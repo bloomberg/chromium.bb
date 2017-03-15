@@ -572,6 +572,12 @@
     'ios_showcase': {
       'filepath': 'ios/showcase',
     },
+    'ios_test': {
+      'filepath': 'ios/chrome/test|'\
+                  'ios/testing|'\
+                  'ios/web/public/test|'\
+                  'ios/web/test',
+    },
     'ios_web': {
       'filepath': 'ios/web',
     },
@@ -1978,6 +1984,9 @@
     'ios_showcase': ['ios-reviews+showcase@chromium.org',
                      'marq+watch@chromium.org',
                      'lpromero+watch@chromium.org'],
+    'ios_test': ['baxley+watch@chromium.org',
+                 'huangml+watch@chromium.org',
+                 'liaoyuke+watch@chromium.org'],
     'ios_web': ['ios-reviews+web@chromium.org',
                 'eugenebut@chromium.org'],
     'ipc': ['darin-cc@chromium.org',
