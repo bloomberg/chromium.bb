@@ -111,6 +111,7 @@ class Speedometer(perf_benchmark.PerfBenchmark):
 
 
 @benchmark.Owner(emails=['hablich@chromium.org'])
+@benchmark.Disabled('all')
 class SpeedometerTurbo(Speedometer):
   def SetExtraBrowserOptions(self, options):
     super(SpeedometerTurbo, self).SetExtraBrowserOptions(options)
@@ -119,3 +120,14 @@ class SpeedometerTurbo(Speedometer):
   @classmethod
   def Name(cls):
     return 'speedometer-turbo'
+
+
+@benchmark.Owner(emails=['hablich@chromium.org'])
+class SpeedometerClassic(Speedometer):
+  def SetExtraBrowserOptions(self, options):
+    super(SpeedometerClassic, self).SetExtraBrowserOptions(options)
+    v8_helper.EnableClassic(options)
+
+  @classmethod
+  def Name(cls):
+    return 'speedometer-classic'
