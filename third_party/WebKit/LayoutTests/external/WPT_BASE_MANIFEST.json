@@ -313,6 +313,18 @@
      {}
     ]
    ],
+   "html/semantics/interactive-elements/context-menus/contextmenu-event-manual.htm": [
+    [
+     "/html/semantics/interactive-elements/context-menus/contextmenu-event-manual.htm",
+     {}
+    ]
+   ],
+   "html/webappapis/scripting/events/event-handler-processing-algorithm-manual.html": [
+    [
+     "/html/webappapis/scripting/events/event-handler-processing-algorithm-manual.html",
+     {}
+    ]
+   ],
    "html/webappapis/system-state-and-capabilities/the-navigator-object/get-navigatorlanguage-manual.html": [
     [
      "/html/webappapis/system-state-and-capabilities/the-navigator-object/get-navigatorlanguage-manual.html",
@@ -328,6 +340,102 @@
    "mediacapture-streams/MediaStreamTrack-end-manual.https.html": [
     [
      "/mediacapture-streams/MediaStreamTrack-end-manual.https.html",
+     {}
+    ]
+   ],
+   "orientation-event/free-fall-manual.html": [
+    [
+     "/orientation-event/free-fall-manual.html",
+     {}
+    ]
+   ],
+   "orientation-event/horizontal-surface-manual.html": [
+    [
+     "/orientation-event/horizontal-surface-manual.html",
+     {}
+    ]
+   ],
+   "orientation-event/screen-upmost-manual.html": [
+    [
+     "/orientation-event/screen-upmost-manual.html",
+     {}
+    ]
+   ],
+   "orientation-event/screen-upright-manual.html": [
+    [
+     "/orientation-event/screen-upright-manual.html",
+     {}
+    ]
+   ],
+   "orientation-event/t001-manual.html": [
+    [
+     "/orientation-event/t001-manual.html",
+     {}
+    ]
+   ],
+   "orientation-event/t002-manual.html": [
+    [
+     "/orientation-event/t002-manual.html",
+     {}
+    ]
+   ],
+   "orientation-event/t003-manual.html": [
+    [
+     "/orientation-event/t003-manual.html",
+     {}
+    ]
+   ],
+   "orientation-event/t006-manual.html": [
+    [
+     "/orientation-event/t006-manual.html",
+     {}
+    ]
+   ],
+   "orientation-event/t009-manual.html": [
+    [
+     "/orientation-event/t009-manual.html",
+     {}
+    ]
+   ],
+   "orientation-event/t010-manual.html": [
+    [
+     "/orientation-event/t010-manual.html",
+     {}
+    ]
+   ],
+   "orientation-event/t012-manual.html": [
+    [
+     "/orientation-event/t012-manual.html",
+     {}
+    ]
+   ],
+   "orientation-event/t021-manual.html": [
+    [
+     "/orientation-event/t021-manual.html",
+     {}
+    ]
+   ],
+   "orientation-event/t022-manual.html": [
+    [
+     "/orientation-event/t022-manual.html",
+     {}
+    ]
+   ],
+   "orientation-event/t023-manual.html": [
+    [
+     "/orientation-event/t023-manual.html",
+     {}
+    ]
+   ],
+   "orientation-event/t025-manual.html": [
+    [
+     "/orientation-event/t025-manual.html",
+     {}
+    ]
+   ],
+   "orientation-event/t028-manual.html": [
+    [
+     "/orientation-event/t028-manual.html",
      {}
     ]
    ],
@@ -700,6 +808,18 @@
    "service-workers/service-worker/fetch-event-within-sw-manual.https.html": [
     [
      "/service-workers/service-worker/fetch-event-within-sw-manual.https.html",
+     {}
+    ]
+   ],
+   "uievents/interface/click-event-manual.htm": [
+    [
+     "/uievents/interface/click-event-manual.htm",
+     {}
+    ]
+   ],
+   "uievents/interface/dblclick-event-manual.htm": [
+    [
+     "/uievents/interface/dblclick-event-manual.htm",
      {}
     ]
    ],
@@ -3375,6 +3495,18 @@
      [
       [
        "/html/semantics/text-level-semantics/the-wbr-element/wbr-element-ref.html",
+       "=="
+      ]
+     ],
+     {}
+    ]
+   ],
+   "infrastructure/reftest-wait.html": [
+    [
+     "/infrastructure/reftest-wait.html",
+     [
+      [
+       "/infrastructure/reftest-wait-ref.html",
        "=="
       ]
      ],
@@ -6623,11 +6755,6 @@
      {}
     ]
    ],
-   "FileAPI/blob/Blob-slice-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "FileAPI/file/File-constructor-expected.txt": [
     [
      {}
@@ -6889,6 +7016,11 @@
     ]
    ],
    "content-security-policy/README.html": [
+    [
+     {}
+    ]
+   ],
+   "content-security-policy/base-uri/base-uri_iframe_sandbox.sub.html.headers": [
     [
      {}
     ]
@@ -8513,11 +8645,6 @@
      {}
     ]
    ],
-   "dom/events/EventTarget-dispatchEvent-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "dom/historical-expected.txt": [
     [
      {}
@@ -8658,6 +8785,11 @@
      {}
     ]
    ],
+   "dom/nodes/Document-createElement-namespace-tests/bare_mathml.svg": [
+    [
+     {}
+    ]
+   ],
    "dom/nodes/Document-createElement-namespace-tests/bare_mathml.xhtml": [
     [
      {}
@@ -8669,6 +8801,11 @@
     ]
    ],
    "dom/nodes/Document-createElement-namespace-tests/bare_svg.html": [
+    [
+     {}
+    ]
+   ],
+   "dom/nodes/Document-createElement-namespace-tests/bare_svg.svg": [
     [
      {}
     ]
@@ -8688,6 +8825,11 @@
      {}
     ]
    ],
+   "dom/nodes/Document-createElement-namespace-tests/bare_xhtml.svg": [
+    [
+     {}
+    ]
+   ],
    "dom/nodes/Document-createElement-namespace-tests/bare_xhtml.xhtml": [
     [
      {}
@@ -8699,6 +8841,11 @@
     ]
    ],
    "dom/nodes/Document-createElement-namespace-tests/empty.html": [
+    [
+     {}
+    ]
+   ],
+   "dom/nodes/Document-createElement-namespace-tests/empty.svg": [
     [
      {}
     ]
@@ -8723,6 +8870,11 @@
      {}
     ]
    ],
+   "dom/nodes/Document-createElement-namespace-tests/mathml.svg": [
+    [
+     {}
+    ]
+   ],
    "dom/nodes/Document-createElement-namespace-tests/mathml.xhtml": [
     [
      {}
@@ -8734,6 +8886,11 @@
     ]
    ],
    "dom/nodes/Document-createElement-namespace-tests/minimal_html.html": [
+    [
+     {}
+    ]
+   ],
+   "dom/nodes/Document-createElement-namespace-tests/minimal_html.svg": [
     [
      {}
     ]
@@ -8753,6 +8910,11 @@
      {}
     ]
    ],
+   "dom/nodes/Document-createElement-namespace-tests/svg.svg": [
+    [
+     {}
+    ]
+   ],
    "dom/nodes/Document-createElement-namespace-tests/svg.xhtml": [
     [
      {}
@@ -8764,6 +8926,11 @@
     ]
    ],
    "dom/nodes/Document-createElement-namespace-tests/xhtml.html": [
+    [
+     {}
+    ]
+   ],
+   "dom/nodes/Document-createElement-namespace-tests/xhtml.svg": [
     [
      {}
     ]
@@ -8783,6 +8950,11 @@
      {}
     ]
    ],
+   "dom/nodes/Document-createElement-namespace-tests/xhtml_ns_changed.svg": [
+    [
+     {}
+    ]
+   ],
    "dom/nodes/Document-createElement-namespace-tests/xhtml_ns_changed.xhtml": [
     [
      {}
@@ -8794,6 +8966,11 @@
     ]
    ],
    "dom/nodes/Document-createElement-namespace-tests/xhtml_ns_removed.html": [
+    [
+     {}
+    ]
+   ],
+   "dom/nodes/Document-createElement-namespace-tests/xhtml_ns_removed.svg": [
     [
      {}
     ]
@@ -8938,11 +9115,6 @@
      {}
     ]
    ],
-   "dom/nodes/Node-lookupNamespaceURI-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "dom/nodes/Node-parentNode-iframe.html": [
     [
      {}
@@ -9038,22 +9210,12 @@
      {}
     ]
    ],
-   "dom/ranges/Range-mutations-dataChange-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "dom/ranges/Range-mutations-splitText-expected.txt": [
     [
      {}
     ]
    ],
    "dom/ranges/Range-mutations.js": [
-    [
-     {}
-    ]
-   ],
-   "dom/ranges/Range-surroundContents-expected.txt": [
     [
      {}
     ]
@@ -9133,11 +9295,6 @@
      {}
     ]
    ],
-   "domparsing/DOMParser-parseFromString-html-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "domparsing/DOMParser-parseFromString-xml-expected.txt": [
     [
      {}
@@ -9159,6 +9316,11 @@
     ]
    ],
    "domparsing/insert_adjacent_html.js": [
+    [
+     {}
+    ]
+   ],
+   "domxpath/002-expected.txt": [
     [
      {}
     ]
@@ -10154,6 +10316,11 @@
     ]
    ],
    "html/browsers/browsing-the-web/history-traversal/browsing_context_name-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "html/browsers/browsing-the-web/history-traversal/browsing_context_name_cross_origin-0.html": [
     [
      {}
     ]
@@ -11368,11 +11535,6 @@
      {}
     ]
    ],
-   "html/browsers/windows/browsing-context-first-created-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "html/browsers/windows/browsing-context-names/001-1.html": [
     [
      {}
@@ -11418,52 +11580,57 @@
      {}
     ]
    ],
-   "html/browsers/windows/nested-browsing-contexts/test.html": [
+   "html/browsers/windows/nested-browsing-contexts/resources/frameElement-nested-frame.html": [
     [
      {}
     ]
    ],
-   "html/browsers/windows/nested-browsing-contexts/testcase3.html": [
+   "html/browsers/windows/nested-browsing-contexts/resources/frameElement-window-post.html": [
     [
      {}
     ]
    ],
-   "html/browsers/windows/noreferrer-cross-origin-window-name.sub.html": [
+   "html/browsers/windows/nested-browsing-contexts/resources/post-to-opener.html": [
     [
      {}
     ]
    ],
-   "html/browsers/windows/support-close.html": [
+   "html/browsers/windows/resources/browsing-context-window.html": [
     [
      {}
     ]
    ],
-   "html/browsers/windows/support-named-null-opener.html": [
+   "html/browsers/windows/resources/echo-window-name.html": [
     [
      {}
     ]
    ],
-   "html/browsers/windows/support-nested-browsing-contexts.html": [
+   "html/browsers/windows/resources/nested-post-to-opener.html": [
     [
      {}
     ]
    ],
-   "html/browsers/windows/support-open-cross-origin.sub.html": [
+   "html/browsers/windows/resources/noreferrer-window-name.html": [
     [
      {}
     ]
    ],
-   "html/browsers/windows/support-opener-null.html": [
+   "html/browsers/windows/resources/post-to-opener.html": [
     [
      {}
     ]
    ],
-   "html/browsers/windows/support-post-to-opener.html": [
+   "html/browsers/windows/resources/target-cross-origin.sub.html": [
     [
      {}
     ]
    ],
-   "html/browsers/windows/support-window-name-echo.html": [
+   "html/browsers/windows/resources/window-close-button.html": [
+    [
+     {}
+    ]
+   ],
+   "html/browsers/windows/resources/window-opener.html": [
     [
      {}
     ]
@@ -16373,6 +16540,11 @@
      {}
     ]
    ],
+   "html/rendering/non-replaced-elements/margin-collapsing-quirks/compare-computed-style.js": [
+    [
+     {}
+    ]
+   ],
    "html/rendering/non-replaced-elements/phrasing-content-0/font-element-text-decoration-color/001-ref.html": [
     [
      {}
@@ -16663,11 +16835,6 @@
      {}
     ]
    ],
-   "html/semantics/embedded-content/media-elements/interfaces/TextTrack/mode-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "html/semantics/embedded-content/media-elements/interfaces/TextTrackCue/onenter-expected.txt": [
     [
      {}
@@ -16734,11 +16901,6 @@
     ]
    ],
    "html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-remove-src-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-set-src-networkState-expected.txt": [
     [
      {}
     ]
@@ -16968,11 +17130,6 @@
      {}
     ]
    ],
-   "html/semantics/embedded-content/the-img-element/Image-constructor-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "html/semantics/embedded-content/the-img-element/brokenimg.jpg": [
     [
      {}
@@ -17024,11 +17181,6 @@
     ]
    ],
    "html/semantics/embedded-content/the-img-element/srcset/common.js": [
-    [
-     {}
-    ]
-   ],
-   "html/semantics/embedded-content/the-img-element/update-the-source-set-expected.txt": [
     [
      {}
     ]
@@ -17153,11 +17305,6 @@
      {}
     ]
    ],
-   "html/semantics/forms/textfieldselection/select-event-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "html/semantics/forms/the-button-element/button-activate-frame.html": [
     [
      {}
@@ -17169,11 +17316,6 @@
     ]
    ],
    "html/semantics/forms/the-button-element/button-validation-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "html/semantics/forms/the-datalist-element/datalistoptions-expected.txt": [
     [
      {}
     ]
@@ -17209,11 +17351,6 @@
     ]
    ],
    "html/semantics/forms/the-input-element/contains.json": [
-    [
-     {}
-    ]
-   ],
-   "html/semantics/forms/the-input-element/date-expected.txt": [
     [
      {}
     ]
@@ -18433,6 +18570,16 @@
      {}
     ]
    ],
+   "html/webappapis/scripting/events/event-handler-processing-algorithm-error/resources/no-op-worker.js": [
+    [
+     {}
+    ]
+   ],
+   "html/webappapis/scripting/events/event-handler-processing-algorithm-error/resources/worker-with-syntax-error.js": [
+    [
+     {}
+    ]
+   ],
    "html/webappapis/scripting/events/event-handler-processing-algorithm-expected.txt": [
     [
      {}
@@ -18449,11 +18596,6 @@
     ]
    ],
    "html/webappapis/scripting/events/invalid-uncompiled-raw-handler-compiled-late-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "html/webappapis/scripting/events/invalid-uncompiled-raw-handler-compiled-once-expected.txt": [
     [
      {}
     ]
@@ -18483,11 +18625,6 @@
      {}
     ]
    ],
-   "html/webappapis/scripting/processing-model-2/addEventListener-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "html/webappapis/scripting/processing-model-2/body-onerror-compile-error-data-url-expected.txt": [
     [
      {}
@@ -18509,11 +18646,6 @@
     ]
    ],
    "html/webappapis/scripting/processing-model-2/compile-error-cross-origin-setTimeout-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "html/webappapis/scripting/processing-model-2/compile-error-in-body-onerror-expected.txt": [
     [
      {}
     ]
@@ -18808,6 +18940,16 @@
      {}
     ]
    ],
+   "images/pattern.ogv": [
+    [
+     {}
+    ]
+   ],
+   "images/pattern.png": [
+    [
+     {}
+    ]
+   ],
    "images/red-16x16.png": [
     [
      {}
@@ -18878,6 +19020,11 @@
      {}
     ]
    ],
+   "infrastructure/reftest-wait-ref.html": [
+    [
+     {}
+    ]
+   ],
    "innerText/getter-expected.txt": [
     [
      {}
@@ -18894,6 +19041,26 @@
     ]
    ],
    "innerText/setter-tests.js": [
+    [
+     {}
+    ]
+   ],
+   "longtask-timing/resources/makelongtask.js": [
+    [
+     {}
+    ]
+   ],
+   "longtask-timing/resources/raflongtask.js": [
+    [
+     {}
+    ]
+   ],
+   "longtask-timing/resources/subframe-observing-longtask.html": [
+    [
+     {}
+    ]
+   ],
+   "longtask-timing/resources/subframe-with-longtask.html": [
     [
      {}
     ]
@@ -22563,11 +22730,6 @@
      {}
     ]
    ],
-   "selection/removeAllRanges-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "selection/setBaseAndExtent-expected.txt": [
     [
      {}
@@ -22723,6 +22885,11 @@
      {}
     ]
    ],
+   "service-workers/service-worker/ServiceWorkerGlobalScope/resources/close-worker.js": [
+    [
+     {}
+    ]
+   ],
    "service-workers/service-worker/ServiceWorkerGlobalScope/resources/registration-attribute-worker.js": [
     [
      {}
@@ -22763,27 +22930,12 @@
      {}
     ]
    ],
-   "service-workers/service-worker/fetch-request-fallback.https-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "service-workers/service-worker/fetch-request-redirect.https-expected.txt": [
     [
      {}
     ]
    ],
    "service-workers/service-worker/fetch-request-resources.https-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "service-workers/service-worker/foreign-fetch-cors.https-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "service-workers/service-worker/foreign-fetch-workers.https-expected.txt": [
     [
      {}
     ]
@@ -22964,6 +23116,11 @@
     ]
    ],
    "service-workers/service-worker/resources/empty-worker.js": [
+    [
+     {}
+    ]
+   ],
+   "service-workers/service-worker/resources/empty.html": [
     [
      {}
     ]
@@ -23789,16 +23946,6 @@
     ]
    ],
    "streams/piping/multiple-propagation.sharedworker-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "streams/piping/pipe-through-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "streams/piping/pipe-through.dedicatedworker-expected.txt": [
     [
      {}
     ]
@@ -27670,7 +27817,9 @@
    "IndexedDB/idb-binary-key-roundtrip.htm": [
     [
      "/IndexedDB/idb-binary-key-roundtrip.htm",
-     {}
+     {
+      "timeout": "long"
+     }
     ]
    ],
    "IndexedDB/idb_binary_key_conversion.htm": [
@@ -28336,6 +28485,12 @@
    "IndexedDB/idbfactory-deleteDatabase-opaque-origin.html": [
     [
      "/IndexedDB/idbfactory-deleteDatabase-opaque-origin.html",
+     {}
+    ]
+   ],
+   "IndexedDB/idbfactory-open-error-properties.html": [
+    [
+     "/IndexedDB/idbfactory-open-error-properties.html",
      {}
     ]
    ],
@@ -29124,7 +29279,9 @@
    "IndexedDB/idbobjectstore_getKey.html": [
     [
      "/IndexedDB/idbobjectstore_getKey.html",
-     {}
+     {
+      "timeout": "long"
+     }
     ]
    ],
    "IndexedDB/idbobjectstore_index.htm": [
@@ -29322,7 +29479,9 @@
    "IndexedDB/key-conversion-exceptions.htm": [
     [
      "/IndexedDB/key-conversion-exceptions.htm",
-     {}
+     {
+      "timeout": "long"
+     }
     ]
    ],
    "IndexedDB/key_invalid.htm": [
@@ -29342,6 +29501,18 @@
    "IndexedDB/keygenerator-constrainterror.htm": [
     [
      "/IndexedDB/keygenerator-constrainterror.htm",
+     {}
+    ]
+   ],
+   "IndexedDB/keygenerator-explicit.html": [
+    [
+     "/IndexedDB/keygenerator-explicit.html",
+     {}
+    ]
+   ],
+   "IndexedDB/keygenerator-inject.html": [
+    [
+     "/IndexedDB/keygenerator-inject.html",
      {}
     ]
    ],
@@ -29452,6 +29623,12 @@
    "IndexedDB/transaction-abort-object-store-metadata-revert.html": [
     [
      "/IndexedDB/transaction-abort-object-store-metadata-revert.html",
+     {}
+    ]
+   ],
+   "IndexedDB/transaction-abort-request-error.html": [
+    [
+     "/IndexedDB/transaction-abort-request-error.html",
      {}
     ]
    ],
@@ -29604,6 +29781,12 @@
    "clear-site-data/navigation.html": [
     [
      "/clear-site-data/navigation.html",
+     {}
+    ]
+   ],
+   "content-security-policy/base-uri/base-uri_iframe_sandbox.sub.html": [
+    [
+     "/content-security-policy/base-uri/base-uri_iframe_sandbox.sub.html",
      {}
     ]
    ],
@@ -31987,6 +32170,12 @@
      {}
     ]
    ],
+   "dom/nodes/Element-childElement-null-svg.svg": [
+    [
+     "/dom/nodes/Element-childElement-null-svg.svg",
+     {}
+    ]
+   ],
    "dom/nodes/Element-childElement-null-xhtml.xhtml": [
     [
      "/dom/nodes/Element-childElement-null-xhtml.xhtml",
@@ -31996,6 +32185,12 @@
    "dom/nodes/Element-childElement-null.html": [
     [
      "/dom/nodes/Element-childElement-null.html",
+     {}
+    ]
+   ],
+   "dom/nodes/Element-childElementCount-dynamic-add-svg.svg": [
+    [
+     "/dom/nodes/Element-childElementCount-dynamic-add-svg.svg",
      {}
     ]
    ],
@@ -32011,6 +32206,12 @@
      {}
     ]
    ],
+   "dom/nodes/Element-childElementCount-dynamic-remove-svg.svg": [
+    [
+     "/dom/nodes/Element-childElementCount-dynamic-remove-svg.svg",
+     {}
+    ]
+   ],
    "dom/nodes/Element-childElementCount-dynamic-remove-xhtml.xhtml": [
     [
      "/dom/nodes/Element-childElementCount-dynamic-remove-xhtml.xhtml",
@@ -32023,6 +32224,12 @@
      {}
     ]
    ],
+   "dom/nodes/Element-childElementCount-nochild-svg.svg": [
+    [
+     "/dom/nodes/Element-childElementCount-nochild-svg.svg",
+     {}
+    ]
+   ],
    "dom/nodes/Element-childElementCount-nochild-xhtml.xhtml": [
     [
      "/dom/nodes/Element-childElementCount-nochild-xhtml.xhtml",
@@ -32032,6 +32239,12 @@
    "dom/nodes/Element-childElementCount-nochild.html": [
     [
      "/dom/nodes/Element-childElementCount-nochild.html",
+     {}
+    ]
+   ],
+   "dom/nodes/Element-childElementCount-svg.svg": [
+    [
+     "/dom/nodes/Element-childElementCount-svg.svg",
      {}
     ]
    ],
@@ -32071,6 +32284,18 @@
      {}
     ]
    ],
+   "dom/nodes/Element-firstElementChild-entity.svg": [
+    [
+     "/dom/nodes/Element-firstElementChild-entity.svg",
+     {}
+    ]
+   ],
+   "dom/nodes/Element-firstElementChild-namespace-svg.svg": [
+    [
+     "/dom/nodes/Element-firstElementChild-namespace-svg.svg",
+     {}
+    ]
+   ],
    "dom/nodes/Element-firstElementChild-namespace-xhtml.xhtml": [
     [
      "/dom/nodes/Element-firstElementChild-namespace-xhtml.xhtml",
@@ -32080,6 +32305,12 @@
    "dom/nodes/Element-firstElementChild-namespace.html": [
     [
      "/dom/nodes/Element-firstElementChild-namespace.html",
+     {}
+    ]
+   ],
+   "dom/nodes/Element-firstElementChild-svg.svg": [
+    [
+     "/dom/nodes/Element-firstElementChild-svg.svg",
      {}
     ]
    ],
@@ -32137,6 +32368,12 @@
      {}
     ]
    ],
+   "dom/nodes/Element-lastElementChild-svg.svg": [
+    [
+     "/dom/nodes/Element-lastElementChild-svg.svg",
+     {}
+    ]
+   ],
    "dom/nodes/Element-lastElementChild-xhtml.xhtml": [
     [
      "/dom/nodes/Element-lastElementChild-xhtml.xhtml",
@@ -32155,6 +32392,12 @@
      {}
     ]
    ],
+   "dom/nodes/Element-nextElementSibling-svg.svg": [
+    [
+     "/dom/nodes/Element-nextElementSibling-svg.svg",
+     {}
+    ]
+   ],
    "dom/nodes/Element-nextElementSibling-xhtml.xhtml": [
     [
      "/dom/nodes/Element-nextElementSibling-xhtml.xhtml",
@@ -32164,6 +32407,12 @@
    "dom/nodes/Element-nextElementSibling.html": [
     [
      "/dom/nodes/Element-nextElementSibling.html",
+     {}
+    ]
+   ],
+   "dom/nodes/Element-previousElementSibling-svg.svg": [
+    [
+     "/dom/nodes/Element-previousElementSibling-svg.svg",
      {}
     ]
    ],
@@ -32188,6 +32437,12 @@
    "dom/nodes/Element-removeAttributeNS.html": [
     [
      "/dom/nodes/Element-removeAttributeNS.html",
+     {}
+    ]
+   ],
+   "dom/nodes/Element-siblingElement-null-svg.svg": [
+    [
+     "/dom/nodes/Element-siblingElement-null-svg.svg",
      {}
     ]
    ],
@@ -33126,6 +33381,18 @@
    "domparsing/xml-serialization.xhtml": [
     [
      "/domparsing/xml-serialization.xhtml",
+     {}
+    ]
+   ],
+   "domxpath/001.html": [
+    [
+     "/domxpath/001.html",
+     {}
+    ]
+   ],
+   "domxpath/002.html": [
+    [
+     "/domxpath/002.html",
      {}
     ]
    ],
@@ -35477,12 +35744,6 @@
      {}
     ]
    ],
-   "html/browsers/windows/browsing-context-first-created.xhtml": [
-    [
-     "/html/browsers/windows/browsing-context-first-created.xhtml",
-     {}
-    ]
-   ],
    "html/browsers/windows/browsing-context-names/001.html": [
     [
      "/html/browsers/windows/browsing-context-names/001.html",
@@ -35519,27 +35780,57 @@
      {}
     ]
    ],
+   "html/browsers/windows/browsing-context-window.html": [
+    [
+     "/html/browsers/windows/browsing-context-window.html",
+     {}
+    ]
+   ],
+   "html/browsers/windows/browsing-context.html": [
+    [
+     "/html/browsers/windows/browsing-context.html",
+     {}
+    ]
+   ],
    "html/browsers/windows/nested-browsing-contexts/frameElement.html": [
     [
      "/html/browsers/windows/nested-browsing-contexts/frameElement.html",
      {}
     ]
    ],
-   "html/browsers/windows/nested-browsing-contexts/window-top-001.html": [
+   "html/browsers/windows/nested-browsing-contexts/window-parent-null.html": [
     [
-     "/html/browsers/windows/nested-browsing-contexts/window-top-001.html",
+     "/html/browsers/windows/nested-browsing-contexts/window-parent-null.html",
+     {}
+    ]
+   ],
+   "html/browsers/windows/nested-browsing-contexts/window-parent.html": [
+    [
+     "/html/browsers/windows/nested-browsing-contexts/window-parent.html",
+     {}
+    ]
+   ],
+   "html/browsers/windows/nested-browsing-contexts/window-top-null.html": [
+    [
+     "/html/browsers/windows/nested-browsing-contexts/window-top-null.html",
+     {}
+    ]
+   ],
+   "html/browsers/windows/nested-browsing-contexts/window-top.html": [
+    [
+     "/html/browsers/windows/nested-browsing-contexts/window-top.html",
+     {}
+    ]
+   ],
+   "html/browsers/windows/noreferrer-null-opener.html": [
+    [
+     "/html/browsers/windows/noreferrer-null-opener.html",
      {}
     ]
    ],
    "html/browsers/windows/noreferrer-window-name.html": [
     [
      "/html/browsers/windows/noreferrer-window-name.html",
-     {}
-    ]
-   ],
-   "html/browsers/windows/noreferrer.html": [
-    [
-     "/html/browsers/windows/noreferrer.html",
      {}
     ]
    ],
@@ -37009,6 +37300,18 @@
      {}
     ]
    ],
+   "html/rendering/non-replaced-elements/margin-collapsing-quirks/multicol-quirks-mode.html": [
+    [
+     "/html/rendering/non-replaced-elements/margin-collapsing-quirks/multicol-quirks-mode.html",
+     {}
+    ]
+   ],
+   "html/rendering/non-replaced-elements/margin-collapsing-quirks/multicol-standards-mode.html": [
+    [
+     "/html/rendering/non-replaced-elements/margin-collapsing-quirks/multicol-standards-mode.html",
+     {}
+    ]
+   ],
    "html/rendering/non-replaced-elements/tables/table-vspace-hspace-s.html": [
     [
      "/html/rendering/non-replaced-elements/tables/table-vspace-hspace-s.html",
@@ -38216,7 +38519,9 @@
    "html/semantics/forms/textfieldselection/select-event.html": [
     [
      "/html/semantics/forms/textfieldselection/select-event.html",
-     {}
+     {
+      "timeout": "long"
+     }
     ]
    ],
    "html/semantics/forms/textfieldselection/selection-after-content-change.html": [
@@ -41055,6 +41360,66 @@
      {}
     ]
    ],
+   "html/webappapis/scripting/events/event-handler-processing-algorithm-error/document-synthetic-errorevent.html": [
+    [
+     "/html/webappapis/scripting/events/event-handler-processing-algorithm-error/document-synthetic-errorevent.html",
+     {}
+    ]
+   ],
+   "html/webappapis/scripting/events/event-handler-processing-algorithm-error/document-synthetic-event.html": [
+    [
+     "/html/webappapis/scripting/events/event-handler-processing-algorithm-error/document-synthetic-event.html",
+     {}
+    ]
+   ],
+   "html/webappapis/scripting/events/event-handler-processing-algorithm-error/script-element.html": [
+    [
+     "/html/webappapis/scripting/events/event-handler-processing-algorithm-error/script-element.html",
+     {}
+    ]
+   ],
+   "html/webappapis/scripting/events/event-handler-processing-algorithm-error/window-runtime-error.html": [
+    [
+     "/html/webappapis/scripting/events/event-handler-processing-algorithm-error/window-runtime-error.html",
+     {}
+    ]
+   ],
+   "html/webappapis/scripting/events/event-handler-processing-algorithm-error/window-synthetic-errorevent.html": [
+    [
+     "/html/webappapis/scripting/events/event-handler-processing-algorithm-error/window-synthetic-errorevent.html",
+     {}
+    ]
+   ],
+   "html/webappapis/scripting/events/event-handler-processing-algorithm-error/window-synthetic-event.html": [
+    [
+     "/html/webappapis/scripting/events/event-handler-processing-algorithm-error/window-synthetic-event.html",
+     {}
+    ]
+   ],
+   "html/webappapis/scripting/events/event-handler-processing-algorithm-error/worker.html": [
+    [
+     "/html/webappapis/scripting/events/event-handler-processing-algorithm-error/worker.html",
+     {}
+    ]
+   ],
+   "html/webappapis/scripting/events/event-handler-processing-algorithm-error/workerglobalscope-runtime-error.worker.js": [
+    [
+     "/html/webappapis/scripting/events/event-handler-processing-algorithm-error/workerglobalscope-runtime-error.worker.html",
+     {}
+    ]
+   ],
+   "html/webappapis/scripting/events/event-handler-processing-algorithm-error/workerglobalscope-synthetic-errorevent.worker.js": [
+    [
+     "/html/webappapis/scripting/events/event-handler-processing-algorithm-error/workerglobalscope-synthetic-errorevent.worker.html",
+     {}
+    ]
+   ],
+   "html/webappapis/scripting/events/event-handler-processing-algorithm-error/workerglobalscope-synthetic-event.worker.js": [
+    [
+     "/html/webappapis/scripting/events/event-handler-processing-algorithm-error/workerglobalscope-synthetic-event.worker.html",
+     {}
+    ]
+   ],
    "html/webappapis/scripting/events/event-handler-processing-algorithm.html": [
     [
      "/html/webappapis/scripting/events/event-handler-processing-algorithm.html",
@@ -41487,6 +41852,12 @@
      {}
     ]
    ],
+   "infrastructure/failing-test.html": [
+    [
+     "/infrastructure/failing-test.html",
+     {}
+    ]
+   ],
    "innerText/getter.html": [
     [
      "/innerText/getter.html",
@@ -41502,6 +41873,54 @@
    "input-events/idlharness.html": [
     [
      "/input-events/idlharness.html",
+     {}
+    ]
+   ],
+   "longtask-timing/longtask-attributes.html": [
+    [
+     "/longtask-timing/longtask-attributes.html",
+     {}
+    ]
+   ],
+   "longtask-timing/longtask-in-childiframe-crossorigin.html": [
+    [
+     "/longtask-timing/longtask-in-childiframe-crossorigin.html",
+     {}
+    ]
+   ],
+   "longtask-timing/longtask-in-childiframe.html": [
+    [
+     "/longtask-timing/longtask-in-childiframe.html",
+     {}
+    ]
+   ],
+   "longtask-timing/longtask-in-externalscript.html": [
+    [
+     "/longtask-timing/longtask-in-externalscript.html",
+     {}
+    ]
+   ],
+   "longtask-timing/longtask-in-parentiframe.html": [
+    [
+     "/longtask-timing/longtask-in-parentiframe.html",
+     {}
+    ]
+   ],
+   "longtask-timing/longtask-in-raf.html": [
+    [
+     "/longtask-timing/longtask-in-raf.html",
+     {}
+    ]
+   ],
+   "longtask-timing/longtask-in-sibling-iframe-crossorigin.html": [
+    [
+     "/longtask-timing/longtask-in-sibling-iframe-crossorigin.html",
+     {}
+    ]
+   ],
+   "longtask-timing/longtask-in-sibling-iframe.html": [
+    [
+     "/longtask-timing/longtask-in-sibling-iframe.html",
      {}
     ]
    ],
@@ -43518,6 +43937,30 @@
    "navigation-timing/test_unique_performance_objects.html": [
     [
      "/navigation-timing/test_unique_performance_objects.html",
+     {}
+    ]
+   ],
+   "orientation-event/devicemotionevent-init.html": [
+    [
+     "/orientation-event/devicemotionevent-init.html",
+     {}
+    ]
+   ],
+   "orientation-event/deviceorientationabsoluteevent.html": [
+    [
+     "/orientation-event/deviceorientationabsoluteevent.html",
+     {}
+    ]
+   ],
+   "orientation-event/deviceorientationevent-init.html": [
+    [
+     "/orientation-event/deviceorientationevent-init.html",
+     {}
+    ]
+   ],
+   "orientation-event/idlharness.html": [
+    [
+     "/orientation-event/idlharness.html",
      {}
     ]
    ],
@@ -52155,6 +52598,12 @@
      }
     ]
    ],
+   "service-workers/service-worker/ServiceWorkerGlobalScope/close.https.html": [
+    [
+     "/service-workers/service-worker/ServiceWorkerGlobalScope/close.https.html",
+     {}
+    ]
+   ],
    "service-workers/service-worker/ServiceWorkerGlobalScope/registration-attribute.https.html": [
     [
      "/service-workers/service-worker/ServiceWorkerGlobalScope/registration-attribute.https.html",
@@ -52203,6 +52652,18 @@
      {}
     ]
    ],
+   "service-workers/service-worker/claim-affect-other-registration.https.html": [
+    [
+     "/service-workers/service-worker/claim-affect-other-registration.https.html",
+     {}
+    ]
+   ],
+   "service-workers/service-worker/claim-fetch.https.html": [
+    [
+     "/service-workers/service-worker/claim-fetch.https.html",
+     {}
+    ]
+   ],
    "service-workers/service-worker/claim-not-using-registration.https.html": [
     [
      "/service-workers/service-worker/claim-not-using-registration.https.html",
@@ -52239,9 +52700,21 @@
      {}
     ]
    ],
+   "service-workers/service-worker/clients-matchall-exact-controller.https.html": [
+    [
+     "/service-workers/service-worker/clients-matchall-exact-controller.https.html",
+     {}
+    ]
+   ],
    "service-workers/service-worker/clients-matchall-include-uncontrolled.https.html": [
     [
      "/service-workers/service-worker/clients-matchall-include-uncontrolled.https.html",
+     {}
+    ]
+   ],
+   "service-workers/service-worker/clients-matchall-order.https.html": [
+    [
+     "/service-workers/service-worker/clients-matchall-order.https.html",
      {}
     ]
    ],
@@ -54281,6 +54754,12 @@
      {}
     ]
    ],
+   "uievents/interface/click-event.htm": [
+    [
+     "/uievents/interface/click-event.htm",
+     {}
+    ]
+   ],
    "uievents/legacy-domevents-tests/approved/ProcessingInstruction.DOMCharacterDataModified.html": [
     [
      "/uievents/legacy-domevents-tests/approved/ProcessingInstruction.DOMCharacterDataModified.html",
@@ -55835,6 +56314,12 @@
      {}
     ]
    ],
+   "webvtt/api/interfaces.html": [
+    [
+     "/webvtt/api/interfaces.html",
+     {}
+    ]
+   ],
    "webvtt/interfaces.html": [
     [
      "/webvtt/interfaces.html",
@@ -57153,7 +57638,7 @@
  },
  "paths": {
   "./.gitignore": [
-   "bfa8422ef9849af857cdbddbe8044c2179953f6d",
+   "a74e35d1ce44dcca7ecb513a8cbd6194fe0f2c58",
    "support"
   ],
   "./CONTRIBUTING.md": [
@@ -57225,7 +57710,7 @@
    "testharness"
   ],
   "FileAPI/blob/Blob-constructor-expected.txt": [
-   "56291c1b3e1d7d435594e7c8daacfaf87a3b158a",
+   "458870f050a401d2be24aff18989d9ab68bb74fe",
    "support"
   ],
   "FileAPI/blob/Blob-constructor.html": [
@@ -57236,10 +57721,6 @@
    "44cf8b06af70ba951889f75c28221583be57dce0",
    "testharness"
   ],
-  "FileAPI/blob/Blob-slice-expected.txt": [
-   "88f986952e6348e4b612d0d825bc4cbc52813a53",
-   "support"
-  ],
   "FileAPI/blob/Blob-slice-overflow.html": [
    "4ad2acdfa2719862531e8219f0b6ce6a707c7a31",
    "testharness"
@@ -57249,7 +57730,7 @@
    "testharness"
   ],
   "FileAPI/file/File-constructor-expected.txt": [
-   "f3457720f65350962fd6255f22a6b9edf395af79",
+   "94fd9c8b5a0bffa2b4684d1155c2f985ecd39ae7",
    "support"
   ],
   "FileAPI/file/File-constructor.html": [
@@ -57285,7 +57766,7 @@
    "testharness"
   ],
   "FileAPI/idlharness-expected.txt": [
-   "abd8aefe1386609956bcdf08ab70700bebe8080f",
+   "3481a561989744ff3a461b1bc2f97bf22e9374f9",
    "support"
   ],
   "FileAPI/idlharness.html": [
@@ -57445,7 +57926,7 @@
    "testharness"
   ],
   "IndexedDB/idb-binary-key-roundtrip.htm": [
-   "ed1e8ae0ca73fdc6fd4d15fcd7623f8f15b7f296",
+   "587b7c783d77450a2c9c1cc09ccaf530e6e5d363",
    "testharness"
   ],
   "IndexedDB/idb_binary_key_conversion.htm": [
@@ -57497,7 +57978,7 @@
    "testharness"
   ],
   "IndexedDB/idbcursor-direction-index-keyrange.htm": [
-   "d87cc37174c74e57880f8883e75a9c033c021e74",
+   "3b7f8b093301e1eb89d4398c76bd36101490d5e6",
    "testharness"
   ],
   "IndexedDB/idbcursor-direction-index.htm": [
@@ -57505,7 +57986,7 @@
    "testharness"
   ],
   "IndexedDB/idbcursor-direction-objectstore-keyrange.htm": [
-   "58e7ff550e99abd610cd842e94ca2cfd20313766",
+   "7834cd03a20e4e52ce4b55b4966c9c73e0a00301",
    "testharness"
   ],
   "IndexedDB/idbcursor-direction-objectstore.htm": [
@@ -57886,6 +58367,10 @@
   ],
   "IndexedDB/idbfactory-deleteDatabase-opaque-origin.html": [
    "faebbda16f92e9d993086578e12fd5ccdb794749",
+   "testharness"
+  ],
+  "IndexedDB/idbfactory-open-error-properties.html": [
+   "bf539f5a577759908e5cc3ff1ab1c115dbed9df0",
    "testharness"
   ],
   "IndexedDB/idbfactory-open-opaque-origin.html": [
@@ -58405,7 +58890,7 @@
    "testharness"
   ],
   "IndexedDB/idbobjectstore_getKey.html": [
-   "58272cd29a4137d30247cef03da5576bd5beddc2",
+   "76906dde291ad82b93070aef7b1fcecae80adfff",
    "testharness"
   ],
   "IndexedDB/idbobjectstore_index.htm": [
@@ -58549,7 +59034,7 @@
    "testharness"
   ],
   "IndexedDB/key-conversion-exceptions.htm": [
-   "66c9ee49f2689e8917e5206f1bd2b9759b755d53",
+   "aed58068ec48e3fd682a195bd5b0ea3f87c5a0e7",
    "testharness"
   ],
   "IndexedDB/key_invalid.htm": [
@@ -58562,6 +59047,14 @@
   ],
   "IndexedDB/keygenerator-constrainterror.htm": [
    "3bd30e912c27c5e93e28c6847ff726c8e6ffae90",
+   "testharness"
+  ],
+  "IndexedDB/keygenerator-explicit.html": [
+   "6415cf0734ab1ab94d6fac420a70f85046036bb1",
+   "testharness"
+  ],
+  "IndexedDB/keygenerator-inject.html": [
+   "1e8439807fd9be6cfdb01b3579017dd3a220478d",
    "testharness"
   ],
   "IndexedDB/keygenerator-overflow.htm": [
@@ -58644,6 +59137,10 @@
    "c0ee1602c5884af9fdf98d21a88721573257d0d2",
    "testharness"
   ],
+  "IndexedDB/transaction-abort-request-error.html": [
+   "7b0a8afb593f65826eab5f56d514f1739b9ef143",
+   "testharness"
+  ],
   "IndexedDB/transaction-create_in_versionchange.htm": [
    "a0237aa82de84dd351a4854a55075fbfbaba3c2e",
    "testharness"
@@ -58701,7 +59198,7 @@
    "testharness"
   ],
   "WebIDL/current-realm-expected.txt": [
-   "23353499a832baf71c265f1a991e3dae3c9932fe",
+   "fbd7d926601db88e491cb984373499945720782b",
    "support"
   ],
   "WebIDL/current-realm.html": [
@@ -58741,7 +59238,7 @@
    "support"
   ],
   "WebIDL/ecmascript-binding/es-exceptions/exceptions.html": [
-   "858edab3778d760d5ab6f942262c7cc43474c15f",
+   "15537c428eeb22a3addb13497ff02181666a1de1",
    "testharness"
   ],
   "WebIDL/ecmascript-binding/has-instance.html": [
@@ -58898,6 +59395,14 @@
   ],
   "content-security-policy/README.html": [
    "9834273e9d9f9bf5ca645497955dc5375091938f",
+   "support"
+  ],
+  "content-security-policy/base-uri/base-uri_iframe_sandbox.sub.html": [
+   "0235470345c1f336bb6ace4cb747ffc1a334a5f6",
+   "testharness"
+  ],
+  "content-security-policy/base-uri/base-uri_iframe_sandbox.sub.html.headers": [
+   "ac57d9475710ee4ca0f979d3037264a405787c35",
    "support"
   ],
   "content-security-policy/blink-contrib-2/allowed.css": [
@@ -61512,10 +62017,6 @@
    "85dea0178b16b5c3e8ddbfa9a8b4bd8424bc0a3d",
    "testharness"
   ],
-  "dom/events/EventTarget-dispatchEvent-expected.txt": [
-   "103c88a2a76fba190a3ccefd0867698ee0af9c4a",
-   "support"
-  ],
   "dom/events/EventTarget-dispatchEvent-returnvalue.html": [
    "70fedeb118930fdc57292ce5f2bfe621f63c2563",
    "testharness"
@@ -61541,7 +62042,7 @@
    "testharness"
   ],
   "dom/interfaces-expected.txt": [
-   "96d8e6f7a745eeef3fbf7d3b5a73b1645ab6dd6a",
+   "6677b9fe8d71310625d7d0a52233d883bde3e58d",
    "support"
   ],
   "dom/interfaces.html": [
@@ -61821,10 +62322,14 @@
    "testharness"
   ],
   "dom/nodes/Document-createElement-namespace-expected.txt": [
-   "995a4c14a9eecbdff5730fac16fc8a5adb139ca0",
+   "e8445bd71bc05b8034f7fa8738e48c2419fbe93d",
    "support"
   ],
   "dom/nodes/Document-createElement-namespace-tests/bare_mathml.html": [
+   "af7eaac588fa1a23884d30f93ed50c2f1779c2fa",
+   "support"
+  ],
+  "dom/nodes/Document-createElement-namespace-tests/bare_mathml.svg": [
    "af7eaac588fa1a23884d30f93ed50c2f1779c2fa",
    "support"
   ],
@@ -61840,6 +62345,10 @@
    "9ed5d9c55c348ab8df6e84baeabeb87e729730ba",
    "support"
   ],
+  "dom/nodes/Document-createElement-namespace-tests/bare_svg.svg": [
+   "9ed5d9c55c348ab8df6e84baeabeb87e729730ba",
+   "support"
+  ],
   "dom/nodes/Document-createElement-namespace-tests/bare_svg.xhtml": [
    "9ed5d9c55c348ab8df6e84baeabeb87e729730ba",
    "support"
@@ -61852,6 +62361,10 @@
    "941efb7368e46b27b937d34b07fc4d41da01b002",
    "support"
   ],
+  "dom/nodes/Document-createElement-namespace-tests/bare_xhtml.svg": [
+   "941efb7368e46b27b937d34b07fc4d41da01b002",
+   "support"
+  ],
   "dom/nodes/Document-createElement-namespace-tests/bare_xhtml.xhtml": [
    "941efb7368e46b27b937d34b07fc4d41da01b002",
    "support"
@@ -61861,6 +62374,10 @@
    "support"
   ],
   "dom/nodes/Document-createElement-namespace-tests/empty.html": [
+   "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+   "support"
+  ],
+  "dom/nodes/Document-createElement-namespace-tests/empty.svg": [
    "da39a3ee5e6b4b0d3255bfef95601890afd80709",
    "support"
   ],
@@ -61880,6 +62397,10 @@
    "57ba88926297c314a5e33b511112afbe0ff00fef",
    "support"
   ],
+  "dom/nodes/Document-createElement-namespace-tests/mathml.svg": [
+   "57ba88926297c314a5e33b511112afbe0ff00fef",
+   "support"
+  ],
   "dom/nodes/Document-createElement-namespace-tests/mathml.xhtml": [
    "57ba88926297c314a5e33b511112afbe0ff00fef",
    "support"
@@ -61889,6 +62410,10 @@
    "support"
   ],
   "dom/nodes/Document-createElement-namespace-tests/minimal_html.html": [
+   "d271a84df01afb5721f71e2295d8a8164df9038c",
+   "support"
+  ],
+  "dom/nodes/Document-createElement-namespace-tests/minimal_html.svg": [
    "d271a84df01afb5721f71e2295d8a8164df9038c",
    "support"
   ],
@@ -61904,6 +62429,10 @@
    "297b27cc9c3500b77e72320d73ad8252aede9bb8",
    "support"
   ],
+  "dom/nodes/Document-createElement-namespace-tests/svg.svg": [
+   "297b27cc9c3500b77e72320d73ad8252aede9bb8",
+   "support"
+  ],
   "dom/nodes/Document-createElement-namespace-tests/svg.xhtml": [
    "297b27cc9c3500b77e72320d73ad8252aede9bb8",
    "support"
@@ -61913,6 +62442,10 @@
    "support"
   ],
   "dom/nodes/Document-createElement-namespace-tests/xhtml.html": [
+   "94cbcdb63ad2dad3a0a4db055a04d9002cf2301d",
+   "support"
+  ],
+  "dom/nodes/Document-createElement-namespace-tests/xhtml.svg": [
    "94cbcdb63ad2dad3a0a4db055a04d9002cf2301d",
    "support"
   ],
@@ -61928,6 +62461,10 @@
    "a37fe2fd8537349b32dba5a246a22f9f1057f2e7",
    "support"
   ],
+  "dom/nodes/Document-createElement-namespace-tests/xhtml_ns_changed.svg": [
+   "a37fe2fd8537349b32dba5a246a22f9f1057f2e7",
+   "support"
+  ],
   "dom/nodes/Document-createElement-namespace-tests/xhtml_ns_changed.xhtml": [
    "a37fe2fd8537349b32dba5a246a22f9f1057f2e7",
    "support"
@@ -61937,6 +62474,10 @@
    "support"
   ],
   "dom/nodes/Document-createElement-namespace-tests/xhtml_ns_removed.html": [
+   "646a55ff6c8ac6787bb224bcea86da8b6c6cda67",
+   "support"
+  ],
+  "dom/nodes/Document-createElement-namespace-tests/xhtml_ns_removed.svg": [
    "646a55ff6c8ac6787bb224bcea86da8b6c6cda67",
    "support"
   ],
@@ -62056,12 +62597,20 @@
    "4f739d2474f87a7b8950d6b7e19f19782b85785f",
    "testharness"
   ],
+  "dom/nodes/Element-childElement-null-svg.svg": [
+   "457b76464f33ea491da7508a1a0ffee9d2f0e4b7",
+   "testharness"
+  ],
   "dom/nodes/Element-childElement-null-xhtml.xhtml": [
    "8fcbbffbacf9e5b835847af510430afa88bfc356",
    "testharness"
   ],
   "dom/nodes/Element-childElement-null.html": [
    "652b8dd45d20e6b6689d234c8d036d7326449b1b",
+   "testharness"
+  ],
+  "dom/nodes/Element-childElementCount-dynamic-add-svg.svg": [
+   "efff73168dded644dafe721d6fef0b7cfa58bef8",
    "testharness"
   ],
   "dom/nodes/Element-childElementCount-dynamic-add-xhtml.xhtml": [
@@ -62072,6 +62621,10 @@
    "f072539b9819d4d2bf2dba4ab1018b31dcc42843",
    "testharness"
   ],
+  "dom/nodes/Element-childElementCount-dynamic-remove-svg.svg": [
+   "82ce322279fe2b7c18a1147cb718b5eed8ac6523",
+   "testharness"
+  ],
   "dom/nodes/Element-childElementCount-dynamic-remove-xhtml.xhtml": [
    "dc65d6efb417323e73b413092bcca9ac363cf178",
    "testharness"
@@ -62080,12 +62633,20 @@
    "a5abad51fb3ba1202a0e7189b6e236df1a3b4d97",
    "testharness"
   ],
+  "dom/nodes/Element-childElementCount-nochild-svg.svg": [
+   "f790e573c17a57d19265ef28b97b8a648e927432",
+   "testharness"
+  ],
   "dom/nodes/Element-childElementCount-nochild-xhtml.xhtml": [
    "7faa83cb08282eed9af6f2a5c8ddb93dfe050646",
    "testharness"
   ],
   "dom/nodes/Element-childElementCount-nochild.html": [
    "bd6bd3eb4d99227841b5cb4927e91978ffaafb78",
+   "testharness"
+  ],
+  "dom/nodes/Element-childElementCount-svg.svg": [
+   "6e876f6ccc0ad2d0b57315580e7739da797fdd80",
    "testharness"
   ],
   "dom/nodes/Element-childElementCount-xhtml.xhtml": [
@@ -62124,12 +62685,24 @@
    "d8babfc580fb43cfec2a2600be979ae769087c05",
    "testharness"
   ],
+  "dom/nodes/Element-firstElementChild-entity.svg": [
+   "2e6c8ef31fb4fb37ff539285f62c18e834b97eb4",
+   "testharness"
+  ],
+  "dom/nodes/Element-firstElementChild-namespace-svg.svg": [
+   "7231112691293bb62dc9181449a00f04c1fb08c9",
+   "testharness"
+  ],
   "dom/nodes/Element-firstElementChild-namespace-xhtml.xhtml": [
    "000e02f0fced2ed583779bae8187f84c28700b85",
    "testharness"
   ],
   "dom/nodes/Element-firstElementChild-namespace.html": [
    "88d1ed90e6d4bb749eb1d7397ca6f8108336a5d6",
+   "testharness"
+  ],
+  "dom/nodes/Element-firstElementChild-svg.svg": [
+   "d4c5df21ea3669909142992b2ba2a053dab45a96",
    "testharness"
   ],
   "dom/nodes/Element-firstElementChild-xhtml.xhtml": [
@@ -62184,6 +62757,10 @@
    "5d0017c68ce6a8c7f24cef6ed9fb574949dee820",
    "testharness"
   ],
+  "dom/nodes/Element-lastElementChild-svg.svg": [
+   "e5edc46fc586925693f8db822af5e80841597e5d",
+   "testharness"
+  ],
   "dom/nodes/Element-lastElementChild-xhtml.xhtml": [
    "84a00d0b0ed8eb8595093cdcf85ba2d2adb99373",
    "testharness"
@@ -62204,12 +62781,20 @@
    "9ce802ae7a010a1a8458f49f1fdc1db81dafb8c7",
    "support"
   ],
+  "dom/nodes/Element-nextElementSibling-svg.svg": [
+   "e66acecc9c4667b027c5e4c4eac60545cf90101e",
+   "testharness"
+  ],
   "dom/nodes/Element-nextElementSibling-xhtml.xhtml": [
    "74628551e42e6ba2208055aba40d339ed1b38518",
    "testharness"
   ],
   "dom/nodes/Element-nextElementSibling.html": [
    "520a06c0df8c268d35f9ebe068e19ff384106205",
+   "testharness"
+  ],
+  "dom/nodes/Element-previousElementSibling-svg.svg": [
+   "75a04a4f24311f09e8c13ccdbfa02335026c169e",
    "testharness"
   ],
   "dom/nodes/Element-previousElementSibling-xhtml.xhtml": [
@@ -62226,6 +62811,10 @@
   ],
   "dom/nodes/Element-removeAttributeNS.html": [
    "ae9e9c7e0910a00f859c0d1ed6d5cbca2b372b69",
+   "testharness"
+  ],
+  "dom/nodes/Element-siblingElement-null-svg.svg": [
+   "0644ced1077aea85dcbb1d95e4dde84cdcbfb9eb",
    "testharness"
   ],
   "dom/nodes/Element-siblingElement-null-xhtml.xhtml": [
@@ -62356,12 +62945,8 @@
    "4d2530ef5f322041d04b8d6ca91d873d24b768ef",
    "testharness"
   ],
-  "dom/nodes/Node-lookupNamespaceURI-expected.txt": [
-   "bb4bc0db4bd4a3ba44ff14fcd0a684f51bbbade6",
-   "support"
-  ],
   "dom/nodes/Node-lookupNamespaceURI.html": [
-   "a1ca60e17a13b72b9546e82ed9eb4ceb24060dff",
+   "fb00bd55b27f2993d1c1285f51916e00f2c0cf26",
    "testharness"
   ],
   "dom/nodes/Node-lookupPrefix.xhtml": [
@@ -62752,10 +63337,6 @@
    "1705d7c4257cfc73afaf8c0e7b1d8dd272a63ac5",
    "testharness"
   ],
-  "dom/ranges/Range-mutations-dataChange-expected.txt": [
-   "372d3f8bcd17916497417dcf9d1aa0ae5156cba7",
-   "support"
-  ],
   "dom/ranges/Range-mutations-dataChange.html": [
    "f69fc889a375d01a7ea4d0b56c9e27f440079219",
    "testharness"
@@ -62785,7 +63366,7 @@
    "testharness"
   ],
   "dom/ranges/Range-mutations-splitText-expected.txt": [
-   "9682f315a73c54f2239fd8e2d3d51ddd7d72a35b",
+   "6051705c2fe0845ba1bb93d348a20fcfa2d59fde",
    "support"
   ],
   "dom/ranges/Range-mutations-splitText.html": [
@@ -62807,10 +63388,6 @@
   "dom/ranges/Range-stringifier.html": [
    "e899f6f79cf57b491260a967ad93ce0b9b32c6fa",
    "testharness"
-  ],
-  "dom/ranges/Range-surroundContents-expected.txt": [
-   "fb60bcb3cf4831a114ec414832df915d387c61c1",
-   "support"
   ],
   "dom/ranges/Range-surroundContents.html": [
    "fd7d4b14d495703004363b4309135fde94e82311",
@@ -62928,10 +63505,6 @@
    "29f250eddff5e2145da8348ea586d4d35d910093",
    "support"
   ],
-  "domparsing/DOMParser-parseFromString-html-expected.txt": [
-   "32df6d5dfe5b64ecac68d64fbad2375ac3c3d2b6",
-   "support"
-  ],
   "domparsing/DOMParser-parseFromString-html.html": [
    "000f4669cf7f452fc2bf3f5c2b2eb279253d1f55",
    "testharness"
@@ -62941,7 +63514,7 @@
    "testharness"
   ],
   "domparsing/DOMParser-parseFromString-xml-expected.txt": [
-   "5626449d28d99d2b8e9e356ae237bedd3fa74144",
+   "23bba3f0f3342feefe7fd3447b55ca7150f50aef",
    "support"
   ],
   "domparsing/DOMParser-parseFromString-xml.html": [
@@ -62957,7 +63530,7 @@
    "testharness"
   ],
   "domparsing/innerhtml-01-expected.txt": [
-   "0dfdedb14f48470d547319a79633e40094e1a36f",
+   "3932429de1f3718737d3be52085a51050ef1584a",
    "support"
   ],
   "domparsing/innerhtml-01.xhtml": [
@@ -63022,6 +63595,18 @@
   ],
   "domparsing/xml-serialization.xhtml": [
    "71944bd6e03639c4736db03b651e265d103cf5cf",
+   "testharness"
+  ],
+  "domxpath/001.html": [
+   "f7161655a8955dd5a028b2e7dd5ada945176a930",
+   "testharness"
+  ],
+  "domxpath/002-expected.txt": [
+   "aba3c2786237660cce6081d4b47efe007a670ea4",
+   "support"
+  ],
+  "domxpath/002.html": [
+   "44e057c92dd61fbc6ea081c5f328596736371e85",
    "testharness"
   ],
   "domxpath/evaluator-constructor.html": [
@@ -63385,7 +63970,7 @@
    "testharness"
   ],
   "editing/run/inserttext-expected.txt": [
-   "a8daa42d55dde6130d824c336cdfdeca6cbdda28",
+   "5f197813f424bc1abb308ce6e8e2459de0f9d3df",
    "support"
   ],
   "editing/run/inserttext.html": [
@@ -64660,12 +65245,16 @@
    "87d7d141b05200ad3db0660d9d8d8bdf7876ee4b",
    "testharness"
   ],
+  "html/browsers/browsing-the-web/history-traversal/browsing_context_name_cross_origin-0.html": [
+   "a0512a75c277b22bbbcd37692580c779334ab74b",
+   "support"
+  ],
   "html/browsers/browsing-the-web/history-traversal/browsing_context_name_cross_origin-expected.txt": [
    "9762c240f4c9c44cdb9d71d2d9d07c9866b61af4",
    "support"
   ],
   "html/browsers/browsing-the-web/history-traversal/browsing_context_name_cross_origin.html": [
-   "7455a083f29518418a3508b8fd3ade74cb747666",
+   "80ddf5ab19d6698340820c2fa4145d4aa6960459",
    "testharness"
   ],
   "html/browsers/browsing-the-web/history-traversal/browsing_context_name_cross_origin_2-expected.txt": [
@@ -64841,7 +65430,7 @@
    "testharness"
   ],
   "html/browsers/browsing-the-web/navigating-across-documents/012-expected.txt": [
-   "0e2290652e397799ba09d893d7bfd301ba2a1db2",
+   "0f8a56e660ec489ff575347d46f44f3fbdb641d2",
    "support"
   ],
   "html/browsers/browsing-the-web/navigating-across-documents/012.html": [
@@ -65069,7 +65658,7 @@
    "testharness"
   ],
   "html/browsers/browsing-the-web/unloading-documents/001-expected.txt": [
-   "a4b27b97cddda7cef0ab6acdf8028f53f1820c0b",
+   "db9cd4d0327b6f6d7dac8d6e4312afb6b98c62a0",
    "support"
   ],
   "html/browsers/browsing-the-web/unloading-documents/001.html": [
@@ -66017,7 +66606,7 @@
    "testharness"
   ],
   "html/browsers/offline/application-cache-api/api_update-expected.txt": [
-   "e339d1b9d6ec3b58d4755403559229319aa7c490",
+   "d3ef10552fd83d25fb151b71fe6a2ca9c817f133",
    "support"
   ],
   "html/browsers/offline/application-cache-api/api_update.html": [
@@ -66448,14 +67037,6 @@
    "aecd2f28b5bd6301c51d535a4b1068a10b497899",
    "support"
   ],
-  "html/browsers/windows/browsing-context-first-created-expected.txt": [
-   "604d794fbda3f96189c7c35e30cb3f6bab7ab096",
-   "support"
-  ],
-  "html/browsers/windows/browsing-context-first-created.xhtml": [
-   "1393800854d0b2daa509eeec75e43fadc2be3a5c",
-   "testharness"
-  ],
   "html/browsers/windows/browsing-context-names/001-1.html": [
    "7f9396d2baeeafd98832c7fe5a0a1474fc358e98",
    "support"
@@ -66512,68 +67093,92 @@
    "174e949fcfb26b9c93463a4eeecb338115ed56b2",
    "support"
   ],
+  "html/browsers/windows/browsing-context-window.html": [
+   "8400240acf63f30ec67ecd003030e81201783d2b",
+   "testharness"
+  ],
+  "html/browsers/windows/browsing-context.html": [
+   "ad718fb943e000ad5d2f376ea5ac8a011661ab37",
+   "testharness"
+  ],
   "html/browsers/windows/nested-browsing-contexts/contains.json": [
    "0f2e164f656015ba43e2b3471af67a5d16fb97ea",
    "support"
   ],
   "html/browsers/windows/nested-browsing-contexts/frameElement.html": [
-   "bf11bfc2c614a24f099a002e04f528c8cd88bf65",
+   "9272ddfc9d2d7301e7adadc5ca06f03d9a224b1f",
    "testharness"
   ],
-  "html/browsers/windows/nested-browsing-contexts/test.html": [
+  "html/browsers/windows/nested-browsing-contexts/resources/frameElement-nested-frame.html": [
    "f9b0142274439bb5e64cd35758c2573b7ff4dfd8",
    "support"
   ],
-  "html/browsers/windows/nested-browsing-contexts/testcase3.html": [
+  "html/browsers/windows/nested-browsing-contexts/resources/frameElement-window-post.html": [
    "e18bdb8a34bcf88b92e9b73ce75ed3a412889b09",
    "support"
   ],
-  "html/browsers/windows/nested-browsing-contexts/window-top-001.html": [
-   "24855b6261867799f59c5aaedd014bb78c877233",
+  "html/browsers/windows/nested-browsing-contexts/resources/post-to-opener.html": [
+   "0b2be6b8955f7d8a5920d34965e2a3a47ee64daf",
+   "support"
+  ],
+  "html/browsers/windows/nested-browsing-contexts/window-parent-null.html": [
+   "cbf895a397edb704ffbca57f93f57e1bc6f82fd9",
    "testharness"
   ],
-  "html/browsers/windows/noreferrer-cross-origin-window-name.sub.html": [
-   "e7f97f2c9c76773719a53e0a16cad28942583efa",
-   "support"
+  "html/browsers/windows/nested-browsing-contexts/window-parent.html": [
+   "a59d0371de7859a84381b7fce04c0ebeeddb89b4",
+   "testharness"
+  ],
+  "html/browsers/windows/nested-browsing-contexts/window-top-null.html": [
+   "d13c025b053bad61013872bda2ce769d51daadaf",
+   "testharness"
+  ],
+  "html/browsers/windows/nested-browsing-contexts/window-top.html": [
+   "3fbe2a993024f1b148bae96f942aa287836e0710",
+   "testharness"
+  ],
+  "html/browsers/windows/noreferrer-null-opener.html": [
+   "cfced8fc2302ae4111c9c44976f36fe211ae379c",
+   "testharness"
   ],
   "html/browsers/windows/noreferrer-window-name.html": [
-   "50afeed23c4279ed044802c6b33c5b5ac9ad4d7a",
+   "163e478a1fb6bb341d10f2ac94f868207b71bbf1",
    "testharness"
   ],
-  "html/browsers/windows/noreferrer.html": [
-   "c59de38af4cf52877cf722bda7997b0dae8026d8",
-   "testharness"
-  ],
-  "html/browsers/windows/support-close.html": [
-   "83bc4461894fdfc0b708c5740a8f5361178cf870",
+  "html/browsers/windows/resources/browsing-context-window.html": [
+   "391d8d5a5d0d8d8cfb98e4938a5bc4a5946eb13e",
    "support"
   ],
-  "html/browsers/windows/support-named-null-opener.html": [
-   "0713aa5c65f801ba146994d504cb1ee4b3bb2599",
-   "support"
-  ],
-  "html/browsers/windows/support-nested-browsing-contexts.html": [
-   "605d0c4f4e80cccd58226d7ecf3bdab8788aa4c8",
-   "support"
-  ],
-  "html/browsers/windows/support-open-cross-origin.sub.html": [
-   "9c78af14dcc8056383dd428c45439a514fe2580c",
-   "support"
-  ],
-  "html/browsers/windows/support-opener-null.html": [
-   "3b7934e44c2b2cfbcc68a6f965a824ebef132baf",
-   "support"
-  ],
-  "html/browsers/windows/support-post-to-opener.html": [
-   "fb65db2b3dd74a04f29bdbd938d5a3b0fe189abb",
-   "support"
-  ],
-  "html/browsers/windows/support-window-name-echo.html": [
+  "html/browsers/windows/resources/echo-window-name.html": [
    "8921da98fd0c74e8fa3a500310d434419119714c",
    "support"
   ],
+  "html/browsers/windows/resources/nested-post-to-opener.html": [
+   "605d0c4f4e80cccd58226d7ecf3bdab8788aa4c8",
+   "support"
+  ],
+  "html/browsers/windows/resources/noreferrer-window-name.html": [
+   "0713aa5c65f801ba146994d504cb1ee4b3bb2599",
+   "support"
+  ],
+  "html/browsers/windows/resources/post-to-opener.html": [
+   "fb65db2b3dd74a04f29bdbd938d5a3b0fe189abb",
+   "support"
+  ],
+  "html/browsers/windows/resources/target-cross-origin.sub.html": [
+   "a2d5c6b8771f5394dd1c5aee41a0b0f63276bfaa",
+   "support"
+  ],
+  "html/browsers/windows/resources/window-close-button.html": [
+   "83bc4461894fdfc0b708c5740a8f5361178cf870",
+   "support"
+  ],
+  "html/browsers/windows/resources/window-opener.html": [
+   "3b7934e44c2b2cfbcc68a6f965a824ebef132baf",
+   "support"
+  ],
   "html/browsers/windows/targeting-cross-origin-nested-browsing-contexts.html": [
-   "f7873dc96cadadccf6097d387c94f8db60a54e69",
+   "81b59630c8973be637f2ef2f379e126ea6dca69d",
    "testharness"
   ],
   "html/dom/documents/dom-tree-accessors/Document.body.html": [
@@ -68157,7 +68762,7 @@
    "support"
   ],
   "html/dom/reflection-embedded-expected.txt": [
-   "b9c46fed5ba5e31ef958673fea6059153ab74969",
+   "41509378a039a34d065c48dd2cb6f57bfe6f43c6",
    "support"
   ],
   "html/dom/reflection-embedded.html": [
@@ -71952,6 +72557,18 @@
    "eafbd5d4f39a28fb5c2c4f3af8d176ea247e0efa",
    "reftest"
   ],
+  "html/rendering/non-replaced-elements/margin-collapsing-quirks/compare-computed-style.js": [
+   "8502d7384d4139d4911ac66cbe053cabc2b37a8b",
+   "support"
+  ],
+  "html/rendering/non-replaced-elements/margin-collapsing-quirks/multicol-quirks-mode.html": [
+   "c608d0b37218e0c39816926ed829396faccbe3cc",
+   "testharness"
+  ],
+  "html/rendering/non-replaced-elements/margin-collapsing-quirks/multicol-standards-mode.html": [
+   "ffc5c58fa1fa37be7e433285de870acac12b41a5",
+   "testharness"
+  ],
   "html/rendering/non-replaced-elements/phrasing-content-0/font-element-text-decoration-color/001-a.html": [
    "da59b8c71eb6abbcc4423b424f19c47d7fbd10b5",
    "reftest"
@@ -72333,7 +72950,7 @@
    "support"
   ],
   "html/semantics/document-metadata/the-meta-element/pragma-directives/attr-meta-http-equiv-refresh/allow-scripts-flag-changing-1-expected.txt": [
-   "67fd398f1d30d45b654691f3e23dad8f5accc101",
+   "38aeb360969e4a6b15145ef80c61734897f8d892",
    "support"
   ],
   "html/semantics/document-metadata/the-meta-element/pragma-directives/attr-meta-http-equiv-refresh/allow-scripts-flag-changing-1.html": [
@@ -72341,7 +72958,7 @@
    "testharness"
   ],
   "html/semantics/document-metadata/the-meta-element/pragma-directives/attr-meta-http-equiv-refresh/allow-scripts-flag-changing-2-expected.txt": [
-   "5b70855d27e3ab2b16b359e13bf3082e85c4a838",
+   "b93f0804cdd12762bb425e6f2f0cb97ac3cdcf1b",
    "support"
   ],
   "html/semantics/document-metadata/the-meta-element/pragma-directives/attr-meta-http-equiv-refresh/allow-scripts-flag-changing-2.html": [
@@ -72349,7 +72966,7 @@
    "testharness"
   ],
   "html/semantics/document-metadata/the-meta-element/pragma-directives/attr-meta-http-equiv-refresh/dynamic-append-expected.txt": [
-   "3019cb4298d56821c32afc59e26d14db0a664004",
+   "d003e5c1a75169716e22dc82a2d8836d9ac27102",
    "support"
   ],
   "html/semantics/document-metadata/the-meta-element/pragma-directives/attr-meta-http-equiv-refresh/dynamic-append.html": [
@@ -72357,7 +72974,7 @@
    "testharness"
   ],
   "html/semantics/document-metadata/the-meta-element/pragma-directives/attr-meta-http-equiv-refresh/moving-documents-expected.txt": [
-   "1968dbb36dd2c0e74eeb3d1942eeebb3d22018c8",
+   "7b8abf8e25718bde349b3a5392a409e4b25f1533",
    "support"
   ],
   "html/semantics/document-metadata/the-meta-element/pragma-directives/attr-meta-http-equiv-refresh/moving-documents.html": [
@@ -72515,10 +73132,6 @@
   "html/semantics/embedded-content/media-elements/interfaces/TextTrack/language.html": [
    "09b93e6a9bf7b27450635bc74bf436c312e01492",
    "testharness"
-  ],
-  "html/semantics/embedded-content/media-elements/interfaces/TextTrack/mode-expected.txt": [
-   "18dff0e78d41b3d2bdb8b3bc8279f9796da8b488",
-   "support"
   ],
   "html/semantics/embedded-content/media-elements/interfaces/TextTrack/mode.html": [
    "a60051c3d25a921841d79541f8ece401c3ceb665",
@@ -72743,10 +73356,6 @@
   "html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-set-src-in-namespace.html": [
    "db82f82f73fe633307e94df5582ef83448698c83",
    "testharness"
-  ],
-  "html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-set-src-networkState-expected.txt": [
-   "989cb63b58d092d0d1ce1bd25073dec3ef153abc",
-   "support"
   ],
   "html/semantics/embedded-content/media-elements/loading-the-media-resource/resource-selection-invoke-set-src-networkState.html": [
    "f45e4ebd634489d9187259ae64bad04d33d5e6a2",
@@ -73164,12 +73773,8 @@
    "842453aa8de65e562f5925c3fac90431c186a7fa",
    "support"
   ],
-  "html/semantics/embedded-content/the-img-element/Image-constructor-expected.txt": [
-   "fa086718ad7d97a3f0002c668bcd46f472337ccb",
-   "support"
-  ],
   "html/semantics/embedded-content/the-img-element/Image-constructor.html": [
-   "8070de7ff74b04e6ac35cd514f9db75f5def1b4c",
+   "2047645c2bdecc90189878cc68e861087d7bd84b",
    "testharness"
   ],
   "html/semantics/embedded-content/the-img-element/brokenimg.jpg": [
@@ -73267,10 +73872,6 @@
   "html/semantics/embedded-content/the-img-element/update-the-image-data/fail-to-resolve.html": [
    "a7d2a9af9048bb1e8c61b1a4669bb755201cc55e",
    "testharness"
-  ],
-  "html/semantics/embedded-content/the-img-element/update-the-source-set-expected.txt": [
-   "08bef7197bea69a44aeb2273b1edd3820de3f3ec",
-   "support"
   ],
   "html/semantics/embedded-content/the-img-element/update-the-source-set.html": [
    "8de24b6c632f61fac416ac5945eb67999ddf8ab3",
@@ -73552,12 +74153,8 @@
    "14a6f0077d512837c24931a2a9723e11d1d7a1c7",
    "support"
   ],
-  "html/semantics/forms/textfieldselection/select-event-expected.txt": [
-   "2cdb4a00c85c2f68497c065ca53e40c1e573dd51",
-   "support"
-  ],
   "html/semantics/forms/textfieldselection/select-event.html": [
-   "90528b5c92d94342b3fe2ef248d90d6a4d397377",
+   "e4835db1c781cad4b259b782a57b452022a50d79",
    "testharness"
   ],
   "html/semantics/forms/textfieldselection/selection-after-content-change.html": [
@@ -73611,10 +74208,6 @@
   "html/semantics/forms/the-button-element/button-validation.html": [
    "a4bb6a1e45b5b92e170e87d153a44f2027ff3717",
    "testharness"
-  ],
-  "html/semantics/forms/the-datalist-element/datalistoptions-expected.txt": [
-   "a69e71b9c30591a8de63c4160a496d0d2fef5c84",
-   "support"
   ],
   "html/semantics/forms/the-datalist-element/datalistoptions.html": [
    "3a1cc7747218cffa1e7bd86a9c762339f9788ca9",
@@ -73720,10 +74313,6 @@
    "799e0488b67e1d91e33cc2a9a834833b4c034838",
    "support"
   ],
-  "html/semantics/forms/the-input-element/date-expected.txt": [
-   "d867bda4f83fe88ccc672ebb053bf8b7a96bad28",
-   "support"
-  ],
   "html/semantics/forms/the-input-element/date.html": [
    "6f60577eb930ff28d0da0874bfc97bc0f40cf2e7",
    "testharness"
@@ -73809,7 +74398,7 @@
    "testharness"
   ],
   "html/semantics/forms/the-input-element/range-expected.txt": [
-   "41087e2783650709041989a1c283bf4a17591bbd",
+   "f61ea2bf823f760ea776be16347ae03cc0cd34df",
    "support"
   ],
   "html/semantics/forms/the-input-element/range.html": [
@@ -73853,7 +74442,7 @@
    "testharness"
   ],
   "html/semantics/forms/the-input-element/type-change-state-expected.txt": [
-   "6a55dbf28a8413c13490a29b0e96364d1919172f",
+   "993798cca042a75407b4e0ad6a8b4e80de018674",
    "support"
   ],
   "html/semantics/forms/the-input-element/type-change-state.html": [
@@ -73949,7 +74538,7 @@
    "testharness"
   ],
   "html/semantics/forms/the-select-element/common-HTMLOptionsCollection.html": [
-   "de186d5f39bf85cc073ad6262fa933f89a4500d5",
+   "b5a01e973e4d4c97c6fa06bd9fd1e535e8c622e8",
    "testharness"
   ],
   "html/semantics/forms/the-select-element/select-ask-for-reset.html": [
@@ -74255,6 +74844,10 @@
   "html/semantics/interactive-elements/commands/contains.json": [
    "6737e2d1d4510e1d0fd105c5a45f0d67e1a7ea0a",
    "support"
+  ],
+  "html/semantics/interactive-elements/context-menus/contextmenu-event-manual.htm": [
+   "da34a14c36842d855a3d73a171e3e5a03282360f",
+   "manual"
   ],
   "html/semantics/interactive-elements/the-details-element/details.html": [
    "2095117d3b5d2a58dbfea27b5aec561a371efd83",
@@ -74629,7 +75222,7 @@
    "support"
   ],
   "html/semantics/scripting-1/the-script-element/module/imports-expected.txt": [
-   "6e1f3f4de6fcaa07c06137a315bdaabc3e294afb",
+   "94b787a3a163472254223d43b00767d7d66a820c",
    "support"
   ],
   "html/semantics/scripting-1/the-script-element/module/imports-inc-a.js": [
@@ -74673,7 +75266,7 @@
    "testharness"
   ],
   "html/semantics/scripting-1/the-script-element/nomodule-set-on-external-module-script-expected.txt": [
-   "1951d35abe826966f14d5ac8306da6c04d9909e0",
+   "5ea8baf592face04b63a27fc4e84085677ba2080",
    "support"
   ],
   "html/semantics/scripting-1/the-script-element/nomodule-set-on-external-module-script.html": [
@@ -74689,7 +75282,7 @@
    "testharness"
   ],
   "html/semantics/scripting-1/the-script-element/nomodule-set-on-inline-module-script-expected.txt": [
-   "2fb7ccec5ac443854e7d0843b1b691811913eed2",
+   "3aba60ab688ea5589f542ffee28f7f6c766827fd",
    "support"
   ],
   "html/semantics/scripting-1/the-script-element/nomodule-set-on-inline-module-script.html": [
@@ -75209,7 +75802,7 @@
    "testharness"
   ],
   "html/semantics/tabular-data/the-table-element/tFoot.html": [
-   "8017cabc08b5c10566ce97dee0cecd73d7ee3bce",
+   "ec9513f8c78bed931ac9ea51910d314b46639317",
    "testharness"
   ],
   "html/semantics/tabular-data/the-table-element/tHead-expected.txt": [
@@ -75217,7 +75810,7 @@
    "support"
   ],
   "html/semantics/tabular-data/the-table-element/tHead.html": [
-   "45cd1c63c80dce76c5a51644fa17f8535846cb54",
+   "96c3470e247189297a84310173392007bad4977d",
    "testharness"
   ],
   "html/semantics/tabular-data/the-table-element/table-insertRow.html": [
@@ -75257,7 +75850,7 @@
    "testharness"
   ],
   "html/semantics/tabular-data/the-tr-element/insertCell.html": [
-   "d3e48e89cfc8a9f3478af5c922fea6a59e88135e",
+   "8161e1f20e42a9fe5270cc779dca71ada097cd75",
    "testharness"
   ],
   "html/semantics/tabular-data/the-tr-element/rowIndex.html": [
@@ -75689,7 +76282,7 @@
    "testharness"
   ],
   "html/syntax/parsing/html5lib_innerHTML_adoption01-expected.txt": [
-   "e20b5700663042e08dda128f81b1153af0313219",
+   "2c9fd3e91fb7fb396958e46b41e9da60ce17b686",
    "support"
   ],
   "html/syntax/parsing/html5lib_innerHTML_adoption01.html": [
@@ -75805,7 +76398,7 @@
    "testharness"
   ],
   "html/syntax/parsing/html5lib_tests11-expected.txt": [
-   "8c718f1cebf05be89d5f175a081df8463d92c9e5",
+   "c6d36593f970af1ce5f71bbee631f288ceda8c20",
    "support"
   ],
   "html/syntax/parsing/html5lib_tests11.html": [
@@ -76125,7 +76718,7 @@
    "testharness"
   ],
   "html/webappapis/idle-callbacks/callback-suspended-expected.txt": [
-   "d370f6b87d60ab1b859ec7fe84bba7449ed4a8e0",
+   "cc31200fbead20c404cf4a4eee28488be9c76e44",
    "support"
   ],
   "html/webappapis/idle-callbacks/callback-suspended.html": [
@@ -76216,12 +76809,64 @@
    "917a10cd8a60b916eb4e2ad7bb7cb1ae657335a8",
    "testharness"
   ],
+  "html/webappapis/scripting/events/event-handler-processing-algorithm-error/document-synthetic-errorevent.html": [
+   "7856a87c6f1735d10b1da16b763f6443d8864811",
+   "testharness"
+  ],
+  "html/webappapis/scripting/events/event-handler-processing-algorithm-error/document-synthetic-event.html": [
+   "2aa064b10fb2ad38cff90fb092d8445a8d1ef102",
+   "testharness"
+  ],
+  "html/webappapis/scripting/events/event-handler-processing-algorithm-error/resources/no-op-worker.js": [
+   "ab0b2e3846514bc4649834eb4252cd39e831572a",
+   "support"
+  ],
+  "html/webappapis/scripting/events/event-handler-processing-algorithm-error/resources/worker-with-syntax-error.js": [
+   "8225f1086abf81073b9fdce82540d8021b73bad7",
+   "support"
+  ],
+  "html/webappapis/scripting/events/event-handler-processing-algorithm-error/script-element.html": [
+   "ef22b322a16f835c562a0aa4575361f0fb53754a",
+   "testharness"
+  ],
+  "html/webappapis/scripting/events/event-handler-processing-algorithm-error/window-runtime-error.html": [
+   "e69a2ad6b52db467bab6baee7485809fec35893c",
+   "testharness"
+  ],
+  "html/webappapis/scripting/events/event-handler-processing-algorithm-error/window-synthetic-errorevent.html": [
+   "23db12066d01404453425499bbc1c85e293375cc",
+   "testharness"
+  ],
+  "html/webappapis/scripting/events/event-handler-processing-algorithm-error/window-synthetic-event.html": [
+   "a779db7beb4c5f52bde9131b7648b6efab2f8000",
+   "testharness"
+  ],
+  "html/webappapis/scripting/events/event-handler-processing-algorithm-error/worker.html": [
+   "659a209fce79b593fd665ea366a959d8095ab7a7",
+   "testharness"
+  ],
+  "html/webappapis/scripting/events/event-handler-processing-algorithm-error/workerglobalscope-runtime-error.worker.js": [
+   "7c0277fc2e4cbff0f4253f2dc65306892255303a",
+   "testharness"
+  ],
+  "html/webappapis/scripting/events/event-handler-processing-algorithm-error/workerglobalscope-synthetic-errorevent.worker.js": [
+   "ea70eb5fc402c513a3f8d81c637698ae62133a7a",
+   "testharness"
+  ],
+  "html/webappapis/scripting/events/event-handler-processing-algorithm-error/workerglobalscope-synthetic-event.worker.js": [
+   "cdc54d4667e9f7d0774fdf64050d561affb14480",
+   "testharness"
+  ],
   "html/webappapis/scripting/events/event-handler-processing-algorithm-expected.txt": [
    "10cb96228545b28542eb4cac2f7075feed63dfa5",
    "support"
   ],
+  "html/webappapis/scripting/events/event-handler-processing-algorithm-manual.html": [
+   "3ae38e063225a1e5c39c620f5499fb39843e0550",
+   "manual"
+  ],
   "html/webappapis/scripting/events/event-handler-processing-algorithm.html": [
-   "a7c163d53eb559ea710527cace404ed88e9c4d0a",
+   "9a1fa2065ba742d6ab945065d65bdc0f60783d94",
    "testharness"
   ],
   "html/webappapis/scripting/events/event-handler-spec-example-expected.txt": [
@@ -76237,7 +76882,7 @@
    "testharness"
   ],
   "html/webappapis/scripting/events/inline-event-handler-ordering-expected.txt": [
-   "cd0912b31fd49dd7dfc4fdab6b4da07b3b845c78",
+   "a6e8e25d5f456d8a5454a10d59b0ad10b4ff25a6",
    "support"
   ],
   "html/webappapis/scripting/events/inline-event-handler-ordering.html": [
@@ -76245,16 +76890,12 @@
    "testharness"
   ],
   "html/webappapis/scripting/events/invalid-uncompiled-raw-handler-compiled-late-expected.txt": [
-   "539ab18d050b7d4a9e9c8702a5381f505808be94",
+   "933ca052487bcc69c3efcb8783ae6fc6bc4671ea",
    "support"
   ],
   "html/webappapis/scripting/events/invalid-uncompiled-raw-handler-compiled-late.html": [
    "3a16be9d55c95a04eb426676ff89802974e88b95",
    "testharness"
-  ],
-  "html/webappapis/scripting/events/invalid-uncompiled-raw-handler-compiled-once-expected.txt": [
-   "3d1fe1d4a525314f3140f8d6a7ad9a0e42b9ae73",
-   "support"
   ],
   "html/webappapis/scripting/events/invalid-uncompiled-raw-handler-compiled-once.html": [
    "6f2c0cc97bdd385322e0a422e7ea5aa77c280536",
@@ -76292,16 +76933,12 @@
    "875ab8aa7b99cec015d82bcfe9ef4133b7adf97f",
    "testharness"
   ],
-  "html/webappapis/scripting/processing-model-2/addEventListener-expected.txt": [
-   "f1d0360cc36096e12545b26cc2653de7bc4b5890",
-   "support"
-  ],
   "html/webappapis/scripting/processing-model-2/addEventListener.html": [
    "a2e5be7d9a2a50da12bd8145c34bf81e7116dbac",
    "testharness"
   ],
   "html/webappapis/scripting/processing-model-2/body-onerror-compile-error-data-url-expected.txt": [
-   "43c6b76df5e7339fb8fbc755b21c53021efcaa7e",
+   "450e671b42c0c0f7a58e8441a0bc54341f23a23f",
    "support"
   ],
   "html/webappapis/scripting/processing-model-2/body-onerror-compile-error-data-url.html": [
@@ -76309,7 +76946,7 @@
    "testharness"
   ],
   "html/webappapis/scripting/processing-model-2/body-onerror-compile-error-expected.txt": [
-   "bdf1635da62c3f23a5a75577ee7b96a6633ad193",
+   "76cb354f35ccc669c2bb0b84a6f54b51c26f0acf",
    "support"
   ],
   "html/webappapis/scripting/processing-model-2/body-onerror-compile-error.html": [
@@ -76317,7 +76954,7 @@
    "testharness"
   ],
   "html/webappapis/scripting/processing-model-2/body-onerror-runtime-error-expected.txt": [
-   "8f0c73b38b364209eb7853c0b72e938ca0d97107",
+   "9a2a7379bc6be1e5df2610b747975e2283ac2bb8",
    "support"
   ],
   "html/webappapis/scripting/processing-model-2/body-onerror-runtime-error.html": [
@@ -76325,7 +76962,7 @@
    "testharness"
   ],
   "html/webappapis/scripting/processing-model-2/compile-error-cross-origin-setInterval-expected.txt": [
-   "e4c799304ee036ec98f3da75e84100a4fa5f793b",
+   "5d14878304d2d9bb3fec867385762b123d58310e",
    "support"
   ],
   "html/webappapis/scripting/processing-model-2/compile-error-cross-origin-setInterval.html": [
@@ -76333,7 +76970,7 @@
    "testharness"
   ],
   "html/webappapis/scripting/processing-model-2/compile-error-cross-origin-setTimeout-expected.txt": [
-   "fe710cf81d022c93e0d64777238deb041be3afb1",
+   "e0d7524e8d27f6619398b7eda27811d52de0e94f",
    "support"
   ],
   "html/webappapis/scripting/processing-model-2/compile-error-cross-origin-setTimeout.html": [
@@ -76352,16 +76989,12 @@
    "60498eb91902b5f0afd53268433ecba2c256108a",
    "testharness"
   ],
-  "html/webappapis/scripting/processing-model-2/compile-error-in-body-onerror-expected.txt": [
-   "cc00714430e2d7f4a3035ac57e74b6521651ef0f",
-   "support"
-  ],
   "html/webappapis/scripting/processing-model-2/compile-error-in-body-onerror.html": [
    "7781dc14881c5377c0df772ab1271fe552493811",
    "testharness"
   ],
   "html/webappapis/scripting/processing-model-2/compile-error-in-setInterval-expected.txt": [
-   "fcdb55c9fd2f1240647c5f966f99956da32a52e4",
+   "0bd793a66719c6c3c288439a404b7580e192d32b",
    "support"
   ],
   "html/webappapis/scripting/processing-model-2/compile-error-in-setInterval.html": [
@@ -76369,7 +77002,7 @@
    "testharness"
   ],
   "html/webappapis/scripting/processing-model-2/compile-error-in-setTimeout-expected.txt": [
-   "9889b4d17074090be1be2ec9454a7c055865435b",
+   "2b0b12fd8674fde2a0f8f6bf6371cc19b670663b",
    "support"
   ],
   "html/webappapis/scripting/processing-model-2/compile-error-in-setTimeout.html": [
@@ -76377,7 +77010,7 @@
    "testharness"
   ],
   "html/webappapis/scripting/processing-model-2/compile-error-same-origin-with-hash-expected.txt": [
-   "9c038fa35d63491bd5bd2a15c7e1a82912f5de29",
+   "ec0b36e05bc82195598edfb479eb9bdb2468f0db",
    "support"
   ],
   "html/webappapis/scripting/processing-model-2/compile-error-same-origin-with-hash.html": [
@@ -76397,7 +77030,7 @@
    "support"
   ],
   "html/webappapis/scripting/processing-model-2/runtime-error-cross-origin-setInterval-expected.txt": [
-   "79b219522b502f1430c7b52a78c83572f7aebdf0",
+   "88ea880dc12cf373e596195ba2ec7f43f39965c1",
    "support"
   ],
   "html/webappapis/scripting/processing-model-2/runtime-error-cross-origin-setInterval.html": [
@@ -76405,7 +77038,7 @@
    "testharness"
   ],
   "html/webappapis/scripting/processing-model-2/runtime-error-cross-origin-setTimeout-expected.txt": [
-   "321a01a1e8c44cd29f59fc400174ba05e20344d2",
+   "6fafca5acb7fa2987e9056ed79e4be2103315f94",
    "support"
   ],
   "html/webappapis/scripting/processing-model-2/runtime-error-cross-origin-setTimeout.html": [
@@ -76429,7 +77062,7 @@
    "testharness"
   ],
   "html/webappapis/scripting/processing-model-2/runtime-error-in-setInterval-expected.txt": [
-   "9dacbf8a4cadf6ab31610fb9fd55cdc48335f501",
+   "1299074e49a8643dfcdf3c2e8b54c00045ae0a88",
    "support"
   ],
   "html/webappapis/scripting/processing-model-2/runtime-error-in-setInterval.html": [
@@ -76437,7 +77070,7 @@
    "testharness"
   ],
   "html/webappapis/scripting/processing-model-2/runtime-error-in-setTimeout-expected.txt": [
-   "cf7a510602a1f525b5125edb5be3268d8051f357",
+   "be303818b4c2e24b30fb023cdad1c7d0a3eb3591",
    "support"
   ],
   "html/webappapis/scripting/processing-model-2/runtime-error-in-setTimeout.html": [
@@ -76449,7 +77082,7 @@
    "testharness"
   ],
   "html/webappapis/scripting/processing-model-2/runtime-error-same-origin-with-hash-expected.txt": [
-   "334cb5bfcdce8bcc9a8185d6d6f8bbc0a5a298f1",
+   "66ef05eefeb5cb3facf4240a2342695ddfb27957",
    "support"
   ],
   "html/webappapis/scripting/processing-model-2/runtime-error-same-origin-with-hash.html": [
@@ -76545,7 +77178,7 @@
    "testharness"
   ],
   "html/webappapis/scripting/processing-model-2/window-onerror-with-cross-frame-event-listeners-1-expected.txt": [
-   "80fcbed1d9fa080bbbf0bced25e10210a5639ed2",
+   "a54f8c539455a54dc10b28bfee52b03394a2e3f7",
    "support"
   ],
   "html/webappapis/scripting/processing-model-2/window-onerror-with-cross-frame-event-listeners-1.html": [
@@ -76553,7 +77186,7 @@
    "testharness"
   ],
   "html/webappapis/scripting/processing-model-2/window-onerror-with-cross-frame-event-listeners-2-expected.txt": [
-   "80fcbed1d9fa080bbbf0bced25e10210a5639ed2",
+   "a54f8c539455a54dc10b28bfee52b03394a2e3f7",
    "support"
   ],
   "html/webappapis/scripting/processing-model-2/window-onerror-with-cross-frame-event-listeners-2.html": [
@@ -76808,6 +77441,14 @@
    "1f29964d20d88de0d659fd76b864b51681582870",
    "support"
   ],
+  "images/pattern.ogv": [
+   "340a255f9e8e06dad2a766f4b3e7bb5e15bf697e",
+   "support"
+  ],
+  "images/pattern.png": [
+   "c0edf6205f84cd5d03ef85ad6db7824d7f70b345",
+   "support"
+  ],
   "images/red-16x16.png": [
    "0d6c6847bafe93c1e1d617a64bd1b432700f7f3f",
    "support"
@@ -76864,12 +77505,24 @@
    "4e33f8928d27bd64a96d72c32de08ebd483ab888",
    "support"
   ],
+  "infrastructure/failing-test.html": [
+   "c832afb4826fd43d2fcc4f5e3fd6a773a6ee35f0",
+   "testharness"
+  ],
+  "infrastructure/reftest-wait-ref.html": [
+   "62552ac6981fc0c7aca84983569717eb2990a31e",
+   "support"
+  ],
+  "infrastructure/reftest-wait.html": [
+   "1a291b68cdf6edcfc28a2ff22e294e8e8ebc0c42",
+   "reftest"
+  ],
   "innerText/getter-expected.txt": [
    "11c121b0354c9017afdc58b1ad97134411142cbc",
    "support"
   ],
   "innerText/getter-tests.js": [
-   "3b33df08dce92cf6720bbbfa3881ccd04c9ab658",
+   "08171e0a781c05d91841e483d7e18c670c82c827",
    "support"
   ],
   "innerText/getter.html": [
@@ -76881,16 +77534,64 @@
    "support"
   ],
   "innerText/setter-tests.js": [
-   "8d59eda6625ecbc94de223ae03f09b3fdf1f4def",
+   "7793daf20cc41ec589b0c11ab26378ca34c44950",
    "support"
   ],
   "innerText/setter.html": [
-   "c7b9fa4c3e9b504ebd035c4b2fbe5d9e0f7616f7",
+   "edfd8fb32ffbc1c20fa0de6ce113fe6ea85635c9",
    "testharness"
   ],
   "input-events/idlharness.html": [
    "cd25518dd402033694667ccd1982fd3b85faa412",
    "testharness"
+  ],
+  "longtask-timing/longtask-attributes.html": [
+   "a88bd658adcb9ef3dcbfa803397910e531bc864b",
+   "testharness"
+  ],
+  "longtask-timing/longtask-in-childiframe-crossorigin.html": [
+   "646324580798ab727e31db4c47b919bb9df6e6a9",
+   "testharness"
+  ],
+  "longtask-timing/longtask-in-childiframe.html": [
+   "74f235096580d329eb0cc2d2c682857c2b6f2c6d",
+   "testharness"
+  ],
+  "longtask-timing/longtask-in-externalscript.html": [
+   "74329829a0248b8e81443f78b998bf97ac60e965",
+   "testharness"
+  ],
+  "longtask-timing/longtask-in-parentiframe.html": [
+   "4732540c350dcfed013f07af0590c5de04aacc2a",
+   "testharness"
+  ],
+  "longtask-timing/longtask-in-raf.html": [
+   "e5a058a841e039e1d8f7b5f8b24d48937aad038b",
+   "testharness"
+  ],
+  "longtask-timing/longtask-in-sibling-iframe-crossorigin.html": [
+   "64085903b907b37077013d42747e3aaa8cf2b86e",
+   "testharness"
+  ],
+  "longtask-timing/longtask-in-sibling-iframe.html": [
+   "d08d6f2ddf39615cc3dad7c65a01a29c9411a2a9",
+   "testharness"
+  ],
+  "longtask-timing/resources/makelongtask.js": [
+   "42c70ac5f3c87499e43eb6200e8c8007d7d1ad9c",
+   "support"
+  ],
+  "longtask-timing/resources/raflongtask.js": [
+   "9fc7b7f0c5dd55de7e5de9258fa6e70c759aed06",
+   "support"
+  ],
+  "longtask-timing/resources/subframe-observing-longtask.html": [
+   "6a335da14401450f2da44c4d994c7c7b4102f57e",
+   "support"
+  ],
+  "longtask-timing/resources/subframe-with-longtask.html": [
+   "4acb6764c2fb60ad55733c420dfd7c1946542f17",
+   "support"
   ],
   "magnetometer/idlharness.https-expected.txt": [
    "adc83b19e793491b1c6ea0fd8b46cd9f32e592fc",
@@ -76905,7 +77606,7 @@
    "support"
   ],
   "media-capabilities/idlharness-expected.txt": [
-   "3ee114ccca363fd6cf18401641ed8df71ee39578",
+   "36a770de2f25ca3e03f92ff615db45b2b3edec59",
    "support"
   ],
   "media-capabilities/idlharness.html": [
@@ -77109,11 +77810,11 @@
    "testharness"
   ],
   "mediacapture-streams/MediaStreamTrack-init.https-expected.txt": [
-   "502d913f8ca1178e71eec066f3761a726607b93e",
+   "e06d937ccc5c05632bc1ce90cb8302d416be5480",
    "support"
   ],
   "mediacapture-streams/MediaStreamTrack-init.https.html": [
-   "5cbc929d8add4eea27950f9b193001566d838f9e",
+   "5dec952b5ea64b644a7fd90ef41d2da95388167b",
    "testharness"
   ],
   "mediacapture-streams/MediaStreamTrackEvent-constructor.https.html": [
@@ -77125,7 +77826,7 @@
    "support"
   ],
   "mediasession/idlharness-expected.txt": [
-   "9d213cce22b4300c0496ba5438bcc647e276688c",
+   "cc2ca247cfee9fd0be5cb80ac1e650d79341485e",
    "support"
   ],
   "mediasession/idlharness.html": [
@@ -78996,6 +79697,86 @@
    "c7d89bf7a3119dbfe9a581f82b5ac43ff6645a64",
    "testharness"
   ],
+  "orientation-event/devicemotionevent-init.html": [
+   "fab191bbebab21f696fefc0ad9e8110b99855eee",
+   "testharness"
+  ],
+  "orientation-event/deviceorientationabsoluteevent.html": [
+   "39b8076ee3dc20b085f06d52441766389155f04b",
+   "testharness"
+  ],
+  "orientation-event/deviceorientationevent-init.html": [
+   "ccd2db5f8266737e2eaf4aa8462b1a51201c42ab",
+   "testharness"
+  ],
+  "orientation-event/free-fall-manual.html": [
+   "e291465a89d97156f518e12e1bf65e6ab8091ce7",
+   "manual"
+  ],
+  "orientation-event/horizontal-surface-manual.html": [
+   "ef54a144013c5eb07a1c5742d8239e741a2a18dc",
+   "manual"
+  ],
+  "orientation-event/idlharness.html": [
+   "d23bfd2d59820008a8783e73e5e349a762dd8b64",
+   "testharness"
+  ],
+  "orientation-event/screen-upmost-manual.html": [
+   "2842c8cce38c52b44779debd172ec06acf1a6bed",
+   "manual"
+  ],
+  "orientation-event/screen-upright-manual.html": [
+   "6b5ad2a9357f9d2dcb320b8b20ae853aa5decbb1",
+   "manual"
+  ],
+  "orientation-event/t001-manual.html": [
+   "d8dc1eae6318e5ef713968ddd2066137178b6160",
+   "manual"
+  ],
+  "orientation-event/t002-manual.html": [
+   "85d511b9cf2a4467a2b066f96771c31919ee6cb2",
+   "manual"
+  ],
+  "orientation-event/t003-manual.html": [
+   "1890e3cef5b51c9322954186a46616524d1090e7",
+   "manual"
+  ],
+  "orientation-event/t006-manual.html": [
+   "445dee427dcf509941e1a340e2dcc010662a5696",
+   "manual"
+  ],
+  "orientation-event/t009-manual.html": [
+   "b6ee2d44a5821c0722c640a703c388a05b738dac",
+   "manual"
+  ],
+  "orientation-event/t010-manual.html": [
+   "66e4118c1084ea73e7ab97e0a2fb75c6d8baf145",
+   "manual"
+  ],
+  "orientation-event/t012-manual.html": [
+   "818ba14af7086635293c7f3d071cf8e482f762ed",
+   "manual"
+  ],
+  "orientation-event/t021-manual.html": [
+   "25d5ebcb60cd8ad8baeeb591a8ae47bd1b918289",
+   "manual"
+  ],
+  "orientation-event/t022-manual.html": [
+   "4cb600579d8f2776af34c2c384b357b615382a0a",
+   "manual"
+  ],
+  "orientation-event/t023-manual.html": [
+   "bf0788e0a38910362a49a9f27325a081ad0a9c9e",
+   "manual"
+  ],
+  "orientation-event/t025-manual.html": [
+   "c75b1abe106111ace7f213ee84087daf17f0f48d",
+   "manual"
+  ],
+  "orientation-event/t028-manual.html": [
+   "6948dbbdc88ffd9aa84ad5a6c822b354809561b2",
+   "manual"
+  ],
   "pointerevents/README.md": [
    "91a8bd86357b0d96ba3ab8f08f88c28436de484c",
    "support"
@@ -79017,7 +79798,7 @@
    "testharness"
   ],
   "pointerevents/idlharness-expected.txt": [
-   "4a3c8f5f9332c268d13f404a09c54e7812f30c0c",
+   "8db80f38011d2ae4ceacd2040db42d3edce9c787",
    "support"
   ],
   "pointerevents/idlharness.html": [
@@ -79305,7 +80086,7 @@
    "testharness"
   ],
   "preload/download-resources.html": [
-   "b59eac5b7ef9911f8f8f9c3583dc701fbd3966c7",
+   "f7e3c1ebfbb2b018dd0e5af4a81b0ab0eecac15c",
    "testharness"
   ],
   "preload/dynamic-adding-preload.html": [
@@ -79333,23 +80114,23 @@
    "support"
   ],
   "preload/onerror-event.html": [
-   "3c7ad9853f296438af51a48dbeb0d3554c7e69fc",
+   "aeb775170f956860edf37d492484531d1cd5aabc",
    "testharness"
   ],
   "preload/onload-event.html": [
-   "10727401482c9947a29d5073e50407f592538e98",
+   "a28bdbf41a8e74bee92ef00e77d283d198a77cfc",
    "testharness"
   ],
   "preload/preload-csp.sub.html": [
-   "171151dace92c82412d086bf3a3f93b90edd1744",
+   "fabb968b75579b301045ecb00380336815e36e86",
    "testharness"
   ],
   "preload/preload-default-csp.sub.html": [
-   "9a3eb4d9f73417bc57ca0128d97fe2c154f26204",
+   "4686e9047519b9a3e90ccda610442006c35cfc63",
    "testharness"
   ],
   "preload/preload-with-type.html": [
-   "e49e294f08b309b542fe97d40b246683f71714b5",
+   "dbae18f696990e4f5b76ca1324141df8ae190fb8",
    "testharness"
   ],
   "preload/resources/dummy.css": [
@@ -79385,7 +80166,7 @@
    "testharness"
   ],
   "preload/single-download-preload.html": [
-   "8d638e60e598d83aaf089a2e17e128cd6d0b3dee",
+   "e83015080694026c96466863c385e3425982479b",
    "testharness"
   ],
   "quirks-mode/blocks-ignore-line-height.html": [
@@ -86829,7 +87610,7 @@
    "testharness"
   ],
   "selection/addRange-00-expected.txt": [
-   "eedac4c59c749216666bcd60a08711810db36e73",
+   "0fa89f93e6b0810c97155a780f0287278aa817cb",
    "support"
   ],
   "selection/addRange-00.html": [
@@ -86837,7 +87618,7 @@
    "testharness"
   ],
   "selection/addRange-04-expected.txt": [
-   "cdd195d7aadd66603ca9c0f5bf2b52cf054b92f2",
+   "6fa9ec0fb9d56ba112ff4a52c61ec4dcdad1757d",
    "support"
   ],
   "selection/addRange-04.html": [
@@ -86849,7 +87630,7 @@
    "testharness"
   ],
   "selection/addRange-12-expected.txt": [
-   "c37408236a59467912d31966c48e105b372be787",
+   "8e6a7d5d1099b8165513cc8bfba2eb884ca3cb07",
    "support"
   ],
   "selection/addRange-12.html": [
@@ -86857,7 +87638,7 @@
    "testharness"
   ],
   "selection/addRange-16-expected.txt": [
-   "d8e9f67a786aea3ea8b94f942663ad69a419c52a",
+   "855ef76cb7d37772805a377eb03d0857f1dc3415",
    "support"
   ],
   "selection/addRange-16.html": [
@@ -86865,7 +87646,7 @@
    "testharness"
   ],
   "selection/addRange-20-expected.txt": [
-   "2bc82fd38cd3bd635d3bda05fe3d92bc99f5e98a",
+   "9fd5b1f712afbc0016ce10f97fa1cf2cabadf310",
    "support"
   ],
   "selection/addRange-20.html": [
@@ -86873,7 +87654,7 @@
    "testharness"
   ],
   "selection/addRange-24-expected.txt": [
-   "fd4aabd6d0ed1531e3adc99411095b501e2be0de",
+   "332f1cc45a9aacee7c157a762073509bd93ab3d5",
    "support"
   ],
   "selection/addRange-24.html": [
@@ -86881,7 +87662,7 @@
    "testharness"
   ],
   "selection/addRange-28-expected.txt": [
-   "a0eb6bab0cdc1093ccad3c96eef6e99895d1a537",
+   "75efb318748e3bc6653e0a798f8c4f7d5009dd9f",
    "support"
   ],
   "selection/addRange-28.html": [
@@ -86889,7 +87670,7 @@
    "testharness"
   ],
   "selection/addRange-32-expected.txt": [
-   "c5bc03594b1095dedab19073232291b45f73a31a",
+   "6cc3b0112a811f8ccc1e2c0f18f1b0622625a89b",
    "support"
   ],
   "selection/addRange-32.html": [
@@ -86897,7 +87678,7 @@
    "testharness"
   ],
   "selection/addRange-36-expected.txt": [
-   "fbed318b78eb54ba405d9b055d92f66bf899cf0a",
+   "5f74cc3bc9612cff536e53d3e124fd7317853f1f",
    "support"
   ],
   "selection/addRange-36.html": [
@@ -86991,10 +87772,6 @@
   "selection/isCollapsed.html": [
    "d1984a9359d880dfb81197e7ec31b2456833809d",
    "testharness"
-  ],
-  "selection/removeAllRanges-expected.txt": [
-   "c163d9bfe29307dd686f48c49e632a85e2b4f567",
-   "support"
   ],
   "selection/removeAllRanges.html": [
    "23385a72a586db288b282eb251f9384048532666",
@@ -87141,7 +87918,7 @@
    "testharness"
   ],
   "service-workers/cache-storage/window/cache-add.https-expected.txt": [
-   "315e6cde8490f8821de90e690553912765865a20",
+   "6efe1ca94742b99558f3cce4157d98f34f41423b",
    "support"
   ],
   "service-workers/cache-storage/window/cache-add.https.html": [
@@ -87197,7 +87974,7 @@
    "testharness"
   ],
   "service-workers/cache-storage/worker/cache-add.https-expected.txt": [
-   "315e6cde8490f8821de90e690553912765865a20",
+   "6efe1ca94742b99558f3cce4157d98f34f41423b",
    "support"
   ],
   "service-workers/cache-storage/worker/cache-add.https.html": [
@@ -87244,9 +88021,17 @@
    "85ba3f00328e9c5a0e4c9935d10921ea1c1afe86",
    "testharness"
   ],
+  "service-workers/service-worker/ServiceWorkerGlobalScope/close.https.html": [
+   "5037b0f564f3d23c0733ae7b4d59b5353eca8d45",
+   "testharness"
+  ],
   "service-workers/service-worker/ServiceWorkerGlobalScope/registration-attribute.https.html": [
    "a6652870c60e93ff522ac107c1b69ec9c9fb2781",
    "testharness"
+  ],
+  "service-workers/service-worker/ServiceWorkerGlobalScope/resources/close-worker.js": [
+   "559815205e99f825fdc0a0f2564e7e25586f3c05",
+   "support"
   ],
   "service-workers/service-worker/ServiceWorkerGlobalScope/resources/registration-attribute-worker.js": [
    "eac69ddc3445a66abddd1494302bf9aac8c7104d",
@@ -87296,6 +88081,14 @@
    "a71f51cde17f9d209750877dfbe1bacd26412ab3",
    "testharness"
   ],
+  "service-workers/service-worker/claim-affect-other-registration.https.html": [
+   "96ffb6f3376a5fa73abd405e123d019d8cac694d",
+   "testharness"
+  ],
+  "service-workers/service-worker/claim-fetch.https.html": [
+   "adec77bbeec2ec9ea7da3aba94375bc92e1b4f6f",
+   "testharness"
+  ],
   "service-workers/service-worker/claim-not-using-registration.https.html": [
    "72da19e038b6ab32ea04a0e91d117bc67d25a301",
    "testharness"
@@ -87317,15 +88110,23 @@
    "testharness"
   ],
   "service-workers/service-worker/clients-matchall-client-types.https.html": [
-   "576b4306b0976071ec1c7e085e016b99b5ab12cc",
+   "aaca38d0ad5e6a03775632fcef1657dd40753ae0",
+   "testharness"
+  ],
+  "service-workers/service-worker/clients-matchall-exact-controller.https.html": [
+   "231ce3ee744eeb670e00ee3a670ba361d5ca0707",
    "testharness"
   ],
   "service-workers/service-worker/clients-matchall-include-uncontrolled.https.html": [
-   "f3fbc439d4352a9c781290d80373fce8ff3e7c40",
+   "a4f4cb575ffea826c642aa3de424c0a0f986fdd0",
+   "testharness"
+  ],
+  "service-workers/service-worker/clients-matchall-order.https.html": [
+   "b2617b7dce0dce64c1a354a3dc07c67f1fa0adf2",
    "testharness"
   ],
   "service-workers/service-worker/clients-matchall.https.html": [
-   "91be48b6b8513197d131dc5f2ffbf43553cb89b3",
+   "ac873d343a0c9d0af058f84d7e8db2809825c64c",
    "testharness"
   ],
   "service-workers/service-worker/controller-on-disconnect.https-expected.txt": [
@@ -87385,7 +88186,7 @@
    "testharness"
   ],
   "service-workers/service-worker/fetch-event-redirect.https.html": [
-   "e322139b14149fe9b3f3aff76a9af8a58437e715",
+   "2a6f2d4f818ac325edd9c69c1b08801961728b20",
    "testharness"
   ],
   "service-workers/service-worker/fetch-event-respond-with-stops-propagation.https.html": [
@@ -87432,10 +88233,6 @@
    "ca776bff1f106f9a1e2dfe4d25ff3618d99758b7",
    "testharness"
   ],
-  "service-workers/service-worker/fetch-request-fallback.https-expected.txt": [
-   "2e185a05c4fb3b8510d3f77b9d7f65f07932628d",
-   "support"
-  ],
   "service-workers/service-worker/fetch-request-fallback.https.html": [
    "60dcb3a4c3b3ca2e79adfc7b779724cbe3ffa1c4",
    "testharness"
@@ -87445,7 +88242,7 @@
    "testharness"
   ],
   "service-workers/service-worker/fetch-request-redirect.https-expected.txt": [
-   "67e8b2fcbfc736ff595eab96902e0f9c589ae820",
+   "b7d53b1f7ee6f904294cd21e5142ff3339a0c55c",
    "support"
   ],
   "service-workers/service-worker/fetch-request-redirect.https.html": [
@@ -87453,7 +88250,7 @@
    "testharness"
   ],
   "service-workers/service-worker/fetch-request-resources.https-expected.txt": [
-   "16fede6024ebb098c774e6f80225dd8378b44492",
+   "fda03ac2ef5e2d49f28c7b1c3f1d283f0623aadb",
    "support"
   ],
   "service-workers/service-worker/fetch-request-resources.https.html": [
@@ -87476,10 +88273,6 @@
    "6600d201f205fe3586cbfab088cf9f2be7d96b87",
    "testharness"
   ],
-  "service-workers/service-worker/foreign-fetch-cors.https-expected.txt": [
-   "695cb32da1ec015990684439ae033d60a0ea0a4a",
-   "support"
-  ],
   "service-workers/service-worker/foreign-fetch-cors.https.html": [
    "aac5e2b6b096af5fb5edd9b8c5193774089afac2",
    "testharness"
@@ -87487,10 +88280,6 @@
   "service-workers/service-worker/foreign-fetch-event.https.html": [
    "8fbf910205f175a457846100deb34a01c02b00ab",
    "testharness"
-  ],
-  "service-workers/service-worker/foreign-fetch-workers.https-expected.txt": [
-   "d3f1cd1321ee6461a0270b59290e61e745e2aafb",
-   "support"
   ],
   "service-workers/service-worker/foreign-fetch-workers.https.html": [
    "4838204f935a89eccb333e347dd56f30846460fe",
@@ -87721,7 +88510,7 @@
    "support"
   ],
   "service-workers/service-worker/resources/claim-worker.js": [
-   "2839599adca9049d31085e50504623576dc81643",
+   "e779a28c42928ff10219073171c1216c6623b4d4",
    "support"
   ],
   "service-workers/service-worker/resources/client-navigate-frame.html": [
@@ -87757,7 +88546,7 @@
    "support"
   ],
   "service-workers/service-worker/resources/clients-matchall-worker.js": [
-   "e204fdb53a9ae84f1b463f4655d62d1182d77cd5",
+   "88326b2119c68ba656c62a74b9c1af201bca1548",
    "support"
   ],
   "service-workers/service-worker/resources/dummy-shared-worker-interceptor.js": [
@@ -87786,6 +88575,10 @@
   ],
   "service-workers/service-worker/resources/empty-worker.js": [
    "84b3339c3419e318803e51f46d7252d9e8ac183b",
+   "support"
+  ],
+  "service-workers/service-worker/resources/empty.html": [
+   "90aa64bd32d0dd20f0fda1783b0d9ec4a97b3430",
    "support"
   ],
   "service-workers/service-worker/resources/empty.js": [
@@ -87949,7 +88742,7 @@
    "support"
   ],
   "service-workers/service-worker/resources/foreign-fetch-cors-worker.js": [
-   "de8574422145b4c5385e34312b323201bbc35518",
+   "0bee2a7495fd8590c65fbdb10c02bb4024f729a9",
    "support"
   ],
   "service-workers/service-worker/resources/foreign-fetch-event-worker.js": [
@@ -87965,7 +88758,7 @@
    "support"
   ],
   "service-workers/service-worker/resources/foreign-fetch-helper-worker.js": [
-   "750ddd06ccb14b662e64be7faa54552bc04e9358",
+   "94061830f3d478ac53d9eeb03af662c3635f7860",
    "support"
   ],
   "service-workers/service-worker/resources/foreign-fetch-helpers.js": [
@@ -88397,7 +89190,7 @@
    "testharness"
   ],
   "service-workers/service-worker/websocket.https-expected.txt": [
-   "1fdf76c93fab7b19ef861df5aaada4ddce974f73",
+   "857a6466cae10de84c8de7295374710e83bdf281",
    "support"
   ],
   "service-workers/service-worker/websocket.https.html": [
@@ -89205,7 +89998,7 @@
    "testharness"
   ],
   "streams/piping/general.js": [
-   "cb4f7956b3973e318f6227122ab0df3c017414d5",
+   "3883820b3c21c05bedc258bae42731b42a42944b",
    "support"
   ],
   "streams/piping/general.serviceworker.https.html": [
@@ -89217,11 +90010,11 @@
    "testharness"
   ],
   "streams/piping/multiple-propagation-expected.txt": [
-   "ce9eac70da5aff617fcba34317a9357332ed5aa2",
+   "e1c701155da2752a69ab048a1d2b0d02ee9c23b0",
    "support"
   ],
   "streams/piping/multiple-propagation.dedicatedworker-expected.txt": [
-   "ce9eac70da5aff617fcba34317a9357332ed5aa2",
+   "e1c701155da2752a69ab048a1d2b0d02ee9c23b0",
    "support"
   ],
   "streams/piping/multiple-propagation.dedicatedworker.html": [
@@ -89252,14 +90045,6 @@
    "a2aaf43f0d2eb831bd9f8e379fbf0076eee76633",
    "testharness"
   ],
-  "streams/piping/pipe-through-expected.txt": [
-   "99727d10dfd517ff4345ffd7f781f2cef6363980",
-   "support"
-  ],
-  "streams/piping/pipe-through.dedicatedworker-expected.txt": [
-   "99727d10dfd517ff4345ffd7f781f2cef6363980",
-   "support"
-  ],
   "streams/piping/pipe-through.dedicatedworker.html": [
    "ed05dd7416cc07e178e481375c2372ce1094905e",
    "testharness"
@@ -89269,7 +90054,7 @@
    "testharness"
   ],
   "streams/piping/pipe-through.js": [
-   "7506ed68f5b64d7339af19cacd5d1d1201e1e5f7",
+   "08daa95df8e64c57f082b297ffd8bd11cda54d26",
    "support"
   ],
   "streams/piping/pipe-through.serviceworker.https-expected.txt": [
@@ -89341,7 +90126,7 @@
    "testharness"
   ],
   "streams/readable-byte-streams/general.js": [
-   "4a7d7a12437ad4c3ad39411c8fddffeca664dab7",
+   "944b6cec4ef71b243b97b69248fbd3d9af0fce43",
    "support"
   ],
   "streams/readable-byte-streams/general.serviceworker.https-expected.txt": [
@@ -89389,7 +90174,7 @@
    "testharness"
   ],
   "streams/readable-streams/bad-underlying-sources.js": [
-   "f980e8d1a99149a2292835eafb5484f8ee8da966",
+   "f6eeb95c1eb3cf9d60cb7e8f1b44a4c460c5bbaf",
    "support"
   ],
   "streams/readable-streams/bad-underlying-sources.serviceworker.https.html": [
@@ -89429,7 +90214,7 @@
    "testharness"
   ],
   "streams/readable-streams/cancel.js": [
-   "de3fc5a6a025a8ae42cb4870200af196d844e818",
+   "1874c77f2018facc15f233b30daa998f407841b2",
    "support"
   ],
   "streams/readable-streams/cancel.serviceworker.https.html": [
@@ -89469,7 +90254,7 @@
    "testharness"
   ],
   "streams/readable-streams/default-reader.js": [
-   "bf6b1859b76b4891b558da229e7a2e4d40eb3a1d",
+   "4bf42e5e2f45275c98122fd6e884d7af0dee1e77",
    "support"
   ],
   "streams/readable-streams/default-reader.serviceworker.https.html": [
@@ -89541,7 +90326,7 @@
    "testharness"
   ],
   "streams/readable-streams/general.js": [
-   "655cd8df67e0ef1c7f14e60bfb1584631e3291b5",
+   "81c44fb5c5c416d4882bf266319c384ced4a0ffe",
    "support"
   ],
   "streams/readable-streams/general.serviceworker.https-expected.txt": [
@@ -89569,7 +90354,7 @@
    "testharness"
   ],
   "streams/readable-streams/pipe-through.js": [
-   "1fdceec0fdec41293e411e7263fec1bf8f397853",
+   "df79dbb2844e85b65abc5ffb356aedc833b81b0a",
    "support"
   ],
   "streams/readable-streams/pipe-through.serviceworker.https.html": [
@@ -89653,7 +90438,7 @@
    "testharness"
   ],
   "streams/writable-streams/aborting.js": [
-   "744d55d9887783d92cdf81685358dab5a2016f84",
+   "f6edf8933a360f06d399bc17672a464e147310f6",
    "support"
   ],
   "streams/writable-streams/aborting.serviceworker.https-expected.txt": [
@@ -89777,7 +90562,7 @@
    "testharness"
   ],
   "streams/writable-streams/close.js": [
-   "ac7f1df6753c0d171d61a274a8ae7c6f5107857c",
+   "fae91aef3ae70841716304a91e603ed591e514ef",
    "support"
   ],
   "streams/writable-streams/close.serviceworker.https.html": [
@@ -89933,7 +90718,7 @@
    "testharness"
   ],
   "streams/writable-streams/write.js": [
-   "f956e42aa67abce9b3e11179c800a6f9c625d111",
+   "d3c5ce9a44188acb6def61118b2d1d3119fce1c4",
    "support"
   ],
   "streams/writable-streams/write.serviceworker.https-expected.txt": [
@@ -90029,7 +90814,7 @@
    "testharness"
   ],
   "svg/interfaces-expected.txt": [
-   "1985757d283da280151ab9f5c7e375265f486c3e",
+   "2ee30b154b64a6c0b9de9e9fd642e1e51a945762",
    "support"
   ],
   "svg/interfaces.html": [
@@ -90159,6 +90944,18 @@
   "uievents/interface/README.md": [
    "6112502ca25230f30d0d87fc00cdb4d3dad64178",
    "support"
+  ],
+  "uievents/interface/click-event-manual.htm": [
+   "2dc66486c4fedd5e7f0a60f1210cbfa5d4e9e3a0",
+   "manual"
+  ],
+  "uievents/interface/click-event.htm": [
+   "31beb4ca0d686fefa3eaa50360ad37c56e05655c",
+   "testharness"
+  ],
+  "uievents/interface/dblclick-event-manual.htm": [
+   "551486b9882d33a0ce31740809eaec0352403d69",
+   "manual"
   ],
   "uievents/keyboard/README.md": [
    "ee83feb002acf1f134fecf618d985103c906472b",
@@ -90637,11 +91434,11 @@
    "testharness"
   ],
   "web-animations/interfaces/Animatable/animate-expected.txt": [
-   "da37cabf824042a09bf1b974a48059afe95b827f",
+   "171f7cc3ce026fb9be6fc86cfca92a27387ceb00",
    "support"
   ],
   "web-animations/interfaces/Animatable/animate.html": [
-   "d076cdc3862c8a178d69d44cfe422f4e48b0649a",
+   "5f50ca1e8ab1fecdc6594310b4e386eec4738c6b",
    "testharness"
   ],
   "web-animations/interfaces/Animatable/getAnimations.html": [
@@ -90737,7 +91534,7 @@
    "testharness"
   ],
   "web-animations/interfaces/AnimationEffectTiming/easing.html": [
-   "3d0175c4879d60ee04442debf32b00ee8241bda5",
+   "a4b8b1c715795d5e66c0e32c2415a2e8fb587147",
    "testharness"
   ],
   "web-animations/interfaces/AnimationEffectTiming/endDelay.html": [
@@ -90805,7 +91602,7 @@
    "testharness"
   ],
   "web-animations/interfaces/KeyframeEffect/constructor-expected.txt": [
-   "78116feafa4663aeb21ebad7ed37d3c05b493319",
+   "8ae20367cc2abc594c7c46bea3809adc6f16ec8c",
    "support"
   ],
   "web-animations/interfaces/KeyframeEffect/constructor.html": [
@@ -90877,7 +91674,7 @@
    "testharness"
   ],
   "web-animations/resources/easing-tests.js": [
-   "190134380a0724f470a03ed0aa20c936bfed8d6c",
+   "2946cba8cbfa1216e5f1e941d92a1695473dc5f4",
    "support"
   ],
   "web-animations/resources/keyframe-utils.js": [
@@ -91417,7 +92214,7 @@
    "testharness"
   ],
   "webrtc/rtcpeerconnection/rtcpeerconnection-constructor-expected.txt": [
-   "b18ac0a88bcca09362db052949635a8aec707550",
+   "ae19b2abd560bd378b5a4dc0afde8763fd09cdc2",
    "support"
   ],
   "webrtc/rtcpeerconnection/rtcpeerconnection-constructor.html": [
@@ -91425,7 +92222,7 @@
    "testharness"
   ],
   "webrtc/rtcpeerconnection/rtcpeerconnection-idl-expected.txt": [
-   "35c0cae70e3415ca49b29d91ca7dad467d73221b",
+   "6775c653f14a91f38f03712eede88a15a0f07929",
    "support"
   ],
   "webrtc/rtcpeerconnection/rtcpeerconnection-idl.html": [
@@ -91437,7 +92234,7 @@
    "testharness"
   ],
   "webrtc/simplecall-expected.txt": [
-   "4588b7b96363cea683df9cb7ba59b92572da06f6",
+   "73c0717ad63503c6ea9c14c71a62a2984a46125b",
    "support"
   ],
   "webrtc/simplecall.html": [
@@ -91693,7 +92490,7 @@
    "testharness"
   ],
   "webstorage/storage_string_conversion.html": [
-   "3d8b227e0884935392f66d00c9d09e0f0d4aadc5",
+   "33c748773a518af29ea2ef8cbbc859fe988fb88a",
    "testharness"
   ],
   "webstorage/storage_supported_property_names.html": [
@@ -91701,15 +92498,15 @@
    "testharness"
   ],
   "webvr/idlharness-expected.txt": [
-   "4ec0d16ffbfb8d51f8ff2aeed3c509ede7b01022",
+   "7079dade4dae2bb7e2a669f1ac0c645eb0ac4e9a",
    "support"
   ],
   "webvr/idlharness.html": [
-   "ecfd51818c20d46b9983bb1d045a9308fc9a26b7",
+   "53ac12278e26e70cc0f6d6f31171fc4d2b6e6667",
    "testharness"
   ],
   "webvtt/api/VTTCue/align-expected.txt": [
-   "131f744febd82a1ec7672df3b3e0c2b050cabd60",
+   "0d037e134d1272ff24a2a8f852f309570d1e8843",
    "support"
   ],
   "webvtt/api/VTTCue/align.html": [
@@ -91729,11 +92526,11 @@
    "support"
   ],
   "webvtt/api/VTTCue/getCueAsHTML.html": [
-   "2c4a14607efdc17772f2878e9c0943300a2f8840",
+   "88e868bd5a243bfb24151028b6012914341e3742",
    "testharness"
   ],
   "webvtt/api/VTTCue/line-expected.txt": [
-   "3e11ceaab25e30c8c1aabed811b884bdccda9441",
+   "e674e063947619ae2c1172e69a29bdb13186ed7a",
    "support"
   ],
   "webvtt/api/VTTCue/line.html": [
@@ -91773,7 +92570,7 @@
    "testharness"
   ],
   "webvtt/api/VTTCue/snapToLines-expected.txt": [
-   "c456dfc5bb6f8a876ed57b51c7158f5e88e3fff3",
+   "962cf6527e05ca57d59d32c13edb4d41e3609ec0",
    "support"
   ],
   "webvtt/api/VTTCue/snapToLines.html": [
@@ -91781,15 +92578,15 @@
    "testharness"
   ],
   "webvtt/api/VTTCue/text-expected.txt": [
-   "c070481c2ea2189090684786662a3009d3ba544a",
+   "c7a2031b7986b74ae21e6c155178559d0a32cb2b",
    "support"
   ],
   "webvtt/api/VTTCue/text.html": [
-   "df27153660ab3df840d922803809a5b803027155",
+   "090ecc4c467c9bb2547c0906abfdb5b8572ecaf6",
    "testharness"
   ],
   "webvtt/api/VTTCue/vertical-expected.txt": [
-   "8db8dc0caa62b5aa1cad3ef4d283cecddd4f44ce",
+   "3fe06a9af105216c817946abd52276778aa43a34",
    "support"
   ],
   "webvtt/api/VTTCue/vertical.html": [
@@ -91826,6 +92623,10 @@
   ],
   "webvtt/api/VTTRegion/width.html": [
    "103a481c365bea3c1d6494f9fc3f3b6bf70ed580",
+   "testharness"
+  ],
+  "webvtt/api/interfaces.html": [
+   "dbff06876d1a0db46505423b9c1d919c2188b7a9",
    "testharness"
   ],
   "webvtt/interfaces-expected.txt": [
@@ -91953,7 +92754,7 @@
    "support"
   ],
   "webvtt/parsing/file-parsing/support/settings-line.test": [
-   "c199f5bf8d95a1b932d72991f59ec0501679c01e",
+   "1aa0776cf32d9ef64564e566a04effd40c1e55ae",
    "support"
   ],
   "webvtt/parsing/file-parsing/support/settings-multiple.test": [
@@ -92081,119 +92882,119 @@
    "support"
   ],
   "webvtt/parsing/file-parsing/tests/arrows.html": [
-   "55d90be35579cf64a966eb12c593ed3792b4b1c1",
+   "89e6f67e075cad269095e8ad02e2b3b18364de55",
    "testharness"
   ],
   "webvtt/parsing/file-parsing/tests/header-garbage.html": [
-   "f0478b342977b4b1986b6ea02474f28fe654cc87",
+   "c6384692eb912f3364c5f9b977934c953bc59c3d",
    "testharness"
   ],
   "webvtt/parsing/file-parsing/tests/header-space.html": [
-   "693f0bbebe9e6d92e73edb41d94d4f7c9023d33a",
+   "da29d0b7044604aa2bb2447a2174e26332958349",
    "testharness"
   ],
   "webvtt/parsing/file-parsing/tests/header-tab.html": [
-   "5183feaeab6476b98a26ed7d897d46a095177d09",
+   "a860aa6b10e1e9fea5bca2c791a523e32644b50a",
    "testharness"
   ],
   "webvtt/parsing/file-parsing/tests/header-timings.html": [
-   "b4aac06a6fef4ac548091db5d3ad6609a8fc935e",
+   "a04c70b0d66d93950968c94720acc05f513b6c61",
    "testharness"
   ],
   "webvtt/parsing/file-parsing/tests/ids.html": [
-   "c61a87e0623a77150e25b647690fc0b30555cbb3",
+   "a90c0f6a13ba32ebf47c33afb9ba7b3c3809728c",
    "testharness"
   ],
   "webvtt/parsing/file-parsing/tests/newlines.html": [
-   "0f58395ed99a61da5f6ec2490402e93bd3f892f2",
+   "b3c553a83a4fe2172e9c317817c772e7036a1a70",
    "testharness"
   ],
   "webvtt/parsing/file-parsing/tests/nulls.html": [
-   "9da3e5bf2d7cfa65109c196d88c44c37887296d0",
+   "527b1f144e3af92dddb0746afff4cffc6004a08d",
    "testharness"
   ],
   "webvtt/parsing/file-parsing/tests/regions-id.html": [
-   "a460719d2dbcd8a83ecb0b66e242c7690085b5b2",
+   "b795ab2a5e12895569d24c2828b265d6f9d296fb",
    "testharness"
   ],
   "webvtt/parsing/file-parsing/tests/regions-lines.html": [
-   "f3dbc54ce3b9ff4a8483a26d8772b4e0c9147135",
+   "3c232948d1a38e8e81e2f29846aff912b3934cb5",
    "testharness"
   ],
   "webvtt/parsing/file-parsing/tests/regions-old.html": [
-   "4ab58e6adde68b318d1efea94bdbc68b5d0d7f80",
+   "e61b584d8c6618749a861f47e5144a70334964cf",
    "testharness"
   ],
   "webvtt/parsing/file-parsing/tests/regions-regionanchor.html": [
-   "4b2a99d7e1ead80e60eb0b51176da10a2af9608e",
+   "cdd801c8ab4f1976ccbe242d09bb4d1cbb08049f",
    "testharness"
   ],
   "webvtt/parsing/file-parsing/tests/regions-scroll.html": [
-   "15dd9378d09fbebfba8a7dbcaa4b3ffb63d41ee6",
+   "485cb47d08a5b54fa94136f6ee3b1367df5cb8cd",
    "testharness"
   ],
   "webvtt/parsing/file-parsing/tests/regions-viewportanchor.html": [
-   "3409a66aea03f9ba1a7f5d0b18b8ee6fe191763a",
+   "82d8106c43a13ed2f673b919ed0e52e01aabdfcd",
    "testharness"
   ],
   "webvtt/parsing/file-parsing/tests/settings-align.html": [
-   "df4874a3bbf689758ad2074b3d2e39c71866470f",
+   "600c8c0861b9da63a15df4c88f9b8082213c4e5a",
    "testharness"
   ],
   "webvtt/parsing/file-parsing/tests/settings-line.html": [
-   "e4ec4556da5f46b5c683e73dd136114572bbbbe0",
+   "f9ba37c2f420d3c181a5a81ad34cdf9b113fce76",
    "testharness"
   ],
   "webvtt/parsing/file-parsing/tests/settings-multiple.html": [
-   "84fd3e8d7e038d6a4eed22b09a27278814da309a",
+   "0f35b3c2dbe4074b95201353eb5f318cf8e9a36c",
    "testharness"
   ],
   "webvtt/parsing/file-parsing/tests/settings-position.html": [
-   "6e2ecca129e46a6e32db1c325bfee986f02f7be1",
+   "37814e276567b552b4f2a28bb6e06fffcf4b594b",
    "testharness"
   ],
   "webvtt/parsing/file-parsing/tests/settings-region.html": [
-   "1584b357a5c3177bdaea1a2393af7d816161ea2a",
+   "04ef1c8cac52193d6a6e686ea0cce8116e7c5bd6",
    "testharness"
   ],
   "webvtt/parsing/file-parsing/tests/settings-size.html": [
-   "78fac093a4186eedfd90177a4e7335861fea917c",
+   "e4160327a73c66ab3c2c5ec89cce9ee404ec3d19",
    "testharness"
   ],
   "webvtt/parsing/file-parsing/tests/settings-vertical.html": [
-   "17c413b330c8a65d772f6fd748e40d1040d4ef0a",
+   "9a8e64eb358f1f90a0eebcaba2647cd652620986",
    "testharness"
   ],
   "webvtt/parsing/file-parsing/tests/signature-bom.html": [
-   "d76f904ba7a64fff02cc733f66c62238d84758f5",
+   "06475a73a9344680ed20f574d177671e64d95106",
    "testharness"
   ],
   "webvtt/parsing/file-parsing/tests/signature-no-newline.html": [
-   "5c5b716d1ea6acf700aadff6ee54fc33c14b02d5",
+   "0b0b3d11b4737df33192f1255db6e8b5aff579b8",
    "testharness"
   ],
   "webvtt/parsing/file-parsing/tests/signature-space-no-newline.html": [
-   "985f4fb440b5dea3b0b153b16868e7276ba5017f",
+   "0321e973b4ec3683c0427acc975ad7bea6b9ce8d",
    "testharness"
   ],
   "webvtt/parsing/file-parsing/tests/signature-space.html": [
-   "8ea054d2c663e1b16a040585b6240d39fd5438c6",
+   "df02016a3767c7f11cd4589f674b94ffbeb7cf67",
    "testharness"
   ],
   "webvtt/parsing/file-parsing/tests/signature-tab-no-newline.html": [
-   "c2b0a3c180eea3d833a7ac392ff74ad1eb6d8f2c",
+   "a2e7c2f08eed4b1b61f03488c88c3dcb8ceedf0d",
    "testharness"
   ],
   "webvtt/parsing/file-parsing/tests/signature-tab.html": [
-   "6835dfa0e62f3bf04244faaf7be5e92cc56d3e5c",
+   "b26a09a12cdf7ae322f3157ebba2883b2ed31f92",
    "testharness"
   ],
   "webvtt/parsing/file-parsing/tests/signature-timings.html": [
-   "3e1818c2597d16ad68dd1c46bf5bdeb7d7d9ce77",
+   "3c5a7f5f5f5bbc167a82eb627240bb4f2e3f5698",
    "testharness"
   ],
   "webvtt/parsing/file-parsing/tests/stylesheets.html": [
-   "4065f4d9ce0844d9b83ebce09a0f990d769dae32",
+   "75e78cf3294b42e26c49a2b2c8252354a17969c5",
    "testharness"
   ],
   "webvtt/parsing/file-parsing/tests/support/arrows.vtt": [
@@ -92257,7 +93058,7 @@
    "support"
   ],
   "webvtt/parsing/file-parsing/tests/support/settings-line.vtt": [
-   "fd81aff88127d2ea398523197dc8255ac21eda95",
+   "2c51c8c55a3c963ffdbbc9d1a3e569a0c89499d3",
    "support"
   ],
   "webvtt/parsing/file-parsing/tests/support/settings-multiple.vtt": [
@@ -92345,35 +93146,35 @@
    "support"
   ],
   "webvtt/parsing/file-parsing/tests/timings-60.html": [
-   "19356a2f5e1db8174ecf83d0174b3f9384c2e987",
+   "f53c6baa4033d8faf37afc87ca8c6d48fc77f927",
    "testharness"
   ],
   "webvtt/parsing/file-parsing/tests/timings-eof.html": [
-   "7990f06dd0f370dd5f96a106104a302da2c6e019",
+   "ee5110219a5c828429cb0904f08da6dd788e620f",
    "testharness"
   ],
   "webvtt/parsing/file-parsing/tests/timings-garbage.html": [
-   "7e07298edb4302b733e2574df252895ecae0e604",
+   "be70a34b16bd68952ad556035b037900a66268f3",
    "testharness"
   ],
   "webvtt/parsing/file-parsing/tests/timings-negative.html": [
-   "e5a061ba0a1778b25ad4e6d46d20004a106adb30",
+   "2f4fe6d1827cc7187c566953dbdd4a1fc0e4f46b",
    "testharness"
   ],
   "webvtt/parsing/file-parsing/tests/timings-omitted-hours.html": [
-   "091b8695747d264d59a6b58a23e0154fdf87ee6e",
+   "22c0baf7140207a8222f9408df616efe253a1f82",
    "testharness"
   ],
   "webvtt/parsing/file-parsing/tests/timings-too-long.html": [
-   "63368b894412e15c7f40846cfb900a933cfa2412",
+   "20fe59dba355b3aeb04a6dab985a4fa67ae062b1",
    "testharness"
   ],
   "webvtt/parsing/file-parsing/tests/timings-too-short.html": [
-   "3ee4574905ed255ea35318aa3b08dca1f47feb10",
+   "d61f03f4b14c76622f18ba218d998638756f2db1",
    "testharness"
   ],
   "webvtt/parsing/file-parsing/tests/whitespace-chars.html": [
-   "6c519d036e82076a2039eaf63b644e0cab5d19fe",
+   "ba2fd1a6cb63cdf9887ed9936dfdc1f5a6766057",
    "testharness"
   ],
   "webvtt/rendering/cues-with-video/processing-model/2_cues_overlapping_completely_move_up-ref.html": [
@@ -94877,7 +95678,7 @@
    "testharness"
   ],
   "workers/data-url-shared.html": [
-   "50debec2192e5a6b0b18ce53942fc08ff0f2df11",
+   "0fee4678c53e3f30e0f6090b5b9fc51b7bb74806",
    "testharness"
   ],
   "workers/data-url.html": [

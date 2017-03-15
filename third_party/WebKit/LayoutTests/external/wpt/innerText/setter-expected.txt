@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 56 tests; 55 PASS, 1 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 62 tests; 56 PASS, 6 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Simplest possible test 
 PASS Newlines convert to <br> in non-white-space:pre elements 
 PASS Newlines convert to <br> in <pre> element 
@@ -7,8 +7,8 @@ PASS Newlines convert to <br> in white-space:pre element
 PASS CRs convert to <br> in non-white-space:pre elements 
 PASS CRs convert to <br> in <pre> element 
 PASS Newline/CR pair converts to <br> in non-white-space:pre element 
-PASS Newline/newline pair converts to two <br>s in non-white-space:pre element 
-PASS CR/CR pair converts to two <br>s in non-white-space:pre element 
+FAIL Newline/newline pair converts to two <br>s in non-white-space:pre element assert_not_equals: Should not have empty text nodes got disallowed value ""
+FAIL CR/CR pair converts to two <br>s in non-white-space:pre element assert_not_equals: Should not have empty text nodes got disallowed value ""
 PASS CRs convert to <br> in white-space:pre element 
 PASS < preserved 
 PASS > preserved 
@@ -27,6 +27,12 @@ PASS Existing <br> deleted
 PASS Assigning the empty string 
 PASS Assigning null 
 PASS Assigning undefined 
+FAIL Start with CR assert_not_equals: Should not have empty text nodes got disallowed value ""
+FAIL Start with LF assert_not_equals: Should not have empty text nodes got disallowed value ""
+FAIL Start with CRLF assert_not_equals: Should not have empty text nodes got disallowed value ""
+PASS End with CR 
+PASS End with LF 
+PASS End with CRLF 
 PASS innerText on <area> element 
 PASS innerText on <base> element 
 PASS innerText on <basefont> element 

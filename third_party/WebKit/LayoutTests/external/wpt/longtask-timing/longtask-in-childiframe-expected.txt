@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Performance longtask entries in child iframe are observable in parent assert_equals: expected "same-origin-descendant" but got "multiple-contexts"
+Harness: the test ran to completion.
+

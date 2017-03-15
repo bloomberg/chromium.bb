@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 205 tests; 125 PASS, 80 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 206 tests; 125 PASS, 81 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Simplest possible test ("<div>abc") 
 PASS Leading whitespace removed ("<div> abc") 
 PASS Trailing whitespace removed ("<div>abc ") 
@@ -14,6 +14,7 @@ PASS Internal whitespace preserved ("<pre>abc  def")
 PASS \n preserved ("<pre>abc\ndef") 
 PASS \r converted to newline ("<pre>abc\rdef") 
 PASS \t preserved ("<pre>abc\tdef") 
+FAIL Two <pre> siblings ("<div><pre>abc</pre><pre>def</pre>") assert_equals: expected "abc\ndef" but got "abc\ndef\n"
 PASS Leading whitespace preserved ("<div style='white-space:pre'> abc") 
 PASS Trailing whitespace preserved ("<div style='white-space:pre'>abc ") 
 PASS Internal whitespace preserved ("<div style='white-space:pre'>abc  def") 

@@ -1,10 +1,13 @@
 This is a testharness.js-based test.
-Found 67 tests; 25 PASS, 42 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 82 tests; 38 PASS, 44 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Element.animate() creates an Animation object 
 FAIL Element.animate() creates an Animation object in the relevant realm of the target element Cannot read property 'prototype' of undefined
 PASS Element.animate() creates an Animation object with a KeyframeEffect 
 PASS Element.animate() creates an Animation object with a KeyframeEffect that is created in the relevant realm of the target element 
 PASS Element.animate() creates an Animation object with a KeyframeEffect whose AnimationEffectTiming object is created in the relevant realm of the target element 
+PASS Element.animate() accepts empty keyframe lists (input: []) 
+PASS Element.animate() accepts empty keyframe lists (input: null) 
+PASS Element.animate() accepts empty keyframe lists (input: undefined) 
 FAIL Element.animate() accepts a one property two value property-indexed keyframes specification anim.effect.getKeyframes is not a function
 FAIL Element.animate() accepts a one shorthand property two value property-indexed keyframes specification anim.effect.getKeyframes is not a function
 FAIL Element.animate() accepts a two property (one shorthand and one of its longhand components) two value property-indexed keyframes specification anim.effect.getKeyframes is not a function
@@ -26,9 +29,11 @@ FAIL Element.animate() accepts a two property (a shorthand and one of its compon
 FAIL Element.animate() accepts a keyframe sequence with duplicate values for a given interior offset anim.effect.getKeyframes is not a function
 FAIL Element.animate() accepts a keyframe sequence with duplicate values for offsets 0 and 1 anim.effect.getKeyframes is not a function
 FAIL Element.animate() accepts a two property four keyframe sequence anim.effect.getKeyframes is not a function
-FAIL Element.animate() accepts a single keyframe sequence with omitted offsets anim.effect.getKeyframes is not a function
+FAIL Element.animate() accepts a single keyframe sequence with omitted offset anim.effect.getKeyframes is not a function
+FAIL Element.animate() accepts a single keyframe sequence with null offset anim.effect.getKeyframes is not a function
 FAIL Element.animate() accepts a single keyframe sequence with string offset anim.effect.getKeyframes is not a function
 FAIL Element.animate() accepts a one property keyframe sequence with some omitted offsets anim.effect.getKeyframes is not a function
+FAIL Element.animate() accepts a one property keyframe sequence with some null offsets anim.effect.getKeyframes is not a function
 FAIL Element.animate() accepts a two property keyframe sequence with some omitted offsets anim.effect.getKeyframes is not a function
 FAIL Element.animate() accepts a one property keyframe sequence with all omitted offsets anim.effect.getKeyframes is not a function
 FAIL Element.animate() accepts a keyframe sequence with different easing values, but the same easing value for a given offset anim.effect.getKeyframes is not a function
@@ -52,13 +57,23 @@ FAIL Element.animate() does not accept keyframes with an invalid composite value
       div.animate(subtest.input, 2000);
     }" did not throw
 PASS Element.animate() does not accept invalid easing: '' 
+PASS Element.animate() does not accept invalid easing: '7' 
 PASS Element.animate() does not accept invalid easing: 'test' 
+PASS Element.animate() does not accept invalid easing: 'initial' 
+PASS Element.animate() does not accept invalid easing: 'inherit' 
+PASS Element.animate() does not accept invalid easing: 'unset' 
 PASS Element.animate() does not accept invalid easing: 'cubic-bezier(1.1, 0, 1, 1)' 
 PASS Element.animate() does not accept invalid easing: 'cubic-bezier(0, 0, 1.1, 1)' 
 PASS Element.animate() does not accept invalid easing: 'cubic-bezier(-0.1, 0, 1, 1)' 
 PASS Element.animate() does not accept invalid easing: 'cubic-bezier(0, 0, -0.1, 1)' 
+PASS Element.animate() does not accept invalid easing: 'cubic-bezier(0.1, 0, 4, 0.4)' 
 PASS Element.animate() does not accept invalid easing: 'steps(-1, start)' 
 PASS Element.animate() does not accept invalid easing: 'steps(0.1, start)' 
+PASS Element.animate() does not accept invalid easing: 'steps(3, nowhere)' 
+PASS Element.animate() does not accept invalid easing: 'steps(-3, end)' 
+PASS Element.animate() does not accept invalid easing: 'function (a){return a}' 
+PASS Element.animate() does not accept invalid easing: 'function (x){return x}' 
+PASS Element.animate() does not accept invalid easing: 'function(x, y){return 0.3}' 
 PASS Element.animate() accepts a double as an options argument 
 PASS Element.animate() accepts a KeyframeAnimationOptions argument 
 PASS Element.animate() accepts an absent options argument 

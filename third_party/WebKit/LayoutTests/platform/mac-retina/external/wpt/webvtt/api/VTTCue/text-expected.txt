@@ -1,5 +1,0 @@
-This is a testharness.js-based test.
-FAIL VTTCue.text, script-created cue cue is not defined
-FAIL VTTCue.text, parsed cue assert_unreached: got error event Reached unreachable code
-Harness: the test ran to completion.
-

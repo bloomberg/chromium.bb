@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Performance longtask entries are observable assert_equals: expected "same-origin-self" but got "self"
+Harness: the test ran to completion.
+
