@@ -1235,9 +1235,9 @@ void VrShellGl::UpdateScene(std::unique_ptr<base::ListValue> commands) {
 
 void VrShellGl::SendVSync(base::TimeDelta time,
                           const GetVSyncCallback& callback) {
-  TRACE_EVENT0("input", "VrShellGl::SendVSync");
-
   uint8_t frame_index = frame_index_++;
+
+  TRACE_EVENT1("input", "VrShellGl::SendVSync", "frame", frame_index);
 
   gvr::ClockTimePoint target_time = gvr::GvrApi::GetTimePointNow();
   target_time.monotonic_system_time_nanos += kPredictionTimeWithoutVsyncNanos;

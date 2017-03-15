@@ -689,6 +689,14 @@ void VRDisplay::OnDeactivate(
       EventTypeNames::vrdisplaydeactivate, true, false, this, reason));
 }
 
+void VRDisplay::processScheduledAnimations(double timestamp) {
+  TRACE_EVENT1("gpu", "VRDisplay::OnVSync", "frame", m_vrFrameId);
+
+  AutoReset<bool> animating(&m_inAnimationFrame, true);
+  m_pendingRaf = false;
+  m_scriptedAnimationController->serviceScriptedAnimations(timestamp);
+}
+
 void VRDisplay::OnVSync(device::mojom::blink::VRPosePtr pose,
                         mojo::common::mojom::blink::TimeDeltaPtr time,
                         int16_t frameId,
@@ -711,12 +719,21 @@ void VRDisplay::OnVSync(device::mojom::blink::VRPosePtr pose,
     m_timebase = WTF::monotonicallyIncreasingTime() - timeDelta.InSecondsF();
   }
 
-  AutoReset<bool> animating(&m_inAnimationFrame, true);
   m_framePose = std::move(pose);
   m_vrFrameId = frameId;
-  m_pendingRaf = false;
-  m_scriptedAnimationController->serviceScriptedAnimations(
-      m_timebase + timeDelta.InSecondsF());
+
+  // Post a task to handle scheduled animations after the current
+  // execution context finishes, so that we yield to non-mojo tasks in
+  // between frames. Executing mojo tasks back to back within the same
+  // execution context caused extreme input delay due to processing
+  // multiple frames without yielding, see crbug.com/701444. I suspect
+  // this is due to WaitForIncomingMethodCall receiving the OnVSync
+  // but queueing it for immediate execution since it doesn't match
+  // the interface being waited on.
+  Platform::current()->currentThread()->getWebTaskRunner()->postTask(
+      BLINK_FROM_HERE,
+      WTF::bind(&VRDisplay::processScheduledAnimations,
+                wrapWeakPersistent(this), m_timebase + timeDelta.InSecondsF()));
 }
 
 void VRDisplay::ConnectVSyncProvider() {
