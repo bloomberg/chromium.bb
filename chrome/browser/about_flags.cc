@@ -143,6 +143,10 @@ namespace {
 const unsigned kOsAll = kOsMac | kOsWin | kOsLinux | kOsCrOS | kOsAndroid;
 const unsigned kOsDesktop = kOsMac | kOsWin | kOsLinux | kOsCrOS;
 
+#if defined(USE_AURA)
+const unsigned kOsAura = kOsWin | kOsLinux | kOsCrOS;
+#endif  // USE_AURA
+
 const FeatureEntry::Choice kTouchEventFeatureDetectionChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_AUTOMATIC, "", "" },
   { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
@@ -870,15 +874,15 @@ const FeatureEntry kFeatureEntries[] = {
      kOsLinux | kOsCrOS | kOsWin | kOsAndroid,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableSmoothScrolling,
                                switches::kDisableSmoothScrolling)},
-#if defined(USE_AURA) || defined(OS_LINUX)
+#if defined(USE_AURA)
     {"overlay-scrollbars", IDS_FLAGS_OVERLAY_SCROLLBARS_NAME,
      IDS_FLAGS_OVERLAY_SCROLLBARS_DESCRIPTION,
      // Uses the system preference on Mac (a different implementation).
      // On Android, this is always enabled.
-     kOsLinux | kOsCrOS | kOsWin,
+     kOsAura,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableOverlayScrollbar,
                                switches::kDisableOverlayScrollbar)},
-#endif  // USE_AURA || OS_LINUX
+#endif  // USE_AURA
     {   // See http://crbug.com/120416 for how to remove this flag.
      "save-page-as-mhtml", IDS_FLAGS_SAVE_PAGE_AS_MHTML_NAME,
      IDS_FLAGS_SAVE_PAGE_AS_MHTML_DESCRIPTION, kOsMac | kOsWin | kOsLinux,
@@ -1138,7 +1142,7 @@ const FeatureEntry kFeatureEntries[] = {
 #if defined(USE_AURA)
     {"overscroll-history-navigation",
      IDS_FLAGS_OVERSCROLL_HISTORY_NAVIGATION_NAME,
-     IDS_FLAGS_OVERSCROLL_HISTORY_NAVIGATION_DESCRIPTION, kOsAll,
+     IDS_FLAGS_OVERSCROLL_HISTORY_NAVIGATION_DESCRIPTION, kOsAura,
      MULTI_VALUE_TYPE(kOverscrollHistoryNavigationChoices)},
 #endif  // USE_AURA
     {"scroll-end-effect", IDS_FLAGS_SCROLL_END_EFFECT_NAME,
