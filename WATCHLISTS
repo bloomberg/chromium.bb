@@ -1448,10 +1448,12 @@
     },
     'blink_serviceworkers' : {
       'filepath': 'third_party/WebKit/Source/modules/serviceworkers' \
-                  '|third_party/WebKit/LayoutTests/http/tests/serviceworker'
+                  '|third_party/WebKit/LayoutTests/http/tests/serviceworker' \
+                  '|third_party/WebKit/LayoutTests/external/wpt/service-workers'
     },
     'blink_serviceworkers_tests' : {
-      'filepath': 'third_party/WebKit/LayoutTests/http/tests/serviceworker'
+      'filepath': 'third_party/WebKit/LayoutTests/http/tests/serviceworker' \
+                  '|third_party/WebKit/LayoutTests/external/wpt/service-workers'
     },
     'blink_spellcheck' : {
       'filepath': 'third_party/WebKit/Source/core/editing/spellcheck'
@@ -1498,7 +1500,10 @@
       'filepath': 'third_party/WebKit/Source/modules/websockets/'
     },
     'blink_workers': {
-      'filepath': 'third_party/WebKit/Source/core/workers',
+      'filepath': 'third_party/WebKit/Source/core/workers' \
+                  '|third_party/WebKit/LayoutTests/http/tests/workers' \
+                  '|third_party/WebKit/LayoutTests/fast/workers' \
+                  '|third_party/WebKit/LayoutTests/external/wpt/workers'
     },
     'blink_wtf': {
       'filepath': 'third_party/WebKit/Source/wtf',
