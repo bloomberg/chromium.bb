@@ -95,14 +95,14 @@ When the task is ready for scheduling, you use the
 `BackgroundTaskScheduler` and use it to schedule the job.
 
 ```java
-BackgroundTaskScheduleFactory.getScheduler().schedule(myTaskInfo);
+BackgroundTaskSchedulerFactory.getScheduler().schedule(myTaskInfo);
 ```
 
 If you ever need to cancel a task, you can do that by calling `cancel`, and
 passing in the task ID:
 
 ```java
-BackgroundTaskScheduleFactory.getScheduler().cancel(TaskIds.YOUR_FEATURE);
+BackgroundTaskSchedulerFactory.getScheduler().cancel(TaskIds.YOUR_FEATURE);
 ```
 
 ## Passing task arguments
