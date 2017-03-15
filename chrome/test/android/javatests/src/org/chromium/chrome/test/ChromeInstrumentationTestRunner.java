@@ -114,9 +114,8 @@ public class ChromeInstrumentationTestRunner extends BaseChromiumInstrumentation
         }
 
         private boolean supportsWebVr() {
-            // WebVR support is tied to VR Services support, which is currently only on N+
-            // TODO(bsheedy): Change this to >= N when the SDK supports it
-            return Build.VERSION.SDK_INT > Build.VERSION_CODES.M;
+            // WebVR support is tied to VR Services support, which is only on K+
+            return Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
         }
 
         @Override
