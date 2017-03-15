@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Performance longtask entries in parent are observable in child iframe assert_equals: expected "longtask+same-origin+frame" but got "longtask+multiple-contexts+script"
-Harness: the test ran to completion.
-

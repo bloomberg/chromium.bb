@@ -218,6 +218,7 @@ external/wpt/css-values [ WontFix ]
 external/wpt/gyroscope [ WontFix ]
 external/wpt/magnetometer [ WontFix ]
 external/wpt/upgrade-insecure-requests [ WontFix ]
+external/wpt/longtask-timing [ WontFix ]
 
 # WPT manual tests without automation
 external/wpt/html/semantics/forms/constraints/tooShort-input-email-add-manual.html [ WontFix ]

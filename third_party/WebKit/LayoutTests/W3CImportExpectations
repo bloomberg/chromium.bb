@@ -1,14 +1,18 @@
-# This file controls which subdirectories of the w3c test repos we do (or don't) import.
+# This file controls which subdirectories of the w3c test repos we import.
 #
-# This file acts as a blacklist; directories and files not listed here will automatically
-# be found and imported.
+# This file acts as a blacklist; directories and files not listed here will
+# automatically be found and imported.
 #
 # This file is read by webkitpy/w3c/directory_owners_extractor.py to decide who
-# to contact for new failures; to allow it to read
+# to contact for new failures; it will read entries with the following format:
 # When removing blacklist entries:
-# * Comment out the line rather than deleting it, to show it is intentional
+# * Comment out the line rather than deleting it, to show it is intentional.
 # * Change [ Skip ] to [ Pass ]
 # * Add a leading comment: ## Owners: user@example.com
+#
+# We may want to move towards importing but not running directories without
+# owners, in order to make it easier to enable or run them in the future --
+# directories that are imported but not run are listed in NeverFixTests.
 
 external/csswg-test/WOFF2-UserAgent [ Skip ]
 external/csswg-test/compositing-1 [ Skip ]

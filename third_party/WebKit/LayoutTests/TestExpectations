@@ -1927,8 +1927,6 @@ crbug.com/626703 external/wpt/domxpath/001.html [ Failure ]
 # ====== New tests from w3c-test-autoroller added here ======
 crbug.com/626703 external/wpt/html/semantics/interactive-elements/context-menus/contextmenu-event-manual.htm [ Timeout ]
 crbug.com/626703 external/wpt/html/webappapis/scripting/events/event-handler-processing-algorithm-manual.html [ Timeout ]
-crbug.com/626703 external/wpt/longtask-timing/longtask-in-childiframe-crossorigin.html [ Timeout ]
-crbug.com/626703 external/wpt/longtask-timing/longtask-in-sibling-iframe-crossorigin.html [ Timeout ]
 crbug.com/626703 external/wpt/orientation-event/deviceorientationabsoluteevent.html [ Timeout ]
 crbug.com/626703 external/wpt/orientation-event/free-fall-manual.html [ Timeout ]
 crbug.com/626703 external/wpt/orientation-event/screen-upmost-manual.html [ Timeout ]
