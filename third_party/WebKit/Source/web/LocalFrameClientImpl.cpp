@@ -413,7 +413,7 @@ void LocalFrameClientImpl::dispatchDidNavigateWithinPage(
 
 void LocalFrameClientImpl::dispatchWillCommitProvisionalLoad() {
   if (m_webFrame->client())
-    m_webFrame->client()->willCommitProvisionalLoad(m_webFrame);
+    m_webFrame->client()->willCommitProvisionalLoad();
 }
 
 void LocalFrameClientImpl::dispatchDidStartProvisionalLoad(

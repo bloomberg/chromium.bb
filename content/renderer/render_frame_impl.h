@@ -510,7 +510,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void didChangeOpener(blink::WebFrame* frame) override;
   void frameDetached(blink::WebLocalFrame* frame, DetachType type) override;
   void frameFocused() override;
-  void willCommitProvisionalLoad(blink::WebLocalFrame* frame) override;
+  void willCommitProvisionalLoad() override;
   void didChangeName(const blink::WebString& name,
                      const blink::WebString& unique_name) override;
   void didEnforceInsecureRequestPolicy(

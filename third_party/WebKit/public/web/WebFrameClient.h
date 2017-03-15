@@ -204,7 +204,7 @@ class BLINK_EXPORT WebFrameClient {
   virtual void frameFocused() {}
 
   // A provisional load is about to commit.
-  virtual void willCommitProvisionalLoad(WebLocalFrame*) {}
+  virtual void willCommitProvisionalLoad() {}
 
   // This frame's name has changed.
   virtual void didChangeName(const WebString& name,

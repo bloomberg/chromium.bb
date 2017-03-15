@@ -3172,9 +3172,7 @@ void RenderFrameImpl::frameFocused() {
   Send(new FrameHostMsg_FrameFocused(routing_id_));
 }
 
-void RenderFrameImpl::willCommitProvisionalLoad(blink::WebLocalFrame* frame) {
-  DCHECK_EQ(frame_, frame);
-
+void RenderFrameImpl::willCommitProvisionalLoad() {
   for (auto& observer : observers_)
     observer.WillCommitProvisionalLoad();
 }
