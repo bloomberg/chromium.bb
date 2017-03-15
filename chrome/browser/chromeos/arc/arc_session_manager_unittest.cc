@@ -555,6 +555,31 @@ TEST_P(ArcSessionManagerPolicyTest, SkippingTerms) {
   arc_session_manager()->Shutdown();
 }
 
+TEST_P(ArcSessionManagerPolicyTest, ReenableManagedArc) {
+  sync_preferences::TestingPrefServiceSyncable* const prefs =
+      profile()->GetTestingPrefService();
+
+  // Set ARC to be managed.
+  prefs->SetManagedPref(prefs::kArcEnabled, new base::Value(true));
+  EXPECT_TRUE(arc::IsArcPlayStoreEnabledForProfile(profile()));
+
+  arc_session_manager()->SetProfile(profile());
+  arc_session_manager()->RequestEnable();
+  EXPECT_TRUE(arc_session_manager()->enable_requested());
+
+  // Simulate close OptIn. Session manager should stop.
+  SetArcPlayStoreEnabledForProfile(profile(), false);
+  EXPECT_TRUE(arc::IsArcPlayStoreEnabledForProfile(profile()));
+  EXPECT_FALSE(arc_session_manager()->enable_requested());
+
+  // Restart ARC again
+  SetArcPlayStoreEnabledForProfile(profile(), true);
+  EXPECT_TRUE(arc::IsArcPlayStoreEnabledForProfile(profile()));
+  EXPECT_TRUE(arc_session_manager()->enable_requested());
+
+  arc_session_manager()->Shutdown();
+}
+
 INSTANTIATE_TEST_CASE_P(
     ArcSessionManagerPolicyTest,
     ArcSessionManagerPolicyTest,
@@ -751,13 +776,20 @@ TEST_P(ArcSessionOobeOptInNegotiatorTest, OobeTermsRejected) {
   EXPECT_EQ(ArcSessionManager::State::NEGOTIATING_TERMS_OF_SERVICE,
             arc_session_manager()->state());
   ReportResult(false);
-  // ArcPlayStoreEnabledPreferenceHandler is not running, so the state should
-  // be kept as is.
-  EXPECT_EQ(ArcSessionManager::State::NEGOTIATING_TERMS_OF_SERVICE,
-            arc_session_manager()->state());
-  // Managed user's preference should not be overwritten.
-  if (!IsManagedUser())
+  if (!IsManagedUser()) {
+    // ArcPlayStoreEnabledPreferenceHandler is not running, so the state should
+    // be kept as is
+    EXPECT_EQ(ArcSessionManager::State::NEGOTIATING_TERMS_OF_SERVICE,
+              arc_session_manager()->state());
     EXPECT_FALSE(IsArcPlayStoreEnabledForProfile(profile()));
+  } else {
+    // For managed case we handle closing outside of
+    // ArcPlayStoreEnabledPreferenceHandler. So it session turns to STOPPED.
+    EXPECT_EQ(ArcSessionManager::State::STOPPED,
+              arc_session_manager()->state());
+    // Managed user's preference should not be overwritten.
+    EXPECT_TRUE(IsArcPlayStoreEnabledForProfile(profile()));
+  }
 }
 
 TEST_P(ArcSessionOobeOptInNegotiatorTest, OobeTermsViewDestroyed) {
@@ -766,13 +798,20 @@ TEST_P(ArcSessionOobeOptInNegotiatorTest, OobeTermsViewDestroyed) {
             arc_session_manager()->state());
   CloseLoginDisplayHost();
   ReportViewDestroyed();
-  // ArcPlayStoreEnabledPreferenceHandler is not running, so the state should
-  // be kept as is.
-  EXPECT_EQ(ArcSessionManager::State::NEGOTIATING_TERMS_OF_SERVICE,
-            arc_session_manager()->state());
-  // Managed user's preference should not be overwritten.
-  if (!IsManagedUser())
+  if (!IsManagedUser()) {
+    // ArcPlayStoreEnabledPreferenceHandler is not running, so the state should
+    // be kept as is.
+    EXPECT_EQ(ArcSessionManager::State::NEGOTIATING_TERMS_OF_SERVICE,
+              arc_session_manager()->state());
     EXPECT_FALSE(IsArcPlayStoreEnabledForProfile(profile()));
+  } else {
+    // For managed case we handle closing outside of
+    // ArcPlayStoreEnabledPreferenceHandler. So it session turns to STOPPED.
+    EXPECT_EQ(ArcSessionManager::State::STOPPED,
+              arc_session_manager()->state());
+    // Managed user's preference should not be overwritten.
+    EXPECT_TRUE(IsArcPlayStoreEnabledForProfile(profile()));
+  }
 }
 
 }  // namespace arc

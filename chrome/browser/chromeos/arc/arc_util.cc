@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 
 #include "base/logging.h"
+#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/login/user_flow.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -114,8 +115,20 @@ bool IsArcPlayStoreEnabledPreferenceManagedForProfile(const Profile* profile) {
 void SetArcPlayStoreEnabledForProfile(Profile* profile, bool enabled) {
   DCHECK(IsArcAllowedForProfile(profile));
   if (IsArcPlayStoreEnabledPreferenceManagedForProfile(profile)) {
-    VLOG(1) << "Do nothing, since the Google-Play-Store-enabled pref is "
-            << "managed.";
+    VLOG(1) << "Google-Play-Store-enabled pref is managed. Request to "
+            << (enabled ? "enable" : "disable") << " Play Store is not stored";
+    // Need update ARC session manager manually for managed case in order to
+    // keep its state up to date, otherwise it may stuck with enabling
+    // request.
+    // TODO (khmel): Consider finding the better way handling this.
+    ArcSessionManager* arc_session_manager = ArcSessionManager::Get();
+    // |arc_session_manager| can be nullptr in unit_tests.
+    if (!arc_session_manager)
+      return;
+    if (enabled)
+      arc_session_manager->RequestEnable();
+    else
+      arc_session_manager->RequestDisable();
     return;
   }
   profile->GetPrefs()->SetBoolean(prefs::kArcEnabled, enabled);

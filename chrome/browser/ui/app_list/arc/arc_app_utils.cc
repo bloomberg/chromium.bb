@@ -12,6 +12,7 @@
 #include "base/json/json_writer.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
@@ -288,6 +289,21 @@ bool LaunchApp(content::BrowserContext* context,
       } else {
         // Only reachable when ARC always starts.
         DCHECK(arc::ShouldArcAlwaysStart());
+      }
+    } else {
+      // Handle the case when default app tries to re-activate OptIn flow.
+      if (IsArcPlayStoreEnabledPreferenceManagedForProfile(profile) &&
+          !ArcSessionManager::Get()->enable_requested() &&
+          prefs->IsDefault(app_id)) {
+        SetArcPlayStoreEnabledForProfile(profile, true);
+        // PlayStore item has special handling for shelf controllers. In order
+        // to avoid unwanted initial animation for PlayStore item do not create
+        // deferred launch request when PlayStore item enables Google Play
+        // Store.
+        if (app_id == kPlayStoreAppId) {
+          prefs->SetLastLaunchTime(app_id, base::Time::Now());
+          return true;
+        }
       }
     }
 

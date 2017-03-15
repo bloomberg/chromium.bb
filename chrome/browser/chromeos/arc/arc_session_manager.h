@@ -216,6 +216,9 @@ class ArcSessionManager : public ArcSessionRunner::Observer,
   // been started yet.
   base::Time arc_start_time() const { return arc_start_time_; }
 
+  // Returns true if ARC requested to start.
+  bool enable_requested() const { return enable_requested_; }
+
   // Injectors for testing.
   void SetArcSessionRunnerForTesting(
       std::unique_ptr<ArcSessionRunner> arc_session_runner);
