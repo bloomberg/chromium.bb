@@ -110,7 +110,7 @@ cr.define('settings_toggle_button', function() {
           value: 5
         };
 
-        testElement._setNumericUncheckedValue(5);
+        testElement.numericUncheckedValue = 5;
 
         testElement.set('pref', prefNum);
         assertFalse(testElement.checked);
@@ -131,7 +131,7 @@ cr.define('settings_toggle_button', function() {
           value: 3
         };
 
-        testElement._setNumericUncheckedValue(5);
+        testElement.numericUncheckedValue = 5;
 
         testElement.set('pref', prefNum);
 

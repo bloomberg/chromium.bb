@@ -63,7 +63,6 @@ var SettingsBooleanControlBehaviorImpl = {
      */
     numericUncheckedValue: {
       type: Number,
-      readOnly: true,
       value: 0,
     }
   },
