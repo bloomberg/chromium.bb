@@ -34,14 +34,6 @@ void ClipPathDisplayItem::Raster(SkCanvas* canvas,
   canvas->clipPath(clip_path_, antialias_);
 }
 
-void ClipPathDisplayItem::AsValueInto(
-    const gfx::Rect& visual_rect,
-    base::trace_event::TracedValue* array) const {
-  array->AppendString(base::StringPrintf(
-      "ClipPathDisplayItem length: %d visualRect: [%s]",
-      clip_path_.countPoints(), visual_rect.ToString().c_str()));
-}
-
 EndClipPathDisplayItem::EndClipPathDisplayItem() : DisplayItem(END_CLIP_PATH) {}
 
 EndClipPathDisplayItem::~EndClipPathDisplayItem() {
@@ -51,14 +43,6 @@ void EndClipPathDisplayItem::Raster(
     SkCanvas* canvas,
     SkPicture::AbortCallback* callback) const {
   canvas->restore();
-}
-
-void EndClipPathDisplayItem::AsValueInto(
-    const gfx::Rect& visual_rect,
-    base::trace_event::TracedValue* array) const {
-  array->AppendString(
-      base::StringPrintf("EndClipPathDisplayItem visualRect: [%s]",
-                         visual_rect.ToString().c_str()));
 }
 
 }  // namespace cc

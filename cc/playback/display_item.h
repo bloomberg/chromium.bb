@@ -40,8 +40,6 @@ class CC_EXPORT DisplayItem {
 
   virtual void Raster(SkCanvas* canvas,
                       SkPicture::AbortCallback* callback) const = 0;
-  virtual void AsValueInto(const gfx::Rect& visual_rect,
-                           base::trace_event::TracedValue* array) const = 0;
 
   Type type() const { return type_; }
 

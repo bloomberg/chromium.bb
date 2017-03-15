@@ -31,14 +31,6 @@ void FloatClipDisplayItem::Raster(SkCanvas* canvas,
   canvas->clipRect(gfx::RectFToSkRect(clip_rect_));
 }
 
-void FloatClipDisplayItem::AsValueInto(
-    const gfx::Rect& visual_rect,
-    base::trace_event::TracedValue* array) const {
-  array->AppendString(base::StringPrintf(
-      "FloatClipDisplayItem rect: [%s] visualRect: [%s]",
-      clip_rect_.ToString().c_str(), visual_rect.ToString().c_str()));
-}
-
 EndFloatClipDisplayItem::EndFloatClipDisplayItem()
     : DisplayItem(END_FLOAT_CLIP) {}
 
@@ -49,14 +41,6 @@ void EndFloatClipDisplayItem::Raster(
     SkCanvas* canvas,
     SkPicture::AbortCallback* callback) const {
   canvas->restore();
-}
-
-void EndFloatClipDisplayItem::AsValueInto(
-    const gfx::Rect& visual_rect,
-    base::trace_event::TracedValue* array) const {
-  array->AppendString(
-      base::StringPrintf("EndFloatClipDisplayItem visualRect: [%s]",
-                         visual_rect.ToString().c_str()));
 }
 
 }  // namespace cc

@@ -28,8 +28,6 @@ class CC_EXPORT FilterDisplayItem : public DisplayItem {
 
   void Raster(SkCanvas* canvas,
               SkPicture::AbortCallback* callback) const override;
-  void AsValueInto(const gfx::Rect& visual_rect,
-                   base::trace_event::TracedValue* array) const override;
 
   size_t ExternalMemoryUsage() const {
     // FilterOperations doesn't expose its capacity, but size is probably good
@@ -37,6 +35,8 @@ class CC_EXPORT FilterDisplayItem : public DisplayItem {
     return filters_.size() * sizeof(filters_.at(0));
   }
   int ApproximateOpCount() const { return 1; }
+
+  const gfx::RectF& bounds() const { return bounds_; }
 
  private:
   void SetNew(const FilterOperations& filters,
@@ -59,8 +59,6 @@ class CC_EXPORT EndFilterDisplayItem : public DisplayItem {
 
   void Raster(SkCanvas* canvas,
               SkPicture::AbortCallback* callback) const override;
-  void AsValueInto(const gfx::Rect& visual_rect,
-                   base::trace_event::TracedValue* array) const override;
 
   int ApproximateOpCount() const { return 0; }
 };

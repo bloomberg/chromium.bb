@@ -61,21 +61,6 @@ void CompositingDisplayItem::Raster(
     canvas->saveLayerPreserveLCDTextRequests(bounds, &paint);
 }
 
-void CompositingDisplayItem::AsValueInto(
-    const gfx::Rect& visual_rect,
-    base::trace_event::TracedValue* array) const {
-  std::string info = base::StringPrintf(
-      "CompositingDisplayItem alpha: %d, xfermode: %d, visualRect: [%s]",
-      alpha_, static_cast<int>(xfermode_), visual_rect.ToString().c_str());
-  if (has_bounds_) {
-    base::StringAppendF(
-        &info, ", bounds: [%f, %f, %f, %f]", static_cast<float>(bounds_.x()),
-        static_cast<float>(bounds_.y()), static_cast<float>(bounds_.width()),
-        static_cast<float>(bounds_.height()));
-  }
-  array->AppendString(info);
-}
-
 EndCompositingDisplayItem::EndCompositingDisplayItem()
     : DisplayItem(END_COMPOSITING) {}
 
@@ -86,14 +71,6 @@ void EndCompositingDisplayItem::Raster(
     SkCanvas* canvas,
     SkPicture::AbortCallback* callback) const {
   canvas->restore();
-}
-
-void EndCompositingDisplayItem::AsValueInto(
-    const gfx::Rect& visual_rect,
-    base::trace_event::TracedValue* array) const {
-  array->AppendString(
-      base::StringPrintf("EndCompositingDisplayItem visualRect: [%s]",
-                         visual_rect.ToString().c_str()));
 }
 
 }  // namespace cc

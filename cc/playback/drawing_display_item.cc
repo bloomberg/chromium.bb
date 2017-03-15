@@ -53,33 +53,6 @@ void DrawingDisplayItem::Raster(SkCanvas* canvas,
   }
 }
 
-void DrawingDisplayItem::AsValueInto(
-    const gfx::Rect& visual_rect,
-    base::trace_event::TracedValue* array) const {
-  array->BeginDictionary();
-  array->SetString("name", "DrawingDisplayItem");
-
-  array->BeginArray("visualRect");
-  array->AppendInteger(visual_rect.x());
-  array->AppendInteger(visual_rect.y());
-  array->AppendInteger(visual_rect.width());
-  array->AppendInteger(visual_rect.height());
-  array->EndArray();
-
-  array->BeginArray("cullRect");
-  array->AppendInteger(picture_->cullRect().x());
-  array->AppendInteger(picture_->cullRect().y());
-  array->AppendInteger(picture_->cullRect().width());
-  array->AppendInteger(picture_->cullRect().height());
-  array->EndArray();
-
-  std::string b64_picture;
-  PictureDebugUtil::SerializeAsBase64(ToSkPicture(picture_.get()),
-                                      &b64_picture);
-  array->SetString("skp64", b64_picture);
-  array->EndDictionary();
-}
-
 void DrawingDisplayItem::CloneTo(DrawingDisplayItem* item) const {
   item->SetNew(picture_);
 }

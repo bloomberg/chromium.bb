@@ -25,8 +25,6 @@ class CC_EXPORT ClipPathDisplayItem : public DisplayItem {
 
   void Raster(SkCanvas* canvas,
               SkPicture::AbortCallback* callback) const override;
-  void AsValueInto(const gfx::Rect& visual_rect,
-                   base::trace_event::TracedValue* array) const override;
 
   size_t ExternalMemoryUsage() const {
     // The size of SkPath's external storage is not currently accounted for (and
@@ -34,6 +32,8 @@ class CC_EXPORT ClipPathDisplayItem : public DisplayItem {
     return 0;
   }
   int ApproximateOpCount() const { return 1; }
+
+  const SkPath& clip_path() const { return clip_path_; }
 
  private:
   void SetNew(const SkPath& path, bool antialias);
@@ -53,8 +53,6 @@ class CC_EXPORT EndClipPathDisplayItem : public DisplayItem {
 
   void Raster(SkCanvas* canvas,
               SkPicture::AbortCallback* callback) const override;
-  void AsValueInto(const gfx::Rect& visual_rect,
-                   base::trace_event::TracedValue* array) const override;
 
   int ApproximateOpCount() const { return 0; }
 };

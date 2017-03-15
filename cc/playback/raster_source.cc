@@ -10,6 +10,7 @@
 #include "cc/base/math_util.h"
 #include "cc/base/region.h"
 #include "cc/debug/debug_colors.h"
+#include "cc/debug/traced_value.h"
 #include "cc/playback/display_item_list.h"
 #include "cc/playback/image_hijack_canvas.h"
 #include "cc/playback/skip_image_canvas.h"

@@ -27,6 +27,12 @@
 
 class SkCanvas;
 
+namespace base {
+namespace trace_event {
+class TracedValue;
+}
+}
+
 namespace cc {
 class DisplayItem;
 
@@ -130,9 +136,6 @@ class CC_EXPORT DisplayItemList
   size_t ApproximateMemoryUsage() const;
   bool ShouldBeAnalyzedForSolidColor() const;
 
-  std::unique_ptr<base::trace_event::ConvertableToTraceFormat> AsValue(
-      bool include_items) const;
-
   void EmitTraceSnapshot() const;
 
   void GenerateDiscardableImagesMetadata();
@@ -160,7 +163,13 @@ class CC_EXPORT DisplayItemList
   }
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(DisplayItemListTest, AsValueWithNoItems);
+  FRIEND_TEST_ALL_PREFIXES(DisplayItemListTest, AsValueWithItems);
+
   ~DisplayItemList();
+
+  std::unique_ptr<base::trace_event::TracedValue> CreateTracedValue(
+      bool include_items) const;
 
   RTree rtree_;
   // For testing purposes only. Whether to keep visual rects across calls to

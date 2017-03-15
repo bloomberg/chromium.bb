@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/memory/ptr_util.h"
+#include "base/trace_event/trace_event_argument.h"
 #include "cc/output/filter_operation.h"
 #include "cc/output/filter_operations.h"
 #include "cc/paint/paint_canvas.h"
@@ -317,13 +318,13 @@ TEST(DisplayItemListTest, AsValueWithNoItems) {
   list->SetRetainVisualRectsForTesting(true);
   list->Finalize();
 
-  std::string value = list->AsValue(true)->ToString();
+  std::string value = list->CreateTracedValue(true)->ToString();
   EXPECT_EQ(value.find("\"layer_rect\": [0,0,0,0]"), std::string::npos);
   EXPECT_NE(value.find("\"items\":[]"), std::string::npos);
   EXPECT_EQ(value.find("visualRect: [0,0 42x42]"), std::string::npos);
   EXPECT_NE(value.find("\"skp64\":"), std::string::npos);
 
-  value = list->AsValue(false)->ToString();
+  value = list->CreateTracedValue(false)->ToString();
   EXPECT_EQ(value.find("\"layer_rect\": [0,0,0,0]"), std::string::npos);
   EXPECT_EQ(value.find("\"items\":"), std::string::npos);
   EXPECT_EQ(value.find("visualRect: [0,0 42x42]"), std::string::npos);
@@ -341,14 +342,14 @@ TEST(DisplayItemListTest, AsValueWithItems) {
   list->CreateAndAppendPairedEndItem<EndTransformDisplayItem>();
   list->Finalize();
 
-  std::string value = list->AsValue(true)->ToString();
+  std::string value = list->CreateTracedValue(true)->ToString();
   EXPECT_EQ(value.find("\"layer_rect\": [0,0,42,42]"), std::string::npos);
   EXPECT_NE(value.find("{\"items\":[\"TransformDisplayItem"),
             std::string::npos);
   EXPECT_NE(value.find("visualRect: [0,0 42x42]"), std::string::npos);
   EXPECT_NE(value.find("\"skp64\":"), std::string::npos);
 
-  value = list->AsValue(false)->ToString();
+  value = list->CreateTracedValue(false)->ToString();
   EXPECT_EQ(value.find("\"layer_rect\": [0,0,42,42]"), std::string::npos);
   EXPECT_EQ(value.find("{\"items\":[\"TransformDisplayItem"),
             std::string::npos);

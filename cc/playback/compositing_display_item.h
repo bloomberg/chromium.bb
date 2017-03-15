@@ -33,14 +33,17 @@ class CC_EXPORT CompositingDisplayItem : public DisplayItem {
 
   void Raster(SkCanvas* canvas,
               SkPicture::AbortCallback* callback) const override;
-  void AsValueInto(const gfx::Rect& visual_rect,
-                   base::trace_event::TracedValue* array) const override;
 
   size_t ExternalMemoryUsage() const {
     // TODO(pdr): Include color_filter's memory here.
     return 0;
   }
   int ApproximateOpCount() const { return 1; }
+
+  uint8_t alpha() const { return alpha_; }
+  SkBlendMode xfermode() const { return xfermode_; }
+  bool has_bounds() const { return has_bounds_; }
+  const SkRect& bounds() const { return bounds_; }
 
  private:
   void SetNew(uint8_t alpha,
@@ -68,8 +71,6 @@ class CC_EXPORT EndCompositingDisplayItem : public DisplayItem {
 
   void Raster(SkCanvas* canvas,
               SkPicture::AbortCallback* callback) const override;
-  void AsValueInto(const gfx::Rect& visual_rect,
-                   base::trace_event::TracedValue* array) const override;
 
   int ApproximateOpCount() const { return 0; }
 };

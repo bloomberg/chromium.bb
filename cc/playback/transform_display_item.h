@@ -25,11 +25,11 @@ class CC_EXPORT TransformDisplayItem : public DisplayItem {
 
   void Raster(SkCanvas* canvas,
               SkPicture::AbortCallback* callback) const override;
-  void AsValueInto(const gfx::Rect& visual_rect,
-                   base::trace_event::TracedValue* array) const override;
 
   size_t ExternalMemoryUsage() const { return 0; }
   int ApproximateOpCount() const { return 1; }
+
+  const gfx::Transform& transform() const { return transform_; }
 
  private:
   void SetNew(const gfx::Transform& transform);
@@ -48,8 +48,6 @@ class CC_EXPORT EndTransformDisplayItem : public DisplayItem {
 
   void Raster(SkCanvas* canvas,
               SkPicture::AbortCallback* callback) const override;
-  void AsValueInto(const gfx::Rect& visual_rect,
-                   base::trace_event::TracedValue* array) const override;
 
   int ApproximateOpCount() const { return 0; }
 };

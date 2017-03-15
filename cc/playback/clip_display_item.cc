@@ -47,34 +47,6 @@ void ClipDisplayItem::Raster(SkCanvas* canvas,
   }
 }
 
-void ClipDisplayItem::AsValueInto(const gfx::Rect& visual_rect,
-                                  base::trace_event::TracedValue* array) const {
-  std::string value = base::StringPrintf(
-      "ClipDisplayItem rect: [%s] visualRect: [%s]",
-      clip_rect_.ToString().c_str(), visual_rect.ToString().c_str());
-  for (const SkRRect& rounded_rect : rounded_clip_rects_) {
-    base::StringAppendF(
-        &value, " rounded_rect: [rect: [%s]",
-        gfx::SkRectToRectF(rounded_rect.rect()).ToString().c_str());
-    base::StringAppendF(&value, " radii: [");
-    SkVector upper_left_radius = rounded_rect.radii(SkRRect::kUpperLeft_Corner);
-    base::StringAppendF(&value, "[%f,%f],", upper_left_radius.x(),
-                        upper_left_radius.y());
-    SkVector upper_right_radius =
-        rounded_rect.radii(SkRRect::kUpperRight_Corner);
-    base::StringAppendF(&value, " [%f,%f],", upper_right_radius.x(),
-                        upper_right_radius.y());
-    SkVector lower_right_radius =
-        rounded_rect.radii(SkRRect::kLowerRight_Corner);
-    base::StringAppendF(&value, " [%f,%f],", lower_right_radius.x(),
-                        lower_right_radius.y());
-    SkVector lower_left_radius = rounded_rect.radii(SkRRect::kLowerLeft_Corner);
-    base::StringAppendF(&value, " [%f,%f]]", lower_left_radius.x(),
-                        lower_left_radius.y());
-  }
-  array->AppendString(value);
-}
-
 EndClipDisplayItem::EndClipDisplayItem() : DisplayItem(END_CLIP) {}
 
 EndClipDisplayItem::~EndClipDisplayItem() {
@@ -83,13 +55,6 @@ EndClipDisplayItem::~EndClipDisplayItem() {
 void EndClipDisplayItem::Raster(SkCanvas* canvas,
                                 SkPicture::AbortCallback* callback) const {
   canvas->restore();
-}
-
-void EndClipDisplayItem::AsValueInto(
-    const gfx::Rect& visual_rect,
-    base::trace_event::TracedValue* array) const {
-  array->AppendString(base::StringPrintf("EndClipDisplayItem visualRect: [%s]",
-                                         visual_rect.ToString().c_str()));
 }
 
 }  // namespace cc
