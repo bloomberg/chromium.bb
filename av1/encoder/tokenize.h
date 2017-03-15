@@ -136,6 +136,14 @@ static INLINE int av1_get_token_cost(int v, int16_t *token, int cat6_bits) {
   return av1_dct_cat_lt_10_value_cost[v];
 }
 
+#if !CONFIG_PVQ || CONFIG_VAR_TX
+static INLINE int get_tx_eob(const struct segmentation *seg, int segment_id,
+                             TX_SIZE tx_size) {
+  const int eob_max = tx_size_2d[tx_size];
+  return segfeature_active(seg, segment_id, SEG_LVL_SKIP) ? 0 : eob_max;
+}
+#endif
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif

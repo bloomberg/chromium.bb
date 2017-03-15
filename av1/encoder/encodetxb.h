@@ -28,6 +28,10 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
                           aom_writer *w, int block, int plane,
                           const tran_low_t *tcoeff, uint16_t eob,
                           TXB_CTX *txb_ctx);
+
+void av1_update_txb_context(const AV1_COMP *cpi, ThreadData *td,
+                            RUN_TYPE dry_run, BLOCK_SIZE bsize, int *rate,
+                            const int mi_row, const int mi_col);
 #ifdef __cplusplus
 }
 #endif

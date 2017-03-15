@@ -313,7 +313,7 @@ static INLINE void add_token(TOKENEXTRA **t,
   (*t)++;
 }
 
-#else
+#else  // CONFIG_NEW_TOKENSET
 static INLINE void add_token(
     TOKENEXTRA **t, const aom_prob *context_tree,
 #if CONFIG_EC_MULTISYMBOL
@@ -330,14 +330,8 @@ static INLINE void add_token(
   (*t)++;
   ++counts[token];
 }
-#endif
-
-static INLINE int get_tx_eob(const struct segmentation *seg, int segment_id,
-                             TX_SIZE tx_size) {
-  const int eob_max = tx_size_2d[tx_size];
-  return segfeature_active(seg, segment_id, SEG_LVL_SKIP) ? 0 : eob_max;
-}
-#endif  // !CONFIG_PVQ
+#endif  // CONFIG_NEW_TOKENSET
+#endif  // !CONFIG_PVQ || CONFIG_VAR_TX
 
 #if CONFIG_PALETTE
 void av1_tokenize_palette_sb(const AV1_COMP *cpi,

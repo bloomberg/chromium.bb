@@ -10,9 +10,12 @@
  */
 
 #include "av1/common/scan.h"
+#include "av1/common/blockd.h"
+#include "av1/common/pred_common.h"
 #include "av1/encoder/cost.h"
 #include "av1/encoder/encoder.h"
 #include "av1/encoder/encodetxb.h"
+#include "av1/encoder/tokenize.h"
 
 void av1_alloc_txb_buf(AV1_COMP *cpi) {
   AV1_COMMON *cm = &cpi->common;
@@ -351,4 +354,192 @@ int av1_cost_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
   set_dc_sign(cul_level, qcoeff[0]);
 
   return cost;
+}
+
+typedef struct TxbParams {
+  const AV1_COMP *cpi;
+  ThreadData *td;
+  int rate;
+} TxbParams;
+
+static void update_txb_context(int plane, int block, int blk_row, int blk_col,
+                               BLOCK_SIZE plane_bsize, TX_SIZE tx_size,
+                               void *arg) {
+  TxbParams *const args = arg;
+  ThreadData *const td = args->td;
+  MACROBLOCK *const x = &td->mb;
+  MACROBLOCKD *const xd = &x->e_mbd;
+  struct macroblock_plane *p = &x->plane[plane];
+  struct macroblockd_plane *pd = &xd->plane[plane];
+  (void)plane_bsize;
+  av1_set_contexts(xd, pd, plane, tx_size, p->eobs[block] > 0, blk_col,
+                   blk_row);
+}
+
+static void update_and_record_txb_context(int plane, int block, int blk_row,
+                                          int blk_col, BLOCK_SIZE plane_bsize,
+                                          TX_SIZE tx_size, void *arg) {
+  TxbParams *const args = arg;
+  const AV1_COMP *cpi = args->cpi;
+  const AV1_COMMON *cm = &cpi->common;
+  ThreadData *const td = args->td;
+  MACROBLOCK *const x = &td->mb;
+  MACROBLOCKD *const xd = &x->e_mbd;
+  struct macroblock_plane *p = &x->plane[plane];
+  struct macroblockd_plane *pd = &xd->plane[plane];
+  MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
+  int eob = p->eobs[block], update_eob = 0;
+  const PLANE_TYPE plane_type = pd->plane_type;
+  const tran_low_t *qcoeff = BLOCK_OFFSET(p->qcoeff, block);
+  tran_low_t *tcoeff = BLOCK_OFFSET(x->mbmi_ext->tcoeff[plane], block);
+  const int segment_id = mbmi->segment_id;
+  const int16_t *scan, *nb;
+  const TX_TYPE tx_type = get_tx_type(plane_type, xd, block, tx_size);
+  const SCAN_ORDER *const scan_order =
+      get_scan(cm, tx_size, tx_type, is_inter_block(mbmi));
+  const int ref = is_inter_block(mbmi);
+  unsigned int(*const counts)[COEFF_CONTEXTS][ENTROPY_TOKENS] =
+      td->rd_counts.coef_counts[tx_size][plane_type][ref];
+  const uint8_t *const band = get_band_translate(tx_size);
+  const int seg_eob = get_tx_eob(&cpi->common.seg, segment_id, tx_size);
+  int c, i;
+  int dc_sign;
+  int txb_skip_ctx = get_txb_skip_context(plane_bsize, tx_size, plane,
+                                          pd->above_context + blk_col,
+                                          pd->left_context + blk_row, &dc_sign);
+  const int bwl = b_width_log2_lookup[txsize_to_bsize[tx_size]] + 2;
+  int cul_level = 0;
+  unsigned int(*nz_map_count)[SIG_COEF_CONTEXTS][2];
+  uint8_t txb_mask[32 * 32] = { 0 };
+
+  nz_map_count = &td->counts->nz_map[tx_size][plane_type];
+
+  scan = scan_order->scan;
+  nb = scan_order->neighbors;
+
+  memcpy(tcoeff, qcoeff, sizeof(*tcoeff) * seg_eob);
+
+  (void)nb;
+  (void)counts;
+  (void)band;
+
+  ++td->counts->txb_skip[tx_size][txb_skip_ctx][eob == 0];
+  x->mbmi_ext->txb_skip_ctx[plane][block] = txb_skip_ctx;
+
+  x->mbmi_ext->eobs[plane][block] = eob;
+
+  if (eob == 0) {
+    av1_set_contexts(xd, pd, plane, tx_size, 0, blk_col, blk_row);
+    return;
+  }
+
+  // update_tx_type_count(cm, mbmi, td, plane, block);
+
+  for (c = 0; c < eob; ++c) {
+    tran_low_t v = qcoeff[scan[c]];
+    int is_nz = (v != 0);
+    int coeff_ctx = get_nz_map_ctx(tcoeff, txb_mask, scan[c], bwl);
+    int eob_ctx = get_eob_ctx(tcoeff, scan[c], bwl);
+
+    if (c == seg_eob - 1) break;
+
+    ++(*nz_map_count)[coeff_ctx][is_nz];
+
+    if (is_nz) {
+      ++td->counts->eob_flag[tx_size][plane_type][eob_ctx][c == (eob - 1)];
+    }
+    txb_mask[scan[c]] = 1;
+  }
+
+  // Reverse process order to handle coefficient level and sign.
+  for (i = 0; i < NUM_BASE_LEVELS; ++i) {
+    update_eob = 0;
+    for (c = eob - 1; c >= 0; --c) {
+      tran_low_t v = qcoeff[scan[c]];
+      tran_low_t level = abs(v);
+      int ctx;
+
+      if (level <= i) continue;
+
+      ctx = get_base_ctx(tcoeff, scan[c], bwl, i + 1);
+
+      if (level == i + 1) {
+        ++td->counts->coeff_base[tx_size][plane_type][i][ctx][1];
+        if (c == 0) {
+          int dc_sign_ctx = get_dc_sign_ctx(dc_sign);
+
+          ++td->counts->dc_sign[plane_type][dc_sign_ctx][v < 0];
+          x->mbmi_ext->dc_sign_ctx[plane][block] = dc_sign_ctx;
+        }
+        cul_level += level;
+        continue;
+      }
+      ++td->counts->coeff_base[tx_size][plane_type][i][ctx][0];
+      update_eob = AOMMAX(update_eob, c);
+    }
+  }
+
+  for (c = update_eob; c >= 0; --c) {
+    tran_low_t v = qcoeff[scan[c]];
+    tran_low_t level = abs(v);
+    int idx;
+    int ctx;
+
+    if (level <= NUM_BASE_LEVELS) continue;
+
+    cul_level += level;
+    if (c == 0) {
+      int dc_sign_ctx = get_dc_sign_ctx(dc_sign);
+
+      ++td->counts->dc_sign[plane_type][dc_sign_ctx][v < 0];
+      x->mbmi_ext->dc_sign_ctx[plane][block] = dc_sign_ctx;
+    }
+
+    // level is above 1.
+    ctx = get_level_ctx(tcoeff, scan[c], bwl);
+    for (idx = 0; idx < COEFF_BASE_RANGE; ++idx) {
+      if (level == (idx + 1 + NUM_BASE_LEVELS)) {
+        ++td->counts->coeff_lps[tx_size][plane_type][ctx][1];
+        break;
+      }
+      ++td->counts->coeff_lps[tx_size][plane_type][ctx][0];
+    }
+    if (idx < COEFF_BASE_RANGE) continue;
+
+    // use 0-th order Golomb code to handle the residual level.
+  }
+  cul_level = AOMMIN(63, cul_level);
+
+  // DC value
+  set_dc_sign(&cul_level, tcoeff[0]);
+  av1_set_contexts(xd, pd, plane, tx_size, cul_level, blk_col, blk_row);
+}
+
+void av1_update_txb_context(const AV1_COMP *cpi, ThreadData *td,
+                            RUN_TYPE dry_run, BLOCK_SIZE bsize, int *rate,
+                            const int mi_row, const int mi_col) {
+  const AV1_COMMON *const cm = &cpi->common;
+  MACROBLOCK *const x = &td->mb;
+  MACROBLOCKD *const xd = &x->e_mbd;
+  MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
+  const int ctx = av1_get_skip_context(xd);
+  const int skip_inc =
+      !segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP);
+  struct TxbParams arg = { cpi, td, 0 };
+  (void)rate;
+  (void)mi_row;
+  (void)mi_col;
+  if (mbmi->skip) {
+    if (!dry_run) td->counts->skip[ctx][1] += skip_inc;
+    reset_skip_context(xd, bsize);
+    return;
+  }
+
+  if (!dry_run) {
+    td->counts->skip[ctx][0] += skip_inc;
+    av1_foreach_transformed_block(xd, bsize, update_and_record_txb_context,
+                                  &arg);
+  } else {
+    av1_foreach_transformed_block(xd, bsize, update_txb_context, &arg);
+  }
 }

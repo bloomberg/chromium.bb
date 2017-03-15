@@ -307,4 +307,70 @@ static INLINE void set_dc_sign(int *cul_level, tran_low_t v) {
   else if (v > 0)
     *cul_level += 2 << COEFF_CONTEXT_BITS;
 }
+
+static INLINE int get_dc_sign_ctx(int dc_sign) {
+  int dc_sign_ctx = 0;
+  if (dc_sign < 0)
+    dc_sign_ctx = 1;
+  else if (dc_sign > 0)
+    dc_sign_ctx = 2;
+
+  return dc_sign_ctx;
+}
+
+static INLINE int get_txb_skip_context(BLOCK_SIZE bsize, TX_SIZE tx_size,
+                                       int plane, const ENTROPY_CONTEXT *a,
+                                       const ENTROPY_CONTEXT *l, int *dc_sign) {
+  const int tx_size_in_blocks = 1 << tx_size;
+  int ctx_offset = (plane == 0) ? 0 : 7;
+  int k;
+
+  if (bsize > txsize_to_bsize[tx_size]) ctx_offset += 3;
+
+  *dc_sign = 0;
+  for (k = 0; k < tx_size_in_blocks; ++k) {
+    int sign = a[k] >> COEFF_CONTEXT_BITS;
+    if (sign == 1)
+      --*dc_sign;
+    else if (sign == 2)
+      ++*dc_sign;
+    else if (sign != 0)
+      exit(0);
+
+    sign = l[k] >> 6;
+    if (sign == 1)
+      --*dc_sign;
+    else if (sign == 2)
+      ++*dc_sign;
+    else if (sign != 0)
+      exit(0);
+  }
+
+  if (plane == 0) {
+    int top = 0;
+    int left = 0;
+    for (k = 0; k < tx_size_in_blocks; ++k) {
+      top = AOMMAX(top, (a[k] & COEFF_CONTEXT_MASK));
+      left = AOMMAX(left, (l[k] & COEFF_CONTEXT_MASK));
+    }
+    top = AOMMIN(top, 255);
+    left = AOMMIN(left, 255);
+
+    if (bsize == txsize_to_bsize[tx_size])
+      return 0;
+    else if (top == 0 && left == 0)
+      return 1;
+    else if (top == 0 || left == 0)
+      return 2 + (AOMMAX(top, left) > 3);
+    else if (AOMMAX(top, left) <= 3)
+      return 4;
+    else if (AOMMIN(top, left) <= 3)
+      return 5;
+    else
+      return 6;
+  } else {
+    int ctx_base = get_entropy_context(tx_size, a, l);
+    return ctx_offset + ctx_base;
+  }
+}
 #endif  // AV1_COMMON_TXB_COMMON_H_

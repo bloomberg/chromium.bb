@@ -156,6 +156,18 @@ void av1_foreach_transformed_block_in_plane(
   }
 }
 
+#if CONFIG_LV_MAP
+void av1_foreach_transformed_block(const MACROBLOCKD *const xd,
+                                   BLOCK_SIZE bsize,
+                                   foreach_transformed_block_visitor visit,
+                                   void *arg) {
+  int plane;
+
+  for (plane = 0; plane < MAX_MB_PLANE; ++plane)
+    av1_foreach_transformed_block_in_plane(xd, bsize, plane, visit, arg);
+}
+#endif
+
 #if CONFIG_DAALA_DIST
 void av1_foreach_8x8_transformed_block_in_plane(
     const MACROBLOCKD *const xd, BLOCK_SIZE bsize, int plane,

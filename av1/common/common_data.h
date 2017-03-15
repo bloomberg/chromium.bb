@@ -639,6 +639,12 @@ static const TX_SIZE txsize_vert_map[TX_SIZES_ALL] = {
   TX_8X8,    // TX_32X8
 };
 
+#if CONFIG_CB4X4
+#define TX_SIZE_W_MIN 2
+#else
+#define TX_SIZE_W_MIN 4
+#endif
+
 // Transform block width in pixels
 static const int tx_size_wide[TX_SIZES_ALL] = {
 #if CONFIG_CB4X4
@@ -650,6 +656,12 @@ static const int tx_size_wide[TX_SIZES_ALL] = {
 #endif  // CONFIG_TX64X64
   4,  8, 8,  16, 16, 32, 4, 16, 8, 32
 };
+
+#if CONFIG_CB4X4
+#define TX_SIZE_H_MIN 2
+#else
+#define TX_SIZE_H_MIN 4
+#endif
 
 // Transform block height in pixels
 static const int tx_size_high[TX_SIZES_ALL] = {

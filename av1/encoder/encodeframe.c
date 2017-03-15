@@ -49,6 +49,9 @@
 #include "av1/encoder/encodeframe.h"
 #include "av1/encoder/encodemb.h"
 #include "av1/encoder/encodemv.h"
+#if CONFIG_LV_MAP
+#include "av1/encoder/encodetxb.h"
+#endif
 #include "av1/encoder/ethread.h"
 #include "av1/encoder/extend.h"
 #include "av1/encoder/rd.h"
@@ -5690,7 +5693,11 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
 #if CONFIG_VAR_TX
     mbmi->min_tx_size = get_min_tx_size(mbmi->tx_size);
 #endif
+#if CONFIG_LV_MAP
+    av1_update_txb_context(cpi, td, dry_run, block_size, rate, mi_row, mi_col);
+#else   // CONFIG_LV_MAP
     av1_tokenize_sb(cpi, td, t, dry_run, block_size, rate, mi_row, mi_col);
+#endif  // CONFIG_LV_MAP
   } else {
     int ref;
     const int is_compound = has_second_ref(mbmi);
@@ -5748,7 +5755,11 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
     av1_tokenize_sb_vartx(cpi, td, t, dry_run, mi_row, mi_col, block_size,
                           rate);
 #else
+#if CONFIG_LV_MAP
+    av1_update_txb_context(cpi, td, dry_run, block_size, rate, mi_row, mi_col);
+#else   // CONFIG_LV_MAP
     av1_tokenize_sb(cpi, td, t, dry_run, block_size, rate, mi_row, mi_col);
+#endif  // CONFIG_LV_MAP
 #endif
   }
 
