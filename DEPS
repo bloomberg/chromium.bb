@@ -211,7 +211,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/sctplab/usrsctp' + '@' + '8679f2b0bf063ac894dc473debefd61dbbebf622',
 
   'src/third_party/libsrtp':
-    Var('chromium_git') + '/chromium/deps/libsrtp.git' + '@' + '0e0936f3013fe5884eac82f95e370c8d460a179f',
+    Var('chromium_git') + '/chromium/deps/libsrtp.git' + '@' + 'd15364a801e42d164486b6c8522bde271b24761d',
 
   'src/third_party/yasm/source/patched-yasm':
     Var('chromium_git') + '/chromium/deps/yasm/patched-yasm.git' + '@' + '7da28c6c7c6a1387217352ce02b31754deb54d2a',
