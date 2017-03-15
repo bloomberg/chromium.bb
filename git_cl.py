@@ -16,6 +16,7 @@ import collections
 import contextlib
 import fnmatch
 import httplib
+import itertools
 import json
 import logging
 import multiprocessing
@@ -3446,6 +3447,13 @@ def GetRietveldCodereviewSettingsInteractively():
 class _GitCookiesChecker(object):
   """Provides facilties for validating and suggesting fixes to .gitcookies."""
 
+  _GOOGLESOURCE = 'googlesource.com'
+
+  def __init__(self):
+    # Cached list of [host, identity, source], where source is either
+    # .gitcookies or .netrc.
+    self._all_hosts = None
+
   def ensure_configured_gitcookies(self):
     """Runs checks and suggests fixes to make git use .gitcookies from default
     path."""
@@ -3505,6 +3513,34 @@ class _GitCookiesChecker(object):
     RunGit(['config', '--global', 'http.cookiefile', default_path])
     print('Configured git to use .gitcookies from %s' % default_path)
 
+  def get_hosts_with_creds(self, include_netrc=False):
+    if self._all_hosts is None:
+      a = gerrit_util.CookiesAuthenticator()
+      self._all_hosts = [
+          (h, u, s)
+          for h, u, s in itertools.chain(
+              ((h, u, '.netrc') for h, (u, _, _) in a.netrc.hosts.iteritems()),
+              ((h, u, '.gitcookies') for h, (u, _) in a.gitcookies.iteritems())
+          )
+          if h.endswith(self._GOOGLESOURCE)
+      ]
+
+    if include_netrc:
+      return self._all_hosts
+    return [(h, u, s) for h, u, s in self._all_hosts if s != '.netrc']
+
+  def print_current_creds(self, include_netrc=False):
+    hosts = sorted(self.get_hosts_with_creds(include_netrc=include_netrc))
+    if not hosts:
+      print('No Git/Gerrit credentials found')
+      return
+    lengths = [max(map(len, (row[i] for row in hosts))) for i in xrange(3)]
+    header = [('Host', 'User', 'Which file'),
+              ['=' * l for l in lengths]]
+    for row in (header + hosts):
+      print('\t'.join((('%%+%ds' % l) % s)
+                       for l, s in zip(lengths, row)))
+
 
 def CMDcreds_check(parser, args):
   """Checks credentials and suggests changes."""
@@ -3515,6 +3551,10 @@ def CMDcreds_check(parser, args):
 
   checker = _GitCookiesChecker()
   checker.ensure_configured_gitcookies()
+
+  print('Your .netrc and .gitcookies have credentails for these hosts:')
+  checker.print_current_creds(include_netrc=True)
+
   # TODO(tandrii): finish this.
   return 0
 

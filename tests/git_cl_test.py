@@ -2933,6 +2933,38 @@ class TestGitCl(TestCase):
     self.assertEqual(cl.GetDescription(), 'desc1')  # cache hit.
     self.assertEqual(cl.GetDescription(force=True), 'desc2')
 
+  def test_print_current_creds(self):
+    class CookiesAuthenticatorMock(object):
+      def __init__(self):
+        self.gitcookies = {
+            'host.googlesource.com': ('user', 'pass'),
+            'host-review.googlesource.com': ('user', 'pass'),
+        }
+        self.netrc = self
+        self.netrc.hosts = {
+            'github.com': ('user2', None, 'pass2'),
+            'host2.googlesource.com': ('user3', None, 'pass'),
+        }
+    self.mock(git_cl.gerrit_util, 'CookiesAuthenticator',
+              CookiesAuthenticatorMock)
+    self.mock(sys, 'stdout', StringIO.StringIO())
+    git_cl._GitCookiesChecker().print_current_creds(include_netrc=True)
+    self.assertEqual(list(sys.stdout.getvalue().splitlines()), [
+        '                        Host\t User\t Which file',
+        '============================\t=====\t===========',
+        'host-review.googlesource.com\t user\t.gitcookies',
+        '       host.googlesource.com\t user\t.gitcookies',
+        '      host2.googlesource.com\tuser3\t     .netrc',
+    ])
+    sys.stdout.buf = ''
+    git_cl._GitCookiesChecker().print_current_creds(include_netrc=False)
+    self.assertEqual(list(sys.stdout.getvalue().splitlines()), [
+        '                        Host\tUser\t Which file',
+        '============================\t====\t===========',
+        'host-review.googlesource.com\tuser\t.gitcookies',
+        '       host.googlesource.com\tuser\t.gitcookies',
+    ])
+
   def _common_creds_check_mocks(self):
     def exists_mock(path):
       dirname = os.path.dirname(path)
@@ -2948,6 +2980,8 @@ class TestGitCl(TestCase):
 
   def test_creds_check_gitcookies_not_configured(self):
     self._common_creds_check_mocks()
+    self.mock(git_cl._GitCookiesChecker, 'get_hosts_with_creds',
+              lambda _, include_netrc: [])
     self.calls = [
       ((['git', 'config', '--global', 'http.cookiefile'],), CERR1),
       (('os.path.exists', '~/.netrc'), True),
@@ -2966,6 +3000,8 @@ class TestGitCl(TestCase):
 
   def test_creds_check_gitcookies_configured_custom_broken(self):
     self._common_creds_check_mocks()
+    self.mock(git_cl._GitCookiesChecker, 'get_hosts_with_creds',
+              lambda _, include_netrc: [])
     self.calls = [
       ((['git', 'config', '--global', 'http.cookiefile'],),
        '/custom/.gitcookies'),
@@ -2982,6 +3018,7 @@ class TestGitCl(TestCase):
     self.assertRegexpMatches(
         sys.stdout.getvalue(),
         'However, your configured .gitcookies file is missing.')
+
 
 if __name__ == '__main__':
   logging.basicConfig(
