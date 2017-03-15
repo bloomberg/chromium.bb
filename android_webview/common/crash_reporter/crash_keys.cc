@@ -20,6 +20,11 @@ const char kFontKeyName[] = "font_key_name";
 const char kShutdownType[] = "shutdown-type";
 const char kBrowserUnpinTrace[] = "browser-unpin-trace";
 
+const char kAppPackageName[] = "app-package-name";
+const char kAppPackageVersionCode[] = "app-package-version-code";
+
+const char kAndroidSdkInt[] = "android-sdk-int";
+
 const char kGPUDriverVersion[] = "gpu-driver";
 const char kGPUPixelShaderVersion[] = "gpu-psver";
 const char kGPUVertexShaderVersion[] = "gpu-vsver";
@@ -48,6 +53,9 @@ size_t RegisterWebViewCrashKeys() {
       {kGPUVertexShaderVersion, kSmallSize},
       {kGPUVendor, kSmallSize},
       {kGPURenderer, kSmallSize},
+      {kAppPackageName, kSmallSize},
+      {kAppPackageVersionCode, kSmallSize},
+      {kAndroidSdkInt, kSmallSize},
 
       // content/:
       {"bad_message_reason", kSmallSize},
@@ -147,6 +155,9 @@ const char* const kWebViewCrashKeyWhiteList[] = {
     kGPUVertexShaderVersion,
     kGPUVendor,
     kGPURenderer,
+    kAppPackageName,
+    kAppPackageVersionCode,
+    kAndroidSdkInt,
 
     // content/:
     "bad_message_reason",

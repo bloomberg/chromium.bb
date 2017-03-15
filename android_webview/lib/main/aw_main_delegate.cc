@@ -16,6 +16,7 @@
 #include "android_webview/common/aw_paths.h"
 #include "android_webview/common/aw_switches.h"
 #include "android_webview/common/crash_reporter/aw_microdump_crash_reporter.h"
+#include "android_webview/common/crash_reporter/crash_keys.h"
 #include "android_webview/gpu/aw_content_gpu_client.h"
 #include "android_webview/native/aw_locale_manager_impl.h"
 #include "android_webview/native/aw_media_url_interceptor.h"
@@ -24,11 +25,14 @@
 #include "android_webview/native/aw_web_preferences_populater_impl.h"
 #include "android_webview/renderer/aw_content_renderer_client.h"
 #include "base/android/apk_assets.h"
+#include "base/android/build_info.h"
 #include "base/command_line.h"
 #include "base/cpu.h"
+#include "base/debug/crash_logging.h"
 #include "base/i18n/icu_util.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "cc/base/switches.h"
 #include "components/crash/content/app/breakpad_linux.h"
@@ -210,6 +214,16 @@ void AwMainDelegate::PreSandboxStartup() {
   }
 
   crash_reporter::EnableCrashReporter(process_type, crash_signal_fd);
+
+  base::android::BuildInfo* android_build_info =
+      base::android::BuildInfo::GetInstance();
+  base::debug::SetCrashKeyValue(crash_keys::kAppPackageName,
+                                android_build_info->package_name());
+  base::debug::SetCrashKeyValue(crash_keys::kAppPackageVersionCode,
+                                android_build_info->package_version_code());
+  base::debug::SetCrashKeyValue(
+      crash_keys::kAndroidSdkInt,
+      base::IntToString(android_build_info->sdk_int()));
 }
 
 int AwMainDelegate::RunProcess(

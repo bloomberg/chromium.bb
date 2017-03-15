@@ -28,6 +28,11 @@ extern const char kGPUVertexShaderVersion[];
 extern const char kGPUVendor[];
 extern const char kGPURenderer[];
 
+// Application information.
+extern const char kAppPackageName[];
+extern const char kAppPackageVersionCode[];
+
+extern const char kAndroidSdkInt[];
 
 }  // namespace crash_keys
 }  // namespace android_webview
