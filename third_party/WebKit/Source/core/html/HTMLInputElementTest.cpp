@@ -4,7 +4,10 @@
 
 #include "core/html/HTMLInputElement.h"
 
+#include <memory>
 #include "core/dom/Document.h"
+#include "core/events/KeyboardEvent.h"
+#include "core/events/KeyboardEventInit.h"
 #include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/VisualViewport.h"
@@ -15,7 +18,6 @@
 #include "core/html/forms/DateTimeChooser.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace blink {
 
@@ -146,6 +148,22 @@ TEST_F(HTMLInputElementTest, ImageTypeCrash) {
   // |value| doesn't crash.
   input->ensurePrimaryContent();
   input->setAttribute(HTMLNames::valueAttr, "aaa");
+}
+
+TEST_F(HTMLInputElementTest, RadioKeyDownDCHECKFailure) {
+  // crbug.com/697286
+  document().body()->setInnerHTML(
+      "<input type=radio name=g><input type=radio name=g>");
+  HTMLInputElement& radio1 =
+      toHTMLInputElement(*document().body()->firstChild());
+  HTMLInputElement& radio2 = toHTMLInputElement(*radio1.nextSibling());
+  radio1.focus();
+  // Make layout-dirty.
+  radio2.setAttribute(HTMLNames::styleAttr, "position:fixed");
+  KeyboardEventInit init;
+  init.setKey("ArrowRight");
+  radio1.defaultEventHandler(new KeyboardEvent("keydown", init));
+  EXPECT_EQ(document().activeElement(), &radio2);
 }
 
 TEST_F(HTMLInputElementTest, DateTimeChooserSizeParamRespectsScale) {

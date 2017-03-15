@@ -25,6 +25,7 @@
 #ifndef HTMLInputElement_h
 #define HTMLInputElement_h
 
+#include "base/gtest_prod_util.h"
 #include "core/CoreExport.h"
 #include "core/html/TextControlElement.h"
 #include "core/html/forms/StepRange.h"
@@ -429,6 +430,8 @@ class CORE_EXPORT HTMLInputElement : public TextControlElement {
   // element lives on.
   Member<HTMLImageLoader> m_imageLoader;
   Member<ListAttributeTargetObserver> m_listAttributeTargetObserver;
+
+  FRIEND_TEST_ALL_PREFIXES(HTMLInputElementTest, RadioKeyDownDCHECKFailure);
 };
 
 }  // namespace blink
