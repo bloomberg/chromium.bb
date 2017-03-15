@@ -1,0 +1,15 @@
+Test that tracing model correctly processes flow events.
+
+flowSimple#1 s:100 f:101 
+flowStep#1 s:120 t:121.001 t:126.1 f:126.999 
+flowCrossThread#1 s:130 t:130.2 t:130.8 f:131 
+flowIdName#1 s:140 f:140.8 
+flowIdName1#1 s:140.22 f:141 
+flowIdCat#1 s:150 f:152 
+flowIdCat#1 s:151 f:153 
+flowIdScope#s1@1 s:153.5 f:154 
+flowIdScope#s2@1 s:154 f:154.5 
+flowIdLocal#::100:1 s:155 f:155.5 
+flowIdLocal#::101:1 s:155.1 f:155.6 
+flowIdGlobal#::1 s:156.5 t:157.5 t:157.6 
+

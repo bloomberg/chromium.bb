@@ -1,0 +1,68 @@
+<html>
+<head>
+<script src="../http/tests/inspector/inspector-test.js"></script>
+<script src="../http/tests/inspector/timeline-test.js"></script>
+<script>
+function test()
+{
+    var mainThread = 1;
+    var pid = 100;
+
+    var testData = [
+        { "cat": "cat", "name": "flowSimple", "ph": "s", "ts": 100000, "args": {}, "id": 1, "tid": mainThread, "pid": pid },
+        { "cat": "cat", "name": "flowSimple", "ph": "f", "ts": 101000, "args": {}, "id": 1, "tid": mainThread, "pid": pid },
+
+        { "cat": "cat", "name": "flowStep", "ph": "s", "ts": 120000, "args": {}, "id": 1, "tid": mainThread, "pid": pid },
+        { "cat": "cat", "name": "flowStep", "ph": "t", "ts": 121001, "args": {}, "id": 1, "tid": mainThread, "pid": pid },
+        { "cat": "cat", "name": "flowStep", "ph": "t", "ts": 126100, "args": {}, "id": 1, "tid": mainThread, "pid": pid },
+        { "cat": "cat", "name": "flowStep", "ph": "f", "ts": 126999, "args": {}, "id": 1, "tid": mainThread, "pid": pid },
+
+        { "cat": "cat", "name": "flowCrossThread", "ph": "t", "ts": 130200, "args": {}, "id": 1, "tid": 2, "pid": pid },
+        { "cat": "cat", "name": "flowCrossThread", "ph": "t", "ts": 130800, "args": {}, "id": 1, "tid": 2, "pid": pid },
+        { "cat": "cat", "name": "flowCrossThread", "ph": "s", "ts": 130000, "args": {}, "id": 1, "tid": mainThread, "pid": pid },
+        { "cat": "cat", "name": "flowCrossThread", "ph": "f", "ts": 131000, "args": {}, "id": 1, "tid": mainThread, "pid": pid },
+
+        { "cat": "cat", "name": "flowIdName", "ph": "s", "ts": 140000, "args": {}, "id": 1, "tid": mainThread, "pid": pid },
+        { "cat": "cat", "name": "flowIdName1", "ph": "s", "ts": 140220, "args": {}, "id": 1, "tid": mainThread, "pid": pid },
+        { "cat": "cat", "name": "flowIdName", "ph": "f", "ts": 140800, "args": {}, "id": 1, "tid": mainThread, "pid": pid },
+        { "cat": "cat", "name": "flowIdName1", "ph": "f", "ts": 141000, "args": {}, "id": 1, "tid": mainThread, "pid": pid },
+
+        { "cat": "cat", "name": "flowIdCat", "ph": "s", "ts": 150000, "args": {}, "id": 1, "tid": mainThread, "pid": pid },
+        { "cat": "cat1", "name": "flowIdCat", "ph": "s", "ts": 151000, "args": {}, "id": 1, "tid": mainThread, "pid": pid },
+        { "cat": "cat", "name": "flowIdCat", "ph": "f", "ts": 152000, "args": {}, "id": 1, "tid": mainThread, "pid": pid },
+        { "cat": "cat1", "name": "flowIdCat", "ph": "f", "ts": 153000, "args": {}, "id": 1, "tid": mainThread, "pid": pid },
+
+        { "cat": "cat", "name": "flowIdScope", "ph": "s", "ts": 153500, "args": {}, "scope": "s1", "id": 1, "tid": mainThread, "pid": pid },
+        { "cat": "cat", "name": "flowIdScope", "ph": "s", "ts": 154000, "args": {}, "scope": "s2", "id": 1, "tid": mainThread, "pid": pid },
+        { "cat": "cat", "name": "flowIdScope", "ph": "f", "ts": 154000, "args": {}, "scope": "s1", "id": 1, "tid": mainThread, "pid": pid },
+        { "cat": "cat", "name": "flowIdScope", "ph": "f", "ts": 154500, "args": {}, "scope": "s2", "id": 1, "tid": mainThread, "pid": pid },
+
+        { "cat": "cat", "name": "flowIdLocal", "ph": "s", "ts": 155000, "args": {}, "id2": {"local": 1}, "tid": mainThread, "pid": pid },
+        { "cat": "cat", "name": "flowIdLocal", "ph": "s", "ts": 155100, "args": {}, "id2": {"local": 1}, "tid": mainThread, "pid": pid + 1 },
+        { "cat": "cat", "name": "flowIdLocal", "ph": "f", "ts": 155500, "args": {}, "id2": {"local": 1}, "tid": mainThread, "pid": pid },
+        { "cat": "cat", "name": "flowIdLocal", "ph": "f", "ts": 155600, "args": {}, "id2": {"local": 1}, "tid": mainThread, "pid": pid + 1},
+
+        { "cat": "cat", "name": "flowIdGlobal", "ph": "s", "ts": 156500, "args": {}, "id2": {"global": 1}, "tid": mainThread, "pid": pid },
+        { "cat": "cat", "name": "flowIdGlobal", "ph": "t", "ts": 157500, "args": {}, "id2": {"global": 1}, "tid": mainThread, "pid": pid + 1},
+        { "cat": "cat", "name": "flowIdGlobal", "ph": "t", "ts": 157600, "args": {}, "id2": {"global": 1}, "tid": mainThread, "pid": pid },
+    ];
+
+    var model = InspectorTest.createTracingModel();
+    model.setEventsForTest(testData);
+    var heads = model.flowHeads();
+    for (var h of heads) {
+        var str = `${h.name}#${h.id} `;
+        for (;h; h = h.nextFlow) {
+            str += `${h.phase}:${h.startTime} `
+        }
+        InspectorTest.addResult(str);
+    }
+    InspectorTest.completeTest();
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>Test that tracing model correctly processes flow events.</p>
+</body>
+</html>
