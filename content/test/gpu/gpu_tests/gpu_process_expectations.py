@@ -17,6 +17,11 @@ class GpuProcessExpectations(GpuTestExpectations):
     self.Skip('GpuProcess_no_gpu_process', ['android'], bug=643282)
     self.Skip('GpuProcess_skip_gpu_process', ['android'], bug=(610951, 610023))
 
+    # Chrome on Windows creates a GPU process that uses SwiftShader when using
+    # either --disable-gpu or a blacklisted GPU.
+    self.Skip('GpuProcess_no_gpu_process', ['win', 'debug'], bug=630728)
+    self.Skip('GpuProcess_skip_gpu_process', ['win', 'debug'], bug=630728)
+
     # There is no Android multi-gpu configuration and the helper
     # gpu_info_collector.cc::IdentifyActiveGPU is not even called.
     self.Skip('GpuProcess_identify_active_gpu1', ['android'])
