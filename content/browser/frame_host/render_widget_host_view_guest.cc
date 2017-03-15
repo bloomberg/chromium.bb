@@ -84,7 +84,8 @@ RenderWidgetHostViewGuest::RenderWidgetHostViewGuest(
     : RenderWidgetHostViewChildFrame(widget_host),
       // |guest| is NULL during test.
       guest_(guest ? guest->AsWeakPtr() : base::WeakPtr<BrowserPluginGuest>()),
-      platform_view_(platform_view) {
+      platform_view_(platform_view),
+      should_forward_text_selection_(false) {
   gfx::NativeView view = GetNativeView();
   if (view)
     UpdateScreenInfo(view);
@@ -372,6 +373,9 @@ void RenderWidgetHostViewGuest::TextInputStateChanged(
     return;
   // Forward the information to embedding RWHV.
   rwhv->TextInputStateChanged(params);
+
+  should_forward_text_selection_ =
+      (params.type != ui::TEXT_INPUT_TYPE_NONE) && guest_ && guest_->focused();
 }
 
 void RenderWidgetHostViewGuest::ImeCancelComposition() {
@@ -409,7 +413,11 @@ void RenderWidgetHostViewGuest::ImeCompositionRangeChanged(
 void RenderWidgetHostViewGuest::SelectionChanged(const base::string16& text,
                                                  size_t offset,
                                                  const gfx::Range& range) {
-  platform_view_->SelectionChanged(text, offset, range);
+  RenderWidgetHostViewBase* view = should_forward_text_selection_
+                                       ? GetOwnerRenderWidgetHostView()
+                                       : platform_view_.get();
+  if (view)
+    view->SelectionChanged(text, offset, range);
 }
 
 void RenderWidgetHostViewGuest::SelectionBoundsChanged(

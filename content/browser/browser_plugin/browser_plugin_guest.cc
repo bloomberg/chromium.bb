@@ -896,24 +896,20 @@ void BrowserPluginGuest::OnExecuteEditCommand(int browser_plugin_instance_id,
 
 void BrowserPluginGuest::OnImeSetComposition(
     int browser_plugin_instance_id,
-    const std::string& text,
-    const std::vector<blink::WebCompositionUnderline>& underlines,
-    int selection_start,
-    int selection_end) {
-  Send(new InputMsg_ImeSetComposition(routing_id(),
-                                      base::UTF8ToUTF16(text), underlines,
-                                      gfx::Range::InvalidRange(),
-                                      selection_start, selection_end));
+    const BrowserPluginHostMsg_SetComposition_Params& params) {
+  Send(new InputMsg_ImeSetComposition(
+      routing_id(), params.text, params.underlines, params.replacement_range,
+      params.selection_start, params.selection_end));
 }
 
 void BrowserPluginGuest::OnImeCommitText(
     int browser_plugin_instance_id,
-    const std::string& text,
+    const base::string16& text,
     const std::vector<blink::WebCompositionUnderline>& underlines,
+    const gfx::Range& replacement_range,
     int relative_cursor_pos) {
-  Send(new InputMsg_ImeCommitText(routing_id(), base::UTF8ToUTF16(text),
-                                  underlines, gfx::Range::InvalidRange(),
-                                  relative_cursor_pos));
+  Send(new InputMsg_ImeCommitText(routing_id(), text, underlines,
+                                  replacement_range, relative_cursor_pos));
 }
 
 void BrowserPluginGuest::OnImeFinishComposingText(bool keep_selection) {

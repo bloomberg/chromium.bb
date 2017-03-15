@@ -167,19 +167,23 @@ class WebPlugin {
   }
 
   // Sets composition text from input method, and returns true if the
-  // composition is set successfully.
+  // composition is set successfully. If |replacementRange| is not null, the
+  // text inside |replacementRange| will be replaced by |text|
   virtual bool setComposition(
       const WebString& text,
       const WebVector<WebCompositionUnderline>& underlines,
+      const WebRange& replacementRange,
       int selectionStart,
       int selectionEnd) {
     return false;
   }
 
   // Deletes the ongoing composition if any, inserts the specified text, and
-  // moves the caret according to relativeCaretPosition.
+  // moves the caret according to relativeCaretPosition. If |replacementRange|
+  // is not null, the text inside |replacementRange| will be replaced by |text|.
   virtual bool commitText(const WebString& text,
                           const WebVector<WebCompositionUnderline>& underlines,
+                          const WebRange& replacementRange,
                           int relativeCaretPosition) {
     return false;
   }

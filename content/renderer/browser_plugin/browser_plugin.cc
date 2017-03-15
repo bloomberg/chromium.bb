@@ -548,22 +548,28 @@ bool BrowserPlugin::executeEditCommand(const blink::WebString& name,
 bool BrowserPlugin::setComposition(
     const blink::WebString& text,
     const blink::WebVector<blink::WebCompositionUnderline>& underlines,
+    const blink::WebRange& replacementRange,
     int selectionStart,
     int selectionEnd) {
   if (!attached())
     return false;
 
-  std::vector<blink::WebCompositionUnderline> std_underlines;
+  BrowserPluginHostMsg_SetComposition_Params params;
+  params.text = text.utf16();
   for (size_t i = 0; i < underlines.size(); ++i) {
-    std_underlines.push_back(underlines[i]);
+    params.underlines.push_back(underlines[i]);
   }
 
+  params.replacement_range =
+      replacementRange.isNull()
+          ? gfx::Range::InvalidRange()
+          : gfx::Range(static_cast<uint32_t>(replacementRange.startOffset()),
+                       static_cast<uint32_t>(replacementRange.endOffset()));
+  params.selection_start = selectionStart;
+  params.selection_end = selectionEnd;
+
   BrowserPluginManager::Get()->Send(new BrowserPluginHostMsg_ImeSetComposition(
-      browser_plugin_instance_id_,
-      text.utf8(),
-      std_underlines,
-      selectionStart,
-      selectionEnd));
+      browser_plugin_instance_id_, params));
   // TODO(kochi): This assumes the IPC handling always succeeds.
   return true;
 }
@@ -571,6 +577,7 @@ bool BrowserPlugin::setComposition(
 bool BrowserPlugin::commitText(
     const blink::WebString& text,
     const blink::WebVector<blink::WebCompositionUnderline>& underlines,
+    const blink::WebRange& replacementRange,
     int relative_cursor_pos) {
   if (!attached())
     return false;
@@ -579,10 +586,15 @@ bool BrowserPlugin::commitText(
   for (size_t i = 0; i < underlines.size(); ++i) {
     std_underlines.push_back(std_underlines[i]);
   }
+  gfx::Range replacement_range =
+      replacementRange.isNull()
+          ? gfx::Range::InvalidRange()
+          : gfx::Range(static_cast<uint32_t>(replacementRange.startOffset()),
+                       static_cast<uint32_t>(replacementRange.endOffset()));
 
   BrowserPluginManager::Get()->Send(new BrowserPluginHostMsg_ImeCommitText(
-      browser_plugin_instance_id_, text.utf8(), std_underlines,
-      relative_cursor_pos));
+      browser_plugin_instance_id_, text.utf16(), std_underlines,
+      replacement_range, relative_cursor_pos));
   // TODO(kochi): This assumes the IPC handling always succeeds.
   return true;
 }

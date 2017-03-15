@@ -50,8 +50,8 @@ bool WebInputMethodControllerImpl::setComposition(
     int selectionStart,
     int selectionEnd) {
   if (WebPlugin* plugin = focusedPluginIfInputMethodSupported()) {
-    return plugin->setComposition(text, underlines, selectionStart,
-                                  selectionEnd);
+    return plugin->setComposition(text, underlines, replacementRange,
+                                  selectionStart, selectionEnd);
   }
 
   // We should use this |editor| object only to complete the ongoing
@@ -128,8 +128,10 @@ bool WebInputMethodControllerImpl::commitText(
   UserGestureIndicator gestureIndicator(DocumentUserGestureToken::create(
       frame()->document(), UserGestureToken::NewGesture));
 
-  if (WebPlugin* plugin = focusedPluginIfInputMethodSupported())
-    return plugin->commitText(text, underlines, relativeCaretPosition);
+  if (WebPlugin* plugin = focusedPluginIfInputMethodSupported()) {
+    return plugin->commitText(text, underlines, replacementRange,
+                              relativeCaretPosition);
+  }
 
   // Select the range to be replaced with the composition later.
   if (!replacementRange.isNull())

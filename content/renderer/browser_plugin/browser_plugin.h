@@ -113,11 +113,13 @@ class CONTENT_EXPORT BrowserPlugin :
   bool setComposition(
       const blink::WebString& text,
       const blink::WebVector<blink::WebCompositionUnderline>& underlines,
+      const blink::WebRange& replacementRange,
       int selectionStart,
       int selectionEnd) override;
   bool commitText(
       const blink::WebString& text,
       const blink::WebVector<blink::WebCompositionUnderline>& underlines,
+      const blink::WebRange& replacementRange,
       int relative_cursor_pos) override;
   bool finishComposingText(
       blink::WebInputMethodController::ConfirmCompositionBehavior

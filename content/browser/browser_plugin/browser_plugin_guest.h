@@ -45,6 +45,7 @@
 #include "ui/gfx/geometry/rect.h"
 
 struct BrowserPluginHostMsg_Attach_Params;
+struct BrowserPluginHostMsg_SetComposition_Params;
 
 #if defined(OS_MACOSX)
 struct FrameHostMsg_ShowPopup_Params;
@@ -342,14 +343,12 @@ class CONTENT_EXPORT BrowserPluginGuest : public GuestHost,
   void OnTextInputStateChanged(const TextInputState& params);
   void OnImeSetComposition(
       int instance_id,
-      const std::string& text,
-      const std::vector<blink::WebCompositionUnderline>& underlines,
-      int selection_start,
-      int selection_end);
+      const BrowserPluginHostMsg_SetComposition_Params& params);
   void OnImeCommitText(
       int instance_id,
-      const std::string& text,
+      const base::string16& text,
       const std::vector<blink::WebCompositionUnderline>& underlines,
+      const gfx::Range& replacement_range,
       int relative_cursor_pos);
   void OnImeFinishComposingText(bool keep_selection);
   void OnExtendSelectionAndDelete(int instance_id, int before, int after);

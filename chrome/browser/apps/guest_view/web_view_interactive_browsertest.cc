@@ -36,15 +36,18 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/text_input_test_utils.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/base/ime/composition_text.h"
+#include "ui/base/ime/composition_underline.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/test/ui_controls.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/gfx/range/range.h"
 
 using extensions::AppWindow;
 using extensions::ExtensionsAPIClient;
@@ -517,6 +520,7 @@ class WebViewDragDropInteractiveTest : public WebViewInteractiveTest {};
 class WebViewNewWindowInteractiveTest : public WebViewInteractiveTest {};
 class WebViewFocusInteractiveTest : public WebViewInteractiveTest {};
 class WebViewPointerLockInteractiveTest : public WebViewInteractiveTest {};
+class WebViewImeInteractiveTest : public WebViewInteractiveTest {};
 
 // The tests below aren't needed in --use-cross-process-frames-for-guests.
 class WebViewContextMenuInteractiveTest : public WebViewInteractiveTestBase {};
@@ -544,6 +548,10 @@ INSTANTIATE_TEST_CASE_P(WebViewInteractiveTests,
 
 INSTANTIATE_TEST_CASE_P(WebViewInteractiveTests,
                         WebViewPointerLockInteractiveTest,
+                        testing::Bool());
+
+INSTANTIATE_TEST_CASE_P(WebViewInteractiveTests,
+                        WebViewImeInteractiveTest,
                         testing::Bool());
 
 // ui_test_utils::SendMouseMoveSync doesn't seem to work on OS_MACOSX, and
@@ -1507,3 +1515,66 @@ IN_PROC_BROWSER_TEST_P(WebViewInteractiveTest, KeyboardFocusWindowCycle) {
 
   ASSERT_TRUE(next_step_listener.WaitUntilSatisfied());
 }
+
+#if defined(OS_MACOSX)
+// This test verifies that replacement range for IME works with <webview>s. To
+// verify this, a <webview> with an <input> inside is loaded. Then the <input>
+// is focused and  populated with some text. The test then sends an IPC to
+// commit some text which will replace part of the previous text some new text.
+IN_PROC_BROWSER_TEST_P(WebViewImeInteractiveTest,
+                       CommitTextWithReplacementRange) {
+  ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
+  LoadAndLaunchPlatformApp("web_view/ime", "WebViewImeTest.Launched");
+  ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(GetPlatformAppWindow()));
+
+  // Flush any pending events to make sure we start with a clean slate.
+  content::RunAllPendingInMessageLoop();
+
+  content::WebContents* guest_web_contents =
+      GetGuestViewManager()->GetLastGuestCreated();
+
+  // Click the <input> element inside the <webview>. In its focus handle, the
+  // <input> inside the <webview> initializes its value to "A B X D".
+  ExtensionTestMessageListener focus_listener("WebViewImeTest.InputFocused",
+                                              false);
+  content::WebContents* target_web_contents =
+      GetParam()
+          ? guest_web_contents
+          : guest_view::GuestViewBase::FromWebContents(guest_web_contents)
+                ->embedder_web_contents();
+  content::SimulateMouseClickAt(target_web_contents, 0,
+                                blink::WebMouseEvent::Button::Left,
+                                gfx::Point(50, 50));
+  focus_listener.WaitUntilSatisfied();
+
+  // Verify the text inside the <input> is "A B X D".
+  std::string value;
+  ASSERT_TRUE(ExecuteScriptAndExtractString(guest_web_contents,
+                                            "window.domAutomationController."
+                                            "send(document.querySelector('"
+                                            "input').value)",
+                                            &value));
+  EXPECT_EQ("A B X D", value);
+
+  // Now commit "C" to to replace the range (4, 5).
+  // For OOPIF guests, the target for IME is the RWH for the guest's main frame.
+  // For BrowserPlugin-based guests, input always goes to the embedder.
+  ExtensionTestMessageListener input_listener("WebViewImetest.InputReceived",
+                                              false);
+  content::RenderWidgetHost* target_rwh_for_input =
+      target_web_contents->GetRenderWidgetHostView()->GetRenderWidgetHost();
+  content::SendImeCommitTextToWidget(
+      target_rwh_for_input, base::UTF8ToUTF16("C"),
+      std::vector<ui::CompositionUnderline>(), gfx::Range(4, 5), 0);
+  input_listener.WaitUntilSatisfied();
+
+  // Get the input value from the guest.
+  value.clear();
+  ASSERT_TRUE(ExecuteScriptAndExtractString(guest_web_contents,
+                                            "window.domAutomationController."
+                                            "send(document.querySelector('"
+                                            "input').value)",
+                                            &value));
+  EXPECT_EQ("A B C D", value);
+}
+#endif  //  OS_MACOSX

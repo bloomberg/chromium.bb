@@ -161,6 +161,12 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   // RenderWidgetHostViewGuest mostly only cares about stuff related to
   // compositing, the rest are directly forwarded to this |platform_view_|.
   base::WeakPtr<RenderWidgetHostViewBase> platform_view_;
+
+  // When true the guest will forward its selection updates to the owner RWHV.
+  // The guest may forward its updates only when there is an ongoing IME
+  // session.
+  bool should_forward_text_selection_;
+
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewGuest);
 };
 

@@ -26,6 +26,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/ipc/gfx_param_traits.h"
 #include "ui/gfx/ipc/skia/gfx_skia_param_traits.h"
+#include "ui/gfx/range/range.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
@@ -42,6 +43,14 @@ IPC_STRUCT_BEGIN(BrowserPluginHostMsg_Attach_Params)
   IPC_STRUCT_MEMBER(gfx::Rect, view_rect)
   // Whether the browser plugin is a full page plugin document.
   IPC_STRUCT_MEMBER(bool, is_full_page_plugin)
+IPC_STRUCT_END()
+
+IPC_STRUCT_BEGIN(BrowserPluginHostMsg_SetComposition_Params)
+  IPC_STRUCT_MEMBER(base::string16, text)
+  IPC_STRUCT_MEMBER(std::vector<blink::WebCompositionUnderline>, underlines)
+  IPC_STRUCT_MEMBER(gfx::Range, replacement_range)
+  IPC_STRUCT_MEMBER(int, selection_start)
+  IPC_STRUCT_MEMBER(int, selection_end)
 IPC_STRUCT_END()
 
 // Browser plugin messages
@@ -65,21 +74,18 @@ IPC_MESSAGE_CONTROL2(BrowserPluginHostMsg_SetEditCommandsForNextKeyEvent,
 
 // This message is sent from BrowserPlugin to BrowserPluginGuest whenever IME
 // composition state is updated.
-IPC_MESSAGE_CONTROL5(
-    BrowserPluginHostMsg_ImeSetComposition,
-    int /* browser_plugin_instance_id */,
-    std::string /* text */,
-    std::vector<blink::WebCompositionUnderline> /* underlines */,
-    int /* selectiont_start */,
-    int /* selection_end */)
+IPC_MESSAGE_CONTROL2(BrowserPluginHostMsg_ImeSetComposition,
+                     int /* browser_plugin_instance_id */,
+                     BrowserPluginHostMsg_SetComposition_Params /* params */)
 
 // This message is sent from BrowserPlugin to BrowserPluginGuest to notify that
 // deleting the current composition and inserting specified text is requested.
-IPC_MESSAGE_CONTROL4(
+IPC_MESSAGE_CONTROL5(
     BrowserPluginHostMsg_ImeCommitText,
     int /* browser_plugin_instance_id */,
-    std::string /* text */,
+    base::string16 /* text */,
     std::vector<blink::WebCompositionUnderline> /* underlines */,
+    gfx::Range /* replacement_range */,
     int /* relative_cursor_pos */)
 
 // This message is sent from BrowserPlugin to BrowserPluginGuest to notify that
