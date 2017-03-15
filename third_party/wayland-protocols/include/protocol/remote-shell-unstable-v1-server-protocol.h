@@ -281,6 +281,8 @@ struct zcr_remote_shell_v1_interface {
 
 #define ZCR_REMOTE_SHELL_V1_ACTIVATED 0
 #define ZCR_REMOTE_SHELL_V1_CONFIGURATION_CHANGED 1
+#define ZCR_REMOTE_SHELL_V1_WORKSPACE 2
+#define ZCR_REMOTE_SHELL_V1_CONFIGURE 3
 
 /**
  * @ingroup iface_zcr_remote_shell_v1
@@ -290,6 +292,14 @@ struct zcr_remote_shell_v1_interface {
  * @ingroup iface_zcr_remote_shell_v1
  */
 #define ZCR_REMOTE_SHELL_V1_CONFIGURATION_CHANGED_SINCE_VERSION 1
+/**
+ * @ingroup iface_zcr_remote_shell_v1
+ */
+#define ZCR_REMOTE_SHELL_V1_WORKSPACE_SINCE_VERSION 1
+/**
+ * @ingroup iface_zcr_remote_shell_v1
+ */
+#define ZCR_REMOTE_SHELL_V1_CONFIGURE_SINCE_VERSION 1
 
 /**
  * @ingroup iface_zcr_remote_shell_v1
@@ -324,6 +334,28 @@ static inline void
 zcr_remote_shell_v1_send_configuration_changed(struct wl_resource *resource_, int32_t width, int32_t height, int32_t transform, wl_fixed_t scale_factor, int32_t work_area_inset_left, int32_t work_area_inset_top, int32_t work_area_inset_right, int32_t work_area_inset_bottom, uint32_t layout_mode)
 {
 	wl_resource_post_event(resource_, ZCR_REMOTE_SHELL_V1_CONFIGURATION_CHANGED, width, height, transform, scale_factor, work_area_inset_left, work_area_inset_top, work_area_inset_right, work_area_inset_bottom, layout_mode);
+}
+
+/**
+ * @ingroup iface_zcr_remote_shell_v1
+ * Sends an workspace event to the client owning the resource.
+ * @param resource_ The client's resource
+ */
+static inline void
+zcr_remote_shell_v1_send_workspace(struct wl_resource *resource_, uint32_t id_hi, uint32_t id_lo, int32_t x, int32_t y, int32_t width, int32_t height, int32_t inset_left, int32_t inset_top, int32_t inset_right, int32_t inset_bottom)
+{
+	wl_resource_post_event(resource_, ZCR_REMOTE_SHELL_V1_WORKSPACE, id_hi, id_lo, x, y, width, height, inset_left, inset_top, inset_right, inset_bottom);
+}
+
+/**
+ * @ingroup iface_zcr_remote_shell_v1
+ * Sends an configure event to the client owning the resource.
+ * @param resource_ The client's resource
+ */
+static inline void
+zcr_remote_shell_v1_send_configure(struct wl_resource *resource_, uint32_t primary_id_hi, uint32_t primary_id_lo, int32_t transform, wl_fixed_t scale_factor, uint32_t layout_mode)
+{
+	wl_resource_post_event(resource_, ZCR_REMOTE_SHELL_V1_CONFIGURE, primary_id_hi, primary_id_lo, transform, scale_factor, layout_mode);
 }
 
 /**
@@ -755,9 +787,9 @@ zcr_remote_surface_v1_send_state_type_changed(struct wl_resource *resource_, uin
  * @param resource_ The client's resource
  */
 static inline void
-zcr_remote_surface_v1_send_configure(struct wl_resource *resource_, int32_t origin_x, int32_t origin_y, struct wl_array *states, uint32_t serial)
+zcr_remote_surface_v1_send_configure(struct wl_resource *resource_, int32_t origin_offset_x, int32_t origin_offset_y, struct wl_array *states, uint32_t serial)
 {
-	wl_resource_post_event(resource_, ZCR_REMOTE_SURFACE_V1_CONFIGURE, origin_x, origin_y, states, serial);
+	wl_resource_post_event(resource_, ZCR_REMOTE_SURFACE_V1_CONFIGURE, origin_offset_x, origin_offset_y, states, serial);
 }
 
 /**

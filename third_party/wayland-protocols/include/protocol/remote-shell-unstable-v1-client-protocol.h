@@ -246,7 +246,7 @@ struct zcr_remote_shell_v1_listener {
 	/**
 	 * suggests a re-configuration of remote shell
 	 *
-	 * Suggests a re-configuration of remote shell.
+	 * [Deprecated] Suggests a re-configuration of remote shell.
 	 */
 	void (*configuration_changed)(void *data,
 				      struct zcr_remote_shell_v1 *zcr_remote_shell_v1,
@@ -259,6 +259,38 @@ struct zcr_remote_shell_v1_listener {
 				      int32_t work_area_inset_right,
 				      int32_t work_area_inset_bottom,
 				      uint32_t layout_mode);
+	/**
+	 * area of remote shell
+	 *
+	 * Defines an area of the remote shell used for layout. Each
+	 * series of "workspace" events must be terminated by a "configure"
+	 * event.
+	 */
+	void (*workspace)(void *data,
+			  struct zcr_remote_shell_v1 *zcr_remote_shell_v1,
+			  uint32_t id_hi,
+			  uint32_t id_lo,
+			  int32_t x,
+			  int32_t y,
+			  int32_t width,
+			  int32_t height,
+			  int32_t inset_left,
+			  int32_t inset_top,
+			  int32_t inset_right,
+			  int32_t inset_bottom);
+	/**
+	 * suggests configuration of remote shell
+	 *
+	 * Suggests a new configuration of the remote shell. Preceded by
+	 * a series of "workspace" events.
+	 */
+	void (*configure)(void *data,
+			  struct zcr_remote_shell_v1 *zcr_remote_shell_v1,
+			  uint32_t primary_id_hi,
+			  uint32_t primary_id_lo,
+			  int32_t transform,
+			  wl_fixed_t scale_factor,
+			  uint32_t layout_mode);
 };
 
 /**
@@ -284,6 +316,14 @@ zcr_remote_shell_v1_add_listener(struct zcr_remote_shell_v1 *zcr_remote_shell_v1
  * @ingroup iface_zcr_remote_shell_v1
  */
 #define ZCR_REMOTE_SHELL_V1_CONFIGURATION_CHANGED_SINCE_VERSION 1
+/**
+ * @ingroup iface_zcr_remote_shell_v1
+ */
+#define ZCR_REMOTE_SHELL_V1_WORKSPACE_SINCE_VERSION 1
+/**
+ * @ingroup iface_zcr_remote_shell_v1
+ */
+#define ZCR_REMOTE_SHELL_V1_CONFIGURE_SINCE_VERSION 1
 
 /**
  * @ingroup iface_zcr_remote_shell_v1
@@ -414,11 +454,8 @@ struct zcr_remote_surface_v1_listener {
 	 *
 	 * The configure event asks the client to change surface state.
 	 *
-	 * The origin arguments specify the position, in the compositor
-	 * coordinate space, of the virtual display used by the client to
-	 * simulate multiple displays. The client must offset window
-	 * positions in set_window_geometry requests by this origin in
-	 * order to convert between coordinate spaces.
+	 * The client must apply the origin offset to window positions in
+	 * set_window_geometry requests.
 	 *
 	 * The states listed in the event are state_type values, and might
 	 * change due to a client request or an event directly handled by
@@ -435,8 +472,8 @@ struct zcr_remote_surface_v1_listener {
 	 */
 	void (*configure)(void *data,
 			  struct zcr_remote_surface_v1 *zcr_remote_surface_v1,
-			  int32_t origin_x,
-			  int32_t origin_y,
+			  int32_t origin_offset_x,
+			  int32_t origin_offset_y,
 			  struct wl_array *states,
 			  uint32_t serial);
 };

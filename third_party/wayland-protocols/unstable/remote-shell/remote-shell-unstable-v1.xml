@@ -127,7 +127,7 @@
 
     <event name="configuration_changed">
       <description summary="suggests a re-configuration of remote shell">
-	Suggests a re-configuration of remote shell.
+	[Deprecated] Suggests a re-configuration of remote shell.
       </description>
       <arg name="width" type="int"/>
       <arg name="height" type="int"/>
@@ -137,6 +137,37 @@
       <arg name="work_area_inset_top" type="int"/>
       <arg name="work_area_inset_right" type="int"/>
       <arg name="work_area_inset_bottom" type="int"/>
+      <arg name="layout_mode" type="uint"/>
+    </event>
+
+    <!-- Version 3 additions -->
+
+    <event name="workspace" version="3">
+      <description summary="area of remote shell">
+	Defines an area of the remote shell used for layout. Each series of
+	"workspace" events must be terminated by a "configure" event.
+      </description>
+      <arg name="id_hi" type="uint"/>
+      <arg name="id_lo" type="uint"/>
+      <arg name="x" type="int"/>
+      <arg name="y" type="int"/>
+      <arg name="width" type="int"/>
+      <arg name="height" type="int"/>
+      <arg name="inset_left" type="int"/>
+      <arg name="inset_top" type="int"/>
+      <arg name="inset_right" type="int"/>
+      <arg name="inset_bottom" type="int"/>
+    </event>
+
+    <event name="configure" version="3">
+      <description summary="suggests configuration of remote shell">
+	Suggests a new configuration of the remote shell. Preceded by a series
+	of "workspace" events.
+      </description>
+      <arg name="primary_id_hi" type="uint"/>
+      <arg name="primary_id_lo" type="uint"/>
+      <arg name="transform" type="int"/>
+      <arg name="scale_factor" type="fixed"/>
       <arg name="layout_mode" type="uint"/>
     </event>
   </interface>
@@ -406,10 +437,8 @@
       <description summary="suggest a surface change">
 	The configure event asks the client to change surface state.
 
-	The origin arguments specify the position, in the compositor coordinate
-	space, of the virtual display used by the client to simulate multiple
-	displays. The client must offset window positions in set_window_geometry
-	requests by this origin in order to convert between coordinate spaces.
+	The client must apply the origin offset to window positions in
+	set_window_geometry requests.
 
 	The states listed in the event are state_type values, and might change
 	due to a client request or an event directly handled by the compositor.
@@ -421,8 +450,8 @@
 	If the client receives multiple configure events before it can respond
 	to one, it is free to discard all but the last event it received.
       </description>
-      <arg name="origin_x" type="int"/>
-      <arg name="origin_y" type="int"/>
+      <arg name="origin_offset_x" type="int"/>
+      <arg name="origin_offset_y" type="int"/>
       <arg name="states" type="array"/>
       <arg name="serial" type="uint"/>
     </event>
