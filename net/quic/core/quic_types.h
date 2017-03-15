@@ -183,7 +183,7 @@ enum QuicPacketPublicFlags {
   PACKET_PUBLIC_FLAGS_6BYTE_PACKET = PACKET_FLAGS_6BYTE_PACKET << 4,
 
   // TODO(fayang): Remove PACKET_PUBLIC_FLAGS_MULTIPATH when deprecating
-  // gfe2_reloadable_flag_quic_remove_multipath_bit.
+  // quic_reloadable_flag_quic_remove_multipath_bit.
   // Bit 6: Does the packet header contain a path id?
   PACKET_PUBLIC_FLAGS_MULTIPATH = 1 << 6,
 
@@ -194,7 +194,7 @@ enum QuicPacketPublicFlags {
 
   // TODO(fayang): Remove PACKET_PUBLIC_FLAGS_MAX and rename
   // PACKET_PUBLIC_FLAGS_MAX_WITHOUT_MULTIPATH_FLAG when deprecating
-  // gfe2_reloadable_flag_quic_remove_multipath_bit.
+  // quic_reloadable_flag_quic_remove_multipath_bit.
   // All bits set (bit 7 is not currently used): 01111111
   PACKET_PUBLIC_FLAGS_MAX = (1 << 7) - 1,
 

@@ -639,7 +639,7 @@ void QuicConfig::ToHandshakeMessage(CryptoHandshakeMessage* out) const {
   initial_stream_flow_control_window_bytes_.ToHandshakeMessage(out);
   initial_session_flow_control_window_bytes_.ToHandshakeMessage(out);
   if (latched_no_socket_receive_buffer_) {
-    QUIC_FLAG_COUNT_N(gfe2_reloadable_flag_quic_no_socket_receive_buffer, 2, 3);
+    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_no_socket_receive_buffer, 2, 3);
   } else {
     socket_receive_buffer_.ToHandshakeMessage(out);
   }
@@ -690,7 +690,7 @@ QuicErrorCode QuicConfig::ProcessPeerHello(
         peer_hello, hello_type, error_details);
   }
   if (latched_no_socket_receive_buffer_) {
-    QUIC_FLAG_COUNT_N(gfe2_reloadable_flag_quic_no_socket_receive_buffer, 3, 3);
+    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_no_socket_receive_buffer, 3, 3);
   } else if (error == QUIC_NO_ERROR) {
     error = socket_receive_buffer_.ProcessPeerHello(peer_hello, hello_type,
                                                     error_details);

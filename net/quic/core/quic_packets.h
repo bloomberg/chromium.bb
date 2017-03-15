@@ -65,7 +65,7 @@ struct QUIC_EXPORT_PRIVATE QuicPacketPublicHeader {
   QuicConnectionId connection_id;
   QuicConnectionIdLength connection_id_length;
   // TODO(fayang): Remove multipath_flag when deprecating
-  // gfe2_reloadable_flag_quic_remove_multipath_bit.
+  // quic_reloadable_flag_quic_remove_multipath_bit.
   bool multipath_flag;
   bool reset_flag;
   bool version_flag;

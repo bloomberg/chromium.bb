@@ -720,7 +720,7 @@ void QuicDispatcher::ProcessChlo() {
     // Can't create new session any more. Wait till next event loop.
     if (!buffered_packets_.HasChloForConnection(current_connection_id_)) {
       // Only buffer one CHLO per connection. Remove this condition check when
-      // --gfe2_reloadable_flag_quic_buffer_packets_after_chlo
+      // --quic_reloadable_flag_quic_buffer_packets_after_chlo
       // is deprecated because after that retransmitted CHLO should be buffered
       // earlier in OnUnauthenticatedPublicHeader().
       bool is_new_connection =

@@ -274,7 +274,7 @@ QuicConnection::QuicConnection(QuicConnectionId connection_id,
                          ? kDefaultServerMaxPacketSize
                          : kDefaultMaxPacketSize);
   if (packet_generator_.latched_flag_no_stop_waiting_frames()) {
-    QUIC_FLAG_COUNT_N(gfe2_reloadable_flag_quic_no_stop_waiting_frame, 1, 2);
+    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_no_stop_waiting_frames, 1, 2);
     received_packet_manager_.set_max_ack_ranges(255);
   }
 }
@@ -347,7 +347,7 @@ void QuicConnection::SetFromConfig(const QuicConfig& config) {
   }
   if (packet_generator_.latched_flag_no_stop_waiting_frames() &&
       config.HasClientSentConnectionOption(kNSTP, perspective_)) {
-    QUIC_FLAG_COUNT_N(gfe2_reloadable_flag_quic_no_stop_waiting_frame, 2, 2);
+    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_no_stop_waiting_frames, 2, 2);
     no_stop_waiting_frames_ = true;
   }
 }

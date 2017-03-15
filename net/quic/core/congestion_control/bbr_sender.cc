@@ -173,7 +173,7 @@ bool BbrSender::InRecovery() const {
 void BbrSender::SetFromConfig(const QuicConfig& config,
                               Perspective perspective) {
   if (FLAGS_quic_reloadable_flag_quic_allow_2_rtt_bbr_startup) {
-    QUIC_FLAG_COUNT(gfe2_reloadable_flag_quic_allow_2_rtt_bbr_startup);
+    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_allow_2_rtt_bbr_startup);
     if (config.HasClientRequestedIndependentOption(k1RTT, perspective)) {
       num_startup_rtts_ = 1;
     }
