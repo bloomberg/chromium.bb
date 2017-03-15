@@ -60,6 +60,18 @@ class DiscardableImageMapTest : public testing::Test {
       EXPECT_TRUE(draw_images[i].image() == position_draw_images[i].image);
     return position_draw_images;
   }
+
+  // Note that the image rtree outsets the images by 1, see the comment in
+  // DiscardableImagesMetadataCanvas::AddImage.
+  std::vector<gfx::Rect> InsetImageRects(
+      const std::vector<PositionScaleDrawImage>& images) {
+    std::vector<gfx::Rect> result;
+    for (auto& image : images) {
+      result.push_back(image.image_rect);
+      result.back().Inset(1, 1, 1, 1);
+    }
+    return result;
+  }
 };
 
 TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectTest) {
@@ -105,12 +117,13 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectTest) {
     for (int x = 0; x < 4; ++x) {
       std::vector<PositionScaleDrawImage> images = GetDiscardableImagesInRect(
           image_map, gfx::Rect(x * 512, y * 512, 500, 500));
+      std::vector<gfx::Rect> inset_rects = InsetImageRects(images);
       if ((x + y) & 1) {
         EXPECT_EQ(1u, images.size()) << x << " " << y;
         EXPECT_TRUE(images[0].image == discardable_image[y][x]) << x << " "
                                                                 << y;
         EXPECT_EQ(gfx::Rect(x * 512 + 6, y * 512 + 6, 500, 500),
-                  images[0].image_rect);
+                  inset_rects[0]);
         EXPECT_EQ(images[0].image_rect,
                   image_map.GetRectForImage(images[0].image->uniqueID()));
       } else {
@@ -122,27 +135,26 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectTest) {
   // Capture 4 pixel refs.
   std::vector<PositionScaleDrawImage> images =
       GetDiscardableImagesInRect(image_map, gfx::Rect(512, 512, 2048, 2048));
+  std::vector<gfx::Rect> inset_rects = InsetImageRects(images);
   EXPECT_EQ(4u, images.size());
 
   EXPECT_TRUE(images[0].image == discardable_image[1][2]);
-  EXPECT_EQ(gfx::Rect(2 * 512 + 6, 512 + 6, 500, 500), images[0].image_rect);
+  EXPECT_EQ(gfx::Rect(2 * 512 + 6, 512 + 6, 500, 500), inset_rects[0]);
   EXPECT_EQ(images[0].image_rect,
             image_map.GetRectForImage(images[0].image->uniqueID()));
 
   EXPECT_TRUE(images[1].image == discardable_image[2][1]);
-  EXPECT_EQ(gfx::Rect(512 + 6, 2 * 512 + 6, 500, 500), images[1].image_rect);
+  EXPECT_EQ(gfx::Rect(512 + 6, 2 * 512 + 6, 500, 500), inset_rects[1]);
   EXPECT_EQ(images[1].image_rect,
             image_map.GetRectForImage(images[1].image->uniqueID()));
 
   EXPECT_TRUE(images[2].image == discardable_image[2][3]);
-  EXPECT_EQ(gfx::Rect(3 * 512 + 6, 2 * 512 + 6, 500, 500),
-            images[2].image_rect);
+  EXPECT_EQ(gfx::Rect(3 * 512 + 6, 2 * 512 + 6, 500, 500), inset_rects[2]);
   EXPECT_EQ(images[2].image_rect,
             image_map.GetRectForImage(images[2].image->uniqueID()));
 
   EXPECT_TRUE(images[3].image == discardable_image[3][2]);
-  EXPECT_EQ(gfx::Rect(2 * 512 + 6, 3 * 512 + 6, 500, 500),
-            images[3].image_rect);
+  EXPECT_EQ(gfx::Rect(2 * 512 + 6, 3 * 512 + 6, 500, 500), inset_rects[3]);
   EXPECT_EQ(images[3].image_rect,
             image_map.GetRectForImage(images[3].image->uniqueID()));
 }
@@ -192,12 +204,13 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectNonZeroLayer) {
     for (int x = 0; x < 4; ++x) {
       std::vector<PositionScaleDrawImage> images = GetDiscardableImagesInRect(
           image_map, gfx::Rect(1024 + x * 512, y * 512, 500, 500));
+      std::vector<gfx::Rect> inset_rects = InsetImageRects(images);
       if ((x + y) & 1) {
         EXPECT_EQ(1u, images.size()) << x << " " << y;
         EXPECT_TRUE(images[0].image == discardable_image[y][x]) << x << " "
                                                                 << y;
         EXPECT_EQ(gfx::Rect(1024 + x * 512 + 6, y * 512 + 6, 500, 500),
-                  images[0].image_rect);
+                  inset_rects[0]);
         EXPECT_EQ(images[0].image_rect,
                   image_map.GetRectForImage(images[0].image->uniqueID()));
       } else {
@@ -209,29 +222,28 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectNonZeroLayer) {
   {
     std::vector<PositionScaleDrawImage> images = GetDiscardableImagesInRect(
         image_map, gfx::Rect(1024 + 512, 512, 2048, 2048));
+    std::vector<gfx::Rect> inset_rects = InsetImageRects(images);
     EXPECT_EQ(4u, images.size());
 
     EXPECT_TRUE(images[0].image == discardable_image[1][2]);
-    EXPECT_EQ(gfx::Rect(1024 + 2 * 512 + 6, 512 + 6, 500, 500),
-              images[0].image_rect);
+    EXPECT_EQ(gfx::Rect(1024 + 2 * 512 + 6, 512 + 6, 500, 500), inset_rects[0]);
     EXPECT_EQ(images[0].image_rect,
               image_map.GetRectForImage(images[0].image->uniqueID()));
 
     EXPECT_TRUE(images[1].image == discardable_image[2][1]);
-    EXPECT_EQ(gfx::Rect(1024 + 512 + 6, 2 * 512 + 6, 500, 500),
-              images[1].image_rect);
+    EXPECT_EQ(gfx::Rect(1024 + 512 + 6, 2 * 512 + 6, 500, 500), inset_rects[1]);
     EXPECT_EQ(images[1].image_rect,
               image_map.GetRectForImage(images[1].image->uniqueID()));
 
     EXPECT_TRUE(images[2].image == discardable_image[2][3]);
     EXPECT_EQ(gfx::Rect(1024 + 3 * 512 + 6, 2 * 512 + 6, 500, 500),
-              images[2].image_rect);
+              inset_rects[2]);
     EXPECT_EQ(images[2].image_rect,
               image_map.GetRectForImage(images[2].image->uniqueID()));
 
     EXPECT_TRUE(images[3].image == discardable_image[3][2]);
     EXPECT_EQ(gfx::Rect(1024 + 2 * 512 + 6, 3 * 512 + 6, 500, 500),
-              images[3].image_rect);
+              inset_rects[3]);
     EXPECT_EQ(images[3].image_rect,
               image_map.GetRectForImage(images[3].image->uniqueID()));
   }
@@ -308,12 +320,13 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectOnePixelQuery) {
     for (int x = 0; x < 4; ++x) {
       std::vector<PositionScaleDrawImage> images = GetDiscardableImagesInRect(
           image_map, gfx::Rect(x * 512 + 256, y * 512 + 256, 1, 1));
+      std::vector<gfx::Rect> inset_rects = InsetImageRects(images);
       if ((x + y) & 1) {
         EXPECT_EQ(1u, images.size()) << x << " " << y;
         EXPECT_TRUE(images[0].image == discardable_image[y][x]) << x << " "
                                                                 << y;
         EXPECT_EQ(gfx::Rect(x * 512 + 6, y * 512 + 6, 500, 500),
-                  images[0].image_rect);
+                  inset_rects[0]);
         EXPECT_EQ(images[0].image_rect,
                   image_map.GetRectForImage(images[0].image->uniqueID()));
       } else {
@@ -346,9 +359,10 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectMassiveImage) {
   }
   std::vector<PositionScaleDrawImage> images =
       GetDiscardableImagesInRect(image_map, gfx::Rect(0, 0, 1, 1));
+  std::vector<gfx::Rect> inset_rects = InsetImageRects(images);
   EXPECT_EQ(1u, images.size());
   EXPECT_TRUE(images[0].image == discardable_image);
-  EXPECT_EQ(gfx::Rect(0, 0, 2048, 2048), images[0].image_rect);
+  EXPECT_EQ(gfx::Rect(0, 0, 2048, 2048), inset_rects[0]);
   EXPECT_EQ(images[0].image_rect,
             image_map.GetRectForImage(images[0].image->uniqueID()));
 }
@@ -426,9 +440,10 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectMaxImage) {
   }
   std::vector<PositionScaleDrawImage> images =
       GetDiscardableImagesInRect(image_map, gfx::Rect(42, 42, 1, 1));
+  std::vector<gfx::Rect> inset_rects = InsetImageRects(images);
   EXPECT_EQ(1u, images.size());
   EXPECT_TRUE(images[0].image == discardable_image);
-  EXPECT_EQ(gfx::Rect(42, 42, 2006, 2006), images[0].image_rect);
+  EXPECT_EQ(gfx::Rect(42, 42, 2006, 2006), inset_rects[0]);
   EXPECT_EQ(images[0].image_rect,
             image_map.GetRectForImage(images[0].image->uniqueID()));
 }
@@ -467,14 +482,15 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectMaxImageMaxLayer) {
   }
   std::vector<PositionScaleDrawImage> images =
       GetDiscardableImagesInRect(image_map, gfx::Rect(0, 0, 1, 1));
+  std::vector<gfx::Rect> inset_rects = InsetImageRects(images);
   EXPECT_EQ(1u, images.size());
-  EXPECT_EQ(gfx::Rect(0, 0, dimension, dimension), images[0].image_rect);
+  EXPECT_EQ(gfx::Rect(0, 0, dimension, dimension), inset_rects[0]);
 
   images = GetDiscardableImagesInRect(image_map, gfx::Rect(10000, 0, 1, 1));
+  inset_rects = InsetImageRects(images);
   EXPECT_EQ(2u, images.size());
-  EXPECT_EQ(gfx::Rect(10000, 0, dimension - 10000, dimension),
-            images[1].image_rect);
-  EXPECT_EQ(gfx::Rect(0, 0, dimension, dimension), images[0].image_rect);
+  EXPECT_EQ(gfx::Rect(10000, 0, dimension - 10000, dimension), inset_rects[1]);
+  EXPECT_EQ(gfx::Rect(0, 0, dimension, dimension), inset_rects[0]);
 
   // Since we adjust negative offsets before using ToEnclosingRect, the expected
   // width will be converted to float, which means that we lose some precision.
@@ -482,12 +498,12 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInRectMaxImageMaxLayer) {
   // back to int.
   int expected10k = static_cast<int>(static_cast<float>(dimension - 10000));
   images = GetDiscardableImagesInRect(image_map, gfx::Rect(0, 500, 1, 1));
+  inset_rects = InsetImageRects(images);
   EXPECT_EQ(2u, images.size());
-  EXPECT_EQ(gfx::Rect(0, 500, expected10k, dimension - 500),
-            images[1].image_rect);
-  EXPECT_EQ(gfx::Rect(0, 0, dimension, dimension), images[0].image_rect);
+  EXPECT_EQ(gfx::Rect(0, 500, expected10k, dimension - 500), inset_rects[1]);
+  EXPECT_EQ(gfx::Rect(0, 0, dimension, dimension), inset_rects[0]);
 
-  EXPECT_EQ(gfx::Rect(0, 0, dimension, dimension),
+  EXPECT_EQ(images[0].image_rect,
             image_map.GetRectForImage(discardable_image->uniqueID()));
 }
 
@@ -521,24 +537,28 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesRectInBounds) {
   }
   std::vector<PositionScaleDrawImage> images =
       GetDiscardableImagesInRect(image_map, gfx::Rect(0, 0, 1, 1));
+  std::vector<gfx::Rect> inset_rects = InsetImageRects(images);
   EXPECT_EQ(1u, images.size());
-  EXPECT_EQ(gfx::Rect(0, 0, 90, 89), images[0].image_rect);
+  EXPECT_EQ(gfx::Rect(0, 0, 90, 89), inset_rects[0]);
 
   images = GetDiscardableImagesInRect(image_map, gfx::Rect(999, 999, 1, 1));
+  inset_rects = InsetImageRects(images);
   EXPECT_EQ(1u, images.size());
-  EXPECT_EQ(gfx::Rect(950, 951, 50, 49), images[0].image_rect);
+  EXPECT_EQ(gfx::Rect(950, 951, 50, 49), inset_rects[0]);
 
   images = GetDiscardableImagesInRect(image_map, gfx::Rect(0, 500, 1, 1));
+  inset_rects = InsetImageRects(images);
   EXPECT_EQ(1u, images.size());
-  EXPECT_EQ(gfx::Rect(0, 500, 1000, 100), images[0].image_rect);
+  EXPECT_EQ(gfx::Rect(0, 500, 1000, 100), inset_rects[0]);
 
   gfx::Rect discardable_image_rect;
   discardable_image_rect.Union(gfx::Rect(0, 0, 90, 89));
   discardable_image_rect.Union(gfx::Rect(950, 951, 50, 49));
+  discardable_image_rect.Inset(-1, -1, -1, -1);
   EXPECT_EQ(discardable_image_rect,
             image_map.GetRectForImage(discardable_image->uniqueID()));
 
-  EXPECT_EQ(gfx::Rect(0, 500, 1000, 100),
+  EXPECT_EQ(gfx::Rect(-1, 499, 1002, 102),
             image_map.GetRectForImage(long_discardable_image->uniqueID()));
 }
 
@@ -593,12 +613,13 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInShader) {
     for (int x = 0; x < 4; ++x) {
       std::vector<PositionScaleDrawImage> images = GetDiscardableImagesInRect(
           image_map, gfx::Rect(x * 512, y * 512, 500, 500));
+      std::vector<gfx::Rect> inset_rects = InsetImageRects(images);
       if ((x + y) & 1) {
         EXPECT_EQ(1u, images.size()) << x << " " << y;
         EXPECT_TRUE(images[0].image == discardable_image[y][x]) << x << " "
                                                                 << y;
         EXPECT_EQ(gfx::Rect(x * 512 + 6, y * 512 + 6, 500, 500),
-                  images[0].image_rect);
+                  inset_rects[0]);
         EXPECT_EQ(std::max(x * 0.5f, kMinScale), images[0].scale.fWidth);
         EXPECT_EQ(std::max(y * 0.5f, kMinScale), images[0].scale.fHeight);
       } else {
@@ -610,17 +631,16 @@ TEST_F(DiscardableImageMapTest, GetDiscardableImagesInShader) {
   // Capture 4 pixel refs.
   std::vector<PositionScaleDrawImage> images =
       GetDiscardableImagesInRect(image_map, gfx::Rect(512, 512, 2048, 2048));
+  std::vector<gfx::Rect> inset_rects = InsetImageRects(images);
   EXPECT_EQ(4u, images.size());
   EXPECT_TRUE(images[0].image == discardable_image[1][2]);
-  EXPECT_EQ(gfx::Rect(2 * 512 + 6, 512 + 6, 500, 500), images[0].image_rect);
+  EXPECT_EQ(gfx::Rect(2 * 512 + 6, 512 + 6, 500, 500), inset_rects[0]);
   EXPECT_TRUE(images[1].image == discardable_image[2][1]);
-  EXPECT_EQ(gfx::Rect(512 + 6, 2 * 512 + 6, 500, 500), images[1].image_rect);
+  EXPECT_EQ(gfx::Rect(512 + 6, 2 * 512 + 6, 500, 500), inset_rects[1]);
   EXPECT_TRUE(images[2].image == discardable_image[2][3]);
-  EXPECT_EQ(gfx::Rect(3 * 512 + 6, 2 * 512 + 6, 500, 500),
-            images[2].image_rect);
+  EXPECT_EQ(gfx::Rect(3 * 512 + 6, 2 * 512 + 6, 500, 500), inset_rects[2]);
   EXPECT_TRUE(images[3].image == discardable_image[3][2]);
-  EXPECT_EQ(gfx::Rect(2 * 512 + 6, 3 * 512 + 6, 500, 500),
-            images[3].image_rect);
+  EXPECT_EQ(gfx::Rect(2 * 512 + 6, 3 * 512 + 6, 500, 500), inset_rects[3]);
 }
 
 }  // namespace cc

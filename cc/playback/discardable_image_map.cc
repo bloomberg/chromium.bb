@@ -172,6 +172,7 @@ class DiscardableImagesMetadataCanvas : public SkNWayCanvas {
         return false;
       *paint_bounds = paint.computeFastBounds(*paint_bounds, paint_bounds);
     }
+
     return true;
   }
 
@@ -201,6 +202,18 @@ class DiscardableImagesMetadataCanvas : public SkNWayCanvas {
     SkIRect src_irect;
     src_rect.roundOut(&src_irect);
     gfx::Rect image_rect = SafeClampPaintRectToSize(paint_rect, canvas_size_);
+
+    // During raster, we use the device clip bounds on the canvas, which outsets
+    // the actual clip by 1 due to the possibility of antialiasing. Account for
+    // this here by outsetting the image rect by 1. Note that this only affects
+    // queries into the rtree, which will now return images that only touch the
+    // bounds of the query rect.
+    //
+    // Note that it's not sufficient for us to inset the device clip bounds at
+    // raster time, since we might be sending a larger-than-one-item display
+    // item to skia, which means that skia will internally determine whether to
+    // raster the picture (using device clip bounds that are outset).
+    image_rect.Inset(-1, -1);
 
     (*image_id_to_rect_)[image->uniqueID()].Union(image_rect);
     image_set_->push_back(std::make_pair(
