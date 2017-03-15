@@ -116,7 +116,7 @@ void ContentSerializedNavigationDriver::Sanitize(
   // change.
   if (IsUberOrUberReplacementURL(navigation->virtual_url_) &&
       IsUberOrUberReplacementURL(navigation->original_request_url_)) {
-    navigation->encoded_page_state_ = std::string();
+    navigation->encoded_page_state_.clear();
   }
 
   // No need to compare the policy, as it doesn't change during
@@ -158,7 +158,7 @@ void ContentSerializedNavigationDriver::Sanitize(
     // chrome-native://history to the old web UI.
     navigation->virtual_url_ = GURL(content::kChromeUIHistoryURL);
     navigation->original_request_url_ = navigation->virtual_url_;
-    navigation->encoded_page_state_ = std::string();
+    navigation->encoded_page_state_.clear();
   }
 #endif  // defined(OS_ANDROID)
 }

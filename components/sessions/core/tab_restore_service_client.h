@@ -12,18 +12,18 @@
 #include "components/sessions/core/session_id.h"
 #include "components/sessions/core/sessions_export.h"
 
+class GURL;
+
 namespace base {
 class CancelableTaskTracker;
 class SequencedWorkerPool;
 }
 
-class GURL;
-
 namespace sessions {
 
 class LiveTab;
-struct SessionWindow;
 class LiveTabContext;
+struct SessionWindow;
 
 // Callback from TabRestoreServiceClient::GetLastSession.
 // The second parameter is the id of the window that was last active.

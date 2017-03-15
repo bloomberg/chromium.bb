@@ -20,7 +20,6 @@
 #include "components/nacl/renderer/pnacl_translation_resource_host.h"
 #include "components/nacl/renderer/progress_event.h"
 #include "components/nacl/renderer/trusted_plugin_channel.h"
-#include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/sandbox_init.h"
 #include "content/public/renderer/pepper_plugin_instance.h"
