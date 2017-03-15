@@ -39,6 +39,7 @@ typedef struct {
   aom_cdf_prob (*tail_cdf)[CDF_SIZE(ENTROPY_TOKENS)];
   aom_cdf_prob (*head_cdf)[CDF_SIZE(ENTROPY_TOKENS)];
   int eob_val;
+  int first_val;
 #elif CONFIG_EC_MULTISYMBOL
   aom_cdf_prob (*token_cdf)[CDF_SIZE(ENTROPY_TOKENS)];
 #endif

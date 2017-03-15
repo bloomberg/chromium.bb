@@ -835,7 +835,7 @@ static void pack_mb_tokens(aom_writer *w, const TOKENEXTRA **tp,
     const av1_extra_bit *const extra_bits = &extra_bits_table[token];
 
     if (token == BLOCK_Z_TOKEN) {
-      aom_write_symbol(w, 0, *p->head_cdf, 6);
+      aom_write_symbol(w, 0, *p->head_cdf, HEAD_TOKENS + 1);
       p++;
       continue;
     }
@@ -843,12 +843,11 @@ static void pack_mb_tokens(aom_writer *w, const TOKENEXTRA **tp,
       // Just code a flag indicating whether the value is >1 or 1.
       aom_write_bit(w, token != ONE_TOKEN);
     } else {
-      int comb_symb = 2 * AOMMIN(token, TWO_TOKEN) - p->eob_val + 1;
-      aom_write_symbol(w, comb_symb, *p->head_cdf, 6);
+      int comb_symb = 2 * AOMMIN(token, TWO_TOKEN) - p->eob_val + p->first_val;
+      aom_write_symbol(w, comb_symb, *p->head_cdf, HEAD_TOKENS + p->first_val);
     }
     if (token > ONE_TOKEN) {
-      aom_write_symbol(w, token - TWO_TOKEN, *p->tail_cdf,
-                       CATEGORY6_TOKEN + 1 - 2);
+      aom_write_symbol(w, token - TWO_TOKEN, *p->tail_cdf, TAIL_TOKENS);
     }
 
     if (extra_bits->base_val) {

@@ -53,6 +53,8 @@ extern "C" {
 #define EARLY_EOB 1        // End of block before the last position
 #define LAST_EOB 2         // End of block in the last position (implicit)
 #define BLOCK_Z_TOKEN 255  // block zero
+#define HEAD_TOKENS 5
+#define TAIL_TOKENS 9
 #define ONE_TOKEN_EOB 1
 #define ONE_TOKEN_NEOB 2
 #define TWO_TOKEN_PLUS_EOB 3

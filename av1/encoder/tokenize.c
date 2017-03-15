@@ -364,12 +364,14 @@ static void set_entropy_context_b(int plane, int block, int blk_row,
 static INLINE void add_token(TOKENEXTRA **t,
                              aom_cdf_prob (*tail_cdf)[CDF_SIZE(ENTROPY_TOKENS)],
                              aom_cdf_prob (*head_cdf)[CDF_SIZE(ENTROPY_TOKENS)],
-                             int eob_val, int32_t extra, uint8_t token) {
+                             int eob_val, int first_val, int32_t extra,
+                             uint8_t token) {
   (*t)->token = token;
   (*t)->extra = extra;
   (*t)->tail_cdf = tail_cdf;
   (*t)->head_cdf = head_cdf;
   (*t)->eob_val = eob_val;
+  (*t)->first_val = first_val;
   (*t)++;
 }
 
@@ -547,6 +549,7 @@ static void tokenize_b(int plane, int block, int blk_row, int blk_col,
   unsigned int(*const blockz_count)[2] =
       td->counts->blockz_count[txsize_sqr_map[tx_size]][type][ref];
   int eob_val;
+  int first_val = 1;
 #else
 #if CONFIG_EC_MULTISYMBOL
   aom_cdf_prob(*const coef_cdfs)[COEFF_CONTEXTS][CDF_SIZE(ENTROPY_TOKENS)] =
@@ -569,17 +572,18 @@ static void tokenize_b(int plane, int block, int blk_row, int blk_col,
 
 #if CONFIG_NEW_TOKENSET
   if (eob == 0)
-    add_token(&t, &coef_tail_cdfs[band[c]][pt], &coef_head_cdfs[band[c]][pt], 0,
-              0, BLOCK_Z_TOKEN);
+    add_token(&t, &coef_tail_cdfs[band[c]][pt], &coef_head_cdfs[band[c]][pt], 1,
+              1, 0, BLOCK_Z_TOKEN);
 
   ++blockz_count[pt][eob != 0];
 
   while (c < eob) {
     int v = qcoeff[scan[c]];
+    first_val = (c == 0);
 
     if (!v) {
       add_token(&t, &coef_tail_cdfs[band[c]][pt], &coef_head_cdfs[band[c]][pt],
-                0, 0, ZERO_TOKEN);
+                0, first_val, 0, ZERO_TOKEN);
       ++counts[band[c]][pt][ZERO_TOKEN];
       token_cache[scan[c]] = 0;
     } else {
@@ -589,7 +593,7 @@ static void tokenize_b(int plane, int block, int blk_row, int blk_col,
       av1_get_token_extra(v, &token, &extra);
 
       add_token(&t, &coef_tail_cdfs[band[c]][pt], &coef_head_cdfs[band[c]][pt],
-                eob_val, extra, (uint8_t)token);
+                eob_val, first_val, extra, (uint8_t)token);
 
       if (eob_val != LAST_EOB) {
         ++counts[band[c]][pt][token];
