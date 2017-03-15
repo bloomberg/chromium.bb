@@ -6,6 +6,7 @@
 
 #include "core/paint/PaintTiming.h"
 #include "core/testing/DummyPageHolder.h"
+#include "platform/scheduler/test/fake_web_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -17,6 +18,9 @@ class FirstMeaningfulPaintDetectorTest : public testing::Test {
     m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
     s_timeElapsed = 0.0;
     m_originalTimeFunction = setTimeFunctionsForTesting(returnMockTime);
+    m_taskRunner = adoptRef(new scheduler::FakeWebTaskRunner);
+    detector().m_network0QuietTimer.moveToNewTaskRunner(m_taskRunner);
+    detector().m_network2QuietTimer.moveToNewTaskRunner(m_taskRunner);
   }
 
   void TearDown() override {
@@ -38,7 +42,51 @@ class FirstMeaningfulPaintDetectorTest : public testing::Test {
     detector().notifyPaint();
   }
 
-  void simulateNetworkStable() { detector().networkStableTimerFired(nullptr); }
+  void simulateNetworkStable() {
+    document().setParsingState(Document::FinishedParsing);
+    detector().network0QuietTimerFired(nullptr);
+    detector().network2QuietTimerFired(nullptr);
+  }
+
+  void simulateNetwork0Quiet() {
+    document().setParsingState(Document::FinishedParsing);
+    detector().network0QuietTimerFired(nullptr);
+  }
+
+  void simulateNetwork2Quiet() {
+    document().setParsingState(Document::FinishedParsing);
+    detector().network2QuietTimerFired(nullptr);
+  }
+
+  void setActiveConnections(int connections) {
+    double time0 = 0.0;
+    double time2 = 0.0;
+    m_taskRunner->setTime(returnMockTime());
+    if (isNetwork0QuietTimerActive())
+      time0 = detector().m_network0QuietTimer.nextFireInterval();
+    if (isNetwork2QuietTimerActive())
+      time2 = detector().m_network2QuietTimer.nextFireInterval();
+
+    detector().setNetworkQuietTimers(connections);
+
+    m_0QuietTimerRestarted =
+        isNetwork0QuietTimerActive() &&
+        detector().m_network0QuietTimer.nextFireInterval() != time0;
+    m_2QuietTimerRestarted =
+        isNetwork2QuietTimerActive() &&
+        detector().m_network2QuietTimer.nextFireInterval() != time2;
+  }
+
+  bool isNetwork0QuietTimerActive() {
+    return detector().m_network0QuietTimer.isActive();
+  }
+
+  bool isNetwork2QuietTimerActive() {
+    return detector().m_network2QuietTimer.isActive();
+  }
+
+  bool isNetwork0QuietTimerRestarted() { return m_0QuietTimerRestarted; }
+  bool isNetwork2QuietTimerRestarted() { return m_2QuietTimerRestarted; }
 
  private:
   static double returnMockTime() {
@@ -47,7 +95,10 @@ class FirstMeaningfulPaintDetectorTest : public testing::Test {
   }
 
   std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
+  RefPtr<scheduler::FakeWebTaskRunner> m_taskRunner;
   TimeFunction m_originalTimeFunction;
+  bool m_0QuietTimerRestarted;
+  bool m_2QuietTimerRestarted;
   static double s_timeElapsed;
 };
 
@@ -125,6 +176,66 @@ TEST_F(FirstMeaningfulPaintDetectorTest,
   simulateNetworkStable();
   EXPECT_GE(paintTiming().firstMeaningfulPaint(),
             paintTiming().firstContentfulPaint());
+}
+
+TEST_F(FirstMeaningfulPaintDetectorTest, Network2QuietThen0Quiet) {
+  paintTiming().markFirstContentfulPaint();
+
+  simulateLayoutAndPaint(1);
+  double afterFirstPaint = monotonicallyIncreasingTime();
+  simulateNetwork2Quiet();
+
+  simulateLayoutAndPaint(10);
+  simulateNetwork0Quiet();
+
+  // The first paint is FirstMeaningfulPaint.
+  EXPECT_GT(paintTiming().firstMeaningfulPaint(), 0.0);
+  EXPECT_LT(paintTiming().firstMeaningfulPaint(), afterFirstPaint);
+}
+
+TEST_F(FirstMeaningfulPaintDetectorTest, Network0QuietThen2Quiet) {
+  paintTiming().markFirstContentfulPaint();
+
+  simulateLayoutAndPaint(1);
+  double afterFirstPaint = monotonicallyIncreasingTime();
+  simulateNetwork0Quiet();
+
+  simulateLayoutAndPaint(10);
+  double afterSecondPaint = monotonicallyIncreasingTime();
+  simulateNetwork2Quiet();
+
+  // The second paint is FirstMeaningfulPaint.
+  EXPECT_GT(paintTiming().firstMeaningfulPaint(), afterFirstPaint);
+  EXPECT_LT(paintTiming().firstMeaningfulPaint(), afterSecondPaint);
+}
+
+TEST_F(FirstMeaningfulPaintDetectorTest, NetworkQuietTimers) {
+  setActiveConnections(3);
+  EXPECT_FALSE(isNetwork0QuietTimerActive());
+  EXPECT_FALSE(isNetwork2QuietTimerActive());
+
+  setActiveConnections(2);
+  EXPECT_FALSE(isNetwork0QuietTimerActive());
+  EXPECT_TRUE(isNetwork2QuietTimerActive());
+
+  setActiveConnections(1);
+  EXPECT_FALSE(isNetwork0QuietTimerActive());
+  EXPECT_TRUE(isNetwork2QuietTimerActive());
+  EXPECT_FALSE(isNetwork2QuietTimerRestarted());
+
+  setActiveConnections(2);
+  EXPECT_TRUE(isNetwork2QuietTimerRestarted());
+
+  setActiveConnections(0);
+  EXPECT_TRUE(isNetwork0QuietTimerActive());
+  EXPECT_TRUE(isNetwork2QuietTimerActive());
+  EXPECT_FALSE(isNetwork2QuietTimerRestarted());
+
+  setActiveConnections(0);
+  EXPECT_TRUE(isNetwork0QuietTimerActive());
+  EXPECT_TRUE(isNetwork0QuietTimerRestarted());
+  EXPECT_TRUE(isNetwork2QuietTimerActive());
+  EXPECT_FALSE(isNetwork2QuietTimerRestarted());
 }
 
 }  // namespace blink

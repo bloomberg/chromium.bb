@@ -7,6 +7,7 @@
 #include "core/css/FontFaceSet.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/paint/PaintTiming.h"
+#include "platform/Histogram.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 
@@ -18,9 +19,10 @@ namespace {
 // Meaningful Paint.
 const int kBlankCharactersThreshold = 200;
 
-// FirstMeaningfulPaintDetector stops observing layouts and reports First
-// Meaningful Paint when this duration passed from last network activity.
-const double kSecondsWithoutNetworkActivityThreshold = 0.5;
+// The page is n-quiet if there are no more than n active network requests for
+// this duration of time.
+const double kNetwork2QuietWindowSeconds = 3;
+const double kNetwork0QuietWindowSeconds = 0.5;
 
 }  // namespace
 
@@ -33,10 +35,14 @@ FirstMeaningfulPaintDetector::FirstMeaningfulPaintDetector(
     PaintTiming* paintTiming,
     Document& document)
     : m_paintTiming(paintTiming),
-      m_networkStableTimer(
+      m_network0QuietTimer(
           TaskRunnerHelper::get(TaskType::UnspecedTimer, &document),
           this,
-          &FirstMeaningfulPaintDetector::networkStableTimerFired) {}
+          &FirstMeaningfulPaintDetector::network0QuietTimerFired),
+      m_network2QuietTimer(
+          TaskRunnerHelper::get(TaskType::UnspecedTimer, &document),
+          this,
+          &FirstMeaningfulPaintDetector::network2QuietTimerFired) {}
 
 Document* FirstMeaningfulPaintDetector::document() {
   return m_paintTiming->supplementable();
@@ -52,7 +58,7 @@ void FirstMeaningfulPaintDetector::markNextPaintAsMeaningfulIfNeeded(
     int contentsHeightBeforeLayout,
     int contentsHeightAfterLayout,
     int visibleHeight) {
-  if (m_state == Reported)
+  if (m_network0QuietReached && m_network2QuietReached)
     return;
 
   unsigned delta = counter.count() - m_prevLayoutObjectCount;
@@ -77,14 +83,14 @@ void FirstMeaningfulPaintDetector::markNextPaintAsMeaningfulIfNeeded(
     significance += m_accumulatedSignificanceWhileHavingBlankText;
     m_accumulatedSignificanceWhileHavingBlankText = 0;
     if (significance > m_maxSignificanceSoFar) {
-      m_state = NextPaintIsMeaningful;
+      m_nextPaintIsMeaningful = true;
       m_maxSignificanceSoFar = significance;
     }
   }
 }
 
 void FirstMeaningfulPaintDetector::notifyPaint() {
-  if (m_state != NextPaintIsMeaningful)
+  if (!m_nextPaintIsMeaningful)
     return;
 
   // Skip document background-only paints.
@@ -92,7 +98,10 @@ void FirstMeaningfulPaintDetector::notifyPaint() {
     return;
 
   m_provisionalFirstMeaningfulPaint = monotonicallyIncreasingTime();
-  m_state = NextPaintIsNotMeaningful;
+  m_nextPaintIsMeaningful = false;
+
+  if (m_network2QuietReached)
+    return;
 
   TRACE_EVENT_MARK_WITH_TIMESTAMP1(
       "loading", "firstMeaningfulPaintCandidate",
@@ -107,28 +116,110 @@ void FirstMeaningfulPaintDetector::notifyPaint() {
   m_paintTiming->markFirstMeaningfulPaintCandidate();
 }
 
-void FirstMeaningfulPaintDetector::checkNetworkStable() {
+int FirstMeaningfulPaintDetector::activeConnections() {
   DCHECK(document());
-  if (m_state == Reported || document()->fetcher()->hasPendingRequest())
-    return;
-
-  m_networkStableTimer.startOneShot(kSecondsWithoutNetworkActivityThreshold,
-                                    BLINK_FROM_HERE);
+  ResourceFetcher* fetcher = document()->fetcher();
+  return fetcher->blockingRequestCount() + fetcher->nonblockingRequestCount();
 }
 
-void FirstMeaningfulPaintDetector::networkStableTimerFired(TimerBase*) {
-  if (m_state == Reported || !document() ||
-      document()->fetcher()->hasPendingRequest() ||
+// This function is called when the number of active connections is decreased.
+void FirstMeaningfulPaintDetector::checkNetworkStable() {
+  DCHECK(document());
+  if (!document()->hasFinishedParsing())
+    return;
+
+  setNetworkQuietTimers(activeConnections());
+}
+
+void FirstMeaningfulPaintDetector::setNetworkQuietTimers(
+    int activeConnections) {
+  if (!m_network0QuietReached && activeConnections == 0) {
+    // This restarts 0-quiet timer if it's already running.
+    m_network0QuietTimer.startOneShot(kNetwork0QuietWindowSeconds,
+                                      BLINK_FROM_HERE);
+  }
+  if (!m_network2QuietReached && activeConnections <= 2) {
+    // If activeConnections < 2 and the timer is already running, current
+    // 2-quiet window continues; the timer shouldn't be restarted.
+    if (activeConnections == 2 || !m_network2QuietTimer.isActive()) {
+      m_network2QuietTimer.startOneShot(kNetwork2QuietWindowSeconds,
+                                        BLINK_FROM_HERE);
+    }
+  }
+}
+
+void FirstMeaningfulPaintDetector::network0QuietTimerFired(TimerBase*) {
+  if (!document() || m_network0QuietReached || activeConnections() > 0 ||
       !m_paintTiming->firstContentfulPaint())
     return;
+  m_network0QuietReached = true;
 
   if (m_provisionalFirstMeaningfulPaint) {
     // Enforce FirstContentfulPaint <= FirstMeaningfulPaint.
-    double timestamp = std::max(m_provisionalFirstMeaningfulPaint,
-                                m_paintTiming->firstContentfulPaint());
-    m_paintTiming->setFirstMeaningfulPaint(timestamp);
+    m_firstMeaningfulPaint0Quiet =
+        std::max(m_provisionalFirstMeaningfulPaint,
+                 m_paintTiming->firstContentfulPaint());
   }
-  m_state = Reported;
+  reportHistograms();
+}
+
+void FirstMeaningfulPaintDetector::network2QuietTimerFired(TimerBase*) {
+  if (!document() || m_network2QuietReached || activeConnections() > 2 ||
+      !m_paintTiming->firstContentfulPaint())
+    return;
+  m_network2QuietReached = true;
+
+  if (m_provisionalFirstMeaningfulPaint) {
+    // Enforce FirstContentfulPaint <= FirstMeaningfulPaint.
+    m_firstMeaningfulPaint2Quiet =
+        std::max(m_provisionalFirstMeaningfulPaint,
+                 m_paintTiming->firstContentfulPaint());
+    // Report FirstMeaningfulPaint when the page reached network 2-quiet.
+    m_paintTiming->setFirstMeaningfulPaint(m_firstMeaningfulPaint2Quiet);
+  }
+  reportHistograms();
+}
+
+void FirstMeaningfulPaintDetector::reportHistograms() {
+  // This enum backs an UMA histogram, and should be treated as append-only.
+  enum HadNetworkQuiet {
+    HadNetwork0Quiet,
+    HadNetwork2Quiet,
+    HadNetworkQuietEnumMax
+  };
+  DEFINE_STATIC_LOCAL(EnumerationHistogram, hadNetworkQuietHistogram,
+                      ("PageLoad.Experimental.Renderer."
+                       "FirstMeaningfulPaintDetector.HadNetworkQuiet",
+                       HadNetworkQuietEnumMax));
+
+  // This enum backs an UMA histogram, and should be treated as append-only.
+  enum FMPOrderingEnum {
+    FMP0QuietFirst,
+    FMP2QuietFirst,
+    FMP0QuietEqualFMP2Quiet,
+    FMPOrderingEnumMax
+  };
+  DEFINE_STATIC_LOCAL(
+      EnumerationHistogram, firstMeaningfulPaintOrderingHistogram,
+      ("PageLoad.Experimental.Renderer.FirstMeaningfulPaintDetector."
+       "FirstMeaningfulPaintOrdering",
+       FMPOrderingEnumMax));
+
+  if (m_firstMeaningfulPaint0Quiet && m_firstMeaningfulPaint2Quiet) {
+    int sample;
+    if (m_firstMeaningfulPaint2Quiet < m_firstMeaningfulPaint0Quiet) {
+      sample = FMP0QuietFirst;
+    } else if (m_firstMeaningfulPaint2Quiet > m_firstMeaningfulPaint0Quiet) {
+      sample = FMP2QuietFirst;
+    } else {
+      sample = FMP0QuietEqualFMP2Quiet;
+    }
+    firstMeaningfulPaintOrderingHistogram.count(sample);
+  } else if (m_firstMeaningfulPaint0Quiet) {
+    hadNetworkQuietHistogram.count(HadNetwork0Quiet);
+  } else if (m_firstMeaningfulPaint2Quiet) {
+    hadNetworkQuietHistogram.count(HadNetwork2Quiet);
+  }
 }
 
 DEFINE_TRACE(FirstMeaningfulPaintDetector) {

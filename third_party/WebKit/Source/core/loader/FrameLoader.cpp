@@ -676,7 +676,7 @@ static bool shouldComplete(Document* document) {
     return false;
   if (!document->haveImportsLoaded())
     return false;
-  if (document->fetcher()->requestCount())
+  if (document->fetcher()->blockingRequestCount())
     return false;
   if (document->isDelayingLoadEvent())
     return false;

@@ -1054,12 +1054,12 @@ void ResourceFetcher::clearContext() {
   m_context.clear();
 }
 
-int ResourceFetcher::requestCount() const {
+int ResourceFetcher::blockingRequestCount() const {
   return m_loaders.size();
 }
 
-bool ResourceFetcher::hasPendingRequest() const {
-  return m_loaders.size() > 0 || m_nonBlockingLoaders.size() > 0;
+int ResourceFetcher::nonblockingRequestCount() const {
+  return m_nonBlockingLoaders.size();
 }
 
 void ResourceFetcher::preloadStarted(Resource* resource) {

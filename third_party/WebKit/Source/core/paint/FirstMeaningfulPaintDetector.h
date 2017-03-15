@@ -54,10 +54,13 @@ class CORE_EXPORT FirstMeaningfulPaintDetector
   friend class FirstMeaningfulPaintDetectorTest;
 
   Document* document();
-  void networkStableTimerFired(TimerBase*);
+  int activeConnections();
+  void setNetworkQuietTimers(int activeConnections);
+  void network0QuietTimerFired(TimerBase*);
+  void network2QuietTimerFired(TimerBase*);
+  void reportHistograms();
 
-  enum State { NextPaintIsNotMeaningful, NextPaintIsMeaningful, Reported };
-  State m_state = NextPaintIsNotMeaningful;
+  bool m_nextPaintIsMeaningful = false;
 
   Member<PaintTiming> m_paintTiming;
   double m_provisionalFirstMeaningfulPaint = 0.0;
@@ -65,7 +68,12 @@ class CORE_EXPORT FirstMeaningfulPaintDetector
   double m_accumulatedSignificanceWhileHavingBlankText = 0.0;
   unsigned m_prevLayoutObjectCount = 0;
   bool m_seenFirstMeaningfulPaintCandidate = false;
-  TaskRunnerTimer<FirstMeaningfulPaintDetector> m_networkStableTimer;
+  bool m_network0QuietReached = false;
+  bool m_network2QuietReached = false;
+  double m_firstMeaningfulPaint0Quiet = 0.0;
+  double m_firstMeaningfulPaint2Quiet = 0.0;
+  TaskRunnerTimer<FirstMeaningfulPaintDetector> m_network0QuietTimer;
+  TaskRunnerTimer<FirstMeaningfulPaintDetector> m_network2QuietTimer;
 };
 
 }  // namespace blink

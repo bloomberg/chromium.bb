@@ -93,8 +93,8 @@ class PLATFORM_EXPORT ResourceFetcher
   }
   void clearContext();
 
-  int requestCount() const;
-  bool hasPendingRequest() const;
+  int blockingRequestCount() const;
+  int nonblockingRequestCount() const;
 
   enum ClearPreloadsPolicy { ClearAllPreloads, ClearSpeculativeMarkupPreloads };
 

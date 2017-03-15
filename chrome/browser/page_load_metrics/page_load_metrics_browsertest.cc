@@ -640,7 +640,7 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
                                embedded_test_server()->GetURL("/title1.html"));
 
   // Wait until the renderer finishes observing layouts.
-  const int kNetworkIdleTime = 500;
+  const int kNetworkIdleTime = 3000;
   const int kMargin = 500;
   const std::string javascript = base::StringPrintf(
       "setTimeout(() => window.domAutomationController.send(true), %d)",
