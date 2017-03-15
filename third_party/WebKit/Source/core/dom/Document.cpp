@@ -2391,9 +2391,6 @@ void Document::setIsViewSource(bool isViewSource) {
   m_isViewSource = isViewSource;
   if (!m_isViewSource)
     return;
-
-  setSecurityOrigin(SecurityOrigin::createUnique());
-  didUpdateSecurityOrigin();
 }
 
 void Document::scheduleUseShadowTreeUpdate(SVGUseElement& element) {
@@ -5631,11 +5628,6 @@ bool Document::canExecuteScripts(ReasonForCallingCanExecuteScripts reason) {
               "'allow-scripts' permission is not set."));
     }
     return false;
-  }
-
-  if (isViewSource()) {
-    DCHECK(getSecurityOrigin()->isUnique());
-    return true;
   }
 
   DCHECK(frame())
