@@ -6471,6 +6471,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_MAC_VIEWS_NATIVE_APP_WINDOWS_DESCRIPTION" desc="Description of flag to enable or disable toolkit-views Chrome App windows on Mac.">
           Controls whether to use Toolkit-Views based Chrome App windows.
         </message>
+        <message name="IDS_FLAGS_MAC_VIEWS_TASK_MANAGER_NAME" desc="Name of the flag to enable or disable the toolkit-views Task Manager on Mac.">
+          Toolkit-Views Task Manager.
+        </message>
+        <message name="IDS_FLAGS_MAC_VIEWS_TASK_MANAGER_DESCRIPTION" desc="Description of the flag to enable or disable the toolkit-views Task Manager on Mac.">
+          Controls whether to use the Toolkit-Views based Task Manager.
+        </message>
         <message name="IDS_FLAGS_APP_WINDOW_CYCLING_NAME" desc="Name of the flag to enable or disable custom Cmd+` App window cycling on Mac.">
           Custom Window Cycling for Chrome Apps.
         </message>

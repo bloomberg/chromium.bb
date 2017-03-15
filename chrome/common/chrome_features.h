@@ -24,6 +24,7 @@ extern const base::Feature kAllowAutoplayUnmutedInWebappManifestScope;
 
 #if defined(OS_MACOSX)
 extern const base::Feature kAppleScriptExecuteJavaScript;
+extern const base::Feature kViewsTaskManager;
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_CHROMEOS)

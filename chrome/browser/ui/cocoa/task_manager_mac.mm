@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/feature_list.h"
 #include "base/mac/bundle_locations.h"
 #include "base/macros.h"
 #include "base/strings/sys_string_conversions.h"
@@ -19,6 +20,7 @@
 #include "chrome/browser/ui/browser_dialogs.h"
 #import "chrome/browser/ui/cocoa/window_size_autosaver.h"
 #include "chrome/browser/ui/task_manager/task_manager_columns.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
@@ -33,6 +35,10 @@ namespace {
 
 NSString* ColumnIdentifier(int id) {
   return [NSString stringWithFormat:@"%d", id];
+}
+
+bool ShouldUseViewsTaskManager() {
+  return base::FeatureList::IsEnabled(features::kViewsTaskManager);
 }
 
 }  // namespace
@@ -639,10 +645,14 @@ namespace chrome {
 
 // Declared in browser_dialogs.h.
 task_manager::TaskManagerTableModel* ShowTaskManager(Browser* browser) {
+  if (ShouldUseViewsTaskManager())
+    return chrome::ShowTaskManagerViews(browser);
   return task_manager::TaskManagerMac::Show();
 }
 
 void HideTaskManager() {
+  if (ShouldUseViewsTaskManager())
+    return chrome::HideTaskManagerViews();
   task_manager::TaskManagerMac::Hide();
 }
 
