@@ -759,8 +759,6 @@ split_static_library("ui") {
       "layout_constants.h",
       "location_bar/location_bar.cc",
       "location_bar/location_bar.h",
-      "location_bar/location_bar_util.cc",
-      "location_bar/location_bar_util.h",
       "native_window_tracker.h",
       "omnibox/alternate_nav_infobar_delegate.cc",
       "omnibox/alternate_nav_infobar_delegate.h",

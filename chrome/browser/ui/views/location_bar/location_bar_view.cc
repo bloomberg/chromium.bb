@@ -473,12 +473,15 @@ void LocationBarView::Layout() {
   // hits ctrl-d).
   const int vertical_padding = GetTotalVerticalPadding();
   const int location_height = std::max(height() - (vertical_padding * 2), 0);
+  // The largest fraction of the omnibox that can be taken by the EV or search
+  // label/chip.
+  const double kLeadingDecorationMaxFraction = 0.5;
 
   location_icon_view_->SetLabel(base::string16());
   if (ShouldShowKeywordBubble()) {
-    leading_decorations.AddDecoration(vertical_padding, location_height, true,
-                                      0, item_padding, item_padding,
-                                      selected_keyword_view_);
+    leading_decorations.AddDecoration(
+        vertical_padding, location_height, false, kLeadingDecorationMaxFraction,
+        item_padding, item_padding, selected_keyword_view_);
     if (selected_keyword_view_->keyword() != keyword) {
       selected_keyword_view_->SetKeyword(keyword);
       const TemplateURL* template_url =
@@ -495,11 +498,9 @@ void LocationBarView::Layout() {
     }
   } else if (ShouldShowLocationIconText()) {
     location_icon_view_->SetLabel(GetLocationIconText());
-    // The largest fraction of the omnibox that can be taken by the EV bubble.
-    const double kMaxBubbleFraction = 0.5;
-    leading_decorations.AddDecoration(vertical_padding, location_height, false,
-                                      kMaxBubbleFraction, item_padding,
-                                      item_padding, location_icon_view_);
+    leading_decorations.AddDecoration(
+        vertical_padding, location_height, false, kLeadingDecorationMaxFraction,
+        item_padding, item_padding, location_icon_view_);
   } else {
     leading_decorations.AddDecoration(vertical_padding, location_height,
                                       location_icon_view_);

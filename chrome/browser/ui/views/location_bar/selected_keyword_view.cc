@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/ui/location_bar/location_bar_util.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/search_engines/template_url_service.h"
@@ -26,6 +25,7 @@ SelectedKeywordView::SelectedKeywordView(const gfx::FontList& font_list,
   full_label_.SetVisible(false);
   partial_label_.SetFontList(font_list);
   partial_label_.SetVisible(false);
+  label()->SetElideBehavior(gfx::FADE_TAIL);
 }
 
 SelectedKeywordView::~SelectedKeywordView() {
@@ -50,12 +50,18 @@ gfx::Size SelectedKeywordView::GetPreferredSize() const {
 
 gfx::Size SelectedKeywordView::GetMinimumSize() const {
   // Height will be ignored by the LocationBarView.
-  return GetSizeForLabelWidth(partial_label_.GetMinimumSize().width());
+  return GetSizeForLabelWidth(0);
 }
 
 void SelectedKeywordView::Layout() {
-  SetLabel(((width() == GetPreferredSize().width()) ?
-      full_label_ : partial_label_).text());
+  // Keep showing the full label as long as there's more than enough width for
+  // the partial label. Otherwise there will be empty space displayed next to
+  // the partial label.
+  bool use_full_label =
+      width() >
+      GetSizeForLabelWidth(partial_label_.GetPreferredSize().width()).width();
+  SetLabel(use_full_label ? full_label_.text() : partial_label_.text());
+
   IconLabelBubbleView::Layout();
 }
 
@@ -78,14 +84,7 @@ void SelectedKeywordView::SetKeyword(const base::string16& keyword) {
           : l10n_util::GetStringFUTF16(IDS_OMNIBOX_KEYWORD_TEXT_MD, short_name);
   full_label_.SetText(full_name);
 
-  const base::string16 min_string(
-      location_bar_util::CalculateMinString(short_name));
-  const base::string16 partial_name =
-      is_extension_keyword
-          ? min_string
-          : l10n_util::GetStringFUTF16(IDS_OMNIBOX_KEYWORD_TEXT_MD, min_string);
-  partial_label_.SetText(min_string.empty() ?
-      full_label_.text() : partial_name);
+  partial_label_.SetText(short_name);
 
   // Update the label now so ShouldShowLabel() works correctly when the parent
   // class is calculating the preferred size. It will be updated again in

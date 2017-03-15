@@ -4,14 +4,36 @@
 
 #import "chrome/browser/ui/cocoa/location_bar/selected_keyword_decoration.h"
 
+#include <stddef.h>
+
+#include "base/i18n/rtl.h"
+#include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
+#include "base/strings/utf_string_conversions.h"
 #import "chrome/browser/ui/cocoa/omnibox/omnibox_view_mac.h"
-#include "chrome/browser/ui/location_bar/location_bar_util.h"
 #include "chrome/grit/generated_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/text_elider.h"
+
+namespace {
+
+// Build a short string to use in keyword-search when the field isn't very big.
+base::string16 CalculateMinString(const base::string16& description) {
+  // Chop at the first '.' or whitespace.
+  const size_t chop_index = description.find_first_of(base::kWhitespaceUTF16 +
+                                                      base::ASCIIToUTF16("."));
+  base::string16 min_string(
+      (chop_index == base::string16::npos)
+          ? gfx::TruncateString(description, 3, gfx::WORD_BREAK)
+          : description.substr(0, chop_index));
+  base::i18n::AdjustStringForLocaleDirection(&min_string);
+  return min_string;
+}
+
+}  // namespace
 
 SelectedKeywordDecoration::SelectedKeywordDecoration() {
   // Note: the unit test
@@ -53,8 +75,7 @@ CGFloat SelectedKeywordDecoration::GetWidthForSpace(CGFloat width) {
 
 void SelectedKeywordDecoration::SetKeyword(const base::string16& short_name,
                                            bool is_extension_keyword) {
-  const base::string16 min_name(
-      location_bar_util::CalculateMinString(short_name));
+  const base::string16 min_name(CalculateMinString(short_name));
   const int keyword_text_id = IDS_OMNIBOX_KEYWORD_TEXT_MD;
 
   NSString* full_string =

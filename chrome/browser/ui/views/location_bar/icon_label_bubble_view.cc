@@ -117,8 +117,8 @@ void IconLabelBubbleView::Layout() {
   // the label has zero size it doesn't actually matter what we compute its X
   // value to be, since it won't be visible.
   const int label_x = image_->bounds().right() + GetInternalSpacing();
-  const int label_width =
-      std::max(0, width() - label_x - bubble_trailing_padding);
+  const int label_width = std::max(
+      0, width() - label_x - bubble_trailing_padding - kSpaceBesideSeparator);
   label_->SetBounds(label_x, 0, label_width, height());
 }
 
@@ -229,13 +229,7 @@ void IconLabelBubbleView::OnPaint(gfx::Canvas* canvas) {
   gfx::Rect bounds(label_->bounds());
   const int kSeparatorHeight = 16;
   bounds.Inset(0, (bounds.height() - kSeparatorHeight) / 2);
-
-  // Draw the 1 px separator.
-  gfx::ScopedCanvas scoped_canvas(canvas);
-  const float scale = canvas->UndoDeviceScaleFactor();
-  // Keep the separator aligned on a pixel center.
-  const gfx::RectF pixel_aligned_bounds =
-      gfx::ScaleRect(gfx::RectF(bounds), scale) - gfx::Vector2dF(0.5f, 0);
-  canvas->DrawLine(pixel_aligned_bounds.top_right(),
-                   pixel_aligned_bounds.bottom_right(), separator_color);
+  bounds.set_width(bounds.width() + kSpaceBesideSeparator);
+  canvas->Draw1pxLine(gfx::PointF(bounds.top_right()),
+                      gfx::PointF(bounds.bottom_right()), separator_color);
 }
