@@ -32,7 +32,7 @@ class ScriptPromiseResolver;
 // CallbackPromiseAdapter class comments.
 class BluetoothDevice final : public EventTargetWithInlineData,
                               public ContextLifecycleObserver {
-  USING_PRE_FINALIZER(BluetoothDevice, dispose);
+  USING_PRE_FINALIZER(BluetoothDevice, Dispose);
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(BluetoothDevice);
 
@@ -46,22 +46,22 @@ class BluetoothDevice final : public EventTargetWithInlineData,
                                mojom::blink::WebBluetoothDevicePtr,
                                Bluetooth*);
 
-  BluetoothRemoteGATTService* getOrCreateRemoteGATTService(
+  BluetoothRemoteGATTService* GetOrCreateRemoteGATTService(
       mojom::blink::WebBluetoothRemoteGATTServicePtr,
       bool isPrimary,
       const String& deviceInstanceId);
-  bool isValidService(const String& serviceInstanceId);
+  bool IsValidService(const String& serviceInstanceId);
 
-  BluetoothRemoteGATTCharacteristic* getOrCreateRemoteGATTCharacteristic(
+  BluetoothRemoteGATTCharacteristic* GetOrCreateRemoteGATTCharacteristic(
       ExecutionContext*,
       mojom::blink::WebBluetoothRemoteGATTCharacteristicPtr,
       BluetoothRemoteGATTService*);
-  bool isValidCharacteristic(const String& characteristicInstanceId);
+  bool IsValidCharacteristic(const String& characteristicInstanceId);
 
-  BluetoothRemoteGATTDescriptor* getOrCreateBluetoothRemoteGATTDescriptor(
+  BluetoothRemoteGATTDescriptor* GetOrCreateBluetoothRemoteGATTDescriptor(
       mojom::blink::WebBluetoothRemoteGATTDescriptorPtr,
       BluetoothRemoteGATTCharacteristic*);
-  bool isValidDescriptor(const String& descriptorInstanceId);
+  bool IsValidDescriptor(const String& descriptorInstanceId);
 
   // We should disconnect from the device in all of the following cases:
   // 1. When the object gets GarbageCollected e.g. it went out of scope.
@@ -74,7 +74,7 @@ class BluetoothDevice final : public EventTargetWithInlineData,
 
   // USING_PRE_FINALIZER interface.
   // Called before the object gets garbage collected.
-  void dispose();
+  void Dispose();
 
   // ContextLifecycleObserver interface.
   void contextDestroyed(ExecutionContext*) override;
@@ -83,17 +83,17 @@ class BluetoothDevice final : public EventTargetWithInlineData,
   // This function only performs the necessary steps to ensure a device
   // disconnects therefore it should only be used when the object is being
   // garbage collected or the context is being destroyed.
-  void disconnectGATTIfConnected();
+  void DisconnectGATTIfConnected();
 
   // Performs necessary cleanup when a device disconnects and fires
   // gattserverdisconnected event.
-  void cleanupDisconnectedDeviceAndFireEvent();
+  void CleanupDisconnectedDeviceAndFireEvent();
 
   // EventTarget methods:
   const AtomicString& interfaceName() const override;
   ExecutionContext* getExecutionContext() const override;
 
-  void dispatchGattServerDisconnected();
+  void DispatchGattServerDisconnected();
 
   Bluetooth* bluetooth() { return m_bluetooth; }
 

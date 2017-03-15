@@ -25,7 +25,7 @@ Bluetooth* NavigatorBluetooth::bluetooth(Navigator& navigator) {
 
 Bluetooth* NavigatorBluetooth::bluetooth() {
   if (!m_bluetooth)
-    m_bluetooth = Bluetooth::create();
+    m_bluetooth = Bluetooth::Create();
   return m_bluetooth.get();
 }
 

@@ -16,7 +16,7 @@ BluetoothAttributeInstanceMap::BluetoothAttributeInstanceMap(
     : m_device(device) {}
 
 BluetoothRemoteGATTService*
-BluetoothAttributeInstanceMap::getOrCreateRemoteGATTService(
+BluetoothAttributeInstanceMap::GetOrCreateRemoteGATTService(
     mojom::blink::WebBluetoothRemoteGATTServicePtr remoteGATTService,
     bool isPrimary,
     const String& deviceInstanceId) {
@@ -33,13 +33,13 @@ BluetoothAttributeInstanceMap::getOrCreateRemoteGATTService(
   return service;
 }
 
-bool BluetoothAttributeInstanceMap::containsService(
+bool BluetoothAttributeInstanceMap::ContainsService(
     const String& serviceInstanceId) {
   return m_serviceIdToObject.contains(serviceInstanceId);
 }
 
 BluetoothRemoteGATTCharacteristic*
-BluetoothAttributeInstanceMap::getOrCreateRemoteGATTCharacteristic(
+BluetoothAttributeInstanceMap::GetOrCreateRemoteGATTCharacteristic(
     ExecutionContext* context,
     mojom::blink::WebBluetoothRemoteGATTCharacteristicPtr
         remoteGATTCharacteristic,
@@ -49,7 +49,7 @@ BluetoothAttributeInstanceMap::getOrCreateRemoteGATTCharacteristic(
       m_characteristicIdToObject.at(instanceId);
 
   if (!characteristic) {
-    characteristic = BluetoothRemoteGATTCharacteristic::create(
+    characteristic = BluetoothRemoteGATTCharacteristic::Create(
         context, std::move(remoteGATTCharacteristic), service, m_device);
     m_characteristicIdToObject.insert(instanceId, characteristic);
   }
@@ -57,13 +57,13 @@ BluetoothAttributeInstanceMap::getOrCreateRemoteGATTCharacteristic(
   return characteristic;
 }
 
-bool BluetoothAttributeInstanceMap::containsCharacteristic(
+bool BluetoothAttributeInstanceMap::ContainsCharacteristic(
     const String& characteristicInstanceId) {
   return m_characteristicIdToObject.contains(characteristicInstanceId);
 }
 
 BluetoothRemoteGATTDescriptor*
-BluetoothAttributeInstanceMap::getOrCreateBluetoothRemoteGATTDescriptor(
+BluetoothAttributeInstanceMap::GetOrCreateBluetoothRemoteGATTDescriptor(
     mojom::blink::WebBluetoothRemoteGATTDescriptorPtr descriptor,
     BluetoothRemoteGATTCharacteristic* characteristic) {
   String instanceId = descriptor->instance_id;
@@ -78,7 +78,7 @@ BluetoothAttributeInstanceMap::getOrCreateBluetoothRemoteGATTDescriptor(
   return result;
 }
 
-bool BluetoothAttributeInstanceMap::containsDescriptor(
+bool BluetoothAttributeInstanceMap::ContainsDescriptor(
     const String& descriptorInstanceId) {
   return m_descriptorIdToObject.contains(descriptorInstanceId);
 }

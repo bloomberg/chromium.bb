@@ -24,27 +24,27 @@ class Bluetooth : public GarbageCollectedFinalized<Bluetooth>,
                   public ScriptWrappable,
                   public mojom::blink::WebBluetoothServiceClient {
   DEFINE_WRAPPERTYPEINFO();
-  USING_PRE_FINALIZER(Bluetooth, dispose);
+  USING_PRE_FINALIZER(Bluetooth, Dispose);
 
  public:
-  static Bluetooth* create() { return new Bluetooth(); }
+  static Bluetooth* Create() { return new Bluetooth(); }
 
-  void dispose();
+  void Dispose();
 
-  // BluetoothDiscovery interface
+  // IDL exposed interface:
   ScriptPromise requestDevice(ScriptState*,
                               const RequestDeviceOptions&,
                               ExceptionState&);
 
-  mojom::blink::WebBluetoothService* service() { return m_service.get(); }
+  mojom::blink::WebBluetoothService* Service() { return m_service.get(); }
 
-  void addToConnectedDevicesMap(const String& deviceId, BluetoothDevice*);
+  void AddToConnectedDevicesMap(const String& deviceId, BluetoothDevice*);
 
-  void removeFromConnectedDevicesMap(const String& deviceId);
+  void RemoveFromConnectedDevicesMap(const String& deviceId);
 
-  void registerCharacteristicObject(const String& characteristicInstanceId,
+  void RegisterCharacteristicObject(const String& characteristicInstanceId,
                                     BluetoothRemoteGATTCharacteristic*);
-  void characteristicObjectRemoved(const String& characteristicInstanceId);
+  void CharacteristicObjectRemoved(const String& characteristicInstanceId);
 
   // Interface required by Garbage Collection:
   DECLARE_VIRTUAL_TRACE();
@@ -58,7 +58,7 @@ class Bluetooth : public GarbageCollectedFinalized<Bluetooth>,
       const WTF::Vector<uint8_t>& value) override;
   void GattServerDisconnected(const WTF::String& deviceId) override;
 
-  BluetoothDevice* getBluetoothDeviceRepresentingDevice(
+  BluetoothDevice* GetBluetoothDeviceRepresentingDevice(
       mojom::blink::WebBluetoothDevicePtr,
       ScriptPromiseResolver*);
 

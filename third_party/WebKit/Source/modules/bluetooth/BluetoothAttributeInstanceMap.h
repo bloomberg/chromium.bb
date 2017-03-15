@@ -30,39 +30,39 @@ class BluetoothAttributeInstanceMap final
   // no service with the same instance id and adds it to the map.
   // Otherwise returns the BluetoothRemoteGATTService object already
   // in the map.
-  BluetoothRemoteGATTService* getOrCreateRemoteGATTService(
+  BluetoothRemoteGATTService* GetOrCreateRemoteGATTService(
       mojom::blink::WebBluetoothRemoteGATTServicePtr,
       bool isPrimary,
       const String& deviceInstanceId);
 
   // Returns true if a BluetoothRemoteGATTService with |serviceInstanceId|
   // is in the map.
-  bool containsService(const String& serviceInstanceId);
+  bool ContainsService(const String& serviceInstanceId);
 
   // Constructs a new BluetoothRemoteGATTCharacteristic object if there was no
   // characteristic with the same instance id and adds it to the map.
   // Otherwise returns the BluetoothRemoteGATTCharacteristic object already in
   // the map.
-  BluetoothRemoteGATTCharacteristic* getOrCreateRemoteGATTCharacteristic(
+  BluetoothRemoteGATTCharacteristic* GetOrCreateRemoteGATTCharacteristic(
       ExecutionContext*,
       mojom::blink::WebBluetoothRemoteGATTCharacteristicPtr,
       BluetoothRemoteGATTService*);
 
   // Returns true if a BluetoothRemoteGATTCharacteristic with
   // |characteristicInstanceId| is in the map.
-  bool containsCharacteristic(const String& characteristicInstanceId);
+  bool ContainsCharacteristic(const String& characteristicInstanceId);
 
   // Constructs a new BluetoothRemoteGATTDescriptor object if there was no
   // descriptor with the same instance id and adds it to the map.
   // Otherwise returns the BluetoothRemoteGATTDescriptor object already in
   // the map.
-  BluetoothRemoteGATTDescriptor* getOrCreateBluetoothRemoteGATTDescriptor(
+  BluetoothRemoteGATTDescriptor* GetOrCreateBluetoothRemoteGATTDescriptor(
       mojom::blink::WebBluetoothRemoteGATTDescriptorPtr,
       BluetoothRemoteGATTCharacteristic*);
 
   // Returns true if a BluetoothRemoteGATTDescriptor with
   // |descriptorInstanceId| is in the map.
-  bool containsDescriptor(const String& descriptorInstanceId);
+  bool ContainsDescriptor(const String& descriptorInstanceId);
 
   // Removes all Attributes from the map.
   // TODO(crbug.com/654950): Remove descriptors when implemented.

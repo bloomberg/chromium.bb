@@ -19,8 +19,9 @@ class BluetoothCharacteristicProperties final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static BluetoothCharacteristicProperties* create(uint32_t properties);
+  static BluetoothCharacteristicProperties* Create(uint32_t properties);
 
+  // IDL exposed interface:
   bool broadcast() const;
   bool read() const;
   bool writeWithoutResponse() const;

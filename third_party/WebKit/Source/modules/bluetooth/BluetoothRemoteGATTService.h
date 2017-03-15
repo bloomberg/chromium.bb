@@ -63,7 +63,7 @@ class BluetoothRemoteGATTService final
       Optional<Vector<mojom::blink::WebBluetoothRemoteGATTCharacteristicPtr>>
           characteristics);
 
-  ScriptPromise getCharacteristicsImpl(
+  ScriptPromise GetCharacteristicsImpl(
       ScriptState*,
       mojom::blink::WebBluetoothGATTQueryQuantity,
       const String& characteristicUUID = String());

@@ -24,6 +24,8 @@ class NavigatorBluetooth final : public GarbageCollected<NavigatorBluetooth>,
   static NavigatorBluetooth& from(Navigator&);
 
   static Bluetooth* bluetooth(Navigator&);
+
+  // IDL exposed interface:
   Bluetooth* bluetooth();
 
   DECLARE_TRACE();

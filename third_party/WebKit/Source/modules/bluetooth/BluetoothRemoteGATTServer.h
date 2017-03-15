@@ -29,9 +29,9 @@ class BluetoothRemoteGATTServer final
  public:
   BluetoothRemoteGATTServer(BluetoothDevice*);
 
-  static BluetoothRemoteGATTServer* create(BluetoothDevice*);
+  static BluetoothRemoteGATTServer* Create(BluetoothDevice*);
 
-  void setConnected(bool connected) { m_connected = connected; }
+  void SetConnected(bool connected) { m_connected = connected; }
 
   // The Active Algorithms set is maintained so that disconnection, i.e.
   // disconnect() method or the device disconnecting by itself, can be detected
@@ -64,7 +64,7 @@ class BluetoothRemoteGATTServer final
   ScriptPromise getPrimaryServices(ScriptState*, ExceptionState&);
 
  private:
-  ScriptPromise getPrimaryServicesImpl(
+  ScriptPromise GetPrimaryServicesImpl(
       ScriptState*,
       mojom::blink::WebBluetoothGATTQueryQuantity,
       String serviceUUID = String());

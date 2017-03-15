@@ -38,11 +38,11 @@ class BluetoothError {
   STATIC_ONLY(BluetoothError);
 
  public:
-  static DOMException* createNotConnectedException(BluetoothOperation);
-  static DOMException* createDOMException(BluetoothErrorCode,
+  static DOMException* CreateNotConnectedException(BluetoothOperation);
+  static DOMException* CreateDOMException(BluetoothErrorCode,
                                           const String& detailedMessage);
 
-  static DOMException* createDOMException(
+  static DOMException* CreateDOMException(
       mojom::blink::WebBluetoothResult error);
 };
 

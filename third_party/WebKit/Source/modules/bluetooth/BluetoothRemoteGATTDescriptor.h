@@ -35,7 +35,7 @@ class BluetoothRemoteGATTDescriptor final
       mojom::blink::WebBluetoothRemoteGATTDescriptorPtr,
       BluetoothRemoteGATTCharacteristic*);
 
-  static BluetoothRemoteGATTDescriptor* create(
+  static BluetoothRemoteGATTDescriptor* Create(
       mojom::blink::WebBluetoothRemoteGATTDescriptorPtr,
       BluetoothRemoteGATTCharacteristic*);
 
@@ -54,9 +54,9 @@ class BluetoothRemoteGATTDescriptor final
  private:
   friend class DescriptorReadValueCallback;
 
-  BluetoothRemoteGATTServer* getGatt() { return m_characteristic->getGatt(); }
-  mojom::blink::WebBluetoothService* getService() {
-    return m_characteristic->m_device->bluetooth()->service();
+  BluetoothRemoteGATTServer* GetGatt() { return m_characteristic->GetGatt(); }
+  mojom::blink::WebBluetoothService* GetService() {
+    return m_characteristic->m_device->bluetooth()->Service();
   }
 
   void ReadValueCallback(ScriptPromiseResolver*,
@@ -67,7 +67,7 @@ class BluetoothRemoteGATTDescriptor final
                           const Vector<uint8_t>&,
                           mojom::blink::WebBluetoothResult);
 
-  DOMException* createInvalidDescriptorError();
+  DOMException* CreateInvalidDescriptorError();
 
   mojom::blink::WebBluetoothRemoteGATTDescriptorPtr m_descriptor;
   Member<BluetoothRemoteGATTCharacteristic> m_characteristic;

@@ -18,7 +18,7 @@ const char kGATTServerNotConnectedBase[] =
 }  // namespace
 
 // static
-DOMException* BluetoothError::createNotConnectedException(
+DOMException* BluetoothError::CreateNotConnectedException(
     BluetoothOperation operation) {
   const char* operationString = nullptr;
   switch (operation) {
@@ -42,7 +42,7 @@ DOMException* BluetoothError::createNotConnectedException(
 }
 
 // static
-DOMException* BluetoothError::createDOMException(
+DOMException* BluetoothError::CreateDOMException(
     BluetoothErrorCode error,
     const String& detailedMessage) {
   switch (error) {
@@ -60,7 +60,7 @@ DOMException* BluetoothError::createDOMException(
 }
 
 // static
-DOMException* BluetoothError::createDOMException(
+DOMException* BluetoothError::CreateDOMException(
     mojom::blink::WebBluetoothResult error) {
   switch (error) {
     case mojom::blink::WebBluetoothResult::SUCCESS:
