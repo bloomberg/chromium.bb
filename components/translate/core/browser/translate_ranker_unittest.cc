@@ -143,7 +143,7 @@ TEST_F(TranslateRankerTest, EnableEnforcement) {
 TEST_F(TranslateRankerTest, EnableQueryAndEnforcement) {
   InitFeatures({kTranslateRankerQuery, kTranslateRankerEnforcement}, {});
   EXPECT_TRUE(TranslateRanker::IsEnabled());
-  EXPECT_FALSE(TranslateRanker::IsLoggingEnabled());
+  EXPECT_TRUE(TranslateRanker::IsLoggingEnabled());
 }
 
 TEST_F(TranslateRankerTest, EnableLogging) {
@@ -186,7 +186,6 @@ TEST_F(TranslateRankerTest, ShouldOfferTranslation) {
 }
 
 TEST_F(TranslateRankerTest, RecordAndFlushEvents) {
-  InitFeatures({kTranslateRankerLogging}, {});
   std::unique_ptr<translate::TranslateRanker> ranker = GetRankerForTest(0.0f);
   std::vector<metrics::TranslateEventProto> flushed_events;
 

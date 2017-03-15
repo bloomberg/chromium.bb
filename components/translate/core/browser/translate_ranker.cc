@@ -80,7 +80,7 @@ const base::Feature kTranslateRankerEnforcement{
     "TranslateRankerEnforcement", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kTranslateRankerLogging{"TranslateRankerLogging",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 TranslateRanker::~TranslateRanker() {}
 
