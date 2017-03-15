@@ -110,7 +110,8 @@ HostScannerOperation::HostScannerOperation(
     HostScanDevicePrioritizer* host_scan_device_prioritizer)
     : MessageTransferOperation(
           PrioritizeDevices(devices_to_connect, host_scan_device_prioritizer),
-          connection_manager) {}
+          connection_manager),
+      host_scan_device_prioritizer_(host_scan_device_prioritizer) {}
 
 HostScannerOperation::~HostScannerOperation() {}
 
@@ -164,6 +165,9 @@ void HostScannerOperation::OnMessageReceived(
                  << remote_device.GetTruncatedDeviceIdForLogs() << " which "
                  << "indicates that tethering is available. set_up_required = "
                  << set_up_required;
+
+    host_scan_device_prioritizer_->RecordSuccessfulTetherAvailabilityResponse(
+        remote_device);
 
     scanned_device_list_so_far_.push_back(ScannedDeviceInfo(
         remote_device, response->device_status(), set_up_required));

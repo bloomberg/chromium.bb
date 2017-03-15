@@ -4,6 +4,7 @@
 
 #include "chromeos/components/tether/connect_tethering_operation.h"
 
+#include "chromeos/components/tether/host_scan_device_prioritizer.h"
 #include "chromeos/components/tether/message_wrapper.h"
 #include "chromeos/components/tether/proto/tether.pb.h"
 #include "components/proximity_auth/logging/logging.h"
@@ -20,12 +21,13 @@ ConnectTetheringOperation::Factory*
 std::unique_ptr<ConnectTetheringOperation>
 ConnectTetheringOperation::Factory::NewInstance(
     const cryptauth::RemoteDevice& device_to_connect,
-    BleConnectionManager* connection_manager) {
+    BleConnectionManager* connection_manager,
+    HostScanDevicePrioritizer* host_scan_device_prioritizer) {
   if (!factory_instance_) {
     factory_instance_ = new Factory();
   }
-  return factory_instance_->BuildInstance(device_to_connect,
-                                          connection_manager);
+  return factory_instance_->BuildInstance(device_to_connect, connection_manager,
+                                          host_scan_device_prioritizer);
 }
 
 // static
@@ -37,17 +39,20 @@ void ConnectTetheringOperation::Factory::SetInstanceForTesting(
 std::unique_ptr<ConnectTetheringOperation>
 ConnectTetheringOperation::Factory::BuildInstance(
     const cryptauth::RemoteDevice& device_to_connect,
-    BleConnectionManager* connection_manager) {
-  return base::MakeUnique<ConnectTetheringOperation>(device_to_connect,
-                                                     connection_manager);
+    BleConnectionManager* connection_manager,
+    HostScanDevicePrioritizer* host_scan_device_prioritizer) {
+  return base::MakeUnique<ConnectTetheringOperation>(
+      device_to_connect, connection_manager, host_scan_device_prioritizer);
 }
 
 ConnectTetheringOperation::ConnectTetheringOperation(
     const cryptauth::RemoteDevice& device_to_connect,
-    BleConnectionManager* connection_manager)
+    BleConnectionManager* connection_manager,
+    HostScanDevicePrioritizer* host_scan_device_prioritizer)
     : MessageTransferOperation(
           std::vector<cryptauth::RemoteDevice>{device_to_connect},
           connection_manager),
+      host_scan_device_prioritizer_(host_scan_device_prioritizer),
       has_authenticated_(false) {}
 
 ConnectTetheringOperation::~ConnectTetheringOperation() {}
@@ -89,6 +94,10 @@ void ConnectTetheringOperation::OnMessageReceived(
                    << "response_code == SUCCESS. Config: {ssid: \""
                    << response->ssid() << "\", password: \""
                    << response->password() << "\"}";
+
+      host_scan_device_prioritizer_->RecordSuccessfulConnectTetheringResponse(
+          remote_device);
+
       NotifyObserversOfSuccessfulResponse(response->ssid(),
                                           response->password());
     } else {

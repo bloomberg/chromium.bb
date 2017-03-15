@@ -100,6 +100,7 @@ class HostScannerOperation : public MessageTransferOperation {
  private:
   friend class HostScannerOperationTest;
 
+  HostScanDevicePrioritizer* host_scan_device_prioritizer_;
   base::ObserverList<Observer> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(HostScannerOperation);

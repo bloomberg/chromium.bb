@@ -72,6 +72,8 @@ static_library("test_support") {
     "fake_ble_connection_manager.h",
     "fake_tether_host_fetcher.cc",
     "fake_tether_host_fetcher.h",
+    "mock_host_scan_device_prioritizer.cc",
+    "mock_host_scan_device_prioritizer.h",
     "mock_local_device_data_provider.cc",
     "mock_local_device_data_provider.h",
   ]

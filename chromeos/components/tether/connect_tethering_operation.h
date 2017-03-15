@@ -18,6 +18,7 @@ namespace chromeos {
 
 namespace tether {
 
+class HostScanDevicePrioritizer;
 class MessageWrapper;
 
 // Operation used to request that a tether host share its Internet connection.
@@ -31,14 +32,16 @@ class ConnectTetheringOperation : public MessageTransferOperation {
    public:
     static std::unique_ptr<ConnectTetheringOperation> NewInstance(
         const cryptauth::RemoteDevice& device_to_connect,
-        BleConnectionManager* connection_manager);
+        BleConnectionManager* connection_manager,
+        HostScanDevicePrioritizer* host_scan_device_prioritizer);
 
     static void SetInstanceForTesting(Factory* factory);
 
    protected:
     virtual std::unique_ptr<ConnectTetheringOperation> BuildInstance(
         const cryptauth::RemoteDevice& devices_to_connect,
-        BleConnectionManager* connection_manager);
+        BleConnectionManager* connection_manager,
+        HostScanDevicePrioritizer* host_scan_device_prioritizer);
 
    private:
     static Factory* factory_instance_;
@@ -53,8 +56,10 @@ class ConnectTetheringOperation : public MessageTransferOperation {
         ConnectTetheringResponse_ResponseCode error_code) = 0;
   };
 
-  ConnectTetheringOperation(const cryptauth::RemoteDevice& device_to_connect,
-                            BleConnectionManager* connection_manager);
+  ConnectTetheringOperation(
+      const cryptauth::RemoteDevice& device_to_connect,
+      BleConnectionManager* connection_manager,
+      HostScanDevicePrioritizer* host_scan_device_prioritizer);
   ~ConnectTetheringOperation() override;
 
   void AddObserver(Observer* observer);
@@ -77,8 +82,9 @@ class ConnectTetheringOperation : public MessageTransferOperation {
   void NotifyObserversOfConnectionFailure(
       ConnectTetheringResponse_ResponseCode error_code);
 
-  base::ObserverList<Observer> observer_list_;
+  HostScanDevicePrioritizer* host_scan_device_prioritizer_;
   bool has_authenticated_;
+  base::ObserverList<Observer> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectTetheringOperation);
 };

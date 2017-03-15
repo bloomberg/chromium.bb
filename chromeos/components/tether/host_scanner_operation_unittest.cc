@@ -11,11 +11,14 @@
 #include "base/logging.h"
 #include "chromeos/components/tether/ble_constants.h"
 #include "chromeos/components/tether/fake_ble_connection_manager.h"
-#include "chromeos/components/tether/host_scan_device_prioritizer.h"
 #include "chromeos/components/tether/message_wrapper.h"
+#include "chromeos/components/tether/mock_host_scan_device_prioritizer.h"
 #include "chromeos/components/tether/proto/tether.pb.h"
 #include "components/cryptauth/remote_device_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using testing::_;
+using testing::StrictMock;
 
 namespace chromeos {
 
@@ -25,10 +28,10 @@ namespace {
 
 const char kDefaultCarrier[] = "Google Fi";
 
-class FakeHostScanDevicePrioritizer : public HostScanDevicePrioritizer {
+class TestHostScanDevicePrioritizer : public MockHostScanDevicePrioritizer {
  public:
-  FakeHostScanDevicePrioritizer() : HostScanDevicePrioritizer(nullptr) {}
-  ~FakeHostScanDevicePrioritizer() override {}
+  TestHostScanDevicePrioritizer() : MockHostScanDevicePrioritizer() {}
+  ~TestHostScanDevicePrioritizer() override {}
 
   // Simply reverses the device order.
   void SortByHostScanOrder(
@@ -112,8 +115,8 @@ class HostScannerOperationTest : public testing::Test {
 
   void SetUp() override {
     fake_ble_connection_manager_ = base::MakeUnique<FakeBleConnectionManager>();
-    fake_host_scan_device_prioritizer_ =
-        base::MakeUnique<FakeHostScanDevicePrioritizer>();
+    test_host_scan_device_prioritizer_ =
+        base::MakeUnique<StrictMock<TestHostScanDevicePrioritizer>>();
     test_observer_ = base::WrapUnique(new TestObserver());
   }
 
@@ -121,11 +124,11 @@ class HostScannerOperationTest : public testing::Test {
       const std::vector<cryptauth::RemoteDevice>& remote_devices) {
     operation_ = base::WrapUnique(new HostScannerOperation(
         remote_devices, fake_ble_connection_manager_.get(),
-        fake_host_scan_device_prioritizer_.get()));
+        test_host_scan_device_prioritizer_.get()));
     operation_->AddObserver(test_observer_.get());
 
     // Verify that the devices have been correctly prioritized.
-    fake_host_scan_device_prioritizer_->VerifyHasBeenPrioritized(
+    test_host_scan_device_prioritizer_->VerifyHasBeenPrioritized(
         remote_devices, operation_->remote_devices());
 
     EXPECT_FALSE(test_observer_->has_received_update);
@@ -205,8 +208,8 @@ class HostScannerOperationTest : public testing::Test {
   const std::vector<cryptauth::RemoteDevice> test_devices_;
 
   std::unique_ptr<FakeBleConnectionManager> fake_ble_connection_manager_;
-  std::unique_ptr<FakeHostScanDevicePrioritizer>
-      fake_host_scan_device_prioritizer_;
+  std::unique_ptr<StrictMock<TestHostScanDevicePrioritizer>>
+      test_host_scan_device_prioritizer_;
   std::unique_ptr<TestObserver> test_observer_;
   std::unique_ptr<HostScannerOperation> operation_;
 
@@ -220,36 +223,68 @@ TEST_F(HostScannerOperationTest, TestDevicesArePrioritizedDuringConstruction) {
 }
 
 TEST_F(HostScannerOperationTest, TestOperation_OneDevice_UnknownError) {
+  EXPECT_CALL(*test_host_scan_device_prioritizer_,
+              RecordSuccessfulTetherAvailabilityResponse(_))
+      .Times(0);
+
   TestOperationWithOneDevice(
       TetherAvailabilityResponse_ResponseCode ::
           TetherAvailabilityResponse_ResponseCode_UNKNOWN_ERROR);
 }
 
 TEST_F(HostScannerOperationTest, TestOperation_OneDevice_TetherAvailable) {
+  EXPECT_CALL(*test_host_scan_device_prioritizer_,
+              RecordSuccessfulTetherAvailabilityResponse(test_devices_[0]));
+
   TestOperationWithOneDevice(
       TetherAvailabilityResponse_ResponseCode ::
           TetherAvailabilityResponse_ResponseCode_TETHER_AVAILABLE);
 }
 
 TEST_F(HostScannerOperationTest, TestOperation_OneDevice_SetupNeeded) {
+  EXPECT_CALL(*test_host_scan_device_prioritizer_,
+              RecordSuccessfulTetherAvailabilityResponse(test_devices_[0]));
+
   TestOperationWithOneDevice(
       TetherAvailabilityResponse_ResponseCode ::
           TetherAvailabilityResponse_ResponseCode_SETUP_NEEDED);
 }
 
 TEST_F(HostScannerOperationTest, TestOperation_OneDevice_NoReception) {
+  EXPECT_CALL(*test_host_scan_device_prioritizer_,
+              RecordSuccessfulTetherAvailabilityResponse(_))
+      .Times(0);
+
   TestOperationWithOneDevice(
       TetherAvailabilityResponse_ResponseCode ::
           TetherAvailabilityResponse_ResponseCode_NO_RECEPTION);
 }
 
 TEST_F(HostScannerOperationTest, TestOperation_OneDevice_NoSimCard) {
+  EXPECT_CALL(*test_host_scan_device_prioritizer_,
+              RecordSuccessfulTetherAvailabilityResponse(_))
+      .Times(0);
+
   TestOperationWithOneDevice(
       TetherAvailabilityResponse_ResponseCode ::
           TetherAvailabilityResponse_ResponseCode_NO_SIM_CARD);
 }
 
 TEST_F(HostScannerOperationTest, TestMultipleDevices) {
+  EXPECT_CALL(*test_host_scan_device_prioritizer_,
+              RecordSuccessfulTetherAvailabilityResponse(test_devices_[0]));
+  EXPECT_CALL(*test_host_scan_device_prioritizer_,
+              RecordSuccessfulTetherAvailabilityResponse(test_devices_[1]))
+      .Times(0);
+  EXPECT_CALL(*test_host_scan_device_prioritizer_,
+              RecordSuccessfulTetherAvailabilityResponse(test_devices_[2]));
+  EXPECT_CALL(*test_host_scan_device_prioritizer_,
+              RecordSuccessfulTetherAvailabilityResponse(test_devices_[3]))
+      .Times(0);
+  EXPECT_CALL(*test_host_scan_device_prioritizer_,
+              RecordSuccessfulTetherAvailabilityResponse(test_devices_[4]))
+      .Times(0);
+
   ConstructOperation(test_devices_);
 
   // Simulate devices 0 and 2 authenticating successfully. Use different carrier

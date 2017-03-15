@@ -11,9 +11,14 @@
 #include "chromeos/components/tether/ble_constants.h"
 #include "chromeos/components/tether/fake_ble_connection_manager.h"
 #include "chromeos/components/tether/message_wrapper.h"
+#include "chromeos/components/tether/mock_host_scan_device_prioritizer.h"
 #include "chromeos/components/tether/proto/tether.pb.h"
 #include "components/cryptauth/remote_device_test_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using testing::_;
+using testing::StrictMock;
 
 namespace chromeos {
 
@@ -101,10 +106,13 @@ class ConnectTetheringOperationTest : public testing::Test {
 
   void SetUp() override {
     fake_ble_connection_manager_ = base::MakeUnique<FakeBleConnectionManager>();
+    mock_host_scan_device_prioritizer_ =
+        base::MakeUnique<StrictMock<MockHostScanDevicePrioritizer>>();
     test_observer_ = base::WrapUnique(new TestObserver());
 
     operation_ = base::WrapUnique(new ConnectTetheringOperation(
-        test_device_, fake_ble_connection_manager_.get()));
+        test_device_, fake_ble_connection_manager_.get(),
+        mock_host_scan_device_prioritizer_.get()));
     operation_->AddObserver(test_observer_.get());
     operation_->Initialize();
   }
@@ -156,6 +164,8 @@ class ConnectTetheringOperationTest : public testing::Test {
   const cryptauth::RemoteDevice test_device_;
 
   std::unique_ptr<FakeBleConnectionManager> fake_ble_connection_manager_;
+  std::unique_ptr<StrictMock<MockHostScanDevicePrioritizer>>
+      mock_host_scan_device_prioritizer_;
   std::unique_ptr<TestObserver> test_observer_;
   std::unique_ptr<ConnectTetheringOperation> operation_;
 
@@ -164,6 +174,10 @@ class ConnectTetheringOperationTest : public testing::Test {
 };
 
 TEST_F(ConnectTetheringOperationTest, TestOperation_SuccessButInvalidResponse) {
+  EXPECT_CALL(*mock_host_scan_device_prioritizer_,
+              RecordSuccessfulConnectTetheringResponse(_))
+      .Times(0);
+
   SimulateDeviceAuthenticationAndVerifyMessageSent();
   SimulateResponseReceivedAndVerifyObserverCallbackInvoked(
       ConnectTetheringResponse_ResponseCode::
@@ -172,6 +186,9 @@ TEST_F(ConnectTetheringOperationTest, TestOperation_SuccessButInvalidResponse) {
 }
 
 TEST_F(ConnectTetheringOperationTest, TestOperation_SuccessWithValidResponse) {
+  EXPECT_CALL(*mock_host_scan_device_prioritizer_,
+              RecordSuccessfulConnectTetheringResponse(test_device_));
+
   SimulateDeviceAuthenticationAndVerifyMessageSent();
   SimulateResponseReceivedAndVerifyObserverCallbackInvoked(
       ConnectTetheringResponse_ResponseCode::
@@ -180,6 +197,10 @@ TEST_F(ConnectTetheringOperationTest, TestOperation_SuccessWithValidResponse) {
 }
 
 TEST_F(ConnectTetheringOperationTest, TestOperation_UnknownError) {
+  EXPECT_CALL(*mock_host_scan_device_prioritizer_,
+              RecordSuccessfulConnectTetheringResponse(_))
+      .Times(0);
+
   SimulateDeviceAuthenticationAndVerifyMessageSent();
   SimulateResponseReceivedAndVerifyObserverCallbackInvoked(
       ConnectTetheringResponse_ResponseCode::
@@ -188,6 +209,10 @@ TEST_F(ConnectTetheringOperationTest, TestOperation_UnknownError) {
 }
 
 TEST_F(ConnectTetheringOperationTest, TestOperation_ProvisioningFailed) {
+  EXPECT_CALL(*mock_host_scan_device_prioritizer_,
+              RecordSuccessfulConnectTetheringResponse(_))
+      .Times(0);
+
   SimulateDeviceAuthenticationAndVerifyMessageSent();
   SimulateResponseReceivedAndVerifyObserverCallbackInvoked(
       ConnectTetheringResponse_ResponseCode::
@@ -196,6 +221,10 @@ TEST_F(ConnectTetheringOperationTest, TestOperation_ProvisioningFailed) {
 }
 
 TEST_F(ConnectTetheringOperationTest, TestCannotConnect) {
+  EXPECT_CALL(*mock_host_scan_device_prioritizer_,
+              RecordSuccessfulConnectTetheringResponse(_))
+      .Times(0);
+
   // Simulate the device failing to connect.
   fake_ble_connection_manager_->SetDeviceStatus(
       test_device_, cryptauth::SecureChannel::Status::CONNECTING);

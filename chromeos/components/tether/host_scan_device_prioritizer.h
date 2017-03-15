@@ -37,12 +37,12 @@ class HostScanDevicePrioritizer {
   // Records a TetherAvailabilityResponse. This function should be called each
   // time that a response is received from a potential host, even if a
   // connection is not started.
-  void RecordSuccessfulTetherAvailabilityResponse(
+  virtual void RecordSuccessfulTetherAvailabilityResponse(
       const cryptauth::RemoteDevice& remote_device);
 
   // Records a ConnectTetheringResponse. This function should be called each
   // time that a response is received from a host.
-  void RecordSuccessfulConnectTetheringResponse(
+  virtual void RecordSuccessfulConnectTetheringResponse(
       const cryptauth::RemoteDevice& remote_device);
 
   // Prioritizes |remote_devices| using the rules described above.
