@@ -17,7 +17,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "cc/layers/layer.h"
-#include "cc/paint/paint_canvas.h"
+#include "cc/paint/skia_paint_canvas.h"
 #include "cc/trees/layer_tree_host.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/input/synthetic_gesture_params.h"
@@ -482,7 +482,7 @@ static void PrintDocument(blink::WebFrame* frame, SkDocument* doc) {
   int page_count = frame->printBegin(params);
   for (int i = 0; i < page_count; ++i) {
     SkCanvas* sk_canvas = doc->beginPage(kPageWidth, kPageHeight);
-    cc::PaintCanvas canvas(sk_canvas);
+    cc::SkiaPaintCanvas canvas(sk_canvas);
     cc::PaintCanvasAutoRestore auto_restore(&canvas, true);
     canvas.translate(kMarginLeft, kMarginTop);
 

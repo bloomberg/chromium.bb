@@ -9,6 +9,7 @@
 #include "base/auto_reset.h"
 #include "cc/base/math_util.h"
 #include "cc/layers/painted_overlay_scrollbar_layer_impl.h"
+#include "cc/paint/skia_paint_canvas.h"
 #include "cc/resources/ui_resource_bitmap.h"
 #include "cc/resources/ui_resource_manager.h"
 #include "cc/trees/layer_tree_host.h"
@@ -148,7 +149,7 @@ bool PaintedOverlayScrollbarLayer::PaintThumbIfNeeded() {
 
   SkBitmap skbitmap;
   skbitmap.allocN32Pixels(paint_rect.width(), paint_rect.height());
-  PaintCanvas canvas(skbitmap);
+  SkiaPaintCanvas canvas(skbitmap);
 
   SkRect content_skrect = RectToSkRect(paint_rect);
   PaintFlags flags;

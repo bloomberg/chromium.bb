@@ -82,7 +82,7 @@ GraphicsContext::GraphicsContext(PaintController& paintController,
   if (contextDisabled()) {
     DEFINE_STATIC_LOCAL(SkCanvas*, nullSkCanvas,
                         (SkMakeNullCanvas().release()));
-    DEFINE_STATIC_LOCAL(PaintCanvas, nullCanvas, (nullSkCanvas));
+    DEFINE_STATIC_LOCAL(SkiaPaintCanvas, nullCanvas, (nullSkCanvas));
     m_canvas = &nullCanvas;
   }
 }

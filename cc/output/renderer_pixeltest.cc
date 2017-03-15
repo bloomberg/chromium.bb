@@ -9,8 +9,8 @@
 #include "base/message_loop/message_loop.h"
 #include "cc/base/math_util.h"
 #include "cc/output/gl_renderer.h"
-#include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_flags.h"
+#include "cc/paint/skia_paint_canvas.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/picture_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
@@ -1963,7 +1963,7 @@ TYPED_TEST(RendererPixelTest, RenderPassAndMaskWithPartialQuad) {
   SkBitmap bitmap;
   bitmap.allocPixels(
       SkImageInfo::MakeN32Premul(mask_rect.width(), mask_rect.height()));
-  PaintCanvas canvas(bitmap);
+  SkiaPaintCanvas canvas(bitmap);
   PaintFlags flags;
   flags.setStyle(PaintFlags::kStroke_Style);
   flags.setStrokeWidth(SkIntToScalar(4));
@@ -2058,7 +2058,7 @@ TYPED_TEST(RendererPixelTest, RenderPassAndMaskWithPartialQuad2) {
   SkBitmap bitmap;
   bitmap.allocPixels(
       SkImageInfo::MakeN32Premul(mask_rect.width(), mask_rect.height()));
-  PaintCanvas canvas(bitmap);
+  SkiaPaintCanvas canvas(bitmap);
   PaintFlags flags;
   flags.setStyle(PaintFlags::kStroke_Style);
   flags.setStrokeWidth(SkIntToScalar(4));

@@ -14,6 +14,7 @@
 #include "base/trace_event/trace_event.h"
 #include "cc/base/math_util.h"
 #include "cc/output/gl_renderer.h"
+#include "cc/paint/skia_paint_canvas.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/resource_util.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -518,7 +519,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
 
         ResourceProvider::ScopedWriteLockSoftware lock(
             resource_provider_, plane_resource.resource_id());
-        PaintCanvas canvas(lock.sk_bitmap());
+        SkiaPaintCanvas canvas(lock.sk_bitmap());
         // This is software path, so canvas and video_frame are always backed
         // by software.
         video_renderer_->Copy(video_frame, &canvas, media::Context3D());

@@ -62,7 +62,7 @@ AcceleratedImageBufferSurface::AcceleratedImageBufferSurface(
   if (!m_surface)
     return;
 
-  m_canvas = WTF::wrapUnique(new PaintCanvas(m_surface->getCanvas()));
+  m_canvas = WTF::wrapUnique(new SkiaPaintCanvas(m_surface->getCanvas()));
   clear();
 
   // Always save an initial frame, to support resetting the top level matrix

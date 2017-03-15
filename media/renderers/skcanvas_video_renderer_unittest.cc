@@ -124,7 +124,7 @@ class SkCanvasVideoRendererTest : public testing::Test {
   scoped_refptr<VideoFrame> smaller_frame_;
   scoped_refptr<VideoFrame> cropped_frame_;
 
-  cc::PaintCanvas target_canvas_;
+  cc::SkiaPaintCanvas target_canvas_;
   base::MessageLoop message_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(SkCanvasVideoRendererTest);
@@ -368,7 +368,7 @@ TEST_F(SkCanvasVideoRendererTest, CroppedFrame) {
 }
 
 TEST_F(SkCanvasVideoRendererTest, CroppedFrame_NoScaling) {
-  cc::PaintCanvas canvas(AllocBitmap(kWidth, kHeight));
+  cc::SkiaPaintCanvas canvas(AllocBitmap(kWidth, kHeight));
   const gfx::Rect crop_rect = cropped_frame()->visible_rect();
 
   // Force painting to a non-zero position on the destination bitmap, to check
@@ -395,7 +395,7 @@ TEST_F(SkCanvasVideoRendererTest, CroppedFrame_NoScaling) {
 }
 
 TEST_F(SkCanvasVideoRendererTest, Video_Rotation_90) {
-  cc::PaintCanvas canvas(AllocBitmap(kWidth, kHeight));
+  cc::SkiaPaintCanvas canvas(AllocBitmap(kWidth, kHeight));
   PaintRotated(cropped_frame(), &canvas, kNaturalRect, kNone,
                SkBlendMode::kSrcOver, VIDEO_ROTATION_90);
   // Check the corners.
@@ -406,7 +406,7 @@ TEST_F(SkCanvasVideoRendererTest, Video_Rotation_90) {
 }
 
 TEST_F(SkCanvasVideoRendererTest, Video_Rotation_180) {
-  cc::PaintCanvas canvas(AllocBitmap(kWidth, kHeight));
+  cc::SkiaPaintCanvas canvas(AllocBitmap(kWidth, kHeight));
   PaintRotated(cropped_frame(), &canvas, kNaturalRect, kNone,
                SkBlendMode::kSrcOver, VIDEO_ROTATION_180);
   // Check the corners.
@@ -417,7 +417,7 @@ TEST_F(SkCanvasVideoRendererTest, Video_Rotation_180) {
 }
 
 TEST_F(SkCanvasVideoRendererTest, Video_Rotation_270) {
-  cc::PaintCanvas canvas(AllocBitmap(kWidth, kHeight));
+  cc::SkiaPaintCanvas canvas(AllocBitmap(kWidth, kHeight));
   PaintRotated(cropped_frame(), &canvas, kNaturalRect, kNone,
                SkBlendMode::kSrcOver, VIDEO_ROTATION_270);
   // Check the corners.
@@ -428,7 +428,7 @@ TEST_F(SkCanvasVideoRendererTest, Video_Rotation_270) {
 }
 
 TEST_F(SkCanvasVideoRendererTest, Video_Translate) {
-  cc::PaintCanvas canvas(AllocBitmap(kWidth, kHeight));
+  cc::SkiaPaintCanvas canvas(AllocBitmap(kWidth, kHeight));
   FillCanvas(&canvas, SK_ColorMAGENTA);
 
   PaintRotated(cropped_frame(), &canvas,
@@ -447,7 +447,7 @@ TEST_F(SkCanvasVideoRendererTest, Video_Translate) {
 }
 
 TEST_F(SkCanvasVideoRendererTest, Video_Translate_Rotation_90) {
-  cc::PaintCanvas canvas(AllocBitmap(kWidth, kHeight));
+  cc::SkiaPaintCanvas canvas(AllocBitmap(kWidth, kHeight));
   FillCanvas(&canvas, SK_ColorMAGENTA);
 
   PaintRotated(cropped_frame(), &canvas,
@@ -466,7 +466,7 @@ TEST_F(SkCanvasVideoRendererTest, Video_Translate_Rotation_90) {
 }
 
 TEST_F(SkCanvasVideoRendererTest, Video_Translate_Rotation_180) {
-  cc::PaintCanvas canvas(AllocBitmap(kWidth, kHeight));
+  cc::SkiaPaintCanvas canvas(AllocBitmap(kWidth, kHeight));
   FillCanvas(&canvas, SK_ColorMAGENTA);
 
   PaintRotated(cropped_frame(), &canvas,
@@ -485,7 +485,7 @@ TEST_F(SkCanvasVideoRendererTest, Video_Translate_Rotation_180) {
 }
 
 TEST_F(SkCanvasVideoRendererTest, Video_Translate_Rotation_270) {
-  cc::PaintCanvas canvas(AllocBitmap(kWidth, kHeight));
+  cc::SkiaPaintCanvas canvas(AllocBitmap(kWidth, kHeight));
   FillCanvas(&canvas, SK_ColorMAGENTA);
 
   PaintRotated(cropped_frame(), &canvas,
@@ -558,7 +558,7 @@ TEST_F(SkCanvasVideoRendererTest, Y16) {
       CreateTestY16Frame(gfx::Size(stride, offset_y + bitmap.height()), rect,
                          memory.get(), cropped_frame()->timestamp());
 
-  cc::PaintCanvas canvas(bitmap);
+  cc::SkiaPaintCanvas canvas(bitmap);
   cc::PaintFlags flags;
   flags.setFilterQuality(kNone_SkFilterQuality);
   renderer_.Paint(video_frame, &canvas,
@@ -645,7 +645,7 @@ TEST_F(SkCanvasVideoRendererTest, ContextLost) {
       reinterpret_cast<GrBackendContext>(null_interface.get())));
   gr_context->abandonContext();
 
-  cc::PaintCanvas canvas(AllocBitmap(kWidth, kHeight));
+  cc::SkiaPaintCanvas canvas(AllocBitmap(kWidth, kHeight));
 
   TestGLES2Interface gles2;
   Context3D context_3d(&gles2, gr_context.get());
@@ -676,7 +676,7 @@ TEST_F(SkCanvasVideoRendererTest, CorrectFrameSizeToVisibleRect) {
 
   sk_sp<SkSurface> surface =
       SkSurface::MakeRenderTarget(grContext.get(), SkBudgeted::kYes, imInfo);
-  cc::PaintCanvas canvas(surface->getCanvas());
+  cc::SkiaPaintCanvas canvas(surface->getCanvas());
 
   TestGLES2Interface gles2;
   Context3D context_3d(&gles2, grContext.get());

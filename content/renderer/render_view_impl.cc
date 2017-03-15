@@ -38,6 +38,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
+#include "cc/paint/skia_paint_canvas.h"
 #include "content/child/appcache/appcache_dispatcher.h"
 #include "content/child/appcache/web_application_cache_host_impl.h"
 #include "content/child/child_shared_bitmap_manager.h"
@@ -2528,7 +2529,7 @@ bool RenderViewImpl::didTapMultipleTargets(
         SkImageInfo info = SkImageInfo::MakeN32Premul(canvas_size.width(),
                                                       canvas_size.height());
         bitmap.installPixels(info, shared_bitmap->pixels(), info.minRowBytes());
-        cc::PaintCanvas canvas(bitmap);
+        cc::SkiaPaintCanvas canvas(bitmap);
 
         // TODO(trchen): Cleanup the device scale factor mess.
         // device scale will be applied in WebKit

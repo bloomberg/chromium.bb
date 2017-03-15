@@ -97,7 +97,7 @@ TEST(DisplayItemListTest, SingleDrawingItem) {
   SkImageInfo info =
       SkImageInfo::MakeN32Premul(layer_rect.width(), layer_rect.height());
   expected_bitmap.installPixels(info, expected_pixels, info.minRowBytes());
-  PaintCanvas expected_canvas(expected_bitmap);
+  SkiaPaintCanvas expected_canvas(expected_bitmap);
   expected_canvas.clipRect(gfx::RectToSkRect(layer_rect));
   expected_canvas.drawRect(
       SkRect::MakeLTRB(0.f + offset.x(), 0.f + offset.y(), 60.f + offset.x(),
@@ -153,7 +153,7 @@ TEST(DisplayItemListTest, ClipItem) {
   SkImageInfo info =
       SkImageInfo::MakeN32Premul(layer_rect.width(), layer_rect.height());
   expected_bitmap.installPixels(info, expected_pixels, info.minRowBytes());
-  PaintCanvas expected_canvas(expected_bitmap);
+  SkiaPaintCanvas expected_canvas(expected_bitmap);
   expected_canvas.clipRect(gfx::RectToSkRect(layer_rect));
   expected_canvas.drawRect(
       SkRect::MakeLTRB(0.f + first_offset.x(), 0.f + first_offset.y(),
@@ -210,7 +210,7 @@ TEST(DisplayItemListTest, TransformItem) {
   SkImageInfo info =
       SkImageInfo::MakeN32Premul(layer_rect.width(), layer_rect.height());
   expected_bitmap.installPixels(info, expected_pixels, info.minRowBytes());
-  PaintCanvas expected_canvas(expected_bitmap);
+  SkiaPaintCanvas expected_canvas(expected_bitmap);
   expected_canvas.clipRect(gfx::RectToSkRect(layer_rect));
   expected_canvas.drawRect(
       SkRect::MakeLTRB(0.f + first_offset.x(), 0.f + first_offset.y(),
@@ -283,7 +283,7 @@ TEST(DisplayItemListTest, FilterItem) {
   SkImageInfo info =
       SkImageInfo::MakeN32Premul(layer_rect.width(), layer_rect.height());
   expected_bitmap.installPixels(info, expected_pixels, info.minRowBytes());
-  PaintCanvas expected_canvas(expected_bitmap);
+  SkiaPaintCanvas expected_canvas(expected_bitmap);
   expected_canvas.drawRect(RectFToSkRect(filter_bounds), paint);
 
   EXPECT_EQ(0, memcmp(pixels, expected_pixels, 4 * 100 * 100));

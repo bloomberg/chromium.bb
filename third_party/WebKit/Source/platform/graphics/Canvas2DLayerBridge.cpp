@@ -569,7 +569,7 @@ SkSurface* Canvas2DLayerBridge::getOrCreateSurface(AccelerationHint hint) {
       m_msaaSampleCount, m_opacityMode, skSurfaceColorSpace(), m_colorType,
       &surfaceIsAccelerated);
   m_surfacePaintCanvas =
-      WTF::wrapUnique(new PaintCanvas(m_surface->getCanvas()));
+      WTF::wrapUnique(new SkiaPaintCanvas(m_surface->getCanvas()));
 
   if (m_surface) {
     // Always save an initial frame, to support resetting the top level matrix

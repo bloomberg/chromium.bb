@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "cc/paint/skia_paint_canvas.h"
 #include "content/public/common/web_preferences.h"
 #include "ppapi/proxy/connection.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
@@ -341,11 +342,11 @@ PP_Bool BrowserFontResource_Trusted::DrawTextAt(
       return result;
 
     SkSurfaceProps props(0, kUnknown_SkPixelGeometry);
-    cc::PaintCanvas temp_canvas(bm, props);
+    cc::SkiaPaintCanvas temp_canvas(bm, props);
 
     DrawTextToCanvas(&temp_canvas, *text, position, color, clip);
   } else {
-    cc::PaintCanvas temp_canvas(canvas);
+    cc::SkiaPaintCanvas temp_canvas(canvas);
     DrawTextToCanvas(&temp_canvas, *text, position, color, clip);
   }
 

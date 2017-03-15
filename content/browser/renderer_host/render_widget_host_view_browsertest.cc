@@ -14,6 +14,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "cc/paint/skia_paint_canvas.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/renderer_host/dip_util.h"
@@ -498,7 +499,7 @@ class CompositingRenderWidgetHostViewBrowserTestTabCapture
     bitmap.allocN32Pixels(video_frame->visible_rect().width(),
                           video_frame->visible_rect().height());
     // Don't clear the canvas because drawing a video frame by Src mode.
-    cc::PaintCanvas canvas(bitmap);
+    cc::SkiaPaintCanvas canvas(bitmap);
     video_renderer.Copy(video_frame, &canvas, media::Context3D());
 
     ReadbackRequestCallbackTest(quit_callback, bitmap, READBACK_SUCCESS);

@@ -15,12 +15,9 @@
 #include "ppapi/shared_impl/proxy_lock.h"
 #include "ppapi/shared_impl/test_globals.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/platform/WebCanvas.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
-
-using blink::WebCanvas;
 
 namespace content {
 
@@ -69,14 +66,6 @@ class PepperGraphics2DHostTest : public testing::Test {
     host_->OnHostMsgFlush(&context);
     host_->ViewInitiatedPaint();
     host_->SendOffscreenFlushAck();
-  }
-
-  void PaintToWebCanvas(SkBitmap* bitmap) {
-    std::unique_ptr<WebCanvas> canvas(new WebCanvas(*bitmap));
-    gfx::Rect plugin_rect(PP_ToGfxRect(renderer_view_data_.rect));
-    host_->Paint(canvas.get(),
-                 plugin_rect,
-                 gfx::Rect(0, 0, plugin_rect.width(), plugin_rect.height()));
   }
 
   void ResetPageBitmap(SkBitmap* bitmap) {

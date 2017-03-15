@@ -8,8 +8,8 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
-#include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_export.h"
+#include "cc/paint/skia_paint_canvas.h"
 #include "third_party/skia/include/core/SkSurface.h"
 
 namespace cc {
@@ -49,7 +49,7 @@ class CC_PAINT_EXPORT PaintSurface : public SkRefCntBase {
 
  private:
   const sk_sp<SkSurface> surface_;
-  base::Optional<PaintCanvas> canvas_;
+  base::Optional<SkiaPaintCanvas> canvas_;
 
   DISALLOW_COPY_AND_ASSIGN(PaintSurface);
 };

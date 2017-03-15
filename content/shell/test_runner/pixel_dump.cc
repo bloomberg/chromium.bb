@@ -12,8 +12,8 @@
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
-#include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_flags.h"
+#include "cc/paint/skia_paint_canvas.h"
 #include "content/shell/test_runner/layout_test_runtime_flags.h"
 // FIXME: Including platform_canvas.h here is a layering violation.
 #include "skia/ext/platform_canvas.h"
@@ -108,7 +108,7 @@ void CapturePixelsForPrinting(std::unique_ptr<PixelsDumpRequest> dump_request) {
     return;
   }
 
-  cc::PaintCanvas canvas(bitmap);
+  cc::SkiaPaintCanvas canvas(bitmap);
   web_frame->printPagesWithBoundaries(&canvas, page_size_in_pixels);
   web_frame->printEnd();
 
@@ -142,7 +142,7 @@ void CaptureCallback::didCompositeAndReadback(const SkBitmap& bitmap) {
 
 void DidCapturePixelsAsync(std::unique_ptr<PixelsDumpRequest> dump_request,
                            const SkBitmap& bitmap) {
-  cc::PaintCanvas canvas(bitmap);
+  cc::SkiaPaintCanvas canvas(bitmap);
   DrawSelectionRect(*dump_request, &canvas);
   if (!dump_request->callback.is_null())
     dump_request->callback.Run(bitmap);

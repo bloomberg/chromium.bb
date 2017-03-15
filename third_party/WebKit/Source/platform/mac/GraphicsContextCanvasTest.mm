@@ -27,7 +27,7 @@ void RunTest(TestType test) {
   SkBitmap bitmap;
   bitmap.installPixels(info, bits, info.minRowBytes());
 
-  PaintCanvas canvas(bitmap);
+  SkiaPaintCanvas canvas(bitmap);
   if (test & TestTranslate)
     canvas.translate(width / 2, 0);
   if (test & TestClip) {

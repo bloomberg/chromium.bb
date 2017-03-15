@@ -9,7 +9,6 @@
 #include "cc/paint/paint_recorder.h"
 #include "third_party/skia/include/core/SkAnnotation.h"
 #include "third_party/skia/include/core/SkMetaData.h"
-#include "third_party/skia/include/utils/SkNWayCanvas.h"
 
 #if defined(OS_MACOSX)
 namespace {
@@ -19,27 +18,8 @@ const char kIsPreviewMetafileKey[] = "CrIsPreviewMetafile";
 
 namespace cc {
 
-PaintCanvas::PaintCanvas(SkCanvas* canvas) : canvas_(canvas) {}
-
-PaintCanvas::PaintCanvas(const SkBitmap& bitmap)
-    : canvas_(new SkCanvas(bitmap)), owned_(canvas_) {}
-
-PaintCanvas::PaintCanvas(const SkBitmap& bitmap, const SkSurfaceProps& props)
-    : canvas_(new SkCanvas(bitmap, props)), owned_(canvas_) {}
-
-PaintCanvas::~PaintCanvas() = default;
-
 bool ToPixmap(PaintCanvas* canvas, SkPixmap* output) {
-  SkImageInfo info;
-  size_t row_bytes;
-  void* pixels = canvas->canvas_->accessTopLayerPixels(&info, &row_bytes);
-  if (!pixels) {
-    output->reset();
-    return false;
-  }
-
-  output->reset(info, pixels, row_bytes);
-  return true;
+  return canvas->ToPixmap(output);
 }
 
 #if defined(OS_MACOSX)
@@ -60,19 +40,19 @@ bool IsPreviewMetafile(PaintCanvas* canvas) {
 void PaintCanvasAnnotateRectWithURL(PaintCanvas* canvas,
                                     const SkRect& rect,
                                     SkData* data) {
-  SkAnnotateRectWithURL(canvas->canvas_, rect, data);
+  canvas->AnnotateRectWithURL(rect, data);
 }
 
 void PaintCanvasAnnotateNamedDestination(PaintCanvas* canvas,
                                          const SkPoint& point,
                                          SkData* data) {
-  SkAnnotateNamedDestination(canvas->canvas_, point, data);
+  canvas->AnnotateNamedDestination(point, data);
 }
 
 void PaintCanvasAnnotateLinkToDestination(PaintCanvas* canvas,
                                           const SkRect& rect,
                                           SkData* data) {
-  SkAnnotateLinkToDestination(canvas->canvas_, rect, data);
+  canvas->AnnotateLinkToDestination(rect, data);
 }
 
 }  // namespace cc

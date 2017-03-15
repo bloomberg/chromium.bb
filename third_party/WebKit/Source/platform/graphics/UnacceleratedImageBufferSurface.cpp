@@ -56,7 +56,7 @@ UnacceleratedImageBufferSurface::UnacceleratedImageBufferSurface(
 
   // Always save an initial frame, to support resetting the top level matrix
   // and clip.
-  m_canvas = WTF::wrapUnique(new PaintCanvas(m_surface->getCanvas()));
+  m_canvas = WTF::wrapUnique(new SkiaPaintCanvas(m_surface->getCanvas()));
   m_canvas->save();
 
   if (initializationMode == InitializeImagePixels)

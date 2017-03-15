@@ -17,6 +17,8 @@ cc_component("paint") {
     "paint_shader.h",
     "paint_surface.cc",
     "paint_surface.h",
+    "skia_paint_canvas.cc",
+    "skia_paint_canvas.h",
   ]
 
   defines = [ "CC_PAINT_IMPLEMENTATION=1" ]

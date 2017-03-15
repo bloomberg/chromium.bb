@@ -68,7 +68,7 @@ static SkBitmap recordToBitmap(const PaintRecord* record) {
   SkBitmap bitmap;
   SkRect rect = record->cullRect();
   bitmap.allocPixels(SkImageInfo::MakeN32Premul(rect.width(), rect.height()));
-  PaintCanvas canvas(bitmap);
+  SkiaPaintCanvas canvas(bitmap);
   canvas.clear(SK_ColorTRANSPARENT);
   canvas.translate(-rect.x(), -rect.y());
   canvas.drawPicture(record);
