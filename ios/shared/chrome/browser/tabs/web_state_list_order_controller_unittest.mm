@@ -19,15 +19,15 @@ const char kURL[] = "https://chromium.org/";
 
 // A fake NavigationManager used to test opener-opened relationship in the
 // WebStateList.
-class FakeNavigationManer : public web::TestNavigationManager {
+class FakeNavigationManager : public web::TestNavigationManager {
  public:
-  FakeNavigationManer() = default;
+  FakeNavigationManager() = default;
 
   // web::NavigationManager implementation.
   int GetCurrentItemIndex() const override { return 0; }
   int GetLastCommittedItemIndex() const override { return 0; }
 
-  DISALLOW_COPY_AND_ASSIGN(FakeNavigationManer);
+  DISALLOW_COPY_AND_ASSIGN(FakeNavigationManager);
 };
 
 }  // namespace
@@ -50,7 +50,7 @@ class WebStateListOrderControllerTest : public PlatformTest {
     auto test_web_state = base::MakeUnique<web::TestWebState>();
     test_web_state->SetCurrentURL(GURL(kURL));
     test_web_state->SetNavigationManager(
-        base::MakeUnique<FakeNavigationManer>());
+        base::MakeUnique<FakeNavigationManager>());
     return test_web_state.release();
   }
 

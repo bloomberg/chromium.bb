@@ -106,9 +106,9 @@ class WebStateListTestObserver : public WebStateListObserver {
 
 // A fake NavigationManager used to test opener-opened relationship in the
 // WebStateList.
-class FakeNavigationManer : public web::TestNavigationManager {
+class FakeNavigationManager : public web::TestNavigationManager {
  public:
-  FakeNavigationManer() = default;
+  FakeNavigationManager() = default;
 
   // web::NavigationManager implementation.
   int GetCurrentItemIndex() const override { return current_item_index_; }
@@ -133,7 +133,7 @@ class FakeNavigationManer : public web::TestNavigationManager {
 
   int current_item_index_ = 0;
 
-  DISALLOW_COPY_AND_ASSIGN(FakeNavigationManer);
+  DISALLOW_COPY_AND_ASSIGN(FakeNavigationManager);
 };
 
 }  // namespace
@@ -160,7 +160,7 @@ class WebStateListTest : public PlatformTest {
     auto test_web_state = base::MakeUnique<web::TestWebState>();
     test_web_state->SetCurrentURL(GURL(url));
     test_web_state->SetNavigationManager(
-        base::MakeUnique<FakeNavigationManer>());
+        base::MakeUnique<FakeNavigationManager>());
     return test_web_state.release();
   }
 
