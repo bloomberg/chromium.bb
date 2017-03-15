@@ -1022,7 +1022,6 @@ void RenderWidgetHostViewAura::GestureEventAck(
 void RenderWidgetHostViewAura::ProcessAckedTouchEvent(
     const TouchEventWithLatencyInfo& touch,
     InputEventAckState ack_result) {
-  ScopedVector<ui::TouchEvent> events;
   aura::WindowTreeHost* host = window_->GetHost();
   // |host| is NULL during tests.
   if (!host)

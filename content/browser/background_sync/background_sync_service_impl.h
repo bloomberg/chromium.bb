@@ -7,10 +7,12 @@
 
 #include <stdint.h>
 
+#include <memory>
+#include <vector>
+
 #include "base/id_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
 #include "content/browser/background_sync/background_sync_manager.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/WebKit/public/platform/modules/background_sync/background_sync.mojom.h"
@@ -44,7 +46,8 @@ class CONTENT_EXPORT BackgroundSyncServiceImpl
   void OnGetRegistrationsResult(
       const GetRegistrationsCallback& callback,
       BackgroundSyncStatus status,
-      std::unique_ptr<ScopedVector<BackgroundSyncRegistration>> result);
+      std::unique_ptr<std::vector<std::unique_ptr<BackgroundSyncRegistration>>>
+          result);
 
   // Called when an error is detected on binding_.
   void OnConnectionError();

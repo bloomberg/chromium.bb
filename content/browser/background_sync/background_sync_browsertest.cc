@@ -4,6 +4,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -73,10 +74,11 @@ void RegistrationPendingDidGetSyncRegistration(
     const std::string& tag,
     const base::Callback<void(bool)>& callback,
     BackgroundSyncStatus error_type,
-    std::unique_ptr<ScopedVector<BackgroundSyncRegistration>> registrations) {
+    std::unique_ptr<std::vector<std::unique_ptr<BackgroundSyncRegistration>>>
+        registrations) {
   ASSERT_EQ(BACKGROUND_SYNC_STATUS_OK, error_type);
   // Find the right registration in the list and check its status.
-  for (const BackgroundSyncRegistration* registration : *registrations) {
+  for (const auto& registration : *registrations) {
     if (registration->options()->tag == tag) {
       callback.Run(registration->sync_state() ==
                    blink::mojom::BackgroundSyncState::PENDING);

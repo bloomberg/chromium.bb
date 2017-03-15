@@ -6,7 +6,6 @@
 #define CONTENT_BROWSER_PERMISSIONS_PERMISSION_SERVICE_CONTEXT_H_
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "mojo/public/cpp/bindings/interface_request.h"

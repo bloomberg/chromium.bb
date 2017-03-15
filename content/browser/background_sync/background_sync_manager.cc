@@ -216,9 +216,8 @@ void BackgroundSyncManager::GetRegistrations(
         FROM_HERE,
         base::Bind(
             callback, BACKGROUND_SYNC_STATUS_STORAGE_ERROR,
-            base::Passed(
-                std::unique_ptr<ScopedVector<BackgroundSyncRegistration>>(
-                    new ScopedVector<BackgroundSyncRegistration>()))));
+            base::Passed(base::MakeUnique<std::vector<
+                             std::unique_ptr<BackgroundSyncRegistration>>>())));
     return;
   }
 
@@ -789,13 +788,13 @@ void BackgroundSyncManager::GetRegistrationsImpl(
     const StatusAndRegistrationsCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  std::unique_ptr<ScopedVector<BackgroundSyncRegistration>> out_registrations(
-      new ScopedVector<BackgroundSyncRegistration>());
+  auto out_registrations = base::MakeUnique<
+      std::vector<std::unique_ptr<BackgroundSyncRegistration>>>();
 
   if (disabled_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(callback, BACKGROUND_SYNC_STATUS_STORAGE_ERROR,
-                              base::Passed(std::move(out_registrations))));
+                              base::Passed(&out_registrations)));
     return;
   }
 
@@ -807,15 +806,14 @@ void BackgroundSyncManager::GetRegistrationsImpl(
     for (const auto& tag_and_registration : registrations.registration_map) {
       const BackgroundSyncRegistration& registration =
           tag_and_registration.second;
-      BackgroundSyncRegistration* out_registration =
-          new BackgroundSyncRegistration(registration);
-      out_registrations->push_back(out_registration);
+      out_registrations->push_back(
+          base::MakeUnique<BackgroundSyncRegistration>(registration));
     }
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(callback, BACKGROUND_SYNC_STATUS_OK,
-                            base::Passed(std::move(out_registrations))));
+                            base::Passed(&out_registrations)));
 }
 
 bool BackgroundSyncManager::AreOptionConditionsMet(

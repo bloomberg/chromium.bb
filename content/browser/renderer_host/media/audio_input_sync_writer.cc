@@ -63,9 +63,7 @@ AudioInputSyncWriter::AudioInputSyncWriter(void* shared_memory,
     CHECK_EQ(0U, reinterpret_cast<uintptr_t>(ptr) &
         (AudioBus::kChannelAlignment - 1));
     AudioInputBuffer* buffer = reinterpret_cast<AudioInputBuffer*>(ptr);
-    std::unique_ptr<AudioBus> audio_bus =
-        AudioBus::WrapMemory(params, buffer->audio);
-    audio_buses_.push_back(std::move(audio_bus));
+    audio_buses_.push_back(AudioBus::WrapMemory(params, buffer->audio));
     ptr += shared_memory_segment_size_;
   }
 }
@@ -153,8 +151,7 @@ void AudioInputSyncWriter::Write(const AudioBus* data,
     WriteParametersToCurrentSegment(volume, key_pressed, hardware_delay_bytes);
 
     // Copy data into shared memory using pre-allocated audio buses.
-    AudioBus* audio_bus = audio_buses_[current_segment_id_];
-    data->CopyTo(audio_bus);
+    data->CopyTo(audio_buses_[current_segment_id_].get());
 
     if (!SignalDataWrittenAndUpdateCounters())
       write_error = true;
@@ -291,7 +288,7 @@ bool AudioInputSyncWriter::WriteDataFromFifoToSharedMemory() {
 
     // Copy data from the fifo into shared memory using pre-allocated audio
     // buses.
-    (*audio_bus_it)->CopyTo(audio_buses_[current_segment_id_]);
+    (*audio_bus_it)->CopyTo(audio_buses_[current_segment_id_].get());
 
     if (!SignalDataWrittenAndUpdateCounters())
       write_error = true;

@@ -50,7 +50,7 @@ std::string ConfigToString(const BackgroundTracingConfig* config) {
   return "";
 }
 
-std::string RuleToString(const BackgroundTracingRule* rule) {
+std::string RuleToString(const std::unique_ptr<BackgroundTracingRule>& rule) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
 
   rule->IntoDict(dict.get());

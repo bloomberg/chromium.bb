@@ -8,10 +8,10 @@
 #include <memory>
 #include <queue>
 #include <utility>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
 #include "content/browser/renderer_host/input/synthetic_gesture.h"
 #include "content/common/content_export.h"
@@ -67,9 +67,7 @@ class CONTENT_EXPORT SyntheticGestureController {
       gestures_.erase(gestures_.begin());
       callbacks_.pop();
     }
-    SyntheticGesture* FrontGesture() {
-      return gestures_.front();
-    }
+    SyntheticGesture* FrontGesture() { return gestures_.front().get(); }
     OnGestureCompleteCallback& FrontCallback() {
       return callbacks_.front();
     }
@@ -78,8 +76,10 @@ class CONTENT_EXPORT SyntheticGestureController {
       return gestures_.empty();
     }
    private:
-    ScopedVector<SyntheticGesture> gestures_;
+    std::vector<std::unique_ptr<SyntheticGesture>> gestures_;
     std::queue<OnGestureCompleteCallback> callbacks_;
+
+    DISALLOW_COPY_AND_ASSIGN(GestureAndCallbackQueue);
   } pending_gesture_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(SyntheticGestureController);

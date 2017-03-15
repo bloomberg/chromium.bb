@@ -5,9 +5,11 @@
 #ifndef CONTENT_BROWSER_TRACING_BACKGROUND_TRACING_CONFIG_IMPL_H_
 #define CONTENT_BROWSER_TRACING_BACKGROUND_TRACING_CONFIG_IMPL_H_
 
+#include <memory>
+#include <vector>
+
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/background_tracing_config.h"
 
@@ -43,7 +45,9 @@ class CONTENT_EXPORT BackgroundTracingConfigImpl
     category_preset_ = category_preset;
   }
 
-  const ScopedVector<BackgroundTracingRule>& rules() const { return rules_; }
+  const std::vector<std::unique_ptr<BackgroundTracingRule>>& rules() const {
+    return rules_;
+  }
   const std::string& scenario_name() const { return scenario_name_; }
   const std::string& enable_blink_features() const {
     return enable_blink_features_;
@@ -76,7 +80,7 @@ class CONTENT_EXPORT BackgroundTracingConfigImpl
                            ValidPreemptiveConfigToString);
 
   CategoryPreset category_preset_;
-  ScopedVector<BackgroundTracingRule> rules_;
+  std::vector<std::unique_ptr<BackgroundTracingRule>> rules_;
   std::string scenario_name_;
   std::string enable_blink_features_;
   std::string disable_blink_features_;

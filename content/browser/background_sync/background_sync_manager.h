@@ -17,7 +17,6 @@
 #include "base/callback_forward.h"
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/clock.h"
 #include "content/browser/background_sync/background_sync.pb.h"
@@ -59,9 +58,10 @@ class CONTENT_EXPORT BackgroundSyncManager
   using StatusAndRegistrationCallback =
       base::Callback<void(BackgroundSyncStatus,
                           std::unique_ptr<BackgroundSyncRegistration>)>;
-  using StatusAndRegistrationsCallback = base::Callback<void(
-      BackgroundSyncStatus,
-      std::unique_ptr<ScopedVector<BackgroundSyncRegistration>>)>;
+  using StatusAndRegistrationsCallback =
+      base::Callback<void(BackgroundSyncStatus,
+                          std::unique_ptr<std::vector<
+                              std::unique_ptr<BackgroundSyncRegistration>>>)>;
 
   static std::unique_ptr<BackgroundSyncManager> Create(
       scoped_refptr<ServiceWorkerContextWrapper> service_worker_context);

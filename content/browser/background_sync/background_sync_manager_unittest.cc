@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
@@ -207,7 +208,8 @@ class BackgroundSyncManagerTest : public testing::Test {
   void StatusAndRegistrationsCallback(
       bool* was_called,
       BackgroundSyncStatus status,
-      std::unique_ptr<ScopedVector<BackgroundSyncRegistration>> registrations) {
+      std::unique_ptr<std::vector<std::unique_ptr<BackgroundSyncRegistration>>>
+          registrations) {
     *was_called = true;
     callback_status_ = status;
     callback_registrations_ = std::move(registrations);
@@ -308,8 +310,8 @@ class BackgroundSyncManagerTest : public testing::Test {
         if ((*iter)->options()->tag == registration_options.tag) {
           // Transfer the matching registration out of the vector into
           // callback_registration_ for testing.
-          callback_registration_.reset(*iter);
-          callback_registrations_->weak_erase(iter);
+          callback_registration_ = std::move(*iter);
+          callback_registrations_->erase(iter);
           return true;
         }
       }
@@ -425,7 +427,7 @@ class BackgroundSyncManagerTest : public testing::Test {
   // Callback values.
   BackgroundSyncStatus callback_status_ = BACKGROUND_SYNC_STATUS_OK;
   std::unique_ptr<BackgroundSyncRegistration> callback_registration_;
-  std::unique_ptr<ScopedVector<BackgroundSyncRegistration>>
+  std::unique_ptr<std::vector<std::unique_ptr<BackgroundSyncRegistration>>>
       callback_registrations_;
   ServiceWorkerStatusCode callback_sw_status_code_ = SERVICE_WORKER_OK;
   int sync_events_called_ = 0;

@@ -5,7 +5,10 @@
 #include <stddef.h>
 
 #include <limits>
+#include <memory>
+#include <vector>
 
+#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/test/mock_render_process_host.h"
@@ -50,9 +53,9 @@ TEST_F(RenderProcessHostUnitTest, RendererProcessLimit) {
 
   // Add dummy process hosts to saturate the limit.
   ASSERT_NE(0u, kMaxRendererProcessCount);
-  ScopedVector<MockRenderProcessHost> hosts;
+  std::vector<std::unique_ptr<MockRenderProcessHost>> hosts;
   for (size_t i = 0; i < kMaxRendererProcessCount; ++i) {
-    hosts.push_back(new MockRenderProcessHost(browser_context()));
+    hosts.push_back(base::MakeUnique<MockRenderProcessHost>(browser_context()));
   }
 
   // Verify that the renderer sharing will happen.
@@ -73,9 +76,9 @@ TEST_F(RenderProcessHostUnitTest, NoRendererProcessLimitOnAndroid) {
 
   // Add a few dummy process hosts.
   ASSERT_NE(0u, kMaxRendererProcessCount);
-  ScopedVector<MockRenderProcessHost> hosts;
+  std::vector<std::unique_ptr<MockRenderProcessHost>> hosts;
   for (size_t i = 0; i < kMaxRendererProcessCount; ++i) {
-    hosts.push_back(new MockRenderProcessHost(browser_context()));
+    hosts.push_back(base::MakeUnique<MockRenderProcessHost>(browser_context()));
   }
 
   // Verify that the renderer sharing still won't happen.

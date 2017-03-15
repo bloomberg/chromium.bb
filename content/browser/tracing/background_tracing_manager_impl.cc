@@ -178,9 +178,9 @@ bool BackgroundTracingManagerImpl::SetActiveScenario(
   requires_anonymized_data_ = requires_anonymized_data;
 
   if (config_) {
-    DCHECK(!config_.get()->rules().empty());
-    for (auto* rule : config_.get()->rules())
-      static_cast<BackgroundTracingRule*>(rule)->Install();
+    DCHECK(!config_->rules().empty());
+    for (const auto& rule : config_->rules())
+      rule->Install();
 
     if (!config_->enable_blink_features().empty()) {
       command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
@@ -243,10 +243,9 @@ BackgroundTracingManagerImpl::GetRuleAbleToTriggerTracing(
   }
 
   std::string trigger_name = GetTriggerNameFromHandle(handle);
-  for (auto* rule : config_.get()->rules()) {
-    if (static_cast<BackgroundTracingRule*>(rule)
-            ->ShouldTriggerNamedEvent(trigger_name))
-      return static_cast<BackgroundTracingRule*>(rule);
+  for (const auto& rule : config_->rules()) {
+    if (rule->ShouldTriggerNamedEvent(trigger_name))
+      return rule.get();
   }
 
   return nullptr;
@@ -262,9 +261,9 @@ void BackgroundTracingManagerImpl::OnHistogramTrigger(
     return;
   }
 
-  for (auto* rule : config_->rules()) {
+  for (const auto& rule : config_->rules()) {
     if (rule->ShouldTriggerNamedEvent(histogram_name))
-      OnRuleTriggered(rule, StartedFinalizingCallback());
+      OnRuleTriggered(rule.get(), StartedFinalizingCallback());
   }
 }
 

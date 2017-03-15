@@ -327,7 +327,8 @@ class MockBrowserContext : public BrowserContext {
                    const base::FilePath& partition_path, bool in_memory));
 
   // Define these two methods to avoid a
-  // cannot access private member declared in class 'ScopedVector<net::URLRequestInterceptor>'
+  // 'cannot access private member declared in class
+  // URLRequestInterceptorScopedVector'
   // build error if they're put in MOCK_METHOD.
   net::URLRequestContextGetter* CreateRequestContext(
       ProtocolHandlerMap* protocol_handlers,

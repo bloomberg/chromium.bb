@@ -9,10 +9,11 @@
 #include <stdint.h>
 
 #include <deque>
+#include <memory>
+#include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/process/process.h"
 #include "base/sync_socket.h"
 #include "base/time/time.h"
@@ -149,14 +150,14 @@ class CONTENT_EXPORT AudioInputSyncWriter
 
   // Vector of audio buses allocated during construction and deleted in the
   // destructor.
-  ScopedVector<media::AudioBus> audio_buses_;
+  std::vector<std::unique_ptr<media::AudioBus>> audio_buses_;
 
   // Fifo for audio that is used in case there isn't room in the shared memory.
   // This can for example happen under load when the consumer side is starved.
   // It should ideally be rare, but we need to guarantee that the data arrives
   // since audio processing such as echo cancelling requires that to perform
   // properly.
-  ScopedVector<media::AudioBus> overflow_buses_;
+  std::vector<std::unique_ptr<media::AudioBus>> overflow_buses_;
   struct OverflowParams {
     double volume;
     uint32_t hardware_delay_bytes;
