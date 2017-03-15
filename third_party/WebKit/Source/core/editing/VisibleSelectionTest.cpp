@@ -70,6 +70,29 @@ VisibleSelectionTemplate<Strategy> expandUsingGranularity(
           .build());
 }
 
+// For http://crbug.com/700368
+TEST_F(VisibleSelectionTest, appendTrailingWhitespaceWithAfterAnchor) {
+  setBodyContent(
+      "<input type=checkbox>"
+      "<div style='user-select:none'>abc</div>");
+  Element* const input = document().querySelector("input");
+
+  // Simulate double-clicking "abc".
+  // TODO(editing-dev): We should remove above comment once we fix [1].
+  // [1] http://crbug.com/701657 double-click on user-select:none should not
+  // compute selection.
+  VisibleSelection selection =
+      createVisibleSelection(SelectionInDOMTree::Builder()
+                                 .collapse(Position::beforeNode(input))
+                                 .extend(Position::afterNode(input))
+                                 .setGranularity(WordGranularity)
+                                 .build());
+  selection.appendTrailingWhitespace();
+
+  EXPECT_EQ(Position::beforeNode(input), selection.start());
+  EXPECT_EQ(Position::afterNode(input), selection.end());
+}
+
 TEST_F(VisibleSelectionTest, expandUsingGranularity) {
   const char* bodyContent =
       "<span id=host><a id=one>1</a><a id=two>22</a></span>";

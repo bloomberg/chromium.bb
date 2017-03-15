@@ -182,7 +182,7 @@ VisibleSelectionTemplate<Strategy>::toNormalizedEphemeralRange() const {
 template <typename Strategy>
 static EphemeralRangeTemplate<Strategy> makeSearchRange(
     const PositionTemplate<Strategy>& pos) {
-  Node* node = pos.anchorNode();
+  Node* node = pos.computeContainerNode();
   if (!node)
     return EphemeralRangeTemplate<Strategy>();
   Document& document = node->document();
