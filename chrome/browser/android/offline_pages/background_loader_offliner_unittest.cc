@@ -145,6 +145,7 @@ class BackgroundLoaderOfflinerTest : public testing::Test {
   bool SaveInProgress() const { return model_->mock_saving(); }
   MockOfflinePageModel* model() const { return model_; }
   const base::HistogramTester& histograms() const { return histogram_tester_; }
+  int64_t progress() { return progress_; }
 
   void CompleteLoading() {
     // For some reason, setting loading to True will call DidStopLoading
@@ -165,6 +166,7 @@ class BackgroundLoaderOfflinerTest : public testing::Test {
   MockOfflinePageModel* model_;
   bool completion_callback_called_;
   bool cancel_callback_called_;
+  int64_t progress_;
   Offliner::RequestStatus request_status_;
   base::HistogramTester histogram_tester_;
 
@@ -175,6 +177,7 @@ BackgroundLoaderOfflinerTest::BackgroundLoaderOfflinerTest()
     : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
       completion_callback_called_(false),
       cancel_callback_called_(false),
+      progress_(0LL),
       request_status_(Offliner::RequestStatus::UNKNOWN) {}
 
 BackgroundLoaderOfflinerTest::~BackgroundLoaderOfflinerTest() {}
@@ -194,7 +197,9 @@ void BackgroundLoaderOfflinerTest::OnCompletion(
 }
 
 void BackgroundLoaderOfflinerTest::OnProgress(const SavePageRequest& request,
-                                              int64_t bytes) {}
+                                              int64_t bytes) {
+  progress_ = bytes;
+}
 
 void BackgroundLoaderOfflinerTest::OnCancel(int64_t offline_id) {
   DCHECK(!cancel_callback_called_);
@@ -256,6 +261,18 @@ TEST_F(BackgroundLoaderOfflinerTest, LoadAndSaveStartsLoading) {
   EXPECT_EQ(Offliner::RequestStatus::UNKNOWN, request_status());
 }
 
+TEST_F(BackgroundLoaderOfflinerTest, BytesReportedWillUpdateProgress) {
+  base::Time creation_time = base::Time::Now();
+  SavePageRequest request(kRequestId, kHttpUrl, kClientId, creation_time,
+                          kUserRequested);
+  EXPECT_TRUE(offliner()->LoadAndSave(request, completion_callback(),
+                                      progress_callback()));
+  offliner()->OnNetworkBytesChanged(5LL);
+  EXPECT_EQ(progress(), 5LL);
+  offliner()->OnNetworkBytesChanged(10LL);
+  EXPECT_EQ(progress(), 15LL);
+}
+
 TEST_F(BackgroundLoaderOfflinerTest, CompleteLoadingInitiatesSave) {
   base::Time creation_time = base::Time::Now();
   SavePageRequest request(kRequestId, kHttpUrl, kClientId, creation_time,
@@ -277,8 +294,10 @@ TEST_F(BackgroundLoaderOfflinerTest, CancelWhenLoading) {
                                       progress_callback()));
   offliner()->Cancel(cancel_callback());
   PumpLoop();
+  offliner()->OnNetworkBytesChanged(15LL);
   EXPECT_TRUE(cancel_callback_called());
   EXPECT_FALSE(offliner()->is_loading());  // Offliner reset.
+  EXPECT_EQ(progress(), 0LL);  // network bytes not recorded when not busy.
 }
 
 TEST_F(BackgroundLoaderOfflinerTest, CancelWhenLoaded) {
@@ -317,6 +336,19 @@ TEST_F(BackgroundLoaderOfflinerTest, LoadedButSaveFails) {
   EXPECT_EQ(Offliner::RequestStatus::SAVE_FAILED, request_status());
   EXPECT_FALSE(offliner()->is_loading());
   EXPECT_FALSE(SaveInProgress());
+}
+
+TEST_F(BackgroundLoaderOfflinerTest, ProgressDoesNotUpdateDuringSave) {
+  base::Time creation_time = base::Time::Now();
+  SavePageRequest request(kRequestId, kHttpUrl, kClientId, creation_time,
+                          kUserRequested);
+  EXPECT_TRUE(offliner()->LoadAndSave(request, completion_callback(),
+                                      progress_callback()));
+  offliner()->OnNetworkBytesChanged(10LL);
+  CompleteLoading();
+  PumpLoop();
+  offliner()->OnNetworkBytesChanged(15LL);
+  EXPECT_EQ(progress(), 10LL);
 }
 
 TEST_F(BackgroundLoaderOfflinerTest, LoadAndSaveSuccess) {

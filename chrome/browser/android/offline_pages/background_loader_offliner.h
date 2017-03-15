@@ -34,6 +34,9 @@ class BackgroundLoaderOffliner : public Offliner,
                            OfflinePageModel* offline_page_model);
   ~BackgroundLoaderOffliner() override;
 
+  static BackgroundLoaderOffliner* FromWebContents(
+      content::WebContents* contents);
+
   // Offliner implementation.
   bool LoadAndSave(const SavePageRequest& request,
                    const CompletionCallback& completion_callback,
@@ -49,6 +52,7 @@ class BackgroundLoaderOffliner : public Offliner,
       content::NavigationHandle* navigation_handle) override;
 
   void SetPageDelayForTest(long delay_ms);
+  void OnNetworkBytesChanged(int64_t bytes);
 
  protected:
   // Called to reset internal loader and observer state.
@@ -81,6 +85,8 @@ class BackgroundLoaderOffliner : public Offliner,
   std::unique_ptr<SavePageRequest> pending_request_;
   // Callback when pending request completes.
   CompletionCallback completion_callback_;
+  // Callback to report progress.
+  ProgressCallback progress_callback_;
   // ApplicationStatusListener to monitor if Chrome moves to the foreground.
   std::unique_ptr<base::android::ApplicationStatusListener> app_listener_;
   // Whether we are on a low-end device.
@@ -92,6 +98,8 @@ class BackgroundLoaderOffliner : public Offliner,
   PageLoadState page_load_state_;
   // Seconds to delay before taking snapshot.
   long page_delay_ms_;
+  // Network bytes loaded.
+  int64_t network_bytes_;
 
   // Callback for cancel.
   CancelCallback cancel_callback_;

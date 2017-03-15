@@ -15,11 +15,35 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_user_data.h"
 
 namespace offline_pages {
 
 namespace {
-long kOfflinePageDelayMs = 2000;
+const long kOfflinePageDelayMs = 2000;
+
+class OfflinerData : public content::WebContentsUserData<OfflinerData> {
+ public:
+  static void AddToWebContents(content::WebContents* webcontents,
+                               BackgroundLoaderOffliner* offliner) {
+    DCHECK(offliner);
+    webcontents->SetUserData(UserDataKey(), std::unique_ptr<OfflinerData>(
+                                                new OfflinerData(offliner)));
+  }
+
+  explicit OfflinerData(BackgroundLoaderOffliner* offliner) {
+    offliner_ = offliner;
+  }
+  BackgroundLoaderOffliner* offliner() { return offliner_; }
+
+ private:
+  // The offliner that the WebContents is attached to. The offliner owns the
+  // Delegate which owns the WebContents that this data is attached to.
+  // Therefore, its lifetime should exceed that of the WebContents, so this
+  // should always be non-null.
+  BackgroundLoaderOffliner* offliner_;
+};
+
 }  // namespace
 
 BackgroundLoaderOffliner::BackgroundLoaderOffliner(
@@ -32,6 +56,7 @@ BackgroundLoaderOffliner::BackgroundLoaderOffliner(
       save_state_(NONE),
       page_load_state_(SUCCESS),
       page_delay_ms_(kOfflinePageDelayMs),
+      network_bytes_(0LL),
       weak_ptr_factory_(this) {
   DCHECK(offline_page_model_);
   DCHECK(browser_context_);
@@ -39,7 +64,15 @@ BackgroundLoaderOffliner::BackgroundLoaderOffliner(
 
 BackgroundLoaderOffliner::~BackgroundLoaderOffliner() {}
 
-// TODO(dimich): Invoke progress_callback as appropriate.
+// static
+BackgroundLoaderOffliner* BackgroundLoaderOffliner::FromWebContents(
+    content::WebContents* contents) {
+  OfflinerData* data = OfflinerData::FromWebContents(contents);
+  if (data)
+    return data->offliner();
+  return nullptr;
+}
+
 bool BackgroundLoaderOffliner::LoadAndSave(
     const SavePageRequest& request,
     const CompletionCallback& completion_callback,
@@ -109,6 +142,7 @@ bool BackgroundLoaderOffliner::LoadAndSave(
   // Track copy of pending request.
   pending_request_.reset(new SavePageRequest(request));
   completion_callback_ = completion_callback;
+  progress_callback_ = progress_callback;
 
   // Listen for app foreground/background change.
   app_listener_.reset(new base::android::ApplicationStatusListener(
@@ -250,6 +284,13 @@ void BackgroundLoaderOffliner::SetPageDelayForTest(long delay_ms) {
   page_delay_ms_ = delay_ms;
 }
 
+void BackgroundLoaderOffliner::OnNetworkBytesChanged(int64_t bytes) {
+  if (pending_request_ && save_state_ != SAVING) {
+    network_bytes_ += bytes;
+    progress_callback_.Run(*pending_request_, network_bytes_);
+  }
+}
+
 void BackgroundLoaderOffliner::SavePage() {
   if (!pending_request_.get()) {
     DVLOG(1) << "Pending request was cleared during delay.";
@@ -334,6 +375,7 @@ void BackgroundLoaderOffliner::OnPageSaved(SavePageResult save_result,
 void BackgroundLoaderOffliner::ResetState() {
   pending_request_.reset();
   page_load_state_ = SUCCESS;
+  network_bytes_ = 0LL;
   // TODO(chili): Remove after RequestCoordinator can handle multiple offliners.
   // We reset the loader and observer after completion so loaders
   // will not be re-used across different requests/tries. This is a temporary
@@ -341,7 +383,9 @@ void BackgroundLoaderOffliner::ResetState() {
   // there are.
   loader_.reset(
       new background_loader::BackgroundLoaderContents(browser_context_));
-  content::WebContentsObserver::Observe(loader_.get()->web_contents());
+  content::WebContents* contents = loader_->web_contents();
+  content::WebContentsObserver::Observe(contents);
+  OfflinerData::AddToWebContents(contents, this);
 }
 
 void BackgroundLoaderOffliner::OnApplicationStateChange(
@@ -369,3 +413,5 @@ void BackgroundLoaderOffliner::HandleApplicationStateChangeCancel(
   completion_callback_.Run(request, RequestStatus::FOREGROUND_CANCELED);
 }
 }  // namespace offline_pages
+
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(offline_pages::OfflinerData);
