@@ -23,7 +23,9 @@
     <table class="innerTable">
     <thead><th colspan="3">Functions</th></thead>
     {{#f:functions}}
-      {{+partials.function function:f parentName:false/}}
+      <tr><td>
+        {{+partials.function function:f parentName:false/}}
+      </td></tr>
     {{/functions}}
     </table>
     {{/functions}}
