@@ -33,7 +33,7 @@ interface Navigator {
 };
 
 Navigator implements NavigatorCPU;
+Navigator implements NavigatorCookies;
 Navigator implements NavigatorID;
 Navigator implements NavigatorLanguage;
 Navigator implements NavigatorOnLine;
-Navigator implements NavigatorStorageUtils;
