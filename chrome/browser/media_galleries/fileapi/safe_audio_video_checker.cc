@@ -17,7 +17,7 @@ SafeAudioVideoChecker::SafeAudioVideoChecker(
     base::File file,
     const storage::CopyOrMoveFileValidator::ResultCallback& callback)
     : file_(std::move(file)), callback_(callback) {
-  DCHECK(!callback_.is_null());
+  DCHECK(callback_);
 }
 
 void SafeAudioVideoChecker::Start() {
@@ -30,12 +30,9 @@ void SafeAudioVideoChecker::Start() {
 
   DCHECK(!utility_process_mojo_client_);
 
-  const base::string16 utility_process_name =
-      l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_MEDIA_FILE_CHECKER_NAME);
-
-  utility_process_mojo_client_.reset(
-      new content::UtilityProcessMojoClient<extensions::mojom::MediaParser>(
-          utility_process_name));
+  utility_process_mojo_client_ = base::MakeUnique<
+      content::UtilityProcessMojoClient<extensions::mojom::MediaParser>>(
+      l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_MEDIA_FILE_CHECKER_NAME));
   utility_process_mojo_client_->set_error_callback(
       base::Bind(&SafeAudioVideoChecker::CheckMediaFileDone, this, false));
 
