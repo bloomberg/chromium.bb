@@ -2353,7 +2353,7 @@ const FeatureEntry kFeatureEntries[] = {
 #if defined(OS_MACOSX)
     {"tab-strip-keyboard-focus", IDS_FLAGS_TAB_STRIP_KEYBOARD_FOCUS_NAME,
      IDS_FLAGS_TAB_STRIP_KEYBOARD_FOCUS_DESCRIPTION, kOsMac,
-     FEATURE_VALUE_TYPE(features::kTabStripKeyboardFocus)}
+     FEATURE_VALUE_TYPE(features::kTabStripKeyboardFocus)},
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -2362,6 +2362,10 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_ENABLE_CHROMEVOX_ARC_SUPPORT_DESCRIPTION, kOsCrOS,
      SINGLE_VALUE_TYPE(chromeos::switches::kEnableChromeVoxArcSupport)},
 #endif  // defined(OS_CHROMEOS)
+
+    {"enable-mojo-loading", IDS_FLAGS_MOJO_LOADING_NAME,
+     IDS_FLAGS_MOJO_LOADING_DESCRIPTION, kOsAll,
+     FEATURE_VALUE_TYPE(features::kLoadingWithMojo)},
 
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
