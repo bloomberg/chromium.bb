@@ -720,11 +720,6 @@ void LayerTreeHostImpl::FrameData::AsValueInto(
   }
 }
 
-void LayerTreeHostImpl::FrameData::AppendRenderPass(
-    std::unique_ptr<RenderPass> render_pass) {
-  render_passes.push_back(std::move(render_pass));
-}
-
 DrawMode LayerTreeHostImpl::GetDrawMode() const {
   if (resourceless_software_draw_) {
     return DRAW_MODE_RESOURCELESS_SOFTWARE;
@@ -837,7 +832,7 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
         render_surface->contributes_to_drawn_surface() ||
         render_surface->HasCopyRequest();
     if (should_draw_into_render_pass)
-      render_surface->AppendRenderPasses(frame);
+      frame->render_passes.push_back(render_surface->CreateRenderPass());
   }
 
   // Damage rects for non-root passes aren't meaningful, so set them to be

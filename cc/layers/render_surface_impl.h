@@ -27,7 +27,6 @@ namespace cc {
 class DamageTracker;
 class FilterOperations;
 class Occlusion;
-class RenderPassSink;
 class LayerImpl;
 class LayerIterator;
 class LayerTreeImpl;
@@ -147,7 +146,7 @@ class CC_EXPORT RenderSurfaceImpl {
 
   int GetRenderPassId();
 
-  void AppendRenderPasses(RenderPassSink* pass_sink);
+  std::unique_ptr<RenderPass> CreateRenderPass();
   void AppendQuads(RenderPass* render_pass, AppendQuadsData* append_quads_data);
 
   int TransformTreeIndex() const;

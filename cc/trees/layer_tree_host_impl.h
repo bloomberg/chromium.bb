@@ -24,7 +24,6 @@
 #include "cc/input/input_handler.h"
 #include "cc/input/scrollbar_animation_controller.h"
 #include "cc/layers/layer_collections.h"
-#include "cc/layers/render_pass_sink.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/compositor_frame_sink_client.h"
 #include "cc/output/context_cache_controller.h"
@@ -216,9 +215,9 @@ class CC_EXPORT LayerTreeHostImpl
     resourceless_software_draw_ = true;
   }
 
-  struct CC_EXPORT FrameData : public RenderPassSink {
+  struct CC_EXPORT FrameData {
     FrameData();
-    ~FrameData() override;
+    ~FrameData();
     void AsValueInto(base::trace_event::TracedValue* value) const;
 
     std::vector<gfx::Rect> occluding_screen_space_rects;
@@ -229,9 +228,6 @@ class CC_EXPORT LayerTreeHostImpl
     bool has_no_damage;
     bool may_contain_video;
     BeginFrameAck begin_frame_ack;
-
-    // RenderPassSink implementation.
-    void AppendRenderPass(std::unique_ptr<RenderPass> render_pass) override;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(FrameData);

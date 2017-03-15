@@ -13,7 +13,6 @@
 #include "cc/base/math_util.h"
 #include "cc/debug/debug_colors.h"
 #include "cc/layers/layer_impl.h"
-#include "cc/layers/render_pass_sink.h"
 #include "cc/output/filter_operations.h"
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/render_pass.h"
@@ -357,7 +356,7 @@ int RenderSurfaceImpl::GetRenderPassId() {
   return id();
 }
 
-void RenderSurfaceImpl::AppendRenderPasses(RenderPassSink* pass_sink) {
+std::unique_ptr<RenderPass> RenderSurfaceImpl::CreateRenderPass() {
   std::unique_ptr<RenderPass> pass = RenderPass::Create(layer_list_.size());
   gfx::Rect damage_rect = GetDamageRect();
   damage_rect.Intersect(content_rect());
@@ -365,7 +364,7 @@ void RenderSurfaceImpl::AppendRenderPasses(RenderPassSink* pass_sink) {
                draw_properties_.screen_space_transform);
   pass->filters = Filters();
   pass->background_filters = BackgroundFilters();
-  pass_sink->AppendRenderPass(std::move(pass));
+  return pass;
 }
 
 void RenderSurfaceImpl::AppendQuads(RenderPass* render_pass,
