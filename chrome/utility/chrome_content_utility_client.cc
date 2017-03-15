@@ -85,6 +85,10 @@ class FilePatcherImpl : public chrome::mojom::FilePatcher {
                        base::File patch_file,
                        base::File output_file,
                        const PatchFileBsdiffCallback& callback) override {
+    DCHECK(input_file.IsValid());
+    DCHECK(patch_file.IsValid());
+    DCHECK(output_file.IsValid());
+
     const int patch_result_status = bsdiff::ApplyBinaryPatch(
         std::move(input_file), std::move(patch_file), std::move(output_file));
     callback.Run(patch_result_status);
@@ -94,6 +98,10 @@ class FilePatcherImpl : public chrome::mojom::FilePatcher {
                           base::File patch_file,
                           base::File output_file,
                           const PatchFileCourgetteCallback& callback) override {
+    DCHECK(input_file.IsValid());
+    DCHECK(patch_file.IsValid());
+    DCHECK(output_file.IsValid());
+
     const int patch_result_status = courgette::ApplyEnsemblePatch(
         std::move(input_file), std::move(patch_file), std::move(output_file));
     callback.Run(patch_result_status);
