@@ -41,4 +41,22 @@ suite('focusable-iron-list-item-behavior', function() {
     MockInteractions.tap(testElement);
     assertTrue(testElement.classList.contains('no-outline'));
   });
+
+  test('"enter" key event should not propagate out of element', function() {
+    var container = document.createElement('div');
+    container.appendChild(testElement);
+    document.body.appendChild(container);
+
+    var reached = false;
+    container.addEventListener('keydown', function() {
+      reached = true;
+    });
+
+    MockInteractions.keyEventOn(testElement, 'keydown', 13, undefined, 'Enter');
+    assertFalse(reached);
+
+    // Test other keys still work.
+    MockInteractions.keyEventOn(testElement, 'keydown', 9, undefined, 'Tab');
+    assertTrue(reached);
+  });
 });

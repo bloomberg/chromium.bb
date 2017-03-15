@@ -29,10 +29,15 @@ var FocusableIronListItemBehavior = {
 
   /**
    * Unflag when moving away via keyboard (e.g. tabbing onto its children).
+   * @param {!Event} event
    * @private
    */
-  onKeyDown_: function() {
+  onKeyDown_: function(event) {
     this.focusedByKey_ = false;
+
+    // For these types of items, don't propagate enter to iron-list's listener.
+    if (event.key == 'Enter')
+      event.stopPropagation();
   },
 
   /**
