@@ -81,7 +81,9 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
   aom_cdf_prob(*cdf_head)[CDF_SIZE(ENTROPY_TOKENS)];
   aom_cdf_prob(*cdf_tail)[CDF_SIZE(ENTROPY_TOKENS)];
   int val = 0;
+#if !CONFIG_EC_ADAPT
   unsigned int *blockz_count;
+#endif
 #else
   aom_prob(*coef_probs)[COEFF_CONTEXTS][UNCONSTRAINED_NODES] =
       ec_ctx->coef_probs[tx_size_ctx][type][ref];
@@ -120,7 +122,7 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
   if (counts) {
     coef_counts = counts->coef[tx_size_ctx][type][ref];
     eob_branch_count = counts->eob_branch[tx_size_ctx][type][ref];
-#if CONFIG_NEW_TOKENSET
+#if CONFIG_NEW_TOKENSET && !CONFIG_EC_ADAPT
     blockz_count = counts->blockz_count[tx_size_ctx][type][ref][ctx];
 #endif
   }
@@ -178,7 +180,9 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
     comb_token = last_pos ? (aom_read_bit(r, ACCT_STR) + 1) * 2
                           : aom_read_symbol(r, *cdf_head, 6, ACCT_STR);
     if (c == 0) {
+#if !CONFIG_EC_ADAPT
       if (counts) ++blockz_count[comb_token != 0];
+#endif
       if (comb_token == 0) return 0;
     }
     token = comb_token >> 1;
@@ -186,7 +190,10 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
 
     if (token > ONE_TOKEN)
       token += aom_read_symbol(r, *cdf_tail, CATEGORY6_TOKEN + 1 - 2, ACCT_STR);
-    INCREMENT_COUNT(ZERO_TOKEN + (token > ZERO_TOKEN) + (token > ONE_TOKEN));
+#if !CONFIG_EC_ADAPT
+    if (!last_pos)
+      INCREMENT_COUNT(ZERO_TOKEN + (token > ZERO_TOKEN) + (token > ONE_TOKEN));
+#endif
 #if CONFIG_NEW_QUANT
     dqv_val = &dq_val[band][0];
 #endif  // CONFIG_NEW_QUANT
