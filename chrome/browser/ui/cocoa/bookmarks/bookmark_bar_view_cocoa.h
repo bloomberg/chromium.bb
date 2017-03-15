@@ -11,6 +11,8 @@
 
 @class BookmarkBarController;
 
+// A simple custom NSView for the bookmark bar used to prevent clicking and
+// dragging from moving the browser window.
 @interface BookmarkBarView : NSView {
  @private
   BOOL dropIndicatorShown_;
@@ -33,8 +35,6 @@
 @property(nonatomic, assign) BookmarkBarController* controller;
 @end
 
-// A simple custom NSView for the bookmark bar used to prevent clicking and
-// dragging from moving the browser window.
 @interface BookmarkBarView()  // TestingOrInternalAPI
 @property(nonatomic, readonly) BOOL dropIndicatorShown;
 @property(nonatomic, readonly) CGFloat dropIndicatorPosition;
