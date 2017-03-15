@@ -135,6 +135,39 @@ class Bypass(IntegrationTest):
       self.assertEqual(1, histogram['count'])
       self.assertIn({'count': 1, 'high': 5, 'low': 4}, histogram['buckets'])
 
+  # Verify that the Data Reduction Proxy understands the "exp" directive.
+  def testExpDirectiveBypass(self):
+    with TestDriver() as test_driver:
+      test_driver.AddChromeArg('--enable-spdy-proxy-auth')
+      test_driver.AddChromeArg('--data-reduction-proxy-experiment=test')
+
+      # Verify that loading a page other than the specific exp directive test
+      # page loads through the proxy without being bypassed.
+      test_driver.LoadURL('http://check.googlezip.net/test.html')
+      responses = test_driver.GetHTTPResponses()
+      self.assertNotEqual(0, len(responses))
+      for response in responses:
+        self.assertHasChromeProxyViaHeader(response)
+
+      # Verify that loading the exp directive test page with "exp=test" triggers
+      # a bypass.
+      test_driver.LoadURL('http://check.googlezip.net/exp/')
+      responses = test_driver.GetHTTPResponses()
+      self.assertNotEqual(0, len(responses))
+      for response in responses:
+        self.assertNotHasChromeProxyViaHeader(response)
+
+    # Verify that loading the same test page without setting "exp=test" loads
+    # through the proxy without being bypassed.
+    with TestDriver() as test_driver:
+      test_driver.AddChromeArg('--enable-spdy-proxy-auth')
+
+      test_driver.LoadURL('http://check.googlezip.net/exp/')
+      responses = test_driver.GetHTTPResponses()
+      self.assertNotEqual(0, len(responses))
+      for response in responses:
+        self.assertHasChromeProxyViaHeader(response)
+
 
 if __name__ == '__main__':
   IntegrationTest.RunAllTests()
