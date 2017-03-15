@@ -87,6 +87,10 @@ ResultExpr SandboxBPFBasePolicyAndroid::EvaluateSyscall(int sysno) const {
 #endif
     case __NR_getpriority:
     case __NR_ioctl:
+#if defined(__i386__)
+    // While mincore is on multiple arches, it is only used on Android by x86.
+    case __NR_mincore:  // https://crbug.com/701137
+#endif
     case __NR_mremap:
 #if defined(__i386__)
     // Used on pre-N to initialize threads in ART.
@@ -180,12 +184,16 @@ ResultExpr SandboxBPFBasePolicyAndroid::EvaluateSyscall(int sysno) const {
     return Error(EPERM);
   }
 
-  // https://crbug.com/682488
+  // https://crbug.com/682488, https://crbug.com/701137
   if (sysno == __NR_setsockopt) {
     // The baseline policy applies other restrictions to setsockopt.
     const Arg<int> level(1);
     const Arg<int> option(2);
-    return If(AllOf(level == SOL_SOCKET, option == SO_SNDTIMEO), Allow())
+    return If(AllOf(level == SOL_SOCKET,
+                    AnyOf(option == SO_SNDTIMEO,
+                          option == SO_RCVTIMEO,
+                          option == SO_REUSEADDR)),
+              Allow())
            .Else(SandboxBPFBasePolicy::EvaluateSyscall(sysno));
   }
 #elif defined(__i386__)
