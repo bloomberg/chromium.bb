@@ -8,6 +8,7 @@
 #include "base/run_loop.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/threading/thread_checker_impl.h"
 #include "cc/test/skia_common.h"
 #include "cc/tiles/image_decode_cache.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -212,7 +213,8 @@ class BlockingTask : public TileTask {
  private:
   ~BlockingTask() override = default;
 
-  base::ThreadChecker thread_checker_;
+  // Use ThreadCheckerImpl, so that release builds also get correct behavior.
+  base::ThreadCheckerImpl thread_checker_;
   bool has_run_ = false;
   base::Lock lock_;
   base::ConditionVariable run_cv_;
@@ -222,8 +224,7 @@ class BlockingTask : public TileTask {
 };
 
 // For tests that exercise image controller's thread, this is the timeout value
-// to
-// allow the worker thread to do its work.
+// to allow the worker thread to do its work.
 int kDefaultTimeoutSeconds = 10;
 
 class ImageControllerTest : public testing::Test {
