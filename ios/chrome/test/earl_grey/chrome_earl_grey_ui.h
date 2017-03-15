@@ -29,6 +29,11 @@
 // Requires having a tab opened.
 + (void)openShareMenu;
 
+// Waits for toolbar to become visible if |isVisible| is YES, or waits for it
+// to disappear if |isVisible| is NO. Induces a GREYAssert if the condition is
+// not met after a timeout.
++ (void)waitForToolbarVisible:(BOOL)isVisible;
+
 @end
 
 #endif  // IOS_CHROME_TEST_EARL_GREY_CHROME_EARL_GREY_UI_H_

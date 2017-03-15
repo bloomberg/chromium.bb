@@ -17,9 +17,9 @@
 #import "ios/chrome/test/app/web_view_interaction_test_util.h"
 #include "ios/chrome/test/earl_grey/chrome_assertions.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
+#import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
-#import "ios/chrome/test/earl_grey/chrome_util.h"
 #import "ios/testing/wait_util.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #import "ios/web/public/test/http_server.h"
@@ -104,7 +104,7 @@ void AssertStringIsPresentOnPage(const std::string& text) {
       "http://ios/testing/data/http_server_files/two_pages.pdf");
   [ChromeEarlGrey loadURL:URL];
 
-  chrome_test_util::AssertToolbarVisible();
+  [ChromeEarlGreyUI waitForToolbarVisible:YES];
   // Initial y scroll position is -56 on iPhone and -95 on iPad, to make room
   // for the toolbar.
   // TODO(crbug.com/618887) Replace use of specific values when API which
@@ -129,11 +129,11 @@ void AssertStringIsPresentOnPage(const std::string& text) {
       selectElementWithMatcher:WebViewScrollView(
                                    chrome_test_util::GetCurrentWebState())]
       performAction:grey_swipeFastInDirection(kGREYDirectionDown)];
-  chrome_test_util::AssertToolbarVisible();
+  [ChromeEarlGreyUI waitForToolbarVisible:YES];
 
   // Test that the toolbar is no longer visible after a user swipes up.
   HideToolbarUsingUI();
-  chrome_test_util::AssertToolbarNotVisible();
+  [ChromeEarlGreyUI waitForToolbarVisible:NO];
 }
 
 // Verifies that the toolbar properly appears/disappears when scrolling up/down
@@ -146,18 +146,18 @@ void AssertStringIsPresentOnPage(const std::string& text) {
 
   // Test that the toolbar is hidden after a user swipes up.
   HideToolbarUsingUI();
-  chrome_test_util::AssertToolbarNotVisible();
+  [ChromeEarlGreyUI waitForToolbarVisible:NO];
 
   // Test that the toolbar is visible after a user swipes down.
   [[EarlGrey
       selectElementWithMatcher:WebViewScrollView(
                                    chrome_test_util::GetCurrentWebState())]
       performAction:grey_swipeFastInDirection(kGREYDirectionDown)];
-  chrome_test_util::AssertToolbarVisible();
+  [ChromeEarlGreyUI waitForToolbarVisible:YES];
 
   // Test that the toolbar is hidden after a user swipes up.
   HideToolbarUsingUI();
-  chrome_test_util::AssertToolbarNotVisible();
+  [ChromeEarlGreyUI waitForToolbarVisible:NO];
 }
 
 // Tests that link clicks from a chrome:// to chrome:// link result in the
@@ -202,12 +202,12 @@ void AssertStringIsPresentOnPage(const std::string& text) {
 
   // Scroll to hide the UI.
   HideToolbarUsingUI();
-  chrome_test_util::AssertToolbarNotVisible();
+  [ChromeEarlGreyUI waitForToolbarVisible:NO];
 
   // Test that the toolbar is visible when moving from one chrome:// link to
   // another chrome:// link.
   chrome_test_util::TapWebViewElementWithId("version");
-  chrome_test_util::AssertToolbarVisible();
+  [ChromeEarlGreyUI waitForToolbarVisible:YES];
 }
 
 // Tests hiding and showing of the header with a user scroll on a long page.
@@ -220,16 +220,16 @@ void AssertStringIsPresentOnPage(const std::string& text) {
   web::test::SetUpSimpleHttpServer(responses);
 
   [ChromeEarlGrey loadURL:URL];
-  chrome_test_util::AssertToolbarVisible();
+  [ChromeEarlGreyUI waitForToolbarVisible:YES];
   // Simulate a user scroll down.
   HideToolbarUsingUI();
-  chrome_test_util::AssertToolbarNotVisible();
+  [ChromeEarlGreyUI waitForToolbarVisible:NO];
   // Simulate a user scroll up.
   [[EarlGrey
       selectElementWithMatcher:WebViewScrollView(
                                    chrome_test_util::GetCurrentWebState())]
       performAction:grey_swipeFastInDirection(kGREYDirectionDown)];
-  chrome_test_util::AssertToolbarVisible();
+  [ChromeEarlGreyUI waitForToolbarVisible:YES];
 }
 
 // Tests that reloading of a page shows the header even if it was not shown
@@ -249,12 +249,12 @@ void AssertStringIsPresentOnPage(const std::string& text) {
 
   // Hide the toolbar.
   HideToolbarUsingUI();
-  chrome_test_util::AssertToolbarNotVisible();
+  [ChromeEarlGreyUI waitForToolbarVisible:NO];
 
   chrome_test_util::TapWebViewElementWithId("link");
 
   // Main test is here: Make sure the header is still visible!
-  chrome_test_util::AssertToolbarVisible();
+  [ChromeEarlGreyUI waitForToolbarVisible:YES];
 }
 
 // Test to make sure the header is shown when a Tab opened by the current Tab is
@@ -290,7 +290,7 @@ void AssertStringIsPresentOnPage(const std::string& text) {
 
   // Hide the toolbar.
   HideToolbarUsingUI();
-  chrome_test_util::AssertToolbarNotVisible();
+  [ChromeEarlGreyUI waitForToolbarVisible:NO];
 
   // Open new window.
   chrome_test_util::TapWebViewElementWithId("link1");
@@ -303,7 +303,7 @@ void AssertStringIsPresentOnPage(const std::string& text) {
 
   // Hide the toolbar.
   HideToolbarUsingUI();
-  chrome_test_util::AssertToolbarNotVisible();
+  [ChromeEarlGreyUI waitForToolbarVisible:NO];
 
   // Close the tab.
   chrome_test_util::TapWebViewElementWithId("link2");
@@ -311,7 +311,7 @@ void AssertStringIsPresentOnPage(const std::string& text) {
 
   // Make sure the toolbar is on the screen.
   chrome_test_util::AssertMainTabCount(1);
-  chrome_test_util::AssertToolbarVisible();
+  [ChromeEarlGreyUI waitForToolbarVisible:YES];
 }
 
 // Tests that the header is shown when a regular page (non-native page) is
@@ -341,24 +341,24 @@ void AssertStringIsPresentOnPage(const std::string& text) {
   AssertStringIsPresentOnPage("link1");
   // Dismiss the toolbar.
   HideToolbarUsingUI();
-  chrome_test_util::AssertToolbarNotVisible();
+  [ChromeEarlGreyUI waitForToolbarVisible:NO];
 
   // Navigate to the other page.
   chrome_test_util::TapWebViewElementWithId("link1");
   AssertStringIsPresentOnPage("link2");
 
   // Make sure toolbar is shown since a new load has started.
-  chrome_test_util::AssertToolbarVisible();
+  [ChromeEarlGreyUI waitForToolbarVisible:YES];
 
   // Dismiss the toolbar.
   HideToolbarUsingUI();
-  chrome_test_util::AssertToolbarNotVisible();
+  [ChromeEarlGreyUI waitForToolbarVisible:NO];
 
   // Go back.
   chrome_test_util::TapWebViewElementWithId("link2");
 
   // Make sure the toolbar has loaded now that a new page has loaded.
-  chrome_test_util::AssertToolbarVisible();
+  [ChromeEarlGreyUI waitForToolbarVisible:YES];
 }
 
 // Tests that the header is shown when a native page is loaded from a page where
@@ -379,13 +379,13 @@ void AssertStringIsPresentOnPage(const std::string& text) {
 
   // Dismiss the toolbar.
   HideToolbarUsingUI();
-  chrome_test_util::AssertToolbarNotVisible();
+  [ChromeEarlGreyUI waitForToolbarVisible:NO];
 
   // Go back to NTP, which is a native view.
   chrome_test_util::TapWebViewElementWithId("link");
 
   // Make sure the toolbar is visible now that a new page has loaded.
-  chrome_test_util::AssertToolbarVisible();
+  [ChromeEarlGreyUI waitForToolbarVisible:YES];
 }
 
 // Tests that the header is shown when loading an error page in a native view
@@ -405,11 +405,11 @@ void AssertStringIsPresentOnPage(const std::string& text) {
 
   [ChromeEarlGrey loadURL:URL];
   HideToolbarUsingUI();
-  chrome_test_util::AssertToolbarNotVisible();
+  [ChromeEarlGreyUI waitForToolbarVisible:NO];
 
   chrome_test_util::TapWebViewElementWithId("link");
   AssertURLIs(ErrorPageResponseProvider::GetDnsFailureUrl());
-  chrome_test_util::AssertToolbarVisible();
+  [ChromeEarlGreyUI waitForToolbarVisible:YES];
 }
 
 @end

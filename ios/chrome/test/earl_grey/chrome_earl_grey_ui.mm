@@ -79,4 +79,21 @@ using testing::kWaitForPageLoadTimeout;
       performAction:grey_tap()];
 }
 
++ (void)waitForToolbarVisible:(BOOL)isVisible {
+  const NSTimeInterval kWaitForToolbarAnimationTimeout = 1.0;
+  ConditionBlock condition = ^{
+    NSError* error = nil;
+    id<GREYMatcher> visibleMatcher = isVisible ? grey_notNil() : grey_nil();
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::ToolsMenuButton()]
+        assertWithMatcher:visibleMatcher
+                    error:&error];
+    return error == nil;
+  };
+  NSString* errorMessage =
+      isVisible ? @"Toolbar was not visible" : @"Toolbar was visible";
+  GREYAssert(testing::WaitUntilConditionOrTimeout(
+                 kWaitForToolbarAnimationTimeout, condition),
+             errorMessage);
+}
+
 @end
