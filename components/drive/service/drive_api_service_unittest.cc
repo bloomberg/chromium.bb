@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/drive/service/drive_api_service.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/test/test_simple_task_runner.h"
-#include "components/drive/service/drive_api_service.h"
 #include "google_apis/drive/dummy_auth_service.h"
 #include "google_apis/drive/request_sender.h"
 #include "google_apis/drive/test_util.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -43,9 +44,9 @@ TEST(DriveAPIServiceTest, BatchRequestConfiguratorWithAuthFailure) {
       new base::TestSimpleTaskRunner();
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter =
       new net::TestURLRequestContextGetter(task_runner.get());
-  google_apis::RequestSender sender(new TestAuthService,
-                                    request_context_getter.get(),
-                                    task_runner.get(), kTestUserAgent);
+  google_apis::RequestSender sender(
+      new TestAuthService, request_context_getter.get(), task_runner.get(),
+      kTestUserAgent, TRAFFIC_ANNOTATION_FOR_TESTS);
   std::unique_ptr<google_apis::drive::BatchUploadRequest> request =
       base::MakeUnique<google_apis::drive::BatchUploadRequest>(&sender,
                                                                url_generator);

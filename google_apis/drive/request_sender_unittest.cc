@@ -9,6 +9,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "google_apis/drive/base_requests.h"
 #include "google_apis/drive/dummy_auth_service.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace google_apis {
@@ -58,8 +59,12 @@ class TestAuthService : public DummyAuthService {
 class RequestSenderTest : public testing::Test {
  protected:
   RequestSenderTest()
-     : auth_service_(new TestAuthService),
-       request_sender_(auth_service_, NULL, NULL, "dummy-user-agent") {
+      : auth_service_(new TestAuthService),
+        request_sender_(auth_service_,
+                        NULL,
+                        NULL,
+                        "dummy-user-agent",
+                        TRAFFIC_ANNOTATION_FOR_TESTS) {
     auth_service_->set_refresh_token(kTestRefreshToken);
     auth_service_->set_access_token(kTestAccessToken);
   }

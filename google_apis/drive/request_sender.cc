@@ -18,13 +18,14 @@ RequestSender::RequestSender(
     AuthServiceInterface* auth_service,
     net::URLRequestContextGetter* url_request_context_getter,
     const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
-    const std::string& custom_user_agent)
+    const std::string& custom_user_agent,
+    const net::NetworkTrafficAnnotationTag& traffic_annotation)
     : auth_service_(auth_service),
       url_request_context_getter_(url_request_context_getter),
       blocking_task_runner_(blocking_task_runner),
       custom_user_agent_(custom_user_agent),
-      weak_ptr_factory_(this) {
-}
+      traffic_annotation_(traffic_annotation),
+      weak_ptr_factory_(this) {}
 
 RequestSender::~RequestSender() {
   DCHECK(thread_checker_.CalledOnValidThread());

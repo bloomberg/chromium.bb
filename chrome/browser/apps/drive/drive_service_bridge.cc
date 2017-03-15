@@ -21,6 +21,7 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace {
 
@@ -81,12 +82,11 @@ void DriveServiceBridgeImpl::Initialize() {
   ProfileOAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
   drive_service_.reset(new drive::DriveAPIService(
-      token_service,
-      profile_->GetRequestContext(),
-      drive_task_runner.get(),
+      token_service, profile_->GetRequestContext(), drive_task_runner.get(),
       GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction),
       GURL(google_apis::DriveApiUrlGenerator::kBaseThumbnailUrlForProduction),
-      std::string() /* custom_user_agent */));
+      std::string(), /* custom_user_agent */
+      NO_TRAFFIC_ANNOTATION_YET));
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfile(profile_);
   drive_service_->Initialize(signin_manager->GetAuthenticatedAccountId());

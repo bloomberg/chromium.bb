@@ -19,6 +19,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -41,11 +42,10 @@ class BaseRequestsServerTest : public testing::Test {
     request_context_getter_ = new net::TestURLRequestContextGetter(
         message_loop_.task_runner());
 
-    request_sender_.reset(new RequestSender(
-        new DummyAuthService,
-        request_context_getter_.get(),
-        message_loop_.task_runner(),
-        kTestUserAgent));
+    request_sender_.reset(
+        new RequestSender(new DummyAuthService, request_context_getter_.get(),
+                          message_loop_.task_runner(), kTestUserAgent,
+                          TRAFFIC_ANNOTATION_FOR_TESTS));
 
     ASSERT_TRUE(test_server_.InitializeAndListen());
     test_server_.RegisterRequestHandler(

@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "google_apis/drive/drive_api_error_codes.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -48,7 +49,8 @@ class RequestSender {
       AuthServiceInterface* auth_service,
       net::URLRequestContextGetter* url_request_context_getter,
       const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner,
-      const std::string& custom_user_agent);
+      const std::string& custom_user_agent,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation);
   ~RequestSender();
 
   AuthServiceInterface* auth_service() { return auth_service_.get(); }
@@ -73,6 +75,11 @@ class RequestSender {
   // Notifies to this RequestSender that |request| has finished.
   // TODO(kinaba): refactor the life time management and make this at private.
   void RequestFinished(AuthenticatedRequestInterface* request);
+
+  // Returns traffic annotation tag asssigned to this object.
+  const net::NetworkTrafficAnnotationTag& get_traffic_annotation_tag() const {
+    return traffic_annotation_;
+  }
 
  private:
   base::Closure StartRequestWithAuthRetryInternal(
@@ -101,6 +108,8 @@ class RequestSender {
   const std::string custom_user_agent_;
 
   base::ThreadChecker thread_checker_;
+
+  const net::NetworkTrafficAnnotationTag traffic_annotation_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

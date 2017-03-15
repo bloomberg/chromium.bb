@@ -56,6 +56,7 @@
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/extension.h"
 #include "google_apis/drive/drive_api_url_generator.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "storage/browser/blob/scoped_file.h"
 #include "storage/common/fileapi/file_system_util.h"
@@ -65,6 +66,29 @@ namespace sync_file_system {
 class RemoteChangeProcessor;
 
 namespace drive_backend {
+
+constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
+    net::DefineNetworkTrafficAnnotation("sync_file_system", R"(
+        semantics {
+          sender: "Sync FileSystem Chrome API"
+          description:
+            "Sync FileSystem API provides an isolated FileSystem to Chrome "
+            "Apps. The contents of the FileSystem are automatically synced "
+            "among application instances through a hidden folder on Google "
+            "Drive. This service uploades or downloads these files for "
+            "synchronization."
+          trigger:
+            "When a Chrome App uses Sync FileSystem API, or when a file on "
+            "Google Drive is modified."
+          data:
+            "Files created by Chrome Apps via Sync FileSystem API."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: false
+          setting: "This feature cannot be disabled in settings."
+          policy_exception_justification: "Not implemented."
+        })");
 
 std::unique_ptr<drive::DriveServiceInterface>
 SyncEngine::DriveServiceFactory::CreateDriveService(
@@ -76,7 +100,8 @@ SyncEngine::DriveServiceFactory::CreateDriveService(
       oauth2_token_service, url_request_context_getter, blocking_task_runner,
       GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction),
       GURL(google_apis::DriveApiUrlGenerator::kBaseThumbnailUrlForProduction),
-      std::string() /* custom_user_agent */));
+      std::string(), /* custom_user_agent */
+      kTrafficAnnotation));
 }
 
 class SyncEngine::WorkerObserver : public SyncWorkerInterface::Observer {
