@@ -551,7 +551,8 @@ void LayoutBoxModelObject::invalidateTreeIfNeeded(
 
   PaintInvalidationState newPaintInvalidationState(paintInvalidationState,
                                                    *this);
-  if (!shouldCheckForPaintInvalidation(newPaintInvalidationState))
+  if (!shouldCheckForPaintInvalidationWithPaintInvalidationState(
+          newPaintInvalidationState))
     return;
 
   if (mayNeedPaintInvalidationSubtree())

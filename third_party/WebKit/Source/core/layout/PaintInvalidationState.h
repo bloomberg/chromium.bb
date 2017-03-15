@@ -20,8 +20,6 @@ class LayoutObject;
 class LayoutView;
 class PaintLayer;
 
-enum VisualRectFlags { DefaultVisualRectFlags = 0, EdgeInclusive = 1 };
-
 // PaintInvalidationState is an optimization used during the paint
 // invalidation phase.
 //

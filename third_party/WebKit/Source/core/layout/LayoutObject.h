@@ -33,7 +33,6 @@
 #include "core/editing/PositionWithAffinity.h"
 #include "core/layout/LayoutObjectChildList.h"
 #include "core/layout/MapCoordinatesFlags.h"
-#include "core/layout/PaintInvalidationState.h"
 #include "core/layout/ScrollAlignment.h"
 #include "core/layout/SubtreeLayoutScope.h"
 #include "core/layout/api/HitTestAction.h"
@@ -67,11 +66,14 @@ class LayoutGeometryMap;
 class LayoutMultiColumnSpannerPlaceholder;
 class LayoutView;
 class ObjectPaintProperties;
+class PaintInvalidationState;
 class PaintLayer;
 class PseudoStyleRequest;
 
 struct PaintInfo;
 struct PaintInvalidatorContext;
+
+enum VisualRectFlags { DefaultVisualRectFlags = 0, EdgeInclusive = 1 };
 
 enum CursorDirective { SetCursorBasedOnStyle, SetCursor, DoNotSetCursor };
 
@@ -1668,14 +1670,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
   void setShouldInvalidateSelection();
 
-  bool shouldCheckForPaintInvalidation(
-      const PaintInvalidationState& paintInvalidationState) const {
-    return paintInvalidationState.hasForcedSubtreeInvalidationFlags() ||
-           shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState();
-  }
+  bool shouldCheckForPaintInvalidationWithPaintInvalidationState(
+      const PaintInvalidationState&) const;
 
-  bool shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState()
-      const {
+  bool shouldCheckForPaintInvalidation() const {
     return mayNeedPaintInvalidation() || shouldDoFullPaintInvalidation() ||
            shouldInvalidateSelection() ||
            m_bitfields.childShouldCheckForPaintInvalidation();
@@ -2015,7 +2013,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 #if DCHECK_IS_ON()
   virtual bool paintInvalidationStateIsDirty() const {
     return backgroundChangedSinceLastPaintInvalidation() ||
-           shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState();
+           shouldCheckForPaintInvalidation();
   }
 #endif
 

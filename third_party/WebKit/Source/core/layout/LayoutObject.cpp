@@ -70,6 +70,7 @@
 #include "core/layout/LayoutTableRow.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/LayoutView.h"
+#include "core/layout/PaintInvalidationState.h"
 #include "core/layout/api/LayoutAPIShim.h"
 #include "core/layout/api/LayoutPartItem.h"
 #include "core/layout/ng/layout_ng_block_flow.h"
@@ -1140,7 +1141,8 @@ void LayoutObject::invalidateTreeIfNeeded(
 
   // If we didn't need paint invalidation then our children don't need as well.
   // Skip walking down the tree as everything should be fine below us.
-  if (!shouldCheckForPaintInvalidation(paintInvalidationState))
+  if (!shouldCheckForPaintInvalidationWithPaintInvalidationState(
+          paintInvalidationState))
     return;
 
   PaintInvalidationState newPaintInvalidationState(paintInvalidationState,
@@ -1213,7 +1215,7 @@ PaintInvalidationReason LayoutObject::invalidatePaintIfNeeded(
   setVisualRect(newVisualRect);
   paintInvalidator.setLocationInBacking(context.newLocation);
 
-  if (!shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState() &&
+  if (!shouldCheckForPaintInvalidation() &&
       paintInvalidationState
           .forcedSubtreeInvalidationRectUpdateWithinContainerOnly()) {
     // We are done updating the visual rect. No other paint invalidation work
@@ -3405,12 +3407,9 @@ static PaintInvalidationReason documentLifecycleBasedPaintInvalidationReason(
 }
 
 inline void LayoutObject::markAncestorsForPaintInvalidation() {
-  for (
-      LayoutObject* parent = this->paintInvalidationParent();
-      parent &&
-      !parent
-           ->shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState();
-      parent = parent->paintInvalidationParent())
+  for (LayoutObject* parent = this->paintInvalidationParent();
+       parent && !parent->shouldCheckForPaintInvalidation();
+       parent = parent->paintInvalidationParent())
     parent->m_bitfields.setChildShouldCheckForPaintInvalidation(true);
 }
 
@@ -3420,6 +3419,12 @@ void LayoutObject::setShouldInvalidateSelection() {
   m_bitfields.setShouldInvalidateSelection(true);
   markAncestorsForPaintInvalidation();
   frameView()->scheduleVisualUpdateForPaintInvalidationIfNeeded();
+}
+
+bool LayoutObject::shouldCheckForPaintInvalidationWithPaintInvalidationState(
+    const PaintInvalidationState& paintInvalidationState) const {
+  return paintInvalidationState.hasForcedSubtreeInvalidationFlags() ||
+         shouldCheckForPaintInvalidation();
 }
 
 void LayoutObject::setShouldDoFullPaintInvalidation(
@@ -3471,8 +3476,7 @@ void LayoutObject::clearPaintInvalidationFlags() {
   // paintInvalidationStateIsDirty should be kept in sync with the
   // booleans that are cleared below.
 #if DCHECK_IS_ON()
-  DCHECK(!shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState() ||
-         paintInvalidationStateIsDirty());
+  DCHECK(!shouldCheckForPaintInvalidation() || paintInvalidationStateIsDirty());
 #endif
   clearShouldDoFullPaintInvalidation();
   m_bitfields.setChildShouldCheckForPaintInvalidation(false);

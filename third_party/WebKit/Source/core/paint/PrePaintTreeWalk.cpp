@@ -234,13 +234,11 @@ void PrePaintTreeWalk::invalidatePaintLayerOptimizationsIfNeeded(
 bool PrePaintTreeWalk::shouldEndWalkBefore(
     const LayoutObject& object,
     const PrePaintTreeWalkContext& context) {
-  return (
-      !object.needsPaintPropertyUpdate() &&
-      !object.descendantNeedsPaintPropertyUpdate() &&
-      !context.treeBuilderContext->forceSubtreeUpdate &&
-      !context.paintInvalidatorContext.forcedSubtreeInvalidationFlags &&
-      !object
-           .shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState());
+  return !object.needsPaintPropertyUpdate() &&
+         !object.descendantNeedsPaintPropertyUpdate() &&
+         !context.treeBuilderContext->forceSubtreeUpdate &&
+         !context.paintInvalidatorContext.forcedSubtreeInvalidationFlags &&
+         !object.shouldCheckForPaintInvalidation();
 }
 
 void PrePaintTreeWalk::walk(const LayoutObject& object,

@@ -48,9 +48,7 @@ PaintInvalidationReason TablePaintInvalidator::invalidatePaintIfNeeded() {
     LayoutTableSection* section = toLayoutTableSection(child);
     section->ensureIsReadyForPaintInvalidation();
     ObjectPaintInvalidator sectionInvalidator(*section);
-    if (!hasColChangedBackground &&
-        !section
-             ->shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState())
+    if (!hasColChangedBackground && !section->shouldCheckForPaintInvalidation())
       continue;
     for (LayoutTableRow* row = section->firstRow(); row; row = row->nextRow()) {
       row->ensureIsReadyForPaintInvalidation();

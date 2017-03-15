@@ -429,8 +429,7 @@ void PaintInvalidator::invalidatePaintIfNeeded(
   updatePaintInvalidationContainer(object, context);
 
   bool objectShouldCheckForPaintInvalidation =
-      object
-          .shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState();
+      object.shouldCheckForPaintInvalidation();
   if (!context.forcedSubtreeInvalidationFlags &&
       !objectShouldCheckForPaintInvalidation) {
 #if CHECK_VISUAL_RECT_UPDATE
