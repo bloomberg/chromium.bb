@@ -264,15 +264,26 @@ RefPtr<NGLayoutResult> NGInlineNode::Layout(NGConstraintSpace*, NGBreakToken*) {
   return nullptr;
 }
 
-void NGInlineNode::LayoutInline(NGConstraintSpace* constraint_space,
-                                NGLineBuilder* line_builder) {
+RefPtr<NGLayoutResult> NGInlineNode::Layout(NGConstraintSpace* constraint_space,
+                                            NGFragmentBuilder* parent_builder,
+                                            NGBreakToken* break_token) {
+  // TODO(kojii): Invalidate PrepareLayout() more efficiently.
+  InvalidatePrepareLayout();
+  NGLineBuilder line_builder(this, constraint_space, parent_builder);
+  Layout(&line_builder);
+  RefPtr<NGLayoutResult> result = line_builder.CreateFragments();
+  line_builder.CopyFragmentDataToLayoutBlockFlow();
+  return result;
+}
+
+void NGInlineNode::Layout(NGLineBuilder* line_builder) {
   if (!IsPrepareLayoutFinished())
     PrepareLayout();
 
   if (text_content_.isEmpty())
     return;
 
-  NGTextLayoutAlgorithm(this, constraint_space).LayoutInline(line_builder);
+  NGTextLayoutAlgorithm(this).LayoutInline(line_builder);
 }
 
 MinMaxContentSize NGInlineNode::ComputeMinMaxContentSize() {
@@ -287,7 +298,7 @@ MinMaxContentSize NGInlineNode::ComputeMinMaxContentSize() {
           .SetAvailableSize({LayoutUnit(), NGSizeIndefinite})
           .ToConstraintSpace(writing_mode);
   NGLineBuilder line_builder(this, constraint_space.get(), nullptr);
-  LayoutInline(constraint_space.get(), &line_builder);
+  Layout(&line_builder);
   MinMaxContentSize sizes;
   sizes.min_content = line_builder.MaxInlineSize();
 

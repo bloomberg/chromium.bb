@@ -91,7 +91,7 @@ class NGInlineNodeTest : public RenderingTest {
             .ToConstraintSpace(kHorizontalTopBottom);
     NGLineBuilder line_builder(node, constraint_space.get(), nullptr);
 
-    NGTextLayoutAlgorithm algorithm(node, constraint_space.get());
+    NGTextLayoutAlgorithm algorithm(node);
     algorithm.LayoutInline(&line_builder);
 
     RefPtr<NGLayoutResult> result = line_builder.CreateFragments();

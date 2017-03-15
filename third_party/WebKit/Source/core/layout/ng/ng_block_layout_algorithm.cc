@@ -457,15 +457,14 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
     RefPtr<NGConstraintSpace> child_space =
         CreateConstraintSpaceForChild(child);
 
+    RefPtr<NGLayoutResult> layout_result;
     if (child->Type() == NGLayoutInputNode::kLegacyInline) {
-      LayoutInlineChild(toNGInlineNode(child), child_space.get());
-
+      layout_result = toNGInlineNode(child)->Layout(
+          child_space.get(), &builder_, child_break_token);
     } else {
-      RefPtr<NGLayoutResult> layout_result =
-          child->Layout(child_space.get(), child_break_token);
-
-      FinishChildLayout(child, child_space.get(), layout_result);
+      layout_result = child->Layout(child_space.get(), child_break_token);
     }
+    FinishChildLayout(child, child_space.get(), layout_result);
 
     entry = child_iterator.NextChild();
     child = entry.node;
@@ -517,21 +516,6 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
     FinalizeForFragmentation();
 
   return builder_.ToBoxFragment();
-}
-
-void NGBlockLayoutAlgorithm::LayoutInlineChild(NGInlineNode* inline_child,
-                                               NGConstraintSpace* child_space) {
-  // TODO(kojii): This logic does not handle when children are mix of
-  // inline/block. We need to detect the case and setup appropriately; e.g.,
-  // constraint space, margin collapsing, next siblings, etc.
-  NGLineBuilder line_builder(inline_child, child_space, &builder_);
-  // TODO(kojii): Need to determine when to invalidate PrepareLayout() more
-  // efficiently than "everytime".
-  inline_child->InvalidatePrepareLayout();
-  inline_child->LayoutInline(child_space, &line_builder);
-  RefPtr<NGLayoutResult> child_result = line_builder.CreateFragments();
-  line_builder.CopyFragmentDataToLayoutBlockFlow();
-  FinishChildLayout(inline_child, child_space, child_result);
 }
 
 void NGBlockLayoutAlgorithm::FinishChildLayout(

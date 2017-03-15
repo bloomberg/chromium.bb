@@ -18,7 +18,6 @@ namespace blink {
 class ComputedStyle;
 class NGBlockBreakToken;
 class NGConstraintSpace;
-class NGInlineNode;
 class NGLayoutResult;
 
 // A class for general block layout (e.g. a <div> with no special style).
@@ -46,9 +45,6 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
   void FinishChildLayout(NGLayoutInputNode*,
                          NGConstraintSpace*,
                          RefPtr<NGLayoutResult>);
-
-  // Layout inline child.
-  void LayoutInlineChild(NGInlineNode*, NGConstraintSpace*);
 
   // Final adjustments before fragment creation. We need to prevent the
   // fragment from crossing fragmentainer boundaries, and rather create a break
