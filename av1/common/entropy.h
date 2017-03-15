@@ -17,6 +17,7 @@
 #include "aom_dsp/prob.h"
 
 #include "av1/common/common.h"
+#include "av1/common/common_data.h"
 #include "av1/common/enums.h"
 
 #ifdef __cplusplus
@@ -110,6 +111,18 @@ typedef struct {
 
 // indexed by token value
 extern const av1_extra_bit av1_extra_bits[ENTROPY_TOKENS];
+
+static INLINE int av1_get_cat6_extrabits_size(TX_SIZE tx_size,
+                                              aom_bit_depth_t bit_depth) {
+  tx_size = txsize_sqr_up_map[tx_size];
+#if CONFIG_TX64X64
+  // TODO(debargha): Does TX_64X64 require an additional extrabit?
+  if (tx_size > TX_32X32) tx_size = TX_32X32;
+#endif
+  int bits = (int)bit_depth + 3 + (int)tx_size;
+  assert(bits < (int)sizeof(av1_cat6_prob));
+  return bits;
+}
 
 #define DCT_MAX_VALUE 16384
 #if CONFIG_AOM_HIGHBITDEPTH

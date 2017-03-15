@@ -846,10 +846,10 @@ static void pack_mb_tokens(aom_writer *w, const TOKENEXTRA **tp,
       const int bit_string_length = extra_bits->len;  // Length of extra bits to
       // be written excluding
       // the sign bit.
-      int skip_bits =
-          (extra_bits->base_val == CAT6_MIN_VAL)
-              ? TX_SIZES - 1 - txsize_sqr_up_map[tx_size] + (12 - bit_depth)
-              : 0;
+      int skip_bits = (extra_bits->base_val == CAT6_MIN_VAL)
+                          ? (int)sizeof(av1_cat6_prob) -
+                                av1_get_cat6_extrabits_size(tx_size, bit_depth)
+                          : 0;
 
       if (bit_string_length > 0) {
         const unsigned char *pb = extra_bits->prob;
@@ -943,10 +943,10 @@ static void pack_mb_tokens(aom_writer *w, const TOKENEXTRA **tp,
       const int bit_string_length = extra_bits->len;  // Length of extra bits to
                                                       // be written excluding
                                                       // the sign bit.
-      int skip_bits =
-          (extra_bits->base_val == CAT6_MIN_VAL)
-              ? TX_SIZES - 1 - txsize_sqr_up_map[tx_size] + (12 - bit_depth)
-              : 0;
+      int skip_bits = (extra_bits->base_val == CAT6_MIN_VAL)
+                          ? (int)sizeof(av1_cat6_prob) -
+                                av1_get_cat6_extrabits_size(tx_size, bit_depth)
+                          : 0;
       if (bit_string_length > 0) {
         const unsigned char *pb = extra_bits->prob;
         const int value = bit_string >> 1;

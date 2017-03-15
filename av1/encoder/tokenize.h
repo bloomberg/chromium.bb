@@ -98,29 +98,13 @@ extern const TOKENVALUE *av1_dct_value_tokens_ptr;
 extern const TOKENVALUE *av1_dct_cat_lt_10_value_tokens;
 extern const int *av1_dct_cat_lt_10_value_cost;
 extern const int16_t av1_cat6_low_cost[256];
-extern const int av1_cat6_high_cost[64];
-extern const int av1_cat6_high10_high_cost[256];
-extern const int av1_cat6_high12_high_cost[1024];
-static INLINE int av1_get_cost(int16_t token, EXTRABIT extrabits,
-                               const int *cat6_high_table) {
-  if (token != CATEGORY6_TOKEN)
-    return av1_extra_bits[token].cost[extrabits >> 1];
-  return av1_cat6_low_cost[(extrabits >> 1) & 0xff] +
-         cat6_high_table[extrabits >> 9];
-}
-
 #if CONFIG_AOM_HIGHBITDEPTH
-static INLINE const int *av1_get_high_cost_table(int bit_depth) {
-  return bit_depth == 8 ? av1_cat6_high_cost
-                        : (bit_depth == 10 ? av1_cat6_high10_high_cost
-                                           : av1_cat6_high12_high_cost);
-}
+#define CAT6_HIGH_COST_ENTRIES 1024
 #else
-static INLINE const int *av1_get_high_cost_table(int bit_depth) {
-  (void)bit_depth;
-  return av1_cat6_high_cost;
-}
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+#define CAT6_HIGH_COST_ENTRIES 64
+#endif
+extern const int av1_cat6_high_cost[CAT6_HIGH_COST_ENTRIES];
+extern const uint8_t av1_cat6_skipped_bits_discount[8];
 
 static INLINE void av1_get_token_extra(int v, int16_t *token, EXTRABIT *extra) {
   if (v >= CAT6_MIN_VAL || v <= -CAT6_MIN_VAL) {
@@ -139,14 +123,14 @@ static INLINE int16_t av1_get_token(int v) {
   return av1_dct_cat_lt_10_value_tokens[v].token;
 }
 
-static INLINE int av1_get_token_cost(int v, int16_t *token,
-                                     const int *cat6_high_table) {
+static INLINE int av1_get_token_cost(int v, int16_t *token, int cat6_bits) {
   if (v >= CAT6_MIN_VAL || v <= -CAT6_MIN_VAL) {
     EXTRABIT extrabits;
     *token = CATEGORY6_TOKEN;
     extrabits = abs(v) - CAT6_MIN_VAL;
     return av1_cat6_low_cost[extrabits & 0xff] +
-           cat6_high_table[extrabits >> 8];
+           av1_cat6_high_cost[extrabits >> 8] -
+           av1_cat6_skipped_bits_discount[18 - cat6_bits];
   }
   *token = av1_dct_cat_lt_10_value_tokens[v].token;
   return av1_dct_cat_lt_10_value_cost[v];

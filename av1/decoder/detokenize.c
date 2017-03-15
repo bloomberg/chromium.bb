@@ -194,11 +194,11 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
         break;
       case CATEGORY6_TOKEN: {
 #if CONFIG_AOM_HIGHBITDEPTH
-        const int skip_bits =
-            TX_SIZES - 1 - txsize_sqr_up_map[tx_size] + (12 - xd->bd);
+        const int skip_bits = (int)sizeof(av1_cat6_prob) -
+                              av1_get_cat6_extrabits_size(tx_size, xd->bd);
 #else
-        const int skip_bits =
-            TX_SIZES - 1 - txsize_sqr_up_map[tx_size] + (12 - 8);
+        const int skip_bits = (int)sizeof(av1_cat6_prob) -
+                              av1_get_cat6_extrabits_size(tx_size, 8);
 #endif
         val = CAT6_MIN_VAL +
               read_coeff(av1_cat6_prob + skip_bits, 18 - skip_bits, r);
@@ -292,11 +292,11 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
         break;
       case CATEGORY6_TOKEN: {
 #if CONFIG_AOM_HIGHBITDEPTH
-        const int skip_bits =
-            TX_SIZES - 1 - txsize_sqr_up_map[tx_size] + (12 - xd->bd);
+        const int skip_bits = (int)sizeof(av1_cat6_prob) -
+                              av1_get_cat6_extrabits_size(tx_size, xd->bd);
 #else
-        const int skip_bits =
-            TX_SIZES - 1 - txsize_sqr_up_map[tx_size] + (12 - 8);
+        const int skip_bits = (int)sizeof(av1_cat6_prob) -
+                              av1_get_cat6_extrabits_size(tx_size, 8);
 #endif
         val = CAT6_MIN_VAL +
               read_coeff(av1_cat6_prob + skip_bits, 18 - skip_bits, r);
@@ -332,11 +332,11 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
           break;
         case CATEGORY6_TOKEN: {
 #if CONFIG_AOM_HIGHBITDEPTH
-          const int skip_bits =
-              TX_SIZES - 1 - txsize_sqr_up_map[tx_size] + (12 - xd->bd);
+          const int skip_bits = (int)sizeof(av1_cat6_prob) -
+                                av1_get_cat6_extrabits_size(tx_size, xd->bd);
 #else
-          const int skip_bits =
-              TX_SIZES - 1 - txsize_sqr_up_map[tx_size] + (12 - 8);
+          const int skip_bits = (int)sizeof(av1_cat6_prob) -
+                                av1_get_cat6_extrabits_size(tx_size, 8);
 #endif
           val = CAT6_MIN_VAL +
                 read_coeff(av1_cat6_prob + skip_bits, 18 - skip_bits, r);

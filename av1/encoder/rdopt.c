@@ -1120,9 +1120,9 @@ int av1_cost_coeffs(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
 #endif  // CONFIG_NEW_TOKENSET
 
 #if CONFIG_AOM_HIGHBITDEPTH
-  const int *cat6_high_cost = av1_get_high_cost_table(xd->bd);
+  const int cat6_bits = av1_get_cat6_extrabits_size(tx_size, xd->bd);
 #else
-  const int *cat6_high_cost = av1_get_high_cost_table(8);
+  const int cat6_bits = av1_get_cat6_extrabits_size(tx_size, 8);
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
 #if !CONFIG_VAR_TX && !CONFIG_SUPERTX
@@ -1145,7 +1145,7 @@ int av1_cost_coeffs(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
       // dc token
       int v = qcoeff[0];
       int16_t prev_t;
-      cost = av1_get_token_cost(v, &prev_t, cat6_high_cost);
+      cost = av1_get_token_cost(v, &prev_t, cat6_bits);
 #if CONFIG_NEW_TOKENSET
       cost += (*token_costs)[!prev_t][pt][prev_t];
 #else
@@ -1161,7 +1161,7 @@ int av1_cost_coeffs(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
         int16_t t;
 
         v = qcoeff[rc];
-        cost += av1_get_token_cost(v, &t, cat6_high_cost);
+        cost += av1_get_token_cost(v, &t, cat6_bits);
 #if CONFIG_NEW_TOKENSET
         cost += (*token_costs)[!t][!prev_t][t];
 #else
@@ -1187,7 +1187,7 @@ int av1_cost_coeffs(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
 #if !CONFIG_NEW_TOKENSET
       unsigned int(*tok_cost_ptr)[COEFF_CONTEXTS][ENTROPY_TOKENS];
 #endif
-      cost = av1_get_token_cost(v, &tok, cat6_high_cost);
+      cost = av1_get_token_cost(v, &tok, cat6_bits);
 #if CONFIG_NEW_TOKENSET
       cost += (*token_costs)[!tok][pt][tok];
 #else
@@ -1206,7 +1206,7 @@ int av1_cost_coeffs(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
         const int rc = scan[c];
 
         v = qcoeff[rc];
-        cost += av1_get_token_cost(v, &tok, cat6_high_cost);
+        cost += av1_get_token_cost(v, &tok, cat6_bits);
         pt = get_coef_context(nb, token_cache, c);
 #if CONFIG_NEW_TOKENSET
         cost += (*token_costs)[!tok][pt][tok];

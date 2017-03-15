@@ -153,9 +153,9 @@ int av1_optimize_b(const AV1_COMMON *cm, MACROBLOCK *mb, int plane, int block,
                                        : band_translate[eob - 1];
   int pt, i, final_eob;
 #if CONFIG_AOM_HIGHBITDEPTH
-  const int *cat6_high_cost = av1_get_high_cost_table(xd->bd);
+  const int cat6_bits = av1_get_cat6_extrabits_size(tx_size, xd->bd);
 #else
-  const int *cat6_high_cost = av1_get_high_cost_table(8);
+  const int cat6_bits = av1_get_cat6_extrabits_size(tx_size, 8);
 #endif
   unsigned int(*token_costs)[2][COEFF_CONTEXTS][ENTROPY_TOKENS] =
       mb->token_costs[txsize_sqr_map[tx_size]][plane_type][ref];
@@ -182,7 +182,7 @@ int av1_optimize_b(const AV1_COMMON *cm, MACROBLOCK *mb, int plane, int block,
 
   for (i = 0; i < eob; i++) {
     const int rc = scan[i];
-    tokens[i][0].rate = av1_get_token_cost(qcoeff[rc], &t0, cat6_high_cost);
+    tokens[i][0].rate = av1_get_token_cost(qcoeff[rc], &t0, cat6_bits);
     tokens[i][0].token = t0;
     token_cache[rc] = av1_pt_energy_class[t0];
   }
@@ -302,7 +302,7 @@ int av1_optimize_b(const AV1_COMMON *cm, MACROBLOCK *mb, int plane, int block,
         t1 = tokens[next][1].token == EOB_TOKEN ? EOB_TOKEN : ZERO_TOKEN;
         base_bits = 0;
       } else {
-        base_bits = av1_get_token_cost(x, &t0, cat6_high_cost);
+        base_bits = av1_get_token_cost(x, &t0, cat6_bits);
         t1 = t0;
       }
 
