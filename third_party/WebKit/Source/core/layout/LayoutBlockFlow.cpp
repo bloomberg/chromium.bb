@@ -3473,8 +3473,6 @@ LayoutPoint LayoutBlockFlow::computeLogicalLocationForFloat(
 
   LayoutUnit floatLogicalLeft;
 
-  bool insideFlowThread = flowThreadContainingBlock();
-
   if (childBox->style()->floating() == EFloat::kLeft) {
     LayoutUnit heightRemainingLeft = LayoutUnit(1);
     LayoutUnit heightRemainingRight = LayoutUnit(1);
@@ -3488,15 +3486,6 @@ LayoutPoint LayoutBlockFlow::computeLogicalLocationForFloat(
           std::min<LayoutUnit>(heightRemainingLeft, heightRemainingRight);
       floatLogicalLeft = logicalLeftOffsetForPositioningFloat(
           logicalTopOffset, logicalLeftOffset, &heightRemainingLeft);
-      if (insideFlowThread) {
-        // Have to re-evaluate all of our offsets, since they may have changed.
-        logicalRightOffset =
-            logicalRightOffsetForContent();  // Constant part of right offset.
-        logicalLeftOffset =
-            logicalLeftOffsetForContent();  // Constant part of left offset.
-        floatLogicalWidth = std::min(logicalWidthForFloat(floatingObject),
-                                     logicalRightOffset - logicalLeftOffset);
-      }
     }
     floatLogicalLeft = std::max(
         logicalLeftOffset - borderAndPaddingLogicalLeft(), floatLogicalLeft);
@@ -3512,15 +3501,6 @@ LayoutPoint LayoutBlockFlow::computeLogicalLocationForFloat(
       logicalTopOffset += std::min(heightRemainingLeft, heightRemainingRight);
       floatLogicalLeft = logicalRightOffsetForPositioningFloat(
           logicalTopOffset, logicalRightOffset, &heightRemainingRight);
-      if (insideFlowThread) {
-        // Have to re-evaluate all of our offsets, since they may have changed.
-        logicalRightOffset =
-            logicalRightOffsetForContent();  // Constant part of right offset.
-        logicalLeftOffset =
-            logicalLeftOffsetForContent();  // Constant part of left offset.
-        floatLogicalWidth = std::min(logicalWidthForFloat(floatingObject),
-                                     logicalRightOffset - logicalLeftOffset);
-      }
     }
     // Use the original width of the float here, since the local variable
     // |floatLogicalWidth| was capped to the available line width. See
