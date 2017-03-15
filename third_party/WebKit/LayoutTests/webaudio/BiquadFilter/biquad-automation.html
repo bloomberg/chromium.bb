@@ -18,7 +18,7 @@
       var sampleRate = 16000;
 
       // How long to render for each test.
-      var renderDuration = 0.5;
+      var renderDuration = 0.25;
       // Where to end the automations.  Fairly arbitrary, but must end before
       // the renderDuration.
       var automationEndTime = renderDuration / 2;
@@ -167,7 +167,7 @@
         f.frequency.linearRampToValueAtTime(parameters.freq[1], automationEndTime);
 
         context.startRendering()
-          .then(createFilterVerifier(createBandpassFilter, 4.8429e-6, parameters, b.getChannelData(0),
+          .then(createFilterVerifier(createBandpassFilter, 4.6455e-6, parameters, b.getChannelData(0),
             "Output of bandpass filter with frequency automation"))
           .then(done);
       });
@@ -199,7 +199,7 @@
         f.Q.linearRampToValueAtTime(parameters.Q[1], automationEndTime);
 
         context.startRendering()
-          .then(createFilterVerifier(createBandpassFilter, 1.16232e-6, parameters, b.getChannelData(0),
+          .then(createFilterVerifier(createBandpassFilter, 9.8348e-7, parameters, b.getChannelData(0),
             "Output of bandpass filter with Q automation"))
           .then(done);
       });
