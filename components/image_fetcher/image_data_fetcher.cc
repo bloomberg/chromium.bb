@@ -8,7 +8,6 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
@@ -82,12 +81,12 @@ void ImageDataFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   bool success = source->GetStatus().status() == net::URLRequestStatus::SUCCESS;
 
   RequestMetadata metadata;
-  metadata.response_code = RESPONSE_CODE_INVALID;
   if (success && source->GetResponseHeaders()) {
     source->GetResponseHeaders()->GetMimeType(&metadata.mime_type);
-    metadata.response_code = source->GetResponseHeaders()->response_code();
-    success &= (metadata.response_code == net::HTTP_OK);
+    metadata.http_response_code = source->GetResponseHeaders()->response_code();
+    success &= (metadata.http_response_code == net::HTTP_OK);
   }
+  metadata.from_http_cache = source->WasCached();
 
   std::string image_data;
   if (success) {

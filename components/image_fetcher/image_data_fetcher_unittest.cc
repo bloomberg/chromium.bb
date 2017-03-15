@@ -65,7 +65,7 @@ TEST_F(ImageDataFetcherTest, FetchImageData) {
 
   RequestMetadata expected_metadata;
   expected_metadata.mime_type = std::string("image/png");
-  expected_metadata.response_code = net::HTTP_OK;
+  expected_metadata.http_response_code = net::HTTP_OK;
   EXPECT_CALL(*this, OnImageDataFetched(std::string(kURLResponseData),
                                         expected_metadata));
 
@@ -90,6 +90,40 @@ TEST_F(ImageDataFetcherTest, FetchImageData) {
   test_url_fetcher->delegate()->OnURLFetchComplete(test_url_fetcher);
 }
 
+TEST_F(ImageDataFetcherTest, FetchImageData_FromCache) {
+  image_data_fetcher_.FetchImageData(
+      GURL(kImageURL), base::Bind(&ImageDataFetcherTest::OnImageDataFetched,
+                                  base::Unretained(this)));
+
+  RequestMetadata expected_metadata;
+  expected_metadata.mime_type = std::string("image/png");
+  expected_metadata.http_response_code = net::HTTP_OK;
+  expected_metadata.from_http_cache = true;
+  EXPECT_CALL(*this, OnImageDataFetched(std::string(kURLResponseData),
+                                        expected_metadata));
+
+  // Get and configure the TestURLFetcher.
+  net::TestURLFetcher* test_url_fetcher = fetcher_factory_.GetFetcherByID(0);
+  ASSERT_NE(nullptr, test_url_fetcher);
+  test_url_fetcher->set_status(
+      net::URLRequestStatus(net::URLRequestStatus::SUCCESS, net::OK));
+  test_url_fetcher->SetResponseString(kURLResponseData);
+  test_url_fetcher->set_response_code(net::HTTP_OK);
+  test_url_fetcher->set_was_cached(true);
+
+  std::string raw_header =
+      "HTTP/1.1 200 OK\n"
+      "Content-type: image/png\n\n";
+  std::replace(raw_header.begin(), raw_header.end(), '\n', '\0');
+  scoped_refptr<net::HttpResponseHeaders> headers(
+      new net::HttpResponseHeaders(raw_header));
+
+  test_url_fetcher->set_response_headers(headers);
+
+  // Call the URLFetcher delegate to continue the test.
+  test_url_fetcher->delegate()->OnURLFetchComplete(test_url_fetcher);
+}
+
 TEST_F(ImageDataFetcherTest, FetchImageData_NotFound) {
   image_data_fetcher_.FetchImageData(
       GURL(kImageURL), base::Bind(&ImageDataFetcherTest::OnImageDataFetched,
@@ -97,7 +131,7 @@ TEST_F(ImageDataFetcherTest, FetchImageData_NotFound) {
 
   RequestMetadata expected_metadata;
   expected_metadata.mime_type = std::string("image/png");
-  expected_metadata.response_code = net::HTTP_NOT_FOUND;
+  expected_metadata.http_response_code = net::HTTP_NOT_FOUND;
   // For 404, expect an empty result even though correct image data is sent.
   EXPECT_CALL(*this, OnImageDataFetched(std::string(), expected_metadata));
 
@@ -128,7 +162,7 @@ TEST_F(ImageDataFetcherTest, FetchImageData_FailedRequest) {
                  base::Unretained(this)));
 
   RequestMetadata expected_metadata;
-  expected_metadata.response_code = net::URLFetcher::RESPONSE_CODE_INVALID;
+  expected_metadata.http_response_code = net::URLFetcher::RESPONSE_CODE_INVALID;
   EXPECT_CALL(
       *this, OnImageDataFetchedFailedRequest(std::string(), expected_metadata));
 

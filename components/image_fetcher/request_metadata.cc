@@ -6,9 +6,13 @@
 
 namespace image_fetcher {
 
+RequestMetadata::RequestMetadata()
+    : http_response_code(RESPONSE_CODE_INVALID), from_http_cache(false) {}
+
 bool operator==(const RequestMetadata& lhs, const RequestMetadata& rhs) {
   return lhs.mime_type == rhs.mime_type &&
-         lhs.response_code == rhs.response_code;
+         lhs.http_response_code == rhs.http_response_code &&
+         lhs.from_http_cache == rhs.from_http_cache;
 }
 
 bool operator!=(const RequestMetadata& lhs, const RequestMetadata& rhs) {

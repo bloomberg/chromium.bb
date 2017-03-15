@@ -77,8 +77,8 @@ int WebFaviconDriver::DownloadImage(const GURL& url,
 
   image_fetcher::IOSImageDataFetcherCallback local_callback =
       ^(NSData* data, const image_fetcher::RequestMetadata& metadata) {
-        if (metadata.response_code ==
-            image_fetcher::ImageDataFetcher::RESPONSE_CODE_INVALID)
+        if (metadata.http_response_code ==
+            image_fetcher::RequestMetadata::RESPONSE_CODE_INVALID)
           return;
 
         std::vector<SkBitmap> frames;
@@ -89,7 +89,7 @@ int WebFaviconDriver::DownloadImage(const GURL& url,
             sizes.push_back(gfx::Size(frame.width(), frame.height()));
           }
         }
-        callback.Run(local_download_id, metadata.response_code, local_url,
+        callback.Run(local_download_id, metadata.http_response_code, local_url,
                      frames, sizes);
       };
   image_fetcher_.FetchImageDataWebpDecoded(url, local_callback);

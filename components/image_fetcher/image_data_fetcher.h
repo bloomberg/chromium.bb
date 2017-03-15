@@ -14,7 +14,6 @@
 #include "base/memory/ref_counted.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/image_fetcher/request_metadata.h"
-#include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request.h"
 #include "url/gurl.h"
@@ -28,11 +27,6 @@ namespace image_fetcher {
 
 class ImageDataFetcher : public net::URLFetcherDelegate {
  public:
-  // Impossible http response code. Used to signal that no http response code
-  // was received.
-  enum ResponseCode {
-    RESPONSE_CODE_INVALID = net::URLFetcher::RESPONSE_CODE_INVALID
-  };
 
   // Callback with the |image_data|. If an error prevented a http response,
   // |request_metadata.response_code| will be RESPONSE_CODE_INVALID.
