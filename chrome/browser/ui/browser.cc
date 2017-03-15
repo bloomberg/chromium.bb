@@ -656,28 +656,29 @@ void Browser::FormatTitleForDisplay(base::string16* title) {
 bool Browser::ShouldCloseWindow() {
   if (!CanCloseWithInProgressDownloads())
     return false;
-
   if (IsFastTabUnloadEnabled())
     return fast_unload_controller_->ShouldCloseWindow();
   return unload_controller_->ShouldCloseWindow();
 }
 
-bool Browser::CallBeforeUnloadHandlers(
+bool Browser::TryToCloseWindow(
+    bool skip_beforeunload,
     const base::Callback<void(bool)>& on_close_confirmed) {
   cancel_download_confirmation_state_ = RESPONSE_RECEIVED;
   if (IsFastTabUnloadEnabled()) {
-    return fast_unload_controller_->CallBeforeUnloadHandlers(
-        on_close_confirmed);
+    return fast_unload_controller_->TryToCloseWindow(skip_beforeunload,
+                                                     on_close_confirmed);
   }
-  return unload_controller_->CallBeforeUnloadHandlers(on_close_confirmed);
+  return unload_controller_->TryToCloseWindow(skip_beforeunload,
+                                              on_close_confirmed);
 }
 
-void Browser::ResetBeforeUnloadHandlers() {
+void Browser::ResetTryToCloseWindow() {
   cancel_download_confirmation_state_ = NOT_PROMPTED;
   if (IsFastTabUnloadEnabled())
-    fast_unload_controller_->ResetBeforeUnloadHandlers();
+    fast_unload_controller_->ResetTryToCloseWindow();
   else
-    unload_controller_->ResetBeforeUnloadHandlers();
+    unload_controller_->ResetTryToCloseWindow();
 }
 
 bool Browser::HasCompletedUnloadProcessing() const {

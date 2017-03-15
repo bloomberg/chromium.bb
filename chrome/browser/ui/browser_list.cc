@@ -15,7 +15,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "content/public/browser/notification_service.h"
@@ -23,6 +22,20 @@
 
 using base::UserMetricsAction;
 using content::WebContents;
+
+namespace {
+
+BrowserList::BrowserVector GetBrowsersToClose(Profile* profile) {
+  BrowserList::BrowserVector browsers_to_close;
+  for (auto* browser : *BrowserList::GetInstance()) {
+    if (browser->profile()->GetOriginalProfile() ==
+        profile->GetOriginalProfile())
+      browsers_to_close.push_back(browser);
+  }
+  return browsers_to_close;
+}
+
+}  // namespace
 
 // static
 base::LazyInstance<base::ObserverList<chrome::BrowserListObserver>>::Leaky
@@ -124,33 +137,29 @@ void BrowserList::CloseAllBrowsersWithProfile(Profile* profile) {
 }
 
 // static
-void BrowserList::CloseAllBrowsersWithProfile(Profile* profile,
+void BrowserList::CloseAllBrowsersWithProfile(
+    Profile* profile,
     const CloseCallback& on_close_success,
-    const CloseCallback& on_close_aborted) {
-  BrowserVector browsers_to_close;
-  for (auto* browser : *BrowserList::GetInstance()) {
-    if (browser->profile()->GetOriginalProfile() ==
-        profile->GetOriginalProfile())
-      browsers_to_close.push_back(browser);
-  }
-
-  TryToCloseBrowserList(browsers_to_close, on_close_success, on_close_aborted,
-                        profile->GetPath());
+    const CloseCallback& on_close_aborted,
+    bool skip_beforeunload) {
+  TryToCloseBrowserList(GetBrowsersToClose(profile), on_close_success,
+                        on_close_aborted, profile->GetPath(),
+                        skip_beforeunload);
 }
 
 // static
 void BrowserList::TryToCloseBrowserList(const BrowserVector& browsers_to_close,
-    const CloseCallback& on_close_success,
-    const CloseCallback& on_close_aborted,
-    const base::FilePath& profile_path) {
+                                        const CloseCallback& on_close_success,
+                                        const CloseCallback& on_close_aborted,
+                                        const base::FilePath& profile_path,
+                                        const bool skip_beforeunload) {
   for (BrowserVector::const_iterator it = browsers_to_close.begin();
        it != browsers_to_close.end(); ++it) {
-    if ((*it)->CallBeforeUnloadHandlers(
-            base::Bind(&BrowserList::PostBeforeUnloadHandlers,
-                       browsers_to_close,
-                       on_close_success,
-                       on_close_aborted,
-                       profile_path))) {
+    if ((*it)->TryToCloseWindow(
+            skip_beforeunload,
+            base::Bind(&BrowserList::PostTryToCloseBrowserWindow,
+                       browsers_to_close, on_close_success, on_close_aborted,
+                       profile_path, skip_beforeunload))) {
       return;
     }
   }
@@ -166,11 +175,12 @@ void BrowserList::TryToCloseBrowserList(const BrowserVector& browsers_to_close,
 }
 
 // static
-void BrowserList::PostBeforeUnloadHandlers(
+void BrowserList::PostTryToCloseBrowserWindow(
     const BrowserVector& browsers_to_close,
     const CloseCallback& on_close_success,
     const CloseCallback& on_close_aborted,
     const base::FilePath& profile_path,
+    const bool skip_beforeunload,
     bool tab_close_confirmed) {
   // We need this bool to avoid infinite recursion when resetting the
   // BeforeUnload handlers, since doing that will trigger calls back to this
@@ -179,12 +189,12 @@ void BrowserList::PostBeforeUnloadHandlers(
 
   if (tab_close_confirmed) {
     TryToCloseBrowserList(browsers_to_close, on_close_success, on_close_aborted,
-                          profile_path);
+                          profile_path, skip_beforeunload);
   } else if (!resetting_handlers) {
     base::AutoReset<bool> resetting_handlers_scoper(&resetting_handlers, true);
     for (BrowserVector::const_iterator it = browsers_to_close.begin();
          it != browsers_to_close.end(); ++it) {
-      (*it)->ResetBeforeUnloadHandlers();
+      (*it)->ResetTryToCloseWindow();
     }
     on_close_aborted.Run(profile_path);
   }

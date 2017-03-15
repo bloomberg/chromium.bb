@@ -373,7 +373,7 @@ void CloseGuestProfileWindows() {
   if (profile) {
     BrowserList::CloseAllBrowsersWithProfile(
         profile, base::Bind(&ProfileBrowserCloseSuccess),
-        BrowserList::CloseCallback());
+        BrowserList::CloseCallback(), false);
   }
 }
 
@@ -401,7 +401,7 @@ void LockProfile(Profile* profile) {
   if (profile) {
     BrowserList::CloseAllBrowsersWithProfile(
         profile, base::Bind(&LockBrowserCloseSuccess),
-        BrowserList::CloseCallback());
+        BrowserList::CloseCallback(), false);
   }
 }
 
@@ -446,7 +446,7 @@ void CloseProfileWindows(Profile* profile) {
   DCHECK(profile);
   BrowserList::CloseAllBrowsersWithProfile(
       profile, base::Bind(&ProfileBrowserCloseSuccess),
-      BrowserList::CloseCallback());
+      BrowserList::CloseCallback(), false);
 }
 
 void CreateSystemProfileForUserManager(

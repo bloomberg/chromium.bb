@@ -820,7 +820,7 @@ void ProfileManager::ScheduleProfileForDeletion(
         profile,
         base::Bind(&ProfileManager::EnsureActiveProfileExistsBeforeDeletion,
                    base::Unretained(this), callback),
-        base::Bind(&CancelProfileDeletion));
+        base::Bind(&CancelProfileDeletion), false);
   } else {
     EnsureActiveProfileExistsBeforeDeletion(callback, profile_dir);
   }

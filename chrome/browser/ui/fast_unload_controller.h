@@ -18,6 +18,7 @@
 
 class Browser;
 class TabStripModel;
+class UnloadControllerWebContentsDelegate;
 
 namespace content {
 class NotificationSource;
@@ -90,13 +91,14 @@ class FastUnloadController : public content::NotificationObserver,
   bool ShouldCloseWindow();
 
   // Begins the process of confirming whether the associated browser can be
-  // closed.
-  bool CallBeforeUnloadHandlers(
-      const base::Callback<void(bool)>& on_close_confirmed);
+  // closed. Beforeunload events won't be fired if |skip_beforeunload|
+  // true.
+  bool TryToCloseWindow(bool skip_beforeunload,
+                        const base::Callback<void(bool)>& on_close_confirmed);
 
   // Clears the results of any beforeunload confirmation dialogs triggered by a
-  // CallBeforeUnloadHandlers call.
-  void ResetBeforeUnloadHandlers();
+  // TryToCloseWindow call.
+  void ResetTryToCloseWindow();
 
   // Returns true if |browser_| has any tabs that have BeforeUnload handlers
   // that have not been fired. This method is non-const because it builds a list
@@ -140,8 +142,8 @@ class FastUnloadController : public content::NotificationObserver,
   // Returns true if it succeeds.
   bool DetachWebContents(content::WebContents* contents);
 
-  // Processes the next tab that needs it's beforeunload/unload event fired.
-  void ProcessPendingTabs();
+  // Processes the next tab that needs its beforeunload/unload event fired.
+  void ProcessPendingTabs(bool skip_beforeunload);
 
   // Cleans up state appropriately when we are trying to close the
   // browser or close a tab in the background. We also use this in the
@@ -155,6 +157,8 @@ class FastUnloadController : public content::NotificationObserver,
   // Log a step of the unload processing.
   void LogUnloadStep(const base::StringPiece& step_name,
                      content::WebContents* contents) const;
+
+  void CancelTabNeedingBeforeUnloadAck();
 
   bool is_calling_before_unload_handlers() {
     return !on_close_confirmed_.is_null();
@@ -194,8 +198,7 @@ class FastUnloadController : public content::NotificationObserver,
   base::Callback<void(bool)> on_close_confirmed_;
 
   // Manage tabs with beforeunload/unload handlers that close detached.
-  class DetachedWebContentsDelegate;
-  std::unique_ptr<DetachedWebContentsDelegate> detached_delegate_;
+  std::unique_ptr<UnloadControllerWebContentsDelegate> detached_delegate_;
 
   base::WeakPtrFactory<FastUnloadController> weak_factory_;
 

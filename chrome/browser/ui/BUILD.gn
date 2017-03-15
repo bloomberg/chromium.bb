@@ -895,6 +895,8 @@ split_static_library("ui") {
       "uma_browsing_activity_observer.h",
       "unload_controller.cc",
       "unload_controller.h",
+      "unload_controller_web_contents_delegate.cc",
+      "unload_controller_web_contents_delegate.h",
       "user_manager.cc",
       "user_manager.h",
       "website_settings/chooser_bubble_delegate.cc",

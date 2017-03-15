@@ -280,10 +280,12 @@ void ChromeSigninClient::PreSignOut(const base::Callback<void()>& sign_out) {
   if (is_force_signin_enabled_ && !profile_->IsSystemProfile() &&
       !profile_->IsGuestSession() && !profile_->IsSupervised()) {
     BrowserList::CloseAllBrowsersWithProfile(
-        profile_, base::Bind(&ChromeSigninClient::OnCloseBrowsersSuccess,
-                             base::Unretained(this), sign_out),
+        profile_,
+        base::Bind(&ChromeSigninClient::OnCloseBrowsersSuccess,
+                   base::Unretained(this), sign_out),
         base::Bind(&ChromeSigninClient::OnCloseBrowsersAborted,
-                   base::Unretained(this)));
+                   base::Unretained(this)),
+        false);
   } else {
 #else
   {

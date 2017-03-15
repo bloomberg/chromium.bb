@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_UNLOAD_CONTROLLER_H_
 #define CHROME_BROWSER_UI_UNLOAD_CONTROLLER_H_
 
+#include <memory>
 #include <set>
 
 #include "base/callback.h"
@@ -16,6 +17,7 @@
 
 class Browser;
 class TabStripModel;
+class UnloadControllerWebContentsDelegate;
 
 namespace content {
 class NotificationSource;
@@ -62,13 +64,14 @@ class UnloadController : public content::NotificationObserver,
   bool ShouldCloseWindow();
 
   // Begins the process of confirming whether the associated browser can be
-  // closed.
-  bool CallBeforeUnloadHandlers(
-      const base::Callback<void(bool)>& on_close_confirmed);
+  // closed. Beforeunload events won't be fired if |skip_beforeunload|
+  // is true.
+  bool TryToCloseWindow(bool skip_beforeunload,
+                        const base::Callback<void(bool)>& on_close_confirmed);
 
   // Clears the results of any beforeunload confirmation dialogs triggered by a
-  // CallBeforeUnloadHandlers call.
-  void ResetBeforeUnloadHandlers();
+  // TryToCloseWindow call.
+  void ResetTryToCloseWindow();
 
   // Returns true if |browser_| has any tabs that have BeforeUnload handlers
   // that have not been fired. This method is non-const because it builds a list
@@ -107,7 +110,7 @@ class UnloadController : public content::NotificationObserver,
   void TabDetachedImpl(content::WebContents* contents);
 
   // Processes the next tab that needs it's beforeunload/unload event fired.
-  void ProcessPendingTabs();
+  void ProcessPendingTabs(bool skip_beforeunload);
 
   // Whether we've completed firing all the tabs' beforeunload/unload events.
   bool HasCompletedUnloadProcessing() const;

@@ -153,9 +153,9 @@ class StartupBrowserCreatorCorruptProfileTest : public InProcessBrowserTest {
 
     base::RunLoop run_loop;
     BrowserList::GetInstance()->CloseAllBrowsersWithProfile(
-        profile, base::Bind(&OnCloseAllBrowsersSucceeded,
-                            run_loop.QuitClosure()),
-        BrowserList::CloseCallback());
+        profile,
+        base::Bind(&OnCloseAllBrowsersSucceeded, run_loop.QuitClosure()),
+        BrowserList::CloseCallback(), false);
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {

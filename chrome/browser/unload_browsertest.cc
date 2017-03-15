@@ -326,7 +326,8 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserListCloseNoUnloadListeners) {
   BrowserList::CloseAllBrowsersWithProfile(
       browser()->profile(),
       base::Bind(&UnloadResults::AddSuccess, base::Unretained(&unload_results)),
-      base::Bind(&UnloadResults::AddAbort, base::Unretained(&unload_results)));
+      base::Bind(&UnloadResults::AddAbort, base::Unretained(&unload_results)),
+      false);
   window_observer.Wait();
   EXPECT_EQ(1, unload_results.get_successes());
   EXPECT_EQ(0, unload_results.get_aborts());
@@ -344,7 +345,8 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserListCloseBeforeUnloadOK) {
   BrowserList::CloseAllBrowsersWithProfile(
       browser()->profile(),
       base::Bind(&UnloadResults::AddSuccess, base::Unretained(&unload_results)),
-      base::Bind(&UnloadResults::AddAbort, base::Unretained(&unload_results)));
+      base::Bind(&UnloadResults::AddAbort, base::Unretained(&unload_results)),
+      false);
   ClickModalDialogButton(true);
   window_observer.Wait();
   EXPECT_EQ(1, unload_results.get_successes());
@@ -360,7 +362,8 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserListCloseBeforeUnloadCancel) {
   BrowserList::CloseAllBrowsersWithProfile(
       browser()->profile(),
       base::Bind(&UnloadResults::AddSuccess, base::Unretained(&unload_results)),
-      base::Bind(&UnloadResults::AddAbort, base::Unretained(&unload_results)));
+      base::Bind(&UnloadResults::AddAbort, base::Unretained(&unload_results)),
+      false);
 
   // We wait for the title to change after cancelling the closure of browser
   // window, to ensure that in-flight IPCs from the renderer reach the browser.
@@ -397,11 +400,13 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserListDoubleCloseBeforeUnloadOK) {
   BrowserList::CloseAllBrowsersWithProfile(
       browser()->profile(),
       base::Bind(&UnloadResults::AddSuccess, base::Unretained(&unload_results)),
-      base::Bind(&UnloadResults::AddAbort, base::Unretained(&unload_results)));
+      base::Bind(&UnloadResults::AddAbort, base::Unretained(&unload_results)),
+      false);
   BrowserList::CloseAllBrowsersWithProfile(
       browser()->profile(),
       base::Bind(&UnloadResults::AddSuccess, base::Unretained(&unload_results)),
-      base::Bind(&UnloadResults::AddAbort, base::Unretained(&unload_results)));
+      base::Bind(&UnloadResults::AddAbort, base::Unretained(&unload_results)),
+      false);
   ClickModalDialogButton(true);
   window_observer.Wait();
   EXPECT_EQ(1, unload_results.get_successes());
@@ -417,11 +422,13 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserListDoubleCloseBeforeUnloadCancel) {
   BrowserList::CloseAllBrowsersWithProfile(
       browser()->profile(),
       base::Bind(&UnloadResults::AddSuccess, base::Unretained(&unload_results)),
-      base::Bind(&UnloadResults::AddAbort, base::Unretained(&unload_results)));
+      base::Bind(&UnloadResults::AddAbort, base::Unretained(&unload_results)),
+      false);
   BrowserList::CloseAllBrowsersWithProfile(
       browser()->profile(),
       base::Bind(&UnloadResults::AddSuccess, base::Unretained(&unload_results)),
-      base::Bind(&UnloadResults::AddAbort, base::Unretained(&unload_results)));
+      base::Bind(&UnloadResults::AddAbort, base::Unretained(&unload_results)),
+      false);
 
   // We wait for the title to change after cancelling the closure of browser
   // window, to ensure that in-flight IPCs from the renderer reach the browser.
@@ -567,6 +574,62 @@ IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserCloseTabWhenOtherTabHasListener) {
   destroyed_watcher.Wait();
 
   CheckTitle("only_one_unload");
+}
+
+IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserListForceCloseNoUnloadListeners) {
+  NavigateToDataURL(NOLISTENERS_HTML, "nolisteners");
+
+  content::WindowedNotificationObserver window_observer(
+      chrome::NOTIFICATION_BROWSER_CLOSED,
+      content::NotificationService::AllSources());
+  UnloadResults unload_results;
+  BrowserList::CloseAllBrowsersWithProfile(
+      browser()->profile(),
+      base::Bind(&UnloadResults::AddSuccess, base::Unretained(&unload_results)),
+      base::Bind(&UnloadResults::AddAbort, base::Unretained(&unload_results)),
+      true);
+  window_observer.Wait();
+  EXPECT_EQ(1, unload_results.get_successes());
+  EXPECT_EQ(0, unload_results.get_aborts());
+}
+
+IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserListForceCloseWithBeforeUnload) {
+  NavigateToDataURL(BEFORE_UNLOAD_HTML, "beforeunload");
+
+  content::WindowedNotificationObserver window_observer(
+      chrome::NOTIFICATION_BROWSER_CLOSED,
+      content::NotificationService::AllSources());
+  UnloadResults unload_results;
+  BrowserList::CloseAllBrowsersWithProfile(
+      browser()->profile(),
+      base::Bind(&UnloadResults::AddSuccess, base::Unretained(&unload_results)),
+      base::Bind(&UnloadResults::AddAbort, base::Unretained(&unload_results)),
+      true);
+  window_observer.Wait();
+  EXPECT_EQ(1, unload_results.get_successes());
+  EXPECT_EQ(0, unload_results.get_aborts());
+}
+
+IN_PROC_BROWSER_TEST_F(UnloadTest, BrowserListForceCloseAfterNormalClose) {
+  NavigateToDataURL(BEFORE_UNLOAD_HTML, "beforeunload");
+
+  content::WindowedNotificationObserver window_observer(
+      chrome::NOTIFICATION_BROWSER_CLOSED,
+      content::NotificationService::AllSources());
+  UnloadResults unload_results;
+  BrowserList::CloseAllBrowsersWithProfile(
+      browser()->profile(),
+      base::Bind(&UnloadResults::AddSuccess, base::Unretained(&unload_results)),
+      base::Bind(&UnloadResults::AddAbort, base::Unretained(&unload_results)),
+      false);
+  BrowserList::CloseAllBrowsersWithProfile(
+      browser()->profile(),
+      base::Bind(&UnloadResults::AddSuccess, base::Unretained(&unload_results)),
+      base::Bind(&UnloadResults::AddAbort, base::Unretained(&unload_results)),
+      true);
+  window_observer.Wait();
+  EXPECT_EQ(1, unload_results.get_successes());
+  EXPECT_EQ(0, unload_results.get_aborts());
 }
 
 class FastUnloadTest : public UnloadTest {
@@ -787,6 +850,65 @@ IN_PROC_BROWSER_TEST_F(FastUnloadTest,
   chrome::CloseWindow(browser());
   CrashTab(beforeunload_contents);
   window_observer.Wait();
+}
+
+IN_PROC_BROWSER_TEST_F(FastUnloadTest,
+                       BrowserListForceCloseNoUnloadListenersWithFastUnload) {
+  NavigateToDataURL(NOLISTENERS_HTML, "nolisteners");
+
+  content::WindowedNotificationObserver window_observer(
+      chrome::NOTIFICATION_BROWSER_CLOSED,
+      content::NotificationService::AllSources());
+  UnloadResults unload_results;
+  BrowserList::CloseAllBrowsersWithProfile(
+      browser()->profile(),
+      base::Bind(&UnloadResults::AddSuccess, base::Unretained(&unload_results)),
+      base::Bind(&UnloadResults::AddAbort, base::Unretained(&unload_results)),
+      true);
+  window_observer.Wait();
+  EXPECT_EQ(1, unload_results.get_successes());
+  EXPECT_EQ(0, unload_results.get_aborts());
+}
+
+IN_PROC_BROWSER_TEST_F(FastUnloadTest,
+                       BrowserListForceCloseWithBeforeUnloadWithFastUnload) {
+  NavigateToDataURL(BEFORE_UNLOAD_HTML, "beforeunload");
+
+  content::WindowedNotificationObserver window_observer(
+      chrome::NOTIFICATION_BROWSER_CLOSED,
+      content::NotificationService::AllSources());
+  UnloadResults unload_results;
+  BrowserList::CloseAllBrowsersWithProfile(
+      browser()->profile(),
+      base::Bind(&UnloadResults::AddSuccess, base::Unretained(&unload_results)),
+      base::Bind(&UnloadResults::AddAbort, base::Unretained(&unload_results)),
+      true);
+  window_observer.Wait();
+  EXPECT_EQ(1, unload_results.get_successes());
+  EXPECT_EQ(0, unload_results.get_aborts());
+}
+
+IN_PROC_BROWSER_TEST_F(FastUnloadTest,
+                       BrowserListForceCloseAfterNormalCloseWithFastUnload) {
+  NavigateToDataURL(BEFORE_UNLOAD_HTML, "beforeunload");
+
+  content::WindowedNotificationObserver window_observer(
+      chrome::NOTIFICATION_BROWSER_CLOSED,
+      content::NotificationService::AllSources());
+  UnloadResults unload_results;
+  BrowserList::CloseAllBrowsersWithProfile(
+      browser()->profile(),
+      base::Bind(&UnloadResults::AddSuccess, base::Unretained(&unload_results)),
+      base::Bind(&UnloadResults::AddAbort, base::Unretained(&unload_results)),
+      false);
+  BrowserList::CloseAllBrowsersWithProfile(
+      browser()->profile(),
+      base::Bind(&UnloadResults::AddSuccess, base::Unretained(&unload_results)),
+      base::Bind(&UnloadResults::AddAbort, base::Unretained(&unload_results)),
+      true);
+  window_observer.Wait();
+  EXPECT_EQ(1, unload_results.get_successes());
+  EXPECT_EQ(0, unload_results.get_aborts());
 }
 
 // TODO(ojan): Add tests for unload/beforeunload that have multiple tabs

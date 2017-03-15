@@ -61,9 +61,8 @@ void BrowserCloseManager::StartClosingBrowsers() {
 
 void BrowserCloseManager::CancelBrowserClose() {
   browser_shutdown::SetTryingToQuit(false);
-  for (auto* browser : *BrowserList::GetInstance()) {
-    browser->ResetBeforeUnloadHandlers();
-  }
+  for (auto* browser : *BrowserList::GetInstance())
+    browser->ResetTryToCloseWindow();
 }
 
 void BrowserCloseManager::TryToCloseBrowsers() {
@@ -73,7 +72,8 @@ void BrowserCloseManager::TryToCloseBrowsers() {
   // OnBrowserReportCloseable with the result. If the user confirms the close,
   // this will trigger TryToCloseBrowsers to try again.
   for (auto* browser : *BrowserList::GetInstance()) {
-    if (browser->CallBeforeUnloadHandlers(
+    if (browser->TryToCloseWindow(
+            false,
             base::Bind(&BrowserCloseManager::OnBrowserReportCloseable, this))) {
       current_browser_ = browser;
       return;

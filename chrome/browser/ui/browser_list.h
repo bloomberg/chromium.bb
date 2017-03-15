@@ -88,13 +88,17 @@ class BrowserList {
   static void CloseAllBrowsersWithProfile(Profile* profile);
 
   // Closes all browsers for |profile| across all desktops. Uses
-  // TryToCloseBrowserList() to do the actual closing and trigger any
-  // OnBeforeUnload events. If all OnBeforeUnload events are confirmed,
-  // |on_close_success| is called, otherwise |on_close_aborted| is called.
-  static void CloseAllBrowsersWithProfile(
-      Profile* profile,
-      const CloseCallback& on_close_success,
-      const CloseCallback& on_close_aborted);
+  // TryToCloseBrowserList() to do the actual closing. Trigger any
+  // OnBeforeUnload events if |if_force| is false. If all OnBeforeUnload events
+  // are confirmed or |skip_beforeunload| is true, |on_close_success| is called,
+  // otherwise |on_close_aborted| is called.
+  // Note that if there is any browser window has been used before, user
+  // should always has a chance to save his or her work before closing windows
+  // without trigger beforeunload event.
+  static void CloseAllBrowsersWithProfile(Profile* profile,
+                                          const CloseCallback& on_close_success,
+                                          const CloseCallback& on_close_aborted,
+                                          bool skip_beforeunload);
 
   // Returns true if at least one incognito session is active across all
   // desktops.
@@ -116,26 +120,27 @@ class BrowserList {
   // |on_close_success| will be called, with a parameter of |profile_path|,
   // and the Browsers will then be closed. If at least one unfired
   // OnBeforeUnload event is found, handle it with a callback to
-  // PostBeforeUnloadHandlers, which upon success will recursively call this
+  // PostTryToCloseBrowserWindow, which upon success will recursively call this
   // method to handle any other OnBeforeUnload events. If aborted in the
-  // OnBeforeUnload event, PostBeforeUnloadHandlers will call |on_close_aborted|
-  // instead and reset all OnBeforeUnload event handlers.
-  static void TryToCloseBrowserList(
-      const BrowserVector& browsers_to_close,
-      const CloseCallback& on_close_success,
-      const CloseCallback& on_close_aborted,
-      const base::FilePath& profile_path);
+  // OnBeforeUnload event, PostTryToCloseBrowserWindow will call
+  // |on_close_aborted| instead and reset all OnBeforeUnload event handlers.
+  static void TryToCloseBrowserList(const BrowserVector& browsers_to_close,
+                                    const CloseCallback& on_close_success,
+                                    const CloseCallback& on_close_aborted,
+                                    const base::FilePath& profile_path,
+                                    const bool skip_beforeunload);
 
   // Called after handling an OnBeforeUnload event. If |tab_close_confirmed| is
   // true, calls |TryToCloseBrowserList()|, passing the parameters
   // |browsers_to_close|, |on_close_success|, |on_close_aborted|, and
   // |profile_path|. Otherwise, resets all the OnBeforeUnload event handlers and
   // calls |on_close_aborted|.
-  static void PostBeforeUnloadHandlers(
+  static void PostTryToCloseBrowserWindow(
       const BrowserVector& browsers_to_close,
       const CloseCallback& on_close_success,
       const CloseCallback& on_close_aborted,
       const base::FilePath& profile_path,
+      const bool skip_beforeunload,
       bool tab_close_confirmed);
 
   // A vector of the browsers in this list, in the order they were added.
