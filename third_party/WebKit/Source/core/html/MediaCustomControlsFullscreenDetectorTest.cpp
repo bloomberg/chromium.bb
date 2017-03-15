@@ -8,7 +8,6 @@
 #include "core/html/HTMLVideoElement.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/geometry/IntRect.h"
-#include "public/platform/WebMediaPlayer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {

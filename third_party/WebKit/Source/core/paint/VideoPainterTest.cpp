@@ -10,12 +10,12 @@
 #include "core/loader/EmptyClients.h"
 #include "core/paint/StubChromeClientForSPv2.h"
 #include "core/testing/DummyPageHolder.h"
+#include "platform/testing/EmptyWebMediaPlayer.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCompositorSupport.h"
 #include "public/platform/WebLayer.h"
-#include "public/platform/WebMediaPlayer.h"
 #include "public/platform/WebSize.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -24,7 +24,7 @@
 namespace blink {
 namespace {
 
-class StubWebMediaPlayer : public WebMediaPlayer {
+class StubWebMediaPlayer : public EmptyWebMediaPlayer {
  public:
   StubWebMediaPlayer(WebMediaPlayerClient* client) : m_client(client) {}
 
@@ -39,38 +39,8 @@ class StubWebMediaPlayer : public WebMediaPlayer {
     m_webLayer = Platform::current()->compositorSupport()->createLayer();
     m_client->setWebLayer(m_webLayer.get());
   }
-  void play() override {}
-  void pause() override {}
-  bool supportsSave() const override { return false; }
-  void seek(double seconds) override {}
-  void setRate(double) override {}
-  void setVolume(double) override {}
-  WebTimeRanges buffered() const override { return WebTimeRanges(); }
-  WebTimeRanges seekable() const override { return WebTimeRanges(); }
-  void setSinkId(const WebString& sinkId,
-                 const WebSecurityOrigin&,
-                 WebSetSinkIdCallbacks*) override {}
-  bool hasVideo() const override { return false; }
-  bool hasAudio() const override { return false; }
-  WebSize naturalSize() const override { return WebSize(0, 0); }
-  bool paused() const override { return false; }
-  bool seeking() const override { return false; }
-  double duration() const override { return 0.0; }
-  double currentTime() const override { return 0.0; }
   NetworkState getNetworkState() const override { return m_networkState; }
   ReadyState getReadyState() const override { return m_readyState; }
-  WebString getErrorMessage() override { return WebString(); }
-  bool didLoadingProgress() override { return false; }
-  bool hasSingleSecurityOrigin() const override { return true; }
-  bool didPassCORSAccessCheck() const override { return true; }
-  double mediaTimeForTimeValue(double timeValue) const override {
-    return timeValue;
-  }
-  unsigned decodedFrameCount() const override { return 0; }
-  unsigned droppedFrameCount() const override { return 0; }
-  size_t audioDecodedByteCount() const override { return 0; }
-  size_t videoDecodedByteCount() const override { return 0; }
-  void paint(WebCanvas*, const WebRect&, PaintFlags&) override {}
 
  private:
   WebMediaPlayerClient* m_client;
