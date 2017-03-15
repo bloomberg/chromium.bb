@@ -116,7 +116,7 @@ void ArcPlayStoreEnabledPreferenceHandler::OnPreferenceChanged() {
 
 void ArcPlayStoreEnabledPreferenceHandler::UpdateArcSessionManager() {
   auto* support_host = arc_session_manager_->support_host();
-  if (support_host) {
+  if (support_host && IsArcPlayStoreEnabledForProfile(profile_)) {
     support_host->SetArcManaged(
         IsArcPlayStoreEnabledPreferenceManagedForProfile(profile_));
   }
