@@ -51,7 +51,8 @@ public class CrashFileManager {
     private static final Pattern MINIDUMP_PATTERN =
             Pattern.compile("\\.dmp([0-9]*)(\\.try([0-9]+))?\\z");
 
-    private static final Pattern UPLOADED_MINIDUMP_PATTERN = Pattern.compile("\\.up([0-9]*)\\z");
+    private static final Pattern UPLOADED_MINIDUMP_PATTERN =
+            Pattern.compile("\\.up([0-9]*)(\\.try([0-9]+))?\\z");
 
     private static final String NOT_YET_UPLOADED_MINIDUMP_SUFFIX = ".dmp";
 

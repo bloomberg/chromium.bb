@@ -81,7 +81,7 @@ public class CrashFileManagerTest extends CrashTestCase {
         mDmpFile1.setLastModified(mModificationTimestamp);
         mModificationTimestamp += 1000;
 
-        mDmpFile2 = new File(mCrashDir, "chromium-renderer_abc.dmp" + TEST_PID);
+        mDmpFile2 = new File(mCrashDir, "chromium-renderer_abc.dmp" + TEST_PID + ".try1");
         mDmpFile2.createNewFile();
         mDmpFile2.setLastModified(mModificationTimestamp);
         mModificationTimestamp += 1000;
@@ -115,7 +115,7 @@ public class CrashFileManagerTest extends CrashTestCase {
         mUpFile1.setLastModified(mModificationTimestamp);
         mModificationTimestamp += 1000;
 
-        mUpFile2 = new File(mCrashDir, "chromium-renderer_abcd.up" + TEST_PID);
+        mUpFile2 = new File(mCrashDir, "chromium-renderer_abcd.up" + TEST_PID + ".try0");
         mUpFile2.createNewFile();
         mUpFile2.setLastModified(mModificationTimestamp);
         mModificationTimestamp += 1000;
@@ -322,17 +322,21 @@ public class CrashFileManagerTest extends CrashTestCase {
         CrashFileManager.markUploadSuccess(mDmpFile1);
         assertFalse(mDmpFile1.exists());
         assertTrue(new File(mCrashDir, "123_abc.up0").exists());
+
+        CrashFileManager.markUploadSuccess(mDmpFile2);
+        assertFalse(mDmpFile2.exists());
+        assertTrue(new File(mCrashDir, "chromium-renderer_abc.up" + TEST_PID + ".try1").exists());
     }
 
     @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_BAD_PRACTICE")
     @SmallTest
     @Feature({"Android-AppBase"})
     public void testMarkUploadSuccess_ForcedUpload() throws IOException {
-        File forced = new File(mCrashDir, "123_abc.forced0");
+        File forced = new File(mCrashDir, "123_abc.forced" + TEST_PID + ".try0");
         forced.createNewFile();
         CrashFileManager.markUploadSuccess(forced);
         assertFalse(forced.exists());
-        assertTrue(new File(mCrashDir, "123_abc.up0").exists());
+        assertTrue(new File(mCrashDir, "123_abc.up" + TEST_PID + ".try0").exists());
     }
 
     @SmallTest
@@ -341,6 +345,11 @@ public class CrashFileManagerTest extends CrashTestCase {
         CrashFileManager.markUploadSkipped(mDmpFile1);
         assertFalse(mDmpFile1.exists());
         assertTrue(new File(mCrashDir, "123_abc.skipped0").exists());
+
+        CrashFileManager.markUploadSkipped(mDmpFile2);
+        assertFalse(mDmpFile2.exists());
+        assertTrue(
+                new File(mCrashDir, "chromium-renderer_abc.skipped" + TEST_PID + ".try1").exists());
     }
 
     @SmallTest
@@ -561,10 +570,10 @@ public class CrashFileManagerTest extends CrashTestCase {
         File[] recentFiles = new File[3 * CrashFileManager.MAX_CRASH_REPORTS_TO_KEEP];
         for (int i = 0; i < CrashFileManager.MAX_CRASH_REPORTS_TO_KEEP; ++i) {
             String prefix = "chromium-renderer-minidump-deadbeef" + i;
-            // There is no reason why both a minidump and failed upload should exist at the same
-            // time, but the cleanup code should be robust to it anyway.
+            // There is no reason why both a minidump-sans-logcat and failed upload should exist at
+            // the same time, but the cleanup code should be robust to it anyway.
             File recentMinidump = new File(mCrashDir, prefix + ".dmp");
-            File recentFailedUpload = new File(mCrashDir, prefix + ".up0.try0");
+            File recentFailedUpload = new File(mCrashDir, prefix + ".dmp0.try1");
             File recentLogcatFile = new File(mCrashDir, prefix + ".logcat");
             recentMinidump.createNewFile();
             recentFailedUpload.createNewFile();
@@ -582,8 +591,10 @@ public class CrashFileManagerTest extends CrashTestCase {
 
         // Create some additional successful uploads.
         File success1 = new File(mCrashDir, "chromium-renderer-minidump-cafebebe1.up0");
-        File success2 = new File(mCrashDir, "chromium-renderer-minidump-cafebebe2.up1");
-        File success3 = new File(mCrashDir, "chromium-renderer-minidump-cafebebe3.up2");
+        File success2 =
+                new File(mCrashDir, "chromium-renderer-minidump-cafebebe2.up" + TEST_PID + ".try1");
+        File success3 =
+                new File(mCrashDir, "chromium-renderer-minidump-cafebebe3.up" + TEST_PID + ".try2");
         success1.createNewFile();
         success2.createNewFile();
         success3.createNewFile();
