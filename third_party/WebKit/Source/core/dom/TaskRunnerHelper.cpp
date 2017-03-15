@@ -21,6 +21,7 @@ RefPtr<WebTaskRunner> TaskRunnerHelper::get(TaskType type, LocalFrame* frame) {
                    : Platform::current()->currentThread()->getWebTaskRunner();
     case TaskType::UnspecedLoading:
     case TaskType::Networking:
+    case TaskType::DatabaseAccess:
       return frame ? frame->frameScheduler()->loadingTaskRunner()
                    : Platform::current()->currentThread()->getWebTaskRunner();
     // Throttling following tasks may break existing web pages, so tentatively
@@ -40,7 +41,6 @@ RefPtr<WebTaskRunner> TaskRunnerHelper::get(TaskType type, LocalFrame* frame) {
     case TaskType::PostedMessage:
     case TaskType::UnshippedPortMessage:
     case TaskType::FileReading:
-    case TaskType::DatabaseAccess:
     case TaskType::Presentation:
     case TaskType::Sensor:
     case TaskType::PerformanceTimeline:
