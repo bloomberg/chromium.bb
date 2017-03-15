@@ -71,6 +71,12 @@ LayoutGrid* LayoutGrid::createAnonymous(Document* document) {
 void LayoutGrid::addChild(LayoutObject* newChild, LayoutObject* beforeChild) {
   LayoutBlock::addChild(newChild, beforeChild);
 
+  // Positioned grid items do not take up space or otherwise participate in the
+  // layout of the grid, for that reason we don't need to mark the grid as dirty
+  // when they are added.
+  if (newChild->isOutOfFlowPositioned())
+    return;
+
   // The grid needs to be recomputed as it might contain auto-placed items that
   // will change their position.
   dirtyGrid();
@@ -78,6 +84,12 @@ void LayoutGrid::addChild(LayoutObject* newChild, LayoutObject* beforeChild) {
 
 void LayoutGrid::removeChild(LayoutObject* child) {
   LayoutBlock::removeChild(child);
+
+  // Positioned grid items do not take up space or otherwise participate in the
+  // layout of the grid, for that reason we don't need to mark the grid as dirty
+  // when they are removed.
+  if (child->isOutOfFlowPositioned())
+    return;
 
   // The grid needs to be recomputed as it might contain auto-placed items that
   // will change their position.
