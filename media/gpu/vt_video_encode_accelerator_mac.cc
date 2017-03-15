@@ -86,7 +86,6 @@ VTVideoEncodeAccelerator::~VTVideoEncodeAccelerator() {
   DVLOG(3) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  Destroy();
   DCHECK(!encoder_thread_.IsRunning());
   DCHECK(!encoder_task_weak_factory_.HasWeakPtrs());
 }
@@ -231,6 +230,8 @@ void VTVideoEncodeAccelerator::Destroy() {
   } else {
     DestroyTask();
   }
+
+  delete this;
 }
 
 void VTVideoEncodeAccelerator::EncodeTask(
