@@ -29,11 +29,13 @@ NSString* const kOpenShareMarker = @"SHARE_OPENING_ICON";
 // Background view constants.
 const CGFloat kTextImageSpacing = 10;
 const CGFloat kTextHorizontalMinimumMargin = 32;
-const CGFloat kTextMaximalWidth = 270;
+const CGFloat kTextMaximalWidth = 255;
 const CGFloat kImageWidth = 60;
 const CGFloat kImageHeight = 44;
 const CGFloat kFontSize = 16;
-const CGFloat kIconSize = 24;
+const CGFloat kIconHeight = 24;
+const CGFloat kToolbarMenuWidth = 18;
+const CGFloat kShareMenuWidth = 24;
 const CGFloat kLineHeight = 24;
 const CGFloat kPercentageFromTopForPosition = 0.4;
 
@@ -48,8 +50,8 @@ const CGFloat kPercentageFromTopForPosition = 0.4;
 - (void)attachIconNamed:(NSString*)iconName
                toString:(NSMutableAttributedString*)instructionString
               withCaret:(NSMutableAttributedString*)caret
-       spaceBeforeCaret:(BOOL)spaceBeforeCaret
                  offset:(CGFloat)iconOffset
+                  width:(CGFloat)icondWidth
         imageAttributes:(NSDictionary*)attributes;
 // Sets the constraints for this view, positionning the |imageView| in the X
 // center and at 40% of the top. The |label| is positionned below.
@@ -87,7 +89,7 @@ const CGFloat kPercentageFromTopForPosition = 0.4;
     };
 
     // Offset to vertically center the icons.
-    CGFloat iconOffset = (textFont.xHeight - kIconSize) / 2.0;
+    CGFloat iconOffset = (textFont.xHeight - kIconHeight) / 2.0;
 
     UIFont* instructionFont = [fontLoader boldFontOfSize:kFontSize];
     NSDictionary* instructionAttributes = @{
@@ -114,30 +116,30 @@ const CGFloat kPercentageFromTopForPosition = 0.4;
       // If the device has a compact display the share menu is accessed from the
       // toolbar menu. If it is expanded, the share menu is directly accessible.
       [self attachIconNamed:kToolbarMenuIcon
-                    toString:instructionString
-                   withCaret:caret
-            spaceBeforeCaret:NO
-                      offset:iconOffset
-             imageAttributes:textAttributes];
+                   toString:instructionString
+                  withCaret:caret
+                     offset:iconOffset
+                      width:kToolbarMenuWidth
+            imageAttributes:textAttributes];
 
       accessibilityInstructionString = [[accessibilityInstructionString
           stringByAppendingString:l10n_util::GetNSString(
                                       IDS_IOS_TOOLBAR_SETTINGS)]
           stringByAppendingString:@", "];
+
+      // Add a space before the share icon.
+      [instructionString
+          appendAttributedString:[[NSAttributedString alloc]
+                                     initWithString:@" "
+                                         attributes:instructionAttributes]];
     }
 
-    // Add a space before the share icon.
-    [instructionString
-        appendAttributedString:[[NSAttributedString alloc]
-                                   initWithString:@" "
-                                       attributes:instructionAttributes]];
-
     [self attachIconNamed:kShareMenuIcon
-                  toString:instructionString
-                 withCaret:caret
-          spaceBeforeCaret:YES
-                    offset:iconOffset
-           imageAttributes:textAttributes];
+                 toString:instructionString
+                withCaret:caret
+                   offset:iconOffset
+                    width:kShareMenuWidth
+          imageAttributes:textAttributes];
 
     accessibilityInstructionString = [[accessibilityInstructionString
         stringByAppendingString:l10n_util::GetNSString(
@@ -186,8 +188,8 @@ const CGFloat kPercentageFromTopForPosition = 0.4;
 - (void)attachIconNamed:(NSString*)iconName
                toString:(NSMutableAttributedString*)instructionString
               withCaret:(NSMutableAttributedString*)caret
-       spaceBeforeCaret:(BOOL)spaceBeforeCaret
                  offset:(CGFloat)iconOffset
+                  width:(CGFloat)iconWidth
         imageAttributes:(NSDictionary*)attributes {
   // Add a zero width space to set the attributes for the image.
   [instructionString appendAttributedString:[[NSAttributedString alloc]
@@ -197,16 +199,14 @@ const CGFloat kPercentageFromTopForPosition = 0.4;
   NSTextAttachment* toolbarIcon = [[NSTextAttachment alloc] init];
   toolbarIcon.image = [[UIImage imageNamed:iconName]
       imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-  toolbarIcon.bounds = CGRectMake(0, iconOffset, kIconSize, kIconSize);
+  toolbarIcon.bounds = CGRectMake(0, iconOffset, iconWidth, kIconHeight);
   [instructionString
       appendAttributedString:[NSAttributedString
                                  attributedStringWithAttachment:toolbarIcon]];
 
-  if (spaceBeforeCaret) {
     [instructionString appendAttributedString:[[NSAttributedString alloc]
                                                   initWithString:@" "
                                                       attributes:attributes]];
-  }
 
   [instructionString appendAttributedString:caret];
 }
