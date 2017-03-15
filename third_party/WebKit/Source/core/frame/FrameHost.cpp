@@ -31,7 +31,6 @@
 #include "core/frame/FrameHost.h"
 
 #include "core/frame/FrameView.h"
-#include "core/inspector/ConsoleMessageStorage.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/OverscrollController.h"
 #include "public/platform/Platform.h"
@@ -48,7 +47,6 @@ FrameHost::FrameHost(Page& page)
       m_overscrollController(
           OverscrollController::create(m_page->visualViewport(),
                                        m_page->chromeClient())),
-      m_consoleMessageStorage(new ConsoleMessageStorage()),
       m_subframeCount(0) {}
 
 // Explicitly in the .cpp to avoid default constructor in .h
@@ -79,17 +77,16 @@ const OverscrollController& FrameHost::overscrollController() const {
 }
 
 ConsoleMessageStorage& FrameHost::consoleMessageStorage() {
-  return *m_consoleMessageStorage;
+  return page().consoleMessageStorage();
 }
 
 const ConsoleMessageStorage& FrameHost::consoleMessageStorage() const {
-  return *m_consoleMessageStorage;
+  return page().consoleMessageStorage();
 }
 
 DEFINE_TRACE(FrameHost) {
   visitor->trace(m_page);
   visitor->trace(m_overscrollController);
-  visitor->trace(m_consoleMessageStorage);
 }
 
 #if DCHECK_IS_ON()

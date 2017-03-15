@@ -107,6 +107,7 @@ Page::Page(PageClients& pageClients)
       m_pageScaleConstraintsSet(PageScaleConstraintsSet::create()),
       m_pointerLockController(PointerLockController::create(this)),
       m_browserControls(BrowserControls::create(*this)),
+      m_consoleMessageStorage(new ConsoleMessageStorage()),
       m_eventHandlerRegistry(new EventHandlerRegistry(*this)),
       m_globalRootScrollerController(
           TopDocumentRootScrollerController::create(*this)),
@@ -175,6 +176,14 @@ BrowserControls& Page::browserControls() {
 
 const BrowserControls& Page::browserControls() const {
   return *m_browserControls;
+}
+
+ConsoleMessageStorage& Page::consoleMessageStorage() {
+  return *m_consoleMessageStorage;
+}
+
+const ConsoleMessageStorage& Page::consoleMessageStorage() const {
+  return *m_consoleMessageStorage;
 }
 
 EventHandlerRegistry& Page::eventHandlerRegistry() {
@@ -575,6 +584,7 @@ DEFINE_TRACE(Page) {
   visitor->trace(m_pointerLockController);
   visitor->trace(m_scrollingCoordinator);
   visitor->trace(m_browserControls);
+  visitor->trace(m_consoleMessageStorage);
   visitor->trace(m_eventHandlerRegistry);
   visitor->trace(m_globalRootScrollerController);
   visitor->trace(m_visualViewport);

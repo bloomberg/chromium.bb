@@ -67,6 +67,7 @@ class PointerLockController;
 class ScopedPageSuspender;
 class ScrollingCoordinator;
 class Settings;
+class ConsoleMessageStorage;
 class SpellCheckerClient;
 class TopDocumentRootScrollerController;
 class ValidationMessageClient;
@@ -192,6 +193,9 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   BrowserControls& browserControls();
   const BrowserControls& browserControls() const;
 
+  ConsoleMessageStorage& consoleMessageStorage();
+  const ConsoleMessageStorage& consoleMessageStorage() const;
+
   EventHandlerRegistry& eventHandlerRegistry();
   const EventHandlerRegistry& eventHandlerRegistry() const;
 
@@ -286,6 +290,7 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   const Member<PointerLockController> m_pointerLockController;
   Member<ScrollingCoordinator> m_scrollingCoordinator;
   const Member<BrowserControls> m_browserControls;
+  const Member<ConsoleMessageStorage> m_consoleMessageStorage;
   const Member<EventHandlerRegistry> m_eventHandlerRegistry;
   const Member<TopDocumentRootScrollerController>
       m_globalRootScrollerController;
