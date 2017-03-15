@@ -31,6 +31,7 @@ import org.chromium.chrome.browser.findinpage.FindMatchRectsDetails;
 import org.chromium.chrome.browser.findinpage.FindNotificationDetails;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.media.MediaCaptureNotificationService;
+import org.chromium.chrome.browser.media.VideoPersister;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
 import org.chromium.chrome.browser.policy.PolicyAuditor.AuditEvent;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
@@ -214,13 +215,8 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
 
     @Override
     public void toggleFullscreenModeForTab(boolean enableFullscreen) {
-        if (mTab.getFullscreenManager() != null) {
-            mTab.getFullscreenManager().setPersistentFullscreenMode(enableFullscreen);
-        }
-
-        RewindableIterator<TabObserver> observers = mTab.getTabObservers();
-        while (observers.hasNext()) {
-            observers.next().onToggleFullscreenMode(mTab, enableFullscreen);
+        if (!VideoPersister.getInstance().shouldDelayFullscreenModeChange(mTab, enableFullscreen)) {
+            mTab.toggleFullscreenMode(enableFullscreen);
         }
     }
 

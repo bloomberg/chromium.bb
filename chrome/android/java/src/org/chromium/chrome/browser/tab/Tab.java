@@ -2452,6 +2452,21 @@ public class Tab
     }
 
     /**
+     * Toggles fullscreen mode and notifies all observers.
+     * @param enableFullscreen Whether fullscreen should be enabled.
+     */
+    public void toggleFullscreenMode(boolean enableFullscreen) {
+        if (mFullscreenManager != null) {
+            mFullscreenManager.setPersistentFullscreenMode(enableFullscreen);
+        }
+
+        RewindableIterator<TabObserver> observers = getTabObservers();
+        while (observers.hasNext()) {
+            observers.next().onToggleFullscreenMode(this, enableFullscreen);
+        }
+    }
+
+    /**
      * Called when offset values related with fullscreen functionality has been changed by the
      * compositor.
      * @param topControlsOffsetY The Y offset of the top controls in physical pixels.
