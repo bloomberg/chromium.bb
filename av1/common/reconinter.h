@@ -275,12 +275,19 @@ static INLINE void av1_make_inter_predictor(
 #endif
 #if CONFIG_GLOBAL_MOTION
     int is_global, int p_col, int p_row, int plane, int ref,
+#if CONFIG_MOTION_VAR
+    int mi_col_offset, int mi_row_offset,
+#endif
 #endif  // CONFIG_GLOBAL_MOTION
     int xs, int ys, const MACROBLOCKD *xd) {
   (void)xd;
 #if CONFIG_GLOBAL_MOTION
   if (is_global) {
+#if CONFIG_MOTION_VAR
+    const MODE_INFO *mi = xd->mi[mi_col_offset + xd->mi_stride * mi_row_offset];
+#else
     const MODE_INFO *mi = xd->mi[0];
+#endif
     const struct macroblockd_plane *const pd = &xd->plane[plane];
     const struct buf_2d *const pre_buf = &pd->pre[ref];
     WarpedMotionParams *gm = &xd->global_motion[mi->mbmi.ref_frame[ref]];
