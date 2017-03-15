@@ -14,11 +14,14 @@ crbug.com/555418 virtual/mojo-loading/http/tests/security/isolatedWorld/bypass-m
 
 # https://crbug.com/695072: Preserve SourceLocation information.
 # This results in a missing line number in console error messages.
+crbug.com/695072 http/tests/security/location-href-clears-username-password.html [ Failure ]
+crbug.com/695072 virtual/mojo-loading/http/tests/security/location-href-clears-username-password.html [ Failure ]
 # The following tests need teh SourceLocation forwarded to the renderer when adding MixedContents error messages to the console.
 crbug.com/695072 http/tests/security/mixedContent/insecure-iframe-with-hsts.https.html [ Failure ]
 crbug.com/695072 virtual/mojo-loading/http/tests/security/mixedContent/insecure-iframe-with-hsts.https.html [ Failure ]
 
 # These tests are flaky.
 Bug(none) http/tests/misc/window-open-then-write.html [ Timeout ]
-Bug(none) external/wpt/html/browsers/browsing-the-web/unloading-documents/beforeunload-on-history-back.html [ Failure ]
+Bug(none) http/tests/security/popup-allowed-by-sandbox-can-navigate.html [ Failure ]
 Bug(none) virtual/mojo-loading/http/tests/misc/window-open-then-write.html [ Timeout ]
+Bug(none) virtual/mojo-loading/http/tests/security/popup-allowed-by-sandbox-can-navigate.html [ Failure ]
