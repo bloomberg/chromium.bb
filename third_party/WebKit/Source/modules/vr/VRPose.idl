@@ -7,9 +7,9 @@
     OriginTrialEnabled=WebVR,
 ] interface VRPose {
     readonly attribute Float32Array? position;
-    readonly attribute Float32Array? linearVelocity;
-    readonly attribute Float32Array? linearAcceleration;
+    [MeasureAs=VRPoseLinearVelocity] readonly attribute Float32Array? linearVelocity;
+    [MeasureAs=VRPoseLinearAcceleration] readonly attribute Float32Array? linearAcceleration;
     readonly attribute Float32Array? orientation;
-    readonly attribute Float32Array? angularVelocity;
-    readonly attribute Float32Array? angularAcceleration;
+    [MeasureAs=VRPoseAngularVelocity] readonly attribute Float32Array? angularVelocity;
+    [MeasureAs=VRPoseAngularAcceleration] readonly attribute Float32Array? angularAcceleration;
 };

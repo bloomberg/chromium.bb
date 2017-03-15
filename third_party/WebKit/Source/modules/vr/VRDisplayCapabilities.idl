@@ -7,7 +7,7 @@
     OriginTrialEnabled=WebVR
 ] interface VRDisplayCapabilities {
   // Whether or not the VR display is capable of reporting user orientation.
-  readonly attribute boolean hasOrientation;
+  [MeasureAs=VRDisplayCapabilitiesHasOrientation] readonly attribute boolean hasOrientation;
 
   // Whether or not the VR display is capable of reporting user position.
   // If false position may still be reported using simulated values like

@@ -1478,6 +1478,15 @@ class CORE_EXPORT UseCounter {
     HTMLMediaElementControlsListNoFullscreen = 1855,
     HTMLMediaElementControlsListNoRemotePlayback = 1856,
     PointerEventClickRetargetCausedByCapture = 1857,
+    VRDisplayIsConnected = 1858,
+    VRDisplayResetPose = 1859,
+    VRDisplayCapabilitiesHasOrientation = 1860,
+    VRDisplayDisplayName = 1861,
+    VREyeParametersOffset = 1862,
+    VRPoseLinearVelocity = 1863,
+    VRPoseLinearAcceleration = 1864,
+    VRPoseAngularVelocity = 1865,
+    VRPoseAngularAcceleration = 1866,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.
