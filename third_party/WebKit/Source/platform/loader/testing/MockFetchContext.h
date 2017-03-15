@@ -7,7 +7,7 @@
 
 #include "platform/loader/fetch/FetchContext.h"
 #include "platform/loader/fetch/FetchRequest.h"
-#include "platform/network/ResourceTimingInfo.h"
+#include "platform/loader/fetch/ResourceTimingInfo.h"
 #include "platform/scheduler/test/fake_web_task_runner.h"
 #include "wtf/PtrUtil.h"
 

@@ -30,6 +30,8 @@
 
 #include "modules/serviceworkers/ServiceWorkerGlobalScope.h"
 
+#include <memory>
+#include <utility>
 #include "bindings/core/v8/CallbackPromiseAdapter.h"
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
@@ -56,14 +58,12 @@
 #include "platform/Histogram.h"
 #include "platform/loader/fetch/MemoryCache.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
-#include "platform/network/ResourceRequest.h"
+#include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebURL.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/PtrUtil.h"
-#include <memory>
-#include <utility>
 
 namespace blink {
 

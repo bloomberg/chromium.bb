@@ -34,7 +34,7 @@
 #include "core/loader/FrameLoader.h"
 #include "platform/loader/fetch/Resource.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
-#include "platform/network/ResourceResponse.h"
+#include "platform/loader/fetch/ResourceResponse.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/text/CString.h"

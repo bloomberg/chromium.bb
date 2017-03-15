@@ -24,9 +24,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/network/ResourceError.h"
+#include "platform/loader/fetch/ResourceError.h"
 
-#include "platform/network/ResourceRequest.h"
+#include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebURL.h"

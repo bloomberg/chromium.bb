@@ -24,8 +24,9 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "platform/network/ResourceRequest.h"
+#include "platform/loader/fetch/ResourceRequest.h"
 
+#include <memory>
 #include "platform/HTTPNames.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/network/NetworkUtils.h"
@@ -34,7 +35,6 @@
 #include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebURLRequest.h"
 #include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 
@@ -384,10 +384,11 @@ void ResourceRequest::setHasUserGesture(bool hasUserGesture) {
 }
 
 const CacheControlHeader& ResourceRequest::cacheControlHeader() const {
-  if (!m_cacheControlHeaderCache.parsed)
+  if (!m_cacheControlHeaderCache.parsed) {
     m_cacheControlHeaderCache = parseCacheControlDirectives(
         m_httpHeaderFields.get(HTTPNames::Cache_Control),
         m_httpHeaderFields.get(HTTPNames::Pragma));
+  }
   return m_cacheControlHeaderCache;
 }
 

@@ -4,6 +4,8 @@
 
 #include "core/loader/LinkLoader.h"
 
+#include <base/macros.h>
+#include <memory>
 #include "core/frame/Settings.h"
 #include "core/html/LinkRelAttribute.h"
 #include "core/loader/DocumentLoader.h"
@@ -12,13 +14,11 @@
 #include "core/testing/DummyPageHolder.h"
 #include "platform/loader/fetch/MemoryCache.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
-#include "platform/network/ResourceLoadPriority.h"
+#include "platform/loader/fetch/ResourceLoadPriority.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <base/macros.h>
-#include <memory>
 
 namespace blink {
 

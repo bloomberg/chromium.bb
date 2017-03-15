@@ -5,6 +5,7 @@
 #ifndef ImageResourceContent_h
 #define ImageResourceContent_h
 
+#include <memory>
 #include "core/CoreExport.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/IntSizeHash.h"
@@ -12,12 +13,11 @@
 #include "platform/graphics/Image.h"
 #include "platform/graphics/ImageObserver.h"
 #include "platform/graphics/ImageOrientation.h"
+#include "platform/loader/fetch/ResourceLoadPriority.h"
 #include "platform/loader/fetch/ResourceStatus.h"
-#include "platform/network/ResourceLoadPriority.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/HashCountedSet.h"
 #include "wtf/HashMap.h"
-#include <memory>
 
 namespace blink {
 

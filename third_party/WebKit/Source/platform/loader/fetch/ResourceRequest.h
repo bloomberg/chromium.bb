@@ -28,18 +28,18 @@
 #ifndef ResourceRequest_h
 #define ResourceRequest_h
 
+#include <memory>
 #include "platform/HTTPNames.h"
+#include "platform/loader/fetch/ResourceLoadPriority.h"
 #include "platform/network/EncodedFormData.h"
 #include "platform/network/HTTPHeaderMap.h"
 #include "platform/network/HTTPParsers.h"
-#include "platform/network/ResourceLoadPriority.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/Referrer.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebURLRequest.h"
 #include "wtf/RefCounted.h"
-#include <memory>
 
 namespace blink {
 
@@ -88,7 +88,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   bool isEmpty() const;
 
   const KURL& url() const;
-  void setURL(const KURL& url);
+  void setURL(const KURL&);
 
   void removeUserAndPassFromURL();
 
@@ -99,7 +99,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   void setTimeoutInterval(double);
 
   const KURL& firstPartyForCookies() const;
-  void setFirstPartyForCookies(const KURL& firstPartyForCookies);
+  void setFirstPartyForCookies(const KURL&);
 
   PassRefPtr<SecurityOrigin> requestorOrigin() const;
   void setRequestorOrigin(PassRefPtr<SecurityOrigin>);

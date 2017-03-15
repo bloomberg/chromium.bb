@@ -26,15 +26,15 @@
 #ifndef ProgressTracker_h
 #define ProgressTracker_h
 
+#include <memory>
 #include "core/CoreExport.h"
 #include "core/loader/FrameLoaderTypes.h"
 #include "platform/heap/Handle.h"
-#include "platform/network/ResourceLoadPriority.h"
+#include "platform/loader/fetch/ResourceLoadPriority.h"
 #include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
-#include <memory>
 
 namespace blink {
 

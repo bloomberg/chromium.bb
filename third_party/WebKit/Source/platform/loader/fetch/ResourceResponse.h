@@ -29,10 +29,10 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/blob/BlobData.h"
+#include "platform/loader/fetch/ResourceLoadInfo.h"
+#include "platform/loader/fetch/ResourceLoadTiming.h"
 #include "platform/network/HTTPHeaderMap.h"
 #include "platform/network/HTTPParsers.h"
-#include "platform/network/ResourceLoadInfo.h"
-#include "platform/network/ResourceLoadTiming.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/WebURLResponse.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerResponseType.h"

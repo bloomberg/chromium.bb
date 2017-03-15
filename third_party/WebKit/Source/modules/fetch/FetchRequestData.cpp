@@ -14,7 +14,7 @@
 #include "modules/fetch/FetchHeaderList.h"
 #include "platform/HTTPNames.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
-#include "platform/network/ResourceRequest.h"
+#include "platform/loader/fetch/ResourceRequest.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
 

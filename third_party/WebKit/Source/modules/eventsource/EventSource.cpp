@@ -32,6 +32,7 @@
 
 #include "modules/eventsource/EventSource.h"
 
+#include <memory>
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
@@ -51,13 +52,12 @@
 #include "core/loader/ThreadableLoader.h"
 #include "modules/eventsource/EventSourceInit.h"
 #include "platform/HTTPNames.h"
-#include "platform/network/ResourceError.h"
-#include "platform/network/ResourceRequest.h"
-#include "platform/network/ResourceResponse.h"
+#include "platform/loader/fetch/ResourceError.h"
+#include "platform/loader/fetch/ResourceRequest.h"
+#include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebURLRequest.h"
 #include "wtf/text/StringBuilder.h"
-#include <memory>
 
 namespace blink {
 

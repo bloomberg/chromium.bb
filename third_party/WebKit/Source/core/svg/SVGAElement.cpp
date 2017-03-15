@@ -43,7 +43,7 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "core/svg/animation/SVGSMILElement.h"
-#include "platform/network/ResourceRequest.h"
+#include "platform/loader/fetch/ResourceRequest.h"
 
 namespace blink {
 

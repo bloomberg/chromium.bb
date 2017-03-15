@@ -19,7 +19,7 @@
 #include "platform/PluginScriptForbiddenScope.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/graphics/GraphicsLayer.h"
-#include "platform/network/ResourceRequest.h"
+#include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "public/platform/WebLayer.h"
 

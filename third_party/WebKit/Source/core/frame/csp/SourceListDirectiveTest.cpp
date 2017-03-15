@@ -7,7 +7,7 @@
 #include "core/dom/Document.h"
 #include "core/frame/csp/CSPSource.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
-#include "platform/network/ResourceRequest.h"
+#include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "testing/gtest/include/gtest/gtest.h"

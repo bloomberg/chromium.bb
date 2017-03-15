@@ -38,7 +38,7 @@
 #include "platform/loader/fetch/FetchContext.h"
 #include "platform/loader/fetch/FetchRequest.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
-#include "platform/network/ResourceRequest.h"
+#include "platform/loader/fetch/ResourceRequest.h"
 #include "wtf/Forward.h"
 
 namespace blink {

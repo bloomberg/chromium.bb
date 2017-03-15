@@ -30,8 +30,9 @@
 
 #include "public/platform/WebURLRequest.h"
 
+#include <memory>
 #include "platform/RuntimeEnabledFeatures.h"
-#include "platform/network/ResourceRequest.h"
+#include "platform/loader/fetch/ResourceRequest.h"
 #include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebHTTPBody.h"
 #include "public/platform/WebHTTPHeaderVisitor.h"
@@ -40,7 +41,6 @@
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PtrUtil.h"
-#include <memory>
 
 namespace blink {
 

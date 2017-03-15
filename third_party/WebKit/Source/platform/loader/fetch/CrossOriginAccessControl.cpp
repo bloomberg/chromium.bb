@@ -26,20 +26,20 @@
 
 #include "platform/loader/fetch/CrossOriginAccessControl.h"
 
+#include <algorithm>
+#include <memory>
 #include "platform/loader/fetch/FetchUtils.h"
 #include "platform/loader/fetch/Resource.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
+#include "platform/loader/fetch/ResourceRequest.h"
+#include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/network/HTTPParsers.h"
-#include "platform/network/ResourceRequest.h"
-#include "platform/network/ResourceResponse.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/Threading.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/StringBuilder.h"
-#include <algorithm>
-#include <memory>
 
 namespace blink {
 

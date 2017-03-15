@@ -48,7 +48,7 @@
 #include "core/plugins/PluginView.h"
 #include "platform/FrameViewBase.h"
 #include "platform/Histogram.h"
-#include "platform/network/ResourceRequest.h"
+#include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/network/mime/MIMETypeFromURL.h"
 #include "platform/network/mime/MIMETypeRegistry.h"
 #include "platform/plugins/PluginData.h"

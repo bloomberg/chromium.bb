@@ -1125,16 +1125,6 @@ component("platform") {
     "network/NetworkUtils.h",
     "network/ParsedContentType.cpp",
     "network/ParsedContentType.h",
-    "network/ResourceError.cpp",
-    "network/ResourceError.h",
-    "network/ResourceLoadTiming.cpp",
-    "network/ResourceLoadTiming.h",
-    "network/ResourceRequest.cpp",
-    "network/ResourceRequest.h",
-    "network/ResourceResponse.cpp",
-    "network/ResourceResponse.h",
-    "network/ResourceTimingInfo.cpp",
-    "network/ResourceTimingInfo.h",
     "network/WebSocketHandshakeRequest.cpp",
     "network/WebSocketHandshakeRequest.h",
     "network/WebSocketHandshakeResponse.cpp",
@@ -1760,7 +1750,6 @@ test("blink_platform_unittests") {
     "network/NetworkStateNotifierTest.cpp",
     "network/NetworkUtilsTest.cpp",
     "network/ParsedContentTypeTest.cpp",
-    "network/ResourceRequestTest.cpp",
     "network/mime/MIMETypeRegistryTest.cpp",
     "scheduler/base/intrusive_heap_unittest.cc",
     "scheduler/base/queueing_time_estimator_unittest.cc",
@@ -2065,7 +2054,9 @@ source_set("unit_tests") {
     "graphics/test/FakeGLES2Interface.h",
     "graphics/test/FakeWebGraphicsContext3DProvider.h",
     "graphics/test/MockImageDecoder.h",
-    "network/ResourceResponseTest.cpp",
+
+    # TODO(toyoshim): Remove Platform dependency and move to loader/BUILD.gn
+    "loader/fetch/ResourceResponseTest.cpp",
   ]
 
   configs += [

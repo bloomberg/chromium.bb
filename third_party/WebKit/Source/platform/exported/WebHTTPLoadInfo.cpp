@@ -30,7 +30,7 @@
 
 #include "public/platform/WebHTTPLoadInfo.h"
 
-#include "platform/network/ResourceLoadInfo.h"
+#include "platform/loader/fetch/ResourceLoadInfo.h"
 #include "public/platform/WebHTTPHeaderVisitor.h"
 #include "public/platform/WebString.h"
 

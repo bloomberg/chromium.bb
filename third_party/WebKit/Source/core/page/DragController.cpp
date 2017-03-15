@@ -26,6 +26,7 @@
 
 #include "core/page/DragController.h"
 
+#include <memory>
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/HTMLNames.h"
 #include "core/InputTypeNames.h"
@@ -76,7 +77,7 @@
 #include "platform/graphics/Image.h"
 #include "platform/graphics/ImageOrientation.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
-#include "platform/network/ResourceRequest.h"
+#include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebDragData.h"
@@ -88,7 +89,6 @@
 #include "wtf/CurrentTime.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
-#include <memory>
 
 #if OS(WIN)
 #include <windows.h>

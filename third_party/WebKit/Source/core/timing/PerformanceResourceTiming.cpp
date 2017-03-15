@@ -33,9 +33,9 @@
 
 #include "bindings/core/v8/V8ObjectBuilder.h"
 #include "core/timing/PerformanceBase.h"
-#include "platform/network/ResourceRequest.h"
-#include "platform/network/ResourceResponse.h"
-#include "platform/network/ResourceTimingInfo.h"
+#include "platform/loader/fetch/ResourceRequest.h"
+#include "platform/loader/fetch/ResourceResponse.h"
+#include "platform/loader/fetch/ResourceTimingInfo.h"
 
 namespace blink {
 

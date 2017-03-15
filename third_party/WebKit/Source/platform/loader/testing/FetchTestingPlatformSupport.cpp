@@ -5,8 +5,8 @@
 #include "platform/loader/testing/FetchTestingPlatformSupport.h"
 
 #include <memory>
+#include "platform/loader/fetch/ResourceError.h"
 #include "platform/loader/testing/MockFetchContext.h"
-#include "platform/network/ResourceError.h"
 #include "platform/testing/weburl_loader_mock_factory_impl.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebURL.h"

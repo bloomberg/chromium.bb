@@ -10,8 +10,8 @@
 #include "platform/blob/BlobRegistry.h"
 #include "platform/blob/BlobURL.h"
 #include "platform/loader/fetch/FetchInitiatorTypeNames.h"
-#include "platform/network/ResourceError.h"
-#include "platform/network/ResourceRequest.h"
+#include "platform/loader/fetch/ResourceError.h"
+#include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
 

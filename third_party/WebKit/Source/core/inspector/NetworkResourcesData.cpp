@@ -28,11 +28,11 @@
 
 #include "core/inspector/NetworkResourcesData.h"
 
+#include <memory>
 #include "core/dom/DOMImplementation.h"
 #include "platform/SharedBuffer.h"
 #include "platform/loader/fetch/Resource.h"
-#include "platform/network/ResourceResponse.h"
-#include <memory>
+#include "platform/loader/fetch/ResourceResponse.h"
 
 namespace blink {
 

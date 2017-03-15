@@ -4,6 +4,7 @@
 
 #include "core/loader/resource/CSSStyleSheetResource.h"
 
+#include <memory>
 #include "core/css/CSSCrossfadeValue.h"
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSPrimitiveValue.h"
@@ -25,7 +26,7 @@
 #include "platform/loader/fetch/FetchRequest.h"
 #include "platform/loader/fetch/MemoryCache.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
-#include "platform/network/ResourceRequest.h"
+#include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/weborigin/KURL.h"
@@ -35,7 +36,6 @@
 #include "wtf/PtrUtil.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 

@@ -33,7 +33,7 @@
 #include "core/imagebitmap/ImageBitmapSource.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/loader/fetch/FetchRequest.h"
-#include "platform/network/ResourceResponse.h"
+#include "platform/loader/fetch/ResourceResponse.h"
 
 namespace blink {
 

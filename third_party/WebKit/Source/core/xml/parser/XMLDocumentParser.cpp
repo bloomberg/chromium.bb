@@ -26,6 +26,11 @@
 
 #include "core/xml/parser/XMLDocumentParser.h"
 
+#include <libxml/catalog.h>
+#include <libxml/parser.h>
+#include <libxml/parserInternals.h>
+#include <libxslt/xslt.h>
+#include <memory>
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
@@ -61,10 +66,10 @@
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/loader/fetch/FetchInitiatorTypeNames.h"
 #include "platform/loader/fetch/RawResource.h"
+#include "platform/loader/fetch/ResourceError.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
-#include "platform/network/ResourceError.h"
-#include "platform/network/ResourceRequest.h"
-#include "platform/network/ResourceResponse.h"
+#include "platform/loader/fetch/ResourceRequest.h"
+#include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/AutoReset.h"
 #include "wtf/PtrUtil.h"
@@ -72,11 +77,6 @@
 #include "wtf/Threading.h"
 #include "wtf/Vector.h"
 #include "wtf/text/UTF8.h"
-#include <libxml/catalog.h>
-#include <libxml/parser.h>
-#include <libxml/parserInternals.h>
-#include <libxslt/xslt.h>
-#include <memory>
 
 namespace blink {
 

@@ -27,21 +27,21 @@
 #ifndef ResourceFetcher_h
 #define ResourceFetcher_h
 
+#include <memory>
 #include "platform/PlatformExport.h"
 #include "platform/Timer.h"
 #include "platform/loader/fetch/FetchContext.h"
 #include "platform/loader/fetch/FetchInitiatorInfo.h"
 #include "platform/loader/fetch/FetchRequest.h"
 #include "platform/loader/fetch/Resource.h"
+#include "platform/loader/fetch/ResourceError.h"
+#include "platform/loader/fetch/ResourceLoadPriority.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/loader/fetch/SubstituteData.h"
-#include "platform/network/ResourceError.h"
-#include "platform/network/ResourceLoadPriority.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/text/StringHash.h"
-#include <memory>
 
 namespace blink {
 

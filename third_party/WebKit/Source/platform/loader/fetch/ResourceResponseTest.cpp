@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/network/ResourceResponse.h"
+#include "platform/loader/fetch/ResourceResponse.h"
 
 #include "platform/CrossThreadFunctional.h"
 #include "platform/WebTaskRunner.h"

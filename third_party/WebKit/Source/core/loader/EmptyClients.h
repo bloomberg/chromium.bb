@@ -45,7 +45,7 @@
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/heap/Handle.h"
-#include "platform/network/ResourceError.h"
+#include "platform/loader/fetch/ResourceError.h"
 #include "platform/text/TextCheckerClient.h"
 #include "public/platform/WebFocusType.h"
 #include "public/platform/WebScreenInfo.h"

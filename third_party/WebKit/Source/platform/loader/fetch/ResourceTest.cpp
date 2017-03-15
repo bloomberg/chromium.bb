@@ -6,8 +6,8 @@
 
 #include "platform/SharedBuffer.h"
 #include "platform/loader/fetch/RawResource.h"
-#include "platform/network/ResourceRequest.h"
-#include "platform/network/ResourceResponse.h"
+#include "platform/loader/fetch/ResourceRequest.h"
+#include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "public/platform/Platform.h"

@@ -6,7 +6,7 @@
 #define NetworkInstrumentation_h
 
 #include "platform/PlatformExport.h"
-#include "platform/network/ResourceLoadPriority.h"
+#include "platform/loader/fetch/ResourceLoadPriority.h"
 
 namespace blink {
 class ResourceRequest;

@@ -28,10 +28,11 @@
 #ifndef WorkerScriptLoader_h
 #define WorkerScriptLoader_h
 
+#include <memory>
 #include "core/CoreExport.h"
 #include "core/loader/ThreadableLoader.h"
 #include "core/loader/ThreadableLoaderClient.h"
-#include "platform/network/ResourceRequest.h"
+#include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebURLRequest.h"
@@ -40,7 +41,6 @@
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/StringBuilder.h"
-#include <memory>
 
 namespace blink {
 

@@ -32,18 +32,18 @@
 #ifndef DocumentThreadableLoader_h
 #define DocumentThreadableLoader_h
 
+#include <memory>
 #include "core/CoreExport.h"
 #include "core/loader/ThreadableLoader.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/RawResource.h"
+#include "platform/loader/fetch/ResourceError.h"
 #include "platform/loader/fetch/ResourceOwner.h"
 #include "platform/network/HTTPHeaderMap.h"
-#include "platform/network/ResourceError.h"
 #include "platform/weborigin/Referrer.h"
 #include "wtf/Forward.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 

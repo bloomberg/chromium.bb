@@ -34,7 +34,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/MemoryCache.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
-#include "platform/network/ResourceTimingInfo.h"
+#include "platform/loader/fetch/ResourceTimingInfo.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"

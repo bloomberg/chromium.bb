@@ -31,6 +31,7 @@
 
 #include "core/timing/PerformanceBase.h"
 
+#include <algorithm>
 #include "core/dom/Document.h"
 #include "core/dom/DocumentTiming.h"
 #include "core/events/Event.h"
@@ -43,11 +44,10 @@
 #include "core/timing/PerformanceResourceTiming.h"
 #include "core/timing/PerformanceUserTiming.h"
 #include "platform/RuntimeEnabledFeatures.h"
-#include "platform/network/ResourceResponse.h"
-#include "platform/network/ResourceTimingInfo.h"
+#include "platform/loader/fetch/ResourceResponse.h"
+#include "platform/loader/fetch/ResourceTimingInfo.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/CurrentTime.h"
-#include <algorithm>
 
 namespace blink {
 

@@ -31,8 +31,8 @@
 #include "platform/loader/fetch/MemoryCache.h"
 
 #include "platform/loader/fetch/RawResource.h"
+#include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/loader/testing/MockResourceClient.h"
-#include "platform/network/ResourceRequest.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"

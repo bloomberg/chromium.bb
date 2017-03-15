@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/network/ResourceError.h"
 #include <ostream>
+#include "platform/loader/fetch/ResourceError.h"
 
 // Pretty printer for gtest.
 // Each corresponding declaration should be placed in the header file of

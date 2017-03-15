@@ -13,7 +13,7 @@
 #include "core/timing/PerformanceLongTaskTiming.h"
 #include "core/timing/PerformanceObserver.h"
 #include "core/timing/PerformanceObserverInit.h"
-#include "platform/network/ResourceResponse.h"
+#include "platform/loader/fetch/ResourceResponse.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {

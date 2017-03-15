@@ -27,7 +27,7 @@
 
 #include "core/dom/Document.h"
 #include "core/html/forms/FormController.h"
-#include "platform/network/ResourceRequest.h"
+#include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "wtf/Assertions.h"
 #include "wtf/CurrentTime.h"

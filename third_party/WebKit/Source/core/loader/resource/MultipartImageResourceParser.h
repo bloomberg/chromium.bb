@@ -43,7 +43,7 @@
 
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
-#include "platform/network/ResourceResponse.h"
+#include "platform/loader/fetch/ResourceResponse.h"
 #include "wtf/Vector.h"
 
 namespace blink {

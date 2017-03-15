@@ -22,6 +22,10 @@
 
 #include "core/xml/XSLTProcessor.h"
 
+#include <libxslt/imports.h>
+#include <libxslt/security.h>
+#include <libxslt/variables.h>
+#include <libxslt/xsltutils.h>
 #include "bindings/core/v8/SourceLocation.h"
 #include "core/dom/Document.h"
 #include "core/dom/TransformSource.h"
@@ -38,20 +42,16 @@
 #include "platform/loader/fetch/FetchInitiatorTypeNames.h"
 #include "platform/loader/fetch/RawResource.h"
 #include "platform/loader/fetch/Resource.h"
+#include "platform/loader/fetch/ResourceError.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
-#include "platform/network/ResourceError.h"
-#include "platform/network/ResourceRequest.h"
-#include "platform/network/ResourceResponse.h"
+#include "platform/loader/fetch/ResourceRequest.h"
+#include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/Assertions.h"
 #include "wtf/allocator/Partitions.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/StringBuffer.h"
 #include "wtf/text/UTF8.h"
-#include <libxslt/imports.h>
-#include <libxslt/security.h>
-#include <libxslt/variables.h>
-#include <libxslt/xsltutils.h>
 
 namespace blink {
 

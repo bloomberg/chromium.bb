@@ -42,8 +42,8 @@
 #include "core/loader/FrameLoader.h"
 #include "core/paint/PaintTiming.h"
 #include "core/timing/PerformanceBase.h"
-#include "platform/network/ResourceLoadTiming.h"
-#include "platform/network/ResourceResponse.h"
+#include "platform/loader/fetch/ResourceLoadTiming.h"
+#include "platform/loader/fetch/ResourceResponse.h"
 
 // Legacy support for NT1(https://www.w3.org/TR/navigation-timing/).
 namespace blink {

@@ -4,18 +4,18 @@
 
 #include "core/html/parser/CSSPreloadScanner.h"
 
+#include <memory>
 #include "core/frame/Settings.h"
 #include "core/html/parser/HTMLResourcePreloader.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/heap/Heap.h"
 #include "platform/loader/fetch/FetchContext.h"
 #include "platform/loader/fetch/Resource.h"
+#include "platform/loader/fetch/ResourceError.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
-#include "platform/network/ResourceError.h"
-#include "platform/network/ResourceRequest.h"
+#include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/weborigin/KURL.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include <memory>
 
 namespace blink {
 

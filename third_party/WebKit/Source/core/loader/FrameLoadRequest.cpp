@@ -4,7 +4,7 @@
 
 #include "core/loader/FrameLoadRequest.h"
 
-#include "platform/network/ResourceRequest.h"
+#include "platform/loader/fetch/ResourceRequest.h"
 #include "public/platform/WebURLRequest.h"
 #include "wtf/text/AtomicString.h"
 

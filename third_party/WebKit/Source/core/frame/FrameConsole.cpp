@@ -38,8 +38,8 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
-#include "platform/network/ResourceError.h"
-#include "platform/network/ResourceResponse.h"
+#include "platform/loader/fetch/ResourceError.h"
+#include "platform/loader/fetch/ResourceResponse.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace blink {

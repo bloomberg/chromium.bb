@@ -4,6 +4,7 @@
 
 #include "modules/fetch/FetchManager.h"
 
+#include <memory>
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
@@ -30,10 +31,10 @@
 #include "modules/fetch/ResponseInit.h"
 #include "platform/HTTPNames.h"
 #include "platform/loader/fetch/FetchUtils.h"
+#include "platform/loader/fetch/ResourceError.h"
+#include "platform/loader/fetch/ResourceRequest.h"
+#include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/network/NetworkUtils.h"
-#include "platform/network/ResourceError.h"
-#include "platform/network/ResourceRequest.h"
-#include "platform/network/ResourceResponse.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
@@ -43,7 +44,6 @@
 #include "wtf/HashSet.h"
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 

@@ -31,15 +31,15 @@
 #ifndef ResourceTimingInfo_h
 #define ResourceTimingInfo_h
 
+#include <memory>
 #include "platform/CrossThreadCopier.h"
-#include "platform/network/ResourceRequest.h"
-#include "platform/network/ResourceResponse.h"
+#include "platform/loader/fetch/ResourceRequest.h"
+#include "platform/loader/fetch/ResourceResponse.h"
 #include "wtf/Allocator.h"
 #include "wtf/Functional.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/text/AtomicString.h"
-#include <memory>
 
 namespace blink {
 

@@ -30,7 +30,7 @@
 
 #include "public/platform/WebURLLoadTiming.h"
 
-#include "platform/network/ResourceLoadTiming.h"
+#include "platform/loader/fetch/ResourceLoadTiming.h"
 #include "public/platform/WebString.h"
 
 namespace blink {

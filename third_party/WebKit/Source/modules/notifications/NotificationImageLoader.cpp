@@ -4,21 +4,21 @@
 
 #include "modules/notifications/NotificationImageLoader.h"
 
+#include <memory>
 #include "core/dom/ExecutionContext.h"
 #include "platform/Histogram.h"
 #include "platform/image-decoders/ImageDecoder.h"
 #include "platform/image-decoders/ImageFrame.h"
+#include "platform/loader/fetch/ResourceError.h"
+#include "platform/loader/fetch/ResourceLoadPriority.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
-#include "platform/network/ResourceError.h"
-#include "platform/network/ResourceLoadPriority.h"
-#include "platform/network/ResourceRequest.h"
+#include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/modules/notifications/WebNotificationConstants.h"
 #include "skia/ext/image_operations.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/Threading.h"
-#include <memory>
 
 #define NOTIFICATION_PER_TYPE_HISTOGRAM_COUNTS(metric, type_name, value, max) \
   case NotificationImageLoader::Type::type_name: {                            \

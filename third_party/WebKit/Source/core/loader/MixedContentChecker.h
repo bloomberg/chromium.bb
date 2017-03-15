@@ -34,7 +34,7 @@
 #include "base/gtest_prod_util.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
-#include "platform/network/ResourceRequest.h"
+#include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/weborigin/SecurityViolationReportingPolicy.h"
 #include "public/platform/WebMixedContentContextType.h"
 #include "public/platform/WebURLRequest.h"

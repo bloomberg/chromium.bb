@@ -43,7 +43,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/image-decoders/ImageDecoder.h"
 #include "platform/loader/fetch/MemoryCache.h"
-#include "platform/network/ResourceRequest.h"
+#include "platform/loader/fetch/ResourceRequest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColorSpaceXform.h"

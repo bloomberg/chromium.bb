@@ -24,6 +24,7 @@
 #ifndef Resource_h
 #define Resource_h
 
+#include <memory>
 #include "platform/MemoryCoordinator.h"
 #include "platform/PlatformExport.h"
 #include "platform/SharedBuffer.h"
@@ -31,12 +32,12 @@
 #include "platform/instrumentation/tracing/web_process_memory_dump.h"
 #include "platform/loader/fetch/CachedMetadataHandler.h"
 #include "platform/loader/fetch/IntegrityMetadata.h"
+#include "platform/loader/fetch/ResourceError.h"
+#include "platform/loader/fetch/ResourceLoadPriority.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
+#include "platform/loader/fetch/ResourceRequest.h"
+#include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/loader/fetch/ResourceStatus.h"
-#include "platform/network/ResourceError.h"
-#include "platform/network/ResourceLoadPriority.h"
-#include "platform/network/ResourceRequest.h"
-#include "platform/network/ResourceResponse.h"
 #include "public/platform/WebDataConsumerHandle.h"
 #include "wtf/Allocator.h"
 #include "wtf/AutoReset.h"
@@ -44,7 +45,6 @@
 #include "wtf/HashSet.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 

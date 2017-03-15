@@ -4,10 +4,12 @@
 
 #include "core/loader/MixedContentChecker.h"
 
+#include <base/macros.h>
+#include <memory>
 #include "core/frame/Settings.h"
 #include "core/loader/EmptyClients.h"
 #include "core/testing/DummyPageHolder.h"
-#include "platform/network/ResourceResponse.h"
+#include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebMixedContent.h"
@@ -15,8 +17,6 @@
 #include "testing/gmock/include/gmock/gmock-generated-function-mockers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/RefPtr.h"
-#include <base/macros.h>
-#include <memory>
 
 namespace blink {
 

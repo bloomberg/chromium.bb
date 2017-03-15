@@ -17,8 +17,8 @@
 #include "platform/fonts/FontDescription.h"
 #include "platform/fonts/SimpleFontData.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
+#include "platform/loader/fetch/ResourceLoadPriority.h"
 #include "platform/network/NetworkStateNotifier.h"
-#include "platform/network/ResourceLoadPriority.h"
 #include "public/platform/WebEffectiveConnectionType.h"
 #include "wtf/CurrentTime.h"
 

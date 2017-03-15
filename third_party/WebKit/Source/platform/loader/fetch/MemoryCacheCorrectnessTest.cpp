@@ -35,9 +35,9 @@
 #include "platform/loader/fetch/RawResource.h"
 #include "platform/loader/fetch/Resource.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
+#include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/loader/testing/MockFetchContext.h"
 #include "platform/loader/testing/MockResource.h"
-#include "platform/network/ResourceRequest.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

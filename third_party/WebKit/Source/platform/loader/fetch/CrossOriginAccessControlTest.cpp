@@ -4,7 +4,7 @@
 
 #include "platform/loader/fetch/CrossOriginAccessControl.h"
 
-#include "platform/network/ResourceRequest.h"
+#include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/RefPtr.h"

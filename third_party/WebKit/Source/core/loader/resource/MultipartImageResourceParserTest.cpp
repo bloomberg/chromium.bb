@@ -4,7 +4,7 @@
 
 #include "core/loader/resource/MultipartImageResourceParser.h"
 
-#include "platform/network/ResourceResponse.h"
+#include "platform/loader/fetch/ResourceResponse.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include <stddef.h>

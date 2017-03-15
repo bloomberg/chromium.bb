@@ -38,7 +38,7 @@
 #include "core/page/Page.h"
 #include "core/page/WindowFeatures.h"
 #include "platform/UserGestureIndicator.h"
-#include "platform/network/ResourceRequest.h"
+#include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/SecurityPolicy.h"

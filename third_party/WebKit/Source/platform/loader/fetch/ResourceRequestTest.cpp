@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/network/ResourceRequest.h"
+#include "platform/loader/fetch/ResourceRequest.h"
 
+#include <memory>
 #include "platform/network/EncodedFormData.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/Referrer.h"
@@ -11,7 +12,6 @@
 #include "public/platform/WebURLRequest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/text/AtomicString.h"
-#include <memory>
 
 namespace blink {
 

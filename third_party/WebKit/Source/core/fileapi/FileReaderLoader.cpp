@@ -30,6 +30,7 @@
 
 #include "core/fileapi/FileReaderLoader.h"
 
+#include <memory>
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/Blob.h"
@@ -39,9 +40,9 @@
 #include "platform/blob/BlobRegistry.h"
 #include "platform/blob/BlobURL.h"
 #include "platform/loader/fetch/FetchInitiatorTypeNames.h"
-#include "platform/network/ResourceError.h"
-#include "platform/network/ResourceRequest.h"
-#include "platform/network/ResourceResponse.h"
+#include "platform/loader/fetch/ResourceError.h"
+#include "platform/loader/fetch/ResourceRequest.h"
+#include "platform/loader/fetch/ResourceResponse.h"
 #include "public/platform/WebURLRequest.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/PtrUtil.h"
@@ -49,7 +50,6 @@
 #include "wtf/Vector.h"
 #include "wtf/text/Base64.h"
 #include "wtf/text/StringBuilder.h"
-#include <memory>
 
 namespace blink {
 

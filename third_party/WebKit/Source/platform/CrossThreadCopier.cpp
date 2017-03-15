@@ -30,12 +30,12 @@
 
 #include "platform/CrossThreadCopier.h"
 
-#include "platform/network/ResourceError.h"
-#include "platform/network/ResourceRequest.h"
-#include "platform/network/ResourceResponse.h"
+#include <memory>
+#include "platform/loader/fetch/ResourceError.h"
+#include "platform/loader/fetch/ResourceRequest.h"
+#include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/weborigin/KURL.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace blink {
 

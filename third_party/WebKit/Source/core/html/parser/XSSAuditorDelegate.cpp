@@ -34,8 +34,8 @@
 #include "core/loader/NavigationScheduler.h"
 #include "core/loader/PingLoader.h"
 #include "platform/json/JSONValues.h"
+#include "platform/loader/fetch/ResourceError.h"
 #include "platform/network/EncodedFormData.h"
-#include "platform/network/ResourceError.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/text/StringBuilder.h"
 

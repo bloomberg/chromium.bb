@@ -6,8 +6,8 @@
 
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/frame/csp/SourceListDirective.h"
+#include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/network/ContentSecurityPolicyParsers.h"
-#include "platform/network/ResourceRequest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/text/StringOperators.h"
 #include "wtf/text/WTFString.h"

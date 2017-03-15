@@ -27,11 +27,12 @@
 #ifndef ResourceError_h
 #define ResourceError_h
 
+// TODO(toyoshim): Move net/base inclusion from header file.
+#include <iosfwd>
 #include "net/base/net_errors.h"
 #include "platform/PlatformExport.h"
 #include "wtf/Allocator.h"
 #include "wtf/text/WTFString.h"
-#include <iosfwd>
 
 namespace blink {
 

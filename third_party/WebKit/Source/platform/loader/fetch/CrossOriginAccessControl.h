@@ -29,7 +29,7 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
-#include "platform/network/ResourceRequest.h"
+#include "platform/loader/fetch/ResourceRequest.h"
 #include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/HashSet.h"

@@ -29,7 +29,7 @@
 #include <memory>
 #include "platform/HTTPNames.h"
 #include "platform/loader/fetch/FetchUtils.h"
-#include "platform/network/ResourceResponse.h"
+#include "platform/loader/fetch/ResourceResponse.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/StdLibExtras.h"
 

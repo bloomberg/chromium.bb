@@ -30,8 +30,9 @@
 
 #include "public/platform/WebURLResponse.h"
 
-#include "platform/network/ResourceLoadTiming.h"
-#include "platform/network/ResourceResponse.h"
+#include <memory>
+#include "platform/loader/fetch/ResourceLoadTiming.h"
+#include "platform/loader/fetch/ResourceResponse.h"
 #include "public/platform/WebHTTPHeaderVisitor.h"
 #include "public/platform/WebHTTPLoadInfo.h"
 #include "public/platform/WebString.h"
@@ -41,7 +42,6 @@
 #include "wtf/Assertions.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/RefPtr.h"
-#include <memory>
 
 namespace blink {
 

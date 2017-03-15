@@ -5,7 +5,7 @@
 #include "platform/network/HTTPParsers.h"
 
 #include "platform/heap/Handle.h"
-#include "platform/network/ResourceResponse.h"
+#include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/weborigin/Suborigin.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/MathExtras.h"

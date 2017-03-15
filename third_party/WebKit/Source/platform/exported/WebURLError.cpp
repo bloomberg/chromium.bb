@@ -30,7 +30,7 @@
 
 #include "public/platform/WebURLError.h"
 
-#include "platform/network/ResourceError.h"
+#include "platform/loader/fetch/ResourceError.h"
 #include "platform/weborigin/KURL.h"
 
 namespace blink {

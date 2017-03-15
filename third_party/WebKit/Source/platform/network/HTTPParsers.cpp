@@ -35,7 +35,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "platform/json/JSONParser.h"
-#include "platform/network/ResourceResponse.h"
+#include "platform/loader/fetch/ResourceResponse.h"
 #include "platform/weborigin/Suborigin.h"
 #include "public/platform/WebString.h"
 #include "wtf/DateMath.h"

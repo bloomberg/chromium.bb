@@ -49,7 +49,7 @@
 #include "platform/InstanceCounters.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/feature_policy/FeaturePolicy.h"
-#include "platform/network/ResourceError.h"
+#include "platform/loader/fetch/ResourceError.h"
 
 namespace blink {
 

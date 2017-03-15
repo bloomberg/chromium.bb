@@ -29,13 +29,13 @@
 #ifndef ResourceLoader_h
 #define ResourceLoader_h
 
+#include <memory>
 #include "platform/PlatformExport.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
-#include "platform/network/ResourceRequest.h"
+#include "platform/loader/fetch/ResourceRequest.h"
 #include "public/platform/WebURLLoader.h"
 #include "public/platform/WebURLLoaderClient.h"
 #include "wtf/Forward.h"
-#include <memory>
 
 namespace blink {
 
