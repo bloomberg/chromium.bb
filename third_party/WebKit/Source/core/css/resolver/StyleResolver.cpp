@@ -1115,8 +1115,9 @@ bool StyleResolver::applyAnimatedStandardProperties(
   CSSAnimations::calculateCompositorAnimationUpdate(
       state.animationUpdate(), animatingElement, *element, *state.style(),
       state.parentStyle(), wasViewportResized());
-  CSSAnimations::calculateTransitionUpdate(state.animationUpdate(),
-                                           animatingElement, *state.style());
+  CSSAnimations::calculateTransitionUpdate(
+      state.animationUpdate(), CSSAnimations::PropertyPass::Standard,
+      animatingElement, *state.style());
 
   CSSAnimations::snapshotCompositorKeyframes(
       *element, state.animationUpdate(), *state.style(), state.parentStyle());
@@ -1612,7 +1613,7 @@ void StyleResolver::applyMatchedPropertiesAndCustomPropertyAnimations(
     applyMatchedAnimationProperties(state, matchResult, cacheSuccess,
                                     needsApplyPass);
   }
-  if (state.style()->animations() ||
+  if (state.style()->animations() || state.style()->transitions() ||
       (animatingElement && animatingElement->hasAnimations())) {
     calculateAnimationUpdate(state, animatingElement);
     if (state.isAnimatingCustomProperties()) {
@@ -1704,6 +1705,9 @@ void StyleResolver::applyCustomProperties(StyleResolverState& state,
   if (applyAnimations == IncludeAnimations) {
     applyAnimatedProperties<ResolveVariables>(
         state, state.animationUpdate().activeInterpolationsForAnimations());
+    applyAnimatedProperties<ResolveVariables>(
+        state,
+        state.animationUpdate().activeInterpolationsForCustomTransitions());
   }
   // TODO(leviw): stop recalculating every time
   CSSVariableResolver::resolveVariableDefinitions(state);
@@ -1720,6 +1724,9 @@ void StyleResolver::applyCustomProperties(StyleResolverState& state,
       if (applyAnimations == IncludeAnimations) {
         applyAnimatedProperties<ResolveVariables>(
             state, state.animationUpdate().activeInterpolationsForAnimations());
+        applyAnimatedProperties<ResolveVariables>(
+            state,
+            state.animationUpdate().activeInterpolationsForCustomTransitions());
       }
       CSSVariableResolver::resolveVariableDefinitions(state);
     }
@@ -1742,18 +1749,28 @@ void StyleResolver::applyMatchedAnimationProperties(
 
 void StyleResolver::calculateAnimationUpdate(StyleResolverState& state,
                                              const Element* animatingElement) {
-  DCHECK(state.style()->animations() ||
+  DCHECK(state.style()->animations() || state.style()->transitions() ||
          (animatingElement && animatingElement->hasAnimations()));
   DCHECK(!state.isAnimationInterpolationMapReady());
 
   CSSAnimations::calculateAnimationUpdate(
       state.animationUpdate(), animatingElement, *state.element(),
       *state.style(), state.parentStyle(), this);
+  CSSAnimations::calculateTransitionUpdate(state.animationUpdate(),
+                                           CSSAnimations::PropertyPass::Custom,
+                                           animatingElement, *state.style());
 
   state.setIsAnimationInterpolationMapReady();
 
-  if (state.isAnimatingCustomProperties())
+  if (state.isAnimatingCustomProperties()) {
     return;
+  }
+  if (!state.animationUpdate()
+           .activeInterpolationsForCustomTransitions()
+           .isEmpty()) {
+    state.setIsAnimatingCustomProperties(true);
+    return;
+  }
   for (const auto& propertyHandle :
        state.animationUpdate().activeInterpolationsForAnimations().keys()) {
     if (CSSAnimations::isCustomPropertyHandle(propertyHandle)) {

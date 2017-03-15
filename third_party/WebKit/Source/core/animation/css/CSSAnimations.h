@@ -78,9 +78,14 @@ class CSSAnimations final {
       const ComputedStyle&,
       const ComputedStyle* parentStyle,
       bool wasViewportChanged);
+
+  // Specifies whether to process custom or standard CSS properties.
+  enum class PropertyPass { Custom, Standard };
   static void calculateTransitionUpdate(CSSAnimationUpdate&,
+                                        PropertyPass,
                                         const Element* animatingElement,
                                         const ComputedStyle&);
+
   static void snapshotCompositorKeyframes(Element&,
                                           CSSAnimationUpdate&,
                                           const ComputedStyle&,
@@ -161,9 +166,14 @@ class CSSAnimations final {
     const ComputedStyle& oldStyle;
     const ComputedStyle& style;
     const TransitionMap* activeTransitions;
-    std::bitset<numCSSProperties>& listedProperties;
+    HashSet<PropertyHandle>& listedProperties;
     const CSSTransitionData& transitionData;
   };
+
+  static void calculateTransitionUpdateForCustomProperty(
+      TransitionUpdateState&,
+      const CSSTransitionData::TransitionProperty&,
+      size_t transitionIndex);
 
   static void calculateTransitionUpdateForStandardProperty(
       TransitionUpdateState&,
@@ -179,6 +189,7 @@ class CSSAnimations final {
       const Element* animatingElement);
   static void calculateTransitionActiveInterpolations(
       CSSAnimationUpdate&,
+      PropertyPass,
       const Element* animatingElement);
 
   class AnimationEventDelegate final

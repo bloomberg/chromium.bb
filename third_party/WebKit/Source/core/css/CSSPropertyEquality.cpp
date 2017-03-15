@@ -4,6 +4,7 @@
 
 #include "core/css/CSSPropertyEquality.h"
 
+#include "core/css/CSSValue.h"
 #include "core/style/ComputedStyle.h"
 #include "core/style/DataEquivalency.h"
 #include "core/style/ShadowList.h"
@@ -373,6 +374,14 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop,
       NOTREACHED();
       return true;
   }
+}
+
+bool CSSPropertyEquality::registeredCustomPropertiesEqual(
+    const AtomicString& propertyName,
+    const ComputedStyle& a,
+    const ComputedStyle& b) {
+  return dataEquivalent(a.getRegisteredVariable(propertyName),
+                        b.getRegisteredVariable(propertyName));
 }
 
 }  // namespace blink

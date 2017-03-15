@@ -7,6 +7,7 @@
 
 #include "core/CSSPropertyNames.h"
 #include "wtf/Allocator.h"
+#include "wtf/text/AtomicString.h"
 
 namespace blink {
 
@@ -19,6 +20,11 @@ class CSSPropertyEquality {
   static bool propertiesEqual(CSSPropertyID,
                               const ComputedStyle&,
                               const ComputedStyle&);
+
+  static bool registeredCustomPropertiesEqual(
+      const WTF::AtomicString& propertyName,
+      const ComputedStyle&,
+      const ComputedStyle&);
 };
 
 }  // namespace blink

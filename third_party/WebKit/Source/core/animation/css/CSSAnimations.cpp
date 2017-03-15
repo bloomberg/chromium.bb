@@ -50,6 +50,8 @@
 #include "core/css/CSSPropertyEquality.h"
 #include "core/css/CSSPropertyMetadata.h"
 #include "core/css/CSSValueList.h"
+#include "core/css/PropertyRegistry.h"
+#include "core/css/parser/CSSVariableParser.h"
 #include "core/css/resolver/CSSToStyleMap.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/Element.h"
@@ -621,7 +623,7 @@ void CSSAnimations::calculateTransitionUpdateForProperty(
     TransitionUpdateState& state,
     const PropertyHandle& property,
     size_t transitionIndex) {
-  state.listedProperties.set(property.cssProperty() - firstCSSProperty);
+  state.listedProperties.insert(property);
 
   // FIXME: We should transition if an !important property changes even when an
   // animation is running, but this is a bit hard to do with the current
@@ -656,8 +658,17 @@ void CSSAnimations::calculateTransitionUpdateForProperty(
     }
   }
 
-  if (CSSPropertyEquality::propertiesEqual(property.cssProperty(),
-                                           state.oldStyle, state.style)) {
+  const PropertyRegistry* registry =
+      state.animatingElement->document().propertyRegistry();
+
+  if (property.isCSSCustomProperty()) {
+    if (!registry || !registry->registration(property.customPropertyName()) ||
+        CSSPropertyEquality::registeredCustomPropertiesEqual(
+            property.customPropertyName(), state.oldStyle, state.style)) {
+      return;
+    }
+  } else if (CSSPropertyEquality::propertiesEqual(
+                 property.cssProperty(), state.oldStyle, state.style)) {
     return;
   }
 
@@ -666,9 +677,7 @@ void CSSAnimations::calculateTransitionUpdateForProperty(
   RefPtr<AnimatableValue> from =
       CSSAnimatableValueFactory::create(property, state.oldStyle);
 
-  // TODO(alancutter): Support transitions on registered custom properties and
-  // give the map a PropertyRegistry.
-  CSSInterpolationTypesMap map(nullptr);
+  CSSInterpolationTypesMap map(registry);
   InterpolationEnvironment oldEnvironment(map, state.oldStyle);
   InterpolationEnvironment newEnvironment(map, state.style);
   InterpolationValue start = nullptr;
@@ -779,6 +788,23 @@ void CSSAnimations::calculateTransitionUpdateForProperty(
       !state.animatingElement->elementAnimations()->isAnimationStyleChange());
 }
 
+void CSSAnimations::calculateTransitionUpdateForCustomProperty(
+    TransitionUpdateState& state,
+    const CSSTransitionData::TransitionProperty& transitionProperty,
+    size_t transitionIndex) {
+  if (transitionProperty.propertyType !=
+      CSSTransitionData::TransitionUnknownProperty) {
+    return;
+  }
+  if (!CSSVariableParser::isValidVariableName(
+          transitionProperty.propertyString)) {
+    return;
+  }
+  calculateTransitionUpdateForProperty(
+      state, PropertyHandle(transitionProperty.propertyString),
+      transitionIndex);
+}
+
 void CSSAnimations::calculateTransitionUpdateForStandardProperty(
     TransitionUpdateState& state,
     const CSSTransitionData::TransitionProperty& transitionProperty,
@@ -812,6 +838,7 @@ void CSSAnimations::calculateTransitionUpdateForStandardProperty(
 }
 
 void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate& update,
+                                              PropertyPass propertyPass,
                                               const Element* animatingElement,
                                               const ComputedStyle& style) {
   if (!animatingElement)
@@ -829,7 +856,7 @@ void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate& update,
   const bool animationStyleRecalc =
       elementAnimations && elementAnimations->isAnimationStyleChange();
 
-  std::bitset<numCSSProperties> listedProperties;
+  HashSet<PropertyHandle> listedProperties;
   bool anyTransitionHadTransitionAll = false;
   const LayoutObject* layoutObject = animatingElement->layoutObject();
   if (!animationStyleRecalc && style.display() != EDisplay::None &&
@@ -847,26 +874,35 @@ void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate& update,
       if (transitionProperty.unresolvedProperty == CSSPropertyAll) {
         anyTransitionHadTransitionAll = true;
       }
-      calculateTransitionUpdateForStandardProperty(state, transitionProperty,
+      if (propertyPass == PropertyPass::Custom) {
+        calculateTransitionUpdateForCustomProperty(state, transitionProperty,
                                                    transitionIndex);
+      } else {
+        DCHECK_EQ(propertyPass, PropertyPass::Standard);
+        calculateTransitionUpdateForStandardProperty(state, transitionProperty,
+                                                     transitionIndex);
+      }
     }
   }
 
   if (activeTransitions) {
     for (const auto& entry : *activeTransitions) {
       const PropertyHandle& property = entry.key;
-      // TODO(alancutter): Handle transitions on custom properties.
-      DCHECK(!property.isCSSCustomProperty());
-      CSSPropertyID id = property.cssProperty();
+      if (property.isCSSCustomProperty() !=
+          (propertyPass == PropertyPass::Custom)) {
+        continue;
+      }
       if (!anyTransitionHadTransitionAll && !animationStyleRecalc &&
-          !listedProperties.test(id - firstCSSProperty)) {
+          !listedProperties.contains(property)) {
         update.cancelTransition(property);
       } else if (entry.value.animation->finishedInternal()) {
         update.finishTransition(property);
       }
     }
   }
-  calculateTransitionActiveInterpolations(update, animatingElement);
+
+  calculateTransitionActiveInterpolations(update, propertyPass,
+                                          animatingElement);
 }
 
 void CSSAnimations::cancel() {
@@ -932,8 +968,26 @@ void CSSAnimations::calculateAnimationActiveInterpolations(
       activeInterpolationsForAnimations);
 }
 
+static bool isCustomStylePropertyHandle(const PropertyHandle& property) {
+  return property.isCSSCustomProperty();
+}
+
+static bool isStandardStylePropertyHandle(const PropertyHandle& property) {
+  return isStylePropertyHandle(property) && !property.isCSSCustomProperty();
+}
+
+static EffectStack::PropertyHandleFilter stylePropertyFilter(
+    CSSAnimations::PropertyPass propertyPass) {
+  if (propertyPass == CSSAnimations::PropertyPass::Custom) {
+    return isCustomStylePropertyHandle;
+  }
+  DCHECK_EQ(propertyPass, CSSAnimations::PropertyPass::Standard);
+  return isStandardStylePropertyHandle;
+}
+
 void CSSAnimations::calculateTransitionActiveInterpolations(
     CSSAnimationUpdate& update,
+    PropertyPass propertyPass,
     const Element* animatingElement) {
   ElementAnimations* elementAnimations =
       animatingElement ? animatingElement->elementAnimations() : nullptr;
@@ -945,7 +999,8 @@ void CSSAnimations::calculateTransitionActiveInterpolations(
       update.cancelledTransitions().isEmpty()) {
     activeInterpolationsForTransitions = EffectStack::activeInterpolations(
         effectStack, nullptr, nullptr,
-        KeyframeEffectReadOnly::TransitionPriority, isStylePropertyHandle);
+        KeyframeEffectReadOnly::TransitionPriority,
+        stylePropertyFilter(propertyPass));
   } else {
     HeapVector<Member<const InertEffect>> newTransitions;
     for (const auto& entry : update.newTransitions())
@@ -964,7 +1019,8 @@ void CSSAnimations::calculateTransitionActiveInterpolations(
 
     activeInterpolationsForTransitions = EffectStack::activeInterpolations(
         effectStack, &newTransitions, &cancelledAnimations,
-        KeyframeEffectReadOnly::TransitionPriority, isStylePropertyHandle);
+        KeyframeEffectReadOnly::TransitionPriority,
+        stylePropertyFilter(propertyPass));
   }
 
   // Properties being animated by animations don't get values from transitions
@@ -974,8 +1030,15 @@ void CSSAnimations::calculateTransitionActiveInterpolations(
     for (const auto& entry : update.activeInterpolationsForAnimations())
       activeInterpolationsForTransitions.erase(entry.key);
   }
-  update.adoptActiveInterpolationsForStandardTransitions(
-      activeInterpolationsForTransitions);
+
+  if (propertyPass == PropertyPass::Custom) {
+    update.adoptActiveInterpolationsForCustomTransitions(
+        activeInterpolationsForTransitions);
+  } else {
+    DCHECK_EQ(propertyPass, PropertyPass::Standard);
+    update.adoptActiveInterpolationsForStandardTransitions(
+        activeInterpolationsForTransitions);
+  }
 }
 
 EventTarget* CSSAnimations::AnimationEventDelegate::eventTarget() const {
