@@ -89,6 +89,26 @@ const NSTimeInterval kAnimationDuration = 0.35;
       }];
 }
 
+- (void)addSuggestions:(NSArray<ContentSuggestion*>*)suggestions {
+  if (suggestions.count == 0) {
+    return;
+  }
+
+  [self.collectionView performBatchUpdates:^{
+    NSIndexSet* addedSections =
+        [self.collectionUpdater addSectionsForSuggestionsToModel:suggestions];
+    [self.collectionView insertSections:addedSections];
+  }
+                                completion:nil];
+
+  [self.collectionView performBatchUpdates:^{
+    NSArray<NSIndexPath*>* addedItems =
+        [self.collectionUpdater addSuggestionsToModel:suggestions];
+    [self.collectionView insertItemsAtIndexPaths:addedItems];
+  }
+                                completion:nil];
+}
+
 #pragma mark - UIViewController
 
 - (void)viewDidLoad {

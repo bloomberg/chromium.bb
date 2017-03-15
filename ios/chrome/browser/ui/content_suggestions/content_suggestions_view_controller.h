@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_expandable_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_favicon_item.h"
 
+@class ContentSuggestion;
 @protocol ContentSuggestionsCommands;
 @protocol ContentSuggestionsDataSource;
 @protocol ContentSuggestionIdentification;
@@ -39,6 +40,8 @@
 - (void)dismissEntryAtIndexPath:(NSIndexPath*)indexPath;
 // Removes the |section|.
 - (void)dismissSection:(NSInteger)section;
+// Adds the |suggestions| to the collection and its model.
+- (void)addSuggestions:(NSArray<ContentSuggestion*>*)suggestions;
 
 @end
 
