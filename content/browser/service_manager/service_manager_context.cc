@@ -71,6 +71,8 @@ void StartServiceInUtilityProcess(
   service_factory->CreateService(std::move(request), service_name);
 }
 
+#if (ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
+
 // Request service_manager::mojom::ServiceFactory from GPU process host. Must be
 // called on IO thread.
 void StartServiceInGpuProcess(const std::string& service_name,
@@ -92,6 +94,8 @@ void StartServiceInGpuProcess(const std::string& service_name,
       mojo::MakeRequest(&service_factory));
   service_factory->CreateService(std::move(request), service_name);
 }
+
+#endif  // ENABLE_MOJO_MEDIA_IN_GPU_PROCESS
 
 // A ManifestProvider which resolves application names to builtin manifest
 // resources for the catalog service to consume.
@@ -318,6 +322,9 @@ ServiceManagerContext::ServiceManagerContext() {
   GetContentClient()
       ->browser()
       ->RegisterUnsandboxedOutOfProcessServices(&unsandboxed_services);
+  unsandboxed_services.insert(
+      std::make_pair(shape_detection::mojom::kServiceName,
+                     base::ASCIIToUTF16("Shape Detection Service")));
   for (const auto& service : unsandboxed_services) {
     packaged_services_connection_->AddServiceRequestHandler(
         service.first, base::Bind(&StartServiceInUtilityProcess, service.first,
@@ -328,12 +335,6 @@ ServiceManagerContext::ServiceManagerContext() {
   packaged_services_connection_->AddServiceRequestHandler(
       "media", base::Bind(&StartServiceInGpuProcess, "media"));
 #endif
-
-  packaged_services_connection_->AddServiceRequestHandler(
-      shape_detection::mojom::kServiceName,
-      base::Bind(&StartServiceInGpuProcess,
-                 shape_detection::mojom::kServiceName));
-
   packaged_services_connection_->Start();
   ServiceManagerConnection::GetForProcess()->Start();
 }
