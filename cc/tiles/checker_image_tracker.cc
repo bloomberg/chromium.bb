@@ -40,6 +40,9 @@ void CheckerImageTracker::FilterImagesForCheckeringForTile(
     std::vector<DrawImage>* images,
     ImageIdFlatSet* checkered_images,
     WhichTree tree) {
+  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
+               "CheckerImageTracker::FilterImagesForCheckeringForTile", "tree",
+               tree);
   DCHECK(checkered_images->empty());
 
   base::EraseIf(*images,
@@ -56,6 +59,8 @@ void CheckerImageTracker::FilterImagesForCheckeringForTile(
 }
 
 const ImageIdFlatSet& CheckerImageTracker::TakeImagesToInvalidateOnSyncTree() {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
+               "CheckerImageTracker::TakeImagesToInvalidateOnSyncTree");
   DCHECK_EQ(invalidated_images_on_current_sync_tree_.size(), 0u)
       << "Sync tree can not be invalidated more than once";
 
@@ -65,6 +70,8 @@ const ImageIdFlatSet& CheckerImageTracker::TakeImagesToInvalidateOnSyncTree() {
 }
 
 void CheckerImageTracker::DidActivateSyncTree() {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
+               "CheckerImageTracker::DidActivateSyncTree");
   for (auto image_id : invalidated_images_on_current_sync_tree_) {
     auto it = image_id_to_decode_request_id_.find(image_id);
     image_controller_->UnlockImageDecode(it->second);
@@ -78,6 +85,8 @@ void CheckerImageTracker::DidFinishImageDecode(
     ImageId image_id,
     ImageController::ImageDecodeRequestId request_id,
     ImageController::ImageDecodeResult result) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
+               "CheckerImageTracker::DidFinishImageDecode");
   TRACE_EVENT_ASYNC_END0("cc", "CheckerImageTracker::DeferImageDecode",
                          image_id);
 
@@ -130,6 +139,8 @@ bool CheckerImageTracker::ShouldCheckerImage(const sk_sp<const SkImage>& image,
 
 void CheckerImageTracker::ScheduleImageDecodeIfNecessary(
     const sk_sp<const SkImage>& image) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
+               "CheckerImageTracker::ScheduleImageDecodeIfNecessary");
   ImageId image_id = image->uniqueID();
 
   // If the image has already been decoded, or a decode request is pending, we
