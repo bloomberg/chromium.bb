@@ -1477,6 +1477,7 @@ class CORE_EXPORT UseCounter {
     HTMLMediaElementControlsListNoDownload = 1854,
     HTMLMediaElementControlsListNoFullscreen = 1855,
     HTMLMediaElementControlsListNoRemotePlayback = 1856,
+    PointerEventClickRetargetCausedByCapture = 1857,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.
