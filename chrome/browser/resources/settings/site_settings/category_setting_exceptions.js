@@ -10,6 +10,18 @@
 Polymer({
   is: 'category-setting-exceptions',
 
+  properties: {
+    /**
+     * Some content types (like Location) do not allow the user to manually
+     * edit the exception list from within Settings.
+     * @private
+     */
+    readOnlyList: {
+      type: Boolean,
+      value: false,
+    },
+  },
+
   /** @override */
   ready: function() {
     this.PermissionValues = settings.PermissionValues;

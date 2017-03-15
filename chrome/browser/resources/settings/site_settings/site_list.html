@@ -30,7 +30,7 @@
       <div class="settings-box first" hidden$="[[allSites]]">
         <h2 class="start">[[categoryHeader]]</h2>
         <paper-button class="secondary-button header-aligned-button" id="icon"
-            on-tap="onAddSiteTap_">
+            hidden="[[readOnlyList]]" on-tap="onAddSiteTap_">
           $i18n{add}
         </paper-button>
       </div>
@@ -81,7 +81,7 @@
             </template>
 
             <paper-icon-button id="dots" icon="cr:more-vert"
-                hidden="[[isActionMenuHidden_(item.source)]]"
+                hidden="[[isActionMenuHidden_(item.source, readOnlyList)]]"
                 on-tap="onShowActionMenuTap_" title="$i18n{moreActions}">
             </paper-icon-button>
             <template is="dom-if" if="[[enableSiteSettings_]]">

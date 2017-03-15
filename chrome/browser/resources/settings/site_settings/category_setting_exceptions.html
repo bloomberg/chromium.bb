@@ -17,17 +17,20 @@
     <site-list
         category="[[category]]"
         category-subtype="[[PermissionValues.BLOCK]]"
-        category-header="$i18n{siteSettingsBlock}">
+        category-header="$i18n{siteSettingsBlock}"
+        read-only-list="[[readOnlyList]]">
     </site-list>
     <site-list
         category="[[category]]"
         category-subtype="[[PermissionValues.SESSION_ONLY]]"
-        category-header="$i18n{siteSettingsSessionOnly}">
+        category-header="$i18n{siteSettingsSessionOnly}"
+        read-only-list="[[readOnlyList]]">
     </site-list>
     <site-list
         category="[[category]]"
         category-subtype="[[PermissionValues.ALLOW]]"
-        category-header="$i18n{siteSettingsAllow}">
+        category-header="$i18n{siteSettingsAllow}"
+        read-only-list="[[readOnlyList]]">
     </site-list>
   </template>
   <script src="category_setting_exceptions.js"></script>

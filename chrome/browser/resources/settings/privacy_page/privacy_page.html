@@ -263,7 +263,7 @@
                   "$i18n{siteSettingsAskBeforeAccessingRecommended}">
           </category-default-setting>
           <category-setting-exceptions
-              category="{{ContentSettingsTypes.CAMERA}}">
+              category="{{ContentSettingsTypes.CAMERA}}" read-only-list>
           </category-setting-exceptions>
         </settings-subpage>
       </template>
@@ -307,7 +307,7 @@
               category="{{ContentSettingsTypes.GEOLOCATION}}">
           </category-default-setting>
           <category-setting-exceptions
-              category="{{ContentSettingsTypes.GEOLOCATION}}">
+              category="{{ContentSettingsTypes.GEOLOCATION}}" read-only-list>
           </category-setting-exceptions>
         </settings-subpage>
       </template>
@@ -349,7 +349,8 @@
               toggle-on-label=
                   "$i18n{siteSettingsAskBeforeAccessingRecommended}">
           </category-default-setting>
-          <category-setting-exceptions category="{{ContentSettingsTypes.MIC}}">
+          <category-setting-exceptions
+              category="{{ContentSettingsTypes.MIC}}" read-only-list>
           </category-setting-exceptions>
         </settings-subpage>
       </template>
@@ -419,7 +420,7 @@
               category="{{ContentSettingsTypes.MIDI_DEVICES}}">
           </category-default-setting>
           <category-setting-exceptions
-              category="{{ContentSettingsTypes.MIDI_DEVICES}}">
+              category="{{ContentSettingsTypes.MIDI_DEVICES}}" read-only-list>
           </category-setting-exceptions>
         </settings-subpage>
       </template>

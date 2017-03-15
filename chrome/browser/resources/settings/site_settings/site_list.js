@@ -35,6 +35,16 @@ Polymer({
     },
 
     /**
+     * Some content types (like Location) do not allow the user to manually
+     * edit the exception list from within Settings.
+     * @private
+     */
+    readOnlyList: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
      * The site serving as the model for the currently open action menu.
      * @private {?SiteException}
      */
@@ -206,11 +216,12 @@ Polymer({
 
   /**
    * @param {string} source Where the setting came from.
+   * @param {boolean} readOnlyList Whether the site exception list is read-only.
    * @return {boolean}
    * @private
    */
-  isActionMenuHidden_: function(source) {
-    return this.isExceptionControlled_(source) || this.allSites;
+  isActionMenuHidden_: function(source, readOnlyList) {
+    return this.isExceptionControlled_(source) || this.allSites || readOnlyList;
   },
 
   /**
@@ -219,6 +230,7 @@ Polymer({
    * @private
    */
   onAddSiteTap_: function(e) {
+    assert(!this.readOnlyList);
     e.preventDefault();
     var dialog = document.createElement('add-site-dialog');
     dialog.category = this.category;
