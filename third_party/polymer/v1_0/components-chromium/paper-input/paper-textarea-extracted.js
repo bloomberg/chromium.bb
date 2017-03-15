@@ -43,8 +43,8 @@ Polymer({
       }
     },
 
-    _ariaLabelledByChanged: function(ariaLabelledBy) {
-      this.$.input.textarea.setAttribute('aria-labelledby', ariaLabelledBy);
+    _ariaLabelledByChanged: function() {
+      this.$.input.textarea.setAttribute('aria-label', this.label);
     },
 
     _ariaDescribedByChanged: function(ariaDescribedBy) {
