@@ -16,6 +16,7 @@
 #include "net/cert/cert_verifier.h"
 
 namespace base {
+class DictionaryValue;
 class SequencedTaskRunner;
 }  // namespace base
 
@@ -117,7 +118,7 @@ struct URLRequestContextConfig {
       const std::string& cert_verifier_data);
   ~URLRequestContextConfig();
 
-  // Configure |context_builder| based on |this|.
+  // Configures |context_builder| based on |this|.
   void ConfigureURLRequestContextBuilder(
       net::URLRequestContextBuilder* context_builder,
       net::NetLog* net_log,
@@ -172,6 +173,9 @@ struct URLRequestContextConfig {
 
   // The list of public key pins.
   ScopedVector<Pkp> pkp_list;
+
+  // Experimental options that are recognized by the config parser.
+  std::unique_ptr<base::DictionaryValue> effective_experimental_options;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(URLRequestContextConfig);

@@ -36,7 +36,6 @@ class NetworkQualitiesPrefsManager;
 class ProxyConfigService;
 class SdchOwner;
 class URLRequestContext;
-class WriteToFileNetLogObserver;
 class FileNetLogObserver;
 }  // namespace net
 
@@ -82,8 +81,10 @@ class CronetURLRequestContextAdapter
 
   net::URLRequestContext* GetURLRequestContext();
 
-  // Starts NetLog logging to file. This can be called on any thread.  Returns
-  // false if it fails to open log file.
+  // TODO(xunjieli): Keep only one version of StartNetLog().
+
+  // Starts NetLog logging to file. This can be called on any thread.
+  // Return false if |jfile_name| cannot be opened.
   bool StartNetLogToFile(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& jcaller,
                          const base::android::JavaParamRef<jstring>& jfile_name,
@@ -199,17 +200,18 @@ class CronetURLRequestContextAdapter
                                                bool include_socket_bytes,
                                                int size);
 
-  // Stops NetLog logging to file by calling StopObserving() and destroying
-  // the |bounded_file_observer_|.
-  void StopBoundedFileNetLogOnNetworkThread();
+  // Same as StartNetLogToFile, but called only on the network thread.
+  void StartNetLogOnNetworkThread(const base::FilePath& file_path,
+                                  bool include_socket_bytes);
+
+  // Stops NetLog logging on the network thread.
+  void StopNetLogOnNetworkThread();
 
   // Callback for StopObserving() that unblocks the Java ConditionVariable and
   // signals that it is safe to access the NetLog files.
   void StopNetLogCompleted();
 
-  // Helper method to stop NetLog logging to file. This can be called on any
-  // thread. This will flush any remaining writes to disk.
-  void StopNetLogHelper();
+  std::unique_ptr<base::DictionaryValue> GetNetLogInfo() const;
 
   // Network thread is owned by |this|, but is destroyed from java thread.
   base::Thread* network_thread_;
@@ -217,12 +219,7 @@ class CronetURLRequestContextAdapter
   // File thread should be destroyed last.
   std::unique_ptr<base::Thread> file_thread_;
 
-  // |write_to_file_observer_| should only be accessed with
-  // |write_to_file_observer_lock_|.
-  std::unique_ptr<net::WriteToFileNetLogObserver> write_to_file_observer_;
-  base::Lock write_to_file_observer_lock_;
-
-  std::unique_ptr<net::FileNetLogObserver> bounded_file_observer_;
+  std::unique_ptr<net::FileNetLogObserver> net_log_file_observer_;
 
   // |pref_service_| should outlive the HttpServerPropertiesManager owned by
   // |context_|.
@@ -239,6 +236,9 @@ class CronetURLRequestContextAdapter
 
   // Context config is only valid until context is initialized.
   std::unique_ptr<URLRequestContextConfig> context_config_;
+
+  // Effective experimental options. Kept for NetLog.
+  std::unique_ptr<base::DictionaryValue> effective_experimental_options_;
 
   // A queue of tasks that need to be run after context has been initialized.
   std::queue<base::Closure> tasks_waiting_for_context_;

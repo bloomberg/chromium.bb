@@ -19,7 +19,7 @@
 
 namespace cronet {
 
-TEST(URLRequestContextConfigTest, TestExperimentalOptionPassing) {
+TEST(URLRequestContextConfigTest, TestExperimentalOptionParsing) {
   URLRequestContextConfig config(
       // Enable QUIC.
       true,
@@ -50,6 +50,7 @@ TEST(URLRequestContextConfigTest, TestExperimentalOptionPassing) {
       "\"race_cert_verification\":true,"
       "\"connection_options\":\"TIME,TBBR,REJ\"},"
       "\"AsyncDNS\":{\"enable\":true},"
+      "\"UnknownOption\":{\"foo\":true},"
       "\"HostResolverRules\":{\"host_resolver_rules\":"
       "\"MAP * 127.0.0.1\"},"
       // See http://crbug.com/696569.
@@ -75,6 +76,7 @@ TEST(URLRequestContextConfigTest, TestExperimentalOptionPassing) {
   net::URLRequestContextBuilder builder;
   net::NetLog net_log;
   config.ConfigureURLRequestContextBuilder(&builder, &net_log, nullptr);
+  EXPECT_FALSE(config.effective_experimental_options->HasKey("UnknownOption"));
   // Set a ProxyConfigService to avoid DCHECK failure when building.
   builder.set_proxy_config_service(
       base::MakeUnique<net::ProxyConfigServiceFixed>(

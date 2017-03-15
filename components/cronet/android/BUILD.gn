@@ -705,6 +705,7 @@ android_library("cronet_javatests") {
     "test/javatests/src/org/chromium/net/CronetUrlRequestContextTest.java",
     "test/javatests/src/org/chromium/net/CronetUrlRequestTest.java",
     "test/javatests/src/org/chromium/net/DiskStorageTest.java",
+    "test/javatests/src/org/chromium/net/ExperimentalOptionsTest.java",
     "test/javatests/src/org/chromium/net/GetStatusTest.java",
     "test/javatests/src/org/chromium/net/MetricsTestUtil.java",
     "test/javatests/src/org/chromium/net/NetworkChangeNotifierTest.java",
