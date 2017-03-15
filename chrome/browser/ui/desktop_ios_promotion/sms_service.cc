@@ -17,6 +17,7 @@
 #include "net/base/url_util.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -149,8 +150,37 @@ class RequestImpl : public SMSService::Request,
       const std::string& access_token) {
     net::URLFetcher::RequestType request_type =
         post_data_ ? net::URLFetcher::POST : net::URLFetcher::GET;
+    net::NetworkTrafficAnnotationTag traffic_annotation =
+        net::DefineNetworkTrafficAnnotation("desktop_ios_promotion", R"(
+        semantics {
+          sender: "Desktop iOS Promotion"
+          description:
+            "Performes either of the following two tasks: Queries a logged in "
+            "user's recovery phone number, or sends a predetermined "
+            "promotional SMS to that number. SMS text may change but it always "
+            "contains a link to download Chrome from iTunes."
+          trigger:
+            "The query without SMS is only triggered when the desktop to iOS "
+            "promotion is shown to the user. The query and send is triggered "
+            "when the user clicks on 'Send SMS' button in the desktop to iOS "
+            "promotion."
+          data:
+            "It sends an oauth token (X-Developer-Key) which lets the Google "
+            "API identify the user."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: false
+          setting:
+            "The feature cannot be disabled by settings, but it can be "
+            "disabled by 'Desktop to iOS Promotions' feature flag in "
+            "about:flags."
+          policy_exception_justification:
+            "Not implemented, considered not useful as it does not upload any "
+            "data and just downloads a recovery number."
+        })");
     std::unique_ptr<net::URLFetcher> fetcher =
-        net::URLFetcher::Create(url_, request_type, this);
+        net::URLFetcher::Create(url_, request_type, this, traffic_annotation);
     fetcher->SetRequestContext(request_context_.get());
     fetcher->SetMaxRetriesOn5xx(kMaxRetries);
     fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
