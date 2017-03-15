@@ -151,17 +151,45 @@ TEST_F(BrowserWindowControllerTest, TestSetBounds) {
   ASSERT_TRUE([controller isTabbedWindow]);
   BrowserWindow* browser_window = [controller browserWindow];
   EXPECT_EQ(browser_window, browser->window());
-  gfx::Rect bounds = browser_window->GetBounds();
-  EXPECT_EQ(400, bounds.width());
-  EXPECT_EQ(272, bounds.height());
+  EXPECT_EQ(browser_window->GetBounds().size(), kMinCocoaTabbedWindowSize);
 
   // Try to set the bounds smaller than the minimum.
   browser_window->SetBounds(gfx::Rect(0, 0, 50, 50));
-  bounds = browser_window->GetBounds();
-  EXPECT_EQ(400, bounds.width());
-  EXPECT_EQ(272, bounds.height());
+  EXPECT_EQ(browser_window->GetBounds().size(), kMinCocoaTabbedWindowSize);
 
   [controller close];
+}
+
+// https://crbug.com/667698 - When Auto Layout is in use, adding the download
+// shelf without ever showing it shouldn't prevent the window from being
+// resized to its minimum width.
+TEST_F(BrowserWindowControllerTest, TestSetBoundsWithDownloadShelf) {
+  BrowserWindow* browser_window = [controller_ browserWindow];
+  browser_window->SetBounds(gfx::Rect(0, 0, 1000, 50));
+
+  // Auto Layout only acts on the window if it's visible.
+  browser_window->ShowInactive();
+
+  // The browser window should lazily create the download shelf when requested.
+  EXPECT_NE(nullptr, browser_window->GetDownloadShelf());
+
+  // The controller should now have a download shelf, which should have a view.
+  EXPECT_NE(nil, [[controller_ downloadShelf] view]);
+
+  // But, just requesting the download shelf shouldn't make it visible.
+  EXPECT_FALSE([controller_ isDownloadShelfVisible]);
+
+  browser_window->SetBounds(gfx::Rect(0, 0, 50, 50));
+
+  // When linking against an SDK >= 10.11, AppKit may lay out the window
+  // asynchronously (CFExecutableLinkedOnOrAfter check in -[NSThemeFrame
+  // handleSetFrameCommonRedisplay]). Do layout now instead.
+  [[controller_ window] layoutIfNeeded];
+
+  // The window should have returned to its minimum size.
+  EXPECT_EQ(browser_window->GetBounds().size(), kMinCocoaTabbedWindowSize);
+
+  browser_window->Close();
 }
 
 TEST_F(BrowserWindowControllerTest, TestSetBoundsPopup) {

@@ -65,6 +65,9 @@ namespace extensions {
 class Command;
 }
 
+constexpr const gfx::Size kMinCocoaTabbedWindowSize(400, 272);
+constexpr const gfx::Size kMinCocoaPopupWindowSize(100, 122);
+
 @interface BrowserWindowController
     : TabWindowController<BookmarkBarControllerDelegate,
                           ViewResizer,

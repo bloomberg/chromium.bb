@@ -244,11 +244,11 @@ bool IsTabDetachingInFullscreenEnabled() {
     [[window contentView] setWantsLayer:YES];
     windowShim_.reset(new BrowserWindowCocoa(browser, self));
 
-    // Set different minimum sizes on tabbed windows vs non-tabbed, e.g. popups.
     // This has to happen before -enforceMinWindowSize: is called further down.
-    NSSize minSize = [self isTabbedWindow] ?
-      NSMakeSize(400, 272) : NSMakeSize(100, 122);
-    [[self window] setMinSize:minSize];
+    [[self window]
+        setMinSize:(browser->is_type_tabbed() ? kMinCocoaTabbedWindowSize
+                                              : kMinCocoaPopupWindowSize)
+                       .ToCGSize()];
 
     // Lion will attempt to automagically save and restore the UI. This
     // functionality appears to be leaky (or at least interacts badly with our
@@ -1361,6 +1361,7 @@ bool IsTabDetachingInFullscreenEnabled() {
     downloadShelfController_.reset([[DownloadShelfController alloc]
         initWithBrowser:browser_.get() resizeDelegate:self]);
     [self.chromeContentView addSubview:[downloadShelfController_ view]];
+    [self layoutSubviews];
   }
 }
 
