@@ -1619,9 +1619,6 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_ADDED_TO_HOMESCREEN" desc="Indicates that the website with the specified name was added to the user's Home screen.">
         <ph name="NAME">%1$s<ex>Google</ex></ph> was added to your Home screen
       </message>
-      <message name="IDS_FAIL_TO_INSTALL_WEBAPK" desc="The installation of a WebAPK fails. [CHAR-LIMIT=27]">
-        Unable to add
-      </message>
       <message name="IDS_WEBAPK_INSTALL_IN_PROGRESS" desc="Indicates that an installation for the WebAPK for the specific website is already in progress.">
         Still adding previous site
       </message>

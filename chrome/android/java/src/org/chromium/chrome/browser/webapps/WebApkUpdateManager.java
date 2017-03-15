@@ -150,14 +150,14 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
 
         if (!needsUpgrade) {
             if (!mStorage.didPreviousUpdateSucceed()) {
-                recordUpdate(mStorage, true /* success */, false /* relaxUpdates */);
+                recordUpdate(mStorage, WebApkInstallResult.SUCCESS, false /* relaxUpdates */);
             }
             return;
         }
 
         // Set WebAPK update as having failed in case that Chrome is killed prior to
         // {@link onBuiltWebApk} being called.
-        recordUpdate(mStorage, false /* success */, false /* relaxUpdates*/);
+        recordUpdate(mStorage, WebApkInstallResult.FAILURE, false /* relaxUpdates*/);
 
         if (fetchedInfo != null) {
             scheduleUpdate(fetchedInfo, bestIconUrl, false /* isManifestStale */);
@@ -296,12 +296,12 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
      * Updates {@link WebappDataStorage} with the time of the latest WebAPK update and whether the
      * WebAPK update succeeded.
      */
-    private static void recordUpdate(
-            WebappDataStorage storage, boolean success, boolean relaxUpdates) {
+    private static void recordUpdate(WebappDataStorage storage,
+            @WebApkInstallResult.WebApkInstallResultEnum int result, boolean relaxUpdates) {
         // Update the request time and result together. It prevents getting a correct request time
         // but a result from the previous request.
         storage.updateTimeOfLastWebApkUpdateRequestCompletion();
-        storage.updateDidLastWebApkUpdateRequestSucceed(success);
+        storage.updateDidLastWebApkUpdateRequestSucceed(result == WebApkInstallResult.SUCCESS);
         storage.setRelaxedUpdates(relaxUpdates);
     }
 
@@ -359,11 +359,12 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
      * fails.
      */
     @CalledByNative
-    private static void onBuiltWebApk(String id, boolean success, boolean relaxUpdates) {
+    private static void onBuiltWebApk(String id,
+            @WebApkInstallResult.WebApkInstallResultEnum int result, boolean relaxUpdates) {
         WebappDataStorage storage = WebappRegistry.getInstance().getWebappDataStorage(id);
         if (storage == null) return;
 
-        recordUpdate(storage, success, relaxUpdates);
+        recordUpdate(storage, result, relaxUpdates);
     }
 
     private static native void nativeUpdateAsync(String id, String startUrl, String scope,

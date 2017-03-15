@@ -12,7 +12,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/android/webapk/webapk_installer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "url/gurl.h"
 
@@ -23,11 +22,29 @@ class BrowserContext;
 struct ShortcutInfo;
 class SkBitmap;
 
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.webapps
+enum class WebApkInstallResult {
+  SUCCESS = 0,
+  FAILURE = 1,
+  // An install was initiated but it timed out. We did not get a response from
+  // Google Play (or the Android OS in the case of the "unknown sources" flow)
+  // so it is possible that the install will complete some time in the future.
+  PROBABLE_FAILURE = 2
+};
+
 // Service which talks to Chrome WebAPK server and Google Play to generate a
 // WebAPK on the server, download it, and install it.
 class WebApkInstallService : public KeyedService {
  public:
-  using FinishCallback = WebApkInstaller::FinishCallback;
+  // Called when the creation/updating of a WebAPK is finished or failed.
+  // Parameters:
+  // - the result of the installation.
+  // - true if Chrome received a "request updates less frequently" directive.
+  //   from the WebAPK server.
+  // - the package name of the WebAPK.
+  using FinishCallback =
+      base::Callback<void(WebApkInstallResult, bool, const std::string&)>;
 
   static WebApkInstallService* Get(content::BrowserContext* browser_context);
 
@@ -60,7 +77,7 @@ class WebApkInstallService : public KeyedService {
   // Called once the install/update completed or failed.
   void OnFinishedInstall(const GURL& web_manifest_url,
                          const FinishCallback& finish_callback,
-                         bool success,
+                         WebApkInstallResult result,
                          bool relax_updates,
                          const std::string& webapk_package_name);
 

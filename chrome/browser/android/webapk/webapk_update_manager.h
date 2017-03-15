@@ -8,6 +8,8 @@
 #include "base/android/jni_android.h"
 #include "base/macros.h"
 
+enum class WebApkInstallResult;
+
 // WebApkUpdateManager is the C++ counterpart of org.chromium.chrome.browser's
 // WebApkUpdateManager in Java. It calls WebApkInstaller to send an update
 // request to WebAPK Server.
@@ -21,7 +23,7 @@ class WebApkUpdateManager {
   // to the server. A "true" value of |success| does not guarantee that the
   // WebAPK will be successfully updated.
   static void OnBuiltWebApk(const std::string& id,
-                            bool success,
+                            WebApkInstallResult result,
                             bool relax_updates,
                             const std::string& webapk_package);
 
