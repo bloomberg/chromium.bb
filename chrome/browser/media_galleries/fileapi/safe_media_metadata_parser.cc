@@ -66,16 +66,13 @@ SafeMediaMetadataParser::~SafeMediaMetadataParser() = default;
 void SafeMediaMetadataParser::StartOnIOThread(const DoneCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(!utility_process_mojo_client_);
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
 
   callback_ = callback;
 
-  const base::string16 utility_process_name =
-      l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_MEDIA_FILE_CHECKER_NAME);
-
-  utility_process_mojo_client_.reset(
-      new content::UtilityProcessMojoClient<extensions::mojom::MediaParser>(
-          utility_process_name));
+  utility_process_mojo_client_ = base::MakeUnique<
+      content::UtilityProcessMojoClient<extensions::mojom::MediaParser>>(
+      l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_MEDIA_FILE_CHECKER_NAME));
   utility_process_mojo_client_->set_error_callback(
       base::Bind(&SafeMediaMetadataParser::ParseMediaMetadataFailed, this));
 
