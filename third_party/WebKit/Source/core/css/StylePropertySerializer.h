@@ -122,6 +122,7 @@ class StylePropertySerializer {
     bool shouldProcessPropertyAt(unsigned index) const;
     int findPropertyIndex(CSSPropertyID) const;
     const CSSValue* getPropertyCSSValue(CSSPropertyID) const;
+    bool isDescriptorContext() const;
 
     DECLARE_TRACE();
 

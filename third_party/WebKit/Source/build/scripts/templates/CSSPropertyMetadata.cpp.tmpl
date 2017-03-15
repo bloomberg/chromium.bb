@@ -17,8 +17,11 @@ bool CSSPropertyMetadata::{{function_name}}(CSSPropertyID unresolvedProperty) {
     {% for property in properties_including_aliases if property[flag] %}
     case {{property.property_id}}:
     {% endfor %}
-    {% if function_name == "isInheritedProperty" %}
+    {% if function_name in ("isInheritedProperty", "isProperty") %}
     case CSSPropertyVariable:
+    {% endif %}
+    {% if function_name == "isProperty" %}
+    case CSSPropertyApplyAtRule:
     {% endif %}
       return true;
     default:

@@ -153,6 +153,12 @@ StylePropertySerializer::StylePropertySetForSerializer::getPropertyCSSValue(
   return value.value();
 }
 
+bool StylePropertySerializer::StylePropertySetForSerializer::
+    isDescriptorContext() const {
+  return m_propertySet->cssParserMode() == CSSViewportRuleMode ||
+         m_propertySet->cssParserMode() == CSSFontFaceRuleMode;
+}
+
 StylePropertySerializer::StylePropertySerializer(
     const StylePropertySet& properties)
     : m_propertySet(properties) {}
@@ -220,10 +226,12 @@ String StylePropertySerializer::asText() const {
     CSSPropertyID propertyID = property.id();
     // Only enabled properties should be part of the style.
     DCHECK(CSSPropertyMetadata::isEnabledProperty(propertyID));
-    // Shorthands with variable references are not expanded at parse time
-    // and hence may still be observed during serialization.
-    DCHECK(!isShorthandProperty(propertyID) ||
-           property.value()->isVariableReferenceValue());
+    // All shorthand properties should have been expanded at parse time.
+    DCHECK(m_propertySet.isDescriptorContext() ||
+           (CSSPropertyMetadata::isProperty(propertyID) &&
+            !isShorthandProperty(propertyID)));
+    DCHECK(!m_propertySet.isDescriptorContext() ||
+           CSSPropertyMetadata::isDescriptor(propertyID));
 
     switch (propertyID) {
       case CSSPropertyVariable:
