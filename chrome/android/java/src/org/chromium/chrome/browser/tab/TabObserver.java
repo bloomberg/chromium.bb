@@ -66,9 +66,9 @@ public interface TabObserver {
     /**
      * Called when a tab has started to load a page.
      * <p>
-     * This will occur when the main frame has committed a provisional load, and will also
-     * occur in instances where we need to simulate load progress (i.e. swapping in a not
-     * fully loaded pre-rendered page).
+     * This will occur when the main frame starts the navigation, and will also occur in instances
+     * where we need to simulate load progress (i.e. swapping in a not fully loaded pre-rendered
+     * page).
      * <p>
      * For visual loading indicators/throbbers, {@link #onLoadStarted(Tab)} and
      * {@link #onLoadStopped(Tab)} should be used to drive updates.
