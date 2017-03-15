@@ -25,13 +25,27 @@ bool OverlayStrategySingleOnTop::Attempt(
     OverlayCandidateList* candidate_list,
     std::vector<gfx::Rect>* content_bounds) {
   QuadList* quad_list = &render_pass->quad_list;
+  // Build a list of candidates with the associated quad.
+  OverlayCandidate best_candidate;
+  QuadList::Iterator best_quad_it = quad_list->end();
   for (auto it = quad_list->begin(); it != quad_list->end(); ++it) {
     OverlayCandidate candidate;
     if (OverlayCandidate::FromDrawQuad(resource_provider, *it, &candidate) &&
-        TryOverlay(quad_list, candidate_list, candidate, it)) {
-      return true;
+        // TODO(dcastagna): Remove this once drm platform supports transforms.
+        candidate.transform == gfx::OVERLAY_TRANSFORM_NONE &&
+        !OverlayCandidate::IsOccluded(candidate, quad_list->cbegin(), it)) {
+      if (candidate.display_rect.size().GetArea() >
+          best_candidate.display_rect.size().GetArea()) {
+        best_candidate = candidate;
+        best_quad_it = it;
+      }
     }
   }
+  if (best_quad_it == quad_list->end())
+    return false;
+
+  if (TryOverlay(quad_list, candidate_list, best_candidate, best_quad_it))
+    return true;
 
   return false;
 }
@@ -41,15 +55,6 @@ bool OverlayStrategySingleOnTop::TryOverlay(
     OverlayCandidateList* candidate_list,
     const OverlayCandidate& candidate,
     QuadList::Iterator candidate_iterator) {
-  // Reject transformed overlays.
-  // TODO(dcastagna): Remove this once drm platform supports transforms.
-  if (candidate.transform != gfx::OVERLAY_TRANSFORM_NONE)
-    return false;
-  // Check that no prior quads overlap it.
-  if (OverlayCandidate::IsOccluded(candidate, quad_list->cbegin(),
-                                   candidate_iterator))
-    return false;
-
   // Add the overlay.
   OverlayCandidateList new_candidate_list = *candidate_list;
   new_candidate_list.push_back(candidate);

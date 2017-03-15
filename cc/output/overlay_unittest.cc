@@ -79,12 +79,13 @@ class FullscreenOverlayValidator : public OverlayCandidateValidator {
 
 class SingleOverlayValidator : public OverlayCandidateValidator {
  public:
-  SingleOverlayValidator() : expected_rect_(kOverlayRect) {}
+  SingleOverlayValidator() : expected_rects_(1, gfx::RectF(kOverlayRect)) {}
 
   void GetStrategies(OverlayProcessor::StrategyList* strategies) override {
     strategies->push_back(base::MakeUnique<OverlayStrategySingleOnTop>(this));
     strategies->push_back(base::MakeUnique<OverlayStrategyUnderlay>(this));
   }
+
   bool AllowCALayerOverlays() override { return false; }
   bool AllowDCLayerOverlays() override { return false; }
   void CheckOverlaySupport(OverlayCandidateList* surfaces) override {
@@ -95,25 +96,34 @@ class SingleOverlayValidator : public OverlayCandidateValidator {
 
     OverlayCandidate& candidate = surfaces->back();
     EXPECT_TRUE(!candidate.use_output_surface_for_resource);
-    EXPECT_NEAR(expected_rect_.x(), candidate.display_rect.x(), 0.01f);
-    EXPECT_NEAR(expected_rect_.y(), candidate.display_rect.y(), 0.01f);
-    EXPECT_NEAR(expected_rect_.width(), candidate.display_rect.width(), 0.01f);
-    EXPECT_NEAR(expected_rect_.height(), candidate.display_rect.height(),
-                0.01f);
-
-    EXPECT_FLOAT_RECT_EQ(BoundingRect(kUVTopLeft, kUVBottomRight),
-                         candidate.uv_rect);
-    if (!candidate.clip_rect.IsEmpty()) {
-      EXPECT_EQ(true, candidate.is_clipped);
-      EXPECT_EQ(kOverlayClipRect, candidate.clip_rect);
+    for (const auto& r : expected_rects_) {
+      const float kAbsoluteError = 0.01f;
+      if (std::abs(r.x() - candidate.display_rect.x()) <= kAbsoluteError &&
+          std::abs(r.y() - candidate.display_rect.y()) <= kAbsoluteError &&
+          std::abs(r.width() - candidate.display_rect.width()) <=
+              kAbsoluteError &&
+          std::abs(r.height() - candidate.display_rect.height()) <=
+              kAbsoluteError) {
+        EXPECT_FLOAT_RECT_EQ(BoundingRect(kUVTopLeft, kUVBottomRight),
+                             candidate.uv_rect);
+        if (!candidate.clip_rect.IsEmpty()) {
+          EXPECT_EQ(true, candidate.is_clipped);
+          EXPECT_EQ(kOverlayClipRect, candidate.clip_rect);
+        }
+        candidate.overlay_handled = true;
+        return;
+      }
     }
-    candidate.overlay_handled = true;
+    // We should find one rect in expected_rects_that matches candidate.
+    EXPECT_TRUE(false);
   }
 
-  void SetExpectedRect(const gfx::RectF& rect) { expected_rect_ = rect; }
+  void AddExpectedRect(const gfx::RectF& rect) {
+    expected_rects_.push_back(rect);
+  }
 
  private:
-  gfx::RectF expected_rect_;
+  std::vector<gfx::RectF> expected_rects_;
 };
 
 class CALayerValidator : public OverlayCandidateValidator {
@@ -671,6 +681,49 @@ TEST_F(SingleOverlayOnTopTest, SuccessfulOverlay) {
   EXPECT_EQ(original_resource_id, candidate_list.back().resource_id);
 }
 
+TEST_F(SingleOverlayOnTopTest, PrioritizeBiggerOne) {
+  std::unique_ptr<RenderPass> pass = CreateRenderPass();
+  // Add a small quad.
+  const auto kSmallCandidateRect = gfx::Rect(0, 0, 16, 16);
+  CreateCandidateQuadAt(resource_provider_.get(),
+                        pass->shared_quad_state_list.back(), pass.get(),
+                        kSmallCandidateRect);
+  output_surface_->GetOverlayCandidateValidator()->AddExpectedRect(
+      gfx::RectF(kSmallCandidateRect));
+
+  // Add a bigger quad below the previous one, but not occluded.
+  const auto kBigCandidateRect = gfx::Rect(20, 20, 32, 32);
+  TextureDrawQuad* quad_big = CreateCandidateQuadAt(
+      resource_provider_.get(), pass->shared_quad_state_list.back(), pass.get(),
+      kBigCandidateRect);
+  output_surface_->GetOverlayCandidateValidator()->AddExpectedRect(
+      gfx::RectF(kBigCandidateRect));
+
+  unsigned resource_big = quad_big->resource_id();
+
+  // Add something behind it.
+  CreateFullscreenOpaqueQuad(resource_provider_.get(),
+                             pass->shared_quad_state_list.back(), pass.get());
+
+  // Check for potential candidates.
+  OverlayCandidateList candidate_list;
+  RenderPassFilterList render_pass_filters;
+  RenderPassFilterList render_pass_background_filters;
+  overlay_processor_->ProcessForOverlays(
+      resource_provider_.get(), pass.get(), render_pass_filters,
+      render_pass_background_filters, &candidate_list, nullptr, nullptr,
+      &damage_rect_, &content_bounds_);
+  ASSERT_EQ(1U, candidate_list.size());
+
+  RenderPass* main_pass = pass.get();
+  // Check that one quad is gone.
+  EXPECT_EQ(2U, main_pass->quad_list.size());
+  // Check that we have only one overlay.
+  EXPECT_EQ(1U, candidate_list.size());
+  // Check that the right resource id (bigger quad) got extracted.
+  EXPECT_EQ(resource_big, candidate_list.front().resource_id);
+}
+
 TEST_F(SingleOverlayOnTopTest, DamageRect) {
   std::unique_ptr<RenderPass> pass = CreateRenderPass();
   CreateFullscreenCandidateQuad(resource_provider_.get(),
@@ -1029,7 +1082,7 @@ TEST_F(UnderlayTest, Allow270DegreeRotation) {
 }
 
 TEST_F(SingleOverlayOnTopTest, AllowNotTopIfNotOccluded) {
-  output_surface_->GetOverlayCandidateValidator()->SetExpectedRect(
+  output_surface_->GetOverlayCandidateValidator()->AddExpectedRect(
       gfx::RectF(kOverlayBottomRightRect));
 
   std::unique_ptr<RenderPass> pass = CreateRenderPass();
@@ -1052,7 +1105,7 @@ TEST_F(SingleOverlayOnTopTest, AllowNotTopIfNotOccluded) {
 }
 
 TEST_F(SingleOverlayOnTopTest, AllowTransparentOnTop) {
-  output_surface_->GetOverlayCandidateValidator()->SetExpectedRect(
+  output_surface_->GetOverlayCandidateValidator()->AddExpectedRect(
       gfx::RectF(kOverlayBottomRightRect));
 
   std::unique_ptr<RenderPass> pass = CreateRenderPass();
@@ -1076,7 +1129,7 @@ TEST_F(SingleOverlayOnTopTest, AllowTransparentOnTop) {
 }
 
 TEST_F(SingleOverlayOnTopTest, AllowTransparentColorOnTop) {
-  output_surface_->GetOverlayCandidateValidator()->SetExpectedRect(
+  output_surface_->GetOverlayCandidateValidator()->AddExpectedRect(
       gfx::RectF(kOverlayBottomRightRect));
 
   std::unique_ptr<RenderPass> pass = CreateRenderPass();
@@ -1218,7 +1271,7 @@ TEST_F(SingleOverlayOnTopTest, AllowVideoYMirrorTransform) {
 }
 
 TEST_F(UnderlayTest, OverlayLayerUnderMainLayer) {
-  output_surface_->GetOverlayCandidateValidator()->SetExpectedRect(
+  output_surface_->GetOverlayCandidateValidator()->AddExpectedRect(
       gfx::RectF(kOverlayBottomRightRect));
 
   std::unique_ptr<RenderPass> pass = CreateRenderPass();
@@ -1318,7 +1371,7 @@ TEST_F(UnderlayTest, DamageSubtractedForConsecutiveIdenticalUnderlays) {
 TEST_F(UnderlayTest, DamageNotSubtractedForNonIdenticalConsecutiveUnderlays) {
   gfx::Rect overlay_rects[] = {kOverlayBottomRightRect, kOverlayRect};
   for (int i = 0; i < 2; ++i) {
-    output_surface_->GetOverlayCandidateValidator()->SetExpectedRect(
+    output_surface_->GetOverlayCandidateValidator()->AddExpectedRect(
         gfx::RectF(overlay_rects[i]));
 
     std::unique_ptr<RenderPass> pass = CreateRenderPass();
@@ -1366,7 +1419,7 @@ TEST_F(UnderlayTest, DamageNotSubtractedWhenQuadsAboveOverlap) {
 }
 
 TEST_F(UnderlayTest, DamageSubtractedWhenQuadsAboveDontOverlap) {
-  output_surface_->GetOverlayCandidateValidator()->SetExpectedRect(
+  output_surface_->GetOverlayCandidateValidator()->AddExpectedRect(
       gfx::RectF(kOverlayBottomRightRect));
 
   for (int i = 0; i < 2; ++i) {
@@ -1429,7 +1482,7 @@ TEST_F(UnderlayCastTest, FullScreenOverlayContentBounds) {
 }
 
 TEST_F(UnderlayCastTest, BlackOutsideOverlayContentBounds) {
-  output_surface_->GetOverlayCandidateValidator()->SetExpectedRect(
+  output_surface_->GetOverlayCandidateValidator()->AddExpectedRect(
       gfx::RectF(kOverlayBottomRightRect));
 
   const gfx::Rect kLeftSide(0, 0, 128, 256);
@@ -1507,7 +1560,7 @@ TEST_F(UnderlayCastTest, RoundOverlayContentBounds) {
   // Check rounding behaviour on overlay quads.  Be conservative (content
   // potentially visible on boundary).
   const gfx::Rect overlay_rect(1, 1, 8, 8);
-  output_surface_->GetOverlayCandidateValidator()->SetExpectedRect(
+  output_surface_->GetOverlayCandidateValidator()->AddExpectedRect(
       gfx::RectF(1.5f, 1.5f, 8, 8));
 
   gfx::Transform transform;
@@ -1538,7 +1591,7 @@ TEST_F(UnderlayCastTest, RoundContentBounds) {
   // rect).
   gfx::Rect overlay_rect = kOverlayRect;
   overlay_rect.Inset(0, 0, 1, 1);
-  output_surface_->GetOverlayCandidateValidator()->SetExpectedRect(
+  output_surface_->GetOverlayCandidateValidator()->AddExpectedRect(
       gfx::RectF(0.5f, 0.5f, 255, 255));
 
   gfx::Transform transform;
@@ -1912,7 +1965,7 @@ TEST_F(GLRendererWithOverlaysTest, OverlayQuadNotDrawn) {
   bool use_validator = true;
   Init(use_validator);
   renderer_->set_expect_overlays(true);
-  output_surface_->GetOverlayCandidateValidator()->SetExpectedRect(
+  output_surface_->GetOverlayCandidateValidator()->AddExpectedRect(
       gfx::RectF(kOverlayBottomRightRect));
 
   gfx::Size viewport_size(16, 16);
