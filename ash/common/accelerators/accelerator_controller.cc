@@ -42,8 +42,10 @@
 #include "ash/common/wm_window.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
+#include "ash/rotator/window_rotation.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/wm/window_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_split.h"
@@ -55,6 +57,9 @@
 #include "ui/base/ime/chromeos/ime_keyboard.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/compositor/layer.h"
+#include "ui/compositor/layer_animation_sequence.h"
+#include "ui/compositor/layer_animator.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/message_center/message_center.h"
@@ -286,6 +291,23 @@ void HandlePreviousIme(ImeControlDelegate* ime_control_delegate,
 void HandleRestoreTab() {
   base::RecordAction(UserMetricsAction("Accel_Restore_Tab"));
   WmShell::Get()->new_window_controller()->RestoreTab();
+}
+
+// Rotate the active window.
+void HandleRotateActiveWindow() {
+  base::RecordAction(UserMetricsAction("Accel_Rotate_Active_Window"));
+  aura::Window* active_window = wm::GetActiveWindow();
+  if (!active_window)
+    return;
+  // The rotation animation bases its target transform on the current
+  // rotation and position. Since there could be an animation in progress
+  // right now, queue this animation so when it starts it picks up a neutral
+  // rotation and position. Use replace so we only enqueue one at a time.
+  active_window->layer()->GetAnimator()->set_preemption_strategy(
+      ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
+  active_window->layer()->GetAnimator()->StartAnimation(
+      new ui::LayerAnimationSequence(
+          base::MakeUnique<WindowRotation>(360, active_window->layer())));
 }
 
 void HandleShowKeyboardOverlay() {
@@ -929,6 +951,7 @@ bool AcceleratorController::CanPerformAction(
     case OPEN_GET_HELP:
     case PRINT_UI_HIERARCHIES:
     case RESTORE_TAB:
+    case ROTATE_WINDOW:
     case SHOW_IME_MENU_BUBBLE:
     case SHOW_KEYBOARD_OVERLAY:
     case SHOW_SYSTEM_TRAY_BUBBLE:
@@ -1098,6 +1121,9 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
       break;
     case RESTORE_TAB:
       HandleRestoreTab();
+      break;
+    case ROTATE_WINDOW:
+      HandleRotateActiveWindow();
       break;
     case SHOW_IME_MENU_BUBBLE:
       HandleShowImeMenuBubble();

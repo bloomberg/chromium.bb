@@ -25,23 +25,18 @@
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
-#include "ash/rotator/window_rotation.h"
 #include "ash/screenshot_delegate.h"
 #include "ash/shell.h"
 #include "ash/touch/touch_hud_debug.h"
 #include "ash/utility/screenshot_controller.h"
 #include "ash/wm/power_button_controller.h"
 #include "ash/wm/window_state_aura.h"
-#include "ash/wm/window_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/sys_info.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/accelerators/accelerator.h"
-#include "ui/compositor/layer.h"
-#include "ui/compositor/layer_animation_sequence.h"
-#include "ui/compositor/layer_animator.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
@@ -101,23 +96,6 @@ void HandleRotateScreen() {
   Shell::GetInstance()->display_configuration_controller()->SetDisplayRotation(
       display.id(), GetNextRotation(display_info.GetActiveRotation()),
       display::Display::ROTATION_SOURCE_USER);
-}
-
-// Rotate the active window.
-void HandleRotateActiveWindow() {
-  base::RecordAction(UserMetricsAction("Accel_Rotate_Active_Window"));
-  aura::Window* active_window = wm::GetActiveWindow();
-  if (active_window) {
-    // The rotation animation bases its target transform on the current
-    // rotation and position. Since there could be an animation in progress
-    // right now, queue this animation so when it starts it picks up a neutral
-    // rotation and position. Use replace so we only enqueue one at a time.
-    active_window->layer()->GetAnimator()->set_preemption_strategy(
-        ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
-    active_window->layer()->GetAnimator()->StartAnimation(
-        new ui::LayerAnimationSequence(
-            base::MakeUnique<WindowRotation>(360, active_window->layer())));
-  }
 }
 
 void HandleTakeWindowScreenshot(ScreenshotDelegate* screenshot_delegate) {
@@ -210,7 +188,6 @@ bool AcceleratorControllerDelegateAura::HandlesAction(
     case POWER_PRESSED:
     case POWER_RELEASED:
     case ROTATE_SCREEN:
-    case ROTATE_WINDOW:
     case SCALE_UI_DOWN:
     case SCALE_UI_RESET:
     case SCALE_UI_UP:
@@ -262,7 +239,6 @@ bool AcceleratorControllerDelegateAura::CanPerformAction(
     case POWER_PRESSED:
     case POWER_RELEASED:
     case ROTATE_SCREEN:
-    case ROTATE_WINDOW:
     case TAKE_PARTIAL_SCREENSHOT:
     case TAKE_SCREENSHOT:
     case TAKE_WINDOW_SCREENSHOT:
@@ -335,9 +311,6 @@ void AcceleratorControllerDelegateAura::PerformAction(
       break;
     case ROTATE_SCREEN:
       HandleRotateScreen();
-      break;
-    case ROTATE_WINDOW:
-      HandleRotateActiveWindow();
       break;
     case SCALE_UI_DOWN:
       accelerators::ZoomInternalDisplay(false /* down */);
