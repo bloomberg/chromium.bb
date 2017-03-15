@@ -2976,3 +2976,6 @@ crbug.com/700387 [ Win7 ] external/wpt/fullscreen/api/document-exit-fullscreen-n
 
 # Sheriff failures 2017-03-13
 crbug.com/701140 inspector-protocol/css/css-get-rule-list.html [ Failure Pass ]
+
+crbug.com/349985 [ Win7 ] fast/table/border-collapsing/001-vertical.html [ NeedsRebaseline ]
+crbug.com/349985 [ Win7 ] fast/table/border-collapsing/001.html [ NeedsRebaseline ]
