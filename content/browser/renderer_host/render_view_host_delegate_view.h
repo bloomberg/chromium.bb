@@ -11,6 +11,7 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/common/drag_event_source_info.h"
+#include "content/common/features.h"
 #include "third_party/WebKit/public/platform/WebDragOperation.h"
 
 namespace gfx {
@@ -65,7 +66,7 @@ class CONTENT_EXPORT RenderViewHostDelegateView {
   // retrieved by doing a Shift-Tab.
   virtual void TakeFocus(bool reverse) {}
 
-#if defined(USE_EXTERNAL_POPUP_MENU)
+#if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
   // Shows a popup menu with the specified items.
   // This method should call RenderFrameHost::DidSelectPopupMenuItem[s]() or
   // RenderFrameHost::DidCancelPopupMenu() based on the user action.

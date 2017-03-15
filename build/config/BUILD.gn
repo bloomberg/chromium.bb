@@ -112,9 +112,6 @@ config("feature_flags") {
   if (is_ubsan || is_ubsan_null || is_ubsan_vptr || is_ubsan_security) {
     defines += [ "UNDEFINED_SANITIZER" ]
   }
-  if (use_external_popup_menu) {
-    defines += [ "USE_EXTERNAL_POPUP_MENU=1" ]
-  }
   if (!enable_nacl) {
     defines += [ "DISABLE_NACL" ]
   }

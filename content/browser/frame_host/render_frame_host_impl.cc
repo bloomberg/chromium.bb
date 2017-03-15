@@ -758,7 +758,7 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_FocusedNodeChanged, OnFocusedNodeChanged)
     IPC_MESSAGE_HANDLER(FrameHostMsg_SetHasReceivedUserGesture,
                         OnSetHasReceivedUserGesture)
-#if defined(USE_EXTERNAL_POPUP_MENU)
+#if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ShowPopup, OnShowPopup)
     IPC_MESSAGE_HANDLER(FrameHostMsg_HidePopup, OnHidePopup)
 #endif
@@ -2248,7 +2248,7 @@ void RenderFrameHostImpl::OnSetHasReceivedUserGesture() {
   frame_tree_node_->OnSetHasReceivedUserGesture();
 }
 
-#if defined(USE_EXTERNAL_POPUP_MENU)
+#if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
 void RenderFrameHostImpl::OnShowPopup(
     const FrameHostMsg_ShowPopup_Params& params) {
   RenderViewHostDelegateView* view =
@@ -3097,7 +3097,7 @@ void RenderFrameHostImpl::GetInterfaceProvider(
                             renderer_info_.identity, renderer_spec);
 }
 
-#if defined(USE_EXTERNAL_POPUP_MENU)
+#if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
 #if defined(OS_MACOSX)
 
 void RenderFrameHostImpl::DidSelectPopupMenuItem(int selected_index) {

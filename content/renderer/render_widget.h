@@ -27,6 +27,7 @@
 #include "content/common/cursors/webcursor.h"
 #include "content/common/drag_event_source_info.h"
 #include "content/common/edit_command.h"
+#include "content/common/features.h"
 #include "content/common/input/synthetic_gesture_params.h"
 #include "content/public/common/drop_data.h"
 #include "content/public/common/screen_info.h"
@@ -467,7 +468,7 @@ class CONTENT_EXPORT RenderWidget
 
   // Used to force the size of a window when running layout tests.
   void SetWindowRectSynchronously(const gfx::Rect& new_window_rect);
-#if defined(USE_EXTERNAL_POPUP_MENU)
+#if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
   void SetExternalPopupOriginAdjustmentsForEmulation(
       ExternalPopupMenu* popup,
       RenderWidgetScreenMetricsEmulator* emulator);

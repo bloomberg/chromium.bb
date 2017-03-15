@@ -33,6 +33,7 @@
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view.h"
+#include "content/common/features.h"
 #include "content/common/frame_messages.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
@@ -63,7 +64,7 @@ class InterstitialPageImpl::InterstitialPageRVHDelegateView
   explicit InterstitialPageRVHDelegateView(InterstitialPageImpl* page);
 
   // RenderViewHostDelegateView implementation:
-#if defined(USE_EXTERNAL_POPUP_MENU)
+#if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
   void ShowPopupMenu(RenderFrameHost* render_frame_host,
                      const gfx::Rect& bounds,
                      int item_height,
@@ -879,7 +880,7 @@ InterstitialPageImpl::InterstitialPageRVHDelegateView::
     : interstitial_page_(page) {
 }
 
-#if defined(USE_EXTERNAL_POPUP_MENU)
+#if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
 void InterstitialPageImpl::InterstitialPageRVHDelegateView::ShowPopupMenu(
     RenderFrameHost* render_frame_host,
     const gfx::Rect& bounds,

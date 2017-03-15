@@ -33,6 +33,7 @@
 #include "content/common/content_export.h"
 #include "content/common/content_security_policy/content_security_policy.h"
 #include "content/common/download/mhtml_save_status.h"
+#include "content/common/features.h"
 #include "content/common/frame.mojom.h"
 #include "content/common/frame_message_enums.h"
 #include "content/common/frame_replication_state.h"
@@ -61,7 +62,7 @@ struct FrameHostMsg_DidCommitProvisionalLoad_Params;
 struct FrameHostMsg_DidFailProvisionalLoadWithError_Params;
 struct FrameHostMsg_OpenURL_Params;
 struct FrameMsg_TextTrackSettings_Params;
-#if defined(USE_EXTERNAL_POPUP_MENU)
+#if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
 struct FrameHostMsg_ShowPopup_Params;
 #endif
 
@@ -516,7 +517,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
     no_create_browser_accessibility_manager_for_testing_ = flag;
   }
 
-#if defined(USE_EXTERNAL_POPUP_MENU)
+#if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
 #if defined(OS_MACOSX)
   // Select popup menu related methods (for external popup menus).
   void DidSelectPopupMenuItem(int selected_index);
@@ -764,7 +765,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
                             const gfx::Rect& bounds_in_frame_widget);
   void OnSetHasReceivedUserGesture();
 
-#if defined(USE_EXTERNAL_POPUP_MENU)
+#if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
   void OnShowPopup(const FrameHostMsg_ShowPopup_Params& params);
   void OnHidePopup();
 #endif

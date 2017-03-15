@@ -63,7 +63,7 @@ void ExternalPopupMenu::close()  {
   // |this| was deleted.
 }
 
-#if defined(USE_EXTERNAL_POPUP_MENU)
+#if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
 #if defined(OS_MACOSX)
 void ExternalPopupMenu::DidSelectItem(int index) {
   if (!popup_menu_client_)

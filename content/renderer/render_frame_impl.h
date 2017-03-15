@@ -29,6 +29,7 @@
 #include "content/common/accessibility_mode.h"
 #include "content/common/associated_interface_registry_impl.h"
 #include "content/common/download/mhtml_save_status.h"
+#include "content/common/features.h"
 #include "content/common/frame.mojom.h"
 #include "content/common/frame_message_enums.h"
 #include "content/common/host_zoom.mojom.h"
@@ -398,7 +399,7 @@ class CONTENT_EXPORT RenderFrameImpl
 
   void ScriptedPrint(bool user_initiated);
 
-#if defined(USE_EXTERNAL_POPUP_MENU)
+#if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
   void DidHideExternalPopupMenu();
 #endif
 
@@ -923,7 +924,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnFindMatchRects(int current_version);
 #endif
 
-#if defined(USE_EXTERNAL_POPUP_MENU)
+#if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
 #if defined(OS_MACOSX)
   void OnSelectPopupMenuItem(int selected_index);
 #else
@@ -1344,7 +1345,7 @@ class CONTENT_EXPORT RenderFrameImpl
   struct PendingFileChooser;
   std::deque<std::unique_ptr<PendingFileChooser>> file_chooser_completions_;
 
-#if defined(USE_EXTERNAL_POPUP_MENU)
+#if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
   // The external popup for the currently showing select popup.
   std::unique_ptr<ExternalPopupMenu> external_popup_menu_;
 #endif

@@ -577,7 +577,7 @@ gfx::Rect RenderWidget::AdjustValidationMessageAnchor(const gfx::Rect& anchor) {
   return anchor;
 }
 
-#if defined(USE_EXTERNAL_POPUP_MENU)
+#if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
 void RenderWidget::SetExternalPopupOriginAdjustmentsForEmulation(
     ExternalPopupMenu* popup,
     RenderWidgetScreenMetricsEmulator* emulator) {

@@ -1327,7 +1327,7 @@ void WebContentsViewAura::OnWindowVisibilityChanged(aura::Window* window,
   web_contents_->UpdateWebContentsVisibility(visible);
 }
 
-#if defined(USE_EXTERNAL_POPUP_MENU)
+#if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
 void WebContentsViewAura::ShowPopupMenu(RenderFrameHost* render_frame_host,
                                         const gfx::Rect& bounds,
                                         int item_height,

@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("features.gni")
+import("//build/buildflag_header.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//media/media_options.gni")
@@ -11,6 +13,14 @@ import("//sandbox/features.gni")
 import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
 if (is_mac) {
   import("//build/config/mac/mac_sdk.gni")
+}
+
+# For feature flags internal to content. See content/public/common:features
+# for feature flags that clients of contents need to know about.
+buildflag_header("features") {
+  header = "features.h"
+
+  flags = [ "USE_EXTERNAL_POPUP_MENU=$use_external_popup_menu" ]
 }
 
 source_set("common") {
@@ -356,6 +366,7 @@ source_set("common") {
     "//third_party/WebKit/public:blink_headers",
   ]
   deps = [
+    ":features",
     "//base",
     "//base/third_party/dynamic_annotations",
     "//build/util:webkit_version",

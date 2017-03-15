@@ -6,6 +6,7 @@ import("//build/config/chromecast_build.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//build/split_static_library.gni")
+import("//content/common/features.gni")
 import("//media/media_options.gni")
 import("//ppapi/features/features.gni")
 import("//printing/features/features.gni")
@@ -428,6 +429,7 @@ target(link_target_type, "renderer") {
     "//content:resources",
     "//content/child",
     "//content/common",
+    "//content/common:features",
     "//content/gpu:gpu_sources",
     "//content/public/child:child_sources",
     "//content/public/common:common_sources",

@@ -22,6 +22,7 @@
 #include "content/common/content_security_policy/content_security_policy.h"
 #include "content/common/content_security_policy_header.h"
 #include "content/common/download/mhtml_save_status.h"
+#include "content/common/features.h"
 #include "content/common/frame_message_enums.h"
 #include "content/common/frame_owner_properties.h"
 #include "content/common/frame_replication_state.h"
@@ -599,7 +600,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::FileChooserParams)
   IPC_STRUCT_TRAITS_MEMBER(requestor)
 IPC_STRUCT_TRAITS_END()
 
-#if defined(USE_EXTERNAL_POPUP_MENU)
+#if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
 // This message is used for supporting popup menus on Mac OS X and Android using
 // native controls. See the FrameHostMsg_ShowPopup message.
 IPC_STRUCT_BEGIN(FrameHostMsg_ShowPopup_Params)
@@ -868,7 +869,7 @@ IPC_MESSAGE_ROUTED3(FrameMsg_ActivateNearestFindResult,
 IPC_MESSAGE_ROUTED1(FrameMsg_FindMatchRects, int /* current_version */)
 #endif
 
-#if defined(USE_EXTERNAL_POPUP_MENU)
+#if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
 #if defined(OS_MACOSX)
 IPC_MESSAGE_ROUTED1(FrameMsg_SelectPopupMenuItem,
                     int /* selected index, -1 means no selection */)
@@ -1582,7 +1583,7 @@ IPC_MESSAGE_ROUTED1(FrameHostMsg_HittestData, FrameHostMsg_HittestData_Params)
 // FrameMsg_RunFileChooserResponse message.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_RunFileChooser, content::FileChooserParams)
 
-#if defined(USE_EXTERNAL_POPUP_MENU)
+#if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
 
 // Message to show/hide a popup menu using native controls.
 IPC_MESSAGE_ROUTED1(FrameHostMsg_ShowPopup,

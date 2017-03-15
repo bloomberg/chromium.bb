@@ -1475,7 +1475,7 @@ bool RenderFrameImpl::Send(IPC::Message* message) {
   return RenderThread::Get()->Send(message);
 }
 
-#if defined(USE_EXTERNAL_POPUP_MENU)
+#if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
 void RenderFrameImpl::DidHideExternalPopupMenu() {
   // We need to clear external_popup_menu_ as soon as ExternalPopupMenu::close
   // is called. Otherwise, createExternalPopupMenu() for new popup will fail.
@@ -1602,7 +1602,7 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_FindMatchRects, OnFindMatchRects)
 #endif
 
-#if defined(USE_EXTERNAL_POPUP_MENU)
+#if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(FrameMsg_SelectPopupMenuItem, OnSelectPopupMenuItem)
 #else
@@ -2960,7 +2960,7 @@ RenderFrameImpl::createWorkerContentSettingsClientProxy() {
 WebExternalPopupMenu* RenderFrameImpl::createExternalPopupMenu(
     const WebPopupMenuInfo& popup_menu_info,
     WebExternalPopupMenuClient* popup_menu_client) {
-#if defined(USE_EXTERNAL_POPUP_MENU)
+#if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
   // An IPC message is sent to the browser to build and display the actual
   // popup. The user could have time to click a different select by the time
   // the popup is shown. In that case external_popup_menu_ is non NULL.
@@ -5785,7 +5785,7 @@ void RenderFrameImpl::OnFindMatchRects(int current_version) {
 }
 #endif
 
-#if defined(USE_EXTERNAL_POPUP_MENU)
+#if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
 #if defined(OS_MACOSX)
 void RenderFrameImpl::OnSelectPopupMenuItem(int selected_index) {
   if (external_popup_menu_ == NULL)

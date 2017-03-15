@@ -70,6 +70,7 @@
 #include "content/common/child_process_messages.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/dom_storage/dom_storage_messages.h"
+#include "content/common/features.h"
 #include "content/common/frame_messages.h"
 #include "content/common/frame_owner_properties.h"
 #include "content/common/render_process_messages.h"
@@ -614,7 +615,7 @@ void RenderThreadImpl::Init(
       base::PlatformThread::CurrentId(),
       kTraceEventRendererMainThreadSortIndex);
 
-#if defined(USE_EXTERNAL_POPUP_MENU)
+#if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
   // On Mac and Android Java UI, the select popups are rendered by the browser.
   blink::WebView::setUseExternalPopupMenus(true);
 #endif
