@@ -28,6 +28,7 @@
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -415,9 +416,44 @@ void PaymentsClient::IssueRequest(std::unique_ptr<PaymentsRequest> request,
 }
 
 void PaymentsClient::InitializeUrlFetcher() {
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("payments_sync_cards", R"(
+        semantics {
+          sender: "Payments"
+          description:
+            "This service communicates with Google Payments servers to upload "
+            "(save) or receive the user's credit card info."
+          trigger:
+            "Requests are triggered by a user action, such as selecting a "
+            "masked server card from Chromium's credit card autofill dropdown, "
+            "submitting a form which has credit card information, or accepting "
+            "the prompt to save a credit card to Payments servers."
+          data:
+            "In case of save, a protocol buffer containing relevant address "
+            "and credit card information which should be saved in Google "
+            "Payments servers, along with user credentials. In case of load, a "
+            "protocol buffer containing the id of the credit card to unmask, "
+            "an encrypted cvc value, an optional updated card expiration date, "
+            "and user credentials."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: false
+          setting:
+            "Users can enable or disable this feature in Chromium settings by "
+            "toggling 'Credit cards and addresses using Google Payments', "
+            "under 'Advanced sync settings...'. This feature is enabled by "
+            "default."
+          chrome_policy {
+            AutoFillEnabled {
+              policy_options {mode: MANDATORY}
+              AutoFillEnabled: false
+            }
+          }
+        })");
   url_fetcher_ =
       net::URLFetcher::Create(0, GetRequestUrl(request_->GetRequestUrlPath()),
-                              net::URLFetcher::POST, this);
+                              net::URLFetcher::POST, this, traffic_annotation);
 
   data_use_measurement::DataUseUserData::AttachToFetcher(
       url_fetcher_.get(), data_use_measurement::DataUseUserData::AUTOFILL);
