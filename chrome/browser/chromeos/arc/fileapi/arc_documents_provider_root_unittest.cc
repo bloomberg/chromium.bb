@@ -316,6 +316,14 @@ TEST_F(ArcDocumentsProviderRootTest, WatchChanged) {
     run_loop.Run();
   }
 
+  // Even if AddWatcher() returns, the watch may not have started. In order to
+  // make installation finish we run the message loop until idle. This depends
+  // on the behavior of FakeFileSystemInstance.
+  //
+  // TODO(crbug.com/698624): Remove the hack to make AddWatcher() return
+  // immediately.
+  base::RunLoop().RunUntilIdle();
+
   EXPECT_EQ(0, num_called);
   fake_file_system_.TriggerWatchers(kAuthority, kDirSpec.document_id,
                                     storage::WatcherManager::CHANGED);
@@ -357,6 +365,14 @@ TEST_F(ArcDocumentsProviderRootTest, WatchDeleted) {
                           &run_loop));
     run_loop.Run();
   }
+
+  // Even if AddWatcher() returns, the watch may not have started. In order to
+  // make installation finish we run the message loop until idle. This depends
+  // on the behavior of FakeFileSystemInstance.
+  //
+  // TODO(crbug.com/698624): Remove the hack to make AddWatcher() return
+  // immediately.
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(0, num_called);
   fake_file_system_.TriggerWatchers(kAuthority, kDirSpec.document_id,

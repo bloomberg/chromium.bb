@@ -122,6 +122,33 @@ class ArcDocumentsProviderRoot : public ArcFileSystemOperationRunner::Observer {
     bool is_directory;
   };
 
+  // Represents the status of a document watcher.
+  struct WatcherData {
+    // ID of a watcher in the remote file system service.
+    //
+    // Valid IDs are represented by positive integers. An invalid watcher is
+    // represented by |kInvalidWatcherId|, which occurs in several cases:
+    //
+    // - AddWatcher request is still in-flight. In this case, a valid ID is set
+    //   to |inflight_request_id|.
+    //
+    // - The remote file system service notified us that it stopped and all
+    //   watchers were forgotten. Such watchers are still tracked here, but they
+    //   are not known by the remote service.
+    int64_t id;
+
+    // A unique ID of AddWatcher() request.
+    //
+    // While AddWatcher() is in-flight, a positive integer is set to this
+    // variable, and |id| is |kInvalidWatcherId|. Otherwise it is set to
+    // |kInvalidWatcherRequestId|.
+    uint64_t inflight_request_id;
+  };
+
+  static const int64_t kInvalidWatcherId;
+  static const uint64_t kInvalidWatcherRequestId;
+  static const WatcherData kInvalidWatcherData;
+
   // Mapping from a file name to a ThinDocument.
   using NameToThinDocumentMap =
       std::map<base::FilePath::StringType, ThinDocument>;
@@ -145,15 +172,20 @@ class ArcDocumentsProviderRoot : public ArcFileSystemOperationRunner::Observer {
       NameToThinDocumentMap mapping);
 
   void AddWatcherWithDocumentId(const base::FilePath& path,
+                                uint64_t watcher_request_id,
                                 const WatcherCallback& watcher_callback,
-                                const StatusCallback& callback,
                                 const std::string& document_id);
   void OnWatcherAdded(const base::FilePath& path,
-                      const StatusCallback& callback,
+                      uint64_t watcher_request_id,
                       int64_t watcher_id);
-  void OnWatcherAddedButRemoved(const StatusCallback& callback, bool success);
+  void OnWatcherAddedButRemoved(bool success);
 
   void OnWatcherRemoved(const StatusCallback& callback, bool success);
+
+  // Returns true if the specified watcher request has been canceled.
+  // This function should be called only while the request is in-flight.
+  bool IsWatcherInflightRequestCanceled(const base::FilePath& path,
+                                        uint64_t watcher_request_id) const;
 
   void ResolveToContentUrlWithDocumentId(
       const ResolveToContentUrlCallback& callback,
@@ -184,18 +216,15 @@ class ArcDocumentsProviderRoot : public ArcFileSystemOperationRunner::Observer {
   const std::string authority_;
   const std::string root_document_id_;
 
-  // Map from a file path to a watcher ID.
-  //
-  // A watcher can be "orphan" when watchers are cleared as notified by
-  // OnWatchersCleared() callback. Such watchers are still tracked here,
-  // but they are not known by the remote service, so they are represented
-  // by the invalid watcher ID (-1).
+  // Map from a file path to a watcher data.
   //
   // Note that we do not use a document ID as a key here to guarantee that
   // a watch installed by AddWatcher() can be always identified in
   // RemoveWatcher() with the same file path specified.
   // See the documentation of AddWatcher() for more details.
-  std::map<base::FilePath, int64_t> path_to_watcher_id_;
+  std::map<base::FilePath, WatcherData> path_to_watcher_data_;
+
+  uint64_t next_watcher_request_id_ = 1;
 
   // Can be null if this instance is not observing ArcFileSystemOperationRunner.
   // Observation is started on the first call of AddWatcher().

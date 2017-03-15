@@ -65,6 +65,15 @@ base::FilePath::StringType GetFileNameForDocument(
 
 }  // namespace
 
+// static
+const int64_t ArcDocumentsProviderRoot::kInvalidWatcherId = -1;
+// static
+const uint64_t ArcDocumentsProviderRoot::kInvalidWatcherRequestId = 0;
+// static
+const ArcDocumentsProviderRoot::WatcherData
+    ArcDocumentsProviderRoot::kInvalidWatcherData = {kInvalidWatcherId,
+                                                     kInvalidWatcherRequestId};
+
 ArcDocumentsProviderRoot::ArcDocumentsProviderRoot(
     const std::string& authority,
     const std::string& root_document_id)
@@ -102,30 +111,39 @@ void ArcDocumentsProviderRoot::AddWatcher(
     const WatcherCallback& watcher_callback,
     const StatusCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (path_to_watcher_id_.count(path)) {
+  if (path_to_watcher_data_.count(path)) {
     callback.Run(base::File::FILE_ERROR_FAILED);
     return;
   }
+  uint64_t watcher_request_id = next_watcher_request_id_++;
+  path_to_watcher_data_.insert(
+      std::make_pair(path, WatcherData{kInvalidWatcherId, watcher_request_id}));
   ResolveToDocumentId(
-      path,
-      base::Bind(&ArcDocumentsProviderRoot::AddWatcherWithDocumentId,
-                 weak_ptr_factory_.GetWeakPtr(), path, watcher_callback,
-                 callback));
+      path, base::Bind(&ArcDocumentsProviderRoot::AddWatcherWithDocumentId,
+                       weak_ptr_factory_.GetWeakPtr(), path, watcher_request_id,
+                       watcher_callback));
+
+  // HACK: Invoke |callback| immediately.
+  //
+  // TODO(crbug.com/698624): Remove this hack. It was introduced because Files
+  // app freezes until AddWatcher() finishes, but it should be handled in Files
+  // app rather than here.
+  callback.Run(base::File::FILE_OK);
 }
 
 void ArcDocumentsProviderRoot::RemoveWatcher(const base::FilePath& path,
                                              const StatusCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  auto iter = path_to_watcher_id_.find(path);
-  if (iter == path_to_watcher_id_.end()) {
+  auto iter = path_to_watcher_data_.find(path);
+  if (iter == path_to_watcher_data_.end()) {
     callback.Run(base::File::FILE_ERROR_FAILED);
     return;
   }
-  int64_t watcher_id = iter->second;
-  path_to_watcher_id_.erase(iter);
-  if (watcher_id < 0) {
-    // This is an orphan watcher. Just remove an entry from
-    // |path_to_watcher_id_| and return success.
+  int64_t watcher_id = iter->second.id;
+  path_to_watcher_data_.erase(iter);
+  if (watcher_id == kInvalidWatcherId) {
+    // This is an invalid watcher. No need to send a request to the remote
+    // service.
     callback.Run(base::File::FILE_OK);
     return;
   }
@@ -147,9 +165,9 @@ void ArcDocumentsProviderRoot::ResolveToContentUrl(
 
 void ArcDocumentsProviderRoot::OnWatchersCleared() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  // Mark all watchers orphan.
-  for (auto& entry : path_to_watcher_id_)
-    entry.second = -1;
+  // Mark all watchers invalid.
+  for (auto& entry : path_to_watcher_data_)
+    entry.second = kInvalidWatcherData;
 }
 
 void ArcDocumentsProviderRoot::GetFileInfoWithDocumentId(
@@ -232,58 +250,69 @@ void ArcDocumentsProviderRoot::ReadDirectoryWithNameToThinDocumentMap(
 
 void ArcDocumentsProviderRoot::AddWatcherWithDocumentId(
     const base::FilePath& path,
+    uint64_t watcher_request_id,
     const WatcherCallback& watcher_callback,
-    const StatusCallback& callback,
     const std::string& document_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (IsWatcherInflightRequestCanceled(path, watcher_request_id))
+    return;
+
   if (document_id.empty()) {
-    callback.Run(base::File::FILE_ERROR_NOT_FOUND);
+    DCHECK(path_to_watcher_data_.count(path));
+    path_to_watcher_data_[path] = kInvalidWatcherData;
     return;
   }
+
   // Start observing ArcFileSystemOperationRunner if we have not.
   if (!observer_wrapper_) {
     observer_wrapper_ =
         new file_system_operation_runner_util::ObserverIOThreadWrapper(this);
     file_system_operation_runner_util::AddObserverOnIOThread(observer_wrapper_);
   }
+
   file_system_operation_runner_util::AddWatcherOnIOThread(
       authority_, document_id, watcher_callback,
       base::Bind(&ArcDocumentsProviderRoot::OnWatcherAdded,
-                 weak_ptr_factory_.GetWeakPtr(), path, callback));
+                 weak_ptr_factory_.GetWeakPtr(), path, watcher_request_id));
 }
 
 void ArcDocumentsProviderRoot::OnWatcherAdded(const base::FilePath& path,
-                                              const StatusCallback& callback,
+                                              uint64_t watcher_request_id,
                                               int64_t watcher_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (watcher_id < 0) {
-    callback.Run(base::File::FILE_ERROR_FAILED);
-    return;
-  }
-  if (path_to_watcher_id_.count(path)) {
-    // Multiple watchers have been installed on the same file path in a race.
-    // Following the contract of WatcherManager, we reject all except the first.
+
+  if (IsWatcherInflightRequestCanceled(path, watcher_request_id)) {
     file_system_operation_runner_util::RemoveWatcherOnIOThread(
         watcher_id,
         base::Bind(&ArcDocumentsProviderRoot::OnWatcherAddedButRemoved,
-                   weak_ptr_factory_.GetWeakPtr(), callback));
+                   weak_ptr_factory_.GetWeakPtr()));
     return;
   }
-  path_to_watcher_id_.insert(std::make_pair(path, watcher_id));
-  callback.Run(base::File::FILE_OK);
+
+  DCHECK(path_to_watcher_data_.count(path));
+  path_to_watcher_data_[path] =
+      WatcherData{watcher_id < 0 ? kInvalidWatcherId : watcher_id,
+                  kInvalidWatcherRequestId};
 }
 
-void ArcDocumentsProviderRoot::OnWatcherAddedButRemoved(
-    const StatusCallback& callback,
-    bool success) {
+void ArcDocumentsProviderRoot::OnWatcherAddedButRemoved(bool success) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  callback.Run(base::File::FILE_ERROR_FAILED);
+  // Ignore |success|.
 }
 
 void ArcDocumentsProviderRoot::OnWatcherRemoved(const StatusCallback& callback,
                                                 bool success) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   callback.Run(success ? base::File::FILE_OK : base::File::FILE_ERROR_FAILED);
+}
+
+bool ArcDocumentsProviderRoot::IsWatcherInflightRequestCanceled(
+    const base::FilePath& path,
+    uint64_t watcher_request_id) const {
+  auto iter = path_to_watcher_data_.find(path);
+  return (iter == path_to_watcher_data_.end() ||
+          iter->second.inflight_request_id != watcher_request_id);
 }
 
 void ArcDocumentsProviderRoot::ResolveToContentUrlWithDocumentId(
