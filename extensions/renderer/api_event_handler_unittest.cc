@@ -896,4 +896,75 @@ TEST_F(APIEventHandlerTest, TestArgumentMassagersNeverDispatch) {
   // that we don't crash.)
 }
 
+// Test creating a custom event, as is done by a few of our custom bindings.
+TEST_F(APIEventHandlerTest, TestCreateCustomEvent) {
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = MainContext();
+
+  MockEventChangeHandler change_handler;
+  APIEventHandler handler(base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
+                          change_handler.Get());
+
+  v8::Local<v8::Object> event = handler.CreateAnonymousEventInstance(context);
+  ASSERT_FALSE(event.IsEmpty());
+
+  const char kAddListenerFunction[] =
+      "(function(event) {\n"
+      "  event.addListener(function() {\n"
+      "    this.eventArgs = Array.from(arguments);\n"
+      "  });\n"
+      "})";
+  v8::Local<v8::Value> add_listener_argv[] = {event};
+  RunFunction(FunctionFromString(context, kAddListenerFunction), context,
+              arraysize(add_listener_argv), add_listener_argv);
+
+  // Test dispatching to the listeners.
+  const char kDispatchEventFunction[] =
+      "(function(event) { event.dispatch(1, 2, 3); })";
+  v8::Local<v8::Function> dispatch_function =
+      FunctionFromString(context, kDispatchEventFunction);
+
+  v8::Local<v8::Value> dispatch_argv[] = {event};
+  RunFunction(dispatch_function, context, arraysize(dispatch_argv),
+              dispatch_argv);
+
+  EXPECT_EQ("[1,2,3]", GetStringPropertyFromObject(context->Global(), context,
+                                                   "eventArgs"));
+
+  // Clean up so we can re-check eventArgs.
+  ASSERT_TRUE(context->Global()
+                  ->Delete(context, gin::StringToSymbol(isolate(), "eventArgs"))
+                  .FromJust());
+
+  // Invalidate the event and try dispatching again. Nothing should happen.
+  handler.InvalidateCustomEvent(context, event);
+  RunFunction(dispatch_function, context, arraysize(dispatch_argv),
+              dispatch_argv);
+  EXPECT_EQ("undefined", GetStringPropertyFromObject(context->Global(), context,
+                                                     "eventArgs"));
+}
+
+// Test adding a custom event with a cyclic dependency. Nothing should leak.
+TEST_F(APIEventHandlerTest, TestCreateCustomEventWithCyclicDependency) {
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = MainContext();
+
+  MockEventChangeHandler change_handler;
+  APIEventHandler handler(base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
+                          change_handler.Get());
+
+  v8::Local<v8::Object> event = handler.CreateAnonymousEventInstance(context);
+  ASSERT_FALSE(event.IsEmpty());
+
+  const char kAddListenerFunction[] =
+      "(function(event) {\n"
+      "  event.addListener(function() {}.bind(null, event));\n"
+      "})";
+  v8::Local<v8::Value> add_listener_argv[] = {event};
+  RunFunction(FunctionFromString(context, kAddListenerFunction), context,
+              arraysize(add_listener_argv), add_listener_argv);
+
+  DisposeContext(context);
+}
+
 }  // namespace extensions

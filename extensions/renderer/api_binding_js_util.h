@@ -49,6 +49,19 @@ class APIBindingJSUtil final : public gin::Wrappable<APIBindingJSUtil> {
                                      const std::string& event_name,
                                      v8::Local<v8::Function> massager);
 
+  // A handler to allow custom bindings to create custom extension API event
+  // objects (e.g. foo.onBar).
+  // TODO(devlin): Currently, we ignore schema and options. We'll need to take
+  // at least options into account.
+  void CreateCustomEvent(gin::Arguments* arguments,
+                         v8::Local<v8::Value> v8_event_name,
+                         v8::Local<v8::Value> unused_schema,
+                         v8::Local<v8::Value> unused_event_options);
+
+  // Invalidates an event, removing its listeners and preventing any more from
+  // being added.
+  void InvalidateEvent(gin::Arguments* arguments, v8::Local<v8::Object> event);
+
   // Type references. Guaranteed to outlive this object.
   const APITypeReferenceMap* type_refs_;
 

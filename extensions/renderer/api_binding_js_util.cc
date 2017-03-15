@@ -30,7 +30,9 @@ gin::ObjectTemplateBuilder APIBindingJSUtil::GetObjectTemplateBuilder(
   return Wrappable<APIBindingJSUtil>::GetObjectTemplateBuilder(isolate)
       .SetMethod("sendRequest", &APIBindingJSUtil::SendRequest)
       .SetMethod("registerEventArgumentMassager",
-                 &APIBindingJSUtil::RegisterEventArgumentMassager);
+                 &APIBindingJSUtil::RegisterEventArgumentMassager)
+      .SetMethod("createCustomEvent", &APIBindingJSUtil::CreateCustomEvent)
+      .SetMethod("invalidateEvent", &APIBindingJSUtil::InvalidateEvent);
 }
 
 void APIBindingJSUtil::SendRequest(
@@ -71,6 +73,45 @@ void APIBindingJSUtil::RegisterEventArgumentMassager(
   v8::Local<v8::Context> context = holder->CreationContext();
 
   event_handler_->RegisterArgumentMassager(context, event_name, massager);
+}
+
+void APIBindingJSUtil::CreateCustomEvent(
+    gin::Arguments* arguments,
+    v8::Local<v8::Value> v8_event_name,
+    v8::Local<v8::Value> unused_schema,
+    v8::Local<v8::Value> unused_event_options) {
+  v8::Isolate* isolate = arguments->isolate();
+  v8::HandleScope handle_scope(isolate);
+  v8::Local<v8::Object> holder;
+  CHECK(arguments->GetHolder(&holder));
+  v8::Local<v8::Context> context = holder->CreationContext();
+
+  std::string event_name;
+  if (!v8_event_name->IsUndefined()) {
+    if (!v8_event_name->IsString()) {
+      NOTREACHED();
+      return;
+    }
+    event_name = gin::V8ToString(v8_event_name);
+  }
+
+  v8::Local<v8::Value> event;
+  if (event_name.empty())
+    event = event_handler_->CreateAnonymousEventInstance(context);
+  else
+    event = event_handler_->CreateEventInstance(event_name, context);
+
+  arguments->Return(event);
+}
+
+void APIBindingJSUtil::InvalidateEvent(gin::Arguments* arguments,
+                                       v8::Local<v8::Object> event) {
+  v8::Isolate* isolate = arguments->isolate();
+  v8::HandleScope handle_scope(isolate);
+  v8::Local<v8::Object> holder;
+  CHECK(arguments->GetHolder(&holder));
+  v8::Local<v8::Context> context = holder->CreationContext();
+  event_handler_->InvalidateCustomEvent(context, event);
 }
 
 }  // namespace extensions

@@ -38,6 +38,17 @@ class APIEventHandler {
   v8::Local<v8::Object> CreateEventInstance(const std::string& event_name,
                                             v8::Local<v8::Context> context);
 
+  // Creates a new event without any name. This is used by custom bindings when
+  // the entirety of the logic for the event is contained in the renderer. These
+  // events do not notify of new/removed listeners or allow for dispatching
+  // through FireEventInContext().
+  v8::Local<v8::Object> CreateAnonymousEventInstance(
+      v8::Local<v8::Context> context);
+
+  // Invalidates the given |event|.
+  void InvalidateCustomEvent(v8::Local<v8::Context> context,
+                             v8::Local<v8::Object> event);
+
   // Notifies all listeners of the event with the given |event_name| in the
   // specified |context|, sending the included |arguments|.
   void FireEventInContext(const std::string& event_name,

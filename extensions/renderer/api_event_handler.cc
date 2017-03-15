@@ -23,6 +23,9 @@ namespace extensions {
 
 namespace {
 
+void DoNothingOnListenersChanged(binding::EventListenersChanged change,
+                                 v8::Local<v8::Context> context) {}
+
 const char kExtensionAPIEventPerContextKey[] = "extension_api_events";
 
 struct APIEventPerContextData : public base::SupportsUserData::Data {
@@ -32,6 +35,9 @@ struct APIEventPerContextData : public base::SupportsUserData::Data {
         << "|emitters| should have been cleared by InvalidateContext()";
     DCHECK(massagers.empty())
         << "|massagers| should have been cleared by InvalidateContext()";
+    DCHECK(anonymous_emitters.empty())
+        << "|anonymous_emitters| should have been cleared by "
+        << "InvalidateContext()";
   }
 
   // The associated v8::Isolate. Since this object is cleaned up at context
@@ -43,6 +49,9 @@ struct APIEventPerContextData : public base::SupportsUserData::Data {
 
   // A map from event name -> argument massager.
   std::map<std::string, v8::Global<v8::Function>> massagers;
+
+  // The collection of anonymous events.
+  std::vector<v8::Global<v8::Object>> anonymous_emitters;
 };
 
 APIEventPerContextData* GetContextData(v8::Local<v8::Context> context,
@@ -126,6 +135,41 @@ v8::Local<v8::Object> APIEventHandler::CreateEventInstance(
   return emitter_object;
 }
 
+v8::Local<v8::Object> APIEventHandler::CreateAnonymousEventInstance(
+    v8::Local<v8::Context> context) {
+  v8::Context::Scope context_scope(context);
+  APIEventPerContextData* data = GetContextData(context, true);
+  gin::Handle<EventEmitter> emitter_handle = gin::CreateHandle(
+      context->GetIsolate(),
+      new EventEmitter(call_js_, base::Bind(&DoNothingOnListenersChanged)));
+  CHECK(!emitter_handle.IsEmpty());
+  v8::Local<v8::Object> emitter_object = emitter_handle.ToV8().As<v8::Object>();
+  data->anonymous_emitters.push_back(
+      v8::Global<v8::Object>(context->GetIsolate(), emitter_object));
+  return emitter_object;
+}
+
+void APIEventHandler::InvalidateCustomEvent(v8::Local<v8::Context> context,
+                                            v8::Local<v8::Object> event) {
+  EventEmitter* emitter = nullptr;
+  APIEventPerContextData* data = GetContextData(context, false);
+  if (!data || !gin::Converter<EventEmitter*>::FromV8(context->GetIsolate(),
+                                                      event, &emitter)) {
+    NOTREACHED();
+    return;
+  }
+
+  emitter->Invalidate();
+  auto emitter_entry = std::find(data->anonymous_emitters.begin(),
+                                 data->anonymous_emitters.end(), event);
+  if (emitter_entry == data->anonymous_emitters.end()) {
+    NOTREACHED();
+    return;
+  }
+
+  data->anonymous_emitters.erase(emitter_entry);
+}
+
 void APIEventHandler::FireEventInContext(const std::string& event_name,
                                          v8::Local<v8::Context> context,
                                          const base::ListValue& args) {
@@ -200,6 +244,7 @@ void APIEventHandler::InvalidateContext(v8::Local<v8::Context> context) {
 
   v8::Isolate* isolate = context->GetIsolate();
   v8::HandleScope scope(isolate);
+
   // This loop *shouldn't* allow any self-modification (i.e., no listeners
   // should be added or removed as a result of the iteration). If that changes,
   // we'll need to cache the listeners elsewhere before iterating.
@@ -213,9 +258,17 @@ void APIEventHandler::InvalidateContext(v8::Local<v8::Context> context) {
     listeners_changed_.Run(
         pair.first, binding::EventListenersChanged::NO_LISTENERS, context);
   }
+  for (const auto& global : data->anonymous_emitters) {
+    EventEmitter* emitter = nullptr;
+    gin::Converter<EventEmitter*>::FromV8(isolate, global.Get(isolate),
+                                          &emitter);
+    CHECK(emitter);
+    emitter->Invalidate();
+  }
 
   data->emitters.clear();
   data->massagers.clear();
+  data->anonymous_emitters.clear();
 
   // InvalidateContext() is called shortly (and, theoretically, synchronously)
   // before the PerContextData is deleted. We have a check that guarantees that

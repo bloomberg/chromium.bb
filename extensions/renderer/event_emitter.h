@@ -58,6 +58,14 @@ class EventEmitter final : public gin::Wrappable<EventEmitter> {
   // When invalid, no listeners can be added or removed.
   bool valid_ = true;
 
+  // The event listeners associated with this event.
+  // TODO(devlin): Having these listeners held as v8::Globals means that we
+  // need to worry about cycles when a listener holds a reference to the event,
+  // e.g. EventEmitter -> Listener -> EventEmitter. Right now, we handle that by
+  // requiring Invalidate() to be called, but that means that events that aren't
+  // Invalidate()'d earlier can leak until context destruction. We could
+  // circumvent this by storing the listeners strongly in a private propery
+  // (thus traceable by v8), and optionally keep a weak cache on this object.
   Listeners listeners_;
 
   binding::RunJSFunction run_js_;
