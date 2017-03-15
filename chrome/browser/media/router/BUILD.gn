@@ -14,6 +14,7 @@ static_library("router") {
     "//components/keyed_service/core",
     "//content/public/browser",
     "//content/public/common",
+    "//net",
     "//third_party/icu",
     "//url",
   ]
@@ -22,6 +23,8 @@ static_library("router") {
     "browser_presentation_connection_proxy.h",
     "create_presentation_connection_request.cc",
     "create_presentation_connection_request.h",
+    "discovery/media_sink_internal.cc",
+    "discovery/media_sink_internal.h",
     "issue.cc",
     "issue.h",
     "issue_manager.cc",
@@ -104,7 +107,19 @@ mojom("mojo_bindings") {
 
   public_deps = [
     "//mojo/common:common_custom_types",
+    "//net/interfaces:interfaces",
+    "//url/mojo:url_mojom_gurl",
     "//url/mojo:url_mojom_origin",
+  ]
+}
+
+mojom("mojo_test_interfaces") {
+  sources = [
+    "mojo/media_router_traits_test_service.mojom",
+  ]
+
+  public_deps = [
+    ":mojo_bindings",
   ]
 }
 
@@ -127,6 +142,7 @@ static_library("test_support") {
   if (!is_android) {
     deps += [
       ":mojo_bindings",
+      ":mojo_test_interfaces",
       "//extensions/common",
     ]
     sources += [

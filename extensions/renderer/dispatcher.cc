@@ -744,9 +744,11 @@ std::vector<std::pair<const char*, int>> Dispatcher::GetJsResources() {
 #if defined(ENABLE_MEDIA_ROUTER)
     {"chrome/browser/media/router/mojo/media_router.mojom",
      IDR_MEDIA_ROUTER_MOJOM_JS},
-    {"mojo/common/time.mojom", IDR_MOJO_TIME_MOJOM_JS},
-    {"url/mojo/origin.mojom", IDR_ORIGIN_MOJOM_JS},
     {"media_router_bindings", IDR_MEDIA_ROUTER_BINDINGS_JS},
+    {"mojo/common/time.mojom", IDR_MOJO_TIME_MOJOM_JS},
+    {"net/interfaces/ip_address.mojom", IDR_MOJO_IP_ADDRESS_MOJOM_JS},
+    {"url/mojo/origin.mojom", IDR_ORIGIN_MOJOM_JS},
+    {"url/mojo/url.mojom", IDR_MOJO_URL_MOJOM_JS},
 #endif  // defined(ENABLE_MEDIA_ROUTER)
   };
 

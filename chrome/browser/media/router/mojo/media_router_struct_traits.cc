@@ -5,6 +5,8 @@
 #include "chrome/browser/media/router/mojo/media_router_struct_traits.h"
 
 #include "chrome/browser/media/router/media_source.h"
+#include "net/interfaces/ip_address_struct_traits.h"
+#include "url/mojo/url_gurl_struct_traits.h"
 
 namespace mojo {
 
@@ -43,13 +45,31 @@ bool StructTraits<media_router::mojom::IssueDataView, media_router::IssueInfo>::
 }
 
 // static
-bool StructTraits<
-    media_router::mojom::MediaSinkDataView,
-    media_router::MediaSink>::Read(media_router::mojom::MediaSinkDataView data,
-                                   media_router::MediaSink* out) {
+media_router::mojom::MediaSinkExtraDataDataView::Tag
+UnionTraits<media_router::mojom::MediaSinkExtraDataDataView,
+            media_router::MediaSinkInternal>::
+    GetTag(const media_router::MediaSinkInternal& sink) {
+  if (sink.is_dial_sink()) {
+    return media_router::mojom::MediaSinkExtraDataDataView::Tag::
+        DIAL_MEDIA_SINK;
+  } else if (sink.is_cast_sink()) {
+    return media_router::mojom::MediaSinkExtraDataDataView::Tag::
+        CAST_MEDIA_SINK;
+  }
+  NOTREACHED();
+  return media_router::mojom::MediaSinkExtraDataDataView::Tag::CAST_MEDIA_SINK;
+}
+
+// static
+bool StructTraits<media_router::mojom::MediaSinkDataView,
+                  media_router::MediaSinkInternal>::
+    Read(media_router::mojom::MediaSinkDataView data,
+         media_router::MediaSinkInternal* out) {
   media_router::MediaSink::Id id;
-  if (!data.ReadSinkId(&id))
+  if (!data.ReadSinkId(&id) ||
+      !media_router::MediaSinkInternal::IsValidSinkId(id)) {
     return false;
+  }
 
   out->set_sink_id(id);
 
@@ -79,10 +99,73 @@ bool StructTraits<
 
   out->set_icon_type(icon_type);
 
+  if (!data.ReadExtraData(out))
+    return false;
+
   return true;
 }
 
 // static
+bool UnionTraits<media_router::mojom::MediaSinkExtraDataDataView,
+                 media_router::MediaSinkInternal>::
+    Read(media_router::mojom::MediaSinkExtraDataDataView data,
+         media_router::MediaSinkInternal* out) {
+  switch (data.tag()) {
+    case media_router::mojom::MediaSinkExtraDataDataView::Tag::
+        DIAL_MEDIA_SINK: {
+      media_router::DialSinkExtraData extra_data;
+      if (!data.ReadDialMediaSink(&extra_data))
+        return false;
+      out->set_dial_data(extra_data);
+      return true;
+    }
+    case media_router::mojom::MediaSinkExtraDataDataView::Tag::
+        CAST_MEDIA_SINK: {
+      media_router::CastSinkExtraData extra_data;
+      if (!data.ReadCastMediaSink(&extra_data))
+        return false;
+      out->set_cast_data(extra_data);
+      return true;
+    }
+  }
+  NOTREACHED();
+  return false;
+}
+
+// static
+bool StructTraits<media_router::mojom::DialMediaSinkDataView,
+                  media_router::DialSinkExtraData>::
+    Read(media_router::mojom::DialMediaSinkDataView data,
+         media_router::DialSinkExtraData* out) {
+  if (!data.ReadIpAddress(&out->ip_address))
+    return false;
+
+  if (!data.ReadModelName(&out->model_name))
+    return false;
+
+  if (!data.ReadAppUrl(&out->app_url))
+    return false;
+
+  return true;
+}
+
+// static
+bool StructTraits<media_router::mojom::CastMediaSinkDataView,
+                  media_router::CastSinkExtraData>::
+    Read(media_router::mojom::CastMediaSinkDataView data,
+         media_router::CastSinkExtraData* out) {
+  if (!data.ReadIpAddress(&out->ip_address))
+    return false;
+
+  if (!data.ReadModelName(&out->model_name))
+    return false;
+
+  out->capabilities = data.capabilities();
+  out->cast_channel_id = data.cast_channel_id();
+
+  return true;
+}
+
 bool StructTraits<media_router::mojom::MediaRouteDataView,
                   media_router::MediaRoute>::
     Read(media_router::mojom::MediaRouteDataView data,

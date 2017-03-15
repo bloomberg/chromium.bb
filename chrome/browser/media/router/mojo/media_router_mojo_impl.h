@@ -294,7 +294,7 @@ class MediaRouterMojoImpl : public MediaRouterBase,
           callback) override;
   void OnIssue(const IssueInfo& issue) override;
   void OnSinksReceived(const std::string& media_source,
-                       const std::vector<MediaSink>& sinks,
+                       const std::vector<MediaSinkInternal>& internal_sinks,
                        const std::vector<url::Origin>& origins) override;
   void OnRoutesUpdated(
       const std::vector<MediaRoute>& routes,

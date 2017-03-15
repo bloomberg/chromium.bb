@@ -4,15 +4,17 @@
 
 mojom = "//chrome/browser/media/router/mojo/media_router.mojom"
 public_headers = [
+  "//chrome/browser/media/router/discovery/media_sink_internal.h",
   "//chrome/browser/media/router/issue.h",
   "//chrome/browser/media/router/media_route.h",
-  "//chrome/browser/media/router/media_sink.h",
   "//chrome/browser/media/router/route_message.h",
   "//chrome/browser/media/router/route_request_result.h",
   "//content/public/common/presentation_session.h",
 ]
 deps = [
+  "//net",
   "//third_party/icu",  # For issue.h
+  "//url",
 ]
 traits_headers =
     [ "//chrome/browser/media/router/mojo/media_router_struct_traits.h" ]
@@ -26,7 +28,7 @@ type_mappings = [
   "media_router.mojom.MediaRoute=media_router::MediaRoute",
   "media_router.mojom.MediaRouter.PresentationConnectionCloseReason=content::PresentationConnectionCloseReason",
   "media_router.mojom.MediaRouter.PresentationConnectionState=content::PresentationConnectionState",
-  "media_router.mojom.MediaSink=media_router::MediaSink",
+  "media_router.mojom.MediaSink=media_router::MediaSinkInternal",
   "media_router.mojom.RouteMessage=media_router::RouteMessage",
   "media_router.mojom.RouteRequestResultCode=media_router::RouteRequestResult::ResultCode",
 ]

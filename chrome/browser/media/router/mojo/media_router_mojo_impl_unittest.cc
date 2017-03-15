@@ -697,13 +697,20 @@ TEST_F(MediaRouterMojoImplTest, RegisterAndUnregisterMediaSinksObserver) {
   expected_sinks.push_back(
       MediaSink(kSinkId2, kSinkName, MediaSink::IconType::CAST));
 
+  std::vector<MediaSinkInternal> sinks;
+  for (const auto& expected_sink : expected_sinks) {
+    MediaSinkInternal sink_internal;
+    sink_internal.set_sink(expected_sink);
+    sinks.push_back(sink_internal);
+  }
+
   base::RunLoop run_loop;
   EXPECT_CALL(*sinks_observer, OnSinksReceived(SequenceEquals(expected_sinks)));
   EXPECT_CALL(*extra_sinks_observer,
               OnSinksReceived(SequenceEquals(expected_sinks)))
       .WillOnce(InvokeWithoutArgs([&run_loop]() { run_loop.Quit(); }));
   media_router_proxy_->OnSinksReceived(
-      media_source.id(), expected_sinks,
+      media_source.id(), sinks,
       std::vector<url::Origin>(1, url::Origin(GURL(kOrigin))));
   run_loop.Run();
 

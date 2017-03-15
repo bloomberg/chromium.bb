@@ -7,8 +7,8 @@
 
 #include <string>
 
+#include "chrome/browser/media/router/discovery/media_sink_internal.h"
 #include "chrome/browser/media/router/issue.h"
-#include "chrome/browser/media/router/media_sink.h"
 #include "chrome/browser/media/router/mojo/media_router.mojom.h"
 #include "chrome/browser/media/router/route_request_result.h"
 #include "mojo/common/common_custom_types_struct_traits.h"
@@ -78,6 +78,81 @@ struct EnumTraits<media_router::mojom::Issue::Severity,
     }
     return false;
   }
+};
+
+template <>
+struct UnionTraits<media_router::mojom::MediaSinkExtraDataDataView,
+                   media_router::MediaSinkInternal> {
+  static media_router::mojom::MediaSinkExtraDataDataView::Tag GetTag(
+      const media_router::MediaSinkInternal& sink);
+
+  static bool IsNull(const media_router::MediaSinkInternal& sink) {
+    return !sink.is_cast_sink() && !sink.is_dial_sink();
+  }
+
+  static void SetToNull(media_router::MediaSinkInternal* out) {}
+
+  static const media_router::DialSinkExtraData& dial_media_sink(
+      const media_router::MediaSinkInternal& sink) {
+    return sink.dial_data();
+  }
+
+  static const media_router::CastSinkExtraData& cast_media_sink(
+      const media_router::MediaSinkInternal& sink) {
+    return sink.cast_data();
+  }
+
+  static bool Read(media_router::mojom::MediaSinkExtraDataDataView data,
+                   media_router::MediaSinkInternal* out);
+};
+
+template <>
+struct StructTraits<media_router::mojom::DialMediaSinkDataView,
+                    media_router::DialSinkExtraData> {
+  static const std::string& model_name(
+      const media_router::DialSinkExtraData& extra_data) {
+    return extra_data.model_name;
+  }
+
+  static const net::IPAddress& ip_address(
+      const media_router::DialSinkExtraData& extra_data) {
+    return extra_data.ip_address;
+  }
+
+  static const GURL& app_url(
+      const media_router::DialSinkExtraData& extra_data) {
+    return extra_data.app_url;
+  }
+
+  static bool Read(media_router::mojom::DialMediaSinkDataView data,
+                   media_router::DialSinkExtraData* out);
+};
+
+template <>
+struct StructTraits<media_router::mojom::CastMediaSinkDataView,
+                    media_router::CastSinkExtraData> {
+  static const std::string& model_name(
+      const media_router::CastSinkExtraData& extra_data) {
+    return extra_data.model_name;
+  }
+
+  static const net::IPAddress& ip_address(
+      const media_router::CastSinkExtraData& extra_data) {
+    return extra_data.ip_address;
+  }
+
+  static uint8_t capabilities(
+      const media_router::CastSinkExtraData& extra_data) {
+    return extra_data.capabilities;
+  }
+
+  static int32_t cast_channel_id(
+      const media_router::CastSinkExtraData& extra_data) {
+    return extra_data.cast_channel_id;
+  }
+
+  static bool Read(media_router::mojom::CastMediaSinkDataView data,
+                   media_router::CastSinkExtraData* out);
 };
 
 template <>
@@ -228,31 +303,38 @@ struct EnumTraits<media_router::mojom::MediaSink::IconType,
 
 template <>
 struct StructTraits<media_router::mojom::MediaSinkDataView,
-                    media_router::MediaSink> {
+                    media_router::MediaSinkInternal> {
   static bool Read(media_router::mojom::MediaSinkDataView data,
-                   media_router::MediaSink* out);
+                   media_router::MediaSinkInternal* out);
 
-  static std::string sink_id(const media_router::MediaSink& sink) {
-    return sink.id();
+  static std::string sink_id(
+      const media_router::MediaSinkInternal& sink_internal) {
+    return sink_internal.sink().id();
   }
 
-  static std::string name(const media_router::MediaSink& sink) {
-    return sink.name();
+  static std::string name(
+      const media_router::MediaSinkInternal& sink_internal) {
+    return sink_internal.sink().name();
   }
 
   static base::Optional<std::string> description(
-      const media_router::MediaSink& sink) {
-    return sink.description();
+      const media_router::MediaSinkInternal& sink_internal) {
+    return sink_internal.sink().description();
   }
 
   static base::Optional<std::string> domain(
-      const media_router::MediaSink& sink) {
-    return sink.domain();
+      const media_router::MediaSinkInternal& sink_internal) {
+    return sink_internal.sink().domain();
   }
 
   static media_router::MediaSink::IconType icon_type(
-      const media_router::MediaSink& sink) {
-    return sink.icon_type();
+      const media_router::MediaSinkInternal& sink_internal) {
+    return sink_internal.sink().icon_type();
+  }
+
+  static const media_router::MediaSinkInternal& extra_data(
+      const media_router::MediaSinkInternal& sink_internal) {
+    return sink_internal;
   }
 };
 

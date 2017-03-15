@@ -174,7 +174,7 @@ void MediaRouterMojoImpl::OnIssue(const IssueInfo& issue) {
 
 void MediaRouterMojoImpl::OnSinksReceived(
     const std::string& media_source,
-    const std::vector<MediaSink>& sinks,
+    const std::vector<MediaSinkInternal>& internal_sinks,
     const std::vector<url::Origin>& origins) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DVLOG_WITH_INSTANCE(1) << "OnSinksReceived";
@@ -183,6 +183,11 @@ void MediaRouterMojoImpl::OnSinksReceived(
     DVLOG_WITH_INSTANCE(1) << "Received sink list without MediaSinksQuery.";
     return;
   }
+
+  std::vector<MediaSink> sinks;
+  sinks.reserve(internal_sinks.size());
+  for (const auto& internal_sink : internal_sinks)
+    sinks.push_back(internal_sink.sink());
 
   auto* sinks_query = it->second.get();
   sinks_query->cached_sink_list = sinks;

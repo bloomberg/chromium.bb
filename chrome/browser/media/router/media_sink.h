@@ -17,6 +17,7 @@ class Collator;
 namespace media_router {
 
 // Represents a sink to which media can be routed.
+// TODO(zhaobin): convert MediaSink into a struct.
 class MediaSink {
  public:
   using Id = std::string;
@@ -59,7 +60,12 @@ class MediaSink {
   void set_icon_type(IconType icon_type) { icon_type_ = icon_type; }
   IconType icon_type() const { return icon_type_; }
 
+  // This method only compares IDs.
   bool Equals(const MediaSink& other) const;
+
+  // This method compares all fields.
+  bool operator==(const MediaSink& other) const;
+  bool operator!=(const MediaSink& other) const;
 
   // Compares |this| to |other| first by their icon types, then their names
   // using |collator|, and finally their IDs.
