@@ -24,7 +24,7 @@
 namespace blink {
 
 // static
-StringSequenceCallbackFunctionLongSequenceArg* StringSequenceCallbackFunctionLongSequenceArg::create(ScriptState* scriptState, v8::Local<v8::Value> callback){
+StringSequenceCallbackFunctionLongSequenceArg* StringSequenceCallbackFunctionLongSequenceArg::create(ScriptState* scriptState, v8::Local<v8::Value> callback) {
   if (isUndefinedOrNull(callback))
     return nullptr;
   return new StringSequenceCallbackFunctionLongSequenceArg(scriptState, v8::Local<v8::Function>::Cast(callback));
@@ -36,13 +36,14 @@ StringSequenceCallbackFunctionLongSequenceArg::StringSequenceCallbackFunctionLon
   DCHECK(!m_callback.isEmpty());
 }
 
-DEFINE_TRACE(StringSequenceCallbackFunctionLongSequenceArg) {}
-
 DEFINE_TRACE_WRAPPERS(StringSequenceCallbackFunctionLongSequenceArg) {
   visitor->traceWrappers(m_callback.cast<v8::Value>());
 }
 
 bool StringSequenceCallbackFunctionLongSequenceArg::call(ScriptWrappable* scriptWrappable, const Vector<int32_t>& arg, Vector<String>& returnValue) {
+  if (m_callback.isEmpty())
+    return false;
+
   if (!m_scriptState->contextIsValid())
     return false;
 
@@ -51,32 +52,37 @@ bool StringSequenceCallbackFunctionLongSequenceArg::call(ScriptWrappable* script
   if (context->isContextSuspended() || context->isContextDestroyed())
     return false;
 
-  if (m_callback.isEmpty())
-    return false;
-
   // TODO(bashi): Make sure that using DummyExceptionStateForTesting is OK.
   // crbug.com/653769
   DummyExceptionStateForTesting exceptionState;
   ScriptState::Scope scope(m_scriptState.get());
+  v8::Isolate* isolate = m_scriptState->isolate();
+
+  v8::Local<v8::Value> thisValue = ToV8(
+      scriptWrappable,
+      m_scriptState->context()->Global(),
+      isolate);
 
   v8::Local<v8::Value> argArgument = ToV8(arg, m_scriptState->context()->Global(), m_scriptState->isolate());
-
-  v8::Local<v8::Value> thisValue = ToV8(scriptWrappable, m_scriptState->context()->Global(), m_scriptState->isolate());
-
   v8::Local<v8::Value> argv[] = { argArgument };
-
-  v8::Local<v8::Value> v8ReturnValue;
-  v8::TryCatch exceptionCatcher(m_scriptState->isolate());
+  v8::TryCatch exceptionCatcher(isolate);
   exceptionCatcher.SetVerbose(true);
 
-  if (V8ScriptRunner::callFunction(m_callback.newLocal(m_scriptState->isolate()), m_scriptState->getExecutionContext(), thisValue, 1, argv, m_scriptState->isolate()).ToLocal(&v8ReturnValue)) {
-    Vector<String> cppValue = toImplArray<Vector<String>>(v8ReturnValue, 0, m_scriptState->isolate(), exceptionState);
-        if (exceptionState.hadException())
-          return false;
-    returnValue = cppValue;
-    return true;
+  v8::Local<v8::Value> v8ReturnValue;
+  if (!V8ScriptRunner::callFunction(m_callback.newLocal(isolate),
+                                    context,
+                                    thisValue,
+                                    1,
+                                    argv,
+                                    isolate).ToLocal(&v8ReturnValue)) {
+    return false;
   }
-  return false;
+
+  Vector<String> cppValue = toImplArray<Vector<String>>(v8ReturnValue, 0, m_scriptState->isolate(), exceptionState);
+  if (exceptionState.hadException())
+    return false;
+  returnValue = cppValue;
+  return true;
 }
 
 StringSequenceCallbackFunctionLongSequenceArg* NativeValueTraits<StringSequenceCallbackFunctionLongSequenceArg>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {

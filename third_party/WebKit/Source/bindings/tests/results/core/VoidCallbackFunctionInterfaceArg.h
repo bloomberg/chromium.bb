@@ -27,11 +27,11 @@ class HTMLDivElement;
 
 class CORE_EXPORT VoidCallbackFunctionInterfaceArg final : public GarbageCollectedFinalized<VoidCallbackFunctionInterfaceArg>, public TraceWrapperBase {
  public:
-  static VoidCallbackFunctionInterfaceArg* create(ScriptState* scriptState, v8::Local<v8::Value> callback);
+  static VoidCallbackFunctionInterfaceArg* create(ScriptState*, v8::Local<v8::Value> callback);
 
   ~VoidCallbackFunctionInterfaceArg() = default;
 
-  DECLARE_TRACE();
+  DEFINE_INLINE_TRACE() {}
   DECLARE_TRACE_WRAPPERS();
 
   bool call(ScriptWrappable* scriptWrappable, HTMLDivElement* divElement);

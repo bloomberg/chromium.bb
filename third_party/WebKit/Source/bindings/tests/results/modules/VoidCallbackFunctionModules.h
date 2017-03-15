@@ -26,11 +26,11 @@ class ScriptState;
 
 class MODULES_EXPORT VoidCallbackFunctionModules final : public GarbageCollectedFinalized<VoidCallbackFunctionModules>, public TraceWrapperBase {
  public:
-  static VoidCallbackFunctionModules* create(ScriptState* scriptState, v8::Local<v8::Value> callback);
+  static VoidCallbackFunctionModules* create(ScriptState*, v8::Local<v8::Value> callback);
 
   ~VoidCallbackFunctionModules() = default;
 
-  DECLARE_TRACE();
+  DEFINE_INLINE_TRACE() {}
   DECLARE_TRACE_WRAPPERS();
 
   bool call(ScriptWrappable* scriptWrappable);

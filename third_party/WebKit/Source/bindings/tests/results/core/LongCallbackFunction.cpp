@@ -24,7 +24,7 @@
 namespace blink {
 
 // static
-LongCallbackFunction* LongCallbackFunction::create(ScriptState* scriptState, v8::Local<v8::Value> callback){
+LongCallbackFunction* LongCallbackFunction::create(ScriptState* scriptState, v8::Local<v8::Value> callback) {
   if (isUndefinedOrNull(callback))
     return nullptr;
   return new LongCallbackFunction(scriptState, v8::Local<v8::Function>::Cast(callback));
@@ -36,13 +36,14 @@ LongCallbackFunction::LongCallbackFunction(ScriptState* scriptState, v8::Local<v
   DCHECK(!m_callback.isEmpty());
 }
 
-DEFINE_TRACE(LongCallbackFunction) {}
-
 DEFINE_TRACE_WRAPPERS(LongCallbackFunction) {
   visitor->traceWrappers(m_callback.cast<v8::Value>());
 }
 
 bool LongCallbackFunction::call(ScriptWrappable* scriptWrappable, int32_t num1, int32_t num2, int32_t& returnValue) {
+  if (m_callback.isEmpty())
+    return false;
+
   if (!m_scriptState->contextIsValid())
     return false;
 
@@ -51,33 +52,38 @@ bool LongCallbackFunction::call(ScriptWrappable* scriptWrappable, int32_t num1, 
   if (context->isContextSuspended() || context->isContextDestroyed())
     return false;
 
-  if (m_callback.isEmpty())
-    return false;
-
   // TODO(bashi): Make sure that using DummyExceptionStateForTesting is OK.
   // crbug.com/653769
   DummyExceptionStateForTesting exceptionState;
   ScriptState::Scope scope(m_scriptState.get());
+  v8::Isolate* isolate = m_scriptState->isolate();
+
+  v8::Local<v8::Value> thisValue = ToV8(
+      scriptWrappable,
+      m_scriptState->context()->Global(),
+      isolate);
 
   v8::Local<v8::Value> num1Argument = v8::Integer::New(m_scriptState->isolate(), num1);
   v8::Local<v8::Value> num2Argument = v8::Integer::New(m_scriptState->isolate(), num2);
-
-  v8::Local<v8::Value> thisValue = ToV8(scriptWrappable, m_scriptState->context()->Global(), m_scriptState->isolate());
-
   v8::Local<v8::Value> argv[] = { num1Argument, num2Argument };
-
-  v8::Local<v8::Value> v8ReturnValue;
-  v8::TryCatch exceptionCatcher(m_scriptState->isolate());
+  v8::TryCatch exceptionCatcher(isolate);
   exceptionCatcher.SetVerbose(true);
 
-  if (V8ScriptRunner::callFunction(m_callback.newLocal(m_scriptState->isolate()), m_scriptState->getExecutionContext(), thisValue, 2, argv, m_scriptState->isolate()).ToLocal(&v8ReturnValue)) {
-    int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(m_scriptState->isolate(), v8ReturnValue, exceptionState, NormalConversion);
-        if (exceptionState.hadException())
-          return false;
-    returnValue = cppValue;
-    return true;
+  v8::Local<v8::Value> v8ReturnValue;
+  if (!V8ScriptRunner::callFunction(m_callback.newLocal(isolate),
+                                    context,
+                                    thisValue,
+                                    2,
+                                    argv,
+                                    isolate).ToLocal(&v8ReturnValue)) {
+    return false;
   }
-  return false;
+
+  int32_t cppValue = NativeValueTraits<IDLLong>::nativeValue(m_scriptState->isolate(), v8ReturnValue, exceptionState, NormalConversion);
+  if (exceptionState.hadException())
+    return false;
+  returnValue = cppValue;
+  return true;
 }
 
 LongCallbackFunction* NativeValueTraits<LongCallbackFunction>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {

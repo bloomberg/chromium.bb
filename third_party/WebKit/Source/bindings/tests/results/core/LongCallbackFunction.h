@@ -26,11 +26,11 @@ class ScriptState;
 
 class CORE_EXPORT LongCallbackFunction final : public GarbageCollectedFinalized<LongCallbackFunction>, public TraceWrapperBase {
  public:
-  static LongCallbackFunction* create(ScriptState* scriptState, v8::Local<v8::Value> callback);
+  static LongCallbackFunction* create(ScriptState*, v8::Local<v8::Value> callback);
 
   ~LongCallbackFunction() = default;
 
-  DECLARE_TRACE();
+  DEFINE_INLINE_TRACE() {}
   DECLARE_TRACE_WRAPPERS();
 
   bool call(ScriptWrappable* scriptWrappable, int32_t num1, int32_t num2, int32_t& returnValue);

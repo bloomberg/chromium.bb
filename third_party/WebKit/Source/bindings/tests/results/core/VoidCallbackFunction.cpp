@@ -22,7 +22,7 @@
 namespace blink {
 
 // static
-VoidCallbackFunction* VoidCallbackFunction::create(ScriptState* scriptState, v8::Local<v8::Value> callback){
+VoidCallbackFunction* VoidCallbackFunction::create(ScriptState* scriptState, v8::Local<v8::Value> callback) {
   if (isUndefinedOrNull(callback))
     return nullptr;
   return new VoidCallbackFunction(scriptState, v8::Local<v8::Function>::Cast(callback));
@@ -34,13 +34,14 @@ VoidCallbackFunction::VoidCallbackFunction(ScriptState* scriptState, v8::Local<v
   DCHECK(!m_callback.isEmpty());
 }
 
-DEFINE_TRACE(VoidCallbackFunction) {}
-
 DEFINE_TRACE_WRAPPERS(VoidCallbackFunction) {
   visitor->traceWrappers(m_callback.cast<v8::Value>());
 }
 
 bool VoidCallbackFunction::call(ScriptWrappable* scriptWrappable) {
+  if (m_callback.isEmpty())
+    return false;
+
   if (!m_scriptState->contextIsValid())
     return false;
 
@@ -49,26 +50,32 @@ bool VoidCallbackFunction::call(ScriptWrappable* scriptWrappable) {
   if (context->isContextSuspended() || context->isContextDestroyed())
     return false;
 
-  if (m_callback.isEmpty())
-    return false;
-
   // TODO(bashi): Make sure that using DummyExceptionStateForTesting is OK.
   // crbug.com/653769
   DummyExceptionStateForTesting exceptionState;
   ScriptState::Scope scope(m_scriptState.get());
+  v8::Isolate* isolate = m_scriptState->isolate();
 
-  v8::Local<v8::Value> thisValue = ToV8(scriptWrappable, m_scriptState->context()->Global(), m_scriptState->isolate());
+  v8::Local<v8::Value> thisValue = ToV8(
+      scriptWrappable,
+      m_scriptState->context()->Global(),
+      isolate);
 
   v8::Local<v8::Value> *argv = nullptr;
-
-  v8::Local<v8::Value> v8ReturnValue;
-  v8::TryCatch exceptionCatcher(m_scriptState->isolate());
+  v8::TryCatch exceptionCatcher(isolate);
   exceptionCatcher.SetVerbose(true);
 
-  if (V8ScriptRunner::callFunction(m_callback.newLocal(m_scriptState->isolate()), m_scriptState->getExecutionContext(), thisValue, 0, argv, m_scriptState->isolate()).ToLocal(&v8ReturnValue)) {
-    return true;
+  v8::Local<v8::Value> v8ReturnValue;
+  if (!V8ScriptRunner::callFunction(m_callback.newLocal(isolate),
+                                    context,
+                                    thisValue,
+                                    0,
+                                    argv,
+                                    isolate).ToLocal(&v8ReturnValue)) {
+    return false;
   }
-  return false;
+
+  return true;
 }
 
 VoidCallbackFunction* NativeValueTraits<VoidCallbackFunction>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {

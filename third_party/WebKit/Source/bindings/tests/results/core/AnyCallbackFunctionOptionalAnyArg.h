@@ -26,11 +26,11 @@ class ScriptState;
 
 class CORE_EXPORT AnyCallbackFunctionOptionalAnyArg final : public GarbageCollectedFinalized<AnyCallbackFunctionOptionalAnyArg>, public TraceWrapperBase {
  public:
-  static AnyCallbackFunctionOptionalAnyArg* create(ScriptState* scriptState, v8::Local<v8::Value> callback);
+  static AnyCallbackFunctionOptionalAnyArg* create(ScriptState*, v8::Local<v8::Value> callback);
 
   ~AnyCallbackFunctionOptionalAnyArg() = default;
 
-  DECLARE_TRACE();
+  DEFINE_INLINE_TRACE() {}
   DECLARE_TRACE_WRAPPERS();
 
   bool call(ScriptWrappable* scriptWrappable, ScriptValue optionalAnyArg, ScriptValue& returnValue);

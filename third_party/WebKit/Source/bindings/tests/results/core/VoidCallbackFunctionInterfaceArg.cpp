@@ -23,7 +23,7 @@
 namespace blink {
 
 // static
-VoidCallbackFunctionInterfaceArg* VoidCallbackFunctionInterfaceArg::create(ScriptState* scriptState, v8::Local<v8::Value> callback){
+VoidCallbackFunctionInterfaceArg* VoidCallbackFunctionInterfaceArg::create(ScriptState* scriptState, v8::Local<v8::Value> callback) {
   if (isUndefinedOrNull(callback))
     return nullptr;
   return new VoidCallbackFunctionInterfaceArg(scriptState, v8::Local<v8::Function>::Cast(callback));
@@ -35,13 +35,14 @@ VoidCallbackFunctionInterfaceArg::VoidCallbackFunctionInterfaceArg(ScriptState* 
   DCHECK(!m_callback.isEmpty());
 }
 
-DEFINE_TRACE(VoidCallbackFunctionInterfaceArg) {}
-
 DEFINE_TRACE_WRAPPERS(VoidCallbackFunctionInterfaceArg) {
   visitor->traceWrappers(m_callback.cast<v8::Value>());
 }
 
 bool VoidCallbackFunctionInterfaceArg::call(ScriptWrappable* scriptWrappable, HTMLDivElement* divElement) {
+  if (m_callback.isEmpty())
+    return false;
+
   if (!m_scriptState->contextIsValid())
     return false;
 
@@ -50,28 +51,33 @@ bool VoidCallbackFunctionInterfaceArg::call(ScriptWrappable* scriptWrappable, HT
   if (context->isContextSuspended() || context->isContextDestroyed())
     return false;
 
-  if (m_callback.isEmpty())
-    return false;
-
   // TODO(bashi): Make sure that using DummyExceptionStateForTesting is OK.
   // crbug.com/653769
   DummyExceptionStateForTesting exceptionState;
   ScriptState::Scope scope(m_scriptState.get());
+  v8::Isolate* isolate = m_scriptState->isolate();
+
+  v8::Local<v8::Value> thisValue = ToV8(
+      scriptWrappable,
+      m_scriptState->context()->Global(),
+      isolate);
 
   v8::Local<v8::Value> divElementArgument = ToV8(divElement, m_scriptState->context()->Global(), m_scriptState->isolate());
-
-  v8::Local<v8::Value> thisValue = ToV8(scriptWrappable, m_scriptState->context()->Global(), m_scriptState->isolate());
-
   v8::Local<v8::Value> argv[] = { divElementArgument };
-
-  v8::Local<v8::Value> v8ReturnValue;
-  v8::TryCatch exceptionCatcher(m_scriptState->isolate());
+  v8::TryCatch exceptionCatcher(isolate);
   exceptionCatcher.SetVerbose(true);
 
-  if (V8ScriptRunner::callFunction(m_callback.newLocal(m_scriptState->isolate()), m_scriptState->getExecutionContext(), thisValue, 1, argv, m_scriptState->isolate()).ToLocal(&v8ReturnValue)) {
-    return true;
+  v8::Local<v8::Value> v8ReturnValue;
+  if (!V8ScriptRunner::callFunction(m_callback.newLocal(isolate),
+                                    context,
+                                    thisValue,
+                                    1,
+                                    argv,
+                                    isolate).ToLocal(&v8ReturnValue)) {
+    return false;
   }
-  return false;
+
+  return true;
 }
 
 VoidCallbackFunctionInterfaceArg* NativeValueTraits<VoidCallbackFunctionInterfaceArg>::nativeValue(v8::Isolate* isolate, v8::Local<v8::Value> value, ExceptionState& exceptionState) {

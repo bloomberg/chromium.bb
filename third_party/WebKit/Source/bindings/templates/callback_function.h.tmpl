@@ -18,11 +18,11 @@ class {{forward_declaration}};
 
 class {{exported}}{{cpp_class}} final : public GarbageCollectedFinalized<{{cpp_class}}>, public TraceWrapperBase {
  public:
-  static {{cpp_class}}* create(ScriptState* scriptState, v8::Local<v8::Value> callback);
+  static {{cpp_class}}* create(ScriptState*, v8::Local<v8::Value> callback);
 
   ~{{cpp_class}}() = default;
 
-  DECLARE_TRACE();
+  DEFINE_INLINE_TRACE() {}
   DECLARE_TRACE_WRAPPERS();
 
   bool call({{argument_declarations | join(', ')}});
