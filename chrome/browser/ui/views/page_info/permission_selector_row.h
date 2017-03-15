@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_WEBSITE_SETTINGS_PERMISSION_SELECTOR_ROW_H_
-#define CHROME_BROWSER_UI_VIEWS_WEBSITE_SETTINGS_PERMISSION_SELECTOR_ROW_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_PAGE_INFO_PERMISSION_SELECTOR_ROW_H_
+#define CHROME_BROWSER_UI_VIEWS_PAGE_INFO_PERMISSION_SELECTOR_ROW_H_
 
 #include <memory>
 
@@ -12,7 +12,7 @@
 #include "base/observer_list.h"
 #include "chrome/browser/ui/page_info/permission_menu_model.h"
 #include "chrome/browser/ui/page_info/website_settings_ui.h"
-#include "chrome/browser/ui/views/website_settings/permission_selector_row_observer.h"
+#include "chrome/browser/ui/views/page_info/permission_selector_row_observer.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "ui/views/controls/button/menu_button_listener.h"
@@ -85,4 +85,4 @@ class PermissionSelectorRow {
   DISALLOW_COPY_AND_ASSIGN(PermissionSelectorRow);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_WEBSITE_SETTINGS_PERMISSION_SELECTOR_ROW_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_PAGE_INFO_PERMISSION_SELECTOR_ROW_H_

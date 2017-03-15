@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_WEBSITE_SETTINGS_CHOSEN_OBJECT_ROW_H_
-#define CHROME_BROWSER_UI_VIEWS_WEBSITE_SETTINGS_CHOSEN_OBJECT_ROW_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_PAGE_INFO_CHOSEN_OBJECT_ROW_H_
+#define CHROME_BROWSER_UI_VIEWS_PAGE_INFO_CHOSEN_OBJECT_ROW_H_
 
 #include "base/macros.h"
 #include "chrome/browser/ui/page_info/website_settings_ui.h"
@@ -42,4 +42,4 @@ class ChosenObjectRow : public views::View, public views::ButtonListener {
   DISALLOW_COPY_AND_ASSIGN(ChosenObjectRow);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_WEBSITE_SETTINGS_CHOSEN_OBJECT_ROW_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_PAGE_INFO_CHOSEN_OBJECT_ROW_H_

@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/website_settings/chosen_object_row.h"
+#include "chrome/browser/ui/views/page_info/chosen_object_row.h"
 
-#include "chrome/browser/ui/views/website_settings/chosen_object_row_observer.h"
-#include "chrome/browser/ui/views/website_settings/website_settings_popup_view.h"
+#include "chrome/browser/ui/views/page_info/chosen_object_row_observer.h"
+#include "chrome/browser/ui/views/page_info/website_settings_popup_view.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/resources/grit/ui_resources.h"

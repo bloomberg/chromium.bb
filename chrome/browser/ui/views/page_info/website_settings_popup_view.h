@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_WEBSITE_SETTINGS_WEBSITE_SETTINGS_POPUP_VIEW_H_
-#define CHROME_BROWSER_UI_VIEWS_WEBSITE_SETTINGS_WEBSITE_SETTINGS_POPUP_VIEW_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_PAGE_INFO_WEBSITE_SETTINGS_POPUP_VIEW_H_
+#define CHROME_BROWSER_UI_VIEWS_PAGE_INFO_WEBSITE_SETTINGS_POPUP_VIEW_H_
 
 #include <memory>
 
@@ -11,9 +11,9 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/page_info/website_settings_ui.h"
-#include "chrome/browser/ui/views/website_settings/chosen_object_row_observer.h"
-#include "chrome/browser/ui/views/website_settings/permission_selector_row.h"
-#include "chrome/browser/ui/views/website_settings/permission_selector_row_observer.h"
+#include "chrome/browser/ui/views/page_info/chosen_object_row_observer.h"
+#include "chrome/browser/ui/views/page_info/permission_selector_row.h"
+#include "chrome/browser/ui/views/page_info/permission_selector_row_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/controls/button/button.h"
@@ -183,4 +183,4 @@ class WebsiteSettingsPopupView : public content::WebContentsObserver,
   DISALLOW_COPY_AND_ASSIGN(WebsiteSettingsPopupView);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_WEBSITE_SETTINGS_WEBSITE_SETTINGS_POPUP_VIEW_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_PAGE_INFO_WEBSITE_SETTINGS_POPUP_VIEW_H_

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/website_settings/permission_selector_row.h"
+#include "chrome/browser/ui/views/page_info/permission_selector_row.h"
 
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/page_info/permission_menu_model.h"
 #include "chrome/browser/ui/page_info/website_settings_ui.h"
-#include "chrome/browser/ui/views/website_settings/non_accessible_image_view.h"
-#include "chrome/browser/ui/views/website_settings/website_settings_popup_view.h"
+#include "chrome/browser/ui/views/page_info/non_accessible_image_view.h"
+#include "chrome/browser/ui/views/page_info/website_settings_popup_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/material_design/material_design_controller.h"

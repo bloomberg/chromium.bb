@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/website_settings/website_settings_popup_view.h"
+#include "chrome/browser/ui/views/page_info/website_settings_popup_view.h"
 
 #include <stddef.h>
 
@@ -24,9 +24,9 @@
 #include "chrome/browser/ui/page_info/website_settings.h"
 #include "chrome/browser/ui/views/collected_cookies_views.h"
 #include "chrome/browser/ui/views/harmony/layout_delegate.h"
-#include "chrome/browser/ui/views/website_settings/chosen_object_row.h"
-#include "chrome/browser/ui/views/website_settings/non_accessible_image_view.h"
-#include "chrome/browser/ui/views/website_settings/permission_selector_row.h"
+#include "chrome/browser/ui/views/page_info/chosen_object_row.h"
+#include "chrome/browser/ui/views/page_info/non_accessible_image_view.h"
+#include "chrome/browser/ui/views/page_info/permission_selector_row.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"

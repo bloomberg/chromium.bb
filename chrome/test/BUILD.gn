@@ -558,6 +558,7 @@ if (!is_android) {
           "../browser/ui/views/location_bar/location_icon_view_interactive_uitest.cc",
           "../browser/ui/views/location_bar/star_view_browsertest.cc",
           "../browser/ui/views/omnibox/omnibox_view_views_browsertest.cc",
+          "../browser/ui/views/page_info/website_settings_popup_view_interactive_uitest.cc",
           "../browser/ui/views/passwords/manage_passwords_bubble_view_interactive_uitest.cc",
           "../browser/ui/views/passwords/manage_passwords_icon_view_interactive_uitest.cc",
           "../browser/ui/views/ssl_client_certificate_selector_browsertest.cc",
@@ -567,7 +568,6 @@ if (!is_android) {
           "../browser/ui/views/toolbar/toolbar_button_interactive_uitest.cc",
           "../browser/ui/views/toolbar/toolbar_view_interactive_uitest.cc",
           "../browser/ui/views/translate/translate_bubble_test_utils_views.cc",
-          "../browser/ui/views/website_settings/website_settings_popup_view_interactive_uitest.cc",
           "base/interactive_test_utils_views.cc",
         ]
       }
@@ -4805,11 +4805,11 @@ test("unit_tests") {
       "../browser/ui/views/apps/app_info_dialog/app_info_permissions_panel_unittest.cc",
       "../browser/ui/views/confirm_bubble_views_unittest.cc",
       "../browser/ui/views/global_error_bubble_view_unittest.cc",
+      "../browser/ui/views/page_info/website_settings_popup_view_unittest.cc",
       "../browser/ui/views/payments/credit_card_editor_view_controller_unittest.cc",
       "../browser/ui/views/payments/payment_request_item_list_unittest.cc",
       "../browser/ui/views/payments/validating_textfield_unittest.cc",
       "../browser/ui/views/payments/view_stack_unittest.cc",
-      "../browser/ui/views/website_settings/website_settings_popup_view_unittest.cc",
     ]
     if (is_chromeos) {
       sources += [ "../browser/ui/views/ime_driver/input_method_bridge_chromeos_unittest.cc" ]

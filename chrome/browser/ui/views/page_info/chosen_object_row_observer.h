@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_WEBSITE_SETTINGS_CHOSEN_OBJECT_ROW_OBSERVER_H_
-#define CHROME_BROWSER_UI_VIEWS_WEBSITE_SETTINGS_CHOSEN_OBJECT_ROW_OBSERVER_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_PAGE_INFO_CHOSEN_OBJECT_ROW_OBSERVER_H_
+#define CHROME_BROWSER_UI_VIEWS_PAGE_INFO_CHOSEN_OBJECT_ROW_OBSERVER_H_
 
 #include "chrome/browser/ui/page_info/website_settings_ui.h"
 
@@ -17,4 +17,4 @@ class ChosenObjectRowObserver {
   virtual ~ChosenObjectRowObserver() {}
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_WEBSITE_SETTINGS_CHOSEN_OBJECT_ROW_OBSERVER_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_PAGE_INFO_CHOSEN_OBJECT_ROW_OBSERVER_H_
