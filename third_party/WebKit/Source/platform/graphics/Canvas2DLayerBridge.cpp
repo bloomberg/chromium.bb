@@ -1013,7 +1013,7 @@ void Canvas2DLayerBridge::mailboxReleased(const gpu::Mailbox& mailbox,
   //    the self-destruction of this Canvas2DLayerBridge
   // 2) Release the SkImage, which will return the texture to skia's scratch
   //    texture pool.
-  m_mailboxes.remove(releasedMailboxInfo);
+  m_mailboxes.erase(releasedMailboxInfo);
 
   if (m_mailboxes.isEmpty() && m_accelerationMode == DisableAcceleration)
     m_layer.reset();

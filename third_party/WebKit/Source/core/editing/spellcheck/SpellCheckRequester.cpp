@@ -225,7 +225,7 @@ void SpellCheckRequester::enqueueRequest(SpellCheckRequest* request) {
                               queuedRequest->rootEditableElement();
                      });
     if (sameElementRequest != m_requestQueue.end())
-      m_requestQueue.remove(sameElementRequest);
+      m_requestQueue.erase(sameElementRequest);
   }
 
   m_requestQueue.push_back(request);

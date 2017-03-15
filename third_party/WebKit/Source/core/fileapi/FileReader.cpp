@@ -150,7 +150,7 @@ class FileReader::ThrottlingController final
     for (FileReaderDeque::const_iterator it = m_pendingReaders.begin();
          it != dequeEnd; ++it) {
       if (*it == reader) {
-        m_pendingReaders.remove(it);
+        m_pendingReaders.erase(it);
         break;
       }
     }

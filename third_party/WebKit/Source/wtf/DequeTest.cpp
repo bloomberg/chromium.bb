@@ -590,7 +590,7 @@ TEST(DequeTest, RemoveWhileIterating) {
   // Remove the even numbers while iterating.
   for (auto it = deque.begin(); it != deque.end(); ++it) {
     if (*it % 2 == 0) {
-      deque.remove(it);
+      deque.erase(it);
       --it;
     }
   }

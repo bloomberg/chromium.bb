@@ -204,7 +204,7 @@ void RejectedPromises::handlerAdded(v8::PromiseRejectMessage data) {
   // by processQueue().
   for (auto it = m_queue.begin(); it != m_queue.end(); ++it) {
     if (!(*it)->isCollected() && (*it)->hasPromise(data.GetPromise())) {
-      m_queue.remove(it);
+      m_queue.erase(it);
       return;
     }
   }

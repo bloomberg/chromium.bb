@@ -142,7 +142,7 @@ bool ScriptRunner::removePendingInOrderScript(ScriptLoader* scriptLoader) {
                       m_pendingInOrderScripts.end(), scriptLoader);
   if (it == m_pendingInOrderScripts.end())
     return false;
-  m_pendingInOrderScripts.remove(it);
+  m_pendingInOrderScripts.erase(it);
   SECURITY_CHECK(m_numberOfInOrderScriptsWithPendingNotification > 0);
   m_numberOfInOrderScriptsWithPendingNotification--;
   return true;

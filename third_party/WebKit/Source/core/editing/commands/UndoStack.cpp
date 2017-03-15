@@ -70,7 +70,7 @@ void UndoStack::undo() {
   if (canUndo()) {
     UndoStepStack::iterator back = --m_undoStack.end();
     UndoStep* step(back->get());
-    m_undoStack.remove(back);
+    m_undoStack.erase(back);
     step->unapply();
     // unapply will call us back to push this command onto the redo stack.
   }
@@ -80,7 +80,7 @@ void UndoStack::redo() {
   if (canRedo()) {
     UndoStepStack::iterator back = --m_redoStack.end();
     UndoStep* step(back->get());
-    m_redoStack.remove(back);
+    m_redoStack.erase(back);
 
     DCHECK(!m_inRedo);
     AutoReset<bool> redoScope(&m_inRedo, true);

@@ -127,8 +127,8 @@ class Deque : public ConditionalDestructor<Deque<T, INLINE_CAPACITY, Allocator>,
 
   template <typename U>
   void prepend(U&&);
-  void remove(iterator&);
-  void remove(const_iterator&);
+  void erase(iterator&);
+  void erase(const_iterator&);
 
   // STL compatibility.
   template <typename U>
@@ -183,7 +183,7 @@ class Deque : public ConditionalDestructor<Deque<T, INLINE_CAPACITY, Allocator>,
   typedef VectorTypeOperations<T> TypeOperations;
   typedef DequeIteratorBase<T, inlineCapacity, Allocator> IteratorBase;
 
-  void remove(size_t position);
+  void erase(size_t position);
   void destroyAll();
   void expandCapacityIfNeeded();
   void expandCapacity();
@@ -565,17 +565,17 @@ inline void Deque<T, inlineCapacity, Allocator>::pop_back() {
 }
 
 template <typename T, size_t inlineCapacity, typename Allocator>
-inline void Deque<T, inlineCapacity, Allocator>::remove(iterator& it) {
-  remove(it.m_index);
+inline void Deque<T, inlineCapacity, Allocator>::erase(iterator& it) {
+  erase(it.m_index);
 }
 
 template <typename T, size_t inlineCapacity, typename Allocator>
-inline void Deque<T, inlineCapacity, Allocator>::remove(const_iterator& it) {
-  remove(it.m_index);
+inline void Deque<T, inlineCapacity, Allocator>::erase(const_iterator& it) {
+  erase(it.m_index);
 }
 
 template <typename T, size_t inlineCapacity, typename Allocator>
-inline void Deque<T, inlineCapacity, Allocator>::remove(size_t position) {
+inline void Deque<T, inlineCapacity, Allocator>::erase(size_t position) {
   if (position == m_end)
     return;
 
