@@ -60,6 +60,7 @@ class EventHandlerRegistry;
 class FocusController;
 class Frame;
 class FrameHost;
+class OverscrollController;
 struct PageScaleConstraints;
 class PageScaleConstraintsSet;
 class PluginData;
@@ -204,6 +205,9 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   VisualViewport& visualViewport();
   const VisualViewport& visualViewport() const;
 
+  OverscrollController& overscrollController();
+  const OverscrollController& overscrollController() const;
+
   void setTabKeyCyclesThroughElements(bool b) {
     m_tabKeyCyclesThroughElements = b;
   }
@@ -295,6 +299,7 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   const Member<TopDocumentRootScrollerController>
       m_globalRootScrollerController;
   const Member<VisualViewport> m_visualViewport;
+  const Member<OverscrollController> m_overscrollController;
 
   // Typically, the main frame and Page should both be owned by the embedder,
   // which must call Page::willBeDestroyed() prior to destroying Page. This

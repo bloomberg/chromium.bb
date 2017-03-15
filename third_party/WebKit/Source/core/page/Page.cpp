@@ -54,6 +54,7 @@
 #include "core/page/PointerLockController.h"
 #include "core/page/ScopedPageSuspender.h"
 #include "core/page/ValidationMessageClient.h"
+#include "core/page/scrolling/OverscrollController.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/page/scrolling/TopDocumentRootScrollerController.h"
 #include "core/paint/PaintLayer.h"
@@ -112,6 +113,8 @@ Page::Page(PageClients& pageClients)
       m_globalRootScrollerController(
           TopDocumentRootScrollerController::create(*this)),
       m_visualViewport(VisualViewport::create(*this)),
+      m_overscrollController(
+          OverscrollController::create(visualViewport(), chromeClient())),
       m_mainFrame(nullptr),
       m_editorClient(pageClients.editorClient),
       m_spellCheckerClient(pageClients.spellCheckerClient),
@@ -204,6 +207,14 @@ VisualViewport& Page::visualViewport() {
 
 const VisualViewport& Page::visualViewport() const {
   return *m_visualViewport;
+}
+
+OverscrollController& Page::overscrollController() {
+  return *m_overscrollController;
+}
+
+const OverscrollController& Page::overscrollController() const {
+  return *m_overscrollController;
 }
 
 ClientRectList* Page::nonFastScrollableRects(const LocalFrame* frame) {
@@ -588,6 +599,7 @@ DEFINE_TRACE(Page) {
   visitor->trace(m_eventHandlerRegistry);
   visitor->trace(m_globalRootScrollerController);
   visitor->trace(m_visualViewport);
+  visitor->trace(m_overscrollController);
   visitor->trace(m_mainFrame);
   visitor->trace(m_validationMessageClient);
   visitor->trace(m_useCounter);

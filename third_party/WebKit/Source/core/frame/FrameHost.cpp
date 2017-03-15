@@ -44,9 +44,6 @@ FrameHost* FrameHost::create(Page& page) {
 
 FrameHost::FrameHost(Page& page)
     : m_page(&page),
-      m_overscrollController(
-          OverscrollController::create(m_page->visualViewport(),
-                                       m_page->chromeClient())),
       m_subframeCount(0) {}
 
 // Explicitly in the .cpp to avoid default constructor in .h
@@ -69,11 +66,11 @@ const BrowserControls& FrameHost::browserControls() const {
 }
 
 OverscrollController& FrameHost::overscrollController() {
-  return *m_overscrollController;
+  return page().overscrollController();
 }
 
 const OverscrollController& FrameHost::overscrollController() const {
-  return *m_overscrollController;
+  return page().overscrollController();
 }
 
 ConsoleMessageStorage& FrameHost::consoleMessageStorage() {
@@ -86,7 +83,6 @@ const ConsoleMessageStorage& FrameHost::consoleMessageStorage() const {
 
 DEFINE_TRACE(FrameHost) {
   visitor->trace(m_page);
-  visitor->trace(m_overscrollController);
 }
 
 #if DCHECK_IS_ON()

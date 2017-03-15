@@ -93,7 +93,6 @@ class CORE_EXPORT FrameHost final
   explicit FrameHost(Page&);
 
   const Member<Page> m_page;
-  const Member<OverscrollController> m_overscrollController;
 
   int m_subframeCount;
 };
