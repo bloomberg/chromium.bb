@@ -23,7 +23,8 @@ class View;
 
 namespace payments {
 
-class PaymentRequest;
+class PaymentRequestSpec;
+class PaymentRequestState;
 class PaymentRequestDialogView;
 
 // This base class encapsulates common view logic for contexts which display
@@ -35,13 +36,15 @@ class ProfileListViewController : public PaymentRequestSheetController {
   // Creates a controller which lists and allows selection of profiles
   // for shipping address.
   static std::unique_ptr<ProfileListViewController>
-  GetShippingProfileViewController(PaymentRequest* request,
+  GetShippingProfileViewController(PaymentRequestSpec* spec,
+                                   PaymentRequestState* state,
                                    PaymentRequestDialogView* dialog);
 
   // Creates a controller which lists and allows selection of profiles
   // for contact info.
   static std::unique_ptr<ProfileListViewController>
-  GetContactProfileViewController(PaymentRequest* request,
+  GetContactProfileViewController(PaymentRequestSpec* spec,
+                                  PaymentRequestState* state,
                                   PaymentRequestDialogView* dialog);
 
   // PaymentRequestSheetController:
@@ -54,7 +57,8 @@ class ProfileListViewController : public PaymentRequestSheetController {
 
  protected:
   // Does not take ownership of the arguments, which should outlive this object.
-  ProfileListViewController(PaymentRequest* request,
+  ProfileListViewController(PaymentRequestSpec* spec,
+                            PaymentRequestState* state,
                             PaymentRequestDialogView* dialog);
 
   // Returns the profiles cached by |request| which are appropriate for display

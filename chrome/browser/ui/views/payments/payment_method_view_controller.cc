@@ -16,7 +16,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/credit_card.h"
-#include "components/payments/content/payment_request.h"
 #include "components/payments/content/payment_request_state.h"
 #include "components/strings/grit/components_strings.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -47,10 +46,11 @@ class PaymentMethodListItem : public payments::PaymentRequestItemList::Item {
   // outlive this object. |list| is the PaymentRequestItemList object that will
   // own this.
   PaymentMethodListItem(autofill::CreditCard* card,
-                        PaymentRequest* request,
+                        PaymentRequestSpec* spec,
+                        PaymentRequestState* state,
                         PaymentRequestItemList* list,
                         bool selected)
-      : payments::PaymentRequestItemList::Item(request, list, selected),
+      : payments::PaymentRequestItemList::Item(spec, state, list, selected),
         card_(card) {}
   ~PaymentMethodListItem() override {}
 
@@ -126,7 +126,7 @@ class PaymentMethodListItem : public payments::PaymentRequestItemList::Item {
     if (checkmark_)
       checkmark_->SetVisible(selected());
 
-    request()->state()->SetSelectedCreditCard(card_);
+    state()->SetSelectedCreditCard(card_);
   }
 
   // views::ButtonListener:
@@ -154,17 +154,18 @@ class PaymentMethodListItem : public payments::PaymentRequestItemList::Item {
 }  // namespace
 
 PaymentMethodViewController::PaymentMethodViewController(
-    PaymentRequest* request,
+    PaymentRequestSpec* spec,
+    PaymentRequestState* state,
     PaymentRequestDialogView* dialog)
-    : PaymentRequestSheetController(request, dialog) {
+    : PaymentRequestSheetController(spec, state, dialog) {
   const std::vector<autofill::CreditCard*>& available_cards =
-      request->state()->credit_cards();
+      state->credit_cards();
 
   for (autofill::CreditCard* card : available_cards) {
     std::unique_ptr<PaymentMethodListItem> item =
         base::MakeUnique<PaymentMethodListItem>(
-            card, request, &payment_method_list_,
-            card == request->state()->selected_credit_card());
+            card, spec, state, &payment_method_list_,
+            card == state->selected_credit_card());
     payment_method_list_.AddItem(std::move(item));
   }
 }

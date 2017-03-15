@@ -6,7 +6,8 @@
 
 #include "chrome/browser/ui/views/payments/payment_request_row_view.h"
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
-#include "components/payments/content/payment_request.h"
+#include "components/payments/content/payment_request_spec.h"
+#include "components/payments/content/payment_request_state.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/image_view.h"
@@ -19,16 +20,21 @@ namespace {
 class ProfileItem : public PaymentRequestItemList::Item {
  public:
   // Constructs an object owned by |parent_list|, representing one element in
-  // the list. |request| is the PaymentRequest object that is represented by the
-  // current instance of the dialog. |parent_view| points to the controller
-  // which owns |parent_list|. |profile| is the AutofillProfile that this
-  // specific list item represents. It's a cached profile owned by |request|.
+  // the list. |spec| and |state| are the PaymentRequestSpec/State objects that
+  // are represented by the current instance of the dialog. |parent_view| points
+  // to the controller which owns |parent_list|. |profile| is the
+  // AutofillProfile that this specific list item represents. It's a cached
+  // profile owned by |state|.
   ProfileItem(autofill::AutofillProfile* profile,
-              PaymentRequest* request,
+              PaymentRequestSpec* spec,
+              PaymentRequestState* state,
               PaymentRequestItemList* parent_list,
               ProfileListViewController* parent_view,
               bool selected)
-      : payments::PaymentRequestItemList::Item(request, parent_list, selected),
+      : payments::PaymentRequestItemList::Item(spec,
+                                               state,
+                                               parent_list,
+                                               selected),
         parent_view_(parent_view),
         profile_(profile) {}
   ~ProfileItem() override {}
@@ -84,9 +90,10 @@ class ProfileItem : public PaymentRequestItemList::Item {
 // screen of the Payment Request flow.
 class ShippingProfileViewController : public ProfileListViewController {
  public:
-  ShippingProfileViewController(PaymentRequest* request,
+  ShippingProfileViewController(PaymentRequestSpec* spec,
+                                PaymentRequestState* state,
                                 PaymentRequestDialogView* dialog)
-      : ProfileListViewController(request, dialog) {}
+      : ProfileListViewController(spec, state, dialog) {}
   ~ShippingProfileViewController() override {}
 
  protected:
@@ -94,17 +101,15 @@ class ShippingProfileViewController : public ProfileListViewController {
   std::unique_ptr<views::View> GetLabel(
       autofill::AutofillProfile* profile) override {
     return GetShippingAddressLabel(AddressStyleType::DETAILED,
-                                   request()->state()->GetApplicationLocale(),
-                                   *profile);
+                                   state()->GetApplicationLocale(), *profile);
   }
 
   std::vector<autofill::AutofillProfile*> GetProfiles() override {
-    return request()->state()->shipping_profiles();
+    return state()->shipping_profiles();
   }
 
   base::string16 GetHeaderString() override {
-    return GetShippingAddressSectionString(
-        request()->spec()->options().shipping_type);
+    return GetShippingAddressSectionString(spec()->options().shipping_type);
   }
 
  private:
@@ -113,9 +118,10 @@ class ShippingProfileViewController : public ProfileListViewController {
 
 class ContactProfileViewController : public ProfileListViewController {
  public:
-  ContactProfileViewController(PaymentRequest* request,
+  ContactProfileViewController(PaymentRequestSpec* spec,
+                               PaymentRequestState* state,
                                PaymentRequestDialogView* dialog)
-      : ProfileListViewController(request, dialog) {}
+      : ProfileListViewController(spec, state, dialog) {}
   ~ContactProfileViewController() override {}
 
  protected:
@@ -123,14 +129,13 @@ class ContactProfileViewController : public ProfileListViewController {
   std::unique_ptr<views::View> GetLabel(
       autofill::AutofillProfile* profile) override {
     return GetContactInfoLabel(
-        AddressStyleType::DETAILED, request()->state()->GetApplicationLocale(),
-        *profile, request()->spec()->request_payer_name(),
-        request()->spec()->request_payer_phone(),
-        request()->spec()->request_payer_email());
+        AddressStyleType::DETAILED, state()->GetApplicationLocale(), *profile,
+        spec()->request_payer_name(), spec()->request_payer_phone(),
+        spec()->request_payer_email());
   }
 
   std::vector<autofill::AutofillProfile*> GetProfiles() override {
-    return request()->state()->contact_profiles();
+    return state()->contact_profiles();
   }
 
   base::string16 GetHeaderString() override {
@@ -147,35 +152,38 @@ class ContactProfileViewController : public ProfileListViewController {
 // static
 std::unique_ptr<ProfileListViewController>
 ProfileListViewController::GetShippingProfileViewController(
-    PaymentRequest* request,
+    PaymentRequestSpec* spec,
+    PaymentRequestState* state,
     PaymentRequestDialogView* dialog) {
-  return base::MakeUnique<ShippingProfileViewController>(request, dialog);
+  return base::MakeUnique<ShippingProfileViewController>(spec, state, dialog);
 }
 
 // static
 std::unique_ptr<ProfileListViewController>
 ProfileListViewController::GetContactProfileViewController(
-    PaymentRequest* request,
+    PaymentRequestSpec* spec,
+    PaymentRequestState* state,
     PaymentRequestDialogView* dialog) {
-  return base::MakeUnique<ContactProfileViewController>(request, dialog);
+  return base::MakeUnique<ContactProfileViewController>(spec, state, dialog);
 }
 
 ProfileListViewController::ProfileListViewController(
-    PaymentRequest* request,
+    PaymentRequestSpec* spec,
+    PaymentRequestState* state,
     PaymentRequestDialogView* dialog)
-    : PaymentRequestSheetController(request, dialog) {}
+    : PaymentRequestSheetController(spec, state, dialog) {}
 
 ProfileListViewController::~ProfileListViewController() {}
 
 std::unique_ptr<views::View> ProfileListViewController::CreateView() {
   autofill::AutofillProfile* selected_profile =
-      request()->state()->selected_shipping_profile();
+      state()->selected_shipping_profile();
 
   // This must be done at Create-time, rather than construct-time, because
   // the subclass method GetProfiles can't be called in the ctor.
   for (auto* profile : GetProfiles()) {
     list_.AddItem(base::MakeUnique<ProfileItem>(
-        profile, request(), &list_, this, profile == selected_profile));
+        profile, spec(), state(), &list_, this, profile == selected_profile));
   }
 
   return CreatePaymentView(

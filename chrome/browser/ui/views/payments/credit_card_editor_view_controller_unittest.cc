@@ -28,7 +28,7 @@ TEST(CreditCardEditorViewControllerTest, ExpirationMonth_FromJanuary) {
   test_clock.SetNow(kJanuary2017);
 
   std::unique_ptr<CreditCardEditorViewController> view_controller(
-      new CreditCardEditorViewController(nullptr, nullptr));
+      new CreditCardEditorViewController(nullptr, nullptr, nullptr));
 
   std::unique_ptr<ui::ComboboxModel> model =
       view_controller->GetComboboxModelForType(autofill::CREDIT_CARD_EXP_MONTH);
@@ -57,7 +57,7 @@ TEST(CreditCardEditorViewControllerTest, ExpirationMonth_FromJune) {
   test_clock.SetNow(kJune2017);
 
   std::unique_ptr<CreditCardEditorViewController> view_controller(
-      new CreditCardEditorViewController(nullptr, nullptr));
+      new CreditCardEditorViewController(nullptr, nullptr, nullptr));
 
   std::unique_ptr<ui::ComboboxModel> model =
       view_controller->GetComboboxModelForType(autofill::CREDIT_CARD_EXP_MONTH);
@@ -85,7 +85,7 @@ TEST(CreditCardEditorViewControllerTest, ExpirationYear_From2017) {
   test_clock.SetNow(kJune2017);
 
   std::unique_ptr<CreditCardEditorViewController> view_controller(
-      new CreditCardEditorViewController(nullptr, nullptr));
+      new CreditCardEditorViewController(nullptr, nullptr, nullptr));
 
   std::unique_ptr<ui::ComboboxModel> model =
       view_controller->GetComboboxModelForType(

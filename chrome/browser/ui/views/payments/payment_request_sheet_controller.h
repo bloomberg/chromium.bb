@@ -18,7 +18,8 @@ class View;
 namespace payments {
 
 class PaymentRequestDialogView;
-class PaymentRequest;
+class PaymentRequestSpec;
+class PaymentRequestState;
 
 // The base class for objects responsible for the creation and event handling in
 // views shown in the PaymentRequestDialog.
@@ -26,17 +27,17 @@ class PaymentRequestSheetController : public views::VectorIconButtonDelegate {
  public:
   // Objects of this class are owned by |dialog|, so it's a non-owned pointer
   // that should be valid throughout this object's lifetime.
-  // |request| is also not owned by this and is guaranteed to outlive dialog.
-  // Neither |request| or |dialog| should be null.
-  PaymentRequestSheetController(PaymentRequest* request,
+  // |state| and |spec| are also not owned by this and are guaranteed to outlive
+  // dialog. Neither |state|, |spec| or |dialog| should be null.
+  PaymentRequestSheetController(PaymentRequestSpec* spec,
+                                PaymentRequestState* state,
                                 PaymentRequestDialogView* dialog);
   ~PaymentRequestSheetController() override {}
 
   virtual std::unique_ptr<views::View> CreateView() = 0;
 
-  // The PaymentRequest object associated with this instance of the dialog.
-  // Caller should not take ownership of the result.
-  PaymentRequest* request() { return request_; }
+  PaymentRequestSpec* spec() { return spec_; }
+  PaymentRequestState* state() { return state_; }
 
   // The dialog that contains and owns this object.
   // Caller should not take ownership of the result.
@@ -91,9 +92,9 @@ class PaymentRequestSheetController : public views::VectorIconButtonDelegate {
   std::unique_ptr<views::View> CreateFooterView();
 
  private:
-  // Not owned. Will outlive this.
-  PaymentRequest* request_;
-  // Not owned. Will outlive this.
+  // All these are not owned. Will outlive this.
+  PaymentRequestSpec* spec_;
+  PaymentRequestState* state_;
   PaymentRequestDialogView* dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestSheetController);

@@ -9,12 +9,12 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/views/payments/payment_request_sheet_controller.h"
-#include "components/payments/content/payment_request.h"
 #include "components/payments/content/payment_request_state.h"
 
 namespace payments {
 
-class PaymentRequest;
+class PaymentRequestSpec;
+class PaymentRequestState;
 class PaymentRequestDialogView;
 
 // The PaymentRequestSheetController subtype for the Payment Sheet screen of the
@@ -23,7 +23,8 @@ class PaymentSheetViewController : public PaymentRequestSheetController,
                                    public PaymentRequestState::Observer {
  public:
   // Does not take ownership of the arguments, which should outlive this object.
-  PaymentSheetViewController(PaymentRequest* request,
+  PaymentSheetViewController(PaymentRequestSpec* spec,
+                             PaymentRequestState* state,
                              PaymentRequestDialogView* dialog);
   ~PaymentSheetViewController() override;
 

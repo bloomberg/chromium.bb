@@ -36,7 +36,8 @@ class View;
 
 namespace payments {
 
-class PaymentRequest;
+class PaymentRequestSpec;
+class PaymentRequestState;
 class PaymentRequestDialogView;
 class ValidatingCombobox;
 class ValidatingTextfield;
@@ -89,7 +90,8 @@ class EditorViewController : public PaymentRequestSheetController,
       std::map<const EditorField, views::Label*, EditorField::Compare>;
 
   // Does not take ownership of the arguments, which should outlive this object.
-  EditorViewController(PaymentRequest* request,
+  EditorViewController(PaymentRequestSpec* spec,
+                       PaymentRequestState* state,
                        PaymentRequestDialogView* dialog);
   ~EditorViewController() override;
 

@@ -11,9 +11,13 @@
 
 namespace payments {
 
+class PaymentRequestSpec;
+class PaymentRequestState;
+
 class ShippingOptionViewController : public PaymentRequestSheetController {
  public:
-  ShippingOptionViewController(PaymentRequest* request,
+  ShippingOptionViewController(PaymentRequestSpec* spec,
+                               PaymentRequestState* state,
                                PaymentRequestDialogView* dialog);
   ~ShippingOptionViewController() override;
 

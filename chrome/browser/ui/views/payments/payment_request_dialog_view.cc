@@ -94,6 +94,10 @@ int PaymentRequestDialogView::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_NONE;
 }
 
+void PaymentRequestDialogView::Pay() {
+  request_->Pay();
+}
+
 void PaymentRequestDialogView::GoBack() {
   view_stack_.Pop();
 
@@ -104,8 +108,8 @@ void PaymentRequestDialogView::GoBack() {
 void PaymentRequestDialogView::ShowContactProfileSheet() {
   view_stack_.Push(
       CreateViewAndInstallController(
-          ProfileListViewController::GetContactProfileViewController(request_,
-                                                                     this),
+          ProfileListViewController::GetContactProfileViewController(
+              request_->spec(), request_->state(), this),
           &controller_map_),
       /* animate */ true);
   if (observer_for_testing_)
@@ -113,21 +117,21 @@ void PaymentRequestDialogView::ShowContactProfileSheet() {
 }
 
 void PaymentRequestDialogView::ShowOrderSummary() {
-  view_stack_.Push(
-      CreateViewAndInstallController(
-          base::MakeUnique<OrderSummaryViewController>(request_, this),
-          &controller_map_),
-      /* animate = */ true);
+  view_stack_.Push(CreateViewAndInstallController(
+                       base::MakeUnique<OrderSummaryViewController>(
+                           request_->spec(), request_->state(), this),
+                       &controller_map_),
+                   /* animate = */ true);
   if (observer_for_testing_)
     observer_for_testing_->OnOrderSummaryOpened();
 }
 
 void PaymentRequestDialogView::ShowPaymentMethodSheet() {
-  view_stack_.Push(
-      CreateViewAndInstallController(
-          base::MakeUnique<PaymentMethodViewController>(request_, this),
-          &controller_map_),
-      /* animate = */ true);
+  view_stack_.Push(CreateViewAndInstallController(
+                       base::MakeUnique<PaymentMethodViewController>(
+                           request_->spec(), request_->state(), this),
+                       &controller_map_),
+                   /* animate = */ true);
   if (observer_for_testing_)
     observer_for_testing_->OnPaymentMethodOpened();
 }
@@ -135,26 +139,26 @@ void PaymentRequestDialogView::ShowPaymentMethodSheet() {
 void PaymentRequestDialogView::ShowShippingProfileSheet() {
   view_stack_.Push(
       CreateViewAndInstallController(
-          ProfileListViewController::GetShippingProfileViewController(request_,
-                                                                      this),
+          ProfileListViewController::GetShippingProfileViewController(
+              request_->spec(), request_->state(), this),
           &controller_map_),
       /* animate = */ true);
 }
 
 void PaymentRequestDialogView::ShowShippingOptionSheet() {
-  view_stack_.Push(
-      CreateViewAndInstallController(
-          base::MakeUnique<ShippingOptionViewController>(request_, this),
-          &controller_map_),
-      /* animate = */ true);
+  view_stack_.Push(CreateViewAndInstallController(
+                       base::MakeUnique<ShippingOptionViewController>(
+                           request_->spec(), request_->state(), this),
+                       &controller_map_),
+                   /* animate = */ true);
 }
 
 void PaymentRequestDialogView::ShowCreditCardEditor() {
-  view_stack_.Push(
-      CreateViewAndInstallController(
-          base::MakeUnique<CreditCardEditorViewController>(request_, this),
-          &controller_map_),
-      /* animate = */ true);
+  view_stack_.Push(CreateViewAndInstallController(
+                       base::MakeUnique<CreditCardEditorViewController>(
+                           request_->spec(), request_->state(), this),
+                       &controller_map_),
+                   /* animate = */ true);
   if (observer_for_testing_)
     observer_for_testing_->OnCreditCardEditorOpened();
 }
@@ -170,11 +174,11 @@ void PaymentRequestDialogView::CloseDialog() {
 }
 
 void PaymentRequestDialogView::ShowInitialPaymentSheet() {
-  view_stack_.Push(
-      CreateViewAndInstallController(
-          base::MakeUnique<PaymentSheetViewController>(request_, this),
-          &controller_map_),
-      /* animate = */ false);
+  view_stack_.Push(CreateViewAndInstallController(
+                       base::MakeUnique<PaymentSheetViewController>(
+                           request_->spec(), request_->state(), this),
+                       &controller_map_),
+                   /* animate = */ false);
   if (observer_for_testing_)
     observer_for_testing_->OnDialogOpened();
 }

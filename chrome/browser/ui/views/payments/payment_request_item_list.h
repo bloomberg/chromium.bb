@@ -18,7 +18,8 @@ class View;
 
 namespace payments {
 
-class PaymentRequest;
+class PaymentRequestSpec;
+class PaymentRequestState;
 
 // A control representing a list of selectable items in the PaymentRequest
 // dialog. These lists enforce that only one of their elements be selectable at
@@ -32,7 +33,10 @@ class PaymentRequestItemList {
    public:
     // Creates an item that will be owned by |list| with the initial state set
     // to |selected|.
-    Item(PaymentRequest* request, PaymentRequestItemList* list, bool selected);
+    Item(PaymentRequestSpec* spec,
+         PaymentRequestState* state,
+         PaymentRequestItemList* list,
+         bool selected);
     ~Item() override;
 
     // Gets the view associated with this item. It's owned by this object so
@@ -48,9 +52,10 @@ class PaymentRequestItemList {
     // Returns a pointer to the PaymentRequestItemList that owns this object.
     PaymentRequestItemList* list() { return list_; }
 
-    // Returns a pointer to the PaymentRequest object associated with this
-    // instance of the UI.
-    PaymentRequest* request() { return request_; }
+    // Returns a pointer to the PaymentRequestSpec/State objects associated with
+    // this instance of the UI.
+    PaymentRequestSpec* spec() { return spec_; }
+    PaymentRequestState* state() { return state_; }
 
    protected:
     // Creates and returns the view associated with this list item.
@@ -72,7 +77,8 @@ class PaymentRequestItemList {
     }
 
     std::unique_ptr<views::View> item_view_;
-    PaymentRequest* request_;
+    PaymentRequestSpec* spec_;
+    PaymentRequestState* state_;
     PaymentRequestItemList* list_;
     bool selected_;
 

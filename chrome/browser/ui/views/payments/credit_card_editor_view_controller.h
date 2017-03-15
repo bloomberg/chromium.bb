@@ -17,14 +17,16 @@
 
 namespace payments {
 
-class PaymentRequest;
+class PaymentRequestSpec;
+class PaymentRequestState;
 class PaymentRequestDialogView;
 
 // Credit card editor screen of the Payment Request flow.
 class CreditCardEditorViewController : public EditorViewController {
  public:
   // Does not take ownership of the arguments, which should outlive this object.
-  CreditCardEditorViewController(PaymentRequest* request,
+  CreditCardEditorViewController(PaymentRequestSpec* spec,
+                                 PaymentRequestState* state,
                                  PaymentRequestDialogView* dialog);
   ~CreditCardEditorViewController() override;
 

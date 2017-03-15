@@ -16,7 +16,6 @@
 #include "chrome/browser/ui/views/payments/validating_combobox.h"
 #include "chrome/browser/ui/views/payments/validating_textfield.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/payments/content/payment_request.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/native_theme/native_theme.h"
@@ -47,9 +46,10 @@ constexpr int kNumCharactersInLongField = 20;
 
 }  // namespace
 
-EditorViewController::EditorViewController(PaymentRequest* request,
+EditorViewController::EditorViewController(PaymentRequestSpec* spec,
+                                           PaymentRequestState* state,
                                            PaymentRequestDialogView* dialog)
-    : PaymentRequestSheetController(request, dialog) {}
+    : PaymentRequestSheetController(spec, state, dialog) {}
 
 EditorViewController::~EditorViewController() {}
 

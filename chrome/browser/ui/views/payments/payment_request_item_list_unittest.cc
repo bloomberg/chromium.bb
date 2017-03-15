@@ -4,7 +4,9 @@
 
 #include "chrome/browser/ui/views/payments/payment_request_item_list.h"
 
-#include <algorithm>
+#include <memory>
+#include <utility>
+#include <vector>
 
 #include "base/memory/ptr_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -17,7 +19,7 @@ namespace {
 class TestListItem : public PaymentRequestItemList::Item {
  public:
   TestListItem(PaymentRequestItemList* list, bool selected)
-      : PaymentRequestItemList::Item(nullptr, list, selected),
+      : PaymentRequestItemList::Item(nullptr, nullptr, list, selected),
         selected_state_changed_calls_count_(0) {}
 
   int selected_state_changed_calls_count() {

@@ -20,10 +20,11 @@ const SkColor kCheckmarkColor = 0xFF609265;
 
 }  // namespace
 
-PaymentRequestItemList::Item::Item(PaymentRequest* request,
+PaymentRequestItemList::Item::Item(PaymentRequestSpec* spec,
+                                   PaymentRequestState* state,
                                    PaymentRequestItemList* list,
                                    bool selected)
-    : request_(request), list_(list), selected_(selected) {}
+    : spec_(spec), state_(state), list_(list), selected_(selected) {}
 
 PaymentRequestItemList::Item::~Item() {}
 

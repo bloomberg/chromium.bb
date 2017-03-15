@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/views/payments/shipping_option_view_controller.h"
 
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
-#include "components/payments/content/payment_request.h"
 #include "components/payments/content/payment_request_spec.h"
+#include "components/payments/content/payment_request_state.h"
 
 namespace payments {
 
@@ -15,10 +15,11 @@ namespace {
 class ShippingOptionItem : public PaymentRequestItemList::Item {
  public:
   ShippingOptionItem(payments::mojom::PaymentShippingOption* shipping_option,
-                     PaymentRequest* request,
+                     PaymentRequestSpec* spec,
+                     PaymentRequestState* state,
                      PaymentRequestItemList* parent_list,
                      bool selected)
-      : PaymentRequestItemList::Item(request, parent_list, selected),
+      : PaymentRequestItemList::Item(spec, state, parent_list, selected),
         shipping_option_(shipping_option) {}
   ~ShippingOptionItem() override {}
 
@@ -26,8 +27,8 @@ class ShippingOptionItem : public PaymentRequestItemList::Item {
   // payments::PaymentRequestItemList::Item:
   std::unique_ptr<views::View> CreateItemView() override {
     return CreateShippingOptionLabel(
-        shipping_option_, request()->spec()->GetFormattedCurrencyAmount(
-                              shipping_option_->amount->value));
+        shipping_option_,
+        spec()->GetFormattedCurrencyAmount(shipping_option_->amount->value));
   }
 
   void SelectedStateChanged() override {}
@@ -40,13 +41,14 @@ class ShippingOptionItem : public PaymentRequestItemList::Item {
 }  // namespace
 
 ShippingOptionViewController::ShippingOptionViewController(
-    PaymentRequest* request,
+    PaymentRequestSpec* spec,
+    PaymentRequestState* state,
     PaymentRequestDialogView* dialog)
-    : PaymentRequestSheetController(request, dialog) {
-  for (const auto& option : request->spec()->details().shipping_options) {
+    : PaymentRequestSheetController(spec, state, dialog) {
+  for (const auto& option : spec->details().shipping_options) {
     shipping_option_list_.AddItem(base::MakeUnique<ShippingOptionItem>(
-        option.get(), request, &shipping_option_list_,
-        option.get() == request->state()->selected_shipping_option()));
+        option.get(), spec, state, &shipping_option_list_,
+        option.get() == state->selected_shipping_option()));
   }
 }
 
@@ -56,10 +58,9 @@ std::unique_ptr<views::View> ShippingOptionViewController::CreateView() {
   std::unique_ptr<views::View> list_view =
       shipping_option_list_.CreateListView();
   return CreatePaymentView(
-      CreateSheetHeaderView(true,
-                            GetShippingOptionSectionString(
-                                request()->spec()->options().shipping_type),
-                            this),
+      CreateSheetHeaderView(
+          true, GetShippingOptionSectionString(spec()->options().shipping_type),
+          this),
       std::move(list_view));
 }
 

@@ -18,9 +18,10 @@
 namespace payments {
 
 PaymentRequestSheetController::PaymentRequestSheetController(
-    PaymentRequest* request, PaymentRequestDialogView* dialog)
-  : request_(request), dialog_(dialog) {
-}
+    PaymentRequestSpec* spec,
+    PaymentRequestState* state,
+    PaymentRequestDialogView* dialog)
+    : spec_(spec), state_(state), dialog_(dialog) {}
 
 std::unique_ptr<views::Button>
 PaymentRequestSheetController::CreatePrimaryButton() {
@@ -42,7 +43,7 @@ void PaymentRequestSheetController::ButtonPressed(
       dialog()->GoBack();
       break;
     case PaymentRequestCommonTags::PAY_BUTTON_TAG:
-      request()->Pay();
+      dialog()->Pay();
       break;
     case PaymentRequestCommonTags::PAYMENT_REQUEST_COMMON_TAG_MAX:
       NOTREACHED();
