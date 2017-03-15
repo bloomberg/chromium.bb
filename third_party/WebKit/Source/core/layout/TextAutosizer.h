@@ -337,9 +337,6 @@ class CORE_EXPORT TextAutosizer final
                                    TextLeafSearch) const;
   BlockFlags classifyBlock(const LayoutObject*,
                            BlockFlags mask = UINT_MAX) const;
-#ifdef AUTOSIZING_DOM_DEBUG_INFO
-  void writeClusterDebugInfo(Cluster*);
-#endif
   // Must be called at the start of layout.
   void checkSuperclusterConsistency();
   // Mark the nearest non-inheritance supercluser
