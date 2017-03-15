@@ -314,6 +314,8 @@ source_set("chromeos") {
     "arc/process/arc_process.h",
     "arc/process/arc_process_service.cc",
     "arc/process/arc_process_service.h",
+    "arc/tracing/arc_tracing_bridge.cc",
+    "arc/tracing/arc_tracing_bridge.h",
     "arc/tts/arc_tts_service.cc",
     "arc/tts/arc_tts_service.h",
     "arc/video/gpu_arc_video_service_host.cc",
