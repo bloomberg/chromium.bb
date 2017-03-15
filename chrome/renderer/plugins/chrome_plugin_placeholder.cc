@@ -264,6 +264,10 @@ void ChromePluginPlaceholder::OnMenuAction(int request_id, unsigned action) {
       HidePlugin();
       break;
     }
+    case chrome::MENU_COMMAND_ENABLE_FLASH: {
+      ShowPermissionBubbleCallback();
+      break;
+    }
     default:
       NOTREACHED();
   }
@@ -296,13 +300,24 @@ void ChromePluginPlaceholder::ShowContextMenu(
     params.custom_items.push_back(separator_item);
   }
 
-  if (!GetPluginInfo().path.value().empty()) {
+  bool flash_hidden =
+      status_ == ChromeViewHostMsg_GetPluginInfo_Status::kFlashHiddenPreferHtml;
+  if (!GetPluginInfo().path.value().empty() && !flash_hidden) {
     content::MenuItem run_item;
     run_item.action = chrome::MENU_COMMAND_PLUGIN_RUN;
     // Disable this menu item if the plugin is blocked by policy.
     run_item.enabled = LoadingAllowed();
     run_item.label = l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_PLUGIN_RUN);
     params.custom_items.push_back(run_item);
+  }
+
+  if (flash_hidden) {
+    content::MenuItem enable_flash_item;
+    enable_flash_item.action = chrome::MENU_COMMAND_ENABLE_FLASH;
+    enable_flash_item.enabled = true;
+    enable_flash_item.label =
+        l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_ENABLE_FLASH);
+    params.custom_items.push_back(enable_flash_item);
   }
 
   content::MenuItem hide_item;

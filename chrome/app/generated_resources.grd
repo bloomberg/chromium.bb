@@ -914,6 +914,10 @@ are declared in build/common.gypi.
           Hide This Plugin
         </message>
       </if>
+      <!-- Since Flash is a proper noun we don't have to distinguish between title and non-title case. -->
+      <message name="IDS_CONTENT_CONTEXT_ENABLE_FLASH" desc="The name of the Enable Flash command on the blocked plugin context menu">
+        Enable Flash
+      </message>
 
       <!-- Ash multi-user warning dialog -->
       <if expr="use_ash">

@@ -10,6 +10,7 @@ namespace chrome {
 enum MenuCommands {
   MENU_COMMAND_PLUGIN_RUN = 1,
   MENU_COMMAND_PLUGIN_HIDE = 2,
+  MENU_COMMAND_ENABLE_FLASH = 3,
 };
 
 }  // namespace chrome
