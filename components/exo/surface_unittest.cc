@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "cc/surfaces/surface.h"
 #include "base/bind.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/quads/texture_draw_quad.h"
-#include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_manager.h"
+#include "cc/test/begin_frame_args_test.h"
+#include "cc/test/fake_external_begin_frame_source.h"
 #include "components/exo/buffer.h"
 #include "components/exo/surface.h"
 #include "components/exo/test/exo_test_base.h"
@@ -309,6 +311,42 @@ TEST_F(SurfaceTest, Commit) {
 
   // Calling commit without a buffer should succeed.
   surface->Commit();
+}
+
+TEST_F(SurfaceTest, SendsBeginFrameAcks) {
+  cc::FakeExternalBeginFrameSource source(0.f, false);
+  gfx::Size buffer_size(1, 1);
+  std::unique_ptr<Buffer> buffer(
+      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
+  std::unique_ptr<Surface> surface(new Surface);
+  surface->SetBeginFrameSource(&source);
+  surface->Attach(buffer.get());
+
+  // Request a frame callback so that Surface now needs BeginFrames.
+  base::TimeTicks frame_time;
+  surface->RequestFrameCallback(
+      base::Bind(&SetFrameTime, base::Unretained(&frame_time)));
+  surface->Commit();  // Move callback from pending callbacks to current ones.
+  RunAllPendingInMessageLoop();
+
+  // Surface should add itself as observer during WillDraw().
+  surface->WillDraw();
+  EXPECT_EQ(1u, source.num_observers());
+
+  cc::BeginFrameArgs args(source.CreateBeginFrameArgs(BEGINFRAME_FROM_HERE));
+  args.frame_time = base::TimeTicks::FromInternalValue(100);
+  source.TestOnBeginFrame(args);  // Runs the frame callback.
+  EXPECT_EQ(args.frame_time, frame_time);
+
+  surface->Commit();  // Acknowledges the BeginFrame.
+  RunAllPendingInMessageLoop();
+
+  cc::BeginFrameAck expected_ack(args.source_id, args.sequence_number,
+                                 args.sequence_number, 0, true);
+  EXPECT_EQ(expected_ack, source.LastAckForObserver(surface.get()));
+
+  const cc::CompositorFrame& frame = GetFrameFromSurface(surface.get());
+  EXPECT_EQ(expected_ack, frame.metadata.begin_frame_ack);
 }
 
 }  // namespace
