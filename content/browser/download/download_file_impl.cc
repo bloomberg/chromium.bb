@@ -393,18 +393,8 @@ void DownloadFileImpl::StreamActive(SourceStream* source_stream) {
     // Inform observers.
     SendUpdate();
 
-    // TODO(xingliu): Use slice info to determine if the file is fully
-    // downloaded.
-    bool all_stream_complete = true;
-    for (auto& stream : source_streams_) {
-      if (!stream.second->is_finished()) {
-        all_stream_complete = false;
-        break;
-      }
-    }
-
     // All the stream reader are completed, shut down file IO processing.
-    if (all_stream_complete) {
+    if (IsDownloadCompleted()) {
       RecordFileBandwidth(bytes_seen_, disk_writes_time_,
                           base::TimeTicks::Now() - download_start_);
       weak_factory_.InvalidateWeakPtrs();
@@ -481,6 +471,48 @@ void DownloadFileImpl::AddNewSlice(int64_t offset, int64_t length) {
       source_stream->set_length(offset - source_stream->offset());
     }
   }
+}
+
+bool DownloadFileImpl::IsDownloadCompleted() {
+  SourceStream* stream_for_last_slice = nullptr;
+  int64_t last_slice_offset = 0;
+  for (auto& stream : source_streams_) {
+    SourceStream* source_stream = stream.second.get();
+    if (source_stream->offset() >= last_slice_offset &&
+        source_stream->bytes_written() > 0) {
+      stream_for_last_slice = source_stream;
+      last_slice_offset = source_stream->offset();
+    }
+    if (!source_stream->is_finished())
+      return false;
+  }
+
+  if (!is_sparse_file_)
+    return true;
+
+  // Verify that all the file slices have been downloaded.
+  std::vector<DownloadItem::ReceivedSlice> slices_to_download =
+      FindSlicesToDownload(received_slices_);
+  if (slices_to_download.size() > 1) {
+    // If there are 1 or more holes in the file, download is not finished.
+    // Some streams might not have been added to |source_streams_| yet.
+    return false;
+  }
+  if (stream_for_last_slice) {
+    DCHECK_EQ(slices_to_download[0].received_bytes,
+              DownloadSaveInfo::kLengthFullContent);
+    // The last stream should not have a length limit. If it has, it might
+    // not reach the end of the file.
+    if (stream_for_last_slice->length() !=
+        DownloadSaveInfo::kLengthFullContent) {
+      return false;
+    }
+    DCHECK_EQ(slices_to_download[0].offset,
+              stream_for_last_slice->offset() +
+                  stream_for_last_slice->bytes_written());
+  }
+
+  return true;
 }
 
 DownloadFileImpl::RenameParameters::RenameParameters(

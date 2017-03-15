@@ -195,6 +195,9 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
   // TODO(qinmin): add a test for this function.
   void AddNewSlice(int64_t offset, int64_t length);
 
+  // Check if download is completed.
+  bool IsDownloadCompleted();
+
   // Return the total valid bytes received in the target file.
   // If the file is a sparse file, return the total number of valid bytes.
   // Otherwise, return the current file size.

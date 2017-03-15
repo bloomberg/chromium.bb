@@ -981,8 +981,6 @@ TEST_F(DownloadFileTest, MutipleStreamsLimitedLength) {
   int64_t stream_1_length = static_cast<int64_t>(strlen(kTestData4)) - 1;
   PrepareMultipleStreams(false, stream_1_length);
 
-  EXPECT_CALL(*(observer_.get()), MockDestinationCompleted(_, _));
-
   download_file_->AddByteStream(
       std::unique_ptr<MockByteStreamReader>(input_stream_1_), stream_0_length);
   sink_callback_.Run();
@@ -1006,6 +1004,7 @@ TEST_F(DownloadFileTest, MutipleStreamsLimitedLength) {
   size_t size;
   input_stream_1_->Read(&data, &size);
 
+  download_file_->Cancel();
   DestroyDownloadFile(0, false);
 }
 
