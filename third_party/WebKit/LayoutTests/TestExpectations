@@ -50,7 +50,6 @@ crbug.com/619427 [ Mac Linux ] virtual/spv2/fast/overflow/overflow-height-float-
 # --- End SPV2 Tests ---
 
 crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html [ Failure ]
-crbug.com/309675 virtual/disable-spinvalidation/compositing/gestures/gesture-tapHighlight-simple-longPress.html [ Failure ]
 
 # TODO(schenney) For some reason these tests are failing to get correct baselines with rebaseline-cl.
 # They may be flaky or it may be something else. Investigate and rebaseline manually or with the bot.
@@ -70,7 +69,6 @@ crbug.com/349985 [ Win ] fast/table/backgr_simple-table-column-group.html [ Fail
 crbug.com/349985 [ Win ] fast/table/backgr_position-table-column-group-collapsed-border.html [ Failure ]
 
 crbug.com/504613 crbug.com/524248 paint/images/image-backgrounds-not-antialiased.html [ Skip ]
-crbug.com/504613 crbug.com/524248 virtual/disable-spinvalidation/paint/images/image-backgrounds-not-antialiased.html [ Skip ]
 
 crbug.com/517449 [ Android ] images/optimize-contrast-image.html [ Failure ]
 
@@ -83,7 +81,6 @@ crbug.com/531286 virtual/gpu/fast/canvas/yuv-video-on-accelerated-canvas.html [ 
 crbug.com/549742 [ Linux Mac Win ] virtual/gpu/fast/canvas/canvas-drawImage-video-imageSmoothingEnabled.html [ Failure ]
 
 crbug.com/591500 [ Win10 ] compositing/squashing/squashing-print.html [ Failure ]
-crbug.com/591500 [ Win10 ] virtual/disable-spinvalidation/compositing/squashing/squashing-print.html [ Failure ]
 
 crbug.com/602110 hittesting/border-hittest-with-image-fallback.html [ Failure ]
 
@@ -134,7 +131,6 @@ crbug.com/683339 paint/invalidation/paged-with-overflowing-block-rl.html [ Failu
 crbug.com/683339 virtual/disable-spinvalidation/paint/invalidation/paged-with-overflowing-block-rl.html [ Failure ]
 
 crbug.com/646010 paint/selection/text-selection-newline-rtl-double-linebreak.html [ Failure ]
-crbug.com/646010 virtual/disable-spinvalidation/paint/selection/text-selection-newline-rtl-double-linebreak.html [ Failure ]
 crbug.com/646015 paint/invalidation/hover-invalidation-table.html [ Failure ]
 crbug.com/646015 virtual/disable-spinvalidation/paint/invalidation/hover-invalidation-table.html [ Failure ]
 crbug.com/646016 paint/invalidation/selected-replaced.html [ Failure ]
@@ -155,11 +151,9 @@ crbug.com/671048 virtual/color_space/fast/canvas/color-space/display_linear-rgb.
 
 # Added 2016-12-14
 crbug.com/674396 [ Win ] compositing/reflections/nested-reflection-transition.html [ Pass Failure ]
-crbug.com/674396 [ Win ] virtual/disable-spinvalidation/compositing/reflections/nested-reflection-transition.html [ Pass Failure ]
 
 # Added 2016-12-15
 crbug.com/674468 [ Trusty ] compositing/reflections/nested-reflection-transition.html [ Pass Failure ]
-crbug.com/674468 [ Trusty ] virtual/disable-spinvalidation/compositing/reflections/nested-reflection-transition.html [ Pass Failure ]
 
 # Added 2016-12-16
 crbug.com/674858 [ Linux ] virtual/threaded/printing/offscreencanvas-2d-printing.html [ Pass Failure Crash ]
@@ -168,8 +162,6 @@ crbug.com/674858 [ Linux ] virtual/threaded/printing/offscreencanvas-webgl-print
 # Added 2017-02-20
 crbug.com/693510 compositing/reflections/nested-reflection-anchor-point.html [ Failure Pass ]
 crbug.com/693510 compositing/reflections/nested-reflection-animated.html [ Failure Pass ]
-crbug.com/693510 virtual/disable-spinvalidation/compositing/reflections/nested-reflection-anchor-point.html [ Failure Pass ]
-crbug.com/693510 virtual/disable-spinvalidation/compositing/reflections/nested-reflection-animated.html [ Failure Pass ]
 
 crbug.com/667045 paint/invalidation/table/composited-cell-collapsed-border-add-anonymous.html [ Crash ]
 crbug.com/667045 virtual/disable-spinvalidation/paint/invalidation/table/composited-cell-collapsed-border-add-anonymous.html [ Crash ]
@@ -1809,7 +1801,6 @@ crbug.com/610464 [ Linux Win7 Debug ] inspector/components/throttler.html [ Fail
 crbug.com/487344 paint/invalidation/video-paint-invalidation.html [ Failure ]
 crbug.com/487344 virtual/disable-spinvalidation/paint/invalidation/video-paint-invalidation.html [ Failure ]
 crbug.com/487344 [ Win ] compositing/video/video-controls-layer-creation.html [ Pass Failure ]
-crbug.com/487344 [ Win ] virtual/disable-spinvalidation/compositing/video/video-controls-layer-creation.html [ Pass Failure ]
 crbug.com/487344 fast/hidpi/video-controls-in-hidpi.html [ Failure ]
 crbug.com/487344 fast/layers/video-layer.html [ Failure ]
 crbug.com/487344 media/audio-controls-rendering.html [ Failure ]
@@ -2628,20 +2619,14 @@ crbug.com/697971 [ Mac10.12 ] svg/transforms/svg-css-transforms.xhtml [ Failure 
 crbug.com/697971 [ Mac10.12 ] svg/zoom/page/zoom-background-images.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] transforms/2d/zoom-menulist.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] transforms/svg-vs-css.xhtml [ Failure ]
-crbug.com/697971 [ Mac10.12 ] virtual/disable-spinvalidation/compositing/overflow/border-radius-styles-with-composited-child.html [ Failure ]
-crbug.com/697971 [ Mac10.12 ] virtual/disable-spinvalidation/compositing/overflow/do-not-paint-outline-into-composited-scrolling-contents.html [ Failure ]
-crbug.com/697971 [ Mac10.12 ] virtual/disable-spinvalidation/compositing/overflow/theme-affects-visual-overflow.html [ Failure ]
-crbug.com/697971 [ Mac10.12 ] virtual/disable-spinvalidation/compositing/overflow/update-widget-positions-on-nested-frames-and-scrollers.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] virtual/disable-spinvalidation/paint/invalidation/button-checkbox-click-method-repaint.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] virtual/disable-spinvalidation/paint/invalidation/caret-invalidation-in-overflow-scroll.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] virtual/disable-spinvalidation/paint/invalidation/forms/button-reset-focus-by-mouse-then-keydown.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] virtual/disable-spinvalidation/paint/invalidation/forms/submit-focus-by-mouse-then-keydown.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] virtual/disable-spinvalidation/paint/invalidation/resize-iframe-text.html [ Failure ]
+crbug.com/697971 [ Mac10.12 ] virtual/disable-spinvalidation/paint/invalidation/search-field-cancel.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] virtual/disable-spinvalidation/paint/invalidation/subtree-root-skipped.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] virtual/disable-spinvalidation/paint/invalidation/textarea-caret.html [ Failure ]
-crbug.com/697971 [ Mac10.12 ] virtual/disable-spinvalidation/paint/selection/text-selection-inline-block-rtl.html [ Failure ]
-crbug.com/697971 [ Mac10.12 ] virtual/disable-spinvalidation/paint/selection/text-selection-inline-block.html [ Failure ]
-crbug.com/697971 [ Mac10.12 ] virtual/disable-spinvalidation/paint/spellmarkers/document-markers-zoom-150.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] virtual/gpu-rasterization/images/12-55.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] virtual/gpu-rasterization/images/182.html [ Failure ]
 crbug.com/697971 [ Mac10.12 ] virtual/gpu-rasterization/images/2-dht.html [ Failure ]
