@@ -170,12 +170,21 @@ LayoutObject* HitTestResult::layoutObject() const {
 }
 
 void HitTestResult::setToShadowHostIfInUserAgentShadowRoot() {
-  if (Node* node = innerNode()) {
-    if (ShadowRoot* containingShadowRoot = node->containingShadowRoot()) {
-      if (containingShadowRoot->type() == ShadowRootType::UserAgent)
-        setInnerNode(node->ownerShadowHost());
-    }
+  Node* node = innerNode();
+  if (!node)
+    return;
+
+  ShadowRoot* containingShadowRoot = node->containingShadowRoot();
+  Element* shadowHost = nullptr;
+
+  while (containingShadowRoot &&
+         containingShadowRoot->type() == ShadowRootType::UserAgent) {
+    shadowHost = &containingShadowRoot->host();
+    containingShadowRoot = shadowHost->containingShadowRoot();
   }
+
+  if (shadowHost)
+    setInnerNode(shadowHost);
 }
 
 HTMLAreaElement* HitTestResult::imageAreaForImage() const {

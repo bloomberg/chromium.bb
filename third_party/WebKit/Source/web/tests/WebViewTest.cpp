@@ -279,6 +279,23 @@ static std::string hitTestElementId(WebView* view, int x, int y) {
 
 INSTANTIATE_TEST_CASE_P(All, WebViewTest, ::testing::Bool());
 
+TEST_P(WebViewTest, HitTestVideo) {
+  // Test that hit tests on parts of a video element result in hits on the video
+  // element itself as opposed to its child elements.
+  std::string url = registerMockedHttpURLLoad("video_200x200.html");
+  WebView* webView = m_webViewHelper.initializeAndLoad(url, true, 0);
+  webView->resize(WebSize(200, 200));
+
+  // Center of video.
+  EXPECT_EQ("video", hitTestElementId(webView, 100, 100));
+
+  // Play button.
+  EXPECT_EQ("video", hitTestElementId(webView, 10, 195));
+
+  // Timeline bar.
+  EXPECT_EQ("video", hitTestElementId(webView, 100, 195));
+}
+
 TEST_P(WebViewTest, HitTestContentEditableImageMaps) {
   std::string url =
       registerMockedHttpURLLoad("content-editable-image-maps.html");
