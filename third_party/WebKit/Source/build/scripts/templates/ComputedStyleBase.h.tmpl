@@ -37,14 +37,6 @@ class CORE_EXPORT ComputedStyleBase {
   {% endfor %}
   {}
 
-  inline bool inheritedEqual(const ComputedStyleBase& o) const {
-    return (
-    {% for field in fields if field.is_property and field.is_inherited %}
-        {{field.name}} == o.{{field.name}}{{print_if(not loop.last, ' &&')}}
-    {% endfor %}
-    );
-  }
-
   inline bool independentInheritedEqual(const ComputedStyleBase& o) const {
     return (
     {% for field in fields if field.is_property and field.is_inherited and field.is_independent %}
@@ -59,6 +51,10 @@ class CORE_EXPORT ComputedStyleBase {
         {{field.name}} == o.{{field.name}}{{print_if(not loop.last, ' &&')}}
     {% endfor %}
     );
+  }
+
+  inline bool inheritedEqual(const ComputedStyleBase& o) const {
+    return independentInheritedEqual(o) && nonIndependentInheritedEqual(o);
   }
 
   inline bool nonInheritedEqual(const ComputedStyleBase& o) const {
