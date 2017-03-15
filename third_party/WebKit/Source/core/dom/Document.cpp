@@ -1182,7 +1182,16 @@ Node* Document::adoptNode(Node* source, ExceptionState& exceptionState) {
         source->parentNode()->removeChild(source, exceptionState);
         if (exceptionState.hadException())
           return nullptr;
-        CHECK(!source->parentNode());
+        // The above removeChild() can execute arbitrary JavaScript code.
+        if (source->parentNode()) {
+          addConsoleMessage(ConsoleMessage::create(
+              JSMessageSource, WarningMessageLevel,
+              ExceptionMessages::failedToExecute("adoptNode", "Document",
+                                                 "Unable to remove the "
+                                                 "specified node from the "
+                                                 "original parent.")));
+          return nullptr;
+        }
       }
   }
 
