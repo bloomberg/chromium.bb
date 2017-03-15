@@ -329,8 +329,16 @@ class MenuControllerTest : public ViewsTestBase {
     // Now that the targeter has been destroyed, expect to exit the menu
     // normally when hitting escape.
     event_generator_->PressKey(ui::VKEY_ESCAPE, 0);
-    EXPECT_EQ(MenuController::EXIT_OUTERMOST, menu_exit_type());
+    EXPECT_EQ(MenuController::EXIT_ALL, menu_exit_type());
   }
+
+  // Verifies that a non-nested menu fully closes when receiving an escape key.
+  void TestAsyncEscapeKey() {
+    ui::KeyEvent event(ui::EventType::ET_KEY_PRESSED, ui::VKEY_ESCAPE, 0);
+    menu_controller_->OnWillDispatchKeyEvent(&event);
+    EXPECT_EQ(MenuController::EXIT_ALL, menu_exit_type());
+  }
+
 #endif  // defined(OS_LINUX) && defined(USE_X11)
 
 #if defined(USE_AURA)
@@ -683,6 +691,14 @@ TEST_F(MenuControllerTest, EventTargeter) {
                             base::Unretained(this)));
   RunMenu();
 }
+
+// Tests that an non-nested menu receiving an escape key will fully shut. This
+// should not crash by attempting to retarget the key to an inner menu.
+TEST_F(MenuControllerTest, AsyncEscapeKey) {
+  menu_controller()->SetAsyncRun(true);
+  TestAsyncEscapeKey();
+}
+
 #endif  // defined(OS_LINUX) && defined(USE_X11)
 
 #if defined(USE_X11)
@@ -711,7 +727,7 @@ TEST_F(MenuControllerTest, TouchIdsReleasedCorrectly) {
 
   RunMenu();
 
-  EXPECT_EQ(MenuController::EXIT_OUTERMOST, menu_exit_type());
+  EXPECT_EQ(MenuController::EXIT_ALL, menu_exit_type());
   EXPECT_EQ(0, test_event_handler.outstanding_touches());
 
   owner()->GetNativeWindow()->GetRootWindow()->RemovePreTargetHandler(

@@ -1339,8 +1339,10 @@ void MenuController::OnKeyDown(ui::KeyboardCode key_code) {
           (!state_.item->GetParentMenuItem()->GetParentMenuItem() &&
            (!state_.item->HasSubmenu() ||
             !state_.item->GetSubmenu()->IsShowing()))) {
-        // User pressed escape and only one menu is shown, cancel it.
-        Cancel(EXIT_OUTERMOST);
+        // User pressed escape and current menu has no submenus. If we are
+        // nested, close the current menu on the stack. Otherwise fully exit the
+        // menu.
+        Cancel(delegate_stack_.size() > 1 ? EXIT_OUTERMOST : EXIT_ALL);
         break;
       }
       CloseSubmenu();
