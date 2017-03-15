@@ -1431,6 +1431,10 @@ void RenderWidgetHostViewMac::OnSwapCompositorFrame(
     cc::CompositorFrame frame) {
   TRACE_EVENT0("browser", "RenderWidgetHostViewMac::OnSwapCompositorFrame");
 
+  // Override the compositor background color. See RenderWidgetHostViewAura
+  // for more details.
+  SetBackgroundColor(frame.metadata.root_background_color);
+
   last_scroll_offset_ = frame.metadata.root_scroll_offset;
 
   page_at_minimum_scale_ =
