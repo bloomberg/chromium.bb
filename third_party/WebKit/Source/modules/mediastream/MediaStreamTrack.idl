@@ -50,7 +50,7 @@ enum MediaStreamTrackState {
     [CallWith=ScriptState] MediaStreamTrack clone();
     [ImplementedAs=stopTrack, RaisesException] void stop();
 
-    [RuntimeEnabled=ImageCapture] MediaTrackCapabilities getCapabilities();
+    [RuntimeEnabled=MediaTrackCapabilities] MediaTrackCapabilities getCapabilities();
     [RuntimeEnabled=MediaConstraints] MediaTrackConstraints getConstraints();
     [RuntimeEnabled=MediaGetSettings] MediaTrackSettings getSettings();
 };

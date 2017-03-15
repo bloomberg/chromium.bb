@@ -541,6 +541,10 @@
       name: "MediaGetSettings",
       status: "stable",
     },
+    {
+      name: "MediaQueryShape",
+      status: "experimental",
+    },
     // MediaSession is enabled by default on Android only.
     // TODO(rbyers): Add parameter to specify platform.
     {
@@ -560,11 +564,12 @@
       status: "experimental",
     },
     {
-      name: "MediaQueryShape",
+      name: "MediaStreamTrackContentHint",
       status: "experimental",
     },
     {
-      name: "MediaStreamTrackContentHint",
+      name: "MediaTrackCapabilities",
+      implied_by: ["ImageCapture"],
       status: "experimental",
     },
     {
