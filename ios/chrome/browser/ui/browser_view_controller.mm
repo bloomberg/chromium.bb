@@ -609,6 +609,8 @@ FindInPageController* GetFindInPageController(Tab* tab) {
 - (void)showToolsMenuPopup;
 // Add all delegates to the provided |tab|.
 - (void)installDelegatesForTab:(Tab*)tab;
+// Remove delegates from the provided |tab|.
+- (void)uninstallDelegatesForTab:(Tab*)tab;
 // Closes the current tab, with animation if applicable.
 - (void)closeCurrentTab;
 // Shows the menu to initiate sharing |data|.
@@ -2111,9 +2113,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 }
 
 - (void)installDelegatesForTab:(Tab*)tab {
-  // We don't unregister any of this delegation.
-  // TODO(crbug.com/375577): Unregister these delegates correctly on BVC
-  // deallocation.
+  // Unregistration happens when the Tab is removed from the TabModel.
   tab.dialogDelegate = self;
   tab.snapshotOverlayProvider = self;
   tab.passKitDialogProvider = self;
@@ -2131,8 +2131,25 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   StoreKitTabHelper* tabHelper = StoreKitTabHelper::FromWebState(tab.webState);
   if (tabHelper)
     tabHelper->SetLauncher(self);
-  // Delegate will remove itself on destruction.
   tab.webState->SetDelegate(_webStateDelegate.get());
+}
+
+- (void)uninstallDelegatesForTab:(Tab*)tab {
+  tab.dialogDelegate = nil;
+  tab.snapshotOverlayProvider = nil;
+  tab.passKitDialogProvider = nil;
+  tab.fullScreenControllerDelegate = nil;
+  if (!IsIPadIdiom()) {
+    tab.overscrollActionsControllerDelegate = nil;
+  }
+  tab.tabHeadersDelegate = nil;
+  tab.tabSnapshottingDelegate = nil;
+  tab.webController.nativeProvider = nil;
+  tab.webController.swipeRecognizerProvider = nil;
+  StoreKitTabHelper* tabHelper = StoreKitTabHelper::FromWebState(tab.webState);
+  if (tabHelper)
+    tabHelper->SetLauncher(nil);
+  tab.webState->SetDelegate(nullptr);
 }
 
 // Called when a tab is selected in the model. Make any required view changes.
@@ -4554,10 +4571,21 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   }
 }
 
+// Observer method, tab replaced.
+- (void)tabModel:(TabModel*)model
+    didReplaceTab:(Tab*)oldTab
+          withTab:(Tab*)newTab
+          atIndex:(NSUInteger)index {
+  [self uninstallDelegatesForTab:oldTab];
+  [self installDelegatesForTab:newTab];
+}
+
 // A tab has been removed, remove its views from display if necessary.
 - (void)tabModel:(TabModel*)model
     didRemoveTab:(Tab*)tab
          atIndex:(NSUInteger)index {
+  [self uninstallDelegatesForTab:tab];
+
   // Remove stored native controllers for the tab.
   [_nativeControllersForTabIDs removeObjectForKey:tab.tabId];
 

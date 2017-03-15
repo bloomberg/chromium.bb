@@ -1176,11 +1176,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   // Reset association with the webController.
   [self.webController setDelegate:nil];
 
-  webStateImpl_->ClearTransientContentView();
-  // Terminate the network activity before notifying the parent model, because
-  // the parent model may initiate the request context destruction.
-  [self terminateNetworkActivity];
-
   // Cancel any queued dialogs.
   [self.dialogDelegate cancelDialogForTab:self];
 
@@ -1195,14 +1190,20 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   // delegate should be torn down after |-didCloseTab:| so components triggered
   // by tab closure can use the content facade, and it should be deleted before
   // the web controller since the web controller owns the facade's backing
-  // objects.
+  // objects. |parentTabModel_| is reset after calling |-didCloseTab:| to
+  // prevent propagating WebState notifications that happen during WebState
+  // destruction.
   // TODO(crbug.com/546222): Fix the need for this; TabModel should be
   // responsible for making the lifetime of Tab sane, rather than allowing Tab
   // to drive its own destruction.
   base::scoped_nsobject<Tab> kungFuDeathGrip([self retain]);
   [parentTabModel_ didCloseTab:self];  // Inform parent of tab closure.
+  parentTabModel_ = nil;
 
+  // Destroy the WebState but first stop listening to WebState events (as |self|
+  // is in no state to respond to the notifications if |webStateImpl_| is null).
   LegacyTabHelper::RemoveFromWebState(self.webState);
+  webStateObserver_.reset();
   webStateImpl_.reset();
 }
 
