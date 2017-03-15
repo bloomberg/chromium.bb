@@ -510,8 +510,7 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
     @Override
     public void startSearchTermResolutionRequest(String selection) {
         WebContents baseWebContents = getBaseWebContents();
-        if (baseWebContents != null) {
-            assert mContext != null;
+        if (baseWebContents != null && mContext != null) {
             nativeStartSearchTermResolutionRequest(
                     mNativeContextualSearchManagerPtr, mContext, getBaseWebContents());
         }

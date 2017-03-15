@@ -12,6 +12,10 @@
 ContextualSearchContext::ContextualSearchContext(JNIEnv* env, jobject obj)
     : can_resolve(false),
       can_send_base_page_url(false),
+      selected_text(std::string()),
+      home_country(std::string()),
+      base_page_url(GURL()),
+      surrounding_text(base::string16()),
       start_offset(0),
       end_offset(0) {
   java_object_.Reset(env, obj);
