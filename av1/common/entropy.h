@@ -97,22 +97,7 @@ DECLARE_ALIGNED(16, extern const uint8_t, av1_cat2_prob[2]);
 DECLARE_ALIGNED(16, extern const uint8_t, av1_cat3_prob[3]);
 DECLARE_ALIGNED(16, extern const uint8_t, av1_cat4_prob[4]);
 DECLARE_ALIGNED(16, extern const uint8_t, av1_cat5_prob[5]);
-DECLARE_ALIGNED(16, extern const uint8_t, av1_cat6_prob[14]);
-
-#if CONFIG_AOM_HIGHBITDEPTH
-DECLARE_ALIGNED(16, extern const uint8_t, av1_cat1_prob_high10[1]);
-DECLARE_ALIGNED(16, extern const uint8_t, av1_cat2_prob_high10[2]);
-DECLARE_ALIGNED(16, extern const uint8_t, av1_cat3_prob_high10[3]);
-DECLARE_ALIGNED(16, extern const uint8_t, av1_cat4_prob_high10[4]);
-DECLARE_ALIGNED(16, extern const uint8_t, av1_cat5_prob_high10[5]);
-DECLARE_ALIGNED(16, extern const uint8_t, av1_cat6_prob_high10[16]);
-DECLARE_ALIGNED(16, extern const uint8_t, av1_cat1_prob_high12[1]);
-DECLARE_ALIGNED(16, extern const uint8_t, av1_cat2_prob_high12[2]);
-DECLARE_ALIGNED(16, extern const uint8_t, av1_cat3_prob_high12[3]);
-DECLARE_ALIGNED(16, extern const uint8_t, av1_cat4_prob_high12[4]);
-DECLARE_ALIGNED(16, extern const uint8_t, av1_cat5_prob_high12[5]);
-DECLARE_ALIGNED(16, extern const uint8_t, av1_cat6_prob_high12[18]);
-#endif  // CONFIG_AOM_HIGHBITDEPTH
+DECLARE_ALIGNED(16, extern const uint8_t, av1_cat6_prob[18]);
 
 #define EOB_MODEL_TOKEN 3
 
@@ -125,10 +110,6 @@ typedef struct {
 
 // indexed by token value
 extern const av1_extra_bit av1_extra_bits[ENTROPY_TOKENS];
-#if CONFIG_AOM_HIGHBITDEPTH
-extern const av1_extra_bit av1_extra_bits_high10[ENTROPY_TOKENS];
-extern const av1_extra_bit av1_extra_bits_high12[ENTROPY_TOKENS];
-#endif  // CONFIG_AOM_HIGHBITDEPTH
 
 #define DCT_MAX_VALUE 16384
 #if CONFIG_AOM_HIGHBITDEPTH

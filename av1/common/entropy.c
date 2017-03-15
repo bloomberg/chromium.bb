@@ -37,26 +37,10 @@ const aom_prob av1_cat2_prob[] = { 165, 145 };
 const aom_prob av1_cat3_prob[] = { 173, 148, 140 };
 const aom_prob av1_cat4_prob[] = { 176, 155, 140, 135 };
 const aom_prob av1_cat5_prob[] = { 180, 157, 141, 134, 130 };
-const aom_prob av1_cat6_prob[] = { 254, 254, 254, 252, 249, 243, 230,
-                                   196, 177, 153, 140, 133, 130, 129 };
-#if CONFIG_AOM_HIGHBITDEPTH
-const aom_prob av1_cat1_prob_high10[] = { 159 };
-const aom_prob av1_cat2_prob_high10[] = { 165, 145 };
-const aom_prob av1_cat3_prob_high10[] = { 173, 148, 140 };
-const aom_prob av1_cat4_prob_high10[] = { 176, 155, 140, 135 };
-const aom_prob av1_cat5_prob_high10[] = { 180, 157, 141, 134, 130 };
-const aom_prob av1_cat6_prob_high10[] = {
-  255, 255, 254, 254, 254, 252, 249, 243, 230, 196, 177, 153, 140, 133, 130, 129
+const aom_prob av1_cat6_prob[] = {
+  255, 255, 255, 255, 254, 254, 254, 252, 249,
+  243, 230, 196, 177, 153, 140, 133, 130, 129
 };
-const aom_prob av1_cat1_prob_high12[] = { 159 };
-const aom_prob av1_cat2_prob_high12[] = { 165, 145 };
-const aom_prob av1_cat3_prob_high12[] = { 173, 148, 140 };
-const aom_prob av1_cat4_prob_high12[] = { 176, 155, 140, 135 };
-const aom_prob av1_cat5_prob_high12[] = { 180, 157, 141, 134, 130 };
-const aom_prob av1_cat6_prob_high12[] = { 255, 255, 255, 255, 254, 254,
-                                          254, 252, 249, 243, 230, 196,
-                                          177, 153, 140, 133, 130, 129 };
-#endif
 
 const uint16_t band_count_table[TX_SIZES_ALL][8] = {
 #if CONFIG_CB4X4

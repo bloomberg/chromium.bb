@@ -819,20 +819,11 @@ static void pack_mb_tokens(aom_writer *w, const TOKENEXTRA **tp,
   int count = 0;
   const int seg_eob = tx_size_2d[tx_size];
 #endif
-#if CONFIG_AOM_HIGHBITDEPTH
-  const av1_extra_bit *const extra_bits_table =
-      (bit_depth == AOM_BITS_12)
-          ? av1_extra_bits_high12
-          : (bit_depth == AOM_BITS_10) ? av1_extra_bits_high10 : av1_extra_bits;
-#else
-  const av1_extra_bit *const extra_bits_table = av1_extra_bits;
-  (void)bit_depth;
-#endif  // CONFIG_AOM_HIGHBITDEPTH
 
   while (p < stop && p->token != EOSB_TOKEN) {
     const int token = p->token;
     aom_tree_index index = 0;
-    const av1_extra_bit *const extra_bits = &extra_bits_table[token];
+    const av1_extra_bit *const extra_bits = &av1_extra_bits[token];
 
     if (token == BLOCK_Z_TOKEN) {
       aom_write_symbol(w, 0, *p->head_cdf, HEAD_TOKENS + 1);
@@ -855,9 +846,10 @@ static void pack_mb_tokens(aom_writer *w, const TOKENEXTRA **tp,
       const int bit_string_length = extra_bits->len;  // Length of extra bits to
       // be written excluding
       // the sign bit.
-      int skip_bits = (extra_bits->base_val == CAT6_MIN_VAL)
-                          ? TX_SIZES - 1 - txsize_sqr_up_map[tx_size]
-                          : 0;
+      int skip_bits =
+          (extra_bits->base_val == CAT6_MIN_VAL)
+              ? TX_SIZES - 1 - txsize_sqr_up_map[tx_size] + (12 - bit_depth)
+              : 0;
 
       if (bit_string_length > 0) {
         const unsigned char *pb = extra_bits->prob;
@@ -899,15 +891,6 @@ static void pack_mb_tokens(aom_writer *w, const TOKENEXTRA **tp,
   int count = 0;
   const int seg_eob = tx_size_2d[tx_size];
 #endif
-#if CONFIG_AOM_HIGHBITDEPTH
-  const av1_extra_bit *const extra_bits_table =
-      (bit_depth == AOM_BITS_12)
-          ? av1_extra_bits_high12
-          : (bit_depth == AOM_BITS_10) ? av1_extra_bits_high10 : av1_extra_bits;
-#else
-  const av1_extra_bit *const extra_bits_table = av1_extra_bits;
-  (void)bit_depth;
-#endif  // CONFIG_AOM_HIGHBITDEPTH
 
   while (p < stop && p->token != EOSB_TOKEN) {
     const int token = p->token;
@@ -917,7 +900,7 @@ static void pack_mb_tokens(aom_writer *w, const TOKENEXTRA **tp,
     int coef_value = coef_encoding->value;
     int coef_length = coef_encoding->len;
 #endif  // !CONFIG_EC_MULTISYMBOL
-    const av1_extra_bit *const extra_bits = &extra_bits_table[token];
+    const av1_extra_bit *const extra_bits = &av1_extra_bits[token];
 
 #if CONFIG_EC_MULTISYMBOL
     /* skip one or two nodes */
@@ -960,10 +943,10 @@ static void pack_mb_tokens(aom_writer *w, const TOKENEXTRA **tp,
       const int bit_string_length = extra_bits->len;  // Length of extra bits to
                                                       // be written excluding
                                                       // the sign bit.
-      int skip_bits = (extra_bits->base_val == CAT6_MIN_VAL)
-                          ? TX_SIZES - 1 - txsize_sqr_up_map[tx_size]
-                          : 0;
-
+      int skip_bits =
+          (extra_bits->base_val == CAT6_MIN_VAL)
+              ? TX_SIZES - 1 - txsize_sqr_up_map[tx_size] + (12 - bit_depth)
+              : 0;
       if (bit_string_length > 0) {
         const unsigned char *pb = extra_bits->prob;
         const int value = bit_string >> 1;

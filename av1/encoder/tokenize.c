@@ -271,40 +271,9 @@ const av1_extra_bit av1_extra_bits[ENTROPY_TOKENS] = {
   { av1_cat3_prob, 3, CAT3_MIN_VAL, cat3_cost },  // CATEGORY3_TOKEN
   { av1_cat4_prob, 4, CAT4_MIN_VAL, cat4_cost },  // CATEGORY4_TOKEN
   { av1_cat5_prob, 5, CAT5_MIN_VAL, cat5_cost },  // CATEGORY5_TOKEN
-  { av1_cat6_prob, 14, CAT6_MIN_VAL, 0 },         // CATEGORY6_TOKEN
+  { av1_cat6_prob, 18, CAT6_MIN_VAL, 0 },         // CATEGORY6_TOKEN
   { 0, 0, 0, zero_cost }                          // EOB_TOKEN
 };
-
-#if CONFIG_AOM_HIGHBITDEPTH
-const av1_extra_bit av1_extra_bits_high10[ENTROPY_TOKENS] = {
-  { 0, 0, 0, zero_cost },                                // ZERO
-  { 0, 0, 1, sign_cost },                                // ONE
-  { 0, 0, 2, sign_cost },                                // TWO
-  { 0, 0, 3, sign_cost },                                // THREE
-  { 0, 0, 4, sign_cost },                                // FOUR
-  { av1_cat1_prob_high10, 1, CAT1_MIN_VAL, cat1_cost },  // CAT1
-  { av1_cat2_prob_high10, 2, CAT2_MIN_VAL, cat2_cost },  // CAT2
-  { av1_cat3_prob_high10, 3, CAT3_MIN_VAL, cat3_cost },  // CAT3
-  { av1_cat4_prob_high10, 4, CAT4_MIN_VAL, cat4_cost },  // CAT4
-  { av1_cat5_prob_high10, 5, CAT5_MIN_VAL, cat5_cost },  // CAT5
-  { av1_cat6_prob_high10, 16, CAT6_MIN_VAL, 0 },         // CAT6
-  { 0, 0, 0, zero_cost }                                 // EOB
-};
-const av1_extra_bit av1_extra_bits_high12[ENTROPY_TOKENS] = {
-  { 0, 0, 0, zero_cost },                                // ZERO
-  { 0, 0, 1, sign_cost },                                // ONE
-  { 0, 0, 2, sign_cost },                                // TWO
-  { 0, 0, 3, sign_cost },                                // THREE
-  { 0, 0, 4, sign_cost },                                // FOUR
-  { av1_cat1_prob_high12, 1, CAT1_MIN_VAL, cat1_cost },  // CAT1
-  { av1_cat2_prob_high12, 2, CAT2_MIN_VAL, cat2_cost },  // CAT2
-  { av1_cat3_prob_high12, 3, CAT3_MIN_VAL, cat3_cost },  // CAT3
-  { av1_cat4_prob_high12, 4, CAT4_MIN_VAL, cat4_cost },  // CAT4
-  { av1_cat5_prob_high12, 5, CAT5_MIN_VAL, cat5_cost },  // CAT5
-  { av1_cat6_prob_high12, 18, CAT6_MIN_VAL, 0 },         // CAT6
-  { 0, 0, 0, zero_cost }                                 // EOB
-};
-#endif
 
 #if !CONFIG_EC_MULTISYMBOL
 const struct av1_token av1_coef_encodings[ENTROPY_TOKENS] = {
