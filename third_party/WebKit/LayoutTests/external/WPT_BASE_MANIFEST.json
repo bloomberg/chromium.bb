@@ -24280,7 +24280,27 @@
      {}
     ]
    ],
+   "streams/writable-streams/general-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "streams/writable-streams/general.dedicatedworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "streams/writable-streams/general.js": [
+    [
+     {}
+    ]
+   ],
+   "streams/writable-streams/general.serviceworker.https-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "streams/writable-streams/general.sharedworker-expected.txt": [
     [
      {}
     ]
@@ -90554,11 +90574,11 @@
    "support"
   ],
   "streams/writable-streams/aborting-expected.txt": [
-   "84e08dacc259de6782a334f9b26b202c54ac8f97",
+   "210d85192e93c09fb3a4c8993a606a8c3aa8f811",
    "support"
   ],
   "streams/writable-streams/aborting.dedicatedworker-expected.txt": [
-   "84e08dacc259de6782a334f9b26b202c54ac8f97",
+   "210d85192e93c09fb3a4c8993a606a8c3aa8f811",
    "support"
   ],
   "streams/writable-streams/aborting.dedicatedworker.html": [
@@ -90574,7 +90594,7 @@
    "support"
   ],
   "streams/writable-streams/aborting.serviceworker.https-expected.txt": [
-   "7842749164cd9c2ffdbc8e9571d364d8726e04bf",
+   "db653cba3d2b892e55bf8c58d31dd9442f35e866",
    "support"
   ],
   "streams/writable-streams/aborting.serviceworker.https.html": [
@@ -90582,7 +90602,7 @@
    "testharness"
   ],
   "streams/writable-streams/aborting.sharedworker-expected.txt": [
-   "84e08dacc259de6782a334f9b26b202c54ac8f97",
+   "210d85192e93c09fb3a4c8993a606a8c3aa8f811",
    "support"
   ],
   "streams/writable-streams/aborting.sharedworker.html": [
@@ -90773,6 +90793,14 @@
    "00af09f46d126d6d2944d13831896e648094d1a8",
    "testharness"
   ],
+  "streams/writable-streams/general-expected.txt": [
+   "6fcdba9711e8ed258dc6801ca63a263984313010",
+   "support"
+  ],
+  "streams/writable-streams/general.dedicatedworker-expected.txt": [
+   "6fcdba9711e8ed258dc6801ca63a263984313010",
+   "support"
+  ],
   "streams/writable-streams/general.dedicatedworker.html": [
    "8583d80450b090c16ed0795170340d040449bbc1",
    "testharness"
@@ -90785,9 +90813,17 @@
    "7a6fb1ccd2f77edc2077ec127716d3d2edcf8475",
    "support"
   ],
+  "streams/writable-streams/general.serviceworker.https-expected.txt": [
+   "6980ba2dee4162a716013626dcee9fed88157fe7",
+   "support"
+  ],
   "streams/writable-streams/general.serviceworker.https.html": [
    "1792d6c45a5687777291a4dab031a954aa053752",
    "testharness"
+  ],
+  "streams/writable-streams/general.sharedworker-expected.txt": [
+   "6fcdba9711e8ed258dc6801ca63a263984313010",
+   "support"
   ],
   "streams/writable-streams/general.sharedworker.html": [
    "44f9ceaa3bfc9d8b92885997d322486bd0f237a6",
