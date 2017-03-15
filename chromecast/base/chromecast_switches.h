@@ -45,6 +45,7 @@ extern const char kAlsaOutputAvailMin[];
 extern const char kAlsaCheckCloseTimeout[];
 extern const char kAlsaEnableUpsampling[];
 extern const char kAlsaFixedOutputSampleRate[];
+extern const char kMaxOutputVolumeDba1m[];
 
 // Memory pressure switches
 extern const char kMemPressureSystemReservedKb[];
@@ -67,6 +68,17 @@ namespace chromecast {
 // no switch named |switch_string| -> |default_value|
 bool GetSwitchValueBoolean(const std::string& switch_string,
                            const bool default_value);
+
+// Gets an integer value from switch |switch_name|. If the switch is not present
+// in the command line, or the value is not an integer, the |default_value| is
+// returned.
+int GetSwitchValueInt(const std::string& switch_name, const int default_value);
+
+// Gets a non-negative integer value from switch |switch_name|. If the switch is
+// not present in the command line, or the value is not a non-negative integer,
+// the |default_value| is returned.
+int GetSwitchValueNonNegativeInt(const std::string& switch_name,
+                                 const int default_value);
 
 }  // namespace chromecast
 

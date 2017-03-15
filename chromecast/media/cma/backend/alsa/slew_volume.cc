@@ -38,6 +38,9 @@ void SlewVolume::SetSampleRate(int sample_rate) {
 // Slew rate should be volume_to_slew / slew_time / sample_rate
 void SlewVolume::SetVolume(double volume_scale) {
   volume_scale_ = volume_scale;
+  if (interrupted_) {
+    current_volume_ = volume_scale_;
+  }
   if (volume_scale_ > current_volume_) {
     max_slew_up_ = (volume_scale_ - current_volume_) * 1000.0 /
                    (max_slew_time_up_ms_ * sample_rate_);
@@ -45,6 +48,11 @@ void SlewVolume::SetVolume(double volume_scale) {
     max_slew_down_ = (current_volume_ - volume_scale_) * 1000.0 /
                      (max_slew_time_down_ms_ * sample_rate_);
   }
+}
+
+void SlewVolume::Interrupted() {
+  interrupted_ = true;
+  current_volume_ = volume_scale_;
 }
 
 void SlewVolume::ProcessFMAC(bool repeat_transition,
@@ -63,6 +71,7 @@ void SlewVolume::ProcessFMAC(bool repeat_transition,
     return;
   }
 
+  interrupted_ = false;
   if (repeat_transition) {
     current_volume_ = last_starting_volume_;
   } else {
@@ -112,6 +121,7 @@ bool SlewVolume::ProcessInterleaved(int32_t* data, int frames) {
     return true;
   }
 
+  interrupted_ = false;
   if (current_volume_ == volume_scale_) {
     if (current_volume_ == 1.0) {
       return true;

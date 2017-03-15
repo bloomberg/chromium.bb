@@ -59,6 +59,17 @@ const int64_t kNoTimestamp = std::numeric_limits<int64_t>::min();
 const int kMaxSlewTimeUpMs = 15;
 const int kMaxSlewTimeDownMs = 15;
 
+std::string AudioContentTypeToString(media::AudioContentType type) {
+  switch (type) {
+    case media::AudioContentType::kAlarm:
+      return "alarm";
+    case media::AudioContentType::kCommunication:
+      return "communication";
+    default:
+      return "media";
+  }
+}
+
 }  // namespace
 
 StreamMixerAlsaInputImpl::StreamMixerAlsaInputImpl(
@@ -66,17 +77,22 @@ StreamMixerAlsaInputImpl::StreamMixerAlsaInputImpl(
     int input_samples_per_second,
     bool primary,
     const std::string& device_id,
+    AudioContentType content_type,
     StreamMixerAlsa* mixer)
     : delegate_(delegate),
       input_samples_per_second_(input_samples_per_second),
       primary_(primary),
       device_id_(device_id),
+      content_type_(content_type),
       mixer_(mixer),
       filter_group_(nullptr),
       mixer_task_runner_(mixer_->task_runner()),
       caller_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       resample_ratio_(1.0),
       state_(kStateUninitialized),
+      stream_volume_multiplier_(1.0f),
+      type_volume_multiplier_(1.0f),
+      mute_volume_multiplier_(1.0f),
       slew_volume_(kMaxSlewTimeUpMs, kMaxSlewTimeDownMs),
       queued_frames_(0),
       queued_frames_including_resampler_(0),
@@ -88,7 +104,8 @@ StreamMixerAlsaInputImpl::StreamMixerAlsaInputImpl(
       zeroed_frames_(0),
       is_underflowing_(false),
       weak_factory_(this) {
-  LOG(INFO) << "Create " << device_id_ << " (" << this << ")";
+  LOG(INFO) << "Create " << device_id_ << " (" << this
+            << "), content type = " << AudioContentTypeToString(content_type_);
   DCHECK(delegate_);
   DCHECK(mixer_);
   weak_this_ = weak_factory_.GetWeakPtr();
@@ -109,6 +126,10 @@ bool StreamMixerAlsaInputImpl::primary() const {
 
 std::string StreamMixerAlsaInputImpl::device_id() const {
   return device_id_;
+}
+
+AudioContentType StreamMixerAlsaInputImpl::content_type() const {
+  return content_type_;
 }
 
 bool StreamMixerAlsaInputImpl::IsDeleting() const {
@@ -265,6 +286,7 @@ void StreamMixerAlsaInputImpl::OnSkipped() {
     // Fade in once this input starts providing data again.
     fade_frames_remaining_ = NormalFadeFrames();
   }
+  slew_volume_.Interrupted();
 }
 
 void StreamMixerAlsaInputImpl::AfterWriteFrames(
@@ -528,13 +550,36 @@ void StreamMixerAlsaInputImpl::SetPaused(bool paused) {
 
 void StreamMixerAlsaInputImpl::SetVolumeMultiplier(float multiplier) {
   RUN_ON_MIXER_THREAD(SetVolumeMultiplier, multiplier);
-  LOG(INFO) << device_id_ << "(" << this << "): stream volume = " << multiplier;
   DCHECK(!IsDeleting());
-  if (multiplier > 1.0f)
-    multiplier = 1.0f;
-  if (multiplier < 0.0f)
-    multiplier = 0.0f;
-  slew_volume_.SetVolume(multiplier);
+  stream_volume_multiplier_ = std::max(0.0f, std::min(multiplier, 1.0f));
+  float effective_volume = stream_volume_multiplier_ * type_volume_multiplier_ *
+                           mute_volume_multiplier_;
+  LOG(INFO) << device_id_ << "(" << this
+            << "): stream volume = " << stream_volume_multiplier_
+            << ", effective multiplier = " << effective_volume;
+  slew_volume_.SetVolume(effective_volume);
+}
+
+void StreamMixerAlsaInputImpl::SetContentTypeVolume(float volume) {
+  DCHECK(mixer_task_runner_->BelongsToCurrentThread());
+  type_volume_multiplier_ = std::max(0.0f, std::min(volume, 1.0f));
+  float effective_volume = stream_volume_multiplier_ * type_volume_multiplier_ *
+                           mute_volume_multiplier_;
+  LOG(INFO) << device_id_ << "(" << this
+            << "): type volume = " << type_volume_multiplier_
+            << ", effective multiplier = " << effective_volume;
+  slew_volume_.SetVolume(effective_volume);
+}
+
+void StreamMixerAlsaInputImpl::SetMuted(bool muted) {
+  DCHECK(mixer_task_runner_->BelongsToCurrentThread());
+  mute_volume_multiplier_ = muted ? 0.0f : 1.0f;
+  float effective_volume = stream_volume_multiplier_ * type_volume_multiplier_ *
+                           mute_volume_multiplier_;
+  LOG(INFO) << device_id_ << "(" << this
+            << "): mute volume = " << mute_volume_multiplier_
+            << ", effective multiplier = " << effective_volume;
+  slew_volume_.SetVolume(effective_volume);
 }
 
 void StreamMixerAlsaInputImpl::VolumeScaleAccumulate(bool repeat_transition,

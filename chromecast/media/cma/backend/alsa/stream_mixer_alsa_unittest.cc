@@ -157,6 +157,9 @@ class MockInputQueue : public StreamMixerAlsa::InputQueue {
                void(const MediaPipelineBackendAlsa::RenderingDelay&
                         mixer_rendering_delay));
   std::string device_id() const override { return device_id_; }
+  AudioContentType content_type() const override {
+    return AudioContentType::kMedia;
+  }
   void set_filter_group(FilterGroup* group) override { filter_group_ = group; }
   FilterGroup* filter_group() override { return filter_group_; }
   int MaxReadSize() override { return max_read_size_; }
@@ -170,6 +173,9 @@ class MockInputQueue : public StreamMixerAlsa::InputQueue {
                         mixer_rendering_delay));
   MOCK_METHOD1(SignalError, void(StreamMixerAlsaInput::MixerError error));
   MOCK_METHOD1(PrepareToDelete, void(const OnReadyToDeleteCb& delete_cb));
+
+  void SetContentTypeVolume(float volume) override {}
+  void SetMuted(bool muted) override {}
 
   // Setters and getters for test control.
   void SetPaused(bool paused) { paused_ = paused; }

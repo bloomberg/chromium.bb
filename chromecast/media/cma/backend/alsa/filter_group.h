@@ -15,10 +15,14 @@
 #include "base/macros.h"
 #include "chromecast/media/cma/backend/alsa/audio_filter_factory.h"
 #include "chromecast/media/cma/backend/alsa/stream_mixer_alsa.h"
+#include "chromecast/public/volume_control.h"
+
+namespace media {
+class AudioBus;
+}  // namespace media
 
 namespace chromecast {
 namespace media {
-class AudioBus;
 
 // FilterGroup contains state for an AudioFilter.
 // It takes multiple StreamMixerAlsa::InputQueues,
@@ -33,8 +37,13 @@ class FilterGroup {
   // entry in |input_types| to be processed by this group.
   // |filter_type| is passed to AudioFilterFactory to create an AudioFilter.
   FilterGroup(const std::unordered_set<std::string>& input_types,
-              AudioFilterFactory::FilterType filter_type);
+              AudioFilterFactory::FilterType filter_type,
+              AudioContentType content_type);
   ~FilterGroup();
+
+  AudioContentType content_type() const { return content_type_; }
+
+  void set_volume(float volume) { volume_ = volume; }
 
   // Sets the sample rate and format in the AudioFilter.
   void Initialize(int output_samples_per_second, ::media::SampleFormat format);
@@ -64,10 +73,13 @@ class FilterGroup {
   int BytesPerOutputFormatSample();
 
   const std::unordered_set<std::string> input_types_;
+  const AudioContentType content_type_;
   std::vector<StreamMixerAlsa::InputQueue*> active_inputs_;
 
   int output_samples_per_second_;
   ::media::SampleFormat sample_format_;
+
+  float volume_ = 0.0f;
 
   // Buffers that hold audio data while it is mixed.
   // These are kept as members of this class to minimize copies and

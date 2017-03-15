@@ -19,7 +19,7 @@ class AudioFilterInterface {
                                       ::media::SampleFormat sample_format) = 0;
 
   // Process data frames. Must be interleaved. |data| will be overwritten.
-  virtual bool ProcessInterleaved(uint8_t* data, int frames) = 0;
+  virtual bool ProcessInterleaved(uint8_t* data, int frames, float volume) = 0;
 };
 
 }  // namespace media

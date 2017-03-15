@@ -12,6 +12,7 @@
 #include "base/threading/thread_checker.h"
 #include "chromecast/media/cma/backend/alsa/media_pipeline_backend_alsa.h"
 #include "chromecast/public/media/media_pipeline_device_params.h"
+#include "chromecast/public/volume_control.h"
 
 namespace chromecast {
 namespace media {
@@ -52,7 +53,8 @@ class StreamMixerAlsaInput {
   StreamMixerAlsaInput(Delegate* delegate,
                        int samples_per_second,
                        bool primary,
-                       const std::string& device_id);
+                       const std::string& device_id,
+                       AudioContentType content_type);
   // Removes this input from the mixer, destroying the mixer if there are no
   // remaining inputs.
   ~StreamMixerAlsaInput();

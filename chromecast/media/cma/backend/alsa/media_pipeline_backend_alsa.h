@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
 #include "chromecast/public/media/media_pipeline_device_params.h"
+#include "chromecast/public/volume_control.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -43,6 +44,7 @@ class MediaPipelineBackendAlsa : public MediaPipelineBackend {
 
   bool Primary() const;
   std::string DeviceId() const;
+  AudioContentType ContentType() const;
   const scoped_refptr<base::SingleThreadTaskRunner>& GetTaskRunner() const;
 
  private:

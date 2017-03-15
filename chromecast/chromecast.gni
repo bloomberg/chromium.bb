@@ -27,6 +27,9 @@ declare_args() {
   # TODO(antz): default to false for audio-only builds, might need further
   # clean up (b/27119303)
   enable_chromecast_webui = !is_cast_audio_only && !is_android
+
+  # Set true to enable assistant features.
+  enable_assistant = false
 }
 
 declare_args() {
@@ -43,3 +46,7 @@ if (chromecast_branding == "public") {
   cast_build_release =
       read_file("//chromecast/internal/build/cast_build_release", "trim string")
 }
+
+# Assistant shall only be enabled on audio-only builds.
+assert(!enable_assistant || is_cast_audio_only,
+       "Assistant is only available on audio devices.")

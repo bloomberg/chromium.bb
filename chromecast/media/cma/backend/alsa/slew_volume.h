@@ -23,6 +23,10 @@ class SlewVolume {
   void SetSampleRate(int sample_rate);
   void SetVolume(double volume_scale);
 
+  // Called to indicate that the stream was interrupted; volume changes can be
+  // applied immediately.
+  void Interrupted();
+
   // Assumes 1 channel float data that is 16-byte aligned. Smoothly calculates
   // dest[i] += src[i] * volume_scaling
   // ProcessFMAC will be called once for each channel of audio present and
@@ -44,6 +48,7 @@ class SlewVolume {
   int max_slew_time_down_ms_;
   double max_slew_up_;
   double max_slew_down_;
+  bool interrupted_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(SlewVolume);
 };

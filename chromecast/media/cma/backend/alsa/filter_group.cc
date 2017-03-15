@@ -17,8 +17,10 @@ const int kNumOutputChannels = 2;
 }  // namespace
 
 FilterGroup::FilterGroup(const std::unordered_set<std::string>& input_types,
-                         AudioFilterFactory::FilterType filter_type)
+                         AudioFilterFactory::FilterType filter_type,
+                         AudioContentType content_type)
     : input_types_(input_types),
+      content_type_(content_type),
       output_samples_per_second_(0),
       sample_format_(::media::SampleFormat::kUnknownSampleFormat),
       audio_filter_(AudioFilterFactory::MakeAudioFilter(filter_type)),
@@ -78,7 +80,7 @@ bool FilterGroup::MixAndFilter(int chunk_size) {
   mixed_->ToInterleaved(chunk_size, BytesPerOutputFormatSample(),
                         interleaved_.data());
   if (audio_filter_) {
-    audio_filter_->ProcessInterleaved(interleaved_.data(), chunk_size);
+    audio_filter_->ProcessInterleaved(interleaved_.data(), chunk_size, volume_);
   }
 
   return true;

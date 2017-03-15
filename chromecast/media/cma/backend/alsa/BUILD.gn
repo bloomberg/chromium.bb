@@ -50,6 +50,10 @@ source_set("alsa_cma_backend") {
     "stream_mixer_alsa_input_impl.h",
   ]
 
+  if (enable_assistant) {
+    sources += [ "volume_control.cc" ]
+  }
+
   libs = [ "asound" ]
 
   deps = [

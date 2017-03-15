@@ -102,6 +102,10 @@ std::string MediaPipelineBackendAlsa::DeviceId() const {
   return params_.device_id;
 }
 
+AudioContentType MediaPipelineBackendAlsa::ContentType() const {
+  return params_.content_type;
+}
+
 const scoped_refptr<base::SingleThreadTaskRunner>&
 MediaPipelineBackendAlsa::GetTaskRunner() const {
   return static_cast<TaskRunnerImpl*>(params_.task_runner)->runner();
