@@ -10,6 +10,56 @@
  */
 
 cr.define('bookmarks', function() {
+  var SelectionState = {};
+
+  /**
+   * @param {SelectionState} selectionState
+   * @param {Action} action
+   * @return {SelectionState}
+   */
+  SelectionState.selectItems = function(selectionState, action) {
+    var newItems = {};
+    if (action.add)
+      Object.assign(newItems, selectionState.items);
+
+    action.items.forEach(function(id) {
+      newItems[id] = true;
+    });
+
+    return /** @type {SelectionState} */ (Object.assign({}, selectionState, {
+      items: newItems,
+      anchor: action.anchor,
+    }));
+  };
+
+  /**
+   * @param {SelectionState} selectionState
+   * @return {SelectionState}
+   */
+  SelectionState.deselectAll = function(selectionState) {
+    return {
+      items: {},
+      anchor: null,
+    };
+  };
+
+  /**
+   * @param {SelectionState} selection
+   * @param {Action} action
+   * @return {SelectionState}
+   */
+  SelectionState.updateSelection = function(selection, action) {
+    switch (action.name) {
+      case 'clear-search':
+      case 'finish-search':
+      case 'select-folder':
+        return SelectionState.deselectAll(selection);
+      case 'select-items':
+        return SelectionState.selectItems(selection, action);
+    }
+    return selection;
+  };
+
   var SearchState = {};
 
   /**
@@ -181,52 +231,53 @@ cr.define('bookmarks', function() {
   var ClosedFolderState = {};
 
   /**
-   * @param {ClosedFolderState} state
+   * @param {ClosedFolderState} closedFolders
    * @param {Action} action
    * @param {NodeList} nodes
    * @return {ClosedFolderState}
    */
-  ClosedFolderState.openAncestorsOf = function(state, action, nodes) {
+  ClosedFolderState.openAncestorsOf = function(closedFolders, action, nodes) {
     var id = action.id;
     var modifications = {};
     var parentId = nodes[id].parentId;
     while (parentId) {
-      if (state[parentId]) {
+      if (closedFolders[parentId]) {
         modifications[parentId] = false;
       }
       parentId = nodes[parentId].parentId;
     }
 
-    return Object.assign({}, state, modifications);
+    return Object.assign({}, closedFolders, modifications);
   };
 
   /**
-   * @param {ClosedFolderState} state
+   * @param {ClosedFolderState} closedFolders
    * @param {Action} action
    * @return {ClosedFolderState}
    */
-  ClosedFolderState.changeFolderOpen = function(state, action) {
+  ClosedFolderState.changeFolderOpen = function(closedFolders, action) {
     var closed = !action.open;
     var modification = {};
     modification[action.id] = closed;
 
-    return Object.assign({}, state, modification);
+    return Object.assign({}, closedFolders, modification);
   };
 
   /**
-   * @param {ClosedFolderState} state
+   * @param {ClosedFolderState} closedFolders
    * @param {Action} action
    * @param {NodeList} nodes
    * @return {ClosedFolderState}
    */
-  ClosedFolderState.updateClosedFolders = function(state, action, nodes) {
+  ClosedFolderState.updateClosedFolders = function(
+      closedFolders, action, nodes) {
     switch (action.name) {
       case 'change-folder-open':
-        return ClosedFolderState.changeFolderOpen(state, action);
+        return ClosedFolderState.changeFolderOpen(closedFolders, action);
       case 'select-folder':
-        return ClosedFolderState.openAncestorsOf(state, action, nodes);
+        return ClosedFolderState.openAncestorsOf(closedFolders, action, nodes);
       default:
-        return state;
+        return closedFolders;
     };
   };
 
@@ -245,6 +296,7 @@ cr.define('bookmarks', function() {
       closedFolders: ClosedFolderState.updateClosedFolders(
           state.closedFolders, action, state.nodes),
       search: SearchState.updateSearch(state.search, action),
+      selection: SelectionState.updateSelection(state.selection, action),
     };
   }
 
@@ -254,5 +306,6 @@ cr.define('bookmarks', function() {
     NodeState: NodeState,
     SearchState: SearchState,
     SelectedFolderState: SelectedFolderState,
+    SelectionState: SelectionState,
   };
 });

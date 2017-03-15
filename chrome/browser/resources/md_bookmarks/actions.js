@@ -80,6 +80,44 @@ cr.define('bookmarks.actions', function() {
   }
 
   /**
+   * @param {string} id
+   * @param {boolean} add
+   * @param {boolean} range
+   * @param {BookmarksPageState} state
+   * @return {!Action}
+   */
+  function selectItem(id, add, range, state) {
+    var anchor = state.selection.anchor;
+    var toSelect = [];
+
+    // TODO(tsergeant): Make it possible to deselect items by ctrl-clicking them
+    // again.
+    if (range && anchor) {
+      var displayedList = bookmarks.util.getDisplayedList(state);
+      var selectedIndex = displayedList.indexOf(id);
+      assert(selectedIndex != -1);
+      var anchorIndex = displayedList.indexOf(anchor);
+      if (anchorIndex == -1)
+        anchorIndex = selectedIndex;
+
+      var startIndex = Math.min(anchorIndex, selectedIndex);
+      var endIndex = Math.max(anchorIndex, selectedIndex);
+
+      for (var i = startIndex; i <= endIndex; i++)
+        toSelect.push(displayedList[i]);
+    } else {
+      toSelect.push(id);
+    }
+
+    return {
+      name: 'select-items',
+      add: add,
+      anchor: id,
+      items: toSelect,
+    };
+  }
+
+  /**
    * @param {string} term
    * @return {!Action}
    */
@@ -111,6 +149,7 @@ cr.define('bookmarks.actions', function() {
     refreshNodes: refreshNodes,
     removeBookmark: removeBookmark,
     selectFolder: selectFolder,
+    selectItem: selectItem,
     setSearchResults: setSearchResults,
     setSearchTerm: setSearchTerm,
   };

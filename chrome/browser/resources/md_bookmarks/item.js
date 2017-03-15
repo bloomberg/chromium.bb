@@ -44,6 +44,9 @@ Polymer({
     this.watch('item_', function(store) {
       return store.nodes[this.itemId];
     }.bind(this));
+    this.watch('isSelectedItem_', function(store) {
+      return !!store.selection.items[this.itemId];
+    }.bind(this));
 
     this.updateFromStore();
   },
@@ -78,11 +81,8 @@ Polymer({
    * @private
    */
   onClick_: function(e) {
-    this.fire('select-item', {
-      item: this.item_,
-      range: e.shiftKey,
-      add: e.ctrlKey,
-    });
+    this.dispatch(bookmarks.actions.selectItem(
+        this.itemId, e.ctrlKey, e.shiftKey, this.getState()));
   },
 
   /**

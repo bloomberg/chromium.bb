@@ -2,6 +2,84 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+suite('selection state', function() {
+  var state;
+  var action;
+
+  function select(items, anchor, add) {
+    return {
+      name: 'select-items',
+      add: add,
+      anchor: anchor,
+      items: items,
+    };
+  }
+
+  setup(function() {
+    state = {
+      anchor: null,
+      items: {},
+    };
+  });
+
+  test('can select an item', function() {
+    action = select(['1'], '1', false);
+    state = bookmarks.SelectionState.updateSelection(state, action);
+
+    assertDeepEquals({'1': true}, state.items);
+    assertEquals('1', state.anchor);
+
+    // Replace current selection.
+    action = select(['2'], '2', false);
+    state = bookmarks.SelectionState.updateSelection(state, action);
+    assertDeepEquals({'2': true}, state.items);
+    assertEquals('2', state.anchor);
+
+    // Add to current selection.
+    action = select(['3'], '3', true);
+    state = bookmarks.SelectionState.updateSelection(state, action);
+    assertDeepEquals({'2': true, '3': true}, state.items);
+    assertEquals('3', state.anchor);
+  });
+
+  test('can select multiple items', function() {
+    action = select(['1', '2', '3'], '3', false);
+    state = bookmarks.SelectionState.updateSelection(state, action);
+    assertDeepEquals({'1': true, '2': true, '3': true}, state.items);
+
+    action = select(['3', '4'], '4', true);
+    state = bookmarks.SelectionState.updateSelection(state, action);
+    assertDeepEquals({'1': true, '2': true, '3': true, '4': true}, state.items);
+  });
+
+  test('is cleared when selected folder changes', function() {
+    action = select(['1', '2', '3'], '3', false);
+    state = bookmarks.SelectionState.updateSelection(state, action);
+
+    action = bookmarks.actions.selectFolder('2');
+    state = bookmarks.SelectionState.updateSelection(state, action);
+    assertDeepEquals({}, state.items);
+  });
+
+  test('is cleared when search finished', function() {
+    action = select(['1', '2', '3'], '3', false);
+    state = bookmarks.SelectionState.updateSelection(state, action);
+
+    action = bookmarks.actions.setSearchResults(['2']);
+    state = bookmarks.SelectionState.updateSelection(state, action);
+    assertDeepEquals({}, state.items);
+  });
+
+  test('is cleared when search cleared', function() {
+    action = select(['1', '2', '3'], '3', false);
+    state = bookmarks.SelectionState.updateSelection(state, action);
+
+    action = bookmarks.actions.clearSearch();
+    state = bookmarks.SelectionState.updateSelection(state, action);
+    assertDeepEquals({}, state.items);
+  });
+});
+
 suite('closed folder state', function() {
   var nodes;
   // TODO(tsergeant): Remove use of 'initialState' and 'nextState'.

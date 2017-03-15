@@ -60,6 +60,10 @@ cr.define('bookmarks.util', function() {
         inProgress: false,
         results: [],
       },
+      selection: {
+        items: {},
+        anchor: null,
+      },
     };
   }
 
