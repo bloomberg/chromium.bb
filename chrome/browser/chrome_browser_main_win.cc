@@ -425,7 +425,6 @@ void ChromeBrowserMainPartsWin::PrepareRestartOnCrashEnviroment(
 // static
 void ChromeBrowserMainPartsWin::RegisterApplicationRestart(
     const base::CommandLine& parsed_command_line) {
-  DCHECK(base::win::GetVersion() >= base::win::VERSION_VISTA);
   base::ScopedNativeLibrary library(base::FilePath(L"kernel32.dll"));
   // Get the function pointer for RegisterApplicationRestart.
   RegisterApplicationRestartProc register_application_restart =
@@ -444,15 +443,17 @@ void ChromeBrowserMainPartsWin::RegisterApplicationRestart(
 
   // Restart Chrome if the computer is restarted as the result of an update.
   // This could be extended to handle crashes, hangs, and patches.
+  const auto& command_line_string = command_line.GetCommandLineString();
   HRESULT hr = register_application_restart(
-      command_line.GetCommandLineString().c_str(),
+      command_line_string.c_str(),
       RESTART_NO_CRASH | RESTART_NO_HANG | RESTART_NO_PATCH);
   if (FAILED(hr)) {
     if (hr == E_INVALIDARG) {
-      LOG(WARNING) << "Command line too long for RegisterApplicationRestart";
+      LOG(WARNING) << "Command line too long for RegisterApplicationRestart: "
+                   << command_line_string;
     } else {
-      NOTREACHED() << "RegisterApplicationRestart failed. hr: " << hr <<
-                      ", command_line: " << command_line.GetCommandLineString();
+      NOTREACHED() << "RegisterApplicationRestart failed. hr: " << hr
+                   << ", command_line: " << command_line_string;
     }
   }
 }

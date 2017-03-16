@@ -200,7 +200,6 @@
 #include "base/trace_event/trace_event_etw_export_win.h"
 #include "base/win/registry.h"
 #include "base/win/win_util.h"
-#include "base/win/windows_version.h"
 #include "chrome/browser/chrome_browser_main_win.h"
 #include "chrome/browser/component_updater/sw_reporter_installer_win.h"
 #include "chrome/browser/downgrade/user_data_downgrade.h"
@@ -1706,10 +1705,7 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // This could be run as late as WM_QUERYENDSESSION for system update reboots,
   // but should run on startup if extended to handle crashes/hangs/patches.
   // Also, better to run once here than once for each HWND's WM_QUERYENDSESSION.
-  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
-    ChromeBrowserMainPartsWin::RegisterApplicationRestart(
-        parsed_command_line());
-  }
+  ChromeBrowserMainPartsWin::RegisterApplicationRestart(parsed_command_line());
 
   // Verify that the profile is not on a network share and if so prepare to show
   // notification to the user.
