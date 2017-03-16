@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/gfx/chromeos/codec/jpeg_codec_robust_slow.h"
+#include "ui/gfx/codec/chromeos/jpeg_codec_robust_slow.h"
 
 namespace {
 
@@ -93,16 +93,12 @@ TEST(JPEGCodecRobustSlow, DecodeCorrupted) {
 TEST(JPEGCodecRobustSlow, InvalidRead) {
   std::vector<unsigned char> output;
   int outw, outh;
-  ASSERT_TRUE(
-      JPEGCodecRobustSlow::Decode(kTopSitesMigrationTestImage,
-                                  arraysize(kTopSitesMigrationTestImage),
-                                  JPEGCodecRobustSlow::FORMAT_RGB, &output,
-                                  &outw, &outh));
-  ASSERT_TRUE(
-      JPEGCodecRobustSlow::Decode(kTopSitesMigrationTestImage,
-                                  arraysize(kTopSitesMigrationTestImage),
-                                  JPEGCodecRobustSlow::FORMAT_RGBA, &output,
-                                  &outw, &outh));
+  ASSERT_TRUE(JPEGCodecRobustSlow::Decode(
+      kTopSitesMigrationTestImage, arraysize(kTopSitesMigrationTestImage),
+      JPEGCodecRobustSlow::FORMAT_RGB, &output, &outw, &outh));
+  ASSERT_TRUE(JPEGCodecRobustSlow::Decode(
+      kTopSitesMigrationTestImage, arraysize(kTopSitesMigrationTestImage),
+      JPEGCodecRobustSlow::FORMAT_RGBA, &output, &outw, &outh));
 }
 
 }  // namespace gfx

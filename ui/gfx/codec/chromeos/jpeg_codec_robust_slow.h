@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_CHROMEOS_CODEC_JPEG_CODEC_ROBUST_SLOW_H_
-#define UI_GFX_CHROMEOS_CODEC_JPEG_CODEC_ROBUST_SLOW_H_
+#ifndef UI_GFX_CODEC_CHROMEOS_JPEG_CODEC_ROBUST_SLOW_H_
+#define UI_GFX_CODEC_CHROMEOS_JPEG_CODEC_ROBUST_SLOW_H_
 
 #include <stddef.h>
 #include <vector>
 
-#include "ui/gfx/gfx_export.h"
+#include "ui/gfx/codec/codec_export.h"
 
 class SkBitmap;
 
@@ -18,7 +18,7 @@ namespace gfx {
 // which has an inconvenient interface for callers. This is only used for
 // servicing ChromeUtilityMsg_RobustJPEGDecodeImage and is currently unique
 // to Chrome OS.
-class GFX_EXPORT JPEGCodecRobustSlow {
+class CODEC_EXPORT JPEGCodecRobustSlow {
  public:
   enum ColorFormat {
     // 3 bytes per pixel (packed), in RGB order regardless of endianness.
@@ -41,9 +41,12 @@ class GFX_EXPORT JPEGCodecRobustSlow {
   // decoded data will be placed in *output with the dimensions in *w and *h
   // on success (returns true). This data will be written in the'format'
   // format. On failure, the values of these output variables is undefined.
-  static bool Decode(const unsigned char* input, size_t input_size,
-                     ColorFormat format, std::vector<unsigned char>* output,
-                     int* w, int* h);
+  static bool Decode(const unsigned char* input,
+                     size_t input_size,
+                     ColorFormat format,
+                     std::vector<unsigned char>* output,
+                     int* w,
+                     int* h);
 
   // Decodes the JPEG data contained in input of length input_size. If
   // successful, a SkBitmap is created and returned. It is up to the caller
@@ -53,4 +56,4 @@ class GFX_EXPORT JPEGCodecRobustSlow {
 
 }  // namespace gfx
 
-#endif  // UI_GFX_CHROMEOS_CODEC_JPEG_CODEC_ROBUST_SLOW_H_
+#endif  // UI_GFX_CODEC_CHROMEOS_JPEG_CODEC_ROBUST_SLOW_H_

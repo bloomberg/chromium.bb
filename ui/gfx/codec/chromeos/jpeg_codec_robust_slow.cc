@@ -2,20 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/chromeos/codec/jpeg_codec_robust_slow.h"
+#include "ui/gfx//codec/chromeos/jpeg_codec_robust_slow.h"
 
 #include <setjmp.h>
 
 #include <memory>
 
 #include "base/logging.h"
-#include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/skia/include/core/SkColorPriv.h"
 
 extern "C" {
 // IJG provides robust JPEG decode
 #include "third_party/libjpeg/jpeglib.h"
 }
+
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkColorPriv.h"
 
 namespace gfx {
 
@@ -30,7 +31,7 @@ struct CoderErrorMgr {
 };
 
 void ErrorExit(jpeg_common_struct* cinfo) {
-  CoderErrorMgr *err = reinterpret_cast<CoderErrorMgr*>(cinfo->err);
+  CoderErrorMgr* err = reinterpret_cast<CoderErrorMgr*>(cinfo->err);
 
   // Return control to the setjmp point.
   longjmp(err->setjmp_buffer, false);
@@ -44,8 +45,7 @@ namespace {
 
 struct JpegDecoderState {
   JpegDecoderState(const unsigned char* in, size_t len)
-      : input_buffer(in), input_buffer_length(len) {
-  }
+      : input_buffer(in), input_buffer_length(len) {}
 
   const unsigned char* input_buffer;
   size_t input_buffer_length;
@@ -112,8 +112,7 @@ void SkipInputData(j_decompress_ptr cinfo, long num_bytes) {
 //  "Terminate source --- called by jpeg_finish_decompress() after all data has
 //   been read to clean up JPEG source manager. NOT called by jpeg_abort() or
 //   jpeg_destroy()."
-void TermSource(j_decompress_ptr cinfo) {
-}
+void TermSource(j_decompress_ptr cinfo) {}
 
 #if !defined(JCS_EXTENSIONS)
 // Converts one row of rgb data to rgba data by adding a fully-opaque alpha
@@ -127,8 +126,7 @@ void AddAlpha(const unsigned char* rgb, int pixel_width, unsigned char* rgba) {
 
 // Converts one row of RGB data to BGRA by reordering the color components and
 // adding alpha values of 0xff.
-void RGBtoBGRA(const unsigned char* bgra, int pixel_width, unsigned char* rgb)
-{
+void RGBtoBGRA(const unsigned char* bgra, int pixel_width, unsigned char* rgb) {
   for (int x = 0; x < pixel_width; x++) {
     const unsigned char* pixel_in = &bgra[x * 3];
     unsigned char* pixel_out = &rgb[x * 4];
@@ -145,11 +143,8 @@ void RGBtoBGRA(const unsigned char* bgra, int pixel_width, unsigned char* rgb)
 // success case).
 class DecompressDestroyer {
  public:
-  DecompressDestroyer() : cinfo_(NULL) {
-  }
-  ~DecompressDestroyer() {
-    DestroyManagedObject();
-  }
+  DecompressDestroyer() : cinfo_(NULL) {}
+  ~DecompressDestroyer() { DestroyManagedObject(); }
   void SetManagedObject(jpeg_decompress_struct* ci) {
     DestroyManagedObject();
     cinfo_ = ci;
@@ -160,15 +155,18 @@ class DecompressDestroyer {
       cinfo_ = NULL;
     }
   }
+
  private:
   jpeg_decompress_struct* cinfo_;
 };
 
 }  // namespace
 
-bool JPEGCodecRobustSlow::Decode(const unsigned char* input, size_t input_size,
+bool JPEGCodecRobustSlow::Decode(const unsigned char* input,
+                                 size_t input_size,
                                  ColorFormat format,
-                                 std::vector<unsigned char>* output, int* w,
+                                 std::vector<unsigned char>* output,
+                                 int* w,
                                  int* h) {
   jpeg_decompress_struct cinfo;
   DecompressDestroyer destroyer;
