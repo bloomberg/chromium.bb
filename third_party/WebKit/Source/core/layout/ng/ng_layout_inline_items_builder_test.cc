@@ -97,13 +97,20 @@ TEST_F(NGLayoutInlineItemsBuilderTest, CollapseTabs) {
 }
 
 TEST_F(NGLayoutInlineItemsBuilderTest, CollapseNewLines) {
-  String input("text\ntext \n text");
-  String collapsed("text text text");
+  String input("text\ntext \n text\n\ntext");
+  String collapsed("text text text text");
   TestWhitespaceValue(collapsed, input, EWhiteSpace::kNormal);
   TestWhitespaceValue(collapsed, input, EWhiteSpace::kNowrap);
-  TestWhitespaceValue("text\ntext\ntext", input, EWhiteSpace::kPreLine);
+  TestWhitespaceValue("text\ntext\ntext\n\ntext", input, EWhiteSpace::kPreLine);
   TestWhitespaceValue(input, input, EWhiteSpace::kPre);
   TestWhitespaceValue(input, input, EWhiteSpace::kPreWrap);
+}
+
+TEST_F(NGLayoutInlineItemsBuilderTest, CollapseNewlinesAsSpaces) {
+  EXPECT_EQ("text text", TestAppend("text\ntext"));
+  EXPECT_EQ("text text", TestAppend("text\n\ntext"));
+  EXPECT_EQ("text text", TestAppend("text \n\n text"));
+  EXPECT_EQ("text text", TestAppend("text \n \n text"));
 }
 
 TEST_F(NGLayoutInlineItemsBuilderTest, CollapseAcrossElements) {
@@ -175,9 +182,6 @@ TEST_F(NGLayoutInlineItemsBuilderTest,
 }
 
 TEST_F(NGLayoutInlineItemsBuilderTest, CollapseZeroWidthSpaces) {
-  EXPECT_EQ("text text", TestAppend("text\ntext"))
-      << "Newline is converted to a space.";
-
   EXPECT_EQ(String(u"text\u200Btext"), TestAppend(u"text\u200B\ntext"))
       << "Newline is removed if the character before is ZWS.";
   EXPECT_EQ(String(u"text\u200Btext"), TestAppend(u"text\n\u200Btext"))
@@ -224,12 +228,16 @@ TEST_F(NGLayoutInlineItemsBuilderTest, CollapseAroundReplacedElement) {
   EXPECT_EQ(String(u"Hello \uFFFC World"), builder.ToString());
 }
 
-TEST_F(NGLayoutInlineItemsBuilderTest, AppendAsOpaqueToSpaceCollapsing) {
+TEST_F(NGLayoutInlineItemsBuilderTest, CollapseNewlineAfterObject) {
   NGLayoutInlineItemsBuilder builder(&items_);
-  builder.Append("Hello ", style_.get());
-  builder.AppendAsOpaqueToSpaceCollapsing(firstStrongIsolateCharacter);
-  builder.Append(" World", style_.get());
-  EXPECT_EQ(String(u"Hello \u2068World"), builder.ToString());
+  builder.Append(objectReplacementCharacter);
+  builder.Append("\n", style_.get());
+  builder.Append(objectReplacementCharacter);
+  EXPECT_EQ(String(u"\uFFFC \uFFFC"), builder.ToString());
+  EXPECT_EQ(3u, items_.size());
+  EXPECT_EQ(nullptr, items_[0].Style());
+  EXPECT_EQ(style_.get(), items_[1].Style());
+  EXPECT_EQ(nullptr, items_[2].Style());
 }
 
 TEST_F(NGLayoutInlineItemsBuilderTest, AppendEmptyString) {

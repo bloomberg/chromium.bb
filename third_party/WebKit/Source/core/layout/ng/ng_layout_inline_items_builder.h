@@ -61,11 +61,7 @@ class CORE_EXPORT NGLayoutInlineItemsBuilder {
   // LayoutObject.
   void Append(UChar, const ComputedStyle* = nullptr, LayoutObject* = nullptr);
 
-  // Append a character.
-  // The character is opaque to space collapsing that spaces before this
-  // character and after this character can collapse as if this character does
-  // not exist.
-  void AppendAsOpaqueToSpaceCollapsing(UChar);
+  // Append a Bidi control character, for LTR or RTL depends on the style.
   void AppendBidiControl(const ComputedStyle*, UChar ltr, UChar rtl);
 
   void EnterBlock(const ComputedStyle*);
@@ -83,8 +79,9 @@ class CORE_EXPORT NGLayoutInlineItemsBuilder {
   } OnExitNode;
   Vector<OnExitNode> exits_;
 
-  bool is_last_collapsible_space_ = true;
-  bool has_pending_newline_ = false;
+  enum class CollapsibleSpace { None, Space, Newline };
+
+  CollapsibleSpace last_collapsible_space_ = CollapsibleSpace::Space;
   bool is_svgtext_ = false;
   bool has_bidi_controls_ = false;
 
@@ -95,7 +92,13 @@ class CORE_EXPORT NGLayoutInlineItemsBuilder {
   void ProcessPendingNewline(const String&, const ComputedStyle*);
 
   // Removes the collapsible space at the end of |text_| if exists.
+  void RemoveTrailingCollapsibleSpaceIfExists(unsigned*);
   void RemoveTrailingCollapsibleSpace(unsigned*);
+
+  void RemoveTrailingCollapsibleNewlineIfNeeded(unsigned*,
+                                                const String&,
+                                                unsigned,
+                                                const ComputedStyle*);
 
   void Enter(LayoutObject*, UChar);
   void Exit(LayoutObject*);
