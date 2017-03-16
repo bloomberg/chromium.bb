@@ -19,6 +19,7 @@
 #include "base/strings/string_util.h"
 #include "base/trace_event/trace_event.h"
 #include "gpu/config/gpu_switches.h"
+#include "third_party/angle/src/gpu_info_util/SystemInfo.h"  // nogncheck
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_implementation.h"
@@ -302,6 +303,37 @@ void IdentifyActiveGPU(GPUInfo* gpu_info) {
       return;
     }
   }
+}
+
+void FillGPUInfoFromSystemInfo(GPUInfo* gpu_info,
+                               angle::SystemInfo* system_info) {
+  angle::GPUDeviceInfo* primary =
+      &system_info->gpus[system_info->primaryGPUIndex];
+
+  gpu_info->gpu.vendor_id = primary->vendorId;
+  gpu_info->gpu.device_id = primary->deviceId;
+
+  gpu_info->driver_vendor = std::move(primary->driverVendor);
+  gpu_info->driver_version = std::move(primary->driverVersion);
+  gpu_info->driver_date = std::move(primary->driverDate);
+
+  for (size_t i = 0; i < system_info->gpus.size(); i++) {
+    if (static_cast<int>(i) == system_info->primaryGPUIndex) {
+      continue;
+    }
+
+    GPUInfo::GPUDevice device;
+    device.vendor_id = system_info->gpus[i].vendorId;
+    device.device_id = system_info->gpus[i].deviceId;
+
+    gpu_info->secondary_gpus.push_back(device);
+  }
+
+  gpu_info->optimus = system_info->isOptimus;
+  gpu_info->amd_switchable = system_info->isAMDSwitchable;
+
+  gpu_info->machine_model_name = system_info->machineModelName;
+  gpu_info->machine_model_version = system_info->machineModelVersion;
 }
 
 }  // namespace gpu
