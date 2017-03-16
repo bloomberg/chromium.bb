@@ -21,7 +21,6 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.browser.AppWebMessagePort;
 import org.chromium.content.browser.MediaSessionImpl;
 import org.chromium.content.browser.framehost.RenderFrameHostDelegate;
-import org.chromium.content.browser.framehost.RenderFrameHostImpl;
 import org.chromium.content_public.browser.AccessibilitySnapshotCallback;
 import org.chromium.content_public.browser.AccessibilitySnapshotNode;
 import org.chromium.content_public.browser.ContentBitmapCallback;
@@ -95,14 +94,6 @@ import java.util.UUID;
                     return new WebContents[size];
                 }
             };
-
-    public static WebContents fromRenderFrameHost(RenderFrameHost rfh) {
-        RenderFrameHostDelegate delegate = ((RenderFrameHostImpl) rfh).getRenderFrameHostDelegate();
-        if (delegate == null || !(delegate instanceof WebContents)) {
-            return null;
-        }
-        return (WebContents) delegate;
-    }
 
     private long mNativeWebContentsAndroid;
     private NavigationController mNavigationController;

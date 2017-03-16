@@ -10,6 +10,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.browser.shapedetection.FaceDetectionProviderImpl;
 import org.chromium.content_public.browser.InterfaceRegistrar;
+import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.device.BatteryMonitor;
 import org.chromium.device.battery.BatteryMonitorFactory;
@@ -41,6 +42,16 @@ class InterfaceRegistrarImpl {
         InterfaceRegistry registry = InterfaceRegistry.create(
                 CoreImpl.getInstance().acquireNativeHandle(nativeHandle).toMessagePipeHandle());
         InterfaceRegistrar.Registry.applyWebContentsRegistrars(registry, webContents);
+    }
+
+    @CalledByNative
+    static void createInterfaceRegistryForRenderFrameHost(
+            int nativeHandle, RenderFrameHost renderFrameHost) {
+        ensureContentRegistrarsAreRegistered();
+
+        InterfaceRegistry registry = InterfaceRegistry.create(
+                CoreImpl.getInstance().acquireNativeHandle(nativeHandle).toMessagePipeHandle());
+        InterfaceRegistrar.Registry.applyRenderFrameHostRegistrars(registry, renderFrameHost);
     }
 
     private static void ensureContentRegistrarsAreRegistered() {

@@ -9,11 +9,16 @@
 #include "services/service_manager/public/interfaces/interface_provider.mojom.h"
 
 namespace content {
+class RenderFrameHostImpl;
 class WebContents;
 
 void BindInterfaceRegistryForWebContents(
     service_manager::mojom::InterfaceProviderRequest request,
     WebContents* web_contents);
+
+void BindInterfaceRegistryForRenderFrameHost(
+    service_manager::mojom::InterfaceProviderRequest request,
+    RenderFrameHostImpl* render_frame_host);
 
 }  // namespace content
 

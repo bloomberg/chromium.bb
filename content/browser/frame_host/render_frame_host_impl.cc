@@ -114,6 +114,7 @@
 #include "url/gurl.h"
 
 #if defined(OS_ANDROID)
+#include "content/browser/android/java_interfaces_impl.h"
 #include "content/browser/frame_host/render_frame_host_android.h"
 #include "content/browser/media/android/media_player_renderer.h"
 #include "content/public/browser/android/java_interfaces.h"
@@ -3506,6 +3507,16 @@ RenderFrameHostImpl::GetJavaRenderFrameHost() {
     SetUserData(kRenderFrameHostAndroidKey, render_frame_host_android);
   }
   return render_frame_host_android->GetJavaObject();
+}
+
+service_manager::InterfaceProvider* RenderFrameHostImpl::GetJavaInterfaces() {
+  if (!java_interfaces_) {
+    service_manager::mojom::InterfaceProviderPtr provider;
+    BindInterfaceRegistryForRenderFrameHost(mojo::MakeRequest(&provider), this);
+    java_interfaces_.reset(new service_manager::InterfaceProvider);
+    java_interfaces_->Bind(std::move(provider));
+  }
+  return java_interfaces_.get();
 }
 #endif
 

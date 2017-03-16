@@ -11,6 +11,7 @@
 #include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
 #include "base/memory/singleton.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/InterfaceRegistrarImpl_jni.h"
@@ -58,6 +59,15 @@ void BindInterfaceRegistryForWebContents(
   Java_InterfaceRegistrarImpl_createInterfaceRegistryForWebContents(
       env, request.PassMessagePipe().release().value(),
       web_contents->GetJavaWebContents().obj());
+}
+
+void BindInterfaceRegistryForRenderFrameHost(
+    service_manager::mojom::InterfaceProviderRequest request,
+    RenderFrameHostImpl* render_frame_host) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_InterfaceRegistrarImpl_createInterfaceRegistryForRenderFrameHost(
+      env, request.PassMessagePipe().release().value(),
+      render_frame_host->GetJavaRenderFrameHost().obj());
 }
 
 }  // namespace content

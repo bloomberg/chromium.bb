@@ -47,7 +47,9 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.components.payments.CurrencyFormatter;
 import org.chromium.components.payments.PaymentValidator;
 import org.chromium.components.url_formatter.UrlFormatter;
+import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.WebContentsStatics;
 import org.chromium.mojo.system.MojoException;
 import org.chromium.payments.mojom.CanMakePaymentQueryResult;
 import org.chromium.payments.mojom.PaymentComplete;
@@ -246,6 +248,7 @@ public class PaymentRequestImpl
     };
 
     private final Handler mHandler = new Handler();
+    private final RenderFrameHost mRenderFrameHost;
     private final WebContents mWebContents;
     private final String mSchemelessOriginForPaymentApp;
     private final String mOriginForDisplay;
@@ -348,10 +351,11 @@ public class PaymentRequestImpl
      *
      * @param webContents The web contents that have invoked the PaymentRequest API.
      */
-    public PaymentRequestImpl(WebContents webContents) {
-        assert webContents != null;
+    public PaymentRequestImpl(RenderFrameHost renderFrameHost) {
+        assert renderFrameHost != null;
 
-        mWebContents = webContents;
+        mRenderFrameHost = renderFrameHost;
+        mWebContents = WebContentsStatics.fromRenderFrameHost(renderFrameHost);
 
         mSchemelessOriginForPaymentApp = UrlFormatter.formatUrlForSecurityDisplay(
                 mWebContents.getLastCommittedUrl(), false /* omit scheme for payment apps. */);
@@ -359,7 +363,8 @@ public class PaymentRequestImpl
         mOriginForDisplay = UrlFormatter.formatUrlForSecurityDisplay(
                 mWebContents.getLastCommittedUrl(), true /* include scheme in display */);
 
-        mMerchantName = webContents.getTitle();
+        mMerchantName = mWebContents.getTitle();
+
         mCertificateChain = CertificateChainHelper.getCertificateChain(mWebContents);
 
         mApps = new ArrayList<>();

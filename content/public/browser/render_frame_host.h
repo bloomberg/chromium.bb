@@ -224,6 +224,14 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // RenderFrame. See BindingsPolicy for details.
   virtual int GetEnabledBindings() const = 0;
 
+#if defined(OS_ANDROID)
+  // Returns an InterfaceProvider for Java-implemented interfaces that are
+  // scoped to this RenderFrameHost. This provides access to interfaces
+  // implemented in Java in the browser process to C++ code in the browser
+  // process.
+  virtual service_manager::InterfaceProvider* GetJavaInterfaces() = 0;
+#endif  // OS_ANDROID
+
  private:
   // This interface should only be implemented inside content.
   friend class RenderFrameHostImpl;

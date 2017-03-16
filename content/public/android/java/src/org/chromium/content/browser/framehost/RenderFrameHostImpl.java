@@ -35,6 +35,11 @@ public class RenderFrameHostImpl implements RenderFrameHost {
         mNativeRenderFrameHostAndroid = 0;
     }
 
+    /**
+     * Get the delegate associated with this RenderFrameHost.
+     *
+     * @return The delegate associated with this RenderFrameHost.
+     */
     public RenderFrameHostDelegate getRenderFrameHostDelegate() {
         return mDelegate;
     }

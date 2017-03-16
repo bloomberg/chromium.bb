@@ -3168,12 +3168,12 @@ void ChromeContentBrowserClient::RegisterRenderFrameMojoInterfaces(
                  render_frame_host));
 
 #if defined(OS_ANDROID)
+  registry->AddInterface(
+      render_frame_host->GetJavaInterfaces()
+          ->CreateInterfaceFactory<payments::mojom::PaymentRequest>());
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host);
   if (web_contents) {
-    registry->AddInterface(
-        web_contents->GetJavaInterfaces()
-            ->CreateInterfaceFactory<payments::mojom::PaymentRequest>());
     registry->AddInterface(
         base::Bind(&ForwardShareServiceRequest,
                    web_contents->GetJavaInterfaces()->GetWeakPtr()));

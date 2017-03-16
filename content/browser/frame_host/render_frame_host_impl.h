@@ -619,6 +619,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
 #if defined(OS_ANDROID)
   base::android::ScopedJavaLocalRef<jobject> GetJavaRenderFrameHost();
+  service_manager::InterfaceProvider* GetJavaInterfaces() override;
 #endif
 
  protected:
@@ -1143,6 +1144,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Tracks the feature policy which has been set on this frame.
   std::unique_ptr<FeaturePolicy> feature_policy_;
+
+#if defined(OS_ANDROID)
+  std::unique_ptr<service_manager::InterfaceProvider> java_interfaces_;
+#endif
 
   // NOTE: This must be the last member.
   base::WeakPtrFactory<RenderFrameHostImpl> weak_ptr_factory_;

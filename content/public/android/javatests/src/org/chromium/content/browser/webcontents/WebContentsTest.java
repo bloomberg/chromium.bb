@@ -20,6 +20,7 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content_public.browser.RenderFrameHost;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.content_public.browser.WebContentsStatics;
 import org.chromium.content_shell.Shell;
 import org.chromium.content_shell_apk.ContentShellActivity;
 import org.chromium.content_shell_apk.ContentShellActivityTestRule;
@@ -355,7 +356,8 @@ public class WebContentsTest {
                 Assert.assertEquals("RenderFrameHost has incorrect last committed URL", TEST_URL_2,
                         frameHost.getLastCommittedURL());
 
-                WebContents associatedWebContents = WebContentsImpl.fromRenderFrameHost(frameHost);
+                WebContents associatedWebContents =
+                        WebContentsStatics.fromRenderFrameHost(frameHost);
                 Assert.assertEquals("RenderFrameHost associated with different WebContents",
                         webContents, associatedWebContents);
             }
