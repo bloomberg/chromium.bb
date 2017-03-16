@@ -26,17 +26,14 @@ void V8TestInterfaceEventInit::toImpl(v8::Isolate* isolate, v8::Local<v8::Value>
     exceptionState.throwTypeError("cannot convert to dictionary.");
     return;
   }
+  v8::Local<v8::Object> v8Object = v8Value.As<v8::Object>();
+  (void)v8Object;
 
   V8EventInit::toImpl(isolate, v8Value, impl, exceptionState);
   if (exceptionState.hadException())
     return;
 
   v8::TryCatch block(isolate);
-  v8::Local<v8::Object> v8Object;
-  if (!v8Call(v8Value->ToObject(isolate->GetCurrentContext()), v8Object, block)) {
-    exceptionState.rethrowV8Exception(block.Exception());
-    return;
-  }
   v8::Local<v8::Value> stringMemberValue;
   if (!v8Object->Get(isolate->GetCurrentContext(), v8AtomicString(isolate, "stringMember")).ToLocal(&stringMemberValue)) {
     exceptionState.rethrowV8Exception(block.Exception());
