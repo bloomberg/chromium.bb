@@ -48,6 +48,10 @@ class MemoryTracker;
 struct DisallowedFeatures;
 struct PassthroughResources;
 
+DisallowedFeatures AdjustDisallowedFeatures(
+    ContextType context_type,
+    const DisallowedFeatures& disallowed_features);
+
 // A Context Group helps manage multiple GLES2Decoders that share
 // resources.
 class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {

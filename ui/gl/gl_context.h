@@ -150,6 +150,12 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
   // and API.
   CurrentGL* GetCurrentGL();
 
+  // Reinitialize the dynamic bindings of this context.  Needed when the driver
+  // may be exposing different extensions compared to when it was initialized.
+  // TODO(geofflang): Try to make this call uncessessary by pre-loading all
+  // extension entry points.
+  void ReinitializeDynamicBindings();
+
  protected:
   virtual ~GLContext();
 

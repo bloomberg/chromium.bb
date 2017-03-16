@@ -2933,6 +2933,12 @@ MockGLInterface::Mock_glRenderbufferStorageMultisampleIMG(GLenum target,
                                                 width, height);
 }
 
+void GL_BINDING_CALL
+MockGLInterface::Mock_glRequestExtensionANGLE(const char* name) {
+  MakeFunctionUnique("glRequestExtensionANGLE");
+  interface_->RequestExtensionANGLE(name);
+}
+
 void GL_BINDING_CALL MockGLInterface::Mock_glResumeTransformFeedback(void) {
   MakeFunctionUnique("glResumeTransformFeedback");
   interface_->ResumeTransformFeedback();
@@ -4723,6 +4729,9 @@ MockGLInterface::GetGLProcAddress(const char* name) {
   if (strcmp(name, "glRenderbufferStorageMultisampleIMG") == 0)
     return reinterpret_cast<GLFunctionPointerType>(
         Mock_glRenderbufferStorageMultisampleIMG);
+  if (strcmp(name, "glRequestExtensionANGLE") == 0)
+    return reinterpret_cast<GLFunctionPointerType>(
+        Mock_glRequestExtensionANGLE);
   if (strcmp(name, "glResumeTransformFeedback") == 0)
     return reinterpret_cast<GLFunctionPointerType>(
         Mock_glResumeTransformFeedback);

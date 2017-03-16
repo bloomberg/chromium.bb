@@ -138,6 +138,12 @@ CurrentGL* GLContext::GetCurrentGL() {
   return current_gl_.get();
 }
 
+void GLContext::ReinitializeDynamicBindings() {
+  DCHECK(IsCurrent(nullptr));
+  dynamic_bindings_initialized_ = false;
+  InitializeDynamicBindings();
+}
+
 bool GLContext::HasExtension(const char* name) {
   std::string extensions = GetExtensions();
   extensions += " ";

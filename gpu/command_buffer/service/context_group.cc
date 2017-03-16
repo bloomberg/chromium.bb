@@ -38,6 +38,8 @@ void GetIntegerv(GLenum pname, uint32_t* var) {
   *var = value;
 }
 
+}  // namespace anonymous
+
 DisallowedFeatures AdjustDisallowedFeatures(
     ContextType context_type, const DisallowedFeatures& disallowed_features) {
   DisallowedFeatures adjusted_disallowed_features = disallowed_features;
@@ -55,8 +57,6 @@ DisallowedFeatures AdjustDisallowedFeatures(
   }
   return adjusted_disallowed_features;
 }
-
-}  // namespace anonymous
 
 ContextGroup::ContextGroup(
     const GpuPreferences& gpu_preferences,

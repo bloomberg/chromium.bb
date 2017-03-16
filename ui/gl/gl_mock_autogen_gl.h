@@ -918,6 +918,7 @@ MOCK_METHOD5(RenderbufferStorageMultisampleIMG,
                   GLenum internalformat,
                   GLsizei width,
                   GLsizei height));
+MOCK_METHOD1(RequestExtensionANGLE, void(const char* name));
 MOCK_METHOD0(ResumeTransformFeedback, void());
 MOCK_METHOD2(SampleCoverage, void(GLclampf value, GLboolean invert));
 MOCK_METHOD3(SamplerParameterf,

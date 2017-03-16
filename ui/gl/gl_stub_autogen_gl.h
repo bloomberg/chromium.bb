@@ -898,6 +898,7 @@ void glRenderbufferStorageMultisampleIMGFn(GLenum target,
                                            GLenum internalformat,
                                            GLsizei width,
                                            GLsizei height) override {}
+void glRequestExtensionANGLEFn(const char* name) override {}
 void glResumeTransformFeedbackFn() override {}
 void glSampleCoverageFn(GLclampf value, GLboolean invert) override {}
 void glSamplerParameterfFn(GLuint sampler,

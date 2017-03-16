@@ -1358,6 +1358,8 @@ void FeatureInfo::InitializeFeatures() {
       extensions.Contains("GL_CHROMIUM_copy_compressed_texture");
   feature_flags_.angle_client_arrays =
       extensions.Contains("GL_ANGLE_client_arrays");
+  feature_flags_.angle_request_extension =
+      extensions.Contains("GL_ANGLE_request_extension");
 }
 
 void FeatureInfo::InitializeFloatAndHalfFloatFeatures(

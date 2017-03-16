@@ -1330,6 +1330,10 @@ GL_FUNCTIONS = [
   'arguments': 'GLenum target, GLsizei samples, GLenum internalformat, '
                'GLsizei width, GLsizei height', },
 { 'return_type': 'void',
+  'versions': [{ 'name': 'glRequestExtensionANGLE',
+                 'extensions': ['GL_ANGLE_request_extension'] }],
+  'arguments': 'const char* name', },
+{ 'return_type': 'void',
   'versions': [{ 'name': 'glResumeTransformFeedback',
                  'extensions': ['GL_ARB_transform_feedback2'] }],
   'arguments': 'void', },

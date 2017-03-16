@@ -113,6 +113,10 @@
 // GL_ANGLE_client_arrays
 #define GL_CLIENT_ARRAYS_ANGLE 0x93AA
 
+// GL_ANGLE_request_extension
+#define GL_REQUESTABLE_EXTENSIONS_ANGLE 0x93A8
+#define GL_NUM_REQUESTABLE_EXTENSIONS_ANGLE 0x93A8
+
 // GL_EXT_occlusion_query_boolean
 #define GL_ANY_SAMPLES_PASSED_EXT                        0x8C2F
 #define GL_ANY_SAMPLES_PASSED_CONSERVATIVE_EXT           0x8D6A

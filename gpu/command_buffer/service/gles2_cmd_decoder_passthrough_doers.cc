@@ -2596,14 +2596,26 @@ error::Error GLES2DecoderPassthroughImpl::DoResizeCHROMIUM(GLuint width,
 
 error::Error GLES2DecoderPassthroughImpl::DoGetRequestableExtensionsCHROMIUM(
     const char** extensions) {
-  *extensions = "";
-  NOTIMPLEMENTED();
+  *extensions = reinterpret_cast<const char*>(
+      glGetString(GL_REQUESTABLE_EXTENSIONS_ANGLE));
   return error::kNoError;
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoRequestExtensionCHROMIUM(
     const char* extension) {
-  NOTIMPLEMENTED();
+  glRequestExtensionANGLE(extension);
+
+  // Make sure there are no pending GL errors before re-initializing feature
+  // info
+  FlushErrors();
+
+  // Make sure newly enabled extensions are exposed and usable.
+  context_->ReinitializeDynamicBindings();
+  if (!feature_info_->Initialize(feature_info_->context_type(),
+                                 feature_info_->disallowed_features())) {
+    return error::kLostContext;
+  }
+
   return error::kNoError;
 }
 

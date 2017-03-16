@@ -386,6 +386,7 @@ void DriverGL::InitializeStaticBindings() {
   fn.glRenderbufferStorageMultisampleANGLEFn = 0;
   fn.glRenderbufferStorageMultisampleEXTFn = 0;
   fn.glRenderbufferStorageMultisampleIMGFn = 0;
+  fn.glRequestExtensionANGLEFn = 0;
   fn.glResumeTransformFeedbackFn = 0;
   fn.glSampleCoverageFn = reinterpret_cast<glSampleCoverageProc>(
       GetGLProcAddress("glSampleCoverage"));
@@ -550,6 +551,8 @@ void DriverGL::InitializeDynamicBindings(
       extensions.find("GL_ANGLE_framebuffer_multisample ") != std::string::npos;
   ext.b_GL_ANGLE_instanced_arrays =
       extensions.find("GL_ANGLE_instanced_arrays ") != std::string::npos;
+  ext.b_GL_ANGLE_request_extension =
+      extensions.find("GL_ANGLE_request_extension ") != std::string::npos;
   ext.b_GL_ANGLE_robust_client_memory =
       extensions.find("GL_ANGLE_robust_client_memory ") != std::string::npos;
   ext.b_GL_ANGLE_translated_shader_source =
@@ -2106,6 +2109,12 @@ void DriverGL::InitializeDynamicBindings(
     fn.glRenderbufferStorageMultisampleIMGFn =
         reinterpret_cast<glRenderbufferStorageMultisampleIMGProc>(
             GetGLProcAddress("glRenderbufferStorageMultisampleIMG"));
+  }
+
+  if (ext.b_GL_ANGLE_request_extension) {
+    fn.glRequestExtensionANGLEFn =
+        reinterpret_cast<glRequestExtensionANGLEProc>(
+            GetGLProcAddress("glRequestExtensionANGLE"));
   }
 
   if (ver->IsAtLeastGLES(3u, 0u) || ver->IsAtLeastGL(4u, 0u) ||
@@ -4304,6 +4313,10 @@ void GLApiBase::glRenderbufferStorageMultisampleIMGFn(GLenum target,
                                                       GLsizei height) {
   driver_->fn.glRenderbufferStorageMultisampleIMGFn(
       target, samples, internalformat, width, height);
+}
+
+void GLApiBase::glRequestExtensionANGLEFn(const char* name) {
+  driver_->fn.glRequestExtensionANGLEFn(name);
 }
 
 void GLApiBase::glResumeTransformFeedbackFn(void) {
@@ -7205,6 +7218,11 @@ void TraceGLApi::glRenderbufferStorageMultisampleIMGFn(GLenum target,
       "gpu", "TraceGLAPI::glRenderbufferStorageMultisampleIMG")
   gl_api_->glRenderbufferStorageMultisampleIMGFn(target, samples,
                                                  internalformat, width, height);
+}
+
+void TraceGLApi::glRequestExtensionANGLEFn(const char* name) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::glRequestExtensionANGLE")
+  gl_api_->glRequestExtensionANGLEFn(name);
 }
 
 void TraceGLApi::glResumeTransformFeedbackFn(void) {
@@ -10932,6 +10950,12 @@ void DebugGLApi::glRenderbufferStorageMultisampleIMGFn(GLenum target,
                                                  internalformat, width, height);
 }
 
+void DebugGLApi::glRequestExtensionANGLEFn(const char* name) {
+  GL_SERVICE_LOG("glRequestExtensionANGLE"
+                 << "(" << name << ")");
+  gl_api_->glRequestExtensionANGLEFn(name);
+}
+
 void DebugGLApi::glResumeTransformFeedbackFn(void) {
   GL_SERVICE_LOG("glResumeTransformFeedback"
                  << "("
@@ -14515,6 +14539,13 @@ void NoContextGLApi::glRenderbufferStorageMultisampleIMGFn(
                   "without current GL context";
   LOG(ERROR) << "Trying to call glRenderbufferStorageMultisampleIMG() without "
                 "current GL context";
+}
+
+void NoContextGLApi::glRequestExtensionANGLEFn(const char* name) {
+  NOTREACHED()
+      << "Trying to call glRequestExtensionANGLE() without current GL context";
+  LOG(ERROR)
+      << "Trying to call glRequestExtensionANGLE() without current GL context";
 }
 
 void NoContextGLApi::glResumeTransformFeedbackFn(void) {

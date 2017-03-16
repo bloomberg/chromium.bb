@@ -1044,6 +1044,7 @@ typedef void(GL_BINDING_CALL* glRenderbufferStorageMultisampleIMGProc)(
     GLenum internalformat,
     GLsizei width,
     GLsizei height);
+typedef void(GL_BINDING_CALL* glRequestExtensionANGLEProc)(const char* name);
 typedef void(GL_BINDING_CALL* glResumeTransformFeedbackProc)(void);
 typedef void(GL_BINDING_CALL* glSampleCoverageProc)(GLclampf value,
                                                     GLboolean invert);
@@ -1477,6 +1478,7 @@ struct ExtensionsGL {
   bool b_GL_ANGLE_framebuffer_blit;
   bool b_GL_ANGLE_framebuffer_multisample;
   bool b_GL_ANGLE_instanced_arrays;
+  bool b_GL_ANGLE_request_extension;
   bool b_GL_ANGLE_robust_client_memory;
   bool b_GL_ANGLE_translated_shader_source;
   bool b_GL_APPLE_fence;
@@ -1837,6 +1839,7 @@ struct ProcsGL {
       glRenderbufferStorageMultisampleANGLEFn;
   glRenderbufferStorageMultisampleEXTProc glRenderbufferStorageMultisampleEXTFn;
   glRenderbufferStorageMultisampleIMGProc glRenderbufferStorageMultisampleIMGFn;
+  glRequestExtensionANGLEProc glRequestExtensionANGLEFn;
   glResumeTransformFeedbackProc glResumeTransformFeedbackFn;
   glSampleCoverageProc glSampleCoverageFn;
   glSamplerParameterfProc glSamplerParameterfFn;
@@ -2858,6 +2861,7 @@ class GL_EXPORT GLApi {
                                                      GLenum internalformat,
                                                      GLsizei width,
                                                      GLsizei height) = 0;
+  virtual void glRequestExtensionANGLEFn(const char* name) = 0;
   virtual void glResumeTransformFeedbackFn(void) = 0;
   virtual void glSampleCoverageFn(GLclampf value, GLboolean invert) = 0;
   virtual void glSamplerParameterfFn(GLuint sampler,
@@ -3662,6 +3666,8 @@ class GL_EXPORT GLApi {
   ::gl::g_current_gl_context->glRenderbufferStorageMultisampleEXTFn
 #define glRenderbufferStorageMultisampleIMG \
   ::gl::g_current_gl_context->glRenderbufferStorageMultisampleIMGFn
+#define glRequestExtensionANGLE \
+  ::gl::g_current_gl_context->glRequestExtensionANGLEFn
 #define glResumeTransformFeedback \
   ::gl::g_current_gl_context->glResumeTransformFeedbackFn
 #define glSampleCoverage ::gl::g_current_gl_context->glSampleCoverageFn

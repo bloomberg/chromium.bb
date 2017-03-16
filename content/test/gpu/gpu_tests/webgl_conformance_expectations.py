@@ -112,6 +112,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['passthrough'], bug=1523) # angle bug ID
     self.Fail('conformance/extensions/ext-shader-texture-lod.html',
         ['passthrough'], bug=1523) # angle bug ID
+    self.Fail('conformance/extensions/get-extension.html',
+        ['passthrough'], bug=682745)
     self.Fail('conformance/extensions/oes-texture-float.html',
         ['passthrough'], bug=1523) # angle bug ID
     self.Fail('conformance/extensions/oes-texture-float-linear.html',
@@ -123,6 +125,14 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/extensions/webgl-compressed-texture-s3tc.html',
         ['passthrough'], bug=1523) # angle bug ID
     self.Fail('conformance/extensions/webgl-depth-texture.html',
+        ['passthrough'], bug=1523) # angle bug ID
+    self.Fail('conformance/extensions/webgl-draw-buffers.html',
+        ['passthrough'], bug=1523) # angle bug ID
+    self.Fail('conformance/extensions/' +
+        'webgl-draw-buffers-framebuffer-unsupported.html',
+        ['passthrough'], bug=682745)
+    self.Fail('conformance/extensions/' +
+        'webgl-draw-buffers-max-draw-buffers.html',
         ['passthrough'], bug=1523) # angle bug ID
     self.Fail('conformance/canvas/framebuffer-bindings-unaffected-on-' +
         'resize.html', ['passthrough'], bug=665521)
@@ -207,11 +217,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/extensions/oes-element-index-uint.html',
         ['passthrough', 'd3d11'], bug=1523) # angle bug ID
     self.Fail('conformance/extensions/webgl-debug-shaders.html',
-        ['passthrough', 'd3d11'], bug=1523) # angle bug ID
-    self.Fail('conformance/extensions/webgl-draw-buffers.html',
-        ['passthrough', 'd3d11'], bug=1523) # angle bug ID
-    self.Fail('conformance/extensions/' +
-        'webgl-draw-buffers-max-draw-buffers.html',
         ['passthrough', 'd3d11'], bug=1523) # angle bug ID
     self.Fail('conformance/glsl/misc/shaders-with-uniform-structs.html',
         ['passthrough', 'd3d11'], bug=1639) # angle bug ID

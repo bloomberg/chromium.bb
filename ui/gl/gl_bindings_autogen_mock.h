@@ -1214,6 +1214,7 @@ Mock_glRenderbufferStorageMultisampleIMG(GLenum target,
                                          GLenum internalformat,
                                          GLsizei width,
                                          GLsizei height);
+static void GL_BINDING_CALL Mock_glRequestExtensionANGLE(const char* name);
 static void GL_BINDING_CALL Mock_glResumeTransformFeedback(void);
 static void GL_BINDING_CALL Mock_glSampleCoverage(GLclampf value,
                                                   GLboolean invert);

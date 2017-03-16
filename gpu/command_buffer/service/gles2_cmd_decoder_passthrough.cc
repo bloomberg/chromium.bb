@@ -78,7 +78,7 @@ GLES2DecoderPassthroughImpl::GLES2DecoderPassthroughImpl(ContextGroup* group)
       context_(),
       offscreen_(false),
       group_(group),
-      feature_info_(group->feature_info()) {
+      feature_info_(new FeatureInfo) {
   DCHECK(group);
 }
 
@@ -172,14 +172,25 @@ bool GLES2DecoderPassthroughImpl::Initialize(
     return false;
   }
 
+  // Each context initializes its own feature info because some extensions may
+  // be enabled dynamically
+  DisallowedFeatures adjusted_disallowed_features =
+      AdjustDisallowedFeatures(attrib_helper.context_type, disallowed_features);
+  if (!feature_info_->Initialize(attrib_helper.context_type,
+                                 adjusted_disallowed_features)) {
+    Destroy(true);
+    return false;
+  }
+
   // Check for required extensions
   if (!feature_info_->feature_flags().angle_robust_client_memory ||
       !feature_info_->feature_flags().chromium_bind_generates_resource ||
       !feature_info_->feature_flags().chromium_copy_texture ||
       !feature_info_->feature_flags().angle_client_arrays ||
-      glIsEnabled(GL_CLIENT_ARRAYS_ANGLE) != GL_FALSE) {
-    // TODO(geofflang): Verify that ANGLE_webgl_compatibility is enabled if this
-    // is a WebGL context (depends on crbug.com/671217).
+      glIsEnabled(GL_CLIENT_ARRAYS_ANGLE) != GL_FALSE ||
+      feature_info_->feature_flags().angle_webgl_compatibility !=
+          IsWebGLContextType(attrib_helper.context_type) ||
+      !feature_info_->feature_flags().angle_request_extension) {
     Destroy(true);
     return false;
   }
