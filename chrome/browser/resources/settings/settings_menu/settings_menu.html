@@ -133,8 +133,7 @@
         </iron-icon></paper-button>
       <iron-collapse id="advancedSubmenu" opened="[[advancedOpened]]"
           hidden="[[!pageVisibility.advancedSettings]]">
-        <iron-selector id="subMenu" selectable="a" attr-for-selected="href"
-            on-iron-activate="onSelectorActivate_">
+        <iron-selector id="subMenu" selectable="a" attr-for-selected="href">
 <if expr="chromeos">
           <a href="/dateTime">
             <iron-icon icon="settings:access-time"></iron-icon>
