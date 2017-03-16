@@ -95,10 +95,10 @@ public class ToolbarPhone extends ToolbarLayout
     private static final float UNINITIALIZED_PERCENT = -1f;
 
     /** States that the toolbar can be in regarding the tab switcher. */
-    private static final int STATIC_TAB = 0;
-    private static final int TAB_SWITCHER = 1;
-    private static final int ENTERING_TAB_SWITCHER = 2;
-    private static final int EXITING_TAB_SWITCHER = 3;
+    protected static final int STATIC_TAB = 0;
+    protected static final int TAB_SWITCHER = 1;
+    protected static final int ENTERING_TAB_SWITCHER = 2;
+    protected static final int EXITING_TAB_SWITCHER = 3;
 
     @ViewDebug.ExportedProperty(category = "chrome", mapping = {
             @ViewDebug.IntToString(from = STATIC_TAB, to = "STATIC_TAB"),
@@ -130,7 +130,7 @@ public class ToolbarPhone extends ToolbarLayout
     private final List<View> mTabSwitcherModeViews = new ArrayList<>();
     private final Set<View> mBrowsingModeViews = new HashSet<>();
     @ViewDebug.ExportedProperty(category = "chrome")
-    private int mTabSwitcherState;
+    protected int mTabSwitcherState;
 
     // This determines whether or not the toolbar draws as expected (false) or whether it always
     // draws as if it's showing the non-tabswitcher, non-animating toolbar. This is used in grabbing
@@ -179,7 +179,7 @@ public class ToolbarPhone extends ToolbarLayout
      * maximum of {@link #mUrlFocusChangePercent} and {@link #mNtpSearchBoxScrollPercent}.
      */
     @ViewDebug.ExportedProperty(category = "chrome")
-    private float mUrlExpansionPercent;
+    protected float mUrlExpansionPercent;
     private AnimatorSet mUrlFocusLayoutAnimator;
     private boolean mDisableLocationBarRelayout;
     private boolean mLayoutLocationBarInFocusedMode;
@@ -248,7 +248,7 @@ public class ToolbarPhone extends ToolbarLayout
     /**
      * Used to specify the visual state of the toolbar.
      */
-    private enum VisualState {
+    protected enum VisualState {
         TAB_SWITCHER_INCOGNITO,
         TAB_SWITCHER_NORMAL,
         NORMAL,
@@ -259,7 +259,7 @@ public class ToolbarPhone extends ToolbarLayout
 
     private VisualState mVisualState = VisualState.NORMAL;
     private VisualState mOverlayDrawablesVisualState;
-    private boolean mUseLightToolbarDrawables;
+    protected boolean mUseLightToolbarDrawables;
 
     private NewTabPage mVisibleNewTabPage;
     private float mPreTextureCaptureAlpha = 1f;
@@ -738,7 +738,7 @@ public class ToolbarPhone extends ToolbarLayout
     /**
      * Calculate the bounds for the location bar background and set them to {@code out}.
      */
-    private void updateLocationBarBackgroundBounds(Rect out, VisualState visualState) {
+    protected void updateLocationBarBackgroundBounds(Rect out, VisualState visualState) {
         // Calculate the visible boundaries of the left and right most child views of the
         // location bar.
         float expansion = visualState == VisualState.NEW_TAB_NORMAL ? 1 : mUrlExpansionPercent;
@@ -2023,7 +2023,7 @@ public class ToolbarPhone extends ToolbarLayout
         return VisualState.NORMAL;
     }
 
-    private void updateVisualsForToolbarState() {
+    protected void updateVisualsForToolbarState() {
         final boolean isIncognito = isIncognito();
 
         // These are important for setting visual state while the entering or leaving the tab

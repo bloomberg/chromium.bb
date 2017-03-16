@@ -5,9 +5,17 @@
 package org.chromium.chrome.browser.toolbar;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import android.util.AttributeSet;
+import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.BottomSheet;
 import org.chromium.chrome.browser.widget.BottomSheetObserver;
@@ -16,6 +24,12 @@ import org.chromium.chrome.browser.widget.BottomSheetObserver;
  * Phone specific toolbar that exists at the bottom of the screen.
  */
 public class BottomToolbarPhone extends ToolbarPhone implements BottomSheetObserver {
+    /** The white version of the toolbar handle; used for dark themes and incognito. */
+    private final Bitmap mHandleLight;
+
+    /** The dark version of the toolbar handle; this is the default handle to use. */
+    private final Bitmap mHandleDark;
+
     /** A handle to the bottom sheet. */
     private BottomSheet mBottomSheet;
 
@@ -30,6 +44,9 @@ public class BottomToolbarPhone extends ToolbarPhone implements BottomSheetObser
      */
     private float mLastHeightFraction;
 
+    /** The toolbar handle view that indicates the toolbar can be pulled upward. */
+    private ImageView mToolbarHandleView;
+
     /**
      * Constructs a BottomToolbarPhone object.
      * @param context The Context in which this View object is created.
@@ -37,6 +54,14 @@ public class BottomToolbarPhone extends ToolbarPhone implements BottomSheetObser
      */
     public BottomToolbarPhone(Context context, AttributeSet attrs) {
         super(context, attrs);
+
+        int defaultHandleColor =
+                ApiCompatibilityUtils.getColor(getResources(), R.color.google_grey_500);
+        mHandleDark = generateHandleBitmap(defaultHandleColor);
+
+        int lightHandleColor =
+                ApiCompatibilityUtils.getColor(getResources(), R.color.semi_opaque_white);
+        mHandleLight = generateHandleBitmap(lightHandleColor);
     }
 
     @Override
@@ -78,6 +103,90 @@ public class BottomToolbarPhone extends ToolbarPhone implements BottomSheetObser
         ViewGroup coordinator = (ViewGroup) getRootView().findViewById(R.id.coordinator);
         coordinator.addView(mProgressBar);
         mProgressBar.setProgressBarContainer(coordinator);
+    }
+
+    /**
+     * @return The extra top margin that should be applied to the browser controls views to
+     *         correctly offset them from the handle that sits above them.
+     */
+    private int getExtraTopMargin() {
+        return getResources().getDimensionPixelSize(R.dimen.bottom_toolbar_top_margin);
+    }
+
+    @Override
+    public void onFinishInflate() {
+        super.onFinishInflate();
+
+        // Programmatically apply a top margin to all the children of the toolbar container. This
+        // is done so the view hierarchy does not need to be changed.
+        int topMarginForControls = getExtraTopMargin();
+
+        View topShadow = findViewById(R.id.bottom_toolbar_shadow);
+
+        for (int i = 0; i < getChildCount(); i++) {
+            View curView = getChildAt(i);
+
+            // Skip the shadow that sits at the top of the toolbar since this needs to sit on top
+            // of the toolbar.
+            if (curView == topShadow) continue;
+
+            ((MarginLayoutParams) curView.getLayoutParams()).topMargin = topMarginForControls;
+        }
+    }
+
+    @Override
+    public void onAttachedToWindow() {
+        super.onAttachedToWindow();
+
+        // The toolbar handle is part of the control container so it can draw on top of the other
+        // toolbar views. Get the root view and search for the handle.
+        mToolbarHandleView = (ImageView) getRootView().findViewById(R.id.toolbar_handle);
+        mToolbarHandleView.setImageBitmap(mHandleDark);
+    }
+
+    @Override
+    protected void updateVisualsForToolbarState() {
+        super.updateVisualsForToolbarState();
+
+        // The handle should not show in tab switcher mode.
+        mToolbarHandleView.setVisibility(
+                mTabSwitcherState != ToolbarPhone.STATIC_TAB ? View.INVISIBLE : View.VISIBLE);
+        mToolbarHandleView.setImageBitmap(mUseLightToolbarDrawables ? mHandleLight : mHandleDark);
+    }
+
+    @Override
+    protected void updateLocationBarBackgroundBounds(Rect out, VisualState visualState) {
+        super.updateLocationBarBackgroundBounds(out, visualState);
+
+        // Allow the location bar to expand to the full height of the control container.
+        out.top -= getExtraTopMargin() * mUrlExpansionPercent;
+    }
+
+    /**
+     * Generate the bitmap used as the handle on the toolbar. This indicates that the toolbar can
+     * be pulled up.
+     * @return The handle as a bitmap.
+     */
+    private Bitmap generateHandleBitmap(int handleColor) {
+        int handleWidth = getResources().getDimensionPixelSize(R.dimen.toolbar_handle_width);
+        int handleHeight = getResources().getDimensionPixelSize(R.dimen.toolbar_handle_height);
+
+        Bitmap handle = Bitmap.createBitmap(handleWidth, handleHeight, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(handle);
+
+        // Clear the canvas to be completely transparent.
+        canvas.drawARGB(0, 0, 0, 0);
+
+        Paint paint = new Paint();
+        paint.setColor(handleColor);
+        paint.setAntiAlias(true);
+
+        RectF rect = new RectF(0, 0, handleWidth, handleHeight);
+
+        // Use height / 2 for the corner radius so the handle always takes the shape of a pill.
+        canvas.drawRoundRect(rect, handleHeight / 2f, handleHeight / 2f, paint);
+
+        return handle;
     }
 
     @Override

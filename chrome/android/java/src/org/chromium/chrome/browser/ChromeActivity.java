@@ -1351,6 +1351,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      * @return The resource id that contains how large the browser controls are.
      */
     public int getControlContainerHeightResource() {
+        if (mBottomSheet != null) return R.dimen.bottom_control_container_height;
         return R.dimen.control_container_height;
     }
 
