@@ -188,7 +188,7 @@ class CC_ANIMATION_EXPORT AnimationPlayer
 
   void MarkAbortedAnimationsForDeletion(
       AnimationPlayer* animation_player_impl) const;
-  void PurgeAnimationsMarkedForDeletion();
+  void PurgeAnimationsMarkedForDeletion(bool impl_only);
   void PushNewAnimationsToImplThread(
       AnimationPlayer* animation_player_impl) const;
   void RemoveAnimationsCompletedOnMainThread(

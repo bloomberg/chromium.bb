@@ -927,9 +927,7 @@ TEST_F(ElementAnimationsTest, UpdateStateWithoutAnimate) {
 
   player_impl_->Tick(kInitialTickTime + TimeDelta::FromMilliseconds(1500));
   player_impl_->UpdateState(true, events.get());
-  EXPECT_EQ(
-      Animation::WAITING_FOR_DELETION,
-      player_impl_->GetAnimation(TargetProperty::SCROLL_OFFSET)->run_state());
+  EXPECT_EQ(nullptr, player_impl_->GetAnimation(TargetProperty::SCROLL_OFFSET));
 
   // Add second scroll offset animation.
   AddScrollOffsetAnimationToPlayer(player_impl_.get(),
@@ -2012,9 +2010,7 @@ TEST_F(ElementAnimationsTest, ImplThreadTakeoverAnimationGetsDeleted) {
   EXPECT_EQ(
       target_value,
       events->events_[0].curve->ToScrollOffsetAnimationCurve()->target_value());
-  EXPECT_EQ(
-      Animation::WAITING_FOR_DELETION,
-      player_impl_->GetAnimation(TargetProperty::SCROLL_OFFSET)->run_state());
+  EXPECT_EQ(nullptr, player_impl_->GetAnimation(TargetProperty::SCROLL_OFFSET));
 
   // MT receives the event to take over.
   player_->NotifyAnimationTakeover(events->events_[0]);
