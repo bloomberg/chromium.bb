@@ -447,6 +447,55 @@ class TestGitClBasic(unittest.TestCase):
         'Cr-Branched-From: somehash-refs/heads/master@{#12}')
 
 
+class GitCookiesCheckerTest(unittest.TestCase):
+  def setUp(self):
+    super(GitCookiesCheckerTest, self).setUp()
+    self.c = git_cl._GitCookiesChecker()
+
+  def mock_hosts_creds(self, subhost_identity_pairs):
+    def ensure_googlesource(h):
+      if not h.endswith(self.c._GOOGLESOURCE):
+        assert not h.endswith('.')
+        return h + '.' + self.c._GOOGLESOURCE
+      return h
+    self.c._all_hosts = [(ensure_googlesource(h), i, '.gitcookies')
+                         for h, i in subhost_identity_pairs]
+
+  def test_analysis_nothing(self):
+    self.c._all_hosts = []
+    self.assertFalse(self.c.has_generic_host())
+    self.assertEqual(set(), self.c.get_conflicting_hosts())
+    self.assertEqual(set(), self.c.get_duplicated_hosts())
+    self.assertEqual(set(), self.c.get_partially_configured_hosts())
+    self.assertEqual(set(), self.c.get_hosts_with_wrong_identities())
+
+  def test_analysis(self):
+    self.mock_hosts_creds([
+      ('.googlesource.com',      'git-example.chromium.org'),
+
+      ('chromium',               'git-example.google.com'),
+      ('chromium-review',        'git-example.google.com'),
+      ('chrome-internal',        'git-example.chromium.org'),
+      ('chrome-internal-review', 'git-example.chromium.org'),
+      ('conflict',               'git-example.google.com'),
+      ('conflict-review',        'git-example.chromium.org'),
+      ('dup',                    'git-example.google.com'),
+      ('dup',                    'git-example.google.com'),
+      ('dup-review',             'git-example.google.com'),
+      ('partial',                'git-example.google.com'),
+    ])
+    self.assertTrue(self.c.has_generic_host())
+    self.assertEqual(set(['conflict.googlesource.com']),
+                     self.c.get_conflicting_hosts())
+    self.assertEqual(set(['dup.googlesource.com']),
+                     self.c.get_duplicated_hosts())
+    self.assertEqual(set(['partial.googlesource.com']),
+                     self.c.get_partially_configured_hosts())
+    self.assertEqual(set(['chromium.googlesource.com',
+                          'chrome-internal.googlesource.com']),
+                     self.c.get_hosts_with_wrong_identities())
+
+
 class TestGitCl(TestCase):
   def setUp(self):
     super(TestGitCl, self).setUp()
@@ -488,7 +537,6 @@ class TestGitCl(TestCase):
               lambda msg, change=None: self._mocked_call(['DieWithError', msg]))
     # It's important to reset settings to not have inter-tests interference.
     git_cl.settings = None
-
 
   def tearDown(self):
     try:
