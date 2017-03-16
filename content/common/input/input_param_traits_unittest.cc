@@ -5,7 +5,10 @@
 #include "content/common/input/input_param_traits.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/memory/ptr_util.h"
 #include "content/common/input/input_event.h"
@@ -27,7 +30,7 @@
 namespace content {
 namespace {
 
-typedef ScopedVector<InputEvent> InputEvents;
+typedef std::vector<std::unique_ptr<InputEvent>> InputEvents;
 
 class InputParamTraitsTest : public testing::Test {
  protected:
@@ -44,7 +47,7 @@ class InputParamTraitsTest : public testing::Test {
 
   static void Compare(const InputEvents* a, const InputEvents* b) {
     for (size_t i = 0; i < a->size(); ++i)
-      Compare((*a)[i], (*b)[i]);
+      Compare((*a)[i].get(), (*b)[i].get());
   }
 
   static void Compare(const SyntheticSmoothScrollGestureParams* a,
@@ -201,35 +204,35 @@ TEST_F(InputParamTraitsTest, InitializedEvents) {
                                     blink::WebInputEvent::NoModifiers,
                                     blink::WebInputEvent::TimeStampForTesting);
   key_event.nativeKeyCode = 5;
-  events.push_back(new InputEvent(key_event, latency));
+  events.push_back(base::MakeUnique<InputEvent>(key_event, latency));
 
   blink::WebMouseWheelEvent wheel_event(
       blink::WebInputEvent::MouseWheel, blink::WebInputEvent::NoModifiers,
       blink::WebInputEvent::TimeStampForTesting);
   wheel_event.deltaX = 10;
   latency.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, 1, 1);
-  events.push_back(new InputEvent(wheel_event, latency));
+  events.push_back(base::MakeUnique<InputEvent>(wheel_event, latency));
 
   blink::WebMouseEvent mouse_event(blink::WebInputEvent::MouseDown,
                                    blink::WebInputEvent::NoModifiers,
                                    blink::WebInputEvent::TimeStampForTesting);
   mouse_event.x = 10;
   latency.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_UI_COMPONENT, 2, 2);
-  events.push_back(new InputEvent(mouse_event, latency));
+  events.push_back(base::MakeUnique<InputEvent>(mouse_event, latency));
 
   blink::WebGestureEvent gesture_event(
       blink::WebInputEvent::GestureScrollBegin,
       blink::WebInputEvent::NoModifiers,
       blink::WebInputEvent::TimeStampForTesting);
   gesture_event.x = -1;
-  events.push_back(new InputEvent(gesture_event, latency));
+  events.push_back(base::MakeUnique<InputEvent>(gesture_event, latency));
 
   blink::WebTouchEvent touch_event(blink::WebInputEvent::TouchStart,
                                    blink::WebInputEvent::NoModifiers,
                                    blink::WebInputEvent::TimeStampForTesting);
   touch_event.touchesLength = 1;
   touch_event.touches[0].radiusX = 1;
-  events.push_back(new InputEvent(touch_event, latency));
+  events.push_back(base::MakeUnique<InputEvent>(touch_event, latency));
 
   Verify(events);
 }

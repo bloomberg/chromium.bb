@@ -88,18 +88,16 @@ BrowserMediaPlayerManager::CreateMediaPlayer(
     case MEDIA_PLAYER_TYPE_REMOTE_ONLY:
     case MEDIA_PLAYER_TYPE_URL: {
       const std::string user_agent = GetContentClient()->GetUserAgent();
-      std::unique_ptr<MediaPlayerAndroid> media_player_bridge(
-          new MediaPlayerBridge(
-              media_player_params.player_id, media_player_params.url,
-              media_player_params.first_party_for_cookies, user_agent,
-              hide_url_log, this,
-              base::Bind(&BrowserMediaPlayerManager::OnDecoderResourcesReleased,
-                         weak_ptr_factory_.GetWeakPtr()),
-              media_player_params.frame_url,
-              media_player_params.allow_credentials));
+      auto media_player_bridge = base::MakeUnique<MediaPlayerBridge>(
+          media_player_params.player_id, media_player_params.url,
+          media_player_params.first_party_for_cookies, user_agent, hide_url_log,
+          this,
+          base::Bind(&BrowserMediaPlayerManager::OnDecoderResourcesReleased,
+                     weak_ptr_factory_.GetWeakPtr()),
+          media_player_params.frame_url, media_player_params.allow_credentials);
 
       if (media_player_params.type == MEDIA_PLAYER_TYPE_REMOTE_ONLY)
-        return media_player_bridge;
+        return std::move(media_player_bridge);
 
       bool should_block = false;
       bool extract_metadata =
@@ -122,10 +120,9 @@ BrowserMediaPlayerManager::CreateMediaPlayer(
         OnMediaMetadataChanged(media_player_params.player_id, base::TimeDelta(),
                                0, 0, false);
       } else if (!should_block) {
-        static_cast<MediaPlayerBridge*>(media_player_bridge.get())
-            ->Initialize();
+        media_player_bridge->Initialize();
       }
-      return media_player_bridge;
+      return std::move(media_player_bridge);
     }
   }
 

@@ -16,7 +16,6 @@
 #include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/scoped_vector.h"
 #include "base/memory/shared_memory.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
@@ -210,8 +209,8 @@ void BlobTransportController::OnMemoryRequest(
 
   // Since we can be writing to the same shared memory handle from multiple
   // requests, we keep them in a vector and lazily create them.
-  ScopedVector<SharedMemory> opened_memory;
-  opened_memory.resize(memory_handles->size());
+  std::vector<std::unique_ptr<SharedMemory>> opened_memory(
+      memory_handles->size());
 
   // We need to calculate how much memory we expect to be writing to the memory
   // segments so we can correctly map it the first time.
@@ -252,13 +251,11 @@ void BlobTransportController::OnMemoryRequest(
       }
       case IPCBlobItemRequestStrategy::SHARED_MEMORY: {
         responses.push_back(BlobItemBytesResponse(request.request_number));
-        SharedMemory* memory = opened_memory[request.handle_index];
-        if (!memory) {
+        if (!opened_memory[request.handle_index]) {
           SharedMemoryHandle& handle = (*memory_handles)[request.handle_index];
           size_t size = shared_memory_sizes[request.handle_index];
           DCHECK(SharedMemory::IsHandleValid(handle));
-          std::unique_ptr<SharedMemory> shared_memory(
-              new SharedMemory(handle, false));
+          auto shared_memory = base::MakeUnique<SharedMemory>(handle, false);
 
           if (!shared_memory->Map(size)) {
             // This would happen if the renderer process doesn't have enough
@@ -269,14 +266,15 @@ void BlobTransportController::OnMemoryRequest(
                          << ".";
             return;
           }
-          memory = shared_memory.get();
-          opened_memory[request.handle_index] = shared_memory.release();
+          opened_memory[request.handle_index] = std::move(shared_memory);
         }
-        CHECK(memory->memory()) << "Couldn't map memory for blob transfer.";
+        CHECK(opened_memory[request.handle_index]->memory())
+            << "Couldn't map memory for blob transfer.";
         ReadStatus status = consolidation->ReadMemory(
             request.renderer_item_index, request.renderer_item_offset,
             request.size,
-            static_cast<char*>(memory->memory()) + request.handle_offset);
+            static_cast<char*>(opened_memory[request.handle_index]->memory()) +
+                request.handle_offset);
         DCHECK(status == ReadStatus::OK)
             << "Error reading from consolidated blob: "
             << static_cast<int>(status);

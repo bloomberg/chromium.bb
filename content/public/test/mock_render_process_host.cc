@@ -10,6 +10,7 @@
 
 #include "base/lazy_instance.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -377,28 +378,24 @@ MockRenderProcessHostFactory::MockRenderProcessHostFactory() {}
 MockRenderProcessHostFactory::~MockRenderProcessHostFactory() {
   // Detach this object from MockRenderProcesses to prevent STLDeleteElements()
   // from calling MockRenderProcessHostFactory::Remove().
-  for (ScopedVector<MockRenderProcessHost>::iterator it = processes_.begin();
-       it != processes_.end(); ++it) {
-    (*it)->SetFactory(NULL);
-  }
+  for (const auto& process : processes_)
+    process->SetFactory(nullptr);
 }
 
 RenderProcessHost* MockRenderProcessHostFactory::CreateRenderProcessHost(
     BrowserContext* browser_context,
     SiteInstance* site_instance) const {
-  MockRenderProcessHost* host = new MockRenderProcessHost(browser_context);
-  if (host) {
-    processes_.push_back(host);
-    host->SetFactory(this);
-  }
-  return host;
+  processes_.push_back(
+      base::MakeUnique<MockRenderProcessHost>(browser_context));
+  processes_.back()->SetFactory(this);
+  return processes_.back().get();
 }
 
 void MockRenderProcessHostFactory::Remove(MockRenderProcessHost* host) const {
-  for (ScopedVector<MockRenderProcessHost>::iterator it = processes_.begin();
-       it != processes_.end(); ++it) {
-    if (*it == host) {
-      processes_.weak_erase(it);
+  for (auto it = processes_.begin(); it != processes_.end(); ++it) {
+    if (it->get() == host) {
+      it->release();
+      processes_.erase(it);
       break;
     }
   }

@@ -4,6 +4,7 @@
 
 #include "content/public/test/test_web_contents_factory.h"
 
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_renderer_host.h"
@@ -29,10 +30,10 @@ TestWebContentsFactory::~TestWebContentsFactory() {
 
 WebContents* TestWebContentsFactory::CreateWebContents(
     BrowserContext* context) {
-  web_contents_.push_back(
-      WebContentsTester::CreateTestWebContents(context, nullptr));
+  web_contents_.push_back(base::WrapUnique(
+      WebContentsTester::CreateTestWebContents(context, nullptr)));
   DCHECK(web_contents_.back());
-  return web_contents_.back();
+  return web_contents_.back().get();
 }
 
 }  // namespace content

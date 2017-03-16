@@ -9,9 +9,9 @@
 #include <stdint.h>
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/metrics/persistent_memory_allocator.h"
 #include "base/observer_list.h"
 #include "content/public/browser/render_process_host.h"
@@ -192,7 +192,7 @@ class MockRenderProcessHostFactory : public RenderProcessHostFactory {
   // A list of MockRenderProcessHosts created by this object. This list is used
   // for deleting all MockRenderProcessHosts that have not deleted by a test in
   // the destructor and prevent them from being leaked.
-  mutable ScopedVector<MockRenderProcessHost> processes_;
+  mutable std::vector<std::unique_ptr<MockRenderProcessHost>> processes_;
 
   DISALLOW_COPY_AND_ASSIGN(MockRenderProcessHostFactory);
 };
