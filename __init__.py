@@ -5,6 +5,7 @@
 from __future__ import print_function
 
 import os
+import pkg_resources
 import sys
 
 # Add the third_party/ dir to our search path so that we can find the
@@ -23,17 +24,17 @@ _third_party_dirs = [os.path.join(_chromite_dir, 'third_party')]
 if os.path.basename(_containing_dir) == 'third_party':
   _third_party_dirs.append(_containing_dir)
 
-# List of third_party packages that might need subpaths added to search.
-_paths = [
+# List of third_party directories that might need subpaths added to search.
+_extra_import_paths = [
     'dpkt',
     os.path.join('gdata', 'src'),
     'google',
     'pyelftools',
 ]
 
-for _path in _paths:
-  for _third_party in _third_party_dirs[:]:
-    _component = os.path.join(_third_party, _path)
+for _path in _extra_import_paths:
+  for _third_party_dir in _third_party_dirs[:]:
+    _component = os.path.join(_third_party_dir, _path)
     if os.path.isdir(_component):
       _third_party_dirs.append(_component)
 
@@ -42,10 +43,23 @@ for _path in _paths:
 # precedence over third_party.
 # Therefore, we leave sys.path unaltered up to the final element from the
 # virtualenv, and only insert third_party items after that.
-for i, path in reversed(list(enumerate(sys.path))):
-  if _venv_dir in path:
-    _insert_at = i + 1
+_insert_at = 0
+for _i, _path in reversed(list(enumerate(sys.path))):
+  if _venv_dir in _path:
+    _insert_at = _i + 1
     break
-else:
-  _insert_at = 0
 sys.path[_insert_at:_insert_at] = _third_party_dirs
+
+# Fix the .__path__ attributes of these submodules to correspond with sys.path.
+# This prevents globally installed packages from shadowing the third_party
+# packages. See crbug.com/674760 and
+# https://github.com/google/protobuf/issues/1484 for more context.
+# TODO(phobbs) this won't be necessary when we use venv everywhere.
+_pkg_resources = __import__('pkg_resources')
+for _package in ['google', 'google.protobuf']:
+  _pkg_resources.declare_namespace(_package)
+for _path in _third_party_dirs:
+  _pkg_resources.fixup_namespace_packages(_path)
+
+import google.protobuf
+google.protobuf.__path__ = [os.path.dirname(google.protobuf.__file__)]
