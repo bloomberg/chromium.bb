@@ -163,6 +163,7 @@ NGLogicalOffset CalculateLogicalOffsetForOpportunity(
     const LayoutUnit float_offset,
     const NGLogicalOffset& from_offset,
     NGFloatingObject* floating_object) {
+  DCHECK(floating_object);
   auto margins = floating_object->margins;
   // Adjust to child's margin.
   LayoutUnit inline_offset = margins.inline_start;
@@ -187,6 +188,7 @@ NGLogicalOffset PositionFloat(const NGLogicalOffset& origin_point,
                               const NGLogicalOffset& from_offset,
                               NGFloatingObject* floating_object,
                               NGConstraintSpace* new_parent_space) {
+  DCHECK(floating_object);
   const auto* float_space = floating_object->space.get();
   DCHECK(floating_object->fragment) << "Fragment cannot be null here";
 
@@ -220,10 +222,10 @@ NGLogicalOffset PositionFloat(const NGLogicalOffset& origin_point,
 
 // Updates the Floating Object's left offset from the provided parent_space
 // and {@code floating_object}'s space and margins.
-void UpdateFloatingObjectLeftOffset(
-    const NGConstraintSpace& new_parent_space,
-    const Persistent<NGFloatingObject>& floating_object,
-    const NGLogicalOffset& float_logical_offset) {
+void UpdateFloatingObjectLeftOffset(const NGConstraintSpace& new_parent_space,
+                                    const NGLogicalOffset& float_logical_offset,
+                                    NGFloatingObject* floating_object) {
+  DCHECK(floating_object);
   // TODO(glebl): We should use physical offset here.
   floating_object->left_offset =
       floating_object->original_parent_space->BfcOffset().inline_offset -
@@ -250,10 +252,10 @@ void PositionPendingFloats(const LayoutUnit origin_point_block_offset,
         original_parent_space->BfcOffset().inline_offset, bfc_block_offset};
 
     NGLogicalOffset float_fragment_offset = PositionFloat(
-        origin_point, from_offset, floating_object, new_parent_space);
+        origin_point, from_offset, floating_object.get(), new_parent_space);
     builder->AddFloatingObject(floating_object, float_fragment_offset);
-    UpdateFloatingObjectLeftOffset(*new_parent_space, floating_object,
-                                   float_fragment_offset);
+    UpdateFloatingObjectLeftOffset(*new_parent_space, float_fragment_offset,
+                                   floating_object.get());
   }
   builder->MutableUnpositionedFloats().clear();
 }
@@ -534,7 +536,7 @@ void NGBlockLayoutAlgorithm::FinishChildLayout(
 
   if (child->Type() == NGLayoutInputNode::kLegacyBlock &&
       toNGBlockNode(child)->Style().isFloating()) {
-    NGFloatingObject* floating_object = new NGFloatingObject(
+    RefPtr<NGFloatingObject> floating_object = NGFloatingObject::Create(
         child_space, constraint_space_, toNGBlockNode(child)->Style(),
         curr_child_margins_, layout_result->PhysicalFragment().get());
     builder_.AddUnpositionedFloat(floating_object);

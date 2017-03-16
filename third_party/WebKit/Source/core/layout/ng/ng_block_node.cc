@@ -239,8 +239,9 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
 
   // We may still have unpositioned floats when we reach the root box.
   if (!layout_box_->parent()) {
-    for (const auto& floating_object : fragment->PositionedFloats()) {
-      FloatingObjectPositionedUpdated(floating_object, layout_box_);
+    for (const RefPtr<NGFloatingObject>& floating_object :
+         fragment->PositionedFloats()) {
+      FloatingObjectPositionedUpdated(floating_object.get(), layout_box_);
     }
   }
 
@@ -248,10 +249,11 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
     if (child_fragment->IsPlaced())
       FragmentPositionUpdated(toNGPhysicalBoxFragment(*child_fragment));
 
-    for (const auto& floating_object :
+    for (const RefPtr<NGFloatingObject>& floating_object :
          toNGPhysicalBoxFragment(child_fragment.get())->PositionedFloats()) {
       FloatingObjectPositionedUpdated(
-          floating_object, toLayoutBox(child_fragment->GetLayoutObject()));
+          floating_object.get(),
+          toLayoutBox(child_fragment->GetLayoutObject()));
     }
   }
 

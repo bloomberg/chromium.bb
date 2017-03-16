@@ -91,7 +91,7 @@ NGFragmentBuilder& NGFragmentBuilder::AddChild(
 }
 
 NGFragmentBuilder& NGFragmentBuilder::AddFloatingObject(
-    NGFloatingObject* floating_object,
+    RefPtr<NGFloatingObject> floating_object,
     const NGLogicalOffset& floating_object_offset) {
   positioned_floats_.push_back(floating_object);
   floating_object_offsets_.push_back(floating_object_offset);
@@ -117,8 +117,8 @@ NGFragmentBuilder& NGFragmentBuilder::AddOutOfFlowChildCandidate(
 }
 
 NGFragmentBuilder& NGFragmentBuilder::AddUnpositionedFloat(
-    NGFloatingObject* floating_object) {
-  unpositioned_floats_.push_back(floating_object);
+    RefPtr<NGFloatingObject> floating_object) {
+  unpositioned_floats_.push_back(std::move(floating_object));
   return *this;
 }
 
@@ -173,9 +173,6 @@ RefPtr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment() {
         writing_mode_, direction_, physical_size, child->Size()));
   }
 
-  Vector<Persistent<NGFloatingObject>> positioned_floats;
-  positioned_floats.reserveCapacity(positioned_floats_.size());
-
   RefPtr<NGBreakToken> break_token;
   if (did_break_) {
     break_token = NGBlockBreakToken::create(
@@ -185,11 +182,10 @@ RefPtr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment() {
   }
 
   for (size_t i = 0; i < positioned_floats_.size(); ++i) {
-    Persistent<NGFloatingObject>& floating_object = positioned_floats_[i];
+    RefPtr<NGFloatingObject>& floating_object = positioned_floats_[i];
     NGPhysicalFragment* floating_fragment = floating_object->fragment.get();
     floating_fragment->SetOffset(floating_object_offsets_[i].ConvertToPhysical(
         writing_mode_, direction_, physical_size, floating_fragment->Size()));
-    positioned_floats.push_back(floating_object);
   }
 
   RefPtr<NGPhysicalBoxFragment> fragment = adoptRef(new NGPhysicalBoxFragment(
@@ -209,9 +205,6 @@ RefPtr<NGPhysicalTextFragment> NGFragmentBuilder::ToTextFragment(
   DCHECK_EQ(type_, NGPhysicalFragment::kFragmentText);
   DCHECK(children_.isEmpty());
   DCHECK(offsets_.isEmpty());
-
-  Vector<Persistent<NGFloatingObject>> empty_unpositioned_floats;
-  Vector<Persistent<NGFloatingObject>> empty_positioned_floats;
 
   return adoptRef(new NGPhysicalTextFragment(
       node_->GetLayoutObject(), toNGInlineNode(node_), index, start_offset,

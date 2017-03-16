@@ -13,7 +13,7 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
     NGPhysicalSize size,
     NGPhysicalSize overflow,
     Vector<RefPtr<NGPhysicalFragment>>& children,
-    Vector<Persistent<NGFloatingObject>>& positioned_floats,
+    Vector<RefPtr<NGFloatingObject>>& positioned_floats,
     const WTF::Optional<NGLogicalOffset>& bfc_offset,
     const NGMarginStrut& end_margin_strut,
     RefPtr<NGBreakToken> break_token)

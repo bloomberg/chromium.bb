@@ -9,30 +9,23 @@
 #include "core/layout/ng/ng_block_node.h"
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_exclusion.h"
+#include "core/layout/ng/ng_physical_fragment.h"
 #include "core/style/ComputedStyle.h"
 #include "core/style/ComputedStyleConstants.h"
-#include "platform/heap/Handle.h"
+#include "wtf/RefPtr.h"
 
 namespace blink {
 
-class NGPhysicalFragment;
-
 // Struct that keeps all information needed to position floats in LayoutNG.
-struct CORE_EXPORT NGFloatingObject
-    : public GarbageCollectedFinalized<NGFloatingObject> {
-  NGFloatingObject(const NGConstraintSpace* space,
-                   const NGConstraintSpace* parent_space,
-                   const ComputedStyle& style,
-                   const NGBoxStrut& margins,
-                   NGPhysicalFragment* fragment)
-      : space(space),
-        original_parent_space(parent_space),
-        margins(margins),
-        fragment(fragment) {
-    exclusion_type = NGExclusion::kFloatLeft;
-    if (style.floating() == EFloat::kRight)
-      exclusion_type = NGExclusion::kFloatRight;
-    clear_type = style.clear();
+struct CORE_EXPORT NGFloatingObject : public RefCounted<NGFloatingObject> {
+ public:
+  static RefPtr<NGFloatingObject> Create(const NGConstraintSpace* space,
+                                         const NGConstraintSpace* parent_space,
+                                         const ComputedStyle& style,
+                                         const NGBoxStrut& margins,
+                                         NGPhysicalFragment* fragment) {
+    return adoptRef(
+        new NGFloatingObject(space, parent_space, style, margins, fragment));
   }
 
   // Original constraint space of the float.
@@ -57,7 +50,20 @@ struct CORE_EXPORT NGFloatingObject
   // would be attached.
   LayoutUnit left_offset;
 
-  DEFINE_INLINE_TRACE() {
+ private:
+  NGFloatingObject(const NGConstraintSpace* space,
+                   const NGConstraintSpace* parent_space,
+                   const ComputedStyle& style,
+                   const NGBoxStrut& margins,
+                   NGPhysicalFragment* fragment)
+      : space(space),
+        original_parent_space(parent_space),
+        margins(margins),
+        fragment(fragment) {
+    exclusion_type = NGExclusion::kFloatLeft;
+    if (style.floating() == EFloat::kRight)
+      exclusion_type = NGExclusion::kFloatRight;
+    clear_type = style.clear();
   }
 };
 

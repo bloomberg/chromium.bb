@@ -38,12 +38,13 @@ class CORE_EXPORT NGFragmentBuilder final {
   NGFragmentBuilder& AddChild(RefPtr<NGPhysicalFragment>,
                               const NGLogicalOffset&);
 
-  NGFragmentBuilder& AddFloatingObject(NGFloatingObject*,
+  NGFragmentBuilder& AddFloatingObject(RefPtr<NGFloatingObject>,
                                        const NGLogicalOffset&);
 
   NGFragmentBuilder& SetBfcOffset(const NGLogicalOffset& offset);
 
-  NGFragmentBuilder& AddUnpositionedFloat(NGFloatingObject* floating_object);
+  NGFragmentBuilder& AddUnpositionedFloat(
+      RefPtr<NGFloatingObject> floating_object);
 
   // Builder has non-trivial out-of-flow descendant methods.
   // These methods are building blocks for implementation of
@@ -103,12 +104,12 @@ class CORE_EXPORT NGFragmentBuilder final {
                                                 unsigned end_offset);
 
   // Mutable list of floats that need to be positioned.
-  Vector<Persistent<NGFloatingObject>>& MutableUnpositionedFloats() {
+  Vector<RefPtr<NGFloatingObject>>& MutableUnpositionedFloats() {
     return unpositioned_floats_;
   }
 
   // List of floats that need to be positioned.
-  const Vector<Persistent<NGFloatingObject>>& UnpositionedFloats() const {
+  const Vector<RefPtr<NGFloatingObject>>& UnpositionedFloats() const {
     return unpositioned_floats_;
   }
 
@@ -162,10 +163,10 @@ class CORE_EXPORT NGFragmentBuilder final {
 
   // Floats that need to be positioned by the next in-flow fragment that can
   // determine its block position in space.
-  Vector<Persistent<NGFloatingObject>> unpositioned_floats_;
+  Vector<RefPtr<NGFloatingObject>> unpositioned_floats_;
 
   Vector<NGLogicalOffset> floating_object_offsets_;
-  Vector<Persistent<NGFloatingObject>> positioned_floats_;
+  Vector<RefPtr<NGFloatingObject>> positioned_floats_;
 
   WTF::Optional<NGLogicalOffset> bfc_offset_;
   NGMarginStrut end_margin_strut_;
