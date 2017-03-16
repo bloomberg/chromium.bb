@@ -1,4 +1,3 @@
-CONSOLE ERROR: line 7: Error while parsing the 'permissions' attribute: 'abcdefg' is an invalid permissions flag.
 Tests that the permissions attribute is not exposed for stable
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

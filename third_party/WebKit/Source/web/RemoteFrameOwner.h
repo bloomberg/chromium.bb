@@ -48,10 +48,6 @@ class RemoteFrameOwner final
   bool allowFullscreen() const override { return m_allowFullscreen; }
   bool allowPaymentRequest() const override { return m_allowPaymentRequest; }
   AtomicString csp() const override { return m_csp; }
-  const WebVector<mojom::blink::PermissionName>& delegatedPermissions()
-      const override {
-    return m_delegatedPermissions;
-  }
   const WebVector<WebFeaturePolicyFeature>& allowedFeatures() const override {
     return m_allowedFeatures;
   }
@@ -69,10 +65,6 @@ class RemoteFrameOwner final
     m_allowPaymentRequest = allowPaymentRequest;
   }
   void setCsp(const WebString& csp) { m_csp = csp; }
-  void setDelegatedpermissions(
-      const WebVector<mojom::blink::PermissionName>& delegatedPermissions) {
-    m_delegatedPermissions = delegatedPermissions;
-  }
   void setAllowedFeatures(
       const WebVector<WebFeaturePolicyFeature>& allowedFeatures) {
     m_allowedFeatures = allowedFeatures;
@@ -97,7 +89,6 @@ class RemoteFrameOwner final
   bool m_allowFullscreen;
   bool m_allowPaymentRequest;
   WebString m_csp;
-  WebVector<mojom::blink::PermissionName> m_delegatedPermissions;
   WebVector<WebFeaturePolicyFeature> m_allowedFeatures;
 };
 

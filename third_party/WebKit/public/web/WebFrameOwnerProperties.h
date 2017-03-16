@@ -8,7 +8,6 @@
 #include "../platform/WebFeaturePolicy.h"
 #include "../platform/WebString.h"
 #include "../platform/WebVector.h"
-#include "third_party/WebKit/public/platform/modules/permissions/permission.mojom-shared.h"
 
 #include <algorithm>
 
@@ -24,7 +23,6 @@ struct WebFrameOwnerProperties {
   bool allowFullscreen;
   bool allowPaymentRequest;
   WebString requiredCsp;
-  WebVector<mojom::PermissionName> delegatedPermissions;
 
  public:
   WebVector<WebFeaturePolicyFeature> allowedFeatures;
@@ -45,7 +43,6 @@ struct WebFrameOwnerProperties {
       bool allowFullscreen,
       bool allowPaymentRequest,
       const WebString& requiredCsp,
-      const WebVector<mojom::PermissionName>& delegatedPermissions,
       const WebVector<WebFeaturePolicyFeature>& allowedFeatures)
       : name(name),
         scrollingMode(static_cast<ScrollingMode>(scrollingMode)),
@@ -54,7 +51,6 @@ struct WebFrameOwnerProperties {
         allowFullscreen(allowFullscreen),
         allowPaymentRequest(allowPaymentRequest),
         requiredCsp(requiredCsp),
-        delegatedPermissions(delegatedPermissions),
         allowedFeatures(allowedFeatures) {}
 #endif
 };

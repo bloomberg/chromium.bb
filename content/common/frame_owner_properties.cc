@@ -25,8 +25,6 @@ bool FrameOwnerProperties::operator==(const FrameOwnerProperties& other) const {
          allow_fullscreen == other.allow_fullscreen &&
          allow_payment_request == other.allow_payment_request &&
          required_csp == other.required_csp &&
-         std::equal(delegated_permissions.begin(), delegated_permissions.end(),
-                    other.delegated_permissions.begin()) &&
          std::equal(allowed_features.begin(), allowed_features.end(),
                     other.allowed_features.begin());
 }

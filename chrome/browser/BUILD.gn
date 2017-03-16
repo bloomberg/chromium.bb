@@ -860,8 +860,6 @@ split_static_library("browser") {
     "performance_monitor/process_metrics_history.h",
     "permissions/chooser_context_base.cc",
     "permissions/chooser_context_base.h",
-    "permissions/delegation_tracker.cc",
-    "permissions/delegation_tracker.h",
     "permissions/permission_blacklist_client.cc",
     "permissions/permission_blacklist_client.h",
     "permissions/permission_context_base.cc",

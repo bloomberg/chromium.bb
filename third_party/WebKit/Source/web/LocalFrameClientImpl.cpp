@@ -929,7 +929,6 @@ void LocalFrameClientImpl::didChangeFrameOwnerProperties(
           frameElement->scrollingMode(), frameElement->marginWidth(),
           frameElement->marginHeight(), frameElement->allowFullscreen(),
           frameElement->allowPaymentRequest(), frameElement->csp(),
-          frameElement->delegatedPermissions(),
           frameElement->allowedFeatures()));
 }
 

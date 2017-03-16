@@ -27,12 +27,10 @@
 #include "core/CoreExport.h"
 #include "core/html/HTMLFrameElementBase.h"
 #include "core/html/HTMLIFrameElementAllow.h"
-#include "core/html/HTMLIFrameElementPermissions.h"
 #include "core/html/HTMLIFrameElementSandbox.h"
 #include "platform/Supplementable.h"
 #include "public/platform/WebFeaturePolicy.h"
 #include "public/platform/WebVector.h"
-#include "public/platform/modules/permissions/permission.mojom-blink.h"
 
 namespace blink {
 
@@ -47,11 +45,9 @@ class CORE_EXPORT HTMLIFrameElement final
   DECLARE_VIRTUAL_TRACE();
   ~HTMLIFrameElement() override;
   DOMTokenList* sandbox() const;
-  DOMTokenList* permissions() const;
   DOMTokenList* allow() const;
 
   void sandboxValueWasSet();
-  void permissionsValueWasSet();
   void allowValueWasSet();
 
  private:
@@ -81,15 +77,9 @@ class CORE_EXPORT HTMLIFrameElement final
   bool allowFullscreen() const override { return m_allowFullscreen; }
   bool allowPaymentRequest() const override { return m_allowPaymentRequest; }
   AtomicString csp() const override { return m_csp; }
-  const WebVector<mojom::blink::PermissionName>& delegatedPermissions()
-      const override {
-    return m_delegatedPermissions;
-  }
   const WebVector<WebFeaturePolicyFeature>& allowedFeatures() const override {
     return m_allowedFeatures;
   }
-
-  bool initializePermissionsAttribute();
 
   AtomicString m_name;
   AtomicString m_csp;
@@ -97,10 +87,8 @@ class CORE_EXPORT HTMLIFrameElement final
   bool m_allowFullscreen;
   bool m_allowPaymentRequest;
   Member<HTMLIFrameElementSandbox> m_sandbox;
-  Member<HTMLIFrameElementPermissions> m_permissions;
   Member<HTMLIFrameElementAllow> m_allow;
 
-  WebVector<mojom::blink::PermissionName> m_delegatedPermissions;
   WebVector<WebFeaturePolicyFeature> m_allowedFeatures;
 
   ReferrerPolicy m_referrerPolicy;

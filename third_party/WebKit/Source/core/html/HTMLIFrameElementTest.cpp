@@ -9,26 +9,6 @@
 
 namespace blink {
 
-// Test setting permission via the Element attribute (HTML codepath).
-TEST(HTMLIFrameElementTest, SetPermissionsAttribute) {
-  Document* document = Document::create();
-  HTMLIFrameElement* iframe = HTMLIFrameElement::create(*document);
-
-  iframe->setAttribute(HTMLNames::permissionsAttr, "geolocation");
-  EXPECT_EQ("geolocation", iframe->permissions()->value());
-  iframe->setAttribute(HTMLNames::permissionsAttr, "geolocation notifications");
-  EXPECT_EQ("geolocation notifications", iframe->permissions()->value());
-}
-
-// Test setting permission via the DOMTokenList (JS codepath).
-TEST(HTMLIFrameElementTest, SetPermissionsAttributeJS) {
-  Document* document = Document::create();
-  HTMLIFrameElement* iframe = HTMLIFrameElement::create(*document);
-
-  iframe->permissions()->setValue("midi");
-  EXPECT_EQ("midi", iframe->getAttribute(HTMLNames::permissionsAttr));
-}
-
 // Test setting feature policy via the Element attribute (HTML codepath).
 TEST(HTMLIFrameElementTest, SetAllowAttribute) {
   Document* document = Document::create();
