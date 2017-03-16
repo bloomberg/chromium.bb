@@ -82,81 +82,78 @@ suite('selection state', function() {
 
 suite('closed folder state', function() {
   var nodes;
-  // TODO(tsergeant): Remove use of 'initialState' and 'nextState'.
-  var initialState;
+  var state;
+  var action;
 
   setup(function() {
     nodes = testTree(createFolder('1', [
       createFolder('2', []),
     ]));
-    initialState = {};
+    state = {};
   });
 
   test('toggle folder open state', function() {
-    var action = bookmarks.actions.changeFolderOpen('2', false);
-    var nextState = bookmarks.ClosedFolderState.updateClosedFolders(
-        initialState, action, nodes);
-    assertFalse(!!nextState['1']);
-    assertTrue(nextState['2']);
+    action = bookmarks.actions.changeFolderOpen('2', false);
+    state =
+        bookmarks.ClosedFolderState.updateClosedFolders(state, action, nodes);
+    assertFalse(!!state['1']);
+    assertTrue(state['2']);
   });
 
   test('select folder with closed parent', function() {
-    var action;
-    var nextState;
     // Close '1'
     action = bookmarks.actions.changeFolderOpen('1', false);
-    nextState = bookmarks.ClosedFolderState.updateClosedFolders(
-        initialState, action, nodes);
-    assertTrue(nextState['1']);
-    assertFalse(!!nextState['2']);
+    state =
+        bookmarks.ClosedFolderState.updateClosedFolders(state, action, nodes);
+    assertTrue(state['1']);
+    assertFalse(!!state['2']);
 
     // Should re-open when '2' is selected.
     action = bookmarks.actions.selectFolder('2');
-    nextState = bookmarks.ClosedFolderState.updateClosedFolders(
-        nextState, action, nodes);
-    assertFalse(!!nextState['1']);
+    state =
+        bookmarks.ClosedFolderState.updateClosedFolders(state, action, nodes);
+    assertFalse(!!state['1']);
   });
 });
 
 suite('selected folder', function() {
   var nodes;
-  var initialState;
+  var state;
+  var action;
 
   setup(function() {
     nodes = testTree(createFolder('1', [
       createFolder('2', []),
     ]));
 
-    initialState = '1';
+    state = '1';
   });
 
   test('updates from selectFolder action', function() {
-    var action = bookmarks.actions.selectFolder('2');
-    var newState = bookmarks.SelectedFolderState.updateSelectedFolder(
-        initialState, action, nodes);
-    assertEquals('2', newState);
+    action = bookmarks.actions.selectFolder('2');
+    state = bookmarks.SelectedFolderState.updateSelectedFolder(
+        state, action, nodes);
+    assertEquals('2', state);
   });
 
   test('updates when parent of selected folder is closed', function() {
-    var action;
-    var newState;
-
     action = bookmarks.actions.selectFolder('2');
-    newState = bookmarks.SelectedFolderState.updateSelectedFolder(
-        initialState, action, nodes);
+    state = bookmarks.SelectedFolderState.updateSelectedFolder(
+        state, action, nodes);
 
     action = bookmarks.actions.changeFolderOpen('1', false);
-    newState = bookmarks.SelectedFolderState.updateSelectedFolder(
-        newState, action, nodes);
-    assertEquals('1', newState);
+    state = bookmarks.SelectedFolderState.updateSelectedFolder(
+        state, action, nodes);
+    assertEquals('1', state);
   });
 });
 
 suite('node state', function() {
-  var initialState;
+  var state;
+  var action;
 
   setup(function() {
-    initialState = testTree(
+    state = testTree(
         createFolder(
             '1',
             [
@@ -168,37 +165,37 @@ suite('node state', function() {
   });
 
   test('updates when a node is edited', function() {
-    var action = bookmarks.actions.editBookmark('2', {title: 'b'});
-    var nextState = bookmarks.NodeState.updateNodes(initialState, action);
+    action = bookmarks.actions.editBookmark('2', {title: 'b'});
+    state = bookmarks.NodeState.updateNodes(state, action);
 
-    assertEquals('b', nextState['2'].title);
-    assertEquals('a.com', nextState['2'].url);
+    assertEquals('b', state['2'].title);
+    assertEquals('a.com', state['2'].url);
 
     action = bookmarks.actions.editBookmark('2', {title: 'c', url: 'c.com'});
-    nextState = bookmarks.NodeState.updateNodes(nextState, action);
+    state = bookmarks.NodeState.updateNodes(state, action);
 
-    assertEquals('c', nextState['2'].title);
-    assertEquals('c.com', nextState['2'].url);
+    assertEquals('c', state['2'].title);
+    assertEquals('c.com', state['2'].url);
 
     action = bookmarks.actions.editBookmark('4', {title: 'folder'});
-    nextState = bookmarks.NodeState.updateNodes(nextState, action);
+    state = bookmarks.NodeState.updateNodes(state, action);
 
-    assertEquals('folder', nextState['4'].title);
-    assertEquals(undefined, nextState['4'].url);
+    assertEquals('folder', state['4'].title);
+    assertEquals(undefined, state['4'].url);
 
     // Cannot edit URL of a folder:
     action = bookmarks.actions.editBookmark('4', {url: 'folder.com'});
-    nextState = bookmarks.NodeState.updateNodes(nextState, action);
+    state = bookmarks.NodeState.updateNodes(state, action);
 
-    assertEquals('folder', nextState['4'].title);
-    assertEquals(undefined, nextState['4'].url);
+    assertEquals('folder', state['4'].title);
+    assertEquals(undefined, state['4'].url);
   });
 
   test('updates when a node is deleted', function() {
-    var action = bookmarks.actions.removeBookmark('3', '1', 1);
-    var nextState = bookmarks.NodeState.updateNodes(initialState, action);
+    action = bookmarks.actions.removeBookmark('3', '1', 1);
+    state = bookmarks.NodeState.updateNodes(state, action);
 
-    assertDeepEquals(['2', '4'], nextState['1'].children);
+    assertDeepEquals(['2', '4'], state['1'].children);
 
     // TODO(tsergeant): Deleted nodes should be removed from the nodes map
     // entirely.
