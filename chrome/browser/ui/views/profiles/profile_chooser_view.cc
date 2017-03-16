@@ -181,15 +181,13 @@ class BackgroundColorHoverButton : public views::LabelButton {
   BackgroundColorHoverButton(ProfileChooserView* profile_chooser_view,
                              const base::string16& text)
       : views::LabelButton(profile_chooser_view, text),
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-        profile_chooser_view_(profile_chooser_view),
-#endif
         title_(nullptr),
         subtitle_(nullptr) {
     DCHECK(profile_chooser_view);
     SetImageLabelSpacing(kMenuEdgeMargin - 2);
     SetBorder(views::CreateEmptyBorder(0, kMenuEdgeMargin, 0, kMenuEdgeMargin));
     SetFocusForPlatform();
+    SetFocusPainter(nullptr);
 
     label()->SetHandlesTooltips(false);
   }
@@ -217,73 +215,64 @@ class BackgroundColorHoverButton : public views::LabelButton {
 
  private:
   // views::View:
-  void OnNativeThemeChanged(const ui::NativeTheme* theme) override {
-    // The first time the theme changes, the state will not be hovered
-    // or pressed and the colors will be initialized.  It's okay to
-    // reset the colors when the theme changes and the button is NOT
-    // hovered or pressed because the labels will be in a normal state.
-    if (state() == STATE_HOVERED || state() == STATE_PRESSED)
-      return;
+  void OnFocus() override {
+    LabelButton::OnFocus();
+    UpdateColors();
+  }
 
+  void OnBlur() override {
+    LabelButton::OnBlur();
+    UpdateColors();
+  }
+
+  void OnNativeThemeChanged(const ui::NativeTheme* theme) override {
     LabelButton::OnNativeThemeChanged(theme);
-    views::Label* title = title_ ? title_ : label();
-    normal_title_color_ = title->enabled_color();
-    if (subtitle_)
-      normal_subtitle_color_ = subtitle_->disabled_color();
+    UpdateColors();
   }
 
   // views::CustomButton:
   void StateChanged(ButtonState old_state) override {
     LabelButton::StateChanged(old_state);
 
-    auto set_title_color = [&](SkColor color) {
-      if (title_)
-        title_->SetEnabledColor(color);
-      else
-        SetEnabledTextColors(color);
-    };
+    // As in a menu, focus follows the mouse (including blurring when the mouse
+    // leaves the button). If we don't do this, the focused view and the hovered
+    // view might both have the selection highlight.
+    if (state() == STATE_HOVERED || state() == STATE_PRESSED)
+      RequestFocus();
+    else if (state() == STATE_NORMAL && HasFocus())
+      GetFocusManager()->SetFocusedView(nullptr);
 
-    bool was_prelight =
-        old_state == STATE_HOVERED || old_state == STATE_PRESSED;
-    bool is_prelight = state() == STATE_HOVERED || state() == STATE_PRESSED;
-    if (was_prelight && !is_prelight) {
-      // The pointer is no longer over this button.  Set the
-      // background and text colors back to their normal states.
-      set_background(nullptr);
-      set_title_color(normal_title_color_);
-      if (subtitle_)
-        subtitle_->SetDisabledColor(normal_subtitle_color_);
-    } else if (!was_prelight && is_prelight) {
-      // The pointer moved over this button.  Set the background and
-      // text colors back to their hovered states.
-      SkColor bg_color = profiles::kHoverColor;
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-      if (ThemeServiceFactory::GetForProfile(
-              profile_chooser_view_->browser()->profile())
-              ->UsingSystemTheme()) {
-        // When using the system (GTK) theme, use the selected menuitem colors.
-        bg_color = GetNativeTheme()->GetSystemColor(
-            ui::NativeTheme::kColorId_FocusedMenuItemBackgroundColor);
-        SkColor text_color = GetNativeTheme()->GetSystemColor(
-            ui::NativeTheme::kColorId_SelectedMenuItemForegroundColor);
-        set_title_color(text_color);
-        if (subtitle_)
-          subtitle_->SetDisabledColor(text_color);
-      }
-#endif
-      set_background(views::Background::CreateSolidBackground(bg_color));
+    UpdateColors();
+  }
+
+  void UpdateColors() {
+    bool is_selected = HasFocus();
+
+    set_background(
+        is_selected
+            ? views::Background::CreateSolidBackground(
+                  GetNativeTheme()->GetSystemColor(
+                      ui::NativeTheme::kColorId_FocusedMenuItemBackgroundColor))
+            : nullptr);
+
+    SkColor text_color = GetNativeTheme()->GetSystemColor(
+        is_selected ? ui::NativeTheme::kColorId_SelectedMenuItemForegroundColor
+                    : ui::NativeTheme::kColorId_LabelEnabledColor);
+    SetEnabledTextColors(text_color);
+    if (title_)
+      title_->SetEnabledColor(text_color);
+
+    if (subtitle_) {
+      DCHECK(!subtitle_->enabled());
+      subtitle_->SetDisabledColor(GetNativeTheme()->GetSystemColor(
+          is_selected
+              ? ui::NativeTheme::kColorId_DisabledMenuItemForegroundColor
+              : ui::NativeTheme::kColorId_LabelDisabledColor));
     }
   }
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  ProfileChooserView* profile_chooser_view_;
-#endif
-
   views::Label* title_;
-  SkColor normal_title_color_;
-
   views::Label* subtitle_;
-  SkColor normal_subtitle_color_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundColorHoverButton);
 };
