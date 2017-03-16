@@ -913,6 +913,7 @@ void FeatureInfo::InitializeFeatures() {
              (gl_version_info_->IsAtLeastGLES(3, 1) ||
               (gl_version_info_->IsAtLeastGL(3, 0) &&
                extensions.Contains("GL_ARB_shading_language_420pack") &&
+               extensions.Contains("GL_ARB_texture_storage") &&
                extensions.Contains("GL_ARB_texture_gather") &&
                extensions.Contains("GL_ARB_explicit_uniform_location") &&
                extensions.Contains("GL_ARB_explicit_attrib_location") &&

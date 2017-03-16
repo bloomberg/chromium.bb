@@ -17603,7 +17603,6 @@ void GLES2DecoderImpl::DoApplyScreenSpaceAntialiasingCHROMIUM() {
       apply_framebuffer_attachment_cmaa_intel_.reset(
           new ApplyFramebufferAttachmentCMAAINTELResourceManager());
       apply_framebuffer_attachment_cmaa_intel_->Initialize(this);
-      RestoreCurrentFramebufferBindings();
       if (LOCAL_PEEK_GL_ERROR("glApplyFramebufferAttachmentCMAAINTEL") !=
           GL_NO_ERROR)
         return;

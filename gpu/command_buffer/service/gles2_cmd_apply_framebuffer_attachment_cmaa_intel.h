@@ -57,7 +57,6 @@ class GPU_EXPORT ApplyFramebufferAttachmentCMAAINTELResourceManager {
   bool is_in_gamma_correct_mode_;
   bool supports_usampler_;
   bool supports_r8_image_;
-  bool supports_r8_read_format_;
   bool is_gles31_compatible_;
 
   int frame_id_;

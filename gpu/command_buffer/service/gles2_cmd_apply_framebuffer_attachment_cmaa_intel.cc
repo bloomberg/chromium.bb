@@ -25,7 +25,6 @@ ApplyFramebufferAttachmentCMAAINTELResourceManager::
       is_in_gamma_correct_mode_(false),
       supports_usampler_(true),
       supports_r8_image_(true),
-      supports_r8_read_format_(true),
       is_gles31_compatible_(false),
       frame_id_(0),
       width_(0),
@@ -59,67 +58,55 @@ void ApplyFramebufferAttachmentCMAAINTELResourceManager::Initialize(
   is_gles31_compatible_ =
       decoder->GetGLContext()->GetVersionInfo()->IsAtLeastGLES(3, 1);
 
-  // Check if RGBA8UI is supported as an FBO colour target with depth.
-  // If not supported, GLSL needs to convert the data to/from float so there is
-  // a small extra cost.
-  {
-    GLuint rgba8ui_texture = 0, depth_texture = 0;
-    glGenTextures(1, &rgba8ui_texture);
-    glBindTexture(GL_TEXTURE_2D, rgba8ui_texture);
-    glTexStorage2DEXT(GL_TEXTURE_2D, 1, GL_RGBA8UI, 4, 4);
+  if (is_gles31_compatible_) {
+    supports_r8_image_ =
+        decoder->GetGLContext()->HasExtension("GL_NV_image_formats");
 
-    glGenTextures(1, &depth_texture);
-    glBindTexture(GL_TEXTURE_2D, depth_texture);
-    glTexStorage2DEXT(GL_TEXTURE_2D, 1, GL_DEPTH_COMPONENT16, 4, 4);
+    // ES 3.0 requires GL_RGBA8UI is color renderable.
+    supports_usampler_ = true;
+  } else {
+    // CMAA requires GL_ARB_shader_image_load_store for GL, and it requires r8
+    // image texture.
+    DCHECK(decoder->GetGLContext()->HasExtension(
+        "GL_ARB_shader_image_load_store"));
+    supports_r8_image_ = true;
 
-    // Create the FBO
-    GLuint rgba8ui_framebuffer = 0;
-    glGenFramebuffersEXT(1, &rgba8ui_framebuffer);
-    glBindFramebufferEXT(GL_FRAMEBUFFER, rgba8ui_framebuffer);
+    // Check if RGBA8UI is supported as an FBO colour target with depth.
+    // If not supported, GLSL needs to convert the data to/from float so there
+    // is a small extra cost.
+    {
+      glActiveTexture(GL_TEXTURE0);
 
-    // Bind to the FBO to test support
-    glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                              GL_TEXTURE_2D, rgba8ui_texture, 0);
-    glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-                              GL_TEXTURE_2D, depth_texture, 0);
-    GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER);
+      GLuint rgba8ui_texture = 0, depth_texture = 0;
+      glGenTextures(1, &rgba8ui_texture);
+      glBindTexture(GL_TEXTURE_2D, rgba8ui_texture);
+      glTexStorage2DEXT(GL_TEXTURE_2D, 1, GL_RGBA8UI, 4, 4);
 
-    supports_usampler_ = (status == GL_FRAMEBUFFER_COMPLETE);
+      glGenTextures(1, &depth_texture);
+      glBindTexture(GL_TEXTURE_2D, depth_texture);
+      glTexStorage2DEXT(GL_TEXTURE_2D, 1, GL_DEPTH_COMPONENT16, 4, 4);
 
-    glDeleteFramebuffersEXT(1, &rgba8ui_framebuffer);
-    glDeleteTextures(1, &rgba8ui_texture);
-    glDeleteTextures(1, &depth_texture);
-  }
+      // Create the FBO
+      GLuint rgba8ui_framebuffer = 0;
+      glGenFramebuffersEXT(1, &rgba8ui_framebuffer);
+      glBindFramebufferEXT(GL_FRAMEBUFFER, rgba8ui_framebuffer);
 
-  // Check to see if R8 images are supported
-  // If not supported, images are bound as R32F for write targets, not R8.
-  {
-    GLuint r8_texture = 0;
-    glGenTextures(1, &r8_texture);
-    glBindTexture(GL_TEXTURE_2D, r8_texture);
-    glTexStorage2DEXT(GL_TEXTURE_2D, 1, GL_R8, 4, 4);
+      // Bind to the FBO to test support
+      glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                                GL_TEXTURE_2D, rgba8ui_texture, 0);
+      glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
+                                GL_TEXTURE_2D, depth_texture, 0);
+      GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER);
 
-    glGetError();  // reset all previous errors
-    glBindImageTextureEXT(0, r8_texture, 0, GL_FALSE, 0, GL_WRITE_ONLY, GL_R8);
-    if (glGetError() != GL_NO_ERROR)
-      supports_r8_image_ = false;
+      supports_usampler_ = (status == GL_FRAMEBUFFER_COMPLETE);
 
-    glDeleteTextures(1, &r8_texture);
-  }
+      glDeleteFramebuffersEXT(1, &rgba8ui_framebuffer);
+      glDeleteTextures(1, &rgba8ui_texture);
+      glDeleteTextures(1, &depth_texture);
 
-  // Check if R8 GLSL read formats are supported.
-  // If not supported, r32f is used instead.
-  {
-    const char shader_source[] =
-        SHADER(layout(r8) restrict writeonly uniform highp image2D g_r8Image;
-               void main() {
-                 imageStore(g_r8Image, ivec2(0, 0), vec4(1.0, 0.0, 0.0, 0.0));
-               });
-
-    GLuint shader = CreateShader(GL_FRAGMENT_SHADER, "", shader_source);
-    supports_r8_read_format_ = (shader != 0);
-    if (shader != 0) {
-      glDeleteShader(shader);
+      decoder->RestoreTextureUnitBindings(0);
+      decoder->RestoreActiveTexture();
+      decoder->RestoreFramebufferBindings();
     }
   }
 
@@ -128,9 +115,6 @@ void ApplyFramebufferAttachmentCMAAINTELResourceManager::Initialize(
   VLOG(1) << "ApplyFramebufferAttachmentCMAAINTEL: "
           << "Supports R8 Images is "
           << (supports_r8_image_ ? "true" : "false");
-  VLOG(1) << "ApplyFramebufferAttachmentCMAAINTEL: "
-          << "Supports R8 Read Format is "
-          << (supports_r8_read_format_ ? "true" : "false");
 
   // Create the shaders
   std::ostringstream defines, edge1, edge2, combineEdges, blur, displayEdges,
@@ -148,7 +132,7 @@ void ApplyFramebufferAttachmentCMAAINTELResourceManager::Initialize(
     defines << "#define IN_GAMMA_CORRECT_MODE\n";
   }
 
-  if (supports_r8_read_format_) {
+  if (supports_r8_image_) {
     defines << "#define EDGE_READ_FORMAT r8\n";
   } else {
     defines << "#define EDGE_READ_FORMAT r32f\n";
@@ -629,7 +613,7 @@ GLuint ApplyFramebufferAttachmentCMAAINTELResourceManager::CreateShader(
 
   const char header_es31[] =
       "#version 310 es                                                      \n";
-  const char header_gl30[] =
+  const char header_gl130[] =
       "#version 130                                                         \n"
       "#extension GL_ARB_shading_language_420pack  : require                \n"
       "#extension GL_ARB_texture_gather            : require                \n"
@@ -637,14 +621,17 @@ GLuint ApplyFramebufferAttachmentCMAAINTELResourceManager::CreateShader(
       "#extension GL_ARB_explicit_attrib_location  : require                \n"
       "#extension GL_ARB_shader_image_load_store   : require                \n";
 
-  const char* header = NULL;
+  std::ostringstream header;
   if (is_gles31_compatible_) {
-    header = header_es31;
+    header << header_es31;
+    if (supports_r8_image_)
+      header << "#extension GL_NV_image_formats : require\n";
   } else {
-    header = header_gl30;
+    header << header_gl130;
   }
 
-  const char* source_array[4] = {header, defines, "\n", source};
+  std::string header_str = header.str();
+  const char* source_array[4] = {header_str.c_str(), defines, "\n", source};
   glShaderSource(shader, 4, source_array, NULL);
 
   glCompileShader(shader);
