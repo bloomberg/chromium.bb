@@ -64,11 +64,11 @@ function initialize_extensionsPanelTest()
         InspectorTest.disableConsoleViewport();
         InspectorTest.evaluateInPage("logMessage()");
         var wrappedConsoleMessageAdded = InspectorTest.safeWrap(consoleMessageAdded);
-        SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.MessageAdded, wrappedConsoleMessageAdded);
+        ConsoleModel.consoleModel.addEventListener(ConsoleModel.ConsoleModel.Events.MessageAdded, wrappedConsoleMessageAdded);
 
         function consoleMessageAdded()
         {
-            SDK.consoleModel.removeEventListener(SDK.ConsoleModel.Events.MessageAdded, wrappedConsoleMessageAdded);
+            ConsoleModel.consoleModel.removeEventListener(ConsoleModel.ConsoleModel.Events.MessageAdded, wrappedConsoleMessageAdded);
             Console.ConsoleView.instance()._viewportThrottler.flush();
             InspectorTest.deprecatedRunAfterPendingDispatches(clickOnMessage)
         }

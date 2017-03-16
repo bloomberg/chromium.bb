@@ -45,35 +45,35 @@ function test()
 
         function verbose(next)
         {
-            Common.settings.settingForTest('messageLevelFilters2').set(SDK.ConsoleMessage.MessageLevel.Verbose);
+            Common.settings.settingForTest('messageLevelFilters2').set(ConsoleModel.ConsoleMessage.MessageLevel.Verbose);
             dumpVisibleMessages();
             next();
         },
         
         function info(next)
         {
-            Common.settings.settingForTest('messageLevelFilters2').set(SDK.ConsoleMessage.MessageLevel.Info);
+            Common.settings.settingForTest('messageLevelFilters2').set(ConsoleModel.ConsoleMessage.MessageLevel.Info);
             dumpVisibleMessages();
             next();
         },
 
         function warning(next)
         {
-            Common.settings.settingForTest('messageLevelFilters2').set(SDK.ConsoleMessage.MessageLevel.Warning);
+            Common.settings.settingForTest('messageLevelFilters2').set(ConsoleModel.ConsoleMessage.MessageLevel.Warning);
             dumpVisibleMessages();
             next();
         },
               
         function error(next)
         {
-            Common.settings.settingForTest('messageLevelFilters2').set(SDK.ConsoleMessage.MessageLevel.Error);
+            Common.settings.settingForTest('messageLevelFilters2').set(ConsoleModel.ConsoleMessage.MessageLevel.Error);
             dumpVisibleMessages();
             next();
         },
        
         function abcMessagePlain(next)
         {
-            Common.settings.settingForTest('messageLevelFilters2').set(SDK.ConsoleMessage.MessageLevel.Verbose);
+            Common.settings.settingForTest('messageLevelFilters2').set(ConsoleModel.ConsoleMessage.MessageLevel.Verbose);
             Console.ConsoleView.instance()._filter._textFilterUI.setValue("abc");
             Console.ConsoleView.instance()._filter._textFilterChanged();
             dumpVisibleMessages();
@@ -90,7 +90,7 @@ function test()
 
         function abcMessageRegexWarning(next)
         {
-            Common.settings.settingForTest('messageLevelFilters2').set(SDK.ConsoleMessage.MessageLevel.Warning);
+            Common.settings.settingForTest('messageLevelFilters2').set(ConsoleModel.ConsoleMessage.MessageLevel.Warning);
             dumpVisibleMessages();
             next();
         }

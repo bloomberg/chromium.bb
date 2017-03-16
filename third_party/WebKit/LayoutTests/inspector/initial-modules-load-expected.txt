@@ -6,6 +6,7 @@ Loaded modules:
     bindings
     common
     components
+    console_model
     dom_extension
     emulation
     extensions
@@ -28,6 +29,7 @@ Loaded modules:
     color_picker
     common
     components
+    console_model
     dom_extension
     elements
     emulation
@@ -55,6 +57,7 @@ Loaded modules:
     color_picker
     common
     components
+    console_model
     cookie_table
     data_grid
     diff
@@ -90,6 +93,7 @@ Loaded modules:
     color_picker
     common
     components
+    console_model
     cookie_table
     data_grid
     diff
@@ -128,6 +132,7 @@ Loaded modules:
     color_picker
     common
     components
+    console_model
     cookie_table
     data_grid
     diff

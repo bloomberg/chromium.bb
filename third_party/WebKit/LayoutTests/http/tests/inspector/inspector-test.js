@@ -668,7 +668,7 @@ InspectorTest.addSnifferPromise = function(receiver, methodName)
 
 InspectorTest.addConsoleSniffer = function(override, opt_sticky)
 {
-    InspectorTest.addSniffer(SDK.ConsoleModel.prototype, "addMessage", override, opt_sticky);
+    InspectorTest.addSniffer(ConsoleModel.ConsoleModel.prototype, "addMessage", override, opt_sticky);
 }
 
 InspectorTest.override = function(receiver, methodName, override, opt_sticky)
@@ -987,7 +987,7 @@ SDK.targetManager.observeTargets({
         InspectorTest.serviceWorkerManager = target.model(SDK.ServiceWorkerManager);
         InspectorTest.tracingManager = target.model(SDK.TracingManager);
         InspectorTest.mainTarget = target;
-        InspectorTest.consoleModel = SDK.consoleModel;
+        InspectorTest.consoleModel = ConsoleModel.consoleModel;
     },
 
     targetRemoved: function(target) { }

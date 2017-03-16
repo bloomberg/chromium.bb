@@ -13,10 +13,10 @@ function test()
 
     function addMessageWithFixedTimestamp(messageText, timestamp)
     {
-        var message = new SDK.ConsoleMessage(
+        var message = new ConsoleModel.ConsoleMessage(
             InspectorTest.mainTarget,
-            SDK.ConsoleMessage.MessageSource.Other, // source
-            SDK.ConsoleMessage.MessageLevel.Info, // level
+            ConsoleModel.ConsoleMessage.MessageSource.Other, // source
+            ConsoleModel.ConsoleMessage.MessageLevel.Info, // level
             messageText,
             undefined, // type
             undefined, // url

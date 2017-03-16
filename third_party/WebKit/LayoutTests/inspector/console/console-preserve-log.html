@@ -5,7 +5,7 @@
 <script>
 function test()
 {
-    InspectorTest.consoleModel.addMessage(new SDK.ConsoleMessage(InspectorTest.mainTarget, SDK.ConsoleMessage.MessageSource.Other, SDK.ConsoleMessage.MessageLevel.Info, "PASS"));
+    InspectorTest.consoleModel.addMessage(new ConsoleModel.ConsoleMessage(InspectorTest.mainTarget, ConsoleModel.ConsoleMessage.MessageSource.Other, ConsoleModel.ConsoleMessage.MessageLevel.Info, "PASS"));
     Common.settingForTest("preserveConsoleLog").set(true);
     InspectorTest.reloadPage(function() {
         InspectorTest.dumpConsoleMessages();

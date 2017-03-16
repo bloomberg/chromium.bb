@@ -62,7 +62,7 @@ function dispatchEvents()
 
 function test()
 {
-    SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.MessageAdded, InspectorTest.safeWrap(onConsoleMessage));
+    ConsoleModel.consoleModel.addEventListener(ConsoleModel.ConsoleModel.Events.MessageAdded, InspectorTest.safeWrap(onConsoleMessage));
     step1();
 
     function step1()
