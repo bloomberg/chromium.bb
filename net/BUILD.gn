@@ -5108,7 +5108,6 @@ if (!is_ios && !is_proto_quic) {
       "cookies/cookie_monster_perftest.cc",
       "disk_cache/disk_cache_perftest.cc",
       "extras/sqlite/sqlite_persistent_cookie_store_perftest.cc",
-      "proxy/proxy_resolver_perftest.cc",
       "socket/udp_socket_perftest.cc",
     ]
 
@@ -5129,12 +5128,6 @@ if (!is_ios && !is_proto_quic) {
 
     if (enable_websockets) {
       sources += [ "websockets/websocket_frame_perftest.cc" ]
-    }
-
-    if (use_v8_in_net) {
-      deps += [ ":net_with_v8" ]
-    } else {
-      sources -= [ "proxy/proxy_resolver_perftest.cc" ]
     }
 
     # Some linker failures have been observed for this target on the Win64
