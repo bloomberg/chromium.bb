@@ -10,12 +10,25 @@
 
 @class CWVHTMLElement;
 @class CWVWebView;
+@class CWVWebViewConfiguration;
+@class CWVNavigationAction;
 
 // UI delegate interface for a CWVWebView.  Embedders can implement the
 // functions in order to customize library behavior.
 @protocol CWVUIDelegate<NSObject>
 
 @optional
+// Instructs the delegate to create a new browsing window (f.e. in response to
+// window.open JavaScript call). Page will not open a window if this method
+// returns nil or is not implemented. This method can not return |webView|.
+- (CWVWebView*)webView:(CWVWebView*)webView
+    createWebViewWithConfiguration:(CWVWebViewConfiguration*)configuration
+               forNavigationAction:(CWVNavigationAction*)action;
+
+// Instructs the delegate to close |webView|. Called only for windows opened by
+// DOM.
+- (void)webViewDidClose:(CWVWebView*)webView;
+
 // Instructs the delegate to present context menu in response to user’s long
 // press gesture at |location| in |view| coordinate space. |element| is an HTML
 // element which received the gesture.
