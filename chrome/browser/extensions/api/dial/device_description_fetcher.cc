@@ -13,6 +13,7 @@
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -49,10 +50,40 @@ void DeviceDescriptionFetcher::Start() {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!fetcher_);
 
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("dial_get_device_description", R"(
+        semantics {
+          sender: "DIAL"
+          description:
+            "Chromium sends a request to a device (such as a smart TV) "
+            "discovered via the DIAL (Disovery and Launch) protocol to obtain "
+            "its device description. Chromium then uses the device description "
+            "to determine the capabilities of the device to be used as a "
+            "target for casting media content."
+          trigger:
+            "A new or updated device has been discovered via DIAL in the local "
+            "network."
+          data: "An HTTP GET request."
+          destination: OTHER
+          destination_other:
+            "A device in the local network."
+        }
+        policy {
+          cookies_allowed: false
+          setting:
+            "This feature cannot be disabled by settings and can only be "
+            "disabled by media-router flag."
+          chrome_policy {
+            EnableMediaRouter {
+              policy_options {mode: MANDATORY}
+              EnableMediaRouter: false
+            }
+          }
+        })");
   // DIAL returns device descriptions via GET request.
   fetcher_ =
       net::URLFetcher::Create(kURLFetcherIDForTest, device_description_url_,
-                              net::URLFetcher::GET, this);
+                              net::URLFetcher::GET, this, traffic_annotation);
 
   // net::LOAD_BYPASS_PROXY: Proxies almost certainly hurt more cases than they
   //     help.
