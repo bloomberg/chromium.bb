@@ -29,6 +29,7 @@ const int kDefaultNewRenderersUntilCritical = 2;
 const int kDefaultNewRenderersBackToNormal = 5;
 const int kDefaultNewRenderersBackToWarning = 3;
 const int kDefaultMonitoringIntervalSeconds = 5;
+const int kMonitoringIntervalBackgroundedSeconds = 120;
 
 void SetIntVariationParameter(const std::map<std::string, std::string> params,
                               const char* name,
@@ -70,11 +71,27 @@ MemoryConditionObserver::MemoryConditionObserver(
 
 MemoryConditionObserver::~MemoryConditionObserver() {}
 
-void MemoryConditionObserver::ScheduleUpdateCondition(base::TimeDelta delta) {
+void MemoryConditionObserver::ScheduleUpdateCondition(base::TimeDelta delay) {
   update_condition_closure_.Reset(base::Bind(
       &MemoryConditionObserver::UpdateCondition, base::Unretained(this)));
   task_runner_->PostDelayedTask(FROM_HERE, update_condition_closure_.callback(),
-                                delta);
+                                delay);
+}
+
+void MemoryConditionObserver::OnForegrounded() {
+  SetMonitoringInterval(monitoring_interval_foregrounded_);
+}
+
+void MemoryConditionObserver::OnBackgrounded() {
+  SetMonitoringInterval(monitoring_interval_backgrounded_);
+}
+
+void MemoryConditionObserver::SetMonitoringInterval(base::TimeDelta interval) {
+  DCHECK(!interval.is_zero());
+  if (interval == monitoring_interval_)
+    return;
+  monitoring_interval_ = interval;
+  ScheduleUpdateCondition(interval);
 }
 
 MemoryCondition MemoryConditionObserver::CalculateNextCondition() {
@@ -130,6 +147,10 @@ void MemoryConditionObserver::InitializeParameters() {
   new_renderers_back_to_warning_ = kDefaultNewRenderersBackToWarning;
   monitoring_interval_ =
       base::TimeDelta::FromSeconds(kDefaultMonitoringIntervalSeconds);
+  monitoring_interval_foregrounded_ =
+      base::TimeDelta::FromSeconds(kDefaultMonitoringIntervalSeconds);
+  monitoring_interval_backgrounded_ =
+      base::TimeDelta::FromSeconds(kMonitoringIntervalBackgroundedSeconds);
 
   // Override default parameters with variations.
   static constexpr char kMemoryCoordinatorV0Trial[] = "MemoryCoordinatorV0";
@@ -147,6 +168,10 @@ void MemoryConditionObserver::InitializeParameters() {
                            &new_renderers_back_to_warning_);
   SetSecondsVariationParameter(params, "monitoring_interval",
                                &monitoring_interval_);
+  SetSecondsVariationParameter(params, "monitoring_interval_foregrounded",
+                               &monitoring_interval_foregrounded_);
+  SetSecondsVariationParameter(params, "monitoring_interval_backgrounded",
+                               &monitoring_interval_backgrounded_);
 }
 
 bool MemoryConditionObserver::ValidateParameters() {

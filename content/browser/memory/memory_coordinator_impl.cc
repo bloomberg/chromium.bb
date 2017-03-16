@@ -175,6 +175,14 @@ void MemoryCoordinatorImpl::Start() {
   condition_observer_->ScheduleUpdateCondition(base::TimeDelta());
 }
 
+void MemoryCoordinatorImpl::OnForegrounded() {
+  condition_observer_->OnForegrounded();
+}
+
+void MemoryCoordinatorImpl::OnBackgrounded() {
+  condition_observer_->OnBackgrounded();
+}
+
 void MemoryCoordinatorImpl::CreateHandle(
     int render_process_id,
     mojom::MemoryCoordinatorHandleRequest request) {

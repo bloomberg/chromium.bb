@@ -60,6 +60,12 @@ class CONTENT_EXPORT MemoryCoordinatorImpl : public base::MemoryCoordinator,
   // coordinator will start dispatching state changes.
   void Start();
 
+  // Called when the browser is foregrounded.
+  void OnForegrounded();
+
+  // Called when the browser is backgrounded.
+  void OnBackgrounded();
+
   // Creates a handle to the provided child process.
   void CreateHandle(int render_process_id,
                     mojom::MemoryCoordinatorHandleRequest request);

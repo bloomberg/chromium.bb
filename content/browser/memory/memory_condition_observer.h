@@ -33,11 +33,21 @@ class CONTENT_EXPORT MemoryConditionObserver {
   // after |delay| has passed.
   void ScheduleUpdateCondition(base::TimeDelta delay);
 
+  // Called when the browser is foregrounded.
+  void OnForegrounded();
+
+  // Called when the browser is backgrounded.
+  void OnBackgrounded();
+
  private:
   FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorImplTest, CalculateNextCondition);
   FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorImplTest, UpdateCondition);
   FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorImplTest, ForceSetMemoryCondition);
   FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorImplTest, DiscardTabUnderCritical);
+
+  // Sets the monitoring interval and reschedules a task to update memory
+  // condition.
+  void SetMonitoringInterval(base::TimeDelta interval);
 
   // Calculates next memory condition from the amount of free memory using
   // a heuristic.
@@ -77,8 +87,12 @@ class CONTENT_EXPORT MemoryConditionObserver {
   // rises above this level, the coordinator will transition to a WARNING
   // condition.
   int new_renderers_back_to_warning_;
-  // The interval of checking the amount of free memory.
+  // The current interval of checking the amount of free memory.
   base::TimeDelta monitoring_interval_;
+  // The value of |monitoring_interval_| when the browser is foregrounded.
+  base::TimeDelta monitoring_interval_foregrounded_;
+  // The value of |monitoring_interval_| when the browser is backgrounded.
+  base::TimeDelta monitoring_interval_backgrounded_;
 
   DISALLOW_COPY_AND_ASSIGN(MemoryConditionObserver);
 };
