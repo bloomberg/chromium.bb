@@ -20,6 +20,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 
@@ -161,7 +162,40 @@ void SupervisedUserRefreshTokenFetcherImpl::OnGetTokenSuccess(
   // unit tests.
   const int id = 1;
 
-  url_fetcher_ = URLFetcher::Create(id, url, URLFetcher::POST, this);
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation(
+          "supervised_user_refresh_token_fetcher", R"(
+          semantics {
+            sender: "Supervised Users"
+            description:
+              "Fetches an OAuth2 refresh token scoped down to the Supervised "
+              "User Sync scope and tied to the given Supervised User ID, "
+              "identifying the Supervised User Profile to be created."
+            trigger:
+              "Called when creating a new Supervised User profile in Chromium "
+              "to fetch OAuth credentials for using Sync with the new profile."
+            data:
+              "The request is authenticated with an OAuth2 access token "
+              "identifying the Google account and contains the following "
+              "information:\n* The Supervised User ID, a randomly generated "
+              "64-bit identifier for the profile.\n* The device name, to "
+              "identify the refresh token in account management."
+            destination: GOOGLE_OWNED_SERVICE
+          }
+          policy {
+            cookies_allowed: false
+            setting:
+              "Users can disable this feature by toggling 'Let anyone add a "
+              "person to Chrome' in Chromium settings, under People."
+            chrome_policy {
+              SupervisedUserCreationEnabled {
+                policy_options {mode: MANDATORY}
+                SupervisedUserCreationEnabled: false
+              }
+            }
+          })");
+  url_fetcher_ =
+      URLFetcher::Create(id, url, URLFetcher::POST, this, traffic_annotation);
 
   data_use_measurement::DataUseUserData::AttachToFetcher(
       url_fetcher_.get(),

@@ -19,6 +19,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
@@ -108,8 +109,34 @@ void SafeSearchURLReporter::OnGetTokenSuccess(
 
   (*it)->access_token = access_token;
 
-  (*it)->url_fetcher = URLFetcher::Create((*it)->url_fetcher_id, GURL(kApiUrl),
-                                          URLFetcher::POST, this);
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("safe_search_url_reporter", R"(
+        semantics {
+          sender: "Supervised Users"
+          description: "Reports a URL wrongfully flagged by SafeSearch."
+          trigger: "Initiated by the user."
+          data:
+            "The request is authenticated with an OAuth2 access token "
+            "identifying the Google account and contains the URL that was "
+            "wrongfully flagged."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: false
+          setting:
+            "This feature cannot be disabled by settings and is only enabled "
+            "for child accounts. If sign-in is restricted to accounts from a "
+            "managed domain, those accounts are not going to be child accounts."
+          chrome_policy {
+            RestrictSigninToPattern {
+              policy_options {mode: MANDATORY}
+              RestrictSigninToPattern: "*@manageddomain.com"
+            }
+          }
+        })");
+  (*it)->url_fetcher =
+      URLFetcher::Create((*it)->url_fetcher_id, GURL(kApiUrl), URLFetcher::POST,
+                         this, traffic_annotation);
 
   data_use_measurement::DataUseUserData::AttachToFetcher(
       (*it)->url_fetcher.get(),

@@ -14,6 +14,7 @@
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
 
@@ -171,7 +172,35 @@ void FamilyInfoFetcher::OnGetTokenSuccess(
 
   GURL url = kids_management_api::GetURL(request_path_);
   const int id = 0;
-  url_fetcher_ = net::URLFetcher::Create(id, url, net::URLFetcher::GET, this);
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("family_info", R"(
+        semantics {
+          sender: "Supervised Users"
+          description:
+            "Fetches information about the user's family group from the Google "
+            "Family API."
+          trigger:
+            "Triggered in regular intervals to update profile information."
+          data:
+            "The request is authenticated with an OAuth2 access token "
+            "identifying the Google account. No other information is sent."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: false
+          setting:
+            "This feature cannot be disabled in settings and is only enabled "
+            "for child accounts. If sign-in is restricted to accounts from a "
+            "managed domain, those accounts are not going to be child accounts."
+          chrome_policy {
+            RestrictSigninToPattern {
+              policy_options {mode: MANDATORY}
+              RestrictSigninToPattern: "*@manageddomain.com"
+            }
+          }
+        })");
+  url_fetcher_ = net::URLFetcher::Create(id, url, net::URLFetcher::GET, this,
+                                         traffic_annotation);
 
   data_use_measurement::DataUseUserData::AttachToFetcher(
       url_fetcher_.get(),
