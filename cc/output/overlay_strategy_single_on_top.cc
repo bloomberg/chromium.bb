@@ -7,9 +7,15 @@
 #include "cc/base/math_util.h"
 #include "cc/output/overlay_candidate_validator.h"
 #include "cc/quads/draw_quad.h"
+#include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
 namespace cc {
+namespace {
+
+const gfx::BufferFormat kOverlayFormatsWithAlpha[] = {
+    gfx::BufferFormat::RGBA_8888, gfx::BufferFormat::BGRA_8888};
+}
 
 OverlayStrategySingleOnTop::OverlayStrategySingleOnTop(
     OverlayCandidateValidator* capability_checker)
@@ -34,6 +40,17 @@ bool OverlayStrategySingleOnTop::Attempt(
         // TODO(dcastagna): Remove this once drm platform supports transforms.
         candidate.transform == gfx::OVERLAY_TRANSFORM_NONE &&
         !OverlayCandidate::IsOccluded(candidate, quad_list->cbegin(), it)) {
+      // We currently reject quads with alpha that do not request alpha blending
+      // since the alpha channel might not be set to 1 and we're not disabling
+      // blending when scanning out.
+      // TODO(dcastagna): We should support alpha formats without blending using
+      // the opaque FB at scanout.
+      if (std::find(std::begin(kOverlayFormatsWithAlpha),
+                    std::end(kOverlayFormatsWithAlpha),
+                    candidate.format) != std::end(kOverlayFormatsWithAlpha) &&
+          it->shared_quad_state->blend_mode == SkBlendMode::kSrc)
+        continue;
+
       if (candidate.display_rect.size().GetArea() >
           best_candidate.display_rect.size().GetArea()) {
         best_candidate = candidate;

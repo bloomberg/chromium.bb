@@ -39,9 +39,7 @@ bool OverlayStrategyFullscreen::Attempt(
     return false;
 
   const DrawQuad* quad = *front;
-  if (quad->ShouldDrawWithBlending() ||
-      quad->shared_quad_state->opacity != 1.f ||
-      quad->shared_quad_state->blend_mode != SkBlendMode::kSrcOver)
+  if (quad->ShouldDrawWithBlending())
     return false;
 
   OverlayCandidate candidate;
