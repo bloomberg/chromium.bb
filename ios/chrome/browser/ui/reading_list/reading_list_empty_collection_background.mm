@@ -64,6 +64,8 @@ const CGFloat kPercentageFromTopForPosition = 0.4;
 
 @implementation ReadingListEmptyCollectionBackground
 
+#pragma mark - Public
+
 - (instancetype)init {
   self = [super initWithFrame:CGRectZero];
   if (self) {
@@ -172,6 +174,8 @@ const CGFloat kPercentageFromTopForPosition = 0.4;
     label.numberOfLines = 0;
     label.textAlignment = NSTextAlignmentCenter;
     label.accessibilityLabel = accessibilityLabel;
+    label.accessibilityIdentifier =
+        [ReadingListEmptyCollectionBackground accessibilityIdentifier];
     [label setTranslatesAutoresizingMaskIntoConstraints:NO];
     [self addSubview:label];
 
@@ -184,6 +188,12 @@ const CGFloat kPercentageFromTopForPosition = 0.4;
   }
   return self;
 }
+
++ (NSString*)accessibilityIdentifier {
+  return @"ReadingListBackgroundViewIdentifier";
+}
+
+#pragma mark - Private
 
 - (void)attachIconNamed:(NSString*)iconName
                toString:(NSMutableAttributedString*)instructionString

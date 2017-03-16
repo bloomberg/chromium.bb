@@ -13,6 +13,7 @@
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_empty_collection_background.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
@@ -194,6 +195,12 @@ size_t ModelReadSize(ReadingListModel* model) {
     }
   }
   return size;
+}
+
+// Returns a match for the Reading List Empty Collection Background.
+id<GREYMatcher> EmptyBackground() {
+  return grey_accessibilityID(
+      [ReadingListEmptyCollectionBackground accessibilityIdentifier]);
 }
 }  // namespace
 
@@ -526,6 +533,31 @@ size_t ModelReadSize(ReadingListModel* model) {
   XCTAssertEqual(kNumberReadEntries + 1, ModelReadSize(GetReadingListModel()));
   XCTAssertEqual(kNumberUnreadEntries - 1,
                  GetReadingListModel()->unread_size());
+}
+
+// Tests that you can delete multiple read items in the Reading List without
+// creating a crash (crbug.com/701956).
+- (void)testDeleteMultipleItems {
+  // Add entries.
+  ReadingListModel* model = GetReadingListModel();
+  for (int i = 0; i < 11; i++) {
+    std::string increment = std::to_string(i);
+    model->AddEntry(GURL(kReadURL + increment),
+                    std::string(kReadTitle + increment),
+                    reading_list::ADDED_VIA_CURRENT_APP);
+    model->SetReadStatus(GURL(kReadURL + increment), true);
+  }
+
+  // Delete them from the Reading List view.
+  OpenReadingList();
+  [[EarlGrey selectElementWithMatcher:EmptyBackground()]
+      assertWithMatcher:grey_nil()];
+  TapButtonWithID(IDS_IOS_READING_LIST_EDIT_BUTTON);
+  TapButtonWithID(IDS_IOS_READING_LIST_DELETE_ALL_READ_BUTTON);
+
+  // Verify the background string is displayed.
+  [[EarlGrey selectElementWithMatcher:EmptyBackground()]
+      assertWithMatcher:grey_notNil()];
 }
 
 @end

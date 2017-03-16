@@ -14,6 +14,8 @@
 - (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
 - (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
 
++ (NSString*)accessibilityIdentifier;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_READING_LIST_READING_LIST_EMPTY_COLLECTION_BACKGROUND_H_
