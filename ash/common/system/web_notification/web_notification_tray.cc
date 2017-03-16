@@ -4,7 +4,6 @@
 
 #include "ash/common/system/web_notification/web_notification_tray.h"
 
-#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/wm_shelf.h"
@@ -64,7 +63,6 @@ constexpr int kEnableQuietModeDay = 2;
 constexpr int kMaximumSmallIconCount = 3;
 
 constexpr gfx::Size kTrayItemInnerIconSize(16, 16);
-constexpr gfx::Size kTrayItemInnerBellIconSizeNonMd(18, 18);
 constexpr gfx::Size kTrayItemOuterSize(26, 26);
 constexpr int kTrayMainAxisInset = 3;
 constexpr int kTrayCrossAxisInset = 0;
@@ -75,14 +73,6 @@ constexpr size_t kMaximumNotificationNumber = 99;
 
 // Flag to disable animation. Only for testing.
 bool disable_animations_for_test = false;
-}
-
-namespace {
-
-const SkColor kWebNotificationColorNoUnread =
-    SkColorSetARGB(128, 255, 255, 255);
-const SkColor kWebNotificationColorWithUnread = SK_ColorWHITE;
-const int kNoUnreadIconSize = 18;
 
 }  // namespace
 
@@ -232,13 +222,12 @@ class WebNotificationItem : public views::View, public gfx::AnimationDelegate {
 class WebNotificationImage : public WebNotificationItem {
  public:
   WebNotificationImage(const gfx::ImageSkia& image,
-                       const gfx::Size& size,
                        gfx::AnimationContainer* container,
                        WebNotificationTray* tray)
       : WebNotificationItem(container, tray) {
     view_ = new views::ImageView();
     view_->SetImage(image);
-    view_->SetImageSize(size);
+    view_->SetImageSize(kTrayItemInnerIconSize);
     AddChildView(view_);
   }
 
@@ -272,7 +261,6 @@ class WebNotificationLabel : public WebNotificationItem {
     }
 
     view_->SetText(str);
-    view_->SetEnabledColor(kWebNotificationColorWithUnread);
     SchedulePaint();
   }
 
@@ -295,21 +283,11 @@ WebNotificationTray::WebNotificationTray(WmShelf* shelf,
   DCHECK(status_area_window_);
   DCHECK(system_tray_);
 
-  if (MaterialDesignController::IsShelfMaterial()) {
-    SetInkDropMode(InkDropMode::ON);
-    gfx::ImageSkia bell_image =
-        CreateVectorIcon(kShelfNotificationsIcon, kShelfIconColor);
-    const gfx::Size bell_icon_size = kTrayItemInnerIconSize;
-    bell_icon_.reset(new WebNotificationImage(
-        bell_image, bell_icon_size, animation_container_.get(), this));
-  } else {
-    gfx::ImageSkia bell_image =
-        CreateVectorIcon(ui::kNotificationsIcon, kNoUnreadIconSize,
-                         kWebNotificationColorNoUnread);
-    const gfx::Size bell_icon_size = kTrayItemInnerBellIconSizeNonMd;
-    bell_icon_.reset(new WebNotificationImage(
-        bell_image, bell_icon_size, animation_container_.get(), this));
-  }
+  SetInkDropMode(InkDropMode::ON);
+  gfx::ImageSkia bell_image =
+      CreateVectorIcon(kShelfNotificationsIcon, kShelfIconColor);
+  bell_icon_.reset(
+      new WebNotificationImage(bell_image, animation_container_.get(), this));
   tray_container()->AddChildView(bell_icon_.get());
 
   counter_.reset(new WebNotificationLabel(animation_container_.get(), this));
@@ -583,9 +561,8 @@ void WebNotificationTray::UpdateTrayContent() {
     if (visible_small_icons_.count(notification->id()) != 0)
       continue;
 
-    auto* item =
-        new WebNotificationImage(image.AsImageSkia(), kTrayItemInnerIconSize,
-                                 animation_container_.get(), this);
+    auto* item = new WebNotificationImage(image.AsImageSkia(),
+                                          animation_container_.get(), this);
     visible_small_icons_.insert(std::make_pair(notification->id(), item));
 
     tray_container()->AddChildViewAt(item, 0);
