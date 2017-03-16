@@ -2820,15 +2820,13 @@ TEST_F(BluetoothBlueZTest, PairTrustedDevice) {
                               kConnectedTrustedNotPairedDeviceAddress);
   ASSERT_TRUE(device != nullptr);
 
-  // On the DBus level the device is trusted but not paired. But the current
-  // implementation of |BluetoothDevice::IsPaired()| returns true in this case.
   bluez::FakeBluetoothDeviceClient::Properties* properties =
       fake_bluetooth_device_client_->GetProperties(
           dbus::ObjectPath(bluez::FakeBluetoothDeviceClient::
                                kConnectedTrustedNotPairedDevicePath));
   EXPECT_FALSE(properties->paired.value());
   EXPECT_TRUE(properties->trusted.value());
-  ASSERT_TRUE(device->IsPaired());
+  ASSERT_FALSE(device->IsPaired());
 
   // The |kConnectedTrustedNotPairedDevicePath| requests a passkey confirmation.
   // Obs.: This is the flow when CrOS triggers pairing with a iOS device.

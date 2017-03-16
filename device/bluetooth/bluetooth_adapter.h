@@ -101,7 +101,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
     //  * IsConnecting()
     //  * IsGattConnected()
     //  * IsPaired()
-    //  * IsTrustable()
     //
     // On Android and MacOS this method is called for each advertisement packet
     // received. On Chrome OS and Linux, we can't guarantee that this method

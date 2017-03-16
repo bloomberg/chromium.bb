@@ -252,10 +252,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   bool IsPairable() const;
 
   // Indicates whether the device is paired with the adapter.
-  // On Chrome OS this function also returns true if the user has connected
-  // to the device in the past.
-  // TODO(crbug.com/649651): Change Chrome OS to only return true if the
-  // device is actually paired.
   virtual bool IsPaired() const = 0;
 
   // Indicates whether the device is currently connected to the adapter.
@@ -277,10 +273,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDevice {
   // we consider a call is ongoing if none of the callbacks passed to Connect()
   // were called after the corresponding call to Connect().
   virtual bool IsConnecting() const = 0;
-
-  // Indicates whether the device can be trusted, based on device properties,
-  // such as vendor and product id.
-  bool IsTrustable() const;
 
   // Returns the set of UUIDs that this device supports.
   //  * For classic Bluetooth devices this data is collected from both the EIR
