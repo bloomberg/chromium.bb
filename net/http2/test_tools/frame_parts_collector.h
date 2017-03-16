@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_HTTP2_DECODER_FRAME_PARTS_COLLECTOR_H_
-#define NET_HTTP2_DECODER_FRAME_PARTS_COLLECTOR_H_
+#ifndef NET_HTTP2_TEST_TOOLS_FRAME_PARTS_COLLECTOR_H_
+#define NET_HTTP2_TEST_TOOLS_FRAME_PARTS_COLLECTOR_H_
 
 // FramePartsCollector is a base class for Http2FrameDecoderListener
 // implementations that create one FrameParts instance for each decoded frame.
@@ -13,10 +13,10 @@
 #include <memory>
 #include <vector>
 
-#include "net/http2/decoder/frame_parts.h"
 #include "net/http2/decoder/http2_frame_decoder_listener.h"
 #include "net/http2/decoder/http2_frame_decoder_listener_test_util.h"
 #include "net/http2/http2_structures.h"
+#include "net/http2/test_tools/frame_parts.h"
 
 namespace net {
 namespace test {
@@ -113,4 +113,4 @@ class FramePartsCollector : public FailingHttp2FrameDecoderListener {
 }  // namespace test
 }  // namespace net
 
-#endif  // NET_HTTP2_DECODER_FRAME_PARTS_COLLECTOR_H_
+#endif  // NET_HTTP2_TEST_TOOLS_FRAME_PARTS_COLLECTOR_H_

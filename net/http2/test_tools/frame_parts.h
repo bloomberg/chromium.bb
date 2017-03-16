@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_HTTP2_DECODER_FRAME_PARTS_H_
-#define NET_HTTP2_DECODER_FRAME_PARTS_H_
+#ifndef NET_HTTP2_TEST_TOOLS_FRAME_PARTS_H_
+#define NET_HTTP2_TEST_TOOLS_FRAME_PARTS_H_
 
 // FrameParts implements Http2FrameDecoderListener, recording the callbacks
 // during the decoding of a single frame. It is also used for comparing the
@@ -174,4 +174,4 @@ struct FrameParts : public Http2FrameDecoderListener {
 }  // namespace test
 }  // namespace net
 
-#endif  // NET_HTTP2_DECODER_FRAME_PARTS_H_
+#endif  // NET_HTTP2_TEST_TOOLS_FRAME_PARTS_H_

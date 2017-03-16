@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_HTTP2_DECODER_FRAME_PARTS_COLLECTOR_LISTENER_H_
-#define NET_HTTP2_DECODER_FRAME_PARTS_COLLECTOR_LISTENER_H_
+#ifndef NET_HTTP2_TEST_TOOLS_FRAME_PARTS_COLLECTOR_LISTENER_H_
+#define NET_HTTP2_TEST_TOOLS_FRAME_PARTS_COLLECTOR_LISTENER_H_
 
 // FramePartsCollectorListener extends FramePartsCollector with an
 // implementation of every method of Http2FrameDecoderListener; it is
@@ -14,10 +14,10 @@
 
 #include <stddef.h>
 
-#include "net/http2/decoder/frame_parts_collector.h"
 #include "net/http2/decoder/http2_frame_decoder_listener.h"
 #include "net/http2/http2_constants.h"
 #include "net/http2/http2_structures.h"
+#include "net/http2/test_tools/frame_parts_collector.h"
 
 namespace net {
 namespace test {
@@ -80,4 +80,4 @@ class FramePartsCollectorListener : public FramePartsCollector {
 }  // namespace test
 }  // namespace net
 
-#endif  // NET_HTTP2_DECODER_FRAME_PARTS_COLLECTOR_LISTENER_H_
+#endif  // NET_HTTP2_TEST_TOOLS_FRAME_PARTS_COLLECTOR_LISTENER_H_

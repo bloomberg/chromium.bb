@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/http2/decoder/frame_parts_collector.h"
+#include "net/http2/test_tools/frame_parts_collector.h"
 
 #include <utility>
 
