@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "media/base/fake_single_thread_task_runner.h"
+#include "media/cast/constants.h"
 #include "media/cast/sender/congestion_control.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -141,6 +142,52 @@ TEST_F(CongestionControlTest, SimpleRun) {
       base::TimeDelta::FromMilliseconds(300));
   EXPECT_NEAR(safe_bitrate / kTargetEmptyBufferFraction * 2 / 3, bitrate,
               safe_bitrate * 0.05);
+}
+
+// Regression test for http://crbug.com/685392: This confirms that enough
+// history is maintained in AdaptiveCongestionControl to avoid invalid
+// indexing offsets. This test is successful if it does not crash the process.
+TEST_F(CongestionControlTest, RetainsSufficientHistory) {
+  constexpr base::TimeDelta kFakePlayoutDelay =
+      base::TimeDelta::FromMilliseconds(400);
+
+  // Sanity-check: With no data, GetBitrate() returns an in-range value.
+  const int bitrate = congestion_control_->GetBitrate(
+      testing_clock_.NowTicks() + kFakePlayoutDelay, kFakePlayoutDelay);
+  ASSERT_GE(bitrate, kMinBitrateConfigured);
+  ASSERT_LE(bitrate, kMaxBitrateConfigured);
+
+  // Notify AdaptiveCongestionControl of a large number (the maximum possible)
+  // of frames being enqueued for transport, but not yet ACKed. Confirm
+  // GetBitrate() returns an in-range value at each step.
+  FrameId frame_id = FrameId::first();
+  for (int i = 0; i < kMaxUnackedFrames; ++i) {
+    congestion_control_->SendFrameToTransport(frame_id, 16384,
+                                              testing_clock_.NowTicks());
+
+    const int bitrate = congestion_control_->GetBitrate(
+        testing_clock_.NowTicks() + kFakePlayoutDelay, kFakePlayoutDelay);
+    ASSERT_GE(bitrate, kMinBitrateConfigured);
+    ASSERT_LE(bitrate, kMaxBitrateConfigured);
+
+    task_runner_->Sleep(base::TimeDelta::FromMilliseconds(kFrameDelayMs));
+    ++frame_id;
+  }
+
+  // Notify AdaptiveCongestionControl that each frame is ACK'ed, again checking
+  // that GetBitrate() returns an in-range value at each step.
+  frame_id = FrameId::first();
+  for (int i = 0; i < kMaxUnackedFrames; ++i) {
+    congestion_control_->AckFrame(frame_id, testing_clock_.NowTicks());
+
+    const int bitrate = congestion_control_->GetBitrate(
+        testing_clock_.NowTicks() + kFakePlayoutDelay, kFakePlayoutDelay);
+    ASSERT_GE(bitrate, kMinBitrateConfigured);
+    ASSERT_LE(bitrate, kMaxBitrateConfigured);
+
+    task_runner_->Sleep(base::TimeDelta::FromMilliseconds(kFrameDelayMs));
+    ++frame_id;
+  }
 }
 
 }  // namespace cast

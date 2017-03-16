@@ -60,7 +60,10 @@ class AdaptiveCongestionControl : public CongestionControl {
 
   // Calculate how much "dead air" (idle time) there is between two frames.
   static base::TimeDelta DeadTime(const FrameStats& a, const FrameStats& b);
-  // Get the FrameStats for a given |frame_id|.  Never returns nullptr.
+  // Get the FrameStats for a given |frame_id|, auto-creating a new FrameStats
+  // for newer frames, but possibly returning nullptr for older frames that have
+  // been pruned. Never returns nullptr for |frame_id|s equal to or greater than
+  // |last_checkpoint_frame_|.
   // Note: Older FrameStats will be removed automatically.
   FrameStats* GetFrameStats(FrameId frame_id);
   // Discard old FrameStats.
@@ -202,7 +205,8 @@ base::TimeDelta AdaptiveCongestionControl::DeadTime(const FrameStats& a,
 }
 
 double AdaptiveCongestionControl::CalculateSafeBitrate() {
-  double transmit_time =
+  DCHECK(!frame_stats_.empty());
+  const double transmit_time =
       (GetFrameStats(last_checkpoint_frame_)->ack_time -
        frame_stats_.front().enqueue_time - dead_time_in_history_)
           .InSecondsF();
@@ -215,24 +219,41 @@ double AdaptiveCongestionControl::CalculateSafeBitrate() {
 
 AdaptiveCongestionControl::FrameStats* AdaptiveCongestionControl::GetFrameStats(
     FrameId frame_id) {
-  DCHECK_LT(frame_id - last_frame_stats_, static_cast<int64_t>(kHistorySize));
   int offset = frame_id - last_frame_stats_;
   if (offset > 0) {
+    // Sanity-check: Make sure the new |frame_id| will not cause an unreasonably
+    // large increase in the history dataset.
+    DCHECK_LE(offset, kMaxUnackedFrames + 1);
+
     frame_stats_.resize(frame_stats_.size() + offset);
-    last_frame_stats_ += offset;
+    last_frame_stats_ = frame_id;
     offset = 0;
   }
   PruneFrameStats();
   offset += frame_stats_.size() - 1;
-  // TODO(miu): Change the following to DCHECK once crash fix is confirmed.
-  // http://crbug.com/517145
-  CHECK(offset >= 0 && offset < static_cast<int32_t>(frame_stats_.size()));
+  if (offset < 0) {
+    DCHECK_LT(frame_id, last_checkpoint_frame_);
+    return nullptr;  // Old frame has been pruned from the dataset.
+  }
   return &frame_stats_[offset];
 }
 
 void AdaptiveCongestionControl::PruneFrameStats() {
- while (frame_stats_.size() > history_size_) {
-    DCHECK_GT(frame_stats_.size(), 1UL);
+  // Maintain a minimal amount of history, specified by |history_size_|, that
+  // MUST also include all frames from the last ACK'ed frame.
+  const size_t retention_count = std::max<size_t>(
+      history_size_, last_frame_stats_ - last_checkpoint_frame_ + 1);
+
+  // Sanity-check: At least one entry must be kept, but the dataset should not
+  // grow indefinitely.
+  DCHECK_GE(retention_count, 1u);
+  constexpr size_t kMaxInFlightRangeSize =
+      kMaxUnackedFrames +  // Maximum unACKed frames.
+      1 +                  // The last ACKed frame.
+      1;  // One not-yet-enqueued frame (see call to EstimatedSendingTime()).
+  DCHECK_LE(retention_count, std::max(history_size_, kMaxInFlightRangeSize));
+
+  while (frame_stats_.size() > retention_count) {
     DCHECK(!frame_stats_[0].ack_time.is_null());
     acked_bits_in_history_ -= frame_stats_[0].frame_size_in_bits;
     dead_time_in_history_ -= DeadTime(frame_stats_[0], frame_stats_[1]);
@@ -249,12 +270,14 @@ void AdaptiveCongestionControl::AckFrame(FrameId frame_id,
   while (last_checkpoint_frame_ < frame_id) {
     FrameStats* last_frame_stats = frame_stats;
     frame_stats = GetFrameStats(last_checkpoint_frame_ + 1);
-    if (frame_stats->enqueue_time.is_null()) {
-      // Can't ack a frame that hasn't been sent yet.
-      return;
-    }
+    // Note: This increment must happen AFTER the GetFrameStats() call to
+    // prevent the |last_frame_stats| pointer from being invalidated.
     last_checkpoint_frame_++;
-    if (when < frame_stats->enqueue_time)
+    // When ACKing a frame that was never sent, just pretend it was sent and
+    // ACKed at the same point-in-time.
+    if (frame_stats->enqueue_time.is_null())
+      frame_stats->enqueue_time = when;
+    else if (when < frame_stats->enqueue_time)
       when = frame_stats->enqueue_time;
     // Don't overwrite the ack time for those frames that were already acked in
     // previous extended ACKs.
@@ -270,20 +293,21 @@ void AdaptiveCongestionControl::AckFrame(FrameId frame_id,
 void AdaptiveCongestionControl::AckLaterFrames(
     std::vector<FrameId> received_frames,
     base::TimeTicks when) {
+  DCHECK(std::is_sorted(received_frames.begin(), received_frames.end()));
   for (FrameId frame_id : received_frames) {
-    if (last_checkpoint_frame_ < frame_id) {
-      FrameStats* frame_stats = GetFrameStats(frame_id);
-      if (frame_stats->enqueue_time.is_null()) {
-        // Can't ack a frame that hasn't been sent yet.
-        continue;
-      }
-      if (when < frame_stats->enqueue_time)
-        when = frame_stats->enqueue_time;
-      // Don't overwrite the ack time for those frames that were acked before.
-      if (frame_stats->ack_time.is_null())
-        frame_stats->ack_time = when;
-      DCHECK_GE(when, frame_stats->ack_time);
-    }
+    if (frame_id <= last_checkpoint_frame_)
+      continue;
+    FrameStats* frame_stats = GetFrameStats(frame_id);
+    // When ACKing a frame that was never sent, just pretend it was sent and
+    // ACKed at the same point-in-time.
+    if (frame_stats->enqueue_time.is_null())
+      frame_stats->enqueue_time = when;
+    else if (when < frame_stats->enqueue_time)
+      when = frame_stats->enqueue_time;
+    // Don't overwrite the ack time for those frames that were acked before.
+    if (frame_stats->ack_time.is_null())
+      frame_stats->ack_time = when;
+    DCHECK_GE(when, frame_stats->ack_time);
   }
 }
 
@@ -292,6 +316,7 @@ void AdaptiveCongestionControl::SendFrameToTransport(FrameId frame_id,
                                                      base::TimeTicks when) {
   last_enqueued_frame_ = frame_id;
   FrameStats* frame_stats = GetFrameStats(frame_id);
+  DCHECK(frame_stats);
   frame_stats->enqueue_time = when;
   frame_stats->frame_size_in_bits = frame_size_in_bits;
 }
@@ -357,6 +382,7 @@ base::TimeTicks AdaptiveCongestionControl::EstimatedSendingTime(
   }
 
   FrameStats* const frame_stats = GetFrameStats(frame_id);
+  DCHECK(frame_stats);
   if (frame_stats->enqueue_time.is_null()) {
     // The frame has not yet been enqueued for transport.  Since it cannot be
     // enqueued in the past, ensure the result is lower-bounded by |now|.
