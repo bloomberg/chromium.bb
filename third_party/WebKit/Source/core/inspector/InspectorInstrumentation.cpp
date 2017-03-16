@@ -79,10 +79,12 @@ AsyncTask::AsyncTask(ExecutionContext* context,
       m_task(task),
       m_recurring(step) {
   if (m_recurring) {
-    TRACE_EVENT_FLOW_STEP0("devtools.timeline.async", "AsyncTask", task,
+    TRACE_EVENT_FLOW_STEP0("devtools.timeline.async", "AsyncTask",
+                           TRACE_ID_LOCAL(reinterpret_cast<uintptr_t>(task)),
                            step ? step : "");
   } else {
-    TRACE_EVENT_FLOW_END0("devtools.timeline.async", "AsyncTask", task);
+    TRACE_EVENT_FLOW_END0("devtools.timeline.async", "AsyncTask",
+                          TRACE_ID_LOCAL(reinterpret_cast<uintptr_t>(task)));
   }
   if (m_debugger)
     m_debugger->asyncTaskStarted(m_task);
@@ -99,8 +101,9 @@ AsyncTask::~AsyncTask() {
 void asyncTaskScheduled(ExecutionContext* context,
                         const String& name,
                         void* task) {
-  TRACE_EVENT_FLOW_BEGIN1("devtools.timeline.async", "AsyncTask", task, "data",
-                          InspectorAsyncTask::data(name));
+  TRACE_EVENT_FLOW_BEGIN1("devtools.timeline.async", "AsyncTask",
+                          TRACE_ID_LOCAL(reinterpret_cast<uintptr_t>(task)),
+                          "data", InspectorAsyncTask::data(name));
   if (ThreadDebugger* debugger = ThreadDebugger::from(toIsolate(context)))
     debugger->asyncTaskScheduled(name, task, true);
 }
@@ -115,7 +118,8 @@ void asyncTaskScheduledBreakable(ExecutionContext* context,
 void asyncTaskCanceled(ExecutionContext* context, void* task) {
   if (ThreadDebugger* debugger = ThreadDebugger::from(toIsolate(context)))
     debugger->asyncTaskCanceled(task);
-  TRACE_EVENT_FLOW_END0("devtools.timeline.async", "AsyncTask", task);
+  TRACE_EVENT_FLOW_END0("devtools.timeline.async", "AsyncTask",
+                        TRACE_ID_LOCAL(reinterpret_cast<uintptr_t>(task)));
 }
 
 void asyncTaskCanceledBreakable(ExecutionContext* context,

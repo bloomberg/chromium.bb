@@ -45,6 +45,14 @@
 
 namespace blink {
 
+namespace {
+
+void* asyncId(unsigned long identifier) {
+  return reinterpret_cast<void*>((identifier << 1) | 1);
+}
+
+}  //  namespace
+
 String toHexString(const void* p) {
   return String::format("0x%" PRIx64,
                         static_cast<uint64_t>(reinterpret_cast<uintptr_t>(p)));
@@ -92,6 +100,8 @@ void InspectorTraceEvents::willSendRequest(
   TRACE_EVENT_INSTANT1(
       "devtools.timeline", "ResourceSendRequest", TRACE_EVENT_SCOPE_THREAD,
       "data", InspectorSendRequestEvent::data(identifier, frame, request));
+  probe::asyncTaskScheduled(frame->document(), "SendRequest",
+                            asyncId(identifier));
 }
 
 void InspectorTraceEvents::didReceiveResourceResponse(
@@ -103,6 +113,8 @@ void InspectorTraceEvents::didReceiveResourceResponse(
   TRACE_EVENT_INSTANT1(
       "devtools.timeline", "ResourceReceiveResponse", TRACE_EVENT_SCOPE_THREAD,
       "data", InspectorReceiveResponseEvent::data(identifier, frame, response));
+  probe::AsyncTask asyncTask(frame->document(), asyncId(identifier),
+                             "response");
 }
 
 void InspectorTraceEvents::didReceiveData(LocalFrame* frame,
@@ -113,6 +125,7 @@ void InspectorTraceEvents::didReceiveData(LocalFrame* frame,
       "devtools.timeline", "ResourceReceivedData", TRACE_EVENT_SCOPE_THREAD,
       "data",
       InspectorReceiveDataEvent::data(identifier, frame, encodedDataLength));
+  probe::AsyncTask asyncTask(frame->document(), asyncId(identifier), "data");
 }
 
 void InspectorTraceEvents::didFinishLoading(LocalFrame* frame,
@@ -124,6 +137,7 @@ void InspectorTraceEvents::didFinishLoading(LocalFrame* frame,
       "devtools.timeline", "ResourceFinish", TRACE_EVENT_SCOPE_THREAD, "data",
       InspectorResourceFinishEvent::data(identifier, finishTime, false,
                                          encodedDataLength, decodedBodyLength));
+  probe::AsyncTask asyncTask(frame->document(), asyncId(identifier));
 }
 
 void InspectorTraceEvents::didFailLoading(unsigned long identifier,
