@@ -13,9 +13,12 @@
 #define V8TestObject_h
 
 #include "bindings/core/v8/ArrayBufferOrArrayBufferViewOrDictionary.h"
+#include "bindings/core/v8/BooleanOrElementSequence.h"
 #include "bindings/core/v8/BooleanOrStringOrUnrestrictedDouble.h"
+#include "bindings/core/v8/DoubleOrLongOrBooleanSequence.h"
 #include "bindings/core/v8/DoubleOrString.h"
 #include "bindings/core/v8/DoubleOrStringOrDoubleOrStringSequence.h"
+#include "bindings/core/v8/ElementSequenceOrByteStringDoubleOrStringRecord.h"
 #include "bindings/core/v8/GeneratedCodeHelper.h"
 #include "bindings/core/v8/NativeValueTraits.h"
 #include "bindings/core/v8/ScriptWrappable.h"
@@ -462,6 +465,9 @@ class V8TestObject {
   CORE_EXPORT static void voidMethodDoubleOrNullOrDOMStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void voidMethodDOMStringOrArrayBufferOrArrayBufferViewArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void voidMethodArrayBufferOrArrayBufferViewOrDictionaryArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  CORE_EXPORT static void voidMethodBooleanOrElementSequenceArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  CORE_EXPORT static void voidMethodDoubleOrLongOrBooleanSequenceArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
+  CORE_EXPORT static void voidMethodElementSequenceOrByteStringDoubleOrStringRecordMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void voidMethodArrayOfDoubleOrDOMStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void voidMethodTestInterfaceEmptyOrNullArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);
   CORE_EXPORT static void voidMethodTestCallbackInterfaceArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>&);

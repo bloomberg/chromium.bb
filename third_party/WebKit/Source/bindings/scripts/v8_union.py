@@ -34,7 +34,7 @@ header_forward_decls = set()
 header_includes = set()
 
 
-def container_context(union_type, interfaces_info):
+def container_context(union_type, info_provider):
     cpp_includes.clear()
     header_forward_decls.clear()
     header_includes.clear()
@@ -55,7 +55,7 @@ def container_context(union_type, interfaces_info):
     record_type = None
     string_type = None
     for member in sorted(union_type.flattened_member_types, key=lambda m: m.name):
-        context = member_context(member, interfaces_info)
+        context = member_context(member, info_provider)
         members.append(context)
         if member.base_type == 'ArrayBuffer':
             if array_buffer_type:
@@ -123,7 +123,8 @@ def container_context(union_type, interfaces_info):
     }
 
 
-def _update_includes_and_forward_decls(member, interface_info):
+def _update_includes_and_forward_decls(member, info_provider):
+    interface_info = info_provider.interfaces_info.get(member.name, None)
     if interface_info:
         cpp_includes.update(interface_info.get(
             'dependencies_include_paths', []))
@@ -135,16 +136,22 @@ def _update_includes_and_forward_decls(member, interface_info):
             header_forward_decls.add(member.implemented_as)
     else:
         if member.is_record_type:
-            # The headers for both T and U must be present when
-            # Vector<std::pair<T, U>> is declared.
-            header_includes.update(member.includes_for_type())
+            _update_includes_and_forward_decls(member.key_type, info_provider)
+            _update_includes_and_forward_decls(member.value_type, info_provider)
+        elif member.is_array_or_sequence_type:
+            _update_includes_and_forward_decls(member.element_type, info_provider)
         else:
-            cpp_includes.update(member.includes_for_type())
+            if member.is_union_type:
+                # Reaching this block means we have a union that is inside a
+                # record or sequence.
+                header_forward_decls.add(member.name)
+                cpp_includes.update([info_provider.include_path_for_union_types(member)])
+            else:
+                cpp_includes.update(member.includes_for_type())
 
 
-def member_context(member, interfaces_info):
-    interface_info = interfaces_info.get(member.name, None)
-    _update_includes_and_forward_decls(member, interface_info)
+def member_context(member, info_provider):
+    _update_includes_and_forward_decls(member, info_provider)
     if member.is_nullable:
         member = member.inner_type
     return {

@@ -300,7 +300,7 @@ class CodeGeneratorUnionType(CodeGeneratorBase):
         header_template = self.jinja_env.get_template('union_container.h.tmpl')
         cpp_template = self.jinja_env.get_template('union_container.cpp.tmpl')
         template_context = v8_union.container_context(
-            union_type, self.info_provider.interfaces_info)
+            union_type, self.info_provider)
         template_context['header_includes'].append(
             self.info_provider.include_path_for_export)
         template_context['header_includes'] = normalize_and_sort_includes(

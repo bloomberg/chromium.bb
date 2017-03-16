@@ -11,6 +11,7 @@
 // clang-format off
 #include "NodeOrLongSequenceOrEventOrXMLHttpRequestOrStringOrStringByteStringOrNodeListRecord.h"
 
+#include "bindings/core/v8/ByteStringOrNodeList.h"
 #include "bindings/core/v8/IDLTypes.h"
 #include "bindings/core/v8/NativeValueTraitsImpl.h"
 #include "bindings/core/v8/ToV8.h"

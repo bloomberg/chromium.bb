@@ -21,6 +21,8 @@
 
 namespace blink {
 
+class DoubleOrString;
+
 class CORE_EXPORT DoubleOrStringOrDoubleOrStringSequence final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
  public:

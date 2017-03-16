@@ -14,20 +14,14 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/IDLTypes.h"
 #include "bindings/core/v8/NativeValueTraits.h"
-#include "bindings/core/v8/NativeValueTraitsImpl.h"
 #include "bindings/core/v8/V8Binding.h"
-#include "bindings/core/v8/V8NodeList.h"
 #include "core/CoreExport.h"
-#include "core/dom/NameNodeList.h"
-#include "core/dom/NodeList.h"
-#include "core/dom/StaticNodeList.h"
-#include "core/html/LabelsNodeList.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
+class ByteStringOrNodeList;
 class Event;
 class Node;
 class XMLHttpRequest;

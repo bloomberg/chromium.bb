@@ -4770,6 +4770,60 @@ static void voidMethodArrayBufferOrArrayBufferViewOrDictionaryArgMethod(const v8
   impl->voidMethodArrayBufferOrArrayBufferViewOrDictionaryArg(arg);
 }
 
+static void voidMethodBooleanOrElementSequenceArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodBooleanOrElementSequenceArg");
+
+  TestObject* impl = V8TestObject::toImpl(info.Holder());
+
+  if (UNLIKELY(info.Length() < 1)) {
+    exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+    return;
+  }
+
+  BooleanOrElementSequence arg;
+  V8BooleanOrElementSequence::toImpl(info.GetIsolate(), info[0], arg, UnionTypeConversionMode::NotNullable, exceptionState);
+  if (exceptionState.hadException())
+    return;
+
+  impl->voidMethodBooleanOrElementSequenceArg(arg);
+}
+
+static void voidMethodDoubleOrLongOrBooleanSequenceArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodDoubleOrLongOrBooleanSequenceArg");
+
+  TestObject* impl = V8TestObject::toImpl(info.Holder());
+
+  if (UNLIKELY(info.Length() < 1)) {
+    exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+    return;
+  }
+
+  DoubleOrLongOrBooleanSequence arg;
+  V8DoubleOrLongOrBooleanSequence::toImpl(info.GetIsolate(), info[0], arg, UnionTypeConversionMode::NotNullable, exceptionState);
+  if (exceptionState.hadException())
+    return;
+
+  impl->voidMethodDoubleOrLongOrBooleanSequenceArg(arg);
+}
+
+static void voidMethodElementSequenceOrByteStringDoubleOrStringRecordMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodElementSequenceOrByteStringDoubleOrStringRecord");
+
+  TestObject* impl = V8TestObject::toImpl(info.Holder());
+
+  if (UNLIKELY(info.Length() < 1)) {
+    exceptionState.throwTypeError(ExceptionMessages::notEnoughArguments(1, info.Length()));
+    return;
+  }
+
+  ElementSequenceOrByteStringDoubleOrStringRecord arg;
+  V8ElementSequenceOrByteStringDoubleOrStringRecord::toImpl(info.GetIsolate(), info[0], arg, UnionTypeConversionMode::NotNullable, exceptionState);
+  if (exceptionState.hadException())
+    return;
+
+  impl->voidMethodElementSequenceOrByteStringDoubleOrStringRecord(arg);
+}
+
 static void voidMethodArrayOfDoubleOrDOMStringArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::ExecutionContext, "TestObject", "voidMethodArrayOfDoubleOrDOMStringArg");
 
@@ -10545,6 +10599,18 @@ void V8TestObject::voidMethodArrayBufferOrArrayBufferViewOrDictionaryArgMethodCa
   TestObjectV8Internal::voidMethodArrayBufferOrArrayBufferViewOrDictionaryArgMethod(info);
 }
 
+void V8TestObject::voidMethodBooleanOrElementSequenceArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestObjectV8Internal::voidMethodBooleanOrElementSequenceArgMethod(info);
+}
+
+void V8TestObject::voidMethodDoubleOrLongOrBooleanSequenceArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestObjectV8Internal::voidMethodDoubleOrLongOrBooleanSequenceArgMethod(info);
+}
+
+void V8TestObject::voidMethodElementSequenceOrByteStringDoubleOrStringRecordMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestObjectV8Internal::voidMethodElementSequenceOrByteStringDoubleOrStringRecordMethod(info);
+}
+
 void V8TestObject::voidMethodArrayOfDoubleOrDOMStringArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestObjectV8Internal::voidMethodArrayOfDoubleOrDOMStringArgMethod(info);
 }
@@ -11506,6 +11572,9 @@ const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
     {"voidMethodDoubleOrNullOrDOMStringArg", V8TestObject::voidMethodDoubleOrNullOrDOMStringArgMethodCallback, nullptr, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder, V8DOMConfiguration::DoNotCheckAccess},
     {"voidMethodDOMStringOrArrayBufferOrArrayBufferViewArg", V8TestObject::voidMethodDOMStringOrArrayBufferOrArrayBufferViewArgMethodCallback, nullptr, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder, V8DOMConfiguration::DoNotCheckAccess},
     {"voidMethodArrayBufferOrArrayBufferViewOrDictionaryArg", V8TestObject::voidMethodArrayBufferOrArrayBufferViewOrDictionaryArgMethodCallback, nullptr, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder, V8DOMConfiguration::DoNotCheckAccess},
+    {"voidMethodBooleanOrElementSequenceArg", V8TestObject::voidMethodBooleanOrElementSequenceArgMethodCallback, nullptr, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder, V8DOMConfiguration::DoNotCheckAccess},
+    {"voidMethodDoubleOrLongOrBooleanSequenceArg", V8TestObject::voidMethodDoubleOrLongOrBooleanSequenceArgMethodCallback, nullptr, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder, V8DOMConfiguration::DoNotCheckAccess},
+    {"voidMethodElementSequenceOrByteStringDoubleOrStringRecord", V8TestObject::voidMethodElementSequenceOrByteStringDoubleOrStringRecordMethodCallback, nullptr, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder, V8DOMConfiguration::DoNotCheckAccess},
     {"voidMethodArrayOfDoubleOrDOMStringArg", V8TestObject::voidMethodArrayOfDoubleOrDOMStringArgMethodCallback, nullptr, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder, V8DOMConfiguration::DoNotCheckAccess},
     {"voidMethodTestInterfaceEmptyOrNullArg", V8TestObject::voidMethodTestInterfaceEmptyOrNullArgMethodCallback, nullptr, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder, V8DOMConfiguration::DoNotCheckAccess},
     {"voidMethodTestCallbackInterfaceArg", V8TestObject::voidMethodTestCallbackInterfaceArgMethodCallback, nullptr, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder, V8DOMConfiguration::DoNotCheckAccess},
