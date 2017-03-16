@@ -4209,7 +4209,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
   NSString* referrer = [self referrerFromNavigationAction:action];
   GURL openerURL =
-      referrer ? GURL(base::SysNSStringToUTF8(referrer)) : _documentURL;
+      referrer.length ? GURL(base::SysNSStringToUTF8(referrer)) : _documentURL;
 
   WebState* childWebState = _webStateImpl->CreateNewWebState(
       requestURL, openerURL, [self userIsInteracting]);
