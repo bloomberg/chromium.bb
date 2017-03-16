@@ -1178,7 +1178,7 @@ void QuicChromiumClientSession::OnNetworkConnected(
   // migration process. Allows tests to be more uniform.
   stream_factory_->OnSessionGoingAway(this);
   stream_factory_->MigrateSessionToNewNetwork(
-      this, network, /*close_session_on_error=*/true, net_log_);
+      this, network, /*close_session_on_error=*/true, net_log);
 }
 
 void QuicChromiumClientSession::OnWriteError(int error_code) {
