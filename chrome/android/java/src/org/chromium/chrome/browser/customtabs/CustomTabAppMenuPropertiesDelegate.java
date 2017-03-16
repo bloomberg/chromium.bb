@@ -95,6 +95,7 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
             } else {
                 openInChromeItem.setTitle(
                         DefaultBrowserInfo.getTitleOpenInDefaultBrowser(mIsOpenedByChrome));
+                updateBookmarkMenuItem(bookmarkItem, currentTab);
             }
             bookmarkItem.setVisible(mShowStar);
             downloadItem.setVisible(mShowDownload);
