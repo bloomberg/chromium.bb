@@ -21,6 +21,8 @@ public abstract class TabModelSelectorBase implements TabModelSelector {
     public static final int NORMAL_TAB_MODEL_INDEX = 0;
     public static final int INCOGNITO_TAB_MODEL_INDEX = 1;
 
+    private static TabModelSelectorObserver sObserver;
+
     private List<TabModel> mTabModels = Collections.emptyList();
     private int mActiveModelIndex = NORMAL_TAB_MODEL_INDEX;
     private final ObserverList<TabModelSelectorObserver> mObservers =
@@ -68,7 +70,16 @@ public abstract class TabModelSelectorBase implements TabModelSelector {
         for (TabModel model : models) {
             model.addObserver(tabModelObserver);
         }
+
+        if (sObserver != null) {
+            addObserver(sObserver);
+        }
+
         notifyChanged();
+    }
+
+    public static void setObserverForTests(TabModelSelectorObserver observer) {
+        sObserver = observer;
     }
 
     @Override

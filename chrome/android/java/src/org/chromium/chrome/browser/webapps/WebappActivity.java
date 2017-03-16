@@ -169,8 +169,9 @@ public class WebappActivity extends FullScreenActivity {
             ApiCompatibilityUtils.finishAndRemoveTask(this);
             return;
         }
-        super.finishNativeInitialization();
+
         initializeUI(getSavedInstanceState());
+        super.finishNativeInitialization();
         mIsInitialized = true;
     }
 

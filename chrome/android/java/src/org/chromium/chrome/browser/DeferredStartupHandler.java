@@ -87,10 +87,17 @@ public class DeferredStartupHandler {
      * @return The singleton instance of {@link DeferredStartupHandler}.
      */
     public static DeferredStartupHandler getInstance() {
-        return Holder.INSTANCE;
+        return sDeferredStartupHandler == null ? Holder.INSTANCE : sDeferredStartupHandler;
     }
 
-    private DeferredStartupHandler() {
+    @VisibleForTesting
+    public static void setInstanceForTests(DeferredStartupHandler handler) {
+        sDeferredStartupHandler = handler;
+    }
+
+    private static DeferredStartupHandler sDeferredStartupHandler;
+
+    protected DeferredStartupHandler() {
         mAppContext = ContextUtils.getApplicationContext();
         mDeferredTasks = new LinkedList<>();
     }

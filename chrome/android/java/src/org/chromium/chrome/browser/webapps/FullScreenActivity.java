@@ -81,12 +81,17 @@ public abstract class FullScreenActivity extends ChromeActivity {
     }
 
     @Override
-    public void finishNativeInitialization() {
+    public void initializeState() {
+        super.initializeState();
+
         mTab = createTab();
         handleTabContentChanged();
         getTabModelSelector().setTab(mTab);
         mTab.show(TabSelectionType.FROM_NEW);
+    }
 
+    @Override
+    public void finishNativeInitialization() {
         ControlContainer controlContainer = (ControlContainer) findViewById(R.id.control_container);
         initializeCompositorContent(new LayoutManagerDocument(getCompositorViewHolder()),
                 (View) controlContainer, (ViewGroup) findViewById(android.R.id.content),
