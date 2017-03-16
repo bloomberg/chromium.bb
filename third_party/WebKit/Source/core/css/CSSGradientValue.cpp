@@ -878,10 +878,10 @@ PassRefPtr<Gradient> CSSLinearGradientValue::createGradient(
     }
   }
 
-  RefPtr<Gradient> gradient = Gradient::create(firstPoint, secondPoint);
-
-  gradient->setSpreadMethod(m_repeating ? SpreadMethodRepeat : SpreadMethodPad);
-  gradient->setDrawsInPMColorSpace(true);
+  RefPtr<Gradient> gradient =
+      Gradient::create(firstPoint, secondPoint,
+                       m_repeating ? SpreadMethodRepeat : SpreadMethodPad,
+                       Gradient::ColorInterpolation::Premultiplied);
 
   // Now add the stops.
   addStops(gradient.get(), conversionData, object);
@@ -1247,10 +1247,9 @@ PassRefPtr<Gradient> CSSRadialGradientValue::createGradient(
   RefPtr<Gradient> gradient =
       Gradient::create(firstPoint, firstRadius, secondPoint,
                        isDegenerate ? 0 : secondRadius.width(),
-                       isDegenerate ? 1 : secondRadius.aspectRatio());
-
-  gradient->setSpreadMethod(m_repeating ? SpreadMethodRepeat : SpreadMethodPad);
-  gradient->setDrawsInPMColorSpace(true);
+                       isDegenerate ? 1 : secondRadius.aspectRatio(),
+                       m_repeating ? SpreadMethodRepeat : SpreadMethodPad,
+                       Gradient::ColorInterpolation::Premultiplied);
 
   // Now add the stops.
   addStops(gradient.get(), conversionData, object);

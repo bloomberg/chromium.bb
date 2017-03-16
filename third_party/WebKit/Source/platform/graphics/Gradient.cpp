@@ -42,7 +42,10 @@ typedef Vector<SkColor, 8> ColorStopColorVector;
 
 namespace blink {
 
-Gradient::Gradient(const FloatPoint& p0, const FloatPoint& p1)
+Gradient::Gradient(const FloatPoint& p0,
+                   const FloatPoint& p1,
+                   GradientSpreadMethod spreadMethod,
+                   ColorInterpolation interpolation)
     : m_p0(p0),
       m_p1(p1),
       m_r0(0),
@@ -50,14 +53,16 @@ Gradient::Gradient(const FloatPoint& p0, const FloatPoint& p1)
       m_aspectRatio(1),
       m_radial(false),
       m_stopsSorted(false),
-      m_drawInPMColorSpace(false),
-      m_spreadMethod(SpreadMethodPad) {}
+      m_spreadMethod(spreadMethod),
+      m_colorInterpolation(interpolation) {}
 
 Gradient::Gradient(const FloatPoint& p0,
                    float r0,
                    const FloatPoint& p1,
                    float r1,
-                   float aspectRatio)
+                   float aspectRatio,
+                   GradientSpreadMethod spreadMethod,
+                   ColorInterpolation interpolation)
     : m_p0(p0),
       m_p1(p1),
       m_r0(r0),
@@ -65,8 +70,8 @@ Gradient::Gradient(const FloatPoint& p0,
       m_aspectRatio(aspectRatio),
       m_radial(true),
       m_stopsSorted(false),
-      m_drawInPMColorSpace(false),
-      m_spreadMethod(SpreadMethodPad) {}
+      m_spreadMethod(spreadMethod),
+      m_colorInterpolation(interpolation) {}
 
 Gradient::~Gradient() {}
 
@@ -101,25 +106,6 @@ void Gradient::sortStopsIfNecessary() {
     return;
 
   std::stable_sort(m_stops.begin(), m_stops.end(), compareStops);
-}
-
-void Gradient::setSpreadMethod(GradientSpreadMethod spreadMethod) {
-  // FIXME: Should it become necessary, allow calls to this method after
-  // |m_gradient| has been set.
-  DCHECK(!m_cachedShader);
-
-  if (m_spreadMethod == spreadMethod)
-    return;
-
-  m_spreadMethod = spreadMethod;
-}
-
-void Gradient::setDrawsInPMColorSpace(bool drawInPMColorSpace) {
-  if (drawInPMColorSpace == m_drawInPMColorSpace)
-    return;
-
-  m_drawInPMColorSpace = drawInPMColorSpace;
-  m_cachedShader.reset();
 }
 
 // Determine the total number of stops needed, including pseudo-stops at the
@@ -208,9 +194,9 @@ sk_sp<PaintShader> Gradient::createShader(const SkMatrix& localMatrix) {
   }
 
   sk_sp<SkShader> shader;
-  uint32_t shouldDrawInPMColorSpace =
-      m_drawInPMColorSpace ? SkGradientShader::kInterpolateColorsInPremul_Flag
-                           : 0;
+  uint32_t flags = m_colorInterpolation == ColorInterpolation::Premultiplied
+                       ? SkGradientShader::kInterpolateColorsInPremul_Flag
+                       : 0;
   if (m_radial) {
     SkMatrix adjustedLocalMatrix = localMatrix;
 
@@ -228,8 +214,7 @@ sk_sp<PaintShader> Gradient::createShader(const SkMatrix& localMatrix) {
     if (m_p0 == m_p1 && m_r0 <= 0.0f) {
       shader = SkGradientShader::MakeRadial(
           m_p1.data(), m_r1, colors.data(), pos.data(),
-          static_cast<int>(countUsed), tile, shouldDrawInPMColorSpace,
-          &adjustedLocalMatrix);
+          static_cast<int>(countUsed), tile, flags, &adjustedLocalMatrix);
     } else {
       // The radii we give to Skia must be positive. If we're given a
       // negative radius, ask for zero instead.
@@ -237,14 +222,13 @@ sk_sp<PaintShader> Gradient::createShader(const SkMatrix& localMatrix) {
       SkScalar radius1 = m_r1 >= 0.0f ? WebCoreFloatToSkScalar(m_r1) : 0;
       shader = SkGradientShader::MakeTwoPointConical(
           m_p0.data(), radius0, m_p1.data(), radius1, colors.data(), pos.data(),
-          static_cast<int>(countUsed), tile, shouldDrawInPMColorSpace,
-          &adjustedLocalMatrix);
+          static_cast<int>(countUsed), tile, flags, &adjustedLocalMatrix);
     }
   } else {
     SkPoint pts[2] = {m_p0.data(), m_p1.data()};
-    shader = SkGradientShader::MakeLinear(
-        pts, colors.data(), pos.data(), static_cast<int>(countUsed), tile,
-        shouldDrawInPMColorSpace, &localMatrix);
+    shader = SkGradientShader::MakeLinear(pts, colors.data(), pos.data(),
+                                          static_cast<int>(countUsed), tile,
+                                          flags, &localMatrix);
   }
 
   if (!shader) {

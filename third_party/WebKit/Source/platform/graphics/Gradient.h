@@ -49,16 +49,28 @@ class PLATFORM_EXPORT Gradient : public RefCounted<Gradient> {
   WTF_MAKE_NONCOPYABLE(Gradient);
 
  public:
-  static PassRefPtr<Gradient> create(const FloatPoint& p0,
-                                     const FloatPoint& p1) {
-    return adoptRef(new Gradient(p0, p1));
+  enum class ColorInterpolation {
+    Premultiplied,
+    Unpremultiplied,
+  };
+
+  static PassRefPtr<Gradient> create(
+      const FloatPoint& p0,
+      const FloatPoint& p1,
+      GradientSpreadMethod spreadMethod = SpreadMethodPad,
+      ColorInterpolation interpolation = ColorInterpolation::Unpremultiplied) {
+    return adoptRef(new Gradient(p0, p1, spreadMethod, interpolation));
   }
-  static PassRefPtr<Gradient> create(const FloatPoint& p0,
-                                     float r0,
-                                     const FloatPoint& p1,
-                                     float r1,
-                                     float aspectRatio = 1) {
-    return adoptRef(new Gradient(p0, r0, p1, r1, aspectRatio));
+  static PassRefPtr<Gradient> create(
+      const FloatPoint& p0,
+      float r0,
+      const FloatPoint& p1,
+      float r1,
+      float aspectRatio = 1,
+      GradientSpreadMethod spreadMethod = SpreadMethodPad,
+      ColorInterpolation interpolation = ColorInterpolation::Unpremultiplied) {
+    return adoptRef(
+        new Gradient(p0, r0, p1, r1, aspectRatio, spreadMethod, interpolation));
   }
   ~Gradient();
 
@@ -117,18 +129,20 @@ class PLATFORM_EXPORT Gradient : public RefCounted<Gradient> {
 
   void applyToFlags(PaintFlags&, const SkMatrix& localMatrix);
 
-  void setDrawsInPMColorSpace(bool drawInPMColorSpace);
-
-  void setSpreadMethod(GradientSpreadMethod);
   GradientSpreadMethod spreadMethod() const { return m_spreadMethod; }
 
  private:
-  Gradient(const FloatPoint& p0, const FloatPoint& p1);
+  Gradient(const FloatPoint& p0,
+           const FloatPoint& p1,
+           GradientSpreadMethod,
+           ColorInterpolation);
   Gradient(const FloatPoint& p0,
            float r0,
            const FloatPoint& p1,
            float r1,
-           float aspectRatio);
+           float aspectRatio,
+           GradientSpreadMethod,
+           ColorInterpolation);
 
   sk_sp<PaintShader> createShader(const SkMatrix& localMatrix);
 
@@ -142,8 +156,8 @@ class PLATFORM_EXPORT Gradient : public RefCounted<Gradient> {
   Vector<ColorStop, 2> m_stops;
   bool m_radial;
   bool m_stopsSorted;
-  bool m_drawInPMColorSpace;
   GradientSpreadMethod m_spreadMethod;
+  ColorInterpolation m_colorInterpolation;
 
   mutable sk_sp<PaintShader> m_cachedShader;
 };
