@@ -30,6 +30,7 @@
 
 #include "core/frame/Frame.h"
 
+#include "bindings/core/v8/WindowProxyManager.h"
 #include "core/dom/DocumentType.h"
 #include "core/events/Event.h"
 #include "core/frame/FrameHost.h"
@@ -64,6 +65,7 @@ DEFINE_TRACE(Frame) {
   visitor->trace(m_treeNode);
   visitor->trace(m_host);
   visitor->trace(m_owner);
+  visitor->trace(m_windowProxyManager);
   visitor->trace(m_domWindow);
   visitor->trace(m_client);
 }
@@ -387,6 +389,10 @@ Settings* Frame::settings() const {
   return nullptr;
 }
 
+WindowProxy* Frame::windowProxy(DOMWrapperWorld& world) {
+  return m_windowProxyManager->windowProxy(world);
+}
+
 void Frame::didChangeVisibilityState() {
   HeapVector<Member<Frame>> childFrames;
   for (Frame* child = tree().firstChild(); child;
@@ -412,11 +418,15 @@ bool Frame::isFeatureEnabled(WebFeaturePolicyFeature feature) const {
   return featurePolicy->IsFeatureEnabled(feature);
 }
 
-Frame::Frame(FrameClient* client, FrameHost* host, FrameOwner* owner)
+Frame::Frame(FrameClient* client,
+             FrameHost* host,
+             FrameOwner* owner,
+             WindowProxyManager* windowProxyManager)
     : m_treeNode(this),
       m_host(host),
       m_owner(owner),
       m_client(client),
+      m_windowProxyManager(windowProxyManager),
       m_isLoading(false) {
   InstanceCounters::incrementCounter(InstanceCounters::FrameCounter);
 

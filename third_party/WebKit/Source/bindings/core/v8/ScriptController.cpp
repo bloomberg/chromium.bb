@@ -33,21 +33,13 @@
 #include "bindings/core/v8/ScriptController.h"
 
 #include "bindings/core/v8/ScriptSourceCode.h"
-#include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8Binding.h"
-#include "bindings/core/v8/V8Event.h"
 #include "bindings/core/v8/V8GCController.h"
-#include "bindings/core/v8/V8HTMLElement.h"
-#include "bindings/core/v8/V8PerContextData.h"
 #include "bindings/core/v8/V8ScriptRunner.h"
-#include "bindings/core/v8/V8Window.h"
 #include "bindings/core/v8/WindowProxy.h"
 #include "core/dom/Document.h"
-#include "core/dom/Node.h"
 #include "core/dom/ScriptableDocumentParser.h"
-#include "core/events/Event.h"
-#include "core/events/EventListener.h"
-#include "core/frame/LocalDOMWindow.h"
+#include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
@@ -67,20 +59,16 @@
 #include "platform/UserGestureIndicator.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/weborigin/SecurityOrigin.h"
-#include "public/platform/Platform.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/StringExtras.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/StringBuilder.h"
-#include "wtf/text/TextPosition.h"
 
 namespace blink {
 
-ScriptController::ScriptController(LocalFrame* frame)
-    : m_windowProxyManager(LocalWindowProxyManager::create(*frame)) {}
-
 DEFINE_TRACE(ScriptController) {
+  visitor->trace(m_frame);
   visitor->trace(m_windowProxyManager);
 }
 
@@ -153,12 +141,6 @@ v8::Local<v8::Value> ScriptController::executeScriptAndReturnValue(
   return result;
 }
 
-LocalWindowProxy* ScriptController::windowProxy(DOMWrapperWorld& world) {
-  LocalWindowProxy* windowProxy = m_windowProxyManager->windowProxy(world);
-  windowProxy->initializeIfNeeded();
-  return windowProxy;
-}
-
 bool ScriptController::shouldBypassMainWorldCSP() {
   v8::HandleScope handleScope(isolate());
   v8::Local<v8::Context> context = isolate()->GetCurrentContext();
@@ -180,7 +162,8 @@ TextPosition ScriptController::eventHandlerPosition() const {
 void ScriptController::enableEval() {
   v8::HandleScope handleScope(isolate());
   v8::Local<v8::Context> v8Context =
-      m_windowProxyManager->mainWorldProxy()->contextIfInitialized();
+      m_windowProxyManager->mainWorldProxyMaybeUninitialized()
+          ->contextIfInitialized();
   if (v8Context.IsEmpty())
     return;
   v8Context->AllowCodeGenerationFromStrings(true);
@@ -189,7 +172,8 @@ void ScriptController::enableEval() {
 void ScriptController::disableEval(const String& errorMessage) {
   v8::HandleScope handleScope(isolate());
   v8::Local<v8::Context> v8Context =
-      m_windowProxyManager->mainWorldProxy()->contextIfInitialized();
+      m_windowProxyManager->mainWorldProxyMaybeUninitialized()
+          ->contextIfInitialized();
   if (v8Context.IsEmpty())
     return;
   v8Context->AllowCodeGenerationFromStrings(false);
@@ -237,7 +221,7 @@ void ScriptController::clearWindowProxy() {
 }
 
 void ScriptController::updateDocument() {
-  m_windowProxyManager->mainWorldProxy()->updateDocument();
+  m_windowProxyManager->mainWorldProxyMaybeUninitialized()->updateDocument();
 }
 
 bool ScriptController::executeScriptIfJavaScriptURL(const KURL& url,

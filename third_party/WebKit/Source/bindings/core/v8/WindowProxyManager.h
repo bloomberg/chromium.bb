@@ -19,9 +19,8 @@ namespace blink {
 
 class DOMWrapperWorld;
 class SecurityOrigin;
-class ScriptController;
 
-class WindowProxyManagerBase : public GarbageCollected<WindowProxyManagerBase> {
+class WindowProxyManager : public GarbageCollected<WindowProxyManager> {
  public:
   DECLARE_TRACE();
 
@@ -38,32 +37,44 @@ class WindowProxyManagerBase : public GarbageCollected<WindowProxyManagerBase> {
   void CORE_EXPORT releaseGlobals(GlobalsVector&);
   void CORE_EXPORT setGlobals(const GlobalsVector&);
 
+  WindowProxy* mainWorldProxy() {
+    m_windowProxy->initializeIfNeeded();
+    return m_windowProxy;
+  }
+
+  WindowProxy* windowProxy(DOMWrapperWorld& world) {
+    WindowProxy* windowProxy = windowProxyMaybeUninitialized(world);
+    windowProxy->initializeIfNeeded();
+    return windowProxy;
+  }
+
  protected:
   using IsolatedWorldMap = HeapHashMap<int, Member<WindowProxy>>;
+  enum class FrameType { Local, Remote };
 
-  explicit WindowProxyManagerBase(Frame&);
-
-  Frame* frame() const { return m_frame; }
-  WindowProxy* mainWorldProxy() const { return m_windowProxy.get(); }
-  WindowProxy* windowProxy(DOMWrapperWorld&);
-
-  IsolatedWorldMap& isolatedWorlds() { return m_isolatedWorlds; }
+  WindowProxyManager(Frame&, FrameType);
 
  private:
+  // Creates an uninitialized WindowProxy.
+  WindowProxy* createWindowProxy(DOMWrapperWorld&);
+  WindowProxy* windowProxyMaybeUninitialized(DOMWrapperWorld&);
+
   v8::Isolate* const m_isolate;
   const Member<Frame> m_frame;
+  const FrameType m_frameType;
+
+ protected:
   const Member<WindowProxy> m_windowProxy;
   IsolatedWorldMap m_isolatedWorlds;
 };
 
 template <typename FrameType, typename ProxyType>
-class WindowProxyManagerImplHelper : public WindowProxyManagerBase {
+class WindowProxyManagerImplHelper : public WindowProxyManager {
  private:
-  using Base = WindowProxyManagerBase;
+  using Base = WindowProxyManager;
 
  public:
-  FrameType* frame() const { return static_cast<FrameType*>(Base::frame()); }
-  ProxyType* mainWorldProxy() const {
+  ProxyType* mainWorldProxy() {
     return static_cast<ProxyType*>(Base::mainWorldProxy());
   }
   ProxyType* windowProxy(DOMWrapperWorld& world) {
@@ -71,8 +82,8 @@ class WindowProxyManagerImplHelper : public WindowProxyManagerBase {
   }
 
  protected:
-  explicit WindowProxyManagerImplHelper(Frame& frame)
-      : WindowProxyManagerBase(frame) {}
+  WindowProxyManagerImplHelper(Frame& frame, FrameType frameType)
+      : WindowProxyManager(frame, frameType) {}
 };
 
 class LocalWindowProxyManager
@@ -82,16 +93,20 @@ class LocalWindowProxyManager
     return new LocalWindowProxyManager(frame);
   }
 
+  // TODO(yukishiino): Remove this method.
+  LocalWindowProxy* mainWorldProxyMaybeUninitialized() {
+    return static_cast<LocalWindowProxy*>(m_windowProxy.get());
+  }
+
   // Sets the given security origin to the main world's context.  Also updates
   // the security origin of the context for each isolated world.
   void updateSecurityOrigin(SecurityOrigin*);
 
  private:
-  // TODO(dcheng): Merge LocalWindowProxyManager and ScriptController?
-  friend class ScriptController;
-
   explicit LocalWindowProxyManager(LocalFrame& frame)
-      : WindowProxyManagerImplHelper<LocalFrame, LocalWindowProxy>(frame) {}
+      : WindowProxyManagerImplHelper<LocalFrame, LocalWindowProxy>(
+            frame,
+            FrameType::Local) {}
 };
 
 class RemoteWindowProxyManager
@@ -103,7 +118,9 @@ class RemoteWindowProxyManager
 
  private:
   explicit RemoteWindowProxyManager(RemoteFrame& frame)
-      : WindowProxyManagerImplHelper<RemoteFrame, RemoteWindowProxy>(frame) {}
+      : WindowProxyManagerImplHelper<RemoteFrame, RemoteWindowProxy>(
+            frame,
+            FrameType::Remote) {}
 };
 
 }  // namespace blink

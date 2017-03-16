@@ -28,9 +28,8 @@ namespace blink {
 inline RemoteFrame::RemoteFrame(RemoteFrameClient* client,
                                 FrameHost* host,
                                 FrameOwner* owner)
-    : Frame(client, host, owner),
-      m_securityContext(RemoteSecurityContext::create()),
-      m_windowProxyManager(RemoteWindowProxyManager::create(*this)) {
+    : Frame(client, host, owner, RemoteWindowProxyManager::create(*this)),
+      m_securityContext(RemoteSecurityContext::create()) {
   m_domWindow = RemoteDOMWindow::create(*this);
 }
 
@@ -47,15 +46,7 @@ RemoteFrame::~RemoteFrame() {
 DEFINE_TRACE(RemoteFrame) {
   visitor->trace(m_view);
   visitor->trace(m_securityContext);
-  visitor->trace(m_windowProxyManager);
   Frame::trace(visitor);
-}
-
-WindowProxy* RemoteFrame::windowProxy(DOMWrapperWorld& world) {
-  WindowProxy* windowProxy = m_windowProxyManager->windowProxy(world);
-  ASSERT(windowProxy);
-  windowProxy->initializeIfNeeded();
-  return windowProxy;
 }
 
 void RemoteFrame::navigate(Document& originDocument,
@@ -101,7 +92,7 @@ void RemoteFrame::detach(FrameDetachType type) {
   if (m_view)
     m_view->dispose();
   client()->willBeDetached();
-  m_windowProxyManager->clearForClose();
+  getWindowProxyManager()->clearForClose();
   setView(nullptr);
   // ... the RemoteDOMWindow will need to be informed of detachment,
   // as otherwise it will keep a strong reference back to this RemoteFrame.
@@ -170,10 +161,6 @@ void RemoteFrame::setWebLayer(WebLayer* webLayer) {
 
 void RemoteFrame::advanceFocus(WebFocusType type, LocalFrame* source) {
   client()->advanceFocus(type, source);
-}
-
-WindowProxyManagerBase* RemoteFrame::getWindowProxyManager() const {
-  return m_windowProxyManager.get();
 }
 
 void RemoteFrame::detachChildren() {

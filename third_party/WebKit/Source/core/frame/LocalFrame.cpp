@@ -361,10 +361,6 @@ DEFINE_TRACE(LocalFrame) {
   Supplementable<LocalFrame>::trace(visitor);
 }
 
-WindowProxy* LocalFrame::windowProxy(DOMWrapperWorld& world) {
-  return m_script->windowProxy(world);
-}
-
 void LocalFrame::navigate(Document& originDocument,
                           const KURL& url,
                           bool replaceCurrentItem,
@@ -491,10 +487,6 @@ void LocalFrame::printNavigationErrorMessage(const Frame& targetFrame,
 void LocalFrame::printNavigationWarning(const String& message) {
   m_console->addMessage(
       ConsoleMessage::create(JSMessageSource, WarningMessageLevel, message));
-}
-
-WindowProxyManagerBase* LocalFrame::getWindowProxyManager() const {
-  return m_script->getWindowProxyManager();
 }
 
 bool LocalFrame::shouldClose() {
@@ -855,12 +847,14 @@ inline LocalFrame::LocalFrame(LocalFrameClient* client,
                               FrameOwner* owner,
                               InterfaceProvider* interfaceProvider,
                               InterfaceRegistry* interfaceRegistry)
-    : Frame(client, host, owner),
+    : Frame(client, host, owner, LocalWindowProxyManager::create(*this)),
       m_frameScheduler(page()->chromeClient().createFrameScheduler(
           client->frameBlameContext())),
       m_loader(this),
       m_navigationScheduler(NavigationScheduler::create(this)),
-      m_script(ScriptController::create(this)),
+      m_script(ScriptController::create(
+          *this,
+          *static_cast<LocalWindowProxyManager*>(getWindowProxyManager()))),
       m_editor(Editor::create(*this)),
       m_spellChecker(SpellChecker::create(*this)),
       m_selection(FrameSelection::create(*this)),

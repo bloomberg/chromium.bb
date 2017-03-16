@@ -107,7 +107,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // Frame overrides:
   ~LocalFrame() override;
   DECLARE_VIRTUAL_TRACE();
-  WindowProxy* windowProxy(DOMWrapperWorld&) override;
   void navigate(Document& originDocument,
                 const KURL&,
                 bool replaceCurrentItem,
@@ -232,8 +231,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
              InterfaceProvider*,
              InterfaceRegistry*);
 
-  // Internal Frame helper overrides:
-  WindowProxyManagerBase* getWindowProxyManager() const override;
   // Intentionally private to prevent redundant checks when the type is
   // already LocalFrame.
   bool isLocalFrame() const override { return true; }

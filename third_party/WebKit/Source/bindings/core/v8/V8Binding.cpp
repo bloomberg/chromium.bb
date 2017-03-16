@@ -951,8 +951,8 @@ v8::Isolate* toIsolate(ExecutionContext* context) {
 }
 
 v8::Isolate* toIsolate(LocalFrame* frame) {
-  ASSERT(frame);
-  return frame->script().isolate();
+  DCHECK(frame);
+  return frame->getWindowProxyManager()->isolate();
 }
 
 v8::Local<v8::Value> freezeV8Object(v8::Local<v8::Value> value,

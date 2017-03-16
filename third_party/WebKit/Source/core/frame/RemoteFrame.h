@@ -16,7 +16,6 @@ class Event;
 class LocalFrame;
 class RemoteFrameClient;
 class RemoteFrameView;
-class RemoteWindowProxyManager;
 class WebLayer;
 struct FrameLoadRequest;
 
@@ -28,7 +27,6 @@ class CORE_EXPORT RemoteFrame final : public Frame {
 
   // Frame overrides:
   DECLARE_VIRTUAL_TRACE();
-  WindowProxy* windowProxy(DOMWrapperWorld&) override;
   void navigate(Document& originDocument,
                 const KURL&,
                 bool replaceCurrentItem,
@@ -61,9 +59,6 @@ class CORE_EXPORT RemoteFrame final : public Frame {
  private:
   RemoteFrame(RemoteFrameClient*, FrameHost*, FrameOwner*);
 
-  // Internal Frame helper overrides:
-  WindowProxyManagerBase* getWindowProxyManager() const override;
-
   // Intentionally private to prevent redundant checks when the type is
   // already RemoteFrame.
   bool isLocalFrame() const override { return false; }
@@ -73,7 +68,6 @@ class CORE_EXPORT RemoteFrame final : public Frame {
 
   Member<RemoteFrameView> m_view;
   Member<RemoteSecurityContext> m_securityContext;
-  Member<RemoteWindowProxyManager> m_windowProxyManager;
   WebLayer* m_webLayer = nullptr;
 };
 

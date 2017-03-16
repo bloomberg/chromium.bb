@@ -35,7 +35,6 @@
 #include "bindings/core/v8/WindowProxyManager.h"
 #include "core/CoreExport.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/frame/LocalFrame.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/AccessControlStatus.h"
 #include "platform/loader/fetch/CrossOriginAccessControl.h"
@@ -51,6 +50,7 @@ class DOMWrapperWorld;
 class Element;
 class FrameViewBase;
 class KURL;
+class LocalFrame;
 class ScriptSourceCode;
 class SecurityOrigin;
 
@@ -67,15 +67,18 @@ class CORE_EXPORT ScriptController final
     DoNotExecuteScriptWhenScriptsDisabled
   };
 
-  static ScriptController* create(LocalFrame* frame) {
-    return new ScriptController(frame);
+  static ScriptController* create(LocalFrame& frame,
+                                  LocalWindowProxyManager& windowProxyManager) {
+    return new ScriptController(frame, windowProxyManager);
   }
 
   DECLARE_TRACE();
 
   // This returns an initialized window proxy. (If the window proxy is not
   // yet initialized, it's implicitly initialized at the first access.)
-  LocalWindowProxy* windowProxy(DOMWrapperWorld&);
+  LocalWindowProxy* windowProxy(DOMWrapperWorld& world) {
+    return m_windowProxyManager->windowProxy(world);
+  }
 
   // Evaluate JavaScript in the main world.
   void executeScriptInMainWorld(
@@ -131,22 +134,20 @@ class CORE_EXPORT ScriptController final
   static void registerExtensionIfNeeded(v8::Extension*);
   static V8Extensions& registeredExtensions();
 
-  v8::Isolate* isolate() const { return m_windowProxyManager->isolate(); }
-
-  LocalWindowProxyManager* getWindowProxyManager() const {
-    return m_windowProxyManager.get();
-  }
-
  private:
-  explicit ScriptController(LocalFrame*);
+  ScriptController(LocalFrame& frame,
+                   LocalWindowProxyManager& windowProxyManager)
+      : m_frame(&frame), m_windowProxyManager(&windowProxyManager) {}
 
-  LocalFrame* frame() const { return m_windowProxyManager->frame(); }
+  LocalFrame* frame() const { return m_frame; }
+  v8::Isolate* isolate() const { return m_windowProxyManager->isolate(); }
 
   v8::Local<v8::Value> evaluateScriptInMainWorld(const ScriptSourceCode&,
                                                  AccessControlStatus,
                                                  ExecuteScriptPolicy);
 
-  Member<LocalWindowProxyManager> m_windowProxyManager;
+  const Member<LocalFrame> m_frame;
+  const Member<LocalWindowProxyManager> m_windowProxyManager;
 };
 
 }  // namespace blink
