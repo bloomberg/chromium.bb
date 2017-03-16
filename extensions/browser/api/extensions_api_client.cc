@@ -103,6 +103,11 @@ MetricsPrivateDelegate* ExtensionsAPIClient::GetMetricsPrivateDelegate() {
   return nullptr;
 }
 
+NetworkingCastPrivateDelegate*
+ExtensionsAPIClient::GetNetworkingCastPrivateDelegate() {
+  return nullptr;
+}
+
 #if defined(OS_CHROMEOS)
 NonNativeFileSystemDelegate*
 ExtensionsAPIClient::GetNonNativeFileSystemDelegate() {

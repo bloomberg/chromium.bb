@@ -2603,6 +2603,9 @@ test("browser_tests") {
         "../browser/profiles/profile_statistics_browsertest.cc",
       ]
     }
+    if (is_mac || is_win || is_chromeos) {
+      sources += [ "../browser/extensions/api/networking_cast_private/networking_cast_private_apitest.cc" ]
+    }
     if (enable_app_list) {
       sources += [
         "../browser/apps/drive/drive_app_converter_browsertest.cc",

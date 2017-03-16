@@ -612,6 +612,11 @@
     "dependencies": ["permission:musicManagerPrivate"],
     "contexts": ["blessed_extension"]
   },
+  "networking.castPrivate": {
+    "channel": "stable",
+    "contexts": ["blessed_extension"],
+    "dependencies": ["permission:networking.castPrivate"]
+  },
   "notifications": {
     "dependencies": ["permission:notifications"],
     "contexts": ["blessed_extension"]

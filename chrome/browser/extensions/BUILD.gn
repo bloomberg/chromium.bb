@@ -967,6 +967,10 @@ static_library("extensions") {
       "api/log_private/syslog_parser.cc",
       "api/log_private/syslog_parser.h",
       "api/messaging/native_message_host_chromeos.cc",
+      "api/networking_cast_private/chrome_networking_cast_private_delegate.cc",
+      "api/networking_cast_private/chrome_networking_cast_private_delegate.h",
+      "api/networking_cast_private/networking_cast_private_api.cc",
+      "api/networking_cast_private/networking_cast_private_api.h",
       "api/networking_private/crypto_verify_impl.cc",
       "api/networking_private/crypto_verify_impl.h",
       "api/platform_keys/platform_keys_api.cc",
@@ -1071,6 +1075,10 @@ static_library("extensions") {
 
   if (is_win || is_mac) {
     sources += [
+      "api/networking_cast_private/chrome_networking_cast_private_delegate.cc",
+      "api/networking_cast_private/chrome_networking_cast_private_delegate.h",
+      "api/networking_cast_private/networking_cast_private_api.cc",
+      "api/networking_cast_private/networking_cast_private_api.h",
       "api/networking_private/crypto_verify_impl.cc",
       "api/networking_private/crypto_verify_impl.h",
       "api/networking_private/networking_private_credentials_getter.h",

@@ -961,6 +961,7 @@ namespace networkingPrivate {
     //     is a trusted device.
     // |callback|: A callback function that indicates whether or not the device
     //     is a trusted device.
+    [nodoc, deprecated = "Use networking.castPrivate API."]
     static void verifyDestination(VerificationProperties properties,
                                   BooleanCallback callback);
 
@@ -971,6 +972,7 @@ namespace networkingPrivate {
     // |networkGuid|: The GUID of the Cellular network to activate.
     // |callback|: A callback function that receives base64-encoded encrypted
     //     credential data to send to a trusted device.
+    [nodoc, deprecated = "Use networking.castPrivate API."]
     static void verifyAndEncryptCredentials(VerificationProperties properties,
                                             DOMString networkGuid,
                                             StringCallback callback);
@@ -982,6 +984,7 @@ namespace networkingPrivate {
     // |data|: A string containing the base64-encoded data to encrypt.
     // |callback|: A callback function that receives base64-encoded encrypted
     //     data to send to a trusted device.
+    [nodoc, deprecated = "Use networking.castPrivate API."]
     static void verifyAndEncryptData(VerificationProperties properties,
                                      DOMString data,
                                      StringCallback callback);
@@ -995,6 +998,7 @@ namespace networkingPrivate {
     //     (e.g. MAC address lookup failed). 'Timeout' indicates that the lookup
     //     timed out. Otherwise a valid status is returned (see
     //     $(ref:getWifiTDLSStatus)).
+    [nodoc, deprecated = "Use networking.castPrivate API."]
     static void setWifiTDLSEnabledState(DOMString ip_or_mac_address,
                                         boolean enabled,
                                         optional StringCallback callback);
@@ -1004,6 +1008,7 @@ namespace networkingPrivate {
     // |callback|: A callback function that receives a string with the current
     //     TDLS status which can be 'Connected', 'Disabled', 'Disconnected',
     //     'Nonexistent', or 'Unknown'.
+    [nodoc, deprecated = "Use networking.castPrivate API."]
     static void getWifiTDLSStatus(DOMString ip_or_mac_address,
                                   StringCallback callback);
 

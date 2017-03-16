@@ -89,6 +89,11 @@ schema_sources = [
 if (!is_android) {
   schema_sources += [ "processes.idl" ]
 }
+
+if (is_chromeos || is_mac || is_win) {
+  schema_sources += [ "networking_cast_private.idl" ]
+}
+
 if (is_chromeos) {
   schema_sources += [
     "certificate_provider.idl",
