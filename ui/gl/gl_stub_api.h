@@ -42,6 +42,14 @@ class GL_EXPORT GLStubApi: public GLStubApiBase {
   void glGetIntegervFn(GLenum pname, GLint* params) override;
   void glGetProgramivFn(GLuint program, GLenum pname, GLint* params) override;
   void glGetShaderivFn(GLuint shader, GLenum pname, GLint* params) override;
+  void glGetQueryObjecti64vFn(GLuint id,
+                              GLenum pname,
+                              GLint64* params) override;
+  void glGetQueryObjectivFn(GLuint id, GLenum pname, GLint* params) override;
+  void glGetQueryObjectui64vFn(GLuint id,
+                               GLenum pname,
+                               GLuint64* params) override;
+  void glGetQueryObjectuivFn(GLuint id, GLenum pname, GLuint* params) override;
   const GLubyte* glGetStringFn(GLenum name) override;
   const GLubyte* glGetStringiFn(GLenum name, GLuint index) override;
   GLboolean glIsBufferFn(GLuint buffer) override;

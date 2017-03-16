@@ -194,6 +194,50 @@ void GLStubApi::glGetProgramivFn(GLuint program, GLenum pname, GLint* params) {
   }
 }
 
+void GLStubApi::glGetQueryObjecti64vFn(GLuint id,
+                                       GLenum pname,
+                                       GLint64* params) {
+  switch (pname) {
+    case GL_QUERY_RESULT_AVAILABLE:
+      *params = GL_TRUE;
+      break;
+    default:
+      break;
+  }
+}
+
+void GLStubApi::glGetQueryObjectivFn(GLuint id, GLenum pname, GLint* params) {
+  switch (pname) {
+    case GL_QUERY_RESULT_AVAILABLE:
+      *params = GL_TRUE;
+      break;
+    default:
+      break;
+  }
+}
+
+void GLStubApi::glGetQueryObjectui64vFn(GLuint id,
+                                        GLenum pname,
+                                        GLuint64* params) {
+  switch (pname) {
+    case GL_QUERY_RESULT_AVAILABLE:
+      *params = GL_TRUE;
+      break;
+    default:
+      break;
+  }
+}
+
+void GLStubApi::glGetQueryObjectuivFn(GLuint id, GLenum pname, GLuint* params) {
+  switch (pname) {
+    case GL_QUERY_RESULT_AVAILABLE:
+      *params = GL_TRUE;
+      break;
+    default:
+      break;
+  }
+}
+
 void GLStubApi::glGetShaderivFn(GLuint shader, GLenum pname, GLint* params) {
   switch (pname) {
     case GL_COMPILE_STATUS:
