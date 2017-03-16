@@ -73,9 +73,6 @@ class ASH_EXPORT TrayPower : public SystemTrayItem,
   views::View* CreateTrayView(LoginStatus status) override;
   views::View* CreateDefaultView(LoginStatus status) override;
   void DestroyTrayView() override;
-  void DestroyDefaultView() override;
-  void UpdateAfterLoginStatusChange(LoginStatus status) override;
-  void UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) override;
 
   // Overridden from PowerStatus::Observer.
   void OnPowerStatusChanged() override;

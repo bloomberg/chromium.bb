@@ -269,7 +269,6 @@ void TrayIME::UpdateTrayLabel(const IMEInfo& current, size_t count) {
     } else {
       tray_label_->label()->SetText(current.short_name);
     }
-    SetTrayLabelItemBorder(tray_label_, system_tray()->shelf_alignment());
     tray_label_->Layout();
   }
 }
@@ -331,13 +330,6 @@ void TrayIME::DestroyDefaultView() {
 
 void TrayIME::DestroyDetailedView() {
   detailed_ = NULL;
-}
-
-void TrayIME::UpdateAfterLoginStatusChange(LoginStatus status) {}
-
-void TrayIME::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
-  SetTrayLabelItemBorder(tray_label_, alignment);
-  tray_label_->Layout();
 }
 
 void TrayIME::OnIMERefresh() {

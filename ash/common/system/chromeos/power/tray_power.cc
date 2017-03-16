@@ -182,14 +182,6 @@ void TrayPower::DestroyTrayView() {
   power_tray_ = NULL;
 }
 
-void TrayPower::DestroyDefaultView() {}
-
-void TrayPower::UpdateAfterLoginStatusChange(LoginStatus status) {}
-
-void TrayPower::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
-  SetTrayImageItemBorder(power_tray_, alignment);
-}
-
 void TrayPower::OnPowerStatusChanged() {
   bool battery_alert = UpdateNotificationState();
   if (power_tray_)

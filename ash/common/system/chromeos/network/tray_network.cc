@@ -303,13 +303,6 @@ void TrayNetwork::DestroyDetailedView() {
   detailed_ = NULL;
 }
 
-void TrayNetwork::UpdateAfterLoginStatusChange(LoginStatus status) {}
-
-void TrayNetwork::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
-  if (tray_)
-    SetTrayImageItemBorder(tray_, alignment);
-}
-
 void TrayNetwork::RequestToggleWifi() {
   // This will always be triggered by a user action (e.g. keyboard shortcut)
   if (!detailed_ ||

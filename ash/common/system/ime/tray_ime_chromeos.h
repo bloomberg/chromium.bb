@@ -59,8 +59,6 @@ class ASH_EXPORT TrayIME : public SystemTrayItem,
   void DestroyTrayView() override;
   void DestroyDefaultView() override;
   void DestroyDetailedView() override;
-  void UpdateAfterLoginStatusChange(LoginStatus status) override;
-  void UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) override;
 
   // Overridden from IMEObserver.
   void OnIMERefresh() override;

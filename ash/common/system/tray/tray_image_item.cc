@@ -40,27 +40,9 @@ views::View* TrayImageItem::CreateTrayView(LoginStatus status) {
   return tray_view_;
 }
 
-views::View* TrayImageItem::CreateDefaultView(LoginStatus status) {
-  return nullptr;
-}
-
-views::View* TrayImageItem::CreateDetailedView(LoginStatus status) {
-  return nullptr;
-}
-
-void TrayImageItem::UpdateAfterLoginStatusChange(LoginStatus status) {}
-
-void TrayImageItem::UpdateAfterShelfAlignmentChange(ShelfAlignment alignment) {
-  SetTrayImageItemBorder(tray_view_, alignment);
-}
-
 void TrayImageItem::DestroyTrayView() {
   tray_view_ = nullptr;
 }
-
-void TrayImageItem::DestroyDefaultView() {}
-
-void TrayImageItem::DestroyDetailedView() {}
 
 void TrayImageItem::SetIconColor(SkColor color) {
   icon_color_ = color;
