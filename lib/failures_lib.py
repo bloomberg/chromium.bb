@@ -7,6 +7,7 @@
 from __future__ import print_function
 
 import collections
+import json
 import sys
 import traceback
 
@@ -43,6 +44,9 @@ class StepFailure(Exception):
   def __str__(self):
     """Stringify the message."""
     return self.message
+
+  def EncodeExtraInfo(self):
+    """Encode extra_info into a json string, can be overwritten by subclasses"""
 
 
 # A namedtuple to hold information of an exception.
@@ -225,6 +229,17 @@ class BuildScriptFailure(StepFailure):
     else:
       return self.exception.msg
 
+  def EncodeExtraInfo(self):
+    """Encode extra_info into a json string.
+
+    Returns:
+      A json string containing shortname.
+    """
+    extra_info_dict = {
+        'shortname': self.shortname,
+    }
+    return json.dumps(extra_info_dict)
+
 
 class PackageBuildFailure(BuildScriptFailure):
   """This exception is thrown when packages fail to build."""
@@ -244,6 +259,18 @@ class PackageBuildFailure(BuildScriptFailure):
   def __str__(self):
     return ('Packages failed in %s: %s'
             % (self.shortname, ' '.join(sorted(self.failed_packages))))
+
+  def EncodeExtraInfo(self):
+    """Encode extra_info into a json string.
+
+    Returns:
+      A json string containing shortname and failed_packages.
+    """
+    extra_info_dict = {
+        'shortname': self.shortname,
+        'failed_packages': list(self.failed_packages)
+    }
+    return json.dumps(extra_info_dict)
 
 
 class InfrastructureFailure(CompoundFailure):
@@ -473,10 +500,14 @@ def ReportStageFailureToCIDB(db, build_stage_id, exception):
                        if isinstance(exception, CompoundFailure)
                        else str(exception))
 
+  extra_info = (exception.EncodeExtraInfo()
+                if isinstance(exception, StepFailure) else None)
+
   outer_failure_id = db.InsertFailure(build_stage_id,
                                       type(exception).__name__,
                                       exception_message,
-                                      _GetExceptionCategory(type(exception)))
+                                      _GetExceptionCategory(type(exception)),
+                                      extra_info=extra_info)
 
   # This assumes that CompoundFailure can't be nested.
   if isinstance(exception, CompoundFailure):

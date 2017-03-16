@@ -6,6 +6,8 @@
 
 from __future__ import print_function
 
+import json
+
 from chromite.lib import constants
 from chromite.lib import failures_lib
 from chromite.lib import cros_build_lib
@@ -95,6 +97,7 @@ class ReportStageFailureToCIDBTest(cros_test_lib.TestCase):
     self.assertEqual(3, len(fake_db.failureTable))
     for failure_id, failure in fake_db.failureTable.iteritems():
       self.assertEqual(failure['build_stage_id'], mock_build_stage_id)
+      self.assertIsNone(failure['extra_info'])
 
       if failure_id == outer_failure_id:
         self.assertEqual(failure_id, outer_failure_id)
@@ -109,20 +112,48 @@ class ReportStageFailureToCIDBTest(cros_test_lib.TestCase):
         self.assertEqual(failure['exception_category'],
                          constants.EXCEPTION_CATEGORY_UNKNOWN)
 
-  def testReportStageFailureToCIDBOnNonCompoundFailure(self):
-    """Test ReportStageFailureToCIDB On Non-CompoundFailure"""
+  def testReportStageFailureToCIDBOnBuildScriptFailure(self):
+    """Test ReportStageFailureToCIDB On BuildScriptFailure."""
     fake_db = fake_cidb.FakeCIDBConnection()
     msg = 'run command error'
+    short_name = 'short name'
     error = cros_build_lib.RunCommandError(msg, cros_build_lib.CommandResult())
-    build_failure = failures_lib.BuildScriptFailure(error, 'short name')
+    build_failure = failures_lib.BuildScriptFailure(error, short_name)
     mock_build_stage_id = 1
     failure_id = failures_lib.ReportStageFailureToCIDB(
         fake_db, mock_build_stage_id, build_failure)
 
+    extra_info_json_string = json.dumps({'shortname': short_name})
     self.assertEqual(len(fake_db.failureTable), 1)
     values = fake_db.failureTable[failure_id]
     self.assertEqual(values['exception_message'], msg)
     self.assertEqual(values['outer_failure_id'], None)
+    self.assertEqual(values['extra_info'], extra_info_json_string)
+    self.assertEqual(json.loads(values['extra_info'])['shortname'], short_name)
+
+  def testReportStageFailureToCIDBOnPackageBuildFailure(self):
+    """Test ReportStageFailureToCIDB On PackageBuildFailure."""
+    fake_db = fake_cidb.FakeCIDBConnection()
+    msg = 'run command error'
+    short_name = 'short name'
+    failed_packages = ['chromeos-base/autotest', 'chromeos-base/telemetry']
+    error = cros_build_lib.RunCommandError(msg, cros_build_lib.CommandResult())
+    build_failure = failures_lib.PackageBuildFailure(
+        error, short_name, failed_packages)
+    mock_build_stage_id = 1
+    failure_id = failures_lib.ReportStageFailureToCIDB(
+        fake_db, mock_build_stage_id, build_failure)
+
+    extra_info_json_string = json.dumps({
+        'shortname': short_name,
+        'failed_packages': failed_packages})
+    self.assertEqual(len(fake_db.failureTable), 1)
+    values = fake_db.failureTable[failure_id]
+    self.assertEqual(values['exception_message'], str(build_failure))
+    self.assertEqual(values['outer_failure_id'], None)
+    self.assertEqual(values['extra_info'], extra_info_json_string)
+    self.assertEqual(json.loads(values['extra_info'])['failed_packages'],
+                     failed_packages)
 
 
 class SetFailureTypeTest(cros_test_lib.TestCase):
