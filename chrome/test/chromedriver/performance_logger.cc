@@ -199,7 +199,7 @@ Status PerformanceLogger::HandleTraceEvents(
     // 'value' will be between 0-1 and represents how full the DevTools trace
     // buffer is. If the buffer is full, warn the user.
     double buffer_usage = 0;
-    if (!params.GetDouble("value", &buffer_usage)) {
+    if (!params.GetDouble("percentFull", &buffer_usage)) {
       // Tracing.bufferUsage event will occur once per second, and it really
       // only serves as a warning, so if we can't reliably tell whether the
       // buffer is full, just fail silently instead of spamming the logs.
