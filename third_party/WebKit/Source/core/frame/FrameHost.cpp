@@ -73,14 +73,6 @@ const OverscrollController& FrameHost::overscrollController() const {
   return page().overscrollController();
 }
 
-ConsoleMessageStorage& FrameHost::consoleMessageStorage() {
-  return page().consoleMessageStorage();
-}
-
-const ConsoleMessageStorage& FrameHost::consoleMessageStorage() const {
-  return page().consoleMessageStorage();
-}
-
 DEFINE_TRACE(FrameHost) {
   visitor->trace(m_page);
 }

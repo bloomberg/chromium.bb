@@ -41,7 +41,6 @@
 namespace blink {
 
 class BrowserControls;
-class ConsoleMessageStorage;
 class OverscrollController;
 class Page;
 
@@ -71,9 +70,6 @@ class CORE_EXPORT FrameHost final
 
   OverscrollController& overscrollController();
   const OverscrollController& overscrollController() const;
-
-  ConsoleMessageStorage& consoleMessageStorage();
-  const ConsoleMessageStorage& consoleMessageStorage() const;
 
   DECLARE_TRACE();
 

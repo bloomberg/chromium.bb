@@ -374,7 +374,7 @@ void WebDevToolsAgentImpl::initializeSession(int sessionId,
   m_session->append(pageAgent);
 
   m_session->append(new InspectorLogAgent(
-      &m_inspectedFrames->root()->host()->consoleMessageStorage(),
+      &m_inspectedFrames->root()->page()->consoleMessageStorage(),
       m_inspectedFrames->root()->performanceMonitor()));
 
   m_session->append(

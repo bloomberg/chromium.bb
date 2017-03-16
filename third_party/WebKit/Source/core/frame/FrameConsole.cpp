@@ -69,9 +69,9 @@ void FrameConsole::addMessage(ConsoleMessage* consoleMessage) {
 }
 
 bool FrameConsole::addMessageToStorage(ConsoleMessage* consoleMessage) {
-  if (!m_frame->document() || !m_frame->host())
+  if (!m_frame->document() || !m_frame->page())
     return false;
-  m_frame->host()->consoleMessageStorage().addConsoleMessage(
+  m_frame->page()->consoleMessageStorage().addConsoleMessage(
       m_frame->document(), consoleMessage);
   return true;
 }

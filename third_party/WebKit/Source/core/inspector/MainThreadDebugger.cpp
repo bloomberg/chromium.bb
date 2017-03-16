@@ -326,8 +326,8 @@ void MainThreadDebugger::consoleClear(int contextGroupId) {
   LocalFrame* frame = WeakIdentifierMap<LocalFrame>::lookup(contextGroupId);
   if (!frame)
     return;
-  if (frame->host())
-    frame->host()->consoleMessageStorage().clear();
+  if (frame->page())
+    frame->page()->consoleMessageStorage().clear();
 }
 
 v8::MaybeLocal<v8::Value> MainThreadDebugger::memoryInfo(

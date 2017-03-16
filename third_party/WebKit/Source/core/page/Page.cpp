@@ -555,7 +555,7 @@ void Page::didCommitLoad(LocalFrame* frame) {
 
     // TODO(rbyers): Most of this doesn't appear to take into account that each
     // SVGImage gets it's own Page instance.
-    frameHost().consoleMessageStorage().clear();
+    consoleMessageStorage().clear();
     useCounter().didCommitLoad(url);
     deprecation().clearSuppression();
     visualViewport().sendUMAMetrics();
