@@ -82,10 +82,6 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_release_crypto_stream_buffer,
           true)
 
-// If true, buffer packets while parsing public headers instead of parsing down
-// if CHLO is already buffered.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_buffer_packets_after_chlo, true)
-
 // If true, do not override a connection in global map if exists. Only create
 // QUIC session if it is successfully inserted to the global map. Toss the
 // packet if insertion fails.
@@ -171,3 +167,13 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_no_socket_receive_buffer, false)
 
 // If true, multipath bit is not used in public flag.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_remove_multipath_bit, false)
+
+// Allow QUIC's flow control autotuning to increase the window as
+// quickly for the first adjustment as in subsequent ones.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_flow_control_faster_autotune,
+          false)
+
+// Only consider using the ack spacing in QUIC BBR if 2 packets are acked at
+// once.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_ack_spacing2, false)

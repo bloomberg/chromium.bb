@@ -1471,10 +1471,6 @@ TEST_P(BufferedPacketStoreTest, BufferDuplicatedCHLO) {
   ProcessPacket(client_addr_, last_connection, true, SerializeFullCHLO());
 
   size_t packets_buffered = 2;
-  if (!FLAGS_quic_reloadable_flag_quic_buffer_packets_after_chlo) {
-    // The packet sent above is dropped when flag is off.
-    packets_buffered = 1;
-  }
 
   // Reset counter and process buffered CHLO.
   EXPECT_CALL(*dispatcher_, CreateQuicSession(last_connection, client_addr_))
