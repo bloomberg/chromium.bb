@@ -134,6 +134,15 @@ Node* FlatTreeTraversal::traverseSiblings(const Node& node,
           direction))
     return found;
 
+  // Slotted nodes are already handled in traverseSiblingsForV1HostChild()
+  // above, here is for fallback contents.
+  Element* parent = node.parentElement();
+  if (parent && isHTMLSlotElement(parent)) {
+    HTMLSlotElement& slot = toHTMLSlotElement(*parent);
+    if (slot.supportsDistribution() && slot.assignedNodes().isEmpty())
+      return traverseSiblings(slot, direction);
+  }
+
   if (!node.isInV0ShadowTree())
     return nullptr;
 

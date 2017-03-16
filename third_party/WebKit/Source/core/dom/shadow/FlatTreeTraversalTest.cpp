@@ -594,4 +594,104 @@ TEST_F(FlatTreeTraversalTest, v1SlotInDocumentTree) {
   EXPECT_EQ(parent, FlatTreeTraversal::parent(*slot));
 }
 
+TEST_F(FlatTreeTraversalTest, v1FallbackContent) {
+  const char* mainHTML = "<div id='d1'></div>";
+  const char* shadowHTML =
+      "<div id='before'></div>"
+      "<slot><p>fallback content</p></slot>"
+      "<div id='after'></div>";
+
+  setupDocumentTree(mainHTML);
+
+  Element* body = document().body();
+  Element* d1 = body->querySelector("#d1");
+
+  attachOpenShadowRoot(*d1, shadowHTML);
+  ShadowRoot* shadowRoot = d1->openShadowRoot();
+  Element* before = shadowRoot->querySelector("#before");
+  Element* after = shadowRoot->querySelector("#after");
+  Element* fallbackContent = shadowRoot->querySelector("p");
+
+  EXPECT_EQ(before, FlatTreeTraversal::firstChild(*d1));
+  EXPECT_EQ(after, FlatTreeTraversal::lastChild(*d1));
+  EXPECT_EQ(d1, FlatTreeTraversal::parent(*fallbackContent));
+
+  EXPECT_EQ(fallbackContent, FlatTreeTraversal::nextSibling(*before));
+  EXPECT_EQ(after, FlatTreeTraversal::nextSibling(*fallbackContent));
+  EXPECT_EQ(nullptr, FlatTreeTraversal::nextSibling(*after));
+
+  EXPECT_EQ(fallbackContent, FlatTreeTraversal::previousSibling(*after));
+  EXPECT_EQ(before, FlatTreeTraversal::previousSibling(*fallbackContent));
+  EXPECT_EQ(nullptr, FlatTreeTraversal::previousSibling(*before));
+}
+
+TEST_F(FlatTreeTraversalTest, v1FallbackContentSkippedInTraversal) {
+  const char* mainHTML = "<div id='d1'><span></span></div>";
+  const char* shadowHTML =
+      "<div id='before'></div>"
+      "<slot><p>fallback content</p></slot>"
+      "<div id='after'></div>";
+
+  setupDocumentTree(mainHTML);
+
+  Element* body = document().body();
+  Element* d1 = body->querySelector("#d1");
+  Element* span = body->querySelector("span");
+
+  attachOpenShadowRoot(*d1, shadowHTML);
+  ShadowRoot* shadowRoot = d1->openShadowRoot();
+  Element* before = shadowRoot->querySelector("#before");
+  Element* after = shadowRoot->querySelector("#after");
+  Element* fallbackContent = shadowRoot->querySelector("p");
+
+  EXPECT_EQ(before, FlatTreeTraversal::firstChild(*d1));
+  EXPECT_EQ(after, FlatTreeTraversal::lastChild(*d1));
+  EXPECT_EQ(d1, FlatTreeTraversal::parent(*span));
+
+  EXPECT_EQ(span, FlatTreeTraversal::nextSibling(*before));
+  EXPECT_EQ(after, FlatTreeTraversal::nextSibling(*span));
+  EXPECT_EQ(nullptr, FlatTreeTraversal::nextSibling(*after));
+
+  EXPECT_EQ(span, FlatTreeTraversal::previousSibling(*after));
+  EXPECT_EQ(before, FlatTreeTraversal::previousSibling(*span));
+  EXPECT_EQ(nullptr, FlatTreeTraversal::previousSibling(*before));
+
+  EXPECT_EQ(nullptr, FlatTreeTraversal::parent(*fallbackContent));
+  EXPECT_EQ(nullptr, FlatTreeTraversal::nextSibling(*fallbackContent));
+  EXPECT_EQ(nullptr, FlatTreeTraversal::previousSibling(*fallbackContent));
+}
+
+TEST_F(FlatTreeTraversalTest, v1AllFallbackContent) {
+  const char* mainHTML = "<div id='d1'></div>";
+  const char* shadowHTML =
+      "<slot name='a'><p id='x'>fallback content X</p></slot>"
+      "<slot name='b'><p id='y'>fallback content Y</p></slot>"
+      "<slot name='c'><p id='z'>fallback content Z</p></slot>";
+
+  setupDocumentTree(mainHTML);
+
+  Element* body = document().body();
+  Element* d1 = body->querySelector("#d1");
+
+  attachOpenShadowRoot(*d1, shadowHTML);
+  ShadowRoot* shadowRoot = d1->openShadowRoot();
+  Element* fallbackX = shadowRoot->querySelector("#x");
+  Element* fallbackY = shadowRoot->querySelector("#y");
+  Element* fallbackZ = shadowRoot->querySelector("#z");
+
+  EXPECT_EQ(fallbackX, FlatTreeTraversal::firstChild(*d1));
+  EXPECT_EQ(fallbackZ, FlatTreeTraversal::lastChild(*d1));
+  EXPECT_EQ(d1, FlatTreeTraversal::parent(*fallbackX));
+  EXPECT_EQ(d1, FlatTreeTraversal::parent(*fallbackY));
+  EXPECT_EQ(d1, FlatTreeTraversal::parent(*fallbackZ));
+
+  EXPECT_EQ(fallbackY, FlatTreeTraversal::nextSibling(*fallbackX));
+  EXPECT_EQ(fallbackZ, FlatTreeTraversal::nextSibling(*fallbackY));
+  EXPECT_EQ(nullptr, FlatTreeTraversal::nextSibling(*fallbackZ));
+
+  EXPECT_EQ(fallbackY, FlatTreeTraversal::previousSibling(*fallbackZ));
+  EXPECT_EQ(fallbackX, FlatTreeTraversal::previousSibling(*fallbackY));
+  EXPECT_EQ(nullptr, FlatTreeTraversal::previousSibling(*fallbackX));
+}
+
 }  // namespace blink
