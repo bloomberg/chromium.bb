@@ -4,43 +4,16 @@
 
 #include "cc/playback/transform_display_item.h"
 
-#include <stddef.h>
-
-#include "base/strings/stringprintf.h"
-#include "base/trace_event/trace_event_argument.h"
-#include "third_party/skia/include/core/SkCanvas.h"
-
 namespace cc {
 
 TransformDisplayItem::TransformDisplayItem(const gfx::Transform& transform)
-    : DisplayItem(TRANSFORM), transform_(gfx::Transform::kSkipInitialization) {
-  SetNew(transform);
-}
+    : DisplayItem(TRANSFORM), transform(transform) {}
 
-TransformDisplayItem::~TransformDisplayItem() {
-}
-
-void TransformDisplayItem::SetNew(const gfx::Transform& transform) {
-  transform_ = transform;
-}
-
-void TransformDisplayItem::Raster(SkCanvas* canvas,
-                                  SkPicture::AbortCallback* callback) const {
-  canvas->save();
-  if (!transform_.IsIdentity())
-    canvas->concat(transform_.matrix());
-}
+TransformDisplayItem::~TransformDisplayItem() = default;
 
 EndTransformDisplayItem::EndTransformDisplayItem()
     : DisplayItem(END_TRANSFORM) {}
 
-EndTransformDisplayItem::~EndTransformDisplayItem() {
-}
-
-void EndTransformDisplayItem::Raster(
-    SkCanvas* canvas,
-    SkPicture::AbortCallback* callback) const {
-  canvas->restore();
-}
+EndTransformDisplayItem::~EndTransformDisplayItem() = default;
 
 }  // namespace cc

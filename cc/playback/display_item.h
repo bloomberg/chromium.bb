@@ -14,12 +14,12 @@
 #include "third_party/skia/include/core/SkPicture.h"
 #include "ui/gfx/geometry/rect.h"
 
-class SkCanvas;
-
 namespace cc {
 
 class CC_EXPORT DisplayItem {
  public:
+  virtual ~DisplayItem() = default;
+
   enum Type {
     CLIP,
     END_CLIP,
@@ -35,18 +35,10 @@ class CC_EXPORT DisplayItem {
     TRANSFORM,
     END_TRANSFORM,
   };
-
-  virtual ~DisplayItem() {}
-
-  virtual void Raster(SkCanvas* canvas,
-                      SkPicture::AbortCallback* callback) const = 0;
-
-  Type type() const { return type_; }
+  const Type type;
 
  protected:
-  explicit DisplayItem(Type type) : type_(type) {}
-
-  const Type type_;
+  explicit DisplayItem(Type type) : type(type) {}
 };
 
 }  // namespace cc

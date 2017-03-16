@@ -6,19 +6,13 @@
 #define CC_PLAYBACK_COMPOSITING_DISPLAY_ITEM_H_
 
 #include <stddef.h>
-#include <stdint.h>
 
-#include <memory>
-
-#include "base/memory/ptr_util.h"
 #include "cc/base/cc_export.h"
 #include "cc/playback/display_item.h"
+#include "third_party/skia/include/core/SkBlendMode.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
-#include "ui/gfx/geometry/rect_f.h"
-
-class SkCanvas;
 
 namespace cc {
 
@@ -31,46 +25,24 @@ class CC_EXPORT CompositingDisplayItem : public DisplayItem {
                          bool lcd_text_requires_opaque_layer);
   ~CompositingDisplayItem() override;
 
-  void Raster(SkCanvas* canvas,
-              SkPicture::AbortCallback* callback) const override;
-
   size_t ExternalMemoryUsage() const {
     // TODO(pdr): Include color_filter's memory here.
     return 0;
   }
   int ApproximateOpCount() const { return 1; }
 
-  uint8_t alpha() const { return alpha_; }
-  SkBlendMode xfermode() const { return xfermode_; }
-  bool has_bounds() const { return has_bounds_; }
-  const SkRect& bounds() const { return bounds_; }
-
- private:
-  void SetNew(uint8_t alpha,
-              SkBlendMode xfermode,
-              SkRect* bounds,
-              sk_sp<SkColorFilter> color_filter,
-              bool lcd_text_requires_opaque_layer);
-
-  uint8_t alpha_;
-  SkBlendMode xfermode_;
-  bool has_bounds_;
-  SkRect bounds_;
-  sk_sp<SkColorFilter> color_filter_;
-  bool lcd_text_requires_opaque_layer_;
+  const uint8_t alpha;
+  const SkBlendMode xfermode;
+  const bool has_bounds;
+  const SkRect bounds;
+  const sk_sp<SkColorFilter> color_filter;
+  const bool lcd_text_requires_opaque_layer;
 };
 
 class CC_EXPORT EndCompositingDisplayItem : public DisplayItem {
  public:
   EndCompositingDisplayItem();
   ~EndCompositingDisplayItem() override;
-
-  static std::unique_ptr<EndCompositingDisplayItem> Create() {
-    return base::MakeUnique<EndCompositingDisplayItem>();
-  }
-
-  void Raster(SkCanvas* canvas,
-              SkPicture::AbortCallback* callback) const override;
 
   int ApproximateOpCount() const { return 0; }
 };

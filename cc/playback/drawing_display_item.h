@@ -7,16 +7,10 @@
 
 #include <stddef.h>
 
-#include <memory>
-#include <vector>
-
 #include "cc/base/cc_export.h"
 #include "cc/paint/paint_record.h"
 #include "cc/playback/display_item.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
-#include "ui/gfx/geometry/point_f.h"
-
-class SkCanvas;
 
 namespace cc {
 
@@ -27,20 +21,10 @@ class CC_EXPORT DrawingDisplayItem : public DisplayItem {
   explicit DrawingDisplayItem(const DrawingDisplayItem& item);
   ~DrawingDisplayItem() override;
 
-  void Raster(SkCanvas* canvas,
-              SkPicture::AbortCallback* callback) const override;
-
   size_t ExternalMemoryUsage() const;
   int ApproximateOpCount() const;
 
-  void CloneTo(DrawingDisplayItem* item) const;
-
-  const PaintRecord& picture() const { return *picture_; }
-
- private:
-  void SetNew(sk_sp<const PaintRecord> record);
-
-  sk_sp<const PaintRecord> picture_;
+  const sk_sp<const PaintRecord> picture;
 };
 
 }  // namespace cc

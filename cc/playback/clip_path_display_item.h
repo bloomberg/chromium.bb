@@ -7,14 +7,9 @@
 
 #include <stddef.h>
 
-#include <memory>
-
-#include "base/memory/ptr_util.h"
 #include "cc/base/cc_export.h"
 #include "cc/playback/display_item.h"
 #include "third_party/skia/include/core/SkPath.h"
-
-class SkCanvas;
 
 namespace cc {
 
@@ -23,9 +18,6 @@ class CC_EXPORT ClipPathDisplayItem : public DisplayItem {
   ClipPathDisplayItem(const SkPath& path, bool antialias);
   ~ClipPathDisplayItem() override;
 
-  void Raster(SkCanvas* canvas,
-              SkPicture::AbortCallback* callback) const override;
-
   size_t ExternalMemoryUsage() const {
     // The size of SkPath's external storage is not currently accounted for (and
     // may well be shared anyway).
@@ -33,26 +25,14 @@ class CC_EXPORT ClipPathDisplayItem : public DisplayItem {
   }
   int ApproximateOpCount() const { return 1; }
 
-  const SkPath& clip_path() const { return clip_path_; }
-
- private:
-  void SetNew(const SkPath& path, bool antialias);
-
-  SkPath clip_path_;
-  bool antialias_;
+  const SkPath clip_path;
+  const bool antialias;
 };
 
 class CC_EXPORT EndClipPathDisplayItem : public DisplayItem {
  public:
   EndClipPathDisplayItem();
   ~EndClipPathDisplayItem() override;
-
-  static std::unique_ptr<EndClipPathDisplayItem> Create() {
-    return base::MakeUnique<EndClipPathDisplayItem>();
-  }
-
-  void Raster(SkCanvas* canvas,
-              SkPicture::AbortCallback* callback) const override;
 
   int ApproximateOpCount() const { return 0; }
 };

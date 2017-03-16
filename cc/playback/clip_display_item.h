@@ -7,7 +7,6 @@
 
 #include <stddef.h>
 
-#include <memory>
 #include <vector>
 
 #include "cc/base/cc_export.h"
@@ -15,47 +14,29 @@
 #include "third_party/skia/include/core/SkRRect.h"
 #include "ui/gfx/geometry/rect.h"
 
-class SkCanvas;
-
 namespace cc {
 
 class CC_EXPORT ClipDisplayItem : public DisplayItem {
  public:
   ClipDisplayItem(const gfx::Rect& clip_rect,
-                  const std::vector<SkRRect>& rounded_clip_rects,
+                  std::vector<SkRRect> rounded_clip_rects,
                   bool antialias);
   ~ClipDisplayItem() override;
 
-  void Raster(SkCanvas* canvas,
-              SkPicture::AbortCallback* callback) const override;
-
   size_t ExternalMemoryUsage() const {
-    return rounded_clip_rects_.capacity() * sizeof(rounded_clip_rects_[0]);
+    return rounded_clip_rects.capacity() * sizeof(rounded_clip_rects[0]);
   }
   int ApproximateOpCount() const { return 1; }
 
-  const gfx::Rect& clip_rect() const { return clip_rect_; }
-  const std::vector<SkRRect>& rounded_clip_rects() const {
-    return rounded_clip_rects_;
-  }
-
- private:
-  void SetNew(const gfx::Rect& clip_rect,
-              const std::vector<SkRRect>& rounded_clip_rects,
-              bool antialias);
-
-  gfx::Rect clip_rect_;
-  std::vector<SkRRect> rounded_clip_rects_;
-  bool antialias_;
+  const gfx::Rect clip_rect;
+  const std::vector<SkRRect> rounded_clip_rects;
+  const bool antialias;
 };
 
 class CC_EXPORT EndClipDisplayItem : public DisplayItem {
  public:
   EndClipDisplayItem();
   ~EndClipDisplayItem() override;
-
-  void Raster(SkCanvas* canvas,
-              SkPicture::AbortCallback* callback) const override;
 
   int ApproximateOpCount() const { return 0; }
 };

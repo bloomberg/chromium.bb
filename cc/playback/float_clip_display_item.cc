@@ -4,43 +4,16 @@
 
 #include "cc/playback/float_clip_display_item.h"
 
-#include <stddef.h>
-
-#include "base/strings/stringprintf.h"
-#include "base/trace_event/trace_event_argument.h"
-#include "third_party/skia/include/core/SkCanvas.h"
-#include "ui/gfx/skia_util.h"
-
 namespace cc {
 
 FloatClipDisplayItem::FloatClipDisplayItem(const gfx::RectF& clip_rect)
-    : DisplayItem(FLOAT_CLIP) {
-  SetNew(clip_rect);
-}
+    : DisplayItem(FLOAT_CLIP), clip_rect(clip_rect) {}
 
-FloatClipDisplayItem::~FloatClipDisplayItem() {
-}
-
-void FloatClipDisplayItem::SetNew(const gfx::RectF& clip_rect) {
-  clip_rect_ = clip_rect;
-}
-
-void FloatClipDisplayItem::Raster(SkCanvas* canvas,
-                                  SkPicture::AbortCallback* callback) const {
-  canvas->save();
-  canvas->clipRect(gfx::RectFToSkRect(clip_rect_));
-}
+FloatClipDisplayItem::~FloatClipDisplayItem() = default;
 
 EndFloatClipDisplayItem::EndFloatClipDisplayItem()
     : DisplayItem(END_FLOAT_CLIP) {}
 
-EndFloatClipDisplayItem::~EndFloatClipDisplayItem() {
-}
-
-void EndFloatClipDisplayItem::Raster(
-    SkCanvas* canvas,
-    SkPicture::AbortCallback* callback) const {
-  canvas->restore();
-}
+EndFloatClipDisplayItem::~EndFloatClipDisplayItem() = default;
 
 }  // namespace cc

@@ -8,12 +8,14 @@
 
 #include <string>
 
+#include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "cc/base/math_util.h"
 #include "cc/debug/picture_debug_util.h"
+#include "cc/output/render_surface_filters.h"
 #include "cc/playback/clip_display_item.h"
 #include "cc/playback/clip_path_display_item.h"
 #include "cc/playback/compositing_display_item.h"
@@ -23,6 +25,8 @@
 #include "cc/playback/largest_display_item.h"
 #include "cc/playback/transform_display_item.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkImageFilter.h"
+#include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -45,6 +49,111 @@ bool GetCanvasClipBounds(SkCanvas* canvas, gfx::Rect* clip_bounds) {
 }
 
 const int kDefaultNumDisplayItemsToReserve = 100;
+
+NOINLINE DISABLE_CFI_PERF void RasterItem(const DisplayItem& base_item,
+                                          SkCanvas* canvas,
+                                          SkPicture::AbortCallback* callback) {
+  switch (base_item.type) {
+    case DisplayItem::CLIP: {
+      const auto& item = static_cast<const ClipDisplayItem&>(base_item);
+      canvas->save();
+      canvas->clipRect(gfx::RectToSkRect(item.clip_rect), item.antialias);
+      for (const auto& rrect : item.rounded_clip_rects) {
+        if (rrect.isRect()) {
+          canvas->clipRect(rrect.rect(), item.antialias);
+        } else {
+          canvas->clipRRect(rrect, item.antialias);
+        }
+      }
+      break;
+    }
+    case DisplayItem::END_CLIP:
+      canvas->restore();
+      break;
+    case DisplayItem::CLIP_PATH: {
+      const auto& item = static_cast<const ClipPathDisplayItem&>(base_item);
+      canvas->save();
+      canvas->clipPath(item.clip_path, item.antialias);
+      break;
+    }
+    case DisplayItem::END_CLIP_PATH:
+      canvas->restore();
+      break;
+    case DisplayItem::COMPOSITING: {
+      const auto& item = static_cast<const CompositingDisplayItem&>(base_item);
+      SkPaint paint;
+      paint.setBlendMode(item.xfermode);
+      paint.setAlpha(item.alpha);
+      paint.setColorFilter(item.color_filter);
+      const SkRect* bounds = item.has_bounds ? &item.bounds : nullptr;
+      if (item.lcd_text_requires_opaque_layer)
+        canvas->saveLayer(bounds, &paint);
+      else
+        canvas->saveLayerPreserveLCDTextRequests(bounds, &paint);
+      break;
+    }
+    case DisplayItem::END_COMPOSITING:
+      canvas->restore();
+      break;
+    case DisplayItem::DRAWING: {
+      const auto& item = static_cast<const DrawingDisplayItem&>(base_item);
+      if (canvas->quickReject(item.picture->cullRect()))
+        break;
+
+      // SkPicture always does a wrapping save/restore on the canvas, so it is
+      // not necessary here.
+      if (callback) {
+        item.picture->playback(canvas, callback);
+      } else {
+        // TODO(enne): switch this to playback once PaintRecord is real.
+        canvas->drawPicture(ToSkPicture(item.picture.get()));
+      }
+      break;
+    }
+    case DisplayItem::FLOAT_CLIP: {
+      const auto& item = static_cast<const FloatClipDisplayItem&>(base_item);
+      canvas->save();
+      canvas->clipRect(gfx::RectFToSkRect(item.clip_rect));
+      break;
+    }
+    case DisplayItem::END_FLOAT_CLIP:
+      canvas->restore();
+      break;
+    case DisplayItem::FILTER: {
+      const auto& item = static_cast<const FilterDisplayItem&>(base_item);
+      canvas->save();
+      canvas->translate(item.origin.x(), item.origin.y());
+
+      sk_sp<SkImageFilter> image_filter =
+          RenderSurfaceFilters::BuildImageFilter(item.filters,
+                                                 item.bounds.size());
+      SkRect boundaries = RectFToSkRect(item.bounds);
+      boundaries.offset(-item.origin.x(), -item.origin.y());
+
+      SkPaint paint;
+      paint.setBlendMode(SkBlendMode::kSrcOver);
+      paint.setImageFilter(std::move(image_filter));
+      canvas->saveLayer(&boundaries, &paint);
+
+      canvas->translate(-item.origin.x(), -item.origin.y());
+      break;
+    }
+    case DisplayItem::END_FILTER:
+      canvas->restore();
+      canvas->restore();
+      break;
+    case DisplayItem::TRANSFORM: {
+      const auto& item = static_cast<const TransformDisplayItem&>(base_item);
+      canvas->save();
+      if (!item.transform.IsIdentity())
+        canvas->concat(item.transform.matrix());
+      break;
+    }
+    case DisplayItem::END_TRANSFORM:
+      canvas->restore();
+      break;
+  }
+}
 
 }  // namespace
 
@@ -76,7 +185,6 @@ void DisplayItemList::Raster(SkCanvas* canvas,
   canvas->restore();
 }
 
-DISABLE_CFI_PERF
 void DisplayItemList::Raster(SkCanvas* canvas,
                              SkPicture::AbortCallback* callback) const {
   gfx::Rect canvas_playback_rect;
@@ -86,7 +194,8 @@ void DisplayItemList::Raster(SkCanvas* canvas,
   std::vector<size_t> indices;
   rtree_.Search(canvas_playback_rect, &indices);
   for (size_t index : indices) {
-    inputs_.items[index].Raster(canvas, callback);
+    RasterItem(inputs_.items[index], canvas, callback);
+
     // We use a callback during solid color analysis on the compositor thread to
     // break out early. Since we're handling a sequence of pictures via rtree
     // query results ourselves, we have to respect the callback and early out.
@@ -132,7 +241,7 @@ size_t DisplayItemList::ApproximateMemoryUsage() const {
   size_t external_memory_usage = 0;
   for (const auto& item : inputs_.items) {
     size_t bytes = 0;
-    switch (item.type()) {
+    switch (item.type) {
       case DisplayItem::CLIP:
         bytes = static_cast<const ClipDisplayItem&>(item).ExternalMemoryUsage();
         break;
@@ -212,14 +321,14 @@ DisplayItemList::CreateTracedValue(bool include_items) const {
         ++visual_rects_it;
       }
 
-      switch (base_item.type()) {
+      switch (base_item.type) {
         case DisplayItem::CLIP: {
           const auto& item = static_cast<const ClipDisplayItem&>(base_item);
           std::string output =
               base::StringPrintf("ClipDisplayItem rect: [%s] visualRect: [%s]",
-                                 item.clip_rect().ToString().c_str(),
+                                 item.clip_rect.ToString().c_str(),
                                  visual_rect.ToString().c_str());
-          for (const SkRRect& rounded_rect : item.rounded_clip_rects()) {
+          for (const SkRRect& rounded_rect : item.rounded_clip_rects) {
             base::StringAppendF(
                 &output, " rounded_rect: [rect: [%s]",
                 gfx::SkRectToRectF(rounded_rect.rect()).ToString().c_str());
@@ -253,7 +362,7 @@ DisplayItemList::CreateTracedValue(bool include_items) const {
           const auto& item = static_cast<const ClipPathDisplayItem&>(base_item);
           state->AppendString(base::StringPrintf(
               "ClipPathDisplayItem length: %d visualRect: [%s]",
-              item.clip_path().countPoints(), visual_rect.ToString().c_str()));
+              item.clip_path.countPoints(), visual_rect.ToString().c_str()));
           break;
         }
         case DisplayItem::END_CLIP_PATH:
@@ -267,12 +376,12 @@ DisplayItemList::CreateTracedValue(bool include_items) const {
           std::string output = base::StringPrintf(
               "CompositingDisplayItem alpha: %d, xfermode: %d, visualRect: "
               "[%s]",
-              item.alpha(), static_cast<int>(item.xfermode()),
+              item.alpha, static_cast<int>(item.xfermode),
               visual_rect.ToString().c_str());
-          if (item.has_bounds()) {
+          if (item.has_bounds) {
             base::StringAppendF(
                 &output, ", bounds: [%s]",
-                gfx::SkRectToRectF(item.bounds()).ToString().c_str());
+                gfx::SkRectToRectF(item.bounds).ToString().c_str());
           }
           state->AppendString(output);
           break;
@@ -295,14 +404,14 @@ DisplayItemList::CreateTracedValue(bool include_items) const {
           state->EndArray();
 
           state->BeginArray("cullRect");
-          state->AppendInteger(item.picture().cullRect().x());
-          state->AppendInteger(item.picture().cullRect().y());
-          state->AppendInteger(item.picture().cullRect().width());
-          state->AppendInteger(item.picture().cullRect().height());
+          state->AppendInteger(item.picture->cullRect().x());
+          state->AppendInteger(item.picture->cullRect().y());
+          state->AppendInteger(item.picture->cullRect().width());
+          state->AppendInteger(item.picture->cullRect().height());
           state->EndArray();
 
           std::string b64_picture;
-          PictureDebugUtil::SerializeAsBase64(ToSkPicture(&item.picture()),
+          PictureDebugUtil::SerializeAsBase64(ToSkPicture(item.picture.get()),
                                               &b64_picture);
           state->SetString("skp64", b64_picture);
           state->EndDictionary();
@@ -312,8 +421,7 @@ DisplayItemList::CreateTracedValue(bool include_items) const {
           const auto& item = static_cast<const FilterDisplayItem&>(base_item);
           state->AppendString(base::StringPrintf(
               "FilterDisplayItem bounds: [%s] visualRect: [%s]",
-              item.bounds().ToString().c_str(),
-              visual_rect.ToString().c_str()));
+              item.bounds.ToString().c_str(), visual_rect.ToString().c_str()));
           break;
         }
         case DisplayItem::END_FILTER:
@@ -326,7 +434,7 @@ DisplayItemList::CreateTracedValue(bool include_items) const {
               static_cast<const FloatClipDisplayItem&>(base_item);
           state->AppendString(base::StringPrintf(
               "FloatClipDisplayItem rect: [%s] visualRect: [%s]",
-              item.clip_rect().ToString().c_str(),
+              item.clip_rect.ToString().c_str(),
               visual_rect.ToString().c_str()));
           break;
         }
@@ -340,7 +448,7 @@ DisplayItemList::CreateTracedValue(bool include_items) const {
               static_cast<const TransformDisplayItem&>(base_item);
           state->AppendString(base::StringPrintf(
               "TransformDisplayItem transform: [%s] visualRect: [%s]",
-              item.transform().ToString().c_str(),
+              item.transform.ToString().c_str(),
               visual_rect.ToString().c_str()));
           break;
         }
@@ -383,7 +491,7 @@ void DisplayItemList::GenerateDiscardableImagesMetadata() {
       &image_map_, gfx::Size(bounds.right(), bounds.bottom()));
   auto* canvas = generator.canvas();
   for (const auto& item : inputs_.items)
-    item.Raster(canvas, nullptr);
+    RasterItem(item, canvas, nullptr);
 }
 
 void DisplayItemList::GetDiscardableImagesInRect(

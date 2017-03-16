@@ -4,45 +4,16 @@
 
 #include "cc/playback/clip_path_display_item.h"
 
-#include <stddef.h>
-#include <stdint.h>
-
-#include "base/strings/stringprintf.h"
-#include "base/trace_event/trace_event_argument.h"
-#include "third_party/skia/include/core/SkCanvas.h"
-
 namespace cc {
 
 ClipPathDisplayItem::ClipPathDisplayItem(const SkPath& clip_path,
                                          bool antialias)
-    : DisplayItem(CLIP_PATH) {
-  SetNew(clip_path, antialias);
-}
+    : DisplayItem(CLIP_PATH), clip_path(clip_path), antialias(antialias) {}
 
-ClipPathDisplayItem::~ClipPathDisplayItem() {
-}
-
-void ClipPathDisplayItem::SetNew(const SkPath& clip_path,
-                                 bool antialias) {
-  clip_path_ = clip_path;
-  antialias_ = antialias;
-}
-
-void ClipPathDisplayItem::Raster(SkCanvas* canvas,
-                                 SkPicture::AbortCallback* callback) const {
-  canvas->save();
-  canvas->clipPath(clip_path_, antialias_);
-}
+ClipPathDisplayItem::~ClipPathDisplayItem() = default;
 
 EndClipPathDisplayItem::EndClipPathDisplayItem() : DisplayItem(END_CLIP_PATH) {}
 
-EndClipPathDisplayItem::~EndClipPathDisplayItem() {
-}
-
-void EndClipPathDisplayItem::Raster(
-    SkCanvas* canvas,
-    SkPicture::AbortCallback* callback) const {
-  canvas->restore();
-}
+EndClipPathDisplayItem::~EndClipPathDisplayItem() = default;
 
 }  // namespace cc

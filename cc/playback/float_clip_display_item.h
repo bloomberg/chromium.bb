@@ -7,15 +7,9 @@
 
 #include <stddef.h>
 
-#include <memory>
-#include <vector>
-
-#include "base/memory/ptr_util.h"
 #include "cc/base/cc_export.h"
 #include "cc/playback/display_item.h"
 #include "ui/gfx/geometry/rect_f.h"
-
-class SkCanvas;
 
 namespace cc {
 
@@ -24,31 +18,16 @@ class CC_EXPORT FloatClipDisplayItem : public DisplayItem {
   explicit FloatClipDisplayItem(const gfx::RectF& clip_rect);
   ~FloatClipDisplayItem() override;
 
-  void Raster(SkCanvas* canvas,
-              SkPicture::AbortCallback* callback) const override;
-
   size_t ExternalMemoryUsage() const { return 0; }
   int ApproximateOpCount() const { return 1; }
 
-  const gfx::RectF& clip_rect() const { return clip_rect_; }
-
- private:
-  void SetNew(const gfx::RectF& clip_rect);
-
-  gfx::RectF clip_rect_;
+  const gfx::RectF clip_rect;
 };
 
 class CC_EXPORT EndFloatClipDisplayItem : public DisplayItem {
  public:
   EndFloatClipDisplayItem();
   ~EndFloatClipDisplayItem() override;
-
-  static std::unique_ptr<EndFloatClipDisplayItem> Create() {
-    return base::MakeUnique<EndFloatClipDisplayItem>();
-  }
-
-  void Raster(SkCanvas* canvas,
-              SkPicture::AbortCallback* callback) const override;
 
   int ApproximateOpCount() const { return 0; }
 };

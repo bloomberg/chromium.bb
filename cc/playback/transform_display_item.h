@@ -7,14 +7,9 @@
 
 #include <stddef.h>
 
-#include <memory>
-
-#include "base/memory/ptr_util.h"
 #include "cc/base/cc_export.h"
 #include "cc/playback/display_item.h"
 #include "ui/gfx/transform.h"
-
-class SkCanvas;
 
 namespace cc {
 
@@ -23,31 +18,16 @@ class CC_EXPORT TransformDisplayItem : public DisplayItem {
   explicit TransformDisplayItem(const gfx::Transform& transform);
   ~TransformDisplayItem() override;
 
-  void Raster(SkCanvas* canvas,
-              SkPicture::AbortCallback* callback) const override;
-
   size_t ExternalMemoryUsage() const { return 0; }
   int ApproximateOpCount() const { return 1; }
 
-  const gfx::Transform& transform() const { return transform_; }
-
- private:
-  void SetNew(const gfx::Transform& transform);
-
-  gfx::Transform transform_;
+  const gfx::Transform transform;
 };
 
 class CC_EXPORT EndTransformDisplayItem : public DisplayItem {
  public:
   EndTransformDisplayItem();
   ~EndTransformDisplayItem() override;
-
-  static std::unique_ptr<EndTransformDisplayItem> Create() {
-    return base::MakeUnique<EndTransformDisplayItem>();
-  }
-
-  void Raster(SkCanvas* canvas,
-              SkPicture::AbortCallback* callback) const override;
 
   int ApproximateOpCount() const { return 0; }
 };

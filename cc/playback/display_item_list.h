@@ -49,7 +49,6 @@ class CC_EXPORT DisplayItemList
 
   void Raster(SkCanvas* canvas, SkPicture::AbortCallback* callback) const;
 
-
   // Because processing happens in these CreateAndAppend functions, all the set
   // up for the item should be done via the args, which is why the return type
   // needs to be const, to prevent set-after-processing mistakes.
