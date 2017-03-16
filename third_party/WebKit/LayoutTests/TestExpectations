@@ -7,9 +7,6 @@ Bug(intentional) harness-tests/timeout.html [ Timeout ]
 # failure. Expected outputs will be adjusted for the better once Oilpan
 # has been well and truly enabled always.
 
-crbug.com/420008 inspector/tracing/worker-js-frames.html [ Pass Timeout Failure ]
-crbug.com/420008 virtual/threaded/inspector/tracing/worker-js-frames.html [ Pass Timeout Failure ]
-
 crbug.com/569901 crbug.com/24182 [ Debug ] jquery/manipulation.html [ Timeout Pass ]
 
 # ====== Oilpan-only failures until here ======

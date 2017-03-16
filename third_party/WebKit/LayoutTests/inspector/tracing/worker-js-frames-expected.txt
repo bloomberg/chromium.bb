@@ -1,27 +1,6 @@
 Tests js cpu profile in timeline.
 
 Main Thread
-EvaluateScript Properties:
-{
-    data : {
-    }
-    endTime : <number>
-    startTime : <number>
-    type : "EvaluateScript"
-}
 DedicatedWorker Thread
 DedicatedWorker Thread
-EvaluateScript Properties:
-{
-    data : {
-        columnNumber : <number>
-        frame : <string>
-        lineNumber : <number>
-        url : .../inspector/tracing/resources/worker.js
-    }
-    endTime : <number>
-    frameId : <string>
-    startTime : <number>
-    type : "EvaluateScript"
-}
 
