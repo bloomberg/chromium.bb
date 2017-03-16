@@ -428,14 +428,6 @@ void RenderTextMac::ComputeRuns() {
     run->width = run_width;
     run->glyphs.resize(glyph_count);
     CTRunGetGlyphs(ct_run, empty_cf_range, &run->glyphs[0]);
-    // CTRunGetGlyphs() sometimes returns glyphs with value 65535 and zero
-    // width (this has been observed at the beginning of a string containing
-    // Arabic content). Passing these to Skia will trigger an assertion;
-    // instead set their values to 0.
-    for (size_t glyph = 0; glyph < glyph_count; glyph++) {
-      if (run->glyphs[glyph] == 65535)
-        run->glyphs[glyph] = 0;
-    }
 
     run->glyph_positions.resize(glyph_count);
     const CGPoint* positions_ptr = CTRunGetPositionsPtr(ct_run);
