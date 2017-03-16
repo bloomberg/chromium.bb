@@ -127,7 +127,8 @@ class Builder(object):
       for stage in stage_objs:
         for name in stage.GetStageNames():
           if not results_lib.Results.StageHasResults(name):
-            results_lib.Results.Record(name, ex, str(ex))
+            results_lib.Results.Record(
+                name, ex, str(ex), prefix=stage.StageNamePrefix())
 
         if cidb.CIDBConnectionFactory.IsCIDBSetup():
           db = cidb.CIDBConnectionFactory.GetCIDBConnectionForBuilder()

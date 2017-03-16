@@ -52,12 +52,16 @@ class BuilderTest(cros_test_lib.MockTestCase):
       stage_mock = mock.Mock()
       stage_mock.GetStageNames.return_value = ['stage_%s' % i]
       stage_mock.GetBuildStageIDs.return_value = [i]
+      stage_mock.StageNamePrefix.return_value = 'stage_prefix'
       stage_objs.append(stage_mock)
 
     self.assertRaises(parallel.UnexpectedException,
                       generic_builders.Builder._RunParallelStages, stage_objs)
     self.assertTrue(results_lib.Results.StageHasResults('stage_3'))
     self.assertTrue(results_lib.Results.StageHasResults('stage_4'))
+    for r in results_lib.Results.Get():
+      if r.name in ('stage_3', 'stage_4'):
+        self.assertEqual(r.prefix, 'stage_prefix')
 
     for i in range(0, 3):
       self.assertFalse(fake_db.HasFailureMsgForStage(i))
