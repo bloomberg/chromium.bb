@@ -8,12 +8,16 @@
 #include "content/common/content_export.h"
 #include "content/public/common/manifest.h"
 #include "ipc/ipc_message_macros.h"
+#include "third_party/WebKit/public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
 
 #undef IPC_MESSAGE_EXPORT
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 
 #define IPC_MESSAGE_START ManifestManagerMsgStart
 
+IPC_ENUM_TRAITS_MIN_MAX_VALUE(blink::WebScreenOrientationLockType,
+                              blink::WebScreenOrientationLockDefault,
+                              blink::WebScreenOrientationLockNatural)
 IPC_ENUM_TRAITS_MAX_VALUE(
     content::Manifest::Icon::IconPurpose,
     content::Manifest::Icon::IconPurpose::ICON_PURPOSE_LAST)

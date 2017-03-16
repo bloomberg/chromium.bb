@@ -306,7 +306,6 @@ source_set("common") {
     "sandbox_win.cc",
     "sandbox_win.h",
     "savable_subframe.h",
-    "screen_orientation_messages.h",
     "send_zygote_child_ping_linux.cc",
     "service_manager/embedded_service_runner.cc",
     "service_manager/embedded_service_runner.h",

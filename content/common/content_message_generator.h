@@ -37,7 +37,6 @@
 #include "content/common/quota_messages.h"
 #include "content/common/render_process_messages.h"
 #include "content/common/resource_messages.h"
-#include "content/common/screen_orientation_messages.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/speech_recognition_messages.h"
