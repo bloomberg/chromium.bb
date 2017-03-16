@@ -19,11 +19,6 @@ namespace {
 // Meaningful Paint.
 const int kBlankCharactersThreshold = 200;
 
-// The page is n-quiet if there are no more than n active network requests for
-// this duration of time.
-const double kNetwork2QuietWindowSeconds = 3;
-const double kNetwork0QuietWindowSeconds = 0.5;
-
 }  // namespace
 
 FirstMeaningfulPaintDetector& FirstMeaningfulPaintDetector::from(

@@ -6,7 +6,7 @@
 
 #include "core/paint/PaintTiming.h"
 #include "core/testing/DummyPageHolder.h"
-#include "platform/scheduler/test/fake_web_task_runner.h"
+#include "platform/testing/TestingPlatformSupport.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -15,16 +15,13 @@ namespace blink {
 class FirstMeaningfulPaintDetectorTest : public testing::Test {
  protected:
   void SetUp() override {
+    m_platform->advanceClockSeconds(1);
     m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
-    s_timeElapsed = 0.0;
-    m_originalTimeFunction = setTimeFunctionsForTesting(returnMockTime);
-    m_taskRunner = adoptRef(new scheduler::FakeWebTaskRunner);
-    detector().m_network0QuietTimer.moveToNewTaskRunner(m_taskRunner);
-    detector().m_network2QuietTimer.moveToNewTaskRunner(m_taskRunner);
   }
 
-  void TearDown() override {
-    setTimeFunctionsForTesting(m_originalTimeFunction);
+  double advanceClockAndGetTime() {
+    m_platform->advanceClockSeconds(1);
+    return monotonicallyIncreasingTime();
   }
 
   Document& document() { return m_dummyPageHolder->document(); }
@@ -34,6 +31,7 @@ class FirstMeaningfulPaintDetectorTest : public testing::Test {
   }
 
   void simulateLayoutAndPaint(int newElements) {
+    m_platform->advanceClockSeconds(0.001);
     StringBuilder builder;
     for (int i = 0; i < newElements; i++)
       builder.append("<span>a</span>");
@@ -59,22 +57,7 @@ class FirstMeaningfulPaintDetectorTest : public testing::Test {
   }
 
   void setActiveConnections(int connections) {
-    double time0 = 0.0;
-    double time2 = 0.0;
-    m_taskRunner->setTime(returnMockTime());
-    if (isNetwork0QuietTimerActive())
-      time0 = detector().m_network0QuietTimer.nextFireInterval();
-    if (isNetwork2QuietTimerActive())
-      time2 = detector().m_network2QuietTimer.nextFireInterval();
-
     detector().setNetworkQuietTimers(connections);
-
-    m_0QuietTimerRestarted =
-        isNetwork0QuietTimerActive() &&
-        detector().m_network0QuietTimer.nextFireInterval() != time0;
-    m_2QuietTimerRestarted =
-        isNetwork2QuietTimerActive() &&
-        detector().m_network2QuietTimer.nextFireInterval() != time2;
   }
 
   bool isNetwork0QuietTimerActive() {
@@ -85,24 +68,21 @@ class FirstMeaningfulPaintDetectorTest : public testing::Test {
     return detector().m_network2QuietTimer.isActive();
   }
 
-  bool isNetwork0QuietTimerRestarted() { return m_0QuietTimerRestarted; }
-  bool isNetwork2QuietTimerRestarted() { return m_2QuietTimerRestarted; }
+  bool hadNetwork0Quiet() { return detector().m_network0QuietReached; }
+  bool hadNetwork2Quiet() { return detector().m_network2QuietReached; }
+
+ protected:
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
+      m_platform;
+
+  static constexpr double kNetwork0QuietWindowSeconds =
+      FirstMeaningfulPaintDetector::kNetwork0QuietWindowSeconds;
+  static constexpr double kNetwork2QuietWindowSeconds =
+      FirstMeaningfulPaintDetector::kNetwork2QuietWindowSeconds;
 
  private:
-  static double returnMockTime() {
-    s_timeElapsed += 1.0;
-    return s_timeElapsed;
-  }
-
   std::unique_ptr<DummyPageHolder> m_dummyPageHolder;
-  RefPtr<scheduler::FakeWebTaskRunner> m_taskRunner;
-  TimeFunction m_originalTimeFunction;
-  bool m_0QuietTimerRestarted;
-  bool m_2QuietTimerRestarted;
-  static double s_timeElapsed;
 };
-
-double FirstMeaningfulPaintDetectorTest::s_timeElapsed;
 
 TEST_F(FirstMeaningfulPaintDetectorTest, NoFirstPaint) {
   simulateLayoutAndPaint(1);
@@ -113,7 +93,7 @@ TEST_F(FirstMeaningfulPaintDetectorTest, NoFirstPaint) {
 TEST_F(FirstMeaningfulPaintDetectorTest, OneLayout) {
   paintTiming().markFirstContentfulPaint();
   simulateLayoutAndPaint(1);
-  double afterPaint = monotonicallyIncreasingTime();
+  double afterPaint = advanceClockAndGetTime();
   EXPECT_EQ(paintTiming().firstMeaningfulPaint(), 0.0);
   simulateNetworkStable();
   EXPECT_GT(paintTiming().firstMeaningfulPaint(), paintTiming().firstPaint());
@@ -123,9 +103,9 @@ TEST_F(FirstMeaningfulPaintDetectorTest, OneLayout) {
 TEST_F(FirstMeaningfulPaintDetectorTest, TwoLayoutsSignificantSecond) {
   paintTiming().markFirstContentfulPaint();
   simulateLayoutAndPaint(1);
-  double afterLayout1 = monotonicallyIncreasingTime();
+  double afterLayout1 = advanceClockAndGetTime();
   simulateLayoutAndPaint(10);
-  double afterLayout2 = monotonicallyIncreasingTime();
+  double afterLayout2 = advanceClockAndGetTime();
   simulateNetworkStable();
   EXPECT_GT(paintTiming().firstMeaningfulPaint(), afterLayout1);
   EXPECT_LT(paintTiming().firstMeaningfulPaint(), afterLayout2);
@@ -134,7 +114,7 @@ TEST_F(FirstMeaningfulPaintDetectorTest, TwoLayoutsSignificantSecond) {
 TEST_F(FirstMeaningfulPaintDetectorTest, TwoLayoutsSignificantFirst) {
   paintTiming().markFirstContentfulPaint();
   simulateLayoutAndPaint(10);
-  double afterLayout1 = monotonicallyIncreasingTime();
+  double afterLayout1 = advanceClockAndGetTime();
   simulateLayoutAndPaint(1);
   simulateNetworkStable();
   EXPECT_GT(paintTiming().firstMeaningfulPaint(), paintTiming().firstPaint());
@@ -145,7 +125,7 @@ TEST_F(FirstMeaningfulPaintDetectorTest, FirstMeaningfulPaintCandidate) {
   paintTiming().markFirstContentfulPaint();
   EXPECT_EQ(paintTiming().firstMeaningfulPaintCandidate(), 0.0);
   simulateLayoutAndPaint(1);
-  double afterPaint = monotonicallyIncreasingTime();
+  double afterPaint = advanceClockAndGetTime();
   // The first candidate gets ignored.
   EXPECT_EQ(paintTiming().firstMeaningfulPaintCandidate(), 0.0);
   simulateLayoutAndPaint(10);
@@ -161,7 +141,7 @@ TEST_F(FirstMeaningfulPaintDetectorTest,
        OnlyOneFirstMeaningfulPaintCandidateBeforeNetworkStable) {
   paintTiming().markFirstContentfulPaint();
   EXPECT_EQ(paintTiming().firstMeaningfulPaintCandidate(), 0.0);
-  double beforePaint = monotonicallyIncreasingTime();
+  double beforePaint = advanceClockAndGetTime();
   simulateLayoutAndPaint(1);
   // The first candidate is initially ignored.
   EXPECT_EQ(paintTiming().firstMeaningfulPaintCandidate(), 0.0);
@@ -199,7 +179,7 @@ TEST_F(FirstMeaningfulPaintDetectorTest, Network2QuietThen0Quiet) {
   paintTiming().markFirstContentfulPaint();
 
   simulateLayoutAndPaint(1);
-  double afterFirstPaint = monotonicallyIncreasingTime();
+  double afterFirstPaint = advanceClockAndGetTime();
   simulateNetwork2Quiet();
 
   simulateLayoutAndPaint(10);
@@ -214,11 +194,11 @@ TEST_F(FirstMeaningfulPaintDetectorTest, Network0QuietThen2Quiet) {
   paintTiming().markFirstContentfulPaint();
 
   simulateLayoutAndPaint(1);
-  double afterFirstPaint = monotonicallyIncreasingTime();
+  double afterFirstPaint = advanceClockAndGetTime();
   simulateNetwork0Quiet();
 
   simulateLayoutAndPaint(10);
-  double afterSecondPaint = monotonicallyIncreasingTime();
+  double afterSecondPaint = advanceClockAndGetTime();
   simulateNetwork2Quiet();
 
   // The second paint is FirstMeaningfulPaint.
@@ -226,33 +206,45 @@ TEST_F(FirstMeaningfulPaintDetectorTest, Network0QuietThen2Quiet) {
   EXPECT_LT(paintTiming().firstMeaningfulPaint(), afterSecondPaint);
 }
 
-TEST_F(FirstMeaningfulPaintDetectorTest, NetworkQuietTimers) {
-  setActiveConnections(3);
-  EXPECT_FALSE(isNetwork0QuietTimerActive());
-  EXPECT_FALSE(isNetwork2QuietTimerActive());
-
-  setActiveConnections(2);
-  EXPECT_FALSE(isNetwork0QuietTimerActive());
-  EXPECT_TRUE(isNetwork2QuietTimerActive());
+TEST_F(FirstMeaningfulPaintDetectorTest, Network0QuietTimer) {
+  paintTiming().markFirstContentfulPaint();
 
   setActiveConnections(1);
   EXPECT_FALSE(isNetwork0QuietTimerActive());
-  EXPECT_TRUE(isNetwork2QuietTimerActive());
-  EXPECT_FALSE(isNetwork2QuietTimerRestarted());
+
+  setActiveConnections(0);
+  m_platform->runForPeriodSeconds(kNetwork0QuietWindowSeconds - 0.1);
+  EXPECT_TRUE(isNetwork0QuietTimerActive());
+  EXPECT_FALSE(hadNetwork0Quiet());
+
+  setActiveConnections(0);  // This should reset the 0-quiet timer.
+  m_platform->runForPeriodSeconds(kNetwork0QuietWindowSeconds - 0.1);
+  EXPECT_TRUE(isNetwork0QuietTimerActive());
+  EXPECT_FALSE(hadNetwork0Quiet());
+
+  m_platform->runForPeriodSeconds(0.1001);
+  EXPECT_TRUE(hadNetwork0Quiet());
+}
+
+TEST_F(FirstMeaningfulPaintDetectorTest, Network2QuietTimer) {
+  paintTiming().markFirstContentfulPaint();
+
+  setActiveConnections(3);
+  EXPECT_FALSE(isNetwork2QuietTimerActive());
 
   setActiveConnections(2);
-  EXPECT_TRUE(isNetwork2QuietTimerRestarted());
-
-  setActiveConnections(0);
-  EXPECT_TRUE(isNetwork0QuietTimerActive());
+  m_platform->runForPeriodSeconds(kNetwork2QuietWindowSeconds - 0.1);
   EXPECT_TRUE(isNetwork2QuietTimerActive());
-  EXPECT_FALSE(isNetwork2QuietTimerRestarted());
+  EXPECT_FALSE(hadNetwork2Quiet());
 
-  setActiveConnections(0);
-  EXPECT_TRUE(isNetwork0QuietTimerActive());
-  EXPECT_TRUE(isNetwork0QuietTimerRestarted());
+  setActiveConnections(2);  // This should reset the 2-quiet timer.
+  m_platform->runForPeriodSeconds(kNetwork2QuietWindowSeconds - 0.1);
   EXPECT_TRUE(isNetwork2QuietTimerActive());
-  EXPECT_FALSE(isNetwork2QuietTimerRestarted());
+  EXPECT_FALSE(hadNetwork2Quiet());
+
+  setActiveConnections(1);  // This should not reset the 2-quiet timer.
+  m_platform->runForPeriodSeconds(0.1001);
+  EXPECT_TRUE(hadNetwork2Quiet());
 }
 
 }  // namespace blink
