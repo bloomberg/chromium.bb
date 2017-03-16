@@ -110,12 +110,13 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
              ('GpuProcess_driver_bug_workarounds_upon_gl_renderer',
               'chrome:gpu'),
              ('GpuProcess_only_one_workaround', 'chrome:gpu'),
-             ('GpuProcess_skip_gpu_process', 'chrome:gpu'),
+             ('GpuProcess_skip_gpu_process', 'gpu/functional_webgl.html'),
              ('GpuProcess_identify_active_gpu1', 'chrome:gpu'),
              ('GpuProcess_identify_active_gpu2', 'chrome:gpu'),
              ('GpuProcess_identify_active_gpu3', 'chrome:gpu'),
              ('GpuProcess_identify_active_gpu4', 'chrome:gpu'),
-             ('GpuProcess_disabling_workarounds_works', 'chrome:gpu'))
+             ('GpuProcess_disabling_workarounds_works', 'chrome:gpu'),
+             ('GpuProcess_swiftshader_for_webgl', 'gpu/functional_webgl.html'))
 
     # The earlier has_transparent_visuals_gpu_process and
     # no_transparent_visuals_gpu_process tests became no-ops in
@@ -450,10 +451,15 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         (recorded_disabled_gl_extensions, new_disabled_gl_extensions))
 
   def _GpuProcess_skip_gpu_process(self, test_path):
+    # This test loads functional_webgl.html so that there is a
+    # deliberate attempt to use an API which would start the GPU
+    # process. On platforms where SwiftShader is used, this test
+    # should be skipped. Once SwiftShader is enabled on all platforms,
+    # this test should be removed.
     self.RestartBrowserIfNecessaryWithArgs([
       '--disable-gpu',
       '--skip-gpu-data-loading'])
-    self._Navigate(test_path)
+    self._NavigateAndWait(test_path)
     if self.tab.EvaluateJavaScript('chrome.gpuBenchmarking.hasGpuProcess()'):
       self.fail('GPU process detected')
 
@@ -522,6 +528,27 @@ class GpuProcessIntegrationTest(gpu_integration_test.GpuIntegrationTest):
       self._CompareAndCaptureDriverBugWorkarounds())
     if 'use_gpu_driver_workaround_for_testing' in workarounds:
       self.fail('use_gpu_driver_workaround_for_testing erroneously present')
+
+  def _GpuProcess_swiftshader_for_webgl(self, test_path):
+    # This test loads functional_webgl.html so that there is a
+    # deliberate attempt to use an API which would start the GPU
+    # process. On Windows, and eventually on other platforms where
+    # SwiftShader is used, this test should pass.
+    #
+    # TODO(kbr): figure out a better way than --disable-gpu to
+    # reliably trigger SwiftShader.
+    self.RestartBrowserIfNecessaryWithArgs(['--disable-gpu'])
+    self._NavigateAndWait(test_path)
+    # It looks like when SwiftShader is in use (via --disable-gpu),
+    # that GPU information collection doesn't yet contain what's
+    # expected (the system_info.gpu.aux_attributes['gl_renderer']
+    # looks like it'll be null). Verified locally that we can fetch
+    # the desired information via WebGL.
+    renderer = self.tab.EvaluateJavaScript('gl_renderer')
+    if not renderer:
+      self.fail('getParameter(UNMASKED_RENDERER_WEBGL) was null')
+    if 'SwiftShader' not in renderer:
+      self.fail('Expected SwiftShader renderer; instead got ' + renderer)
 
 def load_tests(loader, tests, pattern):
   del loader, tests, pattern  # Unused.

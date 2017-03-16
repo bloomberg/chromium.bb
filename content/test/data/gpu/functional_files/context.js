@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Global variable.
+// Global variables.
 var gl_context;
+var gl_renderer;
 
 initializeWebGL = function(canvas) {
   gl_context = null;
@@ -13,7 +14,7 @@ initializeWebGL = function(canvas) {
   // If we don't have a GL context, give up now.
   if (!gl_context) {
     err = "Unable to initialize WebGL. Your browser may not support it.";
-    if (domAutomationController) {
+    if (window.domAutomationController) {
       console.log(err);
     } else {
       alert(err);
@@ -34,8 +35,14 @@ startWebGLContext = function() {
     gl_context.clearDepth(1);
     gl_context.clear(gl_context.COLOR_BUFFER_BIT |
                      gl_context.DEPTH_BUFFER_BIT);
+
+    // Also fetch the unmasked GL_RENDERER string.
+    var ext = gl_context.getExtension("WEBGL_debug_renderer_info");
+    gl_renderer = gl_context.getParameter(ext.UNMASKED_RENDERER_WEBGL);
   }
 
-  domAutomationController.setAutomationId(0);
-  domAutomationController.send("FINISHED");
+  if (window.domAutomationController) {
+    domAutomationController.setAutomationId(0);
+    domAutomationController.send("FINISHED");
+  }
 }
