@@ -142,18 +142,6 @@ var MAP_BUFFER_FLAG_NONE;
 function close(handle) { [native code] }
 
 /**
- * Queries the last known signaling state of |handle|.
- *
- * @param {MojoHandle} handle Handle to query.
- * @return {object} An object of the form {
- *     result,              // MOJO_RESULT_OK or MOJO_RESULT_INVALID_ARGUMENT
- *     satisfiedSignals,    // MojoHandleSignals (see above)
- *     satisfiableSignals,  // MojoHandleSignals
- * }
- */
-function queryHandleSignalsState(handle) { [native code] }
-
-/**
  * Waits on the given handle until a signal indicated by |signals| is
  * satisfied or until |deadline| is passed. See MojoWait for more information.
  *

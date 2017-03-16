@@ -47,7 +47,8 @@ class MessagePipePerfTest : public test::MojoTestBase {
                               0, MOJO_WRITE_MESSAGE_FLAG_NONE),
              MOJO_RESULT_OK);
     HandleSignalsState hss;
-    CHECK_EQ(WaitForSignals(mp, MOJO_HANDLE_SIGNAL_READABLE, &hss),
+    CHECK_EQ(MojoWait(mp, MOJO_HANDLE_SIGNAL_READABLE, MOJO_DEADLINE_INDEFINITE,
+                      &hss),
              MOJO_RESULT_OK);
     uint32_t read_buffer_size = static_cast<uint32_t>(read_buffer_.size());
     CHECK_EQ(MojoReadMessage(mp, &read_buffer_[0], &read_buffer_size, nullptr,
@@ -97,7 +98,9 @@ class MessagePipePerfTest : public test::MojoTestBase {
     while (true) {
       // Wait for our end of the message pipe to be readable.
       HandleSignalsState hss;
-      MojoResult result = WaitForSignals(mp, MOJO_HANDLE_SIGNAL_READABLE, &hss);
+      MojoResult result =
+          MojoWait(mp, MOJO_HANDLE_SIGNAL_READABLE,
+                   MOJO_DEADLINE_INDEFINITE, &hss);
       if (result != MOJO_RESULT_OK) {
         rv = result;
         break;

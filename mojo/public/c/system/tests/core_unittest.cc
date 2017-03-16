@@ -41,9 +41,9 @@ TEST(CoreTest, InvalidHandle) {
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoClose(MOJO_HANDLE_INVALID));
 
   // Wait:
-  EXPECT_EQ(
-      MOJO_RESULT_INVALID_ARGUMENT,
-      MojoWait(MOJO_HANDLE_INVALID, ~MOJO_HANDLE_SIGNAL_NONE, 0, nullptr));
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+            MojoWait(MOJO_HANDLE_INVALID, ~MOJO_HANDLE_SIGNAL_NONE, 1000000,
+                     nullptr));
 
   h0 = MOJO_HANDLE_INVALID;
   sig = ~MOJO_HANDLE_SIGNAL_NONE;
@@ -98,9 +98,16 @@ TEST(CoreTest, BasicMessagePipe) {
   EXPECT_NE(h0, MOJO_HANDLE_INVALID);
   EXPECT_NE(h1, MOJO_HANDLE_INVALID);
 
-  // Shouldn't be readable, we haven't written anything. Should be writable.
+  // Shouldn't be readable, we haven't written anything.
   MojoHandleSignalsState state;
-  EXPECT_EQ(MOJO_RESULT_OK, MojoQueryHandleSignalsState(h0, &state));
+  EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED,
+            MojoWait(h0, MOJO_HANDLE_SIGNAL_READABLE, 0, &state));
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, state.satisfied_signals);
+  EXPECT_EQ(kSignalAll, state.satisfiable_signals);
+
+  // Should be writable.
+  EXPECT_EQ(MOJO_RESULT_OK,
+            MojoWait(h0, MOJO_HANDLE_SIGNAL_WRITABLE, 0, &state));
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, state.satisfied_signals);
   EXPECT_EQ(kSignalAll, state.satisfiable_signals);
 
@@ -140,7 +147,9 @@ TEST(CoreTest, BasicMessagePipe) {
   EXPECT_STREQ(kHello, buffer);
 
   // |h0| should no longer be readable.
-  EXPECT_EQ(MOJO_RESULT_OK, MojoQueryHandleSignalsState(h0, &state));
+  EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED,
+            MojoWait(h0, MOJO_HANDLE_SIGNAL_READABLE, 10, &state));
+
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, state.satisfied_signals);
   EXPECT_EQ(kSignalAll, state.satisfiable_signals);
 
@@ -155,7 +164,7 @@ TEST(CoreTest, BasicMessagePipe) {
   EXPECT_EQ(
       MOJO_RESULT_FAILED_PRECONDITION,
       MojoWait(h1, MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
-               MOJO_DEADLINE_INDEFINITE, &state));
+               1000, &state));
 
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, state.satisfied_signals);
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, state.satisfiable_signals);
@@ -179,14 +188,18 @@ TEST(CoreTest, BasicDataPipe) {
 
   // The consumer |hc| shouldn't be readable.
   MojoHandleSignalsState state;
-  EXPECT_EQ(MOJO_RESULT_OK, MojoQueryHandleSignalsState(hc, &state));
+  EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED,
+            MojoWait(hc, MOJO_HANDLE_SIGNAL_READABLE, 0, &state));
+
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_NONE, state.satisfied_signals);
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED |
                 MOJO_HANDLE_SIGNAL_NEW_DATA_READABLE,
             state.satisfiable_signals);
 
   // The producer |hp| should be writable.
-  EXPECT_EQ(MOJO_RESULT_OK, MojoQueryHandleSignalsState(hp, &state));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            MojoWait(hp, MOJO_HANDLE_SIGNAL_WRITABLE, 0, &state));
+
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, state.satisfied_signals);
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
             state.satisfiable_signals);
@@ -263,8 +276,7 @@ TEST(CoreTest, BasicDataPipe) {
 
   // |hc| should no longer be readable.
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            MojoWait(hc, MOJO_HANDLE_SIGNAL_READABLE, MOJO_DEADLINE_INDEFINITE,
-                     &state));
+            MojoWait(hc, MOJO_HANDLE_SIGNAL_READABLE, 1000, &state));
 
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, state.satisfied_signals);
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, state.satisfiable_signals);

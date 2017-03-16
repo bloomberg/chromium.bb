@@ -30,6 +30,8 @@ class MojoTestBase : public testing::Test {
   ~MojoTestBase() override;
 
   using LaunchType = MultiprocessTestHelper::LaunchType;
+
+ protected:
   using HandlerCallback = base::Callback<void(ScopedMessagePipeHandle)>;
 
   class ClientController {
@@ -149,14 +151,6 @@ class MojoTestBase : public testing::Test {
 
   // Reads data from a data pipe.
   static std::string ReadData(MojoHandle consumer, size_t size);
-
-  // Queries the signals state of |handle|.
-  static MojoHandleSignalsState GetSignalsState(MojoHandle handle);
-
-  // Helper to block the calling thread waiting for signals to be raised.
-  static MojoResult WaitForSignals(MojoHandle handle,
-                                   MojoHandleSignals signals,
-                                   MojoHandleSignalsState* state = nullptr);
 
   void set_launch_type(LaunchType launch_type) { launch_type_ = launch_type; }
 

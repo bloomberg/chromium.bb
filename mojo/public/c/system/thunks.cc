@@ -22,13 +22,6 @@ MojoResult MojoClose(MojoHandle handle) {
   return g_thunks.Close(handle);
 }
 
-MojoResult MojoQueryHandleSignalsState(
-    MojoHandle handle,
-    struct MojoHandleSignalsState* signals_state) {
-  assert(g_thunks.QueryHandleSignalsState);
-  return g_thunks.QueryHandleSignalsState(handle, signals_state);
-}
-
 MojoResult MojoWait(MojoHandle handle,
                     MojoHandleSignals signals,
                     MojoDeadline deadline,

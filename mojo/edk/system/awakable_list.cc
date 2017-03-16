@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "mojo/edk/system/awakable.h"
+#include "mojo/edk/system/handle_signals_state.h"
 
 namespace mojo {
 namespace edk {

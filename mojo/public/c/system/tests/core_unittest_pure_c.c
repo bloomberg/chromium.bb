@@ -54,9 +54,6 @@ const char* MinimalCTest(void) {
   EXPECT_NE(MOJO_RESULT_OK, MojoClose(handle0));
 
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            MojoQueryHandleSignalsState(handle0, NULL));
-
-  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
             MojoWait(handle0, ~MOJO_HANDLE_SIGNAL_NONE,
                      MOJO_DEADLINE_INDEFINITE, NULL));
 

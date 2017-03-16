@@ -46,21 +46,6 @@ MOJO_SYSTEM_EXPORT MojoTimeTicks MojoGetTimeTicksNow(void);
 // fail with |MOJO_RESULT_INVALID_ARGUMENT| if they happen after.
 MOJO_SYSTEM_EXPORT MojoResult MojoClose(MojoHandle handle);
 
-// Queries the last known signals state of a handle.
-//
-// Note that no guarantees can be made about the accuracy of the returned
-// signals state by the time this returns, as other threads in the system may
-// change the handle's state at any time. Use with appropriate discretion.
-//
-// Returns:
-//   |MOJO_RESULT_OK| on success. |*signals_state| is populated with the
-//       last known signals state of |handle|.
-//   |MOJO_RESULT_INVALID_ARGUMENT| if |handle| is not a valid handle or
-//       |signals_state| is null.
-MOJO_SYSTEM_EXPORT MojoResult
-MojoQueryHandleSignalsState(MojoHandle handle,
-                            struct MojoHandleSignalsState* signals_state);
-
 // Waits on the given handle until one of the following happens:
 //   - A signal indicated by |signals| is satisfied.
 //   - It becomes known that no signal indicated by |signals| will ever be

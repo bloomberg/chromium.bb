@@ -28,12 +28,6 @@ MojoResult MojoCloseImpl(MojoHandle handle) {
   return g_core->Close(handle);
 }
 
-MojoResult MojoQueryHandleSignalsStateImpl(
-    MojoHandle handle,
-    MojoHandleSignalsState* signals_state) {
-  return g_core->QueryHandleSignalsState(handle, signals_state);
-}
-
 MojoResult MojoWaitImpl(MojoHandle handle,
                         MojoHandleSignals signals,
                         MojoDeadline deadline,
@@ -287,7 +281,6 @@ MojoSystemThunks MakeSystemThunks() {
   MojoSystemThunks system_thunks = {sizeof(MojoSystemThunks),
                                     MojoGetTimeTicksNowImpl,
                                     MojoCloseImpl,
-                                    MojoQueryHandleSignalsStateImpl,
                                     MojoWaitImpl,
                                     MojoWaitManyImpl,
                                     MojoCreateMessagePipeImpl,

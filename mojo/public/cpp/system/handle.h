@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "mojo/public/c/system/functions.h"
 #include "mojo/public/c/system/types.h"
-#include "mojo/public/cpp/system/handle_signals_state.h"
 
 namespace mojo {
 
@@ -169,14 +168,6 @@ class Handle {
     MojoResult result = MojoClose(value_);
     ALLOW_UNUSED_LOCAL(result);
     DCHECK_EQ(MOJO_RESULT_OK, result);
-  }
-
-  HandleSignalsState QuerySignalsState() const {
-    HandleSignalsState signals_state;
-    MojoResult result = MojoQueryHandleSignalsState(
-        value_, static_cast<MojoHandleSignalsState*>(&signals_state));
-    DCHECK_EQ(MOJO_RESULT_OK, result);
-    return signals_state;
   }
 
  private:

@@ -9,6 +9,9 @@ import android.support.test.filters.SmallTest;
 import org.chromium.mojo.MojoTestCase;
 import org.chromium.mojo.system.Core;
 import org.chromium.mojo.system.Core.HandleSignals;
+import org.chromium.mojo.system.Core.HandleSignalsState;
+import org.chromium.mojo.system.Core.WaitManyResult;
+import org.chromium.mojo.system.Core.WaitResult;
 import org.chromium.mojo.system.DataPipe;
 import org.chromium.mojo.system.Handle;
 import org.chromium.mojo.system.InvalidHandle;
@@ -27,6 +30,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Testing the core API.
@@ -70,6 +74,22 @@ public class CoreImplTest extends MojoTestCase {
     private void addHandlePairToClose(Pair<? extends Handle, ? extends Handle> handles) {
         mHandlesToClose.add(handles.first);
         mHandlesToClose.add(handles.second);
+    }
+
+    /**
+     * Runnable that will close the given handle.
+     */
+    private static class CloseHandle implements Runnable {
+        private Handle mHandle;
+
+        CloseHandle(Handle handle) {
+            mHandle = handle;
+        }
+
+        @Override
+        public void run() {
+            mHandle.close();
+        }
     }
 
     private static void checkSendingMessage(MessagePipeHandle in, MessagePipeHandle out) {
@@ -164,6 +184,46 @@ public class CoreImplTest extends MojoTestCase {
     }
 
     /**
+     * Testing {@link Core#waitMany(List, long)}.
+     */
+    @SmallTest
+    public void testWaitMany() {
+        Core core = CoreImpl.getInstance();
+        Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe(null);
+        addHandlePairToClose(handles);
+
+        // Test waiting on handles of a newly created message pipe - each should be writable, but
+        // not readable.
+        List<Pair<Handle, Core.HandleSignals>> handlesToWaitOn =
+                new ArrayList<Pair<Handle, Core.HandleSignals>>();
+        handlesToWaitOn.add(
+                new Pair<Handle, Core.HandleSignals>(handles.second, Core.HandleSignals.READABLE));
+        handlesToWaitOn.add(
+                new Pair<Handle, Core.HandleSignals>(handles.first, Core.HandleSignals.WRITABLE));
+        WaitManyResult result = core.waitMany(handlesToWaitOn, 0);
+        assertEquals(MojoResult.OK, result.getMojoResult());
+        assertEquals(1, result.getHandleIndex());
+        for (HandleSignalsState state : result.getSignalStates()) {
+            assertEquals(HandleSignals.WRITABLE, state.getSatisfiedSignals());
+            assertEquals(ALL_SIGNALS, state.getSatisfiableSignals());
+        }
+
+        // Same test, but swap the handles around.
+        handlesToWaitOn.clear();
+        handlesToWaitOn.add(
+                new Pair<Handle, Core.HandleSignals>(handles.first, Core.HandleSignals.WRITABLE));
+        handlesToWaitOn.add(
+                new Pair<Handle, Core.HandleSignals>(handles.second, Core.HandleSignals.READABLE));
+        result = core.waitMany(handlesToWaitOn, 0);
+        assertEquals(MojoResult.OK, result.getMojoResult());
+        assertEquals(0, result.getHandleIndex());
+        for (HandleSignalsState state : result.getSignalStates()) {
+            assertEquals(HandleSignals.WRITABLE, state.getSatisfiedSignals());
+            assertEquals(ALL_SIGNALS, state.getSatisfiableSignals());
+        }
+    }
+
+    /**
      * Testing that Core can be retrieved from a handle.
      */
     @SmallTest
@@ -214,14 +274,53 @@ public class CoreImplTest extends MojoTestCase {
         Core core = CoreImpl.getInstance();
         Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe(null);
         addHandlePairToClose(handles);
+        // Test waiting on handles of a newly created message pipe.
+        WaitResult waitResult = handles.first.wait(
+                Core.HandleSignals.none().setReadable(true).setWritable(true), 0);
+        assertEquals(MojoResult.OK, waitResult.getMojoResult());
+        assertEquals(
+                HandleSignals.WRITABLE, waitResult.getHandleSignalsState().getSatisfiedSignals());
+        assertEquals(ALL_SIGNALS, waitResult.getHandleSignalsState().getSatisfiableSignals());
+
+        waitResult = handles.first.wait(Core.HandleSignals.WRITABLE, 0);
+        assertEquals(MojoResult.OK, waitResult.getMojoResult());
+        assertEquals(
+                HandleSignals.WRITABLE, waitResult.getHandleSignalsState().getSatisfiedSignals());
+        assertEquals(ALL_SIGNALS, waitResult.getHandleSignalsState().getSatisfiableSignals());
+
+        waitResult = handles.first.wait(Core.HandleSignals.READABLE, 0);
+        assertEquals(MojoResult.DEADLINE_EXCEEDED, waitResult.getMojoResult());
+        assertEquals(
+                HandleSignals.WRITABLE, waitResult.getHandleSignalsState().getSatisfiedSignals());
+        assertEquals(ALL_SIGNALS, waitResult.getHandleSignalsState().getSatisfiableSignals());
 
         // Testing read on an empty pipe.
         ResultAnd<MessagePipeHandle.ReadMessageResult> readResult =
                 handles.first.readMessage(null, 0, MessagePipeHandle.ReadFlags.NONE);
         assertEquals(MojoResult.SHOULD_WAIT, readResult.getMojoResult());
 
-        handles.first.close();
-        handles.second.close();
+        // Closing a pipe while waiting.
+        WORKER.schedule(new CloseHandle(handles.first), 10, TimeUnit.MILLISECONDS);
+        waitResult = handles.first.wait(Core.HandleSignals.READABLE, 1000000L);
+        assertEquals(MojoResult.CANCELLED, waitResult.getMojoResult());
+        assertEquals(
+                HandleSignals.none(), waitResult.getHandleSignalsState().getSatisfiedSignals());
+        assertEquals(
+                HandleSignals.none(), waitResult.getHandleSignalsState().getSatisfiableSignals());
+
+        handles = core.createMessagePipe(null);
+        addHandlePairToClose(handles);
+
+        // Closing the other pipe while waiting.
+        WORKER.schedule(new CloseHandle(handles.first), 10, TimeUnit.MILLISECONDS);
+        waitResult = handles.second.wait(Core.HandleSignals.READABLE, 1000000L);
+        assertEquals(MojoResult.FAILED_PRECONDITION, waitResult.getMojoResult());
+
+        // Waiting on a closed pipe.
+        waitResult = handles.second.wait(Core.HandleSignals.READABLE, 0);
+        assertEquals(MojoResult.FAILED_PRECONDITION, waitResult.getMojoResult());
+        waitResult = handles.second.wait(Core.HandleSignals.WRITABLE, 0);
+        assertEquals(MojoResult.FAILED_PRECONDITION, waitResult.getMojoResult());
     }
 
     /**
@@ -440,6 +539,29 @@ public class CoreImplTest extends MojoTestCase {
     public void testInvalidHandle() {
         Core core = CoreImpl.getInstance();
         Handle handle = InvalidHandle.INSTANCE;
+
+        // Checking wait.
+        boolean exception = false;
+        try {
+            core.wait(handle, Core.HandleSignals.WRITABLE, 0);
+        } catch (MojoException e) {
+            assertEquals(MojoResult.INVALID_ARGUMENT, e.getMojoResult());
+            exception = true;
+        }
+        assertTrue(exception);
+
+        // Checking waitMany.
+        exception = false;
+        try {
+            List<Pair<Handle, Core.HandleSignals>> handles =
+                    new ArrayList<Pair<Handle, Core.HandleSignals>>();
+            handles.add(Pair.create(handle, Core.HandleSignals.WRITABLE));
+            core.waitMany(handles, 0);
+        } catch (MojoException e) {
+            assertEquals(MojoResult.INVALID_ARGUMENT, e.getMojoResult());
+            exception = true;
+        }
+        assertTrue(exception);
 
         // Checking sending an invalid handle.
         // Until the behavior is changed on the C++ side, handle gracefully 2 different use case:

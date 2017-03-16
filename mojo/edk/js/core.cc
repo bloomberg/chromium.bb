@@ -35,20 +35,6 @@ MojoResult CloseHandle(gin::Handle<HandleWrapper> handle) {
   return MOJO_RESULT_OK;
 }
 
-gin::Dictionary QueryHandleSignalsState(const gin::Arguments& args,
-                                        mojo::Handle handle) {
-  gin::Dictionary dictionary = gin::Dictionary::CreateEmpty(args.isolate());
-  if (!handle.is_valid()) {
-    dictionary.Set("result", MOJO_RESULT_INVALID_ARGUMENT);
-  } else {
-    HandleSignalsState state = handle.QuerySignalsState();
-    dictionary.Set("result", MOJO_RESULT_OK);
-    dictionary.Set("satisfiedSignals", state.satisfied_signals);
-    dictionary.Set("satisfiableSignals", state.satisfiable_signals);
-  }
-  return dictionary;
-}
-
 gin::Dictionary WaitHandle(const gin::Arguments& args,
                            mojo::Handle handle,
                            MojoHandleSignals signals,
@@ -402,7 +388,6 @@ v8::Local<v8::Value> Core::GetModule(v8::Isolate* isolate) {
             // TODO(mpcomplete): Should these just be methods on the JS Handle
             // object?
             .SetMethod("close", CloseHandle)
-            .SetMethod("queryHandleSignalsState", QueryHandleSignalsState)
             .SetMethod("wait", WaitHandle)
             .SetMethod("waitMany", WaitMany)
             .SetMethod("createMessagePipe", CreateMessagePipe)

@@ -5,7 +5,7 @@
 package org.chromium.mojo;
 
 import org.chromium.mojo.system.Core;
-import org.chromium.mojo.system.Core.HandleSignalsState;
+import org.chromium.mojo.system.Core.WaitResult;
 import org.chromium.mojo.system.DataPipe;
 import org.chromium.mojo.system.DataPipe.ConsumerHandle;
 import org.chromium.mojo.system.DataPipe.ProducerHandle;
@@ -35,11 +35,14 @@ public class HandleMock implements UntypedHandle, MessagePipeHandle,
     }
 
     /**
-     * @see Handle#querySignalsState()
+     * @see Handle#wait(Core.HandleSignals, long)
      */
     @Override
-    public HandleSignalsState querySignalsState() {
-        return null;
+    public WaitResult wait(Core.HandleSignals signals, long deadline) {
+        // Do nothing.
+        WaitResult result = new WaitResult();
+        result.setMojoResult(MojoResult.OK);
+        return result;
     }
 
     /**

@@ -12,6 +12,7 @@ import org.chromium.mojo.bindings.BindingsTestUtils.CapturingErrorHandler;
 import org.chromium.mojo.bindings.BindingsTestUtils.RecordingMessageReceiverWithResponder;
 import org.chromium.mojo.system.Core;
 import org.chromium.mojo.system.Core.HandleSignals;
+import org.chromium.mojo.system.Core.WaitResult;
 import org.chromium.mojo.system.Handle;
 import org.chromium.mojo.system.MessagePipeHandle;
 import org.chromium.mojo.system.MojoResult;
@@ -226,6 +227,8 @@ public class RouterTest extends MojoTestCase {
 
         // Confirm that the pipe was closed on the Router side.
         HandleSignals closedFlag = HandleSignals.none().setPeerClosed(true);
-        assertEquals(closedFlag, mHandle.querySignalsState().getSatisfiedSignals());
+        WaitResult result = mHandle.wait(closedFlag, 0);
+        assertEquals(MojoResult.OK, result.getMojoResult());
+        assertEquals(closedFlag, result.getHandleSignalsState().getSatisfiedSignals());
     }
 }

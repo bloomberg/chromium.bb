@@ -165,7 +165,6 @@ test("mojo_system_unittests") {
     "platform_handle_dispatcher_unittest.cc",
     "shared_buffer_dispatcher_unittest.cc",
     "shared_buffer_unittest.cc",
-    "signals_unittest.cc",
     "wait_set_dispatcher_unittest.cc",
     "waiter_test_utils.cc",
     "waiter_test_utils.h",
