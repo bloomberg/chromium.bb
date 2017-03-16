@@ -89,13 +89,14 @@ const char kDisableIPv6[] = "disable_ipv6";
 
 const char kSSLKeyLogFile[] = "ssl_key_log_file";
 
-void ParseAndSetExperimentalOptions(
+// Returns the effective experimental options.
+std::unique_ptr<base::DictionaryValue> ParseAndSetExperimentalOptions(
     const std::string& experimental_options,
     net::URLRequestContextBuilder* context_builder,
     net::NetLog* net_log,
     const scoped_refptr<base::SequencedTaskRunner>& file_task_runner) {
   if (experimental_options.empty())
-    return;
+    return nullptr;
 
   DCHECK(net_log);
 
@@ -106,7 +107,7 @@ void ParseAndSetExperimentalOptions(
   if (!options) {
     DCHECK(false) << "Parsing experimental options failed: "
                   << experimental_options;
-    return;
+    return nullptr;
   }
 
   std::unique_ptr<base::DictionaryValue> dict =
@@ -115,152 +116,199 @@ void ParseAndSetExperimentalOptions(
   if (!dict) {
     DCHECK(false) << "Experimental options string is not a dictionary: "
                   << experimental_options;
-    return;
-  }
-
-  const base::DictionaryValue* quic_args = nullptr;
-  if (dict->GetDictionary(kQuicFieldTrialName, &quic_args)) {
-    std::string quic_connection_options;
-    if (quic_args->GetString(kQuicConnectionOptions,
-                             &quic_connection_options)) {
-      context_builder->set_quic_connection_options(
-          net::ParseQuicConnectionOptions(quic_connection_options));
-    }
-
-    // TODO(rtenneti): Delete this option after apps stop using it.
-    // Added this for backward compatibility.
-    bool quic_store_server_configs_in_properties = false;
-    if (quic_args->GetBoolean(kQuicStoreServerConfigsInProperties,
-                              &quic_store_server_configs_in_properties)) {
-      context_builder->set_quic_max_server_configs_stored_in_properties(
-          net::kMaxQuicServersToPersist);
-    }
-
-    int quic_max_server_configs_stored_in_properties = 0;
-    if (quic_args->GetInteger(kQuicMaxServerConfigsStoredInProperties,
-                              &quic_max_server_configs_stored_in_properties)) {
-      context_builder->set_quic_max_server_configs_stored_in_properties(
-          static_cast<size_t>(quic_max_server_configs_stored_in_properties));
-    }
-
-    bool quic_delay_tcp_race = false;
-    if (quic_args->GetBoolean(kQuicDelayTcpRace, &quic_delay_tcp_race)) {
-      context_builder->set_quic_delay_tcp_race(quic_delay_tcp_race);
-    }
-
-    int quic_idle_connection_timeout_seconds = 0;
-    if (quic_args->GetInteger(kQuicIdleConnectionTimeoutSeconds,
-                              &quic_idle_connection_timeout_seconds)) {
-      context_builder->set_quic_idle_connection_timeout_seconds(
-          quic_idle_connection_timeout_seconds);
-    }
-
-    std::string quic_host_whitelist;
-    if (quic_args->GetString(kQuicHostWhitelist, &quic_host_whitelist)) {
-      std::unordered_set<std::string> hosts;
-      for (const std::string& host :
-           base::SplitString(quic_host_whitelist, ",", base::TRIM_WHITESPACE,
-                             base::SPLIT_WANT_ALL)) {
-        hosts.insert(host);
-      }
-      context_builder->set_quic_host_whitelist(hosts);
-    }
-
-    bool quic_close_sessions_on_ip_change = false;
-    if (quic_args->GetBoolean(kQuicCloseSessionsOnIpChange,
-                              &quic_close_sessions_on_ip_change)) {
-      context_builder->set_quic_close_sessions_on_ip_change(
-          quic_close_sessions_on_ip_change);
-    }
-
-    bool quic_migrate_sessions_on_network_change = false;
-    if (quic_args->GetBoolean(kQuicMigrateSessionsOnNetworkChange,
-                              &quic_migrate_sessions_on_network_change)) {
-      context_builder->set_quic_migrate_sessions_on_network_change(
-          quic_migrate_sessions_on_network_change);
-    }
-
-    bool quic_prefer_aes = false;
-    if (quic_args->GetBoolean(kQuicPreferAes, &quic_prefer_aes)) {
-      context_builder->set_quic_prefer_aes(quic_prefer_aes);
-    }
-
-    std::string quic_user_agent_id;
-    if (quic_args->GetString(kQuicUserAgentId, &quic_user_agent_id)) {
-      context_builder->set_quic_user_agent_id(quic_user_agent_id);
-    }
-
-    bool quic_migrate_sessions_early = false;
-    if (quic_args->GetBoolean(kQuicMigrateSessionsEarly,
-                              &quic_migrate_sessions_early)) {
-      context_builder->set_quic_migrate_sessions_early(
-          quic_migrate_sessions_early);
-    }
-
-    bool quic_disable_bidirectional_streams = false;
-    if (quic_args->GetBoolean(kQuicDisableBidirectionalStreams,
-                              &quic_disable_bidirectional_streams)) {
-      context_builder->set_quic_disable_bidirectional_streams(
-          quic_disable_bidirectional_streams);
-    }
-
-    bool quic_race_cert_verification = false;
-    if (quic_args->GetBoolean(kQuicRaceCertVerification,
-                              &quic_race_cert_verification)) {
-      context_builder->set_quic_race_cert_verification(
-          quic_race_cert_verification);
-    }
+    return nullptr;
   }
 
   bool async_dns_enable = false;
   bool stale_dns_enable = false;
   bool host_resolver_rules_enable = false;
   bool disable_ipv6 = false;
+
+  std::unique_ptr<base::DictionaryValue> effective_experimental_options =
+      dict->CreateDeepCopy();
   StaleHostResolver::StaleOptions stale_dns_options;
   std::string host_resolver_rules_string;
-
-  const base::DictionaryValue* async_dns_args = nullptr;
-  if (dict->GetDictionary(kAsyncDnsFieldTrialName, &async_dns_args))
-    async_dns_args->GetBoolean(kAsyncDnsEnable, &async_dns_enable);
-
-  const base::DictionaryValue* stale_dns_args = nullptr;
-  if (dict->GetDictionary(kStaleDnsFieldTrialName, &stale_dns_args)) {
-    if (stale_dns_args->GetBoolean(kStaleDnsEnable, &stale_dns_enable) &&
-        stale_dns_enable) {
-      int delay;
-      if (stale_dns_args->GetInteger(kStaleDnsDelayMs, &delay))
-        stale_dns_options.delay = base::TimeDelta::FromMilliseconds(delay);
-      int max_expired_time_ms;
-      if (stale_dns_args->GetInteger(kStaleDnsMaxExpiredTimeMs,
-                                     &max_expired_time_ms)) {
-        stale_dns_options.max_expired_time =
-            base::TimeDelta::FromMilliseconds(max_expired_time_ms);
+  for (base::DictionaryValue::Iterator it(*dict.get()); !it.IsAtEnd();
+       it.Advance()) {
+    if (it.key() == kQuicFieldTrialName) {
+      const base::DictionaryValue* quic_args = nullptr;
+      if (!it.value().GetAsDictionary(&quic_args)) {
+        LOG(ERROR) << "Quic config params \"" << it.value()
+                   << "\" is not a dictionary value";
+        effective_experimental_options->Remove(it.key(), nullptr);
+        continue;
       }
-      int max_stale_uses;
-      if (stale_dns_args->GetInteger(kStaleDnsMaxStaleUses, &max_stale_uses))
-        stale_dns_options.max_stale_uses = max_stale_uses;
-      bool allow_other_network;
-      if (stale_dns_args->GetBoolean(kStaleDnsAllowOtherNetwork,
-                                     &allow_other_network)) {
-        stale_dns_options.allow_other_network = allow_other_network;
+      std::string quic_connection_options;
+      if (quic_args->GetString(kQuicConnectionOptions,
+                               &quic_connection_options)) {
+        context_builder->set_quic_connection_options(
+            net::ParseQuicConnectionOptions(quic_connection_options));
       }
+
+      // TODO(rtenneti): Delete this option after apps stop using it.
+      // Added this for backward compatibility.
+      bool quic_store_server_configs_in_properties = false;
+      if (quic_args->GetBoolean(kQuicStoreServerConfigsInProperties,
+                                &quic_store_server_configs_in_properties)) {
+        context_builder->set_quic_max_server_configs_stored_in_properties(
+            net::kMaxQuicServersToPersist);
+      }
+
+      int quic_max_server_configs_stored_in_properties = 0;
+      if (quic_args->GetInteger(
+              kQuicMaxServerConfigsStoredInProperties,
+              &quic_max_server_configs_stored_in_properties)) {
+        context_builder->set_quic_max_server_configs_stored_in_properties(
+            static_cast<size_t>(quic_max_server_configs_stored_in_properties));
+      }
+
+      bool quic_delay_tcp_race = false;
+      if (quic_args->GetBoolean(kQuicDelayTcpRace, &quic_delay_tcp_race)) {
+        context_builder->set_quic_delay_tcp_race(quic_delay_tcp_race);
+      }
+
+      int quic_idle_connection_timeout_seconds = 0;
+      if (quic_args->GetInteger(kQuicIdleConnectionTimeoutSeconds,
+                                &quic_idle_connection_timeout_seconds)) {
+        context_builder->set_quic_idle_connection_timeout_seconds(
+            quic_idle_connection_timeout_seconds);
+      }
+
+      std::string quic_host_whitelist;
+      if (quic_args->GetString(kQuicHostWhitelist, &quic_host_whitelist)) {
+        std::unordered_set<std::string> hosts;
+        for (const std::string& host :
+             base::SplitString(quic_host_whitelist, ",", base::TRIM_WHITESPACE,
+                               base::SPLIT_WANT_ALL)) {
+          hosts.insert(host);
+        }
+        context_builder->set_quic_host_whitelist(hosts);
+      }
+
+      bool quic_close_sessions_on_ip_change = false;
+      if (quic_args->GetBoolean(kQuicCloseSessionsOnIpChange,
+                                &quic_close_sessions_on_ip_change)) {
+        context_builder->set_quic_close_sessions_on_ip_change(
+            quic_close_sessions_on_ip_change);
+      }
+
+      bool quic_migrate_sessions_on_network_change = false;
+      if (quic_args->GetBoolean(kQuicMigrateSessionsOnNetworkChange,
+                                &quic_migrate_sessions_on_network_change)) {
+        context_builder->set_quic_migrate_sessions_on_network_change(
+            quic_migrate_sessions_on_network_change);
+      }
+
+      bool quic_prefer_aes = false;
+      if (quic_args->GetBoolean(kQuicPreferAes, &quic_prefer_aes)) {
+        context_builder->set_quic_prefer_aes(quic_prefer_aes);
+      }
+
+      std::string quic_user_agent_id;
+      if (quic_args->GetString(kQuicUserAgentId, &quic_user_agent_id)) {
+        context_builder->set_quic_user_agent_id(quic_user_agent_id);
+      }
+
+      bool quic_migrate_sessions_early = false;
+      if (quic_args->GetBoolean(kQuicMigrateSessionsEarly,
+                                &quic_migrate_sessions_early)) {
+        context_builder->set_quic_migrate_sessions_early(
+            quic_migrate_sessions_early);
+      }
+
+      bool quic_disable_bidirectional_streams = false;
+      if (quic_args->GetBoolean(kQuicDisableBidirectionalStreams,
+                                &quic_disable_bidirectional_streams)) {
+        context_builder->set_quic_disable_bidirectional_streams(
+            quic_disable_bidirectional_streams);
+      }
+
+      bool quic_race_cert_verification = false;
+      if (quic_args->GetBoolean(kQuicRaceCertVerification,
+                                &quic_race_cert_verification)) {
+        context_builder->set_quic_race_cert_verification(
+            quic_race_cert_verification);
+      }
+
+    } else if (it.key() == kAsyncDnsFieldTrialName) {
+      const base::DictionaryValue* async_dns_args = nullptr;
+      if (!it.value().GetAsDictionary(&async_dns_args)) {
+        LOG(ERROR) << "\"" << it.key() << "\" config params \"" << it.value()
+                   << "\" is not a dictionary value";
+        effective_experimental_options->Remove(it.key(), nullptr);
+        continue;
+      }
+      async_dns_args->GetBoolean(kAsyncDnsEnable, &async_dns_enable);
+    } else if (it.key() == kStaleDnsFieldTrialName) {
+      const base::DictionaryValue* stale_dns_args = nullptr;
+      if (!it.value().GetAsDictionary(&stale_dns_args)) {
+        LOG(ERROR) << "\"" << it.key() << "\" config params \"" << it.value()
+                   << "\" is not a dictionary value";
+        effective_experimental_options->Remove(it.key(), nullptr);
+        continue;
+      }
+      if (stale_dns_args->GetBoolean(kStaleDnsEnable, &stale_dns_enable) &&
+          stale_dns_enable) {
+        int delay;
+        if (stale_dns_args->GetInteger(kStaleDnsDelayMs, &delay))
+          stale_dns_options.delay = base::TimeDelta::FromMilliseconds(delay);
+        int max_expired_time_ms;
+        if (stale_dns_args->GetInteger(kStaleDnsMaxExpiredTimeMs,
+                                       &max_expired_time_ms)) {
+          stale_dns_options.max_expired_time =
+              base::TimeDelta::FromMilliseconds(max_expired_time_ms);
+        }
+        int max_stale_uses;
+        if (stale_dns_args->GetInteger(kStaleDnsMaxStaleUses, &max_stale_uses))
+          stale_dns_options.max_stale_uses = max_stale_uses;
+        bool allow_other_network;
+        if (stale_dns_args->GetBoolean(kStaleDnsAllowOtherNetwork,
+                                       &allow_other_network)) {
+          stale_dns_options.allow_other_network = allow_other_network;
+        }
+      }
+    } else if (it.key() == kHostResolverRulesFieldTrialName) {
+      const base::DictionaryValue* host_resolver_rules_args = nullptr;
+      if (!it.value().GetAsDictionary(&host_resolver_rules_args)) {
+        LOG(ERROR) << "\"" << it.key() << "\" config params \"" << it.value()
+                   << "\" is not a dictionary value";
+        effective_experimental_options->Remove(it.key(), nullptr);
+        continue;
+      }
+      host_resolver_rules_enable = host_resolver_rules_args->GetString(
+          kHostResolverRules, &host_resolver_rules_string);
+    } else if (it.key() == kDisableIPv6) {
+      if (!it.value().GetAsBoolean(&disable_ipv6)) {
+        LOG(ERROR) << "\"" << it.key() << "\" config params \"" << it.value()
+                   << "\" is not a bool";
+        effective_experimental_options->Remove(it.key(), nullptr);
+        continue;
+      }
+    } else if (it.key() == kSSLKeyLogFile) {
+      std::string ssl_key_log_file_string;
+      if (it.value().GetAsString(&ssl_key_log_file_string)) {
+        DCHECK(file_task_runner);
+        base::FilePath ssl_key_log_file(ssl_key_log_file_string);
+        if (!ssl_key_log_file.empty() && file_task_runner) {
+          // SetSSLKeyLogFile is only safe to call before any SSLClientSockets
+          // are created. This should not be used if there are multiple
+          // CronetEngine.
+          // TODO(xunjieli): Expose this as a stable API after crbug.com/458365
+          // is resolved.
+          net::SSLClientSocket::SetSSLKeyLogFile(ssl_key_log_file,
+                                                 file_task_runner);
+        }
+      }
+    } else {
+      LOG(WARNING) << "Unrecognized Cronet experimental option \"" << it.key()
+                   << "\" with params \"" << it.value();
+      effective_experimental_options->Remove(it.key(), nullptr);
     }
   }
-
-  const base::DictionaryValue* host_resolver_rules_args = nullptr;
-  if (dict->GetDictionary(kHostResolverRulesFieldTrialName,
-                          &host_resolver_rules_args)) {
-    host_resolver_rules_enable = host_resolver_rules_args->GetString(
-        kHostResolverRules, &host_resolver_rules_string);
-  }
-
-  dict->GetBoolean(kDisableIPv6, &disable_ipv6);
 
   if (async_dns_enable || stale_dns_enable || host_resolver_rules_enable ||
       disable_ipv6) {
-    if (net_log == nullptr) {
-      CHECK(false) << "All DNS-related experiments require NetLog.";
-    }
+    CHECK(net_log) << "All DNS-related experiments require NetLog.";
     std::unique_ptr<net::HostResolver> host_resolver;
     if (stale_dns_enable) {
       DCHECK(!disable_ipv6);
@@ -282,20 +330,7 @@ void ParseAndSetExperimentalOptions(
     }
     context_builder->set_host_resolver(std::move(host_resolver));
   }
-
-  std::string ssl_key_log_file_string;
-  if (dict->GetString(kSSLKeyLogFile, &ssl_key_log_file_string)) {
-    DCHECK(file_task_runner);
-    base::FilePath ssl_key_log_file(ssl_key_log_file_string);
-    if (!ssl_key_log_file.empty() && file_task_runner) {
-      // SetSSLKeyLogFile is only safe to call before any SSLClientSockets are
-      // created. This should not be used if there are multiple CronetEngine.
-      // TODO(xunjieli): Expose this as a stable API after crbug.com/458365 is
-      // resolved.
-      net::SSLClientSocket::SetSSLKeyLogFile(ssl_key_log_file,
-                                             file_task_runner);
-    }
-  }
+  return effective_experimental_options;
 }
 
 }  // namespace
@@ -387,8 +422,8 @@ void URLRequestContextConfig::ConfigureURLRequestContextBuilder(
   if (enable_quic)
     context_builder->set_quic_user_agent_id(quic_user_agent_id);
 
-  ParseAndSetExperimentalOptions(experimental_options, context_builder, net_log,
-                                 file_task_runner);
+  effective_experimental_options = ParseAndSetExperimentalOptions(
+      experimental_options, context_builder, net_log, file_task_runner);
 
   std::unique_ptr<net::CertVerifier> cert_verifier;
   if (mock_cert_verifier) {

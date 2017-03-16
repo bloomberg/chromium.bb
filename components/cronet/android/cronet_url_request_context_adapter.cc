@@ -58,7 +58,6 @@
 #include "net/http/http_server_properties_manager.h"
 #include "net/log/file_net_log_observer.h"
 #include "net/log/net_log_util.h"
-#include "net/log/write_to_file_net_log_observer.h"
 #include "net/nqe/external_estimate_provider.h"
 #include "net/nqe/network_qualities_prefs_manager.h"
 #include "net/proxy/proxy_config_service_android.h"
@@ -506,7 +505,7 @@ CronetURLRequestContextAdapter::~CronetURLRequestContextAdapter() {
   }
 
   // Stop NetLog observer if there is one.
-  StopNetLogHelper();
+  StopNetLogOnNetworkThread();
 }
 
 void CronetURLRequestContextAdapter::InitRequestContextOnMainThread(
@@ -610,6 +609,7 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
   DCHECK(GetNetworkTaskRunner()->BelongsToCurrentThread());
   DCHECK(!is_context_initialized_);
   DCHECK(proxy_config_service_);
+
   // TODO(mmenke):  Add method to have the builder enable SPDY.
   net::URLRequestContextBuilder context_builder;
 
@@ -647,6 +647,9 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
   config->ConfigureURLRequestContextBuilder(&context_builder,
                                             g_net_log.Get().net_log(),
                                             GetFileThread()->task_runner());
+
+  effective_experimental_options_ =
+      std::move(config->effective_experimental_options);
 
   // Set up pref file if storage path is specified.
   if (!config->storage_path.empty()) {
@@ -879,28 +882,17 @@ bool CronetURLRequestContextAdapter::StartNetLogToFile(
     const JavaParamRef<jobject>& jcaller,
     const JavaParamRef<jstring>& jfile_name,
     jboolean jlog_all) {
-  base::AutoLock lock(write_to_file_observer_lock_);
-  // Do nothing if already logging to a file.
-  if (write_to_file_observer_)
-    return true;
-  std::string file_name =
-      base::android::ConvertJavaStringToUTF8(env, jfile_name);
-  base::FilePath file_path(file_name);
+  base::FilePath file_path(
+      base::android::ConvertJavaStringToUTF8(env, jfile_name));
   base::ScopedFILE file(base::OpenFile(file_path, "w"));
   if (!file) {
     LOG(ERROR) << "Failed to open NetLog file for writing.";
     return false;
   }
-
-  write_to_file_observer_.reset(new net::WriteToFileNetLogObserver());
-  if (jlog_all == JNI_TRUE) {
-    write_to_file_observer_->set_capture_mode(
-        net::NetLogCaptureMode::IncludeSocketBytes());
-  }
-  write_to_file_observer_->StartObserving(
-      g_net_log.Get().net_log(), std::move(file),
-      /*constants=*/nullptr, /*url_request_context=*/nullptr);
-
+  PostTaskToNetworkThread(
+      FROM_HERE,
+      base::Bind(&CronetURLRequestContextAdapter::StartNetLogOnNetworkThread,
+                 base::Unretained(this), file_path, jlog_all == JNI_TRUE));
   return true;
 }
 
@@ -922,7 +914,11 @@ void CronetURLRequestContextAdapter::StartNetLogToDisk(
 void CronetURLRequestContextAdapter::StopNetLog(
     JNIEnv* env,
     const JavaParamRef<jobject>& jcaller) {
-  StopNetLogHelper();
+  DCHECK(!GetNetworkTaskRunner()->BelongsToCurrentThread());
+  PostTaskToNetworkThread(
+      FROM_HERE,
+      base::Bind(&CronetURLRequestContextAdapter::StopNetLogOnNetworkThread,
+                 base::Unretained(this)));
 }
 
 void CronetURLRequestContextAdapter::GetCertVerifierData(
@@ -1009,6 +1005,25 @@ void CronetURLRequestContextAdapter::OnThroughputObservation(
       (timestamp - base::TimeTicks::UnixEpoch()).InMilliseconds(), source);
 }
 
+void CronetURLRequestContextAdapter::StartNetLogOnNetworkThread(
+    const base::FilePath& file_path,
+    bool include_socket_bytes) {
+  DCHECK(GetNetworkTaskRunner()->BelongsToCurrentThread());
+
+  // Do nothing if already logging to a file.
+  if (net_log_file_observer_)
+    return;
+  net_log_file_observer_ = net::FileNetLogObserver::CreateUnbounded(
+      GetFileThread()->task_runner(), file_path, /*constants=*/nullptr);
+  CreateNetLogEntriesForActiveObjects({context_.get()},
+                                      net_log_file_observer_.get());
+  net::NetLogCaptureMode capture_mode =
+      include_socket_bytes ? net::NetLogCaptureMode::IncludeSocketBytes()
+                           : net::NetLogCaptureMode::Default();
+  net_log_file_observer_->StartObserving(g_net_log.Get().net_log(),
+                                         capture_mode);
+}
+
 void CronetURLRequestContextAdapter::StartNetLogToBoundedFileOnNetworkThread(
     const std::string& dir_path,
     bool include_socket_bytes,
@@ -1016,34 +1031,37 @@ void CronetURLRequestContextAdapter::StartNetLogToBoundedFileOnNetworkThread(
   DCHECK(GetNetworkTaskRunner()->BelongsToCurrentThread());
 
   // Do nothing if already logging to a directory.
-  if (bounded_file_observer_)
+  if (net_log_file_observer_)
     return;
 
   // Filepath for NetLog files must exist and be writable.
   base::FilePath file_path(dir_path);
   DCHECK(base::PathIsWritable(file_path));
 
-  bounded_file_observer_ = net::FileNetLogObserver::CreateBounded(
+  net_log_file_observer_ = net::FileNetLogObserver::CreateBounded(
       GetFileThread()->task_runner(), file_path, size, kNumNetLogEventFiles,
       /*constants=*/nullptr);
 
   CreateNetLogEntriesForActiveObjects({context_.get()},
-                                      bounded_file_observer_.get());
+                                      net_log_file_observer_.get());
 
   net::NetLogCaptureMode capture_mode =
       include_socket_bytes ? net::NetLogCaptureMode::IncludeSocketBytes()
                            : net::NetLogCaptureMode::Default();
-  bounded_file_observer_->StartObserving(g_net_log.Get().net_log(),
+  net_log_file_observer_->StartObserving(g_net_log.Get().net_log(),
                                          capture_mode);
 }
 
-void CronetURLRequestContextAdapter::StopBoundedFileNetLogOnNetworkThread() {
+void CronetURLRequestContextAdapter::StopNetLogOnNetworkThread() {
   DCHECK(GetNetworkTaskRunner()->BelongsToCurrentThread());
-  bounded_file_observer_->StopObserving(
-      net::GetNetInfo(context_.get(), net::NET_INFO_ALL_SOURCES),
+
+  if (!net_log_file_observer_)
+    return;
+  net_log_file_observer_->StopObserving(
+      GetNetLogInfo(),
       base::Bind(&CronetURLRequestContextAdapter::StopNetLogCompleted,
                  base::Unretained(this)));
-  bounded_file_observer_.reset();
+  net_log_file_observer_.reset();
 }
 
 void CronetURLRequestContextAdapter::StopNetLogCompleted() {
@@ -1051,18 +1069,15 @@ void CronetURLRequestContextAdapter::StopNetLogCompleted() {
       base::android::AttachCurrentThread(), jcronet_url_request_context_.obj());
 }
 
-void CronetURLRequestContextAdapter::StopNetLogHelper() {
-  base::AutoLock lock(write_to_file_observer_lock_);
-  DCHECK(!(write_to_file_observer_ && bounded_file_observer_));
-  if (write_to_file_observer_) {
-    write_to_file_observer_->StopObserving(/*url_request_context=*/nullptr);
-    write_to_file_observer_.reset();
-  } else if (bounded_file_observer_) {
-    PostTaskToNetworkThread(FROM_HERE,
-                            base::Bind(&CronetURLRequestContextAdapter::
-                                           StopBoundedFileNetLogOnNetworkThread,
-                                       base::Unretained(this)));
+std::unique_ptr<base::DictionaryValue>
+CronetURLRequestContextAdapter::GetNetLogInfo() const {
+  std::unique_ptr<base::DictionaryValue> net_info =
+      net::GetNetInfo(context_.get(), net::NET_INFO_ALL_SOURCES);
+  if (effective_experimental_options_) {
+    net_info->Set("cronetExperimentalParams",
+                  effective_experimental_options_->CreateDeepCopy());
   }
+  return net_info;
 }
 
 // Create a URLRequestContextConfig from the given parameters.
