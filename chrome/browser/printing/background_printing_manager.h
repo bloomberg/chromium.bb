@@ -17,6 +17,7 @@
 
 namespace content {
 class WebContents;
+class BrowserContext;
 }
 
 namespace printing {
@@ -43,6 +44,10 @@ class BackgroundPrintingManager : public base::NonThreadSafe,
 
   // Let others see the list of background printing contents.
   std::set<content::WebContents*> CurrentContentSet();
+
+  // Delete all preview contents that are associated with |browser_context|.
+  void DeletePreviewContentsForBrowserContext(
+      content::BrowserContext* browser_context);
 
  private:
   // content::NotificationObserver overrides:

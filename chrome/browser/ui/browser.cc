@@ -68,6 +68,7 @@
 #include "chrome/browser/pepper_broker_infobar_delegate.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
+#include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_destroyer.h"
 #include "chrome/browser/profiles/profile_metrics.h"
@@ -536,6 +537,14 @@ Browser::~Browser() {
       profiles::RemoveBrowsingDataForProfile(profile_->GetPath());
 #endif
     } else {
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+      // The Printing Background Manager holds onto preview dialog WebContents
+      // whose corresponding print jobs have not yet fully spooled. Make sure
+      // these get destroyed before tearing down the incognito profile so that
+      // their render frame hosts can exit in time - see crbug.com/579155
+      g_browser_process->background_printing_manager()
+          ->DeletePreviewContentsForBrowserContext(profile_);
+#endif
       // An incognito profile is no longer needed, this indirectly frees
       // its cache and cookies once it gets destroyed at the appropriate time.
       ProfileDestroyer::DestroyProfileWhenAppropriate(profile_);

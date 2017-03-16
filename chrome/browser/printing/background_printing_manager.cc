@@ -19,6 +19,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 
+using content::BrowserContext;
 using content::BrowserThread;
 using content::WebContents;
 
@@ -95,6 +96,21 @@ void BackgroundPrintingManager::Observe(
     const content::NotificationDetails& details) {
   DCHECK_EQ(chrome::NOTIFICATION_PRINT_JOB_RELEASED, type);
   DeletePreviewContents(content::Source<WebContents>(source).ptr());
+}
+
+void BackgroundPrintingManager::DeletePreviewContentsForBrowserContext(
+    BrowserContext* browser_context) {
+  std::vector<WebContents*> preview_contents_to_delete;
+  for (const auto& iter : printing_contents_map_) {
+    WebContents* preview_contents = iter.first;
+    if (preview_contents->GetBrowserContext() == browser_context) {
+      preview_contents_to_delete.push_back(preview_contents);
+    }
+  }
+
+  for (size_t i = 0; i < preview_contents_to_delete.size(); i++) {
+    DeletePreviewContents(preview_contents_to_delete[i]);
+  }
 }
 
 void BackgroundPrintingManager::DeletePreviewContents(
