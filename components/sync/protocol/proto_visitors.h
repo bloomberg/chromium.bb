@@ -34,6 +34,7 @@
 #include "components/sync/protocol/theme_specifics.pb.h"
 #include "components/sync/protocol/typed_url_specifics.pb.h"
 #include "components/sync/protocol/unique_position.pb.h"
+#include "components/sync/protocol/user_event_specifics.pb.h"
 
 // This file implements VisitProtoFields() functions for sync protos.
 //
@@ -564,6 +565,11 @@ VISIT_PROTO_FIELDS(const sync_pb::TypedUrlSpecifics& proto) {
   VISIT_REP(visit_transitions);
 }
 
+VISIT_PROTO_FIELDS(const sync_pb::UserEventSpecifics& proto) {
+  VISIT(event_time_usec);
+  VISIT(navigation_id);
+}
+
 VISIT_PROTO_FIELDS(const sync_pb::WalletMaskedCreditCard& proto) {
   VISIT(id);
   VISIT_ENUM(status);
@@ -610,7 +616,6 @@ VISIT_PROTO_FIELDS(const sync_pb::EntitySpecifics& proto) {
   VISIT(autofill);
   VISIT(autofill_profile);
   VISIT(autofill_wallet);
-  VISIT(wallet_metadata);
   VISIT(bookmark);
   VISIT(device_info);
   VISIT(dictionary);
@@ -620,9 +625,9 @@ VISIT_PROTO_FIELDS(const sync_pb::EntitySpecifics& proto) {
   VISIT(favicon_image);
   VISIT(favicon_tracking);
   VISIT(history_delete_directive);
+  VISIT(managed_user);
   VISIT(managed_user_setting);
   VISIT(managed_user_shared_setting);
-  VISIT(managed_user);
   VISIT(managed_user_whitelist);
   VISIT(nigori);
   VISIT(password);
@@ -636,6 +641,8 @@ VISIT_PROTO_FIELDS(const sync_pb::EntitySpecifics& proto) {
   VISIT(synced_notification_app_info);
   VISIT(theme);
   VISIT(typed_url);
+  VISIT(user_event);
+  VISIT(wallet_metadata);
   VISIT(wifi_credential);
 }
 

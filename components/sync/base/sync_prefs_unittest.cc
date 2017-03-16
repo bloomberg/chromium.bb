@@ -157,6 +157,7 @@ TEST_F(SyncPrefsTest, PreferredTypesNotKeepEverythingSynced) {
       expected_preferred_types.Put(SESSIONS);
       expected_preferred_types.Put(FAVICON_IMAGES);
       expected_preferred_types.Put(FAVICON_TRACKING);
+      expected_preferred_types.Put(USER_EVENTS);
     }
     if (it.Get() == PROXY_TABS) {
       expected_preferred_types.Put(SESSIONS);

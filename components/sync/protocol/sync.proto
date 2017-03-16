@@ -52,6 +52,7 @@ import "synced_notification_specifics.proto";
 import "theme_specifics.proto";
 import "typed_url_specifics.proto";
 import "unique_position.proto";
+import "user_event_specifics.proto";
 import "wifi_credential_specifics.proto";
 
 // Used for inspecting how long we spent performing operations in different
@@ -140,6 +141,7 @@ message EntitySpecifics {
   optional ArcPackageSpecifics arc_package = 340906;
   optional PrinterSpecifics printer = 410745;
   optional ReadingListSpecifics reading_list = 411028;
+  optional UserEventSpecifics user_event = 455206;
 }
 
 message SyncEntity {

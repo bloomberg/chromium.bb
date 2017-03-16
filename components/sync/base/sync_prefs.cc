@@ -325,6 +325,8 @@ const char* SyncPrefs::GetPrefNameForDataType(ModelType type) {
       return prefs::kSyncPrinters;
     case READING_LIST:
       return prefs::kSyncReadingList;
+    case USER_EVENTS:
+      return prefs::kSyncUserEvents;
     case PROXY_TABS:
       return prefs::kSyncTabs;
     case NIGORI:
@@ -380,12 +382,13 @@ void SyncPrefs::RegisterPrefGroups() {
   pref_groups_[TYPED_URLS].Put(SESSIONS);
   pref_groups_[TYPED_URLS].Put(FAVICON_IMAGES);
   pref_groups_[TYPED_URLS].Put(FAVICON_TRACKING);
+  pref_groups_[TYPED_URLS].Put(USER_EVENTS);
 
   pref_groups_[PROXY_TABS].Put(SESSIONS);
   pref_groups_[PROXY_TABS].Put(FAVICON_IMAGES);
   pref_groups_[PROXY_TABS].Put(FAVICON_TRACKING);
 
-  // TODO(zea): put favicons in the bookmarks group as well once it handles
+  // TODO(zea): Put favicons in the bookmarks group as well once it handles
   // those favicons.
 }
 

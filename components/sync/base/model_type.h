@@ -132,6 +132,8 @@ enum ModelType {
   PRINTERS,
   // Reading list items.
   READING_LIST,
+  // Commit only user events.
+  USER_EVENTS,
 
   // ---- Proxy types ----
   // Proxy types are excluded from the sync protocol, but are still considered

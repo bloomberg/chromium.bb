@@ -59,7 +59,7 @@ TEST_F(ProtoValueConversionsTest, ProtoChangeCheck) {
   // If this number changes, that means we added or removed a data
   // type.  Don't forget to add a unit test for {New
   // type}SpecificsToValue below.
-  EXPECT_EQ(39, MODEL_TYPE_COUNT);
+  EXPECT_EQ(40, MODEL_TYPE_COUNT);
 
   // We'd also like to check if we changed any field in our messages.
   // However, that's hard to do: sizeof could work, but it's
@@ -139,6 +139,10 @@ TEST_F(ProtoValueConversionsTest, AppSpecificsToValue) {
 
 TEST_F(ProtoValueConversionsTest, ArcPackageSpecificsToValue) {
   TestSpecificsToValue(ArcPackageSpecificsToValue);
+}
+
+TEST_F(ProtoValueConversionsTest, ArticleSpecificsToValue) {
+  TestSpecificsToValue(ArticleSpecificsToValue);
 }
 
 TEST_F(ProtoValueConversionsTest, AutofillSpecificsToValue) {
@@ -228,6 +232,10 @@ TEST_F(ProtoValueConversionsTest, PriorityPreferenceSpecificsToValue) {
 
 TEST_F(ProtoValueConversionsTest, DeviceInfoSpecificsToValue) {
   TestSpecificsToValue(DeviceInfoSpecificsToValue);
+}
+
+TEST_F(ProtoValueConversionsTest, DictionarySpecificsToValue) {
+  TestSpecificsToValue(DictionarySpecificsToValue);
 }
 
 TEST_F(ProtoValueConversionsTest, ExperimentsSpecificsToValue) {
@@ -338,12 +346,8 @@ TEST_F(ProtoValueConversionsTest, TypedUrlSpecificsToValue) {
   TestSpecificsToValue(TypedUrlSpecificsToValue);
 }
 
-TEST_F(ProtoValueConversionsTest, DictionarySpecificsToValue) {
-  TestSpecificsToValue(DictionarySpecificsToValue);
-}
-
-TEST_F(ProtoValueConversionsTest, ArticleSpecificsToValue) {
-  TestSpecificsToValue(ArticleSpecificsToValue);
+TEST_F(ProtoValueConversionsTest, UserEventSpecificsToValue) {
+  TestSpecificsToValue(UserEventSpecificsToValue);
 }
 
 TEST_F(ProtoValueConversionsTest, WifiCredentialSpecificsToValue) {
@@ -366,6 +370,7 @@ TEST_F(ProtoValueConversionsTest, EntitySpecificsToValue) {
   SET_FIELD(article);
   SET_FIELD(autofill);
   SET_FIELD(autofill_profile);
+  SET_FIELD(autofill_wallet);
   SET_FIELD(bookmark);
   SET_FIELD(device_info);
   SET_FIELD(dictionary);
@@ -375,10 +380,10 @@ TEST_F(ProtoValueConversionsTest, EntitySpecificsToValue) {
   SET_FIELD(favicon_image);
   SET_FIELD(favicon_tracking);
   SET_FIELD(history_delete_directive);
+  SET_FIELD(managed_user);
   SET_FIELD(managed_user_setting);
   SET_FIELD(managed_user_shared_setting);
   SET_FIELD(managed_user_whitelist);
-  SET_FIELD(managed_user);
   SET_FIELD(nigori);
   SET_FIELD(password);
   SET_FIELD(preference);
@@ -391,9 +396,9 @@ TEST_F(ProtoValueConversionsTest, EntitySpecificsToValue) {
   SET_FIELD(synced_notification_app_info);
   SET_FIELD(theme);
   SET_FIELD(typed_url);
-  SET_FIELD(wifi_credential);
-  SET_FIELD(autofill_wallet);
+  SET_FIELD(user_event);
   SET_FIELD(wallet_metadata);
+  SET_FIELD(wifi_credential);
 
 #undef SET_FIELD
 

@@ -1,0 +1,24 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// Sync protocol datatype extension for user events.
+
+// Update proto_value_conversions{.h,.cc,_unittest.cc} if you change
+// any fields in this file.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package sync_pb;
+
+message UserEventSpecifics {
+  // Time of event, as measured on the client (unix epoch).
+  optional int64 event_time_usec = 1;
+
+  // The |global_id| field of the associated navigation, if there is one.
+  optional int64 navigation_id = 2;
+
+  // TODO(skym): Wrap actual event payloads in a oneof.
+}
