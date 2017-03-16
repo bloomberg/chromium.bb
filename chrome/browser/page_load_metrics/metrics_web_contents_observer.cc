@@ -104,6 +104,22 @@ void MetricsWebContentsObserver::RenderViewHostChanged(
   RegisterInputEventObserver(new_host);
 }
 
+void MetricsWebContentsObserver::MediaStartedPlaying(
+    const content::WebContentsObserver::MediaPlayerInfo& video_type,
+    const content::WebContentsObserver::MediaPlayerId& id) {
+  content::RenderFrameHost* render_frame_host = id.first;
+  if (!render_frame_host->GetRenderViewHost() ||
+      render_frame_host->GetRenderViewHost()->GetMainFrame() !=
+          web_contents()->GetMainFrame()) {
+    // Ignore media that starts playing in a document that was navigated away
+    // from.
+    return;
+  }
+  if (committed_load_)
+    committed_load_->MediaStartedPlaying(
+        video_type, render_frame_host == web_contents()->GetMainFrame());
+}
+
 bool MetricsWebContentsObserver::OnMessageReceived(
     const IPC::Message& message,
     content::RenderFrameHost* render_frame_host) {

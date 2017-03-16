@@ -65,6 +65,9 @@ class PageLoadMetricsObserverTestHarness
   // Simulates the app being backgrounded.
   void SimulateAppEnterBackground();
 
+  // Simulate playing a media element.
+  void SimulateMediaPlayed();
+
   const base::HistogramTester& histogram_tester() const;
 
   // Gets the PageLoadExtraInfo for the committed_load_ in observer_.

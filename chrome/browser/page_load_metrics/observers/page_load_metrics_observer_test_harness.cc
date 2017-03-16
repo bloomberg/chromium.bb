@@ -14,6 +14,7 @@
 #include "chrome/common/page_load_metrics/page_load_metrics_messages.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/test/web_contents_tester.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 
@@ -150,6 +151,14 @@ void PageLoadMetricsObserverTestHarness::SimulateInputEvent(
 
 void PageLoadMetricsObserverTestHarness::SimulateAppEnterBackground() {
   observer_->FlushMetricsOnAppEnterBackground();
+}
+
+void PageLoadMetricsObserverTestHarness::SimulateMediaPlayed() {
+  content::WebContentsObserver::MediaPlayerInfo video_type(
+      true /* in_has_video*/);
+  content::RenderFrameHost* render_frame_host = web_contents()->GetMainFrame();
+  observer_->MediaStartedPlaying(video_type,
+                                 std::make_pair(render_frame_host, 0));
 }
 
 const base::HistogramTester&

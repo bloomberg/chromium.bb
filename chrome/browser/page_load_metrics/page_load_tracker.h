@@ -15,6 +15,7 @@
 #include "chrome/browser/page_load_metrics/user_input_tracker.h"
 #include "chrome/common/page_load_metrics/page_load_timing.h"
 #include "content/public/browser/global_request_id.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "ui/base/page_transition_types.h"
 
 class GURL;
@@ -230,6 +231,11 @@ class PageLoadTracker {
   // invoked.
   bool HasMatchingNavigationRequestID(
       const content::GlobalRequestID& request_id) const;
+
+  // Invoked when a media element starts playing.
+  void MediaStartedPlaying(
+      const content::WebContentsObserver::MediaPlayerInfo& video_type,
+      bool is_in_main_frame);
 
  private:
   // This function converts a TimeTicks value taken in the browser process

@@ -19,6 +19,7 @@
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "ui/base/page_transition_types.h"
 
@@ -730,6 +731,13 @@ void PageLoadTracker::UpdatePageEndInternal(
   if (is_certainly_browser_timestamp) {
     ClampBrowserTimestampIfInterProcessTimeTickSkew(&page_end_time_);
   }
+}
+
+void PageLoadTracker::MediaStartedPlaying(
+    const content::WebContentsObserver::MediaPlayerInfo& video_type,
+    bool is_in_main_frame) {
+  for (const auto& observer : observers_)
+    observer->MediaStartedPlaying(video_type, is_in_main_frame);
 }
 
 }  // namespace page_load_metrics
