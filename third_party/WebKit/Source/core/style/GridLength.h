@@ -53,12 +53,12 @@ class GridLength {
   bool isFlex() const { return m_type == FlexType; }
 
   const Length& length() const {
-    ASSERT(isLength());
+    DCHECK(isLength());
     return m_length;
   }
 
   double flex() const {
-    ASSERT(isFlex());
+    DCHECK(isFlex());
     return m_flex;
   }
 

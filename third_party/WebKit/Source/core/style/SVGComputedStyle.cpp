@@ -248,7 +248,7 @@ unsigned paintOrderSequence(EPaintOrderType first,
 
 EPaintOrderType SVGComputedStyle::paintOrderType(unsigned index) const {
   unsigned pt = 0;
-  ASSERT(index < ((1 << kPaintOrderBitwidth) - 1));
+  DCHECK(index < ((1 << kPaintOrderBitwidth) - 1));
   switch (this->paintOrder()) {
     case PaintOrderNormal:
     case PaintOrderFillStrokeMarkers:

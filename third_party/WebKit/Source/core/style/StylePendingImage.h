@@ -51,7 +51,7 @@ class StylePendingImage final : public StyleImage {
   CSSValue* cssValue() const override { return m_value; }
 
   CSSValue* computedCSSValue() const override {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return nullptr;
   }
 
@@ -82,7 +82,7 @@ class StylePendingImage final : public StyleImage {
   PassRefPtr<Image> image(const LayoutObject&,
                           const IntSize&,
                           float) const override {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return nullptr;
   }
   bool knownToBeOpaque(const LayoutObject&) const override { return false; }

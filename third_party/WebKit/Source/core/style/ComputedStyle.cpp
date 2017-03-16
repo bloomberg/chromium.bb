@@ -442,7 +442,7 @@ ComputedStyle* ComputedStyle::addCachedPseudoStyle(
   if (!pseudo)
     return 0;
 
-  ASSERT(pseudo->styleType() > PseudoIdNone);
+  DCHECK_GT(pseudo->styleType(), PseudoIdNone);
 
   ComputedStyle* result = pseudo.get();
 
@@ -1644,11 +1644,11 @@ const AtomicString& ComputedStyle::textEmphasisMarkString() const {
                  : openSesameString;
     }
     case TextEmphasisMarkAuto:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return nullAtom;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return nullAtom;
 }
 
@@ -1951,7 +1951,7 @@ void ComputedStyle::setTextAutosizingMultiplier(float multiplier) {
 
   float size = specifiedFontSize();
 
-  ASSERT(std::isfinite(size));
+  DCHECK(std::isfinite(size));
   if (!std::isfinite(size) || size < 0)
     size = 0;
   else
@@ -2145,7 +2145,7 @@ Color ComputedStyle::colorIncludingFallback(int colorProperty,
       result = decorationColorIncludingFallback(visitedLink);
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       break;
   }
 
@@ -2194,7 +2194,7 @@ const BorderValue& ComputedStyle::borderBefore() const {
     case WritingMode::kVerticalRl:
       return borderRight();
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return borderTop();
 }
 
@@ -2207,7 +2207,7 @@ const BorderValue& ComputedStyle::borderAfter() const {
     case WritingMode::kVerticalRl:
       return borderLeft();
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return borderBottom();
 }
 
@@ -2232,7 +2232,7 @@ float ComputedStyle::borderBeforeWidth() const {
     case WritingMode::kVerticalRl:
       return borderRightWidth();
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return borderTopWidth();
 }
 
@@ -2245,7 +2245,7 @@ float ComputedStyle::borderAfterWidth() const {
     case WritingMode::kVerticalRl:
       return borderLeftWidth();
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return borderBottomWidth();
 }
 

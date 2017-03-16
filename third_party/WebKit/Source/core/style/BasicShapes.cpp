@@ -96,7 +96,7 @@ float BasicShapeCircle::floatValueForRadiusInBox(FloatSize boxSize) const {
 }
 
 void BasicShapeCircle::path(Path& path, const FloatRect& boundingBox) {
-  ASSERT(path.isEmpty());
+  DCHECK(path.isEmpty());
   FloatPoint center =
       floatPointForCenterCoordinate(m_centerX, m_centerY, boundingBox.size());
   float radius = floatValueForRadiusInBox(boundingBox.size());
@@ -107,7 +107,7 @@ void BasicShapeCircle::path(Path& path, const FloatRect& boundingBox) {
 
 PassRefPtr<BasicShape> BasicShapeCircle::blend(const BasicShape* other,
                                                double progress) const {
-  ASSERT(type() == other->type());
+  DCHECK_EQ(type(), other->type());
   const BasicShapeCircle* o = toBasicShapeCircle(other);
   RefPtr<BasicShapeCircle> result = BasicShapeCircle::create();
 
@@ -136,12 +136,12 @@ float BasicShapeEllipse::floatValueForRadiusInBox(
   if (radius.type() == BasicShapeRadius::ClosestSide)
     return std::min(std::abs(center), widthOrHeightDelta);
 
-  ASSERT(radius.type() == BasicShapeRadius::FarthestSide);
+  DCHECK_EQ(radius.type(), BasicShapeRadius::FarthestSide);
   return std::max(center, widthOrHeightDelta);
 }
 
 void BasicShapeEllipse::path(Path& path, const FloatRect& boundingBox) {
-  ASSERT(path.isEmpty());
+  DCHECK(path.isEmpty());
   FloatPoint center =
       floatPointForCenterCoordinate(m_centerX, m_centerY, boundingBox.size());
   float radiusX =
@@ -155,7 +155,7 @@ void BasicShapeEllipse::path(Path& path, const FloatRect& boundingBox) {
 
 PassRefPtr<BasicShape> BasicShapeEllipse::blend(const BasicShape* other,
                                                 double progress) const {
-  ASSERT(type() == other->type());
+  DCHECK_EQ(type(), other->type());
   const BasicShapeEllipse* o = toBasicShapeEllipse(other);
   RefPtr<BasicShapeEllipse> result = BasicShapeEllipse::create();
 
@@ -178,8 +178,8 @@ PassRefPtr<BasicShape> BasicShapeEllipse::blend(const BasicShape* other,
 }
 
 void BasicShapePolygon::path(Path& path, const FloatRect& boundingBox) {
-  ASSERT(path.isEmpty());
-  ASSERT(!(m_values.size() % 2));
+  DCHECK(path.isEmpty());
+  DCHECK(!(m_values.size() % 2));
   size_t length = m_values.size();
 
   if (!length)
@@ -202,11 +202,12 @@ void BasicShapePolygon::path(Path& path, const FloatRect& boundingBox) {
 
 PassRefPtr<BasicShape> BasicShapePolygon::blend(const BasicShape* other,
                                                 double progress) const {
-  ASSERT(other && isSameType(*other));
+  DCHECK(other);
+  DCHECK(isSameType(*other));
 
   const BasicShapePolygon* o = toBasicShapePolygon(other);
-  ASSERT(m_values.size() == o->values().size());
-  ASSERT(!(m_values.size() % 2));
+  DCHECK_EQ(m_values.size(), o->values().size());
+  DCHECK(!(m_values.size() % 2));
 
   size_t length = m_values.size();
   RefPtr<BasicShapePolygon> result = BasicShapePolygon::create();
@@ -240,7 +241,7 @@ static FloatSize floatSizeForLengthSize(const LengthSize& lengthSize,
 }
 
 void BasicShapeInset::path(Path& path, const FloatRect& boundingBox) {
-  ASSERT(path.isEmpty());
+  DCHECK(path.isEmpty());
   float left = floatValueForLength(m_left, boundingBox.width());
   float top = floatValueForLength(m_top, boundingBox.height());
   FloatRect rect(
@@ -272,7 +273,8 @@ static inline LengthSize blendLengthSize(const LengthSize& to,
 
 PassRefPtr<BasicShape> BasicShapeInset::blend(const BasicShape* other,
                                               double progress) const {
-  ASSERT(other && isSameType(*other));
+  DCHECK(other);
+  DCHECK(isSameType(*other));
 
   const BasicShapeInset& otherInset = toBasicShapeInset(*other);
   RefPtr<BasicShapeInset> result = BasicShapeInset::create();

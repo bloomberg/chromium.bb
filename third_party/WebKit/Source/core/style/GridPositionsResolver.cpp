@@ -204,7 +204,7 @@ static size_t lookAheadForNamedGridLine(int start,
                                         size_t numberOfLines,
                                         size_t gridLastLine,
                                         NamedLineCollection& linesCollection) {
-  ASSERT(numberOfLines);
+  DCHECK(numberOfLines);
 
   // Only implicit lines on the search direction are assumed to have the given
   // name, so we can start to look from first line.
@@ -221,7 +221,7 @@ static size_t lookAheadForNamedGridLine(int start,
       numberOfLines--;
   }
 
-  ASSERT(end);
+  DCHECK(end);
   return end - 1;
 }
 
@@ -229,7 +229,7 @@ static int lookBackForNamedGridLine(int end,
                                     size_t numberOfLines,
                                     int gridLastLine,
                                     NamedLineCollection& linesCollection) {
-  ASSERT(numberOfLines);
+  DCHECK(numberOfLines);
 
   // Only implicit lines on the search direction are assumed to have the given
   // name, so we can start to look from last line.
@@ -305,11 +305,11 @@ static GridSpan resolveNamedGridLinePositionAgainstOppositePosition(
     const GridPosition& position,
     size_t autoRepeatTracksCount,
     GridPositionSide side) {
-  ASSERT(position.isSpan());
-  ASSERT(!position.namedGridLine().isNull());
+  DCHECK(position.isSpan());
+  DCHECK(!position.namedGridLine().isNull());
   // Negative positions are not allowed per the specification and should have
   // been handled during parsing.
-  ASSERT(position.spanPosition() > 0);
+  DCHECK_GT(position.spanPosition(), 0);
 
   size_t lastLine =
       explicitGridSizeForSide(gridContainerStyle, side, autoRepeatTracksCount);
@@ -347,8 +347,8 @@ static GridSpan resolveGridPositionAgainstOppositePosition(
                                                   oppositeLine + 1);
   }
 
-  ASSERT(position.isSpan());
-  ASSERT(position.spanPosition() > 0);
+  DCHECK(position.isSpan());
+  DCHECK_GT(position.spanPosition(), 0);
 
   if (!position.namedGridLine().isNull()) {
     // span 2 'c' -> we need to find the appropriate grid line before / after
@@ -371,16 +371,16 @@ size_t GridPositionsResolver::spanSizeForAutoPlacedItem(
 
   // This method will only be used when both positions need to be resolved
   // against the opposite one.
-  ASSERT(initialPosition.shouldBeResolvedAgainstOppositePosition() &&
-         finalPosition.shouldBeResolvedAgainstOppositePosition());
+  DCHECK(initialPosition.shouldBeResolvedAgainstOppositePosition());
+  DCHECK(finalPosition.shouldBeResolvedAgainstOppositePosition());
 
   if (initialPosition.isAuto() && finalPosition.isAuto())
     return 1;
 
   GridPosition position =
       initialPosition.isSpan() ? initialPosition : finalPosition;
-  ASSERT(position.isSpan());
-  ASSERT(position.spanPosition());
+  DCHECK(position.isSpan());
+  DCHECK(position.spanPosition());
   return position.spanPosition();
 }
 
@@ -389,7 +389,7 @@ static int resolveNamedGridLinePositionFromStyle(
     const GridPosition& position,
     GridPositionSide side,
     size_t autoRepeatTracksCount) {
-  ASSERT(!position.namedGridLine().isNull());
+  DCHECK(!position.namedGridLine().isNull());
 
   size_t lastLine =
       explicitGridSizeForSide(gridContainerStyle, side, autoRepeatTracksCount);
@@ -411,7 +411,7 @@ static int resolveGridPositionFromStyle(const ComputedStyle& gridContainerStyle,
                                         size_t autoRepeatTracksCount) {
   switch (position.type()) {
     case ExplicitPosition: {
-      ASSERT(position.integerPosition());
+      DCHECK(position.integerPosition());
 
       if (!position.namedGridLine().isNull())
         return resolveNamedGridLinePositionFromStyle(
@@ -433,7 +433,7 @@ static int resolveGridPositionFromStyle(const ComputedStyle& gridContainerStyle,
       // grid-*-start) / <custom-ident>-end'' (for grid-*-end), contributes the
       // first such line to the grid item's placement.
       String namedGridLine = position.namedGridLine();
-      ASSERT(!position.namedGridLine().isNull());
+      DCHECK(!position.namedGridLine().isNull());
 
       size_t lastLine = explicitGridSizeForSide(gridContainerStyle, side,
                                                 autoRepeatTracksCount);
@@ -451,7 +451,7 @@ static int resolveGridPositionFromStyle(const ComputedStyle& gridContainerStyle,
       if (explicitLines.hasNamedLines())
         return explicitLines.firstPosition();
 
-      ASSERT(!NamedLineCollection::isValidNamedLineOrArea(
+      DCHECK(!NamedLineCollection::isValidNamedLineOrArea(
           namedGridLine, gridContainerStyle, side));
       // If none of the above works specs mandate to assume that all the lines
       // in the implicit grid have this name.
@@ -461,10 +461,10 @@ static int resolveGridPositionFromStyle(const ComputedStyle& gridContainerStyle,
     case SpanPosition:
       // 'auto' and span depend on the opposite position for resolution (e.g.
       // grid-row: auto / 1 or grid-column: span 3 / "myHeader").
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return 0;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return 0;
 }
 

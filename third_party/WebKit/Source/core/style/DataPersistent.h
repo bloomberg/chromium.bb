@@ -56,21 +56,21 @@ class DataPersistent {
   }
 
   void init() {
-    ASSERT(!m_data);
+    DCHECK(!m_data);
     m_data = WTF::wrapUnique(new Persistent<T>(T::create()));
     m_ownCopy = true;
   }
 
   bool operator==(const DataPersistent<T>& o) const {
-    ASSERT(m_data);
-    ASSERT(o.m_data);
+    DCHECK(m_data);
+    DCHECK(o.m_data);
     return m_data->get() == o.m_data->get() ||
            *m_data->get() == *o.m_data->get();
   }
 
   bool operator!=(const DataPersistent<T>& o) const {
-    ASSERT(m_data);
-    ASSERT(o.m_data);
+    DCHECK(m_data);
+    DCHECK(o.m_data);
     return m_data->get() != o.m_data->get() &&
            *m_data->get() != *o.m_data->get();
   }

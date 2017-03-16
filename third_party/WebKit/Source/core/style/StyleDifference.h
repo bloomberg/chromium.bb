@@ -80,7 +80,7 @@ class StyleDifference {
     return m_layoutType == PositionedMovement;
   }
   void setNeedsPositionedMovementLayout() {
-    ASSERT(!needsFullLayout());
+    DCHECK(!needsFullLayout());
     m_layoutType = PositionedMovement;
   }
 

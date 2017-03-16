@@ -16,7 +16,7 @@ namespace blink {
 StylePath::StylePath(std::unique_ptr<SVGPathByteStream> pathByteStream)
     : m_byteStream(std::move(pathByteStream)),
       m_pathLength(std::numeric_limits<float>::quiet_NaN()) {
-  ASSERT(m_byteStream);
+  DCHECK(m_byteStream);
 }
 
 StylePath::~StylePath() {}

@@ -73,7 +73,7 @@ class ShapeValue final : public GarbageCollectedFinalized<ShapeValue> {
     return image()->isGeneratedImage();
   }
   void setImage(StyleImage* image) {
-    ASSERT(type() == Image);
+    DCHECK_EQ(type(), Image);
     if (m_image != image)
       m_image = image;
   }

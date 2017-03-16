@@ -70,30 +70,30 @@ struct GridSpan {
   }
 
   size_t integerSpan() const {
-    ASSERT(isTranslatedDefinite());
-    ASSERT(m_endLine > m_startLine);
+    DCHECK(isTranslatedDefinite());
+    DCHECK_GT(m_endLine, m_startLine);
     return m_endLine - m_startLine;
   }
 
   int untranslatedStartLine() const {
-    ASSERT(m_type == UntranslatedDefinite);
+    DCHECK_EQ(m_type, UntranslatedDefinite);
     return m_startLine;
   }
 
   int untranslatedEndLine() const {
-    ASSERT(m_type == UntranslatedDefinite);
+    DCHECK_EQ(m_type, UntranslatedDefinite);
     return m_endLine;
   }
 
   size_t startLine() const {
-    ASSERT(isTranslatedDefinite());
-    ASSERT(m_startLine >= 0);
+    DCHECK(isTranslatedDefinite());
+    DCHECK_GE(m_startLine, 0);
     return m_startLine;
   }
 
   size_t endLine() const {
-    ASSERT(isTranslatedDefinite());
-    ASSERT(m_endLine > 0);
+    DCHECK(isTranslatedDefinite());
+    DCHECK_GT(m_endLine, 0);
     return m_endLine;
   }
 
@@ -110,12 +110,12 @@ struct GridSpan {
   };
 
   GridSpanIterator begin() const {
-    ASSERT(isTranslatedDefinite());
+    DCHECK(isTranslatedDefinite());
     return m_startLine;
   }
 
   GridSpanIterator end() const {
-    ASSERT(isTranslatedDefinite());
+    DCHECK(isTranslatedDefinite());
     return m_endLine;
   }
 
@@ -124,14 +124,14 @@ struct GridSpan {
   bool isIndefinite() const { return m_type == Indefinite; }
 
   void translate(size_t offset) {
-    ASSERT(m_type == UntranslatedDefinite);
+    DCHECK_EQ(m_type, UntranslatedDefinite);
 
     m_type = TranslatedDefinite;
     m_startLine += offset;
     m_endLine += offset;
 
-    ASSERT(m_startLine >= 0);
-    ASSERT(m_endLine > 0);
+    DCHECK_GE(m_startLine, 0);
+    DCHECK_GT(m_endLine, 0);
   }
 
  private:
@@ -139,10 +139,10 @@ struct GridSpan {
 
   GridSpan(int startLine, int endLine, GridSpanType type) : m_type(type) {
 #if DCHECK_IS_ON()
-    ASSERT(startLine < endLine);
+    DCHECK_LT(startLine, endLine);
     if (type == TranslatedDefinite) {
-      ASSERT(startLine >= 0);
-      ASSERT(endLine > 0);
+      DCHECK_GE(startLine, 0);
+      DCHECK_GT(endLine, 0);
     }
 #endif
 

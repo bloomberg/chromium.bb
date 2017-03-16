@@ -78,7 +78,7 @@ class ShadowList : public RefCounted<ShadowList> {
  private:
   ShadowList(ShadowDataVector& shadows) {
     // If we have no shadows, we use a null ShadowList
-    ASSERT(!shadows.isEmpty());
+    DCHECK(!shadows.isEmpty());
     m_shadows.swap(shadows);
     m_shadows.shrinkToFit();
   }

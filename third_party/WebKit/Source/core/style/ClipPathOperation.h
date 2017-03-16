@@ -104,7 +104,7 @@ class ShapeClipPathOperation final : public ClipPathOperation {
   const BasicShape* basicShape() const { return m_shape.get(); }
   bool isValid() const { return m_shape.get(); }
   const Path& path(const FloatRect& boundingRect) {
-    ASSERT(m_shape);
+    DCHECK(m_shape);
     m_path.reset();
     m_path = WTF::wrapUnique(new Path);
     m_shape->path(*m_path, boundingRect);

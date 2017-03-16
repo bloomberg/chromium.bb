@@ -46,19 +46,19 @@ class DataRef {
   }
 
   void init() {
-    ASSERT(!m_data);
+    DCHECK(!m_data);
     m_data = T::create();
   }
 
   bool operator==(const DataRef<T>& o) const {
-    ASSERT(m_data);
-    ASSERT(o.m_data);
+    DCHECK(m_data);
+    DCHECK(o.m_data);
     return m_data == o.m_data || *m_data == *o.m_data;
   }
 
   bool operator!=(const DataRef<T>& o) const {
-    ASSERT(m_data);
-    ASSERT(o.m_data);
+    DCHECK(m_data);
+    DCHECK(o.m_data);
     return m_data != o.m_data && *m_data != *o.m_data;
   }
 

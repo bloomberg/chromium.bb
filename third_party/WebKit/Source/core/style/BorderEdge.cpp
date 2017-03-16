@@ -58,7 +58,7 @@ float BorderEdge::usedWidth() const {
 }
 
 float BorderEdge::getDoubleBorderStripeWidth(DoubleBorderStripe stripe) const {
-  ASSERT(stripe == DoubleBorderStripeOuter ||
+  DCHECK(stripe == DoubleBorderStripeOuter ||
          stripe == DoubleBorderStripeInner);
 
   return roundf(stripe == DoubleBorderStripeOuter ? usedWidth() / 3

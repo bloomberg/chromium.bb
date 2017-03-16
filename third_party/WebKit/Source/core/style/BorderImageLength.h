@@ -53,16 +53,16 @@ class BorderImageLength {
   bool isLength() const { return m_type == LengthType; }
 
   const Length& length() const {
-    ASSERT(isLength());
+    DCHECK(isLength());
     return m_length;
   }
   Length& length() {
-    ASSERT(isLength());
+    DCHECK(isLength());
     return m_length;
   }
 
   double number() const {
-    ASSERT(isNumber());
+    DCHECK(isNumber());
     return m_number;
   }
 
@@ -75,7 +75,7 @@ class BorderImageLength {
     if (isLength())
       return m_length.isZero();
 
-    ASSERT(isNumber());
+    DCHECK(isNumber());
     return !m_number;
   }
 

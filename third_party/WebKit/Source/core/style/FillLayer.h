@@ -140,17 +140,17 @@ class CORE_EXPORT FillLayer {
     m_backgroundYOriginSet = true;
   }
   void setAttachment(EFillAttachment attachment) {
-    ASSERT(!m_cachedPropertiesComputed);
+    DCHECK(!m_cachedPropertiesComputed);
     m_attachment = attachment;
     m_attachmentSet = true;
   }
   void setClip(EFillBox b) {
-    ASSERT(!m_cachedPropertiesComputed);
+    DCHECK(!m_cachedPropertiesComputed);
     m_clip = b;
     m_clipSet = true;
   }
   void setOrigin(EFillBox b) {
-    ASSERT(!m_cachedPropertiesComputed);
+    DCHECK(!m_cachedPropertiesComputed);
     m_origin = b;
     m_originSet = true;
   }

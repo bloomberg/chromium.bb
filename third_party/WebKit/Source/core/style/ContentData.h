@@ -80,7 +80,7 @@ class ImageContentData final : public ContentData {
   const StyleImage* image() const { return m_image.get(); }
   StyleImage* image() { return m_image.get(); }
   void setImage(StyleImage* image) {
-    ASSERT(image);
+    DCHECK(image);
     m_image = image;
   }
 
@@ -97,7 +97,7 @@ class ImageContentData final : public ContentData {
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  ImageContentData(StyleImage* image) : m_image(image) { ASSERT(m_image); }
+  ImageContentData(StyleImage* image) : m_image(image) { DCHECK(m_image); }
 
   ContentData* cloneInternal() const override {
     StyleImage* image = const_cast<StyleImage*>(this->image());

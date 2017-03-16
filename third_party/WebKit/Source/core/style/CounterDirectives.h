@@ -81,8 +81,8 @@ class CounterDirectives {
   bool isDefined() const { return isReset() || isIncrement(); }
 
   int combinedValue() const {
-    ASSERT(m_isResetSet || !m_resetValue);
-    ASSERT(m_isIncrementSet || !m_incrementValue);
+    DCHECK(m_isResetSet || !m_resetValue);
+    DCHECK(m_isIncrementSet || !m_incrementValue);
     // FIXME: Shouldn't allow overflow here.
     return m_resetValue + m_incrementValue;
   }

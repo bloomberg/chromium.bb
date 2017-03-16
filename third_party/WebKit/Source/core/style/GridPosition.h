@@ -82,18 +82,18 @@ class GridPosition {
   }
 
   int integerPosition() const {
-    ASSERT(type() == ExplicitPosition);
+    DCHECK_EQ(type(), ExplicitPosition);
     return m_integerPosition;
   }
 
   AtomicString namedGridLine() const {
-    ASSERT(type() == ExplicitPosition || type() == SpanPosition ||
+    DCHECK(type() == ExplicitPosition || type() == SpanPosition ||
            type() == NamedGridAreaPosition);
     return m_namedGridLine;
   }
 
   int spanPosition() const {
-    ASSERT(type() == SpanPosition);
+    DCHECK_EQ(type(), SpanPosition);
     return m_integerPosition;
   }
 
