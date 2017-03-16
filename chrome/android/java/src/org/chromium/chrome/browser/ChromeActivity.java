@@ -531,6 +531,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         mIncognitoTabCreator = tabCreators.second;
 
         OfflinePageUtils.observeTabModelSelector(this, mTabModelSelector);
+        NewTabPageUma.monitorNTPCreation(mTabModelSelector);
 
         if (mTabModelSelectorTabObserver != null) mTabModelSelectorTabObserver.destroy();
 

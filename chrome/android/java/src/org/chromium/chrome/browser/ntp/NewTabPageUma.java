@@ -16,6 +16,8 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.rappor.RapporServiceBridge;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.PageTransition;
@@ -266,6 +268,15 @@ public final class NewTabPageUma {
     }
 
     /**
+     * Records how often new tabs with a NewTabPage are created. This helps to determine how often
+     * users navigate back to already opened NTPs.
+     * @param tabModelSelector Model selector controlling the creation of new tabs.
+     */
+    public static void monitorNTPCreation(TabModelSelector tabModelSelector) {
+        tabModelSelector.addObserver(new TabCreationRecorder());
+    }
+
+    /**
      * Records the type of load for the NTP, such as cold or warm start.
      */
     public static void recordLoadType(ChromeActivity activity) {
@@ -304,6 +315,18 @@ public final class NewTabPageUma {
             RecordHistogram.recordMediumTimesHistogram(
                     "NewTabPage.SearchAvailableLoadTime2.ColdStart", timeFromIntent,
                     TimeUnit.MILLISECONDS);
+        }
+    }
+
+    /**
+     * Records the number of new NTPs opened in a new tab. Use through
+     * {@link NewTabPageUma#monitorNTPCreation(TabModelSelector)}.
+     */
+    private static class TabCreationRecorder extends EmptyTabModelSelectorObserver {
+        @Override
+        public void onNewTabCreated(Tab tab) {
+            if (!NewTabPage.isNTPUrl(tab.getUrl())) return;
+            RecordUserAction.record("MobileNTPOpenedInNewTab");
         }
     }
 

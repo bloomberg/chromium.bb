@@ -9985,6 +9985,14 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="MobileNTPOpenedInNewTab">
+  <owner>fhorschig@chromium.org</owner>
+  <description>
+    The user manually created a New Tab Page (NTP) in a new tab that has not
+    been shown before. This includes the initial tab (when starting Chrome).
+  </description>
+</action>
+
 <action name="MobileNTPRecentlyClosed">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
