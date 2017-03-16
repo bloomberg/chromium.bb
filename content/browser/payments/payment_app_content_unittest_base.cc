@@ -60,8 +60,6 @@ class PaymentAppContentUnitTestBase::PaymentAppForWorkerTestHelper
       mojom::ServiceWorkerEventDispatcherRequest request) override {
     ServiceWorkerVersion* version =
         context()->GetLiveVersion(service_worker_version_id);
-    version->SetMainScriptHttpResponseInfo(
-        EmbeddedWorkerTestHelper::CreateHttpResponseInfo());
     last_sw_registration_id_ = version->registration_id();
     last_sw_scope_ = scope;
     EmbeddedWorkerTestHelper::OnStartWorker(

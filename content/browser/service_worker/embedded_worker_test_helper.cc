@@ -462,16 +462,19 @@ void EmbeddedWorkerTestHelper::SimulateWorkerScriptCached(
   int64_t version_id =
       embedded_worker_id_service_worker_version_id_map_[embedded_worker_id];
   ServiceWorkerVersion* version = context()->GetLiveVersion(version_id);
-  if (!version || version->script_cache_map()->size())
+  if (!version)
     return;
-  std::vector<ServiceWorkerDatabase::ResourceRecord> records;
-  // Add a dummy ResourceRecord for the main script to the script cache map of
-  // the ServiceWorkerVersion. We use embedded_worker_id for resource_id to
-  // avoid ID collision.
-  records.push_back(ServiceWorkerDatabase::ResourceRecord(
-      embedded_worker_id, version->script_url(), 100));
-  version->script_cache_map()->SetResources(records);
-  version->SetMainScriptHttpResponseInfo(CreateHttpResponseInfo());
+  if (!version->script_cache_map()->size()) {
+    std::vector<ServiceWorkerDatabase::ResourceRecord> records;
+    // Add a dummy ResourceRecord for the main script to the script cache map of
+    // the ServiceWorkerVersion. We use embedded_worker_id for resource_id to
+    // avoid ID collision.
+    records.push_back(ServiceWorkerDatabase::ResourceRecord(
+        embedded_worker_id, version->script_url(), 100));
+    version->script_cache_map()->SetResources(records);
+  }
+  if (!version->GetMainScriptHttpResponseInfo())
+    version->SetMainScriptHttpResponseInfo(CreateHttpResponseInfo());
 }
 
 void EmbeddedWorkerTestHelper::SimulateWorkerScriptLoaded(
