@@ -370,7 +370,13 @@ void SelectionEditor::updateCachedVisibleSelectionIfNeeded() const {
   if (!needsUpdateVisibleSelection())
     return;
 
+  m_styleVersion = document().styleVersion();
+  m_cacheIsDirty = false;
   m_cachedVisibleSelectionInDOMTree = createVisibleSelection(m_selection);
+  if (m_cachedVisibleSelectionInDOMTree.isNone()) {
+    m_cachedVisibleSelectionInFlatTree = VisibleSelectionInFlatTree();
+    return;
+  }
   m_cachedVisibleSelectionInFlatTree = createVisibleSelection(
       SelectionInFlatTree::Builder()
           .setBaseAndExtent(toPositionInFlatTree(m_selection.base()),
@@ -380,8 +386,6 @@ void SelectionEditor::updateCachedVisibleSelectionIfNeeded() const {
           .setGranularity(m_selection.granularity())
           .setIsDirectional(m_selection.isDirectional())
           .build());
-  m_styleVersion = document().styleVersion();
-  m_cacheIsDirty = false;
 }
 
 void SelectionEditor::cacheRangeOfDocument(Range* range) {

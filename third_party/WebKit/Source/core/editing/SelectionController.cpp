@@ -387,6 +387,9 @@ void SelectionController::updateSelectionForMouseDrag(
   } else {
     basePosition = selection().computeVisibleSelectionInFlatTree().base();
   }
+  if (basePosition.isNull())
+    return;
+
   const SelectionInFlatTree& appliedSelection = applySelectAll(
       basePosition, targetPosition.deepEquivalent(), mousePressNode,
       dragStartPos, target, hitTestResult.localPoint());
