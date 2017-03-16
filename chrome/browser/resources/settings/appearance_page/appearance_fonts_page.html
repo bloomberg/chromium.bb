@@ -26,7 +26,7 @@
               font-size:[[computeMinimumFontSize_(
                   prefs.webkit.webprefs.minimum_font_size.value)]]px;
               font-family:
-                  '[[prefs.webkit.webprefs.fonts.standard.Zyyy.value]]';"
+                  '[[prefs.webkit.webprefs.fonts.standard.Zyyy.value]]';">
         <span>[[
             computeMinimumFontSize_(
                 prefs.webkit.webprefs.minimum_font_size.value)]]</span>
@@ -39,83 +39,87 @@
       </cr-slider>
     </div>
     <div class="settings-box">
-      <div class="start">
-        <h2>$i18n{standardFont}</h2>
-        <div class="list-frame">
-          <div class="list-item">
-            <settings-dropdown-menu class="start"
-                pref="{{prefs.webkit.webprefs.fonts.standard.Zyyy}}"
-                menu-options="[[fontOptions_]]">
-            </settings-dropdown-menu>
-          </div>
-          <div class="list-item underbar"
-              style="
-                  font-size:[[prefs.webkit.webprefs.default_font_size.value]]px;
-                  font-family:
-                      '[[prefs.webkit.webprefs.fonts.standard.Zyyy.value]]';"
-            <span>
-              [[prefs.webkit.webprefs.default_font_size.value]]:
-              $i18n{quickBrownFox}
-            </span>
-          </div>
-        </div>
-        <h2>$i18n{serifFont}</h2>
-        <div class="list-frame">
-          <div class="list-item">
-            <settings-dropdown-menu class="start"
-                pref="{{prefs.webkit.webprefs.fonts.serif.Zyyy}}"
-                menu-options="[[fontOptions_]]">
-            </settings-dropdown-menu>
-          </div>
-          <div class="list-item underbar"
-              style="
-                  font-size:[[prefs.webkit.webprefs.default_font_size.value]]px;
-                  font-family:
-                      '[[prefs.webkit.webprefs.fonts.serif.Zyyy.value]]';"
-            <span>
-              [[prefs.webkit.webprefs.default_font_size.value]]:
-              $i18n{quickBrownFox}
-            </span>
-          </div>
-        </div>
-        <h2>$i18n{sansSerifFont}</h2>
-        <div class="list-frame">
-          <div class="list-item">
-            <settings-dropdown-menu class="start"
-                pref="{{prefs.webkit.webprefs.fonts.sansserif.Zyyy}}"
-                menu-options="[[fontOptions_]]">
-            </settings-dropdown-menu>
-          </div>
-          <div class="list-item underbar"
-              style="
-                  font-size:[[prefs.webkit.webprefs.default_font_size.value]]px;
-                  font-family:
-                      '[[prefs.webkit.webprefs.fonts.sansserif.Zyyy.value]]';"
-            <span>
-              [[prefs.webkit.webprefs.default_font_size.value]]:
-              $i18n{quickBrownFox}
-            </span>
-          </div>
-        </div>
-        <h2>$i18n{fixedWidthFont}</h2>
-        <div class="list-frame">
-          <div class="list-item">
-            <settings-dropdown-menu class="start"
-                pref="{{prefs.webkit.webprefs.fonts.fixed.Zyyy}}"
-                menu-options="[[fontOptions_]]">
-            </settings-dropdown-menu>
-          </div>
-          <div class="list-item"
-              style="
-                  font-size:[[prefs.webkit.webprefs.default_font_size.value]]px;
-                  font-family:
-                      '[[prefs.webkit.webprefs.fonts.fixed.Zyyy.value]]';"
-            <span>
-              [[prefs.webkit.webprefs.default_font_size.value]]:
-              $i18n{quickBrownFox}
-            </span>
-          </div>
-        </div>
+      <h2>$i18n{standardFont}</h2>
+    </div>
+    <div class="list-frame">
+      <div class="list-item">
+        <settings-dropdown-menu class="start"
+            pref="{{prefs.webkit.webprefs.fonts.standard.Zyyy}}"
+            menu-options="[[fontOptions_]]">
+        </settings-dropdown-menu>
+      </div>
+      <div class="list-item underbar"
+          style="
+              font-size:[[prefs.webkit.webprefs.default_font_size.value]]px;
+              font-family:
+                  '[[prefs.webkit.webprefs.fonts.standard.Zyyy.value]]';">
+        <span>
+          [[prefs.webkit.webprefs.default_font_size.value]]:
+          $i18n{quickBrownFox}
+        </span>
+      </div>
+    </div>
+    <div class="settings-box">
+      <h2>$i18n{serifFont}</h2>
+    </div>
+    <div class="list-frame">
+      <div class="list-item">
+        <settings-dropdown-menu class="start"
+            pref="{{prefs.webkit.webprefs.fonts.serif.Zyyy}}"
+            menu-options="[[fontOptions_]]">
+        </settings-dropdown-menu>
+      </div>
+      <div class="list-item underbar"
+          style="
+              font-size:[[prefs.webkit.webprefs.default_font_size.value]]px;
+              font-family:
+                  '[[prefs.webkit.webprefs.fonts.serif.Zyyy.value]]';">
+        <span>
+          [[prefs.webkit.webprefs.default_font_size.value]]:
+          $i18n{quickBrownFox}
+        </span>
+      </div>
+    </div>
+    <div class="settings-box">
+      <h2>$i18n{sansSerifFont}</h2>
+    </div>
+    <div class="list-frame">
+      <div class="list-item">
+        <settings-dropdown-menu class="start"
+            pref="{{prefs.webkit.webprefs.fonts.sansserif.Zyyy}}"
+            menu-options="[[fontOptions_]]">
+        </settings-dropdown-menu>
+      </div>
+      <div class="list-item underbar"
+          style="
+              font-size:[[prefs.webkit.webprefs.default_font_size.value]]px;
+              font-family:
+                  '[[prefs.webkit.webprefs.fonts.sansserif.Zyyy.value]]';">
+        <span>
+          [[prefs.webkit.webprefs.default_font_size.value]]:
+          $i18n{quickBrownFox}
+        </span>
+      </div>
+    </div>
+    <div class="settings-box">
+      <h2>$i18n{fixedWidthFont}</h2>
+    </div>
+    <div class="list-frame">
+      <div class="list-item">
+        <settings-dropdown-menu class="start"
+            pref="{{prefs.webkit.webprefs.fonts.fixed.Zyyy}}"
+            menu-options="[[fontOptions_]]">
+        </settings-dropdown-menu>
+      </div>
+      <div class="list-item"
+          style="
+              font-size:[[prefs.webkit.webprefs.default_font_size.value]]px;
+              font-family:
+                  '[[prefs.webkit.webprefs.fonts.fixed.Zyyy.value]]';">
+        <span>
+          [[prefs.webkit.webprefs.default_font_size.value]]:
+          $i18n{quickBrownFox}
+        </span>
       </div>
     </div>
     <template is="dom-if" if="[[!isGuest_]]">
