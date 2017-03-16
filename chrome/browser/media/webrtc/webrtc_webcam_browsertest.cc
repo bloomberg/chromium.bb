@@ -18,10 +18,6 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest-param-test.h"
 
-#if defined(OS_WIN)
-#include "base/win/windows_version.h"
-#endif
-
 static const char kMainWebrtcTestHtmlPage[] =
     "/webrtc/webrtc_jsep01_test.html";
 
@@ -93,17 +89,6 @@ IN_PROC_BROWSER_TEST_P(WebRtcWebcamBrowserTest,
             GetUserMediaAndGetStreamSize(tab, kVideoCallConstraintsVGA));
   EXPECT_EQ("640x360",
             GetUserMediaAndGetStreamSize(tab, kVideoCallConstraints360p));
-
-// TODO(chfremer): Reenable these tests when https://crbug.com/676041 is
-// resolved.
-#if defined(OS_WIN)
-  auto win_version = base::win::GetVersion();
-  if (win_version == base::win::VERSION_WIN8 ||
-      win_version == base::win::VERSION_WIN8_1) {
-    return;
-  }
-#endif
-
   EXPECT_EQ("1280x720",
             GetUserMediaAndGetStreamSize(tab, kVideoCallConstraints720p));
   EXPECT_EQ("1920x1080",
