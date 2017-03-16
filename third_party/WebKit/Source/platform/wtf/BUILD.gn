@@ -59,9 +59,15 @@ config("wtf_config") {
 
 component("platform_wtf") {
   sources = [
+    "ByteSwap.h",
+    "CPU.h",
+    "Compiler.h",
     "CryptographicallyRandomNumber.cpp",
     "CryptographicallyRandomNumber.h",
+    "Forward.h",
+    "TypeTraits.h",
     "WTFExport.h",
+    "build_config.h",
   ]
 
   configs += [
