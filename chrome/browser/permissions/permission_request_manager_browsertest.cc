@@ -7,10 +7,17 @@
 #include "base/command_line.h"
 #include "base/metrics/field_trial.h"
 #include "build/build_config.h"
+#include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
+#include "chrome/browser/custom_handlers/register_protocol_handler_permission_request.h"
+#include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
+#include "chrome/browser/media/webrtc/media_stream_devices_controller.h"
 #include "chrome/browser/permissions/permission_context_base.h"
+#include "chrome/browser/permissions/permission_request_impl.h"
 #include "chrome/browser/permissions/permission_util.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/website_settings/mock_permission_prompt_factory.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -19,6 +26,39 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+
+namespace test {
+class MediaStreamDevicesControllerTestApi
+    : public MediaStreamDevicesController::PermissionPromptDelegate {
+ public:
+  static void AddRequestToManager(
+      PermissionRequestManager* manager,
+      content::WebContents* web_contents,
+      const content::MediaStreamRequest& request,
+      const content::MediaResponseCallback& callback) {
+    MediaStreamDevicesControllerTestApi delegate(manager);
+    MediaStreamDevicesController::RequestPermissionsWithDelegate(
+        web_contents, request, callback, &delegate);
+  }
+
+ private:
+  // MediaStreamDevicesController::PermissionPromptDelegate:
+  void ShowPrompt(
+      bool user_gesture,
+      content::WebContents* web_contents,
+      std::unique_ptr<MediaStreamDevicesController> controller) override {
+    manager_->AddRequest(controller.release());
+  }
+
+  explicit MediaStreamDevicesControllerTestApi(
+      PermissionRequestManager* manager)
+      : manager_(manager) {}
+
+  PermissionRequestManager* manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(MediaStreamDevicesControllerTestApi);
+};
+}  // namespace test
 
 namespace {
 
@@ -68,7 +108,165 @@ class PermissionRequestManagerBrowserTest : public InProcessBrowserTest {
 
  private:
   std::unique_ptr<MockPermissionPromptFactory> mock_permission_prompt_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(PermissionRequestManagerBrowserTest);
 };
+
+// Harness for testing permissions dialogs invoked by PermissionRequestManager.
+// Uses a "real" PermissionPromptFactory rather than a mock.
+class PermissionDialogTest
+    : public SupportsTestDialog<PermissionRequestManagerBrowserTest> {
+ public:
+  PermissionDialogTest() {}
+
+  // InProcessBrowserTest:
+  void SetUpOnMainThread() override {
+    // Skip super: It will install a mock permission UI factory, but for this
+    // test we want to show "real" UI.
+    InProcessBrowserTest::SetUpOnMainThread();
+  }
+
+ private:
+  GURL GetUrl() { return GURL("https://example.com"); }
+
+  PermissionRequest* MakeRegisterProtocolHandlerRequest();
+  void AddMediaRequest(PermissionRequestManager* manager,
+                       ContentSettingsType permission);
+  PermissionRequest* MakePermissionRequest(ContentSettingsType permission);
+
+  // TestBrowserDialog:
+  void ShowDialog(const std::string& name) override;
+
+  // Holds requests that do not delete themselves.
+  std::vector<std::unique_ptr<PermissionRequest>> owned_requests_;
+
+  DISALLOW_COPY_AND_ASSIGN(PermissionDialogTest);
+};
+
+PermissionRequest* PermissionDialogTest::MakeRegisterProtocolHandlerRequest() {
+  std::string protocol = "mailto";
+  bool user_gesture = true;
+  ProtocolHandler handler =
+      ProtocolHandler::CreateProtocolHandler(protocol, GetUrl());
+  ProtocolHandlerRegistry* registry =
+      ProtocolHandlerRegistryFactory::GetForBrowserContext(
+          browser()->profile());
+  // Deleted in RegisterProtocolHandlerPermissionRequest::RequestFinished().
+  return new RegisterProtocolHandlerPermissionRequest(registry, handler,
+                                                      GetUrl(), user_gesture);
+}
+
+void PermissionDialogTest::AddMediaRequest(PermissionRequestManager* manager,
+                                           ContentSettingsType permission) {
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::MediaStreamRequestType request_type = content::MEDIA_DEVICE_ACCESS;
+  content::MediaStreamType audio_type = content::MEDIA_NO_SERVICE;
+  content::MediaStreamType video_type = content::MEDIA_NO_SERVICE;
+  std::string audio_id = "audio_id";
+  std::string video_id = "video_id";
+
+  if (permission == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC)
+    audio_type = content::MEDIA_DEVICE_AUDIO_CAPTURE;
+  else
+    video_type = content::MEDIA_DEVICE_VIDEO_CAPTURE;
+  content::MediaStreamRequest request(0, 0, 0, GetUrl(), false, request_type,
+                                      audio_id, video_id, audio_type,
+                                      video_type, false);
+
+  // Add fake devices, otherwise the request will auto-block.
+  MediaCaptureDevicesDispatcher::GetInstance()->SetTestAudioCaptureDevices(
+      content::MediaStreamDevices(
+          1, content::MediaStreamDevice(content::MEDIA_DEVICE_AUDIO_CAPTURE,
+                                        audio_id, "Fake Audio")));
+  MediaCaptureDevicesDispatcher::GetInstance()->SetTestVideoCaptureDevices(
+      content::MediaStreamDevices(
+          1, content::MediaStreamDevice(content::MEDIA_DEVICE_VIDEO_CAPTURE,
+                                        video_id, "Fake Video")));
+
+  auto response = [](const content::MediaStreamDevices& devices,
+                     content::MediaStreamRequestResult result,
+                     std::unique_ptr<content::MediaStreamUI> ui) {};
+  test::MediaStreamDevicesControllerTestApi::AddRequestToManager(
+      manager, web_contents, request, base::Bind(response));
+}
+
+PermissionRequest* PermissionDialogTest::MakePermissionRequest(
+    ContentSettingsType permission) {
+  bool user_gesture = true;
+  auto decided = [](bool, ContentSetting) {};
+  auto cleanup = [] {};  // Leave cleanup to test harness destructor.
+  owned_requests_.push_back(base::MakeUnique<PermissionRequestImpl>(
+      GetUrl(), permission, browser()->profile(), user_gesture,
+      base::Bind(decided), base::Bind(cleanup)));
+  return owned_requests_.back().get();
+}
+
+void PermissionDialogTest::ShowDialog(const std::string& name) {
+  constexpr const char* kMultipleName = "multiple";
+  // Permissions to request for a "multiple" request. Only types handled in
+  // PermissionRequestImpl::GetMessageTextFragment() are valid.
+  constexpr ContentSettingsType kMultipleRequests[] = {
+      CONTENT_SETTINGS_TYPE_GEOLOCATION, CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+      CONTENT_SETTINGS_TYPE_MIDI_SYSEX};
+  constexpr struct {
+    const char* name;
+    ContentSettingsType type;
+  } kNameToType[] = {
+      {"flash", CONTENT_SETTINGS_TYPE_PLUGINS},
+      {"geolocation", CONTENT_SETTINGS_TYPE_GEOLOCATION},
+      {"protected_media", CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER},
+      {"notifications", CONTENT_SETTINGS_TYPE_NOTIFICATIONS},
+      {"mic", CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC},
+      {"camera", CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA},
+      {"protocol_handlers", CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS},
+      {"midi", CONTENT_SETTINGS_TYPE_MIDI_SYSEX},
+      {kMultipleName, CONTENT_SETTINGS_TYPE_DEFAULT}};
+  const auto* it = std::begin(kNameToType);
+  for (; it != std::end(kNameToType); ++it) {
+    if (name == it->name)
+      break;
+  }
+  if (it == std::end(kNameToType)) {
+    ADD_FAILURE() << "Unknown: " << name;
+    return;
+  }
+  PermissionRequestManager* manager = GetPermissionRequestManager();
+  switch (it->type) {
+    case CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS:
+      manager->AddRequest(MakeRegisterProtocolHandlerRequest());
+      break;
+    case CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS:
+      // TODO(tapted): Prompt for downloading multiple files.
+      break;
+    case CONTENT_SETTINGS_TYPE_DURABLE_STORAGE:
+      // TODO(tapted): Prompt for quota request.
+      break;
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
+    case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
+      AddMediaRequest(manager, it->type);
+      break;
+    // Regular permissions requests.
+    case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
+    case CONTENT_SETTINGS_TYPE_PUSH_MESSAGING:  // Same as notifications.
+    case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
+    case CONTENT_SETTINGS_TYPE_GEOLOCATION:
+    case CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER:  // ChromeOS only.
+    case CONTENT_SETTINGS_TYPE_PPAPI_BROKER:
+    case CONTENT_SETTINGS_TYPE_PLUGINS:  // Flash.
+      manager->AddRequest(MakePermissionRequest(it->type));
+      break;
+    case CONTENT_SETTINGS_TYPE_DEFAULT:
+      EXPECT_EQ(kMultipleName, name);
+      for (auto request : kMultipleRequests)
+        manager->AddRequest(MakePermissionRequest(request));
+      break;
+    default:
+      ADD_FAILURE() << "Not a permission type, or one that doesn't prompt.";
+      return;
+  }
+  manager->DisplayPendingRequests();
+}
 
 // Requests before the load event should be bundled into one bubble.
 // http://crbug.com/512849 flaky
@@ -246,6 +444,57 @@ IN_PROC_BROWSER_TEST_F(PermissionRequestManagerBrowserTest,
   bubble_factory()->WaitForPermissionBubble();
   EXPECT_EQ(1, bubble_factory()->show_count());
   EXPECT_EQ(1, bubble_factory()->total_request_count());
+}
+
+// Host wants to run flash.
+IN_PROC_BROWSER_TEST_F(PermissionDialogTest, InvokeDialog_flash) {
+  RunDialog();
+}
+
+// Host wants to know your location.
+IN_PROC_BROWSER_TEST_F(PermissionDialogTest, InvokeDialog_geolocation) {
+  RunDialog();
+}
+
+// Host wants to show notifications.
+IN_PROC_BROWSER_TEST_F(PermissionDialogTest, InvokeDialog_notifications) {
+  RunDialog();
+}
+
+// Host wants to use your microphone.
+IN_PROC_BROWSER_TEST_F(PermissionDialogTest, InvokeDialog_mic) {
+  RunDialog();
+}
+
+// Host wants to use your camera.
+IN_PROC_BROWSER_TEST_F(PermissionDialogTest, InvokeDialog_camera) {
+  RunDialog();
+}
+
+// Host wants to open email links.
+IN_PROC_BROWSER_TEST_F(PermissionDialogTest, InvokeDialog_protocol_handlers) {
+  RunDialog();
+}
+
+// Host wants to use your MIDI devices.
+IN_PROC_BROWSER_TEST_F(PermissionDialogTest, InvokeDialog_midi) {
+  RunDialog();
+}
+
+// Shows a permissions bubble with multiple requests.
+IN_PROC_BROWSER_TEST_F(PermissionDialogTest, InvokeDialog_multiple) {
+  RunDialog();
+}
+
+// CONTENT_SETTINGS_TYPE_PROTECTED_MEDIA_IDENTIFIER is ChromeOS only.
+#if defined(OS_CHROMEOS)
+#define MAYBE_InvokeDialog_protected_media InvokeDialog_protected_media
+#else
+#define MAYBE_InvokeDialog_protected_media DISABLED_InvokeDialog_protected_media
+#endif
+IN_PROC_BROWSER_TEST_F(PermissionDialogTest,
+                       MAYBE_InvokeDialog_protected_media) {
+  RunDialog();
 }
 
 }  // anonymous namespace

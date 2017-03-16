@@ -28,6 +28,10 @@ namespace policy {
 class MediaStreamDevicesControllerBrowserTest;
 }
 
+namespace test {
+class MediaStreamDevicesControllerTestApi;
+}
+
 class MediaStreamDevicesController : public PermissionRequest {
  public:
   static void RequestPermissions(
@@ -67,6 +71,7 @@ class MediaStreamDevicesController : public PermissionRequest {
 
  private:
   friend class MediaStreamDevicesControllerTest;
+  friend class test::MediaStreamDevicesControllerTestApi;
   friend class policy::MediaStreamDevicesControllerBrowserTest;
 
   // Delegate showing permission prompts.
