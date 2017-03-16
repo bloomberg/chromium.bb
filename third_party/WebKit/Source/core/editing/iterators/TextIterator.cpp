@@ -147,6 +147,13 @@ int shadowDepthOf<EditingInFlatTreeStrategy>(const Node& startContainer,
   return 0;
 }
 
+bool isRenderedAsTable(const Node* node) {
+  if (!node || !node->isElementNode())
+    return false;
+  LayoutObject* layoutObject = node->layoutObject();
+  return layoutObject && layoutObject->isTable();
+}
+
 }  // namespace
 
 template <typename Strategy>
@@ -1037,8 +1044,7 @@ static bool shouldEmitExtraNewlineForNode(Node* node) {
 // container) or as we hit it (if it's atomic).
 template <typename Strategy>
 bool TextIteratorAlgorithm<Strategy>::shouldRepresentNodeOffsetZero() {
-  if (emitsCharactersBetweenAllVisiblePositions() &&
-      isDisplayInsideTable(m_node))
+  if (emitsCharactersBetweenAllVisiblePositions() && isRenderedAsTable(m_node))
     return true;
 
   // Leave element positioned flush with start of a paragraph
@@ -1107,7 +1113,7 @@ bool TextIteratorAlgorithm<Strategy>::shouldRepresentNodeOffsetZero() {
 template <typename Strategy>
 bool TextIteratorAlgorithm<Strategy>::shouldEmitSpaceBeforeAndAfterNode(
     Node* node) {
-  return isDisplayInsideTable(node) &&
+  return isRenderedAsTable(node) &&
          (node->layoutObject()->isInline() ||
           emitsCharactersBetweenAllVisiblePositions());
 }

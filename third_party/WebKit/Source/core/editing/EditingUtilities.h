@@ -174,6 +174,8 @@ CORE_EXPORT bool isEnclosingBlock(const Node*);
 bool isTabHTMLSpanElement(const Node*);
 bool isTabHTMLSpanElementTextNode(const Node*);
 bool isMailHTMLBlockquoteElement(const Node*);
+// Returns true if the specified node is visible <table>. We don't want to add
+// invalid nodes to <table> elements.
 bool isDisplayInsideTable(const Node*);
 bool isInline(const Node*);
 bool isTableCell(const Node*);

@@ -26,9 +26,12 @@ function runTest(caretPosition, deleteCommand, expectedString)
 }
 
 test(function () {
-    runTest(0, "forwardDelete", "ABCD");
-    runTest(1, "Delete", "ABCD");
-}, "This test verifies that we are able to successfully delete the first and the last characters of a contenteditable div with display: table.");
+    runTest(0, "forwardDelete", "BCD");
+}, "This test verifies that ForwardDelete command is able to successfully delete the first character of a contenteditable div with display: table.");
+
+test(function () {
+    runTest(1, "Delete", "ABC");
+}, "This test verifies that Delete command is able to successfully delete the last character of a contenteditable div with display: table.");
 </script>
 </body>
 </html>

@@ -1507,11 +1507,7 @@ bool canMergeLists(Element* firstList, Element* secondList) {
 }
 
 bool isDisplayInsideTable(const Node* node) {
-  if (!node || !node->isElementNode())
-    return false;
-
-  LayoutObject* layoutObject = node->layoutObject();
-  return (layoutObject && layoutObject->isTable());
+  return node && node->layoutObject() && isHTMLTableElement(node);
 }
 
 bool isTableCell(const Node* node) {
