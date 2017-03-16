@@ -196,6 +196,8 @@ crbug.com/665014 virtual/gpu-rasterization/images/cross-fade-svg-size.html [ Won
 crbug.com/484370 [ Win Debug ] svg/custom/gradient-userSpaceOnUse-with-percentage.svg [ WontFix ]
 crbug.com/552433 [ Win7 Debug ] svg/W3C-SVG-1.1/coords-units-02-b.svg [ WontFix ]
 crbug.com/606302 [ Win7 Debug ] compositing/perpendicular-layer-sorting.html [ WontFix ]
+crbug.com/702176 [ Win7 Debug ] fast/table/border-collapsing/001-vertical.html [ WontFix ]
+crbug.com/702176 [ Win7 Debug ] fast/table/border-collapsing/001.html [ WontFix ]
 
 # Only Windows supports Symbol CMAP encoded fonts.
 crbug.com/627953 [ Android Linux Mac ] fast/text/symbol-cmap.html [ WontFix ]
