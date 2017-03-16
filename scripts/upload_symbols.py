@@ -545,7 +545,8 @@ def PerformSymbolsFileUpload(symbols, upload_url, product_name='ChromeOS'):
         s.status = SymbolFile.ERROR
         failures += 1
       except (urllib2.URLError, httplib.HTTPException, socket.error) as e:
-        logging.warning('could not upload: %s: %s', s.display_name, e)
+        logging.warning('could not upload: %s: %s %s', s.display_name,
+                        type(e).__name__, e)
         s.status = SymbolFile.ERROR
         failures += 1
 
