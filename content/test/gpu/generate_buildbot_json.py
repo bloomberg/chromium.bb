@@ -1619,6 +1619,15 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
         'disabled_instrumentation_types': ['tsan'],
       }
     ],
+    'disabled_tester_configs': [
+      {
+        # The Mac ASAN swarming runs on two different GPU types so we can't
+        # have one expected vendor ID / device ID
+        'names': [
+          'Mac GPU ASAN Release',
+        ],
+      },
+    ],
   },
   'maps_pixel_test': {
     'target_name': 'maps',
