@@ -695,9 +695,9 @@ NavigationHandleImpl::CheckWillStartRequest() {
       case NavigationThrottle::PROCEED:
         continue;
 
+      case NavigationThrottle::BLOCK_REQUEST:
       case NavigationThrottle::CANCEL:
       case NavigationThrottle::CANCEL_AND_IGNORE:
-      case NavigationThrottle::BLOCK_REQUEST:
         state_ = CANCELING;
         return result;
 
@@ -727,6 +727,9 @@ NavigationHandleImpl::CheckWillRedirectRequest() {
       case NavigationThrottle::PROCEED:
         continue;
 
+      case NavigationThrottle::BLOCK_REQUEST:
+        CHECK(IsBrowserSideNavigationEnabled())
+            << "BLOCK_REQUEST must not be used on redirect without PlzNavigate";
       case NavigationThrottle::CANCEL:
       case NavigationThrottle::CANCEL_AND_IGNORE:
         state_ = CANCELING;
@@ -737,7 +740,6 @@ NavigationHandleImpl::CheckWillRedirectRequest() {
         next_index_ = i + 1;
         return result;
 
-      case NavigationThrottle::BLOCK_REQUEST:
       case NavigationThrottle::BLOCK_RESPONSE:
         NOTREACHED();
     }

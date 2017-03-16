@@ -34,7 +34,8 @@ class CONTENT_EXPORT NavigationThrottle {
     CANCEL_AND_IGNORE,
 
     // Blocks a navigation due to rules asserted before the request is made.
-    // This can only be returned from WillStartRequest. This will result in an
+    // This can only be returned from WillStartRequest and also from
+    // WillRedirectRequest when PlzNavigate is enabled. This will result in an
     // error page for net::ERR_BLOCKED_BY_CLIENT being loaded in the frame that
     // is navigated.
     BLOCK_REQUEST,

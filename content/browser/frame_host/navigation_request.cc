@@ -735,6 +735,14 @@ void NavigationRequest::OnRedirectChecksComplete(
     return;
   }
 
+  if (result == NavigationThrottle::BLOCK_REQUEST) {
+    OnRequestFailed(false, net::ERR_BLOCKED_BY_CLIENT);
+
+    // DO NOT ADD CODE after this. The previous call to OnRequestFailed has
+    // destroyed the NavigationRequest.
+    return;
+  }
+
   loader_->FollowRedirect();
 }
 

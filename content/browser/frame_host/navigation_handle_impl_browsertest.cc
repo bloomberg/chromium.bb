@@ -7,6 +7,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/request_context_type.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -902,6 +903,21 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
     EXPECT_FALSE(NavigateToURL(shell(), kUrl));
     EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, observer.net_error_code());
   }
+
+  // Using BLOCK_REQUEST on redirect is available only with PlzNavigate.
+  if (IsBrowserSideNavigationEnabled()) {
+    // Set up a NavigationThrottle that will block the navigation in
+    // WillRedirectRequest.
+    TestNavigationThrottleInstaller installer(
+        shell()->web_contents(), NavigationThrottle::PROCEED,
+        NavigationThrottle::BLOCK_REQUEST, NavigationThrottle::PROCEED);
+    NavigationHandleObserver observer(shell()->web_contents(), kRedirectingUrl);
+
+    // Try to navigate to the url. The navigation should be canceled and the
+    // NavigationHandle should have the right error code.
+    EXPECT_FALSE(NavigateToURL(shell(), kRedirectingUrl));
+    EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, observer.net_error_code());
+  }
 }
 
 // Specialized test that verifies the NavigationHandle gets the HTTPS upgraded
@@ -1034,6 +1050,72 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
     EXPECT_EQ(1, installer.will_process_called());
     EXPECT_FALSE(observer.is_same_document());
   }
+}
+
+// Record and list the navigations that are started and finished.
+class NavigationLogger : public WebContentsObserver {
+ public:
+  NavigationLogger(WebContents* web_contents)
+      : WebContentsObserver(web_contents) {}
+
+  void DidStartNavigation(NavigationHandle* navigation_handle) override {
+    started_navigation_urls_.push_back(navigation_handle->GetURL());
+  }
+
+  void DidFinishNavigation(NavigationHandle* navigation_handle) override {
+    finished_navigation_urls_.push_back(navigation_handle->GetURL());
+  }
+
+  const std::vector<GURL>& started_navigation_urls() const {
+    return started_navigation_urls_;
+  }
+  const std::vector<GURL>& finished_navigation_urls() const {
+    return finished_navigation_urls_;
+  }
+
+ private:
+  std::vector<GURL> started_navigation_urls_;
+  std::vector<GURL> finished_navigation_urls_;
+};
+
+// There was a bug without PlzNavigate that happened when a navigation was
+// blocked after a redirect. Blink didn't know about the redirect and tried
+// to commit an error page to the pre-redirect URL. The result was that the
+// NavigationHandle was not found on the browser-side and a new NavigationHandle
+// created for committing the error page. This test makes sure that only one
+// NavigationHandle is used for committing the error page.
+// See https://crbug.com/695421
+IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, BlockedOnRedirect) {
+  // Returning BLOCK_REQUEST is not supported yet without PlzNavigate. It will
+  // call a CHECK(false).
+  // TODO(arthursonzogni) Provide support for BLOCK_REQUEST without PlzNavigate
+  // once https://crbug.com/695421 is fixed.
+  if (!IsBrowserSideNavigationEnabled())
+    return;
+
+  const GURL kUrl = embedded_test_server()->GetURL("/title1.html");
+  const GURL kRedirectingUrl =
+      embedded_test_server()->GetURL("/server-redirect?" + kUrl.spec());
+
+  // Set up a NavigationThrottle that will block the navigation in
+  // WillRedirectRequest.
+  TestNavigationThrottleInstaller installer(
+      shell()->web_contents(), NavigationThrottle::PROCEED,
+      NavigationThrottle::BLOCK_REQUEST, NavigationThrottle::PROCEED);
+  NavigationHandleObserver observer(shell()->web_contents(), kRedirectingUrl);
+  NavigationLogger logger(shell()->web_contents());
+
+  // Try to navigate to the url. The navigation should be canceled and the
+  // NavigationHandle should have the right error code.
+  EXPECT_FALSE(NavigateToURL(shell(), kRedirectingUrl));
+  // EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, observer.net_error_code());
+
+  // Only one navigation is expected to happen.
+  std::vector<GURL> started_navigation = {kRedirectingUrl};
+  EXPECT_EQ(started_navigation, logger.started_navigation_urls());
+
+  std::vector<GURL> finished_navigation = {kUrl};
+  EXPECT_EQ(finished_navigation, logger.finished_navigation_urls());
 }
 
 }  // namespace content
