@@ -13,7 +13,6 @@
 #include "av1/common/blockd.h"
 #include "av1/common/pred_common.h"
 #include "av1/encoder/cost.h"
-#include "av1/encoder/encoder.h"
 #include "av1/encoder/encodetxb.h"
 #include "av1/encoder/tokenize.h"
 
@@ -185,6 +184,39 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 
     // use 0-th order Golomb code to handle the residual level.
     write_golomb(w, level - COEFF_BASE_RANGE - 1 - NUM_BASE_LEVELS);
+  }
+}
+
+void av1_write_coeffs_mb(const AV1_COMMON *const cm, MACROBLOCK *x,
+                         aom_writer *w, int plane) {
+  MACROBLOCKD *xd = &x->e_mbd;
+  MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
+  BLOCK_SIZE bsize = mbmi->sb_type;
+  struct macroblockd_plane *pd = &xd->plane[plane];
+
+#if CONFIG_CB4X4
+  const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
+#else
+  const BLOCK_SIZE plane_bsize =
+      get_plane_block_size(AOMMAX(bsize, BLOCK_8X8), pd);
+#endif
+  const int num_4x4_w = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
+  const int num_4x4_h = block_size_high[plane_bsize] >> tx_size_high_log2[0];
+  TX_SIZE tx_size = get_tx_size(plane, xd);
+  const int bkw = tx_size_wide_unit[tx_size];
+  const int bkh = tx_size_high_unit[tx_size];
+  const int step = tx_size_wide_unit[tx_size] * tx_size_high_unit[tx_size];
+  int row, col;
+  int block = 0;
+  for (row = 0; row < num_4x4_h; row += bkh) {
+    for (col = 0; col < num_4x4_w; col += bkw) {
+      tran_low_t *tcoeff = BLOCK_OFFSET(x->mbmi_ext->tcoeff[plane], block);
+      uint16_t eob = x->mbmi_ext->eobs[plane][block];
+      TXB_CTX txb_ctx = { x->mbmi_ext->txb_skip_ctx[plane][block],
+                          x->mbmi_ext->dc_sign_ctx[plane][block] };
+      av1_write_coeffs_txb(cm, xd, w, block, plane, tcoeff, eob, &txb_ctx);
+      block += step;
+    }
   }
 }
 
@@ -539,7 +571,10 @@ void av1_update_txb_context(const AV1_COMP *cpi, ThreadData *td,
     td->counts->skip[ctx][0] += skip_inc;
     av1_foreach_transformed_block(xd, bsize, update_and_record_txb_context,
                                   &arg);
-  } else {
+  } else if (dry_run == DRY_RUN_NORMAL) {
     av1_foreach_transformed_block(xd, bsize, update_txb_context, &arg);
+  } else {
+    printf("DRY_RUN_COSTCOEFFS is not supported yet\n");
+    assert(0);
   }
 }
