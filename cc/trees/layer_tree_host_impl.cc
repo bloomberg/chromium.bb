@@ -2904,15 +2904,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
       MainThreadScrollingReason::kNotScrollingOnMain;
   ScrollTree& scroll_tree = active_tree_->property_trees()->scroll_tree;
   ScrollNode* scroll_node = scroll_tree.CurrentlyScrollingNode();
-
   if (scroll_node) {
-    // Flash the overlay scrollbar even if the scroll dalta is 0.
-    ScrollbarAnimationController* animation_controller =
-        ScrollbarAnimationControllerForId(scroll_node->owning_layer_id);
-
-    if (animation_controller)
-      animation_controller->WillUpdateScroll();
-
     gfx::Vector2dF delta = scroll_delta;
     if (!scroll_node->user_scrollable_horizontal)
       delta.set_x(0);
@@ -2951,13 +2943,6 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
           viewport()->MainScrollLayer() &&
           viewport()->MainScrollLayer()->scroll_tree_index() == scroll_node->id;
       if (scrolls_main_viewport_scroll_layer) {
-        // Flash the overlay scrollbar even if the scroll dalta is 0.
-        ScrollbarAnimationController* animation_controller =
-            ScrollbarAnimationControllerForId(scroll_node->owning_layer_id);
-
-        if (animation_controller)
-          animation_controller->WillUpdateScroll();
-
         gfx::Vector2dF scrolled =
             viewport()->ScrollAnimated(pending_delta, delayed_by);
         // Viewport::ScrollAnimated returns pending_delta as long as it starts
@@ -3202,17 +3187,8 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
   DCHECK(scroll_state);
 
   TRACE_EVENT0("cc", "LayerTreeHostImpl::ScrollBy");
-  ScrollTree& scroll_tree = active_tree_->property_trees()->scroll_tree;
-  ScrollNode* scroll_node = scroll_tree.CurrentlyScrollingNode();
-
-  if (!scroll_node)
+  if (!CurrentlyScrollingNode())
     return InputHandlerScrollResult();
-
-  ScrollbarAnimationController* animation_controller =
-      ScrollbarAnimationControllerForId(scroll_node->owning_layer_id);
-
-  if (animation_controller)
-    animation_controller->WillUpdateScroll();
 
   float initial_top_controls_offset =
       browser_controls_offset_manager_->ControlsTopOffset();

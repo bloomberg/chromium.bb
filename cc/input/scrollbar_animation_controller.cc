@@ -53,7 +53,6 @@ ScrollbarAnimationController::ScrollbarAnimationController(
       scroll_gesture_has_scrolled_(false),
       opacity_(0.0f),
       fade_out_duration_(fade_out_duration),
-      show_scrollbars_on_scroll_gesture_(false),
       need_thinning_animation_(false),
       weak_factory_(this) {
   ApplyOpacityToScrollbars(0.0f);
@@ -78,7 +77,6 @@ ScrollbarAnimationController::ScrollbarAnimationController(
       scroll_gesture_has_scrolled_(false),
       opacity_(0.0f),
       fade_out_duration_(fade_out_duration),
-      show_scrollbars_on_scroll_gesture_(true),
       need_thinning_animation_(true),
       weak_factory_(this) {
   vertical_controller_ = SingleScrollbarAnimationControllerThinning::Create(
@@ -168,14 +166,39 @@ float ScrollbarAnimationController::AnimationProgressAtTime(
   return std::max(std::min(progress, 1.f), 0.f);
 }
 
+void ScrollbarAnimationController::DidScrollBegin() {
+  currently_scrolling_ = true;
+}
+
 void ScrollbarAnimationController::RunAnimationFrame(float progress) {
   ApplyOpacityToScrollbars(1.f - progress);
   if (progress == 1.f)
     StopAnimation();
 }
 
-void ScrollbarAnimationController::DidScrollBegin() {
-  currently_scrolling_ = true;
+void ScrollbarAnimationController::DidScrollUpdate(bool on_resize) {
+  if (need_thinning_animation_ && Captured())
+    return;
+
+  StopAnimation();
+
+  // As an optimization, we avoid spamming fade delay tasks during active fast
+  // scrolls.  But if we're not within one, we need to post every scroll update.
+  if (!currently_scrolling_) {
+    // We don't fade out scrollbar if they need thinning animation and mouse is
+    // near.
+    if (!need_thinning_animation_ || !MouseIsNearAnyScrollbar())
+      PostDelayedFadeOut(on_resize);
+  } else {
+    scroll_gesture_has_scrolled_ = true;
+  }
+
+  Show();
+
+  if (need_thinning_animation_) {
+    vertical_controller_->UpdateThumbThicknessScale();
+    horizontal_controller_->UpdateThumbThicknessScale();
+  }
 }
 
 void ScrollbarAnimationController::DidScrollEnd() {
@@ -191,44 +214,6 @@ void ScrollbarAnimationController::DidScrollEnd() {
 
   if (has_scrolled)
     PostDelayedFadeOut(false);
-}
-
-void ScrollbarAnimationController::DidScrollUpdate() {
-  if (need_thinning_animation_ && Captured())
-    return;
-
-  StopAnimation();
-
-  // As an optimization, we avoid spamming fade delay tasks during active fast
-  // scrolls.  But if we're not within one, we need to post every scroll update.
-  if (!currently_scrolling_) {
-    // We don't fade out scrollbar if they need thinning animation and mouse is
-    // near.
-    if (!need_thinning_animation_ || !MouseIsNearAnyScrollbar())
-      PostDelayedFadeOut(false);
-  } else {
-    scroll_gesture_has_scrolled_ = true;
-  }
-
-  Show();
-
-  if (need_thinning_animation_) {
-    vertical_controller_->UpdateThumbThicknessScale();
-    horizontal_controller_->UpdateThumbThicknessScale();
-  }
-}
-
-void ScrollbarAnimationController::WillUpdateScroll() {
-  if (show_scrollbars_on_scroll_gesture_)
-    DidScrollUpdate();
-}
-
-void ScrollbarAnimationController::DidResize() {
-  StopAnimation();
-  Show();
-  // We should use the gesture delay rather than the resize delay if we're in a
-  // gesture scroll, even if it is resizing.
-  PostDelayedFadeOut(!currently_scrolling_);
 }
 
 void ScrollbarAnimationController::DidMouseDown() {

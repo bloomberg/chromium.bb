@@ -2814,8 +2814,6 @@ class LayerTreeHostImplTestScrollbarAnimation : public LayerTreeHostImplTest {
     settings.scrollbar_animator = animator;
     settings.scrollbar_show_delay = base::TimeDelta::FromMilliseconds(20);
     settings.scrollbar_fade_out_delay = base::TimeDelta::FromMilliseconds(20);
-    settings.scrollbar_fade_out_resize_delay =
-        base::TimeDelta::FromMilliseconds(20);
     settings.scrollbar_fade_out_duration =
         base::TimeDelta::FromMilliseconds(20);
 
@@ -2848,25 +2846,6 @@ class LayerTreeHostImplTestScrollbarAnimation : public LayerTreeHostImplTest {
     EXPECT_FALSE(did_request_redraw_);
     EXPECT_EQ(base::TimeDelta(), requested_animation_delay_);
     EXPECT_TRUE(animation_task_.Equals(base::Closure()));
-
-    // For Aura Overlay Scrollbar, if no scroll happened during a scroll
-    // gesture, shows scrollbars and schedules a delay fade out.
-    host_impl_->ScrollBegin(BeginState(gfx::Point()).get(),
-                            InputHandler::WHEEL);
-    host_impl_->ScrollBy(UpdateState(gfx::Point(), gfx::Vector2dF(0, 0)).get());
-    host_impl_->ScrollEnd(EndState().get());
-    EXPECT_FALSE(did_request_next_frame_);
-    EXPECT_FALSE(did_request_redraw_);
-    if (animator == LayerTreeSettings::AURA_OVERLAY) {
-      EXPECT_EQ(base::TimeDelta::FromMilliseconds(20),
-                requested_animation_delay_);
-      EXPECT_FALSE(animation_task_.Equals(base::Closure()));
-      requested_animation_delay_ = base::TimeDelta();
-      animation_task_ = base::Closure();
-    } else {
-      EXPECT_EQ(base::TimeDelta(), requested_animation_delay_);
-      EXPECT_TRUE(animation_task_.Equals(base::Closure()));
-    }
 
     // Before the scrollbar animation exists, we should not get redraws.
     BeginFrameArgs begin_frame_args =
@@ -2975,9 +2954,7 @@ class LayerTreeHostImplTestScrollbarAnimation : public LayerTreeHostImplTest {
       host_impl_->DidFinishImplFrame();
     }
 
-    // For Andrdoid, scrollbar animation is not triggered unnecessarily.
-    // For Aura Overlay Scrollbar, scrollbar appears even if scroll offset did
-    // not change.
+    // Scrollbar animation is not triggered unnecessarily.
     host_impl_->ScrollBegin(BeginState(gfx::Point()).get(),
                             InputHandler::WHEEL);
     host_impl_->ScrollBy(UpdateState(gfx::Point(), gfx::Vector2dF(5, 0)).get());
@@ -2990,16 +2967,8 @@ class LayerTreeHostImplTestScrollbarAnimation : public LayerTreeHostImplTest {
     host_impl_->ScrollEnd(EndState().get());
     EXPECT_FALSE(did_request_next_frame_);
     EXPECT_FALSE(did_request_redraw_);
-    if (animator == LayerTreeSettings::AURA_OVERLAY) {
-      EXPECT_EQ(base::TimeDelta::FromMilliseconds(20),
-                requested_animation_delay_);
-      EXPECT_FALSE(animation_task_.Equals(base::Closure()));
-      requested_animation_delay_ = base::TimeDelta();
-      animation_task_ = base::Closure();
-    } else {
-      EXPECT_EQ(base::TimeDelta(), requested_animation_delay_);
-      EXPECT_TRUE(animation_task_.Equals(base::Closure()));
-    }
+    EXPECT_EQ(base::TimeDelta(), requested_animation_delay_);
+    EXPECT_TRUE(animation_task_.Equals(base::Closure()));
 
     // Changing page scale triggers scrollbar animation.
     host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 1.f, 4.f);
