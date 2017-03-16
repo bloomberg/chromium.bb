@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
@@ -153,6 +154,9 @@ std::unique_ptr<base::ListValue> DefaultPopularSites() {
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   return base::MakeUnique<base::ListValue>();
 #else
+  if (!base::FeatureList::IsEnabled(kPopularSitesBakedInContentFeature)) {
+    return base::MakeUnique<base::ListValue>();
+  }
   std::unique_ptr<base::ListValue> sites =
       base::ListValue::From(base::JSONReader::Read(
           ResourceBundle::GetSharedInstance().GetRawDataResource(

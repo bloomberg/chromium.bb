@@ -4,8 +4,13 @@
 
 #include "components/ntp_tiles/constants.h"
 
+#include "base/feature_list.h"
+
 namespace ntp_tiles {
 
 const char kPopularSitesFieldTrialName[] = "NTPPopularSites";
+
+extern const base::Feature kPopularSitesBakedInContentFeature{
+    "NTPPopularSitesBakedInContent", base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace ntp_tiles
