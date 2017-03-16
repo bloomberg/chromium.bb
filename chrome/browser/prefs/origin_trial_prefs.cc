@@ -11,4 +11,5 @@
 void OriginTrialPrefs::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kOriginTrialPublicKey, "");
   registry->RegisterListPref(prefs::kOriginTrialDisabledFeatures);
+  registry->RegisterListPref(prefs::kOriginTrialDisabledTokens);
 }

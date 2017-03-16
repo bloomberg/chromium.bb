@@ -39,6 +39,10 @@ ChromeOriginTrialPolicy::ChromeOriginTrialPolicy()
       SetDisabledFeatures(command_line->GetSwitchValueASCII(
           switches::kOriginTrialDisabledFeatures));
     }
+    if (command_line->HasSwitch(switches::kOriginTrialDisabledTokens)) {
+      SetDisabledTokens(command_line->GetSwitchValueASCII(
+          switches::kOriginTrialDisabledTokens));
+    }
   }
 }
 
@@ -51,6 +55,11 @@ base::StringPiece ChromeOriginTrialPolicy::GetPublicKey() const {
 bool ChromeOriginTrialPolicy::IsFeatureDisabled(
     base::StringPiece feature) const {
   return disabled_features_.count(feature.as_string()) > 0;
+}
+
+bool ChromeOriginTrialPolicy::IsTokenDisabled(
+    base::StringPiece token_signature) const {
+  return disabled_tokens_.count(token_signature.as_string()) > 0;
 }
 
 bool ChromeOriginTrialPolicy::SetPublicKeyFromASCIIString(
@@ -74,5 +83,23 @@ bool ChromeOriginTrialPolicy::SetDisabledFeatures(
   for (const std::string& feature : features)
     new_disabled_features.insert(feature);
   disabled_features_.swap(new_disabled_features);
+  return true;
+}
+
+bool ChromeOriginTrialPolicy::SetDisabledTokens(
+    const std::string& disabled_token_list) {
+  std::set<std::string> new_disabled_tokens;
+  const std::vector<std::string> tokens =
+      base::SplitString(disabled_token_list, "|", base::TRIM_WHITESPACE,
+                        base::SPLIT_WANT_NONEMPTY);
+  for (const std::string& ascii_token : tokens) {
+    std::string token_signature;
+    if (!base::Base64Decode(ascii_token, &token_signature))
+      continue;
+    if (token_signature.size() != 64)
+      continue;
+    new_disabled_tokens.insert(token_signature);
+  }
+  disabled_tokens_.swap(new_disabled_tokens);
   return true;
 }

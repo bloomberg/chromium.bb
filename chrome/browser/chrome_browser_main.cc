@@ -867,6 +867,25 @@ void ChromeBrowserMainParts::SetupOriginTrialsCommandLine() {
       }
     }
   }
+  if (!command_line->HasSwitch(switches::kOriginTrialDisabledTokens)) {
+    const base::ListValue* disabled_token_list =
+        local_state_->GetList(prefs::kOriginTrialDisabledTokens);
+    if (disabled_token_list) {
+      std::vector<std::string> disabled_tokens;
+      std::string disabled_token;
+      for (const auto& item : *disabled_token_list) {
+        if (item->GetAsString(&disabled_token)) {
+          disabled_tokens.push_back(disabled_token);
+        }
+      }
+      if (!disabled_tokens.empty()) {
+        const std::string disabled_token_switch =
+            base::JoinString(disabled_tokens, "|");
+        command_line->AppendSwitchASCII(switches::kOriginTrialDisabledTokens,
+                                        disabled_token_switch);
+      }
+    }
+  }
 }
 
 // -----------------------------------------------------------------------------

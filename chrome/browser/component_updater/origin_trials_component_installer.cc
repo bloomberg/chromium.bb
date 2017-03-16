@@ -20,17 +20,18 @@
 
 // The client-side configuration for the origin trial framework can be
 // overridden by an installed component named 'OriginTrials' (extension id
-// kfoklmclfodeliojeaekpoflbkkhojea. This component currently consists of just a
+// llkgjffcdpffmhiakmfcdcblohccpfmo. This component currently consists of just a
 // manifest.json file, which can contain a custom key named 'origin-trials'. The
 // value of this key is a dictionary:
 //
 // {
 //   "public-key": "<base64-encoding of replacement public key>",
 //   "disabled-features": [<list of features to disable>],
-//   "revoked-tokens": "<base64-encoded data>"
+//   "disabled-tokens":
+//   {
+//     "signatures": [<list of token signatures to disable, base64-encoded>]
+//   }
 // }
-//
-// TODO(iclelland): Implement support for revoked tokens.
 //
 // If the component is not present in the user data directory, the default
 // configuration will be used.
@@ -43,6 +44,8 @@ static const char kManifestOriginTrialsKey[] = "origin-trials";
 static const char kManifestPublicKeyPath[] = "origin-trials.public-key";
 static const char kManifestDisabledFeaturesPath[] =
     "origin-trials.disabled-features";
+static const char kManifestDisabledTokenSignaturesPath[] =
+    "origin-trials.disabled-tokens.signatures";
 
 // Extension id is llkgjffcdpffmhiakmfcdcblohccpfmo
 const uint8_t kSha256Hash[] = {0xbb, 0xa6, 0x95, 0x52, 0x3f, 0x55, 0xc7, 0x80,
@@ -100,6 +103,15 @@ void OriginTrialsComponentInstallerTraits::ComponentReady(
     update->Swap(override_disabled_feature_list);
   } else {
     local_state->ClearPref(prefs::kOriginTrialDisabledFeatures);
+  }
+  base::ListValue* disabled_tokens_list = nullptr;
+  const bool manifest_has_disabled_tokens = manifest->GetList(
+      kManifestDisabledTokenSignaturesPath, &disabled_tokens_list);
+  if (manifest_has_disabled_tokens && !disabled_tokens_list->empty()) {
+    ListPrefUpdate update(local_state, prefs::kOriginTrialDisabledTokens);
+    update->Swap(disabled_tokens_list);
+  } else {
+    local_state->ClearPref(prefs::kOriginTrialDisabledTokens);
   }
 }
 
