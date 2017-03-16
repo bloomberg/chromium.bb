@@ -8,17 +8,18 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_nsobject.h"
-#import "chrome/browser/ui/cocoa/omnibox_decoration_bubble_controller.h"
+#import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 #include "chrome/browser/ui/permission_bubble/permission_prompt.h"
 #include "ui/base/models/simple_menu_model.h"
 
 class Browser;
+class LocationBarDecoration;
 @class MenuController;
 class PermissionBubbleCocoa;
 class PermissionRequest;
 
 @interface PermissionBubbleController
-    : OmniboxDecorationBubbleController<NSTextViewDelegate> {
+    : BaseBubbleController<NSTextViewDelegate> {
  @private
   // Array of views that are the checkboxes for every requested permission.
   // Only populated if multiple requests are shown at once.
@@ -35,6 +36,12 @@ class PermissionRequest;
 
   // Bridge to the C++ class that created this object.
   PermissionBubbleCocoa* bridge_;  // Weak.
+
+  // The omnibox icon the bubble is anchored to. The icon is set as active
+  // when the bubble is opened, and inactive when the bubble is closed.
+  // Usually we would override OmniboxDecorationBubbleController but the page
+  // info icon has a special case where it might cause a race condition.
+  LocationBarDecoration* decoration_;  // Weak.
 }
 
 // Designated initializer.  |browser| and |bridge| must both be non-nil.

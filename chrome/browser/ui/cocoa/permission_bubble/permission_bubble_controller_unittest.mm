@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
+#import "chrome/browser/ui/cocoa/location_bar/location_icon_decoration.h"
 #import "chrome/browser/ui/cocoa/page_info/split_block_button.h"
 #import "chrome/browser/ui/cocoa/permission_bubble/permission_bubble_cocoa.h"
 #import "chrome/browser/ui/cocoa/test/cocoa_profile_test.h"
@@ -169,6 +170,26 @@ TEST_F(PermissionBubbleControllerTest, ShowAndClose) {
   EXPECT_FALSE([[controller_ window] isVisible]);
   [controller_ showWindow:nil];
   EXPECT_TRUE([[controller_ window] isVisible]);
+}
+
+// Tests the page icon decoration's active state.
+TEST_F(PermissionBubbleControllerTest, PageIconDecorationActiveState) {
+  base::mac::ScopedObjCClassSwizzler locationSwizzle(
+      [PermissionBubbleController class], [MockBubbleYesLocationBar class],
+      @selector(hasVisibleLocationBarForBrowser:));
+
+  NSWindow* window = browser()->window()->GetNativeWindow();
+  BrowserWindowController* controller =
+      [BrowserWindowController browserWindowControllerForWindow:window];
+  LocationBarDecoration* decoration =
+      [controller locationBarBridge]->GetPageInfoDecoration();
+
+  [controller_ showWindow:nil];
+  EXPECT_TRUE([[controller_ window] isVisible]);
+  EXPECT_TRUE(decoration->active());
+
+  [controller_ close];
+  EXPECT_FALSE(decoration->active());
 }
 
 TEST_F(PermissionBubbleControllerTest, ShowSinglePermission) {
