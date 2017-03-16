@@ -14386,6 +14386,7 @@
             "peach_pit-chrome-pfq",
             "peppy-chrome-pfq",
             "reef-chrome-pfq",
+            "scarlet-chrome-pfq",
             "tricky-chrome-pfq",
             "veyron_jerry-chromium-pfq",
             "veyron_minnie-chrome-pfq",
@@ -20635,6 +20636,7 @@
     },
     "scarlet-chrome-pfq": {
         "_template": "chrome_pfq",
+        "active_waterfall": "chromeos",
         "boards": [
             "scarlet"
         ],
