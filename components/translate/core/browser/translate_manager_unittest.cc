@@ -307,64 +307,6 @@ TEST_F(TranslateManagerTest, DontTranslateOffline) {
       1);
 }
 
-// The test measures that Translate is not triggered for a zh-TW page for a
-// zh-CN user.
-TEST_F(TranslateManagerTest,
-       DontTranslateZhTraditionalPageForZhSimplifiedLocale) {
-  TranslateManager::SetIgnoreMissingKeyForTesting(true);
-  translate_manager_.reset(new translate::TranslateManager(
-      &mock_translate_client_, kAcceptLanguages));
-
-  const char kMetricName[] = "Translate.InitiationStatus.v2";
-  base::HistogramTester histogram_tester;
-
-  const std::string locale = "zh-TW";
-  const std::string page_lang = "zh-CN";
-
-  network_notifier_.SimulateOnline();
-  manager_->set_application_locale(locale);
-  ON_CALL(mock_translate_client_, IsTranslatableURL(_))
-      .WillByDefault(Return(true));
-
-  EXPECT_EQ("zh-TW", translate_manager_->GetTargetLanguage(&translate_prefs_));
-  translate_manager_->GetLanguageState().LanguageDetermined(page_lang, true);
-  translate_manager_->InitiateTranslation(page_lang);
-
-  histogram_tester.ExpectUniqueSample(
-      kMetricName,
-      translate::TranslateBrowserMetrics::INITIATION_STATUS_SIMILAR_LANGUAGES,
-      1);
-}
-
-// The test measures that Translate is not triggered for a zh-CN page for a
-// zh-TW user.
-TEST_F(TranslateManagerTest,
-       DontTranslateZhSimplifiedPageForZhTraditionalLocale) {
-  TranslateManager::SetIgnoreMissingKeyForTesting(true);
-  translate_manager_.reset(new translate::TranslateManager(
-      &mock_translate_client_, kAcceptLanguages));
-
-  const char kMetricName[] = "Translate.InitiationStatus.v2";
-  base::HistogramTester histogram_tester;
-
-  const std::string locale = "zh-CN";
-  const std::string page_lang = "zh-TW";
-
-  network_notifier_.SimulateOnline();
-  manager_->set_application_locale(locale);
-  ON_CALL(mock_translate_client_, IsTranslatableURL(_))
-      .WillByDefault(Return(true));
-
-  EXPECT_EQ("zh-CN", translate_manager_->GetTargetLanguage(&translate_prefs_));
-  translate_manager_->GetLanguageState().LanguageDetermined(page_lang, true);
-  translate_manager_->InitiateTranslation(page_lang);
-
-  histogram_tester.ExpectUniqueSample(
-      kMetricName,
-      translate::TranslateBrowserMetrics::INITIATION_STATUS_SIMILAR_LANGUAGES,
-      1);
-}
-
 // Utility function to set the threshold params
 void ChangeThresholdInParams(
     const char* initiate_translation_confidence_threshold,
