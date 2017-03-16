@@ -3359,6 +3359,10 @@ def ApplyCustomOverrides(site_config, ge_build_config):
       },
 
 
+      'reef-chrome-pfq': {
+          'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
+      },
+
       'veyron_minnie-chrome-pfq': {
           'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
       },
