@@ -6,9 +6,9 @@ import unittest
 
 from infra_libs.ts_mon.common import monitors
 from infra_libs.ts_mon.common import pb_to_popo
-from infra_libs.ts_mon.protos import acquisition_network_device_pb2
-from infra_libs.ts_mon.protos import acquisition_task_pb2
-from infra_libs.ts_mon.protos import metrics_pb2
+from infra_libs.ts_mon.protos.current import acquisition_network_device_pb2
+from infra_libs.ts_mon.protos.current import acquisition_task_pb2
+from infra_libs.ts_mon.protos.current import metrics_pb2
 
 class PbToPopoTest(unittest.TestCase):
 

@@ -12,6 +12,8 @@ from infra_libs import ts_mon
 class StandardMetricsTest(unittest.TestCase):
 
   def setUp(self):
+    interface.state = interface.State()
+    interface.state.reset_for_unittest()
     interface.state.target = targets.TaskTarget(
         'test_service', 'test_job', 'test_region', 'test_host')
     ts_mon.reset_for_unittest()

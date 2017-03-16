@@ -29,6 +29,7 @@ class GlobalsTest(auto_stub.TestCase):
 
   def setUp(self):
     super(GlobalsTest, self).setUp()
+    interface.state = interface.State()
     self.mock(config, 'load_machine_config', lambda x: {})
 
   def tearDown(self):
@@ -36,8 +37,6 @@ class GlobalsTest(auto_stub.TestCase):
     # because any FlushThread started by the test is stored in that mock state
     # and needs to be stopped before running any other tests.
     interface.close()
-    # This should probably live in interface.close()
-    interface.state = interface.State()
     super(GlobalsTest, self).tearDown()
 
   @mock.patch('requests.get', autospec=True)
@@ -65,8 +64,8 @@ class GlobalsTest(auto_stub.TestCase):
 
   @mock.patch('requests.get', autospec=True)
   @mock.patch('socket.getfqdn', autospec=True)
-  @mock.patch('infra_libs.ts_mon.common.monitors.HttpsMonitor.'
-              '_load_credentials', autospec=True)
+  @mock.patch('infra_libs.ts_mon.common.monitors.CredentialFactory.'
+              'from_string')
   def test_https_monitor_args(self, _load_creds, fake_fqdn, fake_get):
     print [_load_creds, fake_fqdn, fake_get]
     fake_fqdn.return_value = 'slave1-a1.reg.tld'
@@ -171,8 +170,11 @@ class GlobalsTest(auto_stub.TestCase):
                          '--ts-mon-endpoint', 'pubsub://mytopic/myproject'])
     config.process_argparse_options(args)
     fake_monitor.assert_called_once_with(
-        '/path/to/creds.p8.json', 'mytopic', 'myproject',
-        use_instrumented_http=True)
+        mock.ANY, 'mytopic', 'myproject',
+        ca_certs=None, use_instrumented_http=True)
+    cred_factory = fake_monitor.call_args[0][0]
+    self.assertIsInstance(cred_factory, monitors.FileCredentials)
+    self.assertEquals(cred_factory.path, '/path/to/creds.p8.json')
     self.assertIs(interface.state.global_monitor, singleton)
 
   @mock.patch('infra_libs.ts_mon.common.monitors.PubSubMonitor', autospec=True)
@@ -249,7 +251,6 @@ class GlobalsTest(auto_stub.TestCase):
     self.assertEqual(interface.state.target.role, 'role')
     self.assertEqual(interface.state.target.network, 'net')
     self.assertEqual(interface.state.target.hostname, 'autogen:host')
-
 
   def test_task_args(self):
     p = argparse.ArgumentParser()
@@ -368,6 +369,23 @@ class GlobalsTest(auto_stub.TestCase):
     r.status_code = 404
 
     self.assertEquals('golo', config._default_region('foo.golo'))
+
+  def test_use_new_proto_from_config(self):
+    self.mock(config, 'load_machine_config', lambda x: {
+        'use_new_proto': True})
+    p = argparse.ArgumentParser()
+    config.add_argparse_options(p)
+    args = p.parse_args([])
+    config.process_argparse_options(args)
+    self.assertEqual(interface.state.use_new_proto, True)
+
+  def test_use_new_proto_from_arg(self):
+    self.mock(config, 'load_machine_config', lambda x: {})
+    p = argparse.ArgumentParser()
+    config.add_argparse_options(p)
+    args = p.parse_args(['--ts-mon-use-new-proto'])
+    config.process_argparse_options(args)
+    self.assertEqual(interface.state.use_new_proto, True)
 
 
 class ConfigTest(unittest.TestCase):

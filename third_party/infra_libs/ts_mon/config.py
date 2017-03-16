@@ -91,6 +91,11 @@ def add_argparse_options(parser):
       help='path to a pkcs8 json credential file. If set, overrides the value '
            'in --ts-mon-config-file')
   parser.add_argument(
+      '--ts-mon-ca-certs',
+      help='path to file containing root CA certificates for SSL server '
+           'certificate validation. If not set, a CA cert file bundled with '
+           'httplib2 is used.')
+  parser.add_argument(
       '--ts-mon-flush',
       choices=('manual', 'auto'), default='auto',
       help=('metric push behavior: manual (only send when flush() is called), '
@@ -165,6 +170,12 @@ def add_argparse_options(parser):
       default='/chrome/infra/',
       help='metric name prefix for all metrics (default: %(default)s)')
 
+  parser.add_argument(
+      '--ts-mon-use-new-proto',
+      default=False, action='store_true',
+      help='use the new proto schema (default: false)')
+
+
 def process_argparse_options(args):
   """Process command line arguments to initialize the global monitor.
 
@@ -181,12 +192,15 @@ def process_argparse_options(args):
   endpoint = config.get('endpoint', '')
   credentials = config.get('credentials', '')
   autogen_hostname = config.get('autogen_hostname', False)
+  use_new_proto = config.get('use_new_proto', False)
 
   # Command-line args override the values in the config file.
   if args.ts_mon_endpoint is not None:
     endpoint = args.ts_mon_endpoint
   if args.ts_mon_credentials is not None:
     credentials = args.ts_mon_credentials
+  if args.ts_mon_use_new_proto:
+    use_new_proto = args.ts_mon_use_new_proto
 
   if args.ts_mon_target_type == 'device':
     hostname = args.ts_mon_device_hostname
@@ -229,13 +243,15 @@ def process_argparse_options(args):
       project = url.netloc
       topic = url.path.strip('/')
       interface.state.global_monitor = monitors.PubSubMonitor(
-          credentials, project, topic, use_instrumented_http=True)
+          monitors.CredentialFactory.from_string(credentials), project, topic,
+          use_instrumented_http=True, ca_certs=args.ts_mon_ca_certs)
     else:
       logging.error('ts_mon monitoring is disabled because credentials are not '
                     'available')
   elif endpoint.startswith('https://'):
-    interface.state.global_monitor = monitors.HttpsMonitor(endpoint,
-                                                           credentials)
+    interface.state.global_monitor = monitors.HttpsMonitor(
+        endpoint, monitors.CredentialFactory.from_string(credentials),
+        ca_certs=args.ts_mon_ca_certs)
   elif endpoint.lower() == 'none':
     logging.info('ts_mon monitoring has been explicitly disabled')
   else:
@@ -243,6 +259,7 @@ def process_argparse_options(args):
                   ' is invalid or not supported: %s', endpoint)
 
   interface.state.flush_mode = args.ts_mon_flush
+  interface.state.use_new_proto = use_new_proto
 
   if args.ts_mon_flush == 'auto':
     interface.state.flush_thread = interface._FlushThread(
@@ -250,3 +267,4 @@ def process_argparse_options(args):
     interface.state.flush_thread.start()
 
   standard_metrics.init()
+

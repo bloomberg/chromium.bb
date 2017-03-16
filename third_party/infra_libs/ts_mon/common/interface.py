@@ -36,14 +36,16 @@ import logging
 import random
 import threading
 import time
+import traceback
 
 from infra_libs.ts_mon.common import errors
 from infra_libs.ts_mon.common import metric_store
-from infra_libs.ts_mon.protos import metrics_pb2
+from infra_libs.ts_mon.protos.current import metrics_pb2
+from infra_libs.ts_mon.protos.new import metrics_pb2 as new_metrics_pb2
 
 # The maximum number of MetricsData messages to include in each HTTP request.
 # MetricsCollections larger than this will be split into multiple requests.
-METRICS_DATA_LENGTH_LIMIT = 1000
+METRICS_DATA_LENGTH_LIMIT = 500
 
 
 class State(object):
@@ -79,18 +81,20 @@ class State(object):
     self.last_flushed = datetime.datetime.utcfromtimestamp(0)
     # Metric name prefix
     self.metric_name_prefix = '/chrome/infra/'
+    # Use the new proto schema
+    self.use_new_proto = False
 
   def reset_for_unittest(self):
     self.metrics = {}
     self.last_flushed = datetime.datetime.utcfromtimestamp(0)
     self.store.reset_for_unittest()
+    self.use_new_proto = False
 
 state = State()
 
 
 def flush():
   """Send all metrics that are registered in the application."""
-
   if not state.flush_enabled_fn():
     logging.debug('ts_mon: sending metrics is disabled.')
     return
@@ -98,18 +102,98 @@ def flush():
   if not state.global_monitor or not state.target:
     raise errors.MonitoringNoConfiguredMonitorError(None)
 
+  if state.use_new_proto:
+    generator = _generate_proto_new
+  else:
+    generator = _generate_proto
+
+  for proto in generator():
+    state.global_monitor.send(proto)
+  state.last_flushed = datetime.datetime.utcnow()
+
+
+def _generate_proto_new():
+  """Generate MetricsPayload for global_monitor.send()."""
+  proto = new_metrics_pb2.MetricsPayload()
+
+  # Key: Target, value: MetricsCollection.
+  collections = {}
+
+  # Key: (Target, metric name) tuple, value: MetricsDataSet.
+  data_sets = {}
+
+  count = 0
+  error_count = 0
+  for (target, metric, start_time, end_time, fields_values
+       ) in state.store.get_all():
+    for fields, value in fields_values.iteritems():
+      if count >= METRICS_DATA_LENGTH_LIMIT:
+        yield proto
+        proto = new_metrics_pb2.MetricsPayload()
+        collections.clear()
+        data_sets.clear()
+        count = 0
+
+      if target not in collections:
+        collections[target] = proto.metrics_collection.add()
+        target._populate_target_pb_new(collections[target])
+      collection = collections[target]
+
+      key = (target, metric.name)
+      new_data_set = None
+      try:
+        if key not in data_sets:
+            new_data_set = new_metrics_pb2.MetricsDataSet()
+            metric._populate_data_set(new_data_set, fields)
+
+        data = new_metrics_pb2.MetricsData()
+        metric._populate_data(data, start_time, end_time, fields, value)
+      except errors.MonitoringError:
+        logging.exception('Failed to serialize a metric.')
+        error_count += 1
+        continue
+
+      # All required data protos have been successfully populated. Now we can
+      # insert them in serialized proto and bookeeping data structures.
+      if new_data_set is not None:
+        collection.metrics_data_set.add().CopyFrom(new_data_set)
+        data_sets[key] = collection.metrics_data_set[-1]
+      data_sets[key].data.add().CopyFrom(data)
+      count += 1
+
+  if count > 0:
+    yield proto
+
+  if error_count:
+    raise errors.MonitoringFailedToFlushAllMetricsError(error_count)
+
+
+def _generate_proto():
+  """Generate MetricsCollection for global_monitor.send()."""
   proto = metrics_pb2.MetricsCollection()
 
-  for target, metric, start_time, fields_values in state.store.get_all():
+  error_count = 0
+  for target, metric, start_time, _, fields_values in state.store.get_all():
     for fields, value in fields_values.iteritems():
       if len(proto.data) >= METRICS_DATA_LENGTH_LIMIT:
-        state.global_monitor.send(proto)
-        del proto.data[:]
+        yield proto
+        proto = metrics_pb2.MetricsCollection()
 
-      metric.serialize_to(proto, start_time, fields, value, target)
+      try:
+        metrics_pb = metrics_pb2.MetricsData()
+        metric.serialize_to(metrics_pb, start_time, fields, value, target)
+      except errors.MonitoringError:
+        error_count += 1
+        logging.exception('Failed to serialize a metric.')
+        continue
 
-  state.global_monitor.send(proto)
-  state.last_flushed = datetime.datetime.utcnow()
+      proto.data.add().CopyFrom(metrics_pb)
+
+  if len(proto.data) > 0:
+    yield proto
+
+  if error_count:
+    raise errors.MonitoringFailedToFlushAllMetricsError(error_count)
 
 
 def register(metric):
@@ -172,7 +256,6 @@ class _FlushThread(threading.Thread):
 
     while True:
       if self.stop_event.wait(next_timeout):
-        self._flush_and_log_exceptions()
         return
 
       # Try to flush every N seconds exactly so rate calculations are more

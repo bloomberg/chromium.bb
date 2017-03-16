@@ -18,6 +18,7 @@ class ErrorsTest(unittest.TestCase):
       (errors.MonitoringNoConfiguredMonitorError, ('test',)),
       (errors.MonitoringNoConfiguredMonitorError, (None,)),
       (errors.MonitoringNoConfiguredTargetError, ('test',)),
+      (errors.MonitoringFailedToFlushAllMetricsError, (3,)),
       (errors.UnknownModificationTypeError, ('foo',)),
   ]
 

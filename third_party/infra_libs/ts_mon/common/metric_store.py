@@ -78,8 +78,8 @@ class MetricStore(object):
   def get_all(self):
     """Returns an iterator over all the metrics present in the store.
 
-    The iterator yields 4-tuples:
-      (target, metric, start_time, field_values)
+    The iterator yields 5-tuples:
+      (target, metric, start_time, end_time, field_values)
     """
     raise NotImplementedError
 
@@ -257,13 +257,15 @@ class InProcessMetricStore(MetricStore):
     # generator's consumer) modifies them while we're iterating.
     with self._thread_lock:
       values = copy.copy(self._values)
+      end_time = self._time_fn()
 
     for name, metric_values in values.iteritems():
       if name not in self._state.metrics:
         continue
       start_time = metric_values.start_time
       for target, fields_values in metric_values.values.iter_targets():
-        yield target, self._state.metrics[name], start_time, fields_values
+        yield (target, self._state.metrics[name], start_time, end_time,
+               fields_values)
 
   def set(self, name, fields, target_fields, value, enforce_ge=False):
     with self._thread_lock:
