@@ -122,6 +122,7 @@ const char kCryptohomeSetFirmwareManagementParameters[] =
     "SetFirmwareManagementParameters";
 const char kCryptohomeRemoveFirmwareManagementParameters[] =
     "RemoveFirmwareManagementParameters";
+const char kCryptohomeMigrateToDircrypto[] = "MigrateToDircrypto";
 
 // Signals
 const char kSignalAsyncCallStatus[] = "AsyncCallStatus";
@@ -129,6 +130,7 @@ const char kSignalAsyncCallStatusWithData[] = "AsyncCallStatusWithData";
 const char kSignalTpmInitStatus[] = "TpmInitStatus";
 const char kSignalCleanupUsersRemoved[] = "CleanupUsersRemoved";
 const char kSignalLowDiskSpace[] = "LowDiskSpace";
+const char kSignalDircryptoMigrationProgress[] = "DircryptoMigrationProgress";
 // Error code
 enum MountError {
   MOUNT_ERROR_NONE = 0,
@@ -144,6 +146,15 @@ enum MountError {
   // Previous migration attempt was aborted in the middle. Must resume it first.
   MOUNT_ERROR_PREVIOUS_MIGRATION_INCOMPLETE = 1 << 8,
   MOUNT_ERROR_RECREATED = 1 << 31,
+};
+// Status code signaled from MigrateToDircrypto().
+enum DircryptoMigrationStatus {
+  // 0 means a successful completeion.
+  DYRCRYPTO_MIGRATION_SUCCESS = 0,
+  // Negative values mean failing completion.
+  // TODO(kinaba,dspaid): Add error codes as needed here.
+  // Positive values mean intermediate state report for the running migration.
+  // TODO(kinaba,dspaid): Add state codes as needed.
 };
 }  // namespace cryptohome
 
