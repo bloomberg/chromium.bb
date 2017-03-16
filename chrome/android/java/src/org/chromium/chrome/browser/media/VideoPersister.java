@@ -44,5 +44,5 @@ public class VideoPersister {
     /**
      * If the video has been persisted, perform cleanup.
      */
-    public void stopIfPersisted(ChromeActivity activity) {}
+    public void cleanup(ChromeActivity activity) {}
 }
