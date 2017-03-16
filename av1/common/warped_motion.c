@@ -479,7 +479,7 @@ static uint8_t warp_interpolate(uint8_t *ref, int x, int y, int width,
 // [-1, 2) * WARPEDPIXEL_PREC_SHIFTS.
 // We need an extra 2 taps to fit this in, for a total of 8 taps.
 /* clang-format off */
-const int16_t warped_filter[WARPEDPIXEL_PREC_SHIFTS * 3][8] = {
+const int16_t warped_filter[WARPEDPIXEL_PREC_SHIFTS * 3 + 1][8] = {
   // [-1, 0)
   { 0,   0, 128,   0,   0, 0, 0, 0 }, { 0, - 1, 128,   2, - 1, 0, 0, 0 },
   { 1, - 3, 127,   4, - 1, 0, 0, 0 }, { 1, - 4, 126,   6, - 2, 1, 0, 0 },
@@ -581,8 +581,121 @@ const int16_t warped_filter[WARPEDPIXEL_PREC_SHIFTS * 3][8] = {
   { 0, 0, 1, - 4,  13, 124, - 7, 1 }, { 0, 0, 1, - 4,  11, 125, - 6, 1 },
   { 0, 0, 1, - 3,   8, 126, - 5, 1 }, { 0, 0, 1, - 2,   6, 126, - 4, 1 },
   { 0, 0, 0, - 1,   4, 127, - 3, 1 }, { 0, 0, 0, - 1,   2, 128, - 1, 0 },
+
+  // dummy
+  { 0, 0, 0, 0,   0, 128, 0, 0 },
 };
 /* clang-format on */
+
+// Whether to use approximate divisor
+#define APPROXIMATE_DIVISOR 1
+
+#if APPROXIMATE_DIVISOR
+#define DIV_LUT_PREC_BITS 14
+#define DIV_LUT_BITS 8
+#define DIV_LUT_NUM (1 << DIV_LUT_BITS)
+
+static const uint16_t div_lut[DIV_LUT_NUM + 1] = {
+  16384, 16320, 16257, 16194, 16132, 16070, 16009, 15948, 15888, 15828, 15768,
+  15709, 15650, 15592, 15534, 15477, 15420, 15364, 15308, 15252, 15197, 15142,
+  15087, 15033, 14980, 14926, 14873, 14821, 14769, 14717, 14665, 14614, 14564,
+  14513, 14463, 14413, 14364, 14315, 14266, 14218, 14170, 14122, 14075, 14028,
+  13981, 13935, 13888, 13843, 13797, 13752, 13707, 13662, 13618, 13574, 13530,
+  13487, 13443, 13400, 13358, 13315, 13273, 13231, 13190, 13148, 13107, 13066,
+  13026, 12985, 12945, 12906, 12866, 12827, 12788, 12749, 12710, 12672, 12633,
+  12596, 12558, 12520, 12483, 12446, 12409, 12373, 12336, 12300, 12264, 12228,
+  12193, 12157, 12122, 12087, 12053, 12018, 11984, 11950, 11916, 11882, 11848,
+  11815, 11782, 11749, 11716, 11683, 11651, 11619, 11586, 11555, 11523, 11491,
+  11460, 11429, 11398, 11367, 11336, 11305, 11275, 11245, 11215, 11185, 11155,
+  11125, 11096, 11067, 11038, 11009, 10980, 10951, 10923, 10894, 10866, 10838,
+  10810, 10782, 10755, 10727, 10700, 10673, 10645, 10618, 10592, 10565, 10538,
+  10512, 10486, 10460, 10434, 10408, 10382, 10356, 10331, 10305, 10280, 10255,
+  10230, 10205, 10180, 10156, 10131, 10107, 10082, 10058, 10034, 10010, 9986,
+  9963,  9939,  9916,  9892,  9869,  9846,  9823,  9800,  9777,  9754,  9732,
+  9709,  9687,  9664,  9642,  9620,  9598,  9576,  9554,  9533,  9511,  9489,
+  9468,  9447,  9425,  9404,  9383,  9362,  9341,  9321,  9300,  9279,  9259,
+  9239,  9218,  9198,  9178,  9158,  9138,  9118,  9098,  9079,  9059,  9039,
+  9020,  9001,  8981,  8962,  8943,  8924,  8905,  8886,  8867,  8849,  8830,
+  8812,  8793,  8775,  8756,  8738,  8720,  8702,  8684,  8666,  8648,  8630,
+  8613,  8595,  8577,  8560,  8542,  8525,  8508,  8490,  8473,  8456,  8439,
+  8422,  8405,  8389,  8372,  8355,  8339,  8322,  8306,  8289,  8273,  8257,
+  8240,  8224,  8208,  8192,
+};
+
+#if CONFIG_WARPED_MOTION
+// Decomposes a divisor D such that 1/D = y/2^shift, where y is returned
+// at precision of DIV_LUT_PREC_BITS along with the shift.
+static int16_t resolve_divisor_64(uint64_t D, int16_t *shift) {
+  int64_t e, f;
+  *shift = (D >> 32) ? get_msb(D >> 32) + 32 : get_msb(D);
+  // e is obtained from D after resetting the most significant 1 bit.
+  e = D - ((uint64_t)1 << *shift);
+  // Get the most significant DIV_LUT_BITS (8) bits of e into f
+  if (*shift > DIV_LUT_BITS)
+    f = ROUND_POWER_OF_TWO_64(e, *shift - DIV_LUT_BITS);
+  else
+    f = e << (DIV_LUT_BITS - *shift);
+  assert(f <= DIV_LUT_NUM);
+  *shift += DIV_LUT_PREC_BITS;
+  // Use f as lookup into the precomputed table of multipliers
+  return div_lut[f];
+}
+#endif  // CONFIG_WARPED_MOTION
+
+static int16_t resolve_divisor_32(uint32_t D, int16_t *shift) {
+  int32_t e, f;
+  *shift = get_msb(D);
+  // e is obtained from D after resetting the most significant 1 bit.
+  e = D - ((uint32_t)1 << *shift);
+  // Get the most significant DIV_LUT_BITS (8) bits of e into f
+  if (*shift > DIV_LUT_BITS)
+    f = ROUND_POWER_OF_TWO(e, *shift - DIV_LUT_BITS);
+  else
+    f = e << (DIV_LUT_BITS - *shift);
+  assert(f <= DIV_LUT_NUM);
+  *shift += DIV_LUT_PREC_BITS;
+  // Use f as lookup into the precomputed table of multipliers
+  return div_lut[f];
+}
+#endif  // APPROXIMATE_DIVISOR
+
+static int is_affine_valid(WarpedMotionParams *wm) {
+  const int32_t *mat = wm->wmmat;
+  return (mat[2] > 0);
+}
+
+static int is_affine_shear_allowed(int32_t alpha, int32_t beta, int32_t gamma,
+                                   int32_t delta) {
+  if ((4 * abs(alpha) + 7 * abs(beta) >= (1 << WARPEDMODEL_PREC_BITS)) ||
+      (4 * abs(gamma) + 4 * abs(delta) >= (1 << WARPEDMODEL_PREC_BITS)))
+    return 0;
+  else
+    return 1;
+}
+
+// Returns 1 on success or 0 on an invalid affine set
+static int get_shear_params(WarpedMotionParams *wm, int32_t *alpha,
+                            int32_t *beta, int32_t *gamma, int32_t *delta) {
+  const int32_t *mat = wm->wmmat;
+  if (!is_affine_valid(wm)) return 0;
+  *alpha = mat[2] - (1 << WARPEDMODEL_PREC_BITS);
+  *beta = mat[3];
+#if APPROXIMATE_DIVISOR
+  int16_t shift;
+  int16_t y = resolve_divisor_32(abs(mat[2]), &shift) * (mat[2] < 0 ? -1 : 1);
+  int64_t v;
+  v = ((int64_t)mat[4] << WARPEDMODEL_PREC_BITS) * y;
+  *gamma = ROUND_POWER_OF_TWO_SIGNED_64(v, shift);
+  v = ((int64_t)mat[3] * mat[4]) * y;
+  *delta = mat[5] - ROUND_POWER_OF_TWO_SIGNED_64(v, shift) -
+           (1 << WARPEDMODEL_PREC_BITS);
+#else
+  *gamma = ((int64_t)mat[4] << WARPEDMODEL_PREC_BITS) / mat[2];
+  *delta = mat[5] - (((int64_t)mat[3] * mat[4] + (mat[2] / 2)) / mat[2]) -
+           (1 << WARPEDMODEL_PREC_BITS);
+#endif  // APPROXIMATE_DIVISOR
+  return 1;
+}
 
 #if CONFIG_AOM_HIGHBITDEPTH
 static INLINE void highbd_get_subcolumn(int taps, uint16_t *ref, int32_t *col,
@@ -760,31 +873,15 @@ static void highbd_warp_plane(WarpedMotionParams *wm, uint8_t *ref8, int width,
     int i, j, k, l, m;
     int32_t *mat = wm->wmmat;
     int32_t alpha, beta, gamma, delta;
-
-    if (mat[2] == 0) {
-      // assert(0 &&
-      //   "Warped motion model is incompatible with new warp filter");
-      highbd_warp_plane_old(wm, ref8, width, height, stride, pred8, p_col,
-                            p_row, p_width, p_height, p_stride, subsampling_x,
-                            subsampling_y, x_scale, y_scale, bd, ref_frm);
-      return;
-    }
-
-    alpha = mat[2] - (1 << WARPEDMODEL_PREC_BITS);
-    beta = mat[3];
-    gamma = ((int64_t)mat[4] << WARPEDMODEL_PREC_BITS) / mat[2];
-    delta = mat[5] - (((int64_t)mat[3] * mat[4] + (mat[2] / 2)) / mat[2]) -
-            (1 << WARPEDMODEL_PREC_BITS);
     uint16_t *ref = CONVERT_TO_SHORTPTR(ref8);
     uint16_t *pred = CONVERT_TO_SHORTPTR(pred8);
 
-    if ((4 * abs(alpha) + 7 * abs(beta) > (1 << WARPEDMODEL_PREC_BITS)) ||
-        (4 * abs(gamma) + 4 * abs(delta) > (1 << WARPEDMODEL_PREC_BITS))) {
-      // assert(0 &&
-      //   "Warped motion model is incompatible with new warp filter");
-      highbd_warp_plane_old(wm, ref8, width, height, stride, pred8, p_col,
-                            p_row, p_width, p_height, p_stride, subsampling_x,
-                            subsampling_y, x_scale, y_scale, bd, ref_frm);
+    if (!get_shear_params(wm, &alpha, &beta, &gamma, &delta)) {
+      assert(0 && "Warped motion model is incompatible with shear warp filter");
+      return;
+    }
+    if (!is_affine_shear_allowed(alpha, beta, gamma, delta)) {
+      assert(0 && "Warped motion model is incompatible with shear warp filter");
       return;
     }
 
@@ -1058,10 +1155,11 @@ void av1_warp_affine_c(int32_t *mat, uint8_t *ref, int width, int height,
           for (l = -4; l < 4; ++l) {
             int ix = ix4 + l - 3;
             // At this point, sx = sx4 + alpha * l + beta * k
-            const int16_t *coeffs =
-                warped_filter[ROUND_POWER_OF_TWO(sx, WARPEDDIFF_PREC_BITS) +
-                              WARPEDPIXEL_PREC_SHIFTS];
+            const int offs = ROUND_POWER_OF_TWO(sx, WARPEDDIFF_PREC_BITS) +
+                             WARPEDPIXEL_PREC_SHIFTS;
+            const int16_t *coeffs = warped_filter[offs];
             int32_t sum = 0;
+            // assert(offs >= 0 && offs <= WARPEDPIXEL_PREC_SHIFTS * 3);
             for (m = 0; m < 8; ++m) {
               sum += ref[iy * stride + ix + m] * coeffs[m];
             }
@@ -1078,10 +1176,11 @@ void av1_warp_affine_c(int32_t *mat, uint8_t *ref, int width, int height,
           uint8_t *p =
               &pred[(i - p_row + k + 4) * p_stride + (j - p_col + l + 4)];
           // At this point, sy = sy4 + gamma * l + delta * k
-          const int16_t *coeffs =
-              warped_filter[ROUND_POWER_OF_TWO(sy, WARPEDDIFF_PREC_BITS) +
-                            WARPEDPIXEL_PREC_SHIFTS];
+          const int offs = ROUND_POWER_OF_TWO(sy, WARPEDDIFF_PREC_BITS) +
+                           WARPEDPIXEL_PREC_SHIFTS;
+          const int16_t *coeffs = warped_filter[offs];
           int32_t sum = 0;
+          // assert(offs >= 0 && offs <= WARPEDPIXEL_PREC_SHIFTS * 3);
           for (m = 0; m < 8; ++m) {
             sum += tmp[(k + m + 4) * 8 + (l + 4)] * coeffs[m];
           }
@@ -1112,31 +1211,16 @@ static void warp_plane(WarpedMotionParams *wm, uint8_t *ref, int width,
     int32_t *mat = wm->wmmat;
     int32_t alpha, beta, gamma, delta;
 
-    if (mat[2] == 0) {
-      // assert(0 &&
-      //   "Warped motion model is incompatible with new warp filter");
-      warp_plane_old(wm, ref, width, height, stride, pred, p_col, p_row,
-                     p_width, p_height, p_stride, subsampling_x, subsampling_y,
-                     x_scale, y_scale, ref_frm);
+    if (!get_shear_params(wm, &alpha, &beta, &gamma, &delta)) {
+      assert(0 && "Warped motion model is incompatible with shear warp filter");
+      return;
+    }
+    if (!is_affine_shear_allowed(alpha, beta, gamma, delta)) {
+      assert(0 && "Warped motion model is incompatible with shear warp filter");
       return;
     }
 
-    alpha = mat[2] - (1 << WARPEDMODEL_PREC_BITS);
-    beta = mat[3];
-    gamma = ((int64_t)mat[4] << WARPEDMODEL_PREC_BITS) / mat[2];
-    delta = mat[5] - (((int64_t)mat[3] * mat[4] + (mat[2] / 2)) / mat[2]) -
-            (1 << WARPEDMODEL_PREC_BITS);
-
-    if ((4 * abs(alpha) + 7 * abs(beta) > (1 << WARPEDMODEL_PREC_BITS)) ||
-        (4 * abs(gamma) + 4 * abs(delta) > (1 << WARPEDMODEL_PREC_BITS))) {
-      // assert(0 &&
-      //   "Warped motion model is incompatible with new warp filter");
-      warp_plane_old(wm, ref, width, height, stride, pred, p_col, p_row,
-                     p_width, p_height, p_stride, subsampling_x, subsampling_y,
-                     x_scale, y_scale, ref_frm);
-      return;
-    }
-
+    // printf("%d %d %d %d\n", mat[2], mat[3], mat[4], mat[5]);
     av1_warp_affine(mat, ref, width, height, stride, pred, p_col, p_row,
                     p_width, p_height, p_stride, subsampling_x, subsampling_y,
                     ref_frm, alpha, beta, gamma, delta);
@@ -1215,10 +1299,13 @@ void av1_warp_plane(WarpedMotionParams *wm,
 
 #if CONFIG_WARPED_MOTION
 
-#define IDET_PREC_BITS 48
 #define LEAST_SQUARES_SAMPLES_MAX 32
 #define LEAST_SQUARES_MV_MAX 1024  // max mv in 1/8-pel
+
+#ifndef APPROXIMATE_DIVISOR
+#define IDET_PREC_BITS 48
 #define IDET_WARPEDMODEL_DIFF_BITS (IDET_PREC_BITS - WARPEDMODEL_PREC_BITS)
+#endif  // APPROXIMATE_DIVISOR
 
 static int find_affine_int(const int np, int *pts1, int *pts2,
                            WarpedMotionParams *wm, int mi_row, int mi_col) {
@@ -1229,7 +1316,7 @@ static int find_affine_int(const int np, int *pts1, int *pts2,
 
   int64_t C00, C01, C02, C11, C12, C22;
   int64_t Px[3], Py[3];
-  int64_t Det, iDet, v;
+  int64_t Det, v;
 
   // Offsets to make the values in the arrays smaller
   const int ux = mi_col * MI_SIZE * 8, uy = mi_row * MI_SIZE * 8;
@@ -1305,32 +1392,42 @@ static int find_affine_int(const int np, int *pts1, int *pts2,
   Py[1] = C01 * By[0] + C11 * By[1] + C12 * By[2];
   Py[2] = C02 * By[0] + C12 * By[1] + C22 * By[2];
 
+  int16_t shift;
+  int64_t iDet;
+#if APPROXIMATE_DIVISOR
+  iDet = resolve_divisor_64(labs(Det), &shift) * (Det < 0 ? -1 : 1);
+  if (shift > WARPEDMODEL_PREC_BITS) {
+    shift -= WARPEDMODEL_PREC_BITS;
+  } else {
+    iDet <<= WARPEDMODEL_PREC_BITS;
+  }
+#else
   // Compute inverse of the Determinant
-  // TODO(debargha, yuec): Try to remove this only division if possible
   iDet = ((int64_t)1 << IDET_PREC_BITS) / Det;
+  shift = IDET_WARPEDMODEL_DIFF_BITS;
+#endif  // APPROXIMATE_DIVISOR
 
   v = Px[0] * iDet;
-  wm->wmmat[2] = ROUND_POWER_OF_TWO_SIGNED_64(v, IDET_WARPEDMODEL_DIFF_BITS);
+  wm->wmmat[2] = ROUND_POWER_OF_TWO_SIGNED_64(v, shift);
   v = Px[1] * iDet;
-  wm->wmmat[3] = ROUND_POWER_OF_TWO_SIGNED_64(v, IDET_WARPEDMODEL_DIFF_BITS);
+  wm->wmmat[3] = ROUND_POWER_OF_TWO_SIGNED_64(v, shift);
   v = Px[2] * iDet;
-  wm->wmmat[0] =
-      ROUND_POWER_OF_TWO_SIGNED_64(v, IDET_WARPEDMODEL_DIFF_BITS + 3);
+  wm->wmmat[0] = ROUND_POWER_OF_TWO_SIGNED_64(v, shift + 3);
   // Adjust x displacement for the offset
   off = (ux << WARPEDMODEL_PREC_BITS) - ux * wm->wmmat[2] - uy * wm->wmmat[3];
   wm->wmmat[0] += ROUND_POWER_OF_TWO_SIGNED(off, 3);
 
   v = Py[0] * iDet;
-  wm->wmmat[4] = ROUND_POWER_OF_TWO_SIGNED_64(v, IDET_WARPEDMODEL_DIFF_BITS);
+  wm->wmmat[4] = ROUND_POWER_OF_TWO_SIGNED_64(v, shift);
   v = Py[1] * iDet;
-  wm->wmmat[5] = ROUND_POWER_OF_TWO_SIGNED_64(v, IDET_WARPEDMODEL_DIFF_BITS);
+  wm->wmmat[5] = ROUND_POWER_OF_TWO_SIGNED_64(v, shift);
   v = Py[2] * iDet;
-  wm->wmmat[1] =
-      ROUND_POWER_OF_TWO_SIGNED_64(v, IDET_WARPEDMODEL_DIFF_BITS + 3);
+  wm->wmmat[1] = ROUND_POWER_OF_TWO_SIGNED_64(v, shift + 3);
   // Adjust y displacement for the offset
   off = (uy << WARPEDMODEL_PREC_BITS) - ux * wm->wmmat[4] - uy * wm->wmmat[5];
   wm->wmmat[1] += ROUND_POWER_OF_TWO_SIGNED(off, 3);
   wm->wmmat[6] = wm->wmmat[7] = 0;
+
   return 0;
 }
 
@@ -1350,21 +1447,9 @@ int find_projection(const int np, int *pts1, int *pts2,
     }
     if (wm_params->wmtype == AFFINE || wm_params->wmtype == ROTZOOM) {
       // check compatibility with the fast warp filter
-      int32_t *mat = wm_params->wmmat;
       int32_t alpha, beta, gamma, delta;
-
-      if (mat[2] == 0) return 1;
-
-      alpha = mat[2] - (1 << WARPEDMODEL_PREC_BITS);
-      beta = mat[3];
-      gamma = ((int64_t)mat[4] << WARPEDMODEL_PREC_BITS) / mat[2];
-      delta = mat[5] - (((int64_t)mat[3] * mat[4] + (mat[2] / 2)) / mat[2]) -
-              (1 << WARPEDMODEL_PREC_BITS);
-
-      if ((4 * abs(alpha) + 7 * abs(beta) > (1 << WARPEDMODEL_PREC_BITS)) ||
-          (4 * abs(gamma) + 4 * abs(delta) > (1 << WARPEDMODEL_PREC_BITS))) {
-        return 1;
-      }
+      if (!get_shear_params(wm_params, &alpha, &beta, &gamma, &delta)) return 1;
+      if (!is_affine_shear_allowed(alpha, beta, gamma, delta)) return 1;
     }
   }
 
