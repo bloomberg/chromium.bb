@@ -6,7 +6,7 @@
 #define UI_GFX_CODEC_SKIA_IMAGE_ENCODER_ADAPTER_H
 
 #include "third_party/skia/include/core/SkEncodedImageFormat.h"
-#include "ui/gfx/codec/codec_export.h"
+#include "ui/gfx/gfx_export.h"
 
 class SkWStream;
 class SkPixmap;
@@ -15,10 +15,10 @@ namespace gfx {
 
 // Matches signature of Skia's SkEncodeImage, but makes use of Chromium's
 // encoders.
-CODEC_EXPORT bool EncodeSkiaImage(SkWStream* dst,
-                                  const SkPixmap& pixmap,
-                                  SkEncodedImageFormat format,
-                                  int quality);
+GFX_EXPORT bool EncodeSkiaImage(SkWStream* dst,
+                                const SkPixmap& pixmap,
+                                SkEncodedImageFormat format,
+                                int quality);
 
 }  // namespace gfx
 
