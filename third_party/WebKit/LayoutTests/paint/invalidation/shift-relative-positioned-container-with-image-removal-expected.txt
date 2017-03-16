@@ -30,16 +30,6 @@
           "object": "LayoutIFrame IFRAME id='iframe'",
           "rect": [8, 86, 732, 94],
           "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutImage IMG",
-          "rect": [58, 234, 489, 537],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutImage IMG",
-          "rect": [58, 136, 489, 537],
-          "reason": "bounds change"
         }
       ]
     }

@@ -27,11 +27,6 @@
           "reason": "layoutObject insertion"
         },
         {
-          "object": "LayoutSVGContainer g",
-          "rect": [390, 38, 314, 80],
-          "reason": "layoutObject insertion"
-        },
-        {
           "object": "LayoutSVGContainer g id='tabgroupRound'",
           "rect": [390, 38, 314, 80],
           "reason": "became visible"
@@ -54,11 +49,6 @@
         {
           "object": "LayoutSVGPath path",
           "rect": [263, 279, 301, 301],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGContainer g",
-          "rect": [263, 279, 301, 300],
           "reason": "layoutObject insertion"
         },
         {
@@ -107,19 +97,9 @@
           "reason": "layoutObject insertion"
         },
         {
-          "object": "LayoutSVGContainer g",
-          "rect": [507, 233, 236, 159],
-          "reason": "layoutObject insertion"
-        },
-        {
           "object": "LayoutSVGContainer g id='tabgroupRectTriangle'",
           "rect": [507, 233, 236, 159],
           "reason": "became visible"
-        },
-        {
-          "object": "LayoutSVGContainer g",
-          "rect": [7, 257, 236, 158],
-          "reason": "layoutObject insertion"
         },
         {
           "object": "LayoutSVGContainer g id='tabgroupTriangle'",
@@ -174,11 +154,6 @@
         {
           "object": "LayoutSVGPath path",
           "rect": [38, 6, 159, 238],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGContainer g",
-          "rect": [38, 7, 158, 236],
           "reason": "layoutObject insertion"
         },
         {

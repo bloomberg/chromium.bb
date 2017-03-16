@@ -10,11 +10,6 @@
           "object": "LayoutMultiColumnFlowThread (anonymous)",
           "rect": [8, 8, 630, 20],
           "reason": "border box change"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [488, 8, 80, 20],
-          "reason": "layoutObject insertion"
         }
       ]
     }

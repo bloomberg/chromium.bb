@@ -1,0 +1,195 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutTableCell TD class='half'",
+          "rect": [8, 353, 60, 38],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutTableCell TD class='half'",
+          "rect": [8, 338, 60, 38],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutTableCell TD class='half'",
+          "rect": [8, 323, 60, 38],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutTableCell TD class='half'",
+          "rect": [8, 308, 60, 38],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutTableCell TD class='red half'",
+          "rect": [8, 248, 60, 30],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutTableCell TD class='green half'",
+          "rect": [8, 218, 60, 30],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutTableCell TD class='red half'",
+          "rect": [8, 218, 60, 30],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutTableCell TD class='green half'",
+          "rect": [8, 188, 60, 30],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutTableCell TD class='green half'",
+          "rect": [8, 158, 60, 30],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutTableCell TD class='green half'",
+          "rect": [8, 128, 60, 30],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutTableCell TD class='red half'",
+          "rect": [8, 128, 60, 30],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='top' class='blue half'",
+          "rect": [8, 98, 60, 30],
+          "reason": "became invisible"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "rect": [8, 98, 60, 30],
+          "reason": "became invisible"
+        },
+        {
+          "object": "LayoutTableCell TD class='red half'",
+          "rect": [8, 98, 60, 30],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutTableCell TD class='green half'",
+          "rect": [8, 68, 60, 30],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutTableCell TD class='green half'",
+          "rect": [8, 38, 60, 30],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutTableCell TD class='red half'",
+          "rect": [8, 38, 60, 30],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow CAPTION id='caption1' class='blue half'",
+          "rect": [8, 8, 60, 30],
+          "reason": "became invisible"
+        },
+        {
+          "object": "LayoutTableCell TD class='red half'",
+          "rect": [8, 8, 60, 30],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutTable TABLE",
+          "rect": [8, 372, 60, 19],
+          "reason": "incremental"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow CAPTION id='caption1' class='blue half'",
+      "reason": "became invisible"
+    },
+    {
+      "object": "LayoutTableRow TR",
+      "reason": "location change"
+    },
+    {
+      "object": "LayoutTableCell TD class='red half'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutTableRow TR",
+      "reason": "location change"
+    },
+    {
+      "object": "LayoutTableCell TD class='green half'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "became invisible"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='top' class='blue half'",
+      "reason": "became invisible"
+    },
+    {
+      "object": "LayoutTableRow TR",
+      "reason": "location change"
+    },
+    {
+      "object": "LayoutTableCell TD class='red half'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutTableRow TR",
+      "reason": "location change"
+    },
+    {
+      "object": "LayoutTableCell TD class='green half'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutTableRow TR",
+      "reason": "location change"
+    },
+    {
+      "object": "LayoutTableCell TD class='green half'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutTableRow TR",
+      "reason": "location change"
+    },
+    {
+      "object": "LayoutTableCell TD class='red half'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutTable TABLE",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutTableRow TR",
+      "reason": "location change"
+    },
+    {
+      "object": "LayoutTableCell TD class='half'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutTableRow TR",
+      "reason": "location change"
+    },
+    {
+      "object": "LayoutTableCell TD class='half'",
+      "reason": "bounds change"
+    }
+  ]
+}
+

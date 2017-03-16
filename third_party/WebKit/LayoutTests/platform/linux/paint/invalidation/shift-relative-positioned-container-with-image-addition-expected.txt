@@ -30,16 +30,6 @@
           "object": "LayoutView #document",
           "rect": [10, 94, 728, 90],
           "reason": "style change"
-        },
-        {
-          "object": "LayoutImage IMG",
-          "rect": [58, 236, 489, 537],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutImage IMG",
-          "rect": [58, 142, 489, 537],
-          "reason": "bounds change"
         }
       ]
     }

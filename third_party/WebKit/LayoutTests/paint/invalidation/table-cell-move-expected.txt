@@ -22,16 +22,6 @@
           "reason": "became invisible"
         },
         {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [8, 260, 60, 60],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [8, 200, 60, 60],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutTableCell TD",
           "rect": [8, 140, 60, 60],
           "reason": "became visible"

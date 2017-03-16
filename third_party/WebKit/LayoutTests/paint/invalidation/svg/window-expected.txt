@@ -47,21 +47,6 @@
           "reason": "layoutObject insertion"
         },
         {
-          "object": "LayoutSVGContainer g id='navWindow'",
-          "rect": [613, 81, 185, 169],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutSVGContainer g id='decoGroupnavWindow'",
-          "rect": [613, 81, 185, 159],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGContainer g id='windowTitlebarGroupnavWindow'",
-          "rect": [613, 81, 185, 159],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutSVGRect rect",
           "rect": [624, 92, 174, 159],
           "reason": "layoutObject insertion"
@@ -177,11 +162,6 @@
           "reason": "layoutObject insertion"
         },
         {
-          "object": "LayoutSVGContainer use id='maximizeButtonnavWindow'",
-          "rect": [769, 94, 11, 11],
-          "reason": "full"
-        },
-        {
           "object": "LayoutSVGRect rect",
           "rect": [769, 94, 11, 11],
           "reason": "bounds change"
@@ -257,26 +237,6 @@
           "reason": "layoutObject insertion"
         },
         {
-          "object": "LayoutSVGContainer use id='closeButtonnavWindow'",
-          "rect": [783, 95, 10, 10],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutSVGContainer use id='maximizeButtonnavWindow'",
-          "rect": [616, 100, 10, 10],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutSVGContainer use id='closeButtonnavWindow'",
-          "rect": [616, 84, 10, 10],
-          "reason": "full"
-        },
-        {
-          "object": "LayoutSVGContainer use id='minimizeButtonnavWindow'",
-          "rect": [616, 116, 10, 9],
-          "reason": "full"
-        },
-        {
           "object": "LayoutSVGPath line",
           "rect": [616, 123, 10, 3],
           "reason": "bounds change"
@@ -290,11 +250,6 @@
           "object": "LayoutSVGPath line",
           "rect": [428, 388, 10, 2],
           "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGContainer use id='minimizeButtonnavWindow'",
-          "rect": [757, 95, 9, 10],
-          "reason": "full"
         },
         {
           "object": "LayoutSVGPath line",

@@ -10,11 +10,6 @@
           "object": "LayoutSVGContainer g",
           "rect": [9, 13, 48, 28],
           "reason": "bounds change"
-        },
-        {
-          "object": "LayoutSVGText text id='t'",
-          "rect": [9, 13, 48, 28],
-          "reason": "style change"
         }
       ]
     }

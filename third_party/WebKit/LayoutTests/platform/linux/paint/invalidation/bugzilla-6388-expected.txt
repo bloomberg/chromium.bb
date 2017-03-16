@@ -10,11 +10,6 @@
           "object": "LayoutBlockFlow (positioned) DIV",
           "rect": [8, 136, 100, 100],
           "reason": "location change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [8, 136, 100, 100],
-          "reason": "became invisible"
         }
       ]
     }

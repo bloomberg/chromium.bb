@@ -1,0 +1,136 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [1250, 585],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='shiftMe'",
+          "rect": [0, 0, 1500, 237],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='shiftMe'",
+          "rect": [-250, 0, 1500, 237],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV class='imageWrapper'",
+          "rect": [704, 0, 700, 237],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV class='imageWrapper'",
+          "rect": [454, 0, 700, 237],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV class='imageWrapper'",
+          "rect": [0, 0, 700, 237],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV class='imageWrapper'",
+          "rect": [-250, 0, 700, 237],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [1250, 0, 250, 585],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutImage IMG",
+          "rect": [704, 0, 214, 232],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutImage IMG",
+          "rect": [454, 0, 214, 232],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutImage IMG",
+          "rect": [0, 0, 214, 232],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutImage IMG",
+          "rect": [-250, 0, 214, 232],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [700, 217, 4, 19],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [450, 217, 4, 19],
+          "reason": "bounds change"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutView #document",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='shiftMe'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutBlockFlow (relative positioned) DIV class='imageWrapper'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutImage IMG",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "location change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "bounds change"
+    },
+    {
+      "object": "InlineTextBox '\n'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutBlockFlow (relative positioned) DIV class='imageWrapper'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutImage IMG",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "location change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "location change"
+    }
+  ]
+}
+

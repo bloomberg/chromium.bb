@@ -17,16 +17,6 @@
           "reason": "layoutObject insertion"
         },
         {
-          "object": "LayoutSVGText text",
-          "rect": [0, 130, 519, 132],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGText text",
-          "rect": [0, 15, 371, 129],
-          "reason": "layoutObject insertion"
-        },
-        {
           "object": "LayoutSVGRect rect",
           "rect": [16, 16, 18, 18],
           "reason": "layoutObject insertion"

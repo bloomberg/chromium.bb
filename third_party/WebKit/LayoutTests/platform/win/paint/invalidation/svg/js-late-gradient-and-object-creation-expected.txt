@@ -10,21 +10,6 @@
           "object": "LayoutSVGContainer g id='content'",
           "rect": [0, 15, 759, 362],
           "reason": "became visible"
-        },
-        {
-          "object": "LayoutSVGText text",
-          "rect": [0, 247, 759, 130],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGText text",
-          "rect": [0, 130, 596, 130],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutSVGText text",
-          "rect": [0, 15, 449, 127],
-          "reason": "layoutObject insertion"
         }
       ]
     }

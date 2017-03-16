@@ -637,6 +637,9 @@ ObjectPaintInvalidatorWithContext::invalidatePaintIfNeededWithComputedReason(
       return PaintInvalidationDelayedFull;
     default:
       DCHECK(isImmediateFullPaintInvalidationReason(reason));
+      // This allows descendants to know the computed reason if it's different
+      // from the original reason before paint invalidation.
+      m_object.getMutableForPainting().setShouldDoFullPaintInvalidation(reason);
       fullyInvalidatePaint(reason, m_context.oldVisualRect,
                            m_object.visualRect());
   }

@@ -28,11 +28,6 @@
           "reason": "scroll"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [3, 65, 58, 16],
-          "reason": "subtree"
-        },
-        {
           "object": "LayoutView #document",
           "rect": [238, 65, 15, 235],
           "reason": "scroll"

@@ -10,16 +10,6 @@
           "object": "LayoutBlockFlow DIV",
           "rect": [7, 43, 786, 62],
           "reason": "border box change"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='div'",
-          "rect": [8, 84, 784, 20],
-          "reason": "layoutObject insertion"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='div'",
-          "rect": [8, 64, 1, 19],
-          "reason": "caret"
         }
       ]
     }

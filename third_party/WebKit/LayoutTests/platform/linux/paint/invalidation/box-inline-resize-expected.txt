@@ -17,16 +17,6 @@
           "reason": "bounds change"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [40, 107, 113, 27],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [8, 107, 113, 27],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutBlockFlow (anonymous)",
           "rect": [8, 88, 32, 67],
           "reason": "forced by layout"

@@ -15,21 +15,6 @@
           "object": "LayoutView #document",
           "rect": [0, 250, 600, 250],
           "reason": "incremental"
-        },
-        {
-          "object": "LayoutFrame FRAME",
-          "rect": [153, 0, 294, 500],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutFrame FRAME",
-          "rect": [453, 0, 147, 500],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutFrame FRAME",
-          "rect": [0, 0, 147, 500],
-          "reason": "forced by layout"
         }
       ]
     }
@@ -83,34 +68,9 @@
           "reason": "border box change"
         },
         {
-          "object": "LayoutFrame FRAME",
-          "rect": [153, 0, 294, 250],
-          "reason": "forced by layout"
-        },
-        {
           "object": "LayoutView #document",
           "rect": [400, 0, 200, 250],
           "reason": "incremental"
-        },
-        {
-          "object": "LayoutFrame FRAME",
-          "rect": [103, 0, 194, 250],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutFrame FRAME",
-          "rect": [453, 0, 147, 250],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutFrame FRAME",
-          "rect": [0, 0, 147, 250],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutFrame FRAME",
-          "rect": [303, 0, 97, 250],
-          "reason": "forced by layout"
         }
       ]
     }
@@ -191,21 +151,6 @@
           "object": "LayoutView #document",
           "rect": [0, 250, 400, 350],
           "reason": "incremental"
-        },
-        {
-          "object": "LayoutFrame FRAME",
-          "rect": [103, 0, 194, 600],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutFrame FRAME",
-          "rect": [303, 0, 97, 600],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutFrame FRAME",
-          "rect": [0, 0, 97, 600],
-          "reason": "forced by layout"
         }
       ]
     }
@@ -250,31 +195,6 @@
           "object": "LayoutView #document",
           "rect": [400, 0, 400, 600],
           "reason": "incremental"
-        },
-        {
-          "object": "LayoutFrame FRAME",
-          "rect": [203, 0, 394, 600],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutFrame FRAME",
-          "rect": [603, 0, 197, 600],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutFrame FRAME",
-          "rect": [0, 0, 197, 600],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutFrame FRAME",
-          "rect": [103, 0, 194, 600],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutFrame FRAME",
-          "rect": [303, 0, 97, 600],
-          "reason": "forced by layout"
         }
       ]
     }

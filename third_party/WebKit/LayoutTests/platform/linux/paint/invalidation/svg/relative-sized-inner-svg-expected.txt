@@ -10,16 +10,6 @@
           "object": "LayoutBlockFlow div id='contentBox'",
           "rect": [8, 52, 402, 402],
           "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutSVGPath path",
-          "rect": [27, 69, 364, 364],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutSVGPath path",
-          "rect": [13, 207, 92, 91],
-          "reason": "bounds change"
         }
       ]
     }

@@ -15,11 +15,6 @@
           "object": "LayoutBlockFlow DIV id='inner-editor'",
           "rect": [10, 11, 201, 16],
           "reason": "subtree"
-        },
-        {
-          "object": "LayoutBlockFlow DIV id='inner-editor'",
-          "rect": [209, 11, 2, 16],
-          "reason": "caret"
         }
       ]
     }

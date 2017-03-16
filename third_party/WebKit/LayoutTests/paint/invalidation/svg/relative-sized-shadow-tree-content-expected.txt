@@ -13,18 +13,8 @@
         },
         {
           "object": "LayoutSVGRect rect id='targetRect'",
-          "rect": [209, 269, 200, 200],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutSVGRect rect id='targetRect'",
           "rect": [9, 269, 200, 200],
           "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutSVGContainer g id='targetUse'",
-          "rect": [9, 69, 200, 200],
-          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGContainer use id='targetUse'",
@@ -34,21 +24,6 @@
         {
           "object": "LayoutSVGRect rect id='targetRect1'",
           "rect": [9, 69, 200, 200],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutSVGRect rect id='targetRect1'",
-          "rect": [9, 69, 200, 200],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutSVGRect rect id='targetRect1'",
-          "rect": [9, 69, 200, 200],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutSVGRect rect id='targetRect'",
-          "rect": [59, 269, 50, 200],
           "reason": "forced by layout"
         }
       ]

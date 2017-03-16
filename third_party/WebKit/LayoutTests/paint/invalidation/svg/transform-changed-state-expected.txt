@@ -12,19 +12,9 @@
           "reason": "bounds change"
         },
         {
-          "object": "LayoutSVGRect rect",
-          "rect": [108, 108, 100, 100],
-          "reason": "full"
-        },
-        {
           "object": "LayoutSVGContainer g",
           "rect": [108, 8, 100, 100],
           "reason": "bounds change"
-        },
-        {
-          "object": "LayoutSVGRect rect",
-          "rect": [108, 8, 100, 100],
-          "reason": "full"
         }
       ]
     }

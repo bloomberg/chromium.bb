@@ -1,0 +1,51 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGContainer g id='box'",
+          "rect": [0, 10, 230, 350],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutSVGRect rect id='rect3'",
+          "rect": [0, 240, 230, 120],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGRect rect id='rect2'",
+          "rect": [10, 130, 200, 100],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutSVGRect rect id='rect1'",
+          "rect": [10, 10, 200, 100],
+          "reason": "full"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutSVGContainer g id='box'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutSVGRect rect id='rect1'",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutSVGRect rect id='rect2'",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutSVGRect rect id='rect3'",
+      "reason": "full"
+    }
+  ]
+}
+

@@ -1,0 +1,89 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV id='keep' class='item'",
+          "rect": [348, 88, 100, 100],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='to_remove' class='item'",
+          "rect": [348, 88, 100, 100],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='keep' class='item'",
+          "rect": [88, 88, 100, 100],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [348, 88, 4, 19],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [348, 88, 4, 19],
+          "reason": "layoutObject removal"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [88, 88, 4, 19],
+          "reason": "bounds change"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutText #text",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='to_remove' class='item'",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutBlockFlow (relative positioned) (floating) DIV id='to_remove_inner' class='inner'",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutBlockFlow (floating) DIV id='node' class='outer'",
+      "reason": "layoutObject removal"
+    },
+    {
+      "object": "LayoutBlockFlow (floating) DIV id='keep_outer' class='outer'",
+      "reason": "location change"
+    },
+    {
+      "object": "LayoutBlockFlow (relative positioned) (floating) DIV id='keep_inner' class='inner'",
+      "reason": "location change"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='abs_pos'",
+      "reason": "location change"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='keep' class='item'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "bounds change"
+    },
+    {
+      "object": "InlineTextBox '\u00A0'",
+      "reason": "bounds change"
+    }
+  ]
+}
+

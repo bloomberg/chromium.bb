@@ -148,16 +148,6 @@
           "reason": "bounds change"
         },
         {
-          "object": "LayoutText #text",
-          "rect": [208, 8, 897, 214],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [8, 8, 897, 214],
-          "reason": "bounds change"
-        },
-        {
           "object": "LayoutView #document",
           "rect": [513, 235, 600, 15],
           "reason": "scroll"

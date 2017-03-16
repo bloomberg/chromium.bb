@@ -25,16 +25,6 @@
           "object": "LayoutTableCell TD",
           "rect": [2, 52, 102, 238],
           "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [2, 292, 102, 236],
-          "reason": "forced by layout"
-        },
-        {
-          "object": "LayoutTableCell TD",
-          "rect": [2, 102, 102, 46],
-          "reason": "forced by layout"
         }
       ]
     }

@@ -12,11 +12,6 @@
           "reason": "bounds change"
         },
         {
-          "object": "LayoutSVGText text",
-          "rect": [16, 40, 784, 168],
-          "reason": "style change"
-        },
-        {
           "object": "LayoutSVGPath path",
           "rect": [0, 0, 334, 500],
           "reason": "layoutObject insertion"

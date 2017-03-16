@@ -10,11 +10,6 @@
           "object": "LayoutBlockFlow DIV",
           "rect": [8, 8, 100, 100],
           "reason": "background obscuration change"
-        },
-        {
-          "object": "LayoutSVGRoot svg",
-          "rect": [8, 8, 100, 100],
-          "reason": "style change"
         }
       ]
     }

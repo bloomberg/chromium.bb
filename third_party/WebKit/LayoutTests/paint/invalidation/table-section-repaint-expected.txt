@@ -62,11 +62,6 @@
           "reason": "bounds change"
         },
         {
-          "object": "LayoutBlockFlow DIV id='top' class='blue half'",
-          "rect": [8, 98, 60, 30],
-          "reason": "became invisible"
-        },
-        {
           "object": "LayoutTableCell TD",
           "rect": [8, 98, 60, 30],
           "reason": "became invisible"

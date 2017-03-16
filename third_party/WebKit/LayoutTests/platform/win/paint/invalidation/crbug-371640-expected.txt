@@ -24,17 +24,7 @@
         {
           "object": "LayoutText #text",
           "rect": [348, 84, 4, 17],
-          "reason": "bounds change"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [348, 84, 4, 17],
           "reason": "layoutObject removal"
-        },
-        {
-          "object": "LayoutText #text",
-          "rect": [88, 84, 4, 17],
-          "reason": "bounds change"
         }
       ]
     }
