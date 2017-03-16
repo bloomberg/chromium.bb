@@ -1319,10 +1319,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   return NO;
 }
 
-- (void)webWillFinishHistoryNavigation {
-  [parentTabModel_ notifyTabChanged:self];
-}
-
 - (void)webState:(web::WebState*)webState
     didFinishNavigation:(web::NavigationContext*)navigation {
   if (navigation->IsSameDocument()) {
