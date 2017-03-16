@@ -9,42 +9,28 @@
 #include <utility>
 #include <vector>
 
-#include "ash/common/cast_config_controller.h"
-#include "ash/common/material_design/material_design_controller.h"
-#include "ash/common/session/session_state_delegate.h"
-#include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/system/chromeos/screen_security/screen_tray_item.h"
-#include "ash/common/system/tray/fixed_sized_image_view.h"
 #include "ash/common/system/tray/hover_highlight_view.h"
 #include "ash/common/system/tray/system_tray.h"
-#include "ash/common/system/tray/system_tray_delegate.h"
-#include "ash/common/system/tray/throbber_view.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_details_view.h"
 #include "ash/common/system/tray/tray_item_more.h"
 #include "ash/common/system/tray/tray_item_view.h"
-#include "ash/common/system/tray/tray_utils.h"
 #include "ash/common/wm_shell.h"
-#include "ash/public/cpp/shelf_types.h"
 #include "ash/public/interfaces/cast_config.mojom.h"
-#include "ash/resources/grit/ash_resources.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/text_elider.h"
-#include "ui/views/background.h"
-#include "ui/views/border.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/scroll_view.h"
-#include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 
 namespace ash {
@@ -64,13 +50,6 @@ base::string16 ElideString(const base::string16& text) {
   return elided;
 }
 
-// Returns a vectorized version of the Cast icon. The icon's interior region is
-// filled in if |is_casting| is true.
-gfx::ImageSkia GetCastIconForSystemMenu(bool is_casting) {
-  return gfx::CreateVectorIcon(
-      kSystemMenuCastIcon, is_casting ? kMenuIconColor : SK_ColorTRANSPARENT);
-}
-
 }  // namespace
 
 namespace tray {
@@ -84,6 +63,10 @@ class CastSelectDefaultView : public TrayItemMore {
   explicit CastSelectDefaultView(SystemTrayItem* owner);
   ~CastSelectDefaultView() override;
 
+ protected:
+  // TrayItemMore:
+  void UpdateStyle() override;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(CastSelectDefaultView);
 };
@@ -91,13 +74,6 @@ class CastSelectDefaultView : public TrayItemMore {
 CastSelectDefaultView::CastSelectDefaultView(SystemTrayItem* owner)
     : TrayItemMore(owner) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-
-  // Update the image and label.
-  if (MaterialDesignController::IsSystemTrayMenuMaterial())
-    SetImage(GetCastIconForSystemMenu(false));
-  else
-    SetImage(*rb.GetImageNamed(IDR_AURA_UBER_TRAY_CAST).ToImageSkia());
-
   base::string16 label =
       rb.GetLocalizedString(IDS_ASH_STATUS_TRAY_CAST_DESKTOP);
   SetLabel(label);
@@ -105,6 +81,13 @@ CastSelectDefaultView::CastSelectDefaultView(SystemTrayItem* owner)
 }
 
 CastSelectDefaultView::~CastSelectDefaultView() {}
+
+void CastSelectDefaultView::UpdateStyle() {
+  TrayItemMore::UpdateStyle();
+
+  std::unique_ptr<TrayPopupItemStyle> style = CreateStyle();
+  SetImage(gfx::CreateVectorIcon(kSystemMenuCastIcon, style->GetIconColor()));
+}
 
 // This view is displayed when the screen is actively being casted; it allows
 // the user to easily stop casting. It fully replaces the
@@ -138,13 +121,8 @@ CastCastView::CastCastView()
           nullptr,
           l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_CAST_CAST_UNKNOWN),
           l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_CAST_STOP)) {
-  if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
-    icon()->SetImage(GetCastIconForSystemMenu(true));
-  } else {
-    ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-    icon()->SetImage(
-        bundle.GetImageNamed(IDR_AURA_UBER_TRAY_CAST_ENABLED).ToImageSkia());
-  }
+  icon()->SetImage(
+      gfx::CreateVectorIcon(kSystemMenuCastEnabledIcon, kMenuIconColor));
 }
 
 CastCastView::~CastCastView() {}
@@ -310,14 +288,8 @@ class CastTrayView : public TrayItemView {
 CastTrayView::CastTrayView(SystemTrayItem* tray_item)
     : TrayItemView(tray_item) {
   CreateImageView();
-  if (MaterialDesignController::UseMaterialDesignSystemIcons()) {
-    image_view()->SetImage(
-        gfx::CreateVectorIcon(kSystemTrayCastIcon, kTrayIconColor));
-  } else {
-    image_view()->SetImage(ui::ResourceBundle::GetSharedInstance()
-                               .GetImageNamed(IDR_AURA_UBER_TRAY_SCREENSHARE)
-                               .ToImageSkia());
-  }
+  image_view()->SetImage(
+      gfx::CreateVectorIcon(kSystemTrayCastIcon, kTrayIconColor));
 }
 
 CastTrayView::~CastTrayView() {}
@@ -427,11 +399,7 @@ void CastDetailedView::UpdateReceiverListFromCachedData() {
 views::View* CastDetailedView::AddToReceiverList(
     const ash::mojom::SinkAndRoutePtr& sink_route) {
   const gfx::ImageSkia image =
-      MaterialDesignController::IsSystemTrayMenuMaterial()
-          ? gfx::CreateVectorIcon(kSystemMenuCastDeviceIcon, kMenuIconColor)
-          : *ui::ResourceBundle::GetSharedInstance()
-                 .GetImageNamed(IDR_AURA_UBER_TRAY_CAST_DEVICE_ICON)
-                 .ToImageSkia();
+      gfx::CreateVectorIcon(kSystemMenuCastDeviceIcon, kMenuIconColor);
 
   HoverHighlightView* container = new HoverHighlightView(this);
   container->AddIconAndLabelCustomSize(

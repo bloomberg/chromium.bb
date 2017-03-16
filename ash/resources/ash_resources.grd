@@ -38,9 +38,6 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_RESIZE_SHADOW_TOP_RIGHT" file="common/resize_shadow_top_right.png" />
 
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_ACCESSIBILITY_DARK" file="cros/status/status_accessibility_dark.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_CAST" file="cros/status/status_cast.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_CAST_DEVICE_ICON" file="cros/status/status_cast_device_icon.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_CAST_ENABLED" file="cros/status/status_cast_enabled.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_HELP" file="cros/status/status_help.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_HELP_HOVER" file="cros/status/status_help_hover.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_IME" file="cros/status/status_ime.png" />
