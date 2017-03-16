@@ -42,6 +42,8 @@ static const struct wl_interface *types[] = {
 	NULL,
 	NULL,
 	NULL,
+	NULL,
+	NULL,
 	&zcr_remote_surface_v1_interface,
 	&wl_surface_interface,
 	NULL,
@@ -54,15 +56,15 @@ static const struct wl_interface *types[] = {
 
 static const struct wl_message zcr_remote_shell_v1_requests[] = {
 	{ "destroy", "", types + 0 },
-	{ "get_remote_surface", "nou", types + 10 },
-	{ "get_notification_surface", "nos", types + 13 },
+	{ "get_remote_surface", "nou", types + 12 },
+	{ "get_notification_surface", "nos", types + 15 },
 };
 
 static const struct wl_message zcr_remote_shell_v1_events[] = {
-	{ "activated", "?o?o", types + 16 },
+	{ "activated", "?o?o", types + 18 },
 	{ "configuration_changed", "iiifiiiiu", types + 0 },
-	{ "workspace", "uuiiiiiiii", types + 0 },
-	{ "configure", "uuifu", types + 0 },
+	{ "workspace", "uuiiiiiiiiif", types + 0 },
+	{ "configure", "u", types + 0 },
 };
 
 WL_EXPORT const struct wl_interface zcr_remote_shell_v1_interface = {

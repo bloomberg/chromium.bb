@@ -342,9 +342,9 @@ zcr_remote_shell_v1_send_configuration_changed(struct wl_resource *resource_, in
  * @param resource_ The client's resource
  */
 static inline void
-zcr_remote_shell_v1_send_workspace(struct wl_resource *resource_, uint32_t id_hi, uint32_t id_lo, int32_t x, int32_t y, int32_t width, int32_t height, int32_t inset_left, int32_t inset_top, int32_t inset_right, int32_t inset_bottom)
+zcr_remote_shell_v1_send_workspace(struct wl_resource *resource_, uint32_t id_hi, uint32_t id_lo, int32_t x, int32_t y, int32_t width, int32_t height, int32_t inset_left, int32_t inset_top, int32_t inset_right, int32_t inset_bottom, int32_t transform, wl_fixed_t scale_factor)
 {
-	wl_resource_post_event(resource_, ZCR_REMOTE_SHELL_V1_WORKSPACE, id_hi, id_lo, x, y, width, height, inset_left, inset_top, inset_right, inset_bottom);
+	wl_resource_post_event(resource_, ZCR_REMOTE_SHELL_V1_WORKSPACE, id_hi, id_lo, x, y, width, height, inset_left, inset_top, inset_right, inset_bottom, transform, scale_factor);
 }
 
 /**
@@ -353,9 +353,9 @@ zcr_remote_shell_v1_send_workspace(struct wl_resource *resource_, uint32_t id_hi
  * @param resource_ The client's resource
  */
 static inline void
-zcr_remote_shell_v1_send_configure(struct wl_resource *resource_, uint32_t primary_id_hi, uint32_t primary_id_lo, int32_t transform, wl_fixed_t scale_factor, uint32_t layout_mode)
+zcr_remote_shell_v1_send_configure(struct wl_resource *resource_, uint32_t layout_mode)
 {
-	wl_resource_post_event(resource_, ZCR_REMOTE_SHELL_V1_CONFIGURE, primary_id_hi, primary_id_lo, transform, scale_factor, layout_mode);
+	wl_resource_post_event(resource_, ZCR_REMOTE_SHELL_V1_CONFIGURE, layout_mode);
 }
 
 /**

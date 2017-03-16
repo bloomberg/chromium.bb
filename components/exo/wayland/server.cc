@@ -2127,7 +2127,6 @@ class WaylandRemoteShell : public WMHelper::MaximizeModeObserver,
     needs_send_display_metrics_ = false;
 
     const display::Screen* screen = display::Screen::GetScreen();
-    display::Display primary_display = screen->GetPrimaryDisplay();
 
     if (IsMultiDisplaySupported()) {
       for (const auto& display : screen->GetAllDisplays()) {
@@ -2139,18 +2138,15 @@ class WaylandRemoteShell : public WMHelper::MaximizeModeObserver,
             static_cast<uint32_t>(display.id() >> 32),
             static_cast<uint32_t>(display.id()),
             bounds.x(), bounds.y(), bounds.width(), bounds.height(),
-            insets.left(), insets.top(), insets.right(), insets.bottom());
+            insets.left(), insets.top(), insets.right(), insets.bottom(),
+            OutputTransform(display.rotation()),
+            wl_fixed_from_double(display.device_scale_factor()));
       }
 
-      zcr_remote_shell_v1_send_configure(
-          remote_shell_resource_,
-          static_cast<uint32_t>(primary_display.id() >> 32),
-          static_cast<uint32_t>(primary_display.id()),
-          OutputTransform(primary_display.rotation()),
-          wl_fixed_from_double(primary_display.device_scale_factor()),
-          layout_mode_);
+      zcr_remote_shell_v1_send_configure(remote_shell_resource_, layout_mode_);
     }
 
+    display::Display primary_display = screen->GetPrimaryDisplay();
     const gfx::Insets& insets = primary_display.GetWorkAreaInsets();
 
     zcr_remote_shell_v1_send_configuration_changed(

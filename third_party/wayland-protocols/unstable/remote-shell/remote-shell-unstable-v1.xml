@@ -157,6 +157,8 @@
       <arg name="inset_top" type="int"/>
       <arg name="inset_right" type="int"/>
       <arg name="inset_bottom" type="int"/>
+      <arg name="transform" type="int"/>
+      <arg name="scale_factor" type="fixed"/>
     </event>
 
     <event name="configure" version="3">
@@ -164,10 +166,6 @@
 	Suggests a new configuration of the remote shell. Preceded by a series
 	of "workspace" events.
       </description>
-      <arg name="primary_id_hi" type="uint"/>
-      <arg name="primary_id_lo" type="uint"/>
-      <arg name="transform" type="int"/>
-      <arg name="scale_factor" type="fixed"/>
       <arg name="layout_mode" type="uint"/>
     </event>
   </interface>

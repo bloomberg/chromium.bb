@@ -277,7 +277,9 @@ struct zcr_remote_shell_v1_listener {
 			  int32_t inset_left,
 			  int32_t inset_top,
 			  int32_t inset_right,
-			  int32_t inset_bottom);
+			  int32_t inset_bottom,
+			  int32_t transform,
+			  wl_fixed_t scale_factor);
 	/**
 	 * suggests configuration of remote shell
 	 *
@@ -286,10 +288,6 @@ struct zcr_remote_shell_v1_listener {
 	 */
 	void (*configure)(void *data,
 			  struct zcr_remote_shell_v1 *zcr_remote_shell_v1,
-			  uint32_t primary_id_hi,
-			  uint32_t primary_id_lo,
-			  int32_t transform,
-			  wl_fixed_t scale_factor,
 			  uint32_t layout_mode);
 };
 
