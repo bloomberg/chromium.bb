@@ -48,7 +48,7 @@ TEST_P(PaintLayerClipperTest, LayoutSVGRoot) {
   PaintLayer* targetPaintLayer =
       toLayoutBoxModelObject(target->layoutObject())->layer();
   ClipRectsContext context(document().layoutView()->layer(), UncachedClipRects,
-                           IgnoreOverlayScrollbarSize,
+                           IgnorePlatformOverlayScrollbarSize,
                            LayoutSize(FloatSize(0.25, 0.35)));
   // When RLS is enabled, the LayoutView will have a composited scrolling layer,
   // so don't apply an overflow clip.

@@ -588,7 +588,8 @@ ClipRects& PaintLayerClipper::paintingClipRects(
     const LayoutSize& subpixelAccumulation) const {
   DCHECK(!m_geometryMapper);
   ClipRectsContext context(rootLayer, PaintingClipRects,
-                           IgnoreOverlayScrollbarSize, subpixelAccumulation);
+                           IgnorePlatformOverlayScrollbarSize,
+                           subpixelAccumulation);
   if (respectOverflowClip == IgnoreOverflowClip)
     context.setIgnoreOverflowClip();
   return getClipRects(context);

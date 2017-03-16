@@ -230,8 +230,8 @@ LayoutRect LayoutSVGRoot::visualOverflowRect() const {
 
 LayoutRect LayoutSVGRoot::overflowClipRect(const LayoutPoint& location,
                                            OverlayScrollbarClipBehavior) const {
-  return LayoutRect(pixelSnappedIntRect(
-      LayoutReplaced::overflowClipRect(location, IgnoreOverlayScrollbarSize)));
+  return LayoutRect(pixelSnappedIntRect(LayoutReplaced::overflowClipRect(
+      location, IgnorePlatformOverlayScrollbarSize)));
 }
 
 void LayoutSVGRoot::paintReplaced(const PaintInfo& paintInfo,

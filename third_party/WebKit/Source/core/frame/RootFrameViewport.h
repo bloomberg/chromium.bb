@@ -86,9 +86,11 @@ class CORE_EXPORT RootFrameViewport final
   GraphicsLayer* layerForVerticalScrollbar() const override;
   GraphicsLayer* layerForScrollCorner() const override;
   int horizontalScrollbarHeight(
-      OverlayScrollbarClipBehavior = IgnoreOverlayScrollbarSize) const override;
+      OverlayScrollbarClipBehavior =
+          IgnorePlatformOverlayScrollbarSize) const override;
   int verticalScrollbarWidth(
-      OverlayScrollbarClipBehavior = IgnoreOverlayScrollbarSize) const override;
+      OverlayScrollbarClipBehavior =
+          IgnorePlatformOverlayScrollbarSize) const override;
   ScrollResult userScroll(ScrollGranularity, const FloatSize&) override;
   bool scrollAnimatorEnabled() const override;
   HostWindow* getHostWindow() const override;

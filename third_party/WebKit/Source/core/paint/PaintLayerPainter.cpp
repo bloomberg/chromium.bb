@@ -450,23 +450,23 @@ PaintResult PaintLayerPainter::paintLayerContents(
       paintLayerForFragments->appendSingleFragmentIgnoringPagination(
           layerFragments, localPaintingInfo.rootLayer,
           localPaintingInfo.paintDirtyRect, cacheSlot, geometryMapperOption,
-          IgnoreOverlayScrollbarSize, respectOverflowClip, &offsetFromRoot,
-          localPaintingInfo.subPixelAccumulation);
+          IgnorePlatformOverlayScrollbarSize, respectOverflowClip,
+          &offsetFromRoot, localPaintingInfo.subPixelAccumulation);
     } else if (isFixedPositionObjectInPagedMedia()) {
       PaintLayerFragments singleFragment;
       paintLayerForFragments->appendSingleFragmentIgnoringPagination(
           singleFragment, localPaintingInfo.rootLayer,
           localPaintingInfo.paintDirtyRect, cacheSlot, geometryMapperOption,
-          IgnoreOverlayScrollbarSize, respectOverflowClip, &offsetFromRoot,
-          localPaintingInfo.subPixelAccumulation);
+          IgnorePlatformOverlayScrollbarSize, respectOverflowClip,
+          &offsetFromRoot, localPaintingInfo.subPixelAccumulation);
       repeatFixedPositionObjectInPages(singleFragment[0], paintingInfo,
                                        layerFragments);
     } else {
       paintLayerForFragments->collectFragments(
           layerFragments, localPaintingInfo.rootLayer,
           localPaintingInfo.paintDirtyRect, cacheSlot, geometryMapperOption,
-          IgnoreOverlayScrollbarSize, respectOverflowClip, &offsetFromRoot,
-          localPaintingInfo.subPixelAccumulation);
+          IgnorePlatformOverlayScrollbarSize, respectOverflowClip,
+          &offsetFromRoot, localPaintingInfo.subPixelAccumulation);
     }
 
     if (paintFlags & PaintLayerPaintingAncestorClippingMaskPhase) {
@@ -729,7 +729,7 @@ PaintResult PaintLayerPainter::paintLayerWithTransform(
     // here.
     paginationLayer->collectFragments(
         layerFragments, paintingInfo.rootLayer, paintingInfo.paintDirtyRect,
-        cacheSlot, geometryMapperOption, IgnoreOverlayScrollbarSize,
+        cacheSlot, geometryMapperOption, IgnorePlatformOverlayScrollbarSize,
         respectOverflowClip, nullptr, paintingInfo.subPixelAccumulation,
         &transformedExtent);
   }
@@ -746,7 +746,7 @@ PaintResult PaintLayerPainter::paintLayerWithTransform(
           paintingInfo.rootLayer,
           (paintFlags & PaintLayerUncachedClipRects) ? UncachedClipRects
                                                      : PaintingClipRects,
-          IgnoreOverlayScrollbarSize);
+          IgnorePlatformOverlayScrollbarSize);
       if (shouldRespectOverflowClip(paintFlags, m_paintLayer.layoutObject()) ==
           IgnoreOverflowClip)
         clipRectsContext.setIgnoreOverflowClip();
