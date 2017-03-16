@@ -1,0 +1,114 @@
+// This file is generated from {{input_file}}
+
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+
+{% for file in files %}
+#include "{{file.header_name}}.h"
+{% endfor %}
+#include "InstrumentingAgents.h"
+#include "core/CoreExport.h"
+{% for agent in agents %}
+{% set class_name = agent | agent_name_to_class %}
+{% if class_name == "PerformanceMonitor" %}
+#include "core/frame/PerformanceMonitor.h"
+{% else %}
+#include "core/inspector/{{class_name}}.h"
+{% endif %}
+{% endfor %}
+
+namespace blink {
+
+InstrumentingAgents::InstrumentingAgents() {}
+
+{% for agent in agents %}
+{% set class_name = agent | agent_name_to_class %}
+{% set getter_name = class_name | to_lower_case %}
+void InstrumentingAgents::add{{class_name}}({{class_name}}* agent) {
+  m_{{getter_name}}s.insert(agent);
+  m_has{{class_name}}s = true;
+}
+
+void InstrumentingAgents::remove{{class_name}}({{class_name}}* agent) {
+  m_{{getter_name}}s.erase(agent);
+  m_has{{class_name}}s = !m_{{getter_name}}s.isEmpty();
+}
+
+{% endfor -%}
+
+DEFINE_TRACE(InstrumentingAgents)
+{
+{% for agent in agents %}
+{% set getter_name = agent | agent_name_to_class | to_lower_case %}
+    visitor->trace(m_{{getter_name}}s);
+{% endfor %}
+}
+
+namespace probe {
+{% macro params_list(probe) -%}
+{%- for param in probe.params %}
+{{param.type}} {{param.name}}
+{%- if not loop.last %}, {% endif -%}
+{%- endfor -%}
+{%- endmacro %}
+
+{% macro probe_body(probe, common_name) %}
+{% set agent_probe_name = common_name or probe.name %}
+  InstrumentingAgents* agents = instrumentingAgentsFor({{probe.params[0].name}});
+  if (!agents)
+    return {{probe.default_return_value}};
+{% for param in probe.params %}
+{% if param.is_prp %}
+  RefPtr<{{param.inner_type}}> {{param.value}} = {{param.name}};
+{% endif %}
+{% endfor %}
+{% set maybe_return = "return " if probe.returns_value else "" %}
+{% for agent in probe.agents %}
+{% set class_name = agent | agent_name_to_class %}
+  if (agents->has{{class_name}}s()) {
+    for ({{class_name}}* agent : agents->{{ class_name | to_lower_case }}s())
+      {{maybe_return}}agent->{{agent_probe_name}}({{caller()}});
+  }
+{% endfor %}
+{% if probe.default_return_value %}
+  return {{probe.default_return_value}};
+{% endif %}
+{% endmacro -%}
+
+{% for file in files %}
+{% for probe in file.declarations %}
+{% if probe.is_scoped %}
+{{probe.name}}::{{probe.name}}({{ params_list(probe) }}) :
+{% for param in probe.params %}
+    {{param.name}}({{param.name}})
+{%- if not loop.last %},
+{% endif %}
+{% endfor %} {
+{% call probe_body(probe, "will") %}*this{% endcall %}
+}
+
+{{probe.name}}::~{{probe.name}}() {
+{% call probe_body(probe, "did") %}*this{% endcall %}
+}
+
+{% else -%}
+
+CORE_EXPORT {{probe.return_type}} {{probe.name}}({{ params_list(probe) }}) {
+{% call probe_body(probe, "") %}
+{%- for param in probe.params %}
+{%- if not loop.first or "Keep" in param.options -%}
+{{param.value}}
+{%- if not loop.last %}, {% endif -%}
+{%- endif -%}
+{%- endfor %}
+{%- endcall %}
+}
+
+{% endif %}
+{% endfor %}
+{% endfor %}
+
+} // namespace probe
+} // namespace blink

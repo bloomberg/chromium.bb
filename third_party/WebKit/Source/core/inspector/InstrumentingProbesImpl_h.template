@@ -1,0 +1,55 @@
+// This file is generated from {{input_file}}
+
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef {{file.header_name}}_h
+#define {{file.header_name}}_h
+
+{% for include in file.includes %}
+{{include}}
+{% endfor %}
+
+namespace blink {
+
+{% for forward_decl in file.forward_declarations %}
+{{forward_decl}}
+{% endfor %}
+
+namespace probe {
+{% for probe in file.declarations %}
+
+{%- macro params_decl(probe) %}
+{%- for param in probe.params %}
+{{ param.type }}
+{%- if param.default_value %} = {{ param.default_value }}
+{%- endif %}
+{%- if not loop.last %}, {% endif %}
+{%- endfor %}
+{%- endmacro -%}
+
+{% if probe.is_scoped %}
+
+
+class CORE_EXPORT {{probe.name}} : public ProbeBase {
+  STACK_ALLOCATED()
+ public:
+  explicit {{probe.name}}({{ params_decl(probe) }});
+  ~{{probe.name}}();
+{% for param in probe.params %}
+  {{param.member_type}} {{param.name}};
+{% endfor %}
+};
+{%- else %}
+
+CORE_EXPORT {{probe.return_type}} {{probe.name}}({{ params_decl(probe) }});
+
+{%- endif %}
+{%- endfor %}
+
+
+} // namespace probe
+} // namespace blink
+
+#endif // !defined({{file.header_name}}_h)

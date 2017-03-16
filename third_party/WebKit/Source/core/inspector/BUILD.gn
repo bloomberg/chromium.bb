@@ -92,24 +92,29 @@ blink_core_sources("inspector") {
   ]
 }
 
-action("instrumentation_sources") {
+# instrumentation probes -------------------------------------------------------
+
+action("instrumentation_probes") {
   visibility = [ ":*" ]
-  script = "CodeGeneratorInstrumentation.py"
+  script = "InstrumentingProbesCodeGenerator.py"
 
   inputs = [
     # Input file for the script.
-    "InspectorInstrumentation.idl",
+    "InstrumentingProbes.idl",
+    "InstrumentingProbesImpl_cpp.template",
+    "InstrumentingProbesImpl_h.template",
+    "InstrumentingAgents_h.template",
   ]
 
   outputs = [
     "$blink_core_output_dir/InspectorInstrumentationInl.h",
     "$blink_core_output_dir/InspectorOverridesInl.h",
+    "$blink_core_output_dir/InstrumentingProbesImpl.cpp",
     "$blink_core_output_dir/InstrumentingAgents.h",
-    "$blink_core_output_dir/InspectorInstrumentationImpl.cpp",
   ]
 
   args = [
-    rebase_path("InspectorInstrumentation.idl", root_build_dir),
+    rebase_path("InstrumentingProbes.idl", root_build_dir),
     "--output_dir",
     rebase_path(blink_core_output_dir, root_build_dir),
   ]
@@ -194,7 +199,7 @@ inspector_protocol_generate("protocol_sources") {
 # Compiles the sources generated above.
 source_set("generated") {
   sources = get_target_outputs(":protocol_sources") +
-            get_target_outputs(":instrumentation_sources")
+            get_target_outputs(":instrumentation_probes")
 
   configs -= core_config_remove
   configs += core_config_add + [
@@ -207,7 +212,7 @@ source_set("generated") {
   }
 
   deps = [
-    ":instrumentation_sources",
+    ":instrumentation_probes",
     ":protocol_sources",
     "//skia",
     "//third_party/WebKit/Source/bindings/core/v8:bindings_core_v8_generated",
