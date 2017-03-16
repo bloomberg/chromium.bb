@@ -19,12 +19,18 @@ source_set("common_constants") {
 if (enable_extensions) {
   mojom("mojo") {
     sources = [
+      "extension_unpacker.mojom",
       "mojo/app_window.mojom",
       "mojo/keep_alive.mojom",
     ]
+
     if (proprietary_codecs && enable_wifi_display) {
       sources += [ "mojo/wifi_display_session_service.mojom" ]
     }
+
+    public_deps = [
+      "//mojo/common:common_custom_types",
+    ]
   }
 
   # This must be a static library because extensions common depends on
@@ -93,6 +99,7 @@ if (enable_extensions) {
       "extension_urls.cc",
       "extension_urls.h",
       "extension_utility_messages.h",
+      "extension_utility_types.h",
       "extensions_aliases.cc",
       "extensions_aliases.h",
       "extensions_client.cc",
@@ -181,6 +188,8 @@ if (enable_extensions) {
       "manifest_handlers/web_accessible_resources_info.h",
       "manifest_handlers/webview_info.cc",
       "manifest_handlers/webview_info.h",
+      "manifest_location_param_traits.cc",
+      "manifest_location_param_traits.h",
       "manifest_url_handlers.cc",
       "manifest_url_handlers.h",
       "message_bundle.cc",

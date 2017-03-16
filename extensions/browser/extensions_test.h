@@ -16,6 +16,7 @@
 
 namespace content {
 class BrowserContext;
+class ContentBrowserClient;
 class ContentUtilityClient;
 class RenderViewHostTestEnabler;
 }
@@ -52,6 +53,7 @@ class ExtensionsTest : public testing::Test {
 
  private:
   content::TestContentClientInitializer content_client_initializer_;
+  std::unique_ptr<content::ContentBrowserClient> content_browser_client_;
   std::unique_ptr<content::ContentUtilityClient> content_utility_client_;
   std::unique_ptr<content::BrowserContext> browser_context_;
   std::unique_ptr<TestExtensionsBrowserClient> extensions_browser_client_;

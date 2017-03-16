@@ -4127,6 +4127,7 @@ test("unit_tests") {
     deps += [
       "//chrome/common/extensions/api",
       "//extensions:extensions_resources",
+      "//extensions/common",
       "//extensions/strings",
       "//media/cast:test_support",
 

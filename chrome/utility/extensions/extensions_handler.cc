@@ -176,8 +176,7 @@ ExtensionsHandler::ExtensionsHandler() {
   ExtensionsClient::Set(ChromeExtensionsClient::GetInstance());
 }
 
-ExtensionsHandler::~ExtensionsHandler() {
-}
+ExtensionsHandler::~ExtensionsHandler() = default;
 
 // static
 void ExtensionsHandler::PreSandboxStartup() {

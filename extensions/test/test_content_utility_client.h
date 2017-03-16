@@ -15,8 +15,10 @@ class TestContentUtilityClient : public content::ContentUtilityClient {
   TestContentUtilityClient();
   ~TestContentUtilityClient() override;
 
-  // ContentUtilityClient implementation
+  // content::ContentUtilityClient:
   void UtilityThreadStarted() override;
+  void ExposeInterfacesToBrowser(
+      service_manager::InterfaceRegistry* registry) override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
  private:

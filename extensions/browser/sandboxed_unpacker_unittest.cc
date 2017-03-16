@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "extensions/browser/sandboxed_unpacker.h"
+
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -16,7 +18,6 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extensions_test.h"
-#include "extensions/browser/sandboxed_unpacker.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_paths.h"

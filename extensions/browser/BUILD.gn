@@ -295,7 +295,7 @@ source_set("browser_sources") {
       "//components/variations",
       "//crypto:platform",
       "//extensions:extensions_browser_resources",
-      "//extensions/common:mojo",
+      "//extensions/common",
       "//services/service_manager/public/cpp",
     ]
   }

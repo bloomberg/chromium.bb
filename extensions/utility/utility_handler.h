@@ -7,15 +7,14 @@
 
 #include <string>
 
-#include "base/callback.h"
 #include "base/macros.h"
-
-namespace base {
-class FilePath;
-}
 
 namespace IPC {
 class Message;
+}
+
+namespace service_manager {
+class InterfaceRegistry;
 }
 
 namespace extensions {
@@ -28,16 +27,15 @@ class UtilityHandler {
 
   static void UtilityThreadStarted();
 
+  static void ExposeInterfacesToBrowser(
+      service_manager::InterfaceRegistry* registry,
+      bool running_elevated);
+
   bool OnMessageReceived(const IPC::Message& message);
 
  private:
   // IPC message handlers.
   void OnParseUpdateManifest(const std::string& xml);
-  void OnUnzipToDir(const base::FilePath& zip_path, const base::FilePath& dir);
-  void OnUnpackExtension(const base::FilePath& directory_path,
-                         const std::string& extension_id,
-                         int location,
-                         int creation_flags);
 
   DISALLOW_COPY_AND_ASSIGN(UtilityHandler);
 };

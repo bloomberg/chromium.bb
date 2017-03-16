@@ -6,128 +6,115 @@
 
 #include "base/files/file_util.h"
 #include "base/path_service.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/utility_process_host.h"
-#include "extensions/common/extension_utility_messages.h"
+#include "extensions/common/extension_unpacker.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
-
-using content::BrowserThread;
-using content::UtilityProcessHost;
 
 namespace {
 
 const char kExtensionHandlerTempDirError[] =
     "Could not create temporary directory for zipped extension.";
+const char kExtensionHandlerFileUnzipError[] =
+    "Could not unzip extension for install.";
 
 }  // namespace
 
 namespace extensions {
 
-ZipFileInstaller::ZipFileInstaller(ExtensionService* extension_service)
-    : be_noisy_on_failure_(true),
-      extension_service_weak_(extension_service->AsWeakPtr()) {
-}
-
-void ZipFileInstaller::LoadFromZipFile(const base::FilePath& path) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  zip_path_ = path;
-  BrowserThread::PostTask(BrowserThread::FILE,
-                          FROM_HERE,
-                          base::Bind(&ZipFileInstaller::PrepareTempDir, this));
-}
-
-void ZipFileInstaller::PrepareTempDir() {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  base::FilePath temp_dir;
-  PathService::Get(base::DIR_TEMP, &temp_dir);
-  base::FilePath new_temp_dir;
-  if (!base::CreateTemporaryDirInDir(
-          temp_dir,
-          zip_path_.RemoveExtension().BaseName().value() +
-              FILE_PATH_LITERAL("_"),
-          &new_temp_dir)) {
-    OnUnzipFailed(std::string(kExtensionHandlerTempDirError));
-    return;
-  }
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&ZipFileInstaller::StartWorkOnIOThread, this, new_temp_dir));
-}
-
-ZipFileInstaller::~ZipFileInstaller() {
-}
-
 // static
 scoped_refptr<ZipFileInstaller> ZipFileInstaller::Create(
-    ExtensionService* extension_service) {
-  DCHECK(extension_service);
-  return scoped_refptr<ZipFileInstaller>(
-      new ZipFileInstaller(extension_service));
+    ExtensionService* service) {
+  DCHECK(service);
+  return make_scoped_refptr(new ZipFileInstaller(service));
 }
 
-void ZipFileInstaller::StartWorkOnIOThread(const base::FilePath& temp_dir) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  UtilityProcessHost* host =
-      UtilityProcessHost::Create(this,
-                                 base::ThreadTaskRunnerHandle::Get().get());
-  host->SetName(l10n_util::GetStringUTF16(
-      IDS_UTILITY_PROCESS_ZIP_FILE_INSTALLER_NAME));
-  host->SetExposedDir(temp_dir);
-  host->Send(new ExtensionUtilityMsg_UnzipToDir(zip_path_, temp_dir));
+void ZipFileInstaller::LoadFromZipFile(const base::FilePath& zip_file) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(!zip_file.empty());
+
+  zip_file_ = zip_file;
+
+  content::BrowserThread::PostTask(
+      content::BrowserThread::FILE, FROM_HERE,
+      base::Bind(&ZipFileInstaller::PrepareUnzipDir, this, zip_file));
 }
 
-void ZipFileInstaller::ReportSuccessOnUIThread(
-    const base::FilePath& unzipped_path) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (extension_service_weak_.get())
-    UnpackedInstaller::Create(extension_service_weak_.get())
-        ->Load(unzipped_path);
+ZipFileInstaller::ZipFileInstaller(ExtensionService* service)
+    : be_noisy_on_failure_(true),
+      extension_service_weak_(service->AsWeakPtr()) {}
+
+ZipFileInstaller::~ZipFileInstaller() = default;
+
+void ZipFileInstaller::PrepareUnzipDir(const base::FilePath& zip_file) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::FILE);
+
+  base::FilePath dir_temp;
+  base::PathService::Get(base::DIR_TEMP, &dir_temp);
+
+  base::FilePath::StringType dir_name =
+      zip_file.RemoveExtension().BaseName().value() + FILE_PATH_LITERAL("_");
+
+  base::FilePath unzip_dir;
+  if (!base::CreateTemporaryDirInDir(dir_temp, dir_name, &unzip_dir)) {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::Bind(&ZipFileInstaller::ReportFailure, this,
+                   std::string(kExtensionHandlerTempDirError)));
+    return;
+  }
+
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(&ZipFileInstaller::Unzip, this, unzip_dir));
 }
 
-void ZipFileInstaller::ReportErrorOnUIThread(const std::string& error) {
-  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (extension_service_weak_.get()) {
+void ZipFileInstaller::Unzip(const base::FilePath& unzip_dir) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(!utility_process_mojo_client_);
+
+  utility_process_mojo_client_ = base::MakeUnique<
+      content::UtilityProcessMojoClient<mojom::ExtensionUnpacker>>(
+      l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_ZIP_FILE_INSTALLER_NAME));
+  utility_process_mojo_client_->set_error_callback(
+      base::Bind(&ZipFileInstaller::UnzipDone, this, unzip_dir, false));
+
+  utility_process_mojo_client_->set_exposed_directory(unzip_dir);
+
+  utility_process_mojo_client_->Start();
+
+  utility_process_mojo_client_->service()->Unzip(
+      zip_file_, unzip_dir,
+      base::Bind(&ZipFileInstaller::UnzipDone, this, unzip_dir));
+}
+
+void ZipFileInstaller::UnzipDone(const base::FilePath& unzip_dir,
+                                 bool success) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  utility_process_mojo_client_.reset();
+
+  if (!success) {
+    ReportFailure(kExtensionHandlerFileUnzipError);
+    return;
+  }
+
+  if (extension_service_weak_)
+    UnpackedInstaller::Create(extension_service_weak_.get())->Load(unzip_dir);
+}
+
+void ZipFileInstaller::ReportFailure(const std::string& error) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (extension_service_weak_) {
     ExtensionErrorReporter::GetInstance()->ReportLoadError(
-        zip_path_,
-        error,
-        extension_service_weak_->profile(),
+        zip_file_, error, extension_service_weak_->profile(),
         be_noisy_on_failure_);
   }
-}
-
-void ZipFileInstaller::OnUnzipSucceeded(const base::FilePath& unzipped_path) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(
-          &ZipFileInstaller::ReportSuccessOnUIThread, this, unzipped_path));
-}
-
-void ZipFileInstaller::OnUnzipFailed(const std::string& error) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&ZipFileInstaller::ReportErrorOnUIThread, this, error));
-}
-
-bool ZipFileInstaller::OnMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(ZipFileInstaller, message)
-  IPC_MESSAGE_HANDLER(ExtensionUtilityHostMsg_UnzipToDir_Succeeded,
-                      OnUnzipSucceeded)
-  IPC_MESSAGE_HANDLER(ExtensionUtilityHostMsg_UnzipToDir_Failed, OnUnzipFailed)
-  IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
 }
 
 }  // namespace extensions

@@ -8,50 +8,57 @@
 #include <memory>
 #include <string>
 
-#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "content/public/browser/utility_process_host_client.h"
+#include "content/public/browser/utility_process_mojo_client.h"
 
 class ExtensionService;
 
-namespace IPC {
-class Message;
-}
-
 namespace extensions {
 
-// ZipFileInstaller unzips an extension that is zipped up via a utility process.
-// The contents are then loaded via UnpackedInstaller.
-class ZipFileInstaller : public content::UtilityProcessHostClient {
- public:
-  static scoped_refptr<ZipFileInstaller> Create(
-      ExtensionService* extension_service);
+namespace mojom {
+class ExtensionUnpacker;
+}
 
-  void LoadFromZipFile(const base::FilePath& path);
+// ZipFileInstaller unzips an extension in a utility process. On success, the
+// extension content is loaded by an extensions::UnpackedInstaller. The class
+// lives on the UI thread.
+class ZipFileInstaller : public base::RefCountedThreadSafe<ZipFileInstaller> {
+ public:
+  static scoped_refptr<ZipFileInstaller> Create(ExtensionService* service);
+
+  void LoadFromZipFile(const base::FilePath& zip_file);
 
   void set_be_noisy_on_failure(bool value) { be_noisy_on_failure_ = value; }
 
-  // UtilityProcessHostClient
-  bool OnMessageReceived(const IPC::Message& message) override;
-
  private:
-  explicit ZipFileInstaller(ExtensionService* extension_service);
-  ~ZipFileInstaller() override;
+  friend class base::RefCountedThreadSafe<ZipFileInstaller>;
 
-  void PrepareTempDir();
-  void StartWorkOnIOThread(const base::FilePath& temp_dir);
-  void ReportSuccessOnUIThread(const base::FilePath& unzipped_path);
-  void ReportErrorOnUIThread(const std::string& error);
+  explicit ZipFileInstaller(ExtensionService* service);
+  ~ZipFileInstaller();
 
-  void OnUnzipSucceeded(const base::FilePath& unzipped_path);
-  void OnUnzipFailed(const std::string& error);
+  // Unzip an extension into |unzip_dir| and load it with an UnpackedInstaller.
+  void PrepareUnzipDir(const base::FilePath& zip_file);
+  void Unzip(const base::FilePath& unzip_dir);
+  void UnzipDone(const base::FilePath& unzip_dir, bool success);
 
+  // On failure, report the |error| reason.
+  void ReportFailure(const std::string& error);
+
+  // Passed to the ExtensionErrorReporter when reporting errors.
   bool be_noisy_on_failure_;
+
+  // Pointer to our controlling extension service.
   base::WeakPtr<ExtensionService> extension_service_weak_;
-  base::FilePath zip_path_;
+
+  // File containing the extension to unzip.
+  base::FilePath zip_file_;
+
+  // Utility process used to perform the unzip.
+  std::unique_ptr<content::UtilityProcessMojoClient<mojom::ExtensionUnpacker>>
+      utility_process_mojo_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ZipFileInstaller);
 };

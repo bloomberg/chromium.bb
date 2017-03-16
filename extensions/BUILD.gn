@@ -117,6 +117,8 @@ static_library("test_support") {
     "test/extension_test_notification_observer.h",
     "test/result_catcher.cc",
     "test/result_catcher.h",
+    "test/test_content_browser_client.cc",
+    "test/test_content_browser_client.h",
     "test/test_content_utility_client.cc",
     "test/test_content_utility_client.h",
     "test/test_extensions_client.cc",

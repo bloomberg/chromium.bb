@@ -10,6 +10,7 @@
           "chrome::mojom::SafeArchiveAnalyzer",
           "chrome::mojom::ShellHandler",
           "chrome::mojom::ZipFileCreator",
+          "extensions::mojom::ExtensionUnpacker",
           "extensions::mojom::MediaParser",
           "extensions::mojom::RemovableStorageWriter",
           "extensions::mojom::WiFiCredentialsGetter",

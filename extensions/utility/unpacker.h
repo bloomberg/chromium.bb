@@ -53,6 +53,10 @@ class Unpacker {
   base::DictionaryValue* parsed_manifest() { return parsed_manifest_.get(); }
   base::DictionaryValue* parsed_catalogs() { return parsed_catalogs_.get(); }
 
+  std::unique_ptr<base::DictionaryValue> TakeParsedManifest() {
+    return std::move(parsed_manifest_);
+  }
+
  private:
   // Write the decoded images to kDecodedImagesFilename.  We do this instead
   // of sending them over IPC, since they are so large.  Returns true on

@@ -895,6 +895,7 @@ static_library("extensions") {
     "//extensions:extensions_resources",
     "//extensions/browser",
     "//extensions/browser/api:api_registration",
+    "//extensions/common",
     "//extensions/common/api",
     "//extensions/features",
     "//extensions/strings",

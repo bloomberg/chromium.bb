@@ -13,6 +13,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_handler.h"
+#include "extensions/common/manifest_location_param_traits.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/permissions/permissions_info.h"
 
@@ -100,29 +101,6 @@ scoped_refptr<Extension> ExtensionMsg_Loaded_Params::ConvertToExtension(
 }
 
 namespace IPC {
-
-template <>
-struct ParamTraits<Manifest::Location> {
-  typedef Manifest::Location param_type;
-  static void Write(base::Pickle* m, const param_type& p) {
-    int val = static_cast<int>(p);
-    WriteParam(m, val);
-  }
-  static bool Read(const base::Pickle* m,
-                   base::PickleIterator* iter,
-                   param_type* p) {
-    int val = 0;
-    if (!ReadParam(m, iter, &val) ||
-        val < Manifest::INVALID_LOCATION ||
-        val >= Manifest::NUM_LOCATIONS)
-      return false;
-    *p = static_cast<param_type>(val);
-    return true;
-  }
-  static void Log(const param_type& p, std::string* l) {
-    ParamTraits<int>::Log(static_cast<int>(p), l);
-  }
-};
 
 void ParamTraits<URLPattern>::GetSize(base::PickleSizer* s,
                                       const param_type& p) {

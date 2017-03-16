@@ -25,7 +25,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_l10n_util.h"
-#include "extensions/common/extension_utility_messages.h"
+#include "extensions/common/extension_utility_types.h"
 #include "extensions/common/extensions_client.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest.h"
