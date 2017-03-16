@@ -1328,8 +1328,9 @@ TEST_F(MenuControllerTest, AsynchronousTouchEventRepostEvent) {
   sub_menu->ShowAt(owner(), item->bounds(), false);
   gfx::Point location(sub_menu->bounds().bottom_right());
   location.Offset(1, 1);
-  ui::TouchEvent event(ui::ET_TOUCH_PRESSED, location, 0, 0,
-                       ui::EventTimeForNow(), 0, 0, 0, 0);
+  ui::TouchEvent event(
+      ui::ET_TOUCH_PRESSED, location, ui::EventTimeForNow(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
   controller->OnTouchEvent(sub_menu, &event);
 
   EXPECT_FALSE(IsShowing());

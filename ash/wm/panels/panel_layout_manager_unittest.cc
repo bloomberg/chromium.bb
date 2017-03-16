@@ -885,9 +885,10 @@ TEST_F(PanelLayoutManagerTest, TouchHitTestPanel) {
   // Hit test outside the right edge with a bottom-aligned shelf.
   SetAlignment(Shell::GetPrimaryRootWindow(), SHELF_ALIGNMENT_BOTTOM);
   gfx::Rect bounds(w->bounds());
-  ui::TouchEvent touch(ui::ET_TOUCH_PRESSED,
-                       gfx::Point(bounds.right() + 3, bounds.y() + 2), 0,
-                       ui::EventTimeForNow());
+  ui::TouchEvent touch(
+      ui::ET_TOUCH_PRESSED, gfx::Point(bounds.right() + 3, bounds.y() + 2),
+      ui::EventTimeForNow(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
   ui::EventTarget* target = targeter->FindTargetForEvent(root, &touch);
   EXPECT_EQ(w.get(), target);
 

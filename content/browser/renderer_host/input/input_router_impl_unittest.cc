@@ -936,7 +936,8 @@ TEST_F(InputRouterImplTest, AckedTouchEventState) {
   uint32_t touch_press_event_id1 = SendTouchEvent();
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
   expected_events.push_back(base::MakeUnique<ui::TouchEvent>(
-      ui::ET_TOUCH_PRESSED, gfx::Point(1, 1), 0, timestamp));
+      ui::ET_TOUCH_PRESSED, gfx::Point(1, 1), timestamp,
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0)));
 
   // Move the finger.
   timestamp += base::TimeDelta::FromSeconds(10);
@@ -945,7 +946,8 @@ TEST_F(InputRouterImplTest, AckedTouchEventState) {
   uint32_t touch_move_event_id1 = SendTouchEvent();
   EXPECT_FALSE(TouchEventQueueEmpty());
   expected_events.push_back(base::MakeUnique<ui::TouchEvent>(
-      ui::ET_TOUCH_MOVED, gfx::Point(500, 500), 0, timestamp));
+      ui::ET_TOUCH_MOVED, gfx::Point(500, 500), timestamp,
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0)));
 
   // Now press a second finger.
   timestamp += base::TimeDelta::FromSeconds(10);
@@ -954,7 +956,8 @@ TEST_F(InputRouterImplTest, AckedTouchEventState) {
   uint32_t touch_press_event_id2 = SendTouchEvent();
   EXPECT_FALSE(TouchEventQueueEmpty());
   expected_events.push_back(base::MakeUnique<ui::TouchEvent>(
-      ui::ET_TOUCH_PRESSED, gfx::Point(2, 2), 1, timestamp));
+      ui::ET_TOUCH_PRESSED, gfx::Point(2, 2), timestamp,
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1)));
 
   // Move both fingers.
   timestamp += base::TimeDelta::FromSeconds(10);
@@ -964,9 +967,11 @@ TEST_F(InputRouterImplTest, AckedTouchEventState) {
   uint32_t touch_move_event_id2 = SendTouchEvent();
   EXPECT_FALSE(TouchEventQueueEmpty());
   expected_events.push_back(base::MakeUnique<ui::TouchEvent>(
-      ui::ET_TOUCH_MOVED, gfx::Point(10, 10), 0, timestamp));
+      ui::ET_TOUCH_MOVED, gfx::Point(10, 10), timestamp,
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0)));
   expected_events.push_back(base::MakeUnique<ui::TouchEvent>(
-      ui::ET_TOUCH_MOVED, gfx::Point(20, 20), 1, timestamp));
+      ui::ET_TOUCH_MOVED, gfx::Point(20, 20), timestamp,
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1)));
 
   // Receive the ACKs and make sure the generated events from the acked events
   // are correct.

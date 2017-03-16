@@ -188,7 +188,7 @@ void TabletEventConverterEvdev::DispatchMouseButton(const input_event& input) {
   dispatcher_->DispatchMouseButtonEvent(MouseButtonEventParams(
       input_device_.id, EF_NONE, cursor_->GetLocation(), button, down,
       false /* allow_remap */,
-      PointerDetails(GetToolType(stylus_),
+      PointerDetails(GetToolType(stylus_), /* pointer_id*/ 0,
                      /* radius_x */ 0.0f, /* radius_y */ 0.0f, pressure_,
                      tilt_x_, tilt_y_),
       TimeTicksFromInputEvent(input)));
@@ -211,7 +211,7 @@ void TabletEventConverterEvdev::FlushEvents(const input_event& input) {
 
   dispatcher_->DispatchMouseMoveEvent(MouseMoveEventParams(
       input_device_.id, EF_NONE, cursor_->GetLocation(),
-      PointerDetails(GetToolType(stylus_),
+      PointerDetails(GetToolType(stylus_), /* pointer_id*/ 0,
                      /* radius_x */ 0.0f, /* radius_y */ 0.0f, pressure_,
                      tilt_x_, tilt_y_),
       TimeTicksFromInputEvent(input)));

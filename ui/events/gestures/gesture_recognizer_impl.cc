@@ -201,9 +201,11 @@ GestureRecognizerImpl::GetEventPerPointForConsumer(GestureConsumer* consumer,
   if (pointer_state.GetPointerCount() == 0)
     return cancelling_touches;
   for (size_t i = 0; i < pointer_state.GetPointerCount(); ++i) {
-    std::unique_ptr<TouchEvent> touch_event(new TouchEvent(
-        type, gfx::Point(), EF_IS_SYNTHESIZED, pointer_state.GetPointerId(i),
-        EventTimeForNow(), 0.0f, 0.0f, 0.0f, 0.0f));
+    std::unique_ptr<TouchEvent> touch_event(
+        new TouchEvent(type, gfx::Point(), EventTimeForNow(),
+                       PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
+                                      pointer_state.GetPointerId(i)),
+                       EF_IS_SYNTHESIZED, 0.0f));
     gfx::PointF point(pointer_state.GetX(i), pointer_state.GetY(i));
     touch_event->set_location_f(point);
     touch_event->set_root_location_f(point);

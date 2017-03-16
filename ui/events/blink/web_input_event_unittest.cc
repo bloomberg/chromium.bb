@@ -452,14 +452,14 @@ TEST(WebInputEventTest, TestMakeWebMouseEvent) {
                         gfx::Point(123, 321), timestamp, EF_LEFT_MOUSE_BUTTON,
                         EF_LEFT_MOUSE_BUTTON);
     PointerDetails pointer_details(EventPointerType::POINTER_TYPE_PEN,
+                                   /* id */ 63,
                                    /* radius_x */ 0.0f,
                                    /* radius_y */ 0.0f,
                                    /* force */ 0.8f,
                                    /* tilt_x */ 89.5f,
                                    /* tilt_y */ -89.5f,
                                    /* tangential_pressure */ 0.6f,
-                                   /* twist */ 269,
-                                   /* id */ 63);
+                                   /* twist */ 269);
     ui_event.set_pointer_details(pointer_details);
     blink::WebMouseEvent webkit_event =
         MakeWebMouseEvent(ui_event, base::Bind(&GetScreenLocationFromEvent));

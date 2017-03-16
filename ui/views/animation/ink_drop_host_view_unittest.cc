@@ -115,8 +115,9 @@ TEST_F(InkDropHostViewTest, NoInkDropOnTouchOrGestureEvents) {
   EXPECT_EQ(test_api_.GetInkDrop()->GetTargetInkDropState(),
             InkDropState::HIDDEN);
 
-  ui::TouchEvent touch_event(ui::ET_TOUCH_PRESSED, gfx::Point(5, 6), 1,
-                             ui::EventTimeForNow());
+  ui::TouchEvent touch_event(
+      ui::ET_TOUCH_PRESSED, gfx::Point(5, 6), ui::EventTimeForNow(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1));
 
   test_api_.AnimateInkDrop(InkDropState::ACTION_PENDING, &touch_event);
   EXPECT_EQ(test_api_.GetInkDrop()->GetTargetInkDropState(),
@@ -157,8 +158,9 @@ TEST_F(InkDropHostViewTest, DismissInkDropOnTouchOrGestureEvents) {
   EXPECT_EQ(test_api_.GetInkDrop()->GetTargetInkDropState(),
             InkDropState::ACTION_PENDING);
 
-  ui::TouchEvent touch_event(ui::ET_TOUCH_PRESSED, gfx::Point(5, 6), 1,
-                             ui::EventTimeForNow());
+  ui::TouchEvent touch_event(
+      ui::ET_TOUCH_PRESSED, gfx::Point(5, 6), ui::EventTimeForNow(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1));
 
   test_api_.AnimateInkDrop(InkDropState::ACTION_TRIGGERED, &touch_event);
   EXPECT_EQ(test_api_.GetInkDrop()->GetTargetInkDropState(),

@@ -5673,8 +5673,13 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
     observer.Wait();
   }
 
-  ui::TouchEvent touch_event(ui::ET_TOUCH_PRESSED, child_center, 0, 0,
-                             ui::EventTimeForNow(), 30.f, 30.f, 0.f, 0.f);
+  ui::TouchEvent touch_event(
+      ui::ET_TOUCH_PRESSED, child_center, ui::EventTimeForNow(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
+                         /* pointer_id*/ 0,
+                         /* radius_x */ 30.0f,
+                         /* radius_y */ 30.0f,
+                         /* force */ 0.0f));
   rwhv->OnTouchEvent(&touch_event);
   {
     MainThreadFrameObserver observer(child_render_widget_host);
@@ -5740,8 +5745,13 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
     observer->Wait();
   }
 
-  ui::TouchEvent touch_event(ui::ET_TOUCH_PRESSED, frame_center, 0, 0,
-                             ui::EventTimeForNow(), 30.f, 30.f, 0.f, 0.f);
+  ui::TouchEvent touch_event(
+      ui::ET_TOUCH_PRESSED, frame_center, ui::EventTimeForNow(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
+                         /* pointer_id*/ 0,
+                         /* radius_x */ 30.0f,
+                         /* radius_y */ 30.0f,
+                         /* force */ 0.0f));
   rwhv->OnTouchEvent(&touch_event);
   {
     auto observer =
@@ -5852,14 +5862,22 @@ void SendTouchTapWithExpectedTarget(
     RenderWidgetHostViewBase*& router_touch_target,
     const RenderWidgetHostViewBase* expected_target) {
   auto* root_view_aura = static_cast<RenderWidgetHostViewAura*>(root_view);
-  ui::TouchEvent touch_event_pressed(ui::ET_TOUCH_PRESSED, touch_point, 0,
-                                     0, ui::EventTimeForNow(), 30.f, 30.f, 0.f,
-                                     0.f);
+  ui::TouchEvent touch_event_pressed(
+      ui::ET_TOUCH_PRESSED, touch_point, ui::EventTimeForNow(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
+                         /* pointer_id*/ 0,
+                         /* radius_x */ 30.0f,
+                         /* radius_y */ 30.0f,
+                         /* force */ 0.0f));
   root_view_aura->OnTouchEvent(&touch_event_pressed);
   EXPECT_EQ(expected_target, router_touch_target);
-  ui::TouchEvent touch_event_released(ui::ET_TOUCH_RELEASED, touch_point,
-                                      0, 0, ui::EventTimeForNow(), 30.f, 30.f,
-                                      0.f, 0.f);
+  ui::TouchEvent touch_event_released(
+      ui::ET_TOUCH_RELEASED, touch_point, ui::EventTimeForNow(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
+                         /* pointer_id*/ 0,
+                         /* radius_x */ 30.0f,
+                         /* radius_y */ 30.0f,
+                         /* force */ 0.0f));
   root_view_aura->OnTouchEvent(&touch_event_released);
   EXPECT_EQ(nullptr, router_touch_target);
 }
@@ -8288,11 +8306,21 @@ class SitePerProcessGestureBrowserTest : public SitePerProcessBrowserTest {
     DCHECK(rwhva);
     // Use full version of constructor with radius, angle and force since it
     // will crash in the renderer otherwise.
-    ui::TouchEvent touch_pressed(ui::ET_TOUCH_PRESSED, position, 0, 0,
-                                 ui::EventTimeForNow(), 1.f, 1.f, 0.f, 1.f);
+    ui::TouchEvent touch_pressed(
+        ui::ET_TOUCH_PRESSED, position, ui::EventTimeForNow(),
+        ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
+                           /* pointer_id*/ 0,
+                           /* radius_x */ 1.0f,
+                           /* radius_y */ 1.0f,
+                           /* force */ 1.0f));
     rwhva->OnTouchEvent(&touch_pressed);
-    ui::TouchEvent touch_released(ui::ET_TOUCH_RELEASED, position, 0, 0,
-                                  ui::EventTimeForNow(), 1.f, 1.f, 0.f, 1.f);
+    ui::TouchEvent touch_released(
+        ui::ET_TOUCH_RELEASED, position, ui::EventTimeForNow(),
+        ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
+                           /* pointer_id*/ 0,
+                           /* radius_x */ 1.0f,
+                           /* radius_y */ 1.0f,
+                           /* force */ 1.0f));
     rwhva->OnTouchEvent(&touch_released);
 
     ui::GestureEventDetails gesture_tap_down_details(ui::ET_GESTURE_TAP_DOWN);

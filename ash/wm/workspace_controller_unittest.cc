@@ -1513,8 +1513,9 @@ TEST_F(WorkspaceControllerTest, WindowEdgeHitTest) {
       ui::EventTarget* target = targeter->FindTargetForEvent(root, &mouse);
       EXPECT_EQ(expected_target, target);
 
-      ui::TouchEvent touch(ui::ET_TOUCH_PRESSED, location, 0,
-                           ui::EventTimeForNow());
+      ui::TouchEvent touch(
+          ui::ET_TOUCH_PRESSED, location, ui::EventTimeForNow(),
+          ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
       target = targeter->FindTargetForEvent(root, &touch);
       EXPECT_EQ(expected_target, target);
     }
@@ -1587,8 +1588,9 @@ TEST_F(WorkspaceControllerTest, WindowEdgeTouchHitTestPanel) {
   for (int i = 0; i < kNumPoints; ++i) {
     SCOPED_TRACE(points[i].direction);
     const gfx::Point& location = points[i].location;
-    ui::TouchEvent touch(ui::ET_TOUCH_PRESSED, location, 0,
-                         ui::EventTimeForNow());
+    ui::TouchEvent touch(
+        ui::ET_TOUCH_PRESSED, location, ui::EventTimeForNow(),
+        ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
     ui::EventTarget* target = targeter->FindTargetForEvent(root, &touch);
     if (points[i].is_target_hit)
       EXPECT_EQ(window.get(), target);
@@ -1637,8 +1639,9 @@ TEST_F(WorkspaceControllerTest, WindowEdgeHitTestDocked) {
     else
       EXPECT_NE(window.get(), target);
 
-    ui::TouchEvent touch(ui::ET_TOUCH_PRESSED, location, 0,
-                         ui::EventTimeForNow());
+    ui::TouchEvent touch(
+        ui::ET_TOUCH_PRESSED, location, ui::EventTimeForNow(),
+        ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
     target = targeter->FindTargetForEvent(root, &touch);
     if (points[i].is_target_hit)
       EXPECT_EQ(window.get(), target);

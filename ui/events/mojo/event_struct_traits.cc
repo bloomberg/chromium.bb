@@ -300,6 +300,7 @@ bool StructTraits<ui::mojom::EventDataView, EventUniquePtr>::Read(
               screen_location, event.flags(), pointer_data->pointer_id,
               pointer_data->changed_button_flags,
               ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
+                                 /* pointer_id*/ 0,
                                  pointer_data->brush_data->width,
                                  pointer_data->brush_data->height,
                                  pointer_data->brush_data->pressure,

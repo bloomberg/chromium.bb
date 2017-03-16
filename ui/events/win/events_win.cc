@@ -337,11 +337,10 @@ PointerDetails GetTouchPointerDetailsFromNative(
     const base::NativeEvent& native_event) {
   NOTIMPLEMENTED();
   return PointerDetails(EventPointerType::POINTER_TYPE_TOUCH,
+                        /* pointer_id*/ 0,
                         /* radius_x */ 1.0,
                         /* radius_y */ 1.0,
-                        /* force */ 0.f,
-                        /* tilt_x */ 0.f,
-                        /* tilt_y */ 0.f);
+                        /* force */ 0.f);
 }
 
 bool GetScrollOffsets(const base::NativeEvent& native_event,

@@ -572,13 +572,21 @@ TEST(EventTest, TouchEventRadiusDefaultsToOtherAxis) {
   const float non_zero_length1 = 30;
   const float non_zero_length2 = 46;
 
-  TouchEvent event1(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), 0, 0, time,
-                    non_zero_length1, 0, 0, 0);
+  TouchEvent event1(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), time,
+                    PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
+                                   /* pointer_id*/ 0,
+                                   /* radius_x */ non_zero_length1,
+                                   /* radius_y */ 0.0f,
+                                   /* force */ 0));
   EXPECT_EQ(non_zero_length1, event1.pointer_details().radius_x);
   EXPECT_EQ(non_zero_length1, event1.pointer_details().radius_y);
 
-  TouchEvent event2(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), 0, 0, time,
-                    0, non_zero_length2, 0, 0);
+  TouchEvent event2(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), time,
+                    PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
+                                   /* pointer_id*/ 0,
+                                   /* radius_x */ 0.0f,
+                                   /* radius_y */ non_zero_length2,
+                                   /* force */ 0));
   EXPECT_EQ(non_zero_length2, event2.pointer_details().radius_x);
   EXPECT_EQ(non_zero_length2, event2.pointer_details().radius_y);
 }
@@ -590,50 +598,69 @@ TEST(EventTest, TouchEventRotationAngleFixing) {
 
   {
     const float angle_in_range = 0;
-    TouchEvent event(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), 0, 0, time,
-                      radius_x, radius_y, angle_in_range, 0);
+    TouchEvent event(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), time,
+                     PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
+                                    /* pointer_id*/ 0, radius_x, radius_y,
+                                    /* force */ 0),
+                     0, angle_in_range);
     EXPECT_FLOAT_EQ(angle_in_range, event.rotation_angle());
   }
 
   {
     const float angle_in_range = 179.9f;
-    TouchEvent event(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), 0, 0, time,
-                    radius_x, radius_y, angle_in_range, 0);
+    TouchEvent event(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), time,
+                     PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
+                                    /* pointer_id*/ 0, radius_x, radius_y,
+                                    /* force */ 0),
+                     0, angle_in_range);
     EXPECT_FLOAT_EQ(angle_in_range, event.rotation_angle());
   }
 
   {
     const float angle_negative = -0.1f;
-    TouchEvent event(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), 0, 0, time,
-                    radius_x, radius_y, angle_negative, 0);
+    TouchEvent event(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), time,
+                     PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
+                                    /* pointer_id*/ 0, radius_x, radius_y,
+                                    /* force */ 0),
+                     0, angle_negative);
     EXPECT_FLOAT_EQ(180 - 0.1f, event.rotation_angle());
   }
 
   {
     const float angle_negative = -200;
-    TouchEvent event(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), 0, 0, time,
-                    radius_x, radius_y, angle_negative, 0);
+    TouchEvent event(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), time,
+                     PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
+                                    /* pointer_id*/ 0, radius_x, radius_y,
+                                    /* force */ 0),
+                     0, angle_negative);
     EXPECT_FLOAT_EQ(360 - 200, event.rotation_angle());
   }
 
   {
     const float angle_too_big = 180;
-    TouchEvent event(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), 0, 0, time,
-                    radius_x, radius_y, angle_too_big, 0);
+    TouchEvent event(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), time,
+                     PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
+                                    /* pointer_id*/ 0, radius_x, radius_y,
+                                    /* force */ 0),
+                     0, angle_too_big);
     EXPECT_FLOAT_EQ(0, event.rotation_angle());
   }
 
   {
     const float angle_too_big = 400;
-    TouchEvent event(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), 0, 0, time,
-                    radius_x, radius_y, angle_too_big, 0);
+    TouchEvent event(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), time,
+                     PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
+                                    /* pointer_id*/ 0, radius_x, radius_y,
+                                    /* force */ 0),
+                     0, angle_too_big);
     EXPECT_FLOAT_EQ(400 - 360, event.rotation_angle());
   }
 }
 
 TEST(EventTest, PointerDetailsTouch) {
-  ui::TouchEvent touch_event_plain(ET_TOUCH_PRESSED, gfx::Point(0, 0), 0,
-                                   ui::EventTimeForNow());
+  ui::TouchEvent touch_event_plain(
+      ET_TOUCH_PRESSED, gfx::Point(0, 0), ui::EventTimeForNow(),
+      PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
 
   EXPECT_EQ(EventPointerType::POINTER_TYPE_TOUCH,
             touch_event_plain.pointer_details().pointer_type);
@@ -643,9 +670,13 @@ TEST(EventTest, PointerDetailsTouch) {
   EXPECT_EQ(0.0f, touch_event_plain.pointer_details().tilt_x);
   EXPECT_EQ(0.0f, touch_event_plain.pointer_details().tilt_y);
 
-  ui::TouchEvent touch_event_with_details(ET_TOUCH_PRESSED, gfx::Point(0, 0), 0,
-                                          0, ui::EventTimeForNow(), 10.0f, 5.0f,
-                                          0.0f, 15.0f);
+  ui::TouchEvent touch_event_with_details(
+      ET_TOUCH_PRESSED, gfx::Point(0, 0), ui::EventTimeForNow(),
+      PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
+                     /* pointer_id*/ 0,
+                     /* radius_x */ 10.0f,
+                     /* radius_y */ 5.0f,
+                     /* force */ 15.0f));
 
   EXPECT_EQ(EventPointerType::POINTER_TYPE_TOUCH,
             touch_event_with_details.pointer_details().pointer_type);
@@ -680,14 +711,14 @@ TEST(EventTest, PointerDetailsStylus) {
   ui::MouseEvent stylus_event(ET_MOUSE_PRESSED, gfx::Point(0, 0),
                               gfx::Point(0, 0), ui::EventTimeForNow(), 0, 0);
   ui::PointerDetails pointer_details(EventPointerType::POINTER_TYPE_PEN,
+                                     /* pointer_id*/ 0,
                                      /* radius_x */ 0.0f,
                                      /* radius_y */ 0.0f,
                                      /* force */ 21.0f,
                                      /* tilt_x */ 45.0f,
                                      /* tilt_y */ -45.0f,
                                      /* tangential_pressure */ 0.7f,
-                                     /* twist */ 196,
-                                     /* pointer_id*/ 0);
+                                     /* twist */ 196);
 
   stylus_event.set_pointer_details(pointer_details);
   EXPECT_EQ(EventPointerType::POINTER_TYPE_PEN,
@@ -706,8 +737,9 @@ TEST(EventTest, PointerDetailsStylus) {
 }
 
 TEST(EventTest, PointerDetailsCustomTouch) {
-  ui::TouchEvent touch_event(ET_TOUCH_PRESSED, gfx::Point(0, 0), 0,
-                             ui::EventTimeForNow());
+  ui::TouchEvent touch_event(
+      ET_TOUCH_PRESSED, gfx::Point(0, 0), ui::EventTimeForNow(),
+      PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
 
   EXPECT_EQ(EventPointerType::POINTER_TYPE_TOUCH,
             touch_event.pointer_details().pointer_type);
@@ -718,14 +750,14 @@ TEST(EventTest, PointerDetailsCustomTouch) {
   EXPECT_EQ(0.0f, touch_event.pointer_details().tilt_y);
 
   ui::PointerDetails pointer_details(EventPointerType::POINTER_TYPE_PEN,
+                                     /* pointer_id*/ 0,
                                      /* radius_x */ 5.0f,
                                      /* radius_y */ 6.0f,
                                      /* force */ 21.0f,
                                      /* tilt_x */ 45.0f,
                                      /* tilt_y */ -45.0f,
                                      /* tangential_pressure */ 0.7f,
-                                     /* twist */ 196,
-                                     /* pointer_id*/ 0);
+                                     /* twist */ 196);
   touch_event.set_pointer_details(pointer_details);
 
   EXPECT_EQ(EventPointerType::POINTER_TYPE_PEN,
@@ -768,7 +800,9 @@ TEST(EventTest, PointerEventCanConvertFrom) {
       ET_TOUCH_CANCELLED
   };
   for (size_t i = 0; i < arraysize(touch_allowed); i++) {
-    TouchEvent event(touch_allowed[i], point, 0, time);
+    TouchEvent event(
+        touch_allowed[i], point, time,
+        PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
     EXPECT_TRUE(PointerEvent::CanConvertFrom(event));
   }
 
@@ -805,8 +839,9 @@ TEST(EventTest, PointerEventType) {
   }
 
   for (size_t i = 0; i < arraysize(kTouchTypeMap); i++) {
-    ui::TouchEvent touch_event(kTouchTypeMap[i][0], gfx::Point(0, 0), 0,
-                               base::TimeTicks());
+    ui::TouchEvent touch_event(
+        kTouchTypeMap[i][0], gfx::Point(0, 0), base::TimeTicks(),
+        PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
     ui::PointerEvent pointer_event(touch_event);
     EXPECT_EQ(kTouchTypeMap[i][1], pointer_event.type());
     EXPECT_FALSE(pointer_event.IsMouseEvent());
@@ -825,8 +860,9 @@ TEST(EventTest, PointerEventId) {
   }
 
   for (int touch_id = 0; touch_id < 8; touch_id++) {
-    ui::TouchEvent touch_event(ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), touch_id,
-                               base::TimeTicks());
+    ui::TouchEvent touch_event(
+        ui::ET_TOUCH_PRESSED, gfx::Point(0, 0), base::TimeTicks(),
+        PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, touch_id));
     ui::PointerEvent pointer_event(touch_event);
     EXPECT_EQ(pointer_event.pointer_details().id, touch_id);
   }
@@ -836,9 +872,13 @@ TEST(EventTest, PointerDetailsPointer) {
   const float kRadiusX = 10.0f;
   const float kRadiusY = 5.0f;
   const float kForce = 15.0f;
-  ui::TouchEvent touch_event(ET_TOUCH_PRESSED, gfx::Point(0, 0), 0, 0,
-                             ui::EventTimeForNow(), kRadiusX, kRadiusY, 0.0f,
-                             kForce);
+  ui::TouchEvent touch_event(
+      ET_TOUCH_PRESSED, gfx::Point(0, 0), ui::EventTimeForNow(),
+      PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
+                     /* pointer_id*/ 0,
+                     /* radius_x */ kRadiusX,
+                     /* radius_y */ kRadiusY,
+                     /* force */ kForce));
   ui::PointerEvent pointer_event_from_touch(touch_event);
   EXPECT_EQ(kRadiusX, pointer_event_from_touch.pointer_details().radius_x);
   EXPECT_EQ(kRadiusY, pointer_event_from_touch.pointer_details().radius_y);
@@ -858,9 +898,13 @@ TEST(EventTest, PointerDetailsPointer) {
 
 TEST(EventTest, PointerEventClone) {
   {
-    ui::PointerEvent ptr_event(
-        ui::TouchEvent(ET_TOUCH_PRESSED, gfx::Point(0, 0), 0, 0,
-                       ui::EventTimeForNow(), 10.0f, 5.0f, 0.0f, 15.0f));
+    ui::PointerEvent ptr_event(ui::TouchEvent(
+        ET_TOUCH_PRESSED, gfx::Point(0, 0), ui::EventTimeForNow(),
+        PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
+                       /* pointer_id*/ 0,
+                       /* radius_x */ 10.0f,
+                       /* radius_y */ 5.0f,
+                       /* force */ 15.0f)));
     std::unique_ptr<ui::Event> clone(ui::Event::Clone(ptr_event));
     EXPECT_TRUE(clone->IsPointerEvent());
     ui::PointerEvent* clone_as_ptr = clone->AsPointerEvent();
@@ -959,7 +1003,7 @@ TEST(EventTest, PointerEventToTouchEventType) {
   for (size_t i = 0; i < arraysize(kTouchTypeMap); i++) {
     ui::PointerEvent pointer_event(
         kTouchTypeMap[i][0], gfx::Point(), gfx::Point(), 0, 0, 0,
-        ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH),
+        ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0),
         base::TimeTicks());
     ui::TouchEvent touch_event(pointer_event);
 
@@ -968,9 +1012,14 @@ TEST(EventTest, PointerEventToTouchEventType) {
 }
 
 TEST(EventTest, PointerEventToTouchEventDetails) {
-  ui::PointerEvent pointer_event(
-      ui::TouchEvent(ui::ET_TOUCH_PRESSED, gfx::Point(12, 14), 0, 15,
-                     EventTimeForNow(), 11.5, 13.5, 13.0, 0.5));
+  ui::PointerEvent pointer_event(ui::TouchEvent(
+      ui::ET_TOUCH_PRESSED, gfx::Point(12, 14), EventTimeForNow(),
+      PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
+                     /* pointer_id*/ 15,
+                     /* radius_x */ 11.5,
+                     /* radius_y */ 13.5,
+                     /* force */ 0.5),
+      0, 13.0));
   ui::TouchEvent touch_event(pointer_event);
 
   EXPECT_EQ(pointer_event.location(), touch_event.location());
@@ -991,7 +1040,7 @@ TEST(EventTest, PointerEventSourceEventTypeExistsInLatencyInfo) {
 
   ui::PointerEvent touch_poniter_event(
       ui::ET_TOUCH_PRESSED, gfx::Point(), gfx::Point(), 0, 0, 0,
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0),
       ui::EventTimeForNow());
   EXPECT_EQ(touch_poniter_event.latency()->source_event_type(),
             ui::SourceEventType::TOUCH);

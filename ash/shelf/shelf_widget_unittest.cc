@@ -298,8 +298,9 @@ TEST_F(ShelfWidgetTest, HiddenShelfHitTestTouch) {
   // should not find the shelf as the target.
   {
     gfx::Point event_location(20, shelf_bounds.y() - 1);
-    ui::TouchEvent touch(ui::ET_TOUCH_PRESSED, event_location, 0,
-                         ui::EventTimeForNow());
+    ui::TouchEvent touch(
+        ui::ET_TOUCH_PRESSED, event_location, ui::EventTimeForNow(),
+        ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
     EXPECT_NE(shelf_widget->GetNativeWindow(),
               targeter->FindTargetForEvent(root, &touch));
   }
@@ -316,8 +317,9 @@ TEST_F(ShelfWidgetTest, HiddenShelfHitTestTouch) {
   // shelf as the target.
   {
     gfx::Point event_location(20, shelf_bounds.y() - 1);
-    ui::TouchEvent touch(ui::ET_TOUCH_PRESSED, event_location, 0,
-                         ui::EventTimeForNow());
+    ui::TouchEvent touch(
+        ui::ET_TOUCH_PRESSED, event_location, ui::EventTimeForNow(),
+        ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
     EXPECT_EQ(shelf_widget->GetNativeWindow(),
               targeter->FindTargetForEvent(root, &touch));
   }

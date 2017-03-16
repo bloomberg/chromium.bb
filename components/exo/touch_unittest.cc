@@ -209,8 +209,9 @@ TEST_F(TouchTest, OnTouchCancel) {
   // One touch point being canceled is enough for OnTouchCancel to be called.
   EXPECT_CALL(delegate, OnTouchCancel());
   EXPECT_CALL(delegate, OnTouchFrame());
-  ui::TouchEvent cancel_event(ui::ET_TOUCH_CANCELLED, gfx::Point(), 1,
-                              ui::EventTimeForNow());
+  ui::TouchEvent cancel_event(
+      ui::ET_TOUCH_CANCELLED, gfx::Point(), ui::EventTimeForNow(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1));
   generator.Dispatch(&cancel_event);
 
   EXPECT_CALL(delegate, OnTouchDestroying(touch.get()));

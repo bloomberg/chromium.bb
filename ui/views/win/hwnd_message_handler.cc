@@ -2634,7 +2634,9 @@ void HWNDMessageHandler::GenerateTouchEvent(ui::EventType event_type,
                                             unsigned int id,
                                             base::TimeTicks time_stamp,
                                             TouchEvents* touch_events) {
-  ui::TouchEvent event(event_type, point, id, time_stamp);
+  ui::TouchEvent event(
+      event_type, point, time_stamp,
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, id));
 
   event.set_flags(ui::GetModifiersFromKeyState());
 

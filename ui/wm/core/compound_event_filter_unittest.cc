@@ -132,16 +132,20 @@ TEST_F(CompoundEventFilterTest, TouchHidesCursor) {
   // This press is required for the GestureRecognizer to associate a target
   // with kTouchId
   ui::TouchEvent press0(
-      ui::ET_TOUCH_PRESSED, gfx::Point(90, 90), 1, GetTime());
+      ui::ET_TOUCH_PRESSED, gfx::Point(90, 90), GetTime(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1));
   DispatchEventUsingWindowDispatcher(&press0);
   EXPECT_FALSE(cursor_client.IsMouseEventsEnabled());
 
-  ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(10, 10), 1, GetTime());
+  ui::TouchEvent move(
+      ui::ET_TOUCH_MOVED, gfx::Point(10, 10), GetTime(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1));
   DispatchEventUsingWindowDispatcher(&move);
   EXPECT_FALSE(cursor_client.IsMouseEventsEnabled());
 
   ui::TouchEvent release(
-      ui::ET_TOUCH_RELEASED, gfx::Point(10, 10), 1, GetTime());
+      ui::ET_TOUCH_RELEASED, gfx::Point(10, 10), GetTime(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1));
   DispatchEventUsingWindowDispatcher(&release);
   EXPECT_FALSE(cursor_client.IsMouseEventsEnabled());
 
@@ -153,7 +157,8 @@ TEST_F(CompoundEventFilterTest, TouchHidesCursor) {
 
   // Now activate the window and press on it again.
   ui::TouchEvent press1(
-      ui::ET_TOUCH_PRESSED, gfx::Point(90, 90), 1, GetTime());
+      ui::ET_TOUCH_PRESSED, gfx::Point(90, 90), GetTime(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1));
   aura::client::GetActivationClient(
       root_window())->ActivateWindow(window.get());
   DispatchEventUsingWindowDispatcher(&press1);

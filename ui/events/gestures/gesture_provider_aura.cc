@@ -74,8 +74,9 @@ GestureProviderAura::GetAndResetPendingGestures() {
 
 void GestureProviderAura::OnTouchEnter(int pointer_id, float x, float y) {
   std::unique_ptr<TouchEvent> touch_event(new TouchEvent(
-      ET_TOUCH_PRESSED, gfx::Point(), EF_IS_SYNTHESIZED, pointer_id,
-      ui::EventTimeForNow(), 0.0f, 0.0f, 0.0f, 0.0f));
+      ET_TOUCH_PRESSED, gfx::Point(), ui::EventTimeForNow(),
+      PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, pointer_id),
+      EF_IS_SYNTHESIZED, 0.0f));
   gfx::PointF point(x, y);
   touch_event->set_location_f(point);
   touch_event->set_root_location_f(point);

@@ -58,13 +58,15 @@ ClientWindowId BuildClientWindowId(WindowTree* tree,
 // -----------------------------------------------------------------------------
 
 ui::PointerEvent CreatePointerDownEvent(int x, int y) {
-  return ui::PointerEvent(ui::TouchEvent(ui::ET_TOUCH_PRESSED, gfx::Point(x, y),
-                                         1, ui::EventTimeForNow()));
+  return ui::PointerEvent(ui::TouchEvent(
+      ui::ET_TOUCH_PRESSED, gfx::Point(x, y), ui::EventTimeForNow(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1)));
 }
 
 ui::PointerEvent CreatePointerUpEvent(int x, int y) {
   return ui::PointerEvent(ui::TouchEvent(
-      ui::ET_TOUCH_RELEASED, gfx::Point(x, y), 1, ui::EventTimeForNow()));
+      ui::ET_TOUCH_RELEASED, gfx::Point(x, y), ui::EventTimeForNow(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1)));
 }
 
 ui::PointerEvent CreatePointerWheelEvent(int x, int y) {

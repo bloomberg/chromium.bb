@@ -469,9 +469,10 @@ void TouchEventConverterEvdev::ReportTouchEvent(
     const InProgressTouchEvdev& event,
     EventType event_type,
     base::TimeTicks timestamp) {
-  ui::PointerDetails details(event.reported_tool_type, event.radius_x,
-                             event.radius_y, event.pressure,
-                             /* tilt_x */ 0.0f, /* tilt_y */ 0.0f);
+  ui::PointerDetails details(event.reported_tool_type, /* pointer_id*/ 0,
+                             event.radius_x, event.radius_y, event.pressure,
+                             /* tilt_x */ 0.0f, /* tilt_y */ 0.0f,
+                             /* force */ 0.f);
   dispatcher_->DispatchTouchEvent(
       TouchEventParams(input_device_.id, event.slot, event_type,
                        gfx::PointF(event.x, event.y), details, timestamp));

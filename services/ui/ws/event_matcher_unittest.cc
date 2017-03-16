@@ -26,12 +26,14 @@ TEST_F(EventTesterTest, MatchesEventByType) {
   matcher->type_matcher->type = ui::mojom::EventType::POINTER_DOWN;
   EventMatcher pointer_down_matcher(*matcher);
 
-  ui::PointerEvent pointer_down(
-      ui::TouchEvent(ui::ET_TOUCH_PRESSED, gfx::Point(), 1, base::TimeTicks()));
+  ui::PointerEvent pointer_down(ui::TouchEvent(
+      ui::ET_TOUCH_PRESSED, gfx::Point(), base::TimeTicks(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1)));
   EXPECT_TRUE(pointer_down_matcher.MatchesEvent(pointer_down));
 
   ui::PointerEvent pointer_up(ui::TouchEvent(
-      ui::ET_TOUCH_RELEASED, gfx::Point(), 1, base::TimeTicks()));
+      ui::ET_TOUCH_RELEASED, gfx::Point(), base::TimeTicks(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1)));
   EXPECT_FALSE(pointer_down_matcher.MatchesEvent(pointer_up));
 }
 

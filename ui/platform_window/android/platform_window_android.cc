@@ -126,9 +126,11 @@ bool PlatformWindowAndroid::TouchEvent(JNIEnv* env,
   if (event_type == ui::ET_UNKNOWN)
     return false;
   ui::TouchEvent touch(
-      event_type, gfx::Point(), ui::EF_NONE, pointer_id,
+      event_type, gfx::Point(),
       base::TimeTicks() + base::TimeDelta::FromMilliseconds(time_ms),
-      touch_major, touch_minor, orientation, pressure);
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, pointer_id,
+                         touch_major, touch_minor, pressure),
+      ui::EF_NONE, orientation);
   touch.set_location_f(gfx::PointF(x, y));
   touch.set_root_location_f(gfx::PointF(x, y));
   delegate_->DispatchEvent(&touch);

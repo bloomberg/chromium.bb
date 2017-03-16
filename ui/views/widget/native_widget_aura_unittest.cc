@@ -427,7 +427,8 @@ TEST_F(NativeWidgetAuraTest, DontCaptureOnGesture) {
   widget->Show();
 
   ui::TouchEvent press(
-      ui::ET_TOUCH_PRESSED, gfx::Point(41, 51), 1, ui::EventTimeForNow());
+      ui::ET_TOUCH_PRESSED, gfx::Point(41, 51), ui::EventTimeForNow(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1));
   ui::EventDispatchDetails details =
       event_processor()->OnEventFromSource(&press);
   ASSERT_FALSE(details.dispatcher_destroyed);
@@ -442,7 +443,8 @@ TEST_F(NativeWidgetAuraTest, DontCaptureOnGesture) {
   // Release touch. Only |view| should get the release since that it consumed
   // the press.
   ui::TouchEvent release(
-      ui::ET_TOUCH_RELEASED, gfx::Point(250, 251), 1, ui::EventTimeForNow());
+      ui::ET_TOUCH_RELEASED, gfx::Point(250, 251), ui::EventTimeForNow(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1));
   details = event_processor()->OnEventFromSource(&release);
   ASSERT_FALSE(details.dispatcher_destroyed);
   EXPECT_TRUE(view->got_gesture_event());

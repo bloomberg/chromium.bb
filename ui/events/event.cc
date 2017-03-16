@@ -507,24 +507,20 @@ PointerDetails::PointerDetails() {}
 
 PointerDetails::PointerDetails(EventPointerType pointer_type, int pointer_id)
     : PointerDetails(pointer_type,
-                     0.0f,
-                     0.0f,
-                     std::numeric_limits<float>::quiet_NaN(),
-                     0.0f,
-                     0.0f,
-                     0.0f,
-                     0,
-                     pointer_id) {}
+                     pointer_id,
+                     /* radius_x */ 0.0f,
+                     /* radius_y */ 0.0f,
+                     /* force */ std::numeric_limits<float>::quiet_NaN()) {}
 
 PointerDetails::PointerDetails(EventPointerType pointer_type,
+                               int pointer_id,
                                float radius_x,
                                float radius_y,
                                float force,
                                float tilt_x,
                                float tilt_y,
                                float tangential_pressure,
-                               int twist,
-                               int pointer_id)
+                               int twist)
     : pointer_type(pointer_type),
       // If we aren't provided with a radius on one axis, use the
       // information from the other axis.
@@ -537,9 +533,9 @@ PointerDetails::PointerDetails(EventPointerType pointer_type,
       twist(twist),
       id(pointer_id) {
   if (pointer_id == PointerDetails::kUnknownPointerId) {
-    id = pointer_type == EventPointerType::POINTER_TYPE_TOUCH
-             ? 0
-             : PointerEvent::kMousePointerId;
+    id = pointer_type == EventPointerType::POINTER_TYPE_MOUSE
+             ? PointerEvent::kMousePointerId
+             : 0;
   }
 }
 
@@ -886,31 +882,10 @@ TouchEvent::TouchEvent(const PointerEvent& pointer_event)
 
 TouchEvent::TouchEvent(EventType type,
                        const gfx::Point& location,
-                       int touch_id,
-                       base::TimeTicks time_stamp)
-    : LocatedEvent(type,
-                   gfx::PointF(location),
-                   gfx::PointF(location),
-                   time_stamp,
-                   0),
-      unique_event_id_(ui::GetNextTouchEventId()),
-      rotation_angle_(0.0f),
-      may_cause_scrolling_(false),
-      should_remove_native_touch_id_mapping_(false),
-      pointer_details_(
-          PointerDetails(EventPointerType::POINTER_TYPE_TOUCH, touch_id)) {
-  latency()->AddLatencyNumber(INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
-}
-
-TouchEvent::TouchEvent(EventType type,
-                       const gfx::Point& location,
-                       int flags,
-                       int touch_id,
                        base::TimeTicks time_stamp,
-                       float radius_x,
-                       float radius_y,
-                       float angle,
-                       float force)
+                       const PointerDetails& pointer_details,
+                       int flags,
+                       float angle)
     : LocatedEvent(type,
                    gfx::PointF(location),
                    gfx::PointF(location),
@@ -920,15 +895,7 @@ TouchEvent::TouchEvent(EventType type,
       rotation_angle_(angle),
       may_cause_scrolling_(false),
       should_remove_native_touch_id_mapping_(false),
-      pointer_details_(PointerDetails(EventPointerType::POINTER_TYPE_TOUCH,
-                                      radius_x,
-                                      radius_y,
-                                      force,
-                                      /* tilt_x */ 0.0f,
-                                      /* tilt_y */ 0.0f,
-                                      /* tangential_pressure */ 0.0f,
-                                      /* twist */ 0,
-                                      touch_id)) {
+      pointer_details_(pointer_details) {
   latency()->AddLatencyNumber(INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
   FixRotationAngle();
 }

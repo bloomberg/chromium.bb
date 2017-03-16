@@ -1930,8 +1930,9 @@ TEST_F(EventRewriterTest, TestRewriteNonNativeEvent) {
 
   const int kTouchId = 2;
   gfx::Point location(0, 0);
-  ui::TouchEvent press(ui::ET_TOUCH_PRESSED, location, kTouchId,
-                       base::TimeTicks());
+  ui::TouchEvent press(
+      ui::ET_TOUCH_PRESSED, location, base::TimeTicks(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, kTouchId));
   press.set_flags(ui::EF_CONTROL_DOWN);
 #if defined(USE_X11)
   ui::UpdateX11EventForFlags(&press);
