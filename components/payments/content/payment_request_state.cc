@@ -13,11 +13,6 @@
 
 namespace payments {
 
-namespace {
-// Identifier for the basic card payment method in the PaymentMethodData.
-static const char* const kBasicCardMethodName = "basic-card";
-}  // namespace
-
 PaymentRequestState::PaymentRequestState(
     PaymentRequestSpec* spec,
     Delegate* delegate,
@@ -30,7 +25,7 @@ PaymentRequestState::PaymentRequestState(
       personal_data_manager_(personal_data_manager),
       selected_shipping_profile_(nullptr),
       selected_contact_profile_(nullptr),
-      selected_credit_card_(nullptr),
+      selected_instrument_(nullptr),
       selected_shipping_option_(nullptr) {
   PopulateProfileCache();
   UpdateSelectedShippingOption();
@@ -59,16 +54,10 @@ void PaymentRequestState::OnInstrumentDetailsReady(
 }
 
 void PaymentRequestState::GeneratePaymentResponse() {
-  // TODO(mathp): PaymentRequest should know about the currently selected
-  // instrument, and not |selected_credit_card_| which is too specific.
-  // TODO(mathp): The method_name should reflect what the merchant asked, and
-  // not necessarily basic-card.
-  selected_payment_instrument_.reset(new AutofillPaymentInstrument(
-      kBasicCardMethodName, *selected_credit_card_, shipping_profiles_,
-      app_locale_));
+  DCHECK(is_ready_to_pay());
   // Fetch the instrument details, will call back into
   // PaymentRequest::OnInstrumentsDetailsReady.
-  selected_payment_instrument_->InvokePaymentApp(this);
+  selected_instrument_->InvokePaymentApp(this);
 }
 
 void PaymentRequestState::SetSelectedShippingProfile(
@@ -83,8 +72,8 @@ void PaymentRequestState::SetSelectedContactProfile(
   UpdateIsReadyToPayAndNotifyObservers();
 }
 
-void PaymentRequestState::SetSelectedCreditCard(autofill::CreditCard* card) {
-  selected_credit_card_ = card;
+void PaymentRequestState::SetSelectedInstrument(PaymentInstrument* instrument) {
+  selected_instrument_ = instrument;
   UpdateIsReadyToPayAndNotifyObservers();
 }
 
@@ -113,11 +102,27 @@ void PaymentRequestState::PopulateProfileCache() {
     contact_profiles_.push_back(profile_cache_[i].get());
   }
 
+  // Create the list of available instruments.
   const std::vector<autofill::CreditCard*>& cards =
       personal_data_manager_->GetCreditCardsToSuggest();
+  const std::set<std::string>& supported_card_networks =
+      spec_->supported_card_networks_set();
   for (autofill::CreditCard* card : cards) {
-    card_cache_.push_back(base::MakeUnique<autofill::CreditCard>(*card));
-    credit_cards_.push_back(card_cache_.back().get());
+    std::string basic_card_network =
+        autofill::data_util::GetPaymentRequestData(card->type())
+            .basic_card_payment_type;
+    if (!supported_card_networks.count(basic_card_network))
+      continue;
+
+    // TODO(crbug.com/701952): Should use the method name preferred by the
+    // merchant (either "basic-card" or the basic card network e.g. "visa").
+
+    // Copy the credit cards as part of AutofillPaymentInstrument so they are
+    // indirectly owned by this object.
+    std::unique_ptr<PaymentInstrument> instrument =
+        base::MakeUnique<AutofillPaymentInstrument>(
+            basic_card_network, *card, shipping_profiles_, app_locale_);
+    available_instruments_.push_back(std::move(instrument));
   }
 }
 
@@ -128,15 +133,20 @@ void PaymentRequestState::SetDefaultProfileSelections() {
   if (!contact_profiles().empty())
     selected_contact_profile_ = contact_profiles()[0];
 
-  // TODO(anthonyvd): Change this code to prioritize server cards and implement
-  // a way to modify this function's return value.
-  const std::vector<autofill::CreditCard*> cards = credit_cards();
-  auto first_complete_card =
-      std::find_if(cards.begin(), cards.end(),
-                   [](autofill::CreditCard* card) { return card->IsValid(); });
+  // TODO(crbug.com/702063): Change this code to prioritize instruments by use
+  // count and other means, and implement a way to modify this function's return
+  // value.
+  const std::vector<std::unique_ptr<PaymentInstrument>>& instruments =
+      available_instruments();
+  auto first_complete_instrument =
+      std::find_if(instruments.begin(), instruments.end(),
+                   [](const std::unique_ptr<PaymentInstrument>& instrument) {
+                     return instrument->IsValid();
+                   });
 
-  selected_credit_card_ =
-      first_complete_card == cards.end() ? nullptr : *first_complete_card;
+  selected_instrument_ = first_complete_instrument == instruments.end()
+                             ? nullptr
+                             : first_complete_instrument->get();
 
   UpdateIsReadyToPayAndNotifyObservers();
 }
@@ -153,18 +163,10 @@ void PaymentRequestState::NotifyOnSelectedInformationChanged() {
 }
 
 bool PaymentRequestState::ArePaymentDetailsSatisfied() {
-  // TODO(mathp): A masked card may not satisfy IsValid().
-  if (selected_credit_card_ == nullptr || !selected_credit_card_->IsValid())
-    return false;
-
-  const std::string basic_card_payment_type =
-      autofill::data_util::GetPaymentRequestData(selected_credit_card_->type())
-          .basic_card_payment_type;
-  return !spec_->supported_card_networks().empty() &&
-         std::find(spec_->supported_card_networks().begin(),
-                   spec_->supported_card_networks().end(),
-                   basic_card_payment_type) !=
-             spec_->supported_card_networks().end();
+  // There is no need to check for supported networks, because only supported
+  // instruments are listed/created in the flow.
+  // TODO(crbug.com/702063): A masked card may not satisfy IsValid().
+  return selected_instrument_ != nullptr && selected_instrument_->IsValid();
 }
 
 bool PaymentRequestState::ArePaymentOptionsSatisfied() {

@@ -124,6 +124,9 @@ void PaymentRequestSpec::PopulateValidatedMethodData(
       }
     }
   }
+
+  supported_card_networks_set_.insert(supported_card_networks_.begin(),
+                                      supported_card_networks_.end());
 }
 
 void PaymentRequestSpec::NotifyOnInvalidSpecProvided() {

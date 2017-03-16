@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/strings/string16.h"
 
 namespace payments {
 
@@ -28,19 +29,29 @@ class PaymentInstrument {
     virtual void OnInstrumentDetailsError() = 0;
   };
 
-  virtual ~PaymentInstrument() {}
+  virtual ~PaymentInstrument();
 
   // Will call into the |delegate| (can't be null) on success or error.
   virtual void InvokePaymentApp(Delegate* delegate) = 0;
+  // Returns true if the card is valid to be used as a payment method.
+  virtual bool IsValid() = 0;
 
-  const std::string& method_name() { return method_name_; }
+  const std::string& method_name() const { return method_name_; }
+  const base::string16& label() const { return label_; }
+  const base::string16& sublabel() const { return sublabel_; }
+  int icon_resource_id() const { return icon_resource_id_; }
 
  protected:
-  explicit PaymentInstrument(const std::string& method_name)
-      : method_name_(method_name) {}
+  PaymentInstrument(const std::string& method_name,
+                    const base::string16& label,
+                    const base::string16& sublabel,
+                    int icon_resource_id);
 
  private:
   const std::string method_name_;
+  const base::string16 label_;
+  const base::string16 sublabel_;
+  int icon_resource_id_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentInstrument);
 };

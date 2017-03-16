@@ -24,10 +24,15 @@ class PaymentRequestStateTest : public testing::Test,
   PaymentRequestStateTest()
       : num_on_selected_information_changed_called_(0),
         address_(autofill::test::GetFullProfile()),
-        credit_card_(autofill::test::GetCreditCard()) {
+        credit_card_visa_(autofill::test::GetCreditCard()),
+        credit_card_amex_(autofill::test::GetCreditCard2()) {
     test_personal_data_manager_.AddTestingProfile(&address_);
-    credit_card_.set_billing_address_id(address_.guid());
-    test_personal_data_manager_.AddTestingCreditCard(&credit_card_);
+    credit_card_visa_.set_billing_address_id(address_.guid());
+    credit_card_visa_.set_use_count(5u);
+    test_personal_data_manager_.AddTestingCreditCard(&credit_card_visa_);
+    credit_card_amex_.set_billing_address_id(address_.guid());
+    credit_card_amex_.set_use_count(1u);
+    test_personal_data_manager_.AddTestingCreditCard(&credit_card_amex_);
   }
   ~PaymentRequestStateTest() override {}
 
@@ -86,7 +91,6 @@ class PaymentRequestStateTest : public testing::Test,
   }
 
   autofill::AutofillProfile* test_address() { return &address_; }
-  autofill::CreditCard* test_credit_card() { return &credit_card_; }
 
  private:
   std::unique_ptr<PaymentRequestState> state_;
@@ -97,7 +101,8 @@ class PaymentRequestStateTest : public testing::Test,
 
   // Test data.
   autofill::AutofillProfile address_;
-  autofill::CreditCard credit_card_;
+  autofill::CreditCard credit_card_visa_;
+  autofill::CreditCard credit_card_amex_;
 };
 
 // Test that the last shipping option is selected.
@@ -133,28 +138,18 @@ TEST_F(PaymentRequestStateTest, ReadyToPay_DefaultSelections) {
   EXPECT_TRUE(state()->is_ready_to_pay());
 }
 
-// Testing that the card is supported when determining "is ready to pay". In
-// this test the merchant only supports Visa.
-TEST_F(PaymentRequestStateTest, ReadyToPay_SelectUnsupportedCard) {
+// Testing that only supported intruments are shown. In this test the merchant
+// only supports Visa.
+TEST_F(PaymentRequestStateTest, UnsupportedCardAreNotAvailable) {
   // Default options.
   RecreateStateWithOptions(mojom::PaymentOptions::New());
 
-  // Ready to pay because the default card is selected and supported.
+  // Ready to pay because the default instrument is selected and supported.
   EXPECT_TRUE(state()->is_ready_to_pay());
 
-  autofill::CreditCard amex_card = autofill::test::GetCreditCard2();  // Amex.
-  state()->SetSelectedCreditCard(&amex_card);
-  EXPECT_EQ(1, num_on_selected_information_changed_called());
-
-  // Not ready to pay because the card is not supported.
-  EXPECT_FALSE(state()->is_ready_to_pay());
-
-  // Go back to the Visa card.
-  state()->SetSelectedCreditCard(test_credit_card());  // Visa card.
-  EXPECT_EQ(2, num_on_selected_information_changed_called());
-
-  // Visa card is supported by the merchant.
-  EXPECT_TRUE(state()->is_ready_to_pay());
+  // There's only one instrument available, even though there's an Amex in
+  // PersonalDataManager.
+  EXPECT_EQ(1u, state()->available_instruments().size());
 }
 
 // Test selecting a contact info profile will make the user ready to pay.
@@ -185,13 +180,13 @@ TEST_F(PaymentRequestStateTest, ReadyToPay_ContactInfo) {
 TEST_F(PaymentRequestStateTest, GeneratePaymentResponse) {
   // Default options (no shipping, no contact info).
   RecreateStateWithOptions(mojom::PaymentOptions::New());
-  state()->SetSelectedCreditCard(test_credit_card());
+  state()->SetSelectedInstrument(state()->available_instruments()[0].get());
   EXPECT_EQ(1, num_on_selected_information_changed_called());
   EXPECT_TRUE(state()->is_ready_to_pay());
 
   // TODO(mathp): Currently synchronous, when async will need a RunLoop.
   state()->GeneratePaymentResponse();
-  EXPECT_EQ("basic-card", response()->method_name);
+  EXPECT_EQ("visa", response()->method_name);
   EXPECT_EQ(
       "{\"billingAddress\":"
       "{\"addressLine\":[\"666 Erebus St.\",\"Apt 8\"],"

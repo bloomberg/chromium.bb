@@ -15,11 +15,18 @@ namespace payments {
 
 AutofillPaymentInstrument::AutofillPaymentInstrument(
     const std::string& method_name,
-    const autofill::CreditCard& credit_card,
+    const autofill::CreditCard& card,
     const std::vector<autofill::AutofillProfile*>& billing_profiles,
     const std::string& app_locale)
-    : PaymentInstrument(method_name),
-      credit_card_(credit_card),
+    : PaymentInstrument(
+          method_name,
+          /* label= */ card.TypeAndLastFourDigits(),
+          /* sublabel= */
+          card.GetInfo(autofill::AutofillType(autofill::CREDIT_CARD_NAME_FULL),
+                       app_locale),
+          autofill::data_util::GetPaymentRequestData(card.type())
+              .icon_resource_id),
+      credit_card_(card),
       billing_profiles_(billing_profiles),
       app_locale_(app_locale) {}
 AutofillPaymentInstrument::~AutofillPaymentInstrument() {}
@@ -37,6 +44,10 @@ void AutofillPaymentInstrument::InvokePaymentApp(
           .ToDictionaryValue();
   base::JSONWriter::Write(*response_value, &stringified_details);
   delegate->OnInstrumentDetailsReady(method_name(), stringified_details);
+}
+
+bool AutofillPaymentInstrument::IsValid() {
+  return credit_card_.IsValid();
 }
 
 }  // namespace payments

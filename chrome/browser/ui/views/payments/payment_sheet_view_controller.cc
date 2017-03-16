@@ -23,13 +23,12 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
-#include "components/autofill/core/browser/autofill_type.h"
-#include "components/autofill/core/browser/credit_card.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/payments/content/payment_request_spec.h"
 #include "components/payments/content/payment_request_state.h"
 #include "components/payments/core/currency_formatter.h"
+#include "components/payments/core/payment_instrument.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -438,11 +437,11 @@ std::unique_ptr<views::Button> PaymentSheetViewController::CreateShippingRow() {
 // +----------------------------------------------+
 std::unique_ptr<views::Button>
 PaymentSheetViewController::CreatePaymentMethodRow() {
-  autofill::CreditCard* selected_card = state()->selected_credit_card();
+  PaymentInstrument* selected_instrument = state()->selected_instrument();
 
   std::unique_ptr<views::View> content_view;
   std::unique_ptr<views::ImageView> card_icon_view;
-  if (selected_card) {
+  if (selected_instrument) {
     content_view = base::MakeUnique<views::View>();
 
     views::GridLayout* layout = new views::GridLayout(content_view.get());
@@ -452,14 +451,12 @@ PaymentSheetViewController::CreatePaymentMethodRow() {
                        1, views::GridLayout::USE_PREF, 0, 0);
 
     layout->StartRow(0, 0);
-    layout->AddView(new views::Label(selected_card->TypeAndLastFourDigits()));
+    layout->AddView(new views::Label(selected_instrument->label()));
     layout->StartRow(0, 0);
-    layout->AddView(new views::Label(
-        selected_card->GetInfo(
-            autofill::AutofillType(autofill::CREDIT_CARD_NAME_FULL),
-            g_browser_process->GetApplicationLocale())));
+    layout->AddView(new views::Label(selected_instrument->sublabel()));
 
-    card_icon_view = CreateCardIconView(selected_card->type());
+    card_icon_view = CreateInstrumentIconView(
+        selected_instrument->icon_resource_id(), selected_instrument->label());
     card_icon_view->SetImageSize(gfx::Size(32, 20));
   }
 

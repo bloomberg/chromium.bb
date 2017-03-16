@@ -26,17 +26,21 @@ class AutofillPaymentInstrument : public PaymentInstrument {
   // |billing_profiles| is owned by the caller and should outlive this object.
   AutofillPaymentInstrument(
       const std::string& method_name,
-      const autofill::CreditCard& credit_card,
+      const autofill::CreditCard& card,
       const std::vector<autofill::AutofillProfile*>& billing_profiles,
       const std::string& app_locale);
   ~AutofillPaymentInstrument() override;
 
   // PaymentInstrument:
   void InvokePaymentApp(PaymentInstrument::Delegate* delegate) override;
+  bool IsValid() override;
 
  private:
+  // A copy of the card is owned by this object.
   const autofill::CreditCard credit_card_;
+  // Not owned by this object, should outlive this.
   const std::vector<autofill::AutofillProfile*>& billing_profiles_;
+
   const std::string app_locale_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillPaymentInstrument);

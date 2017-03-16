@@ -14,6 +14,7 @@ static_library("core") {
     "currency_formatter.h",
     "payment_address.cc",
     "payment_address.h",
+    "payment_instrument.cc",
     "payment_instrument.h",
     "payment_request_data_util.cc",
     "payment_request_data_util.h",

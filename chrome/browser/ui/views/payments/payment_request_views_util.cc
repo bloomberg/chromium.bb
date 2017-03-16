@@ -170,18 +170,16 @@ std::unique_ptr<views::View> CreateSheetHeaderView(
   return container;
 }
 
-std::unique_ptr<views::ImageView> CreateCardIconView(
-    const std::string& card_type) {
+std::unique_ptr<views::ImageView> CreateInstrumentIconView(
+    int icon_resource_id,
+    const base::string16& tooltip_text) {
   std::unique_ptr<views::ImageView> card_icon_view =
       base::MakeUnique<views::ImageView>();
   card_icon_view->set_can_process_events_within_subtree(false);
-  card_icon_view->SetImage(
-      ResourceBundle::GetSharedInstance()
-          .GetImageNamed(autofill::data_util::GetPaymentRequestData(card_type)
-                             .icon_resource_id)
-          .AsImageSkia());
-  card_icon_view->SetTooltipText(
-      autofill::CreditCard::TypeForDisplay(card_type));
+  card_icon_view->SetImage(ResourceBundle::GetSharedInstance()
+                               .GetImageNamed(icon_resource_id)
+                               .AsImageSkia());
+  card_icon_view->SetTooltipText(tooltip_text);
   card_icon_view->SetBorder(views::CreateRoundedRectBorder(
       1, 3, card_icon_view->GetNativeTheme()->GetSystemColor(
                 ui::NativeTheme::kColorId_UnfocusedBorderColor)));

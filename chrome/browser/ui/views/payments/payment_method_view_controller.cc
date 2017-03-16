@@ -14,9 +14,8 @@
 #include "chrome/browser/ui/views/payments/payment_request_row_view.h"
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/autofill/core/browser/autofill_type.h"
-#include "components/autofill/core/browser/credit_card.h"
 #include "components/payments/content/payment_request_state.h"
+#include "components/payments/core/payment_instrument.h"
 #include "components/strings/grit/components_strings.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -42,16 +41,16 @@ enum class PaymentMethodViewControllerTags : int {
 
 class PaymentMethodListItem : public payments::PaymentRequestItemList::Item {
  public:
-  // Does not take ownership of |card|, which  should not be null and should
-  // outlive this object. |list| is the PaymentRequestItemList object that will
-  // own this.
-  PaymentMethodListItem(autofill::CreditCard* card,
+  // Does not take ownership of |instrument|, which  should not be null and
+  // should outlive this object. |list| is the PaymentRequestItemList object
+  // that will own this.
+  PaymentMethodListItem(PaymentInstrument* instrument,
                         PaymentRequestSpec* spec,
                         PaymentRequestState* state,
                         PaymentRequestItemList* list,
                         bool selected)
       : payments::PaymentRequestItemList::Item(spec, state, list, selected),
-        card_(card) {}
+        instrument_(instrument) {}
   ~PaymentMethodListItem() override {}
 
  private:
@@ -100,11 +99,9 @@ class PaymentMethodListItem : public payments::PaymentRequestItemList::Item {
         views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
     card_info_container->SetLayoutManager(box_layout.release());
 
+    card_info_container->AddChildView(new views::Label(instrument_->label()));
     card_info_container->AddChildView(
-        new views::Label(card_->TypeAndLastFourDigits()));
-    card_info_container->AddChildView(new views::Label(
-        card_->GetInfo(autofill::AutofillType(autofill::CREDIT_CARD_NAME_FULL),
-                       g_browser_process->GetApplicationLocale())));
+        new views::Label(instrument_->sublabel()));
     // TODO(anthonyvd): Add the "card is incomplete" label once the
     // completedness logic is implemented.
     layout->AddView(card_info_container.release());
@@ -112,8 +109,8 @@ class PaymentMethodListItem : public payments::PaymentRequestItemList::Item {
     checkmark_ = CreateCheckmark(selected());
     layout->AddView(checkmark_.get());
 
-    std::unique_ptr<views::ImageView> card_icon_view =
-        CreateCardIconView(card_->type());
+    std::unique_ptr<views::ImageView> card_icon_view = CreateInstrumentIconView(
+        instrument_->icon_resource_id(), instrument_->label());
     card_icon_view->SetImageSize(gfx::Size(32, 20));
     layout->AddView(card_icon_view.release());
 
@@ -126,7 +123,7 @@ class PaymentMethodListItem : public payments::PaymentRequestItemList::Item {
     if (checkmark_)
       checkmark_->SetVisible(selected());
 
-    state()->SetSelectedCreditCard(card_);
+    state()->SetSelectedInstrument(instrument_);
   }
 
   // views::ButtonListener:
@@ -145,7 +142,7 @@ class PaymentMethodListItem : public payments::PaymentRequestItemList::Item {
     return true;
   }
 
-  autofill::CreditCard* card_;
+  PaymentInstrument* instrument_;
   std::unique_ptr<views::ImageView> checkmark_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentMethodListItem);
@@ -158,14 +155,15 @@ PaymentMethodViewController::PaymentMethodViewController(
     PaymentRequestState* state,
     PaymentRequestDialogView* dialog)
     : PaymentRequestSheetController(spec, state, dialog) {
-  const std::vector<autofill::CreditCard*>& available_cards =
-      state->credit_cards();
+  const std::vector<std::unique_ptr<PaymentInstrument>>& available_instruments =
+      state->available_instruments();
 
-  for (autofill::CreditCard* card : available_cards) {
+  for (const std::unique_ptr<PaymentInstrument>& instrument :
+       available_instruments) {
     std::unique_ptr<PaymentMethodListItem> item =
         base::MakeUnique<PaymentMethodListItem>(
-            card, spec, state, &payment_method_list_,
-            card == state->selected_credit_card());
+            instrument.get(), spec, state, &payment_method_list_,
+            instrument.get() == state->selected_instrument());
     payment_method_list_.AddItem(std::move(item));
   }
 }

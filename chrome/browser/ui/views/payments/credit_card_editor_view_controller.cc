@@ -129,8 +129,10 @@ CreditCardEditorViewController::CreateHeaderView() {
     const std::string autofill_card_type =
         autofill::data_util::GetCardTypeForBasicCardPaymentType(
             supported_network);
-    std::unique_ptr<views::ImageView> card_icon_view =
-        CreateCardIconView(autofill_card_type);
+    std::unique_ptr<views::ImageView> card_icon_view = CreateInstrumentIconView(
+        autofill::data_util::GetPaymentRequestData(autofill_card_type)
+            .icon_resource_id,
+        base::UTF8ToUTF16(supported_network));
     card_icon_view->SetImageSize(kCardIconSize);
 
     icons_row->AddChildView(card_icon_view.release());

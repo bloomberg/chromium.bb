@@ -125,8 +125,6 @@ void PaymentRequest::OnConnectionTerminated() {
 }
 
 void PaymentRequest::Pay() {
-  DCHECK(state_->is_ready_to_pay());
-
   state_->GeneratePaymentResponse();
 }
 

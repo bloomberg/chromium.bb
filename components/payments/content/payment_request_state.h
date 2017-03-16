@@ -12,7 +12,6 @@
 
 namespace autofill {
 class AutofillProfile;
-class CreditCard;
 class PersonalDataManager;
 }  // namespace autofill
 
@@ -76,11 +75,11 @@ class PaymentRequestState : public PaymentInstrument::Delegate {
   autofill::AutofillProfile* selected_contact_profile() const {
     return selected_contact_profile_;
   }
-  // Returns the currently selected credit card for this PaymentRequest flow.
+  // Returns the currently selected instrument for this PaymentRequest flow.
   // It's not guaranteed to be complete. Returns nullptr if there is no selected
-  // card.
-  autofill::CreditCard* selected_credit_card() const {
-    return selected_credit_card_;
+  // instrument.
+  PaymentInstrument* selected_instrument() const {
+    return selected_instrument_;
   }
   mojom::PaymentShippingOption* selected_shipping_option() {
     return selected_shipping_option_;
@@ -94,15 +93,16 @@ class PaymentRequestState : public PaymentInstrument::Delegate {
   const std::vector<autofill::AutofillProfile*>& contact_profiles() {
     return contact_profiles_;
   }
-  const std::vector<autofill::CreditCard*>& credit_cards() {
-    return credit_cards_;
+  const std::vector<std::unique_ptr<PaymentInstrument>>&
+  available_instruments() {
+    return available_instruments_;
   }
 
   // Setters to change the selected information. Will have the side effect of
   // recomputing "is ready to pay" and notify observers.
   void SetSelectedShippingProfile(autofill::AutofillProfile* profile);
   void SetSelectedContactProfile(autofill::AutofillProfile* profile);
-  void SetSelectedCreditCard(autofill::CreditCard* card);
+  void SetSelectedInstrument(PaymentInstrument* instrument);
 
   bool is_ready_to_pay() { return is_ready_to_pay_; }
 
@@ -115,7 +115,7 @@ class PaymentRequestState : public PaymentInstrument::Delegate {
   // profile_cache_.
   void PopulateProfileCache();
 
-  // Sets the initial selections for credit card and profiles, and notifies
+  // Sets the initial selections for instruments and profiles, and notifies
   // observers.
   void SetDefaultProfileSelections();
 
@@ -150,12 +150,10 @@ class PaymentRequestState : public PaymentInstrument::Delegate {
 
   autofill::AutofillProfile* selected_shipping_profile_;
   autofill::AutofillProfile* selected_contact_profile_;
-  autofill::CreditCard* selected_credit_card_;
+  PaymentInstrument* selected_instrument_;
   // The shipping options (and thus this pointer) are owned by |spec_| which
   // outlives this object.
   mojom::PaymentShippingOption* selected_shipping_option_;
-
-  std::unique_ptr<PaymentInstrument> selected_payment_instrument_;
 
   // Profiles may change due to (e.g.) sync events, so profiles are cached after
   // loading and owned here. They are populated once only, and ordered by
@@ -163,8 +161,8 @@ class PaymentRequestState : public PaymentInstrument::Delegate {
   std::vector<std::unique_ptr<autofill::AutofillProfile>> profile_cache_;
   std::vector<autofill::AutofillProfile*> shipping_profiles_;
   std::vector<autofill::AutofillProfile*> contact_profiles_;
-  std::vector<std::unique_ptr<autofill::CreditCard>> card_cache_;
-  std::vector<autofill::CreditCard*> credit_cards_;
+  // Credit cards are directly owned by the instruments in this list.
+  std::vector<std::unique_ptr<PaymentInstrument>> available_instruments_;
 
   base::ObserverList<Observer> observers_;
 

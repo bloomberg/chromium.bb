@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_PAYMENTS_CONTENT_PAYMENT_REQUEST_SPEC_H_
 #define COMPONENTS_PAYMENTS_CONTENT_PAYMENT_REQUEST_SPEC_H_
 
+#include <set>
 #include <string>
 #include <vector>
 
@@ -46,8 +47,11 @@ class PaymentRequestSpec {
   bool request_payer_phone() const { return options_->request_payer_phone; }
   bool request_payer_email() const { return options_->request_payer_email; }
 
-  const std::vector<std::string>& supported_card_networks() {
+  const std::vector<std::string>& supported_card_networks() const {
     return supported_card_networks_;
+  }
+  const std::set<std::string>& supported_card_networks_set() const {
+    return supported_card_networks_set_;
   }
 
   // Uses CurrencyFormatter to format |amount| with the currency symbol for this
@@ -85,9 +89,11 @@ class PaymentRequestSpec {
   const std::string app_locale_;
   std::unique_ptr<CurrencyFormatter> currency_formatter_;
 
-  // A list of supported basic card networks, in order that they were specified
-  // by the merchant.
+  // A list/set of supported basic card networks. The list is used to keep the
+  // order in which they were specified by the merchant. The set is used for
+  // fast lookup of supported methods.
   std::vector<std::string> supported_card_networks_;
+  std::set<std::string> supported_card_networks_set_;
 
   base::ObserverList<Observer> observers_;
 
