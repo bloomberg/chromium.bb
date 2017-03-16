@@ -674,4 +674,9 @@
         <item name="android:scaleType">center</item>
         <item name="android:background">@color/light_active_color</item>
     </style>
+
+    <!-- Miscellaneous -->
+    <style name="BottomSheetContentTitle" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">
+        <item name="android:textSize">20sp</item>
+    </style>
 </resources>

@@ -10,6 +10,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.support.v7.widget.Toolbar;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
@@ -229,5 +230,29 @@ public class BottomToolbarPhone extends ToolbarPhone implements BottomSheetObser
         if (isMovingDown && getLocationBar().isUrlBarFocused()) {
             getLocationBar().setUrlBarFocus(false);
         }
+    }
+
+    /**
+     * Sets the height and title text appearance of the provided toolbar so that its style is
+     * consistent with BottomToolbarPhone.
+     * @param otherToolbar The other {@link Toolbar} to style.
+     */
+    public void setOtherToolbarStyle(Toolbar otherToolbar) {
+        // Android's Toolbar class typically changes its height based on device orientation.
+        // BottomToolbarPhone has a fixed height. Update |toolbar| to match.
+        otherToolbar.getLayoutParams().height = getHeight();
+
+        // Android Toolbar action buttons are aligned based on the minimum height.
+        int extraTopMargin = getExtraTopMargin();
+        otherToolbar.setMinimumHeight(getHeight() - extraTopMargin);
+
+        otherToolbar.setTitleTextAppearance(
+                otherToolbar.getContext(), R.style.BottomSheetContentTitle);
+        ApiCompatibilityUtils.setPaddingRelative(otherToolbar,
+                ApiCompatibilityUtils.getPaddingStart(otherToolbar),
+                otherToolbar.getPaddingTop() + extraTopMargin,
+                ApiCompatibilityUtils.getPaddingEnd(otherToolbar), otherToolbar.getPaddingBottom());
+
+        otherToolbar.requestLayout();
     }
 }

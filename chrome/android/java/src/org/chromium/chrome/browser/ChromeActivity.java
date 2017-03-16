@@ -431,17 +431,17 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                 ControlContainer controlContainer =
                         (ControlContainer) findViewById(R.id.control_container);
 
+                // Inflate the correct toolbar layout for the device.
+                int toolbarLayoutId = getToolbarLayoutId();
+                if (toolbarLayoutId != NO_TOOLBAR_LAYOUT && controlContainer != null) {
+                    controlContainer.initWithToolbar(toolbarLayoutId);
+                }
+
                 // Get a handle to the bottom sheet if using the bottom control container.
                 if (controlContainerLayoutId == R.layout.bottom_control_container) {
                     View coordinator = findViewById(R.id.coordinator);
                     mBottomSheet = (BottomSheet) findViewById(R.id.bottom_sheet);
                     mBottomSheet.init(coordinator, controlContainer.getView());
-                }
-
-                // Inflate the correct toolbar layout for the device.
-                int toolbarLayoutId = getToolbarLayoutId();
-                if (toolbarLayoutId != NO_TOOLBAR_LAYOUT && controlContainer != null) {
-                    controlContainer.initWithToolbar(toolbarLayoutId);
                 }
             } finally {
                 StrictMode.setThreadPolicy(oldPolicy);

@@ -17,6 +17,7 @@ import android.support.v7.widget.RecyclerView.Adapter;
 import android.support.v7.widget.RecyclerView.AdapterDataObserver;
 import android.support.v7.widget.RecyclerView.ItemAnimator;
 import android.support.v7.widget.RecyclerView.OnScrollListener;
+import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.Toolbar.OnMenuItemClickListener;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
@@ -298,21 +299,13 @@ public class SelectableListLayout<E>
     }
 
     /**
-     * Removes the content view from this view and returns it so that it may be re-attached
+     * Removes the toolbar view from this view and returns it so that it may be re-attached
      * elsewhere.
-     * @return The content view, which consists of the {@link RecyclerView} that holds the list of
-     *         items, the empty view, and the loading view.
+     * @return The toolbar view.
      */
-    public View detachContentView() {
-        View contentView = findViewById(R.id.list_content);
-        assert contentView != null;
-        removeView(contentView);
-
-        // The background color is typically set on the SelectableListLayout rather than the content
-        // view. Set the background color for the content view so that it is not transparent.
-        contentView.setBackground(getBackground());
-
-        return contentView;
+    public Toolbar detachToolbarView() {
+        removeView(mToolbar);
+        return mToolbar;
     }
 
     /**

@@ -49,7 +49,7 @@ public class DownloadActivity extends SnackbarActivity {
         boolean isOffTheRecord = DownloadUtils.shouldShowOffTheRecordDownloads(getIntent());
         ComponentName parentComponent = IntentUtils.safeGetParcelableExtra(
                 getIntent(), IntentHandler.EXTRA_PARENT_COMPONENT);
-        mDownloadManagerUi = new DownloadManagerUi(this, isOffTheRecord, parentComponent);
+        mDownloadManagerUi = new DownloadManagerUi(this, isOffTheRecord, parentComponent, true);
         setContentView(mDownloadManagerUi.getView());
         mIsOffTheRecord = isOffTheRecord;
         mDownloadManagerUi.addObserver(mUiObserver);

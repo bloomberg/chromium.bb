@@ -4,10 +4,12 @@
 
 package org.chromium.chrome.browser.bookmarks;
 
-import android.app.Activity;
+import android.support.v7.widget.Toolbar;
 import android.view.View;
 
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.toolbar.BottomToolbarPhone;
 import org.chromium.chrome.browser.widget.BottomSheet.BottomSheetContent;
 
 /**
@@ -15,15 +17,19 @@ import org.chromium.chrome.browser.widget.BottomSheet.BottomSheetContent;
  */
 public class BookmarkSheetContent implements BottomSheetContent {
     private final View mContentView;
+    private final Toolbar mToolbarView;
     private BookmarkManager mBookmarkManager;
 
     /**
      * @param activity The activity displaying the bookmark manager UI.
      */
-    public BookmarkSheetContent(Activity activity) {
+    public BookmarkSheetContent(ChromeActivity activity) {
         mBookmarkManager = new BookmarkManager(activity, false);
         mBookmarkManager.updateForUrl(UrlConstants.BOOKMARKS_URL);
-        mContentView = mBookmarkManager.detachContentView();
+        mContentView = mBookmarkManager.getView();
+        mToolbarView = mBookmarkManager.detachToolbarView();
+        ((BottomToolbarPhone) activity.getToolbarManager().getToolbar())
+                .setOtherToolbarStyle(mToolbarView);
     }
 
     @Override
@@ -33,7 +39,7 @@ public class BookmarkSheetContent implements BottomSheetContent {
 
     @Override
     public View getToolbarView() {
-        return null;
+        return mToolbarView;
     }
 
     @Override

@@ -30,6 +30,7 @@ import org.chromium.chrome.browser.preferences.ManagedPreferencesUtils;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.webapk.lib.client.WebApkValidator;
@@ -185,6 +186,13 @@ public class AppMenuPropertiesDelegate {
             // Only display the Enter VR button if VR Shell Dev environment is enabled.
             menu.findItem(R.id.enter_vr_id).setVisible(
                     CommandLine.getInstance().hasSwitch(ChromeSwitches.ENABLE_VR_SHELL_DEV));
+
+            if (FeatureUtilities.isChromeHomeEnabled()) {
+                // History, downloads, and bookmarks are shown in the Chrome Home bottom sheet.
+                menu.findItem(R.id.open_history_menu_id).setVisible(false);
+                menu.findItem(R.id.downloads_menu_id).setVisible(false);
+                menu.findItem(R.id.all_bookmarks_menu_id).setVisible(false);
+            }
         }
 
         if (isOverviewMenu) {

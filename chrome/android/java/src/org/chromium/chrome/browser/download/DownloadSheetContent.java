@@ -5,13 +5,16 @@
 package org.chromium.chrome.browser.download;
 
 import android.app.Activity;
+import android.support.v7.widget.Toolbar;
 import android.view.View;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.ThreadUtils;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.download.ui.DownloadManagerUi;
+import org.chromium.chrome.browser.toolbar.BottomToolbarPhone;
 import org.chromium.chrome.browser.widget.BottomSheet.BottomSheetContent;
 
 /**
@@ -19,6 +22,7 @@ import org.chromium.chrome.browser.widget.BottomSheet.BottomSheetContent;
  */
 public class DownloadSheetContent implements BottomSheetContent {
     private final View mContentView;
+    private final Toolbar mToolbarView;
     private final ActivityStateListener mActivityStateListener;
     private DownloadManagerUi mDownloadManager;
 
@@ -26,12 +30,15 @@ public class DownloadSheetContent implements BottomSheetContent {
      * @param activity The activity displaying the download manager UI.
      * @param isIncognito Whether the activity is currently displaying an incognito tab.
      */
-    public DownloadSheetContent(Activity activity, final boolean isIncognito) {
+    public DownloadSheetContent(ChromeActivity activity, final boolean isIncognito) {
         ThreadUtils.assertOnUiThread();
 
         mDownloadManager =
-                new DownloadManagerUi(activity, isIncognito, activity.getComponentName());
-        mContentView = mDownloadManager.detachContentView();
+                new DownloadManagerUi(activity, isIncognito, activity.getComponentName(), false);
+        mContentView = mDownloadManager.getView();
+        mToolbarView = mDownloadManager.detachToolbarView();
+        ((BottomToolbarPhone) activity.getToolbarManager().getToolbar())
+                .setOtherToolbarStyle(mToolbarView);
 
         // #destroy() unregisters the ActivityStateListener to avoid checking for externally removed
         // downloads after the downloads UI is closed. This requires each download UI to have its
@@ -57,7 +64,7 @@ public class DownloadSheetContent implements BottomSheetContent {
 
     @Override
     public View getToolbarView() {
-        return null;
+        return mToolbarView;
     }
 
     @Override

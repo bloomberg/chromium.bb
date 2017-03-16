@@ -39,6 +39,7 @@ public class BottomSheetContentController extends BottomNavigationView
     private TabModelSelector mTabModelSelector;
     private float mDistanceBelowToolbarPx;
     private int mSelectedItemId;
+    private boolean mDefaultContentInitialized;
 
     private final Map<Integer, BottomSheetContent> mBottomSheetContents = new HashMap<>();
 
@@ -70,8 +71,9 @@ public class BottomSheetContentController extends BottomNavigationView
      * Initialize the default {@link BottomSheetContent}.
      */
     public void initializeDefaultContent() {
-        mBottomSheet.showContent(getSheetContentForId(R.id.action_home));
-        mSelectedItemId = R.id.action_home;
+        if (mDefaultContentInitialized) return;
+        showBottomSheetContent(R.id.action_home);
+        mDefaultContentInitialized = true;
     }
 
     @Override
@@ -91,7 +93,11 @@ public class BottomSheetContentController extends BottomNavigationView
     }
 
     @Override
-    public void onSheetOpened() {}
+    public void onSheetOpened() {
+        if (!mDefaultContentInitialized && mTabModelSelector.getCurrentTab() != null) {
+            initializeDefaultContent();
+        }
+    }
 
     @Override
     public void onSheetClosed() {

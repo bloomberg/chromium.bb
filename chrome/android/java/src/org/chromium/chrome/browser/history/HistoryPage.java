@@ -31,7 +31,7 @@ public class HistoryPage extends BasicNativePage {
 
     @Override
     protected void initialize(Activity activity, final NativePageHost host) {
-        mHistoryManager = new HistoryManager(activity, this);
+        mHistoryManager = new HistoryManager(activity, false);
         mTitle = activity.getString(R.string.menu_history);
     }
 

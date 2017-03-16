@@ -138,6 +138,18 @@ public class BottomSheet
      */
     private float mLastPeekToHalfRatioSent;
 
+    /** The FrameLayout used to hold the bottom sheet toolbar. */
+    private FrameLayout mToolbarHolder;
+
+    /**
+     * The default toolbar view. This is shown when the current bottom sheet content doesn't have
+     * its own toolbar and when the bottom sheet is closed.
+     */
+    private View mDefaultToolbarView;
+
+    /** The last non-default toolbar view that was attached to mToolbarHolder. */
+    private View mLastToolbarView;
+
     /**
      * An interface defining content that can be displayed inside of the bottom sheet for Chrome
      * Home.
@@ -393,6 +405,9 @@ public class BottomSheet
         mPlaceholder.setBackgroundColor(
                 ApiCompatibilityUtils.getColor(getResources(), android.R.color.white));
         mBottomSheetContentContainer.addView(mPlaceholder, placeHolderParams);
+
+        mToolbarHolder = (FrameLayout) mControlContainer.findViewById(R.id.toolbar_holder);
+        mDefaultToolbarView = mControlContainer.findViewById(R.id.toolbar);
     }
 
     @Override
@@ -478,6 +493,19 @@ public class BottomSheet
         mBottomSheetContentContainer.removeView(mPlaceholder);
         mSheetContent = content;
         mBottomSheetContentContainer.addView(mSheetContent.getContentView());
+
+        if (mLastToolbarView != null) {
+            mToolbarHolder.removeView(mLastToolbarView);
+            mLastToolbarView = null;
+        }
+
+        if (mSheetContent.getToolbarView() != null) {
+            mLastToolbarView = mSheetContent.getToolbarView();
+            mToolbarHolder.addView(mSheetContent.getToolbarView());
+            mDefaultToolbarView.setVisibility(View.GONE);
+        } else {
+            mDefaultToolbarView.setVisibility(View.VISIBLE);
+        }
     }
 
     /**

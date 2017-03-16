@@ -12,16 +12,15 @@ import android.content.Intent;
 import android.graphics.Rect;
 import android.net.Uri;
 import android.provider.Browser;
-import android.support.annotation.Nullable;
 import android.support.annotation.VisibleForTesting;
 import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.OnScrollListener;
+import android.support.v7.widget.Toolbar;
 import android.support.v7.widget.Toolbar.OnMenuItemClickListener;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
@@ -31,7 +30,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
-import org.chromium.chrome.browser.NativePage;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
@@ -66,7 +64,7 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
     private final int mListItemLateralShadowSizePx;
 
     private final Activity mActivity;
-    private final boolean mIsDisplayedInNativePage;
+    private final boolean mIsSeparateActivity;
     private final SelectableListLayout<HistoryItem> mSelectableListLayout;
     private final HistoryAdapter mHistoryAdapter;
     private final SelectionDelegate<HistoryItem> mSelectionDelegate;
@@ -80,11 +78,13 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
     /**
      * Creates a new HistoryManager.
      * @param activity The Activity associated with the HistoryManager.
+     * @param isSeparateActivity Whether the history UI will be shown in a separate activity than
+     *                           the main Chrome activity.
      */
-    @SuppressWarnings("unchecked")  // mSelectableListLayout
-    public HistoryManager(Activity activity, @Nullable NativePage nativePage) {
+    @SuppressWarnings("unchecked") // mSelectableListLayout
+    public HistoryManager(Activity activity, boolean isSeparateActivity) {
         mActivity = activity;
-        mIsDisplayedInNativePage = nativePage != null;
+        mIsSeparateActivity = isSeparateActivity;
 
         mSelectionDelegate = new SelectionDelegate<>();
         mSelectionDelegate.addObserver(this);
@@ -165,17 +165,18 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
     }
 
     /**
-     * @return Whether the history manager UI is displayed in a native page.
+     * @return Whether the history manager UI is displayed in a separate activity than the main
+     *         Chrome activity.
      */
-    public boolean isDisplayedInNativePage() {
-        return mIsDisplayedInNativePage;
+    public boolean isDisplayedInSeparateActivity() {
+        return mIsSeparateActivity;
     }
 
     @Override
     public boolean onMenuItemClick(MenuItem item) {
         mToolbar.hideOverflowMenu();
 
-        if (item.getItemId() == R.id.close_menu_id && !isDisplayedInNativePage()) {
+        if (item.getItemId() == R.id.close_menu_id && isDisplayedInSeparateActivity()) {
             mActivity.finish();
             return true;
         } else if (item.getItemId() == R.id.selection_mode_open_in_new_tab) {
@@ -224,10 +225,10 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
     }
 
     /**
-     * See {@link SelectableListLayout#detachContentView()}.
+     * See {@link SelectableListLayout#detachToolbarView()}.
      */
-    public View detachContentView() {
-        return mSelectableListLayout.detachContentView();
+    public Toolbar detachToolbarView() {
+        return mSelectableListLayout.detachToolbarView();
     }
 
     /**

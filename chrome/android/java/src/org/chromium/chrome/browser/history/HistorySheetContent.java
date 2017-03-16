@@ -4,9 +4,11 @@
 
 package org.chromium.chrome.browser.history;
 
-import android.app.Activity;
+import android.support.v7.widget.Toolbar;
 import android.view.View;
 
+import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.toolbar.BottomToolbarPhone;
 import org.chromium.chrome.browser.widget.BottomSheet.BottomSheetContent;
 
 /**
@@ -14,14 +16,18 @@ import org.chromium.chrome.browser.widget.BottomSheet.BottomSheetContent;
  */
 public class HistorySheetContent implements BottomSheetContent {
     private final View mContentView;
+    private final Toolbar mToolbarView;
     private HistoryManager mHistoryManager;
 
     /**
      * @param activity The activity displaying the history manager UI.
      */
-    public HistorySheetContent(Activity activity) {
-        mHistoryManager = new HistoryManager(activity, null);
-        mContentView = mHistoryManager.detachContentView();
+    public HistorySheetContent(ChromeActivity activity) {
+        mHistoryManager = new HistoryManager(activity, false);
+        mContentView = mHistoryManager.getView();
+        mToolbarView = mHistoryManager.detachToolbarView();
+        ((BottomToolbarPhone) activity.getToolbarManager().getToolbar())
+                .setOtherToolbarStyle(mToolbarView);
     }
 
     @Override
@@ -31,7 +37,7 @@ public class HistorySheetContent implements BottomSheetContent {
 
     @Override
     public View getToolbarView() {
-        return null;
+        return mToolbarView;
     }
 
     @Override

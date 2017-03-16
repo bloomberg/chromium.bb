@@ -20,6 +20,7 @@
             android:id="@+id/toolbar_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content" >
+
             <ImageView
                 android:id="@+id/bottom_toolbar_shadow"
                 android:layout_width="match_parent"
@@ -28,11 +29,20 @@
                 android:scaleType="fitXY"
                 android:scaleY="-1"
                 android:contentDescription="@null" />
-            <ViewStub
-                android:id="@+id/toolbar_stub"
+
+            <FrameLayout
+                android:id="@+id/toolbar_holder"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/bottom_control_container_height"
-                android:layout_marginTop="@dimen/toolbar_shadow_height" />
+                android:layout_marginTop="@dimen/toolbar_shadow_height" >
+
+                <ViewStub
+                    android:id="@+id/toolbar_stub"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+
+            </FrameLayout>
+
             <ViewStub
                 android:id="@+id/find_toolbar_stub"
                 android:inflatedId="@+id/find_toolbar"
@@ -40,6 +50,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/bottom_control_container_height"
                 android:layout="@layout/find_toolbar" />
+
             <ImageView
                 android:id="@+id/toolbar_handle"
                 android:layout_width="@dimen/toolbar_handle_width"
