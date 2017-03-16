@@ -122,19 +122,21 @@ void DrmOverlayValidatorTest::SetUp() {
   ui::OverlayCheck_Params primary_candidate;
   primary_candidate.buffer_size = primary_rect_.size();
   primary_candidate.display_rect = primary_rect_;
+  primary_candidate.format = gfx::BufferFormat::BGRX_8888;
   overlay_params_.push_back(primary_candidate);
 
   ui::OverlayCheck_Params overlay_candidate;
   overlay_candidate.buffer_size = overlay_rect_.size();
   overlay_candidate.display_rect = overlay_rect_;
   overlay_candidate.plane_z_order = 1;
+  overlay_candidate.format = gfx::BufferFormat::BGRX_8888;
   overlay_params_.push_back(overlay_candidate);
 
   scoped_refptr<ui::DrmDevice> drm =
       window_->GetController()->GetAllocationDrmDevice();
   for (const auto& param : overlay_params_) {
     scoped_refptr<ui::ScanoutBuffer> scanout_buffer = buffer_generator_->Create(
-        drm, ui::GetFourCCFormatForFramebuffer(param.format),
+        drm, ui::GetFourCCFormatFromBufferFormat(param.format),
         param.buffer_size);
     ui::OverlayPlane plane(std::move(scanout_buffer), param.plane_z_order,
                            param.transform, param.display_rect, param.crop_rect,

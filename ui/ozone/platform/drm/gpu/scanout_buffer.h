@@ -21,10 +21,18 @@ class ScanoutBuffer : public base::RefCountedThreadSafe<ScanoutBuffer> {
   // ID allocated by the KMS API when the buffer is registered (via the handle).
   virtual uint32_t GetFramebufferId() const = 0;
 
+  // ID allocated if the buffer is also registered with a different pixel format
+  // so that it can be scheduled as an opaque buffer.
+  virtual uint32_t GetOpaqueFramebufferId() const = 0;
+
   // Returns FourCC format representing the way pixel data has been encoded in
   // memory for the registered framebuffer. This can be used to check if frame
   // buffer is compatible with a given hardware plane.
   virtual uint32_t GetFramebufferPixelFormat() const = 0;
+
+  // Returns FourCC format that should be used to schedule this buffer for
+  // scanout when used as an opaque buffer.
+  virtual uint32_t GetOpaqueFramebufferPixelFormat() const = 0;
 
   // Handle for the buffer. This is received when allocating the buffer.
   virtual uint32_t GetHandle() const = 0;

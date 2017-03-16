@@ -66,7 +66,7 @@ DisplaySnapshot_Params CreateDisplaySnapshotParams(
 int GetFourCCFormatFromBufferFormat(gfx::BufferFormat format);
 gfx::BufferFormat GetBufferFormatFromFourCCFormat(int format);
 
-int GetFourCCFormatForFramebuffer(gfx::BufferFormat format);
+int GetFourCCFormatForOpaqueFramebuffer(gfx::BufferFormat format);
 
 gfx::Size GetMaximumCursorSize(int fd);
 

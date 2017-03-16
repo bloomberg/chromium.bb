@@ -21,11 +21,9 @@ GbmBufferBase::GbmBufferBase(const scoped_refptr<GbmDevice>& drm,
     : drm_(drm), bo_(bo) {
   if (flags & GBM_BO_USE_SCANOUT) {
     DCHECK(bo_);
-    // The framebuffer format might be different than the format:
-    // drm supports 24 bit color depth and formats with alpha will
-    // be converted to one without it.
-    framebuffer_pixel_format_ =
-        GetFourCCFormatForFramebuffer(GetBufferFormatFromFourCCFormat(format));
+    framebuffer_pixel_format_ = format;
+    opaque_framebuffer_pixel_format_ = GetFourCCFormatForOpaqueFramebuffer(
+        GetBufferFormatFromFourCCFormat(format));
 
     // TODO(dcastagna): Add multi-planar support.
     uint32_t handles[4] = {0};
@@ -43,6 +41,12 @@ GbmBufferBase::GbmBufferBase(const scoped_refptr<GbmDevice>& drm,
     drm_->AddFramebuffer2(gbm_bo_get_width(bo), gbm_bo_get_height(bo),
                           framebuffer_pixel_format_, handles, strides, offsets,
                           modifiers, &framebuffer_, addfb_flags);
+    if (opaque_framebuffer_pixel_format_ != framebuffer_pixel_format_) {
+      drm_->AddFramebuffer2(gbm_bo_get_width(bo), gbm_bo_get_height(bo),
+                            opaque_framebuffer_pixel_format_, handles, strides,
+                            offsets, modifiers, &opaque_framebuffer_,
+                            addfb_flags);
+    }
   }
 }
 
@@ -53,6 +57,10 @@ GbmBufferBase::~GbmBufferBase() {
 
 uint32_t GbmBufferBase::GetFramebufferId() const {
   return framebuffer_;
+}
+
+uint32_t GbmBufferBase::GetOpaqueFramebufferId() const {
+  return opaque_framebuffer_ ? opaque_framebuffer_ : framebuffer_;
 }
 
 uint32_t GbmBufferBase::GetHandle() const {
@@ -66,6 +74,11 @@ gfx::Size GbmBufferBase::GetSize() const {
 uint32_t GbmBufferBase::GetFramebufferPixelFormat() const {
   DCHECK(framebuffer_);
   return framebuffer_pixel_format_;
+}
+
+uint32_t GbmBufferBase::GetOpaqueFramebufferPixelFormat() const {
+  DCHECK(framebuffer_);
+  return opaque_framebuffer_pixel_format_;
 }
 
 const DrmDevice* GbmBufferBase::GetDrmDevice() const {

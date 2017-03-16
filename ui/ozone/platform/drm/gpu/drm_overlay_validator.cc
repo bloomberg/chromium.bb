@@ -131,7 +131,10 @@ std::vector<OverlayCheck_Params> DrmOverlayValidator::TestPageFlip(
     gfx::Size scaled_buffer_size = GetScaledSize(
         overlay.buffer_size, overlay.display_rect, overlay.crop_rect);
 
-    uint32_t original_format = GetFourCCFormatForFramebuffer(overlay.format);
+    uint32_t original_format =
+        overlay.plane_z_order
+            ? GetFourCCFormatFromBufferFormat(overlay.format)
+            : GetFourCCFormatForOpaqueFramebuffer(overlay.format);
     scoped_refptr<ScanoutBuffer> buffer =
         GetBufferForPageFlipTest(drm, overlay.buffer_size, original_format,
                                  buffer_generator_, &reusable_buffers);

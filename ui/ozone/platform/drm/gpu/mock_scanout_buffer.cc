@@ -15,6 +15,10 @@ uint32_t MockScanoutBuffer::GetFramebufferId() const {
   return 1;
 }
 
+uint32_t MockScanoutBuffer::GetOpaqueFramebufferId() const {
+  return 2;
+}
+
 uint32_t MockScanoutBuffer::GetHandle() const {
   return 0;
 }
@@ -24,6 +28,10 @@ gfx::Size MockScanoutBuffer::GetSize() const {
 }
 
 uint32_t MockScanoutBuffer::GetFramebufferPixelFormat() const {
+  return format_;
+}
+
+uint32_t MockScanoutBuffer::GetOpaqueFramebufferPixelFormat() const {
   return format_;
 }
 

@@ -110,7 +110,7 @@ bool HardwareDisplayPlaneManagerLegacy::SetPlaneData(
       plane_list->legacy_page_flips.back().crtc_id != crtc_id) {
     plane_list->legacy_page_flips.push_back(
         HardwareDisplayPlaneList::PageFlipInfo(
-            crtc_id, overlay.buffer->GetFramebufferId(), crtc));
+            crtc_id, overlay.buffer->GetOpaqueFramebufferId(), crtc));
   } else {
     plane_list->legacy_page_flips.back().planes.push_back(
         HardwareDisplayPlaneList::PageFlipInfo::Plane(

@@ -345,7 +345,7 @@ OverlayPlane ScreenManager::GetModesetBuffer(
 
   gfx::BufferFormat format = display::DisplaySnapshot::PrimaryFormat();
   scoped_refptr<DrmDevice> drm = controller->GetAllocationDrmDevice();
-  uint32_t fourcc_format = ui::GetFourCCFormatForFramebuffer(format);
+  uint32_t fourcc_format = ui::GetFourCCFormatForOpaqueFramebuffer(format);
   scoped_refptr<ScanoutBuffer> buffer =
       buffer_generator_->Create(drm, fourcc_format, bounds.size());
   if (!buffer) {

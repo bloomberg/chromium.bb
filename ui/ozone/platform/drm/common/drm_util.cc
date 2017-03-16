@@ -421,8 +421,10 @@ gfx::BufferFormat GetBufferFormatFromFourCCFormat(int format) {
   }
 }
 
-int GetFourCCFormatForFramebuffer(gfx::BufferFormat format) {
-  // Currently, drm supports 24 bitcolordepth for hardware overlay.
+int GetFourCCFormatForOpaqueFramebuffer(gfx::BufferFormat format) {
+  // DRM atomic interface doesn't currently support specifying an alpha
+  // blending. We can simulate disabling alpha bleding creating an fb
+  // with a format without the alpha channel.
   switch (format) {
     case gfx::BufferFormat::RGBA_8888:
     case gfx::BufferFormat::RGBX_8888:
