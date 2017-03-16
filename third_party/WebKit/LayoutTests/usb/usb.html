@@ -7,6 +7,19 @@
 <script>
 'use strict';
 
+// Returns a promise that is resolved when the next USBConnectionEvent of the
+// given type is received.
+function connectionEventPromise(eventType) {
+  return new Promise(resolve => {
+    let eventHandler = e => {
+      assert_true(e instanceof USBConnectionEvent);
+      navigator.usb.removeEventListener(eventType, eventHandler);
+      resolve(e.device);
+    };
+    navigator.usb.addEventListener(eventType, eventHandler);
+  });
+}
+
 usb_test(usb => {
   usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
 
@@ -14,7 +27,18 @@ usb_test(usb => {
     assert_equals(devices.length, 1);
     usb.assertDeviceInfoEquals(devices[0], usb.fakeDevices[0]);
   });
-}, 'getDevices returns devices exposed by the DeviceManager service.');
+}, 'getDevices returns devices exposed by the DeviceManager service');
+
+usb_test(usb => {
+  usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
+
+  return navigator.usb.getDevices().then(devicesFirstTime => {
+    assert_equals(devicesFirstTime.length, 1);
+    return navigator.usb.getDevices().then(devicesSecondTime => {
+      assert_array_equals(devicesSecondTime, devicesFirstTime);
+    });
+  });
+}, 'getDevices returns the same objects for each USB device');
 
 usb_test(usb => {
   return navigator.usb.requestDevice({ filters: [] })
@@ -47,6 +71,17 @@ usb_test(usb => {
     })
   );
 }, 'requestDevice returns the device chosen by the user');
+
+usb_test(usb => {
+  usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
+  usb.mockChooserService.setChosenDevice(usb.fakeDevices[0]);
+  return callWithKeyDown(() => navigator.usb.requestDevice({ filters: [] })
+      .then(device => navigator.usb.getDevices().then(devices => {
+        assert_equals(devices.length, 1);
+        assert_equals(devices[0], device);
+      }))
+  );
+}, 'getDevices returns the same object as requestDevice');
 
 usb_test(usb => {
   const expectedFilters = [
@@ -82,13 +117,7 @@ usb_test(usb => {
 }, 'filters are sent correctly');
 
 usb_test(usb => {
-  let promise = new Promise((resolve, reject) => {
-    navigator.usb.addEventListener('connect', e => {
-      assert_true(e instanceof USBConnectionEvent);
-      resolve(e.device);
-    });
-  });
-
+  let promise = connectionEventPromise('connect');
   usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
   return promise.then(device => {
     usb.assertDeviceInfoEquals(device, usb.fakeDevices[0]);
@@ -97,21 +126,29 @@ usb_test(usb => {
 }, 'onconnect event is trigged by adding a device');
 
 usb_test(usb => {
-  let promise = new Promise((resolve, reject) => {
-    navigator.usb.addEventListener('disconnect', e => {
-      assert_true(e instanceof USBConnectionEvent);
-      resolve(e.device);
-    });
-  });
-
+  let promise = connectionEventPromise('connect');
   usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
-  usb.mockDeviceManager.removeMockDevice(usb.fakeDevices[0]);
-  return promise.then(device => {
-    usb.assertDeviceInfoEquals(device, usb.fakeDevices[0]);
-    return device.open().then(() => {
-      assert_unreachable('should not be able to open a disconnected device');
-    }, error => {
-      assert_equals(error.code, DOMException.NOT_FOUND_ERR);
+  return promise
+      .then(device => navigator.usb.getDevices().then(devices => {
+        assert_equals(devices.length, 1);
+        assert_equals(devices[0], device);
+      }));
+}, 'getDevices returns the same object as sent in the onconnect event');
+
+usb_test(usb => {
+  let deviceAdded = connectionEventPromise('connect');
+  usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
+  return deviceAdded.then(device => {
+    let deviceRemoved = connectionEventPromise('disconnect');
+    usb.mockDeviceManager.removeMockDevice(usb.fakeDevices[0]);
+    return deviceRemoved.then(removedDevice => {
+      usb.assertDeviceInfoEquals(removedDevice, usb.fakeDevices[0]);
+      assert_equals(removedDevice, device);
+      return removedDevice.open().then(() => {
+        assert_unreachable('should not be able to open a disconnected device');
+      }, error => {
+        assert_equals(error.code, DOMException.NOT_FOUND_ERR);
+      });
     });
   });
 }, 'ondisconnect event is triggered by removing a device');
