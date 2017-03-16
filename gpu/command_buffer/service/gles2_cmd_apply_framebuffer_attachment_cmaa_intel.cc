@@ -808,42 +808,6 @@ const char ApplyFramebufferAttachmentCMAAINTELResourceManager::cmaa_frag_s1_[] =
       return ret;
     }
 
-    uint PackZ(const uvec2 screenPos, const bool invertedZShape) {
-      uint retVal = screenPos.x | (screenPos.y << 15u);
-      if (invertedZShape)
-        retVal |= (1u << 30u);
-      return retVal;
-    }
-
-    void UnpackZ(uint packedZ, out uvec2 screenPos,
-                               out bool invertedZShape)
-    {
-      screenPos.x = packedZ & 0x7FFFu;
-      screenPos.y = (packedZ >> 15u) & 0x7FFFu;
-      invertedZShape = (packedZ >> 30u) == 1u;
-    }
-
-    uint PackZ(const uvec2 screenPos,
-               const bool invertedZShape,
-               const bool horizontal) {
-      uint retVal = screenPos.x | (screenPos.y << 15u);
-      if (invertedZShape)
-        retVal |= (1u << 30u);
-      if (horizontal)
-        retVal |= (1u << 31u);
-      return retVal;
-    }
-
-    void UnpackZ(uint packedZ,
-                 out uvec2 screenPos,
-                 out bool invertedZShape,
-                 out bool horizontal) {
-      screenPos.x = packedZ & 0x7FFFu;
-      screenPos.y = (packedZ >> 15u) & 0x7FFFu;
-      invertedZShape = (packedZ & (1u << 30u)) != 0u;
-      horizontal = (packedZ & (1u << 31u)) != 0u;
-    }
-
     vec4 PackBlurAAInfo(ivec2 pixelPos, uint shapeType) {
       uint packedEdges = uint(
           texelFetch(g_src0TextureFlt, pixelPos, 0).r * 255.5);
