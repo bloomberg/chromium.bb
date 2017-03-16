@@ -73,7 +73,9 @@ class ChromeSigninClient
   void PostSignedIn(const std::string& account_id,
                     const std::string& username,
                     const std::string& password) override;
-  void PreSignOut(const base::Callback<void()>& sign_out) override;
+  void PreSignOut(
+      const base::Callback<void()>& sign_out,
+      signin_metrics::ProfileSignout signout_source_metric) override;
 
   // SigninErrorController::Observer implementation.
   void OnErrorChanged() override;
@@ -105,8 +107,10 @@ class ChromeSigninClient
 
  private:
   void MaybeFetchSigninTokenHandle();
-  void OnCloseBrowsersSuccess(const base::Callback<void()>& sign_out,
-                              const base::FilePath& profile_path);
+  void OnCloseBrowsersSuccess(
+      const base::Callback<void()>& sign_out,
+      const signin_metrics::ProfileSignout signout_source_metric,
+      const base::FilePath& profile_path);
   void OnCloseBrowsersAborted(const base::FilePath& profile_path);
 
   Profile* profile_;

@@ -149,9 +149,10 @@ void SigninManager::HandleAuthError(const GoogleServiceAuthError& error) {
 void SigninManager::SignOut(
     signin_metrics::ProfileSignout signout_source_metric,
     signin_metrics::SignoutDelete signout_delete_metric) {
-  client_->PreSignOut(base::Bind(&SigninManager::DoSignOut,
-                                 base::Unretained(this), signout_source_metric,
-                                 signout_delete_metric));
+  client_->PreSignOut(
+      base::Bind(&SigninManager::DoSignOut, base::Unretained(this),
+                 signout_source_metric, signout_delete_metric),
+      signout_source_metric);
 }
 
 void SigninManager::DoSignOut(

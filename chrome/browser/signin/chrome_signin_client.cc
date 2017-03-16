@@ -275,14 +275,20 @@ void ChromeSigninClient::PostSignedIn(const std::string& account_id,
 #endif
 }
 
-void ChromeSigninClient::PreSignOut(const base::Callback<void()>& sign_out) {
+void ChromeSigninClient::PreSignOut(
+    const base::Callback<void()>& sign_out,
+    signin_metrics::ProfileSignout signout_source_metric) {
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   if (is_force_signin_enabled_ && !profile_->IsSystemProfile() &&
       !profile_->IsGuestSession() && !profile_->IsSupervised()) {
+    // TODO(zmin): force window closing based on the reason of sign-out.
+    // This will be updated after force window closing CL is commited.
+
+    // User can't abort the window closing unless user sign out manually.
     BrowserList::CloseAllBrowsersWithProfile(
         profile_,
         base::Bind(&ChromeSigninClient::OnCloseBrowsersSuccess,
-                   base::Unretained(this), sign_out),
+                   base::Unretained(this), sign_out, signout_source_metric),
         base::Bind(&ChromeSigninClient::OnCloseBrowsersAborted,
                    base::Unretained(this)),
         false);
@@ -290,7 +296,7 @@ void ChromeSigninClient::PreSignOut(const base::Callback<void()>& sign_out) {
 #else
   {
 #endif
-    SigninClient::PreSignOut(sign_out);
+    SigninClient::PreSignOut(sign_out, signout_source_metric);
   }
 }
 
@@ -431,8 +437,9 @@ void ChromeSigninClient::AfterCredentialsCopied() {
 
 void ChromeSigninClient::OnCloseBrowsersSuccess(
     const base::Callback<void()>& sign_out,
+    const signin_metrics::ProfileSignout signout_source_metric,
     const base::FilePath& profile_path) {
-  SigninClient::PreSignOut(sign_out);
+  SigninClient::PreSignOut(sign_out, signout_source_metric);
 
   LockForceSigninProfile(profile_path);
   // After sign out, lock the profile and show UserManager if necessary.

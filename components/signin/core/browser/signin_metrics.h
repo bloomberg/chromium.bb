@@ -46,7 +46,8 @@ enum ProfileSignout {
   // The credentials are being transfered to a new profile, so the old one is
   // signed out.
   TRANSFER_CREDENTIALS,
-
+  // Signed out because credentials are invalid and force-sign-in is enabled.
+  AUTHENTICATION_FAILED_WITH_FORCE_SIGNIN,
   // Keep this as the last enum.
   NUM_PROFILE_SIGNOUT_METRICS,
 };

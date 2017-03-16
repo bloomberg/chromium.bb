@@ -792,10 +792,7 @@ void ProfileInfoCache::SetProfileSigninRequiredAtIndex(size_t index,
   info->SetBoolean(kSigninRequiredKey, value);
   // This takes ownership of |info|.
   SetInfoForProfileAtIndex(index, info.release());
-
-  base::FilePath profile_path = GetPathOfProfileAtIndex(index);
-  for (auto& observer : observer_list_)
-    observer.OnProfileSigninRequiredChanged(profile_path);
+  NotifyIsSigninRequiredChanged(GetPathOfProfileAtIndex(index));
 }
 
 void ProfileInfoCache::SetProfileIsEphemeralAtIndex(size_t index, bool value) {
@@ -888,6 +885,12 @@ void ProfileInfoCache::SetStatsSettingsOfProfileAtIndex(size_t index,
   info->SetInteger(kStatsSettingsKey, value);
   // This takes ownership of |info|.
   SetInfoForProfileAtIndex(index, info.release());
+}
+
+void ProfileInfoCache::NotifyIsSigninRequiredChanged(
+    const base::FilePath& profile_path) {
+  for (auto& observer : observer_list_)
+    observer.OnProfileSigninRequiredChanged(profile_path);
 }
 
 const base::FilePath& ProfileInfoCache::GetUserDataDir() const {

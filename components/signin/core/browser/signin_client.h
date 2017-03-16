@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/account_info.h"
+#include "components/signin/core/browser/signin_metrics.h"
 #include "components/signin/core/browser/webdata/token_web_data.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "net/cookies/cookie_store.h"
@@ -98,7 +99,8 @@ class SigninClient : public KeyedService {
 
   // Called before Google signout started, call |sign_out| to start the sign out
   // process.
-  virtual void PreSignOut(const base::Callback<void()>& sign_out);
+  virtual void PreSignOut(const base::Callback<void()>& sign_out,
+                          signin_metrics::ProfileSignout signout_source_metric);
 
   virtual bool IsFirstRun() const = 0;
   virtual base::Time GetInstallDate() = 0;

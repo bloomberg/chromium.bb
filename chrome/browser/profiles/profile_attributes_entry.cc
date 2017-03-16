@@ -1,19 +1,10 @@
 // Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-#include "chrome/browser/browser_process.h"
+
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
-#include "chrome/common/pref_names.h"
-#include "components/prefs/pref_service.h"
-
-namespace {
-bool IsForceSigninEnabled() {
-  PrefService* prefs = g_browser_process->local_state();
-  return prefs && prefs->GetBoolean(prefs::kForceBrowserSignin);
-}
-}  // namespace
+#include "chrome/browser/signin/signin_util.h"
 
 ProfileAttributesEntry::ProfileAttributesEntry()
     : profile_info_cache_(nullptr), profile_path_(base::FilePath()) {}
@@ -26,7 +17,7 @@ void ProfileAttributesEntry::Initialize(
   DCHECK(profile_path_.empty());
   DCHECK(!path.empty());
   profile_path_ = path;
-  is_force_signin_enabled_ = IsForceSigninEnabled();
+  is_force_signin_enabled_ = signin_util::IsForceSigninEnabled();
   if (!IsAuthenticated() && is_force_signin_enabled_)
     is_force_signin_profile_locked_ = true;
 }
@@ -242,7 +233,10 @@ void ProfileAttributesEntry::SetIsSigninRequired(bool value) {
 
 void ProfileAttributesEntry::LockForceSigninProfile(bool is_lock) {
   DCHECK(is_force_signin_enabled_);
+  if (is_force_signin_profile_locked_ == is_lock)
+    return;
   is_force_signin_profile_locked_ = is_lock;
+  profile_info_cache_->NotifyIsSigninRequiredChanged(profile_path_);
 }
 
 void ProfileAttributesEntry::SetIsEphemeral(bool value) {

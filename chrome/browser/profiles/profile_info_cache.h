@@ -152,6 +152,9 @@ class ProfileInfoCache : public ProfileInfoInterface,
   void SetStatsBookmarksOfProfileAtIndex(size_t index, int value);
   void SetStatsSettingsOfProfileAtIndex(size_t index, int value);
 
+  // Notify IsSignedInRequired to all observer
+  void NotifyIsSigninRequiredChanged(const base::FilePath& profile_path);
+
   const base::FilePath& GetUserDataDir() const;
 
   // Register cache related preferences in Local State.

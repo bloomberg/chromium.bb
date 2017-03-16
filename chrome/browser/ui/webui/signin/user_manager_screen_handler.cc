@@ -33,6 +33,7 @@
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/local_auth.h"
+#include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
@@ -1010,12 +1011,16 @@ void UserManagerScreenHandler::OnBrowserWindowReady(Browser* browser) {
 
   // Unlock the profile after browser opens so startup can read the lock bit.
   // Any necessary authentication must have been successful to reach this point.
+  ProfileAttributesEntry* entry = nullptr;
   if (!browser->profile()->IsGuestSession()) {
-    ProfileAttributesEntry* entry = nullptr;
     bool has_entry = g_browser_process->profile_manager()->
         GetProfileAttributesStorage().
         GetProfileAttributesWithPath(browser->profile()->GetPath(), &entry);
     DCHECK(has_entry);
+    // If force sign in is enabled and profile is not signed in, do not close
+    // UserManager and unlock profile.
+    if (signin_util::IsForceSigninEnabled() && !entry->IsAuthenticated())
+      return;
     entry->SetIsSigninRequired(false);
   }
 
