@@ -130,6 +130,9 @@ class FileMetricsProvider : public MetricsProvider,
     // File could not be opened.
     ACCESS_RESULT_NO_OPEN,
 
+    // File contents were internally deleted.
+    ACCESS_RESULT_MEMORY_DELETED,
+
     ACCESS_RESULT_MAX
   };
 
