@@ -156,7 +156,6 @@ void KeychainReauthorizeIfNeeded(NSString* pref_key, int max_tries) {
   [user_defaults synchronize];
 
   bool success = KeychainReauthorize();
-
   if (!success)
     return;
 
@@ -170,6 +169,12 @@ void KeychainReauthorizeIfNeeded(NSString* pref_key, int max_tries) {
   } else {
     UMA_HISTOGRAM_SPARSE_SLOWLY(
         "OSX.KeychainReauthorizeIfNeededAtUpdateSuccess", pref_value);
+  }
+}
+
+void KeychainReauthorizeIfNeededAtUpdate(NSString* pref_key, int max_tries) {
+  @autoreleasepool {
+    KeychainReauthorizeIfNeeded(pref_key, max_tries);
   }
 }
 

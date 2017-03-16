@@ -49,6 +49,7 @@ copy("copies") {
   visibility = [ ":mac" ]
 
   deps = [
+    "//chrome/installer/mac:keychain_reauthorize",
     "//chrome/installer/mac/third_party/bsdiff:goobsdiff",
     "//chrome/installer/mac/third_party/bsdiff:goobspatch",
     "//chrome/installer/mac/third_party/xz:lzma_decompress",
@@ -59,6 +60,7 @@ copy("copies") {
   sources = [
     "$root_out_dir/goobsdiff",
     "$root_out_dir/goobspatch",
+    "$root_out_dir/keychain_reauthorize",
     "$root_out_dir/liblzma_decompress.dylib",
     "$root_out_dir/xz",
     "$root_out_dir/xzdec",
@@ -91,4 +93,11 @@ copy("copies") {
   outputs = [
     "$_packaging_dir/{{source_file_part}}",
   ]
+}
+
+executable("keychain_reauthorize") {
+  sources = [
+    "keychain_reauthorize_main.cc",
+  ]
+  libs = [ "CoreFoundation.framework" ]
 }
