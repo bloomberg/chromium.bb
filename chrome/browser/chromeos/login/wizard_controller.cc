@@ -251,12 +251,10 @@ bool WizardController::zero_delay_enabled_ = false;
 PrefService* WizardController::local_state_for_testing_ = nullptr;
 
 WizardController::WizardController(LoginDisplayHost* host, OobeUI* oobe_ui)
-    : screen_manager_(this),
-      host_(host),
-      oobe_ui_(oobe_ui),
-      weak_factory_(this) {
+    : host_(host), oobe_ui_(oobe_ui), weak_factory_(this) {
   DCHECK(default_controller_ == nullptr);
   default_controller_ = this;
+  screen_manager_ = base::MakeUnique<ScreenManager>(this);
   if (!ash_util::IsRunningInMash()) {
     AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
     CHECK(accessibility_manager);
@@ -269,6 +267,9 @@ WizardController::WizardController(LoginDisplayHost* host, OobeUI* oobe_ui)
 }
 
 WizardController::~WizardController() {
+  screen_manager_.reset();
+  // |remora_controller| has to be reset after |screen_manager_| is reset.
+  remora_controller_.reset();
   if (shark_connection_listener_.get()) {
     base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
         FROM_HERE, shark_connection_listener_.release());
@@ -361,7 +362,7 @@ ErrorScreen* WizardController::GetErrorScreen() {
 BaseScreen* WizardController::GetScreen(OobeScreen screen) {
   if (screen == OobeScreen::SCREEN_ERROR_MESSAGE)
     return GetErrorScreen();
-  return screen_manager_.GetScreen(screen);
+  return screen_manager_->GetScreen(screen);
 }
 
 BaseScreen* WizardController::CreateScreen(OobeScreen screen) {
@@ -434,7 +435,7 @@ void WizardController::ShowNetworkScreen() {
   // Hide the status area initially; it only appears after OOBE first animates
   // in. Keep it visible if the user goes back to the existing network screen.
   SetStatusAreaVisible(
-      screen_manager_.HasScreen(OobeScreen::SCREEN_OOBE_NETWORK));
+      screen_manager_->HasScreen(OobeScreen::SCREEN_OOBE_NETWORK));
   SetCurrentScreen(GetScreen(OobeScreen::SCREEN_OOBE_NETWORK));
 
   // There are two possible screens where we listen to the incoming Bluetooth

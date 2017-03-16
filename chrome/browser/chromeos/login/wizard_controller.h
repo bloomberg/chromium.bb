@@ -116,7 +116,7 @@ class WizardController : public BaseScreenDelegate,
   BaseScreen* GetScreen(OobeScreen screen);
 
   // Returns the current ScreenManager instance.
-  ScreenManager* screen_manager() { return &screen_manager_; }
+  ScreenManager* screen_manager() { return screen_manager_.get(); }
 
   // Volume percent at which spoken feedback is still audible.
   static const int kMinAudibleOutputVolumePercent;
@@ -305,7 +305,7 @@ class WizardController : public BaseScreenDelegate,
   // attestation-based enrollment if appropriate.
   void StartEnrollmentScreen(bool force_interactive);
 
-  ScreenManager screen_manager_;
+  std::unique_ptr<ScreenManager> screen_manager_;
 
   // Whether to skip any screens that may normally be shown after login
   // (registration, Terms of Service, user image selection).
