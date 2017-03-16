@@ -38,10 +38,10 @@ public interface GooglePlayWebApkInstallDelegate {
      * @param title The title of the WebAPK to display during installation.
      * @param token The token from WebAPK Minter Server.
      * @param url The start URL of the WebAPK to install.
-     * @param callback The callback to invoke when the install completes, times out or fails.
+     * @param callback The callback to invoke when the install is either completed or failed.
      */
     void installAsync(String packageName, int version, String title, String token, String url,
-            Callback<Integer> callback);
+            Callback<Boolean> callback);
 
     /**
      * Calls the callback once the installation either succeeded or failed.
@@ -49,4 +49,10 @@ public interface GooglePlayWebApkInstallDelegate {
      * @param event The result of the install.
      */
     void onGotInstallEvent(String packageName, @InstallerPackageEvent int event);
+
+    /**
+     * Checks whether Google Play Install API is available.
+     * @param callback The callback to invoke when the check is done.
+     */
+    void canInstallWebApk(Callback<Boolean> callback);
 }

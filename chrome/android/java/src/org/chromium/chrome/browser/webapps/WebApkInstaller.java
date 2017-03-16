@@ -120,10 +120,13 @@ public class WebApkInstaller {
             return;
         }
 
-        Callback<Integer> callback = new Callback<Integer>() {
+        Callback<Boolean> callback = new Callback<Boolean>() {
             @Override
-            public void onResult(Integer result) {
-                WebApkInstaller.this.notify(result);
+            public void onResult(Boolean success) {
+                // TODO(pkotwicz): Send WebApkInstallResult.PROBABLE_FAILURE result if
+                // install timed out.
+                WebApkInstaller.this.notify(
+                        success ? WebApkInstallResult.SUCCESS : WebApkInstallResult.FAILURE);
             }
         };
         mGooglePlayWebApkInstallDelegate.installAsync(
@@ -177,10 +180,13 @@ public class WebApkInstaller {
             return;
         }
 
-        Callback<Integer> callback = new Callback<Integer>() {
+        Callback<Boolean> callback = new Callback<Boolean>() {
             @Override
-            public void onResult(Integer result) {
-                WebApkInstaller.this.notify(result);
+            public void onResult(Boolean success) {
+                // TODO(pkotwicz): Send WebApkInstallResult.PROBABLE_FAILURE result if
+                // update timed out.
+                WebApkInstaller.this.notify(
+                        success ? WebApkInstallResult.SUCCESS : WebApkInstallResult.FAILURE);
             }
         };
         mGooglePlayWebApkInstallDelegate.installAsync(
