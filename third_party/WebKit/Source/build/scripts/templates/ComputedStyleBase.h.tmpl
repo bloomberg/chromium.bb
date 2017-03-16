@@ -24,19 +24,6 @@ namespace blink {
 // in ComputedStyle.h.
 class CORE_EXPORT ComputedStyleBase {
  public:
-  ALWAYS_INLINE ComputedStyleBase() :
-  {% for field in fields %}
-      {{field.name}}(static_cast<unsigned>({{field.default_value}})){{print_if(not loop.last, ',')}}
-  {% endfor %}
-  {}
-  ~ComputedStyleBase() {}
-
-  ALWAYS_INLINE ComputedStyleBase(const ComputedStyleBase& o) :
-  {% for field in fields %}
-      {{field.name}}(o.{{field.name}}){{print_if(not loop.last, ',')}}
-  {% endfor %}
-  {}
-
   inline bool independentInheritedEqual(const ComputedStyleBase& o) const {
     return (
     {% for field in fields if field.is_property and field.is_inherited and field.is_independent %}
@@ -89,6 +76,20 @@ class CORE_EXPORT ComputedStyleBase {
 
   {% endfor %}
  protected:
+  ALWAYS_INLINE ComputedStyleBase() :
+  {% for field in fields %}
+      {{field.name}}(static_cast<unsigned>({{field.default_value}})){{print_if(not loop.last, ',')}}
+  {% endfor %}
+  {}
+
+  ~ComputedStyleBase() = default;
+
+  ALWAYS_INLINE ComputedStyleBase(const ComputedStyleBase& o) :
+  {% for field in fields %}
+      {{field.name}}(o.{{field.name}}){{print_if(not loop.last, ',')}}
+  {% endfor %}
+  {}
+
   // Storage.
   {% for field in fields %}
   unsigned {{field.name}} : {{field.size}}; // {{field.type_name}}
