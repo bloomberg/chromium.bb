@@ -257,10 +257,18 @@ IN_PROC_BROWSER_TEST_F(UINetworkQualityEstimatorServiceBrowserTest,
   nqe_test_util::OverrideRTTsAndWait(rtt_1);
   EXPECT_EQ(rtt_1, nqe_observer.http_rtt());
 
+  EXPECT_EQ(rtt_1, nqe_service->GetHttpRTT());
+  EXPECT_EQ(rtt_1, nqe_service->GetTransportRTT());
+  EXPECT_FALSE(nqe_service->GetDownstreamThroughputKbps().has_value());
+
   base::TimeDelta rtt_2 = base::TimeDelta::FromMilliseconds(200);
 
   nqe_test_util::OverrideRTTsAndWait(rtt_2);
   EXPECT_EQ(rtt_2, nqe_observer.http_rtt());
+
+  EXPECT_EQ(rtt_2, nqe_service->GetHttpRTT());
+  EXPECT_EQ(rtt_2, nqe_service->GetTransportRTT());
+  EXPECT_FALSE(nqe_service->GetDownstreamThroughputKbps().has_value());
 
   nqe_service->RemoveRTTAndThroughputEstimatesObserver(&nqe_observer);
 
@@ -268,6 +276,10 @@ IN_PROC_BROWSER_TEST_F(UINetworkQualityEstimatorServiceBrowserTest,
 
   nqe_test_util::OverrideRTTsAndWait(rtt_3);
   EXPECT_EQ(rtt_2, nqe_observer.http_rtt());
+
+  EXPECT_EQ(rtt_3, nqe_service->GetHttpRTT());
+  EXPECT_EQ(rtt_3, nqe_service->GetTransportRTT());
+  EXPECT_FALSE(nqe_service->GetDownstreamThroughputKbps().has_value());
 
   // Observer should be notified on addition.
   TestRTTAndThroughputEstimatesObserver nqe_observer_2;

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_NET_NQE_UI_NETWORK_QUALITY_ESTIMATOR_SERVICE_H_
 #define CHROME_BROWSER_NET_NQE_UI_NETWORK_QUALITY_ESTIMATOR_SERVICE_H_
 
+#include <stdint.h>
+
 #include <map>
 #include <memory>
 
@@ -46,6 +48,9 @@ class UINetworkQualityEstimatorService
   void RemoveEffectiveConnectionTypeObserver(
       net::NetworkQualityEstimator::EffectiveConnectionTypeObserver* observer)
       override;
+  base::Optional<base::TimeDelta> GetHttpRTT() const override;
+  base::Optional<base::TimeDelta> GetTransportRTT() const override;
+  base::Optional<int32_t> GetDownstreamThroughputKbps() const override;
 
   // Must be called on the UI thread. |observer| will be notified on the UI
   // thread. |observer| would be notified of the changes in the HTTP RTT,

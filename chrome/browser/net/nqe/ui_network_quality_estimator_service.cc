@@ -21,6 +21,7 @@
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/nqe/network_qualities_prefs_manager.h"
+#include "net/nqe/network_quality.h"
 
 namespace {
 
@@ -145,9 +146,9 @@ class UINetworkQualityEstimatorService::IONetworkQualityObserver
 UINetworkQualityEstimatorService::UINetworkQualityEstimatorService(
     Profile* profile)
     : type_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
-      http_rtt_(base::TimeDelta::FromMilliseconds(-1)),
-      transport_rtt_(base::TimeDelta::FromMilliseconds(-1)),
-      downstream_throughput_kbps_(-1),
+      http_rtt_(net::nqe::internal::InvalidRTT()),
+      transport_rtt_(net::nqe::internal::InvalidRTT()),
+      downstream_throughput_kbps_(net::nqe::internal::kInvalidThroughput),
       weak_factory_(this) {
   DCHECK(profile);
   // If this is running in a context without an IOThread, don't try to create
@@ -237,6 +238,33 @@ void UINetworkQualityEstimatorService::RemoveEffectiveConnectionTypeObserver(
     net::NetworkQualityEstimator::EffectiveConnectionTypeObserver* observer) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   effective_connection_type_observer_list_.RemoveObserver(observer);
+}
+
+base::Optional<base::TimeDelta> UINetworkQualityEstimatorService::GetHttpRTT()
+    const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (http_rtt_ == net::nqe::internal::InvalidRTT())
+    return base::Optional<base::TimeDelta>();
+  return http_rtt_;
+}
+
+base::Optional<base::TimeDelta>
+UINetworkQualityEstimatorService::GetTransportRTT() const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (transport_rtt_ == net::nqe::internal::InvalidRTT())
+    return base::Optional<base::TimeDelta>();
+  return transport_rtt_;
+}
+
+base::Optional<int32_t>
+UINetworkQualityEstimatorService::GetDownstreamThroughputKbps() const {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (downstream_throughput_kbps_ == net::nqe::internal::kInvalidThroughput)
+    return base::Optional<int32_t>();
+  return downstream_throughput_kbps_;
 }
 
 void UINetworkQualityEstimatorService::AddRTTAndThroughputEstimatesObserver(
