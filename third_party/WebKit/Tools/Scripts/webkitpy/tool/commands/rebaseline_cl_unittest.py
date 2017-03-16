@@ -311,10 +311,11 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         return_code = self.command.execute(self.command_options(), [], self.tool)
         self.assertEqual(return_code, 1)
         self.assertLog([
-            'ERROR: Failed to fetch results from '
-            '"https://storage.googleapis.com/chromium-layout-test-archives/MOCK_Try_Win/5000/layout-test-results".\n'
-            'Try starting a new job for MOCK Try Win by running :\n'
-            '  git cl try -b MOCK Try Win\n'
+            'ERROR: Failed to fetch results for: Build(builder_name=\'MOCK Try Win\', build_number=5000)\n',
+            'ERROR: Results were expected to exist at:\n'
+            'https://storage.googleapis.com/chromium-layout-test-archives/MOCK_Try_Win/5000/layout-test-results/results.html\n',
+            'ERROR: If the job failed, you could retry by running:\n'
+            'git cl try -b MOCK Try Win\n'
         ])
 
     def test_bails_when_there_are_unstaged_baselines(self):

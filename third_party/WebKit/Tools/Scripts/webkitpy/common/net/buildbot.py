@@ -27,6 +27,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import collections
+import logging
 import re
 import urllib2
 
@@ -34,6 +35,7 @@ from webkitpy.common.memoized import memoized
 from webkitpy.common.net.layout_test_results import LayoutTestResults
 from webkitpy.common.net.network_transaction import NetworkTransaction
 
+_log = logging.getLogger(__name__)
 
 RESULTS_URL_BASE = 'https://storage.googleapis.com/chromium-layout-test-archives'
 
@@ -88,7 +90,7 @@ class BuildBot(object):
         """
         url_base = '%s/%s' % (self.builder_results_url_base(build.builder_name), build.build_number)
         return NetworkTransaction(return_none_on_404=True).run(
-            lambda: self._fetch_file(url_base, 'retry_summary.json'))
+            lambda: self.fetch_file(url_base, 'retry_summary.json'))
 
     def accumulated_results_url_base(self, builder_name):
         return self.builder_results_url_base(builder_name) + '/results/layout-test-results'
@@ -105,17 +107,21 @@ class BuildBot(object):
     def fetch_layout_test_results(self, results_url):
         """Returns a LayoutTestResults object for results fetched from a given URL."""
         results_file = NetworkTransaction(return_none_on_404=True).run(
-            lambda: self._fetch_file(results_url, 'failing_results.json'))
+            lambda: self.fetch_file(results_url, 'failing_results.json'))
+        if results_file is None:
+            _log.warning('Got 404 response from:\n%s/failing_results.json', results_url)
+            return None
         revision = NetworkTransaction(return_none_on_404=True).run(
-            lambda: self._fetch_file(results_url, 'LAST_CHANGE'))
-        if not revision:
-            results_file = None
+            lambda: self.fetch_file(results_url, 'LAST_CHANGE'))
+        if revision is None:
+            _log.warning('Got 404 response from:\n%s/LAST_CHANGE', results_url)
+            return None
         return LayoutTestResults.results_from_string(results_file, revision)
 
-    def _fetch_file(self, url_base, file_name):
+    def fetch_file(self, url_base, filename):
         # It seems this can return None if the url redirects and then returns 404.
         # FIXME: This could use Web instead of using urllib2 directly.
-        result = urllib2.urlopen('%s/%s' % (url_base, file_name))
+        result = urllib2.urlopen('%s/%s' % (url_base, filename))
         if not result:
             return None
         # urlopen returns a file-like object which sometimes works fine with str()

@@ -154,11 +154,9 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
             results_url = buildbot.results_url(build.builder_name, build.build_number)
             layout_test_results = buildbot.fetch_results(build)
             if layout_test_results is None:
-                _log.error(
-                    'Failed to fetch results from "%s".\n'
-                    'Try starting a new job for %s by running :\n'
-                    '  git cl try -b %s',
-                    results_url, build.builder_name, build.builder_name)
+                _log.error('Failed to fetch results for: %s', build)
+                _log.error('Results were expected to exist at:\n%s/results.html', results_url)
+                _log.error('If the job failed, you could retry by running:\ngit cl try -b %s', build.builder_name)
                 return None
             results[build] = layout_test_results
         return results

@@ -29,9 +29,10 @@
 import unittest
 
 from webkitpy.common.net.buildbot import BuildBot, Build, filter_latest_builds
+from webkitpy.common.system.log_testing import LoggingTestCase
 
 
-class BuilderTest(unittest.TestCase):
+class BuilderTest(LoggingTestCase):
 
     def test_results_url_no_build_number(self):
         self.assertEqual(
@@ -53,10 +54,33 @@ class BuilderTest(unittest.TestCase):
             BuildBot().accumulated_results_url_base('WebKit Mac10.8 (dbg)'),
             'https://storage.googleapis.com/chromium-layout-test-archives/WebKit_Mac10_8__dbg_/results/layout-test-results')
 
-    def fetch_layout_test_results_with_no_responses(self):
+    def test_fetch_layout_test_results_with_no_results_fetched(self):
         buildbot = BuildBot()
-        buildbot._fetch_file = lambda: None  # pylint: disable=protected-access
-        self.assertIsNone(buildbot.fetch_layout_test_results(buildbot.results_url('Builder')))
+
+        def fetch_file(_, filename):
+            return None if filename == 'failing_results.json' else 'contents'
+
+        buildbot.fetch_file = fetch_file
+        results = buildbot.fetch_layout_test_results(buildbot.results_url('B'))
+        self.assertIsNone(results)
+        self.assertLog([
+            'WARNING: Got 404 response from:\n'
+            'https://storage.googleapis.com/chromium-layout-test-archives/B/results/layout-test-results/failing_results.json\n'
+        ])
+
+    def test_fetch_layout_test_results_with_no_last_change_file(self):
+        buildbot = BuildBot()
+
+        def fetch_file(_, filename):
+            return None if filename == 'LAST_CHANGE' else 'contents'
+
+        buildbot.fetch_file = fetch_file
+        results = buildbot.fetch_layout_test_results(buildbot.results_url('B'))
+        self.assertIsNone(results)
+        self.assertLog([
+            'WARNING: Got 404 response from:\n'
+            'https://storage.googleapis.com/chromium-layout-test-archives/B/results/layout-test-results/LAST_CHANGE\n'
+        ])
 
 
 class BuildBotHelperFunctionTest(unittest.TestCase):
