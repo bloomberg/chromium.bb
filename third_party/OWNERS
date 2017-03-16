@@ -19,3 +19,5 @@ jochen@chromium.org
 klobag@chromium.org
 sky@chromium.org
 thakis@chromium.org
+
+per-file .gitignore=*
