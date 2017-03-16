@@ -114,6 +114,8 @@ class CSSGradientValue : public CSSImageGeneratorValue {
 
   DECLARE_TRACE_AFTER_DISPATCH();
 
+  struct GradientDesc;
+
  protected:
   CSSGradientValue(ClassType classType,
                    CSSGradientRepeat repeat,
@@ -123,10 +125,10 @@ class CSSGradientValue : public CSSImageGeneratorValue {
         m_gradientType(gradientType),
         m_repeating(repeat == Repeating) {}
 
-  void addStops(Gradient*,
+  void addStops(GradientDesc&,
                 const CSSToLengthConversionData&,
                 const LayoutObject&);
-  void addDeprecatedStops(Gradient*, const LayoutObject&);
+  void addDeprecatedStops(GradientDesc&, const LayoutObject&);
 
   // Resolve points/radii to front end values.
   FloatPoint computeEndPoint(CSSValue*,

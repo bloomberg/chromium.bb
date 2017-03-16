@@ -96,36 +96,8 @@ class PLATFORM_EXPORT Gradient : public RefCounted<Gradient> {
   const FloatPoint& p0() const { return m_p0; }
   const FloatPoint& p1() const { return m_p1; }
 
-  void setP0(const FloatPoint& p) {
-    if (m_p0 == p)
-      return;
-
-    m_p0 = p;
-  }
-
-  void setP1(const FloatPoint& p) {
-    if (m_p1 == p)
-      return;
-
-    m_p1 = p;
-  }
-
   float startRadius() const { return m_r0; }
   float endRadius() const { return m_r1; }
-
-  void setStartRadius(float r) {
-    if (m_r0 == r)
-      return;
-
-    m_r0 = r;
-  }
-
-  void setEndRadius(float r) {
-    if (m_r1 == r)
-      return;
-
-    m_r1 = r;
-  }
 
   void applyToFlags(PaintFlags&, const SkMatrix& localMatrix);
 
