@@ -74,6 +74,11 @@ class FormFetcher {
   // of the cached credentials.
   virtual void Fetch() = 0;
 
+  // Creates a copy of |*this| with contains the same credentials without the
+  // need for calling Fetch(). Only call this if GetState() returns NOT_WAITING,
+  // otherwise the original FormFetcher does not have any data to be cloned.
+  virtual std::unique_ptr<FormFetcher> Clone() = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(FormFetcher);
 };

@@ -553,4 +553,68 @@ TEST_F(FormFetcherImplTest, StateIsWaitingDuringMigration) {
   EXPECT_EQ(FormFetcher::State::NOT_WAITING, form_fetcher_->GetState());
 }
 
+// Cloning a FormFetcherImpl with empty results should result in an
+// instance with empty results.
+TEST_F(FormFetcherImplTest, Clone_EmptyResults) {
+  Fetch();
+  form_fetcher_->OnGetPasswordStoreResults(
+      std::vector<std::unique_ptr<PasswordForm>>());
+
+  // Clone() should not cause re-fetching from PasswordStore.
+  EXPECT_CALL(*mock_store_, GetLogins(_, _)).Times(0);
+  auto clone = form_fetcher_->Clone();
+  EXPECT_EQ(FormFetcher::State::NOT_WAITING, clone->GetState());
+  EXPECT_THAT(clone->GetInteractionsStats(), IsEmpty());
+  EXPECT_THAT(clone->GetFederatedMatches(), IsEmpty());
+  MockConsumer consumer;
+  EXPECT_CALL(consumer, ProcessMatches(IsEmpty(), 0u));
+  clone->AddConsumer(&consumer);
+}
+
+// Cloning a FormFetcherImpl with non-empty results should result in an
+// instance with the same results.
+TEST_F(FormFetcherImplTest, Clone_NonEmptyResults) {
+  Fetch();
+  PasswordForm non_federated = CreateNonFederated();
+  PasswordForm federated = CreateFederated();
+  PasswordForm android_federated = CreateAndroidFederated();
+  std::vector<std::unique_ptr<PasswordForm>> results;
+  results.push_back(base::MakeUnique<PasswordForm>(non_federated));
+  results.push_back(base::MakeUnique<PasswordForm>(federated));
+  results.push_back(base::MakeUnique<PasswordForm>(android_federated));
+  form_fetcher_->OnGetPasswordStoreResults(std::move(results));
+
+  // Clone() should not cause re-fetching from PasswordStore.
+  EXPECT_CALL(*mock_store_, GetLogins(_, _)).Times(0);
+  auto clone = form_fetcher_->Clone();
+
+  // Additionally, destroy the original FormFetcher. This should not invalidate
+  // the data in |clone|.
+  form_fetcher_.reset();
+
+  EXPECT_EQ(FormFetcher::State::NOT_WAITING, clone->GetState());
+  EXPECT_THAT(clone->GetInteractionsStats(), IsEmpty());
+  EXPECT_THAT(
+      clone->GetFederatedMatches(),
+      UnorderedElementsAre(Pointee(federated), Pointee(android_federated)));
+  MockConsumer consumer;
+  EXPECT_CALL(consumer,
+              ProcessMatches(UnorderedElementsAre(Pointee(non_federated)), 0u));
+  clone->AddConsumer(&consumer);
+}
+
+// Cloning a FormFetcherImpl with some stats should result in an instance with
+// the same stats.
+TEST_F(FormFetcherImplTest, Clone_Stats) {
+  Fetch();
+  // Pass empty results to make the state NOT_WAITING.
+  form_fetcher_->OnGetPasswordStoreResults(
+      std::vector<std::unique_ptr<PasswordForm>>());
+  std::vector<InteractionsStats> stats(1);
+  form_fetcher_->OnGetSiteStatistics(std::move(stats));
+
+  auto clone = form_fetcher_->Clone();
+  EXPECT_EQ(1u, clone->GetInteractionsStats().size());
+}
+
 }  // namespace password_manager

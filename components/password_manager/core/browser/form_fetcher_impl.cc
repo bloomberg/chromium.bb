@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
@@ -53,6 +54,18 @@ std::vector<const PasswordForm*> MakeWeakCopies(
   std::transform(
       owning.begin(), owning.end(), result.begin(),
       [](const std::unique_ptr<PasswordForm>& ptr) { return ptr.get(); });
+  return result;
+}
+
+// Create a vector of unique_ptr<PasswordForm> from another such vector by
+// copying the pointed-to forms.
+std::vector<std::unique_ptr<PasswordForm>> MakeCopies(
+    const std::vector<std::unique_ptr<PasswordForm>>& source) {
+  std::vector<std::unique_ptr<PasswordForm>> result(source.size());
+  std::transform(source.begin(), source.end(), result.begin(),
+                 [](const std::unique_ptr<PasswordForm>& ptr) {
+                   return base::MakeUnique<PasswordForm>(*ptr);
+                 });
   return result;
 }
 
@@ -163,6 +176,28 @@ void FormFetcherImpl::Fetch() {
   // The statistics is needed for the "Save password?" bubble.
   password_store->GetSiteStats(form_digest_.origin.GetOrigin(), this);
 #endif
+}
+
+std::unique_ptr<FormFetcher> FormFetcherImpl::Clone() {
+  DCHECK_EQ(State::NOT_WAITING, state_);
+
+  // Create the copy without the "HTTPS migration" activated. If it was needed,
+  // then it was done by |this| already.
+  auto result = base::MakeUnique<FormFetcherImpl>(form_digest_, client_, false);
+
+  result->non_federated_ = MakeCopies(this->non_federated_);
+  result->federated_ = MakeCopies(this->federated_);
+  result->interactions_stats_ = this->interactions_stats_;
+
+  result->weak_non_federated_ = MakeWeakCopies(result->non_federated_);
+  result->weak_federated_ = MakeWeakCopies(result->federated_);
+
+  result->filtered_count_ = this->filtered_count_;
+  result->state_ = this->state_;
+  result->need_to_refetch_ = this->need_to_refetch_;
+
+  // Move needed for upcasting.
+  return std::move(result);
 }
 
 void FormFetcherImpl::ProcessPasswordStoreResults(

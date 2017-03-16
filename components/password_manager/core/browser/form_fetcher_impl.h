@@ -40,6 +40,7 @@ class FormFetcherImpl : public FormFetcher,
   const std::vector<const autofill::PasswordForm*>& GetFederatedMatches()
       const override;
   void Fetch() override;
+  std::unique_ptr<FormFetcher> Clone() override;
 
   // PasswordStoreConsumer:
   void OnGetPasswordStoreResults(

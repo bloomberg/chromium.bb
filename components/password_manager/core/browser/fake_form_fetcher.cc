@@ -46,4 +46,8 @@ void FakeFormFetcher::Fetch() {
   state_ = State::WAITING;
 }
 
+std::unique_ptr<FormFetcher> FakeFormFetcher::Clone() {
+  return nullptr;
+}
+
 }  // namespace password_manager
