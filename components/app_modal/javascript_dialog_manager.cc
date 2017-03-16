@@ -248,8 +248,17 @@ bool JavaScriptDialogManager::HandleJavaScriptDialog(
       dialog_queue->active_dialog()->web_contents() != web_contents) {
     return false;
   }
+
   JavaScriptAppModalDialog* dialog = static_cast<JavaScriptAppModalDialog*>(
       dialog_queue->active_dialog());
+
+  if (dialog->javascript_dialog_type() ==
+      content::JavaScriptDialogType::JAVASCRIPT_DIALOG_TYPE_ALERT) {
+    // Alert dialogs only have one button: OK. Any "handling" of this dialog has
+    // to be a click on the OK button.
+    accept = true;
+  }
+
   if (accept) {
     if (prompt_override)
       dialog->SetOverridePromptText(*prompt_override);
