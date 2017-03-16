@@ -233,12 +233,12 @@ public class WebVrTest extends ChromeTabbedActivityTestBase {
 
     /**
      * Tests that scanning the Daydream View NFC tag on supported devices
-     * fires the onvrdisplayactivate event.
+     * fires the vrdisplayactivate event.
      */
     @SmallTest
     @Restriction(RESTRICTION_TYPE_DAYDREAM_VIEW)
-    public void testNfcFiresOnvrdisplayactivate() throws InterruptedException {
-        String testName = "test_nfc_fires_onvrdisplayactivate";
+    public void testNfcFiresVrdisplayactivate() throws InterruptedException {
+        String testName = "test_nfc_fires_vrdisplayactivate";
         loadUrl(getHtmlTestFile(testName), 10);
         simNfcScanAndWait(mWebContents);
         endTest(mWebContents);
