@@ -112,7 +112,9 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestParameter(NOT_IN_GUEST_MODE, "audioRepeatAllModeSingleFileDrive"),
         TestParameter(NOT_IN_GUEST_MODE, "audioNoRepeatModeSingleFileDrive"),
         TestParameter(NOT_IN_GUEST_MODE, "audioRepeatOneModeSingleFileDrive"),
-        TestParameter(NOT_IN_GUEST_MODE, "audioRepeatAllModeMultipleFileDrive"),
+        // TODO(crbug.com/701922) Revive this flaky test.
+        // TestParameter(NOT_IN_GUEST_MODE,
+        //               "audioRepeatAllModeMultipleFileDrive"),
         TestParameter(NOT_IN_GUEST_MODE, "audioNoRepeatModeMultipleFileDrive"),
         TestParameter(NOT_IN_GUEST_MODE,
                       "audioRepeatOneModeMultipleFileDrive")));
@@ -175,8 +177,9 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 #else
 #define MAYBE_Delete Delete
 #endif
+// Flaky: crbug.com/699426
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    MAYBE_Delete,
+    DISABLE_Delete,
     FileManagerBrowserTest,
     ::testing::Values(
         TestParameter(NOT_IN_GUEST_MODE,
@@ -340,8 +343,9 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 #else
 #define MAYBE_SuggestAppDialog SuggestAppDialog
 #endif
+// Flaky: crbug.com/701923
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    MAYBE_SuggestAppDialog,
+    DISABLE_SuggestAppDialog,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "suggestAppDialog")));
 
