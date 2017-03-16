@@ -9,6 +9,7 @@
           "ui::mojom::Gpu"
         ],
         "renderer": [
+          "blink::mojom::BackgroundFetchService",
           "blink::mojom::BackgroundSyncService",
           "blink::mojom::BroadcastChannelProvider",
           "blink::mojom::BudgetService",

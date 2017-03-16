@@ -398,6 +398,9 @@ StoragePartitionImpl::~StoragePartitionImpl() {
   if (GetPlatformNotificationContext())
     GetPlatformNotificationContext()->Shutdown();
 
+  if (GetBackgroundFetchContext())
+    GetBackgroundFetchContext()->Shutdown();
+
   if (GetBackgroundSyncContext())
     GetBackgroundSyncContext()->Shutdown();
 
@@ -489,6 +492,9 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
                                           partition->service_worker_context_);
   partition->platform_notification_context_->Initialize();
 
+  partition->background_fetch_context_ = new BackgroundFetchContext(
+      context, partition.get(), partition->service_worker_context_);
+
   partition->background_sync_context_ = new BackgroundSyncContext();
   partition->background_sync_context_->Init(partition->service_worker_context_);
 
@@ -564,6 +570,10 @@ ZoomLevelDelegate* StoragePartitionImpl::GetZoomLevelDelegate() {
 PlatformNotificationContextImpl*
 StoragePartitionImpl::GetPlatformNotificationContext() {
   return platform_notification_context_.get();
+}
+
+BackgroundFetchContext* StoragePartitionImpl::GetBackgroundFetchContext() {
+  return background_fetch_context_.get();
 }
 
 BackgroundSyncContext* StoragePartitionImpl::GetBackgroundSyncContext() {

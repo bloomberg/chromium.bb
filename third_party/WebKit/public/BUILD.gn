@@ -653,6 +653,7 @@ mojom("mojo_bindings") {
   sources = [
     "platform/mime_registry.mojom",
     "platform/modules/app_banner/app_banner.mojom",
+    "platform/modules/background_fetch/background_fetch.mojom",
     "platform/modules/background_sync/background_sync.mojom",
     "platform/modules/bluetooth/web_bluetooth.mojom",
     "platform/modules/broadcastchannel/broadcast_channel.mojom",

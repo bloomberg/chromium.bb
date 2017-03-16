@@ -9,11 +9,15 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/heap/GarbageCollected.h"
 #include "platform/heap/Handle.h"
+#include "public/platform/modules/background_fetch/background_fetch.mojom-blink.h"
 
 namespace blink {
 
+class BackgroundFetchBridge;
 class BackgroundFetchOptions;
+class BackgroundFetchRegistration;
 class RequestOrUSVStringOrRequestOrUSVStringSequence;
+class ScriptPromiseResolver;
 class ScriptState;
 class ServiceWorkerRegistration;
 
@@ -33,10 +37,10 @@ class BackgroundFetchManager final
   // Web Exposed methods defined in the IDL file.
   ScriptPromise fetch(
       ScriptState*,
-      String tag,
+      const String& tag,
       const RequestOrUSVStringOrRequestOrUSVStringSequence& requests,
       const BackgroundFetchOptions&);
-  ScriptPromise get(ScriptState*, String tag);
+  ScriptPromise get(ScriptState*, const String& tag);
   ScriptPromise getTags(ScriptState*);
 
   DECLARE_TRACE();
@@ -44,7 +48,15 @@ class BackgroundFetchManager final
  private:
   explicit BackgroundFetchManager(ServiceWorkerRegistration*);
 
+  void didGetRegistration(ScriptPromiseResolver*,
+                          mojom::blink::BackgroundFetchError,
+                          BackgroundFetchRegistration*);
+  void didGetTags(ScriptPromiseResolver*,
+                  mojom::blink::BackgroundFetchError,
+                  const Vector<String>& tags);
+
   Member<ServiceWorkerRegistration> m_registration;
+  Member<BackgroundFetchBridge> m_bridge;
 };
 
 }  // namespace blink

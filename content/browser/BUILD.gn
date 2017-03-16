@@ -334,6 +334,8 @@ source_set("browser") {
     "background_fetch/background_fetch_job_info.h",
     "background_fetch/background_fetch_request_info.cc",
     "background_fetch/background_fetch_request_info.h",
+    "background_fetch/background_fetch_service_impl.cc",
+    "background_fetch/background_fetch_service_impl.h",
     "background_sync/background_sync_context.cc",
     "background_sync/background_sync_context.h",
     "background_sync/background_sync_manager.cc",

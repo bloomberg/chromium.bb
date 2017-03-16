@@ -1,0 +1,48 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+module blink.mojom;
+
+enum BackgroundFetchError {
+  NONE,
+  DUPLICATED_TAG
+};
+
+struct IconDefinition {
+  string src;
+  string sizes;
+  string type;
+};
+
+struct BackgroundFetchRegistration {
+  string tag;
+  array<IconDefinition> icons;
+  int64 total_download_size = 0;
+  string title = "";
+};
+
+interface BackgroundFetchService {
+  // TODO(peter): Implement support for the `fetch()` function in Mojo.
+
+  // Updates the user interface for the Background Fetch identified by the
+  // |service_worker_registration_id| and the |tag|.
+  UpdateUI(int64 service_worker_registration_id, string tag, string title)
+      => (BackgroundFetchError error);
+
+  // Aborts the Background Fetch registration identified by the
+  // |service_worker_registration_id| and the |tag|.
+  Abort(int64 service_worker_registration_id, string tag);
+
+  // Gets the Background Fetch registration identified by the
+  // |service_worker_registration_id| and the |tag|.
+  GetRegistration(int64 service_worker_registration_id, string tag)
+      => (BackgroundFetchError error,
+          BackgroundFetchRegistration? registration);
+
+  // Gets the sequence of tags for active Background Fetch registrations given
+  // the |service_worker_registration_id|.
+  GetTags(int64 service_worker_registration_id)
+      => (BackgroundFetchError error,
+          array<string> tags);
+};

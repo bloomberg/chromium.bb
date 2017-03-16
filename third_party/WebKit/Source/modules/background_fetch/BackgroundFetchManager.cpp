@@ -7,6 +7,7 @@
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/V8ThrowException.h"
+#include "modules/background_fetch/BackgroundFetchBridge.h"
 #include "modules/background_fetch/BackgroundFetchOptions.h"
 #include "modules/background_fetch/BackgroundFetchRegistration.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
@@ -17,11 +18,12 @@ BackgroundFetchManager::BackgroundFetchManager(
     ServiceWorkerRegistration* registration)
     : m_registration(registration) {
   DCHECK(registration);
+  m_bridge = BackgroundFetchBridge::from(m_registration);
 }
 
 ScriptPromise BackgroundFetchManager::fetch(
     ScriptState* scriptState,
-    String tag,
+    const String& tag,
     const RequestOrUSVStringOrRequestOrUSVStringSequence& requests,
     const BackgroundFetchOptions& options) {
   if (!m_registration->active()) {
@@ -48,7 +50,7 @@ ScriptPromise BackgroundFetchManager::fetch(
 }
 
 ScriptPromise BackgroundFetchManager::get(ScriptState* scriptState,
-                                          String tag) {
+                                          const String& tag) {
   if (!m_registration->active()) {
     return ScriptPromise::reject(
         scriptState,
@@ -60,11 +62,27 @@ ScriptPromise BackgroundFetchManager::get(ScriptState* scriptState,
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
   ScriptPromise promise = resolver->promise();
 
-  // TODO(peter): Get the background fetch registration for `tag` from the
-  // browser process. There may not be one.
-  resolver->resolve(v8::Null(scriptState->isolate()));
+  m_bridge->getRegistration(
+      tag, WTF::bind(&BackgroundFetchManager::didGetRegistration,
+                     wrapPersistent(this), wrapPersistent(resolver)));
 
   return promise;
+}
+
+void BackgroundFetchManager::didGetRegistration(
+    ScriptPromiseResolver* resolver,
+    mojom::blink::BackgroundFetchError error,
+    BackgroundFetchRegistration* registration) {
+  switch (error) {
+    case mojom::blink::BackgroundFetchError::NONE:
+      resolver->resolve(registration);
+      return;
+    case mojom::blink::BackgroundFetchError::DUPLICATED_TAG:
+      // Not applicable for this callback.
+      break;
+  }
+
+  NOTREACHED();
 }
 
 ScriptPromise BackgroundFetchManager::getTags(ScriptState* scriptState) {
@@ -79,14 +97,31 @@ ScriptPromise BackgroundFetchManager::getTags(ScriptState* scriptState) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
   ScriptPromise promise = resolver->promise();
 
-  // TODO(peter): Get a list of tags from the browser process.
-  resolver->resolve(Vector<String>());
+  m_bridge->getTags(WTF::bind(&BackgroundFetchManager::didGetTags,
+                              wrapPersistent(this), wrapPersistent(resolver)));
 
   return promise;
 }
 
+void BackgroundFetchManager::didGetTags(
+    ScriptPromiseResolver* resolver,
+    mojom::blink::BackgroundFetchError error,
+    const Vector<String>& tags) {
+  switch (error) {
+    case mojom::blink::BackgroundFetchError::NONE:
+      resolver->resolve(tags);
+      return;
+    case mojom::blink::BackgroundFetchError::DUPLICATED_TAG:
+      // Not applicable for this callback.
+      break;
+  }
+
+  NOTREACHED();
+}
+
 DEFINE_TRACE(BackgroundFetchManager) {
   visitor->trace(m_registration);
+  visitor->trace(m_bridge);
 }
 
 }  // namespace blink

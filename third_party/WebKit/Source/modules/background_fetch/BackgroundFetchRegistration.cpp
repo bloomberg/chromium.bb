@@ -4,6 +4,7 @@
 
 #include "modules/background_fetch/BackgroundFetchRegistration.h"
 
+#include "modules/background_fetch/BackgroundFetchBridge.h"
 #include "modules/background_fetch/IconDefinition.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
 
@@ -40,8 +41,7 @@ String BackgroundFetchRegistration::title() const {
 }
 
 void BackgroundFetchRegistration::abort() {
-  // TODO(peter): Implement the ability to abort the active background fetch
-  // for the |m_registration| identified by the |m_tag|.
+  BackgroundFetchBridge::from(m_registration)->abort(m_tag);
 }
 
 DEFINE_TRACE(BackgroundFetchRegistration) {
