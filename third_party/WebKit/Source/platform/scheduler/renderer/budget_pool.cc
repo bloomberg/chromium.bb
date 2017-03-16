@@ -36,12 +36,12 @@ BudgetPool::~BudgetPool() {}
 
 CPUTimeBudgetPool::CPUTimeBudgetPool(
     const char* name,
-    TaskQueueThrottler* task_queue_throttler,
+    BudgetPoolController* budget_pool_controller,
     base::TimeTicks now,
     base::Optional<base::TimeDelta> max_budget_level,
     base::Optional<base::TimeDelta> max_throttling_duration)
     : name_(name),
-      task_queue_throttler_(task_queue_throttler),
+      budget_pool_controller_(budget_pool_controller),
       max_budget_level_(max_budget_level),
       max_throttling_duration_(max_throttling_duration),
       last_checkpoint_(now),
@@ -58,39 +58,23 @@ void CPUTimeBudgetPool::SetTimeBudgetRecoveryRate(base::TimeTicks now,
 }
 
 void CPUTimeBudgetPool::AddQueue(base::TimeTicks now, TaskQueue* queue) {
-  std::pair<TaskQueueThrottler::TaskQueueMap::iterator, bool> insert_result =
-      task_queue_throttler_->queue_details_.insert(
-          std::make_pair(queue, TaskQueueThrottler::Metadata()));
-  TaskQueueThrottler::Metadata& metadata = insert_result.first->second;
-  DCHECK(!metadata.time_budget_pool);
-  metadata.time_budget_pool = this;
-
+  budget_pool_controller_->AddQueueToBudgetPool(queue, this);
   associated_task_queues_.insert(queue);
 
-  if (!is_enabled_ || !task_queue_throttler_->IsThrottled(queue))
+  if (!is_enabled_ || !budget_pool_controller_->IsThrottled(queue))
     return;
 
-  queue->InsertFence(TaskQueue::InsertFencePosition::BEGINNING_OF_TIME);
-
-  task_queue_throttler_->MaybeSchedulePumpQueue(FROM_HERE, now, queue,
-                                                GetNextAllowedRunTime());
+  budget_pool_controller_->BlockQueue(now, queue);
 }
 
 void CPUTimeBudgetPool::RemoveQueue(base::TimeTicks now, TaskQueue* queue) {
-  auto find_it = task_queue_throttler_->queue_details_.find(queue);
-  DCHECK(find_it != task_queue_throttler_->queue_details_.end() &&
-         find_it->second.time_budget_pool == this);
-  find_it->second.time_budget_pool = nullptr;
-  bool is_throttled = task_queue_throttler_->IsThrottled(queue);
-
-  task_queue_throttler_->MaybeDeleteQueueMetadata(find_it);
+  budget_pool_controller_->RemoveQueueFromBudgetPool(queue, this);
   associated_task_queues_.erase(queue);
 
-  if (!is_enabled_ || !is_throttled)
+  if (!is_enabled_ || !budget_pool_controller_->IsThrottled(queue))
     return;
 
-  task_queue_throttler_->MaybeSchedulePumpQueue(FROM_HERE, now, queue,
-                                                base::nullopt);
+  budget_pool_controller_->UnblockQueue(now, queue);
 }
 
 void CPUTimeBudgetPool::EnableThrottling(LazyNow* lazy_now) {
@@ -98,8 +82,7 @@ void CPUTimeBudgetPool::EnableThrottling(LazyNow* lazy_now) {
     return;
   is_enabled_ = true;
 
-  TRACE_EVENT0(task_queue_throttler_->tracing_category_,
-               "CPUTimeBudgetPool_EnableThrottling");
+  TRACE_EVENT0("renderer.scheduler", "CPUTimeBudgetPool_EnableThrottling");
 
   BlockThrottledQueues(lazy_now->Now());
 }
@@ -109,15 +92,13 @@ void CPUTimeBudgetPool::DisableThrottling(LazyNow* lazy_now) {
     return;
   is_enabled_ = false;
 
-  TRACE_EVENT0(task_queue_throttler_->tracing_category_,
-               "CPUTimeBudgetPool_DisableThrottling");
+  TRACE_EVENT0("renderer.scheduler", "CPUTimeBudgetPool_DisableThrottling");
 
   for (TaskQueue* queue : associated_task_queues_) {
-    if (!task_queue_throttler_->IsThrottled(queue))
+    if (!budget_pool_controller_->IsThrottled(queue))
       continue;
 
-    task_queue_throttler_->MaybeSchedulePumpQueue(FROM_HERE, lazy_now->Now(),
-                                                  queue, base::nullopt);
+    budget_pool_controller_->UnblockQueue(lazy_now->Now(), queue);
   }
 
   // TODO(altimin): We need to disable TimeBudgetQueues here or they will
@@ -143,7 +124,7 @@ void CPUTimeBudgetPool::SetReportingCallback(
 void CPUTimeBudgetPool::Close() {
   DCHECK_EQ(0u, associated_task_queues_.size());
 
-  task_queue_throttler_->time_budget_pools_.erase(this);
+  budget_pool_controller_->UnregisterBudgetPool(this);
 }
 
 bool CPUTimeBudgetPool::HasEnoughBudgetToRun(base::TimeTicks now) {
@@ -212,14 +193,8 @@ void CPUTimeBudgetPool::Advance(base::TimeTicks now) {
 }
 
 void CPUTimeBudgetPool::BlockThrottledQueues(base::TimeTicks now) {
-  for (TaskQueue* queue : associated_task_queues_) {
-    if (!task_queue_throttler_->IsThrottled(queue))
-      continue;
-
-    queue->InsertFence(TaskQueue::InsertFencePosition::BEGINNING_OF_TIME);
-    task_queue_throttler_->MaybeSchedulePumpQueue(FROM_HERE, now, queue,
-                                                  base::nullopt);
-  }
+  for (TaskQueue* queue : associated_task_queues_)
+    budget_pool_controller_->BlockQueue(now, queue);
 }
 
 void CPUTimeBudgetPool::EnforceBudgetLevelRestrictions() {

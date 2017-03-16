@@ -24,7 +24,7 @@ namespace blink {
 namespace scheduler {
 
 class TaskQueue;
-class TaskQueueThrottler;
+class BudgetPoolController;
 
 // BudgetPool represents a group of task queues which share a limit
 // on a resource. This limit applies when task queues are already throttled
@@ -61,6 +61,9 @@ class BLINK_PLATFORM_EXPORT BudgetPool {
   virtual void RecordTaskRunTime(base::TimeTicks start_time,
                                  base::TimeTicks end_time) = 0;
 
+  // Block all associated queues and schedule them to run when appropriate.
+  virtual void BlockThrottledQueues(base::TimeTicks now) = 0;
+
   // All queues should be removed before calling Close().
   virtual void Close() = 0;
 
@@ -79,6 +82,12 @@ class BLINK_PLATFORM_EXPORT BudgetPool {
 // on total cpu time.
 class BLINK_PLATFORM_EXPORT CPUTimeBudgetPool : public BudgetPool {
  public:
+  CPUTimeBudgetPool(const char* name,
+                    BudgetPoolController* budget_pool_controller,
+                    base::TimeTicks now,
+                    base::Optional<base::TimeDelta> max_budget_level,
+                    base::Optional<base::TimeDelta> max_throttling_duration);
+
   ~CPUTimeBudgetPool();
 
   // Throttle task queues from this time budget pool if tasks are running
@@ -105,6 +114,7 @@ class BLINK_PLATFORM_EXPORT CPUTimeBudgetPool : public BudgetPool {
   bool IsThrottlingEnabled() const override;
   void RecordTaskRunTime(base::TimeTicks start_time,
                          base::TimeTicks end_time) override;
+  void BlockThrottledQueues(base::TimeTicks now) override;
   void Close() override;
   bool HasEnoughBudgetToRun(base::TimeTicks now) override;
   base::TimeTicks GetNextAllowedRunTime() override;
@@ -112,22 +122,11 @@ class BLINK_PLATFORM_EXPORT CPUTimeBudgetPool : public BudgetPool {
                    base::TimeTicks now) const override;
 
  private:
-  friend class TaskQueueThrottler;
-
   FRIEND_TEST_ALL_PREFIXES(TaskQueueThrottlerTest, CPUTimeBudgetPool);
-
-  CPUTimeBudgetPool(const char* name,
-                    TaskQueueThrottler* task_queue_throttler,
-                    base::TimeTicks now,
-                    base::Optional<base::TimeDelta> max_budget_level,
-                    base::Optional<base::TimeDelta> max_throttling_duration);
 
   // Advances |last_checkpoint_| to |now| if needed and recalculates
   // budget level.
   void Advance(base::TimeTicks now);
-
-  // Disable all associated throttled queues.
-  void BlockThrottledQueues(base::TimeTicks now);
 
   // Increase |current_budget_level_| to satisfy max throttling duration
   // condition if necessary.
@@ -137,7 +136,7 @@ class BLINK_PLATFORM_EXPORT CPUTimeBudgetPool : public BudgetPool {
 
   const char* name_;  // NOT OWNED
 
-  TaskQueueThrottler* task_queue_throttler_;
+  BudgetPoolController* budget_pool_controller_;
 
   // Max budget level which we can accrue.
   // Tasks will be allowed to run for this time before being throttled

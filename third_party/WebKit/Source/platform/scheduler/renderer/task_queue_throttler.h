@@ -14,6 +14,7 @@
 #include "base/threading/thread_checker.h"
 #include "platform/scheduler/base/cancelable_closure_holder.h"
 #include "platform/scheduler/base/time_domain.h"
+#include "platform/scheduler/renderer/budget_pool.h"
 #include "public/platform/WebViewScheduler.h"
 
 namespace base {
@@ -29,6 +30,33 @@ class BudgetPool;
 class RendererSchedulerImpl;
 class ThrottledTimeDomain;
 class CPUTimeBudgetPool;
+
+// Interface for BudgetPool to interact with TaskQueueThrottler.
+class BLINK_PLATFORM_EXPORT BudgetPoolController {
+ public:
+  virtual ~BudgetPoolController() {}
+
+  // To be used by BudgetPool only, use BudgetPool::{Add,Remove}Queue
+  // methods instead.
+  virtual void AddQueueToBudgetPool(TaskQueue* queue,
+                                    BudgetPool* budget_pool) = 0;
+  virtual void RemoveQueueFromBudgetPool(TaskQueue* queue,
+                                         BudgetPool* budget_pool) = 0;
+
+  // Deletes the budget pool.
+  virtual void UnregisterBudgetPool(BudgetPool* budget_pool) = 0;
+
+  // Insert a fence to prevent tasks from running and schedule a wakeup at
+  // an appropriate time.
+  virtual void BlockQueue(base::TimeTicks now, TaskQueue* queue) = 0;
+
+  // Schedule a call to unblock queue at an appropriate moment.
+  virtual void UnblockQueue(base::TimeTicks now, TaskQueue* queue) = 0;
+
+  // Returns true if the |queue| is throttled (i.e. added to TaskQueueThrottler
+  // and throttling is not disabled).
+  virtual bool IsThrottled(TaskQueue* queue) const = 0;
+};
 
 // The job of the TaskQueueThrottler is to control when tasks posted on
 // throttled queues get run. The TaskQueueThrottler:
@@ -52,7 +80,8 @@ class CPUTimeBudgetPool;
 // See IncreaseThrottleRefCount & DecreaseThrottleRefCount.
 //
 // This class is main-thread only.
-class BLINK_PLATFORM_EXPORT TaskQueueThrottler : public TimeDomain::Observer {
+class BLINK_PLATFORM_EXPORT TaskQueueThrottler : public TimeDomain::Observer,
+                                                 public BudgetPoolController {
  public:
   // TODO(altimin): Do not pass tracing category as const char*,
   // hard-code string instead.
@@ -65,6 +94,15 @@ class BLINK_PLATFORM_EXPORT TaskQueueThrottler : public TimeDomain::Observer {
   void OnTimeDomainHasImmediateWork(TaskQueue*) override;
   void OnTimeDomainHasDelayedWork(TaskQueue*) override;
 
+  // BudgetPoolController implementation:
+  void AddQueueToBudgetPool(TaskQueue* queue, BudgetPool* budget_pool) override;
+  void RemoveQueueFromBudgetPool(TaskQueue* queue,
+                                 BudgetPool* budget_pool) override;
+  void UnregisterBudgetPool(BudgetPool* budget_pool) override;
+  void BlockQueue(base::TimeTicks now, TaskQueue* queue) override;
+  void UnblockQueue(base::TimeTicks now, TaskQueue* queue) override;
+  bool IsThrottled(TaskQueue* queue) const override;
+
   // Increments the throttled refcount and causes |task_queue| to be throttled
   // if its not already throttled.
   void IncreaseThrottleRefCount(TaskQueue* task_queue);
@@ -76,9 +114,6 @@ class BLINK_PLATFORM_EXPORT TaskQueueThrottler : public TimeDomain::Observer {
 
   // Removes |task_queue| from |queue_details| and from appropriate budget pool.
   void UnregisterTaskQueue(TaskQueue* task_queue);
-
-  // Returns true if the |task_queue| is throttled.
-  bool IsThrottled(TaskQueue* task_queue) const;
 
   // Disable throttling for all queues, this setting takes precedence over
   // all other throttling settings. Designed to be used when a global event
@@ -108,17 +143,13 @@ class BLINK_PLATFORM_EXPORT TaskQueueThrottler : public TimeDomain::Observer {
 
   void AsValueInto(base::trace_event::TracedValue* state,
                    base::TimeTicks now) const;
-
  private:
-  friend class BudgetPool;
-  friend class CPUTimeBudgetPool;
-
   struct Metadata {
-    Metadata() : throttling_ref_count(0), time_budget_pool(nullptr) {}
+    Metadata() : throttling_ref_count(0), budget_pool(nullptr) {}
 
     size_t throttling_ref_count;
 
-    CPUTimeBudgetPool* time_budget_pool;
+    BudgetPool* budget_pool;
   };
   using TaskQueueMap = std::unordered_map<TaskQueue*, Metadata>;
 
@@ -132,20 +163,18 @@ class BLINK_PLATFORM_EXPORT TaskQueueThrottler : public TimeDomain::Observer {
       base::TimeTicks now,
       base::TimeTicks runtime);
 
-  CPUTimeBudgetPool* GetTimeBudgetPoolForQueue(TaskQueue* queue);
-
-  // Schedule pumping because of given task queue.
-  void MaybeSchedulePumpQueue(
-      const tracked_objects::Location& from_here,
-      base::TimeTicks now,
-      TaskQueue* queue,
-      base::Optional<base::TimeTicks> next_possible_run_time);
+  BudgetPool* GetBudgetPoolForQueue(TaskQueue* queue);
 
   // Return next possible time when queue is allowed to run in accordance
   // with throttling policy.
   base::TimeTicks GetNextAllowedRunTime(base::TimeTicks now, TaskQueue* queue);
 
   void MaybeDeleteQueueMetadata(TaskQueueMap::iterator it);
+
+  // Schedule a call PumpThrottledTasks at an appropriate moment for this queue.
+  void SchedulePumpQueue(const tracked_objects::Location& from_here,
+                         base::TimeTicks now,
+                         TaskQueue* queue);
 
   TaskQueueMap queue_details_;
   base::Callback<void(TaskQueue*)> forward_immediate_work_callback_;
@@ -159,8 +188,7 @@ class BLINK_PLATFORM_EXPORT TaskQueueThrottler : public TimeDomain::Observer {
   base::Optional<base::TimeTicks> pending_pump_throttled_tasks_runtime_;
   bool allow_throttling_;
 
-  std::unordered_map<BudgetPool*, std::unique_ptr<BudgetPool>>
-      time_budget_pools_;
+  std::unordered_map<BudgetPool*, std::unique_ptr<BudgetPool>> budget_pools_;
 
   base::WeakPtrFactory<TaskQueueThrottler> weak_factory_;
 
