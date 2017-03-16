@@ -190,9 +190,15 @@ public class MediaNotificationManager {
             MediaNotificationManager manager = getManager();
             if (manager == null || manager.mMediaNotificationInfo == null) return false;
 
-            manager.onServiceStarted(this);
-
-            processAction(intent, manager);
+            if (intent.getAction() == null) {
+                // The intent comes from {@link startService()} or
+                // {@link startServiceWithNotification}.
+                manager.onServiceStarted(this);
+            } else {
+                // The intent comes from the notification. In this case, {@link onServiceStarted()}
+                // does need to be called.
+                processAction(intent, manager);
+            }
             return true;
         }
 
@@ -616,6 +622,8 @@ public class MediaNotificationManager {
      * @param service the service that was started
      */
     private void onServiceStarted(ListenerService service) {
+        if (mService == service) return;
+
         mService = service;
         updateNotification();
     }
