@@ -222,10 +222,9 @@ void av1_inc_mv(const MV *mv, nmv_context_counts *counts, const int usehp) {
 }
 
 void av1_adapt_mv_probs(AV1_COMMON *cm, int allow_hp) {
-  int i;
+  int i, j;
 #if CONFIG_REF_MV
   int idx;
-  int j;
   for (idx = 0; idx < NMV_CONTEXTS; ++idx) {
     nmv_context *fc = &cm->fc->nmvc[idx];
     const nmv_context *pre_fc =
