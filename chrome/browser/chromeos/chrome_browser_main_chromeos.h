@@ -27,6 +27,7 @@ namespace chromeos {
 class ArcKioskAppManager;
 class DataPromoNotification;
 class EventRewriterController;
+class EventRewriterDelegateImpl;
 class ExtensionVolumeObserver;
 class IdleActionWarningObserver;
 class LoginLockStateNotifier;
@@ -87,6 +88,7 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
 
   std::unique_ptr<ShutdownPolicyForwarder> shutdown_policy_forwarder_;
 
+  std::unique_ptr<EventRewriterDelegateImpl> event_rewriter_delegate_;
   std::unique_ptr<EventRewriterController> keyboard_event_rewriters_;
 
   scoped_refptr<chromeos::ExternalMetrics> external_metrics_;

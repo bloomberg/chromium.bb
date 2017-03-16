@@ -39,6 +39,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chromeos/settings/cros_settings_names.h"
+#include "ui/chromeos/events/pref_names.h"
 #endif
 
 namespace {

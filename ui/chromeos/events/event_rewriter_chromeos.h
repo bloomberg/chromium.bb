@@ -2,33 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_EVENTS_EVENT_REWRITER_H_
-#define CHROME_BROWSER_CHROMEOS_EVENTS_EVENT_REWRITER_H_
+#ifndef UI_CHROMEOS_EVENTS_EVENT_REWRITER_CHROMEOS_H_
+#define UI_CHROMEOS_EVENTS_EVENT_REWRITER_CHROMEOS_H_
 
 #include <map>
 #include <memory>
 #include <set>
 #include <string>
 
-#include "base/compiler_specific.h"
-#include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "ui/events/event.h"
 #include "ui/events/event_rewriter.h"
 #include "ui/events/keycodes/dom/dom_key.h"
 
-class PrefService;
-
-namespace ui {
-enum class DomCode;
-};
-
 namespace chromeos {
 namespace input_method {
 class ImeKeyboard;
-}
+}  // namespace input_method
+}  // namespace chromeos
 
-// EventRewriter makes various changes to keyboard-related events,
+namespace ui {
+
+enum class DomCode;
+
+// EventRewriterChromeOS makes various changes to keyboard-related events,
 // including KeyEvents and some other events with keyboard modifier flags:
 // - maps certain non-character keys according to user preferences
 //   (Control, Alt, Search, Caps Lock, Escape, Backspace, Diamond);
@@ -38,7 +35,7 @@ class ImeKeyboard;
 // - handles various key combinations like Search+Backspace -> Delete
 //   and Search+number to Fnumber;
 // - handles key/pointer combinations like Alt+Button1 -> Button3.
-class EventRewriter : public ui::EventRewriter {
+class EventRewriterChromeOS : public ui::EventRewriter {
  public:
   enum DeviceType {
     kDeviceUnknown = 0,
@@ -55,11 +52,40 @@ class EventRewriter : public ui::EventRewriter {
     ui::KeyboardCode key_code;
   };
 
-  // Does not take ownership of the |sticky_keys_controller|, which may also
-  // be NULL (for testing without ash), in which case sticky key operations
+  class Delegate {
+   public:
+    Delegate() {}
+    virtual ~Delegate() {}
+
+    // Retruns true if we want to rewrite modifier keys.
+    virtual bool RewriteModifierKeys() = 0;
+
+    // Returns true if get keyboard remapped preference value successfully and
+    // the value will be stored in |value|.
+    virtual bool GetKeyboardRemappedPrefValue(const std::string& pref_name,
+                                              int* value) const = 0;
+
+    // Returns true if the target would prefer to receive raw
+    // function keys instead of having them rewritten into back, forward,
+    // brightness, volume, etc. or if the user has specified that they desire
+    // top-row keys to be treated as function keys globally.
+    virtual bool TopRowKeysAreFunctionKeys() const = 0;
+
+    // Returns true if the |key_code| and |flags| have been resgistered for
+    // extensions and EventRewriterChromeOS will not rewrite the event.
+    virtual bool IsExtensionCommandRegistered(ui::KeyboardCode key_code,
+                                              int flags) const = 0;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Delegate);
+  };
+
+  // Does not take ownership of the |sticky_keys_controller|, which may also be
+  // nullptr (for testing without ash), in which case sticky key operations
   // don't happen.
-  explicit EventRewriter(ui::EventRewriter* sticky_keys_controller);
-  ~EventRewriter() override;
+  EventRewriterChromeOS(Delegate* delegate,
+                        ui::EventRewriter* sticky_keys_controller);
+  ~EventRewriterChromeOS() override;
 
   // Calls KeyboardDeviceAddedInternal.
   DeviceType KeyboardDeviceAddedForTesting(int device_id,
@@ -76,11 +102,8 @@ class EventRewriter : public ui::EventRewriter {
   void set_last_keyboard_device_id_for_testing(int device_id) {
     last_keyboard_device_id_ = device_id;
   }
-  void set_pref_service_for_testing(const PrefService* pref_service) {
-    pref_service_for_testing_ = pref_service;
-  }
   void set_ime_keyboard_for_testing(
-      chromeos::input_method::ImeKeyboard* ime_keyboard) {
+      ::chromeos::input_method::ImeKeyboard* ime_keyboard) {
     ime_keyboard_for_testing_ = ime_keyboard;
   }
 
@@ -102,9 +125,6 @@ class EventRewriter : public ui::EventRewriter {
  private:
   void DeviceKeyPressedOrReleased(int device_id);
 
-  // Returns the PrefService that should be used.
-  const PrefService* GetPrefService() const;
-
   // Adds a device to |device_id_to_type_|.
   DeviceType KeyboardDeviceAdded(int device_id);
 
@@ -122,16 +142,9 @@ class EventRewriter : public ui::EventRewriter {
   // Returns true if |last_keyboard_device_id_| is of given |device_type|.
   bool IsLastKeyboardOfType(DeviceType device_type) const;
 
-  // Returns true if the target for |event| would prefer to receive raw function
-  // keys instead of having them rewritten into back, forward, brightness,
-  // volume, etc. or if the user has specified that they desire top-row keys to
-  // be treated as function keys globally.
-  bool TopRowKeysAreFunctionKeys(const ui::KeyEvent& event) const;
-
   // Given modifier flags |original_flags|, returns the remapped modifiers
   // according to user preferences and/or event properties.
-  int GetRemappedModifierMasks(const PrefService& pref_service,
-                               const ui::Event& event,
+  int GetRemappedModifierMasks(const ui::Event& event,
                                int original_flags) const;
 
   // Rewrite a particular kind of event.
@@ -170,8 +183,9 @@ class EventRewriter : public ui::EventRewriter {
   // used to interpret modifiers on pointer events.
   int last_keyboard_device_id_;
 
-  chromeos::input_method::ImeKeyboard* ime_keyboard_for_testing_;
-  const PrefService* pref_service_for_testing_;
+  ::chromeos::input_method::ImeKeyboard* ime_keyboard_for_testing_;
+
+  Delegate* const delegate_;
 
   // The sticky keys controller is not owned here;
   // at time of writing it is a singleton in ash::Shell.
@@ -183,7 +197,7 @@ class EventRewriter : public ui::EventRewriter {
   // modifier to the next non-modifier keypress. Under Ozone the stateless
   // layout model requires this to be handled explicitly. See crbug.com/518237
   // Pragmatically this, like the Diamond key, is handled here in
-  // EventRewriter, but modifier state management is scattered between
+  // EventRewriterChromeOS, but modifier state management is scattered between
   // here, sticky keys, and the system layer (X11 or Ozone), and could
   // do with refactoring.
   // - |pressed_modifier_latches_| records the latching keys currently pressed.
@@ -197,9 +211,9 @@ class EventRewriter : public ui::EventRewriter {
   int latched_modifier_latches_;
   int used_modifier_latches_;
 
-  DISALLOW_COPY_AND_ASSIGN(EventRewriter);
+  DISALLOW_COPY_AND_ASSIGN(EventRewriterChromeOS);
 };
 
-}  // namespace chromeos
+}  // namespace ui
 
-#endif  // CHROME_BROWSER_CHROMEOS_EVENTS_EVENT_REWRITER_H_
+#endif  // UI_CHROMEOS_EVENTS_EVENT_REWRITER_CHROMEOS_H_

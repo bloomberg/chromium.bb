@@ -1266,6 +1266,7 @@ split_static_library("ui") {
       "//components/login",
       "//ui/base/ime",
       "//ui/chromeos",
+      "//ui/chromeos/events",
     ]
     if (enable_rlz) {
       deps += [ "//chrome/browser:rlz" ]

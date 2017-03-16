@@ -1012,6 +1012,7 @@ static_library("extensions") {
       "//third_party/protobuf:protobuf_lite",
       "//ui/app_list",
       "//ui/chromeos",
+      "//ui/chromeos/events",
       "//ui/file_manager",
       "//ui/views/",
     ]

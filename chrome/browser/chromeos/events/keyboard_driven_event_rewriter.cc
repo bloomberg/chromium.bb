@@ -4,9 +4,9 @@
 
 #include "chrome/browser/chromeos/events/keyboard_driven_event_rewriter.h"
 
-#include "chrome/browser/chromeos/events/event_rewriter.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "components/session_manager/core/session_manager.h"
+#include "ui/chromeos/events/event_rewriter_chromeos.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 
@@ -89,11 +89,9 @@ ui::EventRewriteStatus KeyboardDrivenEventRewriter::Rewrite(
     return ui::EVENT_REWRITE_CONTINUE;
   }
 
-  chromeos::EventRewriter::MutableKeyState state = {
+  ui::EventRewriterChromeOS::MutableKeyState state = {
       flags & ~(ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN),
-      key_event.code(),
-      key_event.GetDomKey(),
-      key_event.key_code()};
+      key_event.code(), key_event.GetDomKey(), key_event.key_code()};
 
   if (rewritten_to_tab_) {
     if (key_code == ui::VKEY_LEFT || key_code == ui::VKEY_RIGHT ||
@@ -108,8 +106,8 @@ ui::EventRewriteStatus KeyboardDrivenEventRewriter::Rewrite(
     }
   }
 
-  chromeos::EventRewriter::BuildRewrittenKeyEvent(key_event, state,
-                                                  rewritten_event);
+  ui::EventRewriterChromeOS::BuildRewrittenKeyEvent(key_event, state,
+                                                    rewritten_event);
   return ui::EVENT_REWRITE_REWRITTEN;
 }
 

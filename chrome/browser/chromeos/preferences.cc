@@ -51,6 +51,7 @@
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
+#include "ui/chromeos/events/pref_names.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"

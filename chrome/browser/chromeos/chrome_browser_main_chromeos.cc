@@ -44,8 +44,8 @@
 #include "chrome/browser/chromeos/dbus/mus_console_service_provider_delegate.h"
 #include "chrome/browser/chromeos/dbus/screen_lock_service_provider.h"
 #include "chrome/browser/chromeos/display/quirks_manager_delegate_impl.h"
-#include "chrome/browser/chromeos/events/event_rewriter.h"
 #include "chrome/browser/chromeos/events/event_rewriter_controller.h"
+#include "chrome/browser/chromeos/events/event_rewriter_delegate_impl.h"
 #include "chrome/browser/chromeos/events/keyboard_driven_event_rewriter.h"
 #include "chrome/browser/chromeos/extensions/default_app_order.h"
 #include "chrome/browser/chromeos/extensions/extension_volume_observer.h"
@@ -159,6 +159,8 @@
 #include "ui/base/ime/chromeos/ime_keyboard.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/base/touch/touch_device.h"
+#include "ui/chromeos/events/event_rewriter_chromeos.h"
+#include "ui/chromeos/events/pref_names.h"
 #include "ui/events/event_utils.h"
 
 #if BUILDFLAG(ENABLE_RLZ)
@@ -805,9 +807,11 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
         std::unique_ptr<ui::EventRewriter>(new KeyboardDrivenEventRewriter()));
     keyboard_event_rewriters_->AddEventRewriter(
         std::unique_ptr<ui::EventRewriter>(new SpokenFeedbackEventRewriter()));
+    event_rewriter_delegate_ = base::MakeUnique<EventRewriterDelegateImpl>();
     keyboard_event_rewriters_->AddEventRewriter(
-        std::unique_ptr<ui::EventRewriter>(new EventRewriter(
-            ash::Shell::GetInstance()->sticky_keys_controller())));
+        base::MakeUnique<ui::EventRewriterChromeOS>(
+            event_rewriter_delegate_.get(),
+            ash::Shell::GetInstance()->sticky_keys_controller()));
     keyboard_event_rewriters_->Init();
   }
 

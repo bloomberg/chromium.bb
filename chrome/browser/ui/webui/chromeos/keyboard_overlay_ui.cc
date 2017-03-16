@@ -33,6 +33,7 @@
 #include "content/public/browser/web_ui_message_handler.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
+#include "ui/chromeos/events/pref_names.h"
 #include "ui/display/manager/display_manager.h"
 
 using chromeos::input_method::ModifierKey;

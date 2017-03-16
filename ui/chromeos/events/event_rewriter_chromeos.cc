@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/events/event_rewriter.h"
+#include "ui/chromeos/events/event_rewriter_chromeos.h"
 
 #include <stddef.h>
 
@@ -11,20 +11,14 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
-#include "chrome/browser/chromeos/login/ui/login_display_host.h"
-#include "chrome/browser/extensions/extension_commands_global_registry.h"
-#include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
-#include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
-#include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
-#include "components/prefs/pref_service.h"
-#include "components/user_manager/user_manager.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
+#include "ui/chromeos/events/pref_names.h"
 #include "ui/events/devices/input_device_manager.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
@@ -34,8 +28,8 @@
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 
 #if defined(USE_X11)
-#include <X11/extensions/XInput2.h>
 #include <X11/Xlib.h>
+#include <X11/extensions/XInput2.h>
 
 // Get rid of macros from Xlib.h that conflicts with other parts of the code.
 #undef RootWindow
@@ -45,7 +39,7 @@
 #include "ui/events/keycodes/keyboard_code_conversion_x.h"
 #endif
 
-namespace chromeos {
+namespace ui {
 
 namespace {
 
@@ -76,49 +70,49 @@ const struct ModifierRemapping {
   int flag;
   int remap_to;
   const char* pref_name;
-  EventRewriter::MutableKeyState result;
+  EventRewriterChromeOS::MutableKeyState result;
 } kModifierRemappings[] = {
     {// kModifierRemappingCtrl references this entry by index.
      ui::EF_CONTROL_DOWN,
-     input_method::kControlKey,
+     ::chromeos::input_method::kControlKey,
      prefs::kLanguageRemapControlKeyTo,
      {ui::EF_CONTROL_DOWN, ui::DomCode::CONTROL_LEFT, ui::DomKey::CONTROL,
       ui::VKEY_CONTROL}},
     {// kModifierRemappingNeoMod3 references this entry by index.
      ui::EF_MOD3_DOWN | ui::EF_ALTGR_DOWN,
-     input_method::kNumModifierKeys,
+     ::chromeos::input_method::kNumModifierKeys,
      nullptr,
      {ui::EF_MOD3_DOWN | ui::EF_ALTGR_DOWN, ui::DomCode::CAPS_LOCK,
       ui::DomKey::ALT_GRAPH, ui::VKEY_ALTGR}},
     {ui::EF_COMMAND_DOWN,
-     input_method::kSearchKey,
+     ::chromeos::input_method::kSearchKey,
      prefs::kLanguageRemapSearchKeyTo,
      {ui::EF_COMMAND_DOWN, ui::DomCode::META_LEFT, ui::DomKey::META,
       ui::VKEY_LWIN}},
     {ui::EF_ALT_DOWN,
-     input_method::kAltKey,
+     ::chromeos::input_method::kAltKey,
      prefs::kLanguageRemapAltKeyTo,
      {ui::EF_ALT_DOWN, ui::DomCode::ALT_LEFT, ui::DomKey::ALT, ui::VKEY_MENU}},
     {ui::EF_NONE,
-     input_method::kVoidKey,
+     ::chromeos::input_method::kVoidKey,
      nullptr,
      {ui::EF_NONE, ui::DomCode::NONE, ui::DomKey::NONE, ui::VKEY_UNKNOWN}},
     {ui::EF_MOD3_DOWN,
-     input_method::kCapsLockKey,
+     ::chromeos::input_method::kCapsLockKey,
      prefs::kLanguageRemapCapsLockKeyTo,
      {ui::EF_MOD3_DOWN, ui::DomCode::CAPS_LOCK, ui::DomKey::CAPS_LOCK,
       ui::VKEY_CAPITAL}},
     {ui::EF_NONE,
-     input_method::kEscapeKey,
+     ::chromeos::input_method::kEscapeKey,
      prefs::kLanguageRemapEscapeKeyTo,
      {ui::EF_NONE, ui::DomCode::ESCAPE, ui::DomKey::ESCAPE, ui::VKEY_ESCAPE}},
     {ui::EF_NONE,
-     input_method::kBackspaceKey,
+     ::chromeos::input_method::kBackspaceKey,
      prefs::kLanguageRemapBackspaceKeyTo,
      {ui::EF_NONE, ui::DomCode::BACKSPACE, ui::DomKey::BACKSPACE,
       ui::VKEY_BACK}},
     {ui::EF_NONE,
-     input_method::kNumModifierKeys,
+     ::chromeos::input_method::kNumModifierKeys,
      prefs::kLanguageRemapDiamondKeyTo,
      {ui::EF_NONE, ui::DomCode::F15, ui::DomKey::F15, ui::VKEY_F15}}};
 
@@ -128,20 +122,15 @@ const ModifierRemapping* kModifierRemappingNeoMod3 = &kModifierRemappings[1];
 // Gets a remapped key for |pref_name| key. For example, to find out which
 // key Search is currently remapped to, call the function with
 // prefs::kLanguageRemapSearchKeyTo.
-const ModifierRemapping* GetRemappedKey(const std::string& pref_name,
-                                        const PrefService& pref_service) {
+const ModifierRemapping* GetRemappedKey(
+    const std::string& pref_name,
+    EventRewriterChromeOS::Delegate* delegate) {
+  if (!delegate)
+    return nullptr;
+
   int value = -1;
-  // If we're at the login screen, try to get the pref from the global prefs
-  // dictionary.
-  if (!LoginDisplayHost::default_host() ||
-      !LoginDisplayHost::default_host()
-           ->GetOobeUI()
-           ->signin_screen_handler()
-           ->GetKeyboardRemappedPrefValue(pref_name, &value)) {
-    if (!pref_service.FindPreference(pref_name))
-      return nullptr;
-    value = pref_service.GetInteger(pref_name);
-  }
+  if (!delegate->GetKeyboardRemappedPrefValue(pref_name, &value))
+    return nullptr;
 
   for (size_t i = 0; i < arraysize(kModifierRemappings); ++i) {
     if (value == kModifierRemappings[i].remap_to)
@@ -152,7 +141,7 @@ const ModifierRemapping* GetRemappedKey(const std::string& pref_name,
 
 bool HasDiamondKey() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kHasChromeOSDiamondKey);
+      ::chromeos::switches::kHasChromeOSDiamondKey);
 }
 
 bool IsISOLevel5ShiftUsedByCurrentInputMethod() {
@@ -160,43 +149,21 @@ bool IsISOLevel5ShiftUsedByCurrentInputMethod() {
   // it's not possible to make both features work. For now, we don't remap
   // Mod3Mask when Neo2 is in use.
   // TODO(yusukes): Remove the restriction.
-  input_method::InputMethodManager* manager =
-      input_method::InputMethodManager::Get();
+  ::chromeos::input_method::InputMethodManager* manager =
+      ::chromeos::input_method::InputMethodManager::Get();
   return manager->IsISOLevel5ShiftUsedByCurrentInputMethod();
 }
 
-bool IsExtensionCommandRegistered(ui::KeyboardCode key_code, int flags) {
-  // Some keyboard events for ChromeOS get rewritten, such as:
-  // Search+Shift+Left gets converted to Shift+Home (BeginDocument).
-  // This doesn't make sense if the user has assigned that shortcut
-  // to an extension. Because:
-  // 1) The extension would, upon seeing a request for Ctrl+Shift+Home have
-  //    to register for Shift+Home, instead.
-  // 2) The conversion is unnecessary, because Shift+Home (BeginDocument) isn't
-  //    going to be executed.
-  // Therefore, we skip converting the accelerator if an extension has
-  // registered for this shortcut.
-  Profile* profile = ProfileManager::GetActiveUserProfile();
-  if (!profile || !extensions::ExtensionCommandsGlobalRegistry::Get(profile))
-    return false;
-
-  int modifiers = flags & (ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN |
-                           ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
-  ui::Accelerator accelerator(key_code, modifiers);
-  return extensions::ExtensionCommandsGlobalRegistry::Get(profile)
-      ->IsRegistered(accelerator);
-}
-
-EventRewriter::DeviceType GetDeviceType(const std::string& device_name,
-                                        int vendor_id,
-                                        int product_id) {
+EventRewriterChromeOS::DeviceType GetDeviceType(const std::string& device_name,
+                                                int vendor_id,
+                                                int product_id) {
   if (vendor_id == kHotrodRemoteVendorId &&
       product_id == kHotrodRemoteProductId) {
-    return EventRewriter::kDeviceHotrodRemote;
+    return EventRewriterChromeOS::kDeviceHotrodRemote;
   }
 
   if (base::LowerCaseEqualsASCII(device_name, "virtual core keyboard"))
-    return EventRewriter::kDeviceVirtualCoreKeyboard;
+    return EventRewriterChromeOS::kDeviceVirtualCoreKeyboard;
 
   std::vector<std::string> tokens = base::SplitString(
       device_name, " .", base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
@@ -211,10 +178,10 @@ EventRewriter::DeviceType GetDeviceType(const std::string& device_name,
     if (!found_keyboard && base::LowerCaseEqualsASCII(tokens[i], "keyboard"))
       found_keyboard = true;
     if (found_apple && found_keyboard)
-      return EventRewriter::kDeviceAppleKeyboard;
+      return EventRewriterChromeOS::kDeviceAppleKeyboard;
   }
 
-  return EventRewriter::kDeviceUnknown;
+  return EventRewriterChromeOS::kDeviceUnknown;
 }
 
 struct KeyboardRemapping {
@@ -231,18 +198,19 @@ struct KeyboardRemapping {
   // - |dom_key| and |character| are set if |result.dom_key| is not NONE.
   // -|key_code| is set if |result.key_code| is not VKEY_UNKNOWN.
   // - |flags| are always set from |result.flags|, but this can be |EF_NONE|.
-  EventRewriter::MutableKeyState result;
+  EventRewriterChromeOS::MutableKeyState result;
 };
 
-bool MatchKeyboardRemapping(const EventRewriter::MutableKeyState& suspect,
-                            const KeyboardRemapping::Condition& test) {
+bool MatchKeyboardRemapping(
+    const EventRewriterChromeOS::MutableKeyState& suspect,
+    const KeyboardRemapping::Condition& test) {
   return ((test.key_code == ui::VKEY_UNKNOWN) ||
           (test.key_code == suspect.key_code)) &&
          ((suspect.flags & test.flags) == test.flags);
 }
 
-void ApplyRemapping(const EventRewriter::MutableKeyState& changes,
-                    EventRewriter::MutableKeyState* state) {
+void ApplyRemapping(const EventRewriterChromeOS::MutableKeyState& changes,
+                    EventRewriterChromeOS::MutableKeyState* state) {
   state->flags |= changes.flags;
   if (changes.code != ui::DomCode::NONE)
     state->code = changes.code;
@@ -258,8 +226,8 @@ void ApplyRemapping(const EventRewriter::MutableKeyState& changes,
 bool RewriteWithKeyboardRemappings(
     const KeyboardRemapping* mappings,
     size_t num_mappings,
-    const EventRewriter::MutableKeyState& input_state,
-    EventRewriter::MutableKeyState* remapped_state) {
+    const EventRewriterChromeOS::MutableKeyState& input_state,
+    EventRewriterChromeOS::MutableKeyState* remapped_state) {
   for (size_t i = 0; i < num_mappings; ++i) {
     const KeyboardRemapping& map = mappings[i];
     if (MatchKeyboardRemapping(input_state, map.condition)) {
@@ -272,7 +240,7 @@ bool RewriteWithKeyboardRemappings(
 }
 
 void SetMeaningForLayout(ui::EventType type,
-                         EventRewriter::MutableKeyState* state) {
+                         EventRewriterChromeOS::MutableKeyState* state) {
   // Currently layout is applied by creating a temporary key event with the
   // current physical state, and extracting the layout results.
   ui::KeyEvent key(type, state->key_code, state->code, state->flags);
@@ -302,18 +270,21 @@ ui::DomCode RelocateModifier(ui::DomCode code, ui::DomKeyLocation location) {
 
 }  // namespace
 
-EventRewriter::EventRewriter(ui::EventRewriter* sticky_keys_controller)
+EventRewriterChromeOS::EventRewriterChromeOS(
+    Delegate* delegate,
+    ui::EventRewriter* sticky_keys_controller)
     : last_keyboard_device_id_(ui::ED_UNKNOWN_DEVICE),
-      ime_keyboard_for_testing_(NULL),
-      pref_service_for_testing_(NULL),
+      ime_keyboard_for_testing_(nullptr),
+      delegate_(delegate),
       sticky_keys_controller_(sticky_keys_controller),
       pressed_modifier_latches_(ui::EF_NONE),
       latched_modifier_latches_(ui::EF_NONE),
       used_modifier_latches_(ui::EF_NONE) {}
 
-EventRewriter::~EventRewriter() {}
+EventRewriterChromeOS::~EventRewriterChromeOS() {}
 
-EventRewriter::DeviceType EventRewriter::KeyboardDeviceAddedForTesting(
+EventRewriterChromeOS::DeviceType
+EventRewriterChromeOS::KeyboardDeviceAddedForTesting(
     int device_id,
     const std::string& device_name) {
   // Tests must avoid XI2 reserved device IDs.
@@ -322,13 +293,13 @@ EventRewriter::DeviceType EventRewriter::KeyboardDeviceAddedForTesting(
                                      kUnknownProductId);
 }
 
-void EventRewriter::RewriteMouseButtonEventForTesting(
+void EventRewriterChromeOS::RewriteMouseButtonEventForTesting(
     const ui::MouseEvent& event,
     std::unique_ptr<ui::Event>* rewritten_event) {
   RewriteMouseButtonEvent(event, rewritten_event);
 }
 
-ui::EventRewriteStatus EventRewriter::RewriteEvent(
+ui::EventRewriteStatus EventRewriterChromeOS::RewriteEvent(
     const ui::Event& event,
     std::unique_ptr<ui::Event>* rewritten_event) {
   if ((event.type() == ui::ET_KEY_PRESSED) ||
@@ -357,7 +328,7 @@ ui::EventRewriteStatus EventRewriter::RewriteEvent(
   return ui::EVENT_REWRITE_CONTINUE;
 }
 
-ui::EventRewriteStatus EventRewriter::NextDispatchEvent(
+ui::EventRewriteStatus EventRewriterChromeOS::NextDispatchEvent(
     const ui::Event& last_event,
     std::unique_ptr<ui::Event>* new_event) {
   if (sticky_keys_controller_) {
@@ -372,7 +343,7 @@ ui::EventRewriteStatus EventRewriter::NextDispatchEvent(
   return ui::EVENT_REWRITE_CONTINUE;
 }
 
-void EventRewriter::BuildRewrittenKeyEvent(
+void EventRewriterChromeOS::BuildRewrittenKeyEvent(
     const ui::KeyEvent& key_event,
     const MutableKeyState& state,
     std::unique_ptr<ui::Event>* rewritten_event) {
@@ -382,7 +353,7 @@ void EventRewriter::BuildRewrittenKeyEvent(
   rewritten_event->reset(rewritten_key_event);
 }
 
-void EventRewriter::DeviceKeyPressedOrReleased(int device_id) {
+void EventRewriterChromeOS::DeviceKeyPressedOrReleased(int device_id) {
   std::map<int, DeviceType>::const_iterator iter =
       device_id_to_type_.find(device_id);
   DeviceType type;
@@ -400,22 +371,15 @@ void EventRewriter::DeviceKeyPressedOrReleased(int device_id) {
   last_keyboard_device_id_ = device_id;
 }
 
-const PrefService* EventRewriter::GetPrefService() const {
-  if (pref_service_for_testing_)
-    return pref_service_for_testing_;
-  Profile* profile = ProfileManager::GetActiveUserProfile();
-  return profile ? profile->GetPrefs() : NULL;
-}
-
-bool EventRewriter::IsAppleKeyboard() const {
+bool EventRewriterChromeOS::IsAppleKeyboard() const {
   return IsLastKeyboardOfType(kDeviceAppleKeyboard);
 }
 
-bool EventRewriter::IsHotrodRemote() const {
+bool EventRewriterChromeOS::IsHotrodRemote() const {
   return IsLastKeyboardOfType(kDeviceHotrodRemote);
 }
 
-bool EventRewriter::IsLastKeyboardOfType(DeviceType device_type) const {
+bool EventRewriterChromeOS::IsLastKeyboardOfType(DeviceType device_type) const {
   if (last_keyboard_device_id_ == ui::ED_UNKNOWN_DEVICE)
     return false;
 
@@ -431,20 +395,13 @@ bool EventRewriter::IsLastKeyboardOfType(DeviceType device_type) const {
   return type == device_type;
 }
 
-bool EventRewriter::TopRowKeysAreFunctionKeys(const ui::KeyEvent& event) const {
-  const PrefService* prefs = GetPrefService();
-  return prefs && prefs->FindPreference(prefs::kLanguageSendFunctionKeys) &&
-         prefs->GetBoolean(prefs::kLanguageSendFunctionKeys);
-}
-
-int EventRewriter::GetRemappedModifierMasks(const PrefService& pref_service,
-                                            const ui::Event& event,
-                                            int original_flags) const {
+int EventRewriterChromeOS::GetRemappedModifierMasks(const ui::Event& event,
+                                                    int original_flags) const {
   int unmodified_flags = original_flags;
   int rewritten_flags = pressed_modifier_latches_ | latched_modifier_latches_;
   for (size_t i = 0; unmodified_flags && (i < arraysize(kModifierRemappings));
        ++i) {
-    const ModifierRemapping* remapped_key = NULL;
+    const ModifierRemapping* remapped_key = nullptr;
     if (!(unmodified_flags & kModifierRemappings[i].flag))
       continue;
     switch (kModifierRemappings[i].flag) {
@@ -477,7 +434,7 @@ int EventRewriter::GetRemappedModifierMasks(const PrefService& pref_service,
     }
     if (!remapped_key && kModifierRemappings[i].pref_name) {
       remapped_key =
-          GetRemappedKey(kModifierRemappings[i].pref_name, pref_service);
+          GetRemappedKey(kModifierRemappings[i].pref_name, delegate_);
     }
     if (remapped_key) {
       unmodified_flags &= ~kModifierRemappings[i].flag;
@@ -487,10 +444,11 @@ int EventRewriter::GetRemappedModifierMasks(const PrefService& pref_service,
   return rewritten_flags | unmodified_flags;
 }
 
-ui::EventRewriteStatus EventRewriter::RewriteKeyEvent(
+ui::EventRewriteStatus EventRewriterChromeOS::RewriteKeyEvent(
     const ui::KeyEvent& key_event,
     std::unique_ptr<ui::Event>* rewritten_event) {
-  if (IsExtensionCommandRegistered(key_event.key_code(), key_event.flags()))
+  if (delegate_ && delegate_->IsExtensionCommandRegistered(key_event.key_code(),
+                                                           key_event.flags()))
     return ui::EVENT_REWRITE_CONTINUE;
   if (key_event.source_device_id() != ui::ED_UNKNOWN_DEVICE)
     DeviceKeyPressedOrReleased(key_event.source_device_id());
@@ -530,7 +488,8 @@ ui::EventRewriteStatus EventRewriter::RewriteKeyEvent(
     if (status == ui::EVENT_REWRITE_DISCARD)
       return ui::EVENT_REWRITE_DISCARD;
     is_sticky_key_extension_command =
-        IsExtensionCommandRegistered(state.key_code, state.flags);
+        delegate_ &&
+        delegate_->IsExtensionCommandRegistered(state.key_code, state.flags);
   }
 
   // If flags have changed, this may change the interpretation of the key,
@@ -569,7 +528,7 @@ ui::EventRewriteStatus EventRewriter::RewriteKeyEvent(
   return status;
 }
 
-ui::EventRewriteStatus EventRewriter::RewriteMouseButtonEvent(
+ui::EventRewriteStatus EventRewriterChromeOS::RewriteMouseButtonEvent(
     const ui::MouseEvent& mouse_event,
     std::unique_ptr<ui::Event>* rewritten_event) {
   int flags = mouse_event.flags();
@@ -610,7 +569,7 @@ ui::EventRewriteStatus EventRewriter::RewriteMouseButtonEvent(
   return status;
 }
 
-ui::EventRewriteStatus EventRewriter::RewriteMouseWheelEvent(
+ui::EventRewriteStatus EventRewriterChromeOS::RewriteMouseWheelEvent(
     const ui::MouseWheelEvent& wheel_event,
     std::unique_ptr<ui::Event>* rewritten_event) {
   if (!sticky_keys_controller_)
@@ -625,7 +584,7 @@ ui::EventRewriteStatus EventRewriter::RewriteMouseWheelEvent(
   switch (status) {
     case ui::EVENT_REWRITE_REWRITTEN:
     case ui::EVENT_REWRITE_DISPATCH_ANOTHER:
-    // whell event has been rewritten and stored in |rewritten_event|.
+      // whell event has been rewritten and stored in |rewritten_event|.
 #if defined(USE_X11)
       ui::UpdateX11EventForFlags(rewritten_event->get());
 #endif
@@ -648,7 +607,7 @@ ui::EventRewriteStatus EventRewriter::RewriteMouseWheelEvent(
   return status;
 }
 
-ui::EventRewriteStatus EventRewriter::RewriteTouchEvent(
+ui::EventRewriteStatus EventRewriterChromeOS::RewriteTouchEvent(
     const ui::TouchEvent& touch_event,
     std::unique_ptr<ui::Event>* rewritten_event) {
   int flags = touch_event.flags();
@@ -664,7 +623,7 @@ ui::EventRewriteStatus EventRewriter::RewriteTouchEvent(
   return ui::EVENT_REWRITE_REWRITTEN;
 }
 
-ui::EventRewriteStatus EventRewriter::RewriteScrollEvent(
+ui::EventRewriteStatus EventRewriterChromeOS::RewriteScrollEvent(
     const ui::ScrollEvent& scroll_event,
     std::unique_ptr<ui::Event>* rewritten_event) {
   if (!sticky_keys_controller_)
@@ -680,25 +639,12 @@ ui::EventRewriteStatus EventRewriter::RewriteScrollEvent(
   return status;
 }
 
-bool EventRewriter::RewriteModifierKeys(const ui::KeyEvent& key_event,
-                                        MutableKeyState* state) {
+bool EventRewriterChromeOS::RewriteModifierKeys(const ui::KeyEvent& key_event,
+                                                MutableKeyState* state) {
   DCHECK(key_event.type() == ui::ET_KEY_PRESSED ||
          key_event.type() == ui::ET_KEY_RELEASED);
 
-  // Do nothing if we have just logged in as guest but have not restarted chrome
-  // process yet (so we are still on the login screen). In this situations we
-  // have no user profile so can not do anything useful.
-  // Note that currently, unlike other accounts, when user logs in as guest, we
-  // restart chrome process. In future this is to be changed.
-  // TODO(glotov): remove the following condition when we do not restart chrome
-  // when user logs in as guest.
-  // TODO(kpschoedel): check whether this is still necessary.
-  if (user_manager::UserManager::Get()->IsLoggedInAsGuest() &&
-      LoginDisplayHost::default_host())
-    return false;
-
-  const PrefService* pref_service = GetPrefService();
-  if (!pref_service)
+  if (!delegate_ || !delegate_->RewriteModifierKeys())
     return false;
 
   // Preserve a copy of the original before rewriting |state| based on
@@ -709,7 +655,7 @@ bool EventRewriter::RewriteModifierKeys(const ui::KeyEvent& key_event,
   bool exact_event = false;
 
   // First, remap the key code.
-  const ModifierRemapping* remapped_key = NULL;
+  const ModifierRemapping* remapped_key = nullptr;
   // Remapping based on DomKey.
   switch (incoming.key) {
     // On Chrome OS, F15 (XF86XK_Launch6) with NumLock (Mod2Mask) is sent
@@ -720,7 +666,7 @@ bool EventRewriter::RewriteModifierKeys(const ui::KeyEvent& key_event,
       // syncable pref.
       if (HasDiamondKey())
         remapped_key =
-            GetRemappedKey(prefs::kLanguageRemapDiamondKeyTo, *pref_service);
+            GetRemappedKey(prefs::kLanguageRemapDiamondKeyTo, delegate_);
       // Default behavior of F15 is Control, even if --has-chromeos-diamond-key
       // is absent, according to unit test comments.
       if (!remapped_key) {
@@ -738,11 +684,11 @@ bool EventRewriter::RewriteModifierKeys(const ui::KeyEvent& key_event,
         if (incoming.code == ui::DomCode::CAPS_LOCK) {
           characteristic_flag = ui::EF_ALTGR_DOWN | ui::EF_MOD3_DOWN;
           remapped_key =
-              GetRemappedKey(prefs::kLanguageRemapCapsLockKeyTo, *pref_service);
+              GetRemappedKey(prefs::kLanguageRemapCapsLockKeyTo, delegate_);
         } else {
           characteristic_flag = ui::EF_ALTGR_DOWN;
           remapped_key =
-              GetRemappedKey(prefs::kLanguageRemapSearchKeyTo, *pref_service);
+              GetRemappedKey(prefs::kLanguageRemapSearchKeyTo, delegate_);
         }
       }
       if (remapped_key && remapped_key->result.key_code == ui::VKEY_CAPITAL)
@@ -783,7 +729,7 @@ bool EventRewriter::RewriteModifierKeys(const ui::KeyEvent& key_event,
     case ui::DomCode::CAPS_LOCK:
       characteristic_flag = ui::EF_CAPS_LOCK_ON;
       remapped_key =
-          GetRemappedKey(prefs::kLanguageRemapCapsLockKeyTo, *pref_service);
+          GetRemappedKey(prefs::kLanguageRemapCapsLockKeyTo, delegate_);
       break;
     case ui::DomCode::META_LEFT:
     case ui::DomCode::META_RIGHT:
@@ -794,7 +740,7 @@ bool EventRewriter::RewriteModifierKeys(const ui::KeyEvent& key_event,
         remapped_key = kModifierRemappingCtrl;
       } else {
         remapped_key =
-            GetRemappedKey(prefs::kLanguageRemapSearchKeyTo, *pref_service);
+            GetRemappedKey(prefs::kLanguageRemapSearchKeyTo, delegate_);
       }
       // Default behavior is Super key, hence don't remap the event if the pref
       // is unavailable.
@@ -803,22 +749,21 @@ bool EventRewriter::RewriteModifierKeys(const ui::KeyEvent& key_event,
     case ui::DomCode::CONTROL_RIGHT:
       characteristic_flag = ui::EF_CONTROL_DOWN;
       remapped_key =
-          GetRemappedKey(prefs::kLanguageRemapControlKeyTo, *pref_service);
+          GetRemappedKey(prefs::kLanguageRemapControlKeyTo, delegate_);
       break;
     case ui::DomCode::ALT_LEFT:
     case ui::DomCode::ALT_RIGHT:
       // ALT key
       characteristic_flag = ui::EF_ALT_DOWN;
-      remapped_key =
-          GetRemappedKey(prefs::kLanguageRemapAltKeyTo, *pref_service);
+      remapped_key = GetRemappedKey(prefs::kLanguageRemapAltKeyTo, delegate_);
       break;
     case ui::DomCode::ESCAPE:
       remapped_key =
-          GetRemappedKey(prefs::kLanguageRemapEscapeKeyTo, *pref_service);
+          GetRemappedKey(prefs::kLanguageRemapEscapeKeyTo, delegate_);
       break;
     case ui::DomCode::BACKSPACE:
       remapped_key =
-          GetRemappedKey(prefs::kLanguageRemapBackspaceKeyTo, *pref_service);
+          GetRemappedKey(prefs::kLanguageRemapBackspaceKeyTo, delegate_);
       break;
     default:
       break;
@@ -830,15 +775,14 @@ bool EventRewriter::RewriteModifierKeys(const ui::KeyEvent& key_event,
     state->key = remapped_key->result.key;
     incoming.flags |= characteristic_flag;
     characteristic_flag = remapped_key->flag;
-    if (remapped_key->remap_to == input_method::kCapsLockKey)
+    if (remapped_key->remap_to == ::chromeos::input_method::kCapsLockKey)
       characteristic_flag |= ui::EF_CAPS_LOCK_ON;
     state->code = RelocateModifier(
         state->code, ui::KeycodeConverter::DomCodeToLocation(incoming.code));
   }
 
   // Next, remap modifier bits.
-  state->flags |=
-      GetRemappedModifierMasks(*pref_service, key_event, incoming.flags);
+  state->flags |= GetRemappedModifierMasks(key_event, incoming.flags);
 
   // If the DomKey is not a modifier before remapping but is after, set the
   // modifier latches for the later non-modifier key's modifier states.
@@ -871,10 +815,10 @@ bool EventRewriter::RewriteModifierKeys(const ui::KeyEvent& key_event,
         && incoming.key_code != ui::VKEY_CAPITAL
 #endif
         ) {
-      chromeos::input_method::ImeKeyboard* ime_keyboard =
+      ::chromeos::input_method::ImeKeyboard* ime_keyboard =
           ime_keyboard_for_testing_
               ? ime_keyboard_for_testing_
-              : chromeos::input_method::InputMethodManager::Get()
+              : ::chromeos::input_method::InputMethodManager::Get()
                     ->GetImeKeyboard();
       ime_keyboard->SetCapsLockEnabled(!ime_keyboard->CapsLockIsEnabled());
     }
@@ -882,13 +826,13 @@ bool EventRewriter::RewriteModifierKeys(const ui::KeyEvent& key_event,
   return exact_event;
 }
 
-void EventRewriter::RewriteNumPadKeys(const ui::KeyEvent& key_event,
-                                      MutableKeyState* state) {
+void EventRewriterChromeOS::RewriteNumPadKeys(const ui::KeyEvent& key_event,
+                                              MutableKeyState* state) {
   DCHECK(key_event.type() == ui::ET_KEY_PRESSED ||
          key_event.type() == ui::ET_KEY_RELEASED);
   static const struct NumPadRemapping {
     ui::KeyboardCode input_key_code;
-    EventRewriter::MutableKeyState result;
+    MutableKeyState result;
   } kNumPadRemappings[] = {
       {ui::VKEY_DELETE,
        {ui::EF_NONE, ui::DomCode::NONE, ui::DomKey::Constant<'.'>::Character,
@@ -934,8 +878,8 @@ void EventRewriter::RewriteNumPadKeys(const ui::KeyEvent& key_event,
   }
 }
 
-void EventRewriter::RewriteExtendedKeys(const ui::KeyEvent& key_event,
-                                        MutableKeyState* state) {
+void EventRewriterChromeOS::RewriteExtendedKeys(const ui::KeyEvent& key_event,
+                                                MutableKeyState* state) {
   DCHECK(key_event.type() == ui::ET_KEY_PRESSED ||
          key_event.type() == ui::ET_KEY_RELEASED);
   MutableKeyState incoming = *state;
@@ -1021,8 +965,8 @@ void EventRewriter::RewriteExtendedKeys(const ui::KeyEvent& key_event,
   }
 }
 
-void EventRewriter::RewriteFunctionKeys(const ui::KeyEvent& key_event,
-                                        MutableKeyState* state) {
+void EventRewriterChromeOS::RewriteFunctionKeys(const ui::KeyEvent& key_event,
+                                                MutableKeyState* state) {
   CHECK(key_event.type() == ui::ET_KEY_PRESSED ||
         key_event.type() == ui::ET_KEY_RELEASED);
 
@@ -1030,8 +974,9 @@ void EventRewriter::RewriteFunctionKeys(const ui::KeyEvent& key_event,
     // By default the top row (F1-F12) keys are system keys for back, forward,
     // brightness, volume, etc. However, windows for v2 apps can optionally
     // request raw function keys for these keys.
-    bool top_row_keys_are_function_keys = TopRowKeysAreFunctionKeys(key_event);
-    bool search_is_pressed = (state->flags & ui::EF_COMMAND_DOWN) != 0;
+    const bool top_row_keys_are_function_keys =
+        delegate_ && delegate_->TopRowKeysAreFunctionKeys();
+    const bool search_is_pressed = (state->flags & ui::EF_COMMAND_DOWN) != 0;
 
     //  Search? Top Row   Result
     //  ------- --------  ------
@@ -1093,7 +1038,7 @@ void EventRewriter::RewriteFunctionKeys(const ui::KeyEvent& key_event,
     // have different |KeyboardCode|s when modifiers are pressed, such as shift.
     static const struct {
       ui::DomCode input_dom_code;
-      EventRewriter::MutableKeyState result;
+      MutableKeyState result;
     } kNumberKeysToFkeys[] = {
         {ui::DomCode::DIGIT1,
          {ui::EF_NONE, ui::DomCode::F1, ui::DomKey::F1, ui::VKEY_F1}},
@@ -1129,15 +1074,16 @@ void EventRewriter::RewriteFunctionKeys(const ui::KeyEvent& key_event,
   }
 }
 
-void EventRewriter::RewriteLocatedEvent(const ui::Event& event, int* flags) {
-  const PrefService* pref_service = GetPrefService();
-  if (!pref_service)
+void EventRewriterChromeOS::RewriteLocatedEvent(const ui::Event& event,
+                                                int* flags) {
+  if (!delegate_)
     return;
-  *flags = GetRemappedModifierMasks(*pref_service, event, *flags);
+  *flags = GetRemappedModifierMasks(event, *flags);
 }
 
-int EventRewriter::RewriteModifierClick(const ui::MouseEvent& mouse_event,
-                                        int* flags) {
+int EventRewriterChromeOS::RewriteModifierClick(
+    const ui::MouseEvent& mouse_event,
+    int* flags) {
   // Remap Alt+Button1 to Button3.
   const int kAltLeftButton = (ui::EF_ALT_DOWN | ui::EF_LEFT_MOUSE_BUTTON);
   if (((*flags & kAltLeftButton) == kAltLeftButton) &&
@@ -1154,7 +1100,8 @@ int EventRewriter::RewriteModifierClick(const ui::MouseEvent& mouse_event,
   return ui::EF_NONE;
 }
 
-EventRewriter::DeviceType EventRewriter::KeyboardDeviceAddedInternal(
+EventRewriterChromeOS::DeviceType
+EventRewriterChromeOS::KeyboardDeviceAddedInternal(
     int device_id,
     const std::string& device_name,
     int vendor_id,
@@ -1179,7 +1126,8 @@ EventRewriter::DeviceType EventRewriter::KeyboardDeviceAddedInternal(
   return type;
 }
 
-EventRewriter::DeviceType EventRewriter::KeyboardDeviceAdded(int device_id) {
+EventRewriterChromeOS::DeviceType EventRewriterChromeOS::KeyboardDeviceAdded(
+    int device_id) {
   if (!ui::InputDeviceManager::HasInstance())
     return kDeviceUnknown;
   const std::vector<ui::InputDevice>& keyboard_devices =
@@ -1193,4 +1141,4 @@ EventRewriter::DeviceType EventRewriter::KeyboardDeviceAdded(int device_id) {
   return kDeviceUnknown;
 }
 
-}  // namespace chromeos
+}  // namespace ui

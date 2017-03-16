@@ -82,8 +82,7 @@ static bool IsRewrittenKey(uint32_t code) {
 // target application doesn't distinguish between left and right Alt keys.
 //
 // This file must be kept up to date with changes to
-// chrome/browser/chromeos/events/event_rewriter.cc
-
+// ui/chromeos/events/event_rewriter_chromeos.cc
 
 NormalizingInputFilterCros::NormalizingInputFilterCros(
     protocol::InputStub* input_stub)

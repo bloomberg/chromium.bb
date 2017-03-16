@@ -565,26 +565,6 @@ const char kLanguageImeMenuActivated[] = "settings.language.ime_menu_activated";
 const char kLanguageShouldMergeInputMethods[] =
     "settings.language.merge_input_methods";
 
-// Integer prefs which determine how we remap modifier keys (e.g. swap Alt and
-// Control.) Possible values for these prefs are 0-6. See ModifierKey enum in
-// src/chrome/browser/chromeos/input_method/xkeyboard.h
-const char kLanguageRemapSearchKeyTo[] =
-    // Note: we no longer use XKB for remapping these keys, but we can't change
-    // the pref names since the names are already synced with the cloud.
-    "settings.language.xkb_remap_search_key_to";
-const char kLanguageRemapControlKeyTo[] =
-    "settings.language.xkb_remap_control_key_to";
-const char kLanguageRemapAltKeyTo[] =
-    "settings.language.xkb_remap_alt_key_to";
-const char kLanguageRemapCapsLockKeyTo[] =
-    "settings.language.remap_caps_lock_key_to";
-const char kLanguageRemapEscapeKeyTo[] =
-    "settings.language.remap_escape_key_to";
-const char kLanguageRemapBackspaceKeyTo[] =
-    "settings.language.remap_backspace_key_to";
-const char kLanguageRemapDiamondKeyTo[] =
-    "settings.language.remap_diamond_key_to";
-
 // A boolean pref that causes top-row keys to be interpreted as function keys
 // instead of as media keys.
 const char kLanguageSendFunctionKeys[] =
