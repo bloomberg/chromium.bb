@@ -2573,6 +2573,8 @@ crbug.com/701047 [ Mac10.12 ] editing/style/block-styles-007.html [ Failure ]
 
 crbug.com/664873 http/tests/xmlhttprequest/small-chunks-response-text.html [ Failure Pass ]
 crbug.com/664873 virtual/mojo-loading/http/tests/xmlhttprequest/small-chunks-response-text.html [ Failure Pass ]
+crbug.com/700892 http/tests/images/png-animated-partial-load.html [ NeedsRebaseline ]
+crbug.com/700892 virtual/mojo-loading/http/tests/images/png-animated-partial-load.html [ NeedsRebaseline ]
 
 crbug.com/660295 inspector/elements/elements-panel-restore-selection-when-node-comes-later.html [ Pass Failure ]
 
