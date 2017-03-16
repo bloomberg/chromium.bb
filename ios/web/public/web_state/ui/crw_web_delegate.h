@@ -106,11 +106,6 @@ class GURL;
 // shown by the CRWWebController. 0.0 is assumed if not implemented.
 - (CGFloat)headerHeightForWebController:(CRWWebController*)webController;
 
-// Called when CRWWebController updated the SSL status for the current
-// NagivationItem.
-- (void)webControllerDidUpdateSSLStatusForCurrentNavigationItem:
-    (CRWWebController*)webController;
-
 // Called when a PassKit file is downloaded. |data| should be the data from a
 // PassKit file, but this is not guaranteed, and the delegate is responsible for
 // error handling non PassKit data using -[PKPass initWithData:error:]. If the
