@@ -253,29 +253,6 @@ TEST_F('PasswordsAndFormsBrowserTest', 'uiTests', function() {
       });
     });
 
-    test('testActionabilityNope', function() {
-      return createPrefs(false, false).then(function(prefs) {
-
-        var element = createPasswordsAndFormsElement(prefs);
-
-        assertFalse(element.$.autofillManagerButton.hasAttribute('actionable'));
-        assertFalse(element.$.passwordManagerButton.hasAttribute('actionable'));
-
-        destroyPrefs(prefs);
-      });
-    });
-
-    test('testActionabilityYes', function() {
-      return createPrefs(true, true).then(function(prefs) {
-        var element = createPasswordsAndFormsElement(prefs);
-
-        assertTrue(element.$.autofillManagerButton.hasAttribute('actionable'));
-        assertTrue(element.$.passwordManagerButton.hasAttribute('actionable'));
-
-        destroyPrefs(prefs);
-      });
-    });
-
     test('testAutofillExtensionIndicator', function() {
       return createPrefs(true, true).then(function(prefs) {
         var element = createPasswordsAndFormsElement(prefs);
