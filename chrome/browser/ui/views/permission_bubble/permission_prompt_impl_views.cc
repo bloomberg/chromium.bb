@@ -11,7 +11,7 @@
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
-#include "chrome/browser/ui/views/website_settings/permission_prompt_impl.h"
+#include "chrome/browser/ui/views/permission_bubble/permission_prompt_impl.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/vector2d.h"

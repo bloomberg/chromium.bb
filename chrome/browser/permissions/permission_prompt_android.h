@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_PERMISSIONS_PERMISSION_PROMPT_ANDROID_H_
 #define CHROME_BROWSER_PERMISSIONS_PERMISSION_PROMPT_ANDROID_H_
 
-#include "chrome/browser/ui/website_settings/permission_prompt.h"
+#include "chrome/browser/ui/permission_bubble/permission_prompt.h"
 
 class InfoBarService;
 

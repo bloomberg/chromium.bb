@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/website_settings/chooser_bubble_ui_view.h"
+#include "chrome/browser/ui/views/permission_bubble/chooser_bubble_ui_view.h"
 
 #include <stddef.h>
 
@@ -14,13 +14,13 @@
 #include "chrome/browser/chooser_controller/chooser_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/permission_bubble/chooser_bubble_delegate.h"
 #include "chrome/browser/ui/views/device_chooser_content_view.h"
 #include "chrome/browser/ui/views/exclusive_access_bubble_views.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
-#include "chrome/browser/ui/website_settings/chooser_bubble_delegate.h"
 #include "components/bubble/bubble_controller.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/link.h"

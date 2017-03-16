@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBSITE_SETTINGS_MOCK_PERMISSION_PROMPT_H_
-#define CHROME_BROWSER_UI_WEBSITE_SETTINGS_MOCK_PERMISSION_PROMPT_H_
+#ifndef CHROME_BROWSER_UI_PERMISSION_BUBBLE_MOCK_PERMISSION_PROMPT_H_
+#define CHROME_BROWSER_UI_PERMISSION_BUBBLE_MOCK_PERMISSION_PROMPT_H_
 
-#include "chrome/browser/ui/website_settings/permission_prompt.h"
+#include "chrome/browser/ui/permission_bubble/permission_prompt.h"
 
 class MockPermissionPromptFactory;
 class PermissionRequestManager;
@@ -40,4 +40,4 @@ class MockPermissionPrompt : public PermissionPrompt {
   bool is_visible_;
 };
 
-#endif  // CHROME_BROWSER_UI_WEBSITE_SETTINGS_MOCK_PERMISSION_PROMPT_H_
+#endif  // CHROME_BROWSER_UI_PERMISSION_BUBBLE_MOCK_PERMISSION_PROMPT_H_

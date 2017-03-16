@@ -8,7 +8,7 @@
 
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_bubble_manager.h"
-#include "chrome/browser/ui/website_settings/chooser_bubble_delegate.h"
+#include "chrome/browser/ui/permission_bubble/chooser_bubble_delegate.h"
 #include "chrome/browser/usb/usb_chooser_controller.h"
 #include "components/bubble/bubble_controller.h"
 #include "content/public/browser/browser_thread.h"

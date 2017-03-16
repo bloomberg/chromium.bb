@@ -11,7 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "chrome/browser/ui/website_settings/permission_prompt.h"
+#include "chrome/browser/ui/permission_bubble/permission_prompt.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 

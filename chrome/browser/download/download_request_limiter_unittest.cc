@@ -29,7 +29,7 @@
 #else
 #include "chrome/browser/download/download_permission_request.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
-#include "chrome/browser/ui/website_settings/mock_permission_prompt_factory.h"
+#include "chrome/browser/ui/permission_bubble/mock_permission_prompt_factory.h"
 #endif
 
 using content::WebContents;

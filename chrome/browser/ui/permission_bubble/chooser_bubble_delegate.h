@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBSITE_SETTINGS_CHOOSER_BUBBLE_DELEGATE_H_
-#define CHROME_BROWSER_UI_WEBSITE_SETTINGS_CHOOSER_BUBBLE_DELEGATE_H_
+#ifndef CHROME_BROWSER_UI_PERMISSION_BUBBLE_CHOOSER_BUBBLE_DELEGATE_H_
+#define CHROME_BROWSER_UI_PERMISSION_BUBBLE_CHOOSER_BUBBLE_DELEGATE_H_
 
 #include "base/macros.h"
 #include "components/bubble/bubble_delegate.h"
@@ -42,4 +42,4 @@ class ChooserBubbleDelegate : public BubbleDelegate {
   DISALLOW_COPY_AND_ASSIGN(ChooserBubbleDelegate);
 };
 
-#endif  // CHROME_BROWSER_UI_WEBSITE_SETTINGS_CHOOSER_BUBBLE_DELEGATE_H_
+#endif  // CHROME_BROWSER_UI_PERMISSION_BUBBLE_CHOOSER_BUBBLE_DELEGATE_H_

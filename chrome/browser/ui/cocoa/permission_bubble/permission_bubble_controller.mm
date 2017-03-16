@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/website_settings/permission_bubble_controller.h"
+#import "chrome/browser/ui/cocoa/permission_bubble/permission_bubble_controller.h"
 
 #include <algorithm>
 
@@ -25,12 +25,12 @@
 #include "chrome/browser/ui/cocoa/page_info/permission_selector_button.h"
 #include "chrome/browser/ui/cocoa/page_info/split_block_button.h"
 #include "chrome/browser/ui/cocoa/page_info/website_settings_utils_cocoa.h"
-#include "chrome/browser/ui/cocoa/website_settings/permission_bubble_cocoa.h"
+#include "chrome/browser/ui/cocoa/permission_bubble/permission_bubble_cocoa.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/page_info/permission_menu_model.h"
-#include "chrome/browser/ui/website_settings/permission_prompt.h"
+#include "chrome/browser/ui/permission_bubble/permission_prompt.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"

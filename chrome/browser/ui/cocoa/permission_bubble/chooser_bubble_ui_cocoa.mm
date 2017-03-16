@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "chrome/browser/ui/cocoa/website_settings/chooser_bubble_ui_cocoa.h"
+#import "chrome/browser/ui/cocoa/permission_bubble/chooser_bubble_ui_cocoa.h"
 
 #include <stddef.h>
 
@@ -22,7 +22,7 @@
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
-#include "chrome/browser/ui/website_settings/chooser_bubble_delegate.h"
+#include "chrome/browser/ui/permission_bubble/chooser_bubble_delegate.h"
 #include "components/bubble/bubble_controller.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"

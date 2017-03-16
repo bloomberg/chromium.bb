@@ -62,7 +62,7 @@
 #include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 #else
 #include "chrome/browser/permissions/permission_request_manager.h"
-#include "chrome/browser/ui/website_settings/mock_permission_prompt_factory.h"
+#include "chrome/browser/ui/permission_bubble/mock_permission_prompt_factory.h"
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

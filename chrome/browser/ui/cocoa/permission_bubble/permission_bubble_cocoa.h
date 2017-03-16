@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_COCOA_WEBSITE_SETTINGS_PERMISSION_BUBBLE_COCOA_H_
-#define CHROME_BROWSER_UI_COCOA_WEBSITE_SETTINGS_PERMISSION_BUBBLE_COCOA_H_
+#ifndef CHROME_BROWSER_UI_COCOA_PERMISSION_BUBBLE_PERMISSION_BUBBLE_COCOA_H_
+#define CHROME_BROWSER_UI_COCOA_PERMISSION_BUBBLE_PERMISSION_BUBBLE_COCOA_H_
 
 #import <Foundation/Foundation.h>
 
@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/cocoa/info_bubble_view.h"
-#include "chrome/browser/ui/website_settings/permission_prompt.h"
+#include "chrome/browser/ui/permission_bubble/permission_prompt.h"
 #include "content/public/browser/web_contents.h"
 
 class Browser;
@@ -56,4 +56,4 @@ class PermissionBubbleCocoa : public PermissionPrompt {
   DISALLOW_COPY_AND_ASSIGN(PermissionBubbleCocoa);
 };
 
-#endif  // CHROME_BROWSER_UI_COCOA_WEBSITE_SETTINGS_PERMISSION_BUBBLE_COCOA_H_
+#endif  // CHROME_BROWSER_UI_COCOA_PERMISSION_BUBBLE_PERMISSION_BUBBLE_COCOA_H_

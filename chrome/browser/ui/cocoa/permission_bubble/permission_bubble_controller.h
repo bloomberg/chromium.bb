@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_COCOA_WEBSITE_SETTINGS_PERMISSION_BUBBLE_CONTROLLER_H_
-#define CHROME_BROWSER_UI_COCOA_WEBSITE_SETTINGS_PERMISSION_BUBBLE_CONTROLLER_H_
+#ifndef CHROME_BROWSER_UI_COCOA_PERMISSION_BUBBLE_PERMISSION_BUBBLE_CONTROLLER_H_
+#define CHROME_BROWSER_UI_COCOA_PERMISSION_BUBBLE_PERMISSION_BUBBLE_CONTROLLER_H_
 
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/omnibox_decoration_bubble_controller.h"
-#include "chrome/browser/ui/website_settings/permission_prompt.h"
+#include "chrome/browser/ui/permission_bubble/permission_prompt.h"
 #include "ui/base/models/simple_menu_model.h"
 
 class Browser;
@@ -65,4 +65,4 @@ class PermissionRequest;
 
 @end
 
-#endif  // CHROME_BROWSER_UI_COCOA_WEBSITE_SETTINGS_PERMISSION_BUBBLE_CONTROLLER_H_
+#endif  // CHROME_BROWSER_UI_COCOA_PERMISSION_BUBBLE_PERMISSION_BUBBLE_CONTROLLER_H_

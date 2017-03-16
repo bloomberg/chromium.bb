@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_WEBSITE_SETTINGS_PERMISSION_PROMPT_IMPL_H_
-#define CHROME_BROWSER_UI_VIEWS_WEBSITE_SETTINGS_PERMISSION_PROMPT_IMPL_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_PERMISSION_BUBBLE_PERMISSION_PROMPT_IMPL_H_
+#define CHROME_BROWSER_UI_VIEWS_PERMISSION_BUBBLE_PERMISSION_PROMPT_IMPL_H_
 
 #include <memory>
 #include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "chrome/browser/ui/website_settings/permission_prompt.h"
+#include "chrome/browser/ui/permission_bubble/permission_prompt.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/views/bubble/bubble_border.h"
 
@@ -64,4 +64,4 @@ class PermissionPromptImpl : public PermissionPrompt {
   DISALLOW_COPY_AND_ASSIGN(PermissionPromptImpl);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_WEBSITE_SETTINGS_PERMISSION_PROMPT_IMPL_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_PERMISSION_BUBBLE_PERMISSION_PROMPT_IMPL_H_

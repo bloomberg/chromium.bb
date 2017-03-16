@@ -8,7 +8,7 @@
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/permissions/permissions_browsertest.h"
-#include "chrome/browser/ui/website_settings/mock_permission_prompt_factory.h"
+#include "chrome/browser/ui/permission_bubble/mock_permission_prompt_factory.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/variations/variations_switches.h"

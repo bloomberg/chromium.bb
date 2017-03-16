@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/website_settings/mock_permission_prompt_factory.h"
+#include "chrome/browser/ui/permission_bubble/mock_permission_prompt_factory.h"
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
-#include "chrome/browser/ui/website_settings/mock_permission_prompt.h"
+#include "chrome/browser/ui/permission_bubble/mock_permission_prompt.h"
 #include "content/public/browser/web_contents.h"
 
 MockPermissionPromptFactory::MockPermissionPromptFactory(
