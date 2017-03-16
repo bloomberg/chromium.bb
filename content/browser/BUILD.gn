@@ -254,6 +254,8 @@ source_set("browser") {
     "android/browser_startup_controller.h",
     "android/child_process_launcher_android.cc",
     "android/child_process_launcher_android.h",
+    "android/content_feature_list.cc",
+    "android/content_feature_list.h",
     "android/content_protocol_handler_impl.cc",
     "android/content_protocol_handler_impl.h",
     "android/content_startup_flags.cc",

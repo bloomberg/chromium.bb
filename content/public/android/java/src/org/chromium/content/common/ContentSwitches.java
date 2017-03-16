@@ -78,9 +78,6 @@ public abstract class ContentSwitches {
     public static final String USE_FAKE_DEVICE_FOR_MEDIA_STREAM =
             "use-fake-device-for-media-stream";
 
-    // Disable motion event batching through View.requestUnbufferedDispatch().
-    public static final String REQUEST_UNBUFFERED_DISPATCH = "request-unbuffered-dispatch";
-
     // Prevent instantiation.
     private ContentSwitches() {}
 

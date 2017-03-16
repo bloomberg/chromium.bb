@@ -85,8 +85,8 @@ const base::Feature* FindFeatureExposedToJava(const std::string& feature_name) {
     if (kFeaturesExposedToJava[i]->name == feature_name)
       return kFeaturesExposedToJava[i];
   }
-  NOTREACHED() << "Features queried via ChromeFeatureList must be present in "
-                  "|kFeaturesExposedToJava|.";
+  NOTREACHED() << "Queried feature cannot be found in ChromeFeatureList: "
+               << feature_name;
   return nullptr;
 }
 
