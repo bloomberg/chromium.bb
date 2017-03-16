@@ -52,6 +52,20 @@ InspectorTest.evaluateInPage = function(code, callback)
     InspectorTest.RuntimeAgent.evaluate(code, "console", false, mycallback);
 }
 
+InspectorTest.addScriptUISourceCode = function(url, content, isContentScript, worldId) {
+    content += '\n//# sourceURL=' + url;
+    if (isContentScript)
+        content = `testRunner.evaluateScriptInIsolatedWorld(${worldId}, \`${content}\`)`;
+    InspectorTest.evaluateInPagePromise(content);
+    return InspectorTest.waitForUISourceCode(url);
+}
+
+InspectorTest.addScriptForFrame = function(url, content, frame) {
+    content += '\n//# sourceURL=' + url;
+    var executionContext = InspectorTest.runtimeModel.executionContexts().find(context => context.frameId === frame.id);
+    InspectorTest.RuntimeAgent.evaluate(content, "console", false, false, executionContext.id, function() { });
+}
+
 InspectorTest.evaluateInPagePromise = function(code)
 {
     return new Promise(succ => InspectorTest.evaluateInPage(code, succ));
@@ -449,12 +463,6 @@ InspectorTest.waitForUISourceCodeRemoved = function(callback)
         Workspace.workspace.removeEventListener(Workspace.Workspace.Events.UISourceCodeRemoved, uiSourceCodeRemoved);
         callback(event.data);
     }
-}
-
-InspectorTest._mockTargetId = 1;
-InspectorTest.createMockTarget = function(name, capabilities, dontAttachToMain)
-{
-    return SDK.targetManager.createTarget('mock-target-' + InspectorTest._mockTargetId++, name, capabilities || SDK.Target.Capability.AllForTests, params => new SDK.StubConnection(params), dontAttachToMain ? null : InspectorTest.mainTarget);
 }
 
 InspectorTest.assertGreaterOrEqual = function(a, b, message)

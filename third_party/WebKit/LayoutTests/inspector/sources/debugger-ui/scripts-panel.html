@@ -2,6 +2,7 @@
 <head>
 <script src="../../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script src="../../../http/tests/inspector/page-mock.js"></script>
 <script>
 function test()
 {
@@ -18,80 +19,84 @@ function test()
         return navigatorView;
     }
 
-    function createContentProvider(url)
-    {
-        var contentProvider = Common.StaticContentProvider.fromString(url, Common.resourceTypes.Script, "");
-        contentProvider.requestContent = function()
-        {
-            InspectorTest.addResult("Source requested for " + url);
-            return Promise.resolve("");
-        };
-        return contentProvider;
+    InspectorTest.addSniffer(Workspace.UISourceCode.prototype, 'requestContent', onRequestContent, true);
+
+    function onRequestContent() {
+        InspectorTest.addResult("Source requested for " + this.url());
     }
+
+    Bindings.NetworkProject.forTarget(InspectorTest.mainTarget)._reset();
+    var page = new InspectorTest.PageMock('http://example.com');
+    InspectorTest.connectToPage('mock-page', page, true /* makeMainTarget */);
 
     function addNetworkFile(url)
     {
-        var networkProject = Bindings.NetworkProject.forTarget(InspectorTest.mainTarget);
-        return networkProject.addFile(createContentProvider(url), InspectorTest.mainFrame());
+        page.evalScript(url, '', false /* isContentScript */);
+        return InspectorTest.waitForUISourceCode(url);
+    }
+
+    function reload() {
+        page.reload();
+        return new Promise(fulfill => InspectorTest.addSniffer(SDK.ResourceTreeModel.prototype, '_frameNavigated', fulfill));
     }
 
     InspectorTest.runTestSuite([
-        function testInitialLoad(next)
+        async function testInitialLoad(next)
         {
-            Bindings.NetworkProject.forTarget(InspectorTest.mainTarget)._reset();
-            addNetworkFile("foobar.js");
+            await reload();
+            await addNetworkFile("foobar.js");
 
             var sourcesNavigatorView = createNavigatorView();
 
-            addNetworkFile("foo.js");
-            addNetworkFile("bar.js");
-            var uiSourceCode = addNetworkFile("baz.js");
+            await addNetworkFile("foo.js");
+            await addNetworkFile("bar.js");
+            var uiSourceCode = await addNetworkFile("baz.js");
             sourcesNavigatorView.revealUISourceCode(uiSourceCode);
 
             dumpNavigator(sourcesNavigatorView);
             next();
         },
 
-        function testReset(next)
+        async function testReset(next)
         {
-            Bindings.NetworkProject.forTarget(InspectorTest.mainTarget)._reset();
+            await reload();
             var sourcesNavigatorView = createNavigatorView();
 
-            var uiSourceCode = addNetworkFile("foo.js");
-            addNetworkFile("bar.js");
-            addNetworkFile("baz.js");
+            var uiSourceCode = await addNetworkFile("foo.js");
+            await addNetworkFile("bar.js");
+            await addNetworkFile("baz.js");
 
             dumpNavigator(sourcesNavigatorView);
             InspectorTest.addResult("Revealing in navigator.");
             sourcesNavigatorView.revealUISourceCode(uiSourceCode);
             dumpNavigator(sourcesNavigatorView);
 
-            Bindings.NetworkProject.forTarget(InspectorTest.mainTarget)._reset();
+            await reload();
             dumpNavigator(sourcesNavigatorView);
-            uiSourceCode = addNetworkFile("bar.js");
+            uiSourceCode = await addNetworkFile("bar.js");
             sourcesNavigatorView.revealUISourceCode(uiSourceCode);
             dumpNavigator(sourcesNavigatorView);
 
             next();
         },
 
-        function testDebuggerUISourceCodeAddedAndRemoved(next)
+        async function testDebuggerUISourceCodeAddedAndRemoved(next)
         {
-            Bindings.NetworkProject.forTarget(InspectorTest.mainTarget)._reset();
+            await reload();
             var sourcesNavigatorView = createNavigatorView();
 
-            var uiSourceCode = addNetworkFile("foo.js");
+            var uiSourceCode = await addNetworkFile("foo.js");
             InspectorTest.waitForUISourceCode().then(onUISourceCode);
             InspectorTest.evaluateInPage("function foo() {}");
 
-            function onUISourceCode(debuggerUISourceCode)
+            async function onUISourceCode(debuggerUISourceCode)
             {
                 sourcesNavigatorView.revealUISourceCode(uiSourceCode);
                 sourcesNavigatorView.revealUISourceCode(debuggerUISourceCode);
                 dumpNavigator(sourcesNavigatorView);
 
                 // Plug compiler source mapping.
-                addNetworkFile("source.js");
+                await addNetworkFile("source.js");
 
                 dumpNavigator(sourcesNavigatorView);
                 next();

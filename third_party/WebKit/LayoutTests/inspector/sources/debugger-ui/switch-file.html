@@ -1,18 +1,10 @@
 <html>
 <head>
 <script src="../../../http/tests/inspector/inspector-test.js"></script>
-<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script src="../../../http/tests/inspector/page-mock.js"></script>
 <script>
-function test()
+async function test()
 {
-    var uiSourceCodes = [];
-    function addUISourceCode(url)
-    {
-        var contentProvider = Common.StaticContentProvider.fromString(url, Common.resourceTypes.Script, "");
-        var uiSourceCode = Bindings.NetworkProject.forTarget(InspectorTest.mainTarget).addFile(contentProvider, InspectorTest.mainFrame(), false);
-        uiSourceCodes.push(uiSourceCode);
-    }
-
     var files = [
         "foo.css",
         "foo.js",
@@ -38,9 +30,16 @@ function test()
         "bar/foo.js.map",
         "bar/foo.ts",
         "bar/foo" ];
+    files = files.map(file => 'http://example.com/' + file);
 
-    for (var i = 0; i < files.length; ++i)
-        addUISourceCode("http://example.com/" + files[i]);
+    var page = new InspectorTest.PageMock('http://example.com');
+    InspectorTest.connectToPage('mock-page', page);
+
+    var uiSourceCodes = [];
+    for (var i = 0; i < files.length; ++i) {
+        page.evalScript(files[i], '', false /* isContentScript */);
+        uiSourceCodes.push(await InspectorTest.waitForUISourceCode(files[i]));
+    }
 
     InspectorTest.addResult("Dumping next file for each file:");
     for (var i = 0; i < uiSourceCodes.length; ++i) {

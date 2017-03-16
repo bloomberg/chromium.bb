@@ -203,9 +203,6 @@ top
   (index)
   ?a=b
   ?a=b
-  contentScript.js?a=1
-  contentScript.js?a=2
-  contentScript2.js?a=1
   foo?bar=100%&baz=a%20%2fb
   foo?bar=100&baz=a %2fb
   script.js
@@ -231,9 +228,6 @@ top
     foo?bar=100&baz=a %2fb
     white space.html
   localhost:8080
-    contentScript.js?a=1
-    contentScript.js?a=2
-    contentScript2.js?a=1
     script.js
     script.js?a=2
   childframe (post-message-listener.html)
@@ -260,9 +254,6 @@ top
     ?a=b
   localhost:8080
     LayoutTests/inspector/debugger/foo/bar
-      contentScript.js?a=1
-      contentScript.js?a=2
-      contentScript2.js?a=1
       script.js
       script.js?a=2
   childframe (post-message-listener.html)
@@ -291,9 +282,6 @@ example.com
   foo?bar=100&baz=a %2fb
   white space.html
 localhost:8080
-  contentScript.js?a=1
-  contentScript.js?a=2
-  contentScript2.js?a=1
   script.js
   script.js
   script.js?a=1
@@ -318,9 +306,6 @@ example.com
 localhost:8080
   LayoutTests/inspector/debugger/foo
     bar
-      contentScript.js?a=1
-      contentScript.js?a=2
-      contentScript2.js?a=1
       script.js
       script.js?a=1
       script.js?a=2
@@ -335,14 +320,38 @@ mock-target-100
         script.js
 Content Scripts:
 -------- Setting mode: [frame]
+top
+  contentScript.js?a=1
+  contentScript.js?a=2
+  contentScript2.js?a=1
 Content Scripts:
 -------- Setting mode: [frame/domain]
+top
+  localhost:8080
+    contentScript.js?a=1
+    contentScript.js?a=2
+    contentScript2.js?a=1
 Content Scripts:
 -------- Setting mode: [frame/domain/folder]
+top
+  localhost:8080
+    LayoutTests/inspector/debugger/foo/bar
+      contentScript.js?a=1
+      contentScript.js?a=2
+      contentScript2.js?a=1
 Content Scripts:
 -------- Setting mode: [domain]
+localhost:8080
+  contentScript.js?a=1
+  contentScript.js?a=2
+  contentScript2.js?a=1
 Content Scripts:
 -------- Setting mode: [domain/folder]
+localhost:8080
+  LayoutTests/inspector/debugger/foo/bar
+    contentScript.js?a=1
+    contentScript.js?a=2
+    contentScript2.js?a=1
 
 
 ================================================
@@ -353,9 +362,6 @@ top
   (index)
   ?a=b
   ?a=b
-  contentScript.js?a=1
-  contentScript.js?a=2
-  contentScript2.js?a=1
   foo?bar=100%&baz=a%20%2fb
   foo?bar=100&baz=a %2fb
   script.js
@@ -381,9 +387,6 @@ top
     foo?bar=100&baz=a %2fb
     white space.html
   localhost:8080
-    contentScript.js?a=1
-    contentScript.js?a=2
-    contentScript2.js?a=1
     script.js
     script.js?a=2
   childframe (post-message-listener.html)
@@ -410,9 +413,6 @@ top
     ?a=b
   localhost:8080
     LayoutTests/inspector/debugger/foo/bar
-      contentScript.js?a=1
-      contentScript.js?a=2
-      contentScript2.js?a=1
       script.js
       script.js?a=2
   childframe (post-message-listener.html)
@@ -441,9 +441,6 @@ example.com
   foo?bar=100&baz=a %2fb
   white space.html
 localhost:8080
-  contentScript.js?a=1
-  contentScript.js?a=2
-  contentScript2.js?a=1
   script.js
   script.js
   script.js?a=1
@@ -468,9 +465,6 @@ example.com
 localhost:8080
   LayoutTests/inspector/debugger/foo
     bar
-      contentScript.js?a=1
-      contentScript.js?a=2
-      contentScript2.js?a=1
       script.js
       script.js?a=1
       script.js?a=2
@@ -493,9 +487,6 @@ top
   (index)
   ?a=b
   ?a=b
-  contentScript.js?a=1
-  contentScript.js?a=2
-  contentScript2.js?a=1
   foo?bar=100%&baz=a%20%2fb
   foo?bar=100&baz=a %2fb
   script.js
@@ -522,9 +513,6 @@ top
     foo?bar=100&baz=a %2fb
     white space.html
   localhost:8080
-    contentScript.js?a=1
-    contentScript.js?a=2
-    contentScript2.js?a=1
     script.js
     script.js
     script.js?a=2
@@ -553,9 +541,6 @@ top
   localhost:8080
     LayoutTests/inspector
       debugger/foo/bar
-        contentScript.js?a=1
-        contentScript.js?a=2
-        contentScript2.js?a=1
         script.js
         script.js?a=2
       debugger2/foo/bar
@@ -586,9 +571,6 @@ example.com
   foo?bar=100&baz=a %2fb
   white space.html
 localhost:8080
-  contentScript.js?a=1
-  contentScript.js?a=2
-  contentScript2.js?a=1
   script.js
   script.js
   script.js
@@ -615,9 +597,6 @@ localhost:8080
   LayoutTests/inspector
     debugger/foo
       bar
-        contentScript.js?a=1
-        contentScript.js?a=2
-        contentScript2.js?a=1
         script.js
         script.js?a=1
         script.js?a=2
@@ -642,9 +621,6 @@ top
   (index)
   ?a=b
   ?a=b
-  contentScript.js?a=1
-  contentScript.js?a=2
-  contentScript2.js?a=1
   foo?bar=100%&baz=a%20%2fb
   foo?bar=100&baz=a %2fb
   script.js
@@ -672,9 +648,6 @@ top
     foo?bar=100&baz=a %2fb
     white space.html
   localhost:8080
-    contentScript.js?a=1
-    contentScript.js?a=2
-    contentScript2.js?a=1
     script.js
     script.js
     script.js?a=2
@@ -704,9 +677,6 @@ top
   localhost:8080
     LayoutTests/inspector
       debugger/foo/bar
-        contentScript.js?a=1
-        contentScript.js?a=2
-        contentScript2.js?a=1
         script.js
         script.js?a=2
       debugger2/foo/bar
@@ -738,9 +708,6 @@ example.com
   foo?bar=100&baz=a %2fb
   white space.html
 localhost:8080
-  contentScript.js?a=1
-  contentScript.js?a=2
-  contentScript2.js?a=1
   script.js
   script.js
   script.js
@@ -768,9 +735,6 @@ localhost:8080
   LayoutTests/inspector
     debugger/foo
       bar
-        contentScript.js?a=1
-        contentScript.js?a=2
-        contentScript2.js?a=1
         script.js
         script.js?a=1
         script.js?a=2
@@ -796,9 +760,6 @@ top
   (index)
   ?a=b
   ?a=b
-  contentScript.js?a=1
-  contentScript.js?a=2
-  contentScript2.js?a=1
   foo?bar=100%&baz=a%20%2fb
   foo?bar=100&baz=a %2fb
   script.js
@@ -828,9 +789,6 @@ top
     foo?bar=100&baz=a %2fb
     white space.html
   localhost:8080
-    contentScript.js?a=1
-    contentScript.js?a=2
-    contentScript2.js?a=1
     script.js
     script.js
     script.js
@@ -862,9 +820,6 @@ top
   localhost:8080
     LayoutTests/inspector
       debugger/foo/bar
-        contentScript.js?a=1
-        contentScript.js?a=2
-        contentScript2.js?a=1
         script.js
         script.js?a=2
       debugger2/foo
@@ -900,9 +855,6 @@ example.com
   foo?bar=100&baz=a %2fb
   white space.html
 localhost:8080
-  contentScript.js?a=1
-  contentScript.js?a=2
-  contentScript2.js?a=1
   script.js
   script.js
   script.js
@@ -932,9 +884,6 @@ localhost:8080
   LayoutTests/inspector
     debugger/foo
       bar
-        contentScript.js?a=1
-        contentScript.js?a=2
-        contentScript2.js?a=1
         script.js
         script.js?a=1
         script.js?a=2
@@ -963,9 +912,6 @@ top
   (index)
   ?a=b
   ?a=b
-  contentScript.js?a=1
-  contentScript.js?a=2
-  contentScript2.js?a=1
   foo.js
   foo.js
   foo.js
@@ -998,9 +944,6 @@ top
     foo?bar=100&baz=a %2fb
     white space.html
   localhost:8080
-    contentScript.js?a=1
-    contentScript.js?a=2
-    contentScript2.js?a=1
     foo.js
     foo.js
     foo.js
@@ -1035,9 +978,6 @@ top
   localhost:8080
     LayoutTests/inspector
       debugger/foo/bar
-        contentScript.js?a=1
-        contentScript.js?a=2
-        contentScript2.js?a=1
         script.js
         script.js?a=2
       debugger2/foo
@@ -1079,9 +1019,6 @@ example.com
   foo?bar=100&baz=a %2fb
   white space.html
 localhost:8080
-  contentScript.js?a=1
-  contentScript.js?a=2
-  contentScript2.js?a=1
   foo.js
   foo.js
   foo.js
@@ -1114,9 +1051,6 @@ localhost:8080
   LayoutTests/inspector
     debugger/foo
       bar
-        contentScript.js?a=1
-        contentScript.js?a=2
-        contentScript2.js?a=1
         script.js
         script.js?a=1
         script.js?a=2
@@ -1152,9 +1086,6 @@ top
   (index)
   ?a=b
   ?a=b
-  contentScript.js?a=1
-  contentScript.js?a=2
-  contentScript2.js?a=1
   foo.js
   foo.js
   foo.js
@@ -1187,9 +1118,6 @@ top
     foo?bar=100&baz=a %2fb
     white space.html
   localhost:8080
-    contentScript.js?a=1
-    contentScript.js?a=2
-    contentScript2.js?a=1
     foo.js
     foo.js
     foo.js
@@ -1224,9 +1152,6 @@ top
   localhost:8080
     LayoutTests/inspector
       debugger/foo/bar
-        contentScript.js?a=1
-        contentScript.js?a=2
-        contentScript2.js?a=1
         script.js
         script.js?a=2
       debugger2/foo
@@ -1268,9 +1193,6 @@ example.com
   foo?bar=100&baz=a %2fb
   white space.html
 localhost:8080
-  contentScript.js?a=1
-  contentScript.js?a=2
-  contentScript2.js?a=1
   foo.js
   foo.js
   foo.js
@@ -1303,9 +1225,6 @@ localhost:8080
   LayoutTests/inspector
     debugger/foo
       bar
-        contentScript.js?a=1
-        contentScript.js?a=2
-        contentScript2.js?a=1
         script.js
         script.js?a=1
         script.js?a=2
@@ -1333,14 +1252,38 @@ mock-target-100
         script.js
 Content Scripts:
 -------- Setting mode: [frame]
+top
+  contentScript.js?a=1
+  contentScript.js?a=2
+  contentScript2.js?a=1
 Content Scripts:
 -------- Setting mode: [frame/domain]
+top
+  localhost:8080
+    contentScript.js?a=1
+    contentScript.js?a=2
+    contentScript2.js?a=1
 Content Scripts:
 -------- Setting mode: [frame/domain/folder]
+top
+  localhost:8080
+    LayoutTests/inspector/debugger/foo/bar
+      contentScript.js?a=1
+      contentScript.js?a=2
+      contentScript2.js?a=1
 Content Scripts:
 -------- Setting mode: [domain]
+localhost:8080
+  contentScript.js?a=1
+  contentScript.js?a=2
+  contentScript2.js?a=1
 Content Scripts:
 -------- Setting mode: [domain/folder]
+localhost:8080
+  LayoutTests/inspector/debugger/foo/bar
+    contentScript.js?a=1
+    contentScript.js?a=2
+    contentScript2.js?a=1
 
 
 ================================================
@@ -1351,9 +1294,6 @@ top
   (index)
   ?a=b
   ?a=b
-  contentScript.js?a=1
-  contentScript.js?a=2
-  contentScript2.js?a=1
   foo.js
   foo.js
   foo.js
@@ -1383,9 +1323,6 @@ top
     foo?bar=100&baz=a %2fb
     white space.html
   localhost:8080
-    contentScript.js?a=1
-    contentScript.js?a=2
-    contentScript2.js?a=1
     foo.js
     foo.js
     foo.js
@@ -1416,9 +1353,6 @@ top
   localhost:8080
     LayoutTests/inspector
       debugger/foo/bar
-        contentScript.js?a=1
-        contentScript.js?a=2
-        contentScript2.js?a=1
         script.js
         script.js?a=2
       debugger2/foo
@@ -1453,9 +1387,6 @@ example.com
   foo?bar=100&baz=a %2fb
   white space.html
 localhost:8080
-  contentScript.js?a=1
-  contentScript.js?a=2
-  contentScript2.js?a=1
   foo.js
   foo.js
   foo.js
@@ -1484,9 +1415,6 @@ localhost:8080
   LayoutTests/inspector
     debugger/foo
       bar
-        contentScript.js?a=1
-        contentScript.js?a=2
-        contentScript2.js?a=1
         script.js
         script.js?a=1
         script.js?a=2
@@ -1507,12 +1435,36 @@ localhost:8080
       foo.js
 Content Scripts:
 -------- Setting mode: [frame]
+top
+  contentScript.js?a=1
+  contentScript.js?a=2
+  contentScript2.js?a=1
 Content Scripts:
 -------- Setting mode: [frame/domain]
+top
+  localhost:8080
+    contentScript.js?a=1
+    contentScript.js?a=2
+    contentScript2.js?a=1
 Content Scripts:
 -------- Setting mode: [frame/domain/folder]
+top
+  localhost:8080
+    LayoutTests/inspector/debugger/foo/bar
+      contentScript.js?a=1
+      contentScript.js?a=2
+      contentScript2.js?a=1
 Content Scripts:
 -------- Setting mode: [domain]
+localhost:8080
+  contentScript.js?a=1
+  contentScript.js?a=2
+  contentScript2.js?a=1
 Content Scripts:
 -------- Setting mode: [domain/folder]
+localhost:8080
+  LayoutTests/inspector/debugger/foo/bar
+    contentScript.js?a=1
+    contentScript.js?a=2
+    contentScript2.js?a=1
 

@@ -3,24 +3,16 @@
 <script src="../inspector-test.js"></script>
 
 <script>
-function test()
+async function test()
 {
-    function addUISourceCode(url, isContentScript)
-    {
-        var contentProvider = Common.StaticContentProvider.fromString(url, Common.resourceTypes.Script, "");
-        var networkProject = Bindings.NetworkProject.forTarget(InspectorTest.mainTarget);
-        var uiSourceCode = networkProject.addFile(contentProvider, InspectorTest.mainFrame(), isContentScript);
-        return uiSourceCode;
-    }
-
     var rootURL = "http://localhost:8080/LayoutTests/inspector/debugger/";
     var sourcesNavigatorView = new Sources.SourcesNavigatorView();
     sourcesNavigatorView.show(UI.inspectorView.element);
 
     InspectorTest.addResult("\n\n================================================");
     InspectorTest.addResult("Adding urls");
-    addUISourceCode(rootURL + "foo/bar/script.js", false);
-    var contentUISourceCode = addUISourceCode(rootURL + "foo/bar/contentScript2.js?a=1", true);
+    await InspectorTest.addScriptUISourceCode(rootURL + "foo/bar/script.js", '', false);
+    var contentUISourceCode = await InspectorTest.addScriptUISourceCode(rootURL + "foo/bar/contentScript2.js?a=1", '', true, 42);
     InspectorTest.dumpNavigatorView(sourcesNavigatorView);
 
     InspectorTest.addResult("\n\n================================================");

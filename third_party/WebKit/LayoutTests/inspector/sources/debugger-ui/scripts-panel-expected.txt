@@ -4,6 +4,8 @@ Tests that scripts panel UI elements work as intended.
 Running: testInitialLoad
 Navigator:
 top
+  example.com
+    (index)
   (no domain)
     bar.js
     baz.js
@@ -13,6 +15,8 @@ top
 Running: testReset
 Navigator:
 top
+  example.com
+    (index)
   (no domain)
     bar.js
     baz.js
@@ -20,23 +24,34 @@ top
 Revealing in navigator.
 Navigator:
 top
+  example.com
+    (index)
   (no domain)
     bar.js
     baz.js
     foo.js
 Navigator:
+top
+  example.com
+    (index)
 Navigator:
 top
+  example.com
+    (index)
   (no domain)
     bar.js
 
 Running: testDebuggerUISourceCodeAddedAndRemoved
 Navigator:
 top
+  example.com
+    (index)
   (no domain)
     foo.js
 Navigator:
 top
+  example.com
+    (index)
   (no domain)
     foo.js
     source.js

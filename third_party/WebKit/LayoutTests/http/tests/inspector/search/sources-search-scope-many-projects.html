@@ -45,7 +45,7 @@ function test()
         fs.reportCreated(fileSystemCreated);
     }
 
-    function fileSystemCreated()
+    async function fileSystemCreated()
     {
         UI.viewManager.showView("sources.search");
 
@@ -57,8 +57,8 @@ function test()
             }
         }
 
-        addNetworkUISourceCode("http://localhost/search.html", resources["search.html"]);
-        jsNetworkUISourceCode = addNetworkUISourceCode("http://localhost/search.js", resources["search.js"]);
+        await InspectorTest.addScriptUISourceCode("http://localhost/search.html", resources["search.html"]);
+        jsNetworkUISourceCode = await InspectorTest.addScriptUISourceCode("http://localhost/search.js", resources["search.js"]);
         InspectorTest.runTestSuite(testSuite);
     }
 
@@ -69,14 +69,6 @@ function test()
         return Runtime.loadResourcePromise(url).then(function(text) {
             resources[name] = text;
         });
-    }
-
-    function addNetworkUISourceCode(url, content)
-    {
-        var contentProvider = Common.StaticContentProvider.fromString(url, Common.resourceTypes.Script, content);
-        var networkProject = Bindings.NetworkProject.forTarget(SDK.targetManager.mainTarget());
-        var uiSourceCode = networkProject.addFile(contentProvider, InspectorTest.mainFrame(), false);
-        return uiSourceCode;
     }
 
     InspectorFrontendHost.searchInPath = function(requestId, path, query)

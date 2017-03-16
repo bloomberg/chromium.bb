@@ -230,8 +230,17 @@ InspectorTest.addUISourceCode = function(target, breakpointManager, url, doNotSe
     if (!doNotAddScript)
         InspectorTest.addScript(target, breakpointManager, url);
     InspectorTest.addResult("  Adding UISourceCode: " + url);
-    var contentProvider = Common.StaticContentProvider.fromString(url, Common.resourceTypes.Script, "");
-    var uiSourceCode = InspectorTest.testNetworkProject.addFile(contentProvider, null);
+
+    // Add resource to get UISourceCode.
+    var uiSourceCode = InspectorTest.testWorkspace.uiSourceCodeForURL(url);
+    if (uiSourceCode)
+        uiSourceCode.project().removeFile(url);
+    var resource = new SDK.Resource(target, null, url, url, '', '', Common.resourceTypes.Document, 'text/html', null, null);
+    InspectorTest.testNetworkProject._addResource(resource);
+    uiSourceCode = InspectorTest.testWorkspace.uiSourceCodeForURL(url);
+
+    //var contentProvider = Common.StaticContentProvider.fromString(url, Common.resourceTypes.Script, "");
+    //var uiSourceCode = InspectorTest.testNetworkProject.addFile(contentProvider, null);
     InspectorTest.uiSourceCodes[url] = uiSourceCode;
     if (!doNotSetSourceMapping) {
         breakpointManager._debuggerWorkspaceBinding.setSourceMapping(target.debuggerModel, uiSourceCode, breakpointManager.defaultMapping);

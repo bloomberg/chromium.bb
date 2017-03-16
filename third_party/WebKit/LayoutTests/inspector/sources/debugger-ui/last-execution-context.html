@@ -5,6 +5,12 @@
 
 function test()
 {
+    var mockTargetId = 1;
+    function createMockTarget(name, capabilities, dontAttachToMain)
+    {
+        return SDK.targetManager.createTarget('mock-target-' + mockTargetId++, name, capabilities, params => new SDK.StubConnection(params), dontAttachToMain ? null : InspectorTest.mainTarget);
+    }
+
     var context = new UI.Context();
     context.addFlavorChangeListener(SDK.ExecutionContext, executionContextChanged, this);
     context.addFlavorChangeListener(SDK.Target, targetChanged, this);
@@ -26,7 +32,7 @@ function test()
 
     InspectorTest.addResult("");
     InspectorTest.addResult("Adding page target");
-    var pageTarget = InspectorTest.createMockTarget("page-target", SDK.Target.Capability.AllForTests, true /* dontAttachToMain */);
+    var pageTarget = createMockTarget("page-target", SDK.Target.Capability.AllForTests, true /* dontAttachToMain */);
     SDK.ResourceTreeModel.fromTarget(pageTarget)._frameAttached('42', '');
     SDK.ResourceTreeModel.fromTarget(pageTarget)._frameNavigated({id: '42', parentId: '', loaderId: '', name: 'mock-frame', url: 'mock-url.com/frame.html', securityOrigin: 'mock-security-origin', mineType: 'mimeType'});
     pageTarget.runtimeModel._executionContextCreated({id: "cs1", auxData: { isDefault: false, frameId: "42" }, origin: "origin", name: "contentScript1"});
@@ -35,7 +41,7 @@ function test()
 
     InspectorTest.addResult("");
     InspectorTest.addResult("Adding sw target");
-    var swTarget = InspectorTest.createMockTarget("sw-target", SDK.Target.Capability.Network | SDK.Target.Capability.Worker);
+    var swTarget = createMockTarget("sw-target", SDK.Target.Capability.Network | SDK.Target.Capability.Worker);
     swTarget.runtimeModel._executionContextCreated({id: "sw1", auxData: { isDefault: true, frameId: "" }, origin: "origin", name: "swContext1Name"});
 
     InspectorTest.addResult("");

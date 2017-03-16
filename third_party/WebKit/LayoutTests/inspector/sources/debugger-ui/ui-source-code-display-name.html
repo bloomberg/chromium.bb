@@ -2,40 +2,20 @@
 <head>
 <script src="../../../http/tests/inspector/inspector-test.js"></script>
 <script>
-function test()
+async function test()
 {
-
-    function createContentProvider(url)
+    async function dumpUISourceCodeDisplayName(url)
     {
-        var contentProvider = Common.StaticContentProvider.fromString(url, Common.resourceTypes.Script, "");
-        contentProvider.requestContent = function()
-        {
-            InspectorTest.addResult("Source requested for " + url);
-            return Promise.resolve("");
-        };
-        return contentProvider;
-    }
-
-    var workspace = new Workspace.Workspace();
-    workspace.networkProject = new Bindings.NetworkProject(InspectorTest.mainTarget, workspace);
-
-    function addNetworkFile(url)
-    {
-        return workspace.networkProject.addFile(createContentProvider(url), InspectorTest.mainFrame());
-    }
-
-    function dumpUISourceCodeDisplayName(url)
-    {
-        var uiSourceCode = addNetworkFile(url);
+        var uiSourceCode = await InspectorTest.addScriptUISourceCode(url, '');
         InspectorTest.addResult("UISourceCode display name for url \"" + url + "\" is \"" + Sources.TabbedEditorContainer.prototype._titleForFile(uiSourceCode) + "\".");
     }
 
     const baseURL = "http://localhost:8080/folder/";
-    dumpUISourceCodeDisplayName(baseURL + "filename?parameter=value&nnn=1");
-    dumpUISourceCodeDisplayName(baseURL + "very-long-filename-123456?nn=1");
-    dumpUISourceCodeDisplayName(baseURL + "too-long-filename-1234567890?nn=1");
-    dumpUISourceCodeDisplayName(baseURL + "long-filename?parameter=value&nnn=1");
-    dumpUISourceCodeDisplayName(baseURL + "too-long-filename-1234567890?parameter=value&nnn=1");
+    await dumpUISourceCodeDisplayName(baseURL + "filename?parameter=value&nnn=1");
+    await dumpUISourceCodeDisplayName(baseURL + "very-long-filename-123456?nn=1");
+    await dumpUISourceCodeDisplayName(baseURL + "too-long-filename-1234567890?nn=1");
+    await dumpUISourceCodeDisplayName(baseURL + "long-filename?parameter=value&nnn=1");
+    await dumpUISourceCodeDisplayName(baseURL + "too-long-filename-1234567890?parameter=value&nnn=1");
     InspectorTest.completeTest();
 };
 </script>
