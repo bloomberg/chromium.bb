@@ -810,7 +810,10 @@ class EVENTS_EXPORT KeyEvent : public Event {
 
   // Create a keystroke event from a legacy KeyboardCode.
   // This should not be used in new code.
-  KeyEvent(EventType type, KeyboardCode key_code, int flags);
+  KeyEvent(EventType type,
+           KeyboardCode key_code,
+           int flags,
+           base::TimeTicks time_stamp = base::TimeTicks());
 
   // Create a fully defined keystroke event.
   KeyEvent(EventType type,
@@ -821,7 +824,10 @@ class EVENTS_EXPORT KeyEvent : public Event {
            base::TimeTicks time_stamp);
 
   // Create a character event.
-  KeyEvent(base::char16 character, KeyboardCode key_code, int flags);
+  KeyEvent(base::char16 character,
+           KeyboardCode key_code,
+           int flags,
+           base::TimeTicks time_stamp = base::TimeTicks());
 
   // Used for synthetic events with code of DOM KeyboardEvent (e.g. 'KeyA')
   // See also: ui/events/keycodes/dom/dom_values.txt

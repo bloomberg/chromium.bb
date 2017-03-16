@@ -1160,11 +1160,13 @@ KeyEvent::KeyEvent(const base::NativeEvent& native_event, int event_flags)
 
 KeyEvent::KeyEvent(EventType type,
                    KeyboardCode key_code,
-                   int flags)
-    : Event(type, EventTimeForNow(), flags),
+                   int flags,
+                   base::TimeTicks time_stamp)
+    : Event(type,
+            time_stamp == base::TimeTicks() ? EventTimeForNow() : time_stamp,
+            flags),
       key_code_(key_code),
-      code_(UsLayoutKeyboardCodeToDomCode(key_code)) {
-}
+      code_(UsLayoutKeyboardCodeToDomCode(key_code)) {}
 
 KeyEvent::KeyEvent(EventType type,
                    KeyboardCode key_code,
@@ -1186,13 +1188,17 @@ KeyEvent::KeyEvent(EventType type,
       code_(code),
       key_(key) {}
 
-KeyEvent::KeyEvent(base::char16 character, KeyboardCode key_code, int flags)
-    : Event(ET_KEY_PRESSED, EventTimeForNow(), flags),
+KeyEvent::KeyEvent(base::char16 character,
+                   KeyboardCode key_code,
+                   int flags,
+                   base::TimeTicks time_stamp)
+    : Event(ET_KEY_PRESSED,
+            time_stamp == base::TimeTicks() ? EventTimeForNow() : time_stamp,
+            flags),
       key_code_(key_code),
       code_(DomCode::NONE),
       is_char_(true),
-      key_(DomKey::FromCharacter(character)) {
-}
+      key_(DomKey::FromCharacter(character)) {}
 
 KeyEvent::KeyEvent(const KeyEvent& rhs)
     : Event(rhs),

@@ -250,14 +250,16 @@ bool StructTraits<ui::mojom::EventDataView, EventUniquePtr>::Read(
       if (key_data->is_char) {
         out->reset(new ui::KeyEvent(
             static_cast<base::char16>(key_data->character),
-            static_cast<ui::KeyboardCode>(key_data->key_code), event.flags()));
+            static_cast<ui::KeyboardCode>(key_data->key_code), event.flags(),
+            base::TimeTicks::FromInternalValue(event.time_stamp())));
 
       } else {
         out->reset(new ui::KeyEvent(
             event.action() == ui::mojom::EventType::KEY_PRESSED
                 ? ui::ET_KEY_PRESSED
                 : ui::ET_KEY_RELEASED,
-            static_cast<ui::KeyboardCode>(key_data->key_code), event.flags()));
+            static_cast<ui::KeyboardCode>(key_data->key_code), event.flags(),
+            base::TimeTicks::FromInternalValue(event.time_stamp())));
       }
       break;
     }

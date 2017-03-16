@@ -136,6 +136,9 @@ TEST_F(StructTraitsTest, KeyEvent) {
       {'\x12', VKEY_2, EF_CONTROL_DOWN},
       {'Z', VKEY_Z, EF_CAPS_LOCK_ON},
       {'z', VKEY_Z, EF_NONE},
+      {ET_KEY_PRESSED, VKEY_Z, EF_NONE,
+       base::TimeTicks::FromInternalValue(101)},
+      {'Z', VKEY_Z, EF_NONE, base::TimeTicks::FromInternalValue(102)},
   };
 
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
@@ -156,6 +159,7 @@ TEST_F(StructTraitsTest, KeyEvent) {
     EXPECT_EQ(kTestData[i].GetConflatedWindowsKeyCode(),
               output_key_event->GetConflatedWindowsKeyCode());
     EXPECT_EQ(kTestData[i].code(), output_key_event->code());
+    EXPECT_EQ(kTestData[i].time_stamp(), output_key_event->time_stamp());
   }
 }
 
