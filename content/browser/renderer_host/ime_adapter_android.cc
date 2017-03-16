@@ -46,7 +46,7 @@ NativeWebKeyboardEvent NativeWebKeyboardEventFromKeyEvent(
     const base::android::JavaRef<jobject>& java_key_event,
     int type,
     int modifiers,
-    long time_ms,
+    jlong time_ms,
     int key_code,
     int scan_code,
     bool is_system_key,
@@ -123,14 +123,14 @@ bool ImeAdapterAndroid::SendKeyEvent(
     const JavaParamRef<jobject>& original_key_event,
     int type,
     int modifiers,
-    long time_ms,
+    jlong time_ms,
     int key_code,
     int scan_code,
     bool is_system_key,
     int unicode_char) {
   NativeWebKeyboardEvent event = NativeWebKeyboardEventFromKeyEvent(
-          env, original_key_event, type, modifiers,
-          time_ms / 1000.0, key_code, scan_code, is_system_key, unicode_char);
+      env, original_key_event, type, modifiers, time_ms, key_code, scan_code,
+      is_system_key, unicode_char);
   rwhva_->SendKeyEvent(event);
   return true;
 }

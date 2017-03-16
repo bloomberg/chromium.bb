@@ -43,7 +43,7 @@ class CONTENT_EXPORT ImeAdapterAndroid {
       const base::android::JavaParamRef<jobject>& original_key_event,
       int type,
       int modifiers,
-      long event_time,
+      jlong time_ms,
       int key_code,
       int scan_code,
       bool is_system_key,
