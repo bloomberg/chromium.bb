@@ -268,15 +268,17 @@ static NSString* gSearchTerm;
 // Remove highlights from the page and disable the model.
 - (void)disableFindInPageWithCompletionHandler:
     (ProceduralBlock)completionHandler {
-  if (![self canFindInPage])
+  if (![self canFindInPage]) {
+    if (completionHandler)
+      completionHandler();
     return;
+  }
   // Cancel any queued calls to |recurringPumpWithCompletionHandler|.
   [NSObject cancelPreviousPerformRequestsWithTarget:self];
   __weak FindInPageController* weakSelf = self;
   ProceduralBlock handler = ^{
     FindInPageController* strongSelf = weakSelf;
     if (strongSelf) {
-      [strongSelf.findInPageModel setEnabled:NO];
       web::WebState* webState = [strongSelf webState];
       if (webState)
         DOMAlteringLock::FromWebState(webState)->Release(strongSelf);

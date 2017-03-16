@@ -43,6 +43,8 @@ source_set("unit_tests") {
     ":find_in_page",
     ":unit_tests_nonarc",
     "//base",
+    "//base/test:test_support",
+    "//ios/chrome/browser/web:test_support",
     "//ios/web",
     "//ios/web:test_support",
     "//testing/gtest",

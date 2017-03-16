@@ -295,20 +295,7 @@ bool IsURLAllowedInIncognito(const GURL& url) {
 // they are added to the tab model.
 NSString* const kNativeControllerTemporaryKey = @"NativeControllerTemporaryKey";
 
-// Helper function to return the FindInPageController for the given |tab|.  If
-// |tab| is nullptr or has no FindTabHelper, returns nil.
-FindInPageController* GetFindInPageController(Tab* tab) {
-  if (!tab) {
-    return nil;
-  }
-  FindTabHelper* helper = FindTabHelper::FromWebState(tab.webState);
-  if (!helper) {
-    return nil;
-  }
-  return helper->GetController();
-}
-
-}  // anonymous namespace
+}  // namespace
 
 @interface BrowserViewController ()<AppRatingPromptDelegate,
                                     ContextualSearchControllerDelegate,
@@ -1097,15 +1084,13 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 - (BOOL)canShowFindBar {
   // Make sure web controller can handle find in page.
   Tab* tab = [_model currentTab];
-  FindInPageController* controller = GetFindInPageController(tab);
-  if (![controller canFindInPage])
+  if (!tab) {
     return NO;
+  }
 
-  // Don't show twice.
-  if (controller.findInPageModel.enabled)
-    return NO;
-
-  return YES;
+  auto* helper = FindTabHelper::FromWebState(tab.webState);
+  return (helper && helper->CurrentPageSupportsFindInPage() &&
+          !helper->IsFindUIActive());
 }
 
 - (web::UserAgentType)userAgentType {
@@ -1476,9 +1461,6 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   DCHECK(tab && ([_model indexOfTab:tab] != NSNotFound));
   // Hide find bar when navigating to a new page.
   [self hideFindBarWithAnimation:NO];
-
-  FindInPageController* controller = GetFindInPageController(tab);
-  controller.findInPageModel.enabled = NO;
 
   if (tab == [_model currentTab]) {
     // TODO(pinkerton): Fill in here about hiding the forward button on
@@ -1932,8 +1914,8 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
     [[_toolbarController toolsPopupController]
         setIsTabLoading:_toolbarModelIOS->IsLoading()];
 
-  FindInPageController* controller = GetFindInPageController(tab);
-  if (controller.findInPageModel.enabled) {
+  auto* findHelper = FindTabHelper::FromWebState(tab.webState);
+  if (findHelper && findHelper->IsFindUIActive()) {
     [self showFindBarWithAnimation:NO
                         selectText:YES
                        shouldFocus:[_findBarController isFocused]];
@@ -3924,6 +3906,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 
   if (!_model || !_browserState)
     return;
+  Tab* currentTab = [_model currentTab];
 
   switch (command) {
     case IDC_BACK:
@@ -3944,23 +3927,21 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
       [self initFindBarForTab];
       break;
     case IDC_FIND_NEXT: {
-      FindInPageController* findInPageController =
-          GetFindInPageController([_model currentTab]);
+      DCHECK(currentTab);
       // TODO(crbug.com/603524): Reshow find bar if necessary.
-      [findInPageController findNextStringInPageWithCompletionHandler:^{
-        FindInPageModel* model = findInPageController.findInPageModel;
-        [_findBarController updateResultsCount:model];
-      }];
+      FindTabHelper::FromWebState(currentTab.webState)
+          ->ContinueFinding(FindTabHelper::FORWARD, ^(FindInPageModel* model) {
+            [_findBarController updateResultsCount:model];
+          });
       break;
     }
     case IDC_FIND_PREVIOUS: {
-      FindInPageController* findInPageController =
-          GetFindInPageController([_model currentTab]);
+      DCHECK(currentTab);
       // TODO(crbug.com/603524): Reshow find bar if necessary.
-      [findInPageController findPreviousStringInPageWithCompletionHandler:^{
-        FindInPageModel* model = findInPageController.findInPageModel;
-        [_findBarController updateResultsCount:model];
-      }];
+      FindTabHelper::FromWebState(currentTab.webState)
+          ->ContinueFinding(FindTabHelper::REVERSE, ^(FindInPageModel* model) {
+            [_findBarController updateResultsCount:model];
+          });
       break;
     }
     case IDC_FIND_CLOSE:
@@ -4172,11 +4153,14 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   Tab* currentTab = [_model currentTab];
   [currentTab dismissModals];
 
-  FindInPageController* findInPageController =
-      GetFindInPageController(currentTab);
-  [findInPageController disableFindInPageWithCompletionHandler:^{
-    [self updateFindBar:NO shouldFocus:NO];
-  }];
+  if (currentTab) {
+    auto* findHelper = FindTabHelper::FromWebState(currentTab.webState);
+    if (findHelper) {
+      findHelper->StopFinding(^{
+        [self updateFindBar:NO shouldFocus:NO];
+      });
+    }
+  }
 
   [_contextualSearchController movePanelOffscreen];
   [_paymentRequestManager cancelRequest];
@@ -4281,47 +4265,47 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
         [[FindBarControllerIOS alloc] initWithIncognito:_isOffTheRecord]);
 
   Tab* tab = [_model currentTab];
-  FindInPageController* controller = GetFindInPageController(tab);
-  DCHECK(!controller.findInPageModel.enabled);
-  controller.findInPageModel.enabled = YES;
+  DCHECK(tab);
+  auto* helper = FindTabHelper::FromWebState(tab.webState);
+  DCHECK(!helper->IsFindUIActive());
+  helper->SetFindUIActive(true);
   [self showFindBarWithAnimation:YES selectText:YES shouldFocus:YES];
 }
 
 - (void)searchFindInPage {
-  FindInPageController* findInPageController =
-      GetFindInPageController([_model currentTab]);
+  DCHECK([_model currentTab]);
+  auto* helper = FindTabHelper::FromWebState([_model currentTab].webState);
   base::WeakNSObject<BrowserViewController> weakSelf(self);
-  [findInPageController findStringInPage:[_findBarController searchTerm]
-                       completionHandler:^{
-                         FindInPageModel* model =
-                             findInPageController.findInPageModel;
+  helper->StartFinding([_findBarController searchTerm],
+                       ^(FindInPageModel* model) {
                          [_findBarController updateResultsCount:model];
-                       }];
+                       });
+
   if (!_isOffTheRecord)
-    [findInPageController saveSearchTerm];
+    helper->PersistSearchTerm();
 }
 
 - (void)closeFindInPage {
   base::WeakNSObject<BrowserViewController> weakSelf(self);
-  FindInPageController* findInPageController =
-      GetFindInPageController([_model currentTab]);
-  [findInPageController disableFindInPageWithCompletionHandler:^{
-    [weakSelf updateFindBar:NO shouldFocus:NO];
-  }];
+  Tab* currentTab = [_model currentTab];
+  if (currentTab) {
+    FindTabHelper::FromWebState(currentTab.webState)->StopFinding(^{
+      [weakSelf updateFindBar:NO shouldFocus:NO];
+    });
+  }
 }
 
 - (void)updateFindBar:(BOOL)initialUpdate shouldFocus:(BOOL)shouldFocus {
-  FindInPageController* findInPageController =
-      GetFindInPageController([_model currentTab]);
-  FindInPageModel* model = findInPageController.findInPageModel;
-  if (model.enabled) {
+  DCHECK([_model currentTab]);
+  auto* helper = FindTabHelper::FromWebState([_model currentTab].webState);
+  if (helper && helper->IsFindUIActive()) {
     if (initialUpdate && !_isOffTheRecord) {
-      [findInPageController restoreSearchTerm];
+      helper->RestoreSearchTerm();
     }
 
     [self setFramesForHeaders:[self headerViews]
                      atOffset:[self currentHeaderOffset]];
-    [_findBarController updateView:model
+    [_findBarController updateView:helper->GetFindResult()
                      initialUpdate:initialUpdate
                     focusTextfield:shouldFocus];
   } else {
