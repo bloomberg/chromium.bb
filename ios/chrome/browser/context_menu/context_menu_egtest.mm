@@ -189,9 +189,7 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
 // Tests "Open in New Tab" on context menu  on a link that requires scrolling
 // on the page to verify that context menu can be properly triggered in the
 // current screen view.
-// TODO(crbug.com/701104): This test is flaky because sometimes it doesn't
-// scroll down far enough for the link to be visible.
-- (void)FLAKY_testContextMenuOpenInNewTabFromTallPage {
+- (void)testContextMenuOpenInNewTabFromTallPage {
   // Set up test simple http server.
   std::map<GURL, std::string> responses;
   GURL initialURL =
@@ -211,10 +209,20 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
   chrome_test_util::AssertMainTabCount(1U);
 
   // Scroll down on the web view to make the link visible.
+  // grey_swipeFastInDirecton will quickly scroll towards the bottom, and then
+  // grey_scrollToContentEdge guarantees the content edge is reached. Two
+  // methods are used because the first one is much faster, but doesn't
+  // guarantee the link becomes visible.
+  // TODO(crbug.com/702272): Try to replace this with one EarlGrey method call.
   [[EarlGrey
       selectElementWithMatcher:WebViewScrollView(
                                    chrome_test_util::GetCurrentWebState())]
       performAction:grey_swipeFastInDirection(kGREYDirectionUp)];
+  [[EarlGrey
+      selectElementWithMatcher:WebViewScrollView(
+                                   chrome_test_util::GetCurrentWebState())]
+      performAction:grey_scrollToContentEdge(kGREYContentEdgeBottom)];
+
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewContainingText(
                                           kDestinationLinkID)]
       assertWithMatcher:grey_notNil()];
