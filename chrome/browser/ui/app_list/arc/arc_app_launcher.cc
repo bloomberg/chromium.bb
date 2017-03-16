@@ -7,16 +7,21 @@
 #include <memory>
 
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
+#include "ui/events/event_constants.h"
 
 ArcAppLauncher::ArcAppLauncher(content::BrowserContext* context,
                                const std::string& app_id,
-                               bool landscape_layout)
-    : context_(context), app_id_(app_id), landscape_layout_(landscape_layout) {
+                               bool landscape_layout,
+                               bool deferred_launch_allowed)
+    : context_(context),
+      app_id_(app_id),
+      landscape_layout_(landscape_layout),
+      deferred_launch_allowed_(deferred_launch_allowed) {
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(context_);
   DCHECK(prefs);
 
   std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(app_id_);
-  if (app_info && app_info->ready)
+  if (app_info && (app_info->ready || deferred_launch_allowed_))
     LaunchApp();
   else
     prefs->AddObserver(this);
@@ -34,12 +39,12 @@ ArcAppLauncher::~ArcAppLauncher() {
 void ArcAppLauncher::OnAppRegistered(
     const std::string& app_id,
     const ArcAppListPrefs::AppInfo& app_info) {
-  if (app_id == app_id_ && app_info.ready)
+  if (app_id == app_id_ && (app_info.ready || deferred_launch_allowed_))
     LaunchApp();
 }
 
 void ArcAppLauncher::OnAppReadyChanged(const std::string& app_id, bool ready) {
-  if (app_id == app_id_ && ready)
+  if (app_id == app_id_ && (ready || deferred_launch_allowed_))
     LaunchApp();
 }
 
@@ -50,7 +55,7 @@ void ArcAppLauncher::LaunchApp() {
   DCHECK(prefs && prefs->GetApp(app_id_));
   prefs->RemoveObserver(this);
 
-  if (!arc::LaunchApp(context_, app_id_, landscape_layout_))
+  if (!arc::LaunchApp(context_, app_id_, landscape_layout_, ui::EF_NONE))
     VLOG(2) << "Failed to launch app: " + app_id_ + ".";
 
   app_launched_ = true;

@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/ash/launcher/app_shortcut_launcher_item_controller.h"
 
+class ArcAppLauncher;
 class ChromeLauncherController;
 
 class ArcPlaystoreShortcutLauncherItemController
@@ -26,6 +27,8 @@ class ArcPlaystoreShortcutLauncherItemController
                     const ItemSelectedCallback& callback) override;
 
  private:
+  std::unique_ptr<ArcAppLauncher> playstore_launcher_;
+
   DISALLOW_COPY_AND_ASSIGN(ArcPlaystoreShortcutLauncherItemController);
 };
 

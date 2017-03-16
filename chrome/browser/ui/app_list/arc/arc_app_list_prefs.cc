@@ -854,7 +854,7 @@ void ArcAppListPrefs::AddAppAndShortcut(
   } else {
     AppInfo app_info(updated_name, package_name, activity, intent_uri,
                      icon_resource_id, base::Time(), GetInstallTime(app_id),
-                     sticky, notifications_enabled, true,
+                     sticky, notifications_enabled, app_ready,
                      launchable && arc::ShouldShowInLauncher(app_id), shortcut,
                      launchable, orientation_lock);
     for (auto& observer : observer_list_)

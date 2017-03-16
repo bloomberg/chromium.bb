@@ -6,11 +6,11 @@
 
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
-#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_launcher.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "ui/events/event_constants.h"
 
 ArcPlaystoreShortcutLauncherItemController::
     ArcPlaystoreShortcutLauncherItemController(
@@ -27,15 +27,8 @@ void ArcPlaystoreShortcutLauncherItemController::ItemSelected(
     int64_t display_id,
     ash::ShelfLaunchSource source,
     const ItemSelectedCallback& callback) {
-  Profile* profile = controller()->profile();
-  ArcAppListPrefs* arc_app_prefs = ArcAppListPrefs::Get(profile);
-  DCHECK(arc_app_prefs);
-
-  // Play Store should always be registered and arc::LaunchApp can handle all
-  // cases.
-  DCHECK(arc_app_prefs->IsRegistered(arc::kPlayStoreAppId));
-  arc::LaunchApp(profile, arc::kPlayStoreAppId, true);
-
+  playstore_launcher_ = base::MakeUnique<ArcAppLauncher>(
+      controller()->profile(), arc::kPlayStoreAppId, true, true);
   callback.Run(ash::SHELF_ACTION_NONE,
                GetAppMenuItems(event ? event->flags() : ui::EF_NONE));
 }

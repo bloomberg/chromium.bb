@@ -20,7 +20,8 @@ class ArcAppLauncher : public ArcAppListPrefs::Observer {
  public:
   ArcAppLauncher(content::BrowserContext* context,
                  const std::string& app_id,
-                 bool landscape_layout);
+                 bool landscape_layout,
+                 bool deferred_launch_allowed);
   ~ArcAppLauncher() override;
 
   bool app_launched() const { return app_launched_; }
@@ -38,7 +39,11 @@ class ArcAppLauncher : public ArcAppListPrefs::Observer {
   // ARC app id and requested layout.
   const std::string app_id_;
   const bool landscape_layout_;
-  // Flag idicating that ARC app was launched.
+  // If it is set to true that means app is allowed to launch in deferred mode
+  // once it is registered, regardless it is ready or not. Otherwise app is
+  // launched when it becomes ready.
+  const bool deferred_launch_allowed_;
+  // Flag indicating that ARC app was launched.
   bool app_launched_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ArcAppLauncher);

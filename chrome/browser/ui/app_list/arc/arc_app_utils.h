@@ -43,6 +43,8 @@ bool LaunchPlayStoreWithUrl(const std::string& url);
 
 // Launch an app with given layout and let the system decides how big and where
 // to place it.
+// TODO (khmel) replace bool for |landscape_layout| with enum class in order
+// to prevent using another LaunchApp with different signature mistakenly.
 bool LaunchApp(content::BrowserContext* context,
                const std::string& app_id,
                bool landscape_layout,
