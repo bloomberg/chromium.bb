@@ -436,6 +436,7 @@ android_library("content_javatests") {
     "javatests/src/org/chromium/content/browser/TracingControllerAndroidTest.java",
     "javatests/src/org/chromium/content/browser/VideoFullscreenOrientationLockTest.java",
     "javatests/src/org/chromium/content/browser/VSyncMonitorTest.java",
+    "javatests/src/org/chromium/content/browser/VSyncPausedTest.java",
     "javatests/src/org/chromium/content/browser/VibrationManagerImplTest.java",
     "javatests/src/org/chromium/content/browser/ViewportTest.java",
     "javatests/src/org/chromium/content/browser/WebContentsObserverAndroidTest.java",

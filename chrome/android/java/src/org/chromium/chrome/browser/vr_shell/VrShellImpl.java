@@ -502,6 +502,7 @@ public class VrShellImpl
 
     @Override
     public void setWebVrModeEnabled(boolean enabled) {
+        mContentVrWindowAndroid.setVSyncPaused(enabled);
         nativeSetWebVrMode(mNativeVrShell, enabled);
     }
 

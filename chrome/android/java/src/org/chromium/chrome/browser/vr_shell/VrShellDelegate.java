@@ -426,6 +426,8 @@ public class VrShellDelegate {
 
         addVrViews();
         mVrShell.initializeNative(mActivity.getActivityTab(), mRequestedWebVR);
+        mVrShell.setWebVrModeEnabled(mRequestedWebVR);
+
         // onResume needs to be called on GvrLayout after initialization to make sure DON flow work
         // properly.
         mVrShell.resume();

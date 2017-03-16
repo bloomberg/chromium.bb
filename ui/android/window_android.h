@@ -74,6 +74,9 @@ class UI_ANDROID_EXPORT WindowAndroid : public ViewAndroid {
                          const base::android::JavaParamRef<jobject>& obj);
   void OnActivityStarted(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& obj);
+  void SetVSyncPaused(JNIEnv* env,
+                      const base::android::JavaParamRef<jobject>& obj,
+                      bool paused);
 
   // Return whether the specified Android permission is granted.
   bool HasPermission(const std::string& permission);
