@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "extensions/browser/api/messaging/native_message_host.h"
 #include "remoting/host/it2me/it2me_host.h"
+#include "remoting/signaling/delegating_signal_strategy.h"
 
 #if !defined(OS_CHROMEOS)
 #include "remoting/host/native_messaging/log_message_handler.h"
@@ -28,7 +29,6 @@ class SingleThreadTaskRunner;
 namespace remoting {
 
 class ChromotingHostContext;
-class DelegatingSignalStrategy;
 class ElevatedNativeMessagingHost;
 class PolicyWatcher;
 
@@ -94,7 +94,7 @@ class It2MeNativeMessagingHost : public It2MeHost::Observer,
 #endif  // defined(OS_WIN)
 
   Client* client_ = nullptr;
-  DelegatingSignalStrategy* delegating_signal_strategy_ = nullptr;
+  DelegatingSignalStrategy::IqCallback incoming_message_callback_;
   std::unique_ptr<ChromotingHostContext> host_context_;
   std::unique_ptr<It2MeHostFactory> factory_;
   scoped_refptr<It2MeHost> it2me_host_;

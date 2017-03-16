@@ -296,11 +296,14 @@ void It2MeNativeMessagingHost::ProcessConnect(
       return;
     }
 
-    delegating_signal_strategy_ = new DelegatingSignalStrategy(
-        local_jid, host_context_->network_task_runner(),
-        base::Bind(&It2MeNativeMessagingHost::SendOutgoingIq,
-                   weak_factory_.GetWeakPtr()));
-    signal_strategy.reset(delegating_signal_strategy_);
+    auto delegating_signal_strategy =
+        base::MakeUnique<DelegatingSignalStrategy>(
+            local_jid, host_context_->network_task_runner(),
+            base::Bind(&It2MeNativeMessagingHost::SendOutgoingIq,
+                       weak_factory_.GetWeakPtr()));
+    incoming_message_callback_ =
+        delegating_signal_strategy->GetIncomingMessageCallback();
+    signal_strategy = std::move(delegating_signal_strategy);
   }
 
   std::string directory_bot_jid = service_urls->directory_bot_jid();
@@ -357,8 +360,7 @@ void It2MeNativeMessagingHost::ProcessIncomingIq(
     return;
   }
 
-  if (delegating_signal_strategy_)
-    delegating_signal_strategy_->OnIncomingMessage(iq);
+  incoming_message_callback_.Run(iq);
   SendMessageToClient(std::move(response));
 };
 

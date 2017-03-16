@@ -732,7 +732,7 @@ void ChromotingInstance::HandleOnIncomingIq(const base::DictionaryValue& data) {
   // Just ignore the message if it's received before Connect() is called. It's
   // likely to be a leftover from a previous session, so it's safe to ignore it.
   if (signal_strategy_)
-    signal_strategy_->OnIncomingMessage(iq);
+    signal_strategy_->GetIncomingMessageCallback().Run(iq);
 }
 
 void ChromotingInstance::HandleReleaseAllKeys(

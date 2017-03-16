@@ -16,23 +16,41 @@ namespace remoting {
 DelegatingSignalStrategy::DelegatingSignalStrategy(
     std::string local_jid,
     scoped_refptr<base::SingleThreadTaskRunner> client_task_runner,
-    const SendIqCallback& send_iq_callback)
+    const IqCallback& send_iq_callback)
     : local_jid_(local_jid),
       delegate_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       client_task_runner_(client_task_runner),
       send_iq_callback_(send_iq_callback),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  incoming_iq_callback_ =
+      base::BindRepeating(&OnIncomingMessageFromDelegate,
+                          weak_factory_.GetWeakPtr(), client_task_runner_);
+}
 
 DelegatingSignalStrategy::~DelegatingSignalStrategy() {}
 
-void DelegatingSignalStrategy::OnIncomingMessage(const std::string& message) {
-  if (!client_task_runner_->BelongsToCurrentThread()) {
-    client_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&DelegatingSignalStrategy::OnIncomingMessage,
-                              weak_factory_.GetWeakPtr(), message));
+DelegatingSignalStrategy::IqCallback
+DelegatingSignalStrategy::GetIncomingMessageCallback() {
+  return incoming_iq_callback_;
+}
+
+// static
+void DelegatingSignalStrategy::OnIncomingMessageFromDelegate(
+    base::WeakPtr<DelegatingSignalStrategy> weak_ptr,
+    scoped_refptr<base::SingleThreadTaskRunner> client_task_runner,
+    const std::string& message) {
+  if (client_task_runner->BelongsToCurrentThread()) {
+    weak_ptr->OnIncomingMessage(message);
     return;
   }
 
+  client_task_runner->PostTask(
+      FROM_HERE, base::Bind(&DelegatingSignalStrategy::OnIncomingMessage,
+                            weak_ptr, message));
+}
+
+void DelegatingSignalStrategy::OnIncomingMessage(const std::string& message) {
+  DCHECK(client_task_runner_->BelongsToCurrentThread());
   std::unique_ptr<buzz::XmlElement> stanza(buzz::XmlElement::ForStr(message));
   if (!stanza.get()) {
     LOG(WARNING) << "Malformed XMPP stanza received: " << message;

@@ -21,25 +21,26 @@ namespace remoting {
 //
 // Notes on thread safety:
 // 1. This object can be created on any thread.
-// 2. OnIncomingMessage() must be called on the same thread on which this object
-//    is created.
-// 3. |send_iq_callback| will always be called on the thread that it is created.
+// 2. |send_iq_callback| will always be called on the thread that it is created.
 //    Note that |send_iq_callback| may be called after this object is destroyed.
-// 4. The caller should invoke all methods on the SignalStrategy interface on
+// 3. The caller should invoke all methods on the SignalStrategy interface on
 //    the |client_task_runner|.
-// 5. All listeners will be called on |client_task_runner| as well.
-// 6. The destructor should always be called on the |client_task_runner|.
+// 4. All listeners will be called on |client_task_runner| as well.
+// 5. The destructor should always be called on the |client_task_runner|.
+// 6. As a result of (5), use MakeIncomingMessageCallback() to obtain a callback
+//    when passing incoming signaling messages from the delegate.  The callback
+//    can then be invoked at any thread.
 class DelegatingSignalStrategy : public SignalStrategy {
  public:
-  typedef base::Callback<void(const std::string&)> SendIqCallback;
+  typedef base::RepeatingCallback<void(const std::string&)> IqCallback;
 
   DelegatingSignalStrategy(
       std::string local_jid,
       scoped_refptr<base::SingleThreadTaskRunner> client_task_runner,
-      const SendIqCallback& send_iq_callback);
+      const IqCallback& send_iq_callback);
   ~DelegatingSignalStrategy() override;
 
-  void OnIncomingMessage(const std::string& message);
+  IqCallback GetIncomingMessageCallback();
 
   // SignalStrategy interface.
   void Connect() override;
@@ -53,11 +54,19 @@ class DelegatingSignalStrategy : public SignalStrategy {
   std::string GetNextId() override;
 
  private:
+  static void OnIncomingMessageFromDelegate(
+      base::WeakPtr<DelegatingSignalStrategy> weak_ptr,
+      scoped_refptr<base::SingleThreadTaskRunner> client_task_runner,
+      const std::string& message);
+
+  void OnIncomingMessage(const std::string& message);
+
   std::string local_jid_;
   scoped_refptr<base::SingleThreadTaskRunner> delegate_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> client_task_runner_;
 
-  SendIqCallback send_iq_callback_;
+  IqCallback incoming_iq_callback_;
+  IqCallback send_iq_callback_;
   base::ObserverList<Listener> listeners_;
 
   base::WeakPtrFactory<DelegatingSignalStrategy> weak_factory_;
