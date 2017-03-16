@@ -26,8 +26,10 @@ class SimpleWatcher::Context : public base::RefCountedThreadSafe<Context> {
       WatcherHandle watcher_handle,
       Handle handle,
       MojoHandleSignals signals,
+      int watch_id,
       MojoResult* watch_result) {
-    scoped_refptr<Context> context = new Context(watcher, task_runner);
+    scoped_refptr<Context> context =
+        new Context(watcher, task_runner, watch_id);
 
     // If MojoWatch succeeds, it assumes ownership of a reference to |context|.
     // In that case, this reference is balanced in CallNotify() when |result| is
@@ -69,8 +71,11 @@ class SimpleWatcher::Context : public base::RefCountedThreadSafe<Context> {
   friend class base::RefCountedThreadSafe<Context>;
 
   Context(base::WeakPtr<SimpleWatcher> weak_watcher,
-          scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-      : weak_watcher_(weak_watcher), task_runner_(task_runner) {}
+          scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+          int watch_id)
+      : weak_watcher_(weak_watcher),
+        task_runner_(task_runner),
+        watch_id_(watch_id) {}
   ~Context() {}
 
   void Notify(MojoResult result,
@@ -95,16 +100,17 @@ class SimpleWatcher::Context : public base::RefCountedThreadSafe<Context> {
       // System notifications will trigger from the task runner passed to
       // mojo::edk::InitIPCSupport(). In Chrome this happens to always be the
       // default task runner for the IO thread.
-      weak_watcher_->OnHandleReady(make_scoped_refptr(this), result);
+      weak_watcher_->OnHandleReady(watch_id_, result);
     } else {
       task_runner_->PostTask(
           FROM_HERE, base::Bind(&SimpleWatcher::OnHandleReady, weak_watcher_,
-                                make_scoped_refptr(this), result));
+                                watch_id_, result));
     }
   }
 
   const base::WeakPtr<SimpleWatcher> weak_watcher_;
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  const int watch_id_;
 
   base::Lock lock_;
   bool enable_cancellation_notifications_ = true;
@@ -145,11 +151,12 @@ MojoResult SimpleWatcher::Watch(Handle handle,
 
   callback_ = callback;
   handle_ = handle;
+  watch_id_ += 1;
 
   MojoResult watch_result = MOJO_RESULT_UNKNOWN;
-  context_ =
-      Context::Create(weak_factory_.GetWeakPtr(), task_runner_,
-                      watcher_handle_.get(), handle_, signals, &watch_result);
+  context_ = Context::Create(weak_factory_.GetWeakPtr(), task_runner_,
+                             watcher_handle_.get(), handle_, signals, watch_id_,
+                             &watch_result);
   if (!context_) {
     handle_.set_value(kInvalidHandleValue);
     callback_.Reset();
@@ -227,16 +234,15 @@ void SimpleWatcher::ArmOrNotify() {
   DCHECK_EQ(MOJO_RESULT_FAILED_PRECONDITION, rv);
   task_runner_->PostTask(FROM_HERE, base::Bind(&SimpleWatcher::OnHandleReady,
                                                weak_factory_.GetWeakPtr(),
-                                               context_, ready_result));
+                                               watch_id_, ready_result));
 }
 
-void SimpleWatcher::OnHandleReady(scoped_refptr<const Context> context,
-                                  MojoResult result) {
+void SimpleWatcher::OnHandleReady(int watch_id, MojoResult result) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // This notification may be for a previously watched context, in which case
   // we just ignore it.
-  if (context != context_)
+  if (watch_id != watch_id_)
     return;
 
   ReadyCallback callback = callback_;

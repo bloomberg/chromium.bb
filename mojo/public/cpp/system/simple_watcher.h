@@ -164,7 +164,7 @@ class MOJO_CPP_SYSTEM_EXPORT SimpleWatcher {
  private:
   class Context;
 
-  void OnHandleReady(scoped_refptr<const Context> context, MojoResult result);
+  void OnHandleReady(int watch_id, MojoResult result);
 
   base::ThreadChecker thread_checker_;
 
@@ -189,6 +189,10 @@ class MOJO_CPP_SYSTEM_EXPORT SimpleWatcher {
 
   // The handle currently under watch. Not owned.
   Handle handle_;
+
+  // A simple counter to disambiguate notifications from multiple watch contexts
+  // in the event that this SimpleWatcher cancels and watches multiple times.
+  int watch_id_ = 0;
 
   // The callback to call when the handle is signaled.
   ReadyCallback callback_;
