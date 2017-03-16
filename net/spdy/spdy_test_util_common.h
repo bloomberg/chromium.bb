@@ -258,6 +258,13 @@ base::WeakPtr<SpdySession> CreateSecureSpdySession(
     const SpdySessionKey& key,
     const NetLogWithSource& net_log);
 
+// Like CreateSecureSpdySession(), but does not fail if there is already an IP
+// pooled session for |key|.
+base::WeakPtr<SpdySession> CreateSecureSpdySessionWithIpBasedPoolingDisabled(
+    HttpNetworkSession* http_session,
+    const SpdySessionKey& key,
+    const NetLogWithSource& net_log);
+
 // Creates an insecure SPDY session for the given key and puts it in
 // |pool|. The returned session will neither receive nor send any
 // data. A SPDY session for |key| must not already exist.

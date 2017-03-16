@@ -532,6 +532,9 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // Adds |alias| to set of aliases associated with this session.
   void AddPooledAlias(const SpdySessionKey& alias_key);
 
+  // Removes |alias| from set of aliases associated with this session.
+  void RemovePooledAlias(const SpdySessionKey& alias_key);
+
   // Returns the set of aliases associated with this session.
   const std::set<SpdySessionKey>& pooled_aliases() const {
     return pooled_aliases_;

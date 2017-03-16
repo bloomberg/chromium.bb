@@ -3428,8 +3428,9 @@ TEST_F(SpdySessionTest, CloseOneIdleConnectionWithAlias) {
                                        NetLogWithSource());
   // Get a session for |key2|, which should return the session created earlier.
   base::WeakPtr<SpdySession> session2 =
-      spdy_session_pool_->FindAvailableSession(key2, GURL(),
-                                               NetLogWithSource());
+      spdy_session_pool_->FindAvailableSession(
+          key2, GURL(),
+          /* enable_ip_based_pooling = */ true, NetLogWithSource());
   ASSERT_EQ(session1.get(), session2.get());
   EXPECT_FALSE(pool->IsStalled());
 

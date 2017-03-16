@@ -1332,6 +1332,10 @@ void SpdySession::AddPooledAlias(const SpdySessionKey& alias_key) {
   pooled_aliases_.insert(alias_key);
 }
 
+void SpdySession::RemovePooledAlias(const SpdySessionKey& alias_key) {
+  pooled_aliases_.erase(alias_key);
+}
+
 bool SpdySession::HasAcceptableTransportSecurity() const {
   // If we're not even using TLS, we have no standards to meet.
   if (!is_secure_) {
