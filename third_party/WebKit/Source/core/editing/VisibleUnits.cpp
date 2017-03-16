@@ -1831,70 +1831,71 @@ PositionTemplate<Strategy> startOfParagraphAlgorithm(
   PositionAnchorType candidateType = position.anchorType();
   int candidateOffset = position.computeEditingOffset();
 
-  Node* prevousNodeIterator = startNode;
-  while (prevousNodeIterator) {
+  Node* previousNodeIterator = startNode;
+  while (previousNodeIterator) {
     if (boundaryCrossingRule == CannotCrossEditingBoundary &&
-        !nodeIsUserSelectAll(prevousNodeIterator) &&
-        hasEditableStyle(*prevousNodeIterator) != startNodeIsEditable)
+        !nodeIsUserSelectAll(previousNodeIterator) &&
+        hasEditableStyle(*previousNodeIterator) != startNodeIsEditable)
       break;
     if (boundaryCrossingRule == CanSkipOverEditingBoundary) {
-      while (prevousNodeIterator &&
-             hasEditableStyle(*prevousNodeIterator) != startNodeIsEditable)
-        prevousNodeIterator =
-            Strategy::previousPostOrder(*prevousNodeIterator, startBlock);
-      if (!prevousNodeIterator ||
-          !prevousNodeIterator->isDescendantOf(highestRoot))
+      while (previousNodeIterator &&
+             hasEditableStyle(*previousNodeIterator) != startNodeIsEditable) {
+        previousNodeIterator =
+            Strategy::previousPostOrder(*previousNodeIterator, startBlock);
+      }
+      if (!previousNodeIterator ||
+          !previousNodeIterator->isDescendantOf(highestRoot))
         break;
     }
 
     const LayoutItem layoutItem =
-        LayoutItem(prevousNodeIterator->layoutObject());
+        LayoutItem(previousNodeIterator->layoutObject());
     if (layoutItem.isNull()) {
-      prevousNodeIterator =
-          Strategy::previousPostOrder(*prevousNodeIterator, startBlock);
+      previousNodeIterator =
+          Strategy::previousPostOrder(*previousNodeIterator, startBlock);
       continue;
     }
     const ComputedStyle& style = layoutItem.styleRef();
     if (style.visibility() != EVisibility::kVisible) {
-      prevousNodeIterator =
-          Strategy::previousPostOrder(*prevousNodeIterator, startBlock);
+      previousNodeIterator =
+          Strategy::previousPostOrder(*previousNodeIterator, startBlock);
       continue;
     }
 
-    if (layoutItem.isBR() || isEnclosingBlock(prevousNodeIterator))
+    if (layoutItem.isBR() || isEnclosingBlock(previousNodeIterator))
       break;
 
     if (layoutItem.isText() &&
-        toLayoutText(prevousNodeIterator->layoutObject())
+        toLayoutText(previousNodeIterator->layoutObject())
             ->resolvedTextLength()) {
-      SECURITY_DCHECK(prevousNodeIterator->isTextNode());
+      SECURITY_DCHECK(previousNodeIterator->isTextNode());
       if (style.preserveNewline()) {
-        LayoutText* text = toLayoutText(prevousNodeIterator->layoutObject());
+        LayoutText* text = toLayoutText(previousNodeIterator->layoutObject());
         int index = text->textLength();
-        if (prevousNodeIterator == startNode && candidateOffset < index)
+        if (previousNodeIterator == startNode && candidateOffset < index)
           index = max(0, candidateOffset);
         while (--index >= 0) {
           if ((*text)[index] == '\n')
-            return PositionTemplate<Strategy>(toText(prevousNodeIterator),
+            return PositionTemplate<Strategy>(toText(previousNodeIterator),
                                               index + 1);
         }
       }
-      candidateNode = prevousNodeIterator;
+      candidateNode = previousNodeIterator;
       candidateType = PositionAnchorType::OffsetInAnchor;
       candidateOffset = 0;
-      prevousNodeIterator =
-          Strategy::previousPostOrder(*prevousNodeIterator, startBlock);
-    } else if (editingIgnoresContent(*prevousNodeIterator) ||
-               isDisplayInsideTable(prevousNodeIterator)) {
-      candidateNode = prevousNodeIterator;
+      previousNodeIterator =
+          Strategy::previousPostOrder(*previousNodeIterator, startBlock);
+    } else if (editingIgnoresContent(*previousNodeIterator) ||
+               isDisplayInsideTable(previousNodeIterator)) {
+      candidateNode = previousNodeIterator;
       candidateType = PositionAnchorType::BeforeAnchor;
-      prevousNodeIterator =
-          prevousNodeIterator->previousSibling()
-              ? prevousNodeIterator->previousSibling()
-              : Strategy::previousPostOrder(*prevousNodeIterator, startBlock);
+      previousNodeIterator =
+          previousNodeIterator->previousSibling()
+              ? previousNodeIterator->previousSibling()
+              : Strategy::previousPostOrder(*previousNodeIterator, startBlock);
     } else {
-      prevousNodeIterator =
-          Strategy::previousPostOrder(*prevousNodeIterator, startBlock);
+      previousNodeIterator =
+          Strategy::previousPostOrder(*previousNodeIterator, startBlock);
     }
   }
 
@@ -1948,63 +1949,63 @@ static PositionTemplate<Strategy> endOfParagraphAlgorithm(
   PositionAnchorType candidateType = position.anchorType();
   int candidateOffset = position.computeEditingOffset();
 
-  Node* nextNodeItreator = startNode;
-  while (nextNodeItreator) {
+  Node* nextNodeIterator = startNode;
+  while (nextNodeIterator) {
     if (boundaryCrossingRule == CannotCrossEditingBoundary &&
-        !nodeIsUserSelectAll(nextNodeItreator) &&
-        hasEditableStyle(*nextNodeItreator) != startNodeIsEditable)
+        !nodeIsUserSelectAll(nextNodeIterator) &&
+        hasEditableStyle(*nextNodeIterator) != startNodeIsEditable)
       break;
     if (boundaryCrossingRule == CanSkipOverEditingBoundary) {
-      while (nextNodeItreator &&
-             hasEditableStyle(*nextNodeItreator) != startNodeIsEditable)
-        nextNodeItreator = Strategy::next(*nextNodeItreator, startBlock);
-      if (!nextNodeItreator || !nextNodeItreator->isDescendantOf(highestRoot))
+      while (nextNodeIterator &&
+             hasEditableStyle(*nextNodeIterator) != startNodeIsEditable)
+        nextNodeIterator = Strategy::next(*nextNodeIterator, startBlock);
+      if (!nextNodeIterator || !nextNodeIterator->isDescendantOf(highestRoot))
         break;
     }
 
-    LayoutObject* const layoutObject = nextNodeItreator->layoutObject();
+    LayoutObject* const layoutObject = nextNodeIterator->layoutObject();
     if (!layoutObject) {
-      nextNodeItreator = Strategy::next(*nextNodeItreator, startBlock);
+      nextNodeIterator = Strategy::next(*nextNodeIterator, startBlock);
       continue;
     }
     const ComputedStyle& style = layoutObject->styleRef();
     if (style.visibility() != EVisibility::kVisible) {
-      nextNodeItreator = Strategy::next(*nextNodeItreator, startBlock);
+      nextNodeIterator = Strategy::next(*nextNodeIterator, startBlock);
       continue;
     }
 
-    if (layoutObject->isBR() || isEnclosingBlock(nextNodeItreator))
+    if (layoutObject->isBR() || isEnclosingBlock(nextNodeIterator))
       break;
 
     // FIXME: We avoid returning a position where the layoutObject can't accept
     // the caret.
     if (layoutObject->isText() &&
         toLayoutText(layoutObject)->resolvedTextLength()) {
-      SECURITY_DCHECK(nextNodeItreator->isTextNode());
+      SECURITY_DCHECK(nextNodeIterator->isTextNode());
       LayoutText* const text = toLayoutText(layoutObject);
       if (style.preserveNewline()) {
         const int length = toLayoutText(layoutObject)->textLength();
-        for (int i = (nextNodeItreator == startNode ? candidateOffset : 0);
+        for (int i = (nextNodeIterator == startNode ? candidateOffset : 0);
              i < length; ++i) {
           if ((*text)[i] == '\n')
-            return PositionTemplate<Strategy>(toText(nextNodeItreator),
+            return PositionTemplate<Strategy>(toText(nextNodeIterator),
                                               i + text->textStartOffset());
         }
       }
 
-      candidateNode = nextNodeItreator;
+      candidateNode = nextNodeIterator;
       candidateType = PositionAnchorType::OffsetInAnchor;
       candidateOffset =
           layoutObject->caretMaxOffset() + text->textStartOffset();
-      nextNodeItreator = Strategy::next(*nextNodeItreator, startBlock);
-    } else if (editingIgnoresContent(*nextNodeItreator) ||
-               isDisplayInsideTable(nextNodeItreator)) {
-      candidateNode = nextNodeItreator;
+      nextNodeIterator = Strategy::next(*nextNodeIterator, startBlock);
+    } else if (editingIgnoresContent(*nextNodeIterator) ||
+               isDisplayInsideTable(nextNodeIterator)) {
+      candidateNode = nextNodeIterator;
       candidateType = PositionAnchorType::AfterAnchor;
-      nextNodeItreator =
-          Strategy::nextSkippingChildren(*nextNodeItreator, startBlock);
+      nextNodeIterator =
+          Strategy::nextSkippingChildren(*nextNodeIterator, startBlock);
     } else {
-      nextNodeItreator = Strategy::next(*nextNodeItreator, startBlock);
+      nextNodeIterator = Strategy::next(*nextNodeIterator, startBlock);
     }
   }
 
