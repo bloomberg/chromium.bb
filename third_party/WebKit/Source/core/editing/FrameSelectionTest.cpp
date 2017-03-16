@@ -293,4 +293,37 @@ TEST_F(FrameSelectionTest, SelectAllPreservesHandle) {
          "after it.";
 }
 
+TEST_F(FrameSelectionTest, SetSelectedRangePreservesHandle) {
+  Text* text = appendTextNode("Hello, World!");
+  document().view()->updateAllLifecyclePhases();
+  selection().setSelection(
+      SelectionInDOMTree::Builder()
+          .setBaseAndExtent(Position(text, 0), Position(text, 5))
+          .setIsHandleVisible(false)
+          .build());
+
+  selection().setSelectedRange(
+      EphemeralRange(Position(text, 0), Position(text, 12)),
+      VP_DEFAULT_AFFINITY, SelectionDirectionalMode::NonDirectional, 0);
+
+  EXPECT_FALSE(selection().isHandleVisible())
+      << "If handles weren't present before"
+         "setSelectedRange they shouldn't be present"
+         "after it.";
+
+  selection().setSelection(
+      SelectionInDOMTree::Builder()
+          .setBaseAndExtent(Position(text, 0), Position(text, 5))
+          .setIsHandleVisible(true)
+          .build());
+
+  selection().setSelectedRange(
+      EphemeralRange(Position(text, 0), Position(text, 12)),
+      VP_DEFAULT_AFFINITY, SelectionDirectionalMode::NonDirectional, 0);
+
+  EXPECT_TRUE(selection().isHandleVisible())
+      << "If handles were present before"
+         "selectSetSelectedRange they should be present after it.";
+}
+
 }  // namespace blink

@@ -657,6 +657,7 @@ bool FrameSelection::setSelectedRange(const EphemeralRange& range,
   setSelection(SelectionInDOMTree::Builder()
                    .setBaseAndExtent(range)
                    .setAffinity(affinity)
+                   .setIsHandleVisible(isHandleVisible())
                    .setIsDirectional(directional ==
                                      SelectionDirectionalMode::Directional)
                    .build(),
