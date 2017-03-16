@@ -196,6 +196,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 #else
 #define MAYBE_DirectoryTreeContextMenu DirectoryTreeContextMenu
 #endif
+// Flaky: crbug.com/700156, crbug.com/699083
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     DISABLED_DirectoryTreeContextMenu,
     FileManagerBrowserTest,
@@ -257,8 +258,9 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 #else
 #define MAYBE_DriveSpecific DriveSpecific
 #endif
+// Flaky: crbug.com/698834
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    MAYBE_DriveSpecific,
+    DISABLED_DriveSpecific,
     FileManagerBrowserTest,
     ::testing::Values(
         TestParameter(NOT_IN_GUEST_MODE, "openSidebarRecent"),
@@ -355,8 +357,9 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 #else
 #define MAYBE_ExecuteDefaultTaskOnDownloads ExecuteDefaultTaskOnDownloads
 #endif
+// Flaky: crbug.com/699171
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    MAYBE_ExecuteDefaultTaskOnDownloads,
+    DISABLED_ExecuteDefaultTaskOnDownloads,
     FileManagerBrowserTest,
     ::testing::Values(
         TestParameter(NOT_IN_GUEST_MODE, "executeDefaultTaskOnDownloads"),
@@ -448,8 +451,9 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 #else
 #define MAYBE_TabindexFocusDownloads TabindexFocusDownloads
 #endif
+// Flaky: crbug.com/699534
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    MAYBE_TabindexFocusDownloads,
+    DISABLED_TabindexFocusDownloads,
     FileManagerBrowserTestWithLegacyEventDispatch,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE,
                                     "tabindexFocusDownloads"),
@@ -540,8 +544,9 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 #else
 #define MAYBE_ShowGridView ShowGridView
 #endif
+// Flaky: crbug.com/698772
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    MAYBE_ShowGridView,
+    DISABLED_ShowGridView,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "showGridViewDownloads"),
                       TestParameter(IN_GUEST_MODE, "showGridViewDownloads"),
