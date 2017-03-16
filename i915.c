@@ -260,6 +260,16 @@ static int i915_bo_create(struct bo *bo, uint32_t width, uint32_t height,
 	else
 		tiling_mode = I915_TILING_Y;
 
+	/*
+	 * Align the Y plane to 128 bytes so the chroma planes would be aligned
+	 * to 64 byte boundaries. This is an Intel HW requirement.
+	 */
+	if (format == DRM_FORMAT_YVU420 ||
+	    format == DRM_FORMAT_YVU420_ANDROID) {
+		width = ALIGN(width, 128);
+		tiling_mode = I915_TILING_NONE;
+	}
+
 	i915_align_dimensions(bo->drv, tiling_mode, &width, &height, bpp);
 	drv_bo_from_format(bo, width, height, format);
 
