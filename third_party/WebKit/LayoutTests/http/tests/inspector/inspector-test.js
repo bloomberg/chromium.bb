@@ -971,7 +971,6 @@ SDK.targetManager.observeTargets({
         InspectorTest.RuntimeAgent = target.runtimeAgent();
         InspectorTest.TargetAgent = target.targetAgent();
 
-        InspectorTest.consoleModel = target.consoleModel;
         InspectorTest.networkManager = SDK.NetworkManager.fromTarget(target);
         InspectorTest.securityOriginManager = SDK.SecurityOriginManager.fromTarget(target);
         InspectorTest.resourceTreeModel = SDK.ResourceTreeModel.fromTarget(target);
@@ -988,6 +987,7 @@ SDK.targetManager.observeTargets({
         InspectorTest.serviceWorkerManager = target.model(SDK.ServiceWorkerManager);
         InspectorTest.tracingManager = target.model(SDK.TracingManager);
         InspectorTest.mainTarget = target;
+        Promise.resolve().then(() => { InspectorTest.consoleModel = SDK.multitargetConsoleModel._consoleModels.get(target); });
     },
 
     targetRemoved: function(target) { }
