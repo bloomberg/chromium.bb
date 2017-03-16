@@ -368,10 +368,10 @@ TEST_F(EventHandlerTest, NonEmptyTextfieldInsertionOnLongPress) {
 }
 
 TEST_F(EventHandlerTest, ClearHandleAfterTap) {
-  setHtmlInnerHTML("<textarea cols=50 rows=50>Enter text</textarea>");
+  setHtmlInnerHTML("<textarea cols=50  rows=10>Enter text</textarea>");
 
   // Show handle
-  LongPressEventBuilder longPressEvent(IntPoint(200, 200));
+  LongPressEventBuilder longPressEvent(IntPoint(200, 10));
   document().frame()->eventHandler().handleGestureEvent(longPressEvent);
 
   ASSERT_TRUE(
@@ -379,11 +379,9 @@ TEST_F(EventHandlerTest, ClearHandleAfterTap) {
   ASSERT_TRUE(selection().isHandleVisible());
 
   // Tap away from text area should clear handle
-  TapEventBuilder singleTapEvent(IntPoint(700, 700), 1);
+  TapEventBuilder singleTapEvent(IntPoint(200, 350), 1);
   document().frame()->eventHandler().handleGestureEvent(singleTapEvent);
 
-  ASSERT_TRUE(
-      selection().computeVisibleSelectionInDOMTreeDeprecated().isNone());
   ASSERT_FALSE(selection().isHandleVisible());
 }
 
