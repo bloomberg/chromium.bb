@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/shared_memory.h"
 #include "base/memory/singleton.h"
+#include "base/message_loop/message_loop.h"
 #include "base/threading/thread_checker.h"
 #include "device/sensors/device_sensor_export.h"
 #include "device/sensors/device_sensors_consts.h"
@@ -23,7 +24,8 @@ class DataFetcherSharedMemory;
 // Owns the data fetcher for Device Motion and Orientation and keeps track of
 // the number of consumers currently using the data. The data fetcher is stopped
 // when there are no consumers.
-class DEVICE_SENSOR_EXPORT DeviceSensorService {
+class DEVICE_SENSOR_EXPORT DeviceSensorService
+    : public base::MessageLoop::DestructionObserver {
  public:
   // Returns the DeviceSensorService singleton.
   static DeviceSensorService* GetInstance();
@@ -41,6 +43,9 @@ class DEVICE_SENSOR_EXPORT DeviceSensorService {
   mojo::ScopedSharedBufferHandle GetSharedMemoryHandle(
       ConsumerType consumer_type);
 
+  // base::MessageLoop::DestructionObserver:
+  void WillDestroyCurrentMessageLoop() override;
+
   // Stop/join with the background polling thread in |provider_|.
   void Shutdown();
 
@@ -52,7 +57,7 @@ class DEVICE_SENSOR_EXPORT DeviceSensorService {
   friend struct base::DefaultSingletonTraits<DeviceSensorService>;
 
   DeviceSensorService();
-  virtual ~DeviceSensorService();
+  ~DeviceSensorService() override;
 
   bool ChangeNumberConsumers(ConsumerType consumer_type, int delta);
   int GetNumberConsumers(ConsumerType consumer_type) const;

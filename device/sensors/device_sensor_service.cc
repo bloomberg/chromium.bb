@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
+#include "base/trace_event/trace_event.h"
 #include "device/sensors/data_fetcher_shared_memory.h"
 
 namespace device {
@@ -16,7 +17,9 @@ DeviceSensorService::DeviceSensorService()
       num_motion_readers_(0),
       num_orientation_readers_(0),
       num_orientation_absolute_readers_(0),
-      is_shutdown_(false) {}
+      is_shutdown_(false) {
+  base::MessageLoop::current()->AddDestructionObserver(this);
+}
 
 DeviceSensorService::~DeviceSensorService() {}
 
@@ -93,6 +96,12 @@ mojo::ScopedSharedBufferHandle DeviceSensorService::GetSharedMemoryHandle(
     ConsumerType consumer_type) {
   DCHECK(thread_checker_.CalledOnValidThread());
   return data_fetcher_->GetSharedMemoryHandle(consumer_type);
+}
+
+void DeviceSensorService::WillDestroyCurrentMessageLoop() {
+  base::MessageLoop::current()->RemoveDestructionObserver(this);
+  TRACE_EVENT0("shutdown", "DeviceSensorService::Subsystem:SensorService");
+  Shutdown();
 }
 
 void DeviceSensorService::Shutdown() {
