@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 1389 tests; 1278 PASS, 111 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 1348 tests; 1238 PASS, 110 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS [["inserthorizontalrule",""]] "foo[]bar": execCommand("inserthorizontalrule", false, "") return value 
 PASS [["inserthorizontalrule",""]] "foo[]bar" checks for modifications to non-editable content 
 PASS [["inserthorizontalrule",""]] "foo[]bar" compare innerHTML 
@@ -424,15 +424,6 @@ PASS [["defaultparagraphseparator","p"],["inserthorizontalrule",""]] "<p id=abc>
 PASS [["defaultparagraphseparator","p"],["inserthorizontalrule",""]] "<p id=abc>foo[bar]baz</p>" queryCommandIndeterm("inserthorizontalrule") after 
 PASS [["defaultparagraphseparator","p"],["inserthorizontalrule",""]] "<p id=abc>foo[bar]baz</p>" queryCommandState("inserthorizontalrule") after 
 PASS [["defaultparagraphseparator","p"],["inserthorizontalrule",""]] "<p id=abc>foo[bar]baz</p>" queryCommandValue("inserthorizontalrule") after 
-PASS [["inserthorizontalrule",""]] "<h1>foo[bar]baz</h1>": execCommand("inserthorizontalrule", false, "") return value 
-PASS [["inserthorizontalrule",""]] "<h1>foo[bar]baz</h1>" checks for modifications to non-editable content 
-FAIL [["inserthorizontalrule",""]] "<h1>foo[bar]baz</h1>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<h1>foo</h1><hr><h1>baz</h1>" but got "<h1>foo<hr>baz</h1>"
-PASS [["inserthorizontalrule",""]] "<h1>foo[bar]baz</h1>" queryCommandIndeterm("inserthorizontalrule") before 
-PASS [["inserthorizontalrule",""]] "<h1>foo[bar]baz</h1>" queryCommandState("inserthorizontalrule") before 
-PASS [["inserthorizontalrule",""]] "<h1>foo[bar]baz</h1>" queryCommandValue("inserthorizontalrule") before 
-PASS [["inserthorizontalrule",""]] "<h1>foo[bar]baz</h1>" queryCommandIndeterm("inserthorizontalrule") after 
-PASS [["inserthorizontalrule",""]] "<h1>foo[bar]baz</h1>" queryCommandState("inserthorizontalrule") after 
-PASS [["inserthorizontalrule",""]] "<h1>foo[bar]baz</h1>" queryCommandValue("inserthorizontalrule") after 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthorizontalrule",""]] "<p>foo<b>b[a]r</b>baz</p>": execCommand("stylewithcss", false, "true") return value 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthorizontalrule",""]] "<p>foo<b>b[a]r</b>baz</p>": execCommand("defaultparagraphseparator", false, "div") return value 
 PASS [["stylewithcss","true"],["defaultparagraphseparator","div"],["inserthorizontalrule",""]] "<p>foo<b>b[a]r</b>baz</p>": execCommand("inserthorizontalrule", false, "") return value 
@@ -913,38 +904,6 @@ PASS [["inserthorizontalrule",""]] "<ol><li>foo[bar]baz</li></ol>" queryCommandV
 PASS [["inserthorizontalrule",""]] "<ol><li>foo[bar]baz</li></ol>" queryCommandIndeterm("inserthorizontalrule") after 
 PASS [["inserthorizontalrule",""]] "<ol><li>foo[bar]baz</li></ol>" queryCommandState("inserthorizontalrule") after 
 PASS [["inserthorizontalrule",""]] "<ol><li>foo[bar]baz</li></ol>" queryCommandValue("inserthorizontalrule") after 
-PASS [["defaultparagraphseparator","div"],["inserthorizontalrule",""]] "<p>foo[bar]baz</p>": execCommand("defaultparagraphseparator", false, "div") return value 
-PASS [["defaultparagraphseparator","div"],["inserthorizontalrule",""]] "<p>foo[bar]baz</p>": execCommand("inserthorizontalrule", false, "") return value 
-PASS [["defaultparagraphseparator","div"],["inserthorizontalrule",""]] "<p>foo[bar]baz</p>" checks for modifications to non-editable content 
-PASS [["defaultparagraphseparator","div"],["inserthorizontalrule",""]] "<p>foo[bar]baz</p>" compare innerHTML 
-PASS [["defaultparagraphseparator","div"],["inserthorizontalrule",""]] "<p>foo[bar]baz</p>" queryCommandIndeterm("defaultparagraphseparator") before 
-PASS [["defaultparagraphseparator","div"],["inserthorizontalrule",""]] "<p>foo[bar]baz</p>" queryCommandState("defaultparagraphseparator") before 
-PASS [["defaultparagraphseparator","div"],["inserthorizontalrule",""]] "<p>foo[bar]baz</p>" queryCommandValue("defaultparagraphseparator") before 
-PASS [["defaultparagraphseparator","div"],["inserthorizontalrule",""]] "<p>foo[bar]baz</p>" queryCommandIndeterm("defaultparagraphseparator") after 
-PASS [["defaultparagraphseparator","div"],["inserthorizontalrule",""]] "<p>foo[bar]baz</p>" queryCommandState("defaultparagraphseparator") after 
-PASS [["defaultparagraphseparator","div"],["inserthorizontalrule",""]] "<p>foo[bar]baz</p>" queryCommandValue("defaultparagraphseparator") after 
-PASS [["defaultparagraphseparator","div"],["inserthorizontalrule",""]] "<p>foo[bar]baz</p>" queryCommandIndeterm("inserthorizontalrule") before 
-PASS [["defaultparagraphseparator","div"],["inserthorizontalrule",""]] "<p>foo[bar]baz</p>" queryCommandState("inserthorizontalrule") before 
-PASS [["defaultparagraphseparator","div"],["inserthorizontalrule",""]] "<p>foo[bar]baz</p>" queryCommandValue("inserthorizontalrule") before 
-PASS [["defaultparagraphseparator","div"],["inserthorizontalrule",""]] "<p>foo[bar]baz</p>" queryCommandIndeterm("inserthorizontalrule") after 
-PASS [["defaultparagraphseparator","div"],["inserthorizontalrule",""]] "<p>foo[bar]baz</p>" queryCommandState("inserthorizontalrule") after 
-PASS [["defaultparagraphseparator","div"],["inserthorizontalrule",""]] "<p>foo[bar]baz</p>" queryCommandValue("inserthorizontalrule") after 
-PASS [["defaultparagraphseparator","p"],["inserthorizontalrule",""]] "<p>foo[bar]baz</p>": execCommand("defaultparagraphseparator", false, "p") return value 
-PASS [["defaultparagraphseparator","p"],["inserthorizontalrule",""]] "<p>foo[bar]baz</p>": execCommand("inserthorizontalrule", false, "") return value 
-PASS [["defaultparagraphseparator","p"],["inserthorizontalrule",""]] "<p>foo[bar]baz</p>" checks for modifications to non-editable content 
-PASS [["defaultparagraphseparator","p"],["inserthorizontalrule",""]] "<p>foo[bar]baz</p>" compare innerHTML 
-PASS [["defaultparagraphseparator","p"],["inserthorizontalrule",""]] "<p>foo[bar]baz</p>" queryCommandIndeterm("defaultparagraphseparator") before 
-PASS [["defaultparagraphseparator","p"],["inserthorizontalrule",""]] "<p>foo[bar]baz</p>" queryCommandState("defaultparagraphseparator") before 
-PASS [["defaultparagraphseparator","p"],["inserthorizontalrule",""]] "<p>foo[bar]baz</p>" queryCommandValue("defaultparagraphseparator") before 
-PASS [["defaultparagraphseparator","p"],["inserthorizontalrule",""]] "<p>foo[bar]baz</p>" queryCommandIndeterm("defaultparagraphseparator") after 
-PASS [["defaultparagraphseparator","p"],["inserthorizontalrule",""]] "<p>foo[bar]baz</p>" queryCommandState("defaultparagraphseparator") after 
-PASS [["defaultparagraphseparator","p"],["inserthorizontalrule",""]] "<p>foo[bar]baz</p>" queryCommandValue("defaultparagraphseparator") after 
-PASS [["defaultparagraphseparator","p"],["inserthorizontalrule",""]] "<p>foo[bar]baz</p>" queryCommandIndeterm("inserthorizontalrule") before 
-PASS [["defaultparagraphseparator","p"],["inserthorizontalrule",""]] "<p>foo[bar]baz</p>" queryCommandState("inserthorizontalrule") before 
-PASS [["defaultparagraphseparator","p"],["inserthorizontalrule",""]] "<p>foo[bar]baz</p>" queryCommandValue("inserthorizontalrule") before 
-PASS [["defaultparagraphseparator","p"],["inserthorizontalrule",""]] "<p>foo[bar]baz</p>" queryCommandIndeterm("inserthorizontalrule") after 
-PASS [["defaultparagraphseparator","p"],["inserthorizontalrule",""]] "<p>foo[bar]baz</p>" queryCommandState("inserthorizontalrule") after 
-PASS [["defaultparagraphseparator","p"],["inserthorizontalrule",""]] "<p>foo[bar]baz</p>" queryCommandValue("inserthorizontalrule") after 
 PASS [["inserthorizontalrule",""]] "<pre>foo[bar]baz</pre>": execCommand("inserthorizontalrule", false, "") return value 
 PASS [["inserthorizontalrule",""]] "<pre>foo[bar]baz</pre>" checks for modifications to non-editable content 
 FAIL [["inserthorizontalrule",""]] "<pre>foo[bar]baz</pre>" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "<pre>foo</pre><hr><pre>baz</pre>" but got "<pre>foo<hr>baz</pre>"

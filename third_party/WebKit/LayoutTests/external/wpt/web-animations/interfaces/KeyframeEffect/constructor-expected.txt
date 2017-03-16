@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 127 tests; 40 PASS, 87 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 131 tests; 40 PASS, 91 FAIL, 0 TIMEOUT, 0 NOTRUN.
 FAIL a KeyframeEffectReadOnly can be constructed with no frames (intermediate value).getKeyframes is not a function
 FAIL easing values are parsed correctly when passed to the KeyframeEffectReadOnly constructor in a property-indexed keyframe effect.getKeyframes is not a function
 FAIL easing values are parsed correctly when passed to the KeyframeEffectReadOnly constructor in regular keyframes effect.getKeyframes is not a function
@@ -52,12 +52,16 @@ FAIL a KeyframeEffectReadOnly can be constructed with a keyframe sequence with d
 FAIL a KeyframeEffectReadOnly constructed with a keyframe sequence with duplicate values for offsets 0 and 1 roundtrips effect.getKeyframes is not a function
 FAIL a KeyframeEffectReadOnly can be constructed with a two property four keyframe sequence effect.getKeyframes is not a function
 FAIL a KeyframeEffectReadOnly constructed with a two property four keyframe sequence roundtrips effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly can be constructed with a single keyframe sequence with omitted offsets effect.getKeyframes is not a function
-FAIL a KeyframeEffectReadOnly constructed with a single keyframe sequence with omitted offsets roundtrips effect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly can be constructed with a single keyframe sequence with omitted offset effect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly constructed with a single keyframe sequence with omitted offset roundtrips effect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly can be constructed with a single keyframe sequence with null offset effect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly constructed with a single keyframe sequence with null offset roundtrips effect.getKeyframes is not a function
 FAIL a KeyframeEffectReadOnly can be constructed with a single keyframe sequence with string offset effect.getKeyframes is not a function
 FAIL a KeyframeEffectReadOnly constructed with a single keyframe sequence with string offset roundtrips effect.getKeyframes is not a function
 FAIL a KeyframeEffectReadOnly can be constructed with a one property keyframe sequence with some omitted offsets effect.getKeyframes is not a function
 FAIL a KeyframeEffectReadOnly constructed with a one property keyframe sequence with some omitted offsets roundtrips effect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly can be constructed with a one property keyframe sequence with some null offsets effect.getKeyframes is not a function
+FAIL a KeyframeEffectReadOnly constructed with a one property keyframe sequence with some null offsets roundtrips effect.getKeyframes is not a function
 FAIL a KeyframeEffectReadOnly can be constructed with a two property keyframe sequence with some omitted offsets effect.getKeyframes is not a function
 FAIL a KeyframeEffectReadOnly constructed with a two property keyframe sequence with some omitted offsets roundtrips effect.getKeyframes is not a function
 FAIL a KeyframeEffectReadOnly can be constructed with a one property keyframe sequence with all omitted offsets effect.getKeyframes is not a function

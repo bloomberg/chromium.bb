@@ -1,4 +1,5 @@
 This is a testharness.js-based test.
+Harness Error. harness_status.status = 1 , harness_status.message = 1 duplicate test name: "Test invalid mismatch between minor type and codec ID "video/webm;codecs="mp4a.40.2"""
 PASS Test invalid MIME format "video" 
 PASS Test invalid MIME format "video/" 
 PASS Test invalid MIME format "video/webm" 

@@ -1,5 +1,6 @@
 CONSOLE ERROR: line 39: [audit.js] this test requires the explicit comparison with the expected result when it runs with run-webkit-tests.
 This is a testharness.js-based test.
+Harness Error. harness_status.status = 1 , harness_status.message = 1 duplicate test name: "  1 is equal to 1."
 PASS # AUDIT TASK RUNNER STARTED. 
 PASS > [numerical] Numerical assertion unit test. 
 PASS   2.3 is 2 within an error of 0.3. 

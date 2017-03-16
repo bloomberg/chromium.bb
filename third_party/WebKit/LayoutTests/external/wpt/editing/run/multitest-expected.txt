@@ -7956,54 +7956,54 @@ PASS [["underline",""],["createlink","http://www.google.com/"],["inserttext","a"
 PASS [["underline",""],["createlink","http://www.google.com/"],["inserttext","a"]] "foo[]bar" queryCommandIndeterm("inserttext") after 
 PASS [["underline",""],["createlink","http://www.google.com/"],["inserttext","a"]] "foo[]bar" queryCommandState("inserttext") after 
 PASS [["underline",""],["createlink","http://www.google.com/"],["inserttext","a"]] "foo[]bar" queryCommandValue("inserttext") after 
-PASS [["createlink","http://www.google.com/"],["underline",""],["underline",""],["inserttext","a"]] "foo[]bar": execCommand("createlink", false, "http://www.google.com/") return value 
-PASS [["createlink","http://www.google.com/"],["underline",""],["underline",""],["inserttext","a"]] "foo[]bar": execCommand("underline", false, "") return value 
-PASS [["createlink","http://www.google.com/"],["underline",""],["underline",""],["inserttext","a"]] "foo[]bar": execCommand("underline", false, "") return value 
-PASS [["createlink","http://www.google.com/"],["underline",""],["underline",""],["inserttext","a"]] "foo[]bar": execCommand("inserttext", false, "a") return value 
-PASS [["createlink","http://www.google.com/"],["underline",""],["underline",""],["inserttext","a"]] "foo[]bar" checks for modifications to non-editable content 
-PASS [["createlink","http://www.google.com/"],["underline",""],["underline",""],["inserttext","a"]] "foo[]bar" compare innerHTML 
-PASS [["createlink","http://www.google.com/"],["underline",""],["underline",""],["inserttext","a"]] "foo[]bar" queryCommandIndeterm("createlink") before 
-PASS [["createlink","http://www.google.com/"],["underline",""],["underline",""],["inserttext","a"]] "foo[]bar" queryCommandState("createlink") before 
-PASS [["createlink","http://www.google.com/"],["underline",""],["underline",""],["inserttext","a"]] "foo[]bar" queryCommandValue("createlink") before 
-PASS [["createlink","http://www.google.com/"],["underline",""],["underline",""],["inserttext","a"]] "foo[]bar" queryCommandIndeterm("createlink") after 
-PASS [["createlink","http://www.google.com/"],["underline",""],["underline",""],["inserttext","a"]] "foo[]bar" queryCommandState("createlink") after 
-PASS [["createlink","http://www.google.com/"],["underline",""],["underline",""],["inserttext","a"]] "foo[]bar" queryCommandValue("createlink") after 
-PASS [["createlink","http://www.google.com/"],["underline",""],["underline",""],["inserttext","a"]] "foo[]bar" queryCommandIndeterm("underline") before 
-PASS [["createlink","http://www.google.com/"],["underline",""],["underline",""],["inserttext","a"]] "foo[]bar" queryCommandState("underline") before 
-FAIL [["createlink","http://www.google.com/"],["underline",""],["underline",""],["inserttext","a"]] "foo[]bar" queryCommandValue("underline") before assert_equals: Wrong result returned expected "" but got "false"
-PASS [["createlink","http://www.google.com/"],["underline",""],["underline",""],["inserttext","a"]] "foo[]bar" queryCommandIndeterm("underline") after 
-PASS [["createlink","http://www.google.com/"],["underline",""],["underline",""],["inserttext","a"]] "foo[]bar" queryCommandState("underline") after 
-FAIL [["createlink","http://www.google.com/"],["underline",""],["underline",""],["inserttext","a"]] "foo[]bar" queryCommandValue("underline") after assert_equals: Wrong result returned expected "" but got "true"
-PASS [["createlink","http://www.google.com/"],["underline",""],["underline",""],["inserttext","a"]] "foo[]bar" queryCommandIndeterm("inserttext") before 
-PASS [["createlink","http://www.google.com/"],["underline",""],["underline",""],["inserttext","a"]] "foo[]bar" queryCommandState("inserttext") before 
-PASS [["createlink","http://www.google.com/"],["underline",""],["underline",""],["inserttext","a"]] "foo[]bar" queryCommandValue("inserttext") before 
-PASS [["createlink","http://www.google.com/"],["underline",""],["underline",""],["inserttext","a"]] "foo[]bar" queryCommandIndeterm("inserttext") after 
-PASS [["createlink","http://www.google.com/"],["underline",""],["underline",""],["inserttext","a"]] "foo[]bar" queryCommandState("inserttext") after 
-PASS [["createlink","http://www.google.com/"],["underline",""],["underline",""],["inserttext","a"]] "foo[]bar" queryCommandValue("inserttext") after 
-PASS [["underline",""],["underline",""],["createlink","http://www.google.com/"],["inserttext","a"]] "foo[]bar": execCommand("underline", false, "") return value 
-PASS [["underline",""],["underline",""],["createlink","http://www.google.com/"],["inserttext","a"]] "foo[]bar": execCommand("underline", false, "") return value 
-PASS [["underline",""],["underline",""],["createlink","http://www.google.com/"],["inserttext","a"]] "foo[]bar": execCommand("createlink", false, "http://www.google.com/") return value 
-PASS [["underline",""],["underline",""],["createlink","http://www.google.com/"],["inserttext","a"]] "foo[]bar": execCommand("inserttext", false, "a") return value 
-PASS [["underline",""],["underline",""],["createlink","http://www.google.com/"],["inserttext","a"]] "foo[]bar" checks for modifications to non-editable content 
-PASS [["underline",""],["underline",""],["createlink","http://www.google.com/"],["inserttext","a"]] "foo[]bar" compare innerHTML 
-PASS [["underline",""],["underline",""],["createlink","http://www.google.com/"],["inserttext","a"]] "foo[]bar" queryCommandIndeterm("underline") before 
-PASS [["underline",""],["underline",""],["createlink","http://www.google.com/"],["inserttext","a"]] "foo[]bar" queryCommandState("underline") before 
-FAIL [["underline",""],["underline",""],["createlink","http://www.google.com/"],["inserttext","a"]] "foo[]bar" queryCommandValue("underline") before assert_equals: Wrong result returned expected "" but got "false"
-PASS [["underline",""],["underline",""],["createlink","http://www.google.com/"],["inserttext","a"]] "foo[]bar" queryCommandIndeterm("underline") after 
-PASS [["underline",""],["underline",""],["createlink","http://www.google.com/"],["inserttext","a"]] "foo[]bar" queryCommandState("underline") after 
-FAIL [["underline",""],["underline",""],["createlink","http://www.google.com/"],["inserttext","a"]] "foo[]bar" queryCommandValue("underline") after assert_equals: Wrong result returned expected "" but got "true"
-PASS [["underline",""],["underline",""],["createlink","http://www.google.com/"],["inserttext","a"]] "foo[]bar" queryCommandIndeterm("createlink") before 
-PASS [["underline",""],["underline",""],["createlink","http://www.google.com/"],["inserttext","a"]] "foo[]bar" queryCommandState("createlink") before 
-PASS [["underline",""],["underline",""],["createlink","http://www.google.com/"],["inserttext","a"]] "foo[]bar" queryCommandValue("createlink") before 
-PASS [["underline",""],["underline",""],["createlink","http://www.google.com/"],["inserttext","a"]] "foo[]bar" queryCommandIndeterm("createlink") after 
-PASS [["underline",""],["underline",""],["createlink","http://www.google.com/"],["inserttext","a"]] "foo[]bar" queryCommandState("createlink") after 
-PASS [["underline",""],["underline",""],["createlink","http://www.google.com/"],["inserttext","a"]] "foo[]bar" queryCommandValue("createlink") after 
-PASS [["underline",""],["underline",""],["createlink","http://www.google.com/"],["inserttext","a"]] "foo[]bar" queryCommandIndeterm("inserttext") before 
-PASS [["underline",""],["underline",""],["createlink","http://www.google.com/"],["inserttext","a"]] "foo[]bar" queryCommandState("inserttext") before 
-PASS [["underline",""],["underline",""],["createlink","http://www.google.com/"],["inserttext","a"]] "foo[]bar" queryCommandValue("inserttext") before 
-PASS [["underline",""],["underline",""],["createlink","http://www.google.com/"],["inserttext","a"]] "foo[]bar" queryCommandIndeterm("inserttext") after 
-PASS [["underline",""],["underline",""],["createlink","http://www.google.com/"],["inserttext","a"]] "foo[]bar" queryCommandState("inserttext") after 
-PASS [["underline",""],["underline",""],["createlink","http://www.google.com/"],["inserttext","a"]] "foo[]bar" queryCommandValue("inserttext") after 
+PASS [["createlink","http://www.google.com/"],["underline","","first application"],["underline","","second application"],["inserttext","a"]] "foo[]bar": execCommand("createlink", false, "http://www.google.com/") return value 
+PASS [["createlink","http://www.google.com/"],["underline","","first application"],["underline","","second application"],["inserttext","a"]] "foo[]bar": execCommand("underline", false, "") first application return value 
+PASS [["createlink","http://www.google.com/"],["underline","","first application"],["underline","","second application"],["inserttext","a"]] "foo[]bar": execCommand("underline", false, "") second application return value 
+PASS [["createlink","http://www.google.com/"],["underline","","first application"],["underline","","second application"],["inserttext","a"]] "foo[]bar": execCommand("inserttext", false, "a") return value 
+PASS [["createlink","http://www.google.com/"],["underline","","first application"],["underline","","second application"],["inserttext","a"]] "foo[]bar" checks for modifications to non-editable content 
+PASS [["createlink","http://www.google.com/"],["underline","","first application"],["underline","","second application"],["inserttext","a"]] "foo[]bar" compare innerHTML 
+PASS [["createlink","http://www.google.com/"],["underline","","first application"],["underline","","second application"],["inserttext","a"]] "foo[]bar" queryCommandIndeterm("createlink") before 
+PASS [["createlink","http://www.google.com/"],["underline","","first application"],["underline","","second application"],["inserttext","a"]] "foo[]bar" queryCommandState("createlink") before 
+PASS [["createlink","http://www.google.com/"],["underline","","first application"],["underline","","second application"],["inserttext","a"]] "foo[]bar" queryCommandValue("createlink") before 
+PASS [["createlink","http://www.google.com/"],["underline","","first application"],["underline","","second application"],["inserttext","a"]] "foo[]bar" queryCommandIndeterm("createlink") after 
+PASS [["createlink","http://www.google.com/"],["underline","","first application"],["underline","","second application"],["inserttext","a"]] "foo[]bar" queryCommandState("createlink") after 
+PASS [["createlink","http://www.google.com/"],["underline","","first application"],["underline","","second application"],["inserttext","a"]] "foo[]bar" queryCommandValue("createlink") after 
+PASS [["createlink","http://www.google.com/"],["underline","","first application"],["underline","","second application"],["inserttext","a"]] "foo[]bar" queryCommandIndeterm("underline") before 
+PASS [["createlink","http://www.google.com/"],["underline","","first application"],["underline","","second application"],["inserttext","a"]] "foo[]bar" queryCommandState("underline") before 
+FAIL [["createlink","http://www.google.com/"],["underline","","first application"],["underline","","second application"],["inserttext","a"]] "foo[]bar" queryCommandValue("underline") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["createlink","http://www.google.com/"],["underline","","first application"],["underline","","second application"],["inserttext","a"]] "foo[]bar" queryCommandIndeterm("underline") after 
+PASS [["createlink","http://www.google.com/"],["underline","","first application"],["underline","","second application"],["inserttext","a"]] "foo[]bar" queryCommandState("underline") after 
+FAIL [["createlink","http://www.google.com/"],["underline","","first application"],["underline","","second application"],["inserttext","a"]] "foo[]bar" queryCommandValue("underline") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["createlink","http://www.google.com/"],["underline","","first application"],["underline","","second application"],["inserttext","a"]] "foo[]bar" queryCommandIndeterm("inserttext") before 
+PASS [["createlink","http://www.google.com/"],["underline","","first application"],["underline","","second application"],["inserttext","a"]] "foo[]bar" queryCommandState("inserttext") before 
+PASS [["createlink","http://www.google.com/"],["underline","","first application"],["underline","","second application"],["inserttext","a"]] "foo[]bar" queryCommandValue("inserttext") before 
+PASS [["createlink","http://www.google.com/"],["underline","","first application"],["underline","","second application"],["inserttext","a"]] "foo[]bar" queryCommandIndeterm("inserttext") after 
+PASS [["createlink","http://www.google.com/"],["underline","","first application"],["underline","","second application"],["inserttext","a"]] "foo[]bar" queryCommandState("inserttext") after 
+PASS [["createlink","http://www.google.com/"],["underline","","first application"],["underline","","second application"],["inserttext","a"]] "foo[]bar" queryCommandValue("inserttext") after 
+PASS [["underline","","first application"],["underline","","second application"],["createlink","http://www.google.com/"],["inserttext","a"]] "foo[]bar": execCommand("underline", false, "") first application return value 
+PASS [["underline","","first application"],["underline","","second application"],["createlink","http://www.google.com/"],["inserttext","a"]] "foo[]bar": execCommand("underline", false, "") second application return value 
+PASS [["underline","","first application"],["underline","","second application"],["createlink","http://www.google.com/"],["inserttext","a"]] "foo[]bar": execCommand("createlink", false, "http://www.google.com/") return value 
+PASS [["underline","","first application"],["underline","","second application"],["createlink","http://www.google.com/"],["inserttext","a"]] "foo[]bar": execCommand("inserttext", false, "a") return value 
+PASS [["underline","","first application"],["underline","","second application"],["createlink","http://www.google.com/"],["inserttext","a"]] "foo[]bar" checks for modifications to non-editable content 
+PASS [["underline","","first application"],["underline","","second application"],["createlink","http://www.google.com/"],["inserttext","a"]] "foo[]bar" compare innerHTML 
+PASS [["underline","","first application"],["underline","","second application"],["createlink","http://www.google.com/"],["inserttext","a"]] "foo[]bar" queryCommandIndeterm("underline") before 
+PASS [["underline","","first application"],["underline","","second application"],["createlink","http://www.google.com/"],["inserttext","a"]] "foo[]bar" queryCommandState("underline") before 
+FAIL [["underline","","first application"],["underline","","second application"],["createlink","http://www.google.com/"],["inserttext","a"]] "foo[]bar" queryCommandValue("underline") before assert_equals: Wrong result returned expected "" but got "false"
+PASS [["underline","","first application"],["underline","","second application"],["createlink","http://www.google.com/"],["inserttext","a"]] "foo[]bar" queryCommandIndeterm("underline") after 
+PASS [["underline","","first application"],["underline","","second application"],["createlink","http://www.google.com/"],["inserttext","a"]] "foo[]bar" queryCommandState("underline") after 
+FAIL [["underline","","first application"],["underline","","second application"],["createlink","http://www.google.com/"],["inserttext","a"]] "foo[]bar" queryCommandValue("underline") after assert_equals: Wrong result returned expected "" but got "true"
+PASS [["underline","","first application"],["underline","","second application"],["createlink","http://www.google.com/"],["inserttext","a"]] "foo[]bar" queryCommandIndeterm("createlink") before 
+PASS [["underline","","first application"],["underline","","second application"],["createlink","http://www.google.com/"],["inserttext","a"]] "foo[]bar" queryCommandState("createlink") before 
+PASS [["underline","","first application"],["underline","","second application"],["createlink","http://www.google.com/"],["inserttext","a"]] "foo[]bar" queryCommandValue("createlink") before 
+PASS [["underline","","first application"],["underline","","second application"],["createlink","http://www.google.com/"],["inserttext","a"]] "foo[]bar" queryCommandIndeterm("createlink") after 
+PASS [["underline","","first application"],["underline","","second application"],["createlink","http://www.google.com/"],["inserttext","a"]] "foo[]bar" queryCommandState("createlink") after 
+PASS [["underline","","first application"],["underline","","second application"],["createlink","http://www.google.com/"],["inserttext","a"]] "foo[]bar" queryCommandValue("createlink") after 
+PASS [["underline","","first application"],["underline","","second application"],["createlink","http://www.google.com/"],["inserttext","a"]] "foo[]bar" queryCommandIndeterm("inserttext") before 
+PASS [["underline","","first application"],["underline","","second application"],["createlink","http://www.google.com/"],["inserttext","a"]] "foo[]bar" queryCommandState("inserttext") before 
+PASS [["underline","","first application"],["underline","","second application"],["createlink","http://www.google.com/"],["inserttext","a"]] "foo[]bar" queryCommandValue("inserttext") before 
+PASS [["underline","","first application"],["underline","","second application"],["createlink","http://www.google.com/"],["inserttext","a"]] "foo[]bar" queryCommandIndeterm("inserttext") after 
+PASS [["underline","","first application"],["underline","","second application"],["createlink","http://www.google.com/"],["inserttext","a"]] "foo[]bar" queryCommandState("inserttext") after 
+PASS [["underline","","first application"],["underline","","second application"],["createlink","http://www.google.com/"],["inserttext","a"]] "foo[]bar" queryCommandValue("inserttext") after 
 PASS [["subscript",""],["fontsize","2"],["inserttext","a"]] "foo[]bar": execCommand("subscript", false, "") return value 
 PASS [["subscript",""],["fontsize","2"],["inserttext","a"]] "foo[]bar": execCommand("fontsize", false, "2") return value 
 PASS [["subscript",""],["fontsize","2"],["inserttext","a"]] "foo[]bar": execCommand("inserttext", false, "a") return value 

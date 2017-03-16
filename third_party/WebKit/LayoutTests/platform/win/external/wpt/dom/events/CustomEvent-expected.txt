@@ -1,6 +1,0 @@
-This is a testharness.js-based test.
-PASS CustomEvent dispatching. 
-PASS First parameter to initCustomEvent should be mandatory. 
-FAIL initCustomEvent's default parameter values. Failed to execute 'initCustomEvent' on 'CustomEvent': 4 arguments required, but only 1 present.
-Harness: the test ran to completion.
-

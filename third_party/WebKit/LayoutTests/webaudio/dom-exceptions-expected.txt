@@ -5,6 +5,7 @@ CONSOLE WARNING: line 442: The provided value '9x' is not a valid enum value of 
 CONSOLE WARNING: line 645: The provided value 'junk' is not a valid enum value of type ChannelCountMode.
 CONSOLE WARNING: line 676: The provided value 'junk' is not a valid enum value of type ChannelCountMode.
 This is a testharness.js-based test.
+Harness Error. harness_status.status = 1 , harness_status.message = 8 duplicate test names: "  source = context.createBufferSource() did not throw an exception.", "  source.buffer = buffer did not throw an exception.", "  source.start() did not throw an exception.", "  source.stop() did not throw an exception.", "  source.stop(-Number.MIN_VALUE) threw InvalidAccessError: "Failed to execute 'stop' on 'AudioScheduledSourceNode': The stop time provided (-4.94066e-324) is less than the minimum bound (0).".", "  source.stop(Infinity) threw TypeError: "Failed to execute 'stop' on 'AudioScheduledSourceNode': The provided double value is non-finite.".", "  source.stop(-Infinity) threw TypeError: "Failed to execute 'stop' on 'AudioScheduledSourceNode': The provided double value is non-finite.".", "  source.stop(NaN) threw TypeError: "Failed to execute 'stop' on 'AudioScheduledSourceNode': The provided double value is non-finite."."
 PASS # AUDIT TASK RUNNER STARTED. 
 PASS > [initialize]  
 PASS   context = new AudioContext() did not throw an exception. 
