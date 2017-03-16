@@ -45,4 +45,7 @@
     static void partial2StaticVoidMethod(DOMString value);
 
     [Unscopable] void unscopableVoidMethod();
+
+    // UnionWithTypedef is a typedef declared in core/TestTypedefs.idl.
+    UnionWithTypedef unionWithTypedefMethod();
 };

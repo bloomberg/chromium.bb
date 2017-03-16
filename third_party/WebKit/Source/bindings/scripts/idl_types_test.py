@@ -136,3 +136,39 @@ class IdlUnionTypeTest(unittest.TestCase):
             set([IdlType('Node'), IdlSequenceType(IdlType('long')), IdlType('Event'),
                  IdlType('XMLHttpRequest'), IdlType('DOMString'),
                  IdlSequenceType(IdlUnionType([IdlSequenceType(IdlType('double')), IdlType('NodeList')]))]))
+
+    def test_resolve_typedefs(self):
+        # This is a simplification of the typedef mechanism to avoid having to
+        # use idl_definitions and use actual nodes from //tools/idl_parser.
+        typedefs = {
+            'Foo': IdlType('unsigned short'),
+            'MyBooleanType': IdlType('boolean'),
+            'SomeInterfaceT': IdlType('MyInterface'),
+        }
+
+        # (long long or MyBooleanType)
+        union = IdlUnionType([IdlType('long long'), IdlType('MyBooleanType')]).resolve_typedefs(typedefs)
+        self.assertEqual(union.name, 'LongLongOrBoolean')
+        self.assertEqual(union.member_types[0].name, 'LongLong')
+        self.assertEqual(union.member_types[1].name, 'Boolean')
+
+        # (Foo or SomeInterfaceT)
+        union = IdlUnionType([IdlType('Foo'), IdlType('SomeInterfaceT')]).resolve_typedefs(typedefs)
+        self.assertEqual(union.name, 'UnsignedShortOrMyInterface')
+        self.assertEqual(union.member_types[0].name, 'UnsignedShort')
+        self.assertEqual(union.member_types[1].name, 'MyInterface')
+
+        # (Foo or sequence<(MyBooleanType or double)>)
+        union = IdlUnionType([
+            IdlType('Foo'),
+            IdlSequenceType(IdlUnionType([IdlType('MyBooleanType'),
+                                          IdlType('double')]))]).resolve_typedefs(typedefs)
+        self.assertEqual(union.name, 'UnsignedShortOrBooleanOrDoubleSequence')
+        self.assertEqual(union.member_types[0].name, 'UnsignedShort')
+        self.assertEqual(union.member_types[1].name, 'BooleanOrDoubleSequence')
+        self.assertEqual(union.member_types[1].element_type.name, 'BooleanOrDouble')
+        self.assertEqual(union.member_types[1].element_type.member_types[0].name,
+                         'Boolean')
+        self.assertEqual(union.member_types[1].element_type.member_types[1].name,
+                         'Double')
+        self.assertEqual(2, len(union.flattened_member_types))

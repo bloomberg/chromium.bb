@@ -14,6 +14,7 @@
 
 #include "bindings/core/v8/Dictionary.h"
 #include "bindings/core/v8/DoubleOrString.h"
+#include "bindings/core/v8/FloatOrBoolean.h"
 #include "bindings/core/v8/IDLDictionaryBase.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/TestInterface2OrUint8Array.h"
@@ -183,6 +184,10 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   DOMUint8Array* uint8ArrayMember() const;
   void setUint8ArrayMember(DOMUint8Array*);
 
+  bool hasUnionWithTypedefs() const;
+  const FloatOrBoolean& unionWithTypedefs() const;
+  void setUnionWithTypedefs(const FloatOrBoolean&);
+
   bool hasUnrestrictedDoubleMember() const;
   double unrestrictedDoubleMember() const;
   void setUnrestrictedDoubleMember(double);
@@ -241,6 +246,7 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   bool m_hasTestObjectSequenceMember = false;
   HeapVector<Member<TestObject>> m_testObjectSequenceMember;
   Member<DOMUint8Array> m_uint8ArrayMember;
+  FloatOrBoolean m_unionWithTypedefs;
   bool m_hasUnrestrictedDoubleMember = false;
   double m_unrestrictedDoubleMember;
 

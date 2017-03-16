@@ -11,10 +11,8 @@
 // clang-format off
 #include "LongOrTestDictionary.h"
 
-#include "bindings/core/v8/DoubleOrString.h"
 #include "bindings/core/v8/IDLTypes.h"
 #include "bindings/core/v8/NativeValueTraitsImpl.h"
-#include "bindings/core/v8/TestInterface2OrUint8Array.h"
 #include "bindings/core/v8/ToV8.h"
 
 namespace blink {

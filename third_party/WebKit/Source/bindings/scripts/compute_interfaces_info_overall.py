@@ -285,11 +285,6 @@ def compute_interfaces_info_overall(info_individuals):
             else:
                 dependencies_other_component_include_paths.append(include_path)
 
-        for union_type in interface_info.get('union_types', []):
-            name = shorten_union_name(union_type)
-            dependencies_include_paths.append(
-                'bindings/%s/v8/%s.h' % (component, name))
-
         interface_info.update({
             'dependencies_full_paths': dependencies_full_paths,
             'dependencies_include_paths': dependencies_include_paths,

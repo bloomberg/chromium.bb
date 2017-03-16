@@ -32,6 +32,7 @@
 // as typedefs are resolved during IR construction (after parsing,
 // before code generation), and thus the code generator never sees them.
 
+typedef boolean                    BooleanType;
 typedef float                      Float;
 typedef unsigned long long         ULongLong;
 typedef TestInterfaceEmpty         TestInterfaceEmptyType;
@@ -46,6 +47,7 @@ typedef record<ByteString, long>   SomeRecordType;
 typedef record<USVString, TestObject> RecordWithOilpanValueType;
 typedef (sequence<sequence<ByteString>> or record<ByteString, ByteString>) UnionWithRecord;
 typedef (Node or (sequence<long> or Event) or (XMLHttpRequest or DOMString)? or record<DOMString, (ByteString or NodeList)>) NestedUnionType;
+typedef (ULongLong or (BooleanType or TestCallbackInterfaceType)) UnionWithTypedef;
 
 [
     Constructor(String stringArg),
@@ -72,4 +74,6 @@ typedef (Node or (sequence<long> or Event) or (XMLHttpRequest or DOMString)? or 
     record<DOMString, boolean> methodThatReturnsRecord();
 
     void voidMethodNestedUnionType(NestedUnionType arg);
+
+    void voidMethodUnionWithTypedef(UnionWithTypedef arg);
 };

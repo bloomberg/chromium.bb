@@ -16,6 +16,7 @@
 #include "bindings/core/v8/NativeValueTraits.h"
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/ToV8.h"
+#include "bindings/core/v8/UnsignedLongLongOrBooleanOrTestCallbackInterface.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8DOMWrapper.h"
 #include "bindings/core/v8/WrapperTypeInfo.h"
@@ -45,6 +46,7 @@ class V8TestInterfacePartial {
 
   static void partialVoidTestEnumModulesArgMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info);
   static void unscopableVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info);
+  static void unionWithTypedefMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info);
   static void partial4VoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info);
   static void partial4StaticVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info);
 

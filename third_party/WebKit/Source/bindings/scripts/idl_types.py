@@ -379,7 +379,7 @@ class IdlUnionType(IdlTypeBase):
 
     def resolve_typedefs(self, typedefs):
         self.member_types = [
-            typedefs.get(member_type, member_type)
+            member_type.resolve_typedefs(typedefs)
             for member_type in self.member_types]
         return self
 

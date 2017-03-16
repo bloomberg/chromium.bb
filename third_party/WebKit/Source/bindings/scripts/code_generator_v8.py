@@ -287,8 +287,16 @@ class CodeGeneratorUnionType(CodeGeneratorBase):
     def __init__(self, info_provider, cache_dir, output_dir, target_component):
         CodeGeneratorBase.__init__(self, MODULE_PYNAME, info_provider, cache_dir, output_dir)
         self.target_component = target_component
+        # The code below duplicates parts of TypedefResolver. We do not use it
+        # directly because IdlUnionType is not a type defined in
+        # idl_definitions.py. What we do instead is to resolve typedefs in
+        # _generate_container_code() whenever a new union file is generated.
+        self.typedefs = {}
+        for name, typedef in self.info_provider.typedefs.iteritems():
+            self.typedefs[name] = typedef.idl_type
 
     def _generate_container_code(self, union_type):
+        union_type = union_type.resolve_typedefs(self.typedefs)
         header_template = self.jinja_env.get_template('union_container.h.tmpl')
         cpp_template = self.jinja_env.get_template('union_container.cpp.tmpl')
         template_context = v8_union.container_context(

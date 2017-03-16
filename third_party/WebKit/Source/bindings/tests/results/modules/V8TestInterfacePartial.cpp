@@ -20,6 +20,7 @@
 #include "bindings/core/v8/V8Document.h"
 #include "bindings/core/v8/V8Node.h"
 #include "bindings/core/v8/V8ObjectConstructor.h"
+#include "bindings/core/v8/V8TestCallbackInterface.h"
 #include "bindings/core/v8/V8TestInterface.h"
 #include "bindings/tests/idls/modules/TestInterfacePartial3Implementation.h"
 #include "bindings/tests/idls/modules/TestInterfacePartial4.h"
@@ -328,6 +329,14 @@ static void unscopableVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>
   TestInterfacePartial3Implementation::unscopableVoidMethod(*impl);
 }
 
+static void unionWithTypedefMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
+
+  UnsignedLongLongOrBooleanOrTestCallbackInterface result;
+  TestInterfacePartial3Implementation::unionWithTypedefMethod(*impl, result);
+  v8SetReturnValue(info, result);
+}
+
 static void partial4VoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementation* impl = V8TestInterface::toImpl(info.Holder());
 
@@ -368,6 +377,10 @@ void V8TestInterfacePartial::unscopableVoidMethodMethodCallback(const v8::Functi
   TestInterfaceImplementationPartialV8Internal::unscopableVoidMethodMethod(info);
 }
 
+void V8TestInterfacePartial::unionWithTypedefMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  TestInterfaceImplementationPartialV8Internal::unionWithTypedefMethodMethod(info);
+}
+
 void V8TestInterfacePartial::partial4VoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestInterfaceImplementationPartialV8Internal::partial4VoidMethodMethod(info);
 }
@@ -379,6 +392,7 @@ void V8TestInterfacePartial::partial4StaticVoidMethodMethodCallback(const v8::Fu
 const V8DOMConfiguration::MethodConfiguration V8TestInterfaceMethods[] = {
     {"partialVoidTestEnumModulesArgMethod", V8TestInterfacePartial::partialVoidTestEnumModulesArgMethodMethodCallback, nullptr, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder, V8DOMConfiguration::DoNotCheckAccess},
     {"unscopableVoidMethod", V8TestInterfacePartial::unscopableVoidMethodMethodCallback, nullptr, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder, V8DOMConfiguration::DoNotCheckAccess},
+    {"unionWithTypedefMethod", V8TestInterfacePartial::unionWithTypedefMethodMethodCallback, nullptr, 0, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder, V8DOMConfiguration::DoNotCheckAccess},
 };
 
 void V8TestInterfacePartial::installV8TestInterfaceTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate) {
