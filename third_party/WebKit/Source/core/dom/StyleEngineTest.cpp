@@ -450,4 +450,40 @@ TEST_F(StyleEngineTest, ModifyStyleRuleMatchedPropertiesCache) {
             t1->computedStyle()->visitedDependentColor(CSSPropertyColor));
 }
 
+TEST_F(StyleEngineTest, ScheduleInvaldationAfterSubtreeRecalc) {
+  document().body()->setInnerHTML(
+      "<style>"
+      "  .t1 span { color: green }x"
+      "  .t2 span { color: green }"
+      "</style>"
+      "<div id='t1'></div>"
+      "<div id='t2'></div>");
+  document().view()->updateAllLifecyclePhases();
+
+  Element* t1 = document().getElementById("t1");
+  Element* t2 = document().getElementById("t1");
+  ASSERT_TRUE(t1);
+  ASSERT_TRUE(t2);
+
+  // Sanity test.
+  t1->setAttribute(blink::HTMLNames::classAttr, "t1");
+  EXPECT_FALSE(document().needsStyleInvalidation());
+  EXPECT_TRUE(document().childNeedsStyleInvalidation());
+
+  document().view()->updateAllLifecyclePhases();
+
+  // platformColorsChanged() triggers SubtreeStyleChange on document(). If that
+  // for some reason should change, this test will start failing and the
+  // SubtreeStyleChange must be set another way.
+  // Calling setNeedsStyleRecalc() explicitly with an arbitrary reason instead
+  // requires us to CORE_EXPORT the reason strings.
+  styleEngine().platformColorsChanged();
+
+  // Check that no invalidations sets are scheduled when the document node is
+  // already SubtreeStyleChange.
+  t2->setAttribute(blink::HTMLNames::classAttr, "t2");
+  EXPECT_FALSE(document().needsStyleInvalidation());
+  EXPECT_FALSE(document().childNeedsStyleInvalidation());
+}
+
 }  // namespace blink

@@ -1328,12 +1328,6 @@ void Element::attributeChanged(const AttributeModificationParams& params) {
 
   invalidateNodeListCachesInAncestors(&name, this);
 
-  // If there is currently no StyleResolver, we can't be sure that this
-  // attribute change won't affect style.
-  if (!document().styleResolver())
-    setNeedsStyleRecalc(SubtreeStyleChange,
-                        StyleChangeReasonForTracing::fromAttribute(name));
-
   if (isConnected()) {
     if (AXObjectCache* cache = document().existingAXObjectCache())
       cache->handleAttributeChanged(name, this);
@@ -2355,9 +2349,6 @@ void Element::checkForEmptyStyleChange() {
     return;
   if (!inActiveDocument())
     return;
-  if (!document().styleResolver())
-    return;
-
   if (!style ||
       (styleAffectedByEmpty() && (!style->emptyState() || hasChildren())))
     pseudoStateChanged(CSSSelector::PseudoEmpty);

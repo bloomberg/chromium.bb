@@ -606,7 +606,7 @@ void StyleEngine::platformColorsChanged() {
 }
 
 bool StyleEngine::shouldSkipInvalidationFor(const Element& element) const {
-  if (!resolver())
+  if (document().getStyleChangeType() >= SubtreeStyleChange)
     return true;
   if (!element.inActiveDocument())
     return true;
