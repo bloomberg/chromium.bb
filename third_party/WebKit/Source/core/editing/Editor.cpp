@@ -181,13 +181,9 @@ VisibleSelection Editor::selectionForCommand(Event* event) {
   if (textControlOfTarget &&
       (selection.start().isNull() ||
        textControlOfTarget != textControlOfSelectionStart)) {
-    if (Range* range = textControlOfTarget->selection()) {
-      return createVisibleSelection(
-          SelectionInDOMTree::Builder()
-              .setBaseAndExtent(EphemeralRange(range))
-              .setIsDirectional(selection.isDirectional())
-              .build());
-    }
+    const SelectionInDOMTree& select = textControlOfTarget->selection();
+    if (!select.isNone())
+      return createVisibleSelection(select);
   }
   return selection;
 }

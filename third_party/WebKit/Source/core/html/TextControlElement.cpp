@@ -609,9 +609,9 @@ static inline void setContainerAndOffsetForRange(Node* node,
   }
 }
 
-Range* TextControlElement::selection() const {
+SelectionInDOMTree TextControlElement::selection() const {
   if (!layoutObject() || !isTextControl())
-    return nullptr;
+    return SelectionInDOMTree();
 
   int start = m_cachedSelectionStart;
   int end = m_cachedSelectionEnd;
@@ -619,10 +619,14 @@ Range* TextControlElement::selection() const {
   DCHECK_LE(start, end);
   HTMLElement* innerText = innerEditorElement();
   if (!innerText)
-    return nullptr;
+    return SelectionInDOMTree();
 
-  if (!innerText->hasChildren())
-    return Range::create(document(), innerText, 0, innerText, 0);
+  if (!innerText->hasChildren()) {
+    return SelectionInDOMTree::Builder()
+        .collapse(Position(innerText, 0))
+        .setIsDirectional(selectionDirection() != "none")
+        .build();
+  }
 
   int offset = 0;
   Node* startNode = 0;
@@ -644,9 +648,12 @@ Range* TextControlElement::selection() const {
   }
 
   if (!startNode || !endNode)
-    return nullptr;
+    return SelectionInDOMTree();
 
-  return Range::create(document(), startNode, start, endNode, end);
+  return SelectionInDOMTree::Builder()
+      .setBaseAndExtent(Position(startNode, start), Position(endNode, end))
+      .setIsDirectional(selectionDirection() != "none")
+      .build();
 }
 
 const AtomicString& TextControlElement::autocapitalize() const {

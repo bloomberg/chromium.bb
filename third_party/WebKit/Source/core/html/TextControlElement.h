@@ -28,13 +28,13 @@
 
 #include "base/gtest_prod_util.h"
 #include "core/CoreExport.h"
+#include "core/editing/SelectionTemplate.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/html/HTMLFormControlElementWithState.h"
 
 namespace blink {
 
 class ExceptionState;
-class Range;
 
 enum TextFieldSelectionDirection {
   SelectionHasNoDirection,
@@ -100,7 +100,7 @@ class CORE_EXPORT TextControlElement : public HTMLFormControlElementWithState {
   bool setSelectionRange(unsigned start,
                          unsigned end,
                          TextFieldSelectionDirection = SelectionHasNoDirection);
-  Range* selection() const;
+  SelectionInDOMTree selection() const;
 
   virtual bool supportsAutocapitalize() const = 0;
   virtual const AtomicString& defaultAutocapitalize() const = 0;
