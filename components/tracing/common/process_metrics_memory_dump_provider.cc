@@ -213,6 +213,10 @@ std::unique_ptr<base::ProcessMetrics> CreateProcessMetrics(
 // static
 uint64_t ProcessMetricsMemoryDumpProvider::rss_bytes_for_testing = 0;
 
+// static
+ProcessMetricsMemoryDumpProvider::FactoryFunction
+    ProcessMetricsMemoryDumpProvider::factory_for_testing = nullptr;
+
 #if defined(OS_LINUX) || defined(OS_ANDROID)
 
 // static
@@ -542,23 +546,31 @@ bool ProcessMetricsMemoryDumpProvider::DumpProcessMemoryMaps(
 // static
 void ProcessMetricsMemoryDumpProvider::RegisterForProcess(
     base::ProcessId process) {
-  std::unique_ptr<ProcessMetricsMemoryDumpProvider> metrics_provider(
-      new ProcessMetricsMemoryDumpProvider(process));
-  base::trace_event::MemoryDumpProvider::Options options;
-  options.target_pid = process;
-  options.is_fast_polling_supported = true;
-  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-      metrics_provider.get(), "ProcessMemoryMetrics", nullptr, options);
+  std::unique_ptr<ProcessMetricsMemoryDumpProvider> owned_provider;
+  if (factory_for_testing) {
+    owned_provider = factory_for_testing(process);
+  } else {
+    owned_provider = std::unique_ptr<ProcessMetricsMemoryDumpProvider>(
+        new ProcessMetricsMemoryDumpProvider(process));
+  }
+
+  ProcessMetricsMemoryDumpProvider* provider = owned_provider.get();
   bool did_insert =
       g_dump_providers_map.Get()
-          .insert(std::make_pair(process, std::move(metrics_provider)))
+          .insert(std::make_pair(process, std::move(owned_provider)))
           .second;
   if (!did_insert) {
     DLOG(ERROR) << "ProcessMetricsMemoryDumpProvider already registered for "
                 << (process == base::kNullProcessId
                         ? "current process"
                         : "process id " + base::IntToString(process));
+    return;
   }
+  base::trace_event::MemoryDumpProvider::Options options;
+  options.target_pid = process;
+  options.is_fast_polling_supported = true;
+  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+      provider, "ProcessMemoryMetrics", nullptr, options);
 }
 
 // static

@@ -483,6 +483,17 @@ void MemoryDumpManager::RequestGlobalDump(
   RequestGlobalDump(dump_type, level_of_detail, MemoryDumpCallback());
 }
 
+bool MemoryDumpManager::IsDumpProviderRegisteredForTesting(
+    MemoryDumpProvider* provider) {
+  AutoLock lock(lock_);
+
+  for (const auto& info : dump_providers_) {
+    if (info->dump_provider == provider)
+      return true;
+  }
+  return false;
+}
+
 void MemoryDumpManager::CreateProcessDump(const MemoryDumpRequestArgs& args,
                                           const MemoryDumpCallback& callback) {
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(kTraceCategory, "ProcessMemoryDump",

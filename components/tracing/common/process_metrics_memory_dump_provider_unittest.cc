@@ -7,10 +7,12 @@
 #include <stdint.h>
 
 #include <memory>
+#include <unordered_set>
 
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/process/process_metrics.h"
+#include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/process_memory_maps.h"
 #include "base/trace_event/process_memory_totals.h"
@@ -133,6 +135,25 @@ void CreateTempFileWithContents(const char* contents, base::ScopedFILE* file) {
 }  // namespace
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
+class MockMemoryDumpProvider : public ProcessMetricsMemoryDumpProvider {
+ public:
+  MockMemoryDumpProvider(base::ProcessId process);
+  ~MockMemoryDumpProvider() override;
+};
+
+std::unordered_set<MockMemoryDumpProvider*> g_live_mocks;
+std::unordered_set<MockMemoryDumpProvider*> g_dead_mocks;
+
+MockMemoryDumpProvider::MockMemoryDumpProvider(base::ProcessId process)
+    : ProcessMetricsMemoryDumpProvider(process) {
+  g_live_mocks.insert(this);
+}
+
+MockMemoryDumpProvider::~MockMemoryDumpProvider() {
+  g_live_mocks.erase(this);
+  g_dead_mocks.insert(this);
+}
+
 TEST(ProcessMetricsMemoryDumpProviderTest, DumpRSS) {
   const base::trace_event::MemoryDumpArgs high_detail_args = {
       base::trace_event::MemoryDumpLevelOfDetail::DETAILED};
@@ -244,6 +265,27 @@ TEST(ProcessMetricsMemoryDumpProviderTest, ParseProcSmaps) {
   EXPECT_EQ(4 * 1024UL, regions_2[0].byte_stats_private_dirty_resident);
   EXPECT_EQ(0 * 1024UL, regions_2[0].byte_stats_swapped);
 }
+
+TEST(ProcessMetricsMemoryDumpProviderTest, DoubleRegister) {
+  auto factory = [](base::ProcessId process) {
+    return std::unique_ptr<ProcessMetricsMemoryDumpProvider>(
+        new MockMemoryDumpProvider(process));
+  };
+  ProcessMetricsMemoryDumpProvider::factory_for_testing = factory;
+  ProcessMetricsMemoryDumpProvider::RegisterForProcess(1);
+  ProcessMetricsMemoryDumpProvider::RegisterForProcess(1);
+  ASSERT_EQ(1u, g_live_mocks.size());
+  ASSERT_EQ(1u, g_dead_mocks.size());
+  auto* manager = base::trace_event::MemoryDumpManager::GetInstance();
+  MockMemoryDumpProvider* live_mock = *g_live_mocks.begin();
+  EXPECT_TRUE(manager->IsDumpProviderRegisteredForTesting(live_mock));
+  auto* dead_mock = *g_dead_mocks.begin();
+  EXPECT_FALSE(manager->IsDumpProviderRegisteredForTesting(dead_mock));
+  ProcessMetricsMemoryDumpProvider::UnregisterForProcess(1);
+  g_live_mocks.clear();
+  g_dead_mocks.clear();
+}
+
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
 TEST(ProcessMetricsMemoryDumpProviderTest, TestPollFastMemoryTotal) {
@@ -392,5 +434,4 @@ TEST(ProcessMetricsMemoryDumpProviderTest, NoDuplicateRegions) {
 }
 
 #endif  // defined(OS_MACOSX)
-
 }  // namespace tracing
