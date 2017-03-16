@@ -1,0 +1,29 @@
+<title>InputEvent: macOS Transpose</title>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<div id="editable" contenteditable></div>
+<script>
+test(() => {
+    assert_not_equals(window.testRunner, undefined, 'This test requires testRunner.');
+
+    let eventRecorder = '';
+    document.addEventListener('beforeinput', event => {
+        eventRecorder += `beforeinput-${event.inputType}-${event.data}-`;
+    });
+    document.addEventListener('input', event => {
+        eventRecorder += `input-${event.inputType}`;
+    });
+
+    const editable = document.getElementById('editable');
+    editable.innerHTML = 'abc';
+    editable.focus();
+    const selection = window.getSelection();
+    selection.collapse(editable, 1); // End of first line.
+
+    // Test Transpose.
+    eventRecorder = '';
+    testRunner.execCommand('transpose');
+    assert_equals(editable.innerHTML, 'acb');
+    assert_equals(eventRecorder, 'beforeinput-insertTranspose-cb-input-insertTranspose');
+});
+</script>

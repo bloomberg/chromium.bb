@@ -1416,11 +1416,23 @@ void Editor::transpose() {
       frame().selection().computeVisibleSelectionInDOMTreeDeprecated())
     frame().selection().setSelection(newSelection);
 
+  if (dispatchBeforeInputInsertText(
+          eventTargetNodeForDocument(frame().document()), transposed,
+          InputEvent::InputType::InsertTranspose) !=
+      DispatchEventResult::NotCanceled)
+    return;
+
+  // 'beforeinput' event handler may destroy document.
+  if (m_frame->document()->frame() != m_frame)
+    return;
+
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited. see http://crbug.com/590369 for more details.
+  frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+
   // Insert the transposed characters.
-  // TODO(chongz): Once we add |InsertTranspose| in |InputEvent::InputType|, we
-  // should use it instead of |InsertFromPaste|.
   replaceSelectionWithText(transposed, false, false,
-                           InputEvent::InputType::InsertFromPaste);
+                           InputEvent::InputType::InsertTranspose);
 }
 
 void Editor::addToKillRing(const EphemeralRange& range) {

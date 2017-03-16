@@ -26,6 +26,7 @@ const struct {
     {InputEvent::InputType::InsertFromPaste, "insertFromPaste"},
     {InputEvent::InputType::InsertFromDrop, "insertFromDrop"},
     {InputEvent::InputType::InsertFromYank, "insertFromYank"},
+    {InputEvent::InputType::InsertTranspose, "insertTranspose"},
     {InputEvent::InputType::InsertReplacementText, "insertReplacementText"},
     {InputEvent::InputType::InsertCompositionText, "insertCompositionText"},
     {InputEvent::InputType::DeleteWordBackward, "deleteWordBackward"},

@@ -35,6 +35,7 @@ class InputEvent final : public UIEvent {
     InsertFromPaste,
     InsertFromDrop,
     InsertFromYank,
+    InsertTranspose,
     InsertReplacementText,
     InsertCompositionText,
     // Deletion.
