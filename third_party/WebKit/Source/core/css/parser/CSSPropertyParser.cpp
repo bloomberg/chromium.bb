@@ -1034,53 +1034,6 @@ static CSSValue* consumeScrollSnapPoints(CSSParserTokenRange& range,
   return nullptr;
 }
 
-static CSSValue* consumeContentDistributionOverflowPosition(
-    CSSParserTokenRange& range) {
-  if (identMatches<CSSValueNormal, CSSValueBaseline, CSSValueLastBaseline>(
-          range.peek().id()))
-    return CSSContentDistributionValue::create(
-        CSSValueInvalid, range.consumeIncludingWhitespace().id(),
-        CSSValueInvalid);
-
-  CSSValueID distribution = CSSValueInvalid;
-  CSSValueID position = CSSValueInvalid;
-  CSSValueID overflow = CSSValueInvalid;
-  do {
-    CSSValueID id = range.peek().id();
-    if (identMatches<CSSValueSpaceBetween, CSSValueSpaceAround,
-                     CSSValueSpaceEvenly, CSSValueStretch>(id)) {
-      if (distribution != CSSValueInvalid)
-        return nullptr;
-      distribution = id;
-    } else if (identMatches<CSSValueStart, CSSValueEnd, CSSValueCenter,
-                            CSSValueFlexStart, CSSValueFlexEnd, CSSValueLeft,
-                            CSSValueRight>(id)) {
-      if (position != CSSValueInvalid)
-        return nullptr;
-      position = id;
-    } else if (identMatches<CSSValueUnsafe, CSSValueSafe>(id)) {
-      if (overflow != CSSValueInvalid)
-        return nullptr;
-      overflow = id;
-    } else {
-      return nullptr;
-    }
-    range.consumeIncludingWhitespace();
-  } while (!range.atEnd());
-
-  // The grammar states that we should have at least <content-distribution> or
-  // <content-position>.
-  if (position == CSSValueInvalid && distribution == CSSValueInvalid)
-    return nullptr;
-
-  // The grammar states that <overflow-position> must be associated to
-  // <content-position>.
-  if (overflow != CSSValueInvalid && position == CSSValueInvalid)
-    return nullptr;
-
-  return CSSContentDistributionValue::create(distribution, position, overflow);
-}
-
 static CSSIdentifierValue* consumeBorderImageRepeatKeyword(
     CSSParserTokenRange& range) {
   return consumeIdent<CSSValueStretch, CSSValueRepeat, CSSValueSpace,
@@ -2054,10 +2007,6 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
     case CSSPropertyScrollSnapPointsX:
     case CSSPropertyScrollSnapPointsY:
       return consumeScrollSnapPoints(m_range, m_context->mode());
-    case CSSPropertyJustifyContent:
-    case CSSPropertyAlignContent:
-      ASSERT(RuntimeEnabledFeatures::cssGridLayoutEnabled());
-      return consumeContentDistributionOverflowPosition(m_range);
     case CSSPropertyBorderImageRepeat:
     case CSSPropertyWebkitMaskBoxImageRepeat:
       return consumeBorderImageRepeat(m_range);

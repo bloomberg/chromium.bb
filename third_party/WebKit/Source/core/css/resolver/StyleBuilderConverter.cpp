@@ -563,6 +563,7 @@ StyleContentAlignmentData StyleBuilderConverter::convertContentAlignmentData(
   if (contentValue.overflow()->getValueID() != CSSValueInvalid)
     alignmentData.setOverflow(
         contentValue.overflow()->convertTo<OverflowAlignment>());
+
   return alignmentData;
 }
 

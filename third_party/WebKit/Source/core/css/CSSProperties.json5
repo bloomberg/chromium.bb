@@ -531,6 +531,7 @@
 
     {
       name: "align-content",
+      api_methods: ["parseSingleValue"],
       api_class: "CSSPropertyAPIAlignOrJustifyContent",
       converter: "convertContentAlignmentData",
       initial: "initialContentAlignment",
@@ -1141,6 +1142,7 @@
     {
       name: "justify-content",
       api_class: "CSSPropertyAPIAlignOrJustifyContent",
+      api_methods: ["parseSingleValue"],
       converter: "convertContentAlignmentData",
       initial: "initialContentAlignment",
     },

@@ -4,6 +4,7 @@
 
 #include "core/css/properties/CSSPropertyAlignmentUtils.h"
 
+#include "core/css/CSSContentDistributionValue.h"
 #include "core/css/CSSValuePair.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 
@@ -19,6 +20,28 @@ CSSIdentifierValue* consumeSelfPositionKeyword(CSSParserTokenRange& range) {
       id == CSSValueRight)
     return CSSPropertyParserHelpers::consumeIdent(range);
   return nullptr;
+}
+
+bool isContentDistributionKeyword(CSSValueID id) {
+  return CSSPropertyParserHelpers::identMatches<
+      CSSValueSpaceBetween, CSSValueSpaceAround, CSSValueSpaceEvenly,
+      CSSValueStretch>(id);
+}
+
+bool isContentPositionKeyword(CSSValueID id) {
+  return CSSPropertyParserHelpers::identMatches<
+      CSSValueStart, CSSValueEnd, CSSValueCenter, CSSValueFlexStart,
+      CSSValueFlexEnd, CSSValueLeft, CSSValueRight>(id);
+}
+
+bool isOverflowKeyword(CSSValueID id) {
+  return CSSPropertyParserHelpers::identMatches<CSSValueUnsafe, CSSValueSafe>(
+      id);
+}
+
+bool isBaselineKeyword(CSSValueID id) {
+  return CSSPropertyParserHelpers::identMatches<CSSValueFirst, CSSValueLast,
+                                                CSSValueBaseline>(id);
 }
 
 CSSValue* consumeBaselineKeyword(CSSParserTokenRange& range) {
@@ -47,9 +70,7 @@ CSSValue* CSSPropertyAlignmentUtils::consumeSelfPositionOverflowPosition(
           range.peek().id()))
     return CSSPropertyParserHelpers::consumeIdent(range);
 
-  if (CSSPropertyParserHelpers::identMatches<CSSValueFirst, CSSValueLast,
-                                             CSSValueBaseline>(
-          range.peek().id()))
+  if (isBaselineKeyword(range.peek().id()))
     return consumeBaselineKeyword(range);
 
   CSSIdentifierValue* overflowPosition =
@@ -68,6 +89,68 @@ CSSValue* CSSPropertyAlignmentUtils::consumeSelfPositionOverflowPosition(
                                 CSSValuePair::DropIdenticalValues);
   }
   return selfPosition;
+}
+
+CSSValue* CSSPropertyAlignmentUtils::consumeContentDistributionOverflowPosition(
+    CSSParserTokenRange& range) {
+  CSSValueID id = range.peek().id();
+  if (CSSPropertyParserHelpers::identMatches<CSSValueNormal>(id)) {
+    return CSSContentDistributionValue::create(
+        CSSValueInvalid, range.consumeIncludingWhitespace().id(),
+        CSSValueInvalid);
+  }
+
+  if (isBaselineKeyword(id)) {
+    CSSValue* baseline = consumeBaselineKeyword(range);
+    if (!baseline)
+      return nullptr;
+    CSSValueID baselineID = CSSValueBaseline;
+    if (baseline->isValuePair()) {
+      if (toCSSIdentifierValue(toCSSValuePair(baseline)->first())
+              .getValueID() == CSSValueLast) {
+        baselineID = CSSValueLastBaseline;
+      } else {
+        baselineID = CSSValueFirstBaseline;
+      }
+    }
+    return CSSContentDistributionValue::create(CSSValueInvalid, baselineID,
+                                               CSSValueInvalid);
+  }
+
+  CSSValueID distribution = CSSValueInvalid;
+  CSSValueID position = CSSValueInvalid;
+  CSSValueID overflow = CSSValueInvalid;
+  do {
+    if (isContentDistributionKeyword(id)) {
+      if (distribution != CSSValueInvalid)
+        return nullptr;
+      distribution = id;
+    } else if (isContentPositionKeyword(id)) {
+      if (position != CSSValueInvalid)
+        return nullptr;
+      position = id;
+    } else if (isOverflowKeyword(id)) {
+      if (overflow != CSSValueInvalid)
+        return nullptr;
+      overflow = id;
+    } else {
+      return nullptr;
+    }
+    range.consumeIncludingWhitespace();
+    id = range.peek().id();
+  } while (!range.atEnd());
+
+  // The grammar states that we should have at least <content-distribution> or
+  // <content-position>.
+  if (position == CSSValueInvalid && distribution == CSSValueInvalid)
+    return nullptr;
+
+  // The grammar states that <overflow-position> must be associated to
+  // <content-position>.
+  if (overflow != CSSValueInvalid && position == CSSValueInvalid)
+    return nullptr;
+
+  return CSSContentDistributionValue::create(distribution, position, overflow);
 }
 
 }  // namespace blink

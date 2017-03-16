@@ -659,16 +659,32 @@ valueForContentPositionAndDistributionWithOverflowAlignment(
     const StyleContentAlignmentData& data,
     CSSValueID normalBehaviorValueID) {
   CSSValueList* result = CSSValueList::createSpaceSeparated();
+  // Handle content-distribution values
   if (data.distribution() != ContentDistributionDefault)
     result->append(*CSSIdentifierValue::create(data.distribution()));
-  if (data.distribution() == ContentDistributionDefault ||
-      data.position() != ContentPositionNormal) {
-    if (!RuntimeEnabledFeatures::cssGridLayoutEnabled() &&
-        data.position() == ContentPositionNormal)
-      result->append(*CSSIdentifierValue::create(normalBehaviorValueID));
-    else
+
+  // Handle content-position values (either as fallback or actual value)
+  switch (data.position()) {
+    case ContentPositionNormal:
+      // Handle 'normal' value, not valid as content-distribution fallback.
+      if (data.distribution() == ContentDistributionDefault) {
+        result->append(*CSSIdentifierValue::create(
+            RuntimeEnabledFeatures::cssGridLayoutEnabled()
+                ? CSSValueNormal
+                : normalBehaviorValueID));
+      }
+      break;
+    case ContentPositionLastBaseline:
+      result->append(
+          *CSSValuePair::create(CSSIdentifierValue::create(CSSValueLast),
+                                CSSIdentifierValue::create(CSSValueBaseline),
+                                CSSValuePair::DropIdenticalValues));
+      break;
+    default:
       result->append(*CSSIdentifierValue::create(data.position()));
   }
+
+  // Handle overflow-alignment (only allowed for content-position values)
   if ((data.position() >= ContentPositionCenter ||
        data.distribution() != ContentDistributionDefault) &&
       data.overflow() != OverflowAlignmentDefault)

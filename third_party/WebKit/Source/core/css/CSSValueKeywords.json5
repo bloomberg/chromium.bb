@@ -984,6 +984,7 @@
     // stretch
     // baseline
     "last-baseline",
+    "first-baseline",
     "first",
     "last",
     // center

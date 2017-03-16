@@ -3466,6 +3466,8 @@ inline ItemPosition CSSIdentifierValue::convertTo() const {
       return ItemPositionStretch;
     case CSSValueBaseline:
       return ItemPositionBaseline;
+    case CSSValueFirstBaseline:
+      return ItemPositionBaseline;
     case CSSValueLastBaseline:
       return ItemPositionLastBaseline;
     case CSSValueCenter:
@@ -3536,6 +3538,8 @@ inline ContentPosition CSSIdentifierValue::convertTo() const {
     case CSSValueNormal:
       return ContentPositionNormal;
     case CSSValueBaseline:
+      return ContentPositionBaseline;
+    case CSSValueFirstBaseline:
       return ContentPositionBaseline;
     case CSSValueLastBaseline:
       return ContentPositionLastBaseline;
