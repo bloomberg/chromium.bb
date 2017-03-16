@@ -225,6 +225,16 @@ Polymer({
     // Hide the new passphrase box if the sync data has been encrypted.
     if (this.syncPrefs.encryptAllData)
       this.creatingNewPassphrase_ = false;
+
+    // Focus the password input box if password is needed to start sync.
+    if (this.syncPrefs.passphraseRequired) {
+      // Async to allow the dom-if templates to render first.
+      this.async(function() {
+        var input = /** @type {!PaperInputElement} */ (
+            this.$$('#existingPassphraseInput'));
+        input.inputElement.focus();
+      }.bind(this));
+    }
   },
 
   /**

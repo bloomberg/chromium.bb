@@ -372,6 +372,7 @@ cr.define('settings_people_page_sync_page', function() {
 
         Polymer.dom.flush();
 
+        assertTrue(syncPage.$.encryptionDescription.hidden);
         assertTrue(syncPage.$.encryptionRadioGroupContainer.hidden);
       });
 
