@@ -759,6 +759,11 @@ CrSettingsSiteSettingsTest.prototype = {
   browsePreload: 'chrome://md-settings/privacy_page/privacy_page.html',
 
   /** @override */
+  commandLineSwitches: [{
+    switchName: 'enable-site-settings',
+  }],
+
+  /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
     // TODO(dbeam): split these up.
     'category_default_setting_tests.js',

@@ -650,7 +650,6 @@ cr.define('site_list', function() {
         setUpCategory(contentType, settings.PermissionValues.ALLOW, prefs);
         return browserProxy.whenCalled('getExceptionList').then(
             function(actualContentType) {
-              testElement.enableSiteSettings_ = true;
               assertEquals(contentType, actualContentType);
 
               // Required for firstItem to be found below.
@@ -781,7 +780,6 @@ cr.define('site_list', function() {
               var resolver = new PromiseResolver();
               testElement.async(resolver.resolve);
               return resolver.promise.then(function() {
-                testElement.enableSiteSettings_ = true;
                 // All Sites calls getExceptionList for all categories, starting
                 // with Cookies.
                 assertEquals(
@@ -825,7 +823,6 @@ cr.define('site_list', function() {
               var resolver = new PromiseResolver();
               testElement.async(resolver.resolve);
               return resolver.promise.then(function() {
-                testElement.enableSiteSettings_ = true;
                 // All Sites calls getExceptionList for all categories, starting
                 // with Cookies.
                 assertEquals(
