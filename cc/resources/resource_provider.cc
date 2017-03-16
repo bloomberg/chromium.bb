@@ -48,27 +48,41 @@ using gpu::gles2::GLES2Interface;
 
 namespace cc {
 
-class IdAllocator {
+class TextureIdAllocator {
  public:
-  virtual ~IdAllocator() {}
-
-  virtual GLuint NextId() = 0;
-
- protected:
-  IdAllocator(GLES2Interface* gl, size_t id_allocation_chunk_size)
+  TextureIdAllocator(GLES2Interface* gl,
+                     size_t texture_id_allocation_chunk_size)
       : gl_(gl),
-        id_allocation_chunk_size_(id_allocation_chunk_size),
-        ids_(new GLuint[id_allocation_chunk_size]),
-        next_id_index_(id_allocation_chunk_size) {
+        id_allocation_chunk_size_(texture_id_allocation_chunk_size),
+        ids_(new GLuint[texture_id_allocation_chunk_size]),
+        next_id_index_(texture_id_allocation_chunk_size) {
     DCHECK(id_allocation_chunk_size_);
     DCHECK_LE(id_allocation_chunk_size_,
               static_cast<size_t>(std::numeric_limits<int>::max()));
   }
 
+  ~TextureIdAllocator() {
+    gl_->DeleteTextures(
+        static_cast<int>(id_allocation_chunk_size_ - next_id_index_),
+        ids_.get() + next_id_index_);
+  }
+
+  GLuint NextId() {
+    if (next_id_index_ == id_allocation_chunk_size_) {
+      gl_->GenTextures(static_cast<int>(id_allocation_chunk_size_), ids_.get());
+      next_id_index_ = 0;
+    }
+
+    return ids_[next_id_index_++];
+  }
+
+ private:
   GLES2Interface* gl_;
   const size_t id_allocation_chunk_size_;
   std::unique_ptr<GLuint[]> ids_;
   size_t next_id_index_;
+
+  DISALLOW_COPY_AND_ASSIGN(TextureIdAllocator);
 };
 
 namespace {
@@ -157,55 +171,6 @@ class ScopedSetActiveTexture {
  private:
   GLES2Interface* gl_;
   GLenum unit_;
-};
-
-class TextureIdAllocator : public IdAllocator {
- public:
-  TextureIdAllocator(GLES2Interface* gl,
-                     size_t texture_id_allocation_chunk_size)
-      : IdAllocator(gl, texture_id_allocation_chunk_size) {}
-  ~TextureIdAllocator() override {
-    gl_->DeleteTextures(
-        static_cast<int>(id_allocation_chunk_size_ - next_id_index_),
-        ids_.get() + next_id_index_);
-  }
-
-  // Overridden from IdAllocator:
-  GLuint NextId() override {
-    if (next_id_index_ == id_allocation_chunk_size_) {
-      gl_->GenTextures(static_cast<int>(id_allocation_chunk_size_), ids_.get());
-      next_id_index_ = 0;
-    }
-
-    return ids_[next_id_index_++];
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TextureIdAllocator);
-};
-
-class BufferIdAllocator : public IdAllocator {
- public:
-  BufferIdAllocator(GLES2Interface* gl, size_t buffer_id_allocation_chunk_size)
-      : IdAllocator(gl, buffer_id_allocation_chunk_size) {}
-  ~BufferIdAllocator() override {
-    gl_->DeleteBuffers(
-        static_cast<int>(id_allocation_chunk_size_ - next_id_index_),
-        ids_.get() + next_id_index_);
-  }
-
-  // Overridden from IdAllocator:
-  GLuint NextId() override {
-    if (next_id_index_ == id_allocation_chunk_size_) {
-      gl_->GenBuffers(static_cast<int>(id_allocation_chunk_size_), ids_.get());
-      next_id_index_ = 0;
-    }
-
-    return ids_[next_id_index_++];
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(BufferIdAllocator);
 };
 
 // Generates process-unique IDs to use for tracing a ResourceProvider's
@@ -487,12 +452,9 @@ ResourceProvider::ResourceProvider(
     return;
 
   DCHECK(!texture_id_allocator_);
-  DCHECK(!buffer_id_allocator_);
   GLES2Interface* gl = ContextGL();
   texture_id_allocator_.reset(
       new TextureIdAllocator(gl, id_allocation_chunk_size));
-  buffer_id_allocator_.reset(
-      new BufferIdAllocator(gl, id_allocation_chunk_size));
 }
 
 ResourceProvider::~ResourceProvider() {
@@ -521,7 +483,6 @@ ResourceProvider::~ResourceProvider() {
 #endif  // DCHECK_IS_ON()
 
   texture_id_allocator_ = nullptr;
-  buffer_id_allocator_ = nullptr;
   gl->Finish();
 }
 

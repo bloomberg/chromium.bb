@@ -52,9 +52,9 @@ class GLES2Interface;
 
 namespace cc {
 class BlockingTaskRunner;
-class IdAllocator;
 class SharedBitmap;
 class SharedBitmapManager;
+class TextureIdAllocator;
 
 // This class is not thread-safe and can only be called from the thread it was
 // created on (in practice, the impl thread).
@@ -757,8 +757,7 @@ class CC_EXPORT ResourceProvider
   int next_child_;
   ChildMap children_;
   scoped_refptr<Fence> current_read_lock_fence_;
-  std::unique_ptr<IdAllocator> texture_id_allocator_;
-  std::unique_ptr<IdAllocator> buffer_id_allocator_;
+  std::unique_ptr<TextureIdAllocator> texture_id_allocator_;
   BufferToTextureTargetMap buffer_to_texture_target_map_;
 
   base::ThreadChecker thread_checker_;
