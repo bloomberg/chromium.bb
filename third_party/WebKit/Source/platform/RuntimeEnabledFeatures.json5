@@ -1031,6 +1031,9 @@
     {
       name: "MediaControlsOverlayPlayButton",
       settable_from_internals: true,
+    },
+    {
+      name: "VideoFullscreenDetection",
     }
   ],
 }

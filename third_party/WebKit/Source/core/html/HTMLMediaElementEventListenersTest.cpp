@@ -11,6 +11,7 @@
 #include "core/html/shadow/MediaControls.h"
 #include "core/loader/EmptyClients.h"
 #include "core/testing/DummyPageHolder.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/testing/EmptyWebMediaPlayer.h"
 #include "platform/testing/UnitTestHelpers.h"
@@ -131,6 +132,11 @@ TEST_F(HTMLMediaElementEventListenersTest,
 
 TEST_F(HTMLMediaElementEventListenersTest,
        FullscreenDetectorTimerCancelledOnContextDestroy) {
+  bool originalVideoFullscreenDetectionEnabled =
+      RuntimeEnabledFeatures::videoFullscreenDetectionEnabled();
+
+  RuntimeEnabledFeatures::setVideoFullscreenDetectionEnabled(true);
+
   EXPECT_EQ(video(), nullptr);
   document().body()->setInnerHTML("<body><video></video</body>");
   video()->setSrc("http://example.com");
@@ -170,6 +176,9 @@ TEST_F(HTMLMediaElementEventListenersTest,
   // Should only notify the false value when ExecutionContext is destroyed.
   EXPECT_EQ(1u, observedResults.size());
   EXPECT_FALSE(observedResults[0]);
+
+  RuntimeEnabledFeatures::setVideoFullscreenDetectionEnabled(
+      originalVideoFullscreenDetectionEnabled);
 }
 
 }  // namespace blink

@@ -388,6 +388,10 @@ void WebRuntimeFeatures::enableVideoFullscreenOrientationLock(bool enable) {
   RuntimeEnabledFeatures::setVideoFullscreenOrientationLockEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableVideoFullscreenDetection(bool enable) {
+  RuntimeEnabledFeatures::setVideoFullscreenDetectionEnabled(enable);
+}
+
 void WebRuntimeFeatures::enableMediaControlsOverlayPlayButton(bool enable) {
   RuntimeEnabledFeatures::setMediaControlsOverlayPlayButtonEnabled(enable);
 }

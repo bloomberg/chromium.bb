@@ -54,12 +54,15 @@ namespace blink {
 using namespace HTMLNames;
 
 inline HTMLVideoElement::HTMLVideoElement(Document& document)
-    : HTMLMediaElement(videoTag, document),
-      m_customControlsFullscreenDetector(
-          new MediaCustomControlsFullscreenDetector(*this)) {
+    : HTMLMediaElement(videoTag, document) {
   if (document.settings()) {
     m_defaultPosterURL =
         AtomicString(document.settings()->getDefaultVideoPosterURL());
+  }
+
+  if (RuntimeEnabledFeatures::videoFullscreenDetectionEnabled()) {
+    m_customControlsFullscreenDetector =
+        new MediaCustomControlsFullscreenDetector(*this);
   }
 }
 
@@ -77,7 +80,9 @@ DEFINE_TRACE(HTMLVideoElement) {
 }
 
 void HTMLVideoElement::contextDestroyed(ExecutionContext* context) {
-  m_customControlsFullscreenDetector->contextDestroyed();
+  if (m_customControlsFullscreenDetector)
+    m_customControlsFullscreenDetector->contextDestroyed();
+
   HTMLMediaElement::contextDestroyed(context);
 }
 

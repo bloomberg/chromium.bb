@@ -11,6 +11,7 @@ import android.os.Handler;
 import android.os.Looper;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.browser.banners.AppDetailsDelegate;
 import org.chromium.chrome.browser.customtabs.CustomTabsConnection;
 import org.chromium.chrome.browser.datausage.ExternalDataUseObserver;
@@ -55,6 +56,7 @@ import org.chromium.policy.CombinedPolicyProvider;
 public abstract class AppHooks {
     private static AppHooksImpl sInstance;
 
+    @CalledByNative
     public static AppHooks get() {
         if (sInstance == null) {
             sInstance = new AppHooksImpl();
@@ -303,5 +305,15 @@ public abstract class AppHooks {
         // TODO(dtrainor): Eventually make sure the service gets put into the foreground with
         // {@link android.app.Service#startForeground(int, Notification)}.
         ContextUtils.getApplicationContext().startService(intent);
+    }
+
+    /**
+     * @return Whether the renderer should detect whether video elements are in fullscreen. The
+     * detection results can be retrieved through
+     * {@link WebContents.hasActiveEffectivelyFullscreenVideo()}.
+     */
+    @CalledByNative
+    public boolean shouldDetectVideoFullscreen() {
+        return false;
     }
 }

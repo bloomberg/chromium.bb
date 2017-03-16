@@ -249,6 +249,7 @@
 #elif defined(OS_LINUX)
 #include "chrome/browser/chrome_browser_main_linux.h"
 #elif defined(OS_ANDROID)
+#include "chrome/browser/android/app_hooks.h"
 #include "chrome/browser/chrome_browser_main_android.h"
 #include "chrome/common/descriptors_android.h"
 #include "components/crash/content/browser/crash_dump_manager_android.h"
@@ -2683,6 +2684,9 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
       }
     }
   }
+
+  web_prefs->video_fullscreen_detection_enabled =
+      chrome::android::AppHooks::ShouldDetectVideoFullscreen();
 #endif  // defined(OS_ANDROID)
 
   for (size_t i = 0; i < extra_parts_.size(); ++i)

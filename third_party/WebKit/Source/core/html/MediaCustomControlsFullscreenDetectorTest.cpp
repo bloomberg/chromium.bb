@@ -7,6 +7,7 @@
 #include "core/EventTypeNames.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/testing/DummyPageHolder.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/geometry/IntRect.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -25,11 +26,21 @@ struct TestParam {
 class MediaCustomControlsFullscreenDetectorTest : public ::testing::Test {
  protected:
   void SetUp() override {
+    m_originalVideoFullscreenDetectionEnabled =
+        RuntimeEnabledFeatures::videoFullscreenDetectionEnabled();
+
+    RuntimeEnabledFeatures::setVideoFullscreenDetectionEnabled(true);
+
     m_pageHolder = DummyPageHolder::create();
     m_newPageHolder = DummyPageHolder::create();
 
     m_video = HTMLVideoElement::create(m_pageHolder->document());
     document().body()->appendChild(&videoElement());
+  }
+
+  void TearDown() override {
+    RuntimeEnabledFeatures::setVideoFullscreenDetectionEnabled(
+        m_originalVideoFullscreenDetectionEnabled);
   }
 
   HTMLVideoElement& videoElement() const { return *m_video; }
@@ -65,6 +76,8 @@ class MediaCustomControlsFullscreenDetectorTest : public ::testing::Test {
   std::unique_ptr<DummyPageHolder> m_pageHolder;
   std::unique_ptr<DummyPageHolder> m_newPageHolder;
   Persistent<HTMLVideoElement> m_video;
+
+  bool m_originalVideoFullscreenDetectionEnabled;
 };
 
 TEST_F(MediaCustomControlsFullscreenDetectorTest, computeIsDominantVideo) {

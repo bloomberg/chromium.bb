@@ -2562,6 +2562,8 @@ split_static_library("browser") {
       "android/activity_type_ids.cc",
       "android/activity_type_ids.h",
       "android/android_theme_resources.h",
+      "android/app_hooks.cc",
+      "android/app_hooks.h",
       "android/appmenu/app_menu_drag_helper.cc",
       "android/appmenu/app_menu_drag_helper.h",
       "android/background_sync_launcher_android.cc",
@@ -3935,6 +3937,7 @@ if (is_android) {
   generate_jni("jni_headers") {
     sources = [
       "../android/java/src/org/chromium/chrome/browser/AfterStartupTaskUtils.java",
+      "../android/java/src/org/chromium/chrome/browser/AppHooks.java",
       "../android/java/src/org/chromium/chrome/browser/ApplicationLifetime.java",
       "../android/java/src/org/chromium/chrome/browser/BackgroundSyncLauncher.java",
       "../android/java/src/org/chromium/chrome/browser/BluetoothChooserDialog.java",
