@@ -17,7 +17,7 @@ inline HTMLRTElement::HTMLRTElement(Document& document)
 DEFINE_NODE_FACTORY(HTMLRTElement)
 
 LayoutObject* HTMLRTElement::createLayoutObject(const ComputedStyle& style) {
-  if (style.display() == EDisplay::Block)
+  if (style.display() == EDisplay::kBlock)
     return new LayoutRubyText(this);
   return LayoutObject::createObject(this, style);
 }

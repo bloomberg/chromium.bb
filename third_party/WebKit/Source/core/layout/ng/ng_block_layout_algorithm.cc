@@ -36,7 +36,7 @@ bool ShouldShrinkToFit(const NGConstraintSpace& parent_space,
   bool is_in_parallel_flow =
       IsParallelWritingMode(parent_space.WritingMode(), child_writing_mode);
 
-  return child_style.display() == EDisplay::InlineBlock ||
+  return child_style.display() == EDisplay::kInlineBlock ||
          child_style.isFloating() || !is_in_parallel_flow;
 }
 
@@ -285,8 +285,8 @@ bool IsNewFormattingContextForInFlowBlockLevelChild(
     return true;
 
   EDisplay display = style.display();
-  if (display == EDisplay::Grid || display == EDisplay::Flex ||
-      display == EDisplay::WebkitBox)
+  if (display == EDisplay::kGrid || display == EDisplay::kFlex ||
+      display == EDisplay::kWebkitBox)
     return true;
 
   if (space.WritingMode() != FromPlatformWritingMode(style.getWritingMode()))

@@ -713,8 +713,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     // LayoutBlock having a BLOCK or BOX display. Other classes such as
     // LayoutTextFragment are not LayoutBlocks and will return false.
     // See https://bugs.webkit.org/show_bug.cgi?id=56709.
-    return isAnonymous() && (style()->display() == EDisplay::Block ||
-                             style()->display() == EDisplay::WebkitBox) &&
+    return isAnonymous() &&
+           (style()->display() == EDisplay::kBlock ||
+            style()->display() == EDisplay::kWebkitBox) &&
            style()->styleType() == PseudoIdNone && isLayoutBlock() &&
            !isListMarker() && !isLayoutFlowThread() &&
            !isLayoutMultiColumnSet() && !isLayoutFullScreen() &&

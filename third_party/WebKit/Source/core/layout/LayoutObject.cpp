@@ -174,43 +174,43 @@ LayoutObject* LayoutObject::createObject(Element* element,
   }
 
   switch (style.display()) {
-    case EDisplay::None:
-    case EDisplay::Contents:
+    case EDisplay::kNone:
+    case EDisplay::kContents:
       return nullptr;
-    case EDisplay::Inline:
+    case EDisplay::kInline:
       return new LayoutInline(element);
-    case EDisplay::Block:
-    case EDisplay::FlowRoot:
-    case EDisplay::InlineBlock:
+    case EDisplay::kBlock:
+    case EDisplay::kFlowRoot:
+    case EDisplay::kInlineBlock:
       if (RuntimeEnabledFeatures::layoutNGEnabled())
         return new LayoutNGBlockFlow(element);
       return new LayoutBlockFlow(element);
-    case EDisplay::ListItem:
+    case EDisplay::kListItem:
       return new LayoutListItem(element);
-    case EDisplay::Table:
-    case EDisplay::InlineTable:
+    case EDisplay::kTable:
+    case EDisplay::kInlineTable:
       return new LayoutTable(element);
-    case EDisplay::TableRowGroup:
-    case EDisplay::TableHeaderGroup:
-    case EDisplay::TableFooterGroup:
+    case EDisplay::kTableRowGroup:
+    case EDisplay::kTableHeaderGroup:
+    case EDisplay::kTableFooterGroup:
       return new LayoutTableSection(element);
-    case EDisplay::TableRow:
+    case EDisplay::kTableRow:
       return new LayoutTableRow(element);
-    case EDisplay::TableColumnGroup:
-    case EDisplay::TableColumn:
+    case EDisplay::kTableColumnGroup:
+    case EDisplay::kTableColumn:
       return new LayoutTableCol(element);
-    case EDisplay::TableCell:
+    case EDisplay::kTableCell:
       return new LayoutTableCell(element);
-    case EDisplay::TableCaption:
+    case EDisplay::kTableCaption:
       return new LayoutTableCaption(element);
-    case EDisplay::WebkitBox:
-    case EDisplay::WebkitInlineBox:
+    case EDisplay::kWebkitBox:
+    case EDisplay::kWebkitInlineBox:
       return new LayoutDeprecatedFlexibleBox(*element);
-    case EDisplay::Flex:
-    case EDisplay::InlineFlex:
+    case EDisplay::kFlex:
+    case EDisplay::kInlineFlex:
       return new LayoutFlexibleBox(element);
-    case EDisplay::Grid:
-    case EDisplay::InlineGrid:
+    case EDisplay::kGrid:
+    case EDisplay::kInlineGrid:
       return new LayoutGrid(element);
   }
 

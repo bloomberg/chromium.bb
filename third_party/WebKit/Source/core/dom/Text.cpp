@@ -265,7 +265,7 @@ bool Text::textLayoutObjectIsNeeded(const ComputedStyle& style,
   if (!length())
     return false;
 
-  if (style.display() == EDisplay::None)
+  if (style.display() == EDisplay::kNone)
     return false;
 
   if (!containsOnlyWhitespace())

@@ -54,7 +54,7 @@ void LayoutTableRow::willBeRemovedFromTree() {
 
 void LayoutTableRow::styleDidChange(StyleDifference diff,
                                     const ComputedStyle* oldStyle) {
-  DCHECK_EQ(style()->display(), EDisplay::TableRow);
+  DCHECK_EQ(style()->display(), EDisplay::kTableRow);
 
   LayoutTableBoxComponent::styleDidChange(diff, oldStyle);
   propagateStyleToAnonymousChildren();
@@ -278,7 +278,7 @@ LayoutTableRow* LayoutTableRow::createAnonymousWithParent(
   LayoutTableRow* newRow = LayoutTableRow::createAnonymous(&parent->document());
   RefPtr<ComputedStyle> newStyle =
       ComputedStyle::createAnonymousStyleWithDisplay(parent->styleRef(),
-                                                     EDisplay::TableRow);
+                                                     EDisplay::kTableRow);
   newRow->setStyle(std::move(newStyle));
   return newRow;
 }

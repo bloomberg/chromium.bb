@@ -17,9 +17,9 @@ inline HTMLRubyElement::HTMLRubyElement(Document& document)
 DEFINE_NODE_FACTORY(HTMLRubyElement)
 
 LayoutObject* HTMLRubyElement::createLayoutObject(const ComputedStyle& style) {
-  if (style.display() == EDisplay::Inline)
+  if (style.display() == EDisplay::kInline)
     return new LayoutRubyAsInline(this);
-  if (style.display() == EDisplay::Block)
+  if (style.display() == EDisplay::kBlock)
     return new LayoutRubyAsBlock(this);
   return LayoutObject::createObject(this, style);
 }

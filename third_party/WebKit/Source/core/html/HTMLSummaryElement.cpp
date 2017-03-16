@@ -47,8 +47,8 @@ HTMLSummaryElement::HTMLSummaryElement(Document& document)
 LayoutObject* HTMLSummaryElement::createLayoutObject(
     const ComputedStyle& style) {
   EDisplay display = style.display();
-  if (display == EDisplay::Flex || display == EDisplay::InlineFlex ||
-      display == EDisplay::Grid || display == EDisplay::InlineGrid)
+  if (display == EDisplay::kFlex || display == EDisplay::kInlineFlex ||
+      display == EDisplay::kGrid || display == EDisplay::kInlineGrid)
     return LayoutObject::createObject(this, style);
   return new LayoutBlockFlow(this);
 }

@@ -1574,8 +1574,8 @@ const AtomicString Element::imageSourceURL() const {
 }
 
 bool Element::layoutObjectIsNeeded(const ComputedStyle& style) {
-  return style.display() != EDisplay::None &&
-         style.display() != EDisplay::Contents;
+  return style.display() != EDisplay::kNone &&
+         style.display() != EDisplay::kContents;
 }
 
 LayoutObject* Element::createLayoutObject(const ComputedStyle& style) {
@@ -3196,18 +3196,18 @@ const ComputedStyle* Element::nonLayoutObjectComputedStyle() const {
 
 bool Element::hasDisplayContentsStyle() const {
   if (const ComputedStyle* style = nonLayoutObjectComputedStyle())
-    return style->display() == EDisplay::Contents;
+    return style->display() == EDisplay::kContents;
   return false;
 }
 
 bool Element::shouldStoreNonLayoutObjectComputedStyle(
     const ComputedStyle& style) const {
 #if DCHECK_IS_ON()
-  if (style.display() == EDisplay::Contents)
+  if (style.display() == EDisplay::kContents)
     DCHECK(!layoutObject());
 #endif
 
-  return style.display() == EDisplay::Contents ||
+  return style.display() == EDisplay::kContents ||
          isHTMLOptGroupElement(*this) || isHTMLOptionElement(*this);
 }
 

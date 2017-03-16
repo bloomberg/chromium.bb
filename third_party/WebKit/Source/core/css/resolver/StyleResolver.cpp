@@ -561,7 +561,7 @@ PassRefPtr<ComputedStyle> StyleResolver::styleForDocument(Document& document) {
   // These are designed to match the user-agent stylesheet values for the
   // document element so that the common case doesn't need to create a new
   // ComputedStyle in Document::inheritHtmlAndBodyElementStyles.
-  documentStyle->setDisplay(EDisplay::Block);
+  documentStyle->setDisplay(EDisplay::kBlock);
   documentStyle->setPosition(EPosition::kAbsolute);
 
   // Document::inheritHtmlAndBodyElementStyles will set the final overflow
@@ -636,7 +636,7 @@ PassRefPtr<ComputedStyle> StyleResolver::styleForElement(
       !element->layoutObject()) {
     if (!s_styleNotYetAvailable) {
       s_styleNotYetAvailable = ComputedStyle::create().leakRef();
-      s_styleNotYetAvailable->setDisplay(EDisplay::None);
+      s_styleNotYetAvailable->setDisplay(EDisplay::kNone);
       s_styleNotYetAvailable->font().update(
           document().styleEngine().fontSelector());
     }

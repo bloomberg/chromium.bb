@@ -333,11 +333,11 @@ MultipleFieldsTemporalInputTypeView::customStyleForLayoutObject(
     PassRefPtr<ComputedStyle> originalStyle) {
   EDisplay originalDisplay = originalStyle->display();
   EDisplay newDisplay = originalDisplay;
-  if (originalDisplay == EDisplay::Inline ||
-      originalDisplay == EDisplay::InlineBlock)
-    newDisplay = EDisplay::InlineFlex;
-  else if (originalDisplay == EDisplay::Block)
-    newDisplay = EDisplay::Flex;
+  if (originalDisplay == EDisplay::kInline ||
+      originalDisplay == EDisplay::kInlineBlock)
+    newDisplay = EDisplay::kInlineFlex;
+  else if (originalDisplay == EDisplay::kBlock)
+    newDisplay = EDisplay::kFlex;
   TextDirection contentDirection = computedTextDirection();
   if (originalStyle->direction() == contentDirection &&
       originalDisplay == newDisplay)

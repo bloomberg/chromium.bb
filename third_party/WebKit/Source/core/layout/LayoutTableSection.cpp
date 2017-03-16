@@ -115,9 +115,9 @@ LayoutTableSection::~LayoutTableSection() {}
 
 void LayoutTableSection::styleDidChange(StyleDifference diff,
                                         const ComputedStyle* oldStyle) {
-  DCHECK(style()->display() == EDisplay::TableFooterGroup ||
-         style()->display() == EDisplay::TableRowGroup ||
-         style()->display() == EDisplay::TableHeaderGroup);
+  DCHECK(style()->display() == EDisplay::kTableFooterGroup ||
+         style()->display() == EDisplay::kTableRowGroup ||
+         style()->display() == EDisplay::kTableHeaderGroup);
 
   LayoutTableBoxComponent::styleDidChange(diff, oldStyle);
   propagateStyleToAnonymousChildren();
@@ -1846,7 +1846,7 @@ LayoutTableSection* LayoutTableSection::createAnonymousWithParent(
     const LayoutObject* parent) {
   RefPtr<ComputedStyle> newStyle =
       ComputedStyle::createAnonymousStyleWithDisplay(parent->styleRef(),
-                                                     EDisplay::TableRowGroup);
+                                                     EDisplay::kTableRowGroup);
   LayoutTableSection* newSection = new LayoutTableSection(nullptr);
   newSection->setDocumentForAnonymous(&parent->document());
   newSection->setStyle(std::move(newStyle));

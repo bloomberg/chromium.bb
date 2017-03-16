@@ -1066,73 +1066,73 @@ template <>
 inline CSSIdentifierValue::CSSIdentifierValue(EDisplay e)
     : CSSValue(IdentifierClass) {
   switch (e) {
-    case EDisplay::Inline:
+    case EDisplay::kInline:
       m_valueID = CSSValueInline;
       break;
-    case EDisplay::Block:
+    case EDisplay::kBlock:
       m_valueID = CSSValueBlock;
       break;
-    case EDisplay::ListItem:
+    case EDisplay::kListItem:
       m_valueID = CSSValueListItem;
       break;
-    case EDisplay::InlineBlock:
+    case EDisplay::kInlineBlock:
       m_valueID = CSSValueInlineBlock;
       break;
-    case EDisplay::Table:
+    case EDisplay::kTable:
       m_valueID = CSSValueTable;
       break;
-    case EDisplay::InlineTable:
+    case EDisplay::kInlineTable:
       m_valueID = CSSValueInlineTable;
       break;
-    case EDisplay::TableRowGroup:
+    case EDisplay::kTableRowGroup:
       m_valueID = CSSValueTableRowGroup;
       break;
-    case EDisplay::TableHeaderGroup:
+    case EDisplay::kTableHeaderGroup:
       m_valueID = CSSValueTableHeaderGroup;
       break;
-    case EDisplay::TableFooterGroup:
+    case EDisplay::kTableFooterGroup:
       m_valueID = CSSValueTableFooterGroup;
       break;
-    case EDisplay::TableRow:
+    case EDisplay::kTableRow:
       m_valueID = CSSValueTableRow;
       break;
-    case EDisplay::TableColumnGroup:
+    case EDisplay::kTableColumnGroup:
       m_valueID = CSSValueTableColumnGroup;
       break;
-    case EDisplay::TableColumn:
+    case EDisplay::kTableColumn:
       m_valueID = CSSValueTableColumn;
       break;
-    case EDisplay::TableCell:
+    case EDisplay::kTableCell:
       m_valueID = CSSValueTableCell;
       break;
-    case EDisplay::TableCaption:
+    case EDisplay::kTableCaption:
       m_valueID = CSSValueTableCaption;
       break;
-    case EDisplay::WebkitBox:
+    case EDisplay::kWebkitBox:
       m_valueID = CSSValueWebkitBox;
       break;
-    case EDisplay::WebkitInlineBox:
+    case EDisplay::kWebkitInlineBox:
       m_valueID = CSSValueWebkitInlineBox;
       break;
-    case EDisplay::Flex:
+    case EDisplay::kFlex:
       m_valueID = CSSValueFlex;
       break;
-    case EDisplay::InlineFlex:
+    case EDisplay::kInlineFlex:
       m_valueID = CSSValueInlineFlex;
       break;
-    case EDisplay::Grid:
+    case EDisplay::kGrid:
       m_valueID = CSSValueGrid;
       break;
-    case EDisplay::InlineGrid:
+    case EDisplay::kInlineGrid:
       m_valueID = CSSValueInlineGrid;
       break;
-    case EDisplay::Contents:
+    case EDisplay::kContents:
       m_valueID = CSSValueContents;
       break;
-    case EDisplay::FlowRoot:
+    case EDisplay::kFlowRoot:
       m_valueID = CSSValueFlowRoot;
       break;
-    case EDisplay::None:
+    case EDisplay::kNone:
       m_valueID = CSSValueNone;
       break;
   }
@@ -1142,57 +1142,57 @@ template <>
 inline EDisplay CSSIdentifierValue::convertTo() const {
   switch (m_valueID) {
     case CSSValueInline:
-      return EDisplay::Inline;
+      return EDisplay::kInline;
     case CSSValueBlock:
-      return EDisplay::Block;
+      return EDisplay::kBlock;
     case CSSValueListItem:
-      return EDisplay::ListItem;
+      return EDisplay::kListItem;
     case CSSValueInlineBlock:
-      return EDisplay::InlineBlock;
+      return EDisplay::kInlineBlock;
     case CSSValueTable:
-      return EDisplay::Table;
+      return EDisplay::kTable;
     case CSSValueInlineTable:
-      return EDisplay::InlineTable;
+      return EDisplay::kInlineTable;
     case CSSValueTableRowGroup:
-      return EDisplay::TableRowGroup;
+      return EDisplay::kTableRowGroup;
     case CSSValueTableHeaderGroup:
-      return EDisplay::TableHeaderGroup;
+      return EDisplay::kTableHeaderGroup;
     case CSSValueTableFooterGroup:
-      return EDisplay::TableFooterGroup;
+      return EDisplay::kTableFooterGroup;
     case CSSValueTableRow:
-      return EDisplay::TableRow;
+      return EDisplay::kTableRow;
     case CSSValueTableColumnGroup:
-      return EDisplay::TableColumnGroup;
+      return EDisplay::kTableColumnGroup;
     case CSSValueTableColumn:
-      return EDisplay::TableColumn;
+      return EDisplay::kTableColumn;
     case CSSValueTableCell:
-      return EDisplay::TableCell;
+      return EDisplay::kTableCell;
     case CSSValueTableCaption:
-      return EDisplay::TableCaption;
+      return EDisplay::kTableCaption;
     case CSSValueWebkitBox:
-      return EDisplay::WebkitBox;
+      return EDisplay::kWebkitBox;
     case CSSValueWebkitInlineBox:
-      return EDisplay::WebkitInlineBox;
+      return EDisplay::kWebkitInlineBox;
     case CSSValueFlex:
     case CSSValueWebkitFlex:
-      return EDisplay::Flex;
+      return EDisplay::kFlex;
     case CSSValueInlineFlex:
     case CSSValueWebkitInlineFlex:
-      return EDisplay::InlineFlex;
+      return EDisplay::kInlineFlex;
     case CSSValueGrid:
-      return EDisplay::Grid;
+      return EDisplay::kGrid;
     case CSSValueInlineGrid:
-      return EDisplay::InlineGrid;
+      return EDisplay::kInlineGrid;
     case CSSValueContents:
-      return EDisplay::Contents;
+      return EDisplay::kContents;
     case CSSValueFlowRoot:
-      return EDisplay::FlowRoot;
+      return EDisplay::kFlowRoot;
     case CSSValueNone:
-      return EDisplay::None;
+      return EDisplay::kNone;
       break;
     default:
       NOTREACHED();
-      return EDisplay::None;
+      return EDisplay::kNone;
   }
 }
 

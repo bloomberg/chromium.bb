@@ -1834,7 +1834,7 @@ bool HTMLSelectElement::itemIsDisplayNone(Element& element) const {
   if (isHTMLOptionElement(element))
     return toHTMLOptionElement(element).isDisplayNone();
   if (const ComputedStyle* style = itemComputedStyle(element))
-    return style->display() == EDisplay::None;
+    return style->display() == EDisplay::kNone;
   return false;
 }
 

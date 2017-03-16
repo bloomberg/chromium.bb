@@ -830,7 +830,7 @@ bool ComputedStyle::diffNeedsFullLayoutAndPaintInvalidation(
          (borderRightStyle() == BorderStyleNone &&
           other.borderRightStyle() == BorderStyleHidden)))
       return true;
-  } else if (display() == EDisplay::ListItem) {
+  } else if (display() == EDisplay::kListItem) {
     if (listStyleType() != other.listStyleType() ||
         listStylePosition() != other.listStylePosition())
       return true;

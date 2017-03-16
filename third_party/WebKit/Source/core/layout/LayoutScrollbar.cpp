@@ -228,9 +228,9 @@ void LayoutScrollbar::updateScrollbarPart(ScrollbarPart partType,
           : PassRefPtr<ComputedStyle>(nullptr);
 
   bool needLayoutObject =
-      !destroy && partStyle && partStyle->display() != EDisplay::None;
+      !destroy && partStyle && partStyle->display() != EDisplay::kNone;
 
-  if (needLayoutObject && partStyle->display() != EDisplay::Block) {
+  if (needLayoutObject && partStyle->display() != EDisplay::kBlock) {
     // See if we are a button that should not be visible according to OS
     // settings.
     WebScrollbarButtonsPlacement buttonsPlacement = theme().buttonsPlacement();

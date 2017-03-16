@@ -316,10 +316,10 @@ void LayoutBoxModelObject::styleDidChange(StyleDifference diff,
       (parent() != containingBlock()) &&
       (styleRef().position() == oldStyle->position()) &&
       (styleRef().originalDisplay() != oldStyle->originalDisplay()) &&
-      ((styleRef().originalDisplay() == EDisplay::Block) ||
-       (styleRef().originalDisplay() == EDisplay::InlineBlock)) &&
-      ((oldStyle->originalDisplay() == EDisplay::Block) ||
-       (oldStyle->originalDisplay() == EDisplay::InlineBlock)))
+      ((styleRef().originalDisplay() == EDisplay::kBlock) ||
+       (styleRef().originalDisplay() == EDisplay::kInlineBlock)) &&
+      ((oldStyle->originalDisplay() == EDisplay::kBlock) ||
+       (oldStyle->originalDisplay() == EDisplay::kInlineBlock)))
     parent()->setNeedsLayout(LayoutInvalidationReason::ChildChanged,
                              MarkContainerChain);
 

@@ -37,7 +37,7 @@ LayoutTextTrackContainer::LayoutTextTrackContainer(Element* element)
 
 void LayoutTextTrackContainer::layout() {
   LayoutBlockFlow::layout();
-  if (style()->display() == EDisplay::None)
+  if (style()->display() == EDisplay::kNone)
     return;
 
   DeprecatedScheduleStyleRecalcDuringLayout marker(

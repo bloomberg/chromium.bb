@@ -221,8 +221,8 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
 
   static LayoutBlock* createAnonymousWithParentAndDisplay(
       const LayoutObject*,
-      EDisplay = EDisplay::Block);
-  LayoutBlock* createAnonymousBlock(EDisplay display = EDisplay::Block) const {
+      EDisplay = EDisplay::kBlock);
+  LayoutBlock* createAnonymousBlock(EDisplay display = EDisplay::kBlock) const {
     return createAnonymousWithParentAndDisplay(this, display);
   }
 

@@ -417,7 +417,7 @@ bool HTMLOptionElement::isDisplayNone() const {
   if (!style)
     return false;
 
-  if (style->display() != EDisplay::None) {
+  if (style->display() != EDisplay::kNone) {
     // We need to check the parent's display property.  Parent's
     // display:none doesn't override children's display properties in
     // ComputedStyle.
@@ -427,10 +427,10 @@ bool HTMLOptionElement::isDisplayNone() const {
       const ComputedStyle* parentStyle = parent->computedStyle()
                                              ? parent->computedStyle()
                                              : parent->ensureComputedStyle();
-      return !parentStyle || parentStyle->display() == EDisplay::None;
+      return !parentStyle || parentStyle->display() == EDisplay::kNone;
     }
   }
-  return style->display() == EDisplay::None;
+  return style->display() == EDisplay::kNone;
 }
 
 String HTMLOptionElement::innerText() {

@@ -123,13 +123,14 @@ bool HTMLFormElement::layoutObjectIsNeeded(const ComputedStyle& style) {
 
   EDisplay display = style.display();
   bool formIsTablePart =
-      display == EDisplay::Table || display == EDisplay::InlineTable ||
-      display == EDisplay::TableRowGroup ||
-      display == EDisplay::TableHeaderGroup ||
-      display == EDisplay::TableFooterGroup || display == EDisplay::TableRow ||
-      display == EDisplay::TableColumnGroup ||
-      display == EDisplay::TableColumn || display == EDisplay::TableCell ||
-      display == EDisplay::TableCaption;
+      display == EDisplay::kTable || display == EDisplay::kInlineTable ||
+      display == EDisplay::kTableRowGroup ||
+      display == EDisplay::kTableHeaderGroup ||
+      display == EDisplay::kTableFooterGroup ||
+      display == EDisplay::kTableRow ||
+      display == EDisplay::kTableColumnGroup ||
+      display == EDisplay::kTableColumn || display == EDisplay::kTableCell ||
+      display == EDisplay::kTableCaption;
 
   return formIsTablePart;
 }

@@ -2368,7 +2368,7 @@ const CSSValue* ComputedStyleCSSValueMapping::get(
       return CSSPrimitiveValue::create(style.order(),
                                        CSSPrimitiveValue::UnitType::Number);
     case CSSPropertyFloat:
-      if (style.display() != EDisplay::None && style.hasOutOfFlowPosition())
+      if (style.display() != EDisplay::kNone && style.hasOutOfFlowPosition())
         return CSSIdentifierValue::create(CSSValueNone);
       return CSSIdentifierValue::create(style.floating());
     case CSSPropertyFont:
@@ -2582,7 +2582,7 @@ const CSSValue* ComputedStyleCSSValueMapping::get(
       if (marginRight.isPercentOrCalc()) {
         // LayoutBox gives a marginRight() that is the distance between the
         // right-edge of the child box and the right-edge of the containing box,
-        // when display == EDisplay::Block. Let's calculate the absolute value
+        // when display == EDisplay::kBlock. Let's calculate the absolute value
         // of the specified margin-right % instead of relying on LayoutBox's
         // marginRight() value.
         value = minimumValueForLength(

@@ -553,7 +553,7 @@ bool LayoutBlock::createsNewFormattingContext() const {
          isTableCaption() || isFieldset() || isWritingModeRoot() ||
          isDocumentElement() || isColumnSpanAll() || isGridItem() ||
          style()->containsPaint() || style()->containsLayout() ||
-         isSVGForeignObject() || style()->display() == EDisplay::FlowRoot;
+         isSVGForeignObject() || style()->display() == EDisplay::kFlowRoot;
 }
 
 static inline bool changeInAvailableLogicalHeightAffectsChild(
@@ -2013,12 +2013,12 @@ LayoutBlock* LayoutBlock::createAnonymousWithParentAndDisplay(
   // anonymous logic ?
   EDisplay newDisplay;
   LayoutBlock* newBox = nullptr;
-  if (display == EDisplay::Flex || display == EDisplay::InlineFlex) {
+  if (display == EDisplay::kFlex || display == EDisplay::kInlineFlex) {
     newBox = LayoutFlexibleBox::createAnonymous(&parent->document());
-    newDisplay = EDisplay::Flex;
+    newDisplay = EDisplay::kFlex;
   } else {
     newBox = LayoutBlockFlow::createAnonymous(&parent->document());
-    newDisplay = EDisplay::Block;
+    newDisplay = EDisplay::kBlock;
   }
 
   RefPtr<ComputedStyle> newStyle =

@@ -65,7 +65,7 @@ const QualifiedName& pseudoElementTagName();
 inline bool pseudoElementLayoutObjectIsNeeded(const ComputedStyle* style) {
   if (!style)
     return false;
-  if (style->display() == EDisplay::None)
+  if (style->display() == EDisplay::kNone)
     return false;
   if (style->styleType() == PseudoIdFirstLetter ||
       style->styleType() == PseudoIdBackdrop)

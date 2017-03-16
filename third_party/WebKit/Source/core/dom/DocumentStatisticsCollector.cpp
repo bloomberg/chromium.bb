@@ -63,7 +63,7 @@ bool isVisible(const Element& element) {
   const ComputedStyle* style = element.computedStyle();
   if (!style)
     return false;
-  return (style->display() != EDisplay::None &&
+  return (style->display() != EDisplay::kNone &&
           style->visibility() != EVisibility::kHidden && style->opacity() != 0);
 }
 

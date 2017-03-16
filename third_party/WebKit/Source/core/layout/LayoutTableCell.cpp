@@ -479,7 +479,7 @@ void LayoutTableCell::ensureIsReadyForPaintInvalidation() {
 
 void LayoutTableCell::styleDidChange(StyleDifference diff,
                                      const ComputedStyle* oldStyle) {
-  DCHECK_EQ(style()->display(), EDisplay::TableCell);
+  DCHECK_EQ(style()->display(), EDisplay::kTableCell);
 
   LayoutBlockFlow::styleDidChange(diff, oldStyle);
   setHasBoxDecorationBackground(true);
@@ -1438,7 +1438,7 @@ LayoutTableCell* LayoutTableCell::createAnonymousWithParent(
       LayoutTableCell::createAnonymous(&parent->document());
   RefPtr<ComputedStyle> newStyle =
       ComputedStyle::createAnonymousStyleWithDisplay(parent->styleRef(),
-                                                     EDisplay::TableCell);
+                                                     EDisplay::kTableCell);
   newCell->setStyle(std::move(newStyle));
   return newCell;
 }

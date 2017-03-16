@@ -81,7 +81,7 @@ PassRefPtr<ComputedStyle> EditingViewPortElement::customStyleForLayoutObject() {
 
   style->setFlexGrow(1);
   style->setMinWidth(Length(0, Fixed));
-  style->setDisplay(EDisplay::Block);
+  style->setDisplay(EDisplay::kBlock);
   style->setDirection(TextDirection::kLtr);
 
   // We don't want the shadow dom to be editable, so we set this block to

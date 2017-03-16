@@ -14,7 +14,7 @@ LayoutPagedFlowThread* LayoutPagedFlowThread::createAnonymous(
   LayoutPagedFlowThread* pagedFlowThread = new LayoutPagedFlowThread();
   pagedFlowThread->setDocumentForAnonymous(&document);
   pagedFlowThread->setStyle(ComputedStyle::createAnonymousStyleWithDisplay(
-      parentStyle, EDisplay::Block));
+      parentStyle, EDisplay::kBlock));
   return pagedFlowThread;
 }
 

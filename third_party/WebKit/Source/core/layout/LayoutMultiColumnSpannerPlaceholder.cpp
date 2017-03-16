@@ -29,7 +29,7 @@ LayoutMultiColumnSpannerPlaceholder::createAnonymous(
   newSpanner->setDocumentForAnonymous(&document);
   RefPtr<ComputedStyle> newStyle =
       ComputedStyle::createAnonymousStyleWithDisplay(parentStyle,
-                                                     EDisplay::Block);
+                                                     EDisplay::kBlock);
   copyMarginProperties(*newStyle, layoutObjectInFlowThread.styleRef());
   newSpanner->setStyle(newStyle);
   return newSpanner;

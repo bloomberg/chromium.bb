@@ -347,7 +347,7 @@ void LayoutInline::addChildIgnoringContinuation(LayoutObject* newChild,
     // them in a clone of this object.
     RefPtr<ComputedStyle> newStyle =
         ComputedStyle::createAnonymousStyleWithDisplay(
-            containingBlock()->styleRef(), EDisplay::Block);
+            containingBlock()->styleRef(), EDisplay::kBlock);
 
     // If inside an inline affected by in-flow positioning the block needs to be
     // affected by it too. Giving the block a layer like this allows it to

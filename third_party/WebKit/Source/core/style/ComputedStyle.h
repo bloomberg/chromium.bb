@@ -851,7 +851,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   void setContent(ContentData*);
 
   // display
-  static EDisplay initialDisplay() { return EDisplay::Inline; }
+  static EDisplay initialDisplay() { return EDisplay::kInline; }
   EDisplay display() const {
     return static_cast<EDisplay>(m_nonInheritedData.m_effectiveDisplay);
   }
@@ -3570,39 +3570,42 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   static bool isDisplayBlockContainer(EDisplay display) {
-    return display == EDisplay::Block || display == EDisplay::ListItem ||
-           display == EDisplay::InlineBlock || display == EDisplay::FlowRoot ||
-           display == EDisplay::TableCell || display == EDisplay::TableCaption;
+    return display == EDisplay::kBlock || display == EDisplay::kListItem ||
+           display == EDisplay::kInlineBlock ||
+           display == EDisplay::kFlowRoot || display == EDisplay::kTableCell ||
+           display == EDisplay::kTableCaption;
   }
 
   static bool isDisplayFlexibleBox(EDisplay display) {
-    return display == EDisplay::Flex || display == EDisplay::InlineFlex;
+    return display == EDisplay::kFlex || display == EDisplay::kInlineFlex;
   }
 
   static bool isDisplayGridBox(EDisplay display) {
-    return display == EDisplay::Grid || display == EDisplay::InlineGrid;
+    return display == EDisplay::kGrid || display == EDisplay::kInlineGrid;
   }
 
   static bool isDisplayReplacedType(EDisplay display) {
-    return display == EDisplay::InlineBlock ||
-           display == EDisplay::WebkitInlineBox ||
-           display == EDisplay::InlineFlex ||
-           display == EDisplay::InlineTable || display == EDisplay::InlineGrid;
+    return display == EDisplay::kInlineBlock ||
+           display == EDisplay::kWebkitInlineBox ||
+           display == EDisplay::kInlineFlex ||
+           display == EDisplay::kInlineTable ||
+           display == EDisplay::kInlineGrid;
   }
 
   static bool isDisplayInlineType(EDisplay display) {
-    return display == EDisplay::Inline || isDisplayReplacedType(display);
+    return display == EDisplay::kInline || isDisplayReplacedType(display);
   }
 
   static bool isDisplayTableType(EDisplay display) {
-    return display == EDisplay::Table || display == EDisplay::InlineTable ||
-           display == EDisplay::TableRowGroup ||
-           display == EDisplay::TableHeaderGroup ||
-           display == EDisplay::TableFooterGroup ||
-           display == EDisplay::TableRow ||
-           display == EDisplay::TableColumnGroup ||
-           display == EDisplay::TableColumn || display == EDisplay::TableCell ||
-           display == EDisplay::TableCaption;
+    return display == EDisplay::kTable || display == EDisplay::kInlineTable ||
+           display == EDisplay::kTableRowGroup ||
+           display == EDisplay::kTableHeaderGroup ||
+           display == EDisplay::kTableFooterGroup ||
+           display == EDisplay::kTableRow ||
+           display == EDisplay::kTableColumnGroup ||
+           display == EDisplay::kTableColumn ||
+           display == EDisplay::kTableCell ||
+           display == EDisplay::kTableCaption;
   }
 
   // Color accessors are all private to make sure callers use

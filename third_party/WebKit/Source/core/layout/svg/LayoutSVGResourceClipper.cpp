@@ -51,7 +51,7 @@ ClipStrategy determineClipStrategy(const SVGGraphicsElement& element) {
   if (!layoutObject)
     return ClipStrategy::None;
   const ComputedStyle& style = layoutObject->styleRef();
-  if (style.display() == EDisplay::None ||
+  if (style.display() == EDisplay::kNone ||
       style.visibility() != EVisibility::kVisible)
     return ClipStrategy::None;
   ClipStrategy strategy = ClipStrategy::None;
@@ -71,7 +71,7 @@ ClipStrategy determineClipStrategy(const SVGElement& element) {
   if (isSVGUseElement(element)) {
     const LayoutObject* useLayoutObject = element.layoutObject();
     if (!useLayoutObject ||
-        useLayoutObject->styleRef().display() == EDisplay::None)
+        useLayoutObject->styleRef().display() == EDisplay::kNone)
       return ClipStrategy::None;
     const SVGGraphicsElement* shapeElement =
         toSVGUseElement(element).visibleTargetGraphicsElementForClipping();

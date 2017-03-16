@@ -306,7 +306,7 @@ void CSSAnimations::calculateAnimationUpdate(CSSAnimationUpdate& update,
   for (bool& flag : cancelRunningAnimationFlags)
     flag = true;
 
-  if (animationData && style.display() != EDisplay::None) {
+  if (animationData && style.display() != EDisplay::kNone) {
     const Vector<AtomicString>& nameList = animationData->nameList();
     for (size_t i = 0; i < nameList.size(); ++i) {
       AtomicString name = nameList[i];
@@ -859,7 +859,7 @@ void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate& update,
   HashSet<PropertyHandle> listedProperties;
   bool anyTransitionHadTransitionAll = false;
   const LayoutObject* layoutObject = animatingElement->layoutObject();
-  if (!animationStyleRecalc && style.display() != EDisplay::None &&
+  if (!animationStyleRecalc && style.display() != EDisplay::kNone &&
       layoutObject && layoutObject->style() && transitionData) {
     TransitionUpdateState state = {
         update,         animatingElement,  *layoutObject->style(),

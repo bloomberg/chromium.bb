@@ -326,7 +326,7 @@ PassRefPtr<ComputedStyle> LayoutTextControlSingleLine::createInnerEditorStyle(
        logicalHeight.getFloatValue() > computedLineHeight))
     textBlockStyle->setLineHeight(ComputedStyle::initialLineHeight());
 
-  textBlockStyle->setDisplay(EDisplay::Block);
+  textBlockStyle->setDisplay(EDisplay::kBlock);
   textBlockStyle->setUnique();
 
   if (inputElement()->shouldRevealPassword())
@@ -337,7 +337,7 @@ PassRefPtr<ComputedStyle> LayoutTextControlSingleLine::createInnerEditorStyle(
   textBlockStyle->setOverflowY(EOverflow::kScroll);
   RefPtr<ComputedStyle> noScrollbarStyle = ComputedStyle::create();
   noScrollbarStyle->setStyleType(PseudoIdScrollbar);
-  noScrollbarStyle->setDisplay(EDisplay::None);
+  noScrollbarStyle->setDisplay(EDisplay::kNone);
   textBlockStyle->addCachedPseudoStyle(noScrollbarStyle);
   textBlockStyle->setHasPseudoStyle(PseudoIdScrollbar);
 

@@ -82,20 +82,20 @@ void LayoutTheme::adjustStyle(ComputedStyle& style, Element* e) {
   // Force inline and table display styles to be inline-block (except for table-
   // which is block)
   ControlPart part = style.appearance();
-  if (style.display() == EDisplay::Inline ||
-      style.display() == EDisplay::InlineTable ||
-      style.display() == EDisplay::TableRowGroup ||
-      style.display() == EDisplay::TableHeaderGroup ||
-      style.display() == EDisplay::TableFooterGroup ||
-      style.display() == EDisplay::TableRow ||
-      style.display() == EDisplay::TableColumnGroup ||
-      style.display() == EDisplay::TableColumn ||
-      style.display() == EDisplay::TableCell ||
-      style.display() == EDisplay::TableCaption)
-    style.setDisplay(EDisplay::InlineBlock);
-  else if (style.display() == EDisplay::ListItem ||
-           style.display() == EDisplay::Table)
-    style.setDisplay(EDisplay::Block);
+  if (style.display() == EDisplay::kInline ||
+      style.display() == EDisplay::kInlineTable ||
+      style.display() == EDisplay::kTableRowGroup ||
+      style.display() == EDisplay::kTableHeaderGroup ||
+      style.display() == EDisplay::kTableFooterGroup ||
+      style.display() == EDisplay::kTableRow ||
+      style.display() == EDisplay::kTableColumnGroup ||
+      style.display() == EDisplay::kTableColumn ||
+      style.display() == EDisplay::kTableCell ||
+      style.display() == EDisplay::kTableCaption)
+    style.setDisplay(EDisplay::kInlineBlock);
+  else if (style.display() == EDisplay::kListItem ||
+           style.display() == EDisplay::kTable)
+    style.setDisplay(EDisplay::kBlock);
 
   if (isControlStyled(style)) {
     if (part == MenulistPart) {
