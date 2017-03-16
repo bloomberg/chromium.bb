@@ -40,6 +40,8 @@ static_library("tether") {
     "message_transfer_operation.h",
     "message_wrapper.cc",
     "message_wrapper.h",
+    "notification_presenter.cc",
+    "notification_presenter.h",
     "pref_names.cc",
     "pref_names.h",
     "tether_host_fetcher.cc",
@@ -55,6 +57,8 @@ static_library("tether") {
     "//components/prefs",
     "//components/proximity_auth/logging",
     "//device/bluetooth",
+    "//ui/gfx",
+    "//ui/message_center",
   ]
 
   public_deps = [
@@ -70,6 +74,8 @@ static_library("test_support") {
     "fake_active_host.h",
     "fake_ble_connection_manager.cc",
     "fake_ble_connection_manager.h",
+    "fake_notification_presenter.cc",
+    "fake_notification_presenter.h",
     "fake_tether_host_fetcher.cc",
     "fake_tether_host_fetcher.h",
     "mock_host_scan_device_prioritizer.cc",
@@ -87,6 +93,7 @@ static_library("test_support") {
     "//components/cryptauth",
     "//testing/gmock",
     "//testing/gtest",
+    "//ui/message_center:test_support",
   ]
 }
 
@@ -109,6 +116,7 @@ source_set("unit_tests") {
     "local_device_data_provider_unittest.cc",
     "message_transfer_operation_unittest.cc",
     "message_wrapper_unittest.cc",
+    "notification_presenter_unittest.cc",
     "tether_host_fetcher_unittest.cc",
   ]
 
@@ -126,5 +134,6 @@ source_set("unit_tests") {
     "//device/bluetooth:mocks",
     "//testing/gmock",
     "//testing/gtest",
+    "//ui/message_center:test_support",
   ]
 }
