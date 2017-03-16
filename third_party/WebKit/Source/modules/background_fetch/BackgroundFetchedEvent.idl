@@ -9,7 +9,7 @@
     Exposed=ServiceWorker,
     RuntimeEnabled=BackgroundFetch
 ] interface BackgroundFetchedEvent : BackgroundFetchEvent {
-    readonly attribute FrozenArray<BackgroundFetchSettledRequest> completedFetches;
+    readonly attribute FrozenArray<BackgroundFetchSettledFetch> fetches;
 
     [CallWith=ScriptState] Promise<void> updateUI(DOMString title);
 };

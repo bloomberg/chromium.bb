@@ -258,6 +258,10 @@ interface AuthenticationAssertion
     getter credential
     getter signature
     method constructor
+interface BackgroundFetchFetch
+    attribute @@toStringTag
+    getter request
+    method constructor
 interface BackgroundFetchManager
     attribute @@toStringTag
     method constructor
@@ -271,10 +275,6 @@ interface BackgroundFetchRegistration
     getter title
     getter totalDownloadSize
     method abort
-    method constructor
-interface BackgroundFetchRequest
-    attribute @@toStringTag
-    getter request
     method constructor
 interface BarProp
     attribute @@toStringTag

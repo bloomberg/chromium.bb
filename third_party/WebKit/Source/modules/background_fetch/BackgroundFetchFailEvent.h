@@ -12,7 +12,7 @@
 namespace blink {
 
 class BackgroundFetchFailEventInit;
-class BackgroundFetchSettledRequest;
+class BackgroundFetchSettledFetch;
 
 class BackgroundFetchFailEvent final : public BackgroundFetchEvent {
   DEFINE_WRAPPERTYPEINFO();
@@ -27,7 +27,7 @@ class BackgroundFetchFailEvent final : public BackgroundFetchEvent {
   ~BackgroundFetchFailEvent() override;
 
   // Web Exposed attribute defined in the IDL file.
-  HeapVector<Member<BackgroundFetchSettledRequest>> failedFetches() const;
+  HeapVector<Member<BackgroundFetchSettledFetch>> fetches() const;
 
   // ExtendableEvent interface.
   const AtomicString& interfaceName() const override;
@@ -38,7 +38,7 @@ class BackgroundFetchFailEvent final : public BackgroundFetchEvent {
   BackgroundFetchFailEvent(const AtomicString& type,
                            const BackgroundFetchFailEventInit&);
 
-  HeapVector<Member<BackgroundFetchSettledRequest>> m_failedFetches;
+  HeapVector<Member<BackgroundFetchSettledFetch>> m_fetches;
 };
 
 }  // namespace blink

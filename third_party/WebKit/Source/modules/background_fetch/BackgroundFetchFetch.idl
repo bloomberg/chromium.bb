@@ -2,13 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://wicg.github.io/background-fetch/#backgroundfetchfetches
-// TODO(peter): Update either the above link or the name of this interface based
-// on the outcome of https://github.com/WICG/background-fetch/issues/32.
+// https://wicg.github.io/background-fetch/#backgroundfetchfetch
 
 [
     Exposed=(Window,Worker),
     RuntimeEnabled=BackgroundFetch
-] interface BackgroundFetchRequest {
+] interface BackgroundFetchFetch {
     readonly attribute Request request;
 };

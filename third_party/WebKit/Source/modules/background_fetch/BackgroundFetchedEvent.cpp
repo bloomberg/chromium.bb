@@ -9,7 +9,7 @@
 #include "core/dom/DOMException.h"
 #include "modules/EventModulesNames.h"
 #include "modules/background_fetch/BackgroundFetchBridge.h"
-#include "modules/background_fetch/BackgroundFetchSettledRequest.h"
+#include "modules/background_fetch/BackgroundFetchSettledFetch.h"
 #include "modules/background_fetch/BackgroundFetchedEventInit.h"
 
 namespace blink {
@@ -19,14 +19,14 @@ BackgroundFetchedEvent::BackgroundFetchedEvent(
     const BackgroundFetchedEventInit& init,
     ServiceWorkerRegistration* registration)
     : BackgroundFetchEvent(type, init),
-      m_completedFetches(init.completedFetches()),
+      m_fetches(init.fetches()),
       m_registration(registration) {}
 
 BackgroundFetchedEvent::~BackgroundFetchedEvent() = default;
 
-HeapVector<Member<BackgroundFetchSettledRequest>>
-BackgroundFetchedEvent::completedFetches() const {
-  return m_completedFetches;
+HeapVector<Member<BackgroundFetchSettledFetch>>
+BackgroundFetchedEvent::fetches() const {
+  return m_fetches;
 }
 
 ScriptPromise BackgroundFetchedEvent::updateUI(ScriptState* scriptState,
@@ -68,7 +68,7 @@ const AtomicString& BackgroundFetchedEvent::interfaceName() const {
 }
 
 DEFINE_TRACE(BackgroundFetchedEvent) {
-  visitor->trace(m_completedFetches);
+  visitor->trace(m_fetches);
   visitor->trace(m_registration);
   BackgroundFetchEvent::trace(visitor);
 }

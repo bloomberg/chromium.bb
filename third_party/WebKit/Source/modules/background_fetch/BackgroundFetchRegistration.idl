@@ -12,7 +12,7 @@
     readonly attribute FrozenArray<IconDefinition> icons;
     readonly attribute long totalDownloadSize;
     readonly attribute DOMString title;
-    // TODO(crbug.com/699957): Implement the `fetches` attribute.
+    // TODO(crbug.com/699957): Implement the `activeFetches` attribute.
 
     void abort();
 };

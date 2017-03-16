@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/background_fetch/BackgroundFetchRequest.h"
+#include "modules/background_fetch/BackgroundFetchFetch.h"
 
 #include "modules/fetch/Request.h"
 
 namespace blink {
 
-BackgroundFetchRequest::BackgroundFetchRequest(Request* request)
+BackgroundFetchFetch::BackgroundFetchFetch(Request* request)
     : m_request(request) {}
 
-Request* BackgroundFetchRequest::request() const {
+Request* BackgroundFetchFetch::request() const {
   return m_request;
 }
 
-DEFINE_TRACE(BackgroundFetchRequest) {
+DEFINE_TRACE(BackgroundFetchFetch) {
   visitor->trace(m_request);
 }
 

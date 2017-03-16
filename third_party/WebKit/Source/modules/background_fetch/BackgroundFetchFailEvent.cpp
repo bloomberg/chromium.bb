@@ -6,20 +6,20 @@
 
 #include "modules/EventModulesNames.h"
 #include "modules/background_fetch/BackgroundFetchFailEventInit.h"
-#include "modules/background_fetch/BackgroundFetchSettledRequest.h"
+#include "modules/background_fetch/BackgroundFetchSettledFetch.h"
 
 namespace blink {
 
 BackgroundFetchFailEvent::BackgroundFetchFailEvent(
     const AtomicString& type,
     const BackgroundFetchFailEventInit& init)
-    : BackgroundFetchEvent(type, init), m_failedFetches(init.failedFetches()) {}
+    : BackgroundFetchEvent(type, init), m_fetches(init.fetches()) {}
 
 BackgroundFetchFailEvent::~BackgroundFetchFailEvent() = default;
 
-HeapVector<Member<BackgroundFetchSettledRequest>>
-BackgroundFetchFailEvent::failedFetches() const {
-  return m_failedFetches;
+HeapVector<Member<BackgroundFetchSettledFetch>>
+BackgroundFetchFailEvent::fetches() const {
+  return m_fetches;
 }
 
 const AtomicString& BackgroundFetchFailEvent::interfaceName() const {
@@ -27,7 +27,7 @@ const AtomicString& BackgroundFetchFailEvent::interfaceName() const {
 }
 
 DEFINE_TRACE(BackgroundFetchFailEvent) {
-  visitor->trace(m_failedFetches);
+  visitor->trace(m_fetches);
   BackgroundFetchEvent::trace(visitor);
 }
 

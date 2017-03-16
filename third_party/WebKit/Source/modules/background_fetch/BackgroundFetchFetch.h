@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BackgroundFetchRequest_h
-#define BackgroundFetchRequest_h
+#ifndef BackgroundFetchFetch_h
+#define BackgroundFetchFetch_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
@@ -12,10 +12,10 @@ namespace blink {
 
 class Request;
 
-// Base interface for providing developers with access to the Request
+// Base interface for providing developers with access to the fetch
 // information associated with a background fetch.
-class BackgroundFetchRequest : public GarbageCollected<BackgroundFetchRequest>,
-                               public ScriptWrappable {
+class BackgroundFetchFetch : public GarbageCollected<BackgroundFetchFetch>,
+                             public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -25,7 +25,7 @@ class BackgroundFetchRequest : public GarbageCollected<BackgroundFetchRequest>,
   DECLARE_VIRTUAL_TRACE();
 
  protected:
-  explicit BackgroundFetchRequest(Request*);
+  explicit BackgroundFetchFetch(Request*);
 
  private:
   Member<Request> m_request;
@@ -33,4 +33,4 @@ class BackgroundFetchRequest : public GarbageCollected<BackgroundFetchRequest>,
 
 }  // namespace blink
 
-#endif  // BackgroundFetchRequest_h
+#endif  // BackgroundFetchFetch_h

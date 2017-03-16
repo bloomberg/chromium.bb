@@ -13,7 +13,7 @@
 
 namespace blink {
 
-class BackgroundFetchSettledRequest;
+class BackgroundFetchSettledFetch;
 class BackgroundFetchedEventInit;
 class ServiceWorkerRegistration;
 
@@ -38,7 +38,7 @@ class BackgroundFetchedEvent final : public BackgroundFetchEvent {
   ~BackgroundFetchedEvent() override;
 
   // Web Exposed attribute defined in the IDL file.
-  HeapVector<Member<BackgroundFetchSettledRequest>> completedFetches() const;
+  HeapVector<Member<BackgroundFetchSettledFetch>> fetches() const;
 
   // Web Exposed method defined in the IDL file.
   ScriptPromise updateUI(ScriptState*, const String& title);
@@ -55,7 +55,7 @@ class BackgroundFetchedEvent final : public BackgroundFetchEvent {
 
   void didUpdateUI(ScriptPromiseResolver*, mojom::blink::BackgroundFetchError);
 
-  HeapVector<Member<BackgroundFetchSettledRequest>> m_completedFetches;
+  HeapVector<Member<BackgroundFetchSettledFetch>> m_fetches;
   Member<ServiceWorkerRegistration> m_registration;
 };
 

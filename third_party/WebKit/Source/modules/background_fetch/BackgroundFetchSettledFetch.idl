@@ -2,14 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://wicg.github.io/background-fetch/#backgroundfetchsettledfetches
-// TODO(peter): Update either the above link or the name of this interface based
-// on the outcome of https://github.com/WICG/background-fetch/issues/32.
+// https://wicg.github.io/background-fetch/#backgroundfetchsettledfetch
 
 [
     Constructor(Request request, Response response),
     Exposed=ServiceWorker,
     RuntimeEnabled=BackgroundFetch
-] interface BackgroundFetchSettledRequest : BackgroundFetchRequest {
+] interface BackgroundFetchSettledFetch : BackgroundFetchFetch {
     readonly attribute Response? response;
 };

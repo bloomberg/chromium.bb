@@ -9,5 +9,5 @@
     Exposed=ServiceWorker,
     RuntimeEnabled=BackgroundFetch
 ] interface BackgroundFetchFailEvent : BackgroundFetchEvent {
-    readonly attribute FrozenArray<BackgroundFetchSettledRequest> failedFetches;
+    readonly attribute FrozenArray<BackgroundFetchSettledFetch> fetches;
 };

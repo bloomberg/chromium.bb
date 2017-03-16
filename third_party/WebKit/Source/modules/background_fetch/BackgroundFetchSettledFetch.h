@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BackgroundFetchSettledRequest_h
-#define BackgroundFetchSettledRequest_h
+#ifndef BackgroundFetchSettledFetch_h
+#define BackgroundFetchSettledFetch_h
 
-#include "modules/background_fetch/BackgroundFetchRequest.h"
+#include "modules/background_fetch/BackgroundFetchFetch.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -16,13 +16,13 @@ class Response;
 // Interface for providing developers access to the Request/Response pairs when
 // a background fetch has settled, either through the `backgroundfetched` event
 // in case of success, or `backgroundfetchfail` in case of failure.
-class BackgroundFetchSettledRequest final : public BackgroundFetchRequest {
+class BackgroundFetchSettledFetch final : public BackgroundFetchFetch {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static BackgroundFetchSettledRequest* create(Request* request,
-                                               Response* response) {
-    return new BackgroundFetchSettledRequest(request, response);
+  static BackgroundFetchSettledFetch* create(Request* request,
+                                             Response* response) {
+    return new BackgroundFetchSettledFetch(request, response);
   }
 
   // Web Exposed attribute defined in the IDL file.
@@ -31,11 +31,11 @@ class BackgroundFetchSettledRequest final : public BackgroundFetchRequest {
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  BackgroundFetchSettledRequest(Request*, Response*);
+  BackgroundFetchSettledFetch(Request*, Response*);
 
   Member<Response> m_response;
 };
 
 }  // namespace blink
 
-#endif  // BackgroundFetchSettledRequest_h
+#endif  // BackgroundFetchSettledFetch_h
