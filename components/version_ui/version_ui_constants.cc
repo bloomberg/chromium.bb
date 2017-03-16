@@ -54,6 +54,8 @@ const char kOSType[] = "os_type";
 #endif
 #if defined(OS_ANDROID)
 const char kOSVersion[] = "os_version";
+const char kGmsName[] = "gms_name";
+const char kGmsVersion[] = "gms_version";
 #endif
 #if defined(OS_CHROMEOS)
 const char kPlatform[] = "platform";

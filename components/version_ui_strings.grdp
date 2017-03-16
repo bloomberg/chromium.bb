@@ -21,23 +21,28 @@
   <message name="IDS_VERSION_UI_OS" desc="label for the OS on the about:version page">
     OS
   </message>
+  <if expr="is_android">
+    <message name="IDS_VERSION_UI_GMS" desc="label for the Google Play services info on the about:version page">
+      Google Play services
+    </message>
+  </if>
   <message name="IDS_VERSION_UI_USER_AGENT" desc="label for the user agent on the about:version page">
     User Agent
   </message>
   <message name="IDS_VERSION_UI_COMMAND_LINE" desc="label for the command line on the about:version page">
     Command Line
   </message>
-<if expr="chromeos">
-  <message name="IDS_VERSION_UI_BUILD_DATE" desc="label for build date on the about:version page">
-    Build Date
-  </message>
-  <message name="IDS_VERSION_UI_CUSTOMIZATION_ID" desc="label for the device customization ID if present on the about:version page">
-    Customization ID
-  </message>
-  <message name="IDS_VERSION_UI_FIRMWARE_VERSION" desc="label for the firmware version on the about:version page">
-    Firmware Version
-  </message>
-</if>
+  <if expr="chromeos">
+    <message name="IDS_VERSION_UI_BUILD_DATE" desc="label for build date on the about:version page">
+      Build Date
+    </message>
+    <message name="IDS_VERSION_UI_CUSTOMIZATION_ID" desc="label for the device customization ID if present on the about:version page">
+      Customization ID
+    </message>
+    <message name="IDS_VERSION_UI_FIRMWARE_VERSION" desc="label for the firmware version on the about:version page">
+      Firmware Version
+    </message>
+  </if>
   <message name="IDS_VERSION_UI_EXECUTABLE_PATH" desc="label for the executable path on the about:version page">
     Executable Path
   </message>

@@ -103,6 +103,9 @@ WebUIDataSource* CreateVersionUIDataSource() {
 #if defined(OS_ANDROID)
   html_source->AddString(version_ui::kOSVersion,
                          AndroidAboutAppInfo::GetOsInfo());
+  html_source->AddLocalizedString(version_ui::kGmsName, IDS_VERSION_UI_GMS);
+  html_source->AddString(version_ui::kGmsVersion,
+                         AndroidAboutAppInfo::GetGmsInfo());
 #else
   html_source->AddString(version_ui::kFlashPlugin, "Flash");
   // Note that the Flash version is retrieve asynchronously and returned in

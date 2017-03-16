@@ -69,6 +69,14 @@ about:version template page
           </td>
         </tr>
 </if>
+<if expr="is_android">
+        <tr>
+          <td class="label" i18n-content="gms_name"></td>
+          <td class="version" id="gms_version">
+            <span i18n-content="gms_version"></span>
+          </td>
+        </tr>
+</if>
 <if expr="chromeos">
         <tr>
           <td class="label" i18n-content="platform"></td>

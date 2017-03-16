@@ -4,12 +4,23 @@
 
 #include "chrome/browser/ui/android/android_about_app_info.h"
 
+#include <jni.h>
 #include <stdint.h>
 
 #include <string>
 
+#include "base/android/jni_android.h"
+#include "base/android/jni_string.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
+#include "jni/ChromeVersionInfo_jni.h"
+
+std::string AndroidAboutAppInfo::GetGmsInfo() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  const base::android::ScopedJavaLocalRef<jstring> info =
+      Java_ChromeVersionInfo_getGmsInfo(env);
+  return base::android::ConvertJavaStringToUTF8(env, info);
+}
 
 std::string AndroidAboutAppInfo::GetOsInfo() {
   std::string android_info_str;

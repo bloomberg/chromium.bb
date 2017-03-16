@@ -3948,6 +3948,7 @@ if (is_android) {
       "../android/java/src/org/chromium/chrome/browser/ChromeBackupWatcher.java",
       "../android/java/src/org/chromium/chrome/browser/ChromeFeatureList.java",
       "../android/java/src/org/chromium/chrome/browser/ChromeHttpAuthHandler.java",
+      "../android/java/src/org/chromium/chrome/browser/ChromeVersionInfo.java",
       "../android/java/src/org/chromium/chrome/browser/DevToolsServer.java",
       "../android/java/src/org/chromium/chrome/browser/IntentHelper.java",
       "../android/java/src/org/chromium/chrome/browser/JavascriptAppModalDialog.java",
