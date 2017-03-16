@@ -109,6 +109,17 @@ void MediaWebContentsObserver::WasHidden() {
     video_power_save_blocker_.reset();
 }
 
+void MediaWebContentsObserver::RequestPersistentVideo(bool value) {
+  if (!fullscreen_player_)
+    return;
+
+  // The message is sent to the renderer even though the video is already the
+  // fullscreen element itself. It will eventually be handled by Blink.
+  Send(new MediaPlayerDelegateMsg_BecamePersistentVideo(
+      fullscreen_player_->first->GetRoutingID(), fullscreen_player_->second,
+      value));
+}
+
 void MediaWebContentsObserver::OnMediaDestroyed(
     RenderFrameHost* render_frame_host,
     int delegate_id) {

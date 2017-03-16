@@ -199,6 +199,8 @@ bool RendererWebMediaPlayerDelegate::OnMessageReceived(
                         OnMediaDelegateSuspendAllMediaPlayers)
     IPC_MESSAGE_HANDLER(MediaPlayerDelegateMsg_UpdateVolumeMultiplier,
                         OnMediaDelegateVolumeMultiplierUpdate)
+    IPC_MESSAGE_HANDLER(MediaPlayerDelegateMsg_BecamePersistentVideo,
+                        OnMediaDelegateBecamePersistentVideo)
     IPC_MESSAGE_UNHANDLED(return false)
   IPC_END_MESSAGE_MAP()
   return true;
@@ -271,6 +273,14 @@ void RendererWebMediaPlayerDelegate::OnMediaDelegateVolumeMultiplierUpdate(
   Observer* observer = id_map_.Lookup(player_id);
   if (observer)
     observer->OnVolumeMultiplierUpdate(multiplier);
+}
+
+void RendererWebMediaPlayerDelegate::OnMediaDelegateBecamePersistentVideo(
+    int player_id,
+    bool value) {
+  Observer* observer = id_map_.Lookup(player_id);
+  if (observer)
+    observer->OnBecamePersistentVideo(value);
 }
 
 void RendererWebMediaPlayerDelegate::ScheduleUpdateTask() {

@@ -89,6 +89,7 @@ class DummyWebMediaPlayerClient : public blink::WebMediaPlayerClient {
   void disconnectedFromRemoteDevice() override {}
   void cancelledRemotePlaybackRequest() override {}
   void remotePlaybackStarted() override {}
+  void onBecamePersistentVideo(bool) override {}
   bool isAutoplayingMuted() override { return is_autoplaying_muted_; }
   void requestReload(const blink::WebURL& newUrl) override {}
   bool hasSelectedVideoTrack() override { return false; }

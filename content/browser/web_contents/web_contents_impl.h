@@ -796,7 +796,7 @@ class CONTENT_EXPORT WebContentsImpl
   void DecrementBluetoothConnectedDeviceCount();
 
   // Called when the WebContents gains or loses a persistent video.
-  void SetHasPersistentVideo(bool value);
+  void SetHasPersistentVideo(bool has_persistent_video);
 
   // Whether the WebContents has an active player is effectively fullscreen.
   // That means that the video is either fullscreen or it is the content of

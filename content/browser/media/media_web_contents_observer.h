@@ -57,6 +57,12 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   void WasShown() override;
   void WasHidden() override;
 
+  // TODO(zqzhang): this method is temporarily in MediaWebContentsObserver as
+  // the effectively fullscreen video code is also here. We need to consider
+  // merging the logic of effectively fullscreen, hiding media controls and
+  // fullscreening video element to the same place.
+  void RequestPersistentVideo(bool value);
+
   bool has_audio_power_save_blocker_for_testing() const {
     return !!audio_power_save_blocker_;
   }

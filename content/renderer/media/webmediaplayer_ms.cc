@@ -570,6 +570,10 @@ void WebMediaPlayerMS::OnVolumeMultiplierUpdate(double multiplier) {
   // TODO(perkj, magjed): See TODO in OnPlay().
 }
 
+void WebMediaPlayerMS::OnBecamePersistentVideo(bool value) {
+  get_client()->onBecamePersistentVideo(value);
+}
+
 bool WebMediaPlayerMS::copyVideoTextureToPlatformTexture(
     gpu::gles2::GLES2Interface* gl,
     unsigned int texture,

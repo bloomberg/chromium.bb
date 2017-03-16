@@ -36,6 +36,7 @@
 #include "core/css/MediaList.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/DOMException.h"
+#include "core/dom/DocumentUserGestureToken.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/ElementVisibilityObserver.h"
 #include "core/dom/Fullscreen.h"
@@ -465,7 +466,8 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName,
       m_remotePlaybackClient(nullptr),
       m_autoplayVisibilityObserver(nullptr),
       m_mediaControls(nullptr),
-      m_controlsList(HTMLMediaElementControlsList::create(this)) {
+      m_controlsList(HTMLMediaElementControlsList::create(this)),
+      m_isPersistentVideo(false) {
   BLINK_MEDIA_LOG << "HTMLMediaElement(" << (void*)this << ")";
 
   m_lockedPendingUserGesture = computeLockedPendingUserGesture(document);
@@ -3232,6 +3234,28 @@ void HTMLMediaElement::cancelledRemotePlaybackRequest() {
 void HTMLMediaElement::remotePlaybackStarted() {
   if (remotePlaybackClient())
     remotePlaybackClient()->stateChanged(WebRemotePlaybackState::Connected);
+}
+
+// TODO(zqzhang): move logic for hiding controls here.
+void HTMLMediaElement::onBecamePersistentVideo(bool value) {
+  if (!isHTMLVideoElement())
+    return;
+
+  if (value) {
+    if (isFullscreen())
+      return;
+
+    UserGestureIndicator gestureIndicator(
+        DocumentUserGestureToken::create(&document()));
+    Fullscreen::requestFullscreen(*this);
+    m_isPersistentVideo = true;
+  } else {
+    if (!m_isPersistentVideo)
+      return;
+
+    Fullscreen::exitFullscreen(document());
+    m_isPersistentVideo = false;
+  }
 }
 
 bool HTMLMediaElement::hasSelectedVideoTrack() {

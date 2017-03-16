@@ -34,6 +34,10 @@ IPC_MESSAGE_ROUTED2(MediaPlayerDelegateMsg_UpdateVolumeMultiplier,
                     int /* delegate_id, distinguishes instances */,
                     double /* multiplier */)
 
+IPC_MESSAGE_ROUTED2(MediaPlayerDelegateMsg_BecamePersistentVideo,
+                    int /* delegate_id, distinguishes instances */,
+                    double /* is_persistent */)
+
 // ----------------------------------------------------------------------------
 // Messages from the renderer notifying the browser of playback state changes.
 // ----------------------------------------------------------------------------

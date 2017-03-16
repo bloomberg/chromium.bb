@@ -151,6 +151,7 @@ class CONTENT_EXPORT WebMediaPlayerMS
   void OnPlay() override;
   void OnPause() override;
   void OnVolumeMultiplierUpdate(double multiplier) override;
+  void OnBecamePersistentVideo(bool value) override;
 
   bool copyVideoTextureToPlatformTexture(gpu::gles2::GLES2Interface* gl,
                                          unsigned int texture,
