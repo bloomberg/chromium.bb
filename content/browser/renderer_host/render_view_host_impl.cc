@@ -316,6 +316,15 @@ bool RenderViewHostImpl::CreateRenderView(
   params->page_zoom_level = delegate_->GetPendingPageZoomLevel();
   params->image_decode_color_space = gfx::ICCProfile::FromBestMonitor();
 
+  // Pretend that HDR displays are sRGB so that we do not have inconsistent
+  // coloring.
+  // TODO(ccameron): Disable this once color correct rasterization is functional
+  // https://crbug.com/701942
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableHDR)) {
+    gfx::ColorSpace::CreateSRGB().GetICCProfile(
+        &params->image_decode_color_space);
+  }
+
   GetWidget()->GetResizeParams(&params->initial_size);
   GetWidget()->SetInitialRenderSizeParams(params->initial_size);
 
