@@ -17,6 +17,7 @@
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 
 using bookmarks::BookmarkModel;
@@ -127,11 +128,16 @@ void BookmarkTabHelper::BookmarkNodeChanged(BookmarkModel* model,
 
 void BookmarkTabHelper::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame() ||
+      navigation_handle->IsSameDocument())
+    return;
   UpdateStarredStateForCurrentURL();
 }
 
 void BookmarkTabHelper::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInMainFrame() || !navigation_handle->HasCommitted())
+    return;
   UpdateStarredStateForCurrentURL();
 }
 

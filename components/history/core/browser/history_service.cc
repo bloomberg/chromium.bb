@@ -393,10 +393,6 @@ void HistoryService::AddPage(const HistoryAddPageArgs& add_page_args) {
   DCHECK(backend_task_runner_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // Filter out unwanted URLs. We don't add auto-subframe URLs. They are a
-  // large part of history (think iframes for ads) and we never display them in
-  // history UI. We will still add manual subframes, which are ones the user
-  // has clicked on to get.
   if (history_client_ && !history_client_->CanAddURL(add_page_args.url))
     return;
 

@@ -91,6 +91,7 @@ NavigationHandleImpl::NavigationHandleImpl(
       was_redirected_(false),
       did_replace_entry_(false),
       should_update_history_(false),
+      subframe_entry_committed_(false),
       connection_info_(net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN),
       original_url_(url),
       state_(INITIAL),
@@ -286,6 +287,12 @@ bool NavigationHandleImpl::IsErrorPage() {
   return state_ == DID_COMMIT_ERROR_PAGE;
 }
 
+bool NavigationHandleImpl::HasSubframeNavigationEntryCommitted() {
+  DCHECK(!IsInMainFrame());
+  DCHECK(state_ == DID_COMMIT || state_ == DID_COMMIT_ERROR_PAGE);
+  return subframe_entry_committed_;
+}
+
 bool NavigationHandleImpl::DidReplaceEntry() {
   DCHECK(state_ == DID_COMMIT || state_ == DID_COMMIT_ERROR_PAGE);
   return did_replace_entry_;
@@ -434,7 +441,7 @@ void NavigationHandleImpl::CallDidCommitNavigationForTesting(const GURL& url) {
   params.page_state = PageState::CreateFromURL(url);
   params.contents_mime_type = std::string("text/html");
 
-  DidCommitNavigation(params, false, GURL(), NAVIGATION_TYPE_NEW_PAGE,
+  DidCommitNavigation(params, true, false, GURL(), NAVIGATION_TYPE_NEW_PAGE,
                       render_frame_host_);
 }
 
@@ -633,6 +640,7 @@ void NavigationHandleImpl::ReadyToCommitNavigation(
 
 void NavigationHandleImpl::DidCommitNavigation(
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
+    bool navigation_entry_committed,
     bool did_replace_entry,
     const GURL& previous_url,
     NavigationType navigation_type,
@@ -651,6 +659,11 @@ void NavigationHandleImpl::DidCommitNavigation(
   base_url_ = params.base_url;
   socket_address_ = params.socket_address;
   navigation_type_ = navigation_type;
+
+  DCHECK(!IsInMainFrame() || navigation_entry_committed)
+      << "Only subframe navigations can get here without changing the "
+      << "NavigationEntry";
+  subframe_entry_committed_ = navigation_entry_committed;
 
   // If an error page reloads, net_error_code might be 200 but we still want to
   // count it as an error page.

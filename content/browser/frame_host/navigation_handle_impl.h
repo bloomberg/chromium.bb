@@ -130,6 +130,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   bool IsSameDocument() override;
   bool HasCommitted() override;
   bool IsErrorPage() override;
+  bool HasSubframeNavigationEntryCommitted() override;
   bool DidReplaceEntry() override;
   bool ShouldUpdateHistory() override;
   const GURL& GetPreviousURL() override;
@@ -304,10 +305,13 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   // Called when the navigation was committed in |render_frame_host|. This will
   // update the |state_|.
+  // |navigation_entry_committed| indicates whether the navigation changed which
+  // NavigationEntry is current.
   // |did_replace_entry| is true if the committed entry has replaced the
   // existing one. A non-user initiated redirect causes such replacement.
   void DidCommitNavigation(
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
+      bool navigation_entry_committed,
       bool did_replace_entry,
       const GURL& previous_url,
       NavigationType navigation_type,
@@ -413,6 +417,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   bool was_redirected_;
   bool did_replace_entry_;
   bool should_update_history_;
+  bool subframe_entry_committed_;
   scoped_refptr<net::HttpResponseHeaders> response_headers_;
   net::HttpResponseInfo::ConnectionInfo connection_info_;
 

@@ -160,6 +160,10 @@ void AwRenderViewHostExt::RenderFrameCreated(
 void AwRenderViewHostExt::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
   DCHECK(CalledOnValidThread());
+  if (!navigation_handle->HasCommitted() ||
+      (!navigation_handle->IsInMainFrame() &&
+       !navigation_handle->HasSubframeNavigationEntryCommitted()))
+    return;
 
   AwBrowserContext::FromWebContents(web_contents())
       ->AddVisitedURLs(navigation_handle->GetRedirectChain());

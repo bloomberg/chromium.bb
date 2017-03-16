@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -29,9 +30,12 @@
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_frame_navigation_observer.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
 
@@ -91,6 +95,33 @@ class HistoryBrowserTest : public InProcessBrowserTest {
   void LoadAndWaitForFile(const char* filename) {
     GURL url = test_server_.GetURL(std::string("/History") + filename);
     LoadAndWaitForURL(url);
+  }
+
+  bool HistoryContainsURL(const GURL& url) {
+    scoped_refptr<content::MessageLoopRunner> message_loop_runner =
+        new content::MessageLoopRunner;
+    bool success = false;
+    base::CancelableTaskTracker tracker;
+    HistoryServiceFactory::GetForProfile(browser()->profile(),
+                                         ServiceAccessType::EXPLICIT_ACCESS)
+        ->QueryURL(url, true,
+                   base::Bind(&HistoryBrowserTest::SaveResultAndQuit,
+                              base::Unretained(this), &success,
+                              message_loop_runner->QuitClosure()),
+                   &tracker);
+    message_loop_runner->Run();
+    return success;
+  }
+
+ private:
+  // Callback for HistoryService::QueryURL.
+  void SaveResultAndQuit(bool* success_out,
+                         const base::Closure& closure,
+                         bool success,
+                         const history::URLRow&,
+                         const history::VisitVector&) {
+    *success_out = success;
+    closure.Run();
   }
 
   net::EmbeddedTestServer test_server_;
@@ -372,6 +403,82 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, DownloadNoHistory) {
       base::FilePath().AppendASCII("a_zip_file.zip"));
   ui_test_utils::DownloadURL(browser(), download_url);
   ExpectEmptyHistory();
+}
+
+namespace {
+
+// Grabs the RenderFrameHost for the frame navigating to the given URL.
+class RenderFrameHostGrabber : public content::WebContentsObserver {
+ public:
+  RenderFrameHostGrabber(content::WebContents* web_contents, const GURL& url)
+      : WebContentsObserver(web_contents), url_(url) {}
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override {
+    if (navigation_handle->GetURL() == url_) {
+      render_frame_host_ = navigation_handle->GetRenderFrameHost();
+      run_loop_.QuitClosure().Run();
+    }
+  }
+
+  void Wait() { run_loop_.Run(); }
+
+  content::RenderFrameHost* render_frame_host() { return render_frame_host_; }
+
+ private:
+  GURL url_;
+  content::RenderFrameHost* render_frame_host_ = nullptr;
+  base::RunLoop run_loop_;
+};
+
+// Simulates user clicking on a link inside the frame.
+// TODO(jam): merge with content/test/content_browser_test_utils_internal.h
+void NavigateFrameToURL(content::RenderFrameHost* rfh, const GURL& url) {
+  content::TestFrameNavigationObserver observer(rfh);
+  content::NavigationController::LoadURLParams params(url);
+  params.transition_type = ui::PAGE_TRANSITION_LINK;
+  params.frame_tree_node_id = rfh->GetFrameTreeNodeId();
+  content::WebContents::FromRenderFrameHost(rfh)
+      ->GetController()
+      .LoadURLWithParams(params);
+  observer.Wait();
+}
+}  // namespace
+
+IN_PROC_BROWSER_TEST_F(HistoryBrowserTest, Subframe) {
+  // Initial subframe requests should not show up in history.
+  GURL main_page = ui_test_utils::GetTestUrl(
+      base::FilePath().AppendASCII("History"),
+      base::FilePath().AppendASCII("page_with_iframe.html"));
+  GURL initial_subframe =
+      ui_test_utils::GetTestUrl(base::FilePath().AppendASCII("History"),
+                                base::FilePath().AppendASCII("target.html"));
+
+  RenderFrameHostGrabber rfh_grabber(
+      browser()->tab_strip_model()->GetActiveWebContents(), initial_subframe);
+  ui_test_utils::NavigateToURL(browser(), main_page);
+  rfh_grabber.Wait();
+  content::RenderFrameHost* frame = rfh_grabber.render_frame_host();
+  ASSERT_TRUE(!!frame);
+  ASSERT_TRUE(HistoryContainsURL(main_page));
+  ASSERT_FALSE(HistoryContainsURL(initial_subframe));
+
+  // User-initiated subframe navigations should show up in history.
+  GURL manual_subframe =
+      ui_test_utils::GetTestUrl(base::FilePath().AppendASCII("History"),
+                                base::FilePath().AppendASCII("landing.html"));
+  NavigateFrameToURL(frame, manual_subframe);
+  ASSERT_TRUE(HistoryContainsURL(manual_subframe));
+
+  // Page-initiated location.replace subframe navigations should not show up in
+  // history.
+  std::string script = "location.replace('form.html')";
+  content::TestFrameNavigationObserver observer(frame);
+  EXPECT_TRUE(ExecuteScript(frame, script));
+  observer.Wait();
+  GURL auto_subframe =
+      ui_test_utils::GetTestUrl(base::FilePath().AppendASCII("History"),
+                                base::FilePath().AppendASCII("form.html"));
+  ASSERT_FALSE(HistoryContainsURL(auto_subframe));
 }
 
 // HTTP meta-refresh redirects should have separate history entries.

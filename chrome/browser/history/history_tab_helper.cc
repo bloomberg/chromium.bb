@@ -100,6 +100,13 @@ void HistoryTabHelper::DidFinishNavigation(
   if (navigation_handle->IsInMainFrame()) {
     // Allow the new page to set the title again.
     received_page_title_ = false;
+  } else if (!navigation_handle->HasSubframeNavigationEntryCommitted()) {
+    // Filter out unwanted URLs. We don't add auto-subframe URLs that don't
+    // change which NavigationEntry is current. They are a large part of history
+    // (think iframes for ads) and we never display them in history UI. We will
+    // still add manual subframes, which are ones the user has clicked on to
+    // get.
+    return;
   }
 
   // Update history. Note that this needs to happen after the entry is complete,

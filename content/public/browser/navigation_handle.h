@@ -188,6 +188,17 @@ class CONTENT_EXPORT NavigationHandle {
   // GetNetErrorCode will be net::OK.
   virtual bool IsErrorPage() = 0;
 
+  // Not all committed subframe navigations (i.e., !IsInMainFrame &&
+  // HasCommitted) end up causing a change of the current NavigationEntry. For
+  // example, some users of NavigationHandle may want to ignore the initial
+  // commit in a newly added subframe or location.replace events in subframes
+  // (e.g., ads), while still reacting to user actions like link clicks and
+  // back/forward in subframes.  Such users should check if this method returns
+  // true before proceeding.
+  // Note: it's only valid to call this method for subframes for which
+  // HasCommitted returns true.
+  virtual bool HasSubframeNavigationEntryCommitted() = 0;
+
   // True if the committed entry has replaced the existing one. A non-user
   // initiated redirect causes such replacement.
   virtual bool DidReplaceEntry() = 0;
