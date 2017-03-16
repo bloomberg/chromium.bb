@@ -22,7 +22,7 @@ BackgroundFetchManager::BackgroundFetchManager(
 ScriptPromise BackgroundFetchManager::fetch(
     ScriptState* scriptState,
     String tag,
-    HeapVector<RequestOrUSVString> requests,
+    const RequestOrUSVStringOrRequestOrUSVStringSequence& requests,
     const BackgroundFetchOptions& options) {
   if (!m_registration->active()) {
     return ScriptPromise::reject(
