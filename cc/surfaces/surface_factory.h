@@ -50,10 +50,6 @@ class CC_SURFACES_EXPORT SurfaceFactory : public PendingFrameObserver {
   // the old surface will be dealt with).
   void EvictSurface();
 
-  // Destroys and disowns the current surface, and resets all resource
-  // references. This is useful when resources are invalid (e.g. lost context).
-  void Reset();
-
   // Submits the frame to the current surface being managed by the factory if
   // the local frame ids match, or creates a new surface with the given local
   // frame id, destroys the old one, and submits the frame to this new surface.

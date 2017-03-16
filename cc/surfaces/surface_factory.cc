@@ -41,14 +41,6 @@ void SurfaceFactory::EvictSurface() {
   Destroy(std::move(current_surface_));
 }
 
-void SurfaceFactory::Reset() {
-  EvictSurface();
-  // Disown Surfaces that are still alive so that they don't try to unref
-  // resources that we're not tracking any more.
-  weak_factory_.InvalidateWeakPtrs();
-  holder_.Reset();
-}
-
 void SurfaceFactory::SubmitCompositorFrame(
     const LocalSurfaceId& local_surface_id,
     CompositorFrame frame,
