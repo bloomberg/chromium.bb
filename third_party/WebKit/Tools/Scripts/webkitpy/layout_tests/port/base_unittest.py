@@ -490,7 +490,10 @@ class PortTest(unittest.TestCase):
     def test_is_wptserve_test(self):
         port = self.make_port()
         self.assertTrue(port.is_wptserve_test('external/wpt/foo/bar.html'))
+        self.assertTrue(port.is_wptserve_test('virtual/a-name/external/wpt/baz/qux.htm'))
         self.assertFalse(port.is_wptserve_test('http/wpt/foo.html'))
+        self.assertFalse(port.is_wptserve_test('virtual/external/wpt/baz/qux.htm'))
+        self.assertFalse(port.is_wptserve_test('not-virtual/a-name/external/wpt/baz/qux.htm'))
 
     def test_default_results_directory(self):
         port = self.make_port(options=optparse.Values({'target': 'Default', 'configuration': 'Release'}))

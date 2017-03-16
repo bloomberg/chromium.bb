@@ -1151,7 +1151,7 @@ class Port(object):
     @staticmethod
     def is_wptserve_test(test):
         """Whether wptserve should be used for a given test if enabled."""
-        return test.startswith('external/wpt/')
+        return re.match(r'(virtual/[^/]+/)?external/wpt/', test)
 
     def should_use_wptserve(self, test):
         return self.is_wptserve_test(test)

@@ -1,7 +1,7 @@
 // This worker remains in the installing phase so that the
 // navigation preload API can be tested when there is no
 // active worker.
-importScripts('../../../resources/testharness.js');
+importScripts('/resources/testharness.js');
 importScripts('helpers.js');
 
 function expect_rejection(promise) {
