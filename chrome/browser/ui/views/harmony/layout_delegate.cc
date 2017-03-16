@@ -24,7 +24,7 @@ LayoutDelegate* LayoutDelegate::Get() {
 int LayoutDelegate::GetMetric(Metric metric) const {
   switch (metric) {
     case Metric::BUTTON_HORIZONTAL_PADDING:
-      return ChromeViewsDelegate::GetInstance()->GetDefaultDistanceMetric(
+      return ChromeViewsDelegate::GetDefaultDistanceMetric(
           views::DistanceMetric::BUTTON_HORIZONTAL_PADDING);
     case Metric::BUTTON_MAX_LINKABLE_WIDTH:
       return 0;  // Buttons never expand during layout (add padding instead).
@@ -33,23 +33,23 @@ int LayoutDelegate::GetMetric(Metric metric) const {
     case Metric::DIALOG_BUTTON_MARGIN:
       return views::kButtonHEdgeMarginNew;
     case Metric::DIALOG_BUTTON_MINIMUM_WIDTH:
-      return ChromeViewsDelegate::GetInstance()->GetDefaultDistanceMetric(
+      return ChromeViewsDelegate::GetDefaultDistanceMetric(
           views::DistanceMetric::DIALOG_BUTTON_MINIMUM_WIDTH);
     case Metric::DIALOG_BUTTON_TOP_SPACING:
       return 0;
     case Metric::DIALOG_CLOSE_BUTTON_MARGIN:
-      return ChromeViewsDelegate::GetInstance()->GetDefaultDistanceMetric(
+      return ChromeViewsDelegate::GetDefaultDistanceMetric(
           views::DistanceMetric::CLOSE_BUTTON_MARGIN);
     case Metric::PANEL_CONTENT_MARGIN:
       return views::kPanelHorizMargin;
     case Metric::RELATED_BUTTON_HORIZONTAL_SPACING:
-      return ChromeViewsDelegate::GetInstance()->GetDefaultDistanceMetric(
+      return ChromeViewsDelegate::GetDefaultDistanceMetric(
           views::DistanceMetric::RELATED_BUTTON_HORIZONTAL);
     case Metric::RELATED_CONTROL_HORIZONTAL_SPACING:
-      return ChromeViewsDelegate::GetInstance()->GetDefaultDistanceMetric(
+      return ChromeViewsDelegate::GetDefaultDistanceMetric(
           views::DistanceMetric::RELATED_CONTROL_HORIZONTAL);
     case Metric::RELATED_CONTROL_VERTICAL_SPACING:
-      return ChromeViewsDelegate::GetInstance()->GetDefaultDistanceMetric(
+      return ChromeViewsDelegate::GetDefaultDistanceMetric(
           views::DistanceMetric::RELATED_CONTROL_VERTICAL);
     case Metric::RELATED_LABEL_HORIZONTAL_SPACING:
       return views::kItemLabelSpacing;

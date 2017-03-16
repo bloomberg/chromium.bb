@@ -63,7 +63,7 @@ class ChromeViewsDelegate : public views::ViewsDelegate {
   gfx::Insets GetInsetsMetric(views::InsetsMetric metric) const override;
   int GetDistanceMetric(views::DistanceMetric metric) const override;
 
-  int GetDefaultDistanceMetric(views::DistanceMetric metric) const;
+  static int GetDefaultDistanceMetric(views::DistanceMetric metric);
 
  private:
 #if defined(OS_WIN)
@@ -82,6 +82,8 @@ class ChromeViewsDelegate : public views::ViewsDelegate {
   void AdjustSavedWindowPlacementChromeOS(const views::Widget* widget,
                                           gfx::Rect* bounds) const;
 #endif
+
+  int InternalGetDefaultDistanceMetric(views::DistanceMetric metric) const;
 
   // Function to retrieve default opacity value mainly based on platform
   // and desktop context.

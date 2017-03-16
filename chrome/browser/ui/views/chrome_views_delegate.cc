@@ -264,6 +264,13 @@ int ChromeViewsDelegate::GetDistanceMetric(views::DistanceMetric metric) const {
 }
 
 int ChromeViewsDelegate::GetDefaultDistanceMetric(
+    views::DistanceMetric metric) {
+  return views_delegate
+             ? views_delegate->InternalGetDefaultDistanceMetric(metric)
+             : views::ViewsDelegate::GetInstance()->GetDistanceMetric(metric);
+}
+
+int ChromeViewsDelegate::InternalGetDefaultDistanceMetric(
     views::DistanceMetric metric) const {
   return views::ViewsDelegate::GetDistanceMetric(metric);
 }
