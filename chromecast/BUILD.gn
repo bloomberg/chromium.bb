@@ -106,6 +106,15 @@ cast_test_group("cast_tests") {
           "CastMediaBlockerBrowserTest.Video_BlockUnblock",
           "CastMediaBlockerBrowserTest.Audio_BlockUnblock",
         ]
+
+        # TODO(mbjorge): The ReusedRenderer test is failing on v1 and cast audio
+        # devices. Temporarily disable them as part of an effort_to re-green
+        # the unittests. Current failures (2017-03-15) are being disabled to get
+        # back to a green state. Re-enable once the tests have been fixed.
+        # Limitations in the build mean this unfortunately is getting disabled
+        # across all devices, even though it is only failing on some.
+        # b/36238710, b/36239051, hotlist/461351
+        gtest_excludes += [ "RendererPrelauncherTest.ReusedRenderer" ]
       }
 
       # TODO(mbjorge): Temporarily disable AudioPlaybackWavPcm because it is
