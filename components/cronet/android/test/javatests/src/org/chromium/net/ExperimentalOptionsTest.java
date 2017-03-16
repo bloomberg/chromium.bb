@@ -46,50 +46,6 @@ public class ExperimentalOptionsTest extends CronetTestBase {
     @SmallTest
     @Feature({"Cronet"})
     @OnlyRunNativeCronet
-    // Tests that NetLog writes effective experimental options to NetLog.
-    public void testNetLog() throws Exception {
-        File directory = new File(PathUtils.getDataDirectory());
-        File logfile = File.createTempFile("cronet", "json", directory);
-        JSONObject hostResolverParams = CronetTestUtil.generateHostResolverRules();
-        JSONObject experimentalOptions =
-                new JSONObject().put("HostResolverRules", hostResolverParams);
-        mBuilder.setExperimentalOptions(experimentalOptions.toString());
-
-        mTestFramework = new CronetTestFramework(null, null, getContext(), mBuilder);
-        mTestFramework.mCronetEngine.startNetLogToFile(logfile.getPath(), false);
-        String url = Http2TestServer.getEchoMethodUrl();
-        TestUrlRequestCallback callback = new TestUrlRequestCallback();
-        UrlRequest.Builder builder = mTestFramework.mCronetEngine.newUrlRequestBuilder(
-                url, callback, callback.getExecutor());
-        UrlRequest urlRequest = builder.build();
-        urlRequest.start();
-        callback.blockForDone();
-        assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
-        assertEquals("GET", callback.mResponseAsString);
-        mTestFramework.mCronetEngine.stopNetLog();
-        assertTrue(logfile.exists());
-        assertTrue(logfile.length() != 0);
-        BufferedReader logReader = new BufferedReader(new FileReader(logfile));
-        boolean validFile = false;
-        try {
-            String logLine;
-            while ((logLine = logReader.readLine()) != null) {
-                if (logLine.contains("HostResolverRules")) {
-                    validFile = true;
-                    break;
-                }
-            }
-        } finally {
-            logReader.close();
-        }
-        assertTrue(validFile);
-        assertTrue(logfile.delete());
-        assertTrue(!logfile.exists());
-    }
-
-    @SmallTest
-    @Feature({"Cronet"})
-    @OnlyRunNativeCronet
     public void testSetSSLKeyLogFile() throws Exception {
         String url = Http2TestServer.getEchoMethodUrl();
         File dir = new File(PathUtils.getDataDirectory());

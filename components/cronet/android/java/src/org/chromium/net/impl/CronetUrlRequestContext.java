@@ -148,6 +148,13 @@ public class CronetUrlRequestContext extends CronetEngineBase {
     @GuardedBy("mLock")
     private boolean mIsLogging;
 
+    /**
+     * True if a NetLog observer that writes to disk with a bounded amount of space has been
+     * activated by calling StartNetLogToDisk().
+     */
+    @GuardedBy("mLock")
+    private boolean mNetLogToDisk;
+
     @UsedByReflection("CronetEngine.java")
     public CronetUrlRequestContext(final CronetEngineBuilderImpl builder) {
         CronetLibraryLoader.ensureInitialized(builder.getContext(), builder);
@@ -287,6 +294,7 @@ public class CronetUrlRequestContext extends CronetEngineBase {
             checkHaveAdapter();
             nativeStartNetLogToDisk(mUrlRequestContextAdapter, dirPath, logAll, maxSize);
             mIsLogging = true;
+            mNetLogToDisk = true;
         }
     }
 
@@ -299,6 +307,9 @@ public class CronetUrlRequestContext extends CronetEngineBase {
             checkHaveAdapter();
             nativeStopNetLog(mUrlRequestContextAdapter);
             mIsLogging = false;
+            if (!mNetLogToDisk) {
+                return;
+            }
             mStopNetLogCompleted = new ConditionVariable();
         }
         mStopNetLogCompleted.block();
@@ -306,6 +317,9 @@ public class CronetUrlRequestContext extends CronetEngineBase {
 
     @CalledByNative
     public void stopNetLogCompleted() {
+        synchronized (mLock) {
+            mNetLogToDisk = false;
+        }
         mStopNetLogCompleted.open();
     }
 
