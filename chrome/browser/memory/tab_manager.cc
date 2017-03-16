@@ -20,6 +20,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/observer_list.h"
 #include "base/process/process.h"
+#include "base/rand_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -80,35 +81,17 @@ const int kAdjustmentIntervalSeconds = 10;
 const int kRecentTabDiscardIntervalSeconds = 60;
 #endif
 
-// If there has been no priority adjustment in this interval, assume the
-// machine was suspended and correct the timing statistics.
-const int kSuspendThresholdSeconds = kAdjustmentIntervalSeconds * 4;
-
-// A suspended renderer is suspended for this duration.
-constexpr base::TimeDelta kDurationOfRendererSuspension =
-    base::TimeDelta::FromSeconds(1200);
-
-// A resumed renderer is resumed for this duration.
-constexpr base::TimeDelta kDurationOfRendererResumption =
-    base::TimeDelta::FromSeconds(10);
-
 // The time during which a tab is protected from discarding after it stops being
 // audible.
 const int kAudioProtectionTimeSeconds = 60;
 
-int FindTabStripModelById(int64_t target_web_contents_id,
-                          TabStripModel** model) {
-  DCHECK(model);
-  for (auto* browser : *BrowserList::GetInstance()) {
-    TabStripModel* local_model = browser->tab_strip_model();
-    for (int idx = 0; idx < local_model->count(); idx++) {
-      WebContents* web_contents = local_model->GetWebContentsAt(idx);
-      int64_t web_contents_id = TabManager::IdFromWebContents(web_contents);
-      if (web_contents_id == target_web_contents_id) {
-        *model = local_model;
-        return idx;
-      }
-    }
+int FindWebContentsById(const TabStripModel* model,
+                        int64_t target_web_contents_id) {
+  for (int idx = 0; idx < model->count(); idx++) {
+    WebContents* web_contents = model->GetWebContentsAt(idx);
+    int64_t web_contents_id = TabManager::IdFromWebContents(web_contents);
+    if (web_contents_id == target_web_contents_id)
+      return idx;
   }
 
   return -1;
@@ -139,7 +122,7 @@ void NotifyRendererProcess(
 ////////////////////////////////////////////////////////////////////////////////
 // TabManager
 
-constexpr base::TimeDelta TabManager::kDefaultTimeToFirstPurge;
+constexpr base::TimeDelta TabManager::kDefaultMinTimeToPurge;
 
 TabManager::TabManager()
     : discard_count_(0),
@@ -227,19 +210,48 @@ void TabManager::Start() {
   // https://docs.google.com/document/d/1hPHkKtXXBTlsZx9s-9U17XC-ofEIzPo9FYbBEc7PPbk/edit?usp=sharing
   std::string purge_and_suspend_time = variations::GetVariationParamValue(
       "PurgeAndSuspend", "purge-and-suspend-time");
-  unsigned int time_to_first_purge_sec = 0;
+  unsigned int min_time_to_purge_sec = 0;
   if (purge_and_suspend_time.empty() ||
-      !base::StringToUint(purge_and_suspend_time, &time_to_first_purge_sec))
-    time_to_first_suspension_ = kDefaultTimeToFirstPurge;
+      !base::StringToUint(purge_and_suspend_time, &min_time_to_purge_sec))
+    min_time_to_purge_ = kDefaultMinTimeToPurge;
   else
-    time_to_first_suspension_ =
-        base::TimeDelta::FromSeconds(time_to_first_purge_sec);
+    min_time_to_purge_ = base::TimeDelta::FromSeconds(min_time_to_purge_sec);
 }
 
 void TabManager::Stop() {
   update_timer_.Stop();
   recent_tab_discard_timer_.Stop();
   memory_pressure_listener_.reset();
+}
+
+int TabManager::FindTabStripModelById(int64_t target_web_contents_id,
+                                      TabStripModel** model) const {
+  DCHECK(model);
+  // TODO(tasak): Move this code to a TabStripModel enumeration delegate!
+  if (!test_tab_strip_models_.empty()) {
+    for (size_t i = 0; i < test_tab_strip_models_.size(); ++i) {
+      TabStripModel* local_model =
+          const_cast<TabStripModel*>(test_tab_strip_models_[i].first);
+      int idx = FindWebContentsById(local_model, target_web_contents_id);
+      if (idx != -1) {
+        *model = local_model;
+        return idx;
+      }
+    }
+
+    return -1;
+  }
+
+  for (auto* browser : *BrowserList::GetInstance()) {
+    TabStripModel* local_model = browser->tab_strip_model();
+    int idx = FindWebContentsById(local_model, target_web_contents_id);
+    if (idx != -1) {
+      *model = local_model;
+      return idx;
+    }
+  }
+
+  return -1;
 }
 
 TabStatsList TabManager::GetTabStats() const {
@@ -452,7 +464,7 @@ content::WebContents* TabManager::GetWebContentsById(
 }
 
 bool TabManager::CanSuspendBackgroundedRenderer(int render_process_id) const {
-  // A renderer can be suspended if it's not playing media.
+  // A renderer can be purged if it's not playing media.
   auto tab_stats = GetUnsortedTabStats();
   for (auto& tab : tab_stats) {
     if (tab.child_process_host_id != render_process_id)
@@ -685,8 +697,7 @@ void TabManager::AddTabStats(const TabStripModel* model,
 // This function is called when |update_timer_| fires. It will adjust the clock
 // if needed (if it detects that the machine was asleep) and will fire the stats
 // updating on ChromeOS via the delegate. This function also tries to purge
-// cache memory and suspend tabs which becomes and keeps backgrounded for a
-// while.
+// cache memory.
 void TabManager::UpdateTimerCallback() {
   // If Chrome is shutting down, do not do anything.
   if (g_browser_process->IsShuttingDown())
@@ -695,17 +706,6 @@ void TabManager::UpdateTimerCallback() {
   if (BrowserList::GetInstance()->empty())
     return;
 
-  // Check for a discontinuity in time caused by the machine being suspended.
-  if (!last_adjust_time_.is_null()) {
-    TimeDelta suspend_time = NowTicks() - last_adjust_time_;
-    if (suspend_time.InSeconds() > kSuspendThresholdSeconds) {
-      // System was probably suspended, move the event timers forward in time so
-      // when they get subtracted out later, "uptime" is being counted.
-      start_time_ += suspend_time;
-      if (!last_discard_time_.is_null())
-        last_discard_time_ += suspend_time;
-    }
-  }
   last_adjust_time_ = NowTicks();
 
 #if defined(OS_CHROMEOS)
@@ -714,38 +714,26 @@ void TabManager::UpdateTimerCallback() {
   delegate_->AdjustOomPriorities(stats_list);
 #endif
 
-  PurgeAndSuspendBackgroundedTabs();
+  PurgeBackgroundedTabsIfNeeded();
 }
 
-TabManager::PurgeAndSuspendState TabManager::GetNextPurgeAndSuspendState(
-    content::WebContents* content,
-    base::TimeTicks current_time,
-    const base::TimeDelta& time_to_first_suspension) const {
-  DCHECK(content);
-  PurgeAndSuspendState state =
-      GetWebContentsData(content)->GetPurgeAndSuspendState();
-
-  auto time_passed = current_time -
-      GetWebContentsData(content)->LastPurgeAndSuspendModifiedTime();
-  switch (state) {
-    case RUNNING:
-      if (time_passed > time_to_first_suspension)
-        return SUSPENDED;
-      break;
-    case RESUMED:
-      if (time_passed > kDurationOfRendererResumption)
-        return SUSPENDED;
-      break;
-    case SUSPENDED:
-      if (time_passed > kDurationOfRendererSuspension)
-        return RESUMED;
-      break;
-  }
-  return state;
+base::TimeDelta TabManager::GetTimeToPurge(
+    base::TimeDelta min_time_to_purge) const {
+  return base::TimeDelta::FromSeconds(
+      base::RandInt(min_time_to_purge.InSeconds(),
+                    min_time_to_purge.InSeconds() * kMinMaxTimeToPurgeRatio));
 }
 
-void TabManager::PurgeAndSuspendBackgroundedTabs() {
-  base::TimeTicks current_time = NowTicks();
+bool TabManager::ShouldPurgeNow(content::WebContents* content) const {
+  if (GetWebContentsData(content)->is_purged())
+    return false;
+
+  base::TimeDelta time_passed =
+      NowTicks() - GetWebContentsData(content)->LastInactiveTime();
+  return time_passed > GetWebContentsData(content)->time_to_purge();
+}
+
+void TabManager::PurgeBackgroundedTabsIfNeeded() {
   auto tab_stats = GetUnsortedTabStats();
   for (auto& tab : tab_stats) {
     if (!tab.render_process_host->IsProcessBackgrounded())
@@ -757,34 +745,16 @@ void TabManager::PurgeAndSuspendBackgroundedTabs() {
     if (!content)
       continue;
 
-    PurgeAndSuspendState current_state =
-        GetWebContentsData(content)->GetPurgeAndSuspendState();
-    // If the tab's purge-and-suspend state is not RUNNING, the tab should be
-    // backgrounded. Since tab.last_hidden is updated everytime the tab is
-    // hidden, we should see tab.last_hidden < last_modified_time.
-    DCHECK(current_state == RUNNING ||
-           tab.last_hidden <
-               GetWebContentsData(content)->LastPurgeAndSuspendModifiedTime());
-    PurgeAndSuspendState next_state = GetNextPurgeAndSuspendState(
-        content, current_time, time_to_first_suspension_);
-    if (current_state == next_state)
+    bool purge_now = ShouldPurgeNow(content);
+    if (!purge_now)
       continue;
 
-    // TODO(hajimehoshi): Now calling PurgeAndSuspend is implemented without
-    // timers for simplicity, so PurgeAndSuspend is called even after the
-    // renderer is purged and suspended once. This should be replaced with
-    // timers if we want necessary and sufficient signals.
-    GetWebContentsData(content)->SetPurgeAndSuspendState(next_state);
-    switch (next_state) {
-      case SUSPENDED:
-        tab.render_process_host->PurgeAndSuspend();
-        break;
-      case RESUMED:
-        tab.render_process_host->Resume();
-        break;
-      case RUNNING:
-        NOTREACHED();
-    }
+    // Since |content|'s tab is kept inactive and background for more than
+    // time-to-purge time, its purged state changes: false => true.
+    GetWebContentsData(content)->set_is_purged(true);
+    // TODO(tasak): rename PurgeAndSuspend with a better name, e.g.
+    // RequestPurgeCache, because we don't suspend any renderers.
+    tab.render_process_host->PurgeAndSuspend();
   }
 }
 
@@ -823,6 +793,9 @@ WebContents* TabManager::DiscardWebContentsAt(int index, TabStripModel* model) {
   // Mark the tab so it will reload when clicked on.
   GetWebContentsData(null_contents)->SetDiscardState(true);
   GetWebContentsData(null_contents)->IncrementDiscardCount();
+
+  // Make the tab PURGED to avoid purging null_contents.
+  GetWebContentsData(null_contents)->set_is_purged(true);
 
   // Discard the old tab's renderer.
   // TODO(jamescook): This breaks script connections with other tabs.
@@ -885,11 +858,16 @@ void TabManager::ActiveTabChanged(content::WebContents* old_contents,
                                   int index,
                                   int reason) {
   GetWebContentsData(new_contents)->SetDiscardState(false);
-  GetWebContentsData(new_contents)->SetPurgeAndSuspendState(RUNNING);
+  // When ActiveTabChanged, |new_contents| purged state changes to be false.
+  GetWebContentsData(new_contents)->set_is_purged(false);
   // If |old_contents| is set, that tab has switched from being active to
   // inactive, so record the time of that transition.
-  if (old_contents)
+  if (old_contents) {
     GetWebContentsData(old_contents)->SetLastInactiveTime(NowTicks());
+    // Re-setting time-to-purge every time a tab becomes inactive.
+    GetWebContentsData(old_contents)
+        ->set_time_to_purge(GetTimeToPurge(min_time_to_purge_));
+  }
 }
 
 void TabManager::TabInsertedAt(TabStripModel* tab_strip_model,
@@ -904,6 +882,9 @@ void TabManager::TabInsertedAt(TabStripModel* tab_strip_model,
   // A new background tab is similar to having a tab switch from being active to
   // inactive.
   GetWebContentsData(contents)->SetLastInactiveTime(NowTicks());
+  // Re-setting time-to-purge every time a tab becomes inactive.
+  GetWebContentsData(contents)->set_time_to_purge(
+      GetTimeToPurge(min_time_to_purge_));
 }
 
 bool TabManager::IsMediaTab(WebContents* contents) const {

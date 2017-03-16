@@ -79,25 +79,23 @@ class TabManager::WebContentsData
   // Sets/clears the auto-discardable state of the tab.
   void SetAutoDiscardableState(bool state);
 
-  // Sets the current purge-and-suspend state, and update the timestamp,
-  // i.e. the last purge-and-suspend modified time.
-  // TODO(tasak): remove this after PurgeAndSuspend code is moved into
+  // Sets the current purge state.
+  // TODO(tasak): remove this after the logic is moved into
   // MemoryCoordinator.
-  void SetPurgeAndSuspendState(TabManager::PurgeAndSuspendState state);
+  void set_is_purged(bool state) { is_purged_ = state; }
 
-  // Returns the last purge-and-suspend modified time.
-  // TODO(tasak): remove this after PurgeAndSuspend code is moved into
+  // Returns the current state of purge.
+  // TODO(tasak): remove this after the logic is moved into
   // MemoryCoordinator.
-  base::TimeTicks LastPurgeAndSuspendModifiedTime() const;
+  bool is_purged() const { return is_purged_; }
 
-  // Sets the timestamp of the last modified time the purge-and-suspend state
-  // of the tab was changed for testing.
-  void SetLastPurgeAndSuspendModifiedTimeForTesting(base::TimeTicks timestamp);
+  // Sets the time to purge after the tab is backgrounded.
+  void set_time_to_purge(const base::TimeDelta& time_to_purge) {
+    time_to_purge_ = time_to_purge;
+  }
 
-  // Returns the current state of purge-and-suspend.
-  // TODO(tasak): remove this after PurgeAndSuspend code is moved into
-  // MemoryCoordinator.
-  TabManager::PurgeAndSuspendState GetPurgeAndSuspendState() const;
+  // Returns the time to first purge after the tab is backgrounded.
+  base::TimeDelta time_to_purge() const { return time_to_purge_; }
 
  private:
   // Needed to access tab_data_.
@@ -141,11 +139,11 @@ class TabManager::WebContentsData
   // this test clock. Otherwise it returns the system clock's value.
   base::TickClock* test_tick_clock_;
 
-  // The last time purge-and-suspend state was modified.
-  base::TimeTicks last_purge_and_suspend_modified_time_;
+  // The time to purge after the tab is backgrounded.
+  base::TimeDelta time_to_purge_;
 
-  // The current state of purge-and-suspend.
-  PurgeAndSuspendState purge_and_suspend_state_;
+  // True if the tab has been purged.
+  bool is_purged_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsData);
 };
