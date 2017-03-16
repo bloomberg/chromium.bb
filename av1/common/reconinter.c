@@ -1664,9 +1664,10 @@ void av1_count_overlappable_neighbors(const AV1_COMMON *cm, MACROBLOCKD *xd,
       mi_step = AOMMIN(xd->n8_w, mi_size_wide[above_mbmi->sb_type]);
 
       if (is_neighbor_overlappable(above_mbmi)) {
+        const BLOCK_SIZE a_bsize = above_mbmi->sb_type;
+
         xd->mi[0]->mbmi.overlappable_neighbors[0]++;
-        if (!CONFIG_CB4X4 && (above_mbmi->sb_type == BLOCK_4X4 ||
-                              above_mbmi->sb_type == BLOCK_4X8))
+        if (!CONFIG_CB4X4 && (a_bsize == BLOCK_4X4 || a_bsize == BLOCK_4X8))
           xd->mi[0]->mbmi.overlappable_neighbors[0]++;
       }
     }
@@ -1684,9 +1685,10 @@ void av1_count_overlappable_neighbors(const AV1_COMMON *cm, MACROBLOCKD *xd,
       mi_step = AOMMIN(xd->n8_h, mi_size_high[left_mbmi->sb_type]);
 
       if (is_neighbor_overlappable(left_mbmi)) {
+        const BLOCK_SIZE l_bsize = left_mbmi->sb_type;
+
         xd->mi[0]->mbmi.overlappable_neighbors[1]++;
-        if (!CONFIG_CB4X4 && (left_mbmi->sb_type == BLOCK_4X4 ||
-                              left_mbmi->sb_type == BLOCK_8X4))
+        if (!CONFIG_CB4X4 && (l_bsize == BLOCK_4X4 || l_bsize == BLOCK_8X4))
           xd->mi[0]->mbmi.overlappable_neighbors[1]++;
       }
     }
@@ -1714,6 +1716,8 @@ void av1_build_obmc_inter_prediction(const AV1_COMMON *cm, MACROBLOCKD *xd,
     const int overlap = num_4x4_blocks_high_lookup[bsize] * 2;
     const int miw = AOMMIN(xd->n8_w, cm->mi_cols - mi_col);
     const int mi_row_offset = -1;
+    const int neighbor_limit = max_neighbor_obmc[b_width_log2_lookup[bsize]];
+    int neighbor_count = 0;
 
     assert(miw > 0);
 
@@ -1722,9 +1726,15 @@ void av1_build_obmc_inter_prediction(const AV1_COMMON *cm, MACROBLOCKD *xd,
       const int mi_col_offset = i;
       const MB_MODE_INFO *const above_mbmi =
           &xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride]->mbmi;
-      const int mi_step = AOMMIN(xd->n8_w, mi_size_wide[above_mbmi->sb_type]);
+      const BLOCK_SIZE a_bsize = above_mbmi->sb_type;
+      const int mi_step = AOMMIN(xd->n8_w, mi_size_wide[a_bsize]);
 
       if (is_neighbor_overlappable(above_mbmi)) {
+        if (!CONFIG_CB4X4 && (a_bsize == BLOCK_4X4 || a_bsize == BLOCK_4X8))
+          neighbor_count += 2;
+        else
+          neighbor_count++;
+        if (neighbor_count > neighbor_limit) break;
         for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
           const struct macroblockd_plane *pd = &xd->plane[plane];
           const int bw = (mi_step * MI_SIZE) >> pd->subsampling_x;
@@ -1755,6 +1765,8 @@ void av1_build_obmc_inter_prediction(const AV1_COMMON *cm, MACROBLOCKD *xd,
     const int overlap = num_4x4_blocks_wide_lookup[bsize] * 2;
     const int mih = AOMMIN(xd->n8_h, cm->mi_rows - mi_row);
     const int mi_col_offset = -1;
+    const int neighbor_limit = max_neighbor_obmc[b_height_log2_lookup[bsize]];
+    int neighbor_count = 0;
 
     assert(mih > 0);
 
@@ -1763,9 +1775,15 @@ void av1_build_obmc_inter_prediction(const AV1_COMMON *cm, MACROBLOCKD *xd,
       const int mi_row_offset = i;
       const MB_MODE_INFO *const left_mbmi =
           &xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride]->mbmi;
-      const int mi_step = AOMMIN(xd->n8_h, mi_size_high[left_mbmi->sb_type]);
+      const BLOCK_SIZE l_bsize = left_mbmi->sb_type;
+      const int mi_step = AOMMIN(xd->n8_h, mi_size_high[l_bsize]);
 
       if (is_neighbor_overlappable(left_mbmi)) {
+        if (!CONFIG_CB4X4 && (l_bsize == BLOCK_4X4 || l_bsize == BLOCK_8X4))
+          neighbor_count += 2;
+        else
+          neighbor_count++;
+        if (neighbor_count > neighbor_limit) break;
         for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
           const struct macroblockd_plane *pd = &xd->plane[plane];
           const int bw = overlap >> pd->subsampling_x;
@@ -1817,6 +1835,8 @@ void av1_build_prediction_by_above_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
   int i, j, mi_step, ref;
   const int ilimit = AOMMIN(xd->n8_w, cm->mi_cols - mi_col);
   int mb_to_right_edge_base = xd->mb_to_right_edge;
+  const int neighbor_limit = max_neighbor_obmc[b_width_log2_lookup[bsize]];
+  int neighbor_count = 0;
 
   if (mi_row <= tile->mi_row_start) return;
 
@@ -1827,13 +1847,20 @@ void av1_build_prediction_by_above_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
     int mi_x, mi_y, bw, bh;
     MODE_INFO *above_mi = xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride];
     MB_MODE_INFO *above_mbmi = &above_mi->mbmi;
+    const BLOCK_SIZE a_bsize = above_mbmi->sb_type;
 #if CONFIG_EXT_INTER
     MB_MODE_INFO backup_mbmi;
 #endif  // CONFIG_EXT_INTER
 
-    mi_step = AOMMIN(xd->n8_w, mi_size_wide[above_mbmi->sb_type]);
+    mi_step = AOMMIN(xd->n8_w, mi_size_wide[a_bsize]);
 
     if (!is_neighbor_overlappable(above_mbmi)) continue;
+
+    if (!CONFIG_CB4X4 && (a_bsize == BLOCK_4X4 || a_bsize == BLOCK_4X8))
+      neighbor_count += 2;
+    else
+      neighbor_count++;
+    if (neighbor_count > neighbor_limit) break;
 
 #if CONFIG_EXT_INTER
     backup_mbmi = *above_mbmi;
@@ -1870,8 +1897,8 @@ void av1_build_prediction_by_above_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
       bh = AOMMAX((num_4x4_blocks_high_lookup[bsize] * 2) >> pd->subsampling_y,
                   4);
 
-      if (above_mbmi->sb_type < BLOCK_8X8 && !CONFIG_CB4X4) {
-        const PARTITION_TYPE bp = BLOCK_8X8 - above_mbmi->sb_type;
+      if (a_bsize < BLOCK_8X8 && !CONFIG_CB4X4) {
+        const PARTITION_TYPE bp = BLOCK_8X8 - a_bsize;
         const int have_vsplit = bp != PARTITION_HORZ;
         const int have_hsplit = bp != PARTITION_VERT;
         const int num_4x4_w = 2 >> !have_vsplit;
@@ -1945,6 +1972,8 @@ void av1_build_prediction_by_left_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
   int i, j, mi_step, ref;
   const int ilimit = AOMMIN(xd->n8_h, cm->mi_rows - mi_row);
   int mb_to_bottom_edge_base = xd->mb_to_bottom_edge;
+  const int neighbor_limit = max_neighbor_obmc[b_height_log2_lookup[bsize]];
+  int neighbor_count = 0;
 
   if (mi_col == 0 || (mi_col - 1 < tile->mi_col_start)) return;
 
@@ -1955,13 +1984,20 @@ void av1_build_prediction_by_left_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
     int mi_x, mi_y, bw, bh;
     MODE_INFO *left_mi = xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride];
     MB_MODE_INFO *left_mbmi = &left_mi->mbmi;
+    const BLOCK_SIZE l_bsize = left_mbmi->sb_type;
 #if CONFIG_EXT_INTER
     MB_MODE_INFO backup_mbmi;
 #endif  // CONFIG_EXT_INTER
 
-    mi_step = AOMMIN(xd->n8_h, mi_size_high[left_mbmi->sb_type]);
+    mi_step = AOMMIN(xd->n8_h, mi_size_high[l_bsize]);
 
     if (!is_neighbor_overlappable(left_mbmi)) continue;
+
+    if (!CONFIG_CB4X4 && (l_bsize == BLOCK_4X4 || l_bsize == BLOCK_8X4))
+      neighbor_count += 2;
+    else
+      neighbor_count++;
+    if (neighbor_count > neighbor_limit) break;
 
 #if CONFIG_EXT_INTER
     backup_mbmi = *left_mbmi;
@@ -1998,8 +2034,8 @@ void av1_build_prediction_by_left_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
                   4);
       bh = (mi_step << MI_SIZE_LOG2) >> pd->subsampling_y;
 
-      if (left_mbmi->sb_type < BLOCK_8X8 && !CONFIG_CB4X4) {
-        const PARTITION_TYPE bp = BLOCK_8X8 - left_mbmi->sb_type;
+      if (l_bsize < BLOCK_8X8 && !CONFIG_CB4X4) {
+        const PARTITION_TYPE bp = BLOCK_8X8 - l_bsize;
         const int have_vsplit = bp != PARTITION_HORZ;
         const int have_hsplit = bp != PARTITION_VERT;
         const int num_4x4_w = 2 >> !have_vsplit;

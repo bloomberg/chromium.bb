@@ -12477,6 +12477,8 @@ static void calc_target_weighted_pred(const AV1_COMMON *cm, const MACROBLOCK *x,
     const int miw = AOMMIN(xd->n8_w, cm->mi_cols - mi_col);
     const int mi_row_offset = -1;
     const uint8_t *const mask1d = av1_get_obmc_mask(overlap);
+    const int neighbor_limit = max_neighbor_obmc[b_width_log2_lookup[bsize]];
+    int neighbor_count = 0;
 
     assert(miw > 0);
 
@@ -12485,11 +12487,17 @@ static void calc_target_weighted_pred(const AV1_COMMON *cm, const MACROBLOCK *x,
       const int mi_col_offset = i;
       const MB_MODE_INFO *const above_mbmi =
           &xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride]->mbmi;
-      const int mi_step =
-          AOMMIN(xd->n8_w, num_8x8_blocks_wide_lookup[above_mbmi->sb_type]);
+      const BLOCK_SIZE a_bsize = above_mbmi->sb_type;
+      const int mi_step = AOMMIN(xd->n8_w, num_8x8_blocks_wide_lookup[a_bsize]);
       const int neighbor_bw = mi_step * MI_SIZE;
 
       if (is_neighbor_overlappable(above_mbmi)) {
+        if (!CONFIG_CB4X4 && (a_bsize == BLOCK_4X4 || a_bsize == BLOCK_4X8))
+          neighbor_count += 2;
+        else
+          neighbor_count++;
+        if (neighbor_count > neighbor_limit) break;
+
         const int tmp_stride = above_stride;
         int32_t *wsrc = wsrc_buf + (i * MI_SIZE);
         int32_t *mask = mask_buf + (i * MI_SIZE);
@@ -12543,6 +12551,8 @@ static void calc_target_weighted_pred(const AV1_COMMON *cm, const MACROBLOCK *x,
     const int mih = AOMMIN(xd->n8_h, cm->mi_rows - mi_row);
     const int mi_col_offset = -1;
     const uint8_t *const mask1d = av1_get_obmc_mask(overlap);
+    const int neighbor_limit = max_neighbor_obmc[b_height_log2_lookup[bsize]];
+    int neighbor_count = 0;
 
     assert(mih > 0);
 
@@ -12551,11 +12561,17 @@ static void calc_target_weighted_pred(const AV1_COMMON *cm, const MACROBLOCK *x,
       const int mi_row_offset = i;
       const MB_MODE_INFO *const left_mbmi =
           &xd->mi[mi_col_offset + mi_row_offset * xd->mi_stride]->mbmi;
-      const int mi_step =
-          AOMMIN(xd->n8_h, num_8x8_blocks_high_lookup[left_mbmi->sb_type]);
+      const BLOCK_SIZE l_bsize = left_mbmi->sb_type;
+      const int mi_step = AOMMIN(xd->n8_h, num_8x8_blocks_high_lookup[l_bsize]);
       const int neighbor_bh = mi_step * MI_SIZE;
 
       if (is_neighbor_overlappable(left_mbmi)) {
+        if (!CONFIG_CB4X4 && (l_bsize == BLOCK_4X4 || l_bsize == BLOCK_8X4))
+          neighbor_count += 2;
+        else
+          neighbor_count++;
+        if (neighbor_count > neighbor_limit) break;
+
         const int tmp_stride = left_stride;
         int32_t *wsrc = wsrc_buf + (i * MI_SIZE * wsrc_stride);
         int32_t *mask = mask_buf + (i * MI_SIZE * mask_stride);
