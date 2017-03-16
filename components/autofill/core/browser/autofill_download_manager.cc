@@ -24,8 +24,81 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "url/gurl.h"
+
+namespace {
+
+net::NetworkTrafficAnnotationTag GetNetworkTrafficAnnotation(
+    const autofill::AutofillDownloadManager::RequestType& request_type) {
+  if (request_type == autofill::AutofillDownloadManager::REQUEST_QUERY) {
+    return net::DefineNetworkTrafficAnnotation("autofill_query", R"(
+        semantics {
+          sender: "Autofill"
+          description:
+            "Chromium can automatically fill in web forms. If the feature is "
+            "enabled, Chromium will send a non-identifying description of the "
+            "form to Google's servers, which will respond with the type of "
+            "data required by each of the form's fields, if known. I.e., if a "
+            "field expects to receive a name, phone number, street address, "
+            "etc."
+          trigger: "User encounters a web form."
+          data:
+            "Hashed descriptions of the form and its fields. User data is not "
+            "sent."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: false
+          setting:
+            "You can enable or disable this feature via 'Enable autofill to "
+            "fill out web forms in a single click.' in Chromium's settings "
+            "under 'Passwords and forms'. The feature is enabled by default."
+          chrome_policy {
+            AutofillEnabled {
+                policy_options {mode: MANDATORY}
+                AutofillEnabled: false
+            }
+          }
+        })");
+  }
+
+  DCHECK_EQ(request_type, autofill::AutofillDownloadManager::REQUEST_UPLOAD);
+  return net::DefineNetworkTrafficAnnotation("autofill_upload", R"(
+      semantics {
+        sender: "Autofill"
+        description:
+          "Chromium relies on crowd-sourced field type classifications to "
+          "help it automatically fill in web forms. If the feature is "
+          "enabled, Chromium will send a non-identifying description of the "
+          "form to Google's servers along with the type of data Chromium "
+          "observed being given to the form. I.e., if you entered your first "
+          "name into a form field, Chromium will 'vote' for that form field "
+          "being a first name field."
+        trigger: "User submits a web form."
+        data:
+          "Hashed descriptions of the form and its fields along with type of "
+          "data given to each field, if recognized from the user's "
+          "profile(s). User data is not sent."
+        destination: GOOGLE_OWNED_SERVICE
+      }
+      policy {
+        cookies_allowed: false
+        setting:
+          "You can enable or disable this feature via 'Enable autofill to "
+          "fill out web forms in a single click.' in Chromium's settings "
+          "under 'Passwords and forms'. The feature is enabled by default."
+        chrome_policy {
+          AutofillEnabled {
+              policy_options {mode: MANDATORY}
+              AutofillEnabled: false
+          }
+        }
+      })");
+}
+
+}  // namespace
 
 namespace autofill {
 
@@ -234,7 +307,8 @@ bool AutofillDownloadManager::StartRequest(
   // Id is ignored for regular chrome, in unit test id's for fake fetcher
   // factory will be 0, 1, 2, ...
   std::unique_ptr<net::URLFetcher> owned_fetcher = net::URLFetcher::Create(
-      fetcher_id_for_unittest_++, request_url, net::URLFetcher::POST, this);
+      fetcher_id_for_unittest_++, request_url, net::URLFetcher::POST, this,
+      GetNetworkTrafficAnnotation(request_data.request_type));
   net::URLFetcher* fetcher = owned_fetcher.get();
   data_use_measurement::DataUseUserData::AttachToFetcher(
       fetcher, data_use_measurement::DataUseUserData::AUTOFILL);
