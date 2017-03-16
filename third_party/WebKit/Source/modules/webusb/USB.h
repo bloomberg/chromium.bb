@@ -69,8 +69,15 @@ class USB final : public EventTargetWithInlineData,
 
   DECLARE_VIRTUAL_TRACE();
 
+ protected:
+  // EventTarget protected overrides.
+  void addedEventListener(const AtomicString& eventType,
+                          RegisteredEventListener&) override;
+
  private:
   explicit USB(LocalFrame& frame);
+
+  void ensureDeviceManagerConnection();
 
   device::usb::blink::DeviceManagerPtr m_deviceManager;
   HeapHashSet<Member<ScriptPromiseResolver>> m_deviceManagerRequests;
