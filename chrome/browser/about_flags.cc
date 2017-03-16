@@ -505,6 +505,18 @@ const FeatureEntry::Choice kNtpSwitchToExistingTabChoices[] = {
 };
 #endif  // OS_ANDROID
 
+#if defined(OS_CHROMEOS)
+const FeatureEntry::Choice kForceTabletModeChoices[] = {
+    {IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", ""},
+    {IDS_FLAGS_FORCE_TABLET_MODE_TOUCHVIEW, switches::kForceTabletMode,
+     switches::kForceTabletModeTouchView},
+    {IDS_FLAGS_FORCE_TABLET_MODE_CLAMSHELL, switches::kForceTabletMode,
+     switches::kForceTabletModeClamshell},
+    {IDS_FLAGS_FORCE_TABLET_MODE_AUTO, switches::kForceTabletMode,
+     switches::kForceTabletModeAuto},
+};
+#endif  // OS_CHROMEOS
+
 #if defined(OS_ANDROID)
 const FeatureEntry::FeatureParam
     kContentSuggestionsCategoryOrderFeatureVariationGeneral[] = {
@@ -2373,6 +2385,12 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-mojo-loading", IDS_FLAGS_MOJO_LOADING_NAME,
      IDS_FLAGS_MOJO_LOADING_DESCRIPTION, kOsAll,
      FEATURE_VALUE_TYPE(features::kLoadingWithMojo)},
+
+#if defined(OS_CHROMEOS)
+    {"force-tablet-mode", IDS_FLAGS_FORCE_TABLET_MODE_NAME,
+     IDS_FLAGS_FORCE_TABLET_MODE_DESCRIPTION, kOsCrOS,
+     MULTI_VALUE_TYPE(kForceTabletModeChoices)},
+#endif  // OS_CHROMEOS
 
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in

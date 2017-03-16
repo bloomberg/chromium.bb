@@ -5010,6 +5010,27 @@ Keep your key file in a safe place. You will need it to create new versions of y
         "Prefetching" that learning and prefetching are enabled.
       </message>
 
+      <!-- Force Tablet Mode -->
+      <message name="IDS_FLAGS_FORCE_TABLET_MODE_NAME" desc="Name for the flag to force tablet mode." translateable="false">
+        Force Tablet Mode
+      </message>
+      <message name="IDS_FLAGS_FORCE_TABLET_MODE_DESCRIPTION" desc="Description for the flag to force tablet mode." translateable="false">
+        This flag can be used to force a certain mode on to a chromebook, despite its current orientation.
+
+        "TouchView" means that the chromebook will act as if it were in touch view mode.
+        "Clamshell" means that the chromebook will act as if it were in clamshell mode .
+        "Auto" means that the chromebook will alternate between the two, based on its orientation.
+      </message>
+      <message name="IDS_FLAGS_FORCE_TABLET_MODE_TOUCHVIEW" desc="Description of the TouchView mode. In TouchView mode, the keyboard can flip behind the screen so the Chromebook operates like a tablet computer." translateable="false">
+        TouchView
+      </message>
+      <message name="IDS_FLAGS_FORCE_TABLET_MODE_CLAMSHELL" desc="Description of the Clamshell mode. In Clamshell mode, the Chromebook operates like a standard laptop computer, keyboard on the bottom, screen on top, with a hinge like a clamshell." translateable="false">
+        Clamshell
+      </message>
+      <message name="IDS_FLAGS_FORCE_TABLET_MODE_AUTO" desc="Description of the default or 'automatic' mode." translateable="false">
+        Auto (default)
+      </message>
+
       <!-- Print Preview features -->
       <message name="IDS_FLAGS_PRINT_PDF_AS_IMAGE_NAME" desc="Name for the flag to add the option to print PDFs as images to print preview.">
         Print Pdf as Image
