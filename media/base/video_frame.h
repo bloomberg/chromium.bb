@@ -402,6 +402,9 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // guaranteed to be unique within a single process.
   int unique_id() const { return unique_id_; }
 
+  // Returns the number of bits per channel for given |format|.
+  int BitsPerChannel(VideoPixelFormat format);
+
  protected:
   friend class base::RefCountedThreadSafe<VideoFrame>;
 
