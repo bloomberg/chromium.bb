@@ -1153,9 +1153,8 @@ void GpuProcessHost::RecordProcessCrash() {
       crashed_before_ = true;
       last_gpu_crash_time = current_time;
 
-      if ((gpu_recent_crash_count_ >= kGpuMaxCrashCount &&
-           !disable_crash_limit) ||
-          !initialized_) {
+      if ((gpu_recent_crash_count_ >= kGpuMaxCrashCount || !initialized_) &&
+          !disable_crash_limit) {
 #if !defined(OS_CHROMEOS)
         // The GPU process is too unstable to use. Disable it for current
         // session.
