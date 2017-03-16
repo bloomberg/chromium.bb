@@ -450,7 +450,7 @@ void GpuVideoDecodeAccelerator::OnAssignPictureBuffers(
         texture_manager->SetLevelInfo(texture_ref, texture_target_, 0, GL_RGBA,
                                       texture_dimensions_.width(),
                                       texture_dimensions_.height(), 1, 0,
-                                      GL_RGBA, 0, gfx::Rect());
+                                      GL_RGBA, GL_UNSIGNED_BYTE, gfx::Rect());
       } else {
         // For other targets, texture dimensions should already be defined.
         GLsizei width = 0, height = 0;
@@ -467,9 +467,10 @@ void GpuVideoDecodeAccelerator::OnAssignPictureBuffers(
         GLenum format =
             video_decode_accelerator_.get()->GetSurfaceInternalFormat();
         if (format != GL_RGBA) {
+          DCHECK(format == GL_BGRA_EXT);
           texture_manager->SetLevelInfo(texture_ref, texture_target_, 0, format,
-                                        width, height, 1, 0, format, 0,
-                                        gfx::Rect());
+                                        width, height, 1, 0, format,
+                                        GL_UNSIGNED_BYTE, gfx::Rect());
         }
       }
       service_ids.push_back(texture_ref->service_id());
