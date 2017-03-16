@@ -8,6 +8,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/browser_side_navigation_policy.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/request_context_type.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -17,6 +18,7 @@
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/test/url_request/url_request_failed_job.h"
 #include "ui/base/page_transition_types.h"
 #include "url/url_constants.h"
 
@@ -1116,6 +1118,88 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, BlockedOnRedirect) {
 
   std::vector<GURL> finished_navigation = {kUrl};
   EXPECT_EQ(finished_navigation, logger.finished_navigation_urls());
+}
+
+// This class allows running tests with PlzNavigate enabled, regardless of
+// default test configuration.
+class PlzNavigateNavigationHandleImplBrowserTest : public ContentBrowserTest {
+ public:
+  PlzNavigateNavigationHandleImplBrowserTest() {}
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(switches::kEnableBrowserSideNavigation);
+  }
+};
+
+// Test to verify that error pages caused by NavigationThrottle blocking a
+// request from being made are properly committed in the original process
+// that requested the navigation.
+IN_PROC_BROWSER_TEST_F(PlzNavigateNavigationHandleImplBrowserTest,
+                       ErrorPageBlockedNavigation) {
+  host_resolver()->AddRule("*", "127.0.0.1");
+  SetupCrossSiteRedirector(embedded_test_server());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL start_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
+  GURL blocked_url(embedded_test_server()->GetURL("bar.com", "/title2.html"));
+
+  {
+    NavigationHandleObserver observer(shell()->web_contents(), start_url);
+    EXPECT_TRUE(NavigateToURL(shell(), start_url));
+    EXPECT_TRUE(observer.has_committed());
+    EXPECT_FALSE(observer.is_error());
+  }
+
+  scoped_refptr<SiteInstance> site_instance =
+      shell()->web_contents()->GetMainFrame()->GetSiteInstance();
+
+  TestNavigationThrottleInstaller installer(
+      shell()->web_contents(), NavigationThrottle::BLOCK_REQUEST,
+      NavigationThrottle::PROCEED, NavigationThrottle::PROCEED);
+
+  {
+    NavigationHandleObserver observer(shell()->web_contents(), blocked_url);
+    EXPECT_FALSE(NavigateToURL(shell(), blocked_url));
+    EXPECT_TRUE(observer.has_committed());
+    EXPECT_TRUE(observer.is_error());
+    EXPECT_EQ(site_instance,
+              shell()->web_contents()->GetMainFrame()->GetSiteInstance());
+  }
+}
+
+// Test to verify that error pages caused by network error or other
+// recoverable error are properly committed in the process for the
+// destination URL.
+IN_PROC_BROWSER_TEST_F(PlzNavigateNavigationHandleImplBrowserTest,
+                       ErrorPageNetworkError) {
+  host_resolver()->AddRule("*", "127.0.0.1");
+  SetupCrossSiteRedirector(embedded_test_server());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL start_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
+  GURL error_url(
+      net::URLRequestFailedJob::GetMockHttpUrl(net::ERR_CONNECTION_RESET));
+  EXPECT_NE(start_url.host(), error_url.host());
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::Bind(&net::URLRequestFailedJob::AddUrlHandler));
+
+  {
+    NavigationHandleObserver observer(shell()->web_contents(), start_url);
+    EXPECT_TRUE(NavigateToURL(shell(), start_url));
+    EXPECT_TRUE(observer.has_committed());
+    EXPECT_FALSE(observer.is_error());
+  }
+
+  scoped_refptr<SiteInstance> site_instance =
+      shell()->web_contents()->GetMainFrame()->GetSiteInstance();
+  {
+    NavigationHandleObserver observer(shell()->web_contents(), error_url);
+    EXPECT_FALSE(NavigateToURL(shell(), error_url));
+    EXPECT_TRUE(observer.has_committed());
+    EXPECT_TRUE(observer.is_error());
+    EXPECT_NE(site_instance,
+              shell()->web_contents()->GetMainFrame()->GetSiteInstance());
+  }
 }
 
 }  // namespace content

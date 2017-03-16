@@ -583,9 +583,23 @@ void NavigationRequest::OnRequestFailed(bool has_stale_copy_in_cache,
     return;
   }
 
-  // Select an appropriate renderer to show the error page.
-  RenderFrameHostImpl* render_frame_host =
-      frame_tree_node_->render_manager()->GetFrameHostForNavigation(*this);
+  // There are two types of error pages that need to be handled differently.
+  // * Error pages resulting from blocking the request, because the original
+  //   document wasn't even allowed to make the request. In such case,
+  //   the error pages should be committed in the process of the original
+  //   document, to avoid creating a process for the destination.
+  // * Error pages resulting from either network outage (no network, DNS
+  //   error, etc) or similar cases, where the user can reasonably expect that
+  //   a reload at a later point in time can be successful. Such error pages
+  //   do belong to the process that will host the destination URL, as a
+  //   reload will end up committing in that process anyway.
+  RenderFrameHostImpl* render_frame_host = nullptr;
+  if (net_error == net::ERR_BLOCKED_BY_CLIENT) {
+    render_frame_host = frame_tree_node_->current_frame_host();
+  } else {
+    render_frame_host =
+        frame_tree_node_->render_manager()->GetFrameHostForNavigation(*this);
+  }
 
   // Don't ask the renderer to commit an URL if the browser will kill it when
   // it does.
