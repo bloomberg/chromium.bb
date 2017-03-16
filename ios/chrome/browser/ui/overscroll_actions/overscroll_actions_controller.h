@@ -10,7 +10,7 @@
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_view.h"
 #import "ios/chrome/browser/ui/util/relaxed_bounds_constraints_hittest.h"
 #import "ios/web/public/web_state/crw_web_controller_observer.h"
-#import "ios/web/public/web_state/crw_web_view_scroll_view_proxy.h"
+#import "ios/web/public/web_state/ui/crw_web_view_scroll_view_proxy.h"
 
 @class OverscrollActionsController;
 

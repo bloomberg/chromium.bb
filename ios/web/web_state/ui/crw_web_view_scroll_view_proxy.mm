@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web/public/web_state/crw_web_view_scroll_view_proxy.h"
+#import "ios/web/public/web_state/ui/crw_web_view_scroll_view_proxy.h"
 
 #import <objc/runtime.h>
 
@@ -191,11 +191,11 @@
   DCHECK_EQ(_scrollView, scrollView);
   __block BOOL shouldScrollToTop = YES;
   [_observers executeOnObservers:^(id observer) {
-      if ([observer respondsToSelector:@selector(
-          webViewScrollViewShouldScrollToTop:)]) {
-        shouldScrollToTop = shouldScrollToTop &&
-            [observer webViewScrollViewShouldScrollToTop:self];
-      }
+    if ([observer respondsToSelector:@selector
+                  (webViewScrollViewShouldScrollToTop:)]) {
+      shouldScrollToTop = shouldScrollToTop &&
+                          [observer webViewScrollViewShouldScrollToTop:self];
+    }
   }];
   return shouldScrollToTop;
 }

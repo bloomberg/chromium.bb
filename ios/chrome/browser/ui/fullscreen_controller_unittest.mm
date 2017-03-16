@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/ui/fullscreen_controller.h"
+
+#include "base/mac/scoped_nsobject.h"
 #import "ios/web/public/test/fakes/test_web_view_content_view.h"
-#import "ios/web/public/web_state/crw_web_view_scroll_view_proxy.h"
 #import "ios/web/public/web_state/ui/crw_web_view_content_view.h"
-#import "ios/web/web_state/crw_web_view_proxy_impl.h"
+#import "ios/web/public/web_state/ui/crw_web_view_scroll_view_proxy.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
+#import "ios/web/web_state/ui/crw_web_view_proxy_impl.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/ocmock_extensions.h"

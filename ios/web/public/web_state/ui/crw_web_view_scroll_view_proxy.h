@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_PUBLIC_WEB_STATE_CRW_WEB_VIEW_SCROLL_VIEW_PROXY_H_
-#define IOS_WEB_PUBLIC_WEB_STATE_CRW_WEB_VIEW_SCROLL_VIEW_PROXY_H_
+#ifndef IOS_WEB_PUBLIC_WEB_STATE_UI_CRW_WEB_VIEW_SCROLL_VIEW_PROXY_H_
+#define IOS_WEB_PUBLIC_WEB_STATE_UI_CRW_WEB_VIEW_SCROLL_VIEW_PROXY_H_
 
 #import <UIKit/UIKit.h>
 
@@ -58,9 +58,9 @@
 @protocol CRWWebViewScrollViewObserver<NSObject>
 @optional
 - (void)webViewScrollViewDidScroll:
-        (CRWWebViewScrollViewProxy*)webViewScrollViewProxy;
+    (CRWWebViewScrollViewProxy*)webViewScrollViewProxy;
 - (void)webViewScrollViewWillBeginDragging:
-        (CRWWebViewScrollViewProxy*)webViewScrollViewProxy;
+    (CRWWebViewScrollViewProxy*)webViewScrollViewProxy;
 - (void)webViewScrollViewWillEndDragging:
             (CRWWebViewScrollViewProxy*)webViewScrollViewProxy
                             withVelocity:(CGPoint)velocity
@@ -69,13 +69,13 @@
             (CRWWebViewScrollViewProxy*)webViewScrollViewProxy
                          willDecelerate:(BOOL)decelerate;
 - (void)webViewScrollViewDidEndScrollingAnimation:
-        (CRWWebViewScrollViewProxy*)webViewScrollViewProxy;
+    (CRWWebViewScrollViewProxy*)webViewScrollViewProxy;
 - (void)webViewScrollViewDidEndDecelerating:
-        (CRWWebViewScrollViewProxy*)webViewScrollViewProxy;
+    (CRWWebViewScrollViewProxy*)webViewScrollViewProxy;
 - (BOOL)webViewScrollViewShouldScrollToTop:
-        (CRWWebViewScrollViewProxy*)webViewScrollViewProxy;
+    (CRWWebViewScrollViewProxy*)webViewScrollViewProxy;
 - (void)webViewScrollViewDidZoom:
-        (CRWWebViewScrollViewProxy*)webViewScrollViewProxy;
+    (CRWWebViewScrollViewProxy*)webViewScrollViewProxy;
 - (void)webViewScrollViewDidResetContentSize:
     (CRWWebViewScrollViewProxy*)webViewScrollViewProxy;
 @end
@@ -88,7 +88,7 @@
 @optional
 // Called when the underlying scrollview of the proxy is set.
 - (void)webViewScrollViewProxyDidSetScrollView:
-        (CRWWebViewScrollViewProxy*)webViewScrollViewProxy;
+    (CRWWebViewScrollViewProxy*)webViewScrollViewProxy;
 @end
 
-#endif  // IOS_WEB_PUBLIC_WEB_STATE_CRW_WEB_VIEW_SCROLL_VIEW_PROXY_H_
+#endif  // IOS_WEB_PUBLIC_WEB_STATE_UI_CRW_WEB_VIEW_SCROLL_VIEW_PROXY_H_

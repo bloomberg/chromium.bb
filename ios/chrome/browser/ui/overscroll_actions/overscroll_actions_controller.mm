@@ -18,7 +18,7 @@
 #import "ios/chrome/browser/ui/toolbar/web_toolbar_controller.h"
 #include "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/voice/voice_search_notification_names.h"
-#import "ios/web/public/web_state/crw_web_view_proxy.h"
+#import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
 
 namespace {
 // This enum is used to record the overscroll actions performed by the user on

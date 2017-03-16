@@ -17,7 +17,7 @@
 #include "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/ssl_status.h"
-#import "ios/web/public/web_state/crw_web_view_proxy.h"
+#import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 
 NSString* const kSetupForTestingWillCloseAllTabsNotification =

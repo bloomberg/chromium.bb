@@ -14,9 +14,9 @@
 #import "ios/chrome/browser/find_in_page/find_in_page_model.h"
 #import "ios/chrome/browser/find_in_page/js_findinpage_manager.h"
 #import "ios/chrome/browser/web/dom_altering_lock.h"
-#import "ios/web/public/web_state/crw_web_view_proxy.h"
-#import "ios/web/public/web_state/crw_web_view_scroll_view_proxy.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
+#import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
+#import "ios/web/public/web_state/ui/crw_web_view_scroll_view_proxy.h"
 #import "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 

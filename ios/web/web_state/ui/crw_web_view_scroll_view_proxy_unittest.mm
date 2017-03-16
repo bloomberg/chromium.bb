@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web/public/web_state/crw_web_view_scroll_view_proxy.h"
+#import "ios/web/public/web_state/ui/crw_web_view_scroll_view_proxy.h"
 
 #import <UIKit/UIKit.h>
 
@@ -68,38 +68,39 @@ TEST_F(CRWWebViewScrollViewProxyTest, testScrollViewPresent) {
 
   // Arbitrary point.
   const CGPoint point = CGPointMake(10, 10);
-  [[[mockScrollView_ stub]
-      andReturnValue:[NSValue valueWithCGPoint:point]] contentOffset];
-  EXPECT_TRUE(CGPointEqualToPoint(point,
-                                  [webViewScrollViewProxy_ contentOffset]));
+  [[[mockScrollView_ stub] andReturnValue:[NSValue valueWithCGPoint:point]]
+      contentOffset];
+  EXPECT_TRUE(
+      CGPointEqualToPoint(point, [webViewScrollViewProxy_ contentOffset]));
 
   // Arbitrary inset.
   const UIEdgeInsets contentInset = UIEdgeInsetsMake(10, 10, 10, 10);
-  [[[mockScrollView_ stub] andReturnValue:
-      [NSValue valueWithUIEdgeInsets:contentInset]] contentInset];
-  EXPECT_TRUE(UIEdgeInsetsEqualToEdgeInsets(contentInset,
-      [webViewScrollViewProxy_ contentInset]));
+  [[[mockScrollView_ stub]
+      andReturnValue:[NSValue valueWithUIEdgeInsets:contentInset]]
+      contentInset];
+  EXPECT_TRUE(UIEdgeInsetsEqualToEdgeInsets(
+      contentInset, [webViewScrollViewProxy_ contentInset]));
 
   // Arbitrary inset.
   const UIEdgeInsets scrollIndicatorInsets = UIEdgeInsetsMake(20, 20, 20, 20);
-  [[[mockScrollView_ stub] andReturnValue:[NSValue
-      valueWithUIEdgeInsets:scrollIndicatorInsets]] scrollIndicatorInsets];
-  EXPECT_TRUE(UIEdgeInsetsEqualToEdgeInsets(scrollIndicatorInsets,
-      [webViewScrollViewProxy_ scrollIndicatorInsets]));
+  [[[mockScrollView_ stub]
+      andReturnValue:[NSValue valueWithUIEdgeInsets:scrollIndicatorInsets]]
+      scrollIndicatorInsets];
+  EXPECT_TRUE(UIEdgeInsetsEqualToEdgeInsets(
+      scrollIndicatorInsets, [webViewScrollViewProxy_ scrollIndicatorInsets]));
 
   // Arbitrary size.
   const CGSize contentSize = CGSizeMake(19, 19);
-  [[[mockScrollView_ stub] andReturnValue:
-      [NSValue valueWithCGSize:contentSize]] contentSize];
-  EXPECT_TRUE(CGSizeEqualToSize(contentSize,
-                                [webViewScrollViewProxy_ contentSize]));
+  [[[mockScrollView_ stub] andReturnValue:[NSValue valueWithCGSize:contentSize]]
+      contentSize];
+  EXPECT_TRUE(
+      CGSizeEqualToSize(contentSize, [webViewScrollViewProxy_ contentSize]));
 
   // Arbitrary rect.
   const CGRect frame = CGRectMake(2, 4, 5, 1);
-  [[[mockScrollView_ stub] andReturnValue:
-      [NSValue valueWithCGRect:frame]] frame];
-  EXPECT_TRUE(CGRectEqualToRect(frame,
-                                [webViewScrollViewProxy_ frame]));
+  [[[mockScrollView_ stub] andReturnValue:[NSValue valueWithCGRect:frame]]
+      frame];
+  EXPECT_TRUE(CGRectEqualToRect(frame, [webViewScrollViewProxy_ frame]));
 }
 
 // Tests that CRWWebViewScrollViewProxy returns the correct property values when
@@ -113,10 +114,9 @@ TEST_F(CRWWebViewScrollViewProxyTest, testScrollViewAbsent) {
       UIEdgeInsetsZero, [webViewScrollViewProxy_ contentInset]));
   EXPECT_TRUE(UIEdgeInsetsEqualToEdgeInsets(
       UIEdgeInsetsZero, [webViewScrollViewProxy_ scrollIndicatorInsets]));
-  EXPECT_TRUE(CGSizeEqualToSize(CGSizeZero,
-                                [webViewScrollViewProxy_ contentSize]));
-  EXPECT_TRUE(CGRectEqualToRect(CGRectZero,
-                                [webViewScrollViewProxy_ frame]));
+  EXPECT_TRUE(
+      CGSizeEqualToSize(CGSizeZero, [webViewScrollViewProxy_ contentSize]));
+  EXPECT_TRUE(CGRectEqualToRect(CGRectZero, [webViewScrollViewProxy_ frame]));
 
   // Make sure setting the properties is fine too.
   // Arbitrary point.
@@ -152,15 +152,14 @@ TEST_F(CRWWebViewScrollViewProxyTest, testMultipleWebViewScrollViewProxies) {
 
   // Arbitrary point.
   const CGPoint point = CGPointMake(10, 10);
-  [[[mockScrollView_ stub]
-      andReturnValue:[NSValue valueWithCGPoint:point]] contentOffset];
-  EXPECT_TRUE(CGPointEqualToPoint(point,
-                                  [webViewScrollViewProxy_ contentOffset]));
-  EXPECT_TRUE(CGPointEqualToPoint(point,
-                                  [webViewScrollViewProxy1 contentOffset]));
-  EXPECT_TRUE(CGPointEqualToPoint(point,
-                                  [webViewScrollViewProxy2 contentOffset]));
+  [[[mockScrollView_ stub] andReturnValue:[NSValue valueWithCGPoint:point]]
+      contentOffset];
+  EXPECT_TRUE(
+      CGPointEqualToPoint(point, [webViewScrollViewProxy_ contentOffset]));
+  EXPECT_TRUE(
+      CGPointEqualToPoint(point, [webViewScrollViewProxy1 contentOffset]));
+  EXPECT_TRUE(
+      CGPointEqualToPoint(point, [webViewScrollViewProxy2 contentOffset]));
 }
 
 }  // namespace
-

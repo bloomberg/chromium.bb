@@ -16,7 +16,7 @@
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/web/chrome_web_test.h"
 #include "ios/chrome/test/base/scoped_block_swizzler.h"
-#import "ios/web/public/web_state/crw_web_view_proxy.h"
+#import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
 #import "testing/gtest_mac.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
