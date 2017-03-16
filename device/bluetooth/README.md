@@ -1,5 +1,4 @@
-Bluetooth
-=========
+# Bluetooth
 
 `device/bluetooth` abstracts
 [Bluetooth Classic](https://en.wikipedia.org/wiki/Bluetooth) and
@@ -20,9 +19,12 @@ have interfaces for both, e.g. `BluetoothAdapter` & `BluetoothDevice`.
 
 Chrome OS and Linux are supported via BlueZ, see `*_bluez` files.
 
+[Mojo](https://www.chromium.org/developers/design-documents/mojo)
+interfaces in [public/interfaces](public/interfaces) have been started
+but are *not* ready for production use.
 
-Maintainer History
---------------------------------------------------------------------------------
+
+## Maintainer History
 
 Initial implementation OWNERS were youngki@chromium.org, keybuk@chromium.org,
 armansito@chromium.org, and rpaquay@chromium.org. They no longer contribute to
@@ -42,8 +44,7 @@ Known future work is tracked in the
 [Refactoring meta issue](https://crbug.com/580406).
 
 
-Testing
---------------------------------------------------------------------------------
+## Testing
 
 Implementation of the Bluetooth component is tested via unittests. Client code
 uses Mock Bluetooth objects:
@@ -93,8 +94,7 @@ https://chromium.googlesource.com/chromiumos/third_party/autotest/+/master/serve
 https://chromium.googlesource.com/chromiumos/third_party/autotest/+/master/client/cros/bluetooth/
 
 
-Android
---------------------------------------------------------------------------------
+## Android
 
 The android implementation requires crossing from C++ to Java using
 [__JNI__](https://www.chromium.org/developers/design-documents/android-jni).
@@ -130,8 +130,8 @@ See also: [Class Diagram of Web Bluetooth through Bluetooth Android][Class]
 
 [Class]: https://sites.google.com/a/chromium.org/dev/developers/design-documents/bluetooth-design-docs/web-bluetooth-through-bluetooth-android-class-diagram
 
-Design Documents
---------------------------------------------------------------------------------
+
+## Design Documents
 
 * [Bluetooth Notifications](https://docs.google.com/document/d/1guBtAnQUP8ZoZre4VQGrjR5uX0ZYxfK-lwKNeqY0-z4/edit?usp=sharing) 2016-08-26
     * Web Bluetooth through Android implementation details, class diagram and
