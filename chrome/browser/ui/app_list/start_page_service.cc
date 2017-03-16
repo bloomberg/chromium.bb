@@ -159,21 +159,6 @@ class StartPageService::StartPageWebContentsDelegate
   explicit StartPageWebContentsDelegate(Profile* profile) : profile_(profile) {}
   ~StartPageWebContentsDelegate() override {}
 
-  void RequestMediaAccessPermission(
-      content::WebContents* web_contents,
-      const content::MediaStreamRequest& request,
-      const content::MediaResponseCallback& callback) override {
-    MediaStreamDevicesController::RequestPermissions(web_contents, request,
-                                                     callback);
-  }
-
-  bool CheckMediaAccessPermission(content::WebContents* web_contents,
-                                  const GURL& security_origin,
-                                  content::MediaStreamType type) override {
-    return MediaCaptureDevicesDispatcher::GetInstance()
-        ->CheckMediaAccessPermission(web_contents, security_origin, type);
-  }
-
   void AddNewContents(content::WebContents* source,
                       content::WebContents* new_contents,
                       WindowOpenDisposition disposition,
