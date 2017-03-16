@@ -331,8 +331,14 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
     predictor_ =
         ResourcePrefetchPredictorFactory::GetForProfile(browser()->profile());
     ASSERT_TRUE(predictor_);
+    // URLs from the test server contain a port number.
+    ResourcePrefetchPredictor::SetAllowPortInUrlsForTesting(true);
     EnsurePredictorInitialized();
     histogram_tester_.reset(new base::HistogramTester());
+  }
+
+  void TearDownOnMainThread() override {
+    ResourcePrefetchPredictor::SetAllowPortInUrlsForTesting(false);
   }
 
   void TestLearningAndPrefetching(const GURL& main_frame_url) {

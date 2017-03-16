@@ -294,6 +294,8 @@ class ResourcePrefetchPredictor
                                   const RedirectDataMap& redirect_data_map,
                                   std::string* redirect_endpoint);
 
+  static void SetAllowPortInUrlsForTesting(bool state);
+
   // KeyedService methods override.
   void Shutdown() override;
 

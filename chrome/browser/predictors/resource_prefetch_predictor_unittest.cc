@@ -1250,6 +1250,12 @@ TEST_F(ResourcePrefetchPredictorTest, ShouldRecordRequestMainFrame) {
                        content::RESOURCE_TYPE_IMAGE, true);
   EXPECT_FALSE(ResourcePrefetchPredictor::ShouldRecordRequest(
       file_request.get(), content::RESOURCE_TYPE_MAIN_FRAME));
+
+  std::unique_ptr<net::URLRequest> https_request_with_port =
+      CreateURLRequest(GURL("https://www.google.com:666"), net::MEDIUM,
+                       content::RESOURCE_TYPE_IMAGE, true);
+  EXPECT_FALSE(ResourcePrefetchPredictor::ShouldRecordRequest(
+      https_request_with_port.get(), content::RESOURCE_TYPE_MAIN_FRAME));
 }
 
 TEST_F(ResourcePrefetchPredictorTest, ShouldRecordRequestSubResource) {
@@ -1270,6 +1276,12 @@ TEST_F(ResourcePrefetchPredictorTest, ShouldRecordRequestSubResource) {
                        content::RESOURCE_TYPE_IMAGE, false);
   EXPECT_FALSE(ResourcePrefetchPredictor::ShouldRecordRequest(
       file_request.get(), content::RESOURCE_TYPE_IMAGE));
+
+  std::unique_ptr<net::URLRequest> https_request_with_port =
+      CreateURLRequest(GURL("https://www.google.com:666/cat.png"), net::MEDIUM,
+                       content::RESOURCE_TYPE_IMAGE, false);
+  EXPECT_FALSE(ResourcePrefetchPredictor::ShouldRecordRequest(
+      https_request_with_port.get(), content::RESOURCE_TYPE_IMAGE));
 }
 
 TEST_F(ResourcePrefetchPredictorTest, ShouldRecordResponseMainFrame) {
@@ -1294,6 +1306,12 @@ TEST_F(ResourcePrefetchPredictorTest, ShouldRecordResponseMainFrame) {
                        content::RESOURCE_TYPE_MAIN_FRAME, true);
   EXPECT_FALSE(
       ResourcePrefetchPredictor::ShouldRecordResponse(file_request.get()));
+
+  std::unique_ptr<net::URLRequest> https_request_with_port =
+      CreateURLRequest(GURL("https://www.google.com:666"), net::MEDIUM,
+                       content::RESOURCE_TYPE_MAIN_FRAME, true);
+  EXPECT_FALSE(ResourcePrefetchPredictor::ShouldRecordResponse(
+      https_request_with_port.get()));
 }
 
 TEST_F(ResourcePrefetchPredictorTest, ShouldRecordResponseSubresource) {
@@ -1315,6 +1333,12 @@ TEST_F(ResourcePrefetchPredictorTest, ShouldRecordResponseSubresource) {
                        content::RESOURCE_TYPE_IMAGE, true);
   EXPECT_TRUE(ResourcePrefetchPredictor::ShouldRecordResponse(
       https_image_request.get()));
+
+  std::unique_ptr<net::URLRequest> https_image_request_with_port =
+      CreateURLRequest(GURL("https://www.google.com:666/cat.png"), net::MEDIUM,
+                       content::RESOURCE_TYPE_IMAGE, true);
+  EXPECT_FALSE(ResourcePrefetchPredictor::ShouldRecordResponse(
+      https_image_request_with_port.get()));
 
   std::unique_ptr<net::URLRequest> file_image_request =
       CreateURLRequest(GURL("file://www.google.com/cat.png"), net::MEDIUM,

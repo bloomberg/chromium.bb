@@ -52,6 +52,8 @@ const char* kFontMimeTypes[] = {"font/woff2",
 const size_t kNumSampleHosts = 50;
 const size_t kReportReadinessThreshold = 50;
 
+bool g_allow_port_in_urls = false;
+
 // For reporting events of interest that are not tied to any navigation.
 enum ReportingEvent {
   REPORTING_EVENT_ALL_HISTORY_CLEARED = 0,
@@ -273,16 +275,21 @@ bool ResourcePrefetchPredictor::ShouldRecordRedirect(
 
 // static
 bool ResourcePrefetchPredictor::IsHandledMainPage(net::URLRequest* request) {
-  return request->url().SchemeIsHTTPOrHTTPS();
+  const GURL& url = request->url();
+  bool bad_port = !g_allow_port_in_urls && url.has_port();
+  return url.SchemeIsHTTPOrHTTPS() && !bad_port;
 }
 
 // static
 bool ResourcePrefetchPredictor::IsHandledSubresource(
     net::URLRequest* response,
     content::ResourceType resource_type) {
+  const GURL& url = response->url();
+  bool bad_port = !g_allow_port_in_urls && url.has_port();
   if (!response->first_party_for_cookies().SchemeIsHTTPOrHTTPS() ||
-      !response->url().SchemeIsHTTPOrHTTPS())
+      !url.SchemeIsHTTPOrHTTPS() || bad_port) {
     return false;
+  }
 
   std::string mime_type;
   response->GetMimeType(&mime_type);
@@ -396,6 +403,11 @@ bool ResourcePrefetchPredictor::GetRedirectEndpoint(
 
   *final_redirect = best_redirect->url();
   return true;
+}
+
+// static
+void ResourcePrefetchPredictor::SetAllowPortInUrlsForTesting(bool state) {
+  g_allow_port_in_urls = state;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
