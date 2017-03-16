@@ -123,27 +123,32 @@ public class LogcatExtractionRunnable implements Runnable {
 
     @Override
     public void run() {
-        Log.i(TAG, "Trying to extract logcat for minidump " + mMinidumpFile.getName());
+        Log.i(TAG, "Trying to extract logcat for minidump %s.", mMinidumpFile.getName());
         CrashFileManager fileManager = new CrashFileManager(mContext.getCacheDir());
         File fileToUpload = mMinidumpFile;
         try {
             List<String> logcat = getElidedLogcat();
             fileToUpload = new MinidumpLogcatPrepender(fileManager, mMinidumpFile, logcat).run();
+            Log.i(TAG, "Succeeded extracting logcat to %s.", fileToUpload.getName());
         } catch (IOException | InterruptedException e) {
             Log.w(TAG, e.toString());
         }
 
         // Regardless of success, initiate the upload. That way, even if there are errors augmenting
         // the minidump with logcat data, the service can still upload the unaugmented minidump.
-        try {
-            MinidumpUploadService.tryUploadCrashDump(mContext, fileToUpload);
-        } catch (SecurityException e) {
-            // For KitKat and below, there was a framework bug which causes us to not be able to
-            // find our own crash uploading service. Ignore a SecurityException here on older
-            // OS versions since the crash will eventually get uploaded on next start.
-            // crbug/542533
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                throw e;
+        if (MinidumpUploadService.shouldUseJobSchedulerForUploads()) {
+            MinidumpUploadService.scheduleUploadJob(mContext);
+        } else {
+            try {
+                MinidumpUploadService.tryUploadCrashDump(mContext, fileToUpload);
+            } catch (SecurityException e) {
+                // For KitKat and below, there was a framework bug which causes us to not be able to
+                // find our own crash uploading service. Ignore a SecurityException here on older
+                // OS versions since the crash will eventually get uploaded on next start.
+                // crbug/542533
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    throw e;
+                }
             }
         }
     }

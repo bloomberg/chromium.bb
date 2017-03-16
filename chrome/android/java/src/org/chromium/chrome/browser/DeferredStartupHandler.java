@@ -332,11 +332,11 @@ public class DeferredStartupHandler {
                 boolean crashReportingDisabled = CommandLine.getInstance().hasSwitch(
                         ChromeSwitches.DISABLE_CRASH_DUMP_UPLOAD);
                 if (crashReportingDisabled) return;
+                PrivacyPreferencesManager.getInstance().enablePotentialCrashUploading();
 
                 RecordHistogram.recordLongTimesHistogram("UMA.Debug.EnableCrashUpload.Uptime3",
                         mAsyncTaskStartTime - UmaUtils.getForegroundStartTime(),
                         TimeUnit.MILLISECONDS);
-                PrivacyPreferencesManager.getInstance().enablePotentialCrashUploading();
 
                 // Finally, uploading any pending crash reports.
                 File[] minidumps = crashFileManager.getAllMinidumpFiles(
@@ -361,18 +361,23 @@ public class DeferredStartupHandler {
                 if (doesCrashMinidumpNeedLogcat(mostRecentMinidump)) {
                     AsyncTask.THREAD_POOL_EXECUTOR.execute(
                             new LogcatExtractionRunnable(mAppContext, mostRecentMinidump));
+
+                    // The JobScheduler will schedule uploads for all of the available minidumps
+                    // once the logcat is attached. But if the JobScheduler API is not being used,
+                    // then the logcat extraction process will only initiate an upload for the first
+                    // minidump; it's required to manually initiate uploads for all of the remaining
+                    // minidumps.
+                    if (!MinidumpUploadService.shouldUseJobSchedulerForUploads()) {
+                        List<File> remainingMinidumps =
+                                Arrays.asList(minidumps).subList(1, minidumps.length);
+                        for (File minidump : remainingMinidumps) {
+                            MinidumpUploadService.tryUploadCrashDump(mAppContext, minidump);
+                        }
+                    }
+                } else if (MinidumpUploadService.shouldUseJobSchedulerForUploads()) {
+                    MinidumpUploadService.scheduleUploadJob(mAppContext);
                 } else {
-                    MinidumpUploadService.tryUploadCrashDump(mAppContext, mostRecentMinidump);
-                }
-                // TODO(isherman): Once there is support implemented for the JobScheduler API,
-                // we should only explicitly upload the remaining files here if not using that
-                // API. If we *are* using the JobScheduler API, then the JobScheduler will
-                // schedule uploads for all of the available minidumps once the logcat is
-                // attached.
-                List<File> remainingMinidumps =
-                        Arrays.asList(minidumps).subList(1, minidumps.length);
-                for (File minidump : remainingMinidumps) {
-                    MinidumpUploadService.tryUploadCrashDump(mAppContext, minidump);
+                    MinidumpUploadService.tryUploadAllCrashDumps(mAppContext);
                 }
             }
 

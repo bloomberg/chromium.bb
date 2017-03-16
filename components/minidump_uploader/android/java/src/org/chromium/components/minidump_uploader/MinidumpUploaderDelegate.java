@@ -13,10 +13,13 @@ import java.io.File;
  */
 public interface MinidumpUploaderDelegate {
     /**
-     * Creates the directory in which the embedder will store its minidumps.
-     * @return A reference to the created directory, or null if the creation failed.
+     * Returns the parent directory in which the embedder will store the crash report directory and
+     * its minidumps. That is, if this method returns the directory ".../parent/", the embedder
+     * should store minidumps in the directory ".../parent/Crash Reports/".
+     * @return A reference to the directory, or null if the directory did not exist and creation
+     *     failed.
      */
-    File createCrashDir();
+    File getCrashParentDir();
 
     /**
      * Creates the permission manager used to evaluate whether uploading should be allowed.
@@ -30,4 +33,17 @@ public interface MinidumpUploaderDelegate {
      * @param startUploads The continuation to call once any necessary pre-work is completed.
      */
     void prepareToUploadMinidumps(Runnable startUploads);
+
+    /**
+     * Record a metric that the {@param minidump} was uploaded successfully.
+     * @param minidump The minidump filename, prior to the upload attempt.
+     */
+    void recordUploadSuccess(File minidump);
+
+    /**
+     * Record a metric that the {@param minidump} failed to be uploaded. This is only called after
+     * all retries are exhausted.
+     * @param minidump The minidump filename, prior to the upload attempt.
+     */
+    void recordUploadFailure(File minidump);
 }

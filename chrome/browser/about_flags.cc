@@ -2243,6 +2243,12 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_ENABLE_ANDROID_WALLPAPERS_APP_DESCRIPTION, kOsCrOS,
      SINGLE_VALUE_TYPE(chromeos::switches::kEnableAndroidWallpapersApp)},
 #endif  // defined(OS_CHROMEOS)
+#if defined(OS_ANDROID)
+    {"enable-job-scheduler-api-for-crash-uploads",
+     IDS_FLAGS_UPLOAD_CRASH_REPORTS_USING_JOB_SCHEDULER_NAME,
+     IDS_FLAGS_UPLOAD_CRASH_REPORTS_USING_JOB_SCHEDULER_DESCRIPTION, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kUploadCrashReportsUsingJobScheduler)},
+#endif  // OS_ANDROID
 
 #if defined(OS_ANDROID)
     {"enable-expanded-autofill-credit-card-popup",

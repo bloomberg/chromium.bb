@@ -7,7 +7,6 @@ package org.chromium.android_webview.crash;
 import android.annotation.TargetApi;
 import android.app.Service;
 import android.app.job.JobInfo;
-import android.app.job.JobScheduler;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -18,7 +17,9 @@ import android.os.ParcelFileDescriptor;
 
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.components.background_task_scheduler.TaskIds;
 import org.chromium.components.minidump_uploader.CrashFileManager;
+import org.chromium.components.minidump_uploader.MinidumpUploadJobService;
 
 import java.io.File;
 import java.io.IOException;
@@ -32,13 +33,6 @@ public class CrashReceiverService extends Service {
 
     private static final String WEBVIEW_CRASH_DIR = "WebView_Crashes";
     private static final String WEBVIEW_TMP_CRASH_DIR = "WebView_Crashes_Tmp";
-
-    private static final int MINIDUMP_UPLOADING_JOB_ID = 42;
-    // Initial back-off time for upload-job, this is set to a fairly high number (30 minutes) to
-    // increase the chance of performing uploads in batches if the initial upload fails.
-    private static final int JOB_BACKOFF_TIME_IN_MS = 1000 * 60 * 30;
-    // Back-off policy for upload-job.
-    private static final int JOB_BACKOFF_POLICY = JobInfo.BACKOFF_POLICY_EXPONENTIAL;
 
     private final Object mCopyingLock = new Object();
     private boolean mIsCopying = false;
@@ -105,20 +99,12 @@ public class CrashReceiverService extends Service {
     }
 
     private void scheduleNewJob() {
-        JobScheduler jobScheduler = (JobScheduler) getSystemService(Context.JOB_SCHEDULER_SERVICE);
-        JobInfo newJob = new JobInfo
-                                 .Builder(MINIDUMP_UPLOADING_JOB_ID /* jobId */,
-                                         new ComponentName(this, AwMinidumpUploadJobService.class))
-                                 .setRequiredNetworkType(JobInfo.NETWORK_TYPE_UNMETERED)
-                                 // Minimum delay when a job is retried (a retry will happen when
-                                 // there are minidumps left after trying to upload all minidumps -
-                                 // this could e.g. happen if we add more minidumps at the same time
-                                 // as uploading old ones).
-                                 .setBackoffCriteria(JOB_BACKOFF_TIME_IN_MS, JOB_BACKOFF_POLICY)
-                                 .build();
-        if (jobScheduler.schedule(newJob) == JobScheduler.RESULT_FAILURE) {
-            throw new RuntimeException("couldn't schedule " + newJob);
-        }
+        JobInfo.Builder builder =
+                new JobInfo
+                        .Builder(TaskIds.WEBVIEW_MINIDUMP_UPLOADING_JOB_ID,
+                                new ComponentName(this, AwMinidumpUploadJobService.class))
+                        .setRequiredNetworkType(JobInfo.NETWORK_TYPE_UNMETERED);
+        MinidumpUploadJobService.scheduleUpload(this, builder);
     }
 
     /**

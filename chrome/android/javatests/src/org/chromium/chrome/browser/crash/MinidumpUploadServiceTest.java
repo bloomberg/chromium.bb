@@ -9,9 +9,13 @@ import static org.chromium.chrome.browser.crash.MinidumpUploadService.GPU;
 import static org.chromium.chrome.browser.crash.MinidumpUploadService.OTHER;
 import static org.chromium.chrome.browser.crash.MinidumpUploadService.RENDERER;
 
+import android.annotation.TargetApi;
+import android.app.job.JobInfo;
+import android.app.job.JobScheduler;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.support.test.filters.SmallTest;
@@ -19,6 +23,8 @@ import android.support.test.filters.SmallTest;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.components.background_task_scheduler.TaskIds;
 import org.chromium.components.minidump_uploader.CrashTestCase;
 import org.chromium.components.minidump_uploader.MinidumpUploadCallable;
 import org.chromium.components.minidump_uploader.util.CrashReportingPermissionManager;
@@ -29,7 +35,9 @@ import org.chromium.net.NetworkChangeNotifier;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Testcase for {@link MinidumpUploadService}.
@@ -71,10 +79,28 @@ public class MinidumpUploadServiceTest extends CrashTestCase {
         }
     }
 
+    @Override
+    protected void tearDown() throws Exception {
+        ChromeFeatureList.setTestFeatures(null);
+        super.tearDown();
+    }
+
+    /**
+     * Sets whether to upload minidumps using the JobScheduler API. Minidumps can either be uploaded
+     * via a JobScheduler, or via a direct Intent service.
+     * @param enable Whether to enable the JobScheduler API.
+     */
+    private void setJobSchedulerEnabled(boolean enable) {
+        Map<String, Boolean> features = new HashMap<>();
+        features.put(ChromeFeatureList.UPLOAD_CRASH_REPORTS_USING_JOB_SCHEDULER, enable);
+        ChromeFeatureList.setTestFeatures(features);
+    }
+
     @SmallTest
     @Feature({"Android-AppBase"})
     public void testTryUploadAllCrashDumps() throws IOException {
         // Setup prerequisites.
+        setJobSchedulerEnabled(false);
         final AtomicInteger numServiceStarts = new AtomicInteger(0);
         final File[] minidumpFiles = {
                 new File(mCrashDir, "chromium_renderer-111.dmp1"),
@@ -88,12 +114,12 @@ public class MinidumpUploadServiceTest extends CrashTestCase {
                 String filePath =
                         intentToCheck.getStringExtra(MinidumpUploadService.FILE_TO_UPLOAD_KEY);
                 // Assuming numServicesStart value corresponds to minidumpFiles index.
-                assertEquals("Minidump path should be the absolute path",
-                        minidumpFiles[numServiceStarts.intValue()].getAbsolutePath(), filePath);
-                assertTrue("Should not call service more than number of files",
-                        numServiceStarts.incrementAndGet() <= minidumpFiles.length);
                 assertEquals("Action should be correct", MinidumpUploadService.ACTION_UPLOAD,
                         intentToCheck.getAction());
+                assertTrue("Should not call service more than number of files",
+                        numServiceStarts.incrementAndGet() <= minidumpFiles.length);
+                assertEquals("Minidump path should be the absolute path",
+                        minidumpFiles[numServiceStarts.intValue() - 1].getAbsolutePath(), filePath);
                 return new ComponentName(getPackageName(), MinidumpUploadService.class.getName());
             }
 
@@ -168,6 +194,7 @@ public class MinidumpUploadServiceTest extends CrashTestCase {
         // This version of the service overrides the createMinidumpUploadCallable(...) to be able
         // to return fake ones. It also ensures that the service never tries to create a callable
         // too many times.
+        setJobSchedulerEnabled(false);
         TestMinidumpUploadService service = new TestMinidumpUploadService() {
             int mIndex = 0;
             boolean mTriggerNetworkChange = false;
@@ -282,8 +309,10 @@ public class MinidumpUploadServiceTest extends CrashTestCase {
 
     @SmallTest
     @Feature({"Android-AppBase"})
-    public void testHandleForceUploadCrash_MinidumpFileExists() throws IOException {
+    public void testHandleForceUploadCrash_MinidumpFileExists_SansJobScheduler()
+            throws IOException {
         // Set up prerequisites.
+        setJobSchedulerEnabled(false);
         File minidumpFile =
                 new File(mCrashDir, "chromium-renderer-minidump-f297dbcba7a2d0bb.dmp0.try3");
         final File expectedRenamedMinidumpFile =
@@ -313,8 +342,37 @@ public class MinidumpUploadServiceTest extends CrashTestCase {
 
     @SmallTest
     @Feature({"Android-AppBase"})
-    public void testHandleForceUploadCrash_SkippedMinidumpFileExists() throws IOException {
+    public void testHandleForceUploadCrash_MinidumpFileExists_WithJobScheduler()
+            throws IOException {
+        // The JobScheduler API is only available as of Android M.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return;
+        setJobSchedulerEnabled(true);
+
         // Set up prerequisites.
+        setUpMinidumpFile(
+                new File(mCrashDir, "chromium-renderer-minidump-f297dbcba7a2d0bb.dmp0.try3"),
+                BOUNDARY);
+        AdvancedMockContext context =
+                new MinidumpPreparationContext(getInstrumentation().getTargetContext());
+
+        // Run test.
+        MinidumpUploadService.tryUploadCrashDumpWithLocalId(context, "f297dbcba7a2d0bb");
+
+        // Verify.
+        final File expectedRenamedMinidumpFile =
+                new File(mCrashDir, "chromium-renderer-minidump-f297dbcba7a2d0bb.forced0.try0");
+        assertTrue("Should have renamed the minidump file for forced upload",
+                expectedRenamedMinidumpFile.exists());
+        assertTrue("Should have tried to schedule an upload job",
+                context.isFlagSet(TestJobScheduler.SCHEDULE_JOB_FLAG));
+    }
+
+    @SmallTest
+    @Feature({"Android-AppBase"})
+    public void testHandleForceUploadCrash_SkippedMinidumpFileExists_SansJobScheduler()
+            throws IOException {
+        // Set up prerequisites.
+        setJobSchedulerEnabled(false);
         File minidumpFile =
                 new File(mCrashDir, "chromium-renderer-minidump-f297dbcba7a2d0bb.skipped0.try0");
         final File expectedRenamedMinidumpFile =
@@ -344,8 +402,36 @@ public class MinidumpUploadServiceTest extends CrashTestCase {
 
     @SmallTest
     @Feature({"Android-AppBase"})
-    public void testHandleForceUploadCrash_FileDoesntExist() {
+    public void testHandleForceUploadCrash_SkippedMinidumpFileExists_WithJobScheduler()
+            throws IOException {
+        // The JobScheduler API is only available as of Android M.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return;
+        setJobSchedulerEnabled(true);
+
         // Set up prerequisites.
+        setUpMinidumpFile(
+                new File(mCrashDir, "chromium-renderer-minidump-f297dbcba7a2d0bb.skipped0.try3"),
+                BOUNDARY);
+        AdvancedMockContext context =
+                new MinidumpPreparationContext(getInstrumentation().getTargetContext());
+
+        // Run test.
+        MinidumpUploadService.tryUploadCrashDumpWithLocalId(context, "f297dbcba7a2d0bb");
+
+        // Verify.
+        final File expectedRenamedMinidumpFile =
+                new File(mCrashDir, "chromium-renderer-minidump-f297dbcba7a2d0bb.forced0.try0");
+        assertTrue("Should have renamed the minidump file for forced upload",
+                expectedRenamedMinidumpFile.exists());
+        assertTrue("Should have tried to schedule an upload job",
+                context.isFlagSet(TestJobScheduler.SCHEDULE_JOB_FLAG));
+    }
+
+    @SmallTest
+    @Feature({"Android-AppBase"})
+    public void testHandleForceUploadCrash_FileDoesntExist_SansJobScheduler() {
+        // Set up prerequisites.
+        setJobSchedulerEnabled(false);
         final String startServiceFlag = "startServiceFlag";
         MinidumpPreparationContext context = new MinidumpPreparationContext(
                 getInstrumentation().getTargetContext()) {
@@ -366,11 +452,32 @@ public class MinidumpUploadServiceTest extends CrashTestCase {
 
     @SmallTest
     @Feature({"Android-AppBase"})
-    public void testHandleForceUploadCrash_FileAlreadyUploaded() throws IOException {
+    public void testHandleForceUploadCrash_FileDoesntExist_WithJobScheduler() throws IOException {
+        // The JobScheduler API is only available as of Android M.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return;
+        setJobSchedulerEnabled(true);
+
         // Set up prerequisites.
-        File minidumpFile =
-                new File(mCrashDir, "chromium-renderer-minidump-f297dbcba7a2d0bb.up0.try0");
-        setUpMinidumpFile(minidumpFile, BOUNDARY);
+        AdvancedMockContext context =
+                new MinidumpPreparationContext(getInstrumentation().getTargetContext());
+
+        // Run test.
+        MinidumpUploadService.tryUploadCrashDumpWithLocalId(context, "f297dbcba7a2d0bb");
+
+        // Verify.
+        assertFalse("Should not have tried to schedule an upload job",
+                context.isFlagSet(TestJobScheduler.SCHEDULE_JOB_FLAG));
+    }
+
+    @SmallTest
+    @Feature({"Android-AppBase"})
+    public void testHandleForceUploadCrash_FileAlreadyUploaded_SansJobScheduler()
+            throws IOException {
+        // Set up prerequisites.
+        setJobSchedulerEnabled(false);
+        setUpMinidumpFile(
+                new File(mCrashDir, "chromium-renderer-minidump-f297dbcba7a2d0bb.up0.try0"),
+                BOUNDARY);
         final String startServiceFlag = "startServiceFlag";
         MinidumpPreparationContext context = new MinidumpPreparationContext(
                 getInstrumentation().getTargetContext()) {
@@ -387,6 +494,29 @@ public class MinidumpUploadServiceTest extends CrashTestCase {
         // Verify.
         assertFalse(
                 "Should not have called startService(...)", context.isFlagSet(startServiceFlag));
+    }
+
+    @SmallTest
+    @Feature({"Android-AppBase"})
+    public void testHandleForceUploadCrash_FileAlreadyUploaded_WithJobScheduler()
+            throws IOException {
+        // The JobScheduler API is only available as of Android M.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return;
+        setJobSchedulerEnabled(true);
+
+        // Set up prerequisites.
+        setUpMinidumpFile(
+                new File(mCrashDir, "chromium-renderer-minidump-f297dbcba7a2d0bb.up0.try0"),
+                BOUNDARY);
+        AdvancedMockContext context =
+                new MinidumpPreparationContext(getInstrumentation().getTargetContext());
+
+        // Run test.
+        MinidumpUploadService.tryUploadCrashDumpWithLocalId(context, "f297dbcba7a2d0bb");
+
+        // Verify.
+        assertFalse("Should not have tried to schedule an upload job",
+                context.isFlagSet(TestJobScheduler.SCHEDULE_JOB_FLAG));
     }
 
     @SmallTest
@@ -440,7 +570,58 @@ public class MinidumpUploadServiceTest extends CrashTestCase {
         public File getCacheDir() {
             return mCacheDir;
         }
+
+        @Override
+        public Object getSystemService(String name) {
+            if (Context.JOB_SCHEDULER_SERVICE.equals(name)) {
+                assertTrue("Should only access the JobScheduler when it is enabled.",
+                        ChromeFeatureList.isEnabled(
+                                ChromeFeatureList.UPLOAD_CRASH_REPORTS_USING_JOB_SCHEDULER));
+                return new TestJobScheduler(this);
+            }
+
+            return super.getSystemService(name);
+        }
     }
+
+    /**
+     * A JobScheduler wrapper that verifies that the expected properties are set correctly.
+     */
+    @TargetApi(Build.VERSION_CODES.M)
+    private static class TestJobScheduler extends JobScheduler {
+        static final String SCHEDULE_JOB_FLAG = "scheduleJobFlag";
+
+        private final AdvancedMockContext mContext;
+
+        TestJobScheduler(AdvancedMockContext context) {
+            mContext = context;
+        }
+
+        @Override
+        public void cancel(int jobId) {}
+
+        @Override
+        public void cancelAll() {}
+
+        @Override
+        public List<JobInfo> getAllPendingJobs() {
+            return null;
+        }
+
+        @Override
+        public JobInfo getPendingJob(int jobId) {
+            return null;
+        }
+
+        @Override
+        public int schedule(JobInfo job) {
+            mContext.setFlag(SCHEDULE_JOB_FLAG);
+            assertEquals(TaskIds.CHROME_MINIDUMP_UPLOADING_JOB_ID, job.getId());
+            assertEquals(ChromeMinidumpUploadJobService.class.getName(),
+                    job.getService().getClassName());
+            return 0;
+        }
+    };
 
     /**
      * A fake callable, that just counts the number of times it is called.

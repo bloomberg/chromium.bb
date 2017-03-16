@@ -67,6 +67,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kSpecialLocaleWrapper,
     &kTabsInCBD,
     &kTabReparenting,
+    &kUploadCrashReportsUsingJobScheduler,
     &kWebPaymentsModifiers,
     &kWebPaymentsSingleAppUiSkip,
     &kWebVRCardboardSupport,
@@ -171,6 +172,9 @@ const base::Feature kTabsInCBD{"TabsInCBD", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kTabReparenting{"TabReparenting",
                                     base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kUploadCrashReportsUsingJobScheduler{
+    "UploadCrashReportsUsingJobScheduler", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kUserMediaScreenCapturing{
     "UserMediaScreenCapturing", base::FEATURE_DISABLED_BY_DEFAULT};

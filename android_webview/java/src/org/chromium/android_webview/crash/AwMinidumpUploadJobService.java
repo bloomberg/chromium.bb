@@ -5,6 +5,7 @@ package org.chromium.android_webview.crash;
 
 import android.annotation.TargetApi;
 import android.os.Build;
+import android.os.PersistableBundle;
 
 import org.chromium.android_webview.command_line.CommandLineUtil;
 import org.chromium.base.ContextUtils;
@@ -28,7 +29,7 @@ public class AwMinidumpUploadJobService extends MinidumpUploadJobService {
     }
 
     @Override
-    protected MinidumpUploader createMinidumpUploader() {
+    protected MinidumpUploader createMinidumpUploader(PersistableBundle unusedExtras) {
         // Ensure we can use ContextUtils later on (from the minidump_uploader component).
         ContextUtils.initApplicationContext(this.getApplicationContext());
 

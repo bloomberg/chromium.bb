@@ -2835,6 +2835,21 @@
             ]
         }
     ],
+    "UploadCrashReportsUsingJobScheduler": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "UploadCrashReportsUsingJobScheduler"
+                    ]
+                }
+            ]
+        }
+    ],
     "V8CacheStrategiesForCacheStorage": [
         {
             "platforms": [

@@ -4,9 +4,14 @@
 
 package org.chromium.chrome.browser.crash;
 
+import android.annotation.SuppressLint;
 import android.app.IntentService;
+import android.app.job.JobInfo;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
+import android.os.PersistableBundle;
 import android.support.annotation.StringDef;
 
 import org.chromium.base.Log;
@@ -14,10 +19,13 @@ import org.chromium.base.StreamUtil;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
+import org.chromium.components.background_task_scheduler.TaskIds;
 import org.chromium.components.minidump_uploader.CrashFileManager;
 import org.chromium.components.minidump_uploader.MinidumpUploadCallable;
+import org.chromium.components.minidump_uploader.MinidumpUploadJobService;
 import org.chromium.components.minidump_uploader.util.CrashReportingPermissionManager;
 
 import java.io.BufferedReader;
@@ -68,6 +76,44 @@ public class MinidumpUploadService extends IntentService {
     }
 
     /**
+     * @return Whether to use the JobSchduler API to upload crash reports, rather than directly
+     *     creating a service for uploading.
+     */
+    public static boolean shouldUseJobSchedulerForUploads() {
+        // The JobScheduler API is only available as of Android M.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return false;
+
+        return ChromeFeatureList.isEnabled(
+                ChromeFeatureList.UPLOAD_CRASH_REPORTS_USING_JOB_SCHEDULER);
+    }
+
+    /**
+     * Schedules uploading of all pending minidumps, using the JobScheduler API.
+     */
+    @SuppressLint("NewApi")
+    public static void scheduleUploadJob(Context context) {
+        assert shouldUseJobSchedulerForUploads();
+
+        CrashReportingPermissionManager permissionManager = PrivacyPreferencesManager.getInstance();
+        PersistableBundle permissions = new PersistableBundle();
+        permissions.putBoolean(ChromeMinidumpUploaderDelegate.IS_CLIENT_IN_METRICS_SAMPLE,
+                permissionManager.isClientInMetricsSample());
+        permissions.putBoolean(
+                ChromeMinidumpUploaderDelegate.IS_CRASH_UPLOAD_DISABLED_BY_COMMAND_LINE,
+                permissionManager.isCrashUploadDisabledByCommandLine());
+        permissions.putBoolean(ChromeMinidumpUploaderDelegate.IS_UPLOAD_ENABLED_FOR_TESTS,
+                permissionManager.isUploadEnabledForTests());
+
+        JobInfo.Builder builder =
+                new JobInfo
+                        .Builder(TaskIds.CHROME_MINIDUMP_UPLOADING_JOB_ID,
+                                new ComponentName(context, ChromeMinidumpUploadJobService.class))
+                        .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+                        .setExtras(permissions);
+        MinidumpUploadJobService.scheduleUpload(context, builder);
+    }
+
+    /**
      * Stores the successes and failures from uploading crash to UMA,
      */
     public static void storeBreakpadUploadStatsInUma(ChromePreferenceManager pref) {
@@ -106,10 +152,6 @@ public class MinidumpUploadService extends IntentService {
             return;
         }
         int tries = CrashFileManager.readAttemptNumber(minidumpFileName);
-        // -1 means no attempt number was read.
-        if (tries == -1) {
-            tries = 0;
-        }
 
         // Since we do not rename a file after reaching max number of tries,
         // files that have maxed out tries will NOT reach this.
@@ -132,21 +174,23 @@ public class MinidumpUploadService extends IntentService {
 
         if (uploadStatus == MinidumpUploadCallable.UPLOAD_SUCCESS) {
             // Only update UMA stats if an intended and successful upload.
-            incrementCrashSuccessUploadCount(getNewNameAfterSuccessfulUpload(minidumpFileName));
+            incrementCrashSuccessUploadCount(minidumpFileName);
         } else if (uploadStatus == MinidumpUploadCallable.UPLOAD_FAILURE) {
             // Unable to upload minidump. Incrementing try number and restarting.
+            ++tries;
+            if (tries == MAX_TRIES_ALLOWED) {
+                // Only record failure to UMA after we have maxed out the allotted tries.
+                incrementCrashFailureUploadCount(minidumpFileName);
+            }
 
-            // Only create another attempt if we have successfully renamed
-            // the file.
+            // Only create another attempt if we have successfully renamed the file.
             String newName = CrashFileManager.tryIncrementAttemptNumber(minidumpFile);
             if (newName != null) {
-                if (++tries < MAX_TRIES_ALLOWED) {
+                if (tries < MAX_TRIES_ALLOWED) {
                     // TODO(nyquist): Do this as an exponential backoff.
                     MinidumpUploadRetry.scheduleRetry(
                             getApplicationContext(), getCrashReportingPermissionManager());
                 } else {
-                    // Only record failure to UMA after we have maxed out the allotted tries.
-                    incrementCrashFailureUploadCount(newName);
                     Log.d(TAG, "Giving up on trying to upload " + minidumpFileName + "after "
                             + tries + " number of tries.");
                 }
@@ -208,18 +252,30 @@ public class MinidumpUploadService extends IntentService {
     }
 
     /**
-     * Increment the count of success/failure by 1 and distinguish between different types of
-     * crashes by looking into the file.
-     * @param fileName is the name of a minidump file that contains the type of crash.
+     * Increments the count of successful uploads by 1. Distinguishes between different types of
+     * crashes by looking into the file contents. Because this code can execute in a context when
+     * the main Chrome activity is no longer running, the counts are stored in shared preferences;
+     * they are later read and recorded as metrics by the main Chrome activity.
+     * NOTE: This method should be called *after* renaming the file, since renaming occurs as a
+     * side-effect of a successful upload.
+     * @param originalFilename The name of the successfully uploaded minidump, *prior* to uploading.
      */
-    private void incrementCrashSuccessUploadCount(String fileName) {
+    public static void incrementCrashSuccessUploadCount(String originalFilename) {
         ChromePreferenceManager.getInstance().incrementCrashSuccessUploadCount(
-                getCrashType(fileName));
+                getCrashType(getNewNameAfterSuccessfulUpload(originalFilename)));
     }
 
-    private void incrementCrashFailureUploadCount(String fileName) {
+    /**
+     * Increments the count of failed uploads by 1. Distinguishes between different types of crashes
+     * by looking into the file contents. Because this code can execute in a context when the main
+     * Chrome activity is no longer running, the counts are stored in shared preferences; they are
+     * later read and recorded as metrics by the main Chrome activity.
+     * NOTE: This method should be called *prior* to renaming the file.
+     * @param originalFilename The name of the successfully uploaded minidump, *prior* to uploading.
+     */
+    public static void incrementCrashFailureUploadCount(String originalFilename) {
         ChromePreferenceManager.getInstance().incrementCrashFailureUploadCount(
-                getCrashType(fileName));
+                getCrashType(originalFilename));
     }
 
     /**
@@ -249,6 +305,7 @@ public class MinidumpUploadService extends IntentService {
      */
     public static void tryUploadCrashDump(Context context, File minidumpFile)
             throws SecurityException {
+        assert !shouldUseJobSchedulerForUploads();
         CrashFileManager fileManager = new CrashFileManager(context.getCacheDir());
         Intent intent = new Intent(context, MinidumpUploadService.class);
         intent.setAction(ACTION_UPLOAD);
@@ -268,11 +325,12 @@ public class MinidumpUploadService extends IntentService {
      * @param context Context of the application.
      */
     public static void tryUploadAllCrashDumps(Context context) {
+        assert !shouldUseJobSchedulerForUploads();
         CrashFileManager fileManager = new CrashFileManager(context.getCacheDir());
         File[] minidumps = fileManager.getAllMinidumpFiles(MAX_TRIES_ALLOWED);
         Log.i(TAG, "Attempting to upload accumulated crash dumps.");
         for (File minidump : minidumps) {
-            MinidumpUploadService.tryUploadCrashDump(context, minidump);
+            tryUploadCrashDump(context, minidump);
         }
     }
 
@@ -305,6 +363,11 @@ public class MinidumpUploadService extends IntentService {
             Log.w(TAG, "Could not rename the file " + minidumpFile.getName() + " for re-upload");
             return;
         }
-        MinidumpUploadService.tryUploadCrashDump(context, renamedMinidumpFile);
+
+        if (shouldUseJobSchedulerForUploads()) {
+            scheduleUploadJob(context);
+        } else {
+            tryUploadCrashDump(context, renamedMinidumpFile);
+        }
     }
 }

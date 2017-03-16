@@ -1,6 +1,7 @@
 include_rules = [
   "+content/public/android/java",
   "+components/autofill/android/java",
+  "+components/background_task_scheduler/android/java",
   "+components/minidump_uploader/android/java",
   "+components/navigation_interception/android/java",
   "+components/policy/android/java",

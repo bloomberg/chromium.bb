@@ -49,7 +49,7 @@ public class CrashFileManager {
             Pattern.compile("\\.dmp([0-9]+)$\\z");
 
     private static final Pattern MINIDUMP_PATTERN =
-            Pattern.compile("\\.dmp([0-9]*)(\\.try([0-9]+))?\\z");
+            Pattern.compile("\\.(dmp|forced)([0-9]*)(\\.try([0-9]+))?\\z");
 
     private static final Pattern UPLOADED_MINIDUMP_PATTERN =
             Pattern.compile("\\.up([0-9]*)(\\.try([0-9]+))?\\z");
@@ -138,15 +138,15 @@ public class CrashFileManager {
      */
     @VisibleForTesting
     public static String filenameWithIncrementedAttemptNumber(String filename) {
-        int numTried = readAttemptNumber(filename);
+        int numTried = readAttemptNumberInternal(filename);
         if (numTried >= 0) {
             int newCount = numTried + 1;
             return filename.replace(
                     UPLOAD_ATTEMPT_DELIMITER + numTried, UPLOAD_ATTEMPT_DELIMITER + newCount);
         } else {
-            // readAttemptNumber returning -1 means there is no UPLOAD_ATTEMPT_DELIMITER in the file
-            // name (or that there is a delimiter but no attempt number). So, we have to add the
-            // delimiter and attempt number ourselves.
+            // readAttemptNumberInternal returning -1 means there is no UPLOAD_ATTEMPT_DELIMITER in
+            // the file name (or that there is a delimiter but no attempt number). So, we have to
+            // add the delimiter and attempt number ourselves.
             return filename + UPLOAD_ATTEMPT_DELIMITER + "1";
         }
     }
@@ -190,12 +190,22 @@ public class CrashFileManager {
     }
 
     /**
-     * Returns how many times we've tried to upload a certain Minidump file.
-     * @return the number of attempts to upload the given Minidump file, parsed from its file name,
-     *     returns -1 if an attempt-number cannot be parsed from the file-name.
+     * Returns how many times we've tried to upload a certain minidump file.
+     * @return The number of attempts to upload the given minidump file, parsed from its filename.
+     *     Returns 0 if an attempt number cannot be parsed from the filename.
+     */
+    public static int readAttemptNumber(String filename) {
+        int numTries = readAttemptNumberInternal(filename);
+        return numTries >= 0 ? numTries : 0;
+    }
+
+    /**
+     * Returns how many times we've tried to upload a certain minidump file.
+     * @return The number of attempts to upload the given minidump file, parsed from its filename,
+     *     Returns -1 if an attempt number cannot be parsed from the filename.
      */
     @VisibleForTesting
-    public static int readAttemptNumber(String filename) {
+    static int readAttemptNumberInternal(String filename) {
         int tryIndex = filename.lastIndexOf(UPLOAD_ATTEMPT_DELIMITER);
         if (tryIndex >= 0) {
             tryIndex += UPLOAD_ATTEMPT_DELIMITER.length();
@@ -277,8 +287,7 @@ public class CrashFileManager {
 
     /**
      * Returns all minidump files that could still be uploaded, sorted by modification time stamp.
-     * Forced uploads are not included. Only returns files that we have tried to upload less
-     * than {@param maxTries} number of times.
+     * Only returns files that we have tried to upload less than {@param maxTries} number of times.
      */
     public File[] getAllMinidumpFiles(int maxTries) {
         return getFilesBelowMaxTries(getAllMinidumpFilesIncludingFailed(), maxTries);
@@ -286,7 +295,6 @@ public class CrashFileManager {
 
     /**
      * Returns all minidump files sorted by modification time stamp.
-     * Forced uploads are not included.
      */
     private File[] getAllMinidumpFilesIncludingFailed() {
         return listCrashFiles(MINIDUMP_PATTERN);

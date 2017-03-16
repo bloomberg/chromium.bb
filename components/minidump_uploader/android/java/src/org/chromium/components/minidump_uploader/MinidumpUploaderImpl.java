@@ -48,7 +48,7 @@ public class MinidumpUploaderImpl implements MinidumpUploader {
     @VisibleForTesting
     public MinidumpUploaderImpl(MinidumpUploaderDelegate delegate) {
         mDelegate = delegate;
-        mFileManager = createCrashFileManager(mDelegate.createCrashDir());
+        mFileManager = createCrashFileManager(mDelegate.getCrashParentDir());
         if (!mFileManager.ensureCrashDirExists()) {
             Log.e(TAG, "Crash directory doesn't exist!");
         }
@@ -56,11 +56,12 @@ public class MinidumpUploaderImpl implements MinidumpUploader {
 
     /**
      * Utility method to allow tests to customize the behavior of the crash file manager.
-     * @param {crashDir} The directory in which to store crash files (i.e. minidumps).
+     * @param {crashParentDir} The directory that contains the "Crash Reports" directory, in which
+     *     crash files (i.e. minidumps) are stored.
      */
     @VisibleForTesting
-    public CrashFileManager createCrashFileManager(File crashDir) {
-        return new CrashFileManager(crashDir);
+    public CrashFileManager createCrashFileManager(File crashParentDir) {
+        return new CrashFileManager(crashParentDir);
     }
 
     /**
@@ -88,10 +89,25 @@ public class MinidumpUploaderImpl implements MinidumpUploader {
         @Override
         public void run() {
             File[] minidumps = mFileManager.getAllMinidumpFiles(MAX_UPLOAD_TRIES_ALLOWED);
+            Log.i(TAG, "Attempting to upload %d minidumps.", minidumps.length);
             for (File minidump : minidumps) {
+                Log.i(TAG, "Attempting to upload " + minidump.getName());
                 MinidumpUploadCallable uploadCallable = createMinidumpUploadCallable(
                         minidump, mFileManager.getCrashUploadLogFile());
                 int uploadResult = uploadCallable.call();
+
+                // Record metrics about the upload.
+                if (uploadResult == MinidumpUploadCallable.UPLOAD_SUCCESS) {
+                    mDelegate.recordUploadSuccess(minidump);
+                } else if (uploadResult == MinidumpUploadCallable.UPLOAD_FAILURE) {
+                    // Only record a failure after we have maxed out the allotted tries.
+                    // Note: Add 1 to include the most recent failure, since the minidump's filename
+                    // is from before the failure.
+                    int numFailures = CrashFileManager.readAttemptNumber(minidump.getName()) + 1;
+                    if (numFailures == MAX_UPLOAD_TRIES_ALLOWED) {
+                        mDelegate.recordUploadFailure(minidump);
+                    }
+                }
 
                 // Bail if the job was canceled. Note that the cancelation status is checked AFTER
                 // trying to upload a minidump. This is to ensure that the scheduler attempts to

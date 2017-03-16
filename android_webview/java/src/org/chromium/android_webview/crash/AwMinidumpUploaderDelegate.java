@@ -36,7 +36,7 @@ public class AwMinidumpUploaderDelegate implements MinidumpUploaderDelegate {
     }
 
     @Override
-    public File createCrashDir() {
+    public File getCrashParentDir() {
         return CrashReceiverService.createWebViewCrashDir(mContext);
     }
 
@@ -100,6 +100,12 @@ public class AwMinidumpUploaderDelegate implements MinidumpUploaderDelegate {
             }
         });
     }
+
+    @Override
+    public void recordUploadSuccess(File minidump) {}
+
+    @Override
+    public void recordUploadFailure(File minidump) {}
 
     /**
      * Utility method to allow us to test the logic of this class by injecting

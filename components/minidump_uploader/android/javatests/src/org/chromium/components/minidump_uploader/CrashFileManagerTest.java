@@ -193,9 +193,15 @@ public class CrashFileManagerTest extends CrashTestCase {
 
     @SmallTest
     @Feature({"Android-AppBase"})
-    public void testGetAllMinidumpFiles() {
+    @SuppressFBWarnings("RV_RETURN_VALUE_IGNORED_BAD_PRACTICE")
+    public void testGetAllMinidumpFiles() throws IOException {
+        File forcedFile = new File(mCrashDir, "456_def.forced" + TEST_PID + ".try2");
+        forcedFile.createNewFile();
+        forcedFile.setLastModified(mModificationTimestamp);
+        mModificationTimestamp += 1000;
+
         CrashFileManager crashFileManager = new CrashFileManager(mCacheDir);
-        File[] expectedFiles = new File[] {mOneBelowMaxTriesFile, mDmpFile2, mDmpFile1};
+        File[] expectedFiles = new File[] {forcedFile, mOneBelowMaxTriesFile, mDmpFile2, mDmpFile1};
         File[] actualFiles = crashFileManager.getAllMinidumpFiles(MAX_TRIES_ALLOWED);
         assertNotNull(actualFiles);
         MoreAsserts.assertEquals("Failed to get the correct minidump files in directory",
@@ -244,27 +250,66 @@ public class CrashFileManagerTest extends CrashTestCase {
 
     @SmallTest
     @Feature({"Android-AppBase"})
-    public void testAttemptNumber() {
-        assertEquals(-1, CrashFileManager.readAttemptNumber("file.dmp"));
-        assertEquals(-1, CrashFileManager.readAttemptNumber(".try"));
-        assertEquals(-1, CrashFileManager.readAttemptNumber("try1"));
+    public void testReadAttemptNumber() {
+        assertEquals(0, CrashFileManager.readAttemptNumber("file.dmp"));
+        assertEquals(-1, CrashFileManager.readAttemptNumberInternal("file.dmp"));
+
+        assertEquals(0, CrashFileManager.readAttemptNumber(".try"));
+        assertEquals(-1, CrashFileManager.readAttemptNumberInternal(".try"));
+
+        assertEquals(0, CrashFileManager.readAttemptNumber("try1"));
+        assertEquals(-1, CrashFileManager.readAttemptNumberInternal("try1"));
+
         assertEquals(1, CrashFileManager.readAttemptNumber("file.try1.dmp"));
+        assertEquals(1, CrashFileManager.readAttemptNumberInternal("file.try1.dmp"));
+
         assertEquals(1, CrashFileManager.readAttemptNumber("file.dmp.try1"));
+        assertEquals(1, CrashFileManager.readAttemptNumberInternal("file.dmp.try1"));
+
         assertEquals(2, CrashFileManager.readAttemptNumber(".try2"));
+        assertEquals(2, CrashFileManager.readAttemptNumberInternal(".try2"));
+
         assertEquals(2, CrashFileManager.readAttemptNumber("file.try2.dmp"));
+        assertEquals(2, CrashFileManager.readAttemptNumberInternal("file.try2.dmp"));
+
         assertEquals(2, CrashFileManager.readAttemptNumber("file.dmp.try2"));
+        assertEquals(2, CrashFileManager.readAttemptNumberInternal("file.dmp.try2"));
+
         assertEquals(2, CrashFileManager.readAttemptNumber(".try2"));
-        assertEquals(-1, CrashFileManager.readAttemptNumber("file.tryN.dmp"));
-        assertEquals(-1, CrashFileManager.readAttemptNumber("file.tryN.dmp1"));
+        assertEquals(2, CrashFileManager.readAttemptNumberInternal(".try2"));
+
+        assertEquals(0, CrashFileManager.readAttemptNumber("file.tryN.dmp"));
+        assertEquals(-1, CrashFileManager.readAttemptNumberInternal("file.tryN.dmp"));
+
+        assertEquals(0, CrashFileManager.readAttemptNumber("file.tryN.dmp1"));
+        assertEquals(-1, CrashFileManager.readAttemptNumberInternal("file.tryN.dmp1"));
+
         assertEquals(9, CrashFileManager.readAttemptNumber("file.try9.dmp"));
+        assertEquals(9, CrashFileManager.readAttemptNumberInternal("file.try9.dmp"));
+
         assertEquals(10, CrashFileManager.readAttemptNumber("file.try10.dmp"));
+        assertEquals(10, CrashFileManager.readAttemptNumberInternal("file.try10.dmp"));
+
         assertEquals(9, CrashFileManager.readAttemptNumber("file.dmp.try9"));
+        assertEquals(9, CrashFileManager.readAttemptNumberInternal("file.dmp.try9"));
+
         assertEquals(10, CrashFileManager.readAttemptNumber("file.dmp.try10"));
+        assertEquals(10, CrashFileManager.readAttemptNumberInternal("file.dmp.try10"));
+
         assertEquals(300, CrashFileManager.readAttemptNumber("file.dmp.try300"));
-        assertEquals(-1, CrashFileManager.readAttemptNumber("file.dmp202.try"));
-        assertEquals(-1, CrashFileManager.readAttemptNumber("file.try.dmp1"));
-        assertEquals(-1, CrashFileManager.readAttemptNumber("file.try-2.dmp1"));
-        assertEquals(-1, CrashFileManager.readAttemptNumber("file.try-20.dmp1"));
+        assertEquals(300, CrashFileManager.readAttemptNumberInternal("file.dmp.try300"));
+
+        assertEquals(0, CrashFileManager.readAttemptNumber("file.dmp202.try"));
+        assertEquals(-1, CrashFileManager.readAttemptNumberInternal("file.dmp202.try"));
+
+        assertEquals(0, CrashFileManager.readAttemptNumber("file.try.dmp1"));
+        assertEquals(-1, CrashFileManager.readAttemptNumberInternal("file.try.dmp1"));
+
+        assertEquals(0, CrashFileManager.readAttemptNumber("file.try-2.dmp1"));
+        assertEquals(-1, CrashFileManager.readAttemptNumberInternal("file.try-2.dmp1"));
+
+        assertEquals(0, CrashFileManager.readAttemptNumber("file.try-20.dmp1"));
+        assertEquals(-1, CrashFileManager.readAttemptNumberInternal("file.try-20.dmp1"));
     }
 
     @SmallTest

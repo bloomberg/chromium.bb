@@ -6179,6 +6179,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_SERVICE_WORKER_NAVIGATION_PRELOAD_DESCRIPTION" desc="Description of the about::flags setting for service worker navigation preload.">
         Enable web pages to use the experimental service worker navigation preload API.
       </message>
+      <if expr="is_android">
+       <message name="IDS_FLAGS_UPLOAD_CRASH_REPORTS_USING_JOB_SCHEDULER_NAME" desc="Name of chrome:flags option to use the JobScheduler API for uploading crash reports." translateable="false">
+         Upload crash reports using JobScheduler API.
+       </message>
+       <message name="IDS_FLAGS_UPLOAD_CRASH_REPORTS_USING_JOB_SCHEDULER_DESCRIPTION" desc="Description of chrome:flags option to use the JobScheduler API for uploading crash reports." translateable="false">
+         Use the JobScheduler API to upload crash reports. This does not affect whether or not crash reports will be uploaded. Rather, *if* a crash report is going to be uploaded, this flag affects *how* it is uploaded.
+       </message>
+      </if>
 
       <!-- Data Reduction Proxy -->
       <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_LO_FI_NAME" desc="An about:flags experiment title to enable/disable Data Saver Lo-Fi" translateable="false">
