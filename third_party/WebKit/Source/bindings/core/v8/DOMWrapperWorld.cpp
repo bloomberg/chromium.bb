@@ -84,17 +84,15 @@ class DOMObjectHolder : public DOMObjectHolderBase {
 unsigned DOMWrapperWorld::s_numberOfNonMainWorldsInMainThread = 0;
 
 using WorldMap = HashMap<int, DOMWrapperWorld*>;
-
-static WorldMap& isolatedWorldMap() {
-  DCHECK(isMainThread());
-  DEFINE_STATIC_LOCAL(WorldMap, map, ());
-  return map;
-}
-
 static WorldMap& worldMap() {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(ThreadSpecific<WorldMap>, map,
                                   new ThreadSpecific<WorldMap>);
   return *map;
+}
+
+static bool isIsolatedWorldId(int worldId) {
+  return DOMWrapperWorld::MainWorldId < worldId &&
+         worldId < DOMWrapperWorld::IsolatedWorldIdLimit;
 }
 
 PassRefPtr<DOMWrapperWorld> DOMWrapperWorld::create(v8::Isolate* isolate,
@@ -111,30 +109,23 @@ DOMWrapperWorld::DOMWrapperWorld(v8::Isolate* isolate,
       m_worldId(worldId),
       m_domDataStore(
           WTF::wrapUnique(new DOMDataStore(isolate, isMainWorld()))) {
-  switch (worldType) {
+  switch (m_worldType) {
     case WorldType::Main:
-      // MainWorld is managed separately from worldMap() and isolatedWorldMap().
-      // See mainWorld().
+      // MainWorld is managed separately from worldMap(). See mainWorld().
       break;
-    case WorldType::Isolated: {
-      DCHECK(isMainThread());
-      WorldMap& map = isolatedWorldMap();
-      DCHECK(!map.contains(worldId));
-      map.insert(worldId, this);
-      break;
-    }
+    case WorldType::Isolated:
     case WorldType::GarbageCollector:
     case WorldType::RegExp:
     case WorldType::Testing:
     case WorldType::Worker: {
       WorldMap& map = worldMap();
-      DCHECK(!map.contains(worldId));
-      map.insert(worldId, this);
+      DCHECK(!map.contains(m_worldId));
+      map.insert(m_worldId, this);
+      if (isMainThread())
+        s_numberOfNonMainWorldsInMainThread++;
       break;
     }
   }
-  if (worldId != WorldId::MainWorldId && isMainThread())
-    s_numberOfNonMainWorldsInMainThread++;
 }
 
 DOMWrapperWorld& DOMWrapperWorld::mainWorld() {
@@ -147,25 +138,33 @@ DOMWrapperWorld& DOMWrapperWorld::mainWorld() {
 
 PassRefPtr<DOMWrapperWorld> DOMWrapperWorld::fromWorldId(v8::Isolate* isolate,
                                                          int worldId) {
-  if (worldId == MainWorldId)
+  // TODO(nhiroki): The current impl creates a new main/isolated world for
+  // |worldId| if it doesn't exist. We should stop it and instead return nullptr
+  // in the case.
+  if (worldId == WorldId::MainWorldId)
     return &mainWorld();
-  return ensureIsolatedWorld(isolate, worldId);
+  if (isIsolatedWorldId(worldId))
+    return ensureIsolatedWorld(isolate, worldId);
+
+  WorldMap& map = worldMap();
+  auto it = map.find(worldId);
+  if (it != map.end())
+    return it->value;
+  return nullptr;
 }
 
-void DOMWrapperWorld::allWorldsInMainThread(
+void DOMWrapperWorld::allWorldsInCurrentThread(
     Vector<RefPtr<DOMWrapperWorld>>& worlds) {
-  ASSERT(isMainThread());
-  worlds.push_back(&mainWorld());
+  if (isMainThread())
+    worlds.push_back(&mainWorld());
   for (DOMWrapperWorld* world : worldMap().values())
-    worlds.push_back(world);
-  for (DOMWrapperWorld* world : isolatedWorldMap().values())
     worlds.push_back(world);
 }
 
 void DOMWrapperWorld::markWrappersInAllWorlds(
     ScriptWrappable* scriptWrappable,
     const ScriptWrappableVisitor* visitor) {
-  // Marking for worlds other than the main world and the isolated worlds.
+  // Marking for worlds other than the main world.
   DCHECK(ThreadState::current()->isolate());
   for (DOMWrapperWorld* world : worldMap().values()) {
     DOMDataStore& dataStore = world->domDataStore();
@@ -173,66 +172,39 @@ void DOMWrapperWorld::markWrappersInAllWorlds(
       dataStore.markWrapper(scriptWrappable);
   }
 
-  // The main world and isolated worlds should exist only on the main thread.
-  if (!isMainThread())
-    return;
-
   // Marking for the main world.
-  scriptWrappable->markWrapper(visitor);
-
-  // Marking for the isolated worlds.
-  WorldMap& isolatedWorlds = isolatedWorldMap();
-  for (auto& world : isolatedWorlds.values()) {
-    DOMDataStore& dataStore = world->domDataStore();
-    if (dataStore.containsWrapper(scriptWrappable))
-      dataStore.markWrapper(scriptWrappable);
-  }
+  if (isMainThread())
+    scriptWrappable->markWrapper(visitor);
 }
 
 DOMWrapperWorld::~DOMWrapperWorld() {
   ASSERT(!isMainWorld());
-
-  dispose();
-
   if (isMainThread())
     s_numberOfNonMainWorldsInMainThread--;
 
-  if (!isIsolatedWorld())
-    return;
-
-  WorldMap& map = isolatedWorldMap();
-  WorldMap::iterator it = map.find(m_worldId);
-  if (it == map.end()) {
-    ASSERT_NOT_REACHED();
-    return;
-  }
-  ASSERT(it->value == this);
-
-  map.remove(it);
+  // WorkerWorld should be disposed of before the dtor.
+  if (!isWorkerWorld())
+    dispose();
+  DCHECK(!worldMap().contains(m_worldId));
 }
 
 void DOMWrapperWorld::dispose() {
   m_domObjectHolders.clear();
   m_domDataStore.reset();
+  DCHECK(worldMap().contains(m_worldId));
   worldMap().remove(m_worldId);
 }
-
-#if DCHECK_IS_ON()
-static bool isIsolatedWorldId(int worldId) {
-  return DOMWrapperWorld::MainWorldId < worldId &&
-         worldId < DOMWrapperWorld::IsolatedWorldIdLimit;
-}
-#endif
 
 PassRefPtr<DOMWrapperWorld> DOMWrapperWorld::ensureIsolatedWorld(
     v8::Isolate* isolate,
     int worldId) {
   ASSERT(isIsolatedWorldId(worldId));
 
-  WorldMap& map = isolatedWorldMap();
+  WorldMap& map = worldMap();
   auto it = map.find(worldId);
   if (it != map.end()) {
     RefPtr<DOMWrapperWorld> world = it->value;
+    DCHECK(world->isIsolatedWorld());
     DCHECK_EQ(worldId, world->worldId());
     return world.release();
   }

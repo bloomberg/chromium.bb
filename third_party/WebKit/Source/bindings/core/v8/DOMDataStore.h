@@ -156,7 +156,7 @@ class DOMDataStore {
   // be in the main world).
   static bool canUseMainWorldWrapper() {
     return !WTF::mayNotBeMainThread() &&
-           !DOMWrapperWorld::nonMainWorldsInMainThread();
+           !DOMWrapperWorld::nonMainWorldsExistInMainThread();
   }
 
   static bool holderContainsWrapper(v8::Local<v8::Object> holder,

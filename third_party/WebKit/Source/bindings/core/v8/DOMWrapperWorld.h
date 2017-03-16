@@ -84,10 +84,13 @@ class CORE_EXPORT DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
   ~DOMWrapperWorld();
   void dispose();
 
-  static bool nonMainWorldsInMainThread() {
+  // Called from performance-sensitive functions, so we should keep this simple
+  // and fast as much as possible.
+  static bool nonMainWorldsExistInMainThread() {
     return s_numberOfNonMainWorldsInMainThread;
   }
-  static void allWorldsInMainThread(Vector<RefPtr<DOMWrapperWorld>>& worlds);
+
+  static void allWorldsInCurrentThread(Vector<RefPtr<DOMWrapperWorld>>& worlds);
   static void markWrappersInAllWorlds(ScriptWrappable*,
                                       const ScriptWrappableVisitor*);
 
@@ -99,7 +102,6 @@ class CORE_EXPORT DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {
     return world(isolate->GetCurrentContext());
   }
 
-  static DOMWrapperWorld*& workerWorld();
   static DOMWrapperWorld& mainWorld();
   static PassRefPtr<DOMWrapperWorld> fromWorldId(v8::Isolate*, int worldId);
 
