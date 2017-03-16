@@ -1002,10 +1002,19 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     # Linux AMD R7 240
     self.Fail('conformance2/textures/image_bitmap_from_video/' +
+        'tex-2d-rgba16f-rgba-float.html',
+        ['linux', ('amd', 0x6613)], bug=701138)
+    self.Fail('conformance2/textures/image_bitmap_from_video/' +
         'tex-2d-rgba16f-rgba-half_float.html',
         ['linux', ('amd', 0x6613)], bug=701138)
     self.Fail('conformance2/textures/image_bitmap_from_video/' +
         'tex-2d-rgba32f-rgba-float.html',
+        ['linux', ('amd', 0x6613)], bug=701138)
+    self.Fail('conformance2/textures/image_bitmap_from_video/' +
+        'tex-2d-rgba4-rgba-unsigned_byte.html',
+        ['linux', ('amd', 0x6613)], bug=701138)
+    self.Fail('conformance2/textures/image_bitmap_from_video/' +
+        'tex-2d-rgba4-rgba-unsigned_short_4_4_4_4.html',
         ['linux', ('amd', 0x6613)], bug=701138)
 
     # Conflicting expectations to test that the

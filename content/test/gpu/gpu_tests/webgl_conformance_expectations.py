@@ -656,6 +656,11 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['android', 'android-chromium',
          ('nvidia', 'NVIDIA Tegra')], bug=624621)
 
+    # NVIDIA Shield
+    self.Flaky('conformance/context/' +
+        'context-eviction-with-garbage-collection.html',
+        ['android', ('nvidia', 'NVIDIA Tegra')], bug=701929)
+
     ############
     # ChromeOS #
     ############
