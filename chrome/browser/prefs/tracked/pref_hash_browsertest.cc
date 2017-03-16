@@ -221,7 +221,7 @@ class PrefHashBrowserTestBase
     // Sanity check that old protected pref file is never present in modern
     // Chromes.
     EXPECT_FALSE(base::PathExists(
-        profile_dir.Append(chrome::kProtectedPreferencesFilenameDeprecated)));
+        profile_dir.Append(FILE_PATH_LITERAL("Protected Preferences"))));
 
     // Read the preferences from disk.
 

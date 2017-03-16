@@ -62,22 +62,11 @@ class COMPONENTS_PREFS_EXPORT JsonPrefStore
       const base::FilePath& pref_filename,
       base::SequencedWorkerPool* worker_pool);
 
-  // Same as the constructor below with no alternate filename.
-  JsonPrefStore(
-      const base::FilePath& pref_filename,
-      const scoped_refptr<base::SequencedTaskRunner>& sequenced_task_runner,
-      std::unique_ptr<PrefFilter> pref_filter);
-
   // |sequenced_task_runner| must be a shutdown-blocking task runner, ideally
   // created by the GetTaskRunnerForFile() method above.
   // |pref_filename| is the path to the file to read prefs from.
-  // |pref_alternate_filename| is the path to an alternate file which the
-  // desired prefs may have previously been written to. If |pref_filename|
-  // doesn't exist and |pref_alternate_filename| does, |pref_alternate_filename|
-  // will be moved to |pref_filename| before the read occurs.
   JsonPrefStore(
       const base::FilePath& pref_filename,
-      const base::FilePath& pref_alternate_filename,
       const scoped_refptr<base::SequencedTaskRunner>& sequenced_task_runner,
       std::unique_ptr<PrefFilter> pref_filter);
 
@@ -231,7 +220,6 @@ class COMPONENTS_PREFS_EXPORT JsonPrefStore
   void ScheduleWrite(uint32_t flags);
 
   const base::FilePath path_;
-  const base::FilePath alternate_path_;
   const scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
 
   std::unique_ptr<base::DictionaryValue> prefs_;

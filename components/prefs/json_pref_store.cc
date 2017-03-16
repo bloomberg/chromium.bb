@@ -111,13 +111,7 @@ void RecordJsonDataSizeHistogram(const base::FilePath& path, size_t size) {
 }
 
 std::unique_ptr<JsonPrefStore::ReadResult> ReadPrefsFromDisk(
-    const base::FilePath& path,
-    const base::FilePath& alternate_path) {
-  if (!base::PathExists(path) && !alternate_path.empty() &&
-      base::PathExists(alternate_path)) {
-    base::Move(alternate_path, path);
-  }
-
+    const base::FilePath& path) {
   int error_code;
   std::string error_msg;
   std::unique_ptr<JsonPrefStore::ReadResult> read_result(
@@ -151,18 +145,7 @@ JsonPrefStore::JsonPrefStore(
     const base::FilePath& pref_filename,
     const scoped_refptr<base::SequencedTaskRunner>& sequenced_task_runner,
     std::unique_ptr<PrefFilter> pref_filter)
-    : JsonPrefStore(pref_filename,
-                    base::FilePath(),
-                    sequenced_task_runner,
-                    std::move(pref_filter)) {}
-
-JsonPrefStore::JsonPrefStore(
-    const base::FilePath& pref_filename,
-    const base::FilePath& pref_alternate_filename,
-    const scoped_refptr<base::SequencedTaskRunner>& sequenced_task_runner,
-    std::unique_ptr<PrefFilter> pref_filter)
     : path_(pref_filename),
-      alternate_path_(pref_alternate_filename),
       sequenced_task_runner_(sequenced_task_runner),
       prefs_(new base::DictionaryValue()),
       read_only_(false),
@@ -283,7 +266,7 @@ PersistentPrefStore::PrefReadError JsonPrefStore::GetReadError() const {
 PersistentPrefStore::PrefReadError JsonPrefStore::ReadPrefs() {
   DCHECK(CalledOnValidThread());
 
-  OnFileRead(ReadPrefsFromDisk(path_, alternate_path_));
+  OnFileRead(ReadPrefsFromDisk(path_));
   return filtering_in_progress_ ? PREF_READ_ERROR_ASYNCHRONOUS_TASK_INCOMPLETE
                                 : read_error_;
 }
@@ -296,9 +279,8 @@ void JsonPrefStore::ReadPrefsAsync(ReadErrorDelegate* error_delegate) {
 
   // Weakly binds the read task so that it doesn't kick in during shutdown.
   base::PostTaskAndReplyWithResult(
-      sequenced_task_runner_.get(),
-      FROM_HERE,
-      base::Bind(&ReadPrefsFromDisk, path_, alternate_path_),
+      sequenced_task_runner_.get(), FROM_HERE,
+      base::Bind(&ReadPrefsFromDisk, path_),
       base::Bind(&JsonPrefStore::OnFileRead, AsWeakPtr()));
 }
 

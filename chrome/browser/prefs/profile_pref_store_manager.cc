@@ -148,11 +148,8 @@ PersistentPrefStore* ProfilePrefStoreManager::CreateProfilePrefStore(
   scoped_refptr<JsonPrefStore> unprotected_pref_store(new JsonPrefStore(
       profile_path_.Append(chrome::kPreferencesFilename), io_task_runner.get(),
       std::move(unprotected_pref_hash_filter)));
-  // TODO(gab): Remove kDeprecatedProtectedPreferencesFilename as an alternate
-  // file in M40+.
   scoped_refptr<JsonPrefStore> protected_pref_store(new JsonPrefStore(
       profile_path_.Append(chrome::kSecurePreferencesFilename),
-      profile_path_.Append(chrome::kProtectedPreferencesFilenameDeprecated),
       io_task_runner.get(), std::move(protected_pref_hash_filter)));
 
   SetupTrackedPreferencesMigration(

@@ -160,8 +160,6 @@ const base::FilePath::CharType kOfflinePageRequestQueueDirname[] =
 const base::FilePath::CharType kPreferencesFilename[] = FPL("Preferences");
 const base::FilePath::CharType kPreviewsOptOutDBFilename[] =
     FPL("previews_opt_out.db");
-const base::FilePath::CharType kProtectedPreferencesFilenameDeprecated[] =
-    FPL("Protected Preferences");
 const base::FilePath::CharType kReadmeFilename[] = FPL("README");
 const base::FilePath::CharType kSecurePreferencesFilename[] =
     FPL("Secure Preferences");
