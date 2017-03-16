@@ -304,11 +304,7 @@ public class NewTabPageView
         final TextView searchBoxTextView = (TextView) mSearchBoxView
                 .findViewById(R.id.search_box_text);
 
-        boolean isTablet = DeviceFormFactor.isTablet(getContext());
-
-        // If the Google G should not be shown then clear it because it is shown by default in xml.
-        if (isTablet
-                || !ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_SHOW_GOOGLE_G_IN_OMNIBOX)) {
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_SHOW_GOOGLE_G_IN_OMNIBOX)) {
             searchBoxTextView.setCompoundDrawablePadding(0);
 
             // Not using the relative version of this call because we only want to clear
@@ -317,7 +313,7 @@ public class NewTabPageView
         }
 
         String hintText = getResources().getString(R.string.search_or_type_url);
-        if (!isTablet || mManager.isFakeOmniboxTextEnabledTablet()) {
+        if (!DeviceFormFactor.isTablet(getContext()) || mManager.isFakeOmniboxTextEnabledTablet()) {
             searchBoxTextView.setHint(hintText);
         } else {
             searchBoxTextView.setContentDescription(hintText);
@@ -523,8 +519,7 @@ public class NewTabPageView
         if (hasLogo == mSearchProviderHasLogo && mInitialized) return;
         mSearchProviderHasLogo = hasLogo;
         boolean showLogo = mSearchProviderHasLogo
-                && (DeviceFormFactor.isTablet(getContext())
-                           || !ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_CONDENSED_LAYOUT));
+                && !ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_CONDENSED_LAYOUT);
 
         // Set a bit more top padding on the tile grid if there is no logo.
         int paddingTop = getResources().getDimensionPixelSize(showLogo
