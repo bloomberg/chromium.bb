@@ -197,7 +197,7 @@ void DisplayColorManager::LoadCalibrationForDisplay(
   }
 
   quirks::QuirksManager::Get()->RequestIccProfilePath(
-      display->product_id(),
+      display->product_id(), display->display_name(),
       base::Bind(&DisplayColorManager::FinishLoadCalibrationForDisplay,
                  weak_ptr_factory_.GetWeakPtr(), display->display_id(),
                  display->product_id(), display->has_color_correction_matrix(),

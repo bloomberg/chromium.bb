@@ -13,6 +13,7 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/quirks/quirks_manager.h"
 #include "components/version_info/version_info.h"
+#include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
@@ -24,7 +25,7 @@ namespace {
 
 const char kQuirksUrlFormat[] =
     "https://chromeosquirksserver-pa.googleapis.com/v2/display/%s/clients"
-    "/chromeos/M%d";
+    "/chromeos/M%d?";
 
 const int kMaxServerFailures = 10;
 
@@ -54,9 +55,11 @@ bool WriteIccFile(const base::FilePath file_path, const std::string& data) {
 // QuirksClient
 
 QuirksClient::QuirksClient(int64_t product_id,
+                           const std::string& display_name,
                            const RequestFinishedCallback& on_request_finished,
                            QuirksManager* manager)
     : product_id_(product_id),
+      display_name_(display_name),
       on_request_finished_(on_request_finished),
       manager_(manager),
       icc_path_(manager->delegate()->GetDisplayProfileDirectory().Append(
@@ -74,11 +77,15 @@ void QuirksClient::StartDownload() {
   std::string url = base::StringPrintf(
       kQuirksUrlFormat, IdToHexString(product_id_).c_str(), major_version);
 
+  if (!display_name_.empty()) {
+    url +=
+        "display_name=" + net::EscapeQueryParamValue(display_name_, true) + "&";
+  }
+
   VLOG(2) << "Preparing to download\n  " << url << "\nto file "
           << icc_path_.value();
 
-  url += "?key=";
-  url += manager_->delegate()->GetApiKey();
+  url += "key=" + manager_->delegate()->GetApiKey();
 
   url_fetcher_ = manager_->CreateURLFetcher(GURL(url), this);
   url_fetcher_->SetRequestContext(manager_->url_context_getter());

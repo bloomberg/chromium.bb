@@ -114,6 +114,7 @@ void QuirksManager::OnLoginCompleted() {
 
 void QuirksManager::RequestIccProfilePath(
     int64_t product_id,
+    const std::string& display_name,
     const RequestFinishedCallback& on_request_finished) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -135,7 +136,7 @@ void QuirksManager::RequestIccProfilePath(
       base::Bind(&CheckForIccFile,
                  delegate_->GetDisplayProfileDirectory().Append(name)),
       base::Bind(&QuirksManager::OnIccFilePathRequestCompleted,
-                 weak_ptr_factory_.GetWeakPtr(), product_id,
+                 weak_ptr_factory_.GetWeakPtr(), product_id, display_name,
                  on_request_finished));
 }
 
@@ -161,6 +162,7 @@ std::unique_ptr<net::URLFetcher> QuirksManager::CreateURLFetcher(
 
 void QuirksManager::OnIccFilePathRequestCompleted(
     int64_t product_id,
+    const std::string& display_name,
     const RequestFinishedCallback& on_request_finished,
     base::FilePath path) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -191,7 +193,7 @@ void QuirksManager::OnIccFilePathRequestCompleted(
 
   // Create and start a client to download file.
   QuirksClient* client =
-      new QuirksClient(product_id, on_request_finished, this);
+      new QuirksClient(product_id, display_name, on_request_finished, this);
   clients_.insert(base::WrapUnique(client));
   if (!waiting_for_login_)
     client->StartDownload();

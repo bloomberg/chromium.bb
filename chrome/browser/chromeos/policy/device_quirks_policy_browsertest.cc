@@ -15,6 +15,7 @@
 namespace chromeos {
 
 const int64_t kProductId = 0x0000aaaa;
+const char kDisplayName[] = "FakeDisplay";
 const char kFakeIccData[] = {0x00, 0x00, 0x08, 0x90, 0x20, 0x20,
                              0x20, 0x20, 0x02, 0x10, 0x00, 0x00};
 
@@ -66,8 +67,9 @@ class DeviceQuirksPolicyTest : public policy::DevicePolicyCrosBrowserTest {
     icc_path_.clear();
 
     quirks::QuirksManager::Get()->RequestIccProfilePath(
-        kProductId, base::Bind(&DeviceQuirksPolicyTest::OnQuirksClientFinished,
-                               base::Unretained(this)));
+        kProductId, kDisplayName,
+        base::Bind(&DeviceQuirksPolicyTest::OnQuirksClientFinished,
+                   base::Unretained(this)));
 
     run_loop.Run();
 

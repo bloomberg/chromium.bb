@@ -92,6 +92,7 @@ class QUIRKS_EXPORT QuirksManager {
   // Entry point into manager.  Finds or downloads icc file.
   void RequestIccProfilePath(
       int64_t product_id,
+      const std::string& display_name,
       const RequestFinishedCallback& on_request_finished);
 
   void ClientFinished(QuirksClient* client);
@@ -125,6 +126,7 @@ class QUIRKS_EXPORT QuirksManager {
   // Callback after checking for existing icc file; proceed if not found.
   void OnIccFilePathRequestCompleted(
       int64_t product_id,
+      const std::string& display_name,
       const RequestFinishedCallback& on_request_finished,
       base::FilePath path);
 

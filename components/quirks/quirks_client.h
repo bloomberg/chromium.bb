@@ -26,6 +26,7 @@ using RequestFinishedCallback =
 class QuirksClient : public net::URLFetcherDelegate {
  public:
   QuirksClient(int64_t product_id,
+               const std::string& display_name,
                const RequestFinishedCallback& on_request_finished,
                QuirksManager* manager);
   ~QuirksClient() override;
@@ -49,6 +50,9 @@ class QuirksClient : public net::URLFetcherDelegate {
 
   // ID of display to request from Quirks Server.
   const int64_t product_id_;
+
+  // Human-readable name to send to Quirks Server.
+  const std::string display_name_;
 
   // Callback supplied by caller.
   const RequestFinishedCallback on_request_finished_;

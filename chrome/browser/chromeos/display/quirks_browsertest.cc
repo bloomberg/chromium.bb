@@ -65,8 +65,9 @@ class QuirksBrowserTest : public InProcessBrowserTest {
     end_message_loop_ = run_loop.QuitClosure();
 
     quirks::QuirksManager::Get()->RequestIccProfilePath(
-        product_id, base::Bind(&QuirksBrowserTest::OnQuirksClientFinished,
-                               base::Unretained(this)));
+        product_id, std::string(),
+        base::Bind(&QuirksBrowserTest::OnQuirksClientFinished,
+                   base::Unretained(this)));
 
     run_loop.Run();
   }
