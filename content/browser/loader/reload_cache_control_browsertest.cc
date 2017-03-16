@@ -157,6 +157,12 @@ IN_PROC_BROWSER_TEST_F(ReloadCacheControlBrowserTest, NormalReload) {
 
 // Test if bypassing reload issues requests with proper cache control flags.
 IN_PROC_BROWSER_TEST_F(ReloadCacheControlBrowserTest, BypassingReload) {
+  // TODO(crbug.com/671545): This test gets to be unstable if browser-side
+  // navigation is enabled. This is because we can not ensure which of frame and
+  // image requests hits the network first.
+  if (IsBrowserSideNavigationEnabled())
+    return;
+
   GURL url(embedded_test_server()->GetURL(kReloadTestPath));
 
   EXPECT_TRUE(NavigateToURL(shell(), url));
