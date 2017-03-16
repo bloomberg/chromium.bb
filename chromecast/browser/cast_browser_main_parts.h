@@ -9,6 +9,8 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "build/buildflag.h"
+#include "chromecast/chromecast_features.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/common/main_function_params.h"
 
@@ -45,7 +47,7 @@ class CastBrowserMainParts : public content::BrowserMainParts {
 
   scoped_refptr<base::SingleThreadTaskRunner> GetMediaTaskRunner();
 
-#if !defined(OS_ANDROID)
+#if BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
   media::MediaResourceTracker* media_resource_tracker();
   media::MediaPipelineBackendManager* media_pipeline_backend_manager();
 #endif
@@ -70,7 +72,7 @@ class CastBrowserMainParts : public content::BrowserMainParts {
   std::unique_ptr<media::MediaCapsImpl> media_caps_;
   std::unique_ptr<CastWindowManager> window_manager_;
 
-#if !defined(OS_ANDROID)
+#if BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
   // CMA thread used by AudioManager, MojoRenderer, and MediaPipelineBackend.
   std::unique_ptr<base::Thread> media_thread_;
 

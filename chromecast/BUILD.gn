@@ -447,7 +447,10 @@ action("chromecast_locales_pak") {
 
 buildflag_header("chromecast_features") {
   header = "chromecast_features.h"
-  flags = [ "IS_CAST_AUDIO_ONLY=$is_cast_audio_only" ]
+  flags = [
+    "IS_CAST_AUDIO_ONLY=$is_cast_audio_only",
+    "IS_CAST_USING_CMA_BACKEND=$is_cast_using_cma_backend",
+  ]
 }
 
 if (is_android) {

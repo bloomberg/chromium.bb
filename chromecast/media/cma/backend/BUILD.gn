@@ -4,6 +4,7 @@
 
 import("//build/config/chromecast_build.gni")
 import("//chromecast/chromecast.gni")
+import("//media/media_options.gni")
 
 source_set("backend") {
   sources = [
@@ -26,7 +27,12 @@ source_set("backend") {
   ]
 
   if (is_android) {
-    deps += [ ":cast_media_android" ]
+    if (is_cast_using_cma_backend) {
+      # TODO(tsunghung): use the real implementation when it's done.
+      deps += [ ":default" ]
+    } else {
+      deps += [ ":cast_media_android" ]
+    }
   } else {
     deps += [ ":libcast_media_1.0" ]
   }

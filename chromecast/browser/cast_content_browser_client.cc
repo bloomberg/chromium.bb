@@ -71,9 +71,11 @@
 #if defined(OS_ANDROID)
 #include "components/cdm/browser/cdm_message_filter_android.h"
 #include "components/crash/content/browser/crash_dump_manager_android.h"
-#else
-#include "chromecast/media/cdm/cast_cdm_factory.h"
 #endif  // defined(OS_ANDROID)
+
+#if BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
+#include "chromecast/media/cdm/cast_cdm_factory.h"
+#endif  // BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
 
 namespace chromecast {
 namespace shell {
@@ -146,7 +148,7 @@ media::VideoModeSwitcher* CastContentBrowserClient::GetVideoModeSwitcher() {
   return nullptr;
 }
 
-#if !defined(OS_ANDROID)
+#if BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
 media::VideoResolutionPolicy*
 CastContentBrowserClient::GetVideoResolutionPolicy() {
   return nullptr;
@@ -195,7 +197,7 @@ CastContentBrowserClient::CreateCdmFactory() {
 #endif  // defined(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
   return nullptr;
 }
-#endif  // !defined(OS_ANDROID)
+#endif  // BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
 
 media::MediaCapsImpl* CastContentBrowserClient::media_caps() {
   DCHECK(cast_browser_main_parts_);

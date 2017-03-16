@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//chromecast/chromecast.gni")
+import("//media/media_options.gni")
 
 source_set("cdm") {
   sources = [
@@ -15,7 +16,7 @@ source_set("cdm") {
     "//media",
   ]
 
-  if (!is_android) {
+  if (is_cast_using_cma_backend) {
     sources += [
       "cast_cdm.cc",
       "cast_cdm.h",
@@ -29,14 +30,14 @@ source_set("cdm") {
       "//chromecast/media/base",
       "//url:url",
     ]
-  } else {
-    if (use_playready) {
-      sources += [
-        "playready_drm_delegate_android.cc",
-        "playready_drm_delegate_android.h",
-      ]
+  }
 
-      deps += [ "//media/base/android" ]
-    }
+  if (is_android && use_playready) {
+    sources += [
+      "playready_drm_delegate_android.cc",
+      "playready_drm_delegate_android.h",
+    ]
+
+    deps += [ "//media/base/android" ]
   }
 }
