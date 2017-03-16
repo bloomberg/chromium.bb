@@ -32,13 +32,13 @@ void AppendNodeToString(const NGLayoutOpportunityTreeNode* node,
 
   string_builder->append(indent_builder.toString());
   string_builder->append("Left:\t");
-  AppendNodeToString(node->left, string_builder, indent + 2);
+  AppendNodeToString(node->left.get(), string_builder, indent + 2);
   string_builder->append(indent_builder.toString());
   string_builder->append("Right:\t");
-  AppendNodeToString(node->right, string_builder, indent + 2);
+  AppendNodeToString(node->right.get(), string_builder, indent + 2);
   string_builder->append(indent_builder.toString());
   string_builder->append("Bottom:\t");
-  AppendNodeToString(node->bottom, string_builder, indent + 2);
+  AppendNodeToString(node->bottom.get(), string_builder, indent + 2);
 }
 
 // Collects all opportunities from leaves of Layout Opportunity spatial tree.
@@ -48,9 +48,9 @@ void CollectAllOpportunities(const NGLayoutOpportunityTreeNode* node,
     return;
   if (node->IsLeafNode())
     opportunities.push_back(node->opportunity);
-  CollectAllOpportunities(node->left, opportunities);
-  CollectAllOpportunities(node->bottom, opportunities);
-  CollectAllOpportunities(node->right, opportunities);
+  CollectAllOpportunities(node->left.get(), opportunities);
+  CollectAllOpportunities(node->bottom.get(), opportunities);
+  CollectAllOpportunities(node->right.get(), opportunities);
 }
 
 // Creates layout opportunity from the provided space and the origin point.
@@ -161,9 +161,9 @@ NGLayoutOpportunityTreeNode* CreateRightNGLayoutOpportunityTreeNode(
 
 void SplitNGLayoutOpportunityTreeNode(const NGLogicalRect& rect,
                                       NGLayoutOpportunityTreeNode* node) {
-  node->left = CreateLeftNGLayoutOpportunityTreeNode(node, rect);
-  node->right = CreateRightNGLayoutOpportunityTreeNode(node, rect);
-  node->bottom = CreateBottomNGLayoutOpportunityTreeNode(node, rect);
+  node->left.reset(CreateLeftNGLayoutOpportunityTreeNode(node, rect));
+  node->right.reset(CreateRightNGLayoutOpportunityTreeNode(node, rect));
+  node->bottom.reset(CreateBottomNGLayoutOpportunityTreeNode(node, rect));
 }
 
 // Gets/Creates the "TOP" positioned constraint space by splitting
@@ -222,9 +222,9 @@ void InsertExclusion(NGLayoutOpportunityTreeNode* node,
     SplitNGLayoutOpportunityTreeNode(node->combined_exclusion->rect, node);
     node->exclusions.push_back(exclusion);
   } else {
-    InsertExclusion(node->left, exclusion, opportunities);
-    InsertExclusion(node->bottom, exclusion, opportunities);
-    InsertExclusion(node->right, exclusion, opportunities);
+    InsertExclusion(node->left.get(), exclusion, opportunities);
+    InsertExclusion(node->bottom.get(), exclusion, opportunities);
+    InsertExclusion(node->right.get(), exclusion, opportunities);
   }
 }
 
@@ -288,7 +288,8 @@ NGLayoutOpportunityIterator::NGLayoutOpportunityIterator(
 
   NGLayoutOpportunity initial_opportunity =
       CreateLayoutOpportunityFromConstraintSpace(*constraint_space_, Offset());
-  opportunity_tree_root_ = new NGLayoutOpportunityTreeNode(initial_opportunity);
+  opportunity_tree_root_.reset(
+      new NGLayoutOpportunityTreeNode(initial_opportunity));
 
   if (opt_leader_point) {
     const NGExclusion leader_exclusion =

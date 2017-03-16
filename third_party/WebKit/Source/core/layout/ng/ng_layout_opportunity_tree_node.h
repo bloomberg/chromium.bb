@@ -8,15 +8,13 @@
 #include "core/layout/ng/geometry/ng_edge.h"
 #include "core/layout/ng/geometry/ng_logical_rect.h"
 #include "core/layout/ng/ng_exclusion.h"
-#include "platform/heap/Handle.h"
 
 namespace blink {
 
 // 3 node R-Tree that represents available space(left, bottom, right) or
 // layout opportunity after the parent spatial rectangle is split by the
 // exclusion rectangle.
-struct CORE_EXPORT NGLayoutOpportunityTreeNode
-    : public GarbageCollectedFinalized<NGLayoutOpportunityTreeNode> {
+struct CORE_EXPORT NGLayoutOpportunityTreeNode {
  public:
   // Default constructor.
   // Creates a Layout Opportunity tree node that is limited by it's own edge
@@ -31,9 +29,9 @@ struct CORE_EXPORT NGLayoutOpportunityTreeNode
                               NGEdge exclusion_edge);
 
   // Children of the node.
-  Member<NGLayoutOpportunityTreeNode> left;
-  Member<NGLayoutOpportunityTreeNode> bottom;
-  Member<NGLayoutOpportunityTreeNode> right;
+  std::unique_ptr<NGLayoutOpportunityTreeNode> left;
+  std::unique_ptr<NGLayoutOpportunityTreeNode> bottom;
+  std::unique_ptr<NGLayoutOpportunityTreeNode> right;
 
   // The top layout opportunity associated with this node.
   NGLogicalRect opportunity;
@@ -53,8 +51,6 @@ struct CORE_EXPORT NGLayoutOpportunityTreeNode
   bool IsLeafNode() const { return exclusions.isEmpty(); }
 
   String ToString() const;
-
-  DECLARE_TRACE();
 };
 
 inline std::ostream& operator<<(std::ostream& stream,

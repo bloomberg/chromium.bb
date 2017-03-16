@@ -7,7 +7,6 @@
 
 #include "core/CoreExport.h"
 #include "core/layout/ng/ng_layout_opportunity_tree_node.h"
-#include "platform/heap/Handle.h"
 #include "wtf/Optional.h"
 #include "wtf/Vector.h"
 #include "wtf/text/StringBuilder.h"
@@ -63,7 +62,7 @@ class CORE_EXPORT NGLayoutOpportunityIterator final {
 
   NGLayoutOpportunities opportunities_;
   NGLayoutOpportunities::const_iterator opportunity_iter_;
-  Persistent<NGLayoutOpportunityTreeNode> opportunity_tree_root_;
+  std::unique_ptr<NGLayoutOpportunityTreeNode> opportunity_tree_root_;
   NGLogicalOffset offset_;
 };
 

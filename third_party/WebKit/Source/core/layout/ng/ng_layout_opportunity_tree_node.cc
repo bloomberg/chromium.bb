@@ -28,10 +28,4 @@ String NGLayoutOpportunityTreeNode::ToString() const {
                             : "null");
 }
 
-DEFINE_TRACE(NGLayoutOpportunityTreeNode) {
-  visitor->trace(left);
-  visitor->trace(bottom);
-  visitor->trace(right);
-}
-
 }  // namespace blink
