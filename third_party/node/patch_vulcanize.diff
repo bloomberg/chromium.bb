@@ -60,3 +60,33 @@ index 21e1380..b6a353a 100644
 +  URL_TEMPLATE: '{{.*}}|\\[\\[.*\\]\\]|\\$i18n[^{]*{[^}]*}',
    OLD_POLYMER: 'This version of vulcanize is not compatible with Polymer < 0.8. Please use vulcanize 0.7.x.'
  };
+diff --git a/lib/vulcan.js b/lib/vulcan.js
+index 5aff456..2540dc1 100644
+--- a/lib/vulcan.js
++++ b/lib/vulcan.js
+@@ -414,19 +414,21 @@ Vulcan.prototype = {
+   },
+ 
+   getImplicitExcludes: function getImplicitExcludes(excludes) {
+-    // Build a loader that doesn't have to stop at our excludes, since we need them.
++    // Build a loader that doesn't have to stop at our HTML excludes, since we
++    // need them. JS excludes should still be excluded.
+     var loader = buildLoader({
+       abspath: this.abspath,
+       fsResolver: this.fsResolver,
+-      redirects: this.redirects
++      redirects: this.redirects,
++      excludes: excludes.filter(function(e) { return e.match(/.js$/i); })
+     });
+     var analyzer = new hyd.Analyzer(true, loader);
+     var analyzedExcludes = [];
+     excludes.forEach(function(exclude) {
+-      if (exclude.match(/.js$/)) {
++      if (exclude.match(/.js$/i)) {
+         return;
+       }
+-      if (exclude.match(/.css$/)) {
++      if (exclude.match(/.css$/i)) {
+         return;
+       }
+       if (exclude.slice(-1) === '/') {
