@@ -12,6 +12,7 @@
 #include "core/editing/EditingTestBase.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLBodyElement.h"
+#include "core/html/HTMLDivElement.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLHtmlElement.h"
@@ -228,6 +229,14 @@ TEST_F(RangeTest, NotMarkedValidByIrrelevantTextRemove) {
   EXPECT_EQ(0u, range->startOffset());
   EXPECT_EQ(div, range->endContainer());
   EXPECT_EQ(2u, range->endOffset());
+}
+
+// Regression test for crbug.com/698123
+TEST_F(RangeTest, ExpandNotCrash) {
+  Range* range = Range::create(document());
+  Node* div = HTMLDivElement::create(document());
+  range->setStart(div, 0, ASSERT_NO_EXCEPTION);
+  range->expand("", ASSERT_NO_EXCEPTION);
 }
 
 }  // namespace blink

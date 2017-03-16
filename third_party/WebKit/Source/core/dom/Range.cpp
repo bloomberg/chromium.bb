@@ -1644,8 +1644,9 @@ void Range::didSplitTextNode(const Text& oldNode) {
 }
 
 void Range::expand(const String& unit, ExceptionState& exceptionState) {
+  if (!startPosition().isConnected() || !endPosition().isConnected())
+    return;
   m_ownerDocument->updateStyleAndLayoutIgnorePendingStylesheets();
-
   VisiblePosition start = createVisiblePosition(startPosition());
   VisiblePosition end = createVisiblePosition(endPosition());
   if (unit == "word") {
