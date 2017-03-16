@@ -333,7 +333,6 @@ void NetExportMessageHandler::NotifyUIWithState(
     std::unique_ptr<base::DictionaryValue> state) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(web_ui());
-  state->SetBoolean("useMobileUI", UsingMobileUI());
   web_ui()->CallJavascriptFunctionUnsafe(net_log::kOnExportNetLogInfoChanged,
                                          *state);
 }

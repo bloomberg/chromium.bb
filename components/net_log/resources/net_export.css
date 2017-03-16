@@ -16,6 +16,12 @@ button {
   width: 200px;
 }
 
+button:disabled > .export-view-logging-enabled,
+button:enabled > .export-view-logging-disabled
+{
+  display: none;
+}
+
 .radio-button-div {
   margin: 7px auto;
 }

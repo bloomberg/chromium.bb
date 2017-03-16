@@ -16,43 +16,56 @@
 <script src="chrome://net-export/net_export.js"></script>
 <link rel="stylesheet" href="chrome://resources/css/text_defaults.css">
 <link rel="stylesheet" href="net_export.css">
+<title>Network Log Export</title>
 </head>
 <body>
   <h2>Network Log Export</h2>
   <div id="net-export-main">
     <div>
       <button id="export-view-start-data" disabled>
-        Start Logging to Disk
-        <div class="warning" id="export-view-deletes-log-text" hidden>
-          Deletes old log
-        </div>
+        <span class="export-view-logging-enabled">Start Logging to Disk</span>
+        <span class="export-view-logging-disabled">Logging to Disk...</span>
+        <if expr="is_ios or is_android">
+          <div class="warning" id="export-view-mobile-deletes-log-text" hidden>
+            Deletes old log
+          </div>
+        </if>
       </button>
     </div>
     <div>
       <button id="export-view-stop-data" disabled>Stop Logging</button>
     </div>
     <div>
-      <button id="export-view-send-data" disabled>
-        Email Log
-        <div class="warning" id="export-view-private-data-text" hidden>
-          Log contains private information
-        </div>
-        <div class="warning" id="export-view-send-old-log-text" hidden>
-          Log file from previous session
-        </div>
-      </button>
+      <if expr="is_ios or is_android">
+        <button id="export-view-mobile-send-data" disabled>
+          Email Log
+          <div class="warning" id="export-view-mobile-private-data-text" hidden>
+            Log contains private information
+          </div>
+          <div class="warning" id="export-view-mobile-send-old-log-text" hidden>
+            Log file from previous session
+          </div>
+        </button>
+      </if>
     </div>
     <p>
       <b>INSTRUCTIONS</b>: Start logging, reproduce the problem,
-      and then stop logging.  Make sure to send the email before
-      starting to log again. Otherwise, the log will be deleted.
+      and then stop logging.
+     
+      <if expr="is_ios or is_android">
+        Once logging has stopped, click the "Email Log" button to save the
+        file. Starting a new log will overwrite the old one.
+      </if>
+
+      <if expr="not(is_ios or is_android)">
+        Once logging has stopped, attach the log file to the bug report.
+      </if>
     </p>
     <p>
       <!-- TODO(rayraymond): Change link to that of new standalone webapp.
                              See http://crbug.com/472699 -->
-      Logs can be loaded in
-      <a href="chrome://net-internals" target="_blank">net-internals</a>
-      of desktop Chrome.
+      Log files can be loaded using
+      <a href="chrome://net-internals#import" target="_blank">net-internals</a>.
     </p>
     <p>
       <b><span class="warning">WARNING</span></b>: Logs contain a list of sites
