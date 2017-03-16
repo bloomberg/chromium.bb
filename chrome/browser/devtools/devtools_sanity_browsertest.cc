@@ -729,7 +729,15 @@ IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
 
 // Tests that BeforeUnload event gets called on undocked devtools if
 // we try to close them.
-IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest, TestUndockedDevToolsClose) {
+// Flaky on Windows.  http://crbug.com/702171
+#if defined(OS_WIN)
+#define MAYBE_TestUndockedDevToolsClose DISABLED_TestUndockedDevToolsClose
+#else
+#define MAYBE_TestUndockedDevToolsClose TestUndockedDevToolsClose
+#endif
+
+IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
+                       MAYBE_TestUndockedDevToolsClose) {
   RunBeforeUnloadSanityTest(false, base::Bind(
       &DevToolsBeforeUnloadTest::CloseDevToolsWindowAsync,
       base::Unretained(this)), false);
