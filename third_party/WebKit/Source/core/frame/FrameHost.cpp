@@ -42,9 +42,7 @@ FrameHost* FrameHost::create(Page& page) {
   return new FrameHost(page);
 }
 
-FrameHost::FrameHost(Page& page)
-    : m_page(&page),
-      m_subframeCount(0) {}
+FrameHost::FrameHost(Page& page) : m_page(&page) {}
 
 // Explicitly in the .cpp to avoid default constructor in .h
 FrameHost::~FrameHost() {}
@@ -77,23 +75,15 @@ DEFINE_TRACE(FrameHost) {
   visitor->trace(m_page);
 }
 
-#if DCHECK_IS_ON()
-void checkFrameCountConsistency(int expectedFrameCount, Frame* frame) {
-  ASSERT(expectedFrameCount >= 0);
-
-  int actualFrameCount = 0;
-  for (; frame; frame = frame->tree().traverseNext())
-    ++actualFrameCount;
-
-  ASSERT(expectedFrameCount == actualFrameCount);
+void FrameHost::incrementSubframeCount() {
+  page().incrementSubframeCount();
 }
-#endif
 
+void FrameHost::decrementSubframeCount() {
+  page().decrementSubframeCount();
+}
 int FrameHost::subframeCount() const {
-#if DCHECK_IS_ON()
-  checkFrameCountConsistency(m_subframeCount + 1, m_page->mainFrame());
-#endif
-  return m_subframeCount;
+  return page().subframeCount();
 }
 
 }  // namespace blink
