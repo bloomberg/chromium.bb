@@ -1737,6 +1737,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
         # Run this on the FYI waterfall and optional tryservers.
         'predicate': Predicates.FYI_AND_OPTIONAL,
         'os_types': ['win'],
+        'disabled_instrumentation_types': ['tsan'],
       }
     ],
     'disabled_tester_configs': [
@@ -1758,6 +1759,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
         # Run this on the FYI waterfall and optional tryservers.
         'predicate': Predicates.FYI_AND_OPTIONAL,
         'os_types': ['win'],
+        'disabled_instrumentation_types': ['tsan'],
       }
     ],
     'disabled_tester_configs': [
@@ -1827,6 +1829,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
         # Run this on the FYI waterfall and optional tryservers.
         'predicate': Predicates.FYI_AND_OPTIONAL,
         'os_types': ['win'],
+        'disabled_instrumentation_types': ['tsan'],
       }
     ],
     'disabled_tester_configs': [
@@ -1855,6 +1858,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
         # Run this on the FYI waterfall and optional tryservers.
         'predicate': Predicates.FYI_AND_OPTIONAL,
         'os_types': ['linux'],
+        'disabled_instrumentation_types': ['tsan'],
       }
     ],
     'disabled_tester_configs': [
@@ -1976,6 +1980,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
             'os': 'Windows-2008ServerR2-SP1'
           },
         ],
+        'disabled_instrumentation_types': ['tsan'],
       },
     ],
     'disabled_tester_configs': [
