@@ -14,7 +14,6 @@
 #include "ash/common/system/tray/system_tray_bubble.h"
 #include "ash/common/system/tray/system_tray_item.h"
 #include "ash/common/system/tray/tray_constants.h"
-#include "ash/common/system/tray/tray_popup_item_container.h"
 #include "ash/common/system/web_notification/web_notification_tray.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"

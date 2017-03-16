@@ -413,8 +413,6 @@ component("ash") {
     "common/system/tray/tray_popup_header_button.cc",
     "common/system/tray/tray_popup_header_button.h",
     "common/system/tray/tray_popup_ink_drop_style.h",
-    "common/system/tray/tray_popup_item_container.cc",
-    "common/system/tray/tray_popup_item_container.h",
     "common/system/tray/tray_popup_item_style.cc",
     "common/system/tray/tray_popup_item_style.h",
     "common/system/tray/tray_popup_utils.cc",
