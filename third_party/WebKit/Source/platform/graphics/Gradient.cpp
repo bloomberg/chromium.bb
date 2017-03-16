@@ -108,63 +108,43 @@ void Gradient::sortStopsIfNecessary() {
   std::stable_sort(m_stops.begin(), m_stops.end(), compareStops);
 }
 
-// Determine the total number of stops needed, including pseudo-stops at the
-// ends as necessary.
-static size_t totalStopsNeeded(const Gradient::ColorStop* stopData,
-                               size_t count) {
-  // N.B.: The tests in this function should kept in sync with the ones in
-  // fillStops(), or badness happens.
-  const Gradient::ColorStop* stop = stopData;
-  size_t countUsed = count;
-  if (count < 1 || stop->stop > 0.0)
-    countUsed++;
-  stop += count - 1;
-  if (count < 1 || stop->stop < 1.0)
-    countUsed++;
-  return countUsed;
-}
-
 // FIXME: This would be more at home as Color::operator SkColor.
 static inline SkColor makeSkColor(const Color& c) {
   return SkColorSetARGB(c.alpha(), c.red(), c.green(), c.blue());
 }
 
 // Collect sorted stop position and color information into the pos and colors
-// buffers, ensuring stops at both 0.0 and 1.0. The buffers must be large
-// enough to hold information for all stops, including the new endpoints if
-// stops at 0.0 and 1.0 aren't already included.
-static void fillStops(const Gradient::ColorStop* stopData,
-                      size_t count,
+// buffers, ensuring stops at both 0.0 and 1.0.
+// TODO(fmalita): theoretically Skia should provide the same 0.0/1.0 padding
+// (making this logic redundant), but in practice there are rendering diffs;
+// investigate.
+static void fillStops(const Vector<Gradient::ColorStop, 2>& stops,
                       ColorStopOffsetVector& pos,
                       ColorStopColorVector& colors) {
-  const Gradient::ColorStop* stop = stopData;
-  size_t start = 0;
-  if (count < 1) {
+  if (stops.isEmpty()) {
     // A gradient with no stops must be transparent black.
-    pos[0] = WebCoreFloatToSkScalar(0.0);
-    colors[0] = SK_ColorTRANSPARENT;
-    start = 1;
-  } else if (stop->stop > 0.0) {
+    pos.push_back(WebCoreFloatToSkScalar(0));
+    colors.push_back(SK_ColorTRANSPARENT);
+  } else if (stops.front().stop > 0) {
     // Copy the first stop to 0.0. The first stop position may have a slight
     // rounding error, but we don't care in this float comparison, since
     // 0.0 comes through cleanly and people aren't likely to want a gradient
     // with a stop at (0 + epsilon).
-    pos[0] = WebCoreFloatToSkScalar(0.0);
-    colors[0] = makeSkColor(stop->color);
-    start = 1;
+    pos.push_back(WebCoreFloatToSkScalar(0));
+    colors.push_back(makeSkColor(stops.front().color));
   }
 
-  for (size_t i = start; i < start + count; i++) {
-    pos[i] = WebCoreFloatToSkScalar(stop->stop);
-    colors[i] = makeSkColor(stop->color);
-    ++stop;
+  for (const auto& stop : stops) {
+    pos.push_back(WebCoreFloatToSkScalar(stop.stop));
+    colors.push_back(makeSkColor(stop.color));
   }
 
   // Copy the last stop to 1.0 if needed. See comment above about this float
   // comparison.
-  if (count < 1 || (--stop)->stop < 1.0) {
-    pos[start + count] = WebCoreFloatToSkScalar(1.0);
-    colors[start + count] = colors[start + count - 1];
+  DCHECK(!pos.isEmpty());
+  if (pos.back() < 1) {
+    pos.push_back(WebCoreFloatToSkScalar(1));
+    colors.push_back(colors.back());
   }
 }
 
@@ -172,13 +152,14 @@ sk_sp<PaintShader> Gradient::createShader(const SkMatrix& localMatrix) {
   sortStopsIfNecessary();
   ASSERT(m_stopsSorted);
 
-  size_t countUsed = totalStopsNeeded(m_stops.data(), m_stops.size());
-  ASSERT(countUsed >= 2);
-  ASSERT(countUsed >= m_stops.size());
+  ColorStopOffsetVector pos;
+  ColorStopColorVector colors;
+  pos.reserveCapacity(m_stops.size());
+  colors.reserveCapacity(m_stops.size());
 
-  ColorStopOffsetVector pos(countUsed);
-  ColorStopColorVector colors(countUsed);
-  fillStops(m_stops.data(), m_stops.size(), pos, colors);
+  fillStops(m_stops, pos, colors);
+  DCHECK_GE(pos.size(), 2ul);
+  DCHECK_EQ(pos.size(), colors.size());
 
   SkShader::TileMode tile = SkShader::kClamp_TileMode;
   switch (m_spreadMethod) {
@@ -214,7 +195,7 @@ sk_sp<PaintShader> Gradient::createShader(const SkMatrix& localMatrix) {
     if (m_p0 == m_p1 && m_r0 <= 0.0f) {
       shader = SkGradientShader::MakeRadial(
           m_p1.data(), m_r1, colors.data(), pos.data(),
-          static_cast<int>(countUsed), tile, flags, &adjustedLocalMatrix);
+          static_cast<int>(colors.size()), tile, flags, &adjustedLocalMatrix);
     } else {
       // The radii we give to Skia must be positive. If we're given a
       // negative radius, ask for zero instead.
@@ -222,18 +203,18 @@ sk_sp<PaintShader> Gradient::createShader(const SkMatrix& localMatrix) {
       SkScalar radius1 = m_r1 >= 0.0f ? WebCoreFloatToSkScalar(m_r1) : 0;
       shader = SkGradientShader::MakeTwoPointConical(
           m_p0.data(), radius0, m_p1.data(), radius1, colors.data(), pos.data(),
-          static_cast<int>(countUsed), tile, flags, &adjustedLocalMatrix);
+          static_cast<int>(colors.size()), tile, flags, &adjustedLocalMatrix);
     }
   } else {
     SkPoint pts[2] = {m_p0.data(), m_p1.data()};
     shader = SkGradientShader::MakeLinear(pts, colors.data(), pos.data(),
-                                          static_cast<int>(countUsed), tile,
+                                          static_cast<int>(colors.size()), tile,
                                           flags, &localMatrix);
   }
 
   if (!shader) {
     // use last color, since our "geometry" was degenerate (e.g. radius==0)
-    shader = SkShader::MakeColorShader(colors[countUsed - 1]);
+    shader = SkShader::MakeColorShader(colors.back());
   }
 
   return WrapSkShader(shader);
