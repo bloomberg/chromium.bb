@@ -30,10 +30,12 @@ DEFINE_TRACE({{v8_class}}) {
     {{return_default}};
   if (!m_scriptState->contextIsValid())
     {{return_default}};
+
   ScriptState::Scope scope(m_scriptState.get());
   {% if method.call_with_this_handle %}
   v8::Local<v8::Value> thisHandle = thisValue.v8Value();
   {% endif %}
+
   {% for argument in method.arguments %}
   v8::Local<v8::Value> {{argument.handle}} = {{argument.cpp_value_to_v8_value}};
   {% endfor %}
@@ -44,15 +46,27 @@ DEFINE_TRACE({{v8_class}}) {
   v8::Local<v8::Value> *argv = 0;
   {% endif %}
 
-  {% set this_handle_parameter = 'thisHandle, ' if method.call_with_this_handle else 'v8::Undefined(m_scriptState->isolate()), ' %}
+  v8::Isolate* isolate = m_scriptState->isolate();
+  {% set this_handle_parameter = 'thisHandle'
+         if method.call_with_this_handle else 'v8::Undefined(isolate)' %}
   {% if method.idl_type == 'boolean' %}
-  v8::TryCatch exceptionCatcher(m_scriptState->isolate());
+  v8::TryCatch exceptionCatcher(isolate);
   exceptionCatcher.SetVerbose(true);
-  V8ScriptRunner::callFunction(m_callback.newLocal(m_scriptState->isolate()), m_scriptState->getExecutionContext(), {{this_handle_parameter}}{{method.arguments | length}}, argv, m_scriptState->isolate());
+  V8ScriptRunner::callFunction(m_callback.newLocal(isolate),
+                               executionContext,
+                               {{this_handle_parameter}},
+                               {{method.arguments | length}},
+                               argv,
+                               isolate);
   return !exceptionCatcher.HasCaught();
   {% else %}{# void #}
-  V8ScriptRunner::callFunction(m_callback.newLocal(m_scriptState->isolate()), m_scriptState->getExecutionContext(), {{this_handle_parameter}}{{method.arguments | length}}, argv, m_scriptState->isolate());
-    {% endif %}
+  V8ScriptRunner::callFunction(m_callback.newLocal(isolate),
+                               m_scriptState->getExecutionContext(),
+                               {{this_handle_parameter}},
+                               {{method.arguments | length}},
+                               argv,
+                               isolate);
+  {% endif %}
 }
 
 {% endfor %}

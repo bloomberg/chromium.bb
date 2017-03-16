@@ -23,6 +23,7 @@ class {{v8_class}} final : public {{cpp_class}} {
 {% for method in methods %}
   {{method.cpp_type}} {{method.name}}({{method.argument_declarations | join(', ')}}) override;
 {% endfor %}
+
  private:
   {{exported}}{{v8_class}}(v8::Local<v8::Function>, ScriptState*);
 

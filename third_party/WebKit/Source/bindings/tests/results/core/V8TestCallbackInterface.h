@@ -38,6 +38,7 @@ class V8TestCallbackInterface final : public TestCallbackInterface {
   void voidMethodTestInterfaceEmptyStringArg(TestInterfaceEmpty* testInterfaceEmptyArg, const String& stringArg) override;
   void callbackWithThisValueVoidMethodStringArg(ScriptValue thisValue, const String& stringArg) override;
   void customVoidMethodTestInterfaceEmptyArg(TestInterfaceEmpty* testInterfaceEmptyArg) override;
+
  private:
   CORE_EXPORT V8TestCallbackInterface(v8::Local<v8::Function>, ScriptState*);
 
