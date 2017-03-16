@@ -186,7 +186,7 @@
       <if expr="is_macosx">
         <!-- The font used in Web UI (e.g. History). -->
         <message name="IDS_WEB_FONT_FAMILY" use_name_for_id="true">
-          'Helvetica Neue', 'Lucida Grande', sans-serif
+          system-ui, sans-serif
         </message>
 
         <!-- The relative font size in % used in Web UI (e.g. History).  -->

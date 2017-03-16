@@ -6,7 +6,10 @@
   <translation id="IDS_WEB_FONT_FAMILY">'Segoe UI',Arial,Meiryo,sans-serif</translation>
   <translation id="IDS_WEB_FONT_FAMILY_XP">Arial,Meiryo,'MS PGothic',sans-serif</translation>
 </if>
-<if expr="is_macosx or is_ios">
+<if expr="is_macosx">
+  <translation id="IDS_WEB_FONT_FAMILY">system-ui,Hiragino Kaku Gothic ProN,sans-serif</translation>
+</if>
+<if expr="is_ios">
   <translation id="IDS_WEB_FONT_FAMILY">Helvetica,Hiragino Kaku Gothic ProN,sans-serif</translation>
 </if>
 <if expr="desktop_linux and not chromeos">
