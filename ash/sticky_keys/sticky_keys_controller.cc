@@ -295,7 +295,7 @@ int StickyKeysHandler::GetModifierUpEvent(
   DCHECK(new_event);
   if (*new_event)
     return 1;
-  new_event->reset(modifier_up_event_.release());
+  *new_event = std::move(modifier_up_event_);
   return 0;
 }
 
