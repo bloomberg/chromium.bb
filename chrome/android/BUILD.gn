@@ -753,16 +753,27 @@ chrome_public_apk_tmpl_shared("chrome_modern_public_apk") {
   load_library_from_apk = chromium_linker_supported
 }
 
+android_library("monochrome_java") {
+  deps = [
+    "//android_webview/glue",
+    "//base:base_java",
+    "//chrome/android:chrome_java",
+    "//content/public/android:content_java",
+  ]
+  java_files =
+      [ "java/src/org/chromium/chrome/browser/MonochromeApplication.java" ]
+}
+
 monochrome_public_apk_tmpl("monochrome_public_apk") {
   android_manifest = monochrome_public_android_manifest
   android_manifest_dep = ":monochrome_public_android_manifest"
   apk_name = "MonochromePublic"
 
   deps = [
+    ":monochrome_java",
     "//base:base_java",
     "//chrome/android:app_hooks_java",
     "//chrome/android:chrome_java",
-    "//chrome/android/java/templates:public_monochrome_java",
   ]
 }
 

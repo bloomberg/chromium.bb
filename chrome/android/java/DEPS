@@ -17,3 +17,10 @@ include_rules = [
   "+content/public/android/java",
   "+services/service_manager/public/java",
 ]
+
+specific_include_rules = {
+  # Special-case where monochrome composes chrome+webview
+  "MonochromeApplication\.java": [
+    "+android_webview/glue/java/src/com/android/webview/chromium/MonochromeLibraryPreloader.java",
+  ]
+}
