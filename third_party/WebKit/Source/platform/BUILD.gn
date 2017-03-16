@@ -2036,6 +2036,111 @@ fuzzer_test("feature_policy_fuzzer") {
   seed_corpus = "//testing/libfuzzer/fuzzers/feature_policy_corpus"
 }
 
+# Fuzzer template for WTF::TextCodec.
+template("blink_text_codec_fuzzer") {
+  forward_variables_from(invoker, "*")
+  config(target_name + "_config") {
+    defines = [ "$target_name" ]
+  }
+  name = target_name
+  fuzzer_test("blink_text_codec_" + name + "_fuzzer") {
+    sources = [
+      "TextCodecFuzzer.cpp",
+    ]
+    deps = [
+      ":blink_fuzzer_test_support",
+      ":platform",
+    ]
+    additional_configs = [ ":" + name + "_config" ]
+    seed_corpus = "text_codec_fuzzer_seed_corpus"
+  }
+}
+
+blink_text_codec_fuzzer("BIG5") {
+}
+blink_text_codec_fuzzer("EUC_JP") {
+}
+blink_text_codec_fuzzer("EUC_KR") {
+}
+blink_text_codec_fuzzer("GBK") {
+}
+blink_text_codec_fuzzer("IBM866") {
+}
+blink_text_codec_fuzzer("ISO_2022_JP") {
+}
+blink_text_codec_fuzzer("ISO_8859_10") {
+}
+blink_text_codec_fuzzer("ISO_8859_13") {
+}
+blink_text_codec_fuzzer("ISO_8859_14") {
+}
+blink_text_codec_fuzzer("ISO_8859_15") {
+}
+blink_text_codec_fuzzer("ISO_8859_16") {
+}
+blink_text_codec_fuzzer("ISO_8859_2") {
+}
+blink_text_codec_fuzzer("ISO_8859_3") {
+}
+blink_text_codec_fuzzer("ISO_8859_4") {
+}
+blink_text_codec_fuzzer("ISO_8859_5") {
+}
+blink_text_codec_fuzzer("ISO_8859_6") {
+}
+blink_text_codec_fuzzer("ISO_8859_7") {
+}
+blink_text_codec_fuzzer("ISO_8859_8") {
+}
+blink_text_codec_fuzzer("ISO_8859_8_I") {
+}
+blink_text_codec_fuzzer("KOI8_R") {
+}
+blink_text_codec_fuzzer("KOI8_U") {
+}
+blink_text_codec_fuzzer("SHIFT_JIS") {
+}
+blink_text_codec_fuzzer("UTF_16BE") {
+}
+blink_text_codec_fuzzer("UTF_16LE") {
+}
+blink_text_codec_fuzzer("UTF_32") {
+}
+blink_text_codec_fuzzer("UTF_32BE") {
+}
+blink_text_codec_fuzzer("UTF_32LE") {
+}
+blink_text_codec_fuzzer("UTF_8") {
+}
+blink_text_codec_fuzzer("GB18030") {
+}
+blink_text_codec_fuzzer("MACINTOSH") {
+}
+blink_text_codec_fuzzer("WINDOWS_1250") {
+}
+blink_text_codec_fuzzer("WINDOWS_1251") {
+}
+blink_text_codec_fuzzer("WINDOWS_1252") {
+}
+blink_text_codec_fuzzer("WINDOWS_1253") {
+}
+blink_text_codec_fuzzer("WINDOWS_1254") {
+}
+blink_text_codec_fuzzer("WINDOWS_1255") {
+}
+blink_text_codec_fuzzer("WINDOWS_1256") {
+}
+blink_text_codec_fuzzer("WINDOWS_1257") {
+}
+blink_text_codec_fuzzer("WINDOWS_1258") {
+}
+blink_text_codec_fuzzer("WINDOWS_874") {
+}
+blink_text_codec_fuzzer("X_MAC_CYRILLIC") {
+}
+blink_text_codec_fuzzer("X_USER_DEFINED") {
+}
+
 # NOTE: These are legacy unit tests and tests that require a Platform
 # object. Do not add more unless the test requires a Platform object.
 # These tests are a part of the webkit_unit_tests binary.

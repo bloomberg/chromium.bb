@@ -30,6 +30,13 @@ class FuzzedDataProvider {
   // Returns a bool, or false when no data remains.
   bool ConsumeBool();
 
+  // Returns a value from |array|, consuming as many bytes as needed to do so.
+  // |array| must be a fixed-size array.
+  template <typename Type, size_t size>
+  Type PickValueInArray(Type (&array)[size]) {
+    return array[m_provider.ConsumeUint32InRange(0, size - 1)];
+  }
+
  private:
   base::FuzzedDataProvider m_provider;
 };
