@@ -167,8 +167,9 @@ MOJO_SYSTEM_EXPORT MojoResult MojoCancelWatch(MojoHandle watcher_handle,
 //       output buffers is written to |*num_ready_contexts| before returning.
 //
 //       If more than (input) |*num_ready_contexts| watch contexts were ready to
-//       notify, the subset presented in output buffers is arbitrary and
-//       implementation-defined.
+//       notify, the subset presented in output buffers is arbitrary, but the
+//       implementation makes a best effort to circulate the outputs across
+//       consecutive calls so that callers may reliably avoid handle starvation.
 MOJO_SYSTEM_EXPORT MojoResult
 MojoArmWatcher(MojoHandle watcher_handle,
                uint32_t* num_ready_contexts,

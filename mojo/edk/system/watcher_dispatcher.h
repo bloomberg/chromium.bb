@@ -55,6 +55,8 @@ class WatcherDispatcher : public Dispatcher {
  private:
   friend class Watch;
 
+  using WatchSet = std::set<const Watch*>;
+
   ~WatcherDispatcher() override;
 
   const MojoWatcherCallback callback_;
@@ -80,7 +82,15 @@ class WatcherDispatcher : public Dispatcher {
   // used for efficient arming behavior, as it allows for O(1) discovery of
   // whether or not arming can succeed and quick determination of who's
   // responsible if it can't.
-  std::set<Watch*> ready_watches_;
+  WatchSet ready_watches_;
+
+  // Tracks the last Watch whose state was returned by Arm(). This is used to
+  // ensure consistent round-robin behavior in the event that multiple Watches
+  // remain ready over the span of several Arm() attempts.
+  //
+  // NOTE: This pointer is only used to index |ready_watches_| and may point to
+  // an invalid object. It must therefore never be dereferenced.
+  const Watch* last_watch_to_block_arming_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(WatcherDispatcher);
 };

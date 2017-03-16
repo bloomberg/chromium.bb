@@ -4,6 +4,7 @@
 
 #include "mojo/edk/system/watcher_dispatcher.h"
 
+#include <algorithm>
 #include <limits>
 #include <map>
 
@@ -193,20 +194,32 @@ MojoResult WatcherDispatcher::Arm(
   }
 
   if (num_ready_contexts) {
-    uint32_t max_ready_contexts = *num_ready_contexts;
-    *num_ready_contexts = 0;
-    for (auto& entry : watched_handles_) {
-      if (max_ready_contexts == *num_ready_contexts)
-        break;
+    DCHECK_LE(ready_watches_.size(), std::numeric_limits<uint32_t>::max());
+    *num_ready_contexts = std::min(
+        *num_ready_contexts, static_cast<uint32_t>(ready_watches_.size()));
 
-      const Watch* watch = entry.second.get();
-      if (!watch->ready())
-        continue;
+    WatchSet::const_iterator next_ready_iter = ready_watches_.begin();
+    if (last_watch_to_block_arming_) {
+      // Find the next watch to notify in simple round-robin order on the
+      // |ready_watches_| map, wrapping around to the beginning if necessary.
+      next_ready_iter = ready_watches_.find(last_watch_to_block_arming_);
+      if (next_ready_iter != ready_watches_.end())
+        ++next_ready_iter;
+      if (next_ready_iter == ready_watches_.end())
+        next_ready_iter = ready_watches_.begin();
+    }
 
-      *(ready_contexts++) = watch->context();
-      *(ready_results++) = watch->last_known_result();
-      *(ready_signals_states++) = watch->last_known_signals_state();
-      ++(*num_ready_contexts);
+    for (size_t i = 0; i < *num_ready_contexts; ++i) {
+      const Watch* const watch = *next_ready_iter;
+      ready_contexts[i] = watch->context();
+      ready_results[i] = watch->last_known_result();
+      ready_signals_states[i] = watch->last_known_signals_state();
+
+      // Iterate and wrap around.
+      last_watch_to_block_arming_ = watch;
+      ++next_ready_iter;
+      if (next_ready_iter == ready_watches_.end())
+        next_ready_iter = ready_watches_.begin();
     }
   }
 

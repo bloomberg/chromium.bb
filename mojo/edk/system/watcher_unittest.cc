@@ -6,6 +6,7 @@
 
 #include <map>
 #include <memory>
+#include <set>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -1583,6 +1584,52 @@ TEST_F(WatcherTest, AlwaysCancel) {
   event.Wait();
 
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(b));
+}
+
+TEST_F(WatcherTest, ArmFailureCirculation) {
+  // Sanity check to ensure that all ready handles will eventually be returned
+  // over a finite number of calls to MojoArmWatcher().
+
+  constexpr size_t kNumTestPipes = 100;
+  constexpr size_t kNumTestHandles = kNumTestPipes * 2;
+  MojoHandle handles[kNumTestHandles];
+
+  // Create a bunch of pipes and make sure they're all readable.
+  for (size_t i = 0; i < kNumTestPipes; ++i) {
+    CreateMessagePipe(&handles[i], &handles[i + kNumTestPipes]);
+    WriteMessage(handles[i], "hey");
+    WriteMessage(handles[i + kNumTestPipes], "hay");
+    WaitForSignals(handles[i], MOJO_HANDLE_SIGNAL_READABLE);
+    WaitForSignals(handles[i + kNumTestPipes], MOJO_HANDLE_SIGNAL_READABLE);
+  }
+
+  // Create a watcher and watch all of them.
+  MojoHandle w;
+  EXPECT_EQ(MOJO_RESULT_OK, MojoCreateWatcher(&ExpectOnlyCancel, &w));
+  for (size_t i = 0; i < kNumTestHandles; ++i) {
+    EXPECT_EQ(MOJO_RESULT_OK,
+              MojoWatch(w, handles[i], MOJO_HANDLE_SIGNAL_READABLE, i));
+  }
+
+  // Keep trying to arm |w| until every watch gets an entry in |ready_contexts|.
+  // If MojoArmWatcher() is well-behaved, this should terminate eventually.
+  std::set<uintptr_t> ready_contexts;
+  while (ready_contexts.size() < kNumTestHandles) {
+    uint32_t num_ready_contexts = 1;
+    uintptr_t ready_context;
+    MojoResult ready_result;
+    MojoHandleSignalsState ready_state;
+    EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
+              MojoArmWatcher(w, &num_ready_contexts, &ready_context,
+                             &ready_result, &ready_state));
+    EXPECT_EQ(1u, num_ready_contexts);
+    EXPECT_EQ(MOJO_RESULT_OK, ready_result);
+    ready_contexts.insert(ready_context);
+  }
+
+  for (size_t i = 0; i < kNumTestHandles; ++i)
+    EXPECT_EQ(MOJO_RESULT_OK, MojoClose(handles[i]));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoClose(w));
 }
 
 }  // namespace
