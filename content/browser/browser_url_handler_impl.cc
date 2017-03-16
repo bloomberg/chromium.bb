@@ -35,11 +35,11 @@ static bool HandleViewSource(GURL* url, BrowserContext* browser_context) {
     };
 
     // Merge all the schemes for which view-source is allowed by default, with
-    // the WebUI schemes defined by the ContentBrowserClient.
+    // the view-source schemes defined by the ContentBrowserClient.
     std::vector<std::string> all_allowed_sub_schemes;
     for (size_t i = 0; i < arraysize(default_allowed_sub_schemes); ++i)
       all_allowed_sub_schemes.push_back(default_allowed_sub_schemes[i]);
-    GetContentClient()->browser()->GetAdditionalWebUISchemes(
+    GetContentClient()->browser()->GetAdditionalViewSourceSchemes(
         &all_allowed_sub_schemes);
 
     bool is_sub_scheme_allowed = false;
@@ -95,10 +95,11 @@ BrowserURLHandlerImpl::BrowserURLHandlerImpl() :
     fixup_handler_(nullptr) {
   AddHandlerPair(&DebugURLHandler, BrowserURLHandlerImpl::null_handler());
 
-  GetContentClient()->browser()->BrowserURLHandlerCreated(this);
-
-  // view-source:
+  // view-source: should take precedence over other rewriters, so it's
+  // important to add it before calling up to the content client.
   AddHandlerPair(&HandleViewSource, &ReverseViewSource);
+
+  GetContentClient()->browser()->BrowserURLHandlerCreated(this);
 }
 
 BrowserURLHandlerImpl::~BrowserURLHandlerImpl() {

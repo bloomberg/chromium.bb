@@ -63,6 +63,11 @@ bool ContentBrowserClient::ShouldLockToOrigin(BrowserContext* browser_context,
   return true;
 }
 
+void ContentBrowserClient::GetAdditionalViewSourceSchemes(
+    std::vector<std::string>* additional_schemes) {
+  GetAdditionalWebUISchemes(additional_schemes);
+}
+
 bool ContentBrowserClient::LogWebUIUrl(const GURL& web_ui_url) const {
   return false;
 }
