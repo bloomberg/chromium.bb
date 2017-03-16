@@ -1,7 +1,7 @@
 This test setting various attributes of documents to JavaScript null.
 
 TEST SUCCEEDED: Got the expected exception (9). [tested Document.xmlVersion]
-TEST SUCCEEDED: The value was null. [tested Document.documentURI]
+TEST SUCCEEDED: The value was the string 'about:blank'. [tested Document.documentURI]
 TEST SUCCEEDED: The value was the string 'UTF-8'. [tested Document.charset]
 TEST SUCCEEDED: The value was the string 'UTF-8'. [tested Document.characterSet]
 TEST SUCCEEDED: The value was the string 'UTF-8'. [tested Document.inputEncoding]

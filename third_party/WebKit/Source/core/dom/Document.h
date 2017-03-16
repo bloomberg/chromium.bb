@@ -1444,8 +1444,10 @@ class CORE_EXPORT Document : public ContainerNode,
   bool m_wellFormed;
 
   // Document URLs.
-  KURL m_url;  // Document.URL: The URL from which this document was retrieved.
-  KURL m_baseURL;  // Node.baseURI: The URL to use when resolving relative URLs.
+  KURL m_url = blankURL();  // Document.URL: The URL from which this document
+                            // was retrieved.
+  KURL m_baseURL =
+      blankURL();  // Node.baseURI: The URL to use when resolving relative URLs.
   KURL m_baseURLOverride;  // An alternative base URL that takes precedence over
                            // m_baseURL (but not m_baseElementURL).
   KURL m_baseElementURL;   // The URL set by the <base> element.
