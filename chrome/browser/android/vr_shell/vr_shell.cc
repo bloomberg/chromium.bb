@@ -19,7 +19,6 @@
 #include "base/values.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/android/vr_shell/android_ui_gesture_target.h"
-#include "chrome/browser/android/vr_shell/ui_interface.h"
 #include "chrome/browser/android/vr_shell/vr_compositor.h"
 #include "chrome/browser/android/vr_shell/vr_gl_thread.h"
 #include "chrome/browser/android/vr_shell/vr_input_manager.h"
@@ -407,6 +406,11 @@ void VrShell::GvrDelegateReady() {
       base::Passed(
           delegate_provider_->TakeSubmitFrameClient().PassInterface())));
   delegate_provider_->SetDelegate(this, gvr_api_);
+}
+
+void VrShell::AppButtonGesturePerformed(UiInterface::Direction direction) {
+  if (vr_shell_enabled_)
+    html_interface_->HandleAppButtonGesturePerformed(direction);
 }
 
 void VrShell::AppButtonPressed() {

@@ -75,6 +75,16 @@ html {
   width: 512px;
 }
 
+.gesture-indicator {
+  background-color: rgba(0, 0, 0, 0);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  height: 192px;
+  margin: auto auto;
+  width: 192px;
+}
+
 .round-button {
   background-color: #eee;
   background-position: center;
@@ -123,7 +133,9 @@ html {
 }
 
 #back-button,
-#forward-button {
+#forward-button,
+#back-indicator,
+#forward-indicator {
   background-image: url(../../../../ui/webui/resources/images/vr_back.svg);
 }
 
@@ -131,7 +143,8 @@ html {
   background-image: url(../../../../ui/webui/resources/images/vr_reload.svg);
 }
 
-#forward-button {
+#forward-button,
+#forward-indicator {
   transform: scaleX(-1);
 }
 

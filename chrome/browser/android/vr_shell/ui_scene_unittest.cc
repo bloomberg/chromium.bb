@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chrome/browser/android/vr_shell/animation.h"
 #include "chrome/browser/android/vr_shell/easing.h"
@@ -28,20 +29,21 @@ namespace vr_shell {
 namespace {
 
 void addElement(UiScene* scene, int id) {
-  std::unique_ptr<ContentRectangle> element(new ContentRectangle);
+  auto element = base::MakeUnique<ContentRectangle>();
   element->id = id;
-  scene->AddUiElement(element);
+  scene->AddUiElement(std::move(element));
 }
 
 void addAnimation(UiScene* scene,
                   int element_id,
                   int animation_id,
                   Animation::Property property) {
-  std::unique_ptr<Animation> animation(
-      new Animation(animation_id, property,
-                    std::unique_ptr<easing::Easing>(new easing::Linear()), {},
-                    {1, 1, 1, 1}, 0, 1));
-  scene->AddAnimation(element_id, animation);
+  std::unique_ptr<easing::Easing> easing = base::MakeUnique<easing::Linear>();
+  std::vector<float> from = {};
+  std::vector<float> to = {1, 1, 1, 1};
+  auto animation = base::MakeUnique<Animation>(
+      animation_id, property, std::move(easing), from, to, 0, 1);
+  scene->AddAnimation(element_id, std::move(animation));
 }
 
 }  // namespace
@@ -102,23 +104,23 @@ TEST(UiScene, ParentTransformAppliesToChild) {
 
   // Add a parent element, with distinct transformations.
   // Size of the parent should be ignored by the child.
-  std::unique_ptr<ContentRectangle> element(new ContentRectangle);
+  auto element = base::MakeUnique<ContentRectangle>();
   element->id = 0;
   element->size = {1000, 1000, 1};
   element->scale = {3, 3, 1};
   element->rotation = {0, 0, 1, M_PI / 2};
   element->translation = {6, 1, 0};
-  scene.AddUiElement(element);
+  scene.AddUiElement(std::move(element));
 
   // Add a child to the parent, with different transformations.
-  element.reset(new ContentRectangle);
+  element = base::MakeUnique<ContentRectangle>();
   element->id = 1;
   element->parent_id = 0;
   element->size = {1, 1, 1};
   element->scale = {2, 2, 1};
   element->rotation = {0, 0, 1, M_PI / 2};
   element->translation = {3, 0, 0};
-  scene.AddUiElement(element);
+  scene.AddUiElement(std::move(element));
   const ContentRectangle* child = scene.GetUiElementById(1);
 
   const gvr::Vec3f origin({0, 0, 0});
@@ -134,22 +136,40 @@ TEST(UiScene, ParentTransformAppliesToChild) {
 
 TEST(UiScene, Opacity) {
   UiScene scene;
-  std::unique_ptr<ContentRectangle> element;
 
-  element.reset(new ContentRectangle);
+  auto element = base::MakeUnique<ContentRectangle>();
   element->id = 0;
   element->opacity = 0.5;
-  scene.AddUiElement(element);
+  scene.AddUiElement(std::move(element));
 
-  element.reset(new ContentRectangle);
+  element = base::MakeUnique<ContentRectangle>();
   element->id = 1;
   element->parent_id = 0;
   element->opacity = 0.5;
-  scene.AddUiElement(element);
+  scene.AddUiElement(std::move(element));
 
   scene.UpdateTransforms(0);
   EXPECT_EQ(scene.GetUiElementById(0)->computed_opacity, 0.5f);
   EXPECT_EQ(scene.GetUiElementById(1)->computed_opacity, 0.25f);
+}
+
+TEST(UiScene, LockToFov) {
+  UiScene scene;
+
+  auto element = base::MakeUnique<ContentRectangle>();
+  element->id = 0;
+  element->lock_to_fov = true;
+  scene.AddUiElement(std::move(element));
+
+  element = base::MakeUnique<ContentRectangle>();
+  element->id = 1;
+  element->parent_id = 0;
+  element->lock_to_fov = false;
+  scene.AddUiElement(std::move(element));
+
+  scene.UpdateTransforms(0);
+  EXPECT_EQ(scene.GetUiElementById(0)->computed_lock_to_fov, true);
+  EXPECT_EQ(scene.GetUiElementById(1)->computed_lock_to_fov, true);
 }
 
 typedef struct {
@@ -165,19 +185,19 @@ TEST_P(AnchoringTest, VerifyCorrectPosition) {
   UiScene scene;
 
   // Create a parent element with non-unity size and scale.
-  std::unique_ptr<ContentRectangle> element(new ContentRectangle);
+  auto element = base::MakeUnique<ContentRectangle>();
   element->id = 0;
   element->size = {2, 2, 1};
   element->scale = {2, 2, 1};
-  scene.AddUiElement(element);
+  scene.AddUiElement(std::move(element));
 
   // Add a child to the parent, with anchoring.
-  element.reset(new ContentRectangle);
+  element = base::MakeUnique<ContentRectangle>();
   element->id = 1;
   element->parent_id = 0;
   element->x_anchoring = GetParam().x_anchoring;
   element->y_anchoring = GetParam().y_anchoring;
-  scene.AddUiElement(element);
+  scene.AddUiElement(std::move(element));
 
   scene.UpdateTransforms(0);
   const ContentRectangle* child = scene.GetUiElementById(1);
@@ -209,7 +229,6 @@ TEST(UiScene, AddUiElementFromDictionary) {
   dict.SetInteger("parentId", 11);
   dict.SetBoolean("visible", false);
   dict.SetBoolean("hitTestable", false);
-  dict.SetBoolean("lockToFov", true);
   dict.SetInteger("fillType", Fill::SPRITE);
   dict.SetInteger("xAnchoring", XAnchoring::XLEFT);
   dict.SetInteger("yAnchoring", YAnchoring::YTOP);
@@ -244,7 +263,6 @@ TEST(UiScene, AddUiElementFromDictionary) {
   EXPECT_EQ(element->parent_id, 11);
   EXPECT_EQ(element->visible, false);
   EXPECT_EQ(element->hit_testable, false);
-  EXPECT_EQ(element->lock_to_fov, true);
   EXPECT_EQ(element->fill, Fill::SPRITE);
   EXPECT_EQ(element->x_anchoring, XAnchoring::XLEFT);
   EXPECT_EQ(element->y_anchoring, YAnchoring::YTOP);
@@ -271,6 +289,17 @@ TEST(UiScene, AddUiElementFromDictionary) {
   EXPECT_FLOAT_EQ(element->translation.x, 500);
   EXPECT_FLOAT_EQ(element->translation.y, 501);
   EXPECT_FLOAT_EQ(element->translation.z, 502);
+
+  dict.Clear();
+  dict.SetInteger("id", 12);
+  dict.SetBoolean("lockToFov", true);
+
+  scene.AddUiElementFromDict(dict);
+  element = scene.GetUiElementById(12);
+  EXPECT_NE(element, nullptr);
+
+  EXPECT_EQ(element->id, 12);
+  EXPECT_EQ(element->lock_to_fov, true);
 }
 
 TEST(UiScene, AddUiElementFromDictionary_Fill) {
@@ -368,7 +397,7 @@ TEST(UiScene, AddAnimationFromDictionary) {
   dict.SetDouble("durationMillis", 54321);
   dict.SetInteger("property", Animation::Property::ROTATION);
 
-  std::unique_ptr<base::DictionaryValue> easing(new base::DictionaryValue);
+  auto easing = base::MakeUnique<base::DictionaryValue>();
   easing->SetInteger("type", vr_shell::easing::EasingType::CUBICBEZIER);
   easing->SetInteger("p1x", 101);
   easing->SetInteger("p1y", 101);
@@ -376,14 +405,14 @@ TEST(UiScene, AddAnimationFromDictionary) {
   easing->SetInteger("p2y", 101);
   dict.Set("easing", std::move(easing));
 
-  std::unique_ptr<base::DictionaryValue> to(new base::DictionaryValue);
+  auto to = base::MakeUnique<base::DictionaryValue>();
   to->SetInteger("x", 200);
   to->SetInteger("y", 201);
   to->SetInteger("z", 202);
   to->SetInteger("a", 203);
   dict.Set("to", std::move(to));
 
-  std::unique_ptr<base::DictionaryValue> from(new base::DictionaryValue);
+  auto from = base::MakeUnique<base::DictionaryValue>();
   from->SetInteger("x", 300);
   from->SetInteger("y", 301);
   from->SetInteger("z", 302);

@@ -76,6 +76,11 @@ gvr::Vec3f GetRayPoint(const gvr::Vec3f& rayOrigin,
                        const gvr::Vec3f& rayVector,
                        float scale);
 
+float Distance(const gvr::Vec3f& vec1, const gvr::Vec3f& vec2);
+
+// Angle between the vectors' projections to the XZ plane.
+bool XZAngle(const gvr::Vec3f& vec1, const gvr::Vec3f& vec2, float* angle);
+
 }  // namespace vr_shell
 
 #endif  // CHROME_BROWSER_ANDROID_VR_SHELL_VR_MATH_H_

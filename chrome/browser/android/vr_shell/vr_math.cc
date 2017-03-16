@@ -231,4 +231,18 @@ gvr::Vec3f GetRayPoint(const gvr::Vec3f& rayOrigin,
   return v;
 }
 
+float Distance(const gvr::Vec3f& vec1, const gvr::Vec3f& vec2) {
+  return VectorLength(VectorSubtract(vec1, vec2));
+}
+
+bool XZAngle(const gvr::Vec3f& vec1, const gvr::Vec3f& vec2, float* angle) {
+  float len1 = VectorLength(vec1);
+  float len2 = VectorLength(vec2);
+  if (len1 == 0 || len2 == 0)
+    return false;
+  float cross_p = vec1.x * vec2.z - vec1.z * vec2.x;
+  *angle = asin(cross_p / (len1 * len2));
+  return true;
+}
+
 }  // namespace vr_shell

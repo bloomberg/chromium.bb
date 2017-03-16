@@ -258,6 +258,102 @@ var vrShellUi = (function() {
     }
   };
 
+  class GestureHandlers {
+    constructor() {
+      /** @const */ var BACKING_DISTANCE = 0.8;
+      /** @const */ var INDICATOR_DISTANCE = 0.15;
+      this.enabled = false;
+
+      let backing = new api.UiElement(0, 0, 0, 0);
+      backing.setVisible(false);
+      backing.setTranslation(0, 0, -BACKING_DISTANCE);
+      backing.setLockToFieldOfView(true);
+      this.backingElementId = ui.addElement(backing);
+
+      this.indicators = {};
+      this.indicators[api.Direction.LEFT] =
+          new GestureHandler(
+              '#back-indicator',
+              function() {
+                api.doAction(api.Action.HISTORY_BACK, {});
+              },
+              this.backingElementId,
+              [-INDICATOR_DISTANCE, 0]);
+      this.indicators[api.Direction.RIGHT] =
+          new GestureHandler(
+              '#forward-indicator',
+              function() {
+                api.doAction(api.Action.HISTORY_FORWARD, {});
+              },
+              this.backingElementId,
+              [INDICATOR_DISTANCE, 0]);
+    }
+
+    setEnabled(enabledIndicators) {
+      for (let key in enabledIndicators) {
+        if (key in this.indicators) {
+          this.indicators[key].setEnabled(enabledIndicators[key]);
+        }
+      }
+    }
+
+    run(direction) {
+      if (direction in this.indicators) {
+        this.indicators[direction].run();
+      }
+    }
+  }
+
+  class GestureHandler {
+    constructor(selector, callback, parentId, position) {
+      /** @const */ this.ANIM_DURATION = 250;
+      this.enabled = false;
+
+      this.element = new DomUiElement(selector);
+      this.callback = callback;
+
+      let update = new api.UiElementUpdate();
+      update.setParentId(parentId);
+      update.setVisible(true);
+      update.setOpacity(0);
+      update.setScale(0, 0, 0);
+      update.setTranslation(position[0], position[1], 0);
+      ui.updateElement(this.element.id, update);
+    }
+
+    setTranslation(x, y, z) {
+      let update = new api.UiElementUpdate();
+      update.setTranslation(x, y, z);
+      ui.updateElement(this.element.id, update);
+    }
+
+    setEnabled(enabled) {
+      this.enabled = enabled;
+    }
+
+    run() {
+      if (!this.enabled) {
+        return;
+      }
+      this.callback();
+
+      let update = new api.UiElementUpdate();
+      update.setScale(0.5, 0.5, 0.5);
+      update.setOpacity(0.5);
+      ui.updateElement(this.element.id, update);
+      let anim = new api.Animation(this.element.id, this.ANIM_DURATION);
+      anim.setOpacity(1);
+      ui.addAnimation(anim);
+      anim = new api.Animation(this.element.id, this.ANIM_DURATION);
+      anim.setOpacity(0);
+      anim.setDelayedStart(this.ANIM_DURATION);
+      ui.addAnimation(anim);
+      anim = new api.Animation(this.element.id, this.ANIM_DURATION * 2);
+      anim.setScale(1, 1, 1);
+      ui.addAnimation(anim);
+    }
+  }
+
   class Controls {
     constructor(contentQuadId) {
       this.enabled = false;
@@ -990,6 +1086,7 @@ var vrShellUi = (function() {
       this.contentQuad = new ContentQuad();
       let contentId = this.contentQuad.getElementId();
 
+      this.gestureHandlers = new GestureHandlers();
       this.controls = new Controls(contentId);
       this.secureOriginWarnings = new SecureOriginWarnings();
       this.urlIndicator = new UrlIndicator();
@@ -1009,6 +1106,10 @@ var vrShellUi = (function() {
       this.updateState();
     }
 
+    handleAppButtonGesturePerformed(direction) {
+      this.gestureHandlers.run(direction);
+    }
+
     handleAppButtonClicked() {
       this.menuMode = !this.menuMode;
       this.updateState();
@@ -1018,9 +1119,15 @@ var vrShellUi = (function() {
       this.canGoBack = canGoBack;
       this.canGoForward = canGoForward;
 
+      canGoBack = canGoBack || this.fullscreen;
+
       /** No need to call updateState to adjust button properties. */
-      this.controls.setBackButtonEnabled(this.canGoBack || this.fullscreen);
-      this.controls.setForwardButtonEnabled(this.canGoForward);
+      this.controls.setBackButtonEnabled(canGoBack);
+      this.controls.setForwardButtonEnabled(canGoForward);
+      let enabledIndicators = {}
+      enabledIndicators[api.Direction.LEFT] = canGoBack;
+      enabledIndicators[api.Direction.RIGHT] = canGoForward;
+      this.gestureHandlers.setEnabled(enabledIndicators);
     }
 
     exitMenuMode() {
@@ -1045,7 +1152,9 @@ var vrShellUi = (function() {
       // TODO(crbug/643815): Set aspect ratio on content quad when available.
       this.controls.setEnabled(menuMode);
       this.controls.setBackButtonEnabled(this.canGoBack || this.fullscreen);
-      this.controls.setForwardButtonEnabled(this.canGoForward);
+      let enabledIndicators = {}
+      enabledIndicators[api.Direction.LEFT] = this.canGoBack || this.fullscreen;
+      this.gestureHandlers.setEnabled(enabledIndicators);
       this.omnibox.setEnabled(menuMode);
       this.urlIndicator.setEnabled(mode == api.Mode.STANDARD && !menuMode);
       this.urlIndicator.setVisibilityTimeout(
@@ -1093,6 +1202,11 @@ var vrShellUi = (function() {
     /** @override */
     onSetFullscreen(fullscreen) {
       this.manager.setFullscreen(fullscreen);
+    }
+
+    /** @override */
+    onAppButtonGesturePerformed(direction) {
+      this.manager.handleAppButtonGesturePerformed(direction);
     }
 
     /** @override */

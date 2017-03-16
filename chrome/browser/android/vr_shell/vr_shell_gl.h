@@ -229,8 +229,11 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 
   uint8_t frame_index_ = 0;
-  // larger than frame_index_ so it can be initialized out-of-band.
+  // Larger than frame_index_ so it can be initialized out-of-band.
   uint16_t last_frame_index_ = -1;
+
+  // Attributes for gesture detection while holding app button.
+  gvr::Vec3f controller_start_direction_;
 
   base::WeakPtrFactory<VrShellGl> weak_ptr_factory_;
 

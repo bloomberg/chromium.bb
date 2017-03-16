@@ -36,7 +36,7 @@ class UiScene {
   UiScene();
   virtual ~UiScene();
 
-  void AddUiElement(std::unique_ptr<ContentRectangle>& element);
+  void AddUiElement(std::unique_ptr<ContentRectangle> element);
 
   // Add a UI element according to a dictionary passed from the UI HTML.
   void AddUiElementFromDict(const base::DictionaryValue& dict);
@@ -47,7 +47,7 @@ class UiScene {
   void RemoveUiElement(int element_id);
 
   // Add an animation to the scene, on element |element_id|.
-  void AddAnimation(int element_id, std::unique_ptr<Animation>& animation);
+  void AddAnimation(int element_id, std::unique_ptr<Animation> animation);
 
   // Add an animation according to a dictionary passed from the UI HTML.
   void AddAnimationFromDict(const base::DictionaryValue& dict,
@@ -77,7 +77,8 @@ class UiScene {
  private:
   void ApplyRecursiveTransforms(const ContentRectangle& element,
                                 Transform* transform,
-                                float* opacity);
+                                float* opacity,
+                                bool* lock_to_fov);
   void ApplyDictToElement(const base::DictionaryValue& dict,
                           ContentRectangle* element);
 

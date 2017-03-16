@@ -87,6 +87,18 @@ api.Mode = {
 };
 
 /**
+ * Enumeration of gesture directions
+ * @enum {number}
+ * @const
+ */
+api.Direction = {
+  'LEFT': 1,
+  'RIGHT': 2,
+  'UP': 3,
+  'DOWN': 4
+};
+
+/**
  * Triggers an Action.
  * @param {api.Action} action
  * @param {Object} parameters
@@ -470,6 +482,14 @@ api.Animation = class {
   }
 
   /**
+   * Set the delay for starting the animation.
+   * @param {number} millis
+   */
+  setDelayedStart(millis) {
+    this.startInMillis = millis;
+  }
+
+  /**
    * Set the animation's final element size.
    * @param {number} width
    * @param {number} height
@@ -555,6 +575,11 @@ api.NativeCommandHandler = class {
    * @param {boolean} fullscreen
    */
   onSetFullscreen(fullscreen) {}
+
+  /**
+   * A controller app button gesture has happened.
+   */
+  onAppButtonGesturePerformed(direction) {}
 
   /**
    * A controller app button click has happened.
@@ -645,6 +670,10 @@ api.NativeCommandHandler = class {
     }
     if ('fullscreen' in dict) {
       this.onSetFullscreen(dict['fullscreen'])
+    }
+    if ('appButtonGesturePerformed' in dict) {
+      let direction = dict['appButtonGesturePerformed'];
+      this.onAppButtonGesturePerformed(direction);
     }
     if ('appButtonClicked' in dict) {
       this.onAppButtonClicked();

@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
+#include "chrome/browser/android/vr_shell/ui_interface.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "device/vr/android/gvr/gvr_delegate.h"
 #include "device/vr/vr_service.mojom.h"
@@ -141,6 +142,7 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
   void UiSurfaceChanged(jobject surface);
   void ContentSurfaceChanged(jobject surface);
   void GvrDelegateReady();
+  void AppButtonGesturePerformed(UiInterface::Direction direction);
   void AppButtonPressed();
 
   void ContentPhysicalBoundsChanged(

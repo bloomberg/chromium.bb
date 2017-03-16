@@ -110,6 +110,11 @@ void UiInterface::SetURL(const GURL& url) {
   FlushUpdates();
 }
 
+void UiInterface::HandleAppButtonGesturePerformed(Direction direction) {
+  updates_.SetInteger("appButtonGesturePerformed", direction);
+  FlushUpdates();
+}
+
 void UiInterface::HandleAppButtonClicked() {
   updates_.SetBoolean("appButtonClicked", true);
   FlushUpdates();

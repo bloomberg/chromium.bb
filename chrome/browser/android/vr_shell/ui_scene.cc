@@ -174,7 +174,7 @@ void ApplyAnchoring(const ContentRectangle& parent,
 
 }  // namespace
 
-void UiScene::AddUiElement(std::unique_ptr<ContentRectangle>& element) {
+void UiScene::AddUiElement(std::unique_ptr<ContentRectangle> element) {
   CHECK_GE(element->id, 0);
   CHECK_EQ(GetUiElementById(element->id), nullptr);
   if (element->parent_id >= 0) {
@@ -219,7 +219,7 @@ void UiScene::RemoveUiElement(int element_id) {
 }
 
 void UiScene::AddAnimation(int element_id,
-                           std::unique_ptr<Animation>& animation) {
+                           std::unique_ptr<Animation> animation) {
   ContentRectangle* element = GetUiElementById(element_id);
   CHECK_NE(element, nullptr);
   for (auto& existing_animation : element->animations) {
@@ -340,8 +340,10 @@ void UiScene::UpdateTransforms(int64_t time_in_micro) {
     transform.MakeIdentity();
     transform.Scale(element->size.x, element->size.y, element->size.z);
     element->computed_opacity = 1.0f;
+    element->computed_lock_to_fov = false;
     ApplyRecursiveTransforms(*element.get(), &transform,
-                             &element->computed_opacity);
+                             &element->computed_opacity,
+                             &element->computed_lock_to_fov);
     element->SetTransform(transform);
   }
 }
@@ -374,20 +376,23 @@ UiScene::~UiScene() = default;
 
 void UiScene::ApplyRecursiveTransforms(const ContentRectangle& element,
                                        Transform* transform,
-                                       float* opacity) {
+                                       float* opacity,
+                                       bool* lock_to_fov) {
   transform->Scale(element.scale.x, element.scale.y, element.scale.z);
   transform->Rotate(element.rotation.x, element.rotation.y, element.rotation.z,
                     element.rotation.angle);
   transform->Translate(element.translation.x, element.translation.y,
                        element.translation.z);
   *opacity *= element.opacity;
+  // Head-locked state inherited from a parent element.
+  *lock_to_fov = element.lock_to_fov;
 
   if (element.parent_id >= 0) {
     const ContentRectangle* parent = GetUiElementById(element.parent_id);
     CHECK(parent != nullptr);
     ApplyAnchoring(*parent, element.x_anchoring, element.y_anchoring,
                    transform);
-    ApplyRecursiveTransforms(*parent, transform, opacity);
+    ApplyRecursiveTransforms(*parent, transform, opacity, lock_to_fov);
   }
 }
 
@@ -406,6 +411,8 @@ void UiScene::ApplyDictToElement(const base::DictionaryValue& dict,
   dict.GetBoolean("lockToFov", &element->lock_to_fov);
   ParseInt(dict, "drawPhase", &element->draw_phase);
   ParseFloat(dict, "opacity", &element->opacity);
+
+  DCHECK(!(element->lock_to_fov && element->parent_id != -1));
 
   ParseFloat(dict, "sizeX", &element->size.x);
   ParseFloat(dict, "sizeY", &element->size.y);

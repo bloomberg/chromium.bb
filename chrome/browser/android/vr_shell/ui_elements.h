@@ -133,6 +133,9 @@ struct ContentRectangle : public WorldRectangle {
   // The computed opacity, incorporating opacity of parent objects.
   float computed_opacity;
 
+  // The computed lock to the FoV, incorporating lock of parent objects.
+  bool computed_lock_to_fov;
+
   // If anchoring is specified, the translation will be relative to the
   // specified edge(s) of the parent, rather than the center.  A parent object
   // must be specified when using anchoring.

@@ -14,6 +14,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/android/vr_shell/mailbox_to_surface_bridge.h"
 #include "chrome/browser/android/vr_shell/ui_elements.h"
+#include "chrome/browser/android/vr_shell/ui_interface.h"
 #include "chrome/browser/android/vr_shell/ui_scene.h"
 #include "chrome/browser/android/vr_shell/vr_controller.h"
 #include "chrome/browser/android/vr_shell/vr_gl_util.h"
@@ -81,13 +82,9 @@ static constexpr int kViewportListHeadlockedOffset = 2;
 // 2-3 frames.
 static constexpr unsigned kPoseRingBufferSize = 8;
 
-float Distance(const gvr::Vec3f& vec1, const gvr::Vec3f& vec2) {
-  float xdiff = (vec1.x - vec2.x);
-  float ydiff = (vec1.y - vec2.y);
-  float zdiff = (vec1.z - vec2.z);
-  float scale = xdiff * xdiff + ydiff * ydiff + zdiff * zdiff;
-  return std::sqrt(scale);
-}
+// Criteria for considering holding the app button in combination with
+// controller movement as a gesture.
+static constexpr float kMinAppButtonGestureAngleRad = 0.25;
 
 // Generate a quaternion representing the rotation from the negative Z axis
 // (0, 0, -1) to a specified vector. This is an optimized version of a more
@@ -478,14 +475,6 @@ void VrShellGl::InitializeRenderer() {
 void VrShellGl::UpdateController(const gvr::Vec3f& forward_vector) {
   controller_->UpdateState();
 
-  // Note that button up/down state is transient, so ButtonUpHappened only
-  // returns true for a single frame (and we're guaranteed not to miss it).
-  if (controller_->ButtonUpHappened(
-          gvr::ControllerButton::GVR_CONTROLLER_BUTTON_APP)) {
-    main_thread_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&VrShell::AppButtonPressed, weak_vr_shell_));
-  }
-
   if (web_vr_mode_) {
     // Process screen touch events for Cardboard button compatibility.
     // Also send tap events for controller "touchpad click" events.
@@ -517,8 +506,7 @@ void VrShellGl::UpdateController(const gvr::Vec3f& forward_vector) {
   }
 
   gvr::Mat4f mat = QuatToMatrix(controller_quat_);
-  gvr::Vec3f forward = MatrixVectorMul(mat, ergo_neutral_pose);
-  gvr::Vec3f origin = kHandPosition;
+  gvr::Vec3f controller_direction = MatrixVectorMul(mat, ergo_neutral_pose);
 
   // If we place the reticle based on elements intersecting the controller beam,
   // we can end up with the reticle hiding behind elements, or jumping laterally
@@ -535,9 +523,39 @@ void VrShellGl::UpdateController(const gvr::Vec3f& forward_vector) {
   // that the sphere is centered at the controller, rather than the eye, for
   // simplicity.
   float distance = scene_->GetBackgroundDistance();
-  target_point_ = GetRayPoint(origin, forward, distance);
+  target_point_ = GetRayPoint(kHandPosition, controller_direction, distance);
   gvr::Vec3f eye_to_target = target_point_;
   NormalizeVector(eye_to_target);
+
+  // Note that button up/down state is transient, so ButtonDownHappened only
+  // returns true for a single frame (and we're guaranteed not to miss it).
+  if (controller_->ButtonDownHappened(
+          gvr::ControllerButton::GVR_CONTROLLER_BUTTON_APP)) {
+    controller_start_direction_ = controller_direction;
+  }
+  if (controller_->ButtonUpHappened(
+          gvr::ControllerButton::GVR_CONTROLLER_BUTTON_APP)) {
+    // A gesture is a movement of the controller while holding the App button.
+    // If the angle of the movement is within a threshold, the action is
+    // considered a regular click
+    // TODO(asimjour1): We need to refactor the gesture recognition outside of
+    // VrShellGl.
+    UiInterface::Direction direction = UiInterface::NONE;
+    float gesture_xz_angle;
+    bool valid_angle = XZAngle(controller_start_direction_,
+                               controller_direction, &gesture_xz_angle);
+    DCHECK(valid_angle);
+    if (fabs(gesture_xz_angle) > kMinAppButtonGestureAngleRad) {
+      direction = gesture_xz_angle < 0 ? UiInterface::LEFT : UiInterface::RIGHT;
+      main_thread_task_runner_->PostTask(
+          FROM_HERE, base::Bind(&VrShell::AppButtonGesturePerformed,
+                                weak_vr_shell_, direction));
+    }
+    if (direction == UiInterface::NONE) {
+      main_thread_task_runner_->PostTask(
+          FROM_HERE, base::Bind(&VrShell::AppButtonPressed, weak_vr_shell_));
+    }
+  }
 
   // Determine which UI element (if any) intersects the line between the eyes
   // and the controller target position.
@@ -826,7 +844,7 @@ void VrShellGl::DrawVrShellAndUnbind(const gvr::Mat4f& head_pose,
   for (const auto& rect : scene_->GetUiElements()) {
     if (!rect->IsVisible())
       continue;
-    if (rect->lock_to_fov) {
+    if (rect->computed_lock_to_fov) {
       head_locked_elements.push_back(rect.get());
     } else {
       world_elements.push_back(rect.get());
