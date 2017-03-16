@@ -136,6 +136,8 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
   // "mojo/public/c/system/functions.h":
   MojoTimeTicks GetTimeTicksNow();
   MojoResult Close(MojoHandle handle);
+  MojoResult QueryHandleSignalsState(MojoHandle handle,
+                                     MojoHandleSignalsState* signals_state);
   MojoResult Wait(MojoHandle handle,
                   MojoHandleSignals signals,
                   MojoDeadline deadline,

@@ -22,6 +22,9 @@ struct MojoSystemThunks {
   size_t size;  // Should be set to sizeof(MojoSystemThunks).
   MojoTimeTicks (*GetTimeTicksNow)();
   MojoResult (*Close)(MojoHandle handle);
+  MojoResult (*QueryHandleSignalsState)(
+      MojoHandle handle,
+      struct MojoHandleSignalsState* signals_state);
   MojoResult (*Wait)(MojoHandle handle,
                      MojoHandleSignals signals,
                      MojoDeadline deadline,

@@ -13,12 +13,12 @@
 #include "base/macros.h"
 #include "mojo/edk/system/system_impl_export.h"
 #include "mojo/public/c/system/types.h"
+#include "mojo/public/cpp/system/handle_signals_state.h"
 
 namespace mojo {
 namespace edk {
 
 class Awakable;
-struct HandleSignalsState;
 
 // |AwakableList| tracks all the |Waiter|s that are waiting on a given
 // handle/|Dispatcher|. There should be a |AwakableList| for each handle that

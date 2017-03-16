@@ -100,8 +100,8 @@ TEST_F(MessagePipeTest, Basic) {
   ASSERT_EQ(MOJO_RESULT_OK, WriteMessage(pipe1_, buffer, sizeof(buffer[0])));
 
   MojoHandleSignalsState state;
-  ASSERT_EQ(MOJO_RESULT_OK, MojoWait(pipe0_, MOJO_HANDLE_SIGNAL_READABLE,
-                                     MOJO_DEADLINE_INDEFINITE, &state));
+  ASSERT_EQ(MOJO_RESULT_OK,
+            WaitForSignals(pipe0_, MOJO_HANDLE_SIGNAL_READABLE, &state));
 
   // Read from port 0.
   buffer[0] = 123;
@@ -124,8 +124,8 @@ TEST_F(MessagePipeTest, Basic) {
   buffer[1] = 0;
   ASSERT_EQ(MOJO_RESULT_OK, WriteMessage(pipe0_, buffer, sizeof(buffer[0])));
 
-  ASSERT_EQ(MOJO_RESULT_OK, MojoWait(pipe1_, MOJO_HANDLE_SIGNAL_READABLE,
-                                     MOJO_DEADLINE_INDEFINITE, &state));
+  ASSERT_EQ(MOJO_RESULT_OK,
+            WaitForSignals(pipe1_, MOJO_HANDLE_SIGNAL_READABLE, &state));
 
   // Read from port 1 with buffer size 0 (should get the size of next message).
   // Also test that giving a null buffer is okay when the buffer size is 0.
@@ -154,8 +154,8 @@ TEST_F(MessagePipeTest, Basic) {
   ASSERT_EQ(123456789, buffer[0]);
   ASSERT_EQ(456, buffer[1]);
 
-  ASSERT_EQ(MOJO_RESULT_OK, MojoWait(pipe1_, MOJO_HANDLE_SIGNAL_READABLE,
-                                     MOJO_DEADLINE_INDEFINITE, &state));
+  ASSERT_EQ(MOJO_RESULT_OK,
+            WaitForSignals(pipe1_, MOJO_HANDLE_SIGNAL_READABLE, &state));
 
   // Read again from port 1.
   buffer[0] = 123;
@@ -179,8 +179,8 @@ TEST_F(MessagePipeTest, Basic) {
   MojoClose(pipe0_);
   pipe0_ = MOJO_HANDLE_INVALID;
 
-  ASSERT_EQ(MOJO_RESULT_OK, MojoWait(pipe1_, MOJO_HANDLE_SIGNAL_PEER_CLOSED,
-                                     MOJO_DEADLINE_INDEFINITE, &state));
+  ASSERT_EQ(MOJO_RESULT_OK,
+            WaitForSignals(pipe1_, MOJO_HANDLE_SIGNAL_PEER_CLOSED, &state));
 
   // Try to write from port 1 (to port 0).
   buffer[0] = 456789012;
@@ -215,8 +215,8 @@ TEST_F(MessagePipeTest, CloseWithQueuedIncomingMessages) {
   }
 
   MojoHandleSignalsState state;
-  ASSERT_EQ(MOJO_RESULT_OK, MojoWait(pipe0_, MOJO_HANDLE_SIGNAL_READABLE,
-                                     MOJO_DEADLINE_INDEFINITE, &state));
+  ASSERT_EQ(MOJO_RESULT_OK,
+            WaitForSignals(pipe0_, MOJO_HANDLE_SIGNAL_READABLE, &state));
 
   // Port 0 shouldn't be empty.
   buffer_size = 0;
@@ -241,8 +241,8 @@ TEST_F(MessagePipeTest, DiscardMode) {
   ASSERT_EQ(MOJO_RESULT_OK, WriteMessage(pipe1_, buffer, sizeof(buffer[0])));
 
   MojoHandleSignalsState state;
-  ASSERT_EQ(MOJO_RESULT_OK, MojoWait(pipe0_, MOJO_HANDLE_SIGNAL_READABLE,
-                                     MOJO_DEADLINE_INDEFINITE, &state));
+  ASSERT_EQ(MOJO_RESULT_OK,
+            WaitForSignals(pipe0_, MOJO_HANDLE_SIGNAL_READABLE, &state));
 
   // Read/discard from port 0 (no buffer); get size.
   buffer_size = 0;
@@ -261,8 +261,8 @@ TEST_F(MessagePipeTest, DiscardMode) {
   ASSERT_EQ(MOJO_RESULT_OK,
             WriteMessage(pipe1_, buffer, sizeof(buffer[0])));
 
-  ASSERT_EQ(MOJO_RESULT_OK, MojoWait(pipe0_, MOJO_HANDLE_SIGNAL_READABLE,
-                                     MOJO_DEADLINE_INDEFINITE, &state));
+  ASSERT_EQ(MOJO_RESULT_OK,
+            WaitForSignals(pipe0_, MOJO_HANDLE_SIGNAL_READABLE, &state));
 
   // Read from port 0 (buffer big enough).
   buffer[0] = 123;
@@ -283,8 +283,8 @@ TEST_F(MessagePipeTest, DiscardMode) {
   buffer[1] = 0;
   ASSERT_EQ(MOJO_RESULT_OK, WriteMessage(pipe1_, buffer, sizeof(buffer[0])));
 
-  ASSERT_EQ(MOJO_RESULT_OK, MojoWait(pipe0_, MOJO_HANDLE_SIGNAL_READABLE,
-                                     MOJO_DEADLINE_INDEFINITE, &state));
+  ASSERT_EQ(MOJO_RESULT_OK,
+            WaitForSignals(pipe0_, MOJO_HANDLE_SIGNAL_READABLE, &state));
 
   // Read/discard from port 0 (buffer too small); get size.
   buffer_size = 1;
@@ -302,8 +302,8 @@ TEST_F(MessagePipeTest, DiscardMode) {
   buffer[1] = 0;
   ASSERT_EQ(MOJO_RESULT_OK, WriteMessage(pipe1_, buffer, sizeof(buffer[0])));
 
-  ASSERT_EQ(MOJO_RESULT_OK, MojoWait(pipe0_, MOJO_HANDLE_SIGNAL_READABLE,
-                                     MOJO_DEADLINE_INDEFINITE, &state));
+  ASSERT_EQ(MOJO_RESULT_OK,
+            WaitForSignals(pipe0_, MOJO_HANDLE_SIGNAL_READABLE, &state));
 
   // Discard from port 0.
   buffer_size = 1;
@@ -323,41 +323,27 @@ TEST_F(MessagePipeTest, BasicWaiting) {
   const uint32_t kBufferSize = static_cast<uint32_t>(sizeof(buffer));
   uint32_t buffer_size;
 
-  // Always writable (until the other port is closed).
-  hss = MojoHandleSignalsState();
-  ASSERT_EQ(MOJO_RESULT_OK, MojoWait(pipe0_, MOJO_HANDLE_SIGNAL_WRITABLE, 0,
-                                     &hss));
+  // Always writable (until the other port is closed). Not yet readable. Peer
+  // not closed.
+  hss = GetSignalsState(pipe0_);
   ASSERT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss.satisfied_signals);
   ASSERT_EQ(kAllSignals, hss.satisfiable_signals);
   hss = MojoHandleSignalsState();
-
-  // Not yet readable.
-  ASSERT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED,
-            MojoWait(pipe0_, MOJO_HANDLE_SIGNAL_READABLE, 0, &hss));
-  ASSERT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss.satisfied_signals);
-  ASSERT_EQ(kAllSignals, hss.satisfiable_signals);
-
-  // The peer is not closed.
-  hss = MojoHandleSignalsState();
-  ASSERT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED,
-            MojoWait(pipe0_, MOJO_HANDLE_SIGNAL_PEER_CLOSED, 0, &hss));
-  ASSERT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss.satisfied_signals);
-  ASSERT_EQ(kAllSignals, hss.satisfiable_signals);
 
   // Write from port 0 (to port 1), to make port 1 readable.
   buffer[0] = 123456789;
   ASSERT_EQ(MOJO_RESULT_OK, WriteMessage(pipe0_, buffer, kBufferSize));
 
   // Port 1 should already be readable now.
-  ASSERT_EQ(MOJO_RESULT_OK, MojoWait(pipe1_, MOJO_HANDLE_SIGNAL_READABLE,
-                                     MOJO_DEADLINE_INDEFINITE, &hss));
+  ASSERT_EQ(MOJO_RESULT_OK,
+            WaitForSignals(pipe1_, MOJO_HANDLE_SIGNAL_READABLE, &hss));
   ASSERT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
             hss.satisfied_signals);
   ASSERT_EQ(kAllSignals, hss.satisfiable_signals);
   // ... and still writable.
   hss = MojoHandleSignalsState();
-  ASSERT_EQ(MOJO_RESULT_OK, MojoWait(pipe1_, MOJO_HANDLE_SIGNAL_WRITABLE,
-                                     MOJO_DEADLINE_INDEFINITE, &hss));
+  ASSERT_EQ(MOJO_RESULT_OK,
+            WaitForSignals(pipe1_, MOJO_HANDLE_SIGNAL_WRITABLE, &hss));
   ASSERT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
             hss.satisfied_signals);
   ASSERT_EQ(kAllSignals, hss.satisfiable_signals);
@@ -368,8 +354,8 @@ TEST_F(MessagePipeTest, BasicWaiting) {
 
   // Port 1 should be signaled with peer closed.
   hss = MojoHandleSignalsState();
-  ASSERT_EQ(MOJO_RESULT_OK, MojoWait(pipe1_, MOJO_HANDLE_SIGNAL_PEER_CLOSED,
-                                     MOJO_DEADLINE_INDEFINITE, &hss));
+  ASSERT_EQ(MOJO_RESULT_OK,
+            WaitForSignals(pipe1_, MOJO_HANDLE_SIGNAL_PEER_CLOSED, &hss));
   ASSERT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
             hss.satisfied_signals);
   ASSERT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
@@ -379,8 +365,7 @@ TEST_F(MessagePipeTest, BasicWaiting) {
   hss = MojoHandleSignalsState();
 
   ASSERT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            MojoWait(pipe1_, MOJO_HANDLE_SIGNAL_WRITABLE,
-                     MOJO_DEADLINE_INDEFINITE, &hss));
+            WaitForSignals(pipe1_, MOJO_HANDLE_SIGNAL_WRITABLE, &hss));
   ASSERT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
             hss.satisfied_signals);
   ASSERT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
@@ -388,8 +373,8 @@ TEST_F(MessagePipeTest, BasicWaiting) {
 
   // But it should still be readable.
   hss = MojoHandleSignalsState();
-  ASSERT_EQ(MOJO_RESULT_OK, MojoWait(pipe1_, MOJO_HANDLE_SIGNAL_READABLE,
-                                     MOJO_DEADLINE_INDEFINITE, &hss));
+  ASSERT_EQ(MOJO_RESULT_OK,
+            WaitForSignals(pipe1_, MOJO_HANDLE_SIGNAL_READABLE, &hss));
   ASSERT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
             hss.satisfied_signals);
   ASSERT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
@@ -404,8 +389,7 @@ TEST_F(MessagePipeTest, BasicWaiting) {
   // Now port 1 should no longer be readable.
   hss = MojoHandleSignalsState();
   ASSERT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            MojoWait(pipe1_, MOJO_HANDLE_SIGNAL_READABLE,
-                     MOJO_DEADLINE_INDEFINITE, &hss));
+            WaitForSignals(pipe1_, MOJO_HANDLE_SIGNAL_READABLE, &hss));
   ASSERT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfied_signals);
   ASSERT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfiable_signals);
 }
@@ -453,9 +437,7 @@ TEST_F(MessagePipeTest, WriteAndReadMessageObject) {
   EXPECT_EQ(MOJO_RESULT_OK,
             MojoWriteMessageNew(a, message, MOJO_WRITE_MESSAGE_FLAG_NONE));
 
-  EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWait(b, MOJO_HANDLE_SIGNAL_READABLE, MOJO_DEADLINE_INDEFINITE,
-                     nullptr));
+  EXPECT_EQ(MOJO_RESULT_OK, WaitForSignals(b, MOJO_HANDLE_SIGNAL_READABLE));
   uint32_t num_bytes = 0;
   uint32_t num_handles = 0;
   EXPECT_EQ(MOJO_RESULT_OK,
@@ -489,8 +471,7 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(HandlePingPong, MessagePipeTest, h) {
     WriteMessageWithHandles(h, "", handles, kPingPongHandlesPerIteration);
   }
 
-  EXPECT_EQ(MOJO_RESULT_OK, MojoWait(h, MOJO_HANDLE_SIGNAL_READABLE,
-                                     MOJO_DEADLINE_INDEFINITE, nullptr));
+  EXPECT_EQ(MOJO_RESULT_OK, WaitForSignals(h, MOJO_HANDLE_SIGNAL_READABLE));
   char msg[4];
   uint32_t num_bytes = 4;
   EXPECT_EQ(MOJO_RESULT_OK, ReadMessage(h, msg, &num_bytes));
@@ -675,9 +656,7 @@ TEST_F(FuseMessagePipeTest, FuseAfterPeerClosure) {
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoClose(b));
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoClose(c));
 
-  EXPECT_EQ(MOJO_RESULT_OK, MojoWait(d, MOJO_HANDLE_SIGNAL_PEER_CLOSED,
-                                     MOJO_DEADLINE_INDEFINITE, nullptr));
-
+  EXPECT_EQ(MOJO_RESULT_OK, WaitForSignals(d, MOJO_HANDLE_SIGNAL_PEER_CLOSED));
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(d));
 }
 
@@ -700,9 +679,7 @@ TEST_F(FuseMessagePipeTest, FuseAfterPeerWriteAndClosure) {
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoClose(c));
 
   EXPECT_EQ(kTestMessage, ReadMessage(d));
-  EXPECT_EQ(MOJO_RESULT_OK, MojoWait(d, MOJO_HANDLE_SIGNAL_PEER_CLOSED,
-                                     MOJO_DEADLINE_INDEFINITE, nullptr));
-
+  EXPECT_EQ(MOJO_RESULT_OK, WaitForSignals(d, MOJO_HANDLE_SIGNAL_PEER_CLOSED));
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(d));
 }
 

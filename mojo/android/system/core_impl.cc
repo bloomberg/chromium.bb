@@ -26,41 +26,6 @@ static jlong GetTimeTicksNow(JNIEnv* env,
   return MojoGetTimeTicksNow();
 }
 
-static jint WaitMany(JNIEnv* env,
-                     const JavaParamRef<jobject>& jcaller,
-                     const JavaParamRef<jobject>& buffer,
-                     jlong deadline) {
-  // |buffer| contains, in this order
-  // input: The array of N handles (MojoHandle, 4 bytes each)
-  // input: The array of N signals (MojoHandleSignals, 4 bytes each)
-  // space for output: The array of N handle states (MojoHandleSignalsState, 8
-  //                   bytes each)
-  // space for output: The result index (uint32_t, 4 bytes)
-  uint8_t* buffer_start =
-      static_cast<uint8_t*>(env->GetDirectBufferAddress(buffer));
-  DCHECK(buffer_start);
-  DCHECK_EQ(reinterpret_cast<uintptr_t>(buffer_start) % 8, 0u);
-  // Each handle of the input array contributes 4 (MojoHandle) + 4
-  // (MojoHandleSignals) + 8 (MojoHandleSignalsState) = 16 bytes to the size of
-  // the buffer.
-  const size_t size_per_handle = 16;
-  const size_t buffer_size = env->GetDirectBufferCapacity(buffer);
-  DCHECK_EQ((buffer_size - 4) % size_per_handle, 0u);
-
-  const size_t nb_handles = (buffer_size - 4) / size_per_handle;
-  const MojoHandle* handle_start =
-      reinterpret_cast<const MojoHandle*>(buffer_start);
-  const MojoHandleSignals* signals_start =
-      reinterpret_cast<const MojoHandleSignals*>(buffer_start + 4 * nb_handles);
-  MojoHandleSignalsState* states_start =
-      reinterpret_cast<MojoHandleSignalsState*>(buffer_start + 8 * nb_handles);
-  uint32_t* result_index =
-      reinterpret_cast<uint32_t*>(buffer_start + 16 * nb_handles);
-  *result_index = static_cast<uint32_t>(-1);
-  return MojoWaitMany(handle_start, signals_start, nb_handles, deadline,
-                      result_index, states_start);
-}
-
 static ScopedJavaLocalRef<jobject> CreateMessagePipe(
     JNIEnv* env,
     const JavaParamRef<jobject>& jcaller,
@@ -127,21 +92,16 @@ static jint Close(JNIEnv* env,
   return MojoClose(mojo_handle);
 }
 
-static jint Wait(JNIEnv* env,
-                 const JavaParamRef<jobject>& jcaller,
-                 const JavaParamRef<jobject>& buffer,
-                 jint mojo_handle,
-                 jint signals,
-                 jlong deadline) {
-  // Buffer contains space for the MojoHandleSignalsState
-  void* buffer_start = env->GetDirectBufferAddress(buffer);
-  DCHECK(buffer_start);
-  DCHECK_EQ(reinterpret_cast<const uintptr_t>(buffer_start) % 8, 0u);
-  DCHECK_EQ(sizeof(struct MojoHandleSignalsState),
+static jint QueryHandleSignalsState(JNIEnv* env,
+                                    const JavaParamRef<jobject>& jcaller,
+                                    jint mojo_handle,
+                                    const JavaParamRef<jobject>& buffer) {
+  MojoHandleSignalsState* signals_state =
+      static_cast<MojoHandleSignalsState*>(env->GetDirectBufferAddress(buffer));
+  DCHECK(signals_state);
+  DCHECK_EQ(sizeof(MojoHandleSignalsState),
             static_cast<size_t>(env->GetDirectBufferCapacity(buffer)));
-  struct MojoHandleSignalsState* signals_state =
-      static_cast<struct MojoHandleSignalsState*>(buffer_start);
-  return MojoWait(mojo_handle, signals, deadline, signals_state);
+  return MojoQueryHandleSignalsState(mojo_handle, signals_state);
 }
 
 static jint WriteMessage(JNIEnv* env,

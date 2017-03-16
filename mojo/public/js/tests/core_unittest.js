@@ -89,35 +89,15 @@ define([
   }
 
   function testReadAndWriteMessage(pipe) {
-    var wait = core.waitMany([], [], 0);
-    expect(wait.result).toBe(core.RESULT_INVALID_ARGUMENT);
-    expect(wait.index).toBe(null);
-    expect(wait.signalsState).toBe(null);
+    var state0 = core.queryHandleSignalsState(pipe.handle0);
+    expect(state0.result).toBe(core.RESULT_OK);
+    expect(state0.satisfiedSignals).toBe(core.HANDLE_SIGNAL_WRITABLE);
+    expect(state0.satisfiableSignals).toBe(HANDLE_SIGNAL_ALL);
 
-    wait = core.wait(pipe.handle0, core.HANDLE_SIGNAL_READABLE, 0);
-    expect(wait.result).toBe(core.RESULT_DEADLINE_EXCEEDED);
-    expect(wait.signalsState.satisfiedSignals).toBe(
-           core.HANDLE_SIGNAL_WRITABLE);
-    expect(wait.signalsState.satisfiableSignals).toBe(HANDLE_SIGNAL_ALL);
-
-    wait = core.waitMany(
-                  [pipe.handle0, pipe.handle1],
-                  [core.HANDLE_SIGNAL_READABLE,core.HANDLE_SIGNAL_READABLE],
-                  0);
-    expect(wait.result).toBe(core.RESULT_DEADLINE_EXCEEDED);
-    expect(wait.index).toBe(null);
-    expect(wait.signalsState[0].satisfiedSignals).toBe(
-           core.HANDLE_SIGNAL_WRITABLE);
-    expect(wait.signalsState[0].satisfiableSignals).toBe(HANDLE_SIGNAL_ALL);
-    expect(wait.signalsState[1].satisfiedSignals).toBe(
-           core.HANDLE_SIGNAL_WRITABLE);
-    expect(wait.signalsState[1].satisfiableSignals).toBe(HANDLE_SIGNAL_ALL);
-
-    wait = core.wait(pipe.handle0, core.HANDLE_SIGNAL_WRITABLE, 0);
-    expect(wait.result).toBe(core.RESULT_OK);
-    expect(wait.signalsState.satisfiedSignals).toBe(
-           core.HANDLE_SIGNAL_WRITABLE);
-    expect(wait.signalsState.satisfiableSignals).toBe(HANDLE_SIGNAL_ALL);
+    var state1 = core.queryHandleSignalsState(pipe.handle1);
+    expect(state1.result).toBe(core.RESULT_OK);
+    expect(state1.satisfiedSignals).toBe(core.HANDLE_SIGNAL_WRITABLE);
+    expect(state1.satisfiableSignals).toBe(HANDLE_SIGNAL_ALL);
 
     var senderData = new Uint8Array(42);
     for (var i = 0; i < senderData.length; ++i) {
@@ -130,14 +110,13 @@ define([
 
     expect(result).toBe(core.RESULT_OK);
 
-    wait = core.wait(pipe.handle0, core.HANDLE_SIGNAL_WRITABLE, 0);
-    expect(wait.result).toBe(core.RESULT_OK);
-    expect(wait.signalsState.satisfiedSignals).toBe(
-        core.HANDLE_SIGNAL_WRITABLE);
-    expect(wait.signalsState.satisfiableSignals).toBe(HANDLE_SIGNAL_ALL);
+    state0 = core.queryHandleSignalsState(pipe.handle0);
+    expect(state0.result).toBe(core.RESULT_OK);
+    expect(state0.satisfiedSignals).toBe(core.HANDLE_SIGNAL_WRITABLE);
+    expect(state0.satisfiableSignals).toBe(HANDLE_SIGNAL_ALL);
 
-    wait = core.wait(pipe.handle1, core.HANDLE_SIGNAL_READABLE,
-                     core.DEADLINE_INDEFINITE);
+    var wait = core.wait(pipe.handle1, core.HANDLE_SIGNAL_READABLE,
+                         core.DEADLINE_INDEFINITE);
     expect(wait.result).toBe(core.RESULT_OK);
     expect(wait.signalsState.satisfiedSignals).toBe(HANDLE_SIGNAL_READWRITABLE);
     expect(wait.signalsState.satisfiableSignals).toBe(HANDLE_SIGNAL_ALL);

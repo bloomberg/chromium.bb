@@ -62,20 +62,13 @@ Result WebDataConsumerHandleImpl::ReaderImpl::read(void* data,
     // Even if there is unread data available, mojo::ReadDataRaw() returns
     // FAILED_PRECONDITION when |size| is 0 and the producer handle was closed.
     // But in this case, WebDataConsumerHandle::Reader::read() must return Ok.
-    // So we use mojo::Wait() with 0 deadline to check whether readable or not.
-    MojoResult wait_result = mojo::Wait(
-        context_->handle().get(), MOJO_HANDLE_SIGNAL_READABLE, 0, nullptr);
-    switch (wait_result) {
-      case MOJO_RESULT_OK:
-        return Ok;
-      case MOJO_RESULT_FAILED_PRECONDITION:
-        return Done;
-      case MOJO_RESULT_DEADLINE_EXCEEDED:
-        return ShouldWait;
-      default:
-        NOTREACHED();
-        return UnexpectedError;
-    }
+    // So we query the signals state directly.
+    mojo::HandleSignalsState state = context_->handle()->QuerySignalsState();
+    if (state.readable())
+      return Ok;
+    if (state.never_readable())
+      return Done;
+    return ShouldWait;
   }
 
   uint32_t size_to_pass = size;
