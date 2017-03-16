@@ -9,6 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "ui/aura/window_observer.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/geometry/point_f.h"
@@ -65,6 +66,9 @@ class ASH_EXPORT LaserPointerController : public ui::EventHandler,
   // This will remove points that are too old.
   std::unique_ptr<base::Timer> stationary_timer_;
   int stationary_timer_repeat_count_ = 0;
+
+  // The presentation delay used for prediction by the laser pointer view.
+  base::TimeDelta presentation_delay_;
 
   bool enabled_ = false;
 

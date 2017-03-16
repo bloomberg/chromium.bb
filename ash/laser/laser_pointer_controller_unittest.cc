@@ -111,4 +111,43 @@ TEST_F(LaserPointerControllerTest, LaserPointerRenderer) {
   EXPECT_FALSE(controller_test_api_.IsShowingLaserPointer());
   GetEventGenerator().ReleaseTouch();
 }
+
+// Test to ensure the class responsible for drawing the laser pointer handles
+// prediction as expected when it receives points from stylus movements.
+TEST_F(LaserPointerControllerTest, LaserPointerPrediction) {
+  LaserPointerControllerTestApi controller_test_api_(controller_.get());
+
+  controller_test_api_.SetEnabled(true);
+  // The laser pointer mode only works with stylus.
+  GetEventGenerator().EnterPenPointerMode();
+  GetEventGenerator().PressTouch();
+  EXPECT_TRUE(controller_test_api_.IsShowingLaserPointer());
+
+  EXPECT_EQ(1, controller_test_api_.laser_points().GetNumberOfPoints());
+  // Initial press event shouldn't generate any predicted points as there's no
+  // history to use for prediction.
+  EXPECT_EQ(0,
+            controller_test_api_.predicted_laser_points().GetNumberOfPoints());
+
+  // Verify dragging the stylus 3 times will add some predicted points.
+  GetEventGenerator().MoveTouch(gfx::Point(10, 10));
+  GetEventGenerator().MoveTouch(gfx::Point(20, 20));
+  GetEventGenerator().MoveTouch(gfx::Point(30, 30));
+  EXPECT_NE(0,
+            controller_test_api_.predicted_laser_points().GetNumberOfPoints());
+  // Verify predicted points are in the right direction.
+  for (const auto& point :
+       controller_test_api_.predicted_laser_points().laser_points()) {
+    EXPECT_LT(30, point.location.x());
+    EXPECT_LT(30, point.location.y());
+  }
+
+  // Verify releasing the stylus removes predicted points.
+  GetEventGenerator().ReleaseTouch();
+  EXPECT_TRUE(controller_test_api_.IsShowingLaserPointer());
+  EXPECT_TRUE(controller_test_api_.IsFadingAway());
+  EXPECT_EQ(0,
+            controller_test_api_.predicted_laser_points().GetNumberOfPoints());
+}
+
 }  // namespace ash

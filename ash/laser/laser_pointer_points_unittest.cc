@@ -37,15 +37,15 @@ TEST_F(LaserPointerPointsTest, LaserPointerInternalCollection) {
   const gfx::PointF bottom(1, 9);
   const gfx::PointF top_right(30, 0);
   const gfx::PointF last(2, 2);
-  points_.AddPoint(left);
+  points_.AddPoint(left, base::TimeTicks());
   EXPECT_EQ(gfx::Rect(1, 1, 0, 0), points_.GetBoundingBox());
 
   // Should be the new bottom of the bounding box.
-  points_.AddPoint(bottom);
+  points_.AddPoint(bottom, base::TimeTicks());
   EXPECT_EQ(gfx::Rect(1, 1, 0, bottom.y() - 1), points_.GetBoundingBox());
 
   // Should be the new top and right of the bounding box.
-  points_.AddPoint(top_right);
+  points_.AddPoint(top_right, base::TimeTicks());
   EXPECT_EQ(3, points_.GetNumberOfPoints());
   EXPECT_FALSE(points_.IsEmpty());
   EXPECT_EQ(gfx::Rect(left.x(), top_right.y(), top_right.x() - left.x(),
@@ -53,7 +53,7 @@ TEST_F(LaserPointerPointsTest, LaserPointerInternalCollection) {
             points_.GetBoundingBox());
 
   // Should not expand bounding box.
-  points_.AddPoint(last);
+  points_.AddPoint(last, base::TimeTicks());
   EXPECT_EQ(gfx::Rect(left.x(), top_right.y(), top_right.x() - left.x(),
                       bottom.y() - top_right.y()),
             points_.GetBoundingBox());
@@ -64,7 +64,7 @@ TEST_F(LaserPointerPointsTest, LaserPointerInternalCollection) {
 
   // Add a new point which will expand the bounding box.
   gfx::PointF new_left_bottom(0, 40);
-  points_.AddPoint(new_left_bottom);
+  points_.AddPoint(new_left_bottom, base::TimeTicks());
   EXPECT_EQ(5, points_.GetNumberOfPoints());
   EXPECT_EQ(gfx::Rect(new_left_bottom.x(), top_right.y(),
                       top_right.x() - new_left_bottom.x(),

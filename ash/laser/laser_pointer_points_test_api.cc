@@ -18,7 +18,7 @@ int LaserPointerPointsTestApi::GetNumberOfPoints() const {
 
 void LaserPointerPointsTestApi::MoveForwardInTime(
     const base::TimeDelta& delta) {
-  base::Time new_time = instance_->collection_latest_time_ + delta;
+  base::TimeTicks new_time = instance_->collection_latest_time_ + delta;
   instance_->MoveForwardToTime(new_time);
 
   LaserPointerPoints::LaserPoint new_point;

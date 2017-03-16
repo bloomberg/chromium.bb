@@ -12,6 +12,7 @@
 #include "ash/laser/laser_pointer_points.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "cc/ipc/compositor_frame.mojom.h"
 #include "cc/ipc/mojo_compositor_frame_sink.mojom.h"
 #include "cc/resources/texture_mailbox.h"
@@ -44,10 +45,13 @@ class LaserPointerView : public views::View,
                          public cc::mojom::MojoCompositorFrameSink,
                          public cc::CompositorFrameSinkSupportClient {
  public:
-  LaserPointerView(base::TimeDelta life_duration, aura::Window* root_window);
+  LaserPointerView(base::TimeDelta life_duration,
+                   base::TimeDelta presentation_delay,
+                   aura::Window* root_window);
   ~LaserPointerView() override;
 
-  void AddNewPoint(const gfx::PointF& new_point);
+  void AddNewPoint(const gfx::PointF& new_point,
+                   const base::TimeTicks& new_time);
   void UpdateTime();
   void Stop();
 
@@ -75,8 +79,10 @@ class LaserPointerView : public views::View,
   void OnDidDrawSurface();
 
   LaserPointerPoints laser_points_;
+  LaserPointerPoints predicted_laser_points_;
   std::unique_ptr<views::Widget> widget_;
   float scale_factor_ = 1.0f;
+  const base::TimeDelta presentation_delay_;
   std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer_;
   gfx::Rect buffer_damage_rect_;
   bool pending_update_buffer_ = false;

@@ -65,6 +65,11 @@ const char kAshEnableTouchView[] = "enable-touchview";
 // Enables mirrored screen.
 const char kAshEnableMirroredScreen[] = "ash-enable-mirrored-screen";
 
+// Specifies the estimated time (in milliseconds) from VSYNC event until when
+// visible light can be noticed by the user.
+const char kAshEstimatedPresentationDelay[] =
+    "ash-estimated-presentation-delay";
+
 // Enables the palette next to the status area.
 const char kAshForceEnablePalette[] = "ash-force-enable-palette";
 

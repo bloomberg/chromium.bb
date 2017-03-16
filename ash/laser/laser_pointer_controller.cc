@@ -4,10 +4,14 @@
 
 #include "ash/laser/laser_pointer_controller.h"
 
+#include "ash/common/ash_switches.h"
 #include "ash/common/system/chromeos/palette/palette_utils.h"
 #include "ash/laser/laser_pointer_view.h"
 #include "ash/shell.h"
+#include "base/command_line.h"
+#include "base/strings/string_number_conversions.h"
 #include "ui/display/screen.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -26,6 +30,11 @@ const int kPointLifeDurationMs = 200;
 // TODO(reveman): Use real VSYNC interval instead of a hard-coded delay.
 const int kAddStationaryPointsDelayMs = 16;
 
+// The default amount of time used to estimate time from VSYNC event to when
+// visible light can be noticed by the user. This is used when a device
+// specific estimate was not provided using --estimated-presentation-delay.
+const int kDefaultPresentationDelayMs = 18;
+
 }  // namespace
 
 LaserPointerController::LaserPointerController()
@@ -36,6 +45,16 @@ LaserPointerController::LaserPointerController()
                      base::Unretained(this)),
           true /* is_repeating */)) {
   Shell::GetInstance()->AddPreTargetHandler(this);
+
+  int64_t presentation_delay_ms;
+  // Use device specific presentation delay if specified.
+  std::string presentation_delay_string =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kAshEstimatedPresentationDelay);
+  if (!base::StringToInt64(presentation_delay_string, &presentation_delay_ms))
+    presentation_delay_ms = kDefaultPresentationDelayMs;
+  presentation_delay_ =
+      base::TimeDelta::FromMilliseconds(presentation_delay_ms);
 }
 
 LaserPointerController::~LaserPointerController() {
@@ -106,7 +125,8 @@ void LaserPointerController::SwitchTargetRootWindowIfNeeded(
 
   if (!laser_pointer_view_ && enabled_) {
     laser_pointer_view_.reset(new LaserPointerView(
-        base::TimeDelta::FromMilliseconds(kPointLifeDurationMs), root_window));
+        base::TimeDelta::FromMilliseconds(kPointLifeDurationMs),
+        presentation_delay_, root_window));
   }
 }
 
@@ -116,7 +136,8 @@ void LaserPointerController::UpdateLaserPointerView(
     ui::Event* event) {
   SwitchTargetRootWindowIfNeeded(current_window);
   current_stylus_location_ = event_location;
-  laser_pointer_view_->AddNewPoint(current_stylus_location_);
+  laser_pointer_view_->AddNewPoint(current_stylus_location_,
+                                   event->time_stamp());
   event->StopPropagation();
 }
 
@@ -136,10 +157,12 @@ void LaserPointerController::RestartTimer() {
 }
 
 void LaserPointerController::AddStationaryPoint() {
-  if (is_fading_away_)
+  if (is_fading_away_) {
     laser_pointer_view_->UpdateTime();
-  else
-    laser_pointer_view_->AddNewPoint(current_stylus_location_);
+  } else {
+    laser_pointer_view_->AddNewPoint(current_stylus_location_,
+                                     ui::EventTimeForNow());
+  }
 
   // We can stop repeating the timer once the stylus has been stationary for
   // longer than the life of a point.

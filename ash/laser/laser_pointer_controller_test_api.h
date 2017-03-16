@@ -20,11 +20,12 @@ class LaserPointerControllerTestApi {
   ~LaserPointerControllerTestApi();
 
   void SetEnabled(bool enabled);
-  bool IsShowingLaserPointer();
-  bool IsFadingAway();
+  bool IsShowingLaserPointer() const;
+  bool IsFadingAway() const;
   void SetIsFadingAway(bool fading_away);
-  const LaserPointerPoints& laser_points();
-  LaserPointerView* laser_pointer_view();
+  const LaserPointerPoints& laser_points() const;
+  const LaserPointerPoints& predicted_laser_points() const;
+  LaserPointerView* laser_pointer_view() const;
 
  private:
   LaserPointerController* instance_;

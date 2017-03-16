@@ -24,6 +24,7 @@ class ASH_EXPORT LaserPointerPoints {
   // Struct to describe each point.
   struct LaserPoint {
     gfx::PointF location;
+    base::TimeTicks time;
     // age is a value between [0,1] where 0 means the point was just added and 1
     // means that the point is just about to be removed.
     float age = 0.0f;
@@ -35,10 +36,10 @@ class ASH_EXPORT LaserPointerPoints {
   ~LaserPointerPoints();
 
   // Adds a point. Automatically clears points that are too old.
-  void AddPoint(const gfx::PointF& point);
+  void AddPoint(const gfx::PointF& point, const base::TimeTicks& time);
   // Updates the collection latest time. Automatically clears points that are
   // too old.
-  void MoveForwardToTime(const base::Time& latest_time);
+  void MoveForwardToTime(const base::TimeTicks& latest_time);
   // Removes all points.
   void Clear();
   // Gets the bounding box of the points.
@@ -52,7 +53,7 @@ class ASH_EXPORT LaserPointerPoints {
   // Whether there are any points or not.
   bool IsEmpty() const;
   // Expose the collection so callers can work with the points.
-  const std::deque<LaserPoint>& laser_points();
+  const std::deque<LaserPoint>& laser_points() const;
 
  private:
   friend class LaserPointerPointsTestApi;
@@ -61,7 +62,7 @@ class ASH_EXPORT LaserPointerPoints {
   std::deque<LaserPoint> points_;
   // The latest time of the collection of points. This gets updated when new
   // points are added or when MoveForwardInTime is called.
-  base::Time collection_latest_time_;
+  base::TimeTicks collection_latest_time_;
 
   DISALLOW_COPY_AND_ASSIGN(LaserPointerPoints);
 };

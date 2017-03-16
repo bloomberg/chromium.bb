@@ -29,6 +29,7 @@ ASH_EXPORT extern const char kAshEnablePaletteOnAllDisplays[];
 ASH_EXPORT extern const char kAshEnableDockedWindows[];
 ASH_EXPORT extern const char kAshEnableTouchView[];
 ASH_EXPORT extern const char kAshEnableMirroredScreen[];
+ASH_EXPORT extern const char kAshEstimatedPresentationDelay[];
 ASH_EXPORT extern const char kAshForceEnablePalette[];
 ASH_EXPORT extern const char kAshHideNotificationsForFactory[];
 ASH_EXPORT extern const char kAshShelfColor[];

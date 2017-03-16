@@ -20,11 +20,11 @@ void LaserPointerControllerTestApi::SetEnabled(bool enabled) {
   instance_->SetEnabled(enabled);
 }
 
-bool LaserPointerControllerTestApi::IsShowingLaserPointer() {
+bool LaserPointerControllerTestApi::IsShowingLaserPointer() const {
   return instance_->laser_pointer_view_ != nullptr;
 }
 
-bool LaserPointerControllerTestApi::IsFadingAway() {
+bool LaserPointerControllerTestApi::IsFadingAway() const {
   return IsShowingLaserPointer() && instance_->is_fading_away_;
 }
 
@@ -32,11 +32,16 @@ void LaserPointerControllerTestApi::SetIsFadingAway(bool fading_away) {
   instance_->is_fading_away_ = fading_away;
 }
 
-const LaserPointerPoints& LaserPointerControllerTestApi::laser_points() {
+const LaserPointerPoints& LaserPointerControllerTestApi::laser_points() const {
   return instance_->laser_pointer_view_->laser_points_;
 }
 
-LaserPointerView* LaserPointerControllerTestApi::laser_pointer_view() {
+const LaserPointerPoints&
+LaserPointerControllerTestApi::predicted_laser_points() const {
+  return instance_->laser_pointer_view_->predicted_laser_points_;
+}
+
+LaserPointerView* LaserPointerControllerTestApi::laser_pointer_view() const {
   return instance_->laser_pointer_view_.get();
 }
 

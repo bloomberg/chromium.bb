@@ -8,12 +8,16 @@
 #include <GLES2/gl2ext.h>
 #include <GLES2/gl2extchromium.h>
 
+#include <algorithm>
+#include <array>
+#include <cmath>
 #include <memory>
 
 #include "ash/laser/laser_pointer_points.h"
 #include "ash/laser/laser_segment_utils.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
+#include "base/containers/adapters.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
 #include "base/trace_event/trace_event.h"
@@ -31,6 +35,7 @@
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -45,6 +50,8 @@ const float kPointFinalRadius = 0.25f;
 const int kPointInitialOpacity = 200;
 const int kPointFinalOpacity = 10;
 const SkColor kPointColor = SkColorSetRGB(255, 0, 0);
+// Change this when debugging prediction code.
+const SkColor kPredictionPointColor = kPointColor;
 
 float DistanceBetweenPoints(const gfx::PointF& point1,
                             const gfx::PointF& point2) {
@@ -196,8 +203,11 @@ struct LaserResource {
 
 // LaserPointerView
 LaserPointerView::LaserPointerView(base::TimeDelta life_duration,
+                                   base::TimeDelta presentation_delay,
                                    aura::Window* root_window)
     : laser_points_(life_duration),
+      predicted_laser_points_(life_duration),
+      presentation_delay_(presentation_delay),
       frame_sink_id_(aura::Env::GetInstance()
                          ->context_factory_private()
                          ->AllocateFrameSinkId()),
@@ -242,12 +252,118 @@ LaserPointerView::~LaserPointerView() {
 void LaserPointerView::Stop() {
   buffer_damage_rect_.Union(GetBoundingBox());
   laser_points_.Clear();
+  predicted_laser_points_.Clear();
   OnPointsUpdated();
 }
 
-void LaserPointerView::AddNewPoint(const gfx::PointF& new_point) {
+void LaserPointerView::AddNewPoint(const gfx::PointF& new_point,
+                                   const base::TimeTicks& new_time) {
+  TRACE_EVENT1("ui", "LaserPointerView::AddNewPoint", "new_point",
+               new_point.ToString());
+  TRACE_COUNTER1(
+      "ui", "LaserPointerPredictionError",
+      predicted_laser_points_.GetNumberOfPoints()
+          ? std::round((new_point -
+                        predicted_laser_points_.laser_points().front().location)
+                           .Length())
+          : 0);
+
   buffer_damage_rect_.Union(GetBoundingBox());
-  laser_points_.AddPoint(new_point);
+  laser_points_.AddPoint(new_point, new_time);
+
+  // Current time is needed to determine presentation time and the number of
+  // predicted points to add.
+  base::TimeTicks current_time = ui::EventTimeForNow();
+
+  // Create a new set of predicted points based on the last four points added.
+  // We add enough predicted points to fill the time between the new point and
+  // the expected presentation time. Note that estimated presentation time is
+  // based on current time and inefficient rendering of points can result in an
+  // actual presentation time that is later.
+  predicted_laser_points_.Clear();
+
+  // Normalize all coordinates to screen size.
+  gfx::Size screen_size = widget_->GetNativeView()->GetBoundsInScreen().size();
+  gfx::Vector2dF scale(1.0f / screen_size.width(), 1.0f / screen_size.height());
+
+  // TODO(reveman): Determine interval based on history when event time stamps
+  // are accurate. b/36137953
+  const float kPredictionIntervalMs = 5.0f;
+  const float kMaxPointIntervalMs = 10.0f;
+  base::TimeDelta prediction_interval =
+      base::TimeDelta::FromMilliseconds(kPredictionIntervalMs);
+  base::TimeDelta max_point_interval =
+      base::TimeDelta::FromMilliseconds(kMaxPointIntervalMs);
+  base::TimeTicks last_point_time = current_time;
+
+  // Use the last four points for prediction.
+  using PositionArray = std::array<gfx::PointF, 4>;
+  PositionArray position;
+  PositionArray::iterator it = position.begin();
+  for (const auto& point : base::Reversed(laser_points_.laser_points())) {
+    // Stop adding positions if interval between points is too large to provide
+    // an accurate history for prediction.
+    if ((last_point_time - point.time) > max_point_interval)
+      break;
+
+    *it++ = gfx::ScalePoint(point.location, scale.x(), scale.y());
+    last_point_time = point.time;
+
+    // Stop when no more positions are needed.
+    if (it == position.end())
+      break;
+  }
+  // Pad with last point if needed.
+  std::fill(it, position.end(), *(it - 1));
+
+  // Note: Currently there's no need to divide by the time delta between
+  // points as we assume a constant delta between points that matches the
+  // prediction point interval.
+  gfx::Vector2dF velocity[3];
+  for (size_t i = 0; i < arraysize(velocity); ++i)
+    velocity[i] = position[i] - position[i + 1];
+
+  gfx::Vector2dF acceleration[2];
+  for (size_t i = 0; i < arraysize(acceleration); ++i)
+    acceleration[i] = velocity[i] - velocity[i + 1];
+
+  gfx::Vector2dF jerk = acceleration[0] - acceleration[1];
+
+  // Adjust max prediction time based on speed as prediction data is not great
+  // at lower speeds.
+  const float kMaxPredictionScaleSpeed = 1e-5;
+  double speed = velocity[0].LengthSquared();
+  base::TimeTicks max_prediction_time =
+      current_time +
+      std::min(presentation_delay_ * (speed / kMaxPredictionScaleSpeed),
+               presentation_delay_);
+
+  // Add predicted points until we reach the max prediction time.
+  gfx::PointF location = position[0];
+  for (base::TimeTicks time = new_time + prediction_interval;
+       time < max_prediction_time; time += prediction_interval) {
+    // Note: Currently there's no need to multiply by the prediction interval
+    // as the velocity is calculated based on a time delta between points that
+    // is the same as the prediction interval.
+    velocity[0] += acceleration[0];
+    acceleration[0] += jerk;
+    location += velocity[0];
+
+    predicted_laser_points_.AddPoint(
+        gfx::ScalePoint(location, screen_size.width(), screen_size.height()),
+        time);
+
+    // Always stop at three predicted points as a four point history doesn't
+    // provide accurate prediction of more points.
+    if (predicted_laser_points_.GetNumberOfPoints() == 3)
+      break;
+  }
+
+  // Move forward to next presentation time.
+  base::TimeTicks next_presentation_time = current_time + presentation_delay_;
+  laser_points_.MoveForwardToTime(next_presentation_time);
+  predicted_laser_points_.MoveForwardToTime(next_presentation_time);
+
   buffer_damage_rect_.Union(GetBoundingBox());
   OnPointsUpdated();
 }
@@ -256,7 +372,10 @@ void LaserPointerView::UpdateTime() {
   buffer_damage_rect_.Union(GetBoundingBox());
   // Do not add the point but advance the time if the view is in process of
   // fading away.
-  laser_points_.MoveForwardToTime(base::Time::Now());
+  base::TimeTicks next_presentation_time =
+      ui::EventTimeForNow() + presentation_delay_;
+  laser_points_.MoveForwardToTime(next_presentation_time);
+  predicted_laser_points_.MoveForwardToTime(next_presentation_time);
   buffer_damage_rect_.Union(GetBoundingBox());
   OnPointsUpdated();
 }
@@ -302,6 +421,7 @@ gfx::Rect LaserPointerView::GetBoundingBox() {
   // Expand the bounding box so that it includes the radius of the points on the
   // edges and antialiasing.
   gfx::Rect bounding_box = laser_points_.GetBoundingBox();
+  bounding_box.Union(predicted_laser_points_.GetBoundingBox());
   const int kOutsetForAntialiasing = 1;
   int outset = kPointInitialRadius + kOutsetForAntialiasing;
   bounding_box.Inset(-outset, -outset);
@@ -319,9 +439,8 @@ void LaserPointerView::OnPointsUpdated() {
 }
 
 void LaserPointerView::UpdateBuffer() {
-  TRACE_EVENT2("ui", "LaserPointerView::UpdatedBuffer", "damage",
-               buffer_damage_rect_.ToString(), "points",
-               laser_points_.GetNumberOfPoints());
+  TRACE_EVENT1("ui", "LaserPointerView::UpdatedBuffer", "damage",
+               buffer_damage_rect_.ToString());
 
   DCHECK(pending_update_buffer_);
   pending_update_buffer_ = false;
@@ -379,7 +498,8 @@ void LaserPointerView::UpdateBuffer() {
       widget_->GetNativeView()->GetBoundsInRootWindow().origin().x(),
       widget_->GetNativeView()->GetBoundsInRootWindow().origin().y());
 
-  int num_points = laser_points_.GetNumberOfPoints();
+  int num_points = laser_points_.GetNumberOfPoints() +
+                   predicted_laser_points_.GetNumberOfPoints();
   if (num_points) {
     LaserPointerPoints::LaserPoint previous_point = laser_points_.GetOldest();
     previous_point.location -= widget_offset + update_rect.OffsetFromOrigin();
@@ -389,7 +509,13 @@ void LaserPointerView::UpdateBuffer() {
     int current_opacity;
 
     for (int i = 0; i < num_points; ++i) {
-      current_point = laser_points_.laser_points()[i];
+      if (i < laser_points_.GetNumberOfPoints()) {
+        current_point = laser_points_.laser_points()[i];
+      } else {
+        current_point =
+            predicted_laser_points_
+                .laser_points()[i - laser_points_.GetNumberOfPoints()];
+      }
       current_point.location -= widget_offset + update_rect.OffsetFromOrigin();
 
       // Set the radius and opacity based on the distance.
@@ -414,7 +540,10 @@ void LaserPointerView::UpdateBuffer() {
           i == num_points - 1);
 
       SkPath path = current_segment.path();
-      flags.setColor(SkColorSetA(kPointColor, current_opacity));
+      if (i < laser_points_.GetNumberOfPoints())
+        flags.setColor(SkColorSetA(kPointColor, current_opacity));
+      else
+        flags.setColor(SkColorSetA(kPredictionPointColor, current_opacity));
       canvas.DrawPath(path, flags);
 
       previous_segment_points = current_segment.path_points();
@@ -423,7 +552,6 @@ void LaserPointerView::UpdateBuffer() {
     }
 
     // Draw the last point as a circle.
-    flags.setColor(SkColorSetA(kPointColor, current_opacity));
     flags.setStyle(cc::PaintFlags::kFill_Style);
     canvas.DrawCircle(current_point.location, kPointInitialRadius, flags);
   }
