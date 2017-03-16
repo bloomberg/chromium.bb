@@ -95,12 +95,17 @@ static int GetAudioBuffer(struct AVCodecContext* s, AVFrame* frame, int flags) {
     return buffer_size_in_bytes;
   int frames_required = buffer_size_in_bytes / bytes_per_channel / channels;
   DCHECK_GE(frames_required, frame->nb_samples);
+
+  ChannelLayout channel_layout =
+      ChannelLayoutToChromeChannelLayout(s->channel_layout, s->channels);
+
+  if (channel_layout == CHANNEL_LAYOUT_UNSUPPORTED) {
+    DLOG(ERROR) << "Unsupported channel layout.";
+    return AVERROR(EINVAL);
+  }
+
   scoped_refptr<AudioBuffer> buffer = AudioBuffer::CreateBuffer(
-      sample_format,
-      ChannelLayoutToChromeChannelLayout(s->channel_layout, s->channels),
-      channels,
-      s->sample_rate,
-      frames_required);
+      sample_format, channel_layout, channels, s->sample_rate, frames_required);
 
   // Initialize the data[] and extended_data[] fields to point into the memory
   // allocated for AudioBuffer. |number_of_planes| will be 1 for interleaved
