@@ -24,6 +24,7 @@
 #include "chromeos/network/network_util.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "components/arc/arc_bridge_service.h"
+#include "components/user_manager/user_manager.h"
 
 namespace {
 
@@ -43,10 +44,12 @@ chromeos::NetworkConnectionHandler* GetNetworkConnectionHandler() {
 }
 
 bool IsDeviceOwner() {
-  // Check whether the logged-in Chrome OS user is allowed to add or
-  // remove WiFi networks.
-  return chromeos::LoginState::Get()->GetLoggedInUserType() ==
-         chromeos::LoginState::LOGGED_IN_USER_OWNER;
+  // Check whether the logged-in Chrome OS user is allowed to add or remove WiFi
+  // networks. The user account state changes immediately after boot. There is a
+  // small window when this may return an incorrect state. However, after things
+  // settle down this is guranteed to reflect the correct user account state.
+  return user_manager::UserManager::Get()->GetActiveUser()->GetAccountId() ==
+         user_manager::UserManager::Get()->GetOwnerAccountId();
 }
 
 std::string GetStringFromOncDictionary(const base::DictionaryValue* dict,
