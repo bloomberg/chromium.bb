@@ -1445,7 +1445,7 @@
             ],
             "experiments": [
                 {
-                    "name": "NetProxyPreconnects",
+                    "name": "Enabled",
                     "params": {
                         "restrict_to_one_preconnect_for_proxies": "true"
                     }
