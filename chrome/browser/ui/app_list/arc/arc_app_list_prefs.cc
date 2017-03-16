@@ -317,6 +317,23 @@ base::FilePath ArcAppListPrefs::GetIconPath(
   return ToIconPath(GetAppPath(app_id), scale_factor);
 }
 
+bool ArcAppListPrefs::IsIconRequestRecorded(
+    const std::string& app_id,
+    ui::ScaleFactor scale_factor) const {
+  const auto iter = request_icon_recorded_.find(app_id);
+  if (iter == request_icon_recorded_.end())
+    return false;
+  return iter->second & (1 << scale_factor);
+}
+
+void ArcAppListPrefs::MaybeRemoveIconRequestRecord(const std::string& app_id) {
+  request_icon_recorded_.erase(app_id);
+}
+
+void ArcAppListPrefs::ClearIconRequestRecord() {
+  request_icon_recorded_.clear();
+}
+
 void ArcAppListPrefs::RequestIcon(const std::string& app_id,
                                   ui::ScaleFactor scale_factor) {
   // ArcSessionManager can be terminated during test tear down, before callback
@@ -330,12 +347,14 @@ void ArcAppListPrefs::RequestIcon(const std::string& app_id,
     return;
   }
 
-  // In case app is not ready, defer this request.
-  if (!ready_apps_.count(app_id)) {
-    request_icon_deferred_[app_id] =
-        request_icon_deferred_[app_id] | 1 << scale_factor;
+  // In case app is not ready, recorded request will be send to ARC when app
+  // becomes ready.
+  // This record will prevent ArcAppIcon from resending request to ARC for app
+  // icon when icon file decode failure is suffered in case app sends bad icon.
+  request_icon_recorded_[app_id] |= (1 << scale_factor);
+
+  if (!ready_apps_.count(app_id))
     return;
-  }
 
   if (!app_instance_holder_->has_instance()) {
     // AppInstance should be ready since we have app_id in ready_apps_. This
@@ -369,6 +388,12 @@ void ArcAppListPrefs::RequestIcon(const std::string& app_id,
         base::Bind(&ArcAppListPrefs::OnIcon, base::Unretained(this), app_id,
                    static_cast<arc::mojom::ScaleFactor>(scale_factor)));
   }
+}
+
+void ArcAppListPrefs::MaybeRequestIcon(const std::string& app_id,
+                                       ui::ScaleFactor scale_factor) {
+  if (!IsIconRequestRecorded(app_id, scale_factor))
+    RequestIcon(app_id, scale_factor);
 }
 
 void ArcAppListPrefs::SetNotificationsEnabled(const std::string& app_id,
@@ -739,6 +764,7 @@ void ArcAppListPrefs::OnInstanceClosed() {
   default_apps_installations_.clear();
   detect_default_app_availability_timeout_.Stop();
   binding_.Close();
+  ClearIconRequestRecord();
 
   if (sync_service_) {
     sync_service_->StopSyncing(syncer::ARC_PACKAGE);
@@ -837,14 +863,13 @@ void ArcAppListPrefs::AddAppAndShortcut(
   }
 
   if (app_ready) {
-    auto deferred_icons = request_icon_deferred_.find(app_id);
-    if (deferred_icons != request_icon_deferred_.end()) {
+    auto pending_icons = request_icon_recorded_.find(app_id);
+    if (pending_icons != request_icon_recorded_.end()) {
       for (uint32_t i = ui::SCALE_FACTOR_100P; i < ui::NUM_SCALE_FACTORS; ++i) {
-        if (deferred_icons->second & (1 << i)) {
+        if (pending_icons->second & (1 << i)) {
           RequestIcon(app_id, static_cast<ui::ScaleFactor>(i));
         }
       }
-      request_icon_deferred_.erase(deferred_icons);
     }
 
     bool deferred_notifications_enabled;
@@ -861,6 +886,8 @@ void ArcAppListPrefs::RemoveApp(const std::string& app_id) {
   if (app_info && !app_info->icon_resource_id.empty()) {
     arc::RemoveCachedIcon(app_info->icon_resource_id);
   }
+
+  MaybeRemoveIconRequestRecord(app_id);
 
   // From now, app is not available.
   ready_apps_.erase(app_id);

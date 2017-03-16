@@ -82,7 +82,7 @@ class ArcAppIcon {
   class DecodeRequest;
   struct ReadResult;
 
-  void RequestIcon(ui::ScaleFactor scale_factor);
+  void MaybeRequestIcon(ui::ScaleFactor scale_factor);
   static std::unique_ptr<ArcAppIcon::ReadResult> ReadOnFileThread(
       ui::ScaleFactor scale_factor,
       const base::FilePath& path,

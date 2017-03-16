@@ -125,6 +125,8 @@ class FakeAppInstance : public mojom::AppInstance {
   bool GenerateAndSendIcon(const mojom::AppInfo& app,
                            mojom::ScaleFactor scale_factor,
                            std::string* png_data_as_string);
+  void GenerateAndSendBadIcon(const mojom::AppInfo& app,
+                              mojom::ScaleFactor scale_factor);
   void SendInstallShortcut(const mojom::ShortcutInfo& shortcuts);
   void SendInstallShortcuts(const std::vector<mojom::ShortcutInfo>& shortcuts);
   void SetTaskInfo(int32_t task_id,

@@ -199,11 +199,9 @@ class ArcAppListPrefs
   // Sets last launched time for the requested app.
   void SetLastLaunchTime(const std::string& app_id, const base::Time& time);
 
-  // Requests to load an app icon for specific scale factor. If the app or ARC
-  // bridge service is not ready, then defer this request until the app gets
-  // available. Once new icon is installed notifies an observer
-  // OnAppIconUpdated.
-  void RequestIcon(const std::string& app_id, ui::ScaleFactor scale_factor);
+  // Calls RequestIcon if no request is recorded.
+  void MaybeRequestIcon(const std::string& app_id,
+                        ui::ScaleFactor scale_factor);
 
   // Sets notification enabled flag for given value. If the app or ARC bridge
   // service is not ready, then defer this request until the app gets
@@ -249,6 +247,7 @@ class ArcAppListPrefs
 
  private:
   friend class ChromeLauncherControllerImplTest;
+  friend class ArcAppModelBuilderTest;
 
   // See the Create methods.
   ArcAppListPrefs(
@@ -343,6 +342,12 @@ class ArcAppListPrefs
                        ui::ScaleFactor scale_factor,
                        bool install_succeed);
 
+  // Requests to load an app icon for specific scale factor. If the app or ARC
+  // bridge service is not ready, then defer this request until the app gets
+  // available. Once new icon is installed notifies an observer
+  // OnAppIconUpdated.
+  void RequestIcon(const std::string& app_id, ui::ScaleFactor scale_factor);
+
   // This checks if app is not registered yet and in this case creates
   // non-launchable app entry.
   void MaybeAddNonLaunchableApp(const base::Optional<std::string>& name,
@@ -369,6 +374,14 @@ class ArcAppListPrefs
   // some default app is not available yet.
   void MaybeSetDefaultAppLoadingTimeout();
 
+  bool IsIconRequestRecorded(const std::string& app_id,
+                             ui::ScaleFactor scale_factor) const;
+
+  // Remove the IconRequestRecord associated with app_id.
+  void MaybeRemoveIconRequestRecord(const std::string& app_id);
+
+  void ClearIconRequestRecord();
+
   Profile* const profile_;
 
   // Owned by the BrowserContext.
@@ -387,10 +400,15 @@ class ArcAppListPrefs
   std::unordered_set<std::string> tracked_apps_;
   // Contains number of ARC packages that are currently installing.
   int installing_packages_count_ = 0;
-  // Keeps deferred icon load requests. Each app may contain several requests
-  // for different scale factor. Scale factor is defined by specific bit
-  // position.
-  std::map<std::string, uint32_t> request_icon_deferred_;
+  // Keeps record for icon request. Each app may contain several requests for
+  // different scale factor. Scale factor is defined by specific bit position.
+  // Mainly two usages:
+  // 1. Keeps deferred icon load requests when apps are not ready. Request will
+  // be sent when apps becomes ready.
+  // 2. Keeps record of icon request sent to Android. In each user session, one
+  // request per app per scale_factor is allowed once.
+  // When ARC is disabled or the app is uninstalled, the record will be erased.
+  std::map<std::string, uint32_t> request_icon_recorded_;
   // True if this preference has been initialized once.
   bool is_initialized_ = false;
   // True if apps were restored.

@@ -172,6 +172,7 @@ class ArcAppIcon::DecodeRequest : public ImageDecoder::ImageRequest {
   // ImageDecoder::ImageRequest
   void OnImageDecoded(const SkBitmap& bitmap) override;
   void OnDecodeImageFailed() override;
+
  private:
   base::WeakPtr<ArcAppIcon> host_;
   int dimension_;
@@ -206,6 +207,8 @@ void ArcAppIcon::DecodeRequest::OnImageDecoded(const SkBitmap& bitmap) {
     VLOG(2) << "Decoded ARC icon has unexpected dimension "
             << bitmap.width() << "x" << bitmap.height() << ". Expected "
             << expected_dim << "x" << ".";
+
+    host_->MaybeRequestIcon(scale_factor_);
     host_->DiscardDecodeRequest(this);
     return;
   }
@@ -214,7 +217,6 @@ void ArcAppIcon::DecodeRequest::OnImageDecoded(const SkBitmap& bitmap) {
   image_skia.AddRepresentation(gfx::ImageSkiaRep(
       bitmap,
       ui::GetScaleForScaleFactor(scale_factor_)));
-
   host_->Update(&image_skia);
   host_->DiscardDecodeRequest(this);
 }
@@ -225,6 +227,7 @@ void ArcAppIcon::DecodeRequest::OnDecodeImageFailed() {
   if (!host_)
     return;
 
+  host_->MaybeRequestIcon(scale_factor_);
   host_->DiscardDecodeRequest(this);
 }
 
@@ -270,7 +273,7 @@ void ArcAppIcon::LoadForScaleFactor(ui::ScaleFactor scale_factor) {
       base::Bind(&ArcAppIcon::OnIconRead, weak_ptr_factory_.GetWeakPtr()));
 }
 
-void ArcAppIcon::RequestIcon(ui::ScaleFactor scale_factor) {
+void ArcAppIcon::MaybeRequestIcon(ui::ScaleFactor scale_factor) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(context_);
   DCHECK(prefs);
@@ -278,7 +281,7 @@ void ArcAppIcon::RequestIcon(ui::ScaleFactor scale_factor) {
   // ArcAppListPrefs notifies ArcAppModelBuilder via Observer when icon is ready
   // and ArcAppModelBuilder refreshes the icon of the corresponding item by
   // calling LoadScaleFactor.
-  prefs->RequestIcon(app_id_, scale_factor);
+  prefs->MaybeRequestIcon(app_id_, scale_factor);
 }
 
 // static
@@ -293,24 +296,29 @@ std::unique_ptr<ArcAppIcon::ReadResult> ArcAppIcon::ReadOnFileThread(
     path_to_read = path;
   } else {
     if (default_app_path.empty() || !base::PathExists(default_app_path)) {
-      return base::WrapUnique(new ArcAppIcon::ReadResult(
-          false, true, scale_factor, std::string()));
+      return base::MakeUnique<ArcAppIcon::ReadResult>(false, true, scale_factor,
+                                                      std::string());
     }
     path_to_read = default_app_path;
   }
 
+  bool request_to_install = path_to_read != path;
+
   // Read the file from disk.
   std::string unsafe_icon_data;
-  if (!base::ReadFileToString(path_to_read, &unsafe_icon_data)) {
+  if (!base::ReadFileToString(path_to_read, &unsafe_icon_data) ||
+      unsafe_icon_data.empty()) {
     VLOG(2) << "Failed to read an ARC icon from file " << path.MaybeAsASCII();
-    return base::WrapUnique(new ArcAppIcon::ReadResult(
-        true, path_to_read != path, scale_factor, std::string()));
+
+    // If |unsafe_icon_data| is empty typically means we have a file corruption
+    // on cached icon file. Send request to re install the icon.
+    request_to_install |= unsafe_icon_data.empty();
+    return base::MakeUnique<ArcAppIcon::ReadResult>(
+        true, request_to_install, scale_factor, std::string());
   }
 
-  return base::WrapUnique(new ArcAppIcon::ReadResult(false,
-                                                     path_to_read != path,
-                                                     scale_factor,
-                                                     unsafe_icon_data));
+  return base::MakeUnique<ArcAppIcon::ReadResult>(
+      false, request_to_install, scale_factor, unsafe_icon_data);
 }
 
 void ArcAppIcon::OnIconRead(
@@ -318,7 +326,7 @@ void ArcAppIcon::OnIconRead(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (read_result->request_to_install)
-    RequestIcon(read_result->scale_factor);
+    MaybeRequestIcon(read_result->scale_factor);
 
   if (!read_result->unsafe_icon_data.empty()) {
     decode_requests_.push_back(base::MakeUnique<DecodeRequest>(

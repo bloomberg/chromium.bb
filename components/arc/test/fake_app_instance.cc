@@ -119,6 +119,12 @@ bool FakeAppInstance::GenerateAndSendIcon(const mojom::AppInfo& app,
   return true;
 }
 
+void FakeAppInstance::GenerateAndSendBadIcon(const mojom::AppInfo& app,
+                                             mojom::ScaleFactor scale_factor) {
+  std::vector<uint8_t> badIcon(10, 1);
+  app_host_->OnAppIcon(app.package_name, app.activity, scale_factor, badIcon);
+}
+
 bool FakeAppInstance::GetFakeIcon(mojom::ScaleFactor scale_factor,
                                   std::string* png_data_as_string) {
   CHECK(png_data_as_string != nullptr);
