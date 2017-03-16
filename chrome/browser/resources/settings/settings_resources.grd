@@ -996,6 +996,10 @@
                  preprocess="true"
                  file="settings.html"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_LAZY_LOAD_HTML"
+                 preprocess="true"
+                 file="lazy_load.html"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_USB_DEVICES_HTML"
                  file="site_settings/usb_devices.html"
                  type="chrome_html" />

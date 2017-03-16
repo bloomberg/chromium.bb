@@ -1,15 +1,9 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
-<link rel="import" href="../a11y_page/a11y_page.html">
 <link rel="import" href="../appearance_page/appearance_page.html">
 <link rel="import" href="../controls/settings_idle_render.html">
-<link rel="import" href="../downloads_page/downloads_page.html">
-<link rel="import" href="../languages_page/languages_page.html">
+<link rel="import" href="../lazy_load.html">
 <link rel="import" href="../on_startup_page/on_startup_page.html">
-<link rel="import" href="../passwords_and_forms_page/passwords_and_forms_page.html">
 <link rel="import" href="../people_page/people_page.html">
-<link rel="import" href="../printing_page/printing_page.html">
-<link rel="import" href="../privacy_page/privacy_page.html">
-<link rel="import" href="../reset_page/reset_page.html">
 <link rel="import" href="../reset_page/reset_profile_banner.html">
 <link rel="import" href="../search_page/search_page.html">
 <link rel="import" href="../settings_page/main_page_behavior.html">
@@ -21,14 +15,12 @@
 <if expr="chromeos">
 <link rel="import" href="../android_apps_page/android_apps_page.html">
 <link rel="import" href="../bluetooth_page/bluetooth_page.html">
-<link rel="import" href="../date_time_page/date_time_page.html">
 <link rel="import" href="../device_page/device_page.html">
 <link rel="import" href="../internet_page/internet_page.html">
 </if>
 
 <if expr="not chromeos">
 <link rel="import" href="../default_browser_page/default_browser_page.html">
-<link rel="import" href="../system_page/system_page.html">
 </if>
 
 <!-- TODO(michaelpg): Rename to something better than "basic" now that this page

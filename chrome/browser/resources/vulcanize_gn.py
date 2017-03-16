@@ -168,6 +168,10 @@ def _vulcanize(in_folder, args):
                  '--html', html_out_path,
                  '--js', js_out_path])
 
+    # Create an empty JS file if crisper did not create one.
+    if not os.path.isfile(js_out_path):
+      open(js_out_path, 'w').close()
+
     node.RunNode([node_modules.PathToUglifyJs(), js_out_path,
                   '--comments', '"/Copyright|license|LICENSE|\<\/?if/"',
                   '--output', js_out_path])

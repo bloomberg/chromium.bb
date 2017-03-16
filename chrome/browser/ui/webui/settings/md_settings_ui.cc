@@ -205,6 +205,10 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui, const GURL& url)
 
 #if BUILDFLAG(USE_VULCANIZE)
   html_source->AddResourcePath("crisper.js", IDR_MD_SETTINGS_CRISPER_JS);
+  html_source->AddResourcePath("lazy_load.crisper.js",
+                               IDR_MD_SETTINGS_LAZY_LOAD_CRISPER_JS);
+  html_source->AddResourcePath("lazy_load.html",
+                               IDR_MD_SETTINGS_LAZY_LOAD_VULCANIZED_HTML);
   html_source->SetDefaultResource(IDR_MD_SETTINGS_VULCANIZED_HTML);
   html_source->UseGzip(std::unordered_set<std::string>());
 #else
