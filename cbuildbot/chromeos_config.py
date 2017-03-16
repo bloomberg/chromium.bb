@@ -687,6 +687,7 @@ _waterfall_config_map = {
         'kip-paladin',
         'loonix-paladin',
         'poppy-paladin',
+        'scarlet-paladin',
         'whirlwind-paladin',
 
         # Firmware Builders.
