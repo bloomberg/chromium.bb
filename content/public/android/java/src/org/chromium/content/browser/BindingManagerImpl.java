@@ -20,6 +20,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Manages oom bindings used to bound child services.
@@ -158,8 +159,8 @@ class BindingManagerImpl implements BindingManager {
         }
     }
 
-    private final Object mModerateBindingPoolLock = new Object();
-    private ModerateBindingPool mModerateBindingPool;
+    private final AtomicReference<ModerateBindingPool> mModerateBindingPool =
+            new AtomicReference<>();
 
     /**
      * Wraps ChildProcessConnection keeping track of additional information needed to manage the
@@ -201,10 +202,7 @@ class BindingManagerImpl implements BindingManager {
             if (connection == null) return;
 
             connection.addStrongBinding();
-            ModerateBindingPool moderateBindingPool;
-            synchronized (mModerateBindingPoolLock) {
-                moderateBindingPool = mModerateBindingPool;
-            }
+            ModerateBindingPool moderateBindingPool = mModerateBindingPool.get();
             if (moderateBindingPool != null) moderateBindingPool.removeConnection(this);
         }
 
@@ -242,10 +240,7 @@ class BindingManagerImpl implements BindingManager {
          * @param connection The ChildProcessConnection to add to the moderate binding pool.
          */
         private void addConnectionToModerateBindingPool(ChildProcessConnection connection) {
-            ModerateBindingPool moderateBindingPool;
-            synchronized (mModerateBindingPoolLock) {
-                moderateBindingPool = mModerateBindingPool;
-            }
+            ModerateBindingPool moderateBindingPool = mModerateBindingPool.get();
             if (moderateBindingPool != null && !connection.isStrongBindingBound()) {
                 moderateBindingPool.addConnection(ManagedConnection.this);
             }
@@ -332,7 +327,7 @@ class BindingManagerImpl implements BindingManager {
 
         void clearConnection() {
             mWasOomProtected = mConnection.isOomProtectedOrWasWhenDied();
-            ModerateBindingPool moderateBindingPool = mModerateBindingPool;
+            ModerateBindingPool moderateBindingPool = mModerateBindingPool.get();
             if (moderateBindingPool != null) moderateBindingPool.removeConnection(this);
             mConnection = null;
         }
@@ -449,10 +444,7 @@ class BindingManagerImpl implements BindingManager {
                 mBoundForBackgroundPeriod = mLastInForeground;
             }
         }
-        ModerateBindingPool moderateBindingPool;
-        synchronized (mModerateBindingPoolLock) {
-            moderateBindingPool = mModerateBindingPool;
-        }
+        ModerateBindingPool moderateBindingPool = mModerateBindingPool.get();
         if (moderateBindingPool != null) moderateBindingPool.onSentToBackground(mOnTesting);
     }
 
@@ -462,10 +454,7 @@ class BindingManagerImpl implements BindingManager {
             mBoundForBackgroundPeriod.setBoundForBackgroundPeriod(false);
             mBoundForBackgroundPeriod = null;
         }
-        ModerateBindingPool moderateBindingPool;
-        synchronized (mModerateBindingPoolLock) {
-            moderateBindingPool = mModerateBindingPool;
-        }
+        ModerateBindingPool moderateBindingPool = mModerateBindingPool.get();
         if (moderateBindingPool != null) moderateBindingPool.onBroughtToForeground();
     }
 
@@ -501,23 +490,19 @@ class BindingManagerImpl implements BindingManager {
     @Override
     public void startModerateBindingManagement(
             Context context, int maxSize, boolean moderateBindingTillBackgrounded) {
-        synchronized (mModerateBindingPoolLock) {
-            if (mIsLowMemoryDevice || mModerateBindingPool != null) return;
-
+        if (mIsLowMemoryDevice) return;
+        ModerateBindingPool pool = new ModerateBindingPool(maxSize);
+        if (mModerateBindingPool.compareAndSet(null, pool)) {
             mModerateBindingTillBackgrounded = moderateBindingTillBackgrounded;
 
             Log.i(TAG, "Moderate binding enabled: maxSize=%d", maxSize);
-            mModerateBindingPool = new ModerateBindingPool(maxSize);
-            if (context != null) context.registerComponentCallbacks(mModerateBindingPool);
+            if (context != null) context.registerComponentCallbacks(pool);
         }
     }
 
     @Override
     public void releaseAllModerateBindings() {
-        ModerateBindingPool moderateBindingPool;
-        synchronized (mModerateBindingPoolLock) {
-            moderateBindingPool = mModerateBindingPool;
-        }
+        ModerateBindingPool moderateBindingPool = mModerateBindingPool.get();
         if (moderateBindingPool != null) {
             Log.i(TAG, "Release all moderate bindings: %d", moderateBindingPool.size());
             moderateBindingPool.evictAll();
