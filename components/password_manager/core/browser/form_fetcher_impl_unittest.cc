@@ -500,4 +500,57 @@ TEST_F(FormFetcherImplTest, TryToMigrateHTTPPasswordsOnHTTPSSites) {
               UnorderedElementsAre(Pointee(federated_form)));
 }
 
+// When the FormFetcher delegates to the HttpPasswordMigrator, its state should
+// be WAITING until the migrator passes the results.
+TEST_F(FormFetcherImplTest, StateIsWaitingDuringMigration) {
+  GURL::Replacements https_rep;
+  https_rep.SetSchemeStr(url::kHttpsScheme);
+  const GURL https_origin = form_digest_.origin.ReplaceComponents(https_rep);
+  form_digest_ = PasswordStore::FormDigest(
+      PasswordForm::SCHEME_HTML, https_origin.GetOrigin().spec(), https_origin);
+
+  // A new form fetcher is created to be able to set the form digest and
+  // migration flag.
+  form_fetcher_ = base::MakeUnique<FormFetcherImpl>(
+      form_digest_, &client_, /* should_migrate_http_passwords */ true);
+
+  PasswordForm https_form = CreateNonFederated();
+
+  // Create HTTP form for the same orgin (except scheme), which will be passed
+  // to the migrator.
+  GURL::Replacements http_rep;
+  http_rep.SetSchemeStr(url::kHttpScheme);
+  PasswordForm http_form = https_form;
+  http_form.origin = https_form.origin.ReplaceComponents(http_rep);
+  http_form.signon_realm = http_form.origin.GetOrigin().spec();
+
+  std::vector<PasswordForm> empty_forms;
+
+  // Ensure there is an attempt to migrate credentials on HTTPS origins and
+  // extract the migrator.
+  const GURL form_digest_http_origin =
+      form_digest_.origin.ReplaceComponents(http_rep);
+  PasswordStore::FormDigest http_form_digest(
+      PasswordForm::SCHEME_HTML, form_digest_http_origin.GetOrigin().spec(),
+      form_digest_http_origin);
+  Fetch();
+  // First the FormFetcher is waiting for the initial response from
+  // PasswordStore.
+  EXPECT_EQ(FormFetcher::State::WAITING, form_fetcher_->GetState());
+  base::WeakPtr<PasswordStoreConsumer> migrator_ptr;
+  EXPECT_CALL(*mock_store_, GetLogins(http_form_digest, _))
+      .WillOnce(WithArg<1>(GetAndAssignWeakPtr(&migrator_ptr)));
+  form_fetcher_->OnGetPasswordStoreResults(MakeResults(empty_forms));
+  ASSERT_TRUE(migrator_ptr);
+  // While the initial results from PasswordStore arrived to the FormFetcher, it
+  // should be still waiting for the migrator.
+  EXPECT_EQ(FormFetcher::State::WAITING, form_fetcher_->GetState());
+
+  // Now perform the actual migration.
+  EXPECT_CALL(*mock_store_, AddLogin(https_form));
+  static_cast<HttpPasswordMigrator*>(migrator_ptr.get())
+      ->OnGetPasswordStoreResults(MakeResults({http_form}));
+  EXPECT_EQ(FormFetcher::State::NOT_WAITING, form_fetcher_->GetState());
+}
+
 }  // namespace password_manager

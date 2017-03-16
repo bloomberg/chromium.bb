@@ -91,10 +91,10 @@ const std::vector<const PasswordForm*>& FormFetcherImpl::GetFederatedMatches()
 void FormFetcherImpl::OnGetPasswordStoreResults(
     std::vector<std::unique_ptr<PasswordForm>> results) {
   DCHECK_EQ(State::WAITING, state_);
-  state_ = State::NOT_WAITING;
 
   if (need_to_refetch_) {
     // The received results are no longer up to date, need to re-request.
+    state_ = State::NOT_WAITING;
     Fetch();
     need_to_refetch_ = false;
     return;
@@ -167,6 +167,8 @@ void FormFetcherImpl::Fetch() {
 
 void FormFetcherImpl::ProcessPasswordStoreResults(
     std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
+  DCHECK_EQ(State::WAITING, state_);
+  state_ = State::NOT_WAITING;
   federated_ = SplitFederatedMatches(&results);
   non_federated_ = std::move(results);
 
