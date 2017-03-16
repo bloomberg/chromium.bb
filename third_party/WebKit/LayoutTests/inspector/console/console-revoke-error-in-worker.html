@@ -18,8 +18,8 @@ function handlePromiseRejection()
 
 function test()
 {
-    SDK.multitargetConsoleModel.addEventListener(SDK.ConsoleModel.Events.MessageAdded, InspectorTest.wrapListener(messageAdded));
-    SDK.multitargetConsoleModel.addEventListener(SDK.ConsoleModel.Events.MessageUpdated, InspectorTest.wrapListener(messageUpdated));
+    SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.MessageAdded, InspectorTest.wrapListener(messageAdded));
+    SDK.consoleModel.addEventListener(SDK.ConsoleModel.Events.MessageUpdated, InspectorTest.wrapListener(messageUpdated));
 
     InspectorTest.addResult("Creating worker with promise");
     InspectorTest.evaluateInPageWithTimeout("createPromise()");

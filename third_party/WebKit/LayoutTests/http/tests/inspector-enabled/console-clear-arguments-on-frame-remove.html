@@ -31,7 +31,7 @@ function createIFrame()
 
 function test()
 {
-    for (var message of SDK.multitargetConsoleModel.messages()) {
+    for (var message of SDK.consoleModel.messages()) {
         var args = (message.parameters || []).map((arg) => arg.type);
         InspectorTest.addResult("Message: \"" + message.messageText + "\", arguments: [" + args.join(", ") + "]");
     }

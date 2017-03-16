@@ -14,7 +14,7 @@ function test()
     function addMessageWithFixedTimestamp(messageText, timestamp)
     {
         var message = new SDK.ConsoleMessage(
-            InspectorTest.consoleModel.target(),
+            InspectorTest.mainTarget,
             SDK.ConsoleMessage.MessageSource.Other, // source
             SDK.ConsoleMessage.MessageLevel.Info, // level
             messageText,
