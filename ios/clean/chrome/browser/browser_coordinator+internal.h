@@ -37,6 +37,10 @@
 // The coordinator that added this coordinator as a child, if any.
 @property(nonatomic, readonly) BrowserCoordinator* parentCoordinator;
 
+// YES if the receiver has been started; NO (the default) otherwise. Stopping
+// the receiver resets this property to NO.
+@property(nonatomic, readonly) BOOL started;
+
 // YES if the receiver is acting as an overlay coordinator; NO (the default)
 // otherwise.
 @property(nonatomic, readonly) BOOL overlaying;

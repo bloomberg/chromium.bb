@@ -21,6 +21,7 @@
     NSMutableSet<BrowserCoordinator*>* childCoordinators;
 // Parent coordinator of this object, if any.
 @property(nonatomic, readwrite, weak) BrowserCoordinator* parentCoordinator;
+@property(nonatomic, readwrite) BOOL started;
 @property(nonatomic, readwrite) BOOL overlaying;
 @end
 
@@ -30,6 +31,7 @@
 @synthesize browser = _browser;
 @synthesize childCoordinators = _childCoordinators;
 @synthesize parentCoordinator = _parentCoordinator;
+@synthesize started = _started;
 @synthesize overlaying = _overlaying;
 
 - (instancetype)init {
@@ -43,11 +45,13 @@
 #pragma mark - Public API
 
 - (void)start {
+  self.started = YES;
   [self.parentCoordinator childCoordinatorDidStart:self];
 }
 
 - (void)stop {
   [self.parentCoordinator childCoordinatorWillStop:self];
+  self.started = NO;
 }
 
 @end
