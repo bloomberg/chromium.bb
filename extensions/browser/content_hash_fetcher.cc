@@ -31,6 +31,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/file_util.h"
 #include "net/base/load_flags.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_status.h"
@@ -240,8 +241,32 @@ void ContentHashFetcherJob::DoneCheckingForVerifiedContents(bool found) {
   } else {
     VLOG(1) << "Missing verified contents for " << extension_id_
             << ", fetching...";
-    url_fetcher_ =
-        net::URLFetcher::Create(fetch_url_, net::URLFetcher::GET, this);
+    net::NetworkTrafficAnnotationTag traffic_annotation =
+        net::DefineNetworkTrafficAnnotation("content_hash_verification_job", R"(
+          semantics {
+            sender: "Web Store Content Verification"
+            description:
+              "The request sent to retrieve the file required for content "
+              "verification for an extension from the Web Store."
+            trigger:
+              "An extension from the Web Store is missing the "
+              "verified_contents.json file required for extension content "
+              "verification."
+            data: "The extension id and extension version."
+            destination: GOOGLE_OWNED_SERVICE
+          }
+          policy {
+            cookies_allowed: false
+            setting:
+              "This feature cannot be directly disabled; it is enabled if any "
+              "extension from the webstore is installed in the browser."
+            policy_exception_justification:
+              "Not implemented, not required. If the user has extensions from "
+              "the Web Store, this feature is required to ensure the "
+              "extensions match what is distributed by the store."
+          })");
+    url_fetcher_ = net::URLFetcher::Create(fetch_url_, net::URLFetcher::GET,
+                                           this, traffic_annotation);
     url_fetcher_->SetRequestContext(request_context_);
     url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                                net::LOAD_DO_NOT_SAVE_COOKIES |
