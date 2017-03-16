@@ -230,13 +230,8 @@ FloatSize SVGImage::concreteObjectSize(
   return defaultObjectSize;
 }
 
-void SVGImage::drawForContainer(PaintCanvas* canvas,
-                                const PaintFlags& flags,
-                                const FloatSize containerSize,
-                                float zoom,
-                                const FloatRect& dstRect,
-                                const FloatRect& srcRect,
-                                const KURL& url) {
+template <typename Func>
+void SVGImage::forContainer(const FloatSize& containerSize, Func&& func) {
   if (!m_page)
     return;
 
@@ -252,17 +247,29 @@ void SVGImage::drawForContainer(PaintCanvas* canvas,
       layoutObject->setContainerSize(roundedContainerSize);
   }
 
-  FloatRect scaledSrc = srcRect;
-  scaledSrc.scale(1 / zoom);
+  func(FloatSize(roundedContainerSize.width() / containerSize.width(),
+                 roundedContainerSize.height() / containerSize.height()));
+}
 
-  // Compensate for the container size rounding by adjusting the source rect.
-  FloatSize adjustedSrcSize = scaledSrc.size();
-  adjustedSrcSize.scale(roundedContainerSize.width() / containerSize.width(),
-                        roundedContainerSize.height() / containerSize.height());
-  scaledSrc.setSize(adjustedSrcSize);
+void SVGImage::drawForContainer(PaintCanvas* canvas,
+                                const PaintFlags& flags,
+                                const FloatSize& containerSize,
+                                float zoom,
+                                const FloatRect& dstRect,
+                                const FloatRect& srcRect,
+                                const KURL& url) {
+  forContainer(containerSize, [&](const FloatSize& residualScale) {
+    FloatRect scaledSrc = srcRect;
+    scaledSrc.scale(1 / zoom);
 
-  drawInternal(canvas, flags, dstRect, scaledSrc, DoNotRespectImageOrientation,
-               ClampImageToSourceRect, url);
+    // Compensate for the container size rounding by adjusting the source rect.
+    FloatSize adjustedSrcSize = scaledSrc.size();
+    adjustedSrcSize.scale(residualScale.width(), residualScale.height());
+    scaledSrc.setSize(adjustedSrcSize);
+
+    drawInternal(canvas, flags, dstRect, scaledSrc,
+                 DoNotRespectImageOrientation, ClampImageToSourceRect, url);
+  });
 }
 
 sk_sp<SkImage> SVGImage::imageForCurrentFrame() {
@@ -355,6 +362,48 @@ static bool drawNeedsLayer(const PaintFlags& flags) {
   return !flags.isSrcOver();
 }
 
+bool SVGImage::applyShaderInternal(PaintFlags& flags,
+                                   const SkMatrix& localMatrix,
+                                   const KURL& url) {
+  const FloatSize size(containerSize());
+  if (size.isEmpty())
+    return false;
+
+  const FloatRect bounds(FloatPoint(), size);
+  flags.setShader(SkShader::MakePictureShader(
+      paintRecordForCurrentFrame(bounds, bounds, url),
+      SkShader::kRepeat_TileMode, SkShader::kRepeat_TileMode, &localMatrix,
+      nullptr));
+
+  // Animation is normally refreshed in draw() impls, which we don't reach when
+  // painting via shaders.
+  startAnimation();
+
+  return true;
+}
+
+bool SVGImage::applyShader(PaintFlags& flags, const SkMatrix& localMatrix) {
+  return applyShaderInternal(flags, localMatrix, KURL());
+}
+
+bool SVGImage::applyShaderForContainer(const FloatSize& containerSize,
+                                       float zoom,
+                                       const KURL& url,
+                                       PaintFlags& flags,
+                                       const SkMatrix& localMatrix) {
+  bool result = false;
+  forContainer(containerSize, [&](const FloatSize& residualScale) {
+    // Compensate for the container size rounding.
+    auto adjustedLocalMatrix = localMatrix;
+    adjustedLocalMatrix.preScale(zoom * residualScale.width(),
+                                 zoom * residualScale.height());
+
+    result = applyShaderInternal(flags, adjustedLocalMatrix, url);
+  });
+
+  return result;
+}
+
 void SVGImage::draw(PaintCanvas* canvas,
                     const PaintFlags& flags,
                     const FloatRect& dstRect,
@@ -368,13 +417,10 @@ void SVGImage::draw(PaintCanvas* canvas,
                clampMode, KURL());
 }
 
-void SVGImage::drawInternal(PaintCanvas* canvas,
-                            const PaintFlags& flags,
-                            const FloatRect& dstRect,
-                            const FloatRect& srcRect,
-                            RespectImageOrientationEnum,
-                            ImageClampingMode,
-                            const KURL& url) {
+sk_sp<PaintRecord> SVGImage::paintRecordForCurrentFrame(
+    const FloatRect& srcRect,
+    const FloatRect& dstRect,
+    const KURL& url) {
   DCHECK(m_page);
   FrameView* view = toLocalFrame(m_page->mainFrame())->view();
   view->resize(containerSize());
@@ -424,14 +470,24 @@ void SVGImage::drawInternal(PaintCanvas* canvas,
     DCHECK(!view->needsLayout());
   }
 
+  return builder.endRecording();
+}
+
+void SVGImage::drawInternal(PaintCanvas* canvas,
+                            const PaintFlags& flags,
+                            const FloatRect& dstRect,
+                            const FloatRect& srcRect,
+                            RespectImageOrientationEnum,
+                            ImageClampingMode,
+                            const KURL& url) {
   {
     PaintCanvasAutoRestore ar(canvas, false);
     if (drawNeedsLayer(flags)) {
       SkRect layerRect = dstRect;
       canvas->saveLayer(&layerRect, &flags);
     }
-    sk_sp<PaintRecord> recording = builder.endRecording();
-    canvas->drawPicture(recording.get());
+
+    canvas->drawPicture(paintRecordForCurrentFrame(srcRect, dstRect, url));
   }
 
   // Start any (SMIL) animations if needed. This will restart or continue

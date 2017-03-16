@@ -55,6 +55,12 @@ void SVGImageForContainer::drawPattern(GraphicsContext& context,
                                    m_url);
 }
 
+bool SVGImageForContainer::applyShader(PaintFlags& flags,
+                                       const SkMatrix& localMatrix) {
+  return m_image->applyShaderForContainer(m_containerSize, m_zoom, m_url, flags,
+                                          localMatrix);
+}
+
 sk_sp<SkImage> SVGImageForContainer::imageForCurrentFrame() {
   return m_image->imageForCurrentFrameForContainer(m_url, size());
 }
