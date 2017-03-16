@@ -39,6 +39,7 @@
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/user_metrics.h"
 #include "skia/ext/skia_utils_mac.h"
+#include "ui/base/cocoa/a11y_util.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/controls/hyperlink_text_view.h"
 #import "ui/base/cocoa/menu_controller.h"
@@ -497,6 +498,7 @@ const NSInteger kFullscreenLeftOffset = 40;
       setImage:NSImageFromImageSkia(gfx::CreateVectorIcon(
                    request->GetIconId(), 18, gfx::kChromeIconGrey))];
   [permissionIcon setFrameSize:kPermissionIconSize];
+  ui::a11y_util::HideImageFromAccessibilityOrder(permissionIcon);
   [permissionView addSubview:permissionIcon];
 
   base::scoped_nsobject<NSTextField> permissionLabel(
