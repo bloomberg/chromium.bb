@@ -181,7 +181,7 @@ class LoginTest : public LoginManagerTest {
 
 // Used to make sure that the system tray is visible and within the screen
 // bounds after login.
-void TestSystemTrayIsVisible() {
+void TestSystemTrayIsVisible(bool otr) {
   ash::SystemTray* tray = ash::Shell::GetInstance()->GetPrimarySystemTray();
   aura::Window* primary_win = ash::Shell::GetPrimaryRootWindow();
   ash::WmWindow* wm_primary_win = ash::WmWindow::Get(primary_win);
@@ -190,7 +190,10 @@ void TestSystemTrayIsVisible() {
                << "ShelfVisibilityState=" << wm_shelf->GetVisibilityState()
                << " ShelfAutoHideBehavior=" << wm_shelf->auto_hide_behavior());
   EXPECT_TRUE(tray->visible());
-  EXPECT_TRUE(RectContains(primary_win->bounds(), tray->GetBoundsInScreen()));
+
+  // This check flakes for LoginGuestTest: https://crbug.com/693106.
+  if (!otr)
+    EXPECT_TRUE(RectContains(primary_win->bounds(), tray->GetBoundsInScreen()));
 }
 
 }  // namespace
@@ -205,33 +208,31 @@ IN_PROC_BROWSER_TEST_F(LoginUserTest, UserPassed) {
   EXPECT_EQ(profile_base_path, profile->GetPath().BaseName().value());
   EXPECT_FALSE(profile->IsOffTheRecord());
 
-  TestSystemTrayIsVisible();
+  TestSystemTrayIsVisible(false);
 }
 
 // Verifies the cursor is not hidden at startup when user is logged in.
 IN_PROC_BROWSER_TEST_F(LoginUserTest, CursorShown) {
   EXPECT_TRUE(ash::Shell::GetInstance()->cursor_manager()->IsCursorVisible());
 
-  TestSystemTrayIsVisible();
+  TestSystemTrayIsVisible(false);
 }
 
 // After a guest login, we should get the OTR default profile.
-// Test is flaky https://crbug.com/693106
-IN_PROC_BROWSER_TEST_F(LoginGuestTest, DISABLED_GuestIsOTR) {
+IN_PROC_BROWSER_TEST_F(LoginGuestTest, GuestIsOTR) {
   Profile* profile = browser()->profile();
   EXPECT_TRUE(profile->IsOffTheRecord());
   // Ensure there's extension service for this profile.
   EXPECT_TRUE(extensions::ExtensionSystem::Get(profile)->extension_service());
 
-  TestSystemTrayIsVisible();
+  TestSystemTrayIsVisible(true);
 }
 
 // Verifies the cursor is not hidden at startup when running guest session.
-// Test is flaky https://crbug.com/693106
-IN_PROC_BROWSER_TEST_F(LoginGuestTest, DISABLED_CursorShown) {
+IN_PROC_BROWSER_TEST_F(LoginGuestTest, CursorShown) {
   EXPECT_TRUE(ash::Shell::GetInstance()->cursor_manager()->IsCursorVisible());
 
-  TestSystemTrayIsVisible();
+  TestSystemTrayIsVisible(true);
 }
 
 // Verifies the cursor is hidden at startup on login screen.
@@ -249,7 +250,7 @@ IN_PROC_BROWSER_TEST_F(LoginCursorTest, CursorHidden) {
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
       FROM_HERE, LoginDisplayHost::default_host());
 
-  TestSystemTrayIsVisible();
+  TestSystemTrayIsVisible(false);
 }
 
 // Verifies that the webui for login comes up successfully.
@@ -276,7 +277,7 @@ IN_PROC_BROWSER_TEST_F(LoginTest, DISABLED_GaiaAuthOffline) {
   SubmitGaiaAuthOfflineForm(kTestUser, kPassword);
   session_start_waiter.Wait();
 
-  TestSystemTrayIsVisible();
+  TestSystemTrayIsVisible(false);
 }
 
 }  // namespace chromeos
