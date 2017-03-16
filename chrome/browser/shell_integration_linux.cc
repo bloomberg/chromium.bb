@@ -164,26 +164,27 @@ bool SetDefaultWebClient(const std::string& protocol) {
 #endif
 }
 
-#if !defined(OS_CHROMEOS)
-// If |check| is true, returns the output of "xdg-settings check {property}
-// *.desktop", otherwise returns the output of "xdg-settings get {property}",
-// where property is "default-web-browser" if |protocol| is empty or
-// "default-url-scheme-handler |protocol|" otherwise.  Returns "" if
-// xdg-settings fails for any reason.
-std::string GetXdgSettingsOutput(bool check,
-                                 const std::string& protocol,
-                                 base::Environment* env) {
+// If |protocol| is empty this function checks if Chrome is the default browser,
+// otherwise it checks if Chrome is the default handler application for
+// |protocol|.
+DefaultWebClientState GetIsDefaultWebClient(const std::string& protocol) {
+#if defined(OS_CHROMEOS)
+  return UNKNOWN_DEFAULT;
+#else
+  base::ThreadRestrictions::AssertIOAllowed();
+
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
+
   std::vector<std::string> argv;
   argv.push_back(kXdgSettings);
-  argv.push_back(check ? "check" : "get");
+  argv.push_back("check");
   if (protocol.empty()) {
     argv.push_back(kXdgSettingsDefaultBrowser);
   } else {
     argv.push_back(kXdgSettingsDefaultSchemeHandler);
     argv.push_back(protocol);
   }
-  if (check)
-    argv.push_back(shell_integration_linux::GetDesktopName(env));
+  argv.push_back(shell_integration_linux::GetDesktopName(env.get()));
 
   std::string reply;
   int success_code;
@@ -196,47 +197,15 @@ std::string GetXdgSettingsOutput(bool check,
     }
   }
 
-  if (!ran_ok || success_code != EXIT_SUCCESS)
-    return std::string();
-
-  return reply;
-}
-#endif
-
-// If |protocol| is empty this function checks if Chrome is the default browser,
-// otherwise it checks if Chrome is the default handler application for
-// |protocol|.
-DefaultWebClientState GetDefaultWebClient(const std::string& protocol) {
-#if defined(OS_CHROMEOS)
-  return UNKNOWN_DEFAULT;
-#else
-  base::ThreadRestrictions::AssertIOAllowed();
-
-  std::unique_ptr<base::Environment> env(base::Environment::Create());
-  std::string xdg_is_default = GetXdgSettingsOutput(true, protocol, env.get());
-  if (base::StartsWith(xdg_is_default, "yes", base::CompareCase::SENSITIVE)) {
-    return IS_DEFAULT;
-  }
-  if (base::StartsWith(xdg_is_default, "no", base::CompareCase::SENSITIVE)) {
-    // An output of "no" does not necessarily mean Chrom[e,ium] is not the
-    // default.  According to the xdg-settings man page, this can happen when
-    // "only some of the underlying settings actually reflect that value". Don't
-    // return NOT_DEFAULT unless we're sure, or else an annoying "Chrome is not
-    // your default browser" banner will appear on every launch
-    // (https://crbug.com/578888).
-    if (base::StartsWith(GetXdgSettingsOutput(false, protocol, env.get()),
-                         shell_integration_linux::GetDesktopName(env.get()),
-                         base::CompareCase::SENSITIVE)) {
-      // This is the odd case where 'xdg-settings check' said that Chrome wasn't
-      // the default, but 'xdg-settings get' returned Chrome as the default.
-      return UNKNOWN_DEFAULT;
-    }
-    // xdg-settings says the default is non-Chrome, and is self-consistent.
-    return NOT_DEFAULT;
+  if (!ran_ok || success_code != EXIT_SUCCESS) {
+    // xdg-settings failed: we can't determine or set the default browser.
+    return UNKNOWN_DEFAULT;
   }
 
-  // xdg-settings failed: we can't determine or set the default browser.
-  return UNKNOWN_DEFAULT;
+  // Allow any reply that starts with "yes".
+  return base::StartsWith(reply, "yes", base::CompareCase::SENSITIVE)
+             ? IS_DEFAULT
+             : NOT_DEFAULT;
 #endif
 }
 
@@ -274,7 +243,7 @@ base::string16 GetApplicationNameForProtocol(const GURL& url) {
 }
 
 DefaultWebClientState GetDefaultBrowser() {
-  return GetDefaultWebClient(std::string());
+  return GetIsDefaultWebClient(std::string());
 }
 
 bool IsFirefoxDefaultBrowser() {
@@ -290,7 +259,7 @@ bool IsFirefoxDefaultBrowser() {
 }
 
 DefaultWebClientState IsDefaultProtocolClient(const std::string& protocol) {
-  return GetDefaultWebClient(protocol);
+  return GetIsDefaultWebClient(protocol);
 }
 
 }  // namespace shell_integration
