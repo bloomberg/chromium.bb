@@ -18,24 +18,37 @@ ParallelDownloadJob::ParallelDownloadJob(
     const DownloadCreateInfo& create_info)
     : DownloadJobImpl(download_item, std::move(request_handle)),
       initial_request_offset_(create_info.save_info->offset),
-      initial_request_length_(create_info.save_info->length) {}
+      initial_request_length_(create_info.save_info->length),
+      requests_sent_(false) {}
 
 ParallelDownloadJob::~ParallelDownloadJob() = default;
 
 void ParallelDownloadJob::Start() {
   DownloadJobImpl::Start();
 
-  BuildParallelRequests();
+  BuildParallelRequestAfterDelay();
 }
 
 void ParallelDownloadJob::Cancel(bool user_cancel) {
   DownloadJobImpl::Cancel(user_cancel);
+
+  if (!requests_sent_) {
+    timer_.Stop();
+    return;
+  }
+
   for (auto& worker : workers_)
     worker->Cancel();
 }
 
 void ParallelDownloadJob::Pause() {
   DownloadJobImpl::Pause();
+
+  if (!requests_sent_) {
+    timer_.Stop();
+    return;
+  }
+
   for (auto& worker : workers_)
     worker->Pause();
 }
@@ -44,6 +57,13 @@ void ParallelDownloadJob::Resume(bool resume_request) {
   DownloadJobImpl::Resume(resume_request);
   if (!resume_request)
     return;
+
+  // Send parallel requests if the download is paused previously.
+  if (!requests_sent_) {
+    if (!timer_.IsRunning())
+      BuildParallelRequestAfterDelay();
+    return;
+  }
 
   for (auto& worker : workers_)
     worker->Resume();
@@ -73,7 +93,18 @@ void ParallelDownloadJob::ForkRequestsForNewDownload(int64_t bytes_received,
   }
 }
 
+void ParallelDownloadJob::BuildParallelRequestAfterDelay() {
+  DCHECK(workers_.empty());
+  DCHECK(!requests_sent_);
+  DCHECK(!timer_.IsRunning());
+
+  timer_.Start(FROM_HERE, GetParallelRequestDelayConfig(), this,
+               &ParallelDownloadJob::BuildParallelRequests);
+}
+
 void ParallelDownloadJob::BuildParallelRequests() {
+  DCHECK(!requests_sent_);
+
   // Calculate the slices to download and fork parallel requests.
   std::vector<DownloadItem::ReceivedSlice> slices_to_download =
       FindSlicesToDownload(download_item_->GetReceivedSlices());
@@ -97,6 +128,8 @@ void ParallelDownloadJob::BuildParallelRequests() {
     // split it into N pieces and pass the last N-1 pirces to different workers.
     // Otherwise, just fork |slices_to_download.size()| number of workers.
   }
+
+  requests_sent_ = true;
 }
 
 void ParallelDownloadJob::CreateRequest(int64_t offset, int64_t length) {

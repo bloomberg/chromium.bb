@@ -6,6 +6,7 @@
 
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/time/time.h"
 #include "content/public/browser/download_save_info.h"
 #include "content/public/common/content_features.h"
 
@@ -27,6 +28,10 @@ const char kParallelRequestCountFinchKey[] = "request_count";
 // Default value for |kParallelRequestCountFinchKey|, when no parameter is
 // specified.
 const int kParallelRequestCount = 2;
+
+// Finch parameter key value for the delay time in milliseconds to send
+// parallel requests after response of the original request is handled.
+const char kParallelRequestDelayFinchKey[] = "parallel_request_delay";
 
 // TODO(qinmin): replace this with a comparator operator in
 // DownloadItem::ReceivedSlice.
@@ -90,7 +95,7 @@ int64_t GetMinSliceSizeConfig() {
   std::string finch_value = base::GetFieldTrialParamValueByFeature(
       features::kParallelDownloading, kMinSliceSizeFinchKey);
   int64_t result;
-  return !finch_value.empty() && base::StringToInt64(finch_value, &result)
+  return base::StringToInt64(finch_value, &result)
              ? result
              : kMinSliceSizeParallelDownload;
 }
@@ -99,9 +104,17 @@ int GetParallelRequestCountConfig() {
   std::string finch_value = base::GetFieldTrialParamValueByFeature(
       features::kParallelDownloading, kParallelRequestCountFinchKey);
   int result;
-  return !finch_value.empty() && base::StringToInt(finch_value, &result)
-             ? result
-             : kParallelRequestCount;
+  return base::StringToInt(finch_value, &result) ? result
+                                                 : kParallelRequestCount;
+}
+
+base::TimeDelta GetParallelRequestDelayConfig() {
+  std::string finch_value = base::GetFieldTrialParamValueByFeature(
+      features::kParallelDownloading, kParallelRequestDelayFinchKey);
+  int64_t time_ms = 0;
+  return base::StringToInt64(finch_value, &time_ms)
+             ? base::TimeDelta::FromMilliseconds(time_ms)
+             : base::TimeDelta::FromMilliseconds(0);
 }
 
 }  // namespace content

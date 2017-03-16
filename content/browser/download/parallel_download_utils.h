@@ -35,6 +35,10 @@ CONTENT_EXPORT int64_t GetMinSliceSizeConfig();
 // Get the request count for parallel download from finch configuration.
 CONTENT_EXPORT int GetParallelRequestCountConfig();
 
+// Get the time delay to send parallel requests after the response of original
+// request is handled.
+CONTENT_EXPORT base::TimeDelta GetParallelRequestDelayConfig();
+
 }  //  namespace content
 
 #endif  // CONTENT_BROWSER_DOWNLOAD_PARALLEL_DOWNLOAD_UTILS_H_

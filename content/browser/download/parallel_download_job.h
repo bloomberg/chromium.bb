@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/timer/timer.h"
 #include "content/browser/download/download_job_impl.h"
 #include "content/browser/download/download_worker.h"
 #include "content/common/content_export.h"
@@ -45,6 +46,10 @@ class CONTENT_EXPORT ParallelDownloadJob : public DownloadJobImpl {
                                   int64_t total_bytes,
                                   int request_count);
 
+  // Build parallel requests after a delay, to effectively measure the single
+  // stream bandwidth.
+  void BuildParallelRequestAfterDelay();
+
   // Build parallel requests to download the remaining slices.
   // TODO(qinmin): remove ForkRequestsForNewDownload() and move the logic into
   // this function.
@@ -59,6 +64,12 @@ class CONTENT_EXPORT ParallelDownloadJob : public DownloadJobImpl {
 
   // Subsequent tasks to send range requests.
   WorkerList workers_;
+
+  // Used to send parallel requests after a delay based on Finch config.
+  base::OneShotTimer timer_;
+
+  // If we have sent parallel requests.
+  bool requests_sent_;
 
   DISALLOW_COPY_AND_ASSIGN(ParallelDownloadJob);
 };
