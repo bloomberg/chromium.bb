@@ -72,6 +72,10 @@ def depending_union_type(idl_type):
     def find_base_type(current_type):
         if current_type.is_array_or_sequence_type:
             return find_base_type(current_type.element_type)
+        if current_type.is_record_type:
+            # IdlRecordType.key_type is always a string type, so we only need
+            # to looking into value_type.
+            return find_base_type(current_type.value_type)
         if current_type.is_nullable:
             return find_base_type(current_type.inner_type)
         return current_type

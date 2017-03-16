@@ -395,6 +395,17 @@ DOMUint8Array* TestDictionary::uint8ArrayMember() const {
 void TestDictionary::setUint8ArrayMember(DOMUint8Array* value) {
   m_uint8ArrayMember = value;
 }
+bool TestDictionary::hasUnionInRecordMember() const {
+  return m_hasUnionInRecordMember;
+}
+const HeapVector<std::pair<String, LongOrBoolean>>& TestDictionary::unionInRecordMember() const {
+  DCHECK(m_hasUnionInRecordMember);
+  return m_unionInRecordMember;
+}
+void TestDictionary::setUnionInRecordMember(const HeapVector<std::pair<String, LongOrBoolean>>& value) {
+  m_unionInRecordMember = value;
+  m_hasUnionInRecordMember = true;
+}
 bool TestDictionary::hasUnionWithTypedefs() const {
   return !m_unionWithTypedefs.isNull();
 }
@@ -433,6 +444,7 @@ DEFINE_TRACE(TestDictionary) {
   visitor->trace(m_testInterfaceSequenceMember);
   visitor->trace(m_testObjectSequenceMember);
   visitor->trace(m_uint8ArrayMember);
+  visitor->trace(m_unionInRecordMember);
   visitor->trace(m_unionWithTypedefs);
   IDLDictionaryBase::trace(visitor);
 }

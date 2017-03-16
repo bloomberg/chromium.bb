@@ -39,5 +39,6 @@ dictionary TestDictionary {
     [PrefixGet] object prefixGetMember;
     record<ByteString, byte> recordMember;
     record<USVString, TestObject> garbageCollectedRecordMember;
+    record<ByteString, (long or boolean)> unionInRecordMember;
     (Float or BooleanType) unionWithTypedefs;
 };
