@@ -580,7 +580,7 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, variable_name
 
     if 'FlexibleArrayBufferView' in extended_attributes:
         if base_idl_type not in TYPED_ARRAY_TYPES.union(set(['ArrayBufferView'])):
-            raise "Unrecognized base type for extended attribute 'FlexibleArrayBufferView': %s" % (idl_type.base_type)
+            raise ValueError("Unrecognized base type for extended attribute 'FlexibleArrayBufferView': %s" % (idl_type.base_type))
         base_idl_type = 'FlexibleArrayBufferView'
 
     if idl_type.is_integer_type:
@@ -689,7 +689,7 @@ def v8_value_to_local_cpp_value(idl_type, extended_attributes, v8_value, variabl
         }
     elif 'FlexibleArrayBufferView' in extended_attributes:
         if idl_type.base_type not in TYPED_ARRAY_TYPES.union(set(['ArrayBufferView'])):
-            raise "Unrecognized base type for extended attribute 'FlexibleArrayBufferView': %s" % (idl_type.base_type)
+            raise ValueError("Unrecognized base type for extended attribute 'FlexibleArrayBufferView': %s" % (idl_type.base_type))
         set_expression = cpp_value
     else:
         assign_expression = cpp_value

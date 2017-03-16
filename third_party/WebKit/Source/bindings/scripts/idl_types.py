@@ -345,7 +345,7 @@ class IdlUnionType(IdlTypeBase):
     def single_matching_member_type(self, predicate):
         matching_types = filter(predicate, self.flattened_member_types)
         if len(matching_types) > 1:
-            raise "%s is ambigious." % self.name
+            raise ValueError('%s is ambiguous.' % self.name)
         return matching_types[0] if matching_types else None
 
     @property
