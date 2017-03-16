@@ -1925,6 +1925,12 @@ void LayoutObject::styleDidChange(StyleDifference diff,
 
   if (oldStyle && oldStyle->styleType() == PseudoIdNone)
     applyPseudoStyleChanges(*oldStyle);
+
+  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled() && oldStyle &&
+      oldStyle->usedTransformStyle3D() != styleRef().usedTransformStyle3D()) {
+    // Change of transform-style may affect descendant transform property nodes.
+    setSubtreeNeedsPaintPropertyUpdate();
+  }
 }
 
 void LayoutObject::applyPseudoStyleChanges(const ComputedStyle& oldStyle) {

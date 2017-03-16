@@ -722,4 +722,21 @@ TEST_P(PaintPropertyTreeUpdateTest, ScrollbarWidthChange) {
   EXPECT_EQ(FloatSize(60, 60), overflowClip->clipRect().rect().size());
 }
 
+TEST_P(PaintPropertyTreeUpdateTest, Preserve3DChange) {
+  setBodyInnerHTML(
+      "<div id='parent'>"
+      "  <div id='child' style='transform: translate3D(1px, 2px, 3px)'></div>"
+      "</div>");
+
+  auto* child = getLayoutObjectByElementId("child");
+  auto* transform = child->paintProperties()->transform();
+  EXPECT_TRUE(transform->flattensInheritedTransform());
+
+  document().getElementById("parent")->setAttribute(
+      HTMLNames::styleAttr, "transform-style: preserve-3d");
+  document().view()->updateAllLifecyclePhases();
+  EXPECT_EQ(transform, child->paintProperties()->transform());
+  EXPECT_FALSE(transform->flattensInheritedTransform());
+}
+
 }  // namespace blink
