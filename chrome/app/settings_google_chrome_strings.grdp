@@ -39,7 +39,7 @@
   <!-- Default Browser Page -->
   <if expr="not chromeos">
     <message name="IDS_SETTINGS_DEFAULT_BROWSER_DEFAULT" desc="The text displayed when Chrome is not the default browser">
-      Google Chrome is your default browser. Cheers!
+      Google Chrome is your default browser.
     </message>
     <message name="IDS_SETTINGS_DEFAULT_BROWSER_MAKE_DEFAULT" desc="Default browser checkbox label">
       Make Google Chrome the default browser

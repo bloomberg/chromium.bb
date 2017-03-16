@@ -7,10 +7,6 @@
 <dom-module id="settings-default-browser-page">
   <template>
     <style include="settings-shared">
-      .solo-secondary {
-        @apply(--settings-secondary);
-        margin: 0;
-      }
     </style>
     <template is="dom-if" if="[[maySetDefaultBrowser_]]">
       <div class="settings-box first two-line">
@@ -28,16 +24,14 @@
     </template>
     <template is="dom-if" if="[[!maySetDefaultBrowser_]]">
       <div class="settings-box first">
-        <div class="solo-secondary start" hidden$="[[!isDefault_]]"
-            id="isDefault">
+        <div class="start" hidden$="[[!isDefault_]]" id="isDefault">
           $i18n{defaultBrowserDefault}
         </div>
-        <div class="solo-secondary start" hidden$="[[!isSecondaryInstall_]]"
-          id="isSecondaryInstall">
+        <div class="start" hidden$="[[!isSecondaryInstall_]]"
+            id="isSecondaryInstall">
           $i18n{defaultBrowserSecondary}
         </div>
-        <div class="solo-secondary start" hidden$="[[!isUnknownError_]]"
-          id="isUnknownError">
+        <div class="start" hidden$="[[!isUnknownError_]]" id="isUnknownError">
           $i18n{defaultBrowserError}
         </div>
       </div>
