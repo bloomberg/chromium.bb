@@ -104,22 +104,13 @@ bool IsPasswordAppExActivity(NSString* activityString) {
   return PasswordAppExActivityVersion(activityString) != nil;
 }
 
-NSString* SuccessMessageForActivity(ActivityType type) {
+NSString* CompletionMessageForActivity(ActivityType type) {
+  // Some activities can be reported as completed even if not successful.
+  // Make sure that the message is meaningful even if the activity completed
+  // unsuccessfully.
   switch (type) {
     case NATIVE_CLIPBOARD:
       return l10n_util::GetNSString(IDS_IOS_SHARE_TO_CLIPBOARD_SUCCESS);
-    case NATIVE_FACEBOOK:
-      return l10n_util::GetNSString(IDS_IOS_SHARE_FACEBOOK_COMPLETE);
-    case NATIVE_MAIL:
-      return l10n_util::GetNSString(IDS_IOS_SHARE_EMAIL_COMPLETE);
-    case NATIVE_MESSAGE:
-      return l10n_util::GetNSString(IDS_IOS_SHARE_MESSAGES_COMPLETE);
-    case NATIVE_TWITTER:
-      return l10n_util::GetNSString(IDS_IOS_SHARE_TWITTER_COMPLETE);
-    case GOOGLE_GMAIL:
-      return l10n_util::GetNSString(IDS_IOS_SHARE_EMAIL_COMPLETE);
-    case GOOGLE_GOOGLEPLUS:
-      return l10n_util::GetNSString(IDS_IOS_SHARE_GPLUS_COMPLETE);
     case APPEX_PASSWORD_MANAGEMENT_1PASSWORD:
     case APPEX_PASSWORD_MANAGEMENT_LASTPASS:
     case APPEX_PASSWORD_MANAGEMENT_DASHLANE:

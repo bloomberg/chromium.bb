@@ -4939,7 +4939,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 #pragma mark - ShareToDelegate methods
 
 - (void)shareDidComplete:(ShareTo::ShareResult)shareStatus
-          successMessage:(NSString*)message {
+       completionMessage:(NSString*)message {
   // The shareTo dialog dismisses itself instead of through
   // |-dismissViewControllerAnimated:completion:| so we must reset the
   // presenting state here.
@@ -4974,7 +4974,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 - (void)passwordAppExDidFinish:(ShareTo::ShareResult)shareStatus
                       username:(NSString*)username
                       password:(NSString*)password
-                successMessage:(NSString*)message {
+             completionMessage:(NSString*)message {
   switch (shareStatus) {
     case ShareTo::SHARE_SUCCESS: {
       PasswordController* passwordController =

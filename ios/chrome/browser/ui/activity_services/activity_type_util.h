@@ -58,9 +58,9 @@ NSNumber* PasswordAppExActivityVersion(NSString* activityString);
 // App Extension.
 bool IsPasswordAppExActivity(NSString* activityString);
 
-// Returns the message to present when the activity |type| successfully
-// occurred. Returns nil if no message should be presented.
-NSString* SuccessMessageForActivity(ActivityType type);
+// Returns the message to present when the activity |type| has completed
+// successfully. Returns nil if no message should be presented.
+NSString* CompletionMessageForActivity(ActivityType type);
 
 // Records the UMA for activity |type|.
 void RecordMetricForActivity(ActivityType type);

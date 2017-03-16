@@ -469,10 +469,11 @@ TEST_F(BrowserViewControllerTest, TestSharePageWhenClosing) {
 // Verifies that BVC instantiates a bubble to show the given success message on
 // receiving a -shareDidComplete callback for a successful share.
 TEST_F(BrowserViewControllerTest, TestShareDidCompleteWithSuccess) {
-  NSString* successMessage = @"Success";
-  [[dependencyFactory_ expect] showSnackbarWithMessage:successMessage];
+  NSString* completionMessage = @"Completion!";
+  [[dependencyFactory_ expect] showSnackbarWithMessage:completionMessage];
 
-  [bvc_ shareDidComplete:ShareTo::SHARE_SUCCESS successMessage:successMessage];
+  [bvc_ shareDidComplete:ShareTo::SHARE_SUCCESS
+       completionMessage:completionMessage];
   EXPECT_OCMOCK_VERIFY(dependencyFactory_);
 }
 
@@ -493,7 +494,7 @@ TEST_F(BrowserViewControllerTest, TestShareDidCompleteWithError) {
                  viewController:OCMOCK_ANY];
   [static_cast<AlertCoordinator*>([mockCoordinator expect]) start];
 
-  [bvc_ shareDidComplete:ShareTo::SHARE_ERROR successMessage:@"dummy"];
+  [bvc_ shareDidComplete:ShareTo::SHARE_ERROR completionMessage:@"dummy"];
   EXPECT_OCMOCK_VERIFY(dependencyFactory_);
   EXPECT_OCMOCK_VERIFY(mockCoordinator);
 }
@@ -506,7 +507,7 @@ TEST_F(BrowserViewControllerTest, TestShareDidCompleteWithCancellation) {
                                                  message:OCMOCK_ANY
                                           viewController:OCMOCK_ANY];
 
-  [bvc_ shareDidComplete:ShareTo::SHARE_CANCEL successMessage:@"dummy"];
+  [bvc_ shareDidComplete:ShareTo::SHARE_CANCEL completionMessage:@"dummy"];
   EXPECT_OCMOCK_VERIFY(dependencyFactory_);
 }
 

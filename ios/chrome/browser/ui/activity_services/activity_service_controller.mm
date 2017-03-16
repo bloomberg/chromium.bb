@@ -120,12 +120,7 @@
     UIActivityTypeSaveToCameraRoll
   ];
   [activityViewController_ setExcludedActivityTypes:excludedActivityTypes];
-  // Although |completionWithItemsHandler:...| is not present in the iOS
-  // documentation, it is mentioned in the WWDC presentations (specifically
-  // 217_creating_extensions_for_ios_and_os_x_part_2.pdf) and available in
-  // header file UIKit.framework/UIActivityViewController.h as @property.
-  DCHECK([activityViewController_
-      respondsToSelector:@selector(setCompletionWithItemsHandler:)]);
+
   __weak ActivityServiceController* weakSelf = self;
   [activityViewController_ setCompletionWithItemsHandler:^(
                                NSString* activityType, BOOL completed,
@@ -174,14 +169,14 @@
       activity_type_util::ActivityType type =
           activity_type_util::TypeFromString(activityType);
       activity_type_util::RecordMetricForActivity(type);
-      NSString* successMessage =
-          activity_type_util::SuccessMessageForActivity(type);
+      NSString* completionMessage =
+          activity_type_util::CompletionMessageForActivity(type);
       [shareToDelegate_ shareDidComplete:shareResult
-                          successMessage:successMessage];
+                       completionMessage:completionMessage];
     }
   } else {
     [shareToDelegate_ shareDidComplete:ShareTo::ShareResult::SHARE_CANCEL
-                        successMessage:nil];
+                     completionMessage:nil];
   }
   if (shouldResetUI)
     [self resetUserInterface];
@@ -260,7 +255,7 @@
     [shareToDelegate_ passwordAppExDidFinish:ShareTo::ShareResult::SHARE_ERROR
                                     username:nil
                                     password:nil
-                              successMessage:nil];
+                           completionMessage:nil];
     return YES;
   }
 
@@ -280,12 +275,12 @@
       activity_type_util::ActivityType type =
           activity_type_util::TypeFromString(activityType);
       activity_type_util::RecordMetricForActivity(type);
-      message = activity_type_util::SuccessMessageForActivity(type);
+      message = activity_type_util::CompletionMessageForActivity(type);
     }
     [shareToDelegate_ passwordAppExDidFinish:activityResult
                                     username:username
                                     password:password
-                              successMessage:message];
+                           completionMessage:message];
     // Controller state can be reset only after delegate has processed the
     // item returned from the App Extension.
     [self resetUserInterface];
