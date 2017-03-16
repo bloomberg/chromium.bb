@@ -153,15 +153,14 @@ void MessagePort::State::AddWatch() {
   MojoResult rv = CreateWatcher(&State::CallOnHandleReady, &watcher_handle_);
   DCHECK_EQ(MOJO_RESULT_OK, rv);
 
-  // We use a scoped_refptr<State> instance as the watch context. This is owned
-  // by the watch and deleted upon receiving a cancellation notification.
-  scoped_refptr<State>* state_ref = new scoped_refptr<State>(this);
-  context_ = reinterpret_cast<uintptr_t>(state_ref);
+  // Balanced in CallOnHandleReady when MOJO_RESULT_CANCELLED is received.
+  AddRef();
 
   // NOTE: An HTML MessagePort does not receive an event to tell it when the
   // peer has gone away, so we only watch for readability here.
-  rv = MojoWatch(watcher_handle_.get().value(), handle_.get().value(),
-                 MOJO_HANDLE_SIGNAL_READABLE, context_);
+  rv =
+      MojoWatch(watcher_handle_.get().value(), handle_.get().value(),
+                MOJO_HANDLE_SIGNAL_READABLE, reinterpret_cast<uintptr_t>(this));
   DCHECK_EQ(MOJO_RESULT_OK, rv);
 
   ArmWatcher();
@@ -169,7 +168,6 @@ void MessagePort::State::AddWatch() {
 
 void MessagePort::State::CancelWatch() {
   watcher_handle_.reset();
-  context_ = 0;
 }
 
 MessagePort::State::~State() = default;
@@ -191,7 +189,7 @@ void MessagePort::State::ArmWatcher() {
   // The watcher could not be armed because it would notify immediately.
   DCHECK_EQ(MOJO_RESULT_FAILED_PRECONDITION, rv);
   DCHECK_EQ(1u, num_ready_contexts);
-  DCHECK_EQ(context_, ready_context);
+  DCHECK_EQ(reinterpret_cast<uintptr_t>(this), ready_context);
 
   if (ready_result == MOJO_RESULT_OK) {
     // The handle is already signaled, so we trigger a callback now.
@@ -222,12 +220,13 @@ void MessagePort::State::CallOnHandleReady(uintptr_t context,
                                            MojoResult result,
                                            MojoHandleSignalsState signals_state,
                                            MojoWatcherNotificationFlags flags) {
-  auto* state_ref = reinterpret_cast<scoped_refptr<State>*>(context);
+  auto* state = reinterpret_cast<State*>(context);
   if (result == MOJO_RESULT_CANCELLED) {
-    // Last notification. Delete the watch's owned State ref.
-    delete state_ref;
+    // Last notification. Release the watch context's owned State ref. This is
+    // balanced in MessagePort::State::AddWatch.
+    state->Release();
   } else {
-    (*state_ref)->OnHandleReady(result);
+    state->OnHandleReady(result);
   }
 }
 

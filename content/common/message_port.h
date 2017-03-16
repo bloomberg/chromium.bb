@@ -100,8 +100,6 @@ class CONTENT_EXPORT MessagePort {
                                   MojoResult result,
                                   MojoHandleSignalsState signals_state,
                                   MojoWatcherNotificationFlags flags);
-
-    uintptr_t context_;
   };
   mutable scoped_refptr<State> state_;
 };
