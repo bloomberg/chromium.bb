@@ -7,13 +7,11 @@
 #import <Foundation/Foundation.h>
 
 #include "base/base_paths.h"
-#import "base/mac/bundle_locations.h"
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 #import "ios/web_view/public/cwv_delegate.h"
-#import "ios/web_view/public/cwv_web_view.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -30,9 +28,6 @@ WebViewWebMainParts::WebViewWebMainParts(id<CWVDelegate> delegate) {
 WebViewWebMainParts::~WebViewWebMainParts() = default;
 
 void WebViewWebMainParts::PreMainMessageLoopRun() {
-  base::mac::SetOverrideFrameworkBundle(
-      [NSBundle bundleForClass:[CWVWebView class]]);
-
   // Initialize resources.
   l10n_util::OverrideLocaleWithCocoaLocale();
   ui::ResourceBundle::InitSharedInstanceWithLocale(
