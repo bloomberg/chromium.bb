@@ -5,10 +5,24 @@
   'targets': [
 #    {
 #      'target_name': 'actions_controller',
+#      'dependencies': [
+#        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
+#        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+#        '<(DEPTH)/ui/webui/resources/js/cr/compiled_resources2.gyp:ui',
+#        '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:context_menu_handler',
+#        'actions_model',
+#      ],
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
 #    {
 #      'target_name': 'actions_model',
+#      'dependencies': [
+#        '../../background/js/compiled_resources2.gyp:drive_sync_handler',
+#        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+#        '<(EXTERNS_GYP):file_manager_private',
+#        'folder_shortcuts_data_model',
+#        'metadata/compiled_resources2.gyp:metadata_model',
+#      ],
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
 #    {
@@ -61,6 +75,12 @@
 #    },
 #    {
 #      'target_name': 'file_selection',
+#      'dependencies': [
+#        '../../common/js/compiled_resources2.gyp:util',
+#        '../../common/js/compiled_resources2.gyp:volume_manager_common',
+#        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
+#        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+#      ],
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
 #    {
@@ -75,10 +95,18 @@
 #      'target_name': 'file_watcher',
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
-#    {
-#      'target_name': 'folder_shortcuts_data_model',
-#      'includes': ['../../../compile_js2.gypi'],
-#    },
+    {
+      'target_name': 'folder_shortcuts_data_model',
+      'dependencies': [
+        '../../common/js/compiled_resources2.gyp:async_util',
+        '../../common/js/compiled_resources2.gyp:metrics',
+        '../../common/js/compiled_resources2.gyp:util',
+        '../../common/js/compiled_resources2.gyp:volume_manager_common',
+        '<(EXTERNS_GYP):chrome_extensions',
+        'volume_manager_wrapper',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
 #    {
 #      'target_name': 'gear_menu_controller',
 #      'includes': ['../../../compile_js2.gypi'],
@@ -206,6 +234,12 @@
     },
 #    {
 #      'target_name': 'toolbar_controller',
+#      'dependencies': [
+#        '../../common/js/compiled_resources2.gyp:util',
+#        'file_selection',
+#        'ui/compiled_resources2.gyp:list_container',
+#        'ui/compiled_resources2.gyp:location_line',
+#      ],
 #      'includes': ['../../../compile_js2.gypi'],
 #    },
     {
