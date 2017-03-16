@@ -394,6 +394,12 @@ def UserActReviewers(opts, cl, *args):
                         dryrun=opts.dryrun)
 
 
+def UserActAssign(opts, cl, assignee):
+  """Set assignee for CL <n>"""
+  helper, cl = GetGerrit(opts, cl)
+  helper.SetAssignee(cl, assignee, dryrun=opts.dryrun)
+
+
 def UserActMessage(opts, cl, message):
   """Add a message to CL <n>"""
   helper, cl = GetGerrit(opts, cl)

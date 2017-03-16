@@ -79,6 +79,19 @@ class GerritHelper(object):
     # We should get rid of remotes altogether and just use the host.
     return cls(host, site_config.params.GOB_REMOTES.get(gob, gob), **kwargs)
 
+  def SetAssignee(self, change, assignee, dryrun=False):
+    """Set assignee on a gerrit change.
+
+    Args:
+      change: ChangeId or change number for a gerrit review.
+      assignee: email address of reviewer to add.
+      dryrun: If True, only print what would have been done.
+    """
+    if dryrun:
+      logging.info('Would have added %s to "%s"', assignee, change)
+    else:
+      gob_util.AddAssignee(self.host, change, assignee)
+
   def SetReviewers(self, change, add=(), remove=(), dryrun=False):
     """Modify the list of reviewers on a gerrit change.
 
