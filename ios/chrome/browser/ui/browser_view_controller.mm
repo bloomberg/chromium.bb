@@ -1515,7 +1515,7 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   Tab* tab = notify.userInfo[kTabModelTabKey];
   DCHECK(tab);
   [tab wasHidden];
-  [_toolbarController dismissTabHistoryPopup];
+  [self dismissPopups];
 }
 
 - (void)tabWasAdded:(NSNotification*)notify {
