@@ -603,8 +603,8 @@ suu_handler(void *data, struct wl_object *object,
 	int *done = data;
 
 	assert(strcmp(s, "foo") == 0);
-	assert(u1 = 500);
-	assert(u2 = 404040);
+	assert(u1 == 500);
+	assert(u2 == 404040);
 	*done = 1;
 }
 
