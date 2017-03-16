@@ -447,10 +447,11 @@ class TestGitClBasic(unittest.TestCase):
         'Cr-Branched-From: somehash-refs/heads/master@{#12}')
 
 
-class GitCookiesCheckerTest(unittest.TestCase):
+class GitCookiesCheckerTest(TestCase):
   def setUp(self):
     super(GitCookiesCheckerTest, self).setUp()
     self.c = git_cl._GitCookiesChecker()
+    self.c._all_hosts = []
 
   def mock_hosts_creds(self, subhost_identity_pairs):
     def ensure_googlesource(h):
@@ -495,6 +496,22 @@ class GitCookiesCheckerTest(unittest.TestCase):
                           'chrome-internal.googlesource.com']),
                      self.c.get_hosts_with_wrong_identities())
 
+  def test_report_no_problems(self):
+    self.test_analysis_nothing()
+    self.mock(sys, 'stdout', StringIO.StringIO())
+    self.assertFalse(self.c.find_and_report_problems())
+    self.assertEqual(sys.stdout.getvalue(), '')
+
+  def test_report(self):
+    self.test_analysis()
+    self.mock(sys, 'stdout', StringIO.StringIO())
+    self.assertTrue(self.c.find_and_report_problems())
+    with open(os.path.join(os.path.dirname(__file__),
+                           'git_cl_creds_check_report.txt')) as f:
+      expected = f.read()
+    def by_line(text):
+      return [l.rstrip() for l in text.rstrip().splitlines()]
+    self.assertEqual(by_line(sys.stdout.getvalue()), by_line(expected))
 
 class TestGitCl(TestCase):
   def setUp(self):
@@ -1169,7 +1186,7 @@ class TestGitCl(TestCase):
         remote_ref='refs/heads/disabled')
     self.assertEqual(res, False)
 
-    # Validator is disabled by default, even if it's not explicitely in disabled
+    # Validator is disabled by default, even if it's not explicitly in disabled
     # refglobs.
     res = git_cl._is_git_numberer_enabled(
         remote_url='https://chromium.googlesource.com/chromium/src',
@@ -2036,7 +2053,7 @@ class TestGitCl(TestCase):
            'Credentials for the following hosts are required:\n'
            '  chromium-review.googlesource.com\n'
            'These are read from ~/.gitcookies (or legacy ~/.netrc)\n'
-           'You can (re)generate your credentails by visiting '
+           'You can (re)generate your credentials by visiting '
            'https://chromium-review.googlesource.com/new-password'],), ''),)
     self.assertIsNone(cl.EnsureAuthenticated(force=False))
 
@@ -3034,7 +3051,7 @@ class TestGitCl(TestCase):
   def test_creds_check_gitcookies_not_configured(self):
     self._common_creds_check_mocks()
     self.mock(git_cl._GitCookiesChecker, 'get_hosts_with_creds',
-              lambda _, include_netrc: [])
+              lambda _, include_netrc=False: [])
     self.calls = [
       ((['git', 'config', '--global', 'http.cookiefile'],), CERR1),
       (('os.path.exists', '~/.netrc'), True),
@@ -3054,7 +3071,7 @@ class TestGitCl(TestCase):
   def test_creds_check_gitcookies_configured_custom_broken(self):
     self._common_creds_check_mocks()
     self.mock(git_cl._GitCookiesChecker, 'get_hosts_with_creds',
-              lambda _, include_netrc: [])
+              lambda _, include_netrc=False: [])
     self.calls = [
       ((['git', 'config', '--global', 'http.cookiefile'],),
        '/custom/.gitcookies'),

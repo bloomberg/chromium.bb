@@ -107,7 +107,7 @@ class CookiesAuthenticator(Authenticator):
     if not parts[0].endswith('-review'):
       parts[0] += '-review'
     url = 'https://%s/new-password' % ('.'.join(parts))
-    return 'You can (re)generate your credentails by visiting %s' % url
+    return 'You can (re)generate your credentials by visiting %s' % url
 
   @classmethod
   def get_netrc_path(cls):
