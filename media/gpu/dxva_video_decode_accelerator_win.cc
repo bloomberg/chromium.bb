@@ -2088,14 +2088,15 @@ void DXVAVideoDecodeAccelerator::RequestPictureBuffers(int width, int height) {
 void DXVAVideoDecodeAccelerator::NotifyPictureReady(
     int picture_buffer_id,
     int input_buffer_id,
-    const gfx::ColorSpace& color_space) {
+    const gfx::ColorSpace& color_space,
+    bool allow_overlay) {
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
   // This task could execute after the decoder has been torn down.
   if (GetState() != kUninitialized && client_) {
     // TODO(henryhsu): Use correct visible size instead of (0, 0). We can't use
     // coded size here so use (0, 0) intentionally to have the client choose.
     Picture picture(picture_buffer_id, input_buffer_id, gfx::Rect(0, 0),
-                    color_space, false);
+                    color_space, allow_overlay);
     client_->PictureReady(picture);
   }
 }
@@ -2506,7 +2507,8 @@ void DXVAVideoDecodeAccelerator::CopySurfaceComplete(
                                PLATFORM_FAILURE, );
 
   NotifyPictureReady(picture_buffer->id(), input_buffer_id,
-                     picture_buffer->color_space());
+                     picture_buffer->color_space(),
+                     picture_buffer->AllowOverlay());
 
   {
     base::AutoLock lock(decoder_lock_);
@@ -2559,7 +2561,8 @@ void DXVAVideoDecodeAccelerator::BindPictureBufferToSample(
                                PLATFORM_FAILURE, );
 
   NotifyPictureReady(picture_buffer->id(), input_buffer_id,
-                     picture_buffer->color_space());
+                     picture_buffer->color_space(),
+                     picture_buffer->AllowOverlay());
 
   {
     base::AutoLock lock(decoder_lock_);

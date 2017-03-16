@@ -370,6 +370,10 @@ bool PbufferPictureBuffer::CopySurfaceComplete(
   return true;
 }
 
+bool PbufferPictureBuffer::AllowOverlay() const {
+  return false;
+}
+
 PbufferPictureBuffer::PbufferPictureBuffer(const PictureBuffer& buffer)
     : DXVAPictureBuffer(buffer),
       decoding_surface_(NULL),
@@ -505,6 +509,10 @@ bool EGLStreamPictureBuffer::BindSampleToTexture(
   DCHECK(gl_image_dxgi);
 
   gl_image_dxgi->SetTexture(dx11_decoding_texture_, subresource);
+  return true;
+}
+
+bool EGLStreamPictureBuffer::AllowOverlay() const {
   return true;
 }
 
@@ -668,6 +676,10 @@ bool EGLStreamCopyPictureBuffer::ReusePictureBuffer() {
     EGLBoolean result = eglStreamConsumerReleaseKHR(egl_display, stream_);
     RETURN_ON_FAILURE(result, "Could not release stream", false);
   }
+  return true;
+}
+
+bool EGLStreamCopyPictureBuffer::AllowOverlay() const {
   return true;
 }
 

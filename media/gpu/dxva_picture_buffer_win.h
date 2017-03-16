@@ -61,6 +61,11 @@ class DXVAPictureBuffer {
     color_space_ = color_space;
   }
 
+  // Returns true if these could in theory be used as an overlay. May
+  // still be drawn using GL depending on the scene and precise hardware
+  // support.
+  virtual bool AllowOverlay() const = 0;
+
   bool waiting_to_reuse() const { return state_ == WAITING_TO_REUSE; }
   virtual gl::GLFence* reuse_fence();
 
@@ -102,6 +107,7 @@ class PbufferPictureBuffer : public DXVAPictureBuffer {
   gl::GLFence* reuse_fence() override;
   bool CopySurfaceComplete(IDirect3DSurface9* src_surface,
                            IDirect3DSurface9* dest_surface) override;
+  bool AllowOverlay() const override;
 
  protected:
   EGLSurface decoding_surface_;
@@ -144,6 +150,7 @@ class EGLStreamPictureBuffer : public DXVAPictureBuffer {
   bool Initialize();
   bool ReusePictureBuffer() override;
   bool BindSampleToTexture(base::win::ScopedComPtr<IMFSample> sample) override;
+  bool AllowOverlay() const override;
 
  private:
   EGLStreamKHR stream_;
@@ -167,6 +174,7 @@ class EGLStreamCopyPictureBuffer : public DXVAPictureBuffer {
                                            int input_buffer_id) override;
   bool CopySurfaceComplete(IDirect3DSurface9* src_surface,
                            IDirect3DSurface9* dest_surface) override;
+  bool AllowOverlay() const override;
 
  private:
   EGLStreamKHR stream_;
