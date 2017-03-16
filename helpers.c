@@ -138,15 +138,26 @@ int drv_bo_from_format(struct bo *bo, uint32_t aligned_width,
 int drv_dumb_bo_create(struct bo *bo, uint32_t width, uint32_t height,
 		       uint32_t format, uint32_t flags)
 {
-	struct drm_mode_create_dumb create_dumb;
 	int ret;
+	size_t plane;
+	uint32_t aligned_width, aligned_height, bytes_per_pixel;
+	struct drm_mode_create_dumb create_dumb;
 
-	/* Only single-plane formats are supported */
-	assert(drv_num_planes_from_format(format) == 1);
+	aligned_width = width;
+	aligned_height = height;
+	bytes_per_pixel = DIV_ROUND_UP(drv_bpp_from_format(format, 0), 8);
+	if (format == DRM_FORMAT_YVU420_ANDROID) {
+		/*
+		 * Align width to 16 pixels, so chroma strides are 16 bytes as
+		 * Android requires.
+		 */
+		aligned_width = ALIGN(width, 32);
+		aligned_height = 3 * DIV_ROUND_UP(height, 2);
+	}
 
 	memset(&create_dumb, 0, sizeof(create_dumb));
-	create_dumb.height = height;
-	create_dumb.width = width;
+	create_dumb.height = aligned_height;
+	create_dumb.width = aligned_width;
 	create_dumb.bpp = drv_bpp_from_format(format, 0);
 	create_dumb.flags = 0;
 
@@ -156,13 +167,13 @@ int drv_dumb_bo_create(struct bo *bo, uint32_t width, uint32_t height,
 		return ret;
 	}
 
-	bo->width = width;
-	bo->height = height;
-	bo->handles[0].u32 = create_dumb.handle;
-	bo->offsets[0] = 0;
-	bo->total_size = bo->sizes[0] = create_dumb.size;
-	bo->strides[0] = create_dumb.pitch;
+	drv_bo_from_format(bo, DIV_ROUND_UP(create_dumb.pitch, bytes_per_pixel),
+			   height, format);
 
+	for (plane = 0; plane < bo->num_planes; plane++)
+		bo->handles[plane].u32 = create_dumb.handle;
+
+	bo->total_size = create_dumb.size;
 	return 0;
 }
 
