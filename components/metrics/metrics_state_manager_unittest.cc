@@ -28,7 +28,8 @@ namespace metrics {
 class MetricsStateManagerTest : public testing::Test {
  public:
   MetricsStateManagerTest()
-      : enabled_state_provider_(new TestEnabledStateProvider(false, false)) {
+      : test_begin_time_(base::Time::Now().ToTimeT()),
+        enabled_state_provider_(new TestEnabledStateProvider(false, false)) {
     MetricsService::RegisterPrefs(prefs_.registry());
   }
 
@@ -47,6 +48,21 @@ class MetricsStateManagerTest : public testing::Test {
     enabled_state_provider_->set_enabled(true);
   }
 
+  void SetClientInfoPrefs(const ClientInfo& client_info) {
+    prefs_.SetString(prefs::kMetricsClientID, client_info.client_id);
+    prefs_.SetInt64(prefs::kInstallDate, client_info.installation_date);
+    prefs_.SetInt64(prefs::kMetricsReportingEnabledTimestamp,
+                    client_info.reporting_enabled_date);
+  }
+
+  void SetFakeClientInfoBackup(const ClientInfo& client_info) {
+    fake_client_info_backup_.reset(new ClientInfo);
+    fake_client_info_backup_->client_id = client_info.client_id;
+    fake_client_info_backup_->installation_date = client_info.installation_date;
+    fake_client_info_backup_->reporting_enabled_date =
+        client_info.reporting_enabled_date;
+  }
+
  protected:
   TestingPrefServiceSimple prefs_;
 
@@ -57,6 +73,8 @@ class MetricsStateManagerTest : public testing::Test {
   // If set, will be returned via LoadFakeClientInfoBackup if requested by the
   // MetricsStateManager.
   std::unique_ptr<ClientInfo> fake_client_info_backup_;
+
+  const int64_t test_begin_time_;
 
  private:
   // Stores the |client_info| in |stored_client_info_backup_| for verification
@@ -222,11 +240,6 @@ TEST_F(MetricsStateManagerTest, ForceClientIdCreation) {
   const int64_t kFakeInstallationDate = 12345;
   prefs_.SetInt64(prefs::kInstallDate, kFakeInstallationDate);
 
-  const int64_t test_begin_time = base::Time::Now().ToTimeT();
-
-  // Holds ClientInfo from previous scoped test for extra checks.
-  std::unique_ptr<ClientInfo> previous_client_info;
-
   {
     std::unique_ptr<MetricsStateManager> state_manager(CreateStateManager());
 
@@ -241,7 +254,7 @@ TEST_F(MetricsStateManagerTest, ForceClientIdCreation) {
     state_manager->ForceClientIdCreation();
     EXPECT_NE(std::string(), state_manager->client_id());
     EXPECT_GE(prefs_.GetInt64(prefs::kMetricsReportingEnabledTimestamp),
-              test_begin_time);
+              test_begin_time_);
 
     ASSERT_TRUE(stored_client_info_backup_);
     EXPECT_EQ(state_manager->client_id(),
@@ -250,70 +263,82 @@ TEST_F(MetricsStateManagerTest, ForceClientIdCreation) {
               stored_client_info_backup_->installation_date);
     EXPECT_EQ(prefs_.GetInt64(prefs::kMetricsReportingEnabledTimestamp),
               stored_client_info_backup_->reporting_enabled_date);
-
-    previous_client_info = std::move(stored_client_info_backup_);
   }
+}
+
+TEST_F(MetricsStateManagerTest, LoadPrefs) {
+  ClientInfo client_info;
+  client_info.client_id = "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEF";
+  client_info.installation_date = 1112;
+  client_info.reporting_enabled_date = 2223;
+  SetClientInfoPrefs(client_info);
 
   EnableMetricsReporting();
-
   {
+    EXPECT_FALSE(fake_client_info_backup_);
     EXPECT_FALSE(stored_client_info_backup_);
 
     std::unique_ptr<MetricsStateManager> state_manager(CreateStateManager());
 
     // client_id should be auto-obtained from the constructor when metrics
     // reporting is enabled.
-    EXPECT_EQ(previous_client_info->client_id, state_manager->client_id());
+    EXPECT_EQ(client_info.client_id, state_manager->client_id());
 
-    // The backup should also be refreshed when the client id re-initialized.
-    ASSERT_TRUE(stored_client_info_backup_);
-    EXPECT_EQ(previous_client_info->client_id,
-              stored_client_info_backup_->client_id);
-    EXPECT_EQ(kFakeInstallationDate,
-              stored_client_info_backup_->installation_date);
-    EXPECT_EQ(previous_client_info->reporting_enabled_date,
-              stored_client_info_backup_->reporting_enabled_date);
+    // The backup should not be modified.
+    ASSERT_FALSE(stored_client_info_backup_);
 
     // Re-forcing client id creation shouldn't cause another backup and
     // shouldn't affect the existing client id.
-    stored_client_info_backup_.reset();
     state_manager->ForceClientIdCreation();
     EXPECT_FALSE(stored_client_info_backup_);
-    EXPECT_EQ(previous_client_info->client_id, state_manager->client_id());
+    EXPECT_EQ(client_info.client_id, state_manager->client_id());
   }
+}
 
-  const int64_t kBackupInstallationDate = 1111;
-  const int64_t kBackupReportingEnabledDate = 2222;
-  const char kBackupClientId[] = "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE";
-  fake_client_info_backup_.reset(new ClientInfo);
-  fake_client_info_backup_->client_id = kBackupClientId;
-  fake_client_info_backup_->installation_date = kBackupInstallationDate;
-  fake_client_info_backup_->reporting_enabled_date =
-      kBackupReportingEnabledDate;
+TEST_F(MetricsStateManagerTest, PreferPrefs) {
+  ClientInfo client_info;
+  client_info.client_id = "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEF";
+  client_info.installation_date = 1112;
+  client_info.reporting_enabled_date = 2223;
+  SetClientInfoPrefs(client_info);
 
+  ClientInfo client_info2;
+  client_info2.client_id = "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE";
+  client_info2.installation_date = 1111;
+  client_info2.reporting_enabled_date = 2222;
+  SetFakeClientInfoBackup(client_info2);
+
+  EnableMetricsReporting();
   {
-    // The existence of a backup should result in the same behaviour as
-    // before if we already have a client id.
+    // The backup should be ignored if we already have a client id.
 
     EXPECT_FALSE(stored_client_info_backup_);
 
     std::unique_ptr<MetricsStateManager> state_manager(CreateStateManager());
-    EXPECT_EQ(previous_client_info->client_id, state_manager->client_id());
+    EXPECT_EQ(client_info.client_id, state_manager->client_id());
 
-    // The backup should also be refreshed when the client id re-initialized.
-    ASSERT_TRUE(stored_client_info_backup_);
-    EXPECT_EQ(previous_client_info->client_id,
-              stored_client_info_backup_->client_id);
-    EXPECT_EQ(kFakeInstallationDate,
-              stored_client_info_backup_->installation_date);
-    EXPECT_EQ(previous_client_info->reporting_enabled_date,
-              stored_client_info_backup_->reporting_enabled_date);
-    stored_client_info_backup_.reset();
+    // The backup should not be modified.
+    ASSERT_FALSE(stored_client_info_backup_);
   }
+}
+
+TEST_F(MetricsStateManagerTest, RestoreBackup) {
+  ClientInfo client_info;
+  client_info.client_id = "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEF";
+  client_info.installation_date = 1112;
+  client_info.reporting_enabled_date = 2223;
+  SetClientInfoPrefs(client_info);
+
+  ClientInfo client_info2;
+  client_info2.client_id = "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE";
+  client_info2.installation_date = 1111;
+  client_info2.reporting_enabled_date = 2222;
+  SetFakeClientInfoBackup(client_info2);
 
   prefs_.ClearPref(prefs::kMetricsClientID);
   prefs_.ClearPref(prefs::kMetricsReportingEnabledTimestamp);
 
+  EnableMetricsReporting();
   {
     // The backup should kick in if the client id has gone missing. It should
     // replace remaining and missing dates as well.
@@ -321,62 +346,46 @@ TEST_F(MetricsStateManagerTest, ForceClientIdCreation) {
     EXPECT_FALSE(stored_client_info_backup_);
 
     std::unique_ptr<MetricsStateManager> state_manager(CreateStateManager());
-    EXPECT_EQ(kBackupClientId, state_manager->client_id());
-    EXPECT_EQ(kBackupInstallationDate, prefs_.GetInt64(prefs::kInstallDate));
-    EXPECT_EQ(kBackupReportingEnabledDate,
+    EXPECT_EQ(client_info2.client_id, state_manager->client_id());
+    EXPECT_EQ(client_info2.installation_date,
+              prefs_.GetInt64(prefs::kInstallDate));
+    EXPECT_EQ(client_info2.reporting_enabled_date,
               prefs_.GetInt64(prefs::kMetricsReportingEnabledTimestamp));
 
     EXPECT_TRUE(stored_client_info_backup_);
-    stored_client_info_backup_.reset();
   }
+}
 
-  const char kNoDashesBackupClientId[] = "AAAAAAAABBBBCCCCDDDDEEEEEEEEEEEE";
-  fake_client_info_backup_.reset(new ClientInfo);
-  fake_client_info_backup_->client_id = kNoDashesBackupClientId;
+TEST_F(MetricsStateManagerTest, ResetBackup) {
+  ClientInfo client_info;
+  client_info.client_id = "AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE";
+  client_info.installation_date = 1111;
+  client_info.reporting_enabled_date = 2222;
 
-  prefs_.ClearPref(prefs::kInstallDate);
-  prefs_.ClearPref(prefs::kMetricsClientID);
-  prefs_.ClearPref(prefs::kMetricsReportingEnabledTimestamp);
-
-  {
-    // When running the backup from old-style client ids, dashes should be
-    // re-added. And missing dates in backup should be replaced by Time::Now().
-
-    EXPECT_FALSE(stored_client_info_backup_);
-
-    std::unique_ptr<MetricsStateManager> state_manager(CreateStateManager());
-    EXPECT_EQ(kBackupClientId, state_manager->client_id());
-    EXPECT_GE(prefs_.GetInt64(prefs::kInstallDate), test_begin_time);
-    EXPECT_GE(prefs_.GetInt64(prefs::kMetricsReportingEnabledTimestamp),
-              test_begin_time);
-
-    EXPECT_TRUE(stored_client_info_backup_);
-    previous_client_info = std::move(stored_client_info_backup_);
-  }
+  SetFakeClientInfoBackup(client_info);
+  SetClientInfoPrefs(client_info);
 
   prefs_.SetBoolean(prefs::kMetricsResetIds, true);
 
+  EnableMetricsReporting();
   {
     // Upon request to reset metrics ids, the existing backup should not be
     // restored.
-
-    EXPECT_FALSE(stored_client_info_backup_);
 
     std::unique_ptr<MetricsStateManager> state_manager(CreateStateManager());
 
     // A brand new client id should have been generated.
     EXPECT_NE(std::string(), state_manager->client_id());
-    EXPECT_NE(previous_client_info->client_id, state_manager->client_id());
+    EXPECT_NE(client_info.client_id, state_manager->client_id());
+    EXPECT_TRUE(stored_client_info_backup_);
 
     // The installation date should not have been affected.
-    EXPECT_EQ(previous_client_info->installation_date,
+    EXPECT_EQ(client_info.installation_date,
               prefs_.GetInt64(prefs::kInstallDate));
 
     // The metrics-reporting-enabled date will be reset to Now().
     EXPECT_GE(prefs_.GetInt64(prefs::kMetricsReportingEnabledTimestamp),
-              previous_client_info->reporting_enabled_date);
-
-    stored_client_info_backup_.reset();
+              test_begin_time_);
   }
 }
 
