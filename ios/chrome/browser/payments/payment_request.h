@@ -94,6 +94,13 @@ class PaymentRequest {
     return shipping_profiles_;
   }
 
+  const std::vector<std::string>& supported_card_networks() const {
+    return supported_card_networks_;
+  }
+
+  // Adds |credit_card| to the list of cached credit cards.
+  void AddCreditCard(std::unique_ptr<autofill::CreditCard> credit_card);
+
   // Returns the available autofill credit cards for this user that match a
   // supported type specified in |web_payment_request_|.
   const std::vector<autofill::CreditCard*>& credit_cards() const {
@@ -166,6 +173,9 @@ class PaymentRequest {
 
   std::vector<autofill::CreditCard*> credit_cards_;
   autofill::CreditCard* selected_credit_card_;
+
+  // A vector of supported basic card networks.
+  std::vector<std::string> supported_card_networks_;
 
   // A vector of pointers to the shipping options in |web_payment_request_|.
   std::vector<web::PaymentShippingOption*> shipping_options_;

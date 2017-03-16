@@ -4,8 +4,7 @@
 
 #include "ios/chrome/browser/payments/payment_request.h"
 
-#include <unordered_set>
-
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_profile.h"
@@ -53,6 +52,12 @@ payments::CurrencyFormatter* PaymentRequest::GetOrCreateCurrencyFormatter() {
   return currency_formatter_.get();
 }
 
+void PaymentRequest::AddCreditCard(
+    std::unique_ptr<autofill::CreditCard> credit_card) {
+  credit_card_cache_.insert(credit_card_cache_.begin(), std::move(credit_card));
+  credit_cards_.insert(credit_cards_.begin(), credit_card_cache_.front().get());
+}
+
 void PaymentRequest::PopulateProfileCache() {
   for (const auto* profile : personal_data_manager_->GetProfilesToSuggest()) {
     profile_cache_.push_back(
@@ -73,10 +78,14 @@ void PaymentRequest::PopulateProfileCache() {
 
 void PaymentRequest::PopulateCreditCardCache() {
   DCHECK(web_payment_request_);
-  std::unordered_set<base::string16> supported_method_types;
   for (const auto& method_data : web_payment_request_->method_data) {
-    for (const auto& supported_method : method_data.supported_methods)
-      supported_method_types.insert(supported_method);
+    for (const auto& supported_method : method_data.supported_methods) {
+      // Reject non-ASCII supported methods.
+      if (base::IsStringASCII(supported_method)) {
+        supported_card_networks_.push_back(
+            base::UTF16ToASCII(supported_method));
+      }
+    }
   }
 
   std::vector<autofill::CreditCard*> credit_cards =
@@ -91,8 +100,9 @@ void PaymentRequest::PopulateCreditCardCache() {
     std::string spec_card_type =
         autofill::data_util::GetPaymentRequestData(credit_card->type())
             .basic_card_payment_type;
-    if (supported_method_types.find(base::ASCIIToUTF16(spec_card_type)) !=
-        supported_method_types.end()) {
+    if (std::find(supported_card_networks_.begin(),
+                  supported_card_networks_.end(),
+                  spec_card_type) != supported_card_networks_.end()) {
       credit_card_cache_.push_back(
           base::MakeUnique<autofill::CreditCard>(*credit_card));
       credit_cards_.push_back(credit_card_cache_.back().get());
