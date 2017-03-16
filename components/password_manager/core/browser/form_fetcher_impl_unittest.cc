@@ -154,23 +154,6 @@ std::vector<std::unique_ptr<PasswordForm>> MakeResults(
   return results;
 }
 
-class MockFormFetcherImpl : public FormFetcherImpl {
- public:
-  // Inherit constructors.
-  using FormFetcherImpl::FormFetcherImpl;
-
-  // Google Mock is currently unable to mock |ProcessMigratedForms| due to the
-  // presence of move-only types. In order to ensure it is called, a dummy is
-  // added which can be passed to |EXPECT_CALL|.
-  void ProcessMigratedForms(
-      std::vector<std::unique_ptr<autofill::PasswordForm>> results) override {
-    FormFetcherImpl::ProcessMigratedForms(std::move(results));
-    ProcessMigratedFormsDummy();
-  }
-
-  MOCK_METHOD0(ProcessMigratedFormsDummy, void());
-};
-
 ACTION_P(GetAndAssignWeakPtr, ptr) {
   *ptr = arg0->GetWeakPtr();
 }
@@ -417,7 +400,7 @@ TEST_F(FormFetcherImplTest, DoNotTryToMigrateHTTPPasswordsOnHTTPSites) {
 
   // A new form fetcher is created to be able to set the form digest and
   // migration flag.
-  form_fetcher_ = base::MakeUnique<MockFormFetcherImpl>(
+  form_fetcher_ = base::MakeUnique<FormFetcherImpl>(
       form_digest_, &client_, /* should_migrate_http_passwords */ true);
   EXPECT_CALL(consumer_, ProcessMatches(IsEmpty(), 0u));
   form_fetcher_->AddConsumer(&consumer_);
@@ -459,7 +442,7 @@ TEST_F(FormFetcherImplTest, TryToMigrateHTTPPasswordsOnHTTPSSites) {
 
   // A new form fetcher is created to be able to set the form digest and
   // migration flag.
-  form_fetcher_ = base::MakeUnique<MockFormFetcherImpl>(
+  form_fetcher_ = base::MakeUnique<FormFetcherImpl>(
       form_digest_, &client_, /* should_migrate_http_passwords */ true);
   EXPECT_CALL(consumer_, ProcessMatches(IsEmpty(), 0u));
   form_fetcher_->AddConsumer(&consumer_);
@@ -492,8 +475,6 @@ TEST_F(FormFetcherImplTest, TryToMigrateHTTPPasswordsOnHTTPSSites) {
 
   // Now perform the actual migration.
   EXPECT_CALL(*mock_store_, AddLogin(https_form));
-  EXPECT_CALL(*static_cast<MockFormFetcherImpl*>(form_fetcher_.get()),
-              ProcessMigratedFormsDummy());
   EXPECT_CALL(consumer_,
               ProcessMatches(UnorderedElementsAre(Pointee(https_form)), 0u));
   static_cast<HttpPasswordMigrator*>(migrator_ptr.get())
