@@ -409,7 +409,7 @@
     Auto Sign-in
   </message>
   <message name="IDS_SETTINGS_PASSWORDS_AUTOSIGNIN_CHECKBOX_DESC" desc="Text that describes the 'Auto Sign-in' functionality to users.">
-    Automatically sign in to websites using stored credentials. When the feature is disabled, you will be asked for confirmation every time before signing in to a website.
+    Automatically sign in to websites using stored credentials. If disabled, you will be asked for confirmation every time before signing in to a website.
   </message>
   <message name="IDS_SETTINGS_PASSWORDS_DETAIL" desc="Description of what toggling the 'Manage passwords' setting does. Immediately underneath IDS_SETTINGS_PASSWORDS">
     Offer to save your web passwords
