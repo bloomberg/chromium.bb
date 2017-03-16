@@ -150,6 +150,9 @@ crbug.com/653722 virtual/disable-spinvalidation/compositing/reflections/nested-r
 
 crbug.com/701800 [ Win7 ] virtual/disable-spinvalidation/compositing/perpendicular-layer-sorting.html [ Pass Failure ]
 
+crbug.com/702006 paint/invalidation/compositing/scrolling-neg-z-index-descendants-should-cause-repaint.html [ Failure ]
+crbug.com/702006 virtual/disable-spinvalidation/paint/invalidation/compositing/scrolling-neg-z-index-descendants-should-cause-repaint.html [ Failure ]
+
 # ====== Paint team owned tests to here ======
 
 # ====== LayoutNG-only failures from here ======
