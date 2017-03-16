@@ -158,6 +158,9 @@ crbug.com/701800 [ Win7 ] virtual/disable-spinvalidation/compositing/perpendicul
 
 # ====== Paint team owned tests to here ======
 
+crbug.com/702148 http/tests/images/gif-animated-partial-load.html [ NeedsRebaseline ]
+crbug.com/702148 virtual/mojo-loading/http/tests/images/gif-animated-partial-load.html [ NeedsRebaseline ]
+
 # ====== LayoutNG-only failures from here ======
 # LayoutNG - is a new layout system for Blink.
 
