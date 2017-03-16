@@ -56,18 +56,11 @@ class CaretDisplayItemClient final : public DisplayItemClient {
   static LayoutRect computeCaretRect(const PositionWithAffinity& caretPosition);
   static LayoutBlock* caretLayoutBlock(const Node*);
 
-  // Called indirectly from LayoutObject::clearPreviousVisualRects().
-  void clearPreviousVisualRect(const LayoutBlock& block) {
-    if (shouldPaintCaret(block))
-      m_visualRect = LayoutRect();
-  }
+  // Called indirectly from LayoutBlock::clearPreviousVisualRects().
+  void clearPreviousVisualRect(const LayoutBlock&);
 
-  void layoutBlockWillBeDestroyed(const LayoutBlock& block) {
-    if (!shouldPaintCaret(block))
-      return;
-    m_visualRect = LayoutRect();
-    m_layoutBlock = nullptr;
-  }
+  // Called indirectly from LayoutBlock::willBeDestroyed().
+  void layoutBlockWillBeDestroyed(const LayoutBlock&);
 
   // Called when a FrameView finishes layout. Updates style and geometry of the
   // caret for paint invalidation and painting.
@@ -89,8 +82,9 @@ class CaretDisplayItemClient final : public DisplayItemClient {
   String debugName() const final;
 
  private:
-  void invalidatePaintInCurrentLayoutBlock(const PaintInvalidatorContext&);
+  friend class CaretDisplayItemClientTest;
 
+  void invalidatePaintInCurrentLayoutBlock(const PaintInvalidatorContext&);
   void invalidatePaintInPreviousLayoutBlock(const PaintInvalidatorContext&);
 
   // These are updated by updateStyleAndLayoutIfNeeded().

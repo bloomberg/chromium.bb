@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "core/editing/CaretDisplayItemClient.h"
+
 #include "core/HTMLNames.h"
 #include "core/editing/FrameSelection.h"
 #include "core/frame/FrameView.h"
@@ -36,6 +38,16 @@ class CaretDisplayItemClientTest : public RenderingTest {
 
   const DisplayItemClient& caretDisplayItemClient() const {
     return selection().caretDisplayItemClientForTesting();
+  }
+
+  const LayoutBlock* caretLayoutBlock() const {
+    return static_cast<const CaretDisplayItemClient&>(caretDisplayItemClient())
+        .m_layoutBlock;
+  }
+
+  const LayoutBlock* previousCaretLayoutBlock() const {
+    return static_cast<const CaretDisplayItemClient&>(caretDisplayItemClient())
+        .m_previousLayoutBlock;
   }
 
   Text* appendTextNode(const String& data) {
@@ -221,6 +233,64 @@ TEST_F(CaretDisplayItemClientTest, CaretMovesBetweenBlocks) {
       document().view()->trackedObjectPaintInvalidationsAsJSON();
   ASSERT_EQ(2u, objectInvalidations->size());
   document().view()->setTracksPaintInvalidations(false);
+}
+
+TEST_F(CaretDisplayItemClientTest, UpdatePreviousLayoutBlock) {
+  document().body()->setContentEditable("true", ASSERT_NO_EXCEPTION);
+  document().page()->focusController().setActive(true);
+  document().page()->focusController().setFocused(true);
+  auto* blockElement1 = appendBlock("Block1");
+  auto* blockElement2 = appendBlock("Block2");
+  updateAllLifecyclePhases();
+  auto* block1 = toLayoutBlock(blockElement1->layoutObject());
+  auto* block2 = toLayoutBlock(blockElement2->layoutObject());
+
+  // Set caret into block2.
+  document().body()->focus();
+  selection().setSelection(SelectionInDOMTree::Builder()
+                               .collapse(Position(blockElement2, 0))
+                               .build());
+  document().view()->updateLifecycleToLayoutClean();
+  EXPECT_TRUE(block2->shouldPaintCursorCaret());
+  EXPECT_EQ(block2, caretLayoutBlock());
+  EXPECT_FALSE(block1->shouldPaintCursorCaret());
+  EXPECT_FALSE(previousCaretLayoutBlock());
+
+  // Move caret into block1. Should set previousCaretLayoutBlock to block2.
+  selection().setSelection(SelectionInDOMTree::Builder()
+                               .collapse(Position(blockElement1, 0))
+                               .build());
+  document().view()->updateLifecycleToLayoutClean();
+  EXPECT_TRUE(block1->shouldPaintCursorCaret());
+  EXPECT_EQ(block1, caretLayoutBlock());
+  EXPECT_FALSE(block2->shouldPaintCursorCaret());
+  EXPECT_EQ(block2, previousCaretLayoutBlock());
+
+  // Move caret into block2. Partial update should not change
+  // previousCaretLayoutBlock.
+  selection().setSelection(SelectionInDOMTree::Builder()
+                               .collapse(Position(blockElement2, 0))
+                               .build());
+  document().view()->updateLifecycleToLayoutClean();
+  EXPECT_TRUE(block2->shouldPaintCursorCaret());
+  EXPECT_EQ(block2, caretLayoutBlock());
+  EXPECT_FALSE(block1->shouldPaintCursorCaret());
+  EXPECT_EQ(block2, previousCaretLayoutBlock());
+
+  // Remove block2. Should clear caretLayoutBlock and previousCaretLayoutBlock.
+  blockElement2->parentNode()->removeChild(blockElement2);
+  EXPECT_FALSE(caretLayoutBlock());
+  EXPECT_FALSE(previousCaretLayoutBlock());
+
+  // Set caret into block1.
+  selection().setSelection(SelectionInDOMTree::Builder()
+                               .collapse(Position(blockElement1, 0))
+                               .build());
+  updateAllLifecyclePhases();
+  // Remove selection.
+  selection().setSelection(SelectionInDOMTree());
+  document().view()->updateLifecycleToLayoutClean();
+  EXPECT_EQ(block1, previousCaretLayoutBlock());
 }
 
 TEST_F(CaretDisplayItemClientTest, CaretHideMoveAndShow) {

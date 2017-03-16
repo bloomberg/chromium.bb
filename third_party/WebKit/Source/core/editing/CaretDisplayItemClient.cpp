@@ -115,6 +115,23 @@ LayoutRect CaretDisplayItemClient::computeCaretRect(
                                     caretLocalRectWithWritingMode);
 }
 
+void CaretDisplayItemClient::clearPreviousVisualRect(const LayoutBlock& block) {
+  if (block == m_layoutBlock) {
+    m_visualRect = LayoutRect();
+    m_localRect = LayoutRect();
+  }
+  if (block == m_previousLayoutBlock)
+    m_visualRectInPreviousLayoutBlock = LayoutRect();
+}
+
+void CaretDisplayItemClient::layoutBlockWillBeDestroyed(
+    const LayoutBlock& block) {
+  if (block == m_layoutBlock)
+    m_layoutBlock = nullptr;
+  if (block == m_previousLayoutBlock)
+    m_previousLayoutBlock = nullptr;
+}
+
 void CaretDisplayItemClient::updateStyleAndLayoutIfNeeded(
     const PositionWithAffinity& caretPosition) {
   // This method may be called multiple times (e.g. in partial lifecycle
