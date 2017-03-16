@@ -50,6 +50,8 @@ using web::NavigationManagerImpl;
 
 @interface CRWWebController (PrivateAPI)
 @property(nonatomic, readwrite) web::PageDisplayState pageDisplayState;
+- (GURL)URLForHistoryNavigationToItem:(web::NavigationItem*)toItem
+                          previousURL:(const GURL&)previousURL;
 @end
 
 @interface CountingObserver : NSObject<CRWWebControllerObserver>
@@ -167,6 +169,72 @@ class CRWWebControllerTest : public web::WebTestWithWebController {
   base::scoped_nsobject<UIScrollView> scroll_view_;
   base::scoped_nsobject<id> mock_web_view_;
 };
+
+#define MAKE_URL(url_string) GURL([url_string UTF8String])
+
+TEST_F(CRWWebControllerTest, UrlForHistoryNavigation) {
+  NSArray* urls_without_fragments = @[
+    @"http://one.com", @"http://two.com/", @"http://three.com/bar",
+    @"http://four.com/bar/", @"five", @"/six", @"/seven/", @""
+  ];
+
+  NSArray* fragments = @[ @"#", @"#bar" ];
+  NSMutableArray* urls_with_fragments = [NSMutableArray array];
+  for (NSString* url in urls_without_fragments) {
+    for (NSString* fragment in fragments) {
+      [urls_with_fragments addObject:[url stringByAppendingString:fragment]];
+    }
+  }
+
+  GURL previous_url;
+  web::NavigationItemImpl to_item;
+
+  // No start fragment: the end url is never changed.
+  for (NSString* start in urls_without_fragments) {
+    for (NSString* end in urls_with_fragments) {
+      previous_url = MAKE_URL(start);
+      to_item.SetURL(MAKE_URL(end));
+      EXPECT_EQ(MAKE_URL(end),
+                [web_controller() URLForHistoryNavigationToItem:&to_item
+                                                    previousURL:previous_url]);
+    }
+  }
+  // Both contain fragments: the end url is never changed.
+  for (NSString* start in urls_with_fragments) {
+    for (NSString* end in urls_with_fragments) {
+      previous_url = MAKE_URL(start);
+      to_item.SetURL(MAKE_URL(end));
+      EXPECT_EQ(MAKE_URL(end),
+                [web_controller() URLForHistoryNavigationToItem:&to_item
+                                                    previousURL:previous_url]);
+    }
+  }
+  for (unsigned start_index = 0; start_index < urls_with_fragments.count;
+       ++start_index) {
+    NSString* start = urls_with_fragments[start_index];
+    for (unsigned end_index = 0; end_index < urls_without_fragments.count;
+         ++end_index) {
+      NSString* end = urls_without_fragments[end_index];
+      previous_url = MAKE_URL(start);
+      if (start_index / 2 != end_index) {
+        // The URLs have nothing in common, they are left untouched.
+        to_item.SetURL(MAKE_URL(end));
+        EXPECT_EQ(
+            MAKE_URL(end),
+            [web_controller() URLForHistoryNavigationToItem:&to_item
+                                                previousURL:previous_url]);
+      } else {
+        // Start contains a fragment and matches end: An empty fragment is
+        // added.
+        to_item.SetURL(MAKE_URL(end));
+        EXPECT_EQ(
+            MAKE_URL([end stringByAppendingString:@"#"]),
+            [web_controller() URLForHistoryNavigationToItem:&to_item
+                                                previousURL:previous_url]);
+      }
+    }
+  }
+}
 
 // Tests that AllowCertificateError is called with correct arguments if
 // WKWebView fails to load a page with bad SSL cert.

@@ -84,11 +84,18 @@ void WebInterstitialImpl::DontProceed() {
 
   // Clear the pending entry, since that's the page that's not being
   // proceeded to.
-  GetWebStateImpl()->GetNavigationManager()->DiscardNonCommittedItems();
+  NavigationManager* nav_manager = GetWebStateImpl()->GetNavigationManager();
+  nav_manager->DiscardNonCommittedItems();
 
   Hide();
 
   GetDelegate()->OnDontProceed();
+
+  NSUserDefaults* user_defaults = [NSUserDefaults standardUserDefaults];
+  if (![user_defaults boolForKey:@"PendingIndexNavigationDisabled"]) {
+    // Reload last committed entry.
+    nav_manager->Reload(ReloadType::NORMAL, true /* check_for_repost */);
+  }
 
   delete this;
 }

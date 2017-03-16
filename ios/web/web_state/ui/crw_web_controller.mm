@@ -476,6 +476,11 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 // unless the request was a POST.
 @property(nonatomic, readonly) NSDictionary* currentHTTPHeaders;
 
+// TODO(crbug.com/684098): Remove these methods and inline their content.
+// Called before finishing a history navigation from a page with the given
+// UserAgentType.
+- (void)webWillFinishHistoryNavigationWithPreviousUserAgentType:
+    (web::UserAgentType)userAgentType;
 // Requires page reconstruction if |item| has a non-NONE UserAgentType and it
 // differs from that of |fromItem|.
 - (void)updateDesktopUserAgentForItem:(web::NavigationItem*)item
@@ -598,6 +603,13 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 // bounds. Reloads if delta is 0.
 // TODO(crbug.com/661316): Move this method to NavigationManager.
 - (void)goDelta:(int)delta;
+// Loads a new URL if the current entry is not from a pushState() navigation.
+// |fromURL| is the URL of the previous NavigationItem, |fromUserAgentType| is
+// that item's UserAgentType, and |sameDocument| is YES if the navigation is
+// between two pages with the same document.
+- (void)finishHistoryNavigationFromURL:(const GURL&)fromURL
+                         userAgentType:(web::UserAgentType)fromUserAgentType
+                          sameDocument:(BOOL)sameDocument;
 // Informs the native controller if web usage is allowed or not.
 - (void)setNativeControllerWebUsageEnabled:(BOOL)webUsageEnabled;
 // Called when web controller receives a new message from the web page.
@@ -706,6 +718,11 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // Returns YES if the given WKBackForwardListItem is valid to use for
 // navigation.
 - (BOOL)isBackForwardListItemValid:(WKBackForwardListItem*)item;
+// Compares the two URLs being navigated between during a history navigation to
+// determine if a # needs to be appended to the URL of |toItem| to trigger a
+// hashchange event. If so, also saves the modified URL into |toItem|.
+- (GURL)URLForHistoryNavigationToItem:(web::NavigationItem*)toItem
+                          previousURL:(const GURL&)previousURL;
 // Finds all the scrollviews in the view hierarchy and makes sure they do not
 // interfere with scroll to top when tapping the statusbar.
 - (void)optOutScrollsToTopForSubviews;
@@ -1390,6 +1407,40 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
          [list.backList indexOfObject:item] != NSNotFound;
 }
 
+- (GURL)URLForHistoryNavigationToItem:(web::NavigationItem*)toItem
+                          previousURL:(const GURL&)previousURL {
+  // If navigating with native API, i.e. using a back forward list item,
+  // hashchange events will be triggered automatically, so no URL tampering is
+  // required.
+  web::WKBackForwardListItemHolder* holder =
+      web::WKBackForwardListItemHolder::FromNavigationItem(toItem);
+  if (holder->back_forward_list_item()) {
+    return toItem->GetURL();
+  }
+
+  const GURL& URL = toItem->GetURL();
+
+  // Check the state of the fragments on both URLs (aka, is there a '#' in the
+  // url or not).
+  if (!previousURL.has_ref() || URL.has_ref()) {
+    return URL;
+  }
+
+  // startURL contains a fragment and endURL doesn't. Remove the fragment from
+  // startURL and compare the resulting string to endURL. If they are equal, add
+  // # to endURL to cause a hashchange event.
+  GURL hashless = web::GURLByRemovingRefFromGURL(previousURL);
+
+  if (hashless != URL)
+    return URL;
+
+  url::StringPieceReplacements<std::string> emptyRef;
+  emptyRef.SetRefStr("");
+  GURL newEndURL = URL.ReplaceComponents(emptyRef);
+  toItem->SetURL(newEndURL);
+  return newEndURL;
+}
+
 - (void)injectWindowID {
   // Default value for shouldSuppressDialogs is NO, so updating them only
   // when necessary is a good optimization.
@@ -1795,42 +1846,56 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   NavigationManager::WebLoadParams params(originalParams);
 
   // Initiating a navigation from the UI, record the current page state before
-  // the new page loads.
+  // the new page loads. Don't record for back/forward, as the current entry
+  // has already been moved to the next entry in the history. Do, however,
+  // record it for general reload.
+  // TODO(jimblackler): consider a single unified call to record state whenever
+  // the page is about to be changed. This cannot currently be done after
+  // addPendingItem is called.
 
   [_delegate webWillInitiateLoadWithParams:params];
 
   GURL navUrl = params.url;
   ui::PageTransition transition = params.transition_type;
-  DCHECK(!(transition & ui::PAGE_TRANSITION_FORWARD_BACK));
-  DCHECK(!(transition & ui::PAGE_TRANSITION_RELOAD));
 
   BOOL initialNavigation = NO;
-  // Clear transient view before making any changes to history and navigation
-  // manager. TODO(stuartmorgan): Drive Transient Item clearing from
-  // navigation system, rather than from WebController.
-  [self clearTransientContentView];
+  BOOL forwardBack =
+      PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_RELOAD) &&
+      (transition & ui::PAGE_TRANSITION_FORWARD_BACK);
+  if (forwardBack) {
+    // Setting these for back/forward is not supported.
+    DCHECK(!params.extra_headers);
+    DCHECK(!params.post_data);
+  } else {
+    // Clear transient view before making any changes to history and navigation
+    // manager. TODO(stuartmorgan): Drive Transient Item clearing from
+    // navigation system, rather than from WebController.
+    [self clearTransientContentView];
 
-  [self recordStateInHistory];
+    // TODO(stuartmorgan): Why doesn't recordStateInHistory get called for
+    // forward/back transitions?
+    [self recordStateInHistory];
 
-  if (!self.currentNavItem)
-    initialNavigation = YES;
+    if (!self.currentNavItem)
+      initialNavigation = YES;
 
-  web::NavigationInitiationType navigationInitiationType =
-      params.is_renderer_initiated
-          ? web::NavigationInitiationType::RENDERER_INITIATED
-          : web::NavigationInitiationType::USER_INITIATED;
-  self.navigationManagerImpl->AddPendingItem(
-      navUrl, params.referrer, transition, navigationInitiationType);
+    web::NavigationInitiationType navigationInitiationType =
+        params.is_renderer_initiated
+            ? web::NavigationInitiationType::RENDERER_INITIATED
+            : web::NavigationInitiationType::USER_INITIATED;
+    self.navigationManagerImpl->AddPendingItem(
+        navUrl, params.referrer, transition, navigationInitiationType);
 
-  web::NavigationItemImpl* addedItem = self.currentNavItem;
-  DCHECK(addedItem);
-  if (params.extra_headers)
-    addedItem->AddHttpRequestHeaders(params.extra_headers);
-  if (params.post_data) {
-    DCHECK([addedItem->GetHttpRequestHeaders() objectForKey:@"Content-Type"])
-        << "Post data should have an associated content type";
-    addedItem->SetPostData(params.post_data);
-    addedItem->SetShouldSkipRepostFormConfirmation(true);
+    web::NavigationItemImpl* addedItem = self.currentNavItem;
+    DCHECK(addedItem);
+    if (params.extra_headers)
+      addedItem->AddHttpRequestHeaders(params.extra_headers);
+    if (params.post_data) {
+      DCHECK([addedItem->GetHttpRequestHeaders() objectForKey:@"Content-Type"])
+          << "Post data should have an associated content type";
+      addedItem->SetPostData(params.post_data);
+      addedItem->SetShouldSkipRepostFormConfirmation(true);
+    }
   }
 
   [_delegate webDidUpdateSessionForLoadWithParams:params
@@ -2034,32 +2099,44 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   if (!_webStateImpl->IsShowingWebInterstitial())
     [self recordStateInHistory];
 
-  [self clearTransientContentView];
-
-  // Update the user agent before attempting the navigation.
-  web::NavigationItem* toItem = items[index].get();
   web::NavigationItem* previousItem = sessionController.currentItem;
+  GURL previousURL = previousItem ? previousItem->GetURL() : GURL::EmptyGURL();
   web::UserAgentType previousUserAgentType =
       previousItem ? previousItem->GetUserAgentType()
                    : web::UserAgentType::NONE;
-  [self updateDesktopUserAgentForItem:toItem
-                previousUserAgentType:previousUserAgentType];
-
+  web::NavigationItem* toItem = items[index].get();
   BOOL sameDocumentNavigation =
       [sessionController isSameDocumentNavigationBetweenItem:previousItem
                                                      andItem:toItem];
-  if (sameDocumentNavigation) {
-    [sessionController goToItemAtIndex:index];
-    [self updateHTML5HistoryState];
+
+  NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
+  if (![userDefaults boolForKey:@"PendingIndexNavigationDisabled"]) {
+    [self clearTransientContentView];
+
+    // Update the user agent before attempting the navigation.
+    [self updateDesktopUserAgentForItem:toItem
+                  previousUserAgentType:previousUserAgentType];
+
+    if (sameDocumentNavigation) {
+      [sessionController goToItemAtIndex:index];
+      [self updateHTML5HistoryState];
+    } else {
+      [sessionController discardNonCommittedItems];
+      [sessionController setPendingItemIndex:index];
+
+      web::NavigationItemImpl* pendingItem = sessionController.pendingItem;
+      pendingItem->SetTransitionType(ui::PageTransitionFromInt(
+          pendingItem->GetTransitionType() | ui::PAGE_TRANSITION_FORWARD_BACK));
+
+      [self loadCurrentURL];
+    }
   } else {
-    [sessionController discardNonCommittedItems];
-    [sessionController setPendingItemIndex:index];
-
-    web::NavigationItemImpl* pendingItem = sessionController.pendingItem;
-    pendingItem->SetTransitionType(ui::PageTransitionFromInt(
-        pendingItem->GetTransitionType() | ui::PAGE_TRANSITION_FORWARD_BACK));
-
-    [self loadCurrentURL];
+    [sessionController goToItemAtIndex:index];
+    if (previousURL.is_valid()) {
+      [self finishHistoryNavigationFromURL:previousURL
+                             userAgentType:previousUserAgentType
+                              sameDocument:sameDocumentNavigation];
+    }
   }
 }
 
@@ -2153,6 +2230,38 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   }
 }
 
+- (void)finishHistoryNavigationFromURL:(const GURL&)fromURL
+                         userAgentType:(web::UserAgentType)fromUserAgentType
+                          sameDocument:(BOOL)sameDocument {
+  [self webWillFinishHistoryNavigationWithPreviousUserAgentType:
+            fromUserAgentType];
+
+  // Only load the new URL if it has a different document than |fromEntry| to
+  // prevent extra page loads from NavigationItems created by hash changes or
+  // calls to window.history.pushState().
+  web::NavigationItem* currentItem = self.currentNavItem;
+  GURL endURL =
+      [self URLForHistoryNavigationToItem:currentItem previousURL:fromURL];
+  if (!sameDocument) {
+    ui::PageTransition transition = ui::PageTransitionFromInt(
+        ui::PAGE_TRANSITION_RELOAD | ui::PAGE_TRANSITION_FORWARD_BACK);
+
+    NavigationManager::WebLoadParams params(endURL);
+    if (currentItem) {
+      params.referrer = currentItem->GetReferrer();
+    }
+    params.transition_type = transition;
+    [self loadWithParams:params];
+  }
+  // If this is a same-document navigation, update the HTML5 history state
+  // immediately.  For cross-document navigations, the history state will be
+  // updated after the navigation is committed, as attempting to replace the URL
+  // here will result in a JavaScript SecurityError due to the URLs having
+  // different origins.
+  if (sameDocument)
+    [self updateHTML5HistoryState];
+}
+
 - (void)addGestureRecognizerToWebView:(UIGestureRecognizer*)recognizer {
   if ([_gestureRecognizers containsObject:recognizer])
     return;
@@ -2240,6 +2349,13 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
       initWithContextGetter:browserState->GetRequestContext()
           completionHandler:passKitCompletion]);
   return _passKitDownloader.get();
+}
+
+- (void)webWillFinishHistoryNavigationWithPreviousUserAgentType:
+    (web::UserAgentType)userAgentType {
+  [self updateDesktopUserAgentForItem:self.currentNavItem
+                previousUserAgentType:userAgentType];
+  [_delegate webWillFinishHistoryNavigation];
 }
 
 - (void)updateDesktopUserAgentForItem:(web::NavigationItem*)item

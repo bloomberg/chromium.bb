@@ -58,6 +58,9 @@ class GURL;
 - (void)webDidUpdateSessionForLoadWithParams:
             (const web::NavigationManager::WebLoadParams&)params
                         wasInitialNavigation:(BOOL)initialNavigation;
+// Called from finishHistoryNavigationFromEntry.
+// TODO(crbug.com/692331): Remove this method and use |DidFinishNavigation|.
+- (void)webWillFinishHistoryNavigation;
 
 @optional
 
