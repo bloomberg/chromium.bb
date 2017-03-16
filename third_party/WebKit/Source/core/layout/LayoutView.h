@@ -173,8 +173,7 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
   LayoutRect viewRect() const override;
   LayoutRect overflowClipRect(
       const LayoutPoint& location,
-      OverlayScrollbarClipBehavior =
-          IgnorePlatformOverlayScrollbarSize) const override;
+      OverlayScrollbarClipBehavior = IgnoreOverlayScrollbarSize) const override;
 
   LayoutState* layoutState() const { return m_layoutState; }
 

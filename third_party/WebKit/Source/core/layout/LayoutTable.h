@@ -508,8 +508,7 @@ class CORE_EXPORT LayoutTable final : public LayoutBlock {
 
   LayoutRect overflowClipRect(
       const LayoutPoint& location,
-      OverlayScrollbarClipBehavior =
-          IgnorePlatformOverlayScrollbarSize) const override;
+      OverlayScrollbarClipBehavior = IgnoreOverlayScrollbarSize) const override;
 
   void addOverflowFromChildren() override;
 

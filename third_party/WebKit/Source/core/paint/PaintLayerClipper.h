@@ -66,7 +66,7 @@ class ClipRectsContext {
   ClipRectsContext(const PaintLayer* root,
                    ClipRectsCacheSlot slot,
                    OverlayScrollbarClipBehavior overlayScrollbarClipBehavior =
-                       IgnorePlatformOverlayScrollbarSize,
+                       IgnoreOverlayScrollbarSize,
                    const LayoutSize& accumulation = LayoutSize())
       : rootLayer(root),
         overlayScrollbarClipBehavior(overlayScrollbarClipBehavior),

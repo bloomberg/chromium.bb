@@ -506,10 +506,7 @@ IntSize PaintLayerScrollableArea::maximumScrollOffsetInt() const {
 
   IntSize contentSize = contentsSize();
   IntSize visibleSize =
-      pixelSnappedIntRect(
-          box().overflowClipRect(box().location(),
-                                 IgnorePlatformAndCSSOverlayScrollbarSize))
-          .size();
+      pixelSnappedIntRect(box().overflowClipRect(box().location())).size();
 
   Page* page = layoutBox()->document().page();
   DCHECK(page);
@@ -1303,16 +1300,10 @@ int PaintLayerScrollableArea::verticalScrollbarWidth(
     OverlayScrollbarClipBehavior overlayScrollbarClipBehavior) const {
   if (!hasVerticalScrollbar())
     return 0;
-  if (overlayScrollbarClipBehavior ==
-          IgnorePlatformAndCSSOverlayScrollbarSize &&
-      box().style()->overflowY() == EOverflow::kOverlay) {
-    return 0;
-  }
-  if ((overlayScrollbarClipBehavior == IgnorePlatformOverlayScrollbarSize ||
-       overlayScrollbarClipBehavior ==
-           IgnorePlatformAndCSSOverlayScrollbarSize ||
-       !verticalScrollbar()->shouldParticipateInHitTesting()) &&
-      verticalScrollbar()->isOverlayScrollbar()) {
+  if ((verticalScrollbar()->isOverlayScrollbar() ||
+       box().style()->overflowY() == EOverflow::kOverlay) &&
+      (overlayScrollbarClipBehavior == IgnoreOverlayScrollbarSize ||
+       !verticalScrollbar()->shouldParticipateInHitTesting())) {
     return 0;
   }
   return verticalScrollbar()->scrollbarThickness();
@@ -1322,16 +1313,10 @@ int PaintLayerScrollableArea::horizontalScrollbarHeight(
     OverlayScrollbarClipBehavior overlayScrollbarClipBehavior) const {
   if (!hasHorizontalScrollbar())
     return 0;
-  if (overlayScrollbarClipBehavior ==
-          IgnorePlatformAndCSSOverlayScrollbarSize &&
-      box().style()->overflowX() == EOverflow::kOverlay) {
-    return 0;
-  }
-  if ((overlayScrollbarClipBehavior == IgnorePlatformOverlayScrollbarSize ||
-       overlayScrollbarClipBehavior ==
-           IgnorePlatformAndCSSOverlayScrollbarSize ||
-       !horizontalScrollbar()->shouldParticipateInHitTesting()) &&
-      horizontalScrollbar()->isOverlayScrollbar()) {
+  if ((horizontalScrollbar()->isOverlayScrollbar() ||
+       box().style()->overflowX() == EOverflow::kOverlay) &&
+      (overlayScrollbarClipBehavior == IgnoreOverlayScrollbarSize ||
+       !horizontalScrollbar()->shouldParticipateInHitTesting())) {
     return 0;
   }
   return horizontalScrollbar()->scrollbarThickness();

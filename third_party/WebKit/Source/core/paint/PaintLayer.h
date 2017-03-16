@@ -845,7 +845,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
       const LayoutRect& dirtyRect,
       ClipRectsCacheSlot,
       GeometryMapperOption,
-      OverlayScrollbarClipBehavior = IgnorePlatformOverlayScrollbarSize,
+      OverlayScrollbarClipBehavior = IgnoreOverlayScrollbarSize,
       ShouldRespectOverflowClipType = RespectOverflowClip,
       const LayoutPoint* offsetFromRoot = 0,
       const LayoutSize& subPixelAccumulation = LayoutSize());
@@ -855,7 +855,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
       const LayoutRect& dirtyRect,
       ClipRectsCacheSlot,
       GeometryMapperOption,
-      OverlayScrollbarClipBehavior = IgnorePlatformOverlayScrollbarSize,
+      OverlayScrollbarClipBehavior = IgnoreOverlayScrollbarSize,
       ShouldRespectOverflowClipType = RespectOverflowClip,
       const LayoutPoint* offsetFromRoot = 0,
       const LayoutSize& subPixelAccumulation = LayoutSize(),

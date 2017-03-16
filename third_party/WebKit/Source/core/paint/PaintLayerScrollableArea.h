@@ -356,11 +356,9 @@ class CORE_EXPORT PaintLayerScrollableArea final
   int pixelSnappedScrollHeight() const;
 
   int verticalScrollbarWidth(
-      OverlayScrollbarClipBehavior =
-          IgnorePlatformOverlayScrollbarSize) const override;
+      OverlayScrollbarClipBehavior = IgnoreOverlayScrollbarSize) const override;
   int horizontalScrollbarHeight(
-      OverlayScrollbarClipBehavior =
-          IgnorePlatformOverlayScrollbarSize) const override;
+      OverlayScrollbarClipBehavior = IgnoreOverlayScrollbarSize) const override;
 
   DoubleSize adjustedScrollOffset() const {
     return toDoubleSize(DoublePoint(scrollOrigin()) + m_scrollOffset);

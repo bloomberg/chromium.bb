@@ -90,8 +90,7 @@ class CORE_EXPORT LayoutSVGRoot final : public LayoutReplaced {
   LayoutRect visualOverflowRect() const override;
   LayoutRect overflowClipRect(
       const LayoutPoint& location,
-      OverlayScrollbarClipBehavior =
-          IgnorePlatformOverlayScrollbarSize) const override;
+      OverlayScrollbarClipBehavior = IgnoreOverlayScrollbarSize) const override;
 
   bool hasNonIsolatedBlendingDescendants() const final;
 

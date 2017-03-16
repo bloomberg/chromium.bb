@@ -15,7 +15,7 @@
     },
     {
       "name": "Scrolling Layer",
-      "bounds": [285, 285],
+      "bounds": [300, 300],
       "shouldFlattenTransform": false
     },
     {

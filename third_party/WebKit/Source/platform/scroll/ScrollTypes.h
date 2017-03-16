@@ -43,12 +43,8 @@ inline ScrollOffset toScrollOffset(const FloatPoint& p) {
   return ScrollOffset(p.x(), p.y());
 }
 
-// Platform overlay scrollbars are controlled and painted by the operating
-// system (e.g., OSX and Android).  CSS overlay scrollbars are created by
-// setting overflow:overlay, and they are painted by chromium.
 enum OverlayScrollbarClipBehavior {
-  IgnorePlatformOverlayScrollbarSize,
-  IgnorePlatformAndCSSOverlayScrollbarSize,
+  IgnoreOverlayScrollbarSize,
   ExcludeOverlayScrollbarSizeForHitTesting
 };
 

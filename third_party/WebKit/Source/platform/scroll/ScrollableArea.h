@@ -335,9 +335,9 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin,
   IntSize excludeScrollbars(const IntSize&) const;
 
   virtual int verticalScrollbarWidth(
-      OverlayScrollbarClipBehavior = IgnorePlatformOverlayScrollbarSize) const;
+      OverlayScrollbarClipBehavior = IgnoreOverlayScrollbarSize) const;
   virtual int horizontalScrollbarHeight(
-      OverlayScrollbarClipBehavior = IgnorePlatformOverlayScrollbarSize) const;
+      OverlayScrollbarClipBehavior = IgnoreOverlayScrollbarSize) const;
 
   // Returns the widget associated with this ScrollableArea.
   virtual FrameViewBase* getFrameViewBase() { return nullptr; }

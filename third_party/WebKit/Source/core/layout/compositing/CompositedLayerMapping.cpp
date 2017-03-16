@@ -550,7 +550,7 @@ void CompositedLayerMapping::
   // FIXME: this should use cached clip rects, but this sometimes give
   // inaccurate results (and trips the ASSERTS in PaintLayerClipper).
   ClipRectsContext clipRectsContext(compositingAncestor, UncachedClipRects,
-                                    IgnorePlatformOverlayScrollbarSize);
+                                    IgnoreOverlayScrollbarSize);
   clipRectsContext.setIgnoreOverflowClip();
 
   ClipRect clipRect;
@@ -1162,7 +1162,7 @@ void CompositedLayerMapping::updateAncestorClippingLayerGeometry(
 
   ClipRectsContext clipRectsContext(compositingContainer,
                                     PaintingClipRectsIgnoringOverflowClip,
-                                    IgnorePlatformOverlayScrollbarSize);
+                                    IgnoreOverlayScrollbarSize);
 
   ClipRect parentClipRect;
   m_owningLayer.clipper(PaintLayer::DoNotUseGeometryMapper)
