@@ -122,6 +122,7 @@ DSP_SRCS-$(HAVE_SSSE3) += x86/aom_subpixel_8t_intrin_ssse3.c
 ifeq ($(CONFIG_AOM_HIGHBITDEPTH),yes)
 DSP_SRCS-$(HAVE_SSE2)  += x86/aom_high_subpixel_8t_sse2.asm
 DSP_SRCS-$(HAVE_SSE2)  += x86/aom_high_subpixel_bilinear_sse2.asm
+DSP_SRCS-$(HAVE_AVX2)  += x86/highbd_convolve_avx2.c
 endif
 DSP_SRCS-$(HAVE_SSE2)  += x86/aom_convolve_copy_sse2.asm
 

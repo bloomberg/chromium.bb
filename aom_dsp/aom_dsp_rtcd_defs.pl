@@ -770,28 +770,28 @@ if (!(aom_config("CONFIG_AV1") eq "yes" && aom_config("CONFIG_EXT_PARTITION") eq
 
 if (aom_config("CONFIG_AOM_HIGHBITDEPTH") eq "yes") {
   add_proto qw/void aom_highbd_convolve_copy/, "const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h, int bps";
-  specialize qw/aom_highbd_convolve_copy sse2/;
+  specialize qw/aom_highbd_convolve_copy sse2 avx2/;
 
   add_proto qw/void aom_highbd_convolve_avg/, "const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h, int bps";
-  specialize qw/aom_highbd_convolve_avg sse2/;
+  specialize qw/aom_highbd_convolve_avg sse2 avx2/;
 
   add_proto qw/void aom_highbd_convolve8/, "const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h, int bps";
-  specialize qw/aom_highbd_convolve8/, "$sse2_x86_64";
+  specialize qw/aom_highbd_convolve8 avx2/, "$sse2_x86_64";
 
   add_proto qw/void aom_highbd_convolve8_horiz/, "const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h, int bps";
-  specialize qw/aom_highbd_convolve8_horiz/, "$sse2_x86_64";
+  specialize qw/aom_highbd_convolve8_horiz avx2/, "$sse2_x86_64";
 
   add_proto qw/void aom_highbd_convolve8_vert/, "const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h, int bps";
-  specialize qw/aom_highbd_convolve8_vert/, "$sse2_x86_64";
+  specialize qw/aom_highbd_convolve8_vert avx2/, "$sse2_x86_64";
 
   add_proto qw/void aom_highbd_convolve8_avg/, "const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h, int bps";
-  specialize qw/aom_highbd_convolve8_avg/, "$sse2_x86_64";
+  specialize qw/aom_highbd_convolve8_avg avx2/, "$sse2_x86_64";
 
   add_proto qw/void aom_highbd_convolve8_avg_horiz/, "const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h, int bps";
-  specialize qw/aom_highbd_convolve8_avg_horiz/, "$sse2_x86_64";
+  specialize qw/aom_highbd_convolve8_avg_horiz avx2/, "$sse2_x86_64";
 
   add_proto qw/void aom_highbd_convolve8_avg_vert/, "const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h, int bps";
-  specialize qw/aom_highbd_convolve8_avg_vert/, "$sse2_x86_64";
+  specialize qw/aom_highbd_convolve8_avg_vert avx2/, "$sse2_x86_64";
 
   if (aom_config("CONFIG_LOOP_RESTORATION") eq "yes") {
     add_proto qw/void aom_highbd_convolve8_add_src/, "const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h, int bps";

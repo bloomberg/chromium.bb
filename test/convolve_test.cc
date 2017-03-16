@@ -23,6 +23,7 @@
 #include "aom_dsp/aom_filter.h"
 #include "aom_mem/aom_mem.h"
 #include "aom_ports/mem.h"
+#include "aom_ports/aom_timer.h"
 #include "av1/common/filter.h"
 
 namespace {
@@ -942,6 +943,90 @@ TEST_P(ConvolveTest, CheckScalingFiltering) {
   }
 }
 
+TEST_P(ConvolveTest, DISABLED_Speed) {
+  uint8_t *const in = input();
+  uint8_t *const out = output();
+#if CONFIG_AOM_HIGHBITDEPTH
+  uint8_t ref8[kOutputStride * kMaxDimension];
+  uint16_t ref16[kOutputStride * kMaxDimension];
+  uint8_t *ref;
+  if (UUT_->use_highbd_ == 0) {
+    ref = ref8;
+  } else {
+    ref = CONVERT_TO_BYTEPTR(ref16);
+  }
+#else
+  uint8_t ref[kOutputStride * kMaxDimension];
+#endif
+
+  // Populate ref and out with some random data
+  ::libaom_test::ACMRandom prng;
+  for (int y = 0; y < Height(); ++y) {
+    for (int x = 0; x < Width(); ++x) {
+      uint16_t r;
+#if CONFIG_AOM_HIGHBITDEPTH
+      if (UUT_->use_highbd_ == 0 || UUT_->use_highbd_ == 8) {
+        r = prng.Rand8Extremes();
+      } else {
+        r = prng.Rand16() & mask_;
+      }
+#else
+      r = prng.Rand8Extremes();
+#endif
+
+      assign_val(out, y * kOutputStride + x, r);
+      assign_val(ref, y * kOutputStride + x, r);
+    }
+  }
+
+  const InterpFilter filter = (InterpFilter)1;
+  const InterpKernel *filters =
+      (const InterpKernel *)av1_get_interp_filter_kernel(filter);
+  wrapper_filter_average_block2d_8_c(in, kInputStride, filters[1], filters[1],
+                                     out, kOutputStride, Width(), Height());
+
+  aom_usec_timer timer;
+  int tests_num = 1000;
+
+  aom_usec_timer_start(&timer);
+  while (tests_num > 0) {
+    for (int filter_bank = 0; filter_bank < kNumFilterBanks; ++filter_bank) {
+      const InterpFilter filter = (InterpFilter)filter_bank;
+      const InterpKernel *filters =
+          (const InterpKernel *)av1_get_interp_filter_kernel(filter);
+#if CONFIG_DUAL_FILTER
+      const InterpFilterParams filter_params =
+          av1_get_interp_filter_params(filter);
+      if (filter_params.taps != SUBPEL_TAPS) continue;
+#endif
+
+      for (int filter_x = 0; filter_x < kNumFilters; ++filter_x) {
+        for (int filter_y = 0; filter_y < kNumFilters; ++filter_y) {
+          if (filter_x && filter_y)
+            ASM_REGISTER_STATE_CHECK(UUT_->hv8_(
+                in, kInputStride, out, kOutputStride, filters[filter_x], 16,
+                filters[filter_y], 16, Width(), Height()));
+          if (filter_y)
+            ASM_REGISTER_STATE_CHECK(
+                UUT_->v8_(in, kInputStride, out, kOutputStride, kInvalidFilter,
+                          16, filters[filter_y], 16, Width(), Height()));
+          else if (filter_x)
+            ASM_REGISTER_STATE_CHECK(UUT_->h8_(
+                in, kInputStride, out, kOutputStride, filters[filter_x], 16,
+                kInvalidFilter, 16, Width(), Height()));
+        }
+      }
+    }
+    tests_num--;
+  }
+  aom_usec_timer_mark(&timer);
+
+  const int elapsed_time =
+      static_cast<int>(aom_usec_timer_elapsed(&timer) / 1000);
+  printf("%dx%d (bitdepth %d) time: %5d ms\n", Width(), Height(),
+         UUT_->use_highbd_, elapsed_time);
+}
+
 using std::tr1::make_tuple;
 
 #if CONFIG_AOM_HIGHBITDEPTH
@@ -1004,6 +1089,36 @@ WRAP(convolve8_vert_c, 12)
 WRAP(convolve8_avg_vert_c, 12)
 WRAP(convolve8_c, 12)
 WRAP(convolve8_avg_c, 12)
+
+#if HAVE_AVX2
+WRAP(convolve_copy_avx2, 8)
+WRAP(convolve_avg_avx2, 8)
+WRAP(convolve8_horiz_avx2, 8)
+WRAP(convolve8_avg_horiz_avx2, 8)
+WRAP(convolve8_vert_avx2, 8)
+WRAP(convolve8_avg_vert_avx2, 8)
+WRAP(convolve8_avx2, 8)
+WRAP(convolve8_avg_avx2, 8)
+
+WRAP(convolve_copy_avx2, 10)
+WRAP(convolve_avg_avx2, 10)
+WRAP(convolve8_avx2, 10)
+WRAP(convolve8_horiz_avx2, 10)
+WRAP(convolve8_vert_avx2, 10)
+WRAP(convolve8_avg_avx2, 10)
+WRAP(convolve8_avg_horiz_avx2, 10)
+WRAP(convolve8_avg_vert_avx2, 10)
+
+WRAP(convolve_copy_avx2, 12)
+WRAP(convolve_avg_avx2, 12)
+WRAP(convolve8_avx2, 12)
+WRAP(convolve8_horiz_avx2, 12)
+WRAP(convolve8_vert_avx2, 12)
+WRAP(convolve8_avg_avx2, 12)
+WRAP(convolve8_avg_horiz_avx2, 12)
+WRAP(convolve8_avg_vert_avx2, 12)
+#endif  // HAVE_AVX2
+
 #undef WRAP
 
 const ConvolveFunctions convolve8_c(
@@ -1098,7 +1213,35 @@ INSTANTIATE_TEST_CASE_P(SSSE3, ConvolveTest,
                         ::testing::ValuesIn(kArrayConvolve8_ssse3));
 #endif
 
-#if HAVE_AVX2 && HAVE_SSSE3
+#if HAVE_AVX2
+#if CONFIG_AOM_HIGHBITDEPTH
+const ConvolveFunctions convolve8_avx2(
+    wrap_convolve_copy_avx2_8, wrap_convolve_avg_avx2_8,
+    wrap_convolve8_horiz_avx2_8, wrap_convolve8_avg_horiz_avx2_8,
+    wrap_convolve8_vert_avx2_8, wrap_convolve8_avg_vert_avx2_8,
+    wrap_convolve8_avx2_8, wrap_convolve8_avg_avx2_8, wrap_convolve8_horiz_c_8,
+    wrap_convolve8_avg_horiz_c_8, wrap_convolve8_vert_c_8,
+    wrap_convolve8_avg_vert_c_8, wrap_convolve8_c_8, wrap_convolve8_avg_c_8, 8);
+const ConvolveFunctions convolve10_avx2(
+    wrap_convolve_copy_avx2_10, wrap_convolve_avg_avx2_10,
+    wrap_convolve8_horiz_avx2_10, wrap_convolve8_avg_horiz_avx2_10,
+    wrap_convolve8_vert_avx2_10, wrap_convolve8_avg_vert_avx2_10,
+    wrap_convolve8_avx2_10, wrap_convolve8_avg_avx2_10,
+    wrap_convolve8_horiz_c_10, wrap_convolve8_avg_horiz_c_10,
+    wrap_convolve8_vert_c_10, wrap_convolve8_avg_vert_c_10, wrap_convolve8_c_10,
+    wrap_convolve8_avg_c_10, 10);
+const ConvolveFunctions convolve12_avx2(
+    wrap_convolve_copy_avx2_12, wrap_convolve_avg_avx2_12,
+    wrap_convolve8_horiz_avx2_12, wrap_convolve8_avg_horiz_avx2_12,
+    wrap_convolve8_vert_avx2_12, wrap_convolve8_avg_vert_avx2_12,
+    wrap_convolve8_avx2_12, wrap_convolve8_avg_avx2_12,
+    wrap_convolve8_horiz_c_12, wrap_convolve8_avg_horiz_c_12,
+    wrap_convolve8_vert_c_12, wrap_convolve8_avg_vert_c_12, wrap_convolve8_c_12,
+    wrap_convolve8_avg_c_12, 12);
+const ConvolveParam kArrayConvolve8_avx2[] = { ALL_SIZES(convolve8_avx2),
+                                               ALL_SIZES(convolve10_avx2),
+                                               ALL_SIZES(convolve12_avx2) };
+#else
 const ConvolveFunctions convolve8_avx2(
     aom_convolve_copy_c, aom_convolve_avg_c, aom_convolve8_horiz_avx2,
     aom_convolve8_avg_horiz_ssse3, aom_convolve8_vert_avx2,
@@ -1107,9 +1250,10 @@ const ConvolveFunctions convolve8_avx2(
     aom_scaled_avg_vert_c, aom_scaled_2d_c, aom_scaled_avg_2d_c, 0);
 
 const ConvolveParam kArrayConvolve8_avx2[] = { ALL_SIZES(convolve8_avx2) };
+#endif  // CONFIG_AOM_HIGHBITDEPTH
 INSTANTIATE_TEST_CASE_P(AVX2, ConvolveTest,
                         ::testing::ValuesIn(kArrayConvolve8_avx2));
-#endif  // HAVE_AVX2 && HAVE_SSSE3
+#endif  // HAVE_AVX2
 
 // TODO(any): Make NEON versions support 128x128 128x64 64x128 block sizes
 #if HAVE_NEON && !(CONFIG_AV1 && CONFIG_EXT_PARTITION)
