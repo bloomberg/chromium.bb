@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -7,6 +7,10 @@
  *
  *     * Redistributions of source code must retain the above copyright
  * notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above
+ * copyright notice, this list of conditions and the following disclaimer
+ * in the documentation and/or other materials provided with the
+ * distribution.
  *     * Neither the name of Google Inc. nor the names of its
  * contributors may be used to endorse or promote products derived from
  * this software without specific prior written permission.
@@ -24,37 +28,25 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "DynamicAnnotations.h"
+// TODO(palmer): The only caller of this code in Blink is PartitionAlloc. When
+// PA is moved to base, we can remove this file.
+// https://bugs.chromium.org/p/chromium/issues/detail?id=632441
 
-#if USE(DYNAMIC_ANNOTATIONS) && !USE(DYNAMIC_ANNOTATIONS_NOIMPL)
+#ifndef WTF_BitwiseOperations_h
+#define WTF_BitwiseOperations_h
 
-// Identical code folding(-Wl,--icf=all) countermeasures.
-// This makes all Annotate* functions different, which prevents the linker from
-// folding them.
-#ifdef __COUNTER__
-#define DYNAMIC_ANNOTATIONS_IMPL                         \
-  volatile short lineno = (__LINE__ << 8) + __COUNTER__; \
-  (void)lineno;
-#else
-#define DYNAMIC_ANNOTATIONS_IMPL           \
-  volatile short lineno = (__LINE__ << 8); \
-  (void)lineno;
+#include "base/bits.h"
+#include "platform/wtf/CPU.h"
+
+namespace WTF {
+
+using base::bits::CountLeadingZeroBits32;
+using base::bits::CountLeadingZeroBitsSizeT;
+
+#if CPU(64BIT)
+using base::bits::CountLeadingZeroBits64;
 #endif
 
-void WTFAnnotateBenignRaceSized(const char*,
-                                int,
-                                const volatile void*,
-                                long,
-                                const char*) {
-  DYNAMIC_ANNOTATIONS_IMPL
-}
+}  // namespace WTF
 
-void WTFAnnotateHappensBefore(const char*, int, const volatile void*) {
-  DYNAMIC_ANNOTATIONS_IMPL
-}
-
-void WTFAnnotateHappensAfter(const char*, int, const volatile void*) {
-  DYNAMIC_ANNOTATIONS_IMPL
-}
-
-#endif  // USE(DYNAMIC_ANNOTATIONS) && !USE(DYNAMIC_ANNOTATIONS_NOIMPL)
+#endif  // WTF_BitwiseOperations_h
