@@ -20,7 +20,7 @@
 #import "ios/web/public/web_state/web_state_delegate_bridge.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 #import "ios/web_view/internal/cwv_html_element_internal.h"
-#import "ios/web_view/internal/cwv_website_data_store_internal.h"
+#import "ios/web_view/internal/cwv_web_view_configuration_internal.h"
 #import "ios/web_view/internal/translate/web_view_translate_client.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 #import "ios/web_view/internal/web_view_java_script_dialog_presenter.h"
@@ -28,7 +28,6 @@
 #import "ios/web_view/public/cwv_navigation_delegate.h"
 #import "ios/web_view/public/cwv_ui_delegate.h"
 #import "ios/web_view/public/cwv_web_view_configuration.h"
-#import "ios/web_view/public/cwv_website_data_store.h"
 #import "net/base/mac/url_conversions.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
@@ -66,7 +65,7 @@
     _configuration = [configuration copy];
 
     web::WebState::CreateParams webStateCreateParams(
-        [configuration.websiteDataStore browserState]);
+        configuration.browserState);
     _webState = web::WebState::Create(webStateCreateParams);
     _webState->SetWebUsageEnabled(true);
 

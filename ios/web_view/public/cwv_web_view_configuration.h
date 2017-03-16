@@ -12,9 +12,17 @@
 // Configuration used for creation of a CWVWebView.
 @interface CWVWebViewConfiguration : NSObject<NSCopying>
 
-// Data store defining persistance of website data. Default is
-// [CWVWebsiteDataStore defaultDataStore].
-@property(nonatomic, strong, nonnull) CWVWebsiteDataStore* websiteDataStore;
+// Configuration with persistent data store which stores all data on disk.
++ (instancetype)defaultConfiguration;
+
+// Configuration with ephemeral data store that neven stores data on disk.
++ (instancetype)incognitoConfiguration;
+
+- (instancetype)init NS_UNAVAILABLE;
+
+// YES if it is a configuration with persistent data store which stores all data
+// on disk.
+@property(readonly, getter=isPersistent) BOOL persistent;
 
 @end
 

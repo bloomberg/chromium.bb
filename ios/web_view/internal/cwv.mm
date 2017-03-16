@@ -16,7 +16,6 @@
 #import "ios/web_view/public/cwv_delegate.h"
 #import "ios/web_view/public/cwv_web_view.h"
 #import "ios/web_view/public/cwv_web_view_configuration.h"
-#import "ios/web_view/public/cwv_website_data_store.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -50,9 +49,7 @@ CWV* g_criwv = nil;
 
 + (CWVWebView*)webViewWithFrame:(CGRect)frame {
   CWVWebViewConfiguration* configuration =
-      [[CWVWebViewConfiguration alloc] init];
-  configuration.websiteDataStore = [CWVWebsiteDataStore defaultDataStore];
-
+      [CWVWebViewConfiguration defaultConfiguration];
   return [[CWVWebView alloc] initWithFrame:frame configuration:configuration];
 }
 

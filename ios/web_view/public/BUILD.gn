@@ -18,7 +18,6 @@ source_set("public") {
     "cwv_ui_delegate.h",
     "cwv_web_view.h",
     "cwv_web_view_configuration.h",
-    "cwv_website_data_store.h",
   ]
 
   libs = [ "UIKit.framework" ]
