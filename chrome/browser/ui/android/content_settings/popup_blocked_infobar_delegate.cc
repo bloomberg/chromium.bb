@@ -6,7 +6,7 @@
 
 #include <stddef.h>
 #include <utility>
-
+#include "chrome/browser/content_settings/chrome_content_settings_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -49,6 +49,9 @@ void PopupBlockedInfoBarDelegate::Create(content::WebContents* web_contents,
   }
 
   infobar_service->AddInfoBar(std::move(infobar));
+
+  content_settings::RecordPopupsAction(
+      content_settings::POPUPS_ACTION_DISPLAYED_INFOBAR_ON_MOBILE);
 }
 
 PopupBlockedInfoBarDelegate::~PopupBlockedInfoBarDelegate() {
@@ -116,5 +119,7 @@ bool PopupBlockedInfoBarDelegate::Accept() {
       it != blocked_popups.end(); ++it)
     popup_blocker_helper->ShowBlockedPopup(it->first);
 
+  content_settings::RecordPopupsAction(
+      content_settings::POPUPS_ACTION_CLICKED_ALWAYS_SHOW_ON_MOBILE);
   return true;
 }
