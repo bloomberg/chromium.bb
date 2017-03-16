@@ -1,7 +1,6 @@
-<link rel="import" href="chrome://resources/cr_elements/cr_slider/cr_slider.html">
+<link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/md_select_css.html">
-<link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/classes/iron-flex-layout.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
@@ -9,6 +8,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="display_layout.html">
 <link rel="import" href="display_overscan_dialog.html">
+<link rel="import" href="../controls/settings_slider.html">
 <link rel="import" href="../settings_shared_css.html">
 <link rel="import" href="../settings_vars_css.html">
 
@@ -113,10 +113,10 @@
             [[getResolutionText_(selectedDisplay, selectedModeIndex_)]]
           </div>
         </div>
-        <cr-slider disabled="[[!enableSetResolution_(selectedDisplay)]]"
+        <settings-slider disabled="[[!enableSetResolution_(selectedDisplay)]]"
             tick-values="[[modeValues_]]" pref="{{selectedModePref_}}"
             on-change="onSelectedModeChange_">
-        </cr-slider>
+        </settings-slider>
       </div>
       <div class="settings-box embedded">
         <div class="start textarea">$i18n{displayOrientation}</div>

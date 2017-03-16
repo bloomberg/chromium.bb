@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
+<link rel="import" href="../controls/settings_slider.html">
 <link rel="import" href="../controls/settings_toggle_button.html">
 <link rel="import" href="../i18n_setup.html">
 <link rel="import" href="../route.html">
@@ -150,10 +151,10 @@
       <template is="dom-if" if="[[enableAdjustableLargeCursor_]]">
         <div class="list-item">
           <div>$i18n{largeMouseCursorSizeLabel}</div>
-          <cr-slider
+          <settings-slider
              disabled="[[!prefs.settings.a11y.large_cursor_enabled.value]]"
              pref="{{prefs.settings.a11y.large_cursor_dip_size}}"
-             min="25" max="64"></cr-slider>
+             min="25" max="64"></settings-slider>
         </div>
       </template>
       <settings-toggle-button

@@ -4,15 +4,15 @@
 
 /**
  * @fileoverview
- * cr-slider wraps a paper-slider. It maps the slider's values from a linear UI
- * range to a range of real values.  When |value| does not map exactly to a
- * tick mark, it interpolates to the nearest tick.
+ * settings-slider wraps a paper-slider. It maps the slider's values from a
+ * linear UI range to a range of real values.  When |value| does not map exactly
+ * to a tick mark, it interpolates to the nearest tick.
  *
  * Unlike paper-slider, there is no distinction between value and
  * immediateValue; when either changes, the |value| property is updated.
  */
 Polymer({
-  is: 'cr-slider',
+  is: 'settings-slider',
 
   behaviors: [CrPolicyPrefBehavior],
 
@@ -85,8 +85,8 @@ Polymer({
 
     if (this.$.slider.dragging && this.tickValues.length > 0 &&
         this.pref.value != this.tickValues[this.$.slider.immediateValue]) {
-      // The value changed outside cr-slider but we're still holding the knob,
-      // so set the value back to where the knob was.
+      // The value changed outside settings-slider but we're still holding the
+      // knob, so set the value back to where the knob was.
       // Async so we don't confuse Polymer's data binding.
       this.async(function() {
         var newValue = this.tickValues[this.$.slider.immediateValue];

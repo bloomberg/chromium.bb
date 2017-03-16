@@ -94,6 +94,12 @@
         <structure name="IDR_SETTINGS_SHARED_CSS_HTML"
                    file="settings/settings_shared_css.html"
                    type="chrome_html" />
+        <structure name="IDR_SETTINGS_SLIDER_HTML"
+                   file="settings/controls/settings_slider.html"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_SLIDER_JS"
+                   file="settings/controls/settings_slider.js"
+                   type="chrome_html" />
         <structure name="IDR_SETTINGS_TOGGLE_BUTTON_HTML"
                    file="settings/controls/settings_toggle_button.html"
                    type="chrome_html" />

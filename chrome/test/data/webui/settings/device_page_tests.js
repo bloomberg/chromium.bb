@@ -313,7 +313,7 @@ cr.define('device_page_tests', function() {
 
         expectFalse(pointersPage.$$('#mouse settings-toggle-button').checked);
 
-        var slider = assert(pointersPage.$$('#mouse cr-slider'));
+        var slider = assert(pointersPage.$$('#mouse settings-slider'));
         expectEquals(4, slider.pref.value);
         MockInteractions.pressAndReleaseKeyOn(slider.$.slider, 37 /* left */);
         expectEquals(3, devicePage.prefs.settings.mouse.sensitivity2.value);
@@ -328,7 +328,7 @@ cr.define('device_page_tests', function() {
         expectTrue(pointersPage.$$('#touchpad #enableTapToClick').checked);
         expectFalse(pointersPage.$$('#touchpad #enableTapDragging').checked);
 
-        var slider = assert(pointersPage.$$('#touchpad cr-slider'));
+        var slider = assert(pointersPage.$$('#touchpad settings-slider'));
         expectEquals(3, slider.pref.value);
         MockInteractions.pressAndReleaseKeyOn(slider.$.slider, 39 /* right */);
         expectEquals(4, devicePage.prefs.settings.touchpad.sensitivity2.value);
@@ -403,7 +403,7 @@ cr.define('device_page_tests', function() {
         expectEquals(500, keyboardPage.$.delaySlider.pref.value);
         expectEquals(500, keyboardPage.$.repeatRateSlider.pref.value);
 
-        // Test interaction with the cr-slider's underlying paper-slider.
+        // Test interaction with the settings-slider's underlying paper-slider.
         MockInteractions.pressAndReleaseKeyOn(
             keyboardPage.$.delaySlider.$.slider, 37 /* left */);
         MockInteractions.pressAndReleaseKeyOn(

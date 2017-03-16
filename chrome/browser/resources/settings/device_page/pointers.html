@@ -1,7 +1,7 @@
-<link rel="import" href="chrome://resources/cr_elements/cr_slider/cr_slider.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-button/paper-radio-button.html">
 <link rel="import" href="../controls/settings_radio_group.html">
+<link rel="import" href="../controls/settings_slider.html">
 <link rel="import" href="../controls/settings_toggle_button.html">
 <link rel="import" href="device_page_browser_proxy.html">
 <link rel="import" href="../settings_shared_css.html">
@@ -36,12 +36,12 @@
       </div>
       <div class="settings-box">
         <div class="start" id="mouseSpeedLabel">$i18n{mouseSpeed}</div>
-        <cr-slider pref="{{prefs.settings.mouse.sensitivity2}}"
+        <settings-slider pref="{{prefs.settings.mouse.sensitivity2}}"
             tick-values="[[sensitivityValues_]]"
             aria-labelledby="mouseSpeedLabel"
             label-min="$i18n{pointerSlow}"
             label-max="$i18n{pointerFast}">
-        </cr-slider>
+        </settings-slider>
       </div>
     </div>
     <div id="touchpad" hidden$="[[!hasTouchpad]]"
@@ -60,13 +60,13 @@
       </div>
       <div class="settings-box">
         <div class="start" id="touchpadSpeedLabel">$i18n{touchpadSpeed}</div>
-          <cr-slider id="touchpadSensitivity"
+          <settings-slider id="touchpadSensitivity"
               pref="{{prefs.settings.touchpad.sensitivity2}}"
               tick-values="[[sensitivityValues_]]"
               aria-labelledby="touchpadSpeedLabel"
               label-min="$i18n{pointerSlow}"
               label-max="$i18n{pointerFast}">
-          </cr-slider>
+          </settings-slider>
       </div>
       <div class="settings-box">$i18n{scrollLabel}</div>
       <div class="list-frame">

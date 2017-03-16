@@ -117,30 +117,6 @@ TEST_F('CrElementsToolbarSearchFieldTest', 'All', function() {
  * @constructor
  * @extends {CrElementsBrowserTest}
  */
-function CrElementsSliderTest() {}
-
-CrElementsSliderTest.prototype = {
-  __proto__: CrElementsBrowserTest.prototype,
-
-  /** @override */
-  browsePreload: 'chrome://resources/cr_elements/cr_slider/cr_slider.html',
-
-  /** @override */
-  extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
-    'settings_private_test_constants.js',
-    'cr_slider_tests.js',
-  ]),
-};
-
-TEST_F('CrElementsSliderTest', 'All', function() {
-  cr_slider.registerTests();
-  mocha.run();
-});
-
-/**
- * @constructor
- * @extends {CrElementsBrowserTest}
- */
 function CrElementsDrawerTest() {}
 
 CrElementsDrawerTest.prototype = {

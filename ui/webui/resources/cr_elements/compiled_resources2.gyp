@@ -12,7 +12,6 @@
         'cr_drawer/compiled_resources2.gyp:*',
         'cr_expand_button/compiled_resources2.gyp:*',
         'cr_profile_avatar_selector/compiled_resources2.gyp:*',
-        'cr_slider/compiled_resources2.gyp:*',
         'network/compiled_resources2.gyp:*',
         'policy/compiled_resources2.gyp:*',
       ],

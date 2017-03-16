@@ -20,8 +20,8 @@ Polymer({
     hasTouchpad: Boolean,
 
     /**
-     * TODO(michaelpg): cr-slider should optionally take a min and max so we
-     * don't have to generate a simple range of natural numbers ourselves.
+     * TODO(michaelpg): settings-slider should optionally take a min and max so
+     * we don't have to generate a simple range of natural numbers ourselves.
      * @const {!Array<number>}
      * @private
      */

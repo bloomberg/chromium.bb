@@ -1,9 +1,9 @@
-<link rel="import" href="chrome://resources/cr_elements/cr_slider/cr_slider.html">
-<link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="fonts_browser_proxy.html">
+<link rel="import" href="../controls/settings_slider.html">
 <link rel="import" href="../controls/settings_dropdown_menu.html">
 <link rel="import" href="../i18n_setup.html">
 <link rel="import" href="../settings_shared_css.html">
@@ -13,11 +13,11 @@
     <style include="settings-shared"></style>
     <div class="settings-box first">
       <div class="start">$i18n{fontSize}</div>
-      <cr-slider id="sizeSlider"
+      <settings-slider id="sizeSlider"
           pref="{{prefs.webkit.webprefs.default_font_size}}"
           tick-values="[[fontSizeRange_]]"
           label-min="$i18n{tiny}" label-max="$i18n{huge}">
-      </cr-slider>
+      </settings-slider>
     </div>
     <div class="settings-box">
       <div class="start">$i18n{minimumFont}</div>
@@ -32,11 +32,11 @@
                 prefs.webkit.webprefs.minimum_font_size.value)]]</span>
         : $i18n{quickBrownFox}
       </div>
-      <cr-slider id="minimumSizeSlider"
+      <settings-slider id="minimumSizeSlider"
           pref="{{prefs.webkit.webprefs.minimum_font_size}}"
           tick-values="[[minimumFontSizeRange_]]"
           label-min="$i18n{tiny}" label-max="$i18n{huge}">
-      </cr-slider>
+      </settings-slider>
     </div>
     <div class="settings-box">
       <h2>$i18n{standardFont}</h2>

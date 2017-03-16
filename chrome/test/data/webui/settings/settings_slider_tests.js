@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @fileoverview Suite of tests for cr-slider. */
-cr.define('cr_slider', function() {
+/** @fileoverview Suite of tests for settings-slider. */
+cr.define('settings_slider', function() {
   function registerTests() {
-    suite('cr-slider', function() {
+    suite('SettingsSlider', function() {
       /** @type {!CrSliderElement} */
       var slider;
 
       /**
-       * paper-slider instance wrapped by cr-slider.
+       * paper-slider instance wrapped by settings-slider.
        * @type {!PaperSliderElement}
        */
       var paperSlider;
@@ -19,7 +19,7 @@ cr.define('cr_slider', function() {
 
       setup(function() {
         PolymerTest.clearBody();
-        slider = document.createElement('cr-slider');
+        slider = document.createElement('settings-slider');
         slider.pref = {
           type: chrome.settingsPrivate.PrefType.NUMBER,
           value: 16,
@@ -51,8 +51,8 @@ cr.define('cr_slider', function() {
         expectEquals(3, paperSlider.value);
         expectEquals(3, paperSlider.immediateValue);
 
-        // cr-slider only supports snapping to a range of tick values. Setting
-        // to an in-between value should snap to an indexed value.
+        // settings-slider only supports snapping to a range of tick values.
+        // Setting to an in-between value should snap to an indexed value.
         slider.set('pref.value', 70);
         expectEquals(5, paperSlider.value);
         expectEquals(5, paperSlider.immediateValue);
@@ -92,7 +92,7 @@ cr.define('cr_slider', function() {
       });
 
       test('findNearestIndex_', function() {
-        var slider = document.createElement('cr-slider');
+        var slider = document.createElement('settings-slider');
         var testArray = [80, 20, 350, 1000, 200, 100];
         var testFindNearestIndex = function(expectedIndex, value) {
           expectEquals(

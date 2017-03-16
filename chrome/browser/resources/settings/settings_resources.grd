@@ -425,6 +425,12 @@
       <structure name="IDR_SETTINGS_CONTROLS_SETTINGS_IDLE_RENDER_JS"
                  file="controls/settings_idle_render.js"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_CONTROLS_SLIDER_HTML"
+                 file="controls/settings_slider.html"
+                 type="chrome_html" />
+      <structure name="IDR_SETTINGS_CONTROLS_SLIDER_JS"
+                 file="controls/settings_slider.js"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_CONTROLS_TOGGLE_BUTTON_HTML"
                  file="controls/settings_toggle_button.html"
                  type="chrome_html" />
