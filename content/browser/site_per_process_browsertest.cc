@@ -1432,8 +1432,16 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
 // This test tests that browser process hittesting ignores frames with
 // pointer-events: none.
+#if defined(OS_ANDROID)
+// Test failing on some Android builders, due to inaccurate coordinates on
+// some devices. See: https://crbug.com/700007.
+#define MAYBE_SurfaceHitTestPointerEventsNone \
+  DISABLED_SurfaceHitTestPointerEventsNone
+#else
+#define MAYBE_SurfaceHitTestPointerEventsNone SurfaceHitTestPointerEventsNone
+#endif
 IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
-                       SurfaceHitTestPointerEventsNone) {
+                       MAYBE_SurfaceHitTestPointerEventsNone) {
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_frame_pointer-events_none.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -6230,7 +6238,14 @@ void CreateContextMenuTestHelper(
 
 // Test that a mouse right-click to an out-of-process iframe causes a context
 // menu to be generated with the correct screen position.
-IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, CreateContextMenuTest) {
+#if defined(OS_ANDROID)
+// Test failing on some Android builders, due to inaccurate coordinates on
+// some devices. See: https://crbug.com/700007.
+#define MAYBE_CreateContextMenuTest DISABLED_CreateContextMenuTest
+#else
+#define MAYBE_CreateContextMenuTest CreateContextMenuTest
+#endif
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, MAYBE_CreateContextMenuTest) {
   CreateContextMenuTestHelper(shell(), embedded_test_server());
 }
 
