@@ -538,6 +538,60 @@ function testTwoChannelAudio() {
       });
 }
 
+
+// Tests that MediaRecorder can handle a mid-stream resize of the video input
+function testResizeVideoInput(mimeType) {
+  const ON_DATA_AVAILABLE_THRESHOLD = 10;
+  const NUMBER_OF_EVENTS_TO_RECORD = 5;
+  
+  var canvas = document.createElement('canvas');
+  canvas.width = canvas.height = 64;
+  var stream = canvas.captureStream();
+  assertTrue(stream, 'Error creating MediaStream');
+  assertEquals(1, stream.getVideoTracks().length);
+  assertEquals(0, stream.getAudioTracks().length);
+  var recordedEvents = 0;
+
+  function drawOnCanvas(canvas) {
+    var ctx = canvas.getContext('2d');
+    ctx.fillStyle = 'green';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    requestAnimationFrame( function() { drawOnCanvas(canvas); });
+  }
+
+  createMediaRecorder(stream, mimeType)
+      .then(function(recorder) {
+        recorder.ondataavailable = function(event) {
+          if (event.data.size > ON_DATA_AVAILABLE_THRESHOLD)
+            ++recordedEvents;
+        };
+        recorder.start(0);
+        drawOnCanvas(canvas);
+      })
+      .then(function() {
+        return waitFor('Make sure the recording has data',
+            function() {
+              return recordedEvents > NUMBER_OF_EVENTS_TO_RECORD;
+            });
+      })
+      .then(function() {
+        canvas.width = canvas.height = 48;
+        recordedEvents = 0;
+      })
+      .then(function() {
+        return waitFor('Make sure the recording has data',
+            function() {
+              return recordedEvents > NUMBER_OF_EVENTS_TO_RECORD;
+            });
+      })
+      .catch(function(err) {
+        return failTest(err.toString());
+      })
+      .then(function() {
+        reportTestSuccess();
+      });
+}
+
 // Tests that MediaRecorder's requestData() throws an exception if |state| is
 // 'inactive'.
 function testIllegalRequestDataThrowsDOMError() {

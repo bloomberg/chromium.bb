@@ -124,6 +124,13 @@ IN_PROC_BROWSER_TEST_F(WebRtcMediaRecorderTest, TwoChannelAudioRecording) {
   MakeTypicalCall("testTwoChannelAudio();", kMediaRecorderHtmlFile);
 }
 
+IN_PROC_BROWSER_TEST_P(WebRtcMediaRecorderTest, ResizeVideoInput) {
+  MaybeForceDisableEncodeAccelerator(GetParam().disable_accelerator);
+  MakeTypicalCall(base::StringPrintf("testResizeVideoInput(\"%s\");",
+                                     GetParam().mime_type.c_str()),
+                  kMediaRecorderHtmlFile);
+}
+
 IN_PROC_BROWSER_TEST_F(WebRtcMediaRecorderTest, IllegalStopThrowsDOMError) {
   MakeTypicalCall("testIllegalStopThrowsDOMError();", kMediaRecorderHtmlFile);
 }
