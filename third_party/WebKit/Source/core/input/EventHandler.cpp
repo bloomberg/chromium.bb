@@ -726,7 +726,7 @@ WebInputEventResult EventHandler::handleMousePressEvent(
       mouseEvent.button == WebPointerProperties::Button::Left) {
     DCHECK_EQ(WebInputEvent::MouseDown, mouseEvent.type());
     HitTestResult result = mev.hitTestResult();
-    result.setToShadowHostIfInUserAgentShadowRoot();
+    result.setToShadowHostIfInRestrictedShadowRoot();
     m_frame->chromeClient().onMouseDown(result.innerNode());
   }
 
@@ -756,7 +756,7 @@ WebInputEventResult EventHandler::handleMouseMoveEvent(
   if (FrameView* frameView = m_frame->view())
     frameView->mouseMovedInContentArea();
 
-  hoveredNode.setToShadowHostIfInUserAgentShadowRoot();
+  hoveredNode.setToShadowHostIfInRestrictedShadowRoot();
   page->chromeClient().mouseDidMoveOverElement(*m_frame, hoveredNode);
 
   return result;

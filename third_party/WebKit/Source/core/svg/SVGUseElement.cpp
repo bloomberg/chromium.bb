@@ -32,6 +32,7 @@
 #include "core/dom/IdTargetObserver.h"
 #include "core/dom/StyleChangeReason.h"
 #include "core/dom/TaskRunnerHelper.h"
+#include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/Event.h"
 #include "core/layout/svg/LayoutSVGTransformableContainer.h"
@@ -80,7 +81,7 @@ inline SVGUseElement::SVGUseElement(Document& document)
 SVGUseElement* SVGUseElement::create(Document& document) {
   // Always build a user agent #shadow-root for SVGUseElement.
   SVGUseElement* use = new SVGUseElement(document);
-  use->ensureUserAgentShadowRoot();
+  use->ensureShadow().addShadowRoot(*use, ShadowRootType::Closed);
   return use;
 }
 
@@ -313,7 +314,7 @@ void SVGUseElement::buildPendingResource() {
   if (inUseShadowTree())
     return;
   // FIXME: We should try to optimize this, to at least allow partial reclones.
-  userAgentShadowRoot()->removeChildren(OmitSubtreeModifiedEvent);
+  useShadowRoot().removeChildren(OmitSubtreeModifiedEvent);
   clearResourceReference();
   cancelShadowTreeRecreation();
   if (!isConnected())
@@ -420,8 +421,8 @@ void SVGUseElement::buildShadowAndInstanceTree(SVGElement& target) {
   DCHECK(!m_targetElementInstance);
   DCHECK(!m_needsShadowTreeRecreation);
 
-  // <use> creates a "user agent" shadow root. Do not build the shadow/instance
-  // tree for <use> elements living in a user agent shadow tree because they
+  // <use> creates a closed shadow root. Do not build the shadow/instance
+  // tree for <use> elements living in a closed tree because they
   // will get expanded in a second pass -- see expandUseElementsInShadowTree().
   if (inUseShadowTree())
     return;
@@ -435,8 +436,8 @@ void SVGUseElement::buildShadowAndInstanceTree(SVGElement& target) {
   // <symbol> yet.
   Element* instanceRoot = createInstanceTree(target);
   m_targetElementInstance = toSVGElement(instanceRoot);
-  ShadowRoot* shadowTreeRootElement = userAgentShadowRoot();
-  shadowTreeRootElement->appendChild(instanceRoot);
+  ShadowRoot& shadowRoot = useShadowRoot();
+  shadowRoot.appendChild(instanceRoot);
 
   addReferencesToFirstDegreeNestedUseElements(target);
 
@@ -451,16 +452,15 @@ void SVGUseElement::buildShadowAndInstanceTree(SVGElement& target) {
   // Expand all <use> elements in the shadow tree.
   // Expand means: replace the actual <use> element by what it references.
   if (!expandUseElementsInShadowTree()) {
-    shadowTreeRootElement->removeChildren(OmitSubtreeModifiedEvent);
+    shadowRoot.removeChildren(OmitSubtreeModifiedEvent);
     clearResourceReference();
     return;
   }
 
   // If the instance root was a <use>, it could have been replaced now, so
   // reset |m_targetElementInstance|.
-  m_targetElementInstance =
-      toSVGElementOrDie(shadowTreeRootElement->firstChild());
-  DCHECK_EQ(m_targetElementInstance->parentNode(), shadowTreeRootElement);
+  m_targetElementInstance = toSVGElementOrDie(shadowRoot.firstChild());
+  DCHECK_EQ(m_targetElementInstance->parentNode(), shadowRoot);
 
   // Update relative length information.
   updateRelativeLengthsInformation();
@@ -497,7 +497,7 @@ void SVGUseElement::toClipPath(Path& path) const {
 
 SVGGraphicsElement* SVGUseElement::visibleTargetGraphicsElementForClipping()
     const {
-  Node* n = userAgentShadowRoot()->firstChild();
+  Node* n = useShadowRoot().firstChild();
   if (!n || !n->isSVGElement())
     return nullptr;
 
@@ -585,8 +585,8 @@ bool SVGUseElement::expandUseElementsInShadowTree() {
   // a <symbol> contains <use> tags, we'd miss them. So once we're done with
   // setting up the actual shadow tree (after the special case modification for
   // svg/symbol) we have to walk it completely and expand all <use> elements.
-  ShadowRoot* shadowRoot = userAgentShadowRoot();
-  for (SVGUseElement* use = Traversal<SVGUseElement>::firstWithin(*shadowRoot);
+  ShadowRoot& shadowRoot = useShadowRoot();
+  for (SVGUseElement* use = Traversal<SVGUseElement>::firstWithin(shadowRoot);
        use;) {
     DCHECK(!use->resourceIsStillLoading());
 
@@ -617,7 +617,7 @@ bool SVGUseElement::expandUseElementsInShadowTree() {
     // Replace <use> with referenced content.
     use->parentNode()->replaceChild(cloneParent, use);
 
-    use = Traversal<SVGUseElement>::next(*replacingElement, shadowRoot);
+    use = Traversal<SVGUseElement>::next(*replacingElement, &shadowRoot);
   }
   return true;
 }
@@ -718,7 +718,7 @@ bool SVGUseElement::resourceIsValid() const {
 
 bool SVGUseElement::instanceTreeIsLoading() const {
   for (const SVGUseElement& useElement :
-       Traversal<SVGUseElement>::descendantsOf(*userAgentShadowRoot())) {
+       Traversal<SVGUseElement>::descendantsOf(useShadowRoot())) {
     if (useElement.resourceIsStillLoading())
       return true;
   }

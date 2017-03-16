@@ -169,7 +169,7 @@ LayoutObject* HitTestResult::layoutObject() const {
   return m_innerNode ? m_innerNode->layoutObject() : 0;
 }
 
-void HitTestResult::setToShadowHostIfInUserAgentShadowRoot() {
+void HitTestResult::setToShadowHostIfInRestrictedShadowRoot() {
   Node* node = innerNode();
   if (!node)
     return;
@@ -177,10 +177,14 @@ void HitTestResult::setToShadowHostIfInUserAgentShadowRoot() {
   ShadowRoot* containingShadowRoot = node->containingShadowRoot();
   Element* shadowHost = nullptr;
 
+  // Consider a closed shadow tree of SVG's <use> element as a special
+  // case so that a toolip title in the shadow tree works.
   while (containingShadowRoot &&
-         containingShadowRoot->type() == ShadowRootType::UserAgent) {
+         (containingShadowRoot->type() == ShadowRootType::UserAgent ||
+          isSVGUseElement(containingShadowRoot->host()))) {
     shadowHost = &containingShadowRoot->host();
     containingShadowRoot = shadowHost->containingShadowRoot();
+    setInnerNode(node->ownerShadowHost());
   }
 
   if (shadowHost)

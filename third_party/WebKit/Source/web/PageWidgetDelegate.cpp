@@ -128,7 +128,7 @@ WebInputEventResult PageWidgetDelegate::handleInputEvent(
         flooredIntPoint(mouseEvent.positionInRootFrame())));
     HitTestResult result = root->eventHandler().hitTestResultAtPoint(
         docPoint, HitTestRequest::ReadOnly | HitTestRequest::Active);
-    result.setToShadowHostIfInUserAgentShadowRoot();
+    result.setToShadowHostIfInRestrictedShadowRoot();
     if (result.innerNodeFrame()) {
       Document* document = result.innerNodeFrame()->document();
       if (document) {

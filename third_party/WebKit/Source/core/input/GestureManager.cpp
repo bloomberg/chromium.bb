@@ -230,7 +230,7 @@ WebInputEventResult GestureManager::handleGestureTap(
   if (currentHitTest.innerNode()) {
     DCHECK(gestureEvent.type() == WebInputEvent::GestureTap);
     HitTestResult result = currentHitTest;
-    result.setToShadowHostIfInUserAgentShadowRoot();
+    result.setToShadowHostIfInRestrictedShadowRoot();
     m_frame->chromeClient().onMouseDown(result.innerNode());
   }
 

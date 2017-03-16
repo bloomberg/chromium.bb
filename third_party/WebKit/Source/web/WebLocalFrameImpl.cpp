@@ -1927,7 +1927,7 @@ HitTestResult WebLocalFrameImpl::hitTestResultForVisualViewportPos(
   IntPoint docPoint(frame()->view()->rootFrameToContents(rootFramePoint));
   HitTestResult result = frame()->eventHandler().hitTestResultAtPoint(
       docPoint, HitTestRequest::ReadOnly | HitTestRequest::Active);
-  result.setToShadowHostIfInUserAgentShadowRoot();
+  result.setToShadowHostIfInRestrictedShadowRoot();
   return result;
 }
 

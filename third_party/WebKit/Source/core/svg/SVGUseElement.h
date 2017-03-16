@@ -89,6 +89,11 @@ class SVGUseElement final : public SVGGraphicsElement,
 
   bool selfHasRelativeLengths() const override;
 
+  ShadowRoot& useShadowRoot() const {
+    CHECK(closedShadowRoot());
+    return *closedShadowRoot();
+  }
+
   // Instance tree handling
   Element* resolveTargetElement();
   void buildShadowAndInstanceTree(SVGElement& target);

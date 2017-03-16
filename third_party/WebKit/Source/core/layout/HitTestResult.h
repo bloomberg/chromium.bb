@@ -131,7 +131,7 @@ class CORE_EXPORT HitTestResult {
   PositionWithAffinity position() const;
   LayoutObject* layoutObject() const;
 
-  void setToShadowHostIfInUserAgentShadowRoot();
+  void setToShadowHostIfInRestrictedShadowRoot();
 
   const HitTestLocation& hitTestLocation() const { return m_hitTestLocation; }
   const HitTestRequest& hitTestRequest() const { return m_hitTestRequest; }

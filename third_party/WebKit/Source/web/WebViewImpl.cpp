@@ -506,7 +506,7 @@ void WebViewImpl::handleMouseDown(LocalFrame& mainFrame,
     HitTestResult result(
         m_page->deprecatedLocalMainFrame()->eventHandler().hitTestResultAtPoint(
             point));
-    result.setToShadowHostIfInUserAgentShadowRoot();
+    result.setToShadowHostIfInRestrictedShadowRoot();
     Node* hitNode = result.innerNodeOrImageMapImage();
 
     if (!result.scrollbar() && hitNode && hitNode->layoutObject() &&
@@ -1264,7 +1264,7 @@ WebRect WebViewImpl::computeBlockBound(const WebPoint& pointInRootFrame,
   HitTestResult result =
       mainFrameImpl()->frame()->eventHandler().hitTestResultAtPoint(point,
                                                                     hitType);
-  result.setToShadowHostIfInUserAgentShadowRoot();
+  result.setToShadowHostIfInRestrictedShadowRoot();
 
   Node* node = result.innerNodeOrImageMapImage();
   if (!node)
@@ -3776,7 +3776,7 @@ HitTestResult WebViewImpl::hitTestResultForRootFramePos(
   HitTestResult result =
       m_page->deprecatedLocalMainFrame()->eventHandler().hitTestResultAtPoint(
           docPoint, HitTestRequest::ReadOnly | HitTestRequest::Active);
-  result.setToShadowHostIfInUserAgentShadowRoot();
+  result.setToShadowHostIfInRestrictedShadowRoot();
   return result;
 }
 
@@ -3807,7 +3807,7 @@ WebHitTestResult WebViewImpl::hitTestResultForTap(
               scaledEvent, HitTestRequest::ReadOnly | HitTestRequest::Active)
           .hitTestResult();
 
-  result.setToShadowHostIfInUserAgentShadowRoot();
+  result.setToShadowHostIfInRestrictedShadowRoot();
   return result;
 }
 
@@ -4064,7 +4064,7 @@ bool WebViewImpl::detectContentOnTouch(
   // Need a local copy of the hit test as
   // setToShadowHostIfInUserAgentShadowRoot() will modify it.
   HitTestResult touchHit = targetedEvent.hitTestResult();
-  touchHit.setToShadowHostIfInUserAgentShadowRoot();
+  touchHit.setToShadowHostIfInRestrictedShadowRoot();
 
   if (touchHit.isContentEditable())
     return false;

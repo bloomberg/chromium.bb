@@ -744,7 +744,7 @@ void WebFrameWidgetImpl::handleMouseDown(LocalFrame& mainFrame,
     point = m_localRoot->frameView()->rootFrameToContents(point);
     HitTestResult result(
         m_localRoot->frame()->eventHandler().hitTestResultAtPoint(point));
-    result.setToShadowHostIfInUserAgentShadowRoot();
+    result.setToShadowHostIfInRestrictedShadowRoot();
     Node* hitNode = result.innerNode();
 
     if (!result.scrollbar() && hitNode && hitNode->layoutObject() &&
@@ -1115,7 +1115,7 @@ HitTestResult WebFrameWidgetImpl::hitTestResultForRootFramePos(
   HitTestResult result =
       m_localRoot->frame()->eventHandler().hitTestResultAtPoint(
           docPoint, HitTestRequest::ReadOnly | HitTestRequest::Active);
-  result.setToShadowHostIfInUserAgentShadowRoot();
+  result.setToShadowHostIfInRestrictedShadowRoot();
   return result;
 }
 
