@@ -277,6 +277,16 @@ config("compiler") {
       }
     }
 
+    if (is_official_build) {
+      # Explicitly pass --build-id to ld. Compilers used to always pass this
+      # implicitly but don't any more (in particular clang when built without
+      # ENABLE_LINKER_BUILD_ID=ON). The crash infrastructure does need a build
+      # id, so explicitly enable it in official builds. It's not needed in
+      # unofficial builds and computing it does slow down the link, so go with
+      # faster links in unofficial builds.
+      ldflags += [ "-Wl,--build-id=sha1" ]
+    }
+
     defines += [ "_FILE_OFFSET_BITS=64" ]
 
     if (!is_android) {
