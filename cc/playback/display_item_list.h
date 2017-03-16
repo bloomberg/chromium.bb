@@ -68,18 +68,18 @@ class CC_EXPORT DisplayItemList
   const DisplayItemType& CreateAndAppendPairedBeginItemWithVisualRect(
       const gfx::Rect& visual_rect,
       Args&&... args) {
-    size_t item_index = inputs_.visual_rects.size();
-    inputs_.visual_rects.push_back(visual_rect);
-    inputs_.begin_item_indices.push_back(item_index);
+    size_t item_index = visual_rects_.size();
+    visual_rects_.push_back(visual_rect);
+    begin_item_indices_.push_back(item_index);
 
     return AllocateAndConstruct<DisplayItemType>(std::forward<Args>(args)...);
   }
 
   template <typename DisplayItemType, typename... Args>
   const DisplayItemType& CreateAndAppendPairedEndItem(Args&&... args) {
-    DCHECK(!inputs_.begin_item_indices.empty());
-    size_t last_begin_index = inputs_.begin_item_indices.back();
-    inputs_.begin_item_indices.pop_back();
+    DCHECK(!begin_item_indices_.empty());
+    size_t last_begin_index = begin_item_indices_.back();
+    begin_item_indices_.pop_back();
 
     // Note that we are doing two separate things below:
     //
@@ -103,11 +103,11 @@ class CC_EXPORT DisplayItemList
     // overhead.
 
     // Ending bounds match the starting bounds.
-    inputs_.visual_rects.push_back(inputs_.visual_rects[last_begin_index]);
+    visual_rects_.push_back(visual_rects_[last_begin_index]);
 
     // The block that ended needs to be included in the bounds of the enclosing
     // block.
-    GrowCurrentBeginItemVisualRect(inputs_.visual_rects[last_begin_index]);
+    GrowCurrentBeginItemVisualRect(visual_rects_[last_begin_index]);
 
     return AllocateAndConstruct<DisplayItemType>(std::forward<Args>(args)...);
   }
@@ -116,7 +116,7 @@ class CC_EXPORT DisplayItemList
   const DisplayItemType& CreateAndAppendDrawingItem(
       const gfx::Rect& visual_rect,
       Args&&... args) {
-    inputs_.visual_rects.push_back(visual_rect);
+    visual_rects_.push_back(visual_rect);
     GrowCurrentBeginItemVisualRect(visual_rect);
 
     return AllocateAndConstruct<DisplayItemType>(std::forward<Args>(args)...);
@@ -127,7 +127,7 @@ class CC_EXPORT DisplayItemList
   void Finalize();
 
   void SetIsSuitableForGpuRasterization(bool is_suitable) {
-    inputs_.all_items_are_suitable_for_gpu_rasterization = is_suitable;
+    all_items_are_suitable_for_gpu_rasterization_ = is_suitable;
   }
   bool IsSuitableForGpuRasterization() const;
 
@@ -147,18 +147,16 @@ class CC_EXPORT DisplayItemList
     retain_visual_rects_ = retain;
   }
 
-  size_t size() const { return inputs_.items.size(); }
+  size_t size() const { return items_.size(); }
 
-  gfx::Rect VisualRectForTesting(int index) {
-    return inputs_.visual_rects[index];
-  }
+  gfx::Rect VisualRectForTesting(int index) { return visual_rects_[index]; }
 
   ContiguousContainer<DisplayItem>::const_iterator begin() const {
-    return inputs_.items.begin();
+    return items_.begin();
   }
 
   ContiguousContainer<DisplayItem>::const_iterator end() const {
-    return inputs_.items.end();
+    return items_.end();
   }
 
  private:
@@ -170,43 +168,35 @@ class CC_EXPORT DisplayItemList
   std::unique_ptr<base::trace_event::TracedValue> CreateTracedValue(
       bool include_items) const;
 
-  RTree rtree_;
-  // For testing purposes only. Whether to keep visual rects across calls to
-  // Finalize().
-  bool retain_visual_rects_ = false;
-
   // If we're currently within a paired display item block, unions the
   // given visual rect with the begin display item's visual rect.
   void GrowCurrentBeginItemVisualRect(const gfx::Rect& visual_rect);
 
   template <typename DisplayItemType, typename... Args>
   const DisplayItemType& AllocateAndConstruct(Args&&... args) {
-    auto* item = &inputs_.items.AllocateAndConstruct<DisplayItemType>(
+    auto* item = &items_.AllocateAndConstruct<DisplayItemType>(
         std::forward<Args>(args)...);
     approximate_op_count_ += item->ApproximateOpCount();
     return *item;
   }
 
-  int approximate_op_count_ = 0;
-
+  RTree rtree_;
   DiscardableImageMap image_map_;
+  ContiguousContainer<DisplayItem> items_;
 
-  struct Inputs {
-    Inputs();
-    ~Inputs();
+  // The visual rects associated with each of the display items in the
+  // display item list. There is one rect per display item, and the
+  // position in |visual_rects| matches the position of the item in
+  // |items| . These rects are intentionally kept separate
+  // because they are not needed while walking the |items| for raster.
+  std::vector<gfx::Rect> visual_rects_;
+  std::vector<size_t> begin_item_indices_;
 
-    ContiguousContainer<DisplayItem> items;
-    // The visual rects associated with each of the display items in the
-    // display item list. There is one rect per display item, and the
-    // position in |visual_rects| matches the position of the item in
-    // |items| . These rects are intentionally kept separate
-    // because they are not needed while walking the |items| for raster.
-    std::vector<gfx::Rect> visual_rects;
-    std::vector<size_t> begin_item_indices;
-    bool all_items_are_suitable_for_gpu_rasterization = true;
-  };
-
-  Inputs inputs_;
+  int approximate_op_count_ = 0;
+  bool all_items_are_suitable_for_gpu_rasterization_ = true;
+  // For testing purposes only. Whether to keep visual rects across calls to
+  // Finalize().
+  bool retain_visual_rects_ = false;
 
   friend class base::RefCountedThreadSafe<DisplayItemList>;
   FRIEND_TEST_ALL_PREFIXES(DisplayItemListTest, ApproximateMemoryUsage);

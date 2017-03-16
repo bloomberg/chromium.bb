@@ -157,13 +157,9 @@ NOINLINE DISABLE_CFI_PERF void RasterItem(const DisplayItem& base_item,
 
 }  // namespace
 
-DisplayItemList::Inputs::Inputs()
-    : items(LargestDisplayItemSize(),
-            LargestDisplayItemSize() * kDefaultNumDisplayItemsToReserve) {}
-
-DisplayItemList::Inputs::~Inputs() = default;
-
-DisplayItemList::DisplayItemList() = default;
+DisplayItemList::DisplayItemList()
+    : items_(LargestDisplayItemSize(),
+             LargestDisplayItemSize() * kDefaultNumDisplayItemsToReserve) {}
 
 DisplayItemList::~DisplayItemList() = default;
 
@@ -194,7 +190,7 @@ void DisplayItemList::Raster(SkCanvas* canvas,
   std::vector<size_t> indices;
   rtree_.Search(canvas_playback_rect, &indices);
   for (size_t index : indices) {
-    RasterItem(inputs_.items[index], canvas, callback);
+    RasterItem(items_[index], canvas, callback);
 
     // We use a callback during solid color analysis on the compositor thread to
     // break out early. Since we're handling a sequence of pictures via rtree
@@ -206,21 +202,21 @@ void DisplayItemList::Raster(SkCanvas* canvas,
 
 void DisplayItemList::GrowCurrentBeginItemVisualRect(
     const gfx::Rect& visual_rect) {
-  if (!inputs_.begin_item_indices.empty())
-    inputs_.visual_rects[inputs_.begin_item_indices.back()].Union(visual_rect);
+  if (!begin_item_indices_.empty())
+    visual_rects_[begin_item_indices_.back()].Union(visual_rect);
 }
 
 void DisplayItemList::Finalize() {
   TRACE_EVENT0("cc", "DisplayItemList::Finalize");
-  DCHECK(inputs_.items.size() == inputs_.visual_rects.size())
-      << "items.size() " << inputs_.items.size() << " visual_rects.size() "
-      << inputs_.visual_rects.size();
-  rtree_.Build(inputs_.visual_rects);
+  DCHECK(items_.size() == visual_rects_.size())
+      << "items.size() " << items_.size() << " visual_rects.size() "
+      << visual_rects_.size();
+  rtree_.Build(visual_rects_);
 
   if (!retain_visual_rects_)
     // This clears both the vector and the vector's capacity, since
     // visual_rects won't be used anymore.
-    std::vector<gfx::Rect>().swap(inputs_.visual_rects);
+    std::vector<gfx::Rect>().swap(visual_rects_);
 }
 
 bool DisplayItemList::IsSuitableForGpuRasterization() const {
@@ -228,7 +224,7 @@ bool DisplayItemList::IsSuitableForGpuRasterization() const {
   // none of the items might individually trigger a veto even though they
   // collectively have enough "bad" operations that a corresponding Picture
   // would get vetoed. See crbug.com/513016.
-  return inputs_.all_items_are_suitable_for_gpu_rasterization;
+  return all_items_are_suitable_for_gpu_rasterization_;
 }
 
 int DisplayItemList::ApproximateOpCount() const {
@@ -239,7 +235,7 @@ size_t DisplayItemList::ApproximateMemoryUsage() const {
   size_t memory_usage = sizeof(*this);
 
   size_t external_memory_usage = 0;
-  for (const auto& item : inputs_.items) {
+  for (const auto& item : items_) {
     size_t bytes = 0;
     switch (item.type) {
       case DisplayItem::CLIP:
@@ -281,7 +277,7 @@ size_t DisplayItemList::ApproximateMemoryUsage() const {
   }
 
   // Memory outside this class due to |items_|.
-  memory_usage += inputs_.items.GetCapacityInBytes() + external_memory_usage;
+  memory_usage += items_.GetCapacityInBytes() + external_memory_usage;
 
   // TODO(jbroman): Does anything else owned by this class substantially
   // contribute to memory usage?
@@ -313,10 +309,10 @@ DisplayItemList::CreateTracedValue(bool include_items) const {
   if (include_items) {
     state->BeginArray("items");
 
-    auto visual_rects_it = inputs_.visual_rects.begin();
-    for (const DisplayItem& base_item : inputs_.items) {
+    auto visual_rects_it = visual_rects_.begin();
+    for (const DisplayItem& base_item : items_) {
       gfx::Rect visual_rect;
-      if (visual_rects_it != inputs_.visual_rects.end()) {
+      if (visual_rects_it != visual_rects_.end()) {
         visual_rect = *visual_rects_it;
         ++visual_rects_it;
       }
@@ -490,7 +486,7 @@ void DisplayItemList::GenerateDiscardableImagesMetadata() {
   DiscardableImageMap::ScopedMetadataGenerator generator(
       &image_map_, gfx::Size(bounds.right(), bounds.bottom()));
   auto* canvas = generator.canvas();
-  for (const auto& item : inputs_.items)
+  for (const auto& item : items_)
     RasterItem(item, canvas, nullptr);
 }
 
