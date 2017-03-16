@@ -63,7 +63,7 @@ void MockValidationDelegate::OnAtomicPreferenceValidation(
     bool is_personal) {
   record_->RecordValidation(pref_path, value_state,
                             external_validation_value_state, is_personal,
-                            PrefHashFilter::TRACKING_STRATEGY_ATOMIC);
+                            PrefHashFilter::PrefTrackingStrategy::ATOMIC);
 }
 
 void MockValidationDelegate::OnSplitPreferenceValidation(
@@ -75,5 +75,5 @@ void MockValidationDelegate::OnSplitPreferenceValidation(
     bool is_personal) {
   record_->RecordValidation(pref_path, value_state,
                             external_validation_value_state, is_personal,
-                            PrefHashFilter::TRACKING_STRATEGY_SPLIT);
+                            PrefHashFilter::PrefTrackingStrategy::SPLIT);
 }

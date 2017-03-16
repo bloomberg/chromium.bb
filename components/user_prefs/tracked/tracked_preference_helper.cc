@@ -18,9 +18,9 @@ TrackedPreferenceHelper::TrackedPreferenceHelper(
     : pref_path_(pref_path),
       reporting_id_(reporting_id),
       reporting_ids_count_(reporting_ids_count),
-      enforce_(enforcement_level == PrefHashFilter::ENFORCE_ON_LOAD),
-      personal_(value_type == PrefHashFilter::VALUE_PERSONAL) {
-}
+      enforce_(enforcement_level ==
+               PrefHashFilter::EnforcementLevel::ENFORCE_ON_LOAD),
+      personal_(value_type == PrefHashFilter::ValueType::PERSONAL) {}
 
 TrackedPreferenceHelper::ResetAction TrackedPreferenceHelper::GetAction(
     PrefHashStoreTransaction::ValueState value_state) const {

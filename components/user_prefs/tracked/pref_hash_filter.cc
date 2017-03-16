@@ -78,7 +78,7 @@ PrefHashFilter::PrefHashFilter(
 
     std::unique_ptr<TrackedPreference> tracked_preference;
     switch (metadata.strategy) {
-      case TRACKING_STRATEGY_ATOMIC:
+      case PrefTrackingStrategy::ATOMIC:
         tracked_preference.reset(
             new TrackedAtomicPreference(metadata.name,
                                         metadata.reporting_id,
@@ -87,7 +87,7 @@ PrefHashFilter::PrefHashFilter(
                                         metadata.value_type,
                                         delegate));
         break;
-      case TRACKING_STRATEGY_SPLIT:
+      case PrefTrackingStrategy::SPLIT:
         tracked_preference.reset(
             new TrackedSplitPreference(metadata.name,
                                        metadata.reporting_id,

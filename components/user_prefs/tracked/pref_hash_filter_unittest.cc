@@ -33,6 +33,10 @@
 
 namespace {
 
+using EnforcementLevel = PrefHashFilter::EnforcementLevel;
+using PrefTrackingStrategy = PrefHashFilter::PrefTrackingStrategy;
+using ValueType = PrefHashFilter::ValueType;
+
 const char kAtomicPref[] = "atomic_pref";
 const char kAtomicPref2[] = "atomic_pref2";
 const char kAtomicPref3[] = "pref3";
@@ -42,41 +46,20 @@ const char kReportOnlySplitPref[] = "report_only_split_pref";
 const char kSplitPref[] = "split_pref";
 
 const PrefHashFilter::TrackedPreferenceMetadata kTestTrackedPrefs[] = {
-    {0,
-     kAtomicPref,
-     PrefHashFilter::ENFORCE_ON_LOAD,
-     PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
-     PrefHashFilter::VALUE_PERSONAL},
-    {1,
-     kReportOnlyPref,
-     PrefHashFilter::NO_ENFORCEMENT,
-     PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
-     PrefHashFilter::VALUE_IMPERSONAL},
-    {2,
-     kSplitPref,
-     PrefHashFilter::ENFORCE_ON_LOAD,
-     PrefHashFilter::TRACKING_STRATEGY_SPLIT,
-     PrefHashFilter::VALUE_IMPERSONAL},
-    {3,
-     kReportOnlySplitPref,
-     PrefHashFilter::NO_ENFORCEMENT,
-     PrefHashFilter::TRACKING_STRATEGY_SPLIT,
-     PrefHashFilter::VALUE_IMPERSONAL},
-    {4,
-     kAtomicPref2,
-     PrefHashFilter::ENFORCE_ON_LOAD,
-     PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
-     PrefHashFilter::VALUE_IMPERSONAL},
-    {5,
-     kAtomicPref3,
-     PrefHashFilter::ENFORCE_ON_LOAD,
-     PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
-     PrefHashFilter::VALUE_IMPERSONAL},
-    {6,
-     kAtomicPref4,
-     PrefHashFilter::ENFORCE_ON_LOAD,
-     PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
-     PrefHashFilter::VALUE_IMPERSONAL},
+    {0, kAtomicPref, EnforcementLevel::ENFORCE_ON_LOAD,
+     PrefTrackingStrategy::ATOMIC, ValueType::PERSONAL},
+    {1, kReportOnlyPref, EnforcementLevel::NO_ENFORCEMENT,
+     PrefTrackingStrategy::ATOMIC, ValueType::IMPERSONAL},
+    {2, kSplitPref, EnforcementLevel::ENFORCE_ON_LOAD,
+     PrefTrackingStrategy::SPLIT, ValueType::IMPERSONAL},
+    {3, kReportOnlySplitPref, EnforcementLevel::NO_ENFORCEMENT,
+     PrefTrackingStrategy::SPLIT, ValueType::IMPERSONAL},
+    {4, kAtomicPref2, EnforcementLevel::ENFORCE_ON_LOAD,
+     PrefTrackingStrategy::ATOMIC, ValueType::IMPERSONAL},
+    {5, kAtomicPref3, EnforcementLevel::ENFORCE_ON_LOAD,
+     PrefTrackingStrategy::ATOMIC, ValueType::IMPERSONAL},
+    {6, kAtomicPref4, EnforcementLevel::ENFORCE_ON_LOAD,
+     PrefTrackingStrategy::ATOMIC, ValueType::IMPERSONAL},
 };
 
 }  // namespace
@@ -311,15 +294,13 @@ PrefHashStoreTransaction::ValueState
 MockPrefHashStore::MockPrefHashStoreTransaction::CheckValue(
     const std::string& path,
     const base::Value* value) const {
-  return outer_->RecordCheckValue(path, value,
-                                  PrefHashFilter::TRACKING_STRATEGY_ATOMIC);
+  return outer_->RecordCheckValue(path, value, PrefTrackingStrategy::ATOMIC);
 }
 
 void MockPrefHashStore::MockPrefHashStoreTransaction::StoreHash(
     const std::string& path,
     const base::Value* new_value) {
-  outer_->RecordStoreHash(path, new_value,
-                          PrefHashFilter::TRACKING_STRATEGY_ATOMIC);
+  outer_->RecordStoreHash(path, new_value, PrefTrackingStrategy::ATOMIC);
 }
 
 PrefHashStoreTransaction::ValueState
@@ -338,14 +319,13 @@ MockPrefHashStore::MockPrefHashStoreTransaction::CheckSplitValue(
   }
 
   return outer_->RecordCheckValue(path, initial_split_value,
-                                  PrefHashFilter::TRACKING_STRATEGY_SPLIT);
+                                  PrefTrackingStrategy::SPLIT);
 }
 
 void MockPrefHashStore::MockPrefHashStoreTransaction::StoreSplitHash(
     const std::string& path,
     const base::DictionaryValue* new_value) {
-  outer_->RecordStoreHash(path, new_value,
-                          PrefHashFilter::TRACKING_STRATEGY_SPLIT);
+  outer_->RecordStoreHash(path, new_value, PrefTrackingStrategy::SPLIT);
 }
 
 bool MockPrefHashStore::MockPrefHashStoreTransaction::HasHash(
@@ -719,7 +699,7 @@ TEST_P(PrefHashFilterTest, FilterTrackedPrefUpdate) {
   MockPrefHashStore::ValuePtrStrategyPair stored_value =
       mock_pref_hash_store_->stored_value(kAtomicPref);
   ASSERT_EQ(string_value, stored_value.first);
-  ASSERT_EQ(PrefHashFilter::TRACKING_STRATEGY_ATOMIC, stored_value.second);
+  ASSERT_EQ(PrefTrackingStrategy::ATOMIC, stored_value.second);
 
   ASSERT_EQ(1u, mock_pref_hash_store_->transactions_performed());
   VerifyRecordedReset(false);
@@ -779,7 +759,7 @@ TEST_P(PrefHashFilterTest, FilterSplitPrefUpdate) {
   MockPrefHashStore::ValuePtrStrategyPair stored_value =
       mock_pref_hash_store_->stored_value(kSplitPref);
   ASSERT_EQ(dict_value, stored_value.first);
-  ASSERT_EQ(PrefHashFilter::TRACKING_STRATEGY_SPLIT, stored_value.second);
+  ASSERT_EQ(PrefTrackingStrategy::SPLIT, stored_value.second);
 
   ASSERT_EQ(1u, mock_pref_hash_store_->transactions_performed());
   VerifyRecordedReset(false);
@@ -835,20 +815,18 @@ TEST_P(PrefHashFilterTest, MultiplePrefsFilterSerializeData) {
   MockPrefHashStore::ValuePtrStrategyPair stored_value_atomic1 =
       mock_pref_hash_store_->stored_value(kAtomicPref);
   ASSERT_EQ(int_value1, stored_value_atomic1.first);
-  ASSERT_EQ(PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
-            stored_value_atomic1.second);
+  ASSERT_EQ(PrefTrackingStrategy::ATOMIC, stored_value_atomic1.second);
   ASSERT_EQ(1u, mock_pref_hash_store_->transactions_performed());
 
   MockPrefHashStore::ValuePtrStrategyPair stored_value_atomic3 =
       mock_pref_hash_store_->stored_value(kAtomicPref3);
   ASSERT_EQ(int_value5, stored_value_atomic3.first);
-  ASSERT_EQ(PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
-            stored_value_atomic3.second);
+  ASSERT_EQ(PrefTrackingStrategy::ATOMIC, stored_value_atomic3.second);
 
   MockPrefHashStore::ValuePtrStrategyPair stored_value_split =
       mock_pref_hash_store_->stored_value(kSplitPref);
   ASSERT_EQ(dict_value, stored_value_split.first);
-  ASSERT_EQ(PrefHashFilter::TRACKING_STRATEGY_SPLIT, stored_value_split.second);
+  ASSERT_EQ(PrefTrackingStrategy::SPLIT, stored_value_split.second);
 }
 
 TEST_P(PrefHashFilterTest, UnknownNullValue) {
@@ -868,13 +846,12 @@ TEST_P(PrefHashFilterTest, UnknownNullValue) {
   MockPrefHashStore::ValuePtrStrategyPair stored_atomic_value =
       mock_pref_hash_store_->stored_value(kAtomicPref);
   ASSERT_EQ(NULL, stored_atomic_value.first);
-  ASSERT_EQ(PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
-            stored_atomic_value.second);
+  ASSERT_EQ(PrefTrackingStrategy::ATOMIC, stored_atomic_value.second);
 
   MockPrefHashStore::ValuePtrStrategyPair stored_split_value =
       mock_pref_hash_store_->stored_value(kSplitPref);
   ASSERT_EQ(NULL, stored_split_value.first);
-  ASSERT_EQ(PrefHashFilter::TRACKING_STRATEGY_SPLIT, stored_split_value.second);
+  ASSERT_EQ(PrefTrackingStrategy::SPLIT, stored_split_value.second);
 
   // Delegate saw all prefs, two of which had the expected value_state.
   ASSERT_EQ(arraysize(kTestTrackedPrefs),
@@ -887,13 +864,11 @@ TEST_P(PrefHashFilterTest, UnknownNullValue) {
 
   const MockValidationDelegateRecord::ValidationEvent* validated_split_pref =
       mock_validation_delegate_record_->GetEventForPath(kSplitPref);
-  ASSERT_EQ(PrefHashFilter::TRACKING_STRATEGY_SPLIT,
-            validated_split_pref->strategy);
+  ASSERT_EQ(PrefTrackingStrategy::SPLIT, validated_split_pref->strategy);
   ASSERT_FALSE(validated_split_pref->is_personal);
   const MockValidationDelegateRecord::ValidationEvent* validated_atomic_pref =
       mock_validation_delegate_record_->GetEventForPath(kAtomicPref);
-  ASSERT_EQ(PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
-            validated_atomic_pref->strategy);
+  ASSERT_EQ(PrefTrackingStrategy::ATOMIC, validated_atomic_pref->strategy);
   ASSERT_TRUE(validated_atomic_pref->is_personal);
 }
 
@@ -915,7 +890,7 @@ TEST_P(PrefHashFilterTest, InitialValueUnknown) {
   mock_pref_hash_store_->SetCheckResult(
       kSplitPref, PrefHashStoreTransaction::UNTRUSTED_UNKNOWN_VALUE);
   // If we are enforcing, expect this to report changes.
-  DoFilterOnLoad(GetParam() >= PrefHashFilter::ENFORCE_ON_LOAD);
+  DoFilterOnLoad(GetParam() >= EnforcementLevel::ENFORCE_ON_LOAD);
   ASSERT_EQ(arraysize(kTestTrackedPrefs),
             mock_pref_hash_store_->checked_paths_count());
   ASSERT_EQ(2u, mock_pref_hash_store_->stored_paths_count());
@@ -934,10 +909,9 @@ TEST_P(PrefHashFilterTest, InitialValueUnknown) {
       mock_pref_hash_store_->stored_value(kAtomicPref);
   MockPrefHashStore::ValuePtrStrategyPair stored_split_value =
       mock_pref_hash_store_->stored_value(kSplitPref);
-  ASSERT_EQ(PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
-            stored_atomic_value.second);
-  ASSERT_EQ(PrefHashFilter::TRACKING_STRATEGY_SPLIT, stored_split_value.second);
-  if (GetParam() == PrefHashFilter::ENFORCE_ON_LOAD) {
+  ASSERT_EQ(PrefTrackingStrategy::ATOMIC, stored_atomic_value.second);
+  ASSERT_EQ(PrefTrackingStrategy::SPLIT, stored_split_value.second);
+  if (GetParam() == EnforcementLevel::ENFORCE_ON_LOAD) {
     // Ensure the prefs were cleared and the hashes for NULL were restored if
     // the current enforcement level denies seeding.
     ASSERT_FALSE(pref_store_contents_->Get(kAtomicPref, NULL));
@@ -1003,8 +977,7 @@ TEST_P(PrefHashFilterTest, InitialValueTrustedUnknown) {
   MockPrefHashStore::ValuePtrStrategyPair stored_atomic_value =
       mock_pref_hash_store_->stored_value(kAtomicPref);
   ASSERT_EQ(string_value, stored_atomic_value.first);
-  ASSERT_EQ(PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
-            stored_atomic_value.second);
+  ASSERT_EQ(PrefTrackingStrategy::ATOMIC, stored_atomic_value.second);
 
   const base::Value* split_value_in_store;
   ASSERT_TRUE(pref_store_contents_->Get(kSplitPref, &split_value_in_store));
@@ -1012,7 +985,7 @@ TEST_P(PrefHashFilterTest, InitialValueTrustedUnknown) {
   MockPrefHashStore::ValuePtrStrategyPair stored_split_value =
       mock_pref_hash_store_->stored_value(kSplitPref);
   ASSERT_EQ(dict_value, stored_split_value.first);
-  ASSERT_EQ(PrefHashFilter::TRACKING_STRATEGY_SPLIT, stored_split_value.second);
+  ASSERT_EQ(PrefTrackingStrategy::SPLIT, stored_split_value.second);
 }
 
 TEST_P(PrefHashFilterTest, InitialValueChanged) {
@@ -1040,7 +1013,7 @@ TEST_P(PrefHashFilterTest, InitialValueChanged) {
   mock_invalid_keys.push_back("c");
   mock_pref_hash_store_->SetInvalidKeysResult(kSplitPref, mock_invalid_keys);
 
-  DoFilterOnLoad(GetParam() >= PrefHashFilter::ENFORCE_ON_LOAD);
+  DoFilterOnLoad(GetParam() >= EnforcementLevel::ENFORCE_ON_LOAD);
   ASSERT_EQ(arraysize(kTestTrackedPrefs),
             mock_pref_hash_store_->checked_paths_count());
   ASSERT_EQ(2u, mock_pref_hash_store_->stored_paths_count());
@@ -1050,10 +1023,9 @@ TEST_P(PrefHashFilterTest, InitialValueChanged) {
       mock_pref_hash_store_->stored_value(kAtomicPref);
   MockPrefHashStore::ValuePtrStrategyPair stored_split_value =
       mock_pref_hash_store_->stored_value(kSplitPref);
-  ASSERT_EQ(PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
-            stored_atomic_value.second);
-  ASSERT_EQ(PrefHashFilter::TRACKING_STRATEGY_SPLIT, stored_split_value.second);
-  if (GetParam() == PrefHashFilter::ENFORCE_ON_LOAD) {
+  ASSERT_EQ(PrefTrackingStrategy::ATOMIC, stored_atomic_value.second);
+  ASSERT_EQ(PrefTrackingStrategy::SPLIT, stored_split_value.second);
+  if (GetParam() == EnforcementLevel::ENFORCE_ON_LOAD) {
     // Ensure the atomic pref was cleared and the hash for NULL was restored if
     // the current enforcement level prevents changes.
     ASSERT_FALSE(pref_store_contents_->Get(kAtomicPref, NULL));
@@ -1121,14 +1093,13 @@ TEST_P(PrefHashFilterTest, EmptyCleared) {
   MockPrefHashStore::ValuePtrStrategyPair stored_atomic_value =
       mock_pref_hash_store_->stored_value(kAtomicPref);
   ASSERT_EQ(NULL, stored_atomic_value.first);
-  ASSERT_EQ(PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
-            stored_atomic_value.second);
+  ASSERT_EQ(PrefTrackingStrategy::ATOMIC, stored_atomic_value.second);
 
   ASSERT_FALSE(pref_store_contents_->Get(kSplitPref, NULL));
   MockPrefHashStore::ValuePtrStrategyPair stored_split_value =
       mock_pref_hash_store_->stored_value(kSplitPref);
   ASSERT_EQ(NULL, stored_split_value.first);
-  ASSERT_EQ(PrefHashFilter::TRACKING_STRATEGY_SPLIT, stored_split_value.second);
+  ASSERT_EQ(PrefTrackingStrategy::SPLIT, stored_split_value.second);
 }
 
 TEST_P(PrefHashFilterTest, InitialValueUnchangedLegacyId) {
@@ -1170,8 +1141,7 @@ TEST_P(PrefHashFilterTest, InitialValueUnchangedLegacyId) {
 
   MockPrefHashStore::ValuePtrStrategyPair stored_atomic_value =
       mock_pref_hash_store_->stored_value(kAtomicPref);
-  ASSERT_EQ(PrefHashFilter::TRACKING_STRATEGY_ATOMIC,
-            stored_atomic_value.second);
+  ASSERT_EQ(PrefTrackingStrategy::ATOMIC, stored_atomic_value.second);
   const base::Value* atomic_value_in_store;
   ASSERT_TRUE(pref_store_contents_->Get(kAtomicPref, &atomic_value_in_store));
   ASSERT_EQ(string_value, atomic_value_in_store);
@@ -1179,7 +1149,7 @@ TEST_P(PrefHashFilterTest, InitialValueUnchangedLegacyId) {
 
   MockPrefHashStore::ValuePtrStrategyPair stored_split_value =
       mock_pref_hash_store_->stored_value(kSplitPref);
-  ASSERT_EQ(PrefHashFilter::TRACKING_STRATEGY_SPLIT, stored_split_value.second);
+  ASSERT_EQ(PrefTrackingStrategy::SPLIT, stored_split_value.second);
   const base::Value* split_value_in_store;
   ASSERT_TRUE(pref_store_contents_->Get(kSplitPref, &split_value_in_store));
   ASSERT_EQ(dict_value, split_value_in_store);
@@ -1214,7 +1184,7 @@ TEST_P(PrefHashFilterTest, DontResetReportOnly) {
   mock_pref_hash_store_->SetCheckResult(kReportOnlySplitPref,
                                         PrefHashStoreTransaction::CHANGED);
 
-  DoFilterOnLoad(GetParam() >= PrefHashFilter::ENFORCE_ON_LOAD);
+  DoFilterOnLoad(GetParam() >= EnforcementLevel::ENFORCE_ON_LOAD);
   // All prefs should be checked and a new hash should be stored for each tested
   // pref.
   ASSERT_EQ(arraysize(kTestTrackedPrefs),
@@ -1241,7 +1211,7 @@ TEST_P(PrefHashFilterTest, DontResetReportOnly) {
             mock_pref_hash_store_->stored_value(kReportOnlySplitPref).first);
 
   // All other prefs should have been reset if the enforcement level allows it.
-  if (GetParam() == PrefHashFilter::ENFORCE_ON_LOAD) {
+  if (GetParam() == EnforcementLevel::ENFORCE_ON_LOAD) {
     ASSERT_FALSE(pref_store_contents_->Get(kAtomicPref, NULL));
     ASSERT_FALSE(pref_store_contents_->Get(kAtomicPref2, NULL));
     ASSERT_EQ(NULL, mock_pref_hash_store_->stored_value(kAtomicPref).first);
@@ -1393,5 +1363,5 @@ TEST_P(PrefHashFilterTest, ExternalValidationValueChanged) {
 
 INSTANTIATE_TEST_CASE_P(PrefHashFilterTestInstance,
                         PrefHashFilterTest,
-                        testing::Values(PrefHashFilter::NO_ENFORCEMENT,
-                                        PrefHashFilter::ENFORCE_ON_LOAD));
+                        testing::Values(EnforcementLevel::NO_ENFORCEMENT,
+                                        EnforcementLevel::ENFORCE_ON_LOAD));

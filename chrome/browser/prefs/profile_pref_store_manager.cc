@@ -120,7 +120,8 @@ PersistentPrefStore* ProfilePrefStoreManager::CreateProfilePrefStore(
            it = tracking_configuration_.begin();
        it != tracking_configuration_.end();
        ++it) {
-    if (it->enforcement_level > PrefHashFilter::NO_ENFORCEMENT) {
+    if (it->enforcement_level >
+        PrefHashFilter::EnforcementLevel::NO_ENFORCEMENT) {
       protected_configuration.push_back(*it);
       protected_pref_names.insert(it->name);
     } else {

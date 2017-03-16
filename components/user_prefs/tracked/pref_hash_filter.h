@@ -45,21 +45,21 @@ class PrefRegistrySyncable;
 // are changed.
 class PrefHashFilter : public InterceptablePrefFilter {
  public:
-  enum EnforcementLevel { NO_ENFORCEMENT, ENFORCE_ON_LOAD };
+  enum class EnforcementLevel { NO_ENFORCEMENT, ENFORCE_ON_LOAD };
 
-  enum PrefTrackingStrategy {
+  enum class PrefTrackingStrategy {
     // Atomic preferences are tracked as a whole.
-    TRACKING_STRATEGY_ATOMIC,
+    ATOMIC,
     // Split preferences are dictionaries for which each top-level entry is
     // tracked independently. Note: preferences using this strategy must be kept
     // in sync with TrackedSplitPreferences in histograms.xml.
-    TRACKING_STRATEGY_SPLIT,
+    SPLIT,
   };
 
-  enum ValueType {
-    VALUE_IMPERSONAL,
+  enum class ValueType {
+    IMPERSONAL,
     // The preference value may contain personal information.
-    VALUE_PERSONAL,
+    PERSONAL,
   };
 
   struct TrackedPreferenceMetadata {

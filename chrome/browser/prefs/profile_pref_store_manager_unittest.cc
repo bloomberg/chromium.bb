@@ -78,10 +78,10 @@ const char kHelloWorld[] = "HELLOWORLD";
 const char kGoodbyeWorld[] = "GOODBYEWORLD";
 
 const PrefHashFilter::TrackedPreferenceMetadata kConfiguration[] = {
-    {0u, kTrackedAtomic, PrefHashFilter::NO_ENFORCEMENT,
-     PrefHashFilter::TRACKING_STRATEGY_ATOMIC},
-    {1u, kProtectedAtomic, PrefHashFilter::ENFORCE_ON_LOAD,
-     PrefHashFilter::TRACKING_STRATEGY_ATOMIC}};
+    {0u, kTrackedAtomic, PrefHashFilter::EnforcementLevel::NO_ENFORCEMENT,
+     PrefHashFilter::PrefTrackingStrategy::ATOMIC},
+    {1u, kProtectedAtomic, PrefHashFilter::EnforcementLevel::ENFORCE_ON_LOAD,
+     PrefHashFilter::PrefTrackingStrategy::ATOMIC}};
 
 const size_t kExtraReportingId = 2u;
 const size_t kReportingIdCount = 3u;
@@ -106,7 +106,7 @@ class ProfilePrefStoreManagerTest : public testing::Test {
     for (const PrefHashFilter::TrackedPreferenceMetadata* it = kConfiguration;
          it != kConfiguration + arraysize(kConfiguration);
          ++it) {
-      if (it->strategy == PrefHashFilter::TRACKING_STRATEGY_ATOMIC) {
+      if (it->strategy == PrefHashFilter::PrefTrackingStrategy::ATOMIC) {
         profile_pref_registry_->RegisterStringPref(it->name, std::string());
       } else {
         profile_pref_registry_->RegisterDictionaryPref(it->name);
@@ -119,11 +119,11 @@ class ProfilePrefStoreManagerTest : public testing::Test {
     // SegregatedPrefStore. Only declare it after configured prefs have been
     // registered above for this test as kPreferenceResetTime is already
     // registered in ProfilePrefStoreManager::RegisterProfilePrefs.
-    PrefHashFilter::TrackedPreferenceMetadata pref_reset_time_config =
-        {configuration_.rbegin()->reporting_id + 1,
-         user_prefs::kPreferenceResetTime,
-         PrefHashFilter::ENFORCE_ON_LOAD,
-         PrefHashFilter::TRACKING_STRATEGY_ATOMIC};
+    PrefHashFilter::TrackedPreferenceMetadata pref_reset_time_config = {
+        configuration_.rbegin()->reporting_id + 1,
+        user_prefs::kPreferenceResetTime,
+        PrefHashFilter::EnforcementLevel::ENFORCE_ON_LOAD,
+        PrefHashFilter::PrefTrackingStrategy::ATOMIC};
     configuration_.push_back(pref_reset_time_config);
 
     ASSERT_TRUE(profile_dir_.CreateUniqueTempDir());
@@ -358,8 +358,9 @@ TEST_F(ProfilePrefStoreManagerTest, UnprotectedToProtected) {
 
   // Now update the configuration to protect it.
   PrefHashFilter::TrackedPreferenceMetadata new_protected = {
-      kExtraReportingId, kUnprotectedPref, PrefHashFilter::ENFORCE_ON_LOAD,
-      PrefHashFilter::TRACKING_STRATEGY_ATOMIC};
+      kExtraReportingId, kUnprotectedPref,
+      PrefHashFilter::EnforcementLevel::ENFORCE_ON_LOAD,
+      PrefHashFilter::PrefTrackingStrategy::ATOMIC};
   configuration_.push_back(new_protected);
   ReloadConfiguration();
 
@@ -391,7 +392,7 @@ TEST_F(ProfilePrefStoreManagerTest, NewPrefWhenFirstProtecting) {
            configuration_.begin();
        it != configuration_.end();
        ++it) {
-    it->enforcement_level = PrefHashFilter::NO_ENFORCEMENT;
+    it->enforcement_level = PrefHashFilter::EnforcementLevel::NO_ENFORCEMENT;
   }
   ReloadConfiguration();
 
@@ -409,8 +410,9 @@ TEST_F(ProfilePrefStoreManagerTest, NewPrefWhenFirstProtecting) {
   // Now introduce protection, including the never-before tracked "new_pref".
   configuration_ = original_configuration;
   PrefHashFilter::TrackedPreferenceMetadata new_protected = {
-      kExtraReportingId, kUnprotectedPref, PrefHashFilter::ENFORCE_ON_LOAD,
-      PrefHashFilter::TRACKING_STRATEGY_ATOMIC};
+      kExtraReportingId, kUnprotectedPref,
+      PrefHashFilter::EnforcementLevel::ENFORCE_ON_LOAD,
+      PrefHashFilter::PrefTrackingStrategy::ATOMIC};
   configuration_.push_back(new_protected);
   ReloadConfiguration();
 
@@ -431,8 +433,9 @@ TEST_F(ProfilePrefStoreManagerTest, UnprotectedToProtectedWithoutTrust) {
 
   // Now update the configuration to protect it.
   PrefHashFilter::TrackedPreferenceMetadata new_protected = {
-      kExtraReportingId, kUnprotectedPref, PrefHashFilter::ENFORCE_ON_LOAD,
-      PrefHashFilter::TRACKING_STRATEGY_ATOMIC};
+      kExtraReportingId, kUnprotectedPref,
+      PrefHashFilter::EnforcementLevel::ENFORCE_ON_LOAD,
+      PrefHashFilter::PrefTrackingStrategy::ATOMIC};
   configuration_.push_back(new_protected);
   seed_ = "new-seed-to-break-trust";
   ReloadConfiguration();
@@ -464,7 +467,7 @@ TEST_F(ProfilePrefStoreManagerTest, ProtectedToUnprotected) {
        it != configuration_.end();
        ++it) {
     if (it->name == kProtectedAtomic) {
-      it->enforcement_level = PrefHashFilter::NO_ENFORCEMENT;
+      it->enforcement_level = PrefHashFilter::EnforcementLevel::NO_ENFORCEMENT;
       break;
     }
   }
