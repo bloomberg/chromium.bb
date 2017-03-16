@@ -64,14 +64,14 @@ base::MemoryState ChildMemoryCoordinatorImpl::GetCurrentMemoryState() const {
 }
 
 void ChildMemoryCoordinatorImpl::PurgeMemory() {
-  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("memory-infra"),
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("memory_coordinator"),
                "ChildMemoryCoordinatorImpl::PurgeMemory");
   base::MemoryCoordinatorClientRegistry::GetInstance()->PurgeMemory();
 }
 
 void ChildMemoryCoordinatorImpl::OnStateChange(mojom::MemoryState state) {
   current_state_ = ToBaseMemoryState(state);
-  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("memory-infra"),
+  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("memory_coordinator"),
                "ChildMemoryCoordinatorImpl::OnStateChange", "state",
                MemoryStateToString(current_state_));
   base::MemoryCoordinatorClientRegistry::GetInstance()->Notify(current_state_);

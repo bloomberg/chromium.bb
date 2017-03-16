@@ -155,6 +155,10 @@ MemoryCoordinatorImpl::MemoryCoordinatorImpl(
           kDefaultMinimumTransitionPeriodSeconds)) {
   DCHECK(memory_monitor_.get());
   base::MemoryCoordinatorProxy::SetMemoryCoordinator(this);
+
+  // Force the "memory_coordinator" category to show up in the trace viewer.
+  base::trace_event::TraceLog::GetCategoryGroupEnabled(
+      TRACE_DISABLED_BY_DEFAULT("memory_coordinator"));
 }
 
 MemoryCoordinatorImpl::~MemoryCoordinatorImpl() {
@@ -280,7 +284,7 @@ void MemoryCoordinatorImpl::UpdateConditionIfNeeded(
   MemoryCondition prev_condition = memory_condition_;
   memory_condition_ = next_condition;
 
-  TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("memory-infra"),
+  TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("memory_coordinator"),
                "MemoryCoordinatorImpl::UpdateConditionIfNeeded", "prev",
                MemoryConditionToString(prev_condition), "next",
                MemoryConditionToString(next_condition));
