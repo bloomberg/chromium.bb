@@ -48,7 +48,8 @@ class V8Top25(perf_benchmark.PerfBenchmark):
     return 'v8.top_25_smooth'
 
 
-@benchmark.Enabled('android')
+@benchmark.Disabled('all')  # crbug.com/702194
+#@benchmark.Enabled('android')
 @benchmark.Owner(emails=['hpayer@chromium.org', 'rmcilroy@chromium.org'])
 class V8KeyMobileSites(perf_benchmark.PerfBenchmark):
   """Measures V8 GC metrics on the while scrolling down key mobile sites.
