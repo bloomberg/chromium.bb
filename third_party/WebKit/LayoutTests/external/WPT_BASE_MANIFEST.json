@@ -6770,11 +6770,6 @@
      {}
     ]
    ],
-   "FileAPI/historical-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "FileAPI/idlharness-expected.txt": [
     [
      {}
@@ -6796,6 +6791,11 @@
     ]
    ],
    "FileAPI/support/document-domain-setter.sub.html": [
+    [
+     {}
+    ]
+   ],
+   "FileAPI/support/historical-serviceworker.js": [
     [
      {}
     ]
@@ -6945,6 +6945,11 @@
      {}
     ]
    ],
+   "common/domain-setter.sub.html": [
+    [
+     {}
+    ]
+   ],
    "common/dummy.xhtml": [
     [
      {}
@@ -6996,6 +7001,11 @@
     ]
    ],
    "common/stringifiers.js": [
+    [
+     {}
+    ]
+   ],
+   "common/test-setting-immutable-prototype.js": [
     [
      {}
     ]
@@ -11131,11 +11141,6 @@
     ]
    ],
    "html/browsers/history/the-location-interface/cross_origin_joined_frame.sub.html": [
-    [
-     {}
-    ]
-   ],
-   "html/browsers/history/the-location-interface/location-prototype-setting-expected.txt": [
     [
      {}
     ]
@@ -27703,9 +27708,9 @@
      {}
     ]
    ],
-   "FileAPI/historical.html": [
+   "FileAPI/historical.https.html": [
     [
-     "/FileAPI/historical.html",
+     "/FileAPI/historical.https.html",
      {}
     ]
    ],
@@ -35387,9 +35392,33 @@
      {}
     ]
    ],
-   "html/browsers/history/the-location-interface/location-prototype-setting.html": [
+   "html/browsers/history/the-location-interface/location-prototype-setting-cross-origin-domain.sub.html": [
     [
-     "/html/browsers/history/the-location-interface/location-prototype-setting.html",
+     "/html/browsers/history/the-location-interface/location-prototype-setting-cross-origin-domain.sub.html",
+     {}
+    ]
+   ],
+   "html/browsers/history/the-location-interface/location-prototype-setting-cross-origin.sub.html": [
+    [
+     "/html/browsers/history/the-location-interface/location-prototype-setting-cross-origin.sub.html",
+     {}
+    ]
+   ],
+   "html/browsers/history/the-location-interface/location-prototype-setting-goes-cross-origin-domain.sub.html": [
+    [
+     "/html/browsers/history/the-location-interface/location-prototype-setting-goes-cross-origin-domain.sub.html",
+     {}
+    ]
+   ],
+   "html/browsers/history/the-location-interface/location-prototype-setting-same-origin-domain.sub.html": [
+    [
+     "/html/browsers/history/the-location-interface/location-prototype-setting-same-origin-domain.sub.html",
+     {}
+    ]
+   ],
+   "html/browsers/history/the-location-interface/location-prototype-setting-same-origin.html": [
+    [
+     "/html/browsers/history/the-location-interface/location-prototype-setting-same-origin.html",
      {}
     ]
    ],
@@ -35816,6 +35845,36 @@
    "html/browsers/the-window-object/window-prototype-chain.html": [
     [
      "/html/browsers/the-window-object/window-prototype-chain.html",
+     {}
+    ]
+   ],
+   "html/browsers/the-windowproxy-exotic-object/windowproxy-prototype-setting-cross-origin-domain.sub.html": [
+    [
+     "/html/browsers/the-windowproxy-exotic-object/windowproxy-prototype-setting-cross-origin-domain.sub.html",
+     {}
+    ]
+   ],
+   "html/browsers/the-windowproxy-exotic-object/windowproxy-prototype-setting-cross-origin.sub.html": [
+    [
+     "/html/browsers/the-windowproxy-exotic-object/windowproxy-prototype-setting-cross-origin.sub.html",
+     {}
+    ]
+   ],
+   "html/browsers/the-windowproxy-exotic-object/windowproxy-prototype-setting-goes-cross-origin-domain.sub.html": [
+    [
+     "/html/browsers/the-windowproxy-exotic-object/windowproxy-prototype-setting-goes-cross-origin-domain.sub.html",
+     {}
+    ]
+   ],
+   "html/browsers/the-windowproxy-exotic-object/windowproxy-prototype-setting-same-origin-domain.sub.html": [
+    [
+     "/html/browsers/the-windowproxy-exotic-object/windowproxy-prototype-setting-same-origin-domain.sub.html",
+     {}
+    ]
+   ],
+   "html/browsers/the-windowproxy-exotic-object/windowproxy-prototype-setting-same-origin.html": [
+    [
+     "/html/browsers/the-windowproxy-exotic-object/windowproxy-prototype-setting-same-origin.html",
      {}
     ]
    ],
@@ -57850,12 +57909,8 @@
    "fa1e9bd48a2e1f5fe91e6f9b3aa401b4ccf15dfa",
    "support"
   ],
-  "FileAPI/historical-expected.txt": [
-   "e0f38229c877be3dfa02aa531fae60a491148ecf",
-   "support"
-  ],
-  "FileAPI/historical.html": [
-   "81ca35372343646dc700b7b903c01ac4650f0b21",
+  "FileAPI/historical.https.html": [
+   "93903b4f58bc215ea2a67fc6d281593ec5ce79e9",
    "testharness"
   ],
   "FileAPI/idlharness-expected.txt": [
@@ -57924,6 +57979,10 @@
   ],
   "FileAPI/support/document-domain-setter.sub.html": [
    "c05b818b341e8ae4ecd65da8d17aff0365a3387b",
+   "support"
+  ],
+  "FileAPI/support/historical-serviceworker.js": [
+   "affa04a25b75ed4cdb6149d45e997332b9fce286",
    "support"
   ],
   "FileAPI/support/incumbent.sub.html": [
@@ -59430,6 +59489,10 @@
    "9edd8c61eb63c9b63fd7301e65174b5f7f87bbe1",
    "support"
   ],
+  "common/domain-setter.sub.html": [
+   "92a0f084af804f63df988d2f83703797ec143588",
+   "support"
+  ],
   "common/dummy.xhtml": [
    "aa9b8818bf76dcf1385f80055c50f1c5235d6c5f",
    "support"
@@ -59472,6 +59535,10 @@
   ],
   "common/stringifiers.js": [
    "4c6d28a4b6d982edeb5232fa624936254f2df5f0",
+   "support"
+  ],
+  "common/test-setting-immutable-prototype.js": [
+   "f0479c9678eb363ac895debc3b7091f552cc7251",
    "support"
   ],
   "common/text-plain.txt": [
@@ -65799,11 +65866,11 @@
    "support"
   ],
   "html/browsers/browsing-the-web/unloading-documents/beforeunload-canceling-expected.txt": [
-   "5d8984acc4456c9be1b86609f2c28c9acfb4215c",
+   "cb9670c08b7376909c3295fa70cc89d3845ee391",
    "support"
   ],
   "html/browsers/browsing-the-web/unloading-documents/beforeunload-canceling.html": [
-   "4d0e0901dd42a40d86c7263ac7ac432059b6e84e",
+   "ab2eb70457684ca347483b18ac7e391f5d2519ba",
    "testharness"
   ],
   "html/browsers/browsing-the-web/unloading-documents/beforeunload-on-history-back-1.html": [
@@ -66502,12 +66569,24 @@
    "70f3c81ddfe58e8751543513fbd8ea44a6b122a1",
    "testharness"
   ],
-  "html/browsers/history/the-location-interface/location-prototype-setting-expected.txt": [
-   "c93175d78bd63462bce3cc15d02eb62016d7dd5a",
-   "support"
+  "html/browsers/history/the-location-interface/location-prototype-setting-cross-origin-domain.sub.html": [
+   "a5cdc99474b5d083d9231f80bea1ea647e09d2a3",
+   "testharness"
   ],
-  "html/browsers/history/the-location-interface/location-prototype-setting.html": [
-   "47a284185d6abb33d601a3b066a72bf480b515e7",
+  "html/browsers/history/the-location-interface/location-prototype-setting-cross-origin.sub.html": [
+   "f1b2d4c2a4b8ed222d5c8fc0ff4f7047c294fa96",
+   "testharness"
+  ],
+  "html/browsers/history/the-location-interface/location-prototype-setting-goes-cross-origin-domain.sub.html": [
+   "5cd9de744c708763a2d60dee257a695afd097b03",
+   "testharness"
+  ],
+  "html/browsers/history/the-location-interface/location-prototype-setting-same-origin-domain.sub.html": [
+   "8181fb0fb60e8c6f5cc433376768097ba1325264",
+   "testharness"
+  ],
+  "html/browsers/history/the-location-interface/location-prototype-setting-same-origin.html": [
+   "c2d707b23601c50f3dc470598e2c0b49f8ea361e",
    "testharness"
   ],
   "html/browsers/history/the-location-interface/location-stringifier-expected.txt": [
@@ -67124,6 +67203,26 @@
   ],
   "html/browsers/the-window-object/window-prototype-chain.html": [
    "e2811af34d54079cbc716b51b2fc73aec1baba74",
+   "testharness"
+  ],
+  "html/browsers/the-windowproxy-exotic-object/windowproxy-prototype-setting-cross-origin-domain.sub.html": [
+   "38581650fe130c3ec7f087e70373c09bff4e4354",
+   "testharness"
+  ],
+  "html/browsers/the-windowproxy-exotic-object/windowproxy-prototype-setting-cross-origin.sub.html": [
+   "9c022990d2876be3ee124ec4206ce757850aa7f7",
+   "testharness"
+  ],
+  "html/browsers/the-windowproxy-exotic-object/windowproxy-prototype-setting-goes-cross-origin-domain.sub.html": [
+   "3caf9f7655d51f0f3a205810632a2a6304076282",
+   "testharness"
+  ],
+  "html/browsers/the-windowproxy-exotic-object/windowproxy-prototype-setting-same-origin-domain.sub.html": [
+   "206bb598490b5cff7de249160d086c1ccd4aa062",
+   "testharness"
+  ],
+  "html/browsers/the-windowproxy-exotic-object/windowproxy-prototype-setting-same-origin.html": [
+   "3333ad4c882a2dc7fe65028fcedab96c2d1360b6",
    "testharness"
   ],
   "html/browsers/windows/auxiliary-browsing-contexts/contains.json": [

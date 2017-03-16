@@ -6,5 +6,7 @@ PASS Blob should not support slice prefixed
 PASS BlobBuilder should not be supported. 
 PASS createFor method should not be supported 
 FAIL Blob.close() should not be supported assert_false: close in b expected false got true
+PASS Service worker test setup 
+FAIL "FileReaderSync" should not be supported in service workers assert_false: expected false got true
 Harness: the test ran to completion.
 
