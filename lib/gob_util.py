@@ -21,6 +21,7 @@ import socket
 import sys
 import urllib
 import urlparse
+import warnings
 from cStringIO import StringIO
 
 from chromite.lib import constants
@@ -381,9 +382,14 @@ def GetChangeDetail(host, change, o_params=None):
 
 
 def GetChangeReviewers(host, change):
-  """Get information about all reviewers attached to a change."""
-  path = '%s/reviewers' % _GetChangePath(change)
-  return FetchUrlJson(host, path)
+  """Get information about all reviewers attached to a change.
+
+  Args:
+    host: The Gerrit host to interact with.
+    change: The Gerrit change ID.
+  """
+  warnings.warn('GetChangeReviewers is deprecated; use GetReviewers instead.')
+  GetReviewers(host, change)
 
 
 def AbandonChange(host, change, msg=''):
@@ -467,7 +473,12 @@ def AddAssignee(host, change, assignee):
 
 
 def GetReviewers(host, change):
-  """Get information about all reviewers attached to a change."""
+  """Get information about all reviewers attached to a change.
+
+  Args:
+    host: The Gerrit host to interact with.
+    change: The Gerrit change ID.
+  """
   path = '%s/reviewers' % _GetChangePath(change)
   return FetchUrlJson(host, path)
 

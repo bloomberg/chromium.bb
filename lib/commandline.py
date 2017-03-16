@@ -514,6 +514,8 @@ class BaseParser(object):
     for handler in chromite_handlers:
       handler.setFormatter(formatter)
 
+    logging.captureWarnings(True)
+
     return value
 
   def DoPostParseSetup(self, opts, args):
@@ -826,6 +828,7 @@ def ScriptWrapperMain(find_target_func, argv=None,
   logger_handler.setFormatter(
       logging.Formatter(fmt=log_format, datefmt=constants.LOGGER_DATE_FMT))
   logger.addHandler(logger_handler)
+  logging.captureWarnings(True)
 
   signal.signal(signal.SIGTERM, _DefaultHandler)
 
