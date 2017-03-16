@@ -531,7 +531,29 @@ void SupervisedUserURLFilter::SetManualURLs(
 
 void SupervisedUserURLFilter::InitAsyncURLChecker(
     net::URLRequestContextGetter* context) {
-  async_url_checker_.reset(new SafeSearchURLChecker(context));
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("supervised_user_url_filter", R"(
+        semantics {
+          sender: "Supervised Users"
+          description:
+            "Checks whether a given URL (or set of URLs) is considered safe by "
+            "Google SafeSearch."
+          trigger:
+            "If the parent enabled this feature for the child account, this is "
+            "sent for every navigation."
+          data: "URL(s) to be checked."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: false
+          setting:
+            "This feature is only used in child accounts and cannot be "
+            "disabled by settings. Parent accounts can disable it in the "
+            "family dashboard."
+          policy_exception_justification: "Not implemented."
+        })");
+  async_url_checker_.reset(
+      new SafeSearchURLChecker(context, traffic_annotation));
 }
 
 void SupervisedUserURLFilter::ClearAsyncURLChecker() {

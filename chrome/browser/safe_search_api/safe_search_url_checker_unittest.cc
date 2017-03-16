@@ -17,6 +17,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "net/base/net_errors.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -66,7 +67,9 @@ class SafeSearchURLCheckerTest : public testing::Test {
       : next_url_(0),
         request_context_(new net::TestURLRequestContextGetter(
             base::ThreadTaskRunnerHandle::Get())),
-        checker_(request_context_.get(), kCacheSize) {}
+        checker_(request_context_.get(),
+                 TRAFFIC_ANNOTATION_FOR_TESTS,
+                 kCacheSize) {}
 
   MOCK_METHOD3(OnCheckDone,
                void(const GURL& url,

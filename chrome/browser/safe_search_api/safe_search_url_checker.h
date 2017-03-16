@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
@@ -31,9 +32,13 @@ class SafeSearchURLChecker : net::URLFetcherDelegate {
   using CheckCallback = base::Callback<
       void(const GURL&, Classification classification, bool /* uncertain */)>;
 
-  explicit SafeSearchURLChecker(net::URLRequestContextGetter* context);
-  SafeSearchURLChecker(net::URLRequestContextGetter* context,
-                       size_t cache_size);
+  explicit SafeSearchURLChecker(
+      net::URLRequestContextGetter* context,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation);
+  SafeSearchURLChecker(
+      net::URLRequestContextGetter* context,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation,
+      size_t cache_size);
   ~SafeSearchURLChecker() override;
 
   // Returns whether |callback| was run synchronously.
@@ -56,6 +61,7 @@ class SafeSearchURLChecker : net::URLFetcherDelegate {
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
   net::URLRequestContextGetter* context_;
+  const net::NetworkTrafficAnnotationTag traffic_annotation_;
 
   ScopedVector<Check> checks_in_progress_;
 
