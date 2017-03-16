@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/ash/chrome_screenshot_grabber.h"
 
-#include "ash/common/accelerators/accelerator_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/bind.h"

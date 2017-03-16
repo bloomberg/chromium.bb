@@ -142,10 +142,8 @@ void AcceleratorControllerRegistrar::AddAcceleratorToVector(
       accelerator.modifiers());
   pre_event_matcher->accelerator_phase =
       ui::mojom::AcceleratorPhase::PRE_TARGET;
-  DCHECK(accelerator.type() == ui::ET_KEY_PRESSED ||
-         accelerator.type() == ui::ET_KEY_RELEASED);
   pre_event_matcher->type_matcher->type =
-      accelerator.type() == ui::ET_KEY_PRESSED
+      accelerator.key_state() == ui::Accelerator::KeyState::PRESSED
           ? ui::mojom::EventType::KEY_PRESSED
           : ui::mojom::EventType::KEY_RELEASED;
 

@@ -27,33 +27,33 @@ namespace ui {
 
 namespace {
 
-const int kModifierMask = ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN |
-                            ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN;
+const int kModifierMask =
+    EF_SHIFT_DOWN | EF_CONTROL_DOWN | EF_ALT_DOWN | EF_COMMAND_DOWN;
 
 const int kInterestingFlagsMask =
-    kModifierMask | ui::EF_IS_SYNTHESIZED | ui::EF_IS_REPEAT;
+    kModifierMask | EF_IS_SYNTHESIZED | EF_IS_REPEAT;
 
 }  // namespace
 
-Accelerator::Accelerator()
-    : key_code_(ui::VKEY_UNKNOWN), type_(ui::ET_KEY_PRESSED), modifiers_(0) {}
+Accelerator::Accelerator() : Accelerator(VKEY_UNKNOWN, EF_NONE) {}
 
-Accelerator::Accelerator(KeyboardCode keycode, int modifiers)
-    : key_code_(keycode),
-      type_(ui::ET_KEY_PRESSED),
+Accelerator::Accelerator(KeyboardCode key_code, int modifiers)
+    : key_code_(key_code),
+      key_state_(KeyState::PRESSED),
       modifiers_(modifiers & kInterestingFlagsMask) {}
 
 Accelerator::Accelerator(const KeyEvent& key_event)
     : key_code_(key_event.key_code()),
-      type_(key_event.type()),
+      key_state_(key_event.type() == ET_KEY_PRESSED ? KeyState::PRESSED
+                                                    : KeyState::RELEASED),
       // |modifiers_| may include the repeat flag.
       modifiers_(key_event.flags() & kInterestingFlagsMask) {}
 
 Accelerator::Accelerator(const Accelerator& accelerator) {
   key_code_ = accelerator.key_code_;
-  type_ = accelerator.type_;
+  key_state_ = accelerator.key_state_;
   modifiers_ = accelerator.modifiers_;
-  if (accelerator.platform_accelerator_.get())
+  if (accelerator.platform_accelerator_)
     platform_accelerator_ = accelerator.platform_accelerator_->CreateCopy();
 }
 
@@ -68,9 +68,9 @@ int Accelerator::MaskOutKeyEventFlags(int flags) {
 Accelerator& Accelerator::operator=(const Accelerator& accelerator) {
   if (this != &accelerator) {
     key_code_ = accelerator.key_code_;
-    type_ = accelerator.type_;
+    key_state_ = accelerator.key_state_;
     modifiers_ = accelerator.modifiers_;
-    if (accelerator.platform_accelerator_.get())
+    if (accelerator.platform_accelerator_)
       platform_accelerator_ = accelerator.platform_accelerator_->CreateCopy();
     else
       platform_accelerator_.reset();
@@ -81,14 +81,16 @@ Accelerator& Accelerator::operator=(const Accelerator& accelerator) {
 bool Accelerator::operator <(const Accelerator& rhs) const {
   if (key_code_ != rhs.key_code_)
     return key_code_ < rhs.key_code_;
-  if (type_ != rhs.type_)
-    return type_ < rhs.type_;
+  if (key_state_ != rhs.key_state_) {
+    return static_cast<int32_t>(key_state_) <
+           static_cast<int32_t>(rhs.key_state_);
+  }
   return MaskOutKeyEventFlags(modifiers_) <
          MaskOutKeyEventFlags(rhs.modifiers_);
 }
 
 bool Accelerator::operator ==(const Accelerator& rhs) const {
-  if ((key_code_ == rhs.key_code_) && (type_ == rhs.type_) &&
+  if ((key_code_ == rhs.key_code_) && (key_state_ == rhs.key_state_) &&
       (MaskOutKeyEventFlags(modifiers_) ==
        MaskOutKeyEventFlags(rhs.modifiers_)))
     return true;
@@ -127,73 +129,73 @@ bool Accelerator::IsRepeat() const {
 base::string16 Accelerator::GetShortcutText() const {
   int string_id = 0;
   switch (key_code_) {
-    case ui::VKEY_TAB:
+    case VKEY_TAB:
       string_id = IDS_APP_TAB_KEY;
       break;
-    case ui::VKEY_RETURN:
+    case VKEY_RETURN:
       string_id = IDS_APP_ENTER_KEY;
       break;
-    case ui::VKEY_ESCAPE:
+    case VKEY_ESCAPE:
       string_id = IDS_APP_ESC_KEY;
       break;
-    case ui::VKEY_SPACE:
+    case VKEY_SPACE:
       string_id = IDS_APP_SPACE_KEY;
       break;
-    case ui::VKEY_PRIOR:
+    case VKEY_PRIOR:
       string_id = IDS_APP_PAGEUP_KEY;
       break;
-    case ui::VKEY_NEXT:
+    case VKEY_NEXT:
       string_id = IDS_APP_PAGEDOWN_KEY;
       break;
-    case ui::VKEY_END:
+    case VKEY_END:
       string_id = IDS_APP_END_KEY;
       break;
-    case ui::VKEY_HOME:
+    case VKEY_HOME:
       string_id = IDS_APP_HOME_KEY;
       break;
-    case ui::VKEY_INSERT:
+    case VKEY_INSERT:
       string_id = IDS_APP_INSERT_KEY;
       break;
-    case ui::VKEY_DELETE:
+    case VKEY_DELETE:
       string_id = IDS_APP_DELETE_KEY;
       break;
-    case ui::VKEY_LEFT:
+    case VKEY_LEFT:
       string_id = IDS_APP_LEFT_ARROW_KEY;
       break;
-    case ui::VKEY_RIGHT:
+    case VKEY_RIGHT:
       string_id = IDS_APP_RIGHT_ARROW_KEY;
       break;
-    case ui::VKEY_UP:
+    case VKEY_UP:
       string_id = IDS_APP_UP_ARROW_KEY;
       break;
-    case ui::VKEY_DOWN:
+    case VKEY_DOWN:
       string_id = IDS_APP_DOWN_ARROW_KEY;
       break;
-    case ui::VKEY_BACK:
+    case VKEY_BACK:
       string_id = IDS_APP_BACKSPACE_KEY;
       break;
-    case ui::VKEY_F1:
+    case VKEY_F1:
       string_id = IDS_APP_F1_KEY;
       break;
-    case ui::VKEY_F11:
+    case VKEY_F11:
       string_id = IDS_APP_F11_KEY;
       break;
-    case ui::VKEY_OEM_COMMA:
+    case VKEY_OEM_COMMA:
       string_id = IDS_APP_COMMA_KEY;
       break;
-    case ui::VKEY_OEM_PERIOD:
+    case VKEY_OEM_PERIOD:
       string_id = IDS_APP_PERIOD_KEY;
       break;
-    case ui::VKEY_MEDIA_NEXT_TRACK:
+    case VKEY_MEDIA_NEXT_TRACK:
       string_id = IDS_APP_MEDIA_NEXT_TRACK_KEY;
       break;
-    case ui::VKEY_MEDIA_PLAY_PAUSE:
+    case VKEY_MEDIA_PLAY_PAUSE:
       string_id = IDS_APP_MEDIA_PLAY_PAUSE_KEY;
       break;
-    case ui::VKEY_MEDIA_PREV_TRACK:
+    case VKEY_MEDIA_PREV_TRACK:
       string_id = IDS_APP_MEDIA_PREV_TRACK_KEY;
       break;
-    case ui::VKEY_MEDIA_STOP:
+    case VKEY_MEDIA_STOP:
       string_id = IDS_APP_MEDIA_STOP_KEY;
       break;
     default:

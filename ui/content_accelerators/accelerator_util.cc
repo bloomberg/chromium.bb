@@ -41,7 +41,7 @@ ui::Accelerator GetAcceleratorFromNativeWebKeyboardEvent(
       static_cast<ui::KeyboardCode>(event.windowsKeyCode),
       GetModifiersFromNativeWebKeyboardEvent(event));
   if (event.type() == blink::WebInputEvent::KeyUp)
-    accelerator.set_type(ui::ET_KEY_RELEASED);
+    accelerator.set_key_state(Accelerator::KeyState::RELEASED);
   return accelerator;
 }
 

@@ -247,9 +247,7 @@ TEST_F(AcceleratorManagerTest, Process) {
     EXPECT_EQ(last_count + 1, target.accelerator_pressed_count()) << i;
 
     // The non-registered accelerators are not processed.
-    accelerator.set_type(ET_UNKNOWN);
-    EXPECT_FALSE(manager_.Process(accelerator)) << i;  // different type
-    accelerator.set_type(ET_KEY_RELEASED);
+    accelerator.set_key_state(Accelerator::KeyState::RELEASED);
     EXPECT_FALSE(manager_.Process(accelerator)) << i;  // different type
 
     EXPECT_FALSE(manager_.Process(GetAccelerator(VKEY_UNKNOWN, modifiers)))

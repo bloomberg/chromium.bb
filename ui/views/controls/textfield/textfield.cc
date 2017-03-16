@@ -771,8 +771,11 @@ void Textfield::OnGestureEvent(ui::GestureEvent* event) {
 
 // This function is called by BrowserView to execute clipboard commands.
 bool Textfield::AcceleratorPressed(const ui::Accelerator& accelerator) {
-  ui::KeyEvent event(accelerator.type(), accelerator.key_code(),
-                     accelerator.modifiers());
+  ui::KeyEvent event(
+      accelerator.key_state() == ui::Accelerator::KeyState::PRESSED
+          ? ui::ET_KEY_PRESSED
+          : ui::ET_KEY_RELEASED,
+      accelerator.key_code(), accelerator.modifiers());
   ExecuteTextEditCommand(GetCommandForKeyEvent(event));
   return true;
 }

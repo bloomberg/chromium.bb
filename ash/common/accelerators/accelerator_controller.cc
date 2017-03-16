@@ -157,8 +157,9 @@ ui::Accelerator CreateAccelerator(ui::KeyboardCode keycode,
                                   int modifiers,
                                   bool trigger_on_press) {
   ui::Accelerator accelerator(keycode, modifiers);
-  accelerator.set_type(trigger_on_press ? ui::ET_KEY_PRESSED
-                                        : ui::ET_KEY_RELEASED);
+  accelerator.set_key_state(trigger_on_press
+                                ? ui::Accelerator::KeyState::PRESSED
+                                : ui::Accelerator::KeyState::RELEASED);
   return accelerator;
 }
 
@@ -283,7 +284,7 @@ bool CanHandlePreviousIme(ImeControlDelegate* ime_control_delegate) {
 void HandlePreviousIme(ImeControlDelegate* ime_control_delegate,
                        const ui::Accelerator& accelerator) {
   base::RecordAction(UserMetricsAction("Accel_Previous_Ime"));
-  if (accelerator.type() == ui::ET_KEY_PRESSED)
+  if (accelerator.key_state() == ui::Accelerator::KeyState::PRESSED)
     ime_control_delegate->HandlePreviousIme();
   // Else: consume the Ctrl+Space ET_KEY_RELEASED event but do not do anything.
 }
@@ -369,7 +370,8 @@ bool CanHandleToggleAppList(const ui::Accelerator& accelerator,
     // If something else was pressed between the Search key (LWIN)
     // being pressed and released, then ignore the release of the
     // Search key.
-    if (previous_accelerator.type() != ui::ET_KEY_PRESSED ||
+    if (previous_accelerator.key_state() !=
+            ui::Accelerator::KeyState::PRESSED ||
         previous_accelerator.key_code() != ui::VKEY_LWIN) {
       return false;
     }
@@ -466,7 +468,7 @@ void HandleCrosh() {
 
 bool CanHandleDisableCapsLock(const ui::Accelerator& previous_accelerator) {
   ui::KeyboardCode previous_key_code = previous_accelerator.key_code();
-  if (previous_accelerator.type() == ui::ET_KEY_RELEASED ||
+  if (previous_accelerator.key_state() == ui::Accelerator::KeyState::RELEASED ||
       (previous_key_code != ui::VKEY_LSHIFT &&
        previous_key_code != ui::VKEY_SHIFT &&
        previous_key_code != ui::VKEY_RSHIFT)) {
@@ -554,11 +556,12 @@ bool CanHandleToggleCapsLock(const ui::Accelerator& accelerator,
   // This shortcust is set to be trigger on release. Either the current
   // accelerator is a Search release or Alt release.
   if (accelerator.key_code() == ui::VKEY_LWIN &&
-      accelerator.type() == ui::ET_KEY_RELEASED) {
+      accelerator.key_state() == ui::Accelerator::KeyState::RELEASED) {
     // The previous must be either an Alt press or Search press:
     // 1. Press Alt, Press Search, Release Search, Release Alt.
     // 2. Press Search, Press Alt, Release Search, Release Alt.
-    if (previous_accelerator.type() == ui::ET_KEY_PRESSED &&
+    if (previous_accelerator.key_state() ==
+            ui::Accelerator::KeyState::PRESSED &&
         (previous_accelerator.key_code() == ui::VKEY_LWIN ||
          previous_accelerator.key_code() == ui::VKEY_MENU)) {
       return ime && ime->GetImeKeyboard();
@@ -567,11 +570,12 @@ bool CanHandleToggleCapsLock(const ui::Accelerator& accelerator,
 
   // Alt release.
   if (accelerator.key_code() == ui::VKEY_MENU &&
-      accelerator.type() == ui::ET_KEY_RELEASED) {
+      accelerator.key_state() == ui::Accelerator::KeyState::RELEASED) {
     // The previous must be either an Alt press or Search press:
     // 3. Press Alt, Press Search, Release Alt, Release Search.
     // 4. Press Search, Press Alt, Release Alt, Release Search.
-    if (previous_accelerator.type() == ui::ET_KEY_PRESSED &&
+    if (previous_accelerator.key_state() ==
+            ui::Accelerator::KeyState::PRESSED &&
         (previous_accelerator.key_code() == ui::VKEY_LWIN ||
          previous_accelerator.key_code() == ui::VKEY_MENU)) {
       return ime && ime->GetImeKeyboard();

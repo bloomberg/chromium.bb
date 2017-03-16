@@ -35,9 +35,14 @@ class PlatformAccelerator;
 // repeat flag in its comparison.
 class UI_BASE_EXPORT Accelerator {
  public:
+  enum class KeyState {
+    PRESSED,
+    RELEASED,
+  };
+
   Accelerator();
   // NOTE: this constructor strips out non key related flags.
-  Accelerator(ui::KeyboardCode keycode, int modifiers);
+  Accelerator(KeyboardCode key_code, int modifiers);
   explicit Accelerator(const KeyEvent& key_event);
   Accelerator(const Accelerator& accelerator);
   ~Accelerator();
@@ -56,12 +61,11 @@ class UI_BASE_EXPORT Accelerator {
 
   bool operator !=(const Accelerator& rhs) const;
 
-  ui::KeyboardCode key_code() const { return key_code_; }
+  KeyboardCode key_code() const { return key_code_; }
 
-  // Sets the event type if the accelerator should be processed on an event
-  // other than ui::ET_KEY_PRESSED.
-  void set_type(ui::EventType type) { type_ = type; }
-  ui::EventType type() const { return type_; }
+  // Sets the key state that triggers the accelerator. Default is PRESSED.
+  void set_key_state(KeyState state) { key_state_ = state; }
+  KeyState key_state() const { return key_state_; }
 
   int modifiers() const { return modifiers_; }
 
@@ -87,8 +91,7 @@ class UI_BASE_EXPORT Accelerator {
   // The keycode (VK_...).
   KeyboardCode key_code_;
 
-  // The event type (usually ui::ET_KEY_PRESSED).
-  EventType type_;
+  KeyState key_state_;
 
   // The state of the Shift/Ctrl/Alt keys. This corresponds to Event::flags().
   int modifiers_;
@@ -120,9 +123,8 @@ class AcceleratorProvider {
  public:
   // Gets the accelerator for the specified command id. Returns true if the
   // command id has a valid accelerator, false otherwise.
-  virtual bool GetAcceleratorForCommandId(
-      int command_id,
-      ui::Accelerator* accelerator) const = 0;
+  virtual bool GetAcceleratorForCommandId(int command_id,
+                                          Accelerator* accelerator) const = 0;
 
  protected:
   virtual ~AcceleratorProvider() {}
