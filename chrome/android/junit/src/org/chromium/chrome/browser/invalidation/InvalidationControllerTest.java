@@ -12,6 +12,17 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.os.Bundle;
 
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
+import org.robolectric.Shadows;
+import org.robolectric.annotation.Config;
+import org.robolectric.res.builder.RobolectricPackageManager;
+import org.robolectric.shadows.ShadowActivity;
+import org.robolectric.shadows.ShadowLooper;
+
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
@@ -27,16 +38,6 @@ import org.chromium.components.sync.notifier.InvalidationIntentProtocol;
 import org.chromium.components.sync.test.util.MockSyncContentResolverDelegate;
 import org.chromium.testing.local.CustomShadowAsyncTask;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
-import org.robolectric.Shadows;
-import org.robolectric.annotation.Config;
-import org.robolectric.res.builder.RobolectricPackageManager;
-import org.robolectric.shadows.ShadowActivity;
-import org.robolectric.shadows.ShadowLooper;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -46,7 +47,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Tests for the {@link InvalidationController}.
  */
 @RunWith(LocalRobolectricTestRunner.class)
-@Config(manifest = Config.NONE, shadows = {CustomShadowAsyncTask.class})
+@Config(manifest = Config.NONE, sdk = 21, shadows = {CustomShadowAsyncTask.class})
 public class InvalidationControllerTest {
     /**
      * Stubbed out ProfileSyncService with a setter to control return value of

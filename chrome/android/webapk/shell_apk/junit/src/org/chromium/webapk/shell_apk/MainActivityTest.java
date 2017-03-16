@@ -28,9 +28,8 @@ import org.chromium.webapk.test.WebApkTestHelper;
  * Tests MainActivity.
  */
 @RunWith(LocalRobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
+@Config(manifest = Config.NONE, packageName = WebApkTestHelper.WEBAPK_PACKAGE_NAME)
 public class MainActivityTest {
-
     private static final String HOST_BROWSER_PACKAGE_NAME = "truly.random";
 
     private ShadowApplication mShadowApplication;
@@ -39,7 +38,6 @@ public class MainActivityTest {
     @Before
     public void setUp() {
         mShadowApplication = Shadows.shadowOf(RuntimeEnvironment.application);
-        mShadowApplication.setPackageName(WebApkTestHelper.WEBAPK_PACKAGE_NAME);
         mPackageManager =
                 (RobolectricPackageManager) RuntimeEnvironment.application.getPackageManager();
     }

@@ -46,7 +46,6 @@ public class PwsClientImplTest {
     public static class AcceptLanguageShadowResources extends ShadowResources {
         public static final Resources sResources = mock(Resources.class);
 
-        @Override
         @Implementation
         public CharSequence getText(int id) {
             return sResources.getText(id);

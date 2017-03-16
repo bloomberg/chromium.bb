@@ -1603,7 +1603,6 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/offlinepages/ClientIdTest.java",
   "junit/src/org/chromium/chrome/browser/offlinepages/OfflinePageBridgeUnitTest.java",
   "junit/src/org/chromium/chrome/browser/offlinepages/OfflinePageTabObserverTest.java",
-  "junit/src/org/chromium/chrome/browser/offlinepages/OfflinePageTestRunner.java",
   "junit/src/org/chromium/chrome/browser/offlinepages/OfflinePageUtilsUnitTest.java",
   "junit/src/org/chromium/chrome/browser/offlinepages/ShadowDeviceConditions.java",
   "junit/src/org/chromium/chrome/browser/offlinepages/ShadowGcmNetworkManager.java",

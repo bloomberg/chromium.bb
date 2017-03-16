@@ -940,7 +940,6 @@ public class NewTabPageAdapterTest {
     public static class MyShadowResources extends ShadowResources {
         public static final Resources sResources = mock(Resources.class);
 
-        @Override
         @Implementation
         public CharSequence getText(int id) {
             return sResources.getText(id);

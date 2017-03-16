@@ -37,12 +37,13 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.ChromeBackgroundServiceWaiter;
 import org.chromium.chrome.browser.DisableHistogramsRule;
 import org.chromium.net.ConnectionType;
+import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 /**
  * Unit tests for BackgroundOfflinerTask.
  */
-@RunWith(OfflinePageTestRunner.class)
-@Config(manifest = Config.NONE, application = BaseChromiumApplication.class,
+@RunWith(LocalRobolectricTestRunner.class)
+@Config(manifest = Config.NONE, application = BaseChromiumApplication.class, sdk = 21,
         shadows = {ShadowGcmNetworkManager.class, ShadowGoogleApiAvailability.class,
                 ShadowDeviceConditions.class})
 public class BackgroundOfflinerTaskTest {

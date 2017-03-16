@@ -38,6 +38,28 @@ import java.util.Set;
 public class AndroidPaymentAppFinderTest {
     public AndroidPaymentAppFinderTest() {}
 
+    /**
+     * Argument matcher that matches Intents using |filterEquals| method.
+     */
+    private static class IntentArgumentMatcher implements ArgumentMatcher<Intent> {
+
+        private final Intent mIntent;
+
+        public IntentArgumentMatcher(Intent intent) {
+            mIntent = intent;
+        }
+
+        @Override
+        public boolean matches(Intent other) {
+            return mIntent.filterEquals(other);
+        }
+
+        @Override
+        public String toString() {
+            return mIntent.toString();
+        }
+    }
+
     @Test
     public void testNoValidPaymentMethodNames() {
         Set<String> methodNames = new HashSet<>();
@@ -60,7 +82,8 @@ public class AndroidPaymentAppFinderTest {
     public void testQueryBasicCardsWithoutApps() {
         PackageManagerDelegate packageManagerDelegate = Mockito.mock(PackageManagerDelegate.class);
         Mockito.when(packageManagerDelegate.getActivitiesThatCanRespondToIntent(
-                             new Intent(AndroidPaymentAppFinder.ACTION_PAY_BASIC_CARD)))
+                ArgumentMatchers.argThat(new IntentArgumentMatcher(
+                        new Intent(AndroidPaymentAppFinder.ACTION_PAY_BASIC_CARD)))))
                 .thenReturn(new ArrayList<ResolveInfo>());
         Set<String> methodNames = new HashSet<>();
         methodNames.add(AndroidPaymentAppFinder.BASIC_CARD_PAYMENT_METHOD);
@@ -92,10 +115,12 @@ public class AndroidPaymentAppFinderTest {
         Mockito.when(packageManagerDelegate.getAppLabel(Mockito.any(ResolveInfo.class)))
                 .thenReturn("A non-empty label");
         Mockito.when(packageManagerDelegate.getActivitiesThatCanRespondToIntent(
-                             new Intent(AndroidPaymentAppFinder.ACTION_PAY_BASIC_CARD)))
+                ArgumentMatchers.argThat(new IntentArgumentMatcher(
+                        new Intent(AndroidPaymentAppFinder.ACTION_PAY_BASIC_CARD)))))
                 .thenReturn(activities);
         Mockito.when(packageManagerDelegate.getServicesThatCanRespondToIntent(
-                             new Intent(AndroidPaymentAppFinder.ACTION_IS_READY_TO_PAY)))
+                ArgumentMatchers.argThat(new IntentArgumentMatcher(
+                        new Intent(AndroidPaymentAppFinder.ACTION_IS_READY_TO_PAY)))))
                 .thenReturn(new ArrayList<ResolveInfo>());
         Set<String> methodNames = new HashSet<>();
         methodNames.add(AndroidPaymentAppFinder.BASIC_CARD_PAYMENT_METHOD);
@@ -145,7 +170,8 @@ public class AndroidPaymentAppFinderTest {
         PackageManagerDelegate packageManagerDelegate = Mockito.mock(PackageManagerDelegate.class);
         Mockito.when(packageManagerDelegate.getAppLabel(Mockito.any(ResolveInfo.class)))
                 .thenReturn("A non-empty label");
-        Mockito.when(packageManagerDelegate.getActivitiesThatCanRespondToIntent(bobPayIntent))
+        Mockito.when(packageManagerDelegate.getActivitiesThatCanRespondToIntent(
+                ArgumentMatchers.argThat(new IntentArgumentMatcher(bobPayIntent))))
                 .thenReturn(activities);
 
         List<ResolveInfo> services = new ArrayList<>();
@@ -155,7 +181,8 @@ public class AndroidPaymentAppFinderTest {
         isBobPayReadyToPay.serviceInfo.name = "com.bobpay.app.IsReadyToWebPay";
         services.add(isBobPayReadyToPay);
         Intent isReadyToPayIntent = new Intent(AndroidPaymentAppFinder.ACTION_IS_READY_TO_PAY);
-        Mockito.when(packageManagerDelegate.getServicesThatCanRespondToIntent(isReadyToPayIntent))
+        Mockito.when(packageManagerDelegate.getServicesThatCanRespondToIntent(
+                ArgumentMatchers.argThat(new IntentArgumentMatcher(isReadyToPayIntent))))
                 .thenReturn(services);
 
         PackageInfo bobPayPackageInfo = new PackageInfo();

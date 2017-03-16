@@ -23,12 +23,13 @@ import org.robolectric.internal.ShadowExtractor;
 
 import org.chromium.base.BaseChromiumApplication;
 import org.chromium.base.test.util.Feature;
+import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 /**
  * Unit tests for BackgroundScheduler.
  */
-@RunWith(OfflinePageTestRunner.class)
-@Config(manifest = Config.NONE, application = BaseChromiumApplication.class,
+@RunWith(LocalRobolectricTestRunner.class)
+@Config(manifest = Config.NONE, application = BaseChromiumApplication.class, sdk = 21,
         shadows = {ShadowGcmNetworkManager.class, ShadowGoogleApiAvailability.class})
 public class BackgroundSchedulerTest {
     private Context mContext;

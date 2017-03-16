@@ -18,7 +18,7 @@ public class WebApkTestHelper {
     /**
      * Package name of the WebAPK registered by {@link #registerWebApkWithMetaData}.
      */
-    public static String WEBAPK_PACKAGE_NAME = "org.chromium.webapk.test_package";
+    public static final String WEBAPK_PACKAGE_NAME = "org.chromium.webapk.test_package";
 
     /**
      * Registers WebAPK.

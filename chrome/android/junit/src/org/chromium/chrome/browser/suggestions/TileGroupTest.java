@@ -60,7 +60,7 @@ import org.chromium.testing.local.LocalRobolectricTestRunner;
  * Unit tests for {@link TileGroup}.
  */
 @RunWith(LocalRobolectricTestRunner.class)
-@Config(manifest = Config.NONE,
+@Config(manifest = Config.NONE, sdk = 21,
         shadows = {TileGroupTest.TileShadowResources.class,
                 TileGroupTest.ShadowLayoutInflater.class})
 @Features(@Features.Register(ChromeFeatureList.NTP_OFFLINE_PAGES_FEATURE_NAME))

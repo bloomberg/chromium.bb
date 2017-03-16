@@ -2,7 +2,7 @@
 # mirror in DEPS. Without it, a lot is wiped and re-downloaded for each sync.
 /__START__
 /accessibility-developer-tools/
-/accessibility_test_framework/lib/*.jar
+/accessibility_test_framework/lib/accessibility-test-framework-2.1.jar
 /adobe/flash/binaries
 /adobe/flash/symbols
 /amd/
@@ -72,7 +72,7 @@
 /gvr-android-sdk/test-apks/daydream_home/*.apk
 /gvr-android-sdk/test-apks/vr_services/*.apk
 /gperf
-/guava/lib/*.jar
+/guava/lib/guava-20.0.jar
 /hamcrest/lib/*.jar
 /hunspell_dictionaries
 /icu
@@ -150,7 +150,9 @@
 /re2/src
 /requests/src
 /retrolambda/*.jar
-/robolectric/lib/*.jar
+/robolectric/lib/android-all-4.3_r2-robolectric-0.jar
+/robolectric/lib/android-all-5.0.0_r2-robolectric-1.jar
+/robolectric/lib/android-all-7.1.0_r7-robolectric-0.jar
 /robolectric/robolectric
 /scan-build/src
 /scons-2.0.1
