@@ -619,7 +619,7 @@ public class MinidumpUploadServiceTest extends CrashTestCase {
             assertEquals(TaskIds.CHROME_MINIDUMP_UPLOADING_JOB_ID, job.getId());
             assertEquals(ChromeMinidumpUploadJobService.class.getName(),
                     job.getService().getClassName());
-            return 0;
+            return JobScheduler.RESULT_SUCCESS;
         }
     };
 
