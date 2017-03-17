@@ -1645,8 +1645,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   }
   void setShouldDoFullPaintInvalidation(
       PaintInvalidationReason = PaintInvalidationFull);
-  void setShouldDoFullPaintInvalidationWithoutGeometryChange(
-      PaintInvalidationReason = PaintInvalidationFull);
   void clearShouldDoFullPaintInvalidation() {
     m_bitfields.setFullPaintInvalidationReason(PaintInvalidationNone);
   }
@@ -1657,16 +1655,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return m_bitfields.mayNeedPaintInvalidation();
   }
   void setMayNeedPaintInvalidation();
-  void setMayNeedPaintInvalidationWithoutGeometryChange();
 
   bool mayNeedPaintInvalidationSubtree() const {
     return m_bitfields.mayNeedPaintInvalidationSubtree();
   }
   void setMayNeedPaintInvalidationSubtree();
-
-  bool needsPaintOffsetAndVisualRectUpdate() const {
-    return m_bitfields.needsPaintOffsetAndVisualRectUpdate();
-  }
 
   bool mayNeedPaintInvalidationAnimatedBackgroundImage() const {
     return m_bitfields.mayNeedPaintInvalidationAnimatedBackgroundImage();
@@ -1682,7 +1675,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
       const PaintInvalidationState&) const;
 
   bool shouldCheckForPaintInvalidation() const {
-    return mayNeedPaintInvalidation() || shouldDoFullPaintInvalidation();
+    return mayNeedPaintInvalidation() || shouldDoFullPaintInvalidation() ||
+           shouldInvalidateSelection() ||
+           m_bitfields.childShouldCheckForPaintInvalidation();
   }
 
   virtual LayoutRect viewRect() const;
@@ -2019,8 +2014,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 #if DCHECK_IS_ON()
   virtual bool paintInvalidationStateIsDirty() const {
     return backgroundChangedSinceLastPaintInvalidation() ||
-           shouldCheckForPaintInvalidation() || shouldInvalidateSelection() ||
-           needsPaintOffsetAndVisualRectUpdate();
+           shouldCheckForPaintInvalidation();
   }
 #endif
 
@@ -2105,7 +2099,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   inline void markAncestorsForOverflowRecalcIfNeeded();
 
   inline void markAncestorsForPaintInvalidation();
-  inline void setNeedsPaintOffsetAndVisualRectUpdate();
 
   inline void invalidateContainerPreferredLogicalWidths();
 
@@ -2202,10 +2195,10 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
           m_selfNeedsOverflowRecalcAfterStyleChange(false),
           m_childNeedsOverflowRecalcAfterStyleChange(false),
           m_preferredLogicalWidthsDirty(false),
+          m_childShouldCheckForPaintInvalidation(false),
           m_mayNeedPaintInvalidation(false),
           m_mayNeedPaintInvalidationSubtree(false),
           m_mayNeedPaintInvalidationAnimatedBackgroundImage(false),
-          m_needsPaintOffsetAndVisualRectUpdate(false),
           m_shouldInvalidateSelection(false),
           m_floating(false),
           m_isAnonymous(!node),
@@ -2304,13 +2297,13 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     ADD_BOOLEAN_BITFIELD(preferredLogicalWidthsDirty,
                          PreferredLogicalWidthsDirty);
 
+    ADD_BOOLEAN_BITFIELD(childShouldCheckForPaintInvalidation,
+                         ChildShouldCheckForPaintInvalidation);
     ADD_BOOLEAN_BITFIELD(mayNeedPaintInvalidation, MayNeedPaintInvalidation);
     ADD_BOOLEAN_BITFIELD(mayNeedPaintInvalidationSubtree,
                          MayNeedPaintInvalidationSubtree);
     ADD_BOOLEAN_BITFIELD(mayNeedPaintInvalidationAnimatedBackgroundImage,
                          MayNeedPaintInvalidationAnimatedBackgroundImage);
-    ADD_BOOLEAN_BITFIELD(needsPaintOffsetAndVisualRectUpdate,
-                         NeedsPaintOffsetAndVisualRectUpdate);
     ADD_BOOLEAN_BITFIELD(shouldInvalidateSelection, ShouldInvalidateSelection);
 
     // This boolean is the cached value of 'float'

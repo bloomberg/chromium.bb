@@ -1624,7 +1624,6 @@ void LayoutObject::markAncestorsForOverflowRecalcIfNeeded() {
 void LayoutObject::setNeedsOverflowRecalcAfterStyleChange() {
   bool neededRecalc = needsOverflowRecalcAfterStyleChange();
   setSelfNeedsOverflowRecalcAfterStyleChange();
-  setNeedsPaintOffsetAndVisualRectUpdate();
   if (!neededRecalc)
     markAncestorsForOverflowRecalcIfNeeded();
 }
@@ -1724,17 +1723,11 @@ void LayoutObject::setStyle(PassRefPtr<ComputedStyle> style) {
   }
 
   if (diff.needsPaintInvalidationSubtree() ||
-      updatedDiff.needsPaintInvalidationSubtree()) {
+      updatedDiff.needsPaintInvalidationSubtree())
     setShouldDoFullPaintInvalidationIncludingNonCompositingDescendants();
-  } else if (diff.needsPaintInvalidationObject() ||
-             updatedDiff.needsPaintInvalidationObject()) {
-    // TODO(wangxianzhu): For now LayoutSVGRoot::localVisualRect() depends on
-    // several styles. Refactor to avoid this special case.
-    if (isSVGRoot())
-      setShouldDoFullPaintInvalidation();
-    else
-      setShouldDoFullPaintInvalidationWithoutGeometryChange();
-  }
+  else if (diff.needsPaintInvalidationObject() ||
+           updatedDiff.needsPaintInvalidationObject())
+    setShouldDoFullPaintInvalidation();
 
   // Text nodes share style with their parents but the paint properties don't
   // apply to them, hence the !isText() check.
@@ -3416,24 +3409,14 @@ inline void LayoutObject::markAncestorsForPaintInvalidation() {
   for (LayoutObject* parent = this->paintInvalidationParent();
        parent && !parent->shouldCheckForPaintInvalidation();
        parent = parent->paintInvalidationParent())
-    parent->m_bitfields.setMayNeedPaintInvalidation(true);
-}
-
-inline void LayoutObject::setNeedsPaintOffsetAndVisualRectUpdate() {
-  if (needsPaintOffsetAndVisualRectUpdate())
-    return;
-  m_bitfields.setNeedsPaintOffsetAndVisualRectUpdate(true);
-  for (LayoutObject* parent = paintInvalidationParent();
-       parent && !parent->needsPaintOffsetAndVisualRectUpdate();
-       parent = parent->paintInvalidationParent())
-    parent->m_bitfields.setNeedsPaintOffsetAndVisualRectUpdate(true);
+    parent->m_bitfields.setChildShouldCheckForPaintInvalidation(true);
 }
 
 void LayoutObject::setShouldInvalidateSelection() {
   if (!canUpdateSelectionOnRootLineBoxes())
     return;
   m_bitfields.setShouldInvalidateSelection(true);
-  setMayNeedPaintInvalidation();
+  markAncestorsForPaintInvalidation();
   frameView()->scheduleVisualUpdateForPaintInvalidationIfNeeded();
 }
 
@@ -3445,14 +3428,8 @@ bool LayoutObject::shouldCheckForPaintInvalidationWithPaintInvalidationState(
 
 void LayoutObject::setShouldDoFullPaintInvalidation(
     PaintInvalidationReason reason) {
-  setNeedsPaintOffsetAndVisualRectUpdate();
-  setShouldDoFullPaintInvalidationWithoutGeometryChange(reason);
-}
-
-void LayoutObject::setShouldDoFullPaintInvalidationWithoutGeometryChange(
-    PaintInvalidationReason reason) {
   // Only full invalidation reasons are allowed.
-  DCHECK(isFullPaintInvalidationReason(reason));
+  ASSERT(isFullPaintInvalidationReason(reason));
 
   bool isUpgradingDelayedFullToFull =
       m_bitfields.fullPaintInvalidationReason() ==
@@ -3473,11 +3450,6 @@ void LayoutObject::setShouldDoFullPaintInvalidationWithoutGeometryChange(
 }
 
 void LayoutObject::setMayNeedPaintInvalidation() {
-  setNeedsPaintOffsetAndVisualRectUpdate();
-  setMayNeedPaintInvalidationWithoutGeometryChange();
-}
-
-void LayoutObject::setMayNeedPaintInvalidationWithoutGeometryChange() {
   if (mayNeedPaintInvalidation())
     return;
   m_bitfields.setMayNeedPaintInvalidation(true);
@@ -3496,7 +3468,7 @@ void LayoutObject::setMayNeedPaintInvalidationAnimatedBackgroundImage() {
   if (mayNeedPaintInvalidationAnimatedBackgroundImage())
     return;
   m_bitfields.setMayNeedPaintInvalidationAnimatedBackgroundImage(true);
-  setMayNeedPaintInvalidationWithoutGeometryChange();
+  setMayNeedPaintInvalidation();
 }
 
 void LayoutObject::clearPaintInvalidationFlags() {
@@ -3506,10 +3478,10 @@ void LayoutObject::clearPaintInvalidationFlags() {
   DCHECK(!shouldCheckForPaintInvalidation() || paintInvalidationStateIsDirty());
 #endif
   clearShouldDoFullPaintInvalidation();
+  m_bitfields.setChildShouldCheckForPaintInvalidation(false);
   m_bitfields.setMayNeedPaintInvalidation(false);
   m_bitfields.setMayNeedPaintInvalidationSubtree(false);
   m_bitfields.setMayNeedPaintInvalidationAnimatedBackgroundImage(false);
-  m_bitfields.setNeedsPaintOffsetAndVisualRectUpdate(false);
   m_bitfields.setShouldInvalidateSelection(false);
   m_bitfields.setBackgroundChangedSinceLastPaintInvalidation(false);
 }
