@@ -710,6 +710,7 @@ void EventGenerator::DoDispatchEvent(ui::Event* event, bool async) {
   } else {
     if (event->IsKeyEvent())
       delegate()->DispatchKeyEventToIME(current_target_, event->AsKeyEvent());
+    MaybeDispatchToPointerWatchers(*event);
     if (!event->handled()) {
       ui::EventSource* event_source =
           delegate()->GetEventSource(current_target_);
@@ -718,6 +719,27 @@ void EventGenerator::DoDispatchEvent(ui::Event* event, bool async) {
           event_source_test.SendEventToProcessor(event);
       CHECK(!details.dispatcher_destroyed);
     }
+  }
+}
+
+void EventGenerator::MaybeDispatchToPointerWatchers(const Event& event) {
+  // Regular pointer events can be dispatched directly.
+  if (event.IsPointerEvent()) {
+    delegate()->DispatchEventToPointerWatchers(current_target_,
+                                               *event.AsPointerEvent());
+    return;
+  }
+
+  // PointerWatchers always use pointer events, so mouse and touch events
+  // need to be converted.
+  if (!PointerEvent::CanConvertFrom(event))
+    return;
+  if (event.IsMouseEvent()) {
+    delegate()->DispatchEventToPointerWatchers(
+        current_target_, PointerEvent(*event.AsMouseEvent()));
+  } else if (event.IsTouchEvent()) {
+    delegate()->DispatchEventToPointerWatchers(
+        current_target_, PointerEvent(*event.AsTouchEvent()));
   }
 }
 

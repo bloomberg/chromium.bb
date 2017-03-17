@@ -426,10 +426,6 @@ TEST_F(SystemTrayTest, TrayBoundsInWidget) {
 }
 
 TEST_F(SystemTrayTest, PersistentBubble) {
-  // TODO: investigate why this fails in mash. http://crbug.com/695559.
-  if (WmShell::Get()->IsRunningInMash())
-    return;
-
   SystemTray* tray = GetPrimarySystemTray();
   ASSERT_TRUE(tray->GetWidget());
 
@@ -447,6 +443,7 @@ TEST_F(SystemTrayTest, PersistentBubble) {
   base::RunLoop().RunUntilIdle();
   ASSERT_FALSE(tray->HasSystemBubble());
 
+  // Clicking outside the bubble should close it.
   tray->ShowDefaultView(BUBBLE_CREATE_NEW);
   ASSERT_TRUE(tray->HasSystemBubble());
   {

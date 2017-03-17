@@ -7,6 +7,9 @@
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "ui/aura/client/screen_position_client.h"
+#include "ui/aura/env.h"
+#include "ui/aura/test/env_test_helper.h"
+#include "ui/aura/test/mus/window_tree_client_private.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/input_method.h"
@@ -134,6 +137,22 @@ void EventGeneratorDelegateAura::DispatchKeyEventToIME(ui::EventTarget* target,
                                                        ui::KeyEvent* event) {
   Window* window = static_cast<Window*>(target);
   window->GetHost()->GetInputMethod()->DispatchKeyEvent(event);
+}
+
+void EventGeneratorDelegateAura::DispatchEventToPointerWatchers(
+    ui::EventTarget* target,
+    const ui::PointerEvent& event) {
+  // In non-mus aura PointerWatchers are handled by system-wide EventHandlers,
+  // for example ash::Shell and ash::PointerWatcherAdapter.
+  if (!Env::GetInstance()->HasWindowTreeClient())
+    return;
+
+  // Route the event through WindowTreeClient as in production mus. Does nothing
+  // if there are no PointerWatchers installed.
+  Window* window = static_cast<Window*>(target);
+  WindowTreeClient* window_tree_client = EnvTestHelper().GetWindowTreeClient();
+  WindowTreeClientPrivate(window_tree_client)
+      .CallOnPointerEventObserved(window, ui::Event::Clone(event));
 }
 
 }  // namespace test

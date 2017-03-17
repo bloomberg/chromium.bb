@@ -49,6 +49,10 @@ class WindowTreeClientPrivate {
   // Pretends that |event| has been received from the window server.
   void CallOnWindowInputEvent(Window* window, std::unique_ptr<ui::Event> event);
 
+  // Simulates |event| matching a pointer watcher on the window server.
+  void CallOnPointerEventObserved(Window* window,
+                                  std::unique_ptr<ui::Event> event);
+
   void CallOnCaptureChanged(Window* new_capture, Window* old_capture);
 
   // Sets the WindowTree and client id.

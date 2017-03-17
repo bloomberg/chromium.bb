@@ -32,6 +32,8 @@ class EnvTestHelper {
 
   void SetMode(Env::Mode mode) { env_->mode_ = mode; }
 
+  WindowTreeClient* GetWindowTreeClient() { return env_->window_tree_client_; }
+
   // This circumvents the DCHECKs in Env::SetWindowTreeClient() and should
   // only be used for tests where Env is long lived.
   void SetWindowTreeClient(WindowTreeClient* window_tree_client) {

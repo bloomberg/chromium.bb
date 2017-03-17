@@ -62,6 +62,16 @@ void WindowTreeClientPrivate::CallOnWindowInputEvent(
       std::move(event), observer_id);
 }
 
+void WindowTreeClientPrivate::CallOnPointerEventObserved(
+    Window* window,
+    std::unique_ptr<ui::Event> event) {
+  const int64_t display_id = 0;
+  const uint32_t window_id =
+      window ? WindowPortMus::Get(window)->server_id() : 0u;
+  tree_client_impl_->OnPointerEventObserved(std::move(event), window_id,
+                                            display_id);
+}
+
 void WindowTreeClientPrivate::CallOnCaptureChanged(Window* new_capture,
                                                    Window* old_capture) {
   tree_client_impl_->OnCaptureChanged(

@@ -69,11 +69,16 @@ class EventGeneratorDelegate {
   virtual void ConvertPointFromHost(const EventTarget* hosted_target,
                                     gfx::Point* point) const = 0;
 
-  // Detemines whether the input method should be the first to handle key events
-  // before dispathcing to Views. If it does, the given |event| will be
+  // Determines if the input method should be the first to handle key events
+  // before dispatching to Views. If it does, the given |event| will be
   // dispatched and processed by the input method from the host of |target|.
   virtual void DispatchKeyEventToIME(EventTarget* target,
                                      ui::KeyEvent* event) = 0;
+
+  // Offers the event to pointer watchers on systems that provide them.
+  // Does not consume the event (pointer watchers cannot consume events).
+  virtual void DispatchEventToPointerWatchers(EventTarget* target,
+                                              const PointerEvent& event) {}
 };
 
 // ui::test::EventGenerator is a tool that generates and dispatches events.
@@ -431,6 +436,10 @@ class EventGenerator {
 
   void DispatchNextPendingEvent();
   void DoDispatchEvent(Event* event, bool async);
+
+  // Offers event to pointer watchers (via delegate) if the event is a mouse or
+  // touch event.
+  void MaybeDispatchToPointerWatchers(const Event& event);
 
   const EventGeneratorDelegate* delegate() const;
   EventGeneratorDelegate* delegate();

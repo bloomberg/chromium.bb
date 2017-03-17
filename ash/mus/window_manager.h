@@ -105,7 +105,7 @@ class WindowManager : public aura::WindowManagerDelegate,
       std::unique_ptr<aura::WindowTreeHostMus> window_tree_host);
 
  private:
-  friend class ash::test::AshTestHelper;
+  friend class test::AshTestHelper;
   friend class WmTestHelper;
 
   using RootWindowControllers = std::set<std::unique_ptr<RootWindowController>>;

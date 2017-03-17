@@ -147,6 +147,9 @@ class AURA_EXPORT Env : public ui::EventTarget,
   // This is not const for tests, which may share Env across tests and so needs
   // to reset the value.
   Mode mode_;
+
+  // Intentionally not exposed publicly. Someday we might want to support
+  // multiple WindowTreeClients. Use EnvTestHelper in tests.
   WindowTreeClient* window_tree_client_ = nullptr;
 
   base::ObserverList<EnvObserver> observers_;
