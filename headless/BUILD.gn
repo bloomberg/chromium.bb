@@ -272,6 +272,8 @@ static_library("headless_lib") {
   if (use_aura) {
     sources += [
       "lib/browser/headless_browser_impl_aura.cc",
+      "lib/browser/headless_clipboard.cc",
+      "lib/browser/headless_clipboard.h",
       "lib/browser/headless_focus_client.cc",
       "lib/browser/headless_focus_client.h",
       "lib/browser/headless_screen.cc",

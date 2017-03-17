@@ -9,6 +9,7 @@
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test.h"
@@ -29,6 +30,8 @@
 #include "net/url_request/url_request_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/clipboard/clipboard.h"
+#include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/gfx/geometry/size.h"
 
 using testing::UnorderedElementsAre;
@@ -318,6 +321,26 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, WebGLSupported) {
           ->GetValue()
           ->GetAsBoolean(&webgl_supported));
   EXPECT_TRUE(webgl_supported);
+}
+
+IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, ClipboardCopyPasteText) {
+  // Tests copy-pasting text with the clipboard in headless mode.
+  ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
+  ASSERT_TRUE(clipboard);
+  base::string16 paste_text = base::ASCIIToUTF16("Clippy!");
+  for (ui::ClipboardType type :
+       {ui::CLIPBOARD_TYPE_COPY_PASTE, ui::CLIPBOARD_TYPE_SELECTION,
+        ui::CLIPBOARD_TYPE_DRAG}) {
+    if (!ui::Clipboard::IsSupportedClipboardType(type))
+      continue;
+    {
+      ui::ScopedClipboardWriter writer(type);
+      writer.WriteText(paste_text);
+    }
+    base::string16 copy_text;
+    clipboard->ReadText(type, &copy_text);
+    EXPECT_EQ(paste_text, copy_text);
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, DefaultSizes) {

@@ -4,3 +4,8 @@ include_rules = [
   "+ui/aura",
   "+sandbox/win/src",
 ]
+specific_include_rules = {
+  "headless_clipboard.h": [
+    "+third_party/skia/include",
+  ]
+}
