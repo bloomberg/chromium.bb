@@ -149,11 +149,6 @@ int32_t RTCVideoDecoder::InitDecode(const webrtc::VideoCodec* codecSettings,
                                     int32_t /*numberOfCores*/) {
   DVLOG(2) << "InitDecode";
   DCHECK_EQ(video_codec_type_, codecSettings->codecType);
-  if (codecSettings->codecType == webrtc::kVideoCodecVP8 &&
-      codecSettings->VP8().feedbackModeOn) {
-    LOG(ERROR) << "Feedback mode not supported";
-    return RecordInitDecodeUMA(WEBRTC_VIDEO_CODEC_ERROR);
-  }
 
   base::AutoLock auto_lock(lock_);
   if (state_ == UNINITIALIZED || state_ == DECODE_ERROR) {

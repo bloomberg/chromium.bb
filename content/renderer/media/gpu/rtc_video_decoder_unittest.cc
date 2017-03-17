@@ -180,12 +180,6 @@ TEST_P(RTCVideoDecoderTest, CreateAndInitSucceeds) {
   EXPECT_EQ(WEBRTC_VIDEO_CODEC_OK, rtc_decoder_->InitDecode(&codec_, 1));
 }
 
-TEST_F(RTCVideoDecoderTest, InitDecodeReturnsErrorOnFeedbackMode) {
-  CreateDecoder(webrtc::kVideoCodecVP8);
-  codec_.VP8()->feedbackModeOn = true;
-  EXPECT_EQ(WEBRTC_VIDEO_CODEC_ERROR, rtc_decoder_->InitDecode(&codec_, 1));
-}
-
 TEST_F(RTCVideoDecoderTest, DecodeReturnsErrorWithoutInitDecode) {
   CreateDecoder(webrtc::kVideoCodecVP8);
   webrtc::EncodedImage input_image;
