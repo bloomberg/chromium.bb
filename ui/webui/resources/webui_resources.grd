@@ -328,6 +328,8 @@ without changes to the corresponding grd file. -->
                  type="chrome_html" />
       <structure name="IDR_WEBUI_HTML_CR_UI_POSITION_UTIL"
                  file="html/cr/ui/position_util.html" type="chrome_html" />
+      <structure name="IDR_WEBUI_HTML_CR_UI_SPLITTER"
+                 file="html/cr/ui/splitter.html" type="chrome_html" />
       <structure name="IDR_WEBUI_HTML_EVENT_TRACKER"
                  file="html/event_tracker.html" type="chrome_html" />
       <structure name="IDR_WEBUI_HTML_ICON"

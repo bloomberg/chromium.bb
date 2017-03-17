@@ -128,5 +128,13 @@
       ],
       'includes': ['../../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
+    {
+      'target_name': 'splitter',
+      'dependencies': [
+        '../../compiled_resources2.gyp:cr',
+        '../compiled_resources2.gyp:ui',
+      ],
+      'includes': ['../../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
   ],
 }

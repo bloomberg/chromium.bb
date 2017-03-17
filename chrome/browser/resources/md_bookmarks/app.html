@@ -1,4 +1,5 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/html/cr/ui/splitter.html">
 <link rel="import" href="chrome://bookmarks/api_listener.html">
 <link rel="import" href="chrome://bookmarks/list.html">
 <link rel="import" href="chrome://bookmarks/shared_vars.html">
@@ -14,7 +15,6 @@
         display: flex;
         flex-direction: column;
         height: 100%;
-        overflow: hidden;
       }
 
       #main-container {
@@ -24,17 +24,30 @@
         overflow: auto;
       }
 
+      #splitter {
+        cursor: e-resize;
+        flex: 0 0 var(--splitter-width);
+      }
+
+      :host-context([dir='rtl']) #splitter {
+        cursor: w-resize;
+      }
+
       bookmarks-sidebar {
-        flex: 0 0 var(--sidebar-width);
+        max-width: 40%;
+        min-width: var(--min-sidebar-width);
+        width: var(--min-sidebar-width);
       }
 
       bookmarks-list {
         flex: 1;
+        min-width: 550px;
       }
     </style>
-    <bookmarks-toolbar></bookmarks-toolbar>
+    <bookmarks-toolbar sidebar-width="[[sidebarWidth_]]"></bookmarks-toolbar>
     <div id="main-container">
-      <bookmarks-sidebar></bookmarks-sidebar>
+      <bookmarks-sidebar id="sidebar"></bookmarks-sidebar>
+      <div id="splitter"></div>
       <bookmarks-list></bookmarks-list>
     </div>
   </template>

@@ -60,14 +60,6 @@ Polymer({
     return this.isSelectedFolder_ ? 'bookmarks:folder-open' : 'cr:folder';
   },
 
-  /**
-   * @private
-   * @return {string}
-   */
-  getArrowIcon_: function() {
-    return this.isClosed_ ? 'cr:arrow-drop-down' : 'cr:arrow-drop-up';
-  },
-
   /** @private */
   selectFolder_: function() {
     this.dispatch(bookmarks.actions.selectFolder(this.item_.id));
@@ -76,10 +68,12 @@ Polymer({
   /**
    * Occurs when the drop down arrow is tapped.
    * @private
+   * @param {!Event} e
    */
-  toggleFolder_: function() {
+  toggleFolder_: function(e) {
     this.dispatch(
         bookmarks.actions.changeFolderOpen(this.item_.id, this.isClosed_));
+    e.stopPropagation();
   },
 
   /**
@@ -106,7 +100,7 @@ Polymer({
 
   /** @private */
   depthChanged_: function() {
-    this.style.setProperty('--node-depth', this.depth.toString());
+    this.style.setProperty('--node-depth', String(this.depth));
   },
 
   /**

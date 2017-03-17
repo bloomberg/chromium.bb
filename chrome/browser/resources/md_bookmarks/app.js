@@ -15,7 +15,13 @@ Polymer({
       type: String,
       observer: 'searchTermChanged_',
     },
+
+    /** @private */
+    sidebarWidth_: String,
   },
+
+  /** @private{?function(!Event)} */
+  boundUpdateSidebarWidth_: null,
 
   /** @override */
   attached: function() {
@@ -31,7 +37,46 @@ Polymer({
 
       bookmarks.Store.getInstance().init(initialState);
       bookmarks.ApiListener.init();
+
     }.bind(this));
+
+    this.boundUpdateSidebarWidth_ = this.updateSidebarWidth_.bind(this);
+
+    this.initializeSplitter_();
+  },
+
+  detached: function() {
+    window.removeEventListener('resize', this.boundUpdateSidebarWidth_);
+  },
+
+  /**
+   * Set up the splitter and set the initial width from localStorage.
+   * @private
+   */
+  initializeSplitter_: function() {
+    var splitter = this.$.splitter;
+    cr.ui.Splitter.decorate(splitter);
+    var splitterTarget = this.$.sidebar;
+
+    // The splitter persists the size of the left component in the local store.
+    if ('treeWidth' in window.localStorage) {
+      splitterTarget.style.width = window.localStorage['treeWidth'];
+      this.sidebarWidth_ = splitterTarget.getComputedStyleValue('width');
+    }
+
+    splitter.addEventListener('resize', function(e) {
+      window.localStorage['treeWidth'] = splitterTarget.style.width;
+      // TODO(calamity): This only fires when the resize is complete. This
+      // should be updated on every width change.
+      this.updateSidebarWidth_();
+    }.bind(this));
+
+    window.addEventListener('resize', this.boundUpdateSidebarWidth_);
+  },
+
+  /** @private */
+  updateSidebarWidth_: function() {
+    this.sidebarWidth_ = this.$.sidebar.getComputedStyleValue('width');
   },
 
   searchTermChanged_: function() {

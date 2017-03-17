@@ -17,7 +17,8 @@
       }
 
       cr-toolbar {
-        --cr-toolbar-field-margin: var(--sidebar-width);
+        --cr-toolbar-field-margin:
+            calc(var(--sidebar-width) + var(--splitter-width));
         background: var(--md-toolbar-color);
       }
     </style>

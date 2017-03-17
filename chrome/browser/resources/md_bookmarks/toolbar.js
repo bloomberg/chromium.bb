@@ -15,6 +15,11 @@ Polymer({
       type: String,
       observer: 'onSearchTermChanged_',
     },
+
+    sidebarWidth: {
+      type: String,
+      observer: 'onSidebarWidthChanged_',
+    },
   },
 
   attached: function() {
@@ -78,6 +83,10 @@ Polymer({
   onSearchChanged_: function(e) {
     var searchTerm = /** @type {string} */ (e.detail);
     this.dispatch(bookmarks.actions.setSearchTerm(searchTerm));
+  },
+
+  onSidebarWidthChanged_: function() {
+    this.style.setProperty('--sidebar-width', this.sidebarWidth);
   },
 
   /** @private */

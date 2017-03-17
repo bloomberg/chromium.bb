@@ -12,6 +12,7 @@
   <template>
     <style include="shared-style">
       :host {
+        --padding-start-per-depth: 36px;
         display: block;
       }
 
@@ -22,7 +23,7 @@
       }
 
       .menu-label {
-        -webkit-margin-start: 24px;
+        -webkit-margin-start: 16px;
         color: var(--folder-inactive-color);
         font-weight: 500;
         overflow: hidden;
@@ -31,13 +32,15 @@
       }
 
       #container {
+        -webkit-padding-start:
+            calc(var(--node-depth, 0) * var(--padding-start-per-depth));
+        cursor: pointer;
         height: 40px;
-        padding-left: calc(var(--node-depth, 0) * 30px);
       }
 
       #folder-label {
+        -webkit-padding-end: 8px;
         color: var(--secondary-text-color);
-        cursor: pointer;
         flex-grow: 1;
         overflow: hidden;
       }
@@ -53,24 +56,41 @@
         min-width: 20px;
       }
 
-      paper-icon-button {
+      #arrow {
         color: var(--secondary-text-color);
         height: 36px;
+        margin: 0 8px;
         min-width: 36px;
-        padding: 8px;
+        transform: rotate(-90deg);
+        transition: transform 150ms;
         width: 36px;
+      }
+
+      :host-context([dir='rtl']) #arrow {
+        transform: rotate(90deg);
+      }
+
+      #arrow[is-open] {
+        transform: initial;
+      }
+
+      [no-children] {
+        -webkit-padding-start: 52px; /* The width of the arrow and its margin */
       }
     </style>
 
-    <div id="container" class="v-centered">
-      <div id="folder-label" class="v-centered" on-tap="selectFolder_">
-        <iron-icon icon="[[getFolderIcon_(isSelectedFolder_)]]"></iron-icon>
+    <div id="container" class="v-centered" on-tap="selectFolder_">
+      <template is="dom-if" if="[[hasChildFolder_(item_.children)]]">
+        <paper-icon-button id="arrow" icon="cr:arrow-drop-down"
+            is-open$="[[!isClosed_]]" on-tap="toggleFolder_">
+        </paper-icon-button>
+      </template>
+      <div id="folder-label" class="v-centered">
+        <iron-icon icon="[[getFolderIcon_(isSelectedFolder_)]]"
+            no-children$="[[!hasChildFolder_(item_.children)]]">
+        </iron-icon>
         <div class="menu-label">[[item_.title]]</div>
       </div>
-      <template is="dom-if" if="[[hasChildFolder_(item_.children)]]">
-        <paper-icon-button icon="[[getArrowIcon_(isClosed_)]]"
-            on-tap="toggleFolder_"></paper-icon-button>
-      </template>
     </div>
     <div id="descendants" hidden$="[[isClosed_]]">
       <template is="dom-repeat"
