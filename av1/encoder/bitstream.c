@@ -24,8 +24,8 @@
 #endif  // CONFIG_BITSTREAM_DEBUG
 
 #if CONFIG_CDEF
+#include "av1/common/cdef.h"
 #include "av1/common/clpf.h"
-#include "av1/common/dering.h"
 #endif  // CONFIG_CDEF
 #include "av1/common/entropy.h"
 #include "av1/common/entropymode.h"
@@ -2735,95 +2735,29 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
 #if CONFIG_CDEF
 #if CONFIG_EXT_PARTITION
   if (cm->sb_size == BLOCK_128X128 && bsize == BLOCK_128X128 &&
-      cm->dering_level != 0 && !sb_all_skip(cm, mi_row, mi_col)) {
+      !sb_all_skip(cm, mi_row, mi_col)) {
     aom_write_literal(
         w,
         cm->mi_grid_visible[mi_row * cm->mi_stride + mi_col]->mbmi.dering_gain,
-        DERING_REFINEMENT_BITS);
+        cm->dering_bits);
+    aom_write_literal(w, cm->mi_grid_visible[mi_row * cm->mi_stride + mi_col]
+                             ->mbmi.clpf_strength,
+                      cm->clpf_bits);
   } else if (cm->sb_size == BLOCK_64X64 && bsize == BLOCK_64X64 &&
 #else
   if (bsize == BLOCK_64X64 &&
 #endif  // CONFIG_EXT_PARTITION
-             cm->dering_level != 0 && !sb_all_skip(cm, mi_row, mi_col)) {
-    aom_write_literal(
-        w,
-        cm->mi_grid_visible[mi_row * cm->mi_stride + mi_col]->mbmi.dering_gain,
-        DERING_REFINEMENT_BITS);
+             !sb_all_skip(cm, mi_row, mi_col)) {
+    if (cm->dering_bits)
+      aom_write_literal(w, cm->mi_grid_visible[mi_row * cm->mi_stride + mi_col]
+                               ->mbmi.dering_gain,
+                        cm->dering_bits);
+    if (cm->clpf_bits)
+      aom_write_literal(w, cm->mi_grid_visible[mi_row * cm->mi_stride + mi_col]
+                               ->mbmi.clpf_strength,
+                        cm->clpf_bits);
   }
 #endif
-
-#if CONFIG_CDEF
-#if CONFIG_EXT_PARTITION
-  if (cm->sb_size == BLOCK_128X128 && bsize == BLOCK_128X128 &&
-      cm->clpf_blocks && cm->clpf_strength_y && cm->clpf_size != CLPF_NOSIZE) {
-    const int tl = mi_row * MI_SIZE / MIN_FB_SIZE * cm->clpf_stride +
-                   mi_col * MI_SIZE / MIN_FB_SIZE;
-    if (cm->clpf_size == CLPF_128X128 && cm->clpf_blocks[tl] != CLPF_NOFLAG) {
-      aom_write_literal(w, cm->clpf_blocks[tl], 1);
-    } else if (cm->clpf_size == CLPF_64X64) {
-      const int tr = tl + 2;
-      const int bl = tl + 2 * cm->clpf_stride;
-      const int br = tr + 2 * cm->clpf_stride;
-
-      // Up to four bits per SB.
-      if (cm->clpf_blocks[tl] != CLPF_NOFLAG)
-        aom_write_literal(w, cm->clpf_blocks[tl], 1);
-
-      if (mi_col + MI_SIZE < cm->mi_cols && cm->clpf_blocks[tr] != CLPF_NOFLAG)
-        aom_write_literal(w, cm->clpf_blocks[tr], 1);
-
-      if (mi_row + MI_SIZE < cm->mi_rows && cm->clpf_blocks[bl] != CLPF_NOFLAG)
-        aom_write_literal(w, cm->clpf_blocks[bl], 1);
-
-      if (mi_row + MI_SIZE < cm->mi_rows && mi_col + MI_SIZE < cm->mi_cols &&
-          cm->clpf_blocks[br] != CLPF_NOFLAG)
-        aom_write_literal(w, cm->clpf_blocks[br], 1);
-    } else if (cm->clpf_size == CLPF_32X32) {
-      int i, j;
-      const int size = 32 / MI_SIZE;
-      // Up to sixteen bits per SB.
-      for (i = 0; i < 4; ++i)
-        for (j = 0; j < 4; ++j) {
-          const int index = tl + i * cm->clpf_stride + j;
-          if (mi_row + i * size < cm->mi_rows &&
-              mi_col + j * size < cm->mi_cols &&
-              cm->clpf_blocks[index] != CLPF_NOFLAG)
-            aom_write_literal(w, cm->clpf_blocks[index], 1);
-        }
-    }
-  } else if (cm->sb_size == BLOCK_64X64 && bsize == BLOCK_64X64 &&
-#else
-  if (bsize == BLOCK_64X64 &&
-#endif  // CONFIG_EXT_PARTITION
-             cm->clpf_blocks && cm->clpf_strength_y &&
-             cm->clpf_size != CLPF_NOSIZE) {
-    const int tl = mi_row * MI_SIZE / MIN_FB_SIZE * cm->clpf_stride +
-                   mi_col * MI_SIZE / MIN_FB_SIZE;
-    const int tr = tl + 1;
-    const int bl = tl + cm->clpf_stride;
-    const int br = tr + cm->clpf_stride;
-
-    // Up to four bits per SB.
-    // When clpf_size indicates a size larger than the SB size
-    // (CLPF_128X128), one bit for every fourth SB will be transmitted
-    // regardless of skip blocks.
-    if (cm->clpf_blocks[tl] != CLPF_NOFLAG)
-      aom_write_literal(w, cm->clpf_blocks[tl], 1);
-
-    if (mi_col + MI_SIZE / 2 < cm->mi_cols &&
-        cm->clpf_blocks[tr] != CLPF_NOFLAG)
-      aom_write_literal(w, cm->clpf_blocks[tr], 1);
-
-    if (mi_row + MI_SIZE / 2 < cm->mi_rows &&
-        cm->clpf_blocks[bl] != CLPF_NOFLAG)
-      aom_write_literal(w, cm->clpf_blocks[bl], 1);
-
-    if (mi_row + MI_SIZE / 2 < cm->mi_rows &&
-        mi_col + MI_SIZE / 2 < cm->mi_cols &&
-        cm->clpf_blocks[br] != CLPF_NOFLAG)
-      aom_write_literal(w, cm->clpf_blocks[br], 1);
-  }
-#endif  // CONFIG_CDEF
 }
 
 static void write_modes(AV1_COMP *const cpi, const TileInfo *const tile,
@@ -3522,21 +3456,12 @@ static void encode_loopfilter(AV1_COMMON *cm, struct aom_write_bit_buffer *wb) {
 }
 
 #if CONFIG_CDEF
-static void encode_clpf(const AV1_COMMON *cm, struct aom_write_bit_buffer *wb) {
-  aom_wb_write_literal(wb, cm->clpf_strength_y, 2);
+static void encode_cdef(const AV1_COMMON *cm, struct aom_write_bit_buffer *wb) {
+  aom_wb_write_literal(wb, cm->dering_level, DERING_LEVEL_BITS);
   aom_wb_write_literal(wb, cm->clpf_strength_u, 2);
   aom_wb_write_literal(wb, cm->clpf_strength_v, 2);
-  if (cm->clpf_strength_y) {
-    aom_wb_write_literal(wb, cm->clpf_size, 2);
-  }
 }
 #endif
-
-#if CONFIG_CDEF
-static void encode_dering(int level, struct aom_write_bit_buffer *wb) {
-  aom_wb_write_literal(wb, level, DERING_LEVEL_BITS);
-}
-#endif  // CONFIG_CDEF
 
 static void write_delta_q(struct aom_write_bit_buffer *wb, int delta_q) {
   if (delta_q != 0) {
@@ -4481,8 +4406,7 @@ static void write_uncompressed_header(AV1_COMP *cpi,
 
   encode_loopfilter(cm, wb);
 #if CONFIG_CDEF
-  encode_dering(cm->dering_level, wb);
-  encode_clpf(cm, wb);
+  encode_cdef(cm, wb);
 #endif
 #if CONFIG_LOOP_RESTORATION
   encode_restoration_mode(cm, wb);

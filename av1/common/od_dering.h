@@ -24,8 +24,9 @@
 #define OD_FILT_VBORDER (3)
 /* We only need to buffer three horizontal lines too, but let's make it four
    to make vectorization easier. */
-#define OD_FILT_HBORDER (4)
-#define OD_FILT_BSTRIDE (OD_BSIZE_MAX + 2 * OD_FILT_HBORDER)
+#define OD_FILT_HBORDER (32)
+#define OD_FILT_BSTRIDE \
+  ALIGN_POWER_OF_TWO(OD_BSIZE_MAX + 2 * OD_FILT_HBORDER, 5)
 
 #define OD_DERING_VERY_LARGE (30000)
 #define OD_DERING_INBUF_SIZE \
@@ -38,19 +39,22 @@ typedef struct {
   unsigned char bx;
 } dering_list;
 
-typedef int (*od_filter_dering_direction_func)(int16_t *y, int ystride,
-                                               const int16_t *in, int threshold,
-                                               int dir);
-void copy_dering_16bit_to_16bit(int16_t *dst, int dstride, int16_t *src,
+typedef int (*od_filter_dering_direction_func)(uint16_t *y, int ystride,
+                                               const uint16_t *in,
+                                               int threshold, int dir);
+void copy_dering_16bit_to_16bit(uint16_t *dst, int dstride, uint16_t *src,
                                 dering_list *dlist, int dering_count,
                                 int bsize);
 
-void od_dering(int16_t *y, int16_t *in, int xdec,
+void od_dering(uint16_t *y, uint16_t *in, int xdec,
                int dir[OD_DERING_NBLOCKS][OD_DERING_NBLOCKS], int pli,
-               dering_list *dlist, int skip_stride, int threshold,
-               int coeff_shift);
-int od_filter_dering_direction_4x4_c(int16_t *y, int ystride, const int16_t *in,
-                                     int threshold, int dir);
-int od_filter_dering_direction_8x8_c(int16_t *y, int ystride, const int16_t *in,
-                                     int threshold, int dir);
+               dering_list *dlist, int dering_count, int threshold,
+               int clpf_strength, int clpf_damping, int coeff_shift,
+               BOUNDARY_TYPE bt);
+int od_filter_dering_direction_4x4_c(uint16_t *y, int ystride,
+                                     const uint16_t *in, int threshold,
+                                     int dir);
+int od_filter_dering_direction_8x8_c(uint16_t *y, int ystride,
+                                     const uint16_t *in, int threshold,
+                                     int dir);
 #endif

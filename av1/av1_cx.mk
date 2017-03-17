@@ -109,7 +109,7 @@ AV1_CX_SRCS-yes += encoder/temporal_filter.h
 AV1_CX_SRCS-yes += encoder/mbgraph.c
 AV1_CX_SRCS-yes += encoder/mbgraph.h
 ifeq ($(CONFIG_CDEF),yes)
-AV1_CX_SRCS-yes += encoder/pickdering.c
+AV1_CX_SRCS-yes += encoder/pickcdef.c
 AV1_CX_SRCS-yes += encoder/clpf_rdo.c
 AV1_CX_SRCS-yes += encoder/clpf_rdo.h
 AV1_CX_SRCS-yes += encoder/clpf_rdo_simd.h

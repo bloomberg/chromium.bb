@@ -370,6 +370,7 @@ typedef struct {
 #endif  // CONFIG_NEW_QUANT
   /* deringing gain *per-superblock* */
   int8_t dering_gain;
+  int8_t clpf_strength;
 #if CONFIG_DELTA_Q
   int current_q_index;
 #endif

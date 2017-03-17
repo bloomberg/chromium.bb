@@ -215,8 +215,8 @@ if (CONFIG_CDEF)
       "${AOM_ROOT}/av1/common/clpf.h"
       "${AOM_ROOT}/av1/common/clpf_simd.h"
       "${AOM_ROOT}/av1/common/clpf_simd_kernel.h"
-      "${AOM_ROOT}/av1/common/dering.c"
-      "${AOM_ROOT}/av1/common/dering.h"
+      "${AOM_ROOT}/av1/common/cdef.c"
+      "${AOM_ROOT}/av1/common/cdef.h"
       "${AOM_ROOT}/av1/common/od_dering.c"
       "${AOM_ROOT}/av1/common/od_dering.h")
 
@@ -224,7 +224,7 @@ if (CONFIG_CDEF)
       ${AOM_AV1_ENCODER_SOURCES}
       "${AOM_ROOT}/av1/encoder/clpf_rdo.c"
       "${AOM_ROOT}/av1/encoder/clpf_rdo.h"
-      "${AOM_ROOT}/av1/encoder/pickdering.c")
+      "${AOM_ROOT}/av1/encoder/pickcdef.c")
 
   set(AOM_AV1_COMMON_SSE2_INTRIN
       ${AOM_AV1_COMMON_SSE2_INTRIN}

@@ -14,13 +14,8 @@
 
 #include "av1/common/reconinter.h"
 
-int av1_clpf_decision(int k, int l, const YV12_BUFFER_CONFIG *rec,
-                      const YV12_BUFFER_CONFIG *org, const AV1_COMMON *cm,
-                      int block_size, int w, int h, unsigned int strength,
-                      unsigned int fb_size_log2, int8_t *res, int plane);
-
-void av1_clpf_test_frame(const YV12_BUFFER_CONFIG *rec,
+void av1_clpf_test_plane(const YV12_BUFFER_CONFIG *rec,
                          const YV12_BUFFER_CONFIG *org, const AV1_COMMON *cm,
-                         int *best_strength, int *best_bs, int plane);
+                         int *best_strength, int plane);
 
 #endif

@@ -9,22 +9,87 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
-#include <string.h>
+#include <assert.h>
 #include <math.h>
+#include <string.h>
 
 #include "./aom_scale_rtcd.h"
 #include "aom/aom_integer.h"
-#include "av1/common/dering.h"
+#include "av1/common/cdef.h"
+#include "av1/common/od_dering.h"
 #include "av1/common/onyxc_int.h"
 #include "av1/common/reconinter.h"
-#include "av1/common/od_dering.h"
 
-int compute_level_from_index(int global_level, int gi) {
-  static const int dering_gains[DERING_REFINEMENT_LEVELS] = { 0, 11, 16, 22 };
-  int level;
-  if (global_level == 0) return 0;
-  level = (global_level * dering_gains[gi] + 8) >> 4;
-  return clamp(level, gi, MAX_DERING_LEVEL - 1);
+int dering_level_table[DERING_STRENGTHS] = {
+  0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 17, 20, 24, 28, 33, 39, 46, 54, 63
+};
+
+#ifndef NDEBUG
+static int is_sorted(const int *arr, int num) {
+  int sorted = 1;
+  while (sorted && num-- > 1) sorted &= arr[num] >= arr[num - 1];
+  return sorted;
+}
+#endif
+
+uint32_t levels_to_id(const int lev[DERING_REFINEMENT_LEVELS],
+                      const int str[CLPF_REFINEMENT_LEVELS]) {
+  uint32_t id = 0;
+  int i;
+
+  assert(is_sorted(lev, DERING_REFINEMENT_LEVELS));
+  assert(is_sorted(str, CLPF_REFINEMENT_LEVELS));
+  for (i = 0; i < DERING_REFINEMENT_LEVELS; i++)
+    id = id * DERING_STRENGTHS + lev[i];
+  for (i = 0; i < CLPF_REFINEMENT_LEVELS; i++)
+    id = id * CLPF_STRENGTHS + str[i];
+  return id;
+}
+
+void id_to_levels(int lev[DERING_REFINEMENT_LEVELS],
+                  int str[CLPF_REFINEMENT_LEVELS], uint32_t id) {
+  int i;
+  for (i = CLPF_REFINEMENT_LEVELS - 1; i >= 0; i--) {
+    str[i] = id % CLPF_STRENGTHS;
+    id /= CLPF_STRENGTHS;
+  }
+  for (i = DERING_REFINEMENT_LEVELS - 1; i >= 0; i--) {
+    lev[i] = id % DERING_STRENGTHS;
+    id /= DERING_STRENGTHS;
+  }
+
+  // Pack tables
+  int j;
+  for (i = j = 1; i < DERING_REFINEMENT_LEVELS && j < DERING_REFINEMENT_LEVELS;
+       i++)
+    if (lev[j - 1] == lev[j])
+      memmove(&lev[j - 1], &lev[j],
+              (DERING_REFINEMENT_LEVELS - j) * sizeof(*lev));
+    else
+      j++;
+  for (i = j = 1; i < CLPF_REFINEMENT_LEVELS && j < DERING_REFINEMENT_LEVELS;
+       i++)
+    if (str[j - 1] == str[j])
+      memmove(&str[j - 1], &str[j],
+              (CLPF_REFINEMENT_LEVELS - i) * sizeof(*str));
+    else
+      j++;
+
+  assert(is_sorted(lev, DERING_REFINEMENT_LEVELS));
+  assert(is_sorted(str, CLPF_REFINEMENT_LEVELS));
+}
+
+void cdef_get_bits(const int *lev, const int *str, int *dering_bits,
+                   int *clpf_bits) {
+  int i;
+  *dering_bits = *clpf_bits = 1;
+  for (i = 1; i < DERING_REFINEMENT_LEVELS; i++)
+    (*dering_bits) += lev[i] != lev[i - 1];
+  for (i = 1; i < CLPF_REFINEMENT_LEVELS; i++)
+    (*clpf_bits) += str[i] != str[i - 1];
+
+  *dering_bits = get_msb(*dering_bits);
+  *clpf_bits = get_msb(*clpf_bits);
 }
 
 int sb_all_skip(const AV1_COMMON *const cm, int mi_row, int mi_col) {
@@ -82,7 +147,7 @@ int sb_compute_dering_list(const AV1_COMMON *const cm, int mi_row, int mi_col,
 }
 
 static INLINE void copy_8x8_16bit_to_8bit(uint8_t *dst, int dstride,
-                                          int16_t *src, int sstride) {
+                                          uint16_t *src, int sstride) {
   int i, j;
   for (i = 0; i < 8; i++)
     for (j = 0; j < 8; j++)
@@ -90,7 +155,7 @@ static INLINE void copy_8x8_16bit_to_8bit(uint8_t *dst, int dstride,
 }
 
 static INLINE void copy_4x4_16bit_to_8bit(uint8_t *dst, int dstride,
-                                          int16_t *src, int sstride) {
+                                          uint16_t *src, int sstride) {
   int i, j;
   for (i = 0; i < 4; i++)
     for (j = 0; j < 4; j++)
@@ -98,7 +163,7 @@ static INLINE void copy_4x4_16bit_to_8bit(uint8_t *dst, int dstride,
 }
 
 /* TODO: Optimize this function for SSE. */
-void copy_dering_16bit_to_8bit(uint8_t *dst, int dstride, int16_t *src,
+void copy_dering_16bit_to_8bit(uint8_t *dst, int dstride, uint16_t *src,
                                dering_list *dlist, int dering_count,
                                int bsize) {
   int bi, bx, by;
@@ -120,11 +185,10 @@ void copy_dering_16bit_to_8bit(uint8_t *dst, int dstride, int16_t *src,
 }
 
 /* TODO: Optimize this function for SSE. */
-static void copy_sb8_16(AV1_COMMON *cm, int16_t *dst, int dstride,
+static void copy_sb8_16(UNUSED AV1_COMMON *cm, uint16_t *dst, int dstride,
                         const uint8_t *src, int src_voffset, int src_hoffset,
                         int sstride, int vsize, int hsize) {
   int r, c;
-  (void)cm;
 #if CONFIG_AOM_HIGHBITDEPTH
   if (cm->use_highbitdepth) {
     const uint16_t *base =
@@ -134,26 +198,28 @@ static void copy_sb8_16(AV1_COMMON *cm, int16_t *dst, int dstride,
         dst[r * dstride + c] = base[r * sstride + c];
       }
     }
-  } else
+  } else {
 #endif
-  {
     const uint8_t *base = &src[src_voffset * sstride + src_hoffset];
     for (r = 0; r < vsize; r++) {
       for (c = 0; c < hsize; c++) {
         dst[r * dstride + c] = base[r * sstride + c];
       }
     }
+#if CONFIG_AOM_HIGHBITDEPTH
   }
+#endif
 }
 
-void av1_dering_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
-                      MACROBLOCKD *xd, int global_level) {
+void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm, MACROBLOCKD *xd,
+                    uint32_t global_level, int clpf_strength_u,
+                    int clpf_strength_v) {
   int r, c;
   int sbr, sbc;
   int nhsb, nvsb;
-  int16_t src[OD_DERING_INBUF_SIZE];
-  int16_t *linebuf[3];
-  int16_t colbuf[3][OD_BSIZE_MAX + 2 * OD_FILT_VBORDER][OD_FILT_HBORDER];
+  uint16_t src[OD_DERING_INBUF_SIZE];
+  uint16_t *linebuf[3];
+  uint16_t colbuf[3][OD_BSIZE_MAX + 2 * OD_FILT_VBORDER][OD_FILT_HBORDER];
   dering_list dlist[MAX_MIB_SIZE * MAX_MIB_SIZE];
   unsigned char *row_dering, *prev_row_dering, *curr_row_dering;
   int dering_count;
@@ -164,12 +230,13 @@ void av1_dering_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
   int pli;
   int dering_left;
   int coeff_shift = AOMMAX(cm->bit_depth - 8, 0);
-  int nplanes;
-  if (xd->plane[1].subsampling_x == xd->plane[1].subsampling_y &&
-      xd->plane[2].subsampling_x == xd->plane[2].subsampling_y)
-    nplanes = 3;
-  else
-    nplanes = 1;
+  int nplanes = 3;
+  int lev[DERING_REFINEMENT_LEVELS];
+  int str[CLPF_REFINEMENT_LEVELS];
+  int chroma_dering =
+      xd->plane[1].subsampling_x == xd->plane[1].subsampling_y &&
+      xd->plane[2].subsampling_x == xd->plane[2].subsampling_y;
+  id_to_levels(lev, str, global_level);
   nvsb = (cm->mi_rows + MAX_MIB_SIZE - 1) / MAX_MIB_SIZE;
   nhsb = (cm->mi_cols + MAX_MIB_SIZE - 1) / MAX_MIB_SIZE;
   av1_setup_dst_planes(xd->plane, frame, 0, 0);
@@ -195,29 +262,46 @@ void av1_dering_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
     }
     dering_left = 1;
     for (sbc = 0; sbc < nhsb; sbc++) {
-      int level;
+      int level, clpf_strength;
       int nhb, nvb;
       int cstart = 0;
+      BOUNDARY_TYPE boundary_type =
+          cm->mi_grid_visible[MAX_MIB_SIZE * sbr * cm->mi_stride +
+                              MAX_MIB_SIZE * sbc]
+              ->mbmi.boundary_info;
       if (!dering_left) cstart = -OD_FILT_HBORDER;
       nhb = AOMMIN(MAX_MIB_SIZE, cm->mi_cols - MAX_MIB_SIZE * sbc);
       nvb = AOMMIN(MAX_MIB_SIZE, cm->mi_rows - MAX_MIB_SIZE * sbr);
-      level = compute_level_from_index(
-          global_level, cm->mi_grid_visible[MAX_MIB_SIZE * sbr * cm->mi_stride +
-                                            MAX_MIB_SIZE * sbc]
-                            ->mbmi.dering_gain);
+      level = dering_level_table
+          [lev[cm->mi_grid_visible[MAX_MIB_SIZE * sbr * cm->mi_stride +
+                                   MAX_MIB_SIZE * sbc]
+                   ->mbmi.dering_gain]];
+      clpf_strength =
+          str[cm->mi_grid_visible[MAX_MIB_SIZE * sbr * cm->mi_stride +
+                                  MAX_MIB_SIZE * sbc]
+                  ->mbmi.clpf_strength];
+      clpf_strength += clpf_strength == 3;
       curr_row_dering[sbc] = 0;
-      if (level == 0 ||
+      if ((level == 0 && clpf_strength == 0) ||
           (dering_count = sb_compute_dering_list(
                cm, sbr * MAX_MIB_SIZE, sbc * MAX_MIB_SIZE, dlist)) == 0) {
         dering_left = 0;
         continue;
       }
+
       curr_row_dering[sbc] = 1;
       for (pli = 0; pli < nplanes; pli++) {
-        int16_t dst[OD_BSIZE_MAX * OD_BSIZE_MAX];
+        uint16_t dst[OD_BSIZE_MAX * OD_BSIZE_MAX];
         int threshold;
         int coffset;
         int rend, cend;
+        int clpf_damping = 3 - (pli != AOM_PLANE_Y) + (cm->base_qindex >> 6);
+
+        if (pli) {
+          if (!chroma_dering) level = 0;
+          clpf_strength = pli == 1 ? clpf_strength_u : clpf_strength_v;
+          clpf_strength += clpf_strength == 3;
+        }
         if (sbc == nhsb - 1)
           cend = (nhb << bsize[pli]);
         else
@@ -347,14 +431,15 @@ void av1_dering_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
           threshold = (level * 5 + 4) >> 3 << coeff_shift;
         else
           threshold = level << coeff_shift;
-        if (threshold == 0) continue;
-        od_dering(
-            dst, &src[OD_FILT_VBORDER * OD_FILT_BSTRIDE + OD_FILT_HBORDER],
-            dec[pli], dir, pli, dlist, dering_count, threshold, coeff_shift);
+        if (threshold == 0 && clpf_strength == 0) continue;
+        od_dering(dst,
+                  &src[OD_FILT_VBORDER * OD_FILT_BSTRIDE + OD_FILT_HBORDER],
+                  dec[pli], dir, pli, dlist, dering_count, threshold,
+                  clpf_strength, clpf_damping, coeff_shift, boundary_type);
 #if CONFIG_AOM_HIGHBITDEPTH
         if (cm->use_highbitdepth) {
           copy_dering_16bit_to_16bit(
-              (int16_t *)&CONVERT_TO_SHORTPTR(
+              &CONVERT_TO_SHORTPTR(
                   xd->plane[pli]
                       .dst.buf)[xd->plane[pli].dst.stride *
                                     (MAX_MIB_SIZE * sbr << bsize[pli]) +

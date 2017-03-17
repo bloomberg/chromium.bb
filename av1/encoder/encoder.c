@@ -17,10 +17,9 @@
 
 #include "av1/common/alloccommon.h"
 #if CONFIG_CDEF
-#include "aom/aom_image.h"
+#include "av1/common/cdef.h"
 #include "av1/common/clpf.h"
 #include "av1/encoder/clpf_rdo.h"
-#include "av1/common/dering.h"
 #endif  // CONFIG_CDEF
 #include "av1/common/filter.h"
 #include "av1/common/idct.h"
@@ -3526,57 +3525,18 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
   }
 #if CONFIG_CDEF
   if (is_lossless_requested(&cpi->oxcf)) {
-    cm->dering_level = 0;
+    cm->dering_level = cm->clpf_strength_u = cm->clpf_strength_v = 0;
   } else {
-    cm->dering_level =
-        av1_dering_search(cm->frame_to_show, cpi->Source, cm, xd);
-    av1_dering_frame(cm->frame_to_show, cm, xd, cm->dering_level);
-  }
-  cm->clpf_strength_y = cm->clpf_strength_u = cm->clpf_strength_v = 0;
-  cm->clpf_size = CLPF_64X64;
+    // Find cm->dering_level, cm->clpf_strength_u and cm->clpf_strength_v
+    av1_cdef_search(cm->frame_to_show, cpi->Source, cm, xd);
 
-  // Allocate buffer to hold the status of all filter blocks:
-  // 1 = On, 0 = off, -1 = implicitly off
-  {
-    int size;
-    cm->clpf_stride = ((cm->frame_to_show->y_crop_width + MIN_FB_SIZE - 1) &
-                       ~(MIN_FB_SIZE - 1)) >>
-                      MIN_FB_SIZE_LOG2;
-    size = cm->clpf_stride *
-               ((cm->frame_to_show->y_crop_height + MIN_FB_SIZE - 1) &
-                ~(MIN_FB_SIZE - 1)) >>
-           MIN_FB_SIZE_LOG2;
-    CHECK_MEM_ERROR(cm, cm->clpf_blocks, aom_malloc(size));
-    memset(cm->clpf_blocks, CLPF_NOFLAG, size);
-  }
+    // Apply the filter
+    av1_cdef_frame(cm->frame_to_show, cm, xd, cm->dering_level,
+                   cm->clpf_strength_u, cm->clpf_strength_v);
 
-  if (!is_lossless_requested(&cpi->oxcf)) {
-    const YV12_BUFFER_CONFIG *const frame = cm->frame_to_show;
-
-    // Find the best strength and block size for the entire frame
-    int fb_size_log2, strength_y, strength_u, strength_v;
-    av1_clpf_test_frame(frame, cpi->Source, cm, &strength_y, &fb_size_log2,
-                        AOM_PLANE_Y);
-    av1_clpf_test_frame(frame, cpi->Source, cm, &strength_u, 0, AOM_PLANE_U);
-    av1_clpf_test_frame(frame, cpi->Source, cm, &strength_v, 0, AOM_PLANE_V);
-
-    if (strength_y) {
-      // Apply the filter using the chosen strength
-      cm->clpf_strength_y = strength_y - (strength_y == 4);
-      cm->clpf_size =
-          fb_size_log2 ? fb_size_log2 - MAX_FB_SIZE_LOG2 + 3 : CLPF_NOSIZE;
-      av1_clpf_frame(frame, cpi->Source, cm, cm->clpf_size != CLPF_NOSIZE,
-                     strength_y, 4 + cm->clpf_size, AOM_PLANE_Y,
-                     av1_clpf_decision);
-    }
-    if (strength_u) {
-      cm->clpf_strength_u = strength_u - (strength_u == 4);
-      av1_clpf_frame(frame, NULL, cm, 0, strength_u, 4, AOM_PLANE_U, NULL);
-    }
-    if (strength_v) {
-      cm->clpf_strength_v = strength_v - (strength_v == 4);
-      av1_clpf_frame(frame, NULL, cm, 0, strength_v, 4, AOM_PLANE_V, NULL);
-    }
+    // Pack the clpf chroma strengths into two bits each
+    cm->clpf_strength_u -= cm->clpf_strength_u == 4;
+    cm->clpf_strength_v -= cm->clpf_strength_v == 4;
   }
 #endif
 #if CONFIG_LOOP_RESTORATION
@@ -4979,11 +4939,6 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
   // NOTE(zoeliu): For debug - Output the filtered reconstructed video.
   if (cm->show_frame) dump_filtered_recon_frames(cpi);
 #endif  // DUMP_RECON_FRAMES
-
-#if CONFIG_CDEF
-  aom_free(cm->clpf_blocks);
-  cm->clpf_blocks = 0;
-#endif
 
   if (cm->seg.update_map) update_reference_segmentation_map(cpi);
 

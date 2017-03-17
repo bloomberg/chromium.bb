@@ -228,8 +228,8 @@ static INLINE __m128i od_cmplt_abs_epi16(__m128i in, __m128i threshold) {
   return _mm_cmplt_epi16(_mm_abs_epi16(in), threshold);
 }
 
-int od_filter_dering_direction_4x4_sse4_1(int16_t *y, int ystride,
-                                          const int16_t *in, int threshold,
+int od_filter_dering_direction_4x4_sse4_1(uint16_t *y, int ystride,
+                                          const uint16_t *in, int threshold,
                                           int dir) {
   int i;
   __m128i sum;
@@ -303,8 +303,8 @@ int od_filter_dering_direction_4x4_sse4_1(int16_t *y, int ystride,
   return (hsum_epi16(total_abs) + 2) >> 2;
 }
 
-int od_filter_dering_direction_8x8_sse4_1(int16_t *y, int ystride,
-                                          const int16_t *in, int threshold,
+int od_filter_dering_direction_8x8_sse4_1(uint16_t *y, int ystride,
+                                          const uint16_t *in, int threshold,
                                           int dir) {
   int i;
   __m128i sum;

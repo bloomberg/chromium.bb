@@ -263,7 +263,7 @@ void SIMD_FUNC(aom_clpf_block)(const uint8_t *src, uint8_t *dst, int sstride,
   }
 }
 
-#if CONFIG_AOM_HIGHBITDEPTH
+#if defined(CONFIG_AOM_HIGHBITDEPTH)
 // sign(a - b) * max(0, abs(a - b) - max(0, abs(a - b) -
 // strength + (abs(a - b) >> (dmp - log2(s)))))
 SIMD_INLINE v128 constrain_hbd(v128 a, v128 b, unsigned int strength,

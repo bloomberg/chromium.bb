@@ -295,16 +295,6 @@ typedef enum {
 } PALETTE_COLOR;
 #endif  // CONFIG_PALETTE
 
-#ifdef CONFIG_CDEF
-#define CLPF_NOFLAG -1
-typedef enum {
-  CLPF_NOSIZE = 0,
-  CLPF_32X32 = 1,
-  CLPF_64X64 = 2,
-  CLPF_128X128 = 3
-} CLPF_BLOCK_SIZE;
-#endif
-
 typedef enum ATTRIBUTE_PACKED {
   DC_PRED,    // Average of above and left pixels
   V_PRED,     // Vertical

@@ -35,7 +35,11 @@
 #if CONFIG_PVQ
 #include "av1/common/pvq.h"
 #endif
-
+#if CONFIG_CDEF
+struct AV1Common;
+typedef struct AV1Common AV1_COMMON;
+#include "av1/common/cdef.h"
+#endif
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -166,30 +170,6 @@ typedef struct AV1Common {
   // Marks if we need to use 16bit frame buffers (1: yes, 0: no).
   int use_highbitdepth;
 #endif
-#if CONFIG_CDEF
-  // Two bits are used to signal the strength for all blocks and the
-  // valid values are:
-  // 0: no filtering
-  // 1: strength = 1
-  // 2: strength = 2
-  // 3: strength = 4
-  int clpf_strength_y;
-  int clpf_strength_u;
-  int clpf_strength_v;
-
-  // If clpf_strength_y is not 0, another two bits are used to signal
-  // the filter block size.  The valid values for clfp_size are:
-  // 0: no block signalling
-  // 1: 32x32
-  // 2: 64x64
-  // 3: 128x128
-  CLPF_BLOCK_SIZE clpf_size;
-
-  // Buffer for storing whether to filter individual blocks.
-  int8_t *clpf_blocks;
-  int clpf_stride;
-#endif
-
   YV12_BUFFER_CONFIG *frame_to_show;
   RefCntBuffer *prev_frame;
 
@@ -417,7 +397,13 @@ typedef struct AV1Common {
   int mib_size;        // Size of the superblock in units of MI blocks
   int mib_size_log2;   // Log 2 of above.
 #if CONFIG_CDEF
-  int dering_level;
+  uint32_t dering_level;
+  int dering_lev[DERING_REFINEMENT_LEVELS];
+  int clpf_str[CLPF_REFINEMENT_LEVELS];
+  int dering_bits;
+  int clpf_bits;
+  int clpf_strength_u;
+  int clpf_strength_v;
 #endif
 
 #if CONFIG_DELTA_Q

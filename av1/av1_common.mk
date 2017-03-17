@@ -97,8 +97,8 @@ AV1_COMMON_SRCS-yes += common/od_dering.c
 AV1_COMMON_SRCS-yes += common/od_dering.h
 AV1_COMMON_SRCS-$(HAVE_SSE4_1) += common/x86/od_dering_sse4.c
 AV1_COMMON_SRCS-$(HAVE_SSE4_1) += common/x86/od_dering_sse4.h
-AV1_COMMON_SRCS-yes += common/dering.c
-AV1_COMMON_SRCS-yes += common/dering.h
+AV1_COMMON_SRCS-yes += common/cdef.c
+AV1_COMMON_SRCS-yes += common/cdef.h
 endif
 ifeq ($(CONFIG_ACCOUNTING),yes)
 AV1_COMMON_SRCS-yes += common/accounting.h

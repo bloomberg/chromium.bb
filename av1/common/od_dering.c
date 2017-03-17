@@ -8,14 +8,17 @@
  * Media Patent License 1.0 was not distributed with this source code in the
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
+
+#include <math.h>
+#include <stdlib.h>
+
 #ifdef HAVE_CONFIG_H
-#include "config.h"
+#include "./config.h"
 #endif
 
-#include <stdlib.h>
-#include <math.h>
-#include "dering.h"
+#include "./aom_dsp_rtcd.h"
 #include "./av1_rtcd.h"
+#include "./cdef.h"
 
 /* Generated from gen_filter_tables.c. */
 const int OD_DIRECTION_OFFSETS_TABLE[8][3] = {
@@ -38,7 +41,7 @@ const int OD_DIRECTION_OFFSETS_TABLE[8][3] = {
    in a particular direction. Since each direction have the same sum(x^2) term,
    that term is never computed. See Section 2, step 2, of:
    http://jmvalin.ca/notes/intra_paint.pdf */
-int od_dir_find8_c(const int16_t *img, int stride, int32_t *var,
+int od_dir_find8_c(const uint16_t *img, int stride, int32_t *var,
                    int coeff_shift) {
   int i;
   int32_t cost[8] = { 0 };
@@ -110,8 +113,9 @@ int od_dir_find8_c(const int16_t *img, int stride, int32_t *var,
 }
 
 /* Smooth in the direction detected. */
-int od_filter_dering_direction_8x8_c(int16_t *y, int ystride, const int16_t *in,
-                                     int threshold, int dir) {
+int od_filter_dering_direction_8x8_c(uint16_t *y, int ystride,
+                                     const uint16_t *in, int threshold,
+                                     int dir) {
   int i;
   int j;
   int k;
@@ -144,8 +148,9 @@ int od_filter_dering_direction_8x8_c(int16_t *y, int ystride, const int16_t *in,
 }
 
 /* Smooth in the direction detected. */
-int od_filter_dering_direction_4x4_c(int16_t *y, int ystride, const int16_t *in,
-                                     int threshold, int dir) {
+int od_filter_dering_direction_4x4_c(uint16_t *y, int ystride,
+                                     const uint16_t *in, int threshold,
+                                     int dir) {
   int i;
   int j;
   int k;
@@ -198,22 +203,22 @@ static INLINE int od_adjust_thresh(int threshold, int32_t var) {
   return (threshold * OD_THRESH_TABLE_Q8[OD_ILOG(v1)] + 128) >> 8;
 }
 
-static INLINE void copy_8x8_16bit_to_16bit(int16_t *dst, int dstride,
-                                           int16_t *src, int sstride) {
+static INLINE void copy_8x8_16bit_to_16bit(uint16_t *dst, int dstride,
+                                           uint16_t *src, int sstride) {
   int i, j;
   for (i = 0; i < 8; i++)
     for (j = 0; j < 8; j++) dst[i * dstride + j] = src[i * sstride + j];
 }
 
-static INLINE void copy_4x4_16bit_to_16bit(int16_t *dst, int dstride,
-                                           int16_t *src, int sstride) {
+static INLINE void copy_4x4_16bit_to_16bit(uint16_t *dst, int dstride,
+                                           uint16_t *src, int sstride) {
   int i, j;
   for (i = 0; i < 4; i++)
     for (j = 0; j < 4; j++) dst[i * dstride + j] = src[i * sstride + j];
 }
 
 /* TODO: Optimize this function for SSE. */
-void copy_dering_16bit_to_16bit(int16_t *dst, int dstride, int16_t *src,
+void copy_dering_16bit_to_16bit(uint16_t *dst, int dstride, uint16_t *src,
                                 dering_list *dlist, int dering_count,
                                 int bsize) {
   int bi, bx, by;
@@ -234,10 +239,11 @@ void copy_dering_16bit_to_16bit(int16_t *dst, int dstride, int16_t *src,
   }
 }
 
-void od_dering(int16_t *y, int16_t *in, int xdec,
+void od_dering(uint16_t *y, uint16_t *in, int xdec,
                int dir[OD_DERING_NBLOCKS][OD_DERING_NBLOCKS], int pli,
                dering_list *dlist, int dering_count, int threshold,
-               int coeff_shift) {
+               int clpf_strength, int clpf_damping, int coeff_shift,
+               BOUNDARY_TYPE bt) {
   int bi;
   int bx;
   int by;
@@ -276,6 +282,21 @@ void od_dering(int16_t *y, int16_t *in, int xdec,
           dir[by][bx]);
     }
   }
+  if (!clpf_strength) return;
   copy_dering_16bit_to_16bit(in, OD_FILT_BSTRIDE, y, dlist, dering_count,
                              bsize);
+  for (bi = 0; bi < dering_count; bi++) {
+    BOUNDARY_TYPE bt2 = 0;
+    by = dlist[bi].by;
+    bx = dlist[bi].bx;
+
+    // Prevent CLPF from reading across superblock boundaries
+    if (!by) bt2 |= TILE_ABOVE_BOUNDARY;
+    if (by == (1 << bsize) - 1) bt2 |= TILE_BOTTOM_BOUNDARY;
+
+    aom_clpf_block_hbd(in, &y[((bi - by) << 2 * bsize) - (bx << bsize)],
+                       OD_FILT_BSTRIDE, 1 << bsize, bx << bsize, by << bsize,
+                       1 << bsize, 1 << bsize, clpf_strength << coeff_shift,
+                       bt | bt2, clpf_damping + coeff_shift);
+  }
 }
