@@ -85,11 +85,11 @@ const NSInteger kItemTypeEnumZero = 100;
 - (void)removeSectionWithIdentifier:(NSInteger)sectionIdentifier;
 
 // Sets the header item for the section with the given |sectionIdentifier|.
-- (void)setHeader:(ObjectType)header
+- (void)setHeader:(CollectionViewItem*)header
     forSectionWithIdentifier:(NSInteger)sectionIdentifier;
 
 // Sets the footer item for the section with the given |sectionIdentifier|.
-- (void)setFooter:(ObjectType)footer
+- (void)setFooter:(CollectionViewItem*)footer
     forSectionWithIdentifier:(NSInteger)sectionIdentifier;
 
 #pragma mark Query model coordinates from index paths
@@ -118,20 +118,22 @@ const NSInteger kItemTypeEnumZero = 100;
 - (ObjectType)itemAtIndexPath:(NSIndexPath*)indexPath;
 
 // Returns the header for the given |section|.
-- (ObjectType)headerForSection:(NSInteger)section;
+- (CollectionViewItem*)headerForSection:(NSInteger)section;
 
 // Returns the footer for the given |section|.
-- (ObjectType)footerForSection:(NSInteger)section;
+- (CollectionViewItem*)footerForSection:(NSInteger)section;
 
 // Returns an array of items in the section with the given identifier.
 - (NSArray<ObjectType>*)itemsInSectionWithIdentifier:
     (NSInteger)sectionIdentifier;
 
 // Returns the header for the section with the given |sectionIdentifier|.
-- (ObjectType)headerForSectionWithIdentifier:(NSInteger)sectionIdentifier;
+- (CollectionViewItem*)headerForSectionWithIdentifier:
+    (NSInteger)sectionIdentifier;
 
 // Returns the footer for the section with the given |sectionIdentifier|.
-- (ObjectType)footerForSectionWithIdentifier:(NSInteger)sectionIdentifier;
+- (CollectionViewItem*)footerForSectionWithIdentifier:
+    (NSInteger)sectionIdentifier;
 
 #pragma mark Query index paths from model coordinates
 
