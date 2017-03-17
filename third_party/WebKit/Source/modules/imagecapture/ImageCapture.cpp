@@ -16,6 +16,7 @@
 #include "modules/imagecapture/PhotoSettings.h"
 #include "modules/mediastream/MediaStreamTrack.h"
 #include "modules/mediastream/MediaTrackCapabilities.h"
+#include "modules/mediastream/MediaTrackConstraintSet.h"
 #include "platform/WaitableEvent.h"
 #include "platform/mojo/MojoHelper.h"
 #include "public/platform/InterfaceProvider.h"
@@ -114,9 +115,7 @@ void ImageCapture::contextDestroyed(ExecutionContext*) {
   DCHECK(!hasEventListeners());
 }
 
-ScriptPromise ImageCapture::getPhotoCapabilities(
-    ScriptState* scriptState,
-    ExceptionState& exceptionState) {
+ScriptPromise ImageCapture::getPhotoCapabilities(ScriptState* scriptState) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
   ScriptPromise promise = resolver->promise();
 
@@ -124,7 +123,6 @@ ScriptPromise ImageCapture::getPhotoCapabilities(
     resolver->reject(DOMException::create(NotFoundError, kNoServiceError));
     return promise;
   }
-
   m_serviceRequests.insert(resolver);
 
   // m_streamTrack->component()->source()->id() is the renderer "name" of the
@@ -140,8 +138,7 @@ ScriptPromise ImageCapture::getPhotoCapabilities(
 }
 
 ScriptPromise ImageCapture::setOptions(ScriptState* scriptState,
-                                       const PhotoSettings& photoSettings,
-                                       ExceptionState& exceptionState) {
+                                       const PhotoSettings& photoSettings) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
   ScriptPromise promise = resolver->promise();
 
@@ -155,12 +152,11 @@ ScriptPromise ImageCapture::setOptions(ScriptState* scriptState,
     resolver->reject(DOMException::create(NotFoundError, kNoServiceError));
     return promise;
   }
-
   m_serviceRequests.insert(resolver);
 
   // TODO(mcasas): should be using a mojo::StructTraits instead.
-  media::mojom::blink::PhotoSettingsPtr settings =
-      media::mojom::blink::PhotoSettings::New();
+  auto settings = media::mojom::blink::PhotoSettings::New();
+
   settings->has_zoom = photoSettings.hasZoom();
   if (settings->has_zoom)
     settings->zoom = photoSettings.zoom();
@@ -225,8 +221,7 @@ ScriptPromise ImageCapture::setOptions(ScriptState* scriptState,
   return promise;
 }
 
-ScriptPromise ImageCapture::takePhoto(ScriptState* scriptState,
-                                      ExceptionState& exceptionState) {
+ScriptPromise ImageCapture::takePhoto(ScriptState* scriptState) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
   ScriptPromise promise = resolver->promise();
 
@@ -235,7 +230,6 @@ ScriptPromise ImageCapture::takePhoto(ScriptState* scriptState,
         InvalidStateError, "The associated Track is in an invalid state."));
     return promise;
   }
-
   if (!m_service) {
     resolver->reject(DOMException::create(NotFoundError, kNoServiceError));
     return promise;
@@ -254,8 +248,7 @@ ScriptPromise ImageCapture::takePhoto(ScriptState* scriptState,
   return promise;
 }
 
-ScriptPromise ImageCapture::grabFrame(ScriptState* scriptState,
-                                      ExceptionState& exceptionState) {
+ScriptPromise ImageCapture::grabFrame(ScriptState* scriptState) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
   ScriptPromise promise = resolver->promise();
 
@@ -287,6 +280,88 @@ ScriptPromise ImageCapture::grabFrame(ScriptState* scriptState,
 
 MediaTrackCapabilities& ImageCapture::getMediaTrackCapabilities() {
   return m_capabilities;
+}
+
+// TODO(mcasas): make the implementation fully Spec compliant, see inside the
+// method, https://crbug.com/700607.
+void ImageCapture::setMediaTrackConstraints(
+    ScriptPromiseResolver* resolver,
+    const MediaTrackConstraintSet& constraints) {
+  if (!m_service) {
+    resolver->reject(DOMException::create(NotFoundError, kNoServiceError));
+    return;
+  }
+  m_serviceRequests.insert(resolver);
+
+  auto settings = media::mojom::blink::PhotoSettings::New();
+
+  // TODO(mcasas): support other Mode types beyond simple string i.e. the
+  // equivalents of "sequence<DOMString>"" or "ConstrainDOMStringParameters".
+  settings->has_white_balance_mode = constraints.hasWhiteBalanceMode() &&
+                                     constraints.whiteBalanceMode().isString();
+  if (settings->has_white_balance_mode) {
+    settings->white_balance_mode =
+        parseMeteringMode(constraints.whiteBalanceMode().getAsString());
+  }
+  settings->has_exposure_mode =
+      constraints.hasExposureMode() && constraints.exposureMode().isString();
+  if (settings->has_exposure_mode) {
+    settings->exposure_mode =
+        parseMeteringMode(constraints.exposureMode().getAsString());
+  }
+
+  settings->has_focus_mode =
+      constraints.hasFocusMode() && constraints.focusMode().isString();
+  if (settings->has_focus_mode) {
+    settings->focus_mode =
+        parseMeteringMode(constraints.focusMode().getAsString());
+  }
+
+  // TODO(mcasas): support ConstrainDoubleRange where applicable.
+  settings->has_exposure_compensation =
+      constraints.hasExposureCompensation() &&
+      constraints.exposureCompensation().isDouble();
+  if (settings->has_exposure_compensation) {
+    settings->exposure_compensation =
+        constraints.exposureCompensation().getAsDouble();
+  }
+  settings->has_color_temperature = constraints.hasColorTemperature() &&
+                                    constraints.colorTemperature().isDouble();
+  if (settings->has_color_temperature)
+    settings->color_temperature = constraints.colorTemperature().getAsDouble();
+  settings->has_iso = constraints.hasIso() && constraints.iso().isDouble();
+  if (settings->has_iso)
+    settings->iso = constraints.iso().getAsDouble();
+
+  settings->has_brightness =
+      constraints.hasBrightness() && constraints.brightness().isDouble();
+  if (settings->has_brightness)
+    settings->brightness = constraints.brightness().getAsDouble();
+  settings->has_contrast =
+      constraints.hasContrast() && constraints.contrast().isDouble();
+  if (settings->has_contrast)
+    settings->contrast = constraints.contrast().getAsDouble();
+  settings->has_saturation =
+      constraints.hasSaturation() && constraints.saturation().isDouble();
+  if (settings->has_saturation)
+    settings->saturation = constraints.saturation().getAsDouble();
+  settings->has_sharpness =
+      constraints.hasSharpness() && constraints.sharpness().isDouble();
+  if (settings->has_sharpness)
+    settings->sharpness = constraints.sharpness().getAsDouble();
+
+  settings->has_zoom = constraints.hasZoom() && constraints.zoom().isDouble();
+  if (settings->has_zoom)
+    settings->zoom = constraints.zoom().getAsDouble();
+
+  // TODO(mcasas): add |torch| when the mojom interface is updated,
+  // https://crbug.com/700607.
+
+  m_service->SetOptions(m_streamTrack->component()->source()->id(),
+                        std::move(settings),
+                        convertToBaseCallback(WTF::bind(
+                            &ImageCapture::onSetOptions, wrapPersistent(this),
+                            wrapPersistent(resolver))));
 }
 
 ImageCapture::ImageCapture(ExecutionContext* context, MediaStreamTrack* track)

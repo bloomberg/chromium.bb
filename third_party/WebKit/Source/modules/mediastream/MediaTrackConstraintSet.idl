@@ -33,6 +33,24 @@ dictionary MediaTrackConstraintSet {
     [RuntimeEnabled=MediaConstraints,MediaCaptureDepth] ConstrainDouble depthFar;
     [RuntimeEnabled=MediaConstraints,MediaCaptureDepth] ConstrainDouble focalLengthX;
     [RuntimeEnabled=MediaConstraints,MediaCaptureDepth] ConstrainDouble focalLengthY;
+    // W3C Image Capture API
+    // https://w3c.github.io/mediacapture-image/#mediatrackconstraintset-section
+    // TODO(mcasas) move out when partial dictionaries are supported
+    // http://crbug.com/579896.
+    [RuntimeEnabled=MediaConstraints,ImageCapture] ConstrainDOMString whiteBalanceMode;
+    [RuntimeEnabled=MediaConstraints,ImageCapture] ConstrainDOMString exposureMode;
+    [RuntimeEnabled=MediaConstraints,ImageCapture] ConstrainDOMString focusMode;
+    // TODO(mcasas): add support for ConstrainPoint2D pointsOfInterest, see
+    // https://crbug.com/700607
+    [RuntimeEnabled=MediaConstraints,ImageCapture] ConstrainDouble    exposureCompensation;
+    [RuntimeEnabled=MediaConstraints,ImageCapture] ConstrainDouble    colorTemperature;
+    [RuntimeEnabled=MediaConstraints,ImageCapture] ConstrainDouble    iso;
+    [RuntimeEnabled=MediaConstraints,ImageCapture] ConstrainDouble    brightness;
+    [RuntimeEnabled=MediaConstraints,ImageCapture] ConstrainDouble    contrast;
+    [RuntimeEnabled=MediaConstraints,ImageCapture] ConstrainDouble    saturation;
+    [RuntimeEnabled=MediaConstraints,ImageCapture] ConstrainDouble    sharpness;
+    [RuntimeEnabled=MediaConstraints,ImageCapture] ConstrainDouble    zoom;
+    [RuntimeEnabled=MediaConstraints,ImageCapture] ConstrainBoolean   torch;
     // The "mandatory" and "_optional" members are retained for conformance
     // with https://www.w3.org/TR/2013/WD-mediacapture-streams-20130903/
     Dictionary mandatory;

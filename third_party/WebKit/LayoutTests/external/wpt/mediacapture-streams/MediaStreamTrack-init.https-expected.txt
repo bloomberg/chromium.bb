@@ -28,7 +28,7 @@ PASS MediaStreamTrack interface: operation stop()
 PASS MediaStreamTrack interface: operation getCapabilities() 
 PASS MediaStreamTrack interface: operation getConstraints() 
 PASS MediaStreamTrack interface: operation getSettings() 
-FAIL MediaStreamTrack interface: operation applyConstraints(MediaTrackConstraints) assert_own_property: interface prototype object missing non-static operation expected property "applyConstraints" missing
+PASS MediaStreamTrack interface: operation applyConstraints(MediaTrackConstraints) 
 PASS MediaStreamTrack must be primary interface of track 
 PASS Stringification of track 
 PASS MediaStreamTrack interface: track must inherit property "kind" with the proper type (0) 
@@ -46,8 +46,8 @@ PASS MediaStreamTrack interface: track must inherit property "stop" with the pro
 PASS MediaStreamTrack interface: track must inherit property "getCapabilities" with the proper type (12) 
 PASS MediaStreamTrack interface: track must inherit property "getConstraints" with the proper type (13) 
 PASS MediaStreamTrack interface: track must inherit property "getSettings" with the proper type (14) 
-FAIL MediaStreamTrack interface: track must inherit property "applyConstraints" with the proper type (15) assert_inherits: property "applyConstraints" not found in prototype chain
-FAIL MediaStreamTrack interface: calling applyConstraints(MediaTrackConstraints) on track with too few arguments must throw TypeError assert_inherits: property "applyConstraints" not found in prototype chain
+PASS MediaStreamTrack interface: track must inherit property "applyConstraints" with the proper type (15) 
+PASS MediaStreamTrack interface: calling applyConstraints(MediaTrackConstraints) on track with too few arguments must throw TypeError 
 PASS EventTarget interface: track must inherit property "addEventListener" with the proper type (0) 
 PASS EventTarget interface: calling addEventListener(DOMString,EventListener,boolean) on track with too few arguments must throw TypeError 
 PASS EventTarget interface: track must inherit property "removeEventListener" with the proper type (1) 

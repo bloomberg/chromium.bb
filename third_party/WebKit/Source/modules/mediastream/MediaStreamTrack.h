@@ -26,7 +26,9 @@
 #ifndef MediaStreamTrack_h
 #define MediaStreamTrack_h
 
+#include <memory>
 #include "bindings/core/v8/ActiveScriptWrappable.h"
+#include "bindings/core/v8/ScriptPromise.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "modules/EventTargetModules.h"
 #include "modules/ModulesExport.h"
@@ -34,7 +36,6 @@
 #include "platform/mediastream/MediaStreamSource.h"
 #include "public/platform/WebMediaConstraints.h"
 #include "wtf/Forward.h"
-#include <memory>
 
 namespace blink {
 
@@ -76,14 +77,14 @@ class MODULES_EXPORT MediaStreamTrack
   void stopTrack(ExceptionState&);
   virtual MediaStreamTrack* clone(ScriptState*);
 
-  void getConstraints(MediaTrackConstraints&);
-
   // This function is called when constrains have been successfully applied.
   // Called from UserMediaRequest when it succeeds. It is not IDL-exposed.
   void setConstraints(const WebMediaConstraints&);
 
   void getCapabilities(MediaTrackCapabilities&);
+  void getConstraints(MediaTrackConstraints&);
   void getSettings(MediaTrackSettings&);
+  ScriptPromise applyConstraints(ScriptState*, const MediaTrackConstraints&);
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(mute);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(unmute);

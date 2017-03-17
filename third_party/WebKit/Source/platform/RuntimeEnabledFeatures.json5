@@ -564,6 +564,11 @@
       status: "experimental",
     },
     {
+      name: "MediaTrackApplyConstraints",
+      implied_by: ["ImageCapture"],
+      status: "experimental",
+    },
+    {
       name: "MediaTrackCapabilities",
       implied_by: ["ImageCapture"],
       status: "experimental",

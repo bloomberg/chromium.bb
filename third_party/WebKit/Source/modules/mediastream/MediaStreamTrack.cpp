@@ -27,6 +27,8 @@
 
 #include <memory>
 #include "bindings/core/v8/ExceptionMessages.h"
+#include "bindings/core/v8/ScriptPromiseResolver.h"
+#include "core/dom/DOMException.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
@@ -36,6 +38,7 @@
 #include "modules/mediastream/MediaConstraintsImpl.h"
 #include "modules/mediastream/MediaStream.h"
 #include "modules/mediastream/MediaTrackCapabilities.h"
+#include "modules/mediastream/MediaTrackConstraints.h"
 #include "modules/mediastream/MediaTrackSettings.h"
 #include "modules/mediastream/UserMediaController.h"
 #include "platform/mediastream/MediaStreamCenter.h"
@@ -271,6 +274,30 @@ void MediaStreamTrack::getSettings(MediaTrackSettings& settings) {
         break;
     }
   }
+}
+
+ScriptPromise MediaStreamTrack::applyConstraints(
+    ScriptState* scriptState,
+    const MediaTrackConstraints& constraints) {
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
+  ScriptPromise promise = resolver->promise();
+
+  // |constraints| is an optional argument, which is strange.
+  // TODO(mcasas): remove this provision if |constraints| is not optional:
+  // https://github.com/w3c/mediacapture-main/issues/438
+  if (!constraints.hasAdvanced()) {
+    resolver->resolve();
+    return promise;
+  }
+
+  if (!m_imageCapture) {
+    resolver->reject(DOMException::create(
+        NotSupportedError, "Track type not currently supported"));
+    return promise;
+  }
+
+  m_imageCapture->setMediaTrackConstraints(resolver, constraints.advanced()[0]);
+  return promise;
 }
 
 bool MediaStreamTrack::ended() const {

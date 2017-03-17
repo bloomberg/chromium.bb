@@ -20,6 +20,7 @@ namespace blink {
 
 class ExceptionState;
 class MediaStreamTrack;
+class MediaTrackConstraintSet;
 class PhotoSettings;
 class ScriptPromiseResolver;
 class WebImageCaptureFrameGrabber;
@@ -51,15 +52,18 @@ class MODULES_EXPORT ImageCapture final
 
   MediaStreamTrack* videoStreamTrack() const { return m_streamTrack.get(); }
 
-  ScriptPromise getPhotoCapabilities(ScriptState*, ExceptionState&);
+  ScriptPromise getPhotoCapabilities(ScriptState*);
 
-  ScriptPromise setOptions(ScriptState*, const PhotoSettings&, ExceptionState&);
+  ScriptPromise setOptions(ScriptState*, const PhotoSettings&);
 
-  ScriptPromise takePhoto(ScriptState*, ExceptionState&);
+  ScriptPromise takePhoto(ScriptState*);
 
-  ScriptPromise grabFrame(ScriptState*, ExceptionState&);
+  ScriptPromise grabFrame(ScriptState*);
 
   MediaTrackCapabilities& getMediaTrackCapabilities();
+
+  void setMediaTrackConstraints(ScriptPromiseResolver*,
+                                const MediaTrackConstraintSet&);
 
   DECLARE_VIRTUAL_TRACE();
 
