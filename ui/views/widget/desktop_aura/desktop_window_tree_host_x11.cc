@@ -175,6 +175,10 @@ int XI2ModeToXMode(int xi2_mode) {
   }
 }
 
+int IgnoreX11Errors(XDisplay* display, XErrorEvent* error) {
+  return 0;
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -800,13 +804,10 @@ void DesktopWindowTreeHostX11::Activate() {
   } else {
     XRaiseWindow(xdisplay_, xwindow_);
     // Directly ask the X server to give focus to the window. Note that the call
-    // will raise an X error if the window is not mapped.
+    // would have raised an X error if the window is not mapped.
+    auto old_error_handler = XSetErrorHandler(IgnoreX11Errors);
     XSetInputFocus(xdisplay_, xwindow_, RevertToParent, timestamp);
-    // At this point, we know we will receive focus, and some tests depend on a
-    // window being IsActive() immediately after an Activate(), so just set this
-    // state now.
-    has_pointer_focus_ = false;
-    has_window_focus_ = true;
+    XSetErrorHandler(old_error_handler);
   }
   AfterActivationStateChanged();
 }
