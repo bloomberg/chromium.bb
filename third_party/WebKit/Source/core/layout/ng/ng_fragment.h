@@ -36,10 +36,11 @@ class CORE_EXPORT NGFragment {
   NGPhysicalFragment::NGFragmentType Type() const;
 
  protected:
-  NGFragment(NGWritingMode writing_mode, NGPhysicalFragment* physical_fragment)
+  NGFragment(NGWritingMode writing_mode,
+             const NGPhysicalFragment* physical_fragment)
       : physical_fragment_(physical_fragment), writing_mode_(writing_mode) {}
 
-  NGPhysicalFragment* physical_fragment_;
+  const NGPhysicalFragment* physical_fragment_;
 
   unsigned writing_mode_ : 3;
 };

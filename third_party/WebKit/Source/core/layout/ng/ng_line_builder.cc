@@ -28,7 +28,9 @@ NGLineBuilder::NGLineBuilder(NGInlineNode* inline_box,
       baseline_type_(constraint_space->WritingMode() ==
                              NGWritingMode::kHorizontalTopBottom
                          ? FontBaseline::AlphabeticBaseline
-                         : FontBaseline::IdeographicBaseline)
+                         : FontBaseline::IdeographicBaseline),
+      container_builder_(NGPhysicalFragment::kFragmentBox, inline_box_),
+      container_layout_result_(nullptr)
 #if DCHECK_IS_ON()
       ,
       is_bidi_reordered_(false)
@@ -206,7 +208,7 @@ void NGLineBuilder::BidiReorder(Vector<LineItemChunk, 32>* line_item_chunks) {
 void NGLineBuilder::PlaceItems(
     const Vector<LineItemChunk, 32>& line_item_chunks) {
   const Vector<NGLayoutInlineItem>& items = inline_box_->Items();
-  const unsigned fragment_start_index = fragments_.size();
+  const unsigned fragment_start_index = container_builder_.Children().size();
 
   NGFragmentBuilder text_builder(NGPhysicalFragment::kFragmentText,
                                  inline_box_);
@@ -280,18 +282,16 @@ void NGLineBuilder::PlaceItems(
     RefPtr<NGPhysicalTextFragment> text_fragment = text_builder.ToTextFragment(
         line_item_chunk.index, line_item_chunk.start_offset,
         line_item_chunk.end_offset);
-    fragments_.push_back(std::move(text_fragment));
 
     NGLogicalOffset logical_offset(
         line_box_data.inline_size + current_opportunity_.InlineStartOffset() -
             ConstraintSpace().BfcOffset().inline_offset,
         top);
-    offsets_.push_back(logical_offset);
+    container_builder_.AddChild(std::move(text_fragment), logical_offset);
     line_box_data.inline_size += line_item_chunk.inline_size;
   }
-  DCHECK_EQ(fragments_.size(), offsets_.size());
 
-  if (fragment_start_index == fragments_.size()) {
+  if (fragment_start_index == container_builder_.Children().size()) {
     // The line was empty. Remove the LineBoxData.
     line_box_data_list_.shrink(line_box_data_list_.size() - 1);
     return;
@@ -303,11 +303,12 @@ void NGLineBuilder::PlaceItems(
       line_box_data.max_ascent_and_leading) {
     LayoutUnit adjust_top(line_box_data.max_ascent_and_leading -
                           block_metrics.ascent_and_leading);
-    for (unsigned i = fragment_start_index; i < offsets_.size(); i++)
-      offsets_[i].block_offset += adjust_top;
+    auto& offsets = container_builder_.MutableOffsets();
+    for (unsigned i = fragment_start_index; i < offsets.size(); i++)
+      offsets[i].block_offset += adjust_top;
   }
 
-  line_box_data.fragment_end = fragments_.size();
+  line_box_data.fragment_end = container_builder_.Children().size();
   line_box_data.top_with_leading = content_size_;
   max_inline_size_ = std::max(max_inline_size_, line_box_data.inline_size);
   content_size_ += LayoutUnit(line_box_data.max_ascent_and_leading +
@@ -378,25 +379,16 @@ void NGLineBuilder::FindNextLayoutOpportunity() {
 
 RefPtr<NGLayoutResult> NGLineBuilder::CreateFragments() {
   DCHECK(!HasItems()) << "Must call CreateLine()";
-  DCHECK_EQ(fragments_.size(), offsets_.size());
-
-  NGFragmentBuilder container_builder(NGPhysicalFragment::kFragmentBox,
-                                      inline_box_);
-
-  for (unsigned i = 0; i < fragments_.size(); i++) {
-    // TODO(layout-dev): This should really be a std::move but
-    // CopyFragmentDataToLayoutBlockFlow also uses the fragments.
-    container_builder.AddChild(fragments_[i].get(), offsets_[i]);
-  }
 
   // TODO(kojii): Check if the line box width should be content or available.
   // TODO(kojii): Need to take constraint_space into account.
-  container_builder.SetInlineSize(max_inline_size_)
+  container_builder_.SetInlineSize(max_inline_size_)
       .SetInlineOverflow(max_inline_size_)
       .SetBlockSize(content_size_)
       .SetBlockOverflow(content_size_);
 
-  return container_builder.ToBoxFragment();
+  container_layout_result_ = container_builder_.ToBoxFragment();
+  return container_layout_result_;
 }
 
 void NGLineBuilder::CopyFragmentDataToLayoutBlockFlow() {
@@ -407,16 +399,21 @@ void NGLineBuilder::CopyFragmentDataToLayoutBlockFlow() {
   Vector<unsigned, 32> text_offsets(items.size());
   inline_box_->GetLayoutTextOffsets(&text_offsets);
 
-  Vector<NGPhysicalFragment*, 32> fragments_for_bidi_runs;
+  Vector<const NGPhysicalFragment*, 32> fragments_for_bidi_runs;
   fragments_for_bidi_runs.reserveInitialCapacity(items.size());
   BidiRunList<BidiRun> bidi_runs;
   LineInfo line_info;
   unsigned fragment_index = 0;
+  NGPhysicalBoxFragment* box_fragment = toNGPhysicalBoxFragment(
+      container_layout_result_->PhysicalFragment().get());
   for (const auto& line_box_data : line_box_data_list_) {
     // Create a BidiRunList for this line.
     for (; fragment_index < line_box_data.fragment_end; fragment_index++) {
-      NGPhysicalTextFragment* text_fragment =
-          toNGPhysicalTextFragment(fragments_[fragment_index].get());
+      const NGPhysicalFragment* fragment =
+          box_fragment->Children()[fragment_index].get();
+      if (!fragment->IsText())
+        continue;
+      const auto* text_fragment = toNGPhysicalTextFragment(fragment);
       const NGLayoutInlineItem& item = items[text_fragment->ItemIndex()];
       LayoutObject* layout_object = item.GetLayoutObject();
       if (!layout_object)  // Skip bidi controls.

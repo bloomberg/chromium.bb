@@ -9,12 +9,12 @@
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_floating_object.h"
 #include "core/layout/ng/ng_physical_fragment.h"
+#include "core/layout/ng/ng_physical_text_fragment.h"
 #include "wtf/Allocator.h"
 
 namespace blink {
 
 class NGLayoutResult;
-class NGPhysicalTextFragment;
 
 class CORE_EXPORT NGFragmentBuilder final {
   DISALLOW_NEW();
@@ -103,6 +103,10 @@ class CORE_EXPORT NGFragmentBuilder final {
                                                 unsigned start_offset,
                                                 unsigned end_offset);
 
+  Vector<RefPtr<NGPhysicalFragment>>& MutableChildren() { return children_; }
+
+  Vector<NGLogicalOffset>& MutableOffsets() { return offsets_; }
+
   // Mutable list of floats that need to be positioned.
   Vector<RefPtr<NGFloatingObject>>& MutableUnpositionedFloats() {
     return unpositioned_floats_;
@@ -115,6 +119,10 @@ class CORE_EXPORT NGFragmentBuilder final {
 
   const WTF::Optional<NGLogicalOffset>& BfcOffset() const {
     return bfc_offset_;
+  }
+
+  const Vector<RefPtr<NGPhysicalFragment>>& Children() const {
+    return children_;
   }
 
   bool DidBreak() const { return did_break_; }

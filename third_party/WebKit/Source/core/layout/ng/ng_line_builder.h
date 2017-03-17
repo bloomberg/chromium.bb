@@ -7,6 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "core/layout/ng/geometry/ng_logical_offset.h"
+#include "core/layout/ng/ng_fragment_builder.h"
 #include "core/layout/ng/ng_layout_opportunity_iterator.h"
 #include "core/layout/ng/ng_physical_fragment.h"
 #include "platform/fonts/FontBaseline.h"
@@ -18,7 +19,6 @@ namespace blink {
 class ComputedStyle;
 class FontMetrics;
 class NGConstraintSpace;
-class NGFragmentBuilder;
 class NGInlineNode;
 class NGLayoutInlineItem;
 
@@ -143,8 +143,6 @@ class CORE_EXPORT NGLineBuilder final {
   Persistent<NGInlineNode> inline_box_;
   NGConstraintSpace* constraint_space_;  // Not owned as STACK_ALLOCATED.
   NGFragmentBuilder* containing_block_builder_;
-  Vector<RefPtr<NGPhysicalFragment>, 32> fragments_;
-  Vector<NGLogicalOffset, 32> offsets_;
   Vector<LineBoxData, 32> line_box_data_list_;
   unsigned start_index_ = 0;
   unsigned start_offset_ = 0;
@@ -157,6 +155,8 @@ class CORE_EXPORT NGLineBuilder final {
   LayoutUnit content_size_;
   LayoutUnit max_inline_size_;
   FontBaseline baseline_type_;
+  NGFragmentBuilder container_builder_;
+  RefPtr<NGLayoutResult> container_layout_result_;
 
   NGLogicalOffset bfc_offset_;
   NGLogicalRect current_opportunity_;
