@@ -70,6 +70,7 @@ class PlatformFontLinuxTest : public testing::Test {
   ~PlatformFontLinuxTest() override {
     LinuxFontDelegate::SetInstance(
         const_cast<LinuxFontDelegate*>(original_font_delegate_));
+    PlatformFontLinux::ReloadDefaultFont();
     TearDownFontconfig();
   }
 
