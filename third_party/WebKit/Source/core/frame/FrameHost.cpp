@@ -32,7 +32,6 @@
 
 #include "core/frame/FrameView.h"
 #include "core/page/Page.h"
-#include "core/page/scrolling/OverscrollController.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebScheduler.h"
 
@@ -63,14 +62,6 @@ const BrowserControls& FrameHost::browserControls() const {
   return m_page->browserControls();
 }
 
-OverscrollController& FrameHost::overscrollController() {
-  return page().overscrollController();
-}
-
-const OverscrollController& FrameHost::overscrollController() const {
-  return page().overscrollController();
-}
-
 DEFINE_TRACE(FrameHost) {
   visitor->trace(m_page);
 }
@@ -82,6 +73,7 @@ void FrameHost::incrementSubframeCount() {
 void FrameHost::decrementSubframeCount() {
   page().decrementSubframeCount();
 }
+
 int FrameHost::subframeCount() const {
   return page().subframeCount();
 }

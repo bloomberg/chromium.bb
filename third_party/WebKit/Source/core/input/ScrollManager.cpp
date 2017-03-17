@@ -8,7 +8,6 @@
 #include "core/dom/DOMNodeIds.h"
 #include "core/events/GestureEvent.h"
 #include "core/frame/BrowserControls.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/input/EventHandler.h"
@@ -54,10 +53,10 @@ void ScrollManager::clearGestureScrollState() {
   m_deltaConsumedForScrollSequence = false;
   m_currentScrollChain.clear();
 
-  if (FrameHost* host = frameHost()) {
+  if (Page* page = m_frame->page()) {
     bool resetX = true;
     bool resetY = true;
-    host->overscrollController().resetAccumulated(resetX, resetY);
+    page->overscrollController().resetAccumulated(resetX, resetY);
   }
 }
 
@@ -309,9 +308,8 @@ WebInputEventResult ScrollManager::handleGestureScrollUpdate(
 
   if ((!m_previousGestureScrolledElement ||
        !isViewportScrollingElement(*m_previousGestureScrolledElement)) &&
-      frameHost())
-    frameHost()->overscrollController().resetAccumulated(didScrollX,
-                                                         didScrollY);
+      page())
+    page()->overscrollController().resetAccumulated(didScrollX, didScrollY);
 
   if (didScrollX || didScrollY) {
     setFrameWasScrolledByUser();
@@ -345,11 +343,8 @@ WebInputEventResult ScrollManager::handleGestureScrollEnd(
   return WebInputEventResult::NotHandled;
 }
 
-FrameHost* ScrollManager::frameHost() const {
-  if (!m_frame->page())
-    return nullptr;
-
-  return &m_frame->page()->frameHost();
+Page* ScrollManager::page() const {
+  return m_frame->page();
 }
 
 WebInputEventResult ScrollManager::passScrollGestureEvent(

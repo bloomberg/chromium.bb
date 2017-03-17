@@ -18,12 +18,12 @@
 namespace blink {
 
 class AutoscrollController;
-class FrameHost;
 class LayoutBox;
 class LayoutObject;
 class LocalFrame;
 class PaintLayer;
 class PaintLayerScrollableArea;
+class Page;
 class Scrollbar;
 class ScrollState;
 class WebGestureEvent;
@@ -102,7 +102,7 @@ class CORE_EXPORT ScrollManager
 
   void customizedScroll(const Node& startNode, ScrollState&);
 
-  FrameHost* frameHost() const;
+  Page* page() const;
 
   bool isViewportScrollingElement(const Element&) const;
 
