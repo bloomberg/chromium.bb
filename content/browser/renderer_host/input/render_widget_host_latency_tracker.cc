@@ -82,20 +82,6 @@ void UpdateLatencyCoordinates(const WebInputEvent& event,
   DCHECK(!end.last_event_time.is_null());    \
   DCHECK_GE(end.last_event_time, start.first_event_time);
 
-// Long scroll latency component that is mostly under 200ms.
-#define UMA_HISTOGRAM_SCROLL_LATENCY_LONG(name, start, end)             \
-  CONFIRM_VALID_TIMING(start, end);                                     \
-  UMA_HISTOGRAM_CUSTOM_COUNTS(                                          \
-      name, (end.event_time - start.event_time).InMicroseconds(), 1000, \
-      200000, 50)
-
-// Short scroll latency component that is mostly under 50ms.
-#define UMA_HISTOGRAM_SCROLL_LATENCY_SHORT(name, start, end)                \
-  CONFIRM_VALID_TIMING(start, end);                                         \
-  UMA_HISTOGRAM_CUSTOM_COUNTS(                                              \
-      name, (end.event_time - start.event_time).InMicroseconds(), 1, 50000, \
-      50)
-
 // Event latency that is mostly under 1 second. We should only use 100 buckets
 // when needed.
 #define UMA_HISTOGRAM_INPUT_LATENCY_HIGH_RESOLUTION_MICROSECONDS(name, start, \
