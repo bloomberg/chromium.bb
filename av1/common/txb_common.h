@@ -329,21 +329,21 @@ static INLINE void get_txb_ctx(BLOCK_SIZE bsize, TX_SIZE tx_size, int plane,
 
   int dc_sign = 0;
   for (k = 0; k < tx_size_in_blocks; ++k) {
-    int sign = a[k] >> COEFF_CONTEXT_BITS;
+    int sign = ((uint8_t)a[k]) >> COEFF_CONTEXT_BITS;
     if (sign == 1)
       --dc_sign;
     else if (sign == 2)
       ++dc_sign;
     else if (sign != 0)
-      exit(0);
+      assert(0);
 
-    sign = l[k] >> 6;
+    sign = ((uint8_t)l[k]) >> COEFF_CONTEXT_BITS;
     if (sign == 1)
       --dc_sign;
     else if (sign == 2)
       ++dc_sign;
     else if (sign != 0)
-      exit(0);
+      assert(0);
   }
   txb_ctx->dc_sign_ctx = get_dc_sign_ctx(dc_sign);
 
@@ -351,8 +351,8 @@ static INLINE void get_txb_ctx(BLOCK_SIZE bsize, TX_SIZE tx_size, int plane,
     int top = 0;
     int left = 0;
     for (k = 0; k < tx_size_in_blocks; ++k) {
-      top = AOMMAX(top, (a[k] & COEFF_CONTEXT_MASK));
-      left = AOMMAX(left, (l[k] & COEFF_CONTEXT_MASK));
+      top = AOMMAX(top, ((uint8_t)a[k] & COEFF_CONTEXT_MASK));
+      left = AOMMAX(left, ((uint8_t)l[k] & COEFF_CONTEXT_MASK));
     }
     top = AOMMIN(top, 255);
     left = AOMMIN(left, 255);
