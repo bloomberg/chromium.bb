@@ -120,7 +120,7 @@ static INLINE int av1_get_cat6_extrabits_size(TX_SIZE tx_size,
   if (tx_size > TX_32X32) tx_size = TX_32X32;
 #endif
   int bits = (int)bit_depth + 3 + (int)tx_size;
-  assert(bits < (int)sizeof(av1_cat6_prob));
+  assert(bits <= (int)sizeof(av1_cat6_prob));
   return bits;
 }
 
