@@ -393,26 +393,18 @@ void UserMediaClientImpl::FinalizeSelectVideoDeviceSourceSettings(
     const RequestSettings& request_settings,
     const VideoDeviceCaptureSourceSelectionResult& selection_result) {
   DCHECK(CalledOnValidThread());
-  if (selection_result.HasValue()) {
-    controls->video.device_id = selection_result.device_id();
-  } else {
-    // TODO(guidou): Abort the request in all cases where |selection_result|
-    // has no value, as the spec mandates.
-    // Currently, some applications rely on the nonstandard behavior of asking
-    // for permission even if constraints cannot be satisfied or there are no
-    // devices. Fix once the standard behavior ceases to be disruptive.
-    // See http://crbug.com/690491.
+  if (!selection_result.HasValue()) {
     blink::WebString failed_constraint_name =
         blink::WebString::fromASCII(selection_result.failed_constraint_name());
-    blink::WebString device_id_constraint_name = blink::WebString::fromASCII(
-        user_media_request.videoConstraints().basic().deviceId.name());
-    if (failed_constraint_name.equals(device_id_constraint_name)) {
-      GetUserMediaRequestFailed(user_media_request,
-                                MEDIA_DEVICE_CONSTRAINT_NOT_SATISFIED,
-                                failed_constraint_name);
-      return;
-    }
+    MediaStreamRequestResult result =
+        failed_constraint_name.isEmpty()
+            ? MEDIA_DEVICE_NO_HARDWARE
+            : MEDIA_DEVICE_CONSTRAINT_NOT_SATISFIED;
+    GetUserMediaRequestFailed(user_media_request, result,
+                              failed_constraint_name);
+    return;
   }
+  controls->video.device_id = selection_result.device_id();
   FinalizeRequestUserMedia(request_id, user_media_request, std::move(controls),
                            request_settings);
 }
