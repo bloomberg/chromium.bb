@@ -1441,7 +1441,7 @@ FPDF_DOCUMENT PDFiumEngine::CreateSinglePageRasterPdf(
 
   // Add the bitmap to an image object and add the image object to the output
   // page.
-  FPDF_PAGEOBJECT temp_img = FPDFPageObj_NewImgeObj(temp_doc);
+  FPDF_PAGEOBJECT temp_img = FPDFPageObj_NewImageObj(temp_doc);
 
   std::vector<uint8_t> compressed_bitmap_data;
   // Use quality = 40 as this does not significantly degrade the printed
