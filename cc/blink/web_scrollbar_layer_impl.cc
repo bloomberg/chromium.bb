@@ -39,7 +39,7 @@ WebScrollbarLayerImpl::WebScrollbarLayerImpl(
           base::MakeUnique<ScrollbarImpl>(std::move(scrollbar),
                                           painter,
                                           std::move(geometry)),
-          0))) {}
+          cc::Layer::INVALID_ID))) {}
 
 WebScrollbarLayerImpl::WebScrollbarLayerImpl(
     std::unique_ptr<blink::WebScrollbar> scrollbar,
@@ -50,7 +50,7 @@ WebScrollbarLayerImpl::WebScrollbarLayerImpl(
           base::MakeUnique<ScrollbarImpl>(std::move(scrollbar),
                                           painter,
                                           std::move(geometry)),
-          0))) {}
+          cc::Layer::INVALID_ID))) {}
 
 WebScrollbarLayerImpl::WebScrollbarLayerImpl(
     blink::WebScrollbar::Orientation orientation,
@@ -62,7 +62,7 @@ WebScrollbarLayerImpl::WebScrollbarLayerImpl(
                                            thumb_thickness,
                                            track_start,
                                            is_left_side_vertical_scrollbar,
-                                           0))) {}
+                                           cc::Layer::INVALID_ID))) {}
 
 WebScrollbarLayerImpl::~WebScrollbarLayerImpl() {
 }
