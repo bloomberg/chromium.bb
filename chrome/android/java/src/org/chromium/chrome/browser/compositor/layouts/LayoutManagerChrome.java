@@ -179,7 +179,7 @@ public class LayoutManagerChrome
         mOverviewModeObservers = new ObserverList<OverviewModeObserver>();
 
         // Build Event Filter Handlers
-        mToolbarSwipeHandler = createToolbarSwipeHandler(this);
+        mToolbarSwipeHandler = new ToolbarSwipeHandler(this);
 
         // Build Event Filters
         mBlackHoleEventFilter = new BlackHoleEventFilter(context, this);
@@ -685,13 +685,11 @@ public class LayoutManagerChrome
                 return false;
             }
 
-            if (direction == ScrollDirection.DOWN) {
-                boolean isAccessibility =
-                        DeviceClassManager.isAccessibilityModeEnabled(mHost.getContext());
-                return mOverviewLayout != null && !isAccessibility;
-            }
-
-            return direction == ScrollDirection.LEFT || direction == ScrollDirection.RIGHT;
+            boolean isAccessibility =
+                    DeviceClassManager.isAccessibilityModeEnabled(mHost.getContext());
+            return direction == ScrollDirection.LEFT || direction == ScrollDirection.RIGHT
+                    || (direction == ScrollDirection.DOWN && mOverviewLayout != null
+                               && !isAccessibility);
         }
     }
 

@@ -8,7 +8,6 @@ import android.content.Context;
 import android.view.ViewGroup;
 
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
-import org.chromium.chrome.browser.compositor.layouts.eventfilter.EdgeSwipeEventFilter.ScrollDirection;
 import org.chromium.chrome.browser.compositor.layouts.phone.SimpleAnimationLayout;
 import org.chromium.chrome.browser.compositor.overlays.SceneOverlay;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDelegate;
@@ -18,7 +17,6 @@ import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 
 /**
@@ -47,11 +45,6 @@ public class LayoutManagerChromePhone extends LayoutManagerChrome {
         // Set up layout parameters
         mStaticLayout.setLayoutHandlesTabLifecycles(false);
         mToolbarSwipeLayout.setMovesToolbar(true);
-    }
-
-    @Override
-    protected ToolbarSwipeHandler createToolbarSwipeHandler(LayoutProvider provider) {
-        return new PhoneToolbarSwipeHandler(provider);
     }
 
     @Override
@@ -156,20 +149,5 @@ public class LayoutManagerChromePhone extends LayoutManagerChrome {
     public void releaseTabLayout(int id) {
         mTitleCache.remove(id);
         super.releaseTabLayout(id);
-    }
-
-    private class PhoneToolbarSwipeHandler extends ToolbarSwipeHandler {
-        public PhoneToolbarSwipeHandler(LayoutProvider provider) {
-            super(provider);
-        }
-
-        @Override
-        public boolean isSwipeEnabled(ScrollDirection direction) {
-            if (direction == ScrollDirection.DOWN && FeatureUtilities.isChromeHomeEnabled()) {
-                return false;
-            }
-
-            return super.isSwipeEnabled(direction);
-        }
     }
 }
