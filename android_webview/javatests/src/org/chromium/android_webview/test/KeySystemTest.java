@@ -4,7 +4,6 @@
 
 package org.chromium.android_webview.test;
 
-import android.os.Build;
 import android.support.test.filters.SmallTest;
 
 import org.chromium.android_webview.AwContents;
@@ -70,8 +69,8 @@ public class KeySystemTest extends AwTestBase {
     }
 
     private boolean areProprietaryCodecsSupported() throws Exception {
-        String result = executeJavaScriptAndWaitForResult(
-                mAwContents, mContentsClient, "areProprietaryCodecsSupported()");
+        String result = maybeStripDoubleQuotes(executeJavaScriptAndWaitForResult(
+                mAwContents, mContentsClient, "areProprietaryCodecsSupported()"));
         return !result.isEmpty();
     }
 
@@ -87,21 +86,23 @@ public class KeySystemTest extends AwTestBase {
     }
 
     private String getPlatformKeySystemExpectations() throws Exception {
-        // Android key systems only support non-proprietary codecs on Lollipop+.
-        // When neither is true isKeySystemSupported() will return an error for
-        // all key systems except ClearKey (which is handled by Chrome itself).
-        if (!areProprietaryCodecsSupported()
-                && Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-            return "\"NotSupportedError\"";
+        // isKeySystemSupported() calls navigator.requestMediaKeySystemAccess()
+        // with a video/mp4 configuration. mp4 is only supported if
+        // areProprietaryCodecsSupported().
+        if (areProprietaryCodecsSupported()) {
+            return "\"supported\"";
         }
 
-        return "\"supported\"";
+        return "\"NotSupportedError\"";
     }
 
     @Feature({"AndroidWebView"})
     @SmallTest
     public void testSupportClearKeySystem() throws Throwable {
-        assertEquals("\"supported\"", isKeySystemSupported("org.w3.clearkey"));
+        // Clear Key is always supported. However, isKeySystemSupported()
+        // specifies a video/mp4 configuration, so it only succeeds if
+        // proprietary codecs are supported.
+        assertEquals(getPlatformKeySystemExpectations(), isKeySystemSupported("org.w3.clearkey"));
     }
 
     @Feature({"AndroidWebView"})

@@ -14,20 +14,15 @@ function failure(error) {
 }
 
 function isKeySystemSupported(keySystem) {
-  // requestMediaKeySystemAccess() provides 2 different configurations
-  // as encrypted webm is only supported on Lollipop+. mp4 is proprietary,
-  // and may not be supported on all Android devices.
+  // requestMediaKeySystemAccess() checks for video/mp4 support, so this
+  // is only available if proprietary codecs are enabled.
   navigator
       .requestMediaKeySystemAccess(
           keySystem,
           [
             {
-              audioCapabilities :
-                  [ {contentType : 'audio/webm; codec=\"vorbis\"'} ]
-            },
-            {
               videoCapabilities :
-                  [ {contentType : 'video/mp4; codecs=\"avc1.4D000C\"'} ]
+                  [ {contentType : 'video/mp4; codecs=avc1.4D000C'} ]
             }
           ])
       .then(success, failure);
@@ -35,7 +30,7 @@ function isKeySystemSupported(keySystem) {
 
 function areProprietaryCodecsSupported() {
   var video = document.createElement('video');
-  return video.canPlayType('video/mp4; codecs=\"avc1\"');
+  return video.canPlayType('video/mp4; codecs=avc1');
 }
 
 </script>
