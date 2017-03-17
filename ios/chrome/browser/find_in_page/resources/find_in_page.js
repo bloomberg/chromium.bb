@@ -953,9 +953,21 @@ __gCrWeb['findInPage'].frameDocuments = function() {
   while (windowsToSearch.length != 0) {
     var win = windowsToSearch.pop();
     for (var i = win.frames.length - 1; i >= 0; i--) {
-      if (win.frames[i].document) {
-        documents.push(win.frames[i].document);
-        windowsToSearch.push(win.frames[i]);
+      // The following try/catch catches a webkit error when searching a page
+      // with iframes. See crbug.com/702566 for details.
+      // To verify that this is still necessary:
+      // 1. Remove this try/catch.
+      // 2. Go to a page with iframes.
+      // 3. Search for anything.
+      // 4. Check if the webkit debugger spits out SecurityError (DOM Exception)
+      // and the search fails. If it doesn't, feel free to remove this.
+      try {
+        if (win.frames[i].document) {
+          documents.push(win.frames[i].document);
+          windowsToSearch.push(win.frames[i]);
+        }
+      } catch (e) {
+        // Do nothing.
       }
     }
   }
