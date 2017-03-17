@@ -113,6 +113,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return self;
 }
 
+- (void)dealloc {
+  [[InstallationNotifier sharedInstance] unregisterForNotifications:self];
+  if (!_userDidSomething)
+    [self recordUserAction:settings::kNativeAppsActionDidNothing];
+  [super dealloc];
+}
+
 #pragma mark - View lifecycle
 
 - (void)viewDidLoad {
@@ -139,12 +146,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
       removeObserver:self
                 name:UIApplicationDidBecomeActiveNotification
               object:nil];
-  if ([self isMovingFromParentViewController]) {
-    // The view controller is popped.
-    [[InstallationNotifier sharedInstance] unregisterForNotifications:self];
-    if (!_userDidSomething)
-      [self recordUserAction:settings::kNativeAppsActionDidNothing];
-  }
 }
 
 #pragma mark - CollectionViewController
