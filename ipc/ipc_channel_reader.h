@@ -11,7 +11,6 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_export.h"
 

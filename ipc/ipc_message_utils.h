@@ -21,7 +21,6 @@
 #include "base/containers/stack_container.h"
 #include "base/files/file.h"
 #include "base/format_macros.h"
-#include "base/memory/scoped_vector.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
@@ -853,39 +852,6 @@ struct ParamTraits<std::tuple<A, B, C, D, E>> {
     LogParam(std::get<3>(p), l);
     l->append(", ");
     LogParam(std::get<4>(p), l);
-  }
-};
-
-template<class P>
-struct ParamTraits<ScopedVector<P> > {
-  typedef ScopedVector<P> param_type;
-  static void Write(base::Pickle* m, const param_type& p) {
-    WriteParam(m, static_cast<int>(p.size()));
-    for (size_t i = 0; i < p.size(); i++)
-      WriteParam(m, *p[i]);
-  }
-  static bool Read(const base::Pickle* m,
-                   base::PickleIterator* iter,
-                   param_type* r) {
-    int size = 0;
-    if (!iter->ReadLength(&size))
-      return false;
-    if (INT_MAX/sizeof(P) <= static_cast<size_t>(size))
-      return false;
-    r->resize(size);
-    for (int i = 0; i < size; i++) {
-      (*r)[i] = new P();
-      if (!ReadParam(m, iter, (*r)[i]))
-        return false;
-    }
-    return true;
-  }
-  static void Log(const param_type& p, std::string* l) {
-    for (size_t i = 0; i < p.size(); ++i) {
-      if (i != 0)
-        l->append(" ");
-      LogParam(*p[i], l);
-    }
   }
 };
 
