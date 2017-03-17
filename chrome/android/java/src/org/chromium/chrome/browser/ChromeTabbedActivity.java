@@ -104,6 +104,7 @@ import org.chromium.chrome.browser.tab.TabStateBrowserControlsVisibilityDelegate
 import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
+import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorImpl;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
@@ -759,6 +760,23 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             Log.i(TAG, "Not launching NTP due to inactivity, background time: %d, launch delay: %d",
                     backgroundDurationMinutes, ntpLaunchDelayInMins);
             return false;
+        }
+
+        // In cases where the tab model is initialized, attempt to reuse an existing NTP if
+        // available before attempting to create a new one.
+        TabModel normalTabModel = getTabModelSelector().getModel(false);
+        for (int i = 0; i < normalTabModel.getCount(); i++) {
+            Tab tab = normalTabModel.getTabAt(i);
+
+            if (NewTabPage.isNTPUrl(tab.getUrl()) && !tab.canGoBack() && !tab.canGoForward()) {
+                if (getActivityTab().equals(tab)) return true;
+
+                normalTabModel.moveTab(tab.getId(), normalTabModel.getCount());
+                normalTabModel.setIndex(
+                        TabModelUtils.getTabIndexById(normalTabModel, tab.getId()),
+                        TabSelectionType.FROM_USER);
+                return true;
+            }
         }
 
         getTabCreator(false).launchUrl(UrlConstants.NTP_URL, TabLaunchType.FROM_EXTERNAL_APP);
