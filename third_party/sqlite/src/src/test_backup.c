@@ -13,14 +13,7 @@
 **
 */
 
-#if defined(INCLUDE_SQLITE_TCL_H)
-#  include "sqlite_tcl.h"
-#else
-#  include "tcl.h"
-#  ifndef SQLITE_TCLAPI
-#    define SQLITE_TCLAPI
-#  endif
-#endif
+#include "tcl.h"
 #include "sqlite3.h"
 #include <assert.h>
 
@@ -30,7 +23,7 @@ extern const char *sqlite3ErrName(int);
 /* These functions are implemented in test1.c. */
 extern int getDbPointer(Tcl_Interp *, const char *, sqlite3 **);
 
-static int SQLITE_TCLAPI backupTestCmd(
+static int backupTestCmd(
   ClientData clientData, 
   Tcl_Interp *interp, 
   int objc,
@@ -105,7 +98,7 @@ static int SQLITE_TCLAPI backupTestCmd(
   return TCL_OK;
 }
 
-static void SQLITE_TCLAPI backupTestFinish(ClientData clientData){
+static void backupTestFinish(ClientData clientData){
   sqlite3_backup *pBackup = (sqlite3_backup *)clientData;
   sqlite3_backup_finish(pBackup);
 }
@@ -114,7 +107,7 @@ static void SQLITE_TCLAPI backupTestFinish(ClientData clientData){
 **     sqlite3_backup CMDNAME DESTHANDLE DESTNAME SRCHANDLE SRCNAME
 **
 */
-static int SQLITE_TCLAPI backupTestInit(
+static int backupTestInit(
   ClientData clientData, 
   Tcl_Interp *interp, 
   int objc,

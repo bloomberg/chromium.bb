@@ -62,13 +62,12 @@ static void fts5AsciiDelete(Fts5Tokenizer *p){
 ** Create an "ascii" tokenizer.
 */
 static int fts5AsciiCreate(
-  void *pUnused, 
+  void *pCtx, 
   const char **azArg, int nArg,
   Fts5Tokenizer **ppOut
 ){
   int rc = SQLITE_OK;
   AsciiTokenizer *p = 0;
-  UNUSED_PARAM(pUnused);
   if( nArg%2 ){
     rc = SQLITE_ERROR;
   }else{
@@ -117,7 +116,7 @@ static void asciiFold(char *aOut, const char *aIn, int nByte){
 static int fts5AsciiTokenize(
   Fts5Tokenizer *pTokenizer,
   void *pCtx,
-  int iUnused,
+  int flags,
   const char *pText, int nText,
   int (*xToken)(void*, int, const char*, int nToken, int iStart, int iEnd)
 ){
@@ -130,8 +129,6 @@ static int fts5AsciiTokenize(
   int nFold = sizeof(aFold);
   char *pFold = aFold;
   unsigned char *a = p->aTokenChar;
-
-  UNUSED_PARAM(iUnused);
 
   while( is<nText && rc==SQLITE_OK ){
     int nByte;
@@ -326,14 +323,12 @@ static void fts5UnicodeDelete(Fts5Tokenizer *pTok){
 ** Create a "unicode61" tokenizer.
 */
 static int fts5UnicodeCreate(
-  void *pUnused, 
+  void *pCtx, 
   const char **azArg, int nArg,
   Fts5Tokenizer **ppOut
 ){
   int rc = SQLITE_OK;             /* Return code */
   Unicode61Tokenizer *p = 0;      /* New tokenizer object */ 
-
-  UNUSED_PARAM(pUnused);
 
   if( nArg%2 ){
     rc = SQLITE_ERROR;
@@ -391,7 +386,7 @@ static int fts5UnicodeIsAlnum(Unicode61Tokenizer *p, int iCode){
 static int fts5UnicodeTokenize(
   Fts5Tokenizer *pTokenizer,
   void *pCtx,
-  int iUnused,
+  int flags,
   const char *pText, int nText,
   int (*xToken)(void*, int, const char*, int nToken, int iStart, int iEnd)
 ){
@@ -406,8 +401,6 @@ static int fts5UnicodeTokenize(
   char *aFold = p->aFold;
   int nFold = p->nFold;
   const char *pEnd = &aFold[nFold-6];
-
-  UNUSED_PARAM(iUnused);
 
   /* Each iteration of this loop gobbles up a contiguous run of separators,
   ** then the next token.  */
@@ -1227,7 +1220,7 @@ int sqlite3Fts5TokenizerInit(fts5_api *pApi){
   int rc = SQLITE_OK;             /* Return code */
   int i;                          /* To iterate through builtin functions */
 
-  for(i=0; rc==SQLITE_OK && i<ArraySize(aBuiltin); i++){
+  for(i=0; rc==SQLITE_OK && i<(int)ArraySize(aBuiltin); i++){
     rc = pApi->xCreateTokenizer(pApi,
         aBuiltin[i].zName,
         (void*)pApi,

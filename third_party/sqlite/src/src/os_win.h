@@ -12,8 +12,8 @@
 **
 ** This file contains code that is specific to Windows.
 */
-#ifndef SQLITE_OS_WIN_H
-#define SQLITE_OS_WIN_H
+#ifndef _OS_WIN_H_
+#define _OS_WIN_H_
 
 /*
 ** Include the primary Windows SDK header file.
@@ -85,4 +85,4 @@
 # define SQLITE_OS_WIN_THREADS 0
 #endif
 
-#endif /* SQLITE_OS_WIN_H */
+#endif /* _OS_WIN_H_ */

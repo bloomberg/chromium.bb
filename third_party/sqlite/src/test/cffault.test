@@ -15,7 +15,7 @@
 
 set testdir [file dirname $argv0]
 source $testdir/tester.tcl
-set testprefix cffault
+set testprefix cacheflush
 source $testdir/malloc_common.tcl
 
 # Run the supplied SQL on a copy of the database currently stored on 
@@ -156,3 +156,4 @@ do_faultsim_test 2.4 -prep {
 }
 
 finish_test
+

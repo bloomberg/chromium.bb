@@ -13,8 +13,8 @@
 ** This file contains pre-processor directives related to operating system
 ** detection and/or setup.
 */
-#ifndef SQLITE_OS_SETUP_H
-#define SQLITE_OS_SETUP_H
+#ifndef _OS_SETUP_H_
+#define _OS_SETUP_H_
 
 /*
 ** Figure out if we are dealing with Unix, Windows, or some other operating
@@ -54,4 +54,4 @@
 #  endif
 #endif
 
-#endif /* SQLITE_OS_SETUP_H */
+#endif /* _OS_SETUP_H_ */

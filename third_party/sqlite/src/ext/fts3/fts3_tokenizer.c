@@ -30,18 +30,6 @@
 #include <string.h>
 
 /*
-** Return true if the two-argument version of fts3_tokenizer()
-** has been activated via a prior call to sqlite3_db_config(db,
-** SQLITE_DBCONFIG_ENABLE_FTS3_TOKENIZER, 1, 0);
-*/
-static int fts3TokenizerEnabled(sqlite3_context *context){
-  sqlite3 *db = sqlite3_context_db_handle(context);
-  int isEnabled = 0;
-  sqlite3_db_config(db,SQLITE_DBCONFIG_ENABLE_FTS3_TOKENIZER,-1,&isEnabled);
-  return isEnabled;
-}
-
-/*
 ** Implementation of the SQL scalar function for accessing the underlying 
 ** hash table. This function may be called as follows:
 **
@@ -61,7 +49,7 @@ static int fts3TokenizerEnabled(sqlite3_context *context){
 ** is a blob containing the pointer stored as the hash data corresponding
 ** to string <key-name> (after the hash-table is updated, if applicable).
 */
-static void fts3TokenizerFunc(
+static void scalarFunc(
   sqlite3_context *context,
   int argc,
   sqlite3_value **argv
@@ -79,20 +67,16 @@ static void fts3TokenizerFunc(
   nName = sqlite3_value_bytes(argv[0])+1;
 
   if( argc==2 ){
-    if( fts3TokenizerEnabled(context) ){
-      void *pOld;
-      int n = sqlite3_value_bytes(argv[1]);
-      if( zName==0 || n!=sizeof(pPtr) ){
-        sqlite3_result_error(context, "argument type mismatch", -1);
-        return;
-      }
-      pPtr = *(void **)sqlite3_value_blob(argv[1]);
-      pOld = sqlite3Fts3HashInsert(pHash, (void *)zName, nName, pPtr);
-      if( pOld==pPtr ){
-        sqlite3_result_error(context, "out of memory", -1);
-      }
-    }else{
-      sqlite3_result_error(context, "fts3tokenize disabled", -1);
+    void *pOld;
+    int n = sqlite3_value_bytes(argv[1]);
+    if( zName==0 || n!=sizeof(pPtr) ){
+      sqlite3_result_error(context, "argument type mismatch", -1);
+      return;
+    }
+    pPtr = *(void **)sqlite3_value_blob(argv[1]);
+    pOld = sqlite3Fts3HashInsert(pHash, (void *)zName, nName, pPtr);
+    if( pOld==pPtr ){
+      sqlite3_result_error(context, "out of memory", -1);
       return;
     }
   }else{
@@ -106,6 +90,7 @@ static void fts3TokenizerFunc(
       return;
     }
   }
+
   sqlite3_result_blob(context, (void *)&pPtr, sizeof(pPtr), SQLITE_TRANSIENT);
 }
 
@@ -224,11 +209,7 @@ int sqlite3Fts3InitTokenizer(
 
 #ifdef SQLITE_TEST
 
-#if defined(INCLUDE_SQLITE_TCL_H)
-#  include "sqlite_tcl.h"
-#else
-#  include "tcl.h"
-#endif
+#include <tcl.h>
 #include <string.h>
 
 /*
@@ -369,7 +350,6 @@ int registerTokenizer(
   return sqlite3_finalize(pStmt);
 }
 
-
 static
 int queryTokenizer(
   sqlite3 *db, 
@@ -440,13 +420,11 @@ static void intTestFunc(
   assert( 0==strcmp(sqlite3_errmsg(db), "unknown tokenizer: nosuchtokenizer") );
 
   /* Test the storage function */
-  if( fts3TokenizerEnabled(context) ){
-    rc = registerTokenizer(db, "nosuchtokenizer", p1);
-    assert( rc==SQLITE_OK );
-    rc = queryTokenizer(db, "nosuchtokenizer", &p2);
-    assert( rc==SQLITE_OK );
-    assert( p2==p1 );
-  }
+  rc = registerTokenizer(db, "nosuchtokenizer", p1);
+  assert( rc==SQLITE_OK );
+  rc = queryTokenizer(db, "nosuchtokenizer", &p2);
+  assert( rc==SQLITE_OK );
+  assert( p2==p1 );
 
   sqlite3_result_text(context, "ok", -1, SQLITE_STATIC);
 }
@@ -462,7 +440,7 @@ static void intTestFunc(
 **    sqlite3Fts3HashInit(pHash, FTS3_HASH_STRING, 1);
 **
 ** This function adds a scalar function (see header comment above
-** fts3TokenizerFunc() in this file for details) and, if ENABLE_TABLE is
+** scalarFunc() in this file for details) and, if ENABLE_TABLE is
 ** defined at compilation time, a temporary virtual table (see header 
 ** comment above struct HashTableVtab) to the database schema. Both 
 ** provide read/write access to the contents of *pHash.
@@ -491,10 +469,10 @@ int sqlite3Fts3InitHashTable(
 #endif
 
   if( SQLITE_OK==rc ){
-    rc = sqlite3_create_function(db, zName, 1, any, p, fts3TokenizerFunc, 0, 0);
+    rc = sqlite3_create_function(db, zName, 1, any, p, scalarFunc, 0, 0);
   }
   if( SQLITE_OK==rc ){
-    rc = sqlite3_create_function(db, zName, 2, any, p, fts3TokenizerFunc, 0, 0);
+    rc = sqlite3_create_function(db, zName, 2, any, p, scalarFunc, 0, 0);
   }
 #ifdef SQLITE_TEST
   if( SQLITE_OK==rc ){

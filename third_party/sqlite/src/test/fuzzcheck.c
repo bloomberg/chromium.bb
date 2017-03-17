@@ -79,11 +79,6 @@
 # include <unistd.h>
 #endif
 
-#ifdef SQLITE_OSS_FUZZ
-# include <stddef.h>
-# include <stdint.h>
-#endif
-
 /*
 ** Files in the virtual file system.
 */
@@ -132,7 +127,6 @@ static struct GlobalVars {
   Blob *pFirstDb;                  /* Content of first template database */
   int nSql;                        /* Number of SQL scripts */
   Blob *pFirstSql;                 /* First SQL script */
-  unsigned int uRandom;            /* Seed for the SQLite PRNG */
   char zTestName[100];             /* Name of current test */
 } g;
 
@@ -194,7 +188,7 @@ static int progressHandler(void *pVdbeLimitFlag){
 ** Reallocate memory.  Show and error and quit if unable.
 */
 static void *safe_realloc(void *pOld, int szNew){
-  void *pNew = realloc(pOld, szNew<=0 ? 1 : szNew);
+  void *pNew = realloc(pOld, szNew);
   if( pNew==0 ) fatalError("unable to realloc for %d bytes", szNew);
   return pNew;
 }
@@ -261,9 +255,8 @@ static VFile *createVFile(const char *zName, int sz, unsigned char *pData){
   if( i>=MX_FILE ) return 0;
   pNew = &g.aFile[i];
   if( zName ){
-    int nName = (int)strlen(zName)+1;
-    pNew->zFilename = safe_realloc(0, nName);
-    memcpy(pNew->zFilename, zName, nName);
+    pNew->zFilename = safe_realloc(0, strlen(zName)+1);
+    memcpy(pNew->zFilename, zName, strlen(zName)+1);
   }else{
     pNew->zFilename = 0;
   }
@@ -595,18 +588,10 @@ static int inmemFullPathname(
   return SQLITE_OK;
 }
 
-/* Always use the same random see, for repeatability.
-*/
-static int inmemRandomness(sqlite3_vfs *NotUsed, int nBuf, char *zBuf){
-  memset(zBuf, 0, nBuf);
-  memcpy(zBuf, &g.uRandom, nBuf<sizeof(g.uRandom) ? nBuf : sizeof(g.uRandom));
-  return nBuf;
-}
-
 /*
 ** Register the VFS that reads from the g.aFile[] set of files.
 */
-static void inmemVfsRegister(int makeDefault){
+static void inmemVfsRegister(void){
   static sqlite3_vfs inmemVfs;
   sqlite3_vfs *pDefault = sqlite3_vfs_find(0);
   inmemVfs.iVersion = 3;
@@ -617,10 +602,10 @@ static void inmemVfsRegister(int makeDefault){
   inmemVfs.xDelete = inmemDelete;
   inmemVfs.xAccess = inmemAccess;
   inmemVfs.xFullPathname = inmemFullPathname;
-  inmemVfs.xRandomness = inmemRandomness;
+  inmemVfs.xRandomness = pDefault->xRandomness;
   inmemVfs.xSleep = pDefault->xSleep;
   inmemVfs.xCurrentTimeInt64 = pDefault->xCurrentTimeInt64;
-  sqlite3_vfs_register(&inmemVfs, makeDefault);
+  sqlite3_vfs_register(&inmemVfs, 0);
 };
 
 /*
@@ -793,25 +778,25 @@ static void showHelp(void){
 "Read databases and SQL scripts from SOURCE-DB and execute each script against\n"
 "each database, checking for crashes and memory leaks.\n"
 "Options:\n"
-"  --cell-size-check    Set the PRAGMA cell_size_check=ON\n"
-"  --dbid N             Use only the database where dbid=N\n"
-"  --export-db DIR      Write databases to files(s) in DIR. Works with --dbid\n"
-"  --export-sql DIR     Write SQL to file(s) in DIR. Also works with --sqlid\n"
-"  --help               Show this help text\n"
-"  -q|--quiet           Reduced output\n"
-"  --limit-mem N        Limit memory used by test SQLite instance to N bytes\n"
-"  --limit-vdbe         Panic if any test runs for more than 100,000 cycles\n"
-"  --load-sql ARGS...   Load SQL scripts fro files into SOURCE-DB\n"
-"  --load-db ARGS...    Load template databases from files into SOURCE_DB\n"
-"  -m TEXT              Add a description to the database\n"
-"  --native-vfs         Use the native VFS for initially empty database files\n"
-"  --oss-fuzz           Enable OSS-FUZZ testing\n"
-"  --prng-seed N        Seed value for the PRGN inside of SQLite\n"
-"  --rebuild            Rebuild and vacuum the database file\n"
-"  --result-trace       Show the results of each SQL command\n"
-"  --sqlid N            Use only SQL where sqlid=N\n"
-"  --timeout N          Abort if any single test needs more than N seconds\n"
-"  -v|--verbose         Increased output.  Repeat for more output.\n"
+"  --cell-size-check     Set the PRAGMA cell_size_check=ON\n"
+"  --dbid N              Use only the database where dbid=N\n"
+"  --export-db DIR       Write databases to files(s) in DIR. Works with --dbid\n"
+"  --export-sql DIR      Write SQL to file(s) in DIR. Also works with --sqlid\n"
+"  --help                Show this help text\n"
+"  -q                    Reduced output\n"
+"  --quiet               Reduced output\n"
+"  --limit-mem N         Limit memory used by test SQLite instance to N bytes\n"
+"  --limit-vdbe          Panic if an sync SQL runs for more than 100,000 cycles\n"
+"  --load-sql ARGS...    Load SQL scripts fro files into SOURCE-DB\n"
+"  --load-db ARGS...     Load template databases from files into SOURCE_DB\n"
+"  -m TEXT               Add a description to the database\n"
+"  --native-vfs          Use the native VFS for initially empty database files\n"
+"  --rebuild             Rebuild and vacuum the database file\n"
+"  --result-trace        Show the results of each SQL command\n"
+"  --sqlid N             Use only SQL where sqlid=N\n"
+"  --timeout N           Abort if any single test case needs more than N seconds\n"
+"  -v                    Increased output\n"
+"  --verbose             Increased output\n"
   );
 }
 
@@ -845,13 +830,9 @@ int main(int argc, char **argv){
   int sqlFuzz = 0;             /* True for SQL fuzz testing. False for DB fuzz */
   int iTimeout = 120;          /* Default 120-second timeout */
   int nMem = 0;                /* Memory limit */
-  int nMemThisDb = 0;          /* Memory limit set by the CONFIG table */
   char *zExpDb = 0;            /* Write Databases to files in this directory */
   char *zExpSql = 0;           /* Write SQL to files in this directory */
   void *pHeap = 0;             /* Heap for use by SQLite */
-  int ossFuzz = 0;             /* enable OSS-FUZZ testing */
-  int ossFuzzThisDb = 0;       /* ossFuzz value for this particular database */
-  sqlite3_vfs *pDfltVfs;       /* The default VFS */
 
   iBegin = timeOfDay();
 #ifdef __unix__
@@ -859,8 +840,6 @@ int main(int argc, char **argv){
 #endif
   g.zArgv0 = argv[0];
   zFailCode = getenv("TEST_FAILURE");
-  pDfltVfs = sqlite3_vfs_find(0);
-  inmemVfsRegister(1);
   for(i=1; i<argc; i++){
     const char *z = argv[i];
     if( z[0]=='-' ){
@@ -886,13 +865,8 @@ int main(int argc, char **argv){
         return 0;
       }else
       if( strcmp(z,"limit-mem")==0 ){
-#if !defined(SQLITE_ENABLE_MEMSYS3) && !defined(SQLITE_ENABLE_MEMSYS5)
-        fatalError("the %s option requires -DSQLITE_ENABLE_MEMSYS5 or _MEMSYS3",
-                   argv[i]);
-#else
         if( i>=argc-1 ) fatalError("missing arguments on %s", argv[i]);
         nMem = integerValue(argv[++i]);
-#endif
       }else
       if( strcmp(z,"limit-vdbe")==0 ){
         vdbeLimitFlag = 1;
@@ -913,13 +887,6 @@ int main(int argc, char **argv){
       }else
       if( strcmp(z,"native-vfs")==0 ){
         nativeFlag = 1;
-      }else
-      if( strcmp(z,"oss-fuzz")==0 ){
-        ossFuzz = 1;
-      }else
-      if( strcmp(z,"prng-seed")==0 ){
-        if( i>=argc-1 ) fatalError("missing arguments on %s", argv[i]);
-        g.uRandom = atoi(argv[++i]);
       }else
       if( strcmp(z,"quiet")==0 || strcmp(z,"q")==0 ){
         quietFlag = 1;
@@ -947,8 +914,8 @@ int main(int argc, char **argv){
       }else
       if( strcmp(z,"verbose")==0 || strcmp(z,"v")==0 ){
         quietFlag = 0;
-        verboseFlag++;
-        if( verboseFlag>1 ) runFlags |= SQL_TRACE;
+        verboseFlag = 1;
+        runFlags |= SQL_TRACE;
       }else
       {
         fatalError("unknown option: %s", argv[i]);
@@ -971,8 +938,7 @@ int main(int argc, char **argv){
 
   /* Process each source database separately */
   for(iSrcDb=0; iSrcDb<nSrcDb; iSrcDb++){
-    rc = sqlite3_open_v2(azSrcDb[iSrcDb], &db,
-                         SQLITE_OPEN_READONLY, pDfltVfs->zName);
+    rc = sqlite3_open(azSrcDb[iSrcDb], &db);
     if( rc ){
       fatalError("cannot open source database %s - %s",
       azSrcDb[iSrcDb], sqlite3_errmsg(db));
@@ -998,34 +964,6 @@ int main(int argc, char **argv){
       sqlite3_free(zSql);
       if( rc ) fatalError("cannot change description: %s", sqlite3_errmsg(db));
     }
-    ossFuzzThisDb = ossFuzz;
-
-    /* If the CONFIG(name,value) table exists, read db-specific settings
-    ** from that table */
-    if( sqlite3_table_column_metadata(db,0,"config",0,0,0,0,0,0)==SQLITE_OK ){
-      rc = sqlite3_prepare_v2(db, "SELECT name, value FROM config", -1, &pStmt, 0);
-      if( rc ) fatalError("cannot prepare query of CONFIG table: %s",
-                          sqlite3_errmsg(db));
-      while( SQLITE_ROW==sqlite3_step(pStmt) ){
-        const char *zName = (const char *)sqlite3_column_text(pStmt,0);
-        if( zName==0 ) continue;
-        if( strcmp(zName, "oss-fuzz")==0 ){
-          ossFuzzThisDb = sqlite3_column_int(pStmt,1);
-          if( verboseFlag ) printf("Config: oss-fuzz=%d\n", ossFuzzThisDb);
-        }
-        if( strcmp(zName, "limit-mem")==0 ){
-#if !defined(SQLITE_ENABLE_MEMSYS3) && !defined(SQLITE_ENABLE_MEMSYS5)
-          fatalError("the limit-mem option requires -DSQLITE_ENABLE_MEMSYS5"
-                     " or _MEMSYS3");
-#else
-          nMemThisDb = sqlite3_column_int(pStmt,1);
-          if( verboseFlag ) printf("Config: limit-mem=%d\n", nMemThisDb);
-#endif
-        }
-      }
-      sqlite3_finalize(pStmt);
-    }
-
     if( zInsSql ){
       sqlite3_create_function(db, "readfile", 1, SQLITE_UTF8, 0,
                               readfileFunc, 0, 0);
@@ -1112,7 +1050,7 @@ int main(int argc, char **argv){
     /* Print the description, if there is one */
     if( !quietFlag ){
       zDbName = azSrcDb[iSrcDb];
-      i = (int)strlen(zDbName) - 1;
+      i = strlen(zDbName) - 1;
       while( i>0 && zDbName[i-1]!='/' && zDbName[i-1]!='\\' ){ i--; }
       zDbName += i;
       sqlite3_prepare_v2(db, "SELECT msg FROM readme", -1, &pStmt, 0);
@@ -1141,17 +1079,19 @@ int main(int argc, char **argv){
     }
 
     /* Limit available memory, if requested */
-    if( nMemThisDb>0 ){
+    if( nMem>0 ){
       sqlite3_shutdown();
-      pHeap = realloc(pHeap, nMemThisDb);
+      pHeap = malloc(nMem);
       if( pHeap==0 ){
         fatalError("failed to allocate %d bytes of heap memory", nMem);
       }
-      sqlite3_config(SQLITE_CONFIG_HEAP, pHeap, nMemThisDb, 128);
+      sqlite3_config(SQLITE_CONFIG_HEAP, pHeap, nMem, 128);
     }
   
-    /* Reset the in-memory virtual filesystem */
+    /* Register the in-memory virtual filesystem
+    */
     formatVfs();
+    inmemVfsRegister();
     
     /* Run a test using each SQL script against each database.
     */
@@ -1176,37 +1116,25 @@ int main(int argc, char **argv){
           }
         }
         createVFile("main.db", pDb->sz, pDb->a);
-        sqlite3_randomness(0,0);
-        if( ossFuzzThisDb ){
-#ifndef SQLITE_OSS_FUZZ
-          fatalError("--oss-fuzz not supported: recompile with -DSQLITE_OSS_FUZZ");
-#else
-          extern int LLVMFuzzerTestOneInput(const uint8_t*, size_t);
-          LLVMFuzzerTestOneInput((const uint8_t*)pSql->a, (size_t)pSql->sz);
-#endif
-        }else{
-          openFlags = SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE;
-          if( nativeFlag && pDb->sz==0 ){
-            openFlags |= SQLITE_OPEN_MEMORY;
-            zVfs = 0;
-          }
-          rc = sqlite3_open_v2("main.db", &db, openFlags, zVfs);
-          if( rc ) fatalError("cannot open inmem database");
-          sqlite3_limit(db, SQLITE_LIMIT_LENGTH, 100000000);
-          sqlite3_limit(db, SQLITE_LIMIT_LIKE_PATTERN_LENGTH, 50);
-          if( cellSzCkFlag ) runSql(db, "PRAGMA cell_size_check=ON", runFlags);
-          setAlarm(iTimeout);
-#ifndef SQLITE_OMIT_PROGRESS_CALLBACK
-          if( sqlFuzz || vdbeLimitFlag ){
-            sqlite3_progress_handler(db, 100000, progressHandler, &vdbeLimitFlag);
-          }
-#endif
-          do{
-            runSql(db, (char*)pSql->a, runFlags);
-          }while( timeoutTest );
-          setAlarm(0);
-          sqlite3_close(db);
+        openFlags = SQLITE_OPEN_CREATE | SQLITE_OPEN_READWRITE;
+        if( nativeFlag && pDb->sz==0 ){
+          openFlags |= SQLITE_OPEN_MEMORY;
+          zVfs = 0;
         }
+        rc = sqlite3_open_v2("main.db", &db, openFlags, zVfs);
+        if( rc ) fatalError("cannot open inmem database");
+        if( cellSzCkFlag ) runSql(db, "PRAGMA cell_size_check=ON", runFlags);
+        setAlarm(iTimeout);
+#ifndef SQLITE_OMIT_PROGRESS_CALLBACK
+        if( sqlFuzz || vdbeLimitFlag ){
+          sqlite3_progress_handler(db, 100000, progressHandler, &vdbeLimitFlag);
+        }
+#endif
+        do{
+          runSql(db, (char*)pSql->a, runFlags);
+        }while( timeoutTest );
+        setAlarm(0);
+        sqlite3_close(db);
         if( sqlite3_memory_used()>0 ) fatalError("memory leak");
         reformatVfs();
         nTest++;

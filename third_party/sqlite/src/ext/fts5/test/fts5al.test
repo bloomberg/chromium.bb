@@ -23,10 +23,8 @@ ifcapable !fts5 {
   return
 }
 
-foreach_detail_mode $testprefix {
-
 do_execsql_test 1.1 {
-  CREATE VIRTUAL TABLE ft1 USING fts5(x, detail=%DETAIL%);
+  CREATE VIRTUAL TABLE ft1 USING fts5(x);
   SELECT * FROM ft1_config;
 } {version 4}
 
@@ -85,7 +83,7 @@ foreach {tn defn} {
 #
 
 do_execsql_test 3.1 {
-  CREATE VIRTUAL TABLE t1 USING fts5(x, detail=%DETAIL%);
+  CREATE VIRTUAL TABLE t1 USING fts5(x);
   INSERT INTO t1 VALUES('q w e r t y');
   INSERT INTO t1 VALUES('y t r e w q');
 }
@@ -124,13 +122,11 @@ do_execsql_test 3.4.1 {
   {{0 0 5}} 
 }
 
-if {[detail_is_full]} {
-  do_execsql_test 3.4.2 {
-    SELECT insttest(t1) FROM t1 WHERE t1 MATCH 'r+e OR w'
-  } {
-    {{1 0 1}}
-    {{0 0 2} {1 0 4}} 
-  }
+do_execsql_test 3.4.2 {
+  SELECT insttest(t1) FROM t1 WHERE t1 MATCH 'r+e OR w'
+} {
+  {{1 0 1}}
+  {{0 0 2} {1 0 4}} 
 }
 
 proc coltest {cmd} {
@@ -153,7 +149,7 @@ do_execsql_test 3.5.1 {
 #
 
 do_execsql_test 4.0 {
-  CREATE VIRTUAL TABLE t2 USING fts5(a, b, detail=%DETAIL%);
+  CREATE VIRTUAL TABLE t2 USING fts5(a, b);
   INSERT INTO t2 VALUES('a s h g s b j m r h', 's b p a d b b a o e');
   INSERT INTO t2 VALUES('r h n t a g r d d i', 'l d n j r c f t o q');
   INSERT INTO t2 VALUES('q k n i k c a a e m', 'c h n j p g s c i t');
@@ -222,26 +218,24 @@ proc rowidplus {cmd ival} {
 }
 sqlite3_fts5_create_function db rowidplus rowidplus
 
-if {[detail_is_full]} {
-  do_execsql_test 4.2.1 {
-    INSERT INTO t2(t2, rank) VALUES('rank', 'rowidplus(100) ');
-    SELECT rowid, rank FROM t2 WHERE t2 MATCH 'o + q + g'
-  } {
-    10 110
-  }
-  do_execsql_test 4.2.2 {
-    INSERT INTO t2(t2, rank) VALUES('rank', 'rowidplus(111) ');
-    SELECT rowid, rank FROM t2 WHERE t2 MATCH 'o + q + g'
-  } {
-    10 121
-  }
+do_execsql_test 4.2.1 {
+  INSERT INTO t2(t2, rank) VALUES('rank', 'rowidplus(100) ');
+  SELECT rowid, rank FROM t2 WHERE t2 MATCH 'o + q + g'
+} {
+  10 110
+}
+do_execsql_test 4.2.2 {
+  INSERT INTO t2(t2, rank) VALUES('rank', 'rowidplus(111) ');
+  SELECT rowid, rank FROM t2 WHERE t2 MATCH 'o + q + g'
+} {
+  10 121
+}
 
-  do_execsql_test 4.2.3 {
-    SELECT rowid, rank FROM t2 
-      WHERE t2 MATCH 'o + q + g' AND rank MATCH 'rowidplus(112)'
-  } {
-    10 122
-  }
+do_execsql_test 4.2.3 {
+  SELECT rowid, rank FROM t2 
+  WHERE t2 MATCH 'o + q + g' AND rank MATCH 'rowidplus(112)'
+} {
+  10 122
 }
 
 proc rowidmod {cmd imod} { 
@@ -249,7 +243,7 @@ proc rowidmod {cmd imod} {
 }
 sqlite3_fts5_create_function db rowidmod rowidmod
 do_execsql_test 4.3.1 {
-  CREATE VIRTUAL TABLE t3 USING fts5(x, detail=%DETAIL%);
+  CREATE VIRTUAL TABLE t3 USING fts5(x);
   INSERT INTO t3 VALUES('a one');
   INSERT INTO t3 VALUES('a two');
   INSERT INTO t3 VALUES('a three');
@@ -293,7 +287,6 @@ do_catchsql_test 4.4.4 {
   SELECT *, rank FROM t3 WHERE t3 MATCH 'a' AND rank MATCH NULL
 } {1 {parse error in rank function: }}
 
-} ;# foreach_detail_mode
 
 
 finish_test

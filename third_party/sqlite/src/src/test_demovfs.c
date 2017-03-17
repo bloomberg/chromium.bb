@@ -641,17 +641,10 @@ sqlite3_vfs *sqlite3_demovfs(void){
 
 #ifdef SQLITE_TEST
 
-#if defined(INCLUDE_SQLITE_TCL_H)
-#  include "sqlite_tcl.h"
-#else
-#  include "tcl.h"
-#  ifndef SQLITE_TCLAPI
-#    define SQLITE_TCLAPI
-#  endif
-#endif
+#include <tcl.h>
 
 #if SQLITE_OS_UNIX
-static int SQLITE_TCLAPI register_demovfs(
+static int register_demovfs(
   ClientData clientData, /* Pointer to sqlite3_enable_XXX function */
   Tcl_Interp *interp,    /* The TCL interpreter that invoked this command */
   int objc,              /* Number of arguments */
@@ -660,7 +653,7 @@ static int SQLITE_TCLAPI register_demovfs(
   sqlite3_vfs_register(sqlite3_demovfs(), 1);
   return TCL_OK;
 }
-static int SQLITE_TCLAPI unregister_demovfs(
+static int unregister_demovfs(
   ClientData clientData, /* Pointer to sqlite3_enable_XXX function */
   Tcl_Interp *interp,    /* The TCL interpreter that invoked this command */
   int objc,              /* Number of arguments */

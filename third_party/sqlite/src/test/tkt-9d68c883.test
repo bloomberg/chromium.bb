@@ -50,6 +50,4 @@ for {set i 0} {$i < 100} {incr i} {
   } {ok}
 }
 
-catch { db close } 
-unregister_devsim
 finish_test

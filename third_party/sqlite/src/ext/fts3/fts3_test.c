@@ -18,14 +18,7 @@
 ** that the sqlite3_tokenizer_module.xLanguage() method is invoked correctly.
 */
 
-#if defined(INCLUDE_SQLITE_TCL_H)
-#  include "sqlite_tcl.h"
-#else
-#  include "tcl.h"
-#  ifndef SQLITE_TCLAPI
-#    define SQLITE_TCLAPI
-#  endif
-#endif
+#include <tcl.h>
 #include <string.h>
 #include <assert.h>
 
@@ -150,7 +143,7 @@ static int nm_match_count(
 /*
 ** Tclcmd: fts3_near_match DOCUMENT EXPR ?OPTIONS?
 */
-static int SQLITE_TCLAPI fts3_near_match_cmd(
+static int fts3_near_match_cmd(
   ClientData clientData,
   Tcl_Interp *interp,
   int objc,
@@ -285,7 +278,7 @@ static int SQLITE_TCLAPI fts3_near_match_cmd(
 **    # Restore initial incr-load settings:
 **    eval fts3_configure_incr_load $cfg
 */
-static int SQLITE_TCLAPI fts3_configure_incr_load_cmd(
+static int fts3_configure_incr_load_cmd(
   ClientData clientData,
   Tcl_Interp *interp,
   int objc,
@@ -465,7 +458,7 @@ static int testTokenizerNext(
       if( pCsr->iLangid & 0x00000001 ){
         for(i=0; i<nToken; i++) pCsr->aBuffer[i] = pToken[i];
       }else{
-        for(i=0; i<nToken; i++) pCsr->aBuffer[i] = (char)testTolower(pToken[i]);
+        for(i=0; i<nToken; i++) pCsr->aBuffer[i] = testTolower(pToken[i]);
       }
       pCsr->iToken++;
       pCsr->iInput = (int)(p - pCsr->aInput);
@@ -495,7 +488,7 @@ static int testTokenizerLanguage(
 }
 #endif
 
-static int SQLITE_TCLAPI fts3_test_tokenizer_cmd(
+static int fts3_test_tokenizer_cmd(
   ClientData clientData,
   Tcl_Interp *interp,
   int objc,
@@ -524,7 +517,7 @@ static int SQLITE_TCLAPI fts3_test_tokenizer_cmd(
   return TCL_OK;
 }
 
-static int SQLITE_TCLAPI fts3_test_varint_cmd(
+static int fts3_test_varint_cmd(
   ClientData clientData,
   Tcl_Interp *interp,
   int objc,
@@ -533,8 +526,7 @@ static int SQLITE_TCLAPI fts3_test_varint_cmd(
 #ifdef SQLITE_ENABLE_FTS3
   char aBuf[24];
   int rc;
-  Tcl_WideInt w;
-  sqlite3_int64 w2;
+  Tcl_WideInt w, w2;
   int nByte, nByte2;
 
   if( objc!=2 ){

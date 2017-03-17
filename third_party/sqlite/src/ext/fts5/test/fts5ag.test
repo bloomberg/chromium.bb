@@ -33,10 +33,8 @@ ifcapable !fts5 {
 #      ... WHERE fts MATCH ? ORDER BY rank [ASC|DESC]
 #
 
-foreach_detail_mode $testprefix {
-
 do_execsql_test 1.0 {
-  CREATE VIRTUAL TABLE t1 USING fts5(x, y, z, detail=%DETAIL%);
+  CREATE VIRTUAL TABLE t1 USING fts5(x, y, z);
 }
 
 do_test 1.1 {
@@ -121,24 +119,19 @@ foreach {tn expr} {
   2.3 c
   2.4 d
 
+  2.5 {"m m"}
+  2.6 {e + s}
+
   3.0 {a AND b}
   3.1 {a OR b}
   3.2 {b OR c AND d}
+  3.3 {NEAR(c d)}
 } {
   do_fts5ag_test $tn $expr
+
+  if {[set_test_counter errors]} break
 }
 
-if {[detail_is_full]} {
-  foreach {tn expr} {
-    4.1 {"m m"}
-    4.2 {e + s}
-    4.3 {NEAR(c d)}
-  } {
-    do_fts5ag_test $tn $expr
-  }
-}
-
-} ;# foreach_detail_mode
 
 
 finish_test

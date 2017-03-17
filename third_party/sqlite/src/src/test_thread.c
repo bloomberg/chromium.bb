@@ -16,11 +16,7 @@
 */
 
 #include "sqliteInt.h"
-#if defined(INCLUDE_SQLITE_TCL_H)
-#  include "sqlite_tcl.h"
-#else
-#  include "tcl.h"
-#endif
+#include <tcl.h>
 
 #if SQLITE_THREADSAFE
 
@@ -76,7 +72,7 @@ extern int sqlite3TestErrCode(Tcl_Interp *, sqlite3 *, int);
 /*
 ** Handler for events of type EvalEvent.
 */
-static int SQLITE_TCLAPI tclScriptEvent(Tcl_Event *evPtr, int flags){
+static int tclScriptEvent(Tcl_Event *evPtr, int flags){
   int rc;
   EvalEvent *p = (EvalEvent *)evPtr;
   rc = Tcl_Eval(p->interp, p->zScript);
@@ -171,7 +167,7 @@ static Tcl_ThreadCreateType tclScriptThread(ClientData pSqlThread){
 **
 **     The caller can wait for the script to terminate using [vwait VARNAME].
 */
-static int SQLITE_TCLAPI sqlthread_spawn(
+static int sqlthread_spawn(
   ClientData clientData,
   Tcl_Interp *interp,
   int objc,
@@ -224,7 +220,7 @@ static int SQLITE_TCLAPI sqlthread_spawn(
 **
 **     NOTE: At the moment, this doesn't work. FIXME.
 */
-static int SQLITE_TCLAPI sqlthread_parent(
+static int sqlthread_parent(
   ClientData clientData,
   Tcl_Interp *interp,
   int objc,
@@ -269,7 +265,7 @@ static int xBusy(void *pArg, int nBusy){
 **     Open a database handle and return the string representation of
 **     the pointer value.
 */
-static int SQLITE_TCLAPI sqlthread_open(
+static int sqlthread_open(
   ClientData clientData,
   Tcl_Interp *interp,
   int objc,
@@ -280,7 +276,7 @@ static int SQLITE_TCLAPI sqlthread_open(
   const char *zFilename;
   sqlite3 *db;
   char zBuf[100];
-  extern int Md5_Register(sqlite3*,char**,const sqlite3_api_routines*);
+  extern void Md5_Register(sqlite3*);
 
   UNUSED_PARAMETER(clientData);
   UNUSED_PARAMETER(objc);
@@ -303,7 +299,7 @@ static int SQLITE_TCLAPI sqlthread_open(
     }
   }
 #endif
-  Md5_Register(db, 0, 0);
+  Md5_Register(db);
   sqlite3_busy_handler(db, xBusy, 0);
   
   if( sqlite3TestMakePointerStr(interp, zBuf, db) ) return TCL_ERROR;
@@ -319,7 +315,7 @@ static int SQLITE_TCLAPI sqlthread_open(
 **     Return the current thread-id (Tcl_GetCurrentThread()) cast to
 **     an integer.
 */
-static int SQLITE_TCLAPI sqlthread_id(
+static int sqlthread_id(
   ClientData clientData,
   Tcl_Interp *interp,
   int objc,
@@ -337,7 +333,7 @@ static int SQLITE_TCLAPI sqlthread_id(
 /*
 ** Dispatch routine for the sub-commands of [sqlthread].
 */
-static int SQLITE_TCLAPI sqlthread_proc(
+static int sqlthread_proc(
   ClientData clientData,
   Tcl_Interp *interp,
   int objc,
@@ -385,7 +381,7 @@ static int SQLITE_TCLAPI sqlthread_proc(
 ** implemented as a script in Tcl 8.5, it is not usually available to
 ** testfixture.
 */ 
-static int SQLITE_TCLAPI clock_seconds_proc(
+static int clock_seconds_proc(
   ClientData clientData,
   Tcl_Interp *interp,
   int objc,
@@ -547,7 +543,7 @@ int sqlite3_blocking_prepare_v2(
 **
 ** Advance the statement to the next row.
 */
-static int SQLITE_TCLAPI blocking_step_proc(
+static int blocking_step_proc(
   void * clientData,
   Tcl_Interp *interp,
   int objc,
@@ -573,7 +569,7 @@ static int SQLITE_TCLAPI blocking_step_proc(
 ** Usage: sqlite3_blocking_prepare_v2 DB sql bytes ?tailvar?
 ** Usage: sqlite3_nonblocking_prepare_v2 DB sql bytes ?tailvar?
 */
-static int SQLITE_TCLAPI blocking_prepare_v2_proc(
+static int blocking_prepare_v2_proc(
   void * clientData,
   Tcl_Interp *interp,
   int objc,

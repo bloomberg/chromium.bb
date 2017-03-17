@@ -321,3 +321,4 @@ do_test 4.5 {
 
 test_restore_config_pagecache
 finish_test
+

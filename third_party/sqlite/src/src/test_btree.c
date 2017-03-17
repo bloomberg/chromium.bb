@@ -14,11 +14,7 @@
 ** testing of the SQLite library.
 */
 #include "btreeInt.h"
-#if defined(INCLUDE_SQLITE_TCL_H)
-#  include "sqlite_tcl.h"
-#else
-#  include "tcl.h"
-#endif
+#include <tcl.h>
 
 /*
 ** Usage: sqlite3_shared_cache_report
@@ -26,7 +22,7 @@
 ** Return a list of file that are shared and the number of
 ** references to each file.
 */
-int SQLITE_TCLAPI sqlite3BtreeSharedCacheReport(
+int sqlite3BtreeSharedCacheReport(
   void * clientData,
   Tcl_Interp *interp,
   int objc,

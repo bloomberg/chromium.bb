@@ -350,3 +350,7 @@ do_eqp_execsql_test 7.4 {
 }
 
 finish_test
+
+
+
+finish_test

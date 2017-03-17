@@ -12,8 +12,8 @@
 **
 ** This file contains code that is specific to MSVC.
 */
-#ifndef SQLITE_MSVC_H
-#define SQLITE_MSVC_H
+#ifndef _MSVC_H_
+#define _MSVC_H_
 
 #if defined(_MSC_VER)
 #pragma warning(disable : 4054)
@@ -33,4 +33,4 @@
 #pragma warning(disable : 4706)
 #endif /* defined(_MSC_VER) */
 
-#endif /* SQLITE_MSVC_H */
+#endif /* _MSVC_H_ */

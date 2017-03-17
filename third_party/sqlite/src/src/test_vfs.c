@@ -28,11 +28,7 @@
 
 #include "sqlite3.h"
 #include "sqliteInt.h"
-#if defined(INCLUDE_SQLITE_TCL_H)
-#  include "sqlite_tcl.h"
-#else
-#  include "tcl.h"
-#endif
+#include <tcl.h>
 
 typedef struct Testvfs Testvfs;
 typedef struct TestvfsShm TestvfsShm;
@@ -310,6 +306,7 @@ static void tvfsExecTcl(
 ** Close an tvfs-file.
 */
 static int tvfsClose(sqlite3_file *pFile){
+  int rc;
   TestvfsFile *pTestfile = (TestvfsFile *)pFile;
   TestvfsFd *pFd = pTestfile->pFd;
   Testvfs *p = (Testvfs *)pFd->pVfs->pAppData;
@@ -327,10 +324,10 @@ static int tvfsClose(sqlite3_file *pFile){
   if( pFile->pMethods ){
     ckfree((char *)pFile->pMethods);
   }
-  sqlite3OsClose(pFd->pReal);
+  rc = sqlite3OsClose(pFd->pReal);
   ckfree((char *)pFd);
   pTestfile->pFd = 0;
-  return SQLITE_OK;
+  return rc;
 }
 
 /*
@@ -1040,7 +1037,7 @@ static int tvfsUnfetch(sqlite3_file *pFile, sqlite3_int64 iOfst, void *p){
   return sqlite3OsUnfetch(pFd->pReal, iOfst, p);
 }
 
-static int SQLITE_TCLAPI testvfs_obj_cmd(
+static int testvfs_obj_cmd(
   ClientData cd,
   Tcl_Interp *interp,
   int objc,
@@ -1352,7 +1349,7 @@ static int SQLITE_TCLAPI testvfs_obj_cmd(
   return TCL_OK;
 }
 
-static void SQLITE_TCLAPI testvfs_obj_del(ClientData cd){
+static void testvfs_obj_del(ClientData cd){
   Testvfs *p = (Testvfs *)cd;
   if( p->pScript ) Tcl_DecrRefCount(p->pScript);
   sqlite3_vfs_unregister(p->pVfs);
@@ -1395,7 +1392,7 @@ static void SQLITE_TCLAPI testvfs_obj_del(ClientData cd){
 **
 ** where LOCK is of the form "OFFSET NBYTE lock/unlock shared/exclusive"
 */
-static int SQLITE_TCLAPI testvfs_cmd(
+static int testvfs_cmd(
   ClientData cd,
   Tcl_Interp *interp,
   int objc,

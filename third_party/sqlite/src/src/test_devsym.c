@@ -133,8 +133,7 @@ struct DevsymGlobal g = {0, 0, 512};
 */
 static int devsymClose(sqlite3_file *pFile){
   devsym_file *p = (devsym_file *)pFile;
-  sqlite3OsClose(p->pReal);
-  return SQLITE_OK;
+  return sqlite3OsClose(p->pReal);
 }
 
 /*
@@ -394,13 +393,6 @@ void devsym_register(int iDeviceChar, int iSectorSize){
   }else{
     g.iSectorSize = 512;
   }
-}
-
-void devsym_unregister(){
-  sqlite3_vfs_unregister(&devsym_vfs);
-  g.pVfs = 0;
-  g.iDeviceChar = 0;
-  g.iSectorSize = 0;
 }
 
 #endif

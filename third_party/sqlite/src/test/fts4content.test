@@ -636,3 +636,4 @@ do_catchsql_test 11.1 {
 
 
 finish_test
+

@@ -344,10 +344,10 @@ static int fuzzerLoadOneRule(
       memset(pRule, 0, sizeof(*pRule));
       pRule->zFrom = pRule->zTo;
       pRule->zFrom += nTo + 1;
-      pRule->nFrom = (fuzzer_len)nFrom;
+      pRule->nFrom = nFrom;
       memcpy(pRule->zFrom, zFrom, nFrom+1);
       memcpy(pRule->zTo, zTo, nTo+1);
-      pRule->nTo = (fuzzer_len)nTo;
+      pRule->nTo = nTo;
       pRule->rCost = nCost;
       pRule->iRuleset = (int)iRuleset;
     }

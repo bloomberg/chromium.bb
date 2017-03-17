@@ -16,11 +16,7 @@
 */
 #if SQLITE_TEST          /* This file is used for testing only */
 #include "sqliteInt.h"
-#if defined(INCLUDE_SQLITE_TCL_H)
-#  include "sqlite_tcl.h"
-#else
-#  include "tcl.h"
-#endif
+#include "tcl.h"
 
 #ifndef SQLITE_OMIT_DISKIO  /* This file is a no-op if disk I/O is disabled */
 
@@ -219,9 +215,7 @@ static int writeListSync(CrashFile *pFile, int isCrash){
   }
 
 #ifdef TRACE_CRASHTEST
-  if( pFile ){
-    printf("Sync %s (is %s crash)\n", pFile->zName, (isCrash?"a":"not a"));
-  }
+  printf("Sync %s (is %s crash)\n", pFile->zName, (isCrash?"a":"not a"));
 #endif
 
   ppPtr = &g.pWriteList;
@@ -707,10 +701,6 @@ static int cfCurrentTime(sqlite3_vfs *pCfVfs, double *pTimeOut){
   sqlite3_vfs *pVfs = (sqlite3_vfs *)pCfVfs->pAppData;
   return pVfs->xCurrentTime(pVfs, pTimeOut);
 }
-static int cfGetLastError(sqlite3_vfs *pCfVfs, int n, char *z){
-  sqlite3_vfs *pVfs = (sqlite3_vfs *)pCfVfs->pAppData;
-  return pVfs->xGetLastError(pVfs, n, z);
-}
 
 static int processDevSymArgs(
   Tcl_Interp *interp,
@@ -806,33 +796,12 @@ static int processDevSymArgs(
 }
 
 /*
-** tclcmd:   sqlite3_crash_now
-**
-** Simulate a crash immediately. This function does not return 
-** (writeListSync() calls exit(-1)).
-*/
-static int SQLITE_TCLAPI crashNowCmd(
-  void * clientData,
-  Tcl_Interp *interp,
-  int objc,
-  Tcl_Obj *CONST objv[]
-){
-  if( objc!=1 ){
-    Tcl_WrongNumArgs(interp, 1, objv, "");
-    return TCL_ERROR;
-  }
-  writeListSync(0, 1);
-  assert( 0 );
-  return TCL_OK;
-}
-
-/*
 ** tclcmd:   sqlite_crash_enable ENABLE
 **
 ** Parameter ENABLE must be a boolean value. If true, then the "crash"
 ** vfs is added to the system. If false, it is removed.
 */
-static int SQLITE_TCLAPI crashEnableCmd(
+static int crashEnableCmd(
   void * clientData,
   Tcl_Interp *interp,
   int objc,
@@ -858,7 +827,7 @@ static int SQLITE_TCLAPI crashEnableCmd(
     cfRandomness,         /* xRandomness */
     cfSleep,              /* xSleep */
     cfCurrentTime,        /* xCurrentTime */
-    cfGetLastError,       /* xGetLastError */
+    0,                    /* xGetlastError */
     0,                    /* xCurrentTimeInt64 */
   };
 
@@ -907,7 +876,7 @@ static int SQLITE_TCLAPI crashEnableCmd(
 **   sqlite_crashparams -sect 1024 -char {atomic sequential} ./test.db 1
 **
 */
-static int SQLITE_TCLAPI crashParamsObjCmd(
+static int crashParamsObjCmd(
   void * clientData,
   Tcl_Interp *interp,
   int objc,
@@ -954,7 +923,7 @@ error:
   return TCL_ERROR;
 }
 
-static int SQLITE_TCLAPI devSymObjCmd(
+static int devSymObjCmd(
   void * clientData,
   Tcl_Interp *interp,
   int objc,
@@ -971,33 +940,12 @@ static int SQLITE_TCLAPI devSymObjCmd(
   devsym_register(iDc, iSectorSize);
 
   return TCL_OK;
-
-}
-
-/*
-** tclcmd: unregister_devsim
-*/
-static int SQLITE_TCLAPI dsUnregisterObjCmd(
-  void * clientData,
-  Tcl_Interp *interp,
-  int objc,
-  Tcl_Obj *CONST objv[]
-){
-  void devsym_unregister(void);
-
-  if( objc!=1 ){
-    Tcl_WrongNumArgs(interp, 1, objv, "");
-    return TCL_ERROR;
-  }
-
-  devsym_unregister();
-  return TCL_OK;
 }
 
 /*
 ** tclcmd: register_jt_vfs ?-default? PARENT-VFS
 */
-static int SQLITE_TCLAPI jtObjCmd(
+static int jtObjCmd(
   void * clientData,
   Tcl_Interp *interp,
   int objc,
@@ -1035,7 +983,7 @@ static int SQLITE_TCLAPI jtObjCmd(
 /*
 ** tclcmd: unregister_jt_vfs
 */
-static int SQLITE_TCLAPI jtUnregisterObjCmd(
+static int jtUnregisterObjCmd(
   void * clientData,
   Tcl_Interp *interp,
   int objc,
@@ -1061,9 +1009,7 @@ int Sqlitetest6_Init(Tcl_Interp *interp){
 #ifndef SQLITE_OMIT_DISKIO
   Tcl_CreateObjCommand(interp, "sqlite3_crash_enable", crashEnableCmd, 0, 0);
   Tcl_CreateObjCommand(interp, "sqlite3_crashparams", crashParamsObjCmd, 0, 0);
-  Tcl_CreateObjCommand(interp, "sqlite3_crash_now", crashNowCmd, 0, 0);
   Tcl_CreateObjCommand(interp, "sqlite3_simulate_device", devSymObjCmd, 0, 0);
-  Tcl_CreateObjCommand(interp, "unregister_devsim", dsUnregisterObjCmd, 0, 0);
   Tcl_CreateObjCommand(interp, "register_jt_vfs", jtObjCmd, 0, 0);
   Tcl_CreateObjCommand(interp, "unregister_jt_vfs", jtUnregisterObjCmd, 0, 0);
 #endif

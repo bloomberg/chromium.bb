@@ -22,7 +22,7 @@
 ** directory as this file for additional information.
 */
 #ifdef SQLITE_USER_AUTHENTICATION
-#ifndef SQLITEINT_H
+#ifndef _SQLITEINT_H_
 # include "sqliteInt.h"
 #endif
 

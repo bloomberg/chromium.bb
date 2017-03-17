@@ -106,7 +106,7 @@ void sqlite3_randomness(int N, void *pBuf){
   sqlite3_mutex_leave(mutex);
 }
 
-#ifndef SQLITE_UNTESTABLE
+#ifndef SQLITE_OMIT_BUILTIN_TEST
 /*
 ** For testing purposes, we sometimes want to preserve the state of
 ** PRNG and restore the PRNG to its saved state at a later time, or
@@ -131,4 +131,4 @@ void sqlite3PrngRestoreState(void){
     sizeof(sqlite3Prng)
   );
 }
-#endif /* SQLITE_UNTESTABLE */
+#endif /* SQLITE_OMIT_BUILTIN_TEST */

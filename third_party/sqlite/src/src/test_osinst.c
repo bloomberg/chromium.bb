@@ -644,9 +644,9 @@ static void vfslog_flush(VfslogVfs *p){
 
 static void put32bits(unsigned char *p, unsigned int v){
   p[0] = v>>24;
-  p[1] = (unsigned char)(v>>16);
-  p[2] = (unsigned char)(v>>8);
-  p[3] = (unsigned char)v;
+  p[1] = v>>16;
+  p[2] = v>>8;
+  p[3] = v;
 }
 
 static void vfslog_call(
@@ -1104,16 +1104,9 @@ int sqlite3_vfslog_register(sqlite3 *db){
 
 #if defined(SQLITE_TEST) || defined(TCLSH)
 
-#if defined(INCLUDE_SQLITE_TCL_H)
-#  include "sqlite_tcl.h"
-#else
-#  include "tcl.h"
-#  ifndef SQLITE_TCLAPI
-#    define SQLITE_TCLAPI
-#  endif
-#endif
+#include <tcl.h>
 
-static int SQLITE_TCLAPI test_vfslog(
+static int test_vfslog(
   void *clientData,
   Tcl_Interp *interp,
   int objc,

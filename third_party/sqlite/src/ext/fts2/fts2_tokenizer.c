@@ -99,11 +99,7 @@ static void scalarFunc(
 
 #ifdef SQLITE_TEST
 
-#if defined(INCLUDE_SQLITE_TCL_H)
-#  include "sqlite_tcl.h"
-#else
-#  include "tcl.h"
-#endif
+#include <tcl.h>
 #include <string.h>
 
 /*
