@@ -458,14 +458,9 @@ RefPtr<NGLayoutResult> NGBlockLayoutAlgorithm::Layout() {
 
     RefPtr<NGConstraintSpace> child_space =
         CreateConstraintSpaceForChild(child);
+    RefPtr<NGLayoutResult> layout_result =
+        child->Layout(child_space.get(), child_break_token);
 
-    RefPtr<NGLayoutResult> layout_result;
-    if (child->Type() == NGLayoutInputNode::kLegacyInline) {
-      layout_result = toNGInlineNode(child)->Layout(
-          child_space.get(), &builder_, child_break_token);
-    } else {
-      layout_result = child->Layout(child_space.get(), child_break_token);
-    }
     FinishChildLayout(child, child_space.get(), layout_result);
 
     entry = child_iterator.NextChild();

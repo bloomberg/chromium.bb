@@ -89,7 +89,7 @@ class NGInlineNodeTest : public RenderingTest {
     RefPtr<NGConstraintSpace> constraint_space =
         NGConstraintSpaceBuilder(kHorizontalTopBottom)
             .ToConstraintSpace(kHorizontalTopBottom);
-    NGLineBuilder line_builder(node, constraint_space.get(), nullptr);
+    NGLineBuilder line_builder(node, constraint_space.get());
 
     NGTextLayoutAlgorithm algorithm(node);
     algorithm.LayoutInline(&line_builder);

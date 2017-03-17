@@ -31,7 +31,7 @@ class CORE_EXPORT NGLineBuilder final {
   STACK_ALLOCATED();
 
  public:
-  NGLineBuilder(NGInlineNode*, NGConstraintSpace*, NGFragmentBuilder*);
+  NGLineBuilder(NGInlineNode*, NGConstraintSpace*);
 
   const NGConstraintSpace& ConstraintSpace() const {
     return *constraint_space_;
@@ -159,7 +159,6 @@ class CORE_EXPORT NGLineBuilder final {
 
   Persistent<NGInlineNode> inline_box_;
   NGConstraintSpace* constraint_space_;  // Not owned as STACK_ALLOCATED.
-  NGFragmentBuilder* containing_block_builder_;
   Vector<RefPtr<NGLayoutResult>, 32> layout_results_;
   Vector<LineBoxData, 32> line_box_data_list_;
   unsigned start_index_ = 0;

@@ -22,11 +22,9 @@
 namespace blink {
 
 NGLineBuilder::NGLineBuilder(NGInlineNode* inline_box,
-                             NGConstraintSpace* constraint_space,
-                             NGFragmentBuilder* containing_block_builder)
+                             NGConstraintSpace* constraint_space)
     : inline_box_(inline_box),
       constraint_space_(constraint_space),
-      containing_block_builder_(containing_block_builder),
       container_builder_(NGPhysicalFragment::kFragmentBox, inline_box_),
       container_layout_result_(nullptr),
       is_horizontal_writing_mode_(
@@ -309,13 +307,17 @@ void NGLineBuilder::PlaceItems(
     } else {
       LayoutObject* layout_object = item.GetLayoutObject();
       if (layout_object->isOutOfFlowPositioned()) {
-        if (containing_block_builder_) {
-          // Absolute positioning blockifies the box's display type.
-          // https://drafts.csswg.org/css-display/#transformations
-          containing_block_builder_->AddOutOfFlowChildCandidate(
-              new NGBlockNode(layout_object),
-              NGLogicalOffset(line_box_data.inline_size, content_size_));
-        }
+        // Absolute positioning blockifies the box's display type.
+        // https://drafts.csswg.org/css-display/#transformations
+        //
+        // TODO(layout-dev): Report the correct static position for the out of
+        // flow descendant. We can't do this here yet as it doesn't know the
+        // size of the line box.
+        container_builder_.AddOutOfFlowDescendant(
+            new NGBlockNode(layout_object),
+            NGStaticPosition::Create(ConstraintSpace().WritingMode(),
+                                     ConstraintSpace().Direction(),
+                                     NGPhysicalOffset()));
         continue;
       } else if (layout_object->isFloating()) {
         // TODO(kojii): Implement float.
