@@ -38,6 +38,7 @@
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/dom/NodeComputedStyle.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/StyleChangeReason.h"
 #include "core/dom/Text.h"
@@ -832,8 +833,12 @@ TextDirection HTMLElement::directionality(
 }
 
 bool HTMLElement::selfOrAncestorHasDirAutoAttribute() const {
-  return layoutObject() && layoutObject()->style() &&
-         layoutObject()->style()->selfOrAncestorHasDirAutoAttribute();
+  // TODO(esprehn): Storing this state in the computed style is bad, we
+  // should be able to answer questions about the shape of the DOM and the
+  // text contained inside it without having style.
+  if (const ComputedStyle* style = computedStyle())
+    return style->selfOrAncestorHasDirAutoAttribute();
+  return false;
 }
 
 void HTMLElement::dirAttributeChanged(const AtomicString& value) {
@@ -855,11 +860,9 @@ void HTMLElement::dirAttributeChanged(const AtomicString& value) {
 void HTMLElement::adjustDirectionalityIfNeededAfterChildAttributeChanged(
     Element* child) {
   DCHECK(selfOrAncestorHasDirAutoAttribute());
-  TextDirection textDirection = directionality();
-  if (layoutObject() && layoutObject()->style() &&
-      layoutObject()->style()->direction() != textDirection) {
-    Element* elementToAdjust = this;
-    for (; elementToAdjust;
+  const ComputedStyle* style = computedStyle();
+  if (style && style->direction() != directionality()) {
+    for (Element* elementToAdjust = this; elementToAdjust;
          elementToAdjust = FlatTreeTraversal::parentElement(*elementToAdjust)) {
       if (elementAffectsDirectionality(elementToAdjust)) {
         elementToAdjust->setNeedsStyleRecalc(
@@ -873,8 +876,8 @@ void HTMLElement::adjustDirectionalityIfNeededAfterChildAttributeChanged(
 
 void HTMLElement::calculateAndAdjustDirectionality() {
   TextDirection textDirection = directionality();
-  if (layoutObject() && layoutObject()->style() &&
-      layoutObject()->style()->direction() != textDirection)
+  const ComputedStyle* style = computedStyle();
+  if (style && style->direction() != textDirection)
     setNeedsStyleRecalc(LocalStyleChange,
                         StyleChangeReasonForTracing::create(
                             StyleChangeReason::WritingModeChange));
