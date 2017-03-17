@@ -64,6 +64,40 @@ set(AOM_DSP_COMMON_INTRIN_AVX2
     "${AOM_ROOT}/aom_dsp/x86/fwd_txfm_avx2.c"
     "${AOM_ROOT}/aom_dsp/x86/loopfilter_avx2.c")
 
+set(AOM_DSP_COMMON_ASM_NEON
+    "${AOM_ROOT}/aom_dsp/arm/aom_convolve8_avg_neon_asm.asm"
+    "${AOM_ROOT}/aom_dsp/arm/aom_convolve8_neon_asm.asm"
+    "${AOM_ROOT}/aom_dsp/arm/aom_convolve_avg_neon_asm.asm"
+    "${AOM_ROOT}/aom_dsp/arm/aom_convolve_copy_neon_asm.asm"
+    "${AOM_ROOT}/aom_dsp/arm/idct16x16_1_add_neon.asm"
+    "${AOM_ROOT}/aom_dsp/arm/idct16x16_add_neon.asm"
+    "${AOM_ROOT}/aom_dsp/arm/idct32x32_1_add_neon.asm"
+    "${AOM_ROOT}/aom_dsp/arm/idct32x32_add_neon.asm"
+    "${AOM_ROOT}/aom_dsp/arm/idct4x4_1_add_neon.asm"
+    "${AOM_ROOT}/aom_dsp/arm/idct4x4_add_neon.asm"
+    "${AOM_ROOT}/aom_dsp/arm/idct8x8_1_add_neon.asm"
+    "${AOM_ROOT}/aom_dsp/arm/idct8x8_add_neon.asm"
+    "${AOM_ROOT}/aom_dsp/arm/intrapred_neon_asm.asm"
+    "${AOM_ROOT}/aom_dsp/arm/loopfilter_16_neon.asm"
+    "${AOM_ROOT}/aom_dsp/arm/loopfilter_4_neon.asm"
+    "${AOM_ROOT}/aom_dsp/arm/loopfilter_8_neon.asm"
+    "${AOM_ROOT}/aom_dsp/arm/loopfilter_mb_neon.asm"
+    "${AOM_ROOT}/aom_dsp/arm/save_reg_neon.asm")
+
+set(AOM_DSP_COMMON_INTRIN_NEON
+    "${AOM_ROOT}/aom_dsp/arm/aom_convolve_neon.c"
+    "${AOM_ROOT}/aom_dsp/arm/avg_neon.c"
+    "${AOM_ROOT}/aom_dsp/arm/fwd_txfm_neon.c"
+    "${AOM_ROOT}/aom_dsp/arm/hadamard_neon.c"
+    "${AOM_ROOT}/aom_dsp/arm/idct16x16_neon.c"
+    "${AOM_ROOT}/aom_dsp/arm/intrapred_neon.c"
+    "${AOM_ROOT}/aom_dsp/arm/loopfilter_neon.c"
+    "${AOM_ROOT}/aom_dsp/arm/sad4d_neon.c"
+    "${AOM_ROOT}/aom_dsp/arm/sad_neon.c"
+    "${AOM_ROOT}/aom_dsp/arm/subpel_variance_neon.c"
+    "${AOM_ROOT}/aom_dsp/arm/subtract_neon.c"
+    "${AOM_ROOT}/aom_dsp/arm/variance_neon.c")
+
 if (CONFIG_AOM_HIGHBITDEPTH)
   set(AOM_DSP_COMMON_ASM_SSE2
       ${AOM_DSP_COMMON_ASM_SSE2}
@@ -354,6 +388,18 @@ function (setup_aom_dsp_targets)
     endif ()
   endif ()
 
+  if (HAVE_NEON_ASM)
+    if (AOM_ADS2GAS_REQUIRED)
+      add_gas_asm_library("aom_dsp_common_neon" "AOM_DSP_COMMON_ASM_NEON" "aom")
+    else ()
+      add_asm_library("aom_dsp_common_neon" "AOM_DSP_COMMON_ASM_NEON" "aom")
+    endif ()
+  endif ()
+
+  if (HAVE_NEON)
+    add_intrinsics_object_library("${AOM_NEON_INTRIN_FLAG}" "neon"
+                                  "aom_dsp_common" "AOM_DSP_COMMON_INTRIN_NEON")
+  endif ()
   # Pass the new lib targets up to the parent scope instance of
   # $AOM_LIB_TARGETS.
   set(AOM_LIB_TARGETS ${AOM_LIB_TARGETS} PARENT_SCOPE)

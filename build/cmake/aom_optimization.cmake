@@ -148,4 +148,57 @@ function (add_asm_library lib_name asm_sources dependent_target)
   set(AOM_LIB_TARGETS ${AOM_LIB_TARGETS} PARENT_SCOPE)
 endfunction ()
 
+# Converts asm sources in $asm_sources using $AOM_ADS2GAS and calls
+# add_asm_library() to create a library from the converted sources. At
+# generation time the converted sources are created, and a custom rule is added
+# to ensure the sources are reconverted when the original asm source is updated.
+# See add_asm_library() for more information.
+function (add_gas_asm_library lib_name asm_sources dependent_target)
+  set(asm_converted_source_dir "${AOM_CONFIG_DIR}/asm_gas/${lib_name}")
+  if (NOT EXISTS "${asm_converted_source_dir}")
+    file(MAKE_DIRECTORY "${asm_converted_source_dir}")
+  endif ()
+
+  # Create the converted version of each assembly source at generation time.
+  unset(gas_target_sources)
+  foreach (neon_asm_source ${${asm_sources}})
+    get_filename_component(output_asm_source "${neon_asm_source}" NAME)
+    set(output_asm_source "${asm_converted_source_dir}/${output_asm_source}")
+    set(output_asm_source "${output_asm_source}.${AOM_GAS_EXT}")
+    execute_process(COMMAND "${PERL_EXECUTABLE}" "${AOM_ADS2GAS}"
+                    INPUT_FILE "${neon_asm_source}"
+                    OUTPUT_FILE "${output_asm_source}")
+    list(APPEND gas_target_sources "${output_asm_source}")
+  endforeach ()
+
+  add_asm_library("${lib_name}" "gas_target_sources" "${dependent_target}")
+
+  # For each of the converted sources, create a custom rule that will regenerate
+  # the converted source when its input is touched.
+  list(LENGTH gas_target_sources num_asm_files)
+  math(EXPR num_asm_files "${num_asm_files} - 1")
+  foreach(NUM RANGE ${num_asm_files})
+    list(GET ${asm_sources} ${NUM} neon_asm_source)
+    list(GET gas_target_sources ${NUM} gas_asm_source)
+
+    # Grab only the filename for the custom command output to keep build output
+    # reasonably sane.
+    get_filename_component(neon_name "${neon_asm_source}" NAME)
+    get_filename_component(gas_name "${gas_asm_source}" NAME)
+
+    add_custom_command(
+        OUTPUT "${gas_asm_source}"
+        COMMAND ${PERL_EXECUTABLE}
+        ARGS "${AOM_ADS2GAS}" < "${neon_asm_source}" > "${gas_asm_source}"
+        DEPENDS "${neon_asm_source}"
+        COMMENT "ads2gas conversion ${neon_name} -> ${gas_name}"
+        WORKING_DIRECTORY "${AOM_CONFIG_DIR}"
+        VERBATIM)
+  endforeach ()
+
+  # Update the sources list passed in to include the converted asm source files.
+  list(APPEND asm_sources ${gas_target_sources})
+  set(${asm_sources} ${${asm_sources}} PARENT_SCOPE)
+endfunction ()
+
 endif ()  # AOM_BUILD_CMAKE_AOM_OPTIMIZATION_CMAKE_
