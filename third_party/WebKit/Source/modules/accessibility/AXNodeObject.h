@@ -146,7 +146,11 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   unsigned hierarchicalLevel() const final;
   void markers(Vector<DocumentMarker::MarkerType>&,
                Vector<AXRange>&) const override;
+  AXObject* inPageLinkTarget() const override;
   AccessibilityOrientation orientation() const override;
+  AXObjectVector radioButtonsInGroup() const override;
+  static HeapVector<Member<HTMLInputElement>> findAllRadioButtonsWithSameName(
+      HTMLInputElement* radioButton);
   String text() const override;
 
   // Properties of interactive elements.

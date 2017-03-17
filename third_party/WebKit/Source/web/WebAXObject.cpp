@@ -760,6 +760,15 @@ bool WebAXObject::decrement() const {
   return false;
 }
 
+WebAXObject WebAXObject::inPageLinkTarget() const {
+  if (isDetached())
+    return WebAXObject();
+  AXObject* target = m_private->inPageLinkTarget();
+  if (!target)
+    return WebAXObject();
+  return WebAXObject(target);
+}
+
 WebAXOrientation WebAXObject::orientation() const {
   if (isDetached())
     return WebAXOrientationUndefined;
@@ -772,6 +781,17 @@ bool WebAXObject::press() const {
     return false;
 
   return m_private->press();
+}
+
+WebVector<WebAXObject> WebAXObject::radioButtonsInGroup() const {
+  if (isDetached())
+    return WebVector<WebAXObject>();
+
+  AXObject::AXObjectVector radioButtons = m_private->radioButtonsInGroup();
+  WebVector<WebAXObject> webRadioButtons(radioButtons.size());
+  for (size_t i = 0; i < radioButtons.size(); ++i)
+    webRadioButtons[i] = WebAXObject(radioButtons[i]);
+  return webRadioButtons;
 }
 
 WebAXRole WebAXObject::role() const {

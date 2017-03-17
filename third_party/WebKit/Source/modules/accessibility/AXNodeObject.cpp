@@ -38,6 +38,7 @@
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/markers/DocumentMarkerController.h"
 #include "core/frame/FrameView.h"
+#include "core/html/HTMLAnchorElement.h"
 #include "core/html/HTMLDListElement.h"
 #include "core/html/HTMLFieldSetElement.h"
 #include "core/html/HTMLFrameElementBase.h"
@@ -57,6 +58,7 @@
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/html/LabelsNodeList.h"
 #include "core/html/TextControlElement.h"
+#include "core/html/forms/RadioInputType.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/shadow/MediaControlElements.h"
 #include "core/layout/LayoutBlockFlow.h"
@@ -65,6 +67,7 @@
 #include "modules/accessibility/AXObjectCacheImpl.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/text/PlatformLocale.h"
+#include "platform/weborigin/KURL.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace blink {
@@ -240,7 +243,7 @@ void AXNodeObject::alterSliderValue(bool increase) {
 }
 
 AXObject* AXNodeObject::activeDescendant() {
-  if (!getNode() || !getNode()->isElementNode())
+  if (!m_node || !m_node->isElementNode())
     return nullptr;
 
   const AtomicString& activeDescendantAttr =
@@ -1402,6 +1405,34 @@ void AXNodeObject::markers(Vector<DocumentMarker::MarkerType>& markerTypes,
   }
 }
 
+AXObject* AXNodeObject::inPageLinkTarget() const {
+  if (!m_node || !isHTMLAnchorElement(m_node) || !getDocument())
+    return AXObject::inPageLinkTarget();
+
+  HTMLAnchorElement* anchor = toHTMLAnchorElement(m_node);
+  DCHECK(anchor);
+  KURL linkURL = anchor->href();
+  if (!linkURL.isValid())
+    return AXObject::inPageLinkTarget();
+  String fragment = linkURL.fragmentIdentifier();
+  if (fragment.isEmpty())
+    return AXObject::inPageLinkTarget();
+
+  KURL documentURL = getDocument()->url();
+  if (!documentURL.isValid() ||
+      !equalIgnoringFragmentIdentifier(documentURL, linkURL)) {
+    return AXObject::inPageLinkTarget();
+  }
+
+  TreeScope& treeScope = anchor->treeScope();
+  Element* target = treeScope.findAnchor(fragment);
+  if (!target)
+    return AXObject::inPageLinkTarget();
+  // If the target is not in the accessibility tree, get the first unignored
+  // sibling.
+  return axObjectCache().firstAccessibleObjectFromNode(target);
+}
+
 AccessibilityOrientation AXNodeObject::orientation() const {
   const AtomicString& ariaOrientation = getAttribute(aria_orientationAttr);
   AccessibilityOrientation orientation = AccessibilityOrientationUndefined;
@@ -1437,6 +1468,67 @@ AccessibilityOrientation AXNodeObject::orientation() const {
     default:
       return AXObject::orientation();
   }
+}
+
+AXObject::AXObjectVector AXNodeObject::radioButtonsInGroup() const {
+  AXObjectVector radioButtons;
+  if (!m_node || roleValue() != RadioButtonRole)
+    return radioButtons;
+
+  if (isHTMLInputElement(m_node)) {
+    HTMLInputElement* radioButton = toHTMLInputElement(m_node);
+    HeapVector<Member<HTMLInputElement>> htmlRadioButtons =
+        findAllRadioButtonsWithSameName(radioButton);
+    for (size_t i = 0; i < htmlRadioButtons.size(); ++i) {
+      AXObject* axRadioButton =
+          axObjectCache().getOrCreate(htmlRadioButtons[i]);
+      if (axRadioButton)
+        radioButtons.push_back(axRadioButton);
+    }
+    return radioButtons;
+  }
+
+  // If the immediate parent is a radio group, return all its children that are
+  // radio buttons.
+  AXObject* parent = parentObject();
+  if (parent && parent->roleValue() == RadioGroupRole) {
+    for (size_t i = 0; i < parent->children().size(); ++i) {
+      AXObject* child = parent->children()[i];
+      DCHECK(child);
+      if (child->roleValue() == RadioButtonRole &&
+          !child->accessibilityIsIgnored()) {
+        radioButtons.push_back(child);
+      }
+    }
+  }
+
+  return radioButtons;
+}
+
+// static
+HeapVector<Member<HTMLInputElement>>
+AXNodeObject::findAllRadioButtonsWithSameName(HTMLInputElement* radioButton) {
+  HeapVector<Member<HTMLInputElement>> allRadioButtons;
+  if (!radioButton || radioButton->type() != InputTypeNames::radio)
+    return allRadioButtons;
+
+  constexpr bool kTraverseForward = true;
+  constexpr bool kTraverseBackward = false;
+  HTMLInputElement* firstRadioButton = radioButton;
+  do {
+    radioButton = RadioInputType::nextRadioButtonInGroup(firstRadioButton,
+                                                         kTraverseBackward);
+    if (radioButton)
+      firstRadioButton = radioButton;
+  } while (radioButton);
+
+  HTMLInputElement* nextRadioButton = firstRadioButton;
+  do {
+    allRadioButtons.push_back(nextRadioButton);
+    nextRadioButton = RadioInputType::nextRadioButtonInGroup(nextRadioButton,
+                                                             kTraverseForward);
+  } while (nextRadioButton);
+  return allRadioButtons;
 }
 
 String AXNodeObject::text() const {

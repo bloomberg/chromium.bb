@@ -441,6 +441,19 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
     if (dst->role == ui::AX_ROLE_COLOR_WELL)
       dst->AddIntAttribute(ui::AX_ATTR_COLOR_VALUE, src.colorValue());
 
+    if (dst->role == ui::AX_ROLE_LINK) {
+      blink::WebAXObject target = src.inPageLinkTarget();
+      if (!target.isNull()) {
+        int32_t target_id = target.axID();
+        dst->AddIntAttribute(ui::AX_ATTR_IN_PAGE_LINK_TARGET_ID, target_id);
+      }
+    }
+
+    if (dst->role == ui::AX_ROLE_RADIO_BUTTON) {
+      AddIntListAttributeFromWebObjects(ui::AX_ATTR_RADIO_GROUP_IDS,
+                                        src.radioButtonsInGroup(), dst);
+    }
+
     // Text attributes.
     if (src.backgroundColor())
       dst->AddIntAttribute(ui::AX_ATTR_BACKGROUND_COLOR, src.backgroundColor());

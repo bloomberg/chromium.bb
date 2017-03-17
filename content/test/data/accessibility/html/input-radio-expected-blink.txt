@@ -1,0 +1,13 @@
+rootWebArea
+++form
+++++radioButton radioGroupIds=radioButton
+++++staticText name='Radio1'
+++++++inlineTextBox name='Radio1'
+++++lineBreak name='<newline>'
+++++++inlineTextBox name='<newline>'
+++++radioButton radioGroupIds=radioButton
+++++staticText name='Radio2'
+++++++inlineTextBox name='Radio2'
+++form
+++++radioButton name='Radio3' radioGroupIds=radioButton,radioButton
+++++radioButton name='Radio4' radioGroupIds=radioButton,radioButton

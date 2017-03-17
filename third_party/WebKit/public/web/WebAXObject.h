@@ -178,7 +178,9 @@ class WebAXObject {
   BLINK_EXPORT WebAXObject hitTest(const WebPoint&) const;
   BLINK_EXPORT WebString keyboardShortcut() const;
   BLINK_EXPORT WebString language() const;
+  BLINK_EXPORT WebAXObject inPageLinkTarget() const;
   BLINK_EXPORT WebAXOrientation orientation() const;
+  BLINK_EXPORT WebVector<WebAXObject> radioButtonsInGroup() const;
   BLINK_EXPORT WebAXRole role() const;
   BLINK_EXPORT WebString stringValue() const;
   BLINK_EXPORT WebAXTextDirection textDirection() const;

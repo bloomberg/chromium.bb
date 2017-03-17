@@ -403,6 +403,7 @@
     // Relationships between this element and other elements.
     activedescendant_id,
     errormessage_id,
+    in_page_link_target_id,
     member_of_id,
     next_on_line_id,
     previous_on_line_id,
@@ -490,6 +491,7 @@
     details_ids,
     flowto_ids,
     labelledby_ids,
+    radio_group_ids,
 
     // For static text. Character indices where line breaks occur. Note that
     // this attribute is only available on Chrome OS and will be deprecated

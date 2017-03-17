@@ -809,6 +809,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   // PNG format. If |maxSize| is not empty and if the image is larger than
   // those dimensions, the image will be resized proportionally first to fit.
   virtual String imageDataUrl(const IntSize& maxSize) const { return nullAtom; }
+  virtual AXObject* inPageLinkTarget() const { return nullptr; }
   virtual AccessibilityOrientation orientation() const;
   virtual String text() const { return String(); }
   virtual AccessibilityTextDirection textDirection() const {
@@ -816,6 +817,9 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   }
   virtual int textLength() const { return 0; }
   virtual TextStyle getTextStyle() const { return TextStyleNone; }
+  virtual AXObjectVector radioButtonsInGroup() const {
+    return AXObjectVector();
+  }
   virtual KURL url() const { return KURL(); }
 
   // Load inline text boxes for just this node, even if

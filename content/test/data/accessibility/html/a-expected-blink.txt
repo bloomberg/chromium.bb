@@ -1,0 +1,5 @@
+rootWebArea
+++group
+++++link name='normal link'
+++++++staticText name='normal link'
+++++++++inlineTextBox name='normal link'

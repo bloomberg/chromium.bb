@@ -1,0 +1,25 @@
+AXWebArea
+++AXLink AXTitle='Empty anchor' AXLinkedUIElements=["AXStaticText After empty anchor"]
+++++AXStaticText AXValue='Empty anchor'
+++AXLink AXTitle='Anchor with content' AXLinkedUIElements=["AXStaticText Anchor with content"]
+++++AXStaticText AXValue='Anchor with content'
+++AXLink AXTitle='Anchor with ID' AXLinkedUIElements=["AXStaticText Anchor with ID"]
+++++AXStaticText AXValue='Anchor with ID'
+++AXLink AXTitle='Empty span' AXLinkedUIElements=["AXStaticText After empty span"]
+++++AXStaticText AXValue='Empty span'
+++AXLink AXTitle='Span with content' AXLinkedUIElements=["AXStaticText Span with content"]
+++++AXStaticText AXValue='Span with content'
+++AXLink AXTitle='Paragraph with content' AXLinkedUIElements=["AXGroup"]
+++++AXStaticText AXValue='Paragraph with content'
+++AXGroup
+++++AXStaticText AXValue='After empty anchor'
+++AXGroup
+++++AXStaticText AXValue='Anchor with content'
+++AXGroup
+++++AXStaticText AXValue='Anchor with ID'
+++AXGroup
+++++AXStaticText AXValue='After empty span'
+++AXGroup
+++++AXStaticText AXValue='Span with content'
+++AXGroup
+++++AXStaticText AXValue='Paragraph with content'

@@ -64,6 +64,7 @@ bool IsNodeIdIntAttribute(AXIntAttribute attr) {
   switch (attr) {
     case AX_ATTR_ACTIVEDESCENDANT_ID:
     case AX_ATTR_ERRORMESSAGE_ID:
+    case AX_ATTR_IN_PAGE_LINK_TARGET_ID:
     case AX_ATTR_MEMBER_OF_ID:
     case AX_ATTR_NEXT_ON_LINE_ID:
     case AX_ATTR_PREVIOUS_ON_LINE_ID:
@@ -130,6 +131,7 @@ bool IsNodeIdIntListAttribute(AXIntListAttribute attr) {
     case AX_ATTR_FLOWTO_IDS:
     case AX_ATTR_INDIRECT_CHILD_IDS:
     case AX_ATTR_LABELLEDBY_IDS:
+    case AX_ATTR_RADIO_GROUP_IDS:
     case AX_ATTR_UNIQUE_CELL_IDS:
       return true;
 
@@ -600,6 +602,9 @@ std::string AXNodeData::ToString() const {
       case AX_ATTR_ERRORMESSAGE_ID:
         result += " errormessage=" + value;
         break;
+      case AX_ATTR_IN_PAGE_LINK_TARGET_ID:
+        result += " in_page_link_target_id=" + value;
+        break;
       case AX_ATTR_MEMBER_OF_ID:
         result += " member_of_id=" + value;
         break;
@@ -863,6 +868,9 @@ std::string AXNodeData::ToString() const {
         break;
       case AX_ATTR_LABELLEDBY_IDS:
         result += " labelledby_ids=" + IntVectorToString(values);
+        break;
+      case AX_ATTR_RADIO_GROUP_IDS:
+        result += " radio_group_ids=" + IntVectorToString(values);
         break;
       case AX_ATTR_LINE_BREAKS:
         result += " line_breaks=" + IntVectorToString(values);

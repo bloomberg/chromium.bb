@@ -66,6 +66,7 @@ class WebAXObjectProxy : public gin::Wrappable<WebAXObjectProxy> {
   int Y();
   int Width();
   int Height();
+  v8::Local<v8::Value> InPageLinkTarget();
   int IntValue();
   int MinValue();
   int MaxValue();

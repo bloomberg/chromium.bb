@@ -1165,6 +1165,17 @@ NSString* const NSAccessibilityRequiredAttribute = @"AXRequired";
   NSMutableArray* ret = [[[NSMutableArray alloc] init] autorelease];
   [self addLinkedUIElementsFromAttribute:ui::AX_ATTR_CONTROLS_IDS addTo:ret];
   [self addLinkedUIElementsFromAttribute:ui::AX_ATTR_FLOWTO_IDS addTo:ret];
+
+  int target_id;
+  if (browserAccessibility_->GetIntAttribute(ui::AX_ATTR_IN_PAGE_LINK_TARGET_ID,
+                                             &target_id)) {
+    BrowserAccessibility* target = browserAccessibility_->manager()->GetFromID(
+        static_cast<int32_t>(target_id));
+    if (target)
+      [ret addObject:ToBrowserAccessibilityCocoa(target)];
+  }
+
+  [self addLinkedUIElementsFromAttribute:ui::AX_ATTR_RADIO_GROUP_IDS addTo:ret];
   if ([ret count] == 0)
     return nil;
   return ret;

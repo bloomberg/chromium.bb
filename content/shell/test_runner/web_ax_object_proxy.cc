@@ -563,6 +563,7 @@ gin::ObjectTemplateBuilder WebAXObjectProxy::GetObjectTemplateBuilder(
       .SetProperty("y", &WebAXObjectProxy::Y)
       .SetProperty("width", &WebAXObjectProxy::Width)
       .SetProperty("height", &WebAXObjectProxy::Height)
+      .SetProperty("inPageLinkTarget", &WebAXObjectProxy::InPageLinkTarget)
       .SetProperty("intValue", &WebAXObjectProxy::IntValue)
       .SetProperty("minValue", &WebAXObjectProxy::MinValue)
       .SetProperty("maxValue", &WebAXObjectProxy::MaxValue)
@@ -786,6 +787,14 @@ int WebAXObjectProxy::Width() {
 int WebAXObjectProxy::Height() {
   accessibility_object_.updateLayoutAndCheckValidity();
   return BoundsForObject(accessibility_object_).height;
+}
+
+v8::Local<v8::Value> WebAXObjectProxy::InPageLinkTarget() {
+  accessibility_object_.updateLayoutAndCheckValidity();
+  blink::WebAXObject target = accessibility_object_.inPageLinkTarget();
+  if (target.isNull())
+    return v8::Null(blink::mainThreadIsolate());
+  return factory_->GetOrCreate(target);
 }
 
 int WebAXObjectProxy::IntValue() {
