@@ -31,3 +31,9 @@ size_t {{struct.name}}::Hash(size_t seed) const {
   return seed;
 }
 {%- endif %}
+
+bool {{struct.name}}::Validate(
+    const void* data,
+    mojo::internal::ValidationContext* validation_context) {
+  return Data_::Validate(data, validation_context);
+}

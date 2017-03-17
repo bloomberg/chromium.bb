@@ -73,7 +73,7 @@ class {{export_attribute}} {{struct.name}} {
                           UserType* output) {
     return mojo::internal::StructDeserializeImpl<
         {{struct.name}}::DataView, {{serialization_result_type}}>(
-            input, output);
+            input, output, Validate);
   }
 
 {#--- Struct members #}
@@ -83,8 +83,11 @@ class {{export_attribute}} {{struct.name}} {
   {{type}} {{name}};
 {%- endfor %}
 
-{%- if struct|contains_move_only_members %}
  private:
+  static bool Validate(const void* data,
+                       mojo::internal::ValidationContext* validation_context);
+
+{%- if struct|contains_move_only_members %}
   DISALLOW_COPY_AND_ASSIGN({{struct.name}});
 {%- endif %}
 };

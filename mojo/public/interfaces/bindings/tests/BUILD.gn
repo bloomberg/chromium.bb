@@ -84,6 +84,31 @@ mojom("test_exported_import") {
   }
 }
 
+# Used to test that it is okay to call mojom::Foo::Serialize()/Deserialize()
+# even if the mojom target is linked into another component.
+#
+# We don't use |test_export_component| for this test because
+# //mojo/public/cpp/bindings/tests depends on both |test_export_component| and
+# |test_exported_import| and therefore actually get the shared cpp sources of
+# test_export.mojom from |test_exported_import|.
+component("test_export_component2") {
+  testonly = true
+  public_deps = [
+    ":test_export2",
+  ]
+}
+
+mojom("test_export2") {
+  testonly = true
+  sources = [
+    "test_export2.mojom",
+  ]
+  export_class_attribute = "MOJO_TEST_EXPORT"
+  export_define = "MOJO_TEST_IMPLEMENTATION=1"
+  export_header = "mojo/public/cpp/bindings/tests/mojo_test_export.h"
+  visibility = [ ":test_export_component2" ]
+}
+
 mojom("test_mojom_import") {
   testonly = true
   sources = [
