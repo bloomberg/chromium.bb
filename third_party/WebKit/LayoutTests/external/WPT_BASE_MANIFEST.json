@@ -6715,11 +6715,6 @@
      {}
     ]
    ],
-   "./diff-manifest.py": [
-    [
-     {}
-    ]
-   ],
    "./update-built-tests.sh": [
     [
      {}
@@ -6766,6 +6761,11 @@
     ]
    ],
    "FileAPI/filelist-section/support/upload.zip": [
+    [
+     {}
+    ]
+   ],
+   "FileAPI/historical.https-expected.txt": [
     [
      {}
     ]
@@ -8525,6 +8525,16 @@
      {}
     ]
    ],
+   "css-typed-om/CSSMatrixComponent-DOMMatrix-mutable-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "css-typed-om/styleMap-update-function-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "custom-elements/adopted-callback-expected.txt": [
     [
      {}
@@ -8610,6 +8620,11 @@
      {}
     ]
    ],
+   "dom/events/CustomEvent-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "dom/events/Event-dispatch-bubbles-false-expected.txt": [
     [
      {}
@@ -8621,6 +8636,11 @@
     ]
    ],
    "dom/events/Event-dispatch-click-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "dom/events/Event-initEvent-expected.txt": [
     [
      {}
     ]
@@ -9081,6 +9101,11 @@
     ]
    ],
    "dom/nodes/Element-matches.js": [
+    [
+     {}
+    ]
+   ],
+   "dom/nodes/Element-webkitMatchesSelector-expected.txt": [
     [
      {}
     ]
@@ -9680,11 +9705,6 @@
      {}
     ]
    ],
-   "editing/run/italic-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "editing/run/justifycenter-expected.txt": [
     [
      {}
@@ -9721,26 +9741,6 @@
     ]
    ],
    "editing/run/removeformat-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "editing/run/strikethrough-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "editing/run/subscript-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "editing/run/superscript-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "editing/run/underline-expected.txt": [
     [
      {}
     ]
@@ -11145,6 +11145,31 @@
      {}
     ]
    ],
+   "html/browsers/history/the-location-interface/location-prototype-setting-cross-origin-domain.sub-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "html/browsers/history/the-location-interface/location-prototype-setting-cross-origin.sub-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "html/browsers/history/the-location-interface/location-prototype-setting-goes-cross-origin-domain.sub-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "html/browsers/history/the-location-interface/location-prototype-setting-same-origin-domain.sub-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "html/browsers/history/the-location-interface/location-prototype-setting-same-origin-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "html/browsers/history/the-location-interface/location-stringifier-expected.txt": [
     [
      {}
@@ -11531,6 +11556,21 @@
     ]
    ],
    "html/browsers/the-window-object/window-prototype-chain-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "html/browsers/the-windowproxy-exotic-object/windowproxy-prototype-setting-cross-origin-domain.sub-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "html/browsers/the-windowproxy-exotic-object/windowproxy-prototype-setting-cross-origin.sub-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "html/browsers/the-windowproxy-exotic-object/windowproxy-prototype-setting-goes-cross-origin-domain.sub-expected.txt": [
     [
      {}
     ]
@@ -17925,6 +17965,16 @@
      {}
     ]
    ],
+   "html/semantics/scripting-1/the-script-element/script-charset-01-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "html/semantics/scripting-1/the-script-element/script-charset-02-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "html/semantics/scripting-1/the-script-element/script-language-type-expected.txt": [
     [
      {}
@@ -20041,6 +20091,11 @@
     ]
    ],
    "pointerevents/README.md": [
+    [
+     {}
+    ]
+   ],
+   "pointerevents/extension/idlharness-expected.txt": [
     [
      {}
     ]
@@ -22690,51 +22745,6 @@
      {}
     ]
    ],
-   "selection/addRange-00-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "selection/addRange-04-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "selection/addRange-12-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "selection/addRange-16-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "selection/addRange-20-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "selection/addRange-24-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "selection/addRange-28-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "selection/addRange-32-expected.txt": [
-    [
-     {}
-    ]
-   ],
-   "selection/addRange-36-expected.txt": [
-    [
-     {}
-    ]
-   ],
    "selection/addRange.js": [
     [
      {}
@@ -22970,12 +22980,12 @@
      {}
     ]
    ],
-   "service-workers/service-worker/fetch-event.https-expected.txt": [
+   "service-workers/service-worker/fetch-event-within-sw-manual.https-expected.txt": [
     [
      {}
     ]
    ],
-   "service-workers/service-worker/fetch-request-redirect.https-expected.txt": [
+   "service-workers/service-worker/fetch-event.https-expected.txt": [
     [
      {}
     ]
@@ -23021,6 +23031,51 @@
     ]
    ],
    "service-workers/service-worker/navigate-window.https-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "service-workers/service-worker/navigation-preload/resources/broken-chunked-encoding-scope.asis": [
+    [
+     {}
+    ]
+   ],
+   "service-workers/service-worker/navigation-preload/resources/broken-chunked-encoding-worker.js": [
+    [
+     {}
+    ]
+   ],
+   "service-workers/service-worker/navigation-preload/resources/chunked-encoding-scope.py": [
+    [
+     {}
+    ]
+   ],
+   "service-workers/service-worker/navigation-preload/resources/chunked-encoding-worker.js": [
+    [
+     {}
+    ]
+   ],
+   "service-workers/service-worker/navigation-preload/resources/get-state-worker.js": [
+    [
+     {}
+    ]
+   ],
+   "service-workers/service-worker/navigation-preload/resources/helpers.js": [
+    [
+     {}
+    ]
+   ],
+   "service-workers/service-worker/navigation-preload/resources/request-headers-scope.py": [
+    [
+     {}
+    ]
+   ],
+   "service-workers/service-worker/navigation-preload/resources/request-headers-worker.js": [
+    [
+     {}
+    ]
+   ],
+   "service-workers/service-worker/navigation-preload/resources/wait-for-activate-worker.js": [
     [
      {}
     ]
@@ -25115,6 +25170,11 @@
      {}
     ]
    ],
+   "webrtc/rtcpeerconnection/setRemoteDescription-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "webrtc/simplecall-expected.txt": [
     [
      {}
@@ -25330,7 +25390,32 @@
      {}
     ]
    ],
+   "webvtt/parsing/cue-text-parsing/tests/entities-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/cue-text-parsing/tests/tags-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/cue-text-parsing/tests/timestamps-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/cue-text-parsing/tests/tree-building-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "webvtt/parsing/file-parsing/README.md": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/signature-invalid-expected.txt": [
     [
      {}
     ]
@@ -25571,6 +25656,51 @@
     ]
    ],
    "webvtt/parsing/file-parsing/support/whitespace-chars.test": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/regions-id-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/regions-lines-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/regions-old-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/regions-regionanchor-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/regions-scroll-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/regions-viewportanchor-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/settings-line-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/settings-position-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "webvtt/parsing/file-parsing/tests/settings-region-expected.txt": [
     [
      {}
     ]
@@ -27475,7 +27605,17 @@
      {}
     ]
    ],
+   "workers/semantics/encodings/001-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "workers/semantics/encodings/001.html.headers": [
+    [
+     {}
+    ]
+   ],
+   "workers/semantics/encodings/002-expected.txt": [
     [
      {}
     ]
@@ -53158,6 +53298,30 @@
      {}
     ]
    ],
+   "service-workers/service-worker/navigation-preload/broken-chunked-encoding.https.html": [
+    [
+     "/service-workers/service-worker/navigation-preload/broken-chunked-encoding.https.html",
+     {}
+    ]
+   ],
+   "service-workers/service-worker/navigation-preload/chunked-encoding.https.html": [
+    [
+     "/service-workers/service-worker/navigation-preload/chunked-encoding.https.html",
+     {}
+    ]
+   ],
+   "service-workers/service-worker/navigation-preload/get-state.https.html": [
+    [
+     "/service-workers/service-worker/navigation-preload/get-state.https.html",
+     {}
+    ]
+   ],
+   "service-workers/service-worker/navigation-preload/request-headers.https.html": [
+    [
+     "/service-workers/service-worker/navigation-preload/request-headers.https.html",
+     {}
+    ]
+   ],
    "service-workers/service-worker/navigation-redirect.https.html": [
     [
      "/service-workers/service-worker/navigation-redirect.https.html",
@@ -55419,6 +55583,12 @@
    "web-animations/timing-model/animations/current-time.html": [
     [
      "/web-animations/timing-model/animations/current-time.html",
+     {}
+    ]
+   ],
+   "web-animations/timing-model/animations/playing-an-animation.html": [
+    [
+     "/web-animations/timing-model/animations/playing-an-animation.html",
      {}
     ]
    ],
@@ -57794,7 +57964,7 @@
    "support"
   ],
   "./CONTRIBUTING.md": [
-   "7e7cfde5c27d2a72c3d755e2eadc040c1dfbe6e1",
+   "cc9b0261662898aef7f4eed81741361c3f7c6467",
    "support"
   ],
   "./LICENSE.md": [
@@ -57802,11 +57972,11 @@
    "support"
   ],
   "./README.md": [
-   "f7f7d6a2bc0bc23e1c5fa3e812f710dc29ed6711",
+   "b9ca613d4f80444113159dd1f6d4985dafe7d43a",
    "support"
   ],
   "./check_stability.py": [
-   "777e9cbda11e9aa5bb4888668d82e9e51db2c4ea",
+   "c971a52a42b7650562d27abe572957121a937aa6",
    "support"
   ],
   "./ci_built_diff.sh": [
@@ -57814,15 +57984,11 @@
    "support"
   ],
   "./ci_lint.sh": [
-   "ba3b37d8d18ea579f99157bec6c8d865d68f4a3b",
+   "8f26616f562c85c9a5bbd757590bf3a70faa44b8",
    "support"
   ],
   "./ci_stability.sh": [
    "2d54d770ed8439a93e98961b3105b3248684744d",
-   "support"
-  ],
-  "./diff-manifest.py": [
-   "94689a9853ab8d0ddcd85b2a8db4b6f2c9045b4a",
    "support"
   ],
   "./update-built-tests.sh": [
@@ -57907,6 +58073,10 @@
   ],
   "FileAPI/filelist-section/support/upload.zip": [
    "fa1e9bd48a2e1f5fe91e6f9b3aa401b4ccf15dfa",
+   "support"
+  ],
+  "FileAPI/historical.https-expected.txt": [
+   "1206e1644ff536979931519010b337208b33b037",
    "support"
   ],
   "FileAPI/historical.https.html": [
@@ -59538,7 +59708,7 @@
    "support"
   ],
   "common/test-setting-immutable-prototype.js": [
-   "f0479c9678eb363ac895debc3b7091f552cc7251",
+   "2cafc5c2b867e0fd6f738b1fbeaa503761c400b7",
    "support"
   ],
   "common/text-plain.txt": [
@@ -61701,6 +61871,10 @@
    "ff4d7ca289ea20fa00bca535fdcf929876a2278b",
    "testharness"
   ],
+  "css-typed-om/CSSMatrixComponent-DOMMatrix-mutable-expected.txt": [
+   "b382ae164d95402e1b19a9199e647316cb41ba4c",
+   "support"
+  ],
   "css-typed-om/CSSMatrixComponent-DOMMatrix-mutable.html": [
    "f6056e2480829c7aa9885673d332496faf7777b5",
    "testharness"
@@ -61708,6 +61882,10 @@
   "css-typed-om/declared-styleMap-accepts-inherit.html": [
    "2d6e5a3bc89559c671ed9a2dbad8e5f456b947a9",
    "testharness"
+  ],
+  "css-typed-om/styleMap-update-function-expected.txt": [
+   "bbcf689bd0b536339ec537f888d3e91bb8ec09ff",
+   "support"
   ],
   "css-typed-om/styleMap-update-function.html": [
    "ba9d58c998b7c7ab586fd54e80a0466133c91ebc",
@@ -62001,6 +62179,10 @@
    "e239d31a5ec5b30fca8a0ffa1a77be535c714dfb",
    "testharness"
   ],
+  "dom/events/CustomEvent-expected.txt": [
+   "f48bef3b86c6f218b1b183ceefa90d9fbcfc3e7a",
+   "support"
+  ],
   "dom/events/CustomEvent.html": [
    "1ceee10cbe86c94d2c3a68672a78b1c6224c8616",
    "testharness"
@@ -62109,6 +62291,10 @@
    "84e38be2f0e8f3c4f44a95cc296096de3631624b",
    "testharness"
   ],
+  "dom/events/Event-initEvent-expected.txt": [
+   "43e96f2943b9a8d12d8b524a4dcdf3d948a221bc",
+   "support"
+  ],
   "dom/events/Event-initEvent.html": [
    "a01aa825e0905a0efc3afe9bc3015d448e9618f1",
    "testharness"
@@ -62202,7 +62388,7 @@
    "testharness"
   ],
   "dom/interfaces-expected.txt": [
-   "6677b9fe8d71310625d7d0a52233d883bde3e58d",
+   "229024e4deea3ff380684d983f93237ed8be8d84",
    "support"
   ],
   "dom/interfaces.html": [
@@ -62218,7 +62404,7 @@
    "testharness"
   ],
   "dom/lists/DOMTokenList-coverage-for-attributes-expected.txt": [
-   "b3e0a5000fa57b345640ee7dd28bbba9998a1a69",
+   "a096b5214f37d82c928a8a1698914602b8534e8d",
    "support"
   ],
   "dom/lists/DOMTokenList-coverage-for-attributes.html": [
@@ -62930,7 +63116,7 @@
    "testharness"
   ],
   "dom/nodes/Element-matches-expected.txt": [
-   "c728e2c6b15a79a23a23235133c9501ec059661e",
+   "dfdedb454cdb84ac86096396f29bc51532eebd9b",
    "support"
   ],
   "dom/nodes/Element-matches.html": [
@@ -62988,6 +63174,10 @@
   "dom/nodes/Element-tagName.html": [
    "d6bb6d9f107f2d3ffd3c86793185eeb4336df834",
    "testharness"
+  ],
+  "dom/nodes/Element-webkitMatchesSelector-expected.txt": [
+   "92e34ffa0333d92616f1e44402aaf95177ae985f",
+   "support"
   ],
   "dom/nodes/Element-webkitMatchesSelector.html": [
    "31934621453740439f9b318c0bb8b180ac3071c3",
@@ -64082,7 +64272,7 @@
    "testharness"
   ],
   "editing/run/inserthorizontalrule-expected.txt": [
-   "54ede2e3f1ae625deefa1cba046fd594348b623d",
+   "c0568e98b468ce44604df280f7bb93730f076bfa",
    "support"
   ],
   "editing/run/inserthorizontalrule.html": [
@@ -64145,10 +64335,6 @@
    "3f714f7a4def53a2daa9d44712b76061e2ca7552",
    "testharness"
   ],
-  "editing/run/italic-expected.txt": [
-   "ce87e74285f048c36a5649cbe3687f9a64837ba6",
-   "support"
-  ],
   "editing/run/italic.html": [
    "6a4b267457182ea6de8835db633c1420b84c1c05",
    "testharness"
@@ -64194,7 +64380,7 @@
    "testharness"
   ],
   "editing/run/multitest-expected.txt": [
-   "464596fc13fbc8bd30a0dd5599482bde709f7d08",
+   "33ebb71d6ceef5350e44987c80db930bd399fd8b",
    "support"
   ],
   "editing/run/multitest.html": [
@@ -64210,40 +64396,24 @@
    "testharness"
   ],
   "editing/run/removeformat-expected.txt": [
-   "1b9192a8c6ffe728bf7ed29bb5ecaf3031c019da",
+   "fd8f69ff1cfd6c0cd5f0a4f0ebf29288d3e9ae28",
    "support"
   ],
   "editing/run/removeformat.html": [
    "2bc4c61e197ef3591509cd7cad0484f879d0bb26",
    "testharness"
   ],
-  "editing/run/strikethrough-expected.txt": [
-   "556fe981e6ff39f05c684cf09cad988d0f6826aa",
-   "support"
-  ],
   "editing/run/strikethrough.html": [
    "b702fc2dfff8245ec6d91f0ab79566ff92a131b3",
    "testharness"
-  ],
-  "editing/run/subscript-expected.txt": [
-   "3cd2f59a054793b380b26c97e14dd66a4eafdf17",
-   "support"
   ],
   "editing/run/subscript.html": [
    "3c0bb1665e110da97b1d4466dfb3f9baa8d2ade3",
    "testharness"
   ],
-  "editing/run/superscript-expected.txt": [
-   "99bdbce26037adcdb4ae4d590b89855872507f1d",
-   "support"
-  ],
   "editing/run/superscript.html": [
    "1dfa51b6575d008f018c48681c1510e0dc20acc0",
    "testharness"
-  ],
-  "editing/run/underline-expected.txt": [
-   "394462e6cbceb3ba7252aab62f7faee51394b940",
-   "support"
   ],
   "editing/run/underline.html": [
    "ac6b3430cf6f21e3d2a09567a6c14ff45ddef913",
@@ -65866,7 +66036,7 @@
    "support"
   ],
   "html/browsers/browsing-the-web/unloading-documents/beforeunload-canceling-expected.txt": [
-   "cb9670c08b7376909c3295fa70cc89d3845ee391",
+   "28f2d40e3f7450b7d5ffefccb7be8dd0bf135587",
    "support"
   ],
   "html/browsers/browsing-the-web/unloading-documents/beforeunload-canceling.html": [
@@ -66569,24 +66739,44 @@
    "70f3c81ddfe58e8751543513fbd8ea44a6b122a1",
    "testharness"
   ],
+  "html/browsers/history/the-location-interface/location-prototype-setting-cross-origin-domain.sub-expected.txt": [
+   "422a528dcd6c2e012813a7f41e7ce6c5c164d871",
+   "support"
+  ],
   "html/browsers/history/the-location-interface/location-prototype-setting-cross-origin-domain.sub.html": [
-   "a5cdc99474b5d083d9231f80bea1ea647e09d2a3",
+   "f34eee0f4962f8208bac7f3df11625ddacd13627",
    "testharness"
+  ],
+  "html/browsers/history/the-location-interface/location-prototype-setting-cross-origin.sub-expected.txt": [
+   "9c5f631acdfddf4bdc869025773d35bb62db85b1",
+   "support"
   ],
   "html/browsers/history/the-location-interface/location-prototype-setting-cross-origin.sub.html": [
-   "f1b2d4c2a4b8ed222d5c8fc0ff4f7047c294fa96",
+   "7194235f609a7dc9070500f9399a2c05a1216f12",
    "testharness"
+  ],
+  "html/browsers/history/the-location-interface/location-prototype-setting-goes-cross-origin-domain.sub-expected.txt": [
+   "ccab16d430b4d8bc902e4eb983f26db61bd241bb",
+   "support"
   ],
   "html/browsers/history/the-location-interface/location-prototype-setting-goes-cross-origin-domain.sub.html": [
-   "5cd9de744c708763a2d60dee257a695afd097b03",
+   "d4dc26e25cf86a8d33f1d2eaec4851e62180e638",
    "testharness"
+  ],
+  "html/browsers/history/the-location-interface/location-prototype-setting-same-origin-domain.sub-expected.txt": [
+   "6db053b1c6d0e061bef6851b56589ba87d66a8cc",
+   "support"
   ],
   "html/browsers/history/the-location-interface/location-prototype-setting-same-origin-domain.sub.html": [
-   "8181fb0fb60e8c6f5cc433376768097ba1325264",
+   "8cdff65cd3d7b893bfbcd70752c5d4d413674b00",
    "testharness"
   ],
+  "html/browsers/history/the-location-interface/location-prototype-setting-same-origin-expected.txt": [
+   "9fc7f348f7b60e9c6c2da21402ce28498019fc31",
+   "support"
+  ],
   "html/browsers/history/the-location-interface/location-prototype-setting-same-origin.html": [
-   "c2d707b23601c50f3dc470598e2c0b49f8ea361e",
+   "756e8b437e6f04da6359f09b674aa68dc8f2ed5e",
    "testharness"
   ],
   "html/browsers/history/the-location-interface/location-stringifier-expected.txt": [
@@ -67205,24 +67395,36 @@
    "e2811af34d54079cbc716b51b2fc73aec1baba74",
    "testharness"
   ],
+  "html/browsers/the-windowproxy-exotic-object/windowproxy-prototype-setting-cross-origin-domain.sub-expected.txt": [
+   "9c5f631acdfddf4bdc869025773d35bb62db85b1",
+   "support"
+  ],
   "html/browsers/the-windowproxy-exotic-object/windowproxy-prototype-setting-cross-origin-domain.sub.html": [
-   "38581650fe130c3ec7f087e70373c09bff4e4354",
+   "28118a65f91a8cde217ce9abd383605f53faf57e",
    "testharness"
+  ],
+  "html/browsers/the-windowproxy-exotic-object/windowproxy-prototype-setting-cross-origin.sub-expected.txt": [
+   "9c5f631acdfddf4bdc869025773d35bb62db85b1",
+   "support"
   ],
   "html/browsers/the-windowproxy-exotic-object/windowproxy-prototype-setting-cross-origin.sub.html": [
-   "9c022990d2876be3ee124ec4206ce757850aa7f7",
+   "dbcf9b082884115a73c713448c13814d7d3a9625",
    "testharness"
   ],
+  "html/browsers/the-windowproxy-exotic-object/windowproxy-prototype-setting-goes-cross-origin-domain.sub-expected.txt": [
+   "ccab16d430b4d8bc902e4eb983f26db61bd241bb",
+   "support"
+  ],
   "html/browsers/the-windowproxy-exotic-object/windowproxy-prototype-setting-goes-cross-origin-domain.sub.html": [
-   "3caf9f7655d51f0f3a205810632a2a6304076282",
+   "8413cfabb572a5bf0981ba3da732375121f567a9",
    "testharness"
   ],
   "html/browsers/the-windowproxy-exotic-object/windowproxy-prototype-setting-same-origin-domain.sub.html": [
-   "206bb598490b5cff7de249160d086c1ccd4aa062",
+   "d85116f405125972ed022a3166e6a78df8da3108",
    "testharness"
   ],
   "html/browsers/the-windowproxy-exotic-object/windowproxy-prototype-setting-same-origin.html": [
-   "3333ad4c882a2dc7fe65028fcedab96c2d1360b6",
+   "69767dfb374182c8a45fe96d9988e7671c9a6b7a",
    "testharness"
   ],
   "html/browsers/windows/auxiliary-browsing-contexts/contains.json": [
@@ -75517,9 +75719,17 @@
    "87f80eee703965c88f2bf7015bfa76233d459d06",
    "support"
   ],
+  "html/semantics/scripting-1/the-script-element/script-charset-01-expected.txt": [
+   "89ed2800022ff8f95d94bd1f5035de488b8c75f1",
+   "support"
+  ],
   "html/semantics/scripting-1/the-script-element/script-charset-01.html": [
    "4d8f27447b5c76174a2e353f160066fbe156a005",
    "testharness"
+  ],
+  "html/semantics/scripting-1/the-script-element/script-charset-02-expected.txt": [
+   "3d1ed7e6a47ccb794c77944b8faa3971272d3470",
+   "support"
   ],
   "html/semantics/scripting-1/the-script-element/script-charset-02.html": [
    "fd855537451d81818fda97de8a6eff2f8ebd7a5e",
@@ -77114,7 +77324,7 @@
    "testharness"
   ],
   "html/webappapis/scripting/events/messageevent-constructor.https-expected.txt": [
-   "3655362a0eb658bd9704f9893a02fab9168253e1",
+   "8f38c7e45d05ca6a205ddaf9aa0f98a48d743152",
    "support"
   ],
   "html/webappapis/scripting/events/messageevent-constructor.https.html": [
@@ -80012,6 +80222,10 @@
   "pointerevents/compat/pointerevent_touch-action_two-finger_interaction-manual.html": [
    "cba44e2dd2a3c54106bfecc6cdd407643e2ba995",
    "manual"
+  ],
+  "pointerevents/extension/idlharness-expected.txt": [
+   "419c5106c9d9d41689bdf0bcc5480e191adb9e05",
+   "support"
   ],
   "pointerevents/extension/idlharness.html": [
    "64ed6d6c201773f0b5ab4b81369a2d601fe3363a",
@@ -87833,17 +88047,9 @@
    "31a5ee7a3619c62dbd35eafb66725bf4192639a0",
    "testharness"
   ],
-  "selection/addRange-00-expected.txt": [
-   "0fa89f93e6b0810c97155a780f0287278aa817cb",
-   "support"
-  ],
   "selection/addRange-00.html": [
    "e99b95a6bdcba9f4945fb9b03de34ff54469012a",
    "testharness"
-  ],
-  "selection/addRange-04-expected.txt": [
-   "6fa9ec0fb9d56ba112ff4a52c61ec4dcdad1757d",
-   "support"
   ],
   "selection/addRange-04.html": [
    "c241e1c3a82f09c14bbf217350b2ee0b58c17178",
@@ -87853,57 +88059,29 @@
    "6d51d9f4042e5590483fae60d19351602d6b0aa2",
    "testharness"
   ],
-  "selection/addRange-12-expected.txt": [
-   "8e6a7d5d1099b8165513cc8bfba2eb884ca3cb07",
-   "support"
-  ],
   "selection/addRange-12.html": [
    "add2e904651f3564741742dc5e1dcb7e3debc50c",
    "testharness"
-  ],
-  "selection/addRange-16-expected.txt": [
-   "855ef76cb7d37772805a377eb03d0857f1dc3415",
-   "support"
   ],
   "selection/addRange-16.html": [
    "b8357b81e8cff46960b158f2eff40950aba04158",
    "testharness"
   ],
-  "selection/addRange-20-expected.txt": [
-   "9fd5b1f712afbc0016ce10f97fa1cf2cabadf310",
-   "support"
-  ],
   "selection/addRange-20.html": [
    "88fb182b058eae495b92c10a1ddc2bd7768e96cd",
    "testharness"
-  ],
-  "selection/addRange-24-expected.txt": [
-   "332f1cc45a9aacee7c157a762073509bd93ab3d5",
-   "support"
   ],
   "selection/addRange-24.html": [
    "d6c0ce809239b2bafda14dab540bda45e3e89752",
    "testharness"
   ],
-  "selection/addRange-28-expected.txt": [
-   "75efb318748e3bc6653e0a798f8c4f7d5009dd9f",
-   "support"
-  ],
   "selection/addRange-28.html": [
    "a2583e4f46561f8b09183186aed7ca137fab26dd",
    "testharness"
   ],
-  "selection/addRange-32-expected.txt": [
-   "6cc3b0112a811f8ccc1e2c0f18f1b0622625a89b",
-   "support"
-  ],
   "selection/addRange-32.html": [
    "431ec670ebbcd0d0032fc416bd0910507fa76680",
    "testharness"
-  ],
-  "selection/addRange-36-expected.txt": [
-   "5f74cc3bc9612cff536e53d3e124fd7317853f1f",
-   "support"
   ],
   "selection/addRange-36.html": [
    "9572f7b20ee6891157025e576cf837e496a61669",
@@ -88429,6 +88607,10 @@
    "2feaa5022ee31fb980f97075d932b0d87d6efe75",
    "testharness"
   ],
+  "service-workers/service-worker/fetch-event-within-sw-manual.https-expected.txt": [
+   "3aedda99e8e2af542cd84a73386e11938555e326",
+   "support"
+  ],
   "service-workers/service-worker/fetch-event-within-sw-manual.https.html": [
    "6bdea01ca619a894d07364a0485f717b46afe585",
    "manual"
@@ -88477,12 +88659,8 @@
    "9631947d3cec78547bd4666b8ca970d037648cc8",
    "testharness"
   ],
-  "service-workers/service-worker/fetch-request-redirect.https-expected.txt": [
-   "b7d53b1f7ee6f904294cd21e5142ff3339a0c55c",
-   "support"
-  ],
   "service-workers/service-worker/fetch-request-redirect.https.html": [
-   "e0c2c7752674bd8bb65ce09bc1d49b2f5d458d54",
+   "e1ea127e72573e97a4d175c1780bfaae6f537972",
    "testharness"
   ],
   "service-workers/service-worker/fetch-request-resources.https-expected.txt": [
@@ -88600,6 +88778,58 @@
   "service-workers/service-worker/navigate-window.https.html": [
    "0499d4489276c2a933b79e47f1de591f467f42aa",
    "testharness"
+  ],
+  "service-workers/service-worker/navigation-preload/broken-chunked-encoding.https.html": [
+   "4953b0c2e9c0a0a02b285ca89b69947798804e58",
+   "testharness"
+  ],
+  "service-workers/service-worker/navigation-preload/chunked-encoding.https.html": [
+   "2d77619348ca1ed77fd9f2b29412a9b5452607d6",
+   "testharness"
+  ],
+  "service-workers/service-worker/navigation-preload/get-state.https.html": [
+   "18c163e36d5eb7d9dc2cdfe748b0c25783d729ab",
+   "testharness"
+  ],
+  "service-workers/service-worker/navigation-preload/request-headers.https.html": [
+   "fd50f2fd601e136d12fe815e6c1b8d5803663449",
+   "testharness"
+  ],
+  "service-workers/service-worker/navigation-preload/resources/broken-chunked-encoding-scope.asis": [
+   "d1fd50a8f194803dcc0c0f6d74bdc57197c3d6e5",
+   "support"
+  ],
+  "service-workers/service-worker/navigation-preload/resources/broken-chunked-encoding-worker.js": [
+   "becb31d5c7cd2773c064161ef689c31ebe8b7c3e",
+   "support"
+  ],
+  "service-workers/service-worker/navigation-preload/resources/chunked-encoding-scope.py": [
+   "a12cd710fb4accc11a2662a33cda0b8a98d80a30",
+   "support"
+  ],
+  "service-workers/service-worker/navigation-preload/resources/chunked-encoding-worker.js": [
+   "845d59cfe2e5b4d7c6bbb1bafe728df11e62207f",
+   "support"
+  ],
+  "service-workers/service-worker/navigation-preload/resources/get-state-worker.js": [
+   "60618f66cb5703d2d88e0a2b8db1c31eb03c1a77",
+   "support"
+  ],
+  "service-workers/service-worker/navigation-preload/resources/helpers.js": [
+   "68e1b0cf8bfa2501aed7c4a0b2d48ada1d881d0d",
+   "support"
+  ],
+  "service-workers/service-worker/navigation-preload/resources/request-headers-scope.py": [
+   "02d20594a4d027f323ae628769cf7b7c577d100f",
+   "support"
+  ],
+  "service-workers/service-worker/navigation-preload/resources/request-headers-worker.js": [
+   "0c02f9eb1f83a96f16d1d0f82669c78cc26e662d",
+   "support"
+  ],
+  "service-workers/service-worker/navigation-preload/resources/wait-for-activate-worker.js": [
+   "a6ac7ce51f0c0ea47f2d9bbeb44d8db7d3f7864f",
+   "support"
   ],
   "service-workers/service-worker/navigation-redirect.https-expected.txt": [
    "3fb82cb8040285c0709f3835d860b326b9aaee3f",
@@ -91710,7 +91940,7 @@
    "support"
   ],
   "web-animations/interfaces/Animation/effect.html": [
-   "63abcf3343cbed98c44c58fe63abcb393ac1d61a",
+   "9e2551bfd9238ff99f30eabbd119a05fcf6dbeb9",
    "testharness"
   ],
   "web-animations/interfaces/Animation/finish-expected.txt": [
@@ -91826,7 +92056,7 @@
    "testharness"
   ],
   "web-animations/interfaces/AnimationTimeline/document-timeline.html": [
-   "ce74dc0d4b350cbf3f30f62a3dbb002385c4de3b",
+   "033c4137ea1fcffc7c32a4cc353009b07b800c4a",
    "testharness"
   ],
   "web-animations/interfaces/AnimationTimeline/idlharness-expected.txt": [
@@ -91858,7 +92088,7 @@
    "testharness"
   ],
   "web-animations/interfaces/KeyframeEffect/constructor-expected.txt": [
-   "8ae20367cc2abc594c7c46bea3809adc6f16ec8c",
+   "59e26dd949e2988c8b29067ff8443554f497f09f",
    "support"
   ],
   "web-animations/interfaces/KeyframeEffect/constructor.html": [
@@ -91894,7 +92124,7 @@
    "testharness"
   ],
   "web-animations/interfaces/KeyframeEffect/setKeyframes-expected.txt": [
-   "11637094b2f517688a372146d2bdb1b97a6037af",
+   "a6f93561b284c95d612ad66890929f90bd251244",
    "support"
   ],
   "web-animations/interfaces/KeyframeEffect/setKeyframes.html": [
@@ -91983,6 +92213,10 @@
   ],
   "web-animations/timing-model/animations/current-time.html": [
    "b1ea8e490cbfb69fd71b91a90e7e2d9ce99f42d3",
+   "testharness"
+  ],
+  "web-animations/timing-model/animations/playing-an-animation.html": [
+   "88ab1d42390d50bcdf513bb12159c0c15d6278ff",
    "testharness"
   ],
   "web-animations/timing-model/animations/set-the-animation-start-time-expected.txt": [
@@ -92485,6 +92719,10 @@
    "e322b3ab7f8e0bc7ff802f00234a9a6e80b8285a",
    "testharness"
   ],
+  "webrtc/rtcpeerconnection/setRemoteDescription-expected.txt": [
+   "17112c81e061b56dbc28766e689400de27cde5c9",
+   "support"
+  ],
   "webrtc/rtcpeerconnection/setRemoteDescription.html": [
    "b11f7f3cc9a11b6aac9d70324a15e878c0345945",
    "testharness"
@@ -92798,7 +93036,7 @@
    "testharness"
   ],
   "webvtt/api/VTTCue/lineAlign-expected.txt": [
-   "bc91a54160ee1124b1b370eb1d19cbb6189a4fbb",
+   "c7f81b0d309b52f40f4dc85822d267e593f45501",
    "support"
   ],
   "webvtt/api/VTTCue/lineAlign.html": [
@@ -92810,7 +93048,7 @@
    "testharness"
   ],
   "webvtt/api/VTTCue/positionAlign-expected.txt": [
-   "9330303c727375a34ad94308ce55ec32adcbacb4",
+   "5adb7397284eab9a5fdb42053298ef71602b24b3",
    "support"
   ],
   "webvtt/api/VTTCue/positionAlign.html": [
@@ -92929,17 +93167,33 @@
    "4b8777b30361d5193137991be3b3268013a03fe9",
    "support"
   ],
+  "webvtt/parsing/cue-text-parsing/tests/entities-expected.txt": [
+   "5f7bc29b92759e1bd1abae38044914c7c4b36c42",
+   "support"
+  ],
   "webvtt/parsing/cue-text-parsing/tests/entities.html": [
    "43183d8d79641b451636efc22aa70431ec0ab1f7",
    "testharness"
+  ],
+  "webvtt/parsing/cue-text-parsing/tests/tags-expected.txt": [
+   "527015ab46993608933b735df323bc3409b804d2",
+   "support"
   ],
   "webvtt/parsing/cue-text-parsing/tests/tags.html": [
    "5c1bb0dace4c7c18b0265c568f81a5594424ed6b",
    "testharness"
   ],
+  "webvtt/parsing/cue-text-parsing/tests/timestamps-expected.txt": [
+   "bab0043d189c2e834cfc3a7f62df44a5b84ea065",
+   "support"
+  ],
   "webvtt/parsing/cue-text-parsing/tests/timestamps.html": [
    "9096541716f4318972db549f8a1fce33ca810b2a",
    "testharness"
+  ],
+  "webvtt/parsing/cue-text-parsing/tests/tree-building-expected.txt": [
+   "f551917f02c2d7e3380682c8a4b3c7d3190c7b57",
+   "support"
   ],
   "webvtt/parsing/cue-text-parsing/tests/tree-building.html": [
    "a812b24c8c9a8adbf05ea51a20e8b102a697cc88",
@@ -92947,6 +93201,10 @@
   ],
   "webvtt/parsing/file-parsing/README.md": [
    "2e167846b26497b3f44b6f6fed4b29be14b0a300",
+   "support"
+  ],
+  "webvtt/parsing/file-parsing/signature-invalid-expected.txt": [
+   "1cf0b96af7c8910c13cc7b2bfa56f405072cf13d",
    "support"
   ],
   "webvtt/parsing/file-parsing/signature-invalid.html": [
@@ -93177,25 +93435,49 @@
    "527b1f144e3af92dddb0746afff4cffc6004a08d",
    "testharness"
   ],
+  "webvtt/parsing/file-parsing/tests/regions-id-expected.txt": [
+   "027df7cb647f415e284a59901f4d0ad4fca8910e",
+   "support"
+  ],
   "webvtt/parsing/file-parsing/tests/regions-id.html": [
    "b795ab2a5e12895569d24c2828b265d6f9d296fb",
    "testharness"
+  ],
+  "webvtt/parsing/file-parsing/tests/regions-lines-expected.txt": [
+   "707e4f90710d6128571945bd650ccf54c62f3ffb",
+   "support"
   ],
   "webvtt/parsing/file-parsing/tests/regions-lines.html": [
    "3c232948d1a38e8e81e2f29846aff912b3934cb5",
    "testharness"
   ],
+  "webvtt/parsing/file-parsing/tests/regions-old-expected.txt": [
+   "8f75c254de6224e8d8009ab55c8d6913b75d2fac",
+   "support"
+  ],
   "webvtt/parsing/file-parsing/tests/regions-old.html": [
    "e61b584d8c6618749a861f47e5144a70334964cf",
    "testharness"
+  ],
+  "webvtt/parsing/file-parsing/tests/regions-regionanchor-expected.txt": [
+   "e5f6cbc3394bda0e9c27f66e071e0bc1c0e0c212",
+   "support"
   ],
   "webvtt/parsing/file-parsing/tests/regions-regionanchor.html": [
    "cdd801c8ab4f1976ccbe242d09bb4d1cbb08049f",
    "testharness"
   ],
+  "webvtt/parsing/file-parsing/tests/regions-scroll-expected.txt": [
+   "d4e5bce16810cf613e9538d59920335bbb4bd41e",
+   "support"
+  ],
   "webvtt/parsing/file-parsing/tests/regions-scroll.html": [
    "485cb47d08a5b54fa94136f6ee3b1367df5cb8cd",
    "testharness"
+  ],
+  "webvtt/parsing/file-parsing/tests/regions-viewportanchor-expected.txt": [
+   "a36a55def93772d21c792d1e3901deb1df63bfb5",
+   "support"
   ],
   "webvtt/parsing/file-parsing/tests/regions-viewportanchor.html": [
    "82d8106c43a13ed2f673b919ed0e52e01aabdfcd",
@@ -93205,6 +93487,10 @@
    "600c8c0861b9da63a15df4c88f9b8082213c4e5a",
    "testharness"
   ],
+  "webvtt/parsing/file-parsing/tests/settings-line-expected.txt": [
+   "20049badd319d08af248d757b25cd27125f5ff6d",
+   "support"
+  ],
   "webvtt/parsing/file-parsing/tests/settings-line.html": [
    "f9ba37c2f420d3c181a5a81ad34cdf9b113fce76",
    "testharness"
@@ -93213,9 +93499,17 @@
    "0f35b3c2dbe4074b95201353eb5f318cf8e9a36c",
    "testharness"
   ],
+  "webvtt/parsing/file-parsing/tests/settings-position-expected.txt": [
+   "bc8f6b67652a73c6ff2eb3d40184e7d034f457f1",
+   "support"
+  ],
   "webvtt/parsing/file-parsing/tests/settings-position.html": [
    "37814e276567b552b4f2a28bb6e06fffcf4b594b",
    "testharness"
+  ],
+  "webvtt/parsing/file-parsing/tests/settings-region-expected.txt": [
+   "90b5389035ecf6ba6780c6e8d81c471584251ad2",
+   "support"
   ],
   "webvtt/parsing/file-parsing/tests/settings-region.html": [
    "04ef1c8cac52193d6a6e686ea0cce8116e7c5bd6",
@@ -96265,12 +96559,20 @@
    "57c96d6fe9b09b015cc63be4aa8cb0d068f0d810",
    "testharness"
   ],
+  "workers/semantics/encodings/001-expected.txt": [
+   "a46c328e32ad5121ec78e91f7d40ede7506659da",
+   "support"
+  ],
   "workers/semantics/encodings/001.html": [
    "9e4ebc403b7160f1bb29a291a111326f53ac27a4",
    "testharness"
   ],
   "workers/semantics/encodings/001.html.headers": [
    "3355b0c0188586c90715df2a82e5194c4e455da8",
+   "support"
+  ],
+  "workers/semantics/encodings/002-expected.txt": [
+   "b04ed9fa88d879870c30e9693c27af54b2e71779",
    "support"
   ],
   "workers/semantics/encodings/002.html": [
