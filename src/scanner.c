@@ -740,9 +740,7 @@ start_element(void *data, const char *element_name, const char **atts)
 		switch (arg->type) {
 		case NEW_ID:
 			ctx->message->new_id_count++;
-
-			/* Fall through to OBJECT case. */
-
+			/* fallthrough */
 		case OBJECT:
 			if (interface_name)
 				arg->interface_name = xstrdup(interface_name);
