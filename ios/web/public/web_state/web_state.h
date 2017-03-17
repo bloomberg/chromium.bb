@@ -100,8 +100,9 @@ class WebState : public base::SupportsUserData {
   virtual bool IsWebUsageEnabled() const = 0;
   virtual void SetWebUsageEnabled(bool enabled) = 0;
 
-  // Whether or not dialogs (JavaScript dialogs, HTTP auths and window.open)
-  // calls should be suppressed. Default is false.
+  // Whether or not dialogs (JavaScript, geolocation) and window open requests
+  // should be suppressed. Default is false. When dialog is suppressed
+  // |WebStateObserver::DidSuppressDialog| will be called.
   virtual bool ShouldSuppressDialogs() const = 0;
   virtual void SetShouldSuppressDialogs(bool should_suppress) = 0;
 

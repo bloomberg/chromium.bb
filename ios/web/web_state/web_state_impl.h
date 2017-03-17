@@ -94,6 +94,9 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   // Called when the visible security state of the page changes.
   void OnVisibleSecurityStateChange();
 
+  // Called when a dialog or child window open request was suppressed.
+  void OnDialogSuppressed();
+
   // Notifies the observers that the render process was terminated.
   void OnRenderProcessGone();
 

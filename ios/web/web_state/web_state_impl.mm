@@ -211,6 +211,12 @@ void WebStateImpl::OnVisibleSecurityStateChange() {
     observer.DidChangeVisibleSecurityState();
 }
 
+void WebStateImpl::OnDialogSuppressed() {
+  DCHECK(ShouldSuppressDialogs());
+  for (auto& observer : observers_)
+    observer.DidSuppressDialog();
+}
+
 void WebStateImpl::OnRenderProcessGone() {
   for (auto& observer : observers_)
     observer.RenderProcessGone();

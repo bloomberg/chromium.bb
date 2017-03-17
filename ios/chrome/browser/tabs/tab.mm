@@ -1900,7 +1900,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   [self.webController setWebUsageEnabled:webUsageEnabled];
 }
 
-- (void)webControllerDidSuppressDialog:(id)webController {
+- (void)webStateDidSuppressDialog:(web::WebState*)webState {
   DCHECK(isPrerenderTab_);
   [delegate_ discardPrerender];
 }

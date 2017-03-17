@@ -91,6 +91,12 @@ class WebStateObserver {
   // Called when the visible security state of the page changes.
   virtual void DidChangeVisibleSecurityState() {}
 
+  // Called when a dialog (JavaScript, geolocation) or window open request was
+  // suppressed.
+  // NOTE: Called only if WebState::SetShouldSuppressDialogs() was called with
+  // false.
+  virtual void DidSuppressDialog() {}
+
   // Called on form submission. |user_initiated| is true if the user
   // interacted with the page.
   virtual void DocumentSubmitted(const std::string& form_name,

@@ -95,11 +95,6 @@ class GURL;
 // or nil otherwise.
 - (id<CRWNativeContent>)controllerForUnhandledContentAtURL:(const GURL&)url;
 
-// Called when CRWWebController did suppress a dialog (JavaScript, HTTP
-// authentication or window.open).
-// NOTE: Called only if CRWWebController.shouldSuppressDialogs is set to YES.
-- (void)webControllerDidSuppressDialog:(CRWWebController*)webController;
-
 // Called to retrieve the height of any header that is overlaying on top of the
 // web view. This can be used to implement, for e.g. a toolbar that changes
 // height dynamically. Returning a non-zero height affects the visible frame

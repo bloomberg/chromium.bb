@@ -98,7 +98,7 @@ class WebStateImpl;
 
 // YES if JavaScript dialogs, HTTP authentication dialogs and window.open
 // calls should be suppressed. Default is NO. When dialog is suppressed
-// |CRWWebDelegate webControllerDidSuppressDialog:| will be called.
+// |WebStateObserver::DidSuppressDialog| will be called.
 @property(nonatomic, assign) BOOL shouldSuppressDialogs;
 
 // Designated initializer. Initializes web controller with |webState|. The

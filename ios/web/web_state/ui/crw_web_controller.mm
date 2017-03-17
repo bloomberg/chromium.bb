@@ -737,9 +737,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (BOOL)urlTriggersNativeAppLaunch:(const GURL&)URL
                          sourceURL:(const GURL&)sourceURL
            linkActivatedNavigation:(BOOL)linkActivatedNavigation;
-// Called when a JavaScript dialog, HTTP authentication dialog or window.open
-// call has been suppressed.
-- (void)didSuppressDialog;
 // Returns YES if the navigation action is associated with a main frame request.
 - (BOOL)isMainFrameNavigationAction:(WKNavigationAction*)action;
 // Returns whether external URL navigation action should be opened.
@@ -2610,7 +2607,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (BOOL)handleGeolocationDialogSuppressedMessage:(base::DictionaryValue*)message
                                          context:(NSDictionary*)context {
-  [self didSuppressDialog];
+  _webStateImpl->OnDialogSuppressed();
   return YES;
 }
 
@@ -3401,7 +3398,9 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
       [space.authenticationMethod isEqual:NSURLAuthenticationMethodHTTPDigest]);
 
   if (self.shouldSuppressDialogs) {
-    [self didSuppressDialog];
+    // TODO(crbug.com/702381): Web Controller should not assume that embedder
+    // handles HTTP Authentication by showing the dialog.
+    _webStateImpl->OnDialogSuppressed();
     completionHandler(NSURLSessionAuthChallengeRejectProtectionSpace, nil);
     return;
   }
@@ -3443,7 +3442,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
                        completion:(void (^)(BOOL, NSString*))completionHandler {
   DCHECK(completionHandler);
   if (self.shouldSuppressDialogs) {
-    [self didSuppressDialog];
+    _webStateImpl->OnDialogSuppressed();
     completionHandler(NO, nil);
     return;
   }
@@ -3928,11 +3927,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
                       linkClicked:linkClicked];
 }
 
-- (void)didSuppressDialog {
-  if ([_delegate respondsToSelector:@selector(webControllerDidSuppressDialog:)])
-    [_delegate webControllerDidSuppressDialog:self];
-}
-
 - (BOOL)isMainFrameNavigationAction:(WKNavigationAction*)action {
   if (action.targetFrame) {
     return action.targetFrame.mainFrame;
@@ -4311,7 +4305,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
                forNavigationAction:(WKNavigationAction*)action
                     windowFeatures:(WKWindowFeatures*)windowFeatures {
   if (self.shouldSuppressDialogs) {
-    [self didSuppressDialog];
+    _webStateImpl->OnDialogSuppressed();
     return nil;
   }
 

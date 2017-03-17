@@ -49,6 +49,9 @@ class GURL;
 // Invoked by WebStateObserverBridge::DidChangeVisibleSecurityState.
 - (void)webStateDidChangeVisibleSecurityState:(web::WebState*)webState;
 
+// Invoked by WebStateObserverBridge::DidSuppressDialog.
+- (void)webStateDidSuppressDialog:(web::WebState*)webState;
+
 // Invoked by WebStateObserverBridge::DocumentSubmitted.
 - (void)webState:(web::WebState*)webState
     didSubmitDocumentWithFormNamed:(const std::string&)formName
@@ -108,6 +111,7 @@ class WebStateObserverBridge : public web::WebStateObserver {
   void LoadProgressChanged(double progress) override;
   void TitleWasSet() override;
   void DidChangeVisibleSecurityState() override;
+  void DidSuppressDialog() override;
   void DocumentSubmitted(const std::string& form_name,
                          bool user_initiated) override;
   void FormActivityRegistered(const std::string& form_name,

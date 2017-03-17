@@ -142,6 +142,15 @@ TEST_F(WebStateObserverBridgeTest, DidChangeVisibleSecurityState) {
             [observer_ didChangeVisibleSecurityStateInfo]->web_state);
 }
 
+// Tests |webStateDidSuppressDialog:| forwarding.
+TEST_F(WebStateObserverBridgeTest, DidSuppressDialog) {
+  ASSERT_FALSE([observer_ didSuppressDialogInfo]);
+
+  bridge_->DidSuppressDialog();
+  ASSERT_TRUE([observer_ didSuppressDialogInfo]);
+  EXPECT_EQ(&test_web_state_, [observer_ didSuppressDialogInfo]->web_state);
+}
+
 // Tests |webState:didSubmitDocumentWithFormNamed:userInitiated:| forwarding.
 TEST_F(WebStateObserverBridgeTest, DocumentSubmitted) {
   ASSERT_FALSE([observer_ submitDocumentInfo]);

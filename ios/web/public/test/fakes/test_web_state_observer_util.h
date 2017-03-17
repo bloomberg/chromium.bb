@@ -74,6 +74,11 @@ struct TestDidChangeVisibleSecurityStateInfo {
   WebState* web_state;
 };
 
+// Arguments passed to |DidSuppressDialog|.
+struct TestDidSuppressDialogInfo {
+  WebState* web_state;
+};
+
 // Arguments passed to |DocumentSubmitted|.
 struct TestSubmitDocumentInfo {
   WebState* web_state;

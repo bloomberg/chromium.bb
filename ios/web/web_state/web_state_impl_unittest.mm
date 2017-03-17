@@ -283,6 +283,13 @@ TEST_F(WebStateImplTest, ObserverTest) {
   EXPECT_EQ(web_state_.get(),
             observer->did_change_visible_security_state_info()->web_state);
 
+  // Test that DidSuppressDialog() is called.
+  ASSERT_FALSE(observer->did_suppress_dialog_info());
+  web_state_->SetShouldSuppressDialogs(true);
+  web_state_->OnDialogSuppressed();
+  ASSERT_TRUE(observer->did_suppress_dialog_info());
+  EXPECT_EQ(web_state_.get(), observer->did_suppress_dialog_info()->web_state);
+
   // Test that DocumentSubmitted() is called.
   ASSERT_FALSE(observer->submit_document_info());
   std::string kTestFormName("form-name");

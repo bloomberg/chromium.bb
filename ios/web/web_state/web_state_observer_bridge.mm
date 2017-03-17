@@ -91,6 +91,11 @@ void WebStateObserverBridge::DidChangeVisibleSecurityState() {
     [observer_ webStateDidChangeVisibleSecurityState:web_state()];
 }
 
+void WebStateObserverBridge::DidSuppressDialog() {
+  if ([observer_ respondsToSelector:@selector(webStateDidSuppressDialog:)])
+    [observer_ webStateDidSuppressDialog:web_state()];
+}
+
 void WebStateObserverBridge::DocumentSubmitted(const std::string& form_name,
                                                bool user_initiated) {
   SEL selector =

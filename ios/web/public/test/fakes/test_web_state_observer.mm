@@ -96,6 +96,12 @@ void TestWebStateObserver::DidChangeVisibleSecurityState() {
   did_change_visible_security_state_info_->web_state = web_state();
 }
 
+void TestWebStateObserver::DidSuppressDialog() {
+  did_suppress_dialog_info_ =
+      base::MakeUnique<web::TestDidSuppressDialogInfo>();
+  did_suppress_dialog_info_->web_state = web_state();
+}
+
 void TestWebStateObserver::DocumentSubmitted(const std::string& form_name,
                                              bool user_initiated) {
   submit_document_info_ = base::MakeUnique<web::TestSubmitDocumentInfo>();

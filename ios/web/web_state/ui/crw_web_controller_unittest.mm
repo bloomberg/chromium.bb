@@ -284,29 +284,19 @@ TEST_F(CRWWebControllerTest, SslCertError) {
             observer.did_change_visible_security_state_info()->web_state);
 }
 
-// Test fixture to test |setPageDialogOpenPolicy:|.
-class CRWWebControllerPageDialogOpenPolicyTest
-    : public web::WebTestWithWebController {
+// Test fixture to test |WebState::SetShouldSuppressDialogs|.
+class DialogsSuppressionTest : public web::WebTestWithWebState {
  protected:
-  CRWWebControllerPageDialogOpenPolicyTest()
-      : page_url_("https://chromium.test/") {}
+  DialogsSuppressionTest() : page_url_("https://chromium.test/") {}
   void SetUp() override {
-    web::WebTestWithWebController::SetUp();
+    web::WebTestWithWebState::SetUp();
     LoadHtml(@"<html><body></body></html>", page_url_);
-    web_delegate_mock_.reset(
-        [[OCMockObject mockForProtocol:@protocol(CRWWebDelegate)] retain]);
-    [web_controller() setDelegate:web_delegate_mock_];
     web_state()->SetDelegate(&test_web_delegate_);
   }
   void TearDown() override {
-    WaitForBackgroundTasks();
-    EXPECT_OCMOCK_VERIFY(web_delegate_mock_);
-    [web_controller() setDelegate:nil];
     web_state()->SetDelegate(nullptr);
-
-    web::WebTestWithWebController::TearDown();
+    web::WebTestWithWebState::TearDown();
   }
-  id web_delegate_mock() { return web_delegate_mock_; };
   web::TestJavaScriptDialogPresenter* js_dialog_presenter() {
     return test_web_delegate_.GetTestJavaScriptDialogPresenter();
   }
@@ -317,23 +307,26 @@ class CRWWebControllerPageDialogOpenPolicyTest
 
  private:
   web::TestWebStateDelegate test_web_delegate_;
-  base::scoped_nsprotocol<id> web_delegate_mock_;
   GURL page_url_;
 };
 
-// Tests that window.alert dialog is suppressed for DIALOG_POLICY_SUPPRESS.
-TEST_F(CRWWebControllerPageDialogOpenPolicyTest, SuppressAlert) {
-  [[web_delegate_mock() expect]
-      webControllerDidSuppressDialog:web_controller()];
-  [web_controller() setShouldSuppressDialogs:YES];
+// Tests that window.alert dialog is suppressed.
+TEST_F(DialogsSuppressionTest, SuppressAlert) {
+  web::TestWebStateObserver observer(web_state());
+  ASSERT_FALSE(observer.did_suppress_dialog_info());
+  web_state()->SetShouldSuppressDialogs(true);
   ExecuteJavaScript(@"alert('test')");
+  ASSERT_TRUE(observer.did_suppress_dialog_info());
+  EXPECT_EQ(web_state(), observer.did_suppress_dialog_info()->web_state);
 };
 
-// Tests that window.alert dialog is shown for DIALOG_POLICY_ALLOW.
-TEST_F(CRWWebControllerPageDialogOpenPolicyTest, AllowAlert) {
+// Tests that window.alert dialog is shown.
+TEST_F(DialogsSuppressionTest, AllowAlert) {
+  web::TestWebStateObserver observer(web_state());
+  ASSERT_FALSE(observer.did_suppress_dialog_info());
   ASSERT_TRUE(requested_dialogs().empty());
 
-  [web_controller() setShouldSuppressDialogs:NO];
+  web_state()->SetShouldSuppressDialogs(false);
   ExecuteJavaScript(@"alert('test')");
 
   ASSERT_EQ(1U, requested_dialogs().size());
@@ -343,28 +336,32 @@ TEST_F(CRWWebControllerPageDialogOpenPolicyTest, AllowAlert) {
   EXPECT_EQ(web::JAVASCRIPT_DIALOG_TYPE_ALERT, dialog.java_script_dialog_type);
   EXPECT_NSEQ(@"test", dialog.message_text);
   EXPECT_FALSE(dialog.default_prompt_text);
+  ASSERT_FALSE(observer.did_suppress_dialog_info());
 };
 
-// Tests that window.confirm dialog is suppressed for DIALOG_POLICY_SUPPRESS.
-TEST_F(CRWWebControllerPageDialogOpenPolicyTest, SuppressConfirm) {
+// Tests that window.confirm dialog is suppressed.
+TEST_F(DialogsSuppressionTest, SuppressConfirm) {
+  web::TestWebStateObserver observer(web_state());
+  ASSERT_FALSE(observer.did_suppress_dialog_info());
   ASSERT_TRUE(requested_dialogs().empty());
 
-  [[web_delegate_mock() expect]
-      webControllerDidSuppressDialog:web_controller()];
-  [web_controller() setShouldSuppressDialogs:YES];
+  web_state()->SetShouldSuppressDialogs(true);
   EXPECT_NSEQ(@NO, ExecuteJavaScript(@"confirm('test')"));
 
   ASSERT_TRUE(requested_dialogs().empty());
+  ASSERT_TRUE(observer.did_suppress_dialog_info());
+  EXPECT_EQ(web_state(), observer.did_suppress_dialog_info()->web_state);
 };
 
-// Tests that window.confirm dialog is shown for DIALOG_POLICY_ALLOW and
-// it's result is true.
-TEST_F(CRWWebControllerPageDialogOpenPolicyTest, AllowConfirmWithTrue) {
+// Tests that window.confirm dialog is shown and its result is true.
+TEST_F(DialogsSuppressionTest, AllowConfirmWithTrue) {
+  web::TestWebStateObserver observer(web_state());
+  ASSERT_FALSE(observer.did_suppress_dialog_info());
   ASSERT_TRUE(requested_dialogs().empty());
 
   js_dialog_presenter()->set_callback_success_argument(true);
 
-  [web_controller() setShouldSuppressDialogs:NO];
+  web_state()->SetShouldSuppressDialogs(false);
   EXPECT_NSEQ(@YES, ExecuteJavaScript(@"confirm('test')"));
 
   ASSERT_EQ(1U, requested_dialogs().size());
@@ -375,14 +372,16 @@ TEST_F(CRWWebControllerPageDialogOpenPolicyTest, AllowConfirmWithTrue) {
             dialog.java_script_dialog_type);
   EXPECT_NSEQ(@"test", dialog.message_text);
   EXPECT_FALSE(dialog.default_prompt_text);
+  ASSERT_FALSE(observer.did_suppress_dialog_info());
 }
 
-// Tests that window.confirm dialog is shown for DIALOG_POLICY_ALLOW and
-// it's result is false.
-TEST_F(CRWWebControllerPageDialogOpenPolicyTest, AllowConfirmWithFalse) {
+// Tests that window.confirm dialog is shown and its result is false.
+TEST_F(DialogsSuppressionTest, AllowConfirmWithFalse) {
+  web::TestWebStateObserver observer(web_state());
+  ASSERT_FALSE(observer.did_suppress_dialog_info());
   ASSERT_TRUE(requested_dialogs().empty());
 
-  [web_controller() setShouldSuppressDialogs:NO];
+  web_state()->SetShouldSuppressDialogs(false);
   EXPECT_NSEQ(@NO, ExecuteJavaScript(@"confirm('test')"));
 
   ASSERT_EQ(1U, requested_dialogs().size());
@@ -393,27 +392,32 @@ TEST_F(CRWWebControllerPageDialogOpenPolicyTest, AllowConfirmWithFalse) {
             dialog.java_script_dialog_type);
   EXPECT_NSEQ(@"test", dialog.message_text);
   EXPECT_FALSE(dialog.default_prompt_text);
+  ASSERT_FALSE(observer.did_suppress_dialog_info());
 }
 
-// Tests that window.prompt dialog is suppressed for DIALOG_POLICY_SUPPRESS.
-TEST_F(CRWWebControllerPageDialogOpenPolicyTest, SuppressPrompt) {
+// Tests that window.prompt dialog is suppressed.
+TEST_F(DialogsSuppressionTest, SuppressPrompt) {
+  web::TestWebStateObserver observer(web_state());
+  ASSERT_FALSE(observer.did_suppress_dialog_info());
   ASSERT_TRUE(requested_dialogs().empty());
 
-  [[web_delegate_mock() expect]
-      webControllerDidSuppressDialog:web_controller()];
-  [web_controller() setShouldSuppressDialogs:YES];
+  web_state()->SetShouldSuppressDialogs(true);
   EXPECT_EQ([NSNull null], ExecuteJavaScript(@"prompt('Yes?', 'No')"));
 
   ASSERT_TRUE(requested_dialogs().empty());
+  ASSERT_TRUE(observer.did_suppress_dialog_info());
+  EXPECT_EQ(web_state(), observer.did_suppress_dialog_info()->web_state);
 }
 
-// Tests that window.prompt dialog is shown for DIALOG_POLICY_ALLOW.
-TEST_F(CRWWebControllerPageDialogOpenPolicyTest, AllowPrompt) {
+// Tests that window.prompt dialog is shown.
+TEST_F(DialogsSuppressionTest, AllowPrompt) {
+  web::TestWebStateObserver observer(web_state());
+  ASSERT_FALSE(observer.did_suppress_dialog_info());
   ASSERT_TRUE(requested_dialogs().empty());
 
   js_dialog_presenter()->set_callback_user_input_argument(@"Maybe");
 
-  [web_controller() setShouldSuppressDialogs:NO];
+  web_state()->SetShouldSuppressDialogs(false);
   EXPECT_NSEQ(@"Maybe", ExecuteJavaScript(@"prompt('Yes?', 'No')"));
 
   ASSERT_EQ(1U, requested_dialogs().size());
@@ -423,28 +427,37 @@ TEST_F(CRWWebControllerPageDialogOpenPolicyTest, AllowPrompt) {
   EXPECT_EQ(web::JAVASCRIPT_DIALOG_TYPE_PROMPT, dialog.java_script_dialog_type);
   EXPECT_NSEQ(@"Yes?", dialog.message_text);
   EXPECT_NSEQ(@"No", dialog.default_prompt_text);
+  ASSERT_FALSE(observer.did_suppress_dialog_info());
 }
 
-// Tests that geolocation dialog is suppressed for DIALOG_POLICY_SUPPRESS.
-TEST_F(CRWWebControllerPageDialogOpenPolicyTest, SuppressGeolocation) {
+// Tests that geolocation dialog is suppressed.
+TEST_F(DialogsSuppressionTest, SuppressGeolocation) {
   // The geolocation APIs require HTTPS on iOS 10, which can not be simulated
   // even using |loadHTMLString:baseURL:| WKWebView API.
   if (base::ios::IsRunningOnIOS10OrLater()) {
     return;
   }
+  web::TestWebStateObserver observer(web_state());
+  ASSERT_FALSE(observer.did_suppress_dialog_info());
+  ASSERT_TRUE(requested_dialogs().empty());
 
-  [[web_delegate_mock() expect]
-      webControllerDidSuppressDialog:web_controller()];
-  [web_controller() setShouldSuppressDialogs:YES];
+  web_state()->SetShouldSuppressDialogs(true);
   ExecuteJavaScript(@"navigator.geolocation.getCurrentPosition()");
+  ASSERT_TRUE(observer.did_suppress_dialog_info());
+  EXPECT_EQ(web_state(), observer.did_suppress_dialog_info()->web_state);
 }
 
-// Tests that window.open is suppressed for DIALOG_POLICY_SUPPRESS.
-TEST_F(CRWWebControllerPageDialogOpenPolicyTest, SuppressWindowOpen) {
-  [[web_delegate_mock() expect]
-      webControllerDidSuppressDialog:web_controller()];
-  [web_controller() setShouldSuppressDialogs:YES];
+// Tests that window.open is suppressed.
+TEST_F(DialogsSuppressionTest, SuppressWindowOpen) {
+  web::TestWebStateObserver observer(web_state());
+  ASSERT_FALSE(observer.did_suppress_dialog_info());
+  ASSERT_TRUE(requested_dialogs().empty());
+
+  web_state()->SetShouldSuppressDialogs(true);
   ExecuteJavaScript(@"window.open('')");
+
+  ASSERT_TRUE(observer.did_suppress_dialog_info());
+  EXPECT_EQ(web_state(), observer.did_suppress_dialog_info()->web_state);
 }
 
 // A separate test class, as none of the |CRWWebControllerTest| setup is
