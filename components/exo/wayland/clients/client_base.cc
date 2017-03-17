@@ -34,7 +34,7 @@
 #include <gbm.h>
 #include <xf86drm.h>
 
-#include "ui/ozone/public/ozone_platform.h"
+#include "ui/ozone/public/ozone_platform.h"  // nogncheck
 #endif
 
 namespace exo {
