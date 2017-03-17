@@ -2807,7 +2807,7 @@ static bool inRenderedText(const PositionTemplate<Strategy>& position) {
     }
     if (box->containsCaretOffset(textOffset)) {
       // Return false for offsets inside composed characters.
-      return textOffset == 0 ||
+      return textOffset == textLayoutObject->caretMinOffset() ||
              textOffset == nextGraphemeBoundaryOf(anchorNode,
                                                   previousGraphemeBoundaryOf(
                                                       anchorNode, textOffset));

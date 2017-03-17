@@ -2026,4 +2026,15 @@ TEST_F(VisibleUnitsTest, localSelectionRectOfPositionTemplateNotCrash) {
   EXPECT_FALSE(rect.isEmpty());
 }
 
+// Regression test for crbug.com/675429
+TEST_F(VisibleUnitsTest,
+       canonicalizationWithCollapsedSpaceAndIsolatedCombiningCharacter) {
+  setBodyContent("<p>  &#x20E3;</p>");  // Leading space is necessary
+
+  Node* paragraph = document().querySelector("p");
+  Node* text = paragraph->firstChild();
+  Position start = canonicalPositionOf(Position::beforeNode(paragraph));
+  EXPECT_EQ(Position(text, 2), start);
+}
+
 }  // namespace blink
