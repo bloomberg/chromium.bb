@@ -249,7 +249,7 @@ make_patch_fs() {
     exit 13
   fi
 
-  if ! cp -p "${SCRIPT_DIR}/.keychain_reauthorize/${old_app_bundleid}"
+  if ! cp -p "${SCRIPT_DIR}/keychain_reauthorizers/${old_app_bundleid}" \
              "${patch_keychain_reauthorize_dir}/${old_app_bundleid}"; then
     err "could not copy keychain_reauthorize"
     exit 13
