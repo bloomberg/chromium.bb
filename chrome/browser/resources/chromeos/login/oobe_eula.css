@@ -13,6 +13,12 @@ a {
   font: 13px Roboto, sans-serif;
 }
 
+#crosEulaFrame {
+  border: 1px solid var(--google-blue-500);
+  border-radius: 2px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .13);
+}
+
 #installationSettings {
   -webkit-margin-start: 20px;
   margin-top: 31px; /* = 44 - font size */
@@ -27,10 +33,12 @@ a {
 
 #usageStats {
   --paper-checkbox-size: 16px;
-  --paper-checkbox-checked-color: rgb(66, 133, 244); /* #4285f4 */
+  --paper-checkbox-checked-color: var(--google-blue-500);
+  size: 16px;
 }
 
 #usageStatsLabelContainer label {
+  -webkit-margin-start: 16px;
   color: rgba(0, 0, 0, .54);
 }
 
