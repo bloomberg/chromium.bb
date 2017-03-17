@@ -53,7 +53,7 @@ class SitePerProcessInteractiveBrowserTest : public InProcessBrowserTest {
     content::WebContents* web_contents =
         browser()->tab_strip_model()->GetActiveWebContents();
     const display::Display display =
-        display::Screen::GetScreen()->GetDisplayNearestWindow(
+        display::Screen::GetScreen()->GetDisplayNearestView(
             web_contents->GetRenderWidgetHostView()->GetNativeView());
     return display.bounds().size();
   }

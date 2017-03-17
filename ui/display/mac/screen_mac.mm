@@ -153,16 +153,11 @@ class ScreenMac : public Screen {
     return displays_;
   }
 
-  Display GetDisplayNearestWindow(gfx::NativeView view) const override {
+  Display GetDisplayNearestWindow(gfx::NativeWindow window) const override {
     EnsureDisplaysValid();
     if (displays_.size() == 1)
       return displays_[0];
 
-    NSWindow* window = nil;
-#if !defined(USE_AURA)
-    if (view)
-      window = [view window];
-#endif
     if (!window)
       return GetPrimaryDisplay();
 
@@ -328,6 +323,15 @@ class ScreenMac : public Screen {
 };
 
 }  // namespace
+
+// static
+gfx::NativeWindow Screen::GetWindowForView(gfx::NativeView view) {
+  NSWindow* window = nil;
+#if !defined(USE_AURA)
+  window = [view window];
+#endif
+  return window;
+}
 
 #if !defined(USE_AURA)
 Screen* CreateNativeScreen() {

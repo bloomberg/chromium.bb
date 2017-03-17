@@ -30,7 +30,8 @@ class VIEWS_MUS_EXPORT ScreenMus
 
  private:
   // display::Screen:
-  display::Display GetDisplayNearestWindow(gfx::NativeView view) const override;
+  display::Display GetDisplayNearestWindow(
+      gfx::NativeWindow window) const override;
   gfx::Point GetCursorScreenPoint() override;
   bool IsWindowUnderCursor(gfx::NativeWindow window) override;
   aura::Window* GetWindowAtScreenPoint(const gfx::Point& point) override;

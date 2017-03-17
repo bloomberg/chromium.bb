@@ -32,6 +32,7 @@ component("display") {
     "mac/screen_mac.mm",
     "screen.cc",
     "screen.h",
+    "screen_android.cc",
     "screen_aura.cc",
     "screen_base.cc",
     "screen_base.h",

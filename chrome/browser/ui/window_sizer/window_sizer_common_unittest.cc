@@ -63,7 +63,7 @@ class TestScreen : public display::Screen {
   }
 
   display::Display GetDisplayNearestWindow(
-      gfx::NativeView view) const override {
+      gfx::NativeWindow window) const override {
 #if defined(USE_AURA)
     return displays_[index_of_display_nearest_window_];
 #else

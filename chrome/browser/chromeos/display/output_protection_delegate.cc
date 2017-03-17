@@ -26,7 +26,7 @@ bool GetCurrentDisplayId(content::RenderFrameHost* rfh, int64_t* display_id) {
   if (!screen)
     return false;
   display::Display display =
-      screen->GetDisplayNearestWindow(rfh->GetNativeView());
+      screen->GetDisplayNearestView(rfh->GetNativeView());
   *display_id = display.id();
   return true;
 }

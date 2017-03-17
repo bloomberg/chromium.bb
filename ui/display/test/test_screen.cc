@@ -28,7 +28,7 @@ gfx::NativeWindow TestScreen::GetWindowAtScreenPoint(const gfx::Point& point) {
   return nullptr;
 }
 
-Display TestScreen::GetDisplayNearestWindow(gfx::NativeView view) const {
+Display TestScreen::GetDisplayNearestWindow(gfx::NativeWindow window) const {
   return GetPrimaryDisplay();
 }
 

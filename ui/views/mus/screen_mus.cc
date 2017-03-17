@@ -75,7 +75,7 @@ void ScreenMus::Init(service_manager::Connector* connector) {
 }
 
 display::Display ScreenMus::GetDisplayNearestWindow(
-    aura::Window* window) const {
+    gfx::NativeWindow window) const {
   aura::WindowTreeHostMus* window_tree_host_mus =
       aura::WindowTreeHostMus::ForWindow(window);
   if (!window_tree_host_mus)

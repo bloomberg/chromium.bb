@@ -53,7 +53,8 @@ class TestScreen : public display::ScreenBase, public WindowObserver {
   gfx::Point GetCursorScreenPoint() override;
   bool IsWindowUnderCursor(gfx::NativeWindow window) override;
   gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point) override;
-  display::Display GetDisplayNearestWindow(gfx::NativeView view) const override;
+  display::Display GetDisplayNearestWindow(
+      gfx::NativeWindow window) const override;
 
  private:
   TestScreen(const gfx::Rect& screen_bounds,

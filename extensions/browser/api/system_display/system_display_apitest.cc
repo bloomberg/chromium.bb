@@ -55,7 +55,7 @@ class MockScreen : public Screen {
     return displays_;
   }
   display::Display GetDisplayNearestWindow(
-      gfx::NativeView window) const override {
+      gfx::NativeWindow window) const override {
     return display::Display(0);
   }
   display::Display GetDisplayNearestPoint(

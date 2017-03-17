@@ -22,7 +22,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -195,8 +194,7 @@ Browser* TabDragControllerTest::CreateAnotherWindowBrowserAndRelayout() {
   // Resize the two windows so they're right next to each other.
   gfx::Rect work_area =
       display::Screen::GetScreen()
-          ->GetDisplayNearestWindow(platform_util::GetViewForWindow(
-              browser()->window()->GetNativeWindow()))
+          ->GetDisplayNearestWindow(browser()->window()->GetNativeWindow())
           .work_area();
   gfx::Size half_size =
       gfx::Size(work_area.width() / 3 - 10, work_area.height() / 2 - 10);
@@ -920,8 +918,7 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserTabDragControllerTest,
   // Resize the browser window so that it is as big as the work area.
   gfx::Rect work_area =
       display::Screen::GetScreen()
-          ->GetDisplayNearestWindow(platform_util::GetViewForWindow(
-              browser()->window()->GetNativeWindow()))
+          ->GetDisplayNearestWindow(browser()->window()->GetNativeWindow())
           .work_area();
   browser()->window()->SetBounds(work_area);
   const gfx::Rect initial_bounds(browser()->window()->GetBounds());
