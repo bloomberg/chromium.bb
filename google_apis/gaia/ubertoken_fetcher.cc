@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/time/time.h"
@@ -16,11 +17,11 @@
 #include "google_apis/gaia/oauth2_token_service.h"
 
 namespace {
-GaiaAuthFetcher* CreateGaiaAuthFetcher(
+std::unique_ptr<GaiaAuthFetcher> CreateGaiaAuthFetcher(
     GaiaAuthConsumer* consumer,
     const std::string& source,
     net::URLRequestContextGetter* request_context) {
-  return new GaiaAuthFetcher(consumer, source, request_context);
+  return base::MakeUnique<GaiaAuthFetcher>(consumer, source, request_context);
 }
 }
 
@@ -149,7 +150,7 @@ void UbertokenFetcher::RequestAccessToken() {
 }
 
 void UbertokenFetcher::ExchangeTokens() {
-  gaia_auth_fetcher_.reset(
-      gaia_auth_fetcher_factory_.Run(this, source_, request_context_));
+  gaia_auth_fetcher_ =
+      gaia_auth_fetcher_factory_.Run(this, source_, request_context_);
   gaia_auth_fetcher_->StartTokenFetchForUberAuthExchange(access_token_);
 }

@@ -28,10 +28,10 @@ namespace net {
 class URLRequestContextGetter;
 }
 
-typedef base::Callback<GaiaAuthFetcher*(GaiaAuthConsumer*,
-                                        const std::string&,
-                                        net::URLRequestContextGetter*)>
-    GaiaAuthFetcherFactory;
+using GaiaAuthFetcherFactory = base::Callback<std::unique_ptr<GaiaAuthFetcher>(
+    GaiaAuthConsumer*,
+    const std::string&,
+    net::URLRequestContextGetter*)>;
 
 // Callback for the |UbertokenFetcher| class.
 class UbertokenConsumer {

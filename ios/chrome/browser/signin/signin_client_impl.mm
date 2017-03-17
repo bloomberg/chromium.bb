@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/guid.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/keyed_service/core/service_access_type.h"
@@ -231,9 +232,10 @@ void SigninClientImpl::DelayNetworkCall(const base::Closure& callback) {
   }
 }
 
-GaiaAuthFetcher* SigninClientImpl::CreateGaiaAuthFetcher(
+std::unique_ptr<GaiaAuthFetcher> SigninClientImpl::CreateGaiaAuthFetcher(
     GaiaAuthConsumer* consumer,
     const std::string& source,
     net::URLRequestContextGetter* getter) {
-  return new GaiaAuthFetcherIOS(consumer, source, getter, browser_state_);
+  return base::MakeUnique<GaiaAuthFetcherIOS>(consumer, source, getter,
+                                              browser_state_);
 }

@@ -96,9 +96,8 @@ void ChildAccountInfoFetcherImpl::OnGetTokenSuccess(
                                "OnGetTokenSuccess");
   DCHECK_EQ(request, login_token_request_.get());
 
-  gaia_auth_fetcher_.reset(
-      fetcher_service_->signin_client_->CreateGaiaAuthFetcher(
-          this, GaiaConstants::kChromeSource, request_context_getter_));
+  gaia_auth_fetcher_ = fetcher_service_->signin_client_->CreateGaiaAuthFetcher(
+      this, GaiaConstants::kChromeSource, request_context_getter_);
   gaia_auth_fetcher_->StartOAuthLogin(access_token,
                                       GaiaConstants::kGaiaService);
 }

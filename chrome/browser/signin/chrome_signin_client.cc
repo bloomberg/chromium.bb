@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -391,11 +392,11 @@ void ChromeSigninClient::DelayNetworkCall(const base::Closure& callback) {
 #endif
 }
 
-GaiaAuthFetcher* ChromeSigninClient::CreateGaiaAuthFetcher(
+std::unique_ptr<GaiaAuthFetcher> ChromeSigninClient::CreateGaiaAuthFetcher(
     GaiaAuthConsumer* consumer,
     const std::string& source,
     net::URLRequestContextGetter* getter) {
-  return new GaiaAuthFetcher(consumer, source, getter);
+  return base::MakeUnique<GaiaAuthFetcher>(consumer, source, getter);
 }
 
 void ChromeSigninClient::MaybeFetchSigninTokenHandle() {

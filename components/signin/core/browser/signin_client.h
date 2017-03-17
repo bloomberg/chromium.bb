@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_CLIENT_H_
 #define COMPONENTS_SIGNIN_CORE_BROWSER_SIGNIN_CLIENT_H_
 
+#include <memory>
+
 #include "base/callback.h"
 #include "base/callback_list.h"
 #include "base/time/time.h"
@@ -118,9 +120,8 @@ class SigninClient : public KeyedService {
   // Execute |callback| if and when there is a network connection.
   virtual void DelayNetworkCall(const base::Closure& callback) = 0;
 
-  // Creates and returns a new platform-specific GaiaAuthFetcher. It is the
-  // responsability of the caller to delete the returned object.
-  virtual GaiaAuthFetcher* CreateGaiaAuthFetcher(
+  // Creates a new platform-specific GaiaAuthFetcher.
+  virtual std::unique_ptr<GaiaAuthFetcher> CreateGaiaAuthFetcher(
       GaiaAuthConsumer* consumer,
       const std::string& source,
       net::URLRequestContextGetter* getter) = 0;
