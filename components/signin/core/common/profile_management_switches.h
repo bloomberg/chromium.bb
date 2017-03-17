@@ -22,9 +22,6 @@ bool IsEnableAccountConsistency();
 // Whether the chrome.identity API should be multi-account.
 bool IsExtensionsMultiAccount();
 
-// Enables using GAIA information to populate profile name and icon.
-bool IsGoogleProfileInfo();
-
 // Use new profile management system, including profile sign-out and new
 // choosers.
 bool IsNewProfileManagement();

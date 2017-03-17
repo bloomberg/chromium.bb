@@ -74,8 +74,8 @@ bool IsProfileLocked(const base::FilePath& profile_path);
 // an update for the Gaia profile info.
 void UpdateIsProfileLockEnabledIfNeeded(Profile* profile);
 
-// If the --google-profile-info flag is turned on, starts an update for a new
-// version of the Gaia profile picture and other profile info.
+// Starts an update for a new version of the Gaia profile picture and other
+// profile info.
 void UpdateGaiaProfileInfoIfNeeded(Profile* profile);
 
 // Returns the sign-in error controller for the given profile.  Some profiles,

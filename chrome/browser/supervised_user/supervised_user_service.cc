@@ -382,8 +382,7 @@ void SupervisedUserService::RegisterAndInitSync(
                  weak_ptr_factory_.GetWeakPtr(), callback, custodian_profile));
 
   // Fetch the custodian's profile information, to store the name.
-  // TODO(pamg): If --google-profile-info (flag: switches::kGoogleProfileInfo)
-  // is ever enabled, take the name from the ProfileAttributesStorage instead.
+  // TODO(pamg): Take the name from the ProfileAttributesStorage instead.
   CustodianProfileDownloaderService* profile_downloader_service =
       CustodianProfileDownloaderServiceFactory::GetForProfile(
           custodian_profile);

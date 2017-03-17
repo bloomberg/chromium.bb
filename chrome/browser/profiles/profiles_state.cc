@@ -190,12 +190,6 @@ void UpdateIsProfileLockEnabledIfNeeded(Profile* profile) {
 }
 
 void UpdateGaiaProfileInfoIfNeeded(Profile* profile) {
-  // If the --google-profile-info flag isn't used, then the
-  // GAIAInfoUpdateService isn't initialized, and we can't download the profile
-  // info.
-  if (!switches::IsGoogleProfileInfo())
-    return;
-
   DCHECK(profile);
 
   GAIAInfoUpdateService* service =

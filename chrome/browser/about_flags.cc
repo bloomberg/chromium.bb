@@ -1344,9 +1344,6 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_ENABLE_PASSWORD_SEPARATED_SIGNIN_FLOW_DESCRIPTION,
      kOsMac | kOsWin | kOsLinux,
      FEATURE_VALUE_TYPE(switches::kUsePasswordSeparatedSigninFlow)},
-    {"enable-google-profile-info", IDS_FLAGS_GOOGLE_PROFILE_INFO_NAME,
-     IDS_FLAGS_GOOGLE_PROFILE_INFO_DESCRIPTION, kOsMac | kOsWin | kOsLinux,
-     SINGLE_VALUE_TYPE(switches::kGoogleProfileInfo)},
 #if BUILDFLAG(ENABLE_APP_LIST)
     {"reset-app-list-install-state",
      IDS_FLAGS_RESET_APP_LIST_INSTALL_STATE_NAME,
