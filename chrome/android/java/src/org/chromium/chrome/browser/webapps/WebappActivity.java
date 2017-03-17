@@ -30,6 +30,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.document.DocumentUtils;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
@@ -544,18 +545,22 @@ public class WebappActivity extends FullScreenActivity {
                 }
 
                 // Kick the interstitial navigation to Chrome.
-                Intent intent = new Intent(
-                        Intent.ACTION_VIEW, Uri.parse(getActivityTab().getUrl()));
+                Intent intent =
+                        new Intent(Intent.ACTION_VIEW, Uri.parse(getActivityTab().getUrl()));
                 intent.setPackage(getPackageName());
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent);
+                IntentHandler.startChromeLauncherActivityForTrustedIntent(intent);
 
                 // Pretend like the navigation never happened.  We delay so that this happens while
                 // the Activity is in the background.
                 mHandler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        getActivityTab().goBack();
+                        if (getActivityTab().canGoBack()) {
+                            getActivityTab().goBack();
+                        } else {
+                            ApiCompatibilityUtils.finishAndRemoveTask(WebappActivity.this);
+                        }
                     }
                 }, MS_BEFORE_NAVIGATING_BACK_FROM_INTERSTITIAL);
             }
