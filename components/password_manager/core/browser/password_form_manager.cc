@@ -24,6 +24,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/affiliation_utils.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
+#include "components/password_manager/core/browser/form_fetcher_impl.h"
 #include "components/password_manager/core/browser/form_saver.h"
 #include "components/password_manager/core/browser/log_manager.h"
 #include "components/password_manager/core/browser/password_manager.h"
@@ -228,16 +229,16 @@ PasswordFormManager::PasswordFormManager(
       submit_result_(kSubmitResultNotSubmitted),
       form_type_(kFormTypeUnspecified),
       form_saver_(std::move(form_saver)),
-      form_fetcher_impl_(form_fetcher
-                             ? nullptr
-                             : base::MakeUnique<FormFetcherImpl>(
-                                   PasswordStore::FormDigest(observed_form),
-                                   client,
-                                   /* should_migrate_http_passwords */ true)),
-      form_fetcher_(form_fetcher ? form_fetcher : form_fetcher_impl_.get()),
+      owned_form_fetcher_(form_fetcher
+                              ? nullptr
+                              : base::MakeUnique<FormFetcherImpl>(
+                                    PasswordStore::FormDigest(observed_form),
+                                    client,
+                                    /* should_migrate_http_passwords */ true)),
+      form_fetcher_(form_fetcher ? form_fetcher : owned_form_fetcher_.get()),
       is_main_frame_secure_(client->IsMainFrameSecure()) {
-  if (form_fetcher_impl_)
-    form_fetcher_impl_->Fetch();
+  if (owned_form_fetcher_)
+    owned_form_fetcher_->Fetch();
   DCHECK_EQ(observed_form.scheme == PasswordForm::SCHEME_HTML,
             driver != nullptr);
   if (driver)

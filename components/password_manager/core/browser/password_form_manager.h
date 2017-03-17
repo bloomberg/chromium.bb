@@ -21,7 +21,6 @@
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/form_fetcher.h"
-#include "components/password_manager/core/browser/form_fetcher_impl.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/core/browser/password_store.h"
 
@@ -562,10 +561,8 @@ class PasswordFormManager : public FormFetcher::Consumer {
   // credentials.
   std::unique_ptr<FormSaver> form_saver_;
 
-  // TODO(crbug.com/621355) Remove this, ultimately the form fetcher will not be
-  // owned by PasswordFormManager. Temporarily, this is the object which
-  // |form_fetcher_| points to, unless set otherwise in the constructor.
-  std::unique_ptr<FormFetcherImpl> form_fetcher_impl_;
+  // When not null, then this is the object which |form_fetcher_| points to.
+  std::unique_ptr<FormFetcher> owned_form_fetcher_;
 
   // FormFetcher instance which owns the login data from PasswordStore.
   FormFetcher* const form_fetcher_;
