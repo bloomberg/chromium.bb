@@ -167,9 +167,6 @@ NSString* const kStartupAttemptReset = @"StartupAttempReset";
 // Constants for deferring memory debugging tools startup.
 NSString* const kMemoryDebuggingToolsStartup = @"MemoryDebuggingToolsStartup";
 
-// Constants for deferring memory monitoring startup.
-NSString* const kMemoryMonitoring = @"MemoryMonitoring";
-
 // Constants for deferred check if it is necessary to send pings to
 // Chrome distribution related services.
 NSString* const kSendInstallPingIfNecessary = @"SendInstallPingIfNecessary";
@@ -479,7 +476,7 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
 // Asynchronously schedule the init of the memoryDebuggerManager.
 - (void)scheduleMemoryDebuggingTools;
 // Asynchronously kick off regular free memory checks.
-- (void)scheduleFreeMemoryMonitoring;
+- (void)startFreeMemoryMonitoring;
 // Asynchronously schedules the notification of the AuthenticationService.
 - (void)scheduleAuthenticationServiceNotification;
 // Asynchronously schedules the reset of the failed startup attempt counter.
@@ -1166,17 +1163,9 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   }
 }
 
-- (void)scheduleFreeMemoryMonitoring {
-  // TODO(crbug.com/649338): See if this method cannot call PostBlockingPoolTask
-  // directly instead of enqueueing a block.
-  [[DeferredInitializationRunner sharedInstance]
-      enqueueBlockNamed:kMemoryMonitoring
-                  block:^{
-                    web::WebThread::PostBlockingPoolTask(
-                        FROM_HERE,
-                        base::Bind(
-                            &ios_internal::AsynchronousFreeMemoryMonitor));
-                  }];
+- (void)startFreeMemoryMonitoring {
+  web::WebThread::PostBlockingPoolTask(
+      FROM_HERE, base::Bind(&ios_internal::AsynchronousFreeMemoryMonitor));
 }
 
 - (void)scheduleLowPriorityStartupTasks {
@@ -1193,7 +1182,7 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   [self scheduleSpotlightResync];
   [self scheduleDeleteDownloadsDirectory];
   [self scheduleStartupAttemptReset];
-  [self scheduleFreeMemoryMonitoring];
+  [self startFreeMemoryMonitoring];
   [self scheduleAppDistributionPings];
   [self scheduleCheckNativeApps];
 }
