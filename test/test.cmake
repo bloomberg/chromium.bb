@@ -107,9 +107,10 @@ if (CONFIG_AV1)
     endif ()
   endif ()
 
-  set(AOM_UNIT_TEST_COMMON_NEON_INTRIN
-      ${AOM_UNIT_TEST_COMMON_NEON_INTRIN}
-      "${AOM_ROOT}/test/simd_cmp_neon.cc")
+  set(AOM_UNIT_TEST_COMMON_INTRIN_NEON
+    ${AOM_UNIT_TEST_COMMON_INTRIN_NEON}
+      "${AOM_ROOT}/test/simd_cmp_neon.cc"
+      "${AOM_ROOT}/test/simd_neon_test.cc")
   set(AOM_UNIT_TEST_COMMON_INTRIN_SSE2
       ${AOM_UNIT_TEST_COMMON_INTRIN_SSE2}
       "${AOM_ROOT}/test/simd_cmp_sse2.cc")
@@ -295,6 +296,10 @@ function (setup_aom_test_targets)
   if (HAVE_SSE4_1)
     add_intrinsics_source_to_target("-msse4.1" "test_libaom"
                                     "AOM_UNIT_TEST_COMMON_INTRIN_SSE4_1")
+  endif ()
+  if (HAVE_NEON)
+    add_intrinsics_source_to_target("${AOM_NEON_INTRIN_FLAG}" "test_libaom"
+                                    "AOM_UNIT_TEST_COMMON_INTRIN_NEON")
   endif ()
 
   add_custom_target(testdata
