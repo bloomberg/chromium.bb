@@ -7,12 +7,10 @@
 
 #import "base/ios/block_types.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestion_identifier.h"
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 
 // Item for a footer of a Content Suggestions section.
-@interface ContentSuggestionsFooterItem
-    : CollectionViewItem<ContentSuggestionIdentification>
+@interface ContentSuggestionsFooterItem : CollectionViewItem
 
 // Initialize a footer with a button taking all the space, with a |title| and a
 // |block| run when tapped.

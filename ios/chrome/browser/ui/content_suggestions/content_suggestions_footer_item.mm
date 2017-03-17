@@ -27,7 +27,6 @@ const CGFloat kMinimalCellHeight = 44;
 
 @synthesize title = _title;
 @synthesize block = _block;
-@synthesize suggestionIdentifier = _suggestionIdentifier;
 
 - (instancetype)initWithType:(NSInteger)type
                        title:(NSString*)title

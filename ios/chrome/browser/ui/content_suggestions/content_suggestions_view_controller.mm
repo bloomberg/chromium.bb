@@ -184,6 +184,11 @@ const NSTimeInterval kAnimationDuration = 0.35;
   return NO;
 }
 
+- (BOOL)collectionView:(UICollectionView*)collectionView
+    shouldHideHeaderBackgroundForSection:(NSInteger)section {
+  return YES;
+}
+
 - (CGFloat)collectionView:(UICollectionView*)collectionView
     cellHeightAtIndexPath:(NSIndexPath*)indexPath {
   CollectionViewItem* item =

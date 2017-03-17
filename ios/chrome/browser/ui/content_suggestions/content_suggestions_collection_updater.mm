@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 #include "base/time/time.h"
+#import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestion.h"
@@ -39,6 +40,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeStack,
   ItemTypeFavicon,
   ItemTypeFooter,
+  ItemTypeHeader,
 };
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
@@ -166,8 +168,13 @@ SectionIdentifier SectionIdentifierForInfo(
 
 - (void)reloadAllData {
   [self resetModels];
-  [self.collectionViewController
-      addSuggestions:[self.dataSource allSuggestions]];
+
+  // The data is reset, add the new data directly in the model then reload the
+  // collection.
+  NSArray<ContentSuggestion*>* suggestions = [self.dataSource allSuggestions];
+  [self addSectionsForSuggestionsToModel:suggestions];
+  [self addSuggestionsToModel:suggestions];
+  [self.collectionViewController.collectionView reloadData];
 }
 
 - (void)clearSection:(ContentSuggestionsSectionInformation*)sectionInfo {
@@ -247,6 +254,7 @@ SectionIdentifier SectionIdentifierForInfo(
       self.sectionInfoBySectionIdentifier[@(sectionIdentifier)] = sectionInfo;
       [indexSet addIndex:[model sectionForSectionIdentifier:sectionIdentifier]];
 
+      [self addHeader:suggestion.suggestionIdentifier.sectionInfo];
       [self addFooterIfNeeded:suggestion.suggestionIdentifier.sectionInfo];
     }
   }
@@ -303,6 +311,21 @@ SectionIdentifier SectionIdentifierForInfo(
 
     [self.collectionViewController.collectionViewModel
                        setFooter:footer
+        forSectionWithIdentifier:sectionIdentifier];
+  }
+}
+
+// Adds the header corresponding to |sectionInfo| to the section.
+- (void)addHeader:(ContentSuggestionsSectionInformation*)sectionInfo {
+  NSInteger sectionIdentifier = SectionIdentifierForInfo(sectionInfo);
+
+  if (![self.collectionViewController.collectionViewModel
+          headerForSectionWithIdentifier:sectionIdentifier]) {
+    CollectionViewTextItem* header =
+        [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader];
+    header.text = sectionInfo.title;
+    [self.collectionViewController.collectionViewModel
+                       setHeader:header
         forSectionWithIdentifier:sectionIdentifier];
   }
 }
