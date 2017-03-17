@@ -90,6 +90,8 @@ class MockRenderThread : public RenderThread {
   ServiceManagerConnection* GetServiceManagerConnection() override;
   service_manager::InterfaceRegistry* GetInterfaceRegistry() override;
   service_manager::InterfaceProvider* GetRemoteInterfaces() override;
+  void SetFieldTrialGroup(const std::string& trial_name,
+                          const std::string& group_name) override;
 
   //////////////////////////////////////////////////////////////////////////
   // The following functions are called by the test itself.

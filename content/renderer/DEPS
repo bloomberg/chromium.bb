@@ -5,6 +5,7 @@ include_rules = [
   "+components/payments",
   "+components/scheduler",
   "+components/url_formatter",
+  "+components/variations",
 
   "+cc/blink",
   "+content/public/child",

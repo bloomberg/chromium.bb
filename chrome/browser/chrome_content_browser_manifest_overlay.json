@@ -8,7 +8,6 @@
           "autofill::mojom::AutofillDriver",
           "autofill::mojom::PasswordManagerDriver",
           "chrome::mojom::NetBenchmarking",
-          "chrome::mojom::FieldTrialRecorder",
           "extensions::StashService",
           "metrics::mojom::LeakDetector",
           "mojom::ModuleEventSink",

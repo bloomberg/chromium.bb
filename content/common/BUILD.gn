@@ -589,6 +589,7 @@ mojom("mojo_bindings") {
   sources = [
     "associated_interfaces.mojom",
     "child_memory_coordinator.mojom",
+    "field_trial_recorder.mojom",
     "frame.mojom",
     "host_zoom.mojom",
     "image_downloader/image_downloader.mojom",

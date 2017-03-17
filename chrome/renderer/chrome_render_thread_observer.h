@@ -11,10 +11,8 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/metrics/field_trial.h"
 #include "chrome/common/renderer_configuration.mojom.h"
 #include "components/content_settings/core/common/content_settings.h"
-#include "components/variations/child_process_field_trial_syncer.h"
 #include "content/public/renderer/render_thread_observer.h"
 #include "mojo/public/cpp/bindings/associated_binding_set.h"
 
@@ -31,7 +29,6 @@ class VisitedLinkSlave;
 // happen.  If a few messages are related, they should probably have their own
 // observer.
 class ChromeRenderThreadObserver : public content::RenderThreadObserver,
-                                   public base::FieldTrialList::Observer,
                                    public chrome::mojom::RendererConfiguration {
  public:
   ChromeRenderThreadObserver();
@@ -55,10 +52,6 @@ class ChromeRenderThreadObserver : public content::RenderThreadObserver,
       content::AssociatedInterfaceRegistry* associated_interfaces) override;
   void OnRenderProcessShutdown() override;
 
-  // base::FieldTrialList::Observer:
-  void OnFieldTrialGroupFinalized(const std::string& trial_name,
-                                  const std::string& group_name) override;
-
   // chrome::mojom::RendererConfiguration:
   void SetInitialConfiguration(bool is_incognito_process) override;
   void SetContentSettingRules(
@@ -72,7 +65,6 @@ class ChromeRenderThreadObserver : public content::RenderThreadObserver,
   static bool is_incognito_process_;
   std::unique_ptr<content::ResourceDispatcherDelegate> resource_delegate_;
   RendererContentSettingRules content_setting_rules_;
-  variations::ChildProcessFieldTrialSyncer field_trial_syncer_;
 
   std::unique_ptr<visitedlink::VisitedLinkSlave> visited_link_slave_;
 

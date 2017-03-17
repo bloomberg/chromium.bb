@@ -426,6 +426,7 @@ target(link_target_type, "renderer") {
     "//components/discardable_memory/client",
     "//components/payments/content:payment_app",
     "//components/url_formatter",
+    "//components/variations",
     "//content:resources",
     "//content/child",
     "//content/common",

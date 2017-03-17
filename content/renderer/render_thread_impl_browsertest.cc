@@ -13,6 +13,7 @@
 #include "base/debug/leak_annotations.h"
 #include "base/location.h"
 #include "base/memory/discardable_memory.h"
+#include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -163,6 +164,8 @@ class QuitOnTestMsgFilter : public IPC::MessageFilter {
 
 class RenderThreadImplBrowserTest : public testing::Test {
  public:
+  RenderThreadImplBrowserTest() : field_trial_list_(nullptr) {}
+
   void SetUp() override {
     // SequencedWorkerPool is enabled by default in tests. Disable it for this
     // test to avoid a DCHECK failure when RenderThreadImpl::Init enables it.
@@ -212,6 +215,9 @@ class RenderThreadImplBrowserTest : public testing::Test {
         blink::scheduler::RendererScheduler::Create();
     scoped_refptr<base::SingleThreadTaskRunner> test_task_counter(
         test_task_counter_.get());
+
+    base::FieldTrialList::CreateTrialsFromCommandLine(
+        *cmd, switches::kFieldTrialHandle, -1);
     thread_ = new RenderThreadImplForTest(
         InProcessChildThreadParams(io_task_runner,
                                    child_connection_->service_token()),
@@ -248,6 +254,8 @@ class RenderThreadImplBrowserTest : public testing::Test {
   std::unique_ptr<MockRenderProcess> mock_process_;
   scoped_refptr<QuitOnTestMsgFilter> test_msg_filter_;
   RenderThreadImplForTest* thread_;  // Owned by mock_process_.
+
+  base::FieldTrialList field_trial_list_;
 };
 
 void CheckRenderThreadInputHandlerManager(RenderThreadImpl* thread) {

@@ -2,19 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/field_trial_recorder.h"
+#include "content/browser/field_trial_recorder.h"
 
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+
+namespace content {
 
 FieldTrialRecorder::FieldTrialRecorder() = default;
 
 FieldTrialRecorder::~FieldTrialRecorder() = default;
 
 // static
-void FieldTrialRecorder::Create(
-    chrome::mojom::FieldTrialRecorderRequest request) {
+void FieldTrialRecorder::Create(mojom::FieldTrialRecorderRequest request) {
   mojo::MakeStrongBinding(base::MakeUnique<FieldTrialRecorder>(),
                           std::move(request));
 }
@@ -26,3 +27,5 @@ void FieldTrialRecorder::FieldTrialActivated(const std::string& trial_name) {
   // and activates the trial.
   base::FieldTrialList::FindFullName(trial_name);
 }
+
+}  // namespce content

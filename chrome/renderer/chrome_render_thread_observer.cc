@@ -19,7 +19,6 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
-#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/path_service.h"
@@ -30,7 +29,6 @@
 #include "build/build_config.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/field_trial_recorder.mojom.h"
 #include "chrome/common/media/media_resource_provider.h"
 #include "chrome/common/net/net_resource_provider.h"
 #include "chrome/common/render_messages.h"
@@ -236,12 +234,8 @@ void CreateResourceUsageReporter(
 bool ChromeRenderThreadObserver::is_incognito_process_ = false;
 
 ChromeRenderThreadObserver::ChromeRenderThreadObserver()
-    : field_trial_syncer_(this),
-      visited_link_slave_(new visitedlink::VisitedLinkSlave),
+    : visited_link_slave_(new visitedlink::VisitedLinkSlave),
       weak_factory_(this) {
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-
   RenderThread* thread = RenderThread::Get();
   resource_delegate_.reset(new RendererResourceDelegate());
   thread->SetResourceDispatcherDelegate(resource_delegate_.get());
@@ -253,9 +247,6 @@ ChromeRenderThreadObserver::ChromeRenderThreadObserver()
   net::NetModule::SetResourceProvider(chrome_common_net::NetResourceProvider);
   media::SetLocalizedStringProvider(
       chrome_common_media::LocalizedStringProvider);
-
-  field_trial_syncer_.InitFieldTrialObserving(command_line,
-                                              switches::kSingleProcess);
 
   // chrome-native: is a scheme used for placeholder navigations that allow
   // UIs to be drawn with platform native widgets instead of HTML.  These pages
@@ -295,15 +286,6 @@ void ChromeRenderThreadObserver::OnRenderProcessShutdown() {
   renderer_configuration_bindings_.CloseAllBindings();
 }
 
-void ChromeRenderThreadObserver::OnFieldTrialGroupFinalized(
-    const std::string& trial_name,
-    const std::string& group_name) {
-  chrome::mojom::FieldTrialRecorderPtr field_trial_recorder;
-  content::RenderThread::Get()->GetRemoteInterfaces()->GetInterface(
-      &field_trial_recorder);
-  field_trial_recorder->FieldTrialActivated(trial_name);
-}
-
 void ChromeRenderThreadObserver::SetInitialConfiguration(
     bool is_incognito_process) {
   is_incognito_process_ = is_incognito_process;
@@ -317,7 +299,7 @@ void ChromeRenderThreadObserver::SetContentSettingRules(
 void ChromeRenderThreadObserver::SetFieldTrialGroup(
     const std::string& trial_name,
     const std::string& group_name) {
-  field_trial_syncer_.OnSetFieldTrialGroup(trial_name, group_name);
+  RenderThread::Get()->SetFieldTrialGroup(trial_name, group_name);
 }
 
 void ChromeRenderThreadObserver::OnRendererConfigurationAssociatedRequest(

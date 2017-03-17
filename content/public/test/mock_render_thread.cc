@@ -291,6 +291,8 @@ service_manager::InterfaceProvider* MockRenderThread::GetRemoteInterfaces() {
   return remote_interfaces_.get();
 }
 
+void MockRenderThread::SetFieldTrialGroup(const std::string& trial_name,
+                                          const std::string& group_name) {}
 void MockRenderThread::SendCloseMessage() {
   ViewMsg_Close msg(routing_id_);
   RenderViewImpl::FromRoutingID(routing_id_)->OnMessageReceived(msg);

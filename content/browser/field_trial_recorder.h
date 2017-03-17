@@ -2,21 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_FIELD_TRIAL_RECORDER_H_
-#define CHROME_BROWSER_FIELD_TRIAL_RECORDER_H_
+#ifndef CONTENT_BROWSER_FIELD_TRIAL_RECORDER_H_
+#define CONTENT_BROWSER_FIELD_TRIAL_RECORDER_H_
 
 #include "base/threading/thread_checker.h"
-#include "chrome/common/field_trial_recorder.mojom.h"
+#include "content/common/field_trial_recorder.mojom.h"
 
-class FieldTrialRecorder : public chrome::mojom::FieldTrialRecorder {
+namespace content {
+
+class FieldTrialRecorder : public mojom::FieldTrialRecorder {
  public:
   FieldTrialRecorder();
   ~FieldTrialRecorder() override;
 
-  static void Create(chrome::mojom::FieldTrialRecorderRequest request);
+  static void Create(mojom::FieldTrialRecorderRequest request);
 
  private:
-  // chrome::mojom::FieldTrialRecorder:
+  // content::mojom::FieldTrialRecorder:
   void FieldTrialActivated(const std::string& trial_name) override;
 
   base::ThreadChecker thread_checker_;
@@ -24,4 +26,6 @@ class FieldTrialRecorder : public chrome::mojom::FieldTrialRecorder {
   DISALLOW_COPY_AND_ASSIGN(FieldTrialRecorder);
 };
 
-#endif  // CHROME_BROWSER_FIELD_TRIAL_RECORDER_H_
+}  // namespace content
+
+#endif  // CONTENT_BROWSER_FIELD_TRIAL_RECORDER_H_

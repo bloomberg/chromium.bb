@@ -20,6 +20,7 @@
           "blink::mojom::OffscreenCanvasSurfaceFactory",
           "blink::mojom::PermissionService",
           "blink::mojom::WebSocket",
+          "content::mojom::FieldTrialRecorder",
           "content::mojom::MemoryCoordinatorHandle",
           "content::mojom::PushMessaging",
           "content::mojom::ServiceWorkerDispatcherHost",
