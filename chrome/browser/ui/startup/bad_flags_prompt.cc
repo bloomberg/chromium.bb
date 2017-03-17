@@ -86,6 +86,10 @@ void ShowBadFlagsPrompt(Browser* browser) {
     // if they are not.
     switches::kUnsafelyTreatInsecureOriginAsSecure,
 
+    // This flag allows sites to access the camera and microphone without
+    // getting the user's permission.
+    switches::kUseFakeUIForMediaStream,
+
     NULL
   };
 
