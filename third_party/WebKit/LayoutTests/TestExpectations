@@ -153,6 +153,9 @@ crbug.com/701800 [ Win7 ] virtual/disable-spinvalidation/compositing/perpendicul
 crbug.com/702006 paint/invalidation/compositing/scrolling-neg-z-index-descendants-should-cause-repaint.html [ Failure ]
 crbug.com/702006 virtual/disable-spinvalidation/paint/invalidation/compositing/scrolling-neg-z-index-descendants-should-cause-repaint.html [ Failure ]
 
+Bug(wangxianzhu) [ Mac10.12 ] paint/invalidation/forms/button-reset-focus-by-mouse-then-keydown.html [ NeedsRebaseline ]
+Bug(wangxianzhu) [ Mac10.12 ] paint/invalidation/forms/submit-focus-by-mouse-then-keydown.html [ NeedsRebaseline ]
+
 # ====== Paint team owned tests to here ======
 
 # ====== LayoutNG-only failures from here ======
