@@ -83,9 +83,12 @@ ClientNativePixmapDmaBuf::ClientNativePixmapDmaBuf(
   data_ = mmap(nullptr, map_size, (PROT_READ | PROT_WRITE), MAP_SHARED,
                dmabuf_fd_.get(), 0);
   if (data_ == MAP_FAILED) {
+    logging::SystemErrorCode mmap_error = logging::GetLastSystemErrorCode();
+    if (mmap_error == ENOMEM)
+      base::TerminateBecauseOutOfMemory(map_size);
+
     // TODO(dcastagna): Remove the following diagnostic information and the
     // associated crash keys once crbug.com/629521 is fixed.
-    logging::SystemErrorCode mmap_error = logging::GetLastSystemErrorCode();
     bool fd_valid = fcntl(dmabuf_fd_.get(), F_GETFD) != -1 ||
                     logging::GetLastSystemErrorCode() != EBADF;
     std::string mmap_params = base::StringPrintf(
@@ -106,8 +109,6 @@ ClientNativePixmapDmaBuf::ClientNativePixmapDmaBuf(
                << ", buffer_size: (" << size.ToString()
                << "),  errno: " << errno_str
                << " , number_of_fds: " << number_of_fds;
-    if (mmap_error == ENOMEM)
-      base::TerminateBecauseOutOfMemory(map_size);
     CHECK(false) << "Failed to mmap dmabuf.";
   }
 }
