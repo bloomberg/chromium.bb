@@ -5574,6 +5574,14 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Enabling this option allows web applications to access experimental extensions to the Gamepad APIs.
       </message>
       <if expr="is_android">
+        <message name="IDS_FLAGS_NEW_PHOTO_PICKER_NAME" desc="Name of about:flags option to turn on the new Photo picker." translateable="false">
+          Enable new Photopicker
+        </message>
+        <message name="IDS_FLAGS_NEW_PHOTO_PICKER_DESCRIPTION" desc="Description of about:flags option to turn on the new Photo picker." translateable="false">
+          Activates the new picker for selecting photos.
+        </message>
+      </if>
+      <if expr="is_android">
         <message name="IDS_FLAGS_ENABLE_OSK_OVERSCROLL_NAME" desc="Name of about:flags option to turn on the overscrolling for the OSK.">
           Enable OSK Overscroll
         </message>

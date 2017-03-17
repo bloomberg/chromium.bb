@@ -19,6 +19,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.ChromeActivitySessionTracker;
 import org.chromium.chrome.browser.ChromeApplication;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.DeferredStartupHandler;
 import org.chromium.chrome.browser.DevToolsServer;
 import org.chromium.chrome.browser.banners.AppBannerManager;
@@ -39,7 +40,9 @@ import org.chromium.components.signin.AccountManagerHelper;
 import org.chromium.content.common.ContentSwitches;
 import org.chromium.printing.PrintDocumentAdapterWrapper;
 import org.chromium.printing.PrintingControllerImpl;
+import org.chromium.ui.PhotoPickerListener;
 import org.chromium.ui.UiUtils;
+import org.chromium.ui.widget.Toast;
 
 /**
  * Handles the initialization dependences of the browser process.  This is meant to handle the
@@ -153,6 +156,20 @@ public class ProcessInitializationHandler {
         ChromeLifetimeController.initialize();
 
         PrefServiceBridge.getInstance().migratePreferences(application);
+
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.NEW_PHOTO_PICKER)) {
+            UiUtils.setPhotoPickerDelegate(new UiUtils.PhotoPickerDelegate() {
+                @Override
+                public void showPhotoPicker(
+                        Context context, PhotoPickerListener listener, boolean allowMultiple) {
+                    Toast toast = Toast.makeText(context, "Not implemented!", Toast.LENGTH_SHORT);
+                    toast.show();
+                }
+
+                @Override
+                public void dismissPhotoPicker() {}
+            });
+        }
     }
 
     /**

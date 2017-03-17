@@ -54,6 +54,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kCustomFeedbackUi,
     &kImportantSitesInCBD,
     &kImprovedA2HS,
+    &kNewPhotoPicker,
     &kNoCreditCardAbort,
     &kNTPCondensedLayoutFeature,
     &kNTPCondensedTileLayoutFeature,
@@ -118,14 +119,14 @@ const base::Feature kChromeHomeFeature{"ChromeHome",
 const base::Feature kContextualSearchSingleActions{
     "ContextualSearchSingleActions", base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kContextualSearchUrlActions{
+    "ContextualSearchUrlActions", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kCustomFeedbackUi{"CustomFeedbackUi",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kDownloadAutoResumptionThrottling{
     "DownloadAutoResumptionThrottling", base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kContextualSearchUrlActions{
-    "ContextualSearchUrlActions", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kImportantSitesInCBD{"ImportantSitesInCBD",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
@@ -134,6 +135,9 @@ const base::Feature kImportantSitesInCBD{"ImportantSitesInCBD",
 // URL which opens Chrome in fullscreen.
 const base::Feature kImprovedA2HS{"ImprovedA2HS",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kNewPhotoPicker{"NewPhotoPicker",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kNoCreditCardAbort{"NoCreditCardAbort",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
