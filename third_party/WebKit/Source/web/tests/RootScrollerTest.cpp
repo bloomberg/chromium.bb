@@ -231,8 +231,7 @@ TEST_F(RootScrollerTest, TestSetRootScroller) {
   initialize("root-scroller.html", &client);
 
   Element* container = mainFrame()->document()->getElementById("container");
-  DummyExceptionStateForTesting exceptionState;
-  mainFrame()->document()->setRootScroller(container, exceptionState);
+  mainFrame()->document()->setRootScroller(container);
   ASSERT_EQ(container, mainFrame()->document()->rootScroller());
 
   // Content is 1000x1000, WebView size is 400x400 but hiding the top controls
@@ -330,8 +329,7 @@ TEST_F(RootScrollerTest, TestRemoveRootScrollerFromDom) {
   ASSERT_EQ(nullptr, mainFrame()->document()->rootScroller());
 
   Element* container = mainFrame()->document()->getElementById("container");
-  DummyExceptionStateForTesting exceptionState;
-  mainFrame()->document()->setRootScroller(container, exceptionState);
+  mainFrame()->document()->setRootScroller(container);
 
   EXPECT_EQ(container, mainFrame()->document()->rootScroller());
   EXPECT_EQ(container, effectiveRootScroller(mainFrame()->document()));
@@ -352,8 +350,7 @@ TEST_F(RootScrollerTest, TestSetRootScrollerOnInvalidElement) {
     // Set to a non-block element. Should be rejected and a console message
     // logged.
     Element* element = mainFrame()->document()->getElementById("nonBlock");
-    DummyExceptionStateForTesting exceptionState;
-    mainFrame()->document()->setRootScroller(element, exceptionState);
+    mainFrame()->document()->setRootScroller(element);
     mainFrameView()->updateAllLifecyclePhases();
     EXPECT_EQ(element, mainFrame()->document()->rootScroller());
     EXPECT_NE(element, effectiveRootScroller(mainFrame()->document()));
@@ -362,8 +359,7 @@ TEST_F(RootScrollerTest, TestSetRootScrollerOnInvalidElement) {
   {
     // Set to an element with no size.
     Element* element = mainFrame()->document()->getElementById("empty");
-    DummyExceptionStateForTesting exceptionState;
-    mainFrame()->document()->setRootScroller(element, exceptionState);
+    mainFrame()->document()->setRootScroller(element);
     mainFrameView()->updateAllLifecyclePhases();
     EXPECT_EQ(element, mainFrame()->document()->rootScroller());
     EXPECT_NE(element, effectiveRootScroller(mainFrame()->document()));
@@ -376,14 +372,13 @@ TEST_F(RootScrollerTest, TestRootScrollerBecomesInvalid) {
   initialize("root-scroller.html");
 
   Element* container = mainFrame()->document()->getElementById("container");
-  DummyExceptionStateForTesting exceptionState;
 
   ASSERT_EQ(nullptr, mainFrame()->document()->rootScroller());
   ASSERT_EQ(mainFrame()->document(),
             effectiveRootScroller(mainFrame()->document()));
 
   {
-    mainFrame()->document()->setRootScroller(container, exceptionState);
+    mainFrame()->document()->setRootScroller(container);
     mainFrameView()->updateAllLifecyclePhases();
 
     EXPECT_EQ(container, mainFrame()->document()->rootScroller());
@@ -399,14 +394,14 @@ TEST_F(RootScrollerTest, TestRootScrollerBecomesInvalid) {
   }
 
   executeScript("document.querySelector('#container').style.display = 'block'");
-  mainFrame()->document()->setRootScroller(nullptr, exceptionState);
+  mainFrame()->document()->setRootScroller(nullptr);
   mainFrameView()->updateAllLifecyclePhases();
   EXPECT_EQ(nullptr, mainFrame()->document()->rootScroller());
   EXPECT_EQ(mainFrame()->document(),
             effectiveRootScroller(mainFrame()->document()));
 
   {
-    mainFrame()->document()->setRootScroller(container, exceptionState);
+    mainFrame()->document()->setRootScroller(container);
     mainFrameView()->updateAllLifecyclePhases();
 
     EXPECT_EQ(container, mainFrame()->document()->rootScroller());
@@ -435,8 +430,7 @@ TEST_F(RootScrollerTest, TestSetRootScrollerOnElementInIframe) {
     Element* innerContainer =
         iframe->contentDocument()->getElementById("container");
 
-    DummyExceptionStateForTesting exceptionState;
-    mainFrame()->document()->setRootScroller(innerContainer, exceptionState);
+    mainFrame()->document()->setRootScroller(innerContainer);
     mainFrameView()->updateAllLifecyclePhases();
 
     EXPECT_EQ(innerContainer, mainFrame()->document()->rootScroller());
@@ -448,8 +442,7 @@ TEST_F(RootScrollerTest, TestSetRootScrollerOnElementInIframe) {
     HTMLFrameOwnerElement* iframe = toHTMLFrameOwnerElement(
         mainFrame()->document()->getElementById("iframe"));
 
-    DummyExceptionStateForTesting exceptionState;
-    mainFrame()->document()->setRootScroller(iframe, exceptionState);
+    mainFrame()->document()->setRootScroller(iframe);
     mainFrameView()->updateAllLifecyclePhases();
 
     EXPECT_EQ(iframe, mainFrame()->document()->rootScroller());
@@ -473,8 +466,7 @@ TEST_F(RootScrollerTest, TestRootScrollerWithinIframe) {
 
     Element* innerContainer =
         iframe->contentDocument()->getElementById("container");
-    DummyExceptionStateForTesting exceptionState;
-    iframe->contentDocument()->setRootScroller(innerContainer, exceptionState);
+    iframe->contentDocument()->setRootScroller(innerContainer);
     mainFrameView()->updateAllLifecyclePhases();
 
     EXPECT_EQ(innerContainer, iframe->contentDocument()->rootScroller());
@@ -630,14 +622,13 @@ TEST_F(RootScrollerTest,
 
     EXPECT_EQ(nullptr, iframe->contentDocument()->rootScroller());
 
-    DummyExceptionStateForTesting exceptionState;
-    iframe->contentDocument()->setRootScroller(iframe, exceptionState);
+    iframe->contentDocument()->setRootScroller(iframe);
 
     EXPECT_EQ(iframe, iframe->contentDocument()->rootScroller());
 
     // Try to set the root scroller of the child document to be the
     // <body> element of the parent document.
-    iframe->contentDocument()->setRootScroller(body, exceptionState);
+    iframe->contentDocument()->setRootScroller(body);
 
     EXPECT_EQ(body, iframe->contentDocument()->rootScroller());
   }
@@ -752,8 +743,7 @@ TEST_F(RootScrollerTest, BrowserControlsResizeClippingLayer) {
   Element* container = mainFrame()->document()->getElementById("container");
 
   {
-    NonThrowableExceptionState exceptionState;
-    mainFrame()->document()->setRootScroller(container, exceptionState);
+    mainFrame()->document()->setRootScroller(container);
 
     mainFrameView()->updateAllLifecyclePhases();
     ASSERT_EQ(toLayoutBox(container->layoutObject())->clientHeight(), 400);
@@ -875,9 +865,8 @@ TEST_F(RootScrollerTest, RemoveRootScrollerFromDom) {
     Element* innerContainer =
         iframe->contentDocument()->getElementById("container");
 
-    NonThrowableExceptionState exceptionState;
-    mainFrame()->document()->setRootScroller(iframe, exceptionState);
-    iframe->contentDocument()->setRootScroller(innerContainer, exceptionState);
+    mainFrame()->document()->setRootScroller(iframe);
+    iframe->contentDocument()->setRootScroller(innerContainer);
     mainFrameView()->updateAllLifecyclePhases();
 
     ASSERT_EQ(iframe, mainFrame()->document()->rootScroller());
@@ -885,7 +874,7 @@ TEST_F(RootScrollerTest, RemoveRootScrollerFromDom) {
     ASSERT_EQ(innerContainer, iframe->contentDocument()->rootScroller());
     ASSERT_EQ(innerContainer, effectiveRootScroller(iframe->contentDocument()));
 
-    iframe->contentDocument()->body()->setInnerHTML("", exceptionState);
+    iframe->contentDocument()->body()->setInnerHTML("");
 
     // If the root scroller wasn't updated by the DOM removal above, this
     // will touch the disposed root scroller's ScrollableArea.
@@ -1105,8 +1094,7 @@ TEST_F(RootScrollerTest, ImmediateUpdateOfLayoutViewport) {
   HTMLFrameOwnerElement* iframe = toHTMLFrameOwnerElement(
       mainFrame()->document()->getElementById("iframe"));
 
-  DummyExceptionStateForTesting exceptionState;
-  document->setRootScroller(iframe, exceptionState);
+  document->setRootScroller(iframe);
   mainFrameView()->updateAllLifecyclePhases();
 
   RootScrollerController& mainController =

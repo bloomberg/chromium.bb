@@ -1280,7 +1280,7 @@ class CORE_EXPORT Document : public ContainerNode,
   }
 
   Element* rootScroller() const;
-  void setRootScroller(Element*, ExceptionState&);
+  void setRootScroller(Element*, ExceptionState& = ASSERT_NO_EXCEPTION);
   RootScrollerController& rootScrollerController() const {
     DCHECK(m_rootScrollerController);
     return *m_rootScrollerController;

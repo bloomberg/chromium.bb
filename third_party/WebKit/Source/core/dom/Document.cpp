@@ -675,8 +675,7 @@ void Document::childrenChanged(const ChildrenChange& change) {
     beginLifecycleUpdatesIfRenderingReady();
 }
 
-void Document::setRootScroller(Element* newScroller,
-                               ExceptionState& exceptionState) {
+void Document::setRootScroller(Element* newScroller, ExceptionState&) {
   m_rootScrollerController->set(newScroller);
 }
 
