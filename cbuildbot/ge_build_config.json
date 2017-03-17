@@ -122,6 +122,18 @@
       ]
     },
     {
+      "name": "betty",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "",
+          "arch": "X86_INTERNAL"
+        }
+      ]
+    },
+    {
       "name": "bob",
       "configs": [
         {
@@ -693,6 +705,18 @@
           "experimental": false,
           "leader_board": false,
           "board_group": "slippy",
+          "arch": "X86_INTERNAL"
+        }
+      ]
+    },
+    {
+      "name": "newbie",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "",
           "arch": "X86_INTERNAL"
         }
       ]
