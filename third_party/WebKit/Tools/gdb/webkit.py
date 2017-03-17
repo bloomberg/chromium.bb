@@ -325,7 +325,7 @@ class WTFVectorPrinter:
         def __iter__(self):
             return self
 
-        def next(self):
+        def __next__(self):
             if self.item == self.finish:
                 raise StopIteration
             count = self.count
@@ -333,6 +333,10 @@ class WTFVectorPrinter:
             element = self.item.dereference()
             self.item += 1
             return ('[%d]' % count, element)
+
+        # Python version < 3 compatibility:
+        def next(self):
+            return self.__next__()
 
     def __init__(self, val):
         self.val = val
