@@ -290,7 +290,9 @@ class RemoteSuggestionsFetcherTestBase : public testing::Test {
     ResetFetcher();
   }
 
-  void ResetFetcher() {
+  void ResetFetcher() { ResetFetcherWithAPIKey(kAPIKey); }
+
+  void ResetFetcherWithAPIKey(const std::string& api_key) {
     scoped_refptr<net::TestURLRequestContextGetter> request_context_getter =
         new net::TestURLRequestContextGetter(mock_task_runner_.get());
 
@@ -302,7 +304,7 @@ class RemoteSuggestionsFetcherTestBase : public testing::Test {
         utils_.fake_signin_manager(), fake_token_service_.get(),
         std::move(request_context_getter), utils_.pref_service(), nullptr,
         base::Bind(&ParseJsonDelayed),
-        GetFetchEndpoint(version_info::Channel::STABLE), kAPIKey,
+        GetFetchEndpoint(version_info::Channel::STABLE), api_key,
         user_classifier_.get());
 
     fetcher_->SetClockForTesting(mock_task_runner_->GetMockClock());
@@ -798,6 +800,24 @@ TEST_F(RemoteSuggestionsSignedOutFetcherTest, ExclusiveCategoryOnly) {
   ASSERT_THAT(category.suggestions.size(), Eq(1u));
   EXPECT_THAT(category.suggestions[0]->url().spec(),
               Eq("http://localhost/foo2"));
+}
+
+TEST_F(RemoteSuggestionsSignedOutFetcherTest, ShouldNotFetchWithoutApiKey) {
+  ResetFetcherWithAPIKey(std::string());
+
+  EXPECT_CALL(mock_callback(), Run(HasCode(StatusCode::PERMANENT_ERROR),
+                                   /*snippets=*/Not(HasValue())))
+      .Times(1);
+  fetcher().FetchSnippets(test_params(),
+                          ToSnippetsAvailableCallback(&mock_callback()));
+  FastForwardUntilNoTasksRemain();
+
+  EXPECT_THAT(fetcher().last_status(), Eq("No API key available."));
+  EXPECT_THAT(histogram_tester().GetAllSamples(
+                  "NewTabPage.Snippets.FetchHttpResponseOrErrorCode"),
+              IsEmpty());
+  EXPECT_THAT(histogram_tester().GetAllSamples("NewTabPage.Snippets.FetchTime"),
+              IsEmpty());
 }
 
 TEST_F(RemoteSuggestionsChromeReaderFetcherTest,

@@ -194,14 +194,18 @@ void RegisterArticleProvider(SigninManagerBase* signin_manager,
           ->GetSequencedTaskRunnerWithShutdownBehavior(
               base::SequencedWorkerPool::GetSequenceToken(),
               base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
-  bool is_stable_channel =
-      chrome::GetChannel() == version_info::Channel::STABLE;
+  std::string api_key;
+  // The API is private. If we don't have the official API key, don't even try.
+  if (google_apis::IsGoogleChromeAPIKeyUsed()) {
+    bool is_stable_channel =
+        chrome::GetChannel() == version_info::Channel::STABLE;
+    api_key = is_stable_channel ? google_apis::GetAPIKey()
+                                : google_apis::GetNonStableAPIKey();
+  }
   auto suggestions_fetcher = base::MakeUnique<RemoteSuggestionsFetcher>(
       signin_manager, token_service, request_context, pref_service,
       language_model, base::Bind(&safe_json::SafeJsonParser::Parse),
-      GetFetchEndpoint(chrome::GetChannel()),
-      is_stable_channel ? google_apis::GetAPIKey()
-                        : google_apis::GetNonStableAPIKey(),
+      GetFetchEndpoint(chrome::GetChannel()), api_key,
       service->user_classifier());
   auto provider = base::MakeUnique<RemoteSuggestionsProviderImpl>(
       service, pref_service, g_browser_process->GetApplicationLocale(),
@@ -295,9 +299,9 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
   std::unique_ptr<CategoryRanker> category_ranker =
       ntp_snippets::BuildSelectedCategoryRanker(
           pref_service, base::MakeUnique<base::DefaultClock>());
-  auto* service =
-      new ContentSuggestionsService(State::ENABLED, signin_manager,
-          history_service, pref_service, std::move(category_ranker));
+  auto* service = new ContentSuggestionsService(State::ENABLED, signin_manager,
+                                                history_service, pref_service,
+                                                std::move(category_ranker));
 
 #if defined(OS_ANDROID)
   OfflinePageModel* offline_page_model =

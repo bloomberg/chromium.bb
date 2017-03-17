@@ -156,12 +156,17 @@ IOSChromeContentSuggestionsServiceFactory::BuildServiceInstanceFor(
                 base::SequencedWorkerPool::GetSequenceToken(),
                 base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
 
+    std::string api_key;
+    // The API is private. If we don't have the official API key, don't even
+    // try.
+    if (google_apis::IsGoogleChromeAPIKeyUsed()) {
+      bool is_stable_channel = GetChannel() == version_info::Channel::STABLE;
+      api_key = is_stable_channel ? google_apis::GetAPIKey()
+                                  : google_apis::GetNonStableAPIKey();
+    }
     auto suggestions_fetcher = base::MakeUnique<RemoteSuggestionsFetcher>(
         signin_manager, token_service, request_context, prefs, nullptr,
-        base::Bind(&ParseJson), GetFetchEndpoint(GetChannel()),
-        GetChannel() == version_info::Channel::STABLE
-            ? google_apis::GetAPIKey()
-            : google_apis::GetNonStableAPIKey(),
+        base::Bind(&ParseJson), GetFetchEndpoint(GetChannel()), api_key,
         service->user_classifier());
 
     auto provider = base::MakeUnique<RemoteSuggestionsProviderImpl>(

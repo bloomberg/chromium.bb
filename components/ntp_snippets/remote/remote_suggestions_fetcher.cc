@@ -71,6 +71,8 @@ std::string FetchResultToString(FetchResult result) {
       return "Invalid / empty list.";
     case FetchResult::OAUTH_TOKEN_ERROR:
       return "Error in obtaining an OAuth2 access token.";
+    case FetchResult::MISSING_API_KEY:
+      return "No API key available.";
     case FetchResult::RESULT_MAX:
       break;
   }
@@ -85,6 +87,7 @@ Status FetchResultToStatus(FetchResult result) {
     // Permanent errors occur if it is more likely that the error originated
     // from the client.
     case FetchResult::OAUTH_TOKEN_ERROR:
+    case FetchResult::MISSING_API_KEY:
       return Status(StatusCode::PERMANENT_ERROR, FetchResultToString(result));
     // Temporary errors occur if it's more likely that the client behaved
     // correctly but the server failed to respond as expected.
@@ -322,6 +325,12 @@ void RemoteSuggestionsFetcher::FetchSnippets(
 void RemoteSuggestionsFetcher::FetchSnippetsNonAuthenticated(
     JsonRequest::Builder builder,
     SnippetsAvailableCallback callback) {
+  if (api_key_.empty()) {
+    // If we don't have an API key, don't even try.
+    FetchFinished(OptionalFetchedCategories(), std::move(callback),
+                  FetchResult::MISSING_API_KEY, std::string());
+    return;
+  }
   // When not providing OAuth token, we need to pass the Google API key.
   builder.SetUrl(
       GURL(base::StringPrintf(kSnippetsServerNonAuthorizedFormat,
