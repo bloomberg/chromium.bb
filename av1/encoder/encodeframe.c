@@ -4539,7 +4539,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
   }
 
   if (bsize == cm->sb_size) {
-#if !CONFIG_PVQ
+#if !CONFIG_PVQ && !CONFIG_LV_MAP
     assert(tp_orig < *tp || (tp_orig == *tp && xd->mi[0]->mbmi.skip));
 #endif
     assert(best_rdc.rate < INT_MAX);
