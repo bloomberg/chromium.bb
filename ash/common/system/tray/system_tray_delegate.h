@@ -36,6 +36,7 @@ class SystemTrayItem;
 using IMEInfoList = std::vector<IMEInfo>;
 using IMEPropertyInfoList = std::vector<IMEPropertyInfo>;
 
+// TODO(jamescook): Move to TrayBluetoothHelper. http://crbug.com/660043
 struct ASH_EXPORT BluetoothDeviceInfo {
   BluetoothDeviceInfo();
   BluetoothDeviceInfo(const BluetoothDeviceInfo& other);

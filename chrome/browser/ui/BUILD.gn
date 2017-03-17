@@ -1393,6 +1393,8 @@ split_static_library("ui") {
       "ash/session_util.h",
       "ash/system_tray_delegate_chromeos.cc",
       "ash/system_tray_delegate_chromeos.h",
+      "ash/tray_bluetooth_helper.cc",
+      "ash/tray_bluetooth_helper.h",
       "ash/volume_controller.cc",
       "ash/volume_controller.h",
       "ash/vpn_list_forwarder.cc",
