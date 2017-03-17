@@ -1308,10 +1308,11 @@ void LayoutMultiColumnFlowThread::layout() {
   LayoutFlowThread::layout();
   if (LayoutMultiColumnSet* lastSet = lastMultiColumnSet()) {
     ASSERT(lastSet == m_lastSetWorkedOn);
-    if (!lastSet->nextSiblingMultiColumnBox()) {
-      // Include trailing overflow in the last column set. The idea is that we
-      // will generate additional columns and pages to hold that overflow, since
-      // people do write bad content like <body style="height:0px"> in
+    if (!lastSet->nextSiblingMultiColumnSet()) {
+      // Include trailing overflow in the last column set (also if the last set
+      // is followed by one or more spanner placeholders). The idea is that we
+      // will generate additional columns and pages to hold that overflow,
+      // since people do write bad content like <body style="height:0px"> in
       // multi-column layouts.
       // TODO(mstensho): Once we support nested multicol, adding in overflow
       // here may result in the need for creating additional rows, since there
