@@ -14,10 +14,11 @@ class PresubmitApi(recipe_api.RecipeApi):
 
     name = kwargs.pop('name', 'presubmit')
 
-    kwargs.setdefault('env', {})
-    kwargs['env'].setdefault('PATH', '%(PATH)s')
-    kwargs['env']['PATH'] = self.m.path.pathsep.join([
-        kwargs['env']['PATH'], str(self._module.PACKAGE_REPO_ROOT)])
+    env = self.m.step.get_from_context('env', {})
+    env.setdefault('PATH', '%(PATH)s')
+    env['PATH'] = self.m.path.pathsep.join([
+        env['PATH'], str(self._module.PACKAGE_REPO_ROOT)])
 
-    return self.m.python(
-        name, self.presubmit_support_path, list(args), **kwargs)
+    with self.m.step.context({'env': env}):
+      return self.m.python(
+          name, self.presubmit_support_path, list(args), **kwargs)

@@ -278,11 +278,11 @@ class GitApi(recipe_api.RecipeApi):
             name='count-objects before %s' % fetch_step_name,
             step_test_data=lambda: self.m.raw_io.test_api.stream_output(
                 self.test_api.count_objects_output(1000)))
-      self('retry', 'fetch', *fetch_args,
-        name=fetch_step_name,
-        env=fetch_env,
-        stderr=fetch_stderr,
-        can_fail_build=can_fail_build)
+      with self.m.step.context({'env': fetch_env}):
+        self('retry', 'fetch', *fetch_args,
+          name=fetch_step_name,
+          stderr=fetch_stderr,
+          can_fail_build=can_fail_build)
       if display_fetch_size:
         self.count_objects(
             name='count-objects after %s' % fetch_step_name,
@@ -413,7 +413,7 @@ class GitApi(recipe_api.RecipeApi):
       upstream (str): to origin/master.
       kwargs: Forwarded to '__call__'.
     """
-    env = kwargs.pop('env', {})
+    env = self.m.step.get_from_context('env', {})
     env['PATH'] = self.m.path.pathsep.join([
         str(self.package_repo_resource()), '%(PATH)s'])
     args = ['new-branch', branch]
@@ -421,4 +421,5 @@ class GitApi(recipe_api.RecipeApi):
       args.extend(['--upstream', upstream])
     if not name:
       name = 'git new-branch %s' % branch
-    return self(*args, name=name, env=env, **kwargs)
+    with self.m.step.context({'env': env}):
+      return self(*args, name=name, **kwargs)

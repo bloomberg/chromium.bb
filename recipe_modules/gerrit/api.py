@@ -12,16 +12,17 @@ class GerritApi(recipe_api.RecipeApi):
     assert isinstance(cmd, (list, tuple))
     prefix = 'gerrit '
 
-    kwargs.setdefault('env', {})
-    kwargs['env'].setdefault('PATH', '%(PATH)s')
-    kwargs['env']['PATH'] = self.m.path.pathsep.join([
-        kwargs['env']['PATH'], str(self._module.PACKAGE_REPO_ROOT)])
+    env = self.m.step.get_from_context('env', {})
+    env.setdefault('PATH', '%(PATH)s')
+    env['PATH'] = self.m.path.pathsep.join([
+        env['PATH'], str(self._module.PACKAGE_REPO_ROOT)])
 
-    return self.m.python(prefix + name,
-                         self.package_repo_resource('gerrit_client.py'),
-                         cmd,
-                         infra_step=infra_step,
-                         **kwargs)
+    with self.m.step.context({'env': env}):
+      return self.m.python(prefix + name,
+                           self.package_repo_resource('gerrit_client.py'),
+                           cmd,
+                           infra_step=infra_step,
+                           **kwargs)
 
   def create_gerrit_branch(self, host, project, branch, commit, **kwargs):
     """

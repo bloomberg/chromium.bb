@@ -79,16 +79,18 @@ class GclientApi(recipe_api.RecipeApi):
     if self.spec_alias:
       prefix = ('[spec: %s] ' % self.spec_alias) + prefix
 
-    kwargs.setdefault('env', {})
-    kwargs['env'].setdefault('PATH', '%(PATH)s')
-    kwargs['env']['PATH'] = self.m.path.pathsep.join([
-        kwargs['env']['PATH'], str(self._module.PACKAGE_REPO_ROOT)])
+    # TODO(phajdan.jr): create a helper for adding to PATH.
+    env = self.m.step.get_from_context('env', {})
+    env.setdefault('PATH', '%(PATH)s')
+    env['PATH'] = self.m.path.pathsep.join([
+        env['PATH'], str(self._module.PACKAGE_REPO_ROOT)])
 
-    return self.m.python(prefix + name,
-                         self.package_repo_resource('gclient.py'),
-                         cmd,
-                         infra_step=infra_step,
-                         **kwargs)
+    with self.m.step.context({'env': env}):
+      return self.m.python(prefix + name,
+                           self.package_repo_resource('gclient.py'),
+                           cmd,
+                           infra_step=infra_step,
+                           **kwargs)
 
   @property
   def use_mirror(self):

@@ -33,16 +33,17 @@ class BotUpdateApi(recipe_api.RecipeApi):
     assert isinstance(cmd, (list, tuple))
     bot_update_path = self.resource('bot_update.py')
     kwargs.setdefault('infra_step', True)
-    kwargs.setdefault('env', {})
-    kwargs['env'].setdefault('PATH', '%(PATH)s')
-    kwargs['env']['PATH'] = self.m.path.pathsep.join([
-        kwargs['env']['PATH'], str(self._module.PACKAGE_REPO_ROOT)])
+    env = self.m.step.get_from_context('env', {})
+    env.setdefault('PATH', '%(PATH)s')
+    env['PATH'] = self.m.path.pathsep.join([
+        env['PATH'], str(self._module.PACKAGE_REPO_ROOT)])
     # These are to prevent git from hanging.  If the git connection is slower
     # than 1KB/s for more than 5 minutes then git will kill the connection
     # and die with an error "error: RPC failed; curl 28 Operation too slow"
-    kwargs['env']['GIT_HTTP_LOW_SPEED_LIMIT'] = 1000
-    kwargs['env']['GIT_HTTP_LOW_SPEED_TIME'] = 300
-    return self.m.python(name, bot_update_path, cmd, **kwargs)
+    env['GIT_HTTP_LOW_SPEED_LIMIT'] = 1000
+    env['GIT_HTTP_LOW_SPEED_TIME'] = 300
+    with self.m.step.context({'env': env}):
+      return self.m.python(name, bot_update_path, cmd, **kwargs)
 
   @property
   def last_returned_properties(self):
@@ -54,9 +55,10 @@ class BotUpdateApi(recipe_api.RecipeApi):
                        gerrit_no_rebase_patch_ref=False, **kwargs):
     apply_gerrit_path = self.resource('apply_gerrit.py')
     kwargs.setdefault('infra_step', True)
-    kwargs.setdefault('env', {}).setdefault('PATH', '%(PATH)s')
-    kwargs['env']['PATH'] = self.m.path.pathsep.join([
-        kwargs['env']['PATH'], str(self._module.PACKAGE_REPO_ROOT)])
+    env = self.m.step.get_from_context('env', {})
+    env.setdefault('PATH', '%(PATH)s')
+    env['PATH'] = self.m.path.pathsep.join([
+        env['PATH'], str(self._module.PACKAGE_REPO_ROOT)])
     cmd = [
         '--gerrit_repo', self._repository,
         '--gerrit_ref', self._gerrit_ref or '',
@@ -66,7 +68,8 @@ class BotUpdateApi(recipe_api.RecipeApi):
       cmd.append('--gerrit_no_reset')
     if gerrit_no_rebase_patch_ref:
       cmd.append('--gerrit_no_rebase_patch_ref')
-    return self.m.python('apply_gerrit', apply_gerrit_path, cmd, **kwargs)
+    with self.m.step.context({'env': env}):
+      return self.m.python('apply_gerrit', apply_gerrit_path, cmd, **kwargs)
 
   def ensure_checkout(self, gclient_config=None, suffix=None,
                       patch=True, update_presentation=True,
