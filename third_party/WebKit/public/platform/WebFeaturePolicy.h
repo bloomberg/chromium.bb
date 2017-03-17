@@ -50,7 +50,7 @@ enum class WebFeaturePolicyFeature {
 
 struct BLINK_PLATFORM_EXPORT WebParsedFeaturePolicyDeclaration {
   WebParsedFeaturePolicyDeclaration() : matchesAllOrigins(false) {}
-  WebString featureName;
+  WebFeaturePolicyFeature feature;
   bool matchesAllOrigins;
   WebVector<WebSecurityOrigin> origins;
 };

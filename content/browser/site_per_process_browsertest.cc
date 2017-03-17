@@ -716,10 +716,11 @@ class SitePerProcessFeaturePolicyBrowserTest
                                     "FeaturePolicy");
   }
 
-  ParsedFeaturePolicyHeader CreateFPHeader(const std::string& feature_name,
-                                           const std::vector<GURL>& origins) {
+  ParsedFeaturePolicyHeader CreateFPHeader(
+      blink::WebFeaturePolicyFeature feature,
+      const std::vector<GURL>& origins) {
     ParsedFeaturePolicyHeader result(1);
-    result[0].feature_name = feature_name;
+    result[0].feature = feature;
     result[0].matches_all_origins = false;
     DCHECK(!origins.empty());
     for (const GURL& origin : origins)
@@ -728,9 +729,9 @@ class SitePerProcessFeaturePolicyBrowserTest
   }
 
   ParsedFeaturePolicyHeader CreateFPHeaderMatchesAll(
-      const std::string& feature_name) {
+      blink::WebFeaturePolicyFeature feature) {
     ParsedFeaturePolicyHeader result(1);
-    result[0].feature_name = feature_name;
+    result[0].feature = feature;
     result[0].matches_all_origins = true;
     return result;
   }
@@ -738,10 +739,8 @@ class SitePerProcessFeaturePolicyBrowserTest
 
 bool operator==(const ParsedFeaturePolicyDeclaration& first,
                 const ParsedFeaturePolicyDeclaration& second) {
-  return std::tie(first.feature_name, first.matches_all_origins,
-                  first.origins) == std::tie(second.feature_name,
-                                             second.matches_all_origins,
-                                             second.origins);
+  return std::tie(first.feature, first.matches_all_origins, first.origins) ==
+         std::tie(second.feature, second.matches_all_origins, second.origins);
 }
 
 IN_PROC_BROWSER_TEST_F(SitePerProcessHighDPIBrowserTest,
@@ -9136,13 +9135,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), start_url));
 
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
-  EXPECT_EQ(CreateFPHeader("vibrate", {start_url.GetOrigin()}),
+  EXPECT_EQ(CreateFPHeader(blink::WebFeaturePolicyFeature::Vibrate,
+                           {start_url.GetOrigin()}),
             root->current_replication_state().feature_policy_header);
 
   // When the main frame navigates to a page with a new policy, it should
   // overwrite the old one.
   EXPECT_TRUE(NavigateToURL(shell(), first_nav_url));
-  EXPECT_EQ(CreateFPHeaderMatchesAll("vibrate"),
+  EXPECT_EQ(CreateFPHeaderMatchesAll(blink::WebFeaturePolicyFeature::Vibrate),
             root->current_replication_state().feature_policy_header);
 
   // When the main frame navigates to a page without a policy, the replicated
@@ -9162,13 +9162,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), start_url));
 
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
-  EXPECT_EQ(CreateFPHeader("vibrate", {start_url.GetOrigin()}),
+  EXPECT_EQ(CreateFPHeader(blink::WebFeaturePolicyFeature::Vibrate,
+                           {start_url.GetOrigin()}),
             root->current_replication_state().feature_policy_header);
 
   // When the main frame navigates to a page with a new policy, it should
   // overwrite the old one.
   EXPECT_TRUE(NavigateToURL(shell(), first_nav_url));
-  EXPECT_EQ(CreateFPHeaderMatchesAll("vibrate"),
+  EXPECT_EQ(CreateFPHeaderMatchesAll(blink::WebFeaturePolicyFeature::Vibrate),
             root->current_replication_state().feature_policy_header);
 
   // When the main frame navigates to a page without a policy, the replicated
@@ -9190,18 +9191,19 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyBrowserTest,
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   FrameTreeNode* root = web_contents()->GetFrameTree()->root();
-  EXPECT_EQ(CreateFPHeader("vibrate",
+  EXPECT_EQ(CreateFPHeader(blink::WebFeaturePolicyFeature::Vibrate,
                            {main_url.GetOrigin(), GURL("http://example.com/")}),
             root->current_replication_state().feature_policy_header);
   EXPECT_EQ(1UL, root->child_count());
   EXPECT_EQ(
-      CreateFPHeader("vibrate", {main_url.GetOrigin()}),
+      CreateFPHeader(blink::WebFeaturePolicyFeature::Vibrate,
+                     {main_url.GetOrigin()}),
       root->child_at(0)->current_replication_state().feature_policy_header);
 
   // Navigate the iframe cross-site.
   NavigateFrameToURL(root->child_at(0), first_nav_url);
   EXPECT_EQ(
-      CreateFPHeaderMatchesAll("vibrate"),
+      CreateFPHeaderMatchesAll(blink::WebFeaturePolicyFeature::Vibrate),
       root->child_at(0)->current_replication_state().feature_policy_header);
 
   // Navigate the iframe to another location, this one with no policy header
@@ -9213,7 +9215,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyBrowserTest,
   // Navigate the iframe back to a page with a policy
   NavigateFrameToURL(root->child_at(0), first_nav_url);
   EXPECT_EQ(
-      CreateFPHeaderMatchesAll("vibrate"),
+      CreateFPHeaderMatchesAll(blink::WebFeaturePolicyFeature::Vibrate),
       root->child_at(0)->current_replication_state().feature_policy_header);
 }
 

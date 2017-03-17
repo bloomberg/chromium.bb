@@ -412,7 +412,7 @@ IPC_STRUCT_TRAITS_BEGIN(content::RequestNavigationParams)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::ParsedFeaturePolicyDeclaration)
-  IPC_STRUCT_TRAITS_MEMBER(feature_name)
+  IPC_STRUCT_TRAITS_MEMBER(feature)
   IPC_STRUCT_TRAITS_MEMBER(matches_all_origins)
   IPC_STRUCT_TRAITS_MEMBER(origins)
 IPC_STRUCT_TRAITS_END()

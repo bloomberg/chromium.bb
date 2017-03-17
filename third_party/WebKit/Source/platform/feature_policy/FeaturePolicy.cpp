@@ -57,7 +57,7 @@ WebParsedFeaturePolicy parseFeaturePolicy(const String& policy,
   std::unique_ptr<JSONArray> policyItems = parseJSONHeader(policy, 50);
   if (!policyItems) {
     if (messages)
-      messages->push_back("Unable to parse header");
+      messages->push_back("Unable to parse header.");
     return whitelists;
   }
 
@@ -65,13 +65,15 @@ WebParsedFeaturePolicy parseFeaturePolicy(const String& policy,
     JSONObject* item = JSONObject::cast(policyItems->at(i));
     if (!item) {
       if (messages)
-        messages->push_back("Policy is not an object");
+        messages->push_back("Policy is not an object.");
       continue;  // Array element is not an object; skip
     }
 
     for (size_t j = 0; j < item->size(); ++j) {
       JSONObject::Entry entry = item->at(j);
-      String featureName = entry.first;
+      WebFeaturePolicyFeature feature = getWebFeaturePolicyFeature(entry.first);
+      if (feature == WebFeaturePolicyFeature::NotFound)
+        continue;  // Unrecognized feature; skip
       JSONArray* targets = JSONArray::cast(entry.second);
       if (!targets) {
         if (messages)
@@ -80,7 +82,7 @@ WebParsedFeaturePolicy parseFeaturePolicy(const String& policy,
       }
 
       WebParsedFeaturePolicyDeclaration whitelist;
-      whitelist.featureName = featureName;
+      whitelist.feature = feature;
       Vector<WebSecurityOrigin> origins;
       String targetString;
       for (size_t j = 0; j < targets->size(); ++j) {

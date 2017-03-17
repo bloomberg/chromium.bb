@@ -17,22 +17,22 @@ namespace blink {
 namespace {
 
 const char* kValidPolicies[] = {
-    "{\"feature\": []}",
-    "{\"feature\": [\"self\"]}",
-    "{\"feature\": [\"*\"]}",
-    "{\"feature\": [\"" ORIGIN_A "\"]}",
-    "{\"feature\": [\"" ORIGIN_B "\"]}",
-    "{\"feature\": [\"" ORIGIN_A "\", \"" ORIGIN_B "\"]}",
-    "{\"feature1\": [\"" ORIGIN_A "\"], \"feature2\": [\"self\"]}",
-    "{\"feature1\": [\"" ORIGIN_A "\"]}, {\"feature2\": [\"self\"]}"};
+    "{\"vibrate\": []}",
+    "{\"vibrate\": [\"self\"]}",
+    "{\"vibrate\": [\"*\"]}",
+    "{\"vibrate\": [\"" ORIGIN_A "\"]}",
+    "{\"vibrate\": [\"" ORIGIN_B "\"]}",
+    "{\"vibrate\": [\"" ORIGIN_A "\", \"" ORIGIN_B "\"]}",
+    "{\"fullscreen\": [\"" ORIGIN_A "\"], \"payment\": [\"self\"]}",
+    "{\"fullscreen\": [\"" ORIGIN_A "\"]}, {\"payment\": [\"self\"]}"};
 
 const char* kInvalidPolicies[] = {
     "Not A JSON literal",
     "\"Not a JSON object\"",
     "[\"Also\", \"Not a JSON object\"]",
     "1.0",
-    "{\"Whitelist\": \"Not a JSON array\"}",
-    "{\"feature1\": [\"*\"], \"feature2\": \"Not an array\"}"};
+    "{\"vibrate\": \"Not a JSON array\"}",
+    "{\"vibrate\": [\"*\"], \"payment\": \"Not a JSON array\"}"};
 
 }  // namespace
 
@@ -75,41 +75,41 @@ TEST_F(FeaturePolicyTest, PolicyParsedCorrectly) {
   EXPECT_EQ(0UL, parsedPolicy.size());
 
   // Simple policy with "self".
-  parsedPolicy = parseFeaturePolicy("{\"default-self\": [\"self\"]}",
+  parsedPolicy = parseFeaturePolicy("{\"vibrate\": [\"self\"]}",
                                     m_originA.get(), &messages);
   EXPECT_EQ(1UL, parsedPolicy.size());
-  EXPECT_EQ("default-self", parsedPolicy[0].featureName);
+  EXPECT_EQ(WebFeaturePolicyFeature::Vibrate, parsedPolicy[0].feature);
   EXPECT_FALSE(parsedPolicy[0].matchesAllOrigins);
   EXPECT_EQ(1UL, parsedPolicy[0].origins.size());
   EXPECT_TRUE(m_originA->isSameSchemeHostPortAndSuborigin(
       parsedPolicy[0].origins[0].get()));
 
   // Simple policy with *.
-  parsedPolicy = parseFeaturePolicy("{\"default-self\": [\"*\"]}",
-                                    m_originA.get(), &messages);
+  parsedPolicy =
+      parseFeaturePolicy("{\"vibrate\": [\"*\"]}", m_originA.get(), &messages);
   EXPECT_EQ(1UL, parsedPolicy.size());
-  EXPECT_EQ("default-self", parsedPolicy[0].featureName);
+  EXPECT_EQ(WebFeaturePolicyFeature::Vibrate, parsedPolicy[0].feature);
   EXPECT_TRUE(parsedPolicy[0].matchesAllOrigins);
   EXPECT_EQ(0UL, parsedPolicy[0].origins.size());
 
   // Complicated policy.
   parsedPolicy = parseFeaturePolicy(
-      "{\"default-self\": [\"*\"], "
-      "\"default-on\": [\"https://example.net\", \"https://example.org\"], "
-      "\"default-off\": [\"self\"]}",
+      "{\"vibrate\": [\"*\"], "
+      "\"fullscreen\": [\"https://example.net\", \"https://example.org\"], "
+      "\"payment\": [\"self\"]}",
       m_originA.get(), &messages);
   EXPECT_EQ(3UL, parsedPolicy.size());
-  EXPECT_EQ("default-self", parsedPolicy[0].featureName);
+  EXPECT_EQ(WebFeaturePolicyFeature::Vibrate, parsedPolicy[0].feature);
   EXPECT_TRUE(parsedPolicy[0].matchesAllOrigins);
   EXPECT_EQ(0UL, parsedPolicy[0].origins.size());
-  EXPECT_EQ("default-on", parsedPolicy[1].featureName);
+  EXPECT_EQ(WebFeaturePolicyFeature::Fullscreen, parsedPolicy[1].feature);
   EXPECT_FALSE(parsedPolicy[1].matchesAllOrigins);
   EXPECT_EQ(2UL, parsedPolicy[1].origins.size());
   EXPECT_TRUE(m_originB->isSameSchemeHostPortAndSuborigin(
       parsedPolicy[1].origins[0].get()));
   EXPECT_TRUE(m_originC->isSameSchemeHostPortAndSuborigin(
       parsedPolicy[1].origins[1].get()));
-  EXPECT_EQ("default-off", parsedPolicy[2].featureName);
+  EXPECT_EQ(WebFeaturePolicyFeature::Payment, parsedPolicy[2].feature);
   EXPECT_FALSE(parsedPolicy[2].matchesAllOrigins);
   EXPECT_EQ(1UL, parsedPolicy[2].origins.size());
   EXPECT_TRUE(m_originA->isSameSchemeHostPortAndSuborigin(

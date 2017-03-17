@@ -12,48 +12,6 @@ namespace content {
 
 namespace {
 
-// Given a string name, return the matching feature struct, or nullptr if it is
-// not the name of a policy-controlled feature.
-blink::WebFeaturePolicyFeature FeatureForName(
-    const std::string& feature_name,
-    const FeaturePolicy::FeatureList& features) {
-  for (const auto& feature_mapping : features) {
-    if (feature_name == feature_mapping.second->feature_name)
-      return feature_mapping.first;
-  }
-  return blink::WebFeaturePolicyFeature::NotFound;
-}
-
-// Definitions of all features controlled by Feature Policy should appear here.
-const FeaturePolicy::Feature kDocumentCookie{
-    "cookie", FeaturePolicy::FeatureDefault::EnableForAll};
-const FeaturePolicy::Feature kDocumentDomain{
-    "domain", FeaturePolicy::FeatureDefault::EnableForAll};
-const FeaturePolicy::Feature kDocumentWrite{
-    "docwrite", FeaturePolicy::FeatureDefault::EnableForAll};
-const FeaturePolicy::Feature kFullscreenFeature{
-    "fullscreen", FeaturePolicy::FeatureDefault::EnableForSelf};
-const FeaturePolicy::Feature kGeolocationFeature{
-    "geolocation", FeaturePolicy::FeatureDefault::EnableForSelf};
-const FeaturePolicy::Feature kMidiFeature{
-    "midi", FeaturePolicy::FeatureDefault::EnableForAll};
-const FeaturePolicy::Feature kNotificationsFeature{
-    "notifications", FeaturePolicy::FeatureDefault::EnableForAll};
-const FeaturePolicy::Feature kPaymentFeature{
-    "payment", FeaturePolicy::FeatureDefault::EnableForSelf};
-const FeaturePolicy::Feature kPushFeature{
-    "push", FeaturePolicy::FeatureDefault::EnableForAll};
-const FeaturePolicy::Feature kSyncScript{
-    "sync-script", FeaturePolicy::FeatureDefault::EnableForAll};
-const FeaturePolicy::Feature kSyncXHR{
-    "sync-xhr", FeaturePolicy::FeatureDefault::EnableForAll};
-const FeaturePolicy::Feature kUsermedia{
-    "usermedia", FeaturePolicy::FeatureDefault::EnableForAll};
-const FeaturePolicy::Feature kVibrateFeature{
-    "vibrate", FeaturePolicy::FeatureDefault::EnableForSelf};
-const FeaturePolicy::Feature kWebRTC{
-    "webrtc", FeaturePolicy::FeatureDefault::EnableForAll};
-
 // Extracts a Whitelist from a ParsedFeaturePolicyDeclaration.
 std::unique_ptr<FeaturePolicy::Whitelist> WhitelistFromDeclaration(
     const ParsedFeaturePolicyDeclaration& parsed_declaration) {
@@ -72,10 +30,10 @@ ParsedFeaturePolicyDeclaration::ParsedFeaturePolicyDeclaration()
     : matches_all_origins(false) {}
 
 ParsedFeaturePolicyDeclaration::ParsedFeaturePolicyDeclaration(
-    std::string feature_name,
+    blink::WebFeaturePolicyFeature feature,
     bool matches_all_origins,
     std::vector<url::Origin> origins)
-    : feature_name(feature_name),
+    : feature(feature),
       matches_all_origins(matches_all_origins),
       origins(origins) {}
 
@@ -146,19 +104,18 @@ bool FeaturePolicy::IsFeatureEnabledForOrigin(
     blink::WebFeaturePolicyFeature feature,
     const url::Origin& origin) const {
   DCHECK(base::ContainsKey(feature_list_, feature));
-  const FeaturePolicy::Feature* feature_definition = feature_list_.at(feature);
+  const FeaturePolicy::FeatureDefault default_policy =
+      feature_list_.at(feature);
   DCHECK(base::ContainsKey(inherited_policies_, feature));
   if (!inherited_policies_.at(feature))
     return false;
   auto whitelist = whitelists_.find(feature);
   if (whitelist != whitelists_.end())
     return whitelist->second->Contains(origin);
-  if (feature_definition->default_policy ==
-      FeaturePolicy::FeatureDefault::EnableForAll) {
+  if (default_policy == FeaturePolicy::FeatureDefault::EnableForAll) {
     return true;
   }
-  if (feature_definition->default_policy ==
-      FeaturePolicy::FeatureDefault::EnableForSelf) {
+  if (default_policy == FeaturePolicy::FeatureDefault::EnableForSelf) {
     // TODO(iclelland): Remove the pointer equality check once it is possible to
     // compare opaque origins successfully against themselves.
     // https://crbug.com/690520
@@ -172,10 +129,8 @@ void FeaturePolicy::SetHeaderPolicy(
   DCHECK(whitelists_.empty());
   for (const ParsedFeaturePolicyDeclaration& parsed_declaration :
        parsed_header) {
-    blink::WebFeaturePolicyFeature feature =
-        FeatureForName(parsed_declaration.feature_name, feature_list_);
-    if (feature == blink::WebFeaturePolicyFeature::NotFound)
-      continue;
+    blink::WebFeaturePolicyFeature feature = parsed_declaration.feature;
+    DCHECK(feature != blink::WebFeaturePolicyFeature::NotFound);
     whitelists_[feature] = WhitelistFromDeclaration(parsed_declaration);
   }
 }
@@ -219,8 +174,7 @@ void FeaturePolicy::AddContainerPolicy(
     // If a feature is enabled in the parent frame, and the parent chooses to
     // delegate it to the child frame, using the iframe attribute, then the
     // feature should be enabled in the child frame.
-    blink::WebFeaturePolicyFeature feature =
-        FeatureForName(parsed_declaration.feature_name, feature_list_);
+    blink::WebFeaturePolicyFeature feature = parsed_declaration.feature;
     if (feature == blink::WebFeaturePolicyFeature::NotFound)
       continue;
     if (WhitelistFromDeclaration(parsed_declaration)->Contains(origin_) &&
@@ -234,22 +188,35 @@ void FeaturePolicy::AddContainerPolicy(
 
 // static
 const FeaturePolicy::FeatureList& FeaturePolicy::GetDefaultFeatureList() {
-  CR_DEFINE_STATIC_LOCAL(
-      FeatureList, default_feature_list,
-      ({{blink::WebFeaturePolicyFeature::DocumentCookie, &kDocumentCookie},
-        {blink::WebFeaturePolicyFeature::DocumentDomain, &kDocumentDomain},
-        {blink::WebFeaturePolicyFeature::DocumentWrite, &kDocumentWrite},
-        {blink::WebFeaturePolicyFeature::Fullscreen, &kFullscreenFeature},
-        {blink::WebFeaturePolicyFeature::Geolocation, &kGeolocationFeature},
-        {blink::WebFeaturePolicyFeature::MidiFeature, &kMidiFeature},
-        {blink::WebFeaturePolicyFeature::Notifications, &kNotificationsFeature},
-        {blink::WebFeaturePolicyFeature::Payment, &kPaymentFeature},
-        {blink::WebFeaturePolicyFeature::Push, &kPushFeature},
-        {blink::WebFeaturePolicyFeature::SyncScript, &kSyncScript},
-        {blink::WebFeaturePolicyFeature::SyncXHR, &kSyncXHR},
-        {blink::WebFeaturePolicyFeature::Usermedia, &kUsermedia},
-        {blink::WebFeaturePolicyFeature::Vibrate, &kVibrateFeature},
-        {blink::WebFeaturePolicyFeature::WebRTC, &kWebRTC}}));
+  CR_DEFINE_STATIC_LOCAL(FeatureList, default_feature_list,
+                         ({{blink::WebFeaturePolicyFeature::DocumentCookie,
+                            FeaturePolicy::FeatureDefault::EnableForAll},
+                           {blink::WebFeaturePolicyFeature::DocumentDomain,
+                            FeaturePolicy::FeatureDefault::EnableForAll},
+                           {blink::WebFeaturePolicyFeature::DocumentWrite,
+                            FeaturePolicy::FeatureDefault::EnableForAll},
+                           {blink::WebFeaturePolicyFeature::Fullscreen,
+                            FeaturePolicy::FeatureDefault::EnableForSelf},
+                           {blink::WebFeaturePolicyFeature::Geolocation,
+                            FeaturePolicy::FeatureDefault::EnableForSelf},
+                           {blink::WebFeaturePolicyFeature::MidiFeature,
+                            FeaturePolicy::FeatureDefault::EnableForAll},
+                           {blink::WebFeaturePolicyFeature::Notifications,
+                            FeaturePolicy::FeatureDefault::EnableForAll},
+                           {blink::WebFeaturePolicyFeature::Payment,
+                            FeaturePolicy::FeatureDefault::EnableForSelf},
+                           {blink::WebFeaturePolicyFeature::Push,
+                            FeaturePolicy::FeatureDefault::EnableForAll},
+                           {blink::WebFeaturePolicyFeature::SyncScript,
+                            FeaturePolicy::FeatureDefault::EnableForAll},
+                           {blink::WebFeaturePolicyFeature::SyncXHR,
+                            FeaturePolicy::FeatureDefault::EnableForAll},
+                           {blink::WebFeaturePolicyFeature::Usermedia,
+                            FeaturePolicy::FeatureDefault::EnableForAll},
+                           {blink::WebFeaturePolicyFeature::Vibrate,
+                            FeaturePolicy::FeatureDefault::EnableForSelf},
+                           {blink::WebFeaturePolicyFeature::WebRTC,
+                            FeaturePolicy::FeatureDefault::EnableForAll}}));
   return default_feature_list;
 }
 

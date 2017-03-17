@@ -33,9 +33,8 @@ namespace content {
 //
 // Features
 // --------
-// Features which can be controlled by policy are defined by instances of the
-// FeaturePolicy::Feature struct. The features are referenced by the
-// |WebFeaturePolicyFeature| enum, declared in |WebFeaturePolicy.h|.
+// Features which can be controlled by policy are defined by instances of enum
+// blink::WebFeaturePolicyFeature, declared in |WebFeaturePolicy.h|.
 //
 // Whitelists
 // ----------
@@ -90,13 +89,13 @@ namespace content {
 // They exist only because we can't transfer WebVectors directly over IPC.
 struct CONTENT_EXPORT ParsedFeaturePolicyDeclaration {
   ParsedFeaturePolicyDeclaration();
-  ParsedFeaturePolicyDeclaration(std::string feature_name,
+  ParsedFeaturePolicyDeclaration(blink::WebFeaturePolicyFeature feature,
                                  bool matches_all_origins,
                                  std::vector<url::Origin> origins);
   ParsedFeaturePolicyDeclaration(const ParsedFeaturePolicyDeclaration& rhs);
   ~ParsedFeaturePolicyDeclaration();
 
-  std::string feature_name;
+  blink::WebFeaturePolicyFeature feature;
   bool matches_all_origins;
   std::vector<url::Origin> origins;
 };
@@ -148,20 +147,7 @@ class CONTENT_EXPORT FeaturePolicy : public blink::WebFeaturePolicy {
     EnableForAll
   };
 
-  // The FeaturePolicy::Feature struct is used to define all features under
-  // control of Feature Policy. There should only be one instance of this struct
-  // for any given feature (declared below).
-  struct Feature {
-    // The name of the feature, as it should appear in a policy string
-    const char* const feature_name;
-
-    // Controls whether the feature should be available in the platform by
-    // default, in the absence of any declared policy.
-    FeatureDefault default_policy;
-  };
-
-  using FeatureList =
-      std::map<blink::WebFeaturePolicyFeature, const FeaturePolicy::Feature*>;
+  using FeatureList = std::map<blink::WebFeaturePolicyFeature, FeatureDefault>;
 
   ~FeaturePolicy() override;
 
