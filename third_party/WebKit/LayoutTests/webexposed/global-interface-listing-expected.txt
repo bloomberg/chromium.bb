@@ -1315,7 +1315,6 @@ interface DeviceMotionEvent : Event
     getter interval
     getter rotationRate
     method constructor
-    method initDeviceMotionEvent
 interface DeviceOrientationEvent : Event
     attribute @@toStringTag
     getter absolute
@@ -1323,7 +1322,6 @@ interface DeviceOrientationEvent : Event
     getter beta
     getter gamma
     method constructor
-    method initDeviceOrientationEvent
 interface Document : Node
     attribute @@toStringTag
     attribute @@unscopables

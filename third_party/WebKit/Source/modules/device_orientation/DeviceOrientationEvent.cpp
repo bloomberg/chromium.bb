@@ -47,21 +47,6 @@ DeviceOrientationEvent::DeviceOrientationEvent(
     : Event(eventType, false, false),  // Can't bubble, not cancelable
       m_orientation(orientation) {}
 
-void DeviceOrientationEvent::initDeviceOrientationEvent(
-    const AtomicString& type,
-    bool bubbles,
-    bool cancelable,
-    const Nullable<double>& alpha,
-    const Nullable<double>& beta,
-    const Nullable<double>& gamma,
-    bool absolute) {
-  if (isBeingDispatched())
-    return;
-
-  initEvent(type, bubbles, cancelable);
-  m_orientation = DeviceOrientationData::create(alpha, beta, gamma, absolute);
-}
-
 double DeviceOrientationEvent::alpha(bool& isNull) const {
   if (m_orientation->canProvideAlpha())
     return m_orientation->alpha();

@@ -51,11 +51,6 @@ class DeviceMotionEvent final : public Event {
     return new DeviceMotionEvent(eventType, deviceMotionData);
   }
 
-  void initDeviceMotionEvent(const AtomicString& type,
-                             bool bubbles,
-                             bool cancelable,
-                             DeviceMotionData*);
-
   DeviceMotionData* getDeviceMotionData() const {
     return m_deviceMotionData.get();
   }

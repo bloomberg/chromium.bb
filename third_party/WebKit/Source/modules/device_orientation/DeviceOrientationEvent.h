@@ -51,14 +51,6 @@ class DeviceOrientationEvent final : public Event {
     return new DeviceOrientationEvent(eventType, orientation);
   }
 
-  void initDeviceOrientationEvent(const AtomicString& type,
-                                  bool bubbles,
-                                  bool cancelable,
-                                  const Nullable<double>& alpha,
-                                  const Nullable<double>& beta,
-                                  const Nullable<double>& gamma,
-                                  bool absolute);
-
   DeviceOrientationData* orientation() const { return m_orientation.get(); }
 
   double alpha(bool& isNull) const;

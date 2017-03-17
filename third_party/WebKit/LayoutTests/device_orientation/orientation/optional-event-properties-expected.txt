@@ -8,37 +8,37 @@ PASS event.alpha == null is true
 PASS event.beta == null is true
 PASS event.gamma == null is true
 PASS event.absolute is false
-event.initDeviceOrientationEvent('', false, false, 0, 1, 2, false)
+event = new DeviceOrientationEvent('', {alpha: 0, beta: 1, gamma: 2, absolute: false})
 PASS event.alpha == 0 is true
 PASS event.beta == 1 is true
 PASS event.gamma == 2 is true
 PASS event.absolute is false
-event.initDeviceOrientationEvent('', false, false, 0, 1, 2, true)
+event = new DeviceOrientationEvent('', {alpha: 0, beta: 1, gamma: 2, absolute: true})
 PASS event.alpha == 0 is true
 PASS event.beta == 1 is true
 PASS event.gamma == 2 is true
 PASS event.absolute is true
-event.initDeviceOrientationEvent()
+event = new DeviceOrientationEvent('')
 PASS event.alpha == null is true
 PASS event.beta == null is true
 PASS event.gamma == null is true
 PASS event.absolute is false
-event.initDeviceOrientationEvent('', false, false, [], [], [], [])
+event = new DeviceOrientationEvent('', {alpha: [], beta: [], gamma: [], absolute: []})
 PASS event.alpha == 0 is true
 PASS event.beta == 0 is true
 PASS event.gamma == 0 is true
 PASS event.absolute is true
-event.initDeviceOrientationEvent('', false, false, undefined, undefined, undefined, undefined)
+event = new DeviceOrientationEvent('', {alpha: undefined, beta: undefined, gamma: undefined, absolute: undefined})
 PASS event.alpha == null is true
 PASS event.beta == null is true
 PASS event.gamma == null is true
 PASS event.absolute is false
-event.initDeviceOrientationEvent('', false, false, '', '', '', '')
+event = new DeviceOrientationEvent('', {alpha: '', beta: '', gamma: '', absolute: ''})
 PASS event.alpha == 0 is true
 PASS event.beta == 0 is true
 PASS event.gamma == 0 is true
 PASS event.absolute is false
-event.initDeviceOrientationEvent('', false, false, null, null, null, null)
+event = new DeviceOrientationEvent('', {alpha: null, beta: null, gamma: null, absolute: null})
 PASS event.alpha == null is true
 PASS event.beta == null is true
 PASS event.gamma == null is true

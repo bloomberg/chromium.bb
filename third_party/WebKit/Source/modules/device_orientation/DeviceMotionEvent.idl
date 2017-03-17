@@ -31,14 +31,4 @@ interface DeviceMotionEvent : Event {
     readonly attribute DeviceAcceleration? accelerationIncludingGravity;
     readonly attribute DeviceRotationRate? rotationRate;
     readonly attribute double? interval;
-
-    // TODO(foolip): The init*Event() methods are not in the spec:
-    // https://github.com/w3c/deviceorientation/issues/18
-    [Custom, Measure] void initDeviceMotionEvent([Default=Undefined] optional DOMString type,
-                                                 [Default=Undefined] optional boolean bubbles,
-                                                 [Default=Undefined] optional boolean cancelable,
-                                                 [Default=Undefined] optional DeviceAcceleration acceleration,
-                                                 [Default=Undefined] optional DeviceAcceleration accelerationIncludingGravity,
-                                                 [Default=Undefined] optional DeviceRotationRate rotationRate,
-                                                 [Default=Undefined] optional double interval);
 };

@@ -47,22 +47,6 @@ DeviceMotionEvent::DeviceMotionEvent(const AtomicString& eventType,
     : Event(eventType, false, false),  // Can't bubble, not cancelable
       m_deviceMotionData(deviceMotionData) {}
 
-void DeviceMotionEvent::initDeviceMotionEvent(
-    const AtomicString& type,
-    bool bubbles,
-    bool cancelable,
-    DeviceMotionData* deviceMotionData) {
-  if (isBeingDispatched())
-    return;
-
-  initEvent(type, bubbles, cancelable);
-  m_deviceMotionData = deviceMotionData;
-
-  m_acceleration.clear();
-  m_accelerationIncludingGravity.clear();
-  m_rotationRate.clear();
-}
-
 DeviceAcceleration* DeviceMotionEvent::acceleration() {
   if (!m_deviceMotionData->getAcceleration())
     return nullptr;

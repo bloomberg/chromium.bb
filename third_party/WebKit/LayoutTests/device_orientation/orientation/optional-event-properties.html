@@ -13,43 +13,43 @@ shouldBeTrue("event.beta == null");
 shouldBeTrue("event.gamma == null");
 shouldBeFalse("event.absolute");
 
-evalAndLog("event.initDeviceOrientationEvent('', false, false, 0, 1, 2, false)");
+evalAndLog("event = new DeviceOrientationEvent('', {alpha: 0, beta: 1, gamma: 2, absolute: false})");
 shouldBeTrue("event.alpha == 0");
 shouldBeTrue("event.beta == 1");
 shouldBeTrue("event.gamma == 2");
 shouldBeFalse("event.absolute");
 
-evalAndLog("event.initDeviceOrientationEvent('', false, false, 0, 1, 2, true)");
+evalAndLog("event = new DeviceOrientationEvent('', {alpha: 0, beta: 1, gamma: 2, absolute: true})");
 shouldBeTrue("event.alpha == 0");
 shouldBeTrue("event.beta == 1");
 shouldBeTrue("event.gamma == 2");
 shouldBeTrue("event.absolute");
 
-evalAndLog("event.initDeviceOrientationEvent()");
+evalAndLog("event = new DeviceOrientationEvent('')");
 shouldBeTrue("event.alpha == null");
 shouldBeTrue("event.beta == null");
 shouldBeTrue("event.gamma == null");
 shouldBeFalse("event.absolute");
 
-evalAndLog("event.initDeviceOrientationEvent('', false, false, [], [], [], [])");
+evalAndLog("event = new DeviceOrientationEvent('', {alpha: [], beta: [], gamma: [], absolute: []})");
 shouldBeTrue("event.alpha == 0");
 shouldBeTrue("event.beta == 0");
 shouldBeTrue("event.gamma == 0");
 shouldBeTrue("event.absolute");
 
-evalAndLog("event.initDeviceOrientationEvent('', false, false, undefined, undefined, undefined, undefined)");
+evalAndLog("event = new DeviceOrientationEvent('', {alpha: undefined, beta: undefined, gamma: undefined, absolute: undefined})");
 shouldBeTrue("event.alpha == null");
 shouldBeTrue("event.beta == null");
 shouldBeTrue("event.gamma == null");
 shouldBeFalse("event.absolute");
 
-evalAndLog("event.initDeviceOrientationEvent('', false, false, '', '', '', '')");
+evalAndLog("event = new DeviceOrientationEvent('', {alpha: '', beta: '', gamma: '', absolute: ''})");
 shouldBeTrue("event.alpha == 0");
 shouldBeTrue("event.beta == 0");
 shouldBeTrue("event.gamma == 0");
 shouldBeFalse("event.absolute");
 
-evalAndLog("event.initDeviceOrientationEvent('', false, false, null, null, null, null)");
+evalAndLog("event = new DeviceOrientationEvent('', {alpha: null, beta: null, gamma: null, absolute: null})");
 shouldBeTrue("event.alpha == null");
 shouldBeTrue("event.beta == null");
 shouldBeTrue("event.gamma == null");

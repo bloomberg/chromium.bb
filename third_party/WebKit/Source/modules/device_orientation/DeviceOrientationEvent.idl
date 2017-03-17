@@ -31,14 +31,4 @@ interface DeviceOrientationEvent : Event {
     readonly attribute double? beta;
     readonly attribute double? gamma;
     readonly attribute boolean absolute;
-
-    // TODO(foolip): The init*Event() methods are not in the spec:
-    // https://github.com/w3c/deviceorientation/issues/18
-    [Measure] void initDeviceOrientationEvent([Default=Undefined] optional DOMString type,
-                                              [Default=Undefined] optional boolean bubbles,
-                                              [Default=Undefined] optional boolean cancelable,
-                                              [Default=Undefined] optional double? alpha,
-                                              [Default=Undefined] optional double? beta,
-                                              [Default=Undefined] optional double? gamma,
-                                              [Default=Undefined] optional boolean absolute);
 };
