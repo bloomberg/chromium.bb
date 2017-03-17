@@ -11670,6 +11670,21 @@
      {}
     ]
    ],
+   "html/browsers/windows/resources/opener-cross-origin-embed.sub.html": [
+    [
+     {}
+    ]
+   ],
+   "html/browsers/windows/resources/opener-cross-origin-end.txt": [
+    [
+     {}
+    ]
+   ],
+   "html/browsers/windows/resources/opener-cross-origin.html": [
+    [
+     {}
+    ]
+   ],
    "html/browsers/windows/resources/post-to-opener.html": [
     [
      {}
@@ -66740,7 +66755,7 @@
    "testharness"
   ],
   "html/browsers/history/the-location-interface/location-prototype-setting-cross-origin-domain.sub-expected.txt": [
-   "422a528dcd6c2e012813a7f41e7ce6c5c164d871",
+   "0d2b685897e84b98155e58f972cec69ab3d3c323",
    "support"
   ],
   "html/browsers/history/the-location-interface/location-prototype-setting-cross-origin-domain.sub.html": [
@@ -66748,7 +66763,7 @@
    "testharness"
   ],
   "html/browsers/history/the-location-interface/location-prototype-setting-cross-origin.sub-expected.txt": [
-   "9c5f631acdfddf4bdc869025773d35bb62db85b1",
+   "65d844244ed332b554c21c6dff6aa1eb9d080cdc",
    "support"
   ],
   "html/browsers/history/the-location-interface/location-prototype-setting-cross-origin.sub.html": [
@@ -66756,7 +66771,7 @@
    "testharness"
   ],
   "html/browsers/history/the-location-interface/location-prototype-setting-goes-cross-origin-domain.sub-expected.txt": [
-   "ccab16d430b4d8bc902e4eb983f26db61bd241bb",
+   "29f6569022f978c5001f9aab802f9516dd981645",
    "support"
   ],
   "html/browsers/history/the-location-interface/location-prototype-setting-goes-cross-origin-domain.sub.html": [
@@ -67396,7 +67411,7 @@
    "testharness"
   ],
   "html/browsers/the-windowproxy-exotic-object/windowproxy-prototype-setting-cross-origin-domain.sub-expected.txt": [
-   "9c5f631acdfddf4bdc869025773d35bb62db85b1",
+   "0d2b685897e84b98155e58f972cec69ab3d3c323",
    "support"
   ],
   "html/browsers/the-windowproxy-exotic-object/windowproxy-prototype-setting-cross-origin-domain.sub.html": [
@@ -67404,7 +67419,7 @@
    "testharness"
   ],
   "html/browsers/the-windowproxy-exotic-object/windowproxy-prototype-setting-cross-origin.sub-expected.txt": [
-   "9c5f631acdfddf4bdc869025773d35bb62db85b1",
+   "65d844244ed332b554c21c6dff6aa1eb9d080cdc",
    "support"
   ],
   "html/browsers/the-windowproxy-exotic-object/windowproxy-prototype-setting-cross-origin.sub.html": [
@@ -67412,7 +67427,7 @@
    "testharness"
   ],
   "html/browsers/the-windowproxy-exotic-object/windowproxy-prototype-setting-goes-cross-origin-domain.sub-expected.txt": [
-   "ccab16d430b4d8bc902e4eb983f26db61bd241bb",
+   "29f6569022f978c5001f9aab802f9516dd981645",
    "support"
   ],
   "html/browsers/the-windowproxy-exotic-object/windowproxy-prototype-setting-goes-cross-origin-domain.sub.html": [
@@ -67565,6 +67580,18 @@
   ],
   "html/browsers/windows/resources/noreferrer-window-name.html": [
    "0713aa5c65f801ba146994d504cb1ee4b3bb2599",
+   "support"
+  ],
+  "html/browsers/windows/resources/opener-cross-origin-embed.sub.html": [
+   "09f4372441877946c3c2bfe128648c04256b07d8",
+   "support"
+  ],
+  "html/browsers/windows/resources/opener-cross-origin-end.txt": [
+   "c29fb2a395346ff35475aee435d2096bab3c319f",
+   "support"
+  ],
+  "html/browsers/windows/resources/opener-cross-origin.html": [
+   "7977bb11e23708c3039b495a4980f6855df25f2b",
    "support"
   ],
   "html/browsers/windows/resources/post-to-opener.html": [
@@ -78236,7 +78263,7 @@
    "testharness"
   ],
   "mediacapture-streams/MediaStreamTrack-init.https-expected.txt": [
-   "4e890a8c710bbc3100a3c3fc68a2292cff4afa58",
+   "72eff44313d8fb45278de4da064eaa322ff63074",
    "support"
   ],
   "mediacapture-streams/MediaStreamTrack-init.https.html": [
@@ -90904,7 +90931,7 @@
    "testharness"
   ],
   "streams/writable-streams/aborting.js": [
-   "cabcfe5be9a294a2d249743da2e819a1e9d730d3",
+   "3810f67c1136ec1fe2d4552cf1b023a489b8b8c6",
    "support"
   ],
   "streams/writable-streams/aborting.serviceworker.https-expected.txt": [
@@ -91172,7 +91199,7 @@
    "testharness"
   ],
   "streams/writable-streams/start.js": [
-   "936967320da8644a4e6f6fbc903c775249af6710",
+   "35a7dc955dcfda4971dced0266ec3287d18979bd",
    "support"
   ],
   "streams/writable-streams/start.serviceworker.https.html": [
@@ -91936,7 +91963,7 @@
    "testharness"
   ],
   "web-animations/interfaces/Animation/effect-expected.txt": [
-   "45a5216268ae11bc75cf3724d652b5c2ef52bcfc",
+   "8ff9f57500ea7c7d9fba5f9fa7561aab43f965b6",
    "support"
   ],
   "web-animations/interfaces/Animation/effect.html": [

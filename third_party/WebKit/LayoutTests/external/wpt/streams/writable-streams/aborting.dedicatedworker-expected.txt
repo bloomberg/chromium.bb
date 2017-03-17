@@ -33,6 +33,11 @@ FAIL writer.abort(), controller.error() while there is an in-flight write, and t
 PASS controller.error(), writer.abort() while there is an in-flight write, and then finish the write 
 PASS releaseLock() while aborting should reject the original closed promise 
 PASS releaseLock() during delayed async abort() should create a new rejected closed promise 
+FAIL sink abort() should not be called until sink start() is done assert_array_equals: abort() should not be called during start() lengths differ, expected 0 got 2
+FAIL abort() promise should reject if start() errors the controller Cannot error a errored writable stream
+FAIL stream abort() promise should reject if sink start() rejects assert_unreached: Should have rejected: abort() should reject if start() rejects Reached unreachable code
+PASS writer abort() during sink start() should replace the writer.ready promise synchronously 
+FAIL promises returned from other writer methods should be rejected when writer abort() happens during sink start() assert_array_equals: promises should resolve in the standard order property 0, expected "write2" but got "abort"
 FAIL abort() should be rejected with the error passed to controller.error() during pending write() promise_test: Unhandled rejection with value: object "TypeError: Cannot error a errored writable stream"
 FAIL abort() should be rejected with the error passed to controller.error() during pending close() promise_test: Unhandled rejection with value: object "TypeError: Cannot error a errored writable stream"
 Harness: the test ran to completion.
