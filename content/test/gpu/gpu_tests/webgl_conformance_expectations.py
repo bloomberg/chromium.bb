@@ -665,6 +665,11 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Flaky('conformance/context/' +
         'context-eviction-with-garbage-collection.html',
         ['android', ('nvidia', 'NVIDIA Tegra')], bug=701929)
+    self.Flaky('conformance/glsl/misc/glsl-long-variable-names.html',
+        ['android', ('nvidia', 'NVIDIA Tegra')], bug=701929)
+    self.Flaky('conformance/textures/image_bitmap_from_video/' +
+        'tex-2d-rgb-rgb-unsigned_byte.html',
+        ['android', ('nvidia', 'NVIDIA Tegra')], bug=701929)
 
     ############
     # ChromeOS #

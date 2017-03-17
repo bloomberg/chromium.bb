@@ -477,6 +477,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'single_attribute.normalize.html',
         ['mac', 'amd'], bug=483282)
 
+    self.Flaky('deqp/functional/gles3/shaderoperator/common_functions.html',
+        ['mac', 'amd'], bug=702336)
     self.Fail('deqp/functional/gles3/shaderoperator/' +
         'angle_and_trigonometry_02.html',
         ['mac', 'amd'], bug=483282)
@@ -486,6 +488,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Fail('deqp/functional/gles3/shaderoperator/geometric.html',
         ['mac', 'amd'], bug=483282)
 
+    self.Flaky('deqp/functional/gles3/shaderindexing/mat_01.html',
+        ['mac', 'amd'], bug=636648)
     self.Flaky('deqp/functional/gles3/shaderindexing/mat_02.html',
         ['mac', 'amd'], bug=644360)
 
@@ -511,14 +515,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', ('amd', 0x679e)], bug=679682)
     self.Fail('deqp/functional/gles3/fborender/resize_01.html',
         ['mac', ('amd', 0x679e)], bug=679682)
-    self.Flaky('deqp/functional/gles3/shaderindexing/mat_01.html',
-        ['mac', ('amd', 0x679e)], bug=636648)
     self.Flaky('deqp/functional/gles3/shaderindexing/tmp.html',
         ['mac', ('amd', 0x679e)], bug=659871)
     self.Fail('deqp/functional/gles3/uniformbuffers/random.html',
         ['mac', ('amd', 0x679e)], bug=618464)
-    self.Fail('deqp/functional/gles3/shaderoperator/common_functions.html',
-        ['mac', ('amd', 0x679e)], bug=483282)
 
     # Mac Multi-vendor failures.
     self.Fail('deqp/functional/gles3/fragmentoutput/basic.float.html',
