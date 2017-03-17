@@ -153,8 +153,10 @@ class WebStateImpl;
 // to generate an overlay placeholder view.
 - (BOOL)canUseViewForGeneratingOverlayPlaceholderView;
 
-// Start loading the URL specified in |originalParams|, with the specified
+// Start loading the URL specified in |params|, with the specified
 // settings.  Always resets the openedByScript property to NO.
+// NOTE: |params.transition_type| should never be PAGE_TRANSITION_RELOAD except
+// for transient items, if one needs to reload, call |-reload| explicitly.
 - (void)loadWithParams:(const web::NavigationManager::WebLoadParams&)params;
 
 // Loads the URL indicated by current session state.

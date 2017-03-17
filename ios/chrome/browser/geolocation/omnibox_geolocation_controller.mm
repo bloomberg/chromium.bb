@@ -442,7 +442,7 @@ const char* const kGeolocationAuthorizationActionNewUser =
 }
 
 - (void)addLocationAndReloadTab:(Tab*)tab {
-  if (self.enabled && [tab navigationManager]) {
+  if (self.enabled && tab.webState) {
     // Make sure that GeolocationUpdater is running the first time we request
     // the current location.
     //
@@ -453,10 +453,12 @@ const char* const kGeolocationAuthorizationActionNewUser =
     // GeolocationUpdater.
     [self startUpdatingLocation];
 
-    web::NavigationItem* item =
-        tab.webState->GetNavigationManager()->GetVisibleItem();
+    web::NavigationManager* navigationManager =
+        tab.webState->GetNavigationManager();
+    web::NavigationItem* item = navigationManager->GetVisibleItem();
     if ([self addLocationToNavigationItem:item browserState:tab.browserState]) {
-      [tab reload];
+      navigationManager->Reload(web::ReloadType::NORMAL,
+                                false /* check_for_repost */);
     }
   }
 }

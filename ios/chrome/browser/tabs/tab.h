@@ -258,7 +258,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 
 // Navigate forwards or backwards to |item|.
 - (void)goToItem:(const web::NavigationItem*)item;
-- (void)reload;
 
 // Navigates forwards or backwards.
 // TODO(crbug.com/661664): These are passthroughs to CRWWebController. Convert

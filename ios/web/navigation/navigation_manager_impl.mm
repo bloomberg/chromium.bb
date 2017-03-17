@@ -348,16 +348,7 @@ NavigationItemList NavigationManagerImpl::GetForwardItems() const {
 
 void NavigationManagerImpl::Reload(ReloadType reload_type,
                                    bool check_for_reposts) {
-  // Navigation manager may be empty if the only pending item failed to load
-  // with SSL error and the user has decided not to proceed.
-  NavigationItem* item = GetVisibleItem();
-  GURL url = item ? item->GetURL() : GURL(url::kAboutBlankURL);
-  web::Referrer referrer = item ? item->GetReferrer() : web::Referrer();
-
-  WebState::OpenURLParams params(url, referrer,
-                                 WindowOpenDisposition::CURRENT_TAB,
-                                 ui::PAGE_TRANSITION_RELOAD, NO);
-  delegate_->GetWebState()->OpenURL(params);
+  delegate_->Reload();
 }
 
 void NavigationManagerImpl::CopyStateFromAndPrune(

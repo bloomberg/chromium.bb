@@ -20,6 +20,7 @@ namespace {
 class TestNavigationManagerDelegate : public NavigationManagerDelegate {
   void GoToIndex(int index) override {}
   void LoadURLWithParams(const NavigationManager::WebLoadParams&) override {}
+  void Reload() override {}
   void OnNavigationItemsPruned(size_t pruned_item_count) override {}
   void OnNavigationItemChanged() override{};
   void OnNavigationItemCommitted(const LoadCommittedDetails&) override {}
@@ -596,6 +597,22 @@ TEST_F(NavigationManagerTest, UserAgentTypePropagationPastNativeItems) {
 
   // Verify that |item2|'s UserAgentType is propagated to |item3|.
   EXPECT_EQ(item2->GetUserAgentType(), item3->GetUserAgentType());
+}
+
+// Tests that calling |Reload| on NavigationManager leaves the Url of the
+// visible item unchanged.
+TEST_F(NavigationManagerTest, ReloadWithNormalReloadType) {
+  navigation_manager()->AddPendingItem(
+      GURL("http://www.url.com"), Referrer(), ui::PAGE_TRANSITION_TYPED,
+      web::NavigationInitiationType::USER_INITIATED);
+  ASSERT_TRUE(navigation_manager()->GetVisibleItem());
+
+  GURL url_before_reload = navigation_manager()->GetVisibleItem()->GetURL();
+  navigation_manager()->Reload(web::ReloadType::NORMAL,
+                               false /* check_for_repost */);
+
+  EXPECT_EQ(url_before_reload,
+            navigation_manager()->GetVisibleItem()->GetURL());
 }
 
 }  // namespace web

@@ -153,9 +153,9 @@ class NavigationManager {
 
   // Reloads the visible item under the specified ReloadType. If
   // |check_for_repost| is true and the current item has POST data the user is
-  // prompted to see if they really want to reload the page. In nearly all cases
-  // pass in true.  If a transient item is showing, initiates a new navigation
-  // to its URL.
+  // prompted to see if they really want to reload the page. Pass in true if the
+  // reload is explicitly initiated by the user. If a transient item is showing,
+  // initiates a new navigation to its URL.
   // TODO(crbug.com/700571): implement the logic for when |reload_type| is
   // ORIGINAL_REQUEST_URL.
   // TODO(crbug.com/700958): implement the logic for |check_for_repost|.

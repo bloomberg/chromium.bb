@@ -132,7 +132,10 @@
 }
 
 - (void)reload {
-  _webState->GetNavigationManager()->Reload(web::ReloadType::NORMAL, true);
+  // |check_for_repost| is false because CWVWebView does not support repost form
+  // dialogs.
+  _webState->GetNavigationManager()->Reload(web::ReloadType::NORMAL,
+                                            false /* check_for_repost */);
 }
 
 - (void)stopLoading {

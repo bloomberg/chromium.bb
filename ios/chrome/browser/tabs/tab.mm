@@ -1116,12 +1116,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
                          currentIndex:sessionTab->current_navigation_index];
 }
 
-- (void)reload {
-  // TODO(crbug.com/661671): Convert callers to go through CRWWebController
-  // directly and remove this passthrough method.
-  [self.webController reload];
-}
-
 - (void)webWillReload {
   if ([parentTabModel_ tabUsageRecorder]) {
     [parentTabModel_ tabUsageRecorder]->RecordReload(self);
@@ -1418,7 +1412,8 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 - (void)applicationDidBecomeActive {
   if (requireReloadAfterBecomingActive_) {
     if (visible_) {
-      [self.webController reload];
+      self.navigationManager->Reload(web::ReloadType::NORMAL,
+                                     false /* check_for_repost */);
     } else {
       [self.webController requirePageReload];
     }
@@ -1953,7 +1948,11 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
       base::scoped_nsobject<SadTabView> sadTabView(
           [[SadTabView alloc] initWithReloadHandler:^{
             base::scoped_nsobject<Tab> strongSelf([weakSelf retain]);
-            [strongSelf reload];
+
+            // |check_for_repost| is true because this is called from SadTab and
+            // explicitly initiated by the user.
+            [strongSelf navigationManager]->Reload(web::ReloadType::NORMAL,
+                                                   true /* check_for_repost */);
           }]);
       base::scoped_nsobject<CRWContentView> contentView(
           [[CRWGenericContentView alloc] initWithView:sadTabView]);

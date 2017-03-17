@@ -2884,13 +2884,20 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
     case OverscrollAction::CLOSE_TAB:
       [self closeCurrentTab];
       break;
-    case OverscrollAction::REFRESH:
+    case OverscrollAction::REFRESH: {
       if ([[[_model currentTab] webController] loadPhase] ==
           web::PAGE_LOADING) {
         [[_model currentTab] stopLoading];
       }
-      [[_model currentTab] reload];
+
+      web::WebState* webState = [_model currentTab].webState;
+      if (webState)
+        // |check_for_repost| is true because the reload is explicitly initiated
+        // by the user.
+        webState->GetNavigationManager()->Reload(web::ReloadType::NORMAL,
+                                                 true /* check_for_repost */);
       break;
+    }
     case OverscrollAction::NONE:
       NOTREACHED();
       break;
@@ -3838,9 +3845,11 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   // editing ends (i.e., editing was cancelled), restart the cancelled load.
   if (_locationBarEditCancelledLoad) {
     _locationBarEditCancelledLoad = NO;
-    if (!_toolbarModelIOS->IsLoading()) {
-      [[_model currentTab] reload];
-    }
+
+    web::WebState* webState = [_model currentTab].webState;
+    if (!_toolbarModelIOS->IsLoading() && webState)
+      webState->GetNavigationManager()->Reload(web::ReloadType::NORMAL,
+                                               false /* check_for_repost */);
   }
 }
 
@@ -3981,9 +3990,15 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
         [super chromeExecuteCommand:sender];
       }
       break;
-    case IDC_RELOAD:
-      [[_model currentTab] reload];
+    case IDC_RELOAD: {
+      web::WebState* webState = [_model currentTab].webState;
+      if (webState)
+        // |check_for_repost| is true because the reload is explicitly initiated
+        // by the user.
+        webState->GetNavigationManager()->Reload(web::ReloadType::NORMAL,
+                                                 true /* check_for_repost */);
       break;
+    }
     case IDC_SHARE_PAGE:
       [self sharePage];
       break;

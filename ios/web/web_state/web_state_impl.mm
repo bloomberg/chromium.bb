@@ -743,6 +743,10 @@ void WebStateImpl::LoadURLWithParams(
   [web_controller_ loadWithParams:params];
 }
 
+void WebStateImpl::Reload() {
+  [web_controller_ reload];
+}
+
 void WebStateImpl::OnNavigationItemsPruned(size_t pruned_item_count) {
   for (auto& observer : observers_)
     observer.NavigationItemsPruned(pruned_item_count);
