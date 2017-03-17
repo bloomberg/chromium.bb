@@ -1025,7 +1025,11 @@ void AppListSyncableService::ProcessExistingSyncItem(SyncItem* sync_item) {
   AppListItem* app_item = model_->FindItem(sync_item->item_id);
   DVLOG(2) << " AppItem: " << app_item->ToDebugString();
   if (!app_item) {
-    LOG(ERROR) << "Item not found in model: " << sync_item->ToString();
+    // This is expected in case the user uses devices with different app set,
+    // for example, ARC enabled and ARC disabled devices. Another scenario is
+    // app pinned by default (YouTube, for instance) but which has not been yet
+    // installed on this device.
+    DVLOG(2) << "Skip updating missing item : " << sync_item->ToString();
     return;
   }
   // This is the only place where sync can cause an item to change folders.
