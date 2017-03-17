@@ -42,7 +42,8 @@ public class DefaultBrowserInfo {
                         Context context = ContextUtils.getApplicationContext();
                         ArrayList<String> menuTitles = new ArrayList<String>(2);
                         // Store the package label of current application.
-                        menuTitles.add(BuildInfo.getPackageLabel(context));
+                        menuTitles.add(getTitleFromPackageLabel(
+                                context, BuildInfo.getPackageLabel(context)));
 
                         PackageManager pm = context.getPackageManager();
                         ResolveInfo info = getResolveInfoForViewIntent(pm);
@@ -59,19 +60,19 @@ public class DefaultBrowserInfo {
                         if (info != null && info.match != 0 && info.loadLabel(pm) != null) {
                             packageLabel = info.loadLabel(pm).toString();
                         }
-                        if (packageLabel == null) {
-                            menuTitles.add(
-                                    context.getString(R.string.menu_open_in_product_default));
-                        } else {
-                            menuTitles.add(
-                                    context.getString(R.string.menu_open_in_product, packageLabel));
-                        }
+                        menuTitles.add(getTitleFromPackageLabel(context, packageLabel));
                         return menuTitles;
                     }
                 };
                 sDefaultBrowserFetcher.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             }
         }
+    }
+
+    private static String getTitleFromPackageLabel(Context context, String packageLabel) {
+        return packageLabel == null
+                ? context.getString(R.string.menu_open_in_product_default)
+                : context.getString(R.string.menu_open_in_product, packageLabel);
     }
 
     /**
