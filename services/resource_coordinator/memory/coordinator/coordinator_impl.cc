@@ -4,40 +4,53 @@
 
 #include "services/resource_coordinator/memory/coordinator/coordinator_impl.h"
 
+#include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/platform_thread.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/memory_dump_request_args.h"
+#include "services/resource_coordinator/public/cpp/memory/memory_dump_manager_delegate_impl.h"
+#include "services/resource_coordinator/public/interfaces/memory/constants.mojom.h"
 #include "services/resource_coordinator/public/interfaces/memory/memory_instrumentation.mojom.h"
-
-namespace memory_instrumentation {
 
 namespace {
 
-base::LazyInstance<CoordinatorImpl>::Leaky g_coordinator =
-    LAZY_INSTANCE_INITIALIZER;
+memory_instrumentation::CoordinatorImpl* g_coordinator_impl;
 
 }  // namespace
 
+namespace memory_instrumentation {
+
 // static
 CoordinatorImpl* CoordinatorImpl::GetInstance() {
-  return g_coordinator.Pointer();
+  return g_coordinator_impl;
 }
 
-// TODO(chiniforooshan): Initialize the global MemoryDumpManager instance here.
-// This is how the global MemoryDumpManager gets a reference to the delegate on
-// the service (read the browser) process for service process memory dumps. This
-// can be done when the delegate implementation is landed.
-CoordinatorImpl::CoordinatorImpl() : failed_memory_dump_count_(0) {}
+CoordinatorImpl::CoordinatorImpl(bool initialize_memory_dump_manager)
+    : failed_memory_dump_count_(0),
+      initialize_memory_dump_manager_(initialize_memory_dump_manager) {
+  if (initialize_memory_dump_manager) {
+    MemoryDumpManagerDelegateImpl::Config config(this);
+    auto delegate = base::MakeUnique<MemoryDumpManagerDelegateImpl>(config);
+    base::trace_event::MemoryDumpManager::GetInstance()->set_tracing_process_id(
+        mojom::kServiceTracingProcessId);
+    base::trace_event::MemoryDumpManager::GetInstance()->Initialize(
+        std::move(delegate));
+  }
+  g_coordinator_impl = this;
+}
 
-CoordinatorImpl::~CoordinatorImpl() {}
+CoordinatorImpl::~CoordinatorImpl() {
+  g_coordinator_impl = nullptr;
+}
 
 void CoordinatorImpl::BindCoordinatorRequest(
     mojom::CoordinatorRequest request) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   bindings_.AddBinding(this, std::move(request));
 }
 
@@ -52,7 +65,6 @@ void CoordinatorImpl::RequestGlobalMemoryDump(
     const base::trace_event::MemoryDumpRequestArgs& args,
     const RequestGlobalMemoryDumpCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-
   bool another_dump_already_in_progress = !queued_memory_dump_requests_.empty();
 
   // If this is a periodic or peak memory dump request and there already is
@@ -89,7 +101,6 @@ void CoordinatorImpl::RequestGlobalMemoryDump(
 void CoordinatorImpl::RegisterProcessLocalDumpManager(
     mojom::ProcessLocalDumpManagerPtr process_manager) {
   DCHECK(thread_checker_.CalledOnValidThread());
-
   process_manager.set_connection_error_handler(
       base::Bind(&CoordinatorImpl::UnregisterProcessLocalDumpManager,
                  base::Unretained(this), process_manager.get()));
@@ -102,7 +113,8 @@ void CoordinatorImpl::RegisterProcessLocalDumpManager(
 
 void CoordinatorImpl::UnregisterProcessLocalDumpManager(
     mojom::ProcessLocalDumpManager* process_manager) {
-  DCHECK(process_managers_.erase(process_manager) == 1);
+  size_t num_deleted = process_managers_.erase(process_manager);
+  DCHECK(num_deleted == 1);
 
   // Check if we are waiting for an ack from this process-local manager.
   if (pending_process_managers_.find(process_manager) !=

@@ -57,8 +57,8 @@ class CONTENT_EXPORT ChildProcessHostImpl : public ChildProcessHost,
   // process.
   //
   // Never returns MemoryDumpManager::kInvalidTracingProcessId.
-  // Returns only ChildProcessHost::kBrowserTracingProcessId in single-process
-  // mode.
+  // Returns only memory_instrumentation::mojom::kServiceTracingProcessId in
+  // single-process mode.
   static uint64_t ChildProcessUniqueIdToTracingProcessId(int child_process_id);
 
   // ChildProcessHost implementation

@@ -32,6 +32,7 @@
 #include "ipc/ipc_logging.h"
 #include "ipc/message_filter.h"
 #include "mojo/edk/embedder/embedder.h"
+#include "services/resource_coordinator/public/interfaces/memory/constants.mojom.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
 #if defined(OS_LINUX)
@@ -50,9 +51,6 @@ base::StaticAtomicSequenceNumber g_unique_id;
 namespace content {
 
 int ChildProcessHost::kInvalidUniqueID = -1;
-
-uint64_t ChildProcessHost::kBrowserTracingProcessId =
-    std::numeric_limits<uint64_t>::max();
 
 // static
 ChildProcessHost* ChildProcessHost::Create(ChildProcessHostDelegate* delegate) {
@@ -205,7 +203,7 @@ uint64_t ChildProcessHostImpl::ChildProcessUniqueIdToTracingProcessId(
   // tracing process ids.
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSingleProcess))
-    return ChildProcessHost::kBrowserTracingProcessId;
+    return memory_instrumentation::mojom::kServiceTracingProcessId;
 
   // The hash value is incremented so that the tracing id is never equal to
   // MemoryDumpManager::kInvalidTracingProcessId.

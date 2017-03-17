@@ -2,6 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# There should be only one memory instrumentaiton coordinator. It is currently
+# in the browser process. So, only //content/browser should link to this target.
+# Others modules should only need the public targets.
 source_set("lib") {
   sources = [
     "memory/coordinator/coordinator_impl.cc",
@@ -10,6 +13,7 @@ source_set("lib") {
 
   public_deps = [
     "//base",
+    "//mojo/public/cpp/bindings",
     "//services/resource_coordinator/public/cpp",
     "//services/resource_coordinator/public/interfaces",
   ]
@@ -20,12 +24,15 @@ source_set("tests") {
 
   sources = [
     "memory/coordinator/coordinator_impl_unittest.cc",
+    "public/cpp/memory/memory_dump_manager_delegate_impl_unittest.cc",
   ]
 
   deps = [
     ":lib",
     "//base",
     "//mojo/public/cpp/bindings",
+    "//services/resource_coordinator/public/cpp",
+    "//services/resource_coordinator/public/interfaces",
     "//testing/gtest",
   ]
 }

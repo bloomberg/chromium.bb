@@ -103,6 +103,7 @@
 #include "net/socket/client_socket_factory.h"
 #include "net/ssl/ssl_config_service.h"
 #include "ppapi/features/features.h"
+#include "services/resource_coordinator/memory/coordinator/coordinator_impl.h"
 #include "services/service_manager/runner/common/client_util.h"
 #include "skia/ext/event_tracer_impl.h"
 #include "skia/ext/skia_memory_dump_provider.h"
@@ -832,6 +833,14 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
     DOMStorageArea::EnableAggressiveCommitDelay();
     LevelDBWrapperImpl::EnableAggressiveCommitDelay();
   }
+
+  // Create the memory instrumentation service. It will initialize the memory
+  // dump manager, too. It makes sense that BrowserMainLoop owns the service;
+  // this way, the service is alive for the lifetime of Mojo. Mojo is shutdown
+  // in BrowserMainLoop::ShutdownThreadsAndCleanupIO.
+  memory_instrumentation_coordinator_ =
+      base::MakeUnique<memory_instrumentation::CoordinatorImpl>(
+          true /* initialize_memory_dump_manager */);
 
   // Enable memory-infra dump providers.
   InitSkiaEventTracer();

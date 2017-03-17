@@ -4,6 +4,9 @@
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {
+        "gpu": [
+          "memory_instrumentation::mojom::Coordinator"
+        ],
         "plugin": [
           "discardable_memory::mojom::DiscardableSharedMemoryManager",
           "ui::mojom::Gpu"
@@ -36,6 +39,7 @@
           "discardable_memory::mojom::DiscardableSharedMemoryManager",
           "media::mojom::ImageCapture",
           "memory_coordinator::mojom::MemoryCoordinatorHandle",
+          "memory_instrumentation::mojom::Coordinator",
           "payments::mojom::PaymentAppManager",
           "shape_detection::mojom::BarcodeDetection",
           "shape_detection::mojom::FaceDetectionProvider",

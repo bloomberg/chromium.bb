@@ -31,6 +31,7 @@
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/elapsed_timer.h"
+#include "base/trace_event/memory_dump_manager.h"
 #include "base/tracked_objects.h"
 #include "build/build_config.h"
 #include "components/tracing/child/child_trace_message_filter.h"
@@ -66,6 +67,7 @@
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/device/public/cpp/power_monitor/power_monitor_broadcast_source.h"
 #include "services/device/public/interfaces/constants.mojom.h"
+#include "services/resource_coordinator/public/cpp/memory/memory_dump_manager_delegate_impl.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_factory.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -503,6 +505,14 @@ void ChildThreadImpl::Init(const Options& options) {
     channel_->AddFilter(new tracing::ChildTraceMessageFilter(
         ChildProcess::current()->io_task_runner()));
     channel_->AddFilter(new ChildMemoryMessageFilter());
+
+    memory_instrumentation::MemoryDumpManagerDelegateImpl::Config config(
+        GetRemoteInterfaces());
+    auto delegate =
+        base::MakeUnique<memory_instrumentation::MemoryDumpManagerDelegateImpl>(
+            config);
+    base::trace_event::MemoryDumpManager::GetInstance()->Initialize(
+        std::move(delegate));
   }
 
   // In single process mode we may already have a power monitor,

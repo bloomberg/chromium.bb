@@ -112,6 +112,7 @@ source_set("browser") {
     "//services/device/public/interfaces:constants",
     "//services/file:lib",
     "//services/file/public/interfaces",
+    "//services/resource_coordinator:lib",
     "//services/service_manager",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/interfaces",

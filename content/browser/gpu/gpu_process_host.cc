@@ -28,6 +28,7 @@
 #include "build/build_config.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "content/browser/browser_child_process_host_impl.h"
+#include "content/browser/browser_main_loop.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_main_thread_factory.h"
@@ -66,8 +67,10 @@
 #include "media/base/media_switches.h"
 #include "media/media_features.h"
 #include "mojo/edk/embedder/embedder.h"
+#include "services/resource_coordinator/memory/coordinator/coordinator_impl.h"
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/runner/common/client_util.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/events/latency_info.h"
@@ -338,6 +341,14 @@ class GpuProcessHost::ConnectionFilterImpl : public ConnectionFilter {
                  service_manager::Connector* connector) override {
     if (remote_identity.name() != mojom::kGpuServiceName)
       return false;
+
+    registry->AddInterface(
+        base::Bind(
+            &memory_instrumentation::CoordinatorImpl::BindCoordinatorRequest,
+            base::Unretained(
+                memory_instrumentation::CoordinatorImpl::GetInstance())),
+        content::BrowserThread::GetTaskRunnerForThread(
+            content::BrowserThread::UI));
 
     GetContentClient()->browser()->ExposeInterfacesToGpuProcess(registry,
                                                                 host_);

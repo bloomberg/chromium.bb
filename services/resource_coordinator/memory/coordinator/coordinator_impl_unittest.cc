@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "services/resource_coordinator/memory/coordinator/coordinator_impl.h"
+#include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback_forward.h"
 #include "base/memory/ref_counted.h"
@@ -20,14 +21,17 @@ class CoordinatorImplTest : public testing::Test {
  public:
   CoordinatorImplTest() {}
   void SetUp() override {
-    dump_response_args_ = {static_cast<uint64_t>(-1), false};
+    dump_response_args_ = {0U, false};
+    coordinator_.reset(new CoordinatorImpl(false));
   }
+
+  void TearDown() override { coordinator_.reset(); }
 
   void RegisterProcessLocalDumpManager(
       mojom::ProcessLocalDumpManagerPtr process_manager) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::Bind(&CoordinatorImpl::RegisterProcessLocalDumpManager,
-                              base::Unretained(&coordinator_),
+                              base::Unretained(coordinator_.get()),
                               base::Passed(&process_manager)));
   }
 
@@ -36,7 +40,7 @@ class CoordinatorImplTest : public testing::Test {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&CoordinatorImpl::RequestGlobalMemoryDump,
-                   base::Unretained(&coordinator_), args,
+                   base::Unretained(coordinator_.get()), args,
                    base::Bind(&CoordinatorImplTest::OnGlobalMemoryDumpResponse,
                               base::Unretained(this), closure)));
   }
@@ -57,11 +61,11 @@ class CoordinatorImplTest : public testing::Test {
   DumpResponseArgs dump_response_args_;
 
  private:
-  CoordinatorImpl coordinator_;
+  std::unique_ptr<CoordinatorImpl> coordinator_;
   base::MessageLoop message_loop_;
 };
 
-class MockDumpManager : mojom::ProcessLocalDumpManager {
+class MockDumpManager : public mojom::ProcessLocalDumpManager {
  public:
   MockDumpManager(CoordinatorImplTest* test_coordinator, int expected_calls)
       : binding_(this), expected_calls_(expected_calls) {
@@ -93,7 +97,7 @@ TEST_F(CoordinatorImplTest, NoProcessLocalManagers) {
       base::trace_event::MemoryDumpLevelOfDetail::DETAILED};
   RequestGlobalMemoryDump(args, run_loop.QuitClosure());
   run_loop.Run();
-  EXPECT_EQ(static_cast<uint64_t>(1234), dump_response_args_.dump_guid);
+  EXPECT_EQ(1234U, dump_response_args_.dump_guid);
   EXPECT_TRUE(dump_response_args_.success);
 }
 
@@ -109,7 +113,7 @@ TEST_F(CoordinatorImplTest, SeveralProcessLocalManagers) {
 
   run_loop.Run();
 
-  EXPECT_EQ(static_cast<uint64_t>(2345), dump_response_args_.dump_guid);
+  EXPECT_EQ(2345U, dump_response_args_.dump_guid);
   EXPECT_TRUE(dump_response_args_.success);
 }
 
@@ -132,7 +136,7 @@ TEST_F(CoordinatorImplTest, FaultyProcessLocalManager) {
 
   run_loop.Run();
 
-  EXPECT_EQ(static_cast<uint64_t>(3456), dump_response_args_.dump_guid);
+  EXPECT_EQ(3456U, dump_response_args_.dump_guid);
   EXPECT_FALSE(dump_response_args_.success);
 }
 }  // namespace memory_instrumentation

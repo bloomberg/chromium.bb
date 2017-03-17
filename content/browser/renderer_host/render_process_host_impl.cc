@@ -184,6 +184,7 @@
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "ppapi/features/features.h"
+#include "services/resource_coordinator/memory/coordinator/coordinator_impl.h"
 #include "services/service_manager/public/cpp/connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -1346,6 +1347,13 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   }
 
   AddUIThreadInterface(registry.get(), base::Bind(&FieldTrialRecorder::Create));
+
+  AddUIThreadInterface(
+      registry.get(),
+      base::Bind(
+          &memory_instrumentation::CoordinatorImpl::BindCoordinatorRequest,
+          base::Unretained(
+              memory_instrumentation::CoordinatorImpl::GetInstance())));
 
   GetContentClient()->browser()->ExposeInterfacesToRenderer(registry.get(),
                                                             this);

@@ -6,6 +6,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("interfaces") {
   sources = [
+    "memory/constants.mojom",
     "memory/memory_instrumentation.mojom",
     "tracing/tracing.mojom",
   ]

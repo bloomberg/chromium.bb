@@ -242,6 +242,7 @@ target(link_target_type, "child") {
     "//net",
     "//services/device/public/cpp/power_monitor",
     "//services/device/public/interfaces:constants",
+    "//services/resource_coordinator/public/cpp",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/interfaces",
     "//services/service_manager/runner/common",
