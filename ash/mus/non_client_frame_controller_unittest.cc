@@ -11,19 +11,14 @@
 #include "ash/test/ash_test_helper.h"
 #include "cc/base/math_util.h"
 #include "cc/output/compositor_frame.h"
-#include "cc/output/compositor_frame_sink_client.h"
 #include "cc/quads/solid_color_draw_quad.h"
-#include "cc/scheduler/begin_frame_source.h"
-#include "cc/scheduler/delay_based_time_source.h"
-#include "cc/test/fake_compositor_frame_sink.h"
-#include "cc/test/test_gpu_memory_buffer_manager.h"
-#include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/test/draw_waiter_for_test.h"
+#include "ui/compositor/test/fake_context_factory.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -66,40 +61,15 @@ bool FindTiledContentQuad(const cc::CompositorFrame& frame,
   return false;
 }
 
-class FakeCompositorFrameSink : public cc::FakeCompositorFrameSink {
- public:
-  FakeCompositorFrameSink()
-      : cc::FakeCompositorFrameSink(cc::TestContextProvider::Create(),
-                                    cc::TestContextProvider::CreateWorker()) {}
-  ~FakeCompositorFrameSink() override = default;
-
- private:
-  // cc::FakeCompositorFrameSink:
-  bool BindToClient(cc::CompositorFrameSinkClient* client) override {
-    if (!cc::FakeCompositorFrameSink::BindToClient(client))
-      return false;
-    begin_frame_source_ = base::MakeUnique<cc::BackToBackBeginFrameSource>(
-        base::MakeUnique<cc::DelayBasedTimeSource>(
-            base::ThreadTaskRunnerHandle::Get().get()));
-    client_->SetBeginFrameSource(begin_frame_source_.get());
-    return true;
-  }
-
-  std::unique_ptr<cc::BeginFrameSource> begin_frame_source_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeCompositorFrameSink);
-};
-
 }  // namespace
 
-class NonClientFrameControllerTest : public test::AshTestBase,
-                                     public ui::ContextFactory {
+class NonClientFrameControllerTest : public test::AshTestBase {
  public:
   NonClientFrameControllerTest() = default;
   ~NonClientFrameControllerTest() override = default;
 
   const cc::CompositorFrame& GetLastCompositorFrame() const {
-    return *frame_sink_->last_sent_frame();
+    return context_factory_.GetLastCompositorFrame();
   }
 
   // test::AshTestBase:
@@ -107,7 +77,7 @@ class NonClientFrameControllerTest : public test::AshTestBase,
     aura::Env* env = aura::Env::GetInstance();
     DCHECK(env);
     context_factory_to_restore_ = env->context_factory();
-    env->set_context_factory(this);
+    env->set_context_factory(&context_factory_);
     AshTestBase::SetUp();
   }
 
@@ -116,39 +86,9 @@ class NonClientFrameControllerTest : public test::AshTestBase,
     aura::Env::GetInstance()->set_context_factory(context_factory_to_restore_);
   }
 
-  // ui::ContextFactory::
-  void CreateCompositorFrameSink(
-      base::WeakPtr<ui::Compositor> compositor) override {
-    auto frame_sink = base::MakeUnique<FakeCompositorFrameSink>();
-    frame_sink_ = frame_sink.get();
-    compositor->SetCompositorFrameSink(std::move(frame_sink));
-  }
-  scoped_refptr<cc::ContextProvider> SharedMainThreadContextProvider()
-      override {
-    return nullptr;
-  }
-  void RemoveCompositor(ui::Compositor* compositor) override {
-    frame_sink_ = nullptr;
-  }
-  bool DoesCreateTestContexts() override { return true; }
-  uint32_t GetImageTextureTarget(gfx::BufferFormat format,
-                                 gfx::BufferUsage usage) override {
-    return GL_TEXTURE_2D;
-  }
-  gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override {
-    return &gpu_memory_buffer_manager_;
-  }
-  cc::TaskGraphRunner* GetTaskGraphRunner() override {
-    return &task_graph_runner_;
-  }
-  void AddObserver(ui::ContextFactoryObserver* observer) override {}
-  void RemoveObserver(ui::ContextFactoryObserver* observer) override {}
-
  private:
+  ui::FakeContextFactory context_factory_;
   ui::ContextFactory* context_factory_to_restore_ = nullptr;
-  cc::FakeCompositorFrameSink* frame_sink_ = nullptr;
-  cc::TestTaskGraphRunner task_graph_runner_;
-  cc::TestGpuMemoryBufferManager gpu_memory_buffer_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(NonClientFrameControllerTest);
 };

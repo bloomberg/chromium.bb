@@ -249,11 +249,12 @@ void WindowTreeHost::CreateCompositor(const cc::FrameSinkId& frame_sink_id) {
   DCHECK(context_factory);
   ui::ContextFactoryPrivate* context_factory_private =
       Env::GetInstance()->context_factory_private();
-  compositor_.reset(new ui::Compositor(
-      frame_sink_id.is_valid() ? frame_sink_id
-                               : context_factory_private->AllocateFrameSinkId(),
-      context_factory, context_factory_private,
-      base::ThreadTaskRunnerHandle::Get()));
+  compositor_.reset(
+      new ui::Compositor((!context_factory_private || frame_sink_id.is_valid())
+                             ? frame_sink_id
+                             : context_factory_private->AllocateFrameSinkId(),
+                         context_factory, context_factory_private,
+                         base::ThreadTaskRunnerHandle::Get()));
   if (!dispatcher()) {
     window()->Init(ui::LAYER_NOT_DRAWN);
     window()->set_host(this);

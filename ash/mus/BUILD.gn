@@ -209,7 +209,6 @@ source_set("unittests") {
     "//base",
     "//base/test:test_config",
     "//base/test:test_support",
-    "//cc:test_support",
     "//mash/quick_launch/public/interfaces:constants",
     "//mojo/public/cpp/system",
     "//services/service_manager/public/cpp:service_test_support",

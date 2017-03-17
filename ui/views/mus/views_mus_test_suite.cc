@@ -27,6 +27,7 @@
 #include "ui/aura/test/env_test_helper.h"
 #include "ui/aura/test/mus/input_method_mus_test_api.h"
 #include "ui/aura/window.h"
+#include "ui/compositor/test/fake_context_factory.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/views/mus/desktop_window_tree_host_mus.h"
 #include "ui/views/mus/mus_client.h"
@@ -91,6 +92,13 @@ class PlatformTestHelperMus : public PlatformTestHelper {
         ->OnEmbedRootDestroyed(window_tree_host);
   }
 
+  void InitializeContextFactory(
+      ui::ContextFactory** context_factory,
+      ui::ContextFactoryPrivate** context_factory_private) override {
+    *context_factory = &context_factory_;
+    *context_factory_private = nullptr;
+  }
+
  private:
   NativeWidget* CreateNativeWidget(const Widget::InitParams& init_params,
                                    internal::NativeWidgetDelegate* delegate) {
@@ -109,6 +117,7 @@ class PlatformTestHelperMus : public PlatformTestHelper {
   }
 
   std::unique_ptr<MusClient> mus_client_;
+  ui::FakeContextFactory context_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformTestHelperMus);
 };

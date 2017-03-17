@@ -24,6 +24,8 @@
 
 namespace cc {
 
+class BeginFrameSource;
+
 class FakeCompositorFrameSink : public CompositorFrameSink {
  public:
   ~FakeCompositorFrameSink() override;
@@ -61,6 +63,7 @@ class FakeCompositorFrameSink : public CompositorFrameSink {
 
   // CompositorFrameSink implementation.
   void SubmitCompositorFrame(CompositorFrame frame) override;
+  bool BindToClient(CompositorFrameSinkClient* client) override;
   void DetachFromClient() override;
 
   CompositorFrame* last_sent_frame() { return last_sent_frame_.get(); }
@@ -96,6 +99,7 @@ class FakeCompositorFrameSink : public CompositorFrameSink {
  private:
   void DidReceiveCompositorFrameAck();
 
+  std::unique_ptr<BeginFrameSource> begin_frame_source_;
   base::WeakPtrFactory<FakeCompositorFrameSink> weak_ptr_factory_;
 };
 

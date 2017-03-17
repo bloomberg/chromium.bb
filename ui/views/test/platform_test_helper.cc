@@ -7,6 +7,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/views/widget/widget.h"
 
 #if defined(USE_AURA)
@@ -20,6 +21,10 @@ PlatformTestHelper::Factory test_helper_factory;
 bool is_mus = false;
 
 }  // namespace
+
+PlatformTestHelper::~PlatformTestHelper() {
+  ui::TerminateContextFactoryForTests();
+}
 
 void PlatformTestHelper::set_factory(const Factory& factory) {
   DCHECK(test_helper_factory.is_null());
@@ -48,5 +53,13 @@ void PlatformTestHelper::SimulateNativeDestroy(Widget* widget) {
   delete widget->GetNativeView();
 }
 #endif
+
+void PlatformTestHelper::InitializeContextFactory(
+    ui::ContextFactory** context_factory,
+    ui::ContextFactoryPrivate** context_factory_private) {
+  bool enable_pixel_output = false;
+  ui::InitializeContextFactoryForTests(enable_pixel_output, context_factory,
+                                       context_factory_private);
+}
 
 }  // namespace views

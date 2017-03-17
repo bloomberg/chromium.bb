@@ -128,6 +128,7 @@ static_library("test_support") {
     "//testing/gtest",
     "//ui/aura",
     "//ui/aura:test_support",
+    "//ui/compositor:test_support",
     "//ui/gl:test_support",
     "//ui/resources",
     "//ui/resources:ui_test_pak",

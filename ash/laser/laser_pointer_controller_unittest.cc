@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "ash/laser/laser_pointer_controller.h"
+
+#include "ash/common/wm_shell.h"
 #include "ash/laser/laser_pointer_controller_test_api.h"
 #include "ash/laser/laser_pointer_view.h"
 #include "ash/shell.h"
@@ -41,6 +43,9 @@ class LaserPointerControllerTest : public test::AshTestBase {
 // Test to ensure the class responsible for drawing the laser pointer receives
 // points from stylus movements as expected.
 TEST_F(LaserPointerControllerTest, LaserPointerRenderer) {
+  // Crashes in mash mode: crbug.com/702657
+  if (WmShell::Get()->IsRunningInMash())
+    return;
   LaserPointerControllerTestApi controller_test_api_(controller_.get());
 
   // The laser pointer mode only works with stylus.
@@ -115,6 +120,9 @@ TEST_F(LaserPointerControllerTest, LaserPointerRenderer) {
 // Test to ensure the class responsible for drawing the laser pointer handles
 // prediction as expected when it receives points from stylus movements.
 TEST_F(LaserPointerControllerTest, LaserPointerPrediction) {
+  // Crashes in mash mode: crbug.com/702657
+  if (WmShell::Get()->IsRunningInMash())
+    return;
   LaserPointerControllerTestApi controller_test_api_(controller_.get());
 
   controller_test_api_.SetEnabled(true);

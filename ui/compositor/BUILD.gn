@@ -110,6 +110,8 @@ static_library("test_support") {
     "test/context_factories_for_test.h",
     "test/draw_waiter_for_test.cc",
     "test/draw_waiter_for_test.h",
+    "test/fake_context_factory.cc",
+    "test/fake_context_factory.h",
     "test/in_process_context_factory.cc",
     "test/in_process_context_factory.h",
     "test/in_process_context_provider.cc",
