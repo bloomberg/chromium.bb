@@ -30,36 +30,36 @@ void HttpEquiv::process(Document& document,
   DCHECK(!equiv.isNull());
   DCHECK(!content.isNull());
 
-  if (equalIgnoringCase(equiv, "default-style")) {
+  if (equalIgnoringASCIICase(equiv, "default-style")) {
     processHttpEquivDefaultStyle(document, content);
-  } else if (equalIgnoringCase(equiv, "refresh")) {
+  } else if (equalIgnoringASCIICase(equiv, "refresh")) {
     processHttpEquivRefresh(document, content, element);
-  } else if (equalIgnoringCase(equiv, "set-cookie")) {
+  } else if (equalIgnoringASCIICase(equiv, "set-cookie")) {
     processHttpEquivSetCookie(document, content, element);
-  } else if (equalIgnoringCase(equiv, "content-language")) {
+  } else if (equalIgnoringASCIICase(equiv, "content-language")) {
     document.setContentLanguage(content);
-  } else if (equalIgnoringCase(equiv, "x-dns-prefetch-control")) {
+  } else if (equalIgnoringASCIICase(equiv, "x-dns-prefetch-control")) {
     document.parseDNSPrefetchControlHeader(content);
-  } else if (equalIgnoringCase(equiv, "x-frame-options")) {
+  } else if (equalIgnoringASCIICase(equiv, "x-frame-options")) {
     document.addConsoleMessage(ConsoleMessage::create(
         SecurityMessageSource, ErrorMessageLevel,
         "X-Frame-Options may only be set via an HTTP header sent along with a "
         "document. It may not be set inside <meta>."));
-  } else if (equalIgnoringCase(equiv, "accept-ch")) {
+  } else if (equalIgnoringASCIICase(equiv, "accept-ch")) {
     processHttpEquivAcceptCH(document, content);
-  } else if (equalIgnoringCase(equiv, "content-security-policy") ||
-             equalIgnoringCase(equiv, "content-security-policy-report-only")) {
+  } else if (equalIgnoringASCIICase(equiv, "content-security-policy") ||
+             equalIgnoringASCIICase(equiv, "content-security-policy-report-only")) {
     if (inDocumentHeadElement)
       processHttpEquivContentSecurityPolicy(document, equiv, content);
     else
       document.contentSecurityPolicy()->reportMetaOutsideHead(content);
-  } else if (equalIgnoringCase(equiv, "suborigin")) {
+  } else if (equalIgnoringASCIICase(equiv, "suborigin")) {
     document.addConsoleMessage(ConsoleMessage::create(
         SecurityMessageSource, ErrorMessageLevel,
         "Error with Suborigin header: Suborigin header with value '" + content +
             "' was delivered via a <meta> element and not an HTTP header, "
             "which is disallowed. The Suborigin has been ignored."));
-  } else if (equalIgnoringCase(equiv, HTTPNames::Origin_Trial)) {
+  } else if (equalIgnoringASCIICase(equiv, HTTPNames::Origin_Trial)) {
     if (inDocumentHeadElement)
       OriginTrialContext::from(&document)->addToken(content);
   }
@@ -71,11 +71,11 @@ void HttpEquiv::processHttpEquivContentSecurityPolicy(
     const AtomicString& content) {
   if (document.importLoader())
     return;
-  if (equalIgnoringCase(equiv, "content-security-policy")) {
+  if (equalIgnoringASCIICase(equiv, "content-security-policy")) {
     document.contentSecurityPolicy()->didReceiveHeader(
         content, ContentSecurityPolicyHeaderTypeEnforce,
         ContentSecurityPolicyHeaderSourceMeta);
-  } else if (equalIgnoringCase(equiv, "content-security-policy-report-only")) {
+  } else if (equalIgnoringASCIICase(equiv, "content-security-policy-report-only")) {
     document.contentSecurityPolicy()->didReceiveHeader(
         content, ContentSecurityPolicyHeaderTypeReport,
         ContentSecurityPolicyHeaderSourceMeta);
