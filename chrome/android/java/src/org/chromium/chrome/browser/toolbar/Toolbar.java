@@ -8,7 +8,7 @@ import android.graphics.Rect;
 import android.view.View;
 
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
-import org.chromium.chrome.browser.widget.BottomSheet;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 
 /**
  * An interface for outside packages to interact with ToolbarLayout. Other than for testing purposes

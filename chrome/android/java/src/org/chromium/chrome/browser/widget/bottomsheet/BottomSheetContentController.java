@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.widget;
+package org.chromium.chrome.browser.widget.bottomsheet;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -21,7 +21,7 @@ import org.chromium.chrome.browser.history.HistorySheetContent;
 import org.chromium.chrome.browser.suggestions.SuggestionsBottomSheetContent;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.MathUtils;
-import org.chromium.chrome.browser.widget.BottomSheet.BottomSheetContent;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;

@@ -9,7 +9,7 @@ import android.view.View;
 
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.toolbar.BottomToolbarPhone;
-import org.chromium.chrome.browser.widget.BottomSheet.BottomSheetContent;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
 
 /**
  * A {@link BottomSheetContent} holding a {@link HistoryManager} for display in the BottomSheet.

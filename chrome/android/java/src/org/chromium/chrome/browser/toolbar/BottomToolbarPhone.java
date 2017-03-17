@@ -18,8 +18,8 @@ import android.widget.ImageView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.widget.BottomSheet;
-import org.chromium.chrome.browser.widget.BottomSheetObserver;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
 
 /**
  * Phone specific toolbar that exists at the bottom of the screen.

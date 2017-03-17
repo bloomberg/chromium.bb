@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.widget;
+package org.chromium.chrome.browser.widget.bottomsheet;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -32,6 +32,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.MathUtils;
+import org.chromium.chrome.browser.widget.FadingBackgroundView;
 import org.chromium.content_public.browser.LoadUrlParams;
 
 import java.lang.annotation.Retention;
@@ -194,8 +195,7 @@ public class BottomSheet
         }
 
         @Override
-        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX,
-                float distanceY) {
+        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
             // Only start scrolling if the scroll is up or down. If the user is already scrolling,
             // continue moving the sheet.
             float slope = Math.abs(distanceX) > 0f ? Math.abs(distanceY) / Math.abs(distanceX) : 0f;
@@ -243,8 +243,7 @@ public class BottomSheet
         }
 
         @Override
-        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
-                float velocityY) {
+        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
             cancelAnimation();
 
             // Figure out the projected state of the sheet and animate there. Note that a swipe up
@@ -589,8 +588,8 @@ public class BottomSheet
      */
     private void createSettleAnimation(@SheetState int targetState) {
         mCurrentState = targetState;
-        mSettleAnimator = ValueAnimator.ofFloat(getSheetOffsetFromBottom(),
-                getSheetHeightForState(targetState));
+        mSettleAnimator = ValueAnimator.ofFloat(
+                getSheetOffsetFromBottom(), getSheetHeightForState(targetState));
         mSettleAnimator.setDuration(BASE_ANIMATION_DURATION_MS);
         mSettleAnimator.setInterpolator(mInterpolator);
 
