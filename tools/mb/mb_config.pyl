@@ -106,6 +106,7 @@
       'CFI Linux ToT': 'cfi_full_clang_tot_release_static',
       'CFI Linux': 'cfi_release_static',
       'CFI Linux Full': 'cfi_full_release_static',
+      'CFI ThinLTO Linux ToT': 'cfi_thin_lto_clang_tot_full_symbols_release_static_use_lld',
       'Chromium Linux Goma Canary': 'release_bot',
       'Chromium Linux Goma Canary': 'release_bot',
       'Chromium Linux Goma Canary (clobber)': 'release_bot',
@@ -1008,6 +1009,10 @@
 
     'cfi_release_static': [
       'cfi', 'release', 'static',
+    ],
+
+    'cfi_thin_lto_clang_tot_full_symbols_release_static_use_lld': [
+      'cfi', 'thin_lto', 'clang_tot', 'full_symbols', 'release', 'static', 'use_lld',
     ],
 
     'chrome_with_codecs_blink_logging_release_trybot': [
