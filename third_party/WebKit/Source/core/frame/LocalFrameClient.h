@@ -123,9 +123,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
       NavigationPolicy,
       bool shouldReplaceCurrentEntry,
       bool isClientRedirect,
-      HTMLFormElement*,
-      ContentSecurityPolicyDisposition
-          shouldCheckMainWorldContentSecurityPolicy) = 0;
+      HTMLFormElement*) = 0;
 
   virtual void dispatchWillSendSubmitEvent(HTMLFormElement*) = 0;
   virtual void dispatchWillSubmitForm(HTMLFormElement*) = 0;

@@ -15,7 +15,6 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
-#include "content/common/content_security_policy/csp_disposition_enum.h"
 #include "content/common/frame_message_enums.h"
 #include "content/common/resource_request_body_impl.h"
 #include "content/public/common/page_state.h"
@@ -76,8 +75,7 @@ struct CONTENT_EXPORT CommonNavigationParams {
       const base::TimeTicks& navigation_start,
       std::string method,
       const scoped_refptr<ResourceRequestBodyImpl>& post_data,
-      base::Optional<SourceLocation> source_location,
-      CSPDisposition should_check_main_world_csp);
+      base::Optional<SourceLocation> source_location);
   CommonNavigationParams(const CommonNavigationParams& other);
   ~CommonNavigationParams();
 
@@ -142,17 +140,9 @@ struct CONTENT_EXPORT CommonNavigationParams {
   // PlzNavigate
   // Information about the Javascript source for this navigation. Used for
   // providing information in console error messages triggered by the
-  // navigation. If the navigation was not caused by Javascript, this should
-  // not be set.
+  // navigation. If the navigation was not caused by Javascript, this should not
+  // be set.
   base::Optional<SourceLocation> source_location;
-
-  // Whether or not the CSP of the main world should apply. When the navigation
-  // is initiated from a content script in an isolated world, the CSP defined
-  // in the main world should not apply.
-  // TODO(arthursonzogni): Instead of this boolean, the origin of the isolated
-  // world which has initiated the navigation should be passed.
-  // See https://crbug.com/702540
-  CSPDisposition should_check_main_world_csp;
 };
 
 // Provided by the renderer ----------------------------------------------------

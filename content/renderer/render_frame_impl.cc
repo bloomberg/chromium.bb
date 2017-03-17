@@ -684,12 +684,6 @@ CommonNavigationParams MakeCommonNavigationParams(
                                      info.sourceLocation.columnNumber);
   }
 
-  CSPDisposition should_check_main_world_csp =
-      info.shouldCheckMainWorldContentSecurityPolicy ==
-              blink::WebContentSecurityPolicyDispositionCheck
-          ? CSPDisposition::CHECK
-          : CSPDisposition::DO_NOT_CHECK;
-
   const RequestExtraData* extra_data =
       static_cast<RequestExtraData*>(info.urlRequest.getExtraData());
   DCHECK(extra_data);
@@ -699,8 +693,7 @@ CommonNavigationParams MakeCommonNavigationParams(
       report_type, GURL(), GURL(),
       static_cast<PreviewsState>(info.urlRequest.getPreviewsState()),
       base::TimeTicks::Now(), info.urlRequest.httpMethod().latin1(),
-      GetRequestBodyForWebURLRequest(info.urlRequest), source_location,
-      should_check_main_world_csp);
+      GetRequestBodyForWebURLRequest(info.urlRequest), source_location);
 }
 
 media::Context3D GetSharedMainThreadContext3D(
@@ -1585,8 +1578,6 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnTextTrackSettingsChanged)
     IPC_MESSAGE_HANDLER(FrameMsg_PostMessageEvent, OnPostMessageEvent)
     IPC_MESSAGE_HANDLER(FrameMsg_FailedNavigation, OnFailedNavigation)
-    IPC_MESSAGE_HANDLER(FrameMsg_ReportContentSecurityPolicyViolation,
-                        OnReportContentSecurityPolicyViolation)
     IPC_MESSAGE_HANDLER(FrameMsg_GetSavableResourceLinks,
                         OnGetSavableResourceLinks)
     IPC_MESSAGE_HANDLER(FrameMsg_GetSerializedHtmlWithLocalLinks,
@@ -5264,12 +5255,6 @@ void RenderFrameImpl::OnFailedNavigation(
   }
 
   browser_side_navigation_pending_ = false;
-}
-
-void RenderFrameImpl::OnReportContentSecurityPolicyViolation(
-    const content::CSPViolationParams& violation_params) {
-  frame_->reportContentSecurityPolicyViolation(
-      BuildWebContentSecurityPolicyViolation(violation_params));
 }
 
 WebNavigationPolicy RenderFrameImpl::decidePolicyForNavigation(

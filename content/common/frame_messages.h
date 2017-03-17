@@ -19,7 +19,7 @@
 #include "cc/surfaces/surface_sequence.h"
 #include "content/common/content_export.h"
 #include "content/common/content_param_traits.h"
-#include "content/common/content_security_policy/csp_context.h"
+#include "content/common/content_security_policy/content_security_policy.h"
 #include "content/common/content_security_policy_header.h"
 #include "content/common/download/mhtml_save_status.h"
 #include "content/common/features.h"
@@ -113,8 +113,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(content::CSPDirective::Name,
                           content::CSPDirective::NameLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebFeaturePolicyFeature,
                           blink::WebFeaturePolicyFeature::LAST_FEATURE)
-IPC_ENUM_TRAITS_MAX_VALUE(content::CSPDisposition,
-                          content::CSPDisposition::LAST)
 
 IPC_STRUCT_TRAITS_BEGIN(blink::WebFindOptions)
   IPC_STRUCT_TRAITS_MEMBER(forward)
@@ -357,7 +355,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::CommonNavigationParams)
   IPC_STRUCT_TRAITS_MEMBER(method)
   IPC_STRUCT_TRAITS_MEMBER(post_data)
   IPC_STRUCT_TRAITS_MEMBER(source_location)
-  IPC_STRUCT_TRAITS_MEMBER(should_check_main_world_csp)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::BeginNavigationParams)
@@ -580,17 +577,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::ContentSecurityPolicyHeader)
   IPC_STRUCT_TRAITS_MEMBER(header_value)
   IPC_STRUCT_TRAITS_MEMBER(type)
   IPC_STRUCT_TRAITS_MEMBER(source)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(content::CSPViolationParams)
-  IPC_STRUCT_TRAITS_MEMBER(directive)
-  IPC_STRUCT_TRAITS_MEMBER(effective_directive)
-  IPC_STRUCT_TRAITS_MEMBER(console_message)
-  IPC_STRUCT_TRAITS_MEMBER(blocked_url)
-  IPC_STRUCT_TRAITS_MEMBER(report_endpoints)
-  IPC_STRUCT_TRAITS_MEMBER(header)
-  IPC_STRUCT_TRAITS_MEMBER(disposition)
-  IPC_STRUCT_TRAITS_MEMBER(after_redirect)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::FileChooserFileInfo)
@@ -912,12 +898,6 @@ IPC_MESSAGE_ROUTED4(FrameMsg_FailedNavigation,
                     content::RequestNavigationParams, /* request_params */
                     bool,                             /* stale_copy_in_cache */
                     int                               /* error_code */)
-
-// PlzNavigate
-// Tells the renderer that a navigation was blocked because a content security
-// policy was violated.
-IPC_MESSAGE_ROUTED1(FrameMsg_ReportContentSecurityPolicyViolation,
-                    content::CSPViolationParams /* violation_params */)
 
 // Request to enumerate and return links to all savable resources in the frame
 // Note: this covers only the immediate frame / doesn't cover subframes.

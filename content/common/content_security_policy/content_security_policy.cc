@@ -41,8 +41,7 @@ void ReportViolation(CSPContext* context,
                      const ContentSecurityPolicy& policy,
                      const CSPDirective& directive,
                      const CSPDirective::Name directive_name,
-                     const GURL& url,
-                     bool is_redirect) {
+                     const GURL& url) {
   // We should never have a violation against `child-src` or `default-src`
   // directly; the effective directive should always be one of the explicit
   // fetch directives.
@@ -73,11 +72,10 @@ void ReportViolation(CSPContext* context,
   message << "\n";
 
   context->LogToConsole(message.str());
-
-  context->ReportContentSecurityPolicyViolation(CSPViolationParams(
-      CSPDirective::NameToString(directive.name),
-      CSPDirective::NameToString(directive_name), message.str(), url,
-      policy.report_endpoints, policy.header, policy.disposition, is_redirect));
+  context->ReportViolation(CSPDirective::NameToString(directive.name),
+                           CSPDirective::NameToString(directive_name),
+                           message.str(), url, policy.report_endpoints,
+                           policy.header, policy.disposition);
 }
 
 bool AllowDirective(CSPContext* context,
@@ -89,7 +87,7 @@ bool AllowDirective(CSPContext* context,
   if (CSPSourceList::Allow(directive.source_list, url, context, is_redirect))
     return true;
 
-  ReportViolation(context, policy, directive, directive_name, url, is_redirect);
+  ReportViolation(context, policy, directive, directive_name, url);
   return false;
 }
 

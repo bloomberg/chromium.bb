@@ -291,14 +291,17 @@ void FrameTreeNode::ResetFeaturePolicyHeader() {
 }
 
 void FrameTreeNode::AddContentSecurityPolicy(
-    const ContentSecurityPolicyHeader& header) {
+    const ContentSecurityPolicyHeader& header,
+    const std::vector<ContentSecurityPolicy>& policies) {
   replication_state_.accumulated_csp_headers.push_back(header);
   render_manager_.OnDidAddContentSecurityPolicy(header);
+  csp_policies_.insert(csp_policies_.end(), policies.begin(), policies.end());
 }
 
-void FrameTreeNode::ResetCspHeaders() {
+void FrameTreeNode::ResetContentSecurityPolicy() {
   replication_state_.accumulated_csp_headers.clear();
   render_manager_.OnDidResetContentSecurityPolicy();
+  csp_policies_.clear();
 }
 
 void FrameTreeNode::SetInsecureRequestPolicy(

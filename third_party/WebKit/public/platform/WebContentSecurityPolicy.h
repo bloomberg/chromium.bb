@@ -48,13 +48,6 @@ enum WebContentSecurityPolicySource {
   WebContentSecurityPolicySourceLast = WebContentSecurityPolicySourceMeta
 };
 
-enum WebContentSecurityPolicyDisposition {
-  WebContentSecurityPolicyDispositionDoNotCheck,
-  WebContentSecurityPolicyDispositionCheck,
-  WebContentSecurityPolicyDispositionLast =
-      WebContentSecurityPolicyDispositionCheck
-};
-
 }  // namespace blink
 
 #endif

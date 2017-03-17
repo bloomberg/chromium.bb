@@ -105,15 +105,13 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   void dispatchDidFinishLoad() override;
 
   void dispatchDidChangeThemeColor() override;
-  NavigationPolicy decidePolicyForNavigation(
-      const ResourceRequest&,
-      DocumentLoader*,
-      NavigationType,
-      NavigationPolicy,
-      bool shouldReplaceCurrentEntry,
-      bool isClientRedirect,
-      HTMLFormElement*,
-      ContentSecurityPolicyDisposition shouldBypassMainWorldCSP) override;
+  NavigationPolicy decidePolicyForNavigation(const ResourceRequest&,
+                                             DocumentLoader*,
+                                             NavigationType,
+                                             NavigationPolicy,
+                                             bool shouldReplaceCurrentEntry,
+                                             bool isClientRedirect,
+                                             HTMLFormElement*) override;
   void dispatchWillSendSubmitEvent(HTMLFormElement*) override;
   void dispatchWillSubmitForm(HTMLFormElement*) override;
   void didStartLoading(LoadStartType) override;

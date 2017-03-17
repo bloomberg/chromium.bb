@@ -868,30 +868,6 @@ void RenderFrameHostImpl::RenderProcessGone(SiteInstanceImpl* site_instance) {
   set_nav_entry_id(0);
 }
 
-void RenderFrameHostImpl::LogToConsole(const std::string& message) {
-  AddMessageToConsole(CONSOLE_MESSAGE_LEVEL_ERROR, message);
-}
-
-void RenderFrameHostImpl::ReportContentSecurityPolicyViolation(
-    const CSPViolationParams& violation_params) {
-  Send(new FrameMsg_ReportContentSecurityPolicyViolation(routing_id_,
-                                                         violation_params));
-}
-
-bool RenderFrameHostImpl::SchemeShouldBypassCSP(
-    const base::StringPiece& scheme) {
-  // Blink uses its SchemeRegistry to check if a scheme should be bypassed.
-  // It can't be used on the browser process. It is used for two things:
-  // 1) Bypassing the "chrome-extension" scheme when chrome is built with the
-  //    extensions support.
-  // 2) Bypassing arbitrary scheme for testing purpose only in blink and in V8.
-  // TODO(arthursonzogni): url::GetBypassingCSPScheme() is used instead of the
-  // blink::SchemeRegistry. It contains 1) but not 2).
-  const auto& bypassing_schemes = url::GetCSPBypassingSchemes();
-  return std::find(bypassing_schemes.begin(), bypassing_schemes.end(),
-                   scheme) != bypassing_schemes.end();
-}
-
 bool RenderFrameHostImpl::CreateRenderFrame(int proxy_routing_id,
                                             int opener_routing_id,
                                             int parent_routing_id,
@@ -1088,11 +1064,6 @@ void RenderFrameHostImpl::OnCreateNewWindow(
 
   // Our caller (RenderWidgetHelper::OnCreateNewWindowOnUI) will send
   // ViewMsg_Close if the above step did not adopt |main_frame_route_id|.
-}
-
-void RenderFrameHostImpl::SetLastCommittedOrigin(const url::Origin& origin) {
-  last_committed_origin_ = origin;
-  CSPContext::SetSelf(origin);
 }
 
 void RenderFrameHostImpl::OnDetach() {
@@ -1860,9 +1831,7 @@ void RenderFrameHostImpl::OnDidSetFeaturePolicyHeader(
 void RenderFrameHostImpl::OnDidAddContentSecurityPolicy(
     const ContentSecurityPolicyHeader& header,
     const std::vector<ContentSecurityPolicy>& policies) {
-  frame_tree_node()->AddContentSecurityPolicy(header);
-  for (const ContentSecurityPolicy& policy : policies)
-    AddContentSecurityPolicy(policy);
+  frame_tree_node()->AddContentSecurityPolicy(header, policies);
 }
 
 void RenderFrameHostImpl::OnEnforceInsecureRequestPolicy(
@@ -2550,8 +2519,7 @@ void RenderFrameHostImpl::NavigateToInterstitialURL(const GURL& data_url) {
       FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT, false, false,
       base::TimeTicks::Now(), FrameMsg_UILoadMetricsReportType::NO_REPORT,
       GURL(), GURL(), PREVIEWS_OFF, base::TimeTicks::Now(), "GET", nullptr,
-      base::Optional<SourceLocation>(),
-      CSPDisposition::CHECK /* should_check_main_world_csp */);
+      base::Optional<SourceLocation>());
   if (IsBrowserSideNavigationEnabled()) {
     CommitNavigation(nullptr, nullptr, common_params, RequestNavigationParams(),
                      false);
@@ -3466,9 +3434,7 @@ RenderFrameHostImpl::TakeNavigationHandleForCommit(
     return NavigationHandleImpl::Create(
         params.url, params.redirects, frame_tree_node_, is_renderer_initiated,
         params.was_within_same_page, base::TimeTicks::Now(),
-        pending_nav_entry_id,
-        false,                   // started_from_context_menu
-        CSPDisposition::CHECK);  // should_check_main_world_csp
+        pending_nav_entry_id, false);  // started_from_context_menu
   }
 
   // Determine if the current NavigationHandle can be used.
@@ -3520,9 +3486,7 @@ RenderFrameHostImpl::TakeNavigationHandleForCommit(
   return NavigationHandleImpl::Create(
       params.url, params.redirects, frame_tree_node_, is_renderer_initiated,
       params.was_within_same_page, base::TimeTicks::Now(),
-      entry_id_for_data_nav,
-      false,                   // started_from_context_menu
-      CSPDisposition::CHECK);  // should_check_main_world_csp
+      entry_id_for_data_nav, false);  // started_from_context_menu
 }
 
 void RenderFrameHostImpl::BeforeUnloadTimeout() {

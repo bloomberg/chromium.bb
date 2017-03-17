@@ -518,8 +518,7 @@ void RenderViewTest::Reload(const GURL& url) {
       true, false, base::TimeTicks(),
       FrameMsg_UILoadMetricsReportType::NO_REPORT, GURL(), GURL(),
       PREVIEWS_UNSPECIFIED, base::TimeTicks::Now(), "GET", nullptr,
-      base::Optional<SourceLocation>(),
-      CSPDisposition::CHECK /* should_check_main_world_csp */);
+      base::Optional<SourceLocation>());
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
   TestRenderFrame* frame =
       static_cast<TestRenderFrame*>(impl->GetMainRenderFrame());
@@ -657,8 +656,7 @@ void RenderViewTest::GoToOffset(int offset,
       FrameMsg_Navigate_Type::HISTORY_DIFFERENT_DOCUMENT, true, false,
       base::TimeTicks(), FrameMsg_UILoadMetricsReportType::NO_REPORT, GURL(),
       GURL(), PREVIEWS_UNSPECIFIED, base::TimeTicks::Now(), "GET", nullptr,
-      base::Optional<SourceLocation>(),
-      CSPDisposition::CHECK /* should_check_main_world_csp */);
+      base::Optional<SourceLocation>());
   RequestNavigationParams request_params;
   request_params.page_state = state;
   request_params.nav_entry_id = pending_offset + 1;

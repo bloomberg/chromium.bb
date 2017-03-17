@@ -45,18 +45,15 @@ ContentSecurityPolicy BuildPolicy(CSPDirective::Name directive_name,
 }  // namespace;
 
 TEST(CSPContextTest, SchemeShouldBypassCSP) {
-  CSPSource source("", "example.com", false, url::PORT_UNSPECIFIED, false, "");
   CSPContextTest context;
-  context.AddContentSecurityPolicy(
-      BuildPolicy(CSPDirective::DefaultSrc, {source}));
-
-  EXPECT_FALSE(context.IsAllowedByCsp(CSPDirective::FrameSrc,
-                                      GURL("data:text/html,<html></html>")));
-
+  CSPSource source("", "example.com", false, url::PORT_UNSPECIFIED, false, "");
+  ContentSecurityPolicy policy =
+      BuildPolicy(CSPDirective::DefaultSrc, {source});
+  EXPECT_FALSE(context.Allow({policy}, CSPDirective::FrameSrc,
+                             GURL("data:text/html,<html></html>")));
   context.AddSchemeToBypassCSP("data");
-
-  EXPECT_TRUE(context.IsAllowedByCsp(CSPDirective::FrameSrc,
-                                     GURL("data:text/html,<html></html>")));
+  EXPECT_TRUE(context.Allow({policy}, CSPDirective::FrameSrc,
+                            GURL("data:text/html,<html></html>")));
 }
 
 TEST(CSPContextTest, MultiplePolicies) {
@@ -67,19 +64,21 @@ TEST(CSPContextTest, MultiplePolicies) {
   CSPSource source_b("", "b.com", false, url::PORT_UNSPECIFIED, false, "");
   CSPSource source_c("", "c.com", false, url::PORT_UNSPECIFIED, false, "");
 
-  context.AddContentSecurityPolicy(
-      BuildPolicy(CSPDirective::FrameSrc, {source_a, source_b}));
-  context.AddContentSecurityPolicy(
-      BuildPolicy(CSPDirective::FrameSrc, {source_a, source_c}));
+  ContentSecurityPolicy policy1 =
+      BuildPolicy(CSPDirective::FrameSrc, {source_a, source_b});
+  ContentSecurityPolicy policy2 =
+      BuildPolicy(CSPDirective::FrameSrc, {source_a, source_c});
+
+  std::vector<ContentSecurityPolicy> policies = {policy1, policy2};
 
   EXPECT_TRUE(
-      context.IsAllowedByCsp(CSPDirective::FrameSrc, GURL("http://a.com")));
+      context.Allow(policies, CSPDirective::FrameSrc, GURL("http://a.com")));
   EXPECT_FALSE(
-      context.IsAllowedByCsp(CSPDirective::FrameSrc, GURL("http://b.com")));
+      context.Allow(policies, CSPDirective::FrameSrc, GURL("http://b.com")));
   EXPECT_FALSE(
-      context.IsAllowedByCsp(CSPDirective::FrameSrc, GURL("http://c.com")));
+      context.Allow(policies, CSPDirective::FrameSrc, GURL("http://c.com")));
   EXPECT_FALSE(
-      context.IsAllowedByCsp(CSPDirective::FrameSrc, GURL("http://d.com")));
+      context.Allow(policies, CSPDirective::FrameSrc, GURL("http://d.com")));
 }
 
 }  // namespace content

@@ -1660,20 +1660,11 @@ NavigationPolicy FrameLoader::shouldContinueForNavigationPolicy(
   if (request.url().isEmpty() || substituteData.isValid())
     return NavigationPolicyCurrentTab;
 
-  Settings* settings = m_frame->settings();
-  bool browserSideNavigationEnabled =
-      settings && settings->getBrowserSideNavigationEnabled();
-
   // If we're loading content into |m_frame| (NavigationPolicyCurrentTab), check
   // against the parent's Content Security Policy and kill the load if that
   // check fails, unless we should bypass the main world's CSP.
   if (policy == NavigationPolicyCurrentTab &&
-      shouldCheckMainWorldContentSecurityPolicy == CheckContentSecurityPolicy &&
-      // TODO(arthursonzogni): 'frame-src' check is disabled on the
-      // renderer side with browser-side-navigation, but is enforced on the
-      // browser side. See http://crbug.com/692595 for understanding why it
-      // can't be enforced on both sides instead.
-      !browserSideNavigationEnabled) {
+      shouldCheckMainWorldContentSecurityPolicy == CheckContentSecurityPolicy) {
     Frame* parentFrame = m_frame->tree().parent();
     if (parentFrame) {
       ContentSecurityPolicy* parentPolicy =
@@ -1700,9 +1691,9 @@ NavigationPolicy FrameLoader::shouldContinueForNavigationPolicy(
 
   bool replacesCurrentHistoryItem =
       frameLoadType == FrameLoadTypeReplaceCurrentItem;
-  policy = client()->decidePolicyForNavigation(
-      request, loader, type, policy, replacesCurrentHistoryItem,
-      isClientRedirect, form, shouldCheckMainWorldContentSecurityPolicy);
+  policy = client()->decidePolicyForNavigation(request, loader, type, policy,
+                                               replacesCurrentHistoryItem,
+                                               isClientRedirect, form);
   if (policy == NavigationPolicyCurrentTab ||
       policy == NavigationPolicyIgnore ||
       policy == NavigationPolicyHandledByClient ||

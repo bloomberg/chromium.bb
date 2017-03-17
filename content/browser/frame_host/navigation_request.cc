@@ -397,14 +397,12 @@ void NavigationRequest::CreateNavigationHandle(int pending_nav_entry_id) {
   redirect_chain.push_back(common_params_.url);
 
   std::unique_ptr<NavigationHandleImpl> navigation_handle =
-      NavigationHandleImpl::Create(common_params_.url, redirect_chain,
-                                   frame_tree_node_, !browser_initiated_,
-                                   FrameMsg_Navigate_Type::IsSameDocument(
-                                       common_params_.navigation_type),
-                                   common_params_.navigation_start,
-                                   pending_nav_entry_id,
-                                   false,  // started_in_context_menu
-                                   common_params_.should_check_main_world_csp);
+      NavigationHandleImpl::Create(
+          common_params_.url, redirect_chain, frame_tree_node_,
+          !browser_initiated_, FrameMsg_Navigate_Type::IsSameDocument(
+                                   common_params_.navigation_type),
+          common_params_.navigation_start, pending_nav_entry_id,
+          false);  // started_in_context_menu
 
   if (!frame_tree_node->navigation_request()) {
     // A callback could have cancelled this request synchronously in which case
