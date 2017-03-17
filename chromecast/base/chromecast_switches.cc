@@ -85,6 +85,7 @@ const char kMemPressureSystemReservedKb[] = "mem-pressure-system-reserved-kb";
 // screen size correctly (so no need to resize when first window is created).
 const char kCastInitialScreenWidth[] = "cast-initial-screen-width";
 const char kCastInitialScreenHeight[] = "cast-initial-screen-height";
+const char kUseDoubleBuffering[] = "use-double-buffering";
 
 // When present, desktop cast_shell will create 1080p window (provided display
 // resolution is high enough).  Otherwise, cast_shell defaults to 720p.

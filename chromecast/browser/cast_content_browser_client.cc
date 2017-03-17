@@ -126,6 +126,15 @@ void CastContentBrowserClient::AppendExtraCommandLineSwitches(
       command_line->AppendSwitchASCII(switches::kCastInitialScreenHeight,
                                       base::IntToString(res.height()));
     }
+    base::CommandLine* browser_command_line =
+        base::CommandLine::ForCurrentProcess();
+    for (auto* const switch_name : {switches::kUseDoubleBuffering}) {
+      if (browser_command_line->HasSwitch(switch_name)) {
+        command_line->AppendSwitchASCII(
+            switch_name,
+            browser_command_line->GetSwitchValueASCII(switch_name));
+      }
+    }
   }
 #endif  // defined(USE_AURA)
 }

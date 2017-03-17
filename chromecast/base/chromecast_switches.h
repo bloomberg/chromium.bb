@@ -53,6 +53,7 @@ extern const char kMemPressureSystemReservedKb[];
 // GPU process switches
 extern const char kCastInitialScreenWidth[];
 extern const char kCastInitialScreenHeight[];
+extern const char kUseDoubleBuffering[];
 
 // Graphics switches
 extern const char kDesktopWindow1080p[];
