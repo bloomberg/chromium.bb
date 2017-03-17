@@ -21,7 +21,8 @@ import java.lang.annotation.RetentionPolicy;
  */
 public class NotificationUmaTracker {
     @Retention(RetentionPolicy.SOURCE)
-    @IntDef({DOWNLOAD_FILES, DOWNLOAD_PAGES, CLOSE_INCOGNITO, SYSTEM_NOTIFICATION_TYPE_BOUNDARY})
+    @IntDef({DOWNLOAD_FILES, DOWNLOAD_PAGES, CLOSE_INCOGNITO, CONTENT_SUGGESTION,
+            SYSTEM_NOTIFICATION_TYPE_BOUNDARY})
     public @interface SystemNotificationType {}
 
     /*
@@ -34,8 +35,9 @@ public class NotificationUmaTracker {
     public static final int DOWNLOAD_FILES = 0;
     public static final int DOWNLOAD_PAGES = 1;
     public static final int CLOSE_INCOGNITO = 2;
+    public static final int CONTENT_SUGGESTION = 3;
 
-    private static final int SYSTEM_NOTIFICATION_TYPE_BOUNDARY = 3;
+    private static final int SYSTEM_NOTIFICATION_TYPE_BOUNDARY = 4;
 
     private static final String LAST_SHOWN_NOTIFICATION_TYPE_KEY =
             "NotificationUmaTracker.LastShownNotificationType";

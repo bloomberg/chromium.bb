@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.notifications.ChromeNotificationBuilder;
 import org.chromium.chrome.browser.notifications.NotificationConstants;
+import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsNotificationAction;
 
 import java.util.Collection;
@@ -169,6 +170,8 @@ public class ContentSuggestionsNotificationHelper {
             builder.setDefaults(Notification.DEFAULT_ALL);
         }
         manager.notify(NOTIFICATION_TAG, nextId, builder.build());
+        NotificationUmaTracker.getInstance().onNotificationShown(
+                NotificationUmaTracker.CONTENT_SUGGESTION);
         addActiveNotification(new ActiveNotification(nextId, category, idWithinCategory, uri));
 
         // Set timeout.
