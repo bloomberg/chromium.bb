@@ -1251,7 +1251,13 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestDevToolsExternalNavigation) {
 }
 
 // Tests that toolbox window is loaded when DevTools window is undocked.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestToolboxLoadedUndocked) {
+// Crashes on Linux only.  https://crbug.com/702641
+#if defined(OS_LINUX)
+#define MAYBE_TestToolboxLoadedUndocked DISABLED_TestToolboxLoadedUndocked
+#else
+#define MAYBE_TestToolboxLoadedUndocked TestToolboxLoadedUndocked
+#endif
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestToolboxLoadedUndocked) {
   OpenDevToolsWindow(kDebuggerTestPage, false);
   ASSERT_TRUE(toolbox_web_contents());
   DevToolsWindow* on_self =
