@@ -14,21 +14,21 @@ from name_utilities import camel_case, lower_first, upper_first_letter, enum_for
 
 
 # Temporary hard-coded list of fields that are not CSS properties.
-# Ideally these would be specified in a .in or .json5 file.
-NONPROPERTY_FIELDS = set([
-    'isLink',
+# Ideally these would be specified in a .json5 file.
+NONPROPERTY_FIELDS = [
+    {'name': 'isLink', 'field_template': 'monotonic_flag'},
     # Style can not be shared.
-    'unique',
+    {'name': 'unique', 'field_template': 'monotonic_flag'},
     # Whether this style is affected by these pseudo-classes.
-    'affectedByFocus',
-    'affectedByHover',
-    'affectedByActive',
-    'affectedByDrag',
+    {'name': 'affectedByFocus', 'field_template': 'monotonic_flag'},
+    {'name': 'affectedByHover', 'field_template': 'monotonic_flag'},
+    {'name': 'affectedByActive', 'field_template': 'monotonic_flag'},
+    {'name': 'affectedByDrag', 'field_template': 'monotonic_flag'},
     # A non-inherited property references a variable or @apply is used
-    'hasVariableReferenceFromNonInheritedProperty',
+    {'name': 'hasVariableReferenceFromNonInheritedProperty', 'field_template': 'monotonic_flag'},
     # Explicitly inherits a non-inherited property
-    'hasExplicitlyInheritedProperties',
-])
+    {'name': 'hasExplicitlyInheritedProperties', 'field_template': 'monotonic_flag'}
+]
 
 
 class Field(object):
@@ -201,22 +201,25 @@ def _create_inherited_flag_field(property_):
     )
 
 
-def _create_nonproperty_field(field_name):
+def _create_nonproperty_field(property_):
     """
-    Create a nonproperty field from its name and return the Field object.
+    Create a nonproperty field from an entry in NONPROPERTY_FIELDS and return the Field object.
     """
-    member_name = 'm_' + field_name
-    field_name_upper = upper_first_letter(field_name)
+    # TODO(shend): Make this work for nonflags
+    assert property_['field_template'] in ('flag', 'monotonic_flag'), \
+        "Nonproperties with arbitrary templates are not yet supported"
+    member_name = 'm_' + property_['name']
+    field_name_upper = upper_first_letter(property_['name'])
 
     return Field(
         'nonproperty',
         name=member_name,
-        property_name=field_name,
+        property_name=property_['name'],
         type_name='bool',
-        field_template='monotonic_flag',
+        field_template=property_['field_template'],
         size=1,
         default_value='false',
-        getter_method_name=field_name,
+        getter_method_name=property_['name'],
         setter_method_name='set' + field_name_upper,
         initial_method_name='initial' + field_name_upper,
         resetter_method_name='reset' + field_name_upper,
@@ -238,8 +241,10 @@ def _create_fields(properties):
 
             fields.append(_create_property_field(property_))
 
-    for field_name in NONPROPERTY_FIELDS:
-        fields.append(_create_nonproperty_field(field_name))
+    # TODO(shend): Merge NONPROPERTY_FIELDS with property_values so that properties and
+    # nonproperties can be treated uniformly.
+    for property_ in NONPROPERTY_FIELDS:
+        fields.append(_create_nonproperty_field(property_))
 
     return fields
 
