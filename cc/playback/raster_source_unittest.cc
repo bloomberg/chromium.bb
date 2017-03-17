@@ -21,6 +21,10 @@
 namespace cc {
 namespace {
 
+gfx::ColorSpace ColorSpaceForTesting() {
+  return gfx::ColorSpace();
+}
+
 TEST(RasterSourceTest, AnalyzeIsSolidUnscaled) {
   gfx::Size layer_bounds(400, 400);
 
@@ -286,8 +290,8 @@ TEST(RasterSourceTest, RasterFullContents) {
       SkCanvas canvas(bitmap);
       canvas.clear(SK_ColorTRANSPARENT);
 
-      raster->PlaybackToCanvas(&canvas, canvas_rect, canvas_rect,
-                               contents_scale,
+      raster->PlaybackToCanvas(&canvas, ColorSpaceForTesting(), canvas_rect,
+                               canvas_rect, contents_scale,
                                RasterSource::PlaybackSettings());
 
       SkColor* pixels = reinterpret_cast<SkColor*>(bitmap.getPixels());
@@ -338,8 +342,9 @@ TEST(RasterSourceTest, RasterPartialContents) {
   // Playback the full rect which should make everything white.
   gfx::Rect raster_full_rect(content_bounds);
   gfx::Rect playback_rect(content_bounds);
-  raster->PlaybackToCanvas(&canvas, raster_full_rect, playback_rect,
-                           contents_scale, RasterSource::PlaybackSettings());
+  raster->PlaybackToCanvas(&canvas, ColorSpaceForTesting(), raster_full_rect,
+                           playback_rect, contents_scale,
+                           RasterSource::PlaybackSettings());
 
   {
     SkColor* pixels = reinterpret_cast<SkColor*>(bitmap.getPixels());
@@ -369,8 +374,9 @@ TEST(RasterSourceTest, RasterPartialContents) {
   // We're going to playback from "everything is black" into a smaller area,
   // that touches the edge pixels of the recording.
   playback_rect.Inset(1, 2, 0, 1);
-  raster->PlaybackToCanvas(&canvas, raster_full_rect, playback_rect,
-                           contents_scale, RasterSource::PlaybackSettings());
+  raster->PlaybackToCanvas(&canvas, ColorSpaceForTesting(), raster_full_rect,
+                           playback_rect, contents_scale,
+                           RasterSource::PlaybackSettings());
 
   SkColor* pixels = reinterpret_cast<SkColor*>(bitmap.getPixels());
   int num_black = 0;
@@ -433,8 +439,9 @@ TEST(RasterSourceTest, RasterPartialClear) {
   // Playback the full rect which should make everything light gray (alpha=10).
   gfx::Rect raster_full_rect(content_bounds);
   gfx::Rect playback_rect(content_bounds);
-  raster->PlaybackToCanvas(&canvas, raster_full_rect, playback_rect,
-                           contents_scale, RasterSource::PlaybackSettings());
+  raster->PlaybackToCanvas(&canvas, ColorSpaceForTesting(), raster_full_rect,
+                           playback_rect, contents_scale,
+                           RasterSource::PlaybackSettings());
 
   {
     SkColor* pixels = reinterpret_cast<SkColor*>(bitmap.getPixels());
@@ -472,8 +479,9 @@ TEST(RasterSourceTest, RasterPartialClear) {
   // darker white background rectangle.
   playback_rect =
       gfx::Rect(gfx::ScaleToCeiledSize(partial_bounds, contents_scale));
-  raster->PlaybackToCanvas(&canvas, raster_full_rect, playback_rect,
-                           contents_scale, RasterSource::PlaybackSettings());
+  raster->PlaybackToCanvas(&canvas, ColorSpaceForTesting(), raster_full_rect,
+                           playback_rect, contents_scale,
+                           RasterSource::PlaybackSettings());
 
   // Test that the whole playback_rect was cleared and repainted with new alpha.
   SkColor* pixels = reinterpret_cast<SkColor*>(bitmap.getPixels());
@@ -512,7 +520,8 @@ TEST(RasterSourceTest, RasterContentsTransparent) {
   bitmap.allocN32Pixels(canvas_rect.width(), canvas_rect.height());
   SkCanvas canvas(bitmap);
 
-  raster->PlaybackToCanvas(&canvas, canvas_rect, canvas_rect, contents_scale,
+  raster->PlaybackToCanvas(&canvas, ColorSpaceForTesting(), canvas_rect,
+                           canvas_rect, contents_scale,
                            RasterSource::PlaybackSettings());
 
   SkColor* pixels = reinterpret_cast<SkColor*>(bitmap.getPixels());
@@ -585,8 +594,9 @@ TEST(RasterSourceTest, ImageHijackCanvasRespectsSharedCanvasTransform) {
   RasterSource::PlaybackSettings settings;
   settings.playback_to_shared_canvas = true;
   settings.use_image_hijack_canvas = true;
-  raster_source->PlaybackToCanvas(&canvas, gfx::Rect(size), gfx::Rect(size),
-                                  1.f, settings);
+  raster_source->PlaybackToCanvas(&canvas, ColorSpaceForTesting(),
+                                  gfx::Rect(size), gfx::Rect(size), 1.f,
+                                  settings);
 
   EXPECT_EQ(SK_ColorGREEN, bitmap.getColor(0, 0));
   EXPECT_EQ(SK_ColorGREEN, bitmap.getColor(49, 0));

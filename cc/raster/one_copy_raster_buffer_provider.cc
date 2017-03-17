@@ -234,10 +234,10 @@ void OneCopyRasterBufferProvider::PlaybackAndCopyOnWorkerThread(
   std::unique_ptr<StagingBuffer> staging_buffer =
       staging_pool_.AcquireStagingBuffer(resource, previous_content_id);
 
-  PlaybackToStagingBuffer(staging_buffer.get(), resource, raster_source,
-                          raster_full_rect, raster_dirty_rect, scale,
-                          resource_lock->sk_color_space(), playback_settings,
-                          previous_content_id, new_content_id);
+  PlaybackToStagingBuffer(
+      staging_buffer.get(), resource, raster_source, raster_full_rect,
+      raster_dirty_rect, scale, resource_lock->color_space_for_raster(),
+      playback_settings, previous_content_id, new_content_id);
 
   CopyOnWorkerThread(staging_buffer.get(), resource_lock, sync_token,
                      raster_source, previous_content_id, new_content_id);
@@ -252,7 +252,7 @@ void OneCopyRasterBufferProvider::PlaybackToStagingBuffer(
     const gfx::Rect& raster_full_rect,
     const gfx::Rect& raster_dirty_rect,
     float scale,
-    sk_sp<SkColorSpace> dst_color_space,
+    const gfx::ColorSpace& dst_color_space,
     const RasterSource::PlaybackSettings& playback_settings,
     uint64_t previous_content_id,
     uint64_t new_content_id) {

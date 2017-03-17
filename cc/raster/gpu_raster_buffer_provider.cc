@@ -77,8 +77,9 @@ static void RasterizeSource(
         100.0f * fraction_saved);
   }
 
-  raster_source->PlaybackToCanvas(sk_surface->getCanvas(), raster_full_rect,
-                                  playback_rect, scale, playback_settings);
+  raster_source->PlaybackToCanvas(
+      sk_surface->getCanvas(), resource_lock->color_space_for_raster(),
+      raster_full_rect, playback_rect, scale, playback_settings);
 }
 
 }  // namespace

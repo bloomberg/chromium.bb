@@ -424,31 +424,6 @@ sk_sp<SkColorSpace> ColorSpace::ToSkColorSpace() const {
   return SkColorSpace::MakeRGB(fn, to_xyz_d50);
 }
 
-sk_sp<SkColorSpace> ColorSpace::ToNonlinearBlendedSkColorSpace() const {
-  if (!IsValid()) {
-    DLOG(ERROR) << "Cannot create SkColorSpace for invalid space.";
-    return nullptr;
-  }
-  if (matrix_ != MatrixID::RGB) {
-    DLOG(ERROR) << "Not creating non-RGB SkColorSpace";
-    return nullptr;
-  }
-  if (range_ != RangeID::FULL) {
-    DLOG(ERROR) << "Not creating non-full-range SkColorSpace";
-    return nullptr;
-  }
-
-  SkMatrix44 primaries;
-  GetPrimaryMatrix(&primaries);
-  SkColorSpaceTransferFn tr_fn;
-  if (!GetTransferFunction(&tr_fn)) {
-    DLOG(ERROR) << "Not creating non-parametric nonlinear-blended SkColorSpace";
-    return nullptr;
-  }
-  return SkColorSpace::MakeRGB(tr_fn, primaries,
-                               SkColorSpace::kNonLinearBlending_ColorSpaceFlag);
-}
-
 bool ColorSpace::GetICCProfile(ICCProfile* icc_profile) const {
   if (!IsValid()) {
     DLOG(ERROR) << "Cannot fetch ICCProfile for invalid space.";

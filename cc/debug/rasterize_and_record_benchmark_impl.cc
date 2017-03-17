@@ -52,8 +52,8 @@ void RunBenchmark(RasterSource* raster_source,
       bitmap.allocPixels(SkImageInfo::MakeN32Premul(content_rect.width(),
                                                     content_rect.height()));
       SkCanvas canvas(bitmap);
-      raster_source->PlaybackToCanvas(&canvas, content_rect, content_rect,
-                                      contents_scale,
+      raster_source->PlaybackToCanvas(&canvas, gfx::ColorSpace(), content_rect,
+                                      content_rect, contents_scale,
                                       RasterSource::PlaybackSettings());
 
       timer.NextLap();

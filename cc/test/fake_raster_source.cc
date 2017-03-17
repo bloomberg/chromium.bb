@@ -141,10 +141,11 @@ FakeRasterSource::~FakeRasterSource() {}
 
 void FakeRasterSource::PlaybackToCanvas(
     SkCanvas* canvas,
+    const gfx::ColorSpace& canvas_color_space,
     const PlaybackSettings& settings) const {
   if (playback_allowed_event_)
     playback_allowed_event_->Wait();
-  RasterSource::PlaybackToCanvas(canvas, settings);
+  RasterSource::PlaybackToCanvas(canvas, canvas_color_space, settings);
 }
 
 }  // namespace cc

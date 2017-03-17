@@ -52,7 +52,7 @@ class RasterBufferImpl : public RasterBuffer {
     RasterBufferProvider::PlaybackToMemory(
         buffer->memory(0), resource_->format(), resource_->size(),
         buffer->stride(0), raster_source, raster_full_rect, raster_full_rect,
-        scale, lock_.sk_color_space(), playback_settings);
+        scale, lock_.color_space_for_raster(), playback_settings);
     buffer->Unmap();
   }
 

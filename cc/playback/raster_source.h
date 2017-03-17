@@ -17,6 +17,7 @@
 #include "cc/playback/recording_source.h"
 #include "skia/ext/analysis_canvas.h"
 #include "third_party/skia/include/core/SkPicture.h"
+#include "ui/gfx/color_space.h"
 
 namespace cc {
 class DisplayItemList;
@@ -55,6 +56,7 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
 
   // TODO(trchen): Deprecated.
   void PlaybackToCanvas(SkCanvas* canvas,
+                        const gfx::ColorSpace& canvas_color_space,
                         const gfx::Rect& canvas_bitmap_rect,
                         const gfx::Rect& canvas_playback_rect,
                         float contents_scale,
@@ -70,6 +72,7 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
   // Note that this should only be called after the image decode controller has
   // been set, which happens during commit.
   virtual void PlaybackToCanvas(SkCanvas* canvas,
+                                const gfx::ColorSpace& canvas_color_space,
                                 const PlaybackSettings& settings) const;
 
   // Returns whether the given rect at given scale is of solid color in
@@ -151,7 +154,9 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
   ImageDecodeCache* image_decode_cache_;
 
  private:
-  void RasterCommon(SkCanvas* canvas, SkPicture::AbortCallback* callback) const;
+  void RasterCommon(SkCanvas* canvas,
+                    const gfx::ColorSpace& canvas_color_space,
+                    SkPicture::AbortCallback* callback) const;
 
   void PrepareForPlaybackToCanvas(SkCanvas* canvas) const;
 

@@ -844,14 +844,11 @@ ResourceProvider::TextureHint ResourceProvider::GetTextureHint(ResourceId id) {
   return GetResource(id)->hint;
 }
 
-sk_sp<SkColorSpace> ResourceProvider::GetResourceSkColorSpace(
+gfx::ColorSpace ResourceProvider::GetResourceColorSpaceForRaster(
     const Resource* resource) const {
   if (!settings_.enable_color_correct_rasterization)
-    return nullptr;
-  // Returning the nonlinear blended color space matches the expectation of the
-  // web that colors are blended in the output color space, not in a
-  // physically-based linear space.
-  return resource->color_space.ToNonlinearBlendedSkColorSpace();
+    return gfx::ColorSpace();
+  return resource->color_space;
 }
 
 void ResourceProvider::CopyToResource(ResourceId id,
@@ -875,8 +872,7 @@ void ResourceProvider::CopyToResource(ResourceId id,
     DCHECK(resource->allocated);
     DCHECK_EQ(RGBA_8888, resource->format);
     SkImageInfo source_info =
-        SkImageInfo::MakeN32Premul(image_size.width(), image_size.height(),
-                                   GetResourceSkColorSpace(resource));
+        SkImageInfo::MakeN32Premul(image_size.width(), image_size.height());
     size_t image_stride = image_size.width() * 4;
 
     ScopedWriteLockSoftware lock(this, id);
@@ -1156,7 +1152,7 @@ ResourceProvider::ScopedWriteLockGL::ScopedWriteLockGL(
   format_ = resource->format;
   size_ = resource->size;
   mailbox_ = resource->mailbox();
-  sk_color_space_ = resource_provider->GetResourceSkColorSpace(resource);
+  color_space_ = resource_provider->GetResourceColorSpaceForRaster(resource);
 }
 
 ResourceProvider::ScopedWriteLockGL::~ScopedWriteLockGL() {
@@ -1224,8 +1220,7 @@ ResourceProvider::ScopedSkSurfaceProvider::ScopedSkSurfaceProvider(
         SkSurfaceProps(flags, SkSurfaceProps::kLegacyFontHost_InitType);
   }
   sk_surface_ = SkSurface::MakeFromBackendTextureAsRenderTarget(
-      context_provider->GrContext(), desc, resource_lock->sk_color_space(),
-      &surface_props);
+      context_provider->GrContext(), desc, nullptr, &surface_props);
 }
 
 ResourceProvider::ScopedSkSurfaceProvider::~ScopedSkSurfaceProvider() {
@@ -1238,9 +1233,8 @@ ResourceProvider::ScopedSkSurfaceProvider::~ScopedSkSurfaceProvider() {
 void ResourceProvider::PopulateSkBitmapWithResource(SkBitmap* sk_bitmap,
                                                     const Resource* resource) {
   DCHECK_EQ(RGBA_8888, resource->format);
-  SkImageInfo info = SkImageInfo::MakeN32Premul(
-      resource->size.width(), resource->size.height(),
-      GetResourceSkColorSpace(resource));
+  SkImageInfo info = SkImageInfo::MakeN32Premul(resource->size.width(),
+                                                resource->size.height());
   sk_bitmap->installPixels(info, resource->pixels, info.minRowBytes());
 }
 
@@ -1273,8 +1267,7 @@ ResourceProvider::ScopedReadLockSkImage::ScopedReadLockSkImage(
     desc.fTextureHandle = skia::GrGLTextureInfoToGrBackendObject(texture_info);
     sk_image_ = SkImage::MakeFromTexture(
         resource_provider->compositor_context_provider_->GrContext(), desc,
-        kPremul_SkAlphaType,
-        resource_provider->GetResourceSkColorSpace(resource), nullptr, nullptr);
+        kPremul_SkAlphaType);
   } else if (resource->pixels) {
     SkBitmap sk_bitmap;
     resource_provider->PopulateSkBitmapWithResource(&sk_bitmap, resource);
@@ -1301,7 +1294,7 @@ ResourceProvider::ScopedWriteLockSoftware::ScopedWriteLockSoftware(
     : resource_provider_(resource_provider), resource_id_(resource_id) {
   Resource* resource = resource_provider->LockForWrite(resource_id);
   resource_provider->PopulateSkBitmapWithResource(&sk_bitmap_, resource);
-  sk_color_space_ = resource_provider->GetResourceSkColorSpace(resource);
+  color_space_ = resource_provider->GetResourceColorSpaceForRaster(resource);
   DCHECK(valid());
 }
 
@@ -1324,6 +1317,7 @@ ResourceProvider::ScopedWriteLockGpuMemoryBuffer::
   usage_ = resource->usage;
   gpu_memory_buffer_ = std::move(resource->gpu_memory_buffer);
   resource->gpu_memory_buffer = nullptr;
+  color_space_ = resource_provider->GetResourceColorSpaceForRaster(resource);
 }
 
 ResourceProvider::ScopedWriteLockGpuMemoryBuffer::

@@ -168,11 +168,6 @@ class GFX_EXPORT ColorSpace {
   // range, and unspecified spaces.
   sk_sp<SkColorSpace> ToSkColorSpace() const;
 
-  // Return an SkColorSpace that represents this color space, with output-space
-  // blending (which is only linear for color spaces with a linear tranasfer
-  // function).
-  sk_sp<SkColorSpace> ToNonlinearBlendedSkColorSpace() const;
-
   // Populate |icc_profile| with an ICC profile that represents this color
   // space. Returns false if this space is not representable.
   bool GetICCProfile(ICCProfile* icc_profile) const;

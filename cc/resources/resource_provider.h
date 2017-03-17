@@ -288,7 +288,11 @@ class CC_EXPORT ResourceProvider
     GLenum target() const { return target_; }
     ResourceFormat format() const { return format_; }
     const gfx::Size& size() const { return size_; }
-    sk_sp<SkColorSpace> sk_color_space() const { return sk_color_space_; }
+    // Will return the invalid color space unless
+    // |enable_color_correct_rasterization| is true.
+    const gfx::ColorSpace& color_space_for_raster() const {
+      return color_space_;
+    }
 
     const TextureMailbox& mailbox() const { return mailbox_; }
 
@@ -311,7 +315,7 @@ class CC_EXPORT ResourceProvider
     bool has_sync_token_;
     bool synchronized_;
     base::ThreadChecker thread_checker_;
-    sk_sp<SkColorSpace> sk_color_space_;
+    gfx::ColorSpace color_space_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedWriteLockGL);
   };
@@ -399,13 +403,17 @@ class CC_EXPORT ResourceProvider
 
     SkBitmap& sk_bitmap() { return sk_bitmap_; }
     bool valid() const { return !!sk_bitmap_.getPixels(); }
-    sk_sp<SkColorSpace> sk_color_space() const { return sk_color_space_; }
+    // Will return the invalid color space unless
+    // |enable_color_correct_rasterization| is true.
+    const gfx::ColorSpace& color_space_for_raster() const {
+      return color_space_;
+    }
 
    private:
     ResourceProvider* resource_provider_;
     ResourceId resource_id_;
     SkBitmap sk_bitmap_;
-    sk_sp<SkColorSpace> sk_color_space_;
+    gfx::ColorSpace color_space_;
     base::ThreadChecker thread_checker_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedWriteLockSoftware);
@@ -417,7 +425,11 @@ class CC_EXPORT ResourceProvider
                                    ResourceId resource_id);
     ~ScopedWriteLockGpuMemoryBuffer();
     gfx::GpuMemoryBuffer* GetGpuMemoryBuffer();
-    sk_sp<SkColorSpace> sk_color_space() const { return sk_color_space_; }
+    // Will return the invalid color space unless
+    // |enable_color_correct_rasterization| is true.
+    const gfx::ColorSpace& color_space_for_raster() const {
+      return color_space_;
+    }
 
    private:
     ResourceProvider* resource_provider_;
@@ -426,7 +438,7 @@ class CC_EXPORT ResourceProvider
     gfx::BufferUsage usage_;
     gfx::Size size_;
     std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer_;
-    sk_sp<SkColorSpace> sk_color_space_;
+    gfx::ColorSpace color_space_;
     base::ThreadChecker thread_checker_;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedWriteLockGpuMemoryBuffer);
@@ -723,8 +735,10 @@ class CC_EXPORT ResourceProvider
   gpu::gles2::GLES2Interface* ContextGL() const;
   bool IsGLContextLost() const;
 
-  // Returns null if |settings_.enable_color_correct_rasterization| is false.
-  sk_sp<SkColorSpace> GetResourceSkColorSpace(const Resource* resource) const;
+  // Will return the invalid color space unless
+  // |enable_color_correct_rasterization| is true.
+  gfx::ColorSpace GetResourceColorSpaceForRaster(
+      const Resource* resource) const;
 
   // Holds const settings for the ResourceProvider. Never changed after init.
   struct Settings {

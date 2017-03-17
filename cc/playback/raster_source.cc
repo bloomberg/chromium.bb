@@ -16,6 +16,7 @@
 #include "cc/playback/skip_image_canvas.h"
 #include "skia/ext/analysis_canvas.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkColorSpaceXformCanvas.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
@@ -61,6 +62,7 @@ RasterSource::~RasterSource() {
 }
 
 void RasterSource::PlaybackToCanvas(SkCanvas* raster_canvas,
+                                    const gfx::ColorSpace& canvas_color_space,
                                     const gfx::Rect& canvas_bitmap_rect,
                                     const gfx::Rect& canvas_playback_rect,
                                     float raster_scale,
@@ -76,18 +78,19 @@ void RasterSource::PlaybackToCanvas(SkCanvas* raster_canvas,
   raster_canvas->translate(-canvas_bitmap_rect.x(), -canvas_bitmap_rect.y());
   raster_canvas->clipRect(SkRect::MakeFromIRect(raster_bounds));
   raster_canvas->scale(raster_scale, raster_scale);
-  PlaybackToCanvas(raster_canvas, settings);
+  PlaybackToCanvas(raster_canvas, canvas_color_space, settings);
   raster_canvas->restore();
 }
 
 void RasterSource::PlaybackToCanvas(SkCanvas* raster_canvas,
+                                    const gfx::ColorSpace& canvas_color_space,
                                     const PlaybackSettings& settings) const {
   if (!settings.playback_to_shared_canvas)
     PrepareForPlaybackToCanvas(raster_canvas);
 
   if (settings.skip_images) {
     SkipImageCanvas canvas(raster_canvas);
-    RasterCommon(&canvas, nullptr);
+    RasterCommon(&canvas, canvas_color_space, nullptr);
   } else if (settings.use_image_hijack_canvas) {
     const SkImageInfo& info = raster_canvas->imageInfo();
     ImageHijackCanvas canvas(info.width(), info.height(), image_decode_cache_,
@@ -101,9 +104,9 @@ void RasterSource::PlaybackToCanvas(SkCanvas* raster_canvas,
     canvas.setMatrix(raster_canvas->getTotalMatrix());
     canvas.addCanvas(raster_canvas);
 
-    RasterCommon(&canvas, nullptr);
+    RasterCommon(&canvas, canvas_color_space, nullptr);
   } else {
-    RasterCommon(raster_canvas, nullptr);
+    RasterCommon(raster_canvas, canvas_color_space, nullptr);
   }
 }
 
@@ -196,12 +199,20 @@ void RasterSource::PrepareForPlaybackToCanvas(SkCanvas* canvas) const {
   canvas->restore();
 }
 
-void RasterSource::RasterCommon(SkCanvas* canvas,
+void RasterSource::RasterCommon(SkCanvas* input_canvas,
+                                const gfx::ColorSpace& target_color_space,
                                 SkPicture::AbortCallback* callback) const {
+  SkCanvas* raster_canvas = input_canvas;
+  std::unique_ptr<SkCanvas> color_transform_canvas;
+  if (target_color_space.IsValid()) {
+    color_transform_canvas = SkCreateColorSpaceXformCanvas(
+        input_canvas, target_color_space.ToSkColorSpace());
+    raster_canvas = color_transform_canvas.get();
+  }
   DCHECK(display_list_.get());
   int repeat_count = std::max(1, slow_down_raster_scale_factor_for_debug_);
   for (int i = 0; i < repeat_count; ++i)
-    display_list_->Raster(canvas, callback);
+    display_list_->Raster(raster_canvas, callback);
 }
 
 sk_sp<SkPicture> RasterSource::GetFlattenedPicture() {
@@ -211,7 +222,8 @@ sk_sp<SkPicture> RasterSource::GetFlattenedPicture() {
   SkCanvas* canvas = recorder.beginRecording(size_.width(), size_.height());
   if (!size_.IsEmpty()) {
     PrepareForPlaybackToCanvas(canvas);
-    RasterCommon(canvas, nullptr);
+    // No target color space should be set for generating an SkPicture.
+    RasterCommon(canvas, gfx::ColorSpace(), nullptr);
   }
 
   return recorder.finishRecordingAsPicture();
@@ -235,7 +247,9 @@ bool RasterSource::PerformSolidColorAnalysis(const gfx::Rect& content_rect,
   layer_rect.Intersect(gfx::Rect(size_));
   skia::AnalysisCanvas canvas(layer_rect.width(), layer_rect.height());
   canvas.translate(-layer_rect.x(), -layer_rect.y());
-  RasterCommon(&canvas, &canvas);
+  // No target color space should be set for solid color analysis (the
+  // resulting solid color will be known to be sRGB).
+  RasterCommon(&canvas, gfx::ColorSpace(), &canvas);
   return canvas.GetColorIfSolid(color);
 }
 

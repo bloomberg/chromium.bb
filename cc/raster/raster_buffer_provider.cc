@@ -53,7 +53,7 @@ void RasterBufferProvider::PlaybackToMemory(
     const gfx::Rect& canvas_bitmap_rect,
     const gfx::Rect& canvas_playback_rect,
     float scale,
-    sk_sp<SkColorSpace> dst_color_space,
+    const gfx::ColorSpace& target_color_space,
     const RasterSource::PlaybackSettings& playback_settings) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "RasterBufferProvider::PlaybackToMemory");
@@ -61,8 +61,8 @@ void RasterBufferProvider::PlaybackToMemory(
   DCHECK(IsSupportedPlaybackToMemoryFormat(format)) << format;
 
   // Uses kPremul_SkAlphaType since the result is not known to be opaque.
-  SkImageInfo info = SkImageInfo::MakeN32(size.width(), size.height(),
-                                          kPremul_SkAlphaType, dst_color_space);
+  SkImageInfo info =
+      SkImageInfo::MakeN32(size.width(), size.height(), kPremul_SkAlphaType);
 
   // Use unknown pixel geometry to disable LCD text.
   SkSurfaceProps surface_props(0, kUnknown_SkPixelGeometry);
@@ -81,9 +81,9 @@ void RasterBufferProvider::PlaybackToMemory(
     case RGBA_F16: {
       sk_sp<SkSurface> surface =
           SkSurface::MakeRasterDirect(info, memory, stride, &surface_props);
-      raster_source->PlaybackToCanvas(surface->getCanvas(), canvas_bitmap_rect,
-                                      canvas_playback_rect, scale,
-                                      playback_settings);
+      raster_source->PlaybackToCanvas(surface->getCanvas(), target_color_space,
+                                      canvas_bitmap_rect, canvas_playback_rect,
+                                      scale, playback_settings);
       return;
     }
     case RGBA_4444:
@@ -91,9 +91,9 @@ void RasterBufferProvider::PlaybackToMemory(
       sk_sp<SkSurface> surface = SkSurface::MakeRaster(info, &surface_props);
       // TODO(reveman): Improve partial raster support by reducing the size of
       // playback rect passed to PlaybackToCanvas. crbug.com/519070
-      raster_source->PlaybackToCanvas(surface->getCanvas(), canvas_bitmap_rect,
-                                      canvas_bitmap_rect, scale,
-                                      playback_settings);
+      raster_source->PlaybackToCanvas(surface->getCanvas(), target_color_space,
+                                      canvas_bitmap_rect, canvas_bitmap_rect,
+                                      scale, playback_settings);
 
       if (format == ETC1) {
         TRACE_EVENT0("cc",
