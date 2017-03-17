@@ -118,6 +118,7 @@
 #include "public/platform/WebURLLoaderMockFactory.h"
 #include "public/platform/WebURLResponse.h"
 #include "public/web/WebConsoleMessage.h"
+#include "public/web/WebContextMenuData.h"
 #include "public/web/WebDataSource.h"
 #include "public/web/WebDeviceEmulationParams.h"
 #include "public/web/WebDocument.h"
@@ -11462,6 +11463,56 @@ TEST_F(WebFrameTest, ShowVirtualKeyboardOnElementFocus) {
 
   remoteFrame->close();
   webViewHelper.reset();
+}
+
+class ContextMenuWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
+ public:
+  ContextMenuWebFrameClient(){};
+  // WebFrameClient methods
+  void showContextMenu(const WebContextMenuData& data) override {
+    m_menuData = data;
+  }
+
+  WebContextMenuData getMenuData() { return m_menuData; }
+
+ private:
+  WebContextMenuData m_menuData;
+  DISALLOW_COPY_AND_ASSIGN(ContextMenuWebFrameClient);
+};
+
+bool testSelectAll(const std::string& html) {
+  ContextMenuWebFrameClient frame;
+  FrameTestHelpers::WebViewHelper webViewHelper;
+  WebViewImpl* webView = webViewHelper.initialize(true, &frame);
+  FrameTestHelpers::loadHTMLString(webView->mainFrame(), html,
+                                   toKURL("about:blank"));
+  webView->resize(WebSize(500, 300));
+  webView->updateAllLifecyclePhases();
+  runPendingTasks();
+  webView->setInitialFocus(false);
+  runPendingTasks();
+
+  WebMouseEvent mouseEvent(WebInputEvent::MouseDown, WebInputEvent::NoModifiers,
+                           WebInputEvent::TimeStampForTesting);
+
+  mouseEvent.button = WebMouseEvent::Button::Right;
+  mouseEvent.x = 10;
+  mouseEvent.y = 10;
+  mouseEvent.clickCount = 1;
+  webView->handleInputEvent(WebCoalescedInputEvent(mouseEvent));
+  runPendingTasks();
+  webViewHelper.reset();
+  return frame.getMenuData().editFlags & WebContextMenuData::CanSelectAll;
+}
+
+TEST_F(WebFrameTest, ContextMenuData) {
+  EXPECT_FALSE(testSelectAll("<textarea></textarea>"));
+  EXPECT_TRUE(testSelectAll("<textarea>nonempty</textarea>"));
+  EXPECT_FALSE(testSelectAll("<input>"));
+  EXPECT_TRUE(testSelectAll("<input value='nonempty'>"));
+  // TODO(amaralp): Empty contenteditable should not have select all enabled.
+  EXPECT_TRUE(testSelectAll("<div contenteditable></div>"));
+  EXPECT_TRUE(testSelectAll("<div contenteditable>nonempty</div>"));
 }
 
 }  // namespace blink

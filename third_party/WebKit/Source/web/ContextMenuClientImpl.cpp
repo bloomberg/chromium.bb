@@ -166,21 +166,25 @@ bool ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu,
 
   // Compute edit flags.
   data.editFlags = WebContextMenuData::CanDoNone;
-  if (toLocalFrame(m_webView->focusedCoreFrame())->editor().canUndo())
-    data.editFlags |= WebContextMenuData::CanUndo;
-  if (toLocalFrame(m_webView->focusedCoreFrame())->editor().canRedo())
-    data.editFlags |= WebContextMenuData::CanRedo;
-  if (toLocalFrame(m_webView->focusedCoreFrame())->editor().canCut())
-    data.editFlags |= WebContextMenuData::CanCut;
-  if (toLocalFrame(m_webView->focusedCoreFrame())->editor().canCopy())
-    data.editFlags |= WebContextMenuData::CanCopy;
-  if (toLocalFrame(m_webView->focusedCoreFrame())->editor().canPaste())
-    data.editFlags |= WebContextMenuData::CanPaste;
-  if (toLocalFrame(m_webView->focusedCoreFrame())->editor().canDelete())
-    data.editFlags |= WebContextMenuData::CanDelete;
-  // We can always select all...
-  data.editFlags |= WebContextMenuData::CanSelectAll;
-  data.editFlags |= WebContextMenuData::CanTranslate;
+  if (selectedFrame->document()->isHTMLDocument() ||
+      selectedFrame->document()->isXHTMLDocument()) {
+    if (toLocalFrame(m_webView->focusedCoreFrame())->editor().canUndo())
+      data.editFlags |= WebContextMenuData::CanUndo;
+    if (toLocalFrame(m_webView->focusedCoreFrame())->editor().canRedo())
+      data.editFlags |= WebContextMenuData::CanRedo;
+    if (toLocalFrame(m_webView->focusedCoreFrame())->editor().canCut())
+      data.editFlags |= WebContextMenuData::CanCut;
+    if (toLocalFrame(m_webView->focusedCoreFrame())->editor().canCopy())
+      data.editFlags |= WebContextMenuData::CanCopy;
+    if (toLocalFrame(m_webView->focusedCoreFrame())->editor().canPaste())
+      data.editFlags |= WebContextMenuData::CanPaste;
+    if (toLocalFrame(m_webView->focusedCoreFrame())->editor().canDelete())
+      data.editFlags |= WebContextMenuData::CanDelete;
+    if (selectedFrame->document()->queryCommandEnabled("selectAll",
+                                                       ASSERT_NO_EXCEPTION))
+      data.editFlags |= WebContextMenuData::CanSelectAll;
+    data.editFlags |= WebContextMenuData::CanTranslate;
+  }
 
   // Links, Images, Media tags, and Image/Media-Links take preference over
   // all else.

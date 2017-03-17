@@ -59,6 +59,7 @@
 #include "core/html/HTMLFontElement.h"
 #include "core/html/HTMLHRElement.h"
 #include "core/html/HTMLImageElement.h"
+#include "core/html/TextControlElement.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/LayoutBox.h"
 #include "core/page/ChromeClient.h"
@@ -2103,6 +2104,25 @@ static bool enabledUndo(LocalFrame& frame, Event*, EditorCommandSource) {
   return frame.editor().canUndo();
 }
 
+static bool enabledSelectAll(LocalFrame& frame, Event*, EditorCommandSource) {
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  frame.document()->updateStyleAndLayoutIgnorePendingStylesheets();
+  const VisibleSelection& selection =
+      frame.selection().computeVisibleSelectionInDOMTree();
+  if (selection.isNone())
+    return true;
+  if (TextControlElement* textControl =
+          enclosingTextControl(selection.start())) {
+    if (textControl->innerEditorValue().isEmpty())
+      return false;
+    // TODO(amaralp): Return false if already fully selected.
+  }
+  // TODO(amaralp): Support contentEditable.
+  // TODO(amaralp): Address user-select handling.
+  return true;
+}
+
 // State functions
 
 static TriState stateNone(LocalFrame&, Event*) {
@@ -2612,8 +2632,9 @@ static const EditorInternalCommand* internalCommand(const String& commandName) {
       {WebEditingCommandType::ScrollToEndOfDocument,
        executeScrollToEndOfDocument, supportedFromMenuOrKeyBinding, enabled,
        stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled},
-      {WebEditingCommandType::SelectAll, executeSelectAll, supported, enabled,
-       stateNone, valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled},
+      {WebEditingCommandType::SelectAll, executeSelectAll, supported,
+       enabledSelectAll, stateNone, valueNull, notTextInsertion,
+       doNotAllowExecutionWhenDisabled},
       {WebEditingCommandType::SelectLine, executeSelectLine,
        supportedFromMenuOrKeyBinding, enabledVisibleSelection, stateNone,
        valueNull, notTextInsertion, doNotAllowExecutionWhenDisabled},
