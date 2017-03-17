@@ -728,8 +728,16 @@ IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
 
 // Tests that BeforeUnload event gets called on docked devtools if
 // we try to close the inspected browser.
+// Flaky on Windows. http://crbug.com/702171
+#if defined(OS_WIN)
+#define MAYBE_TestDockedDevToolsInspectedBrowserClose \
+  DISABLED_TestDockedDevToolsInspectedBrowserClose
+#else
+#define MAYBE_TestDockedDevToolsInspectedBrowserClose \
+  TestDockedDevToolsInspectedBrowserClose
+#endif
 IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
-                       TestDockedDevToolsInspectedBrowserClose) {
+                       MAYBE_TestDockedDevToolsInspectedBrowserClose) {
   RunBeforeUnloadSanityTest(true, base::Bind(
       &DevToolsBeforeUnloadTest::CloseInspectedBrowser,
       base::Unretained(this)));
@@ -752,6 +760,14 @@ IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
 
 // Tests that BeforeUnload event gets called on undocked devtools if
 // we try to close the inspected page.
+// Flaky on Windows. http://crbug.com/702171
+#if defined(OS_WIN)
+#define MAYBE_TestUndockedDevToolsInspectedTabClose \
+  DISABLED_TestUndockedDevToolsInspectedTabClose
+#else
+#define MAYBE_TestUndockedDevToolsInspectedTabClose \
+  TestUndockedDevToolsInspectedTabClose
+#endif
 IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
                        TestUndockedDevToolsInspectedTabClose) {
   RunBeforeUnloadSanityTest(false, base::Bind(
