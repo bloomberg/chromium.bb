@@ -63,6 +63,10 @@ class ACCELERATED_WIDGET_MAC_EXPORT CARendererLayerTree {
   // Returns the contents used for a given solid color.
   id ContentsForSolidColorForTesting(unsigned int color);
 
+  // If there exists only a single content layer, return the IOSurface of that
+  // layer.
+  IOSurfaceRef GetContentIOSurface() const;
+
  private:
   class SolidColorContents;
   struct RootLayer;

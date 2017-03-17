@@ -7,7 +7,6 @@
 
 #include "ui/accelerated_widget_mac/accelerated_widget_mac_export.h"
 #include "ui/accelerated_widget_mac/ca_renderer_layer_tree.h"
-#include "ui/accelerated_widget_mac/gl_renderer_layer_tree.h"
 
 namespace ui {
 
@@ -27,11 +26,6 @@ class ACCELERATED_WIDGET_MAC_EXPORT CALayerTreeCoordinator {
 
   // Set the composited frame's size.
   void Resize(const gfx::Size& pixel_size, float scale_factor);
-
-  // Set the OpenGL backbuffer to which the pending frame was rendered. This is
-  // used to draw frames created by the OpenGL renderer.
-  bool SetPendingGLRendererBackbuffer(
-      base::ScopedCFTypeRef<IOSurfaceRef> backbuffer);
 
   // The CARendererLayerTree for the pending frame. This is used to construct
   // the CALayer tree for the CoreAnimation renderer.
@@ -67,11 +61,9 @@ class ACCELERATED_WIDGET_MAC_EXPORT CALayerTreeCoordinator {
 
   // Frame that has been scheduled, but has not had a subsequent commit call
   // made yet.
-  std::unique_ptr<GLRendererLayerTree> pending_gl_renderer_layer_tree_;
   std::unique_ptr<CARendererLayerTree> pending_ca_renderer_layer_tree_;
 
   // Frame that is currently being displayed on the screen.
-  std::unique_ptr<GLRendererLayerTree> current_gl_renderer_layer_tree_;
   std::unique_ptr<CARendererLayerTree> current_ca_renderer_layer_tree_;
 
   // The number of frames since we used the low power layer. Used to avoid

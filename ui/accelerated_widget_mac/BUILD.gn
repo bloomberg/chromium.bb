@@ -16,8 +16,6 @@ component("accelerated_widget_mac") {
     "display_link_mac.cc",
     "display_link_mac.h",
     "fullscreen_low_power_coordinator.h",
-    "gl_renderer_layer_tree.h",
-    "gl_renderer_layer_tree.mm",
     "io_surface_context.h",
     "io_surface_context.mm",
     "window_resize_helper_mac.cc",

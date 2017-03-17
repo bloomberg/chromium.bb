@@ -336,8 +336,19 @@ bool ImageTransportSurfaceOverlayMac::ScheduleOverlayPlane(
     DLOG(ERROR) << "Not an IOSurface image.";
     return false;
   }
-  return ca_layer_tree_coordinator_->SetPendingGLRendererBackbuffer(
-      io_surface_image->io_surface());
+  const ui::CARendererLayerParams overlay_as_calayer_params(
+      false,        // is_clipped
+      gfx::Rect(),  // clip_rect
+      0,            // sorting_context_id
+      gfx::Transform(), image,
+      crop_rect,            // contents_rect
+      pixel_frame_rect,     // rect
+      SK_ColorTRANSPARENT,  // background_color
+      0,                    // edge_aa_mask
+      1.f,                  // opacity
+      GL_LINEAR);           // filter;
+  return ca_layer_tree_coordinator_->GetPendingCARendererLayerTree()
+      ->ScheduleCALayer(overlay_as_calayer_params);
 }
 
 bool ImageTransportSurfaceOverlayMac::ScheduleCALayer(
