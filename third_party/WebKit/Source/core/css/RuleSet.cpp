@@ -350,13 +350,8 @@ void RuleSet::compactPendingRules(PendingRuleMap& pendingMap,
                                   CompactRuleMap& compactMap) {
   for (auto& item : pendingMap) {
     HeapLinkedStack<RuleData>* pendingRules = item.value.release();
-    // TODO(meade): crbug.com/694520
-    CHECK(!item.key.isNull());
-    CHECK(pendingRules);
     CompactRuleMap::ValueType* compactRules =
         compactMap.insert(item.key, nullptr).storedValue;
-    // TODO(meade): crbug.com/694520
-    CHECK(compactRules);
 
     HeapTerminatedArrayBuilder<RuleData> builder(compactRules->value.release());
     builder.grow(pendingRules->size());
@@ -370,8 +365,7 @@ void RuleSet::compactPendingRules(PendingRuleMap& pendingMap,
 }
 
 void RuleSet::compactRules() {
-  // TODO(meade): crbug.com/694520
-  CHECK(m_pendingRules);
+  ASSERT(m_pendingRules);
   PendingRuleMaps* pendingRules = m_pendingRules.release();
   compactPendingRules(pendingRules->idRules, m_idRules);
   compactPendingRules(pendingRules->classRules, m_classRules);
