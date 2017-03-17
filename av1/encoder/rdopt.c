@@ -6090,20 +6090,18 @@ static int64_t rd_pick_inter_best_sub8x8_mode(
            * and new motion search. */
           if (new_best_rd < label_mv_thresh) break;
 
-          if (cpi->oxcf.mode != BEST) {
 #if CONFIG_EXT_INTER
-            bsi->mvp.as_int = bsi->ref_mv[0]->as_int;
+          bsi->mvp.as_int = bsi->ref_mv[0]->as_int;
 #else
 // use previous block's result as next block's MV predictor.
 #if !CONFIG_REF_MV
-            if (index > 0) {
-              bsi->mvp.as_int = mi->bmi[index - 1].as_mv[0].as_int;
-              if (index == 2)
-                bsi->mvp.as_int = mi->bmi[index - 2].as_mv[0].as_int;
-            }
+          if (index > 0) {
+            bsi->mvp.as_int = mi->bmi[index - 1].as_mv[0].as_int;
+            if (index == 2)
+              bsi->mvp.as_int = mi->bmi[index - 2].as_mv[0].as_int;
+          }
 #endif  // !CONFIG_REF_MV
 #endif  // CONFIG_EXT_INTER
-          }
           max_mv = (index == 0) ? (int)x->max_mv_context[mbmi->ref_frame[0]]
                                 : AOMMAX(abs(bsi->mvp.as_mv.row),
                                          abs(bsi->mvp.as_mv.col)) >>

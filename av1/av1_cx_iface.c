@@ -912,18 +912,17 @@ static aom_codec_err_t encoder_destroy(aom_codec_alg_priv_t *ctx) {
 
 static void pick_quickcompress_mode(aom_codec_alg_priv_t *ctx,
                                     unsigned long deadline) {
-  MODE new_mode = BEST;
+  MODE new_mode = GOOD;
 
   switch (ctx->cfg.g_pass) {
     case AOM_RC_ONE_PASS:
       switch (deadline) {
-        case AOM_DL_BEST_QUALITY: new_mode = BEST; break;
         case AOM_DL_REALTIME: new_mode = REALTIME; break;
         default: new_mode = GOOD; break;
       }
       break;
     case AOM_RC_FIRST_PASS: break;
-    case AOM_RC_LAST_PASS: new_mode = deadline > 0 ? GOOD : BEST; break;
+    case AOM_RC_LAST_PASS: new_mode = GOOD;
   }
 
   if (ctx->oxcf.mode != new_mode) {

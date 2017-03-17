@@ -29,8 +29,7 @@
 // Encoding A Frame
 // ----------------
 // Encoding a frame in two pass mode is identical to the simple encoder
-// example. To increase the quality while sacrificing encoding speed,
-// AOM_DL_BEST_QUALITY can be used in place of AOM_DL_GOOD_QUALITY.
+// example.
 //
 // Processing Statistics Packets
 // -----------------------------

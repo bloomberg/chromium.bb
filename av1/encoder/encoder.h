@@ -101,11 +101,6 @@ typedef enum {
   // time it takes to encode the output. Speed setting controls how fast.
   GOOD,
 
-  // The encoder places priority on the quality of the output over encoding
-  // speed. The output is compressed at the highest possible quality. This
-  // option takes the longest amount of time to encode. Speed setting ignored.
-  BEST,
-
   // Realtime/Live Encoding. This mode is optimized for realtime encoding (for
   // example, capturing a television signal or feed from a live camera). Speed
   // setting controls how fast.

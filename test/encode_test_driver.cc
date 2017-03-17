@@ -110,13 +110,10 @@ void EncoderTest::SetMode(TestMode mode) {
     case kOnePassGood:
     case kTwoPassGood: deadline_ = AOM_DL_GOOD_QUALITY; break;
 
-    case kOnePassBest:
-    case kTwoPassBest: deadline_ = AOM_DL_BEST_QUALITY; break;
-
     default: ASSERT_TRUE(false) << "Unexpected mode " << mode;
   }
 
-  if (mode == kTwoPassGood || mode == kTwoPassBest)
+  if (mode == kTwoPassGood)
     passes_ = 2;
   else
     passes_ = 1;

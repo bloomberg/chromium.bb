@@ -17,11 +17,6 @@
 
 #include "aom_dsp/aom_dsp_common.h"
 
-// Mesh search patters for various speed settings
-static MESH_PATTERN best_quality_mesh_pattern[MAX_MESH_STEP] = {
-  { 64, 4 }, { 28, 2 }, { 15, 1 }, { 7, 1 }
-};
-
 #define MAX_MESH_SPEED 5  // Max speed setting for mesh motion method
 static MESH_PATTERN
     good_quality_mesh_patterns[MAX_MESH_SPEED + 1][MAX_MESH_STEP] = {
@@ -587,31 +582,19 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   cpi->diamond_search_sad = av1_diamond_search_sad;
 
   sf->allow_exhaustive_searches = 1;
-  if (oxcf->mode == BEST) {
-    if (cpi->twopass.fr_content_type == FC_GRAPHICS_ANIMATION)
-      sf->exhaustive_searches_thresh = (1 << 20);
-    else
-      sf->exhaustive_searches_thresh = (1 << 21);
-    sf->max_exaustive_pct = 100;
-    for (i = 0; i < MAX_MESH_STEP; ++i) {
-      sf->mesh_patterns[i].range = best_quality_mesh_pattern[i].range;
-      sf->mesh_patterns[i].interval = best_quality_mesh_pattern[i].interval;
-    }
-  } else {
-    int speed = (oxcf->speed > MAX_MESH_SPEED) ? MAX_MESH_SPEED : oxcf->speed;
-    if (cpi->twopass.fr_content_type == FC_GRAPHICS_ANIMATION)
-      sf->exhaustive_searches_thresh = (1 << 22);
-    else
-      sf->exhaustive_searches_thresh = (1 << 23);
-    sf->max_exaustive_pct = good_quality_max_mesh_pct[speed];
-    if (speed > 0)
-      sf->exhaustive_searches_thresh = sf->exhaustive_searches_thresh << 1;
+  int speed = (oxcf->speed > MAX_MESH_SPEED) ? MAX_MESH_SPEED : oxcf->speed;
+  if (cpi->twopass.fr_content_type == FC_GRAPHICS_ANIMATION)
+    sf->exhaustive_searches_thresh = (1 << 22);
+  else
+    sf->exhaustive_searches_thresh = (1 << 23);
+  sf->max_exaustive_pct = good_quality_max_mesh_pct[speed];
+  if (speed > 0)
+    sf->exhaustive_searches_thresh = sf->exhaustive_searches_thresh << 1;
 
-    for (i = 0; i < MAX_MESH_STEP; ++i) {
-      sf->mesh_patterns[i].range = good_quality_mesh_patterns[speed][i].range;
-      sf->mesh_patterns[i].interval =
-          good_quality_mesh_patterns[speed][i].interval;
-    }
+  for (i = 0; i < MAX_MESH_STEP; ++i) {
+    sf->mesh_patterns[i].range = good_quality_mesh_patterns[speed][i].range;
+    sf->mesh_patterns[i].interval =
+        good_quality_mesh_patterns[speed][i].interval;
   }
 
 #if !CONFIG_XIPHRC

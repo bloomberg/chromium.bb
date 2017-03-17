@@ -890,8 +890,7 @@ void av1_set_rd_speed_thresholds(AV1_COMP *cpi) {
   SPEED_FEATURES *const sf = &cpi->sf;
 
   // Set baseline threshold values.
-  for (i = 0; i < MAX_MODES; ++i)
-    rd->thresh_mult[i] = cpi->oxcf.mode == BEST ? -500 : 0;
+  for (i = 0; i < MAX_MODES; ++i) rd->thresh_mult[i] = cpi->oxcf.mode == 0;
 
   if (sf->adaptive_rd_thresh) {
     rd->thresh_mult[THR_NEARESTMV] = 300;
@@ -1160,20 +1159,34 @@ void av1_set_rd_speed_thresholds(AV1_COMP *cpi) {
 }
 
 void av1_set_rd_speed_thresholds_sub8x8(AV1_COMP *cpi) {
-  static const int thresh_mult[2][MAX_REFS] = {
+  static const int thresh_mult[MAX_REFS] = {
 #if CONFIG_EXT_REFS
-    { 2500, 2500, 2500, 2500, 2500, 2500, 4500, 4500, 4500, 4500, 4500, 4500,
-      4500, 4500, 2500 },
-    { 2000, 2000, 2000, 2000, 2000, 2000, 4000, 4000, 4000, 4000, 4000, 4000,
-      4000, 4000, 2000 }
+    2500,
+    2500,
+    2500,
+    2500,
+    2500,
+    2500,
+    4500,
+    4500,
+    4500,
+    4500,
+    4500,
+    4500,
+    4500,
+    4500,
+    2500
 #else
-    { 2500, 2500, 2500, 4500, 4500, 2500 },
-    { 2000, 2000, 2000, 4000, 4000, 2000 }
+    2500,
+    2500,
+    2500,
+    4500,
+    4500,
+    2500
 #endif  // CONFIG_EXT_REFS
   };
   RD_OPT *const rd = &cpi->rd;
-  const int idx = cpi->oxcf.mode == BEST;
-  memcpy(rd->thresh_mult_sub8x8, thresh_mult[idx], sizeof(thresh_mult[idx]));
+  memcpy(rd->thresh_mult_sub8x8, thresh_mult, sizeof(thresh_mult));
 }
 
 void av1_update_rd_thresh_fact(const AV1_COMMON *const cm,
