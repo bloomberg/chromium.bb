@@ -43,11 +43,11 @@ public class MockDownloadNotificationService extends DownloadNotificationService
     }
 
     @Override
-    boolean hasDownloadNotifications(Integer notificationIdToIgnore) {
+    boolean hasDownloadNotificationsInternal(int notificationIdToIgnore) {
         if (!useForegroundService()) return false;
         // Cancelling notifications here is synchronous, so we don't really have to worry about
         // {@code notificationIdToIgnore}, but address it properly anyway.
-        if (mNotificationIds.size() == 1 && notificationIdToIgnore != null) {
+        if (mNotificationIds.size() == 1 && notificationIdToIgnore != -1) {
             return !mNotificationIds.contains(notificationIdToIgnore);
         }
 
@@ -55,7 +55,7 @@ public class MockDownloadNotificationService extends DownloadNotificationService
     }
 
     @Override
-    void updateSummaryIcon(
+    void updateSummaryIconInternal(
             int removedNotificationId, Pair<Integer, Notification> addedNotification) {}
 
     @Override

@@ -86,6 +86,8 @@ public class DownloadNotificationService extends Service {
             "org.chromium.chrome.browser.download.DOWNLOAD_RESUME_ALL";
     public static final String ACTION_DOWNLOAD_OPEN =
             "org.chromium.chrome.browser.download.DOWNLOAD_OPEN";
+    public static final String ACTION_DOWNLOAD_UPDATE_SUMMARY_ICON =
+            "org.chromium.chrome.browser.download.DOWNLOAD_UPDATE_SUMMARY_ICON";
 
     static final String NOTIFICATION_NAMESPACE = "DownloadNotificationService";
     private static final String TAG = "DownloadNotification";
@@ -157,13 +159,68 @@ public class DownloadNotificationService extends Service {
         intent.setComponent(new ComponentName(context, DownloadNotificationService.class));
 
         if (useForegroundService()) {
-            Notification notification = buildSummaryNotification(context);
+            NotificationManager manager =
+                    (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+            // Attempt to update the notification summary icon without starting the service.
+            if (ACTION_DOWNLOAD_UPDATE_SUMMARY_ICON.equals(intent.getAction())) {
+                // updateSummaryIcon should be a noop if the notification isn't showing or if the
+                // icon won't change anyway.
+                updateSummaryIcon(context, manager, -1, null);
+                return;
+            }
 
-            AppHooks.get().startServiceWithNotification(
-                    intent, NotificationConstants.NOTIFICATION_ID_DOWNLOAD_SUMMARY, notification);
+            AppHooks.get().startServiceWithNotification(intent,
+                    NotificationConstants.NOTIFICATION_ID_DOWNLOAD_SUMMARY,
+                    buildSummaryNotification(context, manager));
         } else {
             context.startService(intent);
         }
+    }
+
+    /**
+     * Updates the notification summary with a new icon, if necessary.
+     * @param removedNotificationId The id of a notification that is currently closing and should be
+     *                              ignored.  -1 if no notifications are being closed.
+     * @param addedNotification     A {@link Pair} of <id, Notification> of a notification that is
+     *                              currently being added and should be used in addition to or in
+     *                              place of the existing icons.
+     */
+    private static void updateSummaryIcon(Context context, NotificationManager manager,
+            int removedNotificationId, Pair<Integer, Notification> addedNotification) {
+        if (!useForegroundService()) return;
+
+        Pair<Boolean, Integer> icon =
+                getSummaryIcon(context, manager, removedNotificationId, addedNotification);
+        if (!icon.first || !hasDownloadNotifications(manager, removedNotificationId)) return;
+
+        manager.notify(NotificationConstants.NOTIFICATION_ID_DOWNLOAD_SUMMARY,
+                buildSummaryNotificationWithIcon(context, icon.second));
+    }
+
+    /**
+     * Returns whether or not there are any download notifications showing that aren't the summary
+     * notification.
+     * @param notificationIdToIgnore If not -1, the id of a notification to ignore and
+     *                               assume is closing or about to be closed.
+     * @return Whether or not there are valid download notifications currently visible.
+     */
+    @TargetApi(Build.VERSION_CODES.M)
+    private static boolean hasDownloadNotifications(
+            NotificationManager manager, int notificationIdToIgnore) {
+        if (!useForegroundService()) return false;
+
+        StatusBarNotification[] notifications = manager.getActiveNotifications();
+        for (StatusBarNotification notification : notifications) {
+            boolean isDownloadsGroup = TextUtils.equals(notification.getNotification().getGroup(),
+                    NotificationConstants.GROUP_DOWNLOADS);
+            boolean isSummaryNotification =
+                    notification.getId() == NotificationConstants.NOTIFICATION_ID_DOWNLOAD_SUMMARY;
+            boolean isIgnoredNotification =
+                    notificationIdToIgnore != -1 && notificationIdToIgnore == notification.getId();
+            if (isDownloadsGroup && !isSummaryNotification && !isIgnoredNotification) return true;
+        }
+
+        return false;
     }
 
     /**
@@ -179,7 +236,8 @@ public class DownloadNotificationService extends Service {
      *                              is different from the old one and the icon id itself.
      */
     @TargetApi(Build.VERSION_CODES.M)
-    private static Pair<Boolean, Integer> getSummaryIcon(Context context, int removedNotificationId,
+    private static Pair<Boolean, Integer> getSummaryIcon(Context context,
+            NotificationManager manager, int removedNotificationId,
             Pair<Integer, Notification> addedNotification) {
         if (!useForegroundService()) return new Pair<Boolean, Integer>(false, -1);
         boolean progress = false;
@@ -194,8 +252,6 @@ public class DownloadNotificationService extends Service {
         final int completedIcon = R.drawable.offline_pin;
         final int failedIcon = android.R.drawable.stat_sys_download_done;
 
-        NotificationManager manager =
-                (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         StatusBarNotification[] notifications = manager.getActiveNotifications();
 
         int oldIcon = -1;
@@ -238,15 +294,16 @@ public class DownloadNotificationService extends Service {
         int newIcon = android.R.drawable.stat_sys_download_done;
         if (progress) {
             newIcon = android.R.drawable.stat_sys_download;
-        } else if (paused) {
-            newIcon = R.drawable.ic_download_pause;
         } else if (pending) {
             newIcon = R.drawable.ic_download_pending;
-        } else if (completed) {
-            newIcon = R.drawable.offline_pin;
         } else if (failed) {
             newIcon = android.R.drawable.stat_sys_download_done;
+        } else if (paused) {
+            newIcon = R.drawable.ic_download_pause;
+        } else if (completed) {
+            newIcon = R.drawable.offline_pin;
         }
+
         return new Pair<Boolean, Integer>(newIcon != oldIcon, newIcon);
     }
 
@@ -294,8 +351,9 @@ public class DownloadNotificationService extends Service {
      * @return The {@link Notification} to show for the summary.  Meant to be used by
      *         {@link NotificationManager#notify(int, Notification)}.
      */
-    private static Notification buildSummaryNotification(Context context) {
-        Pair<Boolean, Integer> icon = getSummaryIcon(context, -1, null);
+    private static Notification buildSummaryNotification(
+            Context context, NotificationManager manager) {
+        Pair<Boolean, Integer> icon = getSummaryIcon(context, manager, -1, null);
         return buildSummaryNotificationWithIcon(context, icon.second);
     }
 
@@ -328,7 +386,7 @@ public class DownloadNotificationService extends Service {
         // should still be showing any download notifications at all.
         if (ApplicationStatus.isEveryActivityDestroyed()) {
             cancelOffTheRecordDownloads();
-            hideSummaryNotificationIfNecessary(null);
+            hideSummaryNotificationIfNecessary(-1);
         }
     }
 
@@ -362,7 +420,7 @@ public class DownloadNotificationService extends Service {
             updateNotificationsForShutdown();
             handleDownloadOperation(
                     new Intent(DownloadNotificationService.ACTION_DOWNLOAD_RESUME_ALL));
-            hideSummaryNotificationIfNecessary(null);
+            hideSummaryNotificationIfNecessary(-1);
         } else if (isDownloadOperationIntent(intent)) {
             handleDownloadOperation(intent);
             DownloadResumptionScheduler.getDownloadResumptionScheduler(mContext).cancelTask();
@@ -420,8 +478,20 @@ public class DownloadNotificationService extends Service {
     @VisibleForTesting
     void startForegroundInternal() {
         if (!useForegroundService()) return;
-        Notification notification = buildSummaryNotification(getApplicationContext());
+        Notification notification =
+                buildSummaryNotification(getApplicationContext(), mNotificationManager);
         startForeground(NotificationConstants.NOTIFICATION_ID_DOWNLOAD_SUMMARY, notification);
+    }
+
+    @VisibleForTesting
+    boolean hasDownloadNotificationsInternal(int notificationIdToIgnore) {
+        return hasDownloadNotifications(mNotificationManager, notificationIdToIgnore);
+    }
+
+    @VisibleForTesting
+    void updateSummaryIconInternal(
+            int removedNotificationId, Pair<Integer, Notification> addedNotification) {
+        updateSummaryIcon(mContext, mNotificationManager, removedNotificationId, addedNotification);
     }
 
     private void rescheduleDownloads() {
@@ -505,37 +575,10 @@ public class DownloadNotificationService extends Service {
     }
 
     /**
-     * Returns whether or not there are any download notifications showing that aren't the summary
-     * notification.
-     * @param notificationIdToIgnore If not {@code null}, the id of a notification to ignore and
-     *                               assume is closing or about to be closed.
-     * @return Whether or not there are valid download notifications currently visible.
-     */
-    @VisibleForTesting
-    @TargetApi(Build.VERSION_CODES.M)
-    boolean hasDownloadNotifications(Integer notificationIdToIgnore) {
-        if (!useForegroundService()) return false;
-
-        StatusBarNotification[] notifications = mNotificationManager.getActiveNotifications();
-        for (StatusBarNotification notification : notifications) {
-            boolean isDownloadsGroup = TextUtils.equals(notification.getNotification().getGroup(),
-                    NotificationConstants.GROUP_DOWNLOADS);
-            boolean isSummaryNotification =
-                    notification.getId() == NotificationConstants.NOTIFICATION_ID_DOWNLOAD_SUMMARY;
-            boolean isIgnoredNotification = notificationIdToIgnore != null
-                    && notificationIdToIgnore == notification.getId();
-            if (isDownloadsGroup && !isSummaryNotification && !isIgnoredNotification) return true;
-        }
-
-        return false;
-    }
-
-    /**
      * @return The summary {@link StatusBarNotification} if one is showing.
      */
-    @VisibleForTesting
     @TargetApi(Build.VERSION_CODES.M)
-    StatusBarNotification getSummaryNotification() {
+    private StatusBarNotification getSummaryNotification() {
         if (!useForegroundService()) return null;
 
         StatusBarNotification[] notifications = mNotificationManager.getActiveNotifications();
@@ -548,30 +591,6 @@ public class DownloadNotificationService extends Service {
         }
 
         return null;
-    }
-
-    /**
-     * Updates the notification summary with a new icon, if necessary.
-     * @param removedNotificationId The id of a notification that is currently closing and should be
-     *                              ignored.  -1 if no notifications are being closed.
-     * @param addedNotification     A {@link Pair} of <id, Notification> of a notification that is
-     *                              currently being added and should be used in addition to or in
-     *                              place of the existing icons.
-     */
-    @VisibleForTesting
-    void updateSummaryIcon(
-            int removedNotificationId, Pair<Integer, Notification> addedNotification) {
-        if (!useForegroundService()) return;
-
-        Pair<Boolean, Integer> icon =
-                getSummaryIcon(mContext, removedNotificationId, addedNotification);
-
-        // Avoid rebuilding the summary notification if the icon hasn't changed or we have (or are
-        // about to have) no active downloads.
-        if (!icon.first || !hasDownloadNotifications(removedNotificationId)) return;
-
-        mNotificationManager.notify(NotificationConstants.NOTIFICATION_ID_DOWNLOAD_SUMMARY,
-                buildSummaryNotificationWithIcon(mContext, icon.second));
     }
 
     /**
@@ -591,14 +610,14 @@ public class DownloadNotificationService extends Service {
      * @param notificationIdToIgnore Canceling a notification and querying for the current list of
      *                               active notifications isn't synchronous.  Pass a notification id
      *                               here if there is a notification that should be assumed gone.
-     *                               Or pass {@code null} if no notification fits that criteria.
+     *                               Or pass -1 if no notification fits that criteria.
      */
     @TargetApi(Build.VERSION_CODES.M)
-    boolean hideSummaryNotificationIfNecessary(Integer notificationIdToIgnore) {
+    boolean hideSummaryNotificationIfNecessary(int notificationIdToIgnore) {
         if (!useForegroundService()) return false;
         if (mDownloadsInProgress.size() > 0) return false;
 
-        if (hasDownloadNotifications(notificationIdToIgnore)) return false;
+        if (hasDownloadNotificationsInternal(notificationIdToIgnore)) return false;
 
         StatusBarNotification notification = getSummaryNotification();
         if (notification != null) {
@@ -788,9 +807,10 @@ public class DownloadNotificationService extends Service {
         // Since we are about to go through the process of validating whether or not we can shut
         // down, don't stop foreground if we have no download notifications left to show.  Hiding
         // the summary will take care of that for us.
-        stopTrackingInProgressDownload(downloadGuid, hasDownloadNotifications(notificationId));
+        stopTrackingInProgressDownload(
+                downloadGuid, hasDownloadNotificationsInternal(notificationId));
         if (!hideSummaryNotificationIfNecessary(notificationId)) {
-            updateSummaryIcon(notificationId, null);
+            updateSummaryIcon(mContext, mNotificationManager, notificationId, null);
         }
     }
 
@@ -854,6 +874,7 @@ public class DownloadNotificationService extends Service {
         builder.addAction(R.drawable.btn_close_white,
                 mContext.getResources().getString(R.string.download_notification_cancel_button),
                 buildPendingIntent(cancelIntent, entry.notificationId));
+        builder.setDeleteIntent(buildSummaryIconIntent(entry.notificationId));
 
         updateNotification(entry.notificationId, builder.build(), downloadGuid,
                 entry.isOfflinePage(),
@@ -903,6 +924,7 @@ public class DownloadNotificationService extends Service {
                     mContext.getResources(), R.drawable.offline_pin);
             mDownloadSuccessLargeIcon = getLargeNotificationIcon(bitmap);
         }
+        builder.setDeleteIntent(buildSummaryIconIntent(notificationId));
         builder.setLargeIcon(mDownloadSuccessLargeIcon);
         updateNotification(notificationId, builder.build(), downloadGuid, isOfflinePage, null);
         stopTrackingInProgressDownload(downloadGuid, true);
@@ -930,6 +952,7 @@ public class DownloadNotificationService extends Service {
         ChromeNotificationBuilder builder =
                 buildNotification(android.R.drawable.stat_sys_download_done, fileName,
                         mContext.getResources().getString(R.string.download_notification_failed));
+        builder.setDeleteIntent(buildSummaryIconIntent(notificationId));
         updateNotification(notificationId, builder.build(), downloadGuid, isOfflinePage, null);
         stopTrackingInProgressDownload(downloadGuid, true);
     }
@@ -942,6 +965,12 @@ public class DownloadNotificationService extends Service {
     private PendingIntent buildPendingIntent(Intent intent, int notificationId) {
         return PendingIntent.getBroadcast(
                 mContext, notificationId, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+    }
+
+    private PendingIntent buildSummaryIconIntent(int notificationId) {
+        Intent intent = new Intent(mContext, DownloadBroadcastReceiver.class);
+        intent.setAction(ACTION_DOWNLOAD_UPDATE_SUMMARY_ICON);
+        return buildPendingIntent(intent, notificationId);
     }
 
     /**
@@ -1036,6 +1065,14 @@ public class DownloadNotificationService extends Service {
      * @param intent Intent with the download operation.
      */
     private void handleDownloadOperation(final Intent intent) {
+        // Process updating the summary notification first.  This has no impact on a specific
+        // download.
+        if (ACTION_DOWNLOAD_UPDATE_SUMMARY_ICON.equals(intent.getAction())) {
+            updateSummaryIcon(mContext, mNotificationManager, -1, null);
+            hideSummaryNotificationIfNecessary(-1);
+            return;
+        }
+
         // TODO(qinmin): Figure out how to properly handle this case.
         boolean isOfflinePage =
                 IntentUtils.safeGetBooleanExtra(intent, EXTRA_IS_OFFLINE_PAGE, false);
@@ -1043,7 +1080,7 @@ public class DownloadNotificationService extends Service {
         if (entry == null
                 && !(isOfflinePage && TextUtils.equals(intent.getAction(), ACTION_DOWNLOAD_OPEN))) {
             handleDownloadOperationForMissingNotification(intent);
-            hideSummaryNotificationIfNecessary(null);
+            hideSummaryNotificationIfNecessary(-1);
             return;
         }
 
@@ -1052,7 +1089,7 @@ public class DownloadNotificationService extends Service {
             // nothing in that case.
             if (!DownloadManagerService.hasDownloadManagerService()) {
                 notifyDownloadPaused(entry.downloadGuid, !entry.isOffTheRecord, false);
-                hideSummaryNotificationIfNecessary(null);
+                hideSummaryNotificationIfNecessary(-1);
                 return;
             }
         } else if (ACTION_DOWNLOAD_RESUME.equals(intent.getAction())) {
@@ -1068,7 +1105,7 @@ public class DownloadNotificationService extends Service {
         } else if (ACTION_DOWNLOAD_RESUME_ALL.equals(intent.getAction())
                 && (mDownloadSharedPreferenceHelper.getEntries().isEmpty()
                         || DownloadManagerService.hasDownloadManagerService())) {
-            hideSummaryNotificationIfNecessary(null);
+            hideSummaryNotificationIfNecessary(-1);
             return;
         } else if (ACTION_DOWNLOAD_OPEN.equals(intent.getAction())) {
             // TODO(fgorski): Do we even need to do anything special here, before we launch Chrome?
@@ -1127,7 +1164,7 @@ public class DownloadNotificationService extends Service {
 
                 hideSummaryNotificationIfNecessary(ACTION_DOWNLOAD_CANCEL.equals(intent.getAction())
                                 ? entry.notificationId
-                                : null);
+                                : -1);
             }
         };
         try {
@@ -1204,7 +1241,8 @@ public class DownloadNotificationService extends Service {
         } else {
             mDownloadSharedPreferenceHelper.removeSharedPreferenceEntry(downloadGuid);
         }
-        updateSummaryIcon(-1, new Pair<Integer, Notification>(id, notification));
+        updateSummaryIcon(mContext, mNotificationManager, -1,
+                new Pair<Integer, Notification>(id, notification));
     }
 
     private void trackNotificationUma(boolean isOfflinePage, String downloadGuid) {
@@ -1224,6 +1262,7 @@ public class DownloadNotificationService extends Service {
      */
     static boolean isDownloadOperationIntent(Intent intent) {
         if (intent == null) return false;
+        if (ACTION_DOWNLOAD_UPDATE_SUMMARY_ICON.equals(intent.getAction())) return true;
         if (ACTION_DOWNLOAD_RESUME_ALL.equals(intent.getAction())) return true;
         if (!ACTION_DOWNLOAD_CANCEL.equals(intent.getAction())
                 && !ACTION_DOWNLOAD_RESUME.equals(intent.getAction())
