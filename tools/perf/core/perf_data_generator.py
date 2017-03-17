@@ -489,7 +489,7 @@ def generate_isolate_script_entry(swarming_dimensions, test_args,
       # Always say this is true regardless of whether the tester
       # supports swarming. It doesn't hurt.
       'can_use_on_swarming_builders': True,
-      'expiration': 21600,
+      'expiration': 7 * 60 * 60, # 7 hour timeout for now. See crbug.com/699312
       'hard_timeout': swarming_timeout if swarming_timeout else 7200,
       'io_timeout': 3600,
       'dimension_sets': swarming_dimensions,
