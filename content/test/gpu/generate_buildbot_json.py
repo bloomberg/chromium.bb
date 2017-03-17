@@ -1634,9 +1634,11 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
     ],
     'disabled_tester_configs': [
       {
-        # The Mac ASAN swarming runs on two different GPU types so we can't
-        # have one expected vendor ID / device ID
         'names': [
+          'Linux ChromiumOS Ozone (Intel)',
+
+          # The Mac ASAN swarming runs on two different GPU types so we can't
+          # have one expected vendor ID / device ID
           'Mac GPU ASAN Release',
         ],
       },

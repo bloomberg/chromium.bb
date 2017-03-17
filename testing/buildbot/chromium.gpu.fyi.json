@@ -2665,35 +2665,7 @@
         "use_xvfb": false
       }
     ],
-    "isolated_scripts": [
-      {
-        "args": [
-          "info_collection",
-          "--show-stdout",
-          "--browser=release",
-          "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--expected-vendor-id",
-          "8086",
-          "--expected-device-id",
-          "1912"
-        ],
-        "isolate_name": "telemetry_gpu_integration_test",
-        "name": "info_collection_tests",
-        "override_compile_targets": [
-          "telemetry_gpu_integration_test_run"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": false,
-          "dimension_sets": [
-            {
-              "gpu": "8086:1912",
-              "os": "Ubuntu"
-            }
-          ]
-        }
-      }
-    ]
+    "isolated_scripts": []
   },
   "Linux ChromiumOS Ozone Builder": {},
   "Linux Debug (Intel HD 530)": {
