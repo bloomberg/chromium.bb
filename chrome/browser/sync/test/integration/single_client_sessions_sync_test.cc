@@ -324,7 +324,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, TabMovedToOtherWindow) {
 }
 
 // crbug.com/689662
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(OS_WIN)
 #define MAYBE_CookieJarMismatch DISABLED_CookieJarMismatch
 #else
 #define MAYBE_CookieJarMismatch CookieJarMismatch
