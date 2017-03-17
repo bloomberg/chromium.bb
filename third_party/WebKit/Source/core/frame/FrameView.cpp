@@ -3234,18 +3234,17 @@ void FrameView::paintTree() {
 }
 
 void FrameView::paintGraphicsLayerRecursively(GraphicsLayer* graphicsLayer) {
+  DCHECK(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
   if (graphicsLayer->drawsContent()) {
     graphicsLayer->paint(nullptr);
     notifyPaint(graphicsLayer->getPaintController());
   }
 
-  if (!RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
-    if (GraphicsLayer* maskLayer = graphicsLayer->maskLayer())
-      paintGraphicsLayerRecursively(maskLayer);
-    if (GraphicsLayer* contentsClippingMaskLayer =
-            graphicsLayer->contentsClippingMaskLayer())
-      paintGraphicsLayerRecursively(contentsClippingMaskLayer);
-  }
+  if (GraphicsLayer* maskLayer = graphicsLayer->maskLayer())
+    paintGraphicsLayerRecursively(maskLayer);
+  if (GraphicsLayer* contentsClippingMaskLayer =
+          graphicsLayer->contentsClippingMaskLayer())
+    paintGraphicsLayerRecursively(contentsClippingMaskLayer);
 
   for (auto& child : graphicsLayer->children())
     paintGraphicsLayerRecursively(child);
