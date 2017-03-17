@@ -225,8 +225,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,
   TestBubbleWithMultipleWindows();
 }
 
+// Crashes on Mac only.  http://crbug.com/702554
+#if defined(OS_MACOSX)
+#define MAYBE_TestClickingLearnMoreButton DISABLED_TestClickingLearnMoreButton
+#else
+#define MAYBE_TestClickingLearnMoreButton TestClickingLearnMoreButton
+#endif
 IN_PROC_BROWSER_TEST_F(ExtensionMessageBubbleViewBrowserTest,
-                       TestClickingLearnMoreButton) {
+                       MAYBE_TestClickingLearnMoreButton) {
   TestClickingLearnMoreButton();
 }
 
