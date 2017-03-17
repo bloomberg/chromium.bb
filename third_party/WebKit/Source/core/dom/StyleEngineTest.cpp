@@ -450,18 +450,19 @@ TEST_F(StyleEngineTest, ModifyStyleRuleMatchedPropertiesCache) {
             t1->computedStyle()->visitedDependentColor(CSSPropertyColor));
 }
 
-TEST_F(StyleEngineTest, ScheduleInvaldationAfterSubtreeRecalc) {
+TEST_F(StyleEngineTest, ScheduleInvalidationAfterSubtreeRecalc) {
   document().body()->setInnerHTML(
-      "<style>"
-      "  .t1 span { color: green }x"
+      "<style id='s1'>"
+      "  .t1 span { color: green }"
       "  .t2 span { color: green }"
       "</style>"
+      "<style id='s2'>div { background: lime }</style>"
       "<div id='t1'></div>"
       "<div id='t2'></div>");
   document().view()->updateAllLifecyclePhases();
 
   Element* t1 = document().getElementById("t1");
-  Element* t2 = document().getElementById("t1");
+  Element* t2 = document().getElementById("t2");
   ASSERT_TRUE(t1);
   ASSERT_TRUE(t2);
 
@@ -469,6 +470,7 @@ TEST_F(StyleEngineTest, ScheduleInvaldationAfterSubtreeRecalc) {
   t1->setAttribute(blink::HTMLNames::classAttr, "t1");
   EXPECT_FALSE(document().needsStyleInvalidation());
   EXPECT_TRUE(document().childNeedsStyleInvalidation());
+  EXPECT_TRUE(t1->needsStyleInvalidation());
 
   document().view()->updateAllLifecyclePhases();
 
@@ -484,6 +486,65 @@ TEST_F(StyleEngineTest, ScheduleInvaldationAfterSubtreeRecalc) {
   t2->setAttribute(blink::HTMLNames::classAttr, "t2");
   EXPECT_FALSE(document().needsStyleInvalidation());
   EXPECT_FALSE(document().childNeedsStyleInvalidation());
+
+  document().view()->updateAllLifecyclePhases();
+  HTMLStyleElement* s2 = toHTMLStyleElement(document().getElementById("s2"));
+  ASSERT_TRUE(s2);
+  s2->setDisabled(true);
+  styleEngine().updateActiveStyle();
+  EXPECT_FALSE(document().childNeedsStyleInvalidation());
+  EXPECT_TRUE(document().needsStyleInvalidation());
+
+  document().view()->updateAllLifecyclePhases();
+  styleEngine().platformColorsChanged();
+  s2->setDisabled(false);
+  styleEngine().updateActiveStyle();
+  EXPECT_FALSE(document().childNeedsStyleInvalidation());
+  EXPECT_FALSE(document().needsStyleInvalidation());
+
+  document().view()->updateAllLifecyclePhases();
+  HTMLStyleElement* s1 = toHTMLStyleElement(document().getElementById("s1"));
+  ASSERT_TRUE(s1);
+  s1->setDisabled(true);
+  styleEngine().updateActiveStyle();
+  EXPECT_TRUE(document().childNeedsStyleInvalidation());
+  EXPECT_FALSE(document().needsStyleInvalidation());
+  EXPECT_TRUE(t1->needsStyleInvalidation());
+  EXPECT_TRUE(t2->needsStyleInvalidation());
+
+  document().view()->updateAllLifecyclePhases();
+  styleEngine().platformColorsChanged();
+  s1->setDisabled(false);
+  styleEngine().updateActiveStyle();
+  EXPECT_FALSE(document().childNeedsStyleInvalidation());
+  EXPECT_FALSE(document().needsStyleInvalidation());
+  EXPECT_FALSE(t1->needsStyleInvalidation());
+  EXPECT_FALSE(t2->needsStyleInvalidation());
+}
+
+TEST_F(StyleEngineTest, NoScheduledRuleSetInvalidationsOnNewShadow) {
+  document().body()->setInnerHTML("<div id='host'></div>");
+  Element* host = document().getElementById("host");
+  ASSERT_TRUE(host);
+
+  document().view()->updateAllLifecyclePhases();
+  ShadowRootInit init;
+  init.setMode("open");
+  ShadowRoot* shadowRoot = host->attachShadow(
+      ScriptState::forMainWorld(document().frame()), init, ASSERT_NO_EXCEPTION);
+  ASSERT_TRUE(shadowRoot);
+
+  shadowRoot->setInnerHTML(
+      "<style>"
+      "  span { color: green }"
+      "  t1 { color: green }"
+      "</style>"
+      "<div id='t1'></div>"
+      "<span></span>");
+
+  styleEngine().updateActiveStyle();
+  EXPECT_FALSE(document().childNeedsStyleInvalidation());
+  EXPECT_FALSE(document().needsStyleInvalidation());
 }
 
 }  // namespace blink

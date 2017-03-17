@@ -1084,11 +1084,15 @@ void StyleEngine::applyRuleSetChanges(
   if (changedRuleFlags & KeyframesRules)
     ScopedStyleResolver::keyframesRulesAdded(treeScope);
 
+  Node& invalidationRoot =
+      ScopedStyleResolver::invalidationRootForTreeScope(treeScope);
+  if (invalidationRoot.getStyleChangeType() >= SubtreeStyleChange)
+    return;
+
   if (fontsChanged || (changedRuleFlags & FullRecalcRules)) {
-    ScopedStyleResolver::invalidationRootForTreeScope(treeScope)
-        .setNeedsStyleRecalc(SubtreeStyleChange,
-                             StyleChangeReasonForTracing::create(
-                                 StyleChangeReason::ActiveStylesheetsUpdate));
+    invalidationRoot.setNeedsStyleRecalc(
+        SubtreeStyleChange, StyleChangeReasonForTracing::create(
+                                StyleChangeReason::ActiveStylesheetsUpdate));
     return;
   }
 
