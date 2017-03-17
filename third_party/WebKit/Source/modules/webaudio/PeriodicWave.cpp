@@ -99,13 +99,6 @@ PeriodicWave* PeriodicWave::create(BaseAudioContext* context,
                        ? options.disableNormalization()
                        : false;
 
-  if (!options.hasReal() && !options.hasImag()) {
-    exceptionState.throwDOMException(
-        InvalidStateError,
-        "At least one of real and imag members must be specified.");
-    return nullptr;
-  }
-
   Vector<float> realCoef;
   Vector<float> imagCoef;
 
@@ -115,11 +108,16 @@ PeriodicWave* PeriodicWave::create(BaseAudioContext* context,
       imagCoef = options.imag();
     else
       imagCoef.resize(realCoef.size());
-  } else {
-    // We know real is not given, so imag must exist (because we checked for
-    // this above).
+  } else if (options.hasImag()) {
+    // |real| not given, but we have |imag|.
     imagCoef = options.imag();
     realCoef.resize(imagCoef.size());
+  } else {
+    // Neither |real| nor |imag| given.  Return an object that would
+    // generate a sine wave, which means real = [0,0], and imag = [0, 1]
+    realCoef.resize(2);
+    imagCoef.resize(2);
+    imagCoef[1] = 1;
   }
 
   return create(*context, realCoef.size(), realCoef.data(), imagCoef.size(),

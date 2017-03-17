@@ -51,13 +51,13 @@
 
         success = Should("node = new PeriodicWave(context)", function () {
           node = new PeriodicWave(context);
-        }).throw("InvalidStateError");
+        }).notThrow();
 
         taskDone();
       });
 
       audit.defineTask("constructor with options", function (taskDone) {
-        var node;
+        var node1;
         var success = true;
 
         var options = {
@@ -65,30 +65,32 @@
         };
         success = Should("node = new PeriodicWave(context, " + JSON.stringify(options) + ")",
           function () {
-            node = new PeriodicWave(context, options);
+            node1 = new PeriodicWave(context, options);
           }).notThrow();
-        success = Should("node instanceof PeriodicWave", node instanceof PeriodicWave)
+        success = Should("node1 instanceof PeriodicWave", node1 instanceof PeriodicWave)
           .beEqualTo(true) && success;
 
+        var node2;
         options = {
           imag: [1, 1]
         };
-        success = Should("node = new PeriodicWave(context, " + JSON.stringify(options) + ")",
+        success = Should("node2 = new PeriodicWave(context, " + JSON.stringify(options) + ")",
           function () {
-            node = new PeriodicWave(context, options);
+            node2 = new PeriodicWave(context, options);
           }).notThrow();
-        success = Should("node instanceof PeriodicWave", node instanceof PeriodicWave)
+        success = Should("node2 instanceof PeriodicWave", node2 instanceof PeriodicWave)
           .beEqualTo(true) && success;
 
+       var node3;
         options = {
           real: [1, 2],
           imag: [1, 1]
         };
-        success = Should("node = new PeriodicWave(context, " + JSON.stringify(options) + ")",
+        success = Should("node3 = new PeriodicWave(context, " + JSON.stringify(options) + ")",
           function () {
-            node = new PeriodicWave(context, options);
+            node3 = new PeriodicWave(context, options);
           }).notThrow();
-        success = Should("node instanceof PeriodicWave", node instanceof PeriodicWave)
+        success = Should("node3 instanceof PeriodicWave", node3 instanceof PeriodicWave)
           .beEqualTo(true) && success;
 
         Should("new PeriodicWave() with options", success)
@@ -287,6 +289,54 @@
             .beCloseToArray(expected, threshold);
         });
       }
+
+      function sineWaveTest(waveFun, message) {
+        // Verify that the default PeriodicWave produces a sine wave. Use a
+        // 2-channel context to verify this. Channel 0 is the output from the
+        // PeriodicWave, and channel 1 is the reference oscillator output.
+        let context = new OfflineAudioContext(2, 40000, 40000);
+        let oscRef =
+            new OscillatorNode(context, {type: 'sine', frequency: 440});
+        let wave = waveFun(context);
+        let oscTest =
+            new OscillatorNode(context, {frequency: 440, periodicWave: wave});
+
+        let merger = new ChannelMergerNode(context, {numberOfInputs: 2});
+
+        oscRef.connect(merger, 0, 1);
+        oscTest.connect(merger, 0, 0);
+
+        merger.connect(context.destination);
+
+        oscRef.start();
+        oscTest.start();
+
+        return context.startRendering().then(output => {
+          // The output from the two channels MUST match exactly.
+          let actual = output.getChannelData(0);
+          let ref = output.getChannelData(1);
+
+          Should(message, actual).beEqualToArray(ref);
+        });
+      }
+
+      audit.defineTask('default wave', function(taskDone) {
+        // Verify that the default PeriodicWave produces a sine wave.
+        sineWaveTest(
+            (context) => new PeriodicWave(context),
+            'new PeriodicWave(context) output')
+            .then(taskDone);
+      });
+
+      audit.defineTask('default wave (with dict)', function(taskDone) {
+        // Verify that the default PeriodicWave produces a sine wave when the
+        // PeriodicWaveOptions dictionary is given, but real and imag members
+        // are not set.
+        sineWaveTest(
+            (context) => new PeriodicWave(context, {foo: 42}),
+            'new PeriodicWave(context, {foo: 42}) output')
+            .then(taskDone);
+      });
 
       audit.runTasks();
     </script>
