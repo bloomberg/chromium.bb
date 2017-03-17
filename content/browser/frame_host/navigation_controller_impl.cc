@@ -586,11 +586,15 @@ bool NavigationControllerImpl::CanGoToOffset(int offset) const {
 }
 
 void NavigationControllerImpl::GoBack() {
+  TRACE_EVENT0("browser,navigation",
+               "NavigationControllerImpl::GoBack");
   // Call GoToIndex rather than GoToOffset to get the NOTREACHED() check.
   GoToIndex(GetIndexForOffset(-1));
 }
 
 void NavigationControllerImpl::GoForward() {
+  TRACE_EVENT0("browser,navigation",
+               "NavigationControllerImpl::GoForward");
   // Call GoToIndex rather than GoToOffset to get the NOTREACHED() check.
   GoToIndex(GetIndexForOffset(1));
 }
