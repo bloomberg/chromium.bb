@@ -64,7 +64,6 @@ public class PrivacyPreferencesManagerTest extends InstrumentationTestCase {
         ContextUtils.initApplicationContextForTests(context.getApplicationContext());
         PrivacyPreferencesManager preferenceManager = new MockPrivacyPreferencesManager(
                 context, isConnected, wifiOn, isMetricsReportingEnabled);
-        preferenceManager.enablePotentialCrashUploading();
 
         for (int i = 0; i < REPS; i++) {
             String state = String.format("[connected = %b, wifi = %b, reporting = %b]", isConnected,

@@ -33,18 +33,6 @@ public interface CrashReportingPermissionManager {
      */
     public boolean isMetricsUploadPermitted();
 
-    // TODO(isherman): Remove this function. It was previously used to enable a specific type of
-    // test, but it should not be necessary anymore. (Note: There are currently some clients that do
-    // partly depend on it, so it is not necessarily safe to remove without contacting those
-    // clients.)
-    /**
-     * Checks whether uploading of crash dumps is permitted, based on the corresponding command line
-     * flag only.
-     *
-     * @return whether uploading of crash dumps is enabled or disabled by a command line flag.
-     */
-    public boolean isCrashUploadDisabledByCommandLine();
-
     /**
      * Checks whether uploading of usage metrics and crash dumps is currently permitted, based on
      * user consent only.

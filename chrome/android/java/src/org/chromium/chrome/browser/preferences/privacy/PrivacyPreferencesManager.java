@@ -43,18 +43,11 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
     private final Context mContext;
     private final SharedPreferences mSharedPreferences;
 
-    private boolean mCrashUploadingDisabledByCommandLine;
-
     @VisibleForTesting
     PrivacyPreferencesManager(Context context) {
         mContext = context;
         mSharedPreferences = ContextUtils.getAppSharedPreferences();
 
-        // We default the command line flag to disable uploads unless altered on deferred startup
-        // to prevent unwanted uploads at startup. If the command line flag to enable uploading is
-        // turned on, the other conditions (e.g. user/network preferences) for when to upload apply.
-        // This currently applies to only crash reporting and is ignored for metrics reporting.
-        mCrashUploadingDisabledByCommandLine = true;
         migrateUsageAndCrashPreferences();
     }
 
@@ -285,22 +278,7 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
     }
 
     /**
-     * Checks whether uploading of crash dumps is permitted, based on the corresponding command line
-     * flag only.
-     * TODO(jchinlee): this is not quite a boolean. Depending on other refactoring, change to enum.
-     *
-     * @return whether uploading of crash dumps is enabled or disabled by a command line flag.
-     */
-    @Override
-    public boolean isCrashUploadDisabledByCommandLine() {
-        return mCrashUploadingDisabledByCommandLine;
-    }
-
-    /**
      * Checks whether uploading of usage metrics is currently permitted.
-     *
-     * Note that this function intentionally does not check |mCrashUploadingDisabledByCommandLine|.
-     * See http://crbug.com/602703 for more details.
      *
      * @return whether uploading usage metrics is currently permitted.
      */
@@ -331,17 +309,6 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
     @Override
     public boolean isUploadEnabledForTests() {
         return CommandLine.getInstance().hasSwitch(ChromeSwitches.FORCE_CRASH_DUMP_UPLOAD);
-    }
-
-    /**
-     * Provides a way to remove disabling crash uploading entirely.
-     * Enable crash uploading based on user's preference when an overriding flag does not exist in
-     * commandline.
-     * Used to differentiate from tests that trigger crashes intentionally, so these crashes are not
-     * uploaded.
-     */
-    public void enablePotentialCrashUploading() {
-        mCrashUploadingDisabledByCommandLine = false;
     }
 
     /**

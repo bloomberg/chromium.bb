@@ -101,7 +101,6 @@ public class CrashTestCase extends InstrumentationTestCase {
         protected boolean mIsInSample;
         protected boolean mIsPermitted;
         protected boolean mIsUserPermitted;
-        protected boolean mIsCommandLineDisabled;
         protected boolean mIsNetworkAvailable;
         protected boolean mIsEnabledForTests;
 
@@ -125,11 +124,6 @@ public class CrashTestCase extends InstrumentationTestCase {
         @Override
         public boolean isUsageAndCrashReportingPermittedByUser() {
             return mIsUserPermitted;
-        }
-
-        @Override
-        public boolean isCrashUploadDisabledByCommandLine() {
-            return mIsCommandLineDisabled;
         }
 
         @Override

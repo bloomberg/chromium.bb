@@ -129,7 +129,6 @@ public class MinidumpUploaderTest extends CrashTestCase {
                         mIsInSample = true;
                         mIsPermitted = true;
                         mIsUserPermitted = true;
-                        mIsCommandLineDisabled = false;
                         mIsNetworkAvailable = false; // Will cause us to fail uploads
                         mIsEnabledForTests = false;
                     }
@@ -514,7 +513,6 @@ public class MinidumpUploaderTest extends CrashTestCase {
                     // isUsageAndCrashReportingPermittedByUser().
                     mIsInSample = true;
                     mIsPermitted = true;
-                    mIsCommandLineDisabled = false;
                     mIsNetworkAvailable = true;
                     mIsEnabledForTests = false;
                 }

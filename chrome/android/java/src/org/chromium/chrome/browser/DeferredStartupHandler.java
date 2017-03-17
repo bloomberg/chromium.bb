@@ -16,7 +16,6 @@ import android.view.inputmethod.InputMethodInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.view.inputmethod.InputMethodSubtype;
 
-import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.FieldTrialList;
 import org.chromium.base.Log;
@@ -42,7 +41,6 @@ import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomiza
 import org.chromium.chrome.browser.physicalweb.PhysicalWeb;
 import org.chromium.chrome.browser.precache.PrecacheLauncher;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
-import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.webapps.ChromeWebApkHost;
 import org.chromium.chrome.browser.webapps.WebApkVersionManager;
@@ -324,27 +322,21 @@ public class DeferredStartupHandler {
              * minidump storage directory.
              */
             private void initCrashReporting() {
-                // Perform cleanup prior to checking whether crash reporting is enabled, so that
-                // users who disable crash reporting are still able to eventually recover disk space
-                // dedicated to storing pending crash reports.
-                CrashFileManager crashFileManager = new CrashFileManager(mAppContext.getCacheDir());
-                crashFileManager.cleanOutAllNonFreshMinidumpFiles();
-
-                // Likewise, there might be pending metrics from previous runs when crash reporting
-                // was enabled.
-                MinidumpUploadService.storeBreakpadUploadStatsInUma(
-                        ChromePreferenceManager.getInstance());
-
-                // Now check whether crash reporting is enabled. If it is, broadcast the appropriate
-                // permission.
-                boolean crashReportingDisabled = CommandLine.getInstance().hasSwitch(
-                        ChromeSwitches.DISABLE_CRASH_DUMP_UPLOAD);
-                if (crashReportingDisabled) return;
-                PrivacyPreferencesManager.getInstance().enablePotentialCrashUploading();
-
                 RecordHistogram.recordLongTimesHistogram("UMA.Debug.EnableCrashUpload.Uptime3",
                         mAsyncTaskStartTime - UmaUtils.getForegroundStartTime(),
                         TimeUnit.MILLISECONDS);
+
+                // Crash reports can be uploaded as part of a background service even while the main
+                // Chrome activity is not running, and hence regular metrics reporting is not
+                // possible. Instead, metrics are temporarily written to prefs; export those prefs
+                // to UMA metrics here.
+                MinidumpUploadService.storeBreakpadUploadStatsInUma(
+                        ChromePreferenceManager.getInstance());
+
+                // Likewise, this is a good time to process and clean up any pending or stale crash
+                // reports left behind by previous runs.
+                CrashFileManager crashFileManager = new CrashFileManager(mAppContext.getCacheDir());
+                crashFileManager.cleanOutAllNonFreshMinidumpFiles();
 
                 // Finally, uploading any pending crash reports.
                 File[] minidumps = crashFileManager.getAllMinidumpFiles(

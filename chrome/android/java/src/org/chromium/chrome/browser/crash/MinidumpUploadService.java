@@ -98,9 +98,6 @@ public class MinidumpUploadService extends IntentService {
         PersistableBundle permissions = new PersistableBundle();
         permissions.putBoolean(ChromeMinidumpUploaderDelegate.IS_CLIENT_IN_METRICS_SAMPLE,
                 permissionManager.isClientInMetricsSample());
-        permissions.putBoolean(
-                ChromeMinidumpUploaderDelegate.IS_CRASH_UPLOAD_DISABLED_BY_COMMAND_LINE,
-                permissionManager.isCrashUploadDisabledByCommandLine());
         permissions.putBoolean(ChromeMinidumpUploaderDelegate.IS_UPLOAD_ENABLED_FOR_TESTS,
                 permissionManager.isUploadEnabledForTests());
 

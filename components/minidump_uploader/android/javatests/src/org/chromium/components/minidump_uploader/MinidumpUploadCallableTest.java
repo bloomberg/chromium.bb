@@ -166,7 +166,6 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
                         mIsInSample = true;
                         mIsPermitted = true;
                         mIsUserPermitted = true;
-                        mIsCommandLineDisabled = false;
                         mIsNetworkAvailable = true;
                         mIsEnabledForTests = false;
                     }
@@ -191,7 +190,6 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
                         mIsInSample = true;
                         mIsPermitted = false;
                         mIsUserPermitted = false;
-                        mIsCommandLineDisabled = false;
                         mIsNetworkAvailable = true;
                         mIsEnabledForTests = false;
                     }
@@ -212,30 +210,6 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
 
     @SmallTest
     @Feature({"Android-AppBase"})
-    public void testCallNotPermittedByCommandLine() throws Exception {
-        CrashReportingPermissionManager testPermManager =
-                new MockCrashReportingPermissionManager() {
-                    {
-                        mIsInSample = true;
-                        mIsPermitted = true;
-                        mIsUserPermitted = true;
-                        mIsCommandLineDisabled = true;
-                        mIsNetworkAvailable = true;
-                        mIsEnabledForTests = false;
-                    }
-                };
-
-        HttpURLConnectionFactory httpURLConnectionFactory = new FailHttpURLConnectionFactory();
-
-        MinidumpUploadCallable minidumpUploadCallable =
-                new MockMinidumpUploadCallable(httpURLConnectionFactory, testPermManager);
-        assertEquals(MinidumpUploadCallable.UPLOAD_COMMANDLINE_DISABLED,
-                minidumpUploadCallable.call().intValue());
-        assertFalse(mExpectedFileAfterUpload.exists());
-    }
-
-    @SmallTest
-    @Feature({"Android-AppBase"})
     public void testCallPermittedButNotInSample() throws Exception {
         CrashReportingPermissionManager testPermManager =
                 new MockCrashReportingPermissionManager() {
@@ -243,7 +217,6 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
                         mIsInSample = false;
                         mIsPermitted = true;
                         mIsUserPermitted = true;
-                        mIsCommandLineDisabled = false;
                         mIsNetworkAvailable = true;
                         mIsEnabledForTests = false;
                     }
@@ -271,7 +244,6 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
                         mIsInSample = true;
                         mIsPermitted = true;
                         mIsUserPermitted = true;
-                        mIsCommandLineDisabled = false;
                         mIsNetworkAvailable = false;
                         mIsEnabledForTests = false;
                     }
@@ -295,7 +267,6 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
                         mIsInSample = true;
                         mIsPermitted = false;
                         mIsUserPermitted = false;
-                        mIsCommandLineDisabled = false;
                         mIsNetworkAvailable = false;
                         mIsEnabledForTests = true;
                     }
@@ -321,7 +292,6 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
                         mIsInSample = true;
                         mIsPermitted = true;
                         mIsUserPermitted = true;
-                        mIsCommandLineDisabled = false;
                         mIsNetworkAvailable = true;
                         mIsEnabledForTests = false;
                     }
@@ -347,7 +317,6 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
                         mIsInSample = true;
                         mIsPermitted = false;
                         mIsUserPermitted = false;
-                        mIsCommandLineDisabled = false;
                         mIsNetworkAvailable = true;
                         mIsEnabledForTests = false;
                     }
@@ -368,31 +337,6 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
 
     @SmallTest
     @Feature({"Android-AppBase"})
-    public void testCallNotPermittedByCommandLine_ForcedUpload() throws Exception {
-        setForcedUpload();
-        CrashReportingPermissionManager testPermManager =
-                new MockCrashReportingPermissionManager() {
-                    {
-                        mIsInSample = true;
-                        mIsPermitted = true;
-                        mIsUserPermitted = true;
-                        mIsCommandLineDisabled = true;
-                        mIsNetworkAvailable = true;
-                        mIsEnabledForTests = false;
-                    }
-                };
-
-        HttpURLConnectionFactory httpURLConnectionFactory = new FailHttpURLConnectionFactory();
-
-        MinidumpUploadCallable minidumpUploadCallable =
-                new MockMinidumpUploadCallable(httpURLConnectionFactory, testPermManager);
-        assertEquals(MinidumpUploadCallable.UPLOAD_COMMANDLINE_DISABLED,
-                minidumpUploadCallable.call().intValue());
-        assertFalse(mExpectedFileAfterUpload.exists());
-    }
-
-    @SmallTest
-    @Feature({"Android-AppBase"})
     public void testCallPermittedButNotInSample_ForcedUpload() throws Exception {
         setForcedUpload();
         CrashReportingPermissionManager testPermManager =
@@ -401,7 +345,6 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
                         mIsInSample = false;
                         mIsPermitted = true;
                         mIsUserPermitted = true;
-                        mIsCommandLineDisabled = false;
                         mIsNetworkAvailable = true;
                         mIsEnabledForTests = false;
                     }
@@ -430,7 +373,6 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
                         mIsInSample = true;
                         mIsPermitted = true;
                         mIsUserPermitted = true;
-                        mIsCommandLineDisabled = false;
                         mIsNetworkAvailable = false;
                         mIsEnabledForTests = false;
                     }
