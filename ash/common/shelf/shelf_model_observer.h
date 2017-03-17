@@ -6,7 +6,7 @@
 #define ASH_COMMON_SHELF_SHELF_MODEL_OBSERVER_H_
 
 #include "ash/ash_export.h"
-#include "ash/common/shelf/shelf_item_types.h"
+#include "ash/public/cpp/shelf_item.h"
 
 namespace ash {
 

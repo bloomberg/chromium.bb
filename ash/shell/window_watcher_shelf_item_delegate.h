@@ -5,7 +5,7 @@
 #ifndef ASH_SHELL_WINDOW_WATCHER_SHELF_ITEM_DELEGATE_H_
 #define ASH_SHELL_WINDOW_WATCHER_SHELF_ITEM_DELEGATE_H_
 
-#include "ash/common/shelf/shelf_item_types.h"
+#include "ash/public/cpp/shelf_item.h"
 #include "ash/public/interfaces/shelf.mojom.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"

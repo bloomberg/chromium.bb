@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/ash/launcher/settings_window_observer.h"
 
-#include "ash/common/shelf/shelf_item_types.h"
+#include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "base/feature_list.h"

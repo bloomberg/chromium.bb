@@ -2,22 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_COMMON_SHELF_SHELF_ITEM_TYPES_H_
-#define ASH_COMMON_SHELF_SHELF_ITEM_TYPES_H_
-
-// TODO(msw): Rename these files to shelf_item.*; audit users.
+#ifndef ASH_PUBLIC_CPP_SHELF_ITEM_H_
+#define ASH_PUBLIC_CPP_SHELF_ITEM_H_
 
 #include <string>
 #include <vector>
 
-#include "ash/ash_export.h"
+#include "ash/public/cpp/ash_public_export.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "base/strings/string16.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace ash {
 
-struct ASH_EXPORT ShelfItem {
+struct ASH_PUBLIC_EXPORT ShelfItem {
   ShelfItem();
   ShelfItem(const ShelfItem& shelf_item);
   ~ShelfItem();
@@ -50,4 +48,4 @@ typedef std::vector<ShelfItem> ShelfItems;
 
 }  // namespace ash
 
-#endif  // ASH_COMMON_SHELF_SHELF_ITEM_TYPES_H_
+#endif  // ASH_PUBLIC_CPP_SHELF_ITEM_H_

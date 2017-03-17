@@ -2,11 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_PUBLIC_INTERFACES_SHELF_STRUCT_TRAITS_H_
-#define ASH_PUBLIC_INTERFACES_SHELF_STRUCT_TRAITS_H_
+#ifndef ASH_PUBLIC_CPP_SHELF_STRUCT_TRAITS_H_
+#define ASH_PUBLIC_CPP_SHELF_STRUCT_TRAITS_H_
 
+#include "ash/public/cpp/ash_public_export.h"
+#include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/shelf_types.h"
-#include "ash/public/interfaces/shelf.mojom.h"
+#include "ash/public/interfaces/shelf.mojom-shared.h"
+
+using ash::ShelfItem;
 
 namespace mojo {
 
@@ -126,6 +130,97 @@ struct EnumTraits<ash::mojom::ShelfAutoHideBehavior,
 };
 
 template <>
+struct EnumTraits<ash::mojom::ShelfItemStatus, ash::ShelfItemStatus> {
+  static ash::mojom::ShelfItemStatus ToMojom(ash::ShelfItemStatus input) {
+    switch (input) {
+      case ash::STATUS_CLOSED:
+        return ash::mojom::ShelfItemStatus::CLOSED;
+      case ash::STATUS_RUNNING:
+        return ash::mojom::ShelfItemStatus::RUNNING;
+      case ash::STATUS_ACTIVE:
+        return ash::mojom::ShelfItemStatus::ACTIVE;
+      case ash::STATUS_ATTENTION:
+        return ash::mojom::ShelfItemStatus::ATTENTION;
+    }
+    NOTREACHED();
+    return ash::mojom::ShelfItemStatus::CLOSED;
+  }
+
+  static bool FromMojom(ash::mojom::ShelfItemStatus input,
+                        ash::ShelfItemStatus* out) {
+    switch (input) {
+      case ash::mojom::ShelfItemStatus::CLOSED:
+        *out = ash::STATUS_CLOSED;
+        return true;
+      case ash::mojom::ShelfItemStatus::RUNNING:
+        *out = ash::STATUS_RUNNING;
+        return true;
+      case ash::mojom::ShelfItemStatus::ACTIVE:
+        *out = ash::STATUS_ACTIVE;
+        return true;
+      case ash::mojom::ShelfItemStatus::ATTENTION:
+        *out = ash::STATUS_ATTENTION;
+        return true;
+    }
+    NOTREACHED();
+    return false;
+  }
+};
+
+template <>
+struct EnumTraits<ash::mojom::ShelfItemType, ash::ShelfItemType> {
+  static ash::mojom::ShelfItemType ToMojom(ash::ShelfItemType input) {
+    switch (input) {
+      case ash::TYPE_APP_PANEL:
+        return ash::mojom::ShelfItemType::PANEL;
+      case ash::TYPE_PINNED_APP:
+        return ash::mojom::ShelfItemType::PINNED_APP;
+      case ash::TYPE_APP_LIST:
+        return ash::mojom::ShelfItemType::APP_LIST;
+      case ash::TYPE_BROWSER_SHORTCUT:
+        return ash::mojom::ShelfItemType::BROWSER;
+      case ash::TYPE_APP:
+        return ash::mojom::ShelfItemType::APP;
+      case ash::TYPE_DIALOG:
+        return ash::mojom::ShelfItemType::DIALOG;
+      case ash::TYPE_UNDEFINED:
+        return ash::mojom::ShelfItemType::UNDEFINED;
+    }
+    NOTREACHED();
+    return ash::mojom::ShelfItemType::UNDEFINED;
+  }
+
+  static bool FromMojom(ash::mojom::ShelfItemType input,
+                        ash::ShelfItemType* out) {
+    switch (input) {
+      case ash::mojom::ShelfItemType::PANEL:
+        *out = ash::TYPE_APP_PANEL;
+        return true;
+      case ash::mojom::ShelfItemType::PINNED_APP:
+        *out = ash::TYPE_PINNED_APP;
+        return true;
+      case ash::mojom::ShelfItemType::APP_LIST:
+        *out = ash::TYPE_APP_LIST;
+        return true;
+      case ash::mojom::ShelfItemType::BROWSER:
+        *out = ash::TYPE_BROWSER_SHORTCUT;
+        return true;
+      case ash::mojom::ShelfItemType::APP:
+        *out = ash::TYPE_APP;
+        return true;
+      case ash::mojom::ShelfItemType::DIALOG:
+        *out = ash::TYPE_DIALOG;
+        return true;
+      case ash::mojom::ShelfItemType::UNDEFINED:
+        *out = ash::TYPE_UNDEFINED;
+        return true;
+    }
+    NOTREACHED();
+    return false;
+  }
+};
+
+template <>
 struct EnumTraits<ash::mojom::ShelfLaunchSource, ash::ShelfLaunchSource> {
   static ash::mojom::ShelfLaunchSource ToMojom(ash::ShelfLaunchSource input) {
     switch (input) {
@@ -158,6 +253,23 @@ struct EnumTraits<ash::mojom::ShelfLaunchSource, ash::ShelfLaunchSource> {
   }
 };
 
+template <>
+struct ASH_PUBLIC_EXPORT
+    StructTraits<ash::mojom::ShelfItemDataView, ShelfItem> {
+  static ash::ShelfItemType type(const ShelfItem& i) { return i.type; }
+  static const SkBitmap& image(const ShelfItem& i);
+  static ash::ShelfID shelf_id(const ShelfItem& i) { return i.id; }
+  static ash::ShelfItemStatus status(const ShelfItem& i) { return i.status; }
+  static const std::string& app_id(const ShelfItem& i) { return i.app_id; }
+  static const base::string16& title(const ShelfItem& i) { return i.title; }
+  static bool shows_tooltip(const ShelfItem& i) { return i.shows_tooltip; }
+  static bool pinned_by_policy(const ShelfItem& i) {
+    return i.pinned_by_policy;
+  }
+
+  static bool Read(ash::mojom::ShelfItemDataView data, ShelfItem* out);
+};
+
 }  // namespace mojo
 
-#endif  // ASH_PUBLIC_INTERFACES_SHELF_STRUCT_TRAITS_H_
+#endif  // ASH_PUBLIC_CPP_SHELF_STRUCT_TRAITS_H_

@@ -37,6 +37,7 @@
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -256,9 +257,9 @@ class TestShelfDelegateForShelfView : public TestShelfDelegate {
 
   // ShelfDelegate overrides:
   ShelfID GetShelfIDForAppID(const std::string& app_id) override {
-    ShelfID id = 0;
-    EXPECT_TRUE(base::StringToInt(app_id, &id));
-    return id;
+    unsigned id = kInvalidShelfID;
+    EXPECT_TRUE(base::StringToUint(app_id, &id));
+    return base::checked_cast<ShelfID>(id);
   }
 
   bool HasShelfIDToAppIDMapping(ShelfID id) const override { return true; }
@@ -553,7 +554,7 @@ class ShelfViewTest : public AshTestBase {
       int from,
       int to,
       ShelfView* shelf_view,
-      const std::vector<std::pair<int, views::View*>>& expected_id_map) {
+      const std::vector<std::pair<ShelfID, views::View*>>& expected_id_map) {
     views::View* dragged_button =
         SimulateDrag(ShelfView::MOUSE, from, to, true);
     shelf_view->PointerReleasedOnButton(dragged_button, ShelfView::MOUSE,
@@ -599,13 +600,13 @@ class ShelfViewTest : public AshTestBase {
 
     int total_item_count = model_->item_count();
 
-    int last_visible_item_id_in_shelf =
+    ShelfID last_visible_item_id_in_shelf =
         GetItemId(test_api_->GetLastVisibleIndex());
-    int second_last_visible_item_id_in_shelf =
+    ShelfID second_last_visible_item_id_in_shelf =
         GetItemId(test_api_->GetLastVisibleIndex() - 1);
-    int first_visible_item_id_in_overflow =
+    ShelfID first_visible_item_id_in_overflow =
         GetItemId(test_api_for_overflow.GetFirstVisibleIndex());
-    int second_last_visible_item_id_in_overflow =
+    ShelfID second_last_visible_item_id_in_overflow =
         GetItemId(test_api_for_overflow.GetLastVisibleIndex() - 1);
 
     int drag_item_index = test_api_for_overflow.GetLastVisibleIndex();

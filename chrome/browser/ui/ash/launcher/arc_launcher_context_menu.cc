@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/ash/launcher/arc_launcher_context_menu.h"
 
-#include "ash/common/shelf/shelf_item_types.h"
+#include "ash/public/cpp/shelf_item.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"

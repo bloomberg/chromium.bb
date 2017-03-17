@@ -36,7 +36,7 @@
 
 #if defined(USE_ASH)
 // Note: gn check complains here, despite the correct conditional //ash dep.
-#include "ash/common/shelf/shelf_item_types.h"    // nogncheck
+#include "ash/public/cpp/shelf_item.h"            // nogncheck
 #include "ash/public/cpp/window_properties.h"     // nogncheck
 #include "ash/resources/grit/ash_resources.h"     // nogncheck
 #include "ash/wm/window_util.h"                   // nogncheck

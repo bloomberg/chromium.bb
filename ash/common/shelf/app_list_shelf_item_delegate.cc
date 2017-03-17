@@ -24,7 +24,7 @@ void AppListShelfItemDelegate::CreateAppListItemAndDelegate(ShelfModel* model) {
 
   // Create an AppListShelfItemDelegate for that item.
   ShelfID id = model->items()[index].id;
-  DCHECK_GE(id, 0);
+  DCHECK_NE(id, kInvalidShelfID);
   model->SetShelfItemDelegate(id, base::MakeUnique<AppListShelfItemDelegate>());
 }
 

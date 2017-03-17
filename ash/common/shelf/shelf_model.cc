@@ -132,7 +132,7 @@ int ShelfModel::GetItemIndexForType(ShelfItemType type) {
   return -1;
 }
 
-ShelfItems::const_iterator ShelfModel::ItemByID(int id) const {
+ShelfItems::const_iterator ShelfModel::ItemByID(ShelfID id) const {
   for (ShelfItems::const_iterator i = items_.begin(); i != items_.end(); ++i) {
     if (i->id == id)
       return i;

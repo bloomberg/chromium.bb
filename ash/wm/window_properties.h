@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include "ash/ash_export.h"
-#include "ash/common/shelf/shelf_item_types.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "ui/base/class_property.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/geometry/rect.h"

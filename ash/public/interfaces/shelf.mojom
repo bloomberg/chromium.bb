@@ -24,6 +24,30 @@ enum ShelfAlignment { BOTTOM, LEFT, RIGHT, BOTTOM_LOCKED, };
 // These values match ash::ShelfAutoHideBehavior.
 enum ShelfAutoHideBehavior { ALWAYS, NEVER, HIDDEN, };
 
+// Represents the status of items in the shelf.
+// These values match ash::ShelfItemStatus.
+enum ShelfItemStatus {
+  CLOSED,     // A closed shelf item, i.e. has no live instance.
+  RUNNING,    // A shelf item that has live instance.
+  ACTIVE,     // An active shelf item that has focus.
+  ATTENTION,  // A shelf item that needs user's attention.
+};
+
+// The type of a shelf item.
+// These values match ash::ShelfItemType.
+enum ShelfItemType {
+  PANEL,      // A running app panel.
+  PINNED_APP, // A pinned app, which may be running or not.
+  APP_LIST,   // An item that toggles visiblity of the app list.
+  BROWSER,    // The browser shortcut, the browser may be running or not.
+  APP,        // An unpinned running app window. Supports these app types:
+              // - Extension "V1" (legacy packaged and hosted) apps,
+              // - Extension "V2" (platform) apps,
+              // - ARC (App Runtime for Chrome - Android Play Store) apps.
+  DIALOG,     // An open dialog.
+  UNDEFINED,  // Default value.
+};
+
 // Source of the launch or activation request, for tracking.
 // These values match ash::ShelfLaunchSource.
 enum ShelfLaunchSource {
@@ -91,17 +115,16 @@ struct MenuItem {
   uint32 radio_group_id;             // The radio group id.
 };
 
-// ShelfItem contains the basic fields needed to pin shortcut items.
+// ShelfItems are used to populate the shelf.
+// This structure matches ash::ShelfItem.
 struct ShelfItem {
-  // An app id, used to correlate windows and shortcuts (eg. 'mojo:foo').
-  string app_id;
-
-  // A app title, used for tooltips, etc. (eg. 'Foo Application').
-  string app_title;
-
-  // An icon image Bitmap, shown on the shelf.
-  skia.mojom.Bitmap image;
-
-  // Additional context menu items (eg. 'New Incognito Window').
-  array<MenuItem>? context_menu_items;
+  ShelfItemType type;       // The type of the shelf item.
+  skia.mojom.Bitmap image;  // An icon image Bitmap, shown on the shelf.
+  int64 shelf_id;           // A shelf model ID used by the shelf and clients.
+  ShelfItemStatus status;   // The running/closed/etc. status of the item.
+  string app_id;            // An app id string, used to match app windows.
+  mojo.common.mojom.String16 title;  // The title to display for tooltips, etc.
+  bool shows_tooltip;       // Whether the tooltip should be shown on hover.
+  bool pinned_by_policy;    // Whether the item is pinned by policy preferences,
+                            // the user cannot un-pin these items.
 };

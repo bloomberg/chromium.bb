@@ -2240,9 +2240,8 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, OverflowBubble) {
 IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, V1AppNavigation) {
   // We assume that the web store is always there (which it apparently is).
   controller_->PinAppWithID(extensions::kWebStoreAppId);
-  ash::ShelfID id = controller_->GetShelfIDForAppID(
-      extensions::kWebStoreAppId);
-  ASSERT_NE(0, id);
+  ash::ShelfID id = controller_->GetShelfIDForAppID(extensions::kWebStoreAppId);
+  DCHECK_NE(id, ash::kInvalidShelfID);
   EXPECT_EQ(ash::STATUS_CLOSED, model_->ItemByID(id)->status);
 
   // Create a windowed application.

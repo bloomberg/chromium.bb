@@ -15,7 +15,7 @@ WindowWatcherShelfItemDelegate::WindowWatcherShelfItemDelegate(
     ShelfID id,
     WindowWatcher* watcher)
     : id_(id), watcher_(watcher) {
-  DCHECK_GT(id_, 0);
+  DCHECK_NE(id_, kInvalidShelfID);
   DCHECK(watcher_);
 }
 

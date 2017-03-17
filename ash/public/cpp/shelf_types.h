@@ -89,8 +89,10 @@ enum ShelfAction {
   SHELF_ACTION_APP_LIST_SHOWN,
 };
 
-typedef int ShelfID;
-const int kInvalidShelfID = 0;
+// Shelf IDs are sequential values assigned to shelf items by ShelfModel for
+// runtime use; they are not persisted across restarts of the ash environment.
+using ShelfID = uint32_t;
+const ShelfID kInvalidShelfID = 0u;
 
 // The type of a shelf item.
 enum ShelfItemType {

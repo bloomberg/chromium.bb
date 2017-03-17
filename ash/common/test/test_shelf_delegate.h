@@ -6,6 +6,7 @@
 #define ASH_COMMON_TEST_TEST_SHELF_DELEGATE_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 

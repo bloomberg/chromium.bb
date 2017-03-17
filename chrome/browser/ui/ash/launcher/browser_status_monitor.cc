@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/ash/launcher/browser_status_monitor.h"
 
-#include "ash/common/shelf/shelf_item_types.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
 #include "base/macros.h"

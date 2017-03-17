@@ -8,8 +8,8 @@
 #include <map>
 #include <string>
 
-#include "ash/common/shelf/shelf_item_types.h"
 #include "ash/common/shelf/shelf_model.h"
+#include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/interfaces/shelf.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -49,7 +49,7 @@ class ShelfController : public mojom::ShelfController {
   void SetAlignment(ShelfAlignment alignment, int64_t display_id) override;
   void SetAutoHideBehavior(ShelfAutoHideBehavior auto_hide,
                            int64_t display_id) override;
-  void PinItem(mojom::ShelfItemPtr item,
+  void PinItem(const ShelfItem& item,
                mojom::ShelfItemDelegateAssociatedPtrInfo delegate) override;
   void UnpinItem(const std::string& app_id) override;
   void SetItemImage(const std::string& app_id, const SkBitmap& image) override;

@@ -7,7 +7,6 @@
 #include "ash/aura/aura_layout_manager_adapter.h"
 #include "ash/aura/wm_shell_aura.h"
 #include "ash/common/ash_constants.h"
-#include "ash/common/shelf/shelf_item_types.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_layout_manager.h"
 #include "ash/common/wm_transient_window_observer.h"

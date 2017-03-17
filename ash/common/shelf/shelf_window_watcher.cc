@@ -172,7 +172,7 @@ void ShelfWindowWatcher::AddShelfItem(aura::Window* window) {
 
 void ShelfWindowWatcher::RemoveShelfItem(aura::Window* window) {
   user_windows_with_items_.erase(window);
-  int shelf_id = window->GetProperty(kShelfIDKey);
+  ShelfID shelf_id = window->GetProperty(kShelfIDKey);
   DCHECK_NE(shelf_id, kInvalidShelfID);
   int index = model_->ItemIndexByID(shelf_id);
   DCHECK_GE(index, 0);

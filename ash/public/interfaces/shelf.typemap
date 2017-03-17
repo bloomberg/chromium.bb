@@ -3,11 +3,24 @@
 # found in the LICENSE file.
 
 mojom = "//ash/public/interfaces/shelf.mojom"
-public_headers = [ "//ash/public/cpp/shelf_types.h" ]
-traits_headers = [ "//ash/public/interfaces/shelf_struct_traits.h" ]
+public_headers = [
+  "//ash/public/cpp/shelf_item.h",
+  "//ash/public/cpp/shelf_types.h",
+]
+traits_headers = [ "//ash/public/cpp/shelf_struct_traits.h" ]
+sources = [
+  "//ash/public/cpp/shelf_struct_traits.cc",
+]
+public_deps = [
+  "//mojo/common:common_custom_types",
+  "//skia/public/interfaces",
+]
 type_mappings = [
   "ash.mojom.ShelfAction=ash::ShelfAction",
   "ash.mojom.ShelfAlignment=ash::ShelfAlignment",
   "ash.mojom.ShelfAutoHideBehavior=ash::ShelfAutoHideBehavior",
+  "ash.mojom.ShelfItem=ash::ShelfItem",
+  "ash.mojom.ShelfItemStatus=ash::ShelfItemStatus",
+  "ash.mojom.ShelfItemType=ash::ShelfItemType",
   "ash.mojom.ShelfLaunchSource=ash::ShelfLaunchSource",
 ]

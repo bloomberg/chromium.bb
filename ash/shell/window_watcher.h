@@ -10,7 +10,7 @@
 #include <map>
 #include <memory>
 
-#include "ash/common/shelf/shelf_item_types.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"

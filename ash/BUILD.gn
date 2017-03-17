@@ -164,8 +164,6 @@ component("ash") {
     "common/shelf/shelf_controller.cc",
     "common/shelf/shelf_controller.h",
     "common/shelf/shelf_delegate.h",
-    "common/shelf/shelf_item_types.cc",
-    "common/shelf/shelf_item_types.h",
     "common/shelf/shelf_layout_manager.cc",
     "common/shelf/shelf_layout_manager.h",
     "common/shelf/shelf_layout_manager_observer.h",
@@ -1269,6 +1267,7 @@ source_set("common_unittests") {
   deps = [
     "//ash",
     "//ash/public/cpp:ash_public_cpp",
+    "//ash/public/cpp:unit_tests",
     "//ash/resources/vector_icons",
     "//ash/test:test_support_without_content",
     "//base",

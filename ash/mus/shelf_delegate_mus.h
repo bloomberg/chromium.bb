@@ -9,6 +9,7 @@
 
 #include "ash/common/shelf/shelf_delegate.h"
 #include "ash/public/cpp/shelf_types.h"
+#include "base/macros.h"
 
 namespace ash {
 

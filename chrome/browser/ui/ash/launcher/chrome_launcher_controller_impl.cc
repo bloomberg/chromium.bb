@@ -1386,7 +1386,7 @@ void ChromeLauncherControllerImpl::CloseWindowedAppsFromRemovedExtension(
 void ChromeLauncherControllerImpl::SetShelfItemDelegate(
     ash::ShelfID id,
     ash::mojom::ShelfItemDelegate* item_delegate) {
-  DCHECK_GT(id, 0);
+  DCHECK_NE(id, ash::kInvalidShelfID);
   DCHECK(item_delegate);
   model_->SetShelfItemDelegate(
       id, base::WrapUnique<ash::mojom::ShelfItemDelegate>(item_delegate));

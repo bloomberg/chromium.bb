@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_mus.h"
 
 #include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/app_launcher_id.h"
@@ -245,8 +244,7 @@ void ChromeLauncherControllerMus::PinAppsFromPrefs() {
 
     ash::mojom::ShelfItemPtr item(ash::mojom::ShelfItem::New());
     item->app_id = app_id;
-    item->app_title = base::UTF16ToUTF8(
-        launcher_controller_helper()->GetAppTitle(profile(), app_id));
+    item->title = launcher_controller_helper()->GetAppTitle(profile(), app_id);
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     const gfx::Image& image = rb.GetImageNamed(IDR_APP_DEFAULT_ICON);
     item->image = *image.ToSkBitmap();

@@ -17,12 +17,12 @@
 #include "ash/common/shelf/shelf_application_menu_model.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/shelf_controller.h"
-#include "ash/common/shelf/shelf_item_types.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/shelf/shelf_model_observer.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/display/screen_orientation_controller_chromeos.h"
+#include "ash/public/cpp/shelf_item.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/test_shell_delegate.h"
@@ -4243,7 +4243,7 @@ class TestShelfController : public ash::mojom::ShelfController {
     observer_->OnAutoHideBehaviorChanged(auto_hide_, display_id);
   }
   void PinItem(
-      ash::mojom::ShelfItemPtr item,
+      const ash::ShelfItem& item,
       ash::mojom::ShelfItemDelegateAssociatedPtrInfo delegate) override {}
   void UnpinItem(const std::string& app_id) override {}
   void SetItemImage(const std::string& app_id, const SkBitmap& image) override {

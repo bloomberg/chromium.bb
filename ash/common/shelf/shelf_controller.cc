@@ -112,7 +112,7 @@ void ShelfController::SetAutoHideBehavior(ShelfAutoHideBehavior auto_hide,
 }
 
 void ShelfController::PinItem(
-    mojom::ShelfItemPtr item,
+    const ShelfItem& item,
     mojom::ShelfItemDelegateAssociatedPtrInfo delegate) {
   NOTIMPLEMENTED();
 }

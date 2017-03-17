@@ -9,7 +9,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
-#include "ash/common/shelf/shelf_item_types.h"
+#include "ash/public/cpp/shelf_item.h"
 #include "ash/public/interfaces/shelf.mojom.h"
 #include "base/macros.h"
 #include "base/observer_list.h"

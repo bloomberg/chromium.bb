@@ -8,7 +8,7 @@
 #include <string>
 
 #include "ash/ash_export.h"
-#include "ash/common/shelf/shelf_item_types.h"
+#include "ash/public/cpp/shelf_types.h"
 
 namespace ash {
 
