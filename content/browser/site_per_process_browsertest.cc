@@ -7419,7 +7419,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Check that the current RenderFrameHost has stopped loading.
   if (root->child_at(0)->current_frame_host()->is_loading()) {
-    ADD_FAILURE() << "Blocked RenderFrameHost shouldn't be loading anything";
+    if (!IsBrowserSideNavigationEnabled())
+      ADD_FAILURE() << "Blocked RenderFrameHost shouldn't be loading anything";
     load_observer.Wait();
   }
 
@@ -7494,7 +7495,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Check that the current RenderFrameHost has stopped loading.
   if (root->child_at(0)->current_frame_host()->is_loading()) {
-    ADD_FAILURE() << "Blocked RenderFrameHost shouldn't be loading anything";
+    if (!IsBrowserSideNavigationEnabled())
+      ADD_FAILURE() << "Blocked RenderFrameHost shouldn't be loading anything";
     load_observer2.Wait();
   }
 
@@ -7563,7 +7565,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
 
   // Check that the current RenderFrameHost has stopped loading.
   if (navigating_frame->current_frame_host()->is_loading()) {
-    ADD_FAILURE() << "Blocked RenderFrameHost shouldn't be loading anything";
+    if (!IsBrowserSideNavigationEnabled())
+      ADD_FAILURE() << "Blocked RenderFrameHost shouldn't be loading anything";
     load_observer2.Wait();
   }
 
