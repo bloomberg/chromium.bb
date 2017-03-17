@@ -799,10 +799,6 @@ void WebFrameWidgetImpl::mouseContextMenu(const WebMouseEvent& event) {
 
   LocalFrame* targetLocalFrame = toLocalFrame(targetFrame);
 
-#if OS(WIN)
-  targetLocalFrame->view()->setCursor(pointerCursor());
-#endif
-
   {
     ContextMenuAllowedScope scope;
     targetLocalFrame->eventHandler().sendContextMenuEvent(transformedEvent,
