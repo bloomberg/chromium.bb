@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/component_updater/cros_component_installer.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/component_installer_errors.h"
 #include "components/component_updater/component_updater_paths.h"
+#include "components/crx_file/id_util.h"
 #include "content/public/browser/browser_thread.h"
 
 #if defined(OS_CHROMEOS)
@@ -144,49 +146,61 @@ std::vector<std::string> CrOSComponentInstallerTraits::GetMimeTypes() const {
   return mime_types;
 }
 
-void RegisterCrOSComponentInternal(ComponentUpdateService* cus,
-                                   const ComponentConfig& config) {
+void CrOSComponent::RegisterCrOSComponentInternal(
+    ComponentUpdateService* cus,
+    const ComponentConfig& config,
+    const base::Closure& installcallback) {
   std::unique_ptr<ComponentInstallerTraits> traits(
       new CrOSComponentInstallerTraits(config));
   // |cus| will take ownership of |installer| during
   // installer->Register(cus).
   DefaultComponentInstaller* installer =
       new DefaultComponentInstaller(std::move(traits));
-  installer->Register(cus, base::Closure());
+  installer->Register(cus, installcallback);
 }
 
-bool RegisterCrOSComponentInternal(ComponentUpdateService* cus,
-                                   const std::string& name) {
-  if (name.empty()) {
-    DVLOG(1) << "[RegisterCrOSComponents] name is empty.";
-    return false;
-  }
-  const std::map<std::string, std::map<std::string, std::string>> components = {
+void CrOSComponent::InstallChromeOSComponent(
+    ComponentUpdateService* cus,
+    const std::string& id,
+    const update_client::Callback& install_callback) {
+  cus->GetOnDemandUpdater().OnDemandUpdate(id, install_callback);
+}
+
+bool CrOSComponent::InstallCrOSComponent(
+    const std::string& name,
+    const update_client::Callback& install_callback) {
+  auto* const cus = g_browser_process->component_updater();
+  const ConfigMap components = {
       {"escpr",
        {{"dir", "epson-inkjet-printer-escpr"},
         {"sha2hashstr",
          "1913a5e0a6cad30b6f03e176177e0d7ed62c5d6700a9c66da556d7c3f5d6a47e"}}}};
+  if (name.empty()) {
+    base::PostTask(
+        FROM_HERE,
+        base::Bind(install_callback, update_client::Error::INVALID_ARGUMENT));
+    return false;
+  }
   const auto it = components.find(name);
   if (it == components.end()) {
     DVLOG(1) << "[RegisterCrOSComponents] component " << name
              << " is not in configuration.";
+    base::PostTask(
+        FROM_HERE,
+        base::Bind(install_callback, update_client::Error::INVALID_ARGUMENT));
     return false;
   }
   ComponentConfig config(it->first, it->second.find("dir")->second,
                          it->second.find("sha2hashstr")->second);
-  RegisterCrOSComponentInternal(cus, config);
+  RegisterCrOSComponentInternal(
+      cus, config,
+      base::Bind(InstallChromeOSComponent, cus,
+                 crx_file::id_util::GenerateIdFromHex(
+                     it->second.find("sha2hashstr")->second)
+                     .substr(0, 32),
+                 install_callback));
   return true;
 }
-
-#endif  // defined(OS_CHROMEOS)
-
-bool RegisterCrOSComponent(ComponentUpdateService* cus,
-                           const std::string& name) {
-#if defined(OS_CHROMEOS)
-  return RegisterCrOSComponentInternal(cus, name);
-#else
-  return false;
-#endif  // defined(OS_CHROMEOS)
-}
+#endif  // defined(OS_CHROMEOS
 
 }  // namespace component_updater

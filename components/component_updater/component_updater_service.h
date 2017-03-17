@@ -15,6 +15,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/version.h"
+#include "build/build_config.h"
 #include "components/update_client/update_client.h"
 #include "url/gurl.h"
 
@@ -155,6 +156,9 @@ class OnDemandUpdater {
   friend class SupervisedUserWhitelistInstaller;
   friend class ::ComponentsUI;
   friend class ::PluginObserver;
+#if defined(OS_CHROMEOS)
+  friend class CrOSComponent;
+#endif  // defined(OS_CHROMEOS)
 
   // Triggers an update check for a component. |id| is a value
   // returned by GetCrxComponentID(). If an update for this component is already

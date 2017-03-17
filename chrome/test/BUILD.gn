@@ -3800,8 +3800,6 @@ test("unit_tests") {
   }
 
   if (is_chromeos) {
-    sources +=
-        [ "../browser/component_updater/cros_component_installer_unittest.cc" ]
     sources -= [ "../browser/signin/chrome_signin_status_metrics_provider_delegate_unittest.cc" ]
   }
   if (enable_background) {
