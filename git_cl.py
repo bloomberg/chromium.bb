@@ -14,6 +14,7 @@ from multiprocessing.pool import ThreadPool
 import base64
 import collections
 import contextlib
+import datetime
 import fnmatch
 import httplib
 import itertools
@@ -1090,6 +1091,12 @@ class GerritChangeNotExists(Exception):
         self.issue, self.url)
 
 
+_CommentSummary = collections.namedtuple(
+    '_CommentSummary', ['date', 'message', 'sender',
+                        # TODO(tandrii): these two aren't known in Gerrit.
+                        'approval', 'disapproval'])
+
+
 class Changelist(object):
   """Changelist works with one changelist in local branch.
 
@@ -1657,6 +1664,14 @@ class Changelist(object):
   def AddComment(self, message):
     return self._codereview_impl.AddComment(message)
 
+  def GetCommentsSummary(self):
+    """Returns list of _CommentSummary for each comment.
+
+    Note: comments per file or per line are not included,
+    only top-level comments are returned.
+    """
+    return self._codereview_impl.GetCommentsSummary()
+
   def CloseIssue(self):
     return self._codereview_impl.CloseIssue()
 
@@ -1757,6 +1772,9 @@ class _ChangelistCodereviewBase(object):
 
   def AddComment(self, message):
     """Posts a comment to the codereview site."""
+    raise NotImplementedError()
+
+  def GetCommentsSummary(self):
     raise NotImplementedError()
 
   def CloseIssue(self):
@@ -1933,6 +1951,19 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
 
   def AddComment(self, message):
     return self.RpcServer().add_comment(self.GetIssue(), message)
+
+  def GetCommentsSummary(self):
+    summary = []
+    for message in self.GetIssueProperties().get('messages', []):
+      date = datetime.datetime.strptime(message['date'], '%Y-%m-%d %H:%M:%S.%f')
+      summary.append(_CommentSummary(
+        date=date,
+        disapproval=bool(message['disapproval']),
+        approval=bool(message['approval']),
+        sender=message['sender'],
+        message=message['text'],
+      ))
+    return summary
 
   def GetStatus(self):
     """Apply a rough heuristic to give a simple summary of an issue's review
@@ -2498,6 +2529,10 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
   def AddComment(self, message):
     gerrit_util.SetReview(self._GetGerritHost(), self.GetIssue(),
                           msg=message)
+
+  def GetCommentsSummary(self):
+    # TODO(tandrii): implement in follow up CL (http://crbug.com/698236).
+    raise NotImplementedError()
 
   def CloseIssue(self):
     gerrit_util.AbandonChange(self._GetGerritHost(), self.GetIssue(), msg='')
@@ -4234,34 +4269,30 @@ def CMDcomments(parser, args):
     cl.AddComment(options.comment)
     return 0
 
-  data = cl.GetIssueProperties()
-  summary = []
-  for message in sorted(data.get('messages', []), key=lambda x: x['date']):
-    summary.append({
-        'date': message['date'],
-        'lgtm': False,
-        'message': message['text'],
-        'not_lgtm': False,
-        'sender': message['sender'],
-    })
-    if message['disapproval']:
+  summary = sorted(cl.GetCommentsSummary(), key=lambda c: c.date)
+  for comment in summary:
+    if comment.disapproval:
       color = Fore.RED
-      summary[-1]['not lgtm'] = True
-    elif message['approval']:
+    elif comment.approval:
       color = Fore.GREEN
-      summary[-1]['lgtm'] = True
-    elif message['sender'] == data['owner_email']:
+    elif comment.sender == cl.GetIssueOwner():
       color = Fore.MAGENTA
     else:
       color = Fore.BLUE
-    print('\n%s%s  %s%s' % (
-        color, message['date'].split('.', 1)[0], message['sender'],
-        Fore.RESET))
-    if message['text'].strip():
-      print('\n'.join('  ' + l for l in message['text'].splitlines()))
+    print('\n%s%s   %s%s\n%s' % (
+      color,
+      comment.date.strftime('%Y-%m-%d %H:%M:%S UTC'),
+      comment.sender,
+      Fore.RESET,
+      '\n'.join('  ' + l for l in comment.message.strip().splitlines())))
+
   if options.json_file:
+    def pre_serialize(c):
+      dct = c.__dict__.copy()
+      dct['date'] = dct['date'].strftime('%Y-%m-%d %H:%M:%S.%f')
+      return dct
     with open(options.json_file, 'wb') as f:
-      json.dump(summary, f)
+      json.dump(map(pre_serialize, summary), f)
   return 0
 
 

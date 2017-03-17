@@ -6,6 +6,7 @@
 """Unit tests for git_cl.py."""
 
 import contextlib
+import datetime
 import json
 import logging
 import os
@@ -3116,6 +3117,59 @@ class TestGitCl(TestCase):
     ]
     self.assertEqual(0, git_cl.main(['comment', '--gerrit', '-i', '10',
                                      '-a', 'msg']))
+
+  def test_git_cl_comments_fetch_rietveld(self):
+    self.mock(sys, 'stdout', StringIO.StringIO())
+    self.calls = [
+      ((['git', 'config', 'rietveld.autoupdate'],), CERR1),
+      ((['git', 'config', 'rietveld.server'],), 'codereview.chromium.org'),
+    ] * 2
+    self.mock(git_cl._RietveldChangelistImpl, 'GetIssueProperties', lambda _: {
+      'messages': [
+        {'text': 'lgtm', 'date': '2017-03-13 20:49:34.515270',
+         'disapproval': False, 'approval': True, 'sender': 'r@example.com'},
+        {'text': 'not lgtm', 'date': '2017-03-13 21:50:34.515270',
+         'disapproval': True, 'approval': False, 'sender': 'r2@example.com'},
+        # Intentionally wrong order here.
+        {'text': 'PTAL', 'date': '2000-03-13 20:49:34.515270',
+         'disapproval': False, 'approval': False,
+         'sender': 'owner@example.com'},
+      ],
+      'owner_email': 'owner@example.com',
+    })
+    expected_comments_summary = [
+      git_cl._CommentSummary(
+        message='lgtm',
+        date=datetime.datetime(2017, 3, 13, 20, 49, 34, 515270),
+        disapproval=False, approval=True, sender='r@example.com'),
+      git_cl._CommentSummary(
+        message='not lgtm',
+        date=datetime.datetime(2017, 3, 13, 21, 50, 34, 515270),
+        disapproval=True, approval=False, sender='r2@example.com'),
+      # Note: same order as in whatever Rietveld returns.
+      git_cl._CommentSummary(
+        message='PTAL',
+        date=datetime.datetime(2000, 3, 13, 20, 49, 34, 515270),
+        disapproval=False, approval=False, sender='owner@example.com'),
+    ]
+    cl = git_cl.Changelist(codereview='rietveld', issue=1)
+    self.assertEqual(cl.GetCommentsSummary(), expected_comments_summary)
+
+    with git_cl.gclient_utils.temporary_directory() as tempdir:
+      out_file = os.path.abspath(os.path.join(tempdir, 'out.json'))
+      self.assertEqual(0, git_cl.main(['comment', '--rietveld', '-i', '10',
+                                       '-j', out_file]))
+      with open(out_file) as f:
+        read = json.load(f)
+      self.assertEqual(len(read), 3)
+      self.assertEqual(read[0], {
+          'date': '2000-03-13 20:49:34.515270',
+          'message': 'PTAL',
+          'approval': False,
+          'disapproval': False,
+          'sender': 'owner@example.com'})
+      self.assertEqual(read[1]['date'], '2017-03-13 20:49:34.515270')
+      self.assertEqual(read[2]['date'], '2017-03-13 21:50:34.515270')
 
 
 if __name__ == '__main__':
