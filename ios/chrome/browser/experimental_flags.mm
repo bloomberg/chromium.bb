@@ -41,8 +41,6 @@ NSString* const kHeuristicsForPasswordGeneration =
     @"HeuristicsForPasswordGeneration";
 NSString* const kMDMIntegrationDisabled = @"MDMIntegrationDisabled";
 NSString* const kOriginServerHost = @"AlternateOriginServerHost";
-NSString* const kPendingIndexNavigationDisabled =
-    @"PendingIndexNavigationDisabled";
 NSString* const kSafariVCSignInDisabled = @"SafariVCSignInDisabled";
 NSString* const kWhatsNewPromoStatus = @"WhatsNewPromoStatus";
 
@@ -199,11 +197,6 @@ bool IsPaymentRequestEnabled() {
   // Check if the Finch experiment is turned on.
   return base::StartsWith(group_name, "Enabled",
                           base::CompareCase::INSENSITIVE_ASCII);
-}
-
-bool IsPendingIndexNavigationEnabled() {
-  return ![[NSUserDefaults standardUserDefaults]
-      boolForKey:kPendingIndexNavigationDisabled];
 }
 
 bool IsPhysicalWebEnabled() {

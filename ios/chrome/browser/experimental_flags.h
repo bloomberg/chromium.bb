@@ -76,9 +76,6 @@ bool IsPasswordGenerationEnabled();
 // Whether the Payment Request API is enabled or not.
 bool IsPaymentRequestEnabled();
 
-// Whether the back-forward navigation uses pending index.
-bool IsPendingIndexNavigationEnabled();
-
 // Whether the Physical Web feature is enabled.
 bool IsPhysicalWebEnabled();
 
