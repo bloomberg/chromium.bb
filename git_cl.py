@@ -2531,8 +2531,25 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
                           msg=message)
 
   def GetCommentsSummary(self):
-    # TODO(tandrii): implement in follow up CL (http://crbug.com/698236).
-    raise NotImplementedError()
+    # DETAILED_ACCOUNTS is to get emails in accounts.
+    data = self._GetChangeDetail(options=['MESSAGES', 'DETAILED_ACCOUNTS'])
+    summary = []
+    for msg in data.get('messages', []):
+      # Gerrit spits out nanoseconds.
+      assert len(msg['date'].split('.')[-1]) == 9
+      date = datetime.datetime.strptime(msg['date'][:-3],
+                                        '%Y-%m-%d %H:%M:%S.%f')
+      summary.append(_CommentSummary(
+        date=date,
+        message=msg['message'],
+        sender=msg['author']['email'],
+        # These could be inferred from the text messages and correlated with
+        # Code-Review label maximum, however this is not reliable.
+        # Leaving as is until the need arises.
+        approval=False,
+        disapproval=False,
+      ))
+    return summary
 
   def CloseIssue(self):
     gerrit_util.AbandonChange(self._GetGerritHost(), self.GetIssue(), msg='')
@@ -4262,7 +4279,8 @@ def CMDcomments(parser, args):
 
   cl = Changelist(issue=issue,
                   # TODO(tandrii): remove 'rietveld' default.
-                  codereview=options.forced_codereview or 'rietveld',
+                  codereview=options.forced_codereview or (
+                      'rietveld' if issue else None),
                   auth_config=auth_config)
 
   if options.comment:
