@@ -86,7 +86,7 @@ public class ChildProcessLauncher {
         // Allocate or enqueue. If there are no free slots, return null and enqueue the spawn data.
         public ChildProcessConnection allocate(SpawnData spawnData,
                 ChildProcessConnection.DeathCallback deathCallback,
-                ChromiumLinkerParams chromiumLinkerParams, boolean alwaysInForeground) {
+                Bundle childProcessCommonParameters, boolean alwaysInForeground) {
             assert spawnData.inSandbox() == mInSandbox;
             synchronized (mConnectionLock) {
                 if (mFreeConnectionIndices.isEmpty()) {
@@ -98,9 +98,10 @@ public class ChildProcessLauncher {
                 }
                 int slot = mFreeConnectionIndices.remove(0);
                 assert mChildProcessConnections[slot] == null;
-                mChildProcessConnections[slot] = new ChildProcessConnectionImpl(spawnData.context(),
-                        slot, mInSandbox, deathCallback, mChildClassName, chromiumLinkerParams,
-                        alwaysInForeground, spawnData.getCreationParams());
+                mChildProcessConnections[slot] =
+                        new ChildProcessConnectionImpl(spawnData.context(), slot, mInSandbox,
+                                deathCallback, mChildClassName, childProcessCommonParameters,
+                                alwaysInForeground, spawnData.getCreationParams());
                 Log.d(TAG, "Allocator allocated a connection, sandbox: %b, slot: %d", mInSandbox,
                         slot);
                 return mChildProcessConnections[slot];
@@ -351,8 +352,8 @@ public class ChildProcessLauncher {
         return getConnectionAllocator(packageName, inSandbox);
     }
 
-    private static ChildProcessConnection allocateConnection(SpawnData spawnData,
-            ChromiumLinkerParams chromiumLinkerParams, boolean alwaysInForeground) {
+    private static ChildProcessConnection allocateConnection(
+            SpawnData spawnData, Bundle childProcessCommonParams, boolean alwaysInForeground) {
         ChildProcessConnection.DeathCallback deathCallback =
                 new ChildProcessConnection.DeathCallback() {
                     @Override
@@ -371,7 +372,7 @@ public class ChildProcessLauncher {
                 creationParams != null ? creationParams.getPackageName() : context.getPackageName();
         initConnectionAllocatorsIfNecessary(context, inSandbox, packageName);
         return getConnectionAllocator(packageName, inSandbox)
-                .allocate(spawnData, deathCallback, chromiumLinkerParams, alwaysInForeground);
+                .allocate(spawnData, deathCallback, childProcessCommonParams, alwaysInForeground);
     }
 
     private static boolean sLinkerInitialized;
@@ -409,9 +410,11 @@ public class ChildProcessLauncher {
         final Context context = spawnData.context();
         final boolean inSandbox = spawnData.inSandbox();
         final ChildProcessCreationParams creationParams = spawnData.getCreationParams();
-        ChromiumLinkerParams chromiumLinkerParams = getLinkerParamsForNewConnection();
+        Bundle commonParams = new Bundle();
+        commonParams.putParcelable(
+                ChildProcessConstants.EXTRA_LINKER_PARAMS, getLinkerParamsForNewConnection());
         ChildProcessConnection connection =
-                allocateConnection(spawnData, chromiumLinkerParams, alwaysInForeground);
+                allocateConnection(spawnData, commonParams, alwaysInForeground);
         if (connection != null) {
             connection.start(startCallback);
 
@@ -888,11 +891,14 @@ public class ChildProcessLauncher {
     @VisibleForTesting
     static ChildProcessConnection allocateConnectionForTesting(Context context,
             ChildProcessCreationParams creationParams) {
+        Bundle commonParams = new Bundle();
+        commonParams.putParcelable(
+                ChildProcessConstants.EXTRA_LINKER_PARAMS, getLinkerParamsForNewConnection());
         return allocateConnection(
                 new SpawnData(false /* forWarmUp */, context, null /* commandLine */,
                         0 /* childProcessId */, null /* filesToBeMapped */, 0 /* clientContext */,
                         CALLBACK_FOR_RENDERER_PROCESS, true /* inSandbox */, creationParams),
-                getLinkerParamsForNewConnection(), false);
+                commonParams, false);
     }
 
     /**

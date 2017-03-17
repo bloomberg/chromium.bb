@@ -13,12 +13,9 @@ import org.chromium.base.library_loader.LibraryProcessType;
  * Allows specifying the package name for looking up child services
  * configuration and classes into (if it differs from the application
  * package name, like in the case of Android WebView). Also allows
- * specifying additional child service binging flags.
+ * specifying additional child service binding flags.
  */
 public class ChildProcessCreationParams {
-    private static final String EXTRA_LIBRARY_PROCESS_TYPE =
-            "org.chromium.content.common.child_service_params.library_process_type";
-
     /** ID used for the default params. */
     public static final int DEFAULT_ID = 0;
 
@@ -91,11 +88,11 @@ public class ChildProcessCreationParams {
     }
 
     void addIntentExtras(Intent intent) {
-        intent.putExtra(EXTRA_LIBRARY_PROCESS_TYPE, mLibraryProcessType);
+        intent.putExtra(ChildProcessConstants.EXTRA_LIBRARY_PROCESS_TYPE, mLibraryProcessType);
     }
 
     public static int getLibraryProcessType(Intent intent) {
-        return intent.getIntExtra(EXTRA_LIBRARY_PROCESS_TYPE,
-                LibraryProcessType.PROCESS_CHILD);
+        return intent.getIntExtra(
+                ChildProcessConstants.EXTRA_LIBRARY_PROCESS_TYPE, LibraryProcessType.PROCESS_CHILD);
     }
 }

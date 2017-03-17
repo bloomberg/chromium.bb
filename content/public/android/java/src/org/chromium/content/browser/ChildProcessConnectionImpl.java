@@ -20,7 +20,6 @@ import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.content.app.ChromiumLinkerParams;
 import org.chromium.content.common.FileDescriptorInfo;
 import org.chromium.content.common.IChildProcessCallback;
 import org.chromium.content.common.IChildProcessService;
@@ -72,8 +71,10 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
     // foreground to protect a background process from the system out-of-memory killer.
     private ChildServiceConnection mModerateBinding;
 
-    // Linker-related parameters.
-    private ChromiumLinkerParams mLinkerParams;
+    // Parameters passed to the child process through the service binding intent.
+    // If the service gets recreated by the framework the intent will be reused, so these parameters
+    // should be common to all processes of that type.
+    private final Bundle mChildProcessCommonParameters;
 
     private final boolean mAlwaysInForeground;
     private final ChildProcessCreationParams mCreationParams;
@@ -135,12 +136,9 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
             if (!mBound) {
                 try {
                     TraceEvent.begin("ChildProcessConnectionImpl.ChildServiceConnection.bind");
-                    final Intent intent = createServiceBindIntent();
-                    // Note, the intent may be saved and re-used by Android for re-launching the
-                    // child service. Do not pass data that is different for each child; command
-                    // line arguments for example.
-                    if (mLinkerParams != null) {
-                        mLinkerParams.addIntentExtras(intent);
+                    Intent intent = createServiceBindIntent();
+                    if (mChildProcessCommonParameters != null) {
+                        intent.putExtras(mChildProcessCommonParameters);
                     }
                     mBound = mContext.bindService(intent, this, mBindFlags);
                 } finally {
@@ -241,10 +239,8 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
     }
 
     ChildProcessConnectionImpl(Context context, int number, boolean inSandbox,
-            ChildProcessConnection.DeathCallback deathCallback,
-            String serviceClassName,
-            ChromiumLinkerParams chromiumLinkerParams,
-            boolean alwaysInForeground,
+            ChildProcessConnection.DeathCallback deathCallback, String serviceClassName,
+            Bundle childProcessCommonParameters, boolean alwaysInForeground,
             ChildProcessCreationParams creationParams) {
         mContext = context;
         mServiceNumber = number;
@@ -253,7 +249,7 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
         String packageName =
                 creationParams != null ? creationParams.getPackageName() : context.getPackageName();
         mServiceName = new ComponentName(packageName, serviceClassName + mServiceNumber);
-        mLinkerParams = chromiumLinkerParams;
+        mChildProcessCommonParameters = childProcessCommonParameters;
         mAlwaysInForeground = alwaysInForeground;
         mCreationParams = creationParams;
         int initialFlags = Context.BIND_AUTO_CREATE;

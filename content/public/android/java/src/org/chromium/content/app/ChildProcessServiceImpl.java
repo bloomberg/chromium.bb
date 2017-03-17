@@ -335,7 +335,8 @@ public class ChildProcessServiceImpl {
         synchronized (mMainThread) {
             // mLinkerParams is never used if Linker.isUsed() returns false.
             // See onCreate().
-            mLinkerParams = new ChromiumLinkerParams(intent);
+            mLinkerParams = (ChromiumLinkerParams) intent.getParcelableExtra(
+                    ChildProcessConstants.EXTRA_LINKER_PARAMS);
             mLibraryProcessType = ChildProcessCreationParams.getLibraryProcessType(intent);
             mMainThread.notifyAll();
         }
