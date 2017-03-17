@@ -32,9 +32,10 @@ NSString* GetPageScript(NSString* script_file_name) {
   return content;
 }
 
-NSString* GetEarlyPageScript() {
+NSString* GetEarlyPageScript(BrowserState* browser_state) {
   DCHECK(GetWebClient());
-  NSString* embedder_page_script = GetWebClient()->GetEarlyPageScript();
+  NSString* embedder_page_script =
+      GetWebClient()->GetEarlyPageScript(browser_state);
   DCHECK(embedder_page_script);
 
   // Make sure that script is injected only once. For example, content of

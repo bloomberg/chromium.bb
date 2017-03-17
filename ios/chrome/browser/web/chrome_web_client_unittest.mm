@@ -76,7 +76,7 @@ TEST_F(ChromeWebClientTest, WKWebViewEarlyPageScript) {
   web::ExecuteJavaScript(web_view, @"__gCrWeb = {};");
 
   web::ScopedTestingWebClient web_client(base::MakeUnique<ChromeWebClient>());
-  NSString* script = web_client.Get()->GetEarlyPageScript();
+  NSString* script = web_client.Get()->GetEarlyPageScript(&browser_state);
   web::ExecuteJavaScript(web_view, script);
   EXPECT_NSEQ(@"object",
               web::ExecuteJavaScript(web_view, @"typeof __gCrWeb.print"));

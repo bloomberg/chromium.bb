@@ -39,7 +39,7 @@ base::RefCountedMemory* TestWebClient::GetDataResourceBytes(
   return ResourceBundle::GetSharedInstance().LoadDataResourceBytes(resource_id);
 }
 
-NSString* TestWebClient::GetEarlyPageScript() const {
+NSString* TestWebClient::GetEarlyPageScript(BrowserState* browser_state) const {
   return early_page_script_ ? early_page_script_.get() : @"";
 }
 

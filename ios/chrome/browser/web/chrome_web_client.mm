@@ -155,7 +155,8 @@ void ChromeWebClient::PostBrowserURLRewriterCreation(
   rewriter->AddURLRewriter(&WillHandleWebBrowserAboutURL);
 }
 
-NSString* ChromeWebClient::GetEarlyPageScript() const {
+NSString* ChromeWebClient::GetEarlyPageScript(
+    web::BrowserState* browser_state) const {
   return GetPageScript(@"print");
 }
 

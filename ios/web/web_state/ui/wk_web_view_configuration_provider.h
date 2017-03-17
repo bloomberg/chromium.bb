@@ -45,14 +45,13 @@ class WKWebViewConfigurationProvider : public base::SupportsUserData::Data {
   void Purge();
 
  private:
-  explicit WKWebViewConfigurationProvider(bool is_off_the_record);
+  explicit WKWebViewConfigurationProvider(BrowserState* browser_state);
   WKWebViewConfigurationProvider() = delete;
   ~WKWebViewConfigurationProvider() override;
 
   base::scoped_nsobject<WKWebViewConfiguration> configuration_;
   base::scoped_nsobject<CRWWKScriptMessageRouter> router_;
-  // Result of |web::BrowserState::IsOffTheRecord| call.
-  bool is_off_the_record_;
+  BrowserState* browser_state_;
 
   DISALLOW_COPY_AND_ASSIGN(WKWebViewConfigurationProvider);
 };

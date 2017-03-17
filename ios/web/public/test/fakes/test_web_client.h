@@ -15,6 +15,8 @@
 
 namespace web {
 
+class BrowserState;
+
 // A WebClient used for testing purposes.
 class TestWebClient : public web::WebClient {
  public:
@@ -26,7 +28,7 @@ class TestWebClient : public web::WebClient {
   // Returns true for kTestWebUIScheme URL scheme.
   bool IsAppSpecificURL(const GURL& url) const override;
   base::RefCountedMemory* GetDataResourceBytes(int id) const override;
-  NSString* GetEarlyPageScript() const override;
+  NSString* GetEarlyPageScript(BrowserState* browser_state) const override;
   void AllowCertificateError(WebState*,
                              int cert_error,
                              const net::SSLInfo&,

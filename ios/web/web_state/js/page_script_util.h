@@ -10,13 +10,15 @@
 
 namespace web {
 
+class BrowserState;
+
 // Returns an autoreleased string containing the JavaScript loaded from a
 // bundled resource file with the given name (excluding extension).
 NSString* GetPageScript(NSString* script_file_name);
 
 // Returns an autoreleased string containing the JavaScript to be injected into
 // the web view as early as possible.
-NSString* GetEarlyPageScript();
+NSString* GetEarlyPageScript(BrowserState* browser_state);
 
 }  // namespace web
 

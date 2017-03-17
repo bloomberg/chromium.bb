@@ -26,7 +26,7 @@ class EarlyPageScriptPerfTest : public PerfTest {
 
   // Injects early script into WKWebView.
   void InjectEarlyScript() {
-    web::ExecuteJavaScript(web_view_, web::GetEarlyPageScript());
+    web::ExecuteJavaScript(web_view_, web::GetEarlyPageScript(&browser_state_));
   }
 
   // BrowserState required for web view creation.
@@ -40,7 +40,7 @@ TEST_F(EarlyPageScriptPerfTest, ScriptLoading) {
   RepeatTimedRuns("Loading",
                   ^base::TimeDelta(int) {
                     base::ElapsedTimer timer;
-                    web::GetEarlyPageScript();
+                    web::GetEarlyPageScript(&browser_state_);
                     return timer.Elapsed();
                   },
                   nil);
