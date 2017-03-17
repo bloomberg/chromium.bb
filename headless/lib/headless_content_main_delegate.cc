@@ -250,6 +250,9 @@ void HeadlessContentMainDelegate::InitializeResourceBundle() {
           kHeadlessResourcePak.length),
       ui::SCALE_FACTOR_NONE);
 #else
+#if defined(OS_MACOSX) && !defined(COMPONENT_BUILD)
+  dir_module = dir_module.Append(FILE_PATH_LITERAL("Resources/"));
+#endif
   // Try loading the headless library pak file first. If it doesn't exist (i.e.,
   // when we're running with the --headless switch), fall back to the browser's
   // resource pak.
