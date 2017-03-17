@@ -428,7 +428,6 @@ class TeamDriveResource {
   TeamDriveCapabilities capabilities_;
 };
 
-
 // ParentReference represents a directory.
 // https://developers.google.com/drive/v2/reference/parents
 class ParentReference {

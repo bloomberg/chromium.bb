@@ -64,7 +64,7 @@ TEST_F(DriveApiUrlGeneratorTest, GetFilesGetUrl) {
   EXPECT_EQ(
       "https://www.example.com/drive/v2/files/file%3Afile_id",
       url_generator_.GetFilesGetUrl("file:file_id", false, GURL()).spec());
-  EXPECT_EQ("https://www.example.com/drive/v2beta/files/0Bz0bd074"
+  EXPECT_EQ("https://www.example.com/drive/v2/files/0Bz0bd074"
                 "?supportsTeamDrives=true",
             team_drives_url_generator_.GetFilesGetUrl(
                 "0Bz0bd074", false, GURL()).spec());
@@ -179,8 +179,8 @@ TEST_F(DriveApiUrlGeneratorTest, GetFilesListUrl) {
   };
   const std::string kV2FilesUrlPrefix =
       "https://www.example.com/drive/v2/files";
-  const std::string kV2BetaFilesUrlPrefix =
-      "https://www.example.com/drive/v2beta/files?"
+  const std::string kV2FilesUrlPrefixWithTeamDrives =
+      "https://www.example.com/drive/v2/files?"
       "supportsTeamDrives=true&includeTeamDriveItems=true";
 
   for (size_t i = 0; i < arraysize(kTestPatterns); ++i) {
@@ -190,7 +190,7 @@ TEST_F(DriveApiUrlGeneratorTest, GetFilesListUrl) {
               url_generator_.GetFilesListUrl(kTestPatterns[i].max_results,
                                              kTestPatterns[i].page_token,
                                              kTestPatterns[i].q).spec());
-    EXPECT_EQ(kV2BetaFilesUrlPrefix +
+    EXPECT_EQ(kV2FilesUrlPrefixWithTeamDrives +
                   (kTestPatterns[i].expected_query.empty() ? "" : "&") +
                   kTestPatterns[i].expected_query,
               team_drives_url_generator_.GetFilesListUrl(
@@ -271,8 +271,8 @@ TEST_F(DriveApiUrlGeneratorTest, GetChangesListUrl) {
 
   const std::string kV2ChangesUrlPrefix =
       "https://www.example.com/drive/v2/changes";
-  const std::string kV2BetaChangesUrlPrefix =
-      "https://www.example.com/drive/v2beta/changes?"
+  const std::string kV2ChangesUrlPrefixWithTeamDrives =
+      "https://www.example.com/drive/v2/changes?"
       "supportsTeamDrives=true&includeTeamDriveItems=true";
   for (size_t i = 0; i < arraysize(kTestPatterns); ++i) {
     EXPECT_EQ(kV2ChangesUrlPrefix +
@@ -283,7 +283,7 @@ TEST_F(DriveApiUrlGeneratorTest, GetChangesListUrl) {
                                                kTestPatterns[i].page_token,
                                                kTestPatterns[i].start_change_id)
                   .spec());
-    EXPECT_EQ(kV2BetaChangesUrlPrefix +
+    EXPECT_EQ(kV2ChangesUrlPrefixWithTeamDrives +
                   (kTestPatterns[i].expected_query.empty() ? "" : "&") +
                   kTestPatterns[i].expected_query,
               team_drives_url_generator_.GetChangesListUrl(

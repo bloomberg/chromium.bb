@@ -23,11 +23,8 @@ namespace {
 const char kDriveV2AboutUrl[] = "drive/v2/about";
 const char kDriveV2AppsUrl[] = "drive/v2/apps";
 const char kDriveV2ChangelistUrl[] = "drive/v2/changes";
-const char kDriveV2BetaChangelistUrl[] = "drive/v2beta/changes";
 const char kDriveV2FilesUrl[] = "drive/v2/files";
-const char kDriveV2BetaFilesUrl[] = "drive/v2beta/files";
 const char kDriveV2FileUrlPrefix[] = "drive/v2/files/";
-const char kDriveV2BetaFileUrlPrefix[] = "drive/v2beta/files/";
 const char kDriveV2ChildrenUrlFormat[] = "drive/v2/files/%s/children";
 const char kDriveV2ChildrenUrlForRemovalFormat[] =
     "drive/v2/files/%s/children/%s";
@@ -106,8 +103,6 @@ GURL DriveApiUrlGenerator::GetFilesGetUrl(const std::string& file_id,
   const char* url_prefix = nullptr;
   if (use_internal_endpoint)
     url_prefix = kDriveV2InternalFileUrlPrefix;
-  else if (enable_team_drives_)
-    url_prefix = kDriveV2BetaFileUrlPrefix;
   else
     url_prefix = kDriveV2FileUrlPrefix;
 
@@ -181,14 +176,11 @@ GURL DriveApiUrlGenerator::GetFilesCopyUrl(
 GURL DriveApiUrlGenerator::GetFilesListUrl(int max_results,
                                            const std::string& page_token,
                                            const std::string& q) const {
-  GURL url;
+  GURL url = base_url_.Resolve(kDriveV2FilesUrl);
   if (enable_team_drives_) {
-    url = base_url_.Resolve(kDriveV2BetaFilesUrl);
     url = net::AppendOrReplaceQueryParameter(url, kSupportsTeamDrives, "true");
     url = net::AppendOrReplaceQueryParameter(url, kIncludeTeamDriveItems,
                                              "true");
-  } else {
-    url = base_url_.Resolve(kDriveV2FilesUrl);
   }
   // maxResults is 100 by default.
   if (max_results != 100) {
@@ -221,14 +213,11 @@ GURL DriveApiUrlGenerator::GetChangesListUrl(bool include_deleted,
                                              int64_t start_change_id) const {
   DCHECK_GE(start_change_id, 0);
 
-  GURL url;
+  GURL url = base_url_.Resolve(kDriveV2ChangelistUrl);
   if (enable_team_drives_) {
-    url = base_url_.Resolve(kDriveV2BetaChangelistUrl);
     url = net::AppendOrReplaceQueryParameter(url, kSupportsTeamDrives, "true");
     url = net::AppendOrReplaceQueryParameter(url, kIncludeTeamDriveItems,
                                              "true");
-  } else {
-    url = base_url_.Resolve(kDriveV2ChangelistUrl);
   }
   // includeDeleted is "true" by default.
   if (!include_deleted)
