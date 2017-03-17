@@ -21,16 +21,14 @@
     </div>
     <div class="settings-box">
       <div class="start">$i18n{minimumFont}</div>
-      <div class="list-item"
-          style="
-              font-size:[[computeMinimumFontSize_(
-                  prefs.webkit.webprefs.minimum_font_size.value)]]px;
-              font-family:
-                  '[[prefs.webkit.webprefs.fonts.standard.Zyyy.value]]';">
-        <span>[[
-            computeMinimumFontSize_(
-                prefs.webkit.webprefs.minimum_font_size.value)]]</span>
-        : $i18n{quickBrownFox}
+      <div style="
+          font-size:[[computeMinimumFontSize_(
+              prefs.webkit.webprefs.minimum_font_size.value)]]px;
+          font-family:
+              '[[prefs.webkit.webprefs.fonts.standard.Zyyy.value]]';">
+        [[computeMinimumFontSize_(
+                prefs.webkit.webprefs.minimum_font_size.value)]]:
+        $i18n{quickBrownFox}
       </div>
       <settings-slider id="minimumSizeSlider"
           pref="{{prefs.webkit.webprefs.minimum_font_size}}"
