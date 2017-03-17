@@ -84,12 +84,6 @@ class CORE_EXPORT ComputedStyleBase {
 
   ~ComputedStyleBase() = default;
 
-  ALWAYS_INLINE ComputedStyleBase(const ComputedStyleBase& o) :
-  {% for field in fields %}
-      {{field.name}}(o.{{field.name}}){{print_if(not loop.last, ',')}}
-  {% endfor %}
-  {}
-
   // Storage.
   {% for field in fields %}
   unsigned {{field.name}} : {{field.size}}; // {{field.type_name}}
