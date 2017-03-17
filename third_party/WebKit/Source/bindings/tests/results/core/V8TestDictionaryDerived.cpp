@@ -28,7 +28,7 @@ void V8TestDictionaryDerivedImplementedAs::toImpl(v8::Isolate* isolate, v8::Loca
     return;
   }
   v8::Local<v8::Object> v8Object = v8Value.As<v8::Object>();
-  (void)v8Object;
+  ALLOW_UNUSED_LOCAL(v8Object);
 
   V8TestDictionary::toImpl(isolate, v8Value, impl, exceptionState);
   if (exceptionState.hadException())

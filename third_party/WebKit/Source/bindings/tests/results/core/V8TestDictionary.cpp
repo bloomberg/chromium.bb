@@ -40,7 +40,7 @@ void V8TestDictionary::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value
     return;
   }
   v8::Local<v8::Object> v8Object = v8Value.As<v8::Object>();
-  (void)v8Object;
+  ALLOW_UNUSED_LOCAL(v8Object);
 
   v8::TryCatch block(isolate);
   v8::Local<v8::Value> anyMemberValue;

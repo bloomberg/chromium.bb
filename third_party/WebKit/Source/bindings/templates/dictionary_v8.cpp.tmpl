@@ -28,7 +28,7 @@ void {{v8_class}}::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, {{
     {% endif %}
   }
   v8::Local<v8::Object> v8Object = v8Value.As<v8::Object>();
-  (void)v8Object;
+  ALLOW_UNUSED_LOCAL(v8Object);
 
   {% if parent_v8_class %}
   {{parent_v8_class}}::toImpl(isolate, v8Value, impl, exceptionState);

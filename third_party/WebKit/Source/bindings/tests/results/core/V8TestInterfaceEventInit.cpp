@@ -27,7 +27,7 @@ void V8TestInterfaceEventInit::toImpl(v8::Isolate* isolate, v8::Local<v8::Value>
     return;
   }
   v8::Local<v8::Object> v8Object = v8Value.As<v8::Object>();
-  (void)v8Object;
+  ALLOW_UNUSED_LOCAL(v8Object);
 
   V8EventInit::toImpl(isolate, v8Value, impl, exceptionState);
   if (exceptionState.hadException())
