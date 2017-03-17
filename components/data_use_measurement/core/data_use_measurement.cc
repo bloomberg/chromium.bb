@@ -381,6 +381,10 @@ void DataUseMeasurement::ReportDataUsageServices(
         GetHistogramName("DataUse.MessageSize.AllServices", dir, app_state,
                          is_connection_cellular),
         service, message_size);
+    if (app_state == DataUseUserData::BACKGROUND) {
+      IncreaseSparseHistogramByValue("DataUse.AllServices.Background", service,
+                                     message_size);
+    }
   }
 }
 
