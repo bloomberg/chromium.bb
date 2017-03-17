@@ -31,6 +31,9 @@ const CGFloat kHintImagePadding = 1.0;
 // Should leave enough so that the user has space to edit things.
 const CGFloat kHintAvailableRatio = 2.0 / 3.0;
 
+// Extra padding at the right of the decoration.
+const CGFloat kHintRightPadding = 5.0;
+
 // Helper to convert |s| to an |NSString|, trimming whitespace at
 // ends.
 NSString* TrimAndConvert(const base::string16& s) {
@@ -103,7 +106,8 @@ CGFloat KeywordHintDecoration::GetWidthForSpace(CGFloat width) {
   CGFloat full_width =
       std::floor(GetLabelSize(hint_prefix_, attributes_).width + 0.5) +
       kHintImagePadding + image_width + kHintImagePadding +
-      std::floor(GetLabelSize(hint_suffix_, attributes_).width + 0.5);
+      std::floor(GetLabelSize(hint_suffix_, attributes_).width + 0.5) +
+      kHintRightPadding;
   if (full_width <= width * kHintAvailableRatio)
     return full_width;
 
