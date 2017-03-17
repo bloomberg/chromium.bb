@@ -3090,7 +3090,7 @@ class TestGitCl(TestCase):
         sys.stdout.getvalue(),
         'However, your configured .gitcookies file is missing.')
 
-  def test_git_cl_comment_add_default(self):
+  def test_git_cl_comment_add_rietveld(self):
     self.mock(git_cl._RietveldChangelistImpl, 'AddComment',
               lambda _, message: self._mocked_call('AddComment', message))
     self.calls = [
@@ -3098,8 +3098,8 @@ class TestGitCl(TestCase):
       ((['git', 'config', 'rietveld.server'],), 'codereview.chromium.org'),
       (('AddComment', 'msg'), ''),
     ]
-    # TODO(tandrii): --rietveld should be specified here.
-    self.assertEqual(0, git_cl.main(['comment', '-i', '10', '-a', 'msg']))
+    self.assertEqual(0, git_cl.main(['comment', '--rietveld',
+                                     '-i', '10', '-a', 'msg']))
 
   def test_git_cl_comment_add_gerrit(self):
     self.mock(git_cl.gerrit_util, 'SetReview',
