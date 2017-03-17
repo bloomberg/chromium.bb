@@ -65,6 +65,7 @@
 #include "platform/loader/fetch/FetchUtils.h"
 #include "platform/loader/fetch/MemoryCache.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
+#include "platform/loader/fetch/ResourceTimingInfo.h"
 #include "platform/mhtml/ArchiveResource.h"
 #include "platform/network/ContentSecurityPolicyResponseHeaders.h"
 #include "platform/network/HTTPParsers.h"
@@ -166,6 +167,7 @@ unsigned long DocumentLoader::mainResourceIdentifier() const {
 }
 
 ResourceTimingInfo* DocumentLoader::getNavigationTimingInfo() const {
+  DCHECK(fetcher());
   return fetcher()->getNavigationTimingInfo();
 }
 

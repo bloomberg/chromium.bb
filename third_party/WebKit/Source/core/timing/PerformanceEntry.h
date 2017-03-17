@@ -71,7 +71,11 @@ class CORE_EXPORT PerformanceEntry
   String name() const;
   String entryType() const;
   DOMHighResTimeStamp startTime() const;
-  DOMHighResTimeStamp duration() const;
+  // PerformanceNavigationTiming will override this due to
+  // the nature of reporting it early, which means not having a
+  // finish time available at construction time.
+  // Other classes must NOT override this.
+  virtual DOMHighResTimeStamp duration() const;
 
   ScriptValue toJSONForBinding(ScriptState*) const;
 

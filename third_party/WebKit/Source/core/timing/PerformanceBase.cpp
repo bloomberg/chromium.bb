@@ -110,10 +110,14 @@ PerformanceTiming* PerformanceBase::timing() const {
   return nullptr;
 }
 
-PerformanceEntryVector PerformanceBase::getEntries() const {
+PerformanceEntryVector PerformanceBase::getEntries() {
   PerformanceEntryVector entries;
 
   entries.appendVector(m_resourceTimingBuffer);
+  if (!m_navigationTiming)
+    m_navigationTiming = createNavigationTimingInstance();
+  // This extra checking is needed when WorkerPerformance
+  // calls this method.
   if (m_navigationTiming)
     entries.push_back(m_navigationTiming);
   entries.appendVector(m_frameTimingBuffer);
@@ -140,6 +144,8 @@ PerformanceEntryVector PerformanceBase::getEntriesByType(
         entries.push_back(resource);
       break;
     case PerformanceEntry::Navigation:
+      if (!m_navigationTiming)
+        m_navigationTiming = createNavigationTimingInstance();
       if (m_navigationTiming)
         entries.push_back(m_navigationTiming);
       break;
@@ -195,6 +201,8 @@ PerformanceEntryVector PerformanceBase::getEntriesByName(
   }
 
   if (entryType.isNull() || type == PerformanceEntry::Navigation) {
+    if (!m_navigationTiming)
+      m_navigationTiming = createNavigationTimingInstance();
     if (m_navigationTiming && m_navigationTiming->name() == name)
       entries.push_back(m_navigationTiming);
   }
@@ -344,66 +352,12 @@ void PerformanceBase::addResourceTiming(const ResourceTimingInfo& info) {
     addResourceTimingBuffer(*entry);
 }
 
-void PerformanceBase::addNavigationTiming(LocalFrame* frame) {
-  if (!RuntimeEnabledFeatures::performanceNavigationTiming2Enabled())
-    return;
-  DCHECK(frame);
-  const DocumentLoader* documentLoader = frame->loader().documentLoader();
-  DCHECK(documentLoader);
-
-  const DocumentLoadTiming& documentLoadTiming = documentLoader->timing();
-
-  const DocumentTiming* documentTiming =
-      frame->document() ? &(frame->document()->timing()) : nullptr;
-
-  ResourceTimingInfo* navigationTimingInfo =
-      documentLoader->getNavigationTimingInfo();
-  if (!navigationTimingInfo)
-    return;
-
-  const ResourceResponse& finalResponse = navigationTimingInfo->finalResponse();
-
-  ResourceLoadTiming* resourceLoadTiming = finalResponse.resourceLoadTiming();
-  // Don't create a navigation timing instance when
-  // resourceLoadTiming is null, which could happen when visiting non-http sites
-  // such as about:blank or in some error cases.
-  if (!resourceLoadTiming)
-    return;
-  double lastRedirectEndTime = documentLoadTiming.redirectEnd();
-  double finishTime = documentLoadTiming.loadEventEnd();
-
-  ExecutionContext* context = getExecutionContext();
-  SecurityOrigin* securityOrigin = getSecurityOrigin(context);
-  if (!securityOrigin)
-    return;
-
-  bool allowRedirectDetails =
-      allowsTimingRedirect(navigationTimingInfo->redirectChain(), finalResponse,
-                           *securityOrigin, context);
-
-  unsigned long long transferSize = navigationTimingInfo->transferSize();
-  unsigned long long encodedBodyLength = finalResponse.encodedBodyLength();
-  unsigned long long decodedBodyLength = finalResponse.decodedBodyLength();
-  bool didReuseConnection = finalResponse.connectionReused();
-  PerformanceNavigationTiming::NavigationType type =
-      getNavigationType(documentLoader->getNavigationType(), frame->document());
-
-  m_navigationTiming = new PerformanceNavigationTiming(
-      timeOrigin(), navigationTimingInfo->initialURL().getString(),
-      documentLoadTiming.unloadEventStart(),
-      documentLoadTiming.unloadEventEnd(), documentLoadTiming.loadEventStart(),
-      documentLoadTiming.loadEventEnd(), documentLoadTiming.redirectCount(),
-      documentTiming ? documentTiming->domInteractive() : 0,
-      documentTiming ? documentTiming->domContentLoadedEventStart() : 0,
-      documentTiming ? documentTiming->domContentLoadedEventEnd() : 0,
-      documentTiming ? documentTiming->domComplete() : 0, type,
-      documentLoadTiming.redirectStart(), documentLoadTiming.redirectEnd(),
-      documentLoadTiming.fetchStart(), documentLoadTiming.responseEnd(),
-      allowRedirectDetails,
-      documentLoadTiming.hasSameOriginAsPreviousDocument(), resourceLoadTiming,
-      lastRedirectEndTime, finishTime, transferSize, encodedBodyLength,
-      decodedBodyLength, didReuseConnection);
-  notifyObserversOfEntry(*m_navigationTiming);
+// Called after loadEventEnd happens.
+void PerformanceBase::notifyNavigationTimingToObservers() {
+  if (!m_navigationTiming)
+    m_navigationTiming = createNavigationTimingInstance();
+  if (m_navigationTiming)
+    notifyObserversOfEntry(*m_navigationTiming);
 }
 
 void PerformanceBase::addFirstPaintTiming(double startTime) {

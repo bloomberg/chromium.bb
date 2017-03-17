@@ -40,81 +40,85 @@
 namespace blink {
 
 PerformanceResourceTiming::PerformanceResourceTiming(
-    const AtomicString& initiatorType,
-    double timeOrigin,
-    ResourceLoadTiming* timing,
-    double lastRedirectEndTime,
-    double finishTime,
-    unsigned long long transferSize,
-    unsigned long long encodedBodyLength,
-    unsigned long long decodedBodyLength,
-    bool didReuseConnection,
-    bool allowTimingDetails,
-    bool allowRedirectDetails,
-    const String& name,
-    const String& entryType,
-    double startTime)
-    : PerformanceEntry(
-          name,
-          entryType,
-          PerformanceBase::monotonicTimeToDOMHighResTimeStamp(timeOrigin,
-                                                              startTime),
-          PerformanceBase::monotonicTimeToDOMHighResTimeStamp(timeOrigin,
-                                                              finishTime)),
-      m_initiatorType(initiatorType),
-      m_timeOrigin(timeOrigin),
-      m_timing(timing),
-      m_lastRedirectEndTime(lastRedirectEndTime),
-      m_finishTime(finishTime),
-      m_transferSize(transferSize),
-      m_encodedBodySize(encodedBodyLength),
-      m_decodedBodySize(decodedBodyLength),
-      m_didReuseConnection(didReuseConnection),
-      m_allowTimingDetails(allowTimingDetails),
-      m_allowRedirectDetails(allowRedirectDetails) {}
-
-PerformanceResourceTiming::PerformanceResourceTiming(
     const ResourceTimingInfo& info,
     double timeOrigin,
     double startTime,
     double lastRedirectEndTime,
     bool allowTimingDetails,
     bool allowRedirectDetails)
-    : PerformanceResourceTiming(info.initiatorType(),
-                                timeOrigin,
-                                info.finalResponse().resourceLoadTiming(),
-                                lastRedirectEndTime,
-                                info.loadFinishTime(),
-                                info.transferSize(),
-                                info.finalResponse().encodedBodyLength(),
-                                info.finalResponse().decodedBodyLength(),
-                                info.finalResponse().connectionReused(),
-                                allowTimingDetails,
-                                allowRedirectDetails,
-                                info.initialURL().getString(),
-                                "resource",
-                                startTime) {}
+    : PerformanceEntry(
+          info.initialURL().getString(),
+          "resource",
+          PerformanceBase::monotonicTimeToDOMHighResTimeStamp(timeOrigin,
+                                                              startTime),
+          PerformanceBase::monotonicTimeToDOMHighResTimeStamp(
+              timeOrigin,
+              info.loadFinishTime())),
+      m_initiatorType(info.initiatorType()),
+      m_timeOrigin(timeOrigin),
+      m_timing(info.finalResponse().resourceLoadTiming()),
+      m_lastRedirectEndTime(lastRedirectEndTime),
+      m_finishTime(info.loadFinishTime()),
+      m_transferSize(info.transferSize()),
+      m_encodedBodySize(info.finalResponse().encodedBodyLength()),
+      m_decodedBodySize(info.finalResponse().decodedBodyLength()),
+      m_didReuseConnection(info.finalResponse().connectionReused()),
+      m_allowTimingDetails(allowTimingDetails),
+      m_allowRedirectDetails(allowRedirectDetails) {}
+
+// This constructor is for PerformanceNavigationTiming.
+PerformanceResourceTiming::PerformanceResourceTiming(const String& name,
+                                                     const String& entryType,
+                                                     double startTime,
+                                                     double duration)
+    : PerformanceEntry(name, entryType, startTime, duration) {}
 
 PerformanceResourceTiming::~PerformanceResourceTiming() {}
+
+ResourceLoadTiming* PerformanceResourceTiming::resourceLoadTiming() const {
+  return m_timing.get();
+}
+
+bool PerformanceResourceTiming::allowTimingDetails() const {
+  return m_allowTimingDetails;
+}
+
+bool PerformanceResourceTiming::didReuseConnection() const {
+  return m_didReuseConnection;
+}
+
+unsigned long long PerformanceResourceTiming::getTransferSize() const {
+  return m_transferSize;
+}
+
+unsigned long long PerformanceResourceTiming::getEncodedBodySize() const {
+  return m_encodedBodySize;
+}
+
+unsigned long long PerformanceResourceTiming::getDecodedBodySize() const {
+  return m_decodedBodySize;
+}
 
 AtomicString PerformanceResourceTiming::initiatorType() const {
   return m_initiatorType;
 }
 
 DOMHighResTimeStamp PerformanceResourceTiming::workerStart() const {
-  if (!m_timing || m_timing->workerStart() == 0.0)
+  ResourceLoadTiming* timing = resourceLoadTiming();
+  if (!timing || timing->workerStart() == 0.0)
     return 0.0;
 
   return PerformanceBase::monotonicTimeToDOMHighResTimeStamp(
-      m_timeOrigin, m_timing->workerStart());
+      m_timeOrigin, timing->workerStart());
 }
 
 DOMHighResTimeStamp PerformanceResourceTiming::workerReady() const {
-  if (!m_timing || m_timing->workerReady() == 0.0)
+  ResourceLoadTiming* timing = resourceLoadTiming();
+  if (!timing || timing->workerReady() == 0.0)
     return 0.0;
 
   return PerformanceBase::monotonicTimeToDOMHighResTimeStamp(
-      m_timeOrigin, m_timing->workerReady());
+      m_timeOrigin, timing->workerReady());
 }
 
 DOMHighResTimeStamp PerformanceResourceTiming::redirectStart() const {
@@ -136,12 +140,13 @@ DOMHighResTimeStamp PerformanceResourceTiming::redirectEnd() const {
 }
 
 DOMHighResTimeStamp PerformanceResourceTiming::fetchStart() const {
-  if (!m_timing)
+  ResourceLoadTiming* timing = resourceLoadTiming();
+  if (!timing)
     return PerformanceEntry::startTime();
 
   if (m_lastRedirectEndTime) {
     return PerformanceBase::monotonicTimeToDOMHighResTimeStamp(
-        m_timeOrigin, m_timing->requestTime());
+        m_timeOrigin, timing->requestTime());
   }
 
   if (DOMHighResTimeStamp workerReadyTime = workerReady())
@@ -151,90 +156,90 @@ DOMHighResTimeStamp PerformanceResourceTiming::fetchStart() const {
 }
 
 DOMHighResTimeStamp PerformanceResourceTiming::domainLookupStart() const {
-  if (!m_allowTimingDetails)
+  if (!allowTimingDetails())
     return 0.0;
-
-  if (!m_timing || m_timing->dnsStart() == 0.0)
+  ResourceLoadTiming* timing = resourceLoadTiming();
+  if (!timing || timing->dnsStart() == 0.0)
     return fetchStart();
 
   return PerformanceBase::monotonicTimeToDOMHighResTimeStamp(
-      m_timeOrigin, m_timing->dnsStart());
+      m_timeOrigin, timing->dnsStart());
 }
 
 DOMHighResTimeStamp PerformanceResourceTiming::domainLookupEnd() const {
-  if (!m_allowTimingDetails)
+  if (!allowTimingDetails())
     return 0.0;
-
-  if (!m_timing || m_timing->dnsEnd() == 0.0)
+  ResourceLoadTiming* timing = resourceLoadTiming();
+  if (!timing || timing->dnsEnd() == 0.0)
     return domainLookupStart();
 
-  return PerformanceBase::monotonicTimeToDOMHighResTimeStamp(
-      m_timeOrigin, m_timing->dnsEnd());
+  return PerformanceBase::monotonicTimeToDOMHighResTimeStamp(m_timeOrigin,
+                                                             timing->dnsEnd());
 }
 
 DOMHighResTimeStamp PerformanceResourceTiming::connectStart() const {
-  if (!m_allowTimingDetails)
+  if (!allowTimingDetails())
     return 0.0;
-
+  ResourceLoadTiming* timing = resourceLoadTiming();
   // connectStart will be zero when a network request is not made.
-  if (!m_timing || m_timing->connectStart() == 0.0 || m_didReuseConnection)
+  if (!timing || timing->connectStart() == 0.0 || didReuseConnection())
     return domainLookupEnd();
 
   // connectStart includes any DNS time, so we may need to trim that off.
-  double connectStart = m_timing->connectStart();
-  if (m_timing->dnsEnd() > 0.0)
-    connectStart = m_timing->dnsEnd();
+  double connectStart = timing->connectStart();
+  if (timing->dnsEnd() > 0.0)
+    connectStart = timing->dnsEnd();
 
   return PerformanceBase::monotonicTimeToDOMHighResTimeStamp(m_timeOrigin,
                                                              connectStart);
 }
 
 DOMHighResTimeStamp PerformanceResourceTiming::connectEnd() const {
-  if (!m_allowTimingDetails)
+  if (!allowTimingDetails())
     return 0.0;
-
+  ResourceLoadTiming* timing = resourceLoadTiming();
   // connectStart will be zero when a network request is not made.
-  if (!m_timing || m_timing->connectEnd() == 0.0 || m_didReuseConnection)
+  if (!timing || timing->connectEnd() == 0.0 || didReuseConnection())
     return connectStart();
 
   return PerformanceBase::monotonicTimeToDOMHighResTimeStamp(
-      m_timeOrigin, m_timing->connectEnd());
+      m_timeOrigin, timing->connectEnd());
 }
 
 DOMHighResTimeStamp PerformanceResourceTiming::secureConnectionStart() const {
-  if (!m_allowTimingDetails)
+  if (!allowTimingDetails())
     return 0.0;
-
-  if (!m_timing ||
-      m_timing->sslStart() == 0.0)  // Secure connection not negotiated.
+  ResourceLoadTiming* timing = resourceLoadTiming();
+  if (!timing ||
+      timing->sslStart() == 0.0)  // Secure connection not negotiated.
     return 0.0;
 
   return PerformanceBase::monotonicTimeToDOMHighResTimeStamp(
-      m_timeOrigin, m_timing->sslStart());
+      m_timeOrigin, timing->sslStart());
 }
 
 DOMHighResTimeStamp PerformanceResourceTiming::requestStart() const {
-  if (!m_allowTimingDetails)
+  if (!allowTimingDetails())
     return 0.0;
-
-  if (!m_timing)
+  ResourceLoadTiming* timing = resourceLoadTiming();
+  if (!timing)
     return connectEnd();
 
   return PerformanceBase::monotonicTimeToDOMHighResTimeStamp(
-      m_timeOrigin, m_timing->sendStart());
+      m_timeOrigin, timing->sendStart());
 }
 
 DOMHighResTimeStamp PerformanceResourceTiming::responseStart() const {
-  if (!m_allowTimingDetails)
+  if (!allowTimingDetails())
     return 0.0;
-
-  if (!m_timing)
+  ResourceLoadTiming* timing = resourceLoadTiming();
+  if (!timing)
     return requestStart();
 
   // FIXME: This number isn't exactly correct. See the notes in
   // PerformanceTiming::responseStart().
   return PerformanceBase::monotonicTimeToDOMHighResTimeStamp(
-      m_timeOrigin, m_timing->receiveHeadersEnd());
+      m_timeOrigin, timing->receiveHeadersEnd());
 }
 
 DOMHighResTimeStamp PerformanceResourceTiming::responseEnd() const {
@@ -246,24 +251,24 @@ DOMHighResTimeStamp PerformanceResourceTiming::responseEnd() const {
 }
 
 unsigned long long PerformanceResourceTiming::transferSize() const {
-  if (!m_allowTimingDetails)
+  if (!allowTimingDetails())
     return 0;
 
-  return m_transferSize;
+  return getTransferSize();
 }
 
 unsigned long long PerformanceResourceTiming::encodedBodySize() const {
-  if (!m_allowTimingDetails)
+  if (!allowTimingDetails())
     return 0;
 
-  return m_encodedBodySize;
+  return getEncodedBodySize();
 }
 
 unsigned long long PerformanceResourceTiming::decodedBodySize() const {
-  if (!m_allowTimingDetails)
+  if (!allowTimingDetails())
     return 0;
 
-  return m_decodedBodySize;
+  return getDecodedBodySize();
 }
 
 void PerformanceResourceTiming::buildJSONValue(V8ObjectBuilder& builder) const {

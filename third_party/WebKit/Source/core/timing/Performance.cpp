@@ -43,6 +43,8 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/origin_trials/OriginTrials.h"
 #include "core/timing/PerformanceTiming.h"
+#include "platform/loader/fetch/ResourceTimingInfo.h"
+#include "platform/RuntimeEnabledFeatures.h"
 
 static const double kLongTaskThreshold = 0.05;
 
@@ -138,6 +140,19 @@ PerformanceTiming* Performance::timing() const {
     m_timing = PerformanceTiming::create(frame());
 
   return m_timing.get();
+}
+
+PerformanceNavigationTiming* Performance::createNavigationTimingInstance() {
+  if (!RuntimeEnabledFeatures::performanceNavigationTiming2Enabled())
+    return nullptr;
+  if (!frame())
+    return nullptr;
+  const DocumentLoader* documentLoader = frame()->loader().documentLoader();
+  DCHECK(documentLoader);
+  ResourceTimingInfo* info = documentLoader->getNavigationTimingInfo();
+  if (!info)
+    return nullptr;
+  return new PerformanceNavigationTiming(frame(), info, timeOrigin());
 }
 
 void Performance::updateLongTaskInstrumentation() {

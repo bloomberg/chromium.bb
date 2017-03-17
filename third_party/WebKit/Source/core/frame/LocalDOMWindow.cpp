@@ -1491,7 +1491,7 @@ void LocalDOMWindow::dispatchLoadEvent() {
   if (frame()) {
     Performance* performance = DOMWindowPerformance::performance(*this);
     DCHECK(performance);
-    performance->addNavigationTiming(frame());
+    performance->notifyNavigationTimingToObservers();
   }
 
   // For load events, send a separate load event to the enclosing frame only.

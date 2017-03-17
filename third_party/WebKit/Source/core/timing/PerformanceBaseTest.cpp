@@ -62,12 +62,6 @@ class PerformanceBaseTest : public ::testing::Test {
     return m_observer->m_performanceEntries.size();
   }
 
-  PerformanceNavigationTiming::NavigationType getNavigationType(
-      NavigationType type,
-      Document* document) {
-    return PerformanceBase::getNavigationType(type, document);
-  }
-
   static bool allowsTimingRedirect(
       const Vector<ResourceResponse>& redirectChain,
       const ResourceResponse& finalResponse,
@@ -148,19 +142,20 @@ TEST_F(PerformanceBaseTest, AddLongTaskTiming) {
 TEST_F(PerformanceBaseTest, GetNavigationType) {
   m_pageHolder->page().setVisibilityState(PageVisibilityStatePrerender, false);
   PerformanceNavigationTiming::NavigationType returnedType =
-      getNavigationType(NavigationTypeBackForward, &m_pageHolder->document());
+      PerformanceBase::getNavigationType(NavigationTypeBackForward,
+                                         &m_pageHolder->document());
   EXPECT_EQ(returnedType,
             PerformanceNavigationTiming::NavigationType::Prerender);
 
   m_pageHolder->page().setVisibilityState(PageVisibilityStateHidden, false);
-  returnedType =
-      getNavigationType(NavigationTypeBackForward, &m_pageHolder->document());
+  returnedType = PerformanceBase::getNavigationType(NavigationTypeBackForward,
+                                                    &m_pageHolder->document());
   EXPECT_EQ(returnedType,
             PerformanceNavigationTiming::NavigationType::BackForward);
 
   m_pageHolder->page().setVisibilityState(PageVisibilityStateVisible, false);
-  returnedType = getNavigationType(NavigationTypeFormResubmitted,
-                                   &m_pageHolder->document());
+  returnedType = PerformanceBase::getNavigationType(
+      NavigationTypeFormResubmitted, &m_pageHolder->document());
   EXPECT_EQ(returnedType,
             PerformanceNavigationTiming::NavigationType::Navigate);
 }
@@ -171,7 +166,6 @@ TEST_F(PerformanceBaseTest, AllowsTimingRedirect) {
   Vector<ResourceResponse> redirectChain;
   KURL url(ParsedURLString, originDomain + "/foo.html");
   ResourceResponse finalResponse;
-  finalResponse.setURL(url);
   ResourceResponse redirectResponse1;
   redirectResponse1.setURL(url);
   ResourceResponse redirectResponse2;
@@ -179,6 +173,11 @@ TEST_F(PerformanceBaseTest, AllowsTimingRedirect) {
   redirectChain.push_back(redirectResponse1);
   redirectChain.push_back(redirectResponse2);
   RefPtr<SecurityOrigin> securityOrigin = SecurityOrigin::create(url);
+  // When finalResponse is an empty object.
+  EXPECT_FALSE(allowsTimingRedirect(redirectChain, finalResponse,
+                                    *securityOrigin.get(),
+                                    getExecutionContext()));
+  finalResponse.setURL(url);
   EXPECT_TRUE(allowsTimingRedirect(redirectChain, finalResponse,
                                    *securityOrigin.get(),
                                    getExecutionContext()));

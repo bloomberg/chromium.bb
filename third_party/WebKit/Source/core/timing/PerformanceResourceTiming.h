@@ -65,9 +65,8 @@ class CORE_EXPORT PerformanceResourceTiming : public PerformanceEntry {
     return new PerformanceResourceTiming(info, timeOrigin, startTime, 0.0,
                                          allowTimingDetails, false);
   }
-
-  AtomicString initiatorType() const;
-
+  // Related doc: https://goo.gl/uNecAj.
+  virtual AtomicString initiatorType() const;
   DOMHighResTimeStamp workerStart() const;
   virtual DOMHighResTimeStamp redirectStart() const;
   virtual DOMHighResTimeStamp redirectEnd() const;
@@ -87,20 +86,12 @@ class CORE_EXPORT PerformanceResourceTiming : public PerformanceEntry {
  protected:
   void buildJSONValue(V8ObjectBuilder&) const override;
 
-  PerformanceResourceTiming(const AtomicString& initiatorType,
-                            double timeOrigin,
-                            ResourceLoadTiming*,
-                            double lastRedirectEndTime,
-                            double finishTime,
-                            unsigned long long transferSize,
-                            unsigned long long encodedBodyLength,
-                            unsigned long long decodedBodyLength,
-                            bool didReuseConnection,
-                            bool allowTimingDetails,
-                            bool allowRedirectDetails,
-                            const String& name,
+  // This constructor is for PerformanceNavigationTiming.
+  // Related doc: https://goo.gl/uNecAj.
+  PerformanceResourceTiming(const String& name,
                             const String& entryType,
-                            double startTime);
+                            double startTime,
+                            double duration);
 
  private:
   PerformanceResourceTiming(const ResourceTimingInfo&,
@@ -111,6 +102,13 @@ class CORE_EXPORT PerformanceResourceTiming : public PerformanceEntry {
                             bool m_allowRedirectDetails);
 
   double workerReady() const;
+
+  virtual ResourceLoadTiming* resourceLoadTiming() const;
+  virtual bool allowTimingDetails() const;
+  virtual bool didReuseConnection() const;
+  virtual unsigned long long getTransferSize() const;
+  virtual unsigned long long getEncodedBodySize() const;
+  virtual unsigned long long getDecodedBodySize() const;
 
   AtomicString m_initiatorType;
   double m_timeOrigin;

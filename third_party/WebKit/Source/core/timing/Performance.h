@@ -76,6 +76,8 @@ class CORE_EXPORT Performance final : public PerformanceBase,
   // ContextLifecycleObserver overrides.
   void contextDestroyed(ExecutionContext*) override;
 
+  PerformanceNavigationTiming* createNavigationTimingInstance() override;
+
   static std::pair<String, DOMWindow*> sanitizedAttribution(
       ExecutionContext*,
       bool hasMultipleContexts,
