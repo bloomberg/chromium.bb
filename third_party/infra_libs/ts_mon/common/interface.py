@@ -83,9 +83,20 @@ class State(object):
     self.metric_name_prefix = '/chrome/infra/'
     # Use the new proto schema
     self.use_new_proto = False
+    # Metrics registered with register_global_metrics.  Keyed by metric name.
+    self.global_metrics = {}
+    # Callbacks registered with register_global_metrics_callback.  Keyed by the
+    # arbitrary string provided by the user.  Called before each flush.
+    self.global_metrics_callbacks = {}
+    # Whether to call invoke_global_callbacks() on every flush().  Set to False
+    # on Appengine because it does its own thing.
+    self.invoke_global_callbacks_on_flush = True
 
   def reset_for_unittest(self):
     self.metrics = {}
+    self.global_metrics = {}
+    self.global_metrics_callbacks = {}
+    self.invoke_global_callbacks_on_flush = True
     self.last_flushed = datetime.datetime.utcfromtimestamp(0)
     self.store.reset_for_unittest()
     self.use_new_proto = False
@@ -101,6 +112,9 @@ def flush():
 
   if not state.global_monitor or not state.target:
     raise errors.MonitoringNoConfiguredMonitorError(None)
+
+  if state.invoke_global_callbacks_on_flush:
+    invoke_global_callbacks()
 
   if state.use_new_proto:
     generator = _generate_proto_new
@@ -210,6 +224,55 @@ def reset_for_unittest(disable=False):
   state.reset_for_unittest()
   if disable:
     state.flush_enabled_fn = lambda: False
+
+
+def register_global_metrics(metrics):
+  """Declare metrics as global.
+
+  Outside Appengine this has no effect.
+
+  On Appengine, registering a metric as "global" simply means it will be reset
+  every time the metric is sent. This allows any instance to send such a metric
+  to a shared stream, e.g. by overriding target fields like task_num (instance
+  ID), host_name (version) or job_name (module name).
+
+  There is no "unregister". Multiple calls add up. It only needs to be called
+  once, similar to gae_ts_mon.initialize().
+
+  Args:
+    metrics (iterable): a collection of Metric objects.
+  """
+  state.global_metrics.update({m.name: m for m in metrics})
+
+
+def register_global_metrics_callback(name, callback):
+  """Register a named function to compute global metrics values.
+
+  There can only be one callback for a given name. Setting another callback with
+  the same name will override the previous one. To disable a callback, set its
+  function to None.
+
+  Args:
+    name (string): name of the callback.
+    callback (function): this function will be called without arguments every
+      minute.  On Appengine it is called once for the whole application from the
+      gae_ts_mon cron job. It is intended to set the values of the global
+      metrics.
+  """
+  if not callback:
+    if name in state.global_metrics_callbacks:
+      del state.global_metrics_callbacks[name]
+  else:
+    state.global_metrics_callbacks[name] = callback
+
+
+def invoke_global_callbacks():
+  for name, callback in state.global_metrics_callbacks.iteritems():
+    logging.debug('Invoking callback %s', name)
+    try:
+      callback()
+    except Exception:
+      logging.exception('Monitoring global callback "%s" failed', name)
 
 
 class _FlushThread(threading.Thread):
