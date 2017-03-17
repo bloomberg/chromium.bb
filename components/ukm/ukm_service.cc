@@ -14,8 +14,10 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/metrics_hashes.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/time/time.h"
 #include "components/metrics/metrics_log.h"
 #include "components/metrics/metrics_log_uploader.h"
@@ -66,6 +68,13 @@ std::string GetServerUrl() {
   if (!server_url.empty())
     return server_url;
   return kDefaultServerUrl;
+}
+
+// Gets the list of whitelisted Entries as string. Format is a comma seperated
+// list of Entry names (as strings).
+std::string GetWhitelistEntries() {
+  return base::GetFieldTrialParamValueByFeature(kUkmFeature,
+                                                "WhitelistEntries");
 }
 
 // Gets the maximum number of Sources we'll keep in memory before discarding any
@@ -126,6 +135,7 @@ enum class DroppedDataReason {
   NOT_DROPPED = 0,
   RECORDING_DISABLED = 1,
   MAX_HIT = 2,
+  NOT_WHITELISTED = 3,
   NUM_DROPPED_DATA_REASONS
 };
 
@@ -181,6 +191,8 @@ UkmService::UkmService(PrefService* pref_service,
 
   for (auto& provider : metrics_providers_)
     provider->Init();
+
+  StoreWhitelistedEntries();
 }
 
 UkmService::~UkmService() {
@@ -477,7 +489,22 @@ void UkmService::AddEntry(std::unique_ptr<UkmEntry> entry) {
     return;
   }
 
+  if (!whitelisted_entry_hashes_.empty() &&
+      !base::ContainsKey(whitelisted_entry_hashes_, entry->event_hash())) {
+    RecordDroppedEntry(DroppedDataReason::NOT_WHITELISTED);
+    return;
+  }
+
   entries_.push_back(std::move(entry));
+}
+
+void UkmService::StoreWhitelistedEntries() {
+  const auto entries =
+      base::SplitString(GetWhitelistEntries(), ",", base::TRIM_WHITESPACE,
+                        base::SPLIT_WANT_NONEMPTY);
+  for (const auto& entry_string : entries) {
+    whitelisted_entry_hashes_.insert(base::HashMetricName(entry_string));
+  }
 }
 
 }  // namespace ukm

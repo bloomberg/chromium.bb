@@ -29,6 +29,7 @@ class UkmEntry {
   void PopulateProto(Entry* proto_entry) const;
 
   int32_t source_id() const { return source_id_; }
+  uint64_t event_hash() const { return event_hash_; }
 
   ~UkmEntry();
 

@@ -117,6 +117,7 @@ class UkmService : public base::SupportsWeakPtr<UkmService> {
                            LogsUploadedOnlyWhenHavingSourcesOrEntries);
   FRIEND_TEST_ALL_PREFIXES(UkmServiceTest, MetricsProviderTest);
   FRIEND_TEST_ALL_PREFIXES(UkmServiceTest, PersistAndPurge);
+  FRIEND_TEST_ALL_PREFIXES(UkmServiceTest, WhitelistEntryTest);
 
   // Get a new UkmEntryBuilder object for the specified source ID and event,
   // which can get metrics added to.
@@ -149,6 +150,9 @@ class UkmService : public base::SupportsWeakPtr<UkmService> {
 
   // Add an entry to the UkmEntry list.
   void AddEntry(std::unique_ptr<UkmEntry> entry);
+
+  // Cache the list of whitelisted entries from the field trial parameter.
+  void StoreWhitelistedEntries();
 
   // A weak pointer to the PrefService used to read and write preferences.
   PrefService* pref_service_;
@@ -188,6 +192,9 @@ class UkmService : public base::SupportsWeakPtr<UkmService> {
   // get serialized and cleared by BuildAndStoreLog().
   std::map<int32_t, std::unique_ptr<UkmSource>> sources_;
   std::vector<std::unique_ptr<UkmEntry>> entries_;
+
+  // Whitelisted Entry hashes, only the ones in this set will be recorded.
+  std::set<uint64_t> whitelisted_entry_hashes_;
 
   // Weak pointers factory used to post task on different threads. All weak
   // pointers managed by this factory have the same lifetime as UkmService.

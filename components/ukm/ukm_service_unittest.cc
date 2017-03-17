@@ -490,4 +490,55 @@ TEST_F(UkmServiceTest, PurgeMidUpload) {
   EXPECT_FALSE(client_.uploader()->is_uploading());
 }
 
+TEST_F(UkmServiceTest, WhitelistEntryTest) {
+  base::FieldTrialList field_trial_list(nullptr /* entropy_provider */);
+  // Testing two whitelisted Entries.
+  ScopedUkmFeatureParams params(base::FeatureList::OVERRIDE_ENABLE_FEATURE,
+                                {{"WhitelistEntries", "EntryA,EntryB"}});
+
+  ClearPrefs();
+  UkmService service(&prefs_, &client_);
+  EXPECT_EQ(0, GetPersistedLogCount());
+  service.Initialize();
+  task_runner_->RunUntilIdle();
+  service.EnableRecording();
+  service.EnableReporting();
+
+  auto id = UkmService::GetNewSourceID();
+  service.UpdateSourceURL(id, GURL("https://google.com/foobar1"));
+
+  {
+    std::unique_ptr<UkmEntryBuilder> builder =
+        service.GetEntryBuilder(id, "EntryA");
+    builder->AddMetric("MetricA", 300);
+  }
+  {
+    std::unique_ptr<UkmEntryBuilder> builder =
+        service.GetEntryBuilder(id, "EntryB");
+    builder->AddMetric("MetricB", 400);
+  }
+  // Note that this third entry is not in the whitelist.
+  {
+    std::unique_ptr<UkmEntryBuilder> builder =
+        service.GetEntryBuilder(id, "EntryC");
+    builder->AddMetric("MetricC", 500);
+  }
+
+  service.Flush();
+  EXPECT_EQ(1, GetPersistedLogCount());
+  Report proto_report = GetPersistedReport();
+
+  // Verify we've added one source and 2 entries.
+  EXPECT_EQ(1, proto_report.sources_size());
+  ASSERT_EQ(2, proto_report.entries_size());
+
+  const Entry& proto_entry_a = proto_report.entries(0);
+  EXPECT_EQ(id, proto_entry_a.source_id());
+  EXPECT_EQ(base::HashMetricName("EntryA"), proto_entry_a.event_hash());
+
+  const Entry& proto_entry_b = proto_report.entries(1);
+  EXPECT_EQ(id, proto_entry_b.source_id());
+  EXPECT_EQ(base::HashMetricName("EntryB"), proto_entry_b.event_hash());
+}
+
 }  // namespace ukm
