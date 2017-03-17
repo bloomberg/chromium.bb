@@ -1681,10 +1681,12 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_WEBVR_EXPERIMENTAL_RENDERING_NAME,
      IDS_FLAGS_WEBVR_EXPERIMENTAL_RENDERING_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kWebVRExperimentalRendering)},
+#if defined(OS_ANDROID)
     {"enable-vr-shell", IDS_FLAGS_ENABLE_VR_SHELL_NAME,
      IDS_FLAGS_ENABLE_VR_SHELL_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kVrShell)},
-#endif
+#endif  // OS_ANDROID
+#endif  // ENABLE_WEBVR
 #if defined(OS_CHROMEOS)
     {"disable-accelerated-mjpeg-decode",
      IDS_FLAGS_ACCELERATED_MJPEG_DECODE_NAME,
