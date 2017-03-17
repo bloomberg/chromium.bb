@@ -24360,7 +24360,27 @@
      {}
     ]
    ],
+   "streams/writable-streams/start-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "streams/writable-streams/start.dedicatedworker-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "streams/writable-streams/start.js": [
+    [
+     {}
+    ]
+   ],
+   "streams/writable-streams/start.serviceworker.https-expected.txt": [
+    [
+     {}
+    ]
+   ],
+   "streams/writable-streams/start.sharedworker-expected.txt": [
     [
      {}
     ]
@@ -44037,6 +44057,12 @@
      {}
     ]
    ],
+   "navigation-timing/nav2_test_instance_accessible_from_the_start.html": [
+    [
+     "/navigation-timing/nav2_test_instance_accessible_from_the_start.html",
+     {}
+    ]
+   ],
    "navigation-timing/nav2_test_instance_accessors.html": [
     [
      "/navigation-timing/nav2_test_instance_accessors.html",
@@ -44064,18 +44090,6 @@
    "navigation-timing/nav2_test_navigation_type_reload.html": [
     [
      "/navigation-timing/nav2_test_navigation_type_reload.html",
-     {}
-    ]
-   ],
-   "navigation-timing/nav2_test_open_blank_page.html": [
-    [
-     "/navigation-timing/nav2_test_open_blank_page.html",
-     {}
-    ]
-   ],
-   "navigation-timing/nav2_test_open_data_uri.html": [
-    [
-     "/navigation-timing/nav2_test_open_data_uri.html",
      {}
     ]
    ],
@@ -79982,6 +79996,10 @@
    "22ff29845d8417ccbae58123efe8e1c9b9c81eaf",
    "testharness"
   ],
+  "navigation-timing/nav2_test_instance_accessible_from_the_start.html": [
+   "79bd2cff7e144ef3d1b093c542ad69302a0138b3",
+   "testharness"
+  ],
   "navigation-timing/nav2_test_instance_accessors.html": [
    "c4960ce93c9379763845fb2cae9249d4e4c18376",
    "testharness"
@@ -80000,14 +80018,6 @@
   ],
   "navigation-timing/nav2_test_navigation_type_reload.html": [
    "7ae8a4419a61778c6c781330a0eb19a4a8b2791c",
-   "testharness"
-  ],
-  "navigation-timing/nav2_test_open_blank_page.html": [
-   "036b4072819d6906afefd76e3ff8100fb8ee5c1e",
-   "testharness"
-  ],
-  "navigation-timing/nav2_test_open_data_uri.html": [
-   "f1ee360ff8a5aea221e6be63eee60f381c2d33d2",
    "testharness"
   ],
   "navigation-timing/nav2_test_redirect_none.html": [
@@ -90915,11 +90925,11 @@
    "support"
   ],
   "streams/writable-streams/aborting-expected.txt": [
-   "210d85192e93c09fb3a4c8993a606a8c3aa8f811",
+   "b43b709c7bb20be7c709a7e61da43c34eb6a1fef",
    "support"
   ],
   "streams/writable-streams/aborting.dedicatedworker-expected.txt": [
-   "210d85192e93c09fb3a4c8993a606a8c3aa8f811",
+   "b43b709c7bb20be7c709a7e61da43c34eb6a1fef",
    "support"
   ],
   "streams/writable-streams/aborting.dedicatedworker.html": [
@@ -90935,7 +90945,7 @@
    "support"
   ],
   "streams/writable-streams/aborting.serviceworker.https-expected.txt": [
-   "db653cba3d2b892e55bf8c58d31dd9442f35e866",
+   "839866716fb3b4a452596f8565024ba96782be90",
    "support"
   ],
   "streams/writable-streams/aborting.serviceworker.https.html": [
@@ -90943,7 +90953,7 @@
    "testharness"
   ],
   "streams/writable-streams/aborting.sharedworker-expected.txt": [
-   "210d85192e93c09fb3a4c8993a606a8c3aa8f811",
+   "b43b709c7bb20be7c709a7e61da43c34eb6a1fef",
    "support"
   ],
   "streams/writable-streams/aborting.sharedworker.html": [
@@ -91190,6 +91200,14 @@
    "5dabe1367481c57c58fe208ba66d8c13d4e2b796",
    "testharness"
   ],
+  "streams/writable-streams/start-expected.txt": [
+   "875d24671fe0155749dc0122c5b60be6965ae5cc",
+   "support"
+  ],
+  "streams/writable-streams/start.dedicatedworker-expected.txt": [
+   "875d24671fe0155749dc0122c5b60be6965ae5cc",
+   "support"
+  ],
   "streams/writable-streams/start.dedicatedworker.html": [
    "cef789c53d44cdb3e20a1187c90aae8c5d25d488",
    "testharness"
@@ -91202,9 +91220,17 @@
    "35a7dc955dcfda4971dced0266ec3287d18979bd",
    "support"
   ],
+  "streams/writable-streams/start.serviceworker.https-expected.txt": [
+   "b9887b3d714429ad6637b0f7f9c9d52df808ccdf",
+   "support"
+  ],
   "streams/writable-streams/start.serviceworker.https.html": [
    "3d8b4b8eb8e1b7dcc6629e82fc0c5eb5e3be8633",
    "testharness"
+  ],
+  "streams/writable-streams/start.sharedworker-expected.txt": [
+   "875d24671fe0155749dc0122c5b60be6965ae5cc",
+   "support"
   ],
   "streams/writable-streams/start.sharedworker.html": [
    "1117ab179967063a1cdfba17cfc1c47b013bf39d",
