@@ -682,8 +682,12 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
       bi = db.GetBuildStatus(build_id)
       current_time = db.GetTime()
       elapsed_seconds = int((current_time - bi['start_time']).total_seconds())
+      self_destructed = self._run.attrs.metadata.GetValueWithDefault(
+          constants.SELF_DESTRUCTED_BUILD, False)
       fields = {'success': success,
-                'submitted_any': submitted_any}
+                'submitted_any': submitted_any,
+                'self_destructed': self_destructed}
+
       m = metrics.Counter(constants.MON_CQ_WALL_CLOCK_SECS)
       m.increment_by(elapsed_seconds, fields=fields)
 

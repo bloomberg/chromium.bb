@@ -508,6 +508,11 @@ class SlaveStatus(object):
         logging.warning('No need to wait for the remaining running slaves given'
                         ' the results of relevant change triages.')
         self.metadata.UpdateWithDict({constants.SELF_DESTRUCTED_BUILD: True})
+
+        fields = {'build_config': self.config.name}
+        metrics.Counter(constants.MON_CQ_SELF_DESTRUCTION_COUNT).increment(
+            fields=fields)
+
         return False
 
     # We got here which means no problems, we should still wait.
