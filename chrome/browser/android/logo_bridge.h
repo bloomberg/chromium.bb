@@ -7,15 +7,32 @@
 
 #include <jni.h>
 
+#include <memory>
+
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
+#include "base/scoped_observer.h"
+#include "components/doodle/doodle_service.h"
 
 class LogoService;
 
+namespace doodle {
+class DoodleService;
+}  // namespace doodle
+
+namespace gfx {
+class Image;
+}  // namespace gfx
+
+namespace image_fetcher {
+class ImageFetcher;
+}  // namespace image_fetcher
+
 // The C++ counterpart to LogoBridge.java. Enables Java code to access the
 // default search provider's logo.
-class LogoBridge {
+class LogoBridge : public doodle::DoodleService::Observer {
  public:
   explicit LogoBridge(jobject j_profile);
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
@@ -39,9 +56,32 @@ class LogoBridge {
  private:
   class AnimatedLogoFetcher;
 
-  ~LogoBridge();
+  virtual ~LogoBridge();
 
+  // doodle::DoodleService::Observer implementation.
+  void OnDoodleConfigUpdated(
+      const base::Optional<doodle::DoodleConfig>& maybe_doodle_config) override;
+
+  void DoodleConfigReceived(
+      const base::Optional<doodle::DoodleConfig>& maybe_doodle_config,
+      bool from_cache);
+
+  void DoodleImageFetched(bool config_from_cache,
+                          const GURL& on_click_url,
+                          const std::string& alt_text,
+                          const GURL& animated_image_url,
+                          const std::string& image_fetch_id,
+                          const gfx::Image& image);
+
+  // Only valid if UseNewDoodleApi is disabled.
   LogoService* logo_service_;
+
+  // Only valid if UseNewDoodleApi is enabled.
+  doodle::DoodleService* doodle_service_;
+  std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher_;
+  base::android::ScopedJavaGlobalRef<jobject> j_logo_observer_;
+  ScopedObserver<doodle::DoodleService, doodle::DoodleService::Observer>
+      doodle_observer_;
 
   std::unique_ptr<AnimatedLogoFetcher> animated_logo_fetcher_;
 

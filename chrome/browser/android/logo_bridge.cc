@@ -11,10 +11,15 @@
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
+#include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/android/logo_service.h"
+#include "chrome/browser/doodle/doodle_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
+#include "chrome/browser/search/suggestions/image_decoder_impl.h"
+#include "components/image_fetcher/image_fetcher_impl.h"
 #include "components/search_provider_logos/logo_tracker.h"
 #include "jni/LogoBridge_jni.h"
 #include "net/url_request/url_fetcher.h"
@@ -23,6 +28,7 @@
 #include "net/url_request/url_request_status.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/android/java_bitmap.h"
+#include "ui/gfx/image/image.h"
 #include "url/gurl.h"
 
 using base::android::ConvertJavaStringToUTF8;
@@ -33,6 +39,32 @@ using base::android::ToJavaByteArray;
 
 namespace {
 
+const base::Feature kUseNewDoodleApi{"UseNewDoodleApi",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
+ScopedJavaLocalRef<jobject> MakeJavaLogo(JNIEnv* env,
+                                         const SkBitmap* bitmap,
+                                         const GURL& on_click_url,
+                                         const std::string& alt_text,
+                                         const GURL& animated_url) {
+  ScopedJavaLocalRef<jobject> j_bitmap = gfx::ConvertToJavaBitmap(bitmap);
+
+  ScopedJavaLocalRef<jstring> j_on_click_url;
+  if (on_click_url.is_valid())
+    j_on_click_url = ConvertUTF8ToJavaString(env, on_click_url.spec());
+
+  ScopedJavaLocalRef<jstring> j_alt_text;
+  if (!alt_text.empty())
+    j_alt_text = ConvertUTF8ToJavaString(env, alt_text);
+
+  ScopedJavaLocalRef<jstring> j_animated_url;
+  if (animated_url.is_valid())
+    j_animated_url = ConvertUTF8ToJavaString(env, animated_url.spec());
+
+  return Java_LogoBridge_createLogo(env, j_bitmap, j_on_click_url, j_alt_text,
+                                    j_animated_url);
+}
+
 // Converts a C++ Logo to a Java Logo.
 ScopedJavaLocalRef<jobject> ConvertLogoToJavaObject(
     JNIEnv* env,
@@ -40,22 +72,9 @@ ScopedJavaLocalRef<jobject> ConvertLogoToJavaObject(
   if (!logo)
     return ScopedJavaLocalRef<jobject>();
 
-  ScopedJavaLocalRef<jobject> j_bitmap = gfx::ConvertToJavaBitmap(&logo->image);
-
-  ScopedJavaLocalRef<jstring> j_on_click_url;
-  if (!logo->metadata.on_click_url.empty())
-    j_on_click_url = ConvertUTF8ToJavaString(env, logo->metadata.on_click_url);
-
-  ScopedJavaLocalRef<jstring> j_alt_text;
-  if (!logo->metadata.alt_text.empty())
-    j_alt_text = ConvertUTF8ToJavaString(env, logo->metadata.alt_text);
-
-  ScopedJavaLocalRef<jstring> j_animated_url;
-  if (!logo->metadata.animated_url.empty())
-    j_animated_url = ConvertUTF8ToJavaString(env, logo->metadata.animated_url);
-
-  return Java_LogoBridge_createLogo(env, j_bitmap, j_on_click_url, j_alt_text,
-                                    j_animated_url);
+  return MakeJavaLogo(env, &logo->image, GURL(logo->metadata.on_click_url),
+                      logo->metadata.alt_text,
+                      GURL(logo->metadata.animated_url));
 }
 
 class LogoObserverAndroid : public search_provider_logos::LogoObserver {
@@ -172,10 +191,24 @@ static jlong Init(JNIEnv* env,
 }
 
 LogoBridge::LogoBridge(jobject j_profile)
-    : logo_service_(nullptr), weak_ptr_factory_(this) {
+    : logo_service_(nullptr),
+      doodle_service_(nullptr),
+      doodle_observer_(this),
+      weak_ptr_factory_(this) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
   DCHECK(profile);
-  logo_service_ = LogoServiceFactory::GetForProfile(profile);
+
+  if (base::FeatureList::IsEnabled(kUseNewDoodleApi)) {
+    doodle_service_ = DoodleServiceFactory::GetForProfile(profile);
+    image_fetcher_ = base::MakeUnique<image_fetcher::ImageFetcherImpl>(
+        base::MakeUnique<suggestions::ImageDecoderImpl>(),
+        profile->GetRequestContext());
+
+    doodle_observer_.Add(doodle_service_);
+  } else {
+    logo_service_ = LogoServiceFactory::GetForProfile(profile);
+  }
+
   animated_logo_fetcher_ = base::MakeUnique<AnimatedLogoFetcher>(
       profile->GetRequestContext());
 }
@@ -189,10 +222,19 @@ void LogoBridge::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
 void LogoBridge::GetCurrentLogo(JNIEnv* env,
                                 const JavaParamRef<jobject>& obj,
                                 const JavaParamRef<jobject>& j_logo_observer) {
-  // |observer| is deleted in LogoObserverAndroid::OnObserverRemoved().
-  LogoObserverAndroid* observer = new LogoObserverAndroid(
-      weak_ptr_factory_.GetWeakPtr(), env, j_logo_observer);
-  logo_service_->GetLogo(observer);
+  if (doodle_service_) {
+    j_logo_observer_.Reset(j_logo_observer);
+
+    // Immediately hand out any current cached config.
+    DoodleConfigReceived(doodle_service_->config(), /*from_cache=*/true);
+    // Also request a refresh, in case something changed.
+    doodle_service_->Refresh();
+  } else {
+    // |observer| is deleted in LogoObserverAndroid::OnObserverRemoved().
+    LogoObserverAndroid* observer = new LogoObserverAndroid(
+        weak_ptr_factory_.GetWeakPtr(), env, j_logo_observer);
+    logo_service_->GetLogo(observer);
+  }
 }
 
 void LogoBridge::GetAnimatedLogo(JNIEnv* env,
@@ -201,6 +243,66 @@ void LogoBridge::GetAnimatedLogo(JNIEnv* env,
                                  const JavaParamRef<jstring>& j_url) {
   GURL url = GURL(ConvertJavaStringToUTF8(env, j_url));
   animated_logo_fetcher_->Start(env, url, j_callback);
+}
+
+void LogoBridge::OnDoodleConfigUpdated(
+    const base::Optional<doodle::DoodleConfig>& maybe_doodle_config) {
+  if (j_logo_observer_.is_null()) {
+    return;
+  }
+  DoodleConfigReceived(maybe_doodle_config, /*from_cache=*/false);
+}
+
+void LogoBridge::DoodleConfigReceived(
+    const base::Optional<doodle::DoodleConfig>& maybe_doodle_config,
+    bool from_cache) {
+  DCHECK(!j_logo_observer_.is_null());
+
+  if (!maybe_doodle_config.has_value()) {
+    JNIEnv* env = base::android::AttachCurrentThread();
+    Java_LogoObserver_onLogoAvailable(
+        env, j_logo_observer_, ScopedJavaLocalRef<jobject>(), from_cache);
+    return;
+  }
+  const doodle::DoodleConfig& doodle_config = maybe_doodle_config.value();
+  // If there is a CTA image, that means the main image is animated. Show the
+  // non-animated CTA image first, and load the animated one only when the
+  // user requests it.
+  bool has_cta = doodle_config.large_cta_image.has_value();
+  const GURL& image_url = has_cta ? doodle_config.large_cta_image->url
+                                  : doodle_config.large_image.url;
+  const GURL& animated_image_url =
+      has_cta ? doodle_config.large_image.url : GURL::EmptyGURL();
+  // TODO(treib): For interactive doodles, use |fullpage_interactive_url|
+  // instead of |target_url|?
+  const GURL& on_click_url = doodle_config.target_url;
+  const std::string& alt_text = doodle_config.alt_text;
+  image_fetcher_->StartOrQueueNetworkRequest(
+      image_url.spec(), image_url,
+      base::Bind(&LogoBridge::DoodleImageFetched, base::Unretained(this),
+                 from_cache, on_click_url, alt_text, animated_image_url));
+}
+
+void LogoBridge::DoodleImageFetched(bool config_from_cache,
+                                    const GURL& on_click_url,
+                                    const std::string& alt_text,
+                                    const GURL& animated_image_url,
+                                    const std::string& image_fetch_id,
+                                    const gfx::Image& image) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+
+  if (image.IsEmpty()) {
+    DLOG(WARNING) << "Failed to download doodle image";
+    Java_LogoObserver_onLogoAvailable(env, j_logo_observer_,
+                                      ScopedJavaLocalRef<jobject>(),
+                                      config_from_cache);
+    return;
+  }
+
+  ScopedJavaLocalRef<jobject> j_logo = MakeJavaLogo(
+      env, image.ToSkBitmap(), on_click_url, alt_text, animated_image_url);
+  Java_LogoObserver_onLogoAvailable(env, j_logo_observer_, j_logo,
+                                    config_from_cache);
 }
 
 // static
