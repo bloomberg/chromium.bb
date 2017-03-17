@@ -18,6 +18,7 @@
 #include "chrome/browser/android/compositor/layer_title_cache.h"
 #include "chrome/browser/android/compositor/tab_content_manager.h"
 #include "content/public/browser/android/compositor.h"
+#include "ui/android/resources/nine_patch_resource.h"
 #include "ui/android/resources/resource_manager.h"
 #include "ui/base/l10n/l10n_util_android.h"
 #include "ui/gfx/geometry/insets_f.h"
@@ -152,22 +153,22 @@ void TabLayer::SetProperties(int id,
   layer_->SetHideLayerAndSubtree(false);
 
   // Grab required resources
-  ui::ResourceManager::Resource* border_resource =
-      resource_manager_->GetStaticResourceWithTint(border_resource_id,
-                                                   toolbar_background_color);
-  ui::ResourceManager::Resource* border_inner_shadow_resource =
-      resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_STATIC,
-                                     border_inner_shadow_resource_id);
-  ui::ResourceManager::Resource* shadow_resource =
-      resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_STATIC,
-                                     shadow_resource_id);
-  ui::ResourceManager::Resource* contour_resource =
-      resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_STATIC,
-                                     contour_resource_id);
-  ui::ResourceManager::Resource* close_btn_resource =
+  ui::NinePatchResource* border_resource =
+      ui::NinePatchResource::From(resource_manager_->GetStaticResourceWithTint(
+          border_resource_id, toolbar_background_color));
+  ui::NinePatchResource* border_inner_shadow_resource =
+      ui::NinePatchResource::From(resource_manager_->GetResource(
+          ui::ANDROID_RESOURCE_TYPE_STATIC, border_inner_shadow_resource_id));
+  ui::NinePatchResource* shadow_resource =
+      ui::NinePatchResource::From(resource_manager_->GetResource(
+          ui::ANDROID_RESOURCE_TYPE_STATIC, shadow_resource_id));
+  ui::NinePatchResource* contour_resource =
+      ui::NinePatchResource::From(resource_manager_->GetResource(
+          ui::ANDROID_RESOURCE_TYPE_STATIC, contour_resource_id));
+  ui::Resource* close_btn_resource =
       resource_manager_->GetStaticResourceWithTint(close_button_resource_id,
                                                    close_button_color);
-  ui::ResourceManager::Resource* back_logo_resource = nullptr;
+  ui::Resource* back_logo_resource = nullptr;
 
   DecorationTitle* title_layer = nullptr;
 
@@ -184,11 +185,11 @@ void TabLayer::SetProperties(int id,
   //----------------------------------------------------------------------------
   // Precalculate Helper Values
   //----------------------------------------------------------------------------
-  const gfx::RectF border_padding(border_resource->padding);
+  const gfx::RectF border_padding(border_resource->padding());
   const gfx::RectF border_inner_shadow_padding(
-      border_inner_shadow_resource->padding);
-  const gfx::RectF shadow_padding(shadow_resource->padding);
-  const gfx::RectF contour_padding(contour_resource->padding);
+      border_inner_shadow_resource->padding());
+  const gfx::RectF shadow_padding(shadow_resource->padding());
+  const gfx::RectF contour_padding(contour_resource->padding());
 
   // If we're in portrait and we're RTL, the close button is on the left.
   // Similarly if we're in landscape and we're in LTR, the close button is on
@@ -208,19 +209,19 @@ void TabLayer::SetProperties(int id,
       scaled_local_content_area.height() / content_scale);
 
   const gfx::Size shadow_padding_size(
-      shadow_resource->size.width() - shadow_padding.width(),
-      shadow_resource->size.height() - shadow_padding.height());
+      shadow_resource->size().width() - shadow_padding.width(),
+      shadow_resource->size().height() - shadow_padding.height());
   const gfx::Size border_padding_size(
-      border_resource->size.width() - border_padding.width(),
-      border_resource->size.height() - border_padding.height());
+      border_resource->size().width() - border_padding.width(),
+      border_resource->size().height() - border_padding.height());
   const gfx::Size border_inner_shadow_padding_size(
-      border_inner_shadow_resource->size.width()
-          - border_inner_shadow_padding.width(),
-      border_inner_shadow_resource->size.height()
-          - border_inner_shadow_padding.height());
+      border_inner_shadow_resource->size().width() -
+          border_inner_shadow_padding.width(),
+      border_inner_shadow_resource->size().height() -
+          border_inner_shadow_padding.height());
   const gfx::Size contour_padding_size(
-      contour_resource->size.width() - contour_padding.width(),
-      contour_resource->size.height() - contour_padding.height());
+      contour_resource->size().width() - contour_padding.width(),
+      contour_resource->size().height() - contour_padding.height());
 
   const float close_btn_effective_width = close_btn_width * close_alpha;
 
@@ -289,7 +290,7 @@ void TabLayer::SetProperties(int id,
         resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_STATIC,
                                        back_logo_resource_id);
     if (back_logo_resource)
-      back_logo_size = back_logo_resource->size;
+      back_logo_size = back_logo_resource->size();
   }
 
   // Store this size at a point as it might go negative during the inset
@@ -338,10 +339,10 @@ void TabLayer::SetProperties(int id,
   // Center Specific Assets in the Rects
   //----------------------------------------------------------------------------
   close_button_position.Offset(
-      (close_button_size.width() - close_btn_resource->size.width()) / 2.f,
-      (close_button_size.height() - close_btn_resource->size.height()) / 2.f);
-  close_button_size.SetSize(close_btn_resource->size.width(),
-                            close_btn_resource->size.height());
+      (close_button_size.width() - close_btn_resource->size().width()) / 2.f,
+      (close_button_size.height() - close_btn_resource->size().height()) / 2.f);
+  close_button_size.SetSize(close_btn_resource->size().width(),
+                            close_btn_resource->size().height());
 
   //----------------------------------------------------------------------------
   // Handle Insetting the Top Border Component
@@ -413,24 +414,24 @@ void TabLayer::SetProperties(int id,
   //----------------------------------------------------------------------------
   // Update Resource Ids
   //----------------------------------------------------------------------------
-  shadow_->SetUIResourceId(shadow_resource->ui_resource->id());
+  shadow_->SetUIResourceId(shadow_resource->ui_resource()->id());
   shadow_->SetBorder(shadow_resource->Border(shadow_size));
-  shadow_->SetAperture(shadow_resource->aperture);
+  shadow_->SetAperture(shadow_resource->aperture());
 
-  contour_shadow_->SetUIResourceId(contour_resource->ui_resource->id());
+  contour_shadow_->SetUIResourceId(contour_resource->ui_resource()->id());
   contour_shadow_->SetBorder(contour_resource->Border(contour_size));
-  contour_shadow_->SetAperture(contour_resource->aperture);
+  contour_shadow_->SetAperture(contour_resource->aperture());
 
-  front_border_->SetUIResourceId(border_resource->ui_resource->id());
-  front_border_->SetAperture(border_resource->aperture);
+  front_border_->SetUIResourceId(border_resource->ui_resource()->id());
+  front_border_->SetAperture(border_resource->aperture());
   front_border_->SetBorder(border_resource->Border(
       border_size,
       gfx::InsetsF(1.f, side_border_scale, 1.f, side_border_scale)));
 
   front_border_inner_shadow_->SetUIResourceId(
-      border_inner_shadow_resource->ui_resource->id());
+      border_inner_shadow_resource->ui_resource()->id());
   front_border_inner_shadow_->SetAperture(
-      border_inner_shadow_resource->aperture);
+      border_inner_shadow_resource->aperture());
   front_border_inner_shadow_->SetBorder(border_inner_shadow_resource->Border(
       border_inner_shadow_size));
 
@@ -443,7 +444,7 @@ void TabLayer::SetProperties(int id,
     title_layer = layer_title_cache_->GetTitleLayer(id);
   SetTitle(title_layer);
 
-  close_button_->SetUIResourceId(close_btn_resource->ui_resource->id());
+  close_button_->SetUIResourceId(close_btn_resource->ui_resource()->id());
 
   if (!back_visible) {
     gfx::Rect rounded_descaled_content_area(
@@ -456,7 +457,7 @@ void TabLayer::SetProperties(int id,
                             true, alpha, saturation,
                             true, rounded_descaled_content_area);
   } else if (back_logo_resource) {
-    back_logo_->SetUIResourceId(back_logo_resource->ui_resource->id());
+    back_logo_->SetUIResourceId(back_logo_resource->ui_resource()->id());
   }
 
   //----------------------------------------------------------------------------

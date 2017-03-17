@@ -51,14 +51,7 @@ class UI_ANDROID_EXPORT ResourceManagerImpl
                        jint res_type,
                        jint res_id,
                        const base::android::JavaRef<jobject>& bitmap,
-                       jint padding_left,
-                       jint padding_top,
-                       jint padding_right,
-                       jint padding_bottom,
-                       jint aperture_left,
-                       jint aperture_top,
-                       jint aperture_right,
-                       jint aperture_bottom);
+                       jlong native_resource);
   void OnCrushedSpriteResourceReady(
       JNIEnv* env,
       const base::android::JavaRef<jobject>& jobj,

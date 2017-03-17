@@ -13,7 +13,7 @@ import android.util.JsonReader;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.ui.resources.Resource;
-
+import org.chromium.ui.resources.statics.NinePatchData;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -82,13 +82,15 @@ public class CrushedSpriteResource implements Resource {
     }
 
     @Override
-    public Rect getPadding() {
-        return EMPTY_RECT;
+    public long createNativeResource() {
+        // TODO(khushalsagar): See if it makes sense to have the native CrushedSpriteResource
+        // inherit from Resource and create that here.
+        return 0;
     }
 
     @Override
-    public Rect getAperture() {
-        return EMPTY_RECT;
+    public NinePatchData getNinePatchData() {
+        return null;
     }
 
     /**

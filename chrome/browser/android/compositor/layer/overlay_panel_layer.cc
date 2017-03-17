@@ -12,6 +12,7 @@
 #include "content/public/browser/android/compositor.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/android/resources/crushed_sprite_resource.h"
+#include "ui/android/resources/nine_patch_resource.h"
 #include "ui/android/resources/resource_manager.h"
 #include "ui/base/l10n/l10n_util_android.h"
 #include "ui/gfx/color_utils.h"
@@ -29,18 +30,16 @@ const float kDefaultIconWidthDp = 36.0f;
 namespace android {
 
 scoped_refptr<cc::Layer> OverlayPanelLayer::GetIconLayer() {
-  ui::ResourceManager::Resource* panel_icon_resource =
-      resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_STATIC,
-                                     panel_icon_resource_id_);
+  ui::Resource* panel_icon_resource = resource_manager_->GetResource(
+      ui::ANDROID_RESOURCE_TYPE_STATIC, panel_icon_resource_id_);
   DCHECK(panel_icon_resource);
 
   if (panel_icon_->parent() != layer_) {
     layer_->AddChild(panel_icon_);
   }
 
-  panel_icon_->SetUIResourceId(
-      panel_icon_resource->ui_resource->id());
-  panel_icon_->SetBounds(panel_icon_resource->size);
+  panel_icon_->SetUIResourceId(panel_icon_resource->ui_resource()->id());
+  panel_icon_->SetBounds(panel_icon_resource->size());
 
   return panel_icon_;
 }
@@ -81,9 +80,9 @@ void OverlayPanelLayer::SetProperties(
     float close_icon_opacity) {
 
   // Grabs required static resources.
-  ui::ResourceManager::Resource* panel_shadow_resource =
-      resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_STATIC,
-                                     panel_shadow_resource_id_);
+  ui::NinePatchResource* panel_shadow_resource =
+      ui::NinePatchResource::From(resource_manager_->GetResource(
+          ui::ANDROID_RESOURCE_TYPE_STATIC, panel_shadow_resource_id_));
 
   DCHECK(panel_shadow_resource);
 
@@ -98,16 +97,16 @@ void OverlayPanelLayer::SetProperties(
   // ---------------------------------------------------------------------------
   // Panel Shadow
   // ---------------------------------------------------------------------------
-  gfx::Size shadow_res_size = panel_shadow_resource->size;
-  gfx::Rect shadow_res_padding = panel_shadow_resource->padding;
+  gfx::Size shadow_res_size = panel_shadow_resource->size();
+  gfx::Rect shadow_res_padding = panel_shadow_resource->padding();
   gfx::Size shadow_bounds(
       panel_width + shadow_res_size.width()
           - shadow_res_padding.size().width(),
       panel_height + shadow_res_size.height()
           - shadow_res_padding.size().height());
-  panel_shadow_->SetUIResourceId(panel_shadow_resource->ui_resource->id());
+  panel_shadow_->SetUIResourceId(panel_shadow_resource->ui_resource()->id());
   panel_shadow_->SetBorder(panel_shadow_resource->Border(shadow_bounds));
-  panel_shadow_->SetAperture(panel_shadow_resource->aperture);
+  panel_shadow_->SetAperture(panel_shadow_resource->aperture());
   panel_shadow_->SetBounds(shadow_bounds);
   gfx::PointF shadow_position(-shadow_res_padding.origin().x(),
                               -shadow_res_padding.origin().y());
@@ -123,18 +122,15 @@ void OverlayPanelLayer::SetProperties(
   // ---------------------------------------------------------------------------
   // Bar Text
   // ---------------------------------------------------------------------------
-  ui::ResourceManager::Resource* bar_text_resource =
-      resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_DYNAMIC,
-                                     bar_text_resource_id_);
+  ui::Resource* bar_text_resource = resource_manager_->GetResource(
+      ui::ANDROID_RESOURCE_TYPE_DYNAMIC, bar_text_resource_id_);
 
   if (bar_text_resource) {
     // Centers the text vertically in the Search Bar.
     float bar_padding_top =
-        bar_top +
-        bar_height / 2 -
-        bar_text_resource->size.height() / 2;
-    bar_text_->SetUIResourceId(bar_text_resource->ui_resource->id());
-    bar_text_->SetBounds(bar_text_resource->size);
+        bar_top + bar_height / 2 - bar_text_resource->size().height() / 2;
+    bar_text_->SetUIResourceId(bar_text_resource->ui_resource()->id());
+    bar_text_->SetBounds(bar_text_resource->size());
     bar_text_->SetPosition(gfx::PointF(0.f, bar_padding_top));
     bar_text_->SetOpacity(bar_text_opacity);
   }
@@ -169,27 +165,24 @@ void OverlayPanelLayer::SetProperties(
   // Close Icon
   // ---------------------------------------------------------------------------
   // Grab the Close Icon resource.
-  ui::ResourceManager::Resource* close_icon_resource =
-      resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_STATIC,
-                                     close_icon_resource_id_);
+  ui::Resource* close_icon_resource = resource_manager_->GetResource(
+      ui::ANDROID_RESOURCE_TYPE_STATIC, close_icon_resource_id_);
 
   // Positions the icon at the end of the bar.
   float close_icon_left;
   if (is_rtl) {
     close_icon_left = bar_margin_side;
   } else {
-    close_icon_left = panel_width -
-        close_icon_resource->size.width() - bar_margin_side;
+    close_icon_left =
+        panel_width - close_icon_resource->size().width() - bar_margin_side;
   }
 
   // Centers the Close Icon vertically in the bar.
   float close_icon_top =
-      bar_top +
-      bar_height / 2 -
-      close_icon_resource->size.height() / 2;
+      bar_top + bar_height / 2 - close_icon_resource->size().height() / 2;
 
-  close_icon_->SetUIResourceId(close_icon_resource->ui_resource->id());
-  close_icon_->SetBounds(close_icon_resource->size);
+  close_icon_->SetUIResourceId(close_icon_resource->ui_resource()->id());
+  close_icon_->SetBounds(close_icon_resource->size());
   close_icon_->SetPosition(
       gfx::PointF(close_icon_left, close_icon_top));
   close_icon_->SetOpacity(close_icon_opacity);
@@ -211,19 +204,17 @@ void OverlayPanelLayer::SetProperties(
   // Bar Shadow
   // ---------------------------------------------------------------------------
   if (bar_shadow_visible) {
-    ui::ResourceManager::Resource* bar_shadow_resource =
-        resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_STATIC,
-                                       bar_shadow_resource_id_);
+    ui::Resource* bar_shadow_resource = resource_manager_->GetResource(
+        ui::ANDROID_RESOURCE_TYPE_STATIC, bar_shadow_resource_id_);
 
     if (bar_shadow_resource) {
       if (bar_shadow_->parent() != layer_)
         layer_->AddChild(bar_shadow_);
 
-      int shadow_height = bar_shadow_resource->size.height();
+      int shadow_height = bar_shadow_resource->size().height();
       gfx::Size shadow_size(panel_width, shadow_height);
 
-      bar_shadow_->SetUIResourceId(
-          bar_shadow_resource->ui_resource->id());
+      bar_shadow_->SetUIResourceId(bar_shadow_resource->ui_resource()->id());
       bar_shadow_->SetBounds(shadow_size);
       bar_shadow_->SetPosition(gfx::PointF(0.f, bar_bottom));
       bar_shadow_->SetOpacity(bar_shadow_opacity);

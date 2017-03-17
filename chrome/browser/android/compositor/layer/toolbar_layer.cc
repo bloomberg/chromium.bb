@@ -10,6 +10,7 @@
 #include "cc/resources/scoped_ui_resource.h"
 #include "content/public/browser/android/compositor.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/android/resources/nine_patch_resource.h"
 #include "ui/android/resources/resource_manager.h"
 
 namespace android {
@@ -36,9 +37,10 @@ void ToolbarLayer::PushResource(
     bool show_debug,
     bool clip_shadow,
     bool browser_controls_at_bottom) {
-  ui::ResourceManager::Resource* resource =
-      resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_DYNAMIC,
-                                     toolbar_resource_id);
+  // TODO(khushalsagar): This should not be a nine-patch resource.
+  ui::NinePatchResource* resource =
+      ui::NinePatchResource::From(resource_manager_->GetResource(
+          ui::ANDROID_RESOURCE_TYPE_DYNAMIC, toolbar_resource_id));
 
   // Ensure the toolbar resource is available before making the layer visible.
   layer_->SetHideLayerAndSubtree(!resource);
@@ -49,23 +51,23 @@ void ToolbarLayer::PushResource(
   // bounds to the non-shadow size so that other things can properly line up.
   // Padding height does not include the height of the tabstrip, so we add
   // it explicitly by adding y offset.
-  gfx::Size size = gfx::Size(
-      resource->padding.width(),
-      resource->padding.height() + resource->padding.y());
+  gfx::Size size =
+      gfx::Size(resource->padding().width(),
+                resource->padding().height() + resource->padding().y());
   layer_->SetBounds(size);
 
   // The toolbar_root_ contains all of the layers that make up the toolbar. The
   // toolbar_root_ is moved around inside of layer_ to allow appropriate
   // clipping of the shadow.
-  toolbar_root_->SetBounds(resource->padding.size());
+  toolbar_root_->SetBounds(resource->padding().size());
 
   gfx::PointF root_layer_position(0, y_offset);
-  gfx::PointF background_position(resource->padding.origin());
+  gfx::PointF background_position(resource->padding().origin());
   if (browser_controls_at_bottom) {
     // The toolbar's position as if it were completely shown.
-    float base_toolbar_y = window_height - resource->padding.size().height();
+    float base_toolbar_y = window_height - resource->padding().size().height();
     float layer_offset =
-        resource->size.height() - resource->padding.size().height();
+        resource->size().height() - resource->padding().size().height();
 
     root_layer_position.set_y(base_toolbar_y + y_offset);
     toolbar_root_->SetPosition(gfx::PointF(0, -layer_offset));
@@ -73,50 +75,51 @@ void ToolbarLayer::PushResource(
   }
   layer_->SetPosition(root_layer_position);
 
-  toolbar_background_layer_->SetBounds(resource->padding.size());
+  toolbar_background_layer_->SetBounds(resource->padding().size());
   toolbar_background_layer_->SetPosition(background_position);
   toolbar_background_layer_->SetBackgroundColor(toolbar_background_color);
 
-  bool url_bar_visible = (resource->aperture.width() != 0);
+  bool url_bar_visible = (resource->aperture().width() != 0);
   url_bar_background_layer_->SetHideLayerAndSubtree(!url_bar_visible);
   if (url_bar_visible) {
-    ui::ResourceManager::Resource* url_bar_background_resource =
-        resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_STATIC,
-                                       url_bar_background_resource_id);
-    gfx::Size url_bar_size(
-        resource->aperture.width() + url_bar_background_resource->size.width()
-        - url_bar_background_resource->padding.width(),
-        resource->aperture.height() + url_bar_background_resource->size.height()
-        - url_bar_background_resource->padding.height());
+    ui::NinePatchResource* url_bar_background_resource =
+        ui::NinePatchResource::From(resource_manager_->GetResource(
+            ui::ANDROID_RESOURCE_TYPE_STATIC, url_bar_background_resource_id));
+    gfx::Size url_bar_size(resource->aperture().width() +
+                               url_bar_background_resource->size().width() -
+                               url_bar_background_resource->padding().width(),
+                           resource->aperture().height() +
+                               url_bar_background_resource->size().height() -
+                               url_bar_background_resource->padding().height());
     gfx::Rect url_bar_border(
         url_bar_background_resource->Border(url_bar_size));
     gfx::PointF url_bar_position = gfx::PointF(
-        resource->aperture.x() - url_bar_background_resource->padding.x(),
-        resource->aperture.y() - url_bar_background_resource->padding.y());
+        resource->aperture().x() - url_bar_background_resource->padding().x(),
+        resource->aperture().y() - url_bar_background_resource->padding().y());
 
     url_bar_background_layer_->SetUIResourceId(
-        url_bar_background_resource->ui_resource->id());
+        url_bar_background_resource->ui_resource()->id());
     url_bar_background_layer_->SetBorder(url_bar_border);
     url_bar_background_layer_->SetAperture(
-        url_bar_background_resource->aperture);
+        url_bar_background_resource->aperture());
     url_bar_background_layer_->SetBounds(url_bar_size);
     url_bar_background_layer_->SetPosition(url_bar_position);
     url_bar_background_layer_->SetOpacity(url_bar_alpha);
   }
 
-  bitmap_layer_->SetUIResourceId(resource->ui_resource->id());
-  bitmap_layer_->SetBounds(resource->size);
+  bitmap_layer_->SetUIResourceId(resource->ui_resource()->id());
+  bitmap_layer_->SetBounds(resource->size());
 
   layer_->SetMasksToBounds(clip_shadow);
 
   anonymize_layer_->SetHideLayerAndSubtree(!anonymize);
   if (anonymize) {
-    anonymize_layer_->SetPosition(gfx::PointF(resource->aperture.origin()));
-    anonymize_layer_->SetBounds(resource->aperture.size());
+    anonymize_layer_->SetPosition(gfx::PointF(resource->aperture().origin()));
+    anonymize_layer_->SetBounds(resource->aperture().size());
     anonymize_layer_->SetBackgroundColor(toolbar_textbox_background_color);
   }
 
-  debug_layer_->SetBounds(resource->size);
+  debug_layer_->SetBounds(resource->size());
   if (show_debug && !debug_layer_->parent())
     layer_->AddChild(debug_layer_);
   else if (!show_debug && debug_layer_->parent())

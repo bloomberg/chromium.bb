@@ -31,6 +31,7 @@
 #include "ui/gfx/geometry/rect.h"
 
 using base::android::JavaArrayOfIntArrayToIntVector;
+using base::android::JavaParamRef;
 using base::android::JavaRef;
 
 namespace ui {
@@ -73,9 +74,8 @@ ResourceManagerImpl::GetJavaObject() {
   return base::android::ScopedJavaLocalRef<jobject>(java_obj_);
 }
 
-ResourceManager::Resource* ResourceManagerImpl::GetResource(
-    AndroidResourceType res_type,
-    int res_id) {
+Resource* ResourceManagerImpl::GetResource(AndroidResourceType res_type,
+                                           int res_id) {
   DCHECK_GE(res_type, ANDROID_RESOURCE_TYPE_FIRST);
   DCHECK_LE(res_type, ANDROID_RESOURCE_TYPE_LAST);
 
@@ -109,9 +109,8 @@ void ResourceManagerImpl::RemoveUnusedTints(
   }
 }
 
-ResourceManager::Resource* ResourceManagerImpl::GetStaticResourceWithTint(
-    int res_id,
-    SkColor tint_color) {
+Resource* ResourceManagerImpl::GetStaticResourceWithTint(int res_id,
+                                                         SkColor tint_color) {
   if (tinted_resources_.find(tint_color) == tinted_resources_.end()) {
     tinted_resources_[tint_color] = base::MakeUnique<ResourceMap>();
   }
@@ -123,16 +122,15 @@ ResourceManager::Resource* ResourceManagerImpl::GetStaticResourceWithTint(
   if (item != resource_map->end())
     return item->second.get();
 
-  std::unique_ptr<Resource> tinted_resource = base::MakeUnique<Resource>();
-
-  ResourceManager::Resource* base_image =
-      GetResource(ANDROID_RESOURCE_TYPE_STATIC, res_id);
+  Resource* base_image = GetResource(ANDROID_RESOURCE_TYPE_STATIC, res_id);
   DCHECK(base_image);
+
+  std::unique_ptr<Resource> tinted_resource = base_image->CreateForCopy();
 
   TRACE_EVENT0("browser", "ResourceManagerImpl::GetStaticResourceWithTint");
   SkBitmap tinted_bitmap;
-  tinted_bitmap.allocPixels(SkImageInfo::MakeN32Premul(base_image->size.width(),
-      base_image->size.height()));
+  tinted_bitmap.allocPixels(SkImageInfo::MakeN32Premul(
+      base_image->size().width(), base_image->size().height()));
 
   SkCanvas canvas(tinted_bitmap);
   canvas.clear(SK_ColorTRANSPARENT);
@@ -145,16 +143,16 @@ ResourceManager::Resource* ResourceManagerImpl::GetStaticResourceWithTint(
       SkColorFilter::MakeModeFilter(tint_color, SkBlendMode::kModulate));
 
   // Draw the resource and make it immutable.
-  base_image->ui_resource->GetBitmap(base_image->ui_resource->id(), false)
+  base_image->ui_resource()
+      ->GetBitmap(base_image->ui_resource()->id(), false)
       .DrawToCanvas(&canvas, &color_filter);
   tinted_bitmap.setImmutable();
 
   // Create a UI resource from the new bitmap.
-  tinted_resource->size = gfx::Size(base_image->size);
-  tinted_resource->padding = gfx::Rect(base_image->padding);
-  tinted_resource->aperture = gfx::Rect(base_image->aperture);
-  tinted_resource->ui_resource = cc::ScopedUIResource::Create(
-      ui_resource_manager_, cc::UIResourceBitmap(tinted_bitmap));
+  tinted_resource->SetUIResource(
+      cc::ScopedUIResource::Create(ui_resource_manager_,
+                                   cc::UIResourceBitmap(tinted_bitmap)),
+      base_image->size());
 
   (*resource_map)[res_id].swap(tinted_resource);
 
@@ -183,41 +181,24 @@ void ResourceManagerImpl::OnResourceReady(JNIEnv* env,
                                           jint res_type,
                                           jint res_id,
                                           const JavaRef<jobject>& bitmap,
-                                          jint padding_left,
-                                          jint padding_top,
-                                          jint padding_right,
-                                          jint padding_bottom,
-                                          jint aperture_left,
-                                          jint aperture_top,
-                                          jint aperture_right,
-                                          jint aperture_bottom) {
+                                          jlong native_resource) {
   DCHECK_GE(res_type, ANDROID_RESOURCE_TYPE_FIRST);
   DCHECK_LE(res_type, ANDROID_RESOURCE_TYPE_LAST);
   TRACE_EVENT2("ui", "ResourceManagerImpl::OnResourceReady",
                "resource_type", res_type,
                "resource_id", res_id);
 
-  std::unordered_map<int, std::unique_ptr<Resource>>::iterator item =
-      resources_[res_type].find(res_id);
-  if (item == resources_[res_type].end()) {
-    resources_[res_type][res_id] = base::MakeUnique<Resource>();
-  }
-
+  resources_[res_type][res_id] =
+      base::WrapUnique(reinterpret_cast<Resource*>(native_resource));
   Resource* resource = resources_[res_type][res_id].get();
 
   gfx::JavaBitmap jbitmap(bitmap);
-  resource->size = jbitmap.size();
-  resource->padding.SetRect(padding_left, padding_top,
-                            padding_right - padding_left,
-                            padding_bottom - padding_top);
-  resource->aperture.SetRect(aperture_left, aperture_top,
-                             aperture_right - aperture_left,
-                             aperture_bottom - aperture_top);
-
   SkBitmap skbitmap = gfx::CreateSkBitmapFromJavaBitmap(jbitmap);
   skbitmap.setImmutable();
-  resource->ui_resource = cc::ScopedUIResource::Create(
-      ui_resource_manager_, cc::UIResourceBitmap(skbitmap));
+  resource->SetUIResource(
+      cc::ScopedUIResource::Create(ui_resource_manager_,
+                                   cc::UIResourceBitmap(skbitmap)),
+      jbitmap.size());
 }
 
 void ResourceManagerImpl::RemoveResource(

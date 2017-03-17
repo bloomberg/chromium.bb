@@ -11,6 +11,7 @@
 #include "chrome/browser/android/compositor/decoration_title.h"
 #include "chrome/browser/android/compositor/layer_title_cache.h"
 #include "content/public/browser/android/compositor.h"
+#include "ui/android/resources/nine_patch_resource.h"
 #include "ui/android/resources/resource_manager.h"
 #include "ui/base/l10n/l10n_util_android.h"
 
@@ -22,23 +23,22 @@ scoped_refptr<TabHandleLayer> TabHandleLayer::Create(
   return make_scoped_refptr(new TabHandleLayer(layer_title_cache));
 }
 
-void TabHandleLayer::SetProperties(
-    int id,
-    ui::ResourceManager::Resource* close_button_resource,
-    ui::ResourceManager::Resource* tab_handle_resource,
-    bool foreground,
-    bool close_pressed,
-    float toolbar_width,
-    float x,
-    float y,
-    float width,
-    float height,
-    float content_offset_x,
-    float close_button_alpha,
-    bool is_loading,
-    float spinner_rotation,
-    float brightness,
-    float border_opacity) {
+void TabHandleLayer::SetProperties(int id,
+                                   ui::Resource* close_button_resource,
+                                   ui::NinePatchResource* tab_handle_resource,
+                                   bool foreground,
+                                   bool close_pressed,
+                                   float toolbar_width,
+                                   float x,
+                                   float y,
+                                   float width,
+                                   float height,
+                                   float content_offset_x,
+                                   float close_button_alpha,
+                                   bool is_loading,
+                                   float spinner_rotation,
+                                   float brightness,
+                                   float border_opacity) {
   if (brightness != brightness_ || foreground != foreground_) {
     brightness_ = brightness;
     foreground_ = foreground;
@@ -68,10 +68,10 @@ void TabHandleLayer::SetProperties(
 
   bool is_rtl = l10n_util::IsLayoutRtl();
 
-  float margin_width =
-      tab_handle_resource->size.width() - tab_handle_resource->aperture.width();
-  float margin_height = tab_handle_resource->size.height() -
-                        tab_handle_resource->aperture.height();
+  float margin_width = tab_handle_resource->size().width() -
+                       tab_handle_resource->aperture().width();
+  float margin_height = tab_handle_resource->size().height() -
+                        tab_handle_resource->aperture().height();
 
   // In the inset case, the |decoration_tab_| nine-patch layer should not have a
   // margin that is greater than the content size of the layer.  This case can
@@ -113,8 +113,8 @@ void TabHandleLayer::SetProperties(
     title_layer_ = nullptr;
   }
 
-  decoration_tab_->SetUIResourceId(tab_handle_resource->ui_resource->id());
-  decoration_tab_->SetAperture(tab_handle_resource->aperture);
+  decoration_tab_->SetUIResourceId(tab_handle_resource->ui_resource()->id());
+  decoration_tab_->SetAperture(tab_handle_resource->aperture());
   decoration_tab_->SetFillCenter(true);
   decoration_tab_->SetBounds(tab_bounds);
   decoration_tab_->SetBorder(
@@ -125,14 +125,14 @@ void TabHandleLayer::SetProperties(
   else
     decoration_tab_->SetPosition(gfx::PointF(0, 0));
 
-  close_button_->SetUIResourceId(close_button_resource->ui_resource->id());
-  close_button_->SetBounds(close_button_resource->size);
-  const float padding_right =
-      tab_handle_resource->size.width() - tab_handle_resource->padding.right();
-  const float padding_left = tab_handle_resource->padding.x();
+  close_button_->SetUIResourceId(close_button_resource->ui_resource()->id());
+  close_button_->SetBounds(close_button_resource->size());
+  const float padding_right = tab_handle_resource->size().width() -
+                              tab_handle_resource->padding().right();
+  const float padding_left = tab_handle_resource->padding().x();
   const float close_width = close_button_->bounds().width();
   if (title_layer) {
-    int title_y = tab_handle_resource->padding.y() / 2 + height / 2 -
+    int title_y = tab_handle_resource->padding().y() / 2 + height / 2 -
                   title_layer->size().height() / 2;
     int title_x = is_rtl ? padding_left + close_width : padding_left;
     title_x += is_rtl ? 0 : content_offset_x;
@@ -157,7 +157,7 @@ void TabHandleLayer::SetProperties(
   } else {
     close_button_->SetIsDrawable(true);
     const float close_max_width = close_button_->bounds().width();
-    int close_y = (tab_handle_resource->padding.y() + height) / 2 -
+    int close_y = (tab_handle_resource->padding().y() + height) / 2 -
                   close_button_->bounds().height() / 2;
     int close_x = is_rtl ? padding_left - close_max_width + close_width
                          : width - padding_right - close_width;

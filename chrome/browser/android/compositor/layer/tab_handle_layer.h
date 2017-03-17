@@ -20,7 +20,7 @@ class NinePatchLayer;
 }
 
 namespace ui {
-class ResourceManager;
+class NinePatchResource;
 }
 
 namespace android {
@@ -33,8 +33,8 @@ class TabHandleLayer : public Layer {
       LayerTitleCache* layer_title_cache);
 
   void SetProperties(int id,
-                     ui::ResourceManager::Resource* close_button_resource,
-                     ui::ResourceManager::Resource* tab_handle_resource,
+                     ui::Resource* close_button_resource,
+                     ui::NinePatchResource* tab_handle_resource,
                      bool foreground,
                      bool close_pressed,
                      float toolbar_width,

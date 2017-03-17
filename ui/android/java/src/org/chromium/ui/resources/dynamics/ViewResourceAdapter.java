@@ -12,6 +12,9 @@ import android.view.View;
 import android.view.View.OnLayoutChangeListener;
 
 import org.chromium.base.TraceEvent;
+import org.chromium.ui.resources.Resource;
+import org.chromium.ui.resources.ResourceFactory;
+import org.chromium.ui.resources.statics.NinePatchData;
 
 /**
  * An adapter that exposes a {@link View} as a {@link DynamicResource}. In order to properly use
@@ -73,17 +76,17 @@ public class ViewResourceAdapter implements DynamicResource, OnLayoutChangeListe
     }
 
     @Override
-    public Rect getPadding() {
+    public long createNativeResource() {
+        // TODO(khushalsagar): Fix this to create the correct native resource type.
+        // See crbug.com/700454.
         computeContentPadding(mContentPadding);
-
-        return mContentPadding;
+        computeContentAperture(mContentAperture);
+        return ResourceFactory.createNinePatchBitmapResource(mContentPadding, mContentAperture);
     }
 
     @Override
-    public Rect getAperture() {
-        computeContentAperture(mContentAperture);
-
-        return mContentAperture;
+    public NinePatchData getNinePatchData() {
+        return null;
     }
 
     @Override

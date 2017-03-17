@@ -13,6 +13,7 @@
 #include "content/public/browser/android/compositor.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/android/resources/crushed_sprite_resource.h"
+#include "ui/android/resources/nine_patch_resource.h"
 #include "ui/android/resources/resource_manager.h"
 #include "ui/base/l10n/l10n_util_android.h"
 #include "ui/gfx/color_utils.h"
@@ -150,13 +151,12 @@ void ContextualSearchLayer::SetProperties(
   // ---------------------------------------------------------------------------
   if (search_peek_promo_visible) {
     // Grabs the Search Opt Out Promo resource.
-    ui::ResourceManager::Resource* peek_promo_text_resource =
-        resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_DYNAMIC,
-                                       peek_promo_text_resource_id);
+    ui::Resource* peek_promo_text_resource = resource_manager_->GetResource(
+        ui::ANDROID_RESOURCE_TYPE_DYNAMIC, peek_promo_text_resource_id);
 
-    ui::ResourceManager::Resource* peek_promo_ripple_resource =
-        resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_STATIC,
-                                       peek_promo_ripple_resource_id);
+    ui::NinePatchResource* peek_promo_ripple_resource =
+        ui::NinePatchResource::From(resource_manager_->GetResource(
+            ui::ANDROID_RESOURCE_TYPE_STATIC, peek_promo_ripple_resource_id));
 
     // -----------------------------------------------------------------
     // Peek Promo Container
@@ -202,9 +202,9 @@ void ContextualSearchLayer::SetProperties(
     }
 
     peek_promo_ripple_->SetUIResourceId(
-        peek_promo_ripple_resource->ui_resource->id());
+        peek_promo_ripple_resource->ui_resource()->id());
     peek_promo_ripple_->SetBorder(peek_promo_ripple_border);
-    peek_promo_ripple_->SetAperture(peek_promo_ripple_resource->aperture);
+    peek_promo_ripple_->SetAperture(peek_promo_ripple_resource->aperture());
     peek_promo_ripple_->SetBounds(peek_promo_ripple_size);
     peek_promo_ripple_->SetPosition(gfx::PointF(ripple_left, 0.f));
     peek_promo_ripple_->SetOpacity(search_peek_promo_ripple_opacity);
@@ -226,8 +226,8 @@ void ContextualSearchLayer::SetProperties(
     // -----------------------------------------------------------------
     if (peek_promo_text_resource) {
       peek_promo_text_->SetUIResourceId(
-          peek_promo_text_resource->ui_resource->id());
-      peek_promo_text_->SetBounds(peek_promo_text_resource->size);
+          peek_promo_text_resource->ui_resource()->id());
+      peek_promo_text_->SetBounds(peek_promo_text_resource->size());
       peek_promo_text_->SetPosition(
           gfx::PointF(0.f, search_peek_promo_padding));
       peek_promo_text_->SetOpacity(search_peek_promo_text_opacity);
@@ -257,25 +257,24 @@ void ContextualSearchLayer::SetProperties(
   // Arrow Icon
   // ---------------------------------------------------------------------------
   // Grabs the arrow icon resource.
-  ui::ResourceManager::Resource* arrow_icon_resource =
-      resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_STATIC,
-                                     arrow_up_resource_id);
+  ui::Resource* arrow_icon_resource = resource_manager_->GetResource(
+      ui::ANDROID_RESOURCE_TYPE_STATIC, arrow_up_resource_id);
 
   // Positions the icon at the end of the bar.
   float arrow_icon_left;
   if (is_rtl) {
     arrow_icon_left = search_bar_margin_side;
   } else {
-    arrow_icon_left = search_panel_width - arrow_icon_resource->size.width()
-        - search_bar_margin_side;
+    arrow_icon_left = search_panel_width - arrow_icon_resource->size().width() -
+                      search_bar_margin_side;
   }
 
   // Centers the Arrow Icon vertically in the bar.
   float arrow_icon_top = search_bar_top + search_bar_height / 2 -
-      arrow_icon_resource->size.height() / 2;
+                         arrow_icon_resource->size().height() / 2;
 
-  arrow_icon_->SetUIResourceId(arrow_icon_resource->ui_resource->id());
-  arrow_icon_->SetBounds(arrow_icon_resource->size);
+  arrow_icon_->SetUIResourceId(arrow_icon_resource->ui_resource()->id());
+  arrow_icon_->SetBounds(arrow_icon_resource->size());
   arrow_icon_->SetPosition(
       gfx::PointF(arrow_icon_left, arrow_icon_top));
   arrow_icon_->SetOpacity(arrow_icon_opacity);
@@ -283,8 +282,8 @@ void ContextualSearchLayer::SetProperties(
   gfx::Transform transform;
   if (arrow_icon_rotation != 0.f) {
     // Apply rotation about the center of the icon.
-    float pivot_x = floor(arrow_icon_resource->size.width() / 2);
-    float pivot_y = floor(arrow_icon_resource->size.height() / 2);
+    float pivot_x = floor(arrow_icon_resource->size().width() / 2);
+    float pivot_y = floor(arrow_icon_resource->size().height() / 2);
     gfx::PointF pivot_origin(pivot_x, pivot_y);
     transform.Translate(pivot_origin.x(), pivot_origin.y());
     transform.RotateAboutZAxis(arrow_icon_rotation);
@@ -297,9 +296,8 @@ void ContextualSearchLayer::SetProperties(
   // ---------------------------------------------------------------------------
   if (search_promo_visible) {
     // Grabs the Search Opt Out Promo resource.
-    ui::ResourceManager::Resource* search_promo_resource =
-        resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_DYNAMIC,
-                                       search_promo_resource_id);
+    ui::Resource* search_promo_resource = resource_manager_->GetResource(
+        ui::ANDROID_RESOURCE_TYPE_DYNAMIC, search_promo_resource_id);
     // Search Promo Container
     if (search_promo_container_->parent() != layer_) {
       // NOTE(pedrosimonetti): The Promo layer should be always placed before
@@ -308,7 +306,7 @@ void ContextualSearchLayer::SetProperties(
     }
 
     if (search_promo_resource) {
-      int search_promo_content_height = search_promo_resource->size.height();
+      int search_promo_content_height = search_promo_resource->size().height();
       gfx::Size search_promo_size(search_panel_width, search_promo_height);
       search_promo_container_->SetBounds(search_promo_size);
       search_promo_container_->SetPosition(gfx::PointF(0.f, search_bar_bottom));
@@ -318,8 +316,9 @@ void ContextualSearchLayer::SetProperties(
       if (search_promo_->parent() != search_promo_container_)
         search_promo_container_->AddChild(search_promo_);
 
-      search_promo_->SetUIResourceId(search_promo_resource->ui_resource->id());
-      search_promo_->SetBounds(search_promo_resource->size);
+      search_promo_->SetUIResourceId(
+          search_promo_resource->ui_resource()->id());
+      search_promo_->SetBounds(search_promo_resource->size());
       // Align promo at the bottom of the container so the confirmation button
       // is is not clipped when resizing the promo.
       search_promo_->SetPosition(
@@ -337,12 +336,13 @@ void ContextualSearchLayer::SetProperties(
   // ---------------------------------------------------------------------------
   if (should_render_progress_bar) {
     // Grabs Progress Bar resources.
-    ui::ResourceManager::Resource* progress_bar_background_resource =
-        resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_STATIC,
-                                       progress_bar_background_resource_id);
-    ui::ResourceManager::Resource* progress_bar_resource =
-        resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_STATIC,
-                                       progress_bar_resource_id);
+    ui::NinePatchResource* progress_bar_background_resource =
+        ui::NinePatchResource::From(resource_manager_->GetResource(
+            ui::ANDROID_RESOURCE_TYPE_STATIC,
+            progress_bar_background_resource_id));
+    ui::NinePatchResource* progress_bar_resource =
+        ui::NinePatchResource::From(resource_manager_->GetResource(
+            ui::ANDROID_RESOURCE_TYPE_STATIC, progress_bar_resource_id));
 
     DCHECK(progress_bar_background_resource);
     DCHECK(progress_bar_resource);
@@ -356,11 +356,11 @@ void ContextualSearchLayer::SetProperties(
                                            progress_bar_height);
 
     progress_bar_background_->SetUIResourceId(
-        progress_bar_background_resource->ui_resource->id());
+        progress_bar_background_resource->ui_resource()->id());
     progress_bar_background_->SetBorder(
         progress_bar_background_resource->Border(progress_bar_background_size));
     progress_bar_background_->SetAperture(
-        progress_bar_background_resource->aperture);
+        progress_bar_background_resource->aperture());
     progress_bar_background_->SetBounds(progress_bar_background_size);
     progress_bar_background_->SetPosition(gfx::PointF(0.f, progress_bar_y));
     progress_bar_background_->SetOpacity(progress_bar_opacity);
@@ -372,9 +372,9 @@ void ContextualSearchLayer::SetProperties(
     float progress_bar_width =
         floor(search_panel_width * progress_bar_completion / 100.f);
     gfx::Size progress_bar_size(progress_bar_width, progress_bar_height);
-    progress_bar_->SetUIResourceId(progress_bar_resource->ui_resource->id());
+    progress_bar_->SetUIResourceId(progress_bar_resource->ui_resource()->id());
     progress_bar_->SetBorder(progress_bar_resource->Border(progress_bar_size));
-    progress_bar_->SetAperture(progress_bar_resource->aperture);
+    progress_bar_->SetAperture(progress_bar_resource->aperture());
     progress_bar_->SetBounds(progress_bar_size);
     progress_bar_->SetPosition(gfx::PointF(0.f, progress_bar_y));
     progress_bar_->SetOpacity(progress_bar_opacity);
@@ -459,12 +459,11 @@ void ContextualSearchLayer::SetupIconLayer(
     if (quick_action_icon_layer_->parent() != icon_layer_)
       icon_layer_->AddChild(quick_action_icon_layer_);
 
-    ui::ResourceManager::Resource* quick_action_icon_resource =
-        resource_manager_->GetResource(ui::ANDROID_RESOURCE_TYPE_DYNAMIC,
-                                       quick_action_icon_resource_id);
+    ui::Resource* quick_action_icon_resource = resource_manager_->GetResource(
+        ui::ANDROID_RESOURCE_TYPE_DYNAMIC, quick_action_icon_resource_id);
     if (quick_action_icon_resource) {
       quick_action_icon_layer_->SetUIResourceId(
-          quick_action_icon_resource->ui_resource->id());
+          quick_action_icon_resource->ui_resource()->id());
       quick_action_icon_layer_->SetBounds(gfx::Size(static_image_size_,
                                                     static_image_size_));
 
@@ -553,16 +552,15 @@ void ContextualSearchLayer::SetupTextLayer(float bar_top,
     text_layer_->AddChild(bar_text_);
 
   // Search Context
-  ui::ResourceManager::Resource* context_resource =
-      resource_manager_->GetResource(
-          ui::ANDROID_RESOURCE_TYPE_DYNAMIC, context_resource_id);
+  ui::Resource* context_resource = resource_manager_->GetResource(
+      ui::ANDROID_RESOURCE_TYPE_DYNAMIC, context_resource_id);
   if (context_resource) {
-    search_context_->SetUIResourceId(context_resource->ui_resource->id());
-    search_context_->SetBounds(context_resource->size);
+    search_context_->SetUIResourceId(context_resource->ui_resource()->id());
+    search_context_->SetBounds(context_resource->size());
   }
 
   // Search Caption
-  ui::ResourceManager::Resource* caption_resource = nullptr;
+  ui::Resource* caption_resource = nullptr;
   if (caption_visible) {
     // Grabs the dynamic Search Caption resource so we can get a snapshot.
     caption_resource  = resource_manager_->GetResource(
@@ -574,8 +572,8 @@ void ContextualSearchLayer::SetupTextLayer(float bar_top,
       text_layer_->AddChild(search_caption_);
     }
     if (caption_resource) {
-      search_caption_->SetUIResourceId(caption_resource->ui_resource->id());
-      search_caption_->SetBounds(caption_resource->size);
+      search_caption_->SetUIResourceId(caption_resource->ui_resource()->id());
+      search_caption_->SetBounds(caption_resource->size());
     }
   } else if (search_caption_->parent()) {
     search_caption_->RemoveFromParent();
