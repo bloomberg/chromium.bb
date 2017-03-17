@@ -274,7 +274,7 @@ const base::Feature kNativeAndroidHistoryManager{
 
 // FeatureList definition for the Seccomp field trial.
 const base::Feature kSeccompSandboxAndroid{"SeccompSandboxAndroid",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Service worker based payment apps as defined by w3c here:
 // https://w3c.github.io/webpayments-payment-apps-api/
