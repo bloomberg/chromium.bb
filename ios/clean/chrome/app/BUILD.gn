@@ -40,7 +40,7 @@ ios_app_bundle("chrome_clean_skeleton") {
   bundle_deps = [ "//ios/chrome/app/resources" ]
 
   extra_substitutions = [
-    "CHROMIUM_BUNDLE_ID=$chromium_bundle_id",
+    "CHROMIUM_BUNDLE_ID=$output_name",
     "CHROMIUM_SHORT_NAME=$chromium_short_name",
     "CHROMIUM_URL_SCHEME_1=$url_unsecure_scheme",
     "CHROMIUM_URL_SCHEME_2=$url_secure_scheme",
