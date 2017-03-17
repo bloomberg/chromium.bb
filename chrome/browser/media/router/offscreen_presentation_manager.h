@@ -11,7 +11,9 @@
 #include <unordered_map>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/threading/thread_checker.h"
+#include "chrome/browser/media/router/media_route.h"
 #include "chrome/browser/media/router/render_frame_host_id.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/presentation_service_delegate.h"
@@ -110,7 +112,8 @@ class OffscreenPresentationManager : public KeyedService {
       const GURL& presentation_url,
       const RenderFrameHostId& render_frame_id,
       content::PresentationConnectionPtr controller_connection_ptr,
-      content::PresentationConnectionRequest receiver_connection_request);
+      content::PresentationConnectionRequest receiver_connection_request,
+      const MediaRoute& route);
 
   // Unregisters controller PresentationConnectionPtr to presentation with
   // |presentation_id|, |render_frame_id|. It does nothing if there is no
@@ -133,6 +136,14 @@ class OffscreenPresentationManager : public KeyedService {
   virtual void OnOffscreenPresentationReceiverTerminated(
       const std::string& presentation_id);
 
+  // Returns true if this class has an offscreen presentation with
+  // |presentation_id|.
+  virtual bool IsOffscreenPresentation(const std::string& presentation_id);
+
+  // Returns nullptr if |presentation_id| is not associated with an offscreen
+  // presentation.
+  virtual const MediaRoute* GetRoute(const std::string& presentation_id);
+
  private:
   // Represents an offscreen presentation registered with
   // OffscreenPresentationManager. Contains callback to the receiver to inform
@@ -154,7 +165,8 @@ class OffscreenPresentationManager : public KeyedService {
     void RegisterController(
         const RenderFrameHostId& render_frame_id,
         content::PresentationConnectionPtr controller_connection_ptr,
-        content::PresentationConnectionRequest receiver_connection_request);
+        content::PresentationConnectionRequest receiver_connection_request,
+        const MediaRoute& route);
 
     // Unregister controller with |render_frame_id|. Do nothing if there is no
     // pending controller with |render_frame_id|.
@@ -177,6 +189,7 @@ class OffscreenPresentationManager : public KeyedService {
 
     const std::string presentation_id_;
     const GURL presentation_url_;
+    base::Optional<MediaRoute> route_;
 
     // Callback to invoke whenever a receiver connection is available.
     content::ReceiverConnectionAvailableCallback receiver_callback_;

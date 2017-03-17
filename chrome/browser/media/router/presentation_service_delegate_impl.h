@@ -184,6 +184,8 @@ class PresentationServiceDelegateImpl
   FRIEND_TEST_ALL_PREFIXES(PresentationServiceDelegateImplTest,
                            DefaultPresentationUrlCallback);
   FRIEND_TEST_ALL_PREFIXES(PresentationServiceDelegateImplTest,
+                           TestCloseConnectionForOffscreenPresentation);
+  FRIEND_TEST_ALL_PREFIXES(PresentationServiceDelegateImplTest,
                            ConnectToPresentation);
 
   explicit PresentationServiceDelegateImpl(content::WebContents* web_contents);

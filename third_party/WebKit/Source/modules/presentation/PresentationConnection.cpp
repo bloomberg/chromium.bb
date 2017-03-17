@@ -441,7 +441,6 @@ void PresentationConnection::didChangeState(
 
   switch (m_state) {
     case WebPresentationConnectionState::Connecting:
-      NOTREACHED();
       return;
     case WebPresentationConnectionState::Connected:
       dispatchStateChangeEvent(Event::create(EventTypeNames::connect));

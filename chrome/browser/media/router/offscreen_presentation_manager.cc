@@ -39,16 +39,17 @@ void OffscreenPresentationManager::RegisterOffscreenPresentationController(
     const GURL& presentation_url,
     const RenderFrameHostId& render_frame_host_id,
     content::PresentationConnectionPtr controller_connection_ptr,
-    content::PresentationConnectionRequest receiver_connection_request) {
+    content::PresentationConnectionRequest receiver_connection_request,
+    const MediaRoute& route) {
   DVLOG(2) << __FUNCTION__ << " [presentation_id]: " << presentation_id
            << ", [render_frame_host_id]: " << render_frame_host_id.second;
   DCHECK(thread_checker_.CalledOnValidThread());
 
   auto* presentation =
       GetOrCreateOffscreenPresentation(presentation_id, presentation_url);
-  presentation->RegisterController(render_frame_host_id,
-                                   std::move(controller_connection_ptr),
-                                   std::move(receiver_connection_request));
+  presentation->RegisterController(
+      render_frame_host_id, std::move(controller_connection_ptr),
+      std::move(receiver_connection_request), route);
 }
 
 void OffscreenPresentationManager::UnregisterOffscreenPresentationController(
@@ -90,6 +91,20 @@ void OffscreenPresentationManager::OnOffscreenPresentationReceiverTerminated(
   offscreen_presentations_.erase(presentation_id);
 }
 
+bool OffscreenPresentationManager::IsOffscreenPresentation(
+    const std::string& presentation_id) {
+  return base::ContainsKey(offscreen_presentations_, presentation_id);
+}
+
+const MediaRoute* OffscreenPresentationManager::GetRoute(
+    const std::string& presentation_id) {
+  auto it = offscreen_presentations_.find(presentation_id);
+  return (it != offscreen_presentations_.end() &&
+          it->second->route_.has_value())
+             ? &(it->second->route_.value())
+             : nullptr;
+}
+
 // OffscreenPresentation implementation.
 OffscreenPresentationManager::OffscreenPresentation::OffscreenPresentation(
     const std::string& presentation_id,
@@ -101,7 +116,8 @@ OffscreenPresentationManager::OffscreenPresentation::~OffscreenPresentation() {}
 void OffscreenPresentationManager::OffscreenPresentation::RegisterController(
     const RenderFrameHostId& render_frame_host_id,
     content::PresentationConnectionPtr controller_connection_ptr,
-    content::PresentationConnectionRequest receiver_connection_request) {
+    content::PresentationConnectionRequest receiver_connection_request,
+    const MediaRoute& route) {
   if (!receiver_callback_.is_null()) {
     receiver_callback_.Run(
         content::PresentationSessionInfo(presentation_url_, presentation_id_),
@@ -113,6 +129,8 @@ void OffscreenPresentationManager::OffscreenPresentation::RegisterController(
                                   std::move(controller_connection_ptr),
                                   std::move(receiver_connection_request))));
   }
+
+  route_ = route;
 }
 
 void OffscreenPresentationManager::OffscreenPresentation::UnregisterController(
