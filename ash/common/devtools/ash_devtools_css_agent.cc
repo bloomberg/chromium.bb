@@ -18,6 +18,7 @@ const char kHeight[] = "height";
 const char kWidth[] = "width";
 const char kX[] = "x";
 const char kY[] = "y";
+const char kVisibility[] = "visibility";
 
 std::unique_ptr<CSS::SourceRange> BuildDefaultSourceRange() {
   // These tell the frontend where in the stylesheet a certain style
@@ -41,27 +42,37 @@ std::unique_ptr<CSS::CSSProperty> BuildCSSProperty(const std::string& name,
       .build();
 }
 
-std::unique_ptr<Array<CSS::CSSProperty>> BuildBoundsCSSPropertyArray(
-    const gfx::Rect& bounds) {
+std::unique_ptr<Array<CSS::CSSProperty>> BuildCSSPropertyArray(
+    const gfx::Rect& bounds,
+    const bool visible) {
   auto cssProperties = Array<CSS::CSSProperty>::create();
   cssProperties->addItem(BuildCSSProperty(kHeight, bounds.height()));
   cssProperties->addItem(BuildCSSProperty(kWidth, bounds.width()));
   cssProperties->addItem(BuildCSSProperty(kX, bounds.x()));
   cssProperties->addItem(BuildCSSProperty(kY, bounds.y()));
+  cssProperties->addItem(BuildCSSProperty(kVisibility, visible));
   return cssProperties;
 }
 
 std::unique_ptr<CSS::CSSStyle> BuildCSSStyle(int node_id,
-                                             const gfx::Rect& bounds) {
+                                             const gfx::Rect& bounds,
+                                             bool visible) {
   return CSS::CSSStyle::create()
       .setRange(BuildDefaultSourceRange())
       .setStyleSheetId(base::IntToString(node_id))
-      .setCssProperties(BuildBoundsCSSPropertyArray(bounds))
+      .setCssProperties(BuildCSSPropertyArray(bounds, visible))
       .setShorthandEntries(Array<std::string>::create())
       .build();
 }
 
-Response ParseBounds(const std::string& style_text, gfx::Rect& bounds) {
+ui::devtools::protocol::Response NodeNotFoundError(int node_id) {
+  return ui::devtools::protocol::Response::Error(
+      "Node with id=" + std::to_string(node_id) + " not found");
+}
+
+Response ParseProperties(const std::string& style_text,
+                         gfx::Rect* bounds,
+                         bool* visible) {
   std::vector<std::string> tokens = base::SplitString(
       style_text, ":;", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   for (size_t i = 0; i < tokens.size() - 1; i += 2) {
@@ -71,13 +82,15 @@ Response ParseBounds(const std::string& style_text, gfx::Rect& bounds) {
       return Response::Error("Unable to parse value for property=" + property);
 
     if (property == kHeight)
-      bounds.set_height(std::max(0, value));
+      bounds->set_height(std::max(0, value));
     else if (property == kWidth)
-      bounds.set_width(std::max(0, value));
+      bounds->set_width(std::max(0, value));
     else if (property == kX)
-      bounds.set_x(value);
+      bounds->set_x(value);
     else if (property == kY)
-      bounds.set_y(value);
+      bounds->set_y(value);
+    else if (property == kVisibility)
+      *visible = std::max(0, value) == 1;
     else
       return Response::Error("Unsupported property=" + property);
   }
@@ -110,10 +123,8 @@ ui::devtools::protocol::Response AshDevToolsCSSAgent::getMatchedStylesForNode(
     ui::devtools::protocol::Maybe<ui::devtools::protocol::CSS::CSSStyle>*
         inline_style) {
   *inline_style = GetStylesForNode(node_id);
-  if (!inline_style) {
-    return ui::devtools::protocol::Response::Error(
-        "Node with that id not found");
-  }
+  if (!inline_style)
+    return NodeNotFoundError(node_id);
   return ui::devtools::protocol::Response::OK();
 }
 
@@ -134,23 +145,20 @@ ui::devtools::protocol::Response AshDevToolsCSSAgent::setStyleTexts(
       return ui::devtools::protocol::Response::Error("Invalid node id");
 
     gfx::Rect updated_bounds;
-    if (!GetBoundsForNodeId(node_id, &updated_bounds)) {
-      return ui::devtools::protocol::Response::Error(
-          "No node found with that id");
-    }
+    bool visible = false;
+    if (!GetPropertiesForNodeId(node_id, &updated_bounds, &visible))
+      return NodeNotFoundError(node_id);
 
     ui::devtools::protocol::Response response(
-        ParseBounds(edit->getText(), updated_bounds));
+        ParseProperties(edit->getText(), &updated_bounds, &visible));
     if (!response.isSuccess())
       return response;
 
-    updated_styles->addItem(BuildCSSStyle(node_id, updated_bounds));
-    if (!UpdateBounds(node_id, updated_bounds)) {
-      return ui::devtools::protocol::Response::Error(
-          "No node found with that id");
-    }
-  }
+    updated_styles->addItem(BuildCSSStyle(node_id, updated_bounds, visible));
 
+    if (!SetPropertiesForNodeId(node_id, updated_bounds, visible))
+      return NodeNotFoundError(node_id);
+  }
   *result = std::move(updated_styles);
   return ui::devtools::protocol::Response::OK();
 }
@@ -170,8 +178,10 @@ void AshDevToolsCSSAgent::OnViewBoundsChanged(views::View* view) {
 std::unique_ptr<ui::devtools::protocol::CSS::CSSStyle>
 AshDevToolsCSSAgent::GetStylesForNode(int node_id) {
   gfx::Rect bounds;
-  return GetBoundsForNodeId(node_id, &bounds) ? BuildCSSStyle(node_id, bounds)
-                                              : nullptr;
+  bool visible = false;
+  return GetPropertiesForNodeId(node_id, &bounds, &visible)
+             ? BuildCSSStyle(node_id, bounds, visible)
+             : nullptr;
 }
 
 void AshDevToolsCSSAgent::InvalidateStyleSheet(int node_id) {
@@ -179,47 +189,62 @@ void AshDevToolsCSSAgent::InvalidateStyleSheet(int node_id) {
   frontend()->styleSheetChanged(base::IntToString(node_id));
 }
 
-bool AshDevToolsCSSAgent::GetBoundsForNodeId(int node_id, gfx::Rect* bounds) {
+bool AshDevToolsCSSAgent::GetPropertiesForNodeId(int node_id,
+                                                 gfx::Rect* bounds,
+                                                 bool* visible) {
   WmWindow* window = dom_agent_->GetWindowFromNodeId(node_id);
   if (window) {
     *bounds = window->GetBounds();
+    *visible = window->IsVisible();
     return true;
   }
-
   views::Widget* widget = dom_agent_->GetWidgetFromNodeId(node_id);
   if (widget) {
     *bounds = widget->GetRestoredBounds();
+    *visible = widget->IsVisible();
     return true;
   }
-
   views::View* view = dom_agent_->GetViewFromNodeId(node_id);
   if (view) {
     *bounds = view->bounds();
+    *visible = view->visible();
     return true;
   }
-
   return false;
 }
 
-bool AshDevToolsCSSAgent::UpdateBounds(int node_id, const gfx::Rect& bounds) {
+bool AshDevToolsCSSAgent::SetPropertiesForNodeId(int node_id,
+                                                 const gfx::Rect& bounds,
+                                                 bool visible) {
   WmWindow* window = dom_agent_->GetWindowFromNodeId(node_id);
   if (window) {
     window->SetBounds(bounds);
+    if (visible != window->IsVisible()) {
+      if (visible)
+        window->Show();
+      else
+        window->Hide();
+    }
     return true;
   }
-
   views::Widget* widget = dom_agent_->GetWidgetFromNodeId(node_id);
   if (widget) {
     widget->SetBounds(bounds);
+    if (visible != widget->IsVisible()) {
+      if (visible)
+        widget->Show();
+      else
+        widget->Hide();
+    }
     return true;
   }
-
   views::View* view = dom_agent_->GetViewFromNodeId(node_id);
   if (view) {
     view->SetBoundsRect(bounds);
+    if (visible != view->visible())
+      view->SetVisible(visible);
     return true;
   }
-
   return false;
 }
 

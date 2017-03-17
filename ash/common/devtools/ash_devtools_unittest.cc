@@ -717,14 +717,17 @@ TEST_F(AshDevToolsTest, WindowWidgetViewSetStyleText) {
   // Test different combinations on window node
   DOM::Node* window_node = parent_children->get(1);
 
-  SetStyleTexts(window_node, "x: 25; y:35; width: 5; height: 20;", true);
+  SetStyleTexts(window_node,
+                "x: 25; y:35; width: 5; height: 20; visibility: 1;", true);
   EXPECT_EQ(gfx::Rect(25, 35, 5, 20), window->GetBounds());
+  EXPECT_TRUE(window->IsVisible());
 
   SetStyleTexts(window_node, "test_nothing_happens:1;", false);
   EXPECT_EQ(gfx::Rect(25, 35, 5, 20), window->GetBounds());  // Not changed
 
-  SetStyleTexts(window_node, "\nheight: 10;\n  ", true);
+  SetStyleTexts(window_node, "\nheight: 10;\nvisibility: 0;\n", true);
   EXPECT_EQ(gfx::Rect(25, 35, 5, 10), window->GetBounds());
+  EXPECT_FALSE(window->IsVisible());
 
   SetStyleTexts(window_node, "\nx: 10; y: 23; width: 52;\n  ", true);
   EXPECT_EQ(gfx::Rect(10, 23, 52, 10), window->GetBounds());
@@ -732,15 +735,18 @@ TEST_F(AshDevToolsTest, WindowWidgetViewSetStyleText) {
   // Test different combinations on widget node
   DOM::Node* widget_node = parent_children->get(0);
 
-  SetStyleTexts(widget_node, "x: 25; y:35; width: 53; height: 64;", true);
+  SetStyleTexts(widget_node,
+                "x: 25; y:35; width: 53; height: 64; visibility: 0;", true);
   EXPECT_EQ(gfx::Rect(25, 35, 53, 64), widget->GetRestoredBounds());
+  EXPECT_FALSE(widget->IsVisible());
 
   SetStyleTexts(widget_node, "test_nothing_happens:1;", false);
   EXPECT_EQ(gfx::Rect(25, 35, 53, 64),
             widget->GetRestoredBounds());  // Not changed
 
-  SetStyleTexts(widget_node, "\nheight: 123;\n  ", true);
+  SetStyleTexts(widget_node, "\nheight: 123;\nvisibility: 1;\n", true);
   EXPECT_EQ(gfx::Rect(25, 35, 53, 123), widget->GetRestoredBounds());
+  EXPECT_TRUE(widget->IsVisible());
 
   SetStyleTexts(widget_node, "\nx: 10; y: 23; width: 98;\n  ", true);
   EXPECT_EQ(gfx::Rect(10, 23, 98, 123), widget->GetRestoredBounds());
@@ -748,8 +754,10 @@ TEST_F(AshDevToolsTest, WindowWidgetViewSetStyleText) {
   // Test different combinations on view node
   DOM::Node* root_view_node = widget_node->getChildren(nullptr)->get(0);
 
-  SetStyleTexts(root_view_node, "x: 25; y:35; width: 45; height: 20;", true);
+  SetStyleTexts(root_view_node,
+                "x: 25; y:35; width: 45; height: 20; visibility: 0;", true);
   EXPECT_EQ(gfx::Rect(25, 35, 45, 20), root_view->bounds());
+  EXPECT_FALSE(root_view->visible());
 
   SetStyleTexts(root_view_node, "test_nothing_happens:1;", false);
   EXPECT_EQ(gfx::Rect(25, 35, 45, 20), root_view->bounds());  // Not changed
@@ -757,8 +765,10 @@ TEST_F(AshDevToolsTest, WindowWidgetViewSetStyleText) {
   SetStyleTexts(root_view_node, "\nheight: 73;\n  ", true);
   EXPECT_EQ(gfx::Rect(25, 35, 45, 73), root_view->bounds());
 
-  SetStyleTexts(root_view_node, "\nx: 10; y: 23; width: 52;\n  ", true);
+  SetStyleTexts(root_view_node, "\nx: 10; y: 23; width: 52;\nvisibility: 1;\n",
+                true);
   EXPECT_EQ(gfx::Rect(10, 23, 52, 73), root_view->bounds());
+  EXPECT_TRUE(root_view->visible());
 }
 
 }  // namespace ash

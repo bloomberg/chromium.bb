@@ -43,9 +43,10 @@ class ASH_EXPORT AshDevToolsCSSAgent
   std::unique_ptr<ui::devtools::protocol::CSS::CSSStyle> GetStylesForNode(
       int node_id);
   void InvalidateStyleSheet(int node_id);
-  bool GetBoundsForNodeId(int node_id, gfx::Rect* bounds);
-  bool UpdateBounds(int node_id, const gfx::Rect& bounds);
-
+  bool GetPropertiesForNodeId(int node_id, gfx::Rect* bounds, bool* visible);
+  bool SetPropertiesForNodeId(int node_id,
+                              const gfx::Rect& bounds,
+                              bool visible);
   AshDevToolsDOMAgent* dom_agent_;
 
   DISALLOW_COPY_AND_ASSIGN(AshDevToolsCSSAgent);
