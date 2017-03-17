@@ -1040,8 +1040,10 @@ LayoutUnit LayoutBlockFlow::adjustFloatLogicalTopForPagination(
       if (pageLogicalHeightForOffset(logicalTopMarginEdge)) {
         LayoutUnit remainingSpace = pageRemainingLogicalHeightForOffset(
             logicalTopMarginEdge, AssociateWithLatterPage);
-        if (remainingSpace <= marginBefore)
-          strut += remainingSpace;
+        if (remainingSpace <= marginBefore) {
+          strut += calculatePaginationStrutToFitContent(
+              logicalTopMarginEdge, remainingSpace, marginBefore);
+        }
       }
     }
   }
