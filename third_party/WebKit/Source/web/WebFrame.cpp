@@ -202,7 +202,7 @@ void WebFrame::insertAfter(WebFrame* newChild, WebFrame* previousSibling) {
   }
 
   toImplBase()->frame()->tree().invalidateScopedChildCount();
-  toImplBase()->frame()->host()->incrementSubframeCount();
+  toImplBase()->frame()->page()->incrementSubframeCount();
 }
 
 void WebFrame::appendChild(WebFrame* child) {
@@ -227,7 +227,7 @@ void WebFrame::removeChild(WebFrame* child) {
   child->m_previousSibling = child->m_nextSibling = 0;
 
   toImplBase()->frame()->tree().invalidateScopedChildCount();
-  toImplBase()->frame()->host()->decrementSubframeCount();
+  toImplBase()->frame()->page()->decrementSubframeCount();
 }
 
 void WebFrame::setParent(WebFrame* parent) {

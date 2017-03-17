@@ -66,16 +66,4 @@ DEFINE_TRACE(FrameHost) {
   visitor->trace(m_page);
 }
 
-void FrameHost::incrementSubframeCount() {
-  page().incrementSubframeCount();
-}
-
-void FrameHost::decrementSubframeCount() {
-  page().decrementSubframeCount();
-}
-
-int FrameHost::subframeCount() const {
-  return page().subframeCount();
-}
-
 }  // namespace blink

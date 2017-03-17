@@ -69,10 +69,6 @@ class CORE_EXPORT FrameHost final
 
   DECLARE_TRACE();
 
-  void incrementSubframeCount();
-  void decrementSubframeCount();
-  int subframeCount() const;
-
  private:
   explicit FrameHost(Page&);
 

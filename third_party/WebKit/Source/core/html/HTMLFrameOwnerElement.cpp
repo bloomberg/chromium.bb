@@ -307,7 +307,7 @@ bool HTMLFrameOwnerElement::loadOrRedirectSubframe(
   if (!SubframeLoadingDisabler::canLoadFrame(*this))
     return false;
 
-  if (document().frame()->host()->subframeCount() >= Page::maxNumberOfFrames)
+  if (document().frame()->page()->subframeCount() >= Page::maxNumberOfFrames)
     return false;
 
   FrameLoadRequest frameLoadRequest(&document(), url, "_self",
