@@ -1336,7 +1336,7 @@ static void dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane, int block,
         inv_txfm_param.bd = xd->bd;
         aom_highbd_convolve_copy(dst, dst_stride, recon, MAX_TX_SIZE, NULL, 0,
                                  NULL, 0, bsw, bsh, xd->bd);
-        highbd_inv_txfm_add(dqcoeff, recon, MAX_TX_SIZE, &inv_txfm_param);
+        av1_highbd_inv_txfm_add(dqcoeff, recon, MAX_TX_SIZE, &inv_txfm_param);
       } else
 #endif  // CONFIG_AOM_HIGHBITDEPTH
       {
@@ -1349,7 +1349,7 @@ static void dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane, int block,
         for (j = 0; j < bsh; j++)
           for (i = 0; i < bsw; i++) recon[j * MAX_TX_SIZE + i] = 0;
 #endif  // !CONFIG_PVQ
-        inv_txfm_add(dqcoeff, recon, MAX_TX_SIZE, &inv_txfm_param);
+        av1_inv_txfm_add(dqcoeff, recon, MAX_TX_SIZE, &inv_txfm_param);
       }
 #if CONFIG_DAALA_DIST
       if (plane == 0) {
@@ -1451,7 +1451,7 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
                  &this_rd_stats.dist, &this_rd_stats.sse);
     } else {
       // Note that the encode block_intra call above already calls
-      // inv_txfm_add, so we can't just call dist_block here.
+      // av1_inv_txfm_add, so we can't just call dist_block here.
       const BLOCK_SIZE tx_bsize = txsize_to_bsize[tx_size];
       const aom_variance_fn_t variance = args->cpi->fn_ptr[tx_bsize].vf;
       const struct macroblock_plane *const p = &x->plane[plane];
@@ -3894,12 +3894,13 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
 #if CONFIG_AOM_HIGHBITDEPTH
     if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
       inv_txfm_param.bd = xd->bd;
-      highbd_inv_txfm_add(dqcoeff, rec_buffer, MAX_TX_SIZE, &inv_txfm_param);
+      av1_highbd_inv_txfm_add(dqcoeff, rec_buffer, MAX_TX_SIZE,
+                              &inv_txfm_param);
     } else {
-      inv_txfm_add(dqcoeff, rec_buffer, MAX_TX_SIZE, &inv_txfm_param);
+      av1_inv_txfm_add(dqcoeff, rec_buffer, MAX_TX_SIZE, &inv_txfm_param);
     }
 #else   // CONFIG_AOM_HIGHBITDEPTH
-    inv_txfm_add(dqcoeff, rec_buffer, MAX_TX_SIZE, &inv_txfm_param);
+    av1_inv_txfm_add(dqcoeff, rec_buffer, MAX_TX_SIZE, &inv_txfm_param);
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
     if (txb_w + blk_col > max_blocks_wide ||
@@ -6638,7 +6639,7 @@ static int64_t rd_pick_inter_best_sub8x8_mode(
                   for (i2 = 0; i2 < 4; i2++) dst[j2 * dst_stride + i2] = 0;
               }
 #endif  // CONFIG_PVQ
-              inv_txfm_add(dqcoeff, dst, dst_stride, &inv_txfm_param);
+              av1_inv_txfm_add(dqcoeff, dst, dst_stride, &inv_txfm_param);
             }
           }
         }

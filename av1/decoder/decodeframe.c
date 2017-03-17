@@ -336,10 +336,10 @@ static void inverse_transform_block(MACROBLOCKD *xd, int plane,
 #if CONFIG_AOM_HIGHBITDEPTH
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     inv_txfm_param.bd = xd->bd;
-    highbd_inv_txfm_add(dqcoeff, dst, stride, &inv_txfm_param);
+    av1_highbd_inv_txfm_add(dqcoeff, dst, stride, &inv_txfm_param);
   } else {
 #endif  // CONFIG_AOM_HIGHBITDEPTH
-    inv_txfm_add(dqcoeff, dst, stride, &inv_txfm_param);
+    av1_inv_txfm_add(dqcoeff, dst, stride, &inv_txfm_param);
 #if CONFIG_AOM_HIGHBITDEPTH
   }
 #endif  // CONFIG_AOM_HIGHBITDEPTH

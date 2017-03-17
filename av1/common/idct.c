@@ -2787,8 +2787,8 @@ void av1_highbd_inv_txfm_add_64x64(const tran_low_t *input, uint8_t *dest,
 #endif  // CONFIG_TX64X64
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
-void inv_txfm_add(const tran_low_t *input, uint8_t *dest, int stride,
-                  INV_TXFM_PARAM *inv_txfm_param) {
+void av1_inv_txfm_add(const tran_low_t *input, uint8_t *dest, int stride,
+                      INV_TXFM_PARAM *inv_txfm_param) {
   const TX_TYPE tx_type = inv_txfm_param->tx_type;
   const TX_SIZE tx_size = inv_txfm_param->tx_size;
   const int eob = inv_txfm_param->eob;
@@ -2837,8 +2837,8 @@ void inv_txfm_add(const tran_low_t *input, uint8_t *dest, int stride,
 }
 
 #if CONFIG_AOM_HIGHBITDEPTH
-void highbd_inv_txfm_add(const tran_low_t *input, uint8_t *dest, int stride,
-                         INV_TXFM_PARAM *inv_txfm_param) {
+void av1_highbd_inv_txfm_add(const tran_low_t *input, uint8_t *dest, int stride,
+                             INV_TXFM_PARAM *inv_txfm_param) {
   const TX_TYPE tx_type = inv_txfm_param->tx_type;
   const TX_SIZE tx_size = inv_txfm_param->tx_size;
   const int eob = inv_txfm_param->eob;
