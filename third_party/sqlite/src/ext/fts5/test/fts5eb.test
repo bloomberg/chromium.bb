@@ -33,15 +33,24 @@ foreach {tn expr res} {
   1  {abc}                            {"abc"}
   2  {abc ""}                         {"abc"}
   3  {""}                             {}
-  4  {abc OR ""}                      {"abc"}
-  5  {abc NOT ""}                     {"abc"}
-  6  {abc AND ""}                     {"abc"}
-  7  {"" OR abc}                      {"abc"}
-  8  {"" NOT abc}                     {"abc"}
-  9  {"" AND abc}                     {"abc"}
+  4  {abc OR ""}                      {"abc" OR ""}
+  5  {abc NOT ""}                     {"abc" NOT ""}
+  6  {abc AND ""}                     {"abc" AND ""}
+  7  {"" OR abc}                      {"" OR "abc"}
+  8  {"" NOT abc}                     {"" NOT "abc"}
+  9  {"" AND abc}                     {"" AND "abc"}
   10 {abc + "" + def}                 {"abc" + "def"}
   11 {abc "" def}                     {"abc" AND "def"}
   12 {r+e OR w}                       {"r" + "e" OR "w"}
+
+  13 {a AND b NOT c}                  {"a" AND ("b" NOT "c")}
+  14 {a OR b NOT c}                   {"a" OR ("b" NOT "c")}
+  15 {a NOT b AND c}                  {("a" NOT "b") AND "c"}
+  16 {a NOT b OR c}                   {("a" NOT "b") OR "c"}
+
+  17 {a AND b OR c}                   {("a" AND "b") OR "c"}
+  18 {a OR b AND c}                   {"a" OR ("b" AND "c")}
+
 } {
   do_execsql_test 1.$tn {SELECT fts5_expr($expr)} [list $res]
 }
@@ -53,6 +62,23 @@ do_catchsql_test 2.1 {
 do_catchsql_test 2.1 {
   SELECT fts5_expr_tcl()
 } {1 {wrong number of arguments to function fts5_expr_tcl}}
+
+
+do_execsql_test 3.0 {
+  CREATE VIRTUAL TABLE e1 USING fts5(text, tokenize = 'porter unicode61');
+  INSERT INTO e1 VALUES ("just a few words with a / inside");
+}
+do_execsql_test 3.1 {
+  SELECT rowid, bm25(e1) FROM e1 WHERE e1 MATCH '"just"' ORDER BY rank;
+} {1 -1e-06}
+do_execsql_test 3.2 {
+  SELECT rowid FROM e1 WHERE e1 MATCH '"/" OR "just"'
+} 1
+do_execsql_test 3.3 {
+  SELECT rowid, bm25(e1) FROM e1 WHERE e1 MATCH '"/" OR "just"' ORDER BY rank;
+} {1 -1e-06}
+
+
 
 finish_test
 
