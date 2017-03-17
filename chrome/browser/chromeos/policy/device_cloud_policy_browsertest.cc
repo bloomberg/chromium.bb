@@ -67,6 +67,8 @@
 
 namespace policy {
 
+namespace {
+
 class DeviceCloudPolicyBrowserTest : public InProcessBrowserTest {
  protected:
   DeviceCloudPolicyBrowserTest()
@@ -77,6 +79,8 @@ class DeviceCloudPolicyBrowserTest : public InProcessBrowserTest {
  private:
   DISALLOW_COPY_AND_ASSIGN(DeviceCloudPolicyBrowserTest);
 };
+
+}  // namespace
 
 IN_PROC_BROWSER_TEST_F(DeviceCloudPolicyBrowserTest, Initializer) {
   BrowserPolicyConnectorChromeOS* connector =
@@ -93,6 +97,8 @@ IN_PROC_BROWSER_TEST_F(DeviceCloudPolicyBrowserTest, Initializer) {
   connector->GetDeviceCloudPolicyManager()->Disconnect();
   EXPECT_TRUE(connector->GetDeviceCloudPolicyInitializer());
 }
+
+namespace {
 
 // Tests for the rotation of the signing keys used for the device policy.
 //
@@ -228,6 +234,8 @@ class KeyRotationDeviceCloudPolicyTest : public DevicePolicyCrosBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(KeyRotationDeviceCloudPolicyTest);
 };
 
+}  // namespace
+
 IN_PROC_BROWSER_TEST_F(KeyRotationDeviceCloudPolicyTest, Basic) {
   // Initially, the policy has the first value.
   EXPECT_EQ(kTestPolicyValue, GetTestPolicyValue());
@@ -252,6 +260,8 @@ IN_PROC_BROWSER_TEST_F(KeyRotationDeviceCloudPolicyTest, Basic) {
       original_owner_public_key,
       chromeos::DeviceSettingsService::Get()->GetPublicKey()->as_string());
 }
+
+namespace {
 
 // This class is the base class for the tests of the behavior regarding
 // extensions installed on the signin screen (which is generally possible only
@@ -453,6 +463,8 @@ class SigninExtensionsDeviceCloudPolicyBrowserTest
   std::unique_ptr<base::AutoReset<bool>> signin_policy_provided_disabler_;
 };
 
+}  // namespace
+
 IN_PROC_BROWSER_TEST_F(SigninExtensionsDeviceCloudPolicyBrowserTest,
                        InstallAndRunInWindow) {
   const extensions::Extension* extension = InstallAndLoadTestExtension();
@@ -464,6 +476,8 @@ IN_PROC_BROWSER_TEST_F(SigninExtensionsDeviceCloudPolicyBrowserTest,
   EXPECT_TRUE(result_catcher.GetNextResult());
   CloseBrowserSynchronously(browser);
 }
+
+namespace {
 
 // This class tests that the cached component policy is successfully loaded and
 // passed to the extension that is already installed into the signin profile.
@@ -529,6 +543,8 @@ class PreinstalledSigninExtensionsDeviceCloudPolicyBrowserTest
 
   std::unique_ptr<base::AutoReset<bool>> signin_policy_provided_disabler_;
 };
+
+}  // namespace
 
 IN_PROC_BROWSER_TEST_F(PreinstalledSigninExtensionsDeviceCloudPolicyBrowserTest,
                        OfflineStart) {
