@@ -825,6 +825,12 @@ void EmbeddedWorkerInstance::RemoveListener(Listener* listener) {
   listener_list_.RemoveObserver(listener);
 }
 
+void EmbeddedWorkerInstance::SetDevToolsAttached(bool attached) {
+  devtools_attached_ = attached;
+  if (attached)
+    registry_->OnDevToolsAttached(embedded_worker_id_);
+}
+
 void EmbeddedWorkerInstance::OnNetworkAccessedForScriptLoad() {
   starting_phase_ = SCRIPT_DOWNLOADING;
   network_accessed_for_script_ = true;

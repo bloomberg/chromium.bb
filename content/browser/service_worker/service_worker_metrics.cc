@@ -978,4 +978,19 @@ void ServiceWorkerMetrics::RecordContextRequestHandlerStatus(
   }
 }
 
+void ServiceWorkerMetrics::RecordRuntime(base::TimeDelta time) {
+  // Start at 1 second since we expect service worker to last at least this
+  // long: the update timer and idle timeout timer run on the order of seconds.
+  constexpr base::TimeDelta kMin = base::TimeDelta::FromSeconds(1);
+  // End at 1 day since service workers can conceivably run as long as the the
+  // browser is open; we have to cap somewhere.
+  constexpr base::TimeDelta kMax = base::TimeDelta::FromDays(1);
+  // Set the bucket count to 50 since that is the recommended value for all
+  // histograms.
+  const int kBucketCount = 50;
+
+  UMA_HISTOGRAM_CUSTOM_TIMES("ServiceWorker.Runtime", time, kMin, kMax,
+                             kBucketCount);
+}
+
 }  // namespace content

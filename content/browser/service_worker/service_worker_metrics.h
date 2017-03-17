@@ -354,6 +354,8 @@ class ServiceWorkerMetrics {
       bool is_installed,
       bool is_main_script);
 
+  static void RecordRuntime(base::TimeDelta time);
+
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(ServiceWorkerMetrics);
 };

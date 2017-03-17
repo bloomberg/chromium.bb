@@ -750,7 +750,8 @@ void ServiceWorkerVersion::SetValidOriginTrialTokens(
 }
 
 void ServiceWorkerVersion::SetDevToolsAttached(bool attached) {
-  embedded_worker()->set_devtools_attached(attached);
+  embedded_worker()->SetDevToolsAttached(attached);
+
   if (stop_when_devtools_detached_ && !attached) {
     DCHECK_EQ(REDUNDANT, status());
     if (running_status() == EmbeddedWorkerStatus::STARTING ||

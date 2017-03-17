@@ -319,7 +319,7 @@ TEST_F(EmbeddedWorkerInstanceTest, StopWhenDevToolsAttached) {
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, worker->status());
 
   // Set devtools_attached to true, and do the same.
-  worker->set_devtools_attached(true);
+  worker->SetDevToolsAttached(true);
 
   EXPECT_EQ(SERVICE_WORKER_OK,
             StartWorker(worker.get(), service_worker_version_id, pattern, url));

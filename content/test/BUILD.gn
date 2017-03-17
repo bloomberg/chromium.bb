@@ -1264,6 +1264,7 @@ test("content_unittests") {
     "../browser/service_worker/service_worker_dispatcher_host_unittest.cc",
     "../browser/service_worker/service_worker_handle_unittest.cc",
     "../browser/service_worker/service_worker_job_unittest.cc",
+    "../browser/service_worker/service_worker_lifetime_tracker_unittest.cc",
     "../browser/service_worker/service_worker_metrics_unittest.cc",
     "../browser/service_worker/service_worker_process_manager_unittest.cc",
     "../browser/service_worker/service_worker_provider_host_unittest.cc",

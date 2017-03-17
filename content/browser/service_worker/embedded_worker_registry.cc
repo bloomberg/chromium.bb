@@ -140,6 +140,7 @@ void EmbeddedWorkerRegistry::OnWorkerStarted(
   }
 
   worker->OnStarted();
+  lifetime_tracker_.StartTiming(embedded_worker_id);
 }
 
 void EmbeddedWorkerRegistry::OnWorkerStopped(
@@ -150,6 +151,7 @@ void EmbeddedWorkerRegistry::OnWorkerStopped(
     return;
   worker_process_map_[process_id].erase(embedded_worker_id);
   worker->OnStopped();
+  lifetime_tracker_.StopTiming(embedded_worker_id);
 }
 
 void EmbeddedWorkerRegistry::OnReportException(
@@ -177,6 +179,10 @@ void EmbeddedWorkerRegistry::OnReportConsoleMessage(
     return;
   worker->OnReportConsoleMessage(source_identifier, message_level, message,
                                  line_number, source_url);
+}
+
+void EmbeddedWorkerRegistry::OnDevToolsAttached(int embedded_worker_id) {
+  lifetime_tracker_.AbortTiming(embedded_worker_id);
 }
 
 void EmbeddedWorkerRegistry::RemoveProcess(int process_id) {
@@ -269,6 +275,7 @@ void EmbeddedWorkerRegistry::DetachWorker(int process_id,
   worker_process_map_[process_id].erase(embedded_worker_id);
   if (worker_process_map_[process_id].empty())
     worker_process_map_.erase(process_id);
+  lifetime_tracker_.StopTiming(embedded_worker_id);
 }
 
 EmbeddedWorkerInstance* EmbeddedWorkerRegistry::GetWorkerForMessage(
