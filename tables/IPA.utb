@@ -41,8 +41,7 @@
 # Some lines are commented:
 #   - Characters include in latinLetterDef6Dots.uti table (a, b, c...)
 #   - possible conflicts with some local braille codes:
-#       - French braille: ɸ (phi), β (beta), θ (theta), ç (c cedilla), ɣ (gamma),
-#                          ɛ (epsilon), χ (chi), ʊ (upsilon), | (vertical line), . (full stop (point))
+#       - French braille: β (beta), θ (theta), ç (c cedilla), χ (chi), | (vertical line), . (full stop (point))
 #       - ... (other braille code?)
 #   - Tricky character compositions, see end of 'Tones and Word Accents'
 #   - 'Phonetic and Phonemic Enclosures'
@@ -52,7 +51,7 @@
 #            see <http://unicode.org/cldr/utility/list-unicodeset.jsp?a=\p{subhead=Miscellaneous%20phonetic%20modifiers}>
 
 
-# Last updated on December 22, 2016
+# Last updated on March 17, 2017
 
 
 #-----------------------------------
@@ -88,7 +87,7 @@ sign \X2C71 235-1236    #  (UTF-16) - right-hook v - labiodental flap
 sign \XF25F 235-1236    #  (UTF-16) - right-hook v - labiodental flap
 sign \X027E 235-1235    # ɾ - fish-hook r - voiced alveolar tap
 sign \X027D 256-1235    # ɽ - right-tail r - voiced retroflex flap
-# sign \X0278 46-124    # ɸ - phi - voiceless bilabial fricative
+sign \X0278 46-124      # ɸ - 'phi' (latin small letter phi) - voiceless bilabial fricative (IPA Extensions here, greek phi is \X03D5)
 # sign \X03B2 46-12     # β - beta - voiced bilabial fricative
 # sign \X0066 124       # f - lowercase f - voiceless labiodental fricative
 # sign \X0076 1236      # v - lowercase v - voiced labiodental fricative
@@ -103,7 +102,7 @@ sign \X0290 256-1356    # ʐ - right-tail z - voiced retroflex fricative
 # sign \X00E7 235-14    # ç - c cedilla - voiceless palatal fricative
 sign \X029D 236-245     # ʝ - curly-tail j - voiced palatal fricative
 # sign \X0078 1346      # x - lowercase x - voiceless velar fricative
-# sign \X0263 46-1245   # ɣ - gamma - voiced velar fricative
+sign \X0263 46-1245     # ɣ - 'gamma' (latin small letter gamma) - voiced velar fricative (IPA Extensions here, greek gamma is \X03B3)
 # sign \X03C7 46-12346  # χ - chi - voiceless uvular fricative
 sign \X0281 35-3456     # ʁ - inverted small capital r - voiced uvular fricative
 sign \X0127 235-125     # ħ - barred h - voiceless pharyngeal fricative
@@ -156,7 +155,7 @@ sign \X026B 235-123     # ɫ - lowercase l with tilde - velarized voiced alveola
 # UNICODE DOTS          # GLYPH - TYPOGRAPHIC DESC. - ARTICULATORY DESC.
 # sign \X0069 24        # i - lowercase i - close front unrounded vowel
 # sign \X0065 15        # e - lowercase e - close-mid front unrounded vowel
-# sign \X025B 345       # ɛ - epsilon - open-mid front unrounded vowel
+sign \X025B 345         # ɛ - 'epsilon' (latin small letter open e) - open-mid front unrounded vowel (IPA Extensions here, greek epsilon is \X03B5)
 # sign \X0061 1         # a - lowercase a - open front unrounded vowel
 sign \X0251 16          # ɑ - script a - open back unrounded vowel
 sign \X0254 126         # ɔ - open o - open-mid back rounded vowel
@@ -174,7 +173,7 @@ sign \X0268 356-24      # ɨ - barred i - close central unrounded vowel
 sign \X0289 356-136     # ʉ - barred u - close central rounded vowel
 sign \X026A 34          # ɪ - small capital i - near-close near-front unrounded vowel
 sign \X028F 35-13456    # ʏ - small capital y - near-close near-front rounded vowel
-# sign \X028A 12356     # ʊ - upsilon - near-close near-back rounded vowel
+sign \X028A 12356       # ʊ - 'upsilon' (latin small letter upsilon) - near-close near-back rounded vowel (IPA Extensions here, greek upsilon is \X03C5)
 sign \X0259 26          # ə - schwa - mid central vowel
 sign \X0275 356-135     # ɵ - barred o - close-mid central rounded vowel
 sign \X0250 235-1       # ɐ - turned a - near-open central vowel
