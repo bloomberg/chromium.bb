@@ -69,6 +69,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_change_observer.h"
 #include "ui/wm/public/activation_client.h"
 
@@ -178,10 +179,10 @@ class SystemTray::ActivationObserver
   void OnWindowActivated(ActivationReason reason,
                          aura::Window* gained_active,
                          aura::Window* lost_active) override {
-    WmWindow* wm_gained_active = WmWindow::Get(gained_active);
     if (!tray_->HasSystemBubble() || !gained_active)
       return;
 
+    WmWindow* wm_gained_active = WmWindow::Get(gained_active);
     int container_id =
         wm::GetContainerForWindow(wm_gained_active)->GetShellWindowId();
 
@@ -189,10 +190,19 @@ class SystemTray::ActivationObserver
     if (container_id == kShellWindowId_StatusContainer)
       return;
 
-    if (tray_->GetSystemBubble()->bubble_view()->GetWidget() !=
-        wm_gained_active->GetInternalWidget()) {
-      tray_->CloseSystemBubble();
+    views::Widget* bubble_widget =
+        tray_->GetSystemBubble()->bubble_view()->GetWidget();
+    // Don't close the bubble if a transient child is gaining or losing
+    // activation.
+    if (bubble_widget == wm_gained_active->GetInternalWidget() ||
+        ::wm::HasTransientAncestor(gained_active,
+                                   bubble_widget->GetNativeWindow()) ||
+        ::wm::HasTransientAncestor(lost_active,
+                                   bubble_widget->GetNativeWindow())) {
+      return;
     }
+
+    tray_->CloseSystemBubble();
   }
 
  private:

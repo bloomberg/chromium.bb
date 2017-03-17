@@ -60,6 +60,8 @@
 #include "ui/views/layout/layout_manager.h"
 #include "ui/views/painter.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/shadow_types.h"
+#include "ui/wm/core/window_util.h"
 
 using chromeos::DeviceState;
 using chromeos::LoginState;
@@ -74,27 +76,6 @@ namespace {
 
 // Delay between scan requests.
 const int kRequestScanDelaySeconds = 10;
-
-// Create a label with the font size and color used in the network info bubble.
-views::Label* CreateInfoBubbleLabel(const base::string16& text) {
-  views::Label* label = new views::Label(text);
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  label->SetFontList(rb.GetFontList(ui::ResourceBundle::SmallFont));
-  label->SetEnabledColor(SkColorSetARGB(127, 0, 0, 0));
-  return label;
-}
-
-// Create a row of labels for the network info bubble.
-views::View* CreateInfoBubbleLine(const base::string16& text_label,
-                                  const std::string& text_string) {
-  views::View* view = new views::View;
-  view->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 1));
-  view->AddChildView(CreateInfoBubbleLabel(text_label));
-  view->AddChildView(CreateInfoBubbleLabel(base::UTF8ToUTF16(": ")));
-  view->AddChildView(CreateInfoBubbleLabel(base::UTF8ToUTF16(text_string)));
-  return view;
-}
 
 // TODO(varkha): Consolidate with a similar method in tray_bluetooth.cc.
 void SetupConnectedItemMd(HoverHighlightView* container,
@@ -124,6 +105,13 @@ void SetupConnectingItemMd(HoverHighlightView* container,
 
 //------------------------------------------------------------------------------
 
+// This margin value is used throughout the bubble:
+// - margins inside the border
+// - horizontal spacing between bubble border and parent bubble border
+// - distance between top of this bubble's border and the bottom of the anchor
+//   view (horizontal rule).
+int kBubbleMargin = 8;
+
 // A bubble which displays network info.
 class NetworkStateListDetailedView::InfoBubble
     : public views::BubbleDialogDelegateView {
@@ -133,7 +121,12 @@ class NetworkStateListDetailedView::InfoBubble
              NetworkStateListDetailedView* detailed_view)
       : views::BubbleDialogDelegateView(anchor, views::BubbleBorder::TOP_RIGHT),
         detailed_view_(detailed_view) {
-    set_can_activate(false);
+    set_margins(gfx::Insets(kBubbleMargin));
+    set_arrow(views::BubbleBorder::NONE);
+    set_shadow(views::BubbleBorder::NO_ASSETS);
+    set_anchor_view_insets(gfx::Insets(0, 0, kBubbleMargin, 0));
+    set_notify_enter_exit_on_child(true);
+    set_close_on_deactivate(true);
     SetLayoutManager(new views::FillLayout());
     AddChildView(content);
   }
@@ -141,17 +134,29 @@ class NetworkStateListDetailedView::InfoBubble
   ~InfoBubble() override { detailed_view_->OnInfoBubbleDestroyed(); }
 
  private:
+  // View:
+  gfx::Size GetPreferredSize() const override {
+    // This bubble should be inset by kBubbleMargin on both left and right
+    // relative to the parent bubble.
+    const gfx::Size anchor_size = GetAnchorView()->size();
+    int contents_width =
+        anchor_size.width() - 2 * kBubbleMargin - margins().width();
+    return gfx::Size(contents_width, GetHeightForWidth(contents_width));
+  }
+
+  void OnMouseExited(const ui::MouseEvent& event) override {
+    // Like the user switching bubble/menu, hide the bubble when the mouse
+    // exits.
+    detailed_view_->ResetInfoBubble();
+  }
+
   // BubbleDialogDelegateView:
   int GetDialogButtons() const override { return ui::DIALOG_BUTTON_NONE; }
 
   void OnBeforeBubbleWidgetInit(views::Widget::InitParams* params,
                                 views::Widget* widget) const override {
-    DCHECK(anchor_widget());
-    // Place the bubble in the anchor widget's root window.
-    WmWindow::Get(anchor_widget()->GetNativeWindow())
-        ->GetRootWindowController()
-        ->ConfigureWidgetInitParamsForContainer(
-            widget, kShellWindowId_SettingBubbleContainer, params);
+    params->shadow_type = views::Widget::InitParams::SHADOW_TYPE_DROP;
+    params->shadow_elevation = ::wm::ShadowElevation::TINY;
     params->name = "NetworkStateListDetailedView::InfoBubble";
   }
 
@@ -235,8 +240,7 @@ NetworkStateListDetailedView::NetworkStateListDetailedView(
 }
 
 NetworkStateListDetailedView::~NetworkStateListDetailedView() {
-  if (info_bubble_)
-    info_bubble_->GetWidget()->CloseNow();
+  ResetInfoBubble();
 }
 
 void NetworkStateListDetailedView::Update() {
@@ -275,20 +279,18 @@ void NetworkStateListDetailedView::HandleButtonPressed(views::Button* sender,
   if (sender == info_button_) {
     ToggleInfoBubble();
     return;
-  } else if (sender == settings_button_) {
-    ShowSettings();
-  } else if (sender == proxy_settings_button_) {
-    WmShell::Get()->system_tray_controller()->ShowProxySettings();
   }
+
+  if (sender == settings_button_)
+    ShowSettings();
+  else if (sender == proxy_settings_button_)
+    WmShell::Get()->system_tray_controller()->ShowProxySettings();
 
   if (owner()->system_tray())
     owner()->system_tray()->CloseSystemBubble();
 }
 
 void NetworkStateListDetailedView::HandleViewClicked(views::View* view) {
-  // If the info bubble was visible, close it when some other item is clicked.
-  ResetInfoBubble();
-
   if (login_ == LoginStatus::LOCKED)
     return;
 
@@ -381,7 +383,7 @@ void NetworkStateListDetailedView::ToggleInfoBubble() {
   if (ResetInfoBubble())
     return;
 
-  info_bubble_ = new InfoBubble(info_button_, CreateNetworkInfoView(), this);
+  info_bubble_ = new InfoBubble(tri_view(), CreateNetworkInfoView(), this);
   views::BubbleDialogDelegateView::CreateBubble(info_bubble_)->Show();
   info_bubble_->NotifyAccessibilityEvent(ui::AX_EVENT_ALERT, false);
 }
@@ -389,8 +391,13 @@ void NetworkStateListDetailedView::ToggleInfoBubble() {
 bool NetworkStateListDetailedView::ResetInfoBubble() {
   if (!info_bubble_)
     return false;
-  info_bubble_->GetWidget()->Close();
-  info_bubble_ = nullptr;
+  // After losing activation, the InfoBubble will be closed.
+  owner()
+      ->system_tray()
+      ->GetSystemBubble()
+      ->bubble_view()
+      ->GetWidget()
+      ->Activate();
   return true;
 }
 
@@ -399,7 +406,6 @@ void NetworkStateListDetailedView::OnInfoBubbleDestroyed() {
 }
 
 views::View* NetworkStateListDetailedView::CreateNetworkInfoView() {
-  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
 
   std::string ip_address, ipv6_address;
@@ -412,11 +418,6 @@ views::View* NetworkStateListDetailedView::CreateNetworkInfoView() {
     }
   }
 
-  views::View* container = new views::View;
-  container->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 1));
-  container->SetBorder(views::CreateEmptyBorder(0, 5, 0, 5));
-
   std::string ethernet_address, wifi_address, vpn_address;
   if (list_type_ != LIST_TYPE_VPN) {
     ethernet_address = handler->FormattedHardwareAddressForType(
@@ -428,36 +429,33 @@ views::View* NetworkStateListDetailedView::CreateNetworkInfoView() {
         handler->FormattedHardwareAddressForType(NetworkTypePattern::VPN());
   }
 
-  if (!ip_address.empty()) {
-    container->AddChildView(CreateInfoBubbleLine(
-        bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_IP), ip_address));
-  }
-  if (!ipv6_address.empty()) {
-    container->AddChildView(CreateInfoBubbleLine(
-        bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_IPV6), ipv6_address));
-  }
-  if (!ethernet_address.empty()) {
-    container->AddChildView(CreateInfoBubbleLine(
-        bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_ETHERNET),
-        ethernet_address));
-  }
-  if (!wifi_address.empty()) {
-    container->AddChildView(CreateInfoBubbleLine(
-        bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_WIFI), wifi_address));
-  }
-  if (!vpn_address.empty()) {
-    container->AddChildView(CreateInfoBubbleLine(
-        bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_VPN), vpn_address));
-  }
+  base::string16 bubble_text;
+  auto add_line = [&bubble_text](const std::string& address, int ids) {
+    if (!address.empty()) {
+      if (!bubble_text.empty())
+        bubble_text += base::ASCIIToUTF16("\n");
+
+      bubble_text +=
+          l10n_util::GetStringFUTF16(ids, base::UTF8ToUTF16(address));
+    }
+  };
+
+  add_line(ip_address, IDS_ASH_STATUS_TRAY_IP);
+  add_line(ipv6_address, IDS_ASH_STATUS_TRAY_IPV6);
+  add_line(ethernet_address, IDS_ASH_STATUS_TRAY_ETHERNET);
+  add_line(wifi_address, IDS_ASH_STATUS_TRAY_WIFI);
+  add_line(vpn_address, IDS_ASH_STATUS_TRAY_VPN);
 
   // Avoid an empty bubble in the unlikely event that there is no network
   // information at all.
-  if (!container->has_children()) {
-    container->AddChildView(CreateInfoBubbleLabel(
-        bundle.GetLocalizedString(IDS_ASH_STATUS_TRAY_NO_NETWORKS)));
-  }
+  if (bubble_text.empty())
+    bubble_text = l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NO_NETWORKS);
 
-  return container;
+  auto* label = new views::Label(bubble_text);
+  label->SetMultiLine(true);
+  label->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
+  label->SetSelectable(true);
+  return label;
 }
 
 views::View* NetworkStateListDetailedView::CreateControlledByExtensionView(

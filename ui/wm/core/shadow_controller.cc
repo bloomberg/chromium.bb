@@ -62,10 +62,14 @@ ShadowElevation GetShadowElevationConvertDefault(aura::Window* window) {
 }
 
 ShadowElevation GetShadowElevationForActiveState(aura::Window* window) {
+  ShadowElevation elevation = window->GetProperty(kShadowElevationKey);
+  if (elevation != ShadowElevation::DEFAULT)
+    return elevation;
+
   if (IsActiveWindow(window))
     return kActiveNormalShadowElevation;
 
-  return GetShadowElevationConvertDefault(window);
+  return GetDefaultShadowElevationForWindow(window);
 }
 
 // Returns the shadow style to be applied to |losing_active| when it is losing

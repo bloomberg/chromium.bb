@@ -504,16 +504,16 @@ Press Ctrl+Alt+Z to disable.
         Connection may be monitored
       </message>
       <message name="IDS_ASH_STATUS_TRAY_WIFI" desc="The wifi network device.">
-        Wi-Fi
+        Wi-Fi: <ph name="ADDRESS">$1<ex>23:45:67:89:AB:CD</ex></ph>
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_INFO" desc="The accessible text for the network info button.">
         Network info
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_IP" desc="The label for the IP address of the network:">
-        IP address
+      <message name="IDS_ASH_STATUS_TRAY_IP" desc="The label for the IP address of the network.">
+        IP address: <ph name="ADDRESS">$1<ex>192.168.1.1</ex></ph>
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_IPV6" desc="The label for the IP address of the network:">
-        IPv6 address
+      <message name="IDS_ASH_STATUS_TRAY_IPV6" desc="The label for the IP address of the network.">
+        IPv6 address: <ph name="ADDRESS">$1<ex>0:0:0:0:100:0:0:1</ex></ph>
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_SETTINGS" desc="The label used in the settings entry in the network dialog.">
         Network settings
@@ -835,7 +835,7 @@ Press Ctrl+Alt+Z to disable.
         Searching for mobile networks...
       </message>
       <message name="IDS_ASH_STATUS_TRAY_ETHERNET" desc="The ethernet network device.">
-        Ethernet
+        Ethernet: <ph name="ADDRESS">$1<ex>01:23:45:67:89:AB</ex></ph>
       </message>
       <message name="IDS_ASH_STATUS_TRAY_INITIALIZING_CELLULAR" desc="Message for the status area when initializing the cellular device.">
         Initializing...

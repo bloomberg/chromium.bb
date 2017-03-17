@@ -18,6 +18,7 @@ enum class ShadowElevation {
   // default.
   DEFAULT = -1,
   NONE = 0,
+  TINY = 2,
   SMALL = 6,
   MEDIUM = 8,
   LARGE = 24,
