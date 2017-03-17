@@ -43,17 +43,17 @@ A goal of `//net` is to try to ensure that code is 'safe by default' when
 used. As part of serving that goal, in order to make a TLS or QUIC connection
 using code in `//net`, it's necessary for the `//net` embedder to make
 a decision about Certificate Transparency, much like it is necessary to
-provide a [`CertVerifier`](../cert/cert_verifier.h) that describes how to
+provide a [`CertVerifier`](/net/cert/cert_verifier.h) that describes how to
 verify the server's certificate.
 
 Because this is necessary to make a TLS or QUIC connection, this requirement
 surfaces upwards through each layer in the stack - applying to things like
-[`HttpNetworkSession`](../http/http_network_session.h) and upwards to
-[`URLRequestContext`](../url_request/url_request_context.h).
+[`HttpNetworkSession`](/net/http/http_network_session.h) and upwards to
+[`URLRequestContext`](/net/url_request/url_request_context.h).
 
 This requirement is expressed by requiring two separate, but related, objects
-to be supplied: [`CTVerifier`](../cert/ct_verifier.h) and
-[`CTPolicyEnforcer`](../cert/ct_policy_enforcer.h), which together can be used
+to be supplied: [`CTVerifier`](/net/cert/ct_verifier.h) and
+[`CTPolicyEnforcer`](/net/cert/ct_policy_enforcer.h), which together can be used
 to express an application's policies with respect to Certificate Transparency.
 
 As part of the goal of ensuring 'safe by default', `//net` also has various
@@ -63,7 +63,7 @@ consequence, are required to have their certificates disclosed using
 Certificate Transparency in order to ensure that the security provided by
 these CAs matches the level of security and assurance that other CAs provide.
 These policies are implemented in
-[`TransportSecurityState`](../http/transport_security_state.cc), via the
+[`TransportSecurityState`](/net/http/transport_security_state.cc), via the
 `ShouldRequireCT` method.
 
 ### CTVerifier
@@ -81,7 +81,7 @@ it trusts and the CAs that issue these certificates.
 
 `CTPolicyEnforcer` currently expresses two policies:
   * How to treat [Extended Validation](https://cabforum.org/extended-validation-2/)
-    certificates (those for which a [`CertVerifier`](../cert/cert_verifier.h)
+    certificates (those for which a [`CertVerifier`](/net/cert/cert_verifier.h)
     returned `CERT_STATUS_IS_EV`).
   * How to treat all certificates, regardless of EV status.
 
@@ -111,16 +111,16 @@ page includes the policies for how Chromium determines an acceptable set of
 Certificate Transparency logs and what Certificate Transparency-related
 information is expected to accompany certificates, both for EV and non-EV.
 
-The implementation of these policies lives within [`//net/cert`](../cert), and
+The implementation of these policies lives within [`//net/cert`](/net/cert), and
 includes:
-  * [`ct_known_logs.h`](../cert/ct_known_logs.h): The set of Certificate
+  * [`ct_known_logs.h`](/net/cert/ct_known_logs.h): The set of Certificate
     Transparency logs known and qualified according to Chromium's
     [Certificate Transparency Log Policy](https://www.chromium.org/Home/chromium-security/certificate-transparency/log-policy).
-  * ['multi_log_ct_verifier.h`](../cert/multi_log_ct_verifier.h): Capable of
-    parsing `SignedCertificateTimestamps` s from a variety of logs and
+  * [`multi_log_ct_verifier.h`](/net/cert/multi_log_ct_verifier.h): Capable of
+    parsing `SignedCertificateTimestamps` from a variety of logs and
     validating their signatures, using the keys and information provided by
     `ct_known_logs.h`.
-  * [`ct_policy_enforcer.h`](../cert/ct_policy_enforcer.h): A base class that
+  * [`ct_policy_enforcer.h`](/net/cert/ct_policy_enforcer.h): A base class that
     implements the Certificate Transparency in Chrome Policy, for both EV and
     non-EV certificates.
 
@@ -142,25 +142,27 @@ Certificate Transparency is not relevant, and it's not necessary to parse
 or enforce Certificate Transparency related information.
 
 For these cases, the approach is:
-  * [`do_nothing_ct_verifier.h`](../cert/do_nothing_ct_verifier.h): A no-op
+  * [`do_nothing_ct_verifier.h`](/net/cert/do_nothing_ct_verifier.h): A no-op
     CTVerifier that does not parse or verify Certificate Transparency-related
     information.
   * A derived `CTPolicyEnforcer` implementation that indicates all
     certificates comply with its policies.
-    **TODO(rsleevi):** Provide a DoNothingCTPolicyEnforcer
+
+    **TODO(rsleevi):** Provide a `DoNothingCTPolicyEnforcer`
 
 As documented in these classes, care should be taken before using these, as
 they provide much weaker security guarantees. In general, emailing
-net-dev@chromium.org or discussing it during a security review is the right
-answer, and documenting at the instantiation points why it is safe and
-acceptable to use these classes.
+[net-dev@chromium.org](mailto:net-dev@chromium.org) or discussing it during a
+security review is the right answer, and documenting at the instantiation
+points why it is safe and acceptable to use these classes.
 
 ## Certificate Transparency for `//net` Embedders
 
 This section is intended for code that is used in other open-source Chromium
 based projects, but are not included in Google Chrome or related. This
-includes projects based on `//net`, such as `//components/cronet` or other
-`//content` embedders.
+includes projects based on `//net`, such as
+[`//components/cronet`](/components/cronet) or other
+[`//content`](/content) embedders.
 
 For projects and third party products that embed `//net`, the policies
 that are included as part of the open-source repository may not be
@@ -172,12 +174,12 @@ These key expectations are:
   * A release cycle aligned with Chrome releases; that is, every six weeks,
     and on the same versions as Chrome releases.
   * Widespread support for automatic updates.
-  * That [`base::GetBuildTime()`](../../base/build_time.h) will reflect, to
+  * That [`base::GetBuildTime()`](/base/build_time.h) will reflect, to
     some degree, when the tree was branched and/or released, and will not
     be re-generated on recompilation. That is, this implies is_official_build
     for binaries released to end-users, but is not enforced in code so that
     developers can accurately test release behavior.
-  * Support for dynamic [`base::FieldTrial`](../../base/metrics/field_trial.h)
+  * Support for dynamic [`base::FieldTrial`](/base/metrics/field_trial.h)
     configurations.
 
 For projects that don't support automatic updates, or which measure 'stable'
