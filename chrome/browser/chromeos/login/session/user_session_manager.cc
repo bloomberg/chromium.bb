@@ -548,6 +548,16 @@ void UserSessionManager::RestoreAuthenticationSession(Profile* user_profile) {
 
   const user_manager::User* user =
       ProfileHelper::Get()->GetUserByProfile(user_profile);
+
+  const SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(user_profile);
+  const bool account_id_valid =
+      signin_manager && !signin_manager->GetAuthenticatedAccountId().empty();
+  if (!account_id_valid)
+    LOG(ERROR) << "No account is associated with sign-in manager on restore.";
+  UMA_HISTOGRAM_BOOLEAN("UserSessionManager.RestoreOnCrash.AccountIdValid",
+                        account_id_valid);
+
   DCHECK(user);
   if (!net::NetworkChangeNotifier::IsOffline()) {
     pending_signin_restore_sessions_.erase(user->GetAccountId().GetUserEmail());

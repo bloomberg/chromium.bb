@@ -216,6 +216,10 @@ void SigninManagerBase::SetAuthenticatedAccountId(
                                  account_id);
   client_->GetPrefs()->SetString(prefs::kGoogleServicesLastUsername,
                                  info.email);
+
+  // Commit authenticated account info immediately so that it does not get lost
+  // if Chrome crashes before the next commit interval.
+  client_->GetPrefs()->CommitPendingWrite();
 }
 
 bool SigninManagerBase::IsAuthenticated() const {
