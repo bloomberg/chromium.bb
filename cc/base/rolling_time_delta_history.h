@@ -12,13 +12,13 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "cc/base/cc_export.h"
+#include "cc/base/base_export.h"
 
 namespace cc {
 
 // Stores a limited number of samples. When the maximum size is reached, each
 // insertion results in the deletion of the oldest remaining sample.
-class CC_EXPORT RollingTimeDeltaHistory {
+class CC_BASE_EXPORT RollingTimeDeltaHistory {
  public:
   explicit RollingTimeDeltaHistory(size_t max_size);
 

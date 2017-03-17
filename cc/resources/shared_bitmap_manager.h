@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "cc/base/cc_export.h"
+#include "cc/cc_export.h"
 #include "cc/resources/shared_bitmap.h"
 #include "ui/gfx/geometry/size.h"
 

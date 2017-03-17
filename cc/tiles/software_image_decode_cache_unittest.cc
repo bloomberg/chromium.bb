@@ -4,7 +4,7 @@
 
 #include "cc/tiles/software_image_decode_cache.h"
 
-#include "cc/playback/draw_image.h"
+#include "cc/paint/draw_image.h"
 #include "cc/resources/resource_format.h"
 #include "cc/test/test_tile_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"

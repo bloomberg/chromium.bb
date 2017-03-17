@@ -8,8 +8,8 @@
 #include <map>
 #include <vector>
 
-#include "cc/base/cc_export.h"
 #include "cc/base/resource_id.h"
+#include "cc/cc_export.h"
 #include "cc/quads/render_pass.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/rect.h"

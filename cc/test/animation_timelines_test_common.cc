@@ -10,8 +10,8 @@
 #include "cc/animation/animation_player.h"
 #include "cc/animation/animation_timeline.h"
 #include "cc/animation/element_animations.h"
-#include "cc/output/filter_operation.h"
-#include "cc/output/filter_operations.h"
+#include "cc/base/filter_operation.h"
+#include "cc/base/filter_operations.h"
 #include "ui/gfx/transform.h"
 
 namespace cc {

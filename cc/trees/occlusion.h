@@ -7,8 +7,8 @@
 
 #include <string>
 
-#include "cc/base/cc_export.h"
 #include "cc/base/simple_enclosed_region.h"
+#include "cc/cc_export.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/transform.h"
 

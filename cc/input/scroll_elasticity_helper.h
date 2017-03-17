@@ -6,7 +6,7 @@
 #define CC_INPUT_SCROLL_ELASTICITY_HELPER_H_
 
 #include "base/time/time.h"
-#include "cc/base/cc_export.h"
+#include "cc/cc_export.h"
 #include "ui/gfx/geometry/scroll_offset.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 

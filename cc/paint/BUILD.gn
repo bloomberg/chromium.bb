@@ -7,6 +7,28 @@ import("//cc/cc.gni")
 cc_component("paint") {
   output_name = "cc_paint"
   sources = [
+    "clip_display_item.cc",
+    "clip_display_item.h",
+    "clip_path_display_item.cc",
+    "clip_path_display_item.h",
+    "compositing_display_item.cc",
+    "compositing_display_item.h",
+    "discardable_image_map.cc",
+    "discardable_image_map.h",
+    "display_item.h",
+    "display_item_list.cc",
+    "display_item_list.h",
+    "draw_image.cc",
+    "draw_image.h",
+    "drawing_display_item.cc",
+    "drawing_display_item.h",
+    "filter_display_item.cc",
+    "filter_display_item.h",
+    "float_clip_display_item.cc",
+    "float_clip_display_item.h",
+    "image_id.h",
+    "largest_display_item.cc",
+    "largest_display_item.h",
     "paint_canvas.cc",
     "paint_canvas.h",
     "paint_export.h",
@@ -19,6 +41,8 @@ cc_component("paint") {
     "paint_surface.h",
     "skia_paint_canvas.cc",
     "skia_paint_canvas.h",
+    "transform_display_item.cc",
+    "transform_display_item.h",
   ]
 
   defines = [ "CC_PAINT_IMPLEMENTATION=1" ]
@@ -27,7 +51,12 @@ cc_component("paint") {
   # included in Blink.  This component should never publicly include
   # anything that Blink core wouldn't include (e.g. base).
   public_deps = [
+    "//cc/base",
+    "//cc/debug",
     "//skia",
+    "//ui/gfx:color_space",
+    "//ui/gfx:geometry_skia",
+    "//ui/gfx/geometry",
   ]
 
   deps = [

@@ -5,7 +5,7 @@
 #ifndef CC_TILES_MIPMAP_UTIL_H_
 #define CC_TILES_MIPMAP_UTIL_H_
 
-#include "cc/base/cc_export.h"
+#include "cc/cc_export.h"
 #include "third_party/skia/include/core/SkSize.h"
 #include "ui/gfx/skia_util.h"
 

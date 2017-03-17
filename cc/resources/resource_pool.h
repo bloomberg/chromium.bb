@@ -16,7 +16,7 @@
 #include "base/memory/memory_coordinator_client.h"
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/memory_dump_provider.h"
-#include "cc/base/cc_export.h"
+#include "cc/cc_export.h"
 #include "cc/resources/resource.h"
 #include "cc/resources/resource_format.h"
 #include "cc/resources/scoped_resource.h"

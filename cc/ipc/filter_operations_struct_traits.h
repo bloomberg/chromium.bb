@@ -5,8 +5,8 @@
 #ifndef CC_IPC_FILTER_OPERATIONS_STRUCT_TRAITS_H_
 #define CC_IPC_FILTER_OPERATIONS_STRUCT_TRAITS_H_
 
+#include "cc/base/filter_operations.h"
 #include "cc/ipc/filter_operations.mojom-shared.h"
-#include "cc/output/filter_operations.h"
 
 namespace mojo {
 

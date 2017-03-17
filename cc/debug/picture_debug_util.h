@@ -7,11 +7,13 @@
 
 #include <string>
 
+#include "cc/debug/debug_export.h"
+
 class SkPicture;
 
 namespace cc {
 
-class PictureDebugUtil {
+class CC_DEBUG_EXPORT PictureDebugUtil {
  public:
   static void SerializeAsBase64(const SkPicture* picture, std::string* output);
 };

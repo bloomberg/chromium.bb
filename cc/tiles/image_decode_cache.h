@@ -6,8 +6,8 @@
 #define CC_TILES_IMAGE_DECODE_CACHE_H_
 
 #include "base/memory/ref_counted.h"
-#include "cc/playback/decoded_draw_image.h"
-#include "cc/playback/draw_image.h"
+#include "cc/paint/draw_image.h"
+#include "cc/tiles/decoded_draw_image.h"
 #include "cc/tiles/tile_priority.h"
 
 namespace cc {

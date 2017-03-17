@@ -15,7 +15,7 @@
 #include "cc/animation/animation_host.h"
 #include "cc/animation/animation_player.h"
 #include "cc/animation/keyframed_animation_curve.h"
-#include "cc/output/filter_operations.h"
+#include "cc/base/filter_operations.h"
 #include "cc/trees/mutator_host_client.h"
 #include "ui/gfx/geometry/box_f.h"
 

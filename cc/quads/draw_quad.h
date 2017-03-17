@@ -8,8 +8,8 @@
 #include <stddef.h>
 
 #include "base/callback.h"
-#include "cc/base/cc_export.h"
 #include "cc/base/resource_id.h"
+#include "cc/cc_export.h"
 #include "cc/quads/shared_quad_state.h"
 
 namespace base {

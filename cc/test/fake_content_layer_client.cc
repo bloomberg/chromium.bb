@@ -6,11 +6,11 @@
 
 #include <stddef.h>
 
+#include "cc/paint/clip_display_item.h"
+#include "cc/paint/drawing_display_item.h"
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_recorder.h"
-#include "cc/playback/clip_display_item.h"
-#include "cc/playback/drawing_display_item.h"
-#include "cc/playback/transform_display_item.h"
+#include "cc/paint/transform_display_item.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
 

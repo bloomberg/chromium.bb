@@ -7,7 +7,7 @@
 
 #include <stddef.h>
 
-#include "cc/base/cc_export.h"
+#include "cc/cc_export.h"
 #include "cc/output/buffer_to_texture_target_map.h"
 #include "cc/resources/resource_format.h"
 

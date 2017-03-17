@@ -10,7 +10,7 @@
 
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
-#include "cc/base/cc_export.h"
+#include "cc/cc_export.h"
 #include "cc/output/color_lut_cache.h"
 #include "cc/output/context_cache_controller.h"
 #include "cc/output/direct_renderer.h"

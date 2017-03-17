@@ -5,7 +5,7 @@
 #ifndef CC_INPUT_LAYER_SELECTION_BOUND_H_
 #define CC_INPUT_LAYER_SELECTION_BOUND_H_
 
-#include "cc/base/cc_export.h"
+#include "cc/cc_export.h"
 #include "cc/input/selection.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/selection_bound.h"

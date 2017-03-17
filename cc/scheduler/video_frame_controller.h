@@ -5,7 +5,7 @@
 #ifndef CC_SCHEDULER_VIDEO_FRAME_CONTROLLER_H_
 #define CC_SCHEDULER_VIDEO_FRAME_CONTROLLER_H_
 
-#include "cc/base/cc_export.h"
+#include "cc/cc_export.h"
 #include "cc/output/begin_frame_args.h"
 
 namespace cc {

@@ -11,7 +11,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/synchronization/lock.h"
-#include "cc/base/cc_export.h"
+#include "cc/cc_export.h"
 #include "cc/output/context_cache_controller.h"
 #include "cc/output/context_provider.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"

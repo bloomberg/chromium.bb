@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "cc/base/cc_export.h"
+#include "cc/cc_export.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/surfaces/surface_id.h"
 

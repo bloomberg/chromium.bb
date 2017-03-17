@@ -11,7 +11,7 @@
 #include <map>
 #include <vector>
 
-#include "cc/base/cc_export.h"
+#include "cc/cc_export.h"
 #include "cc/raster/task_graph_runner.h"
 
 namespace cc {

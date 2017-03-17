@@ -3,6 +3,6 @@
 # found in the LICENSE file.
 
 mojom = "//cc/ipc/filter_operation.mojom"
-public_headers = [ "//cc/output/filter_operation.h" ]
+public_headers = [ "//cc/base/filter_operation.h" ]
 traits_headers = [ "//cc/ipc/filter_operation_struct_traits.h" ]
 type_mappings = [ "cc.mojom.FilterOperation=cc::FilterOperation" ]

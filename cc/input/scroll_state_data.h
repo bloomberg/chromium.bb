@@ -9,7 +9,7 @@
 
 #include <list>
 
-#include "cc/base/cc_export.h"
+#include "cc/cc_export.h"
 #include "cc/trees/property_tree.h"
 
 namespace cc {

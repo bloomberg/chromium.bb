@@ -8,7 +8,7 @@
 #include <list>
 #include <memory>
 
-#include "cc/base/cc_export.h"
+#include "cc/cc_export.h"
 #include "cc/input/scroll_state_data.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/vector2d.h"

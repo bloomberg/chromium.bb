@@ -9,7 +9,7 @@
 
 #include <vector>
 
-#include "cc/base/cc_export.h"
+#include "cc/cc_export.h"
 #include "cc/tiles/picture_layer_tiling_set.h"
 #include "cc/tiles/prioritized_tile.h"
 

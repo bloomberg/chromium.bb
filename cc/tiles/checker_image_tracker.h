@@ -8,8 +8,8 @@
 #include <unordered_map>
 #include <vector>
 
-#include "cc/base/cc_export.h"
-#include "cc/playback/image_id.h"
+#include "cc/cc_export.h"
+#include "cc/paint/image_id.h"
 #include "cc/tiles/image_controller.h"
 #include "third_party/skia/include/core/SkImage.h"
 

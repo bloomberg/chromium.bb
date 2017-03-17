@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "cc/base/cc_export.h"
+#include "cc/cc_export.h"
 #include "cc/output/overlay_candidate.h"
 #include "cc/output/overlay_processor.h"
 

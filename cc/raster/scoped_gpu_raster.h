@@ -9,7 +9,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "cc/base/cc_export.h"
+#include "cc/cc_export.h"
 #include "cc/output/context_provider.h"
 
 namespace cc {

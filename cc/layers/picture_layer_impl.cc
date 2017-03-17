@@ -201,6 +201,8 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
     return;
   }
 
+  float device_scale_factor =
+      layer_tree_impl() ? layer_tree_impl()->device_scale_factor() : 1;
   float max_contents_scale = MaximumTilingContentsScale();
   PopulateScaledSharedQuadState(shared_quad_state, max_contents_scale,
                                 max_contents_scale);
@@ -213,7 +215,7 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
     AppendDebugBorderQuad(
         render_pass, shared_quad_state->quad_layer_bounds, shared_quad_state,
         append_quads_data, DebugColors::DirectPictureBorderColor(),
-        DebugColors::DirectPictureBorderWidth(layer_tree_impl()));
+        DebugColors::DirectPictureBorderWidth(device_scale_factor));
 
     gfx::Rect geometry_rect = shared_quad_state->visible_quad_layer_rect;
     gfx::Rect opaque_rect = contents_opaque() ? geometry_rect : gfx::Rect();
@@ -260,29 +262,29 @@ void PictureLayerImpl::AppendQuads(RenderPass* render_pass,
         TileDrawInfo::Mode mode = iter->draw_info().mode();
         if (mode == TileDrawInfo::SOLID_COLOR_MODE) {
           color = DebugColors::SolidColorTileBorderColor();
-          width = DebugColors::SolidColorTileBorderWidth(layer_tree_impl());
+          width = DebugColors::SolidColorTileBorderWidth(device_scale_factor);
         } else if (mode == TileDrawInfo::OOM_MODE) {
           color = DebugColors::OOMTileBorderColor();
-          width = DebugColors::OOMTileBorderWidth(layer_tree_impl());
+          width = DebugColors::OOMTileBorderWidth(device_scale_factor);
         } else if (iter->draw_info().has_compressed_resource()) {
           color = DebugColors::CompressedTileBorderColor();
-          width = DebugColors::CompressedTileBorderWidth(layer_tree_impl());
+          width = DebugColors::CompressedTileBorderWidth(device_scale_factor);
         } else if (iter.resolution() == HIGH_RESOLUTION) {
           color = DebugColors::HighResTileBorderColor();
-          width = DebugColors::HighResTileBorderWidth(layer_tree_impl());
+          width = DebugColors::HighResTileBorderWidth(device_scale_factor);
         } else if (iter.resolution() == LOW_RESOLUTION) {
           color = DebugColors::LowResTileBorderColor();
-          width = DebugColors::LowResTileBorderWidth(layer_tree_impl());
+          width = DebugColors::LowResTileBorderWidth(device_scale_factor);
         } else if (iter->contents_scale() > max_contents_scale) {
           color = DebugColors::ExtraHighResTileBorderColor();
-          width = DebugColors::ExtraHighResTileBorderWidth(layer_tree_impl());
+          width = DebugColors::ExtraHighResTileBorderWidth(device_scale_factor);
         } else {
           color = DebugColors::ExtraLowResTileBorderColor();
-          width = DebugColors::ExtraLowResTileBorderWidth(layer_tree_impl());
+          width = DebugColors::ExtraLowResTileBorderWidth(device_scale_factor);
         }
       } else {
         color = DebugColors::MissingTileBorderColor();
-        width = DebugColors::MissingTileBorderWidth(layer_tree_impl());
+        width = DebugColors::MissingTileBorderWidth(device_scale_factor);
       }
 
       DebugBorderDrawQuad* debug_border_quad =
@@ -1268,12 +1270,15 @@ void PictureLayerImpl::UpdateIdealScales() {
 void PictureLayerImpl::GetDebugBorderProperties(
     SkColor* color,
     float* width) const {
+  float device_scale_factor =
+      layer_tree_impl() ? layer_tree_impl()->device_scale_factor() : 1;
+
   if (is_directly_composited_image_) {
     *color = DebugColors::ImageLayerBorderColor();
-    *width = DebugColors::ImageLayerBorderWidth(layer_tree_impl());
+    *width = DebugColors::ImageLayerBorderWidth(device_scale_factor);
   } else {
     *color = DebugColors::TiledContentLayerBorderColor();
-    *width = DebugColors::TiledContentLayerBorderWidth(layer_tree_impl());
+    *width = DebugColors::TiledContentLayerBorderWidth(device_scale_factor);
   }
 }
 

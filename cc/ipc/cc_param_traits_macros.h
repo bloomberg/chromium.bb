@@ -5,9 +5,9 @@
 #ifndef CC_IPC_CC_PARAM_TRAITS_MACROS_H_
 #define CC_IPC_CC_PARAM_TRAITS_MACROS_H_
 
+#include "cc/base/filter_operation.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/compositor_frame.h"
-#include "cc/output/filter_operation.h"
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/render_pass.h"

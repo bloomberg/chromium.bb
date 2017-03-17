@@ -6,7 +6,7 @@
 #define CC_DEBUG_BENCHMARK_INSTRUMENTATION_H_
 
 #include "base/macros.h"
-#include "cc/base/cc_export.h"
+#include "cc/cc_export.h"
 #include "cc/debug/rendering_stats.h"
 
 namespace cc {

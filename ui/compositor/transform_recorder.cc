@@ -4,8 +4,8 @@
 
 #include "ui/compositor/transform_recorder.h"
 
-#include "cc/playback/display_item_list.h"
-#include "cc/playback/transform_display_item.h"
+#include "cc/paint/display_item_list.h"
+#include "cc/paint/transform_display_item.h"
 #include "ui/compositor/paint_context.h"
 
 namespace ui {

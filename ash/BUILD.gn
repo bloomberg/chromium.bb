@@ -844,6 +844,7 @@ component("ash") {
     "//base:i18n",
     "//base/third_party/dynamic_annotations",
     "//cc",
+    "//cc/debug",
     "//cc/surfaces",
     "//chromeos",
     "//chromeos:power_manager_proto",

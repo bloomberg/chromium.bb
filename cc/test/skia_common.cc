@@ -7,8 +7,8 @@
 #include <stddef.h>
 
 #include "base/memory/ptr_util.h"
+#include "cc/paint/display_item_list.h"
 #include "cc/paint/paint_canvas.h"
-#include "cc/playback/display_item_list.h"
 #include "third_party/skia/include/core/SkImageGenerator.h"
 #include "third_party/skia/include/core/SkPixmap.h"
 #include "ui/gfx/geometry/rect.h"

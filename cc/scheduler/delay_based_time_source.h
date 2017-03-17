@@ -13,7 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
-#include "cc/base/cc_export.h"
+#include "cc/cc_export.h"
 
 namespace base {
 namespace trace_event {

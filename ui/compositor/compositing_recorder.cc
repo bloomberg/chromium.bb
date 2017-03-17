@@ -4,8 +4,8 @@
 
 #include "ui/compositor/compositing_recorder.h"
 
-#include "cc/playback/compositing_display_item.h"
-#include "cc/playback/display_item_list.h"
+#include "cc/paint/compositing_display_item.h"
+#include "cc/paint/display_item_list.h"
 #include "ui/compositor/paint_context.h"
 #include "ui/gfx/canvas.h"
 

@@ -8,7 +8,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "cc/base/cc_export.h"
+#include "cc/base/base_export.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -16,7 +16,7 @@ class SequencedTaskRunner;
 
 namespace cc {
 
-class CC_EXPORT DelayedUniqueNotifier {
+class CC_BASE_EXPORT DelayedUniqueNotifier {
  public:
   // Configure this notifier to issue the |closure| notification in |delay| time
   // from Schedule() call.

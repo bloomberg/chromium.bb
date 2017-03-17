@@ -11,7 +11,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "cc/layers/picture_layer_impl.h"
-#include "cc/playback/raster_source.h"
+#include "cc/raster/raster_source.h"
 
 namespace cc {
 

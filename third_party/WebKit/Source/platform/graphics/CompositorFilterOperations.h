@@ -5,7 +5,7 @@
 #ifndef CompositorFilterOperations_h
 #define CompositorFilterOperations_h
 
-#include "cc/output/filter_operations.h"
+#include "cc/base/filter_operations.h"
 #include "platform/PlatformExport.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntPoint.h"

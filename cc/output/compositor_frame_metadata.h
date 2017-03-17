@@ -9,7 +9,7 @@
 
 #include <vector>
 
-#include "cc/base/cc_export.h"
+#include "cc/cc_export.h"
 #include "cc/input/selection.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/surfaces/surface_id.h"

@@ -15,7 +15,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "cc/debug/micro_benchmark_controller.h"
-#include "cc/playback/recording_source.h"
+#include "cc/layers/recording_source.h"
 
 namespace base {
 class DictionaryValue;

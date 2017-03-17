@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "cc/base/cc_export.h"
+#include "cc/cc_export.h"
 #include "cc/trees/clip_expander.h"
 #include "ui/gfx/geometry/rect_f.h"
 

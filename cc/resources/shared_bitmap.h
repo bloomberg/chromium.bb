@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "base/trace_event/memory_allocator_dump.h"
-#include "cc/base/cc_export.h"
+#include "cc/cc_export.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "ui/gfx/geometry/size.h"
 

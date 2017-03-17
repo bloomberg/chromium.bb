@@ -6,7 +6,7 @@ module cc.mojom;
 
 import "cc/ipc/filter_operation.mojom";
 
-// See cc/output/filter_operations.h.
+// See cc/base/filter_operations.h.
 struct FilterOperations {
   array<cc.mojom.FilterOperation> operations;
 };

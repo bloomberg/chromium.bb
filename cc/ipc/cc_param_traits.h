@@ -7,10 +7,10 @@
 #ifndef CC_IPC_CC_PARAM_TRAITS_H_
 #define CC_IPC_CC_PARAM_TRAITS_H_
 
+#include "cc/base/filter_operation.h"
 #include "cc/ipc/cc_ipc_export.h"
 #include "cc/ipc/cc_param_traits_macros.h"
 #include "cc/output/compositor_frame.h"
-#include "cc/output/filter_operation.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/stream_video_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"

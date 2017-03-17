@@ -8,7 +8,7 @@
 #include <map>
 #include <string>
 
-#include "cc/base/cc_export.h"
+#include "cc/cc_export.h"
 #include "ui/gfx/buffer_types.h"
 
 namespace cc {

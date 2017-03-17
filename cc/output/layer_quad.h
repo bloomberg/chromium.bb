@@ -7,7 +7,7 @@
 #define CC_OUTPUT_LAYER_QUAD_H_
 
 #include "base/macros.h"
-#include "cc/base/cc_export.h"
+#include "cc/cc_export.h"
 #include "ui/gfx/geometry/point_f.h"
 
 namespace gfx {

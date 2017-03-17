@@ -14,7 +14,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "cc/base/cc_export.h"
+#include "cc/base/base_export.h"
 
 namespace cc {
 
@@ -36,7 +36,7 @@ namespace cc {
 // Clients should instantiate ContiguousContainer; ContiguousContainerBase is an
 // artifact of the implementation.
 
-class CC_EXPORT ContiguousContainerBase {
+class CC_BASE_EXPORT ContiguousContainerBase {
  protected:
   explicit ContiguousContainerBase(size_t max_object_size);
   ContiguousContainerBase(size_t max_object_size, size_t initial_size_bytes);

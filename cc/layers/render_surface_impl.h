@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "cc/base/cc_export.h"
+#include "cc/cc_export.h"
 #include "cc/layers/layer_collections.h"
 #include "cc/quads/render_pass.h"
 #include "cc/quads/shared_quad_state.h"

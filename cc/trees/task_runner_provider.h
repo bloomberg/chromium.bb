@@ -16,7 +16,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "cc/base/cc_export.h"
+#include "cc/cc_export.h"
 
 namespace base {
 class SingleThreadTaskRunner;

@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
-#include "cc/base/cc_export.h"
+#include "cc/cc_export.h"
 #include "cc/output/context_cache_controller.h"
 #include "gpu/command_buffer/common/capabilities.h"
 

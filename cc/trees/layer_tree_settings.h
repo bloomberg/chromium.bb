@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/time/time.h"
-#include "cc/base/cc_export.h"
+#include "cc/cc_export.h"
 #include "cc/debug/layer_tree_debug_state.h"
 #include "cc/output/managed_memory_policy.h"
 #include "cc/output/renderer_settings.h"

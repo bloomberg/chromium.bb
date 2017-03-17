@@ -6,10 +6,10 @@
 
 #include <stddef.h>
 
+#include "cc/paint/drawing_display_item.h"
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/paint_recorder.h"
-#include "cc/playback/drawing_display_item.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/skia_util.h"

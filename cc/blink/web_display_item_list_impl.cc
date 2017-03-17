@@ -9,14 +9,14 @@
 
 #include <vector>
 
+#include "cc/paint/clip_display_item.h"
+#include "cc/paint/clip_path_display_item.h"
+#include "cc/paint/compositing_display_item.h"
+#include "cc/paint/drawing_display_item.h"
+#include "cc/paint/filter_display_item.h"
+#include "cc/paint/float_clip_display_item.h"
 #include "cc/paint/paint_record.h"
-#include "cc/playback/clip_display_item.h"
-#include "cc/playback/clip_path_display_item.h"
-#include "cc/playback/compositing_display_item.h"
-#include "cc/playback/drawing_display_item.h"
-#include "cc/playback/filter_display_item.h"
-#include "cc/playback/float_clip_display_item.h"
-#include "cc/playback/transform_display_item.h"
+#include "cc/paint/transform_display_item.h"
 #include "third_party/WebKit/public/platform/WebFloatRect.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/skia/include/core/SkColorFilter.h"

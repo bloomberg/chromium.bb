@@ -9,7 +9,7 @@
 
 #include "base/time/time.h"
 #include "cc/animation/animation_export.h"
-#include "cc/output/filter_operations.h"
+#include "cc/base/filter_operations.h"
 #include "ui/gfx/transform.h"
 
 namespace gfx {

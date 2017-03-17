@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "cc/base/cc_export.h"
+#include "cc/base/base_export.h"
 #include "cc/base/region.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -16,7 +16,7 @@ namespace cc {
 // This class behaves similarly to Region, but it may have false positives. That
 // is, InvalidationRegion can be simplified to encompass a larger area than the
 // collection of rects unioned.
-class CC_EXPORT InvalidationRegion {
+class CC_BASE_EXPORT InvalidationRegion {
  public:
   InvalidationRegion();
   ~InvalidationRegion();

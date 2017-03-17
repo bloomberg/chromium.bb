@@ -5,7 +5,7 @@
 #include "cc/layers/picture_image_layer.h"
 
 #include "cc/animation/animation_host.h"
-#include "cc/playback/display_item.h"
+#include "cc/paint/display_item.h"
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/skia_common.h"
 #include "cc/test/test_task_graph_runner.h"

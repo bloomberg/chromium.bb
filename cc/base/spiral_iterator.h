@@ -6,7 +6,7 @@
 #define CC_BASE_SPIRAL_ITERATOR_H_
 
 #include "base/logging.h"
-#include "cc/base/cc_export.h"
+#include "cc/base/base_export.h"
 #include "cc/base/index_rect.h"
 
 namespace cc {
@@ -27,7 +27,7 @@ namespace cc {
 //    ├───┼───┼───┼───┼───┤
 //  4 │ 20│ 21│ 22│ 23│ 24│
 //    └───┴───┴───┴───┴───┘
-class CC_EXPORT SpiralIterator {
+class CC_BASE_EXPORT SpiralIterator {
  public:
   SpiralIterator();
   SpiralIterator(const IndexRect& around_index_rect,

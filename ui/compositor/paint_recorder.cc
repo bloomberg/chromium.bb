@@ -4,9 +4,9 @@
 
 #include "ui/compositor/paint_recorder.h"
 
+#include "cc/paint/display_item_list.h"
+#include "cc/paint/drawing_display_item.h"
 #include "cc/paint/paint_recorder.h"
-#include "cc/playback/display_item_list.h"
-#include "cc/playback/drawing_display_item.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/compositor/paint_cache.h"
 #include "ui/compositor/paint_context.h"

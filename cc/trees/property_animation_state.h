@@ -5,7 +5,7 @@
 #ifndef CC_TREES_PROPERTY_ANIMATION_STATE_H_
 #define CC_TREES_PROPERTY_ANIMATION_STATE_H_
 
-#include "cc/base/cc_export.h"
+#include "cc/cc_export.h"
 #include "cc/trees/target_property.h"
 
 namespace cc {

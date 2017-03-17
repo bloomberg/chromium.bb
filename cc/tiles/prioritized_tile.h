@@ -5,8 +5,8 @@
 #ifndef CC_TILES_PRIORITIZED_TILE_H_
 #define CC_TILES_PRIORITIZED_TILE_H_
 
-#include "cc/base/cc_export.h"
-#include "cc/playback/raster_source.h"
+#include "cc/cc_export.h"
+#include "cc/raster/raster_source.h"
 #include "cc/tiles/picture_layer_tiling.h"
 #include "cc/tiles/tile.h"
 #include "cc/tiles/tile_priority.h"

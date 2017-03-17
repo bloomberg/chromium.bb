@@ -13,7 +13,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"
-#include "cc/base/cc_export.h"
+#include "cc/cc_export.h"
 
 namespace cc {
 

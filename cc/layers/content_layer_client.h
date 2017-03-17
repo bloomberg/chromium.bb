@@ -7,8 +7,8 @@
 
 #include <stddef.h>
 
-#include "cc/base/cc_export.h"
-#include "cc/playback/display_item_list.h"
+#include "cc/cc_export.h"
+#include "cc/paint/display_item_list.h"
 
 namespace gfx {
 class Rect;

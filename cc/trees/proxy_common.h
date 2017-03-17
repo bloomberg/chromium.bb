@@ -8,7 +8,7 @@
 #include <stddef.h>
 
 #include "base/callback_forward.h"
-#include "cc/base/cc_export.h"
+#include "cc/cc_export.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/trees/layer_tree_host_common.h"
 

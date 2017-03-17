@@ -6,7 +6,7 @@
 #define CC_TREES_PROXY_MAIN_H_
 
 #include "base/macros.h"
-#include "cc/base/cc_export.h"
+#include "cc/cc_export.h"
 #include "cc/input/browser_controls_state.h"
 #include "cc/trees/proxy.h"
 #include "cc/trees/proxy_common.h"

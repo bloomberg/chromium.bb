@@ -4,7 +4,7 @@
 
 #include "ui/compositor/canvas_painter.h"
 
-#include "cc/playback/display_item_list.h"
+#include "cc/paint/display_item_list.h"
 
 namespace ui {
 

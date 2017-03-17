@@ -11,7 +11,7 @@
 #include <string>
 
 #include "base/memory/shared_memory.h"
-#include "cc/base/cc_export.h"
+#include "cc/cc_export.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "ui/gfx/color_space.h"

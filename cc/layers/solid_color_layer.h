@@ -7,7 +7,7 @@
 #define CC_LAYERS_SOLID_COLOR_LAYER_H_
 
 #include "base/macros.h"
-#include "cc/base/cc_export.h"
+#include "cc/cc_export.h"
 #include "cc/layers/layer.h"
 
 namespace cc {

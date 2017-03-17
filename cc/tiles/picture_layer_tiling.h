@@ -15,9 +15,9 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "cc/base/cc_export.h"
 #include "cc/base/region.h"
 #include "cc/base/tiling_data.h"
+#include "cc/cc_export.h"
 #include "cc/tiles/tile.h"
 #include "cc/tiles/tile_priority.h"
 #include "cc/trees/occlusion.h"

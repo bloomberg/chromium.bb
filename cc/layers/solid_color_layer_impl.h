@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "cc/base/cc_export.h"
+#include "cc/cc_export.h"
 #include "cc/layers/layer_impl.h"
 
 namespace cc {

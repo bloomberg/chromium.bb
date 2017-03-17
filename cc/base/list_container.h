@@ -11,7 +11,6 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "cc/base/cc_export.h"
 #include "cc/base/list_container_helper.h"
 
 namespace cc {

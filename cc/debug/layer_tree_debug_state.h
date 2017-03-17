@@ -5,7 +5,7 @@
 #ifndef CC_DEBUG_LAYER_TREE_DEBUG_STATE_H_
 #define CC_DEBUG_LAYER_TREE_DEBUG_STATE_H_
 
-#include "cc/base/cc_export.h"
+#include "cc/debug/debug_export.h"
 
 namespace cc {
 
@@ -13,7 +13,7 @@ namespace proto {
 class LayerTreeDebugState;
 }  // namespace proto
 
-class CC_EXPORT LayerTreeDebugState {
+class CC_DEBUG_EXPORT LayerTreeDebugState {
  public:
   LayerTreeDebugState();
   LayerTreeDebugState(const LayerTreeDebugState& other);

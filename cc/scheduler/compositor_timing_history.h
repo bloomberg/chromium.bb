@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "cc/base/rolling_time_delta_history.h"
+#include "cc/cc_export.h"
 #include "cc/output/begin_frame_args.h"
 
 namespace base {

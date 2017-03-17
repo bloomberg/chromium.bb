@@ -7,8 +7,8 @@
 
 #include <stdint.h>
 
-#include "cc/base/cc_export.h"
-#include "cc/playback/raster_source.h"
+#include "cc/cc_export.h"
+#include "cc/raster/raster_source.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace cc {

@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "cc/base/cc_export.h"
+#include "cc/cc_export.h"
 #include "cc/layers/picture_layer_impl.h"
 #include "cc/tiles/tile_priority.h"
 

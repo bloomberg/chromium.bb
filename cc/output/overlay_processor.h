@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "cc/base/cc_export.h"
+#include "cc/cc_export.h"
 #include "cc/output/ca_layer_overlay.h"
 #include "cc/output/dc_layer_overlay.h"
 #include "cc/output/overlay_candidate.h"

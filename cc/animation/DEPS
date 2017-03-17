@@ -3,6 +3,7 @@ include_rules = [
   "+cc/animation",
   "+cc/base",
   "+cc/debug",
+  "+cc/paint",
   "+cc/output/filter_operations.h",
   "+cc/test",
   "+cc/trees/element_id.h",

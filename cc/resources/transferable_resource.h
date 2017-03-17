@@ -9,8 +9,8 @@
 
 #include <vector>
 
-#include "cc/base/cc_export.h"
 #include "cc/base/resource_id.h"
+#include "cc/cc_export.h"
 #include "cc/resources/resource_format.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "ui/gfx/buffer_types.h"

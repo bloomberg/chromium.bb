@@ -192,20 +192,23 @@ bool LayerImpl::ShowDebugBorders() const {
 }
 
 void LayerImpl::GetDebugBorderProperties(SkColor* color, float* width) const {
+  float device_scale_factor =
+      layer_tree_impl() ? layer_tree_impl()->device_scale_factor() : 1;
+
   if (draws_content_) {
     *color = DebugColors::ContentLayerBorderColor();
-    *width = DebugColors::ContentLayerBorderWidth(layer_tree_impl());
+    *width = DebugColors::ContentLayerBorderWidth(device_scale_factor);
     return;
   }
 
   if (masks_to_bounds_) {
     *color = DebugColors::MaskingLayerBorderColor();
-    *width = DebugColors::MaskingLayerBorderWidth(layer_tree_impl());
+    *width = DebugColors::MaskingLayerBorderWidth(device_scale_factor);
     return;
   }
 
   *color = DebugColors::ContainerLayerBorderColor();
-  *width = DebugColors::ContainerLayerBorderWidth(layer_tree_impl());
+  *width = DebugColors::ContainerLayerBorderWidth(device_scale_factor);
 }
 
 void LayerImpl::AppendDebugBorderQuad(

@@ -7,7 +7,7 @@
 
 #include <stddef.h>
 
-#include "cc/base/cc_export.h"
+#include "cc/cc_export.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/trees/layer_tree_host_common.h"
 

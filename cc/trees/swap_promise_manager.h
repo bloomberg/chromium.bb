@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "cc/base/cc_export.h"
+#include "cc/cc_export.h"
 #include "cc/output/swap_promise.h"
 
 namespace cc {

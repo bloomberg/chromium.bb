@@ -5,6 +5,8 @@
 #ifndef CC_DEBUG_TRACED_VALUE_H_
 #define CC_DEBUG_TRACED_VALUE_H_
 
+#include "cc/debug/debug_export.h"
+
 namespace base {
 namespace trace_event {
 class TracedValue;
@@ -13,7 +15,7 @@ class TracedValue;
 
 namespace cc {
 
-class TracedValue {
+class CC_DEBUG_EXPORT TracedValue {
  public:
   static void AppendIDRef(const void* id,
                           base::trace_event::TracedValue* array);

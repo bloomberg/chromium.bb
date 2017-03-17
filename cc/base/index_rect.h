@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "cc/base/cc_export.h"
+#include "cc/base/base_export.h"
 
 namespace cc {
 
@@ -58,7 +58,7 @@ namespace cc {
 //    ├───┼───┼───┼───┼───┤
 //  4 │   │   │   │   │   │
 //    └───┴───┴───┴───┴───┘
-class CC_EXPORT IndexRect {
+class CC_BASE_EXPORT IndexRect {
  public:
   constexpr IndexRect(int left, int right, int top, int bottom)
       : left_(left), right_(right), top_(top), bottom_(bottom) {}

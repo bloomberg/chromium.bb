@@ -6,7 +6,7 @@
 #define CC_BASE_REVERSE_SPIRAL_ITERATOR_H_
 
 #include "base/logging.h"
-#include "cc/base/cc_export.h"
+#include "cc/base/base_export.h"
 #include "cc/base/index_rect.h"
 
 namespace cc {
@@ -27,7 +27,7 @@ namespace cc {
 //    ├───┼───┼───┼───┼───┤
 //  4 │  5│  4│  3│  2│  1│
 //    └───┴───┴───┴───┴───┘
-class CC_EXPORT ReverseSpiralIterator {
+class CC_BASE_EXPORT ReverseSpiralIterator {
  public:
   ReverseSpiralIterator();
   ReverseSpiralIterator(const IndexRect& around_index_rect,
@@ -35,6 +35,8 @@ class CC_EXPORT ReverseSpiralIterator {
                         const IndexRect& ignore_index_rect);
 
   ~ReverseSpiralIterator() = default;
+
+  ReverseSpiralIterator& operator=(ReverseSpiralIterator&& other) = default;
 
   operator bool() const;
   ReverseSpiralIterator& operator++();

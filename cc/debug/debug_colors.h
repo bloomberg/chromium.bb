@@ -6,61 +6,60 @@
 #define CC_DEBUG_DEBUG_COLORS_H_
 
 #include "base/macros.h"
+#include "cc/debug/debug_export.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace cc {
 
-class LayerTreeImpl;
-
-class DebugColors {
+class CC_DEBUG_EXPORT DebugColors {
  public:
   static SkColor TiledContentLayerBorderColor();
-  static int TiledContentLayerBorderWidth(const LayerTreeImpl* tree_impl);
+  static int TiledContentLayerBorderWidth(float device_scale_factor);
 
   static SkColor ImageLayerBorderColor();
-  static int ImageLayerBorderWidth(const LayerTreeImpl* tree_impl);
+  static int ImageLayerBorderWidth(float device_scale_factor);
 
   static SkColor ContentLayerBorderColor();
-  static int ContentLayerBorderWidth(const LayerTreeImpl* tree_impl);
+  static int ContentLayerBorderWidth(float device_scale_factor);
 
   static SkColor MaskingLayerBorderColor();
-  static int MaskingLayerBorderWidth(const LayerTreeImpl* tree_impl);
+  static int MaskingLayerBorderWidth(float device_scale_factor);
 
   static SkColor ContainerLayerBorderColor();
-  static int ContainerLayerBorderWidth(const LayerTreeImpl* tree_impl);
+  static int ContainerLayerBorderWidth(float device_scale_factor);
 
   static SkColor SurfaceLayerBorderColor();
-  static int SurfaceLayerBorderWidth(const LayerTreeImpl* tree_impl);
+  static int SurfaceLayerBorderWidth(float device_scale_factor);
 
   static SkColor SurfaceBorderColor();
-  static int SurfaceBorderWidth(const LayerTreeImpl* tree_impl);
+  static int SurfaceBorderWidth(float device_scale_factor);
 
   static SkColor HighResTileBorderColor();
-  static int HighResTileBorderWidth(const LayerTreeImpl* tree_impl);
+  static int HighResTileBorderWidth(float device_scale_factor);
 
   static SkColor LowResTileBorderColor();
-  static int LowResTileBorderWidth(const LayerTreeImpl* tree_impl);
+  static int LowResTileBorderWidth(float device_scale_factor);
 
   static SkColor ExtraHighResTileBorderColor();
-  static int ExtraHighResTileBorderWidth(const LayerTreeImpl* tree_impl);
+  static int ExtraHighResTileBorderWidth(float device_scale_factor);
 
   static SkColor ExtraLowResTileBorderColor();
-  static int ExtraLowResTileBorderWidth(const LayerTreeImpl* tree_impl);
+  static int ExtraLowResTileBorderWidth(float device_scale_factor);
 
   static SkColor MissingTileBorderColor();
-  static int MissingTileBorderWidth(const LayerTreeImpl* tree_impl);
+  static int MissingTileBorderWidth(float device_scale_factor);
 
   static SkColor SolidColorTileBorderColor();
-  static int SolidColorTileBorderWidth(const LayerTreeImpl* tree_impl);
+  static int SolidColorTileBorderWidth(float device_scale_factor);
 
   static SkColor OOMTileBorderColor();
-  static int OOMTileBorderWidth(const LayerTreeImpl* tree_impl);
+  static int OOMTileBorderWidth(float device_scale_factor);
 
   static SkColor DirectPictureBorderColor();
-  static int DirectPictureBorderWidth(const LayerTreeImpl* tree_impl);
+  static int DirectPictureBorderWidth(float device_scale_factor);
 
   static SkColor CompressedTileBorderColor();
-  static int CompressedTileBorderWidth(const LayerTreeImpl* tree_impl);
+  static int CompressedTileBorderWidth(float device_scale_factor);
 
   static SkColor DefaultCheckerboardColor();
   static SkColor EvictedTileCheckerboardColor();

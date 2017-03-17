@@ -6,10 +6,10 @@
 
 #include <stddef.h>
 
+#include "cc/base/filter_operation.h"
+#include "cc/base/filter_operations.h"
 #include "cc/base/math_util.h"
 #include "cc/layers/layer_impl.h"
-#include "cc/output/filter_operation.h"
-#include "cc/output/filter_operations.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/geometry_test_utils.h"

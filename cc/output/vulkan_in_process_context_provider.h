@@ -7,7 +7,7 @@
 
 #include <memory>
 
-#include "cc/base/cc_export.h"
+#include "cc/cc_export.h"
 #include "cc/output/vulkan_context_provider.h"
 #include "gpu/vulkan/features.h"
 

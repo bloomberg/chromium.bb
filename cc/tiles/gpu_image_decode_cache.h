@@ -14,7 +14,7 @@
 #include "base/memory/memory_coordinator_client.h"
 #include "base/synchronization/lock.h"
 #include "base/trace_event/memory_dump_provider.h"
-#include "cc/base/cc_export.h"
+#include "cc/cc_export.h"
 #include "cc/resources/resource_format.h"
 #include "cc/tiles/image_decode_cache.h"
 #include "third_party/skia/include/core/SkRefCnt.h"

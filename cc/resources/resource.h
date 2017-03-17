@@ -7,7 +7,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "cc/base/cc_export.h"
+#include "cc/cc_export.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/resource_util.h"
 #include "ui/gfx/geometry/size.h"

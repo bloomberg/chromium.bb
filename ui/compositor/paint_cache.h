@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
-#include "cc/playback/drawing_display_item.h"
+#include "cc/paint/drawing_display_item.h"
 #include "ui/compositor/compositor_export.h"
 #include "ui/gfx/geometry/rect.h"
 

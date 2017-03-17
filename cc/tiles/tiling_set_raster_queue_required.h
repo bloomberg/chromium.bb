@@ -5,7 +5,7 @@
 #ifndef CC_TILES_TILING_SET_RASTER_QUEUE_REQUIRED_H_
 #define CC_TILES_TILING_SET_RASTER_QUEUE_REQUIRED_H_
 
-#include "cc/base/cc_export.h"
+#include "cc/cc_export.h"
 #include "cc/tiles/picture_layer_tiling_set.h"
 #include "cc/tiles/raster_tile_priority_queue.h"
 #include "cc/tiles/tile.h"

@@ -10,7 +10,7 @@
 
 #include <vector>
 
-#include "cc/base/cc_export.h"
+#include "cc/base/base_export.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace cc {
@@ -35,7 +35,7 @@ namespace cc {
 //  Beckmann, N.; Kriegel, H. P.; Schneider, R.; Seeger, B. (1990).
 //  "The R*-tree: an efficient and robust access method for points and
 //  rectangles"
-class CC_EXPORT RTree {
+class CC_BASE_EXPORT RTree {
  public:
   RTree();
   ~RTree();
@@ -135,6 +135,8 @@ class CC_EXPORT RTree {
   size_t num_data_elements_;
   Branch root_;
   std::vector<Node> nodes_;
+
+  DISALLOW_COPY_AND_ASSIGN(RTree);
 };
 
 }  // namespace cc

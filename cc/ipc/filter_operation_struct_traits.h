@@ -5,8 +5,8 @@
 #ifndef CC_IPC_FILTER_OPERATION_STRUCT_TRAITS_H_
 #define CC_IPC_FILTER_OPERATION_STRUCT_TRAITS_H_
 
+#include "cc/base/filter_operation.h"
 #include "cc/ipc/filter_operation.mojom-shared.h"
-#include "cc/output/filter_operation.h"
 #include "skia/public/interfaces/image_filter_struct_traits.h"
 
 namespace mojo {

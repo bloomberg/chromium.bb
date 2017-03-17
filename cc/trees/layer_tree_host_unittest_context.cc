@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #include "base/memory/ptr_util.h"
+#include "cc/base/filter_operations.h"
 #include "cc/layers/heads_up_display_layer.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/painted_scrollbar_layer.h"
@@ -14,7 +15,6 @@
 #include "cc/layers/texture_layer_impl.h"
 #include "cc/layers/video_layer.h"
 #include "cc/layers/video_layer_impl.h"
-#include "cc/output/filter_operations.h"
 #include "cc/paint/paint_flags.h"
 #include "cc/resources/single_release_callback.h"
 #include "cc/resources/ui_resource_manager.h"

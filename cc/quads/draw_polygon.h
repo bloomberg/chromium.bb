@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "cc/base/math_util.h"
+#include "cc/cc_export.h"
 #include "cc/output/bsp_compare_result.h"
 #include "ui/gfx/geometry/point3_f.h"
 #include "ui/gfx/geometry/quad_f.h"

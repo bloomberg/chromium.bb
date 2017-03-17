@@ -7,7 +7,7 @@
 
 #include <stddef.h>
 
-#include "cc/base/cc_export.h"
+#include "cc/cc_export.h"
 #include "cc/tiles/tile_priority.h"
 #include "gpu/command_buffer/common/gpu_memory_allocation.h"
 

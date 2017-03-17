@@ -13,7 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "base/timer/elapsed_timer.h"
-#include "cc/base/cc_export.h"
+#include "cc/base/base_export.h"
 
 namespace cc {
 
@@ -22,7 +22,7 @@ namespace cc {
 //
 // We currently assume that there is only one distinct client per process.
 // Not thread-safe. If called multiple times, warns and skips metrics.
-CC_EXPORT void SetClientNameForMetrics(const char* client_name);
+CC_BASE_EXPORT void SetClientNameForMetrics(const char* client_name);
 
 // Returns the client name, for use by applicable cc metrics code.
 // May return null, in which case no clients, or at least two clients, set the
@@ -30,7 +30,7 @@ CC_EXPORT void SetClientNameForMetrics(const char* client_name);
 //
 // This method guarantees that it will never return two distinct non-null
 // values over the lifetime of the process.
-const char* GetClientNameForMetrics();
+CC_BASE_EXPORT const char* GetClientNameForMetrics();
 
 // Emits UMA histogram trackers for time spent as well as area (in pixels)
 // processed per unit time. Time is measured in microseconds, and work in
@@ -90,7 +90,7 @@ const char* GetClientNameForMetrics();
     }                                                                       \
   }
 
-class CC_EXPORT ScopedUMAHistogramAreaTimerBase {
+class CC_BASE_EXPORT ScopedUMAHistogramAreaTimerBase {
  public:
   void AddArea(const base::CheckedNumeric<int>& area) { area_ += area; }
   void SetArea(const base::CheckedNumeric<int>& area) { area_ = area; }

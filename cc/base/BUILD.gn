@@ -4,16 +4,20 @@
 
 import("//cc/cc.gni")
 
-cc_source_set("base") {
-  visibility = [ "//cc" ]
-
+component("base") {
+  output_name = "cc_base"
   sources = [
+    "base_export.h",
     "completion_event.h",
     "container_util.h",
     "contiguous_container.cc",
     "contiguous_container.h",
     "delayed_unique_notifier.cc",
     "delayed_unique_notifier.h",
+    "filter_operation.cc",
+    "filter_operation.h",
+    "filter_operations.cc",
+    "filter_operations.h",
     "histograms.cc",
     "histograms.h",
     "index_rect.cc",
@@ -28,6 +32,8 @@ cc_source_set("base") {
     "random_access_list_container.h",
     "region.cc",
     "region.h",
+    "render_surface_filters.cc",
+    "render_surface_filters.h",
     "resource_id.h",
     "reverse_spiral_iterator.cc",
     "reverse_spiral_iterator.h",
@@ -53,9 +59,10 @@ cc_source_set("base") {
     "//base",
     "//base/third_party/dynamic_annotations",
     "//skia",
-    "//ui/gfx",
+    "//ui/gfx:geometry_skia",
+    "//ui/gfx/animation",
     "//ui/gfx/geometry",
   ]
 
-  defines = [ "CC_IMPLEMENTATION=1" ]
+  defines = [ "CC_BASE_IMPLEMENTATION=1" ]
 }

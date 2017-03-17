@@ -7,9 +7,9 @@
 #include <stddef.h>
 
 #include "cc/layers/picture_layer_impl.h"
+#include "cc/paint/drawing_display_item.h"
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_recorder.h"
-#include "cc/playback/drawing_display_item.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_settings.h"
 

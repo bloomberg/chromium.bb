@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "cc/base/cc_export.h"
 #include "cc/base/simple_enclosed_region.h"
+#include "cc/cc_export.h"
 #include "cc/layers/layer_iterator.h"
 #include "cc/trees/occlusion.h"
 #include "ui/gfx/geometry/rect.h"

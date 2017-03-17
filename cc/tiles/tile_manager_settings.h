@@ -5,7 +5,7 @@
 #ifndef CC_TILES_TILE_MANAGER_SETTINGS_H_
 #define CC_TILES_TILE_MANAGER_SETTINGS_H_
 
-#include "cc/base/cc_export.h"
+#include "cc/cc_export.h"
 
 namespace cc {
 

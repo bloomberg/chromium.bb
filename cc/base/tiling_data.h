@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "cc/base/cc_export.h"
+#include "cc/base/base_export.h"
 #include "cc/base/index_rect.h"
 #include "cc/base/reverse_spiral_iterator.h"
 #include "cc/base/spiral_iterator.h"
@@ -22,7 +22,7 @@ class Vector2d;
 
 namespace cc {
 
-class CC_EXPORT TilingData {
+class CC_BASE_EXPORT TilingData {
  public:
   TilingData();
   TilingData(const gfx::Size& max_texture_size,
@@ -72,7 +72,7 @@ class CC_EXPORT TilingData {
   // Difference between TileBound's and TileBoundWithBorder's origin().
   gfx::Vector2d TextureOffset(int x_index, int y_index) const;
 
-  class CC_EXPORT BaseIterator {
+  class CC_BASE_EXPORT BaseIterator {
    public:
     operator bool() const { return index_x_ != -1 && index_y_ != -1; }
 
@@ -94,7 +94,7 @@ class CC_EXPORT TilingData {
   };
 
   // Iterate through tiles whose bounds + optional border intersect with |rect|.
-  class CC_EXPORT Iterator : public BaseIterator {
+  class CC_BASE_EXPORT Iterator : public BaseIterator {
    public:
     Iterator();
     Iterator(const TilingData* tiling_data,
@@ -106,7 +106,7 @@ class CC_EXPORT TilingData {
     IndexRect index_rect_;
   };
 
-  class CC_EXPORT BaseDifferenceIterator : public BaseIterator {
+  class CC_BASE_EXPORT BaseDifferenceIterator : public BaseIterator {
    protected:
     BaseDifferenceIterator();
     BaseDifferenceIterator(const TilingData* tiling_data,
@@ -121,7 +121,7 @@ class CC_EXPORT TilingData {
 
   // Iterate through all indices whose bounds (not including borders) intersect
   // with |consider| but which also do not intersect with |ignore|.
-  class CC_EXPORT DifferenceIterator : public BaseDifferenceIterator {
+  class CC_BASE_EXPORT DifferenceIterator : public BaseDifferenceIterator {
    public:
     DifferenceIterator();
     DifferenceIterator(const TilingData* tiling_data,
@@ -133,7 +133,8 @@ class CC_EXPORT TilingData {
   // Iterate through all indices whose bounds + border intersect with
   // |consider| but which also do not intersect with |ignore|. The iterator
   // order is a counterclockwise spiral around the given center.
-  class CC_EXPORT SpiralDifferenceIterator : public BaseDifferenceIterator {
+  class CC_BASE_EXPORT SpiralDifferenceIterator
+      : public BaseDifferenceIterator {
    public:
     SpiralDifferenceIterator();
     SpiralDifferenceIterator(const TilingData* tiling_data,
@@ -146,7 +147,7 @@ class CC_EXPORT TilingData {
     SpiralIterator spiral_iterator_;
   };
 
-  class CC_EXPORT ReverseSpiralDifferenceIterator
+  class CC_BASE_EXPORT ReverseSpiralDifferenceIterator
       : public BaseDifferenceIterator {
    public:
     ReverseSpiralDifferenceIterator();

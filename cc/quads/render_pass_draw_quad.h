@@ -9,8 +9,8 @@
 
 #include <memory>
 
-#include "cc/base/cc_export.h"
-#include "cc/output/filter_operations.h"
+#include "cc/base/filter_operations.h"
+#include "cc/cc_export.h"
 #include "cc/quads/draw_quad.h"
 
 #include "ui/gfx/geometry/point_f.h"

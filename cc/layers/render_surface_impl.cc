@@ -10,10 +10,10 @@
 
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
+#include "cc/base/filter_operations.h"
 #include "cc/base/math_util.h"
 #include "cc/debug/debug_colors.h"
 #include "cc/layers/layer_impl.h"
-#include "cc/output/filter_operations.h"
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/render_pass.h"
 #include "cc/quads/render_pass_draw_quad.h"
@@ -113,7 +113,8 @@ SkColor RenderSurfaceImpl::GetDebugBorderColor() const {
 }
 
 float RenderSurfaceImpl::GetDebugBorderWidth() const {
-  return DebugColors::SurfaceBorderWidth(layer_tree_impl_);
+  return DebugColors::SurfaceBorderWidth(
+      layer_tree_impl_ ? layer_tree_impl_->device_scale_factor() : 1);
 }
 
 LayerImpl* RenderSurfaceImpl::MaskLayer() {

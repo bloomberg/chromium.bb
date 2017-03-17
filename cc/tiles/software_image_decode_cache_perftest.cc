@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "cc/debug/lap_timer.h"
-#include "cc/playback/draw_image.h"
+#include "cc/paint/draw_image.h"
 #include "cc/raster/tile_task.h"
 #include "cc/tiles/software_image_decode_cache.h"
 #include "testing/gtest/include/gtest/gtest.h"

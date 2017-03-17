@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "cc/base/cc_export.h"
+#include "cc/base/base_export.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/skia_util.h"
@@ -23,7 +23,7 @@ class TracedValue;
 namespace cc {
 class SimpleEnclosedRegion;
 
-class CC_EXPORT Region {
+class CC_BASE_EXPORT Region {
  public:
   Region();
   Region(const Region& region);
@@ -65,7 +65,7 @@ class CC_EXPORT Region {
   std::unique_ptr<base::Value> AsValue() const;
   void AsValueInto(base::trace_event::TracedValue* array) const;
 
-  class CC_EXPORT Iterator {
+  class CC_BASE_EXPORT Iterator {
    public:
     Iterator();
     explicit Iterator(const Region& region);

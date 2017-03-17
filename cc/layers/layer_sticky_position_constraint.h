@@ -5,7 +5,7 @@
 #ifndef CC_LAYERS_LAYER_STICKY_POSITION_CONSTRAINT_H_
 #define CC_LAYERS_LAYER_STICKY_POSITION_CONSTRAINT_H_
 
-#include "cc/base/cc_export.h"
+#include "cc/cc_export.h"
 
 #include "ui/gfx/geometry/rect.h"
 

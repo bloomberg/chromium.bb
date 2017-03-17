@@ -13,7 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
-#include "cc/playback/raster_source.h"
+#include "cc/raster/raster_source.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
 namespace cc {

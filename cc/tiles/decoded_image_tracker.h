@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "cc/base/cc_export.h"
+#include "cc/cc_export.h"
 #include "cc/tiles/image_controller.h"
 
 class SkImage;

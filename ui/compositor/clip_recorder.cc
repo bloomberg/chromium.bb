@@ -4,9 +4,9 @@
 
 #include "ui/compositor/clip_recorder.h"
 
-#include "cc/playback/clip_display_item.h"
-#include "cc/playback/clip_path_display_item.h"
-#include "cc/playback/display_item_list.h"
+#include "cc/paint/clip_display_item.h"
+#include "cc/paint/clip_path_display_item.h"
+#include "cc/paint/display_item_list.h"
 #include "ui/compositor/paint_context.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"

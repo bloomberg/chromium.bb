@@ -6,7 +6,7 @@
 #define CC_OUTPUT_VULKAN_CONTEXT_PROVIDER_H_
 
 #include "base/memory/ref_counted.h"
-#include "cc/base/cc_export.h"
+#include "cc/cc_export.h"
 
 namespace gpu {
 class VulkanDeviceQueue;

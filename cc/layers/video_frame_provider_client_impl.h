@@ -9,7 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
-#include "cc/base/cc_export.h"
+#include "cc/cc_export.h"
 #include "cc/layers/video_frame_provider.h"
 #include "cc/scheduler/video_frame_controller.h"
 #include "ui/gfx/transform.h"

@@ -9,7 +9,7 @@
 
 #include <string>
 
-#include "cc/base/cc_export.h"
+#include "cc/base/base_export.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace cc {
@@ -19,7 +19,7 @@ class Region;
 // A constant-sized approximation of a Region. The SimpleEnclosedRegion may
 // exclude points in its approximation (may have false negatives) but will never
 // include a point that would not be in the actual Region (no false positives).
-class CC_EXPORT SimpleEnclosedRegion {
+class CC_BASE_EXPORT SimpleEnclosedRegion {
  public:
   SimpleEnclosedRegion() : rect_() {}
   SimpleEnclosedRegion(const SimpleEnclosedRegion& region)

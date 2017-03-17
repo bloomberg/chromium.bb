@@ -11,10 +11,10 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "cc/base/cc_export.h"
+#include "cc/base/filter_operations.h"
+#include "cc/cc_export.h"
 #include "cc/output/ca_layer_overlay.h"
 #include "cc/output/dc_layer_overlay.h"
-#include "cc/output/filter_operations.h"
 #include "cc/output/overlay_processor.h"
 #include "cc/quads/tile_draw_quad.h"
 #include "cc/resources/resource_provider.h"

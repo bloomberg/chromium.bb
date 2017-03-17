@@ -5,7 +5,7 @@
 #ifndef CC_TREES_CLIP_EXPANDER_H_
 #define CC_TREES_CLIP_EXPANDER_H_
 
-#include "cc/base/cc_export.h"
+#include "cc/cc_export.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace cc {
