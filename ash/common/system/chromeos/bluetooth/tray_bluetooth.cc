@@ -269,6 +269,8 @@ class BluetoothDetailedView : public TrayDetailsView {
   }
 
   void UpdateDeviceScrollList() {
+    std::string focused_device_address = GetFocusedDeviceAddress();
+
     device_map_.clear();
     scroll_content()->RemoveAllChildViews(true);
 
@@ -317,6 +319,10 @@ class BluetoothDetailedView : public TrayDetailsView {
         scroll_content()->AddChildView(container);
       }
     }
+
+    // Focus the device which was focused before the device-list update.
+    if (!focused_device_address.empty())
+      FocusDeviceByAddress(focused_device_address);
 
     scroll_content()->InvalidateLayout();
   }
@@ -546,6 +552,23 @@ class BluetoothDetailedView : public TrayDetailsView {
     image_view->SetBorder(
         views::CreateEmptyBorder(label->GetPreferredSize().height(), 0, 0, 0));
     return container;
+  }
+
+  std::string GetFocusedDeviceAddress() {
+    for (auto& view_and_address : device_map_) {
+      if (view_and_address.first->HasFocus())
+        return view_and_address.second;
+    }
+    return std::string();
+  }
+
+  void FocusDeviceByAddress(const std::string& address) {
+    for (auto& view_and_address : device_map_) {
+      if (view_and_address.second == address) {
+        view_and_address.first->RequestFocus();
+        return;
+      }
+    }
   }
 
   LoginStatus login_;
