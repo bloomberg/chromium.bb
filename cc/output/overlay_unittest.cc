@@ -1835,27 +1835,35 @@ TEST_F(DCLayerOverlayTest, Occluded) {
 }
 
 TEST_F(DCLayerOverlayTest, DamageRect) {
-  std::unique_ptr<RenderPass> pass = CreateRenderPass();
-  CreateFullscreenCandidateYUVVideoQuad(resource_provider_.get(),
-                                        pass->shared_quad_state_list.back(),
-                                        pass.get());
+  for (int i = 0; i < 2; i++) {
+    std::unique_ptr<RenderPass> pass = CreateRenderPass();
+    CreateFullscreenCandidateYUVVideoQuad(resource_provider_.get(),
+                                          pass->shared_quad_state_list.back(),
+                                          pass.get());
 
-  gfx::Rect damage_rect;
-  DCLayerOverlayList dc_layer_list;
-  OverlayCandidateList overlay_list;
-  RenderPassFilterList render_pass_filters;
-  RenderPassFilterList render_pass_background_filters;
-  damage_rect_ = gfx::Rect(1, 1, 10, 10);
-  overlay_processor_->ProcessForOverlays(
-      resource_provider_.get(), pass.get(), render_pass_filters,
-      render_pass_background_filters, &overlay_list, nullptr, &dc_layer_list,
-      &damage_rect_, &content_bounds_);
-  EXPECT_EQ(gfx::Rect(), damage_rect);
-  EXPECT_EQ(0U, overlay_list.size());
-  EXPECT_EQ(1U, dc_layer_list.size());
-  EXPECT_EQ(0U, output_surface_->bind_framebuffer_count());
-  EXPECT_EQ(1, dc_layer_list.back().shared_state->z_order);
-  EXPECT_TRUE(damage_rect_.IsEmpty());
+    gfx::Rect damage_rect;
+    DCLayerOverlayList dc_layer_list;
+    OverlayCandidateList overlay_list;
+    RenderPassFilterList render_pass_filters;
+    RenderPassFilterList render_pass_background_filters;
+    damage_rect_ = gfx::Rect(1, 1, 10, 10);
+    overlay_processor_->ProcessForOverlays(
+        resource_provider_.get(), pass.get(), render_pass_filters,
+        render_pass_background_filters, &overlay_list, nullptr, &dc_layer_list,
+        &damage_rect_, &content_bounds_);
+    EXPECT_EQ(gfx::Rect(), damage_rect);
+    EXPECT_EQ(0U, overlay_list.size());
+    EXPECT_EQ(1U, dc_layer_list.size());
+    EXPECT_EQ(0U, output_surface_->bind_framebuffer_count());
+    EXPECT_EQ(1, dc_layer_list.back().shared_state->z_order);
+    // Damage rect should be unchanged on initial frame because of resize, but
+    // should be empty on the second frame because everything was put in a
+    // layer.
+    if (i == 1)
+      EXPECT_TRUE(damage_rect_.IsEmpty());
+    else
+      EXPECT_EQ(gfx::Rect(1, 1, 10, 10), damage_rect_);
+  }
 }
 
 class OverlayInfoRendererGL : public GLRenderer {

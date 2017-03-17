@@ -94,6 +94,7 @@ class DCLayerOverlayProcessor {
 
   gfx::Rect previous_frame_underlay_rect_;
   gfx::Rect previous_occlusion_bounding_box_;
+  gfx::RectF previous_display_rect_;
 };
 
 }  // namespace cc

@@ -113,6 +113,7 @@ void DCLayerOverlayProcessor::Process(ResourceProvider* resource_provider,
                                       gfx::Rect* damage_rect,
                                       DCLayerOverlayList* ca_layer_overlays) {
   gfx::Rect this_frame_underlay_rect;
+  bool display_rect_changed = (display_rect != previous_display_rect_);
   for (auto it = quad_list->begin(); it != quad_list->end(); ++it) {
     DCLayerOverlay ca_layer;
     DCLayerResult result = FromDrawQuad(resource_provider, display_rect,
@@ -123,14 +124,15 @@ void DCLayerOverlayProcessor::Process(ResourceProvider* resource_provider,
         it->shared_quad_state->quad_to_target_transform, it->rect);
     gfx::RectF occlusion_bounding_box =
         GetOcclusionBounds(gfx::RectF(quad_rectangle), quad_list->begin(), it);
+    overlay_damage_rect->Union(quad_rectangle);
 
     if (occlusion_bounding_box.IsEmpty()) {
       // The quad is on top, so promote it to an overlay and remove all damage
       // underneath it.
       if (it->shared_quad_state->quad_to_target_transform
-              .Preserves2dAxisAlignment()) {
+              .Preserves2dAxisAlignment() &&
+          !display_rect_changed) {
         damage_rect->Subtract(quad_rectangle);
-        overlay_damage_rect->Union(quad_rectangle);
       }
       quad_list->EraseAndInvalidateAllPointers(it);
     } else {
@@ -154,7 +156,8 @@ void DCLayerOverlayProcessor::Process(ResourceProvider* resource_provider,
         // already cleared last frame. Add back the damage from the occluded
         // area for this and last frame, as that may have changed.
         if (it->shared_quad_state->quad_to_target_transform
-                .Preserves2dAxisAlignment()) {
+                .Preserves2dAxisAlignment() &&
+            !display_rect_changed) {
           gfx::Rect occluding_damage_rect = *damage_rect;
           occluding_damage_rect.Intersect(quad_rectangle);
           damage_rect->Subtract(quad_rectangle);
@@ -164,7 +167,6 @@ void DCLayerOverlayProcessor::Process(ResourceProvider* resource_provider,
           occluding_damage_rect.Intersect(new_occlusion_bounding_box);
 
           damage_rect->Union(occluding_damage_rect);
-          overlay_damage_rect->Union(quad_rectangle);
         }
       } else {
         // Entire replacement quad must be redrawn.
@@ -178,7 +180,9 @@ void DCLayerOverlayProcessor::Process(ResourceProvider* resource_provider,
     // Only allow one overlay for now.
     break;
   }
+  damage_rect->Intersect(gfx::ToEnclosingRect(display_rect));
   previous_frame_underlay_rect_ = this_frame_underlay_rect;
+  previous_display_rect_ = display_rect;
 }
 
 }  // namespace cc
