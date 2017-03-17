@@ -1,0 +1,92 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+package org.chromium.chrome.browser;
+
+import android.support.test.filters.SmallTest;
+
+import org.chromium.base.ContextUtils;
+import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.library_loader.LibraryProcessType;
+import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.test.util.MetricsUtils;
+import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
+
+/**
+ * This test tests the logic for writing the restore histogram at two different levels
+ */
+public class RestoreHistogramTest extends ChromeTabbedActivityTestBase {
+    @Override
+    public void startMainActivity() {
+        // Do nothing, these tests need to control when they start the activity.
+    }
+
+    private void clearPrefs() {
+        ContextUtils.getAppSharedPreferences().edit().clear().apply();
+    }
+
+    /**
+     * Test that the fundamental method for writing the histogram
+     * {@link ChromeBackupAgent#recordRestoreHistogram()} works correctly
+     *
+     * @throws ProcessInitException
+     * @Note This can't be tested in the ChromeBackupAgent Junit test, since the histograms are
+     *       written in the C++ code, and because all the functions are static there is no easy way
+     *       of mocking them in Mockito (one can disable them, but that would spoil the point of the
+     *       test).
+     */
+    @SmallTest
+    public void testHistogramWriter() throws ProcessInitException {
+        LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized();
+        RecordHistogram.initialize();
+        MetricsUtils.HistogramDelta noRestoreDelta = new MetricsUtils.HistogramDelta(
+                ChromeBackupAgent.HISTOGRAM_ANDROID_RESTORE_RESULT, ChromeBackupAgent.NO_RESTORE);
+        MetricsUtils.HistogramDelta restoreCompletedDelta =
+                new MetricsUtils.HistogramDelta(ChromeBackupAgent.HISTOGRAM_ANDROID_RESTORE_RESULT,
+                        ChromeBackupAgent.RESTORE_COMPLETED);
+        MetricsUtils.HistogramDelta restoreStatusRecorded =
+                new MetricsUtils.HistogramDelta(ChromeBackupAgent.HISTOGRAM_ANDROID_RESTORE_RESULT,
+                        ChromeBackupAgent.RESTORE_STATUS_RECORDED);
+
+        // Check behavior with no preference set
+        clearPrefs();
+        ChromeBackupAgent.recordRestoreHistogram();
+        assertEquals(1, noRestoreDelta.getDelta());
+        assertEquals(0, restoreCompletedDelta.getDelta());
+        assertEquals(
+                ChromeBackupAgent.RESTORE_STATUS_RECORDED, ChromeBackupAgent.getRestoreStatus());
+
+        // Check behavior with a restore status
+        ChromeBackupAgent.setRestoreStatus(ChromeBackupAgent.RESTORE_COMPLETED);
+        ChromeBackupAgent.recordRestoreHistogram();
+        assertEquals(1, noRestoreDelta.getDelta());
+        assertEquals(1, restoreCompletedDelta.getDelta());
+        assertEquals(
+                ChromeBackupAgent.RESTORE_STATUS_RECORDED, ChromeBackupAgent.getRestoreStatus());
+
+        // Second call should record nothing (note this assumes it doesn't record something totally
+        // random)
+        ChromeBackupAgent.recordRestoreHistogram();
+        assertEquals(0, restoreStatusRecorded.getDelta());
+    }
+
+    /**
+     * Test that the histogram is written during Chrome first run.
+     *
+     * @throws InterruptedException
+     * @throws ProcessInitException
+     */
+    @SmallTest
+    public void testWritingHistogramAtStartup() throws InterruptedException, ProcessInitException {
+        LibraryLoader.get(LibraryProcessType.PROCESS_BROWSER).ensureInitialized();
+        RecordHistogram.initialize();
+        MetricsUtils.HistogramDelta noRestoreDelta = new MetricsUtils.HistogramDelta(
+                ChromeBackupAgent.HISTOGRAM_ANDROID_RESTORE_RESULT, ChromeBackupAgent.NO_RESTORE);
+
+        // Histogram should be written the first time the activity is started.
+        startMainActivityOnBlankPage();
+        assertEquals(1, noRestoreDelta.getDelta());
+    }
+}

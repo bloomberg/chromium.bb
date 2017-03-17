@@ -241,6 +241,14 @@ public class DeferredStartupHandler {
             }
         });
 
+        mDeferredTasks.add(new Runnable() {
+            @Override
+            public void run() {
+                // Record the saved restore state in a histogram
+                ChromeBackupAgent.recordRestoreHistogram();
+            }
+        });
+
         ProcessInitializationHandler.getInstance().initializeDeferredStartupTasks();
     }
 

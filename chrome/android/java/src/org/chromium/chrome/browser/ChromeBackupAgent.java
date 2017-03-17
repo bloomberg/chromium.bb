@@ -10,6 +10,7 @@ import android.app.backup.BackupDataOutput;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.ParcelFileDescriptor;
+import android.support.annotation.IntDef;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -18,6 +19,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.firstrun.FirstRunGlueImpl;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
@@ -32,6 +34,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.Callable;
@@ -48,8 +52,31 @@ public class ChromeBackupAgent extends BackupAgent {
 
     private static final String TAG = "ChromeBackupAgent";
 
-    // Lists of preferences that should be restored unchanged.
+    @VisibleForTesting
+    static final String HISTOGRAM_ANDROID_RESTORE_RESULT = "Android.RestoreResult";
 
+    // Restore status is used to pass the result of any restore to Chrome's first run, so that
+    // it can be recorded as a histogram.
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({NO_RESTORE, RESTORE_COMPLETED, RESTORE_AFTER_FIRST_RUN, BROWSER_STARTUP_FAILED,
+            NOT_SIGNED_IN, RESTORE_STATUS_RECORDED})
+    public @interface RestoreStatus {}
+
+    // Values must match those in histogram.xml AndroidRestoreResult.
+    static final int NO_RESTORE = 0;
+    static final int RESTORE_COMPLETED = 1;
+    static final int RESTORE_AFTER_FIRST_RUN = 2;
+    static final int BROWSER_STARTUP_FAILED = 3;
+    static final int NOT_SIGNED_IN = 4;
+    static final int RESTORE_HISTOGRAM_BOUNDARY = 5;
+
+    // Set RESTORE_STATUS_RECORDED when the histogram has been recorded; so that it is only recorded
+    // once.
+    public static final int RESTORE_STATUS_RECORDED = 5;
+
+    private static final String RESTORE_STATUS = "android_restore_status";
+
+    // List of preferences that should be restored unchanged.
     static final String[] BACKUP_ANDROID_BOOL_PREFS = {
             FirstRunGlueImpl.CACHED_TOS_ACCEPTED_PREF,
             FirstRunStatus.FIRST_RUN_FLOW_COMPLETE,
@@ -146,6 +173,7 @@ public class ChromeBackupAgent extends BackupAgent {
                 ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
                     @Override
                     public Boolean call() {
+
                         // Start the browser if necessary, so that Chrome can access the native
                         // preferences. Although Chrome requests the backup, it doesn't happen
                         // immediately, so by the time it does Chrome may not be running.
@@ -168,6 +196,7 @@ public class ChromeBackupAgent extends BackupAgent {
             // Something went wrong reading the native preferences, skip the backup.
             return;
         }
+
         // Add the Android boolean prefs.
         SharedPreferences sharedPrefs = ContextUtils.getAppSharedPreferences();
         for (String prefName : BACKUP_ANDROID_BOOL_PREFS) {
@@ -197,11 +226,13 @@ public class ChromeBackupAgent extends BackupAgent {
             // corrupt. Create a new backup in either case.
             Log.i(TAG, "Can't read backup status file");
         }
+
         // Write the backup data
         for (int i = 0; i < backupNames.size(); i++) {
             data.writeEntityHeader(backupNames.get(i), backupValues.get(i).length);
             data.writeEntityData(backupValues.get(i), backupValues.get(i).length);
         }
+
         // Remember the backup state.
         newBackupState.save(newState);
 
@@ -217,9 +248,9 @@ public class ChromeBackupAgent extends BackupAgent {
         // Check that the user hasn't already seen FRE (not sure if this can ever happen, but if it
         // does then restoring the backup will overwrite the user's choices).
         SharedPreferences sharedPrefs = ContextUtils.getAppSharedPreferences();
-        if (sharedPrefs.getBoolean(FirstRunStatus.FIRST_RUN_FLOW_COMPLETE, false)
-                || sharedPrefs.getBoolean(
-                           FirstRunStatus.LIGHTWEIGHT_FIRST_RUN_FLOW_COMPLETE, false)) {
+        if (FirstRunStatus.getFirstRunFlowComplete()
+                || FirstRunStatus.getLightweightFirstRunFlowComplete()) {
+            setRestoreStatus(RESTORE_AFTER_FIRST_RUN);
             Log.w(TAG, "Restore attempted after first run");
             return;
         }
@@ -240,6 +271,7 @@ public class ChromeBackupAgent extends BackupAgent {
                 backupValues.add(buffer);
             }
         }
+
         // Start and wait for the Async init tasks. This loads the library, and attempts to load the
         // first run variations seed. Since these are both slow it makes sense to run them in
         // parallel as Android AsyncTasks, reusing some of Chrome's async startup logic.
@@ -267,6 +299,7 @@ public class ChromeBackupAgent extends BackupAgent {
         } catch (InterruptedException e) {
             // Should never happen, but can be ignored (as explained above) anyway.
         }
+
         // Chrome has to be running before it can check if the account exists. Because the native
         // library is already loaded Chrome startup should be fast.
         final ChromeBackupAgent backupAgent = this;
@@ -280,13 +313,17 @@ public class ChromeBackupAgent extends BackupAgent {
                 });
         if (!browserStarted) {
             // Something went wrong starting Chrome, skip the restore.
+            setRestoreStatus(BROWSER_STARTUP_FAILED);
             return;
         }
+
         // If the user hasn't signed in, or can't sign in, then don't restore anything.
         if (restoredUserName == null || !accountExistsOnDevice(restoredUserName)) {
+            setRestoreStatus(NOT_SIGNED_IN);
             Log.i(TAG, "Chrome was not signed in with a known account name, not restoring");
             return;
         }
+
         // Restore the native preferences on the UI thread
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -310,6 +347,7 @@ public class ChromeBackupAgent extends BackupAgent {
 
         // Now that everything looks good so restore the Android preferences.
         SharedPreferences.Editor editor = sharedPrefs.edit();
+
         // Only restore preferences that we know about.
         int prefixLength = ANDROID_DEFAULT_PREFIX.length();
         for (int i = 0; i < backupNames.size(); i++) {
@@ -331,6 +369,7 @@ public class ChromeBackupAgent extends BackupAgent {
 
         // The silent first run will change things, so there is no point in trying to prevent
         // additional backups at this stage. Don't write anything to |newState|.
+        setRestoreStatus(RESTORE_COMPLETED);
         Log.i(TAG, "Restore complete");
     }
 
@@ -350,6 +389,40 @@ public class ChromeBackupAgent extends BackupAgent {
                 latch.countDown();
             }
         };
+    }
+
+    /**
+     * Get the saved result of any restore that may have happened.
+     *
+     * @return the restore status, a RestoreStatus value.
+     */
+    @VisibleForTesting
+    @RestoreStatus
+    static int getRestoreStatus() {
+        return ContextUtils.getAppSharedPreferences().getInt(RESTORE_STATUS, NO_RESTORE);
+    }
+
+    /**
+     * Save the restore status for later transfer to a histogram.
+     *
+     * @param status the status.
+     */
+    @VisibleForTesting
+    static void setRestoreStatus(@RestoreStatus int status) {
+        ContextUtils.getAppSharedPreferences().edit().putInt(RESTORE_STATUS, status).apply();
+    }
+
+    /**
+     * Record the restore histogram. To be called from Chrome itself once it is running.
+     */
+    static void recordRestoreHistogram() {
+        int restoreStatus = getRestoreStatus();
+        // Ensure restore status is only recorded once
+        if (restoreStatus != RESTORE_STATUS_RECORDED) {
+            RecordHistogram.recordEnumeratedHistogram(
+                    HISTOGRAM_ANDROID_RESTORE_RESULT, restoreStatus, RESTORE_HISTOGRAM_BOUNDARY);
+            setRestoreStatus(RESTORE_STATUS_RECORDED);
+        }
     }
 
     @VisibleForTesting

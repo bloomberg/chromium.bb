@@ -72,11 +72,18 @@ public class ChromeBackupAgentTest {
         editor.apply();
     }
 
+    private void clearPrefs() {
+        ContextUtils.getAppSharedPreferences().edit().clear().apply();
+    }
+
     @Before
     public void setUp() {
         // Set up the context.
         mContext = RuntimeEnvironment.application.getApplicationContext();
         ContextUtils.initApplicationContextForTests(mContext);
+
+        // Clear any app preferences
+        clearPrefs();
 
         // Create the agent to test; override the native calls and fetching the task runner, and
         // spy on the agent to allow us to validate calls to these methods.
@@ -164,6 +171,7 @@ public class ChromeBackupAgentTest {
         assertThat(values, hasItem(unameBytes));
         assertThat(values, hasItem(new byte[] {0}));
         assertThat(values, hasItem(new byte[] {1}));
+
         // Make sure that there are no extra objects.
         assertThat(newStateStream.available(), equalTo(0));
 
@@ -379,6 +387,11 @@ public class ChromeBackupAgentTest {
         verify(mTaskRunner)
                 .startBackgroundTasks(
                         false /* allocateChildConnection */, true /* initVariationSeed */);
+
+        // Test that the status of the restore has been recorded.
+        assertThat(
+                ChromeBackupAgent.getRestoreStatus(), equalTo(ChromeBackupAgent.RESTORE_COMPLETED));
+
         // The test mocks out everything that forces the AsyncTask used by PathUtils setup to
         // complete. If it isn't completed before the test exits Robolectric crashes with a null
         // pointer exception (although the test passes). Force it to complete by getting some data.
@@ -412,9 +425,108 @@ public class ChromeBackupAgentTest {
         verify(mTaskRunner)
                 .startBackgroundTasks(
                         false /* allocateChildConnection */, true /* initVariationSeed */);
+
+        // Test that the status of the restore has been recorded.
+        assertThat(ChromeBackupAgent.getRestoreStatus(), equalTo(ChromeBackupAgent.NOT_SIGNED_IN));
+
         // The test mocks out everything that forces the AsyncTask used by PathUtils setup to
         // complete. If it isn't completed before the test exits Robolectric crashes with a null
         // pointer exception (although the test passes). Force it to complete by getting some data.
         PathUtils.getDataDirectory();
+    }
+    /**
+     * Test method for {@link ChromeBackupAgent#onRestore} for browser startup failure
+     *
+     * @throws IOException
+     * @throws ClassNotFoundException
+     * @throws ProcessInitException
+     */
+    @Test
+    public void testOnRestore_browserStartupFails()
+            throws IOException, ClassNotFoundException, ProcessInitException {
+        // Create a state file.
+        File stateFile = File.createTempFile("Test", "");
+        ParcelFileDescriptor newState =
+                ParcelFileDescriptor.open(stateFile, ParcelFileDescriptor.parseMode("w"));
+
+        BackupDataInput backupData = createMockBackupData();
+        doReturn(false).when(mAgent).initializeBrowser(any(Context.class));
+
+        // Do a restore.
+        mAgent.onRestore(backupData, 0, newState);
+        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
+        assertFalse(prefs.contains(FirstRunStatus.FIRST_RUN_FLOW_COMPLETE));
+
+        // Test that the status of the restore has been recorded.
+        assertThat(ChromeBackupAgent.getRestoreStatus(),
+                equalTo(ChromeBackupAgent.BROWSER_STARTUP_FAILED));
+
+        // The test mocks out everything that forces the AsyncTask used by PathUtils setup to
+        // complete. If it isn't completed before the test exits Robolectric crashes with a null
+        // pointer exception (although the test passes). Force it to complete by getting some data.
+        PathUtils.getDataDirectory();
+    }
+    /**
+     * Test method for {@link ChromeBackupAgent#onRestore} for browser starup failure
+     *
+     * @throws IOException
+     * @throws ClassNotFoundException
+     * @throws ProcessInitException
+     */
+    @Test
+    public void testOnRestore_afterFirstRun()
+            throws IOException, ClassNotFoundException, ProcessInitException {
+        // Create a state file.
+        File stateFile = File.createTempFile("Test", "");
+        ParcelFileDescriptor newState =
+                ParcelFileDescriptor.open(stateFile, ParcelFileDescriptor.parseMode("w"));
+
+        BackupDataInput backupData = createMockBackupData();
+        FirstRunStatus.setFirstRunFlowComplete(true);
+
+        // Do a restore.
+        mAgent.onRestore(backupData, 0, newState);
+        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
+        assertTrue(prefs.contains(FirstRunStatus.FIRST_RUN_FLOW_COMPLETE));
+
+        // Test that the status of the restore has been recorded.
+        assertThat(ChromeBackupAgent.getRestoreStatus(),
+                equalTo(ChromeBackupAgent.RESTORE_AFTER_FIRST_RUN));
+
+        // The test mocks out everything that forces the AsyncTask used by PathUtils setup to
+        // complete. If it isn't completed before the test exits Robolectric crashes with a null
+        // pointer exception (although the test passes). Force it to complete by getting some data.
+        PathUtils.getDataDirectory();
+    }
+
+    @Test
+    public void testGetRestoreStatus() {
+        // Test default value
+        assertThat(ChromeBackupAgent.getRestoreStatus(), equalTo(ChromeBackupAgent.NO_RESTORE));
+
+        // Test that the value can be changed
+        ChromeBackupAgent.setRestoreStatus(ChromeBackupAgent.RESTORE_AFTER_FIRST_RUN);
+        assertThat(ChromeBackupAgent.getRestoreStatus(),
+                equalTo(ChromeBackupAgent.RESTORE_AFTER_FIRST_RUN));
+
+        // Prove that the value equalTo held in the app preferences (and not, for example, in a
+        // static).
+        clearPrefs();
+        assertThat(ChromeBackupAgent.getRestoreStatus(), equalTo(ChromeBackupAgent.NO_RESTORE));
+
+        // Test that ChromeBackupAgent.setRestoreStatus really looks at the argument.
+        ChromeBackupAgent.setRestoreStatus(ChromeBackupAgent.BROWSER_STARTUP_FAILED);
+        assertThat(ChromeBackupAgent.getRestoreStatus(),
+                equalTo(ChromeBackupAgent.BROWSER_STARTUP_FAILED));
+
+        // Test the remaining values are implemented
+        ChromeBackupAgent.setRestoreStatus(ChromeBackupAgent.NOT_SIGNED_IN);
+        assertThat(ChromeBackupAgent.getRestoreStatus(), equalTo(ChromeBackupAgent.NOT_SIGNED_IN));
+        ChromeBackupAgent.setRestoreStatus(ChromeBackupAgent.RESTORE_COMPLETED);
+        assertThat(
+                ChromeBackupAgent.getRestoreStatus(), equalTo(ChromeBackupAgent.RESTORE_COMPLETED));
+        ChromeBackupAgent.setRestoreStatus(ChromeBackupAgent.RESTORE_STATUS_RECORDED);
+        assertThat(ChromeBackupAgent.getRestoreStatus(),
+                equalTo(ChromeBackupAgent.RESTORE_STATUS_RECORDED));
     }
 }
