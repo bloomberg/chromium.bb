@@ -50,6 +50,7 @@
 #include "modules/payments/PaymentAppRequest.h"
 #include "modules/payments/PaymentAppRequestConversion.h"
 #include "modules/payments/PaymentRequestEvent.h"
+#include "modules/payments/PaymentRequestRespondWithObserver.h"
 #include "modules/push_messaging/PushEvent.h"
 #include "modules/push_messaging/PushMessageData.h"
 #include "modules/serviceworkers/ExtendableEvent.h"
@@ -341,15 +342,27 @@ void ServiceWorkerGlobalScopeProxy::dispatchSyncEvent(
 void ServiceWorkerGlobalScopeProxy::dispatchPaymentRequestEvent(
     int eventID,
     const WebPaymentAppRequest& webAppRequest) {
-  WaitUntilObserver* observer = WaitUntilObserver::create(
+  WaitUntilObserver* waitUntilObserver = WaitUntilObserver::create(
       workerGlobalScope(), WaitUntilObserver::PaymentRequest, eventID);
+  RespondWithObserver* respondWithObserver =
+      PaymentRequestRespondWithObserver::create(workerGlobalScope(), eventID,
+                                                waitUntilObserver);
+
   Event* event = PaymentRequestEvent::create(
       EventTypeNames::paymentrequest,
       PaymentAppRequestConversion::toPaymentAppRequest(
           workerGlobalScope()->scriptController()->getScriptState(),
           webAppRequest),
-      observer);
-  workerGlobalScope()->dispatchExtendableEvent(event, observer);
+      respondWithObserver, waitUntilObserver);
+
+  waitUntilObserver->willDispatchEvent();
+  respondWithObserver->willDispatchEvent();
+  DispatchEventResult dispatchResult =
+      workerGlobalScope()->dispatchEvent(event);
+  respondWithObserver->didDispatchEvent(dispatchResult);
+  // false is okay because waitUntil for payment request event doesn't care
+  // about the promise rejection or an uncaught runtime script error.
+  waitUntilObserver->didDispatchEvent(false /* errorOccurred */);
 }
 
 bool ServiceWorkerGlobalScopeProxy::hasFetchEventHandler() {

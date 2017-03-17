@@ -86,7 +86,13 @@ PaymentMethodData toPaymentMethodData(
 PaymentAppRequest PaymentAppRequestConversion::toPaymentAppRequest(
     ScriptState* scriptState,
     const WebPaymentAppRequest& webAppRequest) {
+  DCHECK(scriptState);
+
   PaymentAppRequest appRequest;
+  if (!scriptState->contextIsValid())
+    return appRequest;
+
+  ScriptState::Scope scope(scriptState);
 
   appRequest.setOrigin(webAppRequest.origin);
   HeapVector<PaymentMethodData> methodData;

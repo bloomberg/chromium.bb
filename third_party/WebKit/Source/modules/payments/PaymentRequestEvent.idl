@@ -9,5 +9,5 @@
     Exposed=ServiceWorker
 ] interface PaymentRequestEvent : ExtendableEvent {
     readonly attribute PaymentAppRequest appRequest;
-    void respondWith(Promise<PaymentResponse> response);
+    [CallWith=ScriptState, RaisesException] void respondWith(Promise<PaymentResponse> response);
 };

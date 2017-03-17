@@ -16,6 +16,8 @@ class AtomicString;
 
 namespace blink {
 
+class RespondWithObserver;
+
 class MODULES_EXPORT PaymentRequestEvent final : public ExtendableEvent {
   DEFINE_WRAPPERTYPEINFO();
   WTF_MAKE_NONCOPYABLE(PaymentRequestEvent);
@@ -23,21 +25,24 @@ class MODULES_EXPORT PaymentRequestEvent final : public ExtendableEvent {
  public:
   static PaymentRequestEvent* create(const AtomicString& type,
                                      const PaymentAppRequest&,
+                                     RespondWithObserver*,
                                      WaitUntilObserver*);
   ~PaymentRequestEvent() override;
 
   const AtomicString& interfaceName() const override;
 
   void appRequest(PaymentAppRequest&) const;
-  void respondWith(ScriptPromise);
+  void respondWith(ScriptState*, ScriptPromise, ExceptionState&);
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   PaymentRequestEvent(const AtomicString& type,
                       const PaymentAppRequest&,
+                      RespondWithObserver*,
                       WaitUntilObserver*);
   PaymentAppRequest m_appRequest;
+  Member<RespondWithObserver> m_observer;
 };
 
 }  // namespace blink

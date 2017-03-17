@@ -30,12 +30,13 @@
 
 #include "web/ServiceWorkerGlobalScopeClientImpl.h"
 
-#include "modules/fetch/Response.h"
-#include "public/platform/WebURL.h"
-#include "public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
-#include "public/web/modules/serviceworker/WebServiceWorkerContextClient.h"
 #include <memory>
 #include <utility>
+#include "modules/fetch/Response.h"
+#include "public/platform/WebURL.h"
+#include "public/platform/modules/payments/WebPaymentAppResponse.h"
+#include "public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
+#include "public/web/modules/serviceworker/WebServiceWorkerContextClient.h"
 
 namespace blink {
 
@@ -97,6 +98,13 @@ void ServiceWorkerGlobalScopeClientImpl::respondToFetchEvent(
     int fetchEventID,
     double eventDispatchTime) {
   m_client.respondToFetchEvent(fetchEventID, eventDispatchTime);
+}
+
+void ServiceWorkerGlobalScopeClientImpl::respondToPaymentRequestEvent(
+    int eventID,
+    const WebPaymentAppResponse& response,
+    double eventDispatchTime) {
+  m_client.respondToPaymentRequestEvent(eventID, response, eventDispatchTime);
 }
 
 void ServiceWorkerGlobalScopeClientImpl::respondToFetchEvent(

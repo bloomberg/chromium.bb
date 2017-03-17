@@ -22,6 +22,8 @@ blink_modules_sources("payments") {
     "PaymentRequest.h",
     "PaymentRequestEvent.cpp",
     "PaymentRequestEvent.h",
+    "PaymentRequestRespondWithObserver.cpp",
+    "PaymentRequestRespondWithObserver.h",
     "PaymentRequestUpdateEvent.cpp",
     "PaymentRequestUpdateEvent.h",
     "PaymentResponse.cpp",

@@ -38,6 +38,7 @@
 
 namespace blink {
 
+struct WebPaymentAppResponse;
 class WebServiceWorkerContextClient;
 class WebServiceWorkerResponse;
 class WebURL;
@@ -72,6 +73,9 @@ class ServiceWorkerGlobalScopeClientImpl final
   void respondToFetchEvent(int responseID,
                            const WebServiceWorkerResponse&,
                            double eventDispatchTime) override;
+  void respondToPaymentRequestEvent(int responseID,
+                                    const WebPaymentAppResponse&,
+                                    double eventDispatchTime) override;
   void didHandleFetchEvent(int fetchEventID,
                            WebServiceWorkerEventResult,
                            double eventDispatchTime) override;
