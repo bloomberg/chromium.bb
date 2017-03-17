@@ -322,7 +322,7 @@ group("gn_all") {
       ]
     }
 
-    if (has_chrome_android_internal) {
+    if (enable_chrome_android_internal) {
       deps += [ "//clank" ]
     }
   }
