@@ -102,7 +102,7 @@ class PLATFORM_EXPORT MediaStreamSource final
   bool requiresAudioConsumer() const { return m_requiresConsumer; }
   void addAudioConsumer(AudioDestinationConsumer*);
   bool removeAudioConsumer(AudioDestinationConsumer*);
-  const HashSet<AudioDestinationConsumer*>& audioConsumers() {
+  const HeapHashSet<Member<AudioDestinationConsumer>>& audioConsumers() {
     return m_audioConsumers;
   }
 
@@ -126,7 +126,7 @@ class PLATFORM_EXPORT MediaStreamSource final
   bool m_requiresConsumer;
   HeapHashSet<WeakMember<Observer>> m_observers;
   Mutex m_audioConsumersLock;
-  HashSet<AudioDestinationConsumer*> m_audioConsumers;
+  HeapHashSet<Member<AudioDestinationConsumer>> m_audioConsumers;
   std::unique_ptr<ExtraData> m_extraData;
   WebMediaConstraints m_constraints;
 };
