@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -72,6 +73,10 @@ TEST_F(ImageDataFetcherTest, FetchImageData) {
   // Get and configure the TestURLFetcher.
   net::TestURLFetcher* test_url_fetcher = fetcher_factory_.GetFetcherByID(0);
   ASSERT_NE(nullptr, test_url_fetcher);
+  EXPECT_TRUE(test_url_fetcher->GetLoadFlags() & net::LOAD_DO_NOT_SEND_COOKIES);
+  EXPECT_TRUE(test_url_fetcher->GetLoadFlags() & net::LOAD_DO_NOT_SAVE_COOKIES);
+  EXPECT_TRUE(test_url_fetcher->GetLoadFlags() &
+              net::LOAD_DO_NOT_SEND_AUTH_DATA);
   test_url_fetcher->set_status(
       net::URLRequestStatus(net::URLRequestStatus::SUCCESS, net::OK));
   test_url_fetcher->SetResponseString(kURLResponseData);

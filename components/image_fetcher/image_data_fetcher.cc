@@ -69,6 +69,9 @@ void ImageDataFetcher::FetchImageData(
   request->url_fetcher->SetRequestContext(url_request_context_getter_.get());
   request->url_fetcher->SetReferrer(referrer);
   request->url_fetcher->SetReferrerPolicy(referrer_policy);
+  request->url_fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
+                                     net::LOAD_DO_NOT_SAVE_COOKIES |
+                                     net::LOAD_DO_NOT_SEND_AUTH_DATA);
   request->url_fetcher->Start();
 
   pending_requests_[request->url_fetcher.get()] = std::move(request);
