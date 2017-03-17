@@ -164,12 +164,46 @@ cr.define('bookmarks', function() {
    * @param {Action} action
    * @return {NodeList}
    */
+  NodeState.moveBookmark = function(nodes, action) {
+    var nodeModifications = {};
+    var id = action.id;
+
+    // Change node's parent.
+    nodeModifications[id] =
+        Object.assign({}, nodes[id], {parentId: action.parentId});
+
+    // Remove from old parent.
+    var oldParentId = action.oldParentId;
+    var oldParentChildren = nodes[oldParentId].children.slice();
+    oldParentChildren.splice(action.oldIndex, 1);
+    nodeModifications[oldParentId] =
+        Object.assign({}, nodes[oldParentId], {children: oldParentChildren});
+
+    // Add to new parent.
+    var parentId = action.parentId;
+    var parentChildren = oldParentId == parentId ?
+        oldParentChildren :
+        nodes[parentId].children.slice();
+    parentChildren.splice(action.index, 0, action.id);
+    nodeModifications[parentId] =
+        Object.assign({}, nodes[parentId], {children: parentChildren});
+
+    return Object.assign({}, nodes, nodeModifications);
+  };
+
+  /**
+   * @param {NodeList} nodes
+   * @param {Action} action
+   * @return {NodeList}
+   */
   NodeState.updateNodes = function(nodes, action) {
     switch (action.name) {
       case 'edit-bookmark':
         return NodeState.editBookmark(nodes, action);
       case 'remove-bookmark':
         return NodeState.removeBookmark(nodes, action);
+      case 'move-bookmark':
+        return NodeState.moveBookmark(nodes, action);
       case 'refresh-nodes':
         return action.nodes;
       default:
@@ -232,19 +266,19 @@ cr.define('bookmarks', function() {
 
   /**
    * @param {ClosedFolderState} closedFolders
-   * @param {Action} action
+   * @param {string|undefined} id
    * @param {NodeList} nodes
    * @return {ClosedFolderState}
    */
-  ClosedFolderState.openAncestorsOf = function(closedFolders, action, nodes) {
-    var id = action.id;
+  ClosedFolderState.openFolderAndAncestors = function(
+      closedFolders, id, nodes) {
     var modifications = {};
-    var parentId = nodes[id].parentId;
-    while (parentId) {
-      if (closedFolders[parentId]) {
-        modifications[parentId] = false;
+    var currentId = id;
+    while (currentId) {
+      if (closedFolders[currentId]) {
+        modifications[currentId] = false;
       }
-      parentId = nodes[parentId].parentId;
+      currentId = nodes[currentId].parentId;
     }
 
     return Object.assign({}, closedFolders, modifications);
@@ -275,7 +309,14 @@ cr.define('bookmarks', function() {
       case 'change-folder-open':
         return ClosedFolderState.changeFolderOpen(closedFolders, action);
       case 'select-folder':
-        return ClosedFolderState.openAncestorsOf(closedFolders, action, nodes);
+        return ClosedFolderState.openFolderAndAncestors(
+            closedFolders, nodes[action.id].parentId, nodes);
+      case 'move-bookmark':
+        if (!nodes[action.id].children)
+          return closedFolders;
+
+        return ClosedFolderState.openFolderAndAncestors(
+            closedFolders, action.parentId, nodes);
       default:
         return closedFolders;
     };

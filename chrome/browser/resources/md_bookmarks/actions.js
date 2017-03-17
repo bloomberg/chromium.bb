@@ -25,6 +25,25 @@ cr.define('bookmarks.actions', function() {
    * @param {string} id
    * @param {string} parentId
    * @param {number} index
+   * @param {string} oldParentId
+   * @param {number} oldIndex
+   * @return {!Action}
+   */
+  function moveBookmark(id, parentId, index, oldParentId, oldIndex) {
+    return {
+      name: 'move-bookmark',
+      id: id,
+      parentId: parentId,
+      index: index,
+      oldParentId: oldParentId,
+      oldIndex: oldIndex,
+    };
+  }
+
+  /**
+   * @param {string} id
+   * @param {string} parentId
+   * @param {number} index
    * @return {!Action}
    */
   function removeBookmark(id, parentId, index) {
@@ -146,6 +165,7 @@ cr.define('bookmarks.actions', function() {
     changeFolderOpen: changeFolderOpen,
     clearSearch: clearSearch,
     editBookmark: editBookmark,
+    moveBookmark: moveBookmark,
     refreshNodes: refreshNodes,
     removeBookmark: removeBookmark,
     selectFolder: selectFolder,

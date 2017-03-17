@@ -30,6 +30,21 @@ cr.define('bookmarks.ApiListener', function() {
         id, removeInfo.parentId, removeInfo.index));
   }
 
+  /**
+   * @param {string} id
+   * @param {{
+   *    parentId: string,
+   *    index: number,
+   *    oldParentId: string,
+   *    oldIndex: number
+   * }} moveInfo
+   */
+  function onBookmarkMoved(id, moveInfo) {
+    dispatch(bookmarks.actions.moveBookmark(
+        id, moveInfo.parentId, moveInfo.index, moveInfo.oldParentId,
+        moveInfo.oldIndex));
+  }
+
   function onImportBegan() {
     // TODO(rongjie): pause onCreated once this event is used.
   }
@@ -43,6 +58,7 @@ cr.define('bookmarks.ApiListener', function() {
 
   function init() {
     chrome.bookmarks.onChanged.addListener(onBookmarkChanged);
+    chrome.bookmarks.onMoved.addListener(onBookmarkMoved);
     chrome.bookmarks.onRemoved.addListener(onBookmarkRemoved);
     chrome.bookmarks.onImportBegan.addListener(onImportBegan);
     chrome.bookmarks.onImportEnded.addListener(onImportEnded);

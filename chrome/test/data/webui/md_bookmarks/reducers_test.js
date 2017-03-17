@@ -86,9 +86,14 @@ suite('closed folder state', function() {
   var action;
 
   setup(function() {
-    nodes = testTree(createFolder('1', [
-      createFolder('2', []),
-    ]));
+    nodes = testTree(
+        createFolder(
+            '1',
+            [
+              createFolder('2', []),
+              createItem('3'),
+            ]),
+        createFolder('4', []));
     state = {};
   });
 
@@ -113,6 +118,24 @@ suite('closed folder state', function() {
     state =
         bookmarks.ClosedFolderState.updateClosedFolders(state, action, nodes);
     assertFalse(!!state['1']);
+  });
+
+  test('move nodes in a closed folder', function() {
+    // Moving bookmark items should not open folders.
+    state = {'1': true};
+    action = bookmarks.actions.moveBookmark('3', '1', 1, '1', 0);
+    state =
+        bookmarks.ClosedFolderState.updateClosedFolders(state, action, nodes);
+
+    assertTrue(state['1']);
+
+    // Moving folders should open their parents.
+    state = {'1': true, '2': true};
+    action = bookmarks.actions.moveBookmark('4', '2', 0, '0', 1);
+    state =
+        bookmarks.ClosedFolderState.updateClosedFolders(state, action, nodes);
+    assertFalse(!!state['1']);
+    assertFalse(!!state['2']);
   });
 });
 
@@ -199,6 +222,27 @@ suite('node state', function() {
 
     // TODO(tsergeant): Deleted nodes should be removed from the nodes map
     // entirely.
+  });
+
+  test('updates when a node is moved', function() {
+    // Move within the same folder backwards.
+    action = bookmarks.actions.moveBookmark('3', '1', 0, '1', 1);
+    state = bookmarks.NodeState.updateNodes(state, action);
+
+    assertDeepEquals(['3', '2', '4'], state['1'].children);
+
+    // Move within the same folder forwards.
+    action = bookmarks.actions.moveBookmark('3', '1', 2, '1', 0);
+    state = bookmarks.NodeState.updateNodes(state, action);
+
+    assertDeepEquals(['2', '4', '3'], state['1'].children);
+
+    // Move between different folders.
+    action = bookmarks.actions.moveBookmark('4', '5', 0, '1', 1);
+    state = bookmarks.NodeState.updateNodes(state, action);
+
+    assertDeepEquals(['2', '3'], state['1'].children);
+    assertDeepEquals(['4'], state['5'].children);
   });
 });
 
