@@ -20,7 +20,6 @@ import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.OnLayoutChangeListener;
 import android.view.ViewStub;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -56,8 +55,7 @@ import org.chromium.ui.base.DeviceFormFactor;
  * The native new tab page, represented by some basic data such as title and url, and an Android
  * View that displays the page.
  */
-public class NewTabPageView
-        extends FrameLayout implements OnLayoutChangeListener, TileGroup.Observer {
+public class NewTabPageView extends FrameLayout implements TileGroup.Observer {
     private static final String TAG = "NewTabPageView";
 
     private static final long SNAP_SCROLL_DELAY_MS = 30;
@@ -102,10 +100,12 @@ public class NewTabPageView
     private TileGroup.Delegate mTileGroupDelegate;
     private TileGroup mTileGroup;
     private UiConfig mUiConfig;
+    private Runnable mSnapScrollRunnable;
     private boolean mFirstShow = true;
     private boolean mSearchProviderHasLogo = true;
     private boolean mPendingSnapScroll;
     private boolean mInitialized;
+    private int mLastScrollY = -1;
 
     /**
      * The number of asynchronous tasks that need to complete before the page is done loading.
@@ -230,10 +230,11 @@ public class NewTabPageView
         mSearchBoxView = mNewTabPageLayout.findViewById(R.id.search_box);
         mNoSearchLogoSpacer = mNewTabPageLayout.findViewById(R.id.no_search_logo_spacer);
 
+        mSnapScrollRunnable = new SnapScrollRunnable();
+
         initializeSearchBoxTextView();
         initializeVoiceSearchButton();
-
-        mNewTabPageLayout.addOnLayoutChangeListener(this);
+        initializeLayoutChangeListeners();
         setSearchProviderHasLogo(searchProviderHasLogo);
 
         tab.addObserver(new EmptyTabObserver() {
@@ -355,6 +356,47 @@ public class NewTabPageView
         TraceEvent.end(TAG + ".initializeVoiceSearchButton()");
     }
 
+    private void initializeLayoutChangeListeners() {
+        TraceEvent.begin(TAG + ".initializeLayoutChangeListeners()");
+        mNewTabPageLayout.addOnLayoutChangeListener(new OnLayoutChangeListener() {
+            @Override
+            public void onLayoutChange(View v, int left, int top, int right, int bottom,
+                    int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                int oldHeight = oldBottom - oldTop;
+                int newHeight = bottom - top;
+
+                if (oldHeight == newHeight && !mTileCountChanged) return;
+                mTileCountChanged = false;
+
+                // Re-apply the url focus change amount after a rotation to ensure the views are
+                // correctly placed with their new layout configurations.
+                onUrlFocusAnimationChanged();
+                updateSearchBoxOnScroll();
+
+                mRecyclerView.updatePeekingCardAndHeader();
+                // The positioning of elements may have been changed (since the elements expand to
+                // fill the available vertical space), so adjust the scroll.
+                mRecyclerView.snapScroll(mSearchBoxView, getHeight());
+            }
+        });
+
+        // Listen for layout changes on the NewTabPageView itself to catch changes in scroll
+        // position that are due to layout changes after e.g. device rotation. This contrasts with
+        // regular scrolling, which is observed through an OnScrollListener.
+        addOnLayoutChangeListener(new OnLayoutChangeListener() {
+            @Override
+            public void onLayoutChange(View v, int left, int top, int right, int bottom,
+                    int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                int scrollY = mRecyclerView.computeVerticalScrollOffset();
+                if (mLastScrollY != scrollY) {
+                    mLastScrollY = scrollY;
+                    handleScroll();
+                }
+            }
+        });
+        TraceEvent.end(TAG + ".initializeLayoutChangeListeners()");
+    }
+
     private void updateSearchBoxOnScroll() {
         if (mDisableUrlFocusChangeAnimations) return;
 
@@ -435,25 +477,11 @@ public class NewTabPageView
      */
     private void setupScrollHandling() {
         TraceEvent.begin(TAG + ".setupScrollHandling()");
-        final Runnable mSnapScrollRunnable = new Runnable() {
-            @Override
-            public void run() {
-                assert mPendingSnapScroll;
-                mPendingSnapScroll = false;
-
-                mRecyclerView.snapScroll(mSearchBoxView, getHeight());
-            }
-        };
-
         mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                if (mPendingSnapScroll) {
-                    mRecyclerView.removeCallbacks(mSnapScrollRunnable);
-                    mRecyclerView.postDelayed(mSnapScrollRunnable, SNAP_SCROLL_DELAY_MS);
-                }
-                updateSearchBoxOnScroll();
-                mRecyclerView.updatePeekingCardAndHeader();
+                mLastScrollY = mRecyclerView.computeVerticalScrollOffset();
+                handleScroll();
             }
         });
 
@@ -474,6 +502,15 @@ public class NewTabPageView
             }
         });
         TraceEvent.end(TAG + ".setupScrollHandling()");
+    }
+
+    private void handleScroll() {
+        if (mPendingSnapScroll) {
+            mRecyclerView.removeCallbacks(mSnapScrollRunnable);
+            mRecyclerView.postDelayed(mSnapScrollRunnable, SNAP_SCROLL_DELAY_MS);
+        }
+        updateSearchBoxOnScroll();
+        mRecyclerView.updatePeekingCardAndHeader();
     }
 
     /**
@@ -736,28 +773,6 @@ public class NewTabPageView
         mNewTabPageRecyclerViewChanged = false;
     }
 
-    // OnLayoutChangeListener overrides
-
-    @Override
-    public void onLayoutChange(View v, int left, int top, int right, int bottom,
-            int oldLeft, int oldTop, int oldRight, int oldBottom) {
-        int oldHeight = oldBottom - oldTop;
-        int newHeight = bottom - top;
-
-        if (oldHeight == newHeight && !mTileCountChanged) return;
-        mTileCountChanged = false;
-
-        // Re-apply the url focus change amount after a rotation to ensure the views are correctly
-        // placed with their new layout configurations.
-        onUrlFocusAnimationChanged();
-        updateSearchBoxOnScroll();
-
-        mRecyclerView.updatePeekingCardAndHeader();
-        // The positioning of elements may have been changed (since the elements expand to fill
-        // the available vertical space), so adjust the scroll.
-        mRecyclerView.snapScroll(mSearchBoxView, getHeight());
-    }
-
     /**
      * Shows the most visited placeholder ("Nothing to see here") if there are no most visited
      * items and there is no search provider logo.
@@ -909,5 +924,15 @@ public class NewTabPageView
     @Override
     public void onLoadTaskCompleted() {
         loadTaskCompleted();
+    }
+
+    private class SnapScrollRunnable implements Runnable {
+        @Override
+        public void run() {
+            assert mPendingSnapScroll;
+            mPendingSnapScroll = false;
+
+            mRecyclerView.snapScroll(mSearchBoxView, getHeight());
+        }
     }
 }
