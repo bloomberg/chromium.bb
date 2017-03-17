@@ -2966,6 +2966,21 @@ TEST_F(LayerTreeHostCommonDrawRectsTest,
             drawing_layer->drawable_content_rect());
 }
 
+static bool ProjectionClips(const gfx::Transform& map_transform,
+                            const gfx::RectF& mapped_rect) {
+  gfx::Transform inverse(Inverse(map_transform));
+  bool clipped = false;
+  if (!clipped)
+    MathUtil::ProjectPoint(inverse, mapped_rect.top_right(), &clipped);
+  if (!clipped)
+    MathUtil::ProjectPoint(inverse, mapped_rect.origin(), &clipped);
+  if (!clipped)
+    MathUtil::ProjectPoint(inverse, mapped_rect.bottom_right(), &clipped);
+  if (!clipped)
+    MathUtil::ProjectPoint(inverse, mapped_rect.bottom_left(), &clipped);
+  return clipped;
+}
+
 TEST_F(LayerTreeHostCommonDrawRectsTest, DrawRectsForPerspectiveUnprojection) {
   // To determine visible rect in layer space, there needs to be an
   // un-projection from surface space to layer space. When the original
@@ -2988,12 +3003,9 @@ TEST_F(LayerTreeHostCommonDrawRectsTest, DrawRectsForPerspectiveUnprojection) {
 
   // Sanity check that un-projection does indeed cause w < 0, otherwise this
   // code is not testing the intended scenario.
-  bool clipped;
   gfx::RectF clipped_rect = MathUtil::MapClippedRect(
       layer_to_surface_transform, gfx::RectF(layer_content_rect));
-  MathUtil::ProjectQuad(
-      Inverse(layer_to_surface_transform), gfx::QuadF(clipped_rect), &clipped);
-  ASSERT_TRUE(clipped);
+  ASSERT_TRUE(ProjectionClips(layer_to_surface_transform, clipped_rect));
 
   // Only the corner of the layer is not visible on the surface because of being
   // clipped. But, the net result of rounding visible region to an axis-aligned

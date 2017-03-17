@@ -490,47 +490,6 @@ gfx::QuadF MathUtil::MapQuad(const gfx::Transform& transform,
                     h4.CartesianPoint2d());
 }
 
-gfx::QuadF MathUtil::MapQuad3d(const gfx::Transform& transform,
-                               const gfx::QuadF& q,
-                               gfx::Point3F* p,
-                               bool* clipped) {
-  if (transform.IsIdentityOrTranslation()) {
-    gfx::QuadF mapped_quad(q);
-    mapped_quad += gfx::Vector2dF(transform.matrix().getFloat(0, 3),
-                                  transform.matrix().getFloat(1, 3));
-    *clipped = false;
-    p[0] = gfx::Point3F(mapped_quad.p1().x(), mapped_quad.p1().y(), 0.0f);
-    p[1] = gfx::Point3F(mapped_quad.p2().x(), mapped_quad.p2().y(), 0.0f);
-    p[2] = gfx::Point3F(mapped_quad.p3().x(), mapped_quad.p3().y(), 0.0f);
-    p[3] = gfx::Point3F(mapped_quad.p4().x(), mapped_quad.p4().y(), 0.0f);
-    return mapped_quad;
-  }
-
-  HomogeneousCoordinate h1 =
-      MapHomogeneousPoint(transform, gfx::Point3F(q.p1()));
-  HomogeneousCoordinate h2 =
-      MapHomogeneousPoint(transform, gfx::Point3F(q.p2()));
-  HomogeneousCoordinate h3 =
-      MapHomogeneousPoint(transform, gfx::Point3F(q.p3()));
-  HomogeneousCoordinate h4 =
-      MapHomogeneousPoint(transform, gfx::Point3F(q.p4()));
-
-  *clipped = h1.ShouldBeClipped() || h2.ShouldBeClipped() ||
-             h3.ShouldBeClipped() || h4.ShouldBeClipped();
-
-  // Result will be invalid if clipped == true. But, compute it anyway just in
-  // case, to emulate existing behavior.
-  p[0] = h1.CartesianPoint3d();
-  p[1] = h2.CartesianPoint3d();
-  p[2] = h3.CartesianPoint3d();
-  p[3] = h4.CartesianPoint3d();
-
-  return gfx::QuadF(h1.CartesianPoint2d(),
-                    h2.CartesianPoint2d(),
-                    h3.CartesianPoint2d(),
-                    h4.CartesianPoint2d());
-}
-
 gfx::PointF MathUtil::MapPoint(const gfx::Transform& transform,
                                const gfx::PointF& p,
                                bool* clipped) {
@@ -553,47 +512,6 @@ gfx::PointF MathUtil::MapPoint(const gfx::Transform& transform,
   // and (2) this behavior is more consistent with existing behavior of WebKit
   // transforms if the user really does not ignore the return value.
   return h.CartesianPoint2d();
-}
-
-gfx::Point3F MathUtil::MapPoint(const gfx::Transform& transform,
-                                const gfx::Point3F& p,
-                                bool* clipped) {
-  HomogeneousCoordinate h = MapHomogeneousPoint(transform, p);
-
-  if (h.w() > 0) {
-    *clipped = false;
-    return h.CartesianPoint3d();
-  }
-
-  // The cartesian coordinates will be invalid after dividing by w.
-  *clipped = true;
-
-  // Avoid dividing by w if w == 0.
-  if (!h.w())
-    return gfx::Point3F();
-
-  // This return value will be invalid because clipped == true, but (1) users of
-  // this code should be ignoring the return value when clipped == true anyway,
-  // and (2) this behavior is more consistent with existing behavior of WebKit
-  // transforms if the user really does not ignore the return value.
-  return h.CartesianPoint3d();
-}
-
-gfx::QuadF MathUtil::ProjectQuad(const gfx::Transform& transform,
-                                 const gfx::QuadF& q,
-                                 bool* clipped) {
-  gfx::QuadF projected_quad;
-  bool clipped_point;
-  projected_quad.set_p1(ProjectPoint(transform, q.p1(), &clipped_point));
-  *clipped = clipped_point;
-  projected_quad.set_p2(ProjectPoint(transform, q.p2(), &clipped_point));
-  *clipped |= clipped_point;
-  projected_quad.set_p3(ProjectPoint(transform, q.p3(), &clipped_point));
-  *clipped |= clipped_point;
-  projected_quad.set_p4(ProjectPoint(transform, q.p4(), &clipped_point));
-  *clipped |= clipped_point;
-
-  return projected_quad;
 }
 
 gfx::PointF MathUtil::ProjectPoint(const gfx::Transform& transform,

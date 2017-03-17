@@ -205,19 +205,9 @@ class CC_BASE_EXPORT MathUtil {
   static gfx::QuadF MapQuad(const gfx::Transform& transform,
                             const gfx::QuadF& quad,
                             bool* clipped);
-  static gfx::QuadF MapQuad3d(const gfx::Transform& transform,
-                              const gfx::QuadF& q,
-                              gfx::Point3F* p,
-                              bool* clipped);
   static gfx::PointF MapPoint(const gfx::Transform& transform,
                               const gfx::PointF& point,
                               bool* clipped);
-  static gfx::Point3F MapPoint(const gfx::Transform&,
-                               const gfx::Point3F&,
-                               bool* clipped);
-  static gfx::QuadF ProjectQuad(const gfx::Transform& transform,
-                                const gfx::QuadF& quad,
-                                bool* clipped);
   static gfx::PointF ProjectPoint(const gfx::Transform& transform,
                                   const gfx::PointF& point,
                                   bool* clipped);
