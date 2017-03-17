@@ -117,13 +117,15 @@ void CupsPrintJobNotification::ClickOnNotificationButton(int button_index) {
 
   switch (button_command) {
     case ButtonCommand::CANCEL_PRINTING:
-      if (print_job_manager->CancelPrintJob(print_job_)) {
-        // only clean up the nofitication if cancel was successful.
-        g_browser_process->notification_ui_manager()->CancelById(
-            GetNotificationId(), profile_id);
-        cancelled_by_user_ = true;
-        notification_manager_->OnPrintJobNotificationRemoved(this);
-      }
+      print_job_manager->CancelPrintJob(print_job_);
+      // print_job_ was deleted in CancelPrintJob.  Forget the pointer.
+      print_job_ = nullptr;
+
+      // Clean up the notification.
+      g_browser_process->notification_ui_manager()->CancelById(
+          GetNotificationId(), profile_id);
+      cancelled_by_user_ = true;
+      notification_manager_->OnPrintJobNotificationRemoved(this);
       break;
     case ButtonCommand::PAUSE_PRINTING:
       print_job_manager->SuspendPrintJob(print_job_);

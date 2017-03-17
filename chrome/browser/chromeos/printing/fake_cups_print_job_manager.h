@@ -26,7 +26,7 @@ class FakeCupsPrintJobManager : public CupsPrintJobManager {
                       const std::string& title,
                       int total_page_number);
 
-  bool CancelPrintJob(CupsPrintJob* job) override;
+  void CancelPrintJob(CupsPrintJob* job) override;
   bool SuspendPrintJob(CupsPrintJob* job) override;
   bool ResumePrintJob(CupsPrintJob* job) override;
 

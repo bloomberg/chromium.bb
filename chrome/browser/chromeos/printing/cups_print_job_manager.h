@@ -53,7 +53,8 @@ class CupsPrintJobManager : public KeyedService {
   void Shutdown() override;
 
   // Cancel a print job |job|. Note the |job| will be deleted after cancelled.
-  virtual bool CancelPrintJob(CupsPrintJob* job) = 0;
+  // There will be no notifications after cancellation.
+  virtual void CancelPrintJob(CupsPrintJob* job) = 0;
   virtual bool SuspendPrintJob(CupsPrintJob* job) = 0;
   virtual bool ResumePrintJob(CupsPrintJob* job) = 0;
 

@@ -35,7 +35,7 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
   ~CupsPrintJobManagerImpl() override;
 
   // CupsPrintJobManager overrides:
-  bool CancelPrintJob(CupsPrintJob* job) override;
+  void CancelPrintJob(CupsPrintJob* job) override;
   bool SuspendPrintJob(CupsPrintJob* job) override;
   bool ResumePrintJob(CupsPrintJob* job) override;
 
@@ -61,11 +61,20 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
   // to UpdateJobs.
   void PostQuery();
 
+  // Updates the state of a print job based on |printer_status| and |job|.
+  // Returns true if observers need to be notified of an update.
+  bool UpdatePrintJob(const ::printing::PrinterStatus& printer_status,
+                      const ::printing::CupsJob& job,
+                      CupsPrintJob* print_job);
+
   // Process jobs from CUPS and perform notifications.
   void UpdateJobs(const QueryResult& results);
 
   // Mark remaining jobs as errors and remove active jobs.
   void PurgeJobs();
+
+  // Cancel the print job on the blocking thread.
+  void CancelJobImpl(const std::string& printer_id, const int job_id);
 
   // Notify observers that a state update has occured for |job|.
   void NotifyJobStateUpdate(CupsPrintJob* job);

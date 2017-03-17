@@ -16,6 +16,7 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/printing/cups_print_job.h"
 #include "chrome/browser/chromeos/printing/printers_manager.h"
@@ -141,43 +142,6 @@ bool UpdateCurrentPage(const printing::CupsJob& job,
   return pages_updated;
 }
 
-// Updates the state of a print job based on |printer_status| and |job|. Returns
-// true if observers need to be notified of an update.
-bool UpdatePrintJob(const printing::PrinterStatus& printer_status,
-                    const printing::CupsJob& job,
-                    chromeos::CupsPrintJob* print_job) {
-  DCHECK_EQ(job.id, print_job->job_id());
-
-  State old_state = print_job->state();
-
-  bool pages_updated = false;
-  switch (job.state) {
-    case printing::CupsJob::PROCESSING:
-      if (ContainsReason(printer_status, PrinterReason::CONNECTING_TO_DEVICE)) {
-        if (EnforceTimeout(job, print_job)) {
-          LOG(WARNING) << "Connecting to printer timed out";
-          // TODO(skau): Purge job from queue.
-        }
-        break;
-      }
-      pages_updated = UpdateCurrentPage(job, print_job);
-      break;
-    case printing::CupsJob::COMPLETED:
-      DCHECK_GE(job.current_pages, print_job->total_page_number());
-      print_job->set_state(State::STATE_DOCUMENT_DONE);
-      break;
-    case printing::CupsJob::ABORTED:
-    case printing::CupsJob::CANCELED:
-      print_job->set_error_code(ErrorCodeFromReasons(printer_status));
-    // fall through
-    default:
-      print_job->set_state(ConvertState(job.state));
-      break;
-  }
-
-  return print_job->state() != old_state || pages_updated;
-}
-
 }  // namespace
 
 namespace chromeos {
@@ -192,16 +156,23 @@ CupsPrintJobManagerImpl::CupsPrintJobManagerImpl(Profile* profile)
 
 CupsPrintJobManagerImpl::~CupsPrintJobManagerImpl() {}
 
-bool CupsPrintJobManagerImpl::CancelPrintJob(CupsPrintJob* job) {
-  std::string printer_id = job->printer().id();
-  std::unique_ptr<::printing::CupsPrinter> printer =
-      cups_connection_.GetPrinter(printer_id);
-  if (!printer) {
-    LOG(WARNING) << "Printer not found";
-    return false;
-  }
+// Must be run from the UI thread.
+void CupsPrintJobManagerImpl::CancelPrintJob(CupsPrintJob* job) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  return printer->CancelJob(job->job_id());
+  // Copy job_id and printer_id.  |job| is about to be freed.
+  const int job_id = job->job_id();
+  const std::string printer_id = job->printer().id();
+
+  // Stop montioring jobs after we cancel them.  The user no longer cares.
+  jobs_.erase(job->GetUniqueId());
+
+  // Be sure to copy out all relevant fields.  |job| may be destroyed after we
+  // exit this scope.
+  content::BrowserThread::GetBlockingPool()->PostTask(
+      FROM_HERE,
+      base::Bind(&CupsPrintJobManagerImpl::CancelJobImpl,
+                 weak_ptr_factory_.GetWeakPtr(), printer_id, job_id));
 }
 
 bool CupsPrintJobManagerImpl::SuspendPrintJob(CupsPrintJob* job) {
@@ -238,8 +209,8 @@ bool CupsPrintJobManagerImpl::CreatePrintJob(const std::string& printer_name,
                                              int job_id,
                                              int total_page_number) {
   auto printer =
-      chromeos::PrintersManagerFactory::GetForBrowserContext(profile_)
-          ->GetPrinter(printer_name);
+      PrintersManagerFactory::GetForBrowserContext(profile_)->GetPrinter(
+          printer_name);
   if (!printer) {
     LOG(WARNING) << "Printer was removed while job was in progress.  It cannot "
                     "be tracked";
@@ -295,6 +266,42 @@ void CupsPrintJobManagerImpl::PostQuery() {
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
+bool CupsPrintJobManagerImpl::UpdatePrintJob(
+    const ::printing::PrinterStatus& printer_status,
+    const ::printing::CupsJob& job,
+    CupsPrintJob* print_job) {
+  DCHECK_EQ(job.id, print_job->job_id());
+
+  State old_state = print_job->state();
+
+  bool pages_updated = false;
+  switch (job.state) {
+    case ::printing::CupsJob::PROCESSING:
+      if (ContainsReason(printer_status, PrinterReason::CONNECTING_TO_DEVICE)) {
+        if (EnforceTimeout(job, print_job)) {
+          LOG(WARNING) << "Connecting to printer timed out";
+          print_job->set_expired(true);
+        }
+      } else {
+        pages_updated = UpdateCurrentPage(job, print_job);
+      }
+      break;
+    case ::printing::CupsJob::COMPLETED:
+      DCHECK_GE(job.current_pages, print_job->total_page_number());
+      print_job->set_state(State::STATE_DOCUMENT_DONE);
+      break;
+    case ::printing::CupsJob::ABORTED:
+    case ::printing::CupsJob::CANCELED:
+      print_job->set_error_code(ErrorCodeFromReasons(printer_status));
+    // fall through
+    default:
+      print_job->set_state(ConvertState(job.state));
+      break;
+  }
+
+  return print_job->state() != old_state || pages_updated;
+}
+
 // Use job information to update local job states.  Previously completed jobs
 // could be in |jobs| but those are ignored as we will not emit updates for them
 // after they are completed.
@@ -339,8 +346,12 @@ void CupsPrintJobManagerImpl::UpdateJobs(const QueryResult& result) {
         NotifyJobStateUpdate(print_job);
       }
 
-      // Cleanup completed jobs.
-      if (print_job->IsJobFinished()) {
+      if (print_job->expired()) {
+        // Job needs to be forcibly cancelled.
+        CancelPrintJob(print_job);
+        // Beware, print_job was removed from jobs_ and deleted.
+      } else if (print_job->IsJobFinished()) {
+        // Cleanup completed jobs.
         jobs_.erase(entry);
       } else {
         active_jobs.push_back(key);
@@ -369,6 +380,21 @@ void CupsPrintJobManagerImpl::PurgeJobs() {
   }
 
   jobs_.clear();
+}
+
+void CupsPrintJobManagerImpl::CancelJobImpl(const std::string& printer_id,
+                                            const int job_id) {
+  std::unique_ptr<::printing::CupsPrinter> printer =
+      cups_connection_.GetPrinter(printer_id);
+  if (!printer) {
+    LOG(WARNING) << "Printer not found: " << printer_id;
+    return;
+  }
+
+  if (!printer->CancelJob(job_id)) {
+    // This is not expected to fail but log it if it does.
+    LOG(WARNING) << "Cancelling job failed.  Job may be stuck in queue.";
+  }
 }
 
 void CupsPrintJobManagerImpl::NotifyJobStateUpdate(CupsPrintJob* job) {

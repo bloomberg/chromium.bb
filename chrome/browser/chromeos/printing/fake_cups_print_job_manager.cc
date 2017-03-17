@@ -48,7 +48,7 @@ bool FakeCupsPrintJobManager::CreatePrintJob(const std::string& printer_name,
   return true;
 }
 
-bool FakeCupsPrintJobManager::CancelPrintJob(CupsPrintJob* job) {
+void FakeCupsPrintJobManager::CancelPrintJob(CupsPrintJob* job) {
   job->set_state(CupsPrintJob::State::STATE_CANCELLED);
   NotifyJobCanceled(job);
 
@@ -59,8 +59,6 @@ bool FakeCupsPrintJobManager::CancelPrintJob(CupsPrintJob* job) {
       break;
     }
   }
-
-  return true;
 }
 
 bool FakeCupsPrintJobManager::SuspendPrintJob(CupsPrintJob* job) {
