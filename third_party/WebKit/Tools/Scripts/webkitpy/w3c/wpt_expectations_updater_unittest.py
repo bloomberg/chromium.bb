@@ -69,6 +69,22 @@ class WPTExpectationsUpdaterTest(LoggingTestCase):
         updater = WPTExpectationsUpdater(host)
         self.assertEqual(updater.get_failing_results_dict(Build('MOCK Try Mac10.10', 123)), {})
 
+    def test_get_failing_results_dict_unexpected_pass(self):
+        host = self.mock_host()
+        host.buildbot.set_results(Build('MOCK Try Mac10.10', 123), LayoutTestResults({
+            'tests': {
+                'x': {
+                    'passing-test.html': {
+                        'expected': 'FAIL TIMEOUT',
+                        'actual': 'PASS',
+                        'is_unexpected': True,
+                    },
+                },
+            },
+        }))
+        updater = WPTExpectationsUpdater(host)
+        self.assertEqual(updater.get_failing_results_dict(Build('MOCK Try Mac10.10', 123)), {})
+
     def test_get_failing_results_dict_no_results(self):
         host = self.mock_host()
         host.buildbot = MockBuildBot()

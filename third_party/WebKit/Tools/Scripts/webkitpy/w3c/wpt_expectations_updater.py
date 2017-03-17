@@ -100,7 +100,7 @@ class WPTExpectationsUpdater(object):
             _log.warning('No results for build %s', build)
             return {}
         port_name = self.host.builders.port_name_for_builder_name(build.builder_name)
-        test_results = layout_test_results.didnt_run_as_expected_results()
+        test_results = [result for result in layout_test_results.didnt_run_as_expected_results() if not result.did_pass()]
         failing_results_dict = self.generate_results_dict(port_name, test_results)
         return failing_results_dict
 
