@@ -633,16 +633,7 @@ Image::SizeAvailability SVGImage::dataChanged(bool allDataReceived) {
     DEFINE_STATIC_LOCAL(LocalFrameClient, dummyLocalFrameClient,
                         (EmptyLocalFrameClient::create()));
 
-    if (m_page) {
-      toLocalFrame(m_page->mainFrame())
-          ->loader()
-          .load(FrameLoadRequest(
-              0, blankURL(),
-              SubstituteData(data(), AtomicString("image/svg+xml"),
-                             AtomicString("UTF-8"), KURL(),
-                             ForceSynchronousLoad)));
-      return SizeAvailable;
-    }
+    CHECK(!m_page);
 
     Page::PageClients pageClients;
     fillWithEmptyClients(pageClients);
