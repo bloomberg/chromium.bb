@@ -10460,8 +10460,8 @@ TEST_F(LayerTreeHostCommonTest, PropertyTreesRebuildWithOpacityChanges) {
   EXPECT_TRUE(property_trees->needs_rebuild);
 
   ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
-  EXPECT_NE(property_trees->layer_id_to_effect_node_index.find(child->id()),
-            property_trees->layer_id_to_effect_node_index.end());
+  EXPECT_NE(property_trees->effect_tree.FindNodeFromOwningLayerId(child->id()),
+            nullptr);
 
   // child already has an effect node. Changing its opacity shouldn't trigger
   // a property trees rebuild.
@@ -10470,8 +10470,8 @@ TEST_F(LayerTreeHostCommonTest, PropertyTreesRebuildWithOpacityChanges) {
   EXPECT_FALSE(property_trees->needs_rebuild);
 
   ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
-  EXPECT_NE(property_trees->layer_id_to_effect_node_index.find(child->id()),
-            property_trees->layer_id_to_effect_node_index.end());
+  EXPECT_NE(property_trees->effect_tree.FindNodeFromOwningLayerId(child->id()),
+            nullptr);
 
   // Changing the opacity from non-1 value to 1 should trigger a rebuild of
   // property trees as the effect node may no longer be needed.
@@ -10480,8 +10480,8 @@ TEST_F(LayerTreeHostCommonTest, PropertyTreesRebuildWithOpacityChanges) {
   EXPECT_TRUE(property_trees->needs_rebuild);
 
   ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root.get());
-  EXPECT_EQ(property_trees->layer_id_to_effect_node_index.find(child->id()),
-            property_trees->layer_id_to_effect_node_index.end());
+  EXPECT_EQ(property_trees->effect_tree.FindNodeFromOwningLayerId(child->id()),
+            nullptr);
 }
 
 TEST_F(LayerTreeHostCommonTest, OpacityAnimationsTrackingTest) {
@@ -10702,6 +10702,8 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
   scroll_root1.user_scrollable_vertical = true;
   scroll_root1.transform_id = root1->transform_tree_index();
   expected_scroll_tree.Insert(scroll_root1, 0);
+  expected_scroll_tree.SetOwningLayerIdForNode(expected_scroll_tree.back(),
+                                               root1->id());
 
   // The node owned by parent2
   ScrollNode scroll_parent2;
@@ -10718,6 +10720,8 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
   scroll_parent2.user_scrollable_vertical = true;
   scroll_parent2.transform_id = parent2->transform_tree_index();
   expected_scroll_tree.Insert(scroll_parent2, 1);
+  expected_scroll_tree.SetOwningLayerIdForNode(expected_scroll_tree.back(),
+                                               parent2->id());
 
   // The node owned by child6
   ScrollNode scroll_child6;
@@ -10730,6 +10734,8 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
   scroll_child6.user_scrollable_vertical = true;
   scroll_child6.transform_id = child6->transform_tree_index();
   expected_scroll_tree.Insert(scroll_child6, 2);
+  expected_scroll_tree.SetOwningLayerIdForNode(expected_scroll_tree.back(),
+                                               child6->id());
 
   // The node owned by child7, child7 also owns a transform node
   ScrollNode scroll_child7;
@@ -10742,6 +10748,8 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
   scroll_child7.user_scrollable_vertical = true;
   scroll_child7.transform_id = child7->transform_tree_index();
   expected_scroll_tree.Insert(scroll_child7, 1);
+  expected_scroll_tree.SetOwningLayerIdForNode(expected_scroll_tree.back(),
+                                               child7->id());
 
   // The node owned by grand_child11, grand_child11 also owns a transform node
   ScrollNode scroll_grand_child11;
@@ -10752,6 +10760,8 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
   scroll_grand_child11.user_scrollable_vertical = true;
   scroll_grand_child11.transform_id = grand_child11->transform_tree_index();
   expected_scroll_tree.Insert(scroll_grand_child11, 4);
+  expected_scroll_tree.SetOwningLayerIdForNode(expected_scroll_tree.back(),
+                                               grand_child11->id());
 
   // The node owned by parent5
   ScrollNode scroll_parent5;
@@ -10764,6 +10774,8 @@ TEST_F(LayerTreeHostCommonTest, ScrollTreeBuilderTest) {
   scroll_parent5.user_scrollable_vertical = true;
   scroll_parent5.transform_id = parent5->transform_tree_index();
   expected_scroll_tree.Insert(scroll_parent5, 1);
+  expected_scroll_tree.SetOwningLayerIdForNode(expected_scroll_tree.back(),
+                                               parent5->id());
 
   expected_scroll_tree.SetScrollOffset(parent2->id(), gfx::ScrollOffset(0, 0));
   expected_scroll_tree.SetScrollOffset(child7->id(), gfx::ScrollOffset(0, 0));

@@ -530,6 +530,7 @@ class CC_EXPORT LayerImpl {
 
  private:
   PropertyTrees* GetPropertyTrees() const;
+  ClipTree& GetClipTree() const;
   EffectTree& GetEffectTree() const;
   ScrollTree& GetScrollTree() const;
   TransformTree& GetTransformTree() const;

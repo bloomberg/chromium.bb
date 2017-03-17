@@ -721,9 +721,9 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, OneScrollNode) {
 
   auto* layer = contentLayerAt(0);
   EXPECT_EQ(layer->id(), scrollNode.owning_layer_id);
-  auto scrollNodeIndexIt =
-      propertyTrees().layer_id_to_scroll_node_index.find(layer->id());
-  EXPECT_EQ(scrollNodeIndexIt->second, scrollNode.id);
+  auto scrollNodeIndex =
+      propertyTrees().scroll_tree.FindNodeIndexFromOwningLayerId(layer->id());
+  EXPECT_EQ(scrollNodeIndex, scrollNode.id);
 
   EXPECT_EQ(0u, scrollClient.didScrollCount);
   layer->SetScrollOffsetFromImplSide(gfx::ScrollOffset(1, 2));

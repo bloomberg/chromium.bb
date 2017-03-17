@@ -476,12 +476,8 @@ int LayerImpl::num_copy_requests_in_target_subtree() {
 }
 
 void LayerImpl::UpdatePropertyTreeTransformIsAnimated(bool is_animated) {
-  PropertyTrees* property_trees = GetPropertyTrees();
-  if (property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::TRANSFORM,
-                                       id())) {
-    TransformTree& transform_tree = GetTransformTree();
-    TransformNode* node = transform_tree.Node(
-        property_trees->layer_id_to_transform_node_index[id()]);
+  if (TransformNode* node =
+          GetTransformTree().FindNodeFromOwningLayerId(id())) {
     // A LayerImpl's own current state is insufficient for determining whether
     // it owns a TransformNode, since this depends on the state of the
     // corresponding Layer at the time of the last commit. For example, if
@@ -499,7 +495,7 @@ void LayerImpl::UpdatePropertyTreeTransformIsAnimated(bool is_animated) {
         node->has_only_translation_animations = true;
       }
 
-      transform_tree.set_needs_update(true);
+      GetTransformTree().set_needs_update(true);
       layer_tree_impl()->set_needs_update_draw_properties();
     }
   }
@@ -522,21 +518,10 @@ gfx::ScrollOffset LayerImpl::ScrollOffsetForAnimation() const {
 void LayerImpl::OnIsAnimatingChanged(const PropertyAnimationState& mask,
                                      const PropertyAnimationState& state) {
   DCHECK(layer_tree_impl_);
-  PropertyTrees* property_trees = GetPropertyTrees();
 
-  TransformNode* transform_node = nullptr;
-  if (property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::TRANSFORM,
-                                       id())) {
-    transform_node = GetTransformTree().Node(
-        property_trees->layer_id_to_transform_node_index[id()]);
-  }
-
-  EffectNode* effect_node = nullptr;
-  if (property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::EFFECT, id())) {
-    effect_node = GetEffectTree().Node(
-        property_trees->layer_id_to_effect_node_index[id()]);
-  }
-
+  TransformNode* transform_node =
+      GetTransformTree().FindNodeFromOwningLayerId(id());
+  EffectNode* effect_node = GetEffectTree().FindNodeFromOwningLayerId(id());
   for (int property = TargetProperty::FIRST_TARGET_PROPERTY;
        property <= TargetProperty::LAST_TARGET_PROPERTY; ++property) {
     switch (property) {
@@ -627,8 +612,7 @@ void LayerImpl::SetBoundsDelta(const gfx::Vector2dF& bounds_delta) {
     // If layer is clipping, then update the clip node using the new bounds.
     ClipNode* clip_node = property_trees->clip_tree.Node(clip_tree_index());
     if (clip_node) {
-      DCHECK(property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::CLIP,
-                                              id()));
+      DCHECK_EQ(clip_node, GetClipTree().FindNodeFromOwningLayerId(id()));
       clip_node->clip = gfx::RectF(gfx::PointF() + offset_to_transform_parent(),
                                    gfx::SizeF(bounds()));
       property_trees->clip_tree.set_needs_update(true);
@@ -692,21 +676,15 @@ void LayerImpl::SetContentsOpaque(bool opaque) {
 }
 
 float LayerImpl::Opacity() const {
-  PropertyTrees* property_trees = GetPropertyTrees();
-  if (!property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::EFFECT, id()))
+  if (EffectNode* node = GetEffectTree().FindNodeFromOwningLayerId(id()))
+    return node->opacity;
+  else
     return 1.f;
-  EffectNode* node =
-      GetEffectTree().Node(property_trees->layer_id_to_effect_node_index[id()]);
-  return node->opacity;
 }
 
 const gfx::Transform& LayerImpl::Transform() const {
-  PropertyTrees* property_trees = GetPropertyTrees();
-  DCHECK(property_trees->IsInIdToIndexMap(PropertyTrees::TreeType::TRANSFORM,
-                                          id()));
-  TransformNode* node = GetTransformTree().Node(
-      property_trees->layer_id_to_transform_node_index[id()]);
-  return node->local;
+  DCHECK_NE(GetTransformTree().FindNodeFromOwningLayerId(id()), nullptr);
+  return GetTransformTree().FindNodeFromOwningLayerId(id())->local;
 }
 
 void LayerImpl::SetElementId(ElementId element_id) {
@@ -1056,6 +1034,10 @@ float LayerImpl::GetIdealContentsScale() const {
 
 PropertyTrees* LayerImpl::GetPropertyTrees() const {
   return layer_tree_impl_->property_trees();
+}
+
+ClipTree& LayerImpl::GetClipTree() const {
+  return GetPropertyTrees()->clip_tree;
 }
 
 EffectTree& LayerImpl::GetEffectTree() const {

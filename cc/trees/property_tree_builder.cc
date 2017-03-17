@@ -458,9 +458,8 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
 
     data_for_children->clip_tree_parent =
         data_for_children->property_trees->clip_tree.Insert(node, parent_id);
-    data_for_children->property_trees
-        ->layer_id_to_clip_node_index[layer->id()] =
-        data_for_children->clip_tree_parent;
+    data_for_children->property_trees->clip_tree.SetOwningLayerIdForNode(
+        data_for_children->property_trees->clip_tree.back(), layer->id());
   }
 
   layer->SetClipTreeIndex(data_for_children->clip_tree_parent);
@@ -630,8 +629,8 @@ bool AddTransformNodeIfNeeded(
   TransformNode* node =
       data_for_children->property_trees->transform_tree.back();
   layer->SetTransformTreeIndex(node->id);
-  data_for_children->property_trees
-      ->layer_id_to_transform_node_index[layer->id()] = node->id;
+  data_for_children->property_trees->transform_tree.SetOwningLayerIdForNode(
+      node, layer->id());
 
   // For animation subsystem purposes, if this layer has a compositor element
   // id, we build a map from that id to this transform node.
@@ -1102,8 +1101,8 @@ bool AddEffectNodeIfNeeded(
   int node_id = effect_tree.Insert(node, parent_id);
   data_for_children->effect_tree_parent = node_id;
   layer->SetEffectTreeIndex(node_id);
-  data_for_children->property_trees
-      ->layer_id_to_effect_node_index[layer->id()] = node_id;
+  data_for_children->property_trees->effect_tree.SetOwningLayerIdForNode(
+      effect_tree.back(), layer->id());
 
   // For animation subsystem purposes, if this layer has a compositor element
   // id, we build a map from that id to this effect node.
@@ -1198,8 +1197,8 @@ void AddScrollNodeIfNeeded(
         node.main_thread_scrolling_reasons;
     data_for_children->scroll_tree_parent_created_by_uninheritable_criteria =
         scroll_node_uninheritable_criteria;
-    data_for_children->property_trees
-        ->layer_id_to_scroll_node_index[layer->id()] = node_id;
+    data_for_children->property_trees->scroll_tree.SetOwningLayerIdForNode(
+        data_for_children->property_trees->scroll_tree.back(), layer->id());
     // For animation subsystem purposes, if this layer has a compositor element
     // id, we build a map from that id to this scroll node.
     if (layer->element_id()) {

@@ -53,7 +53,7 @@ class CC_EXPORT PropertyTree {
   // they are exported by CC_EXPORT. They will be instantiated in every
   // compilation units that included this header, and compilation can fail
   // because T may be incomplete.
-  ~PropertyTree();
+  virtual ~PropertyTree();
   PropertyTree<T>& operator=(const PropertyTree<T>&);
 
   // Property tree node starts from index 0.
@@ -97,8 +97,32 @@ class CC_EXPORT PropertyTree {
 
   void AsValueInto(base::trace_event::TracedValue* value) const;
 
+  T* FindNodeFromOwningLayerId(int id) {
+    return Node(FindNodeIndexFromOwningLayerId(id));
+  }
+  int FindNodeIndexFromOwningLayerId(int id) const {
+    auto iter = owning_layer_id_to_node_index.find(id);
+    if (iter == owning_layer_id_to_node_index.end())
+      return kInvalidNodeId;
+    else
+      return iter->second;
+  }
+
+  void SetOwningLayerIdForNode(const T* node, int id) {
+    if (!node) {
+      owning_layer_id_to_node_index[id] = kInvalidNodeId;
+      return;
+    }
+
+    DCHECK(node == Node(node->id));
+    owning_layer_id_to_node_index[id] = node->id;
+  }
+
  private:
   std::vector<T> nodes_;
+
+  // These maps map from layer id to the property tree node index.
+  std::unordered_map<int, int> owning_layer_id_to_node_index;
 
   bool needs_update_;
   PropertyTrees* property_trees_;
@@ -125,7 +149,7 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
   // compilation units that included this header, and compilation can fail
   // because TransformCachedNodeData may be incomplete.
   TransformTree(const TransformTree&) = delete;
-  ~TransformTree();
+  ~TransformTree() final;
   TransformTree& operator=(const TransformTree&);
 
   bool operator==(const TransformTree& other) const;
@@ -290,7 +314,7 @@ class CC_EXPORT ClipTree final : public PropertyTree<ClipNode> {
 class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
  public:
   EffectTree();
-  ~EffectTree();
+  ~EffectTree() final;
 
   EffectTree& operator=(const EffectTree& from);
   bool operator==(const EffectTree& other) const;
@@ -370,7 +394,7 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
 class CC_EXPORT ScrollTree final : public PropertyTree<ScrollNode> {
  public:
   ScrollTree();
-  ~ScrollTree();
+  ~ScrollTree() final;
 
   ScrollTree& operator=(const ScrollTree& from);
   bool operator==(const ScrollTree& other) const;
@@ -565,14 +589,6 @@ class CC_EXPORT PropertyTrees final {
   bool operator==(const PropertyTrees& other) const;
   PropertyTrees& operator=(const PropertyTrees& from);
 
-  // These maps map from layer id to the index for each of the respective
-  // property node types.
-  std::unordered_map<int, int> layer_id_to_transform_node_index;
-  std::unordered_map<int, int> layer_id_to_effect_node_index;
-  std::unordered_map<int, int> layer_id_to_clip_node_index;
-  std::unordered_map<int, int> layer_id_to_scroll_node_index;
-  enum TreeType { TRANSFORM, EFFECT, CLIP, SCROLL };
-
   // These maps allow mapping directly from a compositor element id to the
   // respective property node. This will eventually allow simplifying logic in
   // various places that today has to map from element id to layer id, and then
@@ -615,7 +631,6 @@ class CC_EXPORT PropertyTrees final {
   void SetInnerViewportScrollBoundsDelta(gfx::Vector2dF bounds_delta);
   void PushOpacityIfNeeded(PropertyTrees* target_tree);
   void RemoveIdFromIdToIndexMaps(int id);
-  bool IsInIdToIndexMap(TreeType tree_type, int id);
   void UpdateChangeTracking();
   void PushChangeTrackingTo(PropertyTrees* tree);
   void ResetAllChangeTracking();

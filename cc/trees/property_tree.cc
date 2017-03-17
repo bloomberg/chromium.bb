@@ -71,6 +71,7 @@ void PropertyTree<T>::clear() {
   nodes_.push_back(T());
   back()->id = kRootNodeId;
   back()->parent_id = kInvalidNodeId;
+  owning_layer_id_to_node_index.clear();
 
 #if DCHECK_IS_ON()
   PropertyTree<T> tree;
@@ -80,7 +81,8 @@ void PropertyTree<T>::clear() {
 
 template <typename T>
 bool PropertyTree<T>::operator==(const PropertyTree<T>& other) const {
-  return nodes_ == other.nodes() && needs_update_ == other.needs_update();
+  return nodes_ == other.nodes() && needs_update_ == other.needs_update() &&
+         owning_layer_id_to_node_index == other.owning_layer_id_to_node_index;
 }
 
 template <typename T>
@@ -1597,11 +1599,6 @@ bool PropertyTrees::operator==(const PropertyTrees& other) const {
   return transform_tree == other.transform_tree &&
          effect_tree == other.effect_tree && clip_tree == other.clip_tree &&
          scroll_tree == other.scroll_tree &&
-         layer_id_to_transform_node_index ==
-             other.layer_id_to_transform_node_index &&
-         layer_id_to_effect_node_index == other.layer_id_to_effect_node_index &&
-         layer_id_to_clip_node_index == other.layer_id_to_clip_node_index &&
-         layer_id_to_scroll_node_index == other.layer_id_to_scroll_node_index &&
          element_id_to_effect_node_index ==
              other.element_id_to_effect_node_index &&
          element_id_to_scroll_node_index ==
@@ -1623,12 +1620,8 @@ PropertyTrees& PropertyTrees::operator=(const PropertyTrees& from) {
   effect_tree = from.effect_tree;
   clip_tree = from.clip_tree;
   scroll_tree = from.scroll_tree;
-  layer_id_to_transform_node_index = from.layer_id_to_transform_node_index;
-  layer_id_to_effect_node_index = from.layer_id_to_effect_node_index;
   always_use_active_tree_opacity_effect_ids =
       from.always_use_active_tree_opacity_effect_ids;
-  layer_id_to_clip_node_index = from.layer_id_to_clip_node_index;
-  layer_id_to_scroll_node_index = from.layer_id_to_scroll_node_index;
   element_id_to_effect_node_index = from.element_id_to_effect_node_index;
   element_id_to_scroll_node_index = from.element_id_to_scroll_node_index;
   element_id_to_transform_node_index = from.element_id_to_transform_node_index;
@@ -1658,10 +1651,6 @@ void PropertyTrees::clear() {
   clip_tree.clear();
   effect_tree.clear();
   scroll_tree.clear();
-  layer_id_to_transform_node_index.clear();
-  layer_id_to_effect_node_index.clear();
-  layer_id_to_clip_node_index.clear();
-  layer_id_to_scroll_node_index.clear();
   element_id_to_effect_node_index.clear();
   element_id_to_scroll_node_index.clear();
   element_id_to_transform_node_index.clear();
@@ -1713,46 +1702,25 @@ void PropertyTrees::SetInnerViewportScrollBoundsDelta(
 
 void PropertyTrees::PushOpacityIfNeeded(PropertyTrees* target_tree) {
   for (int id : target_tree->always_use_active_tree_opacity_effect_ids) {
-    if (layer_id_to_effect_node_index.find(id) ==
-        layer_id_to_effect_node_index.end())
-      continue;
-    EffectNode* source_effect_node =
-        effect_tree.Node(layer_id_to_effect_node_index[id]);
-    EffectNode* target_effect_node = target_tree->effect_tree.Node(
-        target_tree->layer_id_to_effect_node_index[id]);
-    float source_opacity = source_effect_node->opacity;
-    float target_opacity = target_effect_node->opacity;
-    if (source_opacity == target_opacity)
-      continue;
-    target_effect_node->opacity = source_opacity;
-    target_tree->effect_tree.set_needs_update(true);
+    if (EffectNode* source_effect_node =
+            effect_tree.FindNodeFromOwningLayerId(id)) {
+      EffectNode* target_effect_node =
+          target_tree->effect_tree.FindNodeFromOwningLayerId(id);
+      float source_opacity = source_effect_node->opacity;
+      float target_opacity = target_effect_node->opacity;
+      if (source_opacity == target_opacity)
+        continue;
+      target_effect_node->opacity = source_opacity;
+      target_tree->effect_tree.set_needs_update(true);
+    }
   }
 }
 
 void PropertyTrees::RemoveIdFromIdToIndexMaps(int id) {
-  layer_id_to_transform_node_index.erase(id);
-  layer_id_to_effect_node_index.erase(id);
-  layer_id_to_clip_node_index.erase(id);
-  layer_id_to_scroll_node_index.erase(id);
-}
-
-bool PropertyTrees::IsInIdToIndexMap(TreeType tree_type, int id) {
-  std::unordered_map<int, int>* id_to_index_map = nullptr;
-  switch (tree_type) {
-    case TRANSFORM:
-      id_to_index_map = &layer_id_to_transform_node_index;
-      break;
-    case EFFECT:
-      id_to_index_map = &layer_id_to_effect_node_index;
-      break;
-    case CLIP:
-      id_to_index_map = &layer_id_to_clip_node_index;
-      break;
-    case SCROLL:
-      id_to_index_map = &layer_id_to_scroll_node_index;
-      break;
-  }
-  return id_to_index_map->find(id) != id_to_index_map->end();
+  transform_tree.SetOwningLayerIdForNode(nullptr, id);
+  clip_tree.SetOwningLayerIdForNode(nullptr, id);
+  scroll_tree.SetOwningLayerIdForNode(nullptr, id);
+  effect_tree.SetOwningLayerIdForNode(nullptr, id);
 }
 
 void PropertyTrees::UpdateChangeTracking() {

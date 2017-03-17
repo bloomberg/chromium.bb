@@ -726,9 +726,8 @@ void LayerTreeImpl::UpdatePropertyTreeScrollingAndAnimationFromMainThread() {
   std::vector<int> layer_ids_to_remove;
   for (auto& layer_id_to_opacity : opacity_animations_map_) {
     const int id = layer_id_to_opacity.first;
-    if (property_trees_.IsInIdToIndexMap(PropertyTrees::TreeType::EFFECT, id)) {
-      EffectNode* node = property_trees_.effect_tree.Node(
-          property_trees_.layer_id_to_effect_node_index[id]);
+    if (EffectNode* node =
+            property_trees_.effect_tree.FindNodeFromOwningLayerId(id)) {
       if (!node->is_currently_animating_opacity ||
           node->opacity == layer_id_to_opacity.second) {
         layer_ids_to_remove.push_back(id);
@@ -744,10 +743,8 @@ void LayerTreeImpl::UpdatePropertyTreeScrollingAndAnimationFromMainThread() {
 
   for (auto& layer_id_to_transform : transform_animations_map_) {
     const int id = layer_id_to_transform.first;
-    if (property_trees_.IsInIdToIndexMap(PropertyTrees::TreeType::TRANSFORM,
-                                         id)) {
-      TransformNode* node = property_trees_.transform_tree.Node(
-          property_trees_.layer_id_to_transform_node_index[id]);
+    if (TransformNode* node =
+            property_trees_.transform_tree.FindNodeFromOwningLayerId(id)) {
       if (!node->is_currently_animating ||
           node->local == layer_id_to_transform.second) {
         layer_ids_to_remove.push_back(id);
@@ -764,9 +761,8 @@ void LayerTreeImpl::UpdatePropertyTreeScrollingAndAnimationFromMainThread() {
 
   for (auto& layer_id_to_filters : filter_animations_map_) {
     const int id = layer_id_to_filters.first;
-    if (property_trees_.IsInIdToIndexMap(PropertyTrees::TreeType::EFFECT, id)) {
-      EffectNode* node = property_trees_.effect_tree.Node(
-          property_trees_.layer_id_to_effect_node_index[id]);
+    if (EffectNode* node =
+            property_trees_.effect_tree.FindNodeFromOwningLayerId(id)) {
       if (!node->is_currently_animating_filter ||
           node->filters == layer_id_to_filters.second) {
         layer_ids_to_remove.push_back(id);

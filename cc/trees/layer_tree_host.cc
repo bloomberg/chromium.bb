@@ -1259,12 +1259,9 @@ void LayerTreeHost::SetElementOpacityMutated(ElementId element_id,
   DCHECK_LE(opacity, 1.f);
   layer->OnOpacityAnimated(opacity);
 
-  if (property_trees_.IsInIdToIndexMap(PropertyTrees::TreeType::EFFECT,
-                                       layer->id())) {
-    DCHECK_EQ(layer->effect_tree_index(),
-              property_trees_.layer_id_to_effect_node_index[layer->id()]);
-    EffectNode* node =
-        property_trees_.effect_tree.Node(layer->effect_tree_index());
+  if (EffectNode* node =
+          property_trees_.effect_tree.FindNodeFromOwningLayerId(layer->id())) {
+    DCHECK_EQ(layer->effect_tree_index(), node->id);
     if (node->opacity == opacity)
       return;
 
@@ -1283,12 +1280,10 @@ void LayerTreeHost::SetElementTransformMutated(
   DCHECK(layer);
   layer->OnTransformAnimated(transform);
 
-  if (property_trees_.IsInIdToIndexMap(PropertyTrees::TreeType::TRANSFORM,
-                                       layer->id())) {
-    DCHECK_EQ(layer->transform_tree_index(),
-              property_trees_.layer_id_to_transform_node_index[layer->id()]);
-    TransformNode* node =
-        property_trees_.transform_tree.Node(layer->transform_tree_index());
+  if (TransformNode* node =
+          property_trees_.transform_tree.FindNodeFromOwningLayerId(
+              layer->id())) {
+    DCHECK_EQ(layer->transform_tree_index(), node->id);
     if (node->local == transform)
       return;
 

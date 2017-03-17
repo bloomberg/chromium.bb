@@ -53,6 +53,7 @@
 #include "cc/test/skia_common.h"
 #include "cc/test/test_compositor_frame_sink.h"
 #include "cc/test/test_web_graphics_context_3d.h"
+#include "cc/trees/clip_node.h"
 #include "cc/trees/effect_node.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_host_impl.h"
@@ -819,92 +820,61 @@ class LayerTreeHostTestPushNodeOwnerToNodeIdMap : public LayerTreeHostTest {
 
   void CommitCompleteOnThread(LayerTreeHostImpl* impl) override {
     PropertyTrees* property_trees = impl->sync_tree()->property_trees();
-    auto root_transform_id_to_index =
-        property_trees->layer_id_to_transform_node_index.find(root_->id());
-    auto child_transform_id_to_index =
-        property_trees->layer_id_to_transform_node_index.find(child_->id());
-    auto root_effect_id_to_index =
-        property_trees->layer_id_to_effect_node_index.find(root_->id());
-    auto child_effect_id_to_index =
-        property_trees->layer_id_to_effect_node_index.find(child_->id());
-    auto root_clip_id_to_index =
-        property_trees->layer_id_to_clip_node_index.find(root_->id());
-    auto child_clip_id_to_index =
-        property_trees->layer_id_to_clip_node_index.find(child_->id());
-    auto root_scroll_id_to_index =
-        property_trees->layer_id_to_scroll_node_index.find(root_->id());
-    auto child_scroll_id_to_index =
-        property_trees->layer_id_to_scroll_node_index.find(child_->id());
+    auto* root_transform_node =
+        property_trees->transform_tree.FindNodeFromOwningLayerId(root_->id());
+    auto* child_transform_node =
+        property_trees->transform_tree.FindNodeFromOwningLayerId(child_->id());
+    auto* root_effect_node =
+        property_trees->effect_tree.FindNodeFromOwningLayerId(root_->id());
+    auto* child_effect_node =
+        property_trees->effect_tree.FindNodeFromOwningLayerId(child_->id());
+    auto* root_clip_node =
+        property_trees->clip_tree.FindNodeFromOwningLayerId(root_->id());
+    auto* child_clip_node =
+        property_trees->clip_tree.FindNodeFromOwningLayerId(child_->id());
+    auto* root_scroll_node =
+        property_trees->scroll_tree.FindNodeFromOwningLayerId(root_->id());
+    auto* child_scroll_node =
+        property_trees->scroll_tree.FindNodeFromOwningLayerId(child_->id());
     switch (impl->sync_tree()->source_frame_number()) {
       case 0:
         // root_ should create every property tree node and child_ should not
         // create any.
-        EXPECT_NE(root_transform_id_to_index,
-                  property_trees->layer_id_to_transform_node_index.end());
-        EXPECT_EQ(root_transform_id_to_index->second,
-                  root_->transform_tree_index());
-        EXPECT_NE(root_effect_id_to_index,
-                  property_trees->layer_id_to_effect_node_index.end());
-        EXPECT_EQ(root_effect_id_to_index->second, root_->effect_tree_index());
-        EXPECT_NE(root_clip_id_to_index,
-                  property_trees->layer_id_to_clip_node_index.end());
-        EXPECT_EQ(root_clip_id_to_index->second, root_->clip_tree_index());
-        EXPECT_NE(root_scroll_id_to_index,
-                  property_trees->layer_id_to_scroll_node_index.end());
-        EXPECT_EQ(root_scroll_id_to_index->second, root_->scroll_tree_index());
-        EXPECT_EQ(child_transform_id_to_index,
-                  property_trees->layer_id_to_transform_node_index.end());
-        EXPECT_EQ(child_effect_id_to_index,
-                  property_trees->layer_id_to_effect_node_index.end());
-        EXPECT_EQ(child_clip_id_to_index,
-                  property_trees->layer_id_to_clip_node_index.end());
-        EXPECT_EQ(child_scroll_id_to_index,
-                  property_trees->layer_id_to_scroll_node_index.end());
+        EXPECT_NE(root_transform_node, nullptr);
+        EXPECT_EQ(root_transform_node->id, root_->transform_tree_index());
+        EXPECT_NE(root_effect_node, nullptr);
+        EXPECT_EQ(root_effect_node->id, root_->effect_tree_index());
+        EXPECT_NE(root_clip_node, nullptr);
+        EXPECT_EQ(root_clip_node->id, root_->clip_tree_index());
+        EXPECT_NE(root_scroll_node, nullptr);
+        EXPECT_EQ(root_scroll_node->id, root_->scroll_tree_index());
+        EXPECT_EQ(child_transform_node, nullptr);
+        EXPECT_EQ(child_effect_node, nullptr);
+        EXPECT_EQ(child_clip_node, nullptr);
+        EXPECT_EQ(child_scroll_node, nullptr);
         break;
       case 1:
         // child_ should create a transfrom, clip, effect nodes but not a scroll
         // node.
-        EXPECT_NE(
-            property_trees->layer_id_to_transform_node_index.find(child_->id()),
-            property_trees->layer_id_to_transform_node_index.end());
-        EXPECT_EQ(child_transform_id_to_index->second,
-                  child_->transform_tree_index());
-        EXPECT_NE(
-            property_trees->layer_id_to_effect_node_index.find(child_->id()),
-            property_trees->layer_id_to_effect_node_index.end());
-        EXPECT_EQ(child_effect_id_to_index->second,
-                  child_->effect_tree_index());
-        EXPECT_NE(
-            property_trees->layer_id_to_clip_node_index.find(child_->id()),
-            property_trees->layer_id_to_clip_node_index.end());
-        EXPECT_EQ(child_clip_id_to_index->second, child_->clip_tree_index());
-        EXPECT_EQ(
-            property_trees->layer_id_to_scroll_node_index.find(child_->id()),
-            property_trees->layer_id_to_scroll_node_index.end());
+        EXPECT_NE(child_transform_node, nullptr);
+        EXPECT_EQ(child_transform_node->id, child_->transform_tree_index());
+        EXPECT_NE(child_effect_node, nullptr);
+        EXPECT_EQ(child_effect_node->id, child_->effect_tree_index());
+        EXPECT_NE(child_clip_node, nullptr);
+        EXPECT_EQ(child_clip_node->id, child_->clip_tree_index());
+        EXPECT_EQ(child_scroll_node, nullptr);
         break;
       case 2:
         // child_ should create a scroll node.
-        EXPECT_NE(
-            property_trees->layer_id_to_scroll_node_index.find(child_->id()),
-            property_trees->layer_id_to_scroll_node_index.end());
-        EXPECT_EQ(child_scroll_id_to_index->second,
-                  child_->scroll_tree_index());
+        EXPECT_NE(child_scroll_node, nullptr);
+        EXPECT_EQ(child_scroll_node->id, child_->scroll_tree_index());
         break;
       case 3:
         // child_ should not create any property tree nodes.
-        EXPECT_EQ(
-            property_trees->layer_id_to_transform_node_index.find(child_->id()),
-            property_trees->layer_id_to_transform_node_index.end());
-        EXPECT_EQ(
-            property_trees->layer_id_to_effect_node_index.find(child_->id()),
-            property_trees->layer_id_to_effect_node_index.end());
-        EXPECT_EQ(
-            property_trees->layer_id_to_clip_node_index.find(child_->id()),
-            property_trees->layer_id_to_clip_node_index.end());
-        EXPECT_EQ(
-            property_trees->layer_id_to_scroll_node_index.find(child_->id()),
-            property_trees->layer_id_to_scroll_node_index.end());
-
+        EXPECT_EQ(child_transform_node, nullptr);
+        EXPECT_EQ(child_effect_node, nullptr);
+        EXPECT_EQ(child_clip_node, nullptr);
+        EXPECT_EQ(child_scroll_node, nullptr);
         EndTest();
         break;
     }
