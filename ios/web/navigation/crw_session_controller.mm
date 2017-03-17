@@ -58,8 +58,8 @@
   web::ScopedNavigationItemImplList _items;
   // |_pendingItem| only contains a NavigationItem for non-history navigations.
   // For back/forward navigations within session history, _pendingItemIndex will
-  // be equal to -1, and self.pendingItem will return an item contained within
-  // |_items|.
+  // be an index within |_items|, and self.pendingItem will return the item at
+  // that index.
   std::unique_ptr<web::NavigationItemImpl> _pendingItem;
   std::unique_ptr<web::NavigationItemImpl> _transientItem;
 }
