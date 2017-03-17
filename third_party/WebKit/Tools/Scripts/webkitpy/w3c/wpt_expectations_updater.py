@@ -419,19 +419,26 @@ class WPTExpectationsUpdater(object):
             the test results dictionary. The tests to be rebaselined should
             include testharness.js tests that failed due to a baseline mismatch.
         """
-        test_results = copy.deepcopy(test_results)
+        new_test_results = copy.deepcopy(test_results)
         tests_to_rebaseline = set()
         for test_path in test_results:
-            if not (self.is_js_test(test_path) and test_results.get(test_path)):
-                continue
-            for platform in test_results[test_path].keys():
-                if test_results[test_path][platform]['actual'] not in ['CRASH', 'TIMEOUT']:
-                    del test_results[test_path][platform]
+            for platform, result in test_results[test_path].iteritems():
+                if self.can_rebaseline(test_path, result):
+                    del new_test_results[test_path][platform]
                     tests_to_rebaseline.add(test_path)
-        return sorted(tests_to_rebaseline), test_results
+        return sorted(tests_to_rebaseline), new_test_results
+
+    def can_rebaseline(self, test_path, result):
+        return (self.is_js_test(test_path) and
+                result['actual'] not in ('CRASH', 'TIMEOUT'))
 
     def is_js_test(self, test_path):
         """Checks whether a given file is a testharness.js test.
+
+        TODO(qyearsley): This may not behave how we want it to for virtual tests.
+        TODO(qyearsley): Avoid using TestParser; maybe this should use
+        Port.test_type, or Port.reference_files to see whether it's not
+        a reference test?
 
         Args:
             test_path: A file path relative to the layout tests directory.
