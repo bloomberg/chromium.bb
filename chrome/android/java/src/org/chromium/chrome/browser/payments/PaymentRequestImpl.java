@@ -252,6 +252,7 @@ public class PaymentRequestImpl
     private final WebContents mWebContents;
     private final String mSchemelessOriginForPaymentApp;
     private final String mOriginForDisplay;
+    private final String mSchemelessIFrameOriginForPaymentApp;
     private final String mMerchantName;
     private final byte[][] mCertificateChain;
     private final AddressEditor mAddressEditor;
@@ -355,6 +356,8 @@ public class PaymentRequestImpl
         assert renderFrameHost != null;
 
         mRenderFrameHost = renderFrameHost;
+        mSchemelessIFrameOriginForPaymentApp = UrlFormatter.formatUrlForSecurityDisplay(
+                mRenderFrameHost.getLastCommittedURL(), false /* omit scheme for payment apps. */);
         mWebContents = WebContentsStatics.fromRenderFrameHost(renderFrameHost);
 
         mSchemelessOriginForPaymentApp = UrlFormatter.formatUrlForSecurityDisplay(
@@ -658,8 +661,8 @@ public class PaymentRequestImpl
         // so a fast response from a non-autofill payment app at the front of the app list does not
         // cause NOT_SUPPORTED payment rejection.
         for (Map.Entry<PaymentApp, Map<String, PaymentMethodData>> q : queryApps.entrySet()) {
-            q.getKey().getInstruments(
-                    q.getValue(), mSchemelessOriginForPaymentApp, mCertificateChain, this);
+            q.getKey().getInstruments(q.getValue(), mSchemelessOriginForPaymentApp,
+                    mSchemelessIFrameOriginForPaymentApp, mCertificateChain, this);
         }
     }
 
@@ -1181,8 +1184,9 @@ public class PaymentRequestImpl
         }
 
         instrument.invokePaymentApp(mMerchantName, mSchemelessOriginForPaymentApp,
-                mCertificateChain, Collections.unmodifiableMap(methodData), mRawTotal,
-                mRawLineItems, Collections.unmodifiableMap(modifiers), this);
+                mSchemelessIFrameOriginForPaymentApp, mCertificateChain,
+                Collections.unmodifiableMap(methodData), mRawTotal, mRawLineItems,
+                Collections.unmodifiableMap(modifiers), this);
 
         recordSuccessFunnelHistograms("PayClicked");
         return !(instrument instanceof AutofillPaymentInstrument);

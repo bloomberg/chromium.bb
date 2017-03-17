@@ -75,6 +75,8 @@ public abstract class PaymentInstrument extends PaymentOption {
      *
      * @param merchantName     The name of the merchant.
      * @param origin           The origin of this merchant.
+     * @param iframeOrigin     The origin of the iframe browsing context that invoked
+     * PaymentRequest.
      * @param certificateChain The site certificate chain of the merchant.
      * @param methodDataMap    The payment-method specific data for all applicable payment methods,
      *                         e.g., whether the app should be invoked in test or production, a
@@ -84,7 +86,7 @@ public abstract class PaymentInstrument extends PaymentOption {
      * @param modifiers        The relevant payment details modifiers.
      * @param callback         The object that will receive the instrument details.
      */
-    public abstract void invokePaymentApp(String merchantName, String origin,
+    public abstract void invokePaymentApp(String merchantName, String origin, String iframeOrigin,
             byte[][] certificateChain, Map<String, PaymentMethodData> methodDataMap,
             PaymentItem total, List<PaymentItem> displayItems,
             Map<String, PaymentDetailsModifier> modifiers, InstrumentDetailsCallback callback);

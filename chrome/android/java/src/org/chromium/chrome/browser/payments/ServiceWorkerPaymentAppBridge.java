@@ -74,8 +74,9 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
      * @param modifiers      Payment method specific modifiers to the payment items and the total.
      */
     public static void invokePaymentApp(WebContents webContents, long registrationId,
-            String optionId, String origin, Set<PaymentMethodData> methodData, PaymentItem total,
-            List<PaymentItem> displayItems, Set<PaymentDetailsModifier> modifiers) {
+            String optionId, String origin, String unusedIframeOrigin,
+            Set<PaymentMethodData> methodData, PaymentItem total, List<PaymentItem> displayItems,
+            Set<PaymentDetailsModifier> modifiers) {
         nativeInvokePaymentApp(webContents, registrationId, optionId, origin,
                 methodData.toArray(new PaymentMethodData[0]), total,
                 modifiers.toArray(new PaymentDetailsModifier[0]));

@@ -38,11 +38,13 @@ public interface PaymentApp {
      * production
      *                         mode, merchant identifier, or a public key.
      * @param origin           The origin of this merchant.
+     * @param iframeOrigin     The origin of the iframe browsing context that invoked
+     * PaymentRequest.
      * @param certificateChain The site certificate chain of the merchant.
      * @param callback         The object that will receive the list of instruments.
      */
     void getInstruments(Map<String, PaymentMethodData> methodDataMap, String origin,
-            byte[][] certificateChain, InstrumentsCallback callback);
+            String iframeOrigin, byte[][] certificateChain, InstrumentsCallback callback);
 
     /**
      * Returns a list of all payment method names that this app supports. For example, ["visa",

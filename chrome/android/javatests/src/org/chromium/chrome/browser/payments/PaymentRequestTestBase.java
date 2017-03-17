@@ -930,7 +930,8 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
 
         @Override
         public void getInstruments(Map<String, PaymentMethodData> methodData, String origin,
-                byte[][] certificateChain, InstrumentsCallback instrumentsCallback) {
+                String iframeOrigin, byte[][] certificateChain,
+                InstrumentsCallback instrumentsCallback) {
             mCallback = instrumentsCallback;
             respond();
         }
@@ -995,9 +996,10 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
         }
 
         @Override
-        public void invokePaymentApp(String merchantName, String origin, byte[][] certificateChain,
-                Map<String, PaymentMethodData> methodData, PaymentItem total,
-                List<PaymentItem> displayItems, Map<String, PaymentDetailsModifier> modifiers,
+        public void invokePaymentApp(String merchantName, String origin, String iframeOrigin,
+                byte[][] certificateChain, Map<String, PaymentMethodData> methodData,
+                PaymentItem total, List<PaymentItem> displayItems,
+                Map<String, PaymentDetailsModifier> modifiers,
                 InstrumentDetailsCallback detailsCallback) {
             detailsCallback.onInstrumentDetailsReady(
                     mMethodName, "{\"transaction\": 1337}");

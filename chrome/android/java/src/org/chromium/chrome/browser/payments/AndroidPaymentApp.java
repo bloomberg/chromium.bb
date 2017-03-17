@@ -57,6 +57,7 @@ public class AndroidPaymentApp
     private static final String EXTRA_METHOD_NAME = "methodName";
     private static final String EXTRA_DATA = "data";
     private static final String EXTRA_ORIGIN = "origin";
+    private static final String EXTRA_IFRAME_ORIGIN = "iframeOrigin";
     private static final String EXTRA_DETAILS = "details";
     private static final String EXTRA_INSTRUMENT_DETAILS = "instrumentDetails";
     private static final String EXTRA_CERTIFICATE_CHAIN = "certificateChain";
@@ -123,7 +124,7 @@ public class AndroidPaymentApp
 
     @Override
     public void getInstruments(Map<String, PaymentMethodData> methodData, String origin,
-            byte[][] certificateChain, InstrumentsCallback callback) {
+            String iframeOrigin, byte[][] certificateChain, InstrumentsCallback callback) {
         assert mInstrumentsCallback
                 == null : "Have not responded to previous request for instruments yet";
         mInstrumentsCallback = callback;
@@ -136,6 +137,7 @@ public class AndroidPaymentApp
         Bundle extras = new Bundle();
         extras.putString(EXTRA_METHOD_NAME, mMethodNames.iterator().next());
         extras.putString(EXTRA_ORIGIN, origin);
+        extras.putString(EXTRA_IFRAME_ORIGIN, iframeOrigin);
         PaymentMethodData data = methodData.get(mMethodNames.iterator().next());
         extras.putString(EXTRA_DATA, data == null ? EMPTY_JSON_DATA : data.stringifiedData);
         addCertificateChain(extras, certificateChain);
@@ -253,15 +255,16 @@ public class AndroidPaymentApp
 
     @Override
     public void invokePaymentApp(final String merchantName, final String origin,
-            final byte[][] certificateChain, final Map<String, PaymentMethodData> methodDataMap,
-            final PaymentItem total, final List<PaymentItem> displayItems,
+            final String iframeOrigin, final byte[][] certificateChain,
+            final Map<String, PaymentMethodData> methodDataMap, final PaymentItem total,
+            final List<PaymentItem> displayItems,
             final Map<String, PaymentDetailsModifier> modifiers,
             InstrumentDetailsCallback callback) {
         mInstrumentDetailsCallback = callback;
 
         if (!mIsIncognito) {
-            launchPaymentApp(merchantName, origin, certificateChain, methodDataMap, total,
-                    displayItems, modifiers);
+            launchPaymentApp(merchantName, origin, iframeOrigin, certificateChain, methodDataMap,
+                    total, displayItems, modifiers);
             return;
         }
 
@@ -278,8 +281,9 @@ public class AndroidPaymentApp
                         new OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                launchPaymentApp(merchantName, origin, certificateChain,
-                                        methodDataMap, total, displayItems, modifiers);
+                                launchPaymentApp(merchantName, origin, iframeOrigin,
+                                        certificateChain, methodDataMap, total, displayItems,
+                                        modifiers);
                             }
                         })
                 .setNegativeButton(R.string.cancel,
@@ -298,13 +302,15 @@ public class AndroidPaymentApp
                 .show();
     }
 
-    private void launchPaymentApp(String merchantName, String origin, byte[][] certificateChain,
-            Map<String, PaymentMethodData> methodDataMap, PaymentItem total,
-            List<PaymentItem> displayItems, Map<String, PaymentDetailsModifier> modifiers) {
+    private void launchPaymentApp(String merchantName, String origin, String iframeOrigin,
+            byte[][] certificateChain, Map<String, PaymentMethodData> methodDataMap,
+            PaymentItem total, List<PaymentItem> displayItems,
+            Map<String, PaymentDetailsModifier> modifiers) {
         assert mInstrumentDetailsCallback != null;
         assert !mMethodNames.isEmpty();
         Bundle extras = new Bundle();
         extras.putString(EXTRA_ORIGIN, origin);
+        extras.putString(EXTRA_IFRAME_ORIGIN, iframeOrigin);
         addCertificateChain(extras, certificateChain);
 
         String methodName = mMethodNames.iterator().next();
