@@ -769,7 +769,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
   TestUndockedDevToolsInspectedTabClose
 #endif
 IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
-                       TestUndockedDevToolsInspectedTabClose) {
+                       MAYBE_TestUndockedDevToolsInspectedTabClose) {
   RunBeforeUnloadSanityTest(false, base::Bind(
       &DevToolsBeforeUnloadTest::CloseInspectedTab,
       base::Unretained(this)));
