@@ -258,7 +258,6 @@ exec_script_whitelist =
       # with other repos. The entries in this list should be only for files
       # in the Chromium repo outside of //build.
       "//build_overrides/build.gni",
-      "//chromeos/BUILD.gn",
 
       # TODO(dgn): Layer violation but breaks the build otherwise, see
       # https://crbug.com/474506.
