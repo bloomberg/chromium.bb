@@ -1427,4 +1427,316 @@ TEST_F(InputMethodControllerTest, SetEmptyCompositionShouldNotMoveCaret) {
   EXPECT_STREQ("abc\ndef", textarea->value().utf8().data());
 }
 
+TEST_F(InputMethodControllerTest, WhitespaceFixup) {
+  Element* div = insertHTMLElement(
+      "<div id='sample' contenteditable>Initial text blah</div>", "sample");
+
+  // Delete "Initial"
+  Vector<CompositionUnderline> emptyUnderlines;
+  controller().setCompositionFromExistingText(emptyUnderlines, 0, 7);
+  controller().commitText(String(""), emptyUnderlines, 0);
+
+  // The space at the beginning of the string should have been converted to an
+  // nbsp
+  EXPECT_STREQ("&nbsp;text blah", div->innerHTML().utf8().data());
+
+  // Delete "blah"
+  controller().setCompositionFromExistingText(emptyUnderlines, 6, 10);
+  controller().commitText(String(""), emptyUnderlines, 0);
+
+  // The space at the end of the string should have been converted to an nbsp
+  EXPECT_STREQ("&nbsp;text&nbsp;", div->innerHTML().utf8().data());
+}
+
+static String getMarkedText(DocumentMarkerController& documentMarkerController,
+                            Node* node,
+                            int markerIndex) {
+  DocumentMarker* marker = documentMarkerController.markers()[markerIndex];
+  return node->textContent().substring(
+      marker->startOffset(), marker->endOffset() - marker->startOffset());
+}
+
+TEST_F(InputMethodControllerTest,
+       Marker_WhitespaceFixupAroundMarkerNotContainingSpace) {
+  Element* div = insertHTMLElement(
+      "<div id='sample' contenteditable>Initial text blah</div>", "sample");
+
+  // Add marker under "text" (use TextMatch since Composition markers don't
+  // persist across editing operations)
+  EphemeralRange markerRange = PlainTextRange(8, 12).createRange(*div);
+  document().markers().addMarker(markerRange.startPosition(),
+                                 markerRange.endPosition(),
+                                 DocumentMarker::TextMatch);
+  // Delete "Initial"
+  Vector<CompositionUnderline> emptyUnderlines;
+  controller().setCompositionFromExistingText(emptyUnderlines, 0, 7);
+  controller().commitText(String(""), emptyUnderlines, 0);
+
+  // Delete "blah"
+  controller().setCompositionFromExistingText(emptyUnderlines, 6, 10);
+  controller().commitText(String(""), emptyUnderlines, 0);
+
+  // Check that the marker is still attached to "text" and doesn't include
+  // either space around it
+  EXPECT_EQ(1u, document().markers().markersFor(div->firstChild()).size());
+  EXPECT_STREQ(
+      "text",
+      getMarkedText(document().markers(), div->firstChild(), 0).utf8().data());
+}
+
+// TODO(rlanday): The behavior tested in the following DocumentMarker tests is
+// going to be changed so markers are not split when text they contain is
+// deleted
+
+TEST_F(InputMethodControllerTest,
+       Marker_WhitespaceFixupAroundMarkerBeginningWithSpace) {
+  Element* div = insertHTMLElement(
+      "<div id='sample' contenteditable>Initial text blah</div>", "sample");
+
+  // Add marker under " text" (use TextMatch since Composition markers don't
+  // persist across editing operations)
+  EphemeralRange markerRange = PlainTextRange(7, 12).createRange(*div);
+  document().markers().addMarker(markerRange.startPosition(),
+                                 markerRange.endPosition(),
+                                 DocumentMarker::TextMatch);
+  // Delete "Initial"
+  Vector<CompositionUnderline> emptyUnderlines;
+  controller().setCompositionFromExistingText(emptyUnderlines, 0, 7);
+  controller().commitText(String(""), emptyUnderlines, 0);
+
+  // Delete "blah"
+  controller().setCompositionFromExistingText(emptyUnderlines, 6, 10);
+  controller().commitText(String(""), emptyUnderlines, 0);
+
+  // Check that the marker was split when the space at the beginning was
+  // converted to an nbsp
+  EXPECT_EQ(2u, document().markers().markers().size());
+  EXPECT_STREQ(
+      "\xC2\xA0",  // UTF-8 for an nbsp
+      getMarkedText(document().markers(), div->firstChild(), 0).utf8().data());
+  EXPECT_STREQ(
+      "text",
+      getMarkedText(document().markers(), div->firstChild(), 1).utf8().data());
+}
+
+TEST_F(InputMethodControllerTest,
+       Marker_WhitespaceFixupAroundMarkerEndingWithSpace) {
+  Element* div = insertHTMLElement(
+      "<div id='sample' contenteditable>Initial text blah</div>", "sample");
+
+  // Add marker under "text " (use TextMatch since Composition markers don't
+  // persist across editing operations)
+  EphemeralRange markerRange = PlainTextRange(8, 13).createRange(*div);
+  document().markers().addMarker(markerRange.startPosition(),
+                                 markerRange.endPosition(),
+                                 DocumentMarker::TextMatch);
+  // Delete "Initial"
+  Vector<CompositionUnderline> emptyUnderlines;
+  controller().setCompositionFromExistingText(emptyUnderlines, 0, 7);
+  controller().commitText(String(""), emptyUnderlines, 0);
+
+  // Delete "blah"
+  controller().setCompositionFromExistingText(emptyUnderlines, 6, 10);
+  controller().commitText(String(""), emptyUnderlines, 0);
+
+  // Check that the marker was split when the space at the end was
+  // converted to an nbsp
+  EXPECT_EQ(2u, document().markers().markers().size());
+  EXPECT_STREQ(
+      "text",
+      getMarkedText(document().markers(), div->firstChild(), 0).utf8().data());
+  EXPECT_STREQ(
+      "\xC2\xA0",  // UTF-8 for an nbsp
+      getMarkedText(document().markers(), div->firstChild(), 1).utf8().data());
+}
+
+TEST_F(InputMethodControllerTest,
+       Marker_WhitespaceFixupAroundMarkerBeginningAndEndingWithSpaces) {
+  Element* div = insertHTMLElement(
+      "<div id='sample' contenteditable>Initial text blah</div>", "sample");
+
+  // Add marker under " text " (use TextMatch since Composition markers don't
+  // persist across editing operations)
+  EphemeralRange markerRange = PlainTextRange(7, 13).createRange(*div);
+  document().markers().addMarker(markerRange.startPosition(),
+                                 markerRange.endPosition(),
+                                 DocumentMarker::TextMatch);
+
+  // Delete "Initial"
+  Vector<CompositionUnderline> emptyUnderlines;
+  controller().setCompositionFromExistingText(emptyUnderlines, 0, 7);
+  controller().commitText(String(""), emptyUnderlines, 0);
+
+  // Delete "blah"
+  controller().setCompositionFromExistingText(emptyUnderlines, 6, 10);
+  controller().commitText(String(""), emptyUnderlines, 0);
+
+  // Check that the marker was split into three pieces when the two spaces were
+  // converted to nbsps
+  EXPECT_EQ(3u, document().markers().markers().size());
+  EXPECT_STREQ(
+      "\xC2\xA0",  // UTF-8 for an nbsp
+      getMarkedText(document().markers(), div->firstChild(), 0).utf8().data());
+  EXPECT_STREQ(
+      "text",
+      getMarkedText(document().markers(), div->firstChild(), 1).utf8().data());
+  EXPECT_STREQ(
+      "\xC2\xA0",  // UTF-8 for an nbsp
+      getMarkedText(document().markers(), div->firstChild(), 2).utf8().data());
+}
+
+TEST_F(InputMethodControllerTest, Marker_ReplaceStartOfMarker) {
+  Element* div = insertHTMLElement(
+      "<div id='sample' contenteditable>Initial text</div>", "sample");
+
+  // Add marker under "Initial text"
+  EphemeralRange markerRange = PlainTextRange(0, 12).createRange(*div);
+  document().markers().addMarker(markerRange.startPosition(),
+                                 markerRange.endPosition(),
+                                 DocumentMarker::TextMatch);
+
+  // Replace "Initial" with "Original"
+  Vector<CompositionUnderline> emptyUnderlines;
+  controller().setCompositionFromExistingText(emptyUnderlines, 0, 7);
+  controller().commitText(String("Original"), emptyUnderlines, 0);
+
+  // Verify marker is under "al text"
+  // ("Initial" and "Original" have "al" as a common suffix)
+  EXPECT_EQ(1u, document().markers().markers().size());
+  EXPECT_STREQ(
+      "al text",
+      getMarkedText(document().markers(), div->firstChild(), 0).utf8().data());
+}
+
+TEST_F(InputMethodControllerTest, Marker_ReplaceTextContainsStartOfMarker) {
+  Element* div = insertHTMLElement(
+      "<div id='sample' contenteditable>This is some initial text</div>",
+      "sample");
+
+  // Add marker under "initial text"
+  EphemeralRange markerRange = PlainTextRange(13, 25).createRange(*div);
+  document().markers().addMarker(markerRange.startPosition(),
+                                 markerRange.endPosition(),
+                                 DocumentMarker::TextMatch);
+
+  // Replace "some initial" with "boring"
+  Vector<CompositionUnderline> emptyUnderlines;
+  controller().setCompositionFromExistingText(emptyUnderlines, 8, 20);
+  controller().commitText(String("boring"), emptyUnderlines, 0);
+
+  // Verify marker is under " text"
+  EXPECT_EQ(1u, document().markers().markers().size());
+  EXPECT_STREQ(
+      " text",
+      getMarkedText(document().markers(), div->firstChild(), 0).utf8().data());
+}
+
+TEST_F(InputMethodControllerTest, Marker_ReplaceEndOfMarker) {
+  Element* div = insertHTMLElement(
+      "<div id='sample' contenteditable>Initial text</div>", "sample");
+
+  // Add marker under "Initial text"
+  EphemeralRange markerRange = PlainTextRange(0, 12).createRange(*div);
+  document().markers().addMarker(markerRange.startPosition(),
+                                 markerRange.endPosition(),
+                                 DocumentMarker::TextMatch);
+
+  // Replace "text" with "string"
+  Vector<CompositionUnderline> emptyUnderlines;
+  controller().setCompositionFromExistingText(emptyUnderlines, 8, 12);
+  controller().commitText(String("string"), emptyUnderlines, 0);
+
+  // Verify marker is under "Initial "
+  EXPECT_EQ(1u, document().markers().markers().size());
+  EXPECT_STREQ(
+      "Initial ",
+      getMarkedText(document().markers(), div->firstChild(), 0).utf8().data());
+}
+
+TEST_F(InputMethodControllerTest, Marker_ReplaceTextContainsEndOfMarker) {
+  Element* div = insertHTMLElement(
+      "<div id='sample' contenteditable>This is some initial text</div>",
+      "sample");
+
+  // Add marker under "some initial"
+  EphemeralRange markerRange = PlainTextRange(8, 20).createRange(*div);
+  document().markers().addMarker(markerRange.startPosition(),
+                                 markerRange.endPosition(),
+                                 DocumentMarker::TextMatch);
+
+  // Replace "initial text" with "content"
+  Vector<CompositionUnderline> emptyUnderlines;
+  controller().setCompositionFromExistingText(emptyUnderlines, 13, 25);
+  controller().commitText(String("content"), emptyUnderlines, 0);
+
+  EXPECT_STREQ("This is some content", div->innerHTML().utf8().data());
+
+  // Verify marker is under "some "
+  EXPECT_EQ(1u, document().markers().markers().size());
+  EXPECT_STREQ(
+      "some ",
+      getMarkedText(document().markers(), div->firstChild(), 0).utf8().data());
+}
+
+TEST_F(InputMethodControllerTest, Marker_ReplaceEntireMarker) {
+  Element* div = insertHTMLElement(
+      "<div id='sample' contenteditable>Initial text</div>", "sample");
+
+  // Add marker under "text"
+  EphemeralRange markerRange = PlainTextRange(8, 12).createRange(*div);
+  document().markers().addMarker(markerRange.startPosition(),
+                                 markerRange.endPosition(),
+                                 DocumentMarker::TextMatch);
+
+  // Replace "text" with "string"
+  Vector<CompositionUnderline> emptyUnderlines;
+  controller().setCompositionFromExistingText(emptyUnderlines, 8, 12);
+  controller().commitText(String("string"), emptyUnderlines, 0);
+
+  // Verify marker was removed
+  EXPECT_EQ(0u, document().markers().markers().size());
+}
+
+TEST_F(InputMethodControllerTest, Marker_ReplaceTextWithMarkerAtBeginning) {
+  Element* div = insertHTMLElement(
+      "<div id='sample' contenteditable>Initial text</div>", "sample");
+
+  // Add marker under "Initial"
+  EphemeralRange markerRange = PlainTextRange(0, 7).createRange(*div);
+  document().markers().addMarker(markerRange.startPosition(),
+                                 markerRange.endPosition(),
+                                 DocumentMarker::TextMatch);
+
+  EXPECT_EQ(1u, document().markers().markers().size());
+
+  // Replace "Initial text" with "New string"
+  Vector<CompositionUnderline> emptyUnderlines;
+  controller().setCompositionFromExistingText(emptyUnderlines, 0, 12);
+  controller().commitText(String("New string"), emptyUnderlines, 0);
+
+  // Verify marker was removed
+  EXPECT_EQ(0u, document().markers().markers().size());
+}
+
+TEST_F(InputMethodControllerTest, Marker_ReplaceTextWithMarkerAtEnd) {
+  Element* div = insertHTMLElement(
+      "<div id='sample' contenteditable>Initial text</div>", "sample");
+
+  // Add marker under "text"
+  EphemeralRange markerRange = PlainTextRange(8, 12).createRange(*div);
+  document().markers().addMarker(markerRange.startPosition(),
+                                 markerRange.endPosition(),
+                                 DocumentMarker::TextMatch);
+
+  EXPECT_EQ(1u, document().markers().markers().size());
+
+  // Replace "Initial text" with "New string"
+  Vector<CompositionUnderline> emptyUnderlines;
+  controller().setCompositionFromExistingText(emptyUnderlines, 0, 12);
+  controller().commitText(String("New string"), emptyUnderlines, 0);
+
+  // Verify marker was removed
+  EXPECT_EQ(0u, document().markers().markers().size());
+}
+
 }  // namespace blink
