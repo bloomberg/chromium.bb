@@ -248,7 +248,7 @@ foreach(NUM RANGE ${AOM_RTCD_CUSTOM_COMMAND_COUNT})
   list(GET AOM_RTCD_SYMBOL_LIST ${NUM} AOM_RTCD_SYMBOL)
   execute_process(
     COMMAND ${PERL_EXECUTABLE} "${AOM_ROOT}/build/make/rtcd.pl"
-      --arch=${AOM_ARCH} --sym=${AOM_RTCD_SYMBOL}
+      --arch=${AOM_ARCH} --sym=${AOM_RTCD_SYMBOL} ${AOM_RTCD_FLAGS}
       --config=${AOM_CONFIG_DIR}/${AOM_ARCH}.rtcd ${AOM_RTCD_CONFIG_FILE}
     OUTPUT_FILE ${AOM_RTCD_HEADER_FILE})
 endforeach()
@@ -258,7 +258,8 @@ function (add_rtcd_build_step config output source symbol)
     OUTPUT ${output}
     COMMAND ${PERL_EXECUTABLE}
     ARGS "${AOM_ROOT}/build/make/rtcd.pl" --arch=${AOM_ARCH} --sym=${symbol}
-      --config=${AOM_CONFIG_DIR}/${AOM_ARCH}.rtcd ${config} > ${output}
+      ${AOM_RTCD_FLAGS} --config=${AOM_CONFIG_DIR}/${AOM_ARCH}.rtcd ${config}
+      > ${output}
     DEPENDS ${config}
     COMMENT "Generating ${output}"
     WORKING_DIRECTORY ${AOM_CONFIG_DIR}

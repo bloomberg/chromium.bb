@@ -41,4 +41,8 @@ set(AOM_ADS2GAS_REQUIRED 1)
 set(AOM_ADS2GAS "${CMAKE_CURRENT_SOURCE_DIR}/build/make/ads2gas_apple.pl")
 set(AOM_GAS_EXT "S")
 
+# RTCD generation requires --disable-media for armv7s-ios.
+set(AOM_RTCD_FLAGS ${AOM_RTCD_FLAGS} --disable-media)
+string(STRIP AOM_RTCD_FLAGS ${AOM_RTCD_FLAGS})
+
 endif ()  # AOM_BUILD_CMAKE_ARMV7S_IOS_CMAKE_
