@@ -542,6 +542,19 @@ FYI_WATERFALL = {
       'swarming': False,
       'os_type': 'linux',
     },
+    'Linux Release (NVIDIA Quadro M2000)': {
+      'swarming_dimensions': [
+        {
+          'gpu': '10de:1430',
+          'os': 'Ubuntu'
+        },
+      ],
+      'build_config': 'Release',
+      # This bot is a one-off and doesn't have similar slaves in the
+      # swarming pool.
+      'swarming': False,
+      'os_type': 'linux',
+    },
     'Linux Debug (NVIDIA)': {
       'swarming_dimensions': [
         {
