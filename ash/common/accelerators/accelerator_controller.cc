@@ -514,9 +514,11 @@ void HandleShowStylusTools() {
 
   RootWindowController* root_window_controller =
       Shell::GetWmRootWindowForNewWindows()->GetRootWindowController();
-  PaletteTray* palette_tray =
-      root_window_controller->GetShelf()->GetStatusAreaWidget()->palette_tray();
-  palette_tray->ShowPalette();
+  StatusAreaWidget* status_area_widget =
+      root_window_controller->GetShelf()->GetStatusAreaWidget();
+  // Tests (clusterfuzz) can trigger this before the status area is ready.
+  if (status_area_widget)
+    status_area_widget->palette_tray()->ShowPalette();
 }
 
 bool CanHandleShowStylusTools() {
