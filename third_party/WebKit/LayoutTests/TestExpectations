@@ -159,8 +159,8 @@ crbug.com/702006 virtual/disable-spinvalidation/paint/invalidation/compositing/s
 # LayoutNG - is a new layout system for Blink.
 
 #### css2.1/20110323
-#### Passed: 222
-#### Skipped: 187
+#### Passed: 216
+#### Skipped: 193
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-non-replaced-height-006.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-non-replaced-width-017.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/absolute-non-replaced-width-018.htm [ Skip ]
@@ -259,6 +259,7 @@ crbug.com/635619 virtual/layout_ng/css2.1/20110323/float-replaced-width-002.htm 
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/float-replaced-width-006.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/float-replaced-width-011.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/floating-replaced-height-008.htm [ Skip ]
+crbug.com/635619 virtual/layout_ng/css2.1/20110323/floats-001.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/floats-102.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/floats-149.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/floats-wrap-top-below-bfc-001l.htm [ Skip ]
@@ -267,9 +268,12 @@ crbug.com/635619 virtual/layout_ng/css2.1/20110323/floats-wrap-top-below-bfc-002
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/floats-wrap-top-below-bfc-002r.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/floats-wrap-top-below-bfc-003l.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/floats-wrap-top-below-bfc-003r.htm [ Skip ]
+crbug.com/635619 virtual/layout_ng/css2.1/20110323/floats-wrap-top-below-inline-001l.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/floats-wrap-top-below-inline-002l.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/floats-wrap-top-below-inline-002r.htm [ Skip ]
+crbug.com/635619 virtual/layout_ng/css2.1/20110323/floats-wrap-top-below-inline-003l.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/height-applies-to-010a.htm [ Skip ]
+crbug.com/635619 virtual/layout_ng/css2.1/20110323/height-percentage-005.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/height-width-inline-table-001.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/height-width-table-001.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/inline-block-non-replaced-height-001.htm [ Skip ]
@@ -329,6 +333,7 @@ crbug.com/635619 virtual/layout_ng/css2.1/20110323/margin-collapse-clear-012.htm
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/margin-collapse-clear-013.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/margin-collapse-clear-014.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/margin-collapse-clear-015.htm [ Skip ]
+crbug.com/635619 virtual/layout_ng/css2.1/20110323/max-height-percentage-003.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/outline-color-001.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/outline-color-applies-to-008.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/outline-color-applies-to-012.htm [ Skip ]
@@ -350,11 +355,12 @@ crbug.com/635619 virtual/layout_ng/css2.1/20110323/table-caption-optional-002.ht
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/table-height-algorithm-023.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/table-height-algorithm-024.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/text-indent-014.htm [ Skip ]
+crbug.com/635619 virtual/layout_ng/css2.1/20110323/vertical-align-boxes-001.htm [ Skip ]
 crbug.com/635619 virtual/layout_ng/css2.1/20110323/width-non-replaced-inline-001.htm [ Skip ]
 
 #### fast/block/basic
-#### Passed: 5
-#### Skipped: 27
+#### Passed: 6
+#### Skipped: 26
 crbug.com/635619 virtual/layout_ng/fast/block/basic/001.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/basic/002.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/basic/003.html [ Skip ]
@@ -372,7 +378,6 @@ crbug.com/635619 virtual/layout_ng/fast/block/basic/019.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/basic/020.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/basic/021.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/basic/adding-near-anonymous-block.html [ Skip ]
-crbug.com/635619 virtual/layout_ng/fast/block/basic/empty-anonymous-block-remove-crash.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/basic/fieldset-stretch-to-legend.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/basic/min-pref-width-nowrap-floats.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/basic/minheight.html [ Skip ]
@@ -450,8 +455,8 @@ crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/webkit-margin-coll
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/webkit-margin-collapse-floats.html [ Skip ]
 
 #### fast/block/float
-#### Passed: 33
-#### Skipped: 174
+#### Passed: 35
+#### Skipped: 172
 crbug.com/635619 virtual/layout_ng/fast/block/float/001.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/002.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/003.html [ Skip ]
@@ -491,6 +496,7 @@ crbug.com/635619 virtual/layout_ng/fast/block/float/4145535Crash.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/add-abspos-before-float-in-block-children-block.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/add-float-back-to-anonymous-block-previous.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/add-float-back-to-anonymous-block.html [ Skip ]
+crbug.com/635619 virtual/layout_ng/fast/block/float/add-inline-before-float-and-after-anonymous-block.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/add-inline-before-float-in-block-children-block.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/add-inline-between-floats-with-preceding-anonymous-box.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/add-inline-to-block-flow-and-ensure-layout-on-containers-of-removed-floats.html [ Skip ]
@@ -548,6 +554,8 @@ crbug.com/635619 virtual/layout_ng/fast/block/float/float-reinsertion-failure.ht
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-reparent-during-detach-crash.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-should-dirty-line-even-when-it-doesnt-intersect-it-2.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-should-dirty-line-even-when-it-doesnt-intersect-it.html [ Skip ]
+crbug.com/635619 virtual/layout_ng/fast/block/float/float-should-dirty-line-when-adjacent-to-line-breaks-2.html [ Skip ]
+crbug.com/635619 virtual/layout_ng/fast/block/float/float-should-dirty-line-when-adjacent-to-line-breaks.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/floats-and-text-indent-rl.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/floats-and-text-indent.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/floats-do-not-overhang-from-block-formatting-context.html [ Skip ]
@@ -593,13 +601,11 @@ crbug.com/635619 virtual/layout_ng/fast/block/float/overhanging-after-height-dec
 crbug.com/635619 virtual/layout_ng/fast/block/float/overhanging-float-add-in-static-position-block.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/overhanging-float-add-in-static-position-block2.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/overhanging-float-container-add-compositing.html [ Skip ]
-crbug.com/635619 virtual/layout_ng/fast/block/float/overhanging-float-crashes-when-sibling-becomes-formatting-context.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/overhanging-float-remove-from-absolute-position-block.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/overhanging-float-remove-from-absolute-position-block2.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/overhanging-float-remove-from-fixed-position-block.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/overhanging-float-remove-from-fixed-position-block2.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/overhanging-from-second-last-sibling.html [ Skip ]
-crbug.com/635619 virtual/layout_ng/fast/block/float/overhanging-from-third-last-sibling.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/overhanging-tall-block.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/overlapping-floats-paint-hittest-order-1.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/overlapping-floats-paint-hittest-order-2.html [ Skip ]
@@ -627,13 +633,11 @@ crbug.com/635619 virtual/layout_ng/fast/block/float/trailing-float.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/vertical-move-relayout.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/width-update-after-clear.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/clear-intruding-floats-when-moving-to-inline-parent-3.html [ Skip ]
-crbug.com/635619 virtual/layout_ng/fast/block/float/float-append-child-crash.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-list-changed-before-layout-crash.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-mark-descendants-for-layout-crash.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-not-removed-crash.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/float-should-dirty-line-even-when-it-doesnt-intersect-it-3.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/floats-not-cleared-from-grand-parents.html [ Skip ]
-crbug.com/635619 virtual/layout_ng/fast/block/float/intruding-float-not-removed-from-next-sibling-crash.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/line-break-after-white-space-crash.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/max-width-clear-float-with-overflow-hidden.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/trailing-float-with-content.html [ Skip ]

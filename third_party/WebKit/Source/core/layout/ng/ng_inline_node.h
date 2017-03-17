@@ -137,6 +137,10 @@ class NGLayoutInlineItem {
   const ComputedStyle* Style() const { return style_; }
   LayoutObject* GetLayoutObject() const { return layout_object_; }
 
+  bool IsAtomicInlineLevel() const {
+    return layout_object_ && layout_object_->isAtomicInlineLevel();
+  }
+
   void SetEndOffset(unsigned);
 
   LayoutUnit InlineSize() const;

@@ -105,6 +105,7 @@ class NGInlineNodeTest : public RenderingTest {
   RefPtr<const ComputedStyle> style_;
   LayoutBlockFlow* layout_block_flow_ = nullptr;
   LayoutObject* layout_object_ = nullptr;
+  FontCachePurgePreventer purge_preventer_;
 };
 
 #define TEST_ITEM_OFFSET_DIR(item, start, end, direction) \
@@ -218,6 +219,7 @@ TEST_F(NGInlineNodeTest, CreateLineBidiIsolate) {
   style->font().update(nullptr);
   NGInlineNodeForTest* node =
       CreateBidiIsolateNode(CreateInlineNode(), style.get(), layout_object_);
+  node->ShapeText();
   Vector<RefPtr<const NGPhysicalTextFragment>> fragments;
   CreateLine(node, &fragments);
   ASSERT_EQ(5u, fragments.size());

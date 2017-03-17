@@ -20,6 +20,11 @@ enum NGWritingMode {
 
 CORE_EXPORT NGWritingMode FromPlatformWritingMode(WritingMode);
 
+// Lines have horizontal orientation; modes horizontal-tb.
+inline bool IsHorizontalWritingMode(NGWritingMode writingMode) {
+  return writingMode == NGWritingMode::kHorizontalTopBottom;
+}
+
 // Whether the child and the containing block are parallel to each other.
 // Example: vertical-rl and vertical-lr
 bool IsParallelWritingMode(NGWritingMode a, NGWritingMode b);
