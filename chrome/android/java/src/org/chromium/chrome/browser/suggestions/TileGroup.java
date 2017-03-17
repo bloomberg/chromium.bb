@@ -22,6 +22,7 @@ import android.view.View.OnCreateContextMenuListener;
 import android.view.ViewGroup;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
@@ -48,7 +49,12 @@ public class TileGroup implements MostVisitedSites.Observer {
      * Performs work in other parts of the system that the {@link TileGroup} should not know about.
      */
     public interface Delegate {
-        void removeMostVisitedItem(Tile tile);
+        /**
+         * @param tile The tile corresponding to the most visited item to remove.
+         * @param removalUndoneCallback The callback to invoke if the removal is reverted. The
+         *                              callback's argument is the URL being restored.
+         */
+        void removeMostVisitedItem(Tile tile, Callback<String> removalUndoneCallback);
 
         void openMostVisitedItem(int windowDisposition, Tile tile);
 
@@ -153,6 +159,14 @@ public class TileGroup implements MostVisitedSites.Observer {
     @Nullable
     private String mPendingRemovalUrl;
 
+    /**
+     * URL of the most recently added tile. Used to identify when a given tile's insertion is
+     * confirmed by the tile backend. This is relevant when a previously existing tile is removed,
+     * then the user undoes the action and wants that tile back.
+     */
+    @Nullable
+    private String mPendingInsertionUrl;
+
     private boolean mHasReceivedData;
 
     /**
@@ -196,6 +210,8 @@ public class TileGroup implements MostVisitedSites.Observer {
     public void onMostVisitedURLsAvailable(final String[] titles, final String[] urls,
             final String[] whitelistIconPaths, final int[] sources) {
         boolean removalCompleted = mPendingRemovalUrl != null;
+        boolean insertionCompleted = mPendingInsertionUrl == null;
+
         Set<String> addedUrls = new HashSet<>();
         mPendingTileData = new Tile[titles.length];
         for (int i = 0; i < titles.length; i++) {
@@ -213,10 +229,20 @@ public class TileGroup implements MostVisitedSites.Observer {
             addedUrls.add(urls[i]);
 
             if (urls[i].equals(mPendingRemovalUrl)) removalCompleted = false;
+            if (urls[i].equals(mPendingInsertionUrl)) insertionCompleted = true;
         }
 
-        if (removalCompleted) mPendingRemovalUrl = null;
-        if (!mHasReceivedData || !mUiDelegate.isVisible() || removalCompleted) loadTiles();
+        boolean expectedChangeCompleted = false;
+        if (mPendingRemovalUrl != null && removalCompleted) {
+            mPendingRemovalUrl = null;
+            expectedChangeCompleted = true;
+        }
+        if (mPendingInsertionUrl != null && insertionCompleted) {
+            mPendingInsertionUrl = null;
+            expectedChangeCompleted = true;
+        }
+
+        if (!mHasReceivedData || !mUiDelegate.isVisible() || expectedChangeCompleted) loadTiles();
     }
 
     @Override
@@ -436,7 +462,7 @@ public class TileGroup implements MostVisitedSites.Observer {
             // Note: This does not track all the removals, but will track the most recent one. If
             // that removal is committed, it's good enough for change detection.
             mPendingRemovalUrl = mUrl;
-            mTileGroupDelegate.removeMostVisitedItem(tile);
+            mTileGroupDelegate.removeMostVisitedItem(tile, new RemovalUndoneCallback());
         }
 
         @Override
@@ -456,6 +482,13 @@ public class TileGroup implements MostVisitedSites.Observer {
         public void onCreateContextMenu(
                 ContextMenu contextMenu, View view, ContextMenuInfo contextMenuInfo) {
             mContextMenuManager.createContextMenu(contextMenu, view, this);
+        }
+    }
+
+    private class RemovalUndoneCallback extends Callback<String> {
+        @Override
+        public void onResult(String restoredUrl) {
+            mPendingInsertionUrl = restoredUrl;
         }
     }
 

@@ -8,6 +8,7 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.os.Build;
 
+import org.chromium.base.Callback;
 import org.chromium.base.CommandLine;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
@@ -53,11 +54,11 @@ public class TileGroupDelegateImpl implements TileGroup.Delegate {
     }
 
     @Override
-    public void removeMostVisitedItem(Tile item) {
+    public void removeMostVisitedItem(Tile item, Callback<String> removalUndoneCallback) {
         assert !mIsDestroyed;
 
         mMostVisitedSites.addBlacklistedUrl(item.getUrl());
-        showTileRemovedSnackbar(item.getUrl());
+        showTileRemovedSnackbar(item.getUrl(), removalUndoneCallback);
     }
 
     @Override
@@ -127,7 +128,7 @@ public class TileGroupDelegateImpl implements TileGroup.Delegate {
         sMostVisitedSitesForTests = mostVisitedSitesForTests;
     }
 
-    private void showTileRemovedSnackbar(String url) {
+    private void showTileRemovedSnackbar(String url, final Callback<String> removalUndoneCallback) {
         if (mTileRemovedSnackbarController == null) {
             mTileRemovedSnackbarController = new SnackbarController() {
                 @Override
@@ -138,6 +139,7 @@ public class TileGroupDelegateImpl implements TileGroup.Delegate {
                 public void onAction(Object actionData) {
                     if (mIsDestroyed) return;
                     String url = (String) actionData;
+                    removalUndoneCallback.onResult(url);
                     mMostVisitedSites.removeBlacklistedUrl(url);
                 }
             };
