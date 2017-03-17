@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "base/threading/simple_thread.h"
+#include "mojo/public/cpp/system/wait.h"
 #include "mojo/public/cpp/test_support/test_support.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -85,8 +86,7 @@ class MessagePipeReaderThread : public base::SimpleThread {
       }
 
       if (result == MOJO_RESULT_SHOULD_WAIT) {
-        result = MojoWait(handle_, MOJO_HANDLE_SIGNAL_READABLE,
-                          MOJO_DEADLINE_INDEFINITE, nullptr);
+        result = mojo::Wait(mojo::Handle(handle_), MOJO_HANDLE_SIGNAL_READABLE);
         if (result == MOJO_RESULT_OK) {
           // Go to the top of the loop to read again.
           continue;

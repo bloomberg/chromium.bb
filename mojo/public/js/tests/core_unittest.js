@@ -115,8 +115,7 @@ define([
     expect(state0.satisfiedSignals).toBe(core.HANDLE_SIGNAL_WRITABLE);
     expect(state0.satisfiableSignals).toBe(HANDLE_SIGNAL_ALL);
 
-    var wait = core.wait(pipe.handle1, core.HANDLE_SIGNAL_READABLE,
-                         core.DEADLINE_INDEFINITE);
+    var wait = core.wait(pipe.handle1, core.HANDLE_SIGNAL_READABLE);
     expect(wait.result).toBe(core.RESULT_OK);
     expect(wait.signalsState.satisfiedSignals).toBe(HANDLE_SIGNAL_READWRITABLE);
     expect(wait.signalsState.satisfiableSignals).toBe(HANDLE_SIGNAL_ALL);
@@ -145,8 +144,7 @@ define([
     expect(write.result).toBe(core.RESULT_OK);
     expect(write.numBytes).toBe(42);
 
-    var wait = core.wait(pipe.consumerHandle, core.HANDLE_SIGNAL_READABLE,
-                         core.DEADLINE_INDEFINITE);
+    var wait = core.wait(pipe.consumerHandle, core.HANDLE_SIGNAL_READABLE);
     expect(wait.result).toBe(core.RESULT_OK);
     var peeked = core.readData(
          pipe.consumerHandle,

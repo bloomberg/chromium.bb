@@ -10,6 +10,7 @@
 #include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/system/wait.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
 #include "mojo/public/interfaces/bindings/tests/sample_factory.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -111,8 +112,7 @@ class SampleFactoryImpl : public sample::Factory {
 
     MojoHandleSignalsState state;
     ASSERT_EQ(MOJO_RESULT_OK,
-              MojoWait(pipe.get().value(), MOJO_HANDLE_SIGNAL_READABLE,
-                       MOJO_DEADLINE_INDEFINITE, &state));
+              mojo::Wait(pipe.get(), MOJO_HANDLE_SIGNAL_READABLE, &state));
     ASSERT_TRUE(state.satisfied_signals & MOJO_HANDLE_SIGNAL_READABLE);
     ASSERT_EQ(MOJO_RESULT_OK,
               ReadDataRaw(

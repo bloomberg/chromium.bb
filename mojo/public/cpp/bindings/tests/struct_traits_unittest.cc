@@ -15,6 +15,7 @@
 #include "mojo/public/cpp/bindings/tests/struct_with_traits_impl.h"
 #include "mojo/public/cpp/bindings/tests/struct_with_traits_impl_traits.h"
 #include "mojo/public/cpp/bindings/tests/variant_test_util.h"
+#include "mojo/public/cpp/system/wait.h"
 #include "mojo/public/interfaces/bindings/tests/struct_with_traits.mojom.h"
 #include "mojo/public/interfaces/bindings/tests/test_native_types.mojom-blink.h"
 #include "mojo/public/interfaces/bindings/tests/test_native_types.mojom.h"
@@ -391,8 +392,7 @@ TEST_F(StructTraitsTest, EchoMoveOnlyStructWithTraits) {
             WriteMessageRaw(mp.handle1.get(), kHello, kHelloSize, nullptr, 0,
                             MOJO_WRITE_MESSAGE_FLAG_NONE));
 
-  EXPECT_EQ(MOJO_RESULT_OK, Wait(received.get(), MOJO_HANDLE_SIGNAL_READABLE,
-                                 MOJO_DEADLINE_INDEFINITE, nullptr));
+  EXPECT_EQ(MOJO_RESULT_OK, Wait(received.get(), MOJO_HANDLE_SIGNAL_READABLE));
 
   char buffer[10] = {0};
   uint32_t buffer_size = static_cast<uint32_t>(sizeof(buffer));

@@ -14,6 +14,7 @@
 #include "base/synchronization/lock.h"
 #include "mojo/public/cpp/bindings/lib/may_auto_lock.h"
 #include "mojo/public/cpp/bindings/sync_handle_watcher.h"
+#include "mojo/public/cpp/system/wait.h"
 
 namespace mojo {
 
@@ -77,16 +78,24 @@ bool Connector::WaitForIncomingMessage(MojoDeadline deadline) {
 
   ResumeIncomingMethodCallProcessing();
 
-  MojoResult rv =
-      Wait(message_pipe_.get(), MOJO_HANDLE_SIGNAL_READABLE, deadline, nullptr);
-  if (rv == MOJO_RESULT_SHOULD_WAIT || rv == MOJO_RESULT_DEADLINE_EXCEEDED)
+  // TODO(rockot): Use a timed Wait here. Nobody uses anything but 0 or
+  // INDEFINITE deadlines at present, so we only support those.
+  DCHECK(deadline == 0 || deadline == MOJO_DEADLINE_INDEFINITE);
+
+  MojoResult rv = MOJO_RESULT_UNKNOWN;
+  if (deadline == 0 && !message_pipe_->QuerySignalsState().readable())
     return false;
-  if (rv != MOJO_RESULT_OK) {
-    // Users that call WaitForIncomingMessage() should expect their code to be
-    // re-entered, so we call the error handler synchronously.
-    HandleError(rv != MOJO_RESULT_FAILED_PRECONDITION, false);
-    return false;
+
+  if (deadline == MOJO_DEADLINE_INDEFINITE) {
+    rv = Wait(message_pipe_.get(), MOJO_HANDLE_SIGNAL_READABLE);
+    if (rv != MOJO_RESULT_OK) {
+      // Users that call WaitForIncomingMessage() should expect their code to be
+      // re-entered, so we call the error handler synchronously.
+      HandleError(rv != MOJO_RESULT_FAILED_PRECONDITION, false);
+      return false;
+    }
   }
+
   ignore_result(ReadSingleMessage(&rv));
   return (rv == MOJO_RESULT_OK);
 }

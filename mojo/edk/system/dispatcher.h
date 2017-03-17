@@ -29,15 +29,13 @@
 namespace mojo {
 namespace edk {
 
-class Awakable;
 class Dispatcher;
 class MessageForTransit;
 
 using DispatcherVector = std::vector<scoped_refptr<Dispatcher>>;
 
 // A |Dispatcher| implements Mojo EDK calls that are associated with a
-// particular MojoHandle, with the exception of MojoWait and MojoWaitMany (
-// which are implemented directly in Core.).
+// particular MojoHandle.
 class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
     : public base::RefCountedThreadSafe<Dispatcher> {
  public:
@@ -173,32 +171,6 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
   // Removes a WatcherDispatcher reference from this dispatcher.
   virtual MojoResult RemoveWatcherRef(WatcherDispatcher* watcher,
                                       uintptr_t context);
-
-  // Adds an awakable to this dispatcher, which will be woken up when this
-  // object changes state to satisfy |signals| with context |context|. It will
-  // also be woken up when it becomes impossible for the object to ever satisfy
-  // |signals| with a suitable error status.
-  //
-  // If |signals_state| is non-null, on *failure* |*signals_state| will be set
-  // to the current handle signals state (on success, it is left untouched).
-  //
-  // Returns:
-  //  - |MOJO_RESULT_OK| if the awakable was added;
-  //  - |MOJO_RESULT_ALREADY_EXISTS| if |signals| is already satisfied;
-  //  - |MOJO_RESULT_INVALID_ARGUMENT| if the dispatcher has been closed; and
-  //  - |MOJO_RESULT_FAILED_PRECONDITION| if it is not (or no longer) possible
-  //    that |signals| will ever be satisfied.
-  virtual MojoResult AddAwakable(Awakable* awakable,
-                                 MojoHandleSignals signals,
-                                 uintptr_t context,
-                                 HandleSignalsState* signals_state);
-
-  // Removes an awakable from this dispatcher. (It is valid to call this
-  // multiple times for the same |awakable| on the same object, so long as
-  // |AddAwakable()| was called at most once.) If |signals_state| is non-null,
-  // |*signals_state| will be set to the current handle signals state.
-  virtual void RemoveAwakable(Awakable* awakable,
-                              HandleSignalsState* signals_state);
 
   // Informs the caller of the total serialized size (in bytes) and the total
   // number of platform handles and ports needed to transfer this dispatcher

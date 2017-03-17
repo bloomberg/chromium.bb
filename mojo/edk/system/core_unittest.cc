@@ -10,9 +10,9 @@
 
 #include "base/bind.h"
 #include "mojo/edk/embedder/embedder_internal.h"
-#include "mojo/edk/system/awakable.h"
 #include "mojo/edk/system/core_test_base.h"
 #include "mojo/edk/system/test_utils.h"
+#include "mojo/public/cpp/system/wait.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -97,72 +97,11 @@ TEST_F(CoreTest, Basic) {
   ASSERT_EQ(MOJO_RESULT_UNIMPLEMENTED, core()->EndReadData(h, 0));
   ASSERT_EQ(1u, info.GetEndReadDataCallCount());
 
-  ASSERT_EQ(0u, info.GetAddAwakableCallCount());
-  ASSERT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            core()->Wait(h, ~MOJO_HANDLE_SIGNAL_NONE, MOJO_DEADLINE_INDEFINITE,
-                         nullptr));
-  ASSERT_EQ(1u, info.GetAddAwakableCallCount());
-  ASSERT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            core()->Wait(h, ~MOJO_HANDLE_SIGNAL_NONE, 0, nullptr));
-  ASSERT_EQ(2u, info.GetAddAwakableCallCount());
-  MojoHandleSignalsState hss = kFullMojoHandleSignalsState;
-  ASSERT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            core()->Wait(h, ~MOJO_HANDLE_SIGNAL_NONE, MOJO_DEADLINE_INDEFINITE,
-                         &hss));
-  ASSERT_EQ(3u, info.GetAddAwakableCallCount());
-  ASSERT_EQ(0u, hss.satisfied_signals);
-  ASSERT_EQ(0u, hss.satisfiable_signals);
-  ASSERT_EQ(
-      MOJO_RESULT_FAILED_PRECONDITION,
-      core()->Wait(h, ~MOJO_HANDLE_SIGNAL_NONE, 10 * 1000, nullptr));
-  ASSERT_EQ(4u, info.GetAddAwakableCallCount());
-  hss = kFullMojoHandleSignalsState;
-  ASSERT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            core()->Wait(h, ~MOJO_HANDLE_SIGNAL_NONE, 10 * 1000, &hss));
-  ASSERT_EQ(5u, info.GetAddAwakableCallCount());
-  ASSERT_EQ(0u, hss.satisfied_signals);
-  ASSERT_EQ(0u, hss.satisfiable_signals);
-
-  MojoHandleSignals handle_signals = ~MOJO_HANDLE_SIGNAL_NONE;
-  ASSERT_EQ(
-      MOJO_RESULT_FAILED_PRECONDITION,
-      core()->WaitMany(&h, &handle_signals, 1, MOJO_DEADLINE_INDEFINITE,
-                       nullptr, nullptr));
-  ASSERT_EQ(6u, info.GetAddAwakableCallCount());
-  uint32_t result_index = static_cast<uint32_t>(-1);
-  ASSERT_EQ(
-      MOJO_RESULT_FAILED_PRECONDITION,
-      core()->WaitMany(&h, &handle_signals, 1, MOJO_DEADLINE_INDEFINITE,
-                       &result_index, nullptr));
-  ASSERT_EQ(7u, info.GetAddAwakableCallCount());
-  ASSERT_EQ(0u, result_index);
-  hss = kFullMojoHandleSignalsState;
-  ASSERT_EQ(
-      MOJO_RESULT_FAILED_PRECONDITION,
-      core()->WaitMany(&h, &handle_signals, 1, MOJO_DEADLINE_INDEFINITE,
-                       nullptr, &hss));
-  ASSERT_EQ(8u, info.GetAddAwakableCallCount());
-  ASSERT_EQ(0u, hss.satisfied_signals);
-  ASSERT_EQ(0u, hss.satisfiable_signals);
-  result_index = static_cast<uint32_t>(-1);
-  hss = kFullMojoHandleSignalsState;
-  ASSERT_EQ(
-      MOJO_RESULT_FAILED_PRECONDITION,
-      core()->WaitMany(&h, &handle_signals, 1, MOJO_DEADLINE_INDEFINITE,
-                       &result_index, &hss));
-  ASSERT_EQ(9u, info.GetAddAwakableCallCount());
-  ASSERT_EQ(0u, result_index);
-  ASSERT_EQ(0u, hss.satisfied_signals);
-  ASSERT_EQ(0u, hss.satisfiable_signals);
-
   ASSERT_EQ(0u, info.GetDtorCallCount());
   ASSERT_EQ(0u, info.GetCloseCallCount());
   ASSERT_EQ(MOJO_RESULT_OK, core()->Close(h));
   ASSERT_EQ(1u, info.GetCloseCallCount());
   ASSERT_EQ(1u, info.GetDtorCallCount());
-
-  // No awakables should ever have ever been added.
-  ASSERT_EQ(0u, info.GetRemoveAwakableCallCount());
 }
 
 TEST_F(CoreTest, InvalidArguments) {
@@ -179,125 +118,6 @@ TEST_F(CoreTest, InvalidArguments) {
     ASSERT_EQ(1u, info.GetCloseCallCount());
     ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT, core()->Close(h));
     ASSERT_EQ(1u, info.GetCloseCallCount());
-  }
-
-  // |Wait()|:
-  {
-    ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              core()->Wait(MOJO_HANDLE_INVALID, ~MOJO_HANDLE_SIGNAL_NONE,
-                           MOJO_DEADLINE_INDEFINITE, nullptr));
-    ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              core()->Wait(10, ~MOJO_HANDLE_SIGNAL_NONE,
-                           MOJO_DEADLINE_INDEFINITE, nullptr));
-
-    MojoHandleSignalsState hss = kFullMojoHandleSignalsState;
-    ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              core()->Wait(MOJO_HANDLE_INVALID, ~MOJO_HANDLE_SIGNAL_NONE,
-                           MOJO_DEADLINE_INDEFINITE, &hss));
-    // On invalid argument, it shouldn't modify the handle signals state.
-    ASSERT_EQ(kFullMojoHandleSignalsState.satisfied_signals,
-              hss.satisfied_signals);
-    ASSERT_EQ(kFullMojoHandleSignalsState.satisfiable_signals,
-              hss.satisfiable_signals);
-    hss = kFullMojoHandleSignalsState;
-    ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              core()->Wait(10, ~MOJO_HANDLE_SIGNAL_NONE,
-                           MOJO_DEADLINE_INDEFINITE, &hss));
-    // On invalid argument, it shouldn't modify the handle signals state.
-    ASSERT_EQ(kFullMojoHandleSignalsState.satisfied_signals,
-              hss.satisfied_signals);
-    ASSERT_EQ(kFullMojoHandleSignalsState.satisfiable_signals,
-              hss.satisfiable_signals);
-  }
-
-  // |WaitMany()|:
-  {
-    MojoHandle handles[2] = {MOJO_HANDLE_INVALID, MOJO_HANDLE_INVALID};
-    MojoHandleSignals signals[2] = {~MOJO_HANDLE_SIGNAL_NONE,
-                                    ~MOJO_HANDLE_SIGNAL_NONE};
-    ASSERT_EQ(
-        MOJO_RESULT_INVALID_ARGUMENT,
-        core()->WaitMany(handles, signals, 0, MOJO_DEADLINE_INDEFINITE,
-                         nullptr, nullptr));
-    ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              core()->WaitMany(nullptr, signals, 0, MOJO_DEADLINE_INDEFINITE,
-                               nullptr, nullptr));
-    // If |num_handles| is invalid, it should leave |result_index| and
-    // |signals_states| alone.
-    // (We use -1 internally; make sure that doesn't leak.)
-    uint32_t result_index = 123;
-    MojoHandleSignalsState hss = kFullMojoHandleSignalsState;
-    ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              core()->WaitMany(nullptr, signals, 0, MOJO_DEADLINE_INDEFINITE,
-                               &result_index, &hss));
-    ASSERT_EQ(123u, result_index);
-    ASSERT_EQ(kFullMojoHandleSignalsState.satisfied_signals,
-              hss.satisfied_signals);
-    ASSERT_EQ(kFullMojoHandleSignalsState.satisfiable_signals,
-              hss.satisfiable_signals);
-
-    ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              core()->WaitMany(handles, nullptr, 0, MOJO_DEADLINE_INDEFINITE,
-                               nullptr, nullptr));
-    ASSERT_EQ(
-        MOJO_RESULT_INVALID_ARGUMENT,
-        core()->WaitMany(handles, signals, 1, MOJO_DEADLINE_INDEFINITE, nullptr,
-                         nullptr));
-    // But if a handle is bad, then it should set |result_index| but still leave
-    // |signals_states| alone.
-    result_index = static_cast<uint32_t>(-1);
-    hss = kFullMojoHandleSignalsState;
-    ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              core()->WaitMany(
-                  handles, signals, 1, MOJO_DEADLINE_INDEFINITE, &result_index,
-                  &hss));
-    ASSERT_EQ(0u, result_index);
-    ASSERT_EQ(kFullMojoHandleSignalsState.satisfied_signals,
-              hss.satisfied_signals);
-    ASSERT_EQ(kFullMojoHandleSignalsState.satisfiable_signals,
-              hss.satisfiable_signals);
-
-    MockHandleInfo info[2];
-    handles[0] = CreateMockHandle(&info[0]);
-
-    result_index = static_cast<uint32_t>(-1);
-    hss = kFullMojoHandleSignalsState;
-    ASSERT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-              core()->WaitMany(
-                  handles, signals, 1, MOJO_DEADLINE_INDEFINITE, &result_index,
-                  &hss));
-    ASSERT_EQ(0u, result_index);
-    ASSERT_EQ(0u, hss.satisfied_signals);
-    ASSERT_EQ(0u, hss.satisfiable_signals);
-
-    // On invalid argument, it'll leave |signals_states| alone.
-    result_index = static_cast<uint32_t>(-1);
-    hss = kFullMojoHandleSignalsState;
-    ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              core()->WaitMany(
-                  handles, signals, 2, MOJO_DEADLINE_INDEFINITE, &result_index,
-                  &hss));
-    ASSERT_EQ(1u, result_index);
-    ASSERT_EQ(kFullMojoHandleSignalsState.satisfied_signals,
-              hss.satisfied_signals);
-    ASSERT_EQ(kFullMojoHandleSignalsState.satisfiable_signals,
-              hss.satisfiable_signals);
-    handles[1] = handles[0] + 1;  // Invalid handle.
-    ASSERT_EQ(
-        MOJO_RESULT_INVALID_ARGUMENT,
-        core()->WaitMany(handles, signals, 2, MOJO_DEADLINE_INDEFINITE, nullptr,
-                         nullptr));
-    handles[1] = CreateMockHandle(&info[1]);
-    ASSERT_EQ(
-        MOJO_RESULT_FAILED_PRECONDITION,
-        core()->WaitMany(handles, signals, 2, MOJO_DEADLINE_INDEFINITE, nullptr,
-                         nullptr));
-
-    // TODO(vtl): Test one where we get "failed precondition" only for the
-    // second handle (and the first one is valid to wait on).
-
-    ASSERT_EQ(MOJO_RESULT_OK, core()->Close(handles[0]));
-    ASSERT_EQ(MOJO_RESULT_OK, core()->Close(handles[1]));
   }
 
   // |CreateMessagePipe()|: Nothing to check (apart from things that cause
@@ -451,22 +271,6 @@ TEST_F(CoreTest, InvalidArgumentsDeath) {
   const char kMemoryCheckFailedRegex[] = "Check failed";
 #endif
 
-  // |WaitMany()|:
-  {
-    MojoHandle handle = MOJO_HANDLE_INVALID;
-    MojoHandleSignals signals = ~MOJO_HANDLE_SIGNAL_NONE;
-    ASSERT_DEATH_IF_SUPPORTED(
-        core()->WaitMany(nullptr, &signals, 1, MOJO_DEADLINE_INDEFINITE,
-                         nullptr, nullptr),
-        kMemoryCheckFailedRegex);
-    ASSERT_DEATH_IF_SUPPORTED(
-        core()->WaitMany(&handle, nullptr, 1, MOJO_DEADLINE_INDEFINITE, nullptr,
-                         nullptr),
-        kMemoryCheckFailedRegex);
-    // TODO(vtl): |result_index| and |signals_states| are optional. Test them
-    // with non-null invalid pointers?
-  }
-
   // |CreateMessagePipe()|:
   {
     MojoHandle h;
@@ -498,14 +302,9 @@ TEST_F(CoreTest, InvalidArgumentsDeath) {
   }
 }
 
-// TODO(vtl): test |Wait()| and |WaitMany()| properly
-//  - including |WaitMany()| with the same handle more than once (with
-//    same/different signals)
-
 TEST_F(CoreTest, MessagePipe) {
   MojoHandle h[2];
   MojoHandleSignalsState hss[2];
-  uint32_t result_index;
 
   ASSERT_EQ(MOJO_RESULT_OK, core()->CreateMessagePipe(nullptr, &h[0], &h[1]));
   // Should get two distinct, valid handles.
@@ -514,15 +313,10 @@ TEST_F(CoreTest, MessagePipe) {
   ASSERT_NE(h[0], h[1]);
 
   // Neither should be readable.
-  MojoHandleSignals signals[2] = {MOJO_HANDLE_SIGNAL_READABLE,
-                                  MOJO_HANDLE_SIGNAL_READABLE};
-  result_index = static_cast<uint32_t>(-1);
   hss[0] = kEmptyMojoHandleSignalsState;
   hss[1] = kEmptyMojoHandleSignalsState;
-  ASSERT_EQ(
-      MOJO_RESULT_DEADLINE_EXCEEDED,
-      core()->WaitMany(h, signals, 2, 0, &result_index, hss));
-  ASSERT_EQ(static_cast<uint32_t>(-1), result_index);
+  EXPECT_EQ(MOJO_RESULT_OK, core()->QueryHandleSignalsState(h[0], &hss[0]));
+  EXPECT_EQ(MOJO_RESULT_OK, core()->QueryHandleSignalsState(h[1], &hss[1]));
   ASSERT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss[0].satisfied_signals);
   ASSERT_EQ(kAllSignals, hss[0].satisfiable_signals);
   ASSERT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss[1].satisfied_signals);
@@ -539,34 +333,6 @@ TEST_F(CoreTest, MessagePipe) {
   ASSERT_EQ('a', buffer[0]);
   ASSERT_EQ(1u, buffer_size);
 
-  // Both should be writable.
-  hss[0] = kEmptyMojoHandleSignalsState;
-  ASSERT_EQ(MOJO_RESULT_OK, core()->Wait(h[0], MOJO_HANDLE_SIGNAL_WRITABLE,
-                                         1000000000, &hss[0]));
-  ASSERT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss[0].satisfied_signals);
-  ASSERT_EQ(kAllSignals, hss[0].satisfiable_signals);
-  hss[0] = kEmptyMojoHandleSignalsState;
-  ASSERT_EQ(MOJO_RESULT_OK, core()->Wait(h[1], MOJO_HANDLE_SIGNAL_WRITABLE,
-                                         1000000000, &hss[0]));
-  ASSERT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss[0].satisfied_signals);
-  ASSERT_EQ(kAllSignals, hss[0].satisfiable_signals);
-
-  // Also check that |h[1]| is writable using |WaitMany()|.
-  signals[0] = MOJO_HANDLE_SIGNAL_READABLE;
-  signals[1] = MOJO_HANDLE_SIGNAL_WRITABLE;
-  result_index = static_cast<uint32_t>(-1);
-  hss[0] = kEmptyMojoHandleSignalsState;
-  hss[1] = kEmptyMojoHandleSignalsState;
-  ASSERT_EQ(
-      MOJO_RESULT_OK,
-      core()->WaitMany(h, signals, 2, MOJO_DEADLINE_INDEFINITE, &result_index,
-                       hss));
-  ASSERT_EQ(1u, result_index);
-  ASSERT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss[0].satisfied_signals);
-  ASSERT_EQ(kAllSignals, hss[0].satisfiable_signals);
-  ASSERT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss[1].satisfied_signals);
-  ASSERT_EQ(kAllSignals, hss[1].satisfiable_signals);
-
   // Write to |h[1]|.
   buffer[0] = 'b';
   ASSERT_EQ(
@@ -574,22 +340,9 @@ TEST_F(CoreTest, MessagePipe) {
       core()->WriteMessage(h[1], buffer, 1, nullptr, 0,
                            MOJO_WRITE_MESSAGE_FLAG_NONE));
 
-  // Check that |h[0]| is now readable.
-  signals[0] = MOJO_HANDLE_SIGNAL_READABLE;
-  signals[1] = MOJO_HANDLE_SIGNAL_READABLE;
-  result_index = static_cast<uint32_t>(-1);
-  hss[0] = kEmptyMojoHandleSignalsState;
-  hss[1] = kEmptyMojoHandleSignalsState;
-  ASSERT_EQ(
-      MOJO_RESULT_OK,
-      core()->WaitMany(h, signals, 2, MOJO_DEADLINE_INDEFINITE, &result_index,
-                       hss));
-  ASSERT_EQ(0u, result_index);
-  ASSERT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
-            hss[0].satisfied_signals);
-  ASSERT_EQ(kAllSignals, hss[0].satisfiable_signals);
-  ASSERT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss[1].satisfied_signals);
-  ASSERT_EQ(kAllSignals, hss[1].satisfiable_signals);
+  // Wait for |h[0]| to become readable.
+  EXPECT_EQ(MOJO_RESULT_OK, mojo::Wait(mojo::Handle(h[0]),
+                                       MOJO_HANDLE_SIGNAL_READABLE, &hss[0]));
 
   // Read from |h[0]|.
   // First, get only the size.
@@ -611,8 +364,7 @@ TEST_F(CoreTest, MessagePipe) {
 
   // |h[0]| should no longer be readable.
   hss[0] = kEmptyMojoHandleSignalsState;
-  ASSERT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED,
-            core()->Wait(h[0], MOJO_HANDLE_SIGNAL_READABLE, 0, &hss[0]));
+  EXPECT_EQ(MOJO_RESULT_OK, core()->QueryHandleSignalsState(h[0], &hss[0]));
   ASSERT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss[0].satisfied_signals);
   ASSERT_EQ(kAllSignals, hss[0].satisfiable_signals);
 
@@ -627,28 +379,21 @@ TEST_F(CoreTest, MessagePipe) {
   ASSERT_EQ(MOJO_RESULT_OK, core()->Close(h[0]));
 
   // Wait for |h[1]| to learn about the other end's closure.
-  ASSERT_EQ(MOJO_RESULT_OK,
-            core()->Wait(h[1], MOJO_HANDLE_SIGNAL_PEER_CLOSED, 1000000000,
-                         &hss[0]));
+  EXPECT_EQ(
+      MOJO_RESULT_OK,
+      mojo::Wait(mojo::Handle(h[1]), MOJO_HANDLE_SIGNAL_PEER_CLOSED, &hss[1]));
 
   // Check that |h[1]| is no longer writable (and will never be).
-  hss[0] = kEmptyMojoHandleSignalsState;
-  ASSERT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            core()->Wait(h[1], MOJO_HANDLE_SIGNAL_WRITABLE, 1000000000,
-                         &hss[0]));
-  ASSERT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
-            hss[0].satisfied_signals);
-  ASSERT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
-            hss[0].satisfiable_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+            hss[1].satisfied_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+            hss[1].satisfiable_signals);
 
   // Check that |h[1]| is still readable (for the moment).
-  hss[0] = kEmptyMojoHandleSignalsState;
-  ASSERT_EQ(MOJO_RESULT_OK, core()->Wait(h[1], MOJO_HANDLE_SIGNAL_READABLE,
-                                         1000000000, &hss[0]));
-  ASSERT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
-            hss[0].satisfied_signals);
-  ASSERT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
-            hss[0].satisfiable_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+            hss[1].satisfied_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+            hss[1].satisfiable_signals);
 
   // Discard a message from |h[1]|.
   ASSERT_EQ(MOJO_RESULT_RESOURCE_EXHAUSTED,
@@ -656,12 +401,10 @@ TEST_F(CoreTest, MessagePipe) {
                                 MOJO_READ_MESSAGE_FLAG_MAY_DISCARD));
 
   // |h[1]| is no longer readable (and will never be).
-  hss[0] = kFullMojoHandleSignalsState;
-  ASSERT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            core()->Wait(h[1], MOJO_HANDLE_SIGNAL_READABLE, 1000000000,
-                         &hss[0]));
-  ASSERT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss[0].satisfied_signals);
-  ASSERT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss[0].satisfiable_signals);
+  hss[1] = kFullMojoHandleSignalsState;
+  EXPECT_EQ(MOJO_RESULT_OK, core()->QueryHandleSignalsState(h[1], &hss[1]));
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss[1].satisfied_signals);
+  EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss[1].satisfiable_signals);
 
   // Try writing to |h[1]|.
   buffer[0] = 'e';
@@ -696,9 +439,8 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing1) {
             core()->WriteMessage(h_passing[0], kHello, kHelloSize, nullptr, 0,
                                  MOJO_WRITE_MESSAGE_FLAG_NONE));
   hss = kEmptyMojoHandleSignalsState;
-  ASSERT_EQ(MOJO_RESULT_OK,
-            core()->Wait(h_passing[1], MOJO_HANDLE_SIGNAL_READABLE, 1000000000,
-                         &hss));
+  EXPECT_EQ(MOJO_RESULT_OK, mojo::Wait(mojo::Handle(h_passing[1]),
+                                       MOJO_HANDLE_SIGNAL_READABLE, &hss));
   ASSERT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
             hss.satisfied_signals);
   ASSERT_EQ(kAllSignals, hss.satisfiable_signals);
@@ -737,9 +479,8 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing1) {
             core()->WriteMessage(h_passed[0], kHello, kHelloSize, nullptr, 0,
                                  MOJO_WRITE_MESSAGE_FLAG_NONE));
   hss = kEmptyMojoHandleSignalsState;
-  ASSERT_EQ(MOJO_RESULT_OK,
-            core()->Wait(h_passed[1], MOJO_HANDLE_SIGNAL_READABLE, 1000000000,
-                         &hss));
+  ASSERT_EQ(MOJO_RESULT_OK, mojo::Wait(mojo::Handle(h_passed[1]),
+                                       MOJO_HANDLE_SIGNAL_READABLE, &hss));
   ASSERT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
             hss.satisfied_signals);
   ASSERT_EQ(kAllSignals, hss.satisfiable_signals);
@@ -759,9 +500,8 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing1) {
                                  &h_passed[1], 1,
                                  MOJO_WRITE_MESSAGE_FLAG_NONE));
   hss = kEmptyMojoHandleSignalsState;
-  ASSERT_EQ(MOJO_RESULT_OK,
-            core()->Wait(h_passing[1], MOJO_HANDLE_SIGNAL_READABLE, 1000000000,
-                         &hss));
+  ASSERT_EQ(MOJO_RESULT_OK, mojo::Wait(mojo::Handle(h_passing[1]),
+                                       MOJO_HANDLE_SIGNAL_READABLE, &hss));
   ASSERT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
             hss.satisfied_signals);
   ASSERT_EQ(kAllSignals, hss.satisfiable_signals);
@@ -792,9 +532,8 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing1) {
             core()->WriteMessage(h_passed[0], kHello, kHelloSize, nullptr, 0,
                                  MOJO_WRITE_MESSAGE_FLAG_NONE));
   hss = kEmptyMojoHandleSignalsState;
-  ASSERT_EQ(MOJO_RESULT_OK,
-            core()->Wait(h_received, MOJO_HANDLE_SIGNAL_READABLE, 1000000000,
-                         &hss));
+  ASSERT_EQ(MOJO_RESULT_OK, mojo::Wait(mojo::Handle(h_received),
+                                       MOJO_HANDLE_SIGNAL_READABLE, &hss));
   ASSERT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
             hss.satisfied_signals);
   ASSERT_EQ(kAllSignals, hss.satisfiable_signals);
@@ -827,33 +566,15 @@ TEST_F(CoreTest, DataPipe) {
 
   // Producer should be never-readable, but already writable.
   hss = kEmptyMojoHandleSignalsState;
-  ASSERT_EQ(
-      MOJO_RESULT_FAILED_PRECONDITION,
-      core()->Wait(ph, MOJO_HANDLE_SIGNAL_READABLE, 0, &hss));
-  ASSERT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss.satisfied_signals);
-  ASSERT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
-            hss.satisfiable_signals);
-  hss = kEmptyMojoHandleSignalsState;
-  ASSERT_EQ(MOJO_RESULT_OK, core()->Wait(ph, MOJO_HANDLE_SIGNAL_WRITABLE, 0,
-                                         &hss));
+  EXPECT_EQ(MOJO_RESULT_OK, core()->QueryHandleSignalsState(ph, &hss));
   ASSERT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, hss.satisfied_signals);
   ASSERT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
             hss.satisfiable_signals);
 
   // Consumer should be never-writable, and not yet readable.
   hss = kFullMojoHandleSignalsState;
-  ASSERT_EQ(
-      MOJO_RESULT_FAILED_PRECONDITION,
-      core()->Wait(ch, MOJO_HANDLE_SIGNAL_WRITABLE, 0, &hss));
-  ASSERT_EQ(0u, hss.satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED |
-                MOJO_HANDLE_SIGNAL_NEW_DATA_READABLE,
-            hss.satisfiable_signals);
-  hss = kFullMojoHandleSignalsState;
-  ASSERT_EQ(
-      MOJO_RESULT_DEADLINE_EXCEEDED,
-      core()->Wait(ch, MOJO_HANDLE_SIGNAL_READABLE, 0, &hss));
-  ASSERT_EQ(0u, hss.satisfied_signals);
+  EXPECT_EQ(MOJO_RESULT_OK, core()->QueryHandleSignalsState(ch, &hss));
+  EXPECT_EQ(0u, hss.satisfied_signals);
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED |
                 MOJO_HANDLE_SIGNAL_NEW_DATA_READABLE,
             hss.satisfiable_signals);
@@ -867,13 +588,12 @@ TEST_F(CoreTest, DataPipe) {
   ASSERT_EQ(2u, num_bytes);
 
   // Wait for the data to arrive to the consumer.
-  ASSERT_EQ(MOJO_RESULT_OK,
-            core()->Wait(ch, MOJO_HANDLE_SIGNAL_READABLE, 1000000000, &hss));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            mojo::Wait(mojo::Handle(ch), MOJO_HANDLE_SIGNAL_READABLE, &hss));
 
   // Consumer should now be readable.
   hss = kEmptyMojoHandleSignalsState;
-  ASSERT_EQ(MOJO_RESULT_OK, core()->Wait(ch, MOJO_HANDLE_SIGNAL_READABLE, 0,
-                                         &hss));
+  EXPECT_EQ(MOJO_RESULT_OK, core()->QueryHandleSignalsState(ch, &hss));
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_NEW_DATA_READABLE,
             hss.satisfied_signals);
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED |
@@ -924,7 +644,7 @@ TEST_F(CoreTest, DataPipe) {
 
   // Wait for the data to arrive to the consumer.
   ASSERT_EQ(MOJO_RESULT_OK,
-            core()->Wait(ch, MOJO_HANDLE_SIGNAL_READABLE, 1000000000, &hss));
+            mojo::Wait(mojo::Handle(ch), MOJO_HANDLE_SIGNAL_READABLE, &hss));
 
   // Query how much data we have.
   num_bytes = 0;
@@ -964,7 +684,7 @@ TEST_F(CoreTest, DataPipe) {
 
   // Ensure the 3 bytes were read.
   ASSERT_EQ(MOJO_RESULT_OK,
-            core()->Wait(ch, MOJO_HANDLE_SIGNAL_READABLE, 1000000000, &hss));
+            mojo::Wait(mojo::Handle(ch), MOJO_HANDLE_SIGNAL_READABLE, &hss));
 
   // Try a two-phase read of the remaining three bytes with peek. Should fail.
   const void* read_ptr = nullptr;
@@ -995,9 +715,7 @@ TEST_F(CoreTest, DataPipe) {
 
   // Consumer should now be no longer readable.
   hss = kFullMojoHandleSignalsState;
-  ASSERT_EQ(
-      MOJO_RESULT_DEADLINE_EXCEEDED,
-      core()->Wait(ch, MOJO_HANDLE_SIGNAL_READABLE, 0, &hss));
+  EXPECT_EQ(MOJO_RESULT_OK, core()->QueryHandleSignalsState(ch, &hss));
   EXPECT_EQ(0u, hss.satisfied_signals);
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED |
                 MOJO_HANDLE_SIGNAL_NEW_DATA_READABLE,
@@ -1009,14 +727,12 @@ TEST_F(CoreTest, DataPipe) {
   ASSERT_EQ(MOJO_RESULT_OK, core()->Close(ph));
 
   // Wait for this to get to the consumer.
-  ASSERT_EQ(MOJO_RESULT_OK,
-            core()->Wait(ch, MOJO_HANDLE_SIGNAL_PEER_CLOSED, 1000000000, &hss));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            mojo::Wait(mojo::Handle(ch), MOJO_HANDLE_SIGNAL_PEER_CLOSED, &hss));
 
   // The consumer should now be never-readable.
   hss = kFullMojoHandleSignalsState;
-  ASSERT_EQ(
-      MOJO_RESULT_FAILED_PRECONDITION,
-      core()->Wait(ch, MOJO_HANDLE_SIGNAL_READABLE, 0, &hss));
+  EXPECT_EQ(MOJO_RESULT_OK, core()->QueryHandleSignalsState(ch, &hss));
   ASSERT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfied_signals);
   ASSERT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfiable_signals);
 
@@ -1049,9 +765,8 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing2) {
             core()->WriteMessage(h_passing[0], kHello, kHelloSize, &ch, 1,
                                  MOJO_WRITE_MESSAGE_FLAG_NONE));
   hss = kEmptyMojoHandleSignalsState;
-  ASSERT_EQ(MOJO_RESULT_OK,
-            core()->Wait(h_passing[1], MOJO_HANDLE_SIGNAL_READABLE, 1000000000,
-                         &hss));
+  ASSERT_EQ(MOJO_RESULT_OK, mojo::Wait(mojo::Handle(h_passing[1]),
+                                       MOJO_HANDLE_SIGNAL_READABLE, &hss));
   ASSERT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
             hss.satisfied_signals);
   ASSERT_EQ(kAllSignals, hss.satisfiable_signals);
@@ -1083,9 +798,8 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing2) {
             core()->WriteData(ph, kWorld, &num_bytes,
                               MOJO_WRITE_DATA_FLAG_ALL_OR_NONE));
   hss = kEmptyMojoHandleSignalsState;
-  ASSERT_EQ(MOJO_RESULT_OK,
-            core()->Wait(ch_received, MOJO_HANDLE_SIGNAL_READABLE, 1000000000,
-                         &hss));
+  EXPECT_EQ(MOJO_RESULT_OK, mojo::Wait(mojo::Handle(ch_received),
+                                       MOJO_HANDLE_SIGNAL_READABLE, &hss));
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_NEW_DATA_READABLE,
             hss.satisfied_signals);
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED |
@@ -1103,9 +817,8 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing2) {
             core()->WriteMessage(h_passing[0], kWorld, kWorldSize, &ph, 1,
                                  MOJO_WRITE_MESSAGE_FLAG_NONE));
   hss = kEmptyMojoHandleSignalsState;
-  ASSERT_EQ(MOJO_RESULT_OK,
-            core()->Wait(h_passing[1], MOJO_HANDLE_SIGNAL_READABLE, 1000000000,
-                         &hss));
+  ASSERT_EQ(MOJO_RESULT_OK, mojo::Wait(mojo::Handle(h_passing[1]),
+                                       MOJO_HANDLE_SIGNAL_READABLE, &hss));
   ASSERT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
             hss.satisfied_signals);
   ASSERT_EQ(kAllSignals, hss.satisfiable_signals);
@@ -1137,9 +850,8 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing2) {
             core()->WriteData(ph_received, kHello, &num_bytes,
                               MOJO_WRITE_DATA_FLAG_ALL_OR_NONE));
   hss = kEmptyMojoHandleSignalsState;
-  ASSERT_EQ(MOJO_RESULT_OK,
-            core()->Wait(ch_received, MOJO_HANDLE_SIGNAL_READABLE, 1000000000,
-                         &hss));
+  EXPECT_EQ(MOJO_RESULT_OK, mojo::Wait(mojo::Handle(ch_received),
+                                       MOJO_HANDLE_SIGNAL_READABLE, &hss));
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_NEW_DATA_READABLE,
             hss.satisfied_signals);
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED |
@@ -1173,9 +885,8 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing2) {
             core()->WriteMessage(h_passing[0], kHello, kHelloSize, &ch, 1,
                                  MOJO_WRITE_MESSAGE_FLAG_NONE));
   ch = MOJO_HANDLE_INVALID;
-  ASSERT_EQ(MOJO_RESULT_OK,
-            core()->Wait(h_passing[1], MOJO_HANDLE_SIGNAL_READABLE, 1000000000,
-                         nullptr));
+  EXPECT_EQ(MOJO_RESULT_OK, mojo::Wait(mojo::Handle(h_passing[1]),
+                                       MOJO_HANDLE_SIGNAL_READABLE));
   num_bytes = kBufferSize;
   num_handles = arraysize(handles);
   ASSERT_EQ(MOJO_RESULT_OK,
@@ -1194,8 +905,8 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing2) {
 
   // Wait for |ch| to be readable.
   hss = kEmptyMojoHandleSignalsState;
-  ASSERT_EQ(MOJO_RESULT_OK, core()->Wait(ch, MOJO_HANDLE_SIGNAL_READABLE,
-                                         1000000000, &hss));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            mojo::Wait(mojo::Handle(ch), MOJO_HANDLE_SIGNAL_READABLE, &hss));
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_NEW_DATA_READABLE,
             hss.satisfied_signals);
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED |
@@ -1218,9 +929,8 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing2) {
                                  MOJO_WRITE_MESSAGE_FLAG_NONE));
   ph = MOJO_HANDLE_INVALID;
   hss = kEmptyMojoHandleSignalsState;
-  ASSERT_EQ(MOJO_RESULT_OK,
-            core()->Wait(h_passing[1], MOJO_HANDLE_SIGNAL_READABLE, 1000000000,
-                         &hss));
+  EXPECT_EQ(MOJO_RESULT_OK, mojo::Wait(mojo::Handle(h_passing[1]),
+                                       MOJO_HANDLE_SIGNAL_READABLE, &hss));
   ASSERT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
             hss.satisfied_signals);
   ASSERT_EQ(kAllSignals, hss.satisfiable_signals);

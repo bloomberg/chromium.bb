@@ -80,7 +80,7 @@ const MojoHandle MOJO_HANDLE_INVALID = 0;
 //       the resource being invalidated.
 //   |MOJO_RESULT_SHOULD_WAIT| - The request cannot currently be completed
 //       (e.g., if the data requested is not yet available). The caller should
-//       wait for it to be feasible using |MojoWait()| or |MojoWaitMany()|.
+//       wait for it to be feasible using a watcher.
 //
 // The codes from |MOJO_RESULT_OK| to |MOJO_RESULT_DATA_LOSS| come from
 // Google3's canonical error codes.
@@ -141,11 +141,11 @@ const MojoDeadline MOJO_DEADLINE_INDEFINITE = static_cast<MojoDeadline>(-1);
 #define MOJO_DEADLINE_INDEFINITE ((MojoDeadline) - 1)
 #endif
 
-// |MojoHandleSignals|: Used to specify signals that can be waited on for a
+// |MojoHandleSignals|: Used to specify signals that can be watched for on a
 // handle (and which can be triggered), e.g., the ability to read or write to
 // the handle.
-//   |MOJO_HANDLE_SIGNAL_NONE| - No flags. |MojoWait()|, etc. will return
-//       |MOJO_RESULT_FAILED_PRECONDITION| if you attempt to wait on this.
+//   |MOJO_HANDLE_SIGNAL_NONE| - No flags. A registered watch will always fail
+//       to arm with |MOJO_RESULT_FAILED_PRECONDITION| when watching for this.
 //   |MOJO_HANDLE_SIGNAL_READABLE| - Can read (e.g., a message) from the handle.
 //   |MOJO_HANDLE_SIGNAL_WRITABLE| - Can write (e.g., a message) to the handle.
 //   |MOJO_HANDLE_SIGNAL_PEER_CLOSED| - The peer handle is closed.
@@ -171,8 +171,9 @@ const MojoHandleSignals MOJO_HANDLE_SIGNAL_NEW_DATA_READABLE = 1 << 3;
 #define MOJO_HANDLE_SIGNAL_NEW_DATA_READABLE ((MojoHandleSignals)1 << 3);
 #endif
 
-// |MojoHandleSignalsState|: Returned by wait functions to indicate the
-// signaling state of handles. Members are as follows:
+// |MojoHandleSignalsState|: Returned by watch notification callbacks and
+// |MojoQueryHandleSignalsState| functions to indicate the signaling state of
+// handles. Members are as follows:
 //   - |satisfied signals|: Bitmask of signals that were satisfied at some time
 //         before the call returned.
 //   - |satisfiable signals|: These are the signals that are possible to

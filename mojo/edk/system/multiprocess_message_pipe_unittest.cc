@@ -32,6 +32,7 @@
 #include "mojo/public/c/system/functions.h"
 #include "mojo/public/c/system/types.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
+#include "mojo/public/cpp/system/wait.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 
@@ -777,16 +778,15 @@ DEFINE_TEST_CLIENT_WITH_PIPE(EchoServiceFactoryClient,
   MojoHandle p;
   ReadMessageWithHandles(h, &p, 1);
 
-  std::vector<MojoHandle> handles(2);
-  handles[0] = h;
-  handles[1] = p;
+  std::vector<Handle> handles(2);
+  handles[0] = Handle(h);
+  handles[1] = Handle(p);
   std::vector<MojoHandleSignals> signals(2, MOJO_HANDLE_SIGNAL_READABLE);
   for (;;) {
-    uint32_t index;
-    CHECK_EQ(MojoWaitMany(handles.data(), signals.data(),
-                          static_cast<uint32_t>(handles.size()),
-                          MOJO_DEADLINE_INDEFINITE, &index, nullptr),
-             MOJO_RESULT_OK);
+    size_t index;
+    CHECK_EQ(
+        mojo::WaitMany(handles.data(), signals.data(), handles.size(), &index),
+        MOJO_RESULT_OK);
     DCHECK_LE(index, handles.size());
     if (index == 0) {
       // If data is available on the first pipe, it should be an exit command.
@@ -796,16 +796,16 @@ DEFINE_TEST_CLIENT_WITH_PIPE(EchoServiceFactoryClient,
       // If the second pipe, it should be a new handle requesting echo service.
       MojoHandle echo_request;
       ReadMessageWithHandles(p, &echo_request, 1);
-      handles.push_back(echo_request);
+      handles.push_back(Handle(echo_request));
       signals.push_back(MOJO_HANDLE_SIGNAL_READABLE);
     } else {
       // Otherwise it was one of our established echo pipes. Echo!
-      WriteMessage(handles[index], ReadMessage(handles[index]));
+      WriteMessage(handles[index].value(), ReadMessage(handles[index].value()));
     }
   }
 
   for (size_t i = 1; i < handles.size(); ++i)
-    CloseHandle(handles[i]);
+    CloseHandle(handles[i].value());
 
   return 0;
 }

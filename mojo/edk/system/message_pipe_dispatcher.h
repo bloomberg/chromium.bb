@@ -12,7 +12,6 @@
 
 #include "base/macros.h"
 #include "mojo/edk/system/atomic_flag.h"
-#include "mojo/edk/system/awakable_list.h"
 #include "mojo/edk/system/dispatcher.h"
 #include "mojo/edk/system/message_for_transit.h"
 #include "mojo/edk/system/ports/port_ref.h"
@@ -62,12 +61,6 @@ class MessagePipeDispatcher : public Dispatcher {
                            uintptr_t context) override;
   MojoResult RemoveWatcherRef(WatcherDispatcher* watcher,
                               uintptr_t context) override;
-  MojoResult AddAwakable(Awakable* awakable,
-                         MojoHandleSignals signals,
-                         uintptr_t context,
-                         HandleSignalsState* signals_state) override;
-  void RemoveAwakable(Awakable* awakable,
-                      HandleSignalsState* signals_state) override;
   void StartSerialize(uint32_t* num_bytes,
                       uint32_t* num_ports,
                       uint32_t* num_handles) override;
@@ -111,7 +104,6 @@ class MessagePipeDispatcher : public Dispatcher {
 
   bool port_transferred_ = false;
   AtomicFlag port_closed_;
-  AwakableList awakables_;
   WatcherSet watchers_;
 
   DISALLOW_COPY_AND_ASSIGN(MessagePipeDispatcher);

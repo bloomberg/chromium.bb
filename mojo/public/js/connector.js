@@ -83,8 +83,7 @@ define("mojo/public/js/connector", [
   };
 
   Connector.prototype.waitForNextMessageForTesting = function() {
-    var wait = core.wait(this.handle_, core.HANDLE_SIGNAL_READABLE,
-                         core.DEADLINE_INDEFINITE);
+    var wait = core.wait(this.handle_, core.HANDLE_SIGNAL_READABLE);
     this.readMore_(wait.result);
   };
 

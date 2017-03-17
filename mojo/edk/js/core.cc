@@ -21,6 +21,7 @@
 #include "gin/wrappable.h"
 #include "mojo/edk/js/drain_data.h"
 #include "mojo/edk/js/handle.h"
+#include "mojo/public/cpp/system/wait.h"
 
 namespace mojo {
 namespace edk {
@@ -51,17 +52,15 @@ gin::Dictionary QueryHandleSignalsState(const gin::Arguments& args,
 
 gin::Dictionary WaitHandle(const gin::Arguments& args,
                            mojo::Handle handle,
-                           MojoHandleSignals signals,
-                           MojoDeadline deadline) {
+                           MojoHandleSignals signals) {
   v8::Isolate* isolate = args.isolate();
   gin::Dictionary dictionary = gin::Dictionary::CreateEmpty(isolate);
 
   MojoHandleSignalsState signals_state;
-  MojoResult result = mojo::Wait(handle, signals, deadline, &signals_state);
+  MojoResult result = Wait(handle, signals, &signals_state);
   dictionary.Set("result", result);
 
-  mojo::WaitManyResult wmv(result, 0);
-  if (!wmv.AreSignalsStatesValid()) {
+  if (result != MOJO_RESULT_OK && result != MOJO_RESULT_FAILED_PRECONDITION) {
     dictionary.Set("signalsState", v8::Null(isolate).As<v8::Value>());
   } else {
     gin::Dictionary signalsStateDict = gin::Dictionary::CreateEmpty(isolate);
@@ -69,40 +68,6 @@ gin::Dictionary WaitHandle(const gin::Arguments& args,
     signalsStateDict.Set("satisfiableSignals",
                          signals_state.satisfiable_signals);
     dictionary.Set("signalsState", signalsStateDict);
-  }
-
-  return dictionary;
-}
-
-gin::Dictionary WaitMany(const gin::Arguments& args,
-                         const std::vector<mojo::Handle>& handles,
-                         const std::vector<MojoHandleSignals>& signals,
-                         MojoDeadline deadline) {
-  v8::Isolate* isolate = args.isolate();
-  gin::Dictionary dictionary = gin::Dictionary::CreateEmpty(isolate);
-
-  std::vector<MojoHandleSignalsState> signals_states(signals.size());
-  mojo::WaitManyResult wmv =
-      mojo::WaitMany(handles, signals, deadline, &signals_states);
-  dictionary.Set("result", wmv.result);
-  if (wmv.IsIndexValid()) {
-    dictionary.Set("index", wmv.index);
-  } else {
-    dictionary.Set("index", v8::Null(isolate).As<v8::Value>());
-  }
-  if (wmv.AreSignalsStatesValid()) {
-    std::vector<gin::Dictionary> vec;
-    for (size_t i = 0; i < handles.size(); ++i) {
-      gin::Dictionary signalsStateDict = gin::Dictionary::CreateEmpty(isolate);
-      signalsStateDict.Set("satisfiedSignals",
-                           signals_states[i].satisfied_signals);
-      signalsStateDict.Set("satisfiableSignals",
-                           signals_states[i].satisfiable_signals);
-      vec.push_back(signalsStateDict);
-    }
-    dictionary.Set("signalsState", vec);
-  } else {
-    dictionary.Set("signalsState", v8::Null(isolate).As<v8::Value>());
   }
 
   return dictionary;
@@ -404,7 +369,6 @@ v8::Local<v8::Value> Core::GetModule(v8::Isolate* isolate) {
             .SetMethod("close", CloseHandle)
             .SetMethod("queryHandleSignalsState", QueryHandleSignalsState)
             .SetMethod("wait", WaitHandle)
-            .SetMethod("waitMany", WaitMany)
             .SetMethod("createMessagePipe", CreateMessagePipe)
             .SetMethod("writeMessage", WriteMessage)
             .SetMethod("readMessage", ReadMessage)
@@ -438,8 +402,6 @@ v8::Local<v8::Value> Core::GetModule(v8::Isolate* isolate) {
             .SetValue("RESULT_DATA_LOSS", MOJO_RESULT_DATA_LOSS)
             .SetValue("RESULT_BUSY", MOJO_RESULT_BUSY)
             .SetValue("RESULT_SHOULD_WAIT", MOJO_RESULT_SHOULD_WAIT)
-
-            .SetValue("DEADLINE_INDEFINITE", MOJO_DEADLINE_INDEFINITE)
 
             .SetValue("HANDLE_SIGNAL_NONE", MOJO_HANDLE_SIGNAL_NONE)
             .SetValue("HANDLE_SIGNAL_READABLE", MOJO_HANDLE_SIGNAL_READABLE)

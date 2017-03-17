@@ -15,6 +15,7 @@
 #include "mojo/public/c/system/data_pipe.h"
 #include "mojo/public/c/system/functions.h"
 #include "mojo/public/c/system/watcher.h"
+#include "mojo/public/cpp/system/wait.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
@@ -24,104 +25,6 @@
 namespace mojo {
 namespace edk {
 namespace test {
-
-namespace {
-
-class Waiter {
- public:
-  Waiter() {}
-  ~Waiter() {}
-
-  MojoResult Wait(MojoHandle handle,
-                  MojoHandleSignals signals,
-                  MojoHandleSignalsState* state) {
-    MojoHandle watcher;
-    MojoCreateWatcher(&Context::OnNotification, &watcher);
-
-    context_ = new Context();
-
-    // Balanced by OnNotification in the |MOJO_RESULT_CANCELLED| case.
-    context_->AddRef();
-
-    MojoResult rv = MojoWatch(watcher, handle, signals,
-                              reinterpret_cast<uintptr_t>(context_.get()));
-    DCHECK_EQ(MOJO_RESULT_OK, rv);
-
-    uint32_t num_ready_contexts = 1;
-    uintptr_t ready_context;
-    MojoResult ready_result;
-    MojoHandleSignalsState ready_state;
-    rv = MojoArmWatcher(watcher, &num_ready_contexts, &ready_context,
-                        &ready_result, &ready_state);
-    if (rv == MOJO_RESULT_FAILED_PRECONDITION) {
-      MojoClose(watcher);
-      DCHECK_EQ(1u, num_ready_contexts);
-      if (state)
-        *state = ready_state;
-      return ready_result;
-    }
-
-    // Wait for the first notification.
-    context_->event().Wait();
-
-    ready_result = context_->wait_result();
-    DCHECK_NE(MOJO_RESULT_UNKNOWN, ready_result);
-
-    if (state)
-      *state = context_->wait_state();
-
-    MojoClose(watcher);
-
-    return ready_result;
-  }
-
- private:
-  class Context : public base::RefCountedThreadSafe<Context> {
-   public:
-    Context()
-        : event_(base::WaitableEvent::ResetPolicy::AUTOMATIC,
-                 base::WaitableEvent::InitialState::NOT_SIGNALED) {}
-
-    base::WaitableEvent& event() { return event_; }
-    MojoResult wait_result() const { return wait_result_; }
-    MojoHandleSignalsState wait_state() const { return wait_state_; }
-
-    static void OnNotification(uintptr_t context_value,
-                               MojoResult result,
-                               MojoHandleSignalsState state,
-                               MojoWatcherNotificationFlags flags) {
-      auto* context = reinterpret_cast<Context*>(context_value);
-      context->Notify(result, state);
-      if (result == MOJO_RESULT_CANCELLED)
-        context->Release();
-    }
-
-   private:
-    friend class base::RefCountedThreadSafe<Context>;
-
-    ~Context() {}
-
-    void Notify(MojoResult result, MojoHandleSignalsState state) {
-      if (wait_result_ == MOJO_RESULT_UNKNOWN) {
-        wait_result_ = result;
-        wait_state_ = state;
-      }
-      event_.Signal();
-    }
-
-    base::WaitableEvent event_;
-    MojoResult wait_result_ = MOJO_RESULT_UNKNOWN;
-    MojoHandleSignalsState wait_state_ = {0, 0};
-
-    DISALLOW_COPY_AND_ASSIGN(Context);
-  };
-
-  scoped_refptr<Context> context_;
-
-  DISALLOW_COPY_AND_ASSIGN(Waiter);
-};
-
-}  // namespace
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 namespace {
@@ -416,8 +319,7 @@ MojoHandleSignalsState MojoTestBase::GetSignalsState(MojoHandle handle) {
 MojoResult MojoTestBase::WaitForSignals(MojoHandle handle,
                                         MojoHandleSignals signals,
                                         MojoHandleSignalsState* state) {
-  Waiter waiter;
-  return waiter.Wait(handle, signals, state);
+  return Wait(Handle(handle), signals, state);
 }
 
 }  // namespace test

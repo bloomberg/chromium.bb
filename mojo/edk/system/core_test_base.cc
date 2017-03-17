@@ -107,28 +107,6 @@ class MockDispatcher : public Dispatcher {
     return MOJO_RESULT_UNIMPLEMENTED;
   }
 
-  MojoResult AddAwakable(Awakable* awakable,
-                         MojoHandleSignals /*signals*/,
-                         uintptr_t /*context*/,
-                         HandleSignalsState* signals_state) override {
-    info_->IncrementAddAwakableCallCount();
-    if (signals_state)
-      *signals_state = HandleSignalsState();
-    if (info_->IsAddAwakableAllowed()) {
-      info_->AwakableWasAdded(awakable);
-      return MOJO_RESULT_OK;
-    }
-
-    return MOJO_RESULT_FAILED_PRECONDITION;
-  }
-
-  void RemoveAwakable(Awakable* /*awakable*/,
-                      HandleSignalsState* signals_state) override {
-    info_->IncrementRemoveAwakableCallCount();
-    if (signals_state)
-      *signals_state = HandleSignalsState();
-  }
-
  private:
   explicit MockDispatcher(CoreTestBase::MockHandleInfo* info) : info_(info) {
     CHECK(info_);
@@ -174,11 +152,7 @@ CoreTestBase_MockHandleInfo::CoreTestBase_MockHandleInfo()
       end_write_data_call_count_(0),
       read_data_call_count_(0),
       begin_read_data_call_count_(0),
-      end_read_data_call_count_(0),
-      add_awakable_call_count_(0),
-      remove_awakable_call_count_(0),
-      add_awakable_allowed_(false) {
-}
+      end_read_data_call_count_(0) {}
 
 CoreTestBase_MockHandleInfo::~CoreTestBase_MockHandleInfo() {
 }
@@ -238,26 +212,6 @@ unsigned CoreTestBase_MockHandleInfo::GetEndReadDataCallCount() const {
   return end_read_data_call_count_;
 }
 
-unsigned CoreTestBase_MockHandleInfo::GetAddAwakableCallCount() const {
-  base::AutoLock locker(lock_);
-  return add_awakable_call_count_;
-}
-
-unsigned CoreTestBase_MockHandleInfo::GetRemoveAwakableCallCount() const {
-  base::AutoLock locker(lock_);
-  return remove_awakable_call_count_;
-}
-
-size_t CoreTestBase_MockHandleInfo::GetAddedAwakableSize() const {
-  base::AutoLock locker(lock_);
-  return added_awakables_.size();
-}
-
-Awakable* CoreTestBase_MockHandleInfo::GetAddedAwakableAt(unsigned i) const {
-  base::AutoLock locker(lock_);
-  return added_awakables_[i];
-}
-
 void CoreTestBase_MockHandleInfo::IncrementCtorCallCount() {
   base::AutoLock locker(lock_);
   ctor_call_count_++;
@@ -311,31 +265,6 @@ void CoreTestBase_MockHandleInfo::IncrementBeginReadDataCallCount() {
 void CoreTestBase_MockHandleInfo::IncrementEndReadDataCallCount() {
   base::AutoLock locker(lock_);
   end_read_data_call_count_++;
-}
-
-void CoreTestBase_MockHandleInfo::IncrementAddAwakableCallCount() {
-  base::AutoLock locker(lock_);
-  add_awakable_call_count_++;
-}
-
-void CoreTestBase_MockHandleInfo::IncrementRemoveAwakableCallCount() {
-  base::AutoLock locker(lock_);
-  remove_awakable_call_count_++;
-}
-
-void CoreTestBase_MockHandleInfo::AllowAddAwakable(bool alllow) {
-  base::AutoLock locker(lock_);
-  add_awakable_allowed_ = alllow;
-}
-
-bool CoreTestBase_MockHandleInfo::IsAddAwakableAllowed() const {
-  base::AutoLock locker(lock_);
-  return add_awakable_allowed_;
-}
-
-void CoreTestBase_MockHandleInfo::AwakableWasAdded(Awakable* awakable) {
-  base::AutoLock locker(lock_);
-  added_awakables_.push_back(awakable);
 }
 
 }  // namespace test

@@ -16,7 +16,6 @@
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/system/test_utils.h"
-#include "mojo/edk/system/waiter.h"
 #include "mojo/edk/test/mojo_test_base.h"
 #include "mojo/public/c/system/data_pipe.h"
 #include "mojo/public/c/system/functions.h"

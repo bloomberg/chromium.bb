@@ -248,7 +248,6 @@ MojoResult DataPipeConsumerDispatcher::EndReadData(uint32_t num_bytes_read) {
 
   CHECK(shared_ring_buffer_);
 
-  HandleSignalsState old_state = GetHandleSignalsStateNoLock();
   MojoResult rv;
   if (num_bytes_read > two_phase_max_bytes_read_ ||
       num_bytes_read % options_.element_num_bytes != 0) {
@@ -268,10 +267,7 @@ MojoResult DataPipeConsumerDispatcher::EndReadData(uint32_t num_bytes_read) {
   in_two_phase_read_ = false;
   two_phase_max_bytes_read_ = 0;
 
-  HandleSignalsState new_state = GetHandleSignalsStateNoLock();
-  if (!new_state.equals(old_state))
-    awakable_list_.AwakeForStateChange(new_state);
-  watchers_.NotifyState(new_state);
+  watchers_.NotifyState(GetHandleSignalsStateNoLock());
 
   return rv;
 }
@@ -297,45 +293,6 @@ MojoResult DataPipeConsumerDispatcher::RemoveWatcherRef(
   if (is_closed_ || in_transit_)
     return MOJO_RESULT_INVALID_ARGUMENT;
   return watchers_.Remove(watcher, context);
-}
-
-MojoResult DataPipeConsumerDispatcher::AddAwakable(
-    Awakable* awakable,
-    MojoHandleSignals signals,
-    uintptr_t context,
-    HandleSignalsState* signals_state) {
-  base::AutoLock lock(lock_);
-  if (!shared_ring_buffer_ || in_transit_) {
-    if (signals_state)
-      *signals_state = HandleSignalsState();
-    return MOJO_RESULT_INVALID_ARGUMENT;
-  }
-  UpdateSignalsStateNoLock();
-  HandleSignalsState state = GetHandleSignalsStateNoLock();
-  if (state.satisfies(signals)) {
-    if (signals_state)
-      *signals_state = state;
-    return MOJO_RESULT_ALREADY_EXISTS;
-  }
-  if (!state.can_satisfy(signals)) {
-    if (signals_state)
-      *signals_state = state;
-    return MOJO_RESULT_FAILED_PRECONDITION;
-  }
-
-  awakable_list_.Add(awakable, signals, context);
-  return MOJO_RESULT_OK;
-}
-
-void DataPipeConsumerDispatcher::RemoveAwakable(
-    Awakable* awakable,
-    HandleSignalsState* signals_state) {
-  base::AutoLock lock(lock_);
-  if ((!shared_ring_buffer_ || in_transit_) && signals_state)
-    *signals_state = HandleSignalsState();
-  else if (signals_state)
-    *signals_state = GetHandleSignalsStateNoLock();
-  awakable_list_.Remove(awakable);
 }
 
 void DataPipeConsumerDispatcher::StartSerialize(uint32_t* num_bytes,
@@ -480,7 +437,6 @@ MojoResult DataPipeConsumerDispatcher::CloseNoLock() {
   ring_buffer_mapping_.reset();
   shared_ring_buffer_ = nullptr;
 
-  awakable_list_.CancelAll();
   watchers_.NotifyClosed();
   if (!transferred_) {
     base::AutoUnlock unlock(lock_);
@@ -598,11 +554,8 @@ void DataPipeConsumerDispatcher::UpdateSignalsStateNoLock() {
   if (has_new_data)
     new_data_available_ = true;
 
-  if (peer_closed_ != was_peer_closed || has_new_data) {
-    HandleSignalsState state = GetHandleSignalsStateNoLock();
-    awakable_list_.AwakeForStateChange(state);
-    watchers_.NotifyState(state);
-  }
+  if (peer_closed_ != was_peer_closed || has_new_data)
+    watchers_.NotifyState(GetHandleSignalsStateNoLock());
 }
 
 }  // namespace edk

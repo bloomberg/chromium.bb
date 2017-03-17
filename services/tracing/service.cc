@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "mojo/public/cpp/system/wait.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 
 namespace tracing {
@@ -94,7 +95,7 @@ void Service::StopAndFlush() {
   // done, close the collector pipe. We don't know how long they will take. We
   // want to read all data that any collector might send until all collectors or
   // closed or an (arbitrary) deadline has passed. Since the bindings don't
-  // support this directly we do our own MojoWaitMany over the handles and read
+  // support this directly we do our own WaitMany over the handles and read
   // individual messages until all are closed or our absolute deadline has
   // elapsed.
   static const MojoDeadline kTimeToWaitMicros = 1000 * 1000;
@@ -105,7 +106,6 @@ void Service::StopAndFlush() {
     if (now >= end)  // Timed out?
       break;
 
-    MojoDeadline mojo_deadline = end - now;
     std::vector<mojo::Handle> handles;
     std::vector<MojoHandleSignals> signals;
     for (const auto& it : recorder_impls_) {
@@ -114,14 +114,14 @@ void Service::StopAndFlush() {
                         MOJO_HANDLE_SIGNAL_PEER_CLOSED);
     }
     std::vector<MojoHandleSignalsState> signals_states(signals.size());
-    const mojo::WaitManyResult wait_many_result =
-        mojo::WaitMany(handles, signals, mojo_deadline, &signals_states);
-    if (wait_many_result.result == MOJO_RESULT_DEADLINE_EXCEEDED) {
-      // Timed out waiting, nothing more to read.
-      LOG(WARNING) << "Timed out waiting for trace flush";
-      break;
-    }
-    if (wait_many_result.IsIndexValid()) {
+    size_t result_index;
+
+    // TODO(rockot): Use a timed wait here to avoid hanging forever in the case
+    // of a misbehaving or unresponsive collector.
+    MojoResult rv =
+        mojo::WaitMany(handles.data(), signals.data(), handles.size(),
+                       &result_index, signals_states.data());
+    if (rv == MOJO_RESULT_OK || rv == MOJO_RESULT_FAILED_PRECONDITION) {
       // Iterate backwards so we can remove closed pipes from |recorder_impls_|
       // without invalidating subsequent offsets.
       for (size_t i = signals_states.size(); i != 0; --i) {

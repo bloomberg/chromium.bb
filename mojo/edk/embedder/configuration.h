@@ -27,10 +27,6 @@ struct Configuration {
   // Maximum number of active memory mappings. The default is 1,000,000.
   size_t max_mapping_table_sze;
 
-  // Upper limit of |MojoWaitMany()|'s |num_handles|. The default is 1,000,000.
-  // Must be same as or smaller than |max_handle_table_size|.
-  size_t max_wait_many_num_handles;
-
   // Maximum data size of messages sent over message pipes, in bytes. The
   // default is 4MB.
   size_t max_message_num_bytes;

@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "mojo/public/cpp/system/core.h"
+#include "mojo/public/cpp/system/wait.h"
 #include "mojo/public/cpp/test_support/test_support.h"
 
 namespace mojo {
@@ -41,8 +42,7 @@ bool ReadTextMessage(const MessagePipeHandle& handle, std::string* text) {
         assert(false);  // Looping endlessly!?
         return false;
       }
-      rv = Wait(handle, MOJO_HANDLE_SIGNAL_READABLE, MOJO_DEADLINE_INDEFINITE,
-                nullptr);
+      rv = Wait(handle, MOJO_HANDLE_SIGNAL_READABLE);
       if (rv != MOJO_RESULT_OK)
         return false;
       did_wait = true;

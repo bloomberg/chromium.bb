@@ -29,25 +29,6 @@ MojoResult MojoQueryHandleSignalsState(
   return g_thunks.QueryHandleSignalsState(handle, signals_state);
 }
 
-MojoResult MojoWait(MojoHandle handle,
-                    MojoHandleSignals signals,
-                    MojoDeadline deadline,
-                    struct MojoHandleSignalsState* signals_state) {
-  assert(g_thunks.Wait);
-  return g_thunks.Wait(handle, signals, deadline, signals_state);
-}
-
-MojoResult MojoWaitMany(const MojoHandle* handles,
-                        const MojoHandleSignals* signals,
-                        uint32_t num_handles,
-                        MojoDeadline deadline,
-                        uint32_t* result_index,
-                        struct MojoHandleSignalsState* signals_states) {
-  assert(g_thunks.WaitMany);
-  return g_thunks.WaitMany(handles, signals, num_handles, deadline,
-                           result_index, signals_states);
-}
-
 MojoResult MojoCreateMessagePipe(const MojoCreateMessagePipeOptions* options,
                                  MojoHandle* message_pipe_handle0,
                                  MojoHandle* message_pipe_handle1) {
@@ -163,33 +144,6 @@ MojoResult MojoMapBuffer(MojoHandle buffer_handle,
 MojoResult MojoUnmapBuffer(void* buffer) {
   assert(g_thunks.UnmapBuffer);
   return g_thunks.UnmapBuffer(buffer);
-}
-
-MojoResult MojoCreateWaitSet(MojoHandle* wait_set) {
-  assert(g_thunks.CreateWaitSet);
-  return g_thunks.CreateWaitSet(wait_set);
-}
-
-MojoResult MojoAddHandle(MojoHandle wait_set,
-                         MojoHandle handle,
-                         MojoHandleSignals signals) {
-  assert(g_thunks.AddHandle);
-  return g_thunks.AddHandle(wait_set, handle, signals);
-}
-
-MojoResult MojoRemoveHandle(MojoHandle wait_set, MojoHandle handle) {
-  assert(g_thunks.RemoveHandle);
-  return g_thunks.RemoveHandle(wait_set, handle);
-}
-
-MojoResult MojoGetReadyHandles(MojoHandle wait_set,
-                               uint32_t* count,
-                               MojoHandle* handles,
-                               MojoResult* results,
-                               struct MojoHandleSignalsState* signals_states) {
-  assert(g_thunks.GetReadyHandles);
-  return g_thunks.GetReadyHandles(wait_set, count, handles, results,
-                                  signals_states);
 }
 
 MojoResult MojoCreateWatcher(MojoWatcherCallback callback,

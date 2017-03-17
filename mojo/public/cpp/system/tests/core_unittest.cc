@@ -13,6 +13,7 @@
 #include <map>
 #include <utility>
 
+#include "mojo/public/cpp/system/wait.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
@@ -108,25 +109,15 @@ TEST(CoreCppTest, Basic) {
     EXPECT_EQ(kInvalidHandleValue, h.get().value());
 
     EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              Wait(h.get(), ~MOJO_HANDLE_SIGNAL_NONE, 1000000, nullptr));
+              Wait(h.get(), ~MOJO_HANDLE_SIGNAL_NONE));
 
     std::vector<Handle> wh;
     wh.push_back(h.get());
     std::vector<MojoHandleSignals> sigs;
     sigs.push_back(~MOJO_HANDLE_SIGNAL_NONE);
-    WaitManyResult wait_many_result =
-        WaitMany(wh, sigs, MOJO_DEADLINE_INDEFINITE, nullptr);
-    EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, wait_many_result.result);
-    EXPECT_TRUE(wait_many_result.IsIndexValid());
-    EXPECT_FALSE(wait_many_result.AreSignalsStatesValid());
-
-    // Make sure that our specialized template correctly handles |NULL| as well
-    // as |nullptr|.
-    wait_many_result = WaitMany(wh, sigs, MOJO_DEADLINE_INDEFINITE, NULL);
-    EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, wait_many_result.result);
-    EXPECT_EQ(0u, wait_many_result.index);
-    EXPECT_TRUE(wait_many_result.IsIndexValid());
-    EXPECT_FALSE(wait_many_result.AreSignalsStatesValid());
+    size_t result_index;
+    MojoResult rv = WaitMany(wh.data(), sigs.data(), wh.size(), &result_index);
+    EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, rv);
   }
 
   // |MakeScopedHandle| (just compilation tests):
@@ -186,10 +177,7 @@ TEST(CoreCppTest, Basic) {
       // correctly.
       hv0 = h0.get().value();
       MojoHandle hv1 = h1.get().value();
-      MojoHandleSignalsState state;
-
-      EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED,
-                Wait(h0.get(), MOJO_HANDLE_SIGNAL_READABLE, 0, &state));
+      MojoHandleSignalsState state = h0->QuerySignalsState();
 
       EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, state.satisfied_signals);
       EXPECT_EQ(kSignalAll, state.satisfiable_signals);
@@ -201,11 +189,12 @@ TEST(CoreCppTest, Basic) {
       sigs.push_back(MOJO_HANDLE_SIGNAL_READABLE);
       sigs.push_back(MOJO_HANDLE_SIGNAL_WRITABLE);
       std::vector<MojoHandleSignalsState> states(sigs.size());
-      WaitManyResult wait_many_result = WaitMany(wh, sigs, 1000, &states);
-      EXPECT_EQ(MOJO_RESULT_OK, wait_many_result.result);
-      EXPECT_EQ(1u, wait_many_result.index);
-      EXPECT_TRUE(wait_many_result.IsIndexValid());
-      EXPECT_TRUE(wait_many_result.AreSignalsStatesValid());
+
+      size_t result_index;
+      MojoResult rv = WaitMany(wh.data(), sigs.data(), wh.size(), &result_index,
+                               states.data());
+      EXPECT_EQ(MOJO_RESULT_OK, rv);
+      EXPECT_EQ(1u, result_index);
       EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, states[0].satisfied_signals);
       EXPECT_EQ(kSignalAll, states[0].satisfiable_signals);
       EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, states[1].satisfied_signals);
@@ -217,12 +206,10 @@ TEST(CoreCppTest, Basic) {
 
       // Make sure |h1| is closed.
       EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-                Wait(Handle(hv1), ~MOJO_HANDLE_SIGNAL_NONE,
-                     MOJO_DEADLINE_INDEFINITE, nullptr));
+                Wait(Handle(hv1), ~MOJO_HANDLE_SIGNAL_NONE));
 
       EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-                Wait(h0.get(), MOJO_HANDLE_SIGNAL_READABLE,
-                     MOJO_DEADLINE_INDEFINITE, &state));
+                Wait(h0.get(), MOJO_HANDLE_SIGNAL_READABLE, &state));
 
       EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, state.satisfied_signals);
       EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, state.satisfiable_signals);
@@ -248,8 +235,8 @@ TEST(CoreCppTest, Basic) {
                                 MOJO_WRITE_MESSAGE_FLAG_NONE));
 
       MojoHandleSignalsState state;
-      EXPECT_EQ(MOJO_RESULT_OK, Wait(h1.get(), MOJO_HANDLE_SIGNAL_READABLE,
-                                     MOJO_DEADLINE_INDEFINITE, &state));
+      EXPECT_EQ(MOJO_RESULT_OK,
+                Wait(h1.get(), MOJO_HANDLE_SIGNAL_READABLE, &state));
       EXPECT_EQ(kSignalReadableWritable, state.satisfied_signals);
       EXPECT_EQ(kSignalAll, state.satisfiable_signals);
 
@@ -298,8 +285,8 @@ TEST(CoreCppTest, Basic) {
       EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, MojoClose(handles[0]));
 
       // Read "hello" and the sent handle.
-      EXPECT_EQ(MOJO_RESULT_OK, Wait(h0.get(), MOJO_HANDLE_SIGNAL_READABLE,
-                                     MOJO_DEADLINE_INDEFINITE, &state));
+      EXPECT_EQ(MOJO_RESULT_OK,
+                Wait(h0.get(), MOJO_HANDLE_SIGNAL_READABLE, &state));
       EXPECT_EQ(kSignalReadableWritable, state.satisfied_signals);
       EXPECT_EQ(kSignalAll, state.satisfiable_signals);
 
@@ -326,8 +313,7 @@ TEST(CoreCppTest, Basic) {
       hv0 = handles[0];
 
       EXPECT_EQ(MOJO_RESULT_OK,
-                Wait(mp.handle1.get(), MOJO_HANDLE_SIGNAL_READABLE,
-                     MOJO_DEADLINE_INDEFINITE, &state));
+                Wait(mp.handle1.get(), MOJO_HANDLE_SIGNAL_READABLE, &state));
       EXPECT_EQ(kSignalReadableWritable, state.satisfied_signals);
       EXPECT_EQ(kSignalAll, state.satisfiable_signals);
 

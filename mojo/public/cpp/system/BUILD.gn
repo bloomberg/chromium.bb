@@ -37,6 +37,10 @@ component("system") {
     "simple_watcher.cc",
     "simple_watcher.h",
     "system_export.h",
+    "wait.cc",
+    "wait.h",
+    "wait_set.cc",
+    "wait_set.h",
     "watcher.cc",
     "watcher.h",
   ]

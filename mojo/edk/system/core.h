@@ -138,16 +138,6 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
   MojoResult Close(MojoHandle handle);
   MojoResult QueryHandleSignalsState(MojoHandle handle,
                                      MojoHandleSignalsState* signals_state);
-  MojoResult Wait(MojoHandle handle,
-                  MojoHandleSignals signals,
-                  MojoDeadline deadline,
-                  MojoHandleSignalsState* signals_state);
-  MojoResult WaitMany(const MojoHandle* handles,
-                      const MojoHandleSignals* signals,
-                      uint32_t num_handles,
-                      MojoDeadline deadline,
-                      uint32_t* result_index,
-                      MojoHandleSignalsState* signals_states);
   MojoResult CreateWatcher(MojoWatcherCallback callback,
                            MojoHandle* watcher_handle);
   MojoResult Watch(MojoHandle watcher_handle,
@@ -168,20 +158,6 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
   MojoResult FreeMessage(MojoMessageHandle message);
   MojoResult GetMessageBuffer(MojoMessageHandle message, void** buffer);
   MojoResult GetProperty(MojoPropertyType type, void* value);
-
-  // These methods correspond to the API functions defined in
-  // "mojo/public/c/system/wait_set.h":
-  MojoResult CreateWaitSet(MojoHandle* wait_set_handle);
-  MojoResult AddHandle(MojoHandle wait_set_handle,
-                       MojoHandle handle,
-                       MojoHandleSignals signals);
-  MojoResult RemoveHandle(MojoHandle wait_set_handle,
-                          MojoHandle handle);
-  MojoResult GetReadyHandles(MojoHandle wait_set_handle,
-                             uint32_t* count,
-                             MojoHandle* handles,
-                             MojoResult* results,
-                             MojoHandleSignalsState* signals_states);
 
   // These methods correspond to the API functions defined in
   // "mojo/public/c/system/message_pipe.h":
@@ -279,13 +255,6 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
   void GetActiveHandlesForTest(std::vector<MojoHandle>* handles);
 
  private:
-  MojoResult WaitManyInternal(const MojoHandle* handles,
-                              const MojoHandleSignals* signals,
-                              uint32_t num_handles,
-                              MojoDeadline deadline,
-                              uint32_t* result_index,
-                              HandleSignalsState* signals_states);
-
   // Used to pass ownership of our NodeController over to the IO thread in the
   // event that we're torn down before said thread.
   static void PassNodeControllerToIOThread(

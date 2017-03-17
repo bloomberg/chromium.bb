@@ -13,6 +13,7 @@
 #include "base/threading/thread_checker.h"
 #include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/system/core.h"
+#include "mojo/public/cpp/system/wait_set.h"
 
 namespace mojo {
 
@@ -55,7 +56,7 @@ class MOJO_CPP_BINDINGS_EXPORT SyncHandleRegistry
 
   HandleMap handles_;
 
-  ScopedHandle wait_set_handle_;
+  WaitSet wait_set_;
 
   base::ThreadChecker thread_checker_;
 

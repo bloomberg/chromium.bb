@@ -16,9 +16,6 @@ component("system") {
 
   sources = [
     "atomic_flag.h",
-    "awakable.h",
-    "awakable_list.cc",
-    "awakable_list.h",
     "broker.h",
     "broker_host.cc",
     "broker_host.h",
@@ -62,10 +59,6 @@ component("system") {
     "request_context.h",
     "shared_buffer_dispatcher.cc",
     "shared_buffer_dispatcher.h",
-    "wait_set_dispatcher.cc",
-    "wait_set_dispatcher.h",
-    "waiter.cc",
-    "waiter.h",
     "watch.cc",
     "watch.h",
     "watcher_dispatcher.cc",
@@ -155,7 +148,6 @@ source_set("test_utils") {
 
 test("mojo_system_unittests") {
   sources = [
-    "awakable_list_unittest.cc",
     "channel_unittest.cc",
     "core_test_base.cc",
     "core_test_base.h",
@@ -166,10 +158,6 @@ test("mojo_system_unittests") {
     "shared_buffer_dispatcher_unittest.cc",
     "shared_buffer_unittest.cc",
     "signals_unittest.cc",
-    "wait_set_dispatcher_unittest.cc",
-    "waiter_test_utils.cc",
-    "waiter_test_utils.h",
-    "waiter_unittest.cc",
     "watcher_unittest.cc",
   ]
 
@@ -190,6 +178,7 @@ test("mojo_system_unittests") {
     "//mojo/edk/system/ports:tests",
     "//mojo/edk/test:run_all_unittests",
     "//mojo/edk/test:test_support",
+    "//mojo/public/cpp/system",
     "//testing/gmock",
     "//testing/gtest",
   ]

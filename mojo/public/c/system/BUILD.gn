@@ -17,7 +17,6 @@ component("system") {
     "thunks.cc",
     "thunks.h",
     "types.h",
-    "wait_set.h",
     "watcher.h",
   ]
 

@@ -25,16 +25,6 @@ struct MojoSystemThunks {
   MojoResult (*QueryHandleSignalsState)(
       MojoHandle handle,
       struct MojoHandleSignalsState* signals_state);
-  MojoResult (*Wait)(MojoHandle handle,
-                     MojoHandleSignals signals,
-                     MojoDeadline deadline,
-                     struct MojoHandleSignalsState* signals_state);
-  MojoResult (*WaitMany)(const MojoHandle* handles,
-                         const MojoHandleSignals* signals,
-                         uint32_t num_handles,
-                         MojoDeadline deadline,
-                         uint32_t* result_index,
-                         struct MojoHandleSignalsState* signals_states);
   MojoResult (*CreateMessagePipe)(
       const struct MojoCreateMessagePipeOptions* options,
       MojoHandle* message_pipe_handle0,
@@ -88,18 +78,6 @@ struct MojoSystemThunks {
                           void** buffer,
                           MojoMapBufferFlags flags);
   MojoResult (*UnmapBuffer)(void* buffer);
-
-  MojoResult (*CreateWaitSet)(MojoHandle* wait_set);
-  MojoResult (*AddHandle)(MojoHandle wait_set,
-                          MojoHandle handle,
-                          MojoHandleSignals signals);
-  MojoResult (*RemoveHandle)(MojoHandle wait_set,
-                             MojoHandle handle);
-  MojoResult (*GetReadyHandles)(MojoHandle wait_set,
-                                uint32_t* count,
-                                MojoHandle* handles,
-                                MojoResult* results,
-                                struct MojoHandleSignalsState* signals_states);
   MojoResult (*CreateWatcher)(MojoWatcherCallback callback,
                               MojoHandle* watcher_handle);
   MojoResult (*Watch)(MojoHandle watcher_handle,

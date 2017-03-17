@@ -9,6 +9,8 @@ source_set("tests") {
     "core_unittest.cc",
     "handle_signals_state_unittest.cc",
     "simple_watcher_unittest.cc",
+    "wait_set_unittest.cc",
+    "wait_unittest.cc",
   ]
 
   deps = [

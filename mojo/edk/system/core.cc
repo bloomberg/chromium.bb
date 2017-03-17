@@ -33,8 +33,6 @@
 #include "mojo/edk/system/ports/node.h"
 #include "mojo/edk/system/request_context.h"
 #include "mojo/edk/system/shared_buffer_dispatcher.h"
-#include "mojo/edk/system/wait_set_dispatcher.h"
-#include "mojo/edk/system/waiter.h"
 #include "mojo/edk/system/watcher_dispatcher.h"
 
 namespace mojo {
@@ -389,48 +387,6 @@ MojoResult Core::QueryHandleSignalsState(
   return MOJO_RESULT_OK;
 }
 
-MojoResult Core::Wait(MojoHandle handle,
-                      MojoHandleSignals signals,
-                      MojoDeadline deadline,
-                      MojoHandleSignalsState* signals_state) {
-  RequestContext request_context;
-  uint32_t unused = static_cast<uint32_t>(-1);
-  HandleSignalsState hss;
-  MojoResult rv = WaitManyInternal(&handle, &signals, 1, deadline, &unused,
-                                   signals_state ? &hss : nullptr);
-  if (rv != MOJO_RESULT_INVALID_ARGUMENT && signals_state)
-    *signals_state = hss;
-  return rv;
-}
-
-MojoResult Core::WaitMany(const MojoHandle* handles,
-                          const MojoHandleSignals* signals,
-                          uint32_t num_handles,
-                          MojoDeadline deadline,
-                          uint32_t* result_index,
-                          MojoHandleSignalsState* signals_state) {
-  RequestContext request_context;
-  if (num_handles < 1)
-    return MOJO_RESULT_INVALID_ARGUMENT;
-  if (num_handles > GetConfiguration().max_wait_many_num_handles)
-    return MOJO_RESULT_RESOURCE_EXHAUSTED;
-
-  uint32_t index = static_cast<uint32_t>(-1);
-  MojoResult rv;
-  if (!signals_state) {
-    rv = WaitManyInternal(handles, signals, num_handles, deadline, &index,
-                          nullptr);
-  } else {
-    // Note: The |reinterpret_cast| is safe, since |HandleSignalsState| is a
-    // subclass of |MojoHandleSignalsState| that doesn't add any data members.
-    rv = WaitManyInternal(handles, signals, num_handles, deadline, &index,
-                          reinterpret_cast<HandleSignalsState*>(signals_state));
-  }
-  if (index != static_cast<uint32_t>(-1) && result_index)
-    *result_index = index;
-  return rv;
-}
-
 MojoResult Core::CreateWatcher(MojoWatcherCallback callback,
                                MojoHandle* watcher_handle) {
   RequestContext request_context;
@@ -556,83 +512,6 @@ MojoResult Core::GetProperty(MojoPropertyType type, void* value) {
     default:
       return MOJO_RESULT_INVALID_ARGUMENT;
   }
-}
-
-MojoResult Core::CreateWaitSet(MojoHandle* wait_set_handle) {
-  RequestContext request_context;
-  if (!wait_set_handle)
-    return MOJO_RESULT_INVALID_ARGUMENT;
-
-  scoped_refptr<WaitSetDispatcher> dispatcher = new WaitSetDispatcher();
-  MojoHandle h = AddDispatcher(dispatcher);
-  if (h == MOJO_HANDLE_INVALID) {
-    LOG(ERROR) << "Handle table full";
-    dispatcher->Close();
-    return MOJO_RESULT_RESOURCE_EXHAUSTED;
-  }
-
-  *wait_set_handle = h;
-  return MOJO_RESULT_OK;
-}
-
-MojoResult Core::AddHandle(MojoHandle wait_set_handle,
-                           MojoHandle handle,
-                           MojoHandleSignals signals) {
-  RequestContext request_context;
-  scoped_refptr<Dispatcher> wait_set_dispatcher(GetDispatcher(wait_set_handle));
-  if (!wait_set_dispatcher)
-    return MOJO_RESULT_INVALID_ARGUMENT;
-
-  scoped_refptr<Dispatcher> dispatcher(GetDispatcher(handle));
-  if (!dispatcher)
-    return MOJO_RESULT_INVALID_ARGUMENT;
-
-  return wait_set_dispatcher->AddWaitingDispatcher(dispatcher, signals, handle);
-}
-
-MojoResult Core::RemoveHandle(MojoHandle wait_set_handle,
-                              MojoHandle handle) {
-  RequestContext request_context;
-  scoped_refptr<Dispatcher> wait_set_dispatcher(GetDispatcher(wait_set_handle));
-  if (!wait_set_dispatcher)
-    return MOJO_RESULT_INVALID_ARGUMENT;
-
-  scoped_refptr<Dispatcher> dispatcher(GetDispatcher(handle));
-  if (!dispatcher)
-    return MOJO_RESULT_INVALID_ARGUMENT;
-
-  return wait_set_dispatcher->RemoveWaitingDispatcher(dispatcher);
-}
-
-MojoResult Core::GetReadyHandles(MojoHandle wait_set_handle,
-                                 uint32_t* count,
-                                 MojoHandle* handles,
-                                 MojoResult* results,
-                                 MojoHandleSignalsState* signals_states) {
-  RequestContext request_context;
-  if (!handles || !count || !(*count) || !results)
-    return MOJO_RESULT_INVALID_ARGUMENT;
-
-  scoped_refptr<Dispatcher> wait_set_dispatcher(GetDispatcher(wait_set_handle));
-  if (!wait_set_dispatcher)
-    return MOJO_RESULT_INVALID_ARGUMENT;
-
-  DispatcherVector awoken_dispatchers;
-  base::StackVector<uintptr_t, 16> contexts;
-  contexts->assign(*count, MOJO_HANDLE_INVALID);
-
-  MojoResult result = wait_set_dispatcher->GetReadyDispatchers(
-      count, &awoken_dispatchers, results, contexts->data());
-
-  if (result == MOJO_RESULT_OK) {
-    for (size_t i = 0; i < *count; i++) {
-      handles[i] = static_cast<MojoHandle>(contexts[i]);
-      if (signals_states)
-        signals_states[i] = awoken_dispatchers[i]->GetHandleSignalsState();
-    }
-  }
-
-  return result;
 }
 
 MojoResult Core::CreateMessagePipe(
@@ -1124,74 +1003,6 @@ MojoResult Core::UnwrapPlatformSharedBufferHandle(
 void Core::GetActiveHandlesForTest(std::vector<MojoHandle>* handles) {
   base::AutoLock lock(handles_lock_);
   handles_.GetActiveHandlesForTest(handles);
-}
-
-MojoResult Core::WaitManyInternal(const MojoHandle* handles,
-                                  const MojoHandleSignals* signals,
-                                  uint32_t num_handles,
-                                  MojoDeadline deadline,
-                                  uint32_t* result_index,
-                                  HandleSignalsState* signals_states) {
-  CHECK(handles);
-  CHECK(signals);
-  DCHECK_GT(num_handles, 0u);
-  if (result_index) {
-    DCHECK_EQ(*result_index, static_cast<uint32_t>(-1));
-  }
-
-  // The primary caller of |WaitManyInternal()| is |Wait()|, which only waits on
-  // a single handle. In the common case of a single handle, this avoid a heap
-  // allocation.
-  base::StackVector<scoped_refptr<Dispatcher>, 1> dispatchers;
-  dispatchers->reserve(num_handles);
-  for (uint32_t i = 0; i < num_handles; i++) {
-    scoped_refptr<Dispatcher> dispatcher = GetDispatcher(handles[i]);
-    if (!dispatcher) {
-      if (result_index)
-        *result_index = i;
-      return MOJO_RESULT_INVALID_ARGUMENT;
-    }
-    dispatchers->push_back(dispatcher);
-  }
-
-  // TODO(vtl): Should make the waiter live (permanently) in TLS.
-  Waiter waiter;
-  waiter.Init();
-
-  uint32_t i;
-  MojoResult rv = MOJO_RESULT_OK;
-  for (i = 0; i < num_handles; i++) {
-    rv = dispatchers[i]->AddAwakable(
-        &waiter, signals[i], i, signals_states ? &signals_states[i] : nullptr);
-    if (rv != MOJO_RESULT_OK) {
-      if (result_index)
-        *result_index = i;
-      break;
-    }
-  }
-  uint32_t num_added = i;
-
-  if (rv == MOJO_RESULT_ALREADY_EXISTS) {
-    rv = MOJO_RESULT_OK;  // The i-th one is already "triggered".
-  } else if (rv == MOJO_RESULT_OK) {
-    uintptr_t uintptr_result = *result_index;
-    rv = waiter.Wait(deadline, &uintptr_result);
-    *result_index = static_cast<uint32_t>(uintptr_result);
-  }
-
-  // Make sure no other dispatchers try to wake |waiter| for the current
-  // |Wait()|/|WaitMany()| call. (Only after doing this can |waiter| be
-  // destroyed, but this would still be required if the waiter were in TLS.)
-  for (i = 0; i < num_added; i++) {
-    dispatchers[i]->RemoveAwakable(
-        &waiter, signals_states ? &signals_states[i] : nullptr);
-  }
-  if (signals_states) {
-    for (; i < num_handles; i++)
-      signals_states[i] = dispatchers[i]->GetHandleSignalsState();
-  }
-
-  return rv;
 }
 
 // static

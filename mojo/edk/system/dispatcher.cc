@@ -133,18 +133,6 @@ MojoResult Dispatcher::RemoveWatcherRef(WatcherDispatcher* watcher,
   return MOJO_RESULT_INVALID_ARGUMENT;
 }
 
-MojoResult Dispatcher::AddAwakable(Awakable* awakable,
-                                   MojoHandleSignals signals,
-                                   uintptr_t context,
-                                   HandleSignalsState* signals_state) {
-  return MOJO_RESULT_INVALID_ARGUMENT;
-}
-
-void Dispatcher::RemoveAwakable(Awakable* awakable,
-                                HandleSignalsState* handle_signals_state) {
-  NOTREACHED();
-}
-
 void Dispatcher::StartSerialize(uint32_t* num_bytes,
                                 uint32_t* num_ports,
                                 uint32_t* num_platform_handles) {

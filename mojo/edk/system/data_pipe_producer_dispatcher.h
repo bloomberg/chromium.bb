@@ -15,7 +15,6 @@
 #include "base/synchronization/lock.h"
 #include "mojo/edk/embedder/platform_handle_vector.h"
 #include "mojo/edk/embedder/platform_shared_buffer.h"
-#include "mojo/edk/system/awakable_list.h"
 #include "mojo/edk/system/dispatcher.h"
 #include "mojo/edk/system/ports/port_ref.h"
 #include "mojo/edk/system/system_impl_export.h"
@@ -56,12 +55,6 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipeProducerDispatcher final
                            uintptr_t context) override;
   MojoResult RemoveWatcherRef(WatcherDispatcher* watcher,
                               uintptr_t context) override;
-  MojoResult AddAwakable(Awakable* awakable,
-                         MojoHandleSignals signals,
-                         uintptr_t context,
-                         HandleSignalsState* signals_state) override;
-  void RemoveAwakable(Awakable* awakable,
-                      HandleSignalsState* signals_state) override;
   void StartSerialize(uint32_t* num_bytes,
                       uint32_t* num_ports,
                       uint32_t* num_handles) override;
@@ -104,7 +97,6 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipeProducerDispatcher final
   // Guards access to the fields below.
   mutable base::Lock lock_;
 
-  AwakableList awakable_list_;
   WatcherSet watchers_;
 
   bool buffer_requested_ = false;

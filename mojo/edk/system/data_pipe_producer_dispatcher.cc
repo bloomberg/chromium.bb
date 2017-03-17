@@ -128,8 +128,6 @@ MojoResult DataPipeProducerDispatcher::WriteData(const void* elements,
   if (num_bytes_to_write == 0)
     return MOJO_RESULT_SHOULD_WAIT;
 
-  HandleSignalsState old_state = GetHandleSignalsStateNoLock();
-
   *num_bytes = num_bytes_to_write;
 
   CHECK(ring_buffer_mapping_);
@@ -155,10 +153,7 @@ MojoResult DataPipeProducerDispatcher::WriteData(const void* elements,
   write_offset_ = (write_offset_ + num_bytes_to_write) %
       options_.capacity_num_bytes;
 
-  HandleSignalsState new_state = GetHandleSignalsStateNoLock();
-  if (!new_state.equals(old_state))
-    awakable_list_.AwakeForStateChange(new_state);
-  watchers_.NotifyState(new_state);
+  watchers_.NotifyState(GetHandleSignalsStateNoLock());
 
   base::AutoUnlock unlock(lock_);
   NotifyWrite(num_bytes_to_write);
@@ -232,11 +227,8 @@ MojoResult DataPipeProducerDispatcher::EndWriteData(
   in_two_phase_write_ = false;
 
   // If we're now writable, we *became* writable (since we weren't writable
-  // during the two-phase write), so awake producer awakables.
-  HandleSignalsState new_state = GetHandleSignalsStateNoLock();
-  if (new_state.satisfies(MOJO_HANDLE_SIGNAL_WRITABLE))
-    awakable_list_.AwakeForStateChange(new_state);
-  watchers_.NotifyState(new_state);
+  // during the two-phase write), so notify watchers.
+  watchers_.NotifyState(GetHandleSignalsStateNoLock());
 
   return rv;
 }
@@ -262,45 +254,6 @@ MojoResult DataPipeProducerDispatcher::RemoveWatcherRef(
   if (is_closed_ || in_transit_)
     return MOJO_RESULT_INVALID_ARGUMENT;
   return watchers_.Remove(watcher, context);
-}
-
-MojoResult DataPipeProducerDispatcher::AddAwakable(
-    Awakable* awakable,
-    MojoHandleSignals signals,
-    uintptr_t context,
-    HandleSignalsState* signals_state) {
-  base::AutoLock lock(lock_);
-  if (!shared_ring_buffer_ || in_transit_) {
-    if (signals_state)
-      *signals_state = HandleSignalsState();
-    return MOJO_RESULT_INVALID_ARGUMENT;
-  }
-  UpdateSignalsStateNoLock();
-  HandleSignalsState state = GetHandleSignalsStateNoLock();
-  if (state.satisfies(signals)) {
-    if (signals_state)
-      *signals_state = state;
-    return MOJO_RESULT_ALREADY_EXISTS;
-  }
-  if (!state.can_satisfy(signals)) {
-    if (signals_state)
-      *signals_state = state;
-    return MOJO_RESULT_FAILED_PRECONDITION;
-  }
-
-  awakable_list_.Add(awakable, signals, context);
-  return MOJO_RESULT_OK;
-}
-
-void DataPipeProducerDispatcher::RemoveAwakable(
-    Awakable* awakable,
-    HandleSignalsState* signals_state) {
-  base::AutoLock lock(lock_);
-  if ((!shared_ring_buffer_ || in_transit_) && signals_state)
-    *signals_state = HandleSignalsState();
-  else if (signals_state)
-    *signals_state = GetHandleSignalsStateNoLock();
-  awakable_list_.Remove(awakable);
 }
 
 void DataPipeProducerDispatcher::StartSerialize(uint32_t* num_bytes,
@@ -362,7 +315,6 @@ void DataPipeProducerDispatcher::CancelTransit() {
   buffer_handle_for_transit_.reset();
 
   HandleSignalsState state = GetHandleSignalsStateNoLock();
-  awakable_list_.AwakeForStateChange(state);
   watchers_.NotifyState(state);
 }
 
@@ -446,7 +398,6 @@ MojoResult DataPipeProducerDispatcher::CloseNoLock() {
   ring_buffer_mapping_.reset();
   shared_ring_buffer_ = nullptr;
 
-  awakable_list_.CancelAll();
   watchers_.NotifyClosed();
   if (!transferred_) {
     base::AutoUnlock unlock(lock_);
@@ -548,9 +499,7 @@ void DataPipeProducerDispatcher::UpdateSignalsStateNoLock() {
 
   if (peer_closed_ != was_peer_closed ||
       available_capacity_ != previous_capacity) {
-    HandleSignalsState state = GetHandleSignalsStateNoLock();
-    awakable_list_.AwakeForStateChange(state);
-    watchers_.NotifyState(state);
+    watchers_.NotifyState(GetHandleSignalsStateNoLock());
   }
 }
 

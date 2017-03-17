@@ -21,12 +21,6 @@ inline MojoTimeTicks GetTimeTicksNow() {
   return MojoGetTimeTicksNow();
 }
 
-// The C++ wrappers for |MojoWait()| and |MojoWaitMany()| are defined in
-// "handle.h".
-// TODO(ggowan): Consider making the C and C++ APIs more consistent in the
-// organization of the functions into different header files (since in the C
-// API, those functions are defined in "functions.h").
-
 }  // namespace mojo
 
 #endif  // MOJO_PUBLIC_CPP_SYSTEM_FUNCTIONS_H_

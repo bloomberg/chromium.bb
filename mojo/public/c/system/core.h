@@ -17,7 +17,6 @@
 #include "mojo/public/c/system/platform_handle.h"
 #include "mojo/public/c/system/system_export.h"
 #include "mojo/public/c/system/types.h"
-#include "mojo/public/c/system/wait_set.h"
 #include "mojo/public/c/system/watcher.h"
 
 #endif  // MOJO_PUBLIC_C_SYSTEM_CORE_H_

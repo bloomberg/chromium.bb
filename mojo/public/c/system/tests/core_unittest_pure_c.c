@@ -42,7 +42,6 @@ const char* MinimalCTest(void) {
   // at the top. (MSVS 2013 is more reasonable.)
   MojoTimeTicks ticks;
   MojoHandle handle0, handle1;
-  MojoHandleSignals signals;
   const char kHello[] = "hello";
   char buffer[200] = {0};
   uint32_t num_bytes;
@@ -56,40 +55,12 @@ const char* MinimalCTest(void) {
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
             MojoQueryHandleSignalsState(handle0, NULL));
 
-  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            MojoWait(handle0, ~MOJO_HANDLE_SIGNAL_NONE,
-                     MOJO_DEADLINE_INDEFINITE, NULL));
-
   handle1 = MOJO_HANDLE_INVALID;
   EXPECT_EQ(MOJO_RESULT_OK, MojoCreateMessagePipe(NULL, &handle0, &handle1));
-
-  signals = MOJO_HANDLE_SIGNAL_READABLE;
-  uint32_t result_index = 123;
-  struct MojoHandleSignalsState states[1];
-  EXPECT_EQ(MOJO_RESULT_DEADLINE_EXCEEDED,
-            MojoWaitMany(&handle0, &signals, 1, 1, &result_index, states));
-
-  // "Deadline exceeded" doesn't apply to a single handle, so this should leave
-  // |result_index| untouched.
-  EXPECT_EQ(123u, result_index);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_WRITABLE, states[0].satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE |
-                MOJO_HANDLE_SIGNAL_PEER_CLOSED,
-            states[0].satisfiable_signals);
 
   EXPECT_EQ(MOJO_RESULT_OK,
             MojoWriteMessage(handle0, kHello, (uint32_t)sizeof(kHello), NULL,
                              0u, MOJO_WRITE_DATA_FLAG_NONE));
-
-  struct MojoHandleSignalsState state;
-  EXPECT_EQ(MOJO_RESULT_OK, MojoWait(handle1, MOJO_HANDLE_SIGNAL_READABLE,
-                                     MOJO_DEADLINE_INDEFINITE, &state));
-
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
-            state.satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE |
-                MOJO_HANDLE_SIGNAL_PEER_CLOSED,
-            state.satisfiable_signals);
 
   num_bytes = (uint32_t)sizeof(buffer);
   EXPECT_EQ(MOJO_RESULT_OK, MojoReadMessage(handle1, buffer, &num_bytes, NULL,

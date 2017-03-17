@@ -13,7 +13,6 @@ namespace internal {
 Configuration g_configuration = {
     1000000,              // max_handle_table_size
     1000000,              // max_mapping_table_sze
-    1000000,              // max_wait_many_num_handles
     4 * 1024 * 1024,      // max_message_num_bytes
     10000,                // max_message_num_handles
     256 * 1024 * 1024,    // max_data_pipe_capacity_bytes

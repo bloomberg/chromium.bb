@@ -38,6 +38,7 @@
 #include "ipc/ipc_test.mojom.h"
 #include "ipc/ipc_test_base.h"
 #include "ipc/ipc_test_channel_listener.h"
+#include "mojo/public/cpp/system/wait.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_POSIX)
@@ -247,8 +248,7 @@ class HandleSendingHelper {
 
     uint32_t num_bytes = static_cast<uint32_t>(content.size());
     ASSERT_EQ(MOJO_RESULT_OK,
-              mojo::Wait(pipe.get(), MOJO_HANDLE_SIGNAL_READABLE,
-                         MOJO_DEADLINE_INDEFINITE, nullptr));
+              mojo::Wait(pipe.get(), MOJO_HANDLE_SIGNAL_READABLE));
     EXPECT_EQ(MOJO_RESULT_OK,
               mojo::ReadMessageRaw(pipe.get(), &content[0], &num_bytes, nullptr,
                                    nullptr, 0));
@@ -356,8 +356,7 @@ DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT(IPCChannelMojoTestSendMessagePipeClient) {
 void ReadOK(mojo::MessagePipeHandle pipe) {
   std::string should_be_ok("xx");
   uint32_t num_bytes = static_cast<uint32_t>(should_be_ok.size());
-  CHECK_EQ(MOJO_RESULT_OK, mojo::Wait(pipe, MOJO_HANDLE_SIGNAL_READABLE,
-                                      MOJO_DEADLINE_INDEFINITE, nullptr));
+  CHECK_EQ(MOJO_RESULT_OK, mojo::Wait(pipe, MOJO_HANDLE_SIGNAL_READABLE));
   CHECK_EQ(MOJO_RESULT_OK,
            mojo::ReadMessageRaw(pipe, &should_be_ok[0], &num_bytes, nullptr,
                                 nullptr, 0));

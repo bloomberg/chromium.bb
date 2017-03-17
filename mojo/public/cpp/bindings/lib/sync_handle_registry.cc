@@ -37,8 +37,7 @@ bool SyncHandleRegistry::RegisterHandle(const Handle& handle,
   if (base::ContainsKey(handles_, handle))
     return false;
 
-  MojoResult result = MojoAddHandle(wait_set_handle_.get().value(),
-                                    handle.value(), handle_signals);
+  MojoResult result = wait_set_.AddHandle(handle, handle_signals);
   if (result != MOJO_RESULT_OK)
     return false;
 
@@ -51,8 +50,7 @@ void SyncHandleRegistry::UnregisterHandle(const Handle& handle) {
   if (!base::ContainsKey(handles_, handle))
     return;
 
-  MojoResult result =
-      MojoRemoveHandle(wait_set_handle_.get().value(), handle.value());
+  MojoResult result = wait_set_.RemoveHandle(handle);
   DCHECK_EQ(MOJO_RESULT_OK, result);
   handles_.erase(handle);
 }
@@ -61,9 +59,8 @@ bool SyncHandleRegistry::WatchAllHandles(const bool* should_stop[],
                                          size_t count) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  MojoResult result;
-  uint32_t num_ready_handles;
-  MojoHandle ready_handle;
+  size_t num_ready_handles;
+  Handle ready_handle;
   MojoResult ready_handle_result;
 
   scoped_refptr<SyncHandleRegistry> preserver(this);
@@ -71,23 +68,14 @@ bool SyncHandleRegistry::WatchAllHandles(const bool* should_stop[],
     for (size_t i = 0; i < count; ++i)
       if (*should_stop[i])
         return true;
-    do {
-      result = Wait(wait_set_handle_.get(), MOJO_HANDLE_SIGNAL_READABLE,
-                    MOJO_DEADLINE_INDEFINITE, nullptr);
-      if (result != MOJO_RESULT_OK)
-        return false;
 
-      // TODO(yzshen): Theoretically it can reduce sync call re-entrancy if we
-      // give priority to the handle that is waiting for sync response.
-      num_ready_handles = 1;
-      result = MojoGetReadyHandles(wait_set_handle_.get().value(),
-                                   &num_ready_handles, &ready_handle,
-                                   &ready_handle_result, nullptr);
-      if (result != MOJO_RESULT_OK && result != MOJO_RESULT_SHOULD_WAIT)
-        return false;
-    } while (result == MOJO_RESULT_SHOULD_WAIT);
+    // TODO(yzshen): Theoretically it can reduce sync call re-entrancy if we
+    // give priority to the handle that is waiting for sync response.
+    num_ready_handles = 1;
+    wait_set_.Wait(&num_ready_handles, &ready_handle, &ready_handle_result);
+    DCHECK_EQ(1u, num_ready_handles);
 
-    const auto iter = handles_.find(Handle(ready_handle));
+    const auto iter = handles_.find(ready_handle);
     iter->second.Run(ready_handle_result);
   };
 
@@ -95,12 +83,6 @@ bool SyncHandleRegistry::WatchAllHandles(const bool* should_stop[],
 }
 
 SyncHandleRegistry::SyncHandleRegistry() {
-  MojoHandle handle;
-  MojoResult result = MojoCreateWaitSet(&handle);
-  CHECK_EQ(MOJO_RESULT_OK, result);
-  wait_set_handle_.reset(Handle(handle));
-  CHECK(wait_set_handle_.is_valid());
-
   DCHECK(!g_current_sync_handle_watcher.Pointer()->Get());
   g_current_sync_handle_watcher.Pointer()->Set(this);
 }

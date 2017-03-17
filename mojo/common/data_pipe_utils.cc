@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "mojo/public/cpp/system/wait.h"
 
 namespace mojo {
 namespace common {
@@ -25,10 +26,7 @@ bool BlockingCopyHelper(ScopedDataPipeConsumerHandle source,
       if (bytes_written < num_bytes || result != MOJO_RESULT_OK)
         return false;
     } else if (result == MOJO_RESULT_SHOULD_WAIT) {
-      result = Wait(source.get(),
-                    MOJO_HANDLE_SIGNAL_READABLE,
-                    MOJO_DEADLINE_INDEFINITE,
-                    nullptr);
+      result = Wait(source.get(), MOJO_HANDLE_SIGNAL_READABLE);
       if (result != MOJO_RESULT_OK) {
         // If the producer handle was closed, then treat as EOF.
         return result == MOJO_RESULT_FAILED_PRECONDITION;
@@ -82,8 +80,7 @@ bool MOJO_COMMON_EXPORT BlockingCopyFromString(
       if (it == source.end())
         return true;
     } else if (result == MOJO_RESULT_SHOULD_WAIT) {
-      result = Wait(destination.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
-                    MOJO_DEADLINE_INDEFINITE, nullptr);
+      result = Wait(destination.get(), MOJO_HANDLE_SIGNAL_WRITABLE);
       if (result != MOJO_RESULT_OK) {
         // If the consumer handle was closed, then treat as EOF.
         return result == MOJO_RESULT_FAILED_PRECONDITION;
