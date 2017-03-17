@@ -5,6 +5,8 @@
 #ifndef GOOGLE_CACHEINVALIDATION_DEPS_CALLBACK_H_
 #define GOOGLE_CACHEINVALIDATION_DEPS_CALLBACK_H_
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -126,8 +128,8 @@ template <typename ArgType>
 Closure* NewPermanentCallback(
     INVALIDATION_CALLBACK1_TYPE(ArgType)* callback,
     typename internal::Identity<ArgType>::type arg) {
-  return new ::base::Closure(::base::Bind(
-      &::base::Callback<void(ArgType)>::Run, base::Owned(callback), arg));
+  std::unique_ptr<::base::Callback<void(ArgType)>> deleter(callback);
+  return new ::base::Closure(::base::Bind(*callback, arg));
 }
 
 }  // namespace invalidation
