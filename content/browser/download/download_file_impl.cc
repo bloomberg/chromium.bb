@@ -156,6 +156,35 @@ DownloadInterruptReason DownloadFileImpl::WriteDataToFile(int64_t offset,
   return file_.WriteDataToFile(offset, data, data_len);
 }
 
+bool DownloadFileImpl::CalculateBytesToWrite(SourceStream* source_stream,
+                                             size_t bytes_available_to_write,
+                                             size_t* bytes_to_write) {
+  // If a new slice finds that its target position has already been written,
+  // terminate the stream.
+  if (source_stream->bytes_written() == 0) {
+    for (const auto& received_slice : received_slices_) {
+      if (received_slice.offset <= source_stream->offset() &&
+          received_slice.offset + received_slice.received_bytes >
+              source_stream->offset()) {
+        *bytes_to_write = 0;
+        return true;
+      }
+    }
+  }
+
+  if (source_stream->length() != DownloadSaveInfo::kLengthFullContent &&
+      source_stream->bytes_written() +
+              static_cast<int64_t>(bytes_available_to_write) >=
+          source_stream->length()) {
+    // Write a partial buffer as the incoming data exceeds the length limit.
+    *bytes_to_write = source_stream->length() - source_stream->bytes_written();
+    return true;
+  }
+
+  *bytes_to_write = bytes_available_to_write;
+  return false;
+}
+
 void DownloadFileImpl::RenameAndUniquify(
     const base::FilePath& full_path,
     const RenameCompletionCallback& callback) {
@@ -292,6 +321,7 @@ void DownloadFileImpl::StreamActive(SourceStream* source_stream) {
   size_t incoming_data_size = 0;
   size_t total_incoming_data_size = 0;
   size_t num_buffers = 0;
+  size_t bytes_to_write = 0;
   bool should_terminate = false;
   ByteStreamReader::StreamState state(ByteStreamReader::STREAM_EMPTY);
   DownloadInterruptReason reason = DOWNLOAD_INTERRUPT_REASON_NONE;
@@ -310,34 +340,28 @@ void DownloadFileImpl::StreamActive(SourceStream* source_stream) {
         {
           ++num_buffers;
           base::TimeTicks write_start(base::TimeTicks::Now());
-          // Stop the stream if it writes more bytes than expected.
-          if (source_stream->length() != DownloadSaveInfo::kLengthFullContent &&
-              source_stream->bytes_written() +
-                      static_cast<int64_t>(incoming_data_size) >=
-                  source_stream->length()) {
-            should_terminate = true;
-            incoming_data_size =
-                source_stream->length() - source_stream->bytes_written();
-          }
+          should_terminate = CalculateBytesToWrite(
+              source_stream, incoming_data_size, &bytes_to_write);
+          DCHECK_GE(incoming_data_size, bytes_to_write);
           reason = WriteDataToFile(
               source_stream->offset() + source_stream->bytes_written(),
-              incoming_data.get()->data(), incoming_data_size);
+              incoming_data.get()->data(), bytes_to_write);
           disk_writes_time_ += (base::TimeTicks::Now() - write_start);
-          bytes_seen_ += incoming_data_size;
-          total_incoming_data_size += incoming_data_size;
+          bytes_seen_ += bytes_to_write;
+          total_incoming_data_size += bytes_to_write;
           if (reason == DOWNLOAD_INTERRUPT_REASON_NONE) {
             int64_t prev_bytes_written = source_stream->bytes_written();
-            source_stream->OnWriteBytesToDisk(incoming_data_size);
+            source_stream->OnWriteBytesToDisk(bytes_to_write);
             if (!is_sparse_file_)
               break;
             // If the write operation creates a new slice, add it to the
             // |received_slices_| and update all the entries in
             // |source_streams_|.
-            if (incoming_data_size > 0 && prev_bytes_written == 0) {
-              AddNewSlice(source_stream->offset(), incoming_data_size);
+            if (bytes_to_write > 0 && prev_bytes_written == 0) {
+              AddNewSlice(source_stream->offset(), bytes_to_write);
             } else {
               received_slices_[source_stream->index()].received_bytes +=
-                  incoming_data_size;
+                  bytes_to_write;
             }
           }
         }

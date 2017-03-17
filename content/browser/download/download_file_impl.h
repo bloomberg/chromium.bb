@@ -183,6 +183,16 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
   // Called before the data is written to disk.
   void WillWriteToDisk(size_t data_len);
 
+  // For a given SourceStream object and the bytes available to write, determine
+  // the actual number of bytes it can write to the disk. For parallel
+  // downloading, if the first disk IO writes to a location that is already
+  // written by another stream, the current stream should stop writing. Returns
+  // true if the stream can write no more data and should be finished, returns
+  // false otherwise.
+  bool CalculateBytesToWrite(SourceStream* source_stream,
+                             size_t bytes_available_to_write,
+                             size_t* bytes_to_write);
+
   // Called when there's some activity on the byte stream that needs to be
   // handled.
   void StreamActive(SourceStream* source_stream);
