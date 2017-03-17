@@ -1691,7 +1691,7 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
   ### All of these builders should be slaves of 'master-toolchain'.
 
   ### Master toolchain config.
-  site_config.Add(
+  master = site_config.Add(
       'master-toolchain',
       site_config.templates.toolchain,
       boards=[],
@@ -1704,52 +1704,43 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       important=True,
       active_waterfall=constants.WATERFALL_INTERNAL,
       buildslave_type=constants.GCE_WIMPY_BUILD_SLAVE_TYPE,
-      slave_configs=[
-          'amd64-gcc-toolchain',
-          'amd64-llvm-toolchain',
-          'amd64-llvm-next-toolchain',
-          'arm-gcc-toolchain',
-          'arm-llvm-toolchain',
-          'arm-llvm-next-toolchain',
-          'arm64-gcc-toolchain',
-          'arm64-llvm-toolchain',
-          'arm64-llvm-next-toolchain',
-      ],
+      slave_configs=[],
   )
 
   def toolchainSlaveHelper(name, board, *args, **kwargs):
-    site_config.Add(
-        name + '-gcc-toolchain',
-        site_config.templates.gcc_toolchain,
-        *args,
-        boards=['peppy' if name == 'amd64' else board],
-        important=True,
-        active_waterfall=constants.WATERFALL_INTERNAL,
-        **kwargs
-    )
-
-    site_config.Add(
-        name + '-llvm-toolchain',
-        site_config.templates.llvm_toolchain,
-        *args,
-        boards=[board],
-        important=True,
-        active_waterfall=constants.WATERFALL_INTERNAL,
-        hw_tests=hw_test_list.ToolchainTestMedium(constants.HWTEST_MACH_POOL),
-        hw_tests_override=hw_test_list.ToolchainTestMedium(
-            constants.HWTEST_MACH_POOL),
-        **kwargs
-    )
-
-    site_config.Add(
-        name + '-llvm-next-toolchain',
-        site_config.templates.llvm_next_toolchain,
-        *args,
-        boards=[board],
-        important=True,
-        active_waterfall=constants.WATERFALL_INTERNAL,
-        **kwargs
-    )
+    master.AddSlaves([
+        site_config.Add(
+            name + '-gcc-toolchain',
+            site_config.templates.gcc_toolchain,
+            *args,
+            boards=['peppy' if name == 'amd64' else board],
+            important=True,
+            active_waterfall=constants.WATERFALL_INTERNAL,
+            **kwargs
+        ),
+        site_config.Add(
+            name + '-llvm-toolchain',
+            site_config.templates.llvm_toolchain,
+            *args,
+            boards=[board],
+            important=True,
+            active_waterfall=constants.WATERFALL_INTERNAL,
+            hw_tests=hw_test_list.ToolchainTestMedium(
+                constants.HWTEST_MACH_POOL),
+            hw_tests_override=hw_test_list.ToolchainTestMedium(
+                constants.HWTEST_MACH_POOL),
+            **kwargs
+        ),
+        site_config.Add(
+            name + '-llvm-next-toolchain',
+            site_config.templates.llvm_next_toolchain,
+            *args,
+            boards=[board],
+            important=True,
+            active_waterfall=constants.WATERFALL_INTERNAL,
+            **kwargs
+        )
+    ])
 
   # Create all waterfall slave builders.
   toolchainSlaveHelper('amd64', 'samus')
@@ -2031,13 +2022,14 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       vm_tests_override=None,
   )
 
-  site_config.Add(
+  master_config = site_config.Add(
       'master-android-pfq',
       site_config.templates.android_pfq,
       site_config.templates.internal,
       buildslave_type=constants.GCE_WIMPY_BUILD_SLAVE_TYPE,
       boards=[],
       master=True,
+      slave_configs=[],
       push_overlays=constants.BOTH_OVERLAYS,
   )
 
@@ -2051,18 +2043,23 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       'glados-cheets',
   ])
 
-  site_config.AddForBoards(
-      'android-pfq',
-      _android_pfq_hwtest_boards,
-      board_configs,
-      site_config.templates.android_pfq,
-      hw_tests=hw_test_list.SharedPoolAndroidPFQ(),
+  master_config.AddSlaves(
+      site_config.AddForBoards(
+          'android-pfq',
+          _android_pfq_hwtest_boards,
+          board_configs,
+          site_config.templates.android_pfq,
+          hw_tests=hw_test_list.SharedPoolAndroidPFQ(),
+      )
   )
-  site_config.AddForBoards(
-      'android-pfq',
-      _android_pfq_no_hwtest_boards,
-      board_configs,
-      site_config.templates.android_pfq,
+
+  master_config.AddSlaves(
+      site_config.AddForBoards(
+          'android-pfq',
+          _android_pfq_no_hwtest_boards,
+          board_configs,
+          site_config.templates.android_pfq,
+      )
   )
 
 
@@ -2154,6 +2151,18 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'x86-zgb',
   ])
 
+  _paladin_experimental_boards = frozenset([
+      'fizz',
+      'gale',
+      'kip',
+      'loonix',
+      'poppy',
+      'scarlet',
+      'whirlwind',
+  ])
+
+  _paladin_active = _paladin_important_boards | _paladin_experimental_boards
+
   _paladin_simple_vmtest_boards = frozenset([
       'rambi',
       'x86-mario',
@@ -2222,13 +2231,14 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   ])
 
   ### Master paladin (CQ builder).
-  site_config.Add(
+  master_config = site_config.Add(
       'master-paladin',
       site_config.templates.paladin,
       site_config.templates.internal_paladin,
       boards=[],
       buildslave_type=constants.GCE_WIMPY_BUILD_SLAVE_TYPE,
       master=True,
+      slave_configs=[],
       binhost_test=True,
       push_overlays=constants.BOTH_OVERLAYS,
       description='Commit Queue master (all others are slaves)',
@@ -2257,14 +2267,17 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
 
   # Sanity check builder, part of the CQ but builds without the patches
   # under test.
-  site_config.Add(
-      'wolf-tot-paladin',
-      site_config.templates.paladin,
-      site_config.templates.internal_paladin,
-      boards=['wolf'],
-      do_not_apply_cq_patches=True,
-      prebuilts=False,
-      hw_tests=hw_test_list.SharedPoolCQ(),
+  master_config.AddSlave(
+      site_config.Add(
+          'wolf-tot-paladin',
+          site_config.templates.paladin,
+          site_config.templates.internal_paladin,
+          boards=['wolf'],
+          do_not_apply_cq_patches=True,
+          prebuilts=False,
+          hw_tests=hw_test_list.SharedPoolCQ(),
+          active_waterfall=constants.WATERFALL_INTERNAL,
+      )
   )
 
   for board in _paladin_boards:
@@ -2343,16 +2356,25 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
     else:
       customizations.update(prebuilts=constants.PUBLIC)
 
+    if board in _paladin_active:
+      if base_config.get('internal'):
+        customizations.update(active_waterfall=constants.WATERFALL_INTERNAL)
+      else:
+        customizations.update(active_waterfall=constants.WATERFALL_EXTERNAL)
+
     if board in _lakitu_boards:
       customizations.update(
           site_config.templates.lakitu_paladin_test_customizations)
 
-    site_config.Add(
+    config = site_config.Add(
         config_name,
         site_config.templates.paladin,
         customizations,
         base_config,
     )
+
+    if config.active_waterfall:
+      master_config.AddSlave(config)
 
   #
   # Paladins with alternative configs.
@@ -2366,40 +2388,48 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       important=False,
   )
 
-  site_config.Add(
-      'x86-mario-nowithdebug-paladin',
-      site_config.templates.paladin,
-      site_config.templates.internal_nowithdebug_paladin,
-      boards=['x86-mario'])
+  master_config.AddSlaves([
+      site_config.Add(
+          'x86-mario-nowithdebug-paladin',
+          site_config.templates.paladin,
+          site_config.templates.internal_nowithdebug_paladin,
+          boards=['x86-mario'],
+          active_waterfall=constants.WATERFALL_INTERNAL,
+      ),
 
-  site_config.Add(
-      'lumpy-incremental-paladin',
-      site_config.templates.paladin,
-      site_config.templates.internal_paladin,
-      boards=['lumpy'],
-      build_before_patching=True,
-      prebuilts=False,
-      compilecheck=True,
-      unittests=False,
-  )
+      site_config.Add(
+          'lumpy-incremental-paladin',
+          site_config.templates.paladin,
+          site_config.templates.internal_paladin,
+          boards=['lumpy'],
+          build_before_patching=True,
+          prebuilts=False,
+          compilecheck=True,
+          unittests=False,
+          active_waterfall=constants.WATERFALL_INTERNAL,
+      ),
+  ])
 
   # Used for builders which build completely from source except Chrome.
   # These boards pass with -clang-clean CFLAG, so ensure they stay that way.
-  site_config.AddForBoards(
-      'full-compile-paladin',
-      ['falco', 'nyan'],
-      board_configs,
-      site_config.templates.paladin,
-      board_replace=True,
-      chrome_binhost_only=True,
-      chrome_sdk=False,
-      compilecheck=True,
-      cpe_export=False,
-      debug_symbols=False,
-      prebuilts=False,
-      unittests=False,
-      upload_hw_test_artifacts=False,
-      vm_tests=[],
+  master_config.AddSlaves(
+      site_config.AddForBoards(
+          'full-compile-paladin',
+          ['falco', 'nyan'],
+          board_configs,
+          site_config.templates.paladin,
+          board_replace=True,
+          chrome_binhost_only=True,
+          chrome_sdk=False,
+          compilecheck=True,
+          cpe_export=False,
+          debug_symbols=False,
+          prebuilts=False,
+          unittests=False,
+          upload_hw_test_artifacts=False,
+          vm_tests=[],
+          active_waterfall=constants.WATERFALL_INTERNAL,
+      )
   )
 
   # These are not built. Can they be removed?
@@ -2782,11 +2812,12 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       'amd64-generic',
   ])
 
-  site_config.Add(
+  master_config = site_config.Add(
       'master-chromium-pfq',
       site_config.templates.chromium_pfq,
       boards=[],
       master=True,
+      slave_configs=[],
       binhost_test=True,
       push_overlays=constants.BOTH_OVERLAYS,
       afdo_update_ebuild=True,
@@ -2797,12 +2828,14 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
   )
 
   # Create important configs, then non-important configs.
-  site_config.AddForBoards(
-      'chromium-pfq',
-      _chromium_pfq_important_boards,
-      external_board_configs,
-      site_config.templates.chromium_pfq,
-      site_config.templates.build_external_chrome)
+  master_config.AddSlaves(
+      site_config.AddForBoards(
+          'chromium-pfq',
+          _chromium_pfq_important_boards,
+          external_board_configs,
+          site_config.templates.chromium_pfq,
+          site_config.templates.build_external_chrome)
+  )
   site_config.AddForBoards(
       'chromium-pfq',
       ((boards_dict['all_full_boards'] & _chrome_boards) -
@@ -2826,17 +2859,39 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       'x86-alex',
   ])
 
-  site_config.AddForBoards(
-      'chrome-pfq',
-      _chrome_pfq_important_boards,
-      internal_board_configs,
-      site_config.templates.chrome_pfq,
-      important=True
+  _chrome_pfq_experimental_boards = frozenset([
+      'reef',
+  ])
+
+  _chromte_pfq_tryjob_boards = (
+      (boards_dict['all_release_boards'] & _chrome_boards) -
+      (_chrome_pfq_important_boards | _chrome_pfq_experimental_boards)
   )
+
+  master_config.AddSlaves(
+      site_config.AddForBoards(
+          'chrome-pfq',
+          _chrome_pfq_important_boards,
+          internal_board_configs,
+          site_config.templates.chrome_pfq,
+          important=True,
+          active_waterfall=constants.WATERFALL_INTERNAL,
+      )
+  )
+  master_config.AddSlaves(
+      site_config.AddForBoards(
+          'chrome-pfq',
+          _chrome_pfq_experimental_boards,
+          internal_board_configs,
+          site_config.templates.chrome_pfq,
+          important=False,
+          active_waterfall=constants.WATERFALL_INTERNAL,
+      )
+  )
+  # Define the result of the build configs for tryjob purposes.
   site_config.AddForBoards(
       'chrome-pfq',
-      ((boards_dict['all_release_boards'] & _chrome_boards) -
-       _chrome_pfq_important_boards),
+      _chromte_pfq_tryjob_boards,
       internal_board_configs,
       site_config.templates.chrome_pfq,
       important=False,
@@ -2993,12 +3048,13 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
       site_config, boards_dict, ge_build_config)
 
   ### Master release config.
-  site_config.Add(
+  master_config = site_config.Add(
       'master-release',
       site_config.templates.release,
       boards=[],
       buildslave_type=constants.GCE_WIMPY_BUILD_SLAVE_TYPE,
       master=True,
+      slave_configs=[],
       sync_chrome=False,
       chrome_sdk=False,
       health_alert_recipients=['tree'],
@@ -3078,6 +3134,7 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
         site_config[config_name].apply(
             _GetConfigValues(builder, board),
         )
+        master_config.AddSlave(site_config[config_name])
 
   def _AdjustGroupedReleaseConfigs(builder_group_dict):
     """Adjust leader and follower configs for grouped boards"""
@@ -3093,6 +3150,7 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
           site_config[config_name].apply(
               _GetConfigValues(builder, board),
           )
+          master_config.AddSlave(site_config[config_name])
 
         # Followers are built on GCE instances, and turn off testing that breaks
         # on GCE. The missing tests run on the leader board.
@@ -3105,6 +3163,7 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
               chrome_sdk_build_chrome=False,
               vm_tests=[],
           )
+          master_config.AddSlave(site_config[config_name])
 
   def _AdjustReleaseConfigs():
     """Adjust ungrouped and grouped release configs"""
@@ -3439,6 +3498,7 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       'samus-pre-flight-branch',
       site_config.templates.pre_flight_branch,
       master=True,
+      slave_configs=[],
       push_overlays=constants.BOTH_OVERLAYS,
       boards=['samus'],
       android_rev=constants.ANDROID_REV_LATEST,

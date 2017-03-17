@@ -332,6 +332,28 @@ class BuildConfig(AttrDict):
     """
     return self.deepcopy().apply(*args, **kwargs)
 
+  def AddSlave(self, slave):
+    """Assign slave config(s) to a build master.
+
+    A helper for adding slave configs to a master config.
+    """
+    assert self.master
+    if self['slave_configs'] is None:
+      self['slave_configs'] = []
+    self.slave_configs.append(slave.name)
+    self.slave_configs.sort()
+
+  def AddSlaves(self, slaves):
+    """Assign slave config(s) to a build master.
+
+    A helper for adding slave configs to a master config.
+    """
+    assert self.master
+    if self['slave_configs'] is None:
+      self['slave_configs'] = []
+    self.slave_configs.extend(slave_config.name for slave_config in slaves)
+    self.slave_configs.sort()
+
 
 class VMTestConfig(object):
   """Config object for virtual machine tests suites.
@@ -1336,7 +1358,12 @@ class SiteConfig(dict):
       template: The template to use for all configs created.
       *args: Mixin templates to apply.
       **kwargs: Additional keyword arguments to be used in AddConfig.
+
+    Returns:
+      List of the configs created.
     """
+    result = []
+
     for board in boards:
       config_name = '%s-%s' % (board, suffix)
 
@@ -1346,7 +1373,10 @@ class SiteConfig(dict):
         mixins = mixins + (per_board[board],)
 
       # Create the new config for this board.
-      self.Add(config_name, template, *mixins, **kwargs)
+      result.append(
+          self.Add(config_name, template, *mixins, **kwargs))
+
+    return result
 
   def AddTemplate(self, name, *args, **kwargs):
     """Create a template named |name|.

@@ -266,16 +266,31 @@ class CBuildBotTest(ChromeosConfigTestBase):
           self.assertIn(slave_name, self.site_config)
           self.assertTrue(self.site_config[slave_name].active_waterfall)
 
+  def testMasterSlaveConfigsSorted(self):
+    """Configs listing slave configs, must list valid configs."""
+    for config in self.site_config.itervalues():
+      if config.slave_configs is not None:
+        expected = sorted(config.slave_configs)
+
+        self.assertEqual(config.slave_configs, expected)
+
   def testExplicitImplicitSlavesMatch(self):
     """Make sure the explicit slave list matches implicit."""
     # TODO(dgarrett): Delete this test, when we remove the heuristic from
     # config_lib.GetSlaveConfigMapForMaster.
+    self.maxDiff = None
 
     for config in self.site_config.itervalues():
       if config.slave_configs is not None:
         master_config = config.deepcopy()
         master_config.slave_configs = None
-        slaves = self.site_config.GetSlaveConfigMapForMaster(master_config)
+        slaves = self.site_config.GetSlaveConfigMapForMaster(
+            master_config, important_only=False)
+
+        if not config.slave_configs and list(slaves.keys()) == [config.name]:
+          # The implicit logic lists the master as a slave, if there are no
+          # slaves.
+          continue
 
         self.assertItemsEqual(config.slave_configs, slaves.keys())
 
