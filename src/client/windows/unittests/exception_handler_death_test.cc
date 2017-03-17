@@ -357,8 +357,8 @@ TEST_F(ExceptionHandlerDeathTest, InstructionPointerMemory) {
 
   // Read the minidump. Locate the exception record and the
   // memory list, and then ensure that there is a memory region
-  // in the memory list that covers the instruction pointer from
-  // the exception record.
+  // in the memory list that covers at least 128 bytes on either
+  // side of the instruction pointer from the exception record.
   {
     Minidump minidump(minidump_filename);
     ASSERT_TRUE(minidump.Read());
@@ -379,18 +379,23 @@ TEST_F(ExceptionHandlerDeathTest, InstructionPointerMemory) {
         memory_list->GetMemoryRegionForAddress(instruction_pointer);
     ASSERT_TRUE(region);
 
-    EXPECT_EQ(kMemorySize, region->GetSize());
+    EXPECT_LE(kMemorySize, region->GetSize());
     const uint8_t* bytes = region->GetMemory();
     ASSERT_TRUE(bytes);
+
+    uint64_t ip_offset = instruction_pointer - region->GetBase();
+    EXPECT_GE(region->GetSize() - kOffset, ip_offset);
+    EXPECT_LE(kOffset, ip_offset);
 
     uint8_t prefix_bytes[kOffset];
     uint8_t suffix_bytes[kMemorySize - kOffset - sizeof(instructions)];
     memset(prefix_bytes, 0, sizeof(prefix_bytes));
     memset(suffix_bytes, 0, sizeof(suffix_bytes));
-    EXPECT_EQ(0, memcmp(bytes, prefix_bytes, sizeof(prefix_bytes)));
-    EXPECT_EQ(0, memcmp(bytes + kOffset, instructions, sizeof(instructions)));
-    EXPECT_EQ(0, memcmp(bytes + kOffset + sizeof(instructions),
-                        suffix_bytes, sizeof(suffix_bytes)));
+    EXPECT_EQ(0, memcmp(bytes + ip_offset - kOffset, prefix_bytes,
+                        sizeof(prefix_bytes)));
+    EXPECT_EQ(0, memcmp(bytes + ip_offset, instructions, sizeof(instructions)));
+    EXPECT_EQ(0, memcmp(bytes + ip_offset + sizeof(instructions), suffix_bytes,
+                        sizeof(suffix_bytes)));
   }
 
   DeleteFileW(minidump_filename_wide.c_str());
