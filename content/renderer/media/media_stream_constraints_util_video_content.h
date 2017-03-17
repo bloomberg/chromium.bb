@@ -20,14 +20,16 @@ namespace content {
 
 class CONTENT_EXPORT VideoContentCaptureSourceSelectionResult {
  public:
+  // Creates a result without value and with an empty failed constraint name.
+  VideoContentCaptureSourceSelectionResult();
+
   // Creates a result without value and with the given |failed_constraint_name|.
   // Does not take ownership of |failed_constraint_name|, so it must be null or
   // point to a string that remains accessible.
   explicit VideoContentCaptureSourceSelectionResult(
       const char* failed_constraint_name);
 
-  // Creates a result with the given values. |device_id| is moved to an internal
-  // field.
+  // Creates a result with the given values.
   VideoContentCaptureSourceSelectionResult(
       std::string device_id,
       const rtc::Optional<bool>& noise_reduction,

@@ -252,6 +252,10 @@ VideoContentCaptureSourceSelectionResult UnsatisfiedConstraintsResult(
 }  // namespace
 
 VideoContentCaptureSourceSelectionResult::
+    VideoContentCaptureSourceSelectionResult()
+    : VideoContentCaptureSourceSelectionResult("") {}
+
+VideoContentCaptureSourceSelectionResult::
     VideoContentCaptureSourceSelectionResult(const char* failed_constraint_name)
     : failed_constraint_name_(failed_constraint_name) {}
 

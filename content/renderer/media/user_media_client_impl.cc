@@ -26,6 +26,7 @@
 #include "content/renderer/media/local_media_stream_audio_source.h"
 #include "content/renderer/media/media_stream.h"
 #include "content/renderer/media/media_stream_constraints_util.h"
+#include "content/renderer/media/media_stream_constraints_util_video_content.h"
 #include "content/renderer/media/media_stream_constraints_util_video_device.h"
 #include "content/renderer/media/media_stream_dispatcher.h"
 #include "content/renderer/media/media_stream_video_capturer_source.h"
@@ -129,6 +130,8 @@ bool IsDeviceSource(const std::string& source) {
   return source.empty();
 }
 
+// TODO(guidou): Remove once audio constraints are processed with spec-compliant
+// algorithm. See http://crbug.com/657733.
 void CopyConstraintsToTrackControls(
     const blink::WebMediaConstraints& constraints,
     TrackControls* track_controls,
@@ -151,6 +154,14 @@ void CopyConstraintsToTrackControls(
     CopyFirstString(constraints.basic().deviceId, &track_controls->device_id);
     *request_devices = false;
   }
+}
+
+void InitializeTrackControls(const blink::WebMediaConstraints& constraints,
+                             TrackControls* track_controls) {
+  DCHECK(!constraints.isNull());
+  track_controls->requested = true;
+  CopyFirstString(constraints.basic().mediaStreamSource,
+                  &track_controls->stream_source);
 }
 
 void CopyHotwordAndLocalEchoToStreamControls(
@@ -260,6 +271,7 @@ void UserMediaClientImpl::requestUserMedia(
   UpdateWebRTCMethodCount(WEBKIT_GET_USER_MEDIA);
   DCHECK(CalledOnValidThread());
   DCHECK(!user_media_request.isNull());
+  DCHECK(user_media_request.audio() || user_media_request.video());
   // ownerDocument may be null if we are in a test.
   // In that case, it's OK to not check frame().
   DCHECK(user_media_request.ownerDocument().isNull() ||
@@ -338,21 +350,29 @@ void UserMediaClientImpl::SetupVideoInput(
     const blink::WebUserMediaRequest& user_media_request,
     std::unique_ptr<StreamControls> controls,
     const RequestSettings& request_settings) {
-  if (user_media_request.video()) {
-    bool ignore;
-    CopyConstraintsToTrackControls(user_media_request.videoConstraints(),
-                                   &controls->video, &ignore);
-    if (IsDeviceSource(controls->video.stream_source)) {
-      GetMediaDevicesDispatcher()->GetVideoInputCapabilities(
-          request_settings.security_origin,
-          base::Bind(&UserMediaClientImpl::SelectVideoDeviceSourceSettings,
-                     weak_factory_.GetWeakPtr(), request_id, user_media_request,
-                     base::Passed(&controls), request_settings));
-      return;
-    }
+  if (!user_media_request.video()) {
+    FinalizeRequestUserMedia(request_id, user_media_request,
+                             std::move(controls), request_settings);
+    return;
   }
-  FinalizeRequestUserMedia(request_id, user_media_request, std::move(controls),
-                           request_settings);
+  InitializeTrackControls(user_media_request.videoConstraints(),
+                          &controls->video);
+  if (IsDeviceSource(controls->video.stream_source)) {
+    GetMediaDevicesDispatcher()->GetVideoInputCapabilities(
+        request_settings.security_origin,
+        base::Bind(&UserMediaClientImpl::SelectVideoDeviceSourceSettings,
+                   weak_factory_.GetWeakPtr(), request_id, user_media_request,
+                   base::Passed(&controls), request_settings));
+  } else {
+    base::PostTaskAndReplyWithResult(
+        worker_task_runner_.get(), FROM_HERE,
+        base::Bind(&SelectVideoContentCaptureSourceSettings,
+                   user_media_request.videoConstraints()),
+        base::Bind(
+            &UserMediaClientImpl::FinalizeSelectVideoContentSourceSettings,
+            weak_factory_.GetWeakPtr(), request_id, user_media_request,
+            base::Passed(&controls), request_settings));
+  }
 }
 
 void UserMediaClientImpl::SelectVideoDeviceSourceSettings(
@@ -401,6 +421,29 @@ void UserMediaClientImpl::FinalizeSelectVideoDeviceSourceSettings(
             ? MEDIA_DEVICE_NO_HARDWARE
             : MEDIA_DEVICE_CONSTRAINT_NOT_SATISFIED;
     GetUserMediaRequestFailed(user_media_request, result,
+                              failed_constraint_name);
+    return;
+  }
+  controls->video.device_id = selection_result.device_id();
+  FinalizeRequestUserMedia(request_id, user_media_request, std::move(controls),
+                           request_settings);
+}
+
+void UserMediaClientImpl::FinalizeSelectVideoContentSourceSettings(
+    int request_id,
+    const blink::WebUserMediaRequest& user_media_request,
+    std::unique_ptr<StreamControls> controls,
+    const RequestSettings& request_settings,
+    const VideoContentCaptureSourceSelectionResult& selection_result) {
+  DCHECK(CalledOnValidThread());
+  if (!selection_result.HasValue()) {
+    blink::WebString failed_constraint_name =
+        blink::WebString::fromASCII(selection_result.failed_constraint_name());
+    DCHECK(!failed_constraint_name.isEmpty());
+    blink::WebString device_id_constraint_name = blink::WebString::fromASCII(
+        user_media_request.videoConstraints().basic().deviceId.name());
+    GetUserMediaRequestFailed(user_media_request,
+                              MEDIA_DEVICE_CONSTRAINT_NOT_SATISFIED,
                               failed_constraint_name);
     return;
   }
