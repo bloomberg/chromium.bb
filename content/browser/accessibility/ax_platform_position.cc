@@ -99,6 +99,22 @@ int AXPlatformPosition::MaxTextOffset() const {
   return static_cast<int>(GetInnerText().length());
 }
 
+// On some platforms, most objects are represented in the text of their parents
+// with a special (embedded object) character and not with their actual text
+// contents.
+int AXPlatformPosition::MaxTextOffsetInParent() const {
+#if defined(OS_WIN) || \
+    (defined(OS_LINUX) && defined(USE_X11) && !defined(OS_CHROMEOS))
+  if (IsNullPosition())
+    return INVALID_OFFSET;
+  if (GetAnchor()->IsTextOnlyObject())
+    return MaxTextOffset();
+  return 1;
+#else
+  return MaxTextOffset();
+#endif
+}
+
 bool AXPlatformPosition::IsInLineBreak() const {
   if (IsNullPosition())
     return false;

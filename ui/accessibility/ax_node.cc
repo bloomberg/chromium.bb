@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "base/strings/string16.h"
+#include "ui/accessibility/ax_enums.h"
 #include "ui/gfx/transform.h"
 
 namespace ui {
@@ -17,6 +18,12 @@ AXNode::AXNode(AXNode* parent, int32_t id, int32_t index_in_parent)
 }
 
 AXNode::~AXNode() {
+}
+
+bool AXNode::IsTextNode() const {
+  return data().role == AX_ROLE_STATIC_TEXT ||
+         data().role == AX_ROLE_LINE_BREAK ||
+         data().role == AX_ROLE_INLINE_TEXT_BOX;
 }
 
 void AXNode::SetData(const AXNodeData& src) {

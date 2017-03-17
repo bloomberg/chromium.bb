@@ -40,6 +40,7 @@ class AXPlatformPosition
   BrowserAccessibility* GetNodeInTree(AXTreeID tree_id,
                                       int32_t node_id) const override;
   int MaxTextOffset() const override;
+  int MaxTextOffsetInParent() const override;
   bool IsInLineBreak() const override;
   std::vector<int32_t> GetWordStartOffsets() const override;
   std::vector<int32_t> GetWordEndOffsets() const override;

@@ -33,6 +33,9 @@ class AX_EXPORT AXNode {
   // Get the child at the given index.
   AXNode* ChildAtIndex(int index) const { return children_[index]; }
 
+  // Returns true if the node has any of the text related roles.
+  bool IsTextNode() const;
+
   // Set the node's accessibility data. This may be done during initial
   // initialization or later when the node data changes.
   void SetData(const AXNodeData& src);

@@ -266,7 +266,8 @@ class AXPosition {
     DCHECK(copy);
     DCHECK_NE(copy->text_offset_, INVALID_OFFSET);
     // If the anchor node has no text inside it then the child index should be
-    // set to |BEFORE_TEXT|, hence the check for the text's length.
+    // set to |BEFORE_TEXT|, hence the check if |MaxTextOffset| is greater than
+    // 0.
     if (copy->MaxTextOffset() > 0 &&
         copy->text_offset_ >= copy->MaxTextOffset()) {
       copy->child_index_ = copy->AnchorChildCount();
@@ -278,13 +279,14 @@ class AXPosition {
       for (int i = 0; i < copy->AnchorChildCount(); ++i) {
         AXPositionInstance child = copy->CreateChildPositionAt(i);
         DCHECK(child);
+        int child_length = child->MaxTextOffsetInParent();
         if (copy->text_offset_ >= current_offset &&
-            copy->text_offset_ < (current_offset + child->MaxTextOffset())) {
+            copy->text_offset_ < (current_offset + child_length)) {
           copy->child_index_ = i;
           break;
         }
 
-        current_offset += child->MaxTextOffset();
+        current_offset += child_length;
       }
     }
 
@@ -314,21 +316,22 @@ class AXPosition {
       for (int i = 0; i <= child_index_; ++i) {
         AXPositionInstance child = copy->CreateChildPositionAt(i);
         DCHECK(child);
+        int child_length = child->MaxTextOffsetInParent();
 
         // If the current text offset is valid, we don't touch it.
         // Otherwise, we reset it to the beginning of the current child node.
         if (i == child_index_ &&
             (copy->text_offset_ < new_offset ||
-             copy->text_offset_ > (new_offset + child->MaxTextOffset()) ||
+             copy->text_offset_ > (new_offset + child_length) ||
              // When the text offset is equal to the text's length but this is
              // not an "after text" position.
              (!copy->AtEndOfAnchor() &&
-              copy->text_offset_ == (new_offset + child->MaxTextOffset())))) {
+              copy->text_offset_ == (new_offset + child_length)))) {
           copy->text_offset_ = new_offset;
           break;
         }
 
-        new_offset += child->MaxTextOffset();
+        new_offset += child_length;
       }
     }
 
@@ -361,7 +364,7 @@ class AXPosition {
     for (int i = 0; i < tree_position->child_index_; ++i) {
       child_position = tree_position->CreateChildPositionAt(i);
       DCHECK(child_position);
-      adjusted_offset -= child_position->MaxTextOffset();
+      adjusted_offset -= child_position->MaxTextOffsetInParent();
     }
     DCHECK_GE(adjusted_offset, 0);
 
@@ -1028,7 +1031,7 @@ class AXPosition {
     for (int i = 0; i < parent_position->child_index(); ++i) {
       AXPositionInstance child = parent_position->CreateChildPositionAt(i);
       DCHECK(child);
-      offset_in_parent += child->MaxTextOffset();
+      offset_in_parent += child->MaxTextOffsetInParent();
     }
     return offset_in_parent;
   }
@@ -1042,8 +1045,12 @@ class AXPosition {
   virtual void AnchorParent(int* tree_id, int32_t* parent_id) const = 0;
   virtual AXNodeType* GetNodeInTree(int tree_id, int32_t node_id) const = 0;
   // Returns the length of the text that is present inside the anchor node,
-  // including any text found in descendant nodes.
+  // including any text found in descendant text nodes.
   virtual int MaxTextOffset() const = 0;
+  // Returns the length of text that this anchor node takes up in its parent.
+  // On some platforms, embedded objects are represented in their parent with a
+  // single embedded object character.
+  virtual int MaxTextOffsetInParent() const { return MaxTextOffset(); }
   virtual bool IsInLineBreak() const = 0;
   virtual std::vector<int32_t> GetWordStartOffsets() const = 0;
   virtual std::vector<int32_t> GetWordEndOffsets() const = 0;
