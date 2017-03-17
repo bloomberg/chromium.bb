@@ -53,6 +53,7 @@ class ArcNotificationManager
   void CreateNotificationWindow(const std::string& key);
   void CloseNotificationWindow(const std::string& key);
   void OpenNotificationSettings(const std::string& key);
+  bool IsOpeningSettingsSupported() const;
 
  private:
   const AccountId main_profile_id_;

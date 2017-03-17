@@ -275,6 +275,10 @@ void ArcNotificationItem::OpenSettings() {
   manager_->OpenNotificationSettings(notification_key_);
 }
 
+bool ArcNotificationItem::IsOpeningSettingsSupported() const {
+  return manager_->IsOpeningSettingsSupported();
+}
+
 // Converts from Android notification priority to Chrome notification priority.
 // On Android, PRIORITY_DEFAULT does not pop up, so this maps PRIORITY_DEFAULT
 // to Chrome's -1 to adapt that behavior. Also, this maps PRIORITY_LOW and _HIGH

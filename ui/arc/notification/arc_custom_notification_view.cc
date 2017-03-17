@@ -249,6 +249,19 @@ void ArcCustomNotificationView::CreateCloseButton() {
   control_buttons_view_->AddChildView(close_button_.get());
 }
 
+void ArcCustomNotificationView::CreateSettingsButton() {
+  DCHECK(control_buttons_view_);
+
+  settings_button_ = new ControlButton(this);
+  settings_button_->SetImage(views::CustomButton::STATE_NORMAL,
+                             message_center::GetSettingsIcon());
+  settings_button_->SetAccessibleName(l10n_util::GetStringUTF16(
+      IDS_MESSAGE_NOTIFICATION_SETTINGS_BUTTON_ACCESSIBLE_NAME));
+  settings_button_->SetTooltipText(l10n_util::GetStringUTF16(
+      IDS_MESSAGE_NOTIFICATION_SETTINGS_BUTTON_ACCESSIBLE_NAME));
+  control_buttons_view_->AddChildView(settings_button_);
+}
+
 void ArcCustomNotificationView::CreateFloatingControlButtons() {
   // Floating close button is a transient child of |surface_| and also part
   // of the hosting widget's focus chain. It could only be created when both
@@ -262,15 +275,8 @@ void ArcCustomNotificationView::CreateFloatingControlButtons() {
   control_buttons_view_->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0));
 
-  settings_button_ = new ControlButton(this);
-  settings_button_->SetImage(views::CustomButton::STATE_NORMAL,
-                             message_center::GetSettingsIcon());
-  settings_button_->SetAccessibleName(l10n_util::GetStringUTF16(
-      IDS_MESSAGE_NOTIFICATION_SETTINGS_BUTTON_ACCESSIBLE_NAME));
-  settings_button_->SetTooltipText(l10n_util::GetStringUTF16(
-      IDS_MESSAGE_NOTIFICATION_SETTINGS_BUTTON_ACCESSIBLE_NAME));
-  control_buttons_view_->AddChildView(settings_button_);
-
+  if (item_ && item_->IsOpeningSettingsSupported())
+    CreateSettingsButton();
   CreateCloseButton();
 
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
@@ -339,9 +345,9 @@ void ArcCustomNotificationView::UpdateControlButtonsVisibility() {
   if (!surface_ || !floating_control_buttons_widget_)
     return;
 
-  const bool target_visiblity = IsMouseHovered() ||
-                                (close_button_ && close_button_->HasFocus()) ||
-                                settings_button_->HasFocus();
+  const bool target_visiblity =
+      IsMouseHovered() || (close_button_ && close_button_->HasFocus()) ||
+      (settings_button_ && settings_button_->HasFocus());
   if (target_visiblity == floating_control_buttons_widget_->IsVisible())
     return;
 
@@ -451,17 +457,21 @@ void ArcCustomNotificationView::Layout() {
 
   gfx::Rect control_buttons_bounds(contents_bounds);
   int buttons_width = 0;
-  if (close_button_)
+  int buttons_height = 0;
+  if (close_button_) {
     buttons_width += close_button_->GetPreferredSize().width();
-  if (settings_button_)
+    buttons_height = close_button_->GetPreferredSize().height();
+  }
+  if (settings_button_) {
     buttons_width += settings_button_->GetPreferredSize().width();
+    buttons_height = settings_button_->GetPreferredSize().height();
+  }
   control_buttons_bounds.set_x(control_buttons_bounds.right() - buttons_width -
                                message_center::kControlButtonPadding);
   control_buttons_bounds.set_y(control_buttons_bounds.y() +
                                message_center::kControlButtonPadding);
-  control_buttons_bounds.set_height(
-      settings_button_->GetPreferredSize().height());
   control_buttons_bounds.set_width(buttons_width);
+  control_buttons_bounds.set_height(buttons_height);
   floating_control_buttons_widget_->SetBounds(control_buttons_bounds);
 
   UpdateControlButtonsVisibility();

@@ -240,6 +240,12 @@ void ArcNotificationManager::OpenNotificationSettings(const std::string& key) {
   notifications_instance->OpenNotificationSettings(key);
 }
 
+bool ArcNotificationManager::IsOpeningSettingsSupported() const {
+  const auto* notifications_instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_bridge_service()->notifications(), OpenNotificationSettings);
+  return notifications_instance != nullptr;
+}
+
 void ArcNotificationManager::OnToastPosted(mojom::ArcToastDataPtr data) {
   const base::string16 text16(
       base::UTF8ToUTF16(data->text.has_value() ? *data->text : std::string()));

@@ -63,6 +63,7 @@ class ArcCustomNotificationView
   };
 
   void CreateCloseButton();
+  void CreateSettingsButton();
   void CreateFloatingControlButtons();
   void SetSurface(exo::NotificationSurface* surface);
   void UpdatePreferredSize();
