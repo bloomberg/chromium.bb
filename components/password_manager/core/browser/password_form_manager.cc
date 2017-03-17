@@ -1219,6 +1219,14 @@ void PasswordFormManager::SaveGenerationFieldDetectedByClassifier(
   generation_element_detected_by_classifier_ = generation_field;
 }
 
+void PasswordFormManager::ResetStoredMatches() {
+  preferred_match_ = nullptr;
+  best_matches_.clear();
+  not_best_matches_.clear();
+  blacklisted_matches_.clear();
+  new_blacklisted_.reset();
+}
+
 void PasswordFormManager::SendVotesOnSave() {
   if (observed_form_.IsPossibleChangePasswordFormWithoutUsername())
     return;

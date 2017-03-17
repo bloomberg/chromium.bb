@@ -2898,4 +2898,65 @@ TEST_F(PasswordFormManagerTest, DoesManageDifferentSignonRealmSameDrivers) {
       form_manager()->DoesManage(submitted_form, client()->driver().get()));
 }
 
+// Test that ResetStoredMatches removes references to previously fetched store
+// results.
+TEST_F(PasswordFormManagerTest, ResetStoredMatches) {
+  PasswordForm best_match1 = *observed_form();
+  best_match1.username_value = ASCIIToUTF16("user1");
+  best_match1.password_value = ASCIIToUTF16("pass");
+  best_match1.preferred = true;
+
+  PasswordForm best_match2 = best_match1;
+  best_match2.username_value = ASCIIToUTF16("user2");
+  best_match2.preferred = false;
+
+  PasswordForm non_best_match = best_match1;
+  non_best_match.action = GURL();
+
+  PasswordForm blacklisted = *observed_form();
+  blacklisted.blacklisted_by_user = true;
+  blacklisted.username_value.clear();
+
+  fake_form_fetcher()->SetNonFederated(
+      {&best_match1, &best_match2, &non_best_match, &blacklisted}, 0u);
+
+  EXPECT_EQ(2u, form_manager()->best_matches().size());
+  EXPECT_TRUE(form_manager()->preferred_match());
+  EXPECT_EQ(1u, form_manager()->blacklisted_matches().size());
+
+  // Trigger Update to verify that there is a non-best match.
+  PasswordForm updated(best_match1);
+  updated.password_value = ASCIIToUTF16("updated password");
+  form_manager()->ProvisionallySave(
+      updated, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  std::vector<PasswordForm> credentials_to_update;
+  EXPECT_CALL(MockFormSaver::Get(form_manager()), Update(_, _, _, nullptr))
+      .WillOnce(SaveArgPointee<2>(&credentials_to_update));
+  form_manager()->Save();
+
+  PasswordForm updated_non_best = non_best_match;
+  updated_non_best.password_value = updated.password_value;
+  EXPECT_THAT(credentials_to_update, UnorderedElementsAre(updated_non_best));
+
+  form_manager()->ResetStoredMatches();
+
+  EXPECT_THAT(form_manager()->best_matches(), IsEmpty());
+  EXPECT_FALSE(form_manager()->preferred_match());
+  EXPECT_THAT(form_manager()->blacklisted_matches(), IsEmpty());
+
+  // Simulate updating a saved credential again, but this time without non-best
+  // matches. Verify that the old non-best matches are no longer present.
+  fake_form_fetcher()->Fetch();
+  fake_form_fetcher()->SetNonFederated({&best_match1}, 0u);
+
+  form_manager()->ProvisionallySave(
+      updated, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  credentials_to_update.clear();
+  EXPECT_CALL(MockFormSaver::Get(form_manager()), Update(_, _, _, nullptr))
+      .WillOnce(SaveArgPointee<2>(&credentials_to_update));
+  form_manager()->Save();
+
+  EXPECT_THAT(credentials_to_update, IsEmpty());
+}
+
 }  // namespace password_manager

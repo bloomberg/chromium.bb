@@ -242,6 +242,11 @@ class PasswordFormManager : public FormFetcher::Consumer {
 
   FormSaver* form_saver() { return form_saver_.get(); }
 
+  // Clears references to matches derived from the associated FormFetcher data.
+  // After calling this, the PasswordFormManager holds no references to objects
+  // owned by the associated FormFetcher.
+  void ResetStoredMatches();
+
  protected:
   // FormFetcher::Consumer:
   void ProcessMatches(
