@@ -115,6 +115,18 @@ class TimeFormatTest : public ::testing::Test {
         TimeFormat::FORMAT_ELAPSED, TimeFormat::LENGTH_SHORT, delta_1h_));
     EXPECT_EQ(ASCIIToUTF16("1 day ago"), TimeFormat::Simple(
         TimeFormat::FORMAT_ELAPSED, TimeFormat::LENGTH_SHORT, delta_1d_));
+    EXPECT_EQ(ASCIIToUTF16("1 second ago"),
+              TimeFormat::Simple(TimeFormat::FORMAT_ELAPSED,
+                                 TimeFormat::LENGTH_LONG, delta_1s_));
+    EXPECT_EQ(ASCIIToUTF16("1 minute ago"),
+              TimeFormat::Simple(TimeFormat::FORMAT_ELAPSED,
+                                 TimeFormat::LENGTH_LONG, delta_1m_));
+    EXPECT_EQ(ASCIIToUTF16("1 hour ago"),
+              TimeFormat::Simple(TimeFormat::FORMAT_ELAPSED,
+                                 TimeFormat::LENGTH_LONG, delta_1h_));
+    EXPECT_EQ(ASCIIToUTF16("1 day ago"),
+              TimeFormat::Simple(TimeFormat::FORMAT_ELAPSED,
+                                 TimeFormat::LENGTH_LONG, delta_1d_));
 
     // Test English strings (simple, plural).
     EXPECT_EQ(ASCIIToUTF16("2 secs"), TimeFormat::Simple(
@@ -157,6 +169,18 @@ class TimeFormatTest : public ::testing::Test {
         TimeFormat::FORMAT_ELAPSED, TimeFormat::LENGTH_SHORT, delta_2h_));
     EXPECT_EQ(ASCIIToUTF16("2 days ago"), TimeFormat::Simple(
         TimeFormat::FORMAT_ELAPSED, TimeFormat::LENGTH_SHORT, delta_2d_));
+    EXPECT_EQ(ASCIIToUTF16("2 seconds ago"),
+              TimeFormat::Simple(TimeFormat::FORMAT_ELAPSED,
+                                 TimeFormat::LENGTH_LONG, delta_2s_));
+    EXPECT_EQ(ASCIIToUTF16("2 minutes ago"),
+              TimeFormat::Simple(TimeFormat::FORMAT_ELAPSED,
+                                 TimeFormat::LENGTH_LONG, delta_2m_));
+    EXPECT_EQ(ASCIIToUTF16("2 hours ago"),
+              TimeFormat::Simple(TimeFormat::FORMAT_ELAPSED,
+                                 TimeFormat::LENGTH_SHORT, delta_2h_));
+    EXPECT_EQ(ASCIIToUTF16("2 days ago"),
+              TimeFormat::Simple(TimeFormat::FORMAT_ELAPSED,
+                                 TimeFormat::LENGTH_SHORT, delta_2d_));
 
     // Test English strings (detailed, singular and plural).
     EXPECT_EQ(ASCIIToUTF16("1 minute and 2 seconds"), TimeFormat::Detailed(

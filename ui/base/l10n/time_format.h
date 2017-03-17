@@ -34,8 +34,7 @@ class UI_BASE_EXPORT TimeFormat {
 
   // Return a localized string of approximate time duration, formatted as a
   // single number, e.g. in English "2 hours ago".  Currently, all combinations
-  // of format and length except (FORMAT_ELAPSED, LENGTH_LONG) are implemented
-  // but it's easy to add this, if required.
+  // of format and length are implemented.
   static base::string16 Simple(Format format,
                                Length length,
                                const base::TimeDelta& delta);

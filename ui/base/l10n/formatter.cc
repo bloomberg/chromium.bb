@@ -30,11 +30,19 @@ static const Pluralities IDS_ELAPSED_SHORT_SEC = {
   "one{# sec ago}",
   " other{# secs ago}"
 };
+
+static const Pluralities IDS_ELAPSED_LONG_SEC = {
+    IDS_TIME_ELAPSED_LONG_SECS, "one{# second ago}", " other{# seconds ago}"};
+
 static const Pluralities IDS_ELAPSED_SHORT_MIN = {
   IDS_TIME_ELAPSED_MINS,
   "one{# min ago}",
   " other{# mins ago}"
 };
+
+static const Pluralities IDS_ELAPSED_LONG_MIN = {
+    IDS_TIME_ELAPSED_LONG_MINS, "one{# minute ago}", " other{# minutes ago}"};
+
 static const Pluralities IDS_ELAPSED_HOUR = {
   IDS_TIME_ELAPSED_HOURS,
   "one{# hour ago}",
@@ -265,8 +273,6 @@ std::unique_ptr<icu::MessageFormat> Formatter::InitFormat(
 
 const Formatter* FormatterContainer::Get(TimeFormat::Format format,
                                          TimeFormat::Length length) const {
-  DCHECK(formatter_[format][length])
-      << "Combination of FORMAT_ELAPSED and LENGTH_LONG is not implemented!";
   return formatter_[format][length].get();
 }
 
@@ -283,7 +289,9 @@ void FormatterContainer::Initialize() {
                     IDS_ELAPSED_SHORT_MIN,
                     IDS_ELAPSED_HOUR,
                     IDS_ELAPSED_DAY));
-  formatter_[TimeFormat::FORMAT_ELAPSED][TimeFormat::LENGTH_LONG].reset();
+  formatter_[TimeFormat::FORMAT_ELAPSED][TimeFormat::LENGTH_LONG].reset(
+      new Formatter(IDS_ELAPSED_LONG_SEC, IDS_ELAPSED_LONG_MIN,
+                    IDS_ELAPSED_HOUR, IDS_ELAPSED_DAY));
   formatter_[TimeFormat::FORMAT_REMAINING][TimeFormat::LENGTH_SHORT].reset(
       new Formatter(IDS_REMAINING_SHORT_SEC,
                     IDS_REMAINING_SHORT_MIN,
