@@ -422,13 +422,25 @@ class MasterSlaveSyncCompletionStageTestWithMasterPaladin(
         'No status found for build %s buildbucket_id %s' %
         ('build_1', 'buildbucket_id_1'))
 
+  def test_AnnotateNoStatBuildersWithBuildbucketSchedulder(self):
+    """Tests _AnnotateNoStatBuilders with master using Buildbucket scheduler."""
+    stage = self.ConstructStage()
+
+    annotate_mock = self.PatchObject(
+        completion_stages.MasterSlaveSyncCompletionStage,
+        '_AnnotateBuildStatusFromBuildbucket')
+
+    no_stat = {'no_stat_1', 'no_stat_2'}
+    stage._AnnotateNoStatBuilders(no_stat)
+    annotate_mock.assert_called_once_with(no_stat)
+
   def testAnnotateFailingBuilders(self):
     """Tests that _AnnotateFailingBuilders is free of syntax errors."""
     stage = self.ConstructStage()
 
     annotate_mock = self.PatchObject(
         completion_stages.MasterSlaveSyncCompletionStage,
-        '_AnnotateBuildStatusFromBuildbucket')
+        '_AnnotateNoStatBuilders')
 
     failing = {'failing_build'}
     inflight = {'inflight_build'}
@@ -448,7 +460,7 @@ class MasterSlaveSyncCompletionStageTestWithMasterPaladin(
     self.assertEqual(annotate_mock.call_count, 2)
 
     stage._AnnotateFailingBuilders(failing, inflight, no_stat, statuses, True)
-    self.assertEqual(annotate_mock.call_count, 2)
+    self.assertEqual(annotate_mock.call_count, 3)
 
 
 class CanaryCompletionStageTest(

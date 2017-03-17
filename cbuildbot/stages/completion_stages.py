@@ -390,13 +390,26 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
         logging.PrintBuildbotStepText('%s wasn\'t scheduled by master.'
                                       % config_name)
 
+  def _AnnotateNoStatBuilders(self, no_stat):
+    """Annotate the no stat builds.
+
+    Args:
+      no_stat: Set of build config names of slaves that had status None.
+    """
+    if config_lib.UseBuildbucketScheduler(self._run.config):
+      self._AnnotateBuildStatusFromBuildbucket(no_stat)
+    else:
+      for build in no_stat:
+        self._PrintBuildMessage('%s: did not start' % build)
+
   def _AnnotateFailingBuilders(self, failing, inflight, no_stat, statuses,
                                self_destructed):
-    """Add annotations that link to either failing or inflight builders.
+    """Annotate the failing, inflight and no_stat builds with text and links.
 
-    Adds buildbot links to failing builder dashboards. If no builders are
-    failing, adds links to inflight builders. Adds step text for builders
-    with status None.
+    Add text and buildbot links to build dashboards for failing builds and
+    inflight builds. For master builds using Buildbucket schdeduler, add text
+    and buildbot links for the no_stat builds; for other master builds, add
+    step text for the no_stat builds.
 
     Args:
       failing: Set of builder names of slave builders that failed.
@@ -413,7 +426,7 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
             '%s: %s' % (build, statuses[build].message.reason),
             statuses[build].dashboard_url)
       else:
-        self._PrintBuildMessage('%s: did not start' % build,
+        self._PrintBuildMessage('%s: failed due to unknown reasons' % build,
                                 statuses[build].dashboard_url)
 
     if not self_destructed:
@@ -421,19 +434,15 @@ class MasterSlaveSyncCompletionStage(ManifestVersionedSyncCompletionStage):
         self._PrintBuildMessage('%s: timed out' % build,
                                 statuses[build].dashboard_url)
 
-      if config_lib.UseBuildbucketScheduler(self._run.config):
-        self._AnnotateBuildStatusFromBuildbucket(no_stat)
-      else:
-        for build in no_stat:
-          self._PrintBuildMessage('%s: did not start.' % build)
+      self._AnnotateNoStatBuilders(no_stat)
     else:
       logging.PrintBuildbotStepText('The master destructed itself and stopped '
                                     'waiting for the following slaves:')
       for build in inflight:
         self._PrintBuildMessage('%s: still running' % build,
                                 statuses[build].dashboard_url)
-      for build in no_stat:
-        self._PrintBuildMessage('%s: did not start' % build)
+
+      self._AnnotateNoStatBuilders(no_stat)
 
   def GetSlaveStatuses(self):
     """Returns cached slave status results.
