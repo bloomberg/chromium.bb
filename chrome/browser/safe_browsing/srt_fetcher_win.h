@@ -132,6 +132,8 @@ class SwReporterTestingDelegate {
 // cleared.
 void SetSwReporterTestingDelegate(SwReporterTestingDelegate* delegate);
 
+void DisplaySRTPromptForTesting(const base::FilePath& download_path);
+
 }  // namespace safe_browsing
 
 #endif  // CHROME_BROWSER_SAFE_BROWSING_SRT_FETCHER_WIN_H_

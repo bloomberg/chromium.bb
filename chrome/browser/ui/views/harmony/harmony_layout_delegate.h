@@ -24,6 +24,7 @@ class HarmonyLayoutDelegate : public LayoutDelegate {
   bool UseExtraDialogPadding() const override;
   bool IsHarmonyMode() const override;
   int GetDialogPreferredWidth(DialogWidth width) const override;
+  bool ShouldShowWindowIcon() const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HarmonyLayoutDelegate);

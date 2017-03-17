@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/elevation_icon_setter.h"
+#include "chrome/browser/ui/views/harmony/layout_delegate.h"
 #include "chrome/browser/ui/views/toolbar/app_menu_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -25,7 +26,7 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/layout/layout_constants.h"
+#include "ui/views/views_delegate.h"
 #include "ui/views/window/dialog_client_view.h"
 
 #if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
@@ -89,7 +90,7 @@ gfx::ImageSkia GlobalErrorBubbleView::GetWindowIcon() {
 }
 
 bool GlobalErrorBubbleView::ShouldShowWindowIcon() const {
-  return true;
+  return LayoutDelegate::Get()->ShouldShowWindowIcon();
 }
 
 void GlobalErrorBubbleView::WindowClosing() {
@@ -126,7 +127,9 @@ void GlobalErrorBubbleView::Init() {
     layout->StartRow(1, 0);
     layout->AddView(message_labels[i]);
     if (i < message_labels.size() - 1)
-      layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+      layout->AddPaddingRow(
+          0, views::ViewsDelegate::GetInstance()->GetDistanceMetric(
+                 views::DistanceMetric::RELATED_CONTROL_VERTICAL));
   }
 
   // These bubbles show at times where activation is sporadic (like at startup,

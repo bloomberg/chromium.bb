@@ -68,6 +68,10 @@ bool HarmonyLayoutDelegate::UseExtraDialogPadding() const {
   return false;
 }
 
+bool HarmonyLayoutDelegate::ShouldShowWindowIcon() const {
+  return false;
+}
+
 bool HarmonyLayoutDelegate::IsHarmonyMode() const {
   return true;
 }

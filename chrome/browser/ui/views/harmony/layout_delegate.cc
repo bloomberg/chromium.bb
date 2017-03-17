@@ -77,6 +77,10 @@ bool LayoutDelegate::UseExtraDialogPadding() const {
   return true;
 }
 
+bool LayoutDelegate::ShouldShowWindowIcon() const {
+  return true;
+}
+
 bool LayoutDelegate::IsHarmonyMode() const {
   return false;
 }

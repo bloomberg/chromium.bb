@@ -578,6 +578,10 @@ int LaunchAndWaitForExit(const SwReporterInvocation& invocation) {
 
 }  // namespace
 
+void DisplaySRTPromptForTesting(const base::FilePath& download_path) {
+  DisplaySRTPrompt(download_path);
+}
+
 // Class that will attempt to download the SRT, showing the SRT notification
 // bubble when the download operation is complete. Instances of SRTFetcher own
 // themselves, they will self-delete on completion of the network request when

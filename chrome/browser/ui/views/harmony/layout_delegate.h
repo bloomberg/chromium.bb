@@ -96,6 +96,9 @@ class LayoutDelegate {
   // May return 0 if the dialog has no preferred width.
   virtual int GetDialogPreferredWidth(DialogWidth width) const;
 
+  // Returns whether to show the icon next to the title text on a dialog.
+  virtual bool ShouldShowWindowIcon() const;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(LayoutDelegate);
 };

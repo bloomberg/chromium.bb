@@ -27,6 +27,7 @@
 #include "chrome/browser/safe_browsing/srt_client_info_win.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/component_updater/pref_names.h"
@@ -265,6 +266,19 @@ class SRTFetcherTest : public InProcessBrowserTest,
   // can be used to perform actions in the middle of a queue of reporters which
   // all launch on the same mock clock tick.
   base::OnceClosure first_launch_callback_;
+};
+
+class SRTFetcherPromptTest : public DialogBrowserTest {
+ public:
+  void ShowDialog(const std::string& name) override {
+    if (name == "SRTErrorNoFile")
+      DisplaySRTPromptForTesting(base::FilePath());
+    else if (name == "SRTErrorFile")
+      DisplaySRTPromptForTesting(
+          base::FilePath().Append(FILE_PATH_LITERAL("c:\temp\testfile.txt")));
+    else
+      ADD_FAILURE() << "Unknown dialog type.";
+  }
 };
 
 }  // namespace
@@ -576,6 +590,18 @@ IN_PROC_BROWSER_TEST_F(SRTFetcherTest, ReporterLogging_MultipleLaunches) {
     ExpectLastReportSentInTheLastHour();
   }
   ExpectToRunAgain(kDaysBetweenSuccessfulSwReporterRuns);
+}
+
+// This provide tests which allows explicit invocation of the SRT Prompt
+// useful for checking dialog layout or any other interactive functionality
+// tests. See docs/testing/test_browser_dialog.md for description of the
+// testing framework.
+IN_PROC_BROWSER_TEST_F(SRTFetcherPromptTest, InvokeDialog_SRTErrorNoFile) {
+  RunDialog();
+}
+
+IN_PROC_BROWSER_TEST_F(SRTFetcherPromptTest, InvokeDialog_SRTErrorFile) {
+  RunDialog();
 }
 
 }  // namespace safe_browsing
