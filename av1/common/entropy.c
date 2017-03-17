@@ -5681,15 +5681,11 @@ void av1_average_tile_intra_cdfs(FRAME_CONTEXT *fc, FRAME_CONTEXT *ec_ctxs[],
 #if CONFIG_VAR_TX
 // FIXME: txfm_partition probs
 #endif
-// FIXME: skip probs
 
-#if CONFIG_EXT_TX
-// FIXME: ext_tx CDFs
-#else
+  // FIXME: skip probs
+
   AVERAGE_TILE_CDFS(intra_ext_tx_cdf)
   AVERAGE_TILE_CDFS(inter_ext_tx_cdf);
-
-#endif  // CONFIG_EXT_TX
 
   AVERAGE_TILE_CDFS(seg.tree_cdf)
   AVERAGE_TILE_CDFS(uv_mode_cdf)

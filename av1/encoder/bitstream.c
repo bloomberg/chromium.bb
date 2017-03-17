@@ -196,7 +196,14 @@ void av1_encode_token_init(void) {
 /* This hack is necessary because the four TX_TYPES are not consecutive,
     e.g., 0, 1, 2, 3, when doing an in-order traversal of the av1_ext_tx_tree
     structure. */
-#if !CONFIG_EXT_TX
+#if CONFIG_EXT_TX
+  for (s = 1; s < EXT_TX_SETS_INTRA; ++s)
+    av1_indices_from_tree(av1_ext_tx_intra_ind[s], av1_ext_tx_intra_inv[s],
+                          ext_tx_cnt_intra[s], av1_ext_tx_intra_tree[s]);
+  for (s = 1; s < EXT_TX_SETS_INTER; ++s)
+    av1_indices_from_tree(av1_ext_tx_inter_ind[s], av1_ext_tx_inter_inv[s],
+                          ext_tx_cnt_inter[s], av1_ext_tx_inter_tree[s]);
+#else
   av1_indices_from_tree(av1_ext_tx_ind, av1_ext_tx_inv, TX_TYPES,
                         av1_ext_tx_tree);
 #endif
@@ -1441,17 +1448,30 @@ static void write_tx_type(const AV1_COMMON *const cm, const MACROBLOCKD *xd,
       if (is_inter) {
         assert(ext_tx_used_inter[eset][mbmi->tx_type]);
         if (eset > 0) {
+#if CONFIG_EC_MULTISYMBOL
+          aom_write_symbol(w, av1_ext_tx_inter_ind[eset][mbmi->tx_type],
+                           ec_ctx->inter_ext_tx_cdf[eset][square_tx_size],
+                           ext_tx_cnt_inter[eset]);
+#else
           av1_write_token(w, av1_ext_tx_inter_tree[eset],
                           ec_ctx->inter_ext_tx_prob[eset][square_tx_size],
                           &ext_tx_inter_encodings[eset][mbmi->tx_type]);
+#endif
         }
       } else if (ALLOW_INTRA_EXT_TX) {
         assert(ext_tx_used_intra[eset][mbmi->tx_type]);
         if (eset > 0) {
+#if CONFIG_EC_MULTISYMBOL
+          aom_write_symbol(
+              w, av1_ext_tx_intra_ind[eset][mbmi->tx_type],
+              ec_ctx->intra_ext_tx_cdf[eset][square_tx_size][mbmi->mode],
+              ext_tx_cnt_intra[eset]);
+#else
           av1_write_token(
               w, av1_ext_tx_intra_tree[eset],
               ec_ctx->intra_ext_tx_prob[eset][square_tx_size][mbmi->mode],
               &ext_tx_intra_encodings[eset][mbmi->tx_type]);
+#endif
         }
       }
     }
@@ -2684,9 +2704,15 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
       const int eset =
           get_ext_tx_set(supertx_size, bsize, 1, cm->reduced_tx_set_used);
       if (eset > 0) {
+#if CONFIG_EC_MULTISYMBOL
+        aom_write_symbol(w, av1_ext_tx_inter_ind[eset][mbmi->tx_type],
+                         ec_ctx->inter_ext_tx_cdf[eset][supertx_size],
+                         ext_tx_cnt_inter[eset]);
+#else
         av1_write_token(w, av1_ext_tx_inter_tree[eset],
                         cm->fc->inter_ext_tx_prob[eset][supertx_size],
                         &ext_tx_inter_encodings[eset][mbmi->tx_type]);
+#endif
       }
     }
 #else

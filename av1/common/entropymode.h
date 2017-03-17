@@ -261,10 +261,15 @@ typedef struct frame_contexts {
 #if CONFIG_DELTA_Q
   aom_cdf_prob delta_q_cdf[CDF_SIZE(DELTA_Q_PROBS + 1)];
 #endif  // CONFIG_DELTA_Q
-#if !CONFIG_EXT_TX
+#if CONFIG_EXT_TX
+  aom_cdf_prob intra_ext_tx_cdf[EXT_TX_SETS_INTRA][EXT_TX_SIZES][INTRA_MODES]
+                               [CDF_SIZE(TX_TYPES)];
+  aom_cdf_prob inter_ext_tx_cdf[EXT_TX_SETS_INTER][EXT_TX_SIZES]
+                               [CDF_SIZE(TX_TYPES)];
+#else
   aom_cdf_prob intra_ext_tx_cdf[EXT_TX_SIZES][TX_TYPES][CDF_SIZE(TX_TYPES)];
   aom_cdf_prob inter_ext_tx_cdf[EXT_TX_SIZES][CDF_SIZE(TX_TYPES)];
-#endif  // !CONFIG_EXT_TX
+#endif  // CONFIG_EXT_TX
 #if CONFIG_EXT_INTRA && CONFIG_INTRA_INTERP
   aom_cdf_prob intra_filter_cdf[INTRA_FILTERS + 1][CDF_SIZE(INTRA_FILTERS)];
 #endif  // CONFIG_EXT_INTRA && CONFIG_INTRA_INTERP
@@ -432,7 +437,14 @@ extern int av1_intra_mode_ind[INTRA_MODES];
 extern int av1_intra_mode_inv[INTRA_MODES];
 extern int av1_inter_mode_ind[INTER_MODES];
 extern int av1_inter_mode_inv[INTER_MODES];
+#if CONFIG_EXT_TX
+extern int av1_ext_tx_intra_ind[EXT_TX_SETS_INTRA][TX_TYPES];
+extern int av1_ext_tx_intra_inv[EXT_TX_SETS_INTRA][TX_TYPES];
+extern int av1_ext_tx_inter_ind[EXT_TX_SETS_INTER][TX_TYPES];
+extern int av1_ext_tx_inter_inv[EXT_TX_SETS_INTER][TX_TYPES];
 #endif
+#endif
+
 #if CONFIG_EXT_INTER
 extern const aom_tree_index
     av1_interintra_mode_tree[TREE_SIZE(INTERINTRA_MODES)];

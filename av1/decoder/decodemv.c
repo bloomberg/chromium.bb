@@ -787,18 +787,30 @@ static void read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 
       if (inter_block) {
         if (eset > 0) {
+#if CONFIG_EC_MULTISYMBOL
+          mbmi->tx_type = av1_ext_tx_inter_inv[eset][aom_read_symbol(
+              r, ec_ctx->inter_ext_tx_cdf[eset][square_tx_size],
+              ext_tx_cnt_inter[eset], ACCT_STR)];
+#else
           mbmi->tx_type = aom_read_tree(
               r, av1_ext_tx_inter_tree[eset],
               ec_ctx->inter_ext_tx_prob[eset][square_tx_size], ACCT_STR);
+#endif
           if (counts)
             ++counts->inter_ext_tx[eset][square_tx_size][mbmi->tx_type];
         }
       } else if (ALLOW_INTRA_EXT_TX) {
         if (eset > 0) {
+#if CONFIG_EC_MULTISYMBOL
+          mbmi->tx_type = av1_ext_tx_intra_inv[eset][aom_read_symbol(
+              r, ec_ctx->intra_ext_tx_cdf[eset][square_tx_size][mbmi->mode],
+              ext_tx_cnt_intra[eset], ACCT_STR)];
+#else
           mbmi->tx_type = aom_read_tree(
               r, av1_ext_tx_intra_tree[eset],
               ec_ctx->intra_ext_tx_prob[eset][square_tx_size][mbmi->mode],
               ACCT_STR);
+#endif
           if (counts)
             ++counts->intra_ext_tx[eset][square_tx_size][mbmi->mode]
                                   [mbmi->tx_type];

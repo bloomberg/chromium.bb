@@ -55,7 +55,15 @@ static void initialize_dec(void) {
                           av1_intra_mode_tree);
     av1_indices_from_tree(av1_switchable_interp_ind, av1_switchable_interp_inv,
                           SWITCHABLE_FILTERS, av1_switchable_interp_tree);
-#if !CONFIG_EXT_TX
+#if CONFIG_EXT_TX
+    int s;
+    for (s = 1; s < EXT_TX_SETS_INTRA; ++s)
+      av1_indices_from_tree(av1_ext_tx_intra_ind[s], av1_ext_tx_intra_inv[s],
+                            ext_tx_cnt_intra[s], av1_ext_tx_intra_tree[s]);
+    for (s = 1; s < EXT_TX_SETS_INTER; ++s)
+      av1_indices_from_tree(av1_ext_tx_inter_ind[s], av1_ext_tx_inter_inv[s],
+                            ext_tx_cnt_inter[s], av1_ext_tx_inter_tree[s]);
+#else
     av1_indices_from_tree(av1_ext_tx_ind, av1_ext_tx_inv, TX_TYPES,
                           av1_ext_tx_tree);
 #endif

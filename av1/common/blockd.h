@@ -728,6 +728,9 @@ static const int ext_tx_used_intra[EXT_TX_SETS_INTRA][TX_TYPES] = {
   { 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0 },
 };
 
+// Numbers of transform types used in each intra set
+static const int ext_tx_cnt_intra[EXT_TX_SETS_INTRA] = { 1, 7, 5 };
+
 // Transform types used in each inter set
 static const int ext_tx_used_inter[EXT_TX_SETS_INTER][TX_TYPES] = {
   { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
@@ -735,6 +738,9 @@ static const int ext_tx_used_inter[EXT_TX_SETS_INTER][TX_TYPES] = {
   { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0 },
   { 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0 },
 };
+
+// Numbers of transform types used in each inter set
+static const int ext_tx_cnt_inter[EXT_TX_SETS_INTER] = { 1, 16, 12, 2 };
 
 // 1D Transforms used in inter set, this needs to be changed if
 // ext_tx_used_inter is changed
