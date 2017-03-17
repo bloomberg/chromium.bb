@@ -175,7 +175,16 @@ cr.define('cr.ui.Oobe', function() {
       $('screen-magnifier').addEventListener('click',
                                              Oobe.handleScreenMagnifierClick);
       $('virtual-keyboard').addEventListener('click',
-                                              Oobe.handleVirtualKeyboardClick);
+                                             Oobe.handleVirtualKeyboardClick);
+
+      $('high-contrast').addEventListener('keypress', Oobe.handleA11yKeyPress);
+      $('large-cursor').addEventListener('keypress', Oobe.handleA11yKeyPress);
+      $('spoken-feedback')
+          .addEventListener('keypress', Oobe.handleA11yKeyPress);
+      $('screen-magnifier')
+          .addEventListener('keypress', Oobe.handleA11yKeyPress);
+      $('virtual-keyboard')
+          .addEventListener('keypress', Oobe.handleA11yKeyPress);
 
       // A11y menu should be accessible i.e. disable autohide on any
       // keydown or click inside menu.
@@ -217,6 +226,20 @@ cr.define('cr.ui.Oobe', function() {
         $('accessibility-menu').elementToFocusOnHide = e.target;
       }
       e.stopPropagation();
+    },
+
+    /**
+     * handle a11y menu checkboxes keypress event by simulating click event.
+     */
+    handleA11yKeyPress: function(e) {
+      if (e.key != 'Enter')
+        return;
+
+      if (e.target.tagName != 'INPUT' || e.target.type != 'checkbox')
+        return;
+
+      // Simulate click on the checkbox.
+      e.target.click()
     },
 
     /**
