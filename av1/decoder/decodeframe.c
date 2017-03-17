@@ -51,6 +51,9 @@
 #include "av1/decoder/decodeframe.h"
 #include "av1/decoder/decodemv.h"
 #include "av1/decoder/decoder.h"
+#if CONFIG_LV_MAP
+#include "av1/decoder/decodetxb.h"
+#endif
 #include "av1/decoder/detokenize.h"
 #include "av1/decoder/dsubexp.h"
 
@@ -518,11 +521,17 @@ static void predict_and_reconstruct_intra_block(
   if (!mbmi->skip) {
     TX_TYPE tx_type = get_tx_type(plane_type, xd, block_idx, tx_size);
 #if !CONFIG_PVQ
+#if CONFIG_LV_MAP
+    int16_t max_scan_line = 0;
+    const int eob = av1_read_coeffs_txb_facade(
+        cm, xd, r, row, col, block_idx, plane, pd->dqcoeff, &max_scan_line);
+#else   // CONFIG_LV_MAP
     const SCAN_ORDER *scan_order = get_scan(cm, tx_size, tx_type, 0);
     int16_t max_scan_line = 0;
     const int eob =
         av1_decode_block_tokens(xd, plane, scan_order, col, row, tx_size,
                                 tx_type, &max_scan_line, r, mbmi->segment_id);
+#endif  // CONFIG_LV_MAP
 #if CONFIG_ADAPT_SCAN
     if (xd->counts)
       av1_update_scan_count_facade(cm, xd->counts, tx_size, tx_type,
@@ -560,11 +569,18 @@ static void decode_reconstruct_tx(AV1_COMMON *cm, MACROBLOCKD *const xd,
     PLANE_TYPE plane_type = get_plane_type(plane);
     int block_idx = (blk_row << 1) + blk_col;
     TX_TYPE tx_type = get_tx_type(plane_type, xd, block_idx, plane_tx_size);
+#if CONFIG_LV_MAP
+    (void)segment_id;
+    int16_t max_scan_line = 0;
+    const int eob = av1_read_coeffs_txb_facade(
+        cm, xd, r, row, col, block_idx, plane, pd->dqcoeff, &max_scan_line);
+#else   // CONFIG_LV_MAP
     const SCAN_ORDER *sc = get_scan(cm, plane_tx_size, tx_type, 1);
     int16_t max_scan_line = 0;
     const int eob =
         av1_decode_block_tokens(xd, plane, sc, blk_col, blk_row, plane_tx_size,
                                 tx_type, &max_scan_line, r, mbmi->segment_id);
+#endif  // CONFIG_LV_MAP
 #if CONFIG_ADAPT_SCAN
     if (xd->counts)
       av1_update_scan_count_facade(cm, xd->counts, tx_size, tx_type,
@@ -613,11 +629,18 @@ static int reconstruct_inter_block(AV1_COMMON *cm, MACROBLOCKD *const xd,
 #endif
 
 #if !CONFIG_PVQ
-  const SCAN_ORDER *scan_order = get_scan(cm, tx_size, tx_type, 1);
+#if CONFIG_LV_MAP
+  (void)segment_id;
   int16_t max_scan_line = 0;
+  const int eob = av1_read_coeffs_txb_facade(
+      cm, xd, r, row, col, block_idx, plane, pd->dqcoeff, &max_scan_line);
+#else   // CONFIG_LV_MAP
+  int16_t max_scan_line = 0;
+  const SCAN_ORDER *scan_order = get_scan(cm, tx_size, tx_type, 1);
   const int eob =
       av1_decode_block_tokens(xd, plane, scan_order, col, row, tx_size, tx_type,
                               &max_scan_line, r, segment_id);
+#endif  // CONFIG_LV_MAP
   uint8_t *dst =
       &pd->dst.buf[(row * pd->dst.stride + col) << tx_size_wide_log2[0]];
 #if CONFIG_ADAPT_SCAN
@@ -1647,7 +1670,7 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
       }
     }
   }
-#else
+#else  // CONFIG_COEF_INTERLEAVE
   if (!is_inter_block(mbmi)) {
     int plane;
 #if CONFIG_PALETTE
@@ -1795,7 +1818,7 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
       }
     }
   }
-#endif
+#endif  // CONFIG_COEF_INTERLEAVE
 
   int reader_corrupted_flag = aom_reader_has_error(r);
   aom_merge_corrupted_flag(&xd->corrupted, reader_corrupted_flag);
