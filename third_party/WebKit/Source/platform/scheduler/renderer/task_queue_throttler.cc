@@ -170,16 +170,19 @@ bool TaskQueueThrottler::IsThrottled(TaskQueue* task_queue) const {
 }
 
 void TaskQueueThrottler::UnregisterTaskQueue(TaskQueue* task_queue) {
-  LazyNow lazy_now(tick_clock_);
   auto find_it = queue_details_.find(task_queue);
-
   if (find_it == queue_details_.end())
     return;
 
-  if (find_it->second.budget_pool)
-    find_it->second.budget_pool->RemoveQueue(lazy_now.Now(), task_queue);
+  LazyNow lazy_now(tick_clock_);
+  std::unordered_set<BudgetPool*> budget_pools = find_it->second.budget_pools;
+  for (BudgetPool* budget_pool : budget_pools) {
+    budget_pool->RemoveQueue(lazy_now.Now(), task_queue);
+  }
 
-  queue_details_.erase(find_it);
+  // Iterator may have been deleted by BudgetPool::RemoveQueue, so don't
+  // use it here.
+  queue_details_.erase(task_queue);
 }
 
 void TaskQueueThrottler::OnTimeDomainHasImmediateWork(TaskQueue* queue) {
@@ -325,13 +328,15 @@ void TaskQueueThrottler::OnTaskRunTimeReported(TaskQueue* task_queue,
   if (!IsThrottled(task_queue))
     return;
 
-  BudgetPool* budget_pool = GetBudgetPoolForQueue(task_queue);
-  if (!budget_pool)
+  auto find_it = queue_details_.find(task_queue);
+  if (find_it == queue_details_.end())
     return;
 
-  budget_pool->RecordTaskRunTime(start_time, end_time);
-  if (!budget_pool->HasEnoughBudgetToRun(end_time))
-    budget_pool->BlockThrottledQueues(end_time);
+  for (BudgetPool* budget_pool : find_it->second.budget_pools) {
+    budget_pool->RecordTaskRunTime(start_time, end_time);
+    if (!budget_pool->HasEnoughBudgetToRun(end_time))
+      budget_pool->BlockThrottledQueues(end_time);
+  }
 }
 
 void TaskQueueThrottler::BlockQueue(base::TimeTicks now, TaskQueue* queue) {
@@ -378,17 +383,20 @@ void TaskQueueThrottler::AddQueueToBudgetPool(TaskQueue* queue,
 
   Metadata& metadata = insert_result.first->second;
 
-  DCHECK(!metadata.budget_pool);
-  metadata.budget_pool = budget_pool;
+  DCHECK(metadata.budget_pools.find(budget_pool) ==
+         metadata.budget_pools.end());
+
+  metadata.budget_pools.insert(budget_pool);
 }
 
 void TaskQueueThrottler::RemoveQueueFromBudgetPool(TaskQueue* queue,
                                                    BudgetPool* budget_pool) {
   auto find_it = queue_details_.find(queue);
   DCHECK(find_it != queue_details_.end() &&
-         find_it->second.budget_pool == budget_pool);
+         find_it->second.budget_pools.find(budget_pool) !=
+             find_it->second.budget_pools.end());
 
-  find_it->second.budget_pool = nullptr;
+  find_it->second.budget_pools.erase(budget_pool);
 
   MaybeDeleteQueueMetadata(find_it);
 }
@@ -420,23 +428,24 @@ void TaskQueueThrottler::SchedulePumpQueue(
   MaybeSchedulePumpThrottledTasks(from_here, now, next_run_time.value());
 }
 
-BudgetPool* TaskQueueThrottler::GetBudgetPoolForQueue(TaskQueue* queue) {
-  auto find_it = queue_details_.find(queue);
-  if (find_it == queue_details_.end())
-    return nullptr;
-  return find_it->second.budget_pool;
-}
-
 base::TimeTicks TaskQueueThrottler::GetNextAllowedRunTime(base::TimeTicks now,
                                                           TaskQueue* queue) {
-  BudgetPool* budget_pool = GetBudgetPoolForQueue(queue);
-  if (!budget_pool)
-    return now;
-  return std::max(now, budget_pool->GetNextAllowedRunTime());
+  base::TimeTicks next_run_time = now;
+
+  auto find_it = queue_details_.find(queue);
+  if (find_it == queue_details_.end())
+    return next_run_time;
+
+  for (BudgetPool* budget_pool : find_it->second.budget_pools) {
+    next_run_time =
+        std::max(next_run_time, budget_pool->GetNextAllowedRunTime());
+  }
+
+  return next_run_time;
 }
 
 void TaskQueueThrottler::MaybeDeleteQueueMetadata(TaskQueueMap::iterator it) {
-  if (it->second.throttling_ref_count == 0 && !it->second.budget_pool)
+  if (it->second.throttling_ref_count == 0 && it->second.budget_pools.empty())
     queue_details_.erase(it);
 }
 

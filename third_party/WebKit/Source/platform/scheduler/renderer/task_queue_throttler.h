@@ -145,11 +145,11 @@ class BLINK_PLATFORM_EXPORT TaskQueueThrottler : public TimeDomain::Observer,
                    base::TimeTicks now) const;
  private:
   struct Metadata {
-    Metadata() : throttling_ref_count(0), budget_pool(nullptr) {}
+    Metadata() : throttling_ref_count(0) {}
 
     size_t throttling_ref_count;
 
-    BudgetPool* budget_pool;
+    std::unordered_set<BudgetPool*> budget_pools;
   };
   using TaskQueueMap = std::unordered_map<TaskQueue*, Metadata>;
 
@@ -162,8 +162,6 @@ class BLINK_PLATFORM_EXPORT TaskQueueThrottler : public TimeDomain::Observer,
       const tracked_objects::Location& from_here,
       base::TimeTicks now,
       base::TimeTicks runtime);
-
-  BudgetPool* GetBudgetPoolForQueue(TaskQueue* queue);
 
   // Return next possible time when queue is allowed to run in accordance
   // with throttling policy.
