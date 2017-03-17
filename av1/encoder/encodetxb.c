@@ -435,10 +435,9 @@ static void update_and_record_txb_context(int plane, int block, int blk_row,
   const uint8_t *const band = get_band_translate(tx_size);
   const int seg_eob = get_tx_eob(&cpi->common.seg, segment_id, tx_size);
   int c, i;
-  int dc_sign;
-  int txb_skip_ctx = get_txb_skip_context(plane_bsize, tx_size, plane,
-                                          pd->above_context + blk_col,
-                                          pd->left_context + blk_row, &dc_sign);
+  TXB_CTX txb_ctx;
+  get_txb_ctx(plane_bsize, tx_size, plane, pd->above_context + blk_col,
+              pd->left_context + blk_row, &txb_ctx);
   const int bwl = b_width_log2_lookup[txsize_to_bsize[tx_size]] + 2;
   int cul_level = 0;
   unsigned int(*nz_map_count)[SIG_COEF_CONTEXTS][2];
@@ -455,8 +454,8 @@ static void update_and_record_txb_context(int plane, int block, int blk_row,
   (void)counts;
   (void)band;
 
-  ++td->counts->txb_skip[tx_size][txb_skip_ctx][eob == 0];
-  x->mbmi_ext->txb_skip_ctx[plane][block] = txb_skip_ctx;
+  ++td->counts->txb_skip[tx_size][txb_ctx.txb_skip_ctx][eob == 0];
+  x->mbmi_ext->txb_skip_ctx[plane][block] = txb_ctx.txb_skip_ctx;
 
   x->mbmi_ext->eobs[plane][block] = eob;
 
@@ -498,7 +497,7 @@ static void update_and_record_txb_context(int plane, int block, int blk_row,
       if (level == i + 1) {
         ++td->counts->coeff_base[tx_size][plane_type][i][ctx][1];
         if (c == 0) {
-          int dc_sign_ctx = get_dc_sign_ctx(dc_sign);
+          int dc_sign_ctx = txb_ctx.dc_sign_ctx;
 
           ++td->counts->dc_sign[plane_type][dc_sign_ctx][v < 0];
           x->mbmi_ext->dc_sign_ctx[plane][block] = dc_sign_ctx;
@@ -521,7 +520,7 @@ static void update_and_record_txb_context(int plane, int block, int blk_row,
 
     cul_level += level;
     if (c == 0) {
-      int dc_sign_ctx = get_dc_sign_ctx(dc_sign);
+      int dc_sign_ctx = txb_ctx.dc_sign_ctx;
 
       ++td->counts->dc_sign[plane_type][dc_sign_ctx][v < 0];
       x->mbmi_ext->dc_sign_ctx[plane][block] = dc_sign_ctx;
