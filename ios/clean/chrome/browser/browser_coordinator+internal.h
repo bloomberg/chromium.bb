@@ -59,6 +59,12 @@
 // |coordinator| isn't a child of the receiver, this method does nothing.
 - (void)removeChildCoordinator:(BrowserCoordinator*)coordinator;
 
+// Called when this coordinator moves to a new parent coordinator.  Subclasses
+// can override this method to run code that requires a configured
+// CoordinatorContext.
+- (void)coordinatorDidMoveToParentCoordinator:
+    (BrowserCoordinator*)parentCoordinator;
+
 // Called when a child coordinator did start. This is a blank template method.
 // Subclasses can override this method when they need to know when their
 // children start.
