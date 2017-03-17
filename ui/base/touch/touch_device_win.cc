@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "ui/base/touch/touch_device.h"
+
 #include "base/logging.h"
-#include "base/win/windows_version.h"
-#include <windows.h>
+#include "base/win/win_util.h"
 
 namespace ui {
 
@@ -17,29 +17,49 @@ bool IsTouchDevicePresent() {
       ((value & NID_INTEGRATED_TOUCH) || (value & NID_EXTERNAL_TOUCH));
 }
 
+// The following method logic is as follow :
+// - On versions prior to Windows 8 it will always return POINTER_TYPE_FINE
+// and/or POINTER_TYPE_COARSE (if the device has a touch screen).
+// - If the device is a detachable/convertible win8/10 device and the keyboard/
+// trackpad is detached/flipped it will always return POINTER_TYPE_COARSE.
+// It does not cover the case where an external mouse/keyboard is connected
+// while the device is used as a tablet. This is because Windows doesn't provide
+// us a reliable way to detect keyboard/mouse presence with
+// GetSystemMetrics(SM_MOUSEPRESENT).
+// - If the device doesn't have a touch screen it will return POINTER_TYPE_FINE.
+// In the rare cases (this is Microsoft documentation) where
+// GetSystemMetrics(SM_MOUSEPRESENT) returns 0 we will return POINTER_TYPE_NONE.
+// - If the device has a touch screen the available pointer devices are
+// POINTER_TYPE_FINE and POINTER_TYPE_COARSE.
 int GetAvailablePointerTypes() {
-  int available_pointer_types = 0;
+  // IsTabletDevice guarantees us that :
+  // - The device has a touch screen.
+  // - It is used as a tablet which means that it has no keyboard connected.
+  // On Windows 10 it means that it is verifying with ConvertibleSlateMode.
+  if (base::win::IsTabletDevice(nullptr))
+    return POINTER_TYPE_COARSE;
+
+  if (GetSystemMetrics(SM_MOUSEPRESENT) == 0)
+    return POINTER_TYPE_NONE;
+
+  int available_pointer_types = POINTER_TYPE_FINE;
   if (IsTouchDevicePresent())
     available_pointer_types |= POINTER_TYPE_COARSE;
-  if (GetSystemMetrics(SM_MOUSEPRESENT) != 0 &&
-      GetSystemMetrics(SM_CMOUSEBUTTONS) > 0)
-    available_pointer_types |= POINTER_TYPE_FINE;
-
-  if (available_pointer_types == 0)
-    available_pointer_types = POINTER_TYPE_NONE;
 
   return available_pointer_types;
 }
 
+// This method follows the same logic as above but with hover types.
 int GetAvailableHoverTypes() {
-  int available_hover_types = 0;
+  if (base::win::IsTabletDevice(nullptr))
+    return HOVER_TYPE_ON_DEMAND;
+
+  if (GetSystemMetrics(SM_MOUSEPRESENT) == 0)
+    return HOVER_TYPE_NONE;
+
+  int available_hover_types = HOVER_TYPE_HOVER;
   if (IsTouchDevicePresent())
     available_hover_types |= HOVER_TYPE_ON_DEMAND;
-  if (GetSystemMetrics(SM_MOUSEPRESENT) != 0)
-    available_hover_types |= HOVER_TYPE_HOVER;
-
-  if (available_hover_types == 0)
-    available_hover_types = HOVER_TYPE_NONE;
 
   return available_hover_types;
 }
