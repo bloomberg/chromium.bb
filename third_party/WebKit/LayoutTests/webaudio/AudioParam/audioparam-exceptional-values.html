@@ -37,72 +37,78 @@
       // important.
       let curve = new Float32Array(10);
 
-      audit.define('test', function(task, should) {
-        task.describe(
-            'Test exceptional arguments for AudioParam timeline events');
-        let context = new AudioContext();
-        let gain = context.createGain();
+      audit.define(
+          {
+            label: 'test',
+            description:
+                'Test exceptional arguments for AudioParam timeline events'
+          },
+          function(task, should) {
+            let context = new AudioContext();
+            let gain = context.createGain();
 
-        // Test the value parameter
-        for (value of targetValues) {
-          let testMethods = [
-            {name: 'setValueAtTime', arg: [value, 1]},
-            {name: 'linearRampToValueAtTime', arg: [value, 1]},
-            {name: 'exponentialRampToValueAtTime', arg: [value, 1]},
-            {name: 'setTargetAtTime', arg: [value, 1, 1]}
-          ];
+            // Test the value parameter
+            for (value of targetValues) {
+              let testMethods = [
+                {name: 'setValueAtTime', arg: [value, 1]},
+                {name: 'linearRampToValueAtTime', arg: [value, 1]},
+                {name: 'exponentialRampToValueAtTime', arg: [value, 1]},
+                {name: 'setTargetAtTime', arg: [value, 1, 1]}
+              ];
 
-          for (method of testMethods) {
-            let message = 'gain.gain.' + method.name + '(' + method.arg + ')';
-            should(
-                () => gain.gain[method.name].apply(gain.gain, method.arg),
-                message)
-                .throw();
-          }
-        }
+              for (method of testMethods) {
+                let message =
+                    'gain.gain.' + method.name + '(' + method.arg + ')';
+                should(
+                    () => gain.gain[method.name].apply(gain.gain, method.arg),
+                    message)
+                    .throw();
+              }
+            }
 
-        // Test the time parameter
-        for (startTime of timeValues) {
-          let testMethods = [
-            {name: 'setValueAtTime', arg: [1, startTime]},
-            {name: 'linearRampToValueAtTime', arg: [1, startTime]},
-            {name: 'exponentialRampToValueAtTime', arg: [1, startTime]},
-            {name: 'setTargetAtTime', arg: [1, startTime, 1]}
-          ];
+            // Test the time parameter
+            for (startTime of timeValues) {
+              let testMethods = [
+                {name: 'setValueAtTime', arg: [1, startTime]},
+                {name: 'linearRampToValueAtTime', arg: [1, startTime]},
+                {name: 'exponentialRampToValueAtTime', arg: [1, startTime]},
+                {name: 'setTargetAtTime', arg: [1, startTime, 1]}
+              ];
 
-          for (method of testMethods) {
-            let message = 'gain.gain.' + method.name + '(' + method.arg + ')';
-            should(
-                () => gain.gain[method.name].apply(gain.gain, method.arg),
-                message)
-                .throw();
-          }
-        }
+              for (method of testMethods) {
+                let message =
+                    'gain.gain.' + method.name + '(' + method.arg + ')';
+                should(
+                    () => gain.gain[method.name].apply(gain.gain, method.arg),
+                    message)
+                    .throw();
+              }
+            }
 
-        // Test time constant
-        for (value of timeConstantValues) {
-          should(
-              () => gain.gain.setTargetAtTime(1, 1, value),
-              'gain.gain.setTargetAtTime(1, 1, ' + value + ')')
-              .throw();
-        }
+            // Test time constant
+            for (value of timeConstantValues) {
+              should(
+                  () => gain.gain.setTargetAtTime(1, 1, value),
+                  'gain.gain.setTargetAtTime(1, 1, ' + value + ')')
+                  .throw();
+            }
 
-        // Test startTime and duration for setValueCurveAtTime
-        for (startTime of timeValues) {
-          should(
-              () => gain.gain.setValueCurveAtTime(curve, startTime, 1),
-              'gain.gain.setValueCurveAtTime(curve, ' + startTime + ', 1)')
-              .throw();
-        }
-        for (duration of durationValues) {
-          should(
-              () => gain.gain.setValueCurveAtTime(curve, 1, duration),
-              'gain.gain.setValueCurveAtTime(curve, 1, ' + duration + ')')
-              .throw();
-        }
+            // Test startTime and duration for setValueCurveAtTime
+            for (startTime of timeValues) {
+              should(
+                  () => gain.gain.setValueCurveAtTime(curve, startTime, 1),
+                  'gain.gain.setValueCurveAtTime(curve, ' + startTime + ', 1)')
+                  .throw();
+            }
+            for (duration of durationValues) {
+              should(
+                  () => gain.gain.setValueCurveAtTime(curve, 1, duration),
+                  'gain.gain.setValueCurveAtTime(curve, 1, ' + duration + ')')
+                  .throw();
+            }
 
-        task.done();
-      });
+            task.done();
+          });
 
       audit.run();
     </script>

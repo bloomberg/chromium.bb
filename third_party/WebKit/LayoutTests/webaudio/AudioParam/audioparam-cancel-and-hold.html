@@ -20,313 +20,337 @@
       // start things off.  Then the automation to be tested is scheduled and
       // cancelled.
 
-      audit.define("linear", function (task, should) {
-        task.describe("Cancel linearRampToValueAtTime");
-        cancelTest(should, linearRampTest("linearRampToValueAtTime"), {
-          valueThreshold: 8.3998e-5,
-          curveThreshold: 0
-        }).then(task.done.bind(task));
-      });
+      audit.define(
+          {label: 'linear', description: 'Cancel linearRampToValueAtTime'},
+          function(task, should) {
+            cancelTest(should, linearRampTest('linearRampToValueAtTime'), {
+              valueThreshold: 8.3998e-5,
+              curveThreshold: 0
+            }).then(task.done.bind(task));
+          });
 
-      audit.define("exponential", function (task, should) {
-        task.describe("Cancel exponentialRampAtTime");
-        // Cancel an exponential ramp.  The thresholds are experimentally
-        // determined.
-        cancelTest(should, function (g, v0, t0, cancelTime) {
-          // Initialize values to 0.
-          g[0].gain.setValueAtTime(0, 0);
-          g[1].gain.setValueAtTime(0, 0);
-          // Schedule a short linear ramp to start things off.
-          g[0].gain.linearRampToValueAtTime(v0, t0);
-          g[1].gain.linearRampToValueAtTime(v0, t0);
+      audit.define(
+          {label: 'exponential', description: 'Cancel exponentialRampAtTime'},
+          function(task, should) {
+            // Cancel an exponential ramp.  The thresholds are experimentally
+            // determined.
+            cancelTest(should, function(g, v0, t0, cancelTime) {
+              // Initialize values to 0.
+              g[0].gain.setValueAtTime(0, 0);
+              g[1].gain.setValueAtTime(0, 0);
+              // Schedule a short linear ramp to start things off.
+              g[0].gain.linearRampToValueAtTime(v0, t0);
+              g[1].gain.linearRampToValueAtTime(v0, t0);
 
-          // After the linear ramp, schedule an exponential ramp to the end.
-          // (This is the event that will be be cancelled.)
-          let v1 = 0.001;
-          let t1 = renderDuration;
+              // After the linear ramp, schedule an exponential ramp to the end.
+              // (This is the event that will be be cancelled.)
+              let v1 = 0.001;
+              let t1 = renderDuration;
 
-          g[0].gain.exponentialRampToValueAtTime(v1, t1);
-          g[1].gain.exponentialRampToValueAtTime(v1, t1);
+              g[0].gain.exponentialRampToValueAtTime(v1, t1);
+              g[1].gain.exponentialRampToValueAtTime(v1, t1);
 
-          expectedConstant = Math.fround(v0 * Math.pow(v1 / v0, (
-            cancelTime -
-            t0) / (t1 - t0)));
-          return {
-            expectedConstant: expectedConstant,
-            autoMessage: "exponentialRampToValue(" + v1 + ", " + t1 + ")",
-            summary: "exponentialRampToValueAtTime",
-          };
-        }, {
-          valueThreshold: 1.8664e-6,
-          curveThreshold: 5.9605e-8
-        }).then(task.done.bind(task));
-      });
+              expectedConstant = Math.fround(
+                  v0 * Math.pow(v1 / v0, (cancelTime - t0) / (t1 - t0)));
+              return {
+                expectedConstant: expectedConstant,
+                autoMessage: 'exponentialRampToValue(' + v1 + ', ' + t1 + ')',
+                summary: 'exponentialRampToValueAtTime',
+              };
+            }, {
+              valueThreshold: 1.8664e-6,
+              curveThreshold: 5.9605e-8
+            }).then(task.done.bind(task));
+          });
 
-      audit.define("setTarget", function (task, should) {
-        task.describe("Cancel setTargetAtTime");
-        // Cancel a setTarget event.
-        cancelTest(should, function (g, v0, t0, cancelTime) {
-          // Initialize values to 0.
-          g[0].gain.setValueAtTime(0, 0);
-          g[1].gain.setValueAtTime(0, 0);
-          // Schedule a short linear ramp to start things off.
-          g[0].gain.linearRampToValueAtTime(v0, t0);
-          g[1].gain.linearRampToValueAtTime(v0, t0);
+      audit.define(
+          {label: 'setTarget', description: 'Cancel setTargetAtTime'},
+          function(task, should) {
+            // Cancel a setTarget event.
+            cancelTest(should, function(g, v0, t0, cancelTime) {
+              // Initialize values to 0.
+              g[0].gain.setValueAtTime(0, 0);
+              g[1].gain.setValueAtTime(0, 0);
+              // Schedule a short linear ramp to start things off.
+              g[0].gain.linearRampToValueAtTime(v0, t0);
+              g[1].gain.linearRampToValueAtTime(v0, t0);
 
-          // At the end of the linear ramp, schedule a setTarget.  (This is the
-          // event that will be cancelled.)
-          let v1 = 0;
-          let t1 = t0;
-          let timeConstant = 0.05;
+              // At the end of the linear ramp, schedule a setTarget.  (This is
+              // the event that will be cancelled.)
+              let v1 = 0;
+              let t1 = t0;
+              let timeConstant = 0.05;
 
-          g[0].gain.setTargetAtTime(v1, t1, timeConstant);
-          g[1].gain.setTargetAtTime(v1, t1, timeConstant);
+              g[0].gain.setTargetAtTime(v1, t1, timeConstant);
+              g[1].gain.setTargetAtTime(v1, t1, timeConstant);
 
-          expectedConstant = Math.fround(v1 + (v0 - v1) * Math.exp(-(
-            cancelTime - t0) / timeConstant));
-          return {
-            expectedConstant: expectedConstant,
-            autoMessage: "setTargetAtTime(" + v1 + ", " + t1 + ", " +
-              timeConstant + ")",
-            summary: "setTargetAtTime",
-          };
-        }, {
-          valueThreshold: 4.5267e-7, //1.1317e-7,
-          curveThreshold: 0
-        }).then(task.done.bind(task));
-      });
+              expectedConstant = Math.fround(
+                  v1 + (v0 - v1) * Math.exp(-(cancelTime - t0) / timeConstant));
+              return {
+                expectedConstant: expectedConstant,
+                autoMessage: 'setTargetAtTime(' + v1 + ', ' + t1 + ', ' +
+                    timeConstant + ')',
+                summary: 'setTargetAtTime',
+              };
+            }, {
+              valueThreshold: 4.5267e-7,  // 1.1317e-7,
+              curveThreshold: 0
+            }).then(task.done.bind(task));
+          });
 
-      audit.define("setValueCurve", function (task, should) {
-        task.describe("Cancel setValueCurveAtTime");
-        // Cancel a setValueCurve event.
-        cancelTest(should, function (g, v0, t0, cancelTime) {
-          // Initialize values to 0.
-          g[0].gain.setValueAtTime(0, 0);
-          g[1].gain.setValueAtTime(0, 0);
-          // Schedule a short linear ramp to start things off.
-          g[0].gain.linearRampToValueAtTime(v0, t0);
-          g[1].gain.linearRampToValueAtTime(v0, t0);
+      audit.define(
+          {label: 'setValueCurve', description: 'Cancel setValueCurveAtTime'},
+          function(task, should) {
+            // Cancel a setValueCurve event.
+            cancelTest(should, function(g, v0, t0, cancelTime) {
+              // Initialize values to 0.
+              g[0].gain.setValueAtTime(0, 0);
+              g[1].gain.setValueAtTime(0, 0);
+              // Schedule a short linear ramp to start things off.
+              g[0].gain.linearRampToValueAtTime(v0, t0);
+              g[1].gain.linearRampToValueAtTime(v0, t0);
 
-          // After the linear ramp, schedule a setValuesCurve. (This is the
-          // event that will be cancelled.)
-          let v1 = 0;
-          let duration = renderDuration - t0;
+              // After the linear ramp, schedule a setValuesCurve. (This is the
+              // event that will be cancelled.)
+              let v1 = 0;
+              let duration = renderDuration - t0;
 
-          // For simplicity, a 2-point curve so we get a linear interpolated result.
-          let curve = Float32Array.from([v0, 0]);
+              // For simplicity, a 2-point curve so we get a linear interpolated
+              // result.
+              let curve = Float32Array.from([v0, 0]);
 
-          g[0].gain.setValueCurveAtTime(curve, t0, duration);
-          g[1].gain.setValueCurveAtTime(curve, t0, duration);
+              g[0].gain.setValueCurveAtTime(curve, t0, duration);
+              g[1].gain.setValueCurveAtTime(curve, t0, duration);
 
-          let index = Math.floor((curve.length - 1) / duration * (
-            cancelTime - t0));
+              let index =
+                  Math.floor((curve.length - 1) / duration * (cancelTime - t0));
 
-          let curvePointsPerFrame = (curve.length - 1) / duration /
-            sampleRate;
-          let virtualIndex = (cancelTime - t0) * sampleRate *
-            curvePointsPerFrame;
+              let curvePointsPerFrame =
+                  (curve.length - 1) / duration / sampleRate;
+              let virtualIndex =
+                  (cancelTime - t0) * sampleRate * curvePointsPerFrame;
 
-          let delta = virtualIndex - index;
-          expectedConstant = curve[0] + (curve[1] - curve[0]) * delta;
-          return {
-            expectedConstant: expectedConstant,
-            autoMessage: "setValueCurveAtTime([" + curve + "], " + t0 +
-              ", " + duration +
-              ")",
-            summary: "setValueCurveAtTime",
-          };
-        }, {
-          valueThreshold: 9.5368e-9,
-          curveThreshold: 0
-        }).then(task.done.bind(task));
-      });
+              let delta = virtualIndex - index;
+              expectedConstant = curve[0] + (curve[1] - curve[0]) * delta;
+              return {
+                expectedConstant: expectedConstant,
+                autoMessage: 'setValueCurveAtTime([' + curve + '], ' + t0 +
+                    ', ' + duration + ')',
+                summary: 'setValueCurveAtTime',
+              };
+            }, {
+              valueThreshold: 9.5368e-9,
+              curveThreshold: 0
+            }).then(task.done.bind(task));
+          });
 
-      audit.define("setValueCurve after end", function (task, should) {
-        task.describe("Cancel setValueCurveAtTime after the end");
-        cancelTest(should, function (g, v0, t0, cancelTime) {
-          // Initialize values to 0.
-          g[0].gain.setValueAtTime(0, 0);
-          g[1].gain.setValueAtTime(0, 0);
-          // Schedule a short linear ramp to start things off.
-          g[0].gain.linearRampToValueAtTime(v0, t0);
-          g[1].gain.linearRampToValueAtTime(v0, t0);
+      audit.define(
+          {
+            label: 'setValueCurve after end',
+            description: 'Cancel setValueCurveAtTime after the end'
+          },
+          function(task, should) {
+            cancelTest(should, function(g, v0, t0, cancelTime) {
+              // Initialize values to 0.
+              g[0].gain.setValueAtTime(0, 0);
+              g[1].gain.setValueAtTime(0, 0);
+              // Schedule a short linear ramp to start things off.
+              g[0].gain.linearRampToValueAtTime(v0, t0);
+              g[1].gain.linearRampToValueAtTime(v0, t0);
 
-          // After the linear ramp, schedule a setValuesCurve. (This is the
-          // event that will be cancelled.)  Make sure the curve ends before the
-          // cancellation time.
-          let v1 = 0;
-          let duration = cancelTime - t0 - 0.125;
+              // After the linear ramp, schedule a setValuesCurve. (This is the
+              // event that will be cancelled.)  Make sure the curve ends before
+              // the cancellation time.
+              let v1 = 0;
+              let duration = cancelTime - t0 - 0.125;
 
-          // For simplicity, a 2-point curve so we get a linear interpolated
-          // result.
-          let curve = Float32Array.from([v0, 0]);
+              // For simplicity, a 2-point curve so we get a linear interpolated
+              // result.
+              let curve = Float32Array.from([v0, 0]);
 
-          g[0].gain.setValueCurveAtTime(curve, t0, duration);
-          g[1].gain.setValueCurveAtTime(curve, t0, duration);
+              g[0].gain.setValueCurveAtTime(curve, t0, duration);
+              g[1].gain.setValueCurveAtTime(curve, t0, duration);
 
-          expectedConstant = curve[1];
-          return {
-            expectedConstant: expectedConstant,
-            autoMessage: "setValueCurveAtTime([" + curve + "], " + t0 +
-              ", " + duration +
-              ")",
-            summary: "setValueCurveAtTime",
-          };
-        }, {
-          valueThreshold: 0,
-          curveThreshold: 0
-        }).then(task.done.bind(task));
-      });
+              expectedConstant = curve[1];
+              return {
+                expectedConstant: expectedConstant,
+                autoMessage: 'setValueCurveAtTime([' + curve + '], ' + t0 +
+                    ', ' + duration + ')',
+                summary: 'setValueCurveAtTime',
+              };
+            }, {
+              valueThreshold: 0,
+              curveThreshold: 0
+            }).then(task.done.bind(task));
+          });
 
       // Special case where we schedule a setTarget and there is no earlier
       // automation event.  This tests that we pick up the starting point
       // correctly from the last setting of the AudioParam value attribute.
 
 
-      audit.define("initial setTarget", function (task, should) {
-        task.describe("Cancel with initial setTargetAtTime");
-        cancelTest(should, function (g, v0, t0, cancelTime) {
-          let v1 = 0;
-          let timeConstant = 0.1;
-          g[0].gain.value = 1;
-          g[0].gain.setTargetAtTime(v1, t0, timeConstant);
-          g[1].gain.value = 1;
-          g[1].gain.setTargetAtTime(v1, t0, timeConstant);
+      audit.define(
+          {
+            label: 'initial setTarget',
+            description: 'Cancel with initial setTargetAtTime'
+          },
+          function(task, should) {
+            cancelTest(should, function(g, v0, t0, cancelTime) {
+              let v1 = 0;
+              let timeConstant = 0.1;
+              g[0].gain.value = 1;
+              g[0].gain.setTargetAtTime(v1, t0, timeConstant);
+              g[1].gain.value = 1;
+              g[1].gain.setTargetAtTime(v1, t0, timeConstant);
 
-          let expectedConstant = Math.fround(v1 + (v0 - v1) * Math.exp(-
-            (cancelTime - t0) /
-            timeConstant));
+              let expectedConstant = Math.fround(
+                  v1 + (v0 - v1) * Math.exp(-(cancelTime - t0) / timeConstant));
 
-          return {
-            expectedConstant: expectedConstant,
-            autoMessage: "setTargetAtTime(" + v1 + ", " + t0 + ", " +
-              timeConstant + ")",
-            summary: "Initial setTargetAtTime",
-          };
-        }, {
-          valueThreshold: 1.2320e-6,
-          curveThreshold: 0
-        }).then(task.done.bind(task));
-      });
+              return {
+                expectedConstant: expectedConstant,
+                autoMessage: 'setTargetAtTime(' + v1 + ', ' + t0 + ', ' +
+                    timeConstant + ')',
+                summary: 'Initial setTargetAtTime',
+              };
+            }, {
+              valueThreshold: 1.2320e-6,
+              curveThreshold: 0
+            }).then(task.done.bind(task));
+          });
 
       // Test automations scheduled after the call to cancelAndHoldAtTime.
       // Very similar to the above tests, but we also schedule an event after
       // cancelAndHoldAtTime and verify that curve after cancellation has
       // the correct values.
 
-      audit.define("post cancel: Linear", function (task, should) {
-        // Run the cancel test using a linearRamp as the event to be cancelled.
-        // Then schedule another linear ramp after the cancellation.
-        task.describe("LinearRamp after cancelling");
-        cancelTest(should, linearRampTest(
-          "Post cancellation linearRampToValueAtTime"), {
-          valueThreshold: 8.3998e-5,
-          curveThreshold: 0
-        }, function (g, cancelTime, expectedConstant) {
-          // Schedule the linear ramp on g[0], and do the same for g[2], using the starting point
-          // given by expectedConstant.
-          let v2 = 2;
-          let t2 = cancelTime + 0.125;
-          g[0].gain.linearRampToValueAtTime(v2, t2);
-          g[2].gain.setValueAtTime(expectedConstant, cancelTime);
-          g[2].gain.linearRampToValueAtTime(v2, t2);
-          return {
-            constantEndTime: cancelTime,
-            message: "Post linearRamp(" + v2 + ", " + t2 + ")"
-          };
-        }).then(task.done.bind(task));
-      });
+      audit.define(
+          {
+            label: 'post cancel: Linear',
+            description: 'LinearRamp after cancelling'
+          },
+          function(task, should) {
+            // Run the cancel test using a linearRamp as the event to be
+            // cancelled. Then schedule another linear ramp after the
+            // cancellation.
+            cancelTest(
+                should,
+                linearRampTest('Post cancellation linearRampToValueAtTime'),
+                {valueThreshold: 8.3998e-5, curveThreshold: 0},
+                function(g, cancelTime, expectedConstant) {
+                  // Schedule the linear ramp on g[0], and do the same for g[2],
+                  // using the starting point given by expectedConstant.
+                  let v2 = 2;
+                  let t2 = cancelTime + 0.125;
+                  g[0].gain.linearRampToValueAtTime(v2, t2);
+                  g[2].gain.setValueAtTime(expectedConstant, cancelTime);
+                  g[2].gain.linearRampToValueAtTime(v2, t2);
+                  return {
+                    constantEndTime: cancelTime,
+                    message: 'Post linearRamp(' + v2 + ', ' + t2 + ')'
+                  };
+                })
+                .then(task.done.bind(task));
+          });
 
-      audit.define("post cancel: Exponential", function (task, should) {
-        task.describe("ExponentialRamp after cancelling");
-        // Run the cancel test using a linearRamp as the event to be cancelled.
-        // Then schedule an exponential ramp after the cancellation.
-        cancelTest(should, linearRampTest(
-          "Post cancel exponentialRampToValueAtTime"), {
-          valueThreshold: 8.3998e-5,
-          curveThreshold: 0
-        }, function (g, cancelTime, expectedConstant) {
-          // Schedule the exponential ramp on g[0], and do the same for g[2],
-          // using the starting point given by expectedConstant.
-          let v2 = 2;
-          let t2 = cancelTime + 0.125;
-          g[0].gain.exponentialRampToValueAtTime(v2, t2);
-          g[2].gain.setValueAtTime(expectedConstant, cancelTime);
-          g[2].gain.exponentialRampToValueAtTime(v2, t2);
-          return {
-            constantEndTime: cancelTime,
-            message: "Post exponentialRamp(" + v2 + ", " + t2 + ")"
-          };
-        }).then(task.done.bind(task));
-      });
+      audit.define(
+          {
+            label: 'post cancel: Exponential',
+            description: 'ExponentialRamp after cancelling'
+          },
+          function(task, should) {
+            // Run the cancel test using a linearRamp as the event to be
+            // cancelled. Then schedule an exponential ramp after the
+            // cancellation.
+            cancelTest(
+                should,
+                linearRampTest('Post cancel exponentialRampToValueAtTime'),
+                {valueThreshold: 8.3998e-5, curveThreshold: 0},
+                function(g, cancelTime, expectedConstant) {
+                  // Schedule the exponential ramp on g[0], and do the same for
+                  // g[2], using the starting point given by expectedConstant.
+                  let v2 = 2;
+                  let t2 = cancelTime + 0.125;
+                  g[0].gain.exponentialRampToValueAtTime(v2, t2);
+                  g[2].gain.setValueAtTime(expectedConstant, cancelTime);
+                  g[2].gain.exponentialRampToValueAtTime(v2, t2);
+                  return {
+                    constantEndTime: cancelTime,
+                    message: 'Post exponentialRamp(' + v2 + ', ' + t2 + ')'
+                  };
+                })
+                .then(task.done.bind(task));
+          });
 
-      audit.define("post cancel: ValueCurve", function (task, should) {
+      audit.define('post cancel: ValueCurve', function(task, should) {
         // Run the cancel test using a linearRamp as the event to be cancelled.
         // Then schedule a setValueCurve after the cancellation.
-        cancelTest(should, linearRampTest("Post cancel setValueCurveAtTime"), {
-          valueThreshold: 8.3998e-5,
-          curveThreshold: 0
-        }, function (g, cancelTime, expectedConstant) {
-          // Schedule the exponential ramp on g[0], and do the same for g[2],
-          // using the starting point given by expectedConstant.
-          let t2 = cancelTime + 0.125;
-          let duration = 0.125;
-          let curve = Float32Array.from([.125, 2]);
-          g[0].gain.setValueCurveAtTime(curve, t2, duration);
-          g[2].gain.setValueAtTime(expectedConstant, cancelTime);
-          g[2].gain.setValueCurveAtTime(curve, t2, duration);
-          return {
-            constantEndTime: cancelTime,
-            message: "Post setValueCurve([" + curve + "], " + t2 + ", " +
-              duration + ")",
-            errorThreshold: 8.3998e-5
-          };
-        }).then(task.done.bind(task));
+        cancelTest(
+            should, linearRampTest('Post cancel setValueCurveAtTime'),
+            {valueThreshold: 8.3998e-5, curveThreshold: 0},
+            function(g, cancelTime, expectedConstant) {
+              // Schedule the exponential ramp on g[0], and do the same for
+              // g[2], using the starting point given by expectedConstant.
+              let t2 = cancelTime + 0.125;
+              let duration = 0.125;
+              let curve = Float32Array.from([.125, 2]);
+              g[0].gain.setValueCurveAtTime(curve, t2, duration);
+              g[2].gain.setValueAtTime(expectedConstant, cancelTime);
+              g[2].gain.setValueCurveAtTime(curve, t2, duration);
+              return {
+                constantEndTime: cancelTime,
+                message: 'Post setValueCurve([' + curve + '], ' + t2 + ', ' +
+                    duration + ')',
+                errorThreshold: 8.3998e-5
+              };
+            })
+            .then(task.done.bind(task));
       });
 
-      audit.define("post cancel: setTarget", function (task, should) {
+      audit.define('post cancel: setTarget', function(task, should) {
         // Run the cancel test using a linearRamp as the event to be cancelled.
         // Then schedule a setTarget after the cancellation.
-        cancelTest(should, linearRampTest("Post cancel setTargetAtTime"), {
-          valueThreshold: 8.3998e-5,
-          curveThreshold: 0
-        }, function (g, cancelTime, expectedConstant) {
-          // Schedule the exponential ramp on g[0], and do the same for g[2],
-          // using the starting point given by expectedConstant.
-          let v2 = 0.125;
-          let t2 = cancelTime + 0.125;
-          let timeConstant = 0.1;
-          g[0].gain.setTargetAtTime(v2, t2, timeConstant);
-          g[2].gain.setValueAtTime(expectedConstant, cancelTime);
-          g[2].gain.setTargetAtTime(v2, t2, timeConstant);
-          return {
-            constantEndTime: cancelTime + 0.125,
-            message: "Post setTargetAtTime(" + v2 + ", " + t2 + ", " +
-              timeConstant + ")",
-            errorThreshold: 8.4037e-5
-          };
-        }).then(task.done.bind(task));
+        cancelTest(
+            should, linearRampTest('Post cancel setTargetAtTime'),
+            {valueThreshold: 8.3998e-5, curveThreshold: 0},
+            function(g, cancelTime, expectedConstant) {
+              // Schedule the exponential ramp on g[0], and do the same for
+              // g[2], using the starting point given by expectedConstant.
+              let v2 = 0.125;
+              let t2 = cancelTime + 0.125;
+              let timeConstant = 0.1;
+              g[0].gain.setTargetAtTime(v2, t2, timeConstant);
+              g[2].gain.setValueAtTime(expectedConstant, cancelTime);
+              g[2].gain.setTargetAtTime(v2, t2, timeConstant);
+              return {
+                constantEndTime: cancelTime + 0.125,
+                message: 'Post setTargetAtTime(' + v2 + ', ' + t2 + ', ' +
+                    timeConstant + ')',
+                errorThreshold: 8.4037e-5
+              };
+            })
+            .then(task.done.bind(task));
       });
 
-      audit.define("post cancel: setValue", function (task, should) {
+      audit.define('post cancel: setValue', function(task, should) {
         // Run the cancel test using a linearRamp as the event to be cancelled.
         // Then schedule a setTarget after the cancellation.
-        cancelTest(should, linearRampTest("Post cancel setValueAtTime"), {
-          valueThreshold: 8.3998e-5,
-          curveThreshold: 0
-        }, function (g, cancelTime, expectedConstant) {
-          // Schedule the exponential ramp on g[0], and do the same for g[2],
-          // using the starting point given by expectedConstant.
-          let v2 = 0.125;
-          let t2 = cancelTime + 0.125;
-          g[0].gain.setValueAtTime(v2, t2);
-          g[2].gain.setValueAtTime(expectedConstant, cancelTime);
-          g[2].gain.setValueAtTime(v2, t2);
-          return {
-            constantEndTime: cancelTime + 0.125,
-            message: "Post setValueAtTime(" + v2 + ", " + t2 + ")"
-          };
-        }).then(task.done.bind(task));
+        cancelTest(
+            should, linearRampTest('Post cancel setValueAtTime'),
+            {valueThreshold: 8.3998e-5, curveThreshold: 0},
+            function(g, cancelTime, expectedConstant) {
+              // Schedule the exponential ramp on g[0], and do the same for
+              // g[2], using the starting point given by expectedConstant.
+              let v2 = 0.125;
+              let t2 = cancelTime + 0.125;
+              g[0].gain.setValueAtTime(v2, t2);
+              g[2].gain.setValueAtTime(expectedConstant, cancelTime);
+              g[2].gain.setValueAtTime(v2, t2);
+              return {
+                constantEndTime: cancelTime + 0.125,
+                message: 'Post setValueAtTime(' + v2 + ', ' + t2 + ')'
+              };
+            })
+            .then(task.done.bind(task));
       });
 
       audit.run();
@@ -336,7 +360,7 @@
       // scheduled from v0 to 0 from time t0 to t1.  This is the ramp that is to
       // be cancelled.
       function linearRampTest(message) {
-        return function (g, v0, t0, cancelTime) {
+        return function(g, v0, t0, cancelTime) {
           g[0].gain.setValueAtTime(0, 0);
           g[1].gain.setValueAtTime(0, 0);
           g[0].gain.linearRampToValueAtTime(v0, t0);
@@ -347,12 +371,12 @@
           g[0].gain.linearRampToValueAtTime(v1, t1);
           g[1].gain.linearRampToValueAtTime(v1, t1);
 
-          expectedConstant = Math.fround(v0 + (v1 - v0) * (cancelTime - t0) /
-            (t1 - t0));
+          expectedConstant =
+              Math.fround(v0 + (v1 - v0) * (cancelTime - t0) / (t1 - t0));
 
           return {
             expectedConstant: expectedConstant,
-            autoMessage: "linearRampToValue(" + v1 + ", " + t1 + ")",
+            autoMessage: 'linearRampToValue(' + v1 + ', ' + t1 + ')',
             summary: message,
           };
         }

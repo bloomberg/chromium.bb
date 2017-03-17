@@ -14,52 +14,48 @@ let audit = Audit.createTaskRunner();
 let context;
 let source;
 
-audit.define("validate .buffer",
-  function(task, should) {
-    task.describe(
-      "AudioBufferSourceNode validates AudioBuffer in .buffer attribute setter"
-    );
-    context = new AudioContext();
-    source = context.createBufferSource();
+audit.define(
+    {
+      label: 'validate .buffer',
+      description: 'Validatation of AudioBuffer in .buffer attribute setter'
+    },
+    function(task, should) {
+      context = new AudioContext();
+      source = context.createBufferSource();
 
-    // Make sure we can't set to something which isn't an AudioBuffer.
-    should(function() {
+      // Make sure we can't set to something which isn't an AudioBuffer.
+      should(function() {
         source.buffer = 57;
-      }, "source.buffer = 57")
-      .throw("TypeError");
+      }, 'source.buffer = 57').throw('TypeError');
 
-    should(function() {
+      should(function() {
         source.buffer = null;
-      }, "source.buffer = null")
-      .throw("TypeError");
+      }, 'source.buffer = null').throw('TypeError');
 
-    // Check that mono buffer can be set.
-    should(function() {
+      // Check that mono buffer can be set.
+      should(function() {
         let monoBuffer = context.createBuffer(1, 1024, context.sampleRate);
         let testSource = context.createBufferSource();
         testSource.buffer = monoBuffer;
-      }, "Setting source with mono buffer")
-      .notThrow();
+      }, 'Setting source with mono buffer').notThrow();
 
-    // Check that stereo buffer can be set.
-    should(function() {
+      // Check that stereo buffer can be set.
+      should(function() {
         let stereoBuffer = context.createBuffer(2, 1024, context.sampleRate);
         let testSource = context.createBufferSource();
         testSource.buffer = stereoBuffer;
-      }, "Setting source with stereo buffer")
-      .notThrow();
+      }, 'Setting source with stereo buffer').notThrow();
 
-    // Check buffers with more than two channels.
-    for (let i = 3; i < 10; ++i) {
-      should(function() {
+      // Check buffers with more than two channels.
+      for (let i = 3; i < 10; ++i) {
+        should(function() {
           let buffer = context.createBuffer(i, 1024, context.sampleRate);
           let testSource = context.createBufferSource();
           testSource.buffer = buffer;
-        }, "Setting source with " + i + " channels buffer")
-        .notThrow();
-    }
-    task.done();
-  });
+        }, 'Setting source with ' + i + ' channels buffer').notThrow();
+      }
+      task.done();
+    });
 
 audit.run();
 

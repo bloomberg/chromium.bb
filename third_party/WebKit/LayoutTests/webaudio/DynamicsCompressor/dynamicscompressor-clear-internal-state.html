@@ -19,35 +19,37 @@
       let sampleRate = 44100;
       let testDurationSamples = 44100;
 
-      audit.define("test", function (task, should) {
-          task.describe(
-            "Validate Reduction Value of DynamicsCompressor after Disabling"
-          );
-          // Create the offline context for the test.
-          context = new OfflineAudioContext(1, testDurationSamples, sampleRate);
+      audit.define(
+          {
+            label: 'test',
+            description:
+                'Validate Reduction Value of DynamicsCompressor after Disabling'
+          },
+          function(task, should) {
+            // Create the offline context for the test.
+            context =
+                new OfflineAudioContext(1, testDurationSamples, sampleRate);
 
-          // Create the constant sample buffer of 0.5 sec.
-          buffer = createConstantBuffer(context, testDurationSamples / 2, 1);
+            // Create the constant sample buffer of 0.5 sec.
+            buffer = createConstantBuffer(context, testDurationSamples / 2, 1);
 
-          // Create compressor and use default parameters for the compression.
-          compressor = context.createDynamicsCompressor();
+            // Create compressor and use default parameters for the compression.
+            compressor = context.createDynamicsCompressor();
 
-          // Create the source and connect it to the destination
-          source = context.createBufferSource();
-          source.buffer = buffer;
-          source.connect(compressor);
-          compressor.connect(context.destination);
-          source.start(0.0);
+            // Create the source and connect it to the destination
+            source = context.createBufferSource();
+            source.buffer = buffer;
+            source.connect(compressor);
+            compressor.connect(context.destination);
+            source.start(0.0);
 
-          // Render it!
-          context.startRendering()
-            .then(() => {
-               // Check that the reduction value is 0.0.
-               should(compressor.reduction, "compressor.reduction")
-                 .beEqualTo(0);
-               task.done();
+            // Render it!
+            context.startRendering().then(() => {
+              // Check that the reduction value is 0.0.
+              should(compressor.reduction, 'compressor.reduction').beEqualTo(0);
+              task.done();
             });
-      });
+          });
 
       audit.run();
     </script>

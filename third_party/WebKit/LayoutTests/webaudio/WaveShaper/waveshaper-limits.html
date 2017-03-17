@@ -62,36 +62,43 @@
         }
       }
 
-      audit.define("test", function (task, should) {
-        task.describe("Test WaveShaperNode including values outside the range of [-1,1]");
-        context = new OfflineAudioContext(1, testFrames, sampleRate);
-        // Create input values between -1.1 and 1.1
-        var buffer = context.createBuffer(1, testFrames, context.sampleRate);
-        bufferData = buffer.getChannelData(0);
-        var start = -1 - scale;
-        for (var k = 0; k < testFrames; ++k) {
-          bufferData[k] = k * scale + start;
-        }
+      audit.define(
+          {
+            label: 'test',
+            description:
+                'WaveShaperNode including values outside the range of [-1,1]'
+          },
+          function(task, should) {
+            context = new OfflineAudioContext(1, testFrames, sampleRate);
+            // Create input values between -1.1 and 1.1
+            var buffer =
+                context.createBuffer(1, testFrames, context.sampleRate);
+            bufferData = buffer.getChannelData(0);
+            var start = -1 - scale;
+            for (var k = 0; k < testFrames; ++k) {
+              bufferData[k] = k * scale + start;
+            }
 
-        var source = context.createBufferSource();
-        source.buffer = buffer;
+            var source = context.createBufferSource();
+            source.buffer = buffer;
 
-        // Create simple waveshaper. It should map -1 to 0, 0 to 1, and +1 to 0 and interpolate
-        // all points in between using a simple linear interpolator.
-        var shaper = context.createWaveShaper();
-        var curve = new Float32Array(3);
-        curve[0] = 0;
-        curve[1] = 1;
-        curve[2] = 0;
-        shaper.curve = curve;
-        source.connect(shaper);
-        shaper.connect(context.destination);
+            // Create simple waveshaper. It should map -1 to 0, 0 to 1, and +1
+            // to 0 and interpolate all points in between using a simple linear
+            // interpolator.
+            var shaper = context.createWaveShaper();
+            var curve = new Float32Array(3);
+            curve[0] = 0;
+            curve[1] = 1;
+            curve[2] = 0;
+            shaper.curve = curve;
+            source.connect(shaper);
+            shaper.connect(context.destination);
 
-        source.start();
-        context.startRendering()
-          .then(buffer => checkResult(buffer, should))
-          .then(() => task.done());
-      });
+            source.start();
+            context.startRendering()
+                .then(buffer => checkResult(buffer, should))
+                .then(() => task.done());
+          });
 
       audit.run();
     </script>

@@ -1007,10 +1007,6 @@ window.Audit = (function () {
       this._failedAssertions = 0;
     }
 
-    // TODO(hongchan): This does not have any effect. Remove this method and fix
-    // layout test files use it.
-    describe (message) {}
-
     get label () {
       return this._label;
     }

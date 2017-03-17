@@ -42,31 +42,35 @@
 
       // Create an offline context and verify that both the oncomplete and
       // promise are returned with the same stuff.
-      audit.define("test", (task, should) => {
-        task.describe(
-          "OfflineAudioContext.startRendering Promise with oncomplete");
-        context = new OfflineAudioContext(contextChannels, renderFrames,
-          sampleRate);
+      audit.define(
+          {
+            label: 'test',
+            description:
+                'OfflineAudioContext.startRendering Promise with oncomplete'
+          },
+          (task, should) => {
+            context = new OfflineAudioContext(
+                contextChannels, renderFrames, sampleRate);
 
-        var buffer = context.createBuffer(contextChannels, renderFrames,
-          sampleRate);
-        for (var k = 0; k < renderFrames; ++k) {
-          buffer.getChannelData(0)[k] = 1;
-          buffer.getChannelData(1)[k] = 2;
-        }
+            var buffer =
+                context.createBuffer(contextChannels, renderFrames, sampleRate);
+            for (var k = 0; k < renderFrames; ++k) {
+              buffer.getChannelData(0)[k] = 1;
+              buffer.getChannelData(1)[k] = 2;
+            }
 
-        var source = context.createBufferSource();
-        source.buffer = buffer;
-        source.connect(context.destination);
-        source.start();
+            var source = context.createBufferSource();
+            source.buffer = buffer;
+            source.connect(context.destination);
+            source.start();
 
-        context.oncomplete = (event) => {
-          checkResult(task, should, event);
-        };
+            context.oncomplete = (event) => {
+              checkResult(task, should, event);
+            };
 
-        promise = context.startRendering();
+            promise = context.startRendering();
 
-      });
+          });
 
       audit.run();
     </script>

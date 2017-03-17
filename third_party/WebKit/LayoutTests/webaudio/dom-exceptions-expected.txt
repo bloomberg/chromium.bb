@@ -1,13 +1,11 @@
-CONSOLE ERROR: line 39: [audit.js] this test requires the explicit comparison with the expected result when it runs with run-webkit-tests.
 CONSOLE WARNING: line 308: The provided value 'fancy' is not a valid enum value of type ChannelCountMode.
-CONSOLE WARNING: line 312: The provided value 'undefined' is not a valid enum value of type ChannelInterpretation.
-CONSOLE WARNING: line 442: The provided value '9x' is not a valid enum value of type OverSampleType.
-CONSOLE WARNING: line 645: The provided value 'junk' is not a valid enum value of type ChannelCountMode.
-CONSOLE WARNING: line 676: The provided value 'junk' is not a valid enum value of type ChannelCountMode.
+CONSOLE WARNING: line 314: The provided value 'undefined' is not a valid enum value of type ChannelInterpretation.
+CONSOLE WARNING: line 436: The provided value '9x' is not a valid enum value of type OverSampleType.
+CONSOLE WARNING: line 651: The provided value 'junk' is not a valid enum value of type ChannelCountMode.
+CONSOLE WARNING: line 680: The provided value 'junk' is not a valid enum value of type ChannelCountMode.
 This is a testharness.js-based test.
-Harness Error. harness_status.status = 1 , harness_status.message = 8 duplicate test names: "  source = context.createBufferSource() did not throw an exception.", "  source.buffer = buffer did not throw an exception.", "  source.start() did not throw an exception.", "  source.stop() did not throw an exception.", "  source.stop(-Number.MIN_VALUE) threw InvalidAccessError: "Failed to execute 'stop' on 'AudioScheduledSourceNode': The stop time provided (-4.94066e-324) is less than the minimum bound (0).".", "  source.stop(Infinity) threw TypeError: "Failed to execute 'stop' on 'AudioScheduledSourceNode': The provided double value is non-finite.".", "  source.stop(-Infinity) threw TypeError: "Failed to execute 'stop' on 'AudioScheduledSourceNode': The provided double value is non-finite.".", "  source.stop(NaN) threw TypeError: "Failed to execute 'stop' on 'AudioScheduledSourceNode': The provided double value is non-finite."."
 PASS # AUDIT TASK RUNNER STARTED. 
-PASS > [initialize]  
+PASS > [initialize] Initialize contexts for testing 
 PASS   context = new AudioContext() did not throw an exception. 
 PASS   otherContext = new AudioContext() did not throw an exception. 
 PASS < [initialize] All assertions passed. (total 2 assertions) 
@@ -79,11 +77,11 @@ PASS   AnalyserNode.getFloatTimeDomainData(null) threw TypeError: "Failed to exe
 PASS   AnalyserNode.getByteTimeDomainData(null) threw TypeError: "Failed to execute 'getByteTimeDomainData' on 'AnalyserNode': parameter 1 is not of type 'Uint8Array'.". 
 PASS   AudioBuffer.getChannelData(2) threw IndexSizeError: "Failed to execute 'getChannelData' on 'AudioBuffer': channel index (2) exceeds number of channels (1)". 
 PASS < [createAnalyser] All assertions passed. (total 24 assertions) 
-PASS > [Init test nodes]  
+PASS > [Init test nodes] Create test nodes for the following tests 
 PASS   node = context.createGain() did not throw an exception. 
 PASS   node2 = context.createGain() did not throw an exception. 
 PASS < [Init test nodes] All assertions passed. (total 2 assertions) 
-PASS > [connections]  
+PASS > [connections] AudioNode connections 
 PASS   node.connect(null, 0, 0) threw TypeError: "Failed to execute 'connect' on 'AudioNode': parameter 1 is not of type 'AudioNode'.". 
 PASS   node.connect(context.destination, 100, 0) threw IndexSizeError: "Failed to execute 'connect' on 'AudioNode': output index (100) exceeds number of outputs (1).". 
 PASS   node.connect(context.destination, 0, 100) threw IndexSizeError: "Failed to execute 'connect' on 'AudioNode': input index (100) exceeds number of inputs (1).". 
@@ -91,7 +89,7 @@ PASS   node.connect(node2.gain, 100) threw IndexSizeError: "Failed to execute 'c
 PASS   node.disconnect(99) threw IndexSizeError: "Failed to execute 'disconnect' on 'AudioNode': The output index provided (99) is outside the range [0, 0].". 
 PASS   node.connect(otherContext.destination) threw InvalidAccessError: "Failed to execute 'connect' on 'AudioNode': cannot connect to a destination belonging to a different audio context.". 
 PASS < [connections] All assertions passed. (total 6 assertions) 
-PASS > [channel-stuff]  
+PASS > [channel-stuff] channelCount, channelCountMode, channelInterpretation 
 PASS   GainNode.channelCount = 99 threw NotSupportedError: "Failed to set the 'channelCount' property on 'AudioNode': The channel count provided (99) is outside the range [1, 32].". 
 PASS   GainNode.channelCount is not equal to 99. 
 PASS   node.channelCountMode = "fancy" did not throw an exception. 
@@ -130,7 +128,7 @@ PASS   node.curve is equal to ${expected}.
 PASS   node.curve = new Float32Array(2) did not throw an exception. 
 PASS   node.curve = null did not throw an exception. 
 PASS < [waveshaper] All assertions passed. (total 7 assertions) 
-PASS > [audio-buffer-source]  
+PASS > [audio-buffer-source] AudioBufferSource start/stop 
 PASS   source = context.createBufferSource() did not throw an exception. 
 PASS   source.buffer = buffer did not throw an exception. 
 PASS   source.buffer = context.createBuffer(1, 10, context.sampleRate) threw InvalidStateError: "Failed to set the 'buffer' property on 'AudioBufferSourceNode': Cannot set buffer after it has been already been set". 
@@ -154,38 +152,38 @@ PASS   source.stop(Infinity) threw TypeError: "Failed to execute 'stop' on 'Audi
 PASS   source.stop(-Infinity) threw TypeError: "Failed to execute 'stop' on 'AudioScheduledSourceNode': The provided double value is non-finite.". 
 PASS   source.stop(NaN) threw TypeError: "Failed to execute 'stop' on 'AudioScheduledSourceNode': The provided double value is non-finite.". 
 PASS   source.stop() did not throw an exception. 
-PASS   source = context.createBufferSource() did not throw an exception. 
-PASS   source.buffer = buffer did not throw an exception. 
-PASS   source.start(0, 0) did not throw an exception. 
-PASS   source = context.createBufferSource() did not throw an exception. 
-PASS   source.buffer = buffer did not throw an exception. 
-PASS   source.start(0, -1/Infinity) did not throw an exception. 
-PASS   source = context.createBufferSource() did not throw an exception. 
-PASS   source.start() did not throw an exception. 
-PASS   source = context.createBufferSource() did not throw an exception. 
-PASS   source.buffer = buffer did not throw an exception. 
-PASS   source.stop() threw InvalidStateError: "Failed to execute 'stop' on 'AudioScheduledSourceNode': cannot call stop without calling start first.". 
-PASS   source = context.createBufferSource() did not throw an exception. 
-PASS   source.buffer = buffer did not throw an exception. 
-PASS   source.start() did not throw an exception. 
-PASS   source.start() threw InvalidStateError: "Failed to execute 'start' on 'AudioBufferSourceNode': cannot call start more than once.". 
-PASS   source = context.createBufferSource() did not throw an exception. 
-PASS   source.buffer = buffer did not throw an exception. 
-PASS   source.start() did not throw an exception. 
-PASS   source.stop() did not throw an exception. 
+PASS   source2 = context.createBufferSource() did not throw an exception. 
+PASS   source2.buffer = buffer did not throw an exception. 
+PASS   source2.start(0, 0) did not throw an exception. 
+PASS   source3 = context.createBufferSource() did not throw an exception. 
+PASS   source3.buffer = buffer did not throw an exception. 
+PASS   source3.start(0, -1/Infinity) did not throw an exception. 
+PASS   source4 = context.createBufferSource() did not throw an exception. 
+PASS   source4.start() did not throw an exception. 
+PASS   source5 = context.createBufferSource() did not throw an exception. 
+PASS   source5.buffer = buffer did not throw an exception. 
+PASS   source5.stop() threw InvalidStateError: "Failed to execute 'stop' on 'AudioScheduledSourceNode': cannot call stop without calling start first.". 
+PASS   source6 = context.createBufferSource() did not throw an exception. 
+PASS   source6.buffer = buffer did not throw an exception. 
+PASS   source6.start() did not throw an exception. 
+PASS   source6.start() threw InvalidStateError: "Failed to execute 'start' on 'AudioBufferSourceNode': cannot call start more than once.". 
+PASS   source7 = context.createBufferSource() did not throw an exception. 
+PASS   source7.buffer = buffer did not throw an exception. 
+PASS   source7.start() did not throw an exception. 
+PASS   source7.stop() did not throw an exception. 
 PASS < [audio-buffer-source] All assertions passed. (total 42 assertions) 
-PASS > [oscillator]  
-PASS   source = context.createOscillator() did not throw an exception. 
-PASS   source.start(-Number.MIN_VALUE) threw InvalidAccessError: "Failed to execute 'start' on 'AudioScheduledSourceNode': The start time provided (-4.94066e-324) is less than the minimum bound (0).". 
-PASS   source.start(Infinity) threw TypeError: "Failed to execute 'start' on 'AudioScheduledSourceNode': The provided double value is non-finite.". 
-PASS   source.start(-Infinity) threw TypeError: "Failed to execute 'start' on 'AudioScheduledSourceNode': The provided double value is non-finite.". 
-PASS   source.start(NaN) threw TypeError: "Failed to execute 'start' on 'AudioScheduledSourceNode': The provided double value is non-finite.". 
-PASS   source.start() did not throw an exception. 
-PASS   source.stop(-Number.MIN_VALUE) threw InvalidAccessError: "Failed to execute 'stop' on 'AudioScheduledSourceNode': The stop time provided (-4.94066e-324) is less than the minimum bound (0).". 
-PASS   source.stop(Infinity) threw TypeError: "Failed to execute 'stop' on 'AudioScheduledSourceNode': The provided double value is non-finite.". 
-PASS   source.stop(-Infinity) threw TypeError: "Failed to execute 'stop' on 'AudioScheduledSourceNode': The provided double value is non-finite.". 
-PASS   source.stop(NaN) threw TypeError: "Failed to execute 'stop' on 'AudioScheduledSourceNode': The provided double value is non-finite.". 
-PASS   source.stop() did not throw an exception. 
+PASS > [oscillator] start/stop 
+PASS   source8 = context.createOscillator() did not throw an exception. 
+PASS   source8.start(-Number.MIN_VALUE) threw InvalidAccessError: "Failed to execute 'start' on 'AudioScheduledSourceNode': The start time provided (-4.94066e-324) is less than the minimum bound (0).". 
+PASS   source8.start(Infinity) threw TypeError: "Failed to execute 'start' on 'AudioScheduledSourceNode': The provided double value is non-finite.". 
+PASS   source8.start(-Infinity) threw TypeError: "Failed to execute 'start' on 'AudioScheduledSourceNode': The provided double value is non-finite.". 
+PASS   source8.start(NaN) threw TypeError: "Failed to execute 'start' on 'AudioScheduledSourceNode': The provided double value is non-finite.". 
+PASS   source8.start() did not throw an exception. 
+PASS   source8.stop(-Number.MIN_VALUE) threw InvalidAccessError: "Failed to execute 'stop' on 'AudioScheduledSourceNode': The stop time provided (-4.94066e-324) is less than the minimum bound (0).". 
+PASS   source8.stop(Infinity) threw TypeError: "Failed to execute 'stop' on 'AudioScheduledSourceNode': The provided double value is non-finite.". 
+PASS   source8.stop(-Infinity) threw TypeError: "Failed to execute 'stop' on 'AudioScheduledSourceNode': The provided double value is non-finite.". 
+PASS   source8.stop(NaN) threw TypeError: "Failed to execute 'stop' on 'AudioScheduledSourceNode': The provided double value is non-finite.". 
+PASS   source8.stop() did not throw an exception. 
 PASS   osc = context.createOscillator() did not throw an exception. 
 PASS   osc.stop() threw InvalidStateError: "Failed to execute 'stop' on 'AudioScheduledSourceNode': cannot call stop without calling start first.". 
 PASS   osc1 = context.createOscillator() did not throw an exception. 
@@ -229,7 +227,7 @@ PASS   ScriptProcessorNode.channelCountMode = clamped-max threw NotSupportedErro
 PASS   ScriptProcessorNode.channelCountMode is not equal to clamped-max. 
 PASS   script.channelCountMode = "junk" did not throw an exception. 
 PASS < [script-processor] All assertions passed. (total 14 assertions) 
-PASS > [misc]  
+PASS > [misc] Miscellaneous tests 
 PASS   osc.noteOn is equal to undefined. 
 PASS   osc.noteOff is equal to undefined. 
 PASS   source.noteOn is equal to undefined. 

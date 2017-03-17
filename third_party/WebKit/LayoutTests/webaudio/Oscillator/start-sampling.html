@@ -19,54 +19,65 @@
       
       let audit = Audit.createTaskRunner();
 
-      audit.define("basic test small", function (task, should) {
-        task.describe("Start oscillator slightly past a sample frame")
-        testStartSampling(should, 1.25, {
-            error: 1.0842e-4,
-            snrThreshold: 84.054
-          })
-          .then(task.done.bind(task));
-      });
+      audit.define(
+          {
+            label: 'basic test small',
+            description: 'Start oscillator slightly past a sample frame'
+          },
+          function(task, should) {
+            testStartSampling(should, 1.25, {
+              error: 1.0842e-4,
+              snrThreshold: 84.054
+            }).then(task.done.bind(task));
+          });
 
-      audit.define("basic test big", function (task, should) {
-        task.describe("Start oscillator slightly before a sample frame")
-        testStartSampling(should, 1.75, {
-            error: 1.0839e-4,
-            snrThreshold: 84.056
-          })
-          .then(task.done.bind(task));
-      });
+      audit.define(
+          {
+            label: 'basic test big',
+            description: 'Start oscillator slightly before a sample frame'
+          },
+          function(task, should) {
+            testStartSampling(should, 1.75, {
+              error: 1.0839e-4,
+              snrThreshold: 84.056
+            }).then(task.done.bind(task));
+          });
 
-      audit.define("diff big offset", function (task, should) {
-        task.describe(
-          "Test sampling with start offset greater than 1/2 sampling frame"
-        );
-        // With a sample rate of 24000 Hz, and an oscillator frequency of 440 Hz
-        // (the default), a quarter wave delay is 13.636363... frames.  This
-        // tests the case where the starting time is more than 1/2 frame from
-        // the preceding sampling frame.  This tests one path of the internal
-        // implementation.
-        testStartWithGain(should, defaultSampleRate, {
-            error: 4.1724e-7,
-            snrThreshold: 137.536
-          })
-          .then(task.done.bind(task));
-      });
+      audit.define(
+          {
+            label: 'diff big offset',
+            description:
+                'Test sampling with start offset greater than 1/2 sampling frame'
+          },
+          function(task, should) {
+            // With a sample rate of 24000 Hz, and an oscillator frequency of
+            // 440 Hz (the default), a quarter wave delay is 13.636363...
+            // frames.  This tests the case where the starting time is more than
+            // 1/2 frame from the preceding sampling frame.  This tests one path
+            // of the internal implementation.
+            testStartWithGain(should, defaultSampleRate, {
+              error: 4.1724e-7,
+              snrThreshold: 137.536
+            }).then(task.done.bind(task));
+          });
 
-      audit.define("diff small offset", function (task, should) {
-        task.describe(
-          "Test sampling with start offset less than 1/2 sampling frame");
-        // With a sample rate of 48000 Hz, and an oscillator frequency of 440 Hz
-        // (the default), a quarter wave delay is 27.2727... frames.  This tests
-        // the case where the starting time is less than 1/2 frame from the
-        // preceding sampling frame.  This tests one path of the internal
-        // implementation.
-        testStartWithGain(should, 48000, {
-            error: 4.1724e-7,
-            snrThreshold: 137.536
-          })
-          .then(task.done.bind(task));
-      });
+      audit.define(
+          {
+            label: 'diff small offset',
+            description:
+                'Test sampling with start offset less than 1/2 sampling frame'
+          },
+          function(task, should) {
+            // With a sample rate of 48000 Hz, and an oscillator frequency of
+            // 440 Hz (the default), a quarter wave delay is 27.2727... frames.
+            // This tests the case where the starting time is less than 1/2
+            // frame from the preceding sampling frame.  This tests one path of
+            // the internal implementation.
+            testStartWithGain(should, 48000, {
+              error: 4.1724e-7,
+              snrThreshold: 137.536
+            }).then(task.done.bind(task));
+          });
 
       function testStartSampling(should, startFrame, thresholds) {
         // Start the oscillator in the middle of a sample frame and compare

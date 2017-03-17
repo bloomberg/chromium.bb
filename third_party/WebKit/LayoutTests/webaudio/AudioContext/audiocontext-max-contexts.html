@@ -19,17 +19,21 @@ function reachHardwareContextsLimit() {
 }
 
 
-audit.define("test-limit", function (task, should) {
-  task.describe(
-    "Check that the AudioContext constructor throws when the limit on hardware contexts is reached."
-  );
-  should(function () {
-      reachHardwareContextsLimit();
-    }, "Create " + contextsToCreate + " concurrent AudioContext's")
-    .throw("NotSupportedError");
+audit.define(
+    {
+      label: 'hardware-context-limit',
+      description: 'AudioContext throws when hardware context limit is reached'
+    },
+    function(task, should) {
+      should(
+          function() {
+            reachHardwareContextsLimit();
+          },
+          'Create ' + contextsToCreate + ' concurrent AudioContext\'s')
+          .throw('NotSupportedError');
 
-  task.done();
-});
+      task.done();
+    });
 
 audit.run();
 </script>

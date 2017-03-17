@@ -10,7 +10,7 @@
 
 <body>
 <script>
-let audit = Audit.createTaskRunner({requireResultFile: true});
+let audit = Audit.createTaskRunner();
 
 let otherContext;
 let node;
@@ -18,6 +18,7 @@ let node2;
 let mode;
 let panner;
 let script;
+let source;
 
 function shouldThrowAndBeUnchanged(should, node, attr, value) {
   should(
@@ -27,24 +28,22 @@ function shouldThrowAndBeUnchanged(should, node, attr, value) {
   should(node[attr], node.constructor.name + '.' + attr).notBeEqualTo(value);
 }
 
-audit.define('initialize', (task, should) => {
-  task.describe('Initialize contexts for testing');
+audit.define(
+    {label: 'initialize', description: 'Initialize contexts for testing'},
+    (task, should) => {
 
-  should(() => {
-    context = new AudioContext();
-  }, 'context = new AudioContext()').notThrow();
+      should(() => {
+        context = new AudioContext();
+      }, 'context = new AudioContext()').notThrow();
 
-  should(() => {
-    otherContext = new AudioContext(); },
-      'otherContext = new AudioContext()')
-      .notThrow();
+      should(() => {
+        otherContext = new AudioContext();
+      }, 'otherContext = new AudioContext()').notThrow();
 
-  task.done();
-});
+      task.done();
+    });
 
 audit.define('createBuffer', (task, should) => {
-  task.describe('createBuffer');
-
   // Invalid number of channels: NotSupportedError
   should(
       () => context.createBuffer(99, 1, context.sampleRate),
@@ -96,8 +95,6 @@ audit.define('createBuffer', (task, should) => {
 });
 
 audit.define('createMediaElementSource', (task, should) => {
-  task.describe('createMediaElementSource');
-
   // Invalid sources (unspecified error)
   should(
       () => context.createMediaElementSource(null),
@@ -107,8 +104,6 @@ audit.define('createMediaElementSource', (task, should) => {
 });
 
 audit.define('createMediaStreamSource', (task, should) => {
-  task.describe('createMediaStreamSource');
-
   // Invalid sources (unspecified error)
   should(
       () => context.createMediaStreamSource(null),
@@ -119,8 +114,6 @@ audit.define('createMediaStreamSource', (task, should) => {
 });
 
 audit.define('createScriptProcessor', (task, should) => {
-  task.describe('createScriptProcessor');
-
   // Invalid buffer size: IndexSizeError
   should(
       () => context.createScriptProcessor(1, 1, 1),
@@ -147,8 +140,6 @@ audit.define('createScriptProcessor', (task, should) => {
 });
 
 audit.define('createChannelSplitter', (task, should) => {
-  task.describe('createChannelSplitter');
-
   // Invalid number of channels: IndexSizeError
   should(
       () => context.createChannelSplitter(0),
@@ -165,8 +156,6 @@ audit.define('createChannelSplitter', (task, should) => {
 });
 
 audit.define('createChannelMerger', (task, should) => {
-  task.describe('createChannelMerger');
-
   // Invalid number of channels: IndexSizeError
   should(
       () => context.createChannelMerger(99), 'context.createChannelMerger(99)')
@@ -176,8 +165,6 @@ audit.define('createChannelMerger', (task, should) => {
 });
 
 audit.define('createPeriodicWave', (task, should) => {
-  task.describe('createPeriodicWave');
-
   // Invalid real/imag arrays: IndexSizeError
   should(
       () => context.createPeriodicWave(null, null),
@@ -214,8 +201,6 @@ audit.define('createPeriodicWave', (task, should) => {
 });
 
 audit.define('createAnalyser', (task, should) => {
-  task.describe('createAnalyser');
-
   // Analysers
   node = context.createAnalyser();
   // Invalid fftSize: IndexSizeError
@@ -237,7 +222,8 @@ audit.define('createAnalyser', (task, should) => {
       'AnalyserNode.getFloatFrequencyData(null)')
       .throw();
   should(
-      () => node.getByteFrequencyData(null), node.constructor.name + '.getByteFrequencyData(null)')
+      () => node.getByteFrequencyData(null),
+      node.constructor.name + '.getByteFrequencyData(null)')
       .throw();
   should(
       () => node.getFloatTimeDomainData(null),
@@ -251,84 +237,98 @@ audit.define('createAnalyser', (task, should) => {
   // AudioBuffers
   node = context.createBuffer(1, 1, context.sampleRate);
   // Invalid channel index: IndexSizeError
-  should(() => node.getChannelData(2), node.constructor.name + '.getChannelData(2)').throw();
-
-  task.done();
-});
-
-audit.define('Init test nodes', (task, should) => {
-  task.describe('Create test nodes');
-  should(() => { node = context.createGain(); },
-    'node = context.createGain()')
-    .notThrow();
-  should(() => { node2 = context.createGain(); },
-    'node2 = context.createGain()')
-    .notThrow();
-
-  task.done();
-});
-
-audit.define('connections', (task, should) => {
-  task.describe('AudioNode connections');
-
-  // AudioNode connections
-  // Invalid destination node (unspecified error)
-  should(() => node.connect(null, 0, 0), 'node.connect(null, 0, 0)').throw();
-  // Invalid input or output index: IndexSizeError
   should(
-      () => node.connect(context.destination, 100, 0),
-      'node.connect(context.destination, 100, 0)')
-      .throw('IndexSizeError');
-  should(
-      () => node.connect(context.destination, 0, 100),
-      'node.connect(context.destination, 0, 100)')
-      .throw('IndexSizeError');
-  should(() => node.connect(node2.gain, 100), 'node.connect(node2.gain, 100)')
-      .throw('IndexSizeError');
-  should(() => node.disconnect(99), 'node.disconnect(99)')
-      .throw('IndexSizeError');
-  // Can't connect to a different context (unspecified error)
-  should(
-      () => node.connect(otherContext.destination),
-      'node.connect(otherContext.destination)')
+      () => node.getChannelData(2),
+      node.constructor.name + '.getChannelData(2)')
       .throw();
 
   task.done();
 });
 
-audit.define('channel-stuff', (task, should) => {
-  task.describe('channelCount, channelCountMode, channelInterpretation');
+audit.define(
+    {
+      label: 'Init test nodes',
+      description: 'Create test nodes for the following tests'
+    },
+    (task, should) => {
+      should(() => {
+        node = context.createGain();
+      }, 'node = context.createGain()').notThrow();
+      should(() => {
+        node2 = context.createGain();
+      }, 'node2 = context.createGain()').notThrow();
 
-  // Invalid channel count: NotSupportedError
-  shouldThrowAndBeUnchanged(should, node, 'channelCount', '99');
-  // Invalid mode or interpretation (unspecified error)
-  currentMode = node.channelCountMode;
-  currentInterpretation = node.channelInterpretation;
-  should(
-      () => node.channelCountMode = 'fancy', 'node.channelCountMode = "fancy"')
-      .notThrow();
-  should(node.channelCountMode, 'node.channelCountMode').beEqualTo(currentMode);
-  should(
-      () => node.channelInterpretation = mode,
-      'node.channelInterpretation = mode')
-      .notThrow();
-  should(node.channelInterpretation, 'node.channelInterpretation')
-      .beEqualTo(currentInterpretation);
-  // Destination node channel count: should throw IndexSizeError on invalid
-  // channel count. shouldNotThrow() method cannot be used because the error
-  // message includes the number of channels, which can change depending on
-  // the actual attached hardware.
-  should(
-      () => context.destination.channelCount = 99,
-      'context.destination.channelCount = 99')
-      .throw('IndexSizeError');
+      task.done();
+    });
 
-  task.done();
-});
+audit.define(
+    {label: 'connections', description: 'AudioNode connections'},
+    (task, should) => {
+
+      // AudioNode connections
+      // Invalid destination node (unspecified error)
+      should(() => node.connect(null, 0, 0), 'node.connect(null, 0, 0)')
+          .throw();
+      // Invalid input or output index: IndexSizeError
+      should(
+          () => node.connect(context.destination, 100, 0),
+          'node.connect(context.destination, 100, 0)')
+          .throw('IndexSizeError');
+      should(
+          () => node.connect(context.destination, 0, 100),
+          'node.connect(context.destination, 0, 100)')
+          .throw('IndexSizeError');
+      should(
+          () => node.connect(node2.gain, 100), 'node.connect(node2.gain, 100)')
+          .throw('IndexSizeError');
+      should(() => node.disconnect(99), 'node.disconnect(99)')
+          .throw('IndexSizeError');
+      // Can't connect to a different context (unspecified error)
+      should(
+          () => node.connect(otherContext.destination),
+          'node.connect(otherContext.destination)')
+          .throw();
+
+      task.done();
+    });
+
+audit.define(
+    {
+      label: 'channel-stuff',
+      description: 'channelCount, channelCountMode, channelInterpretation'
+    },
+    (task, should) => {
+
+      // Invalid channel count: NotSupportedError
+      shouldThrowAndBeUnchanged(should, node, 'channelCount', '99');
+      // Invalid mode or interpretation (unspecified error)
+      currentMode = node.channelCountMode;
+      currentInterpretation = node.channelInterpretation;
+      should(
+          () => node.channelCountMode = 'fancy',
+          'node.channelCountMode = "fancy"')
+          .notThrow();
+      should(node.channelCountMode, 'node.channelCountMode')
+          .beEqualTo(currentMode);
+      should(
+          () => node.channelInterpretation = mode,
+          'node.channelInterpretation = mode')
+          .notThrow();
+      should(node.channelInterpretation, 'node.channelInterpretation')
+          .beEqualTo(currentInterpretation);
+      // Destination node channel count: should throw IndexSizeError on invalid
+      // channel count. shouldNotThrow() method cannot be used because the error
+      // message includes the number of channels, which can change depending on
+      // the actual attached hardware.
+      should(
+          () => context.destination.channelCount = 99,
+          'context.destination.channelCount = 99')
+          .throw('IndexSizeError');
+
+      task.done();
+    });
 
 audit.define('audioparam', (task, should) => {
-  task.describe('Simple AudioParam');
-
   // AudioParams
   param = context.createGain().gain;
   should(
@@ -373,8 +373,6 @@ audit.define('audioparam', (task, should) => {
 });
 
 audit.define('biquad', (task, should) => {
-  task.describe('BiquadFilter');
-
   // BiquadFilterNode
   node = context.createBiquadFilter();
   should(
@@ -402,8 +400,6 @@ audit.define('biquad', (task, should) => {
 });
 
 audit.define('offline-audio-context', (task, should) => {
-  task.describe('OfflineAudioContext');
-
   // OfflineAudioContext
   // Max supported channels
   should(
@@ -434,8 +430,6 @@ audit.define('offline-audio-context', (task, should) => {
 });
 
 audit.define('waveshaper', (task, should) => {
-  task.describe('WaveShaper');
-
   // WaveShaper types
   node = context.createWaveShaper();
   currentOversample = node.oversample;
@@ -456,149 +450,163 @@ audit.define('waveshaper', (task, should) => {
   task.done();
 });
 
-audit.define('audio-buffer-source', (task, should) => {
-  task.describe('AudioBufferSource start/stop');
+audit.define(
+    {label: 'audio-buffer-source', description: 'AudioBufferSource start/stop'},
+    (task, should) => {
+      // Start/stop for AudioBufferSourceNodes
+      buffer = context.createBuffer(1, 1, context.sampleRate);
+      should(
+          () => source = context.createBufferSource(),
+          'source = context.createBufferSource()')
+          .notThrow();
+      should(() => { source.buffer = buffer}, 'source.buffer = buffer').notThrow();
+      should(
+          () => source.buffer = context.createBuffer(1, 10, context.sampleRate),
+          'source.buffer = context.createBuffer(1, 10, context.sampleRate)')
+          .throw();
+      should(() => {source.start(-1)}, 'source.start(-1)').throw();
+      should(() => {source.start(Infinity)}, 'source.start(Infinity)').throw();
+      should(() => {source.start(-Infinity)}, 'source.start(-Infinity)').throw();
+      should(() => {source.start(NaN)}, 'source.start(NaN)').throw();
+      should(() => {source.start(1, Infinity)}, 'source.start(1, Infinity)')
+          .throw();
+      should(() => {source.start(1, -Infinity)}, 'source.start(1, -Infinity)')
+          .throw();
+      should(() => {source.start(1, NaN)}, 'source.start(1, NaN)').throw();
+      should(() => {source.start(1, -1)}, 'source.start(1, -1)').throw();
+      should(
+          () => {source.start(1, -Number.MIN_VALUE)},
+          'source.start(1, -Number.MIN_VALUE)')
+          .throw();
+      should(() => {source.start(1, 1, Infinity)}, 'source.start(1, 1, Infinity)')
+          .throw();
+      should(
+          () => {source.start(1, 1, -Infinity)}, 'source.start(1, 1, -Infinity)')
+          .throw();
+      should(() => {source.start(1, 1, NaN)}, 'source.start(1, 1, NaN)').throw();
+      should(() => {source.start(1, 1, -1)}, 'source.start(1, 1, -1)').throw();
+      should(
+          () => {source.start(1, 1, -Number.MIN_VALUE)},
+          'source.start(1, 1, -Number.MIN_VALUE)')
+          .throw();
+      should(() => source.start(), 'source.start()').notThrow();
+      should(
+          () => source.stop(-Number.MIN_VALUE),
+          'source.stop(-Number.MIN_VALUE)')
+          .throw();
+      should(() => source.stop(Infinity), 'source.stop(Infinity)').throw();
+      should(() => source.stop(-Infinity), 'source.stop(-Infinity)').throw();
+      should(() => source.stop(NaN), 'source.stop(NaN)').throw();
+      should(() => source.stop(), 'source.stop()').notThrow();
 
-  // Start/stop for AudioBufferSourceNodes
-  buffer = context.createBuffer(1, 1, context.sampleRate);
-  should(
-      () => source = context.createBufferSource(),
-      'source = context.createBufferSource()')
-      .notThrow();
-  should(() => source.buffer = buffer, 'source.buffer = buffer').notThrow();
-  should(
-      () => source.buffer = context.createBuffer(1, 10, context.sampleRate),
-      'source.buffer = context.createBuffer(1, 10, context.sampleRate)')
-      .throw();
-  should(() => source.start(-1), 'source.start(-1)').throw();
-  should(() => source.start(Infinity), 'source.start(Infinity)').throw();
-  should(() => source.start(-Infinity), 'source.start(-Infinity)').throw();
-  should(() => source.start(NaN), 'source.start(NaN)').throw();
-  should(() => source.start(1, Infinity), 'source.start(1, Infinity)').throw();
-  should(() => source.start(1, -Infinity), 'source.start(1, -Infinity)')
-      .throw();
-  should(() => source.start(1, NaN), 'source.start(1, NaN)').throw();
-  should(() => source.start(1, -1), 'source.start(1, -1)').throw();
-  should(
-      () => source.start(1, -Number.MIN_VALUE),
-      'source.start(1, -Number.MIN_VALUE)')
-      .throw();
-  should(() => source.start(1, 1, Infinity), 'source.start(1, 1, Infinity)')
-      .throw();
-  should(() => source.start(1, 1, -Infinity), 'source.start(1, 1, -Infinity)')
-      .throw();
-  should(() => source.start(1, 1, NaN), 'source.start(1, 1, NaN)').throw();
-  should(() => source.start(1, 1, -1), 'source.start(1, 1, -1)').throw();
-  should(
-      () => source.start(1, 1, -Number.MIN_VALUE),
-      'source.start(1, 1, -Number.MIN_VALUE)')
-      .throw();
-  should(() => source.start(), 'source.start()').notThrow();
-  should(() => source.stop(-Number.MIN_VALUE), 'source.stop(-Number.MIN_VALUE)')
-      .throw();
-  should(() => source.stop(Infinity), 'source.stop(Infinity)').throw();
-  should(() => source.stop(-Infinity), 'source.stop(-Infinity)').throw();
-  should(() => source.stop(NaN), 'source.stop(NaN)').throw();
-  should(() => source.stop(), 'source.stop()').notThrow();
+      // Verify that start(0, 0) doesn't signal.
+      let source2;
+      should(
+          () => { source2 = context.createBufferSource()},
+          'source2 = context.createBufferSource()')
+          .notThrow();
+      should(() => source2.buffer = buffer, 'source2.buffer = buffer').notThrow();
+      should(() => source2.start(0, 0), 'source2.start(0, 0)').notThrow();
 
-  // Verify that start(0, 0) doesn't signal.
-  should(
-      () => source = context.createBufferSource(),
-      'source = context.createBufferSource()')
-      .notThrow();
-  should(() => source.buffer = buffer, 'source.buffer = buffer').notThrow();
-  should(() => source.start(0, 0), 'source.start(0, 0)').notThrow();
+      // Verify that start(0, -0.0) doesn't signal.
+      let source3;
+      should(
+          () => source3 = context.createBufferSource(),
+          'source3 = context.createBufferSource()')
+          .notThrow();
+      should(() => source3.buffer = buffer, 'source3.buffer = buffer').notThrow();
+      should(
+          () => source3.start(0, -1 / Infinity), 'source3.start(0, -1/Infinity)')
+          .notThrow();
 
-  // Verify that start(0, -0.0) doesn't signal.
-  should(
-      () => source = context.createBufferSource(),
-      'source = context.createBufferSource()')
-      .notThrow();
-  should(() => source.buffer = buffer, 'source.buffer = buffer').notThrow();
-  should(() => source.start(0, -1 / Infinity), 'source.start(0, -1/Infinity)')
-      .notThrow();
+      // It's not clear from the spec, but I think it's valid to call start().
+      // The spec is silent on what happens if we call stop() afterwards, so
+      // don't call it.
+      let source4;
+      should(
+          () => source4 = context.createBufferSource(),
+          'source4 = context.createBufferSource()')
+          .notThrow();
+      should(() => source4.start(), 'source4.start()').notThrow();
 
-  // It's not clear from the spec, but I think it's valid to call start(). The
-  // spec is silent on
-  // what happens if we call stop() afterwards, so don't call it.
-  should(
-      () => source = context.createBufferSource(),
-      'source = context.createBufferSource()')
-      .notThrow();
-  should(() => source.start(), 'source.start()').notThrow();
+      buffer = context.createBuffer(1, 1, context.sampleRate);
+      let source5;
+      should(
+          () => source5 = context.createBufferSource(),
+          'source5 = context.createBufferSource()')
+          .notThrow();
+      should(() => source5.buffer = buffer, 'source5.buffer = buffer').notThrow();
+      should(() => source5.stop(), 'source5.stop()').throw();
 
-  buffer = context.createBuffer(1, 1, context.sampleRate);
-  should(
-      () => source = context.createBufferSource(),
-      'source = context.createBufferSource()')
-      .notThrow();
-  should(() => source.buffer = buffer, 'source.buffer = buffer').notThrow();
-  should(() => source.stop(), 'source.stop()').throw();
+      buffer = context.createBuffer(1, 1, context.sampleRate);
+      let source6;
+      should(
+          () => source6 = context.createBufferSource(),
+          'source6 = context.createBufferSource()')
+          .notThrow();
+      should(() => source6.buffer = buffer, 'source6.buffer = buffer').notThrow();
+      should(() => source6.start(), 'source6.start()').notThrow();
+      should(() => source6.start(), 'source6.start()').throw();
 
-  buffer = context.createBuffer(1, 1, context.sampleRate);
-  should(
-      () => source = context.createBufferSource(),
-      'source = context.createBufferSource()')
-      .notThrow();
-  should(() => source.buffer = buffer, 'source.buffer = buffer').notThrow();
-  should(() => source.start(), 'source.start()').notThrow();
-  should(() => source.start(), 'source.start()').throw();
+      buffer = context.createBuffer(1, 1, context.sampleRate);
+      let source7;
+      should(
+          () => source7 = context.createBufferSource(),
+          'source7 = context.createBufferSource()')
+          .notThrow();
+      should(() => source7.buffer = buffer, 'source7.buffer = buffer').notThrow();
+      should(() => source7.start(), 'source7.start()').notThrow();
+      should(() => source7.stop(), 'source7.stop()').notThrow();
 
-  buffer = context.createBuffer(1, 1, context.sampleRate);
-  should(
-      () => source = context.createBufferSource(),
-      'source = context.createBufferSource()')
-      .notThrow();
-  should(() => source.buffer = buffer, 'source.buffer = buffer').notThrow();
-  should(() => source.start(), 'source.start()').notThrow();
-  should(() => source.stop(), 'source.stop()').notThrow();
+      task.done();
+    });
 
-  task.done();
-});
+audit.define(
+    {label: 'oscillator', description: 'start/stop'}, (task, should) => {
 
-audit.define('oscillator', (task, should) => {
-  task.describe('Oscillator start/stop');
+      let source8;
+      // Start/stop for OscillatorNodes
+      should(
+          () => source8 = context.createOscillator(),
+          'source8 = context.createOscillator()')
+          .notThrow();
+      should(
+          () => source8.start(-Number.MIN_VALUE),
+          'source8.start(-Number.MIN_VALUE)')
+          .throw();
+      should(() => source8.start(Infinity), 'source8.start(Infinity)').throw();
+      should(() => source8.start(-Infinity), 'source8.start(-Infinity)').throw();
+      should(() => source8.start(NaN), 'source8.start(NaN)').throw();
+      should(() => source8.start(), 'source8.start()').notThrow();
+      should(
+          () => source8.stop(-Number.MIN_VALUE),
+          'source8.stop(-Number.MIN_VALUE)')
+          .throw();
+      should(() => source8.stop(Infinity), 'source8.stop(Infinity)').throw();
+      should(() => source8.stop(-Infinity), 'source8.stop(-Infinity)').throw();
+      should(() => source8.stop(NaN), 'source8.stop(NaN)').throw();
+      should(() => source8.stop(), 'source8.stop()').notThrow();
 
-  // Start/stop for OscillatorNodes
-  should(
-      () => source = context.createOscillator(),
-      'source = context.createOscillator()')
-      .notThrow();
-  should(
-      () => source.start(-Number.MIN_VALUE), 'source.start(-Number.MIN_VALUE)')
-      .throw();
-  should(() => source.start(Infinity), 'source.start(Infinity)').throw();
-  should(() => source.start(-Infinity), 'source.start(-Infinity)').throw();
-  should(() => source.start(NaN), 'source.start(NaN)').throw();
-  should(() => source.start(), 'source.start()').notThrow();
-  should(() => source.stop(-Number.MIN_VALUE), 'source.stop(-Number.MIN_VALUE)')
-      .throw();
-  should(() => source.stop(Infinity), 'source.stop(Infinity)').throw();
-  should(() => source.stop(-Infinity), 'source.stop(-Infinity)').throw();
-  should(() => source.stop(NaN), 'source.stop(NaN)').throw();
-  should(() => source.stop(), 'source.stop()').notThrow();
+      should(
+          () => osc = context.createOscillator(),
+          'osc = context.createOscillator()')
+          .notThrow();
+      should(() => osc.stop(), 'osc.stop()').throw();
+      should(
+          () => osc1 = context.createOscillator(),
+          'osc1 = context.createOscillator()')
+          .notThrow();
+      should(() => osc1.start(), 'osc1.start()').notThrow();
+      should(() => osc1.stop(), 'osc1.stop()').notThrow();
 
-  should(
-      () => osc = context.createOscillator(),
-      'osc = context.createOscillator()')
-      .notThrow();
-  should(() => osc.stop(), 'osc.stop()').throw();
-  should(
-      () => osc1 = context.createOscillator(),
-      'osc1 = context.createOscillator()')
-      .notThrow();
-  should(() => osc1.start(), 'osc1.start()').notThrow();
-  should(() => osc1.stop(), 'osc1.stop()').notThrow();
-
-  should(() => osc.setPeriodicWave(null), 'osc.setPeriodicWave(null)').throw();
+      should(() => osc.setPeriodicWave(null), 'osc.setPeriodicWave(null)')
+          .throw();
 
 
-  task.done();
-});
+      task.done();
+    });
 
 audit.define('convolver', (task, should) => {
-  task.describe('Convolver');
-
   // Convolver buffer rate must match context rate. Create on offline context so
   // we
   // specify the context rate exactly, in case the test is run on platforms with
@@ -622,8 +630,6 @@ audit.define('convolver', (task, should) => {
 });
 
 audit.define('panner', (task, should) => {
-  task.describe('Panner');
-
   // PannerNode channel count and mode
   panner = context.createPanner();
   // Channel count can only be set to 1 or 2.
@@ -650,8 +656,6 @@ audit.define('panner', (task, should) => {
 });
 
 audit.define('script-processor', (task, should) => {
-  task.describe('ScriptProcessor');
-
   // Test channel count and mode for a ScriptProcessor.
   should(
       () => script = context.createScriptProcessor(256, 3),
@@ -680,17 +684,17 @@ audit.define('script-processor', (task, should) => {
   task.done();
 });
 
-audit.define('misc', (task, should) => {
-  task.describe('Miscellaneous');
+audit.define(
+    {label: 'misc', description: 'Miscellaneous tests'}, (task, should) => {
 
-  // noteOn and noteOff don't exist anymore
-  should(osc.noteOn, 'osc.noteOn').beEqualTo(undefined);
-  should(osc.noteOff, 'osc.noteOff').beEqualTo(undefined);
-  should(source.noteOn, 'source.noteOn').beEqualTo(undefined);
-  should(source.noteOff, 'source.noteOff').beEqualTo(undefined);
+      // noteOn and noteOff don't exist anymore
+      should(osc.noteOn, 'osc.noteOn').beEqualTo(undefined);
+      should(osc.noteOff, 'osc.noteOff').beEqualTo(undefined);
+      should(source.noteOn, 'source.noteOn').beEqualTo(undefined);
+      should(source.noteOff, 'source.noteOff').beEqualTo(undefined);
 
-  task.done();
-});
+      task.done();
+    });
 
 audit.run();
 </script>

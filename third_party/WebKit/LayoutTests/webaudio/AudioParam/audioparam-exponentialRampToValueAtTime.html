@@ -43,14 +43,18 @@
           // uses the value from the setValueAtTime() call above.
           gainNode.gain.exponentialRampToValueAtTime(value, endTime)}
 
-      audit.define('test', function(task, should) {
-        task.describe(
-            'AudioParam exponentialRampToValueAtTime() functionality');
-        createAudioGraphAndTest(
-            task, should, numberOfTests, initialValue, setValue, generateRamp,
-            'exponentialRampToValueAtTime()', maxAllowedError,
-            createExponentialRampArray);
-      });
+      audit.define(
+          {
+            label: 'test',
+            description:
+                'AudioParam exponentialRampToValueAtTime() functionality'
+          },
+          function(task, should) {
+            createAudioGraphAndTest(
+                task, should, numberOfTests, initialValue, setValue,
+                generateRamp, 'exponentialRampToValueAtTime()', maxAllowedError,
+                createExponentialRampArray);
+          });
 
       audit.run();
     </script>
