@@ -99,8 +99,6 @@ crbug.com/632000 [ Win ] images/paint-subrect-grid.html [ Pass Failure ]
 # Very slight (~2 pixel) differences.
 crbug.com/699573 [ Win ] virtual/gpu-rasterization/images/cross-fade-background-size.html [ Pass Failure ]
 
-crbug.com/639147 svg/wicd/test-rightsizing-b.xhtml [ Failure Pass ]
-
 crbug.com/644433 virtual/gpu/fast/canvas/OffscreenCanvas-2d-pattern-in-worker.html [ Failure ]
 
 crbug.com/645389 [ Win ] virtual/gpu/fast/canvas/canvas-hit-regions-fallback-element-test.html [ Timeout ]

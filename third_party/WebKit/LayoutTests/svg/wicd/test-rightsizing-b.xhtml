@@ -33,7 +33,9 @@
     if (window.testRunner)
         testRunner.waitUntilDone();
     onload = function() {
-        runAfterLayoutAndPaint(function() {}, true);
+        runAfterLayoutAndPaint(function() {
+            runAfterLayoutAndPaint(function() { }, true)
+        }, false);
     };
     </script>
 </body>
