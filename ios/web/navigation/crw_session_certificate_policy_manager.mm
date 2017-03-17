@@ -153,6 +153,8 @@ void AddToCertificatePolicyCache(
       }
       scoped_refptr<net::X509Certificate> cert =
           NSDataToCertificate([fields objectAtIndex:0]);
+      if (!cert)
+        continue;
       std::string host = base::SysNSStringToUTF8([fields objectAtIndex:1]);
       net::CertStatus status = (net::CertStatus)[[fields objectAtIndex:2]
           unsignedIntegerValue];

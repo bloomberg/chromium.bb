@@ -128,6 +128,7 @@ loadPolicyForRejectedTrustResult:(SecTrustResultType)trustResult
   if (!cert->GetIntermediateCertificates().empty()) {
     cert = net::X509Certificate::CreateFromHandle(
         cert->os_cert_handle(), net::X509Certificate::OSCertHandles());
+    DCHECK(cert);
   }
   DCHECK(cert->GetIntermediateCertificates().empty());
   web::WebThread::PostTask(web::WebThread::IO, FROM_HERE, base::BindBlockArc(^{
@@ -229,6 +230,8 @@ loadPolicyForRejectedTrustResult:(SecTrustResultType)trustResult
       net::X509Certificate::CreateFromHandle(
           SecTrustGetCertificateAtIndex(trust, 0),
           net::X509Certificate::OSCertHandles());
+  if (!leafCert)
+    return web::CERT_ACCEPT_POLICY_NON_RECOVERABLE_ERROR;
 
   web::CertPolicy::Judgment judgment = _certPolicyCache->QueryPolicy(
       leafCert.get(), base::SysNSStringToUTF8(host), certStatus);

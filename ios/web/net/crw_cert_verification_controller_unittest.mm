@@ -140,6 +140,7 @@ TEST_F(CRWCertVerificationControllerTest, AllowCertIgnoresIntermediateCerts) {
   scoped_refptr<net::X509Certificate> cert(
       net::X509Certificate::CreateFromHandle(cert_->os_cert_handle(),
                                              {cert_->os_cert_handle()}));
+  ASSERT_TRUE(cert);
   [controller_ allowCert:cert.get()
                  forHost:kHostName
                   status:net::CERT_STATUS_ALL_ERRORS];
