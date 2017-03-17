@@ -33,9 +33,7 @@
 
 #include "wtf/Assertions.h"
 
-// TODO(meade): Revert this by 17 Mar 17.
-// This is for investigating crbug.com/694520
-// #if DCHECK_IS_ON()
+#if DCHECK_IS_ON()
 
 #include "wtf/Threading.h"
 
@@ -106,5 +104,5 @@ class ThreadRestrictionVerifier {
 
 }  // namespace WTF
 
-// #endif  // DCHECK_IS_ON()
+#endif  // DCHECK_IS_ON()
 #endif  // ThreadRestrictionVerifier_h

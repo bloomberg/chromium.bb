@@ -59,15 +59,13 @@ using namespace Unicode;
 // As of Jan 2017, StringImpl needs 2 * sizeof(int) + 29 bits of data, and
 // sizeof(ThreadRestrictionVerifier) is 16 bytes. Thus, in DCHECK mode the
 // class may be padded to 32 bytes.
-// TODO(meade): Revert this by 17 Mar 17.
-// This is for investigating crbug.com/694520
-// #if DCHECK_IS_ON()
+#if DCHECK_IS_ON()
 static_assert(sizeof(StringImpl) <= 8 * sizeof(int),
               "StringImpl should stay small");
-// #else
-// static_assert(sizeof(StringImpl) <= 3 * sizeof(int),
-//               "StringImpl should stay small");
-// #endif
+#else
+static_assert(sizeof(StringImpl) <= 3 * sizeof(int),
+              "StringImpl should stay small");
+#endif
 
 #ifdef STRING_STATS
 
@@ -336,14 +334,12 @@ bool StringImpl::isSafeToSendToAnotherThread() const {
   return false;
 }
 
-// TODO(meade): Revert this by 17 Mar 17.
-// This is for investigating crbug.com/694520
-// #if DCHECK_IS_ON()
+#if DCHECK_IS_ON()
 std::string StringImpl::asciiForDebugging() const {
   CString ascii = String(isolatedCopy()->substring(0, 128)).ascii();
   return std::string(ascii.data(), ascii.length());
 }
-// #endif
+#endif
 
 PassRefPtr<StringImpl> StringImpl::createUninitialized(unsigned length,
                                                        LChar*& data) {
