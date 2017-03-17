@@ -36,8 +36,8 @@ class PluginResourceCallback : public PluginResourceCallbackBase {
   void Run(
       const ResourceMessageReplyParams& reply_params,
       const IPC::Message& msg) override {
-    DispatchResourceReplyOrDefaultParams<MsgClass>(
-        &callback_, &CallbackType::Run, reply_params, msg);
+    DispatchResourceReplyOrDefaultParams<MsgClass>(callback_, reply_params,
+                                                   msg);
   }
 
  private:
