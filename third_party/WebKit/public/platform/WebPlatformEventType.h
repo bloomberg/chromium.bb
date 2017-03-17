@@ -13,7 +13,6 @@ enum WebPlatformEventType {
   WebPlatformEventTypeDeviceOrientationAbsolute,
   WebPlatformEventTypeDeviceLight,
   WebPlatformEventTypeGamepad,
-  WebPlatformEventTypeScreenOrientation
 };
 
 }  // namespace blink

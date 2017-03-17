@@ -17,4 +17,9 @@ blink_modules_sources("screen_orientation") {
     "ScreenScreenOrientation.cpp",
     "ScreenScreenOrientation.h",
   ]
+  deps = [
+    "//device/screen_orientation/public/interfaces:interfaces_blink",
+    "//services/device/public/interfaces:constants_blink",
+    "//third_party/WebKit/Source/platform",
+  ]
 }

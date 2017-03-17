@@ -66,7 +66,6 @@
 #include "content/renderer/mojo/blink_interface_provider_impl.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_clipboard_delegate.h"
-#include "content/renderer/screen_orientation/screen_orientation_observer.h"
 #include "content/renderer/webclipboard_impl.h"
 #include "content/renderer/webgraphicscontext3d_provider_impl.h"
 #include "content/renderer/webpublicsuffixlist_impl.h"
@@ -1132,8 +1131,6 @@ RendererBlinkPlatformImpl::CreatePlatformEventObserverFromType(
       return base::MakeUnique<DeviceLightEventPump>(thread);
     case blink::WebPlatformEventTypeGamepad:
       return base::MakeUnique<GamepadSharedMemoryReader>(thread);
-    case blink::WebPlatformEventTypeScreenOrientation:
-      return base::MakeUnique<ScreenOrientationObserver>();
     default:
       // A default statement is required to prevent compilation errors when
       // Blink adds a new type.

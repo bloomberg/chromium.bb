@@ -4,7 +4,9 @@
 
 #include "modules/screen_orientation/ScreenOrientationDispatcher.h"
 
+#include "platform/ServiceConnector.h"
 #include "public/platform/Platform.h"
+#include "services/device/public/interfaces/constants.mojom-blink.h"
 
 namespace blink {
 
@@ -16,16 +18,27 @@ ScreenOrientationDispatcher& ScreenOrientationDispatcher::instance() {
 
 ScreenOrientationDispatcher::ScreenOrientationDispatcher() {}
 
+ScreenOrientationDispatcher::~ScreenOrientationDispatcher() {
+  DCHECK(!m_listener);
+}
+
 DEFINE_TRACE(ScreenOrientationDispatcher) {
   PlatformEventDispatcher::trace(visitor);
 }
 
 void ScreenOrientationDispatcher::startListening() {
-  Platform::current()->startListening(WebPlatformEventTypeScreenOrientation, 0);
+  DCHECK(!m_listener);
+
+  ServiceConnector::instance().connectToInterface(
+      device::mojom::blink::kServiceName, mojo::MakeRequest(&m_listener));
+  m_listener->Start();
 }
 
 void ScreenOrientationDispatcher::stopListening() {
-  Platform::current()->stopListening(WebPlatformEventTypeScreenOrientation);
+  DCHECK(m_listener);
+
+  m_listener->Stop();
+  m_listener.reset();
 }
 
 }  // namespace blink

@@ -339,8 +339,6 @@ target(link_target_type, "renderer") {
     "scheduler/resource_dispatch_throttler.h",
     "screen_orientation/screen_orientation_dispatcher.cc",
     "screen_orientation/screen_orientation_dispatcher.h",
-    "screen_orientation/screen_orientation_observer.cc",
-    "screen_orientation/screen_orientation_observer.h",
     "service_worker/embedded_worker_devtools_agent.cc",
     "service_worker/embedded_worker_devtools_agent.h",
     "service_worker/embedded_worker_dispatcher.cc",
