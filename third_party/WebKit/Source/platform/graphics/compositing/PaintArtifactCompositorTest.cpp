@@ -547,7 +547,6 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, SiblingClips) {
              EffectPaintPropertyNode::root())
       .rectDrawing(FloatRect(0, 0, 640, 480), Color::black);
   update(artifact.build());
-
   ASSERT_EQ(2u, contentLayerCount());
 
   const cc::Layer* whiteLayer = contentLayerAt(0);
@@ -596,18 +595,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
       .rectDrawing(FloatRect(0, 0, 100, 100), Color::gray);
 
   const PaintArtifact& artifact = testArtifact.build();
-
   ASSERT_EQ(3u, artifact.paintChunks().size());
-  PaintArtifactCompositor::PendingLayer pendingLayer1(
-      artifact.paintChunks()[0]);
-  // Foreign layers can't merge.
-  EXPECT_FALSE(PaintArtifactCompositor::canMergeInto(
-      artifact, artifact.paintChunks()[1], pendingLayer1));
-  PaintArtifactCompositor::PendingLayer pendingLayer2(
-      artifact.paintChunks()[1]);
-  EXPECT_FALSE(PaintArtifactCompositor::canMergeInto(
-      artifact, artifact.paintChunks()[2], pendingLayer2));
-
   update(artifact);
 
   ASSERT_EQ(3u, contentLayerCount());
@@ -617,12 +605,21 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
 }
 
 TEST_F(PaintArtifactCompositorTestWithPropertyTrees, EffectTreeConversion) {
-  RefPtr<EffectPaintPropertyNode> effect1 =
-      createOpacityOnlyEffect(EffectPaintPropertyNode::root(), 0.5);
-  RefPtr<EffectPaintPropertyNode> effect2 =
-      createOpacityOnlyEffect(effect1, 0.3);
-  RefPtr<EffectPaintPropertyNode> effect3 =
-      createOpacityOnlyEffect(EffectPaintPropertyNode::root(), 0.2);
+  RefPtr<EffectPaintPropertyNode> effect1 = EffectPaintPropertyNode::create(
+      EffectPaintPropertyNode::root(), TransformPaintPropertyNode::root(),
+      ClipPaintPropertyNode::root(), ColorFilterNone,
+      CompositorFilterOperations(), 0.5, SkBlendMode::kSrcOver,
+      CompositingReasonAll);
+  RefPtr<EffectPaintPropertyNode> effect2 = EffectPaintPropertyNode::create(
+      effect1, TransformPaintPropertyNode::root(),
+      ClipPaintPropertyNode::root(), ColorFilterNone,
+      CompositorFilterOperations(), 0.3, SkBlendMode::kSrcOver,
+      CompositingReasonAll);
+  RefPtr<EffectPaintPropertyNode> effect3 = EffectPaintPropertyNode::create(
+      EffectPaintPropertyNode::root(), TransformPaintPropertyNode::root(),
+      ClipPaintPropertyNode::root(), ColorFilterNone,
+      CompositorFilterOperations(), 0.2, SkBlendMode::kSrcOver,
+      CompositingReasonAll);
 
   TestPaintArtifact artifact;
   artifact
@@ -784,9 +781,10 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, NestedScrollNodes) {
       TransformPaintPropertyNode::createScrollTranslation(
           TransformPaintPropertyNode::root(),
           TransformationMatrix().translate(11, 13), FloatPoint3D(), false, 0,
-          CompositingReasonNone, expectedCompositorElementIdA,
-          ScrollPaintPropertyNode::root(), IntSize(2, 3), IntSize(5, 7), false,
-          true, MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects,
+          CompositingReasonLayerForScrollingContents,
+          expectedCompositorElementIdA, ScrollPaintPropertyNode::root(),
+          IntSize(2, 3), IntSize(5, 7), false, true,
+          MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects,
           nullptr);
 
   CompositorElementId expectedCompositorElementIdB = CompositorElementId(3, 0);
@@ -841,12 +839,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, MergeSimpleChunks) {
       .rectDrawing(FloatRect(0, 0, 200, 300), Color::gray);
 
   const PaintArtifact& artifact = testArtifact.build();
-
   ASSERT_EQ(2u, artifact.paintChunks().size());
-  PaintArtifactCompositor::PendingLayer pendingLayer(artifact.paintChunks()[0]);
-  EXPECT_TRUE(PaintArtifactCompositor::canMergeInto(
-      artifact, artifact.paintChunks()[1], pendingLayer));
-
   update(artifact);
 
   ASSERT_EQ(1u, contentLayerCount());
@@ -884,15 +877,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, MergeClip) {
   const PaintArtifact& artifact = testArtifact.build();
 
   ASSERT_EQ(3u, artifact.paintChunks().size());
-  PaintArtifactCompositor::PendingLayer pendingLayer(artifact.paintChunks()[0]);
-  EXPECT_TRUE(PaintArtifactCompositor::canMergeInto(
-      artifact, artifact.paintChunks()[1], pendingLayer));
-  pendingLayer.add(artifact.paintChunks()[1], nullptr);
-  EXPECT_TRUE(PaintArtifactCompositor::canMergeInto(
-      artifact, artifact.paintChunks()[2], pendingLayer));
-
   update(artifact);
-
   ASSERT_EQ(1u, contentLayerCount());
   {
     Vector<RectWithColor> rectsWithColor;
@@ -931,15 +916,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, Merge2DTransform) {
       .rectDrawing(FloatRect(0, 0, 200, 300), Color::gray);
 
   const PaintArtifact& artifact = testArtifact.build();
-
   ASSERT_EQ(3u, artifact.paintChunks().size());
-  PaintArtifactCompositor::PendingLayer pendingLayer(artifact.paintChunks()[0]);
-  EXPECT_TRUE(PaintArtifactCompositor::canMergeInto(
-      artifact, artifact.paintChunks()[1], pendingLayer));
-  pendingLayer.add(artifact.paintChunks()[1], nullptr);
-  EXPECT_TRUE(PaintArtifactCompositor::canMergeInto(
-      artifact, artifact.paintChunks()[2], pendingLayer));
-
   update(artifact);
 
   ASSERT_EQ(1u, contentLayerCount());
@@ -983,14 +960,8 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
       .rectDrawing(FloatRect(0, 0, 100, 100), Color::black);
 
   const PaintArtifact& artifact = testArtifact.build();
-
   ASSERT_EQ(2u, artifact.paintChunks().size());
-  PaintArtifactCompositor::PendingLayer pendingLayer(artifact.paintChunks()[0]);
-  EXPECT_TRUE(PaintArtifactCompositor::canMergeInto(
-      artifact, artifact.paintChunks()[1], pendingLayer));
-
   update(artifact);
-
   ASSERT_EQ(1u, contentLayerCount());
   {
     Vector<RectWithColor> rectsWithColor;
@@ -1026,16 +997,8 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, MergeTransformOrigin) {
       .rectDrawing(FloatRect(0, 0, 200, 300), Color::gray);
 
   const PaintArtifact& artifact = testArtifact.build();
-
   ASSERT_EQ(3u, artifact.paintChunks().size());
-  PaintArtifactCompositor::PendingLayer pendingLayer(artifact.paintChunks()[0]);
-  EXPECT_TRUE(PaintArtifactCompositor::canMergeInto(
-      artifact, artifact.paintChunks()[1], pendingLayer));
-  pendingLayer.add(artifact.paintChunks()[1], nullptr);
-  EXPECT_TRUE(PaintArtifactCompositor::canMergeInto(
-      artifact, artifact.paintChunks()[2], pendingLayer));
   update(artifact);
-
   ASSERT_EQ(1u, contentLayerCount());
   {
     Vector<RectWithColor> rectsWithColor;
@@ -1072,17 +1035,8 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, MergeOpacity) {
       .rectDrawing(FloatRect(0, 0, 200, 300), Color::gray);
 
   const PaintArtifact& artifact = testArtifact.build();
-
   ASSERT_EQ(3u, artifact.paintChunks().size());
-  PaintArtifactCompositor::PendingLayer pendingLayer(artifact.paintChunks()[0]);
-  EXPECT_TRUE(PaintArtifactCompositor::canMergeInto(
-      artifact, artifact.paintChunks()[1], pendingLayer));
-  pendingLayer.add(artifact.paintChunks()[1], nullptr);
-  EXPECT_TRUE(PaintArtifactCompositor::canMergeInto(
-      artifact, artifact.paintChunks()[2], pendingLayer));
-
   update(artifact);
-
   ASSERT_EQ(1u, contentLayerCount());
   {
     Vector<RectWithColor> rectsWithColor;
@@ -1133,16 +1087,8 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, MergeNested) {
       .rectDrawing(FloatRect(0, 0, 200, 300), Color::gray);
 
   const PaintArtifact& artifact = testArtifact.build();
-
   ASSERT_EQ(3u, artifact.paintChunks().size());
-  PaintArtifactCompositor::PendingLayer pendingLayer(artifact.paintChunks()[0]);
-  EXPECT_TRUE(PaintArtifactCompositor::canMergeInto(
-      artifact, artifact.paintChunks()[1], pendingLayer));
-  pendingLayer.add(artifact.paintChunks()[1], nullptr);
-  EXPECT_TRUE(PaintArtifactCompositor::canMergeInto(
-      artifact, artifact.paintChunks()[2], pendingLayer));
   update(artifact);
-
   ASSERT_EQ(1u, contentLayerCount());
   {
     Vector<RectWithColor> rectsWithColor;
@@ -1195,16 +1141,8 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, ClipPushedUp) {
       .rectDrawing(FloatRect(0, 0, 200, 300), Color::gray);
 
   const PaintArtifact& artifact = testArtifact.build();
-
   ASSERT_EQ(3u, artifact.paintChunks().size());
-  PaintArtifactCompositor::PendingLayer pendingLayer(artifact.paintChunks()[0]);
-  EXPECT_TRUE(PaintArtifactCompositor::canMergeInto(
-      artifact, artifact.paintChunks()[1], pendingLayer));
-  pendingLayer.add(artifact.paintChunks()[1], nullptr);
-  EXPECT_TRUE(PaintArtifactCompositor::canMergeInto(
-      artifact, artifact.paintChunks()[2], pendingLayer));
   update(artifact);
-
   ASSERT_EQ(1u, contentLayerCount());
   {
     Vector<RectWithColor> rectsWithColor;
@@ -1222,7 +1160,10 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, ClipPushedUp) {
   }
 }
 
-TEST_F(PaintArtifactCompositorTestWithPropertyTrees, EffectPushedUp) {
+// TODO(crbug.com/696842): The effect refuses to "decomposite" because it's in
+// a deeper transform space than its chunk. We should allow decomposite if
+// the two transform nodes share the same direct compositing ancestor.
+TEST_F(PaintArtifactCompositorTestWithPropertyTrees, EffectPushedUp_DISABLED) {
   // Tests merging of an element which has an effect applied to it,
   // but has an ancestor transform of them. This can happen for fixed-
   // or absolute-position elements which escape scroll transforms.
@@ -1259,16 +1200,8 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, EffectPushedUp) {
       .rectDrawing(FloatRect(0, 0, 200, 300), Color::gray);
 
   const PaintArtifact& artifact = testArtifact.build();
-
   ASSERT_EQ(3u, artifact.paintChunks().size());
-  PaintArtifactCompositor::PendingLayer pendingLayer(artifact.paintChunks()[0]);
-  EXPECT_TRUE(PaintArtifactCompositor::canMergeInto(
-      artifact, artifact.paintChunks()[1], pendingLayer));
-  pendingLayer.add(artifact.paintChunks()[1], nullptr);
-  EXPECT_TRUE(PaintArtifactCompositor::canMergeInto(
-      artifact, artifact.paintChunks()[2], pendingLayer));
   update(artifact);
-
   ASSERT_EQ(1u, contentLayerCount());
   {
     Vector<RectWithColor> rectsWithColor;
@@ -1285,7 +1218,11 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, EffectPushedUp) {
   }
 }
 
-TEST_F(PaintArtifactCompositorTestWithPropertyTrees, EffectAndClipPushedUp) {
+// TODO(crbug.com/696842): The effect refuses to "decomposite" because it's in
+// a deeper transform space than its chunk. We should allow decomposite if
+// the two transform nodes share the same direct compositing ancestor.
+TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
+       EffectAndClipPushedUp_DISABLED) {
   // Tests merging of an element which has an effect applied to it,
   // but has an ancestor transform of them. This can happen for fixed-
   // or absolute-position elements which escape scroll transforms.
@@ -1325,16 +1262,8 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, EffectAndClipPushedUp) {
       .rectDrawing(FloatRect(0, 0, 200, 300), Color::gray);
 
   const PaintArtifact& artifact = testArtifact.build();
-
   ASSERT_EQ(3u, artifact.paintChunks().size());
-  PaintArtifactCompositor::PendingLayer pendingLayer(artifact.paintChunks()[0]);
-  EXPECT_TRUE(PaintArtifactCompositor::canMergeInto(
-      artifact, artifact.paintChunks()[1], pendingLayer));
-  pendingLayer.add(artifact.paintChunks()[1], nullptr);
-  EXPECT_TRUE(PaintArtifactCompositor::canMergeInto(
-      artifact, artifact.paintChunks()[2], pendingLayer));
   update(artifact);
-
   ASSERT_EQ(1u, contentLayerCount());
   {
     Vector<RectWithColor> rectsWithColor;
@@ -1381,16 +1310,8 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, ClipAndEffectNoTransform) {
       .rectDrawing(FloatRect(0, 0, 200, 300), Color::gray);
 
   const PaintArtifact& artifact = testArtifact.build();
-
   ASSERT_EQ(3u, artifact.paintChunks().size());
-  PaintArtifactCompositor::PendingLayer pendingLayer(artifact.paintChunks()[0]);
-  EXPECT_TRUE(PaintArtifactCompositor::canMergeInto(
-      artifact, artifact.paintChunks()[1], pendingLayer));
-  pendingLayer.add(artifact.paintChunks()[1], nullptr);
-  EXPECT_TRUE(PaintArtifactCompositor::canMergeInto(
-      artifact, artifact.paintChunks()[2], pendingLayer));
   update(artifact);
-
   ASSERT_EQ(1u, contentLayerCount());
   {
     Vector<RectWithColor> rectsWithColor;
@@ -1434,16 +1355,8 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, TwoClips) {
       .rectDrawing(FloatRect(0, 0, 200, 300), Color::gray);
 
   const PaintArtifact& artifact = testArtifact.build();
-
   ASSERT_EQ(3u, artifact.paintChunks().size());
-  PaintArtifactCompositor::PendingLayer pendingLayer(artifact.paintChunks()[0]);
-  EXPECT_TRUE(PaintArtifactCompositor::canMergeInto(
-      artifact, artifact.paintChunks()[1], pendingLayer));
-  pendingLayer.add(artifact.paintChunks()[1], nullptr);
-  EXPECT_TRUE(PaintArtifactCompositor::canMergeInto(
-      artifact, artifact.paintChunks()[2], pendingLayer));
   update(artifact);
-
   ASSERT_EQ(1u, contentLayerCount());
   {
     Vector<RectWithColor> rectsWithColor;
@@ -1485,14 +1398,9 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, TwoTransformsClipBetween) {
       .chunk(TransformPaintPropertyNode::root(), ClipPaintPropertyNode::root(),
              EffectPaintPropertyNode::root())
       .rectDrawing(FloatRect(0, 0, 200, 300), Color::gray);
+
   const PaintArtifact& artifact = testArtifact.build();
   ASSERT_EQ(3u, artifact.paintChunks().size());
-  PaintArtifactCompositor::PendingLayer pendingLayer(artifact.paintChunks()[0]);
-  EXPECT_TRUE(PaintArtifactCompositor::canMergeInto(
-      artifact, artifact.paintChunks()[1], pendingLayer));
-  pendingLayer.add(artifact.paintChunks()[1], nullptr);
-  EXPECT_TRUE(PaintArtifactCompositor::canMergeInto(
-      artifact, artifact.paintChunks()[2], pendingLayer));
   update(artifact);
   ASSERT_EQ(1u, contentLayerCount());
   {
@@ -1526,24 +1434,8 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, OverlapTransform) {
       .rectDrawing(FloatRect(0, 0, 200, 300), Color::gray);
 
   const PaintArtifact& artifact = testArtifact.build();
-
   ASSERT_EQ(3u, artifact.paintChunks().size());
-  PaintArtifactCompositor::PendingLayer pendingLayer(artifact.paintChunks()[0]);
-
-  EXPECT_FALSE(PaintArtifactCompositor::canMergeInto(
-      artifact, artifact.paintChunks()[1], pendingLayer));
-
-  PaintArtifactCompositor::PendingLayer pendingLayer2(
-      artifact.paintChunks()[1]);
-  EXPECT_FALSE(PaintArtifactCompositor::canMergeInto(
-      artifact, artifact.paintChunks()[2], pendingLayer2));
-
-  std::unique_ptr<GeometryMapper> geometryMapper = GeometryMapper::create();
-  EXPECT_TRUE(PaintArtifactCompositor::mightOverlap(
-      artifact.paintChunks()[2], pendingLayer2, *geometryMapper));
-
   update(artifact);
-
   // The third paint chunk overlaps the second but can't merge due to
   // incompatible transform. The second paint chunk can't merge into the first
   // due to a direct compositing reason.
@@ -1554,38 +1446,48 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, MightOverlap) {
   PaintChunk paintChunk;
   paintChunk.properties = defaultPaintChunkProperties();
   paintChunk.bounds = FloatRect(0, 0, 100, 100);
+  PaintArtifactCompositor::PendingLayer pendingLayer(paintChunk, false);
 
   PaintChunk paintChunk2;
   paintChunk2.properties = defaultPaintChunkProperties();
   paintChunk2.bounds = FloatRect(0, 0, 100, 100);
 
   std::unique_ptr<GeometryMapper> geometryMapper = GeometryMapper::create();
-  PaintArtifactCompositor::PendingLayer pendingLayer(paintChunk);
-  EXPECT_TRUE(PaintArtifactCompositor::mightOverlap(paintChunk2, pendingLayer,
-                                                    *geometryMapper));
+
+  {
+    PaintArtifactCompositor::PendingLayer pendingLayer2(paintChunk2, false);
+    EXPECT_TRUE(PaintArtifactCompositor::mightOverlap(
+        pendingLayer, pendingLayer2, *geometryMapper));
+  }
 
   RefPtr<TransformPaintPropertyNode> transform =
       TransformPaintPropertyNode::create(
           TransformPaintPropertyNode::root(),
           TransformationMatrix().translate(99, 0), FloatPoint3D(100, 100, 0),
           false);
-
-  paintChunk2.properties.propertyTreeState.setTransform(transform.get());
-  EXPECT_TRUE(PaintArtifactCompositor::mightOverlap(paintChunk2, pendingLayer,
-                                                    *geometryMapper));
+  {
+    paintChunk2.properties.propertyTreeState.setTransform(transform.get());
+    PaintArtifactCompositor::PendingLayer pendingLayer2(paintChunk2, false);
+    EXPECT_TRUE(PaintArtifactCompositor::mightOverlap(
+        pendingLayer, pendingLayer2, *geometryMapper));
+  }
 
   RefPtr<TransformPaintPropertyNode> transform2 =
       TransformPaintPropertyNode::create(
           TransformPaintPropertyNode::root(),
           TransformationMatrix().translate(100, 0), FloatPoint3D(100, 100, 0),
           false);
-  paintChunk2.properties.propertyTreeState.setTransform(transform2.get());
-
-  EXPECT_FALSE(PaintArtifactCompositor::mightOverlap(paintChunk2, pendingLayer,
-                                                     *geometryMapper));
+  {
+    paintChunk2.properties.propertyTreeState.setTransform(transform2.get());
+    PaintArtifactCompositor::PendingLayer pendingLayer2(paintChunk2, false);
+    EXPECT_FALSE(PaintArtifactCompositor::mightOverlap(
+        pendingLayer, pendingLayer2, *geometryMapper));
+  }
 }
 
 TEST_F(PaintArtifactCompositorTestWithPropertyTrees, PendingLayer) {
+  std::unique_ptr<GeometryMapper> geometryMapper = GeometryMapper::create();
+
   PaintChunk chunk1;
   chunk1.properties.propertyTreeState = PropertyTreeState(
       TransformPaintPropertyNode::root(), ClipPaintPropertyNode::root(),
@@ -1594,7 +1496,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, PendingLayer) {
   chunk1.knownToBeOpaque = true;
   chunk1.bounds = FloatRect(0, 0, 30, 40);
 
-  PaintArtifactCompositor::PendingLayer pendingLayer(chunk1);
+  PaintArtifactCompositor::PendingLayer pendingLayer(chunk1, false);
 
   EXPECT_TRUE(pendingLayer.backfaceHidden);
   EXPECT_TRUE(pendingLayer.knownToBeOpaque);
@@ -1605,7 +1507,8 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, PendingLayer) {
   chunk2.properties.backfaceHidden = true;
   chunk2.knownToBeOpaque = true;
   chunk2.bounds = FloatRect(10, 20, 30, 40);
-  pendingLayer.add(chunk2, nullptr);
+  pendingLayer.merge(PaintArtifactCompositor::PendingLayer(chunk2, false),
+                     *geometryMapper);
 
   EXPECT_TRUE(pendingLayer.backfaceHidden);
   // Bounds not equal to one PaintChunk.
@@ -1617,7 +1520,8 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, PendingLayer) {
   chunk3.properties.backfaceHidden = true;
   chunk3.knownToBeOpaque = true;
   chunk3.bounds = FloatRect(-5, -25, 20, 20);
-  pendingLayer.add(chunk3, nullptr);
+  pendingLayer.merge(PaintArtifactCompositor::PendingLayer(chunk3, false),
+                     *geometryMapper);
 
   EXPECT_TRUE(pendingLayer.backfaceHidden);
   EXPECT_FALSE(pendingLayer.knownToBeOpaque);
@@ -1637,7 +1541,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, PendingLayerWithGeometry) {
       EffectPaintPropertyNode::root());
   chunk1.bounds = FloatRect(0, 0, 30, 40);
 
-  PaintArtifactCompositor::PendingLayer pendingLayer(chunk1);
+  PaintArtifactCompositor::PendingLayer pendingLayer(chunk1, false);
 
   EXPECT_BLINK_FLOAT_RECT_EQ(FloatRect(0, 0, 30, 40), pendingLayer.bounds);
 
@@ -1646,19 +1550,25 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, PendingLayerWithGeometry) {
   chunk2.properties.propertyTreeState.setTransform(transform);
   chunk2.bounds = FloatRect(0, 0, 50, 60);
   std::unique_ptr<GeometryMapper> geometryMapper = GeometryMapper::create();
-  pendingLayer.add(chunk2, geometryMapper.get());
+  pendingLayer.merge(PaintArtifactCompositor::PendingLayer(chunk2, false),
+                     *geometryMapper);
 
   EXPECT_BLINK_FLOAT_RECT_EQ(FloatRect(0, 0, 70, 85), pendingLayer.bounds);
 }
 
-TEST_F(PaintArtifactCompositorTestWithPropertyTrees, PendingLayerKnownOpaque) {
+// TODO(crbug.com/701991):
+// The test is disabled because opaque rect mapping is not implemented yet.
+TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
+       PendingLayerKnownOpaque_DISABLED) {
+  std::unique_ptr<GeometryMapper> geometryMapper = GeometryMapper::create();
+
   PaintChunk chunk1;
   chunk1.properties.propertyTreeState = PropertyTreeState(
       TransformPaintPropertyNode::root(), ClipPaintPropertyNode::root(),
       EffectPaintPropertyNode::root());
   chunk1.bounds = FloatRect(0, 0, 30, 40);
   chunk1.knownToBeOpaque = false;
-  PaintArtifactCompositor::PendingLayer pendingLayer(chunk1);
+  PaintArtifactCompositor::PendingLayer pendingLayer(chunk1, false);
 
   EXPECT_FALSE(pendingLayer.knownToBeOpaque);
 
@@ -1666,7 +1576,8 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, PendingLayerKnownOpaque) {
   chunk2.properties.propertyTreeState = chunk1.properties.propertyTreeState;
   chunk2.bounds = FloatRect(0, 0, 25, 35);
   chunk2.knownToBeOpaque = true;
-  pendingLayer.add(chunk2, nullptr);
+  pendingLayer.merge(PaintArtifactCompositor::PendingLayer(chunk2, false),
+                     *geometryMapper);
 
   // Chunk 2 doesn't cover the entire layer, so not opaque.
   EXPECT_FALSE(pendingLayer.knownToBeOpaque);
@@ -1675,7 +1586,8 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, PendingLayerKnownOpaque) {
   chunk3.properties.propertyTreeState = chunk1.properties.propertyTreeState;
   chunk3.bounds = FloatRect(0, 0, 50, 60);
   chunk3.knownToBeOpaque = true;
-  pendingLayer.add(chunk3, nullptr);
+  pendingLayer.merge(PaintArtifactCompositor::PendingLayer(chunk3, false),
+                     *geometryMapper);
 
   // Chunk 3 covers the entire layer, so now it's opaque.
   EXPECT_TRUE(pendingLayer.knownToBeOpaque);
@@ -1706,7 +1618,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, EffectWithElementId) {
       EffectPaintPropertyNode::root(), TransformPaintPropertyNode::root(),
       ClipPaintPropertyNode::root(), ColorFilterNone,
       CompositorFilterOperations(), opacity, SkBlendMode::kSrcOver,
-      CompositingReasonNone, expectedCompositorElementId);
+      CompositingReasonActiveAnimation, expectedCompositorElementId);
 
   TestPaintArtifact artifact;
   artifact
@@ -1739,7 +1651,6 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, CompositedLuminanceMask) {
              masking.get())
       .rectDrawing(FloatRect(150, 150, 100, 100), Color::white);
   update(artifact.build());
-
   ASSERT_EQ(2u, contentLayerCount());
 
   const cc::Layer* maskedLayer = contentLayerAt(0);
@@ -1814,6 +1725,264 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
   for (auto layer : rootLayer()->children()) {
     EXPECT_EQ(sequenceNumber, layer->property_tree_sequence_number());
   }
+}
+
+TEST_F(PaintArtifactCompositorTestWithPropertyTrees, DecompositeClip) {
+  // A clipped paint chunk that gets merged into a previous layer should
+  // only contribute clipped bounds to the layer bound.
+
+  RefPtr<ClipPaintPropertyNode> clip = ClipPaintPropertyNode::create(
+      ClipPaintPropertyNode::root(), TransformPaintPropertyNode::root(),
+      FloatRoundedRect(75, 75, 100, 100));
+
+  TestPaintArtifact artifact;
+  artifact
+      .chunk(TransformPaintPropertyNode::root(), ClipPaintPropertyNode::root(),
+             EffectPaintPropertyNode::root())
+      .rectDrawing(FloatRect(50, 50, 100, 100), Color::gray);
+  artifact
+      .chunk(TransformPaintPropertyNode::root(), clip.get(),
+             EffectPaintPropertyNode::root())
+      .rectDrawing(FloatRect(100, 100, 100, 100), Color::gray);
+  update(artifact.build());
+  ASSERT_EQ(1u, contentLayerCount());
+
+  const cc::Layer* layer = contentLayerAt(0);
+  EXPECT_EQ(gfx::Vector2dF(50.f, 50.f), layer->offset_to_transform_parent());
+  EXPECT_EQ(gfx::Size(125, 125), layer->bounds());
+}
+
+TEST_F(PaintArtifactCompositorTestWithPropertyTrees, DecompositeEffect) {
+  // An effect node without direct compositing reason and does not need to
+  // group compositing descendants should not be composited and can merge
+  // with other chunks.
+
+  RefPtr<EffectPaintPropertyNode> effect =
+      createOpacityOnlyEffect(EffectPaintPropertyNode::root(), 0.5);
+
+  TestPaintArtifact artifact;
+  artifact
+      .chunk(TransformPaintPropertyNode::root(), ClipPaintPropertyNode::root(),
+             EffectPaintPropertyNode::root())
+      .rectDrawing(FloatRect(50, 25, 100, 100), Color::gray);
+  artifact
+      .chunk(TransformPaintPropertyNode::root(), ClipPaintPropertyNode::root(),
+             effect.get())
+      .rectDrawing(FloatRect(25, 75, 100, 100), Color::gray);
+  artifact
+      .chunk(TransformPaintPropertyNode::root(), ClipPaintPropertyNode::root(),
+             EffectPaintPropertyNode::root())
+      .rectDrawing(FloatRect(75, 75, 100, 100), Color::gray);
+  update(artifact.build());
+  ASSERT_EQ(1u, contentLayerCount());
+
+  const cc::Layer* layer = contentLayerAt(0);
+  EXPECT_EQ(gfx::Vector2dF(25.f, 25.f), layer->offset_to_transform_parent());
+  EXPECT_EQ(gfx::Size(150, 150), layer->bounds());
+  EXPECT_EQ(1, layer->effect_tree_index());
+}
+
+TEST_F(PaintArtifactCompositorTestWithPropertyTrees, DirectlyCompositedEffect) {
+  // An effect node with direct compositing shall be composited.
+  RefPtr<EffectPaintPropertyNode> effect = EffectPaintPropertyNode::create(
+      EffectPaintPropertyNode::root(), TransformPaintPropertyNode::root(),
+      ClipPaintPropertyNode::root(), ColorFilterNone,
+      CompositorFilterOperations(), 0.5f, SkBlendMode::kSrcOver,
+      CompositingReasonAll);
+
+  TestPaintArtifact artifact;
+  artifact
+      .chunk(TransformPaintPropertyNode::root(), ClipPaintPropertyNode::root(),
+             EffectPaintPropertyNode::root())
+      .rectDrawing(FloatRect(50, 25, 100, 100), Color::gray);
+  artifact
+      .chunk(TransformPaintPropertyNode::root(), ClipPaintPropertyNode::root(),
+             effect.get())
+      .rectDrawing(FloatRect(25, 75, 100, 100), Color::gray);
+  artifact
+      .chunk(TransformPaintPropertyNode::root(), ClipPaintPropertyNode::root(),
+             EffectPaintPropertyNode::root())
+      .rectDrawing(FloatRect(75, 75, 100, 100), Color::gray);
+  update(artifact.build());
+  ASSERT_EQ(3u, contentLayerCount());
+
+  const cc::Layer* layer1 = contentLayerAt(0);
+  EXPECT_EQ(gfx::Vector2dF(50.f, 25.f), layer1->offset_to_transform_parent());
+  EXPECT_EQ(gfx::Size(100, 100), layer1->bounds());
+  EXPECT_EQ(1, layer1->effect_tree_index());
+
+  const cc::Layer* layer2 = contentLayerAt(1);
+  EXPECT_EQ(gfx::Vector2dF(25.f, 75.f), layer2->offset_to_transform_parent());
+  EXPECT_EQ(gfx::Size(100, 100), layer2->bounds());
+  const cc::EffectNode* effectNode =
+      propertyTrees().effect_tree.Node(layer2->effect_tree_index());
+  EXPECT_EQ(1, effectNode->parent_id);
+  EXPECT_EQ(0.5f, effectNode->opacity);
+
+  const cc::Layer* layer3 = contentLayerAt(2);
+  EXPECT_EQ(gfx::Vector2dF(75.f, 75.f), layer3->offset_to_transform_parent());
+  EXPECT_EQ(gfx::Size(100, 100), layer3->bounds());
+  EXPECT_EQ(1, layer3->effect_tree_index());
+}
+
+TEST_F(PaintArtifactCompositorTestWithPropertyTrees, DecompositeDeepEffect) {
+  // A paint chunk may enter multiple level effects with or without compositing
+  // reasons. This test verifies we still decomposite effects without a direct
+  // reason, but stop at a directly composited effect.
+  RefPtr<EffectPaintPropertyNode> effect1 =
+      createOpacityOnlyEffect(EffectPaintPropertyNode::root(), 0.1f);
+  RefPtr<EffectPaintPropertyNode> effect2 = EffectPaintPropertyNode::create(
+      effect1, TransformPaintPropertyNode::root(),
+      ClipPaintPropertyNode::root(), ColorFilterNone,
+      CompositorFilterOperations(), 0.2f, SkBlendMode::kSrcOver,
+      CompositingReasonAll);
+  RefPtr<EffectPaintPropertyNode> effect3 =
+      createOpacityOnlyEffect(effect2, 0.3f);
+
+  TestPaintArtifact artifact;
+  artifact
+      .chunk(TransformPaintPropertyNode::root(), ClipPaintPropertyNode::root(),
+             EffectPaintPropertyNode::root())
+      .rectDrawing(FloatRect(50, 25, 100, 100), Color::gray);
+  artifact
+      .chunk(TransformPaintPropertyNode::root(), ClipPaintPropertyNode::root(),
+             effect3.get())
+      .rectDrawing(FloatRect(25, 75, 100, 100), Color::gray);
+  artifact
+      .chunk(TransformPaintPropertyNode::root(), ClipPaintPropertyNode::root(),
+             EffectPaintPropertyNode::root())
+      .rectDrawing(FloatRect(75, 75, 100, 100), Color::gray);
+  update(artifact.build());
+  ASSERT_EQ(3u, contentLayerCount());
+
+  const cc::Layer* layer1 = contentLayerAt(0);
+  EXPECT_EQ(gfx::Vector2dF(50.f, 25.f), layer1->offset_to_transform_parent());
+  EXPECT_EQ(gfx::Size(100, 100), layer1->bounds());
+  EXPECT_EQ(1, layer1->effect_tree_index());
+
+  const cc::Layer* layer2 = contentLayerAt(1);
+  EXPECT_EQ(gfx::Vector2dF(25.f, 75.f), layer2->offset_to_transform_parent());
+  EXPECT_EQ(gfx::Size(100, 100), layer2->bounds());
+  const cc::EffectNode* effectNode2 =
+      propertyTrees().effect_tree.Node(layer2->effect_tree_index());
+  EXPECT_EQ(0.2f, effectNode2->opacity);
+  const cc::EffectNode* effectNode1 =
+      propertyTrees().effect_tree.Node(effectNode2->parent_id);
+  EXPECT_EQ(1, effectNode1->parent_id);
+  EXPECT_EQ(0.1f, effectNode1->opacity);
+
+  const cc::Layer* layer3 = contentLayerAt(2);
+  EXPECT_EQ(gfx::Vector2dF(75.f, 75.f), layer3->offset_to_transform_parent());
+  EXPECT_EQ(gfx::Size(100, 100), layer3->bounds());
+  EXPECT_EQ(1, layer3->effect_tree_index());
+}
+
+TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
+       IndirectlyCompositedEffect) {
+  // An effect node without direct compositing still needs to be composited
+  // for grouping, if some chunks need to be composited.
+  RefPtr<EffectPaintPropertyNode> effect =
+      createOpacityOnlyEffect(EffectPaintPropertyNode::root(), 0.5f);
+  RefPtr<TransformPaintPropertyNode> transform =
+      TransformPaintPropertyNode::create(
+          TransformPaintPropertyNode::root(), TransformationMatrix(),
+          FloatPoint3D(), false, 0, CompositingReason3DTransform);
+
+  TestPaintArtifact artifact;
+  artifact
+      .chunk(TransformPaintPropertyNode::root(), ClipPaintPropertyNode::root(),
+             EffectPaintPropertyNode::root())
+      .rectDrawing(FloatRect(50, 25, 100, 100), Color::gray);
+  artifact
+      .chunk(TransformPaintPropertyNode::root(), ClipPaintPropertyNode::root(),
+             effect.get())
+      .rectDrawing(FloatRect(25, 75, 100, 100), Color::gray);
+  artifact.chunk(transform.get(), ClipPaintPropertyNode::root(), effect.get())
+      .rectDrawing(FloatRect(75, 75, 100, 100), Color::gray);
+  update(artifact.build());
+  ASSERT_EQ(3u, contentLayerCount());
+
+  const cc::Layer* layer1 = contentLayerAt(0);
+  EXPECT_EQ(gfx::Vector2dF(50.f, 25.f), layer1->offset_to_transform_parent());
+  EXPECT_EQ(gfx::Size(100, 100), layer1->bounds());
+  EXPECT_EQ(1, layer1->effect_tree_index());
+
+  const cc::Layer* layer2 = contentLayerAt(1);
+  EXPECT_EQ(gfx::Vector2dF(25.f, 75.f), layer2->offset_to_transform_parent());
+  EXPECT_EQ(gfx::Size(100, 100), layer2->bounds());
+  const cc::EffectNode* effectNode =
+      propertyTrees().effect_tree.Node(layer2->effect_tree_index());
+  EXPECT_EQ(1, effectNode->parent_id);
+  EXPECT_EQ(0.5f, effectNode->opacity);
+
+  const cc::Layer* layer3 = contentLayerAt(2);
+  EXPECT_EQ(gfx::Vector2dF(75.f, 75.f), layer3->offset_to_transform_parent());
+  EXPECT_EQ(gfx::Size(100, 100), layer3->bounds());
+  EXPECT_EQ(effectNode->id, layer3->effect_tree_index());
+}
+
+TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
+       DecompositedEffectNotMergingDueToOverlap) {
+  // This tests an effect that doesn't need to be composited, but needs
+  // separate backing due to overlap with a previous composited effect.
+  RefPtr<EffectPaintPropertyNode> effect1 =
+      createOpacityOnlyEffect(EffectPaintPropertyNode::root(), 0.1f);
+  RefPtr<EffectPaintPropertyNode> effect2 =
+      createOpacityOnlyEffect(EffectPaintPropertyNode::root(), 0.2f);
+  RefPtr<TransformPaintPropertyNode> transform =
+      TransformPaintPropertyNode::create(
+          TransformPaintPropertyNode::root(), TransformationMatrix(),
+          FloatPoint3D(), false, 0, CompositingReason3DTransform);
+  TestPaintArtifact artifact;
+  artifact
+      .chunk(TransformPaintPropertyNode::root(), ClipPaintPropertyNode::root(),
+             EffectPaintPropertyNode::root())
+      .rectDrawing(FloatRect(0, 0, 50, 50), Color::gray);
+  artifact
+      .chunk(TransformPaintPropertyNode::root(), ClipPaintPropertyNode::root(),
+             effect1.get())
+      .rectDrawing(FloatRect(100, 0, 50, 50), Color::gray);
+  // This chunk has a transform that must be composited, thus causing effect1
+  // to be composited too.
+  artifact.chunk(transform.get(), ClipPaintPropertyNode::root(), effect1.get())
+      .rectDrawing(FloatRect(200, 0, 50, 50), Color::gray);
+  artifact
+      .chunk(TransformPaintPropertyNode::root(), ClipPaintPropertyNode::root(),
+             effect2.get())
+      .rectDrawing(FloatRect(200, 100, 50, 50), Color::gray);
+  // This chunk overlaps with the 2nd chunk, but is seemingly safe to merge.
+  // However because effect1 gets composited due to a composited transform,
+  // we can't merge with effect1 nor skip it to merge with the first chunk.
+  artifact
+      .chunk(TransformPaintPropertyNode::root(), ClipPaintPropertyNode::root(),
+             effect2.get())
+      .rectDrawing(FloatRect(100, 0, 50, 50), Color::gray);
+
+  update(artifact.build());
+  ASSERT_EQ(4u, contentLayerCount());
+
+  const cc::Layer* layer1 = contentLayerAt(0);
+  EXPECT_EQ(gfx::Vector2dF(0.f, 0.f), layer1->offset_to_transform_parent());
+  EXPECT_EQ(gfx::Size(50, 50), layer1->bounds());
+  EXPECT_EQ(1, layer1->effect_tree_index());
+
+  const cc::Layer* layer2 = contentLayerAt(1);
+  EXPECT_EQ(gfx::Vector2dF(100.f, 0.f), layer2->offset_to_transform_parent());
+  EXPECT_EQ(gfx::Size(50, 50), layer2->bounds());
+  const cc::EffectNode* effectNode =
+      propertyTrees().effect_tree.Node(layer2->effect_tree_index());
+  EXPECT_EQ(1, effectNode->parent_id);
+  EXPECT_EQ(0.1f, effectNode->opacity);
+
+  const cc::Layer* layer3 = contentLayerAt(2);
+  EXPECT_EQ(gfx::Vector2dF(200.f, 0.f), layer3->offset_to_transform_parent());
+  EXPECT_EQ(gfx::Size(50, 50), layer3->bounds());
+  EXPECT_EQ(effectNode->id, layer3->effect_tree_index());
+
+  const cc::Layer* layer4 = contentLayerAt(3);
+  EXPECT_EQ(gfx::Vector2dF(100.f, 0.f), layer4->offset_to_transform_parent());
+  EXPECT_EQ(gfx::Size(150, 150), layer4->bounds());
+  EXPECT_EQ(1, layer4->effect_tree_index());
 }
 
 }  // namespace blink

@@ -91,13 +91,25 @@ class PLATFORM_EXPORT PaintArtifactCompositor {
   // A pending layer is a collection of paint chunks that will end up in
   // the same cc::Layer.
   struct PLATFORM_EXPORT PendingLayer {
-    PendingLayer(const PaintChunk& firstPaintChunk);
-    void add(const PaintChunk&, GeometryMapper*);
+    PendingLayer(const PaintChunk& firstPaintChunk, bool chunkIsForeign);
+    // Merge another pending layer after this one, appending all its paint
+    // chunks after chunks in this layer, with appropriate space conversion
+    // applied. The merged layer must have a property tree state that's deeper
+    // than this layer, i.e. can "upcast" to this layer's state.
+    void merge(const PendingLayer& guest, GeometryMapper&);
+    bool canMerge(const PendingLayer& guest) const;
+    // Mutate this layer's property tree state to a more general (shallower)
+    // state, thus the name "upcast". The concrete effect of this is to
+    // "decomposite" some of the properties, so that fewer properties will be
+    // applied by the compositor, and more properties will be applied internally
+    // to the chunks as Skia commands.
+    void upcast(const PropertyTreeState&, GeometryMapper&);
     FloatRect bounds;
     Vector<const PaintChunk*> paintChunks;
     bool knownToBeOpaque;
     bool backfaceHidden;
     PropertyTreeState propertyTreeState;
+    bool isForeign;
   };
 
   PaintArtifactCompositor();
@@ -105,13 +117,37 @@ class PLATFORM_EXPORT PaintArtifactCompositor {
   class ContentLayerClientImpl;
 
   // Collects the PaintChunks into groups which will end up in the same
-  // cc layer. This includes testing PaintChunks for "merge" compatibility (e.g.
-  // directly composited property tree states are separately composited)
-  // and overlap testing (PaintChunks that overlap existing PaintLayers they
-  // are not compatible with must be separately composited).
+  // cc layer. This is the entry point of the layerization algorithm.
   void collectPendingLayers(const PaintArtifact&,
                             Vector<PendingLayer>& pendingLayers,
                             GeometryMapper&);
+  // This is the internal recursion of collectPendingLayers. This function
+  // loops over the list of paint chunks, scoped by an isolated group
+  // (i.e. effect node). Inside of the loop, chunks are tested for overlap
+  // and merge compatibility. Subgroups are handled by recursion, and will
+  // be tested for "decompositing" upon return.
+  // Merge compatibility means consecutive chunks may be layerized into the
+  // same backing (i.e. merged) if their property states don't cross
+  // direct-compositing boundary.
+  // Non-consecutive chunks that are nevertheless compatible may still be
+  // merged, if reordering of the chunks won't affect the ultimate result.
+  // This is determined by overlap testing such that chunks can be safely
+  // reordered if their effective bounds in screen space can't overlap.
+  // The recursion only tests merge & overlap for chunks scoped by the same
+  // group. This is where "decompositing" came in. Upon returning from a
+  // recursion, the layerization of the subgroup may be tested for merge &
+  // overlap with other chunks in the parent group, if grouping requirement
+  // can be satisfied (and the effect node has no direct reason).
+  static void layerizeGroup(const PaintArtifact&,
+                            Vector<PendingLayer>& pendingLayers,
+                            GeometryMapper&,
+                            const EffectPaintPropertyNode&,
+                            Vector<PaintChunk>::const_iterator& chunkCursor);
+  static bool mightOverlap(const PendingLayer&,
+                           const PendingLayer&,
+                           GeometryMapper&);
+  static bool canDecompositeEffect(const EffectPaintPropertyNode*,
+                                   const PendingLayer&);
 
   // Builds a leaf layer that represents a single paint chunk.
   // Note: cc::Layer API assumes the layer bounds start at (0, 0), but the
@@ -133,19 +169,6 @@ class PLATFORM_EXPORT PaintArtifactCompositor {
   std::unique_ptr<ContentLayerClientImpl> clientForPaintChunk(
       const PaintChunk&,
       const PaintArtifact&);
-
-  static bool canMergeInto(const PaintArtifact&,
-                           const PaintChunk& newChunk,
-                           const PendingLayer& candidatePendingLayer);
-
-  // Returns true if |newChunk| might overlap |candidatePendingLayer| in the
-  // root property tree space. If it does overlap, it will always return true.
-  // If it doesn't overlap, it might return true in cases were we can't
-  // efficiently determine a false value, or the truth depends on
-  // compositor animations.
-  static bool mightOverlap(const PaintChunk& newChunk,
-                           const PendingLayer& candidatePendingLayer,
-                           GeometryMapper&);
 
   scoped_refptr<cc::Layer> m_rootLayer;
   std::unique_ptr<WebLayer> m_webLayer;
@@ -196,7 +219,7 @@ class PLATFORM_EXPORT PaintArtifactCompositor {
   FRIEND_TEST_ALL_PREFIXES(PaintArtifactCompositorTestWithPropertyTrees,
                            PendingLayerWithGeometry);
   FRIEND_TEST_ALL_PREFIXES(PaintArtifactCompositorTestWithPropertyTrees,
-                           PendingLayerKnownOpaque);
+                           PendingLayerKnownOpaque_DISABLED);
 };
 
 }  // namespace blink
