@@ -185,6 +185,9 @@ set(AOM_AV1_ENCODER_AVX2_INTRIN
     "${AOM_ROOT}/av1/encoder/x86/error_intrin_avx2.c"
     "${AOM_ROOT}/av1/encoder/x86/hybrid_fwd_txfm_avx2.c")
 
+set(AOM_AV1_ENCODER_NEON_INTRIN
+    "${AOM_ROOT}/av1/encoder/arm/neon/quantize_neon.c")
+
 if (CONFIG_ACCOUNTING)
   set(AOM_AV1_COMMON_SOURCES
       ${AOM_AV1_COMMON_SOURCES}
@@ -202,10 +205,20 @@ if (CONFIG_AOM_HIGHBITDEPTH)
       ${AOM_AV1_COMMON_AVX2_INTRIN}
       "${AOM_ROOT}/av1/common/x86/highbd_inv_txfm_avx2.c")
 
+  set(AOM_AV1_ENCODER_NEON_INTRIN
+      ${AOM_AV1_ENCODER_NEON_INTRIN}
+      "${AOM_ROOT}/av1/encoder/arm/neon/dct_neon.c"
+      "${AOM_ROOT}/av1/encoder/arm/neon/error_neon.c")
+
   set(AOM_AV1_ENCODER_SSE4_1_INTRIN
       ${AOM_AV1_ENCODER_SSE4_1_INTRIN}
       "${AOM_ROOT}/av1/encoder/x86/av1_highbd_quantize_sse4.c"
       "${AOM_ROOT}/av1/encoder/x86/highbd_fwd_txfm_sse4.c")
+else ()
+  set(AOM_AV1_COMMON_NEON_INTRIN
+      ${AOM_AV1_COMMON_NEON_INTRIN}
+      "${AOM_ROOT}/av1/common/arm/neon/iht4x4_add_neon.c"
+      "${AOM_ROOT}/av1/common/arm/neon/iht8x8_add_neon.c")
 endif ()
 
 if (CONFIG_CDEF)
@@ -238,6 +251,10 @@ if (CONFIG_CDEF)
       ${AOM_AV1_COMMON_SSE4_1_INTRIN}
       "${AOM_ROOT}/av1/common/clpf_sse4.c")
 
+  set(AOM_AV1_COMMON_NEON_INTRIN
+      ${AOM_AV1_COMMON_NEON_INTRIN}
+      "${AOM_ROOT}/av1/common/clpf_neon.c")
+
   set(AOM_AV1_ENCODER_SSE2_INTRIN
       ${AOM_AV1_ENCODER_SSE2_INTRIN}
       "${AOM_ROOT}/av1/encoder/clpf_rdo_sse2.c")
@@ -251,6 +268,10 @@ if (CONFIG_CDEF)
       "${AOM_ROOT}/av1/encoder/clpf_rdo_sse4.c"
       "${AOM_ROOT}/av1/common/x86/od_dering_sse4.c"
       "${AOM_ROOT}/av1/common/x86/od_dering_sse4.h")
+
+  set(AOM_AV1_ENCODER_NEON_INTRIN
+      ${AOM_AV1_ENCODER_NEON_INTRIN}
+      "${AOM_ROOT}/av1/encoder/clpf_rdo_neon.c")
 endif ()
 
 if (CONFIG_EXT_INTER)
@@ -439,6 +460,21 @@ function (setup_av1_targets)
     endif ()
   endif ()
 
+  if (HAVE_NEON)
+    if (AOM_AV1_COMMON_NEON_INTRIN)
+      add_intrinsics_object_library("${AOM_NEON_INTRIN_FLAG}"
+                                    "neon"
+                                    "aom_av1_common"
+                                    "AOM_AV1_COMMON_NEON_INTRIN")
+    endif ()
+
+    if (AOM_AV1_ENCODER_NEON_INTRIN)
+      add_intrinsics_object_library("${AOM_NEON_INTRIN_FLAG}"
+                                    "neon"
+                                    "aom_av1_encoder"
+                                    "AOM_AV1_ENCODER_NEON_INTRIN")
+    endif ()
+  endif ()
   # Pass the new lib targets up to the parent scope instance of
   # $AOM_LIB_TARGETS.
   set(AOM_LIB_TARGETS ${AOM_LIB_TARGETS} PARENT_SCOPE)
