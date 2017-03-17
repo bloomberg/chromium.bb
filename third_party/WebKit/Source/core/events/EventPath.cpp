@@ -35,7 +35,6 @@
 #include "core/events/TouchEvent.h"
 #include "core/events/TouchEventContext.h"
 #include "core/html/HTMLSlotElement.h"
-#include "core/svg/SVGUseElement.h"
 
 namespace blink {
 
@@ -75,21 +74,12 @@ void EventPath::initializeWith(Node& node, Event* event) {
   initialize();
 }
 
-static inline bool eventPathShouldBeEmptyFor(Node& node, Event* event) {
-  if (node.isPseudoElement() && !node.parentElement())
-    return true;
-
-  // Do not dispatch non-composed events in SVG use trees.
-  if (node.isSVGElement()) {
-    if (toSVGElement(node).inUseShadowTree() && event && !event->composed())
-      return true;
-  }
-
-  return false;
+static inline bool eventPathShouldBeEmptyFor(Node& node) {
+  return node.isPseudoElement() && !node.parentElement();
 }
 
 void EventPath::initialize() {
-  if (eventPathShouldBeEmptyFor(*m_node, m_event))
+  if (eventPathShouldBeEmptyFor(*m_node))
     return;
 
   calculatePath();
@@ -108,16 +98,6 @@ void EventPath::calculatePath() {
   // storing it in a perfectly sized m_nodeEventContexts Vector.
   HeapVector<Member<Node>, 64> nodesInPath;
   Node* current = m_node;
-
-  // Exclude nodes in SVG <use>'s shadow tree from event path.
-  // See crbug.com/630870
-  while (current->isSVGElement()) {
-    SVGUseElement* correspondingUseElement =
-        toSVGElement(current)->correspondingUseElement();
-    if (!correspondingUseElement)
-      break;
-    current = correspondingUseElement;
-  }
 
   nodesInPath.push_back(current);
   while (current) {

@@ -104,6 +104,7 @@ class SVGUseElement final : public SVGGraphicsElement,
                               const ContainerNode& targetInstance,
                               SVGElement*& newTarget) const;
   bool expandUseElementsInShadowTree();
+  void cloneNonMarkupEventListeners();
   void addReferencesToFirstDegreeNestedUseElements(SVGElement& target);
 
   void invalidateDependentShadowTrees();

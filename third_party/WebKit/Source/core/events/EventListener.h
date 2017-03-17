@@ -45,6 +45,7 @@ class CORE_EXPORT EventListener
   virtual bool operator==(const EventListener&) const = 0;
   virtual void handleEvent(ExecutionContext*, Event*) = 0;
   virtual const String& code() const { return emptyString; }
+  virtual bool wasCreatedFromMarkup() const { return false; }
   virtual bool belongsToTheCurrentWorld(ExecutionContext*) const {
     return false;
   }

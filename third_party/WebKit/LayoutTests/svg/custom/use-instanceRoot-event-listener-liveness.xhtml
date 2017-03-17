@@ -19,11 +19,10 @@ if (window.testRunner) {
     testRunner.waitUntilDone();
 }
 
-function eventHandler(event)
+function eventHandler()
 {
     var divElement = document.getElementById("console");
-    if (event.target == document.getElementById("test"))
-        divElement.textContent = "Test passed";
+    divElement.textContent = "Test passed";
 
     if (window.testRunner)
         testRunner.notifyDone();
@@ -43,9 +42,8 @@ function startTest() {
     // No-op, as no listener is not yet registered
     fireSimulatedMouseClickEvent(shadowRoot.firstChild);
 
-    // Add listeners
+    // Add listener
     shadowRoot.firstChild.addEventListener("click", eventHandler, false);
-    useElement.addEventListener("click", eventHandler, false);
 
     // Should fire immediately and finish the test
     fireSimulatedMouseClickEvent(shadowRoot.firstChild);

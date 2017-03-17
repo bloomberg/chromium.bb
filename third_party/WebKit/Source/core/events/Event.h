@@ -115,7 +115,7 @@ class CORE_EXPORT Event : public GarbageCollectedFinalized<Event>,
   EventTarget* target() const { return m_target.get(); }
   void setTarget(EventTarget*);
 
-  EventTarget* currentTarget() const { return m_currentTarget; }
+  EventTarget* currentTarget() const;
   void setCurrentTarget(EventTarget* currentTarget) {
     m_currentTarget = currentTarget;
   }
