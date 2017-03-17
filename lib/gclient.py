@@ -146,7 +146,7 @@ def _GetGclientURLs(internal, rev):
   return results
 
 
-def _GetGclientSolutions(internal, rev, template):
+def _GetGclientSolutions(internal, rev, template, managed):
   """Get the solutions array to write to the gclient file.
 
   See WriteConfigFile below.
@@ -165,20 +165,17 @@ def _GetGclientSolutions(internal, rev, template):
     # template gclient file.
     solution.setdefault('custom_deps', {})
     solution.setdefault('custom_vars', {})
-
-    # Use managed:True for now, see crbug.com/624177
-    solution.setdefault('managed', True)
+    solution.setdefault('managed', managed)
 
   return solutions
 
 
-def _GetGclientSpec(internal, rev, template, use_cache):
+def _GetGclientSpec(internal, rev, template, use_cache, managed):
   """Return a formatted gclient spec.
 
   See WriteConfigFile below.
   """
-  solutions = _GetGclientSolutions(internal=internal, rev=rev,
-                                   template=template)
+  solutions = _GetGclientSolutions(internal, rev, template, managed)
   result = 'solutions = %s\n' % pprint.pformat(solutions)
 
   # Horrible hack, I will go to hell for this.  The bots need to have a git
@@ -193,7 +190,7 @@ def _GetGclientSpec(internal, rev, template, use_cache):
   return result
 
 def WriteConfigFile(gclient, cwd, internal, rev, template=None,
-                    use_cache=True):
+                    use_cache=True, managed=True):
   """Initialize the specified directory as a gclient checkout.
 
   For gclient documentation, see:
@@ -214,9 +211,10 @@ def WriteConfigFile(gclient, cwd, internal, rev, template=None,
               solutions.
     use_cache: An optional Boolean flag to indicate if the git cache should
                be used when available (on a continuous-integration builder).
+    managed: Default value of gclient config's 'managed' field. Default True
+             (see crbug.com/624177).
   """
-  spec = _GetGclientSpec(internal=internal, rev=rev, template=template,
-                         use_cache=use_cache)
+  spec = _GetGclientSpec(internal, rev, template, use_cache, managed)
   cmd = [gclient, 'config', '--spec', spec]
   cros_build_lib.RunCommand(cmd, cwd=cwd)
 
@@ -231,17 +229,30 @@ def Revert(gclient, cwd):
   cros_build_lib.RunCommand([gclient, 'revert', '--nohooks'], cwd=cwd)
 
 
-def Sync(gclient, cwd, reset=False):
+def Sync(gclient, cwd, reset=False, nohooks=True, verbose=True,
+         run_args=None):
   """Sync the specified directory using gclient.
 
   Args:
     gclient: Path to gclient.
     cwd: Directory to sync.
     reset: Reset to pristine version of the source code.
-  """
-  cmd = [gclient, 'sync', '--verbose', '--nohooks',
-         '--with_branch_heads', '--with_tags']
+    nohooks: If set, add '--nohooks' argument.
+    verbose: If set, add '--verbose' argument.
+    run_args: If set (dict), pass to RunCommand as kwargs.
 
+  Returns:
+    A CommandResult object.
+  """
+  if run_args is None:
+    run_args = {}
+
+  cmd = [gclient, 'sync', '--with_branch_heads', '--with_tags']
   if reset:
     cmd += ['--reset', '--force', '--delete_unversioned_trees']
-  cros_build_lib.RunCommand(cmd, cwd=cwd)
+  if nohooks:
+    cmd.append('--nohooks')
+  if verbose:
+    cmd.append('--verbose')
+
+  return cros_build_lib.RunCommand(cmd, cwd=cwd, **run_args)

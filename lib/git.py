@@ -185,12 +185,21 @@ def IsRefsTags(value):
   return value.startswith('refs/tags/')
 
 
-def GetGitRepoRevision(cwd, branch='HEAD'):
+def GetGitRepoRevision(cwd, branch='HEAD', short=False):
   """Find the revision of a branch.
 
-  Defaults to current branch.
+  Args:
+    cwd: The git repository to work with.
+    branch: Branch name. Defaults to current branch.
+    short: If set, output shorter unique SHA-1.
+
+  Returns:
+    Revision SHA-1.
   """
-  return RunGit(cwd, ['rev-parse', branch]).output.strip()
+  cmd = ['rev-parse', branch]
+  if short:
+    cmd.insert(1, '--short')
+  return RunGit(cwd, cmd).output.strip()
 
 
 def DoesCommitExistInRepo(cwd, commit):

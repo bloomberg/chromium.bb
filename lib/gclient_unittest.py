@@ -105,6 +105,25 @@ class TestGclientWriteConfigFile(
   'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git'}]
 """)
 
+  def testChromeSpecWithGitHashNoManaged(self):
+    """Like testChromeSpecWithGitHash() but with "managed" sets to False."""
+    gclient.WriteConfigFile('gclient', self._TEST_CWD, True,
+                            '7becbe4afb42b3301d42149d7d1cade017f150ff',
+                            managed=False)
+    self._AssertGclientConfigSpec("""solutions = [{'custom_deps': {},
+  'custom_vars': {},
+  'deps_file': '.DEPS.git',
+  'managed': False,
+  'name': 'src',
+  'url': 'https://chromium.googlesource.com/chromium/src.git@7becbe4afb42b3301d42149d7d1cade017f150ff'},
+ {'custom_deps': {},
+  'custom_vars': {},
+  'deps_file': '.DEPS.git',
+  'managed': False,
+  'name': 'src-internal',
+  'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git'}]
+""")
+
   def testChromeSpecWithReleaseTag(self):
     """Test WriteConfigFile with chrome checkout at a given release tag."""
     gclient.WriteConfigFile('gclient', self._TEST_CWD, True, '45.0.2431.1')
@@ -179,3 +198,47 @@ class TestGclientWriteConfigFile(
   'name': 'src-internal',
   'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git'}]
 """)
+
+
+class GclientWrappersTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
+  """Tests for small gclient wrappers"""
+
+  def setUp(self):
+    self.fake_gclient = os.path.join(self.tempdir, 'gclient')
+    self.cwd = self.tempdir
+
+  def testRevert(self):
+    gclient.Revert(self.fake_gclient, self.cwd)
+    self.assertCommandCalled([self.fake_gclient, 'revert', '--nohooks'],
+                             cwd=self.cwd)
+
+  def testSync(self):
+    """Test gclient.Sync() without optional arguments."""
+    gclient.Sync(self.fake_gclient, self.cwd)
+    self.assertCommandCalled(
+        [self.fake_gclient, 'sync', '--with_branch_heads', '--with_tags',
+         '--nohooks', '--verbose'], cwd=self.cwd)
+
+  def testSyncWithOptions(self):
+    """Test gclient.Sync() with optional arguments."""
+    gclient.Sync(self.fake_gclient, self.cwd, reset=True)
+    self.assertCommandCalled(
+        [self.fake_gclient, 'sync', '--with_branch_heads', '--with_tags',
+         '--reset', '--force', '--delete_unversioned_trees',
+         '--nohooks', '--verbose'], cwd=self.cwd)
+
+    gclient.Sync(self.fake_gclient, self.cwd, nohooks=False, verbose=False)
+    self.assertCommandCalled(
+        [self.fake_gclient, 'sync', '--with_branch_heads', '--with_tags'],
+        cwd=self.cwd)
+
+  def testSyncWithRunArgs(self):
+    """Test gclient.Sync() with run_args.
+
+    run_args is an optional argument for RunCommand kwargs.
+    """
+    gclient.Sync(self.fake_gclient, self.cwd, run_args={'log_output': True})
+    self.assertCommandCalled(
+        [self.fake_gclient, 'sync', '--with_branch_heads', '--with_tags',
+         '--nohooks', '--verbose'],
+        cwd=self.cwd, log_output=True)

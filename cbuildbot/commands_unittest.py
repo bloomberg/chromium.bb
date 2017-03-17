@@ -167,6 +167,8 @@ class ChromeSDKTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
   CHROME_SRC = 'chrome_src'
   CMD = ['bar', 'baz']
   CWD = 'fooey'
+  DEFAULT_NINJA_CMD = ['ninja', '-C', 'out_%s/Release' % BOARD, '-j',
+                       str(commands.ChromeSDK.DEFAULT_JOBS)]
 
   def setUp(self):
     self.inst = commands.ChromeSDK(self.CWD, self.BOARD)
@@ -175,6 +177,12 @@ class ChromeSDKTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
     """Test that running a command is possible."""
     self.inst.Run(self.CMD)
     self.assertCommandContains([self.BOARD] + self.CMD, cwd=self.CWD)
+
+  def testRunCommandWithRunArgs(self):
+    """Test run_args optional argument for RunCommand kwargs."""
+    self.inst.Run(self.CMD, run_args={'log_output': True})
+    self.assertCommandContains([self.BOARD] + self.CMD, cwd=self.CWD,
+                               log_output=True)
 
   def testRunCommandKwargs(self):
     """Exercise optional arguments."""
@@ -185,16 +193,20 @@ class ChromeSDKTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
     self.assertCommandContains(['debug', self.BOARD] + list(self.EXTRA_ARGS) +
                                list(self.EXTRA_ARGS2) + self.CMD, cwd=self.CWD)
 
+  def MockGetDefaultTarget(self, with_nacl=False):
+    nacl_str = ' ninja nacl gold' if with_nacl else ''
+    self.rc.AddCmdResult(partial_mock.In('qlist-%s' % self.BOARD),
+                         output='%s%s' % (constants.CHROME_CP, nacl_str))
+
   def testNinjaWithNaclUseFlag(self):
     """Test that running ninja is possible.
 
     Verify that nacl_helper is built when the 'nacl' USE flag is specified
     for chromeos-base/chromeos-chrome.
     """
-    self.rc.AddCmdResult(partial_mock.In('qlist-%s' % self.BOARD),
-                         output='%s ninja nacl gold' % constants.CHROME_CP)
-    self.inst.Ninja(self.BOARD)
-    self.assertCommandContains([self.BOARD], cwd=self.CWD)
+    self.MockGetDefaultTarget(with_nacl=True)
+    self.inst.Ninja()
+    self.assertCommandContains(self.DEFAULT_NINJA_CMD, cwd=self.CWD)
     self.assertCommandContains(['nacl_helper'])
 
   def testNinjaWithoutNaclUseFlag(self):
@@ -203,11 +215,30 @@ class ChromeSDKTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
     Verify that nacl_helper is not built when no 'nacl' USE flag is specified
     for chromeos-base/chromeos-chrome.
     """
-    self.rc.AddCmdResult(partial_mock.In('qlist-%s' % self.BOARD),
-                         output='%s' % constants.CHROME_CP)
-    self.inst.Ninja(self.BOARD)
-    self.assertCommandContains([self.BOARD], cwd=self.CWD)
+    self.MockGetDefaultTarget()
+    self.inst.Ninja()
+    self.assertCommandContains(self.DEFAULT_NINJA_CMD, cwd=self.CWD)
     self.assertCommandContains(['nacl_helper'], expected=False)
+
+  def testNinjaWithRunArgs(self):
+    """Test that running ninja with run_args.
+
+    run_args is an optional argument for RunCommand kwargs.
+    """
+    self.MockGetDefaultTarget()
+    self.inst.Ninja(run_args={'log_output': True})
+    self.assertCommandContains(self.DEFAULT_NINJA_CMD, cwd=self.CWD,
+                               log_output=True)
+
+  def testNinjaOptions(self):
+    """Test that running ninja with non-default options."""
+    self.MockGetDefaultTarget()
+    expected_jobs = 123
+    expected_target = 'custom_target'
+    self.inst.Ninja(jobs=expected_jobs, debug=True, targets=[expected_target])
+    self.assertCommandContains(
+        ['ninja', '-C', 'out_%s/Debug' % self.BOARD, '-j', str(expected_jobs)])
+    self.assertCommandContains([expected_target])
 
 
 class HWLabCommandsTest(cros_build_lib_unittest.RunCommandTestCase,

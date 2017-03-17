@@ -2743,8 +2743,16 @@ class ChromeSDK(object):
 
     return targets
 
-  def Run(self, cmd, extra_args=None):
-    """Run a command inside the chrome-sdk context."""
+  def Run(self, cmd, extra_args=None, run_args=None):
+    """Run a command inside the chrome-sdk context.
+
+    Args:
+      cmd: Command (list) to run inside 'cros chrome-sdk'.
+      extra_args: Extra arguments for 'cros chorme-sdk'.
+      run_args: If set (dict), pass to RunCommand as kwargs.
+    """
+    if run_args is None:
+      run_args = {}
     cros_cmd = ['cros']
     if self.debug_log:
       cros_cmd += ['--log-level', 'debug']
@@ -2756,15 +2764,16 @@ class ChromeSDK(object):
       self.extra_args += ['--toolchain-url', self.toolchain_url]
     cros_cmd += ['chrome-sdk', '--board', self.board] + self.extra_args
     cros_cmd += (extra_args or []) + ['--'] + cmd
-    cros_build_lib.RunCommand(cros_cmd, cwd=self.cwd)
+    cros_build_lib.RunCommand(cros_cmd, cwd=self.cwd, **run_args)
 
-  def Ninja(self, jobs=None, debug=False, targets=None):
+  def Ninja(self, jobs=None, debug=False, targets=None, run_args=None):
     """Run 'ninja' inside a chrome-sdk context.
 
     Args:
       jobs: The number of -j jobs to run.
       debug: Whether to do a Debug build (defaults to Release).
       targets: The targets to compile.
+      run_args: If set (dict), pass to RunCommand as kwargs.
     """
     if jobs is None:
       jobs = self.DEFAULT_JOBS_GOMA if self.goma else self.DEFAULT_JOBS
@@ -2772,4 +2781,4 @@ class ChromeSDK(object):
       targets = self._GetDefaultTargets()
     flavor = 'Debug' if debug else 'Release'
     cmd = ['ninja', '-C', 'out_%s/%s' % (self.board, flavor), '-j', str(jobs)]
-    self.Run(cmd + list(targets))
+    self.Run(cmd + list(targets), run_args=run_args)

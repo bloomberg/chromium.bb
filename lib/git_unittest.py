@@ -189,6 +189,16 @@ class GitWrappersTest(cros_build_lib_unittest.RunCommandTempDirTestCase):
                                                        self.PUSH_BRANCH)],
                                capture_output=True)
 
+  def testGetGitRepoRevision(self):
+    git.GetGitRepoRevision(self.fake_git_dir)
+    self.assertCommandContains(['rev-parse', 'HEAD'])
+    git.GetGitRepoRevision(self.fake_git_dir, branch='branch')
+    self.assertCommandContains(['rev-parse', 'branch'])
+    git.GetGitRepoRevision(self.fake_git_dir, short=True)
+    self.assertCommandContains(['rev-parse', '--short', 'HEAD'])
+    git.GetGitRepoRevision(self.fake_git_dir, branch='branch', short=True)
+    self.assertCommandContains(['rev-parse', '--short', 'branch'])
+
 
 class ProjectCheckoutTest(cros_test_lib.TestCase):
   """Tests for git.ProjectCheckout"""
