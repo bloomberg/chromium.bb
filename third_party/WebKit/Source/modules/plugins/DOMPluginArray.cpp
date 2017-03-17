@@ -69,9 +69,7 @@ void DOMPluginArray::refresh(bool reload) {
     return;
   Page::refreshPlugins();
   if (reload) {
-    frame()->reload(RuntimeEnabledFeatures::fasterLocationReloadEnabled()
-                        ? FrameLoadTypeReloadMainResource
-                        : FrameLoadTypeReload,
+    frame()->reload(FrameLoadTypeReloadMainResource,
                     ClientRedirectPolicy::ClientRedirect);
   }
 }

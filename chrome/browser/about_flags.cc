@@ -2277,9 +2277,6 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(switches::kWindows10CustomTitlebar)},
 #endif  // OS_WIN
 
-    {"enable-faster-location-reload", IDS_FLAGS_FASTER_LOCATION_RELOAD_NAME,
-     IDS_FLAGS_FASTER_LOCATION_RELOAD_DESCRIPTION, kOsAll,
-     FEATURE_VALUE_TYPE(features::kFasterLocationReload)},
 #if defined(OS_ANDROID)
     {"lsd-permission-prompt", IDS_FLAGS_LSD_PERMISSION_PROMPT_NAME,
      IDS_FLAGS_LSD_PERMISSION_PROMPT_DESCRIPTION, kOsAndroid,

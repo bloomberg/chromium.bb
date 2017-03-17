@@ -357,9 +357,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (base::FeatureList::IsEnabled(features::kGenericSensor))
     WebRuntimeFeatures::enableGenericSensor(true);
 
-  if (base::FeatureList::IsEnabled(features::kFasterLocationReload))
-    WebRuntimeFeatures::enableFasterLocationReload(true);
-
   // Enable features which VrShell depends on.
   if (base::FeatureList::IsEnabled(features::kVrShell)) {
     WebRuntimeFeatures::enableGamepadExtensions(true);

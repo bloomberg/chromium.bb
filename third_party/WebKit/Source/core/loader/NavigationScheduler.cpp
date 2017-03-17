@@ -271,10 +271,7 @@ class ScheduledReload final : public ScheduledNavigation {
     request.setClientRedirect(ClientRedirectPolicy::ClientRedirect);
     maybeLogScheduledNavigationClobber(ScheduledNavigationType::ScheduledReload,
                                        frame);
-    if (RuntimeEnabledFeatures::fasterLocationReloadEnabled())
-      frame->loader().load(request, FrameLoadTypeReloadMainResource);
-    else
-      frame->loader().load(request, FrameLoadTypeReload);
+    frame->loader().load(request, FrameLoadTypeReloadMainResource);
   }
 
  private:

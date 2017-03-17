@@ -35,7 +35,6 @@
 #include "core/loader/HistoryItem.h"
 #include "core/loader/NavigationScheduler.h"
 #include "core/page/Page.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/text/StringView.h"
@@ -153,11 +152,8 @@ void History::go(ScriptState* scriptState, int delta) {
     // Otherwise, navigation happens on the root frame.
     // This behavior is designed in the following spec.
     // https://html.spec.whatwg.org/multipage/browsers.html#dom-history-go
-    FrameLoadType reloadType =
-        RuntimeEnabledFeatures::fasterLocationReloadEnabled()
-            ? FrameLoadTypeReloadMainResource
-            : FrameLoadTypeReload;
-    frame()->reload(reloadType, ClientRedirectPolicy::ClientRedirect);
+    frame()->reload(FrameLoadTypeReloadMainResource,
+                    ClientRedirectPolicy::ClientRedirect);
   }
 }
 

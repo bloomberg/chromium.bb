@@ -25,7 +25,6 @@ CONTENT_EXPORT extern const base::Feature kCompositeOpaqueScrollers;
 CONTENT_EXPORT extern const base::Feature kCredentialManagementAPI;
 CONTENT_EXPORT extern const base::Feature kDocumentWriteEvaluator;
 CONTENT_EXPORT extern const base::Feature kExpensiveBackgroundTimerThrottling;
-CONTENT_EXPORT extern const base::Feature kFasterLocationReload;
 CONTENT_EXPORT extern const base::Feature kFeaturePolicy;
 CONTENT_EXPORT extern const base::Feature kFilterSameOriginTinyPlugin;
 CONTENT_EXPORT extern const base::Feature kFontCacheScaling;

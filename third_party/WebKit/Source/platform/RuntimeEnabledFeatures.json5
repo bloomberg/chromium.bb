@@ -348,10 +348,6 @@
       status: "experimental",
     },
     {
-      name: "FasterLocationReload",
-      status: "experimental",
-    },
-    {
       name: "FontCacheScaling",
       status: "test",
     },

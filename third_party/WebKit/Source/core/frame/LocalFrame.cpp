@@ -385,10 +385,7 @@ void LocalFrame::reload(FrameLoadType loadType,
     request.setClientRedirect(clientRedirectPolicy);
     m_loader.load(request, loadType);
   } else {
-    if (RuntimeEnabledFeatures::fasterLocationReloadEnabled())
-      DCHECK_EQ(FrameLoadTypeReloadMainResource, loadType);
-    else
-      DCHECK_EQ(FrameLoadTypeReload, loadType);
+    DCHECK_EQ(FrameLoadTypeReloadMainResource, loadType);
     m_navigationScheduler->scheduleReload();
   }
 }

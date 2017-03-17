@@ -14915,13 +14915,6 @@ read aloud to screenreader users to announce that a completion is available.">
     <message name="IDS_FLAGS_CROS_COMP_UPDATES_DESCRIPTION" desc="Description for the flag to enable Chrome OS component flash updates" translateable="false">
       Enable Flash component updates for Chrome OS.
     </message>
-    <!-- Faster location.reload() chrome://flags strings -->
-    <message name="IDS_FLAGS_FASTER_LOCATION_RELOAD_NAME" desc="Name for the flag to enable faster location.reload()" translateable="false">
-      Faster location.reload()
-    </message>
-    <message name="IDS_FLAGS_FASTER_LOCATION_RELOAD_DESCRIPTION" desc="Description for the flag to enable faster location.reload()" translateable="false">
-      Enable faster location.reload() to use a reload mode that revalidates only main resource forcibly.
-    </message>
 
     <!-- Native Android History chrome://flags strings -->
     <if expr="is_android">
