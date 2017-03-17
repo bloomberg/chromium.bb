@@ -254,6 +254,7 @@ public class PaymentRequestImpl
     private final String mOriginForDisplay;
     private final String mSchemelessIFrameOriginForPaymentApp;
     private final String mMerchantName;
+    @Nullable
     private final byte[][] mCertificateChain;
     private final AddressEditor mAddressEditor;
     private final CardEditor mCardEditor;
@@ -350,7 +351,7 @@ public class PaymentRequestImpl
     /**
      * Builds the PaymentRequest service implementation.
      *
-     * @param webContents The web contents that have invoked the PaymentRequest API.
+     * @param renderFrameHost The host of the frame that has invoked the PaymentRequest API.
      */
     public PaymentRequestImpl(RenderFrameHost renderFrameHost) {
         assert renderFrameHost != null;

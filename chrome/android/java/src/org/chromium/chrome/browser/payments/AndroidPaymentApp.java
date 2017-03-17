@@ -42,6 +42,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 /** The point of interaction with a locally installed 3rd party native Android payment app. */
 public class AndroidPaymentApp
         extends PaymentInstrument implements PaymentApp, WindowAndroid.IntentCallback {
@@ -54,10 +56,13 @@ public class AndroidPaymentApp
     /** The maximum number of milliseconds to wait for a connection to READY_TO_PAY service. */
     private static final long SERVICE_CONNECTION_TIMEOUT_MS = 1000;
 
+    private static final String EXTRA_MERCHANT_NAME = "merchantName";
     private static final String EXTRA_METHOD_NAME = "methodName";
+    private static final String EXTRA_METHOD_NAMES = "methodNames";
     private static final String EXTRA_DATA = "data";
     private static final String EXTRA_ORIGIN = "origin";
     private static final String EXTRA_IFRAME_ORIGIN = "iframeOrigin";
+    private static final String EXTRA_DATA_MAP = "dataMap";
     private static final String EXTRA_DETAILS = "details";
     private static final String EXTRA_INSTRUMENT_DETAILS = "instrumentDetails";
     private static final String EXTRA_CERTIFICATE_CHAIN = "certificateChain";
@@ -110,23 +115,14 @@ public class AndroidPaymentApp
         mIsReadyToPayIntent.setClassName(mIsReadyToPayIntent.getPackage(), className);
     }
 
-    private void addCertificateChain(Bundle extras, byte[][] certificateChain) {
-        if (certificateChain != null && certificateChain.length > 0) {
-            Parcelable[] certificateArray = new Parcelable[certificateChain.length];
-            for (int i = 0; i < certificateChain.length; i++) {
-                Bundle bundle = new Bundle();
-                bundle.putByteArray(EXTRA_CERTIFICATE, certificateChain[i]);
-                certificateArray[i] = bundle;
-            }
-            extras.putParcelableArray(EXTRA_CERTIFICATE_CHAIN, certificateArray);
-        }
-    }
-
     @Override
-    public void getInstruments(Map<String, PaymentMethodData> methodData, String origin,
-            String iframeOrigin, byte[][] certificateChain, InstrumentsCallback callback) {
+    public void getInstruments(Map<String, PaymentMethodData> methodDataMap, String origin,
+            String iframeOrigin, @Nullable byte[][] certificateChain,
+            InstrumentsCallback callback) {
+        assert mMethodNames.containsAll(methodDataMap.keySet());
         assert mInstrumentsCallback
                 == null : "Have not responded to previous request for instruments yet";
+
         mInstrumentsCallback = callback;
         if (mIsReadyToPayIntent.getComponent() == null) {
             respondToGetInstrumentsQuery(AndroidPaymentApp.this);
@@ -134,15 +130,6 @@ public class AndroidPaymentApp
         }
 
         assert !mIsIncognito;
-        Bundle extras = new Bundle();
-        extras.putString(EXTRA_METHOD_NAME, mMethodNames.iterator().next());
-        extras.putString(EXTRA_ORIGIN, origin);
-        extras.putString(EXTRA_IFRAME_ORIGIN, iframeOrigin);
-        PaymentMethodData data = methodData.get(mMethodNames.iterator().next());
-        extras.putString(EXTRA_DATA, data == null ? EMPTY_JSON_DATA : data.stringifiedData);
-        addCertificateChain(extras, certificateChain);
-        mIsReadyToPayIntent.putExtras(extras);
-
         mServiceConnection = new ServiceConnection() {
             @Override
             public void onServiceConnected(ComponentName name, IBinder service) {
@@ -159,6 +146,8 @@ public class AndroidPaymentApp
             public void onServiceDisconnected(ComponentName name) {}
         };
 
+        mIsReadyToPayIntent.putExtras(buildExtras(
+                null, origin, iframeOrigin, certificateChain, methodDataMap, null, null, null));
         try {
             if (!ContextUtils.getApplicationContext().bindService(
                         mIsReadyToPayIntent, mServiceConnection, Context.BIND_AUTO_CREATE)) {
@@ -306,23 +295,8 @@ public class AndroidPaymentApp
             byte[][] certificateChain, Map<String, PaymentMethodData> methodDataMap,
             PaymentItem total, List<PaymentItem> displayItems,
             Map<String, PaymentDetailsModifier> modifiers) {
+        assert mMethodNames.containsAll(methodDataMap.keySet());
         assert mInstrumentDetailsCallback != null;
-        assert !mMethodNames.isEmpty();
-        Bundle extras = new Bundle();
-        extras.putString(EXTRA_ORIGIN, origin);
-        extras.putString(EXTRA_IFRAME_ORIGIN, iframeOrigin);
-        addCertificateChain(extras, certificateChain);
-
-        String methodName = mMethodNames.iterator().next();
-        extras.putString(EXTRA_METHOD_NAME, methodName);
-
-        PaymentMethodData methodData = methodDataMap.get(methodName);
-        extras.putString(
-                EXTRA_DATA, methodData == null ? EMPTY_JSON_DATA : methodData.stringifiedData);
-
-        String details = serializeDetails(total, displayItems);
-        extras.putString(EXTRA_DETAILS, details == null ? EMPTY_JSON_DATA : details);
-        mPayIntent.putExtras(extras);
 
         WindowAndroid window = mWebContents.getTopLevelNativeWindow();
         if (window == null) {
@@ -330,9 +304,61 @@ public class AndroidPaymentApp
             return;
         }
 
+        mPayIntent.putExtras(buildExtras(merchantName, origin, iframeOrigin, certificateChain,
+                methodDataMap, total, displayItems, modifiers));
         if (!window.showIntent(mPayIntent, this, R.string.payments_android_app_error)) {
             notifyErrorInvokingPaymentApp();
         }
+    }
+
+    private static Bundle buildExtras(@Nullable String merchantName, String origin,
+            String iframeOrigin, @Nullable byte[][] certificateChain,
+            Map<String, PaymentMethodData> methodDataMap, @Nullable PaymentItem total,
+            @Nullable List<PaymentItem> displayItems,
+            @Nullable Map<String, PaymentDetailsModifier> modifiers) {
+        Bundle extras = new Bundle();
+
+        if (merchantName != null) extras.putString(EXTRA_MERCHANT_NAME, merchantName);
+        extras.putString(EXTRA_ORIGIN, origin);
+        extras.putString(EXTRA_IFRAME_ORIGIN, iframeOrigin);
+
+        if (certificateChain != null && certificateChain.length > 0) {
+            extras.putParcelableArray(
+                    EXTRA_CERTIFICATE_CHAIN, buildCertificateChain(certificateChain));
+        }
+
+        // Deprecated:
+        String methodName = methodDataMap.entrySet().iterator().next().getKey();
+        extras.putString(EXTRA_METHOD_NAME, methodName);
+        PaymentMethodData firstMethodData = methodDataMap.get(methodName);
+        extras.putString(EXTRA_DATA,
+                firstMethodData == null ? EMPTY_JSON_DATA : firstMethodData.stringifiedData);
+
+        extras.putStringArrayList(EXTRA_METHOD_NAMES, new ArrayList<>(methodDataMap.keySet()));
+        Bundle methodDataBundle = new Bundle();
+        for (Map.Entry<String, PaymentMethodData> methodData : methodDataMap.entrySet()) {
+            methodDataBundle.putString(methodData.getKey(),
+                    methodData.getValue() == null ? EMPTY_JSON_DATA
+                                                  : methodData.getValue().stringifiedData);
+        }
+        extras.putParcelable(EXTRA_DATA_MAP, methodDataBundle);
+
+        if (total != null) {
+            String details = serializeDetails(total, displayItems);
+            extras.putString(EXTRA_DETAILS, details == null ? EMPTY_JSON_DATA : details);
+        }
+
+        return extras;
+    }
+
+    private static Parcelable[] buildCertificateChain(byte[][] certificateChain) {
+        Parcelable[] result = new Parcelable[certificateChain.length];
+        for (int i = 0; i < certificateChain.length; i++) {
+            Bundle bundle = new Bundle();
+            bundle.putByteArray(EXTRA_CERTIFICATE, certificateChain[i]);
+            result[i] = bundle;
+        }
+        return result;
     }
 
     private void notifyErrorInvokingPaymentApp() {
@@ -344,7 +370,8 @@ public class AndroidPaymentApp
         });
     }
 
-    private static String serializeDetails(PaymentItem total, List<PaymentItem> displayItems) {
+    private static String serializeDetails(
+            PaymentItem total, @Nullable List<PaymentItem> displayItems) {
         StringWriter stringWriter = new StringWriter();
         JsonWriter json = new JsonWriter(stringWriter);
         try {
@@ -353,14 +380,14 @@ public class AndroidPaymentApp
 
             // total {{{
             json.name("total");
-            serializePaymentItem(json, total);
+            serializePaymentItem(total, json);
             // }}} total
 
             // displayitems {{{
             if (displayItems != null) {
                 json.name("displayItems").beginArray();
                 for (int i = 0; i < displayItems.size(); i++) {
-                    serializePaymentItem(json, displayItems.get(i));
+                    serializePaymentItem(displayItems.get(i), json);
                 }
                 json.endArray();
             }
@@ -375,7 +402,7 @@ public class AndroidPaymentApp
         return stringWriter.toString();
     }
 
-    private static void serializePaymentItem(JsonWriter json, PaymentItem item) throws IOException {
+    private static void serializePaymentItem(PaymentItem item, JsonWriter json) throws IOException {
         // item {{{
         json.beginObject();
         json.name("label").value(item.label);
