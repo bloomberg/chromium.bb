@@ -5,10 +5,12 @@
 #ifndef SuspendableScriptExecutor_h
 #define SuspendableScriptExecutor_h
 
+#include "bindings/core/v8/DOMWrapperWorld.h"
 #include "core/frame/SuspendableTimer.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/SelfKeepAlive.h"
 #include "v8/include/v8.h"
+#include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 
 namespace blink {
@@ -28,7 +30,7 @@ class SuspendableScriptExecutor final
 
   static SuspendableScriptExecutor* create(
       LocalFrame*,
-      int worldID,
+      RefPtr<DOMWrapperWorld>,
       const HeapVector<ScriptSourceCode>& sources,
       bool userGesture,
       WebScriptExecutionCallback*);

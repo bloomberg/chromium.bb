@@ -754,8 +754,10 @@ void WebLocalFrameImpl::requestExecuteScriptAndReturnValue(
     WebScriptExecutionCallback* callback) {
   DCHECK(frame());
 
+  RefPtr<DOMWrapperWorld> mainWorld = &DOMWrapperWorld::mainWorld();
   SuspendableScriptExecutor* executor = SuspendableScriptExecutor::create(
-      frame(), 0, createSourcesVector(&source, 1), userGesture, callback);
+      frame(), std::move(mainWorld), createSourcesVector(&source, 1),
+      userGesture, callback);
   executor->run();
 }
 
@@ -810,9 +812,11 @@ void WebLocalFrameImpl::requestExecuteScriptInIsolatedWorld(
   CHECK_GT(worldID, 0);
   CHECK_LT(worldID, DOMWrapperWorld::EmbedderWorldIdLimit);
 
+  RefPtr<DOMWrapperWorld> isolatedWorld =
+      DOMWrapperWorld::ensureIsolatedWorld(toIsolate(frame()), worldID);
   SuspendableScriptExecutor* executor = SuspendableScriptExecutor::create(
-      frame(), worldID, createSourcesVector(sourcesIn, numSources), userGesture,
-      callback);
+      frame(), std::move(isolatedWorld),
+      createSourcesVector(sourcesIn, numSources), userGesture, callback);
   switch (option) {
     case AsynchronousBlockingOnload:
       executor->runAsync(SuspendableScriptExecutor::OnloadBlocking);

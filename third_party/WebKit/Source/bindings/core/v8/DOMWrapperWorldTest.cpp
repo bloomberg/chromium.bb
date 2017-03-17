@@ -26,10 +26,6 @@ Vector<RefPtr<DOMWrapperWorld>> createIsolatedWorlds(v8::Isolate* isolate) {
       isolate, DOMWrapperWorld::WorldId::IsolatedWorldIdLimit - 1));
   EXPECT_TRUE(worlds[0]->isIsolatedWorld());
   EXPECT_TRUE(worlds[1]->isIsolatedWorld());
-  EXPECT_EQ(worlds[0],
-            DOMWrapperWorld::fromWorldId(isolate, worlds[0]->worldId()));
-  EXPECT_EQ(worlds[1],
-            DOMWrapperWorld::fromWorldId(isolate, worlds[1]->worldId()));
   return worlds;
 }
 
@@ -50,12 +46,6 @@ Vector<RefPtr<DOMWrapperWorld>> createWorlds(v8::Isolate* isolate) {
   EXPECT_TRUE(worldIds.insert(worlds[0]->worldId()).isNewEntry);
   EXPECT_TRUE(worldIds.insert(worlds[1]->worldId()).isNewEntry);
   EXPECT_TRUE(worldIds.insert(worlds[2]->worldId()).isNewEntry);
-  EXPECT_EQ(worlds[0],
-            DOMWrapperWorld::fromWorldId(isolate, worlds[0]->worldId()));
-  EXPECT_EQ(worlds[1],
-            DOMWrapperWorld::fromWorldId(isolate, worlds[1]->worldId()));
-  EXPECT_EQ(worlds[2],
-            DOMWrapperWorld::fromWorldId(isolate, worlds[2]->worldId()));
 
   return worlds;
 }
@@ -93,21 +83,23 @@ void workerThreadFunc(WorkerBackingThread* thread,
 }
 
 TEST(DOMWrapperWorldTest, Basic) {
-  V8TestingScope scope;
+  // Initially, there should be no worlds.
+  EXPECT_FALSE(DOMWrapperWorld::nonMainWorldsExistInMainThread());
+  Vector<RefPtr<DOMWrapperWorld>> retrievedWorlds;
+  DOMWrapperWorld::allWorldsInCurrentThread(retrievedWorlds);
+  EXPECT_TRUE(retrievedWorlds.isEmpty());
 
   // Create the main world and verify it.
   DOMWrapperWorld& mainWorld = DOMWrapperWorld::mainWorld();
   EXPECT_TRUE(mainWorld.isMainWorld());
   EXPECT_FALSE(DOMWrapperWorld::nonMainWorldsExistInMainThread());
-  Vector<RefPtr<DOMWrapperWorld>> retrievedWorlds;
   DOMWrapperWorld::allWorldsInCurrentThread(retrievedWorlds);
   EXPECT_EQ(1u, retrievedWorlds.size());
   EXPECT_TRUE(retrievedWorlds[0]->isMainWorld());
-  EXPECT_EQ(&mainWorld,
-            DOMWrapperWorld::fromWorldId(scope.isolate(), mainWorld.worldId()));
   retrievedWorlds.clear();
 
   // Create isolated worlds and verify them.
+  V8TestingScope scope;
   Vector<RefPtr<DOMWrapperWorld>> isolatedWorlds =
       createIsolatedWorlds(scope.isolate());
   EXPECT_TRUE(DOMWrapperWorld::nonMainWorldsExistInMainThread());

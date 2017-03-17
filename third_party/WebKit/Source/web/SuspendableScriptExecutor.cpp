@@ -132,17 +132,14 @@ Vector<v8::Local<v8::Value>> V8FunctionExecutor::execute(LocalFrame* frame) {
 
 SuspendableScriptExecutor* SuspendableScriptExecutor::create(
     LocalFrame* frame,
-    int worldID,
+    RefPtr<DOMWrapperWorld> world,
     const HeapVector<ScriptSourceCode>& sources,
     bool userGesture,
     WebScriptExecutionCallback* callback) {
-  // TODO(devlin): Passing in a v8::Isolate* directly would be better than
-  // toIsolate() here.
-  ScriptState* scriptState = ScriptState::forWorld(
-      frame, *DOMWrapperWorld::fromWorldId(toIsolate(frame), worldID));
+  ScriptState* scriptState = ScriptState::forWorld(frame, *world);
   return new SuspendableScriptExecutor(
       frame, scriptState, callback,
-      new WebScriptExecutor(sources, worldID, userGesture));
+      new WebScriptExecutor(sources, world->worldId(), userGesture));
 }
 
 void SuspendableScriptExecutor::createAndRun(
