@@ -66,7 +66,9 @@ using web::test::HttpServer;
 
 // Tests that page scroll position of a page is restored upon returning to the
 // page via the back/forward buttons.
-- (void)testScrollPositionRestoring {
+// TODO(crbug.com/702410): This test flakily fails when it scrolls too far down
+// the page.
+- (void)FLAKY_testScrollPositionRestoring {
   web::test::SetUpFileBasedHttpServer();
 
   // Load first URL which is a long page.
