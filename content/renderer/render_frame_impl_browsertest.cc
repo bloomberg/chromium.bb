@@ -204,7 +204,7 @@ TEST_F(RenderFrameImplTest, LoFiNotUpdatedOnSubframeCommits) {
   DocumentState* document_state =
       DocumentState::FromDataSource(frame()->GetWebFrame()->dataSource());
   static_cast<NavigationStateImpl*>(document_state->navigation_state())
-      ->set_was_within_same_page(false);
+      ->set_was_within_same_document(false);
 
   frame()->didCommitProvisionalLoad(frame()->GetWebFrame(), item,
                                     blink::WebStandardCommit);
@@ -214,7 +214,7 @@ TEST_F(RenderFrameImplTest, LoFiNotUpdatedOnSubframeCommits) {
   document_state = DocumentState::FromDataSource(
       GetMainRenderFrame()->GetWebFrame()->dataSource());
   static_cast<NavigationStateImpl*>(document_state->navigation_state())
-      ->set_was_within_same_page(false);
+      ->set_was_within_same_document(false);
 
   // Calling didCommitProvisionalLoad is not representative of a full navigation
   // but serves the purpose of testing the LoFi state logic.
@@ -265,7 +265,7 @@ TEST_F(RenderFrameImplTest, EffectiveConnectionType) {
     DocumentState* document_state =
         DocumentState::FromDataSource(frame()->GetWebFrame()->dataSource());
     static_cast<NavigationStateImpl*>(document_state->navigation_state())
-        ->set_was_within_same_page(false);
+        ->set_was_within_same_document(false);
 
     frame()->didCommitProvisionalLoad(frame()->GetWebFrame(), item,
                                       blink::WebStandardCommit);
@@ -275,7 +275,7 @@ TEST_F(RenderFrameImplTest, EffectiveConnectionType) {
     document_state = DocumentState::FromDataSource(
         GetMainRenderFrame()->GetWebFrame()->dataSource());
     static_cast<NavigationStateImpl*>(document_state->navigation_state())
-        ->set_was_within_same_page(false);
+        ->set_was_within_same_document(false);
 
     GetMainRenderFrame()->didCommitProvisionalLoad(
         GetMainRenderFrame()->GetWebFrame(), item, blink::WebStandardCommit);

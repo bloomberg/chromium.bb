@@ -149,14 +149,15 @@ void PhishingClassifierDelegate::DidCommitProvisionalLoad(
   // A new page is starting to load, so cancel classificaiton.
   //
   // TODO(bryner): We shouldn't need to cancel classification if the navigation
-  // is within the same page.  However, if we let classification continue in
+  // is within the same document.  However, if we let classification continue in
   // this case, we need to properly deal with the fact that PageCaptured will
-  // be called again for the in-page navigation.  We need to be sure not to
-  // swap out the page text while the term feature extractor is still running.
+  // be called again for the same-document navigation.  We need to be sure not
+  // to swap out the page text while the term feature extractor is still
+  // running.
   DocumentState* document_state = DocumentState::FromDataSource(
       frame->dataSource());
   NavigationState* navigation_state = document_state->navigation_state();
-  CancelPendingClassification(navigation_state->WasWithinSamePage()
+  CancelPendingClassification(navigation_state->WasWithinSameDocument()
                                   ? NAVIGATE_WITHIN_PAGE
                                   : NAVIGATE_AWAY);
   if (frame->parent())
@@ -243,7 +244,7 @@ void PhishingClassifierDelegate::MaybeStartClassification() {
   if (last_main_frame_transition_ & ui::PAGE_TRANSITION_FORWARD_BACK) {
     // Skip loads from session history navigation.  However, update the
     // last URL sent to the classifier, so that we'll properly detect
-    // in-page navigations.
+    // same-document navigations.
     DVLOG(2) << "Not starting classification for back/forward navigation";
     last_url_sent_to_classifier_ = last_finished_load_url_;
     classifier_page_text_.clear();  // we won't need this.
@@ -254,8 +255,8 @@ void PhishingClassifierDelegate::MaybeStartClassification() {
   GURL stripped_last_load_url(StripRef(last_finished_load_url_));
   if (stripped_last_load_url == StripRef(last_url_sent_to_classifier_)) {
     // We've already classified this toplevel URL, so this was likely an
-    // in-page navigation or a subframe navigation.  The browser should not
-    // send a StartPhishingDetection IPC in this case.
+    // same-document navigation or a subframe navigation.  The browser should
+    // not send a StartPhishingDetection IPC in this case.
     DVLOG(2) << "Toplevel URL is unchanged, not starting classification.";
     classifier_page_text_.clear();  // we won't need this.
     have_page_text_ = false;

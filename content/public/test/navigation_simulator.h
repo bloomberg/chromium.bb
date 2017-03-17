@@ -87,7 +87,7 @@ class NavigationSimulator : public WebContentsObserver {
   //   unique_ptr<NavigationSimulator> simulator =
   //       NavigationSimulator::CreateRendererInitiated(
   //           original_url, render_frame_host);
-  //   simulator->CommitSamePage();
+  //   simulator->CommitSameDocument();
   //
   // Example of usage for a renderer-initiated navigation which is cancelled by
   // a throttle upon redirecting. Note that registering the throttle is done
@@ -116,9 +116,9 @@ class NavigationSimulator : public WebContentsObserver {
   // Simulates the commit of an error page following a navigation failure.
   virtual void CommitErrorPage();
 
-  // Simulates the commit of a same-page navigation, ie fragment navigations or
-  // pushState/popState navigations.
-  virtual void CommitSamePage();
+  // Simulates the commit of a same-document navigation, ie fragment navigations
+  // or pushState/popState navigations.
+  virtual void CommitSameDocument();
 
   // --------------------------------------------------------------------------
 

@@ -26,7 +26,7 @@ class CONTENT_EXPORT NavigationStateImpl : public NavigationState {
 
   // NavigationState implementation.
   ui::PageTransition GetTransitionType() override;
-  bool WasWithinSamePage() override;
+  bool WasWithinSameDocument() override;
   bool IsContentInitiated() override;
 
   const CommonNavigationParams& common_params() const { return common_params_; }
@@ -36,7 +36,9 @@ class CONTENT_EXPORT NavigationStateImpl : public NavigationState {
   }
   bool request_committed() const { return request_committed_; }
   void set_request_committed(bool value) { request_committed_ = value; }
-  void set_was_within_same_page(bool value) { was_within_same_page_ = value; }
+  void set_was_within_same_document(bool value) {
+    was_within_same_document_ = value;
+  }
 
   void set_transition_type(ui::PageTransition transition) {
     common_params_.transition = transition;
@@ -49,7 +51,7 @@ class CONTENT_EXPORT NavigationStateImpl : public NavigationState {
                       bool is_content_initiated);
 
   bool request_committed_;
-  bool was_within_same_page_;
+  bool was_within_same_document_;
 
   // True if this navigation was not initiated via WebFrame::LoadRequest.
   const bool is_content_initiated_;

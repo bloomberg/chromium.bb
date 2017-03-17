@@ -1272,8 +1272,8 @@ void RenderFrameHostImpl::OnDidCommitProvisionalLoad(const IPC::Message& msg) {
   // PlzNavigate
   if (!navigation_handle_ && IsBrowserSideNavigationEnabled()) {
     // PlzNavigate: the browser has not been notified about the start of the
-    // load in this renderer yet (e.g., for same-page navigations that start in
-    // the renderer). Do it now.
+    // load in this renderer yet (e.g., for same-document navigations that start
+    // in the renderer). Do it now.
     if (!is_loading()) {
       bool was_loading = frame_tree_node()->frame_tree()->IsLoading();
       is_loading_ = true;
@@ -1319,7 +1319,7 @@ void RenderFrameHostImpl::OnDidCommitProvisionalLoad(const IPC::Message& msg) {
   // situation) then we clear it after a while anyway.
   // See https://crbug.com/497588.
   if (frame_tree_node_->IsMainFrame() && GetView() &&
-      !validated_params.was_within_same_page) {
+      !validated_params.was_within_same_document) {
     RenderWidgetHostImpl::From(GetView()->GetRenderWidgetHost())
         ->StartNewContentRenderingTimeout(validated_params.content_source_id);
   }
@@ -3398,7 +3398,7 @@ RenderFrameHostImpl::TakeNavigationHandleForCommit(
     const FrameHostMsg_DidCommitProvisionalLoad_Params& params) {
   bool is_browser_initiated = (params.nav_entry_id != 0);
 
-  if (params.was_within_same_page) {
+  if (params.was_within_same_document) {
     if (IsBrowserSideNavigationEnabled()) {
       // When browser-side navigation is enabled, a NavigationHandle is created
       // for browser-initiated same-document navigation. Try to take it if it's
@@ -3418,7 +3418,7 @@ RenderFrameHostImpl::TakeNavigationHandleForCommit(
     // reset any NavigationHandle tracking an ongoing navigation, since this may
     // lead to the cancellation of the navigation.
     // First, determine if the navigation corresponds to the pending navigation
-    // entry. This is the case for a browser-initiated same-page navigation,
+    // entry. This is the case for a browser-initiated same-document navigation,
     // which does not cause a NavigationHandle to be created because it does not
     // go through DidStartProvisionalLoad.
     bool is_renderer_initiated = true;
@@ -3433,7 +3433,7 @@ RenderFrameHostImpl::TakeNavigationHandleForCommit(
 
     return NavigationHandleImpl::Create(
         params.url, params.redirects, frame_tree_node_, is_renderer_initiated,
-        params.was_within_same_page, base::TimeTicks::Now(),
+        params.was_within_same_document, base::TimeTicks::Now(),
         pending_nav_entry_id, false);  // started_from_context_menu
   }
 
@@ -3485,7 +3485,7 @@ RenderFrameHostImpl::TakeNavigationHandleForCommit(
   // navigation loaded via LoadDataWithBaseURL, propagate the entry id.
   return NavigationHandleImpl::Create(
       params.url, params.redirects, frame_tree_node_, is_renderer_initiated,
-      params.was_within_same_page, base::TimeTicks::Now(),
+      params.was_within_same_document, base::TimeTicks::Now(),
       entry_id_for_data_nav, false);  // started_from_context_menu
 }
 

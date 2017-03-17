@@ -131,7 +131,7 @@ void TestWebContents::TestDidNavigateWithSequenceNumber(
     const GURL& url,
     const Referrer& referrer,
     ui::PageTransition transition,
-    bool was_within_same_page,
+    bool was_within_same_document,
     int item_sequence_number,
     int document_sequence_number) {
   TestRenderFrameHost* rfh =
@@ -161,7 +161,7 @@ void TestWebContents::TestDidNavigateWithSequenceNumber(
   params.gesture = NavigationGestureUser;
   params.method = "GET";
   params.post_id = 0;
-  params.was_within_same_page = was_within_same_page;
+  params.was_within_same_document = was_within_same_document;
   params.http_status_code = 200;
   params.url_is_unreachable = false;
   if (item_sequence_number != -1 && document_sequence_number != -1) {

@@ -362,7 +362,7 @@ class ContentSubresourceFilterDriverFactoryTest
     std::unique_ptr<content::NavigationSimulator> navigation_simulator =
         content::NavigationSimulator::CreateRendererInitiated(GURL(kExampleUrl),
                                                               main_rfh());
-    navigation_simulator->CommitSamePage();
+    navigation_simulator->CommitSameDocument();
     ExpectActivationSignalForFrame(main_rfh(), false);
     ::testing::Mock::VerifyAndClearExpectations(client());
   }

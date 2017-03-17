@@ -27,8 +27,8 @@ ui::PageTransition NavigationStateImpl::GetTransitionType() {
   return common_params_.transition;
 }
 
-bool NavigationStateImpl::WasWithinSamePage() {
-  return was_within_same_page_;
+bool NavigationStateImpl::WasWithinSameDocument() {
+  return was_within_same_document_;
 }
 
 bool NavigationStateImpl::IsContentInitiated() {
@@ -41,11 +41,10 @@ NavigationStateImpl::NavigationStateImpl(
     const RequestNavigationParams& request_params,
     bool is_content_initiated)
     : request_committed_(false),
-      was_within_same_page_(false),
+      was_within_same_document_(false),
       is_content_initiated_(is_content_initiated),
       common_params_(common_params),
       start_params_(start_params),
-      request_params_(request_params) {
-}
+      request_params_(request_params) {}
 
 }  // namespace content

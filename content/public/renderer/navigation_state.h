@@ -23,8 +23,8 @@ class CONTENT_EXPORT NavigationState {
   // initiated the load.
   virtual ui::PageTransition GetTransitionType() = 0;
 
-  // True iff the frame's navigation was within the same page.
-  virtual bool WasWithinSamePage() = 0;
+  // True iff the frame's navigation was within the same document.
+  virtual bool WasWithinSameDocument() = 0;
 
   // True if this navigation was not initiated via WebFrame::LoadRequest.
   virtual bool IsContentInitiated() = 0;

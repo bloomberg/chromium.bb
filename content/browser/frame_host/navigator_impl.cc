@@ -552,7 +552,7 @@ void NavigatorImpl::DidNavigate(
                         has_embedded_credentials);
 
   bool is_navigation_within_page = controller_->IsURLInPageNavigation(
-      params.url, params.origin, params.was_within_same_page,
+      params.url, params.origin, params.was_within_same_document,
       render_frame_host);
 
   // If a frame claims it navigated within page, it must be the current frame,
@@ -576,11 +576,11 @@ void NavigatorImpl::DidNavigate(
       // change WebContents::GetRenderViewHost to return the new host, instead
       // of the one that may have just been swapped out.
       if (delegate_->CanOverscrollContent()) {
-        // Don't take screenshots if we are staying on the same page. We want
-        // in-page navigations to be super fast, and taking a screenshot
-        // currently blocks GPU for a longer time than we are willing to
-        // tolerate in this use case.
-        if (!params.was_within_same_page)
+        // Don't take screenshots if we are staying on the same document. We
+        // want same-document navigations to be super fast, and taking a
+        // screenshot currently blocks GPU for a longer time than we are willing
+        // to tolerate in this use case.
+        if (!params.was_within_same_document)
           controller_->TakeScreenshot();
       }
 
@@ -1091,7 +1091,7 @@ void NavigatorImpl::DiscardPendingEntryIfNeeded(NavigationHandleImpl* handle) {
   // We usually clear the pending entry when it fails, so that an arbitrary URL
   // isn't left visible above a committed page. This must be enforced when the
   // pending entry isn't visible (e.g., renderer-initiated navigations) to
-  // prevent URL spoofs for in-page navigations that don't go through
+  // prevent URL spoofs for same-document navigations that don't go through
   // DidStartProvisionalLoadForFrame.
   //
   // However, we do preserve the pending entry in some cases, such as on the

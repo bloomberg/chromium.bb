@@ -299,7 +299,7 @@ void NavigationSimulator::Commit() {
   params.socket_address.set_port(80);
   params.history_list_was_cleared = false;
   params.original_request_url = navigation_url_;
-  params.was_within_same_page = false;
+  params.was_within_same_document = false;
   params.page_state =
       PageState::CreateForTesting(navigation_url_, false, nullptr, nullptr);
 
@@ -390,7 +390,7 @@ void NavigationSimulator::CommitErrorPage() {
   params.did_create_new_entry = true;
   params.url = navigation_url_;
   params.transition = transition_;
-  params.was_within_same_page = false;
+  params.was_within_same_document = false;
   params.url_is_unreachable = true;
   params.page_state =
       PageState::CreateForTesting(navigation_url_, false, nullptr, nullptr);
@@ -408,7 +408,7 @@ void NavigationSimulator::CommitErrorPage() {
   CHECK_EQ(1, num_did_finish_navigation_called_);
 }
 
-void NavigationSimulator::CommitSamePage() {
+void NavigationSimulator::CommitSameDocument() {
   CHECK_EQ(INITIALIZATION, state_)
       << "NavigationSimulator::CommitErrorPage should be the only "
          "navigation event function called on the NavigationSimulator";
@@ -431,7 +431,7 @@ void NavigationSimulator::CommitSamePage() {
   params.socket_address.set_port(80);
   params.history_list_was_cleared = false;
   params.original_request_url = navigation_url_;
-  params.was_within_same_page = true;
+  params.was_within_same_document = true;
   params.page_state =
       PageState::CreateForTesting(navigation_url_, false, nullptr, nullptr);
 

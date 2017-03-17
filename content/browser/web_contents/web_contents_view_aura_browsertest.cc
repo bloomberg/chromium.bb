@@ -710,17 +710,17 @@ IN_PROC_BROWSER_TEST_F(WebContentsViewAuraTest, ReplaceStateReloadPushState) {
   WaitForLoadStop(web_contents);
   // reloading the page shouldn't capture a screenshot
   // TODO (mfomitchev): currently broken. Uncomment when
-  // FrameHostMsg_DidCommitProvisionalLoad_Params.was_within_same_page
+  // FrameHostMsg_DidCommitProvisionalLoad_Params.was_within_same_document
   // is populated properly when reloading the page.
-  //EXPECT_FALSE(screenshot_manager()->screenshot_taken_for());
+  // EXPECT_FALSE(screenshot_manager()->screenshot_taken_for());
   screenshot_manager()->Reset();
   ExecuteSyncJSFunction(main_frame, "use_push_state()");
   screenshot_manager()->WaitUntilScreenshotIsReady();
   // pushing a state shouldn't capture a screenshot
   // TODO (mfomitchev): currently broken. Uncomment when
-  // FrameHostMsg_DidCommitProvisionalLoad_Params.was_within_same_page
+  // FrameHostMsg_DidCommitProvisionalLoad_Params.was_within_same_document
   // is populated properly when pushState is used.
-  //EXPECT_FALSE(screenshot_manager()->screenshot_taken_for());
+  // EXPECT_FALSE(screenshot_manager()->screenshot_taken_for());
 }
 
 // TODO(sadrul): This test is disabled because it reparents in a way the

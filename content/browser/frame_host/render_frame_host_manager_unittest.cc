@@ -1193,7 +1193,7 @@ TEST_F(RenderFrameHostManagerTest, PageDoesBackAndReload) {
   params.transition = ui::PAGE_TRANSITION_CLIENT_REDIRECT;
   params.should_update_history = false;
   params.gesture = NavigationGestureAuto;
-  params.was_within_same_page = false;
+  params.was_within_same_document = false;
   params.method = "GET";
   params.page_state = PageState::CreateFromURL(kUrl2);
 
@@ -2767,7 +2767,7 @@ TEST_F(RenderFrameHostManagerTest, CanCommitOrigin) {
   params.transition = ui::PAGE_TRANSITION_LINK;
   params.should_update_history = false;
   params.gesture = NavigationGestureAuto;
-  params.was_within_same_page = false;
+  params.was_within_same_document = false;
   params.method = "GET";
   params.page_state = PageState::CreateFromURL(kUrlBar);
 
@@ -3077,7 +3077,7 @@ TEST_F(RenderFrameHostManagerTestWithSiteIsolation,
   commit_params.transition = ui::PAGE_TRANSITION_AUTO_SUBFRAME;
   commit_params.should_update_history = false;
   commit_params.gesture = NavigationGestureAuto;
-  commit_params.was_within_same_page = false;
+  commit_params.was_within_same_document = false;
   commit_params.method = "GET";
   commit_params.page_state = PageState::CreateFromURL(kUrl3);
   commit_params.insecure_request_policy = blink::kLeaveInsecureRequestsAlone;

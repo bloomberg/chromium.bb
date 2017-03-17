@@ -244,10 +244,10 @@ IPC_STRUCT_BEGIN_WITH_PARENT(FrameHostMsg_DidCommitProvisionalLoad_Params,
   // The POST body identifier. -1 if it doesn't exist.
   IPC_STRUCT_MEMBER(int64_t, post_id)
 
-  // Whether the frame navigation resulted in no change to the documents within
-  // the page. For example, the navigation may have just resulted in scrolling
-  // to a named anchor.
-  IPC_STRUCT_MEMBER(bool, was_within_same_page)
+  // Whether the frame navigation resulted in no change of the document within
+  // the frame. For example, the navigation may have just resulted in
+  // scrolling to a named anchor.
+  IPC_STRUCT_MEMBER(bool, was_within_same_document)
 
   // The status code of the HTTP request.
   IPC_STRUCT_MEMBER(int, http_status_code)

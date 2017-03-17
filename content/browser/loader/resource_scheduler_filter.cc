@@ -36,7 +36,7 @@ void ResourceSchedulerFilter::OnDidCommitProvisionalLoad(
   // propagate OnNavigate to the client associated with the OOPIF's RVH. This
   // should not result in show-stopping bugs, just poorer loading performance.
   if (ui::PageTransitionIsMainFrame(params.transition) &&
-      !params.was_within_same_page) {
+      !params.was_within_same_document) {
     scheduler->OnNavigate(child_id_, params.render_view_routing_id);
   }
 }

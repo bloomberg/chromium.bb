@@ -76,7 +76,7 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
                                          const GURL& url,
                                          const Referrer& referrer,
                                          ui::PageTransition transition,
-                                         bool was_within_same_page,
+                                         bool was_within_same_document,
                                          int item_sequence_number,
                                          int document_sequence_number);
   const std::string& GetSaveFrameHeaders() override;
