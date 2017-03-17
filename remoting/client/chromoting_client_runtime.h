@@ -8,11 +8,16 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "remoting/base/auto_thread.h"
+#include "remoting/base/telemetry_log_writer.h"
 
 namespace base {
 class MessageLoopForUI;
+
+template <typename T>
+struct DefaultSingletonTraits;
 }  // namespace base
 
 // Houses the global resources on which the Chromoting components run
@@ -21,28 +26,29 @@ namespace remoting {
 
 class ChromotingClientRuntime {
  public:
-  // Caller to create is responsible for creating and attaching a new ui thread
-  // for use. Example:
-  //
-  // On Android, the UI thread is managed by Java, so we need to attach and
-  // start a special type of message loop to allow Chromium code to run tasks.
-  //
-  //  base::MessageLoopForUI *ui_loop = new base::MessageLoopForUI();
-  //  ui_loop_->Start();
-  //  std::unique_ptr<ChromotingClientRuntime> runtime =
-  //    ChromotingClientRuntime::Create(ui_loop);
-  //
-  // On iOS we created a new message loop and now attach it.
-  //
-  //  base::MessageLoopForUI *ui_loop = new base::MessageLoopForUI();
-  //  ui_loop_->Attach();
-  //  std::unique_ptr<ChromotingClientRuntime> runtime =
-  //    ChromotingClientRuntime::Create(ui_loop);
-  //
-  static std::unique_ptr<ChromotingClientRuntime> Create(
-      base::MessageLoopForUI* ui_loop);
+  class Delegate {
+   public:
+    virtual ~Delegate() {}
 
-  ~ChromotingClientRuntime();
+    // RuntimeWillShutdown will be called on the delegate when the runtime
+    // enters into the destructor. This is a good time for the delegate to
+    // start shutting down on threads while they exist.
+    virtual void RuntimeWillShutdown() = 0;
+
+    // RuntimeDidShutdown will be called after task managers and threads
+    // have been stopped.
+    virtual void RuntimeDidShutdown() = 0;
+
+    // RequestAuthTokenForLogger is called when the logger is requesting
+    // and auth token and the delegate is set. It is expected that the
+    // delegate will give the logger and auth token on the network thread like:
+    // (network thread): runtime->log_writer()->SetAuthToken(token)
+    virtual void RequestAuthTokenForLogger() = 0;
+  };
+
+  static ChromotingClientRuntime* GetInstance();
+
+  void SetDelegate(ChromotingClientRuntime::Delegate* delegate);
 
   scoped_refptr<AutoThreadTaskRunner> network_task_runner() {
     return network_task_runner_;
@@ -64,14 +70,19 @@ class ChromotingClientRuntime {
     return url_requester_;
   }
 
+  // Must call and use log_writter on the network thread.
+  ChromotingEventLogWriter* log_writer();
+
  private:
   ChromotingClientRuntime();
-  ChromotingClientRuntime(
-      scoped_refptr<AutoThreadTaskRunner> ui_task_runner,
-      scoped_refptr<AutoThreadTaskRunner> display_task_runner,
-      scoped_refptr<AutoThreadTaskRunner> network_task_runner,
-      scoped_refptr<AutoThreadTaskRunner> file_task_runner,
-      scoped_refptr<net::URLRequestContextGetter> url_requester);
+  virtual ~ChromotingClientRuntime();
+
+  void CreateLogWriter();
+  void RequestAuthTokenForLogger();
+
+  // Chromium code's connection to the app message loop. Once created the
+  // MessageLoop will live for the life of the program.
+  std::unique_ptr<base::MessageLoopForUI> ui_loop_;
 
   // References to native threads.
   scoped_refptr<AutoThreadTaskRunner> ui_task_runner_;
@@ -81,6 +92,13 @@ class ChromotingClientRuntime {
   scoped_refptr<AutoThreadTaskRunner> file_task_runner_;
 
   scoped_refptr<net::URLRequestContextGetter> url_requester_;
+
+  // For logging session stage changes and stats.
+  std::unique_ptr<TelemetryLogWriter> log_writer_;
+
+  ChromotingClientRuntime::Delegate* delegate_;
+
+  friend struct base::DefaultSingletonTraits<ChromotingClientRuntime>;
 
   DISALLOW_COPY_AND_ASSIGN(ChromotingClientRuntime);
 };

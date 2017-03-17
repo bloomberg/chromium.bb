@@ -15,7 +15,7 @@
 
 namespace remoting {
 
-class ChromotingJniRuntime;
+class ChromotingClientRuntime;
 class ChromotingJniInstance;
 class JniGlDisplayHandler;
 class JniPairingSecretFetcher;
@@ -27,8 +27,7 @@ struct ConnectToHostInfo;
 // from the UI thread unless otherwise noted.
 class JniClient {
  public:
-  JniClient(ChromotingJniRuntime* runtime,
-            base::android::ScopedJavaGlobalRef<jobject> java_client);
+  JniClient(base::android::ScopedJavaGlobalRef<jobject> java_client);
   virtual ~JniClient();
 
   // Initiates a connection with the specified host. To skip the attempt at
@@ -149,7 +148,7 @@ class JniClient {
   base::WeakPtr<JniClient> GetWeakPtr();
 
  private:
-  ChromotingJniRuntime* runtime_;
+  ChromotingClientRuntime* runtime_;
 
   // Reference to the Java client object.
   base::android::ScopedJavaGlobalRef<jobject> java_client_;

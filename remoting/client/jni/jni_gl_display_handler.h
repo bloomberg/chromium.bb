@@ -22,15 +22,14 @@ namespace protocol {
 class VideoRenderer;
 }  // namespace protocol
 
-class ChromotingJniRuntime;
+class ChromotingClientRuntime;
 
 // Handles OpenGL display operations. Draws desktop and cursor on the OpenGL
 // surface. The handler should be used and destroyed on the UI thread. It also
 // has a core that works on the display thread.
 class JniGlDisplayHandler {
  public:
-  JniGlDisplayHandler(ChromotingJniRuntime* runtime,
-                      const base::android::JavaRef<jobject>& java_client);
+  JniGlDisplayHandler(const base::android::JavaRef<jobject>& java_client);
   ~JniGlDisplayHandler();
 
   std::unique_ptr<protocol::CursorShapeStub> CreateCursorShapeStub();
@@ -83,7 +82,7 @@ class JniGlDisplayHandler {
   void OnRenderDone();
   void OnCanvasSizeChanged(int width, int height);
 
-  ChromotingJniRuntime* runtime_;
+  ChromotingClientRuntime* runtime_;
 
   QueuedTaskPoster ui_task_poster_;
 

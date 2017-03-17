@@ -7,50 +7,118 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
+#include "base/task_scheduler/task_scheduler.h"
+#include "remoting/base/chromium_url_request.h"
+#include "remoting/base/telemetry_log_writer.h"
 #include "remoting/base/url_request_context_getter.h"
+
+namespace {
+
+const char kTelemetryBaseUrl[] = "https://remoting-pa.googleapis.com/v1/events";
+
+}  // namespace
 
 namespace remoting {
 
-std::unique_ptr<ChromotingClientRuntime> ChromotingClientRuntime::Create(
-    base::MessageLoopForUI* ui_loop) {
-  DCHECK(ui_loop);
+// static
+ChromotingClientRuntime* ChromotingClientRuntime::GetInstance() {
+  return base::Singleton<ChromotingClientRuntime>::get();
+}
+
+ChromotingClientRuntime::ChromotingClientRuntime() {
+  // TODO(sergeyu): Consider adding separate pools for different task classes.
+  const int kMaxBackgroundThreads = 5;
+  if (!base::TaskScheduler::GetInstance()) {
+    // Make sure TaskScheduler is initialized.
+    base::TaskScheduler::CreateAndSetSimpleTaskScheduler(kMaxBackgroundThreads);
+  }
+
+  if (!base::MessageLoop::current()) {
+    VLOG(1) << "Starting main message loop";
+    ui_loop_.reset(new base::MessageLoopForUI());
+#if defined(OS_ANDROID)
+    // On Android, the UI thread is managed by Java, so we need to attach and
+    // start a special type of message loop to allow Chromium code to run tasks.
+    ui_loop_->Start();
+#elif defined(OS_IOS)
+    base::MessageLoopForUI::current()->Attach();
+#endif  // OS_ANDROID, OS_IOS
+  } else {
+    ui_loop_.reset(base::MessageLoopForUI::current());
+  }
+
+#if defined(DEBUG)
+  net::URLFetcher::SetIgnoreCertificateRequests(true);
+#endif  // DEBUG
 
   // |ui_loop_| runs on the main thread, so |ui_task_runner_| will run on the
   // main thread.  We can not kill the main thread when the message loop becomes
   // idle so the callback function does nothing (as opposed to the typical
   // base::MessageLoop::QuitClosure())
-  scoped_refptr<AutoThreadTaskRunner> ui_task_runner = new AutoThreadTaskRunner(
-      ui_loop->task_runner(), base::Bind(&base::DoNothing));
+  ui_task_runner_ = new AutoThreadTaskRunner(ui_loop_->task_runner(),
+                                             base::Bind(&base::DoNothing));
 
-  scoped_refptr<AutoThreadTaskRunner> display_task_runner =
-      AutoThread::Create("native_disp", ui_task_runner);
-  scoped_refptr<AutoThreadTaskRunner> network_task_runner =
-      AutoThread::CreateWithType("native_net", ui_task_runner,
-                                 base::MessageLoop::TYPE_IO);
-  scoped_refptr<AutoThreadTaskRunner> file_task_runner =
-      AutoThread::CreateWithType("native_file", ui_task_runner,
-                                 base::MessageLoop::TYPE_IO);
-  scoped_refptr<net::URLRequestContextGetter> url_requester =
-      new URLRequestContextGetter(network_task_runner, file_task_runner);
+  display_task_runner_ = AutoThread::Create("native_disp", ui_task_runner_);
+  network_task_runner_ = AutoThread::CreateWithType(
+      "native_net", ui_task_runner_, base::MessageLoop::TYPE_IO);
+  file_task_runner_ = AutoThread::CreateWithType("native_file", ui_task_runner_,
+                                                 base::MessageLoop::TYPE_IO);
+  url_requester_ =
+      new URLRequestContextGetter(network_task_runner_, file_task_runner_);
 
-  return base::WrapUnique(new ChromotingClientRuntime(
-      ui_task_runner, display_task_runner, network_task_runner,
-      file_task_runner, url_requester));
+  CreateLogWriter();
 }
 
-ChromotingClientRuntime::ChromotingClientRuntime(
-    scoped_refptr<AutoThreadTaskRunner> ui_task_runner,
-    scoped_refptr<AutoThreadTaskRunner> display_task_runner,
-    scoped_refptr<AutoThreadTaskRunner> network_task_runner,
-    scoped_refptr<AutoThreadTaskRunner> file_task_runner,
-    scoped_refptr<net::URLRequestContextGetter> url_requester)
-    : ui_task_runner_(ui_task_runner),
-      display_task_runner_(display_task_runner),
-      network_task_runner_(network_task_runner),
-      file_task_runner_(file_task_runner),
-      url_requester_(url_requester) {}
+ChromotingClientRuntime::~ChromotingClientRuntime() {
+  if (delegate_) {
+    delegate_->RuntimeWillShutdown();
+  } else {
+    DLOG(ERROR) << "ClientRuntime Delegate is null.";
+  }
 
-ChromotingClientRuntime::~ChromotingClientRuntime() {}
+  // Block until tasks blocking shutdown have completed their execution.
+  base::TaskScheduler::GetInstance()->Shutdown();
+
+  if (delegate_) {
+    delegate_->RuntimeDidShutdown();
+  }
+}
+
+void ChromotingClientRuntime::SetDelegate(
+    ChromotingClientRuntime::Delegate* delegate) {
+  delegate_ = delegate;
+  delegate_->RequestAuthTokenForLogger();
+}
+
+void ChromotingClientRuntime::CreateLogWriter() {
+  if (!network_task_runner()->BelongsToCurrentThread()) {
+    network_task_runner()->PostTask(
+        FROM_HERE, base::Bind(&ChromotingClientRuntime::CreateLogWriter,
+                              base::Unretained(this)));
+    return;
+  }
+  log_writer_.reset(new TelemetryLogWriter(
+      kTelemetryBaseUrl,
+      base::MakeUnique<ChromiumUrlRequestFactory>(url_requester())));
+  log_writer_->SetAuthClosure(
+      base::Bind(&ChromotingClientRuntime::RequestAuthTokenForLogger,
+                 base::Unretained(this)));
+}
+
+void ChromotingClientRuntime::RequestAuthTokenForLogger() {
+  if (delegate_) {
+    delegate_->RequestAuthTokenForLogger();
+  } else {
+    DLOG(ERROR) << "ClientRuntime Delegate is null.";
+  }
+}
+
+ChromotingEventLogWriter* ChromotingClientRuntime::log_writer() {
+  DCHECK(network_task_runner()->BelongsToCurrentThread());
+  return log_writer_.get();
+}
+
 
 }  // namespace remoting

@@ -5,39 +5,36 @@
 #include "remoting/client/jni/jni_pairing_secret_fetcher.h"
 #include "base/bind.h"
 #include "base/location.h"
-#include "remoting/client/jni/chromoting_jni_runtime.h"
+#include "remoting/client/chromoting_client_runtime.h"
 #include "remoting/client/jni/jni_client.h"
 
 namespace remoting {
 
-JniPairingSecretFetcher::JniPairingSecretFetcher(ChromotingJniRuntime* runtime,
-                                   base::WeakPtr<JniClient> client,
-                                   const std::string& host_id) :
-    jni_runtime_(runtime),
-    jni_client_(client),
-    host_id_(host_id),
-    weak_factory_(this) {
+JniPairingSecretFetcher::JniPairingSecretFetcher(
+    base::WeakPtr<JniClient> client,
+    const std::string& host_id)
+    : jni_client_(client), host_id_(host_id), weak_factory_(this) {
+  runtime_ = ChromotingClientRuntime::GetInstance();
   weak_ptr_ = weak_factory_.GetWeakPtr();
 }
 
 JniPairingSecretFetcher::~JniPairingSecretFetcher() {
-  DCHECK(jni_runtime_->network_task_runner()->BelongsToCurrentThread());
+  DCHECK(runtime_->network_task_runner()->BelongsToCurrentThread());
 }
 
 void JniPairingSecretFetcher::FetchSecret(
     bool pairable,
     const protocol::SecretFetchedCallback& callback) {
-  DCHECK (jni_runtime_->network_task_runner()->BelongsToCurrentThread());
+  DCHECK(runtime_->network_task_runner()->BelongsToCurrentThread());
 
   callback_ = callback;
-  jni_runtime_->ui_task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&JniPairingSecretFetcher::FetchSecretOnUiThread, jni_client_,
-                 host_id_, pairable));
+  runtime_->ui_task_runner()->PostTask(
+      FROM_HERE, base::Bind(&JniPairingSecretFetcher::FetchSecretOnUiThread,
+                            jni_client_, host_id_, pairable));
 }
 
 void JniPairingSecretFetcher::ProvideSecret(const std::string& pin) {
-  DCHECK(jni_runtime_->network_task_runner()->BelongsToCurrentThread());
+  DCHECK(runtime_->network_task_runner()->BelongsToCurrentThread());
   DCHECK(!callback_.is_null());
 
   callback_.Run(pin);

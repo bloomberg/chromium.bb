@@ -19,51 +19,6 @@ generate_jni("jni_headers") {
   jni_package = "remoting"
 }
 
-shared_library("remoting_client_jni") {
-  deps = [
-    "//remoting/android:jni_headers",
-    "//remoting/base",
-    "//remoting/client",
-    "//remoting/client/display",
-    "//remoting/protocol",
-    "//ui/events:dom_keycode_converter",
-    "//ui/gfx",
-  ]
-  sources = [
-    "//remoting/client/audio_player_android.cc",
-    "//remoting/client/audio_player_android.h",
-    "//remoting/client/jni/android_keymap.cc",
-    "//remoting/client/jni/android_keymap.h",
-    "//remoting/client/jni/chromoting_jni_instance.cc",
-    "//remoting/client/jni/chromoting_jni_instance.h",
-    "//remoting/client/jni/chromoting_jni_runtime.cc",
-    "//remoting/client/jni/chromoting_jni_runtime.h",
-    "//remoting/client/jni/connect_to_host_info.cc",
-    "//remoting/client/jni/connect_to_host_info.h",
-    "//remoting/client/jni/display_updater_factory.h",
-    "//remoting/client/jni/egl_thread_context.cc",
-    "//remoting/client/jni/egl_thread_context.h",
-    "//remoting/client/jni/jni_client.cc",
-    "//remoting/client/jni/jni_client.h",
-    "//remoting/client/jni/jni_gl_display_handler.cc",
-    "//remoting/client/jni/jni_gl_display_handler.h",
-    "//remoting/client/jni/jni_pairing_secret_fetcher.cc",
-    "//remoting/client/jni/jni_pairing_secret_fetcher.h",
-    "//remoting/client/jni/jni_touch_event_data.cc",
-    "//remoting/client/jni/jni_touch_event_data.h",
-    "//remoting/client/jni/remoting_jni_onload.cc",
-    "//remoting/client/jni/remoting_jni_registrar.cc",
-    "//remoting/client/jni/remoting_jni_registrar.h",
-  ]
-  libs = [
-    "android",
-    "OpenSLES",
-    "EGL",
-  ]
-  configs += [ "//remoting/build/config:enable_webrtc_remoting_client" ]
-  assert_no_deps = [ "//third_party/ffmpeg:*" ]
-}
-
 action("credits") {
   credits_html_file = "$target_gen_dir/credits.html"
   script = "//tools/licenses.py"

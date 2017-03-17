@@ -61,6 +61,8 @@ static_library("client") {
     "//third_party/webrtc/modules/desktop_capture:primitives",
   ]
 
+  libs = []
+
   if (is_nacl) {
     sources -= [
       "client_status_logger.cc",
@@ -71,6 +73,16 @@ static_library("client") {
     sources += [
       "chromoting_client_runtime.cc",
       "chromoting_client_runtime.h",
+    ]
+  }
+  if (is_android) {
+    sources += [
+      "audio_player_android.cc",
+      "audio_player_android.h",
+    ]
+    libs += [
+      "android",
+      "OpenSLES",
     ]
   }
 }

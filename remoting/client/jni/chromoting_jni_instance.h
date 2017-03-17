@@ -32,7 +32,7 @@ class VideoRenderer;
 }  // namespace protocol
 
 class AudioPlayerAndroid;
-class ChromotingJniRuntime;
+class ChromotingClientRuntime;
 class JniClient;
 class JniPairingSecretFetcher;
 
@@ -47,8 +47,7 @@ class ChromotingJniInstance
   // Initiates a connection with the specified host. Call from the UI thread.
   // The instance does not take ownership of |jni_runtime|. To connect with an
   // unpaired host, pass in |pairing_id| and |pairing_secret| as empty strings.
-  ChromotingJniInstance(ChromotingJniRuntime* jni_runtime,
-                        base::WeakPtr<JniClient> jni_client,
+  ChromotingJniInstance(base::WeakPtr<JniClient> jni_client,
                         base::WeakPtr<JniPairingSecretFetcher> secret_fetcher,
                         std::unique_ptr<protocol::CursorShapeStub> cursor_stub,
                         std::unique_ptr<protocol::VideoRenderer> video_renderer,
@@ -142,8 +141,8 @@ class ChromotingJniInstance
   // Releases the resource in the right order.
   void ReleaseResources();
 
-  // Used to obtain task runner references and make calls to Java methods.
-  ChromotingJniRuntime* jni_runtime_;
+  // Used to obtain task runner references.
+  ChromotingClientRuntime* runtime_;
 
   base::WeakPtr<JniClient> jni_client_;
 

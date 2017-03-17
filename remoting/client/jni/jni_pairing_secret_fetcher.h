@@ -11,7 +11,7 @@
 
 namespace remoting {
 
-class ChromotingJniRuntime;
+class ChromotingClientRuntime;
 class JniClient;
 
 // This class fetches the pairing secret on the UI thread. This should be
@@ -19,9 +19,8 @@ class JniClient;
 // thread.
 class JniPairingSecretFetcher {
  public:
-  JniPairingSecretFetcher(ChromotingJniRuntime* runtime,
-                   base::WeakPtr<JniClient> client,
-                   const std::string& host_id);
+  JniPairingSecretFetcher(base::WeakPtr<JniClient> client,
+                          const std::string& host_id);
   virtual ~JniPairingSecretFetcher();
 
   // Notifies the user interface that the user needs to enter a PIN. The current
@@ -42,7 +41,7 @@ class JniPairingSecretFetcher {
                                     const std::string& host_id,
                                     bool pairable);
 
-  ChromotingJniRuntime* jni_runtime_;
+  ChromotingClientRuntime* runtime_;
   base::WeakPtr<JniClient> jni_client_;
 
   std::string host_id_;

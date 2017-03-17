@@ -8,8 +8,8 @@
 #include "base/android/jni_string.h"
 #include "base/logging.h"
 #include "jni/Client_jni.h"
+#include "remoting/client/chromoting_client_runtime.h"
 #include "remoting/client/jni/chromoting_jni_instance.h"
-#include "remoting/client/jni/chromoting_jni_runtime.h"
 #include "remoting/client/jni/connect_to_host_info.h"
 #include "remoting/client/jni/jni_gl_display_handler.h"
 #include "remoting/client/jni/jni_pairing_secret_fetcher.h"
@@ -23,11 +23,9 @@ using base::android::ScopedJavaLocalRef;
 
 namespace remoting {
 
-JniClient::JniClient(ChromotingJniRuntime* runtime,
-                     base::android::ScopedJavaGlobalRef<jobject> java_client)
-    : runtime_(runtime),
-      java_client_(java_client),
-      weak_factory_(this) {
+JniClient::JniClient(base::android::ScopedJavaGlobalRef<jobject> java_client)
+    : java_client_(java_client), weak_factory_(this) {
+  runtime_ = ChromotingClientRuntime::GetInstance();
   weak_ptr_ = weak_factory_.GetWeakPtr();
 }
 
@@ -44,13 +42,13 @@ void JniClient::ConnectToHost(const ConnectToHostInfo& info) {
   DCHECK(!display_handler_);
   DCHECK(!session_);
   DCHECK(!secret_fetcher_);
-  display_handler_.reset(new JniGlDisplayHandler(runtime_, java_client_));
+  display_handler_.reset(new JniGlDisplayHandler(java_client_));
   secret_fetcher_.reset(
-      new JniPairingSecretFetcher(runtime_, GetWeakPtr(), info.host_id));
-  session_.reset(new ChromotingJniInstance(
-      runtime_, GetWeakPtr(), secret_fetcher_->GetWeakPtr(),
-      display_handler_->CreateCursorShapeStub(),
-      display_handler_->CreateVideoRenderer(), info));
+      new JniPairingSecretFetcher(GetWeakPtr(), info.host_id));
+  session_.reset(
+      new ChromotingJniInstance(GetWeakPtr(), secret_fetcher_->GetWeakPtr(),
+                                display_handler_->CreateCursorShapeStub(),
+                                display_handler_->CreateVideoRenderer(), info));
   session_->Connect();
 }
 
@@ -287,8 +285,7 @@ base::WeakPtr<JniClient> JniClient::GetWeakPtr() {
 
 static jlong Init(JNIEnv* env, const JavaParamRef<jobject>& caller) {
   return reinterpret_cast<intptr_t>(
-      new JniClient(ChromotingJniRuntime::GetInstance(),
-                    base::android::ScopedJavaGlobalRef<jobject>(env, caller)));
+      new JniClient(base::android::ScopedJavaGlobalRef<jobject>(env, caller)));
 }
 
 }  // namespace remoting
