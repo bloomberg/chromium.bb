@@ -9,42 +9,42 @@
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [10, 126, 228, 17],
-          "reason": "full"
+          "reason": "DocumentMarker change"
         },
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [20, 214, 202, 72],
-          "reason": "full"
+          "reason": "DocumentMarker change"
         },
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [10, 181, 138, 12],
-          "reason": "full"
+          "reason": "DocumentMarker change"
         },
         {
           "object": "LayoutText #text",
           "rect": [282, 36, 46, 17],
-          "reason": "full"
+          "reason": "DocumentMarker change"
         },
         {
           "object": "LayoutText #text",
           "rect": [270, 54, 46, 17],
-          "reason": "full"
+          "reason": "DocumentMarker change"
         },
         {
           "object": "LayoutText #text",
           "rect": [225, 54, 46, 17],
-          "reason": "full"
+          "reason": "DocumentMarker change"
         },
         {
           "object": "LayoutText #text",
           "rect": [90, 54, 46, 17],
-          "reason": "full"
+          "reason": "DocumentMarker change"
         },
         {
           "object": "LayoutText #text",
           "rect": [52, 72, 46, 17],
-          "reason": "full"
+          "reason": "DocumentMarker change"
         }
       ]
     }
@@ -52,67 +52,67 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutText #text",
-      "reason": "full"
+      "reason": "DocumentMarker change"
     },
     {
       "object": "InlineTextBox 'findme'",
-      "reason": "full"
+      "reason": "DocumentMarker change"
     },
     {
       "object": "LayoutText #text",
-      "reason": "full"
+      "reason": "DocumentMarker change"
     },
     {
       "object": "InlineTextBox 'findme'",
-      "reason": "full"
+      "reason": "DocumentMarker change"
     },
     {
       "object": "LayoutText #text",
-      "reason": "full"
+      "reason": "DocumentMarker change"
     },
     {
       "object": "InlineTextBox 'findme'",
-      "reason": "full"
+      "reason": "DocumentMarker change"
     },
     {
       "object": "LayoutText #text",
-      "reason": "full"
+      "reason": "DocumentMarker change"
     },
     {
       "object": "InlineTextBox 'findme'",
-      "reason": "full"
+      "reason": "DocumentMarker change"
     },
     {
       "object": "LayoutText #text",
-      "reason": "full"
+      "reason": "DocumentMarker change"
     },
     {
       "object": "InlineTextBox 'findme'",
-      "reason": "full"
+      "reason": "DocumentMarker change"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "full"
+      "reason": "DocumentMarker change"
     },
     {
       "object": "InlineTextBox 'Can you findme in this boring text?'",
-      "reason": "full"
+      "reason": "DocumentMarker change"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "full"
+      "reason": "DocumentMarker change"
     },
     {
       "object": "InlineTextBox 'Findme in a typewriter!'",
-      "reason": "full"
+      "reason": "DocumentMarker change"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "full"
+      "reason": "DocumentMarker change"
     },
     {
       "object": "InlineTextBox 'Findme on a path! Did you findme?'",
-      "reason": "full"
+      "reason": "DocumentMarker change"
     }
   ]
 }

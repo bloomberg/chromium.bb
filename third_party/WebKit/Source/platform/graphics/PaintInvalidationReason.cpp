@@ -60,6 +60,8 @@ const char* paintInvalidationReasonToString(PaintInvalidationReason reason) {
       return "caret";
     case PaintInvalidationViewBackground:
       return "view background";
+    case PaintInvalidationDocumentMarkerChange:
+      return "DocumentMarker change";
     case PaintInvalidationForTesting:
       return "for testing";
     case PaintInvalidationDelayedFull:
