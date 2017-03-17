@@ -551,8 +551,15 @@ void NetworkPortalDetectorImpl::OnAttemptCompleted(
   }
 
   // Observers (via OnDetectionCompleted) may already schedule new attempt.
-  if (is_idle())
-    ScheduleAttempt(results.retry_after_delta);
+  if (!is_idle())
+    return;
+
+  // If behind a captive portal and the response code was 200 (OK), do not
+  // schedule a new attempt.
+  if (state.status == CAPTIVE_PORTAL_STATUS_PORTAL && response_code == 200)
+    return;
+
+  ScheduleAttempt(results.retry_after_delta);
 }
 
 void NetworkPortalDetectorImpl::Observe(
