@@ -23,6 +23,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "media/audio/audio_device_description.h"
+#include "media/audio/audio_system_impl.h"
 #include "media/audio/fake_audio_log_factory.h"
 #include "media/base/media_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -166,7 +167,9 @@ class MediaStreamManagerTest : public ::testing::Test {
   MediaStreamManagerTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
     audio_manager_.reset(new MockAudioManager());
-    media_stream_manager_.reset(new MediaStreamManager(audio_manager_.get()));
+    audio_system_ = media::AudioSystemImpl::Create(audio_manager_.get());
+    media_stream_manager_ =
+        base::MakeUnique<MediaStreamManager>(audio_system_.get());
     base::RunLoop().RunUntilIdle();
   }
 
@@ -202,6 +205,7 @@ class MediaStreamManagerTest : public ::testing::Test {
   std::unique_ptr<MediaStreamManager> media_stream_manager_;
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<MockAudioManager, media::AudioManagerDeleter> audio_manager_;
+  std::unique_ptr<media::AudioSystem> audio_system_;
   base::RunLoop run_loop_;
 
  private:

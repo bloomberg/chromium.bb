@@ -242,7 +242,8 @@ class AudioRendererHostTest : public testing::Test {
         render_process_host_(&browser_context_, &auth_run_loop_) {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kUseFakeDeviceForMediaStream);
-    media_stream_manager_.reset(new MediaStreamManager(audio_manager_.get()));
+    media_stream_manager_ =
+        base::MakeUnique<MediaStreamManager>(audio_system_.get());
     host_ = new MockAudioRendererHost(
         &auth_run_loop_, render_process_host_.GetID(), audio_manager_.get(),
         audio_system_.get(), &mirroring_manager_, media_stream_manager_.get(),

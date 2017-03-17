@@ -21,6 +21,7 @@
 #include "content/public/browser/media_observer.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "media/audio/audio_output_controller.h"
+#include "media/audio/audio_system_impl.h"
 #include "media/audio/fake_audio_log_factory.h"
 #include "media/audio/fake_audio_manager.h"
 #include "media/base/media_switches.h"
@@ -115,8 +116,9 @@ class AudioOutputDelegateTest : public testing::Test {
     audio_manager_.reset(new media::FakeAudioManager(
         audio_thread_->task_runner(), audio_thread_->worker_task_runner(),
         &log_factory_));
+    audio_system_ = media::AudioSystemImpl::Create(audio_manager_.get());
     media_stream_manager_ =
-        base::MakeUnique<MediaStreamManager>(audio_manager_.get());
+        base::MakeUnique<MediaStreamManager>(audio_system_.get());
   }
 
   // Test bodies are here, so that we can run them on the IO thread.
@@ -450,6 +452,7 @@ class AudioOutputDelegateTest : public testing::Test {
   std::unique_ptr<TestBrowserThreadBundle> thread_bundle_;
   std::unique_ptr<AudioManagerThread> audio_thread_;
   media::ScopedAudioManagerPtr audio_manager_;
+  std::unique_ptr<media::AudioSystem> audio_system_;
   StrictMock<MockAudioMirroringManager> mirroring_manager_;
   StrictMock<MockEventHandler> event_handler_;
   StrictMock<MockObserver> media_observer_;

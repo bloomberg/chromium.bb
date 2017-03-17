@@ -69,7 +69,7 @@ class AudioOutputAuthorizationHandlerTest : public testing::Test {
         &log_factory_));
     audio_system_ = media::AudioSystemImpl::Create(audio_manager_.get());
     media_stream_manager_ =
-        base::MakeUnique<MediaStreamManager>(audio_manager_.get());
+        base::MakeUnique<MediaStreamManager>(audio_system_.get());
     // Make sure everything is done initializing:
     SyncWithAllThreads();
   }

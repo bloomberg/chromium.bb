@@ -45,7 +45,7 @@
 #include "content/public/common/media_stream_request.h"
 #include "crypto/hmac.h"
 #include "media/audio/audio_device_description.h"
-#include "media/audio/audio_manager.h"
+#include "media/audio/audio_system.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/channel_layout.h"
 #include "media/base/media_switches.h"
@@ -392,14 +392,14 @@ void MediaStreamManager::SendMessageToNativeLog(const std::string& message) {
   msm->AddLogMessageOnIOThread(message);
 }
 
-MediaStreamManager::MediaStreamManager(media::AudioManager* audio_manager)
-    : audio_manager_(audio_manager),
+MediaStreamManager::MediaStreamManager(media::AudioSystem* audio_system)
+    : audio_system_(audio_system),
 #if defined(OS_WIN)
       video_capture_thread_("VideoCaptureThread"),
 #endif
       use_fake_ui_(base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kUseFakeUIForMediaStream)) {
-  DCHECK(audio_manager_);
+  DCHECK(audio_system_);
 
   // Some unit tests create the MSM in the IO thread and assumes the
   // initialization is done synchronously.
@@ -423,7 +423,6 @@ MediaStreamManager::~MediaStreamManager() {
   DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::IO));
   DVLOG(1) << "~MediaStreamManager";
   DCHECK(requests_.empty());
-  DCHECK(!device_task_runner_.get());
 
   base::PowerMonitor* power_monitor = base::PowerMonitor::Get();
   // The PowerMonitor instance owned by BrowserMainLoops always outlives the
@@ -909,14 +908,11 @@ void MediaStreamManager::ReadOutputParamsAndPostRequestToUI(
   // TODO(guidou): MEDIA_TAB_AUDIO_CAPTURE should not be a special case. See
   // crbug.com/584287.
   if (request->audio_type() == MEDIA_TAB_AUDIO_CAPTURE) {
-    // Read output parameters on the correct thread for native audio OS calls.
-    // Using base::Unretained is safe since |audio_manager_| is deleted after
-    // its task runner, and MediaStreamManager is deleted on the UI thread,
-    // after the IO thread has been stopped.
-    base::PostTaskAndReplyWithResult(
-        audio_manager_->GetTaskRunner(), FROM_HERE,
-        base::Bind(&media::AudioManager::GetDefaultOutputStreamParameters,
-                   base::Unretained(audio_manager_)),
+    // Using base::Unretained is safe: |audio_system_| will post
+    // PostRequestToUI() to IO thread, and MediaStreamManager is deleted on the
+    // UI thread, after the IO thread has been stopped.
+    audio_system_->GetOutputStreamParameters(
+        media::AudioDeviceDescription::kDefaultDeviceId,
         base::Bind(&MediaStreamManager::PostRequestToUI, base::Unretained(this),
                    label, request, enumeration));
   } else {
@@ -1233,15 +1229,14 @@ void MediaStreamManager::InitializeDeviceManagersOnIOThread() {
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "457525 MediaStreamManager::InitializeDeviceManagersOnIOThread 1"));
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(!device_task_runner_.get());
-  device_task_runner_ = audio_manager_->GetTaskRunner();
 
   // TODO(dalecurtis): Remove ScopedTracker below once crbug.com/457525 is
   // fixed.
   tracked_objects::ScopedTracker tracking_profile2(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "457525 MediaStreamManager::InitializeDeviceManagersOnIOThread 2"));
-  audio_input_device_manager_ = new AudioInputDeviceManager(audio_manager_);
+  audio_input_device_manager_ =
+      new AudioInputDeviceManager(audio_system_->GetAudioManager());
   audio_input_device_manager_->RegisterListener(this);
 
   // TODO(dalecurtis): Remove ScopedTracker below once crbug.com/457525 is
@@ -1271,13 +1266,13 @@ void MediaStreamManager::InitializeDeviceManagersOnIOThread() {
   video_capture_manager_ = new VideoCaptureManager(
       media::VideoCaptureDeviceFactory::CreateFactory(
           BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)),
-      device_task_runner_);
+      audio_system_->GetTaskRunner());
 #endif
 
   video_capture_manager_->RegisterListener(this);
 
-  media_devices_manager_.reset(
-      new MediaDevicesManager(audio_manager_, video_capture_manager_, this));
+  media_devices_manager_.reset(new MediaDevicesManager(
+      audio_system_->GetAudioManager(), video_capture_manager_, this));
 }
 
 void MediaStreamManager::Opened(MediaStreamType stream_type,
@@ -1560,7 +1555,6 @@ void MediaStreamManager::WillDestroyCurrentMessageLoop() {
   if (audio_input_device_manager_)
     audio_input_device_manager_->UnregisterListener(this);
 
-  device_task_runner_ = nullptr;
   audio_input_device_manager_ = nullptr;
   video_capture_manager_ = nullptr;
   media_devices_manager_ = nullptr;

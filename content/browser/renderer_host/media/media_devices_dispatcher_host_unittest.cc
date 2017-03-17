@@ -25,6 +25,7 @@
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "media/audio/audio_device_description.h"
+#include "media/audio/audio_system_impl.h"
 #include "media/audio/mock_audio_manager.h"
 #include "media/base/media_switches.h"
 #include "media/capture/video/fake_video_capture_device_factory.h"
@@ -81,7 +82,9 @@ class MediaDevicesDispatcherHostTest : public testing::Test {
                            kNumFakeVideoDevices, kDefaultVideoDeviceID));
     audio_manager_.reset(
         new media::MockAudioManager(base::ThreadTaskRunnerHandle::Get()));
-    media_stream_manager_.reset(new MediaStreamManager(audio_manager_.get()));
+    audio_system_ = media::AudioSystemImpl::Create(audio_manager_.get());
+    media_stream_manager_ =
+        base::MakeUnique<MediaStreamManager>(audio_system_.get());
 
     MockResourceContext* mock_resource_context =
         static_cast<MockResourceContext*>(
@@ -286,6 +289,7 @@ class MediaDevicesDispatcherHostTest : public testing::Test {
 
   std::unique_ptr<media::AudioManager, media::AudioManagerDeleter>
       audio_manager_;
+  std::unique_ptr<media::AudioSystem> audio_system_;
   content::TestBrowserContext browser_context_;
   MediaDeviceEnumeration physical_devices_;
   url::Origin origin_;

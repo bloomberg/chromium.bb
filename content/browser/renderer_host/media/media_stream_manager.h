@@ -48,7 +48,7 @@
 #include "media/base/video_facing.h"
 
 namespace media {
-class AudioManager;
+class AudioSystem;
 }
 
 namespace url {
@@ -85,7 +85,7 @@ class CONTENT_EXPORT MediaStreamManager
   // logging from webrtcLoggingPrivate API. Safe to call from any thread.
   static void SendMessageToNativeLog(const std::string& message);
 
-  explicit MediaStreamManager(media::AudioManager* audio_manager);
+  explicit MediaStreamManager(media::AudioSystem* audio_system);
 
   ~MediaStreamManager() override;
 
@@ -403,13 +403,7 @@ class CONTENT_EXPORT MediaStreamManager
       MediaStreamType stream_type,
       const MediaDeviceInfoArray& device_infos);
 
-  // Task runner shared by VideoCaptureManager and AudioInputDeviceManager and
-  // used for enumerating audio output devices.
-  // Note: Enumeration tasks may take seconds to complete so must never be run
-  // on any of the BrowserThreads (UI, IO, etc).  See http://crbug.com/256945.
-  scoped_refptr<base::SingleThreadTaskRunner> device_task_runner_;
-
-  media::AudioManager* const audio_manager_;  // not owned
+  media::AudioSystem* const audio_system_;  // not owned
   scoped_refptr<AudioInputDeviceManager> audio_input_device_manager_;
   scoped_refptr<VideoCaptureManager> video_capture_manager_;
 #if defined(OS_WIN)

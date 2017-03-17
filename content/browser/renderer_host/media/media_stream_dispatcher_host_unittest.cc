@@ -35,6 +35,7 @@
 #include "content/test/test_content_client.h"
 #include "ipc/ipc_message_macros.h"
 #include "media/audio/audio_device_description.h"
+#include "media/audio/audio_system_impl.h"
 #include "media/audio/mock_audio_manager.h"
 #include "media/base/media_switches.h"
 #include "media/capture/video/fake_video_capture_device_factory.h"
@@ -235,11 +236,13 @@ class MediaStreamDispatcherHostTest : public testing::Test {
         origin_(GURL("https://test.com")) {
     audio_manager_.reset(
         new media::MockAudioManager(base::ThreadTaskRunnerHandle::Get()));
+    audio_system_ = media::AudioSystemImpl::Create(audio_manager_.get());
     // Make sure we use fake devices to avoid long delays.
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kUseFakeDeviceForMediaStream);
     // Create our own MediaStreamManager.
-    media_stream_manager_.reset(new MediaStreamManager(audio_manager_.get()));
+    media_stream_manager_ =
+        base::MakeUnique<MediaStreamManager>(audio_system_.get());
     video_capture_device_factory_ =
         static_cast<media::FakeVideoCaptureDeviceFactory*>(
             media_stream_manager_->video_capture_manager()
@@ -426,6 +429,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<media::AudioManager, media::AudioManagerDeleter>
       audio_manager_;
+  std::unique_ptr<media::AudioSystem> audio_system_;
   MockMediaStreamUIProxy* stream_ui_;
   ContentBrowserClient* old_browser_client_;
   std::unique_ptr<ContentClient> content_client_;
