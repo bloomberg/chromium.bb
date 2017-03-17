@@ -120,8 +120,7 @@ resources, native libraries, etc.
 
 ### What works
 
-* Tested with Android Studio v2.3.
-    * If you get an error about build tools version 25.0.0, install it manually.
+* Tested with Android Studio v2.2.
 * Java editing and gradle compile works.
 * Instrumentation tests included as androidTest.
 * Symlinks to existing .so files in jniLibs (doesn't generate them).
