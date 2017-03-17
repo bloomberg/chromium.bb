@@ -56,6 +56,40 @@ class In(Comparator):
     return '<sequence or map containing %r>' % str(self._key)
 
 
+class InOrder(Comparator):
+  """Checks whether every items of a list exists in a list/dict parameter."""
+
+  def __init__(self, items):
+    """Constructor.
+
+    Args:
+      items: A list of things that could be in a list or a key in a dict
+    """
+    super(InOrder, self).__init__()
+    self.items = items
+
+  def Match(self, args):
+    """Checks if args' item matches all expected items in sequence.
+
+    Args:
+      args: parameter list.
+
+    Returns:
+      True if all expected items are matched.
+    """
+    items = list(self.items)
+    to_match = items.pop(0)
+    for arg in args:
+      if to_match == arg:
+        if len(items) < 1:
+          return True
+        to_match = items.pop(0)
+    return False
+
+  def __repr__(self):
+    return '<sequence or map containing %r>' % str(self.items)
+
+
 class Regex(Comparator):
   """Checks if a string matches a regular expression."""
 

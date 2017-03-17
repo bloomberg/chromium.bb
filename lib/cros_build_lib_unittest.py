@@ -144,7 +144,7 @@ class RunCommandMock(partial_mock.PartialCmdMock):
 
   def RunCommand(self, cmd, *args, **kwargs):
     result = self._results['RunCommand'].LookupResult(
-        (cmd,), hook_args=(cmd,) + args, hook_kwargs=kwargs)
+        (cmd,), kwargs=kwargs, hook_args=(cmd,) + args, hook_kwargs=kwargs)
 
     popen_mock = PopenMock()
     popen_mock.AddCmdResult(partial_mock.Ignore(), result.returncode,
