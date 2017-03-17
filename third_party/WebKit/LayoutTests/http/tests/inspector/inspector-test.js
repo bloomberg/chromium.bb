@@ -982,7 +982,6 @@ SDK.targetManager.observeTargets({
         InspectorTest.networkManager = SDK.NetworkManager.fromTarget(target);
         InspectorTest.securityOriginManager = SDK.SecurityOriginManager.fromTarget(target);
         InspectorTest.resourceTreeModel = SDK.ResourceTreeModel.fromTarget(target);
-        InspectorTest.networkLog = SDK.NetworkLog.fromTarget(target);
         InspectorTest.debuggerModel = SDK.DebuggerModel.fromTarget(target);
         InspectorTest.runtimeModel = target.runtimeModel;
         InspectorTest.domModel = SDK.DOMModel.fromTarget(target);
@@ -996,6 +995,7 @@ SDK.targetManager.observeTargets({
         InspectorTest.tracingManager = target.model(SDK.TracingManager);
         InspectorTest.mainTarget = target;
         InspectorTest.consoleModel = ConsoleModel.consoleModel;
+        InspectorTest.networkLog = SDK.networkLog;
     },
 
     targetRemoved: function(target) { }

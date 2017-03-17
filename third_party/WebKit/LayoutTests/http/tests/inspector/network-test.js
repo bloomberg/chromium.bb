@@ -63,7 +63,7 @@ InspectorTest.recordNetwork = function()
 
 InspectorTest.networkRequests = function()
 {
-    return SDK.NetworkLog.requests();
+    return SDK.networkLog.requests().slice();
 }
 
 InspectorTest.dumpNetworkRequests = function()
