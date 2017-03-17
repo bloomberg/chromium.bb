@@ -5771,13 +5771,8 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
     TX_SIZE tx_size = mbmi->tx_size;
 #endif
     if (cm->tx_mode == TX_MODE_SELECT && !xd->lossless[mbmi->segment_id] &&
-#if CONFIG_CB4X4 && (CONFIG_VAR_TX || CONFIG_RECT_TX)
-#if CONFIG_RECT_TX
+#if CONFIG_CB4X4 && (CONFIG_VAR_TX || CONFIG_EXT_TX) && CONFIG_RECT_TX
         mbmi->sb_type > BLOCK_4X4 &&
-#else
-        (mbmi->sb_type >= BLOCK_8X8 ||
-         (mbmi->sb_type > BLOCK_4X4 && is_inter)) &&
-#endif
 #else
         mbmi->sb_type >= BLOCK_8X8 &&
 #endif

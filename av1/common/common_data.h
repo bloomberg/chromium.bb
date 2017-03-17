@@ -455,7 +455,7 @@ static const TX_SIZE max_txsize_lookup[BLOCK_SIZES] = {
 #endif  // CONFIG_TX64X64
 };
 
-#if CONFIG_RECT_TX
+#if CONFIG_RECT_TX && (CONFIG_EXT_TX || CONFIG_VAR_TX)
 static const TX_SIZE max_txsize_rect_lookup[BLOCK_SIZES] = {
 #if CONFIG_CB4X4
   // 2X2,    2X4,      4X2,
@@ -489,9 +489,9 @@ static const TX_SIZE max_txsize_rect_lookup[BLOCK_SIZES] = {
 };
 #else
 #define max_txsize_rect_lookup max_txsize_lookup
-#endif  // CONFIG_RECT_TX
+#endif  // CONFIG_RECT_TX && (CONFIG_EXT_TX || CONFIG_VAR_TX)
 
-#if (CONFIG_VAR_TX || CONFIG_RECT_TX)
+#if CONFIG_RECT_TX && (CONFIG_EXT_TX || CONFIG_VAR_TX)
 // Same as "max_txsize_lookup[bsize] - TX_8X8", except for rectangular
 // block which may use a rectangular transform, in which  case it is
 // "(max_txsize_lookup[bsize] + 1) - TX_8X8", invalid for bsize < 8X8
@@ -564,7 +564,7 @@ static const int32_t intra_tx_size_cat_lookup[BLOCK_SIZES] = {
 #endif  // CONFIG_EXT_PARTITION
 #endif  // CONFIG_TX64X64
 };
-#endif  // CONFIG_VAR_TX && CONFIG_RECT_TX
+#endif  // CONFIG_RECT_TX && (CONFIG_EXT_TX || CONFIG_VAR_TX)
 
 #define inter_tx_size_cat_lookup intra_tx_size_cat_lookup
 

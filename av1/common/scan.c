@@ -6500,14 +6500,14 @@ static uint32_t *get_non_zero_prob(FRAME_CONTEXT *fc, TX_SIZE tx_size,
     case TX_8X8: return fc->non_zero_prob_8X8[tx_type];
     case TX_16X16: return fc->non_zero_prob_16X16[tx_type];
     case TX_32X32: return fc->non_zero_prob_32X32[tx_type];
-#if CONFIG_VAR_TX || CONFIG_RECT_TX
+#if CONFIG_RECT_TX && (CONFIG_EXT_TX || CONFIG_VAR_TX)
     case TX_4X8: return fc->non_zero_prob_4X8[tx_type];
     case TX_8X4: return fc->non_zero_prob_8X4[tx_type];
     case TX_8X16: return fc->non_zero_prob_8X16[tx_type];
     case TX_16X8: return fc->non_zero_prob_16X8[tx_type];
     case TX_16X32: return fc->non_zero_prob_16X32[tx_type];
     case TX_32X16: return fc->non_zero_prob_32X16[tx_type];
-#endif
+#endif  // CONFIG_RECT_TX && (CONFIG_EXT_TX || CONFIG_VAR_TX)
     default: assert(0); return NULL;
   }
 }
@@ -6522,14 +6522,14 @@ static int16_t *get_adapt_scan(FRAME_CONTEXT *fc, TX_SIZE tx_size,
     case TX_8X8: return fc->scan_8X8[tx_type];
     case TX_16X16: return fc->scan_16X16[tx_type];
     case TX_32X32: return fc->scan_32X32[tx_type];
-#if CONFIG_VAR_TX || CONFIG_RECT_TX
+#if CONFIG_RECT_TX && (CONFIG_EXT_TX || CONFIG_VAR_TX)
     case TX_4X8: return fc->scan_4X8[tx_type];
     case TX_8X4: return fc->scan_8X4[tx_type];
     case TX_8X16: return fc->scan_8X16[tx_type];
     case TX_16X8: return fc->scan_16X8[tx_type];
     case TX_16X32: return fc->scan_16X32[tx_type];
     case TX_32X16: return fc->scan_32X16[tx_type];
-#endif
+#endif  // CONFIG_RECT_TX && (CONFIG_EXT_TX || CONFIG_VAR_TX)
     default: assert(0); return NULL;
   }
 }
@@ -6544,14 +6544,14 @@ static int16_t *get_adapt_iscan(FRAME_CONTEXT *fc, TX_SIZE tx_size,
     case TX_8X8: return fc->iscan_8X8[tx_type];
     case TX_16X16: return fc->iscan_16X16[tx_type];
     case TX_32X32: return fc->iscan_32X32[tx_type];
-#if CONFIG_VAR_TX || CONFIG_RECT_TX
+#if CONFIG_RECT_TX && (CONFIG_EXT_TX || CONFIG_VAR_TX)
     case TX_4X8: return fc->iscan_4X8[tx_type];
     case TX_8X4: return fc->iscan_8X4[tx_type];
     case TX_8X16: return fc->iscan_8X16[tx_type];
     case TX_16X8: return fc->iscan_16X8[tx_type];
     case TX_16X32: return fc->iscan_16X32[tx_type];
     case TX_32X16: return fc->iscan_32X16[tx_type];
-#endif
+#endif  // CONFIG_RECT_TX && (CONFIG_EXT_TX || CONFIG_VAR_TX)
     default: assert(0); return NULL;
   }
 }
@@ -6566,14 +6566,14 @@ static int16_t *get_adapt_nb(FRAME_CONTEXT *fc, TX_SIZE tx_size,
     case TX_8X8: return fc->nb_8X8[tx_type];
     case TX_16X16: return fc->nb_16X16[tx_type];
     case TX_32X32: return fc->nb_32X32[tx_type];
-#if CONFIG_VAR_TX || CONFIG_RECT_TX
+#if CONFIG_RECT_TX && (CONFIG_EXT_TX || CONFIG_VAR_TX)
     case TX_4X8: return fc->nb_4X8[tx_type];
     case TX_8X4: return fc->nb_8X4[tx_type];
     case TX_8X16: return fc->nb_8X16[tx_type];
     case TX_16X8: return fc->nb_16X8[tx_type];
     case TX_16X32: return fc->nb_16X32[tx_type];
     case TX_32X16: return fc->nb_32X16[tx_type];
-#endif
+#endif  // CONFIG_RECT_TX && (CONFIG_EXT_TX || CONFIG_VAR_TX)
     default: assert(0); return NULL;
   }
 }
@@ -6588,14 +6588,14 @@ static uint32_t *get_non_zero_counts(FRAME_COUNTS *counts, TX_SIZE tx_size,
     case TX_8X8: return counts->non_zero_count_8X8[tx_type];
     case TX_16X16: return counts->non_zero_count_16X16[tx_type];
     case TX_32X32: return counts->non_zero_count_32X32[tx_type];
-#if CONFIG_VAR_TX || CONFIG_RECT_TX
+#if CONFIG_RECT_TX && (CONFIG_EXT_TX || CONFIG_VAR_TX)
     case TX_4X8: return counts->non_zero_count_4x8[tx_type];
     case TX_8X4: return counts->non_zero_count_8x4[tx_type];
     case TX_8X16: return counts->non_zero_count_8x16[tx_type];
     case TX_16X8: return counts->non_zero_count_16x8[tx_type];
     case TX_16X32: return counts->non_zero_count_16x32[tx_type];
     case TX_32X16: return counts->non_zero_count_32x16[tx_type];
-#endif
+#endif  // CONFIG_RECT_TX && (CONFIG_EXT_TX || CONFIG_VAR_TX)
     default: assert(0); return NULL;
   }
 }
@@ -6774,11 +6774,11 @@ void av1_init_scan_order(AV1_COMMON *cm) {
   TX_SIZE tx_size;
   TX_TYPE tx_type;
   for (tx_size = 0; tx_size < TX_SIZES_ALL; ++tx_size) {
-#if !(CONFIG_VAR_TX || CONFIG_RECT_TX)
-    if (tx_size >= TX_SIZES) continue;
-#else
+#if CONFIG_RECT_TX && (CONFIG_EXT_TX || CONFIG_VAR_TX)
     if (tx_size > TX_32X16) continue;
-#endif
+#else
+    if (tx_size >= TX_SIZES) continue;
+#endif  // CONFIG_RECT_TX && (CONFIG_EXT_TX || CONFIG_VAR_TX)
     for (tx_type = DCT_DCT; tx_type < TX_TYPES; ++tx_type) {
       uint32_t *non_zero_prob = get_non_zero_prob(cm->fc, tx_size, tx_type);
       const int tx2d_size = tx_size_2d[tx_size];
@@ -6798,11 +6798,11 @@ void av1_init_scan_order(AV1_COMMON *cm) {
 void av1_adapt_scan_order(AV1_COMMON *cm) {
   TX_SIZE tx_size;
   for (tx_size = 0; tx_size < TX_SIZES_ALL; ++tx_size) {
-#if !(CONFIG_VAR_TX || CONFIG_RECT_TX)
-    if (tx_size >= TX_SIZES) continue;
-#else
+#if CONFIG_RECT_TX && (CONFIG_EXT_TX || CONFIG_VAR_TX)
     if (tx_size > TX_32X16) continue;
-#endif  // !(CONFIG_VAR_TX || CONFIG_RECT_TX)
+#else
+    if (tx_size >= TX_SIZES) continue;
+#endif  // CONFIG_RECT_TX && (CONFIG_EXT_TX || CONFIG_VAR_TX)
     TX_TYPE tx_type;
     for (tx_type = DCT_DCT; tx_type < TX_TYPES; ++tx_type) {
       update_scan_prob(cm, tx_size, tx_type, ADAPT_SCAN_UPDATE_RATE_16);

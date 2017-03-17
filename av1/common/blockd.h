@@ -602,7 +602,6 @@ static INLINE int supertx_enabled(const MB_MODE_INFO *mbmi) {
 #define USE_TXTYPE_SEARCH_FOR_SUB8X8_IN_CB4X4 1
 
 #if CONFIG_RECT_TX
-
 static INLINE int is_rect_tx(TX_SIZE tx_size) { return tx_size >= TX_SIZES; }
 #endif  // CONFIG_RECT_TX
 
@@ -776,13 +775,13 @@ static INLINE int is_rect_tx_allowed(const MACROBLOCKD *xd,
 static INLINE TX_SIZE tx_size_from_tx_mode(BLOCK_SIZE bsize, TX_MODE tx_mode,
                                            int is_inter) {
   const TX_SIZE largest_tx_size = tx_mode_to_biggest_tx_size[tx_mode];
-#if CONFIG_VAR_TX || (CONFIG_EXT_TX && CONFIG_RECT_TX)
+#if (CONFIG_VAR_TX || CONFIG_EXT_TX) && CONFIG_RECT_TX
   const TX_SIZE max_rect_tx_size = max_txsize_rect_lookup[bsize];
 #else
   const TX_SIZE max_tx_size = max_txsize_lookup[bsize];
-#endif  // CONFIG_VAR_TX || (CONFIG_EXT_TX && CONFIG_RECT_TX)
+#endif  // (CONFIG_VAR_TX || CONFIG_EXT_TX) && CONFIG_RECT_TX
   (void)is_inter;
-#if CONFIG_VAR_TX
+#if CONFIG_VAR_TX && CONFIG_RECT_TX
 #if CONFIG_CB4X4
   if (bsize == BLOCK_4X4)
     return AOMMIN(max_txsize_lookup[bsize], largest_tx_size);
@@ -802,7 +801,7 @@ static INLINE TX_SIZE tx_size_from_tx_mode(BLOCK_SIZE bsize, TX_MODE tx_mode,
   }
 #else
   return AOMMIN(max_tx_size, largest_tx_size);
-#endif  // CONFIG_VAR_TX
+#endif  // CONFIG_VAR_TX && CONFIG_RECT_TX
 }
 
 #if CONFIG_EXT_INTRA
