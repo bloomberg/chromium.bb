@@ -177,7 +177,11 @@ void SliderThumbElement::setPositionFromPoint(const LayoutPoint& point) {
 
 void SliderThumbElement::startDragging() {
   if (LocalFrame* frame = document().frame()) {
-    frame->eventHandler().setCapturingMouseEventsNode(this);
+    // Note that we get to here only we through mouse event path. The touch
+    // events are implicitly captured to the starting element and will be
+    // handled in handleTouchEvent function.
+    frame->eventHandler().setPointerCapture(PointerEventFactory::s_mouseId,
+                                            this);
     m_inDragMode = true;
   }
 }
@@ -186,8 +190,10 @@ void SliderThumbElement::stopDragging() {
   if (!m_inDragMode)
     return;
 
-  if (LocalFrame* frame = document().frame())
-    frame->eventHandler().setCapturingMouseEventsNode(nullptr);
+  if (LocalFrame* frame = document().frame()) {
+    frame->eventHandler().releasePointerCapture(PointerEventFactory::s_mouseId,
+                                                this);
+  }
   m_inDragMode = false;
   if (layoutObject())
     layoutObject()->setNeedsLayoutAndFullPaintInvalidation(
@@ -197,6 +203,12 @@ void SliderThumbElement::stopDragging() {
 }
 
 void SliderThumbElement::defaultEventHandler(Event* event) {
+  if (event->isPointerEvent() &&
+      event->type() == EventTypeNames::lostpointercapture) {
+    stopDragging();
+    return;
+  }
+
   if (!event->isMouseEvent()) {
     HTMLDivElement::defaultEventHandler(event);
     return;
