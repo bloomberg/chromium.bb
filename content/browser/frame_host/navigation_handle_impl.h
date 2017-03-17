@@ -91,7 +91,8 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       bool is_same_page,
       const base::TimeTicks& navigation_start,
       int pending_nav_entry_id,
-      bool started_from_context_menu);
+      bool started_from_context_menu,
+      CSPDisposition should_check_main_world_csp);
   ~NavigationHandleImpl() override;
 
   // Used to track the state the navigation is currently in.
@@ -359,6 +360,10 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
     base_url_for_data_url_ = url;
   }
 
+  CSPDisposition should_check_main_world_csp() const {
+    return should_check_main_world_csp_;
+  }
+
  private:
   friend class NavigationHandleImplTest;
 
@@ -369,7 +374,8 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
                        bool is_same_page,
                        const base::TimeTicks& navigation_start,
                        int pending_nav_entry_id,
-                       bool started_from_context_menu);
+                       bool started_from_context_menu,
+                       CSPDisposition should_check_main_world_csp);
 
   NavigationThrottle::ThrottleCheckResult CheckWillStartRequest();
   NavigationThrottle::ThrottleCheckResult CheckWillRedirectRequest();
@@ -524,6 +530,11 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   GURL base_url_for_data_url_;
   net::HostPortPair socket_address_;
   NavigationType navigation_type_;
+
+  // Whether or not the CSP of the main world should apply. When the navigation
+  // is initiated from a content script in an isolated world, the CSP defined
+  // in the main world should not apply.
+  CSPDisposition should_check_main_world_csp_;
 
   base::WeakPtrFactory<NavigationHandleImpl> weak_factory_;
 

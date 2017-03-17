@@ -159,6 +159,7 @@ class ResourceRequestBodyImpl;
 class ScreenOrientationDispatcher;
 class SharedWorkerRepository;
 class UserMediaClientImpl;
+struct CSPViolationParams;
 struct CommonNavigationParams;
 struct CustomContextMenuContext;
 struct FileChooserFileInfo;
@@ -898,6 +899,8 @@ class CONTENT_EXPORT RenderFrameImpl
                           const RequestNavigationParams& request_params,
                           bool has_stale_copy_in_cache,
                           int error_code);
+  void OnReportContentSecurityPolicyViolation(
+      const content::CSPViolationParams& violation_params);
   void OnGetSavableResourceLinks();
   void OnGetSerializedHtmlWithLocalLinks(
       const std::map<GURL, base::FilePath>& url_to_local_path,

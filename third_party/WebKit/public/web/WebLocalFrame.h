@@ -37,6 +37,7 @@ enum class WebCachePolicy;
 enum class WebSandboxFlags;
 enum class WebTreeScopeType;
 struct WebConsoleMessage;
+struct WebContentSecurityPolicyViolation;
 struct WebFindOptions;
 struct WebFloatRect;
 struct WebPrintPresetOptions;
@@ -153,6 +154,11 @@ class WebLocalFrame : public WebFrame {
   // On load failure, attempts to make frame's parent rendering fallback content
   // and stop this frame loading.
   virtual bool maybeRenderFallbackContent(const WebURLError&) const = 0;
+
+  // Called when a navigation is blocked because a Content Security Policy (CSP)
+  // is infringed.
+  virtual void reportContentSecurityPolicyViolation(
+      const blink::WebContentSecurityPolicyViolation&) = 0;
 
   // Navigation State -------------------------------------------------------
 

@@ -6,17 +6,22 @@
 #define CONTENT_RENDERER_CONTENT_SECURITY_POLICY_UTIL_H_
 
 #include "content/common/content_security_policy/content_security_policy.h"
-
-namespace blink {
-struct WebContentSecurityPolicyPolicy;
-}  // namespace blink
+#include "content/common/content_security_policy/csp_context.h"
+#include "third_party/WebKit/public/platform/WebContentSecurityPolicyStruct.h"
 
 namespace content {
 
-// Convert a WebContentSecurityPolicy into a ContentSecurityPolicy, these two
-// classes are the reflection of each other. One in content, the other in blink.
+// Convert a WebContentSecurityPolicy into a ContentSecurityPolicy. These two
+// classes represent the exact same thing, but one is in content, the other is
+// in blink.
 ContentSecurityPolicy BuildContentSecurityPolicy(
     const blink::WebContentSecurityPolicyPolicy&);
+
+// Convert a CSPViolationParams into a WebContentSecurityPolicyViolation. These
+// two classes represent the exact same thing, but one is in content, the other
+// is in blink.
+blink::WebContentSecurityPolicyViolation BuildWebContentSecurityPolicyViolation(
+    const content::CSPViolationParams& violation_params);
 
 }  // namespace content
 

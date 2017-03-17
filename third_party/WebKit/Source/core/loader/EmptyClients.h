@@ -280,13 +280,15 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   void dispatchDidFinishLoad() override {}
   void dispatchDidChangeThemeColor() override {}
 
-  NavigationPolicy decidePolicyForNavigation(const ResourceRequest&,
-                                             DocumentLoader*,
-                                             NavigationType,
-                                             NavigationPolicy,
-                                             bool,
-                                             bool,
-                                             HTMLFormElement*) override;
+  NavigationPolicy decidePolicyForNavigation(
+      const ResourceRequest&,
+      DocumentLoader*,
+      NavigationType,
+      NavigationPolicy,
+      bool,
+      bool,
+      HTMLFormElement*,
+      ContentSecurityPolicyDisposition) override;
 
   void dispatchWillSendSubmitEvent(HTMLFormElement*) override;
   void dispatchWillSubmitForm(HTMLFormElement*) override;

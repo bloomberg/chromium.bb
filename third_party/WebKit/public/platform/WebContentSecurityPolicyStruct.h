@@ -33,6 +33,7 @@
 
 #include "public/platform/WebContentSecurityPolicy.h"
 #include "public/platform/WebString.h"
+#include "public/platform/WebURL.h"
 #include "public/platform/WebVector.h"
 
 namespace blink {
@@ -68,6 +69,35 @@ struct WebContentSecurityPolicyPolicy {
   WebVector<WebContentSecurityPolicyDirective> directives;
   WebVector<WebString> reportEndpoints;
   WebString header;
+};
+
+struct WebContentSecurityPolicyViolation {
+  // The name of the directive that violates the policy. |directive| might be a
+  // directive that serves as a fallback to the |effective_directive|.
+  WebString directive;
+
+  // The name the effective directive that was checked against.
+  WebString effectiveDirective;
+
+  // The console message to be displayed to the user.
+  WebString consoleMessage;
+
+  // The URL that was blocked by the policy.
+  WebURL blockedUrl;
+
+  // The set of URI where a JSON-formatted report of the violation should be
+  // sent.
+  WebVector<WebString> reportEndpoints;
+
+  // The raw content security policy header that was infringed.
+  WebString header;
+
+  // Each policy has an associated disposition, which is either "enforce" or
+  // "report".
+  WebContentSecurityPolicyType disposition;
+
+  // Whether or not the violation happens after a redirect.
+  bool afterRedirect;
 };
 
 }  // namespace blink

@@ -20,7 +20,7 @@ const GURL GetEffectiveURL(CSPContext* context, const GURL& url) {
   // Due to backwards-compatibility concerns, we allow 'self' to match blob and
   // filesystem inner URLs if we are in a context that bypasses
   // ContentSecurityPolicy in the main world.
-  if (context->SelfSchemeShouldBypassCSP()) {
+  if (context->SelfSchemeShouldBypassCsp()) {
     if (url.SchemeIsFileSystem() || url.SchemeIsBlob())
       return ExtractInnerURL(url);
   }

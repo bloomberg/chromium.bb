@@ -3,6 +3,19 @@ This page should be sandboxed.
 <script>
 // We're not served with the extension default CSP, we can use inline script.
 
+var sendResponse = function(msg) {
+  var mainWindow = window.opener || window.top;
+  mainWindow.postMessage(msg, '*');
+};
+
+var remote_frame_loaded = false;
+window.addEventListener('securitypolicyviolation', function(e) {
+  if (remote_frame_loaded)
+    sendResponse('succeeded');
+  else
+    sendResponse('failed');
+});
+
 var loadFrameExpectResponse = function(iframe, url) {
   var identifier = performance.now();
   return new Promise(function(resolve, reject) {
@@ -25,22 +38,15 @@ var loadFrameExpectResponse = function(iframe, url) {
 
 var runTestAndRespond = function(localUrl, remoteUrl) {
   var iframe = document.createElement('iframe');
-  var sendResponse = function(msg) {
-    var mainWindow = window.opener || window.top;
-    mainWindow.postMessage(msg, '*');
-  };
 
   // First load local resource in |iframe|, expect the local frame to respond.
   loadFrameExpectResponse(iframe, localUrl).then(function() {
-    // Then try to load remote resource on the same iframe element. The remote
-    // resource will fail to load but we'd get an iframe.onload event and the
-    // local frame will still be there. Therefore, expect the local frame to
-    // respond again.
-    return loadFrameExpectResponse(iframe, remoteUrl);
-  }).then(function() {
-    sendResponse('succeeded');
-  }).catch(function(err) {
-    sendResponse('failed');
+    // Then load remote resource in |iframe|, expect the navigation to be
+    // blocked by the Content-Security-Policy.
+    // Rely on the SecurityPolicyViolationEvent to detect that the frame has
+    // been blocked.
+    remote_frame_loaded = true;
+    iframe.src = remoteUrl;
   });
   document.body.appendChild(iframe);
 };

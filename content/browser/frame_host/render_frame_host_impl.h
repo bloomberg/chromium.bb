@@ -31,7 +31,7 @@
 #include "content/common/accessibility_mode.h"
 #include "content/common/ax_content_node_data.h"
 #include "content/common/content_export.h"
-#include "content/common/content_security_policy/content_security_policy.h"
+#include "content/common/content_security_policy/csp_context.h"
 #include "content/common/download/mhtml_save_status.h"
 #include "content/common/features.h"
 #include "content/common/frame.mojom.h"
@@ -118,7 +118,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
       public BrowserAccessibilityDelegate,
       public SiteInstanceImpl::Observer,
       public NON_EXPORTED_BASE(
-          service_manager::InterfaceFactory<media::mojom::InterfaceFactory>) {
+          service_manager::InterfaceFactory<media::mojom::InterfaceFactory>),
+      public CSPContext {
  public:
   using AXTreeSnapshotCallback =
       base::Callback<void(
@@ -211,6 +212,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // SiteInstanceImpl::Observer
   void RenderProcessGone(SiteInstanceImpl* site_instance) override;
 
+  // CSPContext
+  void LogToConsole(const std::string& message) override;
+  void ReportContentSecurityPolicyViolation(
+      const CSPViolationParams& violation_params) override;
+  bool SchemeShouldBypassCSP(const base::StringPiece& scheme) override;
+
   // Creates a RenderFrame in the renderer process.
   bool CreateRenderFrame(int proxy_routing_id,
                          int opener_routing_id,
@@ -249,6 +256,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
                          const mojom::CreateNewWindowParams& params,
                          SessionStorageNamespace* session_storage_namespace);
 
+  // Update this frame's last committed origin.
+  void SetLastCommittedOrigin(const url::Origin& origin);
+
   RenderViewHostImpl* render_view_host() { return render_view_host_; }
   RenderFrameHostDelegate* delegate() { return delegate_; }
   FrameTreeNode* frame_tree_node() { return frame_tree_node_; }
@@ -267,11 +277,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   const GURL& last_successful_url() { return last_successful_url_; }
   void set_last_successful_url(const GURL& url) {
     last_successful_url_ = url;
-  }
-
-  // Update this frame's last committed origin.
-  void set_last_committed_origin(const url::Origin& origin) {
-    last_committed_origin_ = origin;
   }
 
   // Returns the associated WebUI or null if none applies.
@@ -718,9 +723,15 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnDidChangeName(const std::string& name, const std::string& unique_name);
   void OnDidSetFeaturePolicyHeader(
       const ParsedFeaturePolicyHeader& parsed_header);
+
+  // A CSP |header| has been added.
+  // RFC2616, section 4.2 specifies that headers appearing multiple times can be
+  // combined with a comma. Hence zero, one or several |policies| are added to
+  // the document.
   void OnDidAddContentSecurityPolicy(
       const ContentSecurityPolicyHeader& header,
-      const std::vector<ContentSecurityPolicy>& policy);
+      const std::vector<ContentSecurityPolicy>& policies);
+
   void OnEnforceInsecureRequestPolicy(blink::WebInsecureRequestPolicy policy);
   void OnUpdateToUniqueOrigin(bool is_potentially_trustworthy_unique_origin);
   void OnDidChangeSandboxFlags(int32_t frame_routing_id,
