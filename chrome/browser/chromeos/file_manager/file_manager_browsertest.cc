@@ -291,13 +291,14 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestParameter(NOT_IN_GUEST_MODE, "transferFromOfflineToDrive")));
 
 // Fails on official build. http://crbug.com/429294
+// Disabled due to flakiness. https://crbug.com/701924
 #if defined(DISABLE_SLOW_FILESAPP_TESTS) || defined(OFFICIAL_BUILD)
 #define MAYBE_RestorePrefs DISABLED_RestorePrefs
 #else
 #define MAYBE_RestorePrefs RestorePrefs
 #endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    MAYBE_RestorePrefs,
+    DISABLED_RestorePrefs,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(IN_GUEST_MODE, "restoreSortColumn"),
                       TestParameter(NOT_IN_GUEST_MODE, "restoreSortColumn"),
