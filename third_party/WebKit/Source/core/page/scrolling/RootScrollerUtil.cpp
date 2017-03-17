@@ -21,8 +21,7 @@ ScrollableArea* scrollableAreaForRootScroller(const Node* node) {
   if (!node)
     return nullptr;
 
-  if (node->isDocumentNode() ||
-      node->isSameNode(node->document().documentElement())) {
+  if (node->isDocumentNode() || node == node->document().documentElement()) {
     if (!node->document().view())
       return nullptr;
 
@@ -47,8 +46,7 @@ PaintLayer* paintLayerForRootScroller(const Node* node) {
   if (!node)
     return nullptr;
 
-  if (node->isDocumentNode() ||
-      node->isSameNode(node->document().documentElement())) {
+  if (node->isDocumentNode() || node == node->document().documentElement()) {
     if (!node->document().layoutView())
       return nullptr;
 

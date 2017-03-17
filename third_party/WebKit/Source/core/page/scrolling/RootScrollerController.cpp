@@ -130,9 +130,9 @@ PaintLayer* RootScrollerController::rootScrollerPaintLayer() const {
 
 bool RootScrollerController::scrollsViewport(const Element& element) const {
   if (m_effectiveRootScroller->isDocumentNode())
-    return element.isSameNode(m_document->documentElement());
+    return element == m_document->documentElement();
 
-  return element.isSameNode(m_effectiveRootScroller);
+  return element == m_effectiveRootScroller.get();
 }
 
 }  // namespace blink

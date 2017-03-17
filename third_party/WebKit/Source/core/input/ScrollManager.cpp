@@ -104,7 +104,7 @@ void ScrollManager::recomputeScrollChain(const Node& startNode,
     if (curElement) {
       scrollChain.push_front(DOMNodeIds::idForNode(curElement));
       if (isViewportScrollingElement(*curElement) ||
-          curElement->isSameNode(documentElement))
+          curElement == documentElement)
         break;
     }
 
