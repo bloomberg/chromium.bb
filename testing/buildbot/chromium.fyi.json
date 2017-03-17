@@ -11436,6 +11436,24 @@
     ],
     "gtest_tests": [
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "ash_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "gpu_ipc_service_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "gpu_unittests"
+      },
+      {
         "args": [
           "--override-use-software-gl-for-tests",
           "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.browser_tests.filter"
