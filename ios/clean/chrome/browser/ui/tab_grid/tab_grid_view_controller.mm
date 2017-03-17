@@ -19,16 +19,11 @@
 #import "ios/clean/chrome/browser/ui/tab_grid/mdc_floating_button+cr_tab_grid.h"
 #import "ios/clean/chrome/browser/ui/tab_grid/tab_grid_collection_view_layout.h"
 #import "ios/clean/chrome/browser/ui/tab_grid/tab_grid_tab_cell.h"
-#import "ios/clean/chrome/browser/ui/tab_grid/ui_stack_view+cr_tab_grid.h"
+#import "ios/clean/chrome/browser/ui/tab_grid/tab_grid_toolbar.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-namespace {
-// Height of toolbar in tab grid.
-const CGFloat kToolbarHeight = 64.0f;
-}
 
 @interface TabGridViewController ()<SettingsActions,
                                     TabGridActions,
@@ -37,7 +32,8 @@ const CGFloat kToolbarHeight = 64.0f;
                                     SessionCellDelegate>
 @property(nonatomic, weak) UICollectionView* grid;
 @property(nonatomic, weak) UIView* noTabsOverlay;
-@property(nonatomic, strong) MDCFloatingButton* floatingNewTabButton;
+@property(nonatomic, weak) TabGridToolbar* toolbar;
+@property(nonatomic, weak) MDCFloatingButton* floatingNewTabButton;
 @end
 
 @implementation TabGridViewController
@@ -48,20 +44,10 @@ const CGFloat kToolbarHeight = 64.0f;
 @synthesize tabCommandHandler = _tabCommandHandler;
 @synthesize grid = _grid;
 @synthesize noTabsOverlay = _noTabsOverlay;
+@synthesize toolbar = _toolbar;
 @synthesize floatingNewTabButton = _floatingNewTabButton;
 
 - (void)viewDidLoad {
-  UIView* toolbar = [UIStackView cr_tabGridToolbarStackView];
-  [self.view addSubview:toolbar];
-
-  toolbar.translatesAutoresizingMaskIntoConstraints = NO;
-  [NSLayoutConstraint activateConstraints:@[
-    [toolbar.heightAnchor constraintEqualToConstant:kToolbarHeight],
-    [toolbar.widthAnchor constraintEqualToAnchor:self.view.widthAnchor],
-    [toolbar.topAnchor constraintEqualToAnchor:self.view.topAnchor],
-    [toolbar.centerXAnchor constraintEqualToAnchor:self.view.centerXAnchor]
-  ]];
-
   TabGridCollectionViewLayout* layout =
       [[TabGridCollectionViewLayout alloc] init];
   UICollectionView* grid = [[UICollectionView alloc] initWithFrame:CGRectZero
@@ -77,19 +63,42 @@ const CGFloat kToolbarHeight = 64.0f;
       forCellWithReuseIdentifier:[TabGridTabCell identifier]];
 
   [NSLayoutConstraint activateConstraints:@[
-    [self.grid.topAnchor constraintEqualToAnchor:toolbar.bottomAnchor],
+    [self.grid.topAnchor constraintEqualToAnchor:self.view.topAnchor],
     [self.grid.bottomAnchor constraintEqualToAnchor:self.view.bottomAnchor],
     [self.grid.leadingAnchor constraintEqualToAnchor:self.view.leadingAnchor],
     [self.grid.trailingAnchor constraintEqualToAnchor:self.view.trailingAnchor],
   ]];
+
+  TabGridToolbar* toolbar = [[TabGridToolbar alloc] init];
+  self.toolbar = toolbar;
+  [self.view addSubview:self.toolbar];
+  self.toolbar.translatesAutoresizingMaskIntoConstraints = NO;
+  [NSLayoutConstraint activateConstraints:@[
+    [self.toolbar.topAnchor constraintEqualToAnchor:self.view.topAnchor],
+    [self.toolbar.heightAnchor
+        constraintEqualToAnchor:self.topLayoutGuide.heightAnchor
+                       constant:self.toolbar.intrinsicContentSize.height],
+    [self.toolbar.leadingAnchor
+        constraintEqualToAnchor:self.view.leadingAnchor],
+    [self.toolbar.trailingAnchor
+        constraintEqualToAnchor:self.view.trailingAnchor]
+  ]];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
-  self.floatingNewTabButton = [MDCFloatingButton cr_tabGridNewTabButton];
+  MDCFloatingButton* floatingNewTabButton =
+      [MDCFloatingButton cr_tabGridNewTabButton];
+  self.floatingNewTabButton = floatingNewTabButton;
   [self.floatingNewTabButton
       setFrame:[MDCFloatingButton
                    cr_frameForTabGridNewTabButtonInRect:self.view.bounds]];
   [self.view addSubview:self.floatingNewTabButton];
+}
+
+- (void)viewDidLayoutSubviews {
+  [super viewDidLayoutSubviews];
+  self.grid.contentInset =
+      UIEdgeInsetsMake(CGRectGetMaxY(self.toolbar.frame), 0, 0, 0);
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle {

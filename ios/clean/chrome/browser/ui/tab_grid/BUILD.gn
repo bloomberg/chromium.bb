@@ -35,6 +35,8 @@ source_set("tab_grid_ui") {
     "tab_grid_collection_view_layout.mm",
     "tab_grid_tab_cell.h",
     "tab_grid_tab_cell.mm",
+    "tab_grid_toolbar.h",
+    "tab_grid_toolbar.mm",
     "tab_grid_view_controller.h",
     "tab_grid_view_controller.mm",
     "ui_button+cr_tab_grid.h",

@@ -12,7 +12,6 @@ namespace {
 const CGFloat kMinTabWidth = 200.0f;
 const CGFloat kMaxTabWidth = 250.0f;
 const CGFloat kInterTabSpacing = 20.0f;
-const UIEdgeInsets kSectionInset = {20.0f, 20.0f, 20.0f, 20.0f};
 }
 
 @implementation TabGridCollectionViewLayout
@@ -38,7 +37,7 @@ const UIEdgeInsets kSectionInset = {20.0f, 20.0f, 20.0f, 20.0f};
     tabWidth = (boundsSize.width - kInterTabSpacing * (columns + 1)) / columns;
   }
   self.itemSize = CGSizeMake(tabWidth, tabWidth);
-  self.sectionInset = kSectionInset;
+  self.sectionInset = UIEdgeInsetsMake(10.0f, 20.0f, 20.0f, 20.0f);
   self.minimumLineSpacing = kInterTabSpacing;
   self.minimumInteritemSpacing = kInterTabSpacing;
 }
