@@ -19,11 +19,13 @@
 #endif
 
 #include <list>
+#include <memory>
 #include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "third_party/pdfium/public/cpp/fpdf_deleters.h"
 #include "third_party/pdfium/public/fpdf_dataavail.h"
 #include "third_party/pdfium/public/fpdf_ext.h"
 #include "third_party/pdfium/public/fpdf_formfill.h"
@@ -54,31 +56,27 @@ static void Add_Segment(FX_DOWNLOADHINTS* pThis, size_t offset, size_t size) {}
 static bool RenderPage(const FPDF_DOCUMENT& doc,
                        const FPDF_FORMHANDLE& form,
                        const int page_index) {
-  FPDF_PAGE page = FPDF_LoadPage(doc, page_index);
+  std::unique_ptr<void, FPDFPageDeleter> page(FPDF_LoadPage(doc, page_index));
   if (!page)
     return false;
 
-  FPDF_TEXTPAGE text_page = FPDFText_LoadPage(page);
-  FORM_OnAfterLoadPage(page, form);
-  FORM_DoPageAAction(page, form, FPDFPAGE_AACTION_OPEN);
+  std::unique_ptr<void, FPDFTextPageDeleter> text_page(
+      FPDFText_LoadPage(page.get()));
+  FORM_OnAfterLoadPage(page.get(), form);
+  FORM_DoPageAAction(page.get(), form, FPDFPAGE_AACTION_OPEN);
 
   const double scale = 1.0;
-  int width = static_cast<int>(FPDF_GetPageWidth(page) * scale);
-  int height = static_cast<int>(FPDF_GetPageHeight(page) * scale);
-
-  FPDF_BITMAP bitmap = FPDFBitmap_Create(width, height, 0);
+  int width = static_cast<int>(FPDF_GetPageWidth(page.get()) * scale);
+  int height = static_cast<int>(FPDF_GetPageHeight(page.get()) * scale);
+  std::unique_ptr<void, FPDFBitmapDeleter> bitmap(
+      FPDFBitmap_Create(width, height, 0));
   if (bitmap) {
-    FPDFBitmap_FillRect(bitmap, 0, 0, width, height, 0xFFFFFFFF);
-    FPDF_RenderPageBitmap(bitmap, page, 0, 0, width, height, 0, 0);
-
-    FPDF_FFLDraw(form, bitmap, page, 0, 0, width, height, 0, 0);
-
-    FPDFBitmap_Destroy(bitmap);
+    FPDFBitmap_FillRect(bitmap.get(), 0, 0, width, height, 0xFFFFFFFF);
+    FPDF_RenderPageBitmap(bitmap.get(), page.get(), 0, 0, width, height, 0, 0);
+    FPDF_FFLDraw(form, bitmap.get(), page.get(), 0, 0, width, height, 0, 0);
   }
-  FORM_DoPageAAction(page, form, FPDFPAGE_AACTION_CLOSE);
-  FORM_OnBeforeClosePage(page, form);
-  FPDFText_ClosePage(text_page);
-  FPDF_ClosePage(page);
+  FORM_DoPageAAction(page.get(), form, FPDFPAGE_AACTION_CLOSE);
+  FORM_OnBeforeClosePage(page.get(), form);
   return !!bitmap;
 }
 
@@ -111,63 +109,56 @@ static void RenderPdf(const char* pBuf, size_t len) {
   hints.version = 1;
   hints.AddSegment = Add_Segment;
 
-  FPDF_DOCUMENT doc;
+  std::unique_ptr<void, FPDFAvailDeleter> pdf_avail(
+      FPDFAvail_Create(&file_avail, &file_access));
+
   int nRet = PDF_DATA_NOTAVAIL;
   bool bIsLinearized = false;
-  FPDF_AVAIL pdf_avail = FPDFAvail_Create(&file_avail, &file_access);
-
-  if (FPDFAvail_IsLinearized(pdf_avail) == PDF_LINEARIZED) {
-    doc = FPDFAvail_GetDocument(pdf_avail, nullptr);
+  std::unique_ptr<void, FPDFDocumentDeleter> doc;
+  if (FPDFAvail_IsLinearized(pdf_avail.get()) == PDF_LINEARIZED) {
+    doc.reset(FPDFAvail_GetDocument(pdf_avail.get(), nullptr));
     if (doc) {
-      while (nRet == PDF_DATA_NOTAVAIL) {
-        nRet = FPDFAvail_IsDocAvail(pdf_avail, &hints);
-      }
-      if (nRet == PDF_DATA_ERROR) {
+      while (nRet == PDF_DATA_NOTAVAIL)
+        nRet = FPDFAvail_IsDocAvail(pdf_avail.get(), &hints);
+
+      if (nRet == PDF_DATA_ERROR)
         return;
-      }
-      nRet = FPDFAvail_IsFormAvail(pdf_avail, &hints);
-      if (nRet == PDF_FORM_ERROR || nRet == PDF_FORM_NOTAVAIL) {
+
+      nRet = FPDFAvail_IsFormAvail(pdf_avail.get(), &hints);
+      if (nRet == PDF_FORM_ERROR || nRet == PDF_FORM_NOTAVAIL)
         return;
-      }
+
       bIsLinearized = true;
     }
   } else {
-    doc = FPDF_LoadCustomDocument(&file_access, nullptr);
+    doc.reset(FPDF_LoadCustomDocument(&file_access, nullptr));
   }
 
-  if (!doc) {
-    FPDFAvail_Destroy(pdf_avail);
+  if (!doc)
     return;
-  }
 
-  (void)FPDF_GetDocPermissions(doc);
+  (void)FPDF_GetDocPermissions(doc.get());
 
-  FPDF_FORMHANDLE form = FPDFDOC_InitFormFillEnvironment(doc, &form_callbacks);
-  FPDF_SetFormFieldHighlightColor(form, 0, 0xFFE4DD);
-  FPDF_SetFormFieldHighlightAlpha(form, 100);
+  std::unique_ptr<void, FPDFFormHandleDeleter> form(
+      FPDFDOC_InitFormFillEnvironment(doc.get(), &form_callbacks));
+  FPDF_SetFormFieldHighlightColor(form.get(), 0, 0xFFE4DD);
+  FPDF_SetFormFieldHighlightAlpha(form.get(), 100);
+  FORM_DoDocumentJSAction(form.get());
+  FORM_DoDocumentOpenAction(form.get());
 
-  FORM_DoDocumentJSAction(form);
-  FORM_DoDocumentOpenAction(form);
-
-  int page_count = FPDF_GetPageCount(doc);
-
+  int page_count = FPDF_GetPageCount(doc.get());
   for (int i = 0; i < page_count; ++i) {
     if (bIsLinearized) {
       nRet = PDF_DATA_NOTAVAIL;
-      while (nRet == PDF_DATA_NOTAVAIL) {
-        nRet = FPDFAvail_IsPageAvail(pdf_avail, i, &hints);
-      }
-      if (nRet == PDF_DATA_ERROR) {
-        return;
-      }
-    }
-    RenderPage(doc, form, i);
-  }
+      while (nRet == PDF_DATA_NOTAVAIL)
+        nRet = FPDFAvail_IsPageAvail(pdf_avail.get(), i, &hints);
 
-  FORM_DoDocumentAAction(form, FPDFDOC_AACTION_WC);
-  FPDFDOC_ExitFormFillEnvironment(form);
-  FPDF_CloseDocument(doc);
-  FPDFAvail_Destroy(pdf_avail);
+      if (nRet == PDF_DATA_ERROR)
+        return;
+    }
+    RenderPage(doc.get(), form.get(), i);
+  }
+  FORM_DoDocumentAAction(form.get(), FPDFDOC_AACTION_WC);
 }
 
 std::string ProgramPath() {
