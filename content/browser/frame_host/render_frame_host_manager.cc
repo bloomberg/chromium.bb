@@ -245,19 +245,7 @@ RenderFrameHostImpl* RenderFrameHostManager::Navigate(
       if (dest_render_frame_host->GetView())
         dest_render_frame_host->GetView()->Hide();
     } else {
-      // After a renderer crash we'd have marked the host as invisible, so we
-      // need to set the visibility of the new View to the correct value here
-      // after reload.
-      if (dest_render_frame_host->GetView() &&
-          dest_render_frame_host->render_view_host()
-                  ->GetWidget()
-                  ->is_hidden() != delegate_->IsHidden()) {
-        if (delegate_->IsHidden()) {
-          dest_render_frame_host->GetView()->Hide();
-        } else {
-          dest_render_frame_host->GetView()->Show();
-        }
-      }
+      EnsureRenderFrameHostVisibilityConsistent();
 
       // TODO(nasko): This is a very ugly hack. The Chrome extensions process
       // manager still uses NotificationService and expects to see a
@@ -461,6 +449,7 @@ void RenderFrameHostManager::CommitPendingIfNecessary(
 
     // We should only hear this from our current renderer.
     DCHECK_EQ(render_frame_host_.get(), render_frame_host);
+    EnsureRenderFrameHostVisibilityConsistent();
 
     // If the current RenderFrameHost has a pending WebUI it must be committed.
     // Note: When one tries to move same-site commit logic into RenderFrameHost
@@ -2805,6 +2794,18 @@ bool RenderFrameHostManager::CanSubframeSwapProcess(
   }
 
   return true;
+}
+
+void RenderFrameHostManager::EnsureRenderFrameHostVisibilityConsistent() {
+  if (render_frame_host_->GetView() &&
+      render_frame_host_->render_view_host()->GetWidget()->is_hidden() !=
+          delegate_->IsHidden()) {
+    if (delegate_->IsHidden()) {
+      render_frame_host_->GetView()->Hide();
+    } else {
+      render_frame_host_->GetView()->Show();
+    }
+  }
 }
 
 }  // namespace content

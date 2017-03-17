@@ -750,6 +750,11 @@ class CONTENT_EXPORT RenderFrameHostManager
                               SiteInstance* dest_instance,
                               bool was_server_redirect);
 
+  // After a renderer process crash we'd have marked the host as invisible, so
+  // we need to set the visibility of the new View to the correct value here
+  // after reload.
+  void EnsureRenderFrameHostVisibilityConsistent();
+
   // For use in creating RenderFrameHosts.
   FrameTreeNode* frame_tree_node_;
 

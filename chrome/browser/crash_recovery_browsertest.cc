@@ -20,6 +20,9 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -106,6 +109,9 @@ IN_PROC_BROWSER_TEST_F(CrashRecoveryBrowserTest, Reload) {
   ASSERT_TRUE(ui_test_utils::GetCurrentTabTitle(browser(),
                                                 &title_after_crash));
   EXPECT_NE(title_before_crash, title_after_crash);
+  ASSERT_TRUE(GetActiveWebContents()->GetMainFrame()->GetView()->IsShowing());
+  ASSERT_FALSE(
+      GetActiveWebContents()->GetRenderProcessHost()->IsProcessBackgrounded());
 }
 
 // Test that reload after a crash forces a cache revalidation.
