@@ -1,6 +1,7 @@
 include_rules = [
   "+components/data_use_measurement/core",
   "+components/google/core/browser",
+  "+components/keyed_service/core",
   "+components/prefs",
   "+net/base",
   "+net/http/http_status_code.h",

@@ -19,6 +19,7 @@ static_library("doodle") {
     "//base",
     "//components/data_use_measurement/core",
     "//components/google/core/browser",
+    "//components/keyed_service/core",
     "//components/prefs",
     "//net",
   ]

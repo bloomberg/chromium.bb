@@ -47,6 +47,8 @@ DoodleService::DoodleService(PrefService* pref_service,
 
 DoodleService::~DoodleService() = default;
 
+void DoodleService::Shutdown() {}
+
 void DoodleService::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }

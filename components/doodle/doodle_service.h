@@ -14,6 +14,7 @@
 #include "base/timer/timer.h"
 #include "components/doodle/doodle_fetcher.h"
 #include "components/doodle/doodle_types.h"
+#include "components/keyed_service/core/keyed_service.h"
 
 class PrefRegistrySimple;
 class PrefService;
@@ -24,7 +25,7 @@ class TimeDelta;
 
 namespace doodle {
 
-class DoodleService {
+class DoodleService : public KeyedService {
  public:
   class Observer {
    public:
@@ -38,7 +39,10 @@ class DoodleService {
                 std::unique_ptr<DoodleFetcher> fetcher,
                 std::unique_ptr<base::OneShotTimer> expiry_timer,
                 std::unique_ptr<base::Clock> clock);
-  ~DoodleService();
+  ~DoodleService() override;
+
+  // KeyedService implementation.
+  void Shutdown() override;
 
   // Returns the current (cached) config, if any.
   const base::Optional<DoodleConfig>& config() const { return cached_config_; }
