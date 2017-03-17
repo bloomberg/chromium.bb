@@ -10,9 +10,14 @@
 
   <body>
     <script>
-      // Some arbitrary sample rate for the offline context. 
-      var sampleRate = 48000;
-      var renderDuration = 1;
+      // Some arbitrary sample rate for the offline context. But it MUST be
+      // at least twice the oscillator frequency that we're using for the
+      // test. (Currently 440 Hz.)
+      var sampleRate = 16000;
+
+      // A fairly arbitrary duration that should have at least 1-2 sample
+      // periods of the oscillator (at a nominal 440 Hz).
+      var renderDuration = 0.1;
       var renderFrames = renderDuration * sampleRate;
 
       var audit = Audit.createTaskRunner();
@@ -21,7 +26,7 @@
         runTest({
           message: "Sum of positive and negative frequency sine oscillators",
           type: "sine",
-          threshold: 4.7684e-7
+          threshold: 3.5763e-7
         }).then(done);
       });
 
@@ -29,7 +34,7 @@
         runTest({
           message: "Sum of positive and negative frequency square oscillators",
           type: "square",
-          threshold: 4.4108e-6
+          threshold: 1.4753e-6
         }).then(done);
       });
 
@@ -37,7 +42,7 @@
         runTest({
           message: "Sum of positive and negative frequency sawtooth oscillators",
           type: "sawtooth",
-          threshold: 4.3735e-6
+          threshold: 1.4753e-6
         }).then(done);
       });
 
@@ -45,7 +50,7 @@
         runTest({
           message: "Sum of positive and negative frequency triangle oscillators",
           type: "triangle",
-          threshold: 3.5763e-7
+          threshold: 2.9803e-7
         }).then(done);
       });
 
@@ -60,7 +65,7 @@
             startFrequency: 440,
             endFrequency: sampleRate / 4
           },
-          threshold: 4.1202e-6
+          threshold: 1.2368e-6
         }).then(done);
       });
 
@@ -138,7 +143,7 @@
               actual, {
                 precision: 6
               })
-            .beCloseToArray(expected, 4.7684e-7);
+            .beCloseToArray(expected, 3.5763e-7);
         }).then(done);
       });
 
