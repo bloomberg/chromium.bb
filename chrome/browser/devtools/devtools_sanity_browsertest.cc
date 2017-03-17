@@ -729,8 +729,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsBeforeUnloadTest,
 
 // Tests that BeforeUnload event gets called on undocked devtools if
 // we try to close them.
-// Flaky on Windows.  http://crbug.com/702171
-#if defined(OS_WIN)
+// Flaky on Windows and Linux.  http://crbug.com/702171
+#if defined(OS_WIN) || defined(OS_LINUX)
 #define MAYBE_TestUndockedDevToolsClose DISABLED_TestUndockedDevToolsClose
 #else
 #define MAYBE_TestUndockedDevToolsClose TestUndockedDevToolsClose
