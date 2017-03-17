@@ -69,7 +69,7 @@ TEST_F(CompositorTimingHistoryTest, AllSequential_Commit) {
   base::TimeDelta activate_duration = base::TimeDelta::FromMilliseconds(4);
   base::TimeDelta draw_duration = base::TimeDelta::FromMilliseconds(5);
 
-  timing_history_.WillBeginMainFrame(true, Now(), BeginFrameArgs::NORMAL);
+  timing_history_.WillBeginMainFrame(true, Now());
   AdvanceNowBy(begin_main_frame_queue_duration);
   timing_history_.BeginMainFrameStarted(Now());
   AdvanceNowBy(begin_main_frame_start_to_commit_duration);
@@ -121,7 +121,7 @@ TEST_F(CompositorTimingHistoryTest, AllSequential_BeginMainFrameAborted) {
   base::TimeDelta activate_duration = base::TimeDelta::FromMilliseconds(4);
   base::TimeDelta draw_duration = base::TimeDelta::FromMilliseconds(5);
 
-  timing_history_.WillBeginMainFrame(false, Now(), BeginFrameArgs::NORMAL);
+  timing_history_.WillBeginMainFrame(false, Now());
   AdvanceNowBy(begin_main_frame_queue_duration);
   timing_history_.BeginMainFrameStarted(Now());
   AdvanceNowBy(begin_main_frame_start_to_commit_duration);
@@ -168,13 +168,13 @@ TEST_F(CompositorTimingHistoryTest, BeginMainFrame_CriticalFaster) {
   base::TimeDelta begin_main_frame_start_to_commit_duration =
       base::TimeDelta::FromMilliseconds(1);
 
-  timing_history_.WillBeginMainFrame(true, Now(), BeginFrameArgs::NORMAL);
+  timing_history_.WillBeginMainFrame(true, Now());
   AdvanceNowBy(begin_main_frame_queue_duration_critical);
   timing_history_.BeginMainFrameStarted(Now());
   AdvanceNowBy(begin_main_frame_start_to_commit_duration);
   timing_history_.BeginMainFrameAborted();
 
-  timing_history_.WillBeginMainFrame(false, Now(), BeginFrameArgs::NORMAL);
+  timing_history_.WillBeginMainFrame(false, Now());
   AdvanceNowBy(begin_main_frame_queue_duration_not_critical);
   timing_history_.BeginMainFrameStarted(Now());
   AdvanceNowBy(begin_main_frame_start_to_commit_duration);
@@ -202,7 +202,7 @@ TEST_F(CompositorTimingHistoryTest, BeginMainFrames_OldCriticalSlower) {
       base::TimeDelta::FromMilliseconds(1);
 
   // A single critical frame that is slow.
-  timing_history_.WillBeginMainFrame(true, Now(), BeginFrameArgs::NORMAL);
+  timing_history_.WillBeginMainFrame(true, Now());
   AdvanceNowBy(begin_main_frame_queue_duration_critical);
   timing_history_.BeginMainFrameStarted(Now());
   AdvanceNowBy(begin_main_frame_start_to_commit_duration);
@@ -211,7 +211,7 @@ TEST_F(CompositorTimingHistoryTest, BeginMainFrames_OldCriticalSlower) {
 
   // A bunch of faster non critical frames that are newer.
   for (int i = 0; i < 100; i++) {
-    timing_history_.WillBeginMainFrame(false, Now(), BeginFrameArgs::NORMAL);
+    timing_history_.WillBeginMainFrame(false, Now());
     AdvanceNowBy(begin_main_frame_queue_duration_not_critical);
     timing_history_.BeginMainFrameStarted(Now());
     AdvanceNowBy(begin_main_frame_start_to_commit_duration);
@@ -242,7 +242,7 @@ TEST_F(CompositorTimingHistoryTest, BeginMainFrames_NewCriticalSlower) {
       base::TimeDelta::FromMilliseconds(1);
 
   // A single non critical frame that is fast.
-  timing_history_.WillBeginMainFrame(false, Now(), BeginFrameArgs::NORMAL);
+  timing_history_.WillBeginMainFrame(false, Now());
   AdvanceNowBy(begin_main_frame_queue_duration_not_critical);
   timing_history_.BeginMainFrameStarted(Now());
   AdvanceNowBy(begin_main_frame_start_to_commit_duration);
@@ -250,7 +250,7 @@ TEST_F(CompositorTimingHistoryTest, BeginMainFrames_NewCriticalSlower) {
 
   // A bunch of slower critical frames that are newer.
   for (int i = 0; i < 100; i++) {
-    timing_history_.WillBeginMainFrame(true, Now(), BeginFrameArgs::NORMAL);
+    timing_history_.WillBeginMainFrame(true, Now());
     AdvanceNowBy(begin_main_frame_queue_duration_critical);
     timing_history_.BeginMainFrameStarted(Now());
     AdvanceNowBy(begin_main_frame_start_to_commit_duration);

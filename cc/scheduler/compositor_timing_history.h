@@ -54,12 +54,14 @@ class CC_EXPORT CompositorTimingHistory {
   void DidCreateAndInitializeCompositorFrameSink();
 
   // Events to be timed.
-  void WillBeginImplFrame(bool new_active_tree_is_likely);
+  void WillBeginImplFrame(bool new_active_tree_is_likely,
+                          base::TimeTicks frame_time,
+                          BeginFrameArgs::BeginFrameArgsType frame_type,
+                          base::TimeTicks now);
   void WillFinishImplFrame(bool needs_redraw);
   void BeginImplFrameNotExpectedSoon();
   void WillBeginMainFrame(bool on_critical_path,
-                          base::TimeTicks main_frame_time,
-                          BeginFrameArgs::BeginFrameArgsType frame_type);
+                          base::TimeTicks main_frame_time);
   void BeginMainFrameStarted(base::TimeTicks main_thread_start_time);
   void BeginMainFrameAborted();
   void DidCommit();

@@ -206,7 +206,7 @@ class CC_EXPORT Scheduler : public BeginFrameObserverBase {
   bool IsBeginMainFrameSentOrStarted() const;
   void BeginImplFrameWithDeadline(const BeginFrameArgs& args);
   void BeginImplFrameSynchronous(const BeginFrameArgs& args);
-  void BeginImplFrame(const BeginFrameArgs& args);
+  void BeginImplFrame(const BeginFrameArgs& args, base::TimeTicks now);
   void FinishImplFrame();
   enum BeginFrameResult { kBeginFrameSkipped, kBeginFrameFinished };
   void SendBeginFrameAck(const BeginFrameArgs& args, BeginFrameResult result);
