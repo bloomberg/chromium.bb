@@ -9,6 +9,24 @@
 
 namespace ukm {
 
+namespace {
+
+// The maximum length of a URL we will record.
+constexpr int kMaxURLLength = 2 * 1024;
+
+// The string sent in place of a URL if the real URL was too long.
+constexpr char kMaxUrlLengthMessage[] = "URLTooLong";
+
+// Returns a URL that is under the length limit, by returning a constant
+// string when the URl is too long.
+std::string GetShortenedURL(const GURL& url) {
+  if (url.spec().length() > kMaxURLLength)
+    return kMaxUrlLengthMessage;
+  return url.spec();
+}
+
+}  // namespace
+
 UkmSource::UkmSource() = default;
 
 UkmSource::~UkmSource() = default;
@@ -28,9 +46,9 @@ void UkmSource::PopulateProto(Source* proto_source) const {
   DCHECK(!proto_source->has_initial_url());
 
   proto_source->set_id(id_);
-  proto_source->set_url(url_.spec());
+  proto_source->set_url(GetShortenedURL(url_));
   if (!initial_url_.is_empty())
-    proto_source->set_initial_url(initial_url_.spec());
+    proto_source->set_initial_url(GetShortenedURL(initial_url_));
 }
 
 }  // namespace ukm

@@ -541,4 +541,27 @@ TEST_F(UkmServiceTest, WhitelistEntryTest) {
   EXPECT_EQ(base::HashMetricName("EntryB"), proto_entry_b.event_hash());
 }
 
+TEST_F(UkmServiceTest, SourceURLLength) {
+  UkmService service(&prefs_, &client_);
+  EXPECT_EQ(0, GetPersistedLogCount());
+  service.Initialize();
+  task_runner_->RunUntilIdle();
+  service.EnableRecording();
+  service.EnableReporting();
+
+  auto id = UkmService::GetNewSourceID();
+
+  // This URL is too long to be recorded fully.
+  const std::string long_string = "https://" + std::string(10000, 'a');
+  service.UpdateSourceURL(id, GURL(long_string));
+
+  service.Flush();
+  EXPECT_EQ(1, GetPersistedLogCount());
+
+  auto proto_report = GetPersistedReport();
+  ASSERT_EQ(1, proto_report.sources_size());
+  const Source& proto_source = proto_report.sources(0);
+  EXPECT_EQ("URLTooLong", proto_source.url());
+}
+
 }  // namespace ukm
