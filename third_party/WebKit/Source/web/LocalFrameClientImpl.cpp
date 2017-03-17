@@ -190,6 +190,12 @@ void LocalFrameClientImpl::runScriptsAtDocumentReady(bool documentIsEmpty) {
   // The callback might have deleted the frame, do not use |this|!
 }
 
+void LocalFrameClientImpl::runScriptsAtDocumentIdle() {
+  if (m_webFrame->client())
+    m_webFrame->client()->runScriptsAtDocumentIdle(m_webFrame);
+  // The callback might have deleted the frame, do not use |this|!
+}
+
 void LocalFrameClientImpl::didCreateScriptContext(
     v8::Local<v8::Context> context,
     int worldId) {

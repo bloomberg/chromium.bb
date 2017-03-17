@@ -352,6 +352,7 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   void documentElementAvailable() override {}
   void runScriptsAtDocumentElementAvailable() override {}
   void runScriptsAtDocumentReady(bool) override {}
+  void runScriptsAtDocumentIdle() override {}
 
   void didCreateScriptContext(v8::Local<v8::Context>,
                               int worldId) override {}

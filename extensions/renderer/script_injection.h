@@ -84,6 +84,10 @@ class ScriptInjection {
   const HostID& host_id() const { return injection_host_->id(); }
   int64_t request_id() const { return request_id_; }
 
+  // Called when JS injection for the given frame has been completed.
+  void OnJsInjectionCompleted(const std::vector<v8::Local<v8::Value>>& results,
+                              base::TimeDelta elapsed);
+
  private:
   class FrameWatcher;
 
@@ -97,9 +101,6 @@ class ScriptInjection {
   // Inject any JS scripts into the frame for the injection.
   void InjectJs(std::set<std::string>* executing_scripts,
                 size_t* num_injected_js_scripts);
-
-  // Called when JS injection for the given frame has been completed.
-  void OnJsInjectionCompleted(const std::vector<v8::Local<v8::Value>>& results);
 
   // Inject any CSS source into the frame for the injection.
   void InjectCss(std::set<std::string>* injected_stylesheets,

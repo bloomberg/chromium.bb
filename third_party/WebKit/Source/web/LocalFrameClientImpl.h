@@ -65,6 +65,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   void documentElementAvailable() override;
   void runScriptsAtDocumentElementAvailable() override;
   void runScriptsAtDocumentReady(bool documentIsEmpty) override;
+  void runScriptsAtDocumentIdle() override;
 
   void didCreateScriptContext(v8::Local<v8::Context>, int worldId) override;
   void willReleaseScriptContext(v8::Local<v8::Context>, int worldId) override;

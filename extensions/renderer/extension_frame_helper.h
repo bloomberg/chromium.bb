@@ -73,6 +73,9 @@ class ExtensionFrameHelper
   // Called after the DOMContentLoaded event has fired.
   void RunScriptsAtDocumentEnd();
 
+  // Called before the window.onload event is fired.
+  void RunScriptsAtDocumentIdle();
+
   // Schedule a callback, to be run at the next RunScriptsAtDocumentStart
   // notification. Only call this when you are certain that there will be such a
   // notification, e.g. from RenderFrameObserver::DidCreateDocumentElement.
@@ -82,6 +85,9 @@ class ExtensionFrameHelper
 
   // Schedule a callback, to be run at the next RunScriptsAtDocumentEnd call.
   void ScheduleAtDocumentEnd(const base::Closure& callback);
+
+  // Schedule a callback, to be run at the next RunScriptsAtDocumentIdle call.
+  void ScheduleAtDocumentIdle(const base::Closure& callback);
 
  private:
   // RenderFrameObserver implementation.
@@ -141,6 +147,9 @@ class ExtensionFrameHelper
 
   // Callbacks to be run at the next RunScriptsAtDocumentEnd notification.
   std::vector<base::Closure> document_load_finished_callbacks_;
+
+  // Callbacks to be run at the next RunScriptsAtDocumentIdle notification.
+  std::vector<base::Closure> document_idle_callbacks_;
 
   bool delayed_main_world_script_initialization_ = false;
 

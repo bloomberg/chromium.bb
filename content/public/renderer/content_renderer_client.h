@@ -319,6 +319,10 @@ class CONTENT_EXPORT ContentRendererClient {
   // This method may invalidate the frame.
   virtual void RunScriptsAtDocumentEnd(RenderFrame* render_frame) {}
 
+  // Notifies that the window.onload event is about to fire.
+  // This method may invalidate the frame.
+  virtual void RunScriptsAtDocumentIdle(RenderFrame* render_frame) {}
+
   // Allows subclasses to enable some runtime features before Blink has
   // started.
   virtual void SetRuntimeFeaturesDefaultsBeforeBlinkInitialization() {}

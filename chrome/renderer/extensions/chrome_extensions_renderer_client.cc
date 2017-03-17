@@ -308,3 +308,8 @@ void ChromeExtensionsRendererClient::RunScriptsAtDocumentEnd(
     content::RenderFrame* render_frame) {
   extension_dispatcher_->RunScriptsAtDocumentEnd(render_frame);
 }
+
+void ChromeExtensionsRendererClient::RunScriptsAtDocumentIdle(
+    content::RenderFrame* render_frame) {
+  extension_dispatcher_->RunScriptsAtDocumentIdle(render_frame);
+}

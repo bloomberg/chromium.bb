@@ -14,7 +14,7 @@ onload = function() {
   };
 
   var element = document.getElementById('the-bridge-element');
-  if (element.innerText == 'Modified') {
+  if (element.innerText == 'Mutated') {
     contentScriptRan = true;
     maybePassTest();
   } else {

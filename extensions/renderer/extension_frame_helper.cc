@@ -171,6 +171,12 @@ void ExtensionFrameHelper::RunScriptsAtDocumentEnd() {
   // |this| might be dead by now.
 }
 
+void ExtensionFrameHelper::RunScriptsAtDocumentIdle() {
+  RunCallbacksWhileFrameIsValid(weak_ptr_factory_.GetWeakPtr(),
+                                &document_idle_callbacks_);
+  // |this| might be dead by now.
+}
+
 void ExtensionFrameHelper::ScheduleAtDocumentStart(
     const base::Closure& callback) {
   document_element_created_callbacks_.push_back(callback);
@@ -179,6 +185,11 @@ void ExtensionFrameHelper::ScheduleAtDocumentStart(
 void ExtensionFrameHelper::ScheduleAtDocumentEnd(
     const base::Closure& callback) {
   document_load_finished_callbacks_.push_back(callback);
+}
+
+void ExtensionFrameHelper::ScheduleAtDocumentIdle(
+    const base::Closure& callback) {
+  document_idle_callbacks_.push_back(callback);
 }
 
 void ExtensionFrameHelper::DidMatchCSS(

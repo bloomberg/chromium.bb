@@ -219,6 +219,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual void documentElementAvailable() = 0;
   virtual void runScriptsAtDocumentElementAvailable() = 0;
   virtual void runScriptsAtDocumentReady(bool documentIsEmpty) = 0;
+  virtual void runScriptsAtDocumentIdle() = 0;
 
   virtual void didCreateScriptContext(v8::Local<v8::Context>, int worldId) = 0;
   virtual void willReleaseScriptContext(v8::Local<v8::Context>,

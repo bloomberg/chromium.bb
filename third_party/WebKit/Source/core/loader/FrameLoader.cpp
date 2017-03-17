@@ -736,6 +736,19 @@ void FrameLoader::checkCompleted() {
   if (!shouldComplete(m_frame->document()))
     return;
 
+  if (client()) {
+    client()->runScriptsAtDocumentIdle();
+
+    // Injected scripts may have disconnected this frame.
+    if (!client())
+      return;
+
+    // Check again, because runScriptsAtDocumentIdle() may have delayed the load
+    // event.
+    if (!shouldComplete(m_frame->document()))
+      return;
+  }
+
   // OK, completed.
   m_frame->document()->setReadyState(Document::Complete);
   if (m_frame->document()->loadEventStillNeeded())

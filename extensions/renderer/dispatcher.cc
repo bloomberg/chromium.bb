@@ -606,6 +606,15 @@ void Dispatcher::RunScriptsAtDocumentEnd(content::RenderFrame* render_frame) {
   // |frame_helper| and |render_frame| might be dead by now.
 }
 
+void Dispatcher::RunScriptsAtDocumentIdle(content::RenderFrame* render_frame) {
+  ExtensionFrameHelper* frame_helper = ExtensionFrameHelper::Get(render_frame);
+  if (!frame_helper)
+    return;  // The frame is invisible to extensions.
+
+  frame_helper->RunScriptsAtDocumentIdle();
+  // |frame_helper| and |render_frame| might be dead by now.
+}
+
 void Dispatcher::OnExtensionResponse(int request_id,
                                      bool success,
                                      const base::ListValue& response,

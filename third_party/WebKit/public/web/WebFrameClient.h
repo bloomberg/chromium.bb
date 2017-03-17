@@ -400,6 +400,10 @@ class BLINK_EXPORT WebFrameClient {
   virtual void runScriptsAtDocumentReady(WebLocalFrame*, bool documentIsEmpty) {
   }
 
+  // The frame's window.onload event is ready to fire. This method may delay
+  // window.onload by incrementing LoadEventDelayCount.
+  virtual void runScriptsAtDocumentIdle(WebLocalFrame*) {}
+
   // The 'load' event was dispatched.
   virtual void didHandleOnloadEvents(WebLocalFrame*) {}
 

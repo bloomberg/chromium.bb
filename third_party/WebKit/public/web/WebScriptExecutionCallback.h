@@ -20,6 +20,9 @@ class WebScriptExecutionCallback {
  public:
   virtual ~WebScriptExecutionCallback() {}
 
+  // Method to be invoked when the asynchronous script is about to execute.
+  virtual void willExecute() {}
+
   // Method to be invoked when the asynchronous script execution is complete.
   // After function call all objects in vector will be collected
   virtual void completed(const WebVector<v8::Local<v8::Value>>&) {}

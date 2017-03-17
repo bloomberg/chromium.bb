@@ -138,6 +138,7 @@ class WEB_EXPORT WebLocalFrameImpl final
       const WebScriptSource* sourceIn,
       unsigned numSources,
       bool userGesture,
+      ScriptExecutionType,
       WebScriptExecutionCallback*) override;
   v8::Local<v8::Value> callFunctionEvenIfScriptDisabled(
       v8::Local<v8::Function>,

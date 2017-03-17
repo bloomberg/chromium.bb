@@ -754,8 +754,9 @@ void WebLocalFrameImpl::requestExecuteScriptAndReturnValue(
     WebScriptExecutionCallback* callback) {
   DCHECK(frame());
 
-  SuspendableScriptExecutor::createAndRun(
+  SuspendableScriptExecutor* executor = SuspendableScriptExecutor::create(
       frame(), 0, createSourcesVector(&source, 1), userGesture, callback);
+  executor->run();
 }
 
 void WebLocalFrameImpl::requestExecuteV8Function(
@@ -803,14 +804,26 @@ void WebLocalFrameImpl::requestExecuteScriptInIsolatedWorld(
     const WebScriptSource* sourcesIn,
     unsigned numSources,
     bool userGesture,
+    ScriptExecutionType option,
     WebScriptExecutionCallback* callback) {
   DCHECK(frame());
   CHECK_GT(worldID, 0);
   CHECK_LT(worldID, DOMWrapperWorld::EmbedderWorldIdLimit);
 
-  SuspendableScriptExecutor::createAndRun(
+  SuspendableScriptExecutor* executor = SuspendableScriptExecutor::create(
       frame(), worldID, createSourcesVector(sourcesIn, numSources), userGesture,
       callback);
+  switch (option) {
+    case AsynchronousBlockingOnload:
+      executor->runAsync(SuspendableScriptExecutor::OnloadBlocking);
+      break;
+    case Asynchronous:
+      executor->runAsync(SuspendableScriptExecutor::NonBlocking);
+      break;
+    case Synchronous:
+      executor->run();
+      break;
+  }
 }
 
 // TODO(bashi): Consider returning MaybeLocal.

@@ -15,6 +15,7 @@
 #include "content/public/child/v8_value_converter.h"
 #include "content/public/renderer/render_frame.h"
 #include "extensions/common/extension_messages.h"
+#include "extensions/common/feature_switch.h"
 #include "extensions/common/host_id.h"
 #include "extensions/renderer/dom_activity_logger.h"
 #include "extensions/renderer/extension_frame_helper.h"
@@ -76,6 +77,31 @@ int GetIsolatedWorldIdForInstance(const InjectionHost* injection_host,
 
   return id;
 }
+
+// This class manages its own lifetime.
+class TimedScriptInjectionCallback : public ScriptInjectionCallback {
+ public:
+  explicit TimedScriptInjectionCallback(
+      base::WeakPtr<ScriptInjection> injection)
+      : ScriptInjectionCallback(
+            base::Bind(&TimedScriptInjectionCallback::OnCompleted,
+                       base::Unretained(this))),
+        injection_(injection) {}
+  ~TimedScriptInjectionCallback() override {}
+
+  void OnCompleted(const std::vector<v8::Local<v8::Value>>& result) {
+    if (injection_) {
+      base::TimeDelta elapsed = base::TimeTicks::Now() - start_time_;
+      injection_->OnJsInjectionCompleted(result, elapsed);
+    }
+  }
+
+  void willExecute() override { start_time_ = base::TimeTicks::Now(); }
+
+ private:
+  base::WeakPtr<ScriptInjection> injection_;
+  base::TimeTicks start_time_;
+};
 
 }  // namespace
 
@@ -258,9 +284,7 @@ void ScriptInjection::InjectJs(std::set<std::string>* executing_scripts,
   bool is_user_gesture = injector_->IsUserGesture();
 
   std::unique_ptr<blink::WebScriptExecutionCallback> callback(
-      new ScriptInjectionCallback(
-          base::Bind(&ScriptInjection::OnJsInjectionCompleted,
-                     weak_ptr_factory_.GetWeakPtr())));
+      new TimedScriptInjectionCallback(weak_ptr_factory_.GetWeakPtr()));
 
   base::ElapsedTimer exec_timer;
   if (injection_host_->id().type() == HostID::EXTENSIONS && log_activity_)
@@ -273,11 +297,23 @@ void ScriptInjection::InjectJs(std::set<std::string>* executing_scripts,
                                                   is_user_gesture,
                                                   callback.release());
   } else {
+    blink::WebLocalFrame::ScriptExecutionType option;
+    if (injector_->script_type() == UserScript::CONTENT_SCRIPT &&
+        FeatureSwitch::yield_between_content_script_runs()->IsEnabled()) {
+      switch (run_location_) {
+        case UserScript::DOCUMENT_END:
+        case UserScript::DOCUMENT_IDLE:
+          option = blink::WebLocalFrame::AsynchronousBlockingOnload;
+          break;
+        default:
+          option = blink::WebLocalFrame::Synchronous;
+          break;
+      }
+    } else {
+      option = blink::WebLocalFrame::Synchronous;
+    }
     web_frame->requestExecuteScriptInIsolatedWorld(
-        world_id,
-        &sources.front(),
-        sources.size(),
-        is_user_gesture,
+        world_id, &sources.front(), sources.size(), is_user_gesture, option,
         callback.release());
   }
 
@@ -286,8 +322,12 @@ void ScriptInjection::InjectJs(std::set<std::string>* executing_scripts,
 }
 
 void ScriptInjection::OnJsInjectionCompleted(
-    const std::vector<v8::Local<v8::Value>>& results) {
+    const std::vector<v8::Local<v8::Value>>& results,
+    base::TimeDelta elapsed) {
   DCHECK(!did_inject_js_);
+
+  if (injection_host_->id().type() == HostID::EXTENSIONS)
+    UMA_HISTOGRAM_TIMES("Extensions.InjectedScriptExecutionTime", elapsed);
 
   bool expects_results = injector_->ExpectsResults();
   if (expects_results) {
@@ -311,6 +351,7 @@ void ScriptInjection::OnJsInjectionCompleted(
   // If |async_completion_callback_| is set, it means the script finished
   // asynchronously, and we should run it.
   if (!async_completion_callback_.is_null()) {
+    complete_ = true;
     injector_->OnInjectionComplete(std::move(execution_result_), run_location_,
                                    render_frame_);
     // Warning: this object can be destroyed after this line!

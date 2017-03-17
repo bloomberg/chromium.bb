@@ -113,6 +113,7 @@ class Dispatcher : public content::RenderThreadObserver,
   // cause |render_frame| to become invalid.
   void RunScriptsAtDocumentStart(content::RenderFrame* render_frame);
   void RunScriptsAtDocumentEnd(content::RenderFrame* render_frame);
+  void RunScriptsAtDocumentIdle(content::RenderFrame* render_frame);
 
   void OnExtensionResponse(int request_id,
                            bool success,

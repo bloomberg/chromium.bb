@@ -2012,8 +2012,8 @@ void RenderFrameImpl::OnJavaScriptExecuteRequestInIsolatedWorld(
   WebScriptSource script = WebScriptSource(WebString::fromUTF16(jscript));
   JavaScriptIsolatedWorldRequest* request = new JavaScriptIsolatedWorldRequest(
       id, notify_result, routing_id_, weak_factory_.GetWeakPtr());
-  frame_->requestExecuteScriptInIsolatedWorld(world_id, &script, 1, false,
-                                              request);
+  frame_->requestExecuteScriptInIsolatedWorld(
+      world_id, &script, 1, false, WebLocalFrame::Synchronous, request);
 }
 
 RenderFrameImpl::JavaScriptIsolatedWorldRequest::JavaScriptIsolatedWorldRequest(
@@ -3909,6 +3909,12 @@ void RenderFrameImpl::runScriptsAtDocumentReady(blink::WebLocalFrame* frame,
                             nullptr);
   }
   // Do not use |this| or |frame| here without checking |weak_self|.
+}
+
+void RenderFrameImpl::runScriptsAtDocumentIdle(blink::WebLocalFrame* frame) {
+  DCHECK_EQ(frame_, frame);
+  GetContentClient()->renderer()->RunScriptsAtDocumentIdle(this);
+  // ContentClient might have deleted |frame| and |this| by now!
 }
 
 void RenderFrameImpl::didHandleOnloadEvents(blink::WebLocalFrame* frame) {

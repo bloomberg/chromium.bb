@@ -177,6 +177,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
       std::map<std::string, std::string>* properties) override;
   void RunScriptsAtDocumentStart(content::RenderFrame* render_frame) override;
   void RunScriptsAtDocumentEnd(content::RenderFrame* render_frame) override;
+  void RunScriptsAtDocumentIdle(content::RenderFrame* render_frame) override;
   void DidInitializeServiceWorkerContextOnWorkerThread(
       v8::Local<v8::Context> context,
       int64_t service_worker_version_id,

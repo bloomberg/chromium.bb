@@ -249,6 +249,15 @@ class WebLocalFrame : public WebFrame {
                                         v8::Local<v8::Value> argv[],
                                         WebScriptExecutionCallback*) = 0;
 
+  enum ScriptExecutionType {
+    // Execute script synchronously, unless the page is suspended.
+    Synchronous,
+    // Execute script asynchronously.
+    Asynchronous,
+    // Execute script asynchronously, blocking the window.onload event.
+    AsynchronousBlockingOnload
+  };
+
   // worldID must be > 0 (as 0 represents the main world).
   // worldID must be < EmbedderWorldIdLimit, high number used internally.
   virtual void requestExecuteScriptInIsolatedWorld(
@@ -256,6 +265,7 @@ class WebLocalFrame : public WebFrame {
       const WebScriptSource* sourceIn,
       unsigned numSources,
       bool userGesture,
+      ScriptExecutionType,
       WebScriptExecutionCallback*) = 0;
 
   // Associates an isolated world with human-readable name which is useful for

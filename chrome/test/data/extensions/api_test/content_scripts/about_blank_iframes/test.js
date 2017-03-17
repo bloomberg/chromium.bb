@@ -45,9 +45,11 @@ chrome.test.getConfig(function(config) {
     function testDocumentStartRunsInSameWorldAsDocumentEndOfJavaScriptUrl() {
       var hasReceivedFirstMessage = false;
       onRequest.addListener(function listener(request) {
-        if (!hasReceivedFirstMessage) {
+        if (config.customArg == "YieldBetweenContentScriptRunsDisabled" &&
+            !hasReceivedFirstMessage) {
           hasReceivedFirstMessage = true;
           // Step one: Empty document where the JavaScript code was executed.
+          // This happens only if content script is injected synchronously.
           checkFirstMessageEquals('jsresult/')(request);
         } else {
           onRequest.removeListener(listener);

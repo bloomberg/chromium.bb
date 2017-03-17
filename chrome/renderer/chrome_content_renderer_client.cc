@@ -1404,6 +1404,15 @@ void ChromeContentRendererClient::RunScriptsAtDocumentEnd(
 #endif
 }
 
+void ChromeContentRendererClient::RunScriptsAtDocumentIdle(
+    content::RenderFrame* render_frame) {
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  ChromeExtensionsRendererClient::GetInstance()->RunScriptsAtDocumentIdle(
+      render_frame);
+  // |render_frame| might be dead by now.
+#endif
+}
+
 void ChromeContentRendererClient::
     DidInitializeServiceWorkerContextOnWorkerThread(
         v8::Local<v8::Context> context,

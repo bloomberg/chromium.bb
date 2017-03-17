@@ -1864,6 +1864,7 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       extensions::switches::kIsolateExtensions,
       extensions::switches::kNativeCrxBindings,
       extensions::switches::kWhitelistedExtensionID,
+      extensions::switches::kYieldBetweenContentScriptRuns,
 #endif
       switches::kAllowInsecureLocalhost,
       switches::kAppsGalleryURL,
