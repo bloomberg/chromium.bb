@@ -295,7 +295,7 @@ bool Text::textLayoutObjectIsNeeded(const ComputedStyle& style,
 
   if (parent.isLayoutInline()) {
     // <span><div/> <div/></span>
-    if (prev && !prev->isInline() && !prev->isOutOfFlowPositioned())
+    if (prev && !prev->isInline() && !prev->isFloatingOrOutOfFlowPositioned())
       return false;
   } else {
     if (parent.isLayoutBlock() && !parent.childrenInline() &&
