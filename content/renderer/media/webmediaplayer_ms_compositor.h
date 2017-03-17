@@ -64,8 +64,8 @@ class CONTENT_EXPORT WebMediaPlayerMSCompositor
   // Statistical data
   gfx::Size GetCurrentSize();
   base::TimeDelta GetCurrentTime();
-  size_t total_frame_count() const;
-  size_t dropped_frame_count() const;
+  size_t total_frame_count();
+  size_t dropped_frame_count();
 
   // VideoFrameProvider implementation.
   void SetVideoFrameProviderClient(

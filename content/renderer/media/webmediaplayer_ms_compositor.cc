@@ -175,13 +175,15 @@ base::TimeDelta WebMediaPlayerMSCompositor::GetCurrentTime() {
   return current_frame_.get() ? current_frame_->timestamp() : base::TimeDelta();
 }
 
-size_t WebMediaPlayerMSCompositor::total_frame_count() const {
+size_t WebMediaPlayerMSCompositor::total_frame_count() {
+  base::AutoLock auto_lock(current_frame_lock_);
   DVLOG(1) << __func__ << ", " << total_frame_count_;
   DCHECK(thread_checker_.CalledOnValidThread());
   return total_frame_count_;
 }
 
-size_t WebMediaPlayerMSCompositor::dropped_frame_count() const {
+size_t WebMediaPlayerMSCompositor::dropped_frame_count() {
+  base::AutoLock auto_lock(current_frame_lock_);
   DVLOG(1) << __func__ << ", " << dropped_frame_count_;
   DCHECK(thread_checker_.CalledOnValidThread());
   return dropped_frame_count_;
