@@ -48,9 +48,6 @@ source_set("unit_tests") {
 
   deps = [
     ":ash_public_cpp",
-
-    # TODO(crbug.com/702397): Rely on :ash_public_cpp for this instead.
-    "//ash/public/interfaces:interfaces_internal",
     "//base",
     "//testing/gtest",
     "//ui/gfx:test_support",
