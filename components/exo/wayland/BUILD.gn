@@ -107,7 +107,10 @@ source_set("client_lib") {
       "//ui/gl:gl_config",
     ]
     defines = [ "OZONE_PLATFORM_GBM" ]
-    deps += [ "//third_party/minigbm" ]
+    deps += [
+      "//third_party/minigbm",
+      "//ui/ozone",
+    ]
   }
 }
 

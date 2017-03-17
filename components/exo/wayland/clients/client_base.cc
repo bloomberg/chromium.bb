@@ -33,6 +33,8 @@
 #include <drm_fourcc.h>
 #include <gbm.h>
 #include <xf86drm.h>
+
+#include "ui/ozone/public/ozone_platform.h"
 #endif
 
 namespace exo {
@@ -273,6 +275,9 @@ bool ClientBase::Init(const InitParams& params) {
       return false;
     }
 
+    ui::OzonePlatform::InitParams params;
+    params.single_process = true;
+    ui::OzonePlatform::InitializeForGPU(params);
     bool gl_initialized = gl::init::InitializeGLOneOff();
     DCHECK(gl_initialized);
     gl_surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size());
