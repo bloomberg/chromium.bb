@@ -690,10 +690,17 @@ void VRDisplay::OnDeactivate(
 }
 
 void VRDisplay::processScheduledAnimations(double timestamp) {
+  // Check if we still have a valid context, the animation controller
+  // or document may have disappeared since we scheduled this.
+  Document* doc = this->document();
+  if (!doc || m_displayBlurred || !m_scriptedAnimationController)
+    return;
+
   TRACE_EVENT1("gpu", "VRDisplay::OnVSync", "frame", m_vrFrameId);
 
   AutoReset<bool> animating(&m_inAnimationFrame, true);
   m_pendingRaf = false;
+
   m_scriptedAnimationController->serviceScriptedAnimations(timestamp);
 }
 
@@ -708,9 +715,6 @@ void VRDisplay::OnVSync(device::mojom::blink::VRPosePtr pose,
       return;
   }
   m_pendingVsync = false;
-  Document* doc = this->document();
-  if (!doc || m_displayBlurred || !m_scriptedAnimationController)
-    return;
 
   WTF::TimeDelta timeDelta =
       WTF::TimeDelta::FromMicroseconds(time->microseconds);
