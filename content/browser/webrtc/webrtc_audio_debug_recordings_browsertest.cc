@@ -170,10 +170,13 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
   for (int i = 0; i < 2; ++i) {
     file_path = GetExpectedOutputAudioFileName(
         base_file_path, kExpectedFirstOutputStreamId + i);
+// Flaky on Mac. http://crbug.com/700859.
+#if !defined(OS_MACOSX)
     EXPECT_TRUE(base::PathExists(file_path));
     file_size = 0;
     EXPECT_TRUE(base::GetFileSize(file_path, &file_size));
     EXPECT_GT(file_size, kWaveHeaderSizeBytes);
+#endif
     base::DeleteFile(file_path, false);
   }
 
