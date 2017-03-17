@@ -10,5 +10,5 @@
                 optional DataView? data)
 ] interface USBIsochronousInTransferResult {
     readonly attribute DataView? data;
-    readonly attribute sequence<USBIsochronousInTransferPacket> packets;
+    readonly attribute FrozenArray<USBIsochronousInTransferPacket> packets;
 };

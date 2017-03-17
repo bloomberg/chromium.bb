@@ -14,5 +14,5 @@
     readonly attribute octet interfaceSubclass;
     readonly attribute octet interfaceProtocol;
     readonly attribute DOMString? interfaceName;
-    readonly attribute sequence<USBEndpoint> endpoints;
+    readonly attribute FrozenArray<USBEndpoint> endpoints;
 };

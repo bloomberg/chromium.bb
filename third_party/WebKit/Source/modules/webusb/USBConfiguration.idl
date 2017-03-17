@@ -11,5 +11,5 @@
 ] interface USBConfiguration {
     readonly attribute octet configurationValue;
     readonly attribute DOMString? configurationName;
-    readonly attribute sequence<USBInterface> interfaces;
+    readonly attribute FrozenArray<USBInterface> interfaces;
 };

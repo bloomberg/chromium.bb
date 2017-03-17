@@ -8,5 +8,5 @@
     OriginTrialEnabled=WebUSB,
     Constructor(sequence<USBIsochronousOutTransferPacket> packets)
 ] interface USBIsochronousOutTransferResult {
-    readonly attribute sequence<USBIsochronousOutTransferPacket> packets;
+    readonly attribute FrozenArray<USBIsochronousOutTransferPacket> packets;
 };

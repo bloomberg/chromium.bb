@@ -11,6 +11,6 @@
 ] interface USBInterface {
     readonly attribute octet interfaceNumber;
     readonly attribute USBAlternateInterface? alternate;
-    readonly attribute sequence<USBAlternateInterface> alternates;
+    readonly attribute FrozenArray<USBAlternateInterface> alternates;
     readonly attribute boolean claimed;
 };
