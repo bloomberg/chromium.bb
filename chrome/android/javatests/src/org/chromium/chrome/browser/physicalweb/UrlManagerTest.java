@@ -4,41 +4,26 @@
 
 package org.chromium.chrome.browser.physicalweb;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import android.content.SharedPreferences;
-
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import org.robolectric.RuntimeEnvironment;
-import org.robolectric.annotation.Config;
-import org.robolectric.shadows.ShadowLooper;
+import android.support.test.filters.SmallTest;
+import android.test.InstrumentationTestCase;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.RetryOnFailure;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
+import org.chromium.content.browser.test.util.Criteria;
+import org.chromium.content.browser.test.util.CriteriaHelper;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Tests for {@link UrlManager}.
  */
-@RunWith(LocalRobolectricTestRunner.class)
-@Config(manifest = Config.NONE)
-public class UrlManagerTest {
+public class UrlManagerTest extends InstrumentationTestCase {
     private static final String URL1 = "https://example.com/";
     private static final String TITLE1 = "Example";
     private static final String DESC1 = "Example Website";
@@ -55,13 +40,12 @@ public class UrlManagerTest {
     private static final int PHYSICAL_WEB_OFF = 0;
     private static final int PHYSICAL_WEB_ON = 1;
     private static final int PHYSICAL_WEB_ONBOARDING = 2;
-    private static final double EPSILON = .001;
     private UrlManager mUrlManager = null;
     private MockPwsClient mMockPwsClient = null;
 
-    @Before
-    public void setUp() {
-        ContextUtils.initApplicationContextForTests(RuntimeEnvironment.application);
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
         ContextUtils.getAppSharedPreferences()
                 .edit()
                 .putInt(PREF_PHYSICAL_WEB, PHYSICAL_WEB_ON)
@@ -111,7 +95,8 @@ public class UrlManagerTest {
                 .apply();
     }
 
-    @Test
+    @SmallTest
+    @RetryOnFailure
     public void testAddUrlAfterClearAllUrlsWorks() {
         addPwsResult1();
         addPwsResult2();
@@ -119,24 +104,25 @@ public class UrlManagerTest {
         addPwsResult2();
         addUrlInfo1();
         addUrlInfo2();
-        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+        getInstrumentation().waitForIdleSync();
         mUrlManager.clearAllUrls();
 
         // Add some more URLs...this should not crash if we cleared correctly.
         addUrlInfo1();
         addUrlInfo2();
-        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+        getInstrumentation().waitForIdleSync();
         List<UrlInfo> urlInfos = mUrlManager.getUrls();
         assertEquals(2, urlInfos.size());
     }
 
-    @Test
+    @SmallTest
+    @RetryOnFailure
     public void testClearNearbyUrlsWorks() {
         addPwsResult1();
         addPwsResult2();
         addUrlInfo1();
         addUrlInfo2();
-        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+        getInstrumentation().waitForIdleSync();
 
         mUrlManager.clearNearbyUrls();
 
@@ -153,7 +139,7 @@ public class UrlManagerTest {
         assertFalse(mUrlManager.containsInAnyCache(URL2));
     }
 
-    @Test
+    @SmallTest
     @RetryOnFailure
     public void testAddUrlGarbageCollectsForSize() throws Exception {
         // Add and remove 101 URLs, making sure one is clearly slightly older than the others.
@@ -174,7 +160,7 @@ public class UrlManagerTest {
         assertTrue(mUrlManager.containsInAnyCache(URL1 + mUrlManager.getMaxCacheSize()));
     }
 
-    @Test
+    @SmallTest
     public void testAddUrlGarbageCollectsForAge() throws Exception {
         // Add a URL with a phony timestamp.
         addEmptyPwsResult();
@@ -191,7 +177,7 @@ public class UrlManagerTest {
         assertTrue(mUrlManager.containsInAnyCache(URL2));
     }
 
-    @Test
+    @SmallTest
     public void testAddUrlUpdatesCache() throws Exception {
         addEmptyPwsResult();
         addEmptyPwsResult();
@@ -200,7 +186,7 @@ public class UrlManagerTest {
         mUrlManager.addUrl(urlInfo);
         List<UrlInfo> urls = mUrlManager.getUrls(true);
         assertEquals(1, urls.size());
-        assertEquals(urlInfo.getDistance(), urls.get(0).getDistance(), EPSILON);
+        assertEquals(urlInfo.getDistance(), urls.get(0).getDistance());
         assertEquals(urlInfo.getDeviceAddress(), urls.get(0).getDeviceAddress());
         assertEquals(urlInfo.getFirstSeenTimestamp(), urls.get(0).getFirstSeenTimestamp());
 
@@ -208,11 +194,12 @@ public class UrlManagerTest {
         mUrlManager.addUrl(urlInfo);
         urls = mUrlManager.getUrls(true);
         assertEquals(1, urls.size());
-        assertEquals(urlInfo.getDistance(), urls.get(0).getDistance(), EPSILON);
+        assertEquals(urlInfo.getDistance(), urls.get(0).getDistance());
         assertEquals(urlInfo.getDeviceAddress(), urls.get(0).getDeviceAddress());
     }
 
-    @Test
+    @SmallTest
+    @RetryOnFailure
     public void testAddUrlTwiceWorks() throws Exception {
         // Add and remove an old URL twice and add new URL twice before removing.
         // This should cover several issues involved with updating the cache queue.
@@ -235,7 +222,7 @@ public class UrlManagerTest {
         assertTrue(mUrlManager.containsInAnyCache(URL2));
     }
 
-    @Test
+    @SmallTest
     public void testGetUrlsSortsAndDedups() throws Exception {
         // Construct results with matching group IDs and check that getUrls returns only the closest
         // URL in each group. The list should be sorted by distance, closest first.
@@ -249,31 +236,31 @@ public class UrlManagerTest {
         mUrlManager.addUrl(new UrlInfo(URL3, 10.0, System.currentTimeMillis()));
         mUrlManager.addUrl(new UrlInfo(URL4, 40.0, System.currentTimeMillis()));
         mUrlManager.addUrl(new UrlInfo(URL5, 50.0, System.currentTimeMillis()));
-        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+        getInstrumentation().waitForIdleSync();
 
         // Make sure URLs are in order and duplicates are omitted.
         List<UrlInfo> urlInfos = mUrlManager.getUrls();
         assertEquals(3, urlInfos.size());
-        assertEquals(10.0, urlInfos.get(0).getDistance(), EPSILON);
+        assertEquals(10.0, urlInfos.get(0).getDistance());
         assertEquals(URL3, urlInfos.get(0).getUrl());
-        assertEquals(30.0, urlInfos.get(1).getDistance(), EPSILON);
+        assertEquals(30.0, urlInfos.get(1).getDistance());
         assertEquals(URL1, urlInfos.get(1).getUrl());
-        assertEquals(50.0, urlInfos.get(2).getDistance(), EPSILON);
+        assertEquals(50.0, urlInfos.get(2).getDistance());
         assertEquals(URL5, urlInfos.get(2).getUrl());
     }
 
     /*
+     * @SmallTest
      * Bug=crbug.com/684148
      */
-    @Ignore
-    @Test
+    @DisabledTest
     public void testSerializationWorksWithPoorlySerializedResult() throws Exception {
         addPwsResult1();
         addPwsResult2();
         long curTime = System.currentTimeMillis();
         mUrlManager.addUrl(new UrlInfo(URL1, 99.5, curTime + 42));
         mUrlManager.addUrl(new UrlInfo(URL2, 100.5, curTime + 43));
-        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+        getInstrumentation().waitForIdleSync();
 
         // Create an invalid serialization.
         Set<String> serializedUrls = new HashSet<>();
@@ -293,14 +280,15 @@ public class UrlManagerTest {
     }
 
     @FlakyTest(message = "https://crbug.com/685471")
-    @Test
+    @SmallTest
+    @RetryOnFailure
     public void testSerializationWorksWithoutGarbageCollection() throws Exception {
         addPwsResult1();
         addPwsResult2();
         long curTime = System.currentTimeMillis();
         mUrlManager.addUrl(new UrlInfo(URL1, 99.5, curTime + 42));
         mUrlManager.addUrl(new UrlInfo(URL2, 100.5, curTime + 43));
-        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+        getInstrumentation().waitForIdleSync();
 
         // Make sure all URLs are restored.
         UrlManager urlManager = new UrlManager();
@@ -312,14 +300,14 @@ public class UrlManagerTest {
         assertEquals(2, resolvedUrls.size());
     }
 
+    @SmallTest
     @RetryOnFailure
-    @Test
     public void testSerializationWorksWithGarbageCollection() throws Exception {
         addPwsResult1();
         addPwsResult2();
         mUrlManager.addUrl(new UrlInfo(URL1, 99.5, 42));
         mUrlManager.addUrl(new UrlInfo(URL2, 100.5, 43));
-        ShadowLooper.runUiThreadTasksIncludingDelayedTasks();
+        getInstrumentation().waitForIdleSync();
 
         // Make sure all URLs are restored.
         UrlManager urlManager = new UrlManager();
@@ -329,49 +317,35 @@ public class UrlManagerTest {
         assertEquals(0, resolvedUrls.size());
     }
 
-    @Test
+    @SmallTest
     public void testUpgradeFromNone() throws Exception {
         Set<String> oldResolvedUrls = new HashSet<String>();
         oldResolvedUrls.add("old");
-        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
-        prefs.edit()
+        ContextUtils.getAppSharedPreferences()
+                .edit()
                 .remove(UrlManager.getVersionKey())
                 .putStringSet("physicalweb_nearby_urls", oldResolvedUrls)
                 .putInt("org.chromium.chrome.browser.physicalweb.VERSION", 1)
                 .putInt("org.chromium.chrome.browser.physicalweb.BOTTOM_BAR_DISPLAY_COUNT", 1)
-                .putBoolean("physical_web_ignore_other_clients", true)
                 .apply();
-        final Lock lock = new ReentrantLock();
-        final Condition condition = lock.newCondition();
-        prefs.registerOnSharedPreferenceChangeListener(
-                new SharedPreferences.OnSharedPreferenceChangeListener() {
-                    public void onSharedPreferenceChanged(
-                            SharedPreferences sharedPreferences, String key) {
-                        lock.lock();
-                        try {
-                            condition.signal();
-                        } finally {
-                            lock.unlock();
-                        }
-                    }
-                });
         new UrlManager();
-        lock.lock();
-        try {
-            assertTrue(condition.await(5, TimeUnit.SECONDS));
-        } finally {
-            lock.unlock();
-        }
 
         // Make sure the new prefs are populated and old prefs are gone.
-        SharedPreferences sharedPreferences = ContextUtils.getAppSharedPreferences();
-        assertTrue(sharedPreferences.contains(UrlManager.getVersionKey()));
+        final SharedPreferences sharedPreferences = ContextUtils.getAppSharedPreferences();
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                SharedPreferences sharedPreferences = ContextUtils.getAppSharedPreferences();
+                return sharedPreferences.contains(UrlManager.getVersionKey())
+                        && !sharedPreferences.contains("physicalweb_nearby_urls")
+                        && !sharedPreferences.contains(
+                                   "org.chromium.chrome.browser.physicalweb.VERSION")
+                        && !sharedPreferences.contains("org.chromium.chrome.browser.physicalweb"
+                                   + ".BOTTOM_BAR_DISPLAY_COUNT");
+            }
+        }, 5000, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
+
         assertEquals(
                 UrlManager.getVersion(), sharedPreferences.getInt(UrlManager.getVersionKey(), 0));
-        assertFalse(sharedPreferences.contains("physicalweb_nearby_urls"));
-        assertFalse(sharedPreferences.contains("org.chromium.chrome.browser.physicalweb.VERSION"));
-        assertFalse(sharedPreferences.contains(
-                "org.chromium.chrome.browser.physicalweb.BOTTOM_BAR_DISPLAY_COUNT"));
-        assertFalse(sharedPreferences.contains("physical_web_ignore_other_clients"));
     }
 }
