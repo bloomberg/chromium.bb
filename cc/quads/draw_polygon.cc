@@ -39,16 +39,17 @@ DrawPolygon::DrawPolygon(const DrawQuad* original,
                          const std::vector<gfx::Point3F>& in_points,
                          const gfx::Vector3dF& normal,
                          int draw_order_index)
-    : order_index_(draw_order_index), original_ref_(original), is_split_(true) {
+    : normal_(normal),
+      order_index_(draw_order_index),
+      original_ref_(original),
+      is_split_(true) {
   for (size_t i = 0; i < in_points.size(); i++) {
     points_.push_back(in_points[i]);
   }
-#if DCHECK_IS_ON()
-  normal_ = normal;
-  ConstructNormal();
-  DCHECK_LE((normal_ - normal).Length(), normalized_threshold);
-#endif
-  normal_ = normal;
+  // If life was fair, we could recalculate the normal from the given points
+  // and assert it was roughly the same.  This causes unhelpful breaks on
+  // trivial slices of split polygons.  Similarly, when splitting, it is
+  // better to keep the normal that was constructed from the original.
 }
 
 // This takes the original DrawQuad that this polygon should be based on,
