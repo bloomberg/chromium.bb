@@ -33,6 +33,9 @@ set(CMAKE_XCODE_ATTRIBUTE_IPHONEOS_DEPLOYMENT_TARGET ${AOM_MIN_IOS_VERSION})
 # No intrinsics flag required for armv7s-ios.
 set(AOM_NEON_INTRIN_FLAG "")
 
+# No runtime cpu detect for armv7s-ios.
+set(CONFIG_RUNTIME_CPU_DETECT 0 CACHE BOOL "")
+
 # Assembler sources must be converted for ARM iOS targets.
 set(AOM_ADS2GAS_REQUIRED 1)
 set(AOM_ADS2GAS "${CMAKE_CURRENT_SOURCE_DIR}/build/make/ads2gas_apple.pl")
