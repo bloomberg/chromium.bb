@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/tray_bluetooth_helper.h"
 
+#include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/wm_shell.h"
 #include "base/bind.h"
@@ -11,7 +12,6 @@
 #include "base/metrics/user_metrics.h"
 #include "chrome/browser/chromeos/bluetooth/bluetooth_pairing_dialog.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
-#include "chrome/browser/ui/ash/system_tray_delegate_chromeos.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_device.h"
@@ -34,9 +34,7 @@ ash::SystemTrayNotifier* GetSystemTrayNotifier() {
 
 }  // namespace
 
-TrayBluetoothHelper::TrayBluetoothHelper(
-    chromeos::SystemTrayDelegateChromeOS* system_tray_delegate)
-    : system_tray_delegate_(system_tray_delegate), weak_ptr_factory_(this) {}
+TrayBluetoothHelper::TrayBluetoothHelper() : weak_ptr_factory_(this) {}
 
 TrayBluetoothHelper::~TrayBluetoothHelper() {
   if (adapter_)
@@ -54,10 +52,6 @@ void TrayBluetoothHelper::InitializeOnAdapterReady(
   adapter_ = adapter;
   CHECK(adapter_);
   adapter_->AddObserver(this);
-
-  // May be null in tests.
-  if (system_tray_delegate_)
-    system_tray_delegate_->InitializeOnAdapterReady();
 }
 
 void TrayBluetoothHelper::GetAvailableDevices(

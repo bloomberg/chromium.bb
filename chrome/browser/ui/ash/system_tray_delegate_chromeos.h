@@ -62,13 +62,7 @@ class SystemTrayDelegateChromeOS
       public input_method::InputMethodManager::ImeMenuObserver {
  public:
   SystemTrayDelegateChromeOS();
-
   ~SystemTrayDelegateChromeOS() override;
-
-  // Completes initialization after the Bluetooth adapter is ready.
-  // TODO(jamescook): Eliminate this and just use Initialize().
-  // http://crbug.com/660043
-  void InitializeOnAdapterReady();
 
   // Overridden from ash::SystemTrayDelegate:
   void Initialize() override;

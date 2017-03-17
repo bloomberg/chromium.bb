@@ -25,7 +25,7 @@ TEST_F(TrayBluetoothHelperTest, Basics) {
           BluezDBusManager::Get()->GetBluetoothAdapterClient());
   adapter_client->SetSimulationIntervalMs(0);
 
-  TrayBluetoothHelper helper(nullptr);
+  TrayBluetoothHelper helper;
   helper.Initialize();
   RunAllPendingInMessageLoop();
   EXPECT_TRUE(helper.GetAvailable());

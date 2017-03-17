@@ -17,10 +17,6 @@ namespace ash {
 struct BluetoothDeviceInfo;
 }
 
-namespace chromeos {
-class SystemTrayDelegateChromeOS;
-}
-
 namespace device {
 class BluetoothDiscoverySession;
 }
@@ -32,8 +28,7 @@ class BluetoothDiscoverySession;
 // named "delegate" because long-term there should not be any delegation.
 class TrayBluetoothHelper : public device::BluetoothAdapter::Observer {
  public:
-  explicit TrayBluetoothHelper(
-      chromeos::SystemTrayDelegateChromeOS* system_tray_delegate);
+  TrayBluetoothHelper();
   ~TrayBluetoothHelper() override;
 
   // Called after SystemTray has been instantiated.
@@ -90,10 +85,6 @@ class TrayBluetoothHelper : public device::BluetoothAdapter::Observer {
  private:
   void OnStartDiscoverySession(
       std::unique_ptr<device::BluetoothDiscoverySession> discovery_session);
-
-  // TODO: Eliminate this after verifying the initialization order of
-  // SystemTrayDelegateChromeOS can be changed.
-  chromeos::SystemTrayDelegateChromeOS* const system_tray_delegate_;
 
   bool should_run_discovery_ = false;
   scoped_refptr<device::BluetoothAdapter> adapter_;

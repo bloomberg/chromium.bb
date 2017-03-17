@@ -124,7 +124,7 @@ bool IsSessionInSecondaryLoginScreen() {
 }  // namespace
 
 SystemTrayDelegateChromeOS::SystemTrayDelegateChromeOS()
-    : bluetooth_helper_(base::MakeUnique<TrayBluetoothHelper>(this)),
+    : bluetooth_helper_(base::MakeUnique<TrayBluetoothHelper>()),
       networking_config_delegate_(
           base::MakeUnique<NetworkingConfigDelegateChromeos>()) {
   // Register notifications on construction so that events such as
@@ -162,9 +162,7 @@ void SystemTrayDelegateChromeOS::Initialize() {
   bluetooth_helper_->Initialize();
 
   BrowserList::AddObserver(this);
-}
 
-void SystemTrayDelegateChromeOS::InitializeOnAdapterReady() {
   local_state_registrar_.reset(new PrefChangeRegistrar);
   local_state_registrar_->Init(g_browser_process->local_state());
 
