@@ -113,7 +113,7 @@ GpuHost::GpuHost(GpuHostDelegate* delegate)
   gpu::GpuPreferences preferences;
   gpu_main_->CreateGpuService(MakeRequest(&gpu_service_),
                               gpu_host_binding_.CreateInterfacePtrAndBind(),
-                              preferences);
+                              preferences, mojo::ScopedSharedBufferHandle());
   gpu_memory_buffer_manager_ = base::MakeUnique<ServerGpuMemoryBufferManager>(
       gpu_service_.get(), next_client_id_++);
 }

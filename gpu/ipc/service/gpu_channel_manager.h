@@ -17,6 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
+#include "gpu/command_buffer/common/activity_flags.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
@@ -72,7 +73,8 @@ class GPU_EXPORT GpuChannelManager {
                     base::WaitableEvent* shutdown_event,
                     SyncPointManager* sync_point_manager,
                     GpuMemoryBufferFactory* gpu_memory_buffer_factory,
-                    const GpuFeatureInfo& gpu_feature_info);
+                    const GpuFeatureInfo& gpu_feature_info,
+                    GpuProcessActivityFlags activity_flags);
   virtual ~GpuChannelManager();
 
   GpuChannelManagerDelegate* delegate() const { return delegate_; }
@@ -203,6 +205,10 @@ class GPU_EXPORT GpuChannelManager {
 
   // Set during intentional GPU process shutdown.
   bool exiting_for_lost_context_;
+
+  // Flags which indicate GPU process activity. Read by the browser process
+  // on GPU process crash.
+  GpuProcessActivityFlags activity_flags_;
 
   // Member variables should appear before the WeakPtrFactory, to ensure
   // that any WeakPtrs to Controller are invalidated before its members

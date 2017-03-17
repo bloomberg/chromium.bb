@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "gpu/command_buffer/common/activity_flags.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "gpu/ipc/gpu_in_process_thread_service.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
@@ -118,14 +119,17 @@ void GpuMain::OnStart() {
 
 void GpuMain::CreateGpuService(mojom::GpuServiceRequest request,
                                mojom::GpuHostPtr gpu_host,
-                               const gpu::GpuPreferences& preferences) {
+                               const gpu::GpuPreferences& preferences,
+                               mojo::ScopedSharedBufferHandle activity_flags) {
   // |this| will outlive the gpu thread and so it's safe to use
   // base::Unretained here.
   gpu_thread_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&GpuMain::CreateGpuServiceOnGpuThread, base::Unretained(this),
                  base::Passed(std::move(request)),
-                 base::Passed(gpu_host.PassInterface()), preferences));
+                 base::Passed(gpu_host.PassInterface()), preferences,
+                 base::Passed(
+                     gpu::GpuProcessActivityFlags(std::move(activity_flags)))));
 }
 
 void GpuMain::CreateDisplayCompositor(
@@ -227,10 +231,12 @@ void GpuMain::TearDownOnGpuThread() {
 void GpuMain::CreateGpuServiceOnGpuThread(
     mojom::GpuServiceRequest request,
     mojom::GpuHostPtrInfo gpu_host_info,
-    const gpu::GpuPreferences& preferences) {
+    const gpu::GpuPreferences& preferences,
+    gpu::GpuProcessActivityFlags activity_flags) {
   mojom::GpuHostPtr gpu_host;
   gpu_host.Bind(std::move(gpu_host_info));
-  gpu_service_->InitializeWithHost(std::move(gpu_host), preferences);
+  gpu_service_->InitializeWithHost(std::move(gpu_host), preferences,
+                                   std::move(activity_flags));
   gpu_service_->Bind(std::move(request));
 
   if (pending_display_compositor_request_.is_pending()) {

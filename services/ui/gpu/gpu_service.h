@@ -11,6 +11,7 @@
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
+#include "gpu/command_buffer/common/activity_flags.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/ipc/common/surface_handle.h"
@@ -55,6 +56,7 @@ class GpuService : public gpu::GpuChannelManagerDelegate,
 
   void InitializeWithHost(mojom::GpuHostPtr gpu_host,
                           const gpu::GpuPreferences& preferences,
+                          gpu::GpuProcessActivityFlags activity_flags,
                           gpu::SyncPointManager* sync_point_manager = nullptr,
                           base::WaitableEvent* shutdown_event = nullptr);
   void Bind(mojom::GpuServiceRequest request);

@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
+#include "gpu/command_buffer/common/activity_flags.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/service/disk_cache_proto.pb.h"
 #include "gpu/command_buffer/service/gl_utils.h"
@@ -211,14 +212,15 @@ bool ProgramBinaryExtensionsAvailable() {
 MemoryProgramCache::MemoryProgramCache(
     size_t max_cache_size_bytes,
     bool disable_gpu_shader_disk_cache,
-    bool disable_program_caching_for_transform_feedback)
+    bool disable_program_caching_for_transform_feedback,
+    GpuProcessActivityFlags* activity_flags)
     : max_size_bytes_(max_cache_size_bytes),
       disable_gpu_shader_disk_cache_(disable_gpu_shader_disk_cache),
       disable_program_caching_for_transform_feedback_(
           disable_program_caching_for_transform_feedback),
       curr_size_bytes_(0),
-      store_(ProgramMRUCache::NO_AUTO_EVICT) {
-}
+      store_(ProgramMRUCache::NO_AUTO_EVICT),
+      activity_flags_(activity_flags) {}
 
 MemoryProgramCache::~MemoryProgramCache() {}
 
@@ -263,10 +265,14 @@ ProgramCache::ProgramLoadResult MemoryProgramCache::LoadLinkedProgram(
     return PROGRAM_LOAD_FAILURE;
   }
   const scoped_refptr<ProgramCacheValue> value = found->second;
-  glProgramBinary(program,
-                  value->format(),
-                  static_cast<const GLvoid*>(value->data()),
-                  value->length());
+
+  {
+    GpuProcessActivityFlags::ScopedSetFlag scoped_set_flag(
+        activity_flags_, ActivityFlagsBase::FLAG_LOADING_PROGRAM_BINARY);
+    glProgramBinary(program, value->format(),
+                    static_cast<const GLvoid*>(value->data()), value->length());
+  }
+
   GLint success = 0;
   glGetProgramiv(program, GL_LINK_STATUS, &success);
   if (success == GL_FALSE) {

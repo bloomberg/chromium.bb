@@ -23,6 +23,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/browser_child_process_host_delegate.h"
 #include "content/public/browser/gpu_data_manager.h"
+#include "gpu/command_buffer/common/activity_flags.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/config/gpu_info.h"
@@ -294,6 +295,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   ui::mojom::GpuMainAssociatedPtr gpu_main_ptr_;
   ui::mojom::GpuServicePtr gpu_service_ptr_;
   mojo::Binding<ui::mojom::GpuHost> gpu_host_binding_;
+  gpu::GpuProcessHostActivityFlags activity_flags_;
 
   base::WeakPtrFactory<GpuProcessHost> weak_ptr_factory_;
 

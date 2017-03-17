@@ -100,7 +100,8 @@ class GpuChildThread : public ChildThreadImpl,
   // ui::mojom::GpuMain:
   void CreateGpuService(ui::mojom::GpuServiceRequest request,
                         ui::mojom::GpuHostPtr gpu_host,
-                        const gpu::GpuPreferences& preferences) override;
+                        const gpu::GpuPreferences& preferences,
+                        mojo::ScopedSharedBufferHandle activity_flags) override;
   void CreateDisplayCompositor(
       cc::mojom::DisplayCompositorRequest request,
       cc::mojom::DisplayCompositorClientPtr client) override;

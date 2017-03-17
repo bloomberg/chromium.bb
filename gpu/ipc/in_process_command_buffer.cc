@@ -171,9 +171,9 @@ gpu::gles2::ProgramCache* InProcessCommandBuffer::Service::program_cache() {
         gpu_preferences_.disable_gpu_shader_disk_cache ||
         workarounds.disable_program_disk_cache;
     program_cache_.reset(new gles2::MemoryProgramCache(
-        gpu_preferences_.gpu_program_cache_size,
-        disable_disk_cache,
-        workarounds.disable_program_caching_for_transform_feedback));
+        gpu_preferences_.gpu_program_cache_size, disable_disk_cache,
+        workarounds.disable_program_caching_for_transform_feedback,
+        &activity_flags_));
   }
   return program_cache_.get();
 }

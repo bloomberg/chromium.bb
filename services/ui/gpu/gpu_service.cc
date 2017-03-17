@@ -71,6 +71,7 @@ GpuService::~GpuService() {
 
 void GpuService::InitializeWithHost(mojom::GpuHostPtr gpu_host,
                                     const gpu::GpuPreferences& preferences,
+                                    gpu::GpuProcessActivityFlags activity_flags,
                                     gpu::SyncPointManager* sync_point_manager,
                                     base::WaitableEvent* shutdown_event) {
   DCHECK(CalledOnValidThread());
@@ -99,7 +100,8 @@ void GpuService::InitializeWithHost(mojom::GpuHostPtr gpu_host,
       gpu_preferences_, this, watchdog_thread_.get(),
       base::ThreadTaskRunnerHandle::Get().get(), io_runner_.get(),
       shutdown_event ? shutdown_event : &shutdown_event_, sync_point_manager_,
-      gpu_memory_buffer_factory_, gpu_feature_info_));
+      gpu_memory_buffer_factory_, gpu_feature_info_,
+      std::move(activity_flags)));
 
   media_gpu_channel_manager_.reset(
       new media::MediaGpuChannelManager(gpu_channel_manager_.get()));

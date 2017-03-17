@@ -24,6 +24,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/gpu/content_gpu_client.h"
+#include "gpu/command_buffer/common/activity_flags.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/config/gpu_info_collector.h"
@@ -281,7 +282,8 @@ void GpuChildThread::OnAssociatedInterfaceRequest(
 void GpuChildThread::CreateGpuService(
     ui::mojom::GpuServiceRequest request,
     ui::mojom::GpuHostPtr gpu_host,
-    const gpu::GpuPreferences& gpu_preferences) {
+    const gpu::GpuPreferences& gpu_preferences,
+    mojo::ScopedSharedBufferHandle activity_flags) {
   gpu_service_->Bind(std::move(request));
 
   gpu_info_.video_decode_accelerator_capabilities =
@@ -318,9 +320,10 @@ void GpuChildThread::CreateGpuService(
   // Note SyncPointManager from ContentGpuClient cannot be owned by this.
   if (GetContentClient()->gpu())
     sync_point_manager = GetContentClient()->gpu()->GetSyncPointManager();
-  gpu_service_->InitializeWithHost(std::move(gpu_host), gpu_preferences,
-                                   sync_point_manager,
-                                   ChildProcess::current()->GetShutDownEvent());
+  gpu_service_->InitializeWithHost(
+      std::move(gpu_host), gpu_preferences,
+      gpu::GpuProcessActivityFlags(std::move(activity_flags)),
+      sync_point_manager, ChildProcess::current()->GetShutDownEvent());
   CHECK(gpu_service_->media_gpu_channel_manager());
 
   // Only set once per process instance.

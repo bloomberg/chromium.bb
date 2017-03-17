@@ -496,6 +496,17 @@ void ShaderCacheFactory::ClearByPath(const base::FilePath& path,
   helper_ptr->Clear();
 }
 
+void ShaderCacheFactory::ClearByClientId(int32_t client_id,
+                                         const base::Time& delete_begin,
+                                         const base::Time& delete_end,
+                                         const base::Closure& callback) {
+  DCHECK(CalledOnValidThread());
+  ClientIdToPathMap::iterator iter = client_id_to_path_map_.find(client_id);
+  if (iter == client_id_to_path_map_.end())
+    return;
+  return ClearByPath(iter->second, delete_begin, delete_end, callback);
+}
+
 void ShaderCacheFactory::CacheCleared(const base::FilePath& path) {
   DCHECK(CalledOnValidThread());
 

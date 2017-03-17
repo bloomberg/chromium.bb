@@ -7,6 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "gpu/command_buffer/common/activity_flags.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
 #include "ipc/ipc_test_sink.h"
@@ -59,7 +60,8 @@ TestGpuChannelManager::TestGpuChannelManager(
                         nullptr,
                         sync_point_manager,
                         gpu_memory_buffer_factory,
-                        GpuFeatureInfo()) {}
+                        GpuFeatureInfo(),
+                        GpuProcessActivityFlags()) {}
 
 TestGpuChannelManager::~TestGpuChannelManager() {
   // Clear gpu channels here so that any IPC messages sent are handled using the

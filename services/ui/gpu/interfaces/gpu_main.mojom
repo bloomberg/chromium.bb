@@ -18,5 +18,6 @@ interface GpuMain {
 
   CreateGpuService(GpuService& gpu_service,
                    GpuHost gpu_host,
-                   gpu.mojom.GpuPreferences preferences);
+                   gpu.mojom.GpuPreferences preferences,
+                   handle<shared_buffer>? activity_flags);
 };
