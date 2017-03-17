@@ -323,10 +323,7 @@ int WebViewPermissionHelper::RequestPermission(
     // after creation. This is to allow those same objects to be accessed again
     // in the same scope without fear of use after freeing.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(&PermissionResponseCallback::Run,
-                   base::Owned(new PermissionResponseCallback(callback)),
-                   allowed_by_default, std::string()));
+        FROM_HERE, base::Bind(callback, allowed_by_default, std::string()));
     return webview::kInvalidPermissionRequestID;
   }
 
