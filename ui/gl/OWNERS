@@ -6,4 +6,4 @@ per-file *_ozone*=alexst@chromium.org
 per-file *_ozone*=dnicoara@chromium.org
 per-file *_ozone*=spang@chromium.org
 
-# COMPONENT: Internals>GPU
+# COMPONENT: Internals>GPU>Internals
