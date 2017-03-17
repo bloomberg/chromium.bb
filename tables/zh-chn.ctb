@@ -40,10 +40,10 @@
 include ukmaths_unicode_defs.cti
 
 #punctuation & digital
-punctuation ， 5-
-punctuation 、 6-
-punctuation ； 56-
-punctuation ： 6-3-
+punctuation ， 5-0
+punctuation 、 6-0
+punctuation ； 56-0
+punctuation ： 6-3-0
 punctuation ？ 5-3
 punctuation 。 5-23
 punctuation ！ 56-2
