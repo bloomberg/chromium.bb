@@ -1485,3 +1485,92 @@ drmModeDestroyPropertyBlob(int fd, uint32_t id)
 	destroy.blob_id = id;
 	return DRM_IOCTL(fd, DRM_IOCTL_MODE_DESTROYPROPBLOB, &destroy);
 }
+
+int
+drmModeCreateLease(int fd, const uint32_t *objects, int num_objects, int flags, uint32_t *lessee_id)
+{
+	struct drm_mode_create_lease create;
+	int ret;
+
+	memclear(create);
+	create.object_ids = (uintptr_t) objects;
+	create.object_count = num_objects;
+	create.flags = flags;
+
+	ret = DRM_IOCTL(fd, DRM_IOCTL_MODE_CREATE_LEASE, &create);
+	if (ret == 0) {
+		*lessee_id = create.lessee_id;
+		return create.fd;
+	}
+	return -errno;
+}
+
+drmModeLesseeListPtr
+drmModeListLessees(int fd)
+{
+	struct drm_mode_list_lessees list;
+	uint32_t count;
+	drmModeLesseeListPtr ret;
+
+	memclear(list);
+
+	if (DRM_IOCTL(fd, DRM_IOCTL_MODE_LIST_LESSEES, &list))
+		return NULL;
+
+	count = list.count_lessees;
+	ret = drmMalloc(sizeof (drmModeLesseeListRes) + count * sizeof (ret->lessees[0]));
+	if (!ret)
+		return NULL;
+
+	list.lessees_ptr = VOID2U64(&ret->lessees[0]);
+	if (DRM_IOCTL(fd, DRM_IOCTL_MODE_LIST_LESSEES, &list)) {
+		drmFree(ret);
+		return NULL;
+	}
+
+	ret->count = count;
+	return ret;
+}
+
+drmModeObjectListPtr
+drmModeGetLease(int fd)
+{
+	struct drm_mode_get_lease get;
+	uint32_t count;
+	drmModeObjectListPtr ret;
+
+	memclear(get);
+
+	if (DRM_IOCTL(fd, DRM_IOCTL_MODE_GET_LEASE, &get))
+		return NULL;
+
+	count = get.count_objects;
+	ret = drmMalloc(sizeof (drmModeObjectListRes) + count * sizeof (ret->objects[0]));
+	if (!ret)
+		return NULL;
+
+	get.objects_ptr = VOID2U64(&ret->objects[0]);
+	if (DRM_IOCTL(fd, DRM_IOCTL_MODE_GET_LEASE, &get)) {
+		drmFree(ret);
+		return NULL;
+	}
+
+	ret->count = count;
+	return ret;
+}
+
+int
+drmModeRevokeLease(int fd, uint32_t lessee_id)
+{
+	struct drm_mode_revoke_lease revoke;
+	int ret;
+
+	memclear(revoke);
+
+	revoke.lessee_id = lessee_id;
+
+	ret = DRM_IOCTL(fd, DRM_IOCTL_MODE_REVOKE_LEASE, &revoke);
+	if (ret == 0)
+		return 0;
+	return -errno;
+}
