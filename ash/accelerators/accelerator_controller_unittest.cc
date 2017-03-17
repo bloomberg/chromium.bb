@@ -278,7 +278,7 @@ class AcceleratorControllerTest : public test::AshTestBase {
 };
 
 AcceleratorController* AcceleratorControllerTest::GetController() {
-  return WmShell::Get()->accelerator_controller();
+  return Shell::Get()->accelerator_controller();
 }
 
 // Double press of exit shortcut => exiting

@@ -125,18 +125,6 @@ WmShellMus::WmShellMus(
     session_state_delegate_ = base::MakeUnique<SessionStateDelegateStub>();
   DCHECK(primary_root_window_);
 
-  uint16_t accelerator_namespace_id = 0u;
-  const bool add_result =
-      window_manager->GetNextAcceleratorNamespaceId(&accelerator_namespace_id);
-  // WmShellMus is created early on, so that this should always succeed.
-  DCHECK(add_result);
-  accelerator_controller_delegate_.reset(
-      new AcceleratorControllerDelegateMus(window_manager_));
-  accelerator_controller_registrar_.reset(new AcceleratorControllerRegistrar(
-      window_manager_, accelerator_namespace_id));
-  SetAcceleratorController(base::MakeUnique<AcceleratorController>(
-      accelerator_controller_delegate_.get(),
-      accelerator_controller_registrar_.get()));
   immersive_handler_factory_.reset(new ImmersiveHandlerFactoryMus);
 
   SetKeyboardUI(KeyboardUIMus::Create(window_manager_->connector()));
@@ -395,5 +383,26 @@ void WmShellMus::InitHosts(const ShellInitParams& init_params) {
   window_manager_->CreatePrimaryRootWindowController(
       base::WrapUnique(init_params.primary_window_tree_host));
 }
+
+std::unique_ptr<AcceleratorController>
+WmShellMus::CreateAcceleratorController() {
+  DCHECK(!accelerator_controller_delegate_);
+  uint16_t accelerator_namespace_id = 0u;
+  const bool add_result =
+      window_manager_->GetNextAcceleratorNamespaceId(&accelerator_namespace_id);
+  // WmShellMus is created early on, so that GetNextAcceleratorNamespaceId()
+  // should always succeed.
+  DCHECK(add_result);
+
+  accelerator_controller_delegate_ =
+      base::MakeUnique<AcceleratorControllerDelegateMus>(window_manager_);
+  accelerator_controller_registrar_ =
+      base ::MakeUnique<AcceleratorControllerRegistrar>(
+          window_manager_, accelerator_namespace_id);
+  return base::MakeUnique<AcceleratorController>(
+      accelerator_controller_delegate_.get(),
+      accelerator_controller_registrar_.get());
+}
+
 }  // namespace mus
 }  // namespace ash

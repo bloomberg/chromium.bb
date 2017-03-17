@@ -5,7 +5,6 @@
 #include "ash/common/accelerators/accelerator_controller.h"
 
 #include "ash/common/wm/window_state.h"
-#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/wm/window_state_aura.h"
 #include "build/build_config.h"
@@ -35,7 +34,7 @@ IN_PROC_BROWSER_TEST_F(AcceleratorControllerBrowserTest,
 
   ui::Accelerator accelerator(ui::VKEY_OEM_PLUS, ui::EF_ALT_DOWN);
   ash::AcceleratorController* accelerator_controller =
-      ash::WmShell::Get()->accelerator_controller();
+      ash::Shell::Get()->accelerator_controller();
   ASSERT_TRUE(accelerator_controller->IsRegistered(accelerator));
 
   ash::wm::WindowState* window_state = ash::wm::GetActiveWindowState();

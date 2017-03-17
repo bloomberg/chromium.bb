@@ -88,7 +88,7 @@ class WindowModalityController;
 
 namespace ash {
 
-class AcceleratorControllerDelegateAura;
+class AcceleratorController;
 class AccessibilityDelegate;
 class AppListDelegateImpl;
 class AshNativeCursorManager;
@@ -273,10 +273,9 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   // dialog. If true then changes to display settings can be saved.
   bool ShouldSaveDisplaySettings();
 
-  AcceleratorControllerDelegateAura* accelerator_controller_delegate() {
-    return accelerator_controller_delegate_.get();
+  AcceleratorController* accelerator_controller() {
+    return accelerator_controller_.get();
   }
-
   AccessibilityDelegate* accessibility_delegate() {
     return accessibility_delegate_.get();
   }
@@ -568,11 +567,10 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   std::unique_ptr<::wm::CompoundEventFilter> env_filter_;
 
   std::unique_ptr<UserMetricsRecorder> user_metrics_recorder_;
-  std::unique_ptr<AcceleratorControllerDelegateAura>
-      accelerator_controller_delegate_;
   std::unique_ptr<SessionStateDelegate> session_state_delegate_;
   std::unique_ptr<WindowPositioner> window_positioner_;
 
+  std::unique_ptr<AcceleratorController> accelerator_controller_;
   std::unique_ptr<AccessibilityDelegate> accessibility_delegate_;
   std::unique_ptr<PaletteDelegate> palette_delegate_;
   std::unique_ptr<DragDropController> drag_drop_controller_;

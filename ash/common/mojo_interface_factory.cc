@@ -31,7 +31,7 @@ namespace {
 
 void BindAcceleratorControllerRequestOnMainThread(
     mojom::AcceleratorControllerRequest request) {
-  WmShell::Get()->accelerator_controller()->BindRequest(std::move(request));
+  Shell::Get()->accelerator_controller()->BindRequest(std::move(request));
 }
 
 void BindAppListRequestOnMainThread(app_list::mojom::AppListRequest request) {

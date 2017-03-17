@@ -236,7 +236,7 @@ TEST_F(ImeMenuTrayTest, TestAccelerator) {
   ASSERT_TRUE(IsVisible());
   ASSERT_FALSE(IsTrayBackgroundActive());
 
-  WmShell::Get()->accelerator_controller()->PerformActionIfEnabled(
+  Shell::Get()->accelerator_controller()->PerformActionIfEnabled(
       SHOW_IME_MENU_BUBBLE);
   EXPECT_TRUE(IsTrayBackgroundActive());
   EXPECT_TRUE(IsBubbleShown());

@@ -8,7 +8,6 @@
 #include <string>
 #include <utility>
 
-#include "ash/accelerators/accelerator_controller_delegate_aura.h"
 #include "ash/accelerators/accelerator_delegate.h"
 #include "ash/accelerators/magnifier_key_scroller.h"
 #include "ash/accelerators/spoken_feedback_toggler.h"
@@ -844,13 +843,7 @@ void Shell::Init(const ShellInitParams& init_params) {
         display::Screen::GetScreen()->GetPrimaryDisplay());
   }
 
-  if (!is_mash) {
-    // TODO(sky): move this to WmShell. http://crbug.com/671246.
-    accelerator_controller_delegate_.reset(
-        new AcceleratorControllerDelegateAura);
-    wm_shell_->SetAcceleratorController(base::MakeUnique<AcceleratorController>(
-        accelerator_controller_delegate_.get(), nullptr));
-  }
+  accelerator_controller_ = wm_shell_->CreateAcceleratorController();
   wm_shell_->CreateMaximizeModeController();
 
   if (!is_mash) {
@@ -875,7 +868,7 @@ void Shell::Init(const ShellInitParams& init_params) {
 
   accelerator_filter_.reset(new ::wm::AcceleratorFilter(
       std::unique_ptr<::wm::AcceleratorDelegate>(new AcceleratorDelegate),
-      wm_shell_->accelerator_controller()->accelerator_history()));
+      accelerator_controller_->accelerator_history()));
   AddPreTargetHandler(accelerator_filter_.get());
 
   event_transformation_handler_.reset(new EventTransformationHandler);

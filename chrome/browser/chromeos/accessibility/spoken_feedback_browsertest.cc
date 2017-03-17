@@ -8,7 +8,6 @@
 #include "ash/common/accelerators/accelerator_table.h"
 #include "ash/common/accessibility_types.h"
 #include "ash/common/system/tray/system_tray.h"
-#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -110,7 +109,7 @@ class LoggedInSpokenFeedbackTest : public InProcessBrowserTest {
 
   bool PerformAcceleratorAction(ash::AcceleratorAction action) {
     ash::AcceleratorController* controller =
-        ash::WmShell::Get()->accelerator_controller();
+        ash::Shell::Get()->accelerator_controller();
     return controller->PerformActionIfEnabled(action);
   }
 

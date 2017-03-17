@@ -15,6 +15,7 @@
 
 namespace ash {
 
+class AcceleratorControllerDelegateAura;
 class PointerWatcherAdapter;
 
 class ASH_EXPORT WmShellAura : public WmShell,
@@ -25,6 +26,9 @@ class ASH_EXPORT WmShellAura : public WmShell,
 
   static WmShellAura* Get();
 
+  AcceleratorControllerDelegateAura* accelerator_controller_delegate() {
+    return accelerator_controller_delegate_.get();
+  }
 
   // WmShell:
   void Shutdown() override;
@@ -78,6 +82,7 @@ class ASH_EXPORT WmShellAura : public WmShell,
   void CreatePointerWatcherAdapter() override;
   void CreatePrimaryHost() override;
   void InitHosts(const ShellInitParams& init_params) override;
+  std::unique_ptr<AcceleratorController> CreateAcceleratorController() override;
 
  private:
   // SessionStateObserver:
@@ -91,6 +96,9 @@ class ASH_EXPORT WmShellAura : public WmShell,
 
   bool added_display_observer_ = false;
   base::ObserverList<WmDisplayObserver> display_observers_;
+
+  std::unique_ptr<AcceleratorControllerDelegateAura>
+      accelerator_controller_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(WmShellAura);
 };

@@ -108,6 +108,7 @@ class WmShellMus : public WmShell {
   void CreatePointerWatcherAdapter() override;
   void CreatePrimaryHost() override;
   void InitHosts(const ShellInitParams& init_params) override;
+  std::unique_ptr<AcceleratorController> CreateAcceleratorController() override;
 
  private:
   friend class WmShellMusTestApi;

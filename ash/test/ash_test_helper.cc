@@ -5,6 +5,7 @@
 #include "ash/test/ash_test_helper.h"
 
 #include "ash/accelerators/accelerator_controller_delegate_aura.h"
+#include "ash/aura/wm_shell_aura.h"
 #include "ash/common/test/test_session_state_delegate.h"
 #include "ash/common/test/test_system_tray_delegate.h"
 #include "ash/common/test/wm_shell_test_api.h"
@@ -163,8 +164,10 @@ void AshTestHelper::SetUp(bool start_session) {
     // TODO: disabled for mash as AcceleratorControllerDelegateAura isn't
     // created in mash http://crbug.com/632111.
     test_screenshot_delegate_ = new TestScreenshotDelegate();
-    shell->accelerator_controller_delegate()->SetScreenshotDelegate(
-        std::unique_ptr<ScreenshotDelegate>(test_screenshot_delegate_));
+    WmShellAura::Get()
+        ->accelerator_controller_delegate()
+        ->SetScreenshotDelegate(
+            std::unique_ptr<ScreenshotDelegate>(test_screenshot_delegate_));
   }
 }
 

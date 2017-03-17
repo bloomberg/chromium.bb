@@ -11,6 +11,7 @@
 #include "ash/common/wm/wm_event.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
+#include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_util.h"
 #include "base/stl_util.h"
@@ -159,7 +160,7 @@ TEST_F(ScreenPinningControllerTest, TrustedPinnedWithAccelerator) {
   wm::PinWindow(w1, /* trusted */ true);
   EXPECT_TRUE(WmShell::Get()->IsPinned());
 
-  WmShell::Get()->accelerator_controller()->PerformActionIfEnabled(UNPIN);
+  Shell::Get()->accelerator_controller()->PerformActionIfEnabled(UNPIN);
   // The UNPIN accelerator key is disabled for trusted pinned and the window
   // must be still pinned.
   EXPECT_TRUE(WmShell::Get()->IsPinned());

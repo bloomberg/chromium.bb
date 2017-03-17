@@ -266,11 +266,6 @@ void WmShell::DeleteMruWindowTracker() {
   mru_window_tracker_.reset();
 }
 
-void WmShell::SetAcceleratorController(
-    std::unique_ptr<AcceleratorController> accelerator_controller) {
-  accelerator_controller_ = std::move(accelerator_controller);
-}
-
 void WmShell::SessionStateChanged(session_manager::SessionState state) {
   // Create the shelf when a session becomes active. It's safe to do this
   // multiple times (e.g. initial login vs. multiprofile add session).

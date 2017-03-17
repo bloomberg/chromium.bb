@@ -70,7 +70,7 @@ ui::mojom::EventResult AcceleratorControllerRegistrar::OnAccelerator(
 
   const Ids& ids = iter->second;
   AcceleratorController* accelerator_controller =
-      WmShell::Get()->accelerator_controller();
+      Shell::Get()->accelerator_controller();
   const bool is_pre = GetAcceleratorLocalId(id) == ids.pre_id;
   if (is_pre) {
     // TODO(sky): this does not exactly match ash code. In particular ash code
@@ -93,7 +93,7 @@ ui::mojom::EventResult AcceleratorControllerRegistrar::OnAccelerator(
   }
   DCHECK_EQ(GetAcceleratorLocalId(id), ids.post_id);
   // NOTE: for post return value doesn't really matter.
-  return WmShell::Get()->accelerator_controller()->Process(accelerator)
+  return Shell::Get()->accelerator_controller()->Process(accelerator)
              ? ui::mojom::EventResult::HANDLED
              : ui::mojom::EventResult::UNHANDLED;
 }

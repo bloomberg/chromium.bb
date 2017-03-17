@@ -91,7 +91,7 @@ void PowerButtonController::OnPowerButtonEvent(
     if (system_tray && system_tray->GetTrayAudio())
       system_tray->GetTrayAudio()->HideDetailedView(false);
 
-    WmShell::Get()->accelerator_controller()->PerformActionIfEnabled(
+    Shell::Get()->accelerator_controller()->PerformActionIfEnabled(
         TAKE_SCREENSHOT);
 
     // Restore volume.

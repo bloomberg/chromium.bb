@@ -92,10 +92,6 @@ class ASH_EXPORT WmShell : public SessionStateObserver {
 
   virtual void Shutdown();
 
-  AcceleratorController* accelerator_controller() {
-    return accelerator_controller_.get();
-  }
-
   BrightnessControlDelegate* brightness_control_delegate() {
     return brightness_control_delegate_.get();
   }
@@ -333,6 +329,10 @@ class ASH_EXPORT WmShell : public SessionStateObserver {
   virtual void CreatePrimaryHost() = 0;
   virtual void InitHosts(const ShellInitParams& init_params) = 0;
 
+  // Called during startup to create the AcceleratorController.
+  virtual std::unique_ptr<AcceleratorController>
+  CreateAcceleratorController() = 0;
+
   void SetKeyboardUI(std::unique_ptr<KeyboardUI> keyboard_ui);
 
   // Helpers to set (and initialize) or destroy various delegates.
@@ -350,9 +350,6 @@ class ASH_EXPORT WmShell : public SessionStateObserver {
   void CreateMruWindowTracker();
   void DeleteMruWindowTracker();
 
-  void SetAcceleratorController(
-      std::unique_ptr<AcceleratorController> accelerator_controller);
-
   // SessionStateObserver:
   void SessionStateChanged(session_manager::SessionState state) override;
 
@@ -363,7 +360,6 @@ class ASH_EXPORT WmShell : public SessionStateObserver {
 
   static WmShell* instance_;
 
-  std::unique_ptr<AcceleratorController> accelerator_controller_;
   std::unique_ptr<BrightnessControlDelegate> brightness_control_delegate_;
   std::unique_ptr<CastConfigController> cast_config_;
   std::unique_ptr<FocusCycler> focus_cycler_;

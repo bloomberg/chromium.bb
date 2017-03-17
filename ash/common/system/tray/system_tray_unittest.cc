@@ -15,7 +15,6 @@
 #include "ash/common/system/tray/system_tray_item.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/web_notification/web_notification_tray.h"
-#include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
@@ -226,7 +225,7 @@ TEST_F(SystemTrayTest, Activation) {
 
   // Opening the bubble with an accelerator activates the bubble because the
   // user will probably navigate with the keyboard.
-  WmShell::Get()->accelerator_controller()->PerformActionIfEnabled(
+  Shell::Get()->accelerator_controller()->PerformActionIfEnabled(
       SHOW_SYSTEM_TRAY_BUBBLE);
   ASSERT_TRUE(tray->GetWidget());
   EXPECT_TRUE(tray->GetSystemBubble()->bubble_view()->GetWidget()->IsActive());

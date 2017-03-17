@@ -5,9 +5,9 @@
 #include "chrome/browser/ui/ash/ash_init.h"
 
 #include "ash/accelerators/accelerator_controller_delegate_aura.h"
+#include "ash/aura/wm_shell_aura.h"
 #include "ash/common/accelerators/accelerator_controller.h"
 #include "ash/common/accessibility_types.h"
-#include "ash/common/wm_shell.h"
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
@@ -68,15 +68,17 @@ void OpenAsh(gfx::AcceleratedWidget remote_window) {
   shell_init_params.blocking_pool = content::BrowserThread::GetBlockingPool();
 
   ash::Shell* shell = ash::Shell::CreateInstance(shell_init_params);
-  shell->accelerator_controller_delegate()->SetScreenshotDelegate(
-      std::unique_ptr<ash::ScreenshotDelegate>(new ChromeScreenshotGrabber));
+  ash::WmShellAura::Get()
+      ->accelerator_controller_delegate()
+      ->SetScreenshotDelegate(std::unique_ptr<ash::ScreenshotDelegate>(
+          new ChromeScreenshotGrabber));
   // TODO(flackr): Investigate exposing a blocking pool task runner to chromeos.
   chromeos::AccelerometerReader::GetInstance()->Initialize(
       content::BrowserThread::GetBlockingPool()
           ->GetSequencedTaskRunnerWithShutdownBehavior(
               content::BrowserThread::GetBlockingPool()->GetSequenceToken(),
               base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
-  ash::WmShell::Get()->accelerator_controller()->SetImeControlDelegate(
+  shell->accelerator_controller()->SetImeControlDelegate(
       std::unique_ptr<ash::ImeControlDelegate>(new ImeController));
   shell->high_contrast_controller()->SetEnabled(
       chromeos::AccessibilityManager::Get()->IsHighContrastEnabled());
