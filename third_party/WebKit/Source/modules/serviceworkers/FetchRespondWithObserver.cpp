@@ -99,22 +99,6 @@ const String getMessageForResponseError(WebServiceWorkerResponseError error,
   return errorMessage;
 }
 
-const String getErrorMessageForRedirectedResponseForNavigationRequest(
-    const KURL& requestURL,
-    const Vector<KURL>& responseURLList) {
-  String errorMessage =
-      "In Chrome 59, the navigation to \"" + requestURL.getString() + "\" " +
-      "will result in a network error, because FetchEvent.respondWith() was " +
-      "called with a redirected response. See https://crbug.com/658249. The " +
-      "url list of the response was: [\"" + responseURLList[0].getString() +
-      "\"";
-  for (size_t i = 1; i < responseURLList.size(); ++i) {
-    errorMessage =
-        errorMessage + ", \"" + responseURLList[i].getString() + "\"";
-  }
-  return errorMessage + "]";
-}
-
 bool isNavigationRequest(WebURLRequest::FrameType frameType) {
   return frameType != WebURLRequest::FrameTypeNone;
 }
@@ -213,18 +197,9 @@ void FetchRespondWithObserver::onResponseFulfilled(const ScriptValue& value) {
   }
   if (m_redirectMode != WebURLRequest::FetchRedirectModeFollow &&
       response->redirected()) {
-    if (!isNavigationRequest(m_frameType)) {
-      onResponseRejected(
-          WebServiceWorkerResponseErrorRedirectedResponseForNotFollowRequest);
-      return;
-    }
-    // TODO(horo): We should just reject even if the request was a navigation.
-    // Currently we measure the impact of the restriction with the use counter
-    // in DocumentLoader.
-    getExecutionContext()->addConsoleMessage(ConsoleMessage::create(
-        JSMessageSource, ErrorMessageLevel,
-        getErrorMessageForRedirectedResponseForNavigationRequest(
-            m_requestURL, response->internalURLList())));
+    onResponseRejected(
+        WebServiceWorkerResponseErrorRedirectedResponseForNotFollowRequest);
+    return;
   }
   if (response->isBodyLocked()) {
     onResponseRejected(WebServiceWorkerResponseErrorBodyLocked);
