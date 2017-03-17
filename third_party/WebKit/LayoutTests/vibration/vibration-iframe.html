@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/mojo-helpers.js"></script>
+<script src="resources/vibration-helpers.js"></script>
+<script>
+
+'use strict';
+
+if (!window.testRunner)
+  debug('This test cannot be run without the TestRunner');
+
+// TODO(leonhsl): Add more test cases http://crbug.com/701288
+
+vibration_test(vibration => {
+  let mockForSubFrame = new vibration.MockVibrationManager;
+  let promise = new Promise(resolve => {
+    let iframe = document.createElement('iframe');
+    iframe.src = 'resources/vibrate-from-iframe.html';
+    iframe.onload = () => {
+      iframe.contentWindow.gin.define(
+          'Mojo Service Registry', ['content/public/renderer/frame_interfaces'],
+          (frameInterfaces) => {
+            frameInterfaces.addInterfaceOverrideForTesting(
+                vibration.VibrationManager.name, handle => {
+                  mockForSubFrame.bindingSet.addBinding(
+                      mockForSubFrame, handle);
+                });
+            iframe.contentWindow.postMessage('Ready', '*');
+          });
+    };
+
+    document.body.appendChild(iframe);
+
+    window.onmessage = msg => {
+      if (msg.data === 'Vibrate') {
+        // Navigate the sub frame.
+        iframe.src = 'about:blank';
+      } else if (msg.data === 'Cancel') {
+        // Cancel is triggered by sub frame navigation on above.
+        resolve(msg.data);
+      }
+    };
+  });
+
+  return promise.then(msgData => {
+    assert_equals(msgData, 'Cancel');
+    assert_equals(mockForSubFrame.getDuration(), 1234);
+    assert_true(mockForSubFrame.isCancelled());
+  });
+}, 'Iframe reload cancels vibration started by it before.');
+
+vibration_test(vibration => {
+  let mockForSubFrame = new vibration.MockVibrationManager;
+  let promise = new Promise(resolve => {
+    let iframe = document.createElement('iframe');
+    iframe.src = 'resources/vibrate-from-iframe.html';
+    iframe.onload = () => {
+      iframe.contentWindow.gin.define(
+          'Mojo Service Registry', ['content/public/renderer/frame_interfaces'],
+          (frameInterfaces) => {
+            frameInterfaces.addInterfaceOverrideForTesting(
+                vibration.VibrationManager.name, handle => {
+                  mockForSubFrame.bindingSet.addBinding(
+                      mockForSubFrame, handle);
+                });
+            iframe.contentWindow.postMessage('Ready', '*');
+          });
+    };
+
+    document.body.appendChild(iframe);
+
+    window.onmessage = msg => {
+      if (msg.data === 'Vibrate') {
+        // Destroy the sub frame.
+        document.body.removeChild(iframe);
+      } else if (msg.data === 'Cancel') {
+        // Cancel is triggered by sub frame destroy on above.
+        resolve(msg.data);
+      }
+    };
+  });
+
+  return promise.then(msgData => {
+    assert_equals(msgData, 'Cancel');
+    assert_equals(mockForSubFrame.getDuration(), 1234);
+    assert_true(mockForSubFrame.isCancelled());
+  });
+}, 'Iframe destroy cancels vibration started by it before.');
+
+</script>
