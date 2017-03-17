@@ -33,7 +33,7 @@ namespace keyboard {
 class WindowBoundsChangeObserver;
 
 // An implementation of KeyboardUI that uses a content::WebContents to implement
-//the keyboard.
+// the keyboard.
 class KEYBOARD_EXPORT KeyboardUIContent : public KeyboardUI,
                                           public aura::WindowObserver {
  public:
