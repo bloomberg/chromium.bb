@@ -38,8 +38,7 @@ CategoryInfo MockContentSuggestionsProvider::GetCategoryInfo(
     Category category) {
   return CategoryInfo(base::ASCIIToUTF16("Section title"),
                       ContentSuggestionsCardLayout::FULL_CARD,
-                      /*has_fetch_action=*/true,
-                      /*has_view_all_action=*/true,
+                      ContentSuggestionsAdditionalAction::FETCH,
                       /*show_if_empty=*/false,
                       base::ASCIIToUTF16("No suggestions message"));
 }

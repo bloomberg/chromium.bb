@@ -94,8 +94,7 @@ CategoryInfo RecentTabSuggestionsProvider::GetCategoryInfo(Category category) {
   return CategoryInfo(
       l10n_util::GetStringUTF16(IDS_NTP_RECENT_TAB_SUGGESTIONS_SECTION_HEADER),
       ContentSuggestionsCardLayout::MINIMAL_CARD,
-      /*has_fetch_action=*/false,
-      /*has_view_all_action=*/false,
+      ContentSuggestionsAdditionalAction::NONE,
       /*show_if_empty=*/false,
       l10n_util::GetStringUTF16(IDS_NTP_RECENT_TAB_SUGGESTIONS_SECTION_EMPTY));
 }

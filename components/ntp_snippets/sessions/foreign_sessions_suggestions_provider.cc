@@ -199,8 +199,7 @@ CategoryInfo ForeignSessionsSuggestionsProvider::GetCategoryInfo(
   return CategoryInfo(l10n_util::GetStringUTF16(
                           IDS_NTP_FOREIGN_SESSIONS_SUGGESTIONS_SECTION_HEADER),
                       ContentSuggestionsCardLayout::MINIMAL_CARD,
-                      /*has_fetch_action=*/false,
-                      /*has_view_all_action=*/true,
+                      ContentSuggestionsAdditionalAction::VIEW_ALL,
                       /*show_if_empty=*/false,
                       l10n_util::GetStringUTF16(
                           IDS_NTP_FOREIGN_SESSIONS_SUGGESTIONS_SECTION_EMPTY));

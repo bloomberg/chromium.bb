@@ -433,8 +433,7 @@ TEST_F(ContentSuggestionsServiceTest, ShouldReturnCategoryInfo) {
   const CategoryInfo& actual = result.value();
   EXPECT_THAT(expected.title(), Eq(actual.title()));
   EXPECT_THAT(expected.card_layout(), Eq(actual.card_layout()));
-  EXPECT_THAT(expected.has_fetch_action(), Eq(actual.has_fetch_action()));
-  EXPECT_THAT(expected.has_view_all_action(), Eq(actual.has_view_all_action()));
+  EXPECT_THAT(expected.additional_action(), Eq(actual.additional_action()));
 }
 
 TEST_F(ContentSuggestionsServiceTest,

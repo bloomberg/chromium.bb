@@ -1254,8 +1254,9 @@ void RemoteSuggestionsProviderImpl::StoreCategoriesToPrefs() {
     dict->SetString(kCategoryContentTitle, content.info.title());
     dict->SetBoolean(kCategoryContentProvidedByServer,
                      content.included_in_last_server_response);
-    dict->SetBoolean(kCategoryContentAllowFetchingMore,
-                     content.info.has_fetch_action());
+    bool has_fetch_action = content.info.additional_action() ==
+                            ContentSuggestionsAdditionalAction::FETCH;
+    dict->SetBoolean(kCategoryContentAllowFetchingMore, has_fetch_action);
     list.Append(std::move(dict));
   }
   // Finally, store the result in the pref service.

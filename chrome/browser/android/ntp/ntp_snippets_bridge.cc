@@ -203,8 +203,8 @@ base::android::ScopedJavaLocalRef<jobject> NTPSnippetsBridge::GetCategoryInfo(
   }
   return Java_SnippetsBridge_createSuggestionsCategoryInfo(
       env, j_category_id, ConvertUTF16ToJavaString(env, info->title()),
-      static_cast<int>(info->card_layout()), info->has_fetch_action(),
-      info->has_view_all_action(), info->show_if_empty(),
+      static_cast<int>(info->card_layout()),
+      static_cast<int>(info->additional_action()), info->show_if_empty(),
       ConvertUTF16ToJavaString(env, info->no_suggestions_message()));
 }
 

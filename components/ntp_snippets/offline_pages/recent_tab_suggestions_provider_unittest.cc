@@ -222,11 +222,9 @@ TEST_F(RecentTabSuggestionsProviderTest, ShouldSortByCreationTime) {
 }
 
 TEST_F(RecentTabSuggestionsProviderTest, ShouldDeliverCorrectCategoryInfo) {
-  EXPECT_FALSE(
-      provider()->GetCategoryInfo(recent_tabs_category()).has_fetch_action());
-  EXPECT_FALSE(provider()
-                   ->GetCategoryInfo(recent_tabs_category())
-                   .has_view_all_action());
+  EXPECT_EQ(
+      ContentSuggestionsAdditionalAction::NONE,
+      provider()->GetCategoryInfo(recent_tabs_category()).additional_action());
 }
 
 // TODO(vitaliii): Break this test into multiple tests. Currently if it fails,

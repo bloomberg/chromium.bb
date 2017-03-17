@@ -8,14 +8,12 @@ namespace ntp_snippets {
 
 CategoryInfo::CategoryInfo(const base::string16& title,
                            ContentSuggestionsCardLayout card_layout,
-                           bool has_fetch_action,
-                           bool has_view_all_action,
+                           ContentSuggestionsAdditionalAction additional_action,
                            bool show_if_empty,
                            const base::string16& no_suggestions_message)
     : title_(title),
       card_layout_(card_layout),
-      has_fetch_action_(has_fetch_action),
-      has_view_all_action_(has_view_all_action),
+      additional_action_(additional_action),
       show_if_empty_(show_if_empty),
       no_suggestions_message_(no_suggestions_message) {}
 

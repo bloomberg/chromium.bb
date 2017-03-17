@@ -117,8 +117,7 @@ CategoryInfo PhysicalWebPageSuggestionsProvider::GetCategoryInfo(
   return CategoryInfo(l10n_util::GetStringUTF16(
                           IDS_NTP_PHYSICAL_WEB_PAGE_SUGGESTIONS_SECTION_HEADER),
                       ContentSuggestionsCardLayout::FULL_CARD,
-                      /*has_fetch_action=*/false,
-                      /*has_view_all_action=*/false,
+                      ContentSuggestionsAdditionalAction::NONE,
                       /*show_if_empty=*/false,
                       l10n_util::GetStringUTF16(
                           IDS_NTP_PHYSICAL_WEB_PAGE_SUGGESTIONS_SECTION_EMPTY));

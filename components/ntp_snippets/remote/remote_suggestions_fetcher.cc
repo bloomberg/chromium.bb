@@ -216,18 +216,20 @@ CategoryInfo BuildArticleCategoryInfo(
                         : l10n_util::GetStringUTF16(
                               IDS_NTP_ARTICLE_SUGGESTIONS_SECTION_HEADER),
       ContentSuggestionsCardLayout::FULL_CARD,
-      /*has_fetch_action=*/true,
-      /*has_view_all_action=*/false,
+      ContentSuggestionsAdditionalAction::FETCH,
       /*show_if_empty=*/true,
       l10n_util::GetStringUTF16(IDS_NTP_ARTICLE_SUGGESTIONS_SECTION_EMPTY));
 }
 
 CategoryInfo BuildRemoteCategoryInfo(const base::string16& title,
                                      bool allow_fetching_more_results) {
+  ContentSuggestionsAdditionalAction action =
+      ContentSuggestionsAdditionalAction::NONE;
+  if (allow_fetching_more_results) {
+    action = ContentSuggestionsAdditionalAction::FETCH;
+  }
   return CategoryInfo(
-      title, ContentSuggestionsCardLayout::FULL_CARD,
-      /*has_fetch_action=*/allow_fetching_more_results,
-      /*has_view_all_action=*/false,
+      title, ContentSuggestionsCardLayout::FULL_CARD, action,
       /*show_if_empty=*/false,
       // TODO(tschumann): The message for no-articles is likely wrong
       // and needs to be added to the stubby protocol if we want to

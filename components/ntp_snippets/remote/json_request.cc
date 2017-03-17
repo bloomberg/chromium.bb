@@ -132,32 +132,6 @@ std::string GetUserClassString(UserClassifier::UserClass user_class) {
 
 }  // namespace
 
-CategoryInfo BuildArticleCategoryInfo(
-    const base::Optional<base::string16>& title) {
-  return CategoryInfo(
-      title.has_value() ? title.value()
-                        : l10n_util::GetStringUTF16(
-                              IDS_NTP_ARTICLE_SUGGESTIONS_SECTION_HEADER),
-      ContentSuggestionsCardLayout::FULL_CARD,
-      /*has_fetch_action=*/true,
-      /*has_view_all_action=*/false,
-      /*show_if_empty=*/true,
-      l10n_util::GetStringUTF16(IDS_NTP_ARTICLE_SUGGESTIONS_SECTION_EMPTY));
-}
-
-CategoryInfo BuildRemoteCategoryInfo(const base::string16& title,
-                                     bool allow_fetching_more_results) {
-  return CategoryInfo(
-      title, ContentSuggestionsCardLayout::FULL_CARD,
-      /*has_fetch_action=*/allow_fetching_more_results,
-      /*has_view_all_action=*/false,
-      /*show_if_empty=*/false,
-      // TODO(tschumann): The message for no-articles is likely wrong
-      // and needs to be added to the stubby protocol if we want to
-      // support it.
-      l10n_util::GetStringUTF16(IDS_NTP_ARTICLE_SUGGESTIONS_SECTION_EMPTY));
-}
-
 JsonRequest::JsonRequest(
     base::Optional<Category> exclusive_category,
     base::Clock* clock,  // Needed until destruction of the request.

@@ -9,6 +9,7 @@
 #include "base/optional.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/ntp_snippets/category.h"
+#include "components/ntp_snippets/category_info.h"
 #include "components/ntp_snippets/content_suggestion.h"
 #import "ios/chrome/browser/content_suggestions/content_suggestions_category_wrapper.h"
 #import "ios/chrome/browser/content_suggestions/content_suggestions_service_bridge_observer.h"
@@ -100,7 +101,8 @@ ContentSuggestionsSectionInformation* SectionInformationFromCategoryInfo(
       // TODO(crbug.com/686728): Creates an item to display information when the
       // section is empty.
     }
-    if (categoryInfo->has_fetch_action()) {
+    if (categoryInfo->additional_action() !=
+        ntp_snippets::ContentSuggestionsAdditionalAction::NONE) {
       sectionInfo.footerTitle =
           l10n_util::GetNSString(IDS_IOS_CONTENT_SUGGESTIONS_FOOTER_TITLE);
     }

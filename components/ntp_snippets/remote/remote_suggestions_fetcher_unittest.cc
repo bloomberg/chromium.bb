@@ -119,12 +119,8 @@ MATCHER_P(IsSingleArticle, url, "is a list with the single article %(url)s") {
 }
 
 MATCHER(IsCategoryInfoForArticles, "") {
-  if (!arg.has_fetch_action()) {
-    *result_listener << "missing expected has_fetc_action";
-    return false;
-  }
-  if (arg.has_view_all_action()) {
-    *result_listener << "unexpected has_view_all_action";
+  if (arg.additional_action() != ContentSuggestionsAdditionalAction::FETCH) {
+    *result_listener << "missing expected FETCH action";
     return false;
   }
   if (!arg.show_if_empty()) {
@@ -674,8 +670,8 @@ TEST_F(RemoteSuggestionsSignedOutFetcherTest, ServerCategories) {
     } else if (category.category == Category::FromRemoteCategory(2)) {
       ASSERT_THAT(articles.size(), Eq(1u));
       EXPECT_THAT(articles[0]->url().spec(), Eq("http://localhost/foo2"));
-      EXPECT_THAT(category.info.has_fetch_action(), Eq(true));
-      EXPECT_THAT(category.info.has_view_all_action(), Eq(false));
+      EXPECT_THAT(category.info.additional_action(),
+                  Eq(ContentSuggestionsAdditionalAction::FETCH));
       EXPECT_THAT(category.info.show_if_empty(), Eq(false));
     } else {
       FAIL() << "unknown category ID " << category.category.id();
@@ -726,7 +722,8 @@ TEST_F(RemoteSuggestionsSignedOutFetcherTest,
 
   ASSERT_TRUE(fetched_categories);
   ASSERT_THAT(fetched_categories->size(), Eq(1u));
-  EXPECT_THAT(fetched_categories->front().info.has_fetch_action(), Eq(false));
+  EXPECT_THAT(fetched_categories->front().info.additional_action(),
+              Eq(ContentSuggestionsAdditionalAction::NONE));
   EXPECT_THAT(fetched_categories->front().info.title(),
               Eq(base::UTF8ToUTF16("Articles for Me")));
 }
