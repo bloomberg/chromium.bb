@@ -874,6 +874,8 @@ test("ui_base_unittests") {
 
   if (is_ios) {
     deps += [ "//ui/resources:ui_test_pak_bundle_data" ]
+  } else {
+    deps += [ "//ui/base/accelerators/mojo:unittests" ]
   }
 
   if (is_win) {
