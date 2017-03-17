@@ -85,8 +85,6 @@ void MessageReader::HandleReadResult(int result, bool* read_succeeded) {
   } else if (result == net::ERR_IO_PENDING) {
     read_pending_ = true;
   } else {
-    DCHECK_LT(result, 0);
-
     // Stop reading after any error.
     closed_ = true;
     *read_succeeded = false;

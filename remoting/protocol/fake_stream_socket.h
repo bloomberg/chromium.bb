@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "net/base/completion_callback.h"
 #include "remoting/protocol/p2p_stream_socket.h"
 #include "remoting/protocol/stream_channel_factory.h"
@@ -55,7 +56,7 @@ class FakeStreamSocket : public P2PStreamSocket {
 
   // Causes Read() to fail with |error| once the read buffer is exhausted. If
   // there is a currently pending Read, it is interrupted.
-  void AppendReadError(int error);
+  void SetReadError(int error);
 
   // Pairs the socket with |peer_socket|. Deleting either of the paired sockets
   // unpairs them.
@@ -85,7 +86,7 @@ class FakeStreamSocket : public P2PStreamSocket {
   int write_limit_ = 0;
   int next_write_error_ = 0;
 
-  int next_read_error_ = 0;
+  base::Optional<int> next_read_error_;
   scoped_refptr<net::IOBuffer> read_buffer_;
   int read_buffer_size_ = 0;
   net::CompletionCallback read_callback_;

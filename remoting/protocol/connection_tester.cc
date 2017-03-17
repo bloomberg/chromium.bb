@@ -260,44 +260,74 @@ void DatagramConnectionTester::HandleReadResult(int result) {
   }
 }
 
+class MessagePipeConnectionTester::MessageSender
+    : public MessagePipe::EventHandler {
+ public:
+  MessageSender(MessagePipe* pipe, int message_size, int message_count)
+      : pipe_(pipe),
+        message_size_(message_size),
+        message_count_(message_count) {}
+
+  void Start() { pipe_->Start(this); }
+
+  const std::vector<std::unique_ptr<VideoPacket>>& sent_messages() {
+    return sent_messages_;
+  }
+
+  // MessagePipe::EventHandler interface.
+  void OnMessagePipeOpen() override {
+    for (int i = 0; i < message_count_; ++i) {
+      std::unique_ptr<VideoPacket> message(new VideoPacket());
+      message->mutable_data()->resize(message_size_);
+      for (int p = 0; p < message_size_; ++p) {
+        message->mutable_data()[0] = static_cast<char>(i + p);
+      }
+      pipe_->Send(message.get(), base::Closure());
+      sent_messages_.push_back(std::move(message));
+    }
+  }
+  void OnMessageReceived(std::unique_ptr<CompoundBuffer> message) override {
+    NOTREACHED();
+  }
+  void OnMessagePipeClosed() override { NOTREACHED(); }
+
+ private:
+  MessagePipe* pipe_;
+  int message_size_;
+  int message_count_;
+
+  std::vector<std::unique_ptr<VideoPacket>> sent_messages_;
+};
+
 MessagePipeConnectionTester::MessagePipeConnectionTester(
-    MessagePipe* client_pipe,
     MessagePipe* host_pipe,
+    MessagePipe* client_pipe,
     int message_size,
     int message_count)
-    : host_pipe_(host_pipe),
-      client_pipe_(client_pipe),
-      message_size_(message_size),
-      message_count_(message_count) {}
+    : client_pipe_(client_pipe),
+      sender_(new MessageSender(host_pipe, message_size, message_count)) {}
+
 MessagePipeConnectionTester::~MessagePipeConnectionTester() {}
 
 void MessagePipeConnectionTester::RunAndCheckResults() {
-  host_pipe_->Start(this);
-}
-
-void MessagePipeConnectionTester::OnMessagePipeOpen() {
-  for (int i = 0; i < message_count_; ++i) {
-    std::unique_ptr<VideoPacket> message(new VideoPacket());
-    message->mutable_data()->resize(message_size_);
-    for (int p = 0; p < message_size_; ++p) {
-      message->mutable_data()[0] = static_cast<char>(i + p);
-    }
-    client_pipe_->Send(message.get(), base::Closure());
-    sent_messages_.push_back(std::move(message));
-  }
+  sender_->Start();
+  client_pipe_->Start(this);
 
   run_loop_.Run();
 
-  ASSERT_EQ(sent_messages_.size(), received_messages_.size());
-  for (size_t i = 0; i < sent_messages_.size(); ++i) {
-    EXPECT_TRUE(sent_messages_[i]->data() == received_messages_[i]->data());
+  ASSERT_EQ(sender_->sent_messages().size(), received_messages_.size());
+  for (size_t i = 0; i < sender_->sent_messages().size(); ++i) {
+    EXPECT_TRUE(sender_->sent_messages()[i]->data() ==
+                received_messages_[i]->data());
   }
 }
+
+void MessagePipeConnectionTester::OnMessagePipeOpen() {}
 
 void MessagePipeConnectionTester::OnMessageReceived(
     std::unique_ptr<CompoundBuffer> message) {
   received_messages_.push_back(ParseMessage<VideoPacket>(message.get()));
-  if (received_messages_.size() >= sent_messages_.size()) {
+  if (received_messages_.size() >= sender_->sent_messages().size()) {
     run_loop_.Quit();
   }
 }

@@ -77,11 +77,18 @@ void FakeSession::Close(ErrorCode error) {
   error_ = error;
   event_handler_->OnSessionStateChange(CLOSED);
 
-  FakeSession* peer = peer_.get();
+  base::WeakPtr<FakeSession> peer = peer_;
   if (peer) {
     peer->peer_.reset();
     peer_.reset();
-    peer->Close(error);
+
+    if (signaling_delay_.is_zero()) {
+      peer->Close(error);
+    } else {
+      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+          FROM_HERE, base::Bind(&FakeSession::Close, peer, error),
+          signaling_delay_);
+    }
   }
 }
 

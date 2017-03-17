@@ -26,7 +26,7 @@ FakeStreamSocket::~FakeStreamSocket() {
   EXPECT_TRUE(task_runner_->BelongsToCurrentThread());
   if (peer_socket_) {
     task_runner_->PostTask(
-        FROM_HERE, base::Bind(&FakeStreamSocket::AppendReadError, peer_socket_,
+        FROM_HERE, base::Bind(&FakeStreamSocket::SetReadError, peer_socket_,
                               net::ERR_CONNECTION_CLOSED));
   }
 }
@@ -48,7 +48,7 @@ void FakeStreamSocket::AppendInputData(const std::string& data) {
   }
 }
 
-void FakeStreamSocket::AppendReadError(int error) {
+void FakeStreamSocket::SetReadError(int error) {
   EXPECT_TRUE(task_runner_->BelongsToCurrentThread());
   // Complete pending read if any.
   if (!read_callback_.is_null()) {
@@ -79,9 +79,9 @@ int FakeStreamSocket::Read(const scoped_refptr<net::IOBuffer>& buf,
     memcpy(buf->data(), &(*input_data_.begin()) + input_pos_, result);
     input_pos_ += result;
     return result;
-  } else if (next_read_error_ != net::OK) {
-    int r = next_read_error_;
-    next_read_error_ = net::OK;
+  } else if (next_read_error_.has_value()) {
+    int r = next_read_error_.value();
+    next_read_error_.reset();
     return r;
   } else {
     read_buffer_ = buf;

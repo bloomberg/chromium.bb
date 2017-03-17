@@ -22,27 +22,31 @@ namespace protocol {
 StreamMessagePipeAdapter::StreamMessagePipeAdapter(
     std::unique_ptr<P2PStreamSocket> socket,
     const ErrorCallback& error_callback)
-    : socket_(std::move(socket)),
-      error_callback_(error_callback),
-      writer_(new BufferedSocketWriter()) {
+    : socket_(std::move(socket)), error_callback_(error_callback) {
   DCHECK(socket_);
-  DCHECK(!error_callback_.is_null());
-
-  writer_->Start(
-      base::Bind(&P2PStreamSocket::Write, base::Unretained(socket_.get())),
-      base::Bind(&StreamMessagePipeAdapter::CloseOnError,
-                 base::Unretained(this)));
+  DCHECK(error_callback_);
 }
 
 StreamMessagePipeAdapter::~StreamMessagePipeAdapter() {}
 
 void StreamMessagePipeAdapter::Start(EventHandler* event_handler) {
-  reader_.StartReading(socket_.get(),
-                       base::Bind(&EventHandler::OnMessageReceived,
-                                  base::Unretained(event_handler)),
-                       base::Bind(&StreamMessagePipeAdapter::CloseOnError,
-                                  base::Unretained(this)));
-  event_handler->OnMessagePipeOpen();
+  DCHECK(event_handler);
+  event_handler_ = event_handler;
+
+  writer_ = base::MakeUnique<BufferedSocketWriter>();
+  writer_->Start(
+      base::Bind(&P2PStreamSocket::Write, base::Unretained(socket_.get())),
+      base::Bind(&StreamMessagePipeAdapter::CloseOnError,
+                 base::Unretained(this)));
+
+  reader_ = base::MakeUnique<MessageReader>();
+  reader_->StartReading(socket_.get(),
+                        base::Bind(&EventHandler::OnMessageReceived,
+                                   base::Unretained(event_handler_)),
+                        base::Bind(&StreamMessagePipeAdapter::CloseOnError,
+                                   base::Unretained(this)));
+
+  event_handler_->OnMessagePipeOpen();
 }
 
 void StreamMessagePipeAdapter::Send(google::protobuf::MessageLite* message,
@@ -52,11 +56,15 @@ void StreamMessagePipeAdapter::Send(google::protobuf::MessageLite* message,
 }
 
 void StreamMessagePipeAdapter::CloseOnError(int error) {
-  // Stop writing on error.
+  // Stop reading and writing on error.
   writer_.reset();
+  reader_.reset();
 
-  if (!error_callback_.is_null())
+  if (error == 0) {
+    event_handler_->OnMessagePipeClosed();
+  } else if (error_callback_) {
     base::ResetAndReturn(&error_callback_).Run(error);
+  }
 }
 
 StreamMessageChannelFactoryAdapter::StreamMessageChannelFactoryAdapter(

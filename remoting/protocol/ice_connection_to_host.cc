@@ -175,8 +175,7 @@ void IceConnectionToHost::OnChannelInitialized(
 
 void IceConnectionToHost::OnChannelClosed(
     ChannelDispatcherBase* channel_dispatcher) {
-  // ICE transport doesn't close channels dynamically.
-  NOTREACHED();
+  session_->Close(OK);
 }
 
 void IceConnectionToHost::OnVideoChannelStatus(bool active) {

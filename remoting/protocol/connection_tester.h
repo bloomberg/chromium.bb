@@ -111,8 +111,8 @@ class DatagramConnectionTester {
 
 class MessagePipeConnectionTester : public MessagePipe::EventHandler {
  public:
-  MessagePipeConnectionTester(MessagePipe* client_pipe,
-                              MessagePipe* host_pipe,
+  MessagePipeConnectionTester(MessagePipe* host_pipe,
+                              MessagePipe* client_pipe,
                               int message_size,
                               int message_count);
   ~MessagePipeConnectionTester() override;
@@ -126,13 +126,13 @@ class MessagePipeConnectionTester : public MessagePipe::EventHandler {
   void OnMessagePipeClosed() override;
 
  private:
-  base::RunLoop run_loop_;
-  MessagePipe* host_pipe_;
-  MessagePipe* client_pipe_;
-  int message_size_;
-  int message_count_;
+  class MessageSender;
 
-  std::vector<std::unique_ptr<VideoPacket>> sent_messages_;
+  base::RunLoop run_loop_;
+  MessagePipe* client_pipe_;
+
+  std::unique_ptr<MessageSender> sender_;
+
   std::vector<std::unique_ptr<VideoPacket>> received_messages_;
 };
 

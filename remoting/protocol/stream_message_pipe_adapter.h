@@ -19,7 +19,7 @@ class P2PStreamSocket;
 class StreamChannelFactory;
 
 // MessagePipe implementation that sends and receives messages over a
-// P2PStreamChannel.
+// P2PStreamSocket.
 class StreamMessagePipeAdapter : public MessagePipe {
  public:
   typedef base::Callback<void(int)> ErrorCallback;
@@ -36,10 +36,12 @@ class StreamMessagePipeAdapter : public MessagePipe {
  private:
   void CloseOnError(int error);
 
+  EventHandler* event_handler_ = nullptr;
+
   std::unique_ptr<P2PStreamSocket> socket_;
   ErrorCallback error_callback_;
 
-  MessageReader reader_;
+  std::unique_ptr<MessageReader> reader_;
   std::unique_ptr<BufferedSocketWriter> writer_;
 
   DISALLOW_COPY_AND_ASSIGN(StreamMessagePipeAdapter);

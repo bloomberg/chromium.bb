@@ -189,7 +189,6 @@ void IceConnectionToClient::OnIceTransportRouteChange(
 
 void IceConnectionToClient::OnIceTransportError(ErrorCode error) {
   DCHECK(thread_checker_.CalledOnValidThread());
-
   Disconnect(error);
 }
 
@@ -202,8 +201,8 @@ void IceConnectionToClient::OnChannelInitialized(
 
 void IceConnectionToClient::OnChannelClosed(
     ChannelDispatcherBase* channel_dispatcher) {
-  // ICE transport doesn't close channels dynamically.
-  NOTREACHED();
+  DCHECK(thread_checker_.CalledOnValidThread());
+  Disconnect(OK);
 }
 
 void IceConnectionToClient::NotifyIfChannelsReady() {
