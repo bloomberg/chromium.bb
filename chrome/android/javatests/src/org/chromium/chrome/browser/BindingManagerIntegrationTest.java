@@ -158,6 +158,8 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
     private static final String ABOUT_VERSION_PATH = "chrome://version/";
     private static final String SHARED_RENDERER_PAGE_PATH =
             "/chrome/test/data/android/bindingmanager/shared_renderer1.html";
+    private static final String SHARED_RENDERER_PAGE2_PATH =
+            "/chrome/test/data/android/bindingmanager/shared_renderer2.html";
 
     public BindingManagerIntegrationTest() {
         super(ChromeActivity.class);
@@ -348,17 +350,17 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
     @Feature({"ProcessManagement"})
     public void testCrashInForeground() throws InterruptedException {
         // Create a tab in foreground and wait until it is loaded.
+        final String testUrl = mTestServer.getURL(FILE_PATH);
         final Tab tab = ThreadUtils.runOnUiThreadBlockingNoException(
                 new Callable<Tab>() {
                     @Override
                     public Tab call() throws Exception {
                         TabCreator tabCreator = getActivity().getCurrentTabCreator();
                         return tabCreator.createNewTab(
-                                new LoadUrlParams(mTestServer.getURL(FILE_PATH)),
-                                        TabLaunchType.FROM_CHROME_UI, null);
+                                new LoadUrlParams(testUrl), TabLaunchType.FROM_CHROME_UI, null);
                     }
                 });
-        ChromeTabUtils.waitForTabPageLoaded(tab, mTestServer.getURL(FILE_PATH));
+        ChromeTabUtils.waitForTabPageLoaded(tab, testUrl);
         getInstrumentation().waitForIdleSync();
 
         // Kill the renderer and wait for the crash to be noted by the browser process.
@@ -380,6 +382,8 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
                 tab.reload();
             }
         });
+
+        ChromeTabUtils.waitForTabPageLoaded(tab, testUrl);
 
         // Wait until the process is spawned and its visibility is determined.
         CriteriaHelper.pollInstrumentationThread(
@@ -592,6 +596,9 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
                 tabs[1].reload();
             }
         });
+
+        ChromeTabUtils.waitForTabPageLoaded(
+                tabs[1], mTestServer.getURL(SHARED_RENDERER_PAGE2_PATH));
 
         // Wait until the process is spawned and its visibility is determined.
         CriteriaHelper.pollInstrumentationThread(
