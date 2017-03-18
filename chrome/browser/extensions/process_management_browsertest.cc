@@ -6,16 +6,19 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_process_policy.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -389,4 +392,69 @@ IN_PROC_BROWSER_TEST_F(ChromeWebStoreProcessTest,
 
   // Verify that Chrome Web Store is isolated in a separate renderer process.
   EXPECT_NE(old_process_host, new_process_host);
+}
+
+// This test verifies that blocked navigations to extensions pages do not
+// overwrite process-per-site map inside content/.
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest,
+                       NavigateToBlockedExtensionPageInNewTab) {
+  host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Load an extension, which will block a request for a specific page in it.
+  const extensions::Extension* extension = LoadExtension(
+      test_data_dir_.AppendASCII("web_request_site_process_registration"));
+  ASSERT_TRUE(extension);
+
+  WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  GURL blocked_url(extension->GetResourceURL("/blocked.html"));
+
+  // Navigating to the blocked extension URL should be done through a redirect,
+  // otherwise it will result in an OpenURL IPC from the renderer process, which
+  // will initiate a navigation through the browser process.
+  GURL redirect_url(
+      embedded_test_server()->GetURL("/server-redirect?" + blocked_url.spec()));
+
+  // Navigate the current tab to the test page in the extension, which will
+  // create the extension process and register the webRequest blocking listener.
+  ui_test_utils::NavigateToURL(browser(),
+                               extension->GetResourceURL("/test.html"));
+
+  // Open a new tab to about:blank, which will result in a new SiteInstance
+  // without an explicit site URL set.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), GURL(url::kAboutBlankURL),
+      WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  WebContents* new_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Navigate the new tab to an extension URL that will be blocked by
+  // webRequest. It must be a renderer-initiated navigation. It also uses a
+  // redirect, otherwise the regular renderer process will send an OpenURL
+  // IPC to the browser due to the chrome-extension:// URL.
+  std::string script =
+      base::StringPrintf("location.href = '%s';", redirect_url.spec().c_str());
+  content::TestNavigationObserver observer(new_web_contents);
+  EXPECT_TRUE(content::ExecuteScript(new_web_contents, script));
+  observer.Wait();
+
+  EXPECT_EQ(observer.last_navigation_url(), blocked_url);
+  EXPECT_FALSE(observer.last_navigation_succeeded());
+
+  // Very subtle check for content/ internal functionality :(.
+  // When a navigation is blocked, it still commits an error page. Since
+  // extensions use the process-per-site model, each extension URL is registered
+  // in a map from URL to a process. Creating a brand new SiteInstance for the
+  // extension URL should always result in a SiteInstance that has a process and
+  // the process is the same for all SiteInstances. This allows us to verify
+  // that the site-to-process map for the extension hasn't been overwritten by
+  // the process of the |blocked_url|.
+  scoped_refptr<content::SiteInstance> new_site_instance =
+      content::SiteInstance::CreateForURL(web_contents->GetBrowserContext(),
+                                          extension->GetResourceURL(""));
+  EXPECT_TRUE(new_site_instance->HasProcess());
+  EXPECT_EQ(new_site_instance->GetProcess(),
+            web_contents->GetSiteInstance()->GetProcess());
 }

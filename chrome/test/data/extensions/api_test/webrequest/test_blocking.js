@@ -36,6 +36,40 @@ runTests([
   // Navigates to a page with subresources, with a blocking handler that
   // cancels the page request. The page will not load, and we should not
   // see the subresources.
+  function complexLoadCancelled() {
+    expect(
+      [  // events
+        { label: "onBeforeRequest",
+          event: "onBeforeRequest",
+          details: {
+            type: "main_frame",
+            url: getURL("complexLoad/b.html"),
+            frameUrl: getURL("complexLoad/b.html")
+          },
+          retval: {cancel: true}
+        },
+        // Cancelling is considered an error.
+        { label: "onErrorOccurred",
+          event: "onErrorOccurred",
+          details: {
+            url: getURL("complexLoad/b.html"),
+            fromCache: false,
+            error: "net::ERR_BLOCKED_BY_CLIENT"
+            // Request to chrome-extension:// url has no IP.
+          }
+        },
+      ],
+      [  // event order
+        ["onBeforeRequest", "onErrorOccurred"]
+      ],
+      {urls: ["<all_urls>"]},  // filter
+      ["blocking"]);
+    navigateAndWait(getURL("complexLoad/b.html"));
+  },
+
+  // Navigates to a page with subresources, with a blocking handler that
+  // cancels the page request. The page will not load, and we should not
+  // see the subresources.
   function simpleLoadCancelledOnReceiveHeaders() {
     expect(
       [  // events
@@ -89,43 +123,6 @@ runTests([
       {urls: ["<all_urls>"]},  // filter
       ["blocking"]);
     navigateAndWait(getURLHttpSimpleLoad());
-  },
-
-  // Navigates to a page with subresources, with a blocking handler that
-  // cancels the page request. The page will not load, and we should not
-  // see the subresources.
-  // TODO(nasko): This test was reordered in order to accommodate an
-  // unrelated failure (https://crbug.com/700514). Once that failure is fixed,
-  // the reordering should be reverted.
-  function complexLoadCancelled() {
-    expect(
-      [  // events
-        { label: "onBeforeRequest",
-          event: "onBeforeRequest",
-          details: {
-            type: "main_frame",
-            url: getURL("complexLoad/b.html"),
-            frameUrl: getURL("complexLoad/b.html")
-          },
-          retval: {cancel: true}
-        },
-        // Cancelling is considered an error.
-        { label: "onErrorOccurred",
-          event: "onErrorOccurred",
-          details: {
-            url: getURL("complexLoad/b.html"),
-            fromCache: false,
-            error: "net::ERR_BLOCKED_BY_CLIENT"
-            // Request to chrome-extension:// url has no IP.
-          }
-        },
-      ],
-      [  // event order
-        ["onBeforeRequest", "onErrorOccurred"]
-      ],
-      {urls: ["<all_urls>"]},  // filter
-      ["blocking"]);
-    navigateAndWait(getURL("complexLoad/b.html"));
   },
 
   // Navigates to a page and provides invalid header information. The request
