@@ -2526,6 +2526,8 @@ crbug.com/664844 media/track/track-cue-rendering-tree-is-removed-properly.html [
 crbug.com/664844 media/track/track-default-attribute.html [ Pass Failure ]
 crbug.com/664844 media/track/track-kind-user-preference.html [ Pass Failure ]
 
+crbug.com/702837 fast/text/aat-morx.html [ Skip ]
+
 crbug.com/688670 media/track/track-cue-rendering-after-controls-removed.html [ Pass Failure ]
 
 # Possible duplicate of crbug.com/665577
