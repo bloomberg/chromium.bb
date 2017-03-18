@@ -11,9 +11,7 @@
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_item_view.h"
 #include "ash/common/wm_shell.h"
-#include "ash/resources/grit/ash_resources.h"
 #include "ash/resources/vector_icons/vector_icons.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/image_view.h"
 
@@ -26,11 +24,8 @@ class MultiProfileMediaTrayView : public TrayItemView,
   explicit MultiProfileMediaTrayView(SystemTrayItem* system_tray_item)
       : TrayItemView(system_tray_item) {
     CreateImageView();
-    ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
     image_view()->SetImage(
-        UseMd()
-            ? gfx::CreateVectorIcon(kSystemTrayRecordingIcon, kTrayIconColor)
-            : *bundle.GetImageSkiaNamed(IDR_AURA_UBER_TRAY_RECORDING));
+        gfx::CreateVectorIcon(kSystemTrayRecordingIcon, kTrayIconColor));
     WmShell::Get()->media_controller()->AddObserver(this);
     SetVisible(false);
     WmShell::Get()->media_controller()->RequestCaptureState();

@@ -50,8 +50,6 @@ class ASH_EXPORT TrayItemView : public views::View,
   int GetHeightForWidth(int width) const override;
 
  protected:
-  static bool UseMd();
-
   // The default animation duration is 200ms. But each view can customize this.
   virtual int GetAnimationDurationMS();
 

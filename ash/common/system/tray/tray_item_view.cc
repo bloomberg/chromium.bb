@@ -4,7 +4,6 @@
 
 #include "ash/common/system/tray/tray_item_view.h"
 
-#include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/system_tray_item.h"
@@ -17,16 +16,16 @@
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
 
+namespace ash {
+
 namespace {
-const int kTrayIconHeight = 29;
-const int kTrayIconWidth = 29;
+
 const int kTrayItemAnimationDurationMS = 200;
 
 // Animations can be disabled for testing.
 bool animations_enabled = true;
-}
 
-namespace ash {
+}  // namespace
 
 TrayItemView::TrayItemView(SystemTrayItem* owner)
     : owner_(owner), label_(NULL), image_view_(NULL) {
@@ -77,32 +76,18 @@ void TrayItemView::SetVisible(bool set_visible) {
   }
 }
 
-// static
-bool TrayItemView::UseMd() {
-  return MaterialDesignController::UseMaterialDesignSystemIcons();
-}
-
 int TrayItemView::GetAnimationDurationMS() {
   return kTrayItemAnimationDurationMS;
 }
 
 gfx::Size TrayItemView::GetPreferredSize() const {
   DCHECK_EQ(1, child_count());
-  gfx::Size size;
-  if (UseMd()) {
-    gfx::Size inner_size = views::View::GetPreferredSize();
-    if (image_view_)
-      inner_size = gfx::Size(kTrayIconSize, kTrayIconSize);
-    gfx::Rect rect(inner_size);
-    rect.Inset(gfx::Insets(-kTrayImageItemPadding));
-    size = rect.size();
-  } else {
-    size = views::View::GetPreferredSize();
-    if (IsHorizontalAlignment(owner()->system_tray()->shelf_alignment()))
-      size.set_height(kTrayIconHeight);
-    else
-      size.set_width(kTrayIconWidth);
-  }
+  gfx::Size inner_size = views::View::GetPreferredSize();
+  if (image_view_)
+    inner_size = gfx::Size(kTrayIconSize, kTrayIconSize);
+  gfx::Rect rect(inner_size);
+  rect.Inset(gfx::Insets(-kTrayImageItemPadding));
+  gfx::Size size = rect.size();
   if (!animation_.get() || !animation_->is_animating())
     return size;
   if (IsHorizontalAlignment(owner()->system_tray()->shelf_alignment())) {
