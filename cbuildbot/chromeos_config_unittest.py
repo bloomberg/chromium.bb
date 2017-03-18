@@ -254,17 +254,19 @@ class CBuildBotTest(ChromeosConfigTestBase):
   def testMasterSlaveConfigsExist(self):
     """Configs listing slave configs, must list valid configs."""
     for config in self.site_config.itervalues():
-      if config.slave_configs is not None:
-
+      if config.master:
         # Any builder with slaves must set both of these.
         self.assertTrue(config.master)
         self.assertTrue(config.manifest_version)
+        self.assertIsNotNone(config.slave_configs)
 
         # If a builder lists slave config names, ensure they are all valid, and
         # have an assigned waterfall.
         for slave_name in config.slave_configs:
           self.assertIn(slave_name, self.site_config)
           self.assertTrue(self.site_config[slave_name].active_waterfall)
+      else:
+        self.assertIsNone(config.slave_configs)
 
   def testMasterSlaveConfigsSorted(self):
     """Configs listing slave configs, must list valid configs."""
@@ -273,26 +275,6 @@ class CBuildBotTest(ChromeosConfigTestBase):
         expected = sorted(config.slave_configs)
 
         self.assertEqual(config.slave_configs, expected)
-
-  def testExplicitImplicitSlavesMatch(self):
-    """Make sure the explicit slave list matches implicit."""
-    # TODO(dgarrett): Delete this test, when we remove the heuristic from
-    # config_lib.GetSlaveConfigMapForMaster.
-    self.maxDiff = None
-
-    for config in self.site_config.itervalues():
-      if config.slave_configs is not None:
-        master_config = config.deepcopy()
-        master_config.slave_configs = None
-        slaves = self.site_config.GetSlaveConfigMapForMaster(
-            master_config, important_only=False)
-
-        if not config.slave_configs and list(slaves.keys()) == [config.name]:
-          # The implicit logic lists the master as a slave, if there are no
-          # slaves.
-          continue
-
-        self.assertItemsEqual(config.slave_configs, slaves.keys())
 
   def testConfigUseflags(self):
     """Useflags must be lists.

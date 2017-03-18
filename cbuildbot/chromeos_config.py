@@ -680,20 +680,8 @@ _waterfall_config_map = {
     ]),
 
     constants.WATERFALL_INTERNAL: frozenset([
-        # Experimental Paladins.
-        'fizz-paladin',
-        'gale-paladin',
-        'kip-paladin',
-        'loonix-paladin',
-        'poppy-paladin',
-        'scarlet-paladin',
-        'whirlwind-paladin',
-
         # Firmware Builders.
         'link-depthcharge-full-firmware',
-
-        # Experimental PFQs
-        'reef-chrome-pfq',
     ]),
 }
 

@@ -137,6 +137,7 @@ class MasterSlaveSyncCompletionStageMockConfigTest(
         boards=[],
         build_type=self.build_type,
         master=True,
+        slave_configs=['test3', 'test5'],
         manifest_version=True,
         active_waterfall=constants.WATERFALL_INTERNAL,
     )

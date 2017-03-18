@@ -1207,33 +1207,16 @@ class SiteConfig(dict):
     """
     assert master_config.manifest_version
     assert master_config.master
+    assert master_config.slave_configs is not None
 
     slave_name_config_map = {}
     if options is not None and options.remote_trybot:
       return {}
 
-    if master_config.slave_configs is not None:
-      # Look up the build configs for all slaves named by the master.
-      slave_name_config_map = {
-          name: self[name] for name in master_config.slave_configs
-      }
-
-    else:
-      # TODO(dgarrett): Delete the following heuristic, after all master/slave
-      # groups are updated to be explicit.
-
-      # TODO(davidjames): In CIDB the master isn't considered a slave of itself,
-      # so we probably shouldn't consider it a slave here either.
-      for build_config_name, build_config in self.iteritems():
-        if not build_config.active_waterfall:
-          continue
-
-        if (build_config['manifest_version'] and
-            (not build_config['master'] or build_config['boards']) and
-            build_config['build_type'] == master_config['build_type'] and
-            build_config['chrome_rev'] == master_config['chrome_rev'] and
-            build_config['branch'] == master_config['branch']):
-          slave_name_config_map[build_config_name] = build_config
+    # Look up the build configs for all slaves named by the master.
+    slave_name_config_map = {
+        name: self[name] for name in master_config.slave_configs
+    }
 
     if important_only:
       # Remove unimportant configs from the result.
