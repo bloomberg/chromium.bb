@@ -91,7 +91,6 @@ ServiceWorkerGlobalScopeProxy::~ServiceWorkerGlobalScopeProxy() {
 DEFINE_TRACE(ServiceWorkerGlobalScopeProxy) {
   visitor->trace(m_document);
   visitor->trace(m_parentFrameTaskRunners);
-  visitor->trace(m_pendingPreloadFetchEvents);
 }
 
 void ServiceWorkerGlobalScopeProxy::setRegistration(

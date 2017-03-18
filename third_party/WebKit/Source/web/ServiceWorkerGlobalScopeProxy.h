@@ -166,7 +166,15 @@ class ServiceWorkerGlobalScopeProxy final
 
   Member<ParentFrameTaskRunners> m_parentFrameTaskRunners;
 
-  HeapHashMap<int, Member<FetchEvent>> m_pendingPreloadFetchEvents;
+  // The worker thread uses this map to track |FetchEvent|s created
+  // on the worker thread (heap.) But as the proxy object is created
+  // on the main thread & its heap, we must use a cross-heap reference
+  // to each |FetchEvent| so as to obey the "per-thread heap rule" that
+  // a heap should only have per-thread heap references. Keeping a
+  // cross-heap reference requires the use of a CrossThreadPersistent<>
+  // to remain safe and sound.
+  //
+  HashMap<int, CrossThreadPersistent<FetchEvent>> m_pendingPreloadFetchEvents;
 
   WebServiceWorkerContextClient* m_client;
 
