@@ -542,9 +542,6 @@ typedef struct AV1_COMP {
   int zeromv_mode_cost[ZEROMV_MODE_CONTEXTS][2];
   int refmv_mode_cost[REFMV_MODE_CONTEXTS][2];
   int drl_mode_cost0[DRL_MODE_CONTEXTS][2];
-#if CONFIG_EXT_INTER
-  int new2mv_mode_cost[2];
-#endif  // CONFIG_EXT_INTER
 #endif
 
   unsigned int inter_mode_cost[INTER_MODE_CONTEXTS][INTER_MODES];

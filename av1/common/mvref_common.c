@@ -48,12 +48,7 @@ static uint8_t add_ref_mv_candidate(
           ref_mv_stack[index].weight = 2 * len;
           ++(*refmv_count);
 
-#if CONFIG_EXT_INTER
-          if (candidate->mode == NEWMV || candidate->mode == NEWFROMNEARMV)
-#else
-          if (candidate->mode == NEWMV)
-#endif  // CONFIG_EXT_INTER
-            ++newmv_count;
+          if (candidate->mode == NEWMV) ++newmv_count;
         }
 
         if (candidate_mi->mbmi.sb_type < BLOCK_8X8 && block >= 0 &&
@@ -76,12 +71,7 @@ static uint8_t add_ref_mv_candidate(
             ref_mv_stack[index].weight = len;
             ++(*refmv_count);
 
-#if CONFIG_EXT_INTER
-            if (candidate->mode == NEWMV || candidate->mode == NEWFROMNEARMV)
-#else
-            if (candidate->mode == NEWMV)
-#endif  // CONFIG_EXT_INTER
-              ++newmv_count;
+            if (candidate->mode == NEWMV) ++newmv_count;
           }
         }
       }

@@ -169,11 +169,7 @@ static INTERINTRA_MODE read_interintra_mode(AV1_COMMON *cm, MACROBLOCKD *xd,
 #endif  // CONFIG_EXT_INTER
 
 static PREDICTION_MODE read_inter_mode(FRAME_CONTEXT *ec_ctx, MACROBLOCKD *xd,
-#if CONFIG_REF_MV && CONFIG_EXT_INTER
-                                       MB_MODE_INFO *mbmi,
-#endif
                                        aom_reader *r, int16_t ctx) {
-
 #if CONFIG_REF_MV
   FRAME_COUNTS *counts = xd->counts;
   int16_t mode_ctx = ctx & NEWMV_CTX_MASK;
@@ -181,23 +177,7 @@ static PREDICTION_MODE read_inter_mode(FRAME_CONTEXT *ec_ctx, MACROBLOCKD *xd,
 
   if (aom_read(r, mode_prob, ACCT_STR) == 0) {
     if (counts) ++counts->newmv_mode[mode_ctx][0];
-
-#if CONFIG_EXT_INTER
-    if (has_second_ref(mbmi)) {
-#endif  // CONFIG_EXT_INTER
-      return NEWMV;
-#if CONFIG_EXT_INTER
-    } else {
-      mode_prob = ec_ctx->new2mv_prob;
-      if (aom_read(r, mode_prob, ACCT_STR) == 0) {
-        if (counts) ++counts->new2mv_mode[0];
-        return NEWMV;
-      } else {
-        if (counts) ++counts->new2mv_mode[1];
-        return NEWFROMNEARMV;
-      }
-    }
-#endif  // CONFIG_EXT_INTER
+    return NEWMV;
   }
   if (counts) ++counts->newmv_mode[mode_ctx][1];
 
@@ -1365,9 +1345,6 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
   (void)bsize;
 
   switch (mode) {
-#if CONFIG_EXT_INTER
-    case NEWFROMNEARMV:
-#endif  // CONFIG_EXT_INTER
     case NEWMV: {
       FRAME_COUNTS *counts = xd->counts;
 #if !CONFIG_REF_MV
@@ -1628,9 +1605,6 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   const int unify_bsize = CONFIG_CB4X4;
   int_mv nearestmv[2], nearmv[2];
   int_mv ref_mvs[MODE_CTX_REF_FRAMES][MAX_MV_REF_CANDIDATES];
-#if CONFIG_EXT_INTER
-  int mv_idx;
-#endif  // CONFIG_EXT_INTER
   int ref, is_compound;
   int16_t inter_mode_ctx[MODE_CTX_REF_FRAMES];
 #if CONFIG_REF_MV && CONFIG_EXT_INTER
@@ -1734,11 +1708,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
         mbmi->mode = read_inter_compound_mode(cm, xd, r, mode_ctx);
       else
 #endif  // CONFIG_EXT_INTER
-        mbmi->mode = read_inter_mode(ec_ctx, xd,
-#if CONFIG_REF_MV && CONFIG_EXT_INTER
-                                     mbmi,
-#endif  // CONFIG_REF_MV && CONFIG_EXT_INTER
-                                     r, mode_ctx);
+        mbmi->mode = read_inter_mode(ec_ctx, xd, r, mode_ctx);
 #if CONFIG_REF_MV
 #if CONFIG_EXT_INTER
       if (mbmi->mode == NEARMV || mbmi->mode == NEAR_NEARMV ||
@@ -1859,15 +1829,9 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
           b_mode = read_inter_compound_mode(cm, xd, r, mode_ctx);
         else
 #endif  // CONFIG_EXT_INTER
-          b_mode = read_inter_mode(ec_ctx, xd,
-#if CONFIG_REF_MV && CONFIG_EXT_INTER
-                                   mbmi,
-#endif  // CONFIG_REF_MV && CONFIG_EXT_INTER
-                                   r, mode_ctx);
+          b_mode = read_inter_mode(ec_ctx, xd, r, mode_ctx);
 
 #if CONFIG_EXT_INTER
-        mv_idx = (b_mode == NEWFROMNEARMV) ? 1 : 0;
-
         if (b_mode != ZEROMV && b_mode != ZERO_ZEROMV) {
 #else
         if (b_mode != ZEROMV) {
@@ -1917,8 +1881,8 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 
         if (!assign_mv(cm, xd, b_mode, mbmi->ref_frame, j, block,
 #if CONFIG_EXT_INTER
-                       ref_mv[mv_idx],
-#else
+                       ref_mv[0],
+#else   // !CONFIG_EXT_INTER
                        ref_mv_s8,
 #endif  // CONFIG_EXT_INTER
                        nearest_sub8x8, near_sub8x8, mi_row, mi_col, is_compound,
@@ -1971,12 +1935,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
     }
 
     int mv_corrupted_flag =
-        !assign_mv(cm, xd, mbmi->mode, mbmi->ref_frame, 0, mbmi->mv,
-#if CONFIG_EXT_INTER
-                   mbmi->mode == NEWFROMNEARMV ? nearmv : nearestmv,
-#else
-                   ref_mv,
-#endif  // CONFIG_EXT_INTER
+        !assign_mv(cm, xd, mbmi->mode, mbmi->ref_frame, 0, mbmi->mv, ref_mv,
                    nearestmv, nearmv, mi_row, mi_col, is_compound, allow_hp, r);
     aom_merge_corrupted_flag(&xd->corrupted, mv_corrupted_flag);
   }

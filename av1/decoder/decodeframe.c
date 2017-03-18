@@ -188,9 +188,6 @@ static void read_inter_mode_probs(FRAME_CONTEXT *fc, aom_reader *r) {
     av1_diff_update_prob(r, &fc->refmv_prob[i], ACCT_STR);
   for (i = 0; i < DRL_MODE_CONTEXTS; ++i)
     av1_diff_update_prob(r, &fc->drl_prob[i], ACCT_STR);
-#if CONFIG_EXT_INTER
-  av1_diff_update_prob(r, &fc->new2mv_prob, ACCT_STR);
-#endif  // CONFIG_EXT_INTER
 #else
 #if !CONFIG_EC_ADAPT
   int i, j;

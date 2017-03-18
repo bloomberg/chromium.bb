@@ -457,10 +457,6 @@ void av1_initialize_rd_consts(AV1_COMP *cpi) {
         cpi->drl_mode_cost0[i][0] = av1_cost_bit(cm->fc->drl_prob[i], 0);
         cpi->drl_mode_cost0[i][1] = av1_cost_bit(cm->fc->drl_prob[i], 1);
       }
-#if CONFIG_EXT_INTER
-      cpi->new2mv_mode_cost[0] = av1_cost_bit(cm->fc->new2mv_prob, 0);
-      cpi->new2mv_mode_cost[1] = av1_cost_bit(cm->fc->new2mv_prob, 1);
-#endif  // CONFIG_EXT_INTER
 #else
       for (i = 0; i < INTER_MODE_CONTEXTS; ++i)
         av1_cost_tokens((int *)cpi->inter_mode_cost[i],
@@ -929,17 +925,6 @@ void av1_set_rd_speed_thresholds(AV1_COMP *cpi) {
 #endif  // CONFIG_EXT_REFS
   rd->thresh_mult[THR_NEARA] += 1000;
   rd->thresh_mult[THR_NEARG] += 1000;
-
-#if CONFIG_EXT_INTER
-  rd->thresh_mult[THR_NEWFROMNEARMV] += 1000;
-#if CONFIG_EXT_REFS
-  rd->thresh_mult[THR_NEWFROMNEARL2] += 1000;
-  rd->thresh_mult[THR_NEWFROMNEARL3] += 1000;
-  rd->thresh_mult[THR_NEWFROMNEARB] += 1000;
-#endif  // CONFIG_EXT_REFS
-  rd->thresh_mult[THR_NEWFROMNEARA] += 1000;
-  rd->thresh_mult[THR_NEWFROMNEARG] += 1000;
-#endif  // CONFIG_EXT_INTER
 
   rd->thresh_mult[THR_ZEROMV] += 2000;
 #if CONFIG_EXT_REFS

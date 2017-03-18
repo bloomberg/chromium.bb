@@ -240,26 +240,15 @@ static void write_interintra_mode(aom_writer *w, INTERINTRA_MODE mode,
 #endif  // CONFIG_EXT_INTER
 
 static void write_inter_mode(aom_writer *w, PREDICTION_MODE mode,
-                             FRAME_CONTEXT *ec_ctx,
-#if CONFIG_REF_MV && CONFIG_EXT_INTER
-                             int is_compound,
-#endif  // CONFIG_REF_MV && CONFIG_EXT_INTER
-                             const int16_t mode_ctx) {
+                             FRAME_CONTEXT *ec_ctx, const int16_t mode_ctx) {
 #if CONFIG_REF_MV
   const int16_t newmv_ctx = mode_ctx & NEWMV_CTX_MASK;
   const aom_prob newmv_prob = ec_ctx->newmv_prob[newmv_ctx];
-#if CONFIG_EXT_INTER
-  aom_write(w, mode != NEWMV && mode != NEWFROMNEARMV, newmv_prob);
 
-  if (!is_compound && (mode == NEWMV || mode == NEWFROMNEARMV))
-    aom_write(w, mode == NEWFROMNEARMV, ec_ctx->new2mv_prob);
+#define IS_NEWMV_MODE(mode) ((mode) == NEWMV)
+  aom_write(w, !IS_NEWMV_MODE(mode), newmv_prob);
 
-  if (mode != NEWMV && mode != NEWFROMNEARMV) {
-#else
-  aom_write(w, mode != NEWMV, newmv_prob);
-
-  if (mode != NEWMV) {
-#endif  // CONFIG_EXT_INTER
+  if (!IS_NEWMV_MODE(mode)) {
     const int16_t zeromv_ctx = (mode_ctx >> ZEROMV_OFFSET) & ZEROMV_CTX_MASK;
     const aom_prob zeromv_prob = ec_ctx->zeromv_prob[zeromv_ctx];
 
@@ -282,7 +271,10 @@ static void write_inter_mode(aom_writer *w, PREDICTION_MODE mode,
       aom_write(w, mode != NEARESTMV, refmv_prob);
     }
   }
-#else
+
+#undef IS_NEWMV_MODE
+
+#else  // !CONFIG_REF_MV
   assert(is_inter_mode(mode));
 #if CONFIG_EC_MULTISYMBOL
   aom_write_symbol(w, av1_inter_mode_ind[INTER_OFFSET(mode)],
@@ -520,10 +512,6 @@ static void update_inter_mode_probs(AV1_COMMON *cm, aom_writer *w,
   for (i = 0; i < DRL_MODE_CONTEXTS; ++i)
     av1_cond_prob_diff_update(w, &cm->fc->drl_prob[i], counts->drl_mode[i],
                               probwt);
-#if CONFIG_EXT_INTER
-  av1_cond_prob_diff_update(w, &cm->fc->new2mv_prob, counts->new2mv_mode,
-                            probwt);
-#endif  // CONFIG_EXT_INTER
 }
 #endif
 
@@ -1734,11 +1722,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
           write_inter_compound_mode(cm, w, mode, mode_ctx);
         else if (is_inter_singleref_mode(mode))
 #endif  // CONFIG_EXT_INTER
-          write_inter_mode(w, mode, ec_ctx,
-#if CONFIG_REF_MV && CONFIG_EXT_INTER
-                           is_compound,
-#endif  // CONFIG_REF_MV && CONFIG_EXT_INTER
-                           mode_ctx);
+          write_inter_mode(w, mode, ec_ctx, mode_ctx);
 
 #if CONFIG_REF_MV
 #if CONFIG_EXT_INTER
@@ -1778,15 +1762,10 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
             write_inter_compound_mode(cm, w, b_mode, mode_ctx);
           else if (is_inter_singleref_mode(b_mode))
 #endif  // CONFIG_EXT_INTER
-            write_inter_mode(w, b_mode, ec_ctx,
-#if CONFIG_REF_MV && CONFIG_EXT_INTER
-                             has_second_ref(mbmi),
-#endif  // CONFIG_REF_MV && CONFIG_EXT_INTER
-                             mode_ctx);
+            write_inter_mode(w, b_mode, ec_ctx, mode_ctx);
 
 #if CONFIG_EXT_INTER
-          if (b_mode == NEWMV || b_mode == NEWFROMNEARMV ||
-              b_mode == NEW_NEWMV) {
+          if (b_mode == NEWMV || b_mode == NEW_NEWMV) {
 #else
           if (b_mode == NEWMV) {
 #endif  // CONFIG_EXT_INTER
@@ -1838,7 +1817,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
       }
     } else {
 #if CONFIG_EXT_INTER
-      if (mode == NEWMV || mode == NEWFROMNEARMV || mode == NEW_NEWMV) {
+      if (mode == NEWMV || mode == NEW_NEWMV) {
 #else
       if (mode == NEWMV) {
 #endif  // CONFIG_EXT_INTER
@@ -1852,15 +1831,8 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
           nmv_context *nmvc = &ec_ctx->nmvc[nmv_ctx];
 #endif
           ref_mv = mbmi_ext->ref_mvs[mbmi->ref_frame[ref]][0];
-#if CONFIG_EXT_INTER
-          if (mode == NEWFROMNEARMV)
-            av1_encode_mv(cpi, w, &mbmi->mv[ref].as_mv,
-                          &mbmi_ext->ref_mvs[mbmi->ref_frame[ref]][1].as_mv,
-                          nmvc, allow_hp);
-          else
-#endif  // CONFIG_EXT_INTER
-            av1_encode_mv(cpi, w, &mbmi->mv[ref].as_mv, &ref_mv.as_mv, nmvc,
-                          allow_hp);
+          av1_encode_mv(cpi, w, &mbmi->mv[ref].as_mv, &ref_mv.as_mv, nmvc,
+                        allow_hp);
         }
 #if CONFIG_EXT_INTER
       } else if (mode == NEAREST_NEWMV || mode == NEAR_NEWMV) {
