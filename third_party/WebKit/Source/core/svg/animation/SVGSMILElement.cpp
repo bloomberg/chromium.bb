@@ -558,8 +558,6 @@ void SVGSMILElement::svgAttributeChanged(const QualifiedName& attrName) {
     // is changed.
     SVGElement::InvalidationGuard invalidationGuard(this);
     buildPendingResource();
-    if (m_targetElement)
-      clearAnimatedType();
   } else {
     SVGElement::svgAttributeChanged(attrName);
     return;
@@ -604,13 +602,11 @@ void SVGSMILElement::disconnectEventBaseConditions() {
 }
 
 void SVGSMILElement::setTargetElement(SVGElement* target) {
-  unscheduleIfScheduled();
+  willChangeAnimationTarget();
 
-  if (m_targetElement) {
-    // Clear values that may depend on the previous target.
-    clearAnimatedType();
+  // Clear values that may depend on the previous target.
+  if (m_targetElement)
     disconnectSyncBaseConditions();
-  }
 
   // If the animation state is not Inactive, always reset to a clear state
   // before leaving the old target element.
@@ -618,7 +614,7 @@ void SVGSMILElement::setTargetElement(SVGElement* target) {
     endedActiveInterval();
 
   m_targetElement = target;
-  schedule();
+  didChangeAnimationTarget();
 }
 
 SMILTime SVGSMILElement::elapsed() const {
@@ -1250,24 +1246,21 @@ bool SVGSMILElement::hasValidTarget() {
   return targetElement() && targetElement()->inActiveDocument();
 }
 
-void SVGSMILElement::schedule() {
-  DCHECK(!m_isScheduled);
-
-  if (!m_timeContainer || !hasValidTarget())
-    return;
-
-  m_timeContainer->schedule(this, m_targetElement, m_attributeName);
-  m_isScheduled = true;
-}
-
-void SVGSMILElement::unscheduleIfScheduled() {
+void SVGSMILElement::willChangeAnimationTarget() {
   if (!m_isScheduled)
     return;
-
   DCHECK(m_timeContainer);
   DCHECK(m_targetElement);
   m_timeContainer->unschedule(this, m_targetElement, m_attributeName);
   m_isScheduled = false;
+}
+
+void SVGSMILElement::didChangeAnimationTarget() {
+  DCHECK(!m_isScheduled);
+  if (!m_timeContainer || !hasValidTarget())
+    return;
+  m_timeContainer->schedule(this, m_targetElement, m_attributeName);
+  m_isScheduled = true;
 }
 
 DEFINE_TRACE(SVGSMILElement) {

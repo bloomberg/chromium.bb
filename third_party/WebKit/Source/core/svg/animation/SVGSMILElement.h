@@ -137,11 +137,11 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
 
   void setInactive() { m_activeState = Inactive; }
 
-  // Sub-classes may need to take action when the target is changed.
-  virtual void setTargetElement(SVGElement*);
+  void setTargetElement(SVGElement*);
 
-  void schedule();
-  void unscheduleIfScheduled();
+  // Sub-classes may need to take action when the target is changed.
+  virtual void willChangeAnimationTarget();
+  virtual void didChangeAnimationTarget();
 
   QualifiedName m_attributeName;
 

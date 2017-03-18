@@ -105,8 +105,7 @@ SVGAnimateElement::SVGAnimateElement(const QualifiedName& tagName,
       m_cssPropertyId(CSSPropertyInvalid),
       m_fromPropertyValueType(RegularPropertyValue),
       m_toPropertyValueType(RegularPropertyValue),
-      m_attributeType(AttributeTypeAuto),
-      m_hasInvalidCSSAttributeType(false) {}
+      m_attributeType(AttributeTypeAuto) {}
 
 SVGAnimateElement* SVGAnimateElement::create(Document& document) {
   return new SVGAnimateElement(SVGNames::animateTag, document);
@@ -214,30 +213,23 @@ AnimatedPropertyType SVGAnimateElement::animatedPropertyType() {
 bool SVGAnimateElement::hasValidTarget() {
   if (!SVGAnimationElement::hasValidTarget())
     return false;
-  if (!hasValidAttributeName())
+  if (attributeName() == anyQName())
     return false;
   resolveTargetProperty();
-  return m_type != AnimatedUnknown && !m_hasInvalidCSSAttributeType;
-}
-
-bool SVGAnimateElement::hasValidAttributeName() const {
-  return attributeName() != anyQName();
+  if (m_type == AnimatedUnknown)
+    return false;
+  // Always animate CSS properties using the ApplyCSSAnimation code path,
+  // regardless of the attributeType value.
+  // If attributeType="CSS" and attributeName doesn't point to a CSS property,
+  // ignore the animation.
+  return isTargetAttributeCSSProperty(*targetElement(), attributeName()) ||
+         getAttributeType() != AttributeTypeCSS;
 }
 
 bool SVGAnimateElement::shouldApplyAnimation(
     const SVGElement& targetElement,
     const QualifiedName& attributeName) {
-  if (!hasValidTarget() || !targetElement.parentNode())
-    return false;
-
-  // Always animate CSS properties using the ApplyCSSAnimation code path,
-  // regardless of the attributeType value.
-  if (isTargetAttributeCSSProperty(targetElement, attributeName))
-    return true;
-
-  // If attributeType="CSS" and attributeName doesn't point to a CSS property,
-  // ignore the animation.
-  return getAttributeType() != AttributeTypeCSS;
+  return targetElement.parentNode() && hasValidTarget();
 }
 
 SVGPropertyBase* SVGAnimateElement::createPropertyForAttributeAnimation(
@@ -557,51 +549,32 @@ float SVGAnimateElement::calculateDistance(const String& fromString,
   return fromValue->calculateDistance(toValue, targetElement());
 }
 
-void SVGAnimateElement::setTargetElement(SVGElement* target) {
-  SVGAnimationElement::setTargetElement(target);
-  checkInvalidCSSAttributeType();
+void SVGAnimateElement::willChangeAnimationTarget() {
+  SVGAnimationElement::willChangeAnimationTarget();
+  if (targetElement())
+    clearAnimatedType();
+}
+
+void SVGAnimateElement::didChangeAnimationTarget() {
+  SVGAnimationElement::didChangeAnimationTarget();
   resetAnimatedPropertyType();
 }
 
 void SVGAnimateElement::setAttributeName(const QualifiedName& attributeName) {
-  unscheduleIfScheduled();
-  if (targetElement())
-    clearAnimatedType();
+  willChangeAnimationTarget();
   m_attributeName = attributeName;
-  schedule();
-  checkInvalidCSSAttributeType();
-  resetAnimatedPropertyType();
+  didChangeAnimationTarget();
 }
 
 void SVGAnimateElement::setAttributeType(const AtomicString& attributeType) {
+  willChangeAnimationTarget();
   if (attributeType == "CSS")
     m_attributeType = AttributeTypeCSS;
   else if (attributeType == "XML")
     m_attributeType = AttributeTypeXML;
   else
     m_attributeType = AttributeTypeAuto;
-  checkInvalidCSSAttributeType();
-}
-
-void SVGAnimateElement::checkInvalidCSSAttributeType() {
-  bool hasInvalidCSSAttributeType =
-      targetElement() && hasValidAttributeName() &&
-      getAttributeType() == AttributeTypeCSS &&
-      !isTargetAttributeCSSProperty(*targetElement(), attributeName());
-
-  if (hasInvalidCSSAttributeType != m_hasInvalidCSSAttributeType) {
-    if (hasInvalidCSSAttributeType)
-      unscheduleIfScheduled();
-
-    m_hasInvalidCSSAttributeType = hasInvalidCSSAttributeType;
-
-    if (!hasInvalidCSSAttributeType)
-      schedule();
-  }
-
-  // Clear values that may depend on the previous target.
-  if (targetElement())
-    clearAnimatedType();
+  didChangeAnimationTarget();
 }
 
 void SVGAnimateElement::resetAnimatedPropertyType() {
