@@ -3211,20 +3211,6 @@ def ApplyCustomOverrides(site_config, ge_build_config):
           'useflags': [],
       },
 
-      'beaglebone-paladin': {
-          'chrome_sdk': False,
-          'image_test': False,
-          'rootfs_verification': False,
-          'sync_chrome': False,
-      },
-
-      'beaglebone_servo-paladin': {
-          'chrome_sdk': False,
-          'image_test': False,
-          'rootfs_verification': False,
-          'sync_chrome': False,
-      },
-
       'lakitu-pre-cq':
           site_config.templates.lakitu_test_customizations,
 
@@ -3238,16 +3224,6 @@ def ApplyCustomOverrides(site_config, ge_build_config):
       'smaug-release' : {
           'paygen': False,
           'sign_types':['nv_lp0_firmware'],
-      },
-
-      # Move beaglebone-release to GCE until we're smart enough to put
-      # everything there that doesn't use VM Tests.
-      'beaglebone-release': {
-          'buildslave_type': constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
-      },
-
-      'beaglebone_servo-release': {
-          'buildslave_type': constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
       },
 
       'whirlwind-release': {
