@@ -1074,8 +1074,6 @@ def GeneralTemplates(site_config, ge_build_config):
       chrome_sdk=False,
       afdo_use=False,
       dev_installer_prebuilts=False,
-      vm_tests=[],
-      vm_tests_override=None,
       hw_tests=[],
   )
 
@@ -1098,6 +1096,7 @@ def GeneralTemplates(site_config, ge_build_config):
       'lakitu_test_customizations',
       vm_tests=[config_lib.VMTestConfig(constants.SMOKE_SUITE_TEST_TYPE),
                 config_lib.VMTestConfig(constants.SIMPLE_AU_TEST_TYPE)],
+      vm_tests_override=None,
       gce_tests=[config_lib.GCETestConfig(constants.GCE_SANITY_TEST_TYPE),
                  config_lib.GCETestConfig(constants.GCE_SMOKE_TEST_TYPE)],
   )
@@ -2345,27 +2344,15 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       customizations.update(prebuilts=constants.PUBLIC)
 
     if board in _lakitu_boards:
-      # Note: Because |customizations| precedes |base_config|, it will be
-      # overridden by |base_config|. So we have to append lakitu
-      # customizations after |base_config| is applied.
-      # TODO(crbug.com/553749)
-      # Also, I can't do
-      # `lakitu_test_customizations if xxx else None` because the Add function
-      # doesn't allow optional args to be None.
-      site_config.Add(
-          config_name,
-          site_config.templates.paladin,
-          customizations,
-          base_config,
-          site_config.templates.lakitu_paladin_test_customizations,
-      )
-    else:
-      site_config.Add(
-          config_name,
-          site_config.templates.paladin,
-          customizations,
-          base_config,
-      )
+      customizations.update(
+          site_config.templates.lakitu_paladin_test_customizations)
+
+    site_config.Add(
+        config_name,
+        site_config.templates.paladin,
+        customizations,
+        base_config,
+    )
 
   #
   # Paladins with alternative configs.

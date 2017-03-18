@@ -12539,6 +12539,7 @@
         "boards": [
             "lakitu"
         ],
+        "buildslave_type": "baremetal",
         "chrome_sdk": false,
         "disk_layout": "base",
         "factory": false,
@@ -12546,14 +12547,14 @@
         "factory_toolkit": false,
         "important": false,
         "manifest": "official.xml",
-        "sync_chrome": false,
-        "vm_tests": []
+        "sync_chrome": false
     },
     "lakitu-chromium-pfq": {
         "_template": "chromium_pfq",
         "boards": [
             "lakitu"
         ],
+        "buildslave_type": "baremetal",
         "chrome_sdk": false,
         "disk_layout": "base",
         "factory": false,
@@ -12563,8 +12564,7 @@
         "sync_chrome": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "lakitu-compile-only-pre-cq": {
         "_template": "compile_only_pre_cq",
@@ -12590,6 +12590,7 @@
         "boards": [
             "lakitu"
         ],
+        "buildslave_type": "baremetal",
         "chrome_sdk": false,
         "disk_layout": "base",
         "factory": false,
@@ -12605,14 +12606,14 @@
         "sync_chrome": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "lakitu-gpu-chrome-pfq": {
         "_template": "chrome_pfq",
         "boards": [
             "lakitu-gpu"
         ],
+        "buildslave_type": "baremetal",
         "chrome_sdk": false,
         "disk_layout": "base",
         "factory": false,
@@ -12620,14 +12621,14 @@
         "factory_toolkit": false,
         "important": false,
         "manifest": "official.xml",
-        "sync_chrome": false,
-        "vm_tests": []
+        "sync_chrome": false
     },
     "lakitu-gpu-chromium-pfq": {
         "_template": "chromium_pfq",
         "boards": [
             "lakitu-gpu"
         ],
+        "buildslave_type": "baremetal",
         "chrome_sdk": false,
         "disk_layout": "base",
         "factory": false,
@@ -12637,8 +12638,7 @@
         "sync_chrome": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "lakitu-gpu-compile-only-pre-cq": {
         "_template": "compile_only_pre_cq",
@@ -12664,6 +12664,7 @@
         "boards": [
             "lakitu-gpu"
         ],
+        "buildslave_type": "baremetal",
         "chrome_sdk": false,
         "disk_layout": "base",
         "factory": false,
@@ -12679,8 +12680,7 @@
         "sync_chrome": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "lakitu-gpu-incremental": {
         "_template": "incremental",
@@ -12759,8 +12759,7 @@
         "vm_tests": [
             "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
             "{\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
-        ],
-        "vm_tests_override": null
+        ]
     },
     "lakitu-gpu-payloads": {
         "_template": "payloads",
@@ -12840,19 +12839,20 @@
         "boards": [
             "lakitu-gpu"
         ],
+        "buildslave_type": "baremetal",
         "disk_layout": "base",
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
         "manifest": "official.xml",
-        "sync_chrome": false,
-        "vm_tests": []
+        "sync_chrome": false
     },
     "lakitu-gpu-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
             "lakitu-gpu"
         ],
+        "buildslave_type": "baremetal",
         "disk_layout": "base",
         "factory": false,
         "factory_install_netboot": false,
@@ -12860,8 +12860,7 @@
         "sync_chrome": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "lakitu-gpu-unittest-stress": {
         "_template": "unittest_stress",
@@ -12958,8 +12957,7 @@
         "vm_tests": [
             "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
             "{\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
-        ],
-        "vm_tests_override": null
+        ]
     },
     "lakitu-payloads": {
         "_template": "payloads",
@@ -13041,19 +13039,20 @@
         "boards": [
             "lakitu"
         ],
+        "buildslave_type": "baremetal",
         "disk_layout": "base",
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
         "manifest": "official.xml",
-        "sync_chrome": false,
-        "vm_tests": []
+        "sync_chrome": false
     },
     "lakitu-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
             "lakitu"
         ],
+        "buildslave_type": "baremetal",
         "disk_layout": "base",
         "factory": false,
         "factory_install_netboot": false,
@@ -13061,8 +13060,7 @@
         "sync_chrome": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "lakitu-unittest-stress": {
         "_template": "unittest_stress",
@@ -13087,6 +13085,7 @@
         "boards": [
             "lakitu_next"
         ],
+        "buildslave_type": "baremetal",
         "chrome_sdk": false,
         "disk_layout": "base",
         "factory": false,
@@ -13094,14 +13093,14 @@
         "factory_toolkit": false,
         "important": false,
         "manifest": "official.xml",
-        "sync_chrome": false,
-        "vm_tests": []
+        "sync_chrome": false
     },
     "lakitu_next-chromium-pfq": {
         "_template": "chromium_pfq",
         "boards": [
             "lakitu_next"
         ],
+        "buildslave_type": "baremetal",
         "chrome_sdk": false,
         "disk_layout": "base",
         "factory": false,
@@ -13111,8 +13110,7 @@
         "sync_chrome": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "lakitu_next-compile-only-pre-cq": {
         "_template": "compile_only_pre_cq",
@@ -13138,6 +13136,7 @@
         "boards": [
             "lakitu_next"
         ],
+        "buildslave_type": "baremetal",
         "chrome_sdk": false,
         "disk_layout": "base",
         "factory": false,
@@ -13153,8 +13152,7 @@
         "sync_chrome": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "lakitu_next-incremental": {
         "_template": "incremental",
@@ -13233,8 +13231,7 @@
         "vm_tests": [
             "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}",
             "{\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
-        ],
-        "vm_tests_override": null
+        ]
     },
     "lakitu_next-payloads": {
         "_template": "payloads",
@@ -13313,19 +13310,20 @@
         "boards": [
             "lakitu_next"
         ],
+        "buildslave_type": "baremetal",
         "disk_layout": "base",
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
         "manifest": "official.xml",
-        "sync_chrome": false,
-        "vm_tests": []
+        "sync_chrome": false
     },
     "lakitu_next-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
             "lakitu_next"
         ],
+        "buildslave_type": "baremetal",
         "disk_layout": "base",
         "factory": false,
         "factory_install_netboot": false,
@@ -13333,8 +13331,7 @@
         "sync_chrome": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
+        ]
     },
     "lakitu_next-unittest-stress": {
         "_template": "unittest_stress",
