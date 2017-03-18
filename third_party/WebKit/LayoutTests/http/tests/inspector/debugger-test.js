@@ -347,7 +347,7 @@ InspectorTest.captureStackTraceIntoString = function(callFrames, asyncStackTrace
     printCallFrames(callFrames, SDK.DebuggerModel.CallFrame.prototype.location, SDK.DebuggerModel.CallFrame.prototype.returnValue);
     while (asyncStackTrace) {
         results.push("    [" + (asyncStackTrace.description || "Async Call") + "]");
-        var debuggerModel = SDK.DebuggerModel.fromTarget(SDK.targetManager.mainTarget());
+        var debuggerModel = InspectorTest.debuggerModel;
         var printed = printCallFrames(asyncStackTrace.callFrames, runtimeCallFramePosition);
         if (!printed)
             results.pop();
@@ -369,7 +369,7 @@ InspectorTest._pausedScript = function(callFrames, reason, auxData, breakpointId
 {
     if (!InspectorTest._quiet)
         InspectorTest.addResult("Script execution paused.");
-    var debuggerModel = SDK.DebuggerModel.fromTarget(this.target());
+    var debuggerModel = this.target().model(SDK.DebuggerModel);
     InspectorTest._pausedScriptArguments = [SDK.DebuggerModel.CallFrame.fromPayloadArray(debuggerModel, callFrames), reason, breakpointIds, asyncStackTrace, auxData];
     if (InspectorTest._waitUntilPausedCallback) {
         var callback = InspectorTest._waitUntilPausedCallback;
@@ -586,7 +586,7 @@ InspectorTest.queryScripts = function(filter)
 InspectorTest.createScriptMock = function(url, startLine, startColumn, isContentScript, source, target, preRegisterCallback)
 {
     target = target || SDK.targetManager.mainTarget();
-    var debuggerModel = SDK.DebuggerModel.fromTarget(target);
+    var debuggerModel = target.model(SDK.DebuggerModel);
     var scriptId = ++InspectorTest._lastScriptId + "";
     var lineCount = source.computeLineEndings().length;
     var endLine = startLine + lineCount - 1;

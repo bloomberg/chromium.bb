@@ -17,7 +17,7 @@ function test()
         InspectorTest.addSniffer(Snippets.ScriptSnippetModel.prototype, "_printRunScriptResult", dumpResult);
         Snippets.scriptSnippetModel.evaluateScriptSnippet(context, uiSourceCode);
         var target = context.target();
-        var mapping = Snippets.scriptSnippetModel._mappingForDebuggerModel.get(SDK.DebuggerModel.fromTarget(target));
+        var mapping = Snippets.scriptSnippetModel._mappingForDebuggerModel.get(target.model(SDK.DebuggerModel));
         var evaluationSourceURL = mapping._evaluationSourceURL(uiSourceCode);
         var snippetId = Snippets.scriptSnippetModel._snippetIdForUISourceCode.get(uiSourceCode);
         InspectorTest.addResult("Last evaluation source url for snippet: " + evaluationSourceURL);
@@ -168,7 +168,7 @@ function test()
             var context = UI.context.flavor(SDK.ExecutionContext);
 
             resetSnippetsSettings();
-            var snippetScriptMapping = Snippets.scriptSnippetModel.snippetScriptMapping(SDK.DebuggerModel.fromTarget(SDK.targetManager.targets()[0]));
+            var snippetScriptMapping = Snippets.scriptSnippetModel.snippetScriptMapping(SDK.targetManager.models(SDK.DebuggerModel)[0]);
 
             Snippets.scriptSnippetModel.project().createFile("", null, "", step2.bind(this));
 
@@ -241,7 +241,7 @@ function test()
             }
 
             resetSnippetsSettings();
-            var snippetScriptMapping = Snippets.scriptSnippetModel.snippetScriptMapping(SDK.DebuggerModel.fromTarget(SDK.targetManager.targets()[0]));
+            var snippetScriptMapping = Snippets.scriptSnippetModel.snippetScriptMapping(SDK.targetManager.models(SDK.DebuggerModel)[0]);
 
             Snippets.scriptSnippetModel.project().createFile("", null, "", step3.bind(this));
 

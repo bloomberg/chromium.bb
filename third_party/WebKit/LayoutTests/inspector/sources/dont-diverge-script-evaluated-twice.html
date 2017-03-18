@@ -25,8 +25,7 @@ var test = function()
 
     function step3(uiSourceCode)
     {
-        var mainTarget = SDK.targetManager.mainTarget();
-        var debuggerModel = SDK.DebuggerModel.fromTarget(mainTarget);
+        var debuggerModel = InspectorTest.debuggerModel;
         var scriptFile = Bindings.debuggerWorkspaceBinding.scriptFile(uiSourceCode, debuggerModel);
         if (!scriptFile) {
             InspectorTest.addResult("[FAIL]: no script file for test.js");

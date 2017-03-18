@@ -14,7 +14,7 @@ function loadScript()
 function test()
 {
     var mainTarget = SDK.targetManager.mainTarget();
-    var debuggerModel = SDK.DebuggerModel.fromTarget(mainTarget);
+    var debuggerModel = InspectorTest.debuggerModel;
     var message = new ConsoleModel.ConsoleMessage(mainTarget, ConsoleModel.ConsoleMessage.MessageSource.JS, ConsoleModel.ConsoleMessage.MessageLevel.Info, "hello?", null, "http://127.0.0.1:8000/inspector/resources/source2.js");
     ConsoleModel.consoleModel.addMessage(message);
     debuggerModel.addEventListener(SDK.DebuggerModel.Events.ParsedScriptSource, onScriptAdded);
