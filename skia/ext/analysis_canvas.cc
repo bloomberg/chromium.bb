@@ -317,16 +317,11 @@ void AnalysisCanvas::onDrawDRRect(const SkRRect& outer,
   ++draw_op_count_;
 }
 
-void AnalysisCanvas::onDrawVertices(SkCanvas::VertexMode,
-                                    int vertex_count,
-                                    const SkPoint verts[],
-                                    const SkPoint texs[],
-                                    const SkColor colors[],
-                                    SkBlendMode bmode,
-                                    const uint16_t indices[],
-                                    int index_count,
-                                    const SkPaint& paint) {
-  TRACE_EVENT0("disabled-by-default-skia", "AnalysisCanvas::onDrawVertices");
+void AnalysisCanvas::onDrawVerticesObject(const SkVertices* vertices,
+                                          SkBlendMode bmode,
+                                          const SkPaint& paint) {
+  TRACE_EVENT0("disabled-by-default-skia",
+               "AnalysisCanvas::onDrawVerticesObject");
   is_solid_color_ = false;
   is_transparent_ = false;
   ++draw_op_count_;

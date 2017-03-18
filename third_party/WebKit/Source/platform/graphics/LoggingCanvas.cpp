@@ -710,20 +710,13 @@ void LoggingCanvas::onDrawImageRect(const SkImage* image,
   this->SkCanvas::onDrawImageRect(image, src, dst, paint, constraint);
 }
 
-void LoggingCanvas::onDrawVertices(VertexMode vmode,
-                                   int vertexCount,
-                                   const SkPoint vertices[],
-                                   const SkPoint texs[],
-                                   const SkColor colors[],
-                                   SkBlendMode bmode,
-                                   const uint16_t indices[],
-                                   int indexCount,
-                                   const SkPaint& paint) {
+void LoggingCanvas::onDrawVerticesObject(const SkVertices* vertices,
+                                         SkBlendMode bmode,
+                                         const SkPaint& paint) {
   AutoLogger logger(this);
   JSONObject* params = logger.logItemWithParams("drawVertices");
   params->setObject("paint", objectForSkPaint(paint));
-  this->SkCanvas::onDrawVertices(vmode, vertexCount, vertices, texs, colors,
-                                 bmode, indices, indexCount, paint);
+  this->SkCanvas::onDrawVerticesObject(vertices, bmode, paint);
 }
 
 void LoggingCanvas::onDrawDRRect(const SkRRect& outer,

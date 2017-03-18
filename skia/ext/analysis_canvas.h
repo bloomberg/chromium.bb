@@ -70,15 +70,9 @@ class SK_API AnalysisCanvas final : public SkNoDrawCanvas,
                        const SkRect& dst,
                        const SkPaint* paint,
                        SrcRectConstraint) override;
-  void onDrawVertices(VertexMode,
-                      int vertexCount,
-                      const SkPoint vertices[],
-                      const SkPoint texs[],
-                      const SkColor colors[],
-                      SkBlendMode,
-                      const uint16_t indices[],
-                      int indexCount,
-                      const SkPaint&) override;
+  void onDrawVerticesObject(const SkVertices*,
+                            SkBlendMode,
+                            const SkPaint&) override;
 
  protected:
   void willSave() override;

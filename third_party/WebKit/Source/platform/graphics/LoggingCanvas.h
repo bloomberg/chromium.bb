@@ -72,15 +72,9 @@ class LoggingCanvas : public InterceptingCanvasBase {
                        const SkRect& dst,
                        const SkPaint*,
                        SrcRectConstraint) override;
-  virtual void onDrawVertices(VertexMode vmode,
-                              int vertexCount,
-                              const SkPoint vertices[],
-                              const SkPoint texs[],
-                              const SkColor colors[],
-                              SkBlendMode bmode,
-                              const uint16_t indices[],
-                              int indexCount,
-                              const SkPaint&) override;
+  void onDrawVerticesObject(const SkVertices*,
+                            SkBlendMode bmode,
+                            const SkPaint&) override;
 
   void onDrawDRRect(const SkRRect& outer,
                     const SkRRect& inner,
