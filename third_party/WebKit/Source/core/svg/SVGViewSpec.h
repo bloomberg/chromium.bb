@@ -65,7 +65,7 @@ class SVGViewSpec final : public GarbageCollectedFinalized<SVGViewSpec>,
 
 template <typename T>
 void SVGViewSpec::inheritViewAttributesFromElement(T& inheritFromElement) {
-  if (!inheritFromElement.hasEmptyViewBox())
+  if (inheritFromElement.viewBox()->currentValue()->isValid())
     setViewBox(inheritFromElement.viewBox()->currentValue()->value());
 
   if (inheritFromElement.preserveAspectRatio()->isSpecified()) {
