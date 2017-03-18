@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/display/json_converter.h"
+#include "ui/display/manager/json_converter.h"
 
 #include <memory>
 #include <string>
 
-#include "ash/display/display_pref_util.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "ui/display/display_layout.h"
+#include "ui/display/manager/display_pref_util.h"
 
-namespace ash {
+namespace display {
 
 namespace {
 
@@ -29,18 +29,17 @@ const char kOffsetKey[] = "offset";
 const char kDisplayPlacementDisplayIdKey[] = "display_id";
 const char kDisplayPlacementParentDisplayIdKey[] = "parent_display_id";
 
-bool AddLegacyValuesFromValue(const base::Value& value,
-                              display::DisplayLayout* layout) {
+bool AddLegacyValuesFromValue(const base::Value& value, DisplayLayout* layout) {
   const base::DictionaryValue* dict_value = nullptr;
   if (!value.GetAsDictionary(&dict_value))
     return false;
   int offset;
   if (dict_value->GetInteger(kOffsetKey, &offset)) {
-    display::DisplayPlacement::Position position;
+    DisplayPlacement::Position position;
     std::string position_str;
     if (!dict_value->GetString(kPositionKey, &position_str))
       return false;
-    display::DisplayPlacement::StringToPosition(position_str, &position);
+    DisplayPlacement::StringToPosition(position_str, &position);
     layout->placement_list.emplace_back(position, offset);
   }
   return true;
@@ -88,14 +87,14 @@ bool UpdateFromDict(const base::DictionaryValue* dict_value,
 template <>
 bool UpdateFromDict(const base::DictionaryValue* dict_value,
                     const std::string& field_name,
-                    display::DisplayPlacement::Position* output) {
+                    DisplayPlacement::Position* output) {
   bool (base::Value::*getter)(std::string*) const = &base::Value::GetAsString;
   std::string value;
   if (!UpdateFromDict(dict_value, field_name, getter, &value))
     return false;
 
-  return value.empty() ? true : display::DisplayPlacement::StringToPosition(
-                                    value, output);
+  return value.empty() ? true
+                       : DisplayPlacement::StringToPosition(value, output);
 }
 
 template <>
@@ -113,7 +112,7 @@ bool UpdateFromDict(const base::DictionaryValue* dict_value,
 template <>
 bool UpdateFromDict(const base::DictionaryValue* dict_value,
                     const std::string& field_name,
-                    std::vector<display::DisplayPlacement>* output) {
+                    std::vector<DisplayPlacement>* output) {
   bool (base::Value::*getter)(const base::ListValue**) const =
       &base::Value::GetAsList;
   const base::ListValue* list = nullptr;
@@ -129,7 +128,7 @@ bool UpdateFromDict(const base::DictionaryValue* dict_value,
     if (!list_item->GetAsDictionary(&item_values))
       return false;
 
-    display::DisplayPlacement item;
+    DisplayPlacement item;
     if (!UpdateFromDict(item_values, kOffsetKey, &item.offset) ||
         !UpdateFromDict(item_values, kPositionKey, &item.position) ||
         !UpdateFromDict(item_values, kDisplayPlacementDisplayIdKey,
@@ -146,8 +145,7 @@ bool UpdateFromDict(const base::DictionaryValue* dict_value,
 
 }  // namespace
 
-bool JsonToDisplayLayout(const base::Value& value,
-                         display::DisplayLayout* layout) {
+bool JsonToDisplayLayout(const base::Value& value, DisplayLayout* layout) {
   layout->placement_list.clear();
   const base::DictionaryValue* dict_value = nullptr;
   if (!value.GetAsDictionary(&dict_value))
@@ -169,8 +167,7 @@ bool JsonToDisplayLayout(const base::Value& value,
   return AddLegacyValuesFromValue(value, layout);
 }
 
-bool DisplayLayoutToJson(const display::DisplayLayout& layout,
-                         base::Value* value) {
+bool DisplayLayoutToJson(const DisplayLayout& layout, base::Value* value) {
   base::DictionaryValue* dict_value = nullptr;
   if (!value->GetAsDictionary(&dict_value))
     return false;
@@ -184,8 +181,7 @@ bool DisplayLayoutToJson(const display::DisplayLayout& layout,
     std::unique_ptr<base::DictionaryValue> placement_value(
         new base::DictionaryValue);
     placement_value->SetString(
-        kPositionKey,
-        display::DisplayPlacement::PositionToString(placement.position));
+        kPositionKey, DisplayPlacement::PositionToString(placement.position));
     placement_value->SetInteger(kOffsetKey, placement.offset);
     placement_value->SetString(kDisplayPlacementDisplayIdKey,
                                base::Int64ToString(placement.display_id));
@@ -198,4 +194,4 @@ bool DisplayLayoutToJson(const display::DisplayLayout& layout,
   return true;
 }
 
-}  // namespace ash
+}  // namespace display

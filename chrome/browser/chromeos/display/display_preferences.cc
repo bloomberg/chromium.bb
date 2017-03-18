@@ -6,8 +6,6 @@
 
 #include <stddef.h>
 
-#include "ash/display/display_pref_util.h"
-#include "ash/display/json_converter.h"
 #include "ash/shell.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -26,6 +24,8 @@
 #include "ui/display/manager/display_layout_store.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/display_manager_utilities.h"
+#include "ui/display/manager/display_pref_util.h"
+#include "ui/display/manager/json_converter.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/insets.h"
 #include "url/url_canon.h"
@@ -206,7 +206,7 @@ void LoadDisplayLayouts() {
   for (base::DictionaryValue::Iterator it(*layouts);
        !it.IsAtEnd(); it.Advance()) {
     std::unique_ptr<display::DisplayLayout> layout(new display::DisplayLayout);
-    if (!ash::JsonToDisplayLayout(it.value(), layout.get())) {
+    if (!display::JsonToDisplayLayout(it.value(), layout.get())) {
       LOG(WARNING) << "Invalid preference value for " << it.key();
       continue;
     }
@@ -314,7 +314,7 @@ void StoreDisplayLayoutPref(const display::DisplayIdList& list,
     if (pref_data->Get(name, &value) && value != nullptr)
       layout_value.reset(value->DeepCopy());
   }
-  if (ash::DisplayLayoutToJson(display_layout, layout_value.get()))
+  if (display::DisplayLayoutToJson(display_layout, layout_value.get()))
     pref_data->Set(name, layout_value.release());
 }
 
@@ -382,7 +382,7 @@ typedef std::map<chromeos::DisplayPowerState, std::string>
 
 const DisplayPowerStateToStringMap* GetDisplayPowerStateToStringMap() {
   // Don't save or retore ALL_OFF state. crbug.com/318456.
-  static const DisplayPowerStateToStringMap* map = ash::CreateToStringMap(
+  static const DisplayPowerStateToStringMap* map = display::CreateToStringMap(
       chromeos::DISPLAY_POWER_ALL_ON, "all_on",
       chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON,
       "internal_off_external_on",
@@ -393,7 +393,7 @@ const DisplayPowerStateToStringMap* GetDisplayPowerStateToStringMap() {
 
 bool GetDisplayPowerStateFromString(const base::StringPiece& state,
                                     chromeos::DisplayPowerState* field) {
-  if (ash::ReverseFind(GetDisplayPowerStateToStringMap(), state, field))
+  if (display::ReverseFind(GetDisplayPowerStateToStringMap(), state, field))
     return true;
   LOG(ERROR) << "Invalid display power state value:" << state;
   return false;

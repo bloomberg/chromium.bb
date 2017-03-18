@@ -122,6 +122,7 @@ source_set("chromeos") {
     "//ui/chromeos/events",
     "//ui/compositor",
     "//ui/display",
+    "//ui/display/manager",
     "//ui/events:dom_keycode_converter",
     "//ui/events/devices",
     "//ui/events/platform",

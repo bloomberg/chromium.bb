@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_DISPLAY_DISPLAY_PREF_UTIL_H
-#define ASH_DISPLAY_DISPLAY_PREF_UTIL_H
+#ifndef UI_DISPLAY_MANAGER_DISPLAY_PREF_UTIL_H
+#define UI_DISPLAY_MANAGER_DISPLAY_PREF_UTIL_H
 
 #include <map>
 #include <string>
 
 #include "base/strings/string_piece.h"
 
-namespace ash {
+namespace display {
 
 // Utility templates to create enum to string map and
 // a function to find an enum value from a string.
@@ -59,6 +59,6 @@ bool ReverseFind(const std::map<T, std::string>* map,
   return false;
 }
 
-}  // namespace ash
+}  // namespace display
 
-#endif  // ASH_DISPLAY_DISPLAY_PREF_UTIL_H
+#endif  // UI_DISPLAY_MANAGER_DISPLAY_PREF_UTIL_H

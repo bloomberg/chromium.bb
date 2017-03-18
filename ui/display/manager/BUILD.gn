@@ -34,6 +34,9 @@ component("manager") {
     "display_manager_export.h",
     "display_manager_utilities.cc",
     "display_manager_utilities.h",
+    "display_pref_util.h",
+    "json_converter.cc",
+    "json_converter.h",
     "managed_display_info.cc",
     "managed_display_info.h",
   ]

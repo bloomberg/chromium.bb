@@ -148,6 +148,7 @@ test("display_unittests") {
     "manager/chromeos/touchscreen_util_unittest.cc",
     "manager/chromeos/update_display_configuration_task_unittest.cc",
     "manager/display_manager_utilities_unittest.cc",
+    "manager/json_converter_unittest.cc",
     "manager/managed_display_info_unittest.cc",
     "mojo/display_struct_traits_unittest.cc",
     "screen_unittest.cc",
