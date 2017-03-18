@@ -12,6 +12,10 @@ group("mac") {
     ":make_signers",
     "app:mac_installer_app",
   ]
+
+  if (is_chrome_branded) {
+    public_deps += [ ":keychain_reauthorizers" ]
+  }
 }
 
 _packaging_dir = "$root_out_dir/$chrome_product_full_name Packaging"
@@ -49,7 +53,6 @@ copy("copies") {
   visibility = [ ":mac" ]
 
   deps = [
-    "//chrome/installer/mac:keychain_reauthorize",
     "//chrome/installer/mac/third_party/bsdiff:goobsdiff",
     "//chrome/installer/mac/third_party/bsdiff:goobspatch",
     "//chrome/installer/mac/third_party/xz:lzma_decompress",
@@ -60,7 +63,6 @@ copy("copies") {
   sources = [
     "$root_out_dir/goobsdiff",
     "$root_out_dir/goobspatch",
-    "$root_out_dir/keychain_reauthorize",
     "$root_out_dir/liblzma_decompress.dylib",
     "$root_out_dir/xz",
     "$root_out_dir/xzdec",
@@ -95,9 +97,17 @@ copy("copies") {
   ]
 }
 
-executable("keychain_reauthorize") {
-  sources = [
-    "keychain_reauthorize_main.cc",
-  ]
-  libs = [ "CoreFoundation.framework" ]
+if (is_chrome_branded) {
+  copy("keychain_reauthorizers") {
+    visibility = [ ":mac" ]
+
+    sources = [
+      "internal/keychain_reauthorizers/com.google.Chrome",
+      "internal/keychain_reauthorizers/com.google.Chrome.canary",
+    ]
+
+    outputs = [
+      "$_packaging_dir/keychain_reauthorizers/{{source_file_part}}",
+    ]
+  }
 }
