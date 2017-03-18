@@ -52,7 +52,7 @@ keyboard.onAdvanceFocus = function(reverse) {
 keyboard.onKeyIgnore_ = function(event) {
   event = /** @type {!KeyboardEvent} */(event);
 
-  if (hasKeyModifiers(event))
+  if (event.ctrlKey || event.shiftKey || event.altKey || event.metaKey)
     return;
 
   if (event.key == 'ArrowLeft' ||
@@ -72,7 +72,7 @@ keyboard.onKeyIgnore_ = function(event) {
 keyboard.onKeyDown_ = function(event) {
   event = /** @type {!KeyboardEvent} */(event);
 
-  if (hasKeyModifiers(event))
+  if (event.ctrlKey || event.shiftKey || event.altKey || event.metaKey)
     return;
 
   // This file also gets embedded inside of the CfM/hotrod enrollment webview.
