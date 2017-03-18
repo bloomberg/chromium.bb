@@ -389,7 +389,7 @@ const V8DOMConfiguration::AccessorConfiguration {{v8_class}}Accessors[] = {
 {% if methods | has_method_configuration(is_partial) %}
 const V8DOMConfiguration::MethodConfiguration {{v8_class}}Methods[] = {
     {% for method in methods | has_method_configuration(is_partial) %}
-    {{method_configuration(method)}},
+    {{method_configuration(method) | indent(4)}},
     {% endfor %}
 };
 
@@ -671,8 +671,11 @@ void {{v8_class_or_partial}}::install{{feature.name}}(v8::Isolate* isolate, cons
   {# Origin-Trial-enabled methods (no overloads) #}
   {% for method in feature.methods %}
   {% set method_name = method.name.title().replace('_', '') %}
-  const V8DOMConfiguration::MethodConfiguration method{{method_name}}Configuration = {{method_configuration(method)}};
-  V8DOMConfiguration::installMethod(isolate, world, instance, prototype, interface, signature, method{{method_name}}Configuration);
+  const V8DOMConfiguration::MethodConfiguration method{{method_name}}Configuration[] = {
+    {{method_configuration(method) | indent(2)}}
+  };
+  for (const auto& methodConfig : method{{method_name}}Configuration)
+    V8DOMConfiguration::installMethod(isolate, world, instance, prototype, interface, signature, methodConfig);
   {% endfor %}
 }
 

@@ -324,6 +324,22 @@ void installConstantInternal(
 }
 
 template <class Configuration>
+bool worldConfigurationApplies(const Configuration& config,
+                               const DOMWrapperWorld& world) {
+  const auto currentWorldConfig = world.isMainWorld()
+                                      ? V8DOMConfiguration::MainWorld
+                                      : V8DOMConfiguration::NonMainWorlds;
+  return config.worldConfiguration & currentWorldConfig;
+}
+
+template <>
+bool worldConfigurationApplies(
+    const V8DOMConfiguration::SymbolKeyedMethodConfiguration&,
+    const DOMWrapperWorld&) {
+  return true;
+}
+
+template <class Configuration>
 void installMethodInternal(v8::Isolate* isolate,
                            v8::Local<v8::ObjectTemplate> instanceTemplate,
                            v8::Local<v8::ObjectTemplate> prototypeTemplate,
@@ -331,8 +347,11 @@ void installMethodInternal(v8::Isolate* isolate,
                            v8::Local<v8::Signature> signature,
                            const Configuration& method,
                            const DOMWrapperWorld& world) {
+  if (!worldConfigurationApplies(method, world))
+    return;
+
   v8::Local<v8::Name> name = method.methodName(isolate);
-  v8::FunctionCallback callback = method.callbackForWorld(world);
+  v8::FunctionCallback callback = method.callback;
   // Promise-returning functions need to return a reject promise when
   // an exception occurs.  This includes a case that the receiver object is not
   // of the type.  So, we disable the type check of the receiver object on V8
@@ -383,8 +402,11 @@ void installMethodInternal(
     v8::Local<v8::Signature> signature,
     const V8DOMConfiguration::MethodConfiguration& method,
     const DOMWrapperWorld& world) {
+  if (!worldConfigurationApplies(method, world))
+    return;
+
   v8::Local<v8::Name> name = method.methodName(isolate);
-  v8::FunctionCallback callback = method.callbackForWorld(world);
+  v8::FunctionCallback callback = method.callback;
   // Promise-returning functions need to return a reject promise when
   // an exception occurs.  This includes a case that the receiver object is not
   // of the type.  So, we disable the type check of the receiver object on V8

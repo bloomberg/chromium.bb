@@ -71,7 +71,7 @@ void V8TestInterface2Partial::voidMethodPartial2MethodCallback(const v8::Functio
 }
 
 const V8DOMConfiguration::MethodConfiguration V8TestInterface2Methods[] = {
-    {"voidMethodPartial2", V8TestInterface2Partial::voidMethodPartial2MethodCallback, nullptr, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder, V8DOMConfiguration::DoNotCheckAccess},
+    {"voidMethodPartial2", V8TestInterface2Partial::voidMethodPartial2MethodCallback, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder, V8DOMConfiguration::DoNotCheckAccess, V8DOMConfiguration::AllWorlds},
 };
 
 void V8TestInterface2Partial::installV8TestInterface2Template(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate) {
@@ -89,8 +89,11 @@ void V8TestInterface2Partial::installV8TestInterface2Template(v8::Isolate* isola
   V8DOMConfiguration::installMethods(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, V8TestInterface2Methods, WTF_ARRAY_LENGTH(V8TestInterface2Methods));
 
   if (RuntimeEnabledFeatures::interface2PartialFeatureNameEnabled()) {
-    const V8DOMConfiguration::MethodConfiguration voidMethodPartial1MethodConfiguration = {"voidMethodPartial1", V8TestInterface2Partial::voidMethodPartial1MethodCallback, nullptr, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder, V8DOMConfiguration::DoNotCheckAccess};
-    V8DOMConfiguration::installMethod(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, voidMethodPartial1MethodConfiguration);
+    const V8DOMConfiguration::MethodConfiguration voidMethodPartial1MethodConfiguration[] = {
+      {"voidMethodPartial1", V8TestInterface2Partial::voidMethodPartial1MethodCallback, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder, V8DOMConfiguration::DoNotCheckAccess, V8DOMConfiguration::AllWorlds}
+    };
+    for (const auto& methodConfig : voidMethodPartial1MethodConfiguration)
+      V8DOMConfiguration::installMethod(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, methodConfig);
   }
 }
 

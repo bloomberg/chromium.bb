@@ -65,6 +65,13 @@ class CORE_EXPORT V8DOMConfiguration final {
     DoNotCheckAccess,
   };
 
+  // Bit field to select which worlds the member will be defined in.
+  enum WorldConfiguration : unsigned {
+    MainWorld = 1 << 0,
+    NonMainWorlds = 1 << 1,
+    AllWorlds = MainWorld | NonMainWorlds,
+  };
+
   typedef v8::Local<v8::Private> (*CachedAccessorCallback)(v8::Isolate*);
 
   // AttributeConfiguration translates into calls to SetNativeDataProperty() on
@@ -233,14 +240,9 @@ class CORE_EXPORT V8DOMConfiguration final {
     v8::Local<v8::Name> methodName(v8::Isolate* isolate) const {
       return v8AtomicString(isolate, name);
     }
-    v8::FunctionCallback callbackForWorld(const DOMWrapperWorld& world) const {
-      return world.isMainWorld() && callbackForMainWorld ? callbackForMainWorld
-                                                         : callback;
-    }
 
     const char* const name;
     v8::FunctionCallback callback;
-    v8::FunctionCallback callbackForMainWorld;
     int length;
     // v8::PropertyAttribute
     unsigned attribute : 8;
@@ -250,6 +252,8 @@ class CORE_EXPORT V8DOMConfiguration final {
     unsigned holderCheckConfiguration : 1;
     // AccessCheckConfiguration
     unsigned accessCheckConfiguration : 1;
+    // WorldConfiguration
+    unsigned worldConfiguration : 2;
   };
 
   struct SymbolKeyedMethodConfiguration {

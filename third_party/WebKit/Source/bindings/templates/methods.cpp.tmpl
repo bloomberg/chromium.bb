@@ -602,14 +602,24 @@ v8SetReturnValue(info, wrapper);
        if method.returns_promise else 'V8DOMConfiguration::CheckHolder' %}
 {% set access_check = 'V8DOMConfiguration::CheckAccess'
        if method.is_check_security_for_receiver else 'V8DOMConfiguration::DoNotCheckAccess' %}
-{"{{method.name}}", {{method_callback}}, {{method_callback_for_main_world}}, {{method.length}}, {{property_attribute}}, {{property_location(method)}}, {{holder_check}}, {{access_check}}}
+{% if method.is_per_world_bindings %}
+{% set method_callback_for_main_world =
+       '%s::%sMethodCallbackForMainWorld' % (v8_class_or_partial, method.name) %}
+{"{{method.name}}", {{method_callback_for_main_world}}, {{method.length}}, {{property_attribute}}, {{property_location(method)}}, {{holder_check}}, {{access_check}}, V8DOMConfiguration::MainWorld},
+{"{{method.name}}", {{method_callback}}, {{method.length}}, {{property_attribute}}, {{property_location(method)}}, {{holder_check}}, {{access_check}}, V8DOMConfiguration::NonMainWorlds}
+{%- else %}
+{"{{method.name}}", {{method_callback}}, {{method.length}}, {{property_attribute}}, {{property_location(method)}}, {{holder_check}}, {{access_check}}, V8DOMConfiguration::AllWorlds}
+{%- endif %}
 {%- endmacro %}
 
 
 {######################################}
 {% macro install_custom_signature(method, instance_template, prototype_template, interface_template, signature) %}
-const V8DOMConfiguration::MethodConfiguration {{method.name}}MethodConfiguration = {{method_configuration(method)}};
-V8DOMConfiguration::installMethod(isolate, world, {{instance_template}}, {{prototype_template}}, {{interface_template}}, {{signature}}, {{method.name}}MethodConfiguration);
+const V8DOMConfiguration::MethodConfiguration {{method.name}}MethodConfiguration[] = {
+  {{method_configuration(method) | indent(2)}}
+};
+for (const auto& methodConfig : {{method.name}}MethodConfiguration)
+  V8DOMConfiguration::installMethod(isolate, world, {{instance_template}}, {{prototype_template}}, {{interface_template}}, {{signature}}, methodConfig);
 {%- endmacro %}
 
 
@@ -626,8 +636,11 @@ V8DOMConfiguration::installMethod(isolate, world, {{instance_template}}, {{proto
 {% filter runtime_enabled(method.overloads.runtime_enabled_all
                           if method.overloads else
                           method.runtime_enabled_feature_name) %}
-const V8DOMConfiguration::MethodConfiguration {{method.name}}MethodConfiguration = {{method_configuration(method)}};
-V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, {{method.name}}MethodConfiguration);
+const V8DOMConfiguration::MethodConfiguration {{method.name}}MethodConfiguration[] = {
+  {{method_configuration(method) | indent(2)}}
+};
+for (const auto& methodConfig : {{method.name}}MethodConfiguration)
+  V8DOMConfiguration::installMethod(isolate, world, v8::Local<v8::Object>(), prototypeObject, interfaceObject, signature, methodConfig);
 {% endfilter %}{# runtime_enabled() #}
 {% endfilter %}{# exposed() #}
 {% endfilter %}{# secure_context() #}
