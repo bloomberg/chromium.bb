@@ -9,7 +9,6 @@ import logging
 import optparse
 
 from webkitpy.common.net.git_cl import GitCL
-from webkitpy.layout_tests.models.test_expectations import BASELINE_SUFFIX_LIST
 from webkitpy.tool.commands.rebaseline import AbstractParallelRebaselineCommand
 from webkitpy.w3c.wpt_manifest import WPTManifest
 
@@ -90,7 +89,7 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
         test_prefix_list = {}
         if args:
             for test in args:
-                test_prefix_list[test] = {b: BASELINE_SUFFIX_LIST for b in builds}
+                test_prefix_list[test] = builds
         else:
             test_prefix_list = self._test_prefix_list(
                 builds_to_results,
@@ -192,8 +191,8 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
                 if only_changed_tests and test not in tests_in_cl:
                     continue
                 if test not in result:
-                    result[test] = {}
-                result[test][build] = BASELINE_SUFFIX_LIST
+                    result[test] = []
+                result[test].append(build)
         return result
 
     def _tests_to_rebaseline(self, build, layout_test_results):

@@ -276,7 +276,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
 
         self.command.rebaseline(
             self.command_options(),
-            {'fast/dom/prototype-taco.html': {Build('MOCK Try Win', 5000): ['txt', 'png']}})
+            {'fast/dom/prototype-taco.html': [Build('MOCK Try Win', 5000)]})
 
         self.assertEqual(
             self.tool.executive.calls,

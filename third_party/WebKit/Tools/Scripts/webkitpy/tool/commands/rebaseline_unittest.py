@@ -329,19 +329,23 @@ class TestAbstractParallelRebaselineCommand(BaseTestCase):
 
     def test_all_baseline_paths(self):
         test_prefix_list = {
-            'passes/text.html': {
-                Build('MOCK Win7'): ('txt', 'png'),
-                Build('MOCK Win10'): ('txt',),
-            }
+            'passes/text.html': [
+                Build('MOCK Win7'),
+                Build('MOCK Win10'),
+            ]
         }
         # pylint: disable=protected-access
         baseline_paths = self.command._all_baseline_paths(test_prefix_list)
         self.assertEqual(baseline_paths, [
             '/test.checkout/LayoutTests/passes/text-expected.png',
             '/test.checkout/LayoutTests/passes/text-expected.txt',
+            '/test.checkout/LayoutTests/passes/text-expected.wav',
+            '/test.checkout/LayoutTests/platform/test-win-win10/passes/text-expected.png',
             '/test.checkout/LayoutTests/platform/test-win-win10/passes/text-expected.txt',
+            '/test.checkout/LayoutTests/platform/test-win-win10/passes/text-expected.wav',
             '/test.checkout/LayoutTests/platform/test-win-win7/passes/text-expected.png',
             '/test.checkout/LayoutTests/platform/test-win-win7/passes/text-expected.txt',
+            '/test.checkout/LayoutTests/platform/test-win-win7/passes/text-expected.wav',
         ])
 
     def test_remove_all_pass_testharness_baselines(self):
@@ -351,10 +355,10 @@ class TestAbstractParallelRebaselineCommand(BaseTestCase):
              'PASS: foo\n'
              'Harness: the test ran to completion.\n'))
         test_prefix_list = {
-            'passes/text.html': {
-                Build('MOCK Win7'): ('txt', 'png'),
-                Build('MOCK Win10'): ('txt',),
-            }
+            'passes/text.html': [
+                Build('MOCK Win7'),
+                Build('MOCK Win10'),
+            ]
         }
         self.command._remove_all_pass_testharness_baselines(test_prefix_list)
         self.assertFalse(self.tool.filesystem.exists(
@@ -701,9 +705,9 @@ class TestRebaselineExpectations(BaseTestCase):
         self._write('userscripts/another-test.html', 'Dummy test contents')
         self._write('userscripts/images.svg', 'Dummy test contents')
         self.command._tests_to_rebaseline = lambda port: {
-            'userscripts/another-test.html': set(['txt']),
-            'userscripts/images.svg': set(['png']),
-            'userscripts/not-actually-failing.html': set(['txt', 'png', 'wav']),
+            'userscripts/another-test.html',
+            'userscripts/images.svg',
+            'userscripts/not-actually-failing.html',
         }
 
         self.command.execute(self.options(), [], self.tool)
@@ -714,9 +718,9 @@ class TestRebaselineExpectations(BaseTestCase):
                  '--builder', 'MOCK Mac10.10', '--test', 'userscripts/another-test.html'],
                 ['python', 'echo', 'copy-existing-baselines-internal', '--suffixes', 'txt',
                  '--builder', 'MOCK Mac10.11', '--test', 'userscripts/another-test.html'],
-                ['python', 'echo', 'copy-existing-baselines-internal', '--suffixes', 'png',
+                ['python', 'echo', 'copy-existing-baselines-internal', '--suffixes', 'txt,png',
                  '--builder', 'MOCK Mac10.10', '--test', 'userscripts/images.svg'],
-                ['python', 'echo', 'copy-existing-baselines-internal', '--suffixes', 'png',
+                ['python', 'echo', 'copy-existing-baselines-internal', '--suffixes', 'txt,png',
                  '--builder', 'MOCK Mac10.11', '--test', 'userscripts/images.svg'],
             ],
             [
@@ -724,9 +728,9 @@ class TestRebaselineExpectations(BaseTestCase):
                  '--builder', 'MOCK Mac10.10', '--test', 'userscripts/another-test.html'],
                 ['python', 'echo', 'rebaseline-test-internal', '--suffixes', 'txt',
                  '--builder', 'MOCK Mac10.11', '--test', 'userscripts/another-test.html'],
-                ['python', 'echo', 'rebaseline-test-internal', '--suffixes', 'png',
+                ['python', 'echo', 'rebaseline-test-internal', '--suffixes', 'txt,png',
                  '--builder', 'MOCK Mac10.10', '--test', 'userscripts/images.svg'],
-                ['python', 'echo', 'rebaseline-test-internal', '--suffixes', 'png',
+                ['python', 'echo', 'rebaseline-test-internal', '--suffixes', 'txt,png',
                  '--builder', 'MOCK Mac10.11', '--test', 'userscripts/images.svg'],
             ],
         ])
@@ -814,8 +818,7 @@ class TestRebaselineExpectations(BaseTestCase):
     def test_rebaseline_without_other_expectations(self):
         self._write('userscripts/another-test.html', 'Dummy test contents')
         self._write(self.mac_expectations_path, 'Bug(x) userscripts/another-test.html [ Rebaseline ]\n')
-        self.assertDictEqual(self.command._tests_to_rebaseline(self.mac_port),
-                             {'userscripts/another-test.html': ('png', 'wav', 'txt')})
+        self.assertEqual(self.command._tests_to_rebaseline(self.mac_port), ['userscripts/another-test.html'])
 
     def test_rebaseline_test_passes_everywhere(self):
         test_port = self.tool.port_factory.get('test')
