@@ -147,11 +147,6 @@ bool ChromeRenderFrameObserver::OnMessageReceived(const IPC::Message& message) {
     return false;
 
   IPC_BEGIN_MESSAGE_MAP(ChromeRenderFrameObserver, message)
-    // TODO(nigeltao): delete the
-    // ChromeViewMsg_RequestReloadImageForContextNode handler when
-    // tab_android.cc's use is converted to Mojo.
-    IPC_MESSAGE_HANDLER(ChromeViewMsg_RequestReloadImageForContextNode,
-                        RequestReloadImageForContextNode)
     IPC_MESSAGE_HANDLER(ChromeViewMsg_SetClientSidePhishingDetection,
                         OnSetClientSidePhishingDetection)
 #if BUILDFLAG(ENABLE_PRINTING)

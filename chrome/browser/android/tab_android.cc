@@ -45,6 +45,7 @@
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_helpers.h"
+#include "chrome/common/image_context_menu_renderer.mojom.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -75,6 +76,7 @@
 #include "content/public/common/resource_request_body.h"
 #include "jni/Tab_jni.h"
 #include "net/base/escape.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/WebKit/public/platform/WebReferrerPolicy.h"
 #include "ui/android/view_android.h"
@@ -655,9 +657,9 @@ void TabAndroid::LoadOriginalImage(JNIEnv* env,
                                    const JavaParamRef<jobject>& obj) {
   content::RenderFrameHost* render_frame_host =
       web_contents()->GetFocusedFrame();
-  // TODO(nigeltao): convert this to Mojo.
-  render_frame_host->Send(new ChromeViewMsg_RequestReloadImageForContextNode(
-      render_frame_host->GetRoutingID()));
+  chrome::mojom::ImageContextMenuRendererPtr renderer;
+  render_frame_host->GetRemoteInterfaces()->GetInterface(&renderer);
+  renderer->RequestReloadImageForContextNode();
 }
 
 jlong TabAndroid::GetBookmarkId(JNIEnv* env,
