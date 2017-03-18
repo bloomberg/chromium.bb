@@ -9,6 +9,8 @@ source_set("web") {
   sources = [
     "dom_altering_lock.h",
     "dom_altering_lock.mm",
+    "navigation_manager_util.h",
+    "navigation_manager_util.mm",
     "network_activity_indicator_tab_helper.h",
     "network_activity_indicator_tab_helper.mm",
     "repost_form_tab_helper.h",
@@ -21,6 +23,7 @@ source_set("web") {
     "//ios/chrome/browser/ui/alert_coordinator:alert_coordinator",
     "//ios/chrome/browser/ui/util:util",
     "//ios/web",
+    "//ios/web:web_arc",
     "//ui/base",
   ]
 }
@@ -29,6 +32,7 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
+    "navigation_manager_util_unittest.mm",
     "network_activity_indicator_tab_helper_unittest.mm",
     "repost_form_tab_helper_unittest.mm",
   ]
@@ -40,8 +44,10 @@ source_set("unit_tests") {
     "//ios/chrome/browser/ui:ui",
     "//ios/chrome/test:test_support",
     "//ios/web:test_support",
+    "//ios/web:web_arc",
     "//testing/gtest",
     "//ui/base:base",
+    "//url:url",
   ]
 }
 

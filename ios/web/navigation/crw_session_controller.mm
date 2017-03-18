@@ -206,19 +206,6 @@ initiationType:(web::NavigationInitiationType)initiationType;
   return index == -1 || self.items.empty() ? nullptr : self.items[index].get();
 }
 
-- (web::NavigationItemImpl*)lastUserItem {
-  if (self.items.empty())
-    return nil;
-
-  NSInteger index = self.currentNavigationIndex;
-  // This will return the first NavigationItem if all other items are
-  // redirects, regardless of the transition state of the first item.
-  while (index > 0 && [self isRedirectTransitionForItemAtIndex:index])
-    --index;
-
-  return self.items[index].get();
-}
-
 - (web::NavigationItemList)backwardItems {
   web::NavigationItemList items;
   for (size_t index = _currentNavigationIndex; index > 0; --index) {

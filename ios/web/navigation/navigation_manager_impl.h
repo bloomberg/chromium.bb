@@ -106,12 +106,6 @@ class NavigationManagerImpl : public NavigationManager {
                       ui::PageTransition navigation_type,
                       NavigationInitiationType initiation_type);
 
-  // Convenience accessors to get the underlying NavigationItems from the
-  // SessionEntries returned from |session_controller_|'s -lastUserEntry and
-  // -previousEntry methods.
-  // TODO(crbug.com/546365): Remove these methods.
-  NavigationItem* GetLastUserItem() const;
-
   // Temporary method. Returns a vector of NavigationItems corresponding to
   // the SessionEntries of the uderlying CRWSessionController.
   // TODO(crbug.com/546365): Remove this method.

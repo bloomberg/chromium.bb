@@ -68,9 +68,6 @@ struct Referrer;
 @property(nonatomic, readonly) web::NavigationItemImpl* lastCommittedItem;
 // Returns the NavigationItem corresponding with the previously loaded page.
 @property(nonatomic, readonly) web::NavigationItemImpl* previousItem;
-// Returns most recent NavigationItem that is not a redirect. Returns nil if
-// |items| is empty.
-@property(nonatomic, readonly) web::NavigationItemImpl* lastUserItem;
 // Returns a list of all non-redirected NavigationItems whose index precedes
 // |currentNavigationIndex|.
 @property(nonatomic, readonly) web::NavigationItemList backwardItems;

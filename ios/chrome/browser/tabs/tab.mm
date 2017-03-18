@@ -105,6 +105,7 @@
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/web/auto_reload_bridge.h"
 #import "ios/chrome/browser/web/external_app_launcher.h"
+#import "ios/chrome/browser/web/navigation_manager_util.h"
 #import "ios/chrome/browser/web/passkit_dialog_provider.h"
 #include "ios/chrome/browser/web/print_observer.h"
 #import "ios/chrome/browser/xcallback_parameters.h"
@@ -1499,21 +1500,21 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   ui::PageTransition transition =
       ui::PageTransitionFromInt(ui::PAGE_TRANSITION_FORM_SUBMIT);
   DCHECK([self navigationManager]);
-  CRWSessionController* sessionController =
-      [self navigationManagerImpl]->GetSessionController();
-  web::NavigationItem* lastUserItem = [sessionController lastUserItem];
-  if (!lastUserItem)
+  web::NavigationItem* lastNonRedirectedItem =
+      GetLastNonRedirectedItem([self navigationManager]);
+  if (!lastNonRedirectedItem)
     return;
 
   // |originalUrl| will be empty if a page was open by DOM.
-  GURL reloadURL(lastUserItem->GetOriginalRequestURL());
+  GURL reloadURL(lastNonRedirectedItem->GetOriginalRequestURL());
   if (reloadURL.is_empty()) {
-    DCHECK(sessionController.openedByDOM);
-    reloadURL = lastUserItem->GetVirtualURL();
+    DCHECK(
+        [[self navigationManagerImpl]->GetSessionController() isOpenedByDOM]);
+    reloadURL = lastNonRedirectedItem->GetVirtualURL();
   }
 
   web::NavigationManager::WebLoadParams params(reloadURL);
-  params.referrer = lastUserItem->GetReferrer();
+  params.referrer = lastNonRedirectedItem->GetReferrer();
   params.transition_type = transition;
   if (self.navigationManager)
     self.navigationManager->LoadURLWithParams(params);

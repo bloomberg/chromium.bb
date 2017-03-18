@@ -217,10 +217,6 @@ void NavigationManagerImpl::AddPendingItem(
   override_desktop_user_agent_for_next_pending_item_ = false;
 }
 
-NavigationItem* NavigationManagerImpl::GetLastUserItem() const {
-  return [session_controller_ lastUserItem];
-}
-
 NavigationItemList NavigationManagerImpl::GetItems() const {
   return CreateNavigationItemList([session_controller_ items]);
 }
