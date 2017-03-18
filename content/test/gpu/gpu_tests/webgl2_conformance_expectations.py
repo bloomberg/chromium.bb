@@ -709,6 +709,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'tex-2d-srgb8-rgb-unsigned_byte.html',
         ['linux', 'nvidia'], bug=694354)
 
+    # Linux NVIDIA Quadro M2000
+    self.Fail('deqp/functional/gles3/multisample.html',
+        ['linux', ('nvidia', 0x1430)], bug=702861)
+
     # Linux Intel
     self.Fail('conformance2/extensions/ext-color-buffer-float.html',
         ['linux', 'intel'], bug=640389)
