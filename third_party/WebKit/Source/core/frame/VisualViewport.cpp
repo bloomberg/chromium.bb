@@ -250,6 +250,8 @@ bool VisualViewport::didSetScaleOrLocation(float scale,
 
   bool valuesChanged = false;
 
+  CHECK(!std::isnan(scale));
+  CHECK(std::isfinite(scale));
   if (scale != m_scale) {
     m_scale = scale;
     valuesChanged = true;
@@ -259,6 +261,10 @@ bool VisualViewport::didSetScaleOrLocation(float scale,
 
   ScrollOffset clampedOffset = clampScrollOffset(toScrollOffset(location));
 
+  CHECK(!std::isnan(clampedOffset.width()) &&
+        !std::isnan(clampedOffset.height()));
+  CHECK(std::isfinite(clampedOffset.width()) &&
+        std::isfinite(clampedOffset.height()));
   if (clampedOffset != m_offset) {
     m_offset = clampedOffset;
     scrollAnimator().setCurrentOffset(m_offset);
