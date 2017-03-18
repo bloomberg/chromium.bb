@@ -89,7 +89,10 @@
 #include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/sync/test/integration/sync_arc_package_helper.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_list_prefs_factory.h"
 #include "chromeos/chromeos_switches.h"
+#include "components/arc/arc_util.h"
 #endif
 
 using browser_sync::ProfileSyncService;
@@ -298,6 +301,7 @@ void SyncTest::SetUpCommandLine(base::CommandLine* cl) {
 
 #if defined(OS_CHROMEOS)
   cl->AppendSwitch(chromeos::switches::kIgnoreUserProfileMappingForTests);
+  arc::SetArcAvailableCommandLineForTesting(cl);
 #endif
 }
 
@@ -513,6 +517,16 @@ bool SyncTest::SetupClients() {
       LOG(FATAL) << "Could not create Gaia account.";
   }
 
+#if defined(OS_CHROMEOS)
+  const auto* cl = base::CommandLine::ForCurrentProcess();
+  // ARC_PACKAGE do not support supervised users, switches::kSupervisedUserId
+  // need to be set in SetUpCommandLine() when a test will use supervise users.
+  if (!cl->HasSwitch(switches::kSupervisedUserId)) {
+    // Sets Arc flags, need to be called before create test profiles.
+    ArcAppListPrefsFactory::SetFactoryForSyncTest();
+  }
+#endif
+
   for (int i = 0; i < num_clients_; ++i) {
     CreateProfile(i);
   }
@@ -531,6 +545,16 @@ bool SyncTest::SetupClients() {
         user_data_dir.Append(FILE_PATH_LITERAL("Verifier")), num_clients_);
     WaitForDataModels(verifier());
   }
+
+#if defined(OS_CHROMEOS)
+  if (ArcAppListPrefsFactory::IsFactorySetForSyncTest()) {
+    // Init SyncArcPackageHelper to ensure that the arc services are initialized
+    // for each Profile, only can be called after test profiles are created.
+    if (!sync_arc_helper())
+      return false;
+  }
+#endif
+
   // Error cases are all handled by LOG(FATAL) messages. So there is not really
   // a case that returns false.  In case we failed to create a verifier profile,
   // any call to the verifier() would fail.
@@ -1171,6 +1195,14 @@ fake_server::FakeServer* SyncTest::GetFakeServer() const {
 void SyncTest::TriggerSyncForModelTypes(int index,
                                         syncer::ModelTypeSet model_types) {
   GetSyncService(index)->TriggerRefresh(model_types);
+}
+
+arc::SyncArcPackageHelper* SyncTest::sync_arc_helper() {
+#if defined(OS_CHROMEOS)
+  return arc::SyncArcPackageHelper::GetInstance();
+#else
+  return nullptr;
+#endif
 }
 
 void SyncTest::SetPreexistingPreferencesFileContents(

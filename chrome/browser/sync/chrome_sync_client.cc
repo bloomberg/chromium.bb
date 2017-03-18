@@ -108,6 +108,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/printing/printers_manager.h"
 #include "chrome/browser/chromeos/printing/printers_manager_factory.h"
 #include "chrome/browser/chromeos/printing/printers_sync_bridge.h"
@@ -678,11 +679,11 @@ void ChromeSyncClient::RegisterDesktopDataTypes(
             syncer::WIFI_CREDENTIALS, error_callback, this, syncer::GROUP_UI,
             BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)));
   }
-
-  // TODO(lgcheng): Add switch for this.
-  sync_service->RegisterDataTypeController(
-      base::MakeUnique<ArcPackageSyncDataTypeController>(
-          syncer::ARC_PACKAGE, error_callback, this, profile_));
+  if (arc::IsArcAllowedForProfile(profile_)) {
+    sync_service->RegisterDataTypeController(
+        base::MakeUnique<ArcPackageSyncDataTypeController>(
+            syncer::ARC_PACKAGE, error_callback, this, profile_));
+  }
 #endif
 }
 

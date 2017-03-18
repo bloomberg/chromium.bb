@@ -20,6 +20,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/app_list/app_list_switches.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/arc/arc_util.h"
+#endif
+
 using browser_sync::ProfileSyncService;
 using syncer::DataTypeController;
 
@@ -51,7 +55,8 @@ class ProfileSyncServiceFactoryTest : public testing::Test {
 #endif  // !OS_ANDROID
 
 #if defined(OS_CHROMEOS)
-    datatypes.push_back(syncer::ARC_PACKAGE);
+    if (arc::IsArcAllowedForProfile(profile()))
+      datatypes.push_back(syncer::ARC_PACKAGE);
     datatypes.push_back(syncer::PRINTERS);
 #endif  // OS_CHROMEOS
 

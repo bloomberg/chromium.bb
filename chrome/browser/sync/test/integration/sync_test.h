@@ -43,6 +43,10 @@ class ProfileSyncServiceHarness;
 class P2PInvalidationForwarder;
 class P2PSyncRefresher;
 
+namespace arc {
+class SyncArcPackageHelper;
+}  // namespace arc
+
 namespace base {
 class CommandLine;
 class ScopedTempDir;
@@ -251,6 +255,8 @@ class SyncTest : public InProcessBrowserTest {
 
   // Triggers a sync for the given |model_types| for the Profile at |index|.
   void TriggerSyncForModelTypes(int index, syncer::ModelTypeSet model_types);
+
+  arc::SyncArcPackageHelper* sync_arc_helper();
 
  protected:
   // Add custom switches needed for running the test.
