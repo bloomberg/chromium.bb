@@ -645,7 +645,8 @@ static const char kExpectedPDFAXTree[] =
     "        staticText '3'\n"
     "          inlineTextBox '3'\n";
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibility) {
+// https://crbug.com/701427
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, DISABLED_PdfAccessibility) {
   content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
 
   GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test-bookmarks.pdf"));
@@ -674,7 +675,8 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibilityCharCountCrash) {
 }
 #endif
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibilityEnableLater) {
+// https://crbug.com/701427
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, DISABLED_PdfAccessibilityEnableLater) {
   // In this test, load the PDF file first, with accessibility off.
   GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test-bookmarks.pdf"));
   content::WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
@@ -697,7 +699,8 @@ bool RetrieveGuestContents(
   return true;
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibilityInIframe) {
+// https://crbug.com/701427
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, DISABLED_PdfAccessibilityInIframe) {
   content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
   GURL test_iframe_url(embedded_test_server()->GetURL("/pdf/test-iframe.html"));
   ui_test_utils::NavigateToURL(browser(), test_iframe_url);
@@ -719,7 +722,8 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibilityInIframe) {
   ASSERT_MULTILINE_STREQ(kExpectedPDFAXTree, ax_tree_dump);
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibilityInOOPIF) {
+// https://crbug.com/701427
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, DISABLED_PdfAccessibilityInOOPIF) {
   content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
   GURL test_iframe_url(embedded_test_server()->GetURL(
       "/pdf/test-cross-site-iframe.html"));
