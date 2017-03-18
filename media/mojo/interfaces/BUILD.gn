@@ -25,6 +25,10 @@ mojom("interfaces") {
     sources += [ "platform_verification.mojom" ]
   }
 
+  if (is_android) {
+    sources += [ "android_overlay.mojom" ]
+  }
+
   public_deps = [
     "//gpu/ipc/common:interfaces",
     "//mojo/common:common_custom_types",

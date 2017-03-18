@@ -31,6 +31,10 @@ namespace IPC {
 class Message;
 }
 
+namespace service_manager {
+class InterfaceRegistry;
+}
+
 namespace content {
 void RouteToGpuProcessHostUIShimTask(int host_id, const IPC::Message& msg);
 
@@ -56,6 +60,12 @@ class GpuProcessHostUIShim : public IPC::Listener,
   // dispatch the incoming messages from the GPU process, which are
   // actually received on the IO thread.
   bool OnMessageReceived(const IPC::Message& message) override;
+
+#if defined(OS_ANDROID)
+  // Register Mojo interfaces that must be bound on the UI thread.
+  static void RegisterUIThreadMojoInterfaces(
+      service_manager::InterfaceRegistry* registry);
+#endif
 
  private:
   explicit GpuProcessHostUIShim(int host_id);

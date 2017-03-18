@@ -38,6 +38,15 @@ source_set("clients") {
     "mojo_video_decoder.h",
   ]
 
+  if (is_android) {
+    sources += [
+      "mojo_android_overlay.cc",
+      "mojo_android_overlay.h",
+      "mojo_android_overlay_factory.cc",
+      "mojo_android_overlay_factory.h",
+    ]
+  }
+
   public_configs = [ "//media/mojo/services:mojo_media_config" ]
 
   public_deps = [
@@ -54,4 +63,8 @@ source_set("clients") {
     "//mojo/common",
     "//services/service_manager/public/cpp",
   ]
+
+  if (is_android) {
+    deps += [ "//ui/gl:gl" ]
+  }
 }

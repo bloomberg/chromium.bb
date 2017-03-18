@@ -26,6 +26,13 @@
 #include "gpu/ipc/common/memory_stats.h"
 #include "ui/gfx/swap_result.h"
 
+#if defined(OS_ANDROID)
+#include "content/public/browser/android/java_interfaces.h"
+#include "media/mojo/interfaces/android_overlay.mojom.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
+#endif
+
 #if defined(USE_OZONE)
 #include "ui/ozone/public/gpu_platform_support_host.h"
 #include "ui/ozone/public/ozone_platform.h"
@@ -42,6 +49,22 @@ namespace {
 
 base::LazyInstance<IDMap<GpuProcessHostUIShim*>>::DestructorAtExit
     g_hosts_by_id = LAZY_INSTANCE_INITIALIZER;
+
+#if defined(OS_ANDROID)
+template <typename Interface>
+void BindJavaInterface(mojo::InterfaceRequest<Interface> request) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  content::GetGlobalJavaInterfaces()->GetInterface(std::move(request));
+}
+
+// Binder which posts each request to the UI thread.
+template <typename Interface>
+void BindJavaInterfaceOnUIThread(mojo::InterfaceRequest<Interface> request) {
+  BrowserThread::GetTaskRunnerForThread(BrowserThread::UI)
+      ->PostTask(FROM_HERE, base::Bind(&BindJavaInterface<Interface>,
+                                       base::Passed(&request)));
+}
+#endif
 
 }  // namespace
 
@@ -151,5 +174,14 @@ void GpuProcessHostUIShim::OnGraphicsInfoCollected(
 
   GpuDataManagerImpl::GetInstance()->UpdateGpuInfo(gpu_info);
 }
+
+#if defined(OS_ANDROID)
+// static
+void GpuProcessHostUIShim::RegisterUIThreadMojoInterfaces(
+    service_manager::InterfaceRegistry* registry) {
+  registry->AddInterface(base::Bind(
+      &BindJavaInterfaceOnUIThread<media::mojom::AndroidOverlayProvider>));
+}
+#endif
 
 }  // namespace content

@@ -8,6 +8,7 @@ import android.content.Context;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.content.browser.androidoverlay.AndroidOverlayProviderImpl;
 import org.chromium.content.browser.shapedetection.FaceDetectionProviderImpl;
 import org.chromium.content_public.browser.InterfaceRegistrar;
 import org.chromium.content_public.browser.RenderFrameHost;
@@ -17,6 +18,7 @@ import org.chromium.device.battery.BatteryMonitorFactory;
 import org.chromium.device.mojom.VibrationManager;
 import org.chromium.device.nfc.mojom.Nfc;
 import org.chromium.device.vibration.VibrationManagerImpl;
+import org.chromium.media.mojom.AndroidOverlayProvider;
 import org.chromium.mojo.system.impl.CoreImpl;
 import org.chromium.services.service_manager.InterfaceRegistry;
 import org.chromium.shape_detection.mojom.FaceDetectionProvider;
@@ -72,6 +74,8 @@ class InterfaceRegistrarImpl {
                     BatteryMonitor.MANAGER, new BatteryMonitorFactory(applicationContext));
             registry.addInterface(FaceDetectionProvider.MANAGER,
                     new FaceDetectionProviderImpl.Factory(applicationContext));
+            registry.addInterface(AndroidOverlayProvider.MANAGER,
+                    new AndroidOverlayProviderImpl.Factory(applicationContext));
             // TODO(avayvod): Register the PresentationService implementation here.
         }
     }

@@ -352,6 +352,11 @@ class GpuProcessHost::ConnectionFilterImpl : public ConnectionFilter {
 
     GetContentClient()->browser()->ExposeInterfacesToGpuProcess(registry,
                                                                 host_);
+
+#if defined(OS_ANDROID)
+    GpuProcessHostUIShim::RegisterUIThreadMojoInterfaces(registry);
+#endif
+
     return true;
   }
 

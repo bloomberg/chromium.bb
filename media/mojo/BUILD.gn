@@ -18,6 +18,10 @@ source_set("unit_tests") {
     "services/mojo_cdm_allocator_unittest.cc",
   ]
 
+  if (is_android) {
+    sources += [ "clients/mojo_android_overlay_unittest.cc" ]
+  }
+
   deps = [
     "//base",
     "//base/test:test_support",

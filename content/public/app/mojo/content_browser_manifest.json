@@ -5,6 +5,7 @@
     "service_manager:connector": {
       "provides": {
         "gpu": [
+          "media::mojom::AndroidOverlayProvider",
           "memory_instrumentation::mojom::Coordinator"
         ],
         "plugin": [

@@ -18,6 +18,7 @@ if (is_android) {
       "android_cdm_factory.h",
       "android_overlay.cc",
       "android_overlay.h",
+      "android_overlay_factory.h",
       "media_client_android.cc",
       "media_client_android.h",
       "media_codec_bridge.h",
