@@ -265,9 +265,14 @@ void DisplayManager::SetLayoutForCurrentDisplays(
     delegate_->PostDisplayConfigurationChange(false);
 }
 
-const Display& DisplayManager::GetDisplayForId(int64_t id) const {
-  Display* display = const_cast<DisplayManager*>(this)->FindDisplayForId(id);
+const Display& DisplayManager::GetDisplayForId(int64_t display_id) const {
+  Display* display =
+      const_cast<DisplayManager*>(this)->FindDisplayForId(display_id);
   return display ? *display : GetInvalidDisplay();
+}
+
+bool DisplayManager::IsDisplayIdValid(int64_t display_id) const {
+  return GetDisplayForId(display_id).is_valid();
 }
 
 const Display& DisplayManager::FindDisplayContainingPoint(

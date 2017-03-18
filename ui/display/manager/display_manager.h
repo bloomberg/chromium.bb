@@ -138,8 +138,11 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   // locaion of the displays relative to their parents.
   void SetLayoutForCurrentDisplays(std::unique_ptr<DisplayLayout> layout);
 
-  // Returns display for given |id|;
-  const Display& GetDisplayForId(int64_t id) const;
+  // Returns display for given |display_id|.
+  const Display& GetDisplayForId(int64_t display_id) const;
+
+  // Checks the validity of given |display_id|.
+  bool IsDisplayIdValid(int64_t display_id) const;
 
   // Finds the display that contains |point| in screeen coordinates.  Returns
   // invalid display if there is no display that can satisfy the condition.

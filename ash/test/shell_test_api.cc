@@ -5,7 +5,6 @@
 #include "ash/test/shell_test_api.h"
 #include "ash/common/palette_delegate.h"
 #include "ash/common/session/session_state_delegate.h"
-#include "ash/display/display_configuration_controller.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 
@@ -34,10 +33,6 @@ AshNativeCursorManager* ShellTestApi::ash_native_cursor_manager() {
 
 DragDropController* ShellTestApi::drag_drop_controller() {
   return shell_->drag_drop_controller_.get();
-}
-
-void ShellTestApi::DisableDisplayAnimator() {
-  shell_->display_configuration_controller()->ResetAnimatorForTest();
 }
 
 void ShellTestApi::SetPaletteDelegate(

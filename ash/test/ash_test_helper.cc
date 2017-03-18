@@ -19,7 +19,7 @@
 #include "ash/system/chromeos/screen_layout_observer.h"
 #include "ash/test/ash_test_environment.h"
 #include "ash/test/ash_test_views_delegate.h"
-#include "ash/test/shell_test_api.h"
+#include "ash/test/display_configuration_controller_test_api.h"
 #include "ash/test/test_screenshot_delegate.h"
 #include "ash/test/test_shell_delegate.h"
 #include "base/memory/ptr_util.h"
@@ -159,7 +159,9 @@ void AshTestHelper::SetUp(bool start_session) {
     display::test::DisplayManagerTestApi(
         Shell::GetInstance()->display_manager())
         .DisableChangeDisplayUponHostResize();
-    ShellTestApi(shell).DisableDisplayAnimator();
+    DisplayConfigurationControllerTestApi(
+        shell->display_configuration_controller())
+        .DisableDisplayAnimator();
 
     // TODO: disabled for mash as AcceleratorControllerDelegateAura isn't
     // created in mash http://crbug.com/632111.
