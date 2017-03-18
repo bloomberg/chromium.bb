@@ -1277,6 +1277,7 @@ TEST_F(RenderWidgetHostTest, SwapCompositorFrameWithBadSourceId) {
 
   // First swap a frame with an invalid ID.
   cc::CompositorFrame frame;
+  frame.metadata.begin_frame_ack = cc::BeginFrameAck(0, 1, 1, 0, true);
   frame.metadata.content_source_id = 99;
   host_->OnMessageReceived(ViewHostMsg_SwapCompositorFrame(
       0, 0, frame, std::vector<IPC::Message>()));

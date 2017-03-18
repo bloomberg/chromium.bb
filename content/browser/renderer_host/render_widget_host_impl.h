@@ -60,6 +60,10 @@ class WebMouseEvent;
 struct WebCompositionUnderline;
 }
 
+namespace cc {
+struct BeginFrameAck;
+}  // namespace cc
+
 #if defined(OS_MACOSX)
 namespace device {
 class PowerSaveBlocker;
@@ -617,6 +621,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   void OnSetTooltipText(const base::string16& tooltip_text,
                         blink::WebTextDirection text_direction_hint);
   bool OnSwapCompositorFrame(const IPC::Message& message);
+  void OnBeginFrameDidNotSwap(const cc::BeginFrameAck& ack);
   void OnUpdateRect(const ViewHostMsg_UpdateRect_Params& params);
   void OnQueueSyntheticGesture(const SyntheticGesturePacket& gesture_packet);
   void OnSetCursor(const WebCursor& cursor);

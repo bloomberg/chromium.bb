@@ -937,12 +937,23 @@ void RenderWidgetHostViewAura::OnSwapCompositorFrame(
     selection.end.SetEdge(end_edge_top, end_edge_bottom);
   }
 
+  cc::BeginFrameAck ack(frame.metadata.begin_frame_ack);
+
   if (delegated_frame_host_) {
     delegated_frame_host_->SwapDelegatedFrame(compositor_frame_sink_id,
                                               std::move(frame));
   }
   selection_controller_->OnSelectionBoundsChanged(selection.start,
                                                   selection.end);
+
+  if (begin_frame_source_)
+    begin_frame_source_->DidFinishFrame(this, ack);
+}
+
+void RenderWidgetHostViewAura::OnBeginFrameDidNotSwap(
+    const cc::BeginFrameAck& ack) {
+  if (begin_frame_source_)
+    begin_frame_source_->DidFinishFrame(this, ack);
 }
 
 void RenderWidgetHostViewAura::ClearCompositorFrame() {

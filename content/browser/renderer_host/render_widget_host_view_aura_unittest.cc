@@ -29,6 +29,8 @@
 #include "cc/output/copy_output_request.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_manager.h"
+#include "cc/test/begin_frame_args_test.h"
+#include "cc/test/fake_external_begin_frame_source.h"
 #include "components/display_compositor/gl_helper.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/compositor/test/no_transport_image_transport_factory.h"
@@ -1859,6 +1861,7 @@ cc::CompositorFrame MakeDelegatedFrame(float scale_factor,
                                        gfx::Rect damage) {
   cc::CompositorFrame frame;
   frame.metadata.device_scale_factor = scale_factor;
+  frame.metadata.begin_frame_ack = cc::BeginFrameAck(0, 1, 1, 0, true);
 
   std::unique_ptr<cc::RenderPass> pass = cc::RenderPass::Create();
   pass->SetNew(1, gfx::Rect(size), damage, gfx::Transform());
@@ -2730,6 +2733,166 @@ TEST_F(RenderWidgetHostViewAuraTest, SourceEventTypeExistsInLatencyInfo) {
   EXPECT_EQ(widget_host_->lastWheelOrTouchEventLatencyInfo.source_event_type(),
             ui::SourceEventType::TOUCH);
   view_->OnTouchEvent(&release);
+}
+
+namespace {
+class LastObserverTracker : public cc::FakeExternalBeginFrameSource::Client {
+ public:
+  void OnAddObserver(cc::BeginFrameObserver* obs) override {
+    last_observer_ = obs;
+  }
+  void OnRemoveObserver(cc::BeginFrameObserver* obs) override {}
+
+  cc::BeginFrameObserver* last_observer_ = nullptr;
+};
+}  // namespace
+
+// Tests that BeginFrameAcks are forwarded correctly from the
+// SwapCompositorFrame and OnBeginFrameDidNotSwap IPCs through
+// DelegatedFrameHost and its CompositorFrameSinkSupport.
+TEST_F(RenderWidgetHostViewAuraTest, ForwardsBeginFrameAcks) {
+  gfx::Rect view_rect(100, 100);
+  gfx::Size frame_size = view_rect.size();
+
+  view_->InitAsChild(nullptr);
+  aura::client::ParentWindowWithContext(
+      view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
+      gfx::Rect());
+  view_->SetSize(view_rect.size());
+
+  // Replace BeginFrameSource so that we can observe acknowledgments. Since the
+  // DelegatedFrameHost doesn't directly observe our BeginFrameSource,
+  // |observer_tracker| grabs a pointer to the observer (the
+  // DelegatedFrameHost's CompositorFrameSinkSupport).
+  LastObserverTracker observer_tracker;
+  cc::FakeExternalBeginFrameSource source(0.f, false);
+  uint32_t source_id = source.source_id();
+  source.SetClient(&observer_tracker);
+  cc::FrameSinkId frame_sink_id =
+      view_->GetDelegatedFrameHost()->GetFrameSinkId();
+  ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
+  cc::SurfaceManager* surface_manager =
+      factory->GetContextFactoryPrivate()->GetSurfaceManager();
+  surface_manager->RegisterBeginFrameSource(&source, frame_sink_id);
+  view_->SetNeedsBeginFrames(true);
+  EXPECT_TRUE(observer_tracker.last_observer_);
+
+  {
+    cc::BeginFrameArgs args =
+        cc::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, source_id, 5u);
+    source.TestOnBeginFrame(args);
+
+    // Ack from CompositorFrame is forwarded.
+    cc::BeginFrameAck ack(source_id, 5, 4, 0, true);
+    cc::CompositorFrame frame = MakeDelegatedFrame(1.f, frame_size, view_rect);
+    frame.metadata.begin_frame_ack = ack;
+    view_->OnSwapCompositorFrame(0, std::move(frame));
+    view_->RunOnCompositingDidCommit();
+    EXPECT_EQ(ack, source.LastAckForObserver(observer_tracker.last_observer_));
+  }
+
+  {
+    cc::BeginFrameArgs args =
+        cc::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, source_id, 6u);
+    source.TestOnBeginFrame(args);
+
+    // Explicit ack through OnBeginFrameDidNotSwap is forwarded.
+    cc::BeginFrameAck ack(source_id, 6, 4, 0, false);
+    view_->OnBeginFrameDidNotSwap(ack);
+    EXPECT_EQ(ack, source.LastAckForObserver(observer_tracker.last_observer_));
+  }
+
+  // Lock the compositor. Now we should drop frames and, thus,
+  // latest_confirmed_sequence_number should not change.
+  view_rect = gfx::Rect(150, 150);
+  view_->SetSize(view_rect.size());
+
+  {
+    cc::BeginFrameArgs args =
+        cc::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, source_id, 7u);
+    source.TestOnBeginFrame(args);
+
+    // Ack from CompositorFrame is forwarded with old
+    // latest_confirmed_sequence_number and without damage.
+    cc::BeginFrameAck ack(source_id, 7, 7, 0, true);
+    gfx::Rect dropped_damage_rect(10, 20, 30, 40);
+    cc::CompositorFrame frame =
+        MakeDelegatedFrame(1.f, frame_size, dropped_damage_rect);
+    frame.metadata.begin_frame_ack = ack;
+    view_->OnSwapCompositorFrame(0, std::move(frame));
+    view_->RunOnCompositingDidCommit();
+    ack.latest_confirmed_sequence_number = 4;
+    ack.has_damage = false;
+    EXPECT_EQ(ack, source.LastAckForObserver(observer_tracker.last_observer_));
+  }
+
+  // Change source_id known to the view. This should reset the
+  // latest_confirmed_sequence_number tracked by the view.
+  source_id = cc::BeginFrameArgs::kManualSourceId;
+
+  {
+    cc::BeginFrameArgs args = cc::CreateBeginFrameArgsForTesting(
+        BEGINFRAME_FROM_HERE, source_id, 10u);
+    source.TestOnBeginFrame(args);
+
+    // Ack from CompositorFrame is forwarded with invalid
+    // latest_confirmed_sequence_number and without damage.
+    cc::BeginFrameAck ack(source_id, 10, 10, 0, true);
+    gfx::Rect dropped_damage_rect(10, 20, 30, 40);
+    cc::CompositorFrame frame =
+        MakeDelegatedFrame(1.f, frame_size, dropped_damage_rect);
+    frame.metadata.begin_frame_ack = ack;
+    view_->OnSwapCompositorFrame(0, std::move(frame));
+    view_->RunOnCompositingDidCommit();
+    ack.latest_confirmed_sequence_number =
+        cc::BeginFrameArgs::kInvalidFrameNumber;
+    ack.has_damage = false;
+    EXPECT_EQ(ack, source.LastAckForObserver(observer_tracker.last_observer_));
+  }
+
+  {
+    cc::BeginFrameArgs args = cc::CreateBeginFrameArgsForTesting(
+        BEGINFRAME_FROM_HERE, source_id, 11u);
+    source.TestOnBeginFrame(args);
+
+    // Explicit ack through OnBeginFrameDidNotSwap is forwarded with invalid
+    // latest_confirmed_sequence_number.
+    cc::BeginFrameAck ack(source_id, 11, 11, 0, false);
+    view_->OnBeginFrameDidNotSwap(ack);
+    ack.latest_confirmed_sequence_number =
+        cc::BeginFrameArgs::kInvalidFrameNumber;
+    EXPECT_EQ(ack, source.LastAckForObserver(observer_tracker.last_observer_));
+  }
+
+  // Unlock the compositor again with a new CompositorFrame of correct size.
+  frame_size = view_rect.size();
+
+  {
+    cc::BeginFrameArgs args = cc::CreateBeginFrameArgsForTesting(
+        BEGINFRAME_FROM_HERE, source_id, 12u);
+    source.TestOnBeginFrame(args);
+
+    // Ack from CompositorFrame is forwarded.
+    cc::BeginFrameAck ack(source_id, 12, 12, 0, true);
+    cc::CompositorFrame frame = MakeDelegatedFrame(1.f, frame_size, view_rect);
+    frame.metadata.begin_frame_ack = ack;
+    view_->OnSwapCompositorFrame(0, std::move(frame));
+    view_->RunOnCompositingDidCommit();
+    EXPECT_EQ(ack, source.LastAckForObserver(observer_tracker.last_observer_));
+  }
+
+  {
+    cc::BeginFrameArgs args = cc::CreateBeginFrameArgsForTesting(
+        BEGINFRAME_FROM_HERE, source_id, 13u);
+    source.TestOnBeginFrame(args);
+
+    // Explicit ack through OnBeginFrameDidNotSwap is forwarded.
+    cc::BeginFrameAck ack(source_id, 13, 13, 0, false);
+    view_->OnBeginFrameDidNotSwap(ack);
+    EXPECT_EQ(ack, source.LastAckForObserver(observer_tracker.last_observer_));
+  }
+
+  surface_manager->UnregisterBeginFrameSource(&source);
 }
 
 class RenderWidgetHostViewAuraCopyRequestTest

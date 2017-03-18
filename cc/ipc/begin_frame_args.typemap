@@ -5,5 +5,14 @@
 mojom = "//cc/ipc/begin_frame_args.mojom"
 public_headers = [ "//cc/output/begin_frame_args.h" ]
 traits_headers = [ "//cc/ipc/begin_frame_args_struct_traits.h" ]
-deps = [ "//cc", ]
-type_mappings = [ "cc.mojom.BeginFrameArgs=cc::BeginFrameArgs" ]
+deps = [
+  "//cc",
+  "//mojo/common:struct_traits",
+]
+sources = [
+  "begin_frame_args_struct_traits.cc",
+]
+type_mappings = [
+  "cc.mojom.BeginFrameArgs=cc::BeginFrameArgs",
+  "cc.mojom.BeginFrameAck=cc::BeginFrameAck",
+]

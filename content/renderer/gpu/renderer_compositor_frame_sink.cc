@@ -109,6 +109,9 @@ void RendererCompositorFrameSink::DetachFromClient() {
 
 void RendererCompositorFrameSink::SubmitCompositorFrame(
     cc::CompositorFrame frame) {
+  // We should only submit CompositorFrames with valid BeginFrameAcks.
+  DCHECK_LE(cc::BeginFrameArgs::kStartingFrameNumber,
+            frame.metadata.begin_frame_ack.sequence_number);
   {
     std::unique_ptr<FrameSwapMessageQueue::SendMessageScope>
         send_message_scope =

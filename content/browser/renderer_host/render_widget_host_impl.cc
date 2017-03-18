@@ -553,6 +553,8 @@ bool RenderWidgetHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetTooltipText, OnSetTooltipText)
     IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_SwapCompositorFrame,
                                 OnSwapCompositorFrame(msg))
+    IPC_MESSAGE_HANDLER(ViewHostMsg_BeginFrameDidNotSwap,
+                        OnBeginFrameDidNotSwap)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateRect, OnUpdateRect)
     IPC_MESSAGE_HANDLER(ViewHostMsg_SetCursor, OnSetCursor)
     IPC_MESSAGE_HANDLER(ViewHostMsg_TextInputStateChanged,
@@ -1826,6 +1828,18 @@ bool RenderWidgetHostImpl::OnSwapCompositorFrame(
   std::vector<IPC::Message> messages_to_deliver_with_frame;
   messages_to_deliver_with_frame.swap(std::get<2>(param));
 
+  if (frame.metadata.begin_frame_ack.sequence_number <
+      cc::BeginFrameArgs::kStartingFrameNumber) {
+    // Received an invalid ack, renderer misbehaved.
+    bad_message::ReceivedBadMessage(
+        GetProcess(),
+        bad_message::RWH_INVALID_BEGIN_FRAME_ACK_COMPOSITOR_FRAME);
+    return false;
+  }
+  // |has_damage| and |remaining_frames| are not transmitted.
+  frame.metadata.begin_frame_ack.has_damage = true;
+  frame.metadata.begin_frame_ack.remaining_frames = 0;
+
   if (!ui::LatencyInfo::Verify(frame.metadata.latency_info,
                                "RenderWidgetHostImpl::OnSwapCompositorFrame")) {
     std::vector<ui::LatencyInfo>().swap(frame.metadata.latency_info);
@@ -1867,6 +1881,24 @@ bool RenderWidgetHostImpl::OnSwapCompositorFrame(
   messages_to_deliver_with_frame.clear();
 
   return true;
+}
+
+void RenderWidgetHostImpl::OnBeginFrameDidNotSwap(
+    const cc::BeginFrameAck& ack) {
+  if (ack.sequence_number < cc::BeginFrameArgs::kStartingFrameNumber) {
+    // Received an invalid ack, renderer misbehaved.
+    bad_message::ReceivedBadMessage(
+        GetProcess(), bad_message::RWH_INVALID_BEGIN_FRAME_ACK_DID_NOT_SWAP);
+    return;
+  }
+
+  // |has_damage| and |remaining_frames| are not transmitted.
+  cc::BeginFrameAck modified_ack = ack;
+  modified_ack.has_damage = false;
+  modified_ack.remaining_frames = 0;
+
+  if (view_)
+    view_->OnBeginFrameDidNotSwap(modified_ack);
 }
 
 void RenderWidgetHostImpl::OnUpdateRect(

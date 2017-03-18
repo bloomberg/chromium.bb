@@ -43,6 +43,10 @@ class SkBitmap;
 
 struct ViewHostMsg_SelectionBounds_Params;
 
+namespace cc {
+struct BeginFrameAck;
+}  // namespace cc
+
 namespace media {
 class VideoFrame;
 }
@@ -217,6 +221,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
 
   virtual void OnSwapCompositorFrame(uint32_t compositor_frame_sink_id,
                                      cc::CompositorFrame frame) {}
+
+  virtual void OnBeginFrameDidNotSwap(const cc::BeginFrameAck& ack) {}
 
   // This method exists to allow removing of displayed graphics, after a new
   // page has been loaded, to prevent the displayed URL from being out of sync

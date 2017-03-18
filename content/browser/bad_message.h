@@ -183,6 +183,8 @@ enum BadMessageReason {
   RFH_DID_ADD_CONSOLE_MESSAGE_BAD_SEVERITY = 159,
   AIRH_VOLUME_OUT_OF_RANGE = 160,
   BDH_INVALID_DESCRIPTOR_ID = 161,
+  RWH_INVALID_BEGIN_FRAME_ACK_DID_NOT_SWAP = 162,
+  RWH_INVALID_BEGIN_FRAME_ACK_COMPOSITOR_FRAME = 163,
 
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. RenderFrameHost becomes RFH) plus a unique description of the

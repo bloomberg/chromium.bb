@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 typemaps = [
-  "//cc/ipc/begin_frame_args.typemap",
+  "//cc/ipc/begin_frame_args_for_blink.typemap",
   "//cc/ipc/compositor_frame_for_blink.typemap",
   "//cc/ipc/frame_sink_id.typemap",
   "//cc/ipc/local_surface_id.typemap",

@@ -831,7 +831,31 @@ void DelegatedFrameHost::OnNeedsBeginFrames(bool needs_begin_frames) {
   support_->SetNeedsBeginFrame(needs_begin_frames);
 }
 
-void DelegatedFrameHost::OnDidFinishFrame(const cc::BeginFrameAck& ack) {}
+void DelegatedFrameHost::OnDidFinishFrame(const cc::BeginFrameAck& ack) {
+  if (ack.source_id != latest_confirmed_begin_frame_source_id_) {
+    // Source changed, we don't know our freshness anymore.
+    latest_confirmed_begin_frame_sequence_number_ =
+        cc::BeginFrameArgs::kInvalidFrameNumber;
+  }
+
+  cc::BeginFrameAck modified_ack = ack;
+  if (skipped_frames_) {
+    // If we skipped the last frame(s), we didn't incorporate the last
+    // CompositorFrame's damage, so need to wait for the next one before
+    // confirming newer sequence numbers.
+    modified_ack.has_damage = false;
+    modified_ack.latest_confirmed_sequence_number =
+        latest_confirmed_begin_frame_sequence_number_;
+  } else {
+    latest_confirmed_begin_frame_source_id_ = modified_ack.source_id;
+    latest_confirmed_begin_frame_sequence_number_ =
+        modified_ack.latest_confirmed_sequence_number;
+  }
+
+  // TODO(eseckler): The interface to CompositorFrameSinkSupport should use
+  // SubmitCompositorFrame and BeginFrameDidNotSwap instead of DidFinishFrame.
+  support_->DidFinishFrame(modified_ack);
+}
 
 void DelegatedFrameHost::CreateCompositorFrameSinkSupport() {
   DCHECK(!support_);

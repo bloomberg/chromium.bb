@@ -119,6 +119,12 @@ class CC_EXPORT BeginFrameSource {
   // (rather than toggling SetNeedsBeginFrames every frame). For example, the
   // BackToBackFrameSource uses them to make sure only one frame is pending at a
   // time.
+  //
+  // Note that the BeginFrameSource should not assume that the |ack| references
+  // a valid BeginFrame sent by the source. The |ack| may reference a BeginFrame
+  // sent by a different BeginFrameSource, and a malicious client may reference
+  // any invalid frame. The source is responsible for checking for
+  // validity/relevance of the BeginFrame itself.
   // TODO(eseckler): Use BeginFrameAcks in DisplayScheduler as described above.
   virtual void DidFinishFrame(BeginFrameObserver* obs,
                               const BeginFrameAck& ack) = 0;

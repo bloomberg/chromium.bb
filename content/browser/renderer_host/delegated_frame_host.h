@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/gtest_prod_util.h"
+#include "cc/output/begin_frame_args.h"
 #include "cc/output/copy_output_result.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/compositor_frame_sink_support_client.h"
@@ -334,8 +335,10 @@ class CONTENT_EXPORT DelegatedFrameHost
       yuv_readback_pipeline_;
 
   std::unique_ptr<cc::ExternalBeginFrameSource> begin_frame_source_;
-
   bool needs_begin_frame_ = false;
+  uint32_t latest_confirmed_begin_frame_source_id_ = 0;
+  uint64_t latest_confirmed_begin_frame_sequence_number_ =
+      cc::BeginFrameArgs::kInvalidFrameNumber;
 
   bool has_frame_ = false;
 

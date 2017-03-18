@@ -29,6 +29,9 @@ interface TraitsTestService {
   EchoBeginFrameArgs(BeginFrameArgs b) => (BeginFrameArgs pass);
 
   [Sync]
+  EchoBeginFrameAck(BeginFrameAck b) => (BeginFrameAck pass);
+
+  [Sync]
   EchoCompositorFrame(CompositorFrame c) => (CompositorFrame pass);
 
   [Sync]

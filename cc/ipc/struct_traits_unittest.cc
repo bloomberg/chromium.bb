@@ -16,6 +16,7 @@
 #include "cc/quads/surface_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/quads/yuv_video_draw_quad.h"
+#include "cc/test/begin_frame_args_test.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkString.h"
@@ -38,6 +39,11 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
   // TraitsTestService:
   void EchoBeginFrameArgs(const BeginFrameArgs& b,
                           const EchoBeginFrameArgsCallback& callback) override {
+    callback.Run(b);
+  }
+
+  void EchoBeginFrameAck(const BeginFrameAck& b,
+                         const EchoBeginFrameAckCallback& callback) override {
     callback.Run(b);
   }
 
@@ -169,7 +175,11 @@ TEST_F(StructTraitsTest, BeginFrameArgs) {
   const base::TimeDelta interval = base::TimeDelta::FromMilliseconds(1337);
   const BeginFrameArgs::BeginFrameArgsType type = BeginFrameArgs::NORMAL;
   const bool on_critical_path = true;
+  const uint32_t source_id = 5;
+  const uint64_t sequence_number = 10;
   BeginFrameArgs input;
+  input.source_id = source_id;
+  input.sequence_number = sequence_number;
   input.frame_time = frame_time;
   input.deadline = deadline;
   input.interval = interval;
@@ -178,11 +188,37 @@ TEST_F(StructTraitsTest, BeginFrameArgs) {
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
   BeginFrameArgs output;
   proxy->EchoBeginFrameArgs(input, &output);
+  EXPECT_EQ(source_id, output.source_id);
+  EXPECT_EQ(sequence_number, output.sequence_number);
   EXPECT_EQ(frame_time, output.frame_time);
   EXPECT_EQ(deadline, output.deadline);
   EXPECT_EQ(interval, output.interval);
   EXPECT_EQ(type, output.type);
   EXPECT_EQ(on_critical_path, output.on_critical_path);
+}
+
+TEST_F(StructTraitsTest, BeginFrameAck) {
+  const uint32_t source_id = 5;
+  const uint64_t sequence_number = 10;
+  const uint64_t latest_confirmed_sequence_number = 8;
+  const uint32_t remaining_frames = 1;
+  const bool has_damage = true;
+  BeginFrameAck input;
+  input.source_id = source_id;
+  input.sequence_number = sequence_number;
+  input.latest_confirmed_sequence_number = latest_confirmed_sequence_number;
+  input.remaining_frames = remaining_frames;
+  input.has_damage = has_damage;
+  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  BeginFrameAck output;
+  proxy->EchoBeginFrameAck(input, &output);
+  EXPECT_EQ(source_id, output.source_id);
+  EXPECT_EQ(sequence_number, output.sequence_number);
+  EXPECT_EQ(latest_confirmed_sequence_number,
+            output.latest_confirmed_sequence_number);
+  // |remaining_frames| and |has_damage| are not transmitted.
+  EXPECT_EQ(0u, output.remaining_frames);
+  EXPECT_FALSE(output.has_damage);
 }
 
 // Note that this is a fairly trivial test of CompositorFrame serialization as
@@ -243,6 +279,7 @@ TEST_F(StructTraitsTest, CompositorFrame) {
   const float page_scale_factor = 1337.5f;
   const gfx::SizeF scrollable_viewport_size(1337.7f, 1234.5f);
   const uint32_t content_source_id = 3;
+  const BeginFrameAck begin_frame_ack(5, 10, 8, 0, false);
 
   CompositorFrame input;
   input.metadata.device_scale_factor = device_scale_factor;
@@ -252,6 +289,7 @@ TEST_F(StructTraitsTest, CompositorFrame) {
   input.render_pass_list.push_back(std::move(render_pass));
   input.resource_list.push_back(resource);
   input.metadata.content_source_id = content_source_id;
+  input.metadata.begin_frame_ack = begin_frame_ack;
 
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
   CompositorFrame output;
@@ -262,6 +300,7 @@ TEST_F(StructTraitsTest, CompositorFrame) {
   EXPECT_EQ(page_scale_factor, output.metadata.page_scale_factor);
   EXPECT_EQ(scrollable_viewport_size, output.metadata.scrollable_viewport_size);
   EXPECT_EQ(content_source_id, output.metadata.content_source_id);
+  EXPECT_EQ(begin_frame_ack, output.metadata.begin_frame_ack);
 
   ASSERT_EQ(1u, output.resource_list.size());
   TransferableResource out_resource = output.resource_list[0];

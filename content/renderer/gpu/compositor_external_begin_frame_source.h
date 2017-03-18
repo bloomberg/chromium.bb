@@ -43,9 +43,8 @@ class CompositorExternalBeginFrameSource
   // cc::BeginFrameSource implementation.
   void AddObserver(cc::BeginFrameObserver* obs) override;
   void RemoveObserver(cc::BeginFrameObserver* obs) override;
-  // TODO(eseckler): Track and forward BeginFrameAcks to browser.
   void DidFinishFrame(cc::BeginFrameObserver* obs,
-                      const cc::BeginFrameAck& ack) override {}
+                      const cc::BeginFrameAck& ack) override;
   bool IsThrottled() const override;
 
   // cc::ExternalBeginFrameSourceClient implementation.

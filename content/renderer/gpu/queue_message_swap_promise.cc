@@ -59,6 +59,8 @@ cc::SwapPromise::DidNotSwapAction QueueMessageSwapPromise::DidNotSwap(
 #if DCHECK_IS_ON()
   DCHECK(!completed_);
 #endif
+  // TODO(eseckler): Deliver messages with next ViewHostMsg_BeginFrameDidNotSwap
+  // or ViewHostMsg_SwapCompositorFrame instead of sending them here directly.
   std::vector<std::unique_ptr<IPC::Message>> messages;
   message_queue_->DidNotSwap(source_frame_number_, reason, &messages);
   for (auto& msg : messages) {
