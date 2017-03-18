@@ -1751,30 +1751,6 @@
         ],
         "important": true
     },
-    "arkham-chrome-pfq": {
-        "_template": "chrome_pfq",
-        "boards": [
-            "arkham"
-        ],
-        "chrome_sdk": false,
-        "important": false,
-        "manifest": "official.xml",
-        "sync_chrome": false,
-        "vm_tests": []
-    },
-    "arkham-chromium-pfq": {
-        "_template": "chromium_pfq",
-        "boards": [
-            "arkham"
-        ],
-        "chrome_sdk": false,
-        "important": false,
-        "sync_chrome": false,
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
     "arkham-compile-only-pre-cq": {
         "_template": "compile_only_pre_cq",
         "boards": [
@@ -1871,26 +1847,6 @@
         "sync_chrome": false,
         "vm_tests": [],
         "vm_tests_override": null
-    },
-    "arkham-tot-chrome-pfq-informational": {
-        "_template": "chrome_pfq_informational",
-        "boards": [
-            "arkham"
-        ],
-        "manifest": "official.xml",
-        "sync_chrome": false,
-        "vm_tests": []
-    },
-    "arkham-tot-chromium-pfq-informational": {
-        "_template": "chromium_pfq_informational",
-        "boards": [
-            "arkham"
-        ],
-        "sync_chrome": false,
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
     },
     "arkham-unittest-stress": {
         "_template": "unittest_stress",
@@ -3313,32 +3269,6 @@
             "chrome_internal"
         ]
     },
-    "beaglebone-chrome-pfq": {
-        "_template": "chrome_pfq",
-        "boards": [
-            "beaglebone"
-        ],
-        "chrome_sdk": false,
-        "important": false,
-        "manifest": "official.xml",
-        "rootfs_verification": false,
-        "sync_chrome": false,
-        "vm_tests": []
-    },
-    "beaglebone-chromium-pfq": {
-        "_template": "chromium_pfq",
-        "boards": [
-            "beaglebone"
-        ],
-        "chrome_sdk": false,
-        "important": false,
-        "rootfs_verification": false,
-        "sync_chrome": false,
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
     "beaglebone-compile-only-pre-cq": {
         "_template": "compile_only_pre_cq",
         "boards": [
@@ -3462,28 +3392,6 @@
         "vm_tests": [],
         "vm_tests_override": null
     },
-    "beaglebone-tot-chrome-pfq-informational": {
-        "_template": "chrome_pfq_informational",
-        "boards": [
-            "beaglebone"
-        ],
-        "manifest": "official.xml",
-        "rootfs_verification": false,
-        "sync_chrome": false,
-        "vm_tests": []
-    },
-    "beaglebone-tot-chromium-pfq-informational": {
-        "_template": "chromium_pfq_informational",
-        "boards": [
-            "beaglebone"
-        ],
-        "rootfs_verification": false,
-        "sync_chrome": false,
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
     "beaglebone-unittest-stress": {
         "_template": "unittest_stress",
         "boards": [
@@ -3498,32 +3406,6 @@
         "useflags": [
             "chrome_internal"
         ]
-    },
-    "beaglebone_servo-chrome-pfq": {
-        "_template": "chrome_pfq",
-        "boards": [
-            "beaglebone_servo"
-        ],
-        "chrome_sdk": false,
-        "important": false,
-        "manifest": "official.xml",
-        "rootfs_verification": false,
-        "sync_chrome": false,
-        "vm_tests": []
-    },
-    "beaglebone_servo-chromium-pfq": {
-        "_template": "chromium_pfq",
-        "boards": [
-            "beaglebone_servo"
-        ],
-        "chrome_sdk": false,
-        "important": false,
-        "rootfs_verification": false,
-        "sync_chrome": false,
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
     },
     "beaglebone_servo-compile-only-pre-cq": {
         "_template": "compile_only_pre_cq",
@@ -3636,28 +3518,6 @@
         "sync_chrome": false,
         "vm_tests": [],
         "vm_tests_override": null
-    },
-    "beaglebone_servo-tot-chrome-pfq-informational": {
-        "_template": "chrome_pfq_informational",
-        "boards": [
-            "beaglebone_servo"
-        ],
-        "manifest": "official.xml",
-        "rootfs_verification": false,
-        "sync_chrome": false,
-        "vm_tests": []
-    },
-    "beaglebone_servo-tot-chromium-pfq-informational": {
-        "_template": "chromium_pfq_informational",
-        "boards": [
-            "beaglebone_servo"
-        ],
-        "rootfs_verification": false,
-        "sync_chrome": false,
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
     },
     "beaglebone_servo-unittest-stress": {
         "_template": "unittest_stress",
@@ -8624,30 +8484,6 @@
             "chrome_internal"
         ]
     },
-    "gale-chrome-pfq": {
-        "_template": "chrome_pfq",
-        "boards": [
-            "gale"
-        ],
-        "chrome_sdk": false,
-        "important": false,
-        "manifest": "official.xml",
-        "sync_chrome": false,
-        "vm_tests": []
-    },
-    "gale-chromium-pfq": {
-        "_template": "chromium_pfq",
-        "boards": [
-            "gale"
-        ],
-        "chrome_sdk": false,
-        "important": false,
-        "sync_chrome": false,
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
     "gale-compile-only-pre-cq": {
         "_template": "compile_only_pre_cq",
         "boards": [
@@ -8756,26 +8592,6 @@
         "sync_chrome": false,
         "vm_tests": [],
         "vm_tests_override": null
-    },
-    "gale-tot-chrome-pfq-informational": {
-        "_template": "chrome_pfq_informational",
-        "boards": [
-            "gale"
-        ],
-        "manifest": "official.xml",
-        "sync_chrome": false,
-        "vm_tests": []
-    },
-    "gale-tot-chromium-pfq-informational": {
-        "_template": "chromium_pfq_informational",
-        "boards": [
-            "gale"
-        ],
-        "sync_chrome": false,
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
     },
     "gale-unittest-stress": {
         "_template": "unittest_stress",
@@ -12534,38 +12350,6 @@
             "chrome_internal"
         ]
     },
-    "lakitu-chrome-pfq": {
-        "_template": "chrome_pfq",
-        "boards": [
-            "lakitu"
-        ],
-        "buildslave_type": "baremetal",
-        "chrome_sdk": false,
-        "disk_layout": "base",
-        "factory": false,
-        "factory_install_netboot": false,
-        "factory_toolkit": false,
-        "important": false,
-        "manifest": "official.xml",
-        "sync_chrome": false
-    },
-    "lakitu-chromium-pfq": {
-        "_template": "chromium_pfq",
-        "boards": [
-            "lakitu"
-        ],
-        "buildslave_type": "baremetal",
-        "chrome_sdk": false,
-        "disk_layout": "base",
-        "factory": false,
-        "factory_install_netboot": false,
-        "factory_toolkit": false,
-        "important": false,
-        "sync_chrome": false,
-        "useflags": [
-            "-chrome_internal"
-        ]
-    },
     "lakitu-compile-only-pre-cq": {
         "_template": "compile_only_pre_cq",
         "boards": [
@@ -12603,38 +12387,6 @@
             "test"
         ],
         "prebuilts": "public",
-        "sync_chrome": false,
-        "useflags": [
-            "-chrome_internal"
-        ]
-    },
-    "lakitu-gpu-chrome-pfq": {
-        "_template": "chrome_pfq",
-        "boards": [
-            "lakitu-gpu"
-        ],
-        "buildslave_type": "baremetal",
-        "chrome_sdk": false,
-        "disk_layout": "base",
-        "factory": false,
-        "factory_install_netboot": false,
-        "factory_toolkit": false,
-        "important": false,
-        "manifest": "official.xml",
-        "sync_chrome": false
-    },
-    "lakitu-gpu-chromium-pfq": {
-        "_template": "chromium_pfq",
-        "boards": [
-            "lakitu-gpu"
-        ],
-        "buildslave_type": "baremetal",
-        "chrome_sdk": false,
-        "disk_layout": "base",
-        "factory": false,
-        "factory_install_netboot": false,
-        "factory_toolkit": false,
-        "important": false,
         "sync_chrome": false,
         "useflags": [
             "-chrome_internal"
@@ -12834,34 +12586,6 @@
         ],
         "vm_tests_override": null
     },
-    "lakitu-gpu-tot-chrome-pfq-informational": {
-        "_template": "chrome_pfq_informational",
-        "boards": [
-            "lakitu-gpu"
-        ],
-        "buildslave_type": "baremetal",
-        "disk_layout": "base",
-        "factory": false,
-        "factory_install_netboot": false,
-        "factory_toolkit": false,
-        "manifest": "official.xml",
-        "sync_chrome": false
-    },
-    "lakitu-gpu-tot-chromium-pfq-informational": {
-        "_template": "chromium_pfq_informational",
-        "boards": [
-            "lakitu-gpu"
-        ],
-        "buildslave_type": "baremetal",
-        "disk_layout": "base",
-        "factory": false,
-        "factory_install_netboot": false,
-        "factory_toolkit": false,
-        "sync_chrome": false,
-        "useflags": [
-            "-chrome_internal"
-        ]
-    },
     "lakitu-gpu-unittest-stress": {
         "_template": "unittest_stress",
         "boards": [
@@ -13034,34 +12758,6 @@
         ],
         "vm_tests_override": null
     },
-    "lakitu-tot-chrome-pfq-informational": {
-        "_template": "chrome_pfq_informational",
-        "boards": [
-            "lakitu"
-        ],
-        "buildslave_type": "baremetal",
-        "disk_layout": "base",
-        "factory": false,
-        "factory_install_netboot": false,
-        "factory_toolkit": false,
-        "manifest": "official.xml",
-        "sync_chrome": false
-    },
-    "lakitu-tot-chromium-pfq-informational": {
-        "_template": "chromium_pfq_informational",
-        "boards": [
-            "lakitu"
-        ],
-        "buildslave_type": "baremetal",
-        "disk_layout": "base",
-        "factory": false,
-        "factory_install_netboot": false,
-        "factory_toolkit": false,
-        "sync_chrome": false,
-        "useflags": [
-            "-chrome_internal"
-        ]
-    },
     "lakitu-unittest-stress": {
         "_template": "unittest_stress",
         "boards": [
@@ -13078,38 +12774,6 @@
         "sync_chrome": false,
         "useflags": [
             "chrome_internal"
-        ]
-    },
-    "lakitu_next-chrome-pfq": {
-        "_template": "chrome_pfq",
-        "boards": [
-            "lakitu_next"
-        ],
-        "buildslave_type": "baremetal",
-        "chrome_sdk": false,
-        "disk_layout": "base",
-        "factory": false,
-        "factory_install_netboot": false,
-        "factory_toolkit": false,
-        "important": false,
-        "manifest": "official.xml",
-        "sync_chrome": false
-    },
-    "lakitu_next-chromium-pfq": {
-        "_template": "chromium_pfq",
-        "boards": [
-            "lakitu_next"
-        ],
-        "buildslave_type": "baremetal",
-        "chrome_sdk": false,
-        "disk_layout": "base",
-        "factory": false,
-        "factory_install_netboot": false,
-        "factory_toolkit": false,
-        "important": false,
-        "sync_chrome": false,
-        "useflags": [
-            "-chrome_internal"
         ]
     },
     "lakitu_next-compile-only-pre-cq": {
@@ -13304,34 +12968,6 @@
             "{\n    \"test_type\": \"pfq_suite\",\n    \"timeout\": 3600\n}"
         ],
         "vm_tests_override": null
-    },
-    "lakitu_next-tot-chrome-pfq-informational": {
-        "_template": "chrome_pfq_informational",
-        "boards": [
-            "lakitu_next"
-        ],
-        "buildslave_type": "baremetal",
-        "disk_layout": "base",
-        "factory": false,
-        "factory_install_netboot": false,
-        "factory_toolkit": false,
-        "manifest": "official.xml",
-        "sync_chrome": false
-    },
-    "lakitu_next-tot-chromium-pfq-informational": {
-        "_template": "chromium_pfq_informational",
-        "boards": [
-            "lakitu_next"
-        ],
-        "buildslave_type": "baremetal",
-        "disk_layout": "base",
-        "factory": false,
-        "factory_install_netboot": false,
-        "factory_toolkit": false,
-        "sync_chrome": false,
-        "useflags": [
-            "-chrome_internal"
-        ]
     },
     "lakitu_next-unittest-stress": {
         "_template": "unittest_stress",
@@ -13963,32 +13599,6 @@
             "chrome_internal"
         ]
     },
-    "loonix-chrome-pfq": {
-        "_template": "chrome_pfq",
-        "boards": [
-            "loonix"
-        ],
-        "chrome_sdk": false,
-        "important": false,
-        "manifest": "official.xml",
-        "sync_chrome": false,
-        "upload_hw_test_artifacts": false,
-        "vm_tests": []
-    },
-    "loonix-chromium-pfq": {
-        "_template": "chromium_pfq",
-        "boards": [
-            "loonix"
-        ],
-        "chrome_sdk": false,
-        "important": false,
-        "sync_chrome": false,
-        "upload_hw_test_artifacts": false,
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
     "loonix-compile-only-pre-cq": {
         "_template": "compile_only_pre_cq",
         "boards": [
@@ -14092,28 +13702,6 @@
         "upload_hw_test_artifacts": false,
         "vm_tests": [],
         "vm_tests_override": null
-    },
-    "loonix-tot-chrome-pfq-informational": {
-        "_template": "chrome_pfq_informational",
-        "boards": [
-            "loonix"
-        ],
-        "manifest": "official.xml",
-        "sync_chrome": false,
-        "upload_hw_test_artifacts": false,
-        "vm_tests": []
-    },
-    "loonix-tot-chromium-pfq-informational": {
-        "_template": "chromium_pfq_informational",
-        "boards": [
-            "loonix"
-        ],
-        "sync_chrome": false,
-        "upload_hw_test_artifacts": false,
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
     },
     "loonix-unittest-stress": {
         "_template": "unittest_stress",
@@ -26571,30 +26159,6 @@
             "chrome_internal"
         ]
     },
-    "whirlwind-chrome-pfq": {
-        "_template": "chrome_pfq",
-        "boards": [
-            "whirlwind"
-        ],
-        "chrome_sdk": false,
-        "important": false,
-        "manifest": "official.xml",
-        "sync_chrome": false,
-        "vm_tests": []
-    },
-    "whirlwind-chromium-pfq": {
-        "_template": "chromium_pfq",
-        "boards": [
-            "whirlwind"
-        ],
-        "chrome_sdk": false,
-        "important": false,
-        "sync_chrome": false,
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
     "whirlwind-compile-only-pre-cq": {
         "_template": "compile_only_pre_cq",
         "boards": [
@@ -26702,26 +26266,6 @@
         "boards": [
             "whirlwind"
         ]
-    },
-    "whirlwind-tot-chrome-pfq-informational": {
-        "_template": "chrome_pfq_informational",
-        "boards": [
-            "whirlwind"
-        ],
-        "manifest": "official.xml",
-        "sync_chrome": false,
-        "vm_tests": []
-    },
-    "whirlwind-tot-chromium-pfq-informational": {
-        "_template": "chromium_pfq_informational",
-        "boards": [
-            "whirlwind"
-        ],
-        "sync_chrome": false,
-        "useflags": [
-            "-chrome_internal"
-        ],
-        "vm_tests": []
     },
     "whirlwind-unittest-stress": {
         "_template": "unittest_stress",

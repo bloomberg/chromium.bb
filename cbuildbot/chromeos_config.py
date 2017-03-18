@@ -2629,6 +2629,11 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
   internal_board_configs = CreateInternalBoardConfigs(
       site_config, boards_dict, ge_build_config)
 
+  _chrome_boards = frozenset(
+      board for board, config in internal_board_configs.iteritems()
+      if config.get('sync_chrome', True))
+
+
   hw_test_list = HWTestList(ge_build_config)
 
   _chrome_informational_hwtest_boards = frozenset([
@@ -2649,8 +2654,8 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       hw_tests=hw_test_list.DefaultListPFQ(
           pool=constants.HWTEST_CONTINUOUS_POOL),
   )
-  informational_boards = set(
-      boards_dict['all_release_boards']) - set(_cheets_boards)
+  informational_boards = (
+      (boards_dict['all_release_boards'] & _chrome_boards) - _cheets_boards)
   site_config.AddForBoards(
       'tot-chrome-pfq-informational',
       informational_boards-_chrome_informational_hwtest_boards,
@@ -2716,7 +2721,7 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
 
   site_config.AddForBoards(
       'tot-chromium-pfq-informational',
-      boards_dict['all_full_boards'],
+      boards_dict['all_full_boards'] & _chrome_boards,
       external_board_configs,
       site_config.templates.chromium_pfq_informational,
       site_config.templates.build_external_chrome,
@@ -2765,6 +2770,10 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
   internal_board_configs = CreateInternalBoardConfigs(
       site_config, boards_dict, ge_build_config)
 
+  _chrome_boards = frozenset(
+      board for board, config in internal_board_configs.iteritems()
+      if config.get('sync_chrome', True))
+
   _chromium_pfq_important_boards = frozenset([
       'arm-generic',
       'daisy',
@@ -2796,7 +2805,8 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.build_external_chrome)
   site_config.AddForBoards(
       'chromium-pfq',
-      boards_dict['all_full_boards'] - _chromium_pfq_important_boards,
+      ((boards_dict['all_full_boards'] & _chrome_boards) -
+       _chromium_pfq_important_boards),
       external_board_configs,
       site_config.templates.chromium_pfq,
       site_config.templates.build_external_chrome,
@@ -2825,7 +2835,8 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
   )
   site_config.AddForBoards(
       'chrome-pfq',
-      boards_dict['all_release_boards'] - _chrome_pfq_important_boards,
+      ((boards_dict['all_release_boards'] & _chrome_boards) -
+       _chrome_pfq_important_boards),
       internal_board_configs,
       site_config.templates.chrome_pfq,
       important=False,
