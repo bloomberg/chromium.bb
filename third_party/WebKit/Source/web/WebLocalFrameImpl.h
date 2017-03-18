@@ -73,6 +73,7 @@ class WebView;
 class WebViewImpl;
 enum class WebFrameLoadType;
 struct FrameLoadRequest;
+struct WebContentSecurityPolicyViolation;
 struct WebPrintParams;
 
 template <typename T>
@@ -262,6 +263,8 @@ class WEB_EXPORT WebLocalFrameImpl final
                 WebHistoryLoadType,
                 bool isClientRedirect) override;
   bool maybeRenderFallbackContent(const WebURLError&) const override;
+  void reportContentSecurityPolicyViolation(
+      const blink::WebContentSecurityPolicyViolation&) override;
   bool isLoading() const override;
   bool isNavigationScheduledWithin(double interval) const override;
   void setCommittedFirstRealLoad() override;

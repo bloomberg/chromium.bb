@@ -43,7 +43,8 @@ CommonNavigationParams::CommonNavigationParams()
       report_type(FrameMsg_UILoadMetricsReportType::NO_REPORT),
       previews_state(PREVIEWS_UNSPECIFIED),
       navigation_start(base::TimeTicks::Now()),
-      method("GET") {}
+      method("GET"),
+      should_check_main_world_csp(CSPDisposition::CHECK) {}
 
 CommonNavigationParams::CommonNavigationParams(
     const GURL& url,
@@ -60,7 +61,8 @@ CommonNavigationParams::CommonNavigationParams(
     const base::TimeTicks& navigation_start,
     std::string method,
     const scoped_refptr<ResourceRequestBodyImpl>& post_data,
-    base::Optional<SourceLocation> source_location)
+    base::Optional<SourceLocation> source_location,
+    CSPDisposition should_check_main_world_csp)
     : url(url),
       referrer(referrer),
       transition(transition),
@@ -75,7 +77,8 @@ CommonNavigationParams::CommonNavigationParams(
       navigation_start(navigation_start),
       method(method),
       post_data(post_data),
-      source_location(source_location) {
+      source_location(source_location),
+      should_check_main_world_csp(should_check_main_world_csp) {
   // |method != "POST"| should imply absence of |post_data|.
   if (method != "POST" && post_data) {
     NOTREACHED();

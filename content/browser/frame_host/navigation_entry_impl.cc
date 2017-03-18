@@ -686,7 +686,8 @@ CommonNavigationParams NavigationEntryImpl::ConstructCommonNavigationParams(
       !IsViewSourceMode(), should_replace_entry(), ui_timestamp, report_type,
       GetBaseURLForDataURL(), GetHistoryURLForDataURL(), previews_state,
       navigation_start, method, post_body ? post_body : post_data_,
-      base::Optional<SourceLocation>());
+      base::Optional<SourceLocation>(),
+      CSPDisposition::CHECK /* should_check_main_world_csp */);
 }
 
 StartNavigationParams NavigationEntryImpl::ConstructStartNavigationParams()

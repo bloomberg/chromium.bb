@@ -534,7 +534,9 @@ NavigationPolicy LocalFrameClientImpl::decidePolicyForNavigation(
     NavigationPolicy policy,
     bool replacesCurrentHistoryItem,
     bool isClientRedirect,
-    HTMLFormElement* form) {
+    HTMLFormElement* form,
+    ContentSecurityPolicyDisposition
+        shouldCheckMainWorldContentSecurityPolicy) {
   if (!m_webFrame->client())
     return NavigationPolicyIgnore;
 
@@ -571,6 +573,10 @@ NavigationPolicy LocalFrameClientImpl::decidePolicyForNavigation(
   navigationInfo.isHistoryNavigationInNewChildFrame =
       isHistoryNavigationInNewChildFrame;
   navigationInfo.isClientRedirect = isClientRedirect;
+  navigationInfo.shouldCheckMainWorldContentSecurityPolicy =
+      shouldCheckMainWorldContentSecurityPolicy == CheckContentSecurityPolicy
+          ? WebContentSecurityPolicyDispositionCheck
+          : WebContentSecurityPolicyDispositionDoNotCheck;
   // Caching could be disabled for requests initiated by DevTools.
   // TODO(ananta)
   // We should extract the network cache state into a global component which

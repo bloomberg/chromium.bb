@@ -5,12 +5,19 @@
 crbug.com/551000 http/tests/inspector/network/x-frame-options-deny.html [ Failure ]
 crbug.com/551000 virtual/mojo-loading/http/tests/inspector/network/x-frame-options-deny.html [ Failure ]
 
-# https://crbug.com/555418: Move `X-Frame-Options` and CSP's `frame-ancestor`
-# checks up out of the renderer.
-crbug.com/555418 http/tests/security/contentSecurityPolicy/1.1/form-action-src-redirect-blocked.html [ Failure ]
-crbug.com/555418 http/tests/security/isolatedWorld/bypass-main-world-csp-iframes.html [ Failure ]
-crbug.com/555418 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/1.1/form-action-src-redirect-blocked.html [ Failure ]
-crbug.com/555418 virtual/mojo-loading/http/tests/security/isolatedWorld/bypass-main-world-csp-iframes.html [ Failure ]
+# https://crbug.com/685074: PlzNavigate: enforce 'form-action' CSP on the browser-side
+crbug.com/685074 http/tests/security/contentSecurityPolicy/1.1/form-action-src-redirect-blocked.html [ Failure ]
+crbug.com/685074 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/1.1/form-action-src-redirect-blocked.html [ Failure ]
+
+# https://crbug.com/690946 PlzNavigate: Missing line number in console messages when the 'frame-src' CSP is infringed.
+crbug.com/690946 http/tests/security/contentSecurityPolicy/1.1/child-src/frame-blocked.html [ Failure ]
+crbug.com/690946 http/tests/security/contentSecurityPolicy/frame-src-blocked.html [ Failure ]
+crbug.com/690946 http/tests/security/contentSecurityPolicy/frame-src-child-frame-navigates-to-blocked-origin.html [ Failure ]
+crbug.com/690946 http/tests/security/contentSecurityPolicy/frame-src-cross-origin-load.html [ Failure ]
+crbug.com/690946 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/1.1/child-src/frame-blocked.html [ Failure ]
+crbug.com/690946 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/frame-src-blocked.html [ Failure ]
+crbug.com/690946 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/frame-src-child-frame-navigates-to-blocked-origin.html [ Failure ]
+crbug.com/690946 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/frame-src-cross-origin-load.html [ Failure ]
 
 # https://crbug.com/695072: Preserve SourceLocation information.
 # This results in a missing line number in console error messages.

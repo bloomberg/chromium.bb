@@ -11,9 +11,11 @@
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
+#include "content/browser/frame_host/navigation_request.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/console_message_level.h"
 #include "net/http/http_response_headers.h"
 #include "url/origin.h"
@@ -163,6 +165,43 @@ AncestorThrottle::WillProcessResponse() {
   }
   NOTREACHED();
   return NavigationThrottle::BLOCK_RESPONSE;
+}
+
+NavigationThrottle::ThrottleCheckResult
+AncestorThrottle::CheckContentSecurityPolicyFrameSrc(bool is_redirect) {
+  // If PlzNavigate is enabled, "frame-src" is enforced on the browser side,
+  // else on the renderer side.
+  if (!IsBrowserSideNavigationEnabled())
+    return NavigationThrottle::PROCEED;
+
+  const GURL& url = navigation_handle()->GetURL();
+  if (url.SchemeIs(url::kAboutScheme))
+    return NavigationThrottle::PROCEED;
+
+  NavigationHandleImpl* handle =
+      static_cast<NavigationHandleImpl*>(navigation_handle());
+
+  if (handle->should_check_main_world_csp() == CSPDisposition::DO_NOT_CHECK)
+    return NavigationThrottle::PROCEED;
+
+  FrameTreeNode* parent_ftn = handle->frame_tree_node()->parent();
+  DCHECK(parent_ftn);
+  RenderFrameHostImpl* parent = parent_ftn->current_frame_host();
+  DCHECK(parent);
+
+  if (!parent->IsAllowedByCsp(CSPDirective::FrameSrc, url, is_redirect))
+    return NavigationThrottle::BLOCK_REQUEST;
+
+  return NavigationThrottle::PROCEED;
+}
+
+NavigationThrottle::ThrottleCheckResult AncestorThrottle::WillStartRequest() {
+  return CheckContentSecurityPolicyFrameSrc(false);
+}
+
+NavigationThrottle::ThrottleCheckResult
+AncestorThrottle::WillRedirectRequest() {
+  return CheckContentSecurityPolicyFrameSrc(true);
 }
 
 AncestorThrottle::AncestorThrottle(NavigationHandle* handle)

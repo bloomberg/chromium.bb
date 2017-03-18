@@ -231,7 +231,8 @@ void NavigatorImpl::DidStartProvisionalLoad(
       validated_url, validated_redirect_chain,
       render_frame_host->frame_tree_node(), is_renderer_initiated,
       false,  // is_same_page
-      navigation_start, pending_nav_entry_id, started_from_context_menu));
+      navigation_start, pending_nav_entry_id, started_from_context_menu,
+      CSPDisposition::CHECK));  // should_check_main_world_csp
 }
 
 void NavigatorImpl::DidFailProvisionalLoadWithError(
@@ -606,7 +607,8 @@ void NavigatorImpl::DidNavigate(
   // Navigating to a new location means a new, fresh set of http headers and/or
   // <meta> elements - we need to reset CSP and Feature Policy.
   if (!is_navigation_within_page) {
-    render_frame_host->frame_tree_node()->ResetContentSecurityPolicy();
+    render_frame_host->ResetContentSecurityPolicies();
+    render_frame_host->frame_tree_node()->ResetCspHeaders();
     render_frame_host->frame_tree_node()->ResetFeaturePolicyHeader();
   }
 
@@ -665,7 +667,7 @@ void NavigatorImpl::DidNavigate(
   // stay correct even if the render_frame_host later becomes pending deletion.
   // The URL is set regardless of whether it's for a net error or not.
   render_frame_host->frame_tree_node()->SetCurrentURL(params.url);
-  render_frame_host->set_last_committed_origin(params.origin);
+  render_frame_host->SetLastCommittedOrigin(params.origin);
 
   // Separately, update the frame's last successful URL except for net error
   // pages, since those do not end up in the correct process after transfers

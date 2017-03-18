@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "content/renderer/content_security_policy_util.h"
-#include "third_party/WebKit/public/platform/WebContentSecurityPolicyStruct.h"
 
 namespace content {
 
@@ -52,6 +51,27 @@ ContentSecurityPolicy BuildContentSecurityPolicy(
                                directives,             // directives
                                report_endpoints,       // report_endpoints
                                policy.header.utf8());  // header
+}
+
+blink::WebContentSecurityPolicyViolation BuildWebContentSecurityPolicyViolation(
+    const content::CSPViolationParams& violation_params) {
+  blink::WebContentSecurityPolicyViolation violation;
+  violation.directive = blink::WebString::fromASCII(violation_params.directive);
+  violation.effectiveDirective =
+      blink::WebString::fromASCII(violation_params.effective_directive);
+  violation.consoleMessage =
+      blink::WebString::fromASCII(violation_params.console_message);
+  violation.blockedUrl = violation_params.blocked_url;
+  violation.reportEndpoints = blink::WebVector<blink::WebString>(
+      violation_params.report_endpoints.size());
+  for (size_t i = 0; i < violation_params.report_endpoints.size(); ++i) {
+    violation.reportEndpoints[i] =
+        blink::WebString::fromASCII(violation_params.report_endpoints[i]);
+  }
+  violation.header = blink::WebString::fromASCII(violation_params.header);
+  violation.disposition = violation_params.disposition;
+  violation.afterRedirect = violation_params.after_redirect;
+  return violation;
 }
 
 }  // namespace content

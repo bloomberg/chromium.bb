@@ -33,10 +33,10 @@ NavigationHandle::CreateNavigationHandleForTesting(
   std::unique_ptr<NavigationHandleImpl> handle_impl =
       NavigationHandleImpl::Create(
           url, std::vector<GURL>(), rfhi->frame_tree_node(),
-          true,   // is_renderer_initiated
-          is_same_page,
-          base::TimeTicks::Now(), 0,
-          false);  // started_from_context_menu
+          true,  // is_renderer_initiated
+          is_same_page, base::TimeTicks::Now(), 0,
+          false,                   // started_from_context_menu
+          CSPDisposition::CHECK);  // should_check_main_world_csp
   handle_impl->set_render_frame_host(rfhi);
   if (error != net::OK)
     handle_impl->set_net_error_code(error);

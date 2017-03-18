@@ -64,11 +64,12 @@ std::unique_ptr<NavigationHandleImpl> NavigationHandleImpl::Create(
     bool is_same_page,
     const base::TimeTicks& navigation_start,
     int pending_nav_entry_id,
-    bool started_from_context_menu) {
+    bool started_from_context_menu,
+    CSPDisposition should_check_main_world_csp) {
   return std::unique_ptr<NavigationHandleImpl>(new NavigationHandleImpl(
       url, redirect_chain, frame_tree_node, is_renderer_initiated, is_same_page,
-      navigation_start, pending_nav_entry_id,
-      started_from_context_menu));
+      navigation_start, pending_nav_entry_id, started_from_context_menu,
+      should_check_main_world_csp));
 }
 
 NavigationHandleImpl::NavigationHandleImpl(
@@ -79,7 +80,8 @@ NavigationHandleImpl::NavigationHandleImpl(
     bool is_same_page,
     const base::TimeTicks& navigation_start,
     int pending_nav_entry_id,
-    bool started_from_context_menu)
+    bool started_from_context_menu,
+    CSPDisposition should_check_main_world_csp)
     : url_(url),
       has_user_gesture_(false),
       transition_(ui::PAGE_TRANSITION_LINK),
@@ -110,6 +112,7 @@ NavigationHandleImpl::NavigationHandleImpl(
       reload_type_(ReloadType::NONE),
       restore_type_(RestoreType::NONE),
       navigation_type_(NAVIGATION_TYPE_UNKNOWN),
+      should_check_main_world_csp_(should_check_main_world_csp),
       weak_factory_(this) {
   DCHECK(!navigation_start.is_null());
   if (redirect_chain_.empty())
