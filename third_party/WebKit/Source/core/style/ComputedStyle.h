@@ -974,7 +974,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
   void setBoxOrdinalGroup(unsigned og) {
     SET_NESTED_VAR(m_rareNonInheritedData, m_deprecatedFlexibleBox,
-                   ordinalGroup, og);
+                   ordinalGroup,
+                   std::min(std::numeric_limits<unsigned>::max() - 1, og));
   }
 
   // -webkit-box-orient
