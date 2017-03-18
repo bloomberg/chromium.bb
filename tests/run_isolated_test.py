@@ -379,16 +379,15 @@ class RunIsolatedTest(RunIsolatedTestBase):
       fs.rmtree(unicode(workdir))
 
   def test_main_naked_with_packages(self):
-    pin_idx_ref = [0]
-    pins = [
-      [
+    pins = {
+      '': [
         ('infra/data/x', 'badc0fee'*5),
         ('infra/data/y', 'cafebabe'*5),
       ],
-      [
+      'bin': [
         ('infra/tools/echo/linux-amd64', 'deadbeef'*5),
       ],
-    ]
+    }
 
     def fake_ensure(args, **_kwargs):
       if (args[0].endswith('/cipd') and
@@ -397,12 +396,14 @@ class RunIsolatedTest(RunIsolatedTestBase):
         idx = args.index('-json-output')
         with open(args[idx+1], 'w') as json_out:
           json.dump({
-            'result': [
-              {'package': pkg, 'instance_id': ver}
-              for pkg, ver in pins[pin_idx_ref[0]]
-            ],
+            'result': {
+              subdir: [
+                {'package': pkg, 'instance_id': ver}
+                for pkg, ver in packages
+              ]
+              for subdir, packages in pins.iteritems()
+            }
           }, json_out)
-        pin_idx_ref[0] += 1
         return 0
 
     self.popen_mocks.append(fake_ensure)
@@ -424,18 +425,18 @@ class RunIsolatedTest(RunIsolatedTestBase):
     ret = run_isolated.main(cmd)
     self.assertEqual(0, ret)
 
-    self.assertEqual(3, len(self.popen_calls))
+    self.assertEqual(2, len(self.popen_calls))
 
     # Test cipd-ensure command for installing packages.
-    for cipd_ensure_cmd, _ in self.popen_calls[0:2]:
-      self.assertEqual(cipd_ensure_cmd[:2], [
-        os.path.join(cipd_cache, 'bin', 'cipd' + cipd.EXECUTABLE_SUFFIX),
-        'ensure',
-      ])
-      cache_dir_index = cipd_ensure_cmd.index('-cache-dir')
-      self.assertEqual(
-          cipd_ensure_cmd[cache_dir_index+1],
-          os.path.join(cipd_cache, 'cache'))
+    cipd_ensure_cmd, _ = self.popen_calls[0]
+    self.assertEqual(cipd_ensure_cmd[:2], [
+      os.path.join(cipd_cache, 'bin', 'cipd' + cipd.EXECUTABLE_SUFFIX),
+      'ensure',
+    ])
+    cache_dir_index = cipd_ensure_cmd.index('-cache-dir')
+    self.assertEqual(
+        cipd_ensure_cmd[cache_dir_index+1],
+        os.path.join(cipd_cache, 'cache'))
 
     # Test cipd client cache. `git:wowza` was a tag and so is cacheable.
     self.assertEqual(len(os.listdir(os.path.join(cipd_cache, 'versions'))), 2)
@@ -450,7 +451,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
     self.assertTrue(fs.isfile(client_binary_file))
 
     # Test echo call.
-    echo_cmd, _ = self.popen_calls[2]
+    echo_cmd, _ = self.popen_calls[1]
     self.assertTrue(echo_cmd[0].endswith(
         os.path.sep + 'bin' + os.path.sep + 'echo' + cipd.EXECUTABLE_SUFFIX),
         echo_cmd[0])
