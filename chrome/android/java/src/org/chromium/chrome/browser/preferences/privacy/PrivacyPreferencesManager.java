@@ -278,17 +278,6 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
     }
 
     /**
-     * Checks whether uploading of usage metrics is currently permitted.
-     *
-     * @return whether uploading usage metrics is currently permitted.
-     */
-    @Override
-    public boolean isMetricsUploadPermitted() {
-        return isNetworkAvailable()
-                && (isUsageAndCrashReportingPermittedByUser() || isUploadEnabledForTests());
-    }
-
-    /**
      * Checks whether uploading of usage metrics and crash dumps is currently permitted, based on
      * user consent only. This doesn't take network condition or experimental state (i.e. disabling
      * upload) into consideration. A crash dump may be retried if this check passes.
@@ -309,6 +298,14 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
     @Override
     public boolean isUploadEnabledForTests() {
         return CommandLine.getInstance().hasSwitch(ChromeSwitches.FORCE_CRASH_DUMP_UPLOAD);
+    }
+
+    /**
+     * @return Whether uploading usage metrics is currently permitted.
+     */
+    public boolean isMetricsUploadPermitted() {
+        return isNetworkAvailable()
+                && (isUsageAndCrashReportingPermittedByUser() || isUploadEnabledForTests());
     }
 
     /**

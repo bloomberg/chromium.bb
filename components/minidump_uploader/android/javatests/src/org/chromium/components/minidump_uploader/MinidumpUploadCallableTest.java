@@ -164,7 +164,6 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
                 new MockCrashReportingPermissionManager() {
                     {
                         mIsInSample = true;
-                        mIsPermitted = true;
                         mIsUserPermitted = true;
                         mIsNetworkAvailable = true;
                         mIsEnabledForTests = false;
@@ -188,7 +187,6 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
                 new MockCrashReportingPermissionManager() {
                     {
                         mIsInSample = true;
-                        mIsPermitted = false;
                         mIsUserPermitted = false;
                         mIsNetworkAvailable = true;
                         mIsEnabledForTests = false;
@@ -215,7 +213,6 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
                 new MockCrashReportingPermissionManager() {
                     {
                         mIsInSample = false;
-                        mIsPermitted = true;
                         mIsUserPermitted = true;
                         mIsNetworkAvailable = true;
                         mIsEnabledForTests = false;
@@ -242,7 +239,6 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
                 new MockCrashReportingPermissionManager() {
                     {
                         mIsInSample = true;
-                        mIsPermitted = true;
                         mIsUserPermitted = true;
                         mIsNetworkAvailable = false;
                         mIsEnabledForTests = false;
@@ -265,7 +261,6 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
                 new MockCrashReportingPermissionManager() {
                     {
                         mIsInSample = true;
-                        mIsPermitted = false;
                         mIsUserPermitted = false;
                         mIsNetworkAvailable = false;
                         mIsEnabledForTests = true;
@@ -290,7 +285,6 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
                 new MockCrashReportingPermissionManager() {
                     {
                         mIsInSample = true;
-                        mIsPermitted = true;
                         mIsUserPermitted = true;
                         mIsNetworkAvailable = true;
                         mIsEnabledForTests = false;
@@ -315,7 +309,6 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
                 new MockCrashReportingPermissionManager() {
                     {
                         mIsInSample = true;
-                        mIsPermitted = false;
                         mIsUserPermitted = false;
                         mIsNetworkAvailable = true;
                         mIsEnabledForTests = false;
@@ -343,7 +336,6 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
                 new MockCrashReportingPermissionManager() {
                     {
                         mIsInSample = false;
-                        mIsPermitted = true;
                         mIsUserPermitted = true;
                         mIsNetworkAvailable = true;
                         mIsEnabledForTests = false;
@@ -371,7 +363,6 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
                 new MockCrashReportingPermissionManager() {
                     {
                         mIsInSample = true;
-                        mIsPermitted = true;
                         mIsUserPermitted = true;
                         mIsNetworkAvailable = false;
                         mIsEnabledForTests = false;

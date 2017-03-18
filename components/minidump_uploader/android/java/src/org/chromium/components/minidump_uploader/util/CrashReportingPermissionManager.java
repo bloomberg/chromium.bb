@@ -23,16 +23,6 @@ public interface CrashReportingPermissionManager {
      */
     public boolean isNetworkAvailableForCrashUploads();
 
-    // TODO(isherman): Remove this function. It's only used for an assertion, and our JobService
-    // implementations simply hardcode their return value to true.
-    /**
-     * Checks whether uploading of usage metrics is currently permitted. This is a combination of
-     * the below checks, plus networking restrictions.
-     *
-     * @return whether uploading usage metrics is currently permitted.
-     */
-    public boolean isMetricsUploadPermitted();
-
     /**
      * Checks whether uploading of usage metrics and crash dumps is currently permitted, based on
      * user consent only.

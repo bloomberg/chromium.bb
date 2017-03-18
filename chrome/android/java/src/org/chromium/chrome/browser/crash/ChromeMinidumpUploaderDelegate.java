@@ -80,13 +80,6 @@ public class ChromeMinidumpUploaderDelegate implements MinidumpUploaderDelegate 
             }
 
             @Override
-            public boolean isMetricsUploadPermitted() {
-                // This method is already represented by isClientInMetricsSample() and
-                // isNetworkAvailableForCrashUploads(), so it's fine to return a dummy value.
-                return true;
-            }
-
-            @Override
             public boolean isUsageAndCrashReportingPermittedByUser() {
                 return PrivacyPreferencesManager.getInstance()
                         .isUsageAndCrashReportingPermittedByUser();

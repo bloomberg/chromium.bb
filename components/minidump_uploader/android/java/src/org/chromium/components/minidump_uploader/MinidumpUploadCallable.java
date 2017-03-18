@@ -105,9 +105,6 @@ public class MinidumpUploadCallable implements Callable<Integer> {
                 Log.i(TAG, "Minidump cannot currently be uploaded due to network constraints.");
                 return UPLOAD_FAILURE;
             }
-
-            // The above checks should be at least as strict as the requirements for UMA uploads.
-            assert mPermManager.isMetricsUploadPermitted();
         }
 
         HttpURLConnection connection =

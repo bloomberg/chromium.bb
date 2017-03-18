@@ -99,7 +99,6 @@ public class CrashTestCase extends InstrumentationTestCase {
     public static class MockCrashReportingPermissionManager
             implements CrashReportingPermissionManager {
         protected boolean mIsInSample;
-        protected boolean mIsPermitted;
         protected boolean mIsUserPermitted;
         protected boolean mIsNetworkAvailable;
         protected boolean mIsEnabledForTests;
@@ -114,11 +113,6 @@ public class CrashTestCase extends InstrumentationTestCase {
         @Override
         public boolean isNetworkAvailableForCrashUploads() {
             return mIsNetworkAvailable;
-        }
-
-        @Override
-        public boolean isMetricsUploadPermitted() {
-            return mIsPermitted;
         }
 
         @Override
