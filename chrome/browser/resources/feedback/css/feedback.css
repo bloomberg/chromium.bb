@@ -105,6 +105,7 @@ body {
 }
 
 .content #screenshot-image {
+  -webkit-margin-end: 25px;
   display: block;
   height: 60px;
   margin-top: 40px;
@@ -112,6 +113,7 @@ body {
 }
 
 .content #screenshot-image:hover {
+  -webkit-margin-end: 0;
   height: 125px;
   margin-top: 80px;
   z-index: 1;
