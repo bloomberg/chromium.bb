@@ -19,6 +19,7 @@ class NavigationManagerUtilTest : public PlatformTest {
 
 // Tests that empty navigation manager returns nullptr.
 TEST_F(NavigationManagerUtilTest, TestLastNonRedirectedItemEmpty) {
+  EXPECT_FALSE(GetLastNonRedirectedItem(nullptr));
   EXPECT_FALSE(GetLastNonRedirectedItem(&nav_manager_));
 }
 

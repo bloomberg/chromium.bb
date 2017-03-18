@@ -10,7 +10,7 @@
 
 web::NavigationItem* GetLastNonRedirectedItem(
     web::NavigationManager* nav_manager) {
-  if (!nav_manager->GetItemCount())
+  if (!nav_manager || !nav_manager->GetItemCount())
     return nullptr;
   int index = nav_manager->GetCurrentItemIndex();
   web::NavigationItem* item = nullptr;

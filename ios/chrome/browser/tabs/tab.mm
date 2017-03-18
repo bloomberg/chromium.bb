@@ -1489,23 +1489,20 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 }
 
 - (void)reloadForDesktopUserAgent {
-  // |loadWithParams| will recreate the removed UIWebView.
+  // This removes the web view, which will be recreated at the end of this.
   [self.webController requirePageReconstruction];
 
   // TODO(crbug.com/228171): A hack in session_controller -addPendingItem
   // discusses making tab responsible for distinguishing history stack
-  // navigation from new navigations. Because we want a new navigation here, we
-  // use |PAGE_TRANSITION_FORM_SUBMIT|. When session_controller changes, so
-  // should this.
-  ui::PageTransition transition =
-      ui::PageTransitionFromInt(ui::PAGE_TRANSITION_FORM_SUBMIT);
-  DCHECK([self navigationManager]);
+  // navigation from new navigations.
+  web::NavigationManager* navigationManager = [self navigationManager];
+  DCHECK(navigationManager);
   web::NavigationItem* lastNonRedirectedItem =
-      GetLastNonRedirectedItem([self navigationManager]);
+      GetLastNonRedirectedItem(navigationManager);
   if (!lastNonRedirectedItem)
     return;
 
-  // |originalUrl| will be empty if a page was open by DOM.
+  // |reloadURL| will be empty if a page was open by DOM.
   GURL reloadURL(lastNonRedirectedItem->GetOriginalRequestURL());
   if (reloadURL.is_empty()) {
     DCHECK(
@@ -1515,9 +1512,10 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 
   web::NavigationManager::WebLoadParams params(reloadURL);
   params.referrer = lastNonRedirectedItem->GetReferrer();
-  params.transition_type = transition;
-  if (self.navigationManager)
-    self.navigationManager->LoadURLWithParams(params);
+  // A new navigation is needed here for reloading with desktop User-Agent.
+  params.transition_type =
+      ui::PageTransitionFromInt(ui::PAGE_TRANSITION_FORM_SUBMIT);
+  navigationManager->LoadURLWithParams(params);
 }
 
 - (id<SnapshotOverlayProvider>)snapshotOverlayProvider {

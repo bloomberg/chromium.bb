@@ -11,8 +11,8 @@
 // Utility functions built on web::NavigationManager public API.
 
 // Returns the most recent navigation item that is not the result of an HTTP
-// Redirect. Returns nullptr if |nav_manager| is empty or the first item if
-// all items are redirects.
+// Redirect. Returns nullptr if |nav_manager| is nullptr or is empty.
+// If all items are redirects, the first item is returned.
 web::NavigationItem* GetLastNonRedirectedItem(
     web::NavigationManager* nav_manager);
 
