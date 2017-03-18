@@ -42,6 +42,9 @@ const base::Feature kBackgroundLoaderForDownloadsFeature{
 const base::Feature kOfflinePagesAsyncDownloadFeature{
     "OfflinePagesAsyncDownload", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kPrefetchingOfflinePagesFeature{
+    "OfflinePagesPrefetching", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kNewBackgroundLoaderFeature {
     "BackgroundLoader", base::FEATURE_DISABLED_BY_DEFAULT
 };
@@ -73,6 +76,10 @@ bool IsBackgroundLoaderForDownloadsEnabled() {
 
 bool IsOfflinePagesAsyncDownloadEnabled() {
   return base::FeatureList::IsEnabled(kOfflinePagesAsyncDownloadFeature);
+}
+
+bool IsPrefetchingOfflinePagesEnabled() {
+  return base::FeatureList::IsEnabled(kPrefetchingOfflinePagesFeature);
 }
 
 bool ShouldUseNewBackgroundLoader() {

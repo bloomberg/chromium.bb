@@ -14121,6 +14121,12 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       <message name="IDS_FLAGS_OFFLINE_PAGES_SVELTE_CONCURRENT_LOADING_DESCRIPTION" desc="Description for the flag to enable concurrent background loading on svelte (512MB RAM) devices.">
         Enables concurrent background loading (or downloading) of pages on Android svelte (512MB RAM) devices. Otherwise, background loading will happen when the svelte device is idle.
       </message>
+      <message name="IDS_FLAGS_OFFLINE_PAGES_PREFETCHING_NAME" desc="Name for the flag to enable offline pages to be prefetched." translateable="false">
+        Enables suggested offline pages to be prefetched.
+      </message>
+      <message name="IDS_FLAGS_OFFLINE_PAGES_PREFETCHING_DESCRIPTION" desc="Description for the flag to enable offline pages prefetching." translateable="false">
+        Enables suggested offline pages to be prefetched, so useful content is available while offline.
+      </message>
       <message name="IDS_FLAGS_OFFLINE_PAGES_SHARING_NAME" desc="Name for the flag to enable offline pages to be shared.">
         Enables offline pages to be shared.
       </message>

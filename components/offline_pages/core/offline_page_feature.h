@@ -17,6 +17,7 @@ extern const base::Feature kOfflinePagesCTFeature;
 extern const base::Feature kOfflinePagesSharingFeature;
 extern const base::Feature kBackgroundLoaderForDownloadsFeature;
 extern const base::Feature kOfflinePagesAsyncDownloadFeature;
+extern const base::Feature kPrefetchingOfflinePagesFeature;
 extern const base::Feature kNewBackgroundLoaderFeature;
 
 // Returns true if saving bookmarked pages for offline viewing is enabled.
@@ -40,6 +41,9 @@ bool IsOfflinePagesSvelteConcurrentLoadingEnabled();
 
 // Returns true if downloading a page asynchonously is enabled.
 bool IsOfflinePagesAsyncDownloadEnabled();
+
+// Returns true if prefetching offline pages is enabled.
+bool IsPrefetchingOfflinePagesEnabled();
 
 // Returns true if we should use background loader rather than prerenderer
 // to offline pages.
