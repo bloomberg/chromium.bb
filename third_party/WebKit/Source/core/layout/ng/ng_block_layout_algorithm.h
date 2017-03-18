@@ -42,6 +42,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
 
   // Creates a new constraint space for the current child.
   RefPtr<NGConstraintSpace> CreateConstraintSpaceForChild(NGLayoutInputNode*);
+  void PrepareChildLayout(NGLayoutInputNode*);
   void FinishChildLayout(NGLayoutInputNode*,
                          NGConstraintSpace*,
                          RefPtr<NGLayoutResult>);
