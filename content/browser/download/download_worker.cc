@@ -32,7 +32,13 @@ CreateUrlDownloader(std::unique_ptr<DownloadUrlParameters> params,
 
 }  // namespace
 
-DownloadWorker::DownloadWorker() : weak_factory_(this) {}
+DownloadWorker::DownloadWorker(DownloadWorker::Delegate* delegate,
+                               int64_t offset,
+                               int64_t length)
+    : delegate_(delegate),
+      offset_(offset),
+      length_(length),
+      weak_factory_(this) {}
 
 DownloadWorker::~DownloadWorker() = default;
 
@@ -77,6 +83,8 @@ void DownloadWorker::OnUrlDownloaderStarted(
   }
 
   request_handle_ = std::move(create_info->request_handle);
+  if (delegate_)
+    delegate_->OnByteStreamReady(this, std::move(stream_reader));
 }
 
 void DownloadWorker::OnUrlDownloaderStopped(UrlDownloader* downloader) {

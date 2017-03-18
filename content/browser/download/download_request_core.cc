@@ -278,6 +278,7 @@ DownloadRequestCore::CreateDownloadCreateInfo(DownloadInterruptReason result) {
   create_info->referrer_url = GURL(request()->referrer());
   create_info->result = result;
   create_info->download_id = download_id_;
+  create_info->offset = create_info->save_info->offset;
   return create_info;
 }
 

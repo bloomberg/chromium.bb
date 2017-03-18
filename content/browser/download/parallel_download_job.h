@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_DOWNLOAD_PARALLEL_DOWNLOAD_JOB_H_
 
 #include <memory>
+#include <unordered_map>
 #include <vector>
 
 #include "base/macros.h"
@@ -18,8 +19,9 @@ namespace content {
 
 // DownloadJob that can create concurrent range requests to fetch different
 // parts of the file.
-// The original request is hold in base class DownloadUrlJob.
-class CONTENT_EXPORT ParallelDownloadJob : public DownloadJobImpl {
+// The original request is hold in base class.
+class CONTENT_EXPORT ParallelDownloadJob : public DownloadJobImpl,
+                                           public DownloadWorker::Delegate {
  public:
   ParallelDownloadJob(
       DownloadItemImpl* download_item,
@@ -27,43 +29,52 @@ class CONTENT_EXPORT ParallelDownloadJob : public DownloadJobImpl {
       const DownloadCreateInfo& create_info);
   ~ParallelDownloadJob() override;
 
-  // DownloadUrlJob implementation.
+  // DownloadJobImpl implementation.
   void Start() override;
   void Cancel(bool user_cancel) override;
   void Pause() override;
   void Resume(bool resume_request) override;
 
+ protected:
+  // Virtual for testing.
+  virtual int GetParallelRequestCount() const;
+
  private:
   friend class ParallelDownloadJobTest;
 
-  typedef std::vector<std::unique_ptr<DownloadWorker>> WorkerList;
+  using WorkerMap =
+      std::unordered_map<int64_t, std::unique_ptr<DownloadWorker>>;
 
-  // Build multiple http requests for a new download,
-  // the rest of the bytes starting from |bytes_received| will be equally
-  // distributed to each connection, including the original connection.
-  // the last connection may take additional bytes.
-  void ForkRequestsForNewDownload(int64_t bytes_received,
-                                  int64_t total_bytes,
-                                  int request_count);
+  // DownloadWorker::Delegate implementation.
+  void OnByteStreamReady(
+      DownloadWorker* worker,
+      std::unique_ptr<ByteStreamReader> stream_reader) override;
 
   // Build parallel requests after a delay, to effectively measure the single
   // stream bandwidth.
   void BuildParallelRequestAfterDelay();
 
-  // Build parallel requests to download the remaining slices.
-  // TODO(qinmin): remove ForkRequestsForNewDownload() and move the logic into
-  // this function.
+  // Build parallel requests to download. This function is the entry point for
+  // all parallel downloads.
   void BuildParallelRequests();
+
+  // Build one http request for each slice from the second slice.
+  // The first slice represents the original request.
+  void ForkSubRequests(const DownloadItem::ReceivedSlices& slices_to_download);
 
   // Create one range request, virtual for testing.
   virtual void CreateRequest(int64_t offset, int64_t length);
 
   // Information about the initial request when download is started.
   int64_t initial_request_offset_;
-  int64_t initial_request_length_;
 
-  // Subsequent tasks to send range requests.
-  WorkerList workers_;
+  // The length of the response body of the original request. May be less than
+  // the size of the target file if the request starts from non-zero offset.
+  int64_t content_length_;
+
+  // Map from the offset position of the slice to the worker that downloads the
+  // slice.
+  WorkerMap workers_;
 
   // Used to send parallel requests after a delay based on Finch config.
   base::OneShotTimer timer_;

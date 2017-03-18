@@ -51,7 +51,8 @@ class CONTENT_EXPORT DownloadFile {
   // Add a byte stream reader to write into a slice of the file, used for
   // parallel download. Called on the file thread.
   virtual void AddByteStream(std::unique_ptr<ByteStreamReader> stream_reader,
-                             int64_t offset) = 0;
+                             int64_t offset,
+                             int64_t length) = 0;
 
   // Rename the download file to |full_path|.  If that file exists
   // |full_path| will be uniquified by suffixing " (<number>)" to the

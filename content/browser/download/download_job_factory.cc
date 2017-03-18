@@ -16,28 +16,6 @@
 
 namespace content {
 
-namespace {
-
-bool ShouldUseParallelDownload(const DownloadCreateInfo& create_info) {
-  // 1. Accept-Ranges, Content-Length and strong validators response headers.
-  // 2. Feature |kParallelDownloading| enabled.
-  // 3. Content-Length is no less than the minimum slice size configuration.
-  // 3. (Undetermined) Http/1.1 protocol.
-  // 4. (Undetermined) Not under http proxy, e.g. data saver.
-
-  // Etag and last modified are stored into DownloadCreateInfo in
-  // DownloadRequestCore only if the response header complies to the strong
-  // validator rule.
-  bool has_strong_validator =
-      !create_info.etag.empty() || !create_info.last_modified.empty();
-
-  return has_strong_validator && create_info.accept_range &&
-         create_info.total_bytes >= GetMinSliceSizeConfig() &&
-         base::FeatureList::IsEnabled(features::kParallelDownloading);
-}
-
-}  // namespace
-
 std::unique_ptr<DownloadJob> DownloadJobFactory::CreateJob(
     DownloadItemImpl* download_item,
     std::unique_ptr<DownloadRequestHandleInterface> req_handle,

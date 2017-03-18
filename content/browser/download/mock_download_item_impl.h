@@ -22,6 +22,8 @@ class MockDownloadItemImpl : public DownloadItemImpl {
  public:
   // Use history constructor for minimal base object.
   explicit MockDownloadItemImpl(DownloadItemImplDelegate* delegate);
+  MockDownloadItemImpl(DownloadItemImplDelegate* delegate,
+                       const DownloadItem::ReceivedSlices& received_slices);
   ~MockDownloadItemImpl() override;
 
   MOCK_METHOD4(OnDownloadTargetDetermined,

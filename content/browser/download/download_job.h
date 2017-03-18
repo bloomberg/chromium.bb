@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "content/browser/byte_stream.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/download_danger_type.h"
 #include "content/public/browser/download_interrupt_reasons.h"
@@ -41,6 +42,11 @@ class CONTENT_EXPORT DownloadJob {
 
  protected:
   void StartDownload() const;
+
+  // Add a byte stream to the download sink.
+  void AddByteStream(std::unique_ptr<ByteStreamReader> stream_reader,
+                     int64_t offset,
+                     int64_t length);
 
   DownloadItemImpl* download_item_;
 

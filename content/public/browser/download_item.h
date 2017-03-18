@@ -117,6 +117,8 @@ class CONTENT_EXPORT DownloadItem : public base::SupportsUserData {
     int64_t received_bytes;
   };
 
+  using ReceivedSlices = std::vector<DownloadItem::ReceivedSlice>;
+
   ~DownloadItem() override {}
 
   // Observation ---------------------------------------------------------------

@@ -39,6 +39,7 @@ using ::testing::AnyNumber;
 using ::testing::DoAll;
 using ::testing::InSequence;
 using ::testing::Return;
+using ::testing::Sequence;
 using ::testing::SetArgPointee;
 using ::testing::StrictMock;
 
@@ -53,6 +54,13 @@ struct SourceStreamTestData {
   int64_t bytes_written;
   bool finished;
 };
+
+int64_t GetBuffersLength(const char** buffers, size_t num_buffer) {
+  int64_t result = 0;
+  for (size_t i = 0; i < num_buffer; ++i)
+    result += static_cast<int64_t>(strlen(buffers[i]));
+  return result;
+}
 
 std::string GetHexEncodedHashValue(crypto::SecureHash* hash_state) {
   if (!hash_state)
@@ -150,6 +158,9 @@ class DownloadFileTest : public testing::Test {
   static const char kTestData3[];
   static const char kTestData4[];
   static const char kTestData5[];
+  static const char* kTestData6[];
+  static const char* kTestData7[];
+  static const char* kTestData8[];
   static const char kDataHash[];
   static const char kEmptyHash[];
   static const uint32_t kDummyDownloadId;
@@ -160,7 +171,8 @@ class DownloadFileTest : public testing::Test {
       : observer_(new StrictMock<MockDownloadDestinationObserver>),
         observer_factory_(observer_.get()),
         input_stream_(NULL),
-        input_stream_1_(NULL),
+        additional_streams_(
+            std::vector<StrictMock<MockByteStreamReader>*>{nullptr, nullptr}),
         bytes_(-1),
         bytes_per_sec_(-1) {}
 
@@ -195,9 +207,16 @@ class DownloadFileTest : public testing::Test {
     closure.Run();
   }
 
+  bool CreateDownloadFile(int offset, bool calculate_hash) {
+    return CreateDownloadFile(offset, 0, calculate_hash, false,
+                              DownloadItem::ReceivedSlices());
+  }
+
   bool CreateDownloadFile(int offset,
+                          int length,
                           bool calculate_hash,
-                          bool is_sparse_file = false) {
+                          bool is_sparse_file,
+                          const DownloadItem::ReceivedSlices& received_slices) {
     // There can be only one.
     DCHECK(!download_file_.get());
 
@@ -210,10 +229,12 @@ class DownloadFileTest : public testing::Test {
         .RetiresOnSaturation();
 
     std::unique_ptr<DownloadSaveInfo> save_info(new DownloadSaveInfo());
+    save_info->offset = offset;
+    save_info->length = length;
+
     download_file_.reset(new TestDownloadFileImpl(
         std::move(save_info), base::FilePath(),
-        std::unique_ptr<ByteStreamReader>(input_stream_),
-        std::vector<DownloadItem::ReceivedSlice>(),
+        std::unique_ptr<ByteStreamReader>(input_stream_), received_slices,
         net::NetLogWithSource(), is_sparse_file,
         observer_factory_.GetWeakPtr()));
 
@@ -395,69 +416,28 @@ class DownloadFileTest : public testing::Test {
     return result_reason;
   }
 
-  // Prepare two byte streams to write to the same file sink. If
-  // |first_stream_completes_early| is true, the first stream will complete
-  // before the second stream starts. If |first_stream_write_all_data| is true,
-  // the first stream will write all the data before the 2nd stream starts.
-  void PrepareMultipleStreams(bool first_stream_completes_early,
-                              bool first_stream_write_all_data,
-                              int64_t second_stream_length) {
-    // Create a sparse file.
-    ASSERT_TRUE(CreateDownloadFile(0, true, true));
-    base::FilePath initial_path(download_file_->FullPath());
-    EXPECT_TRUE(base::PathExists(initial_path));
-    DCHECK(download_file_);
-
-    const char* stream_0_data[] = {kTestData1, kTestData2};
-    const char* stream_1_data[] = {kTestData4, kTestData5};
-    const char* all_data[] = {kTestData1, kTestData2, kTestData4, kTestData5};
-    size_t stream_1_offset = strlen(kTestData1) + strlen(kTestData2);
-
-    // Register second SourceStream entry for the second stream.
-    // The first stream should be registered in ctor of DownloadFile.
-    DownloadFileImpl::SourceStreams& source_streams =
-        download_file_->source_streams_;
-    EXPECT_EQ(static_cast<size_t>(1), source_streams.size());
-    source_streams[stream_1_offset] =
-        base::MakeUnique<DownloadFileImpl::SourceStream>(stream_1_offset,
-                                                         second_stream_length);
-
-    // Create the second byte stream. Will be moved to DownloadFile.
-    input_stream_1_ = new MockByteStreamReader();
-
-    ::testing::Sequence s0;
-    ::testing::Sequence s1;
-    if (first_stream_write_all_data) {
-      SetupDataAppend(all_data, 4, input_stream_, s0, 0);
-      // The 2nd stream will abort after the first read
-      SetupDataAppend(stream_1_data, 1, input_stream_1_, s1, stream_1_offset);
-    } else {
-      SetupDataAppend(stream_0_data, 2, input_stream_, s0, 0);
-      SetupDataAppend(stream_1_data, 2, input_stream_1_, s1, stream_1_offset);
-    }
-
-    // If the first stream doesn't finish before the second stream starts
-    // writing, its length will be cut short by the second stream. So
-    // STREAM_COMPLETE will never get called.
-    if (first_stream_completes_early)
-      SetupFinishStream(DOWNLOAD_INTERRUPT_REASON_NONE, input_stream_, s0);
-    else
-      EXPECT_CALL(*input_stream_, RegisterCallback(_)).RetiresOnSaturation();
+  // Prepare a byte stream to write to the file sink.
+  void PrepareStream(StrictMock<MockByteStreamReader>** stream,
+                     int64_t offset,
+                     bool create_stream,
+                     bool will_finish,
+                     const char** buffers,
+                     size_t num_buffer) {
+    if (create_stream)
+      *stream = new StrictMock<MockByteStreamReader>();
 
     // Expectation on MockByteStreamReader for MultipleStreams tests:
     // 1. RegisterCallback: Must called twice. One to set the callback, the
     // other to release the stream.
     // 2. Read: If filled with N buffer, called (N+1) times, where the last Read
-    // call doesn't read any data but returns STREAM_COMPLETE.
+    // call doesn't read any data but returns STRAM_COMPLETE.
     // The stream may terminate in the middle and less Read calls are expected.
     // 3. GetStatus: Only called if the stream is completed and last Read call
     // returns STREAM_COMPLETE.
-    if (second_stream_length == 0 && !first_stream_write_all_data)
-      SetupFinishStream(DOWNLOAD_INTERRUPT_REASON_NONE, input_stream_1_, s1);
-    else
-      EXPECT_CALL(*input_stream_1_, RegisterCallback(_)).RetiresOnSaturation();
-
-    EXPECT_CALL(*input_stream_1_, RegisterCallback(_)).RetiresOnSaturation();
+    Sequence seq;
+    SetupDataAppend(buffers, num_buffer, *stream, seq, offset);
+    if (will_finish)
+      SetupFinishStream(DOWNLOAD_INTERRUPT_REASON_NONE, *stream, seq);
   }
 
   void VerifySourceStreamsStates(const SourceStreamTestData& data) {
@@ -486,8 +466,8 @@ class DownloadFileTest : public testing::Test {
   // Owned by download_file_; will be alive for lifetime of download_file_.
   StrictMock<MockByteStreamReader>* input_stream_;
 
-  // A second byte stream to test multiple stream write.
-  MockByteStreamReader* input_stream_1_;
+  // Additional streams to test multiple stream write.
+  std::vector<StrictMock<MockByteStreamReader>*> additional_streams_;
 
   // Sink callback data for stream.
   base::Closure sink_callback_;
@@ -548,6 +528,11 @@ const char DownloadFileTest::kTestData2[] = "Writing more data.\n";
 const char DownloadFileTest::kTestData3[] = "Final line.";
 const char DownloadFileTest::kTestData4[] = "abcdefg";
 const char DownloadFileTest::kTestData5[] = "01234";
+const char* DownloadFileTest::kTestData6[] = {kTestData1, kTestData2};
+const char* DownloadFileTest::kTestData7[] = {kTestData4, kTestData5};
+const char* DownloadFileTest::kTestData8[] = {kTestData1, kTestData2,
+                                              kTestData4, kTestData5};
+
 const char DownloadFileTest::kDataHash[] =
     "CBF68BF10F8003DB86B31343AFAC8C7175BD03FB5FC905650F8C80AF087443A8";
 const char DownloadFileTest::kEmptyHash[] =
@@ -922,16 +907,24 @@ TEST_F(DownloadFileTest, StreamNonEmptyError) {
 //
 // Activate both streams at the same time.
 TEST_F(DownloadFileTest, MutipleStreamsWrite) {
-  PrepareMultipleStreams(false, false, 0);
+  int64_t stream_0_length = GetBuffersLength(kTestData6, 2);
+  int64_t stream_1_length = GetBuffersLength(kTestData7, 2);
+
+  ASSERT_TRUE(CreateDownloadFile(0, stream_0_length, true, true,
+                                 DownloadItem::ReceivedSlices()));
+
+  PrepareStream(&input_stream_, 0, false, true, kTestData6, 2);
+  PrepareStream(&additional_streams_[0], stream_0_length, true, true,
+                kTestData7, 2);
+
+  EXPECT_CALL(*additional_streams_[0], RegisterCallback(_))
+      .RetiresOnSaturation();
   EXPECT_CALL(*(observer_.get()), MockDestinationCompleted(_, _));
 
-  int64_t stream_0_length =
-      static_cast<int64_t>(strlen(kTestData1) + strlen(kTestData2));
-  int64_t stream_1_length =
-      static_cast<int64_t>(strlen(kTestData4) + strlen(kTestData5));
-
+  // Activate the streams.
   download_file_->AddByteStream(
-      std::unique_ptr<MockByteStreamReader>(input_stream_1_), stream_0_length);
+      std::unique_ptr<MockByteStreamReader>(additional_streams_[0]),
+      stream_0_length, DownloadSaveInfo::kLengthFullContent);
   sink_callback_.Run();
   base::RunLoop().RunUntilIdle();
 
@@ -944,102 +937,88 @@ TEST_F(DownloadFileTest, MutipleStreamsWrite) {
   DestroyDownloadFile(0);
 }
 
-// Activate and deplete one stream, later add the second stream.
-TEST_F(DownloadFileTest, MutipleStreamsOneStreamFirst) {
-  PrepareMultipleStreams(true, false, 0);
-
-  int64_t stream_0_length =
-      static_cast<int64_t>(strlen(kTestData1) + strlen(kTestData2));
-  int64_t stream_1_length =
-      static_cast<int64_t>(strlen(kTestData4) + strlen(kTestData5));
-
-  // Deplete the first stream.
-  sink_callback_.Run();
-  base::RunLoop().RunUntilIdle();
-
-  SourceStreamTestData stream_data_0(0, stream_0_length, true);
-  SourceStreamTestData stream_data_1(stream_0_length, 0, false);
-  VerifySourceStreamsStates(stream_data_0);
-  VerifySourceStreamsStates(stream_data_1);
-  EXPECT_EQ(stream_0_length, TotalBytesReceived());
-
-  // Won't inform the observer until the second stream is depleted.
-  EXPECT_CALL(*(observer_.get()), MockDestinationCompleted(_, _));
-
-  // Drain the second stream after the first stream is depleted.
-  download_file_->AddByteStream(
-      std::unique_ptr<MockByteStreamReader>(input_stream_1_), stream_0_length);
-  base::RunLoop().RunUntilIdle();
-
-  stream_data_1.bytes_written = stream_1_length;
-  stream_data_1.finished = true;
-  VerifySourceStreamsStates(stream_data_0);
-  VerifySourceStreamsStates(stream_data_1);
-  EXPECT_EQ(stream_0_length + stream_1_length, TotalBytesReceived());
-
-  DestroyDownloadFile(0);
-}
-
-// Two streams write to one sink, the second stream has a limited length.
+// 3 streams write to one sink, the second stream has a limited length.
 TEST_F(DownloadFileTest, MutipleStreamsLimitedLength) {
-  // The second stream has two buffers, kTestData4 and kTestData5.
-  // The length limit is set to less than the length of kTestData4.
-  // kTestData4 should be partially written to disk, where kTestData5 should be
-  // ignored.
-  int64_t stream_0_length =
-      static_cast<int64_t>(strlen(kTestData1) + strlen(kTestData2));
-  int64_t stream_1_length = static_cast<int64_t>(strlen(kTestData4)) - 1;
-  PrepareMultipleStreams(false, false, stream_1_length);
+  int64_t stream_0_length = GetBuffersLength(kTestData6, 2);
 
+  // The second stream has a limited length and should be partially written
+  // to disk. When we prepare the stream, we fill the stream with 2 full buffer.
+  int64_t stream_1_length = GetBuffersLength(kTestData7, 2) - 1;
+
+  // The last stream can't have length limit, it's a half open request, e.g
+  // "Range:50-".
+  int64_t stream_2_length = GetBuffersLength(kTestData6, 2);
+
+  ASSERT_TRUE(CreateDownloadFile(0, stream_0_length, true, true,
+                                 DownloadItem::ReceivedSlices()));
+
+  PrepareStream(&input_stream_, 0, false, true, kTestData6, 2);
+  PrepareStream(&additional_streams_[0], stream_0_length, true, false,
+                kTestData7, 2);
+  PrepareStream(&additional_streams_[1], stream_0_length + stream_1_length,
+                true, true, kTestData6, 2);
+
+  EXPECT_CALL(*additional_streams_[0], RegisterCallback(_))
+      .Times(2)
+      .RetiresOnSaturation();
+
+  EXPECT_CALL(*additional_streams_[1], RegisterCallback(_))
+      .RetiresOnSaturation();
+
+  EXPECT_CALL(*(observer_.get()), MockDestinationCompleted(_, _));
+
+  // Activate all the streams.
   download_file_->AddByteStream(
-      std::unique_ptr<MockByteStreamReader>(input_stream_1_), stream_0_length);
+      std::unique_ptr<MockByteStreamReader>(additional_streams_[0]),
+      stream_0_length, stream_1_length);
+  download_file_->AddByteStream(
+      std::unique_ptr<MockByteStreamReader>(additional_streams_[1]),
+      stream_0_length + stream_1_length, DownloadSaveInfo::kLengthFullContent);
   sink_callback_.Run();
   base::RunLoop().RunUntilIdle();
 
   SourceStreamTestData stream_data_0(0, stream_0_length, true);
   SourceStreamTestData stream_data_1(stream_0_length, stream_1_length, true);
+  SourceStreamTestData stream_data_2(stream_0_length + stream_1_length,
+                                     stream_2_length, true);
+
   VerifySourceStreamsStates(stream_data_0);
   VerifySourceStreamsStates(stream_data_1);
-  EXPECT_EQ(stream_0_length + stream_1_length, TotalBytesReceived());
+  VerifySourceStreamsStates(stream_data_2);
 
-  std::string disk_data, expected_data;
-  EXPECT_TRUE(base::ReadFileToString(download_file_->FullPath(), &disk_data));
-  expected_data.append(kTestData1).append(kTestData2).append(kTestData4);
-  expected_data = expected_data.substr(0, stream_0_length + stream_1_length);
-  EXPECT_EQ(expected_data, disk_data);
-
-  // Finish the second stream.
-  // TODO(xingliu): Refactor test code to deal with unfinished streams.
-  scoped_refptr<net::IOBuffer> data = new net::IOBuffer(strlen(kTestData5));
-  size_t size;
-  input_stream_1_->Read(&data, &size);
+  EXPECT_EQ(stream_0_length + stream_1_length + stream_2_length,
+            TotalBytesReceived());
 
   download_file_->Cancel();
   DestroyDownloadFile(0, false);
 }
 
-// Two streams write to one sink, the first stream writes the whole file before
-// the seconds stream was able to start
+//  Activate and deplete one stream, later add the second stream.
 TEST_F(DownloadFileTest, MutipleStreamsFirstStreamWriteAllData) {
-  PrepareMultipleStreams(true, true, 0);
-  int64_t stream_0_length =
-      static_cast<int64_t>(strlen(kTestData1) + strlen(kTestData2) +
-                           strlen(kTestData4) + strlen(kTestData5));
-  int64_t stream_1_length =
-      static_cast<int64_t>(strlen(kTestData4) + strlen(kTestData5));
-  sink_callback_.Run();
-  base::RunLoop().RunUntilIdle();
+  int64_t stream_0_length = GetBuffersLength(kTestData8, 4);
+
+  ASSERT_TRUE(CreateDownloadFile(0, DownloadSaveInfo::kLengthFullContent, true,
+                                 true, DownloadItem::ReceivedSlices()));
+
+  PrepareStream(&input_stream_, 0, false, true, kTestData8, 4);
 
   EXPECT_CALL(*(observer_.get()), MockDestinationCompleted(_, _));
 
+  sink_callback_.Run();
+  base::RunLoop().RunUntilIdle();
+
+  // Add another stream, the file is already closed, so nothing should be
+  // called.
+  EXPECT_FALSE(download_file_->InProgress());
+
+  additional_streams_[0] = new StrictMock<MockByteStreamReader>();
   download_file_->AddByteStream(
-      std::unique_ptr<MockByteStreamReader>(input_stream_1_),
-      stream_0_length - stream_1_length);
+      std::unique_ptr<MockByteStreamReader>(additional_streams_[0]),
+      stream_0_length - 1, DownloadSaveInfo::kLengthFullContent);
   base::RunLoop().RunUntilIdle();
 
   SourceStreamTestData stream_data_0(0, stream_0_length, true);
-  SourceStreamTestData stream_data_1(stream_0_length - stream_1_length, 0,
-                                     true);
+  SourceStreamTestData stream_data_1(stream_0_length - 1, 0, false);
   VerifySourceStreamsStates(stream_data_0);
   VerifySourceStreamsStates(stream_data_1);
   EXPECT_EQ(stream_0_length, TotalBytesReceived());

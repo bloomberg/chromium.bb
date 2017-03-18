@@ -7,10 +7,22 @@
 
 #include <vector>
 
+#include "content/browser/download/download_create_info.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/download_item.h"
 
 namespace content {
+
+// Return if the download should be a parallel download.
+CONTENT_EXPORT bool ShouldUseParallelDownload(
+    const DownloadCreateInfo& create_info);
+
+// Return the slices to download for the remaining content.
+// This function chunks the content into slices.
+CONTENT_EXPORT std::vector<DownloadItem::ReceivedSlice>
+FindSlicesForRemainingContent(int64_t bytes_received,
+                              int64_t content_length,
+                              int request_count);
 
 // Given an array of slices that are received, returns an array of slices to
 // download. |received_slices| must be ordered by offsets.

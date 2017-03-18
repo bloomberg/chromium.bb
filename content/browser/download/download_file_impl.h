@@ -58,7 +58,8 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
   void Initialize(const InitializeCallback& callback) override;
 
   void AddByteStream(std::unique_ptr<ByteStreamReader> stream_reader,
-                     int64_t offset) override;
+                     int64_t offset,
+                     int64_t length) override;
 
   void RenameAndUniquify(const base::FilePath& full_path,
                          const RenameCompletionCallback& callback) override;
@@ -94,14 +95,12 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
   // |stream_reader_| can be set later when the network response is handled.
   //
   // Multiple SourceStreams can concurrently write to the same file sink.
-  //
-  // The file IO processing is finished when all SourceStreams are finished.
   class CONTENT_EXPORT SourceStream {
    public:
-    SourceStream(int64_t offset, int64_t length);
+    SourceStream(int64_t offset,
+                 int64_t length,
+                 std::unique_ptr<ByteStreamReader> stream_reader);
     ~SourceStream();
-
-    void SetByteStream(std::unique_ptr<ByteStreamReader> stream_reader);
 
     // Called after successfully writing a buffer to disk.
     void OnWriteBytesToDisk(int64_t bytes_write);
@@ -228,11 +227,6 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
 
   // Map of the offset and the source stream that represents the slice
   // starting from offset.
-  // Must be created on the same thread that constructs the DownloadFile.
-  // Should not add or remove elements after creation.
-  // Any byte stream should have a SourceStream before added to the download
-  // file.
-  // The disk IO is completed when all source streams are finished.
   SourceStreams source_streams_;
 
   // Used to trigger progress updates.

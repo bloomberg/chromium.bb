@@ -19,6 +19,7 @@ DownloadCreateInfo::DownloadCreateInfo(
     : download_id(DownloadItem::kInvalidId),
       start_time(start_time),
       total_bytes(0),
+      offset(0),
       has_user_gesture(false),
       result(DOWNLOAD_INTERRUPT_REASON_NONE),
       save_info(std::move(save_info)),

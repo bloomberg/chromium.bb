@@ -42,19 +42,18 @@ const int kInitialRenameRetryDelayMs = 200;
 // Number of times a failing rename is retried before giving up.
 const int kMaxRenameRetries = 3;
 
-DownloadFileImpl::SourceStream::SourceStream(int64_t offset, int64_t length)
+DownloadFileImpl::SourceStream::SourceStream(
+    int64_t offset,
+    int64_t length,
+    std::unique_ptr<ByteStreamReader> stream_reader)
     : offset_(offset),
       length_(length),
       bytes_written_(0),
       finished_(false),
-      index_(0u) {}
+      index_(0u),
+      stream_reader_(std::move(stream_reader)) {}
 
 DownloadFileImpl::SourceStream::~SourceStream() = default;
-
-void DownloadFileImpl::SourceStream::SetByteStream(
-    std::unique_ptr<ByteStreamReader> stream_reader) {
-  stream_reader_ = std::move(stream_reader);
-}
 
 void DownloadFileImpl::SourceStream::OnWriteBytesToDisk(int64_t bytes_write) {
   bytes_written_ += bytes_write;
@@ -80,9 +79,7 @@ DownloadFileImpl::DownloadFileImpl(
       observer_(observer),
       weak_factory_(this) {
   source_streams_[save_info_->offset] = base::MakeUnique<SourceStream>(
-      save_info_->offset, DownloadSaveInfo::kLengthFullContent);
-  DCHECK(source_streams_.size() == static_cast<size_t>(1));
-  source_streams_[save_info_->offset]->SetByteStream(std::move(stream_reader));
+      save_info_->offset, save_info_->length, std::move(stream_reader));
 
   download_item_net_log.AddEvent(
       net::NetLogEventType::DOWNLOAD_FILE_CREATED,
@@ -125,27 +122,27 @@ void DownloadFileImpl::Initialize(const InitializeCallback& callback) {
   // Primarily to make reset to zero in restart visible to owner.
   SendUpdate();
 
-  // Initial pull from the straw.
-  for (auto& source_stream : source_streams_)
-    RegisterAndActivateStream(source_stream.second.get());
-
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE, base::Bind(
           callback, DOWNLOAD_INTERRUPT_REASON_NONE));
+
+  // Initial pull from the straw from all source streams.
+  for (auto& source_stream : source_streams_)
+    RegisterAndActivateStream(source_stream.second.get());
 }
 
 void DownloadFileImpl::AddByteStream(
     std::unique_ptr<ByteStreamReader> stream_reader,
-    int64_t offset) {
+    int64_t offset,
+    int64_t length) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
 
-  // The |source_streams_| must have an existing entry for the stream reader.
-  auto current_source_stream = source_streams_.find(offset);
-  DCHECK(current_source_stream != source_streams_.end());
-  SourceStream* stream = current_source_stream->second.get();
-  stream->SetByteStream(std::move(stream_reader));
+  source_streams_[offset] =
+      base::MakeUnique<SourceStream>(offset, length, std::move(stream_reader));
 
-  RegisterAndActivateStream(stream);
+  // If the file is initialized, start to write data, or wait until file opened.
+  if (file_.in_progress())
+    RegisterAndActivateStream(source_streams_[offset].get());
 }
 
 DownloadInterruptReason DownloadFileImpl::WriteDataToFile(int64_t offset,
@@ -174,7 +171,7 @@ bool DownloadFileImpl::CalculateBytesToWrite(SourceStream* source_stream,
 
   if (source_stream->length() != DownloadSaveInfo::kLengthFullContent &&
       source_stream->bytes_written() +
-              static_cast<int64_t>(bytes_available_to_write) >=
+              static_cast<int64_t>(bytes_available_to_write) >
           source_stream->length()) {
     // Write a partial buffer as the incoming data exceeds the length limit.
     *bytes_to_write = source_stream->length() - source_stream->bytes_written();
