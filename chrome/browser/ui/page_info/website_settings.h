@@ -128,8 +128,7 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver,
   void RecordWebsiteSettingsAction(WebsiteSettingsAction action);
 
   // This method is called when ever a permission setting is changed.
-  void OnSitePermissionChanged(ContentSettingsType type,
-                               ContentSetting value);
+  void OnSitePermissionChanged(ContentSettingsType type, ContentSetting value);
 
   // This method is called whenever access to an object is revoked.
   void OnSiteChosenObjectDeleted(const ChooserUIInfo& ui_info,
@@ -152,9 +151,7 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver,
     return site_identity_status_;
   }
 
-  base::string16 organization_name() const {
-    return organization_name_;
-  }
+  base::string16 organization_name() const { return organization_name_; }
 
   // SiteDataObserver implementation.
   void OnSiteDataAccessed() override;

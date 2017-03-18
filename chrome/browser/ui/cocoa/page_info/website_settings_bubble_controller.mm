@@ -207,11 +207,11 @@ bool IsInternalURL(const GURL& url) {
   // Use an arbitrary height; it will be changed in performLayout.
   NSRect contentRect = NSMakeRect(0, 0, [self defaultWindowWidth], 1);
   // Create an empty window into which content is placed.
-  base::scoped_nsobject<InfoBubbleWindow> window(
-      [[InfoBubbleWindow alloc] initWithContentRect:contentRect
-                                          styleMask:NSBorderlessWindowMask
-                                            backing:NSBackingStoreBuffered
-                                              defer:NO]);
+  base::scoped_nsobject<InfoBubbleWindow> window([[InfoBubbleWindow alloc]
+      initWithContentRect:contentRect
+                styleMask:NSBorderlessWindowMask
+                  backing:NSBackingStoreBuffered
+                    defer:NO]);
 
   if ((self = [super initWithWindow:window.get()
                        parentWindow:parentWindow
@@ -220,12 +220,11 @@ bool IsInternalURL(const GURL& url) {
 
     // Create the container view that uses flipped coordinates.
     NSRect contentFrame = NSMakeRect(0, 0, [self defaultWindowWidth], 300);
-    contentView_.reset(
-        [[FlippedView alloc] initWithFrame:contentFrame]);
+    contentView_.reset([[FlippedView alloc] initWithFrame:contentFrame]);
 
     // Replace the window's content.
-    [[[self window] contentView] setSubviews:
-        [NSArray arrayWithObject:contentView_.get()]];
+    [[[self window] contentView]
+        setSubviews:[NSArray arrayWithObject:contentView_.get()]];
 
     if (IsInternalURL(url_)) {
       [self initializeContentsForInternalPage:url_];
@@ -306,8 +305,8 @@ bool IsInternalURL(const GURL& url) {
 
   // Adjust the contentView to fit everything.
   CGFloat maxY = std::max(NSMaxY(imageFrame), NSMaxY(textFrame));
-  [contentView_ setFrame:NSMakeRect(
-      0, 0, [self defaultWindowWidth], maxY + kInternalPageFramePadding)];
+  [contentView_ setFrame:NSMakeRect(0, 0, [self defaultWindowWidth],
+                                    maxY + kInternalPageFramePadding)];
 
   [self sizeAndPositionWindow];
 }
@@ -349,10 +348,9 @@ bool IsInternalURL(const GURL& url) {
   resetDecisionsField_ = nil;
   resetDecisionsButton_ = nil;
 
-  NSString* connectionHelpButtonText =
-      l10n_util::GetNSString(IDS_LEARN_MORE);
+  NSString* connectionHelpButtonText = l10n_util::GetNSString(IDS_LEARN_MORE);
   connectionHelpButton_ = [self addLinkButtonWithText:connectionHelpButtonText
-                                                toView:securitySectionView];
+                                               toView:securitySectionView];
   [connectionHelpButton_ setTarget:self];
   [connectionHelpButton_ setAction:@selector(openConnectionHelp:)];
 
@@ -474,8 +472,8 @@ bool IsInternalURL(const GURL& url) {
 // the content has changed.
 - (void)performLayout {
   // Make the content at least as wide as the permissions view.
-  CGFloat contentWidth = std::max([self defaultWindowWidth],
-                                  NSWidth([permissionsView_ frame]));
+  CGFloat contentWidth =
+      std::max([self defaultWindowWidth], NSWidth([permissionsView_ frame]));
 
   // Set the width of the content view now, so that all the text fields will
   // be sized to fit before their heights and vertical positions are adjusted.
@@ -510,10 +508,9 @@ bool IsInternalURL(const GURL& url) {
   yPos = [self setYPositionOfView:securityDetailsField_
                                to:yPos + kSecurityParagraphSpacing];
 
-  [connectionHelpButton_
-      setFrameOrigin:NSMakePoint(
-                         kSectionHorizontalPadding - kLinkButtonXAdjustment,
-                         yPos)];
+  [connectionHelpButton_ setFrameOrigin:NSMakePoint(kSectionHorizontalPadding -
+                                                        kLinkButtonXAdjustment,
+                                                    yPos)];
   yPos = NSMaxY([connectionHelpButton_ frame]);
 
   if (resetDecisionsButton_) {
@@ -554,12 +551,12 @@ bool IsInternalURL(const GURL& url) {
 // the bubble anchor appropriately.
 - (void)sizeAndPositionWindow {
   NSRect windowFrame = [contentView_ frame];
-  windowFrame.size = [[[self window] contentView] convertSize:windowFrame.size
-                                                       toView:nil];
+  windowFrame.size =
+      [[[self window] contentView] convertSize:windowFrame.size toView:nil];
   // Adjust the origin by the difference in height.
   windowFrame.origin = [[self window] frame].origin;
-  windowFrame.origin.y -= NSHeight(windowFrame) -
-      NSHeight([[self window] frame]);
+  windowFrame.origin.y -=
+      NSHeight(windowFrame) - NSHeight([[self window] frame]);
 
   // Resize the window. Only animate if the window is visible, otherwise it
   // could be "growing" while it's opening, looking awkward.
@@ -584,8 +581,7 @@ bool IsInternalURL(const GURL& url) {
 - (void)sizeTextFieldHeightToFit:(NSTextField*)textField {
   NSRect frame = [textField frame];
   frame.size.height +=
-     [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:
-         textField];
+      [GTMUILocalizerAndLayoutTweaker sizeToFitFixedWidthTextField:textField];
   [textField setFrame:frame];
 }
 
@@ -702,7 +698,7 @@ bool IsInternalURL(const GURL& url) {
 
   certificate_ = identityInfo.certificate;
 
-  if (certificate_ &&  identityInfo.show_ssl_decision_revoke_button) {
+  if (certificate_ && identityInfo.show_ssl_decision_revoke_button) {
     resetDecisionsField_ =
         [self addText:base::string16()
              withSize:[NSFont smallSystemFontSize]
@@ -728,15 +724,14 @@ bool IsInternalURL(const GURL& url) {
 
 // Add a pop-up button for |permissionInfo| to the given view.
 - (NSPopUpButton*)addPopUpButtonForPermission:
-    (const WebsiteSettingsUI::PermissionInfo&)permissionInfo
+                      (const WebsiteSettingsUI::PermissionInfo&)permissionInfo
                                        toView:(NSView*)view
                                       atPoint:(NSPoint)point {
-
   GURL url = webContents_ ? webContents_->GetURL() : GURL();
   __block WebsiteSettingsBubbleController* weakSelf = self;
   PermissionMenuModel::ChangeCallback callback =
       base::BindBlock(^(const WebsiteSettingsUI::PermissionInfo& permission) {
-          [weakSelf onPermissionChanged:permission.type to:permission.setting];
+        [weakSelf onPermissionChanged:permission.type to:permission.setting];
       });
   base::scoped_nsobject<PermissionSelectorButton> button(
       [[PermissionSelectorButton alloc] initWithPermissionInfo:permissionInfo
@@ -803,15 +798,15 @@ bool IsInternalURL(const GURL& url) {
 // last UI element added (either the permission button, in LTR, or the text
 // label, in RTL).
 - (NSPoint)addPermission:
-    (const WebsiteSettingsUI::PermissionInfo&)permissionInfo
+               (const WebsiteSettingsUI::PermissionInfo&)permissionInfo
                   toView:(NSView*)view
                  atPoint:(NSPoint)point {
   base::string16 labelText =
       WebsiteSettingsUI::PermissionTypeToUIString(permissionInfo.type);
   bool isRTL = base::i18n::IsRTL();
   base::scoped_nsobject<NSImage> image(
-      [WebsiteSettingsUI::GetPermissionIcon(permissionInfo).ToNSImage()
-          retain]);
+      [WebsiteSettingsUI::GetPermissionIcon(permissionInfo)
+              .ToNSImage() retain]);
 
   NSPoint position;
   NSImageView* imageView;
@@ -997,7 +992,6 @@ bool IsInternalURL(const GURL& url) {
 // the cap height of the first line of text.
 - (void)alignPermissionIcon:(NSImageView*)imageView
               withTextField:(NSTextField*)textField {
-
   NSRect frame = [imageView frame];
   frame.origin.y += kPermissionIconYAdjustment;
   [imageView setFrame:frame];
@@ -1104,8 +1098,8 @@ bool IsInternalURL(const GURL& url) {
   permissionsPresent_ = YES;
 
   if (permissionInfoList.size() > 0 || chosenObjectInfoList.size() > 0) {
-    base::string16 sectionTitle = l10n_util::GetStringUTF16(
-        IDS_WEBSITE_SETTINGS_TITLE_SITE_PERMISSIONS);
+    base::string16 sectionTitle =
+        l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_TITLE_SITE_PERMISSIONS);
 
     for (const auto& permission : permissionInfoList) {
       controlOrigin.y += kPermissionsVerticalSpacing;
@@ -1126,8 +1120,8 @@ bool IsInternalURL(const GURL& url) {
     controlOrigin.y += kPermissionsVerticalSpacing;
   }
 
-  [permissionsView_ setFrameSize:
-      NSMakeSize(NSWidth([permissionsView_ frame]), controlOrigin.y)];
+  [permissionsView_ setFrameSize:NSMakeSize(NSWidth([permissionsView_ frame]),
+                                            controlOrigin.y)];
   [self performLayout];
 }
 
@@ -1176,12 +1170,11 @@ void WebsiteSettingsUIBridge::Show(
 
   // Create the bubble controller. It will dealloc itself when it closes,
   // resetting |g_is_popup_showing|.
-  WebsiteSettingsBubbleController* bubble_controller =
-      [[WebsiteSettingsBubbleController alloc]
-             initWithParentWindow:parent
-          websiteSettingsUIBridge:bridge
-                      webContents:web_contents
-                              url:virtual_url];
+  WebsiteSettingsBubbleController* bubble_controller = [
+      [WebsiteSettingsBubbleController alloc] initWithParentWindow:parent
+                                           websiteSettingsUIBridge:bridge
+                                                       webContents:web_contents
+                                                               url:virtual_url];
 
   if (!IsInternalURL(virtual_url)) {
     // Initialize the presenter, which holds the model and controls the UI.

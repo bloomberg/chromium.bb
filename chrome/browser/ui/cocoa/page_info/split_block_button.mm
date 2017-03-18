@@ -65,7 +65,7 @@ NSBezierPath* PathWithCornerStyles(NSRect frame,
   return path.autorelease();
 }
 
-void DrawBezel(id<ConstrainedWindowButtonDrawableCell>cell,
+void DrawBezel(id<ConstrainedWindowButtonDrawableCell> cell,
                CornerType leftCorners,
                CornerType rightCorners,
                NSRect frame,
@@ -90,8 +90,8 @@ void DrawBezel(id<ConstrainedWindowButtonDrawableCell>cell,
 @end
 
 // A button cell used by SplitBlockButton, containing the popup menu.
-@interface SplitButtonPopUpCell :
-    NSPopUpButtonCell<ConstrainedWindowButtonDrawableCell> {
+@interface SplitButtonPopUpCell
+    : NSPopUpButtonCell<ConstrainedWindowButtonDrawableCell> {
  @private
   BOOL isMouseInside_;
   base::scoped_nsobject<MenuController> menuController_;
@@ -110,8 +110,8 @@ void DrawBezel(id<ConstrainedWindowButtonDrawableCell>cell,
 - (id)initWithMenuDelegate:(ui::SimpleMenuModel::Delegate*)menuDelegate {
   if (self = [super initWithFrame:NSZeroRect]) {
     leftCell_.reset([[SplitButtonTitleCell alloc] init]);
-    rightCell_.reset([[SplitButtonPopUpCell alloc]
-        initWithMenuDelegate:menuDelegate]);
+    rightCell_.reset(
+        [[SplitButtonPopUpCell alloc] initWithMenuDelegate:menuDelegate]);
     [leftCell_ setTitle:l10n_util::GetNSString(IDS_PERMISSION_DENY)];
     [leftCell_ setEnabled:YES];
     [rightCell_ setEnabled:YES];
@@ -163,9 +163,7 @@ void DrawBezel(id<ConstrainedWindowButtonDrawableCell>cell,
   path = [NSBezierPath bezierPathWithRoundedRect:NSInsetRect(rect, 0.5, 0.5)
                                          xRadius:radius
                                          yRadius:radius];
-  [ConstrainedWindowButton DrawBorderForPath:path
-                                    withCell:nil
-                                      inView:self];
+  [ConstrainedWindowButton DrawBorderForPath:path withCell:nil inView:self];
 }
 
 - (void)updateTrackingAreas {
@@ -182,8 +180,8 @@ void DrawBezel(id<ConstrainedWindowButtonDrawableCell>cell,
                    forCell:(id<ConstrainedWindowButtonDrawableCell>)cell
                   withRect:(NSRect)rect {
   DCHECK(trackingArea);
-  NSTrackingAreaOptions options = NSTrackingMouseEnteredAndExited |
-                                  NSTrackingActiveInActiveApp;
+  NSTrackingAreaOptions options =
+      NSTrackingMouseEnteredAndExited | NSTrackingActiveInActiveApp;
   [self removeTrackingArea:trackingArea->get()];
   trackingArea->reset([[CrTrackingArea alloc] initWithRect:rect
                                                    options:options
@@ -250,8 +248,8 @@ void DrawBezel(id<ConstrainedWindowButtonDrawableCell>cell,
 
 - (MouseLocation)mouseLocationForEvent:(NSEvent*)theEvent {
   MouseLocation location = kNotInside;
-  NSPoint mousePoint = [self convertPoint:[theEvent locationInWindow]
-                                 fromView:nil];
+  NSPoint mousePoint =
+      [self convertPoint:[theEvent locationInWindow] fromView:nil];
   if ([self mouse:mousePoint inRect:[leftCell_ rect]])
     location = kInsideLeftCell;
   else if ([self mouse:mousePoint inRect:[self rightCellRect]])
@@ -289,7 +287,7 @@ void DrawBezel(id<ConstrainedWindowButtonDrawableCell>cell,
 
 @implementation SplitButtonTitleCell
 
-- (void)drawBezelWithFrame:(NSRect)frame inView:(NSView *)controlView {
+- (void)drawBezelWithFrame:(NSRect)frame inView:(NSView*)controlView {
   DrawBezel(self, kRounded, kAngled, frame, controlView);
 }
 
@@ -312,9 +310,8 @@ void DrawBezel(id<ConstrainedWindowButtonDrawableCell>cell,
     [self setBackgroundColor:[NSColor clearColor]];
     menuModel_.reset(new ui::SimpleMenuModel(menuDelegate));
     menuModel_->AddItemWithStringId(0, IDS_PERMISSION_CUSTOMIZE);
-    menuController_.reset(
-        [[MenuController alloc] initWithModel:menuModel_.get()
-                       useWithPopUpButtonCell:NO]);
+    menuController_.reset([[MenuController alloc] initWithModel:menuModel_.get()
+                                         useWithPopUpButtonCell:NO]);
     [self setMenu:[menuController_ menu]];
     [self setUsesItemFromMenu:NO];
   }

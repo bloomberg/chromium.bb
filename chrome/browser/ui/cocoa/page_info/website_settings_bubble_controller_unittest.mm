@@ -30,7 +30,6 @@
   return resetDecisionsButton_;
 }
 - (NSButton*)connectionHelpButton {
-
   return connectionHelpButton_;
 }
 @end
@@ -48,8 +47,7 @@
 }
 - (CGFloat)defaultWindowWidth {
   // If |defaultWindowWidth_| is 0, use the superclass implementation.
-  return defaultWindowWidth_ ?
-      defaultWindowWidth_ : [super defaultWindowWidth];
+  return defaultWindowWidth_ ? defaultWindowWidth_ : [super defaultWindowWidth];
 }
 @end
 
@@ -63,45 +61,31 @@ enum PermissionMenuIndices {
 };
 
 const ContentSettingsType kTestPermissionTypes[] = {
-  CONTENT_SETTINGS_TYPE_IMAGES,
-  CONTENT_SETTINGS_TYPE_JAVASCRIPT,
-  CONTENT_SETTINGS_TYPE_PLUGINS,
-  CONTENT_SETTINGS_TYPE_POPUPS,
-  CONTENT_SETTINGS_TYPE_GEOLOCATION,
-  CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-  CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC
-};
+    CONTENT_SETTINGS_TYPE_IMAGES,         CONTENT_SETTINGS_TYPE_JAVASCRIPT,
+    CONTENT_SETTINGS_TYPE_PLUGINS,        CONTENT_SETTINGS_TYPE_POPUPS,
+    CONTENT_SETTINGS_TYPE_GEOLOCATION,    CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+    CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC};
 
 const ContentSetting kTestSettings[] = {
-  CONTENT_SETTING_DEFAULT,
-  CONTENT_SETTING_DEFAULT,
-  CONTENT_SETTING_ALLOW,
-  CONTENT_SETTING_BLOCK,
-  CONTENT_SETTING_ALLOW,
-  CONTENT_SETTING_BLOCK,
-  CONTENT_SETTING_BLOCK
-};
+    CONTENT_SETTING_DEFAULT, CONTENT_SETTING_DEFAULT, CONTENT_SETTING_ALLOW,
+    CONTENT_SETTING_BLOCK,   CONTENT_SETTING_ALLOW,   CONTENT_SETTING_BLOCK,
+    CONTENT_SETTING_BLOCK};
 
-const ContentSetting kTestDefaultSettings[] = {
-  CONTENT_SETTING_BLOCK,
-  CONTENT_SETTING_ASK
-};
+const ContentSetting kTestDefaultSettings[] = {CONTENT_SETTING_BLOCK,
+                                               CONTENT_SETTING_ASK};
 
 const content_settings::SettingSource kTestSettingSources[] = {
-  content_settings::SETTING_SOURCE_USER,
-  content_settings::SETTING_SOURCE_USER,
-  content_settings::SETTING_SOURCE_USER,
-  content_settings::SETTING_SOURCE_USER,
-  content_settings::SETTING_SOURCE_POLICY,
-  content_settings::SETTING_SOURCE_POLICY,
-  content_settings::SETTING_SOURCE_EXTENSION
-};
+    content_settings::SETTING_SOURCE_USER,
+    content_settings::SETTING_SOURCE_USER,
+    content_settings::SETTING_SOURCE_USER,
+    content_settings::SETTING_SOURCE_USER,
+    content_settings::SETTING_SOURCE_POLICY,
+    content_settings::SETTING_SOURCE_POLICY,
+    content_settings::SETTING_SOURCE_EXTENSION};
 
 class WebsiteSettingsBubbleControllerTest : public CocoaTest {
  public:
-  WebsiteSettingsBubbleControllerTest() {
-    controller_ = nil;
-  }
+  WebsiteSettingsBubbleControllerTest() { controller_ = nil; }
 
   void TearDown() override {
     [controller_ close];
@@ -111,10 +95,7 @@ class WebsiteSettingsBubbleControllerTest : public CocoaTest {
  protected:
   WebsiteSettingsUIBridge* bridge_;  // Weak, owned by controller.
 
-  enum MatchType {
-    TEXT_EQUAL = 0,
-    TEXT_NOT_EQUAL
-  };
+  enum MatchType { TEXT_EQUAL = 0, TEXT_NOT_EQUAL };
 
   // Creates a new website settings bubble, with the given default width.
   // If |default_width| is 0, the *default* default width will be used.
@@ -133,9 +114,7 @@ class WebsiteSettingsBubbleControllerTest : public CocoaTest {
     [controller_ showWindow:nil];
   }
 
-  void CreateBubble() {
-    CreateBubbleWithWidth(0.0);
-  }
+  void CreateBubble() { CreateBubbleWithWidth(0.0); }
 
   // Return a pointer to the first NSTextField found that either matches, or
   // doesn't match, the given text.
@@ -254,7 +233,7 @@ TEST_F(WebsiteSettingsBubbleControllerTest, SetPermissionInfo) {
 
   // There should be three subviews per permission.
   NSArray* subviews = [[controller_ permissionsView] subviews];
-  EXPECT_EQ(arraysize(kTestPermissionTypes) * 3 , [subviews count]);
+  EXPECT_EQ(arraysize(kTestPermissionTypes) * 3, [subviews count]);
 
   // Ensure that there is a distinct label for each permission.
   NSMutableSet* labels = [NSMutableSet set];

@@ -87,8 +87,7 @@ PermissionMenuButton::PermissionMenuButton(const base::string16& text,
       base::i18n::RIGHT_TO_LEFT == base::i18n::GetStringDirection(text);
 }
 
-PermissionMenuButton::~PermissionMenuButton() {
-}
+PermissionMenuButton::~PermissionMenuButton() {}
 
 void PermissionMenuButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   MenuButton::GetAccessibleNodeData(node_data);
@@ -96,12 +95,15 @@ void PermissionMenuButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 }
 
 void PermissionMenuButton::OnNativeThemeChanged(const ui::NativeTheme* theme) {
-  SetTextColor(views::Button::STATE_NORMAL, theme->GetSystemColor(
-      ui::NativeTheme::kColorId_LabelEnabledColor));
-  SetTextColor(views::Button::STATE_HOVERED, theme->GetSystemColor(
-      ui::NativeTheme::kColorId_LabelEnabledColor));
-  SetTextColor(views::Button::STATE_DISABLED, theme->GetSystemColor(
-      ui::NativeTheme::kColorId_LabelDisabledColor));
+  SetTextColor(
+      views::Button::STATE_NORMAL,
+      theme->GetSystemColor(ui::NativeTheme::kColorId_LabelEnabledColor));
+  SetTextColor(
+      views::Button::STATE_HOVERED,
+      theme->GetSystemColor(ui::NativeTheme::kColorId_LabelEnabledColor));
+  SetTextColor(
+      views::Button::STATE_DISABLED,
+      theme->GetSystemColor(ui::NativeTheme::kColorId_LabelDisabledColor));
 }
 
 void PermissionMenuButton::OnMenuButtonClicked(views::MenuButton* source,
@@ -253,7 +255,7 @@ PermissionSelectorRow::PermissionSelectorRow(
       base::Bind(&PermissionSelectorRow::PermissionChanged,
                  base::Unretained(this))));
 
-  // Create the permission menu button.
+// Create the permission menu button.
 #if defined(OS_MACOSX)
   bool use_real_combobox = true;
 #else
@@ -309,8 +311,8 @@ void PermissionSelectorRow::InitializeComboboxView(
       permission.source == content_settings::SETTING_SOURCE_USER;
   combobox_model_adapter_.reset(
       new internal::ComboboxModelAdapter(menu_model_.get()));
-  combobox_ = new internal::PermissionCombobox(
-      combobox_model_adapter_.get(), button_enabled, true);
+  combobox_ = new internal::PermissionCombobox(combobox_model_adapter_.get(),
+                                               button_enabled, true);
   combobox_->SetEnabled(button_enabled);
   combobox_->SetAccessibleName(
       WebsiteSettingsUI::PermissionTypeToUIString(permission.type));

@@ -144,10 +144,9 @@ void CheckContentStatus(security_state::ContentStatus content_status,
   }
 }
 
-void CheckForInsecureContent(
-    const security_state::SecurityInfo& security_info,
-    bool* displayed,
-    bool* ran) {
+void CheckForInsecureContent(const security_state::SecurityInfo& security_info,
+                             bool* displayed,
+                             bool* ran) {
   CheckContentStatus(security_info.mixed_content_status, displayed, ran);
   // Only consider subresources with certificate errors if the main
   // resource was loaded over HTTPS without major certificate errors. If
@@ -172,18 +171,17 @@ void GetSiteIdentityByMaliciousContentStatus(
       break;
     case security_state::MALICIOUS_CONTENT_STATUS_MALWARE:
       *status = WebsiteSettings::SITE_IDENTITY_STATUS_MALWARE;
-      *details =
-          l10n_util::GetStringUTF16(IDS_PAGEINFO_MALWARE_DETAILS);
+      *details = l10n_util::GetStringUTF16(IDS_PAGEINFO_MALWARE_DETAILS);
       break;
     case security_state::MALICIOUS_CONTENT_STATUS_SOCIAL_ENGINEERING:
       *status = WebsiteSettings::SITE_IDENTITY_STATUS_SOCIAL_ENGINEERING;
-      *details = l10n_util::GetStringUTF16(
-          IDS_PAGEINFO_SOCIAL_ENGINEERING_DETAILS);
+      *details =
+          l10n_util::GetStringUTF16(IDS_PAGEINFO_SOCIAL_ENGINEERING_DETAILS);
       break;
     case security_state::MALICIOUS_CONTENT_STATUS_UNWANTED_SOFTWARE:
       *status = WebsiteSettings::SITE_IDENTITY_STATUS_UNWANTED_SOFTWARE;
-      *details = l10n_util::GetStringUTF16(
-          IDS_PAGEINFO_UNWANTED_SOFTWARE_DETAILS);
+      *details =
+          l10n_util::GetStringUTF16(IDS_PAGEINFO_UNWANTED_SOFTWARE_DETAILS);
       break;
   }
 }
@@ -241,13 +239,11 @@ WebsiteSettings::WebsiteSettings(
   RecordWebsiteSettingsAction(WEBSITE_SETTINGS_OPENED);
 }
 
-WebsiteSettings::~WebsiteSettings() {
-}
+WebsiteSettings::~WebsiteSettings() {}
 
 void WebsiteSettings::RecordWebsiteSettingsAction(
     WebsiteSettingsAction action) {
-  UMA_HISTOGRAM_ENUMERATION("WebsiteSettings.Action",
-                            action,
+  UMA_HISTOGRAM_ENUMERATION("WebsiteSettings.Action", action,
                             WEBSITE_SETTINGS_COUNT);
 
   std::string histogram_name;
@@ -521,8 +517,8 @@ void WebsiteSettings::Init(const GURL& url,
 
     if (security_info.cert_status & net::CERT_STATUS_NON_UNIQUE_NAME) {
       site_identity_details_ += ASCIIToUTF16("\n\n");
-      site_identity_details_ += l10n_util::GetStringUTF16(
-          IDS_PAGE_INFO_SECURITY_TAB_NON_UNIQUE_NAME);
+      site_identity_details_ +=
+          l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURITY_TAB_NON_UNIQUE_NAME);
     }
   }
 
@@ -560,8 +556,7 @@ void WebsiteSettings::Init(const GURL& url,
 
     if (security_info.obsolete_ssl_status == net::OBSOLETE_SSL_NONE) {
       site_connection_details_.assign(l10n_util::GetStringFUTF16(
-          IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_CONNECTION_TEXT,
-          subject_name));
+          IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTED_CONNECTION_TEXT, subject_name));
     } else {
       site_connection_details_.assign(l10n_util::GetStringFUTF16(
           IDS_PAGE_INFO_SECURITY_TAB_WEAK_ENCRYPTION_CONNECTION_TEXT,
@@ -596,8 +591,7 @@ void WebsiteSettings::Init(const GURL& url,
     net::SSLVersionToString(&ssl_version_str, ssl_version);
     site_connection_details_ += ASCIIToUTF16("\n\n");
     site_connection_details_ += l10n_util::GetStringFUTF16(
-        IDS_PAGE_INFO_SECURITY_TAB_SSL_VERSION,
-        ASCIIToUTF16(ssl_version_str));
+        IDS_PAGE_INFO_SECURITY_TAB_SSL_VERSION, ASCIIToUTF16(ssl_version_str));
 
     const char *key_exchange, *cipher, *mac;
     bool is_aead, is_tls13;
@@ -620,8 +614,8 @@ void WebsiteSettings::Init(const GURL& url,
           ASCIIToUTF16(cipher), ASCIIToUTF16(key_exchange));
     } else {
       site_connection_details_ += l10n_util::GetStringFUTF16(
-          IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTION_DETAILS,
-          ASCIIToUTF16(cipher), ASCIIToUTF16(mac), ASCIIToUTF16(key_exchange));
+          IDS_PAGE_INFO_SECURITY_TAB_ENCRYPTION_DETAILS, ASCIIToUTF16(cipher),
+          ASCIIToUTF16(mac), ASCIIToUTF16(key_exchange));
     }
 
     if (ssl_version == net::SSL_CONNECTION_VERSION_SSL3 &&
@@ -751,11 +745,9 @@ void WebsiteSettings::PresentSiteIdentity() {
     info.site_identity = UTF16ToUTF8(GetSimpleSiteName(site_url_));
 
   info.connection_status = site_connection_status_;
-  info.connection_status_description =
-      UTF16ToUTF8(site_connection_details_);
+  info.connection_status_description = UTF16ToUTF8(site_connection_details_);
   info.identity_status = site_identity_status_;
-  info.identity_status_description =
-      UTF16ToUTF8(site_identity_details_);
+  info.identity_status_description = UTF16ToUTF8(site_identity_details_);
   info.certificate = certificate_;
   info.show_ssl_decision_revoke_button = show_ssl_decision_revoke_button_;
   ui_->SetIdentityInfo(info);

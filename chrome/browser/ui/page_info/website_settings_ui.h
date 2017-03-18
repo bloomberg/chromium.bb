@@ -179,8 +179,7 @@ class WebsiteSettingsUI {
       WebsiteSettings::SiteIdentityStatus status);
 
   // Returns the connection icon ID for the given connection |status|.
-  static int GetConnectionIconID(
-      WebsiteSettings::SiteConnectionStatus status);
+  static int GetConnectionIconID(WebsiteSettings::SiteConnectionStatus status);
 
   // Returns the connection icon for the given connection |status|.
   static const gfx::Image& GetConnectionIcon(

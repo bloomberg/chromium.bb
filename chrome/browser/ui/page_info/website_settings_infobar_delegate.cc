@@ -23,14 +23,12 @@ void WebsiteSettingsInfoBarDelegate::Create(InfoBarService* infobar_service) {
 }
 
 WebsiteSettingsInfoBarDelegate::WebsiteSettingsInfoBarDelegate()
-    : ConfirmInfoBarDelegate() {
-}
+    : ConfirmInfoBarDelegate() {}
 
-WebsiteSettingsInfoBarDelegate::~WebsiteSettingsInfoBarDelegate() {
-}
+WebsiteSettingsInfoBarDelegate::~WebsiteSettingsInfoBarDelegate() {}
 
-infobars::InfoBarDelegate::Type
-WebsiteSettingsInfoBarDelegate::GetInfoBarType() const {
+infobars::InfoBarDelegate::Type WebsiteSettingsInfoBarDelegate::GetInfoBarType()
+    const {
   return PAGE_ACTION_TYPE;
 }
 

@@ -32,7 +32,7 @@ const int kPermissionButtonTextIDPolicyManaged[] = {
     kInvalidResourceID,
     kInvalidResourceID};
 static_assert(arraysize(kPermissionButtonTextIDPolicyManaged) ==
-              CONTENT_SETTING_NUM_SETTINGS,
+                  CONTENT_SETTING_NUM_SETTINGS,
               "kPermissionButtonTextIDPolicyManaged array size is incorrect");
 
 // The resource IDs for the strings that are displayed on the permissions
@@ -45,7 +45,7 @@ const int kPermissionButtonTextIDExtensionManaged[] = {
     kInvalidResourceID,
     kInvalidResourceID};
 static_assert(arraysize(kPermissionButtonTextIDExtensionManaged) ==
-              CONTENT_SETTING_NUM_SETTINGS,
+                  CONTENT_SETTING_NUM_SETTINGS,
               "kPermissionButtonTextIDExtensionManaged array size is "
               "incorrect");
 
@@ -59,7 +59,7 @@ const int kPermissionButtonTextIDUserManaged[] = {
     kInvalidResourceID,
     IDS_WEBSITE_SETTINGS_BUTTON_TEXT_DETECT_IMPORTANT_CONTENT_BY_USER};
 static_assert(arraysize(kPermissionButtonTextIDUserManaged) ==
-              CONTENT_SETTING_NUM_SETTINGS,
+                  CONTENT_SETTING_NUM_SETTINGS,
               "kPermissionButtonTextIDUserManaged array size is incorrect");
 
 // The resource IDs for the strings that are displayed on the permissions
@@ -72,7 +72,7 @@ const int kPermissionButtonTextIDDefaultSetting[] = {
     kInvalidResourceID,
     IDS_WEBSITE_SETTINGS_BUTTON_TEXT_DETECT_IMPORTANT_CONTENT_BY_DEFAULT};
 static_assert(arraysize(kPermissionButtonTextIDDefaultSetting) ==
-              CONTENT_SETTING_NUM_SETTINGS,
+                  CONTENT_SETTING_NUM_SETTINGS,
               "kPermissionButtonTextIDDefaultSetting array size is incorrect");
 
 struct PermissionsUIInfo {
@@ -127,9 +127,7 @@ CreateSecurityDescription(int summary_id, int details_id) {
 }
 }  // namespace
 
-WebsiteSettingsUI::CookieInfo::CookieInfo()
-    : allowed(-1), blocked(-1) {
-}
+WebsiteSettingsUI::CookieInfo::CookieInfo() : allowed(-1), blocked(-1) {}
 
 WebsiteSettingsUI::PermissionInfo::PermissionInfo()
     : type(CONTENT_SETTINGS_TYPE_DEFAULT),
@@ -148,8 +146,7 @@ WebsiteSettingsUI::ChosenObjectInfo::~ChosenObjectInfo() {}
 WebsiteSettingsUI::IdentityInfo::IdentityInfo()
     : identity_status(WebsiteSettings::SITE_IDENTITY_STATUS_UNKNOWN),
       connection_status(WebsiteSettings::SITE_CONNECTION_STATUS_UNKNOWN),
-      show_ssl_decision_revoke_button(false) {
-}
+      show_ssl_decision_revoke_button(false) {}
 
 WebsiteSettingsUI::IdentityInfo::~IdentityInfo() {}
 
@@ -170,14 +167,12 @@ WebsiteSettingsUI::IdentityInfo::GetSecurityDescription() const {
       switch (connection_status) {
         case WebsiteSettings::
             SITE_CONNECTION_STATUS_INSECURE_ACTIVE_SUBRESOURCE:
-          return CreateSecurityDescription(
-              IDS_PAGEINFO_NOT_SECURE_SUMMARY,
-              IDS_PAGEINFO_NOT_SECURE_DETAILS);
+          return CreateSecurityDescription(IDS_PAGEINFO_NOT_SECURE_SUMMARY,
+                                           IDS_PAGEINFO_NOT_SECURE_DETAILS);
         case WebsiteSettings::
             SITE_CONNECTION_STATUS_INSECURE_PASSIVE_SUBRESOURCE:
-          return CreateSecurityDescription(
-              IDS_PAGEINFO_MIXED_CONTENT_SUMMARY,
-              IDS_PAGEINFO_MIXED_CONTENT_DETAILS);
+          return CreateSecurityDescription(IDS_PAGEINFO_MIXED_CONTENT_SUMMARY,
+                                           IDS_PAGEINFO_MIXED_CONTENT_DETAILS);
         default:
           return CreateSecurityDescription(IDS_PAGEINFO_SECURE_SUMMARY,
                                            IDS_PAGEINFO_SECURE_DETAILS);
@@ -186,13 +181,11 @@ WebsiteSettingsUI::IdentityInfo::GetSecurityDescription() const {
       return CreateSecurityDescription(IDS_PAGEINFO_MALWARE_SUMMARY,
                                        IDS_PAGEINFO_MALWARE_DETAILS);
     case WebsiteSettings::SITE_IDENTITY_STATUS_SOCIAL_ENGINEERING:
-      return CreateSecurityDescription(
-          IDS_PAGEINFO_SOCIAL_ENGINEERING_SUMMARY,
-          IDS_PAGEINFO_SOCIAL_ENGINEERING_DETAILS);
+      return CreateSecurityDescription(IDS_PAGEINFO_SOCIAL_ENGINEERING_SUMMARY,
+                                       IDS_PAGEINFO_SOCIAL_ENGINEERING_DETAILS);
     case WebsiteSettings::SITE_IDENTITY_STATUS_UNWANTED_SOFTWARE:
-      return CreateSecurityDescription(
-          IDS_PAGEINFO_UNWANTED_SOFTWARE_SUMMARY,
-          IDS_PAGEINFO_UNWANTED_SOFTWARE_DETAILS);
+      return CreateSecurityDescription(IDS_PAGEINFO_UNWANTED_SOFTWARE_SUMMARY,
+                                       IDS_PAGEINFO_UNWANTED_SOFTWARE_DETAILS);
     case WebsiteSettings::SITE_IDENTITY_STATUS_DEPRECATED_SIGNATURE_ALGORITHM:
     case WebsiteSettings::SITE_IDENTITY_STATUS_UNKNOWN:
     case WebsiteSettings::SITE_IDENTITY_STATUS_NO_CERT:
@@ -202,12 +195,11 @@ WebsiteSettingsUI::IdentityInfo::GetSecurityDescription() const {
   }
 }
 
-WebsiteSettingsUI::~WebsiteSettingsUI() {
-}
+WebsiteSettingsUI::~WebsiteSettingsUI() {}
 
 // static
 base::string16 WebsiteSettingsUI::PermissionTypeToUIString(
-      ContentSettingsType type) {
+    ContentSettingsType type) {
   for (const PermissionsUIInfo& info : kPermissionsUIInfo) {
     if (info.type == type)
       return l10n_util::GetStringUTF16(info.string_id);

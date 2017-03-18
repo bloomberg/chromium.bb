@@ -323,8 +323,7 @@ InternalPageInfoPopupView::InternalPageInfoPopupView(
   views::BubbleDialogDelegateView::CreateBubble(this);
 }
 
-InternalPageInfoPopupView::~InternalPageInfoPopupView() {
-}
+InternalPageInfoPopupView::~InternalPageInfoPopupView() {}
 
 void InternalPageInfoPopupView::OnWidgetDestroying(views::Widget* widget) {
   g_shown_popup_type = WebsiteSettingsPopupView::POPUP_NONE;
@@ -338,8 +337,7 @@ int InternalPageInfoPopupView::GetDialogButtons() const {
 // WebsiteSettingsPopupView
 ////////////////////////////////////////////////////////////////////////////////
 
-WebsiteSettingsPopupView::~WebsiteSettingsPopupView() {
-}
+WebsiteSettingsPopupView::~WebsiteSettingsPopupView() {}
 
 // static
 void WebsiteSettingsPopupView::ShowPopup(
@@ -417,12 +415,8 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
   // propagate up to the dialog width.
   const int content_column = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(content_column);
-  column_set->AddColumn(views::GridLayout::FILL,
-                        views::GridLayout::FILL,
-                        1,
-                        views::GridLayout::USE_PREF,
-                        0,
-                        0);
+  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
+                        views::GridLayout::USE_PREF, 0, 0);
 
   header_ = new PopupHeaderView(this, this, side_margin);
   layout->StartRow(1, content_column);
@@ -625,12 +619,8 @@ void WebsiteSettingsPopupView::SetPermissionInfo(
 
   const int content_column = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(content_column);
-  column_set->AddColumn(views::GridLayout::FILL,
-                        views::GridLayout::FILL,
-                        1,
-                        views::GridLayout::USE_PREF,
-                        0,
-                        0);
+  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
+                        views::GridLayout::USE_PREF, 0, 0);
   const int permissions_column = 1;
   views::ColumnSet* permissions_set = layout->AddColumnSet(permissions_column);
   permissions_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,

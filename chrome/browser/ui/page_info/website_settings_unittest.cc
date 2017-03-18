@@ -148,9 +148,7 @@ class WebsiteSettingsTest : public ChromeRenderViewHostTestHarness {
   const GURL& url() const { return url_; }
   scoped_refptr<net::X509Certificate> cert() { return cert_; }
   MockWebsiteSettingsUI* mock_ui() { return mock_ui_.get(); }
-  const security_state::SecurityInfo& security_info() {
-    return security_info_;
-  }
+  const security_state::SecurityInfo& security_info() { return security_info_; }
   const std::vector<std::unique_ptr<WebsiteSettingsUI::ChosenObjectInfo>>&
   last_chosen_object_info() {
     return last_chosen_object_info_;
@@ -217,8 +215,8 @@ TEST_F(WebsiteSettingsTest, OnPermissionsChanged) {
   EXPECT_CALL(*mock_ui(), SetIdentityInfo(_));
   EXPECT_CALL(*mock_ui(), SetCookieInfo(_));
 
-  // SetPermissionInfo() is called once initially, and then again every time
-  // OnSitePermissionChanged() is called.
+// SetPermissionInfo() is called once initially, and then again every time
+// OnSitePermissionChanged() is called.
 #if !BUILDFLAG(ENABLE_PLUGINS)
   // SetPermissionInfo for plugins didn't get called.
   EXPECT_CALL(*mock_ui(), SetPermissionInfoStub()).Times(6);
@@ -506,8 +504,7 @@ TEST_F(WebsiteSettingsTest, InsecureContent) {
 TEST_F(WebsiteSettingsTest, HTTPSEVCert) {
   scoped_refptr<net::X509Certificate> ev_cert =
       net::X509Certificate::CreateFromBytes(
-          reinterpret_cast<const char*>(google_der),
-          sizeof(google_der));
+          reinterpret_cast<const char*>(google_der), sizeof(google_der));
 
   security_info_.security_level = security_state::NONE;
   security_info_.scheme_is_cryptographic = true;
@@ -633,8 +630,8 @@ TEST_F(WebsiteSettingsTest, ShowInfoBar) {
   EXPECT_CALL(*mock_ui(), SetPermissionInfoStub()).Times(2);
 
   EXPECT_EQ(0u, infobar_service()->infobar_count());
-  website_settings()->OnSitePermissionChanged(
-      CONTENT_SETTINGS_TYPE_GEOLOCATION, CONTENT_SETTING_ALLOW);
+  website_settings()->OnSitePermissionChanged(CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                                              CONTENT_SETTING_ALLOW);
   website_settings()->OnUIClosing();
   ASSERT_EQ(1u, infobar_service()->infobar_count());
 
@@ -705,8 +702,7 @@ TEST_F(WebsiteSettingsTest, SecurityLevelMetrics) {
     histograms.ExpectTotalCount(test.histogram_name, 0);
 
     website_settings()->RecordWebsiteSettingsAction(
-        WebsiteSettings::WebsiteSettingsAction::
-            WEBSITE_SETTINGS_OPENED);
+        WebsiteSettings::WebsiteSettingsAction::WEBSITE_SETTINGS_OPENED);
 
     // RecordWebsiteSettingsAction() is called during WebsiteSettings
     // creation in addition to the explicit RecordWebsiteSettingsAction()

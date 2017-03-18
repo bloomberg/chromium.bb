@@ -86,8 +86,7 @@ PermissionMenuModel::PermissionMenuModel(
       permission_.type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA;
   if (!allow_disabled_for_notifications &&
       (!is_media_permission || content::IsOriginSecure(url))) {
-    label = l10n_util::GetStringUTF16(
-        IDS_WEBSITE_SETTINGS_MENU_ITEM_ALLOW);
+    label = l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_MENU_ITEM_ALLOW);
     if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
       label = WebsiteSettingsUI::PermissionActionToUIString(
           profile, permission_.type, CONTENT_SETTING_ALLOW,
