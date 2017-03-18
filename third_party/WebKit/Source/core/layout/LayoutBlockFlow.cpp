@@ -3720,6 +3720,8 @@ LayoutUnit LayoutBlockFlow::positionAndLayoutFloat(
   child.layoutIfNeeded();
 
   if (isPaginated) {
+    paginatedContentWasLaidOut(child.logicalBottom());
+
     // We may have to insert a break before the float.
     LayoutUnit newLogicalTopMarginEdge =
         adjustFloatLogicalTopForPagination(child, logicalTopMarginEdge);
@@ -3740,6 +3742,7 @@ LayoutUnit LayoutBlockFlow::positionAndLayoutFloat(
       if (child.isLayoutBlock())
         child.setChildNeedsLayout(MarkOnlyThis);
       child.layoutIfNeeded();
+      paginatedContentWasLaidOut(child.logicalBottom());
     }
   }
 
