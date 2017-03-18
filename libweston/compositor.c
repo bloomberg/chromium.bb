@@ -2388,7 +2388,7 @@ output_repaint_timer_arm(struct weston_compositor *compositor)
 	struct weston_output *output;
 	bool any_should_repaint = false;
 	struct timespec now;
-	int64_t msec_to_next;
+	int64_t msec_to_next = INT64_MAX;
 
 	weston_compositor_read_presentation_clock(compositor, &now);
 
