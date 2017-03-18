@@ -396,6 +396,10 @@ void GpuWatchdogThread::DeliberatelyTerminateToRecoverFromHang() {
   base::debug::Alias(&current_time);
   base::debug::Alias(&current_timeticks);
 
+  int32_t awaiting_acknowledge =
+      base::subtle::NoBarrier_Load(&awaiting_acknowledge_);
+  base::debug::Alias(&awaiting_acknowledge);
+
   LOG(ERROR) << "The GPU process hung. Terminating after "
              << timeout_.InMilliseconds() << " ms.";
 
