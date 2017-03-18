@@ -14,6 +14,7 @@ Loaded modules:
     host
     main
     network_conditions
+    network_log
     object_ui
     persistence
     platform
@@ -40,6 +41,7 @@ Loaded modules:
     inline_editor
     main
     network_conditions
+    network_log
     object_ui
     persistence
     platform
@@ -72,6 +74,7 @@ Loaded modules:
     main
     network
     network_conditions
+    network_log
     object_ui
     perf_ui
     persistence
@@ -108,6 +111,7 @@ Loaded modules:
     main
     network
     network_conditions
+    network_log
     object_ui
     perf_ui
     persistence
@@ -147,6 +151,7 @@ Loaded modules:
     main
     network
     network_conditions
+    network_log
     object_ui
     perf_ui
     persistence

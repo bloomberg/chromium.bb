@@ -60,7 +60,7 @@ var test = function()
         "_transferSize": "formatAsTypeName",
         "_error": "skip"
     };
-    InspectorTest.addObject(new SDK.HAREntry(testRequest).build(), stillNondeterministic, "", "HAR:");
+    InspectorTest.addObject(new NetworkLog.HAREntry(testRequest).build(), stillNondeterministic, "", "HAR:");
     InspectorTest.completeTest();
 }
 </script>

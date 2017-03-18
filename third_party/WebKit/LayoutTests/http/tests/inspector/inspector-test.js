@@ -995,7 +995,7 @@ SDK.targetManager.observeTargets({
         InspectorTest.tracingManager = target.model(SDK.TracingManager);
         InspectorTest.mainTarget = target;
         InspectorTest.consoleModel = ConsoleModel.consoleModel;
-        InspectorTest.networkLog = SDK.networkLog;
+        InspectorTest.networkLog = NetworkLog.networkLog;
     },
 
     targetRemoved: function(target) { }
