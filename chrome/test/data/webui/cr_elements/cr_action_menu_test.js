@@ -36,38 +36,43 @@ suite('CrActionMenu', function() {
       menu.close();
   });
 
-  test('focus after showing', function() {
+  function down() {
+    MockInteractions.keyDownOn(menu, 'ArrowDown', [], 'ArrowDown');
+  }
+
+  test('hidden or disabled items', function() {
     menu.showAt(document.querySelector('#dots'));
+    down();
     assertEquals(menu.root.activeElement, items[0]);
 
     menu.close();
     items[0].hidden = true;
     menu.showAt(document.querySelector('#dots'));
+    down();
     assertEquals(menu.root.activeElement, items[1]);
 
     menu.close();
-    items[1].hidden = true;
+    items[1].disabled = true;
     menu.showAt(document.querySelector('#dots'));
+    down();
     assertEquals(menu.root.activeElement, items[2]);
-
-    menu.close();
-    items[2].disabled = true;
-    menu.showAt(document.querySelector('#dots'));
-    assertEquals(null, menu.root.activeElement);
   });
 
   test('focus after down/up arrow', function() {
-    function down() {
-      MockInteractions.keyDownOn(menu, 'ArrowDown', [], 'ArrowDown');
-    }
-
     function up() {
       MockInteractions.keyDownOn(menu, 'ArrowUp', [], 'ArrowUp');
     }
 
     menu.showAt(document.querySelector('#dots'));
-    assertEquals(items[0], menu.root.activeElement);
 
+    // The menu should be focused when shown, but not on any of the items.
+    assertEquals(menu, document.activeElement);
+    assertNotEquals(items[0], menu.root.activeElement);
+    assertNotEquals(items[1], menu.root.activeElement);
+    assertNotEquals(items[2], menu.root.activeElement);
+
+    down();
+    assertEquals(items[0], menu.root.activeElement);
     down();
     assertEquals(items[1], menu.root.activeElement);
     down();
