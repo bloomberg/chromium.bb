@@ -181,6 +181,83 @@ TEST_F(SurfaceManagerTest, MultipleDisplays) {
                                         client_b.frame_sink_id());
 }
 
+// This test verifies that a BeginFrameSource path to the root from a
+// FrameSinkId is preserved even if that FrameSinkId has no children
+// and does not have a corresponding SurfaceFactoryClient.
+TEST_F(SurfaceManagerTest, ParentWithoutClientRetained) {
+  StubBeginFrameSource root_source;
+
+  constexpr FrameSinkId kFrameSinkIdRoot(1, 1);
+  constexpr FrameSinkId kFrameSinkIdA(2, 2);
+  constexpr FrameSinkId kFrameSinkIdB(3, 3);
+  constexpr FrameSinkId kFrameSinkIdC(4, 4);
+
+  FakeSurfaceFactoryClient root(kFrameSinkIdRoot, &manager_);
+  FakeSurfaceFactoryClient client_b(kFrameSinkIdB, &manager_);
+  FakeSurfaceFactoryClient client_c(kFrameSinkIdC, &manager_);
+
+  manager_.RegisterBeginFrameSource(&root_source, root.frame_sink_id());
+  EXPECT_EQ(&root_source, root.source());
+
+  // Set up initial hierarchy: root -> A -> B.
+  // Note that A does not have a SurfaceFactoryClient.
+  manager_.RegisterFrameSinkHierarchy(kFrameSinkIdRoot, kFrameSinkIdA);
+  manager_.RegisterFrameSinkHierarchy(kFrameSinkIdA, kFrameSinkIdB);
+  // The root's BeginFrameSource should propagate to B.
+  EXPECT_EQ(root.source(), client_b.source());
+
+  // Unregister B, and attach C to A: root -> A -> C
+  manager_.UnregisterFrameSinkHierarchy(kFrameSinkIdA, kFrameSinkIdB);
+  EXPECT_EQ(nullptr, client_b.source());
+  manager_.RegisterFrameSinkHierarchy(kFrameSinkIdA, kFrameSinkIdC);
+  // The root's BeginFrameSource should propagate to C.
+  EXPECT_EQ(root.source(), client_c.source());
+
+  manager_.UnregisterBeginFrameSource(&root_source);
+  EXPECT_EQ(nullptr, root.source());
+  EXPECT_EQ(nullptr, client_c.source());
+}
+
+// This test sets up the same hierarchy as ParentWithoutClientRetained.
+// However, this unit test registers the BeginFrameSource AFTER C
+// has been attached to A. This test verifies that the BeginFrameSource
+// propagates all the way to C.
+TEST_F(SurfaceManagerTest,
+       ParentWithoutClientRetained_LateBeginFrameRegistration) {
+  StubBeginFrameSource root_source;
+
+  constexpr FrameSinkId kFrameSinkIdRoot(1, 1);
+  constexpr FrameSinkId kFrameSinkIdA(2, 2);
+  constexpr FrameSinkId kFrameSinkIdB(3, 3);
+  constexpr FrameSinkId kFrameSinkIdC(4, 4);
+
+  FakeSurfaceFactoryClient root(kFrameSinkIdRoot, &manager_);
+  FakeSurfaceFactoryClient client_b(kFrameSinkIdB, &manager_);
+  FakeSurfaceFactoryClient client_c(kFrameSinkIdC, &manager_);
+
+  // Set up initial hierarchy: root -> A -> B.
+  // Note that A does not have a SurfaceFactoryClient.
+  manager_.RegisterFrameSinkHierarchy(kFrameSinkIdRoot, kFrameSinkIdA);
+  manager_.RegisterFrameSinkHierarchy(kFrameSinkIdA, kFrameSinkIdB);
+  // The root does not yet have a BeginFrameSource so client B should not have
+  // one either.
+  EXPECT_EQ(nullptr, client_b.source());
+
+  // Unregister B, and attach C to A: root -> A -> C
+  manager_.UnregisterFrameSinkHierarchy(kFrameSinkIdA, kFrameSinkIdB);
+  manager_.RegisterFrameSinkHierarchy(kFrameSinkIdA, kFrameSinkIdC);
+
+  // Registering a BeginFrameSource at the root should propagate it to C.
+  manager_.RegisterBeginFrameSource(&root_source, root.frame_sink_id());
+  // The root's BeginFrameSource should propagate to C.
+  EXPECT_EQ(&root_source, root.source());
+  EXPECT_EQ(root.source(), client_c.source());
+
+  manager_.UnregisterBeginFrameSource(&root_source);
+  EXPECT_EQ(nullptr, root.source());
+  EXPECT_EQ(nullptr, client_c.source());
+}
+
 // In practice, registering and unregistering both parent/child relationships
 // and SurfaceFactoryClients can happen in any ordering with respect to
 // each other.  These following tests verify that all the data structures

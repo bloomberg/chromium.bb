@@ -582,7 +582,8 @@ void SurfaceManager::UnregisterFrameSinkHierarchy(
   // The SurfaceFactoryClient and hierarchy can be registered/unregistered
   // in either order, so empty frame_sink_source_map entries need to be
   // checked when removing either clients or relationships.
-  if (!iter->second.has_children() && !clients_.count(parent_frame_sink_id)) {
+  if (!iter->second.has_children() && !clients_.count(parent_frame_sink_id) &&
+      !iter->second.source) {
     frame_sink_source_map_.erase(iter);
     return;
   }
