@@ -11870,7 +11870,7 @@
       {
         "args": [
           "--gtest-filter-file=../../testing/buildbot/filters/site-per-process.content_browsertests.filter",
-          "--test-arguments=--site-per-process"
+          "--site-per-process"
         ],
         "name": "site_per_process_content_browsertests",
         "override_isolate_target": "content_browsertests",
@@ -11901,7 +11901,7 @@
       },
       {
         "args": [
-          "--test-arguments=--site-per-process"
+          "--site-per-process"
         ],
         "name": "site_per_process_content_unittests",
         "override_isolate_target": "content_unittests",
@@ -11918,7 +11918,7 @@
       },
       {
         "args": [
-          "--test-arguments=--site-per-process"
+          "--site-per-process"
         ],
         "name": "site_per_process_components_browsertests",
         "override_isolate_target": "components_browsertests",
@@ -11935,7 +11935,7 @@
       },
       {
         "args": [
-          "--test-arguments=--site-per-process"
+          "--site-per-process"
         ],
         "name": "site_per_process_components_unittests",
         "override_isolate_target": "components_unittests",
