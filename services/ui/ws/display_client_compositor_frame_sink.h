@@ -21,6 +21,9 @@ class ThreadChecker;
 namespace ui {
 namespace ws {
 
+// DisplayClientCompositorFrameSink submits CompositorFrames to a
+// MojoCompositorFrameSink, with the client's frame being the root surface of
+// the Display.
 class DisplayClientCompositorFrameSink
     : public cc::CompositorFrameSink,
       public cc::mojom::MojoCompositorFrameSinkClient,

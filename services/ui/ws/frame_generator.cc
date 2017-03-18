@@ -93,8 +93,10 @@ void FrameGenerator::SetExternalTilePriorityConstraints(
     const gfx::Transform& transform) {}
 
 void FrameGenerator::OnBeginFrame(const cc::BeginFrameArgs& begin_frame_args) {
-  if (!root_window_->visible())
+  if (!root_window_->visible() ||
+      begin_frame_args.type == cc::BeginFrameArgs::MISSED) {
     return;
+  }
 
   // TODO(fsamuel): We should add a trace for generating a top level frame.
   cc::CompositorFrame frame(GenerateCompositorFrame(root_window_->bounds()));
@@ -186,14 +188,11 @@ void FrameGenerator::SetNeedsBeginFrame(bool needs_begin_frame) {
   if (needs_begin_frame == observing_begin_frames_)
     return;
 
-  if (needs_begin_frame) {
+  observing_begin_frames_ = needs_begin_frame;
+  if (needs_begin_frame)
     begin_frame_source_->AddObserver(this);
-    observing_begin_frames_ = true;
-    return;
-  }
-
-  begin_frame_source_->RemoveObserver(this);
-  observing_begin_frames_ = false;
+  else
+    begin_frame_source_->RemoveObserver(this);
 }
 
 }  // namespace ws
