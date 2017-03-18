@@ -114,6 +114,7 @@ class NetworkingPrivateDelegate : public KeyedService {
                         const FailureCallback& failure_callback) = 0;
   virtual void SetProperties(const std::string& guid,
                              std::unique_ptr<base::DictionaryValue> properties,
+                             bool allow_set_shared_config,
                              const VoidCallback& success_callback,
                              const FailureCallback& failure_callback) = 0;
   virtual void CreateNetwork(bool shared,

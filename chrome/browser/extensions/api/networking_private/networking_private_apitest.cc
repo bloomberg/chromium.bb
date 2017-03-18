@@ -66,6 +66,7 @@ class TestDelegate : public NetworkingPrivateDelegate {
 
   void SetProperties(const std::string& guid,
                      std::unique_ptr<base::DictionaryValue> properties,
+                     bool allow_set_shared_config,
                      const VoidCallback& success_callback,
                      const FailureCallback& failure_callback) override {
     VoidResult(success_callback, failure_callback);

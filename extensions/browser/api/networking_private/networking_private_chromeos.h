@@ -43,6 +43,7 @@ class NetworkingPrivateChromeOS : public NetworkingPrivateDelegate {
                 const FailureCallback& failure_callback) override;
   void SetProperties(const std::string& guid,
                      std::unique_ptr<base::DictionaryValue> properties,
+                     bool allow_set_shared_config,
                      const VoidCallback& success_callback,
                      const FailureCallback& failure_callback) override;
   void CreateNetwork(bool shared,

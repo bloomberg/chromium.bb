@@ -11,6 +11,10 @@
 #include "extensions/browser/test_runtime_api_delegate.h"
 #include "extensions/browser/updater/null_extension_cache.h"
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/login/login_state.h"
+#endif
+
 using content::BrowserContext;
 
 namespace extensions {
@@ -81,7 +85,9 @@ BrowserContext* TestExtensionsBrowserClient::GetOriginalContext(
 #if defined(OS_CHROMEOS)
 std::string TestExtensionsBrowserClient::GetUserIdHashFromContext(
     content::BrowserContext* context) {
-  return "";
+  if (context != main_context_ || !chromeos::LoginState::IsInitialized())
+    return "";
+  return chromeos::LoginState::Get()->primary_user_hash();
 }
 #endif
 

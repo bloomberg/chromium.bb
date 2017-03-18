@@ -74,6 +74,16 @@ bool GetServicePathFromGuid(const std::string& guid,
   return true;
 }
 
+bool IsSharedNetwork(const std::string& service_path) {
+  const chromeos::NetworkState* network =
+      GetStateHandler()->GetNetworkStateFromServicePath(
+          service_path, true /* configured only */);
+  if (!network)
+    return false;
+
+  return !network->IsPrivate();
+}
+
 bool GetPrimaryUserIdHash(content::BrowserContext* browser_context,
                           std::string* user_hash,
                           std::string* error) {
@@ -380,12 +390,28 @@ void NetworkingPrivateChromeOS::GetState(
 void NetworkingPrivateChromeOS::SetProperties(
     const std::string& guid,
     std::unique_ptr<base::DictionaryValue> properties,
+    bool allow_set_shared_config,
     const VoidCallback& success_callback,
     const FailureCallback& failure_callback) {
   std::string service_path, error;
   if (!GetServicePathFromGuid(guid, &service_path, &error)) {
     failure_callback.Run(error);
     return;
+  }
+
+  if (IsSharedNetwork(service_path)) {
+    if (!allow_set_shared_config) {
+      failure_callback.Run(networking_private::kErrorAccessToSharedConfig);
+      return;
+    }
+  } else {
+    std::string user_id_hash;
+    std::string error;
+    // Do not allow changing a non-shared network from a secondary users.
+    if (!GetPrimaryUserIdHash(browser_context_, &user_id_hash, &error)) {
+      failure_callback.Run(error);
+      return;
+    }
   }
 
   GetManagedConfigurationHandler()->SetProperties(

@@ -40,6 +40,15 @@ bool HasPrivateNetworkingAccess(const Extension* extension,
       .is_available();
 }
 
+bool CanChangeSharedConfig(const Extension* extension,
+                           Feature::Context context) {
+#if defined(OS_CHROMEOS)
+  return context == Feature::WEBUI_CONTEXT;
+#else
+  return true;
+#endif
+}
+
 }  // namespace
 
 namespace private_api = api::networking_private;
@@ -47,12 +56,14 @@ namespace private_api = api::networking_private;
 namespace networking_private {
 
 // static
+const char kErrorAccessToSharedConfig[] = "Error.CannotChangeSharedConfig";
 const char kErrorInvalidNetworkGuid[] = "Error.InvalidNetworkGuid";
 const char kErrorInvalidNetworkOperation[] = "Error.InvalidNetworkOperation";
 const char kErrorNetworkUnavailable[] = "Error.NetworkUnavailable";
 const char kErrorEncryptionError[] = "Error.EncryptionError";
 const char kErrorNotReady[] = "Error.NotReady";
 const char kErrorNotSupported[] = "Error.NotSupported";
+const char kErrorPolicyControlled[] = "Error.PolicyControlled";
 const char kErrorSimLocked[] = "Error.SimLocked";
 
 }  // namespace networking_private
@@ -175,6 +186,7 @@ NetworkingPrivateSetPropertiesFunction::Run() {
   GetDelegate(browser_context())
       ->SetProperties(
           params->network_guid, std::move(properties_dict),
+          CanChangeSharedConfig(extension(), source_context_type()),
           base::Bind(&NetworkingPrivateSetPropertiesFunction::Success, this),
           base::Bind(&NetworkingPrivateSetPropertiesFunction::Failure, this));
   // Success() or Failure() might have been called synchronously at this point.
@@ -203,6 +215,11 @@ NetworkingPrivateCreateNetworkFunction::Run() {
   std::unique_ptr<private_api::CreateNetwork::Params> params =
       private_api::CreateNetwork::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params);
+
+  if (params->shared &&
+      !CanChangeSharedConfig(extension(), source_context_type())) {
+    return RespondNow(Error(networking_private::kErrorAccessToSharedConfig));
+  }
 
   std::unique_ptr<base::DictionaryValue> properties_dict(
       params->properties.ToValue());

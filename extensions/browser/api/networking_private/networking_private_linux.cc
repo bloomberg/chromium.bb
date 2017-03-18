@@ -254,6 +254,7 @@ void NetworkingPrivateLinux::GetCachedNetworkProperties(
 void NetworkingPrivateLinux::SetProperties(
     const std::string& guid,
     std::unique_ptr<base::DictionaryValue> properties,
+    bool allow_set_shared_config,
     const VoidCallback& success_callback,
     const FailureCallback& failure_callback) {
   ReportNotSupported("SetProperties", failure_callback);
