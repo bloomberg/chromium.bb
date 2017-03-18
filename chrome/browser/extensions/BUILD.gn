@@ -467,6 +467,8 @@ static_library("extensions") {
     "app_data_migrator.h",
     "blacklist.cc",
     "blacklist.h",
+    "blacklist_check.cc",
+    "blacklist_check.h",
     "blacklist_factory.cc",
     "blacklist_factory.h",
     "blacklist_state_fetcher.cc",

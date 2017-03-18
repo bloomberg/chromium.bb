@@ -224,8 +224,12 @@ source_set("browser_sources") {
       "notification_types.h",
       "null_app_sorting.cc",
       "null_app_sorting.h",
+      "policy_check.cc",
+      "policy_check.h",
       "pref_names.cc",
       "pref_names.h",
+      "preload_check.cc",
+      "preload_check.h",
       "process_manager.cc",
       "process_manager.h",
       "process_manager_delegate.h",
@@ -362,6 +366,21 @@ source_set("browser_tests") {
   }
 }
 
+source_set("test_support") {
+  testonly = true
+  sources = [
+    "preload_check_test_util.cc",
+    "preload_check_test_util.h",
+  ]
+
+  deps = [
+    "//base",
+    "//extensions/browser",
+    "//extensions/common",
+    "//testing/gtest",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [
@@ -425,6 +444,7 @@ source_set("unit_tests") {
     "load_monitoring_extension_host_queue_unittest.cc",
     "management_policy_unittest.cc",
     "mojo/keep_alive_impl_unittest.cc",
+    "policy_check_unittest.cc",
     "process_manager_unittest.cc",
     "process_map_unittest.cc",
     "quota_service_unittest.cc",
@@ -444,6 +464,7 @@ source_set("unit_tests") {
 
   deps = [
     ":browser",
+    ":test_support",
     "//base",
     "//base/test:test_support",
     "//components/cast_certificate",
