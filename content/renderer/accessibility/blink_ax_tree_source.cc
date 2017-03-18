@@ -12,6 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "content/common/accessibility_messages.h"
 #include "content/renderer/accessibility/blink_ax_enum_conversion.h"
 #include "content/renderer/accessibility/render_accessibility_impl.h"
@@ -414,7 +415,6 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
         ui::AX_ATTR_DESCRIBEDBY_IDS, descriptionObjects, dst);
   }
 
-  std::string value;
   if (src.valueDescription().length()) {
     dst->AddStringAttribute(ui::AX_ATTR_VALUE, src.valueDescription().utf8());
   } else {
@@ -776,6 +776,15 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
         std::string value = element.attributeValue(i).utf8();
         dst->html_attributes.push_back(std::make_pair(name, value));
       }
+
+// TODO(nektar): Turn off kHTMLAccessibilityMode for automation and Mac
+// and remove ifdef.
+#if defined(OS_WIN)
+      if (dst->role == ui::AX_ROLE_MATH && element.innerHTML().length()) {
+        dst->AddStringAttribute(ui::AX_ATTR_INNER_HTML,
+                                element.innerHTML().utf8());
+      }
+#endif
     }
 
     if (src.isEditable()) {

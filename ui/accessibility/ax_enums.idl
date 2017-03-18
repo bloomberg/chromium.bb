@@ -335,6 +335,7 @@
     font_family,
     html_tag,
     image_data_url,
+    inner_html,
     key_shortcuts,
     // Only present when different from parent.
     language,

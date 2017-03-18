@@ -122,6 +122,10 @@ WebString WebElement::textContent() const {
   return constUnwrap<Element>()->textContent();
 }
 
+WebString WebElement::innerHTML() const {
+  return constUnwrap<Element>()->innerHTML();
+}
+
 bool WebElement::hasNonEmptyLayoutSize() const {
   return constUnwrap<Element>()->hasNonEmptyLayoutSize();
 }

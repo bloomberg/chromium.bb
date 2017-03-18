@@ -746,6 +746,9 @@ std::string AXNodeData::ToString() const {
         result += " image_data_url=(" +
             IntToString(static_cast<int>(value.size())) + " bytes)";
         break;
+      case AX_ATTR_INNER_HTML:
+        result += " inner_html=" + value;
+        break;
       case AX_ATTR_KEY_SHORTCUTS:
         result += " key_shortcuts=" + value;
         break;

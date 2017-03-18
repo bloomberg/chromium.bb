@@ -64,6 +64,7 @@ class WebElement : public WebNode {
   BLINK_EXPORT WebString getAttribute(const WebString&) const;
   BLINK_EXPORT void setAttribute(const WebString& name, const WebString& value);
   BLINK_EXPORT WebString textContent() const;
+  BLINK_EXPORT WebString innerHTML() const;
   BLINK_EXPORT WebString attributeLocalName(unsigned index) const;
   BLINK_EXPORT WebString attributeValue(unsigned index) const;
   BLINK_EXPORT unsigned attributeCount() const;

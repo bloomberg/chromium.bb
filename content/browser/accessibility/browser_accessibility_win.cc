@@ -3491,10 +3491,19 @@ STDMETHODIMP BrowserAccessibilityWin::get_childAt(
   return S_OK;
 }
 
+// We only support this method for retrieving MathML content.
 STDMETHODIMP BrowserAccessibilityWin::get_innerHTML(BSTR* innerHTML) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_INNER_HTML);
   AddAccessibilityModeFlags(AccessibilityMode::kHTML);
-  return E_NOTIMPL;
+  if (GetRole() != ui::AX_ROLE_MATH)
+    return E_NOTIMPL;
+  if (!instance_active())
+    return E_FAIL;
+
+  base::string16 inner_html = GetString16Attribute(ui::AX_ATTR_INNER_HTML);
+  *innerHTML = SysAllocString(inner_html.c_str());
+  DCHECK(*innerHTML);
+  return S_OK;
 }
 
 STDMETHODIMP
