@@ -229,6 +229,7 @@ test("views_mus_interactive_ui_tests") {
   sources = [
     "../widget/widget_interactive_uitest.cc",
     "clipboard_unittest.cc",
+    "drag_interactive_uitest.cc",
     "interactive_ui_tests_mus.cc",
   ]
 
@@ -239,6 +240,7 @@ test("views_mus_interactive_ui_tests") {
     "//testing/gmock",
     "//testing/gtest",
     "//ui/aura",
+    "//ui/aura:test_support",
     "//ui/base",
     "//ui/base/ime",
     "//ui/events:events_base",

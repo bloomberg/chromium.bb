@@ -99,6 +99,7 @@ class TestWM : public service_manager::Service,
     window_manager_client_ = client;
   }
   bool OnWmSetBounds(aura::Window* window, gfx::Rect* bounds) override {
+    window->SetBounds(*bounds);
     return true;
   }
   bool OnWmSetProperty(

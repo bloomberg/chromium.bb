@@ -1360,6 +1360,9 @@ void WindowTree::SetWindowBounds(
     const base::Optional<cc::LocalSurfaceId>& local_surface_id) {
   ServerWindow* window = GetWindowByClientId(ClientWindowId(window_id));
   if (window && ShouldRouteToWindowManager(window)) {
+    DVLOG(3) << "Redirecting request to change bounds for "
+             << (window ? WindowIdToTransportId(window->id()) : 0)
+             << " to window manager...";
     const uint32_t wm_change_id =
         window_server_->GenerateWindowManagerChangeId(this, change_id);
     // |window_id| may be a client id, use the id from the window to ensure
@@ -1382,6 +1385,8 @@ void WindowTree::SetWindowBounds(
   if (success) {
     Operation op(this, window_server_, OperationType::SET_WINDOW_BOUNDS);
     window->SetBounds(bounds, local_surface_id);
+  } else {
+    DVLOG(1) << "Failed to set bounds on window.";
   }
   client()->OnChangeCompleted(change_id, success);
 }

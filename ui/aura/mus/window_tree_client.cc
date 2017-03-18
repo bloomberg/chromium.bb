@@ -481,6 +481,13 @@ WindowMus* WindowTreeClient::NewWindowFromWindowData(
 
 void WindowTreeClient::SetWindowTree(ui::mojom::WindowTreePtr window_tree_ptr) {
   tree_ptr_ = std::move(window_tree_ptr);
+
+  // Enable nested dispatch on both sides of this connect because these objects
+  // are used in the presence of nested runloops, such as those during drag and
+  // drop.
+  binding_.EnableNestedDispatch(true);
+  tree_ptr_.EnableNestedDispatch(true);
+
   WindowTreeConnectionEstablished(tree_ptr_.get());
   tree_ptr_->GetCursorLocationMemory(
       base::Bind(&WindowTreeClient::OnReceivedCursorLocationMemory,
@@ -1393,6 +1400,8 @@ void WindowTreeClient::WmSetBounds(uint32_t change_id,
       result = bounds_in_dip == transit_bounds_in_dip;
       window->SetBoundsFromServer(bounds_in_dip);
     }
+  } else {
+    DVLOG(1) << "Unknown window passed to WmSetBounds().";
   }
   if (window_manager_internal_client_)
     window_manager_internal_client_->WmResponse(change_id, result);

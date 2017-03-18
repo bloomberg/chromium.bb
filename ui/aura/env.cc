@@ -76,7 +76,7 @@ class Env::ActiveFocusClientWindowObserver : public WindowObserver {
 // Env, public:
 
 Env::~Env() {
-  if (RunningInsideMus())
+  if (is_os_exchange_data_provider_factory_)
     ui::OSExchangeDataProviderFactory::SetFactory(nullptr);
 
   for (EnvObserver& observer : observers_)
@@ -197,7 +197,7 @@ Env::Env(Mode mode)
 
 void Env::Init() {
   if (RunningInsideMus()) {
-    ui::OSExchangeDataProviderFactory::SetFactory(this);
+    EnableMusOSExchangeDataProvider();
     return;
   }
 
@@ -209,6 +209,13 @@ void Env::Init() {
 #endif
   if (!ui::PlatformEventSource::GetInstance())
     event_source_ = ui::PlatformEventSource::CreateDefault();
+}
+
+void Env::EnableMusOSExchangeDataProvider() {
+  if (!is_os_exchange_data_provider_factory_) {
+    ui::OSExchangeDataProviderFactory::SetFactory(this);
+    is_os_exchange_data_provider_factory_ = true;
+  }
 }
 
 void Env::NotifyWindowInitialized(Window* window) {

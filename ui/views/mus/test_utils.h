@@ -16,7 +16,9 @@ class MusClientTestApi {
   static std::unique_ptr<MusClient> Create(
       service_manager::Connector* connector,
       const service_manager::Identity& identity) {
-    return base::WrapUnique(new MusClient(connector, identity));
+    return base::WrapUnique(
+        new MusClient(connector, identity, nullptr, true,
+                      MusClientTestingState::CREATE_TESTING_STATE));
   }
 
  private:

@@ -13,6 +13,7 @@
 
 #include "base/macros.h"
 #include "services/service_manager/public/cpp/identity.h"
+#include "services/ui/public/interfaces/window_server_test.mojom.h"
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/mus/window_tree_client_delegate.h"
 #include "ui/views/mus/mus_export.h"
@@ -54,6 +55,8 @@ namespace test {
 class MusClientTestApi;
 }
 
+enum MusClientTestingState { NO_TESTING, CREATE_TESTING_STATE };
+
 // MusClient establishes a connection to mus and sets up necessary state so that
 // aura and views target mus. This class is useful for typical clients, not the
 // WindowManager. Most clients don't create this directly, rather use AuraInit.
@@ -66,7 +69,8 @@ class VIEWS_MUS_EXPORT MusClient : public aura::WindowTreeClientDelegate,
       service_manager::Connector* connector,
       const service_manager::Identity& identity,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner = nullptr,
-      bool create_wm_state = true);
+      bool create_wm_state = true,
+      MusClientTestingState testing_state = MusClientTestingState::NO_TESTING);
   ~MusClient() override;
 
   static MusClient* Get() { return instance_; }
@@ -110,6 +114,10 @@ class VIEWS_MUS_EXPORT MusClient : public aura::WindowTreeClientDelegate,
   MusPropertyMirror* mus_property_mirror() {
     return mus_property_mirror_.get();
   }
+
+  // Returns an interface to directly control mus. Only available when created
+  // with MusClientTestingState::CREATE_TESTING_STATE.
+  ui::mojom::WindowServerTest* GetTestingInterface() const;
 
  private:
   friend class AuraInit;
@@ -156,6 +164,8 @@ class VIEWS_MUS_EXPORT MusClient : public aura::WindowTreeClientDelegate,
   std::unique_ptr<aura::WindowTreeClient> window_tree_client_;
 
   std::unique_ptr<PointerWatcherEventRouter> pointer_watcher_event_router_;
+
+  ui::mojom::WindowServerTestPtr server_test_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(MusClient);
 };

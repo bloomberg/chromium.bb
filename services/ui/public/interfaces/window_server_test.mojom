@@ -4,6 +4,14 @@
 
 module ui.mojom;
 
+import "ui/events/mojo/event.mojom";
+
 interface WindowServerTest {
   EnsureClientHasDrawnWindow(string client_name) => (bool success);
+
+  // Takes an event and dispatches it as if it came from the native platform.
+  // Returns false on bad |display_id| or |event|; returns true if it reaches
+  // the event dispatch phase.
+  DispatchEvent(int64 display_id, ui.mojom.Event event)
+      => (bool result);
 };

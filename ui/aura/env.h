@@ -124,6 +124,11 @@ class AURA_EXPORT Env : public ui::EventTarget,
 
   void Init();
 
+  // After calling this method, all OSExchangeDataProvider instances will be
+  // Mus instances. We can't do this work in Init(), because our mode may
+  // changed via the EnvTestHelper.
+  void EnableMusOSExchangeDataProvider();
+
   // Called by the Window when it is initialized. Notifies observers.
   void NotifyWindowInitialized(Window* window);
 
@@ -162,6 +167,8 @@ class AURA_EXPORT Env : public ui::EventTarget,
   // This may be set to true in tests to force using |last_mouse_location_|
   // rather than querying WindowTreeClient.
   bool always_use_last_mouse_location_ = false;
+  // Whether we set ourselves as the OSExchangeDataProviderFactory.
+  bool is_os_exchange_data_provider_factory_ = false;
 
   std::unique_ptr<InputStateLookup> input_state_lookup_;
   std::unique_ptr<ui::PlatformEventSource> event_source_;

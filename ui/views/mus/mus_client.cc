@@ -61,7 +61,8 @@ MusClient* MusClient::instance_ = nullptr;
 MusClient::MusClient(service_manager::Connector* connector,
                      const service_manager::Identity& identity,
                      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-                     bool create_wm_state)
+                     bool create_wm_state,
+                     MusClientTestingState testing_state)
     : identity_(identity) {
   DCHECK(!instance_);
   DCHECK(aura::Env::GetInstance());
@@ -84,6 +85,11 @@ MusClient::MusClient(service_manager::Connector* connector,
 
   if (create_wm_state)
     wm_state_ = base::MakeUnique<wm::WMState>();
+
+  if (testing_state == MusClientTestingState::CREATE_TESTING_STATE) {
+    connector->BindInterface(ui::mojom::kServiceName, &server_test_ptr_);
+    server_test_ptr_.EnableNestedDispatch(true);
+  }
 
   window_tree_client_ = base::MakeUnique<aura::WindowTreeClient>(
       connector, this, nullptr /* window_manager_delegate */,
@@ -241,6 +247,13 @@ void MusClient::RemoveObserver(MusClientObserver* observer) {
 void MusClient::SetMusPropertyMirror(
     std::unique_ptr<MusPropertyMirror> mirror) {
   mus_property_mirror_ = std::move(mirror);
+}
+
+ui::mojom::WindowServerTest* MusClient::GetTestingInterface() const {
+  // This will only be set in tests. CHECK to ensure it doesn't get used
+  // elsewhere.
+  CHECK(server_test_ptr_);
+  return server_test_ptr_.get();
 }
 
 std::unique_ptr<DesktopWindowTreeHost> MusClient::CreateDesktopWindowTreeHost(
