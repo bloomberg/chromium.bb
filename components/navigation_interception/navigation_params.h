@@ -23,8 +23,8 @@ class NavigationParams {
                    bool is_external_protocol,
                    bool is_main_frame,
                    const GURL& base_url_for_data_url);
-  NavigationParams(const NavigationParams& other);
-  void operator=(const NavigationParams& rhs);
+  NavigationParams(const NavigationParams&);
+  NavigationParams& operator=(const NavigationParams&) = delete;
 
   const GURL& url() const { return url_; }
   GURL& url() { return url_; }
@@ -38,7 +38,6 @@ class NavigationParams {
   const GURL& base_url_for_data_url() const { return base_url_for_data_url_; }
 
  private:
-  void Assign(const NavigationParams& other);
 
   GURL url_;
   content::Referrer referrer_;

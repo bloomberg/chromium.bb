@@ -19,10 +19,8 @@ base::android::ScopedJavaLocalRef<jobject> CreateJavaNavigationParams(
   const GURL& url = params.base_url_for_data_url().is_empty()
                         ? params.url()
                         : params.base_url_for_data_url();
-  DCHECK(params.base_url_for_data_url().is_empty() ||
-         params.url().SchemeIs(url::kDataScheme));
   ScopedJavaLocalRef<jstring> jstring_url =
-      ConvertUTF8ToJavaString(env, url.spec());
+      ConvertUTF8ToJavaString(env, url.possibly_invalid_spec());
 
   ScopedJavaLocalRef<jstring> jstring_referrer =
       ConvertUTF8ToJavaString(env, params.referrer().url.spec());

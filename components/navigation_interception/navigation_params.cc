@@ -6,10 +6,6 @@
 
 namespace navigation_interception {
 
-NavigationParams::NavigationParams(const NavigationParams& other) {
-  Assign(other);
-}
-
 NavigationParams::NavigationParams(const GURL& url,
                                    const content::Referrer& referrer,
                                    bool has_user_gesture,
@@ -29,20 +25,7 @@ NavigationParams::NavigationParams(const GURL& url,
       is_main_frame_(is_main_frame),
       base_url_for_data_url_(base_url_for_data_url) {}
 
-void NavigationParams::operator=(const NavigationParams& rhs) {
-  Assign(rhs);
-}
-
-void NavigationParams::Assign(const NavigationParams& other) {
-  url_ = other.url();
-  referrer_ = other.referrer();
-  has_user_gesture_ = other.has_user_gesture();
-  is_post_ = other.is_post();
-  transition_type_ = other.transition_type();
-  is_redirect_ = other.is_redirect();
-  is_external_protocol_ = other.is_external_protocol();
-  is_main_frame_ = other.is_main_frame();
-}
+NavigationParams::NavigationParams(const NavigationParams&) = default;
 
 }  // namespace navigation_interception
 
