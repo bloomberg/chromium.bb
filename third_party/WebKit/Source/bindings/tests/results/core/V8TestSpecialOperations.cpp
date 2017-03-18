@@ -170,7 +170,7 @@ void V8TestSpecialOperations::indexedPropertySetterCallback(uint32_t index, v8::
   TestSpecialOperationsV8Internal::namedPropertySetter(propertyName, v8Value, info);
 }
 
-const V8DOMConfiguration::MethodConfiguration V8TestSpecialOperationsMethods[] = {
+static const V8DOMConfiguration::MethodConfiguration V8TestSpecialOperationsMethods[] = {
     {"namedItem", V8TestSpecialOperations::namedItemMethodCallback, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder, V8DOMConfiguration::DoNotCheckAccess, V8DOMConfiguration::AllWorlds},
 };
 

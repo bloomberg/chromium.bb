@@ -160,11 +160,11 @@ void V8TestIntegerIndexedPrimaryGlobal::indexedPropertyDeleterCallback(uint32_t 
   V8TestIntegerIndexedPrimaryGlobal::indexedPropertyDeleterCustom(index, info);
 }
 
-const V8DOMConfiguration::AccessorConfiguration V8TestIntegerIndexedPrimaryGlobalAccessors[] = {
-    {"length", V8TestIntegerIndexedPrimaryGlobal::lengthAttributeGetterCallback, V8TestIntegerIndexedPrimaryGlobal::lengthAttributeSetterCallback, nullptr, nullptr, nullptr, nullptr, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder},
+static const V8DOMConfiguration::AccessorConfiguration V8TestIntegerIndexedPrimaryGlobalAccessors[] = {
+    {"length", V8TestIntegerIndexedPrimaryGlobal::lengthAttributeGetterCallback, V8TestIntegerIndexedPrimaryGlobal::lengthAttributeSetterCallback, nullptr, nullptr, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder, V8DOMConfiguration::AllWorlds},
 };
 
-const V8DOMConfiguration::MethodConfiguration V8TestIntegerIndexedPrimaryGlobalMethods[] = {
+static const V8DOMConfiguration::MethodConfiguration V8TestIntegerIndexedPrimaryGlobalMethods[] = {
     {"voidMethodDocument", V8TestIntegerIndexedPrimaryGlobal::voidMethodDocumentMethodCallback, 1, v8::None, V8DOMConfiguration::OnInstance, V8DOMConfiguration::CheckHolder, V8DOMConfiguration::DoNotCheckAccess, V8DOMConfiguration::AllWorlds},
 };
 

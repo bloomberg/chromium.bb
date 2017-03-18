@@ -581,7 +581,7 @@ void V8TestInterface2::indexedPropertyDeleterCallback(uint32_t index, const v8::
   TestInterface2V8Internal::indexedPropertyDeleter(index, info);
 }
 
-const V8DOMConfiguration::MethodConfiguration V8TestInterface2Methods[] = {
+static const V8DOMConfiguration::MethodConfiguration V8TestInterface2Methods[] = {
     {"legacyCaller", V8TestInterface2::legacyCallerMethodCallback, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder, V8DOMConfiguration::DoNotCheckAccess, V8DOMConfiguration::AllWorlds},
     {"item", V8TestInterface2::itemMethodCallback, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder, V8DOMConfiguration::DoNotCheckAccess, V8DOMConfiguration::AllWorlds},
     {"setItem", V8TestInterface2::setItemMethodCallback, 2, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder, V8DOMConfiguration::DoNotCheckAccess, V8DOMConfiguration::AllWorlds},
@@ -641,7 +641,7 @@ void V8TestInterface2::installV8TestInterface2Template(v8::Isolate* isolate, con
   instanceTemplate->SetHandler(namedPropertyHandlerConfig);
 
   // Iterator (@@iterator)
-  const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, V8TestInterface2::iteratorMethodCallback, 0, v8::DontEnum, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder, V8DOMConfiguration::DoNotCheckAccess };
+  static const V8DOMConfiguration::SymbolKeyedMethodConfiguration symbolKeyedIteratorConfiguration = { v8::Symbol::GetIterator, V8TestInterface2::iteratorMethodCallback, 0, v8::DontEnum, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder, V8DOMConfiguration::DoNotCheckAccess };
   V8DOMConfiguration::installMethod(isolate, world, prototypeTemplate, signature, symbolKeyedIteratorConfiguration);
 
   instanceTemplate->SetCallAsFunctionHandler(TestInterface2V8Internal::legacyCallerMethodCallback);

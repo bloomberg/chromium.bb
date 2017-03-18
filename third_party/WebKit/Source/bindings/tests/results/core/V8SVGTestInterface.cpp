@@ -92,8 +92,8 @@ void V8SVGTestInterface::typeAttributeSetterCallback(const v8::FunctionCallbackI
   SVGTestInterfaceV8Internal::typeAttributeSetter(v8Value, info);
 }
 
-const V8DOMConfiguration::AccessorConfiguration V8SVGTestInterfaceAccessors[] = {
-    {"type", V8SVGTestInterface::typeAttributeGetterCallback, V8SVGTestInterface::typeAttributeSetterCallback, nullptr, nullptr, nullptr, nullptr, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder},
+static const V8DOMConfiguration::AccessorConfiguration V8SVGTestInterfaceAccessors[] = {
+    {"type", V8SVGTestInterface::typeAttributeGetterCallback, V8SVGTestInterface::typeAttributeSetterCallback, nullptr, nullptr, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder, V8DOMConfiguration::AllWorlds},
 };
 
 static void installV8SVGTestInterfaceTemplate(v8::Isolate* isolate, const DOMWrapperWorld& world, v8::Local<v8::FunctionTemplate> interfaceTemplate) {

@@ -83,8 +83,6 @@ class CORE_EXPORT V8DOMConfiguration final {
     const char* const name;
     v8::AccessorNameGetterCallback getter;
     v8::AccessorNameSetterCallback setter;
-    v8::AccessorNameGetterCallback getterForMainWorld;
-    v8::AccessorNameSetterCallback setterForMainWorld;
     // TODO(vogelheim): This has to be removed too since it's only used in
     //                  accessors.
     // The accessor's 'result' is stored in a private property.
@@ -96,6 +94,8 @@ class CORE_EXPORT V8DOMConfiguration final {
     unsigned propertyLocationConfiguration : 3;
     // HolderCheckConfiguration
     unsigned holderCheckConfiguration : 1;
+    // WorldConfiguration
+    unsigned worldConfiguration : 2;
   };
 
   static void installAttributes(v8::Isolate*,
@@ -139,8 +139,6 @@ class CORE_EXPORT V8DOMConfiguration final {
     const char* const name;
     v8::FunctionCallback getter;
     v8::FunctionCallback setter;
-    v8::FunctionCallback getterForMainWorld;
-    v8::FunctionCallback setterForMainWorld;
     // The accessor's 'result' is stored in a private property.
     CachedAccessorCallback cachedAccessorCallback;
     const WrapperTypeInfo* data;
@@ -150,6 +148,8 @@ class CORE_EXPORT V8DOMConfiguration final {
     unsigned propertyLocationConfiguration : 3;
     // HolderCheckConfiguration
     unsigned holderCheckConfiguration : 1;
+    // WorldConfiguration
+    unsigned worldConfiguration : 2;
   };
 
   static void installAccessors(
@@ -262,9 +262,6 @@ class CORE_EXPORT V8DOMConfiguration final {
     DISALLOW_NEW();
     v8::Local<v8::Name> methodName(v8::Isolate* isolate) const {
       return getSymbol(isolate);
-    }
-    v8::FunctionCallback callbackForWorld(const DOMWrapperWorld&) const {
-      return callback;
     }
 
     v8::Local<v8::Symbol> (*getSymbol)(v8::Isolate*);

@@ -652,33 +652,34 @@ void {{v8_class}}::constructorCallback(const v8::FunctionCallbackInfo<v8::Value>
 
 
 {##############################################################################}
-{% macro install_origin_safe_method(method, world_suffix, instance_template, prototype_template) %}
+{% macro install_origin_safe_method(method, instance_template, prototype_template) %}
 {% from 'utilities.cpp.tmpl' import property_location %}
 {# TODO(dcheng): Currently, bindings must create a function object for each
    realm as a hack to support the incumbent realm. Clean this up when Blink
    properly supports the incumbent realm. #}
 {% set getter_callback =
-       '%s::%sOriginSafeMethodGetterCallback%s' %
-       (v8_class_or_partial, method.name, world_suffix) %}
+       '%s::%sOriginSafeMethodGetterCallback' %
+       (v8_class_or_partial, method.name) %}
 {% set setter_callback =
        '%s::%sOriginSafeMethodSetterCallback' % (v8_class_or_partial, cpp_class)
        if not method.is_unforgeable else 'nullptr' %}
-{% if method.is_per_world_bindings %}
-{% set getter_callback_for_main_world = '%sForMainWorld' % getter_callback %}
-{% set setter_callback_for_main_world = '%sForMainWorld' % setter_callback
-       if not method.is_unforgeable else 'nullptr' %}
-{% else %}
-{% set getter_callback_for_main_world = 'nullptr' %}
-{% set setter_callback_for_main_world = 'nullptr' %}
-{% endif %}
 {% set property_attribute =
        'static_cast<v8::PropertyAttribute>(%s)' %
        ' | '.join(method.property_attributes or ['v8::None']) %}
 {% set holder_check = 'V8DOMConfiguration::CheckHolder' %}
-const V8DOMConfiguration::AttributeConfiguration {{method.name}}OriginSafeAttributeConfiguration = {
-    "{{method.name}}", {{getter_callback}}, {{setter_callback}}, {{getter_callback_for_main_world}}, {{setter_callback_for_main_world}}, nullptr, &{{v8_class}}::wrapperTypeInfo, {{property_attribute}}, {{property_location(method)}}, {{holder_check}}
+static const V8DOMConfiguration::AttributeConfiguration {{method.name}}OriginSafeAttributeConfiguration[] = {
+{% if method.is_per_world_bindings %}
+{% set getter_callback_for_main_world = '%sForMainWorld' % getter_callback %}
+{% set setter_callback_for_main_world = '%sForMainWorld' % setter_callback
+       if not method.is_unforgeable else 'nullptr' %}
+    {"{{method.name}}", {{getter_callback_for_main_world}}, {{setter_callback_for_main_world}}, nullptr, &{{v8_class}}::wrapperTypeInfo, {{property_attribute}}, {{property_location(method)}}, {{holder_check}}, V8DOMConfiguration::MainWorld},
+    {"{{method.name}}", {{getter_callback}}, {{setter_callback}}, nullptr, &{{v8_class}}::wrapperTypeInfo, {{property_attribute}}, {{property_location(method)}}, {{holder_check}}, V8DOMConfiguration::NonMainWorlds}}
+{% else %}
+    {"{{method.name}}", {{getter_callback}}, {{setter_callback}}, nullptr, &{{v8_class}}::wrapperTypeInfo, {{property_attribute}}, {{property_location(method)}}, {{holder_check}}, V8DOMConfiguration::AllWorlds}
+{% endif %}
 };
-V8DOMConfiguration::installAttribute(isolate, world, {{instance_template}}, {{prototype_template}}, {{method.name}}OriginSafeAttributeConfiguration);
+for (const auto& attributeConfig : {{method.name}}OriginSafeAttributeConfiguration)
+  V8DOMConfiguration::installAttribute(isolate, world, {{instance_template}}, {{prototype_template}}, attributeConfig);
 {%- endmacro %}
 
 

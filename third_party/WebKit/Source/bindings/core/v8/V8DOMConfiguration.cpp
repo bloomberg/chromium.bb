@@ -36,21 +36,34 @@ namespace blink {
 
 namespace {
 
+template <class Configuration>
+bool worldConfigurationApplies(const Configuration& config,
+                               const DOMWrapperWorld& world) {
+  const auto currentWorldConfig = world.isMainWorld()
+                                      ? V8DOMConfiguration::MainWorld
+                                      : V8DOMConfiguration::NonMainWorlds;
+  return config.worldConfiguration & currentWorldConfig;
+}
+
+template <>
+bool worldConfigurationApplies(
+    const V8DOMConfiguration::SymbolKeyedMethodConfiguration&,
+    const DOMWrapperWorld&) {
+  return true;
+}
+
 void installAttributeInternal(
     v8::Isolate* isolate,
     v8::Local<v8::ObjectTemplate> instanceTemplate,
     v8::Local<v8::ObjectTemplate> prototypeTemplate,
     const V8DOMConfiguration::AttributeConfiguration& attribute,
     const DOMWrapperWorld& world) {
+  if (!worldConfigurationApplies(attribute, world))
+    return;
+
   v8::Local<v8::Name> name = v8AtomicString(isolate, attribute.name);
   v8::AccessorNameGetterCallback getter = attribute.getter;
   v8::AccessorNameSetterCallback setter = attribute.setter;
-  if (world.isMainWorld()) {
-    if (attribute.getterForMainWorld)
-      getter = attribute.getterForMainWorld;
-    if (attribute.setterForMainWorld)
-      setter = attribute.setterForMainWorld;
-  }
   v8::Local<v8::Value> data =
       v8::External::New(isolate, const_cast<WrapperTypeInfo*>(attribute.data));
 
@@ -79,6 +92,8 @@ void installAttributeInternal(
     v8::Local<v8::Object> prototype,
     const V8DOMConfiguration::AttributeConfiguration& attribute,
     const DOMWrapperWorld& world) {
+  if (!worldConfigurationApplies(attribute, world))
+    return;
   v8::Local<v8::Name> name = v8AtomicString(isolate, attribute.name);
 
   // This method is only being used for installing interfaces which are
@@ -119,8 +134,7 @@ void installLazyDataAttributeInternal(
   v8::Local<v8::Name> name = v8AtomicString(isolate, attribute.name);
   v8::AccessorNameGetterCallback getter = attribute.getter;
   DCHECK(!attribute.setter);
-  DCHECK(!attribute.getterForMainWorld);
-  DCHECK(!attribute.setterForMainWorld);
+  DCHECK_EQ(attribute.worldConfiguration, V8DOMConfiguration::AllWorlds);
   v8::Local<v8::Value> data =
       v8::External::New(isolate, const_cast<WrapperTypeInfo*>(attribute.data));
 
@@ -211,15 +225,13 @@ void installAccessorInternal(
     v8::Local<v8::Signature> signature,
     const V8DOMConfiguration::AccessorConfiguration& accessor,
     const DOMWrapperWorld& world) {
+  if (!worldConfigurationApplies(accessor, world))
+    return;
   v8::Local<v8::Name> name = v8AtomicString(isolate, accessor.name);
   v8::FunctionCallback getterCallback = accessor.getter;
   v8::FunctionCallback setterCallback = accessor.setter;
   V8DOMConfiguration::CachedAccessorCallback cachedAccessorCallback = nullptr;
   if (world.isMainWorld()) {
-    if (accessor.getterForMainWorld)
-      getterCallback = accessor.getterForMainWorld;
-    if (accessor.setterForMainWorld)
-      setterCallback = accessor.setterForMainWorld;
     cachedAccessorCallback = accessor.cachedAccessorCallback;
   }
 
@@ -321,22 +333,6 @@ void installConstantInternal(
   v8::Local<v8::Primitive> value = valueForConstant(isolate, constant);
   interface->DefineOwnProperty(context, name, value, attributes).ToChecked();
   prototype->DefineOwnProperty(context, name, value, attributes).ToChecked();
-}
-
-template <class Configuration>
-bool worldConfigurationApplies(const Configuration& config,
-                               const DOMWrapperWorld& world) {
-  const auto currentWorldConfig = world.isMainWorld()
-                                      ? V8DOMConfiguration::MainWorld
-                                      : V8DOMConfiguration::NonMainWorlds;
-  return config.worldConfiguration & currentWorldConfig;
-}
-
-template <>
-bool worldConfigurationApplies(
-    const V8DOMConfiguration::SymbolKeyedMethodConfiguration&,
-    const DOMWrapperWorld&) {
-  return true;
 }
 
 template <class Configuration>

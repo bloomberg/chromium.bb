@@ -70,7 +70,7 @@ void V8TestInterface2Partial::voidMethodPartial2MethodCallback(const v8::Functio
   TestInterface2PartialV8Internal::voidMethodPartial2Method(info);
 }
 
-const V8DOMConfiguration::MethodConfiguration V8TestInterface2Methods[] = {
+static const V8DOMConfiguration::MethodConfiguration V8TestInterface2Methods[] = {
     {"voidMethodPartial2", V8TestInterface2Partial::voidMethodPartial2MethodCallback, 1, v8::None, V8DOMConfiguration::OnPrototype, V8DOMConfiguration::CheckHolder, V8DOMConfiguration::DoNotCheckAccess, V8DOMConfiguration::AllWorlds},
 };
 
