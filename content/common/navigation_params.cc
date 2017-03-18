@@ -97,8 +97,8 @@ BeginNavigationParams::BeginNavigationParams()
       has_user_gesture(false),
       skip_service_worker(false),
       request_context_type(REQUEST_CONTEXT_TYPE_LOCATION),
-      mixed_content_context_type(blink::WebMixedContentContextType::Blockable) {
-}
+      mixed_content_context_type(blink::WebMixedContentContextType::Blockable),
+      is_form_submission(false) {}
 
 BeginNavigationParams::BeginNavigationParams(
     std::string headers,
@@ -107,6 +107,7 @@ BeginNavigationParams::BeginNavigationParams(
     bool skip_service_worker,
     RequestContextType request_context_type,
     blink::WebMixedContentContextType mixed_content_context_type,
+    bool is_form_submission,
     const base::Optional<url::Origin>& initiator_origin)
     : headers(headers),
       load_flags(load_flags),
@@ -114,6 +115,7 @@ BeginNavigationParams::BeginNavigationParams(
       skip_service_worker(skip_service_worker),
       request_context_type(request_context_type),
       mixed_content_context_type(mixed_content_context_type),
+      is_form_submission(is_form_submission),
       initiator_origin(initiator_origin) {}
 
 BeginNavigationParams::BeginNavigationParams(

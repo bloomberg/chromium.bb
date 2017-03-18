@@ -6347,6 +6347,11 @@ void RenderFrameImpl::BeginNavigation(const NavigationPolicyInfo& info) {
                     net::LOAD_ONLY_FROM_CACHE | net::LOAD_DISABLE_CACHE);
     load_flags |= net::LOAD_BYPASS_CACHE;
   }
+
+  bool is_form_submission =
+      info.navigationType == blink::WebNavigationTypeFormSubmitted ||
+      info.navigationType == blink::WebNavigationTypeFormResubmitted;
+
   BeginNavigationParams begin_navigation_params(
       GetWebURLRequestHeaders(info.urlRequest), load_flags,
       info.urlRequest.hasUserGesture(),
@@ -6354,7 +6359,7 @@ void RenderFrameImpl::BeginNavigation(const NavigationPolicyInfo& info) {
           blink::WebURLRequest::ServiceWorkerMode::All,
       GetRequestContextTypeForWebURLRequest(info.urlRequest),
       GetMixedContentContextTypeForWebURLRequest(info.urlRequest),
-      initiator_origin);
+      is_form_submission, initiator_origin);
 
   if (!info.form.isNull()) {
     WebSearchableFormData web_searchable_form_data(info.form);

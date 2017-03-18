@@ -113,7 +113,9 @@ void NavigationSimulator::Start() {
     BeginNavigationParams begin_params(
         std::string(), net::LOAD_NORMAL, true /* has_user_gesture */,
         false /* skip_service_worker */, REQUEST_CONTEXT_TYPE_HYPERLINK,
-        blink::WebMixedContentContextType::Blockable, url::Origin());
+        blink::WebMixedContentContextType::Blockable,
+        false,  // is_form_submission
+        url::Origin());
     CommonNavigationParams common_params;
     common_params.url = navigation_url_;
     common_params.referrer = referrer_;

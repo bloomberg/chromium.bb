@@ -587,6 +587,7 @@ test("content_browsertests") {
     "../browser/fileapi/file_system_browsertest.cc",
     "../browser/fileapi/fileapi_browsertest.cc",
     "../browser/find_request_manager_browsertest.cc",
+    "../browser/frame_host/form_submission_throttle_browsertest.cc",
     "../browser/frame_host/frame_tree_browsertest.cc",
     "../browser/frame_host/interstitial_page_impl_browsertest.cc",
     "../browser/frame_host/navigation_controller_impl_browsertest.cc",

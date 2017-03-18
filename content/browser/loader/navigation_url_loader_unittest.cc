@@ -109,7 +109,9 @@ class NavigationURLLoaderTest : public testing::Test {
     BeginNavigationParams begin_params(
         std::string(), net::LOAD_NORMAL, false, false,
         REQUEST_CONTEXT_TYPE_LOCATION,
-        blink::WebMixedContentContextType::Blockable, url::Origin(url));
+        blink::WebMixedContentContextType::Blockable,
+        false,  // is_form_submission
+        url::Origin(url));
     CommonNavigationParams common_params;
     common_params.url = url;
     std::unique_ptr<NavigationRequestInfo> request_info(

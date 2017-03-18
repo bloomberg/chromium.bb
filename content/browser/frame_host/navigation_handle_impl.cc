@@ -14,6 +14,7 @@
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/frame_host/ancestor_throttle.h"
 #include "content/browser/frame_host/debug_urls.h"
+#include "content/browser/frame_host/form_submission_throttle.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/mixed_content_navigation_throttle.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
@@ -65,11 +66,12 @@ std::unique_ptr<NavigationHandleImpl> NavigationHandleImpl::Create(
     const base::TimeTicks& navigation_start,
     int pending_nav_entry_id,
     bool started_from_context_menu,
-    CSPDisposition should_check_main_world_csp) {
+    CSPDisposition should_check_main_world_csp,
+    bool is_form_submission) {
   return std::unique_ptr<NavigationHandleImpl>(new NavigationHandleImpl(
       url, redirect_chain, frame_tree_node, is_renderer_initiated, is_same_page,
       navigation_start, pending_nav_entry_id, started_from_context_menu,
-      should_check_main_world_csp));
+      should_check_main_world_csp, is_form_submission));
 }
 
 NavigationHandleImpl::NavigationHandleImpl(
@@ -81,7 +83,8 @@ NavigationHandleImpl::NavigationHandleImpl(
     const base::TimeTicks& navigation_start,
     int pending_nav_entry_id,
     bool started_from_context_menu,
-    CSPDisposition should_check_main_world_csp)
+    CSPDisposition should_check_main_world_csp,
+    bool is_form_submission)
     : url_(url),
       has_user_gesture_(false),
       transition_(ui::PAGE_TRANSITION_LINK),
@@ -113,6 +116,7 @@ NavigationHandleImpl::NavigationHandleImpl(
       restore_type_(RestoreType::NONE),
       navigation_type_(NAVIGATION_TYPE_UNKNOWN),
       should_check_main_world_csp_(should_check_main_world_csp),
+      is_form_submission_(is_form_submission),
       weak_factory_(this) {
   DCHECK(!navigation_start.is_null());
   if (redirect_chain_.empty())
@@ -925,6 +929,20 @@ void NavigationHandleImpl::RegisterNavigationThrottles() {
   std::vector<std::unique_ptr<NavigationThrottle>> throttles_to_register =
       GetDelegate()->CreateThrottlesForNavigation(this);
 
+  std::unique_ptr<content::NavigationThrottle> ancestor_throttle =
+      content::AncestorThrottle::MaybeCreateThrottleFor(this);
+  if (ancestor_throttle)
+    throttles_.push_back(std::move(ancestor_throttle));
+
+  std::unique_ptr<content::NavigationThrottle> form_submission_throttle =
+      content::FormSubmissionThrottle::MaybeCreateThrottleFor(this);
+  if (form_submission_throttle)
+    throttles_.push_back(std::move(form_submission_throttle));
+
+  // Check for mixed content. This is done after the AncestorThrottle and the
+  // FormSubmissionThrottle so that when folks block mixed content with a CSP
+  // policy, they don't get a warning. They'll still get a warning in the
+  // console about CSP blocking the load.
   std::unique_ptr<NavigationThrottle> mixed_content_throttle =
       MixedContentNavigationThrottle::CreateThrottleForNavigation(this);
   if (mixed_content_throttle)
@@ -939,11 +957,6 @@ void NavigationHandleImpl::RegisterNavigationThrottles() {
       ClearSiteDataThrottle::CreateThrottleForNavigation(this);
   if (clear_site_data_throttle)
     throttles_to_register.push_back(std::move(clear_site_data_throttle));
-
-  std::unique_ptr<content::NavigationThrottle> ancestor_throttle =
-      content::AncestorThrottle::MaybeCreateThrottleFor(this);
-  if (ancestor_throttle)
-    throttles_.push_back(std::move(ancestor_throttle));
 
   throttles_.insert(throttles_.begin(),
                     std::make_move_iterator(throttles_to_register.begin()),

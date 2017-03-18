@@ -175,6 +175,7 @@ struct CONTENT_EXPORT BeginNavigationParams {
       bool skip_service_worker,
       RequestContextType request_context_type,
       blink::WebMixedContentContextType mixed_content_context_type,
+      bool is_form_submission,
       const base::Optional<url::Origin>& initiator_origin);
   BeginNavigationParams(const BeginNavigationParams& other);
   ~BeginNavigationParams();
@@ -196,6 +197,9 @@ struct CONTENT_EXPORT BeginNavigationParams {
 
   // The mixed content context type for potential mixed content checks.
   blink::WebMixedContentContextType mixed_content_context_type;
+
+  // Whether or not the navigation has been initiated by a form submission.
+  bool is_form_submission;
 
   // See WebSearchableFormData for a description of these.
   GURL searchable_form_url;

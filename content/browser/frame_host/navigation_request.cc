@@ -224,6 +224,10 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateBrowserInitiated(
                             false,  // skip_service_worker
                             REQUEST_CONTEXT_TYPE_LOCATION,
                             blink::WebMixedContentContextType::Blockable,
+                            // TODO(arthursonzogni): It can be true for form
+                            // resubmission when the user reloads the page. This
+                            // needs to be fixed.
+                            false,  // is_form_submission
                             initiator),
       entry.ConstructRequestNavigationParams(
           frame_entry, common_params.url, common_params.method,
@@ -404,7 +408,8 @@ void NavigationRequest::CreateNavigationHandle(int pending_nav_entry_id) {
                                    common_params_.navigation_start,
                                    pending_nav_entry_id,
                                    false,  // started_in_context_menu
-                                   common_params_.should_check_main_world_csp);
+                                   common_params_.should_check_main_world_csp,
+                                   begin_params_.is_form_submission);
 
   if (!frame_tree_node->navigation_request()) {
     // A callback could have cancelled this request synchronously in which case

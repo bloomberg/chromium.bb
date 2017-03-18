@@ -35,8 +35,9 @@ NavigationHandle::CreateNavigationHandleForTesting(
           url, std::vector<GURL>(), rfhi->frame_tree_node(),
           true,  // is_renderer_initiated
           is_same_page, base::TimeTicks::Now(), 0,
-          false,                   // started_from_context_menu
-          CSPDisposition::CHECK);  // should_check_main_world_csp
+          false,                  // started_from_context_menu
+          CSPDisposition::CHECK,  // should_check_main_world_csp
+          false);                 // is_form_submission
   handle_impl->set_render_frame_host(rfhi);
   if (error != net::OK)
     handle_impl->set_net_error_code(error);

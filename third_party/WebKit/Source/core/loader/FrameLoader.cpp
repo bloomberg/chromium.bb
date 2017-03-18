@@ -1693,6 +1693,16 @@ NavigationPolicy FrameLoader::shouldContinueForNavigationPolicy(
   bool isFormSubmission = type == NavigationTypeFormSubmitted ||
                           type == NavigationTypeFormResubmitted;
   if (isFormSubmission &&
+      // 'form-action' check in the frame that is navigating is disabled on the
+      // renderer side when PlzNavigate is enabled, but is enforced on the
+      // browser side instead.
+      // N.B. check in the frame that initiates the navigation stills occurs in
+      // blink and is not enforced on the browser-side.
+      // TODO(arthursonzogni) The 'form-action' check should be fully disabled
+      // in blink when browser side navigation is enabled, except when the form
+      // submission doesn't trigger a navigation(i.e. javascript urls). Please
+      // see https://crbug.com/701749
+      !browserSideNavigationEnabled &&
       !m_frame->document()->contentSecurityPolicy()->allowFormAction(
           request.url(), request.redirectStatus())) {
     return NavigationPolicyIgnore;

@@ -232,7 +232,8 @@ void NavigatorImpl::DidStartProvisionalLoad(
       render_frame_host->frame_tree_node(), is_renderer_initiated,
       false,  // is_same_page
       navigation_start, pending_nav_entry_id, started_from_context_menu,
-      CSPDisposition::CHECK));  // should_check_main_world_csp
+      CSPDisposition::CHECK,  // should_check_main_world_csp
+      false));                // is_form_submission
 }
 
 void NavigatorImpl::DidFailProvisionalLoadWithError(

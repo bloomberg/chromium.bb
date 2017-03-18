@@ -1082,7 +1082,9 @@ class ResourceDispatcherHostTest : public testing::TestWithParam<TestConfig>,
       BeginNavigationParams begin_params(
           std::string(), net::LOAD_NORMAL, false, false,
           REQUEST_CONTEXT_TYPE_LOCATION,
-          blink::WebMixedContentContextType::Blockable, url::Origin(url));
+          blink::WebMixedContentContextType::Blockable,
+          false,  // is_form_submission
+          url::Origin(url));
       CommonNavigationParams common_params;
       common_params.url = url;
       std::unique_ptr<NavigationRequestInfo> request_info(
@@ -2644,6 +2646,7 @@ TEST_P(ResourceDispatcherHostTest, CancelRequestsForContext) {
         std::string(), net::LOAD_NORMAL, false, false,
         REQUEST_CONTEXT_TYPE_LOCATION,
         blink::WebMixedContentContextType::Blockable,
+        false,  // is_form_submission
         url::Origin(download_url));
     CommonNavigationParams common_params;
     common_params.url = download_url;
