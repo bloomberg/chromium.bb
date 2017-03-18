@@ -90,10 +90,9 @@ VerifiedContents::~VerifiedContents() {
 //     }
 //   ]
 // }
-bool VerifiedContents::InitFrom(const base::FilePath& path,
-                                bool ignore_invalid_signature) {
+bool VerifiedContents::InitFrom(const base::FilePath& path) {
   std::string payload;
-  if (!GetPayload(path, &payload, ignore_invalid_signature))
+  if (!GetPayload(path, &payload))
     return false;
 
   std::unique_ptr<base::Value> value(base::JSONReader::Read(payload));
@@ -230,8 +229,7 @@ bool VerifiedContents::TreeHashRootEquals(const base::FilePath& relative_path,
 // the extension's key too (eg for non-webstore hosted extensions such as
 // enterprise installs).
 bool VerifiedContents::GetPayload(const base::FilePath& path,
-                                  std::string* payload,
-                                  bool ignore_invalid_signature) {
+                                  std::string* payload) {
   std::string contents;
   if (!base::ReadFileToString(path, &contents))
     return false;
@@ -284,7 +282,7 @@ bool VerifiedContents::GetPayload(const base::FilePath& path,
 
   valid_signature_ =
       VerifySignature(protected_value, encoded_payload, decoded_signature);
-  if (!valid_signature_ && !ignore_invalid_signature)
+  if (!valid_signature_)
     return false;
 
   if (!base::Base64UrlDecode(encoded_payload,

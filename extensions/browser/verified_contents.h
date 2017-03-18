@@ -29,10 +29,7 @@ class VerifiedContents {
 
   // Returns true if we successfully parsed the verified_contents.json file at
   // |path| and validated the enclosed signature. The
-  // |ignore_invalid_signature| argument can be set to make this still succeed
-  // if the contents of the file were parsed successfully but the signature did
-  // not validate. (Use with caution!)
-  bool InitFrom(const base::FilePath& path, bool ignore_invalid_signature);
+  bool InitFrom(const base::FilePath& path);
 
   int block_size() const { return block_size_; }
   const std::string& extension_id() const { return extension_id_; }
@@ -49,10 +46,8 @@ class VerifiedContents {
 
  private:
   // Returns the base64url-decoded "payload" field from the json at |path|, if
-  // the signature was valid (or ignore_invalid_signature was set to true).
-  bool GetPayload(const base::FilePath& path,
-                  std::string* payload,
-                  bool ignore_invalid_signature);
+  // the signature was valid.
+  bool GetPayload(const base::FilePath& path, std::string* payload);
 
   // The |protected_value| and |payload| arguments should be base64url encoded
   // strings, and |signature_bytes| should be a byte array. See comments in the

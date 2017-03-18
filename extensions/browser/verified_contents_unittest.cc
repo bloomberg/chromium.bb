@@ -58,7 +58,7 @@ TEST(VerifiedContents, Simple) {
   base::FilePath verified_contents_path =
       path.AppendASCII("verified_contents.json");
 
-  ASSERT_TRUE(contents.InitFrom(verified_contents_path, false));
+  ASSERT_TRUE(contents.InitFrom(verified_contents_path));
 
   // Make sure we get expected values.
   EXPECT_EQ(contents.block_size(), 4096);
@@ -147,7 +147,7 @@ TEST(VerifiedContents, FailsOnBase64) {
   base::FilePath verified_contents_path =
       path.AppendASCII("verified_contents_base64.json");
 
-  ASSERT_FALSE(contents.InitFrom(verified_contents_path, false));
+  ASSERT_FALSE(contents.InitFrom(verified_contents_path));
 }
 
 }  // namespace extensions

@@ -62,7 +62,7 @@ bool ContentHashReader::Init() {
     return false;
 
   verified_contents_.reset(new VerifiedContents(key_.data, key_.size));
-  if (!verified_contents_->InitFrom(verified_contents_path, false) ||
+  if (!verified_contents_->InitFrom(verified_contents_path) ||
       !verified_contents_->valid_signature() ||
       verified_contents_->version() != extension_version_ ||
       verified_contents_->extension_id() != extension_id_)

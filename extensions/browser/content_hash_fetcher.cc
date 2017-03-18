@@ -223,7 +223,7 @@ bool ContentHashFetcherJob::LoadVerifiedContents(const base::FilePath& path) {
   if (!base::PathExists(path))
     return false;
   verified_contents_.reset(new VerifiedContents(key_.data, key_.size));
-  if (!verified_contents_->InitFrom(path, false)) {
+  if (!verified_contents_->InitFrom(path)) {
     verified_contents_.reset();
     if (!base::DeleteFile(path, false))
       LOG(WARNING) << "Failed to delete " << path.value();
@@ -377,7 +377,7 @@ bool ContentHashFetcherJob::CreateHashes(const base::FilePath& hashes_file) {
     base::FilePath verified_contents_path =
         file_util::GetVerifiedContentsPath(extension_path_);
     verified_contents_.reset(new VerifiedContents(key_.data, key_.size));
-    if (!verified_contents_->InitFrom(verified_contents_path, false)) {
+    if (!verified_contents_->InitFrom(verified_contents_path)) {
       verified_contents_.reset();
       return false;
     }
