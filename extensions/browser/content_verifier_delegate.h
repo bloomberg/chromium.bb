@@ -26,12 +26,7 @@ struct ContentVerifierKey {
   const uint8_t* data;
   int size;
 
-  ContentVerifierKey() : data(NULL), size(0) {}
-
-  ContentVerifierKey(const uint8_t* data, int size) {
-    this->data = data;
-    this->size = size;
-  }
+  ContentVerifierKey(const uint8_t* data, int size) : data(data), size(size) {}
 };
 
 // This is an interface for clients that want to use a ContentVerifier.
