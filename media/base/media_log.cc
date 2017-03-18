@@ -244,7 +244,7 @@ std::unique_ptr<MediaLogEvent> MediaLog::CreateLoadEvent(
   return event;
 }
 
-std::unique_ptr<MediaLogEvent> MediaLog::CreateSeekEvent(float seconds) {
+std::unique_ptr<MediaLogEvent> MediaLog::CreateSeekEvent(double seconds) {
   std::unique_ptr<MediaLogEvent> event(CreateEvent(MediaLogEvent::SEEK));
   event->params.SetDouble("seek_target", seconds);
   return event;
