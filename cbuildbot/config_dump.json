@@ -6,7 +6,6 @@
         "afdo_generate_min": false,
         "afdo_update_ebuild": false,
         "afdo_use": false,
-        "android_import_branch": null,
         "android_rev": null,
         "archive": true,
         "archive_build_debug": false,
@@ -188,7 +187,6 @@
     "_templates": {
         "android_pfq": {
             "_template": "android_pfq",
-            "android_import_branch": "git_mnc-dr-arc-dev",
             "android_rev": "latest_release",
             "build_type": "android",
             "description": "Preflight Android Uprev & Build (internal)",
@@ -22408,7 +22406,6 @@
         "_template": "pre_flight_branch",
         "afdo_generate": true,
         "afdo_update_ebuild": true,
-        "android_import_branch": "git_mnc-dr-arc-dev",
         "android_rev": "latest_release",
         "boards": [
             "samus"
