@@ -99,6 +99,7 @@ class ChromeContentClient : public content::ContentClient {
   bool IsSupplementarySiteIsolationModeEnabled() override;
 
   content::OriginTrialPolicy* GetOriginTrialPolicy() override;
+  bool AllowBrowserSideNavigation() override;
 
 #if defined(OS_ANDROID)
   media::MediaClientAndroid* GetMediaClientAndroid() override;

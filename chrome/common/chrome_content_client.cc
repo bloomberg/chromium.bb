@@ -24,6 +24,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/common/channel_info.h"
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -709,6 +710,15 @@ content::OriginTrialPolicy* ChromeContentClient::GetOriginTrialPolicy() {
   if (!origin_trial_policy_)
     origin_trial_policy_ = base::MakeUnique<ChromeOriginTrialPolicy>();
   return origin_trial_policy_.get();
+}
+
+bool ChromeContentClient::AllowBrowserSideNavigation() {
+#if defined(OS_ANDROID)
+  return false;
+#else
+  return chrome::GetChannel() == version_info::Channel::CANARY ||
+         chrome::GetChannel() == version_info::Channel::UNKNOWN;
+#endif
 }
 
 #if defined(OS_ANDROID)
