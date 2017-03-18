@@ -414,35 +414,34 @@ void PaintLayerCompositor::updateIfNeeded() {
     }
   }
 
-  if (updateType != CompositingUpdateNone) {
-    if (RuntimeEnabledFeatures::compositorWorkerEnabled() && m_scrollLayer) {
-      // If rootLayerScrolls is enabled, these properties are applied in
-      // CompositedLayerMapping::updateElementIdAndCompositorMutableProperties.
-      if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
-        if (Element* scrollingElement =
-                m_layoutView.document().scrollingElement()) {
-          uint32_t mutableProperties = CompositorMutableProperty::kNone;
-          if (scrollingElement->hasCompositorProxy())
-            mutableProperties = (CompositorMutableProperty::kScrollLeft |
-                                 CompositorMutableProperty::kScrollTop) &
-                                scrollingElement->compositorMutableProperties();
-          m_scrollLayer->setCompositorMutableProperties(mutableProperties);
+  if (RuntimeEnabledFeatures::compositorWorkerEnabled() && m_scrollLayer) {
+    // If rootLayerScrolls is enabled, these properties are applied in
+    // CompositedLayerMapping::updateElementIdAndCompositorMutableProperties.
+    if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
+      if (Element* scrollingElement =
+              m_layoutView.document().scrollingElement()) {
+        uint32_t mutableProperties = CompositorMutableProperty::kNone;
+        if (scrollingElement->hasCompositorProxy()) {
+          mutableProperties = (CompositorMutableProperty::kScrollLeft |
+                               CompositorMutableProperty::kScrollTop) &
+                              scrollingElement->compositorMutableProperties();
         }
+        m_scrollLayer->setCompositorMutableProperties(mutableProperties);
       }
     }
+  }
 
-    GraphicsLayerUpdater updater;
-    updater.update(*updateRoot, layersNeedingPaintInvalidation);
+  GraphicsLayerUpdater updater;
+  updater.update(*updateRoot, layersNeedingPaintInvalidation);
 
-    if (updater.needsRebuildTree())
-      updateType = std::max(updateType, CompositingUpdateRebuildTree);
+  if (updater.needsRebuildTree())
+    updateType = std::max(updateType, CompositingUpdateRebuildTree);
 
 #if DCHECK_IS_ON()
-    // FIXME: Move this check to the end of the compositing update.
-    GraphicsLayerUpdater::assertNeedsToUpdateGraphicsLayerBitsCleared(
-        *updateRoot);
+  // FIXME: Move this check to the end of the compositing update.
+  GraphicsLayerUpdater::assertNeedsToUpdateGraphicsLayerBitsCleared(
+      *updateRoot);
 #endif
-  }
 
   if (updateType >= CompositingUpdateRebuildTree) {
     GraphicsLayerVector childList;
