@@ -22,7 +22,7 @@ static void clpf_block8(const uint8_t *src, uint8_t *dst, int sstride,
   const int bottom = bt & TILE_BOTTOM_BOUNDARY ? sizey - 2 : -1;
   const int right = !(bt & TILE_RIGHT_BOUNDARY);
   const int left = !(bt & TILE_LEFT_BOUNDARY);
-  const int top = bt & TILE_ABOVE_BOUNDARY ? y0 : -1;
+  const int top = bt & TILE_ABOVE_BOUNDARY ? 0 : -1;
   DECLARE_ALIGNED(16, static const uint64_t,
                   c_shuff[]) = { 0x0504030201000000LL, 0x0d0c0b0a09080808LL };
   DECLARE_ALIGNED(16, static const uint64_t,
@@ -121,7 +121,7 @@ static void clpf_block4(const uint8_t *src, uint8_t *dst, int sstride,
   const int right = !(bt & TILE_RIGHT_BOUNDARY);
   const int bottom = bt & TILE_BOTTOM_BOUNDARY ? sizey - 4 : -1;
   const int left = !(bt & TILE_LEFT_BOUNDARY);
-  const int top = bt & TILE_ABOVE_BOUNDARY ? y0 : -1;
+  const int top = bt & TILE_ABOVE_BOUNDARY ? 0 : -1;
 
   DECLARE_ALIGNED(16, static const uint64_t,
                   c_shuff[]) = { 0x0504040401000000LL, 0x0d0c0c0c09080808LL };
@@ -328,7 +328,7 @@ SIMD_INLINE void clpf_block_hbd4(const uint16_t *src, uint16_t *dst,
   const int right = !(bt & TILE_RIGHT_BOUNDARY);
   const int bottom = bt & TILE_BOTTOM_BOUNDARY ? sizey - 2 : -1;
   const int left = !(bt & TILE_LEFT_BOUNDARY);
-  const int top = bt & TILE_ABOVE_BOUNDARY ? y0 : -1;
+  const int top = bt & TILE_ABOVE_BOUNDARY ? 0 : -1;
 
   DECLARE_ALIGNED(16, static const uint64_t,
                   c_shuff[]) = { 0x0302010001000100LL, 0x0b0a090809080908LL };
