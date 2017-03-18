@@ -618,8 +618,7 @@ def run_tha_test(
     grace_period: number of seconds to wait between SIGTERM and SIGKILL.
     extra_args: optional arguments to add to the command stated in the .isolate
                 file. Ignored if isolate_hash is empty.
-    install_packages_fn: context manager dir => CipdInfo, see
-      install_client_and_packages.
+    install_packages_fn: context manager dir => CipdInfo, see install_packages.
     use_symlinks: create tree with symlinks instead of hardlinks.
 
   Returns:
@@ -672,7 +671,7 @@ def run_tha_test(
   return result['exit_code'] or int(bool(result['internal_failure']))
 
 
-# Yielded by 'install_client_and_packages'.
+# Yielded by 'install_packages'.
 CipdInfo = collections.namedtuple('CipdInfo', [
   'client',     # cipd.CipdClient object
   'cache_dir',  # absolute path to bot-global cipd tag and instance cache
@@ -683,67 +682,12 @@ CipdInfo = collections.namedtuple('CipdInfo', [
 
 @contextlib.contextmanager
 def noop_install_packages(_run_dir):
-  """Placeholder for 'install_client_and_packages' if cipd is disabled."""
+  """Placeholder for 'install_packages' if cipd is disabled."""
   yield None
 
 
-def _install_packages(run_dir, cipd_cache_dir, client, packages, timeout):
-  """Calls 'cipd ensure' for packages.
-
-  Args:
-    run_dir (str): root of installation.
-    cipd_cache_dir (str): the directory to use for the cipd package cache.
-    client (CipdClient): the cipd client to use
-    packages: packages to install, list [(path, package_name, version), ...].
-    timeout: max duration in seconds that this function can take.
-
-  Returns: list of pinned packages.  Looks like [
-    {
-      'path': 'subdirectory',
-      'package_name': 'resolved/package/name',
-      'version': 'deadbeef...',
-    },
-    ...
-  ]
-  """
-  package_pins = [None]*len(packages)
-  def insert_pin(path, name, version, idx):
-    # swarming deals with 'root' as '.'
-    package_pins[idx] = {
-      'package_name': name,
-      'path': path,
-      'version': version,
-    }
-
-  by_path = collections.defaultdict(list)
-  for i, (path, name, version) in enumerate(packages):
-    # cipd deals with 'root' as ''
-    if path == '.':
-      path = ''
-    by_path[path].append((name, version, i))
-
-  pins = client.ensure(
-    run_dir,
-    {
-      subdir: [(name, vers) for name, vers, _ in pkgs]
-      for subdir, pkgs in by_path.iteritems()
-    },
-    cache_dir=cipd_cache_dir,
-    timeout=timeout,
-  )
-
-  for subdir, pin_list in sorted(pins.iteritems()):
-    this_subdir = by_path[subdir]
-    for i, (name, version) in enumerate(pin_list):
-      insert_pin(subdir, name, version, this_subdir[i][2])
-
-  assert None not in package_pins
-
-  return package_pins
-
-
 @contextlib.contextmanager
-def install_client_and_packages(
+def install_packages(
     run_dir, packages, service_url, client_package_name,
     client_version, cache_dir, timeout=None):
   """Bootstraps CIPD client and installs CIPD packages.
@@ -789,24 +733,52 @@ def install_client_and_packages(
   run_dir = os.path.abspath(run_dir)
   packages = packages or []
 
+  package_pins = [None]*len(packages)
+  def insert_pin(path, name, version, idx):
+    path = path.replace(os.path.sep, '/')
+    package_pins[idx] = {
+      'package_name': name,
+      'path': path,
+      'version': version,
+    }
+
   get_client_start = time.time()
   client_manager = cipd.get_client(
       service_url, client_package_name, client_version, cache_dir,
       timeout=timeoutfn())
 
+  by_path = collections.defaultdict(list)
+  for i, (path, name, version) in enumerate(packages):
+    path = path.replace('/', os.path.sep)
+    by_path[path].append((name, version, i))
+
   with client_manager as client:
+    client_package = {
+      'package_name': client.package_name,
+      'version': client.instance_id,
+    }
     get_client_duration = time.time() - get_client_start
+    for path, pkgs in sorted(by_path.iteritems()):
+      site_root = os.path.abspath(os.path.join(run_dir, path))
+      if not site_root.startswith(run_dir):
+        raise cipd.Error('Invalid CIPD package path "%s"' % path)
 
-    package_pins = []
-    if packages:
-      package_pins = _install_packages(
-        run_dir, cipd_cache_dir, client, packages, timeoutfn())
-
-    file_path.make_tree_files_read_only(run_dir)
+      # Do not clean site_root before installation because it may contain other
+      # site roots.
+      file_path.ensure_tree(site_root, 0770)
+      pins = client.ensure(
+          site_root, [(name, vers) for name, vers, _ in pkgs],
+          cache_dir=cipd_cache_dir,
+          timeout=timeoutfn())
+      for i, pin in enumerate(pins[""]):
+        insert_pin(path, pin[0], pin[1], pkgs[i][2])
+      file_path.make_tree_files_read_only(site_root)
 
     total_duration = time.time() - start
     logging.info(
         'Installing CIPD client and packages took %d seconds', total_duration)
+
+    assert None not in package_pins
 
     yield CipdInfo(
       client=client,
@@ -816,10 +788,7 @@ def install_client_and_packages(
         'get_client_duration': get_client_duration,
       },
       pins={
-        'client_package': {
-          'package_name': client.package_name,
-          'version': client.instance_id,
-        },
+        'client_package': client_package,
         'packages': package_pins,
       })
 
@@ -994,7 +963,7 @@ def main(args):
 
   install_packages_fn = noop_install_packages
   if options.cipd_enabled:
-    install_packages_fn = lambda run_dir: install_client_and_packages(
+    install_packages_fn = lambda run_dir: install_packages(
         run_dir, cipd.parse_package_args(options.cipd_packages),
         options.cipd_server, options.cipd_client_package,
         options.cipd_client_version, cache_dir=options.cipd_cache)

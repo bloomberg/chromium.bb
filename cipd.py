@@ -148,15 +148,15 @@ class CipdClient(object):
 
     Args:
       site_root (str): where to install packages.
-      packages: dict of subdir -> list of (package_template, version) tuples.
+      packages: list of (package_template, version) tuples.
       cache_dir (str): if set, cache dir for cipd binary own cache.
         Typically contains packages and tags.
       tmp_dir (str): if not None, dir for temp files.
       timeout (int): if not None, timeout in seconds for this function to run.
 
     Returns:
-      Pinned packages in the form of {subdir: [(package_name, package_id)]},
-      which correspond 1:1 with the input packages argument.
+      Pinned packages in the form of [(package_name, package_id)], which
+      correspond 1:1 with the input packages argument.
 
     Raises:
       Error if could not install packages or timed out.
@@ -164,29 +164,24 @@ class CipdClient(object):
     timeoutfn = tools.sliding_timeout(timeout)
     logging.info('Installing packages %r into %s', packages, site_root)
 
-    ensure_file_handle, ensure_file_path = tempfile.mkstemp(
-        dir=tmp_dir, prefix=u'cipd-ensure-file-', suffix='.txt')
+    list_file_handle, list_file_path = tempfile.mkstemp(
+        dir=tmp_dir, prefix=u'cipd-ensure-list-', suffix='.txt')
     json_out_file_handle, json_file_path = tempfile.mkstemp(
       dir=tmp_dir, prefix=u'cipd-ensure-result-', suffix='.json')
     os.close(json_out_file_handle)
 
     try:
       try:
-        for subdir, pkgs in sorted(packages.iteritems()):
-          if '\n' in subdir:
-            raise Error(
-              'Could not install packages; subdir %r contains newline' % subdir)
-          os.write(ensure_file_handle, '@Subdir %s\n' % (subdir,))
-          for pkg, version in pkgs:
-            pkg = render_package_name_template(pkg)
-            os.write(ensure_file_handle, '%s %s\n' % (pkg, version))
+        for pkg, version in packages:
+          pkg = render_package_name_template(pkg)
+          os.write(list_file_handle, '%s %s\n' % (pkg, version))
       finally:
-        os.close(ensure_file_handle)
+        os.close(list_file_handle)
 
       cmd = [
         self.binary_path, 'ensure',
         '-root', site_root,
-        '-ensure-file', ensure_file_path,
+        '-list', list_file_path,
         '-verbose',  # this is safe because cipd-ensure does not print a lot
         '-json-output', json_file_path,
       ]
@@ -221,12 +216,25 @@ class CipdClient(object):
             exit_code, '\n'.join(output)))
       with open(json_file_path) as jfile:
         result_json = json.load(jfile)
-      return {
-        subdir: [(x['package'], x['instance_id']) for x in pins]
-        for subdir, pins in result_json['result'].iteritems()
-      }
+      # TEMPORARY(iannucci): this code handles cipd <1.4 and cipd >=1.5
+      # formatted ensure result formats. Cipd 1.5 added support for subdirs, and
+      # as part of the transition, the result of the ensure command needed to
+      # change. To ease the transition, we always return data as-if we're using
+      # the new format. Once cipd 1.5+ is deployed everywhere, this type switch
+      # can be removed.
+      if isinstance(result_json['result'], dict):
+        # cipd 1.5
+        return {
+          subdir: [(x['package'], x['instance_id']) for x in pins]
+          for subdir, pins in result_json['result'].iteritems()
+        }
+      else:
+        # cipd 1.4
+        return {
+          "": [(x['package'], x['instance_id']) for x in result_json['result']],
+        }
     finally:
-      fs.remove(ensure_file_path)
+      fs.remove(list_file_path)
       fs.remove(json_file_path)
 
 

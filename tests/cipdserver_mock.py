@@ -3,7 +3,6 @@
 # that can be found in the LICENSE file.
 
 import logging
-import urlparse
 
 import httpserver_mock
 
@@ -28,25 +27,12 @@ class CipdServerHandler(httpserver_mock.MockHandler):
         'instance_id': 'a' * 40,
       })
     elif self.path.startswith('/_ah/api/repo/v1/client?'):
-      qs = urlparse.parse_qs(urlparse.urlparse(self.path).query)
-      pkg_name = qs.get('package_name', [])
-      if not pkg_name:
-        self._json({
-          'status': 'FAILED',
-          'error_message': 'package_name not specified',
-        })
-      if '$' in pkg_name[0]:
-        self._json({
-          'status': 'FAILED',
-          'error_message': 'unknown package %r' % pkg_name[0],
-        })
-      else:
-        self._json({
-          'status': 'SUCCESS',
-          'client_binary': {
-            'fetch_url': self.server.url + '/fake_google_storage/cipd_client',
-          },
-        })
+      self._json({
+        'status': 'SUCCESS',
+        'client_binary': {
+          'fetch_url': self.server.url + '/fake_google_storage/cipd_client',
+        },
+      })
     elif self.path == '/fake_google_storage/cipd_client':
       # The content is not actually used because run_isolated_test.py
       # mocks popen.
