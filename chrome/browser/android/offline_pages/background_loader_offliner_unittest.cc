@@ -33,7 +33,7 @@ namespace {
 const int64_t kRequestId = 7;
 const GURL kHttpUrl("http://www.tunafish.com");
 const GURL kFileUrl("file://salmon.png");
-const ClientId kClientId("AsyncLoading", "88");
+const ClientId kClientId("async_loading", "88");
 const bool kUserRequested = true;
 
 // Mock OfflinePageModel for testing the SavePage calls
@@ -421,17 +421,18 @@ TEST_F(BackgroundLoaderOfflinerTest, FailsOnErrorPage) {
                           kUserRequested);
   EXPECT_TRUE(offliner()->LoadAndSave(request, completion_callback(),
                                       progress_callback()));
-
   // Create handle with net error code.
   // Called after calling LoadAndSave so we have web_contents to work with.
   std::unique_ptr<content::NavigationHandle> handle(
       content::NavigationHandle::CreateNavigationHandleForTesting(
           kHttpUrl, offliner()->web_contents()->GetMainFrame(), true,
           net::Error::ERR_NAME_NOT_RESOLVED));
-  // Call DidFinishNavigation with handle that contains error.
-  offliner()->DidFinishNavigation(handle.get());
-  // NavigationHandle is always destroyed after finishing navigation.
+  // NavigationHandle destruction will trigger DidFinishNavigation code.
   handle.reset();
+  histograms().ExpectBucketCount(
+      "OfflinePages.Background.BackgroundLoadingFailedCode.async_loading",
+      105,  // ERR_NAME_NOT_RESOLVED
+      1);
   offliner()->DidStopLoading();
   PumpLoop();
 

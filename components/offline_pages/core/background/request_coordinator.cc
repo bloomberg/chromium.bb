@@ -44,7 +44,7 @@ std::string AddHistogramSuffix(const ClientId& client_id,
   return adjusted_histogram_name;
 }
 
-// Records the final request status UMA for an offlining request. This should
+// Records the request status UMA for an offlining request. This should
 // only be called once per Offliner::LoadAndSave request.
 void RecordOfflinerResultUMA(const ClientId& client_id,
                              const base::Time& request_creation_time,
@@ -71,6 +71,27 @@ void RecordOfflinerResultUMA(const ClientId& client_id,
     base::TimeDelta duration = base::Time::Now() - request_creation_time;
     histogram->Add(duration.InSeconds());
   }
+}
+
+// Records final request status UMA for an offlining request. This should only
+// be called once per Offliner::LoadAndSave request. Every Offliner::LoadAndSave
+// request should also call this once.
+void RecordSavePageResultUMA(
+    const ClientId& client_id,
+    RequestNotifier::BackgroundSavePageResult request_status) {
+  // The histogram below is an expansion of the UMA_HISTOGRAM_ENUMERATION
+  // macro adapted to allow for a dynamically suffixed histogram name.
+  // Note: The factory creates and owns the histogram.
+  base::HistogramBase* histogram = base::LinearHistogram::FactoryGet(
+      AddHistogramSuffix(client_id,
+                         "OfflinePages.Background.FinalSavePageResult"),
+      1,
+      static_cast<int>(RequestNotifier::BackgroundSavePageResult::STATUS_COUNT),
+      static_cast<int>(
+          RequestNotifier::BackgroundSavePageResult::STATUS_COUNT) +
+          1,
+      base::HistogramBase::kUmaTargetedHistogramFlag);
+  histogram->Add(static_cast<int>(request_status));
 }
 
 void RecordStartTimeUMA(const SavePageRequest& request) {
@@ -1079,6 +1100,7 @@ void RequestCoordinator::NotifyAdded(const SavePageRequest& request) {
 void RequestCoordinator::NotifyCompleted(
     const SavePageRequest& request,
     RequestNotifier::BackgroundSavePageResult status) {
+  RecordSavePageResultUMA(request.client_id(), status);
   for (Observer& observer : observers_)
     observer.OnCompleted(request, status);
 }

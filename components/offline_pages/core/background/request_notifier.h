@@ -15,16 +15,20 @@ class RequestNotifier {
   // NOTE: for any changes to the enum, please also update related switch code
   // in RequestCoordinatorEventLogger.
   // GENERATED_JAVA_ENUM_PACKAGE:org.chromium.components.offlinepages
+  // WARNING: You must update histograms.xml to match any changes made to
+  // this enum (ie, histogram enum for OfflinePagesBackgroundSavePageResult).
   enum class BackgroundSavePageResult {
-    SUCCESS,
-    LOADING_FAILURE,
-    LOADING_CANCELED,
-    FOREGROUND_CANCELED,
-    SAVE_FAILED,
-    EXPIRED,
-    RETRY_COUNT_EXCEEDED,
-    START_COUNT_EXCEEDED,
-    REMOVED,
+    SUCCESS = 0,
+    LOADING_FAILURE = 1,
+    LOADING_CANCELED = 2,
+    FOREGROUND_CANCELED = 3,
+    SAVE_FAILED = 4,
+    EXPIRED = 5,
+    RETRY_COUNT_EXCEEDED = 6,
+    START_COUNT_EXCEEDED = 7,
+    REMOVED = 8,
+    // NOTE: insert new values above this line and update histogram enum too.
+    STATUS_COUNT
   };
 
   virtual ~RequestNotifier() = default;

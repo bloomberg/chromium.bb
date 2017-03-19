@@ -670,6 +670,9 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestSucceeded) {
   // Check that the observer got the notification that we succeeded, and that
   // the request got removed from the queue.
   EXPECT_TRUE(observer().completed_called());
+  histograms().ExpectBucketCount(
+      "OfflinePages.Background.FinalSavePageResult.bookmark", 0 /* SUCCESS */,
+      1);
   EXPECT_EQ(RequestCoordinator::BackgroundSavePageResult::SUCCESS,
             observer().last_status());
 }
@@ -739,6 +742,9 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestFailed) {
   // subsequent notification that the request was removed) since we exceeded
   // retry count.
   EXPECT_TRUE(observer().completed_called());
+  histograms().ExpectBucketCount(
+      "OfflinePages.Background.FinalSavePageResult.bookmark",
+      6 /* RETRY_COUNT_EXCEEDED */, 1);
   EXPECT_EQ(RequestCoordinator::BackgroundSavePageResult::RETRY_COUNT_EXCEEDED,
             observer().last_status());
 }

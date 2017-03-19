@@ -44,6 +44,23 @@ class OfflinerData : public content::WebContentsUserData<OfflinerData> {
   BackgroundLoaderOffliner* offliner_;
 };
 
+std::string AddHistogramSuffix(const ClientId& client_id,
+                               const char* histogram_name) {
+  if (client_id.name_space.empty()) {
+    NOTREACHED();
+    return histogram_name;
+  }
+  std::string adjusted_histogram_name(histogram_name);
+  adjusted_histogram_name += "." + client_id.name_space;
+  return adjusted_histogram_name;
+}
+
+void RecordErrorCauseUMA(const ClientId& client_id, net::Error error_code) {
+  UMA_HISTOGRAM_SPARSE_SLOWLY(
+      AddHistogramSuffix(client_id,
+                         "OfflinePages.Background.BackgroundLoadingFailedCode"),
+      std::abs(error_code));
+}
 }  // namespace
 
 BackgroundLoaderOffliner::BackgroundLoaderOffliner(
@@ -231,7 +248,8 @@ void BackgroundLoaderOffliner::DidFinishNavigation(
   // If there was an error of any kind (certificate, client, DNS, etc),
   // Mark as error page. Resetting here causes RecordNavigationMetrics to crash.
   if (navigation_handle->IsErrorPage()) {
-    // TODO(chili): we need to UMA this.
+    RecordErrorCauseUMA(pending_request_->client_id(),
+                        navigation_handle->GetNetErrorCode());
     switch (navigation_handle->GetNetErrorCode()) {
       case net::ERR_ACCESS_DENIED:
       case net::ERR_ADDRESS_INVALID:
