@@ -10,6 +10,8 @@
 #include "content/browser/background_fetch/background_fetch_request_info.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/public/browser/download_interrupt_reasons.h"
+#include "content/public/browser/download_item.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -70,21 +72,35 @@ TEST_F(BackgroundFetchDataManagerTest, AddRequest) {
     const BackgroundFetchRequestInfo& request_info =
         job_data->GetNextBackgroundFetchRequestInfo();
     EXPECT_EQ(request_info.tag(), kTag);
+    EXPECT_EQ(request_info.state(),
+              DownloadItem::DownloadState::MAX_DOWNLOAD_STATE);
+    EXPECT_EQ(request_info.interrupt_reason(),
+              DownloadInterruptReason::DOWNLOAD_INTERRUPT_REASON_NONE);
   }
 
   // At this point, all the fetches have been started, but none finished.
   EXPECT_FALSE(job_data->HasRequestsRemaining());
   EXPECT_FALSE(job_data->IsComplete());
 
-  // Complete all buy one of the fetch requests.
+  // Complete all but one of the fetch requests.
   for (int i = 0; i < 9; i++) {
-    EXPECT_FALSE(
-        job_data->BackgroundFetchRequestInfoComplete(request_guids[i]));
+    EXPECT_FALSE(job_data->UpdateBackgroundFetchRequestState(
+        request_guids[i], DownloadItem::DownloadState::COMPLETE,
+        DownloadInterruptReason::DOWNLOAD_INTERRUPT_REASON_NONE));
     EXPECT_FALSE(job_data->IsComplete());
   }
 
+  // Set the state of the last task to be interrupted. This should not complete
+  // the job.
+  EXPECT_FALSE(job_data->UpdateBackgroundFetchRequestState(
+      request_guids[9], DownloadItem::DownloadState::INTERRUPTED,
+      DownloadInterruptReason::DOWNLOAD_INTERRUPT_REASON_USER_SHUTDOWN));
+  EXPECT_FALSE(job_data->IsComplete());
+
   // Complete the final fetch request.
-  EXPECT_FALSE(job_data->BackgroundFetchRequestInfoComplete(request_guids[9]));
+  EXPECT_FALSE(job_data->UpdateBackgroundFetchRequestState(
+      request_guids[9], DownloadItem::DownloadState::COMPLETE,
+      DownloadInterruptReason::DOWNLOAD_INTERRUPT_REASON_NONE));
   EXPECT_TRUE(job_data->IsComplete());
 }
 

@@ -15,18 +15,29 @@ BackgroundFetchJobData::BackgroundFetchJobData(
 
 BackgroundFetchJobData::~BackgroundFetchJobData() {}
 
-// TODO(harkness): Provide more detail about status and where the returned data
-// is now available.
-bool BackgroundFetchJobData::BackgroundFetchRequestInfoComplete(
-    const std::string& fetch_guid) {
+bool BackgroundFetchJobData::UpdateBackgroundFetchRequestState(
+    const std::string& fetch_guid,
+    DownloadItem::DownloadState state,
+    DownloadInterruptReason interrupt_reason) {
   // Make sure that the request was expected to be in-progress.
   auto index_iter = request_info_index_.find(fetch_guid);
   DCHECK(index_iter != request_info_index_.end());
   DCHECK_EQ(fetch_guid, request_infos_[index_iter->second].guid());
 
-  // Set the request as complete and delete it from the in-progress index.
-  request_infos_[index_iter->second].set_complete(true);
-  request_info_index_.erase(index_iter);
+  // Set the state of the request and the interrupt reason.
+  request_infos_[index_iter->second].set_state(state);
+  request_infos_[index_iter->second].set_interrupt_reason(interrupt_reason);
+
+  // If the new state is complete or cancelled, remove the in-progress request.
+  switch (state) {
+    case DownloadItem::DownloadState::COMPLETE:
+    case DownloadItem::DownloadState::CANCELLED:
+      request_info_index_.erase(index_iter);
+    case DownloadItem::DownloadState::IN_PROGRESS:
+    case DownloadItem::DownloadState::INTERRUPTED:
+    case DownloadItem::DownloadState::MAX_DOWNLOAD_STATE:
+      break;
+  }
 
   // Return a boolean indicating whether there are more requests to be
   // processed.
@@ -39,7 +50,8 @@ BackgroundFetchJobData::GetNextBackgroundFetchRequestInfo() {
 
   const BackgroundFetchRequestInfo& next_request =
       request_infos_[next_request_info_];
-  DCHECK(!next_request.complete());
+  DCHECK_EQ(next_request.state(),
+            DownloadItem::DownloadState::MAX_DOWNLOAD_STATE);
   request_info_index_[next_request.guid()] = next_request_info_++;
 
   return next_request;

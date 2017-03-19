@@ -22,8 +22,9 @@ BackgroundFetchRequestInfo::BackgroundFetchRequestInfo(
     : guid_(request.guid_),
       url_(request.url_),
       tag_(request.tag_),
-      complete_(request.complete_),
-      download_guid_(request.download_guid_) {}
+      download_guid_(request.download_guid_),
+      state_(request.state_),
+      interrupt_reason_(request.interrupt_reason_) {}
 
 BackgroundFetchRequestInfo::~BackgroundFetchRequestInfo() = default;
 

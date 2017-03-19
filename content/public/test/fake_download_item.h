@@ -66,6 +66,9 @@ class FakeDownloadItem : public DownloadItem {
   void SetOriginalUrl(const GURL& url);
   const GURL& GetOriginalUrl() const override;
 
+  void SetLastReason(DownloadInterruptReason last_reason);
+  DownloadInterruptReason GetLastReason() const override;
+
   // The methods below are not supported and are not expected to be called.
   void ValidateDangerousDownload() override;
   void StealDangerousDownload(bool delete_file_afterward,
@@ -76,7 +79,6 @@ class FakeDownloadItem : public DownloadItem {
   void Remove() override;
   void OpenDownload() override;
   void ShowDownloadInShell() override;
-  DownloadInterruptReason GetLastReason() const override;
   bool IsPaused() const override;
   bool IsTemporary() const override;
   bool CanResume() const override;
@@ -129,16 +131,20 @@ class FakeDownloadItem : public DownloadItem {
 
  private:
   base::ObserverList<Observer> observers_;
-  uint32_t id_;
+  uint32_t id_ = 0;
   std::string guid_;
   GURL url_;
   base::FilePath file_path_;
-  bool is_file_externally_removed_;
+  bool is_file_externally_removed_ = false;
   base::Time start_time_;
   base::Time end_time_;
-  DownloadState download_state_;
+  // MAX_DOWNLOAD_STATE is used as the uninitialized state.
+  DownloadState download_state_ =
+      DownloadItem::DownloadState::MAX_DOWNLOAD_STATE;
   std::string mime_type_;
   GURL original_url_;
+  DownloadInterruptReason last_reason_ =
+      DownloadInterruptReason::DOWNLOAD_INTERRUPT_REASON_NONE;
 
   // The members below are to be returned by methods, which return by reference.
   std::string dummy_string;

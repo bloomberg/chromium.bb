@@ -8,6 +8,8 @@
 #include <vector>
 
 #include "content/common/content_export.h"
+#include "content/public/browser/download_interrupt_reasons.h"
+#include "content/public/browser/download_item.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -26,20 +28,28 @@ class CONTENT_EXPORT BackgroundFetchRequestInfo {
   const GURL& url() const { return url_; }
   const std::string& tag() const { return tag_; }
 
-  bool complete() const { return complete_; }
-  void set_complete(bool complete) { complete_ = complete; }
+  DownloadItem::DownloadState state() const { return state_; }
+  void set_state(DownloadItem::DownloadState state) { state_ = state; }
 
   const std::string& download_guid() const { return download_guid_; }
   void set_download_guid(const std::string& download_guid) {
     download_guid_ = download_guid;
   }
 
+  DownloadInterruptReason interrupt_reason() const { return interrupt_reason_; }
+  void set_interrupt_reason(DownloadInterruptReason reason) {
+    interrupt_reason_ = reason;
+  }
+
  private:
   std::string guid_;
   GURL url_;
   std::string tag_;
-  bool complete_ = false;
   std::string download_guid_;
+  DownloadItem::DownloadState state_ =
+      DownloadItem::DownloadState::MAX_DOWNLOAD_STATE;
+  DownloadInterruptReason interrupt_reason_ =
+      DownloadInterruptReason::DOWNLOAD_INTERRUPT_REASON_NONE;
 };
 
 using BackgroundFetchRequestInfos = std::vector<BackgroundFetchRequestInfo>;

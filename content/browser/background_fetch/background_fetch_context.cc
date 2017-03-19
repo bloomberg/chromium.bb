@@ -50,6 +50,8 @@ void BackgroundFetchContext::ShutdownOnIO() {
   // any status to the DataManager.
   for (auto& job : job_map_)
     job.second->Shutdown();
+
+  job_map_.clear();
 }
 
 void BackgroundFetchContext::CreateRequest(
@@ -68,8 +70,19 @@ void BackgroundFetchContext::CreateRequest(
     // the JobData to get information about individual requests for the job.
     job_map_[job_info.guid()] = base::MakeUnique<BackgroundFetchJobController>(
         job_info.guid(), browser_context_, storage_partition_,
-        std::move(job_data));
+        std::move(job_data),
+        base::BindOnce(&BackgroundFetchContext::DidCompleteJob, this,
+                       job_info.guid()));
   }
+}
+
+void BackgroundFetchContext::DidCompleteJob(const std::string& job_guid) {
+  DCHECK(job_map_.find(job_guid) != job_map_.end());
+
+  job_map_.erase(job_guid);
+
+  // TODO(harkness): Once the caller receives the message, inform the
+  // DataManager that it can clean up the pending job.
 }
 
 }  // namespace content

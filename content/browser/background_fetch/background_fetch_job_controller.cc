@@ -21,10 +21,12 @@ BackgroundFetchJobController::BackgroundFetchJobController(
     const std::string& job_guid,
     BrowserContext* browser_context,
     StoragePartition* storage_partition,
-    std::unique_ptr<BackgroundFetchJobData> job_data)
+    std::unique_ptr<BackgroundFetchJobData> job_data,
+    base::OnceClosure completed_closure)
     : browser_context_(browser_context),
       storage_partition_(storage_partition),
       job_data_(std::move(job_data)),
+      completed_closure_(std::move(completed_closure)),
       weak_ptr_factory_(this) {}
 
 BackgroundFetchJobController::~BackgroundFetchJobController() = default;
@@ -66,26 +68,30 @@ void BackgroundFetchJobController::DownloadStarted(
   item->AddObserver(this);
   download_guid_map_[item->GetGuid()] = request_guid;
   job_data_->SetRequestDownloadGuid(request_guid, item->GetGuid());
+
+  // TODO(harkness): If DownloadStarted is called with a real interrupt reason,
+  // record that and don't mark it as in-progress.
 }
 
 void BackgroundFetchJobController::OnDownloadUpdated(DownloadItem* item) {
   DCHECK(download_guid_map_.find(item->GetGuid()) != download_guid_map_.end());
 
-  bool requests_remaining = false;
+  // Update the state of the request on the JobData. If the state is a final
+  // state, this will also update the complete status of the JobData.
+  bool requests_remaining = job_data_->UpdateBackgroundFetchRequestState(
+      download_guid_map_[item->GetGuid()], item->GetState(),
+      item->GetLastReason());
+
   switch (item->GetState()) {
     case DownloadItem::DownloadState::CANCELLED:
-    // TODO(harkness): Expand the "complete" flag on the RequestInfo to
-    // include error states.
     case DownloadItem::DownloadState::COMPLETE:
-      requests_remaining = job_data_->BackgroundFetchRequestInfoComplete(
-          download_guid_map_[item->GetGuid()]);
       // TODO(harkness): Tell the notification service to update the download
       // notification.
 
       if (requests_remaining) {
         ProcessRequest(job_data_->GetNextBackgroundFetchRequestInfo());
       } else if (job_data_->IsComplete()) {
-        // TODO(harkness): Return the data to the context.
+        std::move(completed_closure_).Run();
       }
       break;
     case DownloadItem::DownloadState::INTERRUPTED:

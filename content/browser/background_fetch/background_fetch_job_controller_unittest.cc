@@ -93,8 +93,12 @@ class BackgroundFetchJobControllerTest : public ::testing::Test {
     job_controller_ = base::MakeUnique<BackgroundFetchJobController>(
         kJobGuid, &browser_context_,
         BrowserContext::GetDefaultStoragePartition(&browser_context_),
-        std::move(job_data));
+        std::move(job_data),
+        base::BindOnce(&BackgroundFetchJobControllerTest::DidCompleteJob,
+                       base::Unretained(this)));
   }
+
+  void DidCompleteJob() { did_complete_job_ = true; }
 
   void StartProcessing() {
     base::RunLoop run_loop;
@@ -119,7 +123,10 @@ class BackgroundFetchJobControllerTest : public ::testing::Test {
 
   DownloadItem::Observer* ItemObserver() const { return job_controller_.get(); }
 
+  bool did_complete_job() const { return did_complete_job_; }
+
  private:
+  bool did_complete_job_ = false;
   TestBrowserThreadBundle thread_bundle_;
   TestBrowserContext browser_context_;
   std::unique_ptr<BackgroundFetchJobController> job_controller_;
@@ -154,12 +161,15 @@ TEST_F(BackgroundFetchJobControllerTest, SingleRequestJob) {
   // Update the observer with no actual change.
   ItemObserver()->OnDownloadUpdated(item);
   EXPECT_FALSE(job_data->IsComplete());
+  EXPECT_FALSE(did_complete_job());
 
   // Update the item to be completed then update the observer. The JobController
   // should update the JobData that the request is complete.
   item->SetState(DownloadItem::DownloadState::COMPLETE);
   ItemObserver()->OnDownloadUpdated(item);
   EXPECT_TRUE(job_data->IsComplete());
+
+  EXPECT_TRUE(did_complete_job());
 }
 
 TEST_F(BackgroundFetchJobControllerTest, MultipleRequestJob) {
@@ -203,6 +213,7 @@ TEST_F(BackgroundFetchJobControllerTest, MultipleRequestJob) {
     EXPECT_FALSE(job_data->IsComplete());
   }
   EXPECT_FALSE(job_data->HasRequestsRemaining());
+  EXPECT_FALSE(did_complete_job());
 
   // Finally, update the last request to be complete. The JobController should
   // see that there are no more requests and mark the job as done.
@@ -211,6 +222,8 @@ TEST_F(BackgroundFetchJobControllerTest, MultipleRequestJob) {
   item->SetState(DownloadItem::DownloadState::COMPLETE);
   ItemObserver()->OnDownloadUpdated(item);
   EXPECT_TRUE(job_data->IsComplete());
+
+  EXPECT_TRUE(did_complete_job());
 }
 
 }  // namespace content

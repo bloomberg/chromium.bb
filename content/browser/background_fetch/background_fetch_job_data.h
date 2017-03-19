@@ -11,6 +11,8 @@
 #include "base/macros.h"
 #include "content/browser/background_fetch/background_fetch_request_info.h"
 #include "content/common/content_export.h"
+#include "content/public/browser/download_interrupt_reasons.h"
+#include "content/public/browser/download_item.h"
 #include "url/origin.h"
 
 namespace content {
@@ -24,9 +26,12 @@ class CONTENT_EXPORT BackgroundFetchJobData {
   ~BackgroundFetchJobData();
 
   // Called by the JobController to inform the JobData that the given fetch
-  // has completed. The JobData returns a boolean indicating whether there
+  // has been updated. The JobData returns a boolean indicating whether there
   // are more requests to process.
-  bool BackgroundFetchRequestInfoComplete(const std::string& fetch_guid);
+  bool UpdateBackgroundFetchRequestState(
+      const std::string& fetch_guid,
+      DownloadItem::DownloadState state,
+      DownloadInterruptReason interrupt_reason);
 
   // Called by the JobController to get a BackgroundFetchRequestInfo to
   // process.

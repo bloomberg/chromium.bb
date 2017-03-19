@@ -58,6 +58,9 @@ class CONTENT_EXPORT BackgroundFetchContext
   void CreateRequest(const BackgroundFetchJobInfo& job_info,
                      std::vector<BackgroundFetchRequestInfo>& request_infos);
 
+  // Callback for the JobController when the job is complete.
+  void DidCompleteJob(const std::string& job_guid);
+
   void ShutdownOnIO();
 
   // |this| is owned by the BrowserContext via the StoragePartition.

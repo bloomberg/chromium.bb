@@ -9,6 +9,7 @@
 #include <string>
 #include <unordered_map>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
@@ -27,11 +28,11 @@ class StoragePartition;
 class CONTENT_EXPORT BackgroundFetchJobController
     : public DownloadItem::Observer {
  public:
-  BackgroundFetchJobController(
-      const std::string& job_guid,
-      BrowserContext* browser_context,
-      StoragePartition* storage_partition,
-      std::unique_ptr<BackgroundFetchJobData> job_data);
+  BackgroundFetchJobController(const std::string& job_guid,
+                               BrowserContext* browser_context,
+                               StoragePartition* storage_partition,
+                               std::unique_ptr<BackgroundFetchJobData> job_data,
+                               base::OnceClosure completed_closure);
   ~BackgroundFetchJobController() override;
 
   // Start processing on a batch of requests. Some of these may already be in
@@ -66,6 +67,9 @@ class CONTENT_EXPORT BackgroundFetchJobController
 
   // The JobData which talks to the DataManager for this job_guid.
   std::unique_ptr<BackgroundFetchJobData> job_data_;
+
+  // Callback for when all fetches have been completed.
+  base::OnceClosure completed_closure_;
 
   // Map from the GUID assigned by the DownloadManager to the request_guid.
   std::unordered_map<std::string, std::string> download_guid_map_;

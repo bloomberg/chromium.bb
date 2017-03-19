@@ -69,6 +69,14 @@ const GURL& FakeDownloadItem::GetURL() const {
   return url_;
 }
 
+void FakeDownloadItem::SetLastReason(DownloadInterruptReason last_reason) {
+  last_reason_ = last_reason;
+}
+
+DownloadInterruptReason FakeDownloadItem::GetLastReason() const {
+  return last_reason_;
+}
+
 void FakeDownloadItem::SetTargetFilePath(const base::FilePath& file_path) {
   file_path_ = file_path;
 }
@@ -160,11 +168,6 @@ void FakeDownloadItem::OpenDownload() {
 
 void FakeDownloadItem::ShowDownloadInShell() {
   NOTREACHED();
-}
-
-DownloadInterruptReason FakeDownloadItem::GetLastReason() const {
-  NOTREACHED();
-  return DownloadInterruptReason();
 }
 
 bool FakeDownloadItem::IsPaused() const {
