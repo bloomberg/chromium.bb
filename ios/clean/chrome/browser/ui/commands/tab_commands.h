@@ -12,15 +12,14 @@
 // Command protocol for commands relating to tabs.
 // (Commands are for communicating into or within the coordinator layer).
 @protocol TabCommands
-// Display the tab corresponding to |indexPath|. The receiver determines how
-// this correspondence relates to the tab model(s) it knows about.
-- (void)showTabAtIndexPath:(NSIndexPath*)indexPath;
+// Display the tab corresponding to |index|.
+- (void)showTabAtIndex:(int)index;
 
-// Remove tab from the tab model(s) the receiver knows about.
-- (void)closeTabAtIndexPath:(NSIndexPath*)indexPath;
+// Remove tab corresponding to |index|.
+- (void)closeTabAtIndex:(int)index;
 
-// Create new tab in a tab model the receiver knows about.
-- (void)createNewTabAtIndexPath:(NSIndexPath*)indexPath;
+// Create new tab and display it.
+- (void)createAndShowNewTab;
 @end
 
 #endif  // IOS_CLEAN_CHROME_BROWSER_UI_COMMANDS_TAB_COMMANDS_H_

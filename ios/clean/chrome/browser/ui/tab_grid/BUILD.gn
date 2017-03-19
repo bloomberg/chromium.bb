@@ -6,6 +6,8 @@ source_set("tab_grid") {
   sources = [
     "tab_grid_coordinator.h",
     "tab_grid_coordinator.mm",
+    "tab_grid_mediator.h",
+    "tab_grid_mediator.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -33,6 +35,8 @@ source_set("tab_grid_ui") {
     "mdc_floating_button+cr_tab_grid.mm",
     "tab_grid_collection_view_layout.h",
     "tab_grid_collection_view_layout.mm",
+    "tab_grid_consumer.h",
+    "tab_grid_data_source.h",
     "tab_grid_tab_cell.h",
     "tab_grid_tab_cell.mm",
     "tab_grid_toolbar.h",

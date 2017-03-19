@@ -18,6 +18,7 @@
 #import "ios/clean/chrome/browser/ui/commands/tab_grid_commands.h"
 #import "ios/clean/chrome/browser/ui/tab_grid/mdc_floating_button+cr_tab_grid.h"
 #import "ios/clean/chrome/browser/ui/tab_grid/tab_grid_collection_view_layout.h"
+#import "ios/clean/chrome/browser/ui/tab_grid/tab_grid_data_source.h"
 #import "ios/clean/chrome/browser/ui/tab_grid/tab_grid_tab_cell.h"
 #import "ios/clean/chrome/browser/ui/tab_grid/tab_grid_toolbar.h"
 
@@ -114,15 +115,7 @@
 
 - (NSInteger)collectionView:(UICollectionView*)collectionView
      numberOfItemsInSection:(NSInteger)section {
-  int items = [self.dataSource numberOfTabsInTabGrid];
-  // HACK: Do not make showing noTabsOverlay a side effect of the dataSource
-  // callback.
-  if (items) {
-    [self removeNoTabsOverlay];
-  } else {
-    [self showNoTabsOverlay];
-  }
-  return items;
+  return [self.dataSource numberOfTabsInTabGrid];
 }
 
 - (UICollectionViewCell*)collectionView:(UICollectionView*)collectionView
@@ -173,21 +166,7 @@
 }
 
 - (void)createNewTab:(id)sender {
-  NSInteger index = [self.grid numberOfItemsInSection:0];
-  NSIndexPath* indexPath = [NSIndexPath indexPathForItem:index inSection:0];
-  auto updateBlock = ^{
-    // Unselect current selected item.
-    NSIndexPath* selectedIndexPath =
-        [NSIndexPath indexPathForItem:[self.dataSource indexOfActiveTab]
-                            inSection:0];
-    [self.grid reloadItemsAtIndexPaths:@[ selectedIndexPath ]];
-
-    // Create and show new tab.
-    [self.tabCommandHandler createNewTabAtIndexPath:indexPath];
-    [self.tabCommandHandler showTabAtIndexPath:indexPath];
-    [self.grid insertItemsAtIndexPaths:@[ indexPath ]];
-  };
-  [self.grid performBatchUpdates:updateBlock completion:nil];
+  [self.tabCommandHandler createAndShowNewTab];
 }
 
 #pragma mark - SessionCellDelegate
@@ -198,33 +177,40 @@
 }
 
 - (void)cellPressed:(UICollectionViewCell*)cell {
-  int selectedIndex = [self.dataSource indexOfActiveTab];
-  NSIndexPath* newSelectedIndexPath = [self.grid indexPathForCell:cell];
-  [self.tabCommandHandler showTabAtIndexPath:newSelectedIndexPath];
-  if (selectedIndex == kTabGridDataSourceInvalidIndex) {
-    [self.grid reloadItemsAtIndexPaths:@[ newSelectedIndexPath ]];
-  } else if (newSelectedIndexPath.item != selectedIndex) {
-    NSIndexPath* selectedIndexPath =
-        [NSIndexPath indexPathForItem:selectedIndex inSection:0];
-    [self.grid
-        reloadItemsAtIndexPaths:@[ selectedIndexPath, newSelectedIndexPath ]];
-  }
+  NSInteger item = [[self.grid indexPathForCell:cell] item];
+  DCHECK_LE(item, INT_MAX);
+  int index = static_cast<int>(item);
+  [self.tabCommandHandler showTabAtIndex:index];
 }
 
 - (void)deleteButtonPressedForCell:(UICollectionViewCell*)cell {
-  auto updateBlock = ^{
-    NSIndexPath* indexPath = [self.grid indexPathForCell:cell];
-    [self.tabCommandHandler closeTabAtIndexPath:indexPath];
-    [self.grid deleteItemsAtIndexPaths:@[ indexPath ]];
-  };
-  [self.grid performBatchUpdates:updateBlock completion:nil];
+  NSInteger item = [[self.grid indexPathForCell:cell] item];
+  DCHECK_LE(item, INT_MAX);
+  int index = static_cast<int>(item);
+  [self.tabCommandHandler closeTabAtIndex:index];
 }
 
-#pragma mark - Private
+#pragma mark - TabGridConsumer methods
 
-// Shows an overlay covering the entire tab grid that informs the user that
-// there are no tabs.
-- (void)showNoTabsOverlay {
+- (void)insertTabGridItemAtIndex:(int)index {
+  [self.grid insertItemsAtIndexPaths:@[ [NSIndexPath indexPathForItem:index
+                                                            inSection:0] ]];
+}
+
+- (void)deleteTabGridItemAtIndex:(int)index {
+  [self.grid deleteItemsAtIndexPaths:@[ [NSIndexPath indexPathForItem:index
+                                                            inSection:0] ]];
+}
+
+- (void)reloadTabGridItemsAtIndexes:(NSIndexSet*)indexes {
+  NSMutableArray<NSIndexPath*>* indexPaths = [[NSMutableArray alloc] init];
+  [indexes enumerateIndexesUsingBlock:^(NSUInteger index, BOOL* _Nonnull stop) {
+    [indexPaths addObject:[NSIndexPath indexPathForItem:index inSection:0]];
+  }];
+  [self.grid reloadItemsAtIndexPaths:indexPaths];
+}
+
+- (void)addNoTabsOverlay {
   // PLACEHOLDER: The new tab grid will have a completely different zero tab
   // overlay from the tab switcher. Also, the overlay will be above the recent
   // tabs section.
@@ -239,7 +225,6 @@
   self.noTabsOverlay = overlayView;
 }
 
-// Removes the noTabsOverlay covering the entire tab grid.
 - (void)removeNoTabsOverlay {
   [self.noTabsOverlay removeFromSuperview];
 }

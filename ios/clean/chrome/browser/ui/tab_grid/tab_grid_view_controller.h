@@ -12,35 +12,17 @@
 #import <UIKit/UIKit.h>
 
 #import "ios/clean/chrome/browser/ui/animators/zoom_transition_delegate.h"
-
-const int kTabGridDataSourceInvalidIndex = -1;
+#import "ios/clean/chrome/browser/ui/tab_grid/tab_grid_consumer.h"
 
 @protocol SettingsCommands;
 @protocol TabCommands;
 @protocol TabGridCommands;
-
-// The data source for tab grid UI.
-// Conceptually the tab grid represents a group of WebState objects (which
-// are ultimately the model-layer representation of a browser tab). The data
-// source must be able to map between indices and WebStates.
-@protocol TabGridDataSource<NSObject>
-
-// The number of tabs to be displayed in the grid.
-- (int)numberOfTabsInTabGrid;
-
-// Title for the tab at |index| in the grid.
-- (NSString*)titleAtIndex:(int)index;
-
-// Index for the active tab or kTabGridDataSourceInvalidIndex if there is no
-// active tab.
-- (int)indexOfActiveTab;
-
-@end
+@protocol TabGridDataSource;
 
 // Controller for a scrolling view displaying square cells that represent
 // the user's open tabs.
-@interface TabGridViewController : UIViewController<ZoomTransitionDelegate>
-
+@interface TabGridViewController
+    : UIViewController<TabGridConsumer, ZoomTransitionDelegate>
 // Data source for the tabs to be displayed.
 @property(nonatomic, weak) id<TabGridDataSource> dataSource;
 // Command handlers.

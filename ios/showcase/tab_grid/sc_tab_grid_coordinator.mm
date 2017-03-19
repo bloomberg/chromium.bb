@@ -6,6 +6,7 @@
 
 #import "base/format_macros.h"
 #import "ios/clean/chrome/browser/ui/commands/tab_commands.h"
+#import "ios/clean/chrome/browser/ui/tab_grid/tab_grid_data_source.h"
 #import "ios/clean/chrome/browser/ui/tab_grid/tab_grid_view_controller.h"
 #import "ios/showcase/common/protocol_alerter.h"
 

@@ -19,6 +19,7 @@
 #import "ios/clean/chrome/browser/ui/commands/tab_grid_commands.h"
 #import "ios/clean/chrome/browser/ui/settings/settings_coordinator.h"
 #import "ios/clean/chrome/browser/ui/tab/tab_coordinator.h"
+#import "ios/clean/chrome/browser/ui/tab_grid/tab_grid_mediator.h"
 #import "ios/clean/chrome/browser/ui/tab_grid/tab_grid_view_controller.h"
 #import "ios/shared/chrome/browser/coordinator_context/coordinator_context.h"
 #import "ios/shared/chrome/browser/tabs/web_state_list.h"
@@ -31,18 +32,17 @@
 #error "This file requires ARC support."
 #endif
 
-@interface TabGridCoordinator ()<TabGridDataSource,
-                                 SettingsCommands,
-                                 TabCommands,
-                                 TabGridCommands>
+@interface TabGridCoordinator ()<SettingsCommands, TabCommands, TabGridCommands>
 @property(nonatomic, strong) TabGridViewController* viewController;
 @property(nonatomic, weak) SettingsCoordinator* settingsCoordinator;
 @property(nonatomic, readonly) WebStateList& webStateList;
+@property(nonatomic, strong) TabGridMediator* mediator;
 @end
 
 @implementation TabGridCoordinator
 @synthesize viewController = _viewController;
 @synthesize settingsCoordinator = _settingsCoordinator;
+@synthesize mediator = _mediator;
 
 #pragma mark - Properties
 
@@ -65,11 +65,16 @@
 #pragma mark - BrowserCoordinator
 
 - (void)start {
+  self.mediator = [[TabGridMediator alloc] init];
+  self.mediator.webStateList = &self.webStateList;
+
   self.viewController = [[TabGridViewController alloc] init];
-  self.viewController.dataSource = self;
+  self.viewController.dataSource = self.mediator;
   self.viewController.settingsCommandHandler = self;
   self.viewController.tabCommandHandler = self;
   self.viewController.tabGridCommandHandler = self;
+
+  self.mediator.consumer = self.viewController;
 
   // |baseViewController| is nullable, so this is by design a no-op if it hasn't
   // been set. This may be true in a unit test, or if this coordinator is being
@@ -80,54 +85,33 @@
   [super start];
 }
 
-#pragma mark - TabGridDataSource
-
-- (int)numberOfTabsInTabGrid {
-  return self.webStateList.count();
-}
-
-- (NSString*)titleAtIndex:(int)index {
-  GURL url = self.webStateList.GetWebStateAt(index)->GetVisibleURL();
-  NSString* urlText = @"<New Tab>";
-  if (url.is_valid()) {
-    urlText = base::SysUTF8ToNSString(url.spec());
-  }
-  return urlText;
-}
-
-- (int)indexOfActiveTab {
-  return self.webStateList.active_index();
-}
-
 #pragma mark - TabCommands
 
-- (void)showTabAtIndexPath:(NSIndexPath*)indexPath {
-  TabCoordinator* tabCoordinator = [[TabCoordinator alloc] init];
-  DCHECK_LE(indexPath.item, INT_MAX);
-  int index = static_cast<int>(indexPath.item);
+- (void)showTabAtIndex:(int)index {
   self.webStateList.ActivateWebStateAt(index);
   // PLACEHOLDER: The tab coordinator should be able to get the active webState
   // on its own.
+  TabCoordinator* tabCoordinator = [[TabCoordinator alloc] init];
   tabCoordinator.webState = self.webStateList.GetWebStateAt(index);
-  tabCoordinator.presentationKey = indexPath;
+  tabCoordinator.presentationKey =
+      [NSIndexPath indexPathForItem:index inSection:0];
   [self addChildCoordinator:tabCoordinator];
   [tabCoordinator start];
 }
 
-- (void)closeTabAtIndexPath:(NSIndexPath*)indexPath {
-  DCHECK_LE(indexPath.item, INT_MAX);
-  int index = static_cast<int>(indexPath.item);
+- (void)closeTabAtIndex:(int)index {
   std::unique_ptr<web::WebState> closedWebState(
       self.webStateList.DetachWebStateAt(index));
 }
 
-- (void)createNewTabAtIndexPath:(NSIndexPath*)indexPath {
+- (void)createAndShowNewTab {
   web::WebState::CreateParams webStateCreateParams(
       self.browser->browser_state());
   std::unique_ptr<web::WebState> webState =
       web::WebState::Create(webStateCreateParams);
   self.webStateList.InsertWebState(self.webStateList.count(),
                                    webState.release(), nullptr);
+  [self showTabAtIndex:self.webStateList.count() - 1];
 }
 
 #pragma mark - TabGridCommands
@@ -170,9 +154,7 @@
   params.transition_type = ui::PAGE_TRANSITION_LINK;
   activeWebState->GetNavigationManager()->LoadURLWithParams(params);
   if (!self.children.count) {
-    [self
-        showTabAtIndexPath:[NSIndexPath indexPathForItem:[self indexOfActiveTab]
-                                               inSection:0]];
+    [self showTabAtIndex:self.webStateList.active_index()];
   }
 }
 
