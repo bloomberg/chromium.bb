@@ -232,10 +232,9 @@ AssociatedInterfaceRequest<Interface> MakeRequest(
   return request;
 }
 
-// Like |GetProxy|, but the interface is never associated with any other
-// interface. The returned request can be bound directly to the corresponding
-// associated interface implementation, without first passing it through a
-// message pipe endpoint.
+// Like MakeRequest() above, but it creates a dedicated message pipe. The
+// returned request can be bound directly to an implementation, without being
+// first passed through a message pipe endpoint.
 //
 // This function has two main uses:
 //
@@ -245,7 +244,7 @@ AssociatedInterfaceRequest<Interface> MakeRequest(
 //  * When discarding messages sent on an interface, which can be done by
 //    discarding the returned request.
 template <typename Interface>
-AssociatedInterfaceRequest<Interface> GetIsolatedProxy(
+AssociatedInterfaceRequest<Interface> MakeIsolatedRequest(
     AssociatedInterfacePtr<Interface>* ptr) {
   MessagePipe pipe;
   scoped_refptr<internal::MultiplexRouter> router0 =
@@ -269,15 +268,6 @@ AssociatedInterfaceRequest<Interface> GetIsolatedProxy(
   AssociatedInterfaceRequest<Interface> request;
   request.Bind(std::move(endpoint1));
   return request;
-}
-
-// Creates an associated interface proxy in its own AssociatedGroup.
-// TODO(yzshen): Rename GetIsolatedProxy() to MakeIsolatedRequest(), and change
-// all callsites of this function to directly use that.
-template <typename Interface>
-AssociatedInterfaceRequest<Interface> MakeRequestForTesting(
-    AssociatedInterfacePtr<Interface>* ptr) {
-  return GetIsolatedProxy(ptr);
 }
 
 }  // namespace mojo

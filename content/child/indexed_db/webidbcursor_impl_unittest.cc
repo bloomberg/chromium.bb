@@ -122,7 +122,7 @@ class WebIDBCursorImplTest : public testing::Test {
     null_key_.assignNull();
     indexed_db::mojom::CursorAssociatedPtr ptr;
     mock_cursor_ =
-        base::MakeUnique<MockCursorImpl>(mojo::MakeRequestForTesting(&ptr));
+        base::MakeUnique<MockCursorImpl>(mojo::MakeIsolatedRequest(&ptr));
     cursor_ = base::MakeUnique<WebIDBCursorImpl>(
         ptr.PassInterface(), 1, base::ThreadTaskRunnerHandle::Get());
   }

@@ -43,7 +43,7 @@ class SearchBoxClientFactoryImpl
     DCHECK(web_contents);
     DCHECK(binding);
     // Before we are connected to a frame we throw away all messages.
-    mojo::GetIsolatedProxy(&search_box_);
+    mojo::MakeIsolatedRequest(&search_box_);
   }
 
   chrome::mojom::SearchBox* GetSearchBox() override {
