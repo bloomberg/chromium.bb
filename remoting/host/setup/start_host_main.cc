@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
+#include "base/task_scheduler/task_scheduler.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "net/url_request/url_fetcher.h"
@@ -129,6 +130,9 @@ int StartHostMain(int argc, char** argv) {
   logging::LoggingSettings settings;
   settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
   logging::InitLogging(settings);
+
+  const int kMaxBackgroundThreads = 5;
+  base::TaskScheduler::CreateAndSetSimpleTaskScheduler(kMaxBackgroundThreads);
 
   std::string host_name = command_line->GetSwitchValueASCII("name");
   std::string host_pin = command_line->GetSwitchValueASCII("pin");
