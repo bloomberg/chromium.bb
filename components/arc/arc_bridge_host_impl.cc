@@ -212,6 +212,12 @@ void ArcBridgeHostImpl::OnVideoInstanceReady(
   OnInstanceReady(arc_bridge_service_->video(), std::move(video_ptr));
 }
 
+void ArcBridgeHostImpl::OnVoiceInteractionFrameworkInstanceReady(
+    mojom::VoiceInteractionFrameworkInstancePtr framework_ptr) {
+  OnInstanceReady(arc_bridge_service_->voice_interaction_framework(),
+                  std::move(framework_ptr));
+}
+
 void ArcBridgeHostImpl::OnWallpaperInstanceReady(
     mojom::WallpaperInstancePtr wallpaper_ptr) {
   OnInstanceReady(arc_bridge_service_->wallpaper(), std::move(wallpaper_ptr));
