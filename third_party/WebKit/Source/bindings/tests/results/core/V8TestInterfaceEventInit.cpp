@@ -60,9 +60,15 @@ bool toV8TestInterfaceEventInit(const TestInterfaceEventInit& impl, v8::Local<v8
   if (!toV8EventInit(impl, dictionary, creationContext, isolate))
     return false;
 
+  v8::Local<v8::Value> stringMemberValue;
+  bool stringMemberHasValueOrDefault = false;
   if (impl.hasStringMember()) {
-    if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8AtomicString(isolate, "stringMember"), v8String(isolate, impl.stringMember()))))
-      return false;
+    stringMemberValue = v8String(isolate, impl.stringMember());
+    stringMemberHasValueOrDefault = true;
+  }
+  if (stringMemberHasValueOrDefault &&
+      !v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8AtomicString(isolate, "stringMember"), stringMemberValue))) {
+    return false;
   }
 
   return true;

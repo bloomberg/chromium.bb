@@ -52,9 +52,15 @@ v8::Local<v8::Value> TestPermissiveDictionary::toV8Impl(v8::Local<v8::Object> cr
 }
 
 bool toV8TestPermissiveDictionary(const TestPermissiveDictionary& impl, v8::Local<v8::Object> dictionary, v8::Local<v8::Object> creationContext, v8::Isolate* isolate) {
+  v8::Local<v8::Value> booleanMemberValue;
+  bool booleanMemberHasValueOrDefault = false;
   if (impl.hasBooleanMember()) {
-    if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8AtomicString(isolate, "booleanMember"), v8Boolean(impl.booleanMember(), isolate))))
-      return false;
+    booleanMemberValue = v8Boolean(impl.booleanMember(), isolate);
+    booleanMemberHasValueOrDefault = true;
+  }
+  if (booleanMemberHasValueOrDefault &&
+      !v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8AtomicString(isolate, "booleanMember"), booleanMemberValue))) {
+    return false;
   }
 
   return true;

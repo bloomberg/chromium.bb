@@ -100,24 +100,34 @@ bool toV8{{cpp_class}}(const {{cpp_class}}& impl, v8::Local<v8::Object> dictiona
 
   {% endif %}
   {% for member in members %}
+  v8::Local<v8::Value> {{member.name}}Value;
+  bool {{member.name}}HasValueOrDefault = false;
   if (impl.{{member.has_method_name}}()) {
     {% if member.is_object %}
     DCHECK(impl.{{member.getter_name}}().isObject());
     {% endif %}
-    if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8AtomicString(isolate, "{{member.name}}"), {{member.cpp_value_to_v8_value}})))
-      return false;
+    {{member.name}}Value = {{member.cpp_value_to_v8_value}};
+    {{member.name}}HasValueOrDefault = true;
   {% if member.v8_default_value %}
   } else {
-    if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8AtomicString(isolate, "{{member.name}}"), {{member.v8_default_value}})))
-      return false;
+    {{member.name}}Value = {{member.v8_default_value}};
+    {{member.name}}HasValueOrDefault = true;
   {% elif member.is_nullable %}
   } else {
-    if (!v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8AtomicString(isolate, "{{member.name}}"), v8::Null(isolate))))
-      return false;
+    {{member.name}}Value = v8::Null(isolate);
+    {{member.name}}HasValueOrDefault = true;
   {% elif member.is_required %}
   } else {
     NOTREACHED();
   {% endif %}
+  }
+  {# The HasValueOrDefault variable will be optimized out.
+     If there is a default value, the compiler will notice that all branches set it to true.
+     If there is not, then the compiler will inline this call into the only branch that sets it to true.
+     Either way, the code is efficient and the variable is completely elided. #}
+  if ({{member.name}}HasValueOrDefault &&
+      !v8CallBoolean(dictionary->CreateDataProperty(isolate->GetCurrentContext(), v8AtomicString(isolate, "{{member.name}}"), {{member.name}}Value))) {
+    return false;
   }
 
   {% endfor %}
