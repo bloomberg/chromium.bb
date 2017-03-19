@@ -32,9 +32,11 @@
 #define LocalWindowProxy_h
 
 #include "bindings/core/v8/DOMWrapperWorld.h"
+#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/WindowProxy.h"
 #include "core/frame/LocalFrame.h"
 #include "v8/include/v8.h"
+#include "wtf/Assertions.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/AtomicString.h"
 
@@ -52,6 +54,10 @@ class LocalWindowProxy final : public WindowProxy {
     return new LocalWindowProxy(isolate, frame, std::move(world));
   }
 
+  v8::Local<v8::Context> contextIfInitialized() const {
+    return m_scriptState ? m_scriptState->context() : v8::Local<v8::Context>();
+  }
+
   // Update document object of the frame.
   void updateDocument();
 
@@ -65,6 +71,7 @@ class LocalWindowProxy final : public WindowProxy {
  private:
   LocalWindowProxy(v8::Isolate*, LocalFrame&, RefPtr<DOMWrapperWorld>);
 
+  bool isLocal() const override { return true; }
   void initialize() override;
   void disposeContext(GlobalDetachmentBehavior) override;
 
@@ -95,7 +102,15 @@ class LocalWindowProxy final : public WindowProxy {
   void updateActivityLogger();
 
   LocalFrame* frame() const { return toLocalFrame(WindowProxy::frame()); }
+
+  RefPtr<ScriptState> m_scriptState;
 };
+
+DEFINE_TYPE_CASTS(LocalWindowProxy,
+                  WindowProxy,
+                  windowProxy,
+                  windowProxy->isLocal(),
+                  windowProxy.isLocal());
 
 }  // namespace blink
 

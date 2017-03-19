@@ -71,8 +71,8 @@ void WindowProxy::clearForNavigation() {
 
 v8::Local<v8::Object> WindowProxy::globalIfNotDetached() {
   if (m_lifecycle == Lifecycle::ContextInitialized) {
-    DCHECK(m_scriptState->contextIsValid());
-    DCHECK(m_globalProxy == m_scriptState->context()->Global());
+    DLOG_IF(FATAL, !m_isGlobalObjectAttached)
+        << "Context is initialized but global object is detached!";
     return m_globalProxy.newLocal(m_isolate);
   }
   return v8::Local<v8::Object>();

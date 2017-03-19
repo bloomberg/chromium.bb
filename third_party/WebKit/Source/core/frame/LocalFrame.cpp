@@ -508,6 +508,10 @@ void LocalFrame::documentAttached() {
     m_hasReceivedUserGesture = false;
 }
 
+LocalWindowProxy* LocalFrame::windowProxy(DOMWrapperWorld& world) {
+  return toLocalWindowProxy(Frame::windowProxy(world));
+}
+
 LocalDOMWindow* LocalFrame::domWindow() const {
   return toLocalDOMWindow(m_domWindow);
 }

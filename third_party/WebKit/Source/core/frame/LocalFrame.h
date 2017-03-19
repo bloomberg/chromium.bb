@@ -67,6 +67,7 @@ class IntSize;
 class LayoutView;
 class LayoutViewItem;
 class LocalDOMWindow;
+class LocalWindowProxy;
 class LocalFrameClient;
 class NavigationScheduler;
 class Node;
@@ -124,6 +125,10 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void detachChildren();
   void documentAttached();
 
+  // Note: these two functions are not virtual but intentionally shadow the
+  // corresponding method in the Frame base class to return the
+  // LocalFrame-specific subclass.
+  LocalWindowProxy* windowProxy(DOMWrapperWorld&);
   LocalDOMWindow* domWindow() const;
   void setDOMWindow(LocalDOMWindow*);
   FrameView* view() const;

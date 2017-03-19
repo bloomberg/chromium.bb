@@ -311,6 +311,8 @@ v8::Local<v8::Value> ScriptController::evaluateScriptInMainWorld(
       !frame()->document()->canExecuteScripts(AboutToExecuteScript))
     return v8::Local<v8::Value>();
 
+  // TODO(dcheng): Clean this up to not use ScriptState, to match
+  // executeScriptInIsolatedWorld.
   ScriptState* scriptState = ScriptState::forMainWorld(frame());
   if (!scriptState)
     return v8::Local<v8::Value>();
@@ -338,27 +340,30 @@ void ScriptController::executeScriptInIsolatedWorld(
   RefPtr<DOMWrapperWorld> world =
       DOMWrapperWorld::ensureIsolatedWorld(isolate(), worldID);
   LocalWindowProxy* isolatedWorldWindowProxy = windowProxy(*world);
-  ScriptState* scriptState = isolatedWorldWindowProxy->getScriptState();
-  if (!scriptState->contextIsValid())
-    return;
-  v8::Context::Scope scope(scriptState->context());
+  // TODO(dcheng): Context must always be initialized here, due to the call to
+  // windowProxy() on the previous line. Add a helper which makes that obvious?
+  v8::Local<v8::Context> context =
+      isolatedWorldWindowProxy->contextIfInitialized();
+  v8::Context::Scope scope(context);
   v8::Local<v8::Array> resultArray = v8::Array::New(isolate(), sources.size());
 
   for (size_t i = 0; i < sources.size(); ++i) {
     v8::Local<v8::Value> evaluationResult =
-        executeScriptAndReturnValue(scriptState->context(), sources[i]);
+        executeScriptAndReturnValue(context, sources[i]);
     if (evaluationResult.IsEmpty())
       evaluationResult =
           v8::Local<v8::Value>::New(isolate(), v8::Undefined(isolate()));
-    if (!v8CallBoolean(resultArray->CreateDataProperty(scriptState->context(),
-                                                       i, evaluationResult)))
+    bool didCreate;
+    if (!resultArray->CreateDataProperty(context, i, evaluationResult)
+             .To(&didCreate) ||
+        !didCreate)
       return;
   }
 
   if (results) {
     for (size_t i = 0; i < resultArray->Length(); ++i) {
       v8::Local<v8::Value> value;
-      if (!resultArray->Get(scriptState->context(), i).ToLocal(&value))
+      if (!resultArray->Get(context, i).ToLocal(&value))
         return;
       results->push_back(value);
     }

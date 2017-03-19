@@ -32,9 +32,11 @@
 #define RemoteWindowProxy_h
 
 #include "bindings/core/v8/DOMWrapperWorld.h"
+#include "bindings/core/v8/ScriptState.h"
 #include "bindings/core/v8/WindowProxy.h"
 #include "core/frame/RemoteFrame.h"
 #include "v8/include/v8.h"
+#include "wtf/RefPtr.h"
 
 namespace blink {
 
@@ -66,6 +68,8 @@ class RemoteWindowProxy final : public WindowProxy {
   // Associates the window wrapper and its prototype chain with the native
   // DOMWindow object. Also does some more Window-specific initialization.
   void setupWindowPrototypeChain();
+
+  RefPtr<ScriptState> m_scriptState;
 };
 
 }  // namespace blink

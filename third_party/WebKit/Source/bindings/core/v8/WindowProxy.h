@@ -33,7 +33,6 @@
 
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ScopedPersistent.h"
-#include "bindings/core/v8/ScriptState.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "v8/include/v8.h"
@@ -129,9 +128,6 @@ class WindowProxy : public GarbageCollectedFinalized<WindowProxy> {
 
   DECLARE_TRACE();
 
-  v8::Local<v8::Context> contextIfInitialized() const {
-    return m_scriptState ? m_scriptState->context() : v8::Local<v8::Context>();
-  }
   void initializeIfNeeded();
 
   void clearForClose();
@@ -144,6 +140,8 @@ class WindowProxy : public GarbageCollectedFinalized<WindowProxy> {
   // TODO(dcheng): Temporarily exposed to avoid include cycles. Remove the need
   // for this and remove this getter.
   DOMWrapperWorld& world() { return *m_world; }
+
+  virtual bool isLocal() const { return false; }
 
  protected:
   // TODO(dcheng): Remove this friend declaration once LocalWindowProxyManager
@@ -167,7 +165,6 @@ class WindowProxy : public GarbageCollectedFinalized<WindowProxy> {
 
   v8::Isolate* isolate() const { return m_isolate; }
   Frame* frame() const { return m_frame.get(); }
-  ScriptState* getScriptState() const { return m_scriptState.get(); }
 
 #if DCHECK_IS_ON()
   void didAttachGlobalObject() { m_isGlobalObjectAttached = true; }
@@ -182,9 +179,6 @@ class WindowProxy : public GarbageCollectedFinalized<WindowProxy> {
 #endif
 
  protected:
-  // TODO(dcheng): Move this to LocalWindowProxy once RemoteWindowProxy uses
-  // remote contexts.
-  RefPtr<ScriptState> m_scriptState;
   // TODO(dcheng): Consider making these private and using getters.
   const RefPtr<DOMWrapperWorld> m_world;
   ScopedPersistent<v8::Object> m_globalProxy;
