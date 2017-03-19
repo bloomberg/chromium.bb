@@ -1546,6 +1546,12 @@ TEST_F(SQLConnectionTest, GetAppropriateMmapSize) {
   ASSERT_TRUE(MetaTable::GetMmapStatus(&db(), &mmap_status));
   ASSERT_EQ(MetaTable::kMmapSuccess, mmap_status);
 
+  // Preload with partial progress of one page.  Should map everything.
+  ASSERT_TRUE(db().Execute("REPLACE INTO meta VALUES ('mmap_status', 1)"));
+  ASSERT_GT(db().GetAppropriateMmapSize(), kMmapAlot);
+  ASSERT_TRUE(MetaTable::GetMmapStatus(&db(), &mmap_status));
+  ASSERT_EQ(MetaTable::kMmapSuccess, mmap_status);
+
   // Failure status maps nothing.
   ASSERT_TRUE(db().Execute("REPLACE INTO meta VALUES ('mmap_status', -2)"));
   ASSERT_EQ(0UL, db().GetAppropriateMmapSize());
@@ -1593,12 +1599,19 @@ TEST_F(SQLConnectionTest, GetAppropriateMmapSizeAltStatus) {
   EXPECT_EQ(base::IntToString(MetaTable::kMmapSuccess),
             ExecuteWithResult(&db(), "SELECT * FROM MmapStatus"));
 
-  // Also maps everything when kMmapSuccess is in the view.
+  // Also maps everything when kMmapSuccess is already in the view.
   ASSERT_GT(db().GetAppropriateMmapSize(), kMmapAlot);
+
+  // Preload with partial progress of one page.  Should map everything.
+  ASSERT_TRUE(db().Execute("DROP VIEW MmapStatus"));
+  ASSERT_TRUE(db().Execute("CREATE VIEW MmapStatus (value) AS SELECT 1"));
+  ASSERT_GT(db().GetAppropriateMmapSize(), kMmapAlot);
+  EXPECT_EQ(base::IntToString(MetaTable::kMmapSuccess),
+            ExecuteWithResult(&db(), "SELECT * FROM MmapStatus"));
 
   // Failure status leads to nothing being mapped.
   ASSERT_TRUE(db().Execute("DROP VIEW MmapStatus"));
-  ASSERT_TRUE(db().Execute("CREATE VIEW MmapStatus AS SELECT -2"));
+  ASSERT_TRUE(db().Execute("CREATE VIEW MmapStatus (value) AS SELECT -2"));
   ASSERT_EQ(0UL, db().GetAppropriateMmapSize());
   EXPECT_EQ(base::IntToString(MetaTable::kMmapFailure),
             ExecuteWithResult(&db(), "SELECT * FROM MmapStatus"));
