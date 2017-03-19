@@ -205,6 +205,11 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // inherit
   struct InheritedData {
+    InheritedData()
+        : m_hasSimpleUnderline(false),
+          m_cursorStyle(static_cast<unsigned>(initialCursor())),
+          m_insideLink(static_cast<unsigned>(EInsideLink::kNotInsideLink)) {}
+
     bool operator==(const InheritedData& other) const {
       // Generated properties are compared in ComputedStyleBase
       return (m_hasSimpleUnderline == other.m_hasSimpleUnderline) &&
@@ -226,6 +231,16 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // don't inherit
   struct NonInheritedData {
+    NonInheritedData()
+        : m_effectiveDisplay(static_cast<unsigned>(initialDisplay())),
+          m_originalDisplay(static_cast<unsigned>(initialDisplay())),
+          m_verticalAlign(static_cast<unsigned>(initialVerticalAlign())),
+          m_hasViewportUnits(false),
+          m_styleType(PseudoIdNone),
+          m_pseudoBits(0),
+          m_emptyState(false),
+          m_hasRemUnits(false) {}
+
     // Compare computed styles, differences in inherited bits or other flags
     // should not cause an inequality.
     bool operator==(const NonInheritedData& other) const {
@@ -278,30 +293,9 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // !END SYNC!
 
-  // Only call inside the constructor. Generated properties in the base class
-  // are not initialized in this method.
-  void initializeBitDefaults() {
-    m_inheritedData.m_hasSimpleUnderline = false;
-    m_inheritedData.m_cursorStyle = static_cast<unsigned>(initialCursor());
-    m_inheritedData.m_insideLink =
-        static_cast<unsigned>(EInsideLink::kNotInsideLink);
-
-    m_nonInheritedData.m_effectiveDisplay =
-        m_nonInheritedData.m_originalDisplay =
-            static_cast<unsigned>(initialDisplay());
-    m_nonInheritedData.m_verticalAlign =
-        static_cast<unsigned>(initialVerticalAlign());
-    m_nonInheritedData.m_styleType = PseudoIdNone;
-    m_nonInheritedData.m_pseudoBits = 0;
-    m_nonInheritedData.m_emptyState = false;
-    m_nonInheritedData.m_hasViewportUnits = false;
-    m_nonInheritedData.m_hasRemUnits = false;
-  }
-
  private:
   // TODO(sashab): Move these private members to the bottom of ComputedStyle.
-  enum InitialStyleTag { InitialStyle };
-  ALWAYS_INLINE explicit ComputedStyle(InitialStyleTag);
+  ALWAYS_INLINE ComputedStyle();
   ALWAYS_INLINE ComputedStyle(const ComputedStyle&);
 
   static PassRefPtr<ComputedStyle> createInitialStyle();

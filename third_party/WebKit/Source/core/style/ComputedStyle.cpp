@@ -99,7 +99,7 @@ PassRefPtr<ComputedStyle> ComputedStyle::create() {
 }
 
 PassRefPtr<ComputedStyle> ComputedStyle::createInitialStyle() {
-  return adoptRef(new ComputedStyle(InitialStyle));
+  return adoptRef(new ComputedStyle());
 }
 
 void ComputedStyle::invalidateInitialStyle() {
@@ -120,10 +120,8 @@ PassRefPtr<ComputedStyle> ComputedStyle::clone(const ComputedStyle& other) {
   return adoptRef(new ComputedStyle(other));
 }
 
-ALWAYS_INLINE ComputedStyle::ComputedStyle(InitialStyleTag)
+ALWAYS_INLINE ComputedStyle::ComputedStyle()
     : ComputedStyleBase(), RefCounted<ComputedStyle>() {
-  initializeBitDefaults();
-
   m_box.init();
   m_visual.init();
   m_background.init();
