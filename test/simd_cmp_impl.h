@@ -816,7 +816,7 @@ void TestSimd1Arg(uint32_t iterations, uint32_t mask, uint32_t maskwidth,
   fptr ref_simd;
   fptr simd;
   int error = 0;
-  DECLARE_ALIGNED(32, uint16_t, s[sizeof(CArg) / sizeof(uint16_t)]);
+  DECLARE_ALIGNED(32, uint8_t, s[sizeof(CArg)]);
   DECLARE_ALIGNED(32, uint8_t, d[sizeof(CRet)]);
   DECLARE_ALIGNED(32, uint8_t, ref_d[sizeof(CRet)]);
   memset(ref_d, 0, sizeof(ref_d));
@@ -826,14 +826,12 @@ void TestSimd1Arg(uint32_t iterations, uint32_t mask, uint32_t maskwidth,
   if (simd == NULL || ref_simd == NULL) {
     FAIL() << "Internal error: Unknown intrinsic function " << name;
   }
-
   for (unsigned int count = 0;
        count < iterations && !error && !testing::Test::HasFailure(); count++) {
-    for (unsigned int c = 0; c < sizeof(CArg) / sizeof(uint16_t); c++)
-      s[c] = rnd.Rand16();
+    for (unsigned int c = 0; c < sizeof(CArg); c++) s[c] = rnd.Rand8();
 
     if (maskwidth) {
-      SetMask(reinterpret_cast<uint8_t *>(s), sizeof(CArg), mask, maskwidth);
+      SetMask(s, sizeof(CArg), mask, maskwidth);
     }
 
     if (typeid(CRet) == typeid(c_v64) && typeid(CArg) == typeid(c_v64)) {
@@ -971,9 +969,8 @@ void TestSimd1Arg(uint32_t iterations, uint32_t mask, uint32_t maskwidth,
   }
 
   EXPECT_EQ(0, error) << "Error: mismatch for " << name << "("
-                      << Print((uint8_t *)s, sizeof(s)) << ") -> "
-                      << Print(d, sizeof(d)) << " (simd), "
-                      << Print(ref_d, sizeof(ref_d)) << " (ref)";
+                      << Print(s, sizeof(s)) << ") -> " << Print(d, sizeof(d))
+                      << " (simd), " << Print(ref_d, sizeof(ref_d)) << " (ref)";
 }
 
 template <typename CRet, typename CArg1, typename CArg2>
@@ -983,8 +980,8 @@ void TestSimd2Args(uint32_t iterations, uint32_t mask, uint32_t maskwidth,
   fptr ref_simd;
   fptr simd;
   int error = 0;
-  DECLARE_ALIGNED(32, uint16_t, s1[sizeof(CArg1) / sizeof(uint16_t)]);
-  DECLARE_ALIGNED(32, uint16_t, s2[sizeof(CArg2) / sizeof(uint16_t)]);
+  DECLARE_ALIGNED(32, uint8_t, s1[sizeof(CArg1)]);
+  DECLARE_ALIGNED(32, uint8_t, s2[sizeof(CArg2)]);
   DECLARE_ALIGNED(32, uint8_t, d[sizeof(CRet)]);
   DECLARE_ALIGNED(32, uint8_t, ref_d[sizeof(CRet)]);
   memset(ref_d, 0, sizeof(ref_d));
@@ -997,14 +994,11 @@ void TestSimd2Args(uint32_t iterations, uint32_t mask, uint32_t maskwidth,
 
   for (unsigned int count = 0;
        count < iterations && !error && !testing::Test::HasFailure(); count++) {
-    for (unsigned int c = 0; c < sizeof(CArg1) / sizeof(uint16_t); c++)
-      s1[c] = rnd.Rand16();
+    for (unsigned int c = 0; c < sizeof(CArg1); c++) s1[c] = rnd.Rand8();
 
-    for (unsigned int c = 0; c < sizeof(CArg2) / sizeof(uint16_t); c++)
-      s2[c] = rnd.Rand16();
+    for (unsigned int c = 0; c < sizeof(CArg2); c++) s2[c] = rnd.Rand8();
 
-    if (maskwidth)
-      SetMask(reinterpret_cast<uint8_t *>(s2), sizeof(CArg2), mask, maskwidth);
+    if (maskwidth) SetMask(s2, sizeof(CArg2), mask, maskwidth);
 
     if (typeid(CRet) == typeid(c_v64) && typeid(CArg1) == typeid(c_v64) &&
         typeid(CArg2) == typeid(c_v64)) {
@@ -1145,9 +1139,7 @@ void TestSimd2Args(uint32_t iterations, uint32_t mask, uint32_t maskwidth,
   }
 
   EXPECT_EQ(0, error) << "Error: mismatch for " << name << "("
-                      << Print(reinterpret_cast<uint8_t *>(s1), sizeof(s1))
-                      << ", "
-                      << Print(reinterpret_cast<uint8_t *>(s2), sizeof(s2))
+                      << Print(s1, sizeof(s1)) << ", " << Print(s2, sizeof(s2))
                       << ") -> " << Print(d, sizeof(d)) << " (simd), "
                       << Print(ref_d, sizeof(ref_d)) << " (ref)";
 }
