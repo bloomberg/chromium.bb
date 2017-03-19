@@ -14,43 +14,7 @@ def sort_and_groupby(list_to_sort, key=None):
     return ((k, list(g)) for k, g in itertools.groupby(list_to_sort, key))
 
 
-class OverloadSetAdapter(object):
-    """Base class for the second effective_overload_set argument. Python is
-       a type-lax language, so this is mostly documentation of the expected
-       interface."""
-
-    def arguments(self, operation):
-        """Given an operation, return the list of its arguments."""
-        raise NotImplementedError
-
-    def type(self, argument):
-        """Given an argument, return its type."""
-        raise NotImplementedError
-
-    def is_optional(self, argument):
-        """Given an argument, return whether it is optional."""
-        raise NotImplementedError
-
-    def is_variadic(self, argument):
-        """"Given an argument, return whether it is variadic."""
-        raise NotImplementedError
-
-
-class MethodContextAdapter(OverloadSetAdapter):
-    def arguments(self, operation):
-        return operation['arguments']
-
-    def type(self, argument):
-        return argument['idl_type_object']
-
-    def is_optional(self, argument):
-        return argument['is_optional']
-
-    def is_variadic(self, argument):
-        return argument['is_variadic']
-
-
-def effective_overload_set(F, adapter):  # pylint: disable=invalid-name
+def effective_overload_set(F):  # pylint: disable=invalid-name
     """Returns the effective overload set of an overloaded function.
 
     An effective overload set is the set of overloaded functions + signatures
@@ -101,21 +65,21 @@ def effective_overload_set(F, adapter):  # pylint: disable=invalid-name
 
     # 5. For each operation, extended attribute or callback function X in F:
     for X in F:  # X is the "callable". pylint: disable=invalid-name
-        arguments = adapter.arguments(X)  # pylint: disable=invalid-name
+        arguments = X['arguments']  # pylint: disable=invalid-name
         # 1. Let n be the number of arguments X is declared to take.
         n = len(arguments)  # pylint: disable=invalid-name
         # 2. Let t0..n−1 be a list of types, where ti is the type of X’s
         # argument at index i.
         # (“type list”)
-        t = tuple(adapter.type(argument)  # pylint: disable=invalid-name
+        t = tuple(argument['idl_type_object']  # pylint: disable=invalid-name
                   for argument in arguments)
         # 3. Let o0..n−1 be a list of optionality values, where oi is “variadic”
         # if X’s argument at index i is a final, variadic argument, “optional”
         # if the argument is optional, and “required” otherwise.
         # (“optionality list”)
         # (We’re just using a boolean for optional/variadic vs. required.)
-        o = tuple(adapter.is_optional(argument)  # pylint: disable=invalid-name
-                  or adapter.is_variadic(argument)
+        o = tuple(argument['is_optional']  # pylint: disable=invalid-name
+                  or argument['is_variadic']
                   for argument in arguments)
         # 4. Add to S the tuple <X, t0..n−1, o0..n−1>.
         S.append((X, t, o))
@@ -148,8 +112,7 @@ def effective_overload_set_by_length(overloads):
         # (callable, type list, optionality list)
         return len(entry[1])
 
-    effective_overloads = effective_overload_set(overloads,
-                                                 MethodContextAdapter())
+    effective_overloads = effective_overload_set(overloads)
     return list(sort_and_groupby(effective_overloads, type_list_length))
 
 
