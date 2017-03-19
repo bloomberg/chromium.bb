@@ -31,7 +31,9 @@ class MODULES_EXPORT WaitUntilObserver final
     NotificationClose,
     PaymentRequest,
     Push,
-    Sync
+    Sync,
+    BackgroundFetchAbort,
+    BackgroundFetchClick
   };
 
   static WaitUntilObserver* create(ExecutionContext*, EventType, int eventID);

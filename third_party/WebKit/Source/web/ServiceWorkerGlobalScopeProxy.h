@@ -81,6 +81,10 @@ class ServiceWorkerGlobalScopeProxy final
   void setRegistration(
       std::unique_ptr<WebServiceWorkerRegistration::Handle>) override;
   void dispatchActivateEvent(int) override;
+  void dispatchBackgroundFetchAbortEvent(int, const WebString& tag) override;
+  void dispatchBackgroundFetchClickEvent(int,
+                                         const WebString& tag,
+                                         BackgroundFetchState) override;
   void dispatchExtendableMessageEvent(
       int eventID,
       const WebString& message,

@@ -135,6 +135,18 @@ class WebServiceWorkerContextClient {
                                       WebServiceWorkerEventResult result,
                                       double eventDispatchTime) {}
 
+  // ServiceWorker specific method. Called after Background Fetch events
+  // (dispatched via WebServiceWorkerContextProxy) is handled by the
+  // ServiceWorker's script context.
+  virtual void didHandleBackgroundFetchAbortEvent(
+      int eventID,
+      WebServiceWorkerEventResult result,
+      double eventDispatchTime) {}
+  virtual void didHandleBackgroundFetchClickEvent(
+      int eventID,
+      WebServiceWorkerEventResult result,
+      double eventDispatchTime) {}
+
   // Called after ExtendableMessageEvent is handled by the ServiceWorker's
   // script context.
   virtual void didHandleExtendableMessageEvent(

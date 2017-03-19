@@ -10,8 +10,9 @@
 namespace blink {
 
 BackgroundFetchEvent::BackgroundFetchEvent(const AtomicString& type,
-                                           const BackgroundFetchEventInit& init)
-    : ExtendableEvent(type, init), m_tag(init.tag()) {}
+                                           const BackgroundFetchEventInit& init,
+                                           WaitUntilObserver* observer)
+    : ExtendableEvent(type, init, observer), m_tag(init.tag()) {}
 
 BackgroundFetchEvent::~BackgroundFetchEvent() = default;
 

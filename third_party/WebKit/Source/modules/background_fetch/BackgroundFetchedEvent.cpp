@@ -18,7 +18,7 @@ BackgroundFetchedEvent::BackgroundFetchedEvent(
     const AtomicString& type,
     const BackgroundFetchedEventInit& init,
     ServiceWorkerRegistration* registration)
-    : BackgroundFetchEvent(type, init),
+    : BackgroundFetchEvent(type, init, nullptr /* observer */),
       m_fetches(init.fetches()),
       m_registration(registration) {}
 

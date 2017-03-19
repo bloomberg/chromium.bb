@@ -126,4 +126,22 @@ TypeConverter<blink::WebPaymentDetailsModifier,
   return output;
 }
 
-}  // namespace
+blink::WebServiceWorkerContextProxy::BackgroundFetchState
+TypeConverter<blink::WebServiceWorkerContextProxy::BackgroundFetchState,
+              content::mojom::BackgroundFetchState>::
+    Convert(content::mojom::BackgroundFetchState input) {
+  switch (input) {
+    case content::mojom::BackgroundFetchState::PENDING:
+      return blink::WebServiceWorkerContextProxy::BackgroundFetchState::Pending;
+    case content::mojom::BackgroundFetchState::SUCCEEDED:
+      return blink::WebServiceWorkerContextProxy::BackgroundFetchState::
+          Succeeded;
+    case content::mojom::BackgroundFetchState::FAILED:
+      return blink::WebServiceWorkerContextProxy::BackgroundFetchState::Failed;
+  }
+
+  NOTREACHED();
+  return blink::WebServiceWorkerContextProxy::BackgroundFetchState::Pending;
+}
+
+}  // namespace mojo

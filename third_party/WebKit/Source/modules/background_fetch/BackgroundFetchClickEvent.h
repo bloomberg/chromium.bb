@@ -5,6 +5,7 @@
 #ifndef BackgroundFetchClickEvent_h
 #define BackgroundFetchClickEvent_h
 
+#include "modules/ModulesExport.h"
 #include "modules/background_fetch/BackgroundFetchEvent.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/AtomicString.h"
@@ -12,15 +13,25 @@
 namespace blink {
 
 class BackgroundFetchClickEventInit;
+class WaitUntilObserver;
 
-class BackgroundFetchClickEvent final : public BackgroundFetchEvent {
+class MODULES_EXPORT BackgroundFetchClickEvent final
+    : public BackgroundFetchEvent {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
   static BackgroundFetchClickEvent* create(
       const AtomicString& type,
       const BackgroundFetchClickEventInit& initializer) {
-    return new BackgroundFetchClickEvent(type, initializer);
+    return new BackgroundFetchClickEvent(type, initializer,
+                                         nullptr /* observer */);
+  }
+
+  static BackgroundFetchClickEvent* create(
+      const AtomicString& type,
+      const BackgroundFetchClickEventInit& initializer,
+      WaitUntilObserver* observer) {
+    return new BackgroundFetchClickEvent(type, initializer, observer);
   }
 
   ~BackgroundFetchClickEvent() override;
@@ -33,7 +44,8 @@ class BackgroundFetchClickEvent final : public BackgroundFetchEvent {
 
  private:
   BackgroundFetchClickEvent(const AtomicString& type,
-                            const BackgroundFetchClickEventInit&);
+                            const BackgroundFetchClickEventInit&,
+                            WaitUntilObserver*);
 
   AtomicString m_state;
 };

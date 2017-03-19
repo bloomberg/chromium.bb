@@ -998,6 +998,7 @@ test("content_unittests") {
     "../browser/appcache/mock_appcache_storage.h",
     "../browser/appcache/mock_appcache_storage_unittest.cc",
     "../browser/background_fetch/background_fetch_data_manager_unittest.cc",
+    "../browser/background_fetch/background_fetch_event_dispatcher_unittest.cc",
     "../browser/background_fetch/background_fetch_job_controller_unittest.cc",
     "../browser/background_sync/background_sync_manager_unittest.cc",
     "../browser/background_sync/background_sync_network_observer_unittest.cc",

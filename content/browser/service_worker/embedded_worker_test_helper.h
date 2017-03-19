@@ -189,6 +189,15 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   virtual void OnActivateEvent(
       const mojom::ServiceWorkerEventDispatcher::DispatchActivateEventCallback&
           callback);
+  virtual void OnBackgroundFetchAbortEvent(
+      const std::string& tag,
+      const mojom::ServiceWorkerEventDispatcher::
+          DispatchBackgroundFetchAbortEventCallback& callback);
+  virtual void OnBackgroundFetchClickEvent(
+      const std::string& tag,
+      mojom::BackgroundFetchState state,
+      const mojom::ServiceWorkerEventDispatcher::
+          DispatchBackgroundFetchClickEventCallback& callback);
   virtual void OnExtendableMessageEvent(
       mojom::ExtendableMessageEventPtr event,
       const mojom::ServiceWorkerEventDispatcher::
@@ -247,6 +256,15 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   void OnActivateEventStub(
       const mojom::ServiceWorkerEventDispatcher::DispatchActivateEventCallback&
           callback);
+  void OnBackgroundFetchAbortEventStub(
+      const std::string& tag,
+      const mojom::ServiceWorkerEventDispatcher::
+          DispatchBackgroundFetchAbortEventCallback& callback);
+  void OnBackgroundFetchClickEventStub(
+      const std::string& tag,
+      mojom::BackgroundFetchState state,
+      const mojom::ServiceWorkerEventDispatcher::
+          DispatchBackgroundFetchClickEventCallback& callback);
   void OnExtendableMessageEventStub(
       mojom::ExtendableMessageEventPtr event,
       const mojom::ServiceWorkerEventDispatcher::

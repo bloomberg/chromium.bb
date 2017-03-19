@@ -197,6 +197,14 @@ void WaitUntilObserver::decrementPendingActivity() {
       client->didHandlePaymentRequestEvent(m_eventID, result,
                                            m_eventDispatchTime);
       break;
+    case BackgroundFetchAbort:
+      client->didHandleBackgroundFetchAbortEvent(m_eventID, result,
+                                                 m_eventDispatchTime);
+      break;
+    case BackgroundFetchClick:
+      client->didHandleBackgroundFetchClickEvent(m_eventID, result,
+                                                 m_eventDispatchTime);
+      break;
   }
   m_executionContext = nullptr;
 }

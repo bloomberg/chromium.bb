@@ -157,6 +157,23 @@ class EmbeddedWorkerTestHelper::MockServiceWorkerEventDispatcher
     helper_->OnActivateEventStub(callback);
   }
 
+  void DispatchBackgroundFetchAbortEvent(
+      const std::string& tag,
+      const DispatchBackgroundFetchAbortEventCallback& callback) override {
+    if (!helper_)
+      return;
+    helper_->OnBackgroundFetchAbortEventStub(tag, callback);
+  }
+
+  void DispatchBackgroundFetchClickEvent(
+      const std::string& tag,
+      mojom::BackgroundFetchState state,
+      const DispatchBackgroundFetchClickEventCallback& callback) override {
+    if (!helper_)
+      return;
+    helper_->OnBackgroundFetchClickEventStub(tag, state, callback);
+  }
+
   void DispatchFetchEvent(int fetch_event_id,
                           const ServiceWorkerFetchRequest& request,
                           mojom::FetchEventPreloadHandlePtr preload_handle,
@@ -378,6 +395,21 @@ void EmbeddedWorkerTestHelper::OnActivateEvent(
   callback.Run(SERVICE_WORKER_OK, base::Time::Now());
 }
 
+void EmbeddedWorkerTestHelper::OnBackgroundFetchAbortEvent(
+    const std::string& tag,
+    const mojom::ServiceWorkerEventDispatcher::
+        DispatchBackgroundFetchAbortEventCallback& callback) {
+  callback.Run(SERVICE_WORKER_OK, base::Time::Now());
+}
+
+void EmbeddedWorkerTestHelper::OnBackgroundFetchClickEvent(
+    const std::string& tag,
+    mojom::BackgroundFetchState state,
+    const mojom::ServiceWorkerEventDispatcher::
+        DispatchBackgroundFetchClickEventCallback& callback) {
+  callback.Run(SERVICE_WORKER_OK, base::Time::Now());
+}
+
 void EmbeddedWorkerTestHelper::OnExtendableMessageEvent(
     mojom::ExtendableMessageEventPtr event,
     const mojom::ServiceWorkerEventDispatcher::
@@ -571,6 +603,27 @@ void EmbeddedWorkerTestHelper::OnActivateEventStub(
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&EmbeddedWorkerTestHelper::OnActivateEvent,
                             AsWeakPtr(), callback));
+}
+
+void EmbeddedWorkerTestHelper::OnBackgroundFetchAbortEventStub(
+    const std::string& tag,
+    const mojom::ServiceWorkerEventDispatcher::
+        DispatchBackgroundFetchAbortEventCallback& callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::Bind(&EmbeddedWorkerTestHelper::OnBackgroundFetchAbortEvent,
+                 AsWeakPtr(), tag, callback));
+}
+
+void EmbeddedWorkerTestHelper::OnBackgroundFetchClickEventStub(
+    const std::string& tag,
+    mojom::BackgroundFetchState state,
+    const mojom::ServiceWorkerEventDispatcher::
+        DispatchBackgroundFetchClickEventCallback& callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::Bind(&EmbeddedWorkerTestHelper::OnBackgroundFetchClickEvent,
+                 AsWeakPtr(), tag, state, callback));
 }
 
 void EmbeddedWorkerTestHelper::OnExtendableMessageEventStub(

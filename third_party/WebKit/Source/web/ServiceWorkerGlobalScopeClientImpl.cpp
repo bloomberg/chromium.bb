@@ -87,6 +87,22 @@ void ServiceWorkerGlobalScopeClientImpl::didHandleActivateEvent(
   m_client.didHandleActivateEvent(eventID, result, eventDispatchTime);
 }
 
+void ServiceWorkerGlobalScopeClientImpl::didHandleBackgroundFetchAbortEvent(
+    int eventID,
+    WebServiceWorkerEventResult result,
+    double eventDispatchTime) {
+  m_client.didHandleBackgroundFetchAbortEvent(eventID, result,
+                                              eventDispatchTime);
+}
+
+void ServiceWorkerGlobalScopeClientImpl::didHandleBackgroundFetchClickEvent(
+    int eventID,
+    WebServiceWorkerEventResult result,
+    double eventDispatchTime) {
+  m_client.didHandleBackgroundFetchClickEvent(eventID, result,
+                                              eventDispatchTime);
+}
+
 void ServiceWorkerGlobalScopeClientImpl::didHandleExtendableMessageEvent(
     int eventID,
     WebServiceWorkerEventResult result,

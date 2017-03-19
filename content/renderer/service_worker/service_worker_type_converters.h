@@ -6,9 +6,11 @@
 #define CONTENT_RENDERER_SERVICE_WORKER_SERVICE_WORKER_TYPE_CONVERTERS_H_
 
 #include "components/payments/content/payment_app.mojom.h"
+#include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "third_party/WebKit/public/platform/modules/payments/WebPaymentAppRequest.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_event_status.mojom.h"
+#include "third_party/WebKit/public/web/modules/serviceworker/WebServiceWorkerContextProxy.h"
 
 namespace mojo {
 
@@ -51,6 +53,13 @@ struct TypeConverter<blink::WebPaymentDetailsModifier,
                      payments::mojom::PaymentDetailsModifierPtr> {
   static blink::WebPaymentDetailsModifier Convert(
       const payments::mojom::PaymentDetailsModifierPtr& input);
+};
+
+template <>
+struct TypeConverter<blink::WebServiceWorkerContextProxy::BackgroundFetchState,
+                     content::mojom::BackgroundFetchState> {
+  static blink::WebServiceWorkerContextProxy::BackgroundFetchState Convert(
+      content::mojom::BackgroundFetchState input);
 };
 
 }  // namespace

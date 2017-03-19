@@ -58,6 +58,16 @@ class WebServiceWorkerContextProxy {
       std::unique_ptr<WebServiceWorkerRegistration::Handle>) = 0;
 
   virtual void dispatchActivateEvent(int eventID) = 0;
+
+  enum class BackgroundFetchState { Pending, Succeeded, Failed };
+
+  virtual void dispatchBackgroundFetchAbortEvent(int eventID,
+                                                 const WebString& tag) = 0;
+  virtual void dispatchBackgroundFetchClickEvent(
+      int eventID,
+      const WebString& tag,
+      BackgroundFetchState status) = 0;
+
   virtual void dispatchExtendableMessageEvent(
       int eventID,
       const WebString& message,

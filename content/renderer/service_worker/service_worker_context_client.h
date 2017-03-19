@@ -141,6 +141,12 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
   void didHandleActivateEvent(int request_id,
                               blink::WebServiceWorkerEventResult,
                               double dispatch_event_time) override;
+  void didHandleBackgroundFetchAbortEvent(int request_id,
+                                          blink::WebServiceWorkerEventResult,
+                                          double dispatch_event_time) override;
+  void didHandleBackgroundFetchClickEvent(int request_id,
+                                          blink::WebServiceWorkerEventResult,
+                                          double dispatch_event_time) override;
   void didHandleExtendableMessageEvent(
       int request_id,
       blink::WebServiceWorkerEventResult result,
@@ -213,6 +219,13 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
   // mojom::ServiceWorkerEventDispatcher
   void DispatchActivateEvent(
       const DispatchActivateEventCallback& callback) override;
+  void DispatchBackgroundFetchAbortEvent(
+      const std::string& tag,
+      const DispatchBackgroundFetchAbortEventCallback& callback) override;
+  void DispatchBackgroundFetchClickEvent(
+      const std::string& tag,
+      mojom::BackgroundFetchState state,
+      const DispatchBackgroundFetchClickEventCallback& callback) override;
   void DispatchExtendableMessageEvent(
       mojom::ExtendableMessageEventPtr event,
       const DispatchExtendableMessageEventCallback& callback) override;

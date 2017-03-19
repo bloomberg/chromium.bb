@@ -5,6 +5,7 @@
 #ifndef BackgroundFetchEvent_h
 #define BackgroundFetchEvent_h
 
+#include "modules/ModulesExport.h"
 #include "modules/serviceworkers/ExtendableEvent.h"
 #include "platform/heap/Handle.h"
 #include "wtf/text/AtomicString.h"
@@ -12,15 +13,23 @@
 namespace blink {
 
 class BackgroundFetchEventInit;
+class WaitUntilObserver;
 
-class BackgroundFetchEvent : public ExtendableEvent {
+class MODULES_EXPORT BackgroundFetchEvent : public ExtendableEvent {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
   static BackgroundFetchEvent* create(
       const AtomicString& type,
       const BackgroundFetchEventInit& initializer) {
-    return new BackgroundFetchEvent(type, initializer);
+    return new BackgroundFetchEvent(type, initializer, nullptr /* observer */);
+  }
+
+  static BackgroundFetchEvent* create(
+      const AtomicString& type,
+      const BackgroundFetchEventInit& initializer,
+      WaitUntilObserver* observer) {
+    return new BackgroundFetchEvent(type, initializer, observer);
   }
 
   ~BackgroundFetchEvent() override;
@@ -33,7 +42,8 @@ class BackgroundFetchEvent : public ExtendableEvent {
 
  protected:
   BackgroundFetchEvent(const AtomicString& type,
-                       const BackgroundFetchEventInit&);
+                       const BackgroundFetchEventInit&,
+                       WaitUntilObserver*);
 
   String m_tag;
 };

@@ -13,7 +13,8 @@ namespace blink {
 BackgroundFetchFailEvent::BackgroundFetchFailEvent(
     const AtomicString& type,
     const BackgroundFetchFailEventInit& init)
-    : BackgroundFetchEvent(type, init), m_fetches(init.fetches()) {}
+    : BackgroundFetchEvent(type, init, nullptr /* observer */),
+      m_fetches(init.fetches()) {}
 
 BackgroundFetchFailEvent::~BackgroundFetchFailEvent() = default;
 
