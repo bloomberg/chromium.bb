@@ -177,8 +177,6 @@ class CONTENT_EXPORT ContentClient {
   // supported by the embedder.
   virtual OriginTrialPolicy* GetOriginTrialPolicy();
 
-  virtual bool AllowBrowserSideNavigation();
-
 #if defined(OS_ANDROID)
   // Returns true for clients like Android WebView that uses synchronous
   // compositor. Note setting this to true will permit synchronous IPCs from

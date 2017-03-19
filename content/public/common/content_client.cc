@@ -131,10 +131,6 @@ bool ContentClient::AllowScriptExtensionForServiceWorker(
   return false;
 }
 
-bool ContentClient::AllowBrowserSideNavigation() {
-  return false;
-}
-
 #if defined(OS_ANDROID)
 bool ContentClient::UsingSynchronousCompositing() {
   return false;
