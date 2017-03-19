@@ -3999,21 +3999,14 @@ IN_PROC_BROWSER_TEST_F(
                           result_id)));
 }
 
-#if defined(OS_WIN) || defined(OS_CHROMEOS) || defined(OS_LINUX)
 // This test is very flaky on Win XP and Aura. http://crbug.com/248438
 // Also flaky on Linux. http://crbug.com/700382
-#define MAYBE_DownloadExtensionTest_OnDeterminingFilename_InterruptedResume \
-    DISABLED_DownloadExtensionTest_OnDeterminingFilename_InterruptedResume
-#else
-#define MAYBE_DownloadExtensionTest_OnDeterminingFilename_InterruptedResume \
-    DownloadExtensionTest_OnDeterminingFilename_InterruptedResume
-#endif
-
+// Also flaky on Mac ASAN with PlzNavigate.
 // Test download interruption while extensions determining filename. Should not
 // re-dispatch onDeterminingFilename.
 IN_PROC_BROWSER_TEST_F(
     DownloadExtensionTest,
-    MAYBE_DownloadExtensionTest_OnDeterminingFilename_InterruptedResume) {
+    DISABLED_DownloadExtensionTest_OnDeterminingFilename_InterruptedResume) {
   LoadExtension("downloads_split");
   ASSERT_TRUE(StartEmbeddedTestServer());
   GoOnTheRecord();
