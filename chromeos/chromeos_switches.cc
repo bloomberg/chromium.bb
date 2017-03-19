@@ -304,9 +304,6 @@ const char kEnableTouchSupportForScreenMagnifier[] =
 const char kEnableVideoPlayerChromecastSupport[] =
     "enable-video-player-chromecast-support";
 
-// Enables the VoiceInteraction support.
-const char kEnableVoiceInteraction[] = "enable-voice-interaction";
-
 // Disables ARC for managed accounts.
 const char kEnterpriseDisableArc[] = "enterprise-disable-arc";
 

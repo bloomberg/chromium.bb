@@ -322,8 +322,6 @@ source_set("chromeos") {
     "arc/tts/arc_tts_service.h",
     "arc/video/gpu_arc_video_service_host.cc",
     "arc/video/gpu_arc_video_service_host.h",
-    "arc/voice_interaction/arc_voice_interaction_framework_service.cc",
-    "arc/voice_interaction/arc_voice_interaction_framework_service.h",
     "arc/wallpaper/arc_wallpaper_service.cc",
     "arc/wallpaper/arc_wallpaper_service.h",
     "attestation/attestation_ca_client.cc",

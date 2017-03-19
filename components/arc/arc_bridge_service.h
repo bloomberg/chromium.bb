@@ -39,7 +39,6 @@ class StorageManagerInstance;
 class TracingInstance;
 class TtsInstance;
 class VideoInstance;
-class VoiceInteractionFrameworkInstance;
 class WallpaperInstance;
 
 }  // namespace mojom
@@ -94,10 +93,6 @@ class ArcBridgeService {
   InstanceHolder<mojom::TracingInstance>* tracing() { return &tracing_; }
   InstanceHolder<mojom::TtsInstance>* tts() { return &tts_; }
   InstanceHolder<mojom::VideoInstance>* video() { return &video_; }
-  InstanceHolder<mojom::VoiceInteractionFrameworkInstance>*
-  voice_interaction_framework() {
-    return &voice_interaction_framework_;
-  }
   InstanceHolder<mojom::WallpaperInstance>* wallpaper() { return &wallpaper_; }
 
  private:
@@ -126,8 +121,6 @@ class ArcBridgeService {
   InstanceHolder<mojom::TracingInstance> tracing_;
   InstanceHolder<mojom::TtsInstance> tts_;
   InstanceHolder<mojom::VideoInstance> video_;
-  InstanceHolder<mojom::VoiceInteractionFrameworkInstance>
-      voice_interaction_framework_;
   InstanceHolder<mojom::WallpaperInstance> wallpaper_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcBridgeService);
