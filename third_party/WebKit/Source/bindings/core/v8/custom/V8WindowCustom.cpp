@@ -109,11 +109,9 @@ void V8Window::locationAttributeGetterCustom(
   // remote Location objects, we should clean this up to improve
   // maintainability. In the long-term, this will be superseded by wrapper
   // tracing.
-  const char kKeepAliveKey[] = "KeepAlive#Window#location";
   V8HiddenValue::setHiddenValue(
       ScriptState::current(isolate), holder,
-      v8AtomicString(isolate, StringView(kKeepAliveKey, sizeof kKeepAliveKey)),
-      wrapper);
+      v8AtomicString(isolate, "KeepAlive#Window#location"), wrapper);
 
   v8SetReturnValue(info, wrapper);
 }

@@ -329,8 +329,7 @@ static void staticReadOnlyReturnDOMWrapperAttributeAttributeGetter(const v8::Fun
   if (cppValue && DOMDataStore::setReturnValue(info.GetReturnValue(), cppValue))
     return;
   v8::Local<v8::Value> v8Value(ToV8(cppValue, holder, info.GetIsolate()));
-  const char kKeepAliveKey[] = "KeepAlive#TestInterface#staticReadOnlyReturnDOMWrapperAttribute";
-  V8HiddenValue::setHiddenValue(ScriptState::current(info.GetIsolate()), holder, v8AtomicString(info.GetIsolate(), StringView(kKeepAliveKey, sizeof kKeepAliveKey)), v8Value);
+  V8HiddenValue::setHiddenValue(ScriptState::current(info.GetIsolate()), holder, v8AtomicString(info.GetIsolate(), "KeepAlive#TestInterface#staticReadOnlyReturnDOMWrapperAttribute"), v8Value);
 
   v8SetReturnValue(info, v8Value);
 }

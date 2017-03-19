@@ -151,8 +151,7 @@ static void readonlyTestInterfaceEmptyAttributeAttributeGetter(const v8::Functio
   if (cppValue && DOMDataStore::setReturnValue(info.GetReturnValue(), cppValue))
     return;
   v8::Local<v8::Value> v8Value(ToV8(cppValue, holder, info.GetIsolate()));
-  const char kKeepAliveKey[] = "KeepAlive#TestObject#readonlyTestInterfaceEmptyAttribute";
-  V8HiddenValue::setHiddenValue(ScriptState::current(info.GetIsolate()), holder, v8AtomicString(info.GetIsolate(), StringView(kKeepAliveKey, sizeof kKeepAliveKey)), v8Value);
+  V8HiddenValue::setHiddenValue(ScriptState::current(info.GetIsolate()), holder, v8AtomicString(info.GetIsolate(), "KeepAlive#TestObject#readonlyTestInterfaceEmptyAttribute"), v8Value);
 
   v8SetReturnValue(info, v8Value);
 }
@@ -2030,8 +2029,7 @@ static void perWorldBindingsReadonlyTestInterfaceEmptyAttributeAttributeGetter(c
   if (cppValue && DOMDataStore::setReturnValue(info.GetReturnValue(), cppValue))
     return;
   v8::Local<v8::Value> v8Value(ToV8(cppValue, holder, info.GetIsolate()));
-  const char kKeepAliveKey[] = "KeepAlive#TestObject#perWorldBindingsReadonlyTestInterfaceEmptyAttribute";
-  V8HiddenValue::setHiddenValue(ScriptState::current(info.GetIsolate()), holder, v8AtomicString(info.GetIsolate(), StringView(kKeepAliveKey, sizeof kKeepAliveKey)), v8Value);
+  V8HiddenValue::setHiddenValue(ScriptState::current(info.GetIsolate()), holder, v8AtomicString(info.GetIsolate(), "KeepAlive#TestObject#perWorldBindingsReadonlyTestInterfaceEmptyAttribute"), v8Value);
 
   v8SetReturnValue(info, v8Value);
 }
@@ -2048,8 +2046,7 @@ static void perWorldBindingsReadonlyTestInterfaceEmptyAttributeAttributeGetterFo
   if (cppValue && DOMDataStore::setReturnValueForMainWorld(info.GetReturnValue(), cppValue))
     return;
   v8::Local<v8::Value> v8Value(ToV8(cppValue, holder, info.GetIsolate()));
-  const char kKeepAliveKey[] = "KeepAlive#TestObject#perWorldBindingsReadonlyTestInterfaceEmptyAttribute";
-  V8HiddenValue::setHiddenValue(ScriptState::current(info.GetIsolate()), holder, v8AtomicString(info.GetIsolate(), StringView(kKeepAliveKey, sizeof kKeepAliveKey)), v8Value);
+  V8HiddenValue::setHiddenValue(ScriptState::current(info.GetIsolate()), holder, v8AtomicString(info.GetIsolate(), "KeepAlive#TestObject#perWorldBindingsReadonlyTestInterfaceEmptyAttribute"), v8Value);
 
   v8SetReturnValue(info, v8Value);
 }
@@ -2409,8 +2406,7 @@ static void locationGarbageCollectedAttributeGetter(const v8::FunctionCallbackIn
   if (cppValue && DOMDataStore::setReturnValue(info.GetReturnValue(), cppValue))
     return;
   v8::Local<v8::Value> v8Value(ToV8(cppValue, holder, info.GetIsolate()));
-  const char kKeepAliveKey[] = "KeepAlive#TestObject#locationGarbageCollected";
-  V8HiddenValue::setHiddenValue(ScriptState::current(info.GetIsolate()), holder, v8AtomicString(info.GetIsolate(), StringView(kKeepAliveKey, sizeof kKeepAliveKey)), v8Value);
+  V8HiddenValue::setHiddenValue(ScriptState::current(info.GetIsolate()), holder, v8AtomicString(info.GetIsolate(), "KeepAlive#TestObject#locationGarbageCollected"), v8Value);
 
   v8SetReturnValue(info, v8Value);
 }
@@ -3417,8 +3413,7 @@ static void sameObjectAttributeAttributeGetter(const v8::FunctionCallbackInfo<v8
   if (cppValue && DOMDataStore::setReturnValue(info.GetReturnValue(), cppValue))
     return;
   v8::Local<v8::Value> v8Value(ToV8(cppValue, holder, info.GetIsolate()));
-  const char kKeepAliveKey[] = "KeepAlive#TestObject#sameObjectAttribute";
-  V8HiddenValue::setHiddenValue(ScriptState::current(info.GetIsolate()), holder, v8AtomicString(info.GetIsolate(), StringView(kKeepAliveKey, sizeof kKeepAliveKey)), v8Value);
+  V8HiddenValue::setHiddenValue(ScriptState::current(info.GetIsolate()), holder, v8AtomicString(info.GetIsolate(), "KeepAlive#TestObject#sameObjectAttribute"), v8Value);
 
   v8SetReturnValue(info, v8Value);
 }
@@ -3450,8 +3445,7 @@ static void saveSameObjectAttributeAttributeGetter(const v8::FunctionCallbackInf
   if (cppValue && DOMDataStore::setReturnValue(info.GetReturnValue(), cppValue))
     return;
   v8::Local<v8::Value> v8Value(ToV8(cppValue, holder, info.GetIsolate()));
-  const char kKeepAliveKey[] = "KeepAlive#TestObject#saveSameObjectAttribute";
-  V8HiddenValue::setHiddenValue(ScriptState::current(info.GetIsolate()), holder, v8AtomicString(info.GetIsolate(), StringView(kKeepAliveKey, sizeof kKeepAliveKey)), v8Value);
+  V8HiddenValue::setHiddenValue(ScriptState::current(info.GetIsolate()), holder, v8AtomicString(info.GetIsolate(), "KeepAlive#TestObject#saveSameObjectAttribute"), v8Value);
 
   v8SetReturnValue(info, v8Value);
 
