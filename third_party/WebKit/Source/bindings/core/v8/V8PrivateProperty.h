@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "bindings/core/v8/ScopedPersistent.h"
 #include "bindings/core/v8/ScriptPromiseProperties.h"
 #include "bindings/core/v8/V8BindingMacros.h"
 #include "bindings/core/v8/V8PerIsolateData.h"
@@ -142,9 +141,9 @@ class CORE_EXPORT V8PrivateProperty {
         V8PerIsolateData::from(isolate)->privateProperty();                    \
     if (UNLIKELY(privateProp                                                   \
                      ->V8_PRIVATE_PROPERTY_MEMBER_NAME(InterfaceName, KeyName) \
-                     .isEmpty())) {                                            \
+                     .IsEmpty())) {                                            \
       privateProp->V8_PRIVATE_PROPERTY_MEMBER_NAME(InterfaceName, KeyName)     \
-          .set(                                                                \
+          .Set(                                                                \
               isolate,                                                         \
               createV8Private(                                                 \
                   isolate,                                                     \
@@ -155,7 +154,7 @@ class CORE_EXPORT V8PrivateProperty {
     }                                                                          \
     return Symbol(                                                             \
         privateProp->V8_PRIVATE_PROPERTY_MEMBER_NAME(InterfaceName, KeyName)   \
-            .newLocal(isolate));                                               \
+            .Get(isolate));                                                    \
   }
   V8_PRIVATE_PROPERTY_FOR_EACH(V8_PRIVATE_PROPERTY_DEFINE_GETTER)
 #undef V8_PRIVATE_PROPERTY_DEFINE_GETTER
@@ -174,7 +173,7 @@ class CORE_EXPORT V8PrivateProperty {
                                                 size_t length);
 
 #define V8_PRIVATE_PROPERTY_DECLARE_MEMBER(InterfaceName, KeyName) \
-  ScopedPersistent<v8::Private> V8_PRIVATE_PROPERTY_MEMBER_NAME(   \
+  v8::Eternal<v8::Private> V8_PRIVATE_PROPERTY_MEMBER_NAME(        \
       InterfaceName, KeyName);  // NOLINT(readability/naming/underscores)
   V8_PRIVATE_PROPERTY_FOR_EACH(V8_PRIVATE_PROPERTY_DECLARE_MEMBER)
 #undef V8_PRIVATE_PROPERTY_DECLARE_MEMBER
