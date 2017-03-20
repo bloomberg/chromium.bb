@@ -251,7 +251,8 @@ class DeployChrome(object):
           'Run dev_install on the device to get rsync installed')
     self.device.CopyToDevice('%s/' % os.path.abspath(self.staging_dir),
                              self.options.target_dir,
-                             inplace=True, debug_level=logging.INFO,
+                             mode='rsync', inplace=True,
+                             debug_level=logging.INFO,
                              verbose=self.options.verbose)
 
     for p in self.copy_paths:
