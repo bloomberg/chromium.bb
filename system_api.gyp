@@ -35,11 +35,12 @@
         'proto_out_dir': 'include/power_manager/proto_bindings',
       },
       'sources': [
-        '<(proto_in_dir)/suspend.proto',
         '<(proto_in_dir)/input_event.proto',
         '<(proto_in_dir)/peripheral_battery_status.proto',
         '<(proto_in_dir)/policy.proto',
         '<(proto_in_dir)/power_supply_properties.proto',
+        '<(proto_in_dir)/suspend.proto',
+        '<(proto_in_dir)/switch_states.proto',
       ],
       'includes': ['../../platform2/common-mk/protoc.gypi'],
     },
@@ -51,11 +52,12 @@
         'system_api-power_manager-protos-gen',
       ],
       'sources': [
-        '<(SHARED_INTERMEDIATE_DIR)/include/power_manager/proto_bindings/suspend.pb.cc',
         '<(SHARED_INTERMEDIATE_DIR)/include/power_manager/proto_bindings/input_event.pb.cc',
         '<(SHARED_INTERMEDIATE_DIR)/include/power_manager/proto_bindings/peripheral_battery_status.pb.cc',
         '<(SHARED_INTERMEDIATE_DIR)/include/power_manager/proto_bindings/policy.pb.cc',
         '<(SHARED_INTERMEDIATE_DIR)/include/power_manager/proto_bindings/power_supply_properties.pb.cc',
+        '<(SHARED_INTERMEDIATE_DIR)/include/power_manager/proto_bindings/suspend.pb.cc',
+        '<(SHARED_INTERMEDIATE_DIR)/include/power_manager/proto_bindings/switch_states.pb.cc',
       ]
     },
     {
