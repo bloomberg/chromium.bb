@@ -17,10 +17,6 @@
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
-#include "chrome/browser/extensions/api/tabs/tabs_api.h"
-#include "chrome/browser/extensions/extension_action.h"
-#include "chrome/browser/extensions/location_bar_controller.h"
-#include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
@@ -29,8 +25,8 @@
 #include "chrome/browser/ui/browser_list.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/content_settings/content_setting_bubble_cocoa.h"
-#import "chrome/browser/ui/cocoa/extensions/extension_popup_controller.h"
 #import "chrome/browser/ui/cocoa/first_run_bubble_controller.h"
+#import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_cell.h"
 #import "chrome/browser/ui/cocoa/location_bar/content_setting_decoration.h"
@@ -65,8 +61,6 @@
 #include "components/zoom/zoom_event_manager.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
-#include "extensions/browser/extension_system.h"
-#include "extensions/common/extension.h"
 #include "skia/ext/skia_utils_mac.h"
 #import "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -222,9 +216,6 @@ void LocationBarViewMac::UpdateSaveCreditCardIcon() {
   OnDecorationsChanged();
 }
 
-void LocationBarViewMac::UpdatePageActions() {
-}
-
 void LocationBarViewMac::UpdateBookmarkStarVisibility() {
   star_decoration_->SetVisible(IsStarEnabled());
 }
@@ -239,12 +230,6 @@ void LocationBarViewMac::UpdateLocationBarVisibility(bool visible,
                               withAnimation:animate];
     location_bar_visible_ = visible;
   }
-}
-
-bool LocationBarViewMac::ShowPageActionPopup(
-    const extensions::Extension* extension, bool grant_active_tab) {
-  NOTREACHED();
-  return false;
 }
 
 void LocationBarViewMac::SaveStateToContents(WebContents* contents) {
@@ -266,31 +251,6 @@ OmniboxView* LocationBarViewMac::GetOmniboxView() {
 
 LocationBarTesting* LocationBarViewMac::GetLocationBarForTesting() {
   return this;
-}
-
-// TODO(pamg): Change all these, here and for other platforms, to size_t.
-int LocationBarViewMac::PageActionCount() {
-  NOTREACHED();
-  return 0;
-}
-
-int LocationBarViewMac::PageActionVisibleCount() {
-  NOTREACHED();
-  return 0;
-}
-
-ExtensionAction* LocationBarViewMac::GetPageAction(size_t index) {
-  NOTREACHED();
-  return nullptr;
-}
-
-ExtensionAction* LocationBarViewMac::GetVisiblePageAction(size_t index) {
-  NOTREACHED();
-  return nullptr;
-}
-
-void LocationBarViewMac::TestPageActionPressed(size_t index) {
-  NOTREACHED();
 }
 
 bool LocationBarViewMac::GetBookmarkStarVisibility() {

@@ -25,7 +25,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
@@ -180,14 +179,6 @@ bool ExtensionActionAPI::ShowExtensionActionPopup(
   if (!extension_action)
     return false;
 
-  if (extension_action->action_type() == ActionInfo::TYPE_PAGE &&
-      !FeatureSwitch::extension_action_redesign()->IsEnabled()) {
-    // We show page actions in the location bar unless the new toolbar is
-    // enabled.
-    return browser->window()->GetLocationBar()->ShowPageActionPopup(
-        extension, grant_active_tab_permissions);
-  }
-
   // Don't support showing action popups in a popup window.
   if (!browser->SupportsWindowFeature(Browser::FEATURE_TOOLBAR))
     return false;
@@ -293,11 +284,6 @@ void ExtensionActionAPI::NotifyPageActionsChanged(
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   if (!browser)
     return;
-  LocationBar* location_bar =
-      browser->window() ? browser->window()->GetLocationBar() : NULL;
-  if (!location_bar)
-    return;
-  location_bar->UpdatePageActions();
 
   for (auto& observer : observers_)
     observer.OnPageActionsUpdated(web_contents);

@@ -68,11 +68,8 @@ class LocationBarViewMac : public LocationBar,
   void UpdateContentSettingsIcons() override;
   void UpdateManagePasswordsIconAndBubble() override;
   void UpdateSaveCreditCardIcon() override;
-  void UpdatePageActions() override;
   void UpdateBookmarkStarVisibility() override;
   void UpdateLocationBarVisibility(bool visible, bool animate) override;
-  bool ShowPageActionPopup(const extensions::Extension* extension,
-                           bool grant_active_tab) override;
   void SaveStateToContents(content::WebContents* contents) override;
   void Revert() override;
   const OmniboxView* GetOmniboxView() const override;
@@ -80,11 +77,6 @@ class LocationBarViewMac : public LocationBar,
   LocationBarTesting* GetLocationBarForTesting() override;
 
   // Overridden from LocationBarTesting:
-  int PageActionCount() override;
-  int PageActionVisibleCount() override;
-  ExtensionAction* GetPageAction(size_t index) override;
-  ExtensionAction* GetVisiblePageAction(size_t index) override;
-  void TestPageActionPressed(size_t index) override;
   bool GetBookmarkStarVisibility() override;
   bool TestContentSettingImagePressed(size_t index) override;
 

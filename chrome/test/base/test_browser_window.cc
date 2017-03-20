@@ -5,7 +5,6 @@
 #include "chrome/test/base/test_browser_window.h"
 
 #include "base/memory/ptr_util.h"
-#include "build/build_config.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "ui/gfx/geometry/rect.h"
@@ -40,11 +39,6 @@ WindowOpenDisposition
 ui::PageTransition
     TestBrowserWindow::TestLocationBar::GetPageTransition() const {
   return ui::PAGE_TRANSITION_LINK;
-}
-
-bool TestBrowserWindow::TestLocationBar::ShowPageActionPopup(
-    const extensions::Extension* extension, bool grant_active_tab) {
-  return false;
 }
 
 const OmniboxView* TestBrowserWindow::TestLocationBar::GetOmniboxView() const {

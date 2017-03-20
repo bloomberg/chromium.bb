@@ -12,17 +12,12 @@
 #include "ui/base/window_open_disposition.h"
 #include "url/gurl.h"
 
-class ExtensionAction;
 class LocationBarTesting;
 class OmniboxView;
 class Profile;
 
 namespace content {
 class WebContents;
-}
-
-namespace extensions {
-class Extension;
 }
 
 // The LocationBar class is a virtual interface, defining access to the
@@ -60,23 +55,12 @@ class LocationBar {
   // Updates the visibility and toggled state of the save credit card icon.
   virtual void UpdateSaveCreditCardIcon() = 0;
 
-  // Updates the state of the page actions.
-  // TODO(devlin): Remove all these page action functions once Cocoa stops
-  // using them.
-  virtual void UpdatePageActions() = 0;
-
   // Updates the visibility of the bookmark star.
   virtual void UpdateBookmarkStarVisibility() = 0;
 
   // Updates the visibility of the location bar. Animates the transition if
   // |animate| is true.
   virtual void UpdateLocationBarVisibility(bool visible, bool animate) = 0;
-
-  // Shows the popup for the given |extension| and, if |grant_active_tab| is
-  // true, grants the extension active tab permissions.
-  // Returns true if a popup was shown.
-  virtual bool ShowPageActionPopup(const extensions::Extension* extension,
-                                   bool grant_active_tab) = 0;
 
   // Saves the state of the location bar to the specified WebContents, so that
   // it can be restored later. (Done when switching tabs).
@@ -113,21 +97,6 @@ class LocationBar {
 
 class LocationBarTesting {
  public:
-  // Returns the total number of page actions in the Omnibox.
-  virtual int PageActionCount() = 0;
-
-  // Returns the number of visible page actions in the Omnibox.
-  virtual int PageActionVisibleCount() = 0;
-
-  // Returns the ExtensionAction at |index|.
-  virtual ExtensionAction* GetPageAction(size_t index) = 0;
-
-  // Returns the visible ExtensionAction at |index|.
-  virtual ExtensionAction* GetVisiblePageAction(size_t index) = 0;
-
-  // Simulates a left mouse pressed on the visible page action at |index|.
-  virtual void TestPageActionPressed(size_t index) = 0;
-
   // Returns whether or not the bookmark star decoration is visible.
   virtual bool GetBookmarkStarVisibility() = 0;
 

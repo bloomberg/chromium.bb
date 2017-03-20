@@ -410,9 +410,6 @@ Browser::Browser(const CreateParams& params)
 
   extension_registry_observer_.Add(
       extensions::ExtensionRegistry::Get(profile_));
-  registrar_.Add(this,
-                 extensions::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
-                 content::NotificationService::AllSources());
 #if !defined(OS_ANDROID)
   registrar_.Add(
       this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
@@ -2065,13 +2062,6 @@ void Browser::Observe(int type,
                       const content::NotificationSource& source,
                       const content::NotificationDetails& details) {
   switch (type) {
-    case extensions::NOTIFICATION_EXTENSION_PROCESS_TERMINATED: {
-      Profile* profile = content::Source<Profile>(source).ptr();
-      if (profile_->IsSameProfile(profile) && window()->GetLocationBar())
-        window()->GetLocationBar()->UpdatePageActions();
-      break;
-    }
-
 #if !defined(OS_ANDROID)
     case chrome::NOTIFICATION_BROWSER_THEME_CHANGED:
       window()->UserChangedTheme();
@@ -2097,18 +2087,6 @@ void Browser::Observe(int type,
 ///////////////////////////////////////////////////////////////////////////////
 // Browser, extensions::ExtensionRegistryObserver implementation:
 
-void Browser::OnExtensionUninstalled(content::BrowserContext* browser_context,
-                                     const extensions::Extension* extension,
-                                     extensions::UninstallReason reason) {
-  // During window creation on Windows we may end up calling into
-  // SHAppBarMessage, which internally spawns a nested message loop.This
-  // makes it possible for us to end up here before window creation has
-  // completed, at which point window_ is NULL. See 94752 for details.
-
-  if (window() && window()->GetLocationBar())
-    window()->GetLocationBar()->UpdatePageActions();
-}
-
 void Browser::OnExtensionLoaded(content::BrowserContext* browser_context,
                                 const extensions::Extension* extension) {
   command_controller_->ExtensionStateChanged();
@@ -2119,8 +2097,6 @@ void Browser::OnExtensionUnloaded(
     const extensions::Extension* extension,
     extensions::UnloadedExtensionInfo::Reason reason) {
   command_controller_->ExtensionStateChanged();
-  if (window()->GetLocationBar())
-    window()->GetLocationBar()->UpdatePageActions();
 
   // Close any tabs from the unloaded extension, unless it's terminated,
   // in which case let the sad tabs remain.

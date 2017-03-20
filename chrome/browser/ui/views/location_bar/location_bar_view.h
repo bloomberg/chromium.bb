@@ -32,7 +32,6 @@
 class CommandUpdater;
 class ContentSettingBubbleModelDelegate;
 class ContentSettingImageView;
-class ExtensionAction;
 class GURL;
 class KeywordHintView;
 class LocationIconView;
@@ -316,21 +315,13 @@ class LocationBarView : public LocationBar,
   void UpdateContentSettingsIcons() override;
   void UpdateManagePasswordsIconAndBubble() override;
   void UpdateSaveCreditCardIcon() override;
-  void UpdatePageActions() override;
   void UpdateBookmarkStarVisibility() override;
   void UpdateLocationBarVisibility(bool visible, bool animation) override;
-  bool ShowPageActionPopup(const extensions::Extension* extension,
-                           bool grant_active_tab) override;
   void SaveStateToContents(content::WebContents* contents) override;
   const OmniboxView* GetOmniboxView() const override;
   LocationBarTesting* GetLocationBarForTesting() override;
 
   // LocationBarTesting:
-  int PageActionCount() override;
-  int PageActionVisibleCount() override;
-  ExtensionAction* GetPageAction(size_t index) override;
-  ExtensionAction* GetVisiblePageAction(size_t index) override;
-  void TestPageActionPressed(size_t index) override;
   bool GetBookmarkStarVisibility() override;
   bool TestContentSettingImagePressed(size_t index) override;
 

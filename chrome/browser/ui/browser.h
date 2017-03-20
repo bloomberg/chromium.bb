@@ -747,9 +747,6 @@ class Browser : public TabStripModelObserver,
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // Overridden from extensions::ExtensionRegistryObserver:
-  void OnExtensionUninstalled(content::BrowserContext* browser_context,
-                              const extensions::Extension* extension,
-                              extensions::UninstallReason reason) override;
   void OnExtensionLoaded(content::BrowserContext* browser_context,
                          const extensions::Extension* extension) override;
   void OnExtensionUnloaded(

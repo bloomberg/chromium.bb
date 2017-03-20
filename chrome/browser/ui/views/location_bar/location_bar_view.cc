@@ -15,10 +15,6 @@
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
-#include "chrome/browser/extensions/extension_action.h"
-#include "chrome/browser/extensions/extension_action_manager.h"
-#include "chrome/browser/extensions/extension_util.h"
-#include "chrome/browser/extensions/location_bar_controller.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -866,8 +862,6 @@ void LocationBarView::UpdateSaveCreditCardIcon() {
   }
 }
 
-void LocationBarView::UpdatePageActions() {}
-
 void LocationBarView::UpdateBookmarkStarVisibility() {
   if (star_view_) {
     star_view_->SetVisible(
@@ -890,13 +884,6 @@ void LocationBarView::UpdateLocationBarVisibility(bool visible, bool animate) {
     size_animation_.Hide();
 }
 
-bool LocationBarView::ShowPageActionPopup(
-    const extensions::Extension* extension,
-    bool grant_tab_permissions) {
-  NOTREACHED();
-  return false;
-}
-
 void LocationBarView::SaveStateToContents(WebContents* contents) {
   omnibox_view_->SaveStateToTab(contents);
 }
@@ -911,30 +898,6 @@ LocationBarTesting* LocationBarView::GetLocationBarForTesting() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // LocationBarView, private LocationBarTesting implementation:
-
-int LocationBarView::PageActionCount() {
-  NOTREACHED();
-  return 0;
-}
-
-int LocationBarView::PageActionVisibleCount() {
-  NOTREACHED();
-  return 0;
-}
-
-ExtensionAction* LocationBarView::GetPageAction(size_t index) {
-  NOTREACHED();
-  return nullptr;
-}
-
-ExtensionAction* LocationBarView::GetVisiblePageAction(size_t index) {
-  NOTREACHED();
-  return nullptr;
-}
-
-void LocationBarView::TestPageActionPressed(size_t index) {
-  NOTREACHED();
-}
 
 bool LocationBarView::GetBookmarkStarVisibility() {
   DCHECK(star_view_);
