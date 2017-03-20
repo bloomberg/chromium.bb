@@ -16,10 +16,6 @@ public interface ChildProcessConstants {
     public static final String EXTRA_LINKER_PARAMS =
             "com.google.android.apps.chrome.extra.linker_params";
 
-    // Key in the binding Intent's Bundle for the type of process the child is.
-    public static final String EXTRA_LIBRARY_PROCESS_TYPE =
-            "com.google.android.apps.chrome.extra.library_process_type";
-
     // Below are the names for the items placed in the Bundle passed in the
     // IChildProcessService.setupConnection call, once the connection has been established.
 

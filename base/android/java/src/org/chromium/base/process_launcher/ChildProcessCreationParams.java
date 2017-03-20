@@ -1,29 +1,36 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.content.browser;
+package org.chromium.base.process_launcher;
 
 import android.content.Intent;
 import android.util.SparseArray;
 
 import org.chromium.base.library_loader.LibraryProcessType;
 
+import javax.annotation.concurrent.GuardedBy;
+
 /**
  * Allows specifying the package name for looking up child services
- * configuration and classes into (if it differs from the application
- * package name, like in the case of Android WebView). Also allows
- * specifying additional child service binding flags.
+ * configuration and classes into (if it differs from the application package
+ * name, like in the case of Android WebView). Also allows specifying additional
+ * child service binging flags.
  */
 public class ChildProcessCreationParams {
+    private static final String EXTRA_LIBRARY_PROCESS_TYPE =
+            "org.chromium.content.common.child_service_params.library_process_type";
+
     /** ID used for the default params. */
     public static final int DEFAULT_ID = 0;
 
     private static final Object sLock = new Object();
+    @GuardedBy("sLock")
     private static final SparseArray<ChildProcessCreationParams> sParamMap = new SparseArray<>();
+    @GuardedBy("sLock")
     private static int sNextId = 1; // 0 is reserved for DEFAULT_ID.
 
-    /** Register default params. This should be called once on start up. */
+    /** Registers default params. This should be called once on start up. */
     public static void registerDefault(ChildProcessCreationParams params) {
         synchronized (sLock) {
             // TODO(boliu): Assert not overwriting existing entry once WebApk is fixed.
@@ -31,12 +38,11 @@ public class ChildProcessCreationParams {
         }
     }
 
-    // TODO(boliu): Make package visible once WebApk is fixed.
     public static ChildProcessCreationParams getDefault() {
         return get(DEFAULT_ID);
     }
 
-    /** Register new params. Returns the allocated ID corresponding this params. */
+    /** Registers new params. Returns the allocated ID corresponding this params. */
     public static int register(ChildProcessCreationParams params) {
         assert params != null;
         int id = -1;
@@ -56,7 +62,7 @@ public class ChildProcessCreationParams {
         }
     }
 
-    static ChildProcessCreationParams get(int id) {
+    public static ChildProcessCreationParams get(int id) {
         assert id >= 0;
         synchronized (sLock) {
             return sParamMap.get(id);
@@ -68,31 +74,30 @@ public class ChildProcessCreationParams {
     private final boolean mIsExternalService;
     private final int mLibraryProcessType;
 
-    public ChildProcessCreationParams(String packageName, boolean isExternalService,
-            int libraryProcessType) {
+    public ChildProcessCreationParams(
+            String packageName, boolean isExternalService, int libraryProcessType) {
         mPackageName = packageName;
         mIsExternalService = isExternalService;
         mLibraryProcessType = libraryProcessType;
     }
 
-    String getPackageName() {
+    public String getPackageName() {
         return mPackageName;
     }
 
-    boolean getIsExternalService() {
+    public boolean getIsExternalService() {
         return mIsExternalService;
     }
 
-    int getLibraryProcessType() {
+    public int getLibraryProcessType() {
         return mLibraryProcessType;
     }
 
-    void addIntentExtras(Intent intent) {
-        intent.putExtra(ChildProcessConstants.EXTRA_LIBRARY_PROCESS_TYPE, mLibraryProcessType);
+    public void addIntentExtras(Intent intent) {
+        intent.putExtra(EXTRA_LIBRARY_PROCESS_TYPE, mLibraryProcessType);
     }
 
     public static int getLibraryProcessType(Intent intent) {
-        return intent.getIntExtra(
-                ChildProcessConstants.EXTRA_LIBRARY_PROCESS_TYPE, LibraryProcessType.PROCESS_CHILD);
+        return intent.getIntExtra(EXTRA_LIBRARY_PROCESS_TYPE, LibraryProcessType.PROCESS_CHILD);
     }
 }
