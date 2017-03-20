@@ -91,8 +91,8 @@ Polymer({
 
   /**
    * Handler for when the profile name field is changed, then blurred.
-   * @private
    * @param {!Event} event
+   * @private
    */
   onProfileNameChanged_: function(event) {
     if (event.target.invalid)
@@ -100,6 +100,18 @@ Polymer({
 
     this.browserProxy_.setProfileIconAndName(this.profileIconUrl,
                                              event.target.value);
+  },
+
+  /**
+   * Handler for profile name keydowns.
+   * @param {!Event} event
+   * @private
+   */
+  onProfileNameKeydown_: function(event) {
+    if (event.key == 'Escape') {
+      event.target.value = this.profileName;
+      event.target.blur();
+    }
   },
 
   /**

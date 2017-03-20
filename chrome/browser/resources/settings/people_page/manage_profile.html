@@ -19,6 +19,7 @@
     <div class="settings-box first">
       <paper-input id="name" value="[[profileName]]" pattern=".*\S.*"
           auto-validate required on-change="onProfileNameChanged_"
+          on-keydown="onProfileNameKeydown_"
           disabled="[[isProfileNameDisabled_(syncStatus)]]">
       </paper-input>
     </div>

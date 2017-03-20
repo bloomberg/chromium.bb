@@ -70,6 +70,11 @@ Polymer({
     if (this.$.input.focused)
       return;
 
+    this.setInputValueFromPref_();
+  },
+
+  /** @private */
+  setInputValueFromPref_: function() {
     if (this.pref.type == chrome.settingsPrivate.PrefType.NUMBER) {
       this.value = this.pref.value.toString();
     } else {
@@ -115,6 +120,19 @@ Polymer({
              this.pref.type == chrome.settingsPrivate.PrefType.URL);
       this.set('pref.value', this.value);
     }
+  },
+
+  /**
+   * Handler for profile name keydowns.
+   * @param {!Event} event
+   * @private
+   */
+  onKeydown_: function(event) {
+    if (event.key != 'Escape')
+      return;
+
+    this.setInputValueFromPref_();
+    this.$.input.blur();
   },
 
   /**

@@ -19,7 +19,8 @@
           error-message="[[errorMessage]]" label="[[label]]"
           no-label-float="[[noLabelFloat]]" pattern="[[pattern]]"
           readonly$="[[readonly]]" required="[[required]]" type="[[type]]"
-          on-change="onChange_" disabled="[[isDisabled_(disabled, pref.*)]]"
+          on-change="onChange_" on-keydown="onKeydown_"
+          disabled="[[isDisabled_(disabled, pref.*)]]"
           stop-keyboard-event-propagation$="[[stopKeyboardEventPropagation]]"
           tabindex$="[[getTabindex_(canTab)]]">
       </paper-input>
