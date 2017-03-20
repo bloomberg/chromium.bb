@@ -165,8 +165,7 @@ static int cros_gralloc_lock(struct gralloc_module_t const *module, buffer_handl
 	}
 
 	if ((hnd->droid_format == HAL_PIXEL_FORMAT_YCbCr_420_888)) {
-		cros_gralloc_error("HAL_PIXEL_FORMAT_YCbCr_*_888 format not "
-				   "compatible.");
+		cros_gralloc_error("HAL_PIXEL_FORMAT_YCbCr_*_888 format not compatible.");
 		return CROS_GRALLOC_ERROR_BAD_HANDLE;
 	}
 

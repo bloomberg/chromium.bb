@@ -45,8 +45,7 @@ static int vc4_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_
 
 	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_VC4_CREATE_BO, &bo_create);
 	if (ret) {
-		fprintf(stderr, "drv: DRM_IOCTL_VC4_GEM_CREATE failed "
-				"(size=%zu)\n",
+		fprintf(stderr, "drv: DRM_IOCTL_VC4_GEM_CREATE failed (size=%zu)\n",
 			bo->total_size);
 		return ret;
 	}

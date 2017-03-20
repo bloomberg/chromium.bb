@@ -290,8 +290,7 @@ static int i915_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32
 	ret = drm_intel_bo_set_tiling(i915_bo->ibos[0], &bo->tiling, bo->strides[0]);
 
 	if (ret || bo->tiling != tiling_mode) {
-		fprintf(stderr, "drv: drm_intel_gem_bo_set_tiling failed "
-				"errno=%x, stride=%x\n",
+		fprintf(stderr, "drv: drm_intel_gem_bo_set_tiling failed errno=%x, stride=%x\n",
 			errno, bo->strides[0]);
 		/* Calls i915 bo destroy. */
 		bo->drv->backend->bo_destroy(bo);

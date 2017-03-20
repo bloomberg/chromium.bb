@@ -202,8 +202,7 @@ int drv_dumb_bo_destroy(struct bo *bo)
 
 	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_MODE_DESTROY_DUMB, &destroy_dumb);
 	if (ret) {
-		fprintf(stderr, "drv: DRM_IOCTL_MODE_DESTROY_DUMB failed "
-				"(handle=%x)\n",
+		fprintf(stderr, "drv: DRM_IOCTL_MODE_DESTROY_DUMB failed (handle=%x)\n",
 			bo->handles[0].u32);
 		return ret;
 	}
@@ -230,8 +229,7 @@ int drv_gem_bo_destroy(struct bo *bo)
 
 		ret = drmIoctl(bo->drv->fd, DRM_IOCTL_GEM_CLOSE, &gem_close);
 		if (ret) {
-			fprintf(stderr, "drv: DRM_IOCTL_GEM_CLOSE failed "
-					"(handle=%x) error %d\n",
+			fprintf(stderr, "drv: DRM_IOCTL_GEM_CLOSE failed (handle=%x) error %d\n",
 				bo->handles[plane].u32, ret);
 			error = ret;
 		}
@@ -253,8 +251,7 @@ int drv_prime_bo_import(struct bo *bo, struct drv_import_fd_data *data)
 		ret = drmIoctl(bo->drv->fd, DRM_IOCTL_PRIME_FD_TO_HANDLE, &prime_handle);
 
 		if (ret) {
-			fprintf(stderr, "drv: DRM_IOCTL_PRIME_FD_TO_HANDLE "
-					"failed (fd=%u)\n",
+			fprintf(stderr, "drv: DRM_IOCTL_PRIME_FD_TO_HANDLE failed (fd=%u)\n",
 				prime_handle.fd);
 
 			/*
