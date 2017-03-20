@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestion_identifier.h"
+#import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestion_identifier.h"
 
 #include "base/mac/foundation_util.h"
 

@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestion.h"
 
 #include "base/time/time.h"
+#include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."

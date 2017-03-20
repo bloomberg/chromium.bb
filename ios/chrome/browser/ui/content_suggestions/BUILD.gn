@@ -7,8 +7,6 @@ source_set("content_suggestions") {
   sources = [
     "content_suggestion.h",
     "content_suggestion.mm",
-    "content_suggestion_identifier.h",
-    "content_suggestion_identifier.mm",
     "content_suggestions_article_item.h",
     "content_suggestions_article_item.mm",
     "content_suggestions_collection_updater.h",
@@ -25,8 +23,6 @@ source_set("content_suggestions") {
     "content_suggestions_footer_item.h",
     "content_suggestions_footer_item.mm",
     "content_suggestions_image_fetcher.h",
-    "content_suggestions_section_information.h",
-    "content_suggestions_section_information.mm",
     "content_suggestions_stack_item.h",
     "content_suggestions_stack_item.mm",
     "content_suggestions_stack_item_actions.h",
@@ -42,6 +38,7 @@ source_set("content_suggestions") {
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/collection_view",
     "//ios/chrome/browser/ui/colors",
+    "//ios/chrome/browser/ui/content_suggestions/identifier",
     "//ios/chrome/browser/ui/util",
     "//ios/third_party/material_roboto_font_loader_ios",
     "//ui/base",
@@ -56,7 +53,6 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
-    "content_suggestion_identifier_unittest.mm",
     "content_suggestions_article_item_unittest.mm",
     "content_suggestions_expandable_item_unittest.mm",
     "content_suggestions_favicon_item_unittest.mm",

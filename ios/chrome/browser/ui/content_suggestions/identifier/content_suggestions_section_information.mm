@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_section_information.h"
+#import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestions_section_information.h"
 
 #include "base/logging.h"
 
@@ -12,7 +12,6 @@
 
 @implementation ContentSuggestionsSectionInformation
 
-@synthesize emptyCell = _emptyCell;
 @synthesize layout = _layout;
 @synthesize sectionID = _sectionID;
 @synthesize title = _title;

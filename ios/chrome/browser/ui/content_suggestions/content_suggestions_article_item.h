@@ -6,15 +6,15 @@
 #define IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_ARTICLE_ITEM_H_
 
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestion_identifier.h"
+#import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestion_identifier.h"
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
-#include "url/gurl.h"
 
 namespace base {
 class Time;
 }
 
 @class ContentSuggestionsArticleItem;
+class GURL;
 
 // Delegate for a ContentSuggestionsArticleItem.
 @protocol ContentSuggestionsArticleItemDelegate

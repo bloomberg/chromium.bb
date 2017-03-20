@@ -2,12 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_SECTION_INFORMATION_H_
-#define IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_SECTION_INFORMATION_H_
+#ifndef IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_IDENTIFIER_CONTENT_SUGGESTIONS_SECTION_INFORMATION_H_
+#define IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_IDENTIFIER_CONTENT_SUGGESTIONS_SECTION_INFORMATION_H_
 
 #import <Foundation/Foundation.h>
-
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 
 // Layout for the section and its items.
 typedef NS_ENUM(NSInteger, ContentSuggestionsSectionLayout) {
@@ -37,9 +35,6 @@ typedef NS_ENUM(NSInteger, ContentSuggestionsSectionID) {
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 
-// Item to display when the section is empty. If nil the section should not be
-// displayed when empty.
-@property(nonatomic, strong) CollectionViewItem* emptyCell;
 // Layout to display the content of the section.
 @property(nonatomic, assign) ContentSuggestionsSectionLayout layout;
 // ID of the section. Used for ordering.
@@ -51,4 +46,4 @@ typedef NS_ENUM(NSInteger, ContentSuggestionsSectionID) {
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_SECTION_INFORMATION_H_
+#endif  // IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_IDENTIFIER_CONTENT_SUGGESTIONS_SECTION_INFORMATION_H_

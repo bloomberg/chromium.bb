@@ -7,12 +7,13 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestion_identifier.h"
-#include "url/gurl.h"
+#import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestion_identifier.h"
 
 namespace base {
 class Time;
 }
+
+class GURL;
 
 // Enum defining the type of a ContentSuggestions.
 typedef NS_ENUM(NSInteger, ContentSuggestionType) {
