@@ -67,8 +67,10 @@ const char kExternalClearKeyPlatformVerificationTestKeySystem[] =
     "org.chromium.externalclearkey.platformverificationtest";
 const char kExternalClearKeyCrashKeySystem[] =
     "org.chromium.externalclearkey.crash";
+#if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
 const char kExternalClearKeyVerifyCdmHostTestKeySystem[] =
     "org.chromium.externalclearkey.verifycdmhosttest";
+#endif
 
 // Supported media types.
 const char kWebMVorbisAudioOnly[] = "audio/webm; codecs=\"vorbis\"";
@@ -733,12 +735,13 @@ IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, LoadUnknownSession) {
   TestPlaybackCase(kExternalClearKeyKeySystem, kUnknownSession,
                    kEmeSessionNotFound);
 }
+#endif  // BUILDFLAG(ENABLE_PEPPER_CDMS)
 
+#if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
 IN_PROC_BROWSER_TEST_F(ECKEncryptedMediaTest, VerifyCdmHostTest) {
   TestNonPlaybackCases(kExternalClearKeyVerifyCdmHostTestKeySystem,
                        kUnitTestSuccess);
 }
-
-#endif  // BUILDFLAG(ENABLE_PEPPER_CDMS)
+#endif  // BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
 
 }  // namespace chrome

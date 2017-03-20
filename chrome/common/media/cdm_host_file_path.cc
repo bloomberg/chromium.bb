@@ -20,6 +20,8 @@
 
 namespace chrome {
 
+#if defined(GOOGLE_CHROME_BUILD)
+
 namespace {
 
 using content::CdmHostFilePath;
@@ -107,5 +109,15 @@ void AddCdmHostFilePaths(
 
 #endif  // defined(OS_WIN)
 }
+
+#else  // defined(GOOGLE_CHROME_BUILD)
+
+void AddCdmHostFilePaths(
+    std::vector<content::CdmHostFilePath>* cdm_host_file_paths) {
+  NOTIMPLEMENTED() << "CDM host file paths need to be provided for the CDM to "
+                      "verify the host.";
+}
+
+#endif  // defined(GOOGLE_CHROME_BUILD)
 
 }  // namespace chrome

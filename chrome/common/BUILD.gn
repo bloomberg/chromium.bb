@@ -531,7 +531,7 @@ static_library("common") {
     ]
   }
 
-  if (enable_pepper_cdms) {
+  if (enable_cdm_host_verification) {
     sources += [
       "media/cdm_host_file_path.cc",
       "media/cdm_host_file_path.h",

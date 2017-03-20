@@ -124,7 +124,7 @@
 #include "content/utility/in_process_utility_thread.h"
 #endif
 
-#if BUILDFLAG(ENABLE_PEPPER_CDMS)
+#if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
 #include "content/common/media/cdm_host_files.h"
 #endif
 
@@ -399,7 +399,7 @@ int RunZygote(const MainFunctionParams& main_function_params,
       command_line.GetSwitchValueASCII(switches::kProcessType);
   ContentClientInitializer::Set(process_type, delegate);
 
-#if BUILDFLAG(ENABLE_PEPPER_CDMS)
+#if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
   if (process_type != switches::kPpapiPluginProcess) {
     DVLOG(1) << "Closing CDM files for non-ppapi process.";
     CdmHostFiles::TakeGlobalInstance().reset();

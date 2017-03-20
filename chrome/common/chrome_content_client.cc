@@ -86,7 +86,7 @@
 #include "chrome/common/widevine_cdm_constants.h"
 #endif
 
-#if BUILDFLAG(ENABLE_PEPPER_CDMS)
+#if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
 #include "chrome/common/media/cdm_host_file_path.h"
 #endif
 
@@ -569,7 +569,7 @@ void ChromeContentClient::AddContentDecryptionModules(
     // available.
   }
 
-#if BUILDFLAG(ENABLE_PEPPER_CDMS)
+#if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
   if (cdm_host_file_paths)
     chrome::AddCdmHostFilePaths(cdm_host_file_paths);
 #endif

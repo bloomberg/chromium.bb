@@ -72,7 +72,7 @@
 #include <sanitizer/coverage_interface.h>
 #endif
 
-#if BUILDFLAG(ENABLE_PEPPER_CDMS)
+#if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
 #include "content/common/media/cdm_host_files.h"
 #endif
 
@@ -367,7 +367,7 @@ static void ZygotePreSandboxInit() {
   InitializeWebRtcModule();
 #endif
 
-#if BUILDFLAG(ENABLE_PEPPER_CDMS)
+#if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
   CdmHostFiles::CreateGlobalInstance();
 #endif
 
