@@ -144,6 +144,9 @@ class PlatformNotificationServiceImpl
   void SetNotificationDisplayServiceForTesting(
       NotificationDisplayService* service);
 
+  void RecordSiteEngagement(content::BrowserContext* browser_context,
+                            const GURL& origin);
+
 #if BUILDFLAG(ENABLE_BACKGROUND)
   // Makes sure we keep the browser alive while the event in being processed.
   // As we have no control on the click handling, the notification could be

@@ -155,6 +155,20 @@ std::map<GURL, double> SiteEngagementService::GetScoreMap() const {
   return score_map;
 }
 
+void SiteEngagementService::HandleNotificationInteraction(const GURL& url) {
+  if (!ShouldRecordEngagement(url))
+    return;
+
+  SiteEngagementMetrics::RecordEngagement(
+      SiteEngagementMetrics::ENGAGEMENT_NOTIFICATION_INTERACTION);
+  AddPoints(url, SiteEngagementScore::GetNotificationInteractionPoints());
+
+  RecordMetrics();
+  double score = GetScore(url);
+  for (SiteEngagementObserver& observer : observer_list_)
+    observer.OnEngagementIncreased(nullptr /* web_contents */, url, score);
+}
+
 bool SiteEngagementService::IsBootstrapped() const {
   return GetTotalEngagementPoints() >=
          SiteEngagementScore::GetBootstrapPoints();
@@ -475,8 +489,9 @@ void SiteEngagementService::HandleMediaPlaying(
                            : SiteEngagementScore::GetVisibleMediaPoints());
 
   RecordMetrics();
+  double score = GetScore(url);
   for (SiteEngagementObserver& observer : observer_list_)
-    observer.OnEngagementIncreased(web_contents, url, GetScore(url));
+    observer.OnEngagementIncreased(web_contents, url, score);
 }
 
 void SiteEngagementService::HandleNavigation(content::WebContents* web_contents,
@@ -490,8 +505,9 @@ void SiteEngagementService::HandleNavigation(content::WebContents* web_contents,
   AddPoints(url, SiteEngagementScore::GetNavigationPoints());
 
   RecordMetrics();
+  double score = GetScore(url);
   for (SiteEngagementObserver& observer : observer_list_)
-    observer.OnEngagementIncreased(web_contents, url, GetScore(url));
+    observer.OnEngagementIncreased(web_contents, url, score);
 }
 
 void SiteEngagementService::HandleUserInput(
@@ -505,8 +521,9 @@ void SiteEngagementService::HandleUserInput(
   AddPoints(url, SiteEngagementScore::GetUserInputPoints());
 
   RecordMetrics();
+  double score = GetScore(url);
   for (SiteEngagementObserver& observer : observer_list_)
-    observer.OnEngagementIncreased(web_contents, url, GetScore(url));
+    observer.OnEngagementIncreased(web_contents, url, score);
 }
 
 void SiteEngagementService::SendLevelChangeToHelpers(

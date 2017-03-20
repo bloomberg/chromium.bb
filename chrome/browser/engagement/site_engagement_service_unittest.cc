@@ -391,6 +391,49 @@ TEST_F(SiteEngagementServiceTest, GetTotalUserInputPoints) {
   EXPECT_DOUBLE_EQ(0.4, service->GetTotalEngagementPoints());
 }
 
+TEST_F(SiteEngagementServiceTest, GetTotalNotificationPoints) {
+  SiteEngagementService* service = SiteEngagementService::Get(profile());
+  ASSERT_TRUE(service);
+  base::HistogramTester histograms;
+
+  // The https and http versions of www.google.com should be separate.
+  GURL url1("https://www.google.com/");
+  GURL url2("http://www.google.com/");
+  GURL url3("http://drive.google.com/");
+
+  EXPECT_EQ(0, service->GetScore(url1));
+  EXPECT_EQ(0, service->GetScore(url2));
+  EXPECT_EQ(0, service->GetScore(url3));
+
+  service->HandleNotificationInteraction(url1);
+  EXPECT_DOUBLE_EQ(1.0, service->GetScore(url1));
+  EXPECT_DOUBLE_EQ(1.0, service->GetTotalEngagementPoints());
+  histograms.ExpectBucketCount(
+      SiteEngagementMetrics::kEngagementTypeHistogram,
+      SiteEngagementMetrics::ENGAGEMENT_NOTIFICATION_INTERACTION, 1);
+
+  service->HandleNotificationInteraction(url2);
+  EXPECT_DOUBLE_EQ(1.0, service->GetScore(url2));
+  EXPECT_DOUBLE_EQ(2.0, service->GetTotalEngagementPoints());
+  histograms.ExpectBucketCount(
+      SiteEngagementMetrics::kEngagementTypeHistogram,
+      SiteEngagementMetrics::ENGAGEMENT_NOTIFICATION_INTERACTION, 2);
+
+  service->HandleNotificationInteraction(url1);
+  EXPECT_DOUBLE_EQ(2.0, service->GetScore(url1));
+  EXPECT_DOUBLE_EQ(3.0, service->GetTotalEngagementPoints());
+  histograms.ExpectBucketCount(
+      SiteEngagementMetrics::kEngagementTypeHistogram,
+      SiteEngagementMetrics::ENGAGEMENT_NOTIFICATION_INTERACTION, 3);
+
+  service->HandleNotificationInteraction(url3);
+  EXPECT_DOUBLE_EQ(1.0, service->GetScore(url3));
+  EXPECT_DOUBLE_EQ(4.0, service->GetTotalEngagementPoints());
+  histograms.ExpectBucketCount(
+      SiteEngagementMetrics::kEngagementTypeHistogram,
+      SiteEngagementMetrics::ENGAGEMENT_NOTIFICATION_INTERACTION, 4);
+}
+
 TEST_F(SiteEngagementServiceTest, RestrictedToHTTPAndHTTPS) {
   SiteEngagementService* service = SiteEngagementService::Get(profile());
   ASSERT_TRUE(service);
@@ -1390,6 +1433,7 @@ TEST_F(SiteEngagementServiceTest, Observers) {
   GURL url_score_1("http://www.google.com/maps");
   GURL url_score_2("http://www.google.com/drive");
   GURL url_score_3("http://www.google.com/");
+  GURL url_score_4("http://maps.google.com/");
   GURL url_not_called("https://www.google.com/");
 
   // Create an observer and Observe(nullptr).
@@ -1439,6 +1483,17 @@ TEST_F(SiteEngagementServiceTest, Observers) {
   {
     ObserverTester tester(service, web_contents(), url_score_3, 0.58);
     service->HandleMediaPlaying(web_contents(), true);
+    tester.Wait();
+
+    EXPECT_TRUE(tester.callback_called());
+    EXPECT_FALSE(tester_not_called.callback_called());
+    tester.Observe(nullptr);
+  }
+
+  // Add an observer for notifications.
+  {
+    ObserverTester tester(service, nullptr, url_score_4, 1.0);
+    service->HandleNotificationInteraction(url_score_4);
     tester.Wait();
 
     EXPECT_TRUE(tester.callback_called());

@@ -49,6 +49,13 @@ public class SiteEngagementService {
         nativeResetBaseScoreForURL(mNativePointer, url, score);
     }
 
+    /**
+     * Sets site engagement param values to constants for testing.
+     */
+    public static void setParamValuesForTesting() {
+        nativeSetParamValuesForTesting();
+    }
+
     @CalledByNative
     private static SiteEngagementService create(long nativePointer) {
         return new SiteEngagementService(nativePointer);
@@ -66,6 +73,7 @@ public class SiteEngagementService {
 
     private static native SiteEngagementService nativeSiteEngagementServiceForProfile(
             Profile profile);
+    private static native void nativeSetParamValuesForTesting();
     private native double nativeGetScore(long nativeSiteEngagementServiceAndroid, String url);
     private native void nativeResetBaseScoreForURL(
             long nativeSiteEngagementServiceAndroid, String url, double score);

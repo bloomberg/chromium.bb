@@ -84,8 +84,11 @@ class SiteEngagementScore {
     // period prior to clock_->Now().
     LAST_ENGAGEMENT_GRACE_PERIOD_IN_HOURS,
 
-    // THe number of points given for having notification permission granted.
+    // The number of points given for having notification permission granted.
     NOTIFICATION_PERMISSION_POINTS,
+
+    // The number of points given for interacting with a displayed notification.
+    NOTIFICATION_INTERACTION_POINTS,
 
     MAX_VARIATION
   };
@@ -110,6 +113,11 @@ class SiteEngagementScore {
   static double GetMaxDecaysPerScore();
   static double GetLastEngagementGracePeriodInHours();
   static double GetNotificationPermissionPoints();
+  static double GetNotificationInteractionPoints();
+
+  // Sets fixed parameter values for testing site engagement. Ensure that any
+  // newly added parameters receive a fixed value here.
+  static void SetParamValuesForTesting();
 
   // Update the default engagement settings via variations.
   static void UpdateFromVariations(const char* param_name);
@@ -165,11 +173,6 @@ class SiteEngagementScore {
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementScoreTest, PartiallyEmptyDictionary);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementScoreTest, PopulatedDictionary);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementScoreTest, Reset);
-  friend class ChromePluginServiceFilterTest;
-  friend class ImportantSitesUtil;
-  friend class ImportantSitesUtilTest;
-  friend class PushMessagingBrowserTest;
-  friend class SiteEngagementHelperTest;
   friend class SiteEngagementScoreTest;
   friend class SiteEngagementServiceTest;
 
@@ -195,10 +198,6 @@ class SiteEngagementScore {
 
   // Determine any score bonus from having installed shortcuts.
   double BonusScore() const;
-
-  // Sets fixed parameter values for testing site engagement. Ensure that any
-  // newly added parameters receive a fixed value here.
-  static void SetParamValuesForTesting();
 
   // Updates the content settings dictionary |score_dict| with the current score
   // fields. Returns true if |score_dict| changed, otherwise return false.

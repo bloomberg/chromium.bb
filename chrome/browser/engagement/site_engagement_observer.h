@@ -19,9 +19,10 @@ class SiteEngagementObserver {
  public:
   // Called when the engagement for |url| loaded in |web_contents| increases to
   // |score|. |is_hidden| is true if the engagement occurred when |web_contents|
-  // was hidden (e.g. in the background).
-  // This method may be run on user input, so observers *must not* perform any
-  // expensive tasks here.
+  // was hidden (e.g. in the background). This method may be run on user input,
+  // so observers *must not* perform any expensive tasks here. |web_contents|
+  // may be null if the engagement has increased when |url| is not in a tab,
+  // e.g. from a notification interaction.
   virtual void OnEngagementIncreased(content::WebContents* web_contents,
                                      const GURL& url,
                                      double score) {}

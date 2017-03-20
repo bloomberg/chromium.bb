@@ -27,6 +27,7 @@ class SiteEngagementMetrics {
     ENGAGEMENT_MEDIA_VISIBLE,
     ENGAGEMENT_WEBAPP_SHORTCUT_LAUNCH,
     ENGAGEMENT_FIRST_DAILY_ENGAGEMENT,
+    ENGAGEMENT_NOTIFICATION_INTERACTION,
     ENGAGEMENT_LAST,
   };
 
@@ -46,6 +47,8 @@ class SiteEngagementMetrics {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, CheckHistograms);
+  FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest,
+                           GetTotalNotificationPoints);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, LastShortcutLaunch);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, ScoreDecayHistograms);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementHelperTest,

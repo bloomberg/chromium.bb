@@ -111,6 +111,9 @@ class SiteEngagementService : public KeyedService,
   // Returns a map of all stored origins and their engagement scores.
   std::map<GURL, double> GetScoreMap() const;
 
+  // Update the engagement score of |url| for a notification interaction.
+  void HandleNotificationInteraction(const GURL& url);
+
   // Returns whether the engagement service has enough data to make meaningful
   // decisions. Clients should avoid using engagement in their heuristic until
   // this is true.
@@ -151,6 +154,8 @@ class SiteEngagementService : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, GetMedianEngagement);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, GetTotalNavigationPoints);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, GetTotalUserInputPoints);
+  FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest,
+                           GetTotalNotificationPoints);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, RestrictedToHTTPAndHTTPS);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, LastShortcutLaunch);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, NotificationPermission);

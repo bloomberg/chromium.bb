@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/notifications/notification_object_proxy.h"
 #include "chrome/browser/notifications/persistent_notification_delegate.h"
@@ -155,6 +156,7 @@ void PlatformNotificationServiceImpl::OnPersistentNotificationClick(
   }
 #endif
 
+  RecordSiteEngagement(browser_context, origin);
   content::NotificationEventDispatcher::GetInstance()
       ->DispatchNotificationClickEvent(
           browser_context, notification_id, origin, action_index, reply,
@@ -528,4 +530,14 @@ base::string16 PlatformNotificationServiceImpl::DisplayNameForContextMessage(
 void PlatformNotificationServiceImpl::SetNotificationDisplayServiceForTesting(
     NotificationDisplayService* display_service) {
   test_display_service_ = display_service;
+}
+
+void PlatformNotificationServiceImpl::RecordSiteEngagement(
+    BrowserContext* browser_context,
+    const GURL& origin) {
+  // TODO(dominickn, peter): This would be better if the site engagement service
+  // could directly observe each notification.
+  SiteEngagementService* engagement_service =
+      SiteEngagementService::Get(Profile::FromBrowserContext(browser_context));
+  engagement_service->HandleNotificationInteraction(origin);
 }

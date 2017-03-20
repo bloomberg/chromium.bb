@@ -92,6 +92,8 @@ SiteEngagementScore::ParamValues SiteEngagementScore::BuildParamValues() {
       "last_engagement_grace_period_in_hours", 1};
   param_values[NOTIFICATION_PERMISSION_POINTS] = {
       "notification_permission_points", 5};
+  param_values[NOTIFICATION_INTERACTION_POINTS] = {
+      "notification_interaction_points", 1};
   return param_values;
 }
 
@@ -163,6 +165,33 @@ double SiteEngagementScore::GetNotificationPermissionPoints() {
   return GetParamValues()[NOTIFICATION_PERMISSION_POINTS].second;
 }
 
+double SiteEngagementScore::GetNotificationInteractionPoints() {
+  return GetParamValues()[NOTIFICATION_INTERACTION_POINTS].second;
+}
+
+void SiteEngagementScore::SetParamValuesForTesting() {
+  GetParamValues()[MAX_POINTS_PER_DAY].second = 5;
+  GetParamValues()[DECAY_PERIOD_IN_HOURS].second = 7 * 24;
+  GetParamValues()[DECAY_POINTS].second = 5;
+  GetParamValues()[NAVIGATION_POINTS].second = 0.5;
+  GetParamValues()[USER_INPUT_POINTS].second = 0.05;
+  GetParamValues()[VISIBLE_MEDIA_POINTS].second = 0.02;
+  GetParamValues()[HIDDEN_MEDIA_POINTS].second = 0.01;
+  GetParamValues()[WEB_APP_INSTALLED_POINTS].second = 5;
+  GetParamValues()[BOOTSTRAP_POINTS].second = 8;
+  GetParamValues()[MEDIUM_ENGAGEMENT_BOUNDARY].second = 5;
+  GetParamValues()[HIGH_ENGAGEMENT_BOUNDARY].second = 50;
+  GetParamValues()[MAX_DECAYS_PER_SCORE].second = 1;
+  GetParamValues()[LAST_ENGAGEMENT_GRACE_PERIOD_IN_HOURS].second = 72;
+  GetParamValues()[NOTIFICATION_PERMISSION_POINTS].second = 5;
+  GetParamValues()[NOTIFICATION_INTERACTION_POINTS].second = 1;
+
+  // This is set to values that avoid interference with tests and are set when
+  // testing these features.
+  GetParamValues()[FIRST_DAILY_ENGAGEMENT].second = 0;
+  GetParamValues()[DECAY_PROPORTION].second = 1;
+  GetParamValues()[SCORE_CLEANUP_THRESHOLD].second = 0;
+}
 // static
 void SiteEngagementScore::UpdateFromVariations(const char* param_name) {
   double param_vals[MAX_VARIATION];
@@ -387,27 +416,4 @@ double SiteEngagementScore::BonusScore() const {
   }
 
   return bonus;
-}
-
-void SiteEngagementScore::SetParamValuesForTesting() {
-  GetParamValues()[MAX_POINTS_PER_DAY].second = 5;
-  GetParamValues()[DECAY_PERIOD_IN_HOURS].second = 7 * 24;
-  GetParamValues()[DECAY_POINTS].second = 5;
-  GetParamValues()[NAVIGATION_POINTS].second = 0.5;
-  GetParamValues()[USER_INPUT_POINTS].second = 0.05;
-  GetParamValues()[VISIBLE_MEDIA_POINTS].second = 0.02;
-  GetParamValues()[HIDDEN_MEDIA_POINTS].second = 0.01;
-  GetParamValues()[WEB_APP_INSTALLED_POINTS].second = 5;
-  GetParamValues()[BOOTSTRAP_POINTS].second = 8;
-  GetParamValues()[MEDIUM_ENGAGEMENT_BOUNDARY].second = 5;
-  GetParamValues()[HIGH_ENGAGEMENT_BOUNDARY].second = 50;
-  GetParamValues()[MAX_DECAYS_PER_SCORE].second = 1;
-  GetParamValues()[LAST_ENGAGEMENT_GRACE_PERIOD_IN_HOURS].second = 72;
-  GetParamValues()[NOTIFICATION_PERMISSION_POINTS].second = 5;
-
-  // This is set to values that avoid interference with tests and are set when
-  // testing these features.
-  GetParamValues()[FIRST_DAILY_ENGAGEMENT].second = 0;
-  GetParamValues()[DECAY_PROPORTION].second = 1;
-  GetParamValues()[SCORE_CLEANUP_THRESHOLD].second = 0;
 }
