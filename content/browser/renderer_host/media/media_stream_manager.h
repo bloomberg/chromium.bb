@@ -405,10 +405,11 @@ class CONTENT_EXPORT MediaStreamManager
 
   media::AudioSystem* const audio_system_;  // not owned
   scoped_refptr<AudioInputDeviceManager> audio_input_device_manager_;
-  scoped_refptr<VideoCaptureManager> video_capture_manager_;
 #if defined(OS_WIN)
   base::Thread video_capture_thread_;
 #endif
+  // Must be released before |video_capture_thread_| goes out of scope.
+  scoped_refptr<VideoCaptureManager> video_capture_manager_;
 
   std::unique_ptr<MediaDevicesManager> media_devices_manager_;
 
