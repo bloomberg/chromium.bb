@@ -2590,7 +2590,21 @@ error::Error GLES2DecoderPassthroughImpl::DoResizeCHROMIUM(GLuint width,
                                                            GLuint height,
                                                            GLfloat scale_factor,
                                                            GLboolean alpha) {
-  NOTIMPLEMENTED();
+  if (offscreen_) {
+    // TODO: crbug.com/665521
+    NOTIMPLEMENTED();
+  } else {
+    if (!surface_->Resize(gfx::Size(width, height), scale_factor, !!alpha)) {
+      LOG(ERROR) << "GLES2DecoderImpl: Context lost because resize failed.";
+      return error::kLostContext;
+    }
+    DCHECK(context_->IsCurrent(surface_.get()));
+    if (!context_->IsCurrent(surface_.get())) {
+      LOG(ERROR) << "GLES2DecoderImpl: Context lost because context no longer "
+                 << "current after resize callback.";
+      return error::kLostContext;
+    }
+  }
   return error::kNoError;
 }
 
