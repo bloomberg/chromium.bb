@@ -931,9 +931,6 @@ static void update_frame_size(AV1_COMP *cpi) {
                        NULL);
   memset(cpi->mbmi_ext_base, 0,
          cm->mi_rows * cm->mi_cols * sizeof(*cpi->mbmi_ext_base));
-#if CONFIG_LV_MAP
-  av1_reset_txb_buf(cpi);
-#endif
 
   set_tile_info(cpi);
 }

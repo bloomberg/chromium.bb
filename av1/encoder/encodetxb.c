@@ -17,6 +17,7 @@
 #include "av1/encoder/tokenize.h"
 
 void av1_alloc_txb_buf(AV1_COMP *cpi) {
+#if 0
   AV1_COMMON *cm = &cpi->common;
   int mi_block_size = 1 << MI_SIZE_LOG2;
   // TODO(angiebird): Make sure cm->subsampling_x/y is set correctly, and then
@@ -29,42 +30,20 @@ void av1_alloc_txb_buf(AV1_COMP *cpi) {
         cm, cpi->tcoeff_buf[i],
         aom_malloc(sizeof(*cpi->tcoeff_buf[i]) * pixel_stride * pixel_height));
   }
-}
-
-void av1_reset_txb_buf(AV1_COMP *cpi) {
-  AV1_COMMON *cm = &cpi->common;
-  int mi_block_size = 1 << MI_SIZE_LOG2;
-  int plane;
-  for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
-    // TODO(angiebird): Set the subsampling_x/y to cm->subsampling_x/y
-    int subsampling_x = 0;
-    int subsampling_y = 0;
-    int pixel_stride = (mi_block_size * cm->mi_cols) >> subsampling_x;
-    int pixel_height = (mi_block_size * cm->mi_rows) >> subsampling_y;
-
-    // TODO(angiebird): Check if we really need this initialization
-    memset(cpi->tcoeff_buf[plane], 0,
-           pixel_stride * pixel_height * sizeof(*cpi->tcoeff_buf[plane]));
-
-    int mi_row, mi_col;
-    for (mi_row = 0; mi_row < cm->mi_rows; ++mi_row) {
-      for (mi_col = 0; mi_col < cm->mi_cols; ++mi_col) {
-        MB_MODE_INFO_EXT *mbmi_ext =
-            cpi->mbmi_ext_base + mi_row * cm->mi_cols + mi_col;
-        int pixel_row = (mi_block_size * mi_row) >> subsampling_y;
-        int pixel_col = (mi_block_size * mi_col) >> subsampling_x;
-        mbmi_ext->tcoeff[plane] =
-            cpi->tcoeff_buf[plane] + pixel_row * pixel_stride + pixel_col;
-      }
-    }
-  }
+#else
+  (void)cpi;
+#endif
 }
 
 void av1_free_txb_buf(AV1_COMP *cpi) {
+#if 0
   int i;
   for (i = 0; i < MAX_MB_PLANE; ++i) {
     aom_free(cpi->tcoeff_buf[i]);
   }
+#else
+  (void)cpi;
+#endif
 }
 
 static void write_golomb(aom_writer *w, int level) {

@@ -23,7 +23,6 @@
 extern "C" {
 #endif
 void av1_alloc_txb_buf(AV1_COMP *cpi);
-void av1_reset_txb_buf(AV1_COMP *cpi);
 void av1_free_txb_buf(AV1_COMP *cpi);
 void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
                           aom_writer *w, int block, int plane,
