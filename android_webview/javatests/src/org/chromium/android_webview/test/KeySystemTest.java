@@ -9,7 +9,6 @@ import android.support.test.filters.SmallTest;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.permission.AwPermissionRequest;
 import org.chromium.android_webview.permission.Resource;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 
 import java.util.concurrent.Callable;
@@ -106,8 +105,7 @@ public class KeySystemTest extends AwTestBase {
     }
 
     @Feature({"AndroidWebView"})
-    @DisabledTest
-    // crbug/701916
+    @SmallTest
     public void testSupportWidevineKeySystem() throws Throwable {
         assertEquals(
                 getPlatformKeySystemExpectations(), isKeySystemSupported("com.widevine.alpha"));
@@ -120,8 +118,7 @@ public class KeySystemTest extends AwTestBase {
     }
 
     @Feature({"AndroidWebView"})
-    @DisabledTest
-    // crbug/701916
+    @SmallTest
     public void testSupportPlatformKeySystem() throws Throwable {
         assertEquals(getPlatformKeySystemExpectations(),
                 isKeySystemSupported("x-com.oem.test-keysystem"));
