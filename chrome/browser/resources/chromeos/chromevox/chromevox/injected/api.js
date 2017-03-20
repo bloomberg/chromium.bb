@@ -128,20 +128,41 @@ if (typeof(goog) != 'undefined' && goog.require) {
      callAsync_(message, callback);
    };
 
+   /**
+    * Gets an object given a dotted namespace object path.
+    * @param {string} path
+    * @return {*}
+    */
+   function getObjectByName(path) {
+     var pieces = path.split('.');
+     var resolved = window;
+     for (var i = 0; i < pieces.length; i++) {
+       resolved = resolved[pieces[i]];
+       if (!resolved) {
+         return null;
+       }
+     }
+     return resolved;
+   }
+
 
    /**
     * Maybe enable MathJaX support.
     */
-  function maybeEnableMathJaX() {
-     if (!MathJax || !MathJax.Hub || !MathJax.Hub.Register ||
-         !MathJax.Hub.Register.LoadHook)
+   function maybeEnableMathJaX() {
+     if (!getObjectByName('MathJax.Hub.Register.LoadHook') ||
+         !getObjectByName('MathJax.Ajax.Require')) {
        return;
+     }
 
-     MathJax.Hub.Register.LoadHook(
-         '[a11y]/explorer.js',
-         function() {
-           MathJax.Extension.explorer.Enable(true, true);
-         });
+     MathJax.Hub.Register.LoadHook('[a11y]/explorer.js', function() {
+       // |explorer| is an object instance, so we get it to call an instance
+       // |method.
+       var explorer = getObjectByName('MathJax.Extension.explorer');
+       if (explorer.Enable) {
+         explorer.Enable(true, true);
+       }
+     });
      MathJax.Ajax.Require('[a11y]/explorer.js');
    }
 

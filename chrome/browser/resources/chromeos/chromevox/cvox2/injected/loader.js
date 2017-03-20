@@ -10,7 +10,7 @@ goog.require('KeyboardHandler');
  */
 function initMin() {
   if (cvox.ChromeVox.isChromeOS) {
-    cvox.ApiImplementation.init();
+    cvox.ApiImplementation.init(true);
     return;
   }
 
