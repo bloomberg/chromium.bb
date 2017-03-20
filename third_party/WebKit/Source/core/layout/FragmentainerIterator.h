@@ -5,13 +5,13 @@
 #ifndef FragmentainerIterator_h
 #define FragmentainerIterator_h
 
+#include "core/layout/MultiColumnFragmentainerGroup.h"
 #include "platform/geometry/LayoutRect.h"
 
 namespace blink {
 
 class LayoutFlowThread;
 class LayoutMultiColumnSet;
-class MultiColumnFragmentainerGroup;
 
 // Used to find the fragmentainers that intersect with a given portion of the
 // flow thread. The portion typically corresponds to the bounds of some
@@ -38,13 +38,11 @@ class FragmentainerIterator {
   // flowthread to visual coordinates.
   LayoutSize paginationOffset() const;
 
-  // Return the physical content box of the current fragmentainer, relative to
-  // the flow thread.
-  LayoutRect fragmentainerInFlowThread() const;
-
   // Return the physical clip rectangle of the current fragmentainer, relative
   // to the flow thread.
-  LayoutRect clipRectInFlowThread() const;
+  LayoutRect clipRectInFlowThread(
+      MultiColumnFragmentainerGroup::ClipRectAxesSelector =
+          MultiColumnFragmentainerGroup::BothAxes) const;
 
  private:
   const LayoutFlowThread& m_flowThread;

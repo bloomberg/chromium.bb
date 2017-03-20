@@ -103,7 +103,23 @@ class MultiColumnFragmentainerGroup {
       const LayoutRect& boundingBoxInFlowThread) const;
 
   LayoutRect flowThreadPortionRectAt(unsigned columnIndex) const;
-  LayoutRect flowThreadPortionOverflowRectAt(unsigned columnIndex) const;
+
+  enum ClipRectAxesSelector {
+    // Only limit the clip rectangle in the block direction. Leave inline
+    // position and length at infinity. Certain operations require this. Those
+    // operations would typically ideally want no clipping at all, but in our
+    // implementation we have to clip in the block direction, in order to slice
+    // the flow thread properly into columns.
+    BlockDirectionAxis,
+
+    // Limit the clip rectangle along both axes. This is what to use for
+    // painting and hit testing.
+    BothAxes
+  };
+
+  LayoutRect flowThreadPortionOverflowRectAt(
+      unsigned columnIndex,
+      ClipRectAxesSelector = BothAxes) const;
 
   // Get the first and the last column intersecting the specified block range.
   // Note that |logicalBottomInFlowThread| is an exclusive endpoint.

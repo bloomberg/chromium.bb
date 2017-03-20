@@ -77,18 +77,11 @@ LayoutSize FragmentainerIterator::paginationOffset() const {
       CoordinateSpaceConversion::Visual);
 }
 
-LayoutRect FragmentainerIterator::fragmentainerInFlowThread() const {
-  DCHECK(!atEnd());
-  LayoutRect fragmentainerInFlowThread =
-      currentGroup().flowThreadPortionRectAt(m_currentFragmentainerIndex);
-  m_flowThread.flipForWritingMode(fragmentainerInFlowThread);
-  return fragmentainerInFlowThread;
-}
-
-LayoutRect FragmentainerIterator::clipRectInFlowThread() const {
+LayoutRect FragmentainerIterator::clipRectInFlowThread(
+    MultiColumnFragmentainerGroup::ClipRectAxesSelector axesSelector) const {
   DCHECK(!atEnd());
   LayoutRect clipRect = currentGroup().flowThreadPortionOverflowRectAt(
-      m_currentFragmentainerIndex);
+      m_currentFragmentainerIndex, axesSelector);
   m_flowThread.flipForWritingMode(clipRect);
   return clipRect;
 }

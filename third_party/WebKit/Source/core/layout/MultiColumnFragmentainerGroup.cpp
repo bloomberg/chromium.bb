@@ -416,7 +416,8 @@ LayoutRect MultiColumnFragmentainerGroup::flowThreadPortionRectAt(
 }
 
 LayoutRect MultiColumnFragmentainerGroup::flowThreadPortionOverflowRectAt(
-    unsigned columnIndex) const {
+    unsigned columnIndex,
+    ClipRectAxesSelector axesSelector) const {
   // This function determines the portion of the flow thread that paints for the
   // column. Along the inline axis, columns are unclipped at outside edges
   // (i.e., the first and last column in the set), and they clip to half the
@@ -454,21 +455,27 @@ LayoutRect MultiColumnFragmentainerGroup::flowThreadPortionOverflowRectAt(
       overflowRect.shiftYEdgeTo(portionRect.y());
     if (!isLastColumnInMulticolContainer)
       overflowRect.shiftMaxYEdgeTo(portionRect.maxY());
-    if (!isLeftmostColumn)
-      overflowRect.shiftXEdgeTo(portionRect.x() - columnGap / 2);
-    if (!isRightmostColumn)
-      overflowRect.shiftMaxXEdgeTo(portionRect.maxX() + columnGap -
-                                   columnGap / 2);
+    if (axesSelector == BothAxes) {
+      if (!isLeftmostColumn)
+        overflowRect.shiftXEdgeTo(portionRect.x() - columnGap / 2);
+      if (!isRightmostColumn) {
+        overflowRect.shiftMaxXEdgeTo(portionRect.maxX() + columnGap -
+                                     columnGap / 2);
+      }
+    }
   } else {
     if (!isFirstColumnInMulticolContainer)
       overflowRect.shiftXEdgeTo(portionRect.x());
     if (!isLastColumnInMulticolContainer)
       overflowRect.shiftMaxXEdgeTo(portionRect.maxX());
-    if (!isLeftmostColumn)
-      overflowRect.shiftYEdgeTo(portionRect.y() - columnGap / 2);
-    if (!isRightmostColumn)
-      overflowRect.shiftMaxYEdgeTo(portionRect.maxY() + columnGap -
-                                   columnGap / 2);
+    if (axesSelector == BothAxes) {
+      if (!isLeftmostColumn)
+        overflowRect.shiftYEdgeTo(portionRect.y() - columnGap / 2);
+      if (!isRightmostColumn) {
+        overflowRect.shiftMaxYEdgeTo(portionRect.maxY() + columnGap -
+                                     columnGap / 2);
+      }
+    }
   }
   return overflowRect;
 }
