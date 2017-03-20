@@ -4574,6 +4574,10 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
           atIndex:(NSUInteger)index {
   [self uninstallDelegatesForTab:oldTab];
   [self installDelegatesForTab:newTab];
+
+  // Add |newTab|'s view to the hierarchy if it's the current Tab.
+  if (self.active && model.currentTab == newTab)
+    [self displayTab:newTab isNewSelection:NO];
 }
 
 // A tab has been removed, remove its views from display if necessary.
