@@ -207,6 +207,8 @@ public class ChromeHomeNewTabPage implements NativePage, TemplateUrlServiceObser
                 if (logo == null && fromCache) return;
                 mLogoView.setDelegate(logoDelegate);
                 mLogoView.updateLogo(logo);
+                // TODO(twellington): The new logo may be taller than the default logo. Adjust
+                //                    the view positioning.
             }
         });
         updateSearchProviderLogoVisibility();
