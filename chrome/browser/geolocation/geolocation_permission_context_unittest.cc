@@ -322,6 +322,8 @@ void GeolocationPermissionContextTests::SetUp() {
           std::unique_ptr<LocationSettings>(new MockLocationSettings()));
   MockLocationSettings::SetLocationStatus(true, true);
   MockLocationSettings::SetCanPromptForAndroidPermission(true);
+  MockLocationSettings::SetLocationSettingsDialogStatus(false /* enabled */,
+                                                        GRANTED);
 #else
   SetupRequestManager(web_contents());
 #endif
@@ -1134,6 +1136,8 @@ TEST_F(GeolocationPermissionContextTests, GeolocationStatusSystemDisabled) {
                                CONTENT_SETTING_ALLOW);
   MockLocationSettings::SetLocationStatus(true /* android */,
                                           false /* system */);
+  MockLocationSettings::SetLocationSettingsDialogStatus(true /* enabled */,
+                                                        DENIED);
   ASSERT_EQ(blink::mojom::PermissionStatus::ASK,
             PermissionManager::Get(profile())->GetPermissionStatus(
                 content::PermissionType::GEOLOCATION, requesting_frame,
