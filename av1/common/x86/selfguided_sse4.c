@@ -16,10 +16,10 @@ static void calc_block(__m128i sum, __m128i sum_sq, __m128i n,
   if (bit_depth > 8) {
     __m128i rounding_a = _mm_set1_epi32((1 << (2 * (bit_depth - 8))) >> 1);
     __m128i rounding_b = _mm_set1_epi32((1 << (bit_depth - 8)) >> 1);
-    a = _mm_srl_epi32(_mm_add_epi32(sum_sq, rounding_a),
-                      _mm_set1_epi32(2 * (bit_depth - 8)));
-    b = _mm_srl_epi32(_mm_add_epi32(sum, rounding_b),
-                      _mm_set1_epi32(bit_depth - 8));
+    __m128i shift_a = _mm_set_epi64x(0, 2 * (bit_depth - 8));
+    __m128i shift_b = _mm_set_epi64x(0, bit_depth - 8);
+    a = _mm_srl_epi32(_mm_add_epi32(sum_sq, rounding_a), shift_a);
+    b = _mm_srl_epi32(_mm_add_epi32(sum, rounding_b), shift_b);
     a = _mm_mullo_epi32(a, n);
     b = _mm_mullo_epi32(b, b);
     p = _mm_sub_epi32(_mm_max_epi32(a, b), b);
@@ -1715,6 +1715,89 @@ void av1_highpass_filter_highbd_sse4_1(uint16_t *dgd, int width, int height,
           center * dgd[k] + edge * (dgd[k - 1] + dgd[k - stride] + dgd[k] * 2) +
           corner *
               (dgd[k - stride - 1] + dgd[k - 1] + dgd[k - stride] + dgd[k]);
+    }
+  }
+}
+
+void apply_selfguided_restoration_highbd_sse4_1(
+    uint16_t *dat, int width, int height, int stride, int bit_depth, int eps,
+    int *xqd, uint16_t *dst, int dst_stride, int32_t *tmpbuf) {
+  int xq[2];
+  int32_t *flt1 = tmpbuf;
+  int32_t *flt2 = flt1 + RESTORATION_TILEPELS_MAX;
+  int32_t *tmpbuf2 = flt2 + RESTORATION_TILEPELS_MAX;
+  int i, j;
+  assert(width * height <= RESTORATION_TILEPELS_MAX);
+#if USE_HIGHPASS_IN_SGRPROJ
+  av1_highpass_filter_highbd_sse4_1(dat, width, height, stride, flt1, width,
+                                    sgr_params[eps].corner,
+                                    sgr_params[eps].edge);
+#else
+  av1_selfguided_restoration_highbd_sse4_1(dat, width, height, stride, flt1,
+                                           width, bit_depth, sgr_params[eps].r1,
+                                           sgr_params[eps].e1, tmpbuf2);
+#endif  // USE_HIGHPASS_IN_SGRPROJ
+  av1_selfguided_restoration_highbd_sse4_1(dat, width, height, stride, flt2,
+                                           width, bit_depth, sgr_params[eps].r2,
+                                           sgr_params[eps].e2, tmpbuf2);
+  decode_xq(xqd, xq);
+
+  __m128i xq0 = _mm_set1_epi32(xq[0]);
+  __m128i xq1 = _mm_set1_epi32(xq[1]);
+  for (i = 0; i < height; ++i) {
+    // Calculate output in batches of 8 pixels
+    for (j = 0; j < width; j += 8) {
+      const int k = i * width + j;
+      const int l = i * stride + j;
+      const int m = i * dst_stride + j;
+      __m128i src =
+          _mm_slli_epi16(_mm_load_si128((__m128i *)&dat[l]), SGRPROJ_RST_BITS);
+
+      const __m128i u_0 = _mm_cvtepu16_epi32(src);
+      const __m128i u_1 = _mm_cvtepu16_epi32(_mm_srli_si128(src, 8));
+
+      const __m128i f1_0 =
+          _mm_sub_epi32(_mm_loadu_si128((__m128i *)&flt1[k]), u_0);
+      const __m128i f2_0 =
+          _mm_sub_epi32(_mm_loadu_si128((__m128i *)&flt2[k]), u_0);
+      const __m128i f1_1 =
+          _mm_sub_epi32(_mm_loadu_si128((__m128i *)&flt1[k + 4]), u_1);
+      const __m128i f2_1 =
+          _mm_sub_epi32(_mm_loadu_si128((__m128i *)&flt2[k + 4]), u_1);
+
+      const __m128i v_0 = _mm_add_epi32(
+          _mm_add_epi32(_mm_mullo_epi32(xq0, f1_0), _mm_mullo_epi32(xq1, f2_0)),
+          _mm_slli_epi32(u_0, SGRPROJ_PRJ_BITS));
+      const __m128i v_1 = _mm_add_epi32(
+          _mm_add_epi32(_mm_mullo_epi32(xq0, f1_1), _mm_mullo_epi32(xq1, f2_1)),
+          _mm_slli_epi32(u_1, SGRPROJ_PRJ_BITS));
+
+      const __m128i rounding =
+          _mm_set1_epi32((1 << (SGRPROJ_PRJ_BITS + SGRPROJ_RST_BITS)) >> 1);
+      const __m128i w_0 = _mm_srai_epi32(_mm_add_epi32(v_0, rounding),
+                                         SGRPROJ_PRJ_BITS + SGRPROJ_RST_BITS);
+      const __m128i w_1 = _mm_srai_epi32(_mm_add_epi32(v_1, rounding),
+                                         SGRPROJ_PRJ_BITS + SGRPROJ_RST_BITS);
+
+      // Pack into 16 bits and clamp to [0, 2^bit_depth)
+      const __m128i tmp = _mm_packus_epi32(w_0, w_1);
+      const __m128i max = _mm_set1_epi16((1 << bit_depth) - 1);
+      const __m128i res = _mm_min_epi16(tmp, max);
+
+      _mm_store_si128((__m128i *)&dst[m], res);
+    }
+    // Process leftover pixels
+    for (; j < width; ++j) {
+      const int k = i * width + j;
+      const int l = i * stride + j;
+      const int m = i * dst_stride + j;
+      const int32_t u = ((int32_t)dat[l] << SGRPROJ_RST_BITS);
+      const int32_t f1 = (int32_t)flt1[k] - u;
+      const int32_t f2 = (int32_t)flt2[k] - u;
+      const int32_t v = xq[0] * f1 + xq[1] * f2 + (u << SGRPROJ_PRJ_BITS);
+      const int16_t w =
+          (int16_t)ROUND_POWER_OF_TWO(v, SGRPROJ_PRJ_BITS + SGRPROJ_RST_BITS);
+      dst[m] = (uint16_t)clip_pixel_highbd(w, bit_depth);
     }
   }
 }

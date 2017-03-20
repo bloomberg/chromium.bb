@@ -44,8 +44,8 @@ class AV1SelfguidedFilterTest
     const int NUM_ITERS = 2000;
     int i, j;
 
-    uint8_t *input = new uint8_t[w * h];
-    uint8_t *output = new uint8_t[w * h];
+    uint8_t *input = (uint8_t *)aom_memalign(16, w * h * sizeof(uint8_t));
+    uint8_t *output = (uint8_t *)aom_memalign(16, w * h * sizeof(uint8_t));
     int32_t *tmpbuf = (int32_t *)aom_memalign(16, RESTORATION_TMPBUF_SIZE);
     memset(tmpbuf, 0, RESTORATION_TMPBUF_SIZE);
 
@@ -76,9 +76,9 @@ class AV1SelfguidedFilterTest
     printf("%5d %dx%d blocks in %7.3fs = %7.3fus/block\n", NUM_ITERS, w, h,
            elapsed, elapsed * 1000000. / NUM_ITERS);
 
+    aom_free(input);
+    aom_free(output);
     aom_free(tmpbuf);
-    delete[] input;
-    delete[] output;
   }
 
   void RunCorrectnessTest() {
@@ -89,9 +89,12 @@ class AV1SelfguidedFilterTest
     const int NUM_ITERS = 81;
     int i, j, k;
 
-    uint8_t *input = new uint8_t[stride * max_h];
-    uint8_t *output = new uint8_t[out_stride * max_h];
-    uint8_t *output2 = new uint8_t[out_stride * max_h];
+    uint8_t *input =
+        (uint8_t *)aom_memalign(16, stride * max_h * sizeof(uint8_t));
+    uint8_t *output =
+        (uint8_t *)aom_memalign(16, out_stride * max_h * sizeof(uint8_t));
+    uint8_t *output2 =
+        (uint8_t *)aom_memalign(16, out_stride * max_h * sizeof(uint8_t));
     int32_t *tmpbuf = (int32_t *)aom_memalign(16, RESTORATION_TMPBUF_SIZE);
     memset(tmpbuf, 0, RESTORATION_TMPBUF_SIZE);
 
@@ -124,10 +127,10 @@ class AV1SelfguidedFilterTest
           ASSERT_EQ(output[j * out_stride + k], output2[j * out_stride + k]);
     }
 
+    aom_free(input);
+    aom_free(output);
+    aom_free(output2);
     aom_free(tmpbuf);
-    delete[] input;
-    delete[] output;
-    delete[] output2;
   }
 };
 
@@ -161,8 +164,8 @@ class AV1HighbdSelfguidedFilterTest
     int bit_depth = GET_PARAM(0);
     int mask = (1 << bit_depth) - 1;
 
-    uint16_t *input = new uint16_t[w * h];
-    uint16_t *output = new uint16_t[w * h];
+    uint16_t *input = (uint16_t *)aom_memalign(16, w * h * sizeof(uint16_t));
+    uint16_t *output = (uint16_t *)aom_memalign(16, w * h * sizeof(uint16_t));
     int32_t *tmpbuf = (int32_t *)aom_memalign(16, RESTORATION_TMPBUF_SIZE);
     memset(tmpbuf, 0, RESTORATION_TMPBUF_SIZE);
 
@@ -194,9 +197,9 @@ class AV1HighbdSelfguidedFilterTest
     printf("%5d %dx%d blocks in %7.3fs = %7.3fus/block\n", NUM_ITERS, w, h,
            elapsed, elapsed * 1000000. / NUM_ITERS);
 
+    aom_free(input);
+    aom_free(output);
     aom_free(tmpbuf);
-    delete[] input;
-    delete[] output;
   }
 
   void RunCorrectnessTest() {
@@ -209,9 +212,12 @@ class AV1HighbdSelfguidedFilterTest
     int bit_depth = GET_PARAM(0);
     int mask = (1 << bit_depth) - 1;
 
-    uint16_t *input = new uint16_t[stride * max_h];
-    uint16_t *output = new uint16_t[out_stride * max_h];
-    uint16_t *output2 = new uint16_t[out_stride * max_h];
+    uint16_t *input =
+        (uint16_t *)aom_memalign(16, stride * max_h * sizeof(uint16_t));
+    uint16_t *output =
+        (uint16_t *)aom_memalign(16, out_stride * max_h * sizeof(uint16_t));
+    uint16_t *output2 =
+        (uint16_t *)aom_memalign(16, out_stride * max_h * sizeof(uint16_t));
     int32_t *tmpbuf = (int32_t *)aom_memalign(16, RESTORATION_TMPBUF_SIZE);
     memset(tmpbuf, 0, RESTORATION_TMPBUF_SIZE);
 
@@ -246,10 +252,10 @@ class AV1HighbdSelfguidedFilterTest
           ASSERT_EQ(output[j * out_stride + k], output2[j * out_stride + k]);
     }
 
+    aom_free(input);
+    aom_free(output);
+    aom_free(output2);
     aom_free(tmpbuf);
-    delete[] input;
-    delete[] output;
-    delete[] output2;
   }
 };
 
