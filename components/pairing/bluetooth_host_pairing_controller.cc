@@ -166,28 +166,18 @@ void BluetoothHostPairingController::SendHostStatus() {
 }
 
 void BluetoothHostPairingController::Reset() {
-  if (controller_socket_.get()) {
-    controller_socket_->Close();
-    controller_socket_ = nullptr;
-  }
-
-  if (service_socket_.get()) {
-    service_socket_->Close();
-    service_socket_ = nullptr;
-  }
-
   if (adapter_.get()) {
-    if (adapter_->IsDiscoverable()) {
-      adapter_->SetDiscoverable(false, base::Bind(&base::DoNothing),
-                                base::Bind(&base::DoNothing));
+    device::BluetoothDevice* device =
+        adapter_->GetDevice(controller_device_address_);
+    if (device && device->IsPaired()) {
+      device->Forget(base::Bind(&BluetoothHostPairingController::OnForget,
+                                ptr_factory_.GetWeakPtr()),
+                     base::Bind(&BluetoothHostPairingController::OnForget,
+                                ptr_factory_.GetWeakPtr()));
+      return;
     }
-
-    base::PostTaskAndReplyWithResult(
-        file_task_runner_.get(), FROM_HERE, base::Bind(&GetDevices),
-        base::Bind(&BluetoothHostPairingController::PowerOffAdapterIfApplicable,
-                   ptr_factory_.GetWeakPtr()));
   }
-  ChangeStage(STAGE_NONE);
+  OnForget();
 }
 
 void BluetoothHostPairingController::OnGetAdapter(
@@ -272,6 +262,8 @@ void BluetoothHostPairingController::OnCreateService(
 void BluetoothHostPairingController::OnAccept(
     const device::BluetoothDevice* device,
     scoped_refptr<device::BluetoothSocket> socket) {
+  controller_device_address_ = device->GetAddress();
+
   DCHECK(thread_checker_.CalledOnValidThread());
   adapter_->SetDiscoverable(
       false,
@@ -279,9 +271,7 @@ void BluetoothHostPairingController::OnAccept(
                  ptr_factory_.GetWeakPtr(), false),
       base::Bind(&BluetoothHostPairingController::OnSetError,
                  ptr_factory_.GetWeakPtr()));
-
   controller_socket_ = socket;
-  service_socket_ = nullptr;
 
   SendHostStatus();
 
@@ -369,6 +359,36 @@ void BluetoothHostPairingController::ResetAdapter() {
   adapter_ = nullptr;
   if (delegate_)
     delegate_->OnAdapterReset();
+}
+
+void BluetoothHostPairingController::OnForget() {
+  if (controller_socket_.get()) {
+    controller_socket_->Close();
+    controller_socket_ = nullptr;
+  }
+
+  if (service_socket_.get()) {
+    service_socket_->Close();
+    service_socket_ = nullptr;
+  }
+
+  if (adapter_.get()) {
+    if (adapter_->IsDiscoverable()) {
+      adapter_->SetDiscoverable(false, base::Bind(&base::DoNothing),
+                                base::Bind(&base::DoNothing));
+    }
+
+    base::PostTaskAndReplyWithResult(
+        file_task_runner_.get(), FROM_HERE, base::Bind(&GetDevices),
+        base::Bind(&BluetoothHostPairingController::PowerOffAdapterIfApplicable,
+                   ptr_factory_.GetWeakPtr()));
+  }
+  ChangeStage(STAGE_NONE);
+}
+
+void BluetoothHostPairingController::SetControllerDeviceAddressForTesting(
+    const std::string& address) {
+  controller_device_address_ = address;
 }
 
 void BluetoothHostPairingController::OnReceiveError(

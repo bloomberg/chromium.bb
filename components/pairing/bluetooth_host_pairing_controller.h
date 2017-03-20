@@ -33,6 +33,10 @@ namespace net {
 class IOBuffer;
 }
 
+namespace chromeos {
+class BluetoothHostPairingNoInputTest;
+}
+
 namespace pairing_chromeos {
 
 class BluetoothHostPairingController
@@ -66,6 +70,8 @@ class BluetoothHostPairingController
   scoped_refptr<device::BluetoothAdapter> GetAdapterForTesting();
 
  private:
+  friend class chromeos::BluetoothHostPairingNoInputTest;
+
   void ChangeStage(Stage new_stage);
   void SendHostStatus();
 
@@ -88,6 +94,9 @@ class BluetoothHostPairingController
                       const std::string& error_message);
   void PowerOffAdapterIfApplicable(const std::vector<InputDeviceInfo>& devices);
   void ResetAdapter();
+  void OnForget();
+
+  void SetControllerDeviceAddressForTesting(const std::string& address);
 
   // HostPairingController:
   void AddObserver(Observer* observer) override;
@@ -137,6 +146,7 @@ class BluetoothHostPairingController
   UpdateStatus update_status_;
   EnrollmentStatus enrollment_status_;
   std::string permanent_id_;
+  std::string controller_device_address_;
   bool was_powered_ = false;
 
   scoped_refptr<device::BluetoothAdapter> adapter_;
