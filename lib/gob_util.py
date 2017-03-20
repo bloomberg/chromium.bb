@@ -501,7 +501,7 @@ def SetReview(host, change, revision='current', msg=None, labels=None,
   if notify:
     body['notify'] = notify
   response = FetchUrlJson(host, path, reqtype='POST', body=body)
-  if not response:
+  if response is None:
     raise GOBError(
         http_status=404,
         reason='CL %s not found in %s' % (change, host))
