@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-CN">
 <translation id="1135328998467923690">程序包无效：“<ph name="ERROR_CODE" />”。</translation>
+<translation id="1140871961407805696">后置</translation>
 <translation id="1256619696651732561">扩展程序清单解析器</translation>
 <translation id="1445572445564823378">此扩展程序拖慢了 <ph name="PRODUCT_NAME" />的运行速度。您应将其停用，以恢复 <ph name="PRODUCT_NAME" />的性能。</translation>
 <translation id="149347756975725155">无法加载扩展程序图标“<ph name="ICON" />”。</translation>
@@ -42,6 +43,7 @@
 <translation id="7217838517480956708">此计算机的管理员要求安装 <ph name="EXTENSION_NAME" />。该扩展程序无法删除或修改。</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME" />（扩展程序 ID为“<ph name="EXTENSION_ID" />”）已被管理员阻止。</translation>
 <translation id="7972881773422714442">选项：<ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
+<translation id="8035920974645200807">前置</translation>
 <translation id="8047248493720652249">此扩展程序无法将下载的文件命名为“<ph name="ATTEMPTED_FILENAME" />”，因为另一扩展程序 (<ph name="EXTENSION_NAME" />) 已将此文件命名为“<ph name="ACTUAL_FILENAME" />”。</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" />（<ph name="VENDOR_NAME" />）</translation>
 <translation id="8341840687457896278">此扩展程序无法向网络请求提供凭据，因为另一个扩展程序（<ph name="EXTENSION_NAME" />）已提供了不同的凭据。</translation>

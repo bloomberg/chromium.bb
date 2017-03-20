@@ -278,6 +278,7 @@
       Bir ayar yapılandırılmadan bırakılırsa varsayılan bir değer kullanılır.
 
       Bu politika ayarlanmazsa tüm ayarlar için varsayılanlar kullanılır.</translation>
+<translation id="1960840544413786116">Yerel güven bağlantıları tarafından yayınlanan ve subjectAlternativeName uzantısı bulunmayan sertifikalara izin verilip verilmeyeceği</translation>
 <translation id="1964634611280150550">Gizli mod devre dışı</translation>
 <translation id="1964802606569741174">Bu politikanın Android YouTube uygulaması üzerinde hiçbir etkisi yoktur. YouTube'da Güvenlik Modu uygulanacaksa Android YouTube uygulamasının yüklenmesine izin verilmemelidir.</translation>
 <translation id="1969212217917526199">Uzaktan erişim ana makinesinin Hata Ayıklama yapılarındaki politikaları geçersiz kılar.
@@ -332,6 +333,21 @@
       HardwareAccelerationModeEnabled yanlış seçeneğine ayarlanırsa Disable3DAPI'lar yoksayılır, bu da Disable3DAPI öğelerinin doğru seçeneğine ayarlanmasıyla eşdeğerdir.</translation>
 <translation id="2168397434410358693">AC güçle çalışırken boşta kalma gecikmesi</translation>
 <translation id="2170233653554726857">WPAD optimizasyonunu etkinleştir</translation>
+<translation id="2176565653304920879">Bu politika ayarlandığında, otomatik saat dilimi algılama akışı, ayarın değerine bağlı olarak aşağıdaki yöntemlerden birini kullanır: 
+
+      TimezoneAutomaticDetectionUsersDecide değerine ayarlanırsa kullanıcılar, chrome://settings sayfasındaki normal kontrolleri kullanarak otomatik saat dilimi algılamayı kontrol edebilir.
+
+      TimezoneAutomaticDetectionDisabled değerine ayarlanırsa chrome://settings sayfasındaki otomatik saat dilimi kontrolleri devre dışı bırakılır. Otomatik saat dilimi algılama her zaman kapalı olur.
+
+      TimezoneAutomaticDetectionIPOnly değerine ayarlanırsa chrome://settings sayfasındaki saat dilimi kontrolleri devre dışı bırakılır. Otomatik saat dilimi algılama her zaman açık olur. Saat dilimi algılama, konumu çözümlemek için yalnızca IP yöntemini kullanır.
+
+      TimezoneAutomaticDetectionSendWiFiAccessPoints değerine ayarlanırsa chrome://settings sayfasındaki saat dilimi kontrolleri devre dışı bırakılır. Otomatik saat dilimi algılama her zaman açık olur. Saat diliminin hassas bir şekilde algılanması için görünür kablosuz erişim noktalarının listesi her zaman Coğrafi Konum API'si sunucusuna gönderilir.
+
+      TimezoneAutomaticDetectionSendAllLocationInfo değerine ayarlanırsa chrome://settings sayfasındaki saat dilimi kontrolleri devre dışı bırakılır. Otomatik saat dilimi algılama her zaman açık olur. Saat diliminin hassas bir şekilde algılanması için konum bilgileri (Kablosuz erişim noktaları, erişilebilir Baz İstasyonları, GPS gibi) bir sunucuya gönderilir.
+
+      Bu politika ayarlanmazsa TimezoneAutomaticDetectionUsersDecide değeri belirlenmiş gibi davranır.
+
+      SystemTimezone politikası ayarlanırsa bu politika geçersiz kılınır. Bu durumda, otomatik saat dilimi algılama tamamen devre dışı bırakılır.</translation>
 <translation id="2178899310296064282">YouTube'da en azından Orta Düzey Kısıtlı Mod'u zorunlu kıl</translation>
 <translation id="2183294522275408937">Bu ayar, hızlı kilit açmanın kullanılmaya devam edilebilmesi için kilit ekranında ne sıklıkta şifre sorulacağını kontrol eder. Kilit ekranına her girildiğinde, son şifre girişi bu ayarda belirtilen süreden daha uzun zaman önce yapılmışsa, kilit ekranına girişte hızlı kilit açma kullanılamaz. Kullanıcı bu süreden daha uzun süre kilit ekranında kalırsa, yanlış kod girdiğinde veya kilit ekranına tekrar girdiğinde (hangisi önce olursa) şifre sorulur.
 
@@ -1461,11 +1477,20 @@ politikayı geçersiz kılamaz.
           Bu politika ayarlanmadan bırakılırsa, 'AskNotifications' kullanılır ve kullanıcı ayarı değiştirebilir.</translation>
 <translation id="538108065117008131"><ph name="PRODUCT_FRAME_NAME" /> için aşağıdaki içerik türlerini işlemeye izin ver.</translation>
 <translation id="5388730678841939057">Otomatik temizlik sırasında disk alanı boşaltmak için kullanılan stratejiyi seçer (kullanımdan kaldırıldı)</translation>
+<translation id="5392172595902933844">Android'in durumuyla ilgili bilgiler sunucuya geri gönderilir.
+
+      Politika yanlış (false) değerine ayarlanır veya ayarlanmadan bırakılırsa durum bilgisi bildirilmez.
+      Doğru (true) değerine ayarlanırsa durum bilgisi bildirilir.
+
+      Bu politika, yalnızca Android uygulamalarının etkin olması durumunda geçerlidir.</translation>
 <translation id="5395271912574071439">Bir bağlantı devam ederken uzaktan erişen ana makinelerin perdelenmesini etkinleştirir.
 
           Bu ayar etkinleştirilirse, uzak bağlantı devam ettiği sürece ana makinelerin fiziksel giriş ve çıkış cihazları devre dışı bırakılır.
 
           Bu ayar devre dışı bırakılırsa veya belirlenmezse, ana makine paylaşıldığı sırada hem yerel, hem de uzak kullanıcılar etkileşimde bulunabilir.</translation>
+<translation id="5405289061476885481"><ph name="PRODUCT_OS_NAME" /> oturum açma ekranında hangi klavye düzenlerine izin verileceğini yapılandırır.
+
+      Bu politika bir giriş yöntemi tanımlayıcıları listesine ayarlanırsa belirtilen giriş yöntemleri oturum açma ekranında kullanılabilir. Belirtilen ilk giriş yöntemi önceden seçilir. Oturum açma ekranında bir kullanıcı simgesine odaklanılmışken, kullanıcının kullandığı son giriş yöntemi de bu politikada belirtilen giriş yöntemlerine ek olarak gösterilir. Bu politika ayarlanmazsa oturum açma ekranındaki giriş yöntemleri, oturum açma ekranının görüntülendiği yerel ayardan türetilir. Geçerli giriş yöntemi tanımlayıcıları olmayan değerler yok sayılır.</translation>
 <translation id="5423001109873148185">Bu politika etkinleştirilirse, mevcut varsayılan tarayıcıdan arama motorlarının içe aktarılmasını zorlar. Etkinleştirilirse, bu politika içe aktarma iletişim kutusunu da etkiler.
 
       Devre dışı bırakılırsa, varsayılan arama motoru içe aktarılmaz.
@@ -1541,6 +1566,11 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
       Bu politikayı ayarlarsanız, kullanıcılar değiştiremez veya geçersiz kılamaz.
 
       Bu politika ayarlanmadan bırakılırsa, kullanıcılar rafın otomatik olarak gizlenip gizlenmeyeceğini belirtebilir.</translation>
+<translation id="557360560705413259">Bu ayar etkinleştirildiğinde, <ph name="PRODUCT_NAME" />, bir subjectAlternativeName uzantısı olmayan ancak doğru bir şekilde doğrulanıp yerel olarak yüklenmiş CA sertifikalarıyla zincir oluşturan sertifikalarda, ana makine adını eşleştirmek için sunucu sertifikasının commonName bilgisini kullanır.
+
+      Belirli bir sertifikanın yetkilendirilebileceği ana makine adlarını sınırlandıran nameConstraints uzantısının atlanmasına olanak tanıyabileceği için bunun önerilen bir yöntem olmadığını unutmayın.
+
+      Bu politika ayarlanmazsa veya false (yanlış) değerine ayarlanırsa bir DNS adı veya IP adresi içerip de subjectAlternativeName uzantısı bulunmayan sunucu sertifikalarına güvenilmez.</translation>
 <translation id="557658534286111200">Yer işareti düzenlemeyi etkinleştirir veya devre dışı bırakır</translation>
 <translation id="5586942249556966598">Hiçbir şey yapma</translation>
 <translation id="5613179474872285001">Uzaktan erişim istemcilerine uygulanacak gerekli istemci alan adını yapılandırır ve kullanıcıların bunu değiştirmesini engeller.
@@ -2428,6 +2458,7 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 <translation id="7937766917976512374">Video yakalamaya izin verme veya reddetme</translation>
 <translation id="7941975817681987555">Ağ bağlantılarında ağ işlemlerini tahmin etme</translation>
 <translation id="7953256619080733119">Yönetilen kullanıcı manuel istisna ana makineleri</translation>
+<translation id="7965394584578183156">Saat dilimini çözümlerken kablosuz erişim noktalarını her zaman sunucuya gönder.</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Bu politika artık desteklenmiyor.
           Bir uzak istemciye bağlanırken STUN ve geçiş sunucularının kullanılabilmesini sağlar.
@@ -2596,6 +2627,7 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 <translation id="8390049129576938611"><ph name="PRODUCT_NAME" /> içindeki dahili PDF görüntüleyiciyi devre dışı bırakır. Bunun yerine, dosyayı indirilecek dosya olarak ele alır ve kullanıcının PDF dosyalarını varsayılan uygulamayla açmasına olanak tanır.
 
       Bu politika ayarlanmaz veya devre dışı bırakılırsa, kullanıcı devre dışı bırakmadıkça PDF dosyalarını açmak için PDF eklentisi kullanılır.</translation>
+<translation id="8398203849316312944">Saat dilimini çözümlerken kullanılabilir konum sinyallerini her zaman sunucuya gönder.</translation>
 <translation id="8402079500086185021">PDF dosyalarını her zaman harici olarak aç</translation>
 <translation id="8412312801707973447">Çevrimiçi OCSP/CRL denetimlerinin yapılıp yapılmayacağı</translation>
 <translation id="8413348101535146315"><ph name="PRODUCT_NAME" /> Görev Yöneticisi'ndeki işlemlerin sona erdirilebilmesini sağlar.
@@ -2846,6 +2878,11 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
       Etkinleştirilirse, klavye kısayolları veya uzantı API'ları kullanılarak ekran görüntüleri alınamaz.
 
       Devre dışı bırakılırsa veya belirtilmezse, ekran görüntülerinin alınmasına izin verilir.</translation>
+<translation id="9212233969680267790">Uyarı: Maks. TLS sürümü politikası, yaklaşık olarak sürüm 66 düzeyinde (Şubat 2018 civarında) <ph name="PRODUCT_NAME" /> ürününden tamamıyla kaldırılacaktır.
+
+      Bu politika yapılandırılmazsa <ph name="PRODUCT_NAME" />, varsayılan maksimum sürümü kullanır.
+
+      Aksi halde, şu değerlerin birine ayarlanabilir: "tls1.2" veya "tls1.3". Ayarlandığında, <ph name="PRODUCT_NAME" />, belirtilen sürümden yüksek olan SSL/TLS sürümlerini kullanmaz. Tanınmayan bir değer yoksayılır.</translation>
 <translation id="9213347477683611358">Cihazda henüz hiçbir kullanıcı oturum açmadığında giriş ekranında gösterilen cihaz düzeyindeki duvar kağıdı resmini yapılandırın. Politikayı ayarlamak için Chrome OS cihazın, duvar kağıdı resmini hangi URL'den indireceği ve indirilen dosyanın bütünlüğünü doğrulamak için kullanılacak bir şifreleme karması belirtilmelidir. Resim JPEG biçiminde olmalı, dosya boyutu 16 MB'yi aşmamalıdır. URL'ye kimlik doğrulaması yapılmadan erişilebilmelidir. Duvar kağıdı resmi indirilip önbelleğe alınır. URL veya karma değiştiğinde yeniden indirilir.
 
       Politika, URL'yi ve karmayı JSON biçiminde ifade eden bir dizi olarak belirtilmelidir. Örneğin:

@@ -101,6 +101,7 @@ Nekatera spletna mesta se bodo na primer odzvala na to zahtevo s prikazom oglaso
 <translation id="2871695793448672541">Skrito, geslo</translation>
 <translation id="2898963176829412617">Nova mapa …</translation>
 <translation id="2903493209154104877">Naslovi</translation>
+<translation id="291754862089661335">Kodo QR ali črtno kodo postavite v ta okvir</translation>
 <translation id="2921219216347069551">Deljenje te strani z drugimi ni mogoče</translation>
 <translation id="292639812446257861">Označi kot neprebrano</translation>
 <translation id="2933759065870693102">Svetilka</translation>
@@ -172,7 +173,6 @@ Nekatera spletna mesta se bodo na primer odzvala na to zahtevo s prikazom oglaso
 <translation id="4359125752503270327">This page will open in another application.</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="441868831736628555">Obvestilo o zasebnosti</translation>
-<translation id="4473991315115669931">Enter Incognito Mode</translation>
 <translation id="4526249700380860531">Ogled in upravljanje shranjenih gesel na <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Try signing in again.</translation>
 <translation id="4620246317052452550">Prebrane strani</translation>
@@ -246,7 +246,6 @@ Handoff must also be enabled in the General section of Settings, and your device
 <translation id="6042308850641462728">Več</translation>
 <translation id="605721222689873409">LL</translation>
 <translation id="6066301408025741299">Dotaknite se, da prekinete.</translation>
-<translation id="60851516108411750">Bralni seznam je na voljo brez povezave. Če želite dodati stran na bralni seznam, se dotaknite <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="6122191549521593678">Dosegljiv</translation>
 <translation id="6127379762771434464">Element odstranjen</translation>
 <translation id="6136914049981179737">Pred sek.</translation>
@@ -381,7 +380,6 @@ Podatki so bili šifrirani z vašim geslom za sinhronizacijo <ph name="TIME" />.
 <translation id="8741995161408053644">V Google Računu so morda druge vrste zgodovine brskanja na <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8775144690796719618">Neveljaven URL</translation>
 <translation id="8820817407110198400">Zaznamki</translation>
-<translation id="882482397944455431">Leave Incognito Mode</translation>
 <translation id="8840513115188359703">Iz Google Računa ne boste odjavljeni.</translation>
 <translation id="8904976895050290827">Sinhronizacija za Chrome</translation>
 <translation id="895541991026785598">Prijavite težavo</translation>

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="th">
 <translation id="1135328998467923690">แพ็กเกจไม่ถูกต้อง: "<ph name="ERROR_CODE" />"</translation>
+<translation id="1140871961407805696">กล้องหลัง</translation>
 <translation id="1256619696651732561">โปรแกรมแยกวิเคราะห์ไฟล์ Manifest ส่วนขยาย</translation>
 <translation id="1445572445564823378">ส่วนขยายนี้จะทำให้ <ph name="PRODUCT_NAME" /> ทำงานช้าลง คุณควรปิดใช้งานส่วนขยายเพื่อให้ประสิทธิภาพการทำงานของ <ph name="PRODUCT_NAME" /> กลับมาเป็นปกติ</translation>
 <translation id="149347756975725155">ไม่สามารถโหลดไอคอนส่วนขยาย "<ph name="ICON" />"</translation>
@@ -42,6 +43,7 @@
 <translation id="7217838517480956708">ผู้ดูแลระบบของเครื่องนี้ต้องการให้มีการติดตั้ง <ph name="EXTENSION_NAME" /> โดยไม่สามารถลบหรือแก้ไขได้</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME" /> (ID ส่วนขยาย "<ph name="EXTENSION_ID" />") ถูกบล็อกโดยผู้ดูแลระบบ</translation>
 <translation id="7972881773422714442">ตัวเลือก: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
+<translation id="8035920974645200807">กล้องหน้า</translation>
 <translation id="8047248493720652249">ส่วนขยายนี้ล้มเหลวในการตั้งชื่อการดาวน์โหลดว่า "<ph name="ATTEMPTED_FILENAME" />" เนื่องจากอีกส่วนขยายหนึ่ง (<ph name="EXTENSION_NAME" />) ได้กำหนดชื่อไฟล์ที่แตกต่างไว้ว่า "<ph name="ACTUAL_FILENAME" />"</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> จาก <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">ส่วนขยายนี้ไม่สามารถให้ข้อมูลรับรองแก่คำขอเครือข่ายได้เนื่องจากส่วนขยายอื่น (<ph name="EXTENSION_NAME" />) ได้ให้ข้อมูลรับรองซึ่งต่างออกไป</translation>

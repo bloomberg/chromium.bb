@@ -284,6 +284,7 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent ouvrir normalement 
       Si un paramètre n'est pas défini, une valeur par défaut est utilisée.
 
       Si cette règle n'est pas configurée, des valeurs par défaut sont utilisées pour l'ensemble des paramètres.</translation>
+<translation id="1960840544413786116">Autoriser ou non les certificats émis par les ancres d'approbation locales qui ne comportent pas l'extension subjectAlternativeName</translation>
 <translation id="1964634611280150550">Mode navigation privée désactivé</translation>
 <translation id="1964802606569741174">Cette règle n'a aucun effet sur l'application YouTube pour Android. Vous ne devez pas autoriser son installation si le mode sécurisé de YouTube doit être appliqué.</translation>
 <translation id="1969212217917526199">Remplace des règles sur les versions de débogage de l'hôte d'accès à distance.
@@ -340,6 +341,21 @@ Si ce paramètre n'est pas défini, les utilisateurs peuvent ouvrir normalement 
       Si la règle HardwareAccelerationModeEnabled est définie sur "False", la règle Disable3DAPIs est ignorée, ce qui équivaut à définir Disable3DAPIs sur "True".</translation>
 <translation id="2168397434410358693">Délai d'inactivité (secteur)</translation>
 <translation id="2170233653554726857">Activer l'optimisation WPAD</translation>
+<translation id="2176565653304920879">Lorsque cette règle est configurée, le mode de détection automatique du fuseau horaire dépend de la valeur définie :
+
+      TimezoneAutomaticDetectionUsersDecide : les utilisateurs peuvent contrôler la détection automatique du fuseau horaire à l'aide des commandes classiques disponibles dans chrome://settings
+
+     TimezoneAutomaticDetectionDisabled : les commandes automatiques de fuseau horaire disponibles dans chrome://settings sont désactivées. La détection automatique du fuseau horaire est dans ce cas toujours désactivée.
+
+      TimezoneAutomaticDetectionIPOnly : les commandes de fuseau horaire disponibles dans chrome://settings sont désactivées. La détection automatique du fuseau horaire est dans ce cas toujours activée. Elle utilise une méthode reposant exclusivement sur l'adresse IP pour mettre à jour la position.
+
+      TimezoneAutomaticDetectionSendWiFiAccessPoints : les commandes de fuseau horaire disponibles dans chrome://settings sont désactivées. La détection automatique du fuseau horaire est dans ce cas toujours activée. La liste des points d'accès Wi-Fi visibles est toujours transmise au serveur de l'API Geolocation pour une détection de fuseau horaire plus précise.
+
+      TimezoneAutomaticDetectionSendAllLocationInfo : les commandes de fuseau horaire disponibles dans chrome://settings sont désactivées. La détection automatique du fuseau horaire est dans ce cas toujours activée. Les informations de localisation (comme les points d'accès Wi-Fi, les antennes relais accessibles et les données GPS) sont transmises à un serveur pour une détection de fuseau horaire plus précise.
+
+      Si cette règle n'est pas configurée, elle est appliquée comme si la valeur TimezoneAutomaticDetectionUsersDecide était définie.
+
+      Si la règle SystemTimezone est configurée, elle remplace celle-ci. La détection automatique du fuseau horaire est alors totalement désactivée.</translation>
 <translation id="2178899310296064282">Appliquer au moins le mode restreint modéré sur YouTube</translation>
 <translation id="2183294522275408937">Ce paramètre définit la fréquence à laquelle l'utilisateur sera invité à saisir le mot de passe dans l'écran de verrouillage pour pouvoir continuer à utiliser le déverrouillage rapide. Chaque fois que l'écran de verrouillage est activé, si la dernière saisie du mot de passe est antérieure à ce paramètre, le déverrouillage rapide n'est pas disponible. Si l'utilisateur reste sur l'écran de verrouillage au-delà de cette période, il sera invité à saisir un mot de passe la prochaine fois qu'il indiquera un code erroné ou accédera à nouveau à l'écran de verrouillage, selon l'événement qui survient en premier.
 
@@ -1489,11 +1505,20 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 Si cette règle n'est pas configurée, le paramètre "AskNotifications" est utilisé et l'utilisateur est en mesure de le modifier.</translation>
 <translation id="538108065117008131">Autoriser <ph name="PRODUCT_FRAME_NAME" /> à gérer les types de contenus suivants.</translation>
 <translation id="5388730678841939057">Sélectionner la stratégie utilisée pour libérer de l'espace disque au cours du nettoyage automatique</translation>
+<translation id="5392172595902933844">Cette règle renvoie au serveur des informations sur l'état d'Android.
+
+      Si cette règle est définie sur "False" ou si elle n'est pas configurée, les informations sur l'état ne sont pas transmises.
+      Si cette règle est définie sur "True", les informations sur l'état sont transmises.
+
+      Cette règle ne s'applique que si les applications Android sont activées.</translation>
 <translation id="5395271912574071439">Active la protection des hôtes d'accès à distance lorsqu'une connexion est en cours.
 
           En cas d'activation de ce paramètre, les appareils d'entrée et de sortie physiques des hôtes sont désactivés tant qu'une connexion est en cours.
 
           En cas de désactivation ou de non-configuration de ce paramètre, l'utilisateur local ainsi que l'utilisateur à distance peuvent interagir avec l'hôte tant que ce celui-ci est partagé.</translation>
+<translation id="5405289061476885481">Détermine les dispositions de clavier autorisées sur l'écran de connexion <ph name="PRODUCT_OS_NAME" />.
+
+      Si cette règle est définie sur une liste d'identifiants de modes de saisie, les modes de saisie indiqués sont disponibles sur l'écran de connexion. Le premier mode de saisie proposé est présélectionné. Lorsqu'un profil utilisateur est actif sur l'écran de connexion, le dernier mode de saisie utilisé par l'utilisateur est disponible en plus des modes de saisie fournis par cette règle. Si cette règle n'est pas définie, les modes de saisie sur l'écran de connexion sont dérivés des paramètres régionaux dans lesquels cet écran est affiché. Les valeurs qui ne constituent pas des identifiants de modes de saisie valides sont ignorées.</translation>
 <translation id="5423001109873148185">Lorsqu'elle est activée, cette règle force l'importation des moteurs de recherche à partir du navigateur par défaut actuel. Si cette règle est activée, elle affecte également la boîte de dialogue d'importation. 
 
 Si elle est désactivée, le moteur de recherche par défaut n'est pas importé. 
@@ -1569,6 +1594,11 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       Si cette règle est configurée, l'utilisateur ne peut ni la modifier, ni la contourner.
 
       Si cette règle n'est pas configurée, l'utilisateur peut choisir de masquer automatiquement l'étagère ou non.</translation>
+<translation id="557360560705413259">Lorsque ce paramètre est activé, <ph name="PRODUCT_NAME" /> utilise la valeur "commonName" d'un certificat de serveur pour qu'elle corresponde à un nom d'hôte si le certificat ne comporte pas d'extension subjectAlternativeName, à condition qu'il soit correctement validé et qu'il soit signé par des certificats CA installés localement.
+
+      Sachez que cette méthode n'est pas recommandée, car l'extension nameConstraints qui limite les noms d'hôtes pour lesquels un certificat donné peut être autorisé risque d'être ignorée.
+
+      Si cette règle n'est pas configurée, ou si elle est définie sur "False", les certificats de serveur qui ne comportent pas d'extension subjectAlternativeName contenant soit un nom DNS, soit une adresse IP, ne seront pas approuvés.</translation>
 <translation id="557658534286111200">Active ou désactive la modification des favoris</translation>
 <translation id="5586942249556966598">Ne rien faire</translation>
 <translation id="5613179474872285001">Configure le nom de domaine obligatoire du client qui sera imposé aux clients d'accès à distance et ne pourra pas être modifié par les utilisateurs.
@@ -2459,6 +2489,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale est utilis�
 <translation id="7937766917976512374">Autoriser ou interdire la capture vidéo</translation>
 <translation id="7941975817681987555">Ne pas prédire d'actions réseau lors d'une connexion au réseau</translation>
 <translation id="7953256619080733119">Hôtes d'exception manuelle des utilisateurs gérés</translation>
+<translation id="7965394584578183156">Toujours transmettre les points d'accès Wi-Fi au serveur tout en mettant à jour le fuseau horaire</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Cette règle n'est plus disponible. 
 Permet l'utilisation de serveurs STUN et relais lors de la connexion à un client distant. 
@@ -2625,6 +2656,7 @@ Si ce paramètre n'est pas défini, l'utilisateur peut décider d'utiliser cette
 <translation id="8390049129576938611">Désactive la visionneuse de documents PDF intégrée dans <ph name="PRODUCT_NAME" />. Les fichiers PDF sont alors traités comme des téléchargements que l'utilisateur peut ouvrir avec l'application par défaut.
 
       Si cette règle n'est pas définie ou si elle est désactivée, le plug-in PDF est utilisé pour ouvrir les fichiers PDF, sauf si l'utilisateur le désactive.</translation>
+<translation id="8398203849316312944">Toujours transmettre les signaux de localisation disponibles au serveur tout en mettant à jour le fuseau horaire</translation>
 <translation id="8402079500086185021">Toujours ouvrir les fichiers PDF en externe</translation>
 <translation id="8412312801707973447">Si des contrôles OCSP/CRL en ligne sont effectués</translation>
 <translation id="8413348101535146315">Permet de mettre fin aux processus dans le gestionnaire des tâches de <ph name="PRODUCT_NAME" />.
@@ -2884,6 +2916,11 @@ Si cette règle n'est pas configurée, ce paramètre est activé et l'utilisateu
       En cas d'activation de cette règle, il n'est pas possible d'utiliser des raccourcis clavier ou des API d'extension pour effectuer des captures d'écran.
 
       En cas de désactivation ou de non-configuration de cette règle, les captures d'écran sont autorisées.</translation>
+<translation id="9212233969680267790">Avertissement : La règle relative à la version TLS maximale sera entièrement supprimée du produit <ph name="PRODUCT_NAME" /> à partir de la version 66 environ (autour de février 2018).
+
+      Si cette règle n'est pas définie, <ph name="PRODUCT_NAME" /> utilise la version maximale par défaut.
+
+      Cette règle peut également être définie sur l'une des valeurs suivantes : "tls1.2" ou "tls1.3". Si elle est configurée, <ph name="PRODUCT_NAME" /> n'utilisera pas de versions de SSL/TLS supérieures à la version spécifiée. Toute valeur non reconnue sera ignorée.</translation>
 <translation id="9213347477683611358">Configurez l'image de fond d'écran qui s'affiche sur l'écran de connexion de l'appareil si aucun utilisateur ne s'est encore connecté à celui-ci. Pour définir cette règle, indiquez l'URL à laquelle l'appareil Chrome OS peut télécharger l'image de fond d'écran ainsi qu'un hachage chiffré, utilisé pour vérifier l'intégrité du téléchargement. L'image doit être au format JPEG et ne doit pas dépasser 16 Mo. L'URL doit être accessible sans authentification. L'image de fond d'écran est téléchargée et mise en cache. Elle est à nouveau téléchargée dès que l'URL ou le hachage sont modifiés.
 
       La règle doit prendre la forme d'une chaîne indiquant l'URL et le hachage au format JSON, conformément à l'exemple suivant :

@@ -277,6 +277,7 @@
       Als een instelling niet wordt gespecificeerd, wordt een standaardwaarde gebruikt.
 
       Als het instellen van dit beleid ongedaan wordt gemaakt, worden de standaardwaarden gebruikt voor alle instellingen.</translation>
+<translation id="1960840544413786116">Of door lokale vertrouwensankers uitgegeven certificaten zonder de extensie subjectAlternativeName zijn toegestaan</translation>
 <translation id="1964634611280150550">Incognitomodus uitgeschakeld</translation>
 <translation id="1964802606569741174">Dit beleid is niet van invloed op de YouTube-app voor Android. Als de veiligheidsmodus voor YouTube moet worden afgedwongen, moet je installatie van de YouTube-app voor Android niet toestaan.</translation>
 <translation id="1969212217917526199">Hiermee worden beleidsregels overgeschreven op Debug-builds van de host voor externe toegang.
@@ -333,6 +334,21 @@
       Als 'HardwareAccelerationModeEnabled' op 'onwaar' wordt ingesteld, wordt 'Disable3DAPIs' genegeerd. Dit is hetzelfde als 'Disable3DAPIs' instellen op 'waar'.</translation>
 <translation id="2168397434410358693">Inactieve vertraging wanneer op netstroom wordt gewerkt</translation>
 <translation id="2170233653554726857">WPAD-optimalisatie inschakelen</translation>
+<translation id="2176565653304920879">Als dit beleid is ingesteld, wordt het proces voor automatische tijdzonedetectie op een van de volgende manieren uitgevoerd, afhankelijk van de waarde van de instelling:
+
+       Als TimezoneAutomaticDetectionUsersDecide is ingesteld, kunnen gebruikers automatische tijdzonedetectie beheren via de normale beheeropties in chrome://settings.
+
+      Als TimezoneAutomaticDetectionDisabled is ingesteld, zijn de beheeropties voor automatische tijdzonedetectie in chrome://settings uitgeschakeld. Automatische tijdzonedetectie is altijd uitgeschakeld.
+
+      Als TimezoneAutomaticDetectionIPOnly is ingesteld, zijn de beheeropties voor de tijdzone in chrome://settings uitgeschakeld. Automatische tijdzonedetectie is altijd ingeschakeld. Tijdzonedetectie maakt gebruikt van de methode die gebaseerd is op IP-adressen om de locatie te bepalen.
+
+       Als TimezoneAutomaticDetectionSendWiFiAccessPoints is ingesteld, zijn de beheeropties voor de tijdzone in chrome://settings uitgeschakeld. Automatische tijdzonedetectie is altijd ingeschakeld. De lijst met zichtbare wifi-toegangspunten wordt altijd verzonden naar de Geolocatie-API-server voor gedetailleerde tijdzonedetectie.
+
+      Als TimezoneAutomaticDetectionSendAllLocationInfo is ingesteld, zijn de beheeropties voor de tijdzone in chrome://settings uitgeschakeld. Automatische tijdzonedetectie is altijd ingeschakeld. Locatiegegevens (zoals wifi-toegangspunten, bereikbare zendmasten, GPS) worden naar een server verzonden voor gedetailleerde tijdzonedetectie.
+
+      Als dit beleid niet is ingesteld, gedraagt het zich alsof TimezoneAutomaticDetectionUsersDecide is ingesteld.
+
+      Als het beleid SystemTimezone is ingesteld, overschrijft het dit beleid. In dat geval is automatische tijdzonedetectie volledig uitgeschakeld.</translation>
 <translation id="2178899310296064282">Minimaal de gemiddelde 'Beperkte modus' op YouTube afdwingen</translation>
 <translation id="2183294522275408937">Met deze instelling wordt bepaald hoe vaak het wachtwoord voor het vergrendelingsscherm moet worden opgegeven om de functie voor snel ontgrendelen te kunnen blijven gebruiken. Telkens wanneer het vergrendelingsscherm wordt weergegeven en het wachtwoord nog niet is opgegeven gedurende de ingestelde periode, is de functie voor snel ontgrendelen niet beschikbaar om het vergrendelingsscherm te ontgrendelen. Wanneer het vergrendelingsscherm niet wordt ontgrendeld gedurende de ingestelde periode, moet de volgende keer dat de gebruiker een verkeerde code invoert of het vergrendelingsscherm opnieuw opent een wachtwoord worden opgegeven.
 
@@ -1460,11 +1476,21 @@
           Als dit beleid niet wordt ingesteld, wordt 'AskNotifications' gebruikt en kan de gebruiker dit aanpassen.</translation>
 <translation id="538108065117008131"><ph name="PRODUCT_FRAME_NAME" /> toestaan de volgende soorten content te verwerken.</translation>
 <translation id="5388730678841939057">Hiermee selecteer je de strategie die wordt gebruikt om schijfruimte vrij te maken tijdens het automatisch opschonen (verouderd)</translation>
+<translation id="5392172595902933844">Informatie over de status van Android wordt teruggestuurd naar de
+      server.
+
+      Als het beleid is ingesteld op 'false' (onwaar) of niet is ingesteld, wordt er geen statusinformatie gerapporteerd.
+      Als het beleid is ingesteld op 'true' (waar), wordt de statusinformatie gerapporteerd.
+
+      Dit beleid is alleen van toepassing als Android-apps zijn ingeschakeld.</translation>
 <translation id="5395271912574071439">Schakelt afscherming van hosts voor externe toegang in terwijl een verbinding tot stand wordt gebracht.
 
           Als deze instelling is ingeschakeld, worden de fysieke invoer- en uitvoerapparaten van hosts uitgeschakeld terwijl een externe verbinding tot stand wordt gebracht.
 
           Als deze instelling is uitgeschakeld of niet is ingesteld, kunnen zowel lokale als externe gebruikers met de host communiceren terwijl deze wordt gedeeld.</translation>
+<translation id="5405289061476885481">Hiermee configureer je welke toetsenbordindelingen zijn toegestaan voor het inlogscherm van <ph name="PRODUCT_OS_NAME" />.
+
+      Als dit beleid is ingesteld op een lijst met invoermethode-ID's, zijn de opgegeven invoermethoden beschikbaar in het inlogscherm. De eerste opgegeven invoermethode wordt vooraf geselecteerd. Hoewel een gebruikerspod is gericht op het inlogscherm, is de laatst gebruikte invoermethode van de gebruiker beschikbaar naast de invoermethoden die door dit beleid worden aangegeven. Als dit beleid niet is ingesteld, worden de invoermethoden op het inlogscherm afgeleid van de taal waarin het inlogscherm wordt weergegeven. Waarden die geen geldige invoermethode-ID's zijn, worden genegeerd.</translation>
 <translation id="5423001109873148185">Indien ingeschakeld, wordt met dit beleid afgedwongen dat zoekmachines worden geïmporteerd uit de huidige standaardbrowser. Als het beleid is ingeschakeld, is dit ook van invloed op het dialoogvenster voor importeren.
 
       Als het beleid is uitgeschakeld, wordt de standaardzoekmachine niet geïmporteerd.
@@ -1537,6 +1563,11 @@
       Als je dit beleid instelt, kunnen gebruikers het niet wijzigen of overschrijven.
 
       Als het beleid niet wordt ingesteld, kunnen gebruikers kiezen of het archief automatisch wordt verborgen.</translation>
+<translation id="557360560705413259">Wanneer deze instelling is ingeschakeld, gebruikt <ph name="PRODUCT_NAME" /> de commonName van een servercertificaat, zodat deze overeenkomt met een hostnaam als er een subjectAlternativeName-extensie ontbreekt voor het certificaat, zolang het certificaat kan worden gevalideerd en is gekoppeld aan lokaal geïnstalleerd CA-certificaten.
+
+      Houd er rekening mee dat dit niet wordt aanbevolen, aangezien zodoende de extensie nameConstraints, waarmee kan worden beperkt voor welke hostnamen een bepaald certificaat kan worden geautoriseerd, kan worden omzeild.
+
+      Als dit beleid niet is ingesteld of is ingesteld op 'false' (onwaar), worden de servercertificaten die geen subjectAlternativeName-extensie met een DNS-naam of IP-adres bevatten, niet vertrouwd.</translation>
 <translation id="557658534286111200">Het bewerken van bladwijzers in- of uitschakelen</translation>
 <translation id="5586942249556966598">Niets doen</translation>
 <translation id="5613179474872285001">Hiermee configureer je de vereiste clientdomeinnaam die wordt opgelegd aan clients voor externe toegang en voorkom je dat gebruikers deze wijzigen.
@@ -2395,6 +2426,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="7937766917976512374">Het opnemen van video's toestaan of weigeren</translation>
 <translation id="7941975817681987555">Geen netwerkacties voorspellen voor een netwerkverbinding</translation>
 <translation id="7953256619080733119">Hosts van handmatige uitzonderingen voor beheerde gebruikers</translation>
+<translation id="7965394584578183156">Wifi-toegangspunten altijd verzenden naar de server wanneer de tijdzone wordt bepaald.</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Dit beleid wordt niet meer ondersteund.
           Maakt het gebruik van STUN en relayservers mogelijk bij het verbinding maken met een externe client.
@@ -2560,6 +2592,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="8390049129576938611">Hiermee wordt de interne pdf-viewer in <ph name="PRODUCT_NAME" /> uitgeschakeld. In plaats daarvan wordt dit beschouwd als download. De gebruiker kan pdf-bestanden openen met de standaard-app.
 
       Als dit beleid niet wordt ingesteld of wordt uitgeschakeld, wordt de pdf-plug-in gebruikt om pdf-bestanden te openen, tenzij de gebruiker deze uitschakelt.</translation>
+<translation id="8398203849316312944">Beschikbare locatiesignalen altijd verzenden naar de server wanneer de tijdzone wordt bepaald.</translation>
 <translation id="8402079500086185021">Pdf-bestanden altijd extern openen</translation>
 <translation id="8412312801707973447">Uitvoer van online OCSP/CRL-controles</translation>
 <translation id="8413348101535146315">Hiermee wordt het beëindigen van processen in Taakbeheer van <ph name="PRODUCT_NAME" /> mogelijk gemaakt.
@@ -2597,7 +2630,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       als malware door Google en antivirusproviders.
 
       Je hoeft deze instellingen niet handmatig te configureren. Je kunt gebruiksvriendelijke
-      sjablonen voor Windows, Mac en Linux downloaden via <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
+      templates voor Windows, Mac en Linux downloaden via <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
 
       De aanbevolen manier om beleidsregels te configureren op Windows, is via
       GPO, maar het toewijzen van beleidsregels via een register wordt nog
@@ -2796,6 +2829,11 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Als deze instelling is ingeschakeld, kunnen screenshots niet worden gemaakt met sneltoetsen op het toetsenbord of extensie-API's.
 
       Als deze instelling is uitgeschakeld of niet is opgegeven, mogen er screenshots worden gemaakt.</translation>
+<translation id="9212233969680267790">Waarschuwing: Het beleid voor de maximale TLS-versie wordt rond versie 66 (rond februari 2018) volledig verwijderd uit <ph name="PRODUCT_NAME" />.
+
+      Als dit beleid niet is geconfigureerd, gebruikt <ph name="PRODUCT_NAME" /> de standaard maximumversie: TLS-versie 1.3.
+
+      Dit beleid kan ook zijn ingesteld op een van de volgende waarden: 'tls1.2' of 'tls1.3'. Wanneer dit beleid is ingesteld, gebruikt <ph name="PRODUCT_NAME" /> geen hogere SSL-/TLS-versies dan de opgegeven versie. Als er een waarde wordt ingesteld die niet wordt herkend, wordt deze genegeerd.</translation>
 <translation id="9213347477683611358">Configureer een achtergrondafbeelding op apparaatniveau die wordt weergegeven op het inlogscherm als er nog geen gebruiker is ingelogd bij het apparaat. Je kunt het beleid instellen door de URL op te geven waar het Chrome OS-apparaat de achtergrondafbeelding kan downloaden, evenals een cryptografische hash waarmee de integriteit van de download kan worden gecontroleerd. De afbeelding moet de JPEG-indeling hebben en het bestand mag niet groter dan 16 MB zijn. De URL moet zonder verificatie toegankelijk zijn. De achtergrondafbeelding wordt gedownload en opgeslagen in het cachegeheugen. De afbeelding wordt opnieuw gedownload wanneer de URL of de hash verandert.
 
       Het beleid moet worden opgegeven als tekenreeks die de URL en hash aangeeft in JSON-indeling, bijvoorbeeld:

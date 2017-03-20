@@ -101,6 +101,7 @@ En del webbplatser kan till exempel svara genom att visa annonser som inte baser
 <translation id="2871695793448672541">Dolt, lösenord</translation>
 <translation id="2898963176829412617">Ny mapp ...</translation>
 <translation id="2903493209154104877">Adresser</translation>
+<translation id="291754862089661335">Passa in QR-koden eller streckkoden i den här rutan</translation>
 <translation id="2921219216347069551">Kan inte dela sidan</translation>
 <translation id="292639812446257861">Markera som oläst</translation>
 <translation id="2933759065870693102">Ficklampa</translation>
@@ -172,7 +173,6 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="4359125752503270327">Sidan öppnas i en annan app.</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="441868831736628555">Sekretessmeddelande</translation>
-<translation id="4473991315115669931">Aktivera inkognitoläge</translation>
 <translation id="4526249700380860531">Visa och hantera sparade lösenord på <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Försök att logga in igen.</translation>
 <translation id="4620246317052452550">Sidor du har läst</translation>
@@ -246,7 +246,6 @@ Du måste även aktivera Handoff i avsnittet Allmänt i inställningarna och sam
 <translation id="6042308850641462728">Mer</translation>
 <translation id="605721222689873409">ÅÅ</translation>
 <translation id="6066301408025741299">Avbryt genom att trycka här.</translation>
-<translation id="60851516108411750">Läslistan är tillgänglig offline. Om du vill lägga till en sida i läslistan trycker du på <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="6122191549521593678">Online</translation>
 <translation id="6127379762771434464">Objektet har tagits bort</translation>
 <translation id="6136914049981179737">Nyss</translation>
@@ -381,7 +380,6 @@ Din data krypterades med lösenfrasen den <ph name="TIME" />. Ange den om du vil
 <translation id="8741995161408053644">Andra former av webbhistorik för Google-kontot kan finnas på <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8775144690796719618">Ogiltig webbadress</translation>
 <translation id="8820817407110198400">Bokmärken</translation>
-<translation id="882482397944455431">Inaktivera inkognitoläge</translation>
 <translation id="8840513115188359703">Du loggas inte ut från Google-kontot.</translation>
 <translation id="8904976895050290827">Synkronisera med Chrome</translation>
 <translation id="895541991026785598">Rapportera ett problem</translation>

@@ -101,6 +101,7 @@ Niektoré webové stránky môžu napríklad na túto žiadosť odpovedať zobra
 <translation id="2871695793448672541">Skryté, heslo</translation>
 <translation id="2898963176829412617">Nový priečinok…</translation>
 <translation id="2903493209154104877">Adresy</translation>
+<translation id="291754862089661335">Umiestnite QR kód alebo čiarový kód do tohto rámčeka</translation>
 <translation id="2921219216347069551">Str. sa nedá zdieľať</translation>
 <translation id="292639812446257861">Označiť ako neprečítané</translation>
 <translation id="2933759065870693102">Svietidlo</translation>
@@ -172,7 +173,6 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="4359125752503270327">Táto stránka sa otvorí v ďalšej aplikácii.</translation>
 <translation id="4378154925671717803">Telefón</translation>
 <translation id="441868831736628555">Upozornenie o ochrane údajov</translation>
-<translation id="4473991315115669931">Prejsť do režimu inkognito</translation>
 <translation id="4526249700380860531">Zobrazte si a spravujte uložené heslá na stránke <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Skúste sa znova prihlásiť.</translation>
 <translation id="4620246317052452550">Prečítané stránky</translation>
@@ -246,7 +246,6 @@ Funkciu Handoff musíte povoliť v nastaveniach v časti Všeobecné a vaše zar
 <translation id="6042308850641462728">Viac</translation>
 <translation id="605721222689873409">RR</translation>
 <translation id="6066301408025741299">Sťahovanie zrušíte klepnutím.</translation>
-<translation id="60851516108411750">Váš zoznam na čítanie je k dispozícii offline. Ak chcete pridať stránku do zoznamu na čítanie, klepnite na položku <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="6122191549521593678">Online</translation>
 <translation id="6127379762771434464">Položka bola odstránená</translation>
 <translation id="6136914049981179737">Pred chvíľou</translation>
@@ -381,7 +380,6 @@ Vaše údaje boli <ph name="TIME" /> zašifrované pomocou vlastnej prístupovej
 <translation id="8741995161408053644">Váš účet Google môže mať ďalšie formy histórie prehliadania na adrese <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8775144690796719618">Neplatná webová adresa</translation>
 <translation id="8820817407110198400">Záložky</translation>
-<translation id="882482397944455431">Ukončiť režim inkognito</translation>
 <translation id="8840513115188359703">Neodhlásime vás z účtu Google.</translation>
 <translation id="8904976895050290827">Chrome Sync</translation>
 <translation id="895541991026785598">Nahlásiť problém</translation>

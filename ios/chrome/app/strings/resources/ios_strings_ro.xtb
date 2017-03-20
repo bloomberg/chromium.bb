@@ -101,6 +101,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="2871695793448672541">Parolă ascunsă</translation>
 <translation id="2898963176829412617">Dosar nou…</translation>
 <translation id="2903493209154104877">Adrese</translation>
+<translation id="291754862089661335">Poziționează codul QR sau codul de bare în acest cadru</translation>
 <translation id="2921219216347069551">Pagină netrimisă</translation>
 <translation id="292639812446257861">Marchează ca necitite</translation>
 <translation id="2933759065870693102">Lanterna</translation>
@@ -172,7 +173,6 @@ Pentru a ajusta termenii căutării, apasă lung pentru a selecta. Pentru a rafi
 <translation id="4359125752503270327">Această pagină se va deschide în altă aplicație.</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="441868831736628555">Notificare de confidențialitate</translation>
-<translation id="4473991315115669931">Treci în modul incognito</translation>
 <translation id="4526249700380860531">Vezi și gestionează parolele salvate la <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Încearcă să te conectezi din nou.</translation>
 <translation id="4620246317052452550">Paginile citite</translation>
@@ -246,7 +246,6 @@ Trebuie să activezi Handoff în secțiunea General din Setări, iar dispozitive
 <translation id="6042308850641462728">Mai multe</translation>
 <translation id="605721222689873409">AA</translation>
 <translation id="6066301408025741299">Atinge pentru a anula.</translation>
-<translation id="60851516108411750">Lista de lectură este disponibilă offline. Pentru a adăuga o pagină în lista de lectură, atinge <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="6122191549521593678">Online</translation>
 <translation id="6127379762771434464">Elementul a fost eliminat</translation>
 <translation id="6136914049981179737">Secunde</translation>
@@ -381,7 +380,6 @@ Datele au fost criptate cu expresia de acces pentru sincronizare la <ph name="TI
 <translation id="8741995161408053644">Contul Google poate să ofere alte forme ale istoricului de navigare la <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8775144690796719618">Adresă URL nevalidă</translation>
 <translation id="8820817407110198400">Marcaje</translation>
-<translation id="882482397944455431">Ieși din modul incognito</translation>
 <translation id="8840513115188359703">Nu vei fi deconectat(ă) de la Contul Google.</translation>
 <translation id="8904976895050290827">Chrome Sync</translation>
 <translation id="895541991026785598">Raportați o problemă</translation>

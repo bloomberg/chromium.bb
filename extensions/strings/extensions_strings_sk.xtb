@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sk">
 <translation id="1135328998467923690">Balík je neplatný: „<ph name="ERROR_CODE" />“</translation>
+<translation id="1140871961407805696">Nasmerovaný na okolie</translation>
 <translation id="1256619696651732561">Extension Manifest Parser</translation>
 <translation id="1445572445564823378">Toto rozšírenie spomaľuje prehliadač <ph name="PRODUCT_NAME" />. Ak chcete obnoviť výkonnosť prehliadača <ph name="PRODUCT_NAME" />, zakážte ho.</translation>
 <translation id="149347756975725155">Nepodarilo sa načítať ikonu rozšírenia „<ph name="ICON" />“.</translation>
@@ -42,6 +43,7 @@
 <translation id="7217838517480956708">Správca tohto zariadenia vyžaduje inštaláciu rozšírenia <ph name="EXTENSION_NAME" />. Nemôže byť odstránené alebo upravené.</translation>
 <translation id="7809034755304591547">Rozšírenie <ph name="EXTENSION_NAME" /> (ID rozšírenia „<ph name="EXTENSION_ID" />“) bolo správcom zablokované.</translation>
 <translation id="7972881773422714442">Možnosti: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
+<translation id="8035920974645200807">Nasmerovaný na používateľa</translation>
 <translation id="8047248493720652249">Tomuto rozšíreniu sa nepodarilo pomenovať stiahnutý súbor s názvom „<ph name="ATTEMPTED_FILENAME" />„, pretože ďalšie rozšírenie (<ph name="EXTENSION_NAME" />) určilo odlišný názov súboru „<ph name="ACTUAL_FILENAME" />“.</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> od dodávateľa <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Tomuto rozšíreniu sa nepodarilo poskytnúť poverenia žiadosti o sieť, pretože iné rozšírenie (<ph name="EXTENSION_NAME" />) poskytlo odlišné poverenia.</translation>

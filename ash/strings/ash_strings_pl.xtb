@@ -24,12 +24,16 @@
 <translation id="1525508553941733066">ZAMKNIJ</translation>
 <translation id="15373452373711364">Duży kursor myszy</translation>
 <translation id="1550523713251050646">Kliknij, by wyświetlić więcej opcji</translation>
+<translation id="1571442141242456645">Metoda wprowadzania została zmieniona na <ph name="INPUT_METHOD_ID" />.
+    Naciśnij Shift + Alt, by ją przełączyć.</translation>
 <translation id="1602076796624386989">Włącz komórkową transmisję danych</translation>
 <translation id="1621499497873603021">Czas pozostały do wyczerpania baterii: <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Urządzenie z Chrome</translation>
 <translation id="1677472565718498478">Pozostało <ph name="TIME" /></translation>
 <translation id="1747827819627189109">Klawiatura ekranowa włączona</translation>
 <translation id="1850504506766569011">Wi-Fi wyłączone.</translation>
+<translation id="1854357586517521894">CAPS LOCK jest włączony.
+    Naciśnij Szukaj lub Shift, by anulować.</translation>
 <translation id="1864454756846565995">Urządzenie USB-C (tylny port)</translation>
 <translation id="1882897271359938046">Kopia na <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Zmieniliśmy skrót, który otwiera menedżera zadań. Zamiast <ph name="OLD_SHORTCUT" /> używaj teraz <ph name="NEW_SHORTCUT" />.</translation>
@@ -62,6 +66,8 @@
 <translation id="2857608528410806398">Miejsce na treść powiadomienia o funkcji szybkiego odblokowania. Miejsce na treść powiadomienia o funkcji szybkiego odblokowania. Miejsce na treść powiadomienia o funkcji szybkiego odblokowania. Miejsce na treść powiadomienia o funkcji szybkiego odblokowania.</translation>
 <translation id="2865888419503095837">Informacje o sieci</translation>
 <translation id="2872961005593481000">Wyłącz</translation>
+<translation id="291653379653113090">Metoda wprowadzania została zmieniona na <ph name="INPUT_METHOD_ID" />* (<ph name="BEGIN_LINK" />innej firmy<ph name="END_LINK" />).
+    Naciśnij Shift + Alt, by ją przełączyć.</translation>
 <translation id="2942516765047364088">Pozycja półki</translation>
 <translation id="2946119680249604491">Dodaj połączenie</translation>
 <translation id="2963773877003373896">mod3</translation>
@@ -72,6 +78,8 @@
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Na dół</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
+<translation id="3109220592788908353">CAPS LOCK jest włączony.
+    Naciśnij Alt+Szukaj lub Shift, by anulować.</translation>
 <translation id="3126069444801937830">Uruchom ponownie i zaktualizuj</translation>
 <translation id="3147142846278915599">Menu z aplikacjami (synchronizuję aplikacje...)</translation>
 <translation id="315116470104423982">Komórkowa transmisja danych</translation>
@@ -119,7 +127,6 @@
 <translation id="4421231901400348175">Udostępnianie sterowania ekranem użytkownikowi <ph name="HELPER_NAME" /> przy użyciu pomocy zdalnej.</translation>
 <translation id="4430019312045809116">Głośność</translation>
 <translation id="4448844063988177157">Trwa wyszukiwanie sieci Wi-Fi...</translation>
-<translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Niesparowane urządzenia</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: łączę...</translation>
 <translation id="4527045527269911712">Urządzenie Bluetooth „<ph name="DEVICE_NAME" />” chce się sparować.</translation>
@@ -140,6 +147,7 @@
 <translation id="5313326810920013265">Ustawienia Bluetooth</translation>
 <translation id="532063867737390965">To ustawienie sieci zostało wyłączone przez administratora.</translation>
 <translation id="5331975486040154427">Urządzenie USB-C (tylny port na lewym boku)</translation>
+<translation id="5430931332414098647">Instant Tethering</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">Wszyscy dostępni użytkownicy zostali już dodani do tej sesji.</translation>
 <translation id="5507786745520522457">Skonfiguruj komórkową transmisję danych</translation>
@@ -210,7 +218,6 @@ Aby wyłączyć, naciśnij Ctrl+Alt+Z.</translation>
 <translation id="735745346212279324">VPN odłączona</translation>
 <translation id="742594950370306541">Aparat jest używany.</translation>
 <translation id="743058460480092004">Aparat i mikrofon są używane.</translation>
-<translation id="7502658306369382406">Adres IPv6</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> nie obsługuje <ph name="SPECIFIED_RESOLUTION" />. Zmieniono rozdzielczość na <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Paleta emotikonów</translation>
@@ -240,7 +247,6 @@ Aby wyłączyć, naciśnij Ctrl+Alt+Z.</translation>
 <translation id="8428213095426709021">Ustawienia</translation>
 <translation id="8433186206711564395">Ustawienia sieci</translation>
 <translation id="8454013096329229812">Wi-Fi włączone.</translation>
-<translation id="8483248364096924578">Adres IP</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: ponownie łączę...</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> nie może się ładować, gdy jest włączony.</translation>
 <translation id="8528322925433439945">Komórkowe...</translation>

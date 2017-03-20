@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="nl">
 <translation id="1135328998467923690">Pakket is ongeldig: '<ph name="ERROR_CODE" />'.</translation>
+<translation id="1140871961407805696">Camera aan achterzijde</translation>
 <translation id="1256619696651732561">Extension Manifest Parser</translation>
 <translation id="1445572445564823378"><ph name="PRODUCT_NAME" /> wordt door deze extensie vertraagd. Schakel de extensie uit om de prestaties van <ph name="PRODUCT_NAME" /> te verbeteren.</translation>
 <translation id="149347756975725155">Kan extensiepictogram '<ph name="ICON" />' niet laden.</translation>
@@ -42,6 +43,7 @@
 <translation id="7217838517480956708">De beheerder van dit apparaat vereist dat <ph name="EXTENSION_NAME" /> is geïnstalleerd. Het kan niet worden verwijderd of gewijzigd.</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME" /> (extensie-ID '<ph name="EXTENSION_ID" />') wordt geblokkeerd door de beheerder.</translation>
 <translation id="7972881773422714442">Opties: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
+<translation id="8035920974645200807">Camera aan voorzijde</translation>
 <translation id="8047248493720652249">Deze extensie kan de download niet de naam '<ph name="ATTEMPTED_FILENAME" />' geven, omdat een andere extensie (<ph name="EXTENSION_NAME" />) een andere bestandsnaam '<ph name="ACTUAL_FILENAME" />' heeft bepaald.</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> van <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Deze extensie heeft geen identificatie kunnen leveren voor een netwerkverzoek, omdat een andere extensie (<ph name="EXTENSION_NAME" />) een andere identificatie heeft geleverd.</translation>

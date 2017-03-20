@@ -101,6 +101,7 @@
 <translation id="2871695793448672541">Прихований пароль</translation>
 <translation id="2898963176829412617">Нова папка…</translation>
 <translation id="2903493209154104877">Адреси</translation>
+<translation id="291754862089661335">Розмістіть QR-код або штрих-код у цій рамці</translation>
 <translation id="2921219216347069551">Неможливо поділитися</translation>
 <translation id="292639812446257861">Позначити як непрочитані</translation>
 <translation id="2933759065870693102">Ліхтарик</translation>
@@ -172,7 +173,6 @@
 <translation id="4359125752503270327">Ця сторінка відкриється в іншому додатку.</translation>
 <translation id="4378154925671717803">Телефон</translation>
 <translation id="441868831736628555">Примітка про конфіденційність</translation>
-<translation id="4473991315115669931">Перейти в режим анонімного перегляду</translation>
 <translation id="4526249700380860531">Переглядайте збережені паролі та керуйте ними на сторінці <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Спробуйте ввійти ще раз.</translation>
 <translation id="4620246317052452550">Прочитані сторінки</translation>
@@ -246,7 +246,6 @@
 <translation id="6042308850641462728">Більше</translation>
 <translation id="605721222689873409">РР</translation>
 <translation id="6066301408025741299">Торкніться, щоб скасувати.</translation>
-<translation id="60851516108411750">Ваш список читання доступний у режимі офлайн. Щоб додати до нього сторінку, торкніться опції <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="6122191549521593678">Онлайн</translation>
 <translation id="6127379762771434464">Веб-сайт видалено</translation>
 <translation id="6136914049981179737">Мить тому</translation>
@@ -381,7 +380,6 @@
 <translation id="8741995161408053644">У вашому обліковому записі Google на сторінці <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> можуть бути інші форми історії веб-перегляду.</translation>
 <translation id="8775144690796719618">Недійсна URL-адреса</translation>
 <translation id="8820817407110198400">Закладки</translation>
-<translation id="882482397944455431">Вийти з режиму анонімного перегляду</translation>
 <translation id="8840513115188359703">Ви не вийдете з облікового запису Google.</translation>
 <translation id="8904976895050290827">Синхронізація Chrome</translation>
 <translation id="895541991026785598">Повідомити про проблему</translation>

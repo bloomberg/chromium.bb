@@ -24,12 +24,16 @@
 <translation id="1525508553941733066">IGNORAR</translation>
 <translation id="15373452373711364">Cursor do rato grande</translation>
 <translation id="1550523713251050646">Clicar para obter mais opções</translation>
+<translation id="1571442141242456645">O seu método de introdução foi alterado para <ph name="INPUT_METHOD_ID" />.
+        Prima Shift + Alt para mudar.</translation>
 <translation id="1602076796624386989">Ativar dados móveis</translation>
 <translation id="1621499497873603021">Tempo restante até a bateria terminar, <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Dispositivo Chrome</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> restante(s)</translation>
 <translation id="1747827819627189109">Teclado no ecrã ativado</translation>
 <translation id="1850504506766569011">A ligação Wi-Fi está desativada.</translation>
+<translation id="1854357586517521894">CAPS LOCK ativado.
+     Prima Pesquisar ou Shift para cancelar.</translation>
 <translation id="1864454756846565995">Dispositivo USB-C (porta traseira)</translation>
 <translation id="1882897271359938046">A espelhar para <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">O atalho para abrir o Gestor de tarefas foi alterado. Utilize <ph name="NEW_SHORTCUT" /> em vez de <ph name="OLD_SHORTCUT" />.</translation>
@@ -62,6 +66,8 @@
 <translation id="2857608528410806398">Corpo da notificação da funcionalidade de Desbloqueio rápido aqui. Corpo da notificação da funcionalidade de Desbloqueio rápido aqui. Corpo da notificação da funcionalidade de Desbloqueio rápido aqui. Corpo da notificação da funcionalidade de Desbloqueio rápido aqui. Corpo da notificação da funcionalidade de Desbloqueio rápido aqui.</translation>
 <translation id="2865888419503095837">Informações da rede</translation>
 <translation id="2872961005593481000">Encerrar</translation>
+<translation id="291653379653113090">O seu método de introdução foi alterado para <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />terceiros<ph name="END_LINK" />).
+        Prima Shift + Alt para mudar.</translation>
 <translation id="2942516765047364088">Posição da prateleira</translation>
 <translation id="2946119680249604491">Adicionar ligação</translation>
 <translation id="2963773877003373896">mod3</translation>
@@ -72,6 +78,8 @@
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Parte inferior</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
+<translation id="3109220592788908353">CAPS LOCK ativado.
+     Prima Alt + Pesquisar ou Shift para cancelar.</translation>
 <translation id="3126069444801937830">Reiniciar para atualizar</translation>
 <translation id="3147142846278915599">Launcher (a sincronizar aplicações...)</translation>
 <translation id="315116470104423982">Dados móveis</translation>
@@ -119,7 +127,6 @@
 <translation id="4421231901400348175">A partilhar o controlo do seu ecrã com <ph name="HELPER_NAME" /> através da Assistência remota.</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4448844063988177157">A procurar redes Wi-Fi...</translation>
-<translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Dispositivos dessincronizados</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: A ligar...</translation>
 <translation id="4527045527269911712">O dispositivo Bluetooth "<ph name="DEVICE_NAME" />" necessita de autorização para sincronizar.</translation>
@@ -140,6 +147,7 @@
 <translation id="5313326810920013265">Definições de Bluetooth</translation>
 <translation id="532063867737390965">Esta definição de rede foi desativada pelo administrador.</translation>
 <translation id="5331975486040154427">Dispositivo USB-C (porta traseira do lado esquerdo)</translation>
+<translation id="5430931332414098647">Ligação via telemóvel instantânea</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">Já foram adicionados a esta sessão todos os utilizadores disponíveis.</translation>
 <translation id="5507786745520522457">Configurar dados móveis</translation>
@@ -210,7 +218,6 @@ Prima Ctrl+Alt+Z para desativar.</translation>
 <translation id="735745346212279324">VPN desligado</translation>
 <translation id="742594950370306541">A câmara está a ser utilizada.</translation>
 <translation id="743058460480092004">A câmara e o microfone estão a ser utilizados.</translation>
-<translation id="7502658306369382406">Endereço IPv6</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> não suporta <ph name="SPECIFIED_RESOLUTION" />. A resolução foi alterada para <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Paleta de emoji</translation>
@@ -240,7 +247,6 @@ Prima Ctrl+Alt+Z para desativar.</translation>
 <translation id="8428213095426709021">Definições</translation>
 <translation id="8433186206711564395">Definições da rede</translation>
 <translation id="8454013096329229812">A ligação Wi-Fi está ativada.</translation>
-<translation id="8483248364096924578">Endereço IP</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: a restabelecer ligação...</translation>
 <translation id="8517041960877371778">O <ph name="DEVICE_TYPE" /> pode não carregar enquanto estiver ligado.</translation>
 <translation id="8528322925433439945">Telemóvel...</translation>

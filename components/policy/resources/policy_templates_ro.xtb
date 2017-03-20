@@ -277,6 +277,7 @@
       Dacă o setare rămâne nespecificată, este utilizată o valoare prestabilită.
 
       Dacă politica nu este configurată, sunt utilizate valorile prestabilite pentru toate setările.</translation>
+<translation id="1960840544413786116">Dacă sunt permise certificatele din care lipsește extensia subjectAlternativeName, emise de ancorele de încredere de pe dispozitiv</translation>
 <translation id="1964634611280150550">Modul incognito a fost dezactivat</translation>
 <translation id="1964802606569741174">Această politică nu afectează aplicația Android YouTube. Dacă trebuie impus Modul sigur pe YouTube, nu trebuie permisă instalarea aplicației Android YouTube.</translation>
 <translation id="1969212217917526199">Suprascrie politicile în versiunile de depanare ale gazdei de acces de la distanță.
@@ -331,6 +332,21 @@
       Dacă HardwareAccelerationModeEnabled este dezactivat, Disable3DAPIs este ignorat, fiind echivalent cu activarea Disable3DAPIs.</translation>
 <translation id="2168397434410358693">Interval de inactivitate la funcționarea pe c.a.</translation>
 <translation id="2170233653554726857">Activați optimizarea pentru WPAD</translation>
+<translation id="2176565653304920879">Când această politică este configurată, fluxul de detectare automată a fusului orar va fi într-unul dintre următoarele moduri, în funcție de valoarea setării:
+
+      Dacă este setată la TimezoneAutomaticDetectionUsersDecide, utilizatorii vor putea controla detectarea automată a fusului orar folosind comenzi obișnuite în chrome://settings.
+
+      Dacă este setată la TimezoneAutomaticDetectionDisabled, comenzile pentru fusul orar automat din chrome://settings vor fi dezactivate. Detectarea automată a fusului orar va fi întotdeauna dezactivată.
+
+      Dacă este setată la TimezoneAutomaticDetectionIPOnly, comenzile pentru fusul orar din chrome://settings vor fi dezactivate. Detectarea automată a fusului orar va fi întotdeauna activată. Detectarea fusului orar va folosi numai metoda prin adresa IP pentru a stabili locația.
+
+      Dacă este setată la TimezoneAutomaticDetectionSendWiFiAccessPoints, comenzile pentru fusul orar din chrome://settings vor fi dezactivate. Detectarea automată a fusului orar va fi întotdeauna activată. Lista cu punctele de acces Wi-Fi vizibile va fi trimisă întotdeauna către serverul API-ului Geolocation pentru detectarea exactă a fusului orar.
+
+      Dacă este setată la TimezoneAutomaticDetectionSendAllLocationInfo, comenzile pentru fusul orar din chrome://settings vor fi dezactivate. Detectarea automată a fusului orar va fi întotdeauna activată. Informațiile despre locație (cum ar fi punctele de acces Wi-Fi, turnurile de telefonie mobilă accesibili, GPS) vor fi trimise la un server pentru detectarea exactă a fusului orar.
+
+      Dacă această politică nu este configurată, se va comporta ca și cum TimezoneAutomaticDetectionUsersDecide ar fi setată.
+
+      Dacă politica SystemTimezone este configurată, va modifica această politică. În acest caz, detectarea automată a fusului orar este complet dezactivată.</translation>
 <translation id="2178899310296064282">Impune cel puțin Modul restricționat moderat pe YouTube</translation>
 <translation id="2183294522275408937">Această setare controlează frecvența cu care ecranul de blocare solicită introducerea parolei pentru a se folosi în continuare deblocarea rapidă. Dacă ultima introducere a parolei a fost în urmă cu mai mult decât prevede această setare, deblocarea rapidă nu va mai fi disponibilă la accesarea ecranului de blocare. Dacă utilizatorul menține pornit ecranul de blocare mai mult decât acest interval de timp, se va solicita o parolă data viitoare când acesta introduce codul greșit sau când accesează din nou ecranul de blocare, în funcție de care dintre acestea se realizează prima.
 
@@ -1397,11 +1413,21 @@
 <translation id="5378985487213287085">Vă permite să setați dacă site-urile web au permisiunea de a afișa notificări pe desktop. Afișarea notificărilor pe desktop poate fi permisă în mod prestabilit, refuzată în mod prestabilit sau utilizatorul poate fi întrebat de fiecare dată când un site web vrea să afișeze notificări pe desktop. Dacă această politică nu este setată, va fi utilizată politica „AskNotifications”, iar utilizatorul va putea să o schimbe.</translation>
 <translation id="538108065117008131">Permite <ph name="PRODUCT_FRAME_NAME" /> să gestioneze următoarele tipuri de conținut.</translation>
 <translation id="5388730678841939057">Selectează strategia folosită pentru eliberarea spațiului pe disc în timpul curățării automate (învechită)</translation>
+<translation id="5392172595902933844">Informațiile despre starea Android sunt trimise la
+      server.
+
+      Dacă politica este dezactivată sau nu este configurată, informațiile despre stare nu vor fi raportate.
+      Dacă politica este activată, informațiile despre stare vor fi raportate.
+
+      Politica se aplică numai dacă sunt activate aplicațiile Android.</translation>
 <translation id="5395271912574071439">Permite protecția gazdelor de acces la distanță în timpul unei conexiuni.
 
           Dacă această setare este activată, atunci dispozitivele de intrare și de ieșire fizică ale gazdei sunt dezactivate în timpul unei conexiuni la distanță.
 
           Dacă această setare este dezactivată sau neconfigurată, atunci atât utilizatorii locali, cât și cei de la distanță pot interacționa cu gazda când se permite accesul la aceasta.</translation>
+<translation id="5405289061476885481">Configurează care aspecte ale tastaturii sunt permise pe ecranul de conectare din <ph name="PRODUCT_OS_NAME" />.
+
+      Dacă această politică este configurată la o listă de identificatori ai metodei de introducere a textului, metodele specificate vor fi disponibile pe ecranul de conectare. Prima metodă de introducere a textului specificată va fi preselectată. Deși tastatura utilizatorului este focalizată pe ecranul de conectare, cea mai puțin folosită recent metodă de introducere a textului va fi disponibilă, pe lângă metodele de introducere a textului specificate de această politică. Dacă această politică nu este configurată, metodele de introducere a textului de pe ecranul de conectare se vor baza pe limba în care este afișat ecranul de conectare. Valorile care nu sunt identificatori valizi ai metodei de introducere a textului vor fi ignorate.</translation>
 <translation id="5423001109873148185">Dacă este activată, această politică forțează importarea motoarelor de căutare din browserul prestabilit. Dacă este activată, politica afectează, de asemenea, caseta de dialog de importare. Dacă este dezactivată, motorul de căutare prestabilit nu este importat. În cazul în care nu este setată, utilizatorul poate fi întrebat dacă dorește importarea sau aceasta poate avea loc în mod automat.</translation>
 <translation id="5423197884968724595">Numele restricției Android WebView:</translation>
 <translation id="543559563129402336">Această politică este învechită. Îți recomandăm să folosești <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" />, care înlocuiește această politică și permite ajustări mai exacte.
@@ -1469,6 +1495,11 @@
       Dacă setați această politică, utilizatorii nu pot să o modifice sau să o ignore.
 
       Dacă politica nu este setată, utilizatorii pot alege dacă raftul va fi ascuns automat.</translation>
+<translation id="557360560705413259">Când această setare este activată, dacă dintr-un certificat de server lipsește o extensie subjectAlternativeName, pentru a identifica un nume de gazdă, <ph name="PRODUCT_NAME" /> va folosi numele comun din certificat, atât timp cât este validat și asociat certificatelor CA instalate pe dispozitiv.
+
+      Reține că acest lucru nu este recomandat, deoarece astfel se poate permite evitarea extensiei nameConstraints care limitează numele de gazdă pentru care poate fi autorizat un anumit certificat.
+
+      Dacă politica nu este configurată sau dacă este dezactivată, certificatele de server din care lipsește extensia subjectAlternativeName cu un nume DNS sau o adresă IP nu vor fi considerate de încredere.</translation>
 <translation id="557658534286111200">Activează sau dezactivează editarea marcajelor</translation>
 <translation id="5586942249556966598">Nicio acțiune</translation>
 <translation id="5613179474872285001">Configurează numele de domeniu client necesar care va fi impus pentru clienții cu acces la distanță și împiedică utilizatorii să îl modifice.
@@ -2311,6 +2342,7 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="7937766917976512374">Permiteți sau refuzați preluarea conținutului video</translation>
 <translation id="7941975817681987555">Nu anticipa acțiunile în rețea pentru nicio conexiune la rețea</translation>
 <translation id="7953256619080733119">Gazde pentru excepții adăugate manual ale utilizatorilor gestionați</translation>
+<translation id="7965394584578183156">Trimite întotdeauna punctele de acces Wi-Fi către server în timp ce se stabilește fusul orar.</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Această politică nu mai este acceptată. Permite utilizarea de servere STUN și de retransmisie în cazul conectării la un client la distanță. Dacă această setare este activată, atunci acest computer poate să descopere computere gazdă la distanță și să se conecteze la acestea, chiar dacă există un firewall. Dacă această setare este dezactivată, iar conexiunile UDP de ieșire sunt filtrate de firewall, atunci acest computer se poate conecta numai la computerele gazdă aflate în rețeaua locală.</translation>
 <translation id="7986374692540430898">Nu poți forța aplicațiile Android să folosească un proxy. Un subset al setărilor de proxy este pus la dispoziția aplicațiilor Android, pe care acestea pot alege în mod voluntar să îl respecte. Pentru detalii suplimentare, consultă politica <ph name="PROXY_MODE_POLICY" />.</translation>
@@ -2463,6 +2495,7 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="8390049129576938611">Dezactivează vizualizatorul PDF intern în <ph name="PRODUCT_NAME" />. Îl tratează ca pe o descărcare și permite utilizatorului să deschidă fișierele PDF folosind aplicația prestabilită.
 
       Dacă această politică nu este configurată sau este dezactivată, pluginul PDF va fi folosit pentru a deschide fișierele PDF, dacă utilizatorul nu îl dezactivează.</translation>
+<translation id="8398203849316312944">Trimite întotdeauna semnalele disponibile privind locația către server în timp ce se stabilește fusul orar.</translation>
 <translation id="8402079500086185021">Deschide întotdeauna fișierele PDF extern</translation>
 <translation id="8412312801707973447">Această politică stabilește dacă sunt efectuate verificări OCSP/CRL online</translation>
 <translation id="8413348101535146315">Activează oprirea proceselor în Managerul de activități din <ph name="PRODUCT_NAME" />.
@@ -2705,6 +2738,11 @@ nu poate fi stabilit de utilizator din setările browserului.
       Dacă politica este activată, nu se pot realiza capturi de ecran utilizând comenzile rapide de la tastatură sau API-urile cu extensii.
 
       Dacă politica este dezactivată sau nu este specificată, se permite realizarea capturilor de ecran.</translation>
+<translation id="9212233969680267790">Avertisment: politica privind versiunea maximă TLS va fi eliminată complet din <ph name="PRODUCT_NAME" /> începând cu versiunea 66 (aproximativ în luna februarie 2018).
+
+      Dacă politica nu este configurată, <ph name="PRODUCT_NAME" /> folosește o versiune maximă prestabilită.
+
+      În caz contrar, politica poate fi configurată la una dintre următoarele valori: „tls1.2” sau „tls1.3”. Când este configurată, <ph name="PRODUCT_NAME" /> nu va folosi versiunile SSL/TLS superioare versiunii specificate. Valorile nerecunoscute vor fi ignorate.</translation>
 <translation id="9213347477683611358">Configurează imaginea de fundal la nivel de dispozitiv afișată pe ecranul de conectare, dacă încă nu s-a conectat niciun utilizator pe dispozitiv. Politica se configurează prin specificarea adresei URL de la care dispozitivul cu sistemul de operare Chrome poate descărca imaginea de fundal și a unui cod hash criptografic folosit pentru a verifica integritatea descărcării. Imaginea trebuie să fie în format JPEG, iar dimensiunea fișierului nu trebuie să depășească 16 MB. Adresa URL trebuie să poată fi accesată fără autentificare. Imaginea de fundal este descărcată și stocată în memoria cache. Aceasta va fi descărcată din nou, ori de câte ori adresa URL sau codul hash se modifică.
 
       Politica trebuie să fie specificată ca șir ce exprimă adresa URL și codul hash în format JSON, de ex.,

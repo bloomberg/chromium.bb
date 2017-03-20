@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ro">
 <translation id="1135328998467923690">Pachetul nu este valid: „<ph name="ERROR_CODE" />”.</translation>
+<translation id="1140871961407805696">Camera foto din spate</translation>
 <translation id="1256619696651732561">Analizor al manifestului extensiei</translation>
 <translation id="1445572445564823378">Această extensie încetinește <ph name="PRODUCT_NAME" />. Vă recomandăm să o dezactivați pentru a restabili performanțele produsului <ph name="PRODUCT_NAME" />.</translation>
 <translation id="149347756975725155">Nu se poate încărca pictograma „<ph name="ICON" />” a extensiei.</translation>
@@ -42,6 +43,7 @@
 <translation id="7217838517480956708">Administratorul acestui dispozitiv solicită instalarea extensiei <ph name="EXTENSION_NAME" />. Aceasta nu poate fi eliminată sau modificată.</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME" /> (cu codul de extensie „<ph name="EXTENSION_ID" />”) este blocată de administrator.</translation>
 <translation id="7972881773422714442">Opțiuni: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
+<translation id="8035920974645200807">Camera foto frontală</translation>
 <translation id="8047248493720652249">Această extensie nu a reușit să denumească fișierul descărcat „<ph name="ATTEMPTED_FILENAME" />”, deoarece altă extensie (<ph name="EXTENSION_NAME" />) a stabilit alt nume de fișier, „<ph name="ACTUAL_FILENAME" />”.</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> de la <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Această extensie nu a putut furniza datele de conectare pentru o solicitare din rețea, deoarece o altă extensie (<ph name="EXTENSION_NAME" />) a furnizat alte date de conectare.</translation>

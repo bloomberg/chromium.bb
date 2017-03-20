@@ -24,12 +24,16 @@
 <translation id="1525508553941733066">ख़ारिज करें</translation>
 <translation id="15373452373711364">बड़ा माउस कर्सर</translation>
 <translation id="1550523713251050646">अधिक विकल्पों के लिए क्लिक करें</translation>
+<translation id="1571442141242456645">आपकी इनपुट विधि <ph name="INPUT_METHOD_ID" /> में बदल गई है.
+    स्विच करने के लिए Shift + Alt दबाएं.</translation>
 <translation id="1602076796624386989">मोबाइल डेटा सक्षम करें</translation>
 <translation id="1621499497873603021">बैटरी के खाली होने में शेष समय, <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Chrome डिवाइस</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> शेष</translation>
 <translation id="1747827819627189109">ऑन-स्‍क्रीन कीबोर्ड सक्षम है</translation>
 <translation id="1850504506766569011">वाई-फ़ाई  बंद है.</translation>
+<translation id="1854357586517521894">CAPS LOCK चालू है.
+    रद्द करने के लिए Search या Shift दबाएं.</translation>
 <translation id="1864454756846565995">USB-C डिवाइस (पिछला पोर्ट)</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> पर मिरर कर रहा है</translation>
 <translation id="1919743966458266018">काम के प्रबंधक को खोलने का शॉर्टकट बदल गया है. कृपया <ph name="OLD_SHORTCUT" /> के बजाय <ph name="NEW_SHORTCUT" /> का उपयोग करें.</translation>
@@ -62,6 +66,8 @@
 <translation id="2857608528410806398">QU सुविधा नोटिफ़िकेशन का मुख्य भाग यहां आएगा. QU सुविधा नोटिफ़िकेशन का मुख्य भाग यहां आएगा. QU सुविधा नोटिफ़िकेशन का मुख्य भाग यहां आएगा. QU सुविधा नोटिफ़िकेशन का मुख्य भाग यहां आएगा. QU सुविधा नोटिफ़िकेशन का मुख्य भाग यहां आएगा.</translation>
 <translation id="2865888419503095837">नेटवर्क जानकारी</translation>
 <translation id="2872961005593481000">शट डाउन करें</translation>
+<translation id="291653379653113090">आपकी इनपुट विधि <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />तृतीय पक्ष<ph name="END_LINK" />) में बदल गई है.
+    स्विच करने के लिए Shift + Alt दबाएं.</translation>
 <translation id="2942516765047364088">अलमारी की स्थिति</translation>
 <translation id="2946119680249604491">कनेक्शन जोड़ें</translation>
 <translation id="2963773877003373896">mod3</translation>
@@ -72,6 +78,8 @@
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">नीचे</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (ब्लूटूथ)</translation>
+<translation id="3109220592788908353">CAPS LOCK चालू है.
+    रद्द करने के लिए Alt+Search या Shift दबाएं.</translation>
 <translation id="3126069444801937830">अपडेट करने के लिए पुनरारंभ करें</translation>
 <translation id="3147142846278915599">लॉन्‍चर (ऐप्‍स समन्‍वयित किए जा रहे हैं...)</translation>
 <translation id="315116470104423982">मोबाइल डेटा</translation>
@@ -119,7 +127,6 @@
 <translation id="4421231901400348175">आपकी स्‍क्रीन का नियंत्रण दूरस्‍थ सहायक के द्वारा <ph name="HELPER_NAME" /> से साझा किया जा रहा है.</translation>
 <translation id="4430019312045809116">मात्रा</translation>
 <translation id="4448844063988177157">वाई-फ़ाई  नेटवर्क खोज रहा है...</translation>
-<translation id="4479639480957787382">इथरनेट</translation>
 <translation id="4481530544597605423">अयुग्मित किए गए डिवाइस</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: कनेक्ट हो रहा है...</translation>
 <translation id="4527045527269911712">ब्लूटूथ डिवाइस "<ph name="DEVICE_NAME" />" युग्मित करने की अनुमति चाहता है.</translation>
@@ -140,6 +147,7 @@
 <translation id="5313326810920013265">ब्लूटूथ सेटिंग</translation>
 <translation id="532063867737390965">यह नेटवर्क सेटिंग व्‍यवस्‍थापक द्वारा अक्षम कर दी गई है.</translation>
 <translation id="5331975486040154427">USB-C डिवाइस (बायां पिछला पोर्ट)</translation>
+<translation id="5430931332414098647">झटपट टेदरिंग</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">सभी उपलब्‍ध उपयोगकर्ता पहले से इस सत्र में जोड़ दिए गए हैं.</translation>
 <translation id="5507786745520522457">मोबाइल डेटा सेट करें</translation>
@@ -209,7 +217,6 @@
 <translation id="735745346212279324">VPN डिसकनेक्ट है</translation>
 <translation id="742594950370306541">कैमरे का उपयोग हो रहा है.</translation>
 <translation id="743058460480092004">कैमरे और माइक्रोफ़ोन का उपयोग हो रहा है.</translation>
-<translation id="7502658306369382406">IPv6 पता</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> <ph name="SPECIFIED_RESOLUTION" /> का समर्थन नहीं करता. रिज़ॉल्यूशन को <ph name="FALLBACK_RESOLUTION" /> में बदल दिया गया था</translation>
 <translation id="7562368315689366235">इमोजी पैलेट</translation>
@@ -239,7 +246,6 @@
 <translation id="8428213095426709021">सेटिंग्स</translation>
 <translation id="8433186206711564395">नेटवर्क सेटिंग</translation>
 <translation id="8454013096329229812">वाई-फ़ाई  चालू है.</translation>
-<translation id="8483248364096924578">IP पता</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: पुनः कनेक्ट कर रहा है...</translation>
 <translation id="8517041960877371778">हो सकता है आपका <ph name="DEVICE_TYPE" /> चालू होने पर चार्ज नहीं होता हो.</translation>
 <translation id="8528322925433439945">मोबाइल ...</translation>

@@ -7,6 +7,7 @@
 <translation id="1127238861555034875">Mode loupe</translation>
 <translation id="1153356358378277386">Appareils associés</translation>
 <translation id="1195412055398077112">Surbalayage</translation>
+<translation id="1247372569136754018">Micro (interne)</translation>
 <translation id="1252999807265626933">Charge à partir de la source "<ph name="POWER_SOURCE" />"</translation>
 <translation id="1270290102613614947">Clavier à l'écran désactivé</translation>
 <translation id="1272079795634619415">Arrêter</translation>
@@ -23,16 +24,22 @@
 <translation id="1525508553941733066">IGNORER</translation>
 <translation id="15373452373711364">Grand curseur</translation>
 <translation id="1550523713251050646">Cliquez pour obtenir plus d'options.</translation>
+<translation id="1571442141242456645">Votre mode de saisie a été remplacé par <ph name="INPUT_METHOD_ID" />.
+
+    Appuyez sur Maj+Alt pour en utiliser un autre.</translation>
 <translation id="1602076796624386989">Activer les données mobiles</translation>
 <translation id="1621499497873603021">Temps restant avant que la batterie ne soit vide : <ph name="TIME_LEFT" />.</translation>
 <translation id="164969095109328410">Appareil Google Chrome</translation>
 <translation id="1677472565718498478">Temps restant : <ph name="TIME" /></translation>
 <translation id="1747827819627189109">Clavier à l'écran activé</translation>
 <translation id="1850504506766569011">Le Wi-Fi est désactivé.</translation>
+<translation id="1854357586517521894">Le VERROUILLAGE DES MAJUSCULES est activé.
+    Appuyez sur Recherche ou Maj pour le désactiver.</translation>
 <translation id="1864454756846565995">Appareil USB de type C (port situé sur l'arrière de l'appareil)</translation>
 <translation id="1882897271359938046">Mise en miroir pour <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Le raccourci permettant d'ouvrir le gestionnaire de tâches a été modifié. Utilisez "<ph name="NEW_SHORTCUT" />" au lieu de "<ph name="OLD_SHORTCUT" />".</translation>
 <translation id="1923539912171292317">Clics automatiques</translation>
+<translation id="1942830294380034169">Bouton de dépassement de capacité</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2122028596993374965">Arrêter de diffuser <ph name="TAB_NAME" /> sur "<ph name="RECEIVER_NAME" />"</translation>
@@ -60,6 +67,8 @@
 <translation id="2857608528410806398">QU Feature notification body goes here. QU Feature notification body goes here. QU Feature notification body goes here. QU Feature notification body goes here. QU Feature notification body goes here.</translation>
 <translation id="2865888419503095837">Informations réseau</translation>
 <translation id="2872961005593481000">Éteindre</translation>
+<translation id="291653379653113090">Votre mode de saisie a été remplacé par <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />tiers<ph name="END_LINK" />).
+    Appuyez sur Maj+Alt pour en utiliser un autre.</translation>
 <translation id="2942516765047364088">Position de l'étagère</translation>
 <translation id="2946119680249604491">Ajouter une connexion</translation>
 <translation id="2963773877003373896">mod3</translation>
@@ -70,6 +79,8 @@
 <translation id="3077734595579995578">maj</translation>
 <translation id="3087734570205094154">Bas</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
+<translation id="3109220592788908353">Le VERROUILLAGE DES MAJUSCULES est activé.
+    Appuyez sur Alt+Recherche ou Maj pour le désactiver.</translation>
 <translation id="3126069444801937830">Redémarrer pour mettre à jour</translation>
 <translation id="3147142846278915599">Lanceur d'applications (synchronisation des applications en cours…)</translation>
 <translation id="315116470104423982">Données mobiles</translation>
@@ -92,16 +103,19 @@
 <translation id="3683428399328702079">La résolution de l'écran "<ph name="DISPLAY_NAME" />" est désormais définie sur <ph name="RESOLUTION" />.</translation>
 <translation id="370649949373421643">Activer le Wi-Fi</translation>
 <translation id="3712407551474845318">Capturer la zone</translation>
+<translation id="371370241367527062">Micro avant</translation>
 <translation id="3742055079367172538">Capture d'écran réalisée</translation>
 <translation id="3775358506042162758">Vous ne pouvez vous connecter qu'à trois comptes au maximum dans le cadre de la connexion multicompte.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Verrouiller</translation>
+<translation id="3798670284305777884">Haut-parleur (interne)</translation>
 <translation id="3799026279081545374">Votre chargeur est peut-être défaillant. Si vous résidez aux États-Unis, veuillez appeler le 866 628 1371 pour obtenir de l'aide et recevoir un chargeur de substitution. Si vous résidez au Royaume-Uni, veuillez appeler le 0800 026 0613. Si vous résidez en Irlande, veuillez appeler le 1 800 832 664. Si vous résidez au Canada, veuillez appeler le 866 628 1372. Si vous résidez en Australie, veuillez appeler le 1 800 067 460.</translation>
 <translation id="3846575436967432996">Aucune information disponible concernant le réseau</translation>
 <translation id="3891340733213178823">Appuyez deux fois sur Ctrl + Maj + Q pour vous déconnecter.</translation>
 <translation id="3893630138897523026">ChromeVox (commentaires audio)</translation>
 <translation id="3899995891769452915">Saisie vocale</translation>
 <translation id="3901991538546252627">Connexion à <ph name="NAME" /> en cours…</translation>
+<translation id="394485226368336402">Paramètres audio</translation>
 <translation id="3967919079500697218">Votre administrateur a désactivé la fonctionnalité de capture d'écran.</translation>
 <translation id="397105322502079400">Calcul en cours…</translation>
 <translation id="3995138139523574647">Appareil USB de type C (port situé sur la droite de l'appareil, à l'arrière)</translation>
@@ -114,7 +128,6 @@
 <translation id="4421231901400348175">Partager le contrôle de votre écran avec <ph name="HELPER_NAME" /> via l'assistance à distance</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4448844063988177157">Recherche de réseaux Wi-Fi...</translation>
-<translation id="4479639480957787382">Ethernet </translation>
 <translation id="4481530544597605423">Appareils dissociés</translation>
 <translation id="4508225577814909926"><ph name="NAME" /> : Connexion en cours…</translation>
 <translation id="4527045527269911712">L'appareil Bluetooth "<ph name="DEVICE_NAME" />" demande l'autorisation de s'associer.</translation>
@@ -132,14 +145,18 @@
 <translation id="5170568018924773124">Afficher le dossier</translation>
 <translation id="5222676887888702881">Déconnexion</translation>
 <translation id="523505283826916779">Paramètres d'accessibilité</translation>
+<translation id="5313326810920013265">Paramètres Bluetooth</translation>
 <translation id="532063867737390965">L'administrateur a désactivé ce paramètre réseau.</translation>
 <translation id="5331975486040154427">Appareil USB de type C (port situé sur la gauche de l'appareil, à l'arrière)</translation>
+<translation id="5430931332414098647">Partage de connexion instantané</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">Tous les utilisateurs disponibles ont déjà été ajoutés à cette session.</translation>
 <translation id="5507786745520522457">Configurer les données mobiles</translation>
+<translation id="553675580533261935">Fermeture de la session</translation>
 <translation id="5548285847212963613">L'extension "<ph name="EXTENSION_NAME" />" peut aider à se connecter à ce réseau.</translation>
 <translation id="5571066253365925590">Bluetooth activé</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" /> <ph name="DATE" /></translation>
+<translation id="5648021990716966815">Connecteur micro</translation>
 <translation id="5777841717266010279">Arrêter le partage d'écran ?</translation>
 <translation id="57838592816432529">Couper le son</translation>
 <translation id="5895138241574237353">Redémarrer</translation>
@@ -197,11 +214,11 @@ Appuyez sur les touches Ctrl + Alt + Z pour le désactiver.</translation>
 <translation id="7129360219436193655">Mode pointeur laser</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358">Rétablissement de la résolution précédente dans <ph name="TIMEOUT_SECONDS" /></translation>
+<translation id="7256634071279256947">Micro arrière</translation>
 <translation id="7348093485538360975">Clavier virtuel</translation>
 <translation id="735745346212279324">VPN déconnecté</translation>
 <translation id="742594950370306541">La caméra est en cours d'utilisation.</translation>
 <translation id="743058460480092004">La caméra et le micro sont en cours d'utilisation.</translation>
-<translation id="7502658306369382406">Adresse IPv6</translation>
 <translation id="7510334386202674593">Ctrl+Maj+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> n'est pas compatible avec <ph name="SPECIFIED_RESOLUTION" />. La résolution a été modifiée pour utiliser <ph name="FALLBACK_RESOLUTION" />.</translation>
 <translation id="7562368315689366235">Palette d'emoji</translation>
@@ -231,7 +248,6 @@ Appuyez sur les touches Ctrl + Alt + Z pour le désactiver.</translation>
 <translation id="8428213095426709021">Paramètres</translation>
 <translation id="8433186206711564395">Paramètres réseau</translation>
 <translation id="8454013096329229812">Le Wi-Fi est activé.</translation>
-<translation id="8483248364096924578">Adresse IP</translation>
 <translation id="8484916590211895857"><ph name="NAME" /> : reconnexion…</translation>
 <translation id="8517041960877371778">Il est possible que votre appareil <ph name="DEVICE_TYPE" /> ne se recharge pas lorsqu'il est allumé.</translation>
 <translation id="8528322925433439945">Mobile…</translation>

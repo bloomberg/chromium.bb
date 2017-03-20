@@ -101,6 +101,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="2871695793448672541">Mật khẩu ẩn</translation>
 <translation id="2898963176829412617">Thư mục mới…</translation>
 <translation id="2903493209154104877">Địa chỉ</translation>
+<translation id="291754862089661335">Đặt mã QR hoặc mã vạch vào khung này</translation>
 <translation id="2921219216347069551">Ko thể chia sẻ trang</translation>
 <translation id="292639812446257861">Đánh dấu là chưa đọc</translation>
 <translation id="2933759065870693102">Đèn pin</translation>
@@ -172,7 +173,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="4359125752503270327">Trang này sẽ mở trong ứng dụng khác.</translation>
 <translation id="4378154925671717803">Điện thoại</translation>
 <translation id="441868831736628555">Thông báo bảo mật</translation>
-<translation id="4473991315115669931">Vào chế độ ẩn danh</translation>
 <translation id="4526249700380860531">Xem và quản lý mật khẩu đã lưu tại <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Thử đăng nhập lại.</translation>
 <translation id="4620246317052452550">Các trang bạn đã đọc</translation>
@@ -246,7 +246,6 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="6042308850641462728">Thêm</translation>
 <translation id="605721222689873409">YY</translation>
 <translation id="6066301408025741299">Nhấn để hủy.</translation>
-<translation id="60851516108411750">Danh sách đọc của bạn khả dụng khi ngoại tuyến. Để thêm một trang vào danh sách đọc, nhấn<ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="6122191549521593678">Trực tuyến</translation>
 <translation id="6127379762771434464">Đã xóa mục</translation>
 <translation id="6136914049981179737">Giây trước</translation>
@@ -381,7 +380,6 @@ Dữ liệu của bạn đã được mã hóa bằng cụm mật khẩu đồng
 <translation id="8741995161408053644">Tài khoản Google có thể có các biểu mẫu lịch sử duyệt web khác tại <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8775144690796719618">URL không hợp lệ</translation>
 <translation id="8820817407110198400">Dấu trang</translation>
-<translation id="882482397944455431">Thoát chế độ ẩn danh</translation>
 <translation id="8840513115188359703">Bạn sẽ không được đăng xuất khỏi Tài khoản Google của mình.</translation>
 <translation id="8904976895050290827">Chrome Sync</translation>
 <translation id="895541991026785598">Báo cáo sự cố</translation>

@@ -101,6 +101,7 @@ Näiteks võivad mõned veebisaidid päringule reageerida nii, et näitavad teil
 <translation id="2871695793448672541">Peidetud, parool</translation>
 <translation id="2898963176829412617">Uus kaust ...</translation>
 <translation id="2903493209154104877">Aadressid</translation>
+<translation id="291754862089661335">Paigutage QR-kood või ribakood sellesse kaadrisse</translation>
 <translation id="2921219216347069551">Lehte ei saa jagada</translation>
 <translation id="292639812446257861">Märgi mitteloetuks</translation>
 <translation id="2933759065870693102">Lamp</translation>
@@ -172,7 +173,6 @@ Otsingutermini korrigeerimiseks vajutage valimiseks pikalt. Otsingu täpsustamis
 <translation id="4359125752503270327">See leht avatakse teises rakenduses.</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="441868831736628555">Privaatsusteatis</translation>
-<translation id="4473991315115669931">Sisene inkognito režiimi</translation>
 <translation id="4526249700380860531">Vaadake ja hallake salvestatud paroole saidil <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Proovige uuesti sisse logida.</translation>
 <translation id="4620246317052452550">Teie loetud lehed</translation>
@@ -246,7 +246,6 @@ Handoff peab olema lubatud seadete jaotises General ja seadmed peavad kasutama s
 <translation id="6042308850641462728">Rohkem</translation>
 <translation id="605721222689873409">aa</translation>
 <translation id="6066301408025741299">Tühistamiseks puudutage.</translation>
-<translation id="60851516108411750">Teie lugemisloend on võrguühenduseta saadaval. Lugemisloendisse lehe lisamiseks puudutage ikooni <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="6122191549521593678">Onlain</translation>
 <translation id="6127379762771434464">Üksus eemaldati</translation>
 <translation id="6136914049981179737">Sek. eest</translation>
@@ -381,7 +380,6 @@ Teie andmed krüpteeriti <ph name="TIME" /> teie sünkroonimisparooliga. Sisesta
 <translation id="8741995161408053644">Aadressil <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> võib teie Google'i kontol olla muus vormis sirvimisajalugu.</translation>
 <translation id="8775144690796719618">Sobimatu URL</translation>
 <translation id="8820817407110198400">Järjehoidjad</translation>
-<translation id="882482397944455431">Välju inkognito režiimist</translation>
 <translation id="8840513115188359703">Teid ei logita teie Google'i kontolt välja.</translation>
 <translation id="8904976895050290827">Chrome'i sünkroonimine</translation>
 <translation id="895541991026785598">Teavitage probleemist</translation>

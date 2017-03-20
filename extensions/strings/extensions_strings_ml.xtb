@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ml">
 <translation id="1135328998467923690">പാക്കേജ് അസാധുവാണ്: '<ph name="ERROR_CODE" />'.</translation>
+<translation id="1140871961407805696">പുറകുവശത്തുള്ള ക്യാമറ</translation>
 <translation id="1256619696651732561">വിപുലീകരണ മാനിഫെസ്റ്റ് പാഴ്‌സർ</translation>
 <translation id="1445572445564823378">ഈ വിപുലീകരണം <ph name="PRODUCT_NAME" />-നെ മന്ദഗതിയിലാക്കുന്നു. <ph name="PRODUCT_NAME" />-ന്റെ പ്രകടനം പുനഃസംഭരിക്കുന്നതിനായി നിങ്ങൾ അതിനെ അപ്രാപ്തമാക്കണം.</translation>
 <translation id="149347756975725155">വിപുലീകരണ ഐക്കണ്‍ '<ph name="ICON" />' ലോഡുചെയ്യാനായില്ല.</translation>
@@ -42,6 +43,7 @@
 <translation id="7217838517480956708">ഈ മെഷീനിന്റെ അഡ്‌മിനിസ്‌ട്രേറ്റർ ഇൻസ്റ്റാളുചെയ്യുന്നതിനായി <ph name="EXTENSION_NAME" /> ആവശ്യപ്പെടുന്നു. ഇത് നീക്കംചെയ്യാനോ പരിഷ്‌ക്കരിക്കാനോ കഴിയില്ല.</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME" /> (വിപുലീകരണ ID "<ph name="EXTENSION_ID" />") അഡ്‌മിനിസ്‌ട്രേറ്റർ തടഞ്ഞു.</translation>
 <translation id="7972881773422714442">ഓപ്‌ഷനുകൾ: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
+<translation id="8035920974645200807">മുൻവശത്തുള്ള ക്യാമറ</translation>
 <translation id="8047248493720652249">മറ്റൊരു വിപുലീകരണം (<ph name="EXTENSION_NAME" />) വ്യത്യസ്‌തമായ ഒരു ഫയൽനാമം "<ph name="ACTUAL_FILENAME" />" നിർണ്ണയിച്ചതിനാൽ ഈ വിപുലീകരണം ഡൗൺലോഡ് "<ph name="ATTEMPTED_FILENAME" />-ന് പേരുനൽകുന്നതിൽ പരാജയപ്പെട്ടു.</translation>
 <translation id="8284835137979141223"><ph name="VENDOR_NAME" /> എന്നതിൽ നിന്നുള്ള <ph name="PRODUCT_NAME" /></translation>
 <translation id="8341840687457896278">മറ്റൊരു (<ph name="EXTENSION_NAME" />) വിപുലീകരണം വ്യത്യസ്‌ത ക്രെഡൻഷ്യലുകൾ നൽകിയതിനാൽ ഒരു നെറ്റ്‌വർക്ക് അഭ്യർത്ഥനയിലേക്ക് ക്രെഡൻഷ്യലുകൾ നൽകുന്നതിൽ ഈ വിപുലീകരണം പരാജയപ്പെട്ടു.</translation>

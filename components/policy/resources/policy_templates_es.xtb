@@ -280,6 +280,7 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
       Si no se configura una opción, se utilizará el valor predeterminado.
 
       Si no se define esta política, se utilizarán todos los valores predeterminados.</translation>
+<translation id="1960840544413786116">Si se permiten los certificados emitidos por los anclajes de confianza locales que no tienen la extensión subjectAlternativeName</translation>
 <translation id="1964634611280150550">Modo de incógnito inhabilitado</translation>
 <translation id="1964802606569741174">Esta política no influye en la aplicación YouTube para Android. Si se debe aplicar el modo seguro en YouTube, deberás inhabilitar la descarga de la aplicación YouTube para Android.</translation>
 <translation id="1969212217917526199">Anula las políticas de compilaciones de depuración del host de acceso remoto.
@@ -334,6 +335,21 @@ Si esta política se establece en True, <ph name="PRODUCT_OS_NAME" /> intentará
       Si se ha asignado el valor false a la política HardwareAccelerationModeEnabled, se ignorará Disable3DAPIs y se le asigna el valor true a Disable3DAPIs.</translation>
 <translation id="2168397434410358693">Retraso de inactividad cuando el dispositivo está conectado a la red</translation>
 <translation id="2170233653554726857">Habilitar optimización de WPAD</translation>
+<translation id="2176565653304920879">El flujo de detección automática de la zona horaria puede ser de una de las siguientes formas, en función del valor que se asigne a esta política:
+
+      Si se le asigna el valor TimezoneAutomaticDetectionUsersDecide, los usuarios pueden controlar la detección automática de la zona horaria mediante los controles normales en la página chrome://settings.
+
+      Si se le asigna el valor TimezoneAutomaticDetectionDisabled, se inhabilitarán los controles de zona horaria automática en la página chrome://settings. La detección automática de la zona horaria estará siempre desactivada.
+
+      Si se le asigna el valor TimezoneAutomaticDetectionIPOnly, se inhabilitarán los controles de zona horaria en la página chrome://settings. La detección automática de la zona horaria estará siempre activada. La detección de la zona horaria utilizará solo la IP para conocer la ubicación.
+
+      Si se le asigna el valor TimezoneAutomaticDetectionSendWiFiAccessPoints, se inhabilitarán los controles de zona horaria en la página chrome://settings. La detección automática de la zona horaria estará siempre activada. La lista de puntos de acceso Wi-Fi visibles se enviará siempre al servidor API de geolocalización para detectar la zona horaria de forma más precisa.
+
+      Si se le asigna el valor TimezoneAutomaticDetectionSendAllLocationInfo, se inhabilitarán los controles de zona horaria en la página chrome://settings. La detección automática de la zona horaria estará siempre activada. La información sobre la ubicación (como los puntos de acceso Wi-Fi, las antenas de telefonía móvil disponibles y el GPS) se enviará a un servidor para detectar la zona horaria de forma más precisa.
+
+      Si no se establece esta política, el comportamiento será el mismo que si se hubiera establecido el valor TimezoneAutomaticDetectionUsersDecide.
+
+      Si se establece la política SystemTimezone, se anula esta política. En este caso, la detección automática de la zona horaria se inhabilita por completo.</translation>
 <translation id="2178899310296064282">Aplicar como mínimo el modo restringido moderado en YouTube</translation>
 <translation id="2183294522275408937">Esta opción controla la frecuencia con la que la pantalla de bloqueo solicitará que se introduzca la contraseña y así poder seguir utilizando el desbloqueo rápido. Cada vez que se introduzca la pantalla de bloqueo (si la frecuencia con la que se hizo la última vez fue mayor), el desbloqueo rápido no estará disponible. Si el usuario permanece en la pantalla de bloqueo tras este periodo de tiempo, se le solicitará una contraseña la próxima vez que este introduzca un código erróneo o vuelva a introducir la pantalla de bloqueo (lo que ocurra primero).
 
@@ -1471,11 +1487,20 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
           Si no se establece esta política, se usará la política AskNotifications y el usuario podrá modificarla.</translation>
 <translation id="538108065117008131">Permitir que <ph name="PRODUCT_FRAME_NAME" /> gestione los tipos de contenido que se indican a continuación.</translation>
 <translation id="5388730678841939057">Selecciona la estrategia utilizada para liberar espacio en disco durante la limpieza automática (obsoleta)</translation>
+<translation id="5392172595902933844">La información sobre el estado de Android se envía al servidor.
+
+      Si se asigna el valor false a la política o no se le asigna ningún valor, no se proporciona información sobre el estado.
+      Si se asigna el valor true, se proporciona información sobre el estado.
+
+      Esta política solo se aplica si las aplicaciones para Android están habilitadas.</translation>
 <translation id="5395271912574071439">Permite activar el modo de cortina en los hosts de acceso remoto durante una conexión.
 
           Si se habilita esta opción, los dispositivos físicos de entrada y salida del host se inhabilitan durante la conexión remota.
 
           Si se inhabilita esta opción o no se configura, tanto los usuarios locales como los remotos pueden interactuar con el host cuando se comparte.</translation>
+<translation id="5405289061476885481">Establece los diseños de teclado que se permiten en la pantalla de inicio de sesión de <ph name="PRODUCT_OS_NAME" />.
+
+      Si se asigna una lista de identificadores de métodos de introducción a esta política, esos métodos estarán disponibles en la pantalla de inicio de sesión. El primer método de introducción estará preseleccionado. El grupo de un usuario aparece centrado en la pantalla de inicio de sesión, pero también se mostrará el último método de introducción por el usuario junto a los métodos de introducción proporcionados por esta política. Si esta política no se configura, los métodos de introducción de la pantalla de inicio de sesión procederán de la configuración regional en la que se muestre esa pantalla. Los valores que no sean identificadores de métodos de introducción válidos se ignorarán.</translation>
 <translation id="5423001109873148185">Si se habilita, esta política fuerza la importación de los motores de búsqueda desde el navegador predeterminado actual. Si está habilitada, la política también afecta al cuadro de diálogo de importación.
 
       Si se inhabilita, no se importará el motor de búsqueda predeterminado.
@@ -1548,6 +1573,11 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
       Si se establece esta política, los usuarios no podrán modificarla ni anularla.
 
       Si la política no se establece, los usuarios podrán elegir si los archivos se deben ocultar automáticamente.</translation>
+<translation id="557360560705413259">Si se habilita esta opción, <ph name="PRODUCT_NAME" /> usará commonName de un certificado de servidor para buscar concordancias con un nombre de host si el certificado no tiene ninguna extensión subjectAlternativeName, siempre que se valide correctamente y se vincule a certificados de CA instalados localmente.
+
+      Recuerda que no se recomienda esta opción, ya que puede permitir que se omita la extensión nameConstraints que restringe los nombres de host para los que puede estar autorizado un certificado concreto.
+
+      Si esta política no se configura o se le asigna el valor valse, los certificados de servidor que no tengan ninguna extensión subjectAlternativeName que incluya un nombre de DNS o una dirección IP no serán de confianza.</translation>
 <translation id="557658534286111200">Permite habilitar o inhabilitar la edición de marcadores.</translation>
 <translation id="5586942249556966598">No hacer nada</translation>
 <translation id="5613179474872285001">Configura el nombre de dominio del cliente requerido que se impondrá a los clientes de acceso remoto y evita que los usuarios lo cambien.
@@ -2426,6 +2456,7 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
 <translation id="7937766917976512374">Permitir o denegar captura de vídeo</translation>
 <translation id="7941975817681987555">No predecir las acciones de red en ninguna conexión de red</translation>
 <translation id="7953256619080733119">Hosts de excepción manual de usuario administrado</translation>
+<translation id="7965394584578183156">Enviar siempre los puntos de acceso Wi-Fi al servidor mientras se detecta la zona horaria.</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Ya no se admite esta política.
           Permite habilitar la utilización del protocolo STUN y de servidores de retransmisión al conectar con un cliente remoto.
@@ -2592,6 +2623,7 @@ Si la política está establecida en False, no se informará sobre la lista de i
 <translation id="8390049129576938611">Inhabilita el visor de PDF interno en <ph name="PRODUCT_NAME" />. En su lugar, trata el archivo PDF como una descarga y permite al usuario abrir archivos PDF con la aplicación predeterminada.
 
       Si esta política no se establece o se inhabilita, el complemento de PDF se usará para abrir archivos PDF a menos que el usuario lo inhabilite.</translation>
+<translation id="8398203849316312944">Enviar siempre cualquier señal de ubicación disponible al servidor mientras se detecta la zona horaria.</translation>
 <translation id="8402079500086185021">Abrir siempre los archivos PDF de forma externa</translation>
 <translation id="8412312801707973447">Se realizan comprobaciones OCSP/CRL si estás online</translation>
 <translation id="8413348101535146315">Permite finalizar procesos en el administrador de tareas de <ph name="PRODUCT_NAME" />.
@@ -2848,6 +2880,11 @@ Los controladores de protocolos registrados por la política se combinan con los
       Si se habilita esta opción, no se podrán hacer capturas de pantalla utilizando las combinaciones de teclas ni las API de extensiones.
 
       Si se inhabilita o no se especifica esta opción, se podrán hacer capturas de pantalla.</translation>
+<translation id="9212233969680267790">Advertencia: La política de la versión máxima de TLS se retirará por completo de <ph name="PRODUCT_NAME" /> aproximadamente en la versión 66 (sobre febrero de 2018).
+
+      Si esta política no se configura, <ph name="PRODUCT_NAME" /> utilizará la versión máxima predeterminada.
+
+      En caso contrario, se le asignará uno de estos valores: "tls1.2" o "tls1.3". Cuando se haya configurado, <ph name="PRODUCT_NAME" /> no utilizará versiones de SSL/TLS superiores a la versión especificada y se ignorarán los valores no reconocidos.</translation>
 <translation id="9213347477683611358">Permite configurar la imagen de fondo de pantalla del dispositivo que se muestra en la pantalla de inicio de sesión si ningún usuario ha iniciado sesión en el dispositivo. La política se define especificando la URL desde la que el dispositivo Chrome OS puede descargar la imagen de fondo de pantalla y un hash criptográfico que se utiliza para verificar la integridad de la descarga. La imagen debe tener formato JPEG y un tamaño no superior a 16 MB. Se debe poder acceder a la URL sin autenticación. La imagen de fondo de pantalla se descarga, se almacena en caché y se vuelve a descargar cada vez que se produce un cambio en la URL o en el hash.
 
       La política se debe especificar como una cadena que represente la URL y el hash en formato JSON, p.ej.,

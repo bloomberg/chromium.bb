@@ -24,12 +24,16 @@
 <translation id="1525508553941733066">סגור</translation>
 <translation id="15373452373711364">סמן עכבר גדול</translation>
 <translation id="1550523713251050646">לחץ לקבלת אפשרויות נוספות</translation>
+<translation id="1571442141242456645">‏שיטת הקלט שלך השתנתה ל-‏<ph name="INPUT_METHOD_ID" />.
+        הקש על Shift + Alt כדי להחליף.</translation>
 <translation id="1602076796624386989">הפעל נתונים לנייד</translation>
 <translation id="1621499497873603021">הזמן שנותר עד להתרוקנות הסוללה, <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">‏מכשיר Chrome</translation>
 <translation id="1677472565718498478">זמן נותר - <ph name="TIME" /></translation>
 <translation id="1747827819627189109">המקלדת שמופיעה במסך מופעלת</translation>
 <translation id="1850504506766569011">‏Wi-Fi כבוי.</translation>
+<translation id="1854357586517521894">‏CAPS LOCK פועל.
+    הקש על Search או Shift כדי לבטל.</translation>
 <translation id="1864454756846565995">‏מכשיר עם יציאת USB-C (יציאה אחורית)</translation>
 <translation id="1882897271359938046">משקף אל <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">מקש הקיצור לפתיחת מנהל המשימות השתנה. השתמש ב-<ph name="NEW_SHORTCUT" /> במקום ב-<ph name="OLD_SHORTCUT" />.</translation>
@@ -62,6 +66,8 @@
 <translation id="2857608528410806398">‏גוף ההודעה של תכונת QU יופיע כאן. גוף ההודעה של תכונת QU יופיע כאן. גוף ההודעה של תכונת QU יופיע כאן. גוף ההודעה של תכונת QU יופיע כאן. גוף ההודעה של תכונת QU יופיע כאן.</translation>
 <translation id="2865888419503095837">פרטי רשת</translation>
 <translation id="2872961005593481000">כיבוי</translation>
+<translation id="291653379653113090">‏שיטת הקלט שלך השתנתה ל-‏<ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />צד שלישי<ph name="END_LINK" />).
+        הקש על Shift + Alt כדי להחליף.</translation>
 <translation id="2942516765047364088">מיקום המדף</translation>
 <translation id="2946119680249604491">הוסף חיבור</translation>
 <translation id="2963773877003373896">mod3</translation>
@@ -72,6 +78,8 @@
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">תחתית</translation>
 <translation id="3105990244222795498">‏<ph name="DEVICE_NAME" />‏ (Bluetooth)</translation>
+<translation id="3109220592788908353">‏CAPS LOCK פועל.
+    הקש על Alt+Search או Shift כדי לבטל.</translation>
 <translation id="3126069444801937830">הפעל מחדש כדי לעדכן</translation>
 <translation id="3147142846278915599">מפעיל היישומים (מסנכרן יישומים...)</translation>
 <translation id="315116470104423982">נתוני נייד</translation>
@@ -119,7 +127,6 @@
 <translation id="4421231901400348175">שיתוף השליטה במסך עם <ph name="HELPER_NAME" /> דרך סיוע מרחוק.</translation>
 <translation id="4430019312045809116">עוצמת קול</translation>
 <translation id="4448844063988177157">‏מחפש רשתות Wi-Fi...</translation>
-<translation id="4479639480957787382">אתרנט</translation>
 <translation id="4481530544597605423">מכשירים לא מותאמים</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: מתחבר...</translation>
 <translation id="4527045527269911712">‏מכשיר ה-Bluetooth ‏"<ph name="DEVICE_NAME" />" מבקש הרשאה לבצע התאמה.</translation>
@@ -140,6 +147,7 @@
 <translation id="5313326810920013265">‏הגדרות Bluetooth</translation>
 <translation id="532063867737390965">מנהל המערכת השבית את הגדרת רשת זו.</translation>
 <translation id="5331975486040154427">‏מכשיר עם יציאת USB-C (יציאה שמאלית-אחורית)</translation>
+<translation id="5430931332414098647">שיתוף אינטרנט מיידי בין ניידים</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">כל המשתמשים הזמינים כבר נוספו לפעילות זו באתר.</translation>
 <translation id="5507786745520522457">הגדר נתונים לנייד</translation>
@@ -209,7 +217,6 @@
 <translation id="735745346212279324">‏VPN מנותק</translation>
 <translation id="742594950370306541">המצלמה נמצאת בשימוש.</translation>
 <translation id="743058460480092004">המצלמה והמיקרופון נמצאים בשימוש.</translation>
-<translation id="7502658306369382406">‏כתובת IPv6</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> אינו תומך ב-<ph name="SPECIFIED_RESOLUTION" />. הרזולוציה שונתה ל-<ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">לוח סמלי אמוג'י</translation>
@@ -239,7 +246,6 @@
 <translation id="8428213095426709021">הגדרות</translation>
 <translation id="8433186206711564395">הגדרות רשת</translation>
 <translation id="8454013096329229812">‏Wi-Fi מופעל.</translation>
-<translation id="8483248364096924578">‏כתובת IP</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: מתחבר מחדש...</translation>
 <translation id="8517041960877371778">ייתכן שה-<ph name="DEVICE_TYPE" /> לא ייטען כשהוא פועל.</translation>
 <translation id="8528322925433439945">נייד ...</translation>

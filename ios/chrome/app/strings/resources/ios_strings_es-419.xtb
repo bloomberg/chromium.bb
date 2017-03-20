@@ -101,6 +101,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud a través de la 
 <translation id="2871695793448672541">Contraseña oculta</translation>
 <translation id="2898963176829412617">Nueva carpeta…</translation>
 <translation id="2903493209154104877">Direcciones</translation>
+<translation id="291754862089661335">Coloca el código QR o de barras en este recuadro</translation>
 <translation id="2921219216347069551">Error al compartir</translation>
 <translation id="292639812446257861">Marcar como no leídas</translation>
 <translation id="2933759065870693102">Linterna</translation>
@@ -172,7 +173,6 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="4359125752503270327">Esta página se abrirá en otra aplicación.</translation>
 <translation id="4378154925671717803">Teléfono</translation>
 <translation id="441868831736628555">Aviso de privacidad</translation>
-<translation id="4473991315115669931">Acceder al modo de navegación de incógnito</translation>
 <translation id="4526249700380860531">Consulta y administra las contraseñas que guardaste en <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" />.</translation>
 <translation id="4536418791685807335">Intenta volver a acceder.</translation>
 <translation id="4620246317052452550">Páginas que leíste</translation>
@@ -246,7 +246,6 @@ Handoff también debe estar habilitado en la sección General de la configuraci�
 <translation id="6042308850641462728">Más</translation>
 <translation id="605721222689873409">AA</translation>
 <translation id="6066301408025741299">Toca para cancelar.</translation>
-<translation id="60851516108411750">Tu lista de lectura está disponible sin conexión. Para agregar una página a tu lista de lectura, presiona <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="6122191549521593678">En línea</translation>
 <translation id="6127379762771434464">Se eliminó el elemento</translation>
 <translation id="6136914049981179737">Hace seg.</translation>
@@ -381,7 +380,6 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="8741995161408053644">Es posible que tu cuenta de Google tenga otros formularios del historial de navegación en <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8775144690796719618">URL no válida</translation>
 <translation id="8820817407110198400">Favoritos</translation>
-<translation id="882482397944455431">Salir del modo de navegación de incógnito</translation>
 <translation id="8840513115188359703">No saldrás de tu cuenta de Google.</translation>
 <translation id="8904976895050290827">Chrome Sync</translation>
 <translation id="895541991026785598">Informar de un problema</translation>

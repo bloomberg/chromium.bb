@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="cs">
 <translation id="1135328998467923690">Balíček je neplatný: <ph name="ERROR_CODE" />.</translation>
+<translation id="1140871961407805696">Zadní</translation>
 <translation id="1256619696651732561">Analyzátor manifestů rozšíření</translation>
 <translation id="1445572445564823378">Toto rozšíření zpomaluje prohlížeč <ph name="PRODUCT_NAME" />. Chcete-li výkon prohlížeče <ph name="PRODUCT_NAME" /> obnovit, měli byste rozšíření zakázat.</translation>
 <translation id="149347756975725155">Nelze načíst ikonu rozšíření <ph name="ICON" />.</translation>
@@ -42,6 +43,7 @@
 <translation id="7217838517480956708">Správce tohoto počítače vyžaduje instalaci rozšíření <ph name="EXTENSION_NAME" />. Nelze je odebrat ani upravit.</translation>
 <translation id="7809034755304591547">Rozšíření <ph name="EXTENSION_NAME" /> (ID rozšíření <ph name="EXTENSION_ID" />) je blokováno administrátorem.</translation>
 <translation id="7972881773422714442">Možnosti: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
+<translation id="8035920974645200807">Přední</translation>
 <translation id="8047248493720652249">Tomuto rozšíření se nepodařilo pojmenovat stahovaný soubor „<ph name="ATTEMPTED_FILENAME" />“, protože jiné rozšíření (<ph name="EXTENSION_NAME" />) vybralo jiný název souboru „<ph name="ACTUAL_FILENAME" />“.</translation>
 <translation id="8284835137979141223">Zařízení <ph name="PRODUCT_NAME" /> od dodavatele <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Tomuto rozšíření se nepodařilo poskytnout pověření síťovému požadavku, protože jiné rozšíření (<ph name="EXTENSION_NAME" />) poskytlo odlišná pověření.</translation>

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="bg">
 <translation id="1135328998467923690">Пакетът е невалиден: „<ph name="ERROR_CODE" />“.</translation>
+<translation id="1140871961407805696">Задна</translation>
 <translation id="1256619696651732561">Синтактичен анализ на манифести на разширения</translation>
 <translation id="1445572445564823378">Това разширение забавя работата на <ph name="PRODUCT_NAME" />. Трябва да деактивирате <ph name="PRODUCT_NAME" />, за да възстановите ефективността на браузъра.</translation>
 <translation id="149347756975725155">Не можа да се зареди иконата на разширението „<ph name="ICON" />“.</translation>
@@ -42,6 +43,7 @@
 <translation id="7217838517480956708">Администраторът на тази машина изисква разширението <ph name="EXTENSION_NAME" /> да е инсталирано. То не може да бъде премахнато или променено.</translation>
 <translation id="7809034755304591547">Разширението <ph name="EXTENSION_NAME" /> (идентификационен номер „<ph name="EXTENSION_ID" />“) е блокирано от администратора.</translation>
 <translation id="7972881773422714442">Опции: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
+<translation id="8035920974645200807">Предна</translation>
 <translation id="8047248493720652249">Това разширение не успя да наименува изтеглянето „<ph name="ATTEMPTED_FILENAME" />“, защото друго разширение (<ph name="EXTENSION_NAME" />) определи различно файлово име – „<ph name="ACTUAL_FILENAME" />“.</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> от <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Това разширение не успя да предостави идентификационни данни за заявка от мрежата, защото друго разширение (<ph name="EXTENSION_NAME" />) посочи различни данни.</translation>

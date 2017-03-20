@@ -281,6 +281,7 @@
       Jei nustatymas nenurodytas, naudojama numatytoji vertė.
 
       Jei ši politika nenustatyta, naudojami numatytieji nustatymai.</translation>
+<translation id="1960840544413786116">Ar leidžiami sertifikatai, išduoti naudojant vietinius patikimus prieraišus, kuriuose nėra plėtinio „subjectAlternativeName“</translation>
 <translation id="1964634611280150550">Inkognito režimas neleidžiamas</translation>
 <translation id="1964802606569741174">Ši politika neturi įtakos „Android“ skirtai „YouTube“ programai. Jei turėtų būti taikomi „YouTube“ saugos nustatymai, „Android“ skirtos „YouTube“ programos diegimas turėtų būti neleidžiamas.</translation>
 <translation id="1969212217917526199">Pakeičiama nuotolinės prieigos prieglobos derinimo versijų politika.
@@ -335,6 +336,21 @@
       Jei nustatymas „HardwareAccelerationModeEnabled“ nustatytas į „false“, nustatymo „Disable3DAPIs“ nepaisoma ir jis atitinka nustatymą „Disable3DAPIs“, nustatytą į „true“.</translation>
 <translation id="2168397434410358693">Neveikos delsa, kai naudojama kintamosios srovės energija</translation>
 <translation id="2170233653554726857">Įgalinti WPAD optimizavimą</translation>
+<translation id="2176565653304920879">Kai ši politika nustatyta, automatinio laiko aptikimas bus vykdomas vienu iš toliau nurodytų būdų, atsižvelgiant į nustatymo vertę.
+
+      Jei nustatyta į „TimezoneAutomaticDetectionUsersDecide“, naudotojai galėtų valdyti automatinį laiko juostos aptikimą naudodami įprastus valdiklius apsilankę chrome://settings.
+
+      Jei nustatyta į „TimezoneAutomaticDetectionDisabled“, automatiniai laiko juostos valdikliai, pateikti chrome://settings, bus išjungti. Automatinis laiko juostos aptikimas visada bus išjungtas.
+
+      Jei nustatyta į „TimezoneAutomaticDetectionIPOnly“, laiko juostos valdikliai, pateikti chrome://settings, bus išjungti. Automatinis laiko juostos aptikimas visada bus įjungtas. Laiko juostos aptikimo funkcija nustatydama vietovę naudos tik IP pagrįstą metodą.
+
+      Jei nustatyta į „TimezoneAutomaticDetectionSendWiFiAccessPoints“, laiko juostos valdikliai, pateikti chrome://settings, bus išjungti. Automatinis laiko juostos aptikimas visada bus įjungtas. Matomų „Wi-Fi“ prieigos taškų sąrašas visada bus siunčiamas į geografinės vietovės nustatymo API serverį, kad būtų nustatyta tiksli laiko juosta.
+
+      Jei nustatyta į „TimezoneAutomaticDetectionSendAllLocationInfo“, laiko juostos valdikliai, pateikti chrome://settings, bus išjungti. Automatinis laiko juostos aptikimas visada bus įjungtas. Vietovės informacija (pvz., „Wi-Fi“ prieigos taškai, pasiekiami mobiliojo ryšio bokštai, GPS) bus siunčiami į serverį, kad būtų nustatyta tiksli laiko juosta.
+
+      Jei ši politika nenustatyta, aptikimas veiks taip, tarsi būtų nustatyta „TimezoneAutomaticDetectionUsersDecide“.
+
+      Jei nustatyta politika „SystemTimezone“, ji nepaiso šios politikos. Tokiu atveju automatinis laiko juostos aptikimas visiškai išjungiamas.</translation>
 <translation id="2178899310296064282">Vykdyti bent vidutiniškai ribotą režimą sistemoje „YouTube“</translation>
 <translation id="2183294522275408937">Šiuo nustatymu valdoma, kaip dažnai užrakinimo ekrane bus prašoma įvesti slaptažodį, norint toliau naudoti spartųjį atrakinimą. Kaskart įjungus užrakinimo ekraną, jei yra praėję daugiau laiko nuo paskutinio slaptažodžio įvedimo, nei nurodyta šiame nustatyme, spartusis atrakinimas nepasiekiamas įjungus užrakinimo ekraną. Jei naudotojas norės pasilikti užrakinimo ekrane praėjus šiam laikotarpiui, kitą kartą naudotojui įvedus netinkamą kodą ar pakartotinai apsilankius užrakinimo ekrane (atsižvelgiant į tai, kas įvyksta anksčiau), bus prašoma įvesti slaptažodį.
 
@@ -1474,11 +1490,21 @@
           Nenustačius šios politikos, bus naudojama „Paklausti dėl pranešimų“ ir naudotojas (-a) galės tai pakeisti.</translation>
 <translation id="538108065117008131">Leisti „<ph name="PRODUCT_FRAME_NAME" />“ naudoti šio tipo turinį.</translation>
 <translation id="5388730678841939057">Pasirenkama strategija, naudojama vietai diske atlaisvinti, kai atliekamas automatinis valymas (nebenaudojama)</translation>
+<translation id="5392172595902933844">Informacija apie „Android“ būseną siunčiama atgal į 
+      serverį.
+
+      Jei politika nustatyta į „False“ arba nenustatyta, būsenos informacija nepranešama.
+      Jei nustatyta į „True“, būsenos informacija pranešama.
+
+      Ši politika taikoma tik įgalinus „Android“ programas.</translation>
 <translation id="5395271912574071439">Įgalina nuotolinės prieigos prieglobų slėpimą, kai bandoma užmegzti ryšį.
 
           Jei įgalintas šis nustatymas, fiziniai prieglobos įvesties ir išvesties įrenginiai išjungiami, kai bandoma prisijungti prie nuotolinio ryšio.
 
           Jei šis nustatymas išjungtas arba nenustatytas, vietiniai ir nuotoliniai naudotojai gali sąveikauti su priegloba, kai ji bendrinama.</translation>
+<translation id="5405289061476885481">Konfigūruojama, kokie klaviatūros išdėstymai leidžiami „<ph name="PRODUCT_OS_NAME" />“ prisijungimo ekrane.
+
+      Jei ši politika nustatyta į įvesties metodo identifikatorių sąrašą, pateikti įvesties metodai bus pasiekiami prisijungimo ekrane. Pirmas pateiktas įvesties metodas bus pasirinktas iš anksto. Kai naudotojas yra prisijungimo ekrane, be pagal šią politiką pasiekiamų metodų, bus pasiekiamas ir paskutinis naudotas įvesties metodas. Jei ši politika nenustatyta, įvesties metodai prisijungimo ekrane bus nustatyti atsižvelgiant į lokalę, kuria pateikiamas prisijungimo ekranas. Bus nepaisoma verčių, kurios nėra galiojantys įvesties metodo identifikatoriai.</translation>
 <translation id="5423001109873148185">Pagal šią politiką paieškos varikliai priverstinai importuojami iš esamos numatytosios naršyklės (jei įgalinta). Be to, jei įgalinta, ši politika turi įtakos importavimo dialogo langui.
 
       Jei neleidžiama, numatytasis paieškos variklis neimportuojamas.
@@ -1553,6 +1579,11 @@
       Jei nustatysite šią politiką, naudotojai negalės jos pakeisti arba nepaisyti.
 
       Jei ši politika nenustatyta, naudotojai gali pasirinkti, ar lentyną automatiškai paslėpti.</translation>
+<translation id="557360560705413259">Kai šis nustatymas įgalintas, „<ph name="PRODUCT_NAME" />“ naudos serverio sertifikato parametrą „commonName“ prieglobos serverio pavadinimui nustatyti, jei sertifikate trūksta plėtinio „subjectAlternativeName“ ir jis sėkmingai patvirtinamas bei atitinka vietiniu mastu įdiegtų CA sertifikatų grandinę.
+
+      Atminkite, kad tai nerekomenduojama, nes taip gali būti apeinamas plėtinys „nameConstraints“, apribojantis prieglobos serverių pavadinimus, kuriems gali būti skirtas atitinkamas sertifikatas.
+
+      Jei ši politika nenustatyta arba nustatyta į „False“, serverio sertifikatai be plėtinio „subjectAlternativeName“, kuriuose yra DNS pavadinimas arba IP adresas, nebus laikomi patikimais.</translation>
 <translation id="557658534286111200">Įgalinamas žymių redagavimas arba neleidžiama redaguoti žymių</translation>
 <translation id="5586942249556966598">Nieko nedaryti</translation>
 <translation id="5613179474872285001">Konfigūruojamas būtinas kliento domeno pavadinimas, kuris bus nustatytas nuotolinės prieigos klientams, ir neleidžiama naudotojams jo keisti.
@@ -2442,6 +2473,7 @@
 <translation id="7937766917976512374">Leisti arba blokuoti vaizdo įrašo fiksavimą</translation>
 <translation id="7941975817681987555">Nenumatyti tinklo veiksmų, naudojant bet kurį tinklo ryšį</translation>
 <translation id="7953256619080733119">Tvarkomos naudotojo neautomatinių išimčių prieglobos</translation>
+<translation id="7965394584578183156">Visada siųsti „Wi-Fi“ prieigos taškus serveriui nustatant laiko juostą.</translation>
 <translation id="7971839631300653352">3.0 versijos SSL</translation>
 <translation id="7974114691960514888">Ši politika nebepalaikoma.
           Įgalinamas STUN ir perdavimo serverių naudojimas, kai prisijungiama prie nuotolinių programų.
@@ -2608,6 +2640,7 @@
 <translation id="8390049129576938611">Išjungiama vidinė PDF peržiūros priemonė „<ph name="PRODUCT_NAME" />“. Failai laikomi atsisiuntimu ir naudotojui leidžiama atidaryti PDF failus naudojant numatytąją programą.
 
       Jei ši politika nenustatyta ar išjungta, PDF failams atidaryti bus naudojamas PDF papildinys (jei naudotojas jo neišjungė).</translation>
+<translation id="8398203849316312944">Visada siųsti visus pasiekiamus vietovės signalus serveriui nustatant laiko juostą.</translation>
 <translation id="8402079500086185021">Visada atidaryti PDF failus už programos ribų</translation>
 <translation id="8412312801707973447">Ar atliekami OCSP / CRL patikrinimai prisijungus</translation>
 <translation id="8413348101535146315">Leidžiama užbaigti procesus „<ph name="PRODUCT_NAME" />“ užduočių tvarkytuvėje.
@@ -2867,6 +2900,11 @@
       Jei įgalinta, ekrano kopijų negalima kurti naudojant sparčiuosius klavišus ar plėtinio API.
 
       Jei neleidžiama ar nenurodyta, leidžiama kurti ekrano kopijas.</translation>
+<translation id="9212233969680267790">Įspėjimas: maks. TLS versijos politika bus visiškai pašalinta iš „<ph name="PRODUCT_NAME" />“ maždaug tada, kai bus pristatyta 66 versija (maždaug 2018 m. vasario mėn.).
+
+      Jei ši politika nesukonfigūruota, „<ph name="PRODUCT_NAME" />“ naudoja numatytąją didžiausią versiją.
+
+      Priešingu atveju gali būti nustatyta viena iš nurodytų verčių: „tls1.2“ arba „tls1.3“. Nustačius „<ph name="PRODUCT_NAME" />“ nenaudos naujesnių SSL / TLS versijų, nei nurodyta versija. Neatpažįstamos vertės nebus paisoma.</translation>
 <translation id="9213347477683611358">Konfigūruokite įrenginio lygio ekrano fono vaizdą, kuris rodomas prisijungimo ekrane, jei prie įrenginio neprisijungė joks naudotojas. Politika nustatoma nurodant URL, kuriuo „Chrome“ OS įrenginys gali atsisiųsti ekrano fono vaizdą ir kriptografinę maišos vertę, kuri naudojama atsisiuntimo vientisumui patvirtinti. Vaizdas turi būti JPEG formato, o dydis neturi viršyti 16 MB. URL turi būti pasiekiamas be autentifikavimo. Ekrano fono vaizdas atsisiunčiamas ir įkeliamas į talpyklą. Jis bus iš naujo atsisiųstas pasikeitus URL arba maišos vertei.
 
       Politika turėtų būti nurodyta kaip eilutė, kurioje pateikiamas URL ir maišos vertė JSON formatu, pvz.,

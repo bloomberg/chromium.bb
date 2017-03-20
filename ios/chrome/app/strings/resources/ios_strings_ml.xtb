@@ -101,6 +101,7 @@
 <translation id="2871695793448672541">മറച്ചിരിക്കുന്ന പാസ്‌വേഡ്</translation>
 <translation id="2898963176829412617">പുതിയ ഫോൾഡർ…</translation>
 <translation id="2903493209154104877">വിലാസങ്ങള്‍‌</translation>
+<translation id="291754862089661335">ഈ ഫ്രെയിമിൽ QR കോഡോ ബാർ‌കോഡോ സ്ഥാപിക്കുക</translation>
 <translation id="2921219216347069551">പേജ് പങ്കിടാൻ കഴിയില്ല</translation>
 <translation id="292639812446257861">വായിക്കാത്തതായി അടയാളപ്പെടുത്തുക</translation>
 <translation id="2933759065870693102">ടോർച്ച്</translation>
@@ -172,7 +173,6 @@
 <translation id="4359125752503270327">ഈ പേജ് മറ്റൊരു അപ്ലിക്കേഷനിൽ തുറക്കും.</translation>
 <translation id="4378154925671717803">ഫോണ്‍</translation>
 <translation id="441868831736628555">സ്വകാര്യത അറിയിപ്പ്</translation>
-<translation id="4473991315115669931">ആൾമാറാട്ട മോഡ് നൽകുക</translation>
 <translation id="4526249700380860531"><ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> എന്നതിൽ സംരക്ഷിച്ച പാസ്‌വേഡുകൾ കാണുക, നിയന്ത്രിക്കുക</translation>
 <translation id="4536418791685807335">വീണ്ടും സൈൻ ഇൻ ചെയ്യാൻ ശ്രമിക്കുക.</translation>
 <translation id="4620246317052452550">നിങ്ങൾ വായിച്ചു കഴിഞ്ഞ പേജുകൾ</translation>
@@ -246,7 +246,6 @@
 <translation id="6042308850641462728">കൂടുതൽ</translation>
 <translation id="605721222689873409">YY</translation>
 <translation id="6066301408025741299">റദ്ദാക്കുന്നതിന് ടാപ്പുചെയ്യുക.</translation>
-<translation id="60851516108411750">നിങ്ങളുടെ വായന ലിസ്‌റ്റ് ഓഫ്‌ലൈനിൽ ലഭ്യമാണ്. വായന ലിസ്‌റ്റിൽ ഒരു പേജ് ചേർക്കാൻ,<ph name="SHARE_OPENING_ICON" /> ടാപ്പുചെയ്യുക.</translation>
 <translation id="6122191549521593678">ഓൺലൈൻ</translation>
 <translation id="6127379762771434464">ഇനം നീക്കംചെയ്‌തു</translation>
 <translation id="6136914049981179737">സെക്കൻഡ് മുമ്പ്</translation>
@@ -381,7 +380,6 @@
 <translation id="8741995161408053644">നിങ്ങളുടെ Google അക്കൗണ്ടിന് <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> എന്നതിൽ മറ്റ് തരത്തിലുള്ള ബ്രൗസിംഗ് ചരിത്രമുണ്ടായിരിക്കാം.</translation>
 <translation id="8775144690796719618">URL അസാധുവാണ്</translation>
 <translation id="8820817407110198400">ബുക്ക്‌മാര്‍ക്കുകള്‍</translation>
-<translation id="882482397944455431">ആൾമാറാട്ട മോഡ് വിടുക</translation>
 <translation id="8840513115188359703">നിങ്ങൾ Google അക്കൗണ്ടിൽ നിന്ന് സൈൻ ഔട്ട് ചെയ്യപ്പെടില്ല.</translation>
 <translation id="8904976895050290827">Chrome Sync</translation>
 <translation id="895541991026785598">ഒരു പ്രശ്നം റിപ്പോര്‍ട്ടുചെയ്യുക</translation>

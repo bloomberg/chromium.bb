@@ -101,6 +101,7 @@
 <translation id="2871695793448672541">Скрита парола</translation>
 <translation id="2898963176829412617">Нова папка…</translation>
 <translation id="2903493209154104877">Адреси</translation>
+<translation id="291754862089661335">Поставете кода за бърза реакция или баркода в тази рамка</translation>
 <translation id="2921219216347069551">Стр. не може да се сподели</translation>
 <translation id="292639812446257861">Означаване като непрочетено</translation>
 <translation id="2933759065870693102">Фенерче</translation>
@@ -172,7 +173,6 @@
 <translation id="4359125752503270327">Тази страница ще се отвори в друго приложение.</translation>
 <translation id="4378154925671717803">Телефон</translation>
 <translation id="441868831736628555">Съобщение за поверителност</translation>
-<translation id="4473991315115669931">Влизане в режим „инкогнито“</translation>
 <translation id="4526249700380860531">Преглед и управление на запазените пароли на адрес <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Опитайте да влезете отново.</translation>
 <translation id="4620246317052452550">Страници, които сте прочели</translation>
@@ -246,7 +246,6 @@
 <translation id="6042308850641462728">Още</translation>
 <translation id="605721222689873409">ГГ</translation>
 <translation id="6066301408025741299">Докоснете, за да анулирате.</translation>
-<translation id="60851516108411750">Списъкът ви за четене е налице офлайн. За да добавите страница към него, докоснете „<ph name="SHARE_OPENING_ICON" />“.</translation>
 <translation id="6122191549521593678">Онлайн</translation>
 <translation id="6127379762771434464">Елементът бе премахнат</translation>
 <translation id="6136914049981179737">Току-що</translation>
@@ -381,7 +380,6 @@
 <translation id="8741995161408053644">Възможно е в профила ви в Google да има други видове история на сърфиране, съхранявани на адрес <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8775144690796719618">Невалиден URL адрес</translation>
 <translation id="8820817407110198400">Отметки</translation>
-<translation id="882482397944455431">Напускане на режим „инкогнито“</translation>
 <translation id="8840513115188359703">Няма да излезете от профила си в Google.</translation>
 <translation id="8904976895050290827">Синхронизиране в Chrome</translation>
 <translation id="895541991026785598">Подаване на сигнал за проблем</translation>

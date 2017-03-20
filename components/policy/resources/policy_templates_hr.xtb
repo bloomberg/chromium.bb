@@ -273,6 +273,7 @@
       Ako se postavka ne odredi, upotrijebit će se zadana vrijednost.
 
       Ako se pravilo ne postavi, za sve će se postavke upotrijebiti zadane vrijednosti.</translation>
+<translation id="1960840544413786116">Jesu li dopušteni certifikati koje izdaju lokalna pouzdana sidra, a kojima nedostaje proširenje subjectAlternativeName</translation>
 <translation id="1964634611280150550">Onemogućen je anoniman način rada</translation>
 <translation id="1964802606569741174">To pravilo nema utjecaja na Android aplikaciju YouTube. Ako se treba primijeniti sigurnosni način na YouTubeu, instaliranje Android aplikacije YouTube ne može biti dopušteno.</translation>
 <translation id="1969212217917526199">Nadjačava pravila na međuverzijama za otklanjanje pogrešaka hosta daljinskog pristupa.
@@ -327,6 +328,21 @@
       Ako se pravilo HardwareAccelerationModeEnabled postavi na "netočno", Disable3DAPIs se zanemaruje i to je isto kao da se Disable3DAPIs postavi na "točno".</translation>
 <translation id="2168397434410358693">Odgoda neaktivnosti za vrijeme napajanja izmjeničnom strujom</translation>
 <translation id="2170233653554726857">Omogući WPAD optimizaciju</translation>
+<translation id="2176565653304920879">Kada se to pravilo postavi, automatsko otkrivanje vremenske zone odvijat će se na jedan od sljedećih način ovisno o vrijednosti postavke:
+
+      Ako se pravilo postavi na TimezoneAutomaticDetectionUsersDecide, korisnici će moći upravljati automatskim otkrivanjem vremenske zone uobičajenim kontrolama na stranici chrome://settings.
+
+      Ako se pravilo postavi na TimezoneAutomaticDetectionDisabled, kontrole automatskog otkrivanja vremenske zone na stranici chrome://settings bit će onemogućene. Automatsko otkrivanje vremenske zone bit će uvijek isključeno.
+
+      Ako se pravilo postavi na TimezoneAutomaticDetectionIPOnly, kontrole za vremenske zone na stranici chrome://settings bit će onemogućene. Automatsko otkrivanje vremenske zone bit će uvijek uključeno. Otkrivanje vremenske zone utvrđivat će lokaciju samo na temelju IP adrese.
+
+      Ako se pravilo postavi na TimezoneAutomaticDetectionSendWiFiAccessPoints, kontrole za vremenske zone na stranici chrome://settings bit će onemogućene. Automatsko otkrivanje vremenske zone bit će uvijek uključeno. Popis vidljivih Wi-Fi pristupnih točaka uvijek će se slati poslužitelju API-ja Geolocation radi preciznog otkrivanja vremenske zone.
+
+      Ako se pravilo postavi na TimezoneAutomaticDetectionSendAllLocationInfo, kontrole za vremenske zone na stranici chrome://settings bit će onemogućene. Automatsko otkrivanje vremenske zone bit će uvijek uključeno. Podaci o lokaciji (na primjer Wi-Fi pristupne točke, dostupne bazne stanice, GPS) slat će se poslužitelju radi preciznog otkrivanja vremenske zone.
+
+      Ako se to pravilo ne postavi, ponašat će se kao da je postavljeno pravilo TimezoneAutomaticDetectionUsersDecide.
+
+      Postavljanje pravila SystemTimezone nadjačava ovo pravilo. U tom je slučaju automatsko otkrivanje vremenske zone potpuno onemogućeno.</translation>
 <translation id="2178899310296064282">Primijeni barem umjereni Ograničeni način rada na YouTubeu</translation>
 <translation id="2183294522275408937">Ta postavka određuje koliko se često mora unijeti zaporka na zaključanom zaslonu za daljnju upotrebu brzog otključavanja. Ako je od zadnjeg unosa zaporke prošlo više vremena od onog koje je određeno tom postavkom, brzo otključavanje neće biti dostupno za otvaranje zaključanog zaslona. Ako se korisnik zadrži na zaključanom zaslonu dulje od tog razdoblja, zaporka će se tražiti kada korisnik sljedeći put unese pogrešan kôd ili ponovo otvori zaključani zaslon, ovisno o tome što se dogodi prije.
 
@@ -1383,11 +1399,21 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="5378985487213287085">Omogućuje da postavite smiju li web-lokacije prikazivati obavijesti radne površine. Prikazivanje obavijesti radne površine može biti dopušteno prema zadanim postavkama, odbijeno prema zadanim postavkama ili korisnik može primiti upit svaki put kad web-lokacija želi prikazati obavijest radne površine. Ako to pravilo nije postavljeno, upotrebljavat će se pravilo "AskNotifications", a korisnik će to moći promijeniti.</translation>
 <translation id="538108065117008131">Dopusti da <ph name="PRODUCT_FRAME_NAME" /> rukuje sljedećim vrstama sadržaja.</translation>
 <translation id="5388730678841939057">Odabir strategije kojom se oslobađa prostor na disku tijekom automatskog čišćenja (zastarjelo)</translation>
+<translation id="5392172595902933844">Informacije o statusu Androida šalju se
+      poslužitelju.
+
+      Ako se to pravilo postavi na False ili se ne postavi, informacije o statusu neće se prijavljivati.
+      Ako se postavi na True, te će se informacije prijavljivati.
+
+      To se pravilo primjenjuje samo ako su omogućene Androidove aplikacije.</translation>
 <translation id="5395271912574071439">Omogućuje skrivanje hostova za daljinski pristup dok traje povezivanje.
 
           Ako je ova postavka omogućena, tada se onemogućuju fizički ulazni i izlazni uređaji hosta dok je daljinsko povezivanje u tijeku.
 
           Ako je ta postavka onemogućena ili nije postavljena, tada u interakciju s hostom mogu stupati lokalni i udaljeni korisnici kada se on dijeli.</translation>
+<translation id="5405289061476885481">Konfigurira koji su rasporedi tipkovnice dopušteni na zaslonu za prijavu za <ph name="PRODUCT_OS_NAME" />.
+
+      Ako se to pravilo postavi na popis identifikatora načina unosa, zadani načini unosa bit će dostupni na zaslonu za prijavu. Prvi zadani način unosa bit će odabran unaprijed. Kad je korisnički modul aktiviran na zaslonu za prijavu, uz načine unosa zadane ovim pravilom bit će dostupan i način unosa koji je korisnik zadnji upotrebljavao. Ako se to pravilo ne postavi, načini unosa na zaslonu za prijavu izvest će se iz jezika na kojem se prikazuje zaslon za prijavu. Zanemarit će se vrijednosti koje nisu važeći identifikatori načina unosa.</translation>
 <translation id="5423001109873148185">Ako je omogućeno, ovo pravilo prisilno uvozi tražilice iz trenutačno zadanog preglednika. Ako je omogućeno, ovo pravilo također utječe na dijaloški okvir za uvoz. Ako je onemogućeno, zadana se tražilica ne uvozi. Ako nije postavljeno, korisniku može biti postavljen upit želi li uvesti tražilicu ili do uvoza može doći automatski.</translation>
 <translation id="5423197884968724595">Naziv ograničenja za Android WebView:</translation>
 <translation id="543559563129402336">Ovo je pravilo obustavljeno i umjesto njega možete upotrijebiti pravilo <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" /> koje ga nadjačava i koje omogućuje preciznije prilagođavanje.
@@ -1455,6 +1481,11 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
       Ako postavite to pravilo, korisnici ga ne mogu promijeniti niti prebrisati.
 
       Ako pravilo nije postavljeno, korisnici mogu birati treba li se polica automatski skrivati.</translation>
+<translation id="557360560705413259">Kada se ta postavka omogući, <ph name="PRODUCT_NAME" /> upotrebljava commonName certifikata poslužitelja za pronalaženje podudarnosti s nazivom poslužitelja ako certifikatu nedostaje proširenje subjectAlternativeName pod uvjetom da uspješno potvrdi lokalno instalirane CA certifikate i poveže s njima.
+
+      Napominjemo da se to ne preporučuje jer može omogućiti zaobilaženje proširenja nameConstraints koje ograničava nazive hostova za koje određeni certifikat može biti ovlašten.
+
+      Ako se to pravilo ne postavi ili se postavi na False, certifikati poslužitelja kojima nedostaje proširenje subjectAlternativeName s nazivom DNS-a ili IP adresom neće se smatrati pouzdanima.</translation>
 <translation id="557658534286111200">Omogućuje ili onemogućuje uređivanje knjižnih oznaka</translation>
 <translation id="5586942249556966598">Ne radi ništa</translation>
 <translation id="5613179474872285001">Konfigurira traženi naziv domene klijenta koji će se nametnuti klijentima s daljinskim pristupom i sprječava korisnike da to promijene.
@@ -2289,6 +2320,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="7937766917976512374">Omogući ili onemogući snimanje videozapisa</translation>
 <translation id="7941975817681987555">Ne predviđaj mrežne radnje ni na jednoj mrežnoj vezi</translation>
 <translation id="7953256619080733119">Hostovi ručnih iznimaka upravljanih korisnika</translation>
+<translation id="7965394584578183156">Uvijek šalji pristupne točke Wi-Fi mreže poslužitelju prilikom utvrđivanja vremenske zone.</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Ovo pravilo više se ne podržava. Omogućuje upotrebu STUN i relejnih poslužitelja prilikom povezivanja s udaljenim klijentom. Ako je ova postavka omogućena, onda ovo računalo može otkriti udaljena računala hostove i povezati se s njima, čak i ako su odvojena vatrozidom. Ako je ova postavka onemogućena, a izlazne UDP veze filtrirane su vatrozidom, onda se ovo računalo može jedino povezati s računalima hostovima unutar lokalne mreže.</translation>
 <translation id="7986374692540430898">Android aplikacijama ne možete nametnuti upotrebu proxyja. Podskup postavki proxyja dostupan je Android aplikacijama i one ga mogu poštovati dobrovoljno. Više pojedinosti potražite u pravilima <ph name="PROXY_MODE_POLICY" />.</translation>
@@ -2441,6 +2473,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="8390049129576938611">Onemogućuje interni preglednik PDF-ova na usluzi <ph name="PRODUCT_NAME" />. Tretira ga kao preuzimanje i omogućuje uređaju da otvara PDF datoteke zadanom aplikacijom.
 
       Ako se to pravilo ne postavi ili se onemogući, a korisnik nije onemogućio dodatak za PDF-ove, za otvaranje PDF datoteka upotrebljavat će se dodatak za PDF-ove.</translation>
+<translation id="8398203849316312944">Uvijek šalji sve dostupne signale lokacije poslužitelju prilikom utvrđivanja vremenske zone.</translation>
 <translation id="8402079500086185021">Uvijek otvaraj PDF datoteke vanjski</translation>
 <translation id="8412312801707973447">Izvršavaju li se mrežne provjere OCSP/CRL</translation>
 <translation id="8413348101535146315">Omogućuje završavanje postupaka u Upravitelju zadataka usluge <ph name="PRODUCT_NAME" />.
@@ -2670,6 +2703,11 @@ Svaka stavka na popisu jest niz koji sadrži ID proširenja i URL za ažuriranje
       Ako je omogućeno, snimke zaslona ne mogu se izrađivati upotrebom tipkovničkih prečaca ni API-ja proširenja.
 
       Ako je onemogućeno ili nije određeno, izrada snimki zaslona dopuštena je.</translation>
+<translation id="9212233969680267790">Upozorenje: pravilo o maksimalnoj verziji TLS-a u potpunosti će se ukloniti iz značajke <ph name="PRODUCT_NAME" /> oko verzije 66 (oko veljače 2018.).
+
+      Ako se to pravilo ne konfigurira, <ph name="PRODUCT_NAME" /> upotrebljava zadanu maksimalnu verziju.
+
+      U suprotnom se može postaviti na jednu od sljedećih vrijednosti: "tls1.2" ili "tls1.3". Kad se pravilo postavi, <ph name="PRODUCT_NAME" /> neće upotrebljavati verzije SSL-a/TLS-a veće od navedene verzije. Vrijednost koja se ne prepozna ignorirat će se.</translation>
 <translation id="9213347477683611358">Konfigurira pozadinsku sliku koja se prikazuje na zaslonu za prijavu na razini uređaja ako na uređaju još nema prijavljenih korisnika. Pravilo se postavlja određivanjem URL-a s kojega uređaj s OS-om Chrome može preuzeti pozadinsku sliku i kriptografskog raspršivanja za provjeru integriteta preuzimanja. Slika mora biti u JPEG formatu i ne smije biti veća od 16 MB. URL-u se mora moći pristupiti bez autentifikacije. Pozadinska slika preuzima se i sprema u predmemoriju. Ponovo će se preuzeti svaki put kada se URL ili raspršivanje promijene.
 
       Pravilo se navodi kao niz koji izražava URL i sažetak u JSON obliku, na primjer:

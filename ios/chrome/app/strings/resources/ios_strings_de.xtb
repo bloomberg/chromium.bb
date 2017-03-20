@@ -101,6 +101,7 @@ Einige Websites reagieren möglicherweise auf die Anfrage, indem sie Anzeigen ei
 <translation id="2871695793448672541">Ausgeblendetes Passwort</translation>
 <translation id="2898963176829412617">Neuer Ordner…</translation>
 <translation id="2903493209154104877">Adressen</translation>
+<translation id="291754862089661335">Positionieren Sie den QR-Code oder Barcode in diesem Bereich</translation>
 <translation id="2921219216347069551">Seite kann nicht geteilt werden</translation>
 <translation id="292639812446257861">Als ungelesen markieren</translation>
 <translation id="2933759065870693102">Taschenlampe</translation>
@@ -172,7 +173,6 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="4359125752503270327">Diese Seite wird in einer anderen Anwendung geöffnet.</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="441868831736628555">Datenschutzhinweise</translation>
-<translation id="4473991315115669931">Inkognitomodus aktivieren</translation>
 <translation id="4526249700380860531">Unter <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> gespeicherte Passwörter aufrufen und verwalten</translation>
 <translation id="4536418791685807335">Melden Sie sich noch einmal an.</translation>
 <translation id="4620246317052452550">Seiten, die Sie gelesen haben</translation>
@@ -246,7 +246,6 @@ Handoff muss auch im Abschnitt "Allgemein" Ihrer Einstellungen aktiviert sein un
 <translation id="6042308850641462728">Mehr</translation>
 <translation id="605721222689873409">JJ</translation>
 <translation id="6066301408025741299">Zum Abbrechen tippen</translation>
-<translation id="60851516108411750">Ihre Leseliste ist offline verfügbar. Um eine Seite zu Ihrer Leseliste hinzuzufügen, tippen Sie auf das Symbol "Hinzufügen" <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="6122191549521593678">Online</translation>
 <translation id="6127379762771434464">Eintrag entfernt</translation>
 <translation id="6136914049981179737">Vor Sek.</translation>
@@ -381,7 +380,6 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="8741995161408053644">Möglicherweise sind in Ihrem Google-Konto noch andere Formen des Browserverlaufs unter <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> vorhanden.</translation>
 <translation id="8775144690796719618">Ungültige URL</translation>
 <translation id="8820817407110198400">Lesezeichen</translation>
-<translation id="882482397944455431">Inkognitomodus deaktivieren</translation>
 <translation id="8840513115188359703">Sie werden nicht von Ihrem Google-Konto abgemeldet.</translation>
 <translation id="8904976895050290827">Google Chrome Sync</translation>
 <translation id="895541991026785598">Problem melden</translation>

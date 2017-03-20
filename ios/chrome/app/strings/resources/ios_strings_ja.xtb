@@ -101,6 +101,7 @@
 <translation id="2871695793448672541">非表示のパスワード</translation>
 <translation id="2898963176829412617">新しいフォルダ...</translation>
 <translation id="2903493209154104877">住所</translation>
+<translation id="291754862089661335">QR コードまたはバーコードをこの枠に合わせてください</translation>
 <translation id="2921219216347069551">ページを共有できない</translation>
 <translation id="292639812446257861">未読にする</translation>
 <translation id="2933759065870693102">照明</translation>
@@ -172,7 +173,6 @@
 <translation id="4359125752503270327">このページは別のアプリケーションで開かれます。</translation>
 <translation id="4378154925671717803">電話番号</translation>
 <translation id="441868831736628555">プライバシーに関するお知らせ</translation>
-<translation id="4473991315115669931">シークレット モードを開始</translation>
 <translation id="4526249700380860531"><ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> での保存パスワードの表示と管理</translation>
 <translation id="4536418791685807335">もう一度ログインしてみてください。</translation>
 <translation id="4620246317052452550">既読のページ</translation>
@@ -243,10 +243,9 @@
 <translation id="6021332621416007159">次で開く...</translation>
 <translation id="6039694632319341016"><ph name="PASSWORD_MANAGER_BRAND" /> に保存されているこのサイトの <ph name="USERNAME" /> のパスワードを更新しますか？</translation>
 <translation id="6040143037577758943">閉じる</translation>
-<translation id="6042308850641462728">詳細表示</translation>
+<translation id="6042308850641462728">もっと見る</translation>
 <translation id="605721222689873409">YY</translation>
 <translation id="6066301408025741299">タップしてキャンセルします。</translation>
-<translation id="60851516108411750">リーディング リストをオフラインで利用できます。リーディング リストにページを追加するには、<ph name="SHARE_OPENING_ICON" /> をタップします。</translation>
 <translation id="6122191549521593678">オンライン</translation>
 <translation id="6127379762771434464">アイテムを削除しました</translation>
 <translation id="6136914049981179737">数秒前</translation>
@@ -381,7 +380,6 @@
 <translation id="8741995161408053644">Google アカウントでの他の形式の閲覧履歴が <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> に残ることがあります。</translation>
 <translation id="8775144690796719618">無効なURL</translation>
 <translation id="8820817407110198400">ブックマーク</translation>
-<translation id="882482397944455431">シークレット モードを終了</translation>
 <translation id="8840513115188359703">Google アカウントへのログイン状態は維持されます。</translation>
 <translation id="8904976895050290827">Chrome の同期</translation>
 <translation id="895541991026785598">問題の報告</translation>

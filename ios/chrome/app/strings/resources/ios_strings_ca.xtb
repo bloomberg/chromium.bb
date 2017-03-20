@@ -101,6 +101,7 @@ Per exemple, pot ser que, per respondre a aquesta sol·licitud, alguns llocs web
 <translation id="2871695793448672541">Contrasenya amagada</translation>
 <translation id="2898963176829412617">Carpeta nova…</translation>
 <translation id="2903493209154104877">Adreces</translation>
+<translation id="291754862089661335">Situa el codi QR o el codi de barres dins d'aquest marc</translation>
 <translation id="2921219216347069551">No es pot compartir la pàgina</translation>
 <translation id="292639812446257861">Marca com a no llegit</translation>
 <translation id="2933759065870693102">Llanterna</translation>
@@ -172,7 +173,6 @@ Per ajustar el terme de la cerca, manteniu-lo premut per seleccionar-lo. Per def
 <translation id="4359125752503270327">Aquesta pàgina s'obrirà en una altra aplicació.</translation>
 <translation id="4378154925671717803">Telèfon</translation>
 <translation id="441868831736628555">Avís de privadesa</translation>
-<translation id="4473991315115669931">Entra al mode d'incògnit</translation>
 <translation id="4526249700380860531">Consulta i gestiona les contrasenyes desades a <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Torna a iniciar la sessió.</translation>
 <translation id="4620246317052452550">Pàgines que has llegit</translation>
@@ -246,7 +246,6 @@ Handoff també ha d'estar activat a la secció General de Configuració, i els v
 <translation id="6042308850641462728">Més</translation>
 <translation id="605721222689873409">AA</translation>
 <translation id="6066301408025741299">Toca per cancel·lar.</translation>
-<translation id="60851516108411750">La llista de lectura està disponible sense connexió. Per afegir-hi una pàgina, toca <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="6122191549521593678">En línia</translation>
 <translation id="6127379762771434464">S'ha suprimit l'element</translation>
 <translation id="6136914049981179737">Fa segons</translation>
@@ -381,7 +380,6 @@ Les vostres dades es van encriptar el dia <ph name="TIME" /> amb la vostra frase
 <translation id="8741995161408053644">És possible que el vostre compte de Google tingui altres formes de l'historial de navegació a <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8775144690796719618">URL no vàlid</translation>
 <translation id="8820817407110198400">Adreces d'interès</translation>
-<translation id="882482397944455431">Surt del mode d'incògnit</translation>
 <translation id="8840513115188359703">No se us tancarà la sessió del compte de Google.</translation>
 <translation id="8904976895050290827">Sincronització de Google Chrome</translation>
 <translation id="895541991026785598">Informeu d'un problema</translation>

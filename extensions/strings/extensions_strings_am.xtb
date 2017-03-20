@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="am">
 <translation id="1135328998467923690">ጥቅል ልክ የሆነ አይደለም፦ «<ph name="ERROR_CODE" />»።</translation>
+<translation id="1140871961407805696">አካባቢውን የሚመለከት</translation>
 <translation id="1256619696651732561">ቅጥያ ገልጦ ማሳያ ተንታኝ</translation>
 <translation id="1445572445564823378">ይህ ቅጥያ <ph name="PRODUCT_NAME" /> እያንቀራፈፈው ነው። የ<ph name="PRODUCT_NAME" /> አፈጻጸም ወደነበረበት ለመመለስ ቅጥያውን ማሰናከል አለብዎት።</translation>
 <translation id="149347756975725155">የቅጥያ አዶ «<ph name="ICON" />»ን መጫን አልተቻለም።</translation>
@@ -42,6 +43,7 @@
 <translation id="7217838517480956708">የዚህ ማሽን አስተዳዳሪ <ph name="EXTENSION_NAME" /> እንዲጫን ይፈልጋል። ሊወገድ ወይም ሊቀየር አይችልም።</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME" /> (የቅጥያ መታወቂያ «<ph name="EXTENSION_ID" />») በአስተዳዳሪው ታግዷል።</translation>
 <translation id="7972881773422714442">አማራጮች፦ <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
+<translation id="8035920974645200807">ተጠቃሚውን የሚመለከት</translation>
 <translation id="8047248493720652249">ይህ ቅጥያ የወረደውን «<ph name="ATTEMPTED_FILENAME" />» ብሎ መሰየም አልተሳካለትም፣ ምክንያቱም ሌላ ቅጥያ (<ph name="EXTENSION_NAME" />) ሌላ የፋይል ስም «<ph name="ACTUAL_FILENAME" />» ስለወሰነ ነው።</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> ከ<ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">ይህ ቅጥያ ለአንድ የአውታረ መረብ ጥያቄ ምስክርነቶችን ማቅረብ አልቻለም ምክንያቱም ሌላ ቅጥያ (<ph name="EXTENSION_NAME" />) የተለዩ ምስክርነቶችን ስላቀረበ።</translation>

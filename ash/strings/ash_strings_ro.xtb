@@ -7,6 +7,7 @@
 <translation id="1127238861555034875">Modul lupă</translation>
 <translation id="1153356358378277386">Dispozitive asociate</translation>
 <translation id="1195412055398077112">suprascanare</translation>
+<translation id="1247372569136754018">Microfon (intern)</translation>
 <translation id="1252999807265626933">Se încarcă de la <ph name="POWER_SOURCE" /></translation>
 <translation id="1270290102613614947">Tastatură pe ecran dezactivată</translation>
 <translation id="1272079795634619415">Oprește</translation>
@@ -23,16 +24,21 @@
 <translation id="1525508553941733066">ÎNCHIDE</translation>
 <translation id="15373452373711364">Cursor de mouse mare</translation>
 <translation id="1550523713251050646">Dă clic pentru mai multe opțiuni</translation>
+<translation id="1571442141242456645">Metoda de introducere a textului a fost schimbată la <ph name="INPUT_METHOD_ID" />.
+    Apasă pe Shift + Alt pentru a comuta.</translation>
 <translation id="1602076796624386989">Activați datele mobile</translation>
 <translation id="1621499497873603021">Timp rămas până la descărcarea bateriei: <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Dispozitiv Chrome</translation>
 <translation id="1677472565718498478">Timp rămas: <ph name="TIME" /></translation>
 <translation id="1747827819627189109">Tastatură pe ecran activată</translation>
 <translation id="1850504506766569011">Conexiunea Wi-Fi este dezactivată.</translation>
+<translation id="1854357586517521894">Tasta CAPS LOCK este activată.
+    Apasă pe tasta de căutare sau pe Shift pentru a anula.</translation>
 <translation id="1864454756846565995">Dispozitiv USB-C (portul din spate)</translation>
 <translation id="1882897271359938046">Se oglindește pe <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Comanda rapidă pentru a deschide managerul de activități a fost modificată. Folosește <ph name="NEW_SHORTCUT" /> în loc de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Clicuri automate</translation>
+<translation id="1942830294380034169">Buton pentru meniul suplimentar</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2122028596993374965">Nu mai proiecta <ph name="TAB_NAME" /> pe dispozitivul <ph name="RECEIVER_NAME" /></translation>
@@ -60,6 +66,8 @@
 <translation id="2857608528410806398">Corpul notificării privind funcția Deblocare rapidă trebuie să apară aici. Corpul notificării privind funcția Deblocare rapidă trebuie să apară aici. Corpul notificării privind funcția Deblocare rapidă trebuie să apară aici. Corpul notificării privind funcția Deblocare rapidă trebuie să apară aici. Corpul notificării privind funcția Deblocare rapidă trebuie să apară aici.</translation>
 <translation id="2865888419503095837">Informații despre rețea</translation>
 <translation id="2872961005593481000">Închide</translation>
+<translation id="291653379653113090">Metoda de introducere a textului a fost schimbată la <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />terță parte<ph name="END_LINK" />).
+    Apasă pe Shift + Alt pentru a comuta.</translation>
 <translation id="2942516765047364088">Poziție raft</translation>
 <translation id="2946119680249604491">Adăugați o conexiune</translation>
 <translation id="2963773877003373896">mod3</translation>
@@ -70,6 +78,8 @@
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Jos</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
+<translation id="3109220592788908353">Tasta CAPS LOCK este activată.
+    Apasă pe Alt + tasta de căutare sau Shift pentru a anula.</translation>
 <translation id="3126069444801937830">Reporniți pentru a actualiza</translation>
 <translation id="3147142846278915599">Lansator (se sincronizează aplicațiile...)</translation>
 <translation id="315116470104423982">Date mobile</translation>
@@ -92,16 +102,19 @@
 <translation id="3683428399328702079">Rezoluția <ph name="DISPLAY_NAME" /> a fost modificată la <ph name="RESOLUTION" /></translation>
 <translation id="370649949373421643">Activați Wi-Fi</translation>
 <translation id="3712407551474845318">Capturează zona</translation>
+<translation id="371370241367527062">Microfonul din față</translation>
 <translation id="3742055079367172538">Captură de ecran efectuată</translation>
 <translation id="3775358506042162758">Conectarea multiplă acceptă maximum trei conturi.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Blocați</translation>
+<translation id="3798670284305777884">Difuzor (intern)</translation>
 <translation id="3799026279081545374">Este posibil să aveți un încărcător defect. Dacă locuiți în S.U.A., sunați la 866-628-1371 pentru a primi asistență și un încărcător de schimb. Dacă locuiți în Regatul Unit, sunați la 0800-026-0613. Dacă locuiți în Irlanda, sunați la 1-800-832-664. Dacă locuiți în Canada, sunați la 866-628-1372. Dacă locuiți în Australia, sunați la 1-800-067-460.</translation>
 <translation id="3846575436967432996">Nu sunt disponibile informații despre rețele</translation>
 <translation id="3891340733213178823">Apăsați de două ori Ctrl+Shift+Q pentru a vă deconecta.</translation>
 <translation id="3893630138897523026">ChromeVox (feedback rostit)</translation>
 <translation id="3899995891769452915">Intrare vocală</translation>
 <translation id="3901991538546252627">Se conectează la <ph name="NAME" /></translation>
+<translation id="394485226368336402">Setări audio</translation>
 <translation id="3967919079500697218">Capacitatea de a crea capturi de ecran a fost dezactivată de administrator.</translation>
 <translation id="397105322502079400">Se calculează...</translation>
 <translation id="3995138139523574647">Dispozitiv USB-C (portul din dreapta spate)</translation>
@@ -114,7 +127,6 @@
 <translation id="4421231901400348175">În prezent, <ph name="HELPER_NAME" /> îți poate controla ecranul prin Asistență la distanță.</translation>
 <translation id="4430019312045809116">Volum</translation>
 <translation id="4448844063988177157">Se caută rețele Wi-Fi...</translation>
-<translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Dispozitive neasociate</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: se conectează...</translation>
 <translation id="4527045527269911712">Dispozitivul Bluetooth „<ph name="DEVICE_NAME" />” solicită permisiunea de a se conecta.</translation>
@@ -132,14 +144,18 @@
 <translation id="5170568018924773124">Afișează în dosar</translation>
 <translation id="5222676887888702881">Deconectează-te</translation>
 <translation id="523505283826916779">Setări de accesibilitate</translation>
+<translation id="5313326810920013265">Setări Bluetooth</translation>
 <translation id="532063867737390965">Această setare de rețea este dezactivată de administrator.</translation>
 <translation id="5331975486040154427">Dispozitiv USB-C (portul din stânga spate)</translation>
+<translation id="5430931332414098647">Tethering instantaneu</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">Toți utilizatorii disponibili au fost deja adăugați la această sesiune.</translation>
 <translation id="5507786745520522457">Configurați datele mobile</translation>
+<translation id="553675580533261935">Se iese din sesiune</translation>
 <translation id="5548285847212963613">Extensia „<ph name="EXTENSION_NAME" />” te poate ajuta să te conectezi la această rețea.</translation>
 <translation id="5571066253365925590">Bluetooth activat</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
+<translation id="5648021990716966815">Mufă pentru microfon</translation>
 <translation id="5777841717266010279">Oprești permiterea accesului la ecran?</translation>
 <translation id="57838592816432529">Dezactivează sunetul</translation>
 <translation id="5895138241574237353">Reîncepe</translation>
@@ -197,11 +213,11 @@ Apăsați pe Ctrl+Alt+Z pentru dezactivare.</translation>
 <translation id="7129360219436193655">Modul cursor laser</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358">Se revine la rezoluția anterioară în <ph name="TIMEOUT_SECONDS" /></translation>
+<translation id="7256634071279256947">Microfonul din spate</translation>
 <translation id="7348093485538360975">Tastatură pe ecran</translation>
 <translation id="735745346212279324">Rețea VPN deconectată</translation>
 <translation id="742594950370306541">Camera foto este în uz.</translation>
 <translation id="743058460480092004">Camera foto și microfonul sunt în uz.</translation>
-<translation id="7502658306369382406">Adresă IPv6</translation>
 <translation id="7510334386202674593">Ctrl + Shift + L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> nu acceptă <ph name="SPECIFIED_RESOLUTION" />. Rezoluția a fost modificată la <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Paletă cu emoji</translation>
@@ -231,7 +247,6 @@ Apăsați pe Ctrl+Alt+Z pentru dezactivare.</translation>
 <translation id="8428213095426709021">Setări</translation>
 <translation id="8433186206711564395">Setări de rețea</translation>
 <translation id="8454013096329229812">Conexiunea Wi-Fi este activată.</translation>
-<translation id="8483248364096924578">Adresă IP</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: se reconectează...</translation>
 <translation id="8517041960877371778">Este posibil ca <ph name="DEVICE_TYPE" /> să nu se încarce cât timp este pornit.</translation>
 <translation id="8528322925433439945">Rețele mobile...</translation>

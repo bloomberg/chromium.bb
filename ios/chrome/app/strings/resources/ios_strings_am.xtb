@@ -101,6 +101,7 @@
 <translation id="2871695793448672541">የተደበቀ፣ የይለፍ ቃል</translation>
 <translation id="2898963176829412617">አዲስ አቃፊ…</translation>
 <translation id="2903493209154104877">አድራሻዎች</translation>
+<translation id="291754862089661335">የQR ኮድ ወይም የአሞሌ ኮድ በዚህ ክፈፍ ውስጥ ያምጡት</translation>
 <translation id="2921219216347069551">ገጽ ማጋራት አልተቻለም</translation>
 <translation id="292639812446257861">እንዳልተነበበ ምልክት አድርግ</translation>
 <translation id="2933759065870693102">የባትሪ ብርሃን</translation>
@@ -172,7 +173,6 @@
 <translation id="4359125752503270327">ይህ ገጽ በሌላ መተግበሪያ ውስጥ ይከፈታል።</translation>
 <translation id="4378154925671717803">ስልክ</translation>
 <translation id="441868831736628555">የግላዊነት ማሳወቂያ</translation>
-<translation id="4473991315115669931">ማንነት ወደ ማያሳውቅ ሁነታ ግባ</translation>
 <translation id="4526249700380860531"><ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> ላይ የተቀመጡ የይለፍ ቃሎችን ይመልከቱ እና ያስተዳድሩ</translation>
 <translation id="4536418791685807335">እንደገና ወደ መለያ ለመግባት ይሞክሩ።</translation>
 <translation id="4620246317052452550">እርስዎ ያነበቧቸው ገጾች</translation>
@@ -246,7 +246,6 @@ Handoff እንዲሁም በSettings ውስጥ ባለው የGeneral ክፍል ላ
 <translation id="6042308850641462728">ተጨማሪ</translation>
 <translation id="605721222689873409">ዓዓ</translation>
 <translation id="6066301408025741299">ይቅር ለማለት መታ ያድርጉ።</translation>
-<translation id="60851516108411750">የንባብ ዝርዝርዎ ከመስመር ውጭ ይገኛል። ወደ የእርስዎ የንባብ ዝርዝር ገጽ ለማከል <ph name="SHARE_OPENING_ICON" />መታ ያድርጉ።</translation>
 <translation id="6122191549521593678">መስመር ላይ</translation>
 <translation id="6127379762771434464">ንጥል ተወግዷል</translation>
 <translation id="6136914049981179737">ከሰከንዶች በፊት</translation>
@@ -381,7 +380,6 @@ Handoff እንዲሁም በSettings ውስጥ ባለው የGeneral ክፍል ላ
 <translation id="8741995161408053644">የእርስዎ Google መለያ <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> ላይ ሌሎች የአሰሳ ታሪክ ዓይነቶች ሊኖረው ይችላል።</translation>
 <translation id="8775144690796719618">ልክ ያልሆነ ዩአርኤል</translation>
 <translation id="8820817407110198400">ዕልባቶች</translation>
-<translation id="882482397944455431">ማንነት ከማያሳውቅ ሁነታ ይውጡ</translation>
 <translation id="8840513115188359703">ከእርስዎ የGoogle መለያ ዘግተው እንዲወጡ አይደረጉም።</translation>
 <translation id="8904976895050290827">Chrome ሥምረት</translation>
 <translation id="895541991026785598">ችግር ሪፖርት ያድርጉ</translation>

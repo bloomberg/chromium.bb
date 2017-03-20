@@ -99,6 +99,7 @@
 <translation id="2871695793448672541">รหัสผ่านแบบซ่อน</translation>
 <translation id="2898963176829412617">โฟลเดอร์ใหม่…</translation>
 <translation id="2903493209154104877">ที่อยู่</translation>
+<translation id="291754862089661335">จัดตำแหน่งโค้ด QR หรือบาร์โค้ดให้อยู่ในกรอบนี้</translation>
 <translation id="2921219216347069551">ไม่สามารถแชร์เว็บ</translation>
 <translation id="292639812446257861">ทำเครื่องหมายว่ายังไม่ได้อ่าน</translation>
 <translation id="2933759065870693102">แฟลช</translation>
@@ -170,7 +171,6 @@
 <translation id="4359125752503270327">หน้านี้จะเปิดในแอปพลิเคชันอื่น</translation>
 <translation id="4378154925671717803">โทรศัพท์</translation>
 <translation id="441868831736628555">ประกาศเกี่ยวกับนโยบายความเป็นส่วนตัว</translation>
-<translation id="4473991315115669931">เข้าสู่โหมดไม่ระบุตัวตน</translation>
 <translation id="4526249700380860531">ดูและจัดการรหัสผ่านที่บันทึกไว้ที่ <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">ลองลงชื่อเข้าใช้อีกครั้ง</translation>
 <translation id="4620246317052452550">หน้าที่คุณอ่านแล้ว</translation>
@@ -244,7 +244,6 @@
 <translation id="6042308850641462728">เพิ่มเติม</translation>
 <translation id="605721222689873409">ปป</translation>
 <translation id="6066301408025741299">แตะเพื่อยกเลิก</translation>
-<translation id="60851516108411750">เรื่องรออ่านของคุณพร้อมใช้งานในแบบออฟไลน์ หากต้องการเพิ่มหน้าลงในเรื่องรออ่าน แตะ<ph name="SHARE_OPENING_ICON" /></translation>
 <translation id="6122191549521593678">ออนไลน์</translation>
 <translation id="6127379762771434464">นำรายการออกแล้ว</translation>
 <translation id="6136914049981179737">วินาทีแล้ว</translation>
@@ -379,7 +378,6 @@
 <translation id="8741995161408053644">บัญชี Google ของคุณอาจมีประวัติการท่องเว็บในรูปแบบอื่นๆ ที่ <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /></translation>
 <translation id="8775144690796719618">URL ไม่ถูกต้อง</translation>
 <translation id="8820817407110198400">บุ๊กมาร์ก</translation>
-<translation id="882482397944455431">ออกจากโหมดไม่ระบุตัวตน</translation>
 <translation id="8840513115188359703">คุณจะไม่ออกจากระบบบัญชี Google</translation>
 <translation id="8904976895050290827">การทำข้อมูลให้ตรงกันของ Chrome</translation>
 <translation id="895541991026785598">รายงานปัญหา</translation>

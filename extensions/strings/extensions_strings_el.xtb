@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="el">
 <translation id="1135328998467923690">Μη έγκυρο πακέτο: '<ph name="ERROR_CODE" />'.</translation>
+<translation id="1140871961407805696">Πίσω κάμερα</translation>
 <translation id="1256619696651732561">Συντακτικός αναλυτής μανιφέστου επέκτασης</translation>
 <translation id="1445572445564823378">Αυτή η επέκταση επιβραδύνει το <ph name="PRODUCT_NAME" />. Πρέπει να την απενεργοποιήσετε για να επαναφέρετε την απόδοση του <ph name="PRODUCT_NAME" />.</translation>
 <translation id="149347756975725155">Δεν ήταν δυνατή η φόρτωση του εικονιδίου επέκτασης "<ph name="ICON" />".</translation>
@@ -42,6 +43,7 @@
 <translation id="7217838517480956708">Ο διαχειριστής αυτού του υπολογιστή απαιτεί την εγκατάσταση της επέκτασης <ph name="EXTENSION_NAME" />. Δεν είναι δυνατή η κατάργηση ή η τροποποίησή της.</translation>
 <translation id="7809034755304591547">Το αναγνωριστικό <ph name="EXTENSION_NAME" /> (αναγνωριστικό επέκτασης "<ph name="EXTENSION_ID" />") έχει αποκλειστεί από τον διαχειριστή.</translation>
 <translation id="7972881773422714442">Επιλογές: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
+<translation id="8035920974645200807">Μπροστινή κάμερα</translation>
 <translation id="8047248493720652249">Η επέκταση δεν κατόρθωσε να ονομάσει τη λήψη "<ph name="ATTEMPTED_FILENAME" />" επειδή μια άλλη επέκταση (<ph name="EXTENSION_NAME" />) καθόρισε ένα διαφορετικό όνομα "<ph name="ACTUAL_FILENAME" />".</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> της <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Αυτή η επέκταση απέτυχε να παράσχει διαπιστευτήρια σε κάποιο αίτημα δικτύου επειδή κάποια άλλη επέκταση (<ph name="EXTENSION_NAME" />) παρέσχεσε διαφορετικά διαπιστευτήρια.</translation>

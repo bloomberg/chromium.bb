@@ -276,6 +276,7 @@
       Se não especificar uma definição, é utilizado um valor predefinido.
 
       Se não definir esta política, são utilizadas predefinições para todas as definições.</translation>
+<translation id="1960840544413786116">Se deve ou não autorizar os certificados emitidos por âncoras fidedignas locais que têm a extensão subjectAlternativeName em falta</translation>
 <translation id="1964634611280150550">Modo de navegação anónima desativado</translation>
 <translation id="1964802606569741174">Esta política não tem qualquer efeito na aplicação YouTube para Android. Se for necessário aplicar o modo de segurança no YouTube, a autorização para instalar a aplicação YouTube para Android deve ser removida.</translation>
 <translation id="1969212217917526199">Substitui políticas em compilações de Depuração do anfitrião de acesso remoto.
@@ -330,6 +331,21 @@
       Se a política HardwareAccelerationModeEnabled estiver definida como falsa, a política Disable3DAPIs é ignorada e é equivalente à definição da política Disable3DAPIs como verdadeira.</translation>
 <translation id="2168397434410358693">Atraso de inatividade quando o dispositivo está ligado à eletricidade</translation>
 <translation id="2170233653554726857">Ativar otimização WPAD</translation>
+<translation id="2176565653304920879">Quando esta política está definida, o fluxo da deteção automática do fuso horário é um dos seguintes, consoante o valor da definição:
+
+      Se estiver definida como TimezoneAutomaticDetectionUsersDecide, os utilizadores podem controlar a deteção automática do fuso horário ao utilizar controlos normais em chrome://settings.
+
+      Se estiver definida como TimezoneAutomaticDetectionDisabled, os controlos automáticos do fuso horário disponíveis em chrome://settings estão desativados. A deteção automática do fuso horário está sempre desativada.
+
+      Se estiver definida como TimezoneAutomaticDetectionIPOnly, os controlos do fuso horário disponíveis em chrome://settings estão desativados. A deteção automática do fuso horário está sempre ativada. A deteção do fuso horário utiliza o método apenas de IP para resolver a localização.
+
+      Se estiver definida como TimezoneAutomaticDetectionSendWiFiAccessPoints, os controlos do fuso horário disponíveis em chrome://settings estão desativados. A deteção automática do fuso horário está sempre ativada. A lista de pontos de acesso Wi-Fi visíveis é sempre enviada para o servidor da API de geolocalização, de modo a permitir a deteção precisa do fuso horário.
+
+      Se estiver definida como TimezoneAutomaticDetectionSendAllLocationInfo, os controlos automáticos do fuso horário disponíveis em chrome://settings estão desativados. A deteção automática do fuso horário está sempre ativada. As informações da localização (tal como pontos de acesso Wi-Fi, torres de difusão alcançáveis, GPS) serão enviadas para um servidor para uma deteção precisa do fuso horário.
+
+      Se esta política não estiver definida, o comportamento é o mesmo como se TimezoneAutomaticDetectionUsersDecide estivesse definido.
+
+      Se a política SystemTimezone estiver definida, substitui esta política. Nesse caso, a deteção automática do fuso horário está totalmente desativada.</translation>
 <translation id="2178899310296064282">Aplicar pelo menos o Modo restrito moderado no YouTube</translation>
 <translation id="2183294522275408937">Esta definição controla a frequência com que o ecrã de bloqueio solicita a introdução da palavra-passe para continuar a utilizar o desbloqueio rápido. Sempre que se acede ao ecrã de bloqueio, se a última introdução da palavra-passe tiver sido superior a esta definição, o desbloqueio rápido não estará disponível ao entrar no ecrã de bloqueio. Se o utilizador se mantiver no ecrã de bloqueio após este período de tempo, será solicitada uma palavra-passe da próxima vez que o utilizador introduzir o código errado ou voltar a aceder ao ecrã de bloqueio, o que ocorrer primeiro.
 
@@ -1380,11 +1396,21 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="5378985487213287085">Permite definir se os Web sites estão autorizados a apresentar notificações no ambiente de trabalho. A apresentação de notificações no ambiente de trabalho pode ser permitida por predefinição, negada por predefinição ou o utilizador pode ser questionado sempre que um Web site pretenda apresentar notificações no ambiente de trabalho. Se esta política não for definida, será utilizada a definição "AskNotifications" e o utilizador poderá alterá-la.</translation>
 <translation id="538108065117008131">Permitir que o <ph name="PRODUCT_FRAME_NAME" /> processe os seguintes tipos de conteúdo.</translation>
 <translation id="5388730678841939057">Seleciona a estratégia utilizada para libertar espaço no disco durante a limpeza automática (obsoleto)</translation>
+<translation id="5392172595902933844">As informações sobre o estado do Android são enviadas novamente para o
+      servidor.
+
+      Se a política estiver definida como falsa ou não definida, não são comunicadas quaisquer informações de estado.
+      Se estiver definida como verdadeira, são comunicadas informações de estado.
+
+      Esta política aplica-se apenas se as aplicações Android estiverem ativadas.</translation>
 <translation id="5395271912574071439">Ativa a proteção de anfitriões de acesso remoto enquanto existir uma ligação em progresso.
 
           Se esta definição estiver ativada, então, os dispositivos de entrada e saída físicos do anfitrião são desativados enquanto existir uma ligação remota em progresso.
 
           Se esta definição estiver desativada ou não for definida, então, os utilizadores locais e remotos podem interagir com o anfitrião quando este está a ser partilhado.</translation>
+<translation id="5405289061476885481">Configura os esquemas de teclado que são autorizados no ecrã de início de sessão do <ph name="PRODUCT_OS_NAME" />.
+
+      Se esta política estiver definida como uma lista de identificadores do método de introdução, os métodos de introdução fornecidos são disponibilizados no ecrã de início de sessão. O primeiro método de introdução fornecido é pré-selecionado. Quando um agrupamento de utilizadores está centrado no ecrã de início de sessão, é disponibilizado o método de introdução utilizado mais recentemente, para além dos métodos de introdução fornecidos por esta política. Se esta política não estiver definida, os métodos de introdução no ecrã de início de sessão serão provenientes do local no qual o ecrã de início de sessão é apresentado. Os valores que não forem identificadores de métodos de introdução válidos serão ignorados.</translation>
 <translation id="5423001109873148185">Se esta política estiver ativada, força a importação de motores de pesquisa a partir do navegador predefinido atual e também afeta a caixa de diálogo de importação. Se estiver desativada, o motor de pesquisa predefinido não é importado. Se não for definida, o utilizador poderá ser questionado se pretende importá-lo ou a importação poderá ocorrer automaticamente.</translation>
 <translation id="5423197884968724595">Nome da restrição WebView do Android:</translation>
 <translation id="543559563129402336">Esta política foi descontinuada. Considere utilizar <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" />, que substitui esta política e permite um aperfeiçoamento mais detalhado.
@@ -1452,6 +1478,11 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
       Se definir esta política, os utilizadores não poderão alterá-la ou substituí-la.
 
       Se a política ficar por definir, os utilizadores poderão escolher se a prateleira deverá ser ocultada automaticamente.</translation>
+<translation id="557360560705413259">Quando esta definição está ativada, o <ph name="PRODUCT_NAME" /> utiliza o commonName do certificado de um servidor para fazer corresponder a um nome de anfitrião se o certificado tiver uma extensão subjectAlternativeName em falta, desde que valide e crie uma cadeia para certificados da AC instalados localmente.
+
+      Tenha em atenção que esta ação não é recomendada, dado que pode permitir ignorar a extensão nameConstraints que restringe os nomes de anfitriões para os quais um determinado certificado pode ser autorizado.
+
+      Se esta política não estiver definida ou for definida como falsa, os certificados de servidor que não possuam uma extensão subjectAlternativeName com um nome DNS ou um endereço IP não serão fidedignos.</translation>
 <translation id="557658534286111200">Ativa ou desativa a edição de marcadores</translation>
 <translation id="5586942249556966598">Não fazer nada</translation>
 <translation id="5613179474872285001">Configura o nome do domínio do cliente obrigatório que é imposto aos clientes de acesso remoto e impede os utilizadores de o alterar.
@@ -2688,6 +2719,11 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
       Se a política estiver ativada, não é possível efetuar capturas de ecrã com atalhos de teclado ou APIs de extensões.
 
       Se a política estiver desativada ou não for especificada, as capturas de ecrã são permitidas.</translation>
+<translation id="9212233969680267790">Aviso: a política da versão TLS máxima será totalmente removida do <ph name="PRODUCT_NAME" /> perto da versão 66 (por volta de fevereiro de 2018).
+
+      Se esta política não estiver configurada, o <ph name="PRODUCT_NAME" /> utiliza a versão máxima predefinida.
+
+      Caso contrário, pode ser definida para um dos seguintes valores: "tls1.2" ou "tls1.3". Quando estiver definida, o <ph name="PRODUCT_NAME" /> não utiliza as versões SSL/TLS superiores à versão especificada. Um valor não reconhecido será ignorado.</translation>
 <translation id="9213347477683611358">Configure uma imagem de fundo ao nível do dispositivo mostrada no ecrã de início de sessão se nenhum utilizador tiver iniciado sessão no dispositivo. A política é definida ao especificar o URL a partir do qual o dispositivo com o SO Chrome pode transferir a imagem de fundo e um hash criptográfico para verificar a integridade da transferência. A imagem tem de estar no formato JPEG e o tamanho do ficheiro não pode exceder 16 MB. O URL tem de ser acessível sem nenhuma autenticação. A imagem de fundo é transferida e colocada na cache. É transferida sempre que o URL ou o hash for alterado.
 
       A política deve ser especificada como uma string que expressa o URL e o hash no formato JSON, por exemplo,

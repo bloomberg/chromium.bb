@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ko">
 <translation id="1135328998467923690">패키지가 잘못되었습니다. '<ph name="ERROR_CODE" />'.</translation>
+<translation id="1140871961407805696">후면</translation>
 <translation id="1256619696651732561">확장 프로그램 매니페스트 파서</translation>
 <translation id="1445572445564823378">이 확장 프로그램은 <ph name="PRODUCT_NAME" />의 성능을 저하시킵니다. <ph name="PRODUCT_NAME" />의 성능을 복원하려면 확장 프로그램을 사용중지해야 합니다.</translation>
 <translation id="149347756975725155">확장 프로그램 아이콘('<ph name="ICON" />')을 로드하지 못했습니다.</translation>
@@ -42,6 +43,7 @@
 <translation id="7217838517480956708">이 기기를 설치할 때 관리자가 <ph name="EXTENSION_NAME" />을(를) 요구합니다. 삭제 또는 수정할 수 없습니다.</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME" />(확장 프로그램 ID '<ph name="EXTENSION_ID" />')은(는) 관리자에 의해 차단되었습니다.</translation>
 <translation id="7972881773422714442">옵션: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
+<translation id="8035920974645200807">전면</translation>
 <translation id="8047248493720652249">다른 확장 프로그램(<ph name="EXTENSION_NAME" />)에서 파일 이름을 '<ph name="ACTUAL_FILENAME" />'(으)로 지정했기 때문에 이 확장 프로그램에서 다운로드하는 파일의 이름을 '<ph name="ATTEMPTED_FILENAME" />'(으)로 지정하지 못했습니다.</translation>
 <translation id="8284835137979141223"><ph name="VENDOR_NAME" />의 <ph name="PRODUCT_NAME" /></translation>
 <translation id="8341840687457896278">이 확장 프로그램이 네트워크 요청에 자격 증명을 제공하는 데 실패했습니다. 다른 확장 프로그램(<ph name="EXTENSION_NAME" />)이 다른 자격 증명을 제공했습니다.</translation>

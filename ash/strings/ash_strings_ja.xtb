@@ -7,6 +7,7 @@
 <translation id="1127238861555034875">虫メガネモード</translation>
 <translation id="1153356358378277386">ペア設定されたデバイス</translation>
 <translation id="1195412055398077112">オーバースキャン</translation>
+<translation id="1247372569136754018">マイク（内蔵）</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" /> から充電しています</translation>
 <translation id="1270290102613614947">画面キーボードは無効です</translation>
 <translation id="1272079795634619415">中止</translation>
@@ -23,16 +24,21 @@
 <translation id="1525508553941733066">閉じる</translation>
 <translation id="15373452373711364">大きいマウス カーソル</translation>
 <translation id="1550523713251050646">クリックするとその他のオプションが表示されます</translation>
+<translation id="1571442141242456645">入力方法を <ph name="INPUT_METHOD_ID" /> に変更しました。
+    切り替えるには Shift+Alt キーを押します。</translation>
 <translation id="1602076796624386989">モバイル データを有効にする</translation>
 <translation id="1621499497873603021">バッテリーが空になるまであと: <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Chrome 搭載デバイス</translation>
 <translation id="1677472565718498478">あと <ph name="TIME" /></translation>
 <translation id="1747827819627189109">画面キーボードが有効です</translation>
 <translation id="1850504506766569011">Wi-Fi が無効になりました。</translation>
+<translation id="1854357586517521894">CapsLock がオンです。
+    オフにするには検索または Shift キーを押します。</translation>
 <translation id="1864454756846565995">USB-C デバイス（背面のポート）</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" /> へミラーリング</translation>
 <translation id="1919743966458266018">タスク マネージャを起動するショートカットが変わりました。<ph name="OLD_SHORTCUT" /> ではなく <ph name="NEW_SHORTCUT" /> をご使用ください。</translation>
 <translation id="1923539912171292317">自動クリック</translation>
+<translation id="1942830294380034169">オーバーフロー ボタン</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" />（USB）</translation>
 <translation id="2122028596993374965"><ph name="RECEIVER_NAME" /> への <ph name="TAB_NAME" /> のキャストを停止する</translation>
@@ -60,6 +66,8 @@
 <translation id="2857608528410806398">ロックのクイック解除機能の通知本文がここに表示されます。ロックのクイック解除機能の通知本文がここに表示されます。ロックのクイック解除機能の通知本文がここに表示されます。ロックのクイック解除機能の通知本文がここに表示されます。ロックのクイック解除機能の通知本文がここに表示されます。</translation>
 <translation id="2865888419503095837">ネットワーク情報</translation>
 <translation id="2872961005593481000">終了</translation>
+<translation id="291653379653113090">入力方法を <ph name="INPUT_METHOD_ID" />*（<ph name="BEGIN_LINK" />サードパーティ<ph name="END_LINK" />）に変更しました。
+    切り替えるには Shift+Alt キーを押します。</translation>
 <translation id="2942516765047364088">シェルフの位置</translation>
 <translation id="2946119680249604491">接続を追加</translation>
 <translation id="2963773877003373896">mod3</translation>
@@ -70,6 +78,8 @@
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">下</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" />（Bluetooth）</translation>
+<translation id="3109220592788908353">CapsLock がオンです。
+    オフにするには Alt キーと同時に検索または Shift キーを押します。</translation>
 <translation id="3126069444801937830">再起動して更新</translation>
 <translation id="3147142846278915599">ランチャー（アプリを同期中...）</translation>
 <translation id="315116470104423982">モバイル データ</translation>
@@ -92,16 +102,19 @@
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME" /> の解像度を <ph name="RESOLUTION" /> に変更しました</translation>
 <translation id="370649949373421643">Wi-Fi を有効にする</translation>
 <translation id="3712407551474845318">一部分をキャプチャ</translation>
+<translation id="371370241367527062">前方のマイク</translation>
 <translation id="3742055079367172538">スクリーンショット撮影完了</translation>
 <translation id="3775358506042162758">マルチ ログインできるアカウントは 3 つまでです。</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">ロック</translation>
+<translation id="3798670284305777884">スピーカー（内蔵）</translation>
 <translation id="3799026279081545374">充電器に問題がある可能性があります。お住まいの国に応じて、それぞれのサポート/交換対応窓口までお問い合わせください。米国にお住まいの場合は 866-628-1371 までお電話ください。英国にお住まいの場合は 0800-026-0613 までお電話ください。アイルランドにお住まいの場合は 1-800-832-664 までお電話ください。カナダにお住まいの場合は 866-628-1372 までお電話ください。オーストラリアにお住まいの場合は 1-800-067-460 までお電話ください。</translation>
 <translation id="3846575436967432996">利用可能なネットワーク情報がありません</translation>
 <translation id="3891340733213178823">ログアウトするには、Ctrl+Shift+Q を 2 回押します。</translation>
 <translation id="3893630138897523026">ChromeVox（音声フィードバック）</translation>
 <translation id="3899995891769452915">音声入力</translation>
 <translation id="3901991538546252627"><ph name="NAME" /> に接続しています</translation>
+<translation id="394485226368336402">音声設定</translation>
 <translation id="3967919079500697218">スクリーンショットを撮る機能は、管理者によって無効にされています。</translation>
 <translation id="397105322502079400">計算しています...</translation>
 <translation id="3995138139523574647">USB-C デバイス（右奥のポート）</translation>
@@ -114,7 +127,6 @@
 <translation id="4421231901400348175">リモート サポート経由で <ph name="HELPER_NAME" /> と画面の制御を共有しています。</translation>
 <translation id="4430019312045809116">音量</translation>
 <translation id="4448844063988177157">Wi-Fi ネットワークを検出しています...</translation>
-<translation id="4479639480957787382">イーサネット</translation>
 <translation id="4481530544597605423">ペア設定されていないデバイス</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: 接続しています...</translation>
 <translation id="4527045527269911712">Bluetooth デバイス「<ph name="DEVICE_NAME" />」がペア設定の権限をリクエストしています。</translation>
@@ -132,14 +144,18 @@
 <translation id="5170568018924773124">フォルダを開く</translation>
 <translation id="5222676887888702881">ログアウト</translation>
 <translation id="523505283826916779">ユーザー補助の設定</translation>
+<translation id="5313326810920013265">Bluetooth 設定</translation>
 <translation id="532063867737390965">このネットワーク設定は管理者によって無効にされています。</translation>
 <translation id="5331975486040154427">USB-C デバイス（左奥のポート）</translation>
+<translation id="5430931332414098647">インスタント テザリング</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">該当するすべてのユーザーをこのセッションに追加済みです。</translation>
 <translation id="5507786745520522457">モバイル データを設定する</translation>
+<translation id="553675580533261935">セッションの終了</translation>
 <translation id="5548285847212963613">拡張機能「<ph name="EXTENSION_NAME" />」はこのネットワークへの接続をサポートします。</translation>
 <translation id="5571066253365925590">Bluetooth オン</translation>
 <translation id="5597451508971090205"><ph name="DATE" /> (<ph name="SHORT_WEEKDAY" />)</translation>
+<translation id="5648021990716966815">マイク差込口</translation>
 <translation id="5777841717266010279">画面の共有を解除しますか？</translation>
 <translation id="57838592816432529">ミュート</translation>
 <translation id="5895138241574237353">再起動</translation>
@@ -197,11 +213,11 @@
 <translation id="7129360219436193655">レーザー ポインタ モード</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" /> 秒後に元の解像度に戻ります</translation>
+<translation id="7256634071279256947">後方のマイク</translation>
 <translation id="7348093485538360975">画面キーボード</translation>
 <translation id="735745346212279324">VPN が切断されました</translation>
 <translation id="742594950370306541">カメラが使用中です。</translation>
 <translation id="743058460480092004">カメラとマイクが使用中です。</translation>
-<translation id="7502658306369382406">IPv6 アドレス</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> は <ph name="SPECIFIED_RESOLUTION" /> に対応していません。解像度は <ph name="FALLBACK_RESOLUTION" /> に変更されました</translation>
 <translation id="7562368315689366235">絵文字パレット</translation>
@@ -231,7 +247,6 @@
 <translation id="8428213095426709021">設定</translation>
 <translation id="8433186206711564395">ネットワーク設定</translation>
 <translation id="8454013096329229812">Wi-Fi が有効になりました。</translation>
-<translation id="8483248364096924578">IP アドレス</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: 再接続しています...</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> は電源がオンでも充電できない可能性があります。</translation>
 <translation id="8528322925433439945">モバイル...</translation>

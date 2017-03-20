@@ -101,6 +101,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta visualizzando a
 <translation id="2871695793448672541">Nascosta, password</translation>
 <translation id="2898963176829412617">Nuova cartella…</translation>
 <translation id="2903493209154104877">Indirizzi</translation>
+<translation id="291754862089661335">Posiziona il codice a barre o QR all'interno di quest'area</translation>
 <translation id="2921219216347069551">Impossibile condividere la pagina</translation>
 <translation id="292639812446257861">Segna come da leggere</translation>
 <translation id="2933759065870693102">Torcia</translation>
@@ -172,7 +173,6 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="4359125752503270327">Questa pagina verrà aperta con un'altra applicazione.</translation>
 <translation id="4378154925671717803">Telefono</translation>
 <translation id="441868831736628555">Informativa sulla privacy</translation>
-<translation id="4473991315115669931">Attiva la modalità di navigazione in incognito</translation>
 <translation id="4526249700380860531">Controlla e gestisci le password salvate all'indirizzo <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Prova ad accedere nuovamente.</translation>
 <translation id="4620246317052452550">Pagine che hai letto</translation>
@@ -246,7 +246,6 @@ La funzione Handoff deve anche essere attivata nella sezione Generali di Imposta
 <translation id="6042308850641462728">Più</translation>
 <translation id="605721222689873409">AA</translation>
 <translation id="6066301408025741299">Tocca per annullare.</translation>
-<translation id="60851516108411750">Il tuo Elenco di lettura è disponibile offline. Per aggiungere una pagina all'Elenco di lettura, tocca <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="6122191549521593678">Online</translation>
 <translation id="6127379762771434464">Elemento rimosso</translation>
 <translation id="6136914049981179737">Secondi fa</translation>
@@ -381,7 +380,6 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="8741995161408053644">Il tuo account Google potrebbe avere altre forme di cronologia di navigazione all'indirizzo <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8775144690796719618">URL non valido</translation>
 <translation id="8820817407110198400">Preferiti</translation>
-<translation id="882482397944455431">Esci dalla modalità di navigazione in incognito</translation>
 <translation id="8840513115188359703">Non verrai scollegato dal tuo account Google.</translation>
 <translation id="8904976895050290827">Sincronizzazione Google Chrome</translation>
 <translation id="895541991026785598">Segnala un problema</translation>

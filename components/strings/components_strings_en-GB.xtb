@@ -5,6 +5,7 @@
 <translation id="1015730422737071372">Provide additional details.</translation>
 <translation id="1032854598605920125">Rotate clockwise</translation>
 <translation id="1038842779957582377">unknown name</translation>
+<translation id="1050038467049342496">Close other apps</translation>
 <translation id="1053591932240354961">You cannot visit <ph name="SITE" /> at the moment because the website sent scrambled credentials that Google Chrome cannot process. Network errors and attacks are usually temporary, so this page will probably work later. <ph name="BEGIN_LEARN_MORE_LINK" />Find out more<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="1055184225775184556">&amp;Undo Add</translation>
 <translation id="10614374240317010">Never saved</translation>
@@ -118,6 +119,7 @@
 <translation id="2086652334978798447">To get personalised content suggested by Google, sign in to Chrome.</translation>
 <translation id="2094505752054353250">Domain mismatch</translation>
 <translation id="2096368010154057602">Department</translation>
+<translation id="2108755909498034140">Restart your computer</translation>
 <translation id="2113977810652731515">Card</translation>
 <translation id="2114841414352855701">Ignored because it was overridden by <ph name="POLICY_NAME" />.</translation>
 <translation id="2138201775715568214">Looking for nearby Physical Web pages</translation>
@@ -176,6 +178,7 @@
 <translation id="2639739919103226564">Status:</translation>
 <translation id="2650446666397867134">Access to the file was denied</translation>
 <translation id="2653659639078652383">Submit</translation>
+<translation id="2666117266261740852">Close other tabs or apps</translation>
 <translation id="2674170444375937751">Are you sure that you want to delete these pages from your history?</translation>
 <translation id="2677748264148917807">Leave</translation>
 <translation id="269990154133806163">The server presented a certificate that was not publicly disclosed using the Certificate Transparency policy. This is a requirement for some certificates, to ensure that they are trustworthy and protect against attackers. <ph name="BEGIN_LEARN_MORE_LINK" />Find out more<ph name="END_LEARN_MORE_LINK" />.</translation>
@@ -196,12 +199,15 @@
 <translation id="277499241957683684">Missing device record</translation>
 <translation id="2784949926578158345">The connection was reset.</translation>
 <translation id="2794233252405721443">Site blocked</translation>
+<translation id="2812680587231492111">That pickup option isn’t available. Try a different option.</translation>
 <translation id="2824775600643448204">Address and search bar</translation>
 <translation id="2826760142808435982">The connection is encrypted and authenticated using <ph name="CIPHER" /> and uses <ph name="KX" /> as the key exchange mechanism.</translation>
 <translation id="2835170189407361413">Clear form</translation>
+<translation id="2849041323157393173">That delivery option isn’t available. Try a different option.</translation>
 <translation id="2889159643044928134">Don't reload</translation>
 <translation id="2900469785430194048">Google Chrome ran out of memory while trying to display this web page.</translation>
 <translation id="2909946352844186028">A network change was detected.</translation>
+<translation id="2916038427272391327">Close other programmes</translation>
 <translation id="2922350208395188000">Server's certificate cannot be checked.</translation>
 <translation id="2948083400971632585">You can disable any proxies configured for a connection from the settings page.</translation>
 <translation id="2955913368246107853">Close find bar</translation>
@@ -235,6 +241,7 @@
       make sure that the proxy server is working. If you don't believe you should
       be using a proxy server:
       <ph name="PLATFORM_TEXT" /></translation>
+<translation id="3200379322500587640">Open page in Incognito mode</translation>
 <translation id="3202578601642193415">Newest</translation>
 <translation id="3207960819495026254">Bookmarked</translation>
 <translation id="3226128629678568754">Press the reload button to resubmit the data needed to load the page.</translation>
@@ -260,6 +267,7 @@
 <translation id="3380864720620200369">Client ID:</translation>
 <translation id="3391030046425686457">Delivery address</translation>
 <translation id="340013220407300675">Attackers might be trying to steal your information from <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (for example, passwords, messages or credit cards).</translation>
+<translation id="3422248202833853650">Try exiting other programmes to free up memory.</translation>
 <translation id="3422472998109090673"><ph name="HOST_NAME" /> is currently unreachable.</translation>
 <translation id="3427342743765426898">&amp;Redo Edit</translation>
 <translation id="3431636764301398940">Save this card to this device</translation>
@@ -331,6 +339,7 @@
 <translation id="4030383055268325496">&amp;Undo add</translation>
 <translation id="404928562651467259">WARNING</translation>
 <translation id="4058922952496707368">Key "<ph name="SUBKEY" />": <ph name="ERROR" /></translation>
+<translation id="4072486802667267160">There was an error processing your order. Please try again.</translation>
 <translation id="4075732493274867456">The client and server don't support a common SSL protocol version or cipher suite.</translation>
 <translation id="4079302484614802869">Proxy configuration is set to use a .pac script URL, not fixed proxy servers.</translation>
 <translation id="4098354747657067197">Deceptive site ahead</translation>
@@ -342,7 +351,6 @@
 <translation id="4118212371799607889">This server could not prove that it is <ph name="DOMAIN" />; its security certificate is not trusted by Chromium. This may be caused by a misconfiguration or an attacker intercepting your connection. <ph name="BEGIN_LEARN_MORE_LINK" />Find out more<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{1 other}other{# others}}</translation>
 <translation id="4130226655945681476">Checking the network cables, modem and router</translation>
-<translation id="4137140866298219568">Exp: <ph name="EXPIRATION_DATE_ABBR" />, last used: <ph name="LAST_USED_DATE_NO_DETAIL" /></translation>
 <translation id="4148925816941278100">American Express</translation>
 <translation id="4169947484918424451">Do you want Chromium to save this card?</translation>
 <translation id="4171400957073367226">Bad verification signature</translation>
@@ -373,6 +381,7 @@
 <translation id="4406896451731180161">search results</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> didn’t accept your login certificate, or one may not have been provided.</translation>
 <translation id="443673843213245140">Use of a proxy is disabled but an explicit proxy configuration is specified.</translation>
+<translation id="4446242550670694251">Now you can browse in private and other people who use this device won’t see your activity.</translation>
 <translation id="4492190037599258964">Search results for '<ph name="SEARCH_STRING" />'</translation>
 <translation id="4506176782989081258">Validation error: <ph name="VALIDATION_ERROR" /></translation>
 <translation id="4506599922270137252">Contacting the system admin</translation>
@@ -391,6 +400,7 @@
 <translation id="4722547256916164131"><ph name="BEGIN_LINK" />Running Windows Network Diagnostics<ph name="END_LINK" /></translation>
 <translation id="4726672564094551039">Reload policies</translation>
 <translation id="4728558894243024398">Platform</translation>
+<translation id="4736825316280949806">Restart Chromium</translation>
 <translation id="4744603770635761495">Executable Path</translation>
 <translation id="4750917950439032686">Your information (for example, passwords or credit card numbers) is private when it is sent to this site.</translation>
 <translation id="4756388243121344051">&amp;History</translation>
@@ -402,11 +412,11 @@
 <translation id="4803924862070940586"><ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
 <translation id="4813512666221746211">Network error</translation>
 <translation id="4816492930507672669">Fit to page</translation>
+<translation id="483020001682031208">No Physical Web pages to show</translation>
 <translation id="4850886885716139402">View</translation>
 <translation id="4858792381671956233">You asked your parents if it's OK to visit this site</translation>
 <translation id="4880827082731008257">Search history</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
-<translation id="4897073194580895694">Last used: <ph name="LAST_USED_MONTH" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{and 1 more web page}other{and # more web pages}}</translation>
 <translation id="4923417429809017348">This page has been translated from an unknown language into <ph name="LANGUAGE_LANGUAGE" /></translation>
 <translation id="4923459931733593730">Payment</translation>
@@ -417,6 +427,7 @@
 <translation id="4962322354953122629">This server could not prove that it is <ph name="DOMAIN" />; its security certificate is not trusted by Chrome. This may be caused by a misconfiguration or an attacker intercepting your connection. <ph name="BEGIN_LEARN_MORE_LINK" />Find out more<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="4989809363548539747">This plug-in is not supported</translation>
 <translation id="5002932099480077015">If enabled, Chrome will store a copy of your card on this device for faster form filling.</translation>
+<translation id="5018422839182700155">Can't open this page</translation>
 <translation id="5019198164206649151">Backing store in bad state</translation>
 <translation id="5023310440958281426">Check your administrator's policies</translation>
 <translation id="5029568752722684782">Clear copy</translation>
@@ -425,12 +436,14 @@
 <translation id="5045550434625856497">Incorrect password</translation>
 <translation id="5056549851600133418">Articles for you</translation>
 <translation id="5070335125961472645"><ph name="BEGIN_LINK" />Checking the proxy address<ph name="END_LINK" /></translation>
+<translation id="5076731569460970710">{COUNT,plural, =0{No cookies}=1{1 site uses cookies. }other{# sites use cookies. }}</translation>
 <translation id="5087286274860437796">Server's certificate is not valid at this time.</translation>
 <translation id="5087580092889165836">Add card</translation>
 <translation id="5089810972385038852">County</translation>
 <translation id="5095208057601539847">Province</translation>
 <translation id="5115563688576182185">(64-bit)</translation>
 <translation id="5141240743006678641">Encrypt synced passwords with your Google credentials</translation>
+<translation id="514421653919133810">Open page in Incognito mode (Ctrl-Shift-N)</translation>
 <translation id="5145883236150621069">Error code present in the policy response</translation>
 <translation id="5171045022955879922">Search or type URL</translation>
 <translation id="5172758083709347301">Machine</translation>
@@ -528,11 +541,13 @@
     devices you may be using.</translation>
 <translation id="614940544461990577">Try:</translation>
 <translation id="6151417162996330722">The server certificate has a validity period that is too long.</translation>
+<translation id="615643356032862689">Downloaded files and bookmarks will be kept.</translation>
 <translation id="6165508094623778733">Learn more</translation>
 <translation id="6177128806592000436">Your connection to this site is not secure</translation>
 <translation id="6203231073485539293">Check your Internet connection</translation>
 <translation id="6218753634732582820">Remove address from Chromium?</translation>
 <translation id="6251924700383757765">Privacy Policy</translation>
+<translation id="6254436959401408446">Not enough memory to open this page</translation>
 <translation id="625755898061068298">You have chosen to disable security warnings for this site.</translation>
 <translation id="6259156558325130047">&amp;Redo Reorder</translation>
 <translation id="6263376278284652872"><ph name="DOMAIN" /> bookmarks</translation>
@@ -568,6 +583,7 @@
 <translation id="6477321094435799029">Chrome detected unusual code on this page and blocked it to protect your personal information (for example, passwords, phone numbers and credit cards).</translation>
 <translation id="6477460825583319731">Invalid email address</translation>
 <translation id="6489534406876378309">Start uploading crashes</translation>
+<translation id="6508722015517270189">Restart Chrome</translation>
 <translation id="6525462735697194615">Invalid expiration month</translation>
 <translation id="6529602333819889595">&amp;Redo Delete</translation>
 <translation id="6534179046333460208">Physical Web suggestions</translation>
@@ -582,6 +598,7 @@
 <translation id="6628463337424475685"><ph name="ENGINE" /> Search</translation>
 <translation id="6644283850729428850">This policy has been deprecated.</translation>
 <translation id="6652240803263749613">This server could not prove that it is <ph name="DOMAIN" />; its security certificate is not trusted by your computer's operating system. This may be caused by a misconfiguration or an attacker intercepting your connection. <ph name="BEGIN_LEARN_MORE_LINK" />Find out more<ph name="END_LEARN_MORE_LINK" />.</translation>
+<translation id="6665267558048410100">That delivery option isn’t available. Try a different option.</translation>
 <translation id="6671697161687535275">Remove form suggestion from Chromium?</translation>
 <translation id="6685834062052613830">Sign out and complete setup</translation>
 <translation id="6710213216561001401">Previous</translation>
@@ -620,6 +637,7 @@
 <translation id="7087282848513945231">County</translation>
 <translation id="7088615885725309056">Older</translation>
 <translation id="7090678807593890770">Search Google for <ph name="LINK" /></translation>
+<translation id="7119414471315195487">Close other tabs or programmes</translation>
 <translation id="7139724024395191329">Emirate</translation>
 <translation id="7155487117670177674">Payment not secure</translation>
 <translation id="7179921470347911571">Relaunch Now</translation>
@@ -669,6 +687,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="7542995811387359312">Automatic credit card filling is disabled because this form does not use a secure connection.</translation>
 <translation id="7543525346216957623">Ask your parent</translation>
 <translation id="7549584377607005141">This web page requires data that you entered earlier in order to be properly displayed. You can send this data again, but by doing so you will repeat any action this page previously performed.</translation>
+<translation id="7552846755917812628">Try the following tips:</translation>
 <translation id="7554791636758816595">New Tab</translation>
 <translation id="7568593326407688803">This page is in<ph name="ORIGINAL_LANGUAGE" />Would you like to translate it?</translation>
 <translation id="7569952961197462199">Remove credit card from Chrome?</translation>
@@ -720,6 +739,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="7962083544045318153">Crash ID <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="7983301409776629893">Always translate <ph name="ORIGINAL_LANGUAGE" /> to <ph name="TARGET_LANGUAGE" /></translation>
 <translation id="7995512525968007366">Not Specified</translation>
+<translation id="800218591365569300">Try closing other tabs or programmes to free up memory.</translation>
 <translation id="8012647001091218357">We could not reach your parents at the moment. Please try again.</translation>
 <translation id="8025119109950072390">Attackers on this site may trick you into doing something dangerous like installing software or revealing your personal information (for example passwords, phone numbers or credit cards).</translation>
 <translation id="803030522067524905">Google Safe Browsing recently detected phishing on <ph name="SITE" />. Phishing sites pretend to be other websites to trick you. <ph name="BEGIN_LEARN_MORE_LINK" />Find out more<ph name="END_LEARN_MORE_LINK" />.</translation>
@@ -749,6 +769,7 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="8308427013383895095">The translation failed because of a problem with the network connection.</translation>
 <translation id="8332188693563227489">Access to <ph name="HOST_NAME" /> was denied</translation>
 <translation id="834457929814110454">If you understand the risks to your security, you may <ph name="BEGIN_LINK" />visit this site<ph name="END_LINK" /> before the harmful programs have been removed.</translation>
+<translation id="8344669043927012510">Open page in Incognito mode (⇧⌘N)</translation>
 <translation id="8349305172487531364">Bookmarks bar</translation>
 <translation id="8363502534493474904">Turning off aeroplane mode</translation>
 <translation id="8364627913115013041">Not set.</translation>
@@ -764,17 +785,19 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="8466379296835108687">{COUNT,plural, =1{1 credit card}other{# credit cards}}</translation>
 <translation id="8483780878231876732">To use cards from your Google account, sign in to Chrome</translation>
 <translation id="8488350697529856933">Applies to</translation>
+<translation id="8492969205326575646">Unsupported card type</translation>
 <translation id="8498891568109133222"><ph name="HOST_NAME" /> took too long to respond.</translation>
 <translation id="852346902619691059">This server could not prove that it is <ph name="DOMAIN" />; its security certificate is not trusted by your device's operating system. This may be caused by a misconfiguration or an attacker intercepting your connection. <ph name="BEGIN_LEARN_MORE_LINK" />Find out more<ph name="END_LEARN_MORE_LINK" />.</translation>
 <translation id="8543181531796978784">You can <ph name="BEGIN_ERROR_LINK" />report a detection problem<ph name="END_ERROR_LINK" /> or, if you understand the risks to your security, <ph name="BEGIN_LINK" />visit this unsafe site<ph name="END_LINK" />.</translation>
 <translation id="8553075262323480129">The translation failed because the page's language could not be determined.</translation>
 <translation id="8559762987265718583">A private connection to <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> can't be established because your device's date and time (<ph name="DATE_AND_TIME" />) are incorrect.</translation>
+<translation id="8570229484593575558">This information |won’t be saved|:#Your browsing history#Your searches#Cookie data</translation>
 <translation id="8571890674111243710">Translating page into <ph name="LANGUAGE" />...</translation>
+<translation id="8584539743998202583">Your activity |might still be visible| to:#Websites you visit#Your employer#Your internet service provider</translation>
 <translation id="858637041960032120">Add phone no.</translation>
 <translation id="859285277496340001">The certificate does not specify a mechanism to check whether it has been revoked.</translation>
 <translation id="8620436878122366504">Your parents haven't approved it yet</translation>
 <translation id="8647750283161643317">Reset all to default</translation>
-<translation id="8662285765512809409">Exp: <ph name="EXPIRATION_DATE_ABBR" />, added: <ph name="ADDED_TO_AUTOFILL_MONTH" /></translation>
 <translation id="8703575177326907206">Your connection to <ph name="DOMAIN" /> is not encrypted.</translation>
 <translation id="8725066075913043281">Try again</translation>
 <translation id="8728672262656704056">You’ve gone incognito</translation>
@@ -798,10 +821,10 @@ Psst! Incognito mode <ph name="SHORTCUT_KEY" /> may come in handy next time.</tr
 <translation id="8891727572606052622">Invalid proxy mode.</translation>
 <translation id="889901481107108152">Sorry, this experiment is not available on your platform.</translation>
 <translation id="8903921497873541725">Zoom in</translation>
-<translation id="8928945116588336256">Added: <ph name="ADDED_TO_AUTOFILL_MONTH" /></translation>
 <translation id="8931333241327730545">Do you want to save this card to your Google Account?</translation>
 <translation id="8932102934695377596">Your clock is behind</translation>
 <translation id="8954894007019320973">(Cont.)</translation>
+<translation id="895548565263634352">Read stories from <ph name="ARTICLE_PUBLISHER" /> and <ph name="OTHER_ARTICLE_COUNT" /> more</translation>
 <translation id="8971063699422889582">Server's certificate has expired.</translation>
 <translation id="8986494364107987395">Automatically send usage statistics and crash reports to Google</translation>
 <translation id="8987927404178983737">Month</translation>

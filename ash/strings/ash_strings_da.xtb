@@ -7,6 +7,7 @@
 <translation id="1127238861555034875">Forstørrelsesglastilstand</translation>
 <translation id="1153356358378277386">Parrede enheder</translation>
 <translation id="1195412055398077112">overscan</translation>
+<translation id="1247372569136754018">Mikrofon (indbygget)</translation>
 <translation id="1252999807265626933">Oplader fra <ph name="POWER_SOURCE" /></translation>
 <translation id="1270290102613614947">Skærmtastaturet er deaktiveret</translation>
 <translation id="1272079795634619415">Stop</translation>
@@ -23,16 +24,21 @@
 <translation id="1525508553941733066">AFVIS</translation>
 <translation id="15373452373711364">Stor musemarkør</translation>
 <translation id="1550523713251050646">Klik for at se flere muligheder</translation>
+<translation id="1571442141242456645">Din indtastningsmetode er ændret til <ph name="INPUT_METHOD_ID" />.
+    Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="1602076796624386989">Aktivér mobildata</translation>
 <translation id="1621499497873603021">Tid tilbage, indtil batteriet er tomt, <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Chrome-enhed</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> tilbage</translation>
 <translation id="1747827819627189109">Skærmtastaturet er aktiveret</translation>
 <translation id="1850504506766569011">Wi-Fi er slået fra.</translation>
+<translation id="1854357586517521894">CAPS LOCK er slået til.
+    Tryk på Søg eller Shift for at annullere.</translation>
 <translation id="1864454756846565995">USB-C-enhed (port bagpå)</translation>
 <translation id="1882897271359938046">Spejler mod <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Genvejen til at åbne Jobliste er ændret. Brug <ph name="NEW_SHORTCUT" /> i stedet for <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Automatiske klik</translation>
+<translation id="1942830294380034169">Knappen Overflow</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2122028596993374965">Stop med at caste <ph name="TAB_NAME" /> til <ph name="RECEIVER_NAME" /></translation>
@@ -60,6 +66,8 @@
 <translation id="2857608528410806398">QU Feature notification body goes here. QU Feature notification body goes here. QU Feature notification body goes here. QU Feature notification body goes here. QU Feature notification body goes here.</translation>
 <translation id="2865888419503095837">Netværksoplysninger</translation>
 <translation id="2872961005593481000">Sluk</translation>
+<translation id="291653379653113090">Din indtastningsmetode er ændret til <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />tredjepart<ph name="END_LINK" />).
+    Tryk på Shift+Alt for at ændre den.</translation>
 <translation id="2942516765047364088">Hyldeplacering</translation>
 <translation id="2946119680249604491">Tilføj forbindelse</translation>
 <translation id="2963773877003373896">mod3</translation>
@@ -70,6 +78,8 @@
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Bund</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
+<translation id="3109220592788908353">CAPS LOCK er slået til.
+    Tryk på Alt+Søg eller Shift for at annullere.</translation>
 <translation id="3126069444801937830">Genstart for at opdatere</translation>
 <translation id="3147142846278915599">Starter (synkronisering af apps...)</translation>
 <translation id="315116470104423982">Mobildata</translation>
@@ -92,16 +102,19 @@
 <translation id="3683428399328702079">Opløsningen for <ph name="DISPLAY_NAME" /> er ændret til <ph name="RESOLUTION" /></translation>
 <translation id="370649949373421643">Aktivér Wi-Fi</translation>
 <translation id="3712407551474845318">Tag et screenshot af området</translation>
+<translation id="371370241367527062">Mikrofon på forsiden</translation>
 <translation id="3742055079367172538">Screenshottet blev gemt</translation>
 <translation id="3775358506042162758">Du kan kun have op til tre konti i samlet login fra flere konti.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Lås</translation>
+<translation id="3798670284305777884">Højttaler (indbygget)</translation>
 <translation id="3799026279081545374">Din oplader er muligvis beskadiget. Hvis du er bosiddende i USA, skal du ringe på 866-628-1371 for at få hjælp og en ny oplader. Hvis du er bosiddende i Storbritannien, skal du ringe på 0800-026-0613. Hvis du er bosiddende i Irland, skal du ringe på 1-800-832-664. Hvis du er bosiddende i Canada, skal du ringe på 866-628-1372. Hvis du er bosiddende i Australien, skal du ringe på 1-800-067-460.</translation>
 <translation id="3846575436967432996">Der er ingen tilgængelige netværksoplysninger</translation>
 <translation id="3891340733213178823">Tryk på Ctrl+Shift+Q to gange for at logge ud.</translation>
 <translation id="3893630138897523026">ChromeVox (talefeedback)</translation>
 <translation id="3899995891769452915">Indtaling</translation>
 <translation id="3901991538546252627">Opretter forbindelse til <ph name="NAME" /></translation>
+<translation id="394485226368336402">Lydindstillinger</translation>
 <translation id="3967919079500697218">Din administrator har deaktiveret muligheden for at tage screenshots.</translation>
 <translation id="397105322502079400">Beregner...</translation>
 <translation id="3995138139523574647">USB-C-enhed (porten bagpå i højre side)</translation>
@@ -114,7 +127,6 @@
 <translation id="4421231901400348175">Skærmdeling med <ph name="HELPER_NAME" /> via Fjernsupport.</translation>
 <translation id="4430019312045809116">Lydstyrke</translation>
 <translation id="4448844063988177157">Søger efter Wi-Fi-netværk...</translation>
-<translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Ikke-parrede enheder</translation>
 <translation id="4508225577814909926"><ph name="NAME" /> : Opretter forbindelse...</translation>
 <translation id="4527045527269911712">Bluetooth-enheden "<ph name="DEVICE_NAME" />" vil gerne have parringstilladelse.</translation>
@@ -132,14 +144,18 @@
 <translation id="5170568018924773124">Vis i mappe</translation>
 <translation id="5222676887888702881">Log ud</translation>
 <translation id="523505283826916779">Indstillinger for hjælpefunktioner</translation>
+<translation id="5313326810920013265">Indstillinger for Bluetooth</translation>
 <translation id="532063867737390965">Denne netværksindstilling er deaktiveret af administratoren.</translation>
 <translation id="5331975486040154427">USB-C-enhed (porten bagpå i venstre side)</translation>
+<translation id="5430931332414098647">Øjeblikkelig netdeling</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">Alle tilgængelige brugere er allerede blevet føjet til denne session.</translation>
 <translation id="5507786745520522457">Konfigurer mobildata</translation>
+<translation id="553675580533261935">Afslutter session</translation>
 <translation id="5548285847212963613">Udvidelsen "<ph name="EXTENSION_NAME" />" kan hjælpe med at oprette forbindelse til dette netværk.</translation>
 <translation id="5571066253365925590">Bluetooth er aktiveret</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" /> d. <ph name="DATE" /></translation>
+<translation id="5648021990716966815">Stik til mikrofon</translation>
 <translation id="5777841717266010279">Vil du afslutte skærmdeling?</translation>
 <translation id="57838592816432529">Slå lyden fra</translation>
 <translation id="5895138241574237353">Genstart</translation>
@@ -197,11 +213,11 @@ Tryk på Ctrl+Alt+Z for at deaktivere dette.</translation>
 <translation id="7129360219436193655">Laserpentilstand</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358">Fortryder og vender tilbage til den gamle opløsning om <ph name="TIMEOUT_SECONDS" /> sekunder.</translation>
+<translation id="7256634071279256947">Mikrofon på bagsiden</translation>
 <translation id="7348093485538360975">Skærmtastatur</translation>
 <translation id="735745346212279324">VPN afbrudt</translation>
 <translation id="742594950370306541">Kameraet er i brug.</translation>
 <translation id="743058460480092004">Kamera og mikrofon er i brug.</translation>
-<translation id="7502658306369382406">IPv6-adresse</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> understøtter ikke <ph name="SPECIFIED_RESOLUTION" />. Opløsningen blev ændret til <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Emojipalet</translation>
@@ -231,7 +247,6 @@ Tryk på Ctrl+Alt+Z for at deaktivere dette.</translation>
 <translation id="8428213095426709021">Indstillinger</translation>
 <translation id="8433186206711564395">Netværksindstillinger</translation>
 <translation id="8454013096329229812">Wi-Fi er slået til.</translation>
-<translation id="8483248364096924578">IP-adresse</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Genopretter forbindelsen...</translation>
 <translation id="8517041960877371778">Din <ph name="DEVICE_TYPE" /> kan muligvis ikke oplades, mens den er tændt.</translation>
 <translation id="8528322925433439945">Mobil...</translation>

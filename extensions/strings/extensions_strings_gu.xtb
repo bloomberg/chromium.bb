@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="gu">
 <translation id="1135328998467923690">પૅકેજ અમાન્ય છે : '<ph name="ERROR_CODE" />'.</translation>
+<translation id="1140871961407805696">પાછળનો કૅમેરો</translation>
 <translation id="1256619696651732561">વિસ્તાર મેનીફેસ્ટ વિશ્લેશક</translation>
 <translation id="1445572445564823378">આ એક્સ્ટેંશન <ph name="PRODUCT_NAME" /> ને ધીમુ કરી રહ્યું છે. <ph name="PRODUCT_NAME" /> ના પ્રદર્શનને પુનર્સ્થાપિત કરવા માટે તમારે તેને અક્ષમ કરવું જોઈએ. </translation>
 <translation id="149347756975725155">એક્સ્ટેંશન આયકન '<ph name="ICON" />' લોડ કરી શકાયું નથી.</translation>
@@ -42,6 +43,7 @@
 <translation id="7217838517480956708">આ મશીનના વ્યવસ્થાપકને ઇન્સ્ટોલ કરવા માટે <ph name="EXTENSION_NAME" /> ની આવશ્કતા છે. તેને દૂર અથવા સંશોધિત કરી શકાશે નહીં.</translation>
 <translation id="7809034755304591547">વ્યવસ્થાપક દ્વારા <ph name="EXTENSION_NAME" /> (એક્સટેન્શન ID "<ph name="EXTENSION_ID" />") અવરોધિત કરેલ છે.</translation>
 <translation id="7972881773422714442">વિકલ્પો: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
+<translation id="8035920974645200807">સામેનો કૅમેરો</translation>
 <translation id="8047248493720652249">આ એક્સટેન્શન "<ph name="ATTEMPTED_FILENAME" />" ને ડાઉનલોડ નામ આપવામાં નિષ્ફળ થયું કારણ કે અન્ય એક્સટેન્શન (<ph name="EXTENSION_NAME" />) એ એક જુદું ફાઇલનામ "<ph name="ACTUAL_FILENAME" />" નક્કી કર્યું છે.</translation>
 <translation id="8284835137979141223"><ph name="VENDOR_NAME" /> તરફથી <ph name="PRODUCT_NAME" /></translation>
 <translation id="8341840687457896278">આ એક્સટેન્શન એક નેટવર્ક વિનંતીને ઓળખપત્ર પ્રદાન કરવામાં નિષ્ફળ થયું કારણ કે અન્ય એક્સટેન્શન (<ph name="EXTENSION_NAME" />) એ વિવિધ ઓળખપત્ર પ્રદાન કર્યાં છે.</translation>

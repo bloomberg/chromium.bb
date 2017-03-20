@@ -5,6 +5,7 @@
 
 Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.</translation>
 <translation id="1115445892567829615">Chromium ni mogel sinhronizirati podatkov. Posodobite sinhronizacijsko geslo.</translation>
+<translation id="1170115874949214249">Namestite Chromium v telefonu. Na telefonsko številko za obnovitev računa bomo poslali SMS.</translation>
 <translation id="1174473354587728743">Imate računalnik v skupni rabi? Zdaj lahko nastavite Chromium po svojih željah.</translation>
 <translation id="1185134272377778587">O Chromiumu</translation>
 <translation id="1298199220304005244">Pomoč pri uporabi sistema Chromium OS</translation>
@@ -48,7 +49,6 @@ Nekatere funkcije morda niso na voljo in spremembe nastavitev ne bodo shranjene.
 <translation id="2535480412977113886">Chromium OS ni mogel sinhronizirati podatkov, ker so podatki za prijavo v račun zastareli.</translation>
 <translation id="2572494885440352020">Pomoč za Chromium</translation>
 <translation id="2587578672395088481">Če želite namestiti posodobitev, morate znova zagnati OS Chromium.</translation>
-<translation id="2605472041568654097">Pomagajte izboljšati Chromium s poročanjem o trenutnih nastavitvah.</translation>
 <translation id="2636877269779209383">Chromium potrebuje dostop do kamere, če želite, da temu spletnemu mestu omogoči dostop do nje.</translation>
 <translation id="2647554856022461007">Chromium lahko za izboljšanje izkušnje pri brskanju uporabi spletne storitve.
 Te storitve lahko po želji onemogočite. <ph name="BEGIN_LINK" />Več o tem<ph name="END_LINK" /></translation>
@@ -60,6 +60,7 @@ Te storitve lahko po želji onemogočite. <ph name="BEGIN_LINK" />Več o tem<ph 
 <translation id="2799223571221894425">Vnovičen zagon</translation>
 <translation id="2847479871509788944">Odstranitev iz Chromiuma ...</translation>
 <translation id="2886012850691518054">Izbirno: Pomagajte izboljšati Chromium, tako da Googlu samodejno pošiljate statistične podatke o uporabi in poročila o zrušitvah.</translation>
+<translation id="2898082584336937987">Namestite Chromium v telefonu. V telefon vam bomo poslali SMS: <ph name="PHONE_NUMBER" /></translation>
 <translation id="2905536371227304018">Chromium OS je v tem jeziku.</translation>
 <translation id="2910007522516064972">O &amp;Chromiumu</translation>
 <translation id="3032787606318309379">Dodajanje v Chromium ...</translation>
@@ -138,7 +139,6 @@ Te storitve lahko po želji onemogočite. <ph name="BEGIN_LINK" />Več o tem<ph 
 <translation id="5620765574781326016">Preberite več o temah na spletnih mestih, ne da bi vam bilo treba zapustiti stran.</translation>
 <translation id="5634636535844844681">Za Chromium potrebujete Windows 7 ali novejši.</translation>
 <translation id="5680901439334282664">se prijavite v Chromium</translation>
-<translation id="5684733627009686897">Chromium je privzeti brskalnik. Super.</translation>
 <translation id="5698481217667032250">Prikaži Chromium v tem jeziku</translation>
 <translation id="5726838626470692954">Skrbnik vas mora odstraniti iz Chromiuma in vas znova dodati.</translation>
 <translation id="5768914737813585044">Prikaži Chromium OS v tem jeziku</translation>
@@ -206,6 +206,7 @@ Nekatere funkcije morda ne bodo na voljo. Določite drug imenik profila ali upor
 <translation id="7318036098707714271">Datoteka z nastavitvami je poškodovana ali neveljavna.
 
 Chromium ne more obnoviti vaših nastavitev.</translation>
+<translation id="7331920710658926971">Namestite Chromium v telefonu. V telefon vam bomo poslali SMS.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7339898014177206373">Novo okno</translation>
 <translation id="734373864078049451">Tu so shranjeni vaš splet, zaznamki in druge stvari v Chromiumu.</translation>
@@ -235,6 +236,7 @@ Nadaljnja navodila preberite v e-poštnem sporočilu, ki ste ga prejeli na <ph n
 <translation id="8033665941300843262">Chromium potrebuje dostop do dovoljenj, če želite, da temu spletnemu mestu omogoči dostop do njih.</translation>
 <translation id="8134284582177628525">Če imate ta računalnik v skupni rabi z osebo <ph name="PROFILE_NAME" />, se dodajte v Chromium, če želite brskati ločeno. V nasprotnem primeru prekinite povezavo z njenim Google Računom.</translation>
 <translation id="81770708095080097">Ta datoteka je nevarna, zato jo je Chromium blokiral.</translation>
+<translation id="8222496066431494154">Namestite Chromium v telefonu. Na telefonsko številko za obnovitev računa bomo poslali SMS: <ph name="PHONE_NUMBER" /></translation>
 <translation id="8269379391216269538">Pomagajte izboljšati Chromium</translation>
 <translation id="8290862415967981663">Ta datoteka je morda nevarna, zato jo je Chromium blokiral.</translation>
 <translation id="8340674089072921962">Uporabnik <ph name="USER_EMAIL_ADDRESS" /> je prej uporabljal Chromium</translation>

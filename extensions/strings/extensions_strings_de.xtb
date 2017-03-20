@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="de">
 <translation id="1135328998467923690">Paket ist ungültig: "<ph name="ERROR_CODE" />".</translation>
+<translation id="1140871961407805696">Rückkamera</translation>
 <translation id="1256619696651732561">Erweiterungsmanifest-Parser</translation>
 <translation id="1445572445564823378">Diese Erweiterung verlangsamt die Ausführung von <ph name="PRODUCT_NAME" />. Deaktivieren Sie sie, um die Leistung von <ph name="PRODUCT_NAME" /> nicht zu beeinträchtigen.</translation>
 <translation id="149347756975725155">Erweiterungssymbol "<ph name="ICON" />" kann nicht geladen werden.</translation>
@@ -42,6 +43,7 @@
 <translation id="7217838517480956708">Der Administrator dieses Computers schreibt die Installation von <ph name="EXTENSION_NAME" /> vor. Die Erweiterung kann nicht entfernt oder geändert werden.</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME" /> (Erweiterungs-ID "<ph name="EXTENSION_ID" />") wurde vom Administrator blockiert.</translation>
 <translation id="7972881773422714442">Options: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
+<translation id="8035920974645200807">Frontkamera</translation>
 <translation id="8047248493720652249">Diese Erweiterung konnte den Download nicht "<ph name="ATTEMPTED_FILENAME" />" nennen, weil eine andere Erweiterung (<ph name="EXTENSION_NAME" />) einen anderen Dateinamen "<ph name="ACTUAL_FILENAME" />" festgelegt hat.</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> von <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Die Erweiterung konnte die Anmeldeinformationen für eine Netzwerkanfrage nicht bereitstellen, da eine andere Erweiterung (<ph name="EXTENSION_NAME" />) andere Anmeldeinformationen übermittelt hat.</translation>

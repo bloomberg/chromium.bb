@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="te">
 <translation id="1135328998467923690">ప్యాకేజీ చెల్లనిది: '<ph name="ERROR_CODE" />'.</translation>
+<translation id="1140871961407805696">పర్యావరణం వైపుగా</translation>
 <translation id="1256619696651732561">ఎక్స్‌టెన్షన్ మానిఫెస్ట్ పార్సర్</translation>
 <translation id="1445572445564823378">ఈ పొడిగింపు <ph name="PRODUCT_NAME" />ను మందగింప చేస్తోంది. <ph name="PRODUCT_NAME" /> యొక్క పనితీరును పునరుద్ధరించడానికి మీరు దీన్ని ఆపివేయాలి.</translation>
 <translation id="149347756975725155">'<ph name="ICON" />' పొడిగింపు చిహ్నాన్ని లోడ్ చేయలేకపోయింది.</translation>
@@ -42,6 +43,7 @@
 <translation id="7217838517480956708">ఈ మెషీన్ యొక్క నిర్వాహకుడికి <ph name="EXTENSION_NAME" /> ఇన్‌స్టాల్ చేయబడి ఉండటం అవసరం. దీన్ని తీసివేయడం లేదా సవరించడం సాధ్యపడదు.</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME" /> (పొడిగింపు ID "<ph name="EXTENSION_ID" />")ని నిర్వాహకుడు బ్లాక్ చేసారు.</translation>
 <translation id="7972881773422714442">ఎంపికలు: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
+<translation id="8035920974645200807">వినియోగదారు వైపుగా</translation>
 <translation id="8047248493720652249">ఈ పొడిగింపు డౌన్‌లోడ్ యొక్క పేరును "<ph name="ATTEMPTED_FILENAME" />"గా పేర్కొనడంలో విఫలమైంది ఎందుకంటే మరో పొడిగింపు (<ph name="EXTENSION_NAME" />) "<ph name="ACTUAL_FILENAME" />" అనే వేరే ఫైల్ పేరుని నిశ్చయించింది.</translation>
 <translation id="8284835137979141223"><ph name="VENDOR_NAME" /> నుండి <ph name="PRODUCT_NAME" /></translation>
 <translation id="8341840687457896278">వేరొక పొడిగింపు (<ph name="EXTENSION_NAME" />) వేరే ఆధారాలను అందించినందున ఈ పొడిగింపు నెట్‌వర్క్ అభ్యర్థనకు ఆధారాలను అందించడంలో విఫలమైంది.</translation>

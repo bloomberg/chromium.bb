@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="da">
 <translation id="1135328998467923690">Pakken er ugyldig: "<ph name="ERROR_CODE" />".</translation>
+<translation id="1140871961407805696">Kamera på bagsiden</translation>
 <translation id="1256619696651732561">Værktøj til parsing af udvidelsesmanifester</translation>
 <translation id="1445572445564823378">Denne udvidelse gør <ph name="PRODUCT_NAME" /> langsommere. Du bør deaktivere den for at gøre <ph name="PRODUCT_NAME" /> hurtig igen.</translation>
 <translation id="149347756975725155">Udvidelsesikonet '<ph name="ICON" />' kunne ikke indlæses.</translation>
@@ -42,6 +43,7 @@
 <translation id="7217838517480956708">Administratoren af denne computer kræver, at <ph name="EXTENSION_NAME" /> skal installeres. Den kan ikke fjernes eller ændres.</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME" /> (udvidelses-id "<ph name="EXTENSION_ID" />") er blokeret af administratoren.</translation>
 <translation id="7972881773422714442">Valgmuligheder: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
+<translation id="8035920974645200807">Frontkamera</translation>
 <translation id="8047248493720652249">Denne udvidelse har ikke navngivet downloaden "<ph name="ATTEMPTED_FILENAME" />", fordi en anden udvidelse (<ph name="EXTENSION_NAME" />) har fastlagt et andet filnavn "<ph name="ACTUAL_FILENAME" />".</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> fra <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Denne udvidelse kunne ikke angive legitimationsoplysninger til en netværksanmodning, fordi en anden udvidelse (<ph name="EXTENSION_NAME" />) angav andre legitimationsoplysninger.</translation>

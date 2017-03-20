@@ -259,6 +259,7 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
       Si no s'especifica un paràmetre, s'utilitza un valor predeterminat.
 
       Si no es defineix aquesta política, s'utilitzen els valors predeterminats per a tots els paràmetres.</translation>
+<translation id="1960840544413786116">Si es permeten certificats emesos per ancoratges de confiança locals que no tinguin l'extensió subjectAlternativeName</translation>
 <translation id="1964634611280150550">Mode d'incògnit desactivat</translation>
 <translation id="1964802606569741174">Aquesta política no té cap efecte a l'aplicació YouTube per a Android. Per forçar l'ús del mode de seguretat de YouTube, s'ha de denegar la instal·lació d'aquesta aplicació.</translation>
 <translation id="1969212217917526199">Substitueix les polítiques de compilacions de depuració de l'amfitrió d'accés remot.
@@ -314,6 +315,21 @@ Si aquesta opció està desactivada o no especificada, no apareix cap botó gran
       Si HardwareAccelerationModeEnabled s'estableix en false, Disable3DAPIs s'ignora i equival a establir Disable3DAPIs en true.</translation>
 <translation id="2168397434410358693">Retard d'inactivitat quan s'utilitza alimentació</translation>
 <translation id="2170233653554726857">Activa l'optimització WPAD</translation>
+<translation id="2176565653304920879">Quan s'estableix aquesta política, el flux de detecció automàtica de la zona horària segueix una de les condicions següents en funció del valor de l'opció de configuració:
+
+      Si s'estableix en TimezoneAutomaticDetectionUsersDecide, els usuaris poden controlar la detecció automàtica de la zona horària mitjançant els controls habituals de chrome://settings.
+
+      Si s'estableix en TimezoneAutomaticDetectionDisabled, els controls automàtics de zona horària de chrome://settings estan desactivats. La detecció automàtica de la zona horària està sempre desactivada.
+
+      Si s'estableix en TimezoneAutomaticDetectionIPOnly, els controls de zona horària de chrome://settings estan desactivats. La detecció automàtica de la zona horària està sempre activada i utilitza el mètode de només IP per determinar la ubicació.
+
+      Si s'estableix en TimezoneAutomaticDetectionSendWiFiAccessPoints, els controls de zona horària de chrome://settings estan desactivats. La detecció automàtica de la zona horària està sempre activada. La llista de punts d'accés Wi-Fi visibles s'envia sempre al servidor de l'API de geolocalització per detectar exactament la zona horària.
+
+      Si s'estableix en TimezoneAutomaticDetectionSendAllLocationInfo, els controls de zona horària de chrome://settings estan desactivats. La detecció automàtica de la zona horària està sempre activada. La informació d'ubicació (com ara els punts d'accés Wi-Fi, torres de telefonia mòbil disponibles, GPS) s'envia a un servidor per detectar exactament la zona horària.
+
+      Si aquesta política no s'estableix, es comporta com si la política TimezoneAutomaticDetectionUsersDecide estigués establerta.
+
+      Si s'estableix la política SystemTimezone, substitueix SystemTimezoneAutomaticDetection i la detecció automàtica de la zona horària està totalment desactivada.</translation>
 <translation id="2178899310296064282">Aplica almenys el mode restringit moderat a YouTube</translation>
 <translation id="2183294522275408937">Aquesta opció de configuració controla amb quina freqüència es demanarà introduir la contrasenya a la pantalla de bloqueig per continuar utilitzant el desbloqueig ràpid. El desbloqueig ràpid no estarà disponible si, en entrar a la pantalla de bloqueig, la darrera vegada que s'ha introduït la contrasenya és un temps superior a aquesta opció. Si l'usuari supera aquest període de temps a la pantalla de bloqueig, se li sol·licitarà una contrasenya la propera vegada que introdueixi un codi erroni o que torni a entrar a la pantalla de bloqueig, el que passi abans.
 
@@ -1362,11 +1378,20 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
 <translation id="5378985487213287085">Us permet definir si els llocs web poden mostrar notificacions d'escriptori. La visualització de notificacions d'escriptori es pot autoritzar o denegar de manera predeterminada o bé es pot demanar cada vegada a l'usuari si vol que es mostrin notificacions d'escriptori. Si no es defineix aquesta política, s'utilitzarà el paràmetre "AskNotifications" i l'usuari podrà canviar-lo.</translation>
 <translation id="538108065117008131">Permet que <ph name="PRODUCT_FRAME_NAME" /> gestioni els tipus de contingut següents.</translation>
 <translation id="5388730678841939057">Selecciona l'estratègia utilitzada per alliberar espai del disc durant la neteja automàtica (obsolet)</translation>
+<translation id="5392172595902933844">Envia al servidor informació sobre l'estat d'Android.
+
+      Si la política s'estableix en "false" o es deixa sense establir, no s'envia informació d'estat.
+      Si s'estableix en "true", s'envia informació d'estat.
+
+      Aquesta política només s'aplica si les aplicacions per a Android estan activades.</translation>
 <translation id="5395271912574071439">Activa l'ocultació d'amfitrions d'accés remot mentre hi hagi una connexió en curs.
 
           Si aquest paràmetre està activat, els dispositius físics d'entrada i de sortida de l'amfitrió es desactiven mentre hi hagi una connexió remota en curs.
 
           Si aquest paràmetre està desactivat o no està definit, tant els usuaris remots com els locals poden interactuar amb l'amfitrió mentre sigui compartit.</translation>
+<translation id="5405289061476885481">Configura quins dissenys de teclat s'admeten a la pantalla d'inici de <ph name="PRODUCT_OS_NAME" />.
+
+      Si aquesta política es defineix en una llista d'identificadors de mètodes d'introducció, els mètodes d'introducció indicats estaran disponibles a la pantalla d'inici de sessió. Es preseleccionarà el primer mètode d'introducció de la llista. La selecció d'usuaris es mostrarà al centre de la pantalla d'inici de sessió, però també es mostrarà el mètode d'introducció que l'usuari ha fet servir més recentment, a més dels mètodes d'introducció indicats per aquesta política. Si aquesta política no es defineix, els mètodes d'introducció de la pantalla d'inici de sessió es derivaran de la configuració regional en què es mostri la pantalla d'inici de sessió. S'ignoraran els valors que no siguin identificadors vàlids del mètode d'introducció.</translation>
 <translation id="5423001109873148185">Si està activada, aquesta política fa que els motors de cerca s'importin des del navegador predeterminat actual. Si està activada, aquesta política també afecta el diàleg d'importació. Si està desactivada, el motor de cerca predeterminat no s'importarà. Si no es defineix, pot ser que es demani a l'usuari si vol importar o bé la importació es pot produir de manera automàtica.</translation>
 <translation id="5423197884968724595">Nom de la restricció de WebView per a Android:</translation>
 <translation id="543559563129402336">Aquesta política està obsoleta; substitueix-la per <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" />, que anul·la l'anterior i permet fer ajustos més precisos.
@@ -1432,6 +1457,11 @@ Si aquesta política es defineix com a "NeverAutoHideShelf", el prestatge no s'a
 Si es defineix aquesta política, els usuaris no podran canviar-la ni sobreescriure-la.
 
 Si la política no es defineix, els usuaris podran triar si el prestatge s'ha d'amagar automàticament.</translation>
+<translation id="557360560705413259">Quan s'activa aquesta opció de configuració, <ph name="PRODUCT_NAME" /> utilitza l'extensió commonName del certificat d'un servidor per fer-la coincidir amb un nom d'amfitrió si el certificat no té l'extensió subjectAlternativeName, sempre que validi correctament els certificats de CA instal·lats localment i s'hi concateni.
+
+      Tingues en compte que aquesta opció no es recomana, ja que pot permetre l'omissió de l'extensió nameConstraints que restringeix els noms d'amfitrió per als quals pot estar autoritzat un certificat determinat.
+
+      Si aquesta política no s'estableix o s'estableix en "false", no es confiarà en els certificats del servidor que no tinguin l'extensió subjectAlternativeName i que continguin el nom de DNS o l'adreça IP.</translation>
 <translation id="557658534286111200">Activa o desactiva l'edició d'adreces d'interès.</translation>
 <translation id="5586942249556966598">No facis res</translation>
 <translation id="5613179474872285001">Configura el nom requerit per al domini de client que s'imposarà als clients d'accés remot. A més, impedeix que els usuaris el canviïn.
@@ -2173,20 +2203,19 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="7761446981238915769">Configura la llista d'aplicacions instal·lades a la pantalla d'inici de sessió</translation>
 <translation id="7761526206824804472">Estableix una o més configuracions regionals recomanades per a sessions públiques, de manera que els usuaris en poden triar una fàcilment.
 
-      L'usuari pot triar una configuració regional i un disseny de teclat abans d'iniciar una sessió pública. De manera predeterminada, totes les configuracions regionals admeses a <ph name="PRODUCT_OS_NAME" /> s'enumeren en ordre alfabètic. Podeu fer servir aquesta política per moure un conjunt de configuracions regionals recomanades a la part superior de la llista.
+      L'usuari pot triar una configuració regional i una disposició de teclat abans d'iniciar una sessió pública. De manera predeterminada, totes les configuracions regionals admeses a <ph name="PRODUCT_OS_NAME" /> s'enumeren en ordre alfabètic. Podeu fer servir aquesta política per moure un conjunt de configuracions regionals recomanades a la part superior de la llista.
 
       Si aquesta política no s'estableix, es preselecciona la configuració regional actual de la interfície d'usuari.
 
       Si aquesta política s'estableix, les configuracions regionals recomanades es passaran a dalt de tot de la llista i es diferenciaran visualment de la resta. Les configuracions regionals recomanades s'enumeraran en l'ordre en què es mostren a la política. La primera recomanació es preseleccionarà.
 
-      Si hi ha més d'una recomanació, es dóna per fet que els usuaris voldran seleccionar una d'aquestes opcions. La selecció de configuració regional i de disseny de teclat s'oferirà clarament quan s'iniciï una sessió pública. Si només hi ha una recomanació, es dóna per fet que la majoria d'usuaris voldran utilitzar la configuració regional preseleccionada. La selecció de configuració regional i de disseny de teclat no s'oferirà tan clarament quan s'iniciï una sessió pública.
+      Si hi ha més d'una recomanació, es dóna per fet que els usuaris voldran seleccionar una d'aquestes opcions. La selecció de configuració regional i de disposició de teclat s'oferirà clarament quan s'iniciï una sessió pública. Si només hi ha una recomanació, es dóna per fet que la majoria d'usuaris voldran utilitzar la configuració regional preseleccionada. La selecció de configuració regional i de disposició de teclat no s'oferirà tan clarament quan s'iniciï una sessió pública.
 
-      Quan aquesta política estigui establerta i l'inici de sessió automàtic estigui activat (consulteu les polítiques |DeviceLocalAccountAutoLoginId| i |DeviceLocalAccountAutoLoginDelay|), a la sessió pública que s'hagi iniciat automàticament s'utilitzarà la primera configuració regional recomanada i el disseny de teclat més popular que hi concordi.
+      Quan aquesta política estigui establerta i l'inici de sessió automàtic estigui activat (consulteu les polítiques |DeviceLocalAccountAutoLoginId| i |DeviceLocalAccountAutoLoginDelay|), a la sessió pública que s'hagi iniciat automàticament s'utilitzarà la primera configuració regional recomanada i la disposició de teclat més popular que hi concordi.
 
-      El disseny de teclat preseleccionat serà sempre el més popular que concordi amb la configuració regional preseleccionada.
+      La disposició de teclat preseleccionada serà sempre la més popular que concordi amb la configuració regional preseleccionada.
 
-      Aquesta política només es pot establir com a recomanada. Podeu fer-la servir per moure una sèrie de configuracions regionals recomanades a la part superior de la llista, però els usuaris sempre poden triar per a la sessió qualsevol de les configuracions admeses a <ph name="PRODUCT_OS_NAME" />.
-      </translation>
+      Aquesta política només es pot establir com a recomanada. Podeu fer-la servir per moure una sèrie de configuracions regionals recomanades a la part superior de la llista, però els usuaris sempre poden triar per a la sessió qualsevol de les configuracions admeses a <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="7763311235717725977">Us permet definir si els llocs web poden mostrar imatges. La visualització d'imatges es pot autoritzar o denegar per a tots els llocs web. Si aquesta política no es defineix, s'utilitzarà el paràmetre "AllowImages" i l'usuari podrà canviar-lo.</translation>
 <translation id="7763479091692861127"> Tipus de connexions que es poden utilitzar per a les actualitzacions del sistema operatiu (SO). Les actualitzacions del SO poden saturar la connexió a causa de la seva mida i poden comportar costos addicionals. Per tant, no estan activades de manera predeterminada en tipus de connexió que es consideren cares, entre les quals hi ha, en aquests moments, WiMax, Bluetooth i connexió mòbil.
 
@@ -2265,6 +2294,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="7937766917976512374">Permet o bloqueja la captura de vídeo</translation>
 <translation id="7941975817681987555">No prediguis accions de xarxa en cap connexió de xarxa</translation>
 <translation id="7953256619080733119">Amfitrions d'excepcions manuals d'usuari gestionat</translation>
+<translation id="7965394584578183156">Envia sempre punts d'accés Wi-Fi al servidor mentre es determina la zona horària.</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Aquesta política ja no és compatible. Activa l'ús de servidors STUN i de relé quan us connecteu a un client remot. Si s'activa aquest paràmetre, aquest equip pot descobrir i connectar-se a equips amfitrions remots, fins i tot si estan separats per un tallafoc. Si es desactiva aquest paràmetre i el tallafoc filtra les connexions UDP de sortida, aquest equip només es podrà connectar als equips amfitrions de la xarxa local.</translation>
 <translation id="7986374692540430898">No pots forçar que les aplicacions d'Android utilitzin un servidor intermediari. Les aplicacions per a Android tenen disponible un subconjunt d'opcions de configuració per al servidor intermediari, que poden decidir si respectar-les. Consulta la política <ph name="PROXY_MODE_POLICY" /> per obtenir més detalls.</translation>
@@ -2419,6 +2449,7 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
 <translation id="8390049129576938611">Desactiva el lector de PDF intern a <ph name="PRODUCT_NAME" />. En el seu lloc, tracta els fitxers PDF com una baixada i permet que l'usuari els obri amb l'aplicació predeterminada.
 
       Si aquesta política es deixa sense establir o es desactiva, s'utilitzarà el connector de PDF per obrir aquest tipus de fitxers (tret que l'usuari el desactivi).</translation>
+<translation id="8398203849316312944">Envia sempre els senyals d'ubicació disponibles al servidor mentre es determina la zona horària.</translation>
 <translation id="8402079500086185021">Obre sempre els fitxers PDF amb una altra aplicació</translation>
 <translation id="8412312801707973447">Si es realitzen comprovacions OCSP/CRL en línia</translation>
 <translation id="8413348101535146315">Permet finalitzar processos al gestor de tasques de <ph name="PRODUCT_NAME" />.
@@ -2636,6 +2667,11 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
       Si activeu aquest paràmetre, les captures de pantalla no es poden fer amb les tecles de drecera ni amb les API de l'extensió.
 
       Si desactiveu o no especifiqueu aquest paràmetre, es permetran les captures de pantalla.</translation>
+<translation id="9212233969680267790">Advertiment: la política de la versió TLS màxima se suprimirà completament de <ph name="PRODUCT_NAME" /> aproximadament a la versió 66 (cap al febrer de 2018).
+
+      Si aquesta política no es configura, <ph name="PRODUCT_NAME" /> utilitzarà la versió màxima predeterminada.
+
+      També es pot definir a un dels valors següents: tls1.2 o tls1.3. Quan s'hagi definit, <ph name="PRODUCT_NAME" /> no utilitzarà versions SSL/TLS posteriors a la versió especificada. Els valors que no es reconeguin s'ignoraran.</translation>
 <translation id="9213347477683611358">Configura la imatge de fons de la pantalla d'inici de sessió d'un dispositiu si ningú no hi ha iniciat la sessió. Per establir la política, cal especificar l'URL que pot fer servir el dispositiu de Chrome OS per baixar la imatge i un resum criptogràfic per verificar la integritat de la baixada. La imatge ha de ser en format JPEG i no ha de superar els 16 MB. S'ha de poder accedir a l'URL sense cap tipus d'autenticació. La imatge de fons de pantalla es baixa i es desa a la memòria cau, i es tornarà a baixar si es modifica l'URL o el resum.
 
       La política s'ha d'especificar en forma de cadena amb l'URL i el resum en format JSON. Per exemple:

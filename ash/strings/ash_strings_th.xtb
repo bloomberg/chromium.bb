@@ -7,6 +7,7 @@
 <translation id="1127238861555034875">โหมดแว่นขยาย</translation>
 <translation id="1153356358378277386">อุปกรณ์ที่จับคู่</translation>
 <translation id="1195412055398077112">โอเวอร์สแกน</translation>
+<translation id="1247372569136754018">ไมโครโฟน (ภายใน)</translation>
 <translation id="1252999807265626933">กำลังชาร์จจาก<ph name="POWER_SOURCE" /></translation>
 <translation id="1270290102613614947">ปิดใช้แป้นพิมพ์บนหน้าจออยู่</translation>
 <translation id="1272079795634619415">หยุด</translation>
@@ -23,16 +24,21 @@
 <translation id="1525508553941733066">ปิด</translation>
 <translation id="15373452373711364">เคอร์เซอร์เมาส์ขนาดใหญ่</translation>
 <translation id="1550523713251050646">คลิกเพื่อดูตัวเลือกเพิ่มเติม</translation>
+<translation id="1571442141242456645">วิธีการป้อนข้อมูลของคุณเปลี่ยนเป็น <ph name="INPUT_METHOD_ID" />
+    กด Shift + Alt เพื่อสลับ</translation>
 <translation id="1602076796624386989">เปิดใช้งานข้อมูลมือถือ</translation>
 <translation id="1621499497873603021">เวลาที่เหลือกว่าแบตเตอรี่จะหมด, <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">อุปกรณ์ Chrome</translation>
 <translation id="1677472565718498478">ใช้ได้อีก <ph name="TIME" /></translation>
 <translation id="1747827819627189109">เปิดใช้แป้นพิมพ์บนหน้าจออยู่</translation>
 <translation id="1850504506766569011">WiFi ปิดอยู่</translation>
+<translation id="1854357586517521894">CAPS LOCK เปิดอยู่
+    กด "ค้นหา" หรือ Shift เพื่อยกเลิก</translation>
 <translation id="1864454756846565995">อุปกรณ์ USB-C (พอร์ตด้านหลัง)</translation>
 <translation id="1882897271359938046">กำลังแสดงผลไปที่ <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">มีการเปลี่ยนแปลงทางลัดที่ใช้เปิดตัวจัดการงาน โปรดใช้ <ph name="NEW_SHORTCUT" /> แทน <ph name="OLD_SHORTCUT" /></translation>
 <translation id="1923539912171292317">การคลิกอัตโนมัติ</translation>
+<translation id="1942830294380034169">ปุ่มเพิ่มเติม</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2122028596993374965">หยุดแคสต์ <ph name="TAB_NAME" /> ไปยัง <ph name="RECEIVER_NAME" /></translation>
@@ -60,6 +66,8 @@
 <translation id="2857608528410806398">เนื้อหาการแจ้งเตือนด้วยคุณลักษณะ QU อยู่ที่นี่ เนื้อหาการแจ้งเตือนด้วยคุณลักษณะ QU อยู่ที่นี่ เนื้อหาการแจ้งเตือนด้วยคุณลักษณะ QU อยู่ที่นี่ เนื้อหาการแจ้งเตือนด้วยคุณลักษณะ QU อยู่ที่นี่ เนื้อหาการแจ้งเตือนด้วยคุณลักษณะ QU อยู่ที่นี่</translation>
 <translation id="2865888419503095837">ข้อมูลเครือข่าย</translation>
 <translation id="2872961005593481000">ปิด</translation>
+<translation id="291653379653113090">วิธีการป้อนข้อมูลของคุณเปลี่ยนเป็น <ph name="INPUT_METHOD_ID" />* (<ph name="BEGIN_LINK" />บุคคลที่สาม<ph name="END_LINK" />)
+    กด Shift + Alt เพื่อสลับ</translation>
 <translation id="2942516765047364088">ตำแหน่งของชั้นวาง</translation>
 <translation id="2946119680249604491">เพิ่มการเชื่อมต่อ</translation>
 <translation id="2963773877003373896">mod3</translation>
@@ -70,6 +78,8 @@
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">ด้านล่าง</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (บลูทูธ)</translation>
+<translation id="3109220592788908353">CAPS LOCK เปิดอยู่
+    กด Alt + "ค้นหา" หรือ Shift เพื่อยกเลิก</translation>
 <translation id="3126069444801937830">รีสตาร์ทเพื่ออัปเดต</translation>
 <translation id="3147142846278915599">Launcher (กำลังซิงค์แอป...)</translation>
 <translation id="315116470104423982">ข้อมูลมือถือ</translation>
@@ -92,16 +102,19 @@
 <translation id="3683428399328702079">ความละเอียดของ <ph name="DISPLAY_NAME" /> เปลี่ยนเป็น <ph name="RESOLUTION" /></translation>
 <translation id="370649949373421643">เปิดใช้งาน Wi-Fi</translation>
 <translation id="3712407551474845318">จับภาพบางส่วนของหน้าเว็บ</translation>
+<translation id="371370241367527062">ไมโครโฟนด้านหน้า</translation>
 <translation id="3742055079367172538">ภาพหน้าจอที่บันทึก</translation>
 <translation id="3775358506042162758">คุณสามารถมีได้มากสุดสามบัญชีเท่านั้นในการลงชื่อเข้าสู่ระบบพร้อมกันหลายบัญชี</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">ล็อก</translation>
+<translation id="3798670284305777884">ลำโพง (ภายใน)</translation>
 <translation id="3799026279081545374">ที่ชาร์จของคุณอาจเสีย หากคุณอาศัยในสหรัฐอเมริกา โปรดโทรไปที่ 866-628-1371 เพื่อขอความช่วยเหลือหรือขอเปลี่ยนสินค้า หากคุณอาศัยในสหราชอาณาจักร โปรดโทรไปที่ 0800-026-0613 หากคุณอาศัยในไอร์แลนด์ โปรดโทรไปที่ 1-800-832-664 หากคุณอาศัยในแคนาดา โปรดโทรไปที่ 866-628-1372 หากคุณอาศัยในออสเตรเลีย โปรดโทรไปที่ 1-800-067-460</translation>
 <translation id="3846575436967432996">ไม่มีข้อมูลเครือข่ายที่สามารถใช้งานได้</translation>
 <translation id="3891340733213178823">กด Ctrl+Shift+Q 2 ครั้งเพื่อออกจากระบบ</translation>
 <translation id="3893630138897523026">ChromeVox (การตอบสนองด้วยเสียง)</translation>
 <translation id="3899995891769452915">ป้อนข้อมูลด้วยเสียง</translation>
 <translation id="3901991538546252627">กำลังเชื่อมต่อกับ <ph name="NAME" /></translation>
+<translation id="394485226368336402">การตั้งค่าเสียง</translation>
 <translation id="3967919079500697218">ความสามารถในการบันทึกภาพหน้าจอถูกปิดใช้โดยผู้ดูแลระบบ</translation>
 <translation id="397105322502079400">กำลังคำนวณ...</translation>
 <translation id="3995138139523574647">อุปกรณ์ USB-C (พอร์ตด้านหลังขวา)</translation>
@@ -114,7 +127,6 @@
 <translation id="4421231901400348175">กำลังแชร์การควบคุมหน้าจอกับ <ph name="HELPER_NAME" /> ผ่านความช่วยเหลือระยะไกล</translation>
 <translation id="4430019312045809116">ระดับเสียง</translation>
 <translation id="4448844063988177157">กำลังค้นหาเครือข่าย Wi-Fi...</translation>
-<translation id="4479639480957787382">อีเทอร์เน็ต</translation>
 <translation id="4481530544597605423">อุปกรณ์ที่ไม่ได้จับคู่</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: กำลังเชื่อมต่อ...</translation>
 <translation id="4527045527269911712">อุปกรณ์บลูทูธ "<ph name="DEVICE_NAME" />" ต้องการสิทธิ์ในการจับคู่</translation>
@@ -132,14 +144,18 @@
 <translation id="5170568018924773124">แสดงในโฟลเดอร์</translation>
 <translation id="5222676887888702881">ออกจากระบบ</translation>
 <translation id="523505283826916779">การตั้งค่าสำหรับการเข้าถึง</translation>
+<translation id="5313326810920013265">การตั้งค่าบลูทูธ</translation>
 <translation id="532063867737390965">การตั้งค่าเครือข่ายนี้ปิดใช้โดยผู้ดูแลระบบ</translation>
 <translation id="5331975486040154427">อุปกรณ์ USB-C (พอร์ตด้านหลังซ้าย)</translation>
+<translation id="5430931332414098647">การเชื่อมต่ออินเทอร์เน็ตผ่านมือถือแบบด่วน</translation>
 <translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">เพิ่มผู้ใช้ที่มีทั้งหมดลงในเซสชันนี้แล้ว</translation>
 <translation id="5507786745520522457">ตั้งค่าข้อมูลมือถือ</translation>
+<translation id="553675580533261935">กำลังออกจากเซสชัน</translation>
 <translation id="5548285847212963613">ส่วนขยาย "<ph name="EXTENSION_NAME" />" สามารถช่วยในการเชื่อมต่อเครือข่ายนี้</translation>
 <translation id="5571066253365925590">เปิดใช้งานบลูทูธแล้ว</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
+<translation id="5648021990716966815">ช่องเสียบไมโครโฟน</translation>
 <translation id="5777841717266010279">ต้องการหยุดแชร์หน้าจอไหม</translation>
 <translation id="57838592816432529">ปิดเสียง</translation>
 <translation id="5895138241574237353">ปิดแล้วเปิดอีกครั้ง</translation>
@@ -197,11 +213,11 @@
 <translation id="7129360219436193655">โหมดตัวชี้เลเซอร์</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358">เปลี่ยนกลับไปเป็นความละเอียดเดิมภายใน <ph name="TIMEOUT_SECONDS" /></translation>
+<translation id="7256634071279256947">ไมโครโฟนด้านหลัง</translation>
 <translation id="7348093485538360975">แป้นพิมพ์บนหน้าจอ</translation>
 <translation id="735745346212279324">ยกเลิกการเชื่อมต่อ VPN แล้ว</translation>
 <translation id="742594950370306541">ใช้กล้องถ่ายรูปอยู่</translation>
 <translation id="743058460480092004">ใช้กล้องถ่ายรูปและไมโครโฟนอยู่</translation>
-<translation id="7502658306369382406">ที่อยู่ IPv6</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> ไม่สนับสนุน <ph name="SPECIFIED_RESOLUTION" /> ความละเอียดเปลี่ยนเป็น <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">ชุดอีโมจิ</translation>
@@ -231,7 +247,6 @@
 <translation id="8428213095426709021">การตั้งค่า</translation>
 <translation id="8433186206711564395">การตั้งค่าเครือข่าย</translation>
 <translation id="8454013096329229812">WiFi เปิดอยู่</translation>
-<translation id="8483248364096924578">ที่อยู่ IP</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: กำลังเชื่อมต่อใหม่...</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" /> ของคุณอาจไม่ชาร์จเมื่อเครื่องเปิดอยู่</translation>
 <translation id="8528322925433439945">มือถือ ...</translation>

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ca">
 <translation id="1135328998467923690">El paquet no és vàlid: "<ph name="ERROR_CODE" />".</translation>
+<translation id="1140871961407805696">Càmera posterior</translation>
 <translation id="1256619696651732561">Analitzador per a manifests d'extensions</translation>
 <translation id="1445572445564823378">Aquesta extensió està alentint <ph name="PRODUCT_NAME" />. L'heu de desactivar per restaurar el rendiment de: <ph name="PRODUCT_NAME" />.</translation>
 <translation id="149347756975725155">No s'ha pogut carregar la icona d'extensió "<ph name="ICON" />".</translation>
@@ -42,6 +43,7 @@
 <translation id="7217838517480956708">L'administrador d'aquest equip necessita que s'instal·li <ph name="EXTENSION_NAME" />. No es pot eliminar o modificar.</translation>
 <translation id="7809034755304591547">L'administrador ha bloquejat l'extensió <ph name="EXTENSION_NAME" /> (amb l'ID d'extensió <ph name="EXTENSION_ID" />).</translation>
 <translation id="7972881773422714442">Opcions: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
+<translation id="8035920974645200807">Càmera frontal</translation>
 <translation id="8047248493720652249">Aquesta extensió no ha pogut posar nom a la baixada "<ph name="ATTEMPTED_FILENAME" />" perquè una altra extensió (<ph name="EXTENSION_NAME" />) ha indicat un nom de fitxer diferent "<ph name="ACTUAL_FILENAME" />".</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> proporcionat per <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Aquesta extensió no ha pogut proporcionar credencials a una sol·licitud de xarxa perquè una altra extensió (<ph name="EXTENSION_NAME" />) ha proporcionat unes credencials diferents.</translation>

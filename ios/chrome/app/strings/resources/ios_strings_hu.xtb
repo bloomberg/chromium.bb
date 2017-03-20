@@ -101,6 +101,7 @@ Bizonyos webhelyek például úgy válaszolhatnak a kérésre, hogy olyan hirdet
 <translation id="2871695793448672541">Jelszó (rejtett)</translation>
 <translation id="2898963176829412617">Új mappa...</translation>
 <translation id="2903493209154104877">Címek</translation>
+<translation id="291754862089661335">Igazítsa a QR-kódot vagy vonalkódot ehhez a kerethez</translation>
 <translation id="2921219216347069551">Az oldal megosztása sikertelen</translation>
 <translation id="292639812446257861">Megjelölés olvasatlanként</translation>
 <translation id="2933759065870693102">Vaku</translation>
@@ -172,7 +173,6 @@ A keresési kifejezés módosításához hosszú nyomva tartással hajthat végr
 <translation id="4359125752503270327">Az oldal egy másik alkalmazásban nyílik meg.</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="441868831736628555">Adatvédelmi közlemény</translation>
-<translation id="4473991315115669931">Belépés inkognitómódba</translation>
 <translation id="4526249700380860531">A mentett jelszavak megtekintése és kezelése a <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> címen</translation>
 <translation id="4536418791685807335">Próbáljon meg újra bejelentkezni.</translation>
 <translation id="4620246317052452550">Elolvasva</translation>
@@ -246,7 +246,6 @@ Az Átadást engedélyezni kell a Beállítások általános részében is, és 
 <translation id="6042308850641462728">Hosszabban</translation>
 <translation id="605721222689873409">ÉÉ</translation>
 <translation id="6066301408025741299">Érintse meg a visszavonáshoz</translation>
-<translation id="60851516108411750">Olvasási listája offline elérhető. Ha szeretne hozzáadni oldalakat a listához, koppintson a következőkre: <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="6122191549521593678">Online</translation>
 <translation id="6127379762771434464">Elem eltávolítva</translation>
 <translation id="6136914049981179737">Néhány másodperce</translation>
@@ -382,7 +381,6 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="8741995161408053644">Előfordulhat, hogy a böngészési előzmények más formái még megtalálhatók Google-fiókjában a <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> címen.</translation>
 <translation id="8775144690796719618">Érvénytelen URL</translation>
 <translation id="8820817407110198400">Könyvjelzők</translation>
-<translation id="882482397944455431">Kilépés inkognitómódból</translation>
 <translation id="8840513115188359703">A rendszer nem jelentkezteti ki Google-fiókjából.</translation>
 <translation id="8904976895050290827">Chrome - szinkronizálás</translation>
 <translation id="895541991026785598">Hibabejelentés</translation>

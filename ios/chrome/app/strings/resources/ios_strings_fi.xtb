@@ -101,6 +101,7 @@ Jotkin verkkosivustot esimerkiksi vastaavat pyyntöön näyttämällä sinulle m
 <translation id="2871695793448672541">Piilotettu salasana</translation>
 <translation id="2898963176829412617">Uusi kansio…</translation>
 <translation id="2903493209154104877">Osoitteet</translation>
+<translation id="291754862089661335">Aseta QR- tai viivakoodi tämän kehyksen sisälle.</translation>
 <translation id="2921219216347069551">Sivun jako epäonnist</translation>
 <translation id="292639812446257861">Merkitse lukemattomaksi</translation>
 <translation id="2933759065870693102">Taskulamppu</translation>
@@ -172,7 +173,6 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="4359125752503270327">Tämä sivu avataan toisessa sovelluksessa.</translation>
 <translation id="4378154925671717803">Puhelin</translation>
 <translation id="441868831736628555">Tietosuojailmoitus</translation>
-<translation id="4473991315115669931">Siirry incognito-tilaan.</translation>
 <translation id="4526249700380860531">Tarkastele ja hallinnoi tallennettuja salasanoja osoitteessa <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Yritä kirjautua sisään uudelleen.</translation>
 <translation id="4620246317052452550">Lukemasi sivut</translation>
@@ -246,7 +246,6 @@ Handoff täytyy ottaa käyttöön myös Asetusten Yleiset-osiossa. Lisäksi mole
 <translation id="6042308850641462728">Lisää</translation>
 <translation id="605721222689873409">VV</translation>
 <translation id="6066301408025741299">Peruuta napauttamalla.</translation>
-<translation id="60851516108411750">Lukulistasi on käytettävissä offline-tilassa. Lisää sivu lukulistaasi valitsemalla <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="6122191549521593678">Online</translation>
 <translation id="6127379762771434464">Kohde poistettu</translation>
 <translation id="6136914049981179737">Hetki sitten</translation>
@@ -381,7 +380,6 @@ Tietosi salattiin tunnuslauseesi avulla <ph name="TIME" />. Aloita synkronointi 
 <translation id="8741995161408053644">Google-tililläsi voi olla muita selaushistoriatietoja osoitteessa <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8775144690796719618">Virheellinen URL-osoite</translation>
 <translation id="8820817407110198400">Kirjanmerkit</translation>
-<translation id="882482397944455431">Poistu incognito-tilasta.</translation>
 <translation id="8840513115188359703">Sinua ei kirjata ulos Google-tililtäsi.</translation>
 <translation id="8904976895050290827">Chromen synkronointi</translation>
 <translation id="895541991026785598">Ilmoita ongelmasta</translation>

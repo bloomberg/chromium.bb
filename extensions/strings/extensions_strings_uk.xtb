@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="uk">
 <translation id="1135328998467923690">Пакет недійсний: "<ph name="ERROR_CODE" />".</translation>
+<translation id="1140871961407805696">Задня камера</translation>
 <translation id="1256619696651732561">Синтаксичний аналізатор маніфесту розширення</translation>
 <translation id="1445572445564823378">Це розширення сповільнює <ph name="PRODUCT_NAME" />. Щоб відновити ефективність <ph name="PRODUCT_NAME" />, потрібно його вимкнути.</translation>
 <translation id="149347756975725155">Не вдалося завантажити піктограму розширення "<ph name="ICON" />".</translation>
@@ -42,6 +43,7 @@
 <translation id="7217838517480956708">Адміністратор цього комп’ютера потребує встановленого розширення <ph name="EXTENSION_NAME" />. Його не можна видаляти чи змінювати.</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME" /> (ідентифікатор розширення "<ph name="EXTENSION_ID" />") заблоковано адміністратором.</translation>
 <translation id="7972881773422714442">Параметри: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
+<translation id="8035920974645200807">Фронтальна камера</translation>
 <translation id="8047248493720652249">Цьому розширенню не вдалося назвати завантаження "<ph name="ATTEMPTED_FILENAME" />", оскільки інше розширення (<ph name="EXTENSION_NAME" />) визначило іншу назву файлу "<ph name="ACTUAL_FILENAME" />".</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> від постачальника <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Це розширення не надало облікові дані на запит мережі, оскільки інше розширення (<ph name="EXTENSION_NAME" />) надало інші облікові дані.</translation>

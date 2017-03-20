@@ -281,6 +281,7 @@
       설정이 지정되지 않은 경우 기본값이 사용됩니다.
 
       이 정책이 설정되지 않은 경우 모든 설정에 기본값이 사용됩니다.</translation>
+<translation id="1960840544413786116">subjectAlternativeName 확장 필드가 누락되었으나 로컬 트러스트 앵커에서 발급된 인증서 허용 여부</translation>
 <translation id="1964634611280150550">시크릿 모드 사용이 중지됨</translation>
 <translation id="1964802606569741174">이 정책은 Android YouTube 앱에 아무런 영향도 미치지 않습니다. YouTube의 안전 모드를 실행해야 하는 경우 Android YouTube 앱 설치를 허용하지 않아야 합니다.</translation>
 <translation id="1969212217917526199">원격 액세스 호스트의 디버그 빌드 관련 정책을 재정의합니다.
@@ -335,6 +336,21 @@
       HardwareAccelerationModeEnabled를 false로 설정하면 Disable3DAPIs가 무시되며 Disable3DAPIs를 true로 설정한 것과 같습니다.</translation>
 <translation id="2168397434410358693">AC 전원으로 실행할 때 유휴 지연</translation>
 <translation id="2170233653554726857">WPAD 최적화 사용</translation>
+<translation id="2176565653304920879">이 정책을 설정하면 설정 값에 따라 자동 시간대 감지 절차가 다음 방법 중 한 가지로 진행됩니다.
+
+      TimezoneAutomaticDetectionUsersDecide로 설정하면 사용자는 chrome://settings의 일반 컨트롤을 사용하여 자동 시간대 감지를 조정할 수 있습니다.
+
+      TimezoneAutomaticDetectionDisabled로 설정하면 chrome://settings의 자동 시간대 조정 기능이 사용 중지되며 자동 시간대 감지는 항상 사용 중지됩니다.
+
+      TimezoneAutomaticDetectionIPOnly로 설정하면 chrome://settings의 시간대 조정이 사용 중지되며 자동 시간대 감지는 항상 사용 설정됩니다. 시간대 감지에서 IP 전용 방식을 사용하여 위치를 파악합니다.
+
+      TimezoneAutomaticDetectionSendWiFiAccessPoints로 설정하면 chrome://settings의 시간대 조정 기능이 사용 중지되며 자동 시간대 감지는 항상 사용 설정됩니다. 정밀한 시간대 감지를 위해 가용 Wi-Fi 액세스 포인트 목록이 항상 Geolocation API 서버로 전송됩니다.
+
+      TimezoneAutomaticDetectionSendAllLocationInfo로 설정하면 chrome://settings의 시간대 조정이 사용 중지되며 자동 시간대 감지는 항상 사용 설정됩니다. 정밀한 시간대 감지를 위해 위치 정보(예: Wi-Fi 액세스 포인트, 연결 가능한 기지국, GPS)가 서버로 전송됩니다.
+
+      이 정책을 설정하지 않으면 TimezoneAutomaticDetectionUsersDecide가 설정된 것처럼 작동합니다.
+
+      SystemTimezone 정책이 설정된 경우 이 정책이 재정의됩니다. 이 경우 자동 시간대 감지 기능이 완전히 사용 중지됩니다.</translation>
 <translation id="2178899310296064282">YouTube에서 최소한 보통 제한 모드 사용</translation>
 <translation id="2183294522275408937">이 설정은 계속 빠른 잠금 해제 모드를 사용하기 위해 잠금 화면에서 얼마나 자주 비밀번호를 요청할 것인지 제어합니다. 잠금 화면으로 전환될 때마다 마지막으로 비밀번호를 입력한 이후 이 설정보다 오랜 시간이 지나면 잠금 화면에서 빠른 잠금 해제를 사용할 수 없게 됩니다. 이 기간이 지난 후 사용자에게 잠금 화면이 표시된 상황에서 다음에 사용자가 잘못된 코드를 입력하거나 잠금 화면으로 다시 전환되는 경우 중 먼저 해당하는 경우 비밀번호를 요청하게 됩니다.
 
@@ -1465,11 +1481,21 @@
           이 정책을 설정하지 않은 경우 'AskNotifications' 정책이 사용되며 사용자가 설정을 변경할 수 있습니다.</translation>
 <translation id="538108065117008131"><ph name="PRODUCT_FRAME_NAME" />이(가) 다음 콘텐츠 유형을 다루도록 허용</translation>
 <translation id="5388730678841939057">자동 정리 중 디스크 공간 확보에 사용할 방법 선택(지원 중단됨)</translation>
+<translation id="5392172595902933844">Android 상태 관련 정보가 서버로 다시
+      전송됩니다.
+
+      정책을 false로 설정하거나 설정하지 않으며 상태 정보가 보고되지 않습니다.
+      정책을 true로 설정하면 상태 정보가 보고됩니다.
+
+      이 정책은 Android 앱이 사용 설정된 경우에만 적용됩니다.</translation>
 <translation id="5395271912574071439">연결이 진행 중일 때 원격 액세스 호스트 차단을 사용합니다.
 
           이 설정을 사용하도록 설정하면 원격 연결이 진행 중일 때 호스트의 물리적인 입력/출력 기기가 사용 중지됩니다.
 
           이 설정이 사용 중지되거나 설정되지 않으면 공유 중일 때 로컬 및 원격 사용자가 모두 호스트와 상호작용할 수 있습니다.</translation>
+<translation id="5405289061476885481"><ph name="PRODUCT_OS_NAME" /> 로그인 화면에서 허용되는 키보드 레이아웃을 구성합니다.
+
+      이 정책이 입력 방법 식별자 목록으로 설정되는 경우 주어진 입력 방법을 로그인 화면에서 사용할 수 있습니다. 첫 번째로 주어진 입력 수단이 사전 선택됩니다. 로그인 화면에서는 사용자 포드가 활성화되는데 이때 이 정책에서 주어진 입력 수단과 더불어 사용자가 마지막으로 사용한 입력 수단을 사용할 수 있습니다. 이 정책이 설정되지 않은 경우 로그인 화면의 입력 수단은 로그인 화면이 표시되는 언어에서 가져옵니다. 유효한 입력 수단 식별자가 아닌 값은 무시됩니다.</translation>
 <translation id="5423001109873148185">이 정책을 사용하도록 설정하면 현재 기본 브라우저에서 검색엔진을 강제로 가져옵니다. 또한 가져오기 대화상자에 영향을 미칩니다.
 
       사용하지 않으면 기본 검색엔진을 가져오지 않습니다.
@@ -1544,6 +1570,11 @@
       이 정책을 설정하면 사용자는 변경하거나 무시할 수 없습니다.
 
       이 정책을 설정하지 않으면 사용자가 실행기를 자동 숨김할지 여부를 선택할 수 있습니다.</translation>
+<translation id="557360560705413259">이 설정을 사용하면 인증서에 subjectAlternativeName 확장 필드가 누락되어 있으나 인증서가 검증되었으며 로컬에 설치된 CA 인증서와 연결되어 있는 경우 <ph name="PRODUCT_NAME" />에서 서버 인증서의 commonName을 사용하여 호스트 이름이 일치하는지 확인합니다.
+
+      이는 권장되지 않습니다. 이를 통해 특정 인증서만 승인되며 호스트 이름을 제한하는 nameConstraints 확장 필드를 우회할 수 있기 때문입니다.
+
+      이 정책을 설정하지 않거나 false로 설정되면 subjectAlternativeName 확장 필드가 누락되어 있으며 DNS 이름이나 IP 주소가 포함된 서버 인증서를 신뢰하지 않습니다.</translation>
 <translation id="557658534286111200">북마크 수정 사용 또는 사용 중지</translation>
 <translation id="5586942249556966598">취소</translation>
 <translation id="5613179474872285001">원격 액세스 클라이언트에게 적용되는 필수 클라이언트 도메인 이름을 설정하며 사용자가 변경하지 못하도록 합니다.
@@ -2432,6 +2463,7 @@
 <translation id="7937766917976512374">동영상 캡처 허용 또는 거부</translation>
 <translation id="7941975817681987555">모든 네트워크 연결의 네트워크 활동 예측 안함</translation>
 <translation id="7953256619080733119">관리 사용자 직접 예외 호스트</translation>
+<translation id="7965394584578183156">시간대를 파악하는 동안 항상 Wi-Fi 액세스 포인트를 서버로 전송합니다.</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">이 정책은 더 이상 지원되지 않습니다.
           원격 클라이언트에 연결할 때 STUN 및 릴레이 서버를 사용하도록 설정합니다.
@@ -2598,6 +2630,7 @@
 <translation id="8390049129576938611"><ph name="PRODUCT_NAME" />의 내부 PDF 뷰어를 사용 중지합니다. 대신 이를 다운로드 파일로 처리해 사용자가 기본 애플리케이션으로 PDF 파일을 열 수 있도록 합니다.
 
       이 정책이 설정되어 있지 않거나 사용 중지되어 있으면 사용자가 사용 중지하지 않는 한 PDF 플러그인을 사용하여 PDF 파일이 열립니다.</translation>
+<translation id="8398203849316312944">시간대를 파악하는 동안 항상 사용 가능한 위치 신호를 모두 서버로 전송합니다.</translation>
 <translation id="8402079500086185021">항상 외부 앱으로 PDF 파일 열기</translation>
 <translation id="8412312801707973447">온라인 OCSP/CRL 확인 수행 여부</translation>
 <translation id="8413348101535146315"><ph name="PRODUCT_NAME" />의 작업 관리자에서 종료 프로세스를 사용 설정합니다.
@@ -2849,6 +2882,11 @@
       이 설정을 사용하면 키보드 단축키나 확장 프로그램 API를 사용하여 화면을 캡쳐할 수 없습니다.
 
       이 설정을 사용 중지하거나 지정하지 않으면 화면을 캡쳐할 수 있습니다.</translation>
+<translation id="9212233969680267790">경고: 최대 TLS 버전 정책이 <ph name="PRODUCT_NAME" /> 버전 66쯤에서 완전히 삭제됩니다(2018년 2월경).
+
+      이 정책을 구성하지 않으면 <ph name="PRODUCT_NAME" />에서 기본 최대 버전이 사용됩니다.
+
+      정책을 구성하는 경우 'tls1.2'나 'tls1.3' 중 하나로 설정될 수 있습니다. 설정되면 <ph name="PRODUCT_NAME" />에서 지정된 버전보다 높은 SSL/TLS 버전이 사용되지 않습니다. 인식할 수 없는 값은 무시됩니다.</translation>
 <translation id="9213347477683611358">기기에 로그인한 사용자가 없을 때 로그인 화면에 표시되는 기기 수준의 배경화면 이미지를 설정합니다. 이 정책은 Chrome OS 기기에서 배경화면 이미지를 다운로드할 URL과 다운로드의 무결성을 확인하는 데 사용되는 암호화 해시를 지정하여 설정할 수 있습니다. 이미지는 JPEG 형식이어야 하며 파일 크기는 16MB를 넘지 않아야 합니다. URL은 어떠한 인증도 없이 액세스할 수 있어야 합니다. 배경화면 이미지는 다운로드 및 캐시됩니다. URL이나 해시가 변경될 때마다 배경화면 이미지도 다시 다운로드됩니다.
 
       이 정책은 JSON 형식으로 URL과 해시를 표현하는 문자열로 지정되어야 합니다. 예:

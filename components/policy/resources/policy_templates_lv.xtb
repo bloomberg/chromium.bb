@@ -282,6 +282,7 @@
 
       Ja iestatījums netiek norādīts, tiek izmantota noklusējuma vērtība.
       Ja šī politika vispār netiek iestatīta, visiem iestatījumiem tiek izmantotas noklusējuma vērtības.</translation>
+<translation id="1960840544413786116">Nosaka, vai atļaut sertifikātus, kurus izsnieguši lokāli uzticamības enkuri un kuriem trūkst paplašinājuma subjectAlternativeName.</translation>
 <translation id="1964634611280150550">Inkognito režīms atspējots</translation>
 <translation id="1964802606569741174">Šī politika neietekmē Android lietotni YouTube. Ja lietotnē YouTube tiks aktivizēts drošais režīms, nedrīkst atļaut instalēt Android lietotni YouTube.</translation>
 <translation id="1969212217917526199">Šī politika tiek izmantota, lai ignorētu attālās piekļuves saimniekdatora atkļūdošanas versiju politiku.
@@ -338,6 +339,21 @@
       Ja politikai HardwareAccelerationModeEnabled ir iestatīta vērtība Nepatiesa, politika Disable3DAPIs tiek ignorēta un ir spēkā tādi paši iestatījumi kā tad, ja politikai Disable3DAPIs būtu iestatīta vērtība Patiesa.</translation>
 <translation id="2168397434410358693">Aizkave līdz dīkstāvei, ja ierīce darbojas ar maiņstrāvu</translation>
 <translation id="2170233653554726857">WPAD optimizācijas iespējošana</translation>
+<translation id="2176565653304920879">Ja šī politika ir iestatīta, atkarībā no iestatījuma vērtības būs pieejama viena no tālāk norādītajām automātiskās laika joslas noteikšanas plūsmām.
+
+      Ja tiks atlasīts iestatījums TimezoneAutomaticDetectionUsersDecide, lietotāji varēs pārvaldīt automātisko laika joslas noteikšanu, izmantojot parastās vadīklas lapā chrome://settings.
+
+      Ja tiks atlasīts iestatījums TimezoneAutomaticDetectionDisabled, automātiskās laika joslas noteikšanas vadīklas lapā chrome://settings tiks atspējotas. Automātiskā laika joslas noteikšana vienmēr būs izslēgta.
+
+      Ja tiks atlasīts iestatījums TimezoneAutomaticDetectionIPOnly, laika joslas vadīklas lapā chrome://settings tiks atspējotas. Automātiskā laika joslas noteikšana vienmēr būs ieslēgta. Laika josla vienmēr tiks noteikta tikai pēc IP metodes atrašanās vietas noteikšanai.
+
+      Ja tiks atlasīts iestatījums TimezoneAutomaticDetectionSendWiFiAccessPoints, laika joslas vadīklas lapā chrome://settings tiks atspējotas. Automātiskā laika joslas noteikšana vienmēr būs ieslēgta. Uztverto Wi-Fi piekļuves punktu saraksts vienmēr tiks nosūtīts uz ģeolokācijas API serveri precīzai laika joslas noteikšanai.
+
+      Ja tiks atlasīts iestatījums TimezoneAutomaticDetectionSendAllLocationInfo, laika joslas vadīklas lapā chrome://settings tiks atspējotas. Automātiskā laika joslas noteikšana vienmēr būs ieslēgta. Atrašanās vietas informācija (piemēram, Wi-Fi piekļuves punkti, uztverami mobilo sakaru torņi, GPS) tiks nosūtīta uz serveri precīzai laika joslas noteikšanai.
+
+      Ja šī politika nav iestatīta, tā darbosies atbilstoši iestatījumam TimezoneAutomaticDetectionUsersDecide.
+
+      Ja ir iestatīta politika SystemTimezone, šī politika tiks ignorēta. Tādā gadījumā automātiskā laika joslas noteikšana ir pilnībā atspējota.</translation>
 <translation id="2178899310296064282">Ieslēgt vismaz vidēji ierobežoto režīmu pakalpojumā YouTube</translation>
 <translation id="2183294522275408937">Ar šo iestatījumu tiek kontrolēts, cik bieži bloķēšanas ekrānā pieprasīt paroles ievadi, lai varētu turpināt izmantot ātro atbloķēšanu. Ja tiek atvērts bloķēšanas ekrāns un kopš pēdējās paroles ievades reizes ir pagājis ilgāks laiks, nekā iestatītā vērtība, bloķēšanas ekrānā ātrā atbloķēšana nav pieejama. Ja lietotājs paliks bloķēšanas ekrānā ilgāk par šo periodu, nākamajā reizē, kad lietotājs ievadīs nepareizu kodu vai atkārtoti atvērs bloķēšanas ekrānu, tiks pieprasīts ievadīt paroli (neatkarīgi no tā, kurš nosacījums tiks izpildīts vispirms).
 
@@ -1460,11 +1476,22 @@ Ja šī politika nav iestatīta, lietotājs var izmantot jebkuru sistēmā insta
           Ja šī politika nav iestatīta, tiks lietota politika AskNotifications un lietotājs to varēs mainīt.</translation>
 <translation id="538108065117008131">Atļauj produktam <ph name="PRODUCT_FRAME_NAME" /> apstrādāt tālāk minētos satura veidus.</translation>
 <translation id="5388730678841939057">Stratēģijas atlase, lai atbrīvotu diska vietu automātiskās tīrīšanas laikā (vairs netiek izmantota)</translation>
+<translation id="5392172595902933844">Informācija par Android statusu tiek nosūtīta atpakaļ uz
+      serveri.
+
+      Ja politikai ir iestatīta vērtība “false” vai politika nav iestatīta,
+      statusa informācija netiek nosūtīta.
+      Ja ir iestatīta vērtība “true”, tiek nosūtīta statusa informācija.
+
+      Šī politika ir spēkā tikai tad, ja ir iespējotas Android lietotnes.</translation>
 <translation id="5395271912574071439">Iespējo aizsegšanas režīmu attālās piekļuves saimniekdatoriem, kamēr notiek savienojums.
 
           Ja šis iestatījums ir iespējots, attālā savienojuma laikā saimniekdatoru fiziskās ievades un izvades ierīces ir atspējotas.
 
           Ja šis iestatījums ir atspējots vai nav iestatīts, gan vietējie, gan attālie lietotāji var mijiedarboties ar saimniekdatoru, kad tas tiek koplietots.</translation>
+<translation id="5405289061476885481">Tiek konfigurēts, kuri tastatūras izkārtojumi ir atļauti <ph name="PRODUCT_OS_NAME" /> pierakstīšanās ekrānā.
+
+      Ja šai politikai ir iestatīts saraksts ar ievades metožu identifikatoriem, norādītās ievades metodes būs pieejamas pierakstīšanās ekrānā. Pirmā norādītā ievades metode tiks priekšatlasīta. Kamēr lietotāja ierīce ir fokusēta uz pierakstīšanās ekrānu, papildus šajā politikā norādītajām metodēm būs pieejama lietotāja pēdējā izmantotā ievades metode. Ja šī politika nav iestatīta, pierakstīšanās ekrānā ievades metodes tiks izgūtas no lokalizācijas, kurā tiek rādīts pierakstīšanās ekrāns. Vērtības, kas nav derīgi ievades metožu identifikatori, tiks ignorētas.</translation>
 <translation id="5423001109873148185">Šī politika (ja tā ir iespējota) liek importēt meklētājprogrammas no pašreizējā noklusējuma pārlūka. Ja šī politika ir iespējota, tā arī maina importēšanas dialoglodziņu.
 
       Ja tā ir atspējota, noklusējuma meklētājprogramma netiek importēta.
@@ -1539,6 +1566,11 @@ Ja šis iestatījums ir atspējots vai tam nav iestatīta vērtība, pārlūkā 
       Ja iestatīsiet šo politiku, lietotāji to nevarēs mainīt vai ignorēt.
 
       Ja politika netiks iestatīta, lietotāji varēs izvēlēties, vai automātiski slēpt plauktu.</translation>
+<translation id="557360560705413259">Ja šis iestatījums ir iespējots, <ph name="PRODUCT_NAME" /> izmantos servera sertifikāta nosaukumu commonName, lai nodrošinātu atbilstību saimniekdatora nosaukumam, ja sertifikātam trūks paplašinājuma subjectAlternativeName, kamēr vien tiek veiksmīgi pārbaudīti lokāli instalēti CA sertifikāti un izveidota ķēde ar tiem.
+
+      Ņemiet vērā, ka tas nav ieteicams, jo var atļaut paplašinājuma nameConstraints ignorēšanu, kas ierobežo tos saimniekdatora nosaukumus, kuriem var autorizēt minēto sertifikātu.
+
+      Ja šī politika nav iestatīta vai ir iestatīta vērtība “false”, servera sertifikāti, kam trūks paplašinājuma subjectAlternativeName, kurā ietverts DNS nosaukums vai IP adrese, nebūs uzticami.</translation>
 <translation id="557658534286111200">Iespējo vai atspējo grāmatzīmju rediģēšanu</translation>
 <translation id="5586942249556966598">Nedarīt neko</translation>
 <translation id="5613179474872285001">Konfigurē nepieciešamo klienta domēna nosaukumu, kas tiks izmantots attālās piekļuves klientiem, un lietotāji to nevarēs mainīt.
@@ -2400,6 +2432,7 @@ Ja šī politika nav iestatīta, lietotājs var atspējot jebkuru sistēmā inst
 <translation id="7937766917976512374">Video tveršanas ļaušana vai noraidīšana</translation>
 <translation id="7941975817681987555">Neprognozēt tīkla darbības nevienā tīkla savienojumā</translation>
 <translation id="7953256619080733119">Pārvaldīto lietotāju manuālo izņēmumu saimniekdatori</translation>
+<translation id="7965394584578183156">Vienmēr sūtīt Wi-Fi piekļuves punktus serverim laika joslas noteikšanas laikā.</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Šī politika vairs netiek atbalstīta.
           Iespējo STUN un pārraides serveru lietošanu, veidojot savienojumu ar attālu klientu.
@@ -2566,6 +2599,7 @@ Ja šī politika nav iestatīta, lietotājs var atspējot jebkuru sistēmā inst
 <translation id="8390049129576938611">Atspējo <ph name="PRODUCT_NAME" /> iekšējo PDF skatītāju. Tā vietā PDF faili tiek apstrādāti kā lejupielādes, un lietotājs tos var atvērt noklusējuma lietojumprogrammā.
 
       Ja šī politika nav iestatīta vai ir atspējota, PDF failu atvēršanai tiek lietots PDF spraudnis, ja vien lietotājs to neatspējo.</translation>
+<translation id="8398203849316312944">Vienmēr sūtīt visus signālus par atrašanās vietu serverim laika joslas noteikšanas laikā.</translation>
 <translation id="8402079500086185021">Vienmēr atvērt PDF failus ārēji</translation>
 <translation id="8412312801707973447">Vai tiek veiktas OCSP/CRL pārbaudes tiešsaistē</translation>
 <translation id="8413348101535146315">Iespējo procesu beigšanu <ph name="PRODUCT_NAME" /> uzdevumu pārvaldniekā.
@@ -2827,6 +2861,11 @@ definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph 
       Ja šis iestatījums ir iespējots, nevar uzņemt ekrānuzņēmumus, izmantojot īsinājumtaustiņus vai paplašinājumu API.
 
       Ja šis iestatījums ir atspējots vai nav norādīts, veidot ekrānuzņēmumus ir atļauts.</translation>
+<translation id="9212233969680267790">Brīdinājums! Sākot ar <ph name="PRODUCT_NAME" /> versiju 66, maksimālā TLS versijas politika tiks pilnībā noņemta (pēc aptuveni 2018. gada februāra).
+
+      Ja šī politika nav konfigurēta, <ph name="PRODUCT_NAME" /> izmantos noklusējuma maksimālo versiju.
+
+      Pretējā gadījumā tai var tikt iestatīta viena no šīm vērtībām: “tls1.2” vai “tls1.3”. Kad attiecīgā politikas vērtība tiks iestatīta, <ph name="PRODUCT_NAME" /> neizmantos tādas SSL/TLS versijas, kuras ir jaunākas par norādīto versiju. Neatpazīta vērtība tiks ignorēta.</translation>
 <translation id="9213347477683611358">Konfigurējiet ierīces līmeņa fona tapetes attēlu, kas tiek rādīts pieteikšanās ekrānā, ja ierīcē vēl nav pierakstījies neviens lietotājs. Politika tiek iestatīta, norādot URL, no kura Chrome OS ierīce var lejupielādēt fona tapetes attēlu, un kriptogrāfisku jaucējkodu, kas tiek izmantots lejupielādes integritātes pārbaudei. Attēlam jābūt JPEG formātā, tā lielums nedrīkst pārsniegt 16 MB. Lai piekļūtu vietrādim URL, nedrīkst pieprasīt autentificēšanos. Fona tapetes attēls tiek lejupielādēts un saglabāts kešatmiņā. Tas tiks atkārtoti lejupielādēts, kad tiks mainīts URL vai jaucējkods.
 
       Politika ir jānorāda kā virkne, kurā ietverts URL un jaucējkods JSON formātā, piemēram,

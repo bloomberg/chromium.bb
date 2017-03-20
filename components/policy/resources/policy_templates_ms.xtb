@@ -286,6 +286,7 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
       Jika tetapan dibiarkan tanpa ditentukan, nilai lalai akan digunakan.
 
       Jika dasar ini tidak ditetapkan, nilai lalai akan digunakan untuk semua tetapan.</translation>
+<translation id="1960840544413786116">Sama ada hendak membenarkan sijil yang dikeluarkan oleh pengukuhan kepercayaan setempat yang tiasa sambungan subjectAlternativeName</translation>
 <translation id="1964634611280150550">Mod Inkognito dilumpuhkan</translation>
 <translation id="1964802606569741174">Dasar ini tidak berkesan terhadap apl YouTube Android. Jika Mod Keselamatan pada YouTube harus dikuatkuasakan, pemasangan apl YouTube Android tidak boleh dibenarkan.</translation>
 <translation id="1969212217917526199">Mengatasi dasar pada binaan Nyahpepijat bagi hos akses jauh.
@@ -340,6 +341,21 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
       Jika HardwareAccelerationModeEnabled ditetapkan kepada palsu, Disable3DAPIs diabaikan dan keadaan itu sama seperti Disable3DAPIs ditetapkan kepada benar.</translation>
 <translation id="2168397434410358693">Kelewatan melahu apabila dijalankan dengan kuasa AC</translation>
 <translation id="2170233653554726857">Dayakan pengoptimuman WPAD</translation>
+<translation id="2176565653304920879">Apabila dasar ini ditetapkan, aliran pengesanan zon waktu automatik akan menjadi satu daripada cara berikut bergantung pada nilai tetapan:
+
+      Jika ditetapkan pada TimezoneAutomaticDetectionUsersDecide, pengguna dapat mengawal pengesanan zon waktu automatik menggunakan kawalan biasa dalam chrome://settings.
+
+      Jika ditetapkan pada TimezoneAutomaticDetectionDisabled, kawalan zon waktu automatik dalam chrome://settings akan dilumpuhkan. Pengesanan zon waktu automatik akan sentiasa dimatikan.
+
+      Jika ditetapkan pada TimezoneAutomaticDetectionIPOnly, kawalan zon waktu dalam chrome://settings akan dilumpuhkan. Pengesanan zon waktu automatik akan sentiasa dihidupkan. Pengesanan zon waktu akan menggunakan kaedah IP sahaja untuk menyelesaikan lokasi.
+
+      Jika ditetapkan pada TimezoneAutomaticDetectionSendWiFiAccessPoints, kawalan zon waktu dalam chrome://settings akan dilumpuhkan. Pengesanan zon waktu automatik akan sentiasa dihidupkan. Senarai pusat akses Wi-Fi yang kelihatan akan sentiasa dihantar ke pelayan API Geolokasi untuk pengesanan zon waktu yang terperinci.
+
+      Jika ditetapkan pada TimezoneAutomaticDetectionSendAllLocationInfo, kawalan zon waktu dalam chrome://settings akan dilumpuhkan. Pengesanan zon waktu automatik akan sentiasa dihidupkan. Maklumat lokasi (seperti pusat akses Wi-Fi, Menara Sel yang boleh dihubungi, GPS) akan dihantar ke pelayan untuk pengesanan zon waktu yang terperinci.
+
+      ika dasar ini tidak ditetapkan, dasar ini akan berkelakuan seolah-olah TimezoneAutomaticDetectionUsersDecide ditetapkan.
+
+      Jika dasar SystemTimezone dasar tersebut akan melangkau dasar ini. Dalam hal ini, pengesanan zon waktu automatik dilumpuhkan sepenuhnya.</translation>
 <translation id="2178899310296064282">Kuatkuasakan sekurang-kurangnya Mod Sekatan Sederhana di YouTube</translation>
 <translation id="2183294522275408937">Tetapan ini mengawal kekerapan kunci skrin meminta kata laluan yang perlu dimasukkan untuk terus menggunakan buka kunci pantas. Setiap kali kunci skrin dimasukkan dan jika bilangan masukan kata laluan terakhir melebihi tetapan ini, buka kunci pantas tidak akan tersedia untuk memasuki kunci skrin. Sekiranya pengguna terus berada pada kunci skrin melebihi tempoh masa ini, kata laluan akan diminta apabila pengguna memasukkan kod yang salah selepas ini atau memasuki semula kunci skrin, mana-mana pilihan yang dilakukan dahulu.
 
@@ -1472,11 +1488,21 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
           Jika dasar ini dibiarkan tanpa ditetapkan, 'AskNotifications' akan digunakan dan pengguna akan boleh mengubahnya.</translation>
 <translation id="538108065117008131">Benarkan <ph name="PRODUCT_FRAME_NAME" /> untuk menguruskan jenis kandungan berikut.</translation>
 <translation id="5388730678841939057">Pilih strategi yang digunakan untuk mengosongkan ruang cakera semasa pembersihan automatik (dikecam)</translation>
+<translation id="5392172595902933844">Maklumat tentang status Android dihantar kembali ke
+      pelayan.
+
+      Jika dasar ini ditetapkan kepada palsu atau dibiarkan tanpa ditetapkan, maklumat status tidak akan dilaporkan.
+            Jika ditetapkan kepada benar, maklumat status akan dilaporkan.
+
+      Dasar ini hanya terpakai jika apl Android didayakan.</translation>
 <translation id="5395271912574071439">Mendayakan pengadangan hos akses jauh semasa sambungan sedang dijalankan.
 
           Jika tetapan ini didayakan, maka peranti masukan dan keluaran fizikal hos akan dilumpuhkan semasa sambungan jauh sedang dijalankan.
 
           Jika tetapan ini dilumpuhkan atau tidak ditetapkan, maka kedua-dua pengguna setempat dan jauh boleh berinteraksi dengan hos apabila hos dikongsi.</translation>
+<translation id="5405289061476885481">Mengkonfigurasi reka letak papan kekunci yang dibenarkan pada skrin log masuk <ph name="PRODUCT_OS_NAME" />.
+
+      Jika dasar ini ditetapkan untuk menyenaraikan pengecam kaedah masukan, kaedah masukan tertentu akan tersedia pada skrin log masuk. Kaedah masukan tertentu yang pertama akan dipilih dahulu. Walaupun pod pengguna difokuskan pada skrin log masuk, kaedah masukan pengguna yang terakhir akan tersedia sebagai tambahan kepada kaedah masukan yang diberikan oleh dasar ini. Jika dasar ini tidak ditetapkan, kaedah masukan pada skrin log masuk akan dihasilkan daripada penempatan tempat skrin log masuk dipaparkan. Nilai yang bukan daripada pengecam kaedah masukan yang sah akan diabaikan.</translation>
 <translation id="5423001109873148185">Jika didayakan, dasar ini memaksa enjin carian diimport daripada penyemak imbas lalai semasa. Jika didayakan, dasar ini juga menjejaskan dialog import.
 
       Jika dilumpuhkan, enjin carian lalai tidak akan diimport.
@@ -1551,6 +1577,11 @@ Contoh komponen seperti itu termasuk senarai pembatalan sijil dan data semakan i
       Jika anda menetapkan dasar ini, pengguna tidak boleh mengubah atau mengatasinya.
 
       Jika dasar ini dibiarkan tanpa ditetapkan, pengguna boleh memilih untuk menyembunyikan rak secara automatik atau tidak.</translation>
+<translation id="557360560705413259">Apabila tetapan ini dadayakan, <ph name="PRODUCT_NAME" /> akan menggunakan commonName sijil pelayan untuk dipadankan dengan nama hos jika sijil tiada sambungan subjectAlternativeName, dengan syarat sijil ini berjaya disahkan dan dikaitkan dengan sijil CA yang dipasang setempat.
+
+      Harap maklum bahawa langkah ini tidak disyorkan kerana boleh membenarkan pintasan sambungan nameConstraints yang menyekat nama hos yang boleh diberi kebenaran oleh sijil tertentu.
+
+      Jika dasar ini tidak ditetapkan atau ditetapkan kepada palsu, sijil pelayan yang ketiadaan sambungan subjectAlternativeName yang mengandungi sama ada nama DNS atau alamat IP tidak akan dipercayai.</translation>
 <translation id="557658534286111200">Mendayakan atau melumpuhkan pengeditan penanda halaman</translation>
 <translation id="5586942249556966598">Jangan buat apa-apa</translation>
 <translation id="5613179474872285001">Mengkonfigurasikan nama domain pelanggan yang diperlukan, yang akan dikenakan pada pelanggan akses jauh dan menghalang pengguna daripada menukarnya.
@@ -2872,6 +2903,11 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Jika didayakan, tangkapan skrin tidak boleh diambil menggunakan pintasan papan kekunci atau API sambungan.
 
       Jika dilumpuhkan atau tidak ditentukan, pengambilan tangkapan skrin dibenarkan.</translation>
+<translation id="9212233969680267790">Amaran: Dasar versi TLS maksimum akan dialih keluar sepenuhnya daripada <ph name="PRODUCT_NAME" /> sekitar versi 66 (sekitar Februari 2018).
+
+      Jika dasar ini tidak dikonfigurasikan, maka <ph name="PRODUCT_NAME" /> akan menggunakan versi maksimum lalai.
+
+      Jika tidak, dasar ini mungkin ditetapkan kepada satu daripada nilai berikut: "tls1.2" atau "tls1.3". Apabila ditetapkan, <ph name="PRODUCT_NAME" /> tidak akan menggunakan versi SSL/TLS yang lebih tinggi daripada versi yang dinyatakan. Nilai yang tidak dicam akan diabaikan.</translation>
 <translation id="9213347477683611358">Mengkonfigurasikan imej kertas dinding tahap peranti yang dipaparkan pada skrin log masuk jika belum ada pengguna yang pernah log masuk ke peranti. Dasar ini ditetapkan dengan menentukan URL tempat peranti OS Chrome boleh memuat turun imej kertas dinding itu dan cincangan kriptografi digunakan untuk mengesahkan integriti muat turun itu. Imej mestilah dalam format JPEG dan saiznya tidak boleh melebihi 16MB. URL mestilah boleh diakses tanpa sebarang pengesahan. Imej kertas dinding dimuat turun dan dicache. Imej kertas dinding akan dimuat turun semula setiap kali URL atau cincangan berubah.
 
       Dasar ini hendaklah ditetapkan sebagai rentetan yang menyatakan URL dan cincangan dalam format JSON, mis.,

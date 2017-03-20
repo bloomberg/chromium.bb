@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="hu">
 <translation id="1135328998467923690">A következő csomag érvénytelen: "<ph name="ERROR_CODE" />".</translation>
+<translation id="1140871961407805696">Hátlapi</translation>
 <translation id="1256619696651732561">Bővítményjegyzék elemzője</translation>
 <translation id="1445572445564823378">Ez a bővítmény lassítja a <ph name="PRODUCT_NAME" /> működését. Kapcsolja ki a <ph name="PRODUCT_NAME" /> teljesítményének visszaállításához.</translation>
 <translation id="149347756975725155">A(z) '<ph name="ICON" />' bővítményikon betöltése nem sikerült.</translation>
@@ -42,6 +43,7 @@
 <translation id="7217838517480956708">Az eszköz rendszergazdája megköveteli, hogy a(z) <ph name="EXTENSION_NAME" /> telepítve legyen. A bővítményt nem lehet eltávolítani vagy módosítani.</translation>
 <translation id="7809034755304591547">A(z) <ph name="EXTENSION_NAME" /> bővítményt (bővítményazonosító: „<ph name="EXTENSION_ID" />”) blokkolta a rendszergazda.</translation>
 <translation id="7972881773422714442">Lehetőségek: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
+<translation id="8035920974645200807">Előlapi</translation>
 <translation id="8047248493720652249">Ez a bővítmény nem tudta elnevezni a(z) „<ph name="ATTEMPTED_FILENAME" />” letöltést, mert egy másik bővítmény (<ph name="EXTENSION_NAME" />) eltérő fájlnevet határozott meg: „<ph name="ACTUAL_FILENAME" />”.</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> (<ph name="VENDOR_NAME" />)</translation>
 <translation id="8341840687457896278">A bővítmény nem tudott hitelesítési adatokat biztosítani egy hálózati kérésnek, mert egy másik bővítmény (<ph name="EXTENSION_NAME" />) eltérő hitelesítési adatokat adott meg.</translation>

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="lv">
 <translation id="1135328998467923690">Pakotne nav derīga: <ph name="ERROR_CODE" />.</translation>
+<translation id="1140871961407805696">Vērsta uz aizmuguri</translation>
 <translation id="1256619696651732561">Paplašinājumu manifestu parsētājs</translation>
 <translation id="1445572445564823378">Šis paplašinājums palēnina <ph name="PRODUCT_NAME" /> darbību. Atspējojiet to, lai atjaunotu <ph name="PRODUCT_NAME" /> veiktspēju.</translation>
 <translation id="149347756975725155">Nevarēja ielādēt paplašinājuma ikonu “<ph name="ICON" />”.</translation>
@@ -42,6 +43,7 @@
 <translation id="7217838517480956708">Šīs ierīces administrators uzskata, ka paplašinājumam <ph name="EXTENSION_NAME" /> ir jābūt instalētam. To nevar noņemt vai pārveidot.</translation>
 <translation id="7809034755304591547">Administrators bloķēja paplašinājumu <ph name="EXTENSION_NAME" /> (paplašinājuma ID “<ph name="EXTENSION_ID" />”).</translation>
 <translation id="7972881773422714442">Iespējas: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
+<translation id="8035920974645200807">Vērsta uz lietotāju</translation>
 <translation id="8047248493720652249">Šim paplašinājumam neizdevās piešķirt nosaukumu lejupielādei “<ph name="ATTEMPTED_FILENAME" />”, jo cits paplašinājums (<ph name="EXTENSION_NAME" />) noteica citu faila nosaukumu “<ph name="ACTUAL_FILENAME" />”.</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> no <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Šis paplašinājums nevarēja sniegt tīkla pieprasījuma akreditācijas datus, jo cits paplašinājums (<ph name="EXTENSION_NAME" />) sniedza atšķirīgus akreditācijas datus.</translation>

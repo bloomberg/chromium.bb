@@ -101,6 +101,7 @@ Pvz., kai kurios svetainės gali atsakyti į šią užklausą parodydamos skelbi
 <translation id="2871695793448672541">Paslėptas slaptažodis</translation>
 <translation id="2898963176829412617">Naujas aplankas...</translation>
 <translation id="2903493209154104877">Adresai</translation>
+<translation id="291754862089661335">QR arba brūkšninis kodas turėtų būti rodomas šiame rėmelyje</translation>
 <translation id="2921219216347069551">Neįman. bendr. pusl.</translation>
 <translation id="292639812446257861">Pažymėti kaip neskaitytus</translation>
 <translation id="2933759065870693102">Žibintuvėlis</translation>
@@ -172,7 +173,6 @@ Jei norite koreguoti paieškos terminą, paspauskite ir laikykite, kad jį pasir
 <translation id="4359125752503270327">Šis puslapis bus atidarytas kitoje programoje.</translation>
 <translation id="4378154925671717803">Telefonas</translation>
 <translation id="441868831736628555">Privatumo pranešimas</translation>
-<translation id="4473991315115669931">Įjungti inkognito režimą.</translation>
 <translation id="4526249700380860531">Peržiūrėkite ir tvarkykite išsaugotus slaptažodžius apsilankę adresu <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Bandykite prisijungti dar kartą.</translation>
 <translation id="4620246317052452550">Perskaityti puslapiai</translation>
@@ -246,7 +246,6 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="6042308850641462728">Daugiau</translation>
 <translation id="605721222689873409">MM</translation>
 <translation id="6066301408025741299">Palieskite, jei norite atšaukti.</translation>
-<translation id="60851516108411750">Skaitymo sąrašas yra pasiekiamas neprisijungus. Jei norite pridėti puslapį prie skaitymo sąrašo, palieskite <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="6122191549521593678">Prisijungęs</translation>
 <translation id="6127379762771434464">Elementas pašalintas</translation>
 <translation id="6136914049981179737">Prieš sek.</translation>
@@ -381,7 +380,6 @@ Be to, reikia įgalinti „Handoff“ nustatymų skiltyje „Bendrieji“, o įr
 <translation id="8741995161408053644">Adresu <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> gali būti pateikta kitų formų jūsų „Google“ paskyros istorija.</translation>
 <translation id="8775144690796719618">Netinkamas URL</translation>
 <translation id="8820817407110198400">Žymės</translation>
-<translation id="882482397944455431">Išjungti inkognito režimą</translation>
 <translation id="8840513115188359703">Nebūsite atjungti nuo „Google“ paskyros.</translation>
 <translation id="8904976895050290827">Chrome Sync</translation>
 <translation id="895541991026785598">Pranešti apie problemą</translation>

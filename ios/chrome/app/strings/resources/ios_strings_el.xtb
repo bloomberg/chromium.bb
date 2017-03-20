@@ -101,6 +101,7 @@
 <translation id="2871695793448672541">Κρυφός κωδικός</translation>
 <translation id="2898963176829412617">Νέος φάκελος…</translation>
 <translation id="2903493209154104877">Διευθύνσεις</translation>
+<translation id="291754862089661335">Τοποθετήστε τον κώδικα QR ή τον γραμμωτό κώδικα σε αυτό το πλαίσιο</translation>
 <translation id="2921219216347069551">Κοιν.χ. σελ. αδύνατη</translation>
 <translation id="292639812446257861">Επισ. ως μη αναγνωσμένων</translation>
 <translation id="2933759065870693102">Φακός</translation>
@@ -172,7 +173,6 @@
 <translation id="4359125752503270327">Αυτή η σελίδα θα ανοίξει σε άλλη εφαρμογή.</translation>
 <translation id="4378154925671717803">Τηλέφωνο</translation>
 <translation id="441868831736628555">Σημείωση απορρήτου</translation>
-<translation id="4473991315115669931">Είσοδος στην κατάσταση ανώνυμης περιήγησης</translation>
 <translation id="4526249700380860531">Προβολή και διαχείριση των αποθηκευμένων κωδικών πρόσβασης στη διεύθυνση <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Δοκιμάστε να συνδεθείτε ξανά.</translation>
 <translation id="4620246317052452550">Σελίδες που έχετε διαβάσει</translation>
@@ -246,7 +246,6 @@
 <translation id="6042308850641462728">Περισσότερα</translation>
 <translation id="605721222689873409">ΕΕ</translation>
 <translation id="6066301408025741299">Πατήστε για ακύρωση.</translation>
-<translation id="60851516108411750">Η λίστα ανάγνωσης είναι διαθέσιμη εκτός σύνδεσης. Για να προσθέσετε μια σελίδα στη λίστα ανάγνωσης, πατήστε το εικονίδιο <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="6122191549521593678">Συνδεδεμένο</translation>
 <translation id="6127379762771434464">Το στοιχείο καταργήθηκε</translation>
 <translation id="6136914049981179737">Δευτ.πριν</translation>
@@ -381,7 +380,6 @@
 <translation id="8741995161408053644">Ο Λογαριασμός σας Google ενδέχεται να διαθέτει άλλες μορφές ιστορικού περιήγησης στη διεύθυνση <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8775144690796719618">Μη έγκυρη διεύθ. URL</translation>
 <translation id="8820817407110198400">Σελιδοδείκτες</translation>
-<translation id="882482397944455431">Έξοδος από την κατάσταση ανώνυμης περιήγησης</translation>
 <translation id="8840513115188359703">Δεν θα αποσυνδεθείτε από το Λογαριασμό σας Google.</translation>
 <translation id="8904976895050290827">Συγχρονισμός Chrome</translation>
 <translation id="895541991026785598">Αναφορά προβλήματος</translation>

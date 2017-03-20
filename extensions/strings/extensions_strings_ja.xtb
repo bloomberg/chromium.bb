@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ja">
 <translation id="1135328998467923690">パッケージが無効です: <ph name="ERROR_CODE" /></translation>
+<translation id="1140871961407805696">外向き</translation>
 <translation id="1256619696651732561">拡張機能マニフェストのパーサー</translation>
 <translation id="1445572445564823378">この拡張機能によって <ph name="PRODUCT_NAME" /> の速度が低下しています。<ph name="PRODUCT_NAME" /> のパフォーマンスを回復するには、この拡張機能を無効にしてください。</translation>
 <translation id="149347756975725155">拡張機能アイコン「<ph name="ICON" />」を読み込むことができませんでした。</translation>
@@ -42,6 +43,7 @@
 <translation id="7217838517480956708">このパソコンの管理者にとって <ph name="EXTENSION_NAME" /> がインストールされている必要があります。削除や修正はできません。</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME" />（拡張機能 ID「<ph name="EXTENSION_ID" />」）は管理者によってブロックされています。</translation>
 <translation id="7972881773422714442">オプション: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
+<translation id="8035920974645200807">ユーザー向き</translation>
 <translation id="8047248493720652249">この拡張機能は、ダウンロード ファイル「<ph name="ATTEMPTED_FILENAME" />」に名前を付けることができませんでした。別の拡張機能（<ph name="EXTENSION_NAME" />）が異なるファイル名「<ph name="ACTUAL_FILENAME" />」を指定しました。</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" />、提供元: <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">別の拡張機能（<ph name="EXTENSION_NAME" />）がネットワーク リクエストに別の認証情報を提供したため、この拡張機能は認証情報を提供できませんでした。</translation>

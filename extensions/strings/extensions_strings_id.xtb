@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="id">
 <translation id="1135328998467923690">Paket tidak valid: '<ph name="ERROR_CODE" />'.</translation>
+<translation id="1140871961407805696">Kamera belakang</translation>
 <translation id="1256619696651732561">Pengurai Manifes Ekstensi</translation>
 <translation id="1445572445564823378">Ekstensi ini memperlambat <ph name="PRODUCT_NAME" />. Anda harus menonaktifkannya agar dapat memulihkan kinerja <ph name="PRODUCT_NAME" />.</translation>
 <translation id="149347756975725155">Tidak dapat memuat ikon ekstensi '<ph name="ICON" />'.</translation>
@@ -42,6 +43,7 @@
 <translation id="7217838517480956708">Administrator mesin ini membutuhkan <ph name="EXTENSION_NAME" /> untuk dipasang. Persyaratan ini tidak dapat dihapus atau dimodifikasi.</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME" /> (ID ekstensi "<ph name="EXTENSION_ID" />") dicekal oleh administrator.</translation>
 <translation id="7972881773422714442">Opsi: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
+<translation id="8035920974645200807">Kamera depan</translation>
 <translation id="8047248493720652249">Ekstensi ini gagal memberi nama download "<ph name="ATTEMPTED_FILENAME" />" karena ekstensi lain (<ph name="EXTENSION_NAME" />) menentukan nama file yang berbeda "<ph name="ACTUAL_FILENAME" />".</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> dari <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Ekstensi ini gagal memberikan kredensial ke permintaan jaringan karena ekstensi lain (<ph name="EXTENSION_NAME" />) telah memberikan kredensial yang berbeda.</translation>

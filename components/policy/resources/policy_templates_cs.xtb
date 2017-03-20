@@ -253,6 +253,7 @@ Tyto zásady se použijí pouze v případě, že je nainstalován hostitel Vzd
       Pokud některá možnost nebude nakonfigurována, použije se výchozí hodnota.
 
       Pokud tato zásada není nastavena, budou pro všechna nastavení použity výchozí hodnoty.</translation>
+<translation id="1960840544413786116">Udává, zda mají být povoleny certifikáty vydané místními kotvami vztahu důvěryhodnosti bez rozšíření subjectAlternativeName.</translation>
 <translation id="1964634611280150550">Anonymní režim zakázán</translation>
 <translation id="1964802606569741174">Tato zásada nemá vliv na aplikaci YouTube pro Android. Chcete-li na YouTube vynutit bezpečný režim, měli byste instalaci aplikace YouTube pro Android zakázat.</translation>
 <translation id="1969212217917526199">Přepíše zásady u ladicích sestavení hostitele vzdáleného připojení.
@@ -295,6 +296,21 @@ Pokud tato zásada není nastavena, použije se výchozí hodnota 0 a uživatel
 <translation id="2166715102875984646">Deaktivovat podporu rozhraní API pro 3D grafiku</translation>
 <translation id="2168397434410358693">Prodleva nečinnosti při napájení ze sítě</translation>
 <translation id="2170233653554726857">Povolení optimalizace WPAD</translation>
+<translation id="2176565653304920879">Když je tato zásada nastavena, automatické zjištění časového pásma bude v závislosti na hodnotě nastavení probíhat jedním z následujících způsobů:
+
+      Je-li tato zásada nastavena na možnost TimezoneAutomaticDetectionUsersDecide, uživatelé budou moci automatické zjišťování časového pásma ovládat pomocí běžných ovládacích prvků na stránce chrome://settings.
+
+      Je-li tato zásada nastavena na možnost TimezoneAutomaticDetectionDisabled, ovládací prvky automatického zjišťování časového pásma na stránce chrome://settings budou deaktivovány. Automatické zjišťování časového pásma bude vždy vypnuto.
+
+      Je-li tato zásada nastavena na možnost TimezoneAutomaticDetectionIPOnly, ovládací prvky časových pásem na stránce chrome://settings budou deaktivovány. Automatické zjišťování časového pásma bude vždy zapnuto. Poloha se za účelem zjištění časového pásma bude určovat pouze podle IP adresy.
+
+      Je-li tato zásada nastavena na možnost TimezoneAutomaticDetectionSendWiFiAccessPoints, ovládací prvky časových pásem na stránce chrome://settings budou deaktivovány. Automatické zjišťování časového pásma bude vždy zapnuto. Za účelem přesného určení časového pásma se vždy odešle seznam viditelných přístupových bodů Wi-Fi na server Geolocation API.
+
+      Je-li tato zásada nastavena na možnost TimezoneAutomaticDetectionSendAllLocationInfo, ovládací prvky časových pásem na stránce chrome://settings budou deaktivovány. Automatické zjišťování časového pásma bude vždy zapnuto. Údaje o poloze (jako jsou přístupové body Wi-Fi, dostupné vysílače mobilní sítě a informace ze systému GPS) budou za účelem přesného určení časového pásma odeslány na server.
+
+      Pokud tato zásada není nastavena, bude se chovat, jako by byla nastavena na možnost TimezoneAutomaticDetectionUsersDecide.
+
+      Pokud je nastavena zásada SystemTimezone, má před touto zásadou přednost. V tomto případě je automatické zjišťování časového pásma zcela vypnuto.</translation>
 <translation id="2178899310296064282">Vynutit na YouTube alespoň střední nastavení omezeného režimu</translation>
 <translation id="2183294522275408937">Toto nastavení udává, jak často bude na obrazovce uzamčení vyžadováno zadání hesla, aby bylo možné i nadále používat rychlé odemknutí. Při každém vstupu na obrazovku uzamčení se zkontroluje, jaká doba uplynula od posledního zadání hesla. Pokud uplynula delší doba než udává toto nastavení, funkce rychlého odemknutí nebude k dispozici. Pokud uživatel na obrazovce uzamčení zůstane a tato doba bude překročena, bude uživatel o heslo požádán, buď až zadá nesprávný kód, nebo až znovu přejde na obrazovku uzamčení (podle toho, co nastane dříve).
 
@@ -1408,10 +1424,19 @@ Pokud zásadu nastavíte, můžete nakonfigurovat, zda má uživatel oprávněn�
           Pokud tuto zásadu nenastavíte, použije se zásada AskNotifications a uživatelé ji budou moci změnit.</translation>
 <translation id="538108065117008131">Umožňuje pluginu <ph name="PRODUCT_FRAME_NAME" /> zpracovávat následující typy obsahu.</translation>
 <translation id="5388730678841939057">Zvolí strategii pro uvolnění místa na disku při automatickém čištění (zastaralé)</translation>
+<translation id="5392172595902933844">Informace o stavu systému Android se odesílají zpět na server.
+
+      Je-li tato zásada nastavena na hodnotu False nebo nenastavena, nebudou hlášeny žádné informace o stavu.
+      Pokud je nastavena na hodnotu True, informace budou hlášeny.
+
+      Tato zásada se používá pouze v případě, že jsou povoleny aplikace pro Android.</translation>
 <translation id="5395271912574071439">Povolí blokování uživatelského rozhraní hostitelů vzdáleného přístupu během připojení.
           Je-li nastavení povoleno, jsou fyzická vstupní a výstupní zařízení hostitele během probíhajícího vzdáleného připojení deaktivována.
 
           Pokud je nastavení zakázáno nebo není nastaveno, mohou místní nebo vzdálení uživatelé během sdílení provádět interakci s hostitelem.</translation>
+<translation id="5405289061476885481">Konfiguruje, která rozložení klávesnic jsou povolena na přihlašovací obrazovce systému <ph name="PRODUCT_OS_NAME" />.
+
+      Je-li tato zásada nastavena na seznam metod zadávání, budou na přihlašovací obrazovce k dispozici příslušné metody zadávání. První metoda zadávání bude předvybrána. Když je na přihlašovací obrazovce zakliknut profil konkrétního uživatele, bude kromě metod zadávání definovaných touto zásadou k dispozici také metoda zadávání, kterou uživatel naposledy použil. Pokud tato zásada není nastavena, metody zadávání na přihlašovací obrazovce budou vycházet z jazyka, ve kterém se zobrazuje přihlašovací obrazovka. Hodnoty, které nejsou platnými identifikátory metod zadávání budou ignorovány.</translation>
 <translation id="5423001109873148185">Je-li tato zásada aktivovaná, vynucuje import vyhledávačů z aktuálního výchozího prohlížeče. Aktivace této zásady má také vliv na dialogové okno importu.
      
      Je-li deaktivovaná, k importu výchozího vyhledávače nedojde.
@@ -1484,6 +1509,11 @@ Pokud je tato zásada nastavena na hodnotu NeverAutoHideShelf, polička se nikdy
 Pokud nastavíte tuto zásadu, uživatelé ji nebudou moci změnit ani přepsat.
 
 Pokud tuto zásadu ponecháte nenastavenou, uživatelé budou moci nastavit automatické skrývání poličky sami.</translation>
+<translation id="557360560705413259">Když je toto nastavení zapnuto, u certifikátů bez rozšíření subjectAlternativeName posoudí prohlížeč <ph name="PRODUCT_NAME" /> shodu s názvem hostitele podle údaje commonName serverového certifikátu. Podmínkou je, že certifikát musí být úspěšně ověřen a jeho řetěz důvěryhodnosti musí vést k místně nainstalovaným certifikátům CA.
+
+      Zapnutí této možnost se nedoporučuje, protože může umožnit obejití rozšíření nameConstraints, jež omezuje názvy hostitelů, pro které může být certifikát autorizován.
+
+      Pokud tato zásada není nastavena nebo je nastavena na hodnotu false, certifikáty serverů bez rozšíření subjectAlternativeName, které obsahují buď název DNS nebo IP adresu, nebudou považovány za důvěryhodné.</translation>
 <translation id="557658534286111200">Povolí nebo zakáže úpravy záložek</translation>
 <translation id="5586942249556966598">Nedělat nic</translation>
 <translation id="5613179474872285001">Slouží ke konfiguraci povinného názvu klientské domény, který bude uveden u klientů vzdáleného přístupu, a brání uživatelům, aby jej změnili.
@@ -2330,6 +2360,7 @@ Tato zásada není k dispozici v instancích Windows, které nejsou připojen�
 <translation id="7937766917976512374">Povolit nebo zakázat záznam videa</translation>
 <translation id="7941975817681987555">Nepředvídat síťové akce u žádných síťových připojení</translation>
 <translation id="7953256619080733119">Hostitelské servery ručních výjimek spravovaného uživatele</translation>
+<translation id="7965394584578183156">Při určování časového pásma na server vždy odeslat přístupové body Wi-Fi.</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Tato zásada již není podporována.
           Povolí použití synchronizačních serverů a serverů STUN při připojování ke vzdálenému klientu.
@@ -2483,6 +2514,7 @@ Pokud je tato zásada nastavena na hodnotu false, prohlížeč uvítací stránk
 <translation id="8390049129576938611">Zakáže v prohlížeči <ph name="PRODUCT_NAME" /> interní prohlížeč souborů PDF. Soubory PDF se budou stahovat a uživatel je bude moci otevřít ve výchozí aplikaci.
 
       Pokud tuto zásadu ponecháte nenastavenou nebo deaktivovanou, budou se soubory PDF otevírat pomocí pluginu PDF (pokud jej uživatel nezakáže).</translation>
+<translation id="8398203849316312944">Při určování časového pásma na server vždy odesílat všechny dostupné signály týkající se polohy.</translation>
 <translation id="8402079500086185021">Soubory PDF otevírat vždy externě</translation>
 <translation id="8412312801707973447">Zda se budou provádět online kontroly OCSP/CRL</translation>
 <translation id="8413348101535146315">Umožňuje ukončování procesů ve Správci úloh prohlížeče <ph name="PRODUCT_NAME" />.
@@ -2702,6 +2734,11 @@ Pokud je tato zásada nastavena na hodnotu true a uživatel vypne zařízení, s
       Je-li zásada povolena, nelze pořizovat snímky obrazovky pomocí klávesových zkratek ani rozhraní API rozšíření.
 
       Je-li zakázána, nebo není nastavena, pořizování snímků obrazovky je povoleno.</translation>
+<translation id="9212233969680267790">Upozornění: Přibližně od verze 66 (cca v únoru 2018) bude zásada maximální verze TLS z prohlížeče <ph name="PRODUCT_NAME" /> zcela odebrána.
+
+      Pokud tato zásada není nakonfigurována, použije <ph name="PRODUCT_NAME" /> výchozí maximální verzi.
+
+      Zásadu lze nastavit na jednu z následujících hodnot: tls1.2 nebo tls1.3. Když je nastavena, <ph name="PRODUCT_NAME" /> nebude používat verze SSL/TLS vyšší, než je zadaná verze. Nerozpoznané hodnoty budou ignorovány.</translation>
 <translation id="9213347477683611358">Slouží ke konfiguraci obrázku tapety na úrovni zařízení, který se bude zobrazovat na přihlašovací obrazovce, pokud se do zařízení dosud nepřihlásil žádný uživatel. Zásadu nastavíte zadáním adresy URL, ze které může zařízení se systémem Chrome OS obrázek tapety stáhnout, a kryptografické hodnoty hash k ověření integrity staženého obsahu. Obrázek musí být ve formátu JPEG a jeho velikost nesmí překročit 16 MB. Adresa URL musí být přístupná bez ověření. Obrázek tapety se stáhne a uloží do mezipaměti. Při každé změně adresy URL nebo hodnoty hash se obrázek stáhne znovu.
 
       Tuto zásadu je třeba zadat jako řetězec, který udává adresu URL a hodnotu hash ve formátu JSON. Příklad:

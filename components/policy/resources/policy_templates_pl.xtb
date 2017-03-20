@@ -271,6 +271,7 @@
       Jeśli jakieś ustawienie pozostanie nieokreślone, obowiązuje wartość domyślna.
 
       Jeśli zasada nie jest włączona, wszystkie ustawienia mają wartości domyślne.</translation>
+<translation id="1960840544413786116">Określa, czy zezwolić na certyfikaty wydane przez lokalne kotwice zaufania, którym brakuje rozszerzenia subjectAlternativeName</translation>
 <translation id="1964634611280150550">Tryb incognito wyłączony</translation>
 <translation id="1964802606569741174">Ta zasada nie ma wpływu na aplikację YouTube na Androida. Aby wymusić Tryb bezpieczny w YouTube, trzeba uniemożliwić zainstalowanie tej aplikacji.</translation>
 <translation id="1969212217917526199">Zastępuje zasady w kompilacjach hosta dostępu zdalnego w trybie debugowania.
@@ -326,6 +327,21 @@
       Jeśli zasada HardwareAccelerationModeEnabled jest wyłączona, zasada Disable3DAPIs jest ignorowana, a włączona jest zasada równoważna wobec Disable3DAPI.</translation>
 <translation id="2168397434410358693">Opóźnienie bezczynności przy zasilaniu sieciowym</translation>
 <translation id="2170233653554726857">Włącz optymalizację WPAD</translation>
+<translation id="2176565653304920879">Gdy zasada jest ustawiona, proces automatycznego wykrywania strefy czasowej przebiega na jeden z tych sposobów, zależnie od ustawionej wartości:
+
+      Jeśli wartość to TimezoneAutomaticDetectionUsersDecide, użytkownicy mogą określać automatyczne wykrywanie strefy czasowej przy użyciu zwykłych opcji na stronie chrome://settings.
+
+      Jeśli wartość to TimezoneAutomaticDetectionDisabled, opcje sterowania automatyczną zmianą strefy czasowej na stronie chrome://settings są wyłączone. Automatyczne wykrywanie strefy czasowej jest zawsze wyłączone.
+
+      Jeśli wartość to TimezoneAutomaticDetectionIPOnly, opcje sterowania automatyczną zmianą strefy czasowej na stronie chrome://settings są wyłączone. Automatyczne wykrywanie strefy czasowej jest zawsze włączone. Wykrywanie strefy czasowej do określania lokalizacji używa tylko adresu IP.
+
+      Jeśli wartość to TimezoneAutomaticDetectionSendWiFiAccessPoints, opcje sterowania automatyczną zmianą strefy czasowej na stronie chrome://settings są wyłączone. Automatyczne wykrywanie strefy czasowej jest zawsze włączone. Lista widocznych punktów dostępu Wi-Fi jest zawsze przesyłana do serwera interfejsu API geolokalizacji, by z dużą dokładnością wykrywać strefę czasową.
+
+      Jeśli wartość to TimezoneAutomaticDetectionSendAllLocationInfo, opcje sterowania automatyczną zmianą strefy czasowej na stronie chrome://settings są wyłączone. Automatyczne wykrywanie strefy czasowej jest zawsze włączone. Na serwer przesyłane są informacje o lokalizacji (takie jak dane GPS, dane o punktach dostępu Wi-Fi czy o komórkowych stacjach przekaźnikowych w zasięgu), by z dużą dokładnością wykrywać strefę czasową.
+
+      Jeśli ta zasada nie jest ustawiona, stosowana jest wartość TimezoneAutomaticDetectionUsersDecide.
+
+      Tę zasadę zastępuje włączona zasada SystemTimezone. Jeśli obowiązuje zasada SystemTimezone, automatyczne wykrywanie strefy czasowej jest całkowicie wyłączone.</translation>
 <translation id="2178899310296064282">Wymuś co najmniej umiarkowany tryb ograniczonego dostępu w YouTube</translation>
 <translation id="2183294522275408937">To ustawienie określa, jak często trzeba podawać hasło na ekranie blokady, gdy używane jest szybkie odblokowanie. Szybkie odblokowanie ekranu blokady nie będzie możliwe, jeśli od ostatniego wpisania hasła minęło więcej czasu, niż określa to wartość tego ustawienia. Jeśli ekran blokady będzie otwarty dłużej niż wartość tego ustawienia, użytkownik będzie musiał podać hasło po podaniu błędnego kodu lub ponownym wyświetleniu ekranu blokady, w zależności od tego, co nastąpi wcześniej.
 
@@ -1376,11 +1392,20 @@ Jeśli ta zasada nie zostanie ustawiona, użytkownik będzie mógł korzystać z
 <translation id="5378985487213287085">Umożliwia określenie, czy witryny mogą wyświetlać powiadomienia na pulpicie. Wyświetlanie powiadomień na pulpicie może być domyślnie dozwolone lub zabronione bądź użytkownikowi może być wyświetlany monit za każdym razem, gdy witryna chce wyświetlić takie powiadomienie. W przypadku nieskonfigurowania tej zasady będzie używana zasada „AskNotifications”, a użytkownik będzie mógł zmienić to ustawienie.</translation>
 <translation id="538108065117008131">Zezwalaj wtyczce <ph name="PRODUCT_FRAME_NAME" /> na obsługę następujących typów treści</translation>
 <translation id="5388730678841939057">Wybierz strategię zwalniania miejsca na dysku podczas automatycznego czyszczenia (wycofana)</translation>
+<translation id="5392172595902933844">Informacje o stanie Androida są wysyłane z powrotem na serwer.
+
+      Jeśli zasada jest wyłączona lub nieskonfigurowana, nie są wysyłane żadne informacje o stanie.
+      Jeśli jest włączona, informacje o stanie są wysyłane.
+
+      Ta zasada ma zastosowanie tylko wtedy, gdy są włączone aplikacje na Androida.</translation>
 <translation id="5395271912574071439">Włącza separację hostów zdalnego dostępu podczas połączenia.
 
           W przypadku włączenia tej opcji fizyczne urządzenia wejściowe i wyjściowe hosta będą wyłączane na czas trwania połączenia zdalnego.
 
           Jeśli to ustawienie będzie wyłączone lub nieustawione, zarówno zdalni, jak i lokalni użytkownicy będą mogli korzystać z udostępnianego hosta.</translation>
+<translation id="5405289061476885481">Umożliwia wybranie układów klawiatury dozwolonych na ekranie logowania systemu <ph name="PRODUCT_OS_NAME" />.
+
+      Jeśli ta zasada ma ustawioną jako wartość listę identyfikatorów metod wprowadzania, metody te są dostępne na ekranie logowania. Wstępnie wybrana jest pierwsza z nich. Gdy na ekranie logowania jest wybrany profil danego użytkownika, oprócz metod wprowadzania ustawionych w tej zasadzie dostępna jest metoda ostatnio używana przez tego użytkownika. Gdy zasada nie jest skonfigurowana, metody wprowadzania na ekranie logowania odpowiadają ustawieniom regionalnym stosowanym do wyświetlania tego ekranu. Wartości, które nie są prawidłowymi identyfikatorami metod wprowadzania, są ignorowane.</translation>
 <translation id="5423001109873148185">Po włączeniu tej zasady wymuszany jest import wyszukiwarek z bieżącej przeglądarki domyślnej. Włączenie zasady ma również wpływ na opcje w oknie dialogowym importowania. W przypadku jej wyłączenia wyszukiwarka domyślna nie jest importowana. Jeśli zasada nie zostanie skonfigurowana, użytkownik może zobaczyć pytanie o zaimportowanie wyszukiwarki lub importowanie odbędzie się automatycznie.</translation>
 <translation id="5423197884968724595">Nazwa ograniczenia w Android WebView:</translation>
 <translation id="543559563129402336">Ta zasada została wycofana. Zamiast niej możesz użyć tej zasady: <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" />. Zastępuje ona wycofaną zasadę i umożliwia dokładniejszą konfigurację.
@@ -1448,6 +1473,11 @@ Jeśli je wyłączysz lub nie podasz wartości, stosowanie trybu ograniczonego d
       W przypadku ustawienia tej zasady, użytkownicy nie będą mogli jej zmienić ani nadpisać.
 
       Jeśli ta opcja pozostanie nieustawiona, półka będzie ukrywana automatycznie.</translation>
+<translation id="557360560705413259">Gdy to ustawienie jest włączone, <ph name="PRODUCT_NAME" /> użyje commonName certyfikatu serwera, by dopasować nazwę hosta, jeśli w certyfikacie brakuje rozszerzenia subjectAlternativeName. Będzie to możliwe, pod warunkiem że sprawdzenie poprawności i dołączenie do łańcucha lokalnie zainstalowanych certyfikatów CA wypadnie pomyślnie.
+
+      Nie jest to zalecane, bo może spowodować pominięcie rozszerzenia nameConstraints, które ogranicza nazwy hostów, na których dany certyfikat może być autoryzowany.
+
+      Jeśli ta zasada nie jest skonfigurowana lub jest wyłączona, certyfikaty serwera, które nie mają rozszerzenia subjectAlternativeName zawierającego nazwę DNS lub adres IP, nie będą uważane za zaufane.</translation>
 <translation id="557658534286111200">Włącz lub wyłącz edytowanie zakładek</translation>
 <translation id="5586942249556966598">Nic nie rób</translation>
 <translation id="5613179474872285001">Konfiguruje wymaganą nazwę domeny klienta, która będzie stosowana do klientów zdalnego dostępu, i uniemożliwia użytkownikom jej zmianę.
@@ -2655,6 +2685,11 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
 W przypadku włączenia tej zasady nie będzie można tworzyć zrzutów ekranu, używając skrótów klawiszowych lub interfejsów API rozszerzeń.
 
 W przypadku wyłączenia lub nieskonfigurowania tej zasady tworzenie zrzutów ekranu będzie dozwolone.</translation>
+<translation id="9212233969680267790">Ostrzeżenie: zasada najwyższej wersji TLS zostanie w całości usunięta z usługi <ph name="PRODUCT_NAME" /> prawdopodobnie w wersji 66 (mniej więcej w lutym 2018 r.).
+
+      Jeśli ta zasada nie jest skonfigurowana, <ph name="PRODUCT_NAME" /> korzysta z domyślnej najwyższej wersji.
+
+      W przeciwnym razie zasada może mieć jedną z tych wartości: „tls1.2” lub „tls1.3”. Po jej ustawieniu <ph name="PRODUCT_NAME" /> nie używa wersji SSL/TLS wyższych niż określona. Nierozpoznana wartość jest ignorowana.</translation>
 <translation id="9213347477683611358">Skonfiguruj tapetę na poziomie urządzenia wyświetlaną na ekranie logowania, jeśli żaden użytkownik nie jest jeszcze zalogowany na urządzeniu. Aby ustawić tę zasadę, podaj adres URL, z którego urządzenie z Chrome OS może pobrać tapetę, a także skrót kryptograficzny używany do weryfikacji poprawności pobranego pliku. Obraz musi być w formacie JPEG, a jego rozmiar nie może przekraczać 16 MB. URL musi być dostępny bez żadnego uwierzytelniania. Po pobraniu tapeta jest zapisywana w pamięci podręcznej. Gdy URL lub skrót się zmieni, pobieranie jest powtarzane.
 
       Zasadę należy zdefiniować jako ciąg znaków w formacie JSON zawierający URL i skrót, zgodnie z tym schematem:

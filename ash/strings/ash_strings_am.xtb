@@ -24,12 +24,16 @@
 <translation id="1525508553941733066">አሰናብት</translation>
 <translation id="15373452373711364">ትልቅ የመዳፊት ጠቋሚ</translation>
 <translation id="1550523713251050646">ለተጨማሪ አማራጮች ጠቅ ያድርጉ</translation>
+<translation id="1571442141242456645">የግቤት ስልትዎ ወደ <ph name="INPUT_METHOD_ID" /> ተቀይሯል።
+ለመቀየር Shift + Alt ይጫኑ።</translation>
 <translation id="1602076796624386989">የተንቀሳቃሽ ስልክ ውሂብን ያንቁ</translation>
 <translation id="1621499497873603021">ባትሪ ባዶ እስኪሆን ድረስ የቀረው ጊዜ፣ <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">የChrome መሣሪያ</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> ቀርቷል</translation>
 <translation id="1747827819627189109">በማያ ገጽ ላይ የቁልፍ ሰሌዳ ነቅቷል</translation>
 <translation id="1850504506766569011">Wi-Fi ጠፍቷል።</translation>
+<translation id="1854357586517521894">CAPS LOCK በርቷል።
+ለመሰረዝ Search ወይም Shift ይጫኑ።</translation>
 <translation id="1864454756846565995">USB-C መሣሪያ (የኋላ ወደብ)</translation>
 <translation id="1882897271359938046">ወደ <ph name="DISPLAY_NAME" /> በማንጸባረቅ ላይ</translation>
 <translation id="1919743966458266018">የተግባር መሪው የሚከፈትበት አቋራጭ ተቀይሯል። እባክዎ ከ<ph name="OLD_SHORTCUT" /> ይልቅ <ph name="NEW_SHORTCUT" />ን ይጠቀሙ።</translation>
@@ -62,6 +66,8 @@
 <translation id="2857608528410806398">የQU ባህሪ ማሳወቂያ አካል እዚህ ነው የሚሆነው። የQU ባህሪ ማሳወቂያ አካል እዚህ ነው የሚሆነው። የQU ባህሪ ማሳወቂያ አካል እዚህ ነው የሚሆነው። የQU ባህሪ ማሳወቂያ አካል እዚህ ነው የሚሆነው። የQU ባህሪ ማሳወቂያ አካል እዚህ ነው የሚሆነው።</translation>
 <translation id="2865888419503095837">የአውታረ መረብ መረጃ</translation>
 <translation id="2872961005593481000">ዝጋ</translation>
+<translation id="291653379653113090">የግብዓት ስልትዎ ወደ <ph name="INPUT_METHOD_ID" /> ተቀይሯል*(<ph name="BEGIN_LINK" />3ኛ ወገን<ph name="END_LINK" />)።
+ለመቀየር Shift + Altን ይጫኑ።</translation>
 <translation id="2942516765047364088">የመደርደሪያ አቀማመጥ</translation>
 <translation id="2946119680249604491">ግንኑነት ያክሉ</translation>
 <translation id="2963773877003373896">mod3</translation>
@@ -72,6 +78,8 @@
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">ግርጌ</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (ብሉቱዝ)</translation>
+<translation id="3109220592788908353">CAPS LOCK በርቷል።
+ለመሰረዝ Alt+Search ወይም Shift ይጫኑ።</translation>
 <translation id="3126069444801937830">ለማዘመን ዳግም ያስጀምሩ</translation>
 <translation id="3147142846278915599">ማስጀመሪያ (መተግበሪያዎችን በማመሳሰል ላይ...)</translation>
 <translation id="315116470104423982">የተንቀሳቃሽ ስልክ ውሂብ</translation>
@@ -119,7 +127,6 @@
 <translation id="4421231901400348175">የማያ ገጽዎን ቁጥጥር በርቀት እርዳታ በኩል ለ<ph name="HELPER_NAME" /> በማጋራት ላይ።</translation>
 <translation id="4430019312045809116">ድምፅ</translation>
 <translation id="4448844063988177157">የWi-Fi አውታረ መረቦችን በመፈለግ ላይ…</translation>
-<translation id="4479639480957787382">ኢተርኔት</translation>
 <translation id="4481530544597605423">ያልተጣመሩ መሣሪያዎች</translation>
 <translation id="4508225577814909926"><ph name="NAME" />፦ በመገናኘት ላይ...</translation>
 <translation id="4527045527269911712">የብሉቱዝ መሣሪያ «<ph name="DEVICE_NAME" />» ለመጣመር ፍቃድ ይፈልጋል።</translation>
@@ -140,6 +147,7 @@
 <translation id="5313326810920013265">የብሉቱዝ ቅንብሮች</translation>
 <translation id="532063867737390965">ይህ የአውታረ መረብ ቅንብር በአስተዳዳሪው ተሰናክሏል።</translation>
 <translation id="5331975486040154427">USB-C መሣሪያ (የግራ ጎን ኋላ ወደብ)</translation>
+<translation id="5430931332414098647">ቅጽበታዊ እንደ ሞደም መሰካት</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">ሁሉም የሚገኙ ተጤቃሚዎች አስቀድመው ወደዚህ ክፍለ-ጊዜ ታክለዋል።</translation>
 <translation id="5507786745520522457">የተንቀሳቃሽ ስልክ ውሂብ ያዋቅሩ</translation>
@@ -210,7 +218,6 @@
 <translation id="735745346212279324">የቪ ፒ ኤን ግንኙነት ተቋርጧል</translation>
 <translation id="742594950370306541">ካሜራ ስራ ላይ ነው።</translation>
 <translation id="743058460480092004">ካሜራና ማይክራፎን ስራ ላይ ናቸው።</translation>
-<translation id="7502658306369382406">የIPv6 አድራሻ</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> <ph name="SPECIFIED_RESOLUTION" />ን አይደግፍም። ጥራቱ ወደ <ph name="FALLBACK_RESOLUTION" /> ተቀይሯል</translation>
 <translation id="7562368315689366235">ስሜት ገላጭ ሥዕል ቤተ-ሥዕል</translation>
@@ -240,7 +247,6 @@
 <translation id="8428213095426709021">ቅንብሮች</translation>
 <translation id="8433186206711564395">የአውታረ መረብ ቅንብሮች</translation>
 <translation id="8454013096329229812">Wi-Fi በርቷል።</translation>
-<translation id="8483248364096924578">የአይፒ አድራሻ</translation>
 <translation id="8484916590211895857"><ph name="NAME" />፦ ዳግም በማገናኘት ላይ...</translation>
 <translation id="8517041960877371778">የእርሰዎ <ph name="DEVICE_TYPE" /> እንደበራ ኃይል መሙላት አይችሉ ይሆናል።</translation>
 <translation id="8528322925433439945">ተንቀሳቃሽ ስልክ ...</translation>

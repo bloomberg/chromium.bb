@@ -7,6 +7,7 @@
 <translation id="1127238861555034875">돋보기 모드</translation>
 <translation id="1153356358378277386">페어링된 기기</translation>
 <translation id="1195412055398077112">오버스캔</translation>
+<translation id="1247372569136754018">마이크(내부)</translation>
 <translation id="1252999807265626933"><ph name="POWER_SOURCE" />에서 충전 중</translation>
 <translation id="1270290102613614947">터치 키보드 사용 중지됨</translation>
 <translation id="1272079795634619415">중지</translation>
@@ -23,16 +24,21 @@
 <translation id="1525508553941733066">닫기</translation>
 <translation id="15373452373711364">큰 마우스 커서</translation>
 <translation id="1550523713251050646">더 많은 옵션을 확인하려면 클릭하세요.</translation>
+<translation id="1571442141242456645">입력 방법이 <ph name="INPUT_METHOD_ID" />(으)로 변경되었습니다.
+        Shift+Alt를 눌러 전환합니다.</translation>
 <translation id="1602076796624386989">모바일 데이터 사용</translation>
 <translation id="1621499497873603021">남은 배터리 사용 시간은 <ph name="TIME_LEFT" />입니다.</translation>
 <translation id="164969095109328410">Chrome 기기</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> 남음</translation>
 <translation id="1747827819627189109">터치 키보드 사용 설정됨</translation>
 <translation id="1850504506766569011">Wi-Fi가 꺼져 있습니다.</translation>
+<translation id="1854357586517521894">CAPS LOCK이 켜져 있습니다.
+취소하려면 검색 또는 Shift 키를 누릅니다.</translation>
 <translation id="1864454756846565995">USB-C 기기(후면 포트)</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME" />에 미러링</translation>
 <translation id="1919743966458266018">작업 관리자를 여는 단축키가 변경되었습니다. <ph name="OLD_SHORTCUT" /> 대신 <ph name="NEW_SHORTCUT" />을(를) 사용하세요.</translation>
 <translation id="1923539912171292317">자동 클릭</translation>
+<translation id="1942830294380034169">오버플로 버튼</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" />(USB)</translation>
 <translation id="2122028596993374965"><ph name="RECEIVER_NAME" />에 <ph name="TAB_NAME" /> 전송 중지</translation>
@@ -60,6 +66,8 @@
 <translation id="2857608528410806398">QU 기능 알림 본문이 여기 표시됩니다. QU 기능 알림 본문이 여기 표시됩니다. QU 기능 알림 본문이 여기 표시됩니다. QU 기능 알림 본문이 여기 표시됩니다. QU 기능 알림 본문이 여기 표시됩니다.</translation>
 <translation id="2865888419503095837">네트워크 정보</translation>
 <translation id="2872961005593481000">종료</translation>
+<translation id="291653379653113090">입력 방법이 <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />타사<ph name="END_LINK" />)(으)로 변경되었습니다.
+    Shift + Alt를 눌러 전환합니다.</translation>
 <translation id="2942516765047364088">실행기 위치</translation>
 <translation id="2946119680249604491">연결 추가</translation>
 <translation id="2963773877003373896">mod3</translation>
@@ -70,6 +78,8 @@
 <translation id="3077734595579995578">Shift</translation>
 <translation id="3087734570205094154">맨 아래</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" />(블루투스)</translation>
+<translation id="3109220592788908353">CAPS LOCK이 켜져 있습니다.
+    취소하려면 Alt+검색 또는 Shift 키를 누릅니다.</translation>
 <translation id="3126069444801937830">업데이트하려면 다시 시작</translation>
 <translation id="3147142846278915599">런처(앱 동기화 중...)</translation>
 <translation id="315116470104423982">모바일 데이터</translation>
@@ -92,16 +102,19 @@
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME" /> 해상도가 <ph name="RESOLUTION" />(으)로 변경되었습니다.</translation>
 <translation id="370649949373421643">Wi-Fi 사용</translation>
 <translation id="3712407551474845318">영역 캡처</translation>
+<translation id="371370241367527062">전면 마이크</translation>
 <translation id="3742055079367172538">찍은 캡처화면</translation>
 <translation id="3775358506042162758">멀티 로그인 시 계정은 최대 3개까지만 사용할 수 있습니다.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">잠금</translation>
+<translation id="3798670284305777884">스피커(내부)</translation>
 <translation id="3799026279081545374">충전기에 문제가 있을 수 있습니다. 미국에 거주하는 경우 866-628-1371에 전화하여 문의하고 교체받으세요. 영국에 거주하는 경우 0800-026-0613에 문의하세요. 아일랜드에 거주하는 경우 1-800-832-664에 문의하세요. 캐나다에 거주하는 경우 866-628-1372에 문의하세요. 오스트레일리아에 거주하는 경우 1-800-067-460에 문의하세요.</translation>
 <translation id="3846575436967432996">네트워크 정보 없음</translation>
 <translation id="3891340733213178823">로그아웃하려면 Ctrl+Shift+Q를 두 번 누릅니다.</translation>
 <translation id="3893630138897523026">ChromeVox(음성 피드백)</translation>
 <translation id="3899995891769452915">음성 입력</translation>
 <translation id="3901991538546252627"><ph name="NAME" />에 연결 중</translation>
+<translation id="394485226368336402">오디오 설정</translation>
 <translation id="3967919079500697218">관리자가 스크린샷 캡쳐 기능을 사용 중지했습니다.</translation>
 <translation id="397105322502079400">계산 중...</translation>
 <translation id="3995138139523574647">USB-C 기기(우측 후면 포트)</translation>
@@ -114,7 +127,6 @@
 <translation id="4421231901400348175">원격 지원을 통해 <ph name="HELPER_NAME" />와(과) 화면 제어 공유</translation>
 <translation id="4430019312045809116">볼륨</translation>
 <translation id="4448844063988177157">Wi-Fi 네트워크를 검색하는 중...</translation>
-<translation id="4479639480957787382">이더넷</translation>
 <translation id="4481530544597605423">페어링 해제된 기기</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: 연결하는 중...</translation>
 <translation id="4527045527269911712">블루투스 기기 '<ph name="DEVICE_NAME" />'에서 페어링 허가를 요청합니다.</translation>
@@ -132,14 +144,18 @@
 <translation id="5170568018924773124">폴더 열기</translation>
 <translation id="5222676887888702881">로그아웃</translation>
 <translation id="523505283826916779">접근성 설정</translation>
+<translation id="5313326810920013265">블루투스 설정</translation>
 <translation id="532063867737390965">관리자가 이 네트워크 설정을 사용 중지했습니다.</translation>
 <translation id="5331975486040154427">USB-C 기기(좌측 후면 포트)</translation>
+<translation id="5430931332414098647">인스턴트 테더링</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">사용 가능한 모든 사용자가 이미 이 세션에 추가되었습니다.</translation>
 <translation id="5507786745520522457">모바일 데이터 설정</translation>
+<translation id="553675580533261935">세션 종료</translation>
 <translation id="5548285847212963613">확장 프로그램('<ph name="EXTENSION_NAME" />')을 사용하여 이 네트워크에 연결할 수 있습니다.</translation>
 <translation id="5571066253365925590">블루투스를 사용함</translation>
 <translation id="5597451508971090205"><ph name="DATE" /> <ph name="SHORT_WEEKDAY" /></translation>
+<translation id="5648021990716966815">마이크 잭</translation>
 <translation id="5777841717266010279">화면 공유를 중단하시겠습니까?</translation>
 <translation id="57838592816432529">음소거</translation>
 <translation id="5895138241574237353">다시 시작</translation>
@@ -197,11 +213,11 @@
 <translation id="7129360219436193655">레이저 포인터 모드</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358"><ph name="TIMEOUT_SECONDS" />초 후 기존 해상도로 돌아갑니다.</translation>
+<translation id="7256634071279256947">후면 마이크</translation>
 <translation id="7348093485538360975">터치 키보드</translation>
 <translation id="735745346212279324">VPN 연결 끊김</translation>
 <translation id="742594950370306541">카메라가 사용 중입니다.</translation>
 <translation id="743058460480092004">카메라와 마이크가 사용 중입니다.</translation>
-<translation id="7502658306369382406">IPv6 주소</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" />에서 <ph name="SPECIFIED_RESOLUTION" />을(를) 지원하지 않습니다. 해상도가 <ph name="FALLBACK_RESOLUTION" />(으)로 변경되었습니다.</translation>
 <translation id="7562368315689366235">그림 이모티콘 팔레트</translation>
@@ -231,7 +247,6 @@
 <translation id="8428213095426709021">설정</translation>
 <translation id="8433186206711564395">네트워크 설정</translation>
 <translation id="8454013096329229812">Wi-Fi가 켜져 있습니다.</translation>
-<translation id="8483248364096924578">IP 주소</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: 다시 연결하는 중...</translation>
 <translation id="8517041960877371778"><ph name="DEVICE_TYPE" />이(가) 켜져 있는 동안에는 충전되지 않을 수 있습니다.</translation>
 <translation id="8528322925433439945">모바일 ...</translation>

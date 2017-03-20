@@ -273,6 +273,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Hvis en indstilling ikke er specificeret, anvendes en standardværdi.
 
       Hvis denne politik ikke er indstillet, anvendes standarder for alle indstillinger.</translation>
+<translation id="1960840544413786116">Hvorvidt der skal gives tilladelse til certifikater, som er udstedt af lokale tillidsankre og mangler udvidelsen subjectAlternativeName</translation>
 <translation id="1964634611280150550">Inkognitotilstand er deaktiveret</translation>
 <translation id="1964802606569741174">Denne politik påvirker ikke YouTube-appen til Android. Hvis Beskyttet tilstand på YouTube skal håndhæves, skal installation af YouTube-appen til Android ikke tillades.</translation>
 <translation id="1969212217917526199">Tilsidesætter politikker i fejlfindingsbuilds for hosten for fjernadgang.
@@ -327,6 +328,21 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Hvis HardwareAccelerationModeEnabled er angivet til Falsk, ignoreres Disable3DAPIs, og det svarer til, at Disable3DAPIs er angivet til Sand.</translation>
 <translation id="2168397434410358693">Inaktivitetsforsinkelse, når strømforsyningen er tilsluttet</translation>
 <translation id="2170233653554726857">Aktivér WPAD-optimering</translation>
+<translation id="2176565653304920879">Når denne politik er indstillet, fungerer flowet for registrering af tidszoner på en af de følgende måder, alt efter hvilken værdi der bruges i indstillingen:
+
+      Hvis der er indstillet til TimezoneAutomaticDetectionUsersDecide, kan brugerne kontrollere den automatiske registrering af tidszoner med de almindelige kontrolelementer i chrome://settings.
+
+      Hvis der er indstillet til TimezoneAutomaticDetectionDisabled, bliver de automatiske kontrolelementer for tidszoner i chrome://settings deaktiveret. Automatisk registrering af tidszoner vil altid være deaktiveret.
+
+      Hvis der er indstillet til TimezoneAutomaticDetectionIPOnly, bliver kontrolelementerne for tidszone i chrome://settings deaktiveret. Automatisk registrering af tidszoner vil altid være aktiveret. Registreringen af tidszoner bruger udelukkende IP-metoden til at fastlægge placeringen.
+
+      Hvis der indstilles til TimezoneAutomaticDetectionSendWiFiAccessPoints, bliver kontrolelementerne for tidszoner i chrome://settings deaktiveret. Automatisk registrering af tidszoner vil altid være aktiveret. Listen over synlige Wi-Fi-adgangspunkter sendes altid til Geolocation API-serveren, så der kan foretages detaljeret registrering af tidszoner.
+
+      Hvis der indstilles til TimezoneAutomaticDetectionSendAllLocationInfo, bliver kontrolelementerne for tidszoner i chrome://settings deaktiveret. Automatisk registrering af tidszoner vil altid være aktiveret. Placeringsoplysninger (som f.eks. Wi-Fi-adgangspunkter, tilgængelige mobiltårne, GPS) bliver sendt til en server, så der kan foretages detaljeret registrering af tidszoner.
+
+      Hvis politikken ikke indstilles, svarer det til, at TimezoneAutomaticDetectionUsersDecide er indstillet.
+
+      Hvis politikken SystemTimezone indstilles, tilsidesættes denne politik. I dette tilfælde deaktiveres registrering af tidszoner helt.</translation>
 <translation id="2178899310296064282">Gennemtving som minimum Moderat begrænset tilstand på YouTube</translation>
 <translation id="2183294522275408937">Denne indstilling styrer, hvor ofte låseskærmen kræver, at adgangskoden indtastes for at fortsætte med at bruge hurtig oplåsning. Når du går ind på låseskærmen, vil hurtig oplåsning ikke være tilgængelig, hvis den seneste adgang med adgangskode overskrider denne indstilling. Hvis brugeren bliver på låseskærmen ud over det angivne tidsrum, anmodes der om en adgangskode, næste gang brugeren indtaster den forkerte kode eller går ind på låseskærmen, alt efter hvad der kommer først.
 
@@ -1396,11 +1412,21 @@ Hvis denne politik slås fra eller indstilles til False (falsk), er udviklertils
 <translation id="5378985487213287085">Giver dig mulighed for at angive, om websites må vise underretninger på skrivebordet. Visning af underretninger på skrivebordet kan tillades som standard, nægtes som standard, eller brugeren kan blive spurgt, hver gang et website ønsker at vise underretninger på skrivebordet. Hvis denne politik ikke angives, anvendes "AskNotifications", og brugeren vil kunne ændre det.</translation>
 <translation id="538108065117008131">Tillad, at <ph name="PRODUCT_FRAME_NAME" /> håndterer følgende indholdstyper.</translation>
 <translation id="5388730678841939057">Vælger den strategi, der bruges til at frigøre diskplads ved automatisk oprydning (udfaset)</translation>
+<translation id="5392172595902933844">Der sendes oplysninger om status for Android tilbage til
+      serveren.
+
+      Hvis politikken indstilles til falsk eller ikke indstilles, rapporteres der ingen statusoplysninger.
+      Hvis der indstilles til sand, rapporteres der statusoplysninger.
+
+      Denne politik gælder kun, hvis Android-apps er aktiveret.</translation>
 <translation id="5395271912574071439">Aktiverer skærmning af eksterne hosts, mens en forbindelse er etableret.
 
           Hvis denne indstilling aktiveres, deaktiveres de fysiske input- og outputenheder for hosts, mens en fjernforbindelse er etableret.
 
           Hvis denne indstilling deaktiveres eller ikke angives, kan både lokale brugere og fjernbrugere interagere med en host, når den deles.</translation>
+<translation id="5405289061476885481">Konfigurerer, hvilke tastaturlayouts der tillades på loginskærmen for <ph name="PRODUCT_OS_NAME" />.
+
+      Hvis denne politik er angivet med en liste over indtastningsmetode-id'er, vil de angivne indtastningsmetoder være tilgængelige på loginskærmen. Den første angivne indtastningsmetode udvælges på forhånd. Mens en bruger-pod fokuserer på loginskærmen, vil den indtastningsmetode, som brugeren har brugt mindst for nylig, være tilgængelig udover de indtastningsmetoder, der er angivet i denne politik. Hvis denne politik ikke er angivet, hentes indtastningsmetoderne på loginskærmen fra den landestandard, der gælder for loginskærmen. Værdier, der ikke er gyldige indtastningsmetode-id'er, ignoreres.</translation>
 <translation id="5423001109873148185">Denne politik tvinger import af søgemaskiner fra den aktuelle standardbrowser, hvis den er aktiveret. Hvis denne politik er aktiveret, påvirker den også dialogboksen for import. Hvis standardsøgemaskinen er deaktiveret, bliver den ikke importeret. Hvis den ikke er angivet, kan brugeren blive spurgt, om der skal importeres, ellers sker importen automatisk.</translation>
 <translation id="5423197884968724595">Navn på Android WebView-begrænsning:</translation>
 <translation id="543559563129402336">Denne politik er udfaset. Du bør overveje at bruge <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" />, som tilsidesætter denne politik og giver dig mulighed for større finjustering.
@@ -1466,6 +1492,11 @@ Hvis denne politik ikke er indstillet, er standardfrekvensen 3 minutter. Minimum
       Hvis du indstiller denne politik, kan brugere ikke ændre eller tilsidesætte den.
 
       Hvis politikken ikke indstilles, kan brugere vælge, om hylden skal skjules automatisk.</translation>
+<translation id="557360560705413259">Når denne indstilling er aktiveret, bruger <ph name="PRODUCT_NAME" /> commonName for et servercertificat til at matche et hostnavn, hvis certifikatet mangler en subjectAlternativeName-udvidelse, såfremt det kan godkendes og kobles til lokalt installerede CA-certifikater.
+
+      Bemærk, at dette ikke anbefales, da det kan tillade tilsidesættelse af udvidelsen nameConstraints, som begrænser de hostnavne, et givet certifikat kan godkendes til.
+
+      Hvis denne politik ikke er indstillet eller er indstillet til falsk, anses servercertifikater, som ikke indeholder en subjectAlternativeName-udvidelse med enten et DNS-navn eller en IP-adresse, ikke for pålidelige.</translation>
 <translation id="557658534286111200">Aktiverer eller deaktiverer redigering af bogmærker</translation>
 <translation id="5586942249556966598">Gør ingenting</translation>
 <translation id="5613179474872285001">Konfigurerer det påkrævede klientdomænenavn, som klienter med fjernadgang skal bruge, og forhindrer brugere i at ændre det.
@@ -2304,6 +2335,7 @@ Dynamisk opdatering af denne politik understøttes i M56 og nyere versioner.</tr
 <translation id="7937766917976512374">Tillad eller afvis videooptagelse</translation>
 <translation id="7941975817681987555">Forudse ikke netværkshandlinger på nogen netværksforbindelse</translation>
 <translation id="7953256619080733119">Manuel undtagelse for host for administreret bruger</translation>
+<translation id="7965394584578183156">Send altid Wi-Fi-adgangspunkter til serveren under opdatering af tidszone.</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Denne politik understøttes ikke længere. Muliggør brug af STUN- og relæservere ved oprettelse af forbindelse til en ekstern klient. Hvis denne indstilling er aktiveret, kan denne maskine finde og oprette forbindelse til eksterne værtsmaskiner, selvom de er adskilt af en firewall. Hvis denne indstilling er deaktiveret, og udgående UDP-forbindelser filtreres af firewallen, kan denne maskine kun oprette forbindelse til værtsmaskiner inden for det lokale netværk.</translation>
 <translation id="7986374692540430898">Du kan ikke tvinge Android-apps til at anvende en proxy. Bestemte proxyindstillinger er tilgængelige for Android-apps, som de kan vælge at imødekomme. Se politikken <ph name="PROXY_MODE_POLICY" /> for at få flere oplysninger.</translation>
@@ -2452,6 +2484,7 @@ Dynamisk opdatering af denne politik understøttes i M56 og nyere versioner.</tr
 <translation id="8390049129576938611">Deaktiverer den interne PDF-fremviser i <ph name="PRODUCT_NAME" />. Behandler den i stedet som download og gør det muligt for brugeren at åbne PDF-filer via standardapplikationen.
 
       Hvis politikken ikke angives, eller hvis den deaktiveres, anvendes PDF-pluginnet til at åbne PDF-filer, medmindre brugeren deaktiverer pluginnet.</translation>
+<translation id="8398203849316312944">Send altid eventuelle tilgængelige placeringssignaler til serveren under opdatering af tidszone.</translation>
 <translation id="8402079500086185021">Åbn altid PDF-filer eksternt</translation>
 <translation id="8412312801707973447">Om der udføres online kontrol af OCSP/CRL</translation>
 <translation id="8413348101535146315">Aktiverer mulighed for at afslutte processer i Jobliste for <ph name="PRODUCT_NAME" />.
@@ -2687,6 +2720,11 @@ Dynamisk opdatering af denne politik understøttes i M56 og nyere versioner.</tr
       Hvis funktionen er aktiveret, kan der ikke tages screenshots ved hjælp af tastaturgenveje eller udvidelses-API'er.
 
       Hvis funktionen er deaktiveret eller ikke specificeret, kan der tages screenshots.</translation>
+<translation id="9212233969680267790">Advarsel! Politikken for den maksimale TLS-version fjernes fuldstændig fra <ph name="PRODUCT_NAME" /> omkring version 66 (omtrent februar 2018).
+
+      Hvis denne politik ikke konfigureres, anvender <ph name="PRODUCT_NAME" /> en standardmaksimumversion.
+
+      Den kan også angives til en af følgende værdier: "tls1.2" eller "tls1.3". Når der er angivet en værdi, vil <ph name="PRODUCT_NAME" /> ikke anvende SSL/TLS-versioner, der er højere end den angivne version. Ukendte værdier ignoreres.</translation>
 <translation id="9213347477683611358">Konfigurer baggrundsbillede på enhedsniveau, der vises på loginskærmen, hvis der ikke er nogen bruger, der er logget ind på enheden. Politikken angives ved at angive den webadresse, som Chrome OS-enheden kan downloade baggrundsbilledet fra, samt et kryptografisk hash, der bruges til at bekræfte downloadens integritet. Billedet skal være i JPEG-format, og filstørrelsen må ikke overskride 16 MB. Webadressen skal være tilgængelig uden godkendelse. Baggrundsbilledet downloades og gemmes i cachen. Det downloades på ny, hver gang webadressen eller hashet ændres.
 
       Politikken bør angives som en streng, der viser webadressen og hashet i JSON-format, f.eks.,

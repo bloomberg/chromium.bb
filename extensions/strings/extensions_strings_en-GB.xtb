@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="en-GB">
 <translation id="1135328998467923690">Package is invalid: '<ph name="ERROR_CODE" />'.</translation>
+<translation id="1140871961407805696">Environment-facing</translation>
 <translation id="1256619696651732561">Extension Manifest Parser</translation>
 <translation id="1445572445564823378">This extension is slowing down <ph name="PRODUCT_NAME" />. You should disable it to restore <ph name="PRODUCT_NAME" />'s performance.</translation>
 <translation id="149347756975725155">Could not load extension icon '<ph name="ICON" />'.</translation>
@@ -42,6 +43,7 @@
 <translation id="7217838517480956708">The administrator of this machine requires <ph name="EXTENSION_NAME" /> to be installed. It cannot be removed or modified.</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME" /> (extension ID "<ph name="EXTENSION_ID" />") is blocked by the administrator.</translation>
 <translation id="7972881773422714442">Options: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
+<translation id="8035920974645200807">User-facing</translation>
 <translation id="8047248493720652249">This extension failed to name the download "<ph name="ATTEMPTED_FILENAME" />" because another extension (<ph name="EXTENSION_NAME" />) determined a different filename "<ph name="ACTUAL_FILENAME" />".</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> from <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">This extension failed to provide credentials to a network request because another extension (<ph name="EXTENSION_NAME" />) provided different credentials.</translation>

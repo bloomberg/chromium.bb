@@ -5,6 +5,7 @@
 
 Some features may be unavailable and changes to preferences won't be saved.</translation>
 <translation id="1115445892567829615">Chromium could not sync your data. Please update your Sync passphrase.</translation>
+<translation id="1170115874949214249">Install Chromium on your phone. We’ll send an SMS to your account recovery phone number.</translation>
 <translation id="1174473354587728743">Share a computer? Now you can set up Chromium just the way you like it.</translation>
 <translation id="1185134272377778587">About Chromium</translation>
 <translation id="1298199220304005244">Get help with using Chromium OS</translation>
@@ -48,7 +49,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="2535480412977113886">Chromium OS could not sync your data because your account sign-in details are out of date.</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="2587578672395088481">Chromium OS needs to be restarted to apply the update.</translation>
-<translation id="2605472041568654097">Help make Chromium better by reporting the current settings.</translation>
 <translation id="2636877269779209383">Chromium needs camera access to share it with this site.</translation>
 <translation id="2647554856022461007">Chromium may use web services to improve your browsing experience. You may optionally disable these services. <ph name="BEGIN_LINK" />Find out more<ph name="END_LINK" /></translation>
 <translation id="2648074677641340862">An operating system error occurred during installation. Please download Chromium again.</translation>
@@ -59,6 +59,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="2799223571221894425">Relaunch</translation>
 <translation id="2847479871509788944">Remove from Chromium...</translation>
 <translation id="2886012850691518054">Optional: Help make Chrome better by automatically sending usage statistics and crash reports to Google.</translation>
+<translation id="2898082584336937987">Install Chromium on your phone. We’ll send an SMS to your phone: <ph name="PHONE_NUMBER" /></translation>
 <translation id="2905536371227304018">Chromium OS is displayed in this language.</translation>
 <translation id="2910007522516064972">About &amp;Chromium</translation>
 <translation id="3032787606318309379">Adding to Chromium ...</translation>
@@ -137,7 +138,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="5620765574781326016">Learn about topics on websites without leaving the page.</translation>
 <translation id="5634636535844844681">Chromium requires Windows 7 or higher.</translation>
 <translation id="5680901439334282664">sign in to Chromium</translation>
-<translation id="5684733627009686897">Chromium is your default browser. Thanks!</translation>
 <translation id="5698481217667032250">Display Chromium in this language</translation>
 <translation id="5726838626470692954">Your manager must remove and add you back to Chromium.</translation>
 <translation id="5768914737813585044">Display Chromium OS in this language</translation>
@@ -205,6 +205,7 @@ Some features may be unavailable. Please specify a different profile directory o
 <translation id="7318036098707714271">Your preferences file is corrupt or invalid.
 
 Google Chrome is unable to recover your settings.</translation>
+<translation id="7331920710658926971">Install Chromium on your phone. We’ll send an SMS to your phone.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7339898014177206373">New window</translation>
 <translation id="734373864078049451">Your web, bookmarks and other Chromium stuff live here.</translation>
@@ -234,6 +235,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for further instructions.
 <translation id="8033665941300843262">Chromium needs permissions access to share them with this site.</translation>
 <translation id="8134284582177628525">If you share this computer with <ph name="PROFILE_NAME" />, add yourself to Chromium to browse separately. Otherwise disconnect their Google Account.</translation>
 <translation id="81770708095080097">This file is dangerous, so Chromium has blocked it.</translation>
+<translation id="8222496066431494154">Install Chromium on your phone. We’ll send an SMS to your account recovery phone number: <ph name="PHONE_NUMBER" /></translation>
 <translation id="8269379391216269538">Help make Chromium better</translation>
 <translation id="8290862415967981663">This file may be dangerous, so Chromium has blocked it.</translation>
 <translation id="8340674089072921962"><ph name="USER_EMAIL_ADDRESS" /> was previously using Chromium</translation>

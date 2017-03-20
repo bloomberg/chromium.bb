@@ -101,6 +101,7 @@
 <translation id="2871695793448672541">மறைக்கப்பட்டுள்ளது, கடவுச்சொல்</translation>
 <translation id="2898963176829412617">புதிய கோப்புறை…</translation>
 <translation id="2903493209154104877">முகவரிகள்</translation>
+<translation id="291754862089661335">இந்த ஃப்ரேமில் QR அல்லது பார் குறியீடு தெரியும்படி வைக்கவும்</translation>
 <translation id="2921219216347069551">பக்கத்தைப் பகிர முடியவில்லை</translation>
 <translation id="292639812446257861">படிக்காததாகக் குறி</translation>
 <translation id="2933759065870693102">டார்ச்</translation>
@@ -172,7 +173,6 @@
 <translation id="4359125752503270327">இந்தப் பக்கம் மற்றொரு பயன்பாட்டில் திறக்கப்படும்.</translation>
 <translation id="4378154925671717803">தொலைபேசி</translation>
 <translation id="441868831736628555">தனியுரிமை அறிக்கை</translation>
-<translation id="4473991315115669931">மறைநிலைப் பயன்முறைக்குச் செல்</translation>
 <translation id="4526249700380860531"><ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> இல் சேமித்த கடவுச்சொற்களைப் பார்க்கலாம் மற்றும் நிர்வகிக்கலாம்.</translation>
 <translation id="4536418791685807335">மீண்டும் உள்நுழைந்து முயலவும்.</translation>
 <translation id="4620246317052452550">நீங்கள் படித்த பக்கங்கள்</translation>
@@ -246,7 +246,6 @@
 <translation id="6042308850641462728">மேலும்</translation>
 <translation id="605721222689873409">YY</translation>
 <translation id="6066301408025741299">ரத்துசெய்ய தட்டவும்.</translation>
-<translation id="60851516108411750">உங்கள் வாசிப்புப் பட்டியல் ஆஃப்லைனில் கிடைக்கும். வாசிப்புப் பட்டியலில் பக்கத்தைச் சேர்க்க, <ph name="SHARE_OPENING_ICON" /> என்பதைத் தட்டவும்.</translation>
 <translation id="6122191549521593678">ஆன்லைன்</translation>
 <translation id="6127379762771434464">உருப்படி அகற்றப்பட்டது</translation>
 <translation id="6136914049981179737">வினாடிகள் முன்பு</translation>
@@ -381,7 +380,6 @@
 <translation id="8741995161408053644">உங்கள் Google கணக்கு <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> என்ற தளத்தில் உலாவல் வரலாறு தொடர்பான பிற தகவல்களைக் கொண்டிருக்கலாம்.</translation>
 <translation id="8775144690796719618">தவறான URL</translation>
 <translation id="8820817407110198400">புத்தகக்குறிகள்</translation>
-<translation id="882482397944455431">மறைநிலையிலிருந்து வெளியேறு</translation>
 <translation id="8840513115188359703">உங்கள் Google கணக்கிலிருந்து வெளியேறமாட்டீர்கள்.</translation>
 <translation id="8904976895050290827">Chrome Sync</translation>
 <translation id="895541991026785598">சிக்கலைப் புகார் செய்க</translation>

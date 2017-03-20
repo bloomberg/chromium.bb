@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="lt">
 <translation id="1135328998467923690">Paketas netinkamas: „<ph name="ERROR_CODE" />“.</translation>
+<translation id="1140871961407805696">Nukreiptas į aplinką</translation>
 <translation id="1256619696651732561">Plėtinio aprašo analizavimo įrankis</translation>
 <translation id="1445572445564823378">Dėl šio plėtinio lėčiau veikia „<ph name="PRODUCT_NAME" />“. Kad atkurtumėte „<ph name="PRODUCT_NAME" />“ našumą, turite jo neleisti.</translation>
 <translation id="149347756975725155">Nepavyko įkelti „<ph name="ICON" />“ plėtinio piktogramos.</translation>
@@ -42,6 +43,7 @@
 <translation id="7217838517480956708">Šio kompiuterio administratorius reikalauja, kad būtų įdiegtas papildinys „<ph name="EXTENSION_NAME" />“. Jo negalima pašalinti ar pakeisti.</translation>
 <translation id="7809034755304591547">Administratorius užblokavo „<ph name="EXTENSION_NAME" />“ (plėtinio ID „<ph name="EXTENSION_ID" />“).</translation>
 <translation id="7972881773422714442">Parinktys: „<ph name="EXTENSIONOPTIONS_TAG_NAME" />“</translation>
+<translation id="8035920974645200807">Nukreiptas į naudotoją</translation>
 <translation id="8047248493720652249">Šiam plėtiniui nepavyko pavadinti atsisiuntimo „<ph name="ATTEMPTED_FILENAME" />“, nes kitas plėtinys („<ph name="EXTENSION_NAME" />“) nustatė kitokį failo pavadinimą – „<ph name="ACTUAL_FILENAME" />“.</translation>
 <translation id="8284835137979141223">„<ph name="PRODUCT_NAME" />“ iš „<ph name="VENDOR_NAME" />“</translation>
 <translation id="8341840687457896278">Šiam plėtiniui pateikiant įgaliojimą tinklo užklausai įvyko klaida, nes kitas plėtinys („<ph name="EXTENSION_NAME" />“) pateikė kitokį įgaliojimą.</translation>

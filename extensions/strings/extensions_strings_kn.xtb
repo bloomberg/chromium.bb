@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="kn">
 <translation id="1135328998467923690">ಪ್ಯಾಕೇಜ್ ಅಮಾನ್ಯವಾಗಿದೆ: '<ph name="ERROR_CODE" />'.</translation>
+<translation id="1140871961407805696">ಪರಿಸರಕ್ಕೆ ಮುಖಮಾಡಿದೆ</translation>
 <translation id="1256619696651732561">ವಿಸ್ತರಣೆ ಮ್ಯಾನಿಫೆಸ್ಟ್ ವಿಶ್ಲೇಷಕ</translation>
 <translation id="1445572445564823378">ಈ ವಿಸ್ತರಣೆಯು <ph name="PRODUCT_NAME" /> ಅನ್ನು ನಿಧಾನವಾಗಿಸುತ್ತಿದೆ. ನೀವು <ph name="PRODUCT_NAME" /> ರ ಕಾರ್ಯಾಚರಣೆಯನ್ನು ಮತ್ತೊಮ್ಮೆ ಪ್ರಾರಂಭಿಸಲು ಇದನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸುವುದು ಅವಶ್ಯಕ.</translation>
 <translation id="149347756975725155">'<ph name="ICON" />' ಎಕ್ಸ್‌ಟೆನ್ಷನ್ ಐಕಾನ್  ಲೋಡ್ ಮಾಡಲಾಗಲಿಲ್ಲ.</translation>
@@ -42,6 +43,7 @@
 <translation id="7217838517480956708">ಈ ಯಂತ್ರದ ನಿರ್ವಾಹಕರಿಗೆ <ph name="EXTENSION_NAME" /> ಅನ್ನು ಸ್ಥಾಪಿಸುವ ಅಗತ್ಯವಿದೆ. ಇದನ್ನು ತೆಗೆದುಹಾಕಲು ಅಥವಾ ಮಾರ್ಪಡಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ.</translation>
 <translation id="7809034755304591547">ನಿರ್ವಾಹಕನಿಂದ <ph name="EXTENSION_NAME" /> (ವಿಸ್ತರಣೆ ID "<ph name="EXTENSION_ID" />") ಅನ್ನು ನಿರ್ಬಂಧಿಸಲಾಗಿದೆ.</translation>
 <translation id="7972881773422714442">ಆಯ್ಕೆಗಳು: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
+<translation id="8035920974645200807">ಬಳಕೆದಾರರಿಗೆ ಮುಖಮಾಡಿದೆ</translation>
 <translation id="8047248493720652249">ಈ ವಿಸ್ತರಣೆಯು "<ph name="ATTEMPTED_FILENAME" />" ಅನ್ನು ಡೌನ್‌ಲೋಡ್‌ ಮಾಡುವುದನ್ನು ಹೆಸರಿಸಲು ವಿಫಲವಾಗಿದೆ ಏಕೆಂದರೆ ಮತ್ತೊಂದು ವಿಸ್ತರಣೆ (<ph name="EXTENSION_NAME" />) ಯು ವಿಭಿನ್ನ ಫೈಲ್‌ ಹೆಸರು "<ph name="ACTUAL_FILENAME" />" ಗೆ ನಿರ್ಧರಿಸಿದೆ.</translation>
 <translation id="8284835137979141223"><ph name="VENDOR_NAME" /> ರಿಂದ <ph name="PRODUCT_NAME" /></translation>
 <translation id="8341840687457896278">ಬೇರೊಂದು ವಿಸ್ತರಣೆಯು (<ph name="EXTENSION_NAME" />) ವಿಭಿನ್ನ ರುಜುವಾತುಗಳನ್ನು ಒದಗಿಸಿರುವ ಕಾರಣ ನೆಟ್‌ವರ್ಕ್ ವಿನಂತಿಗೆ ರುಜುವಾತುಗಳನ್ನು ಒದಗಿಸಲು ಈ ವಿಸ್ತರಣೆಯು ವಿಫಲವಾಗಿದೆ.</translation>

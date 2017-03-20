@@ -269,6 +269,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       Se uma configuração não é especificada, um valor padrão é usado.
 
       Se esta política não é definida, os padrões são usados para todas as configurações.</translation>
+<translation id="1960840544413786116">Se os certificados emitidos pelas âncoras de confiança locais que estão sem a extensão subjectAlternativeName devem ser permitidos</translation>
 <translation id="1964634611280150550">Modo de navegação anônima desativado</translation>
 <translation id="1964802606569741174">Esta política não tem nenhum efeito sobre o app do YouTube para Android. Se o modo de segurança do YouTube precisar ser aplicado, a instalação desse app será bloqueada.</translation>
 <translation id="1969212217917526199">Modifica as políticas sobre versões de depuração do host de acesso remoto.
@@ -323,6 +324,21 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       Se HardwareAccelerationModeEnabled é definida como "false", Disable3DAPIs é ignorada. Isso equivale a definir Disable3DAPIs como "true".</translation>
 <translation id="2168397434410358693">Intervalo de inatividade no funcionamento com alimentação CA</translation>
 <translation id="2170233653554726857">Ativar otimização WPAD</translation>
+<translation id="2176565653304920879">Quando esta política é definida, o fluxo de detecção automática de fuso horário acontece de uma das seguintes formas, dependendo do valor da configuração:
+
+      Se definida para TimezoneAutomaticDetectionUsersDecide, os usuários poderão controlar a detecção automática de fuso horário usando controles normais em chrome://settings.
+
+      Se definida para TimezoneAutomaticDetectionDisabled, os controles de fuso horário automático em chrome://settings serão desativados. A detecção automática de fuso horário ficará sempre desativada.
+
+      Se definida para TimezoneAutomaticDetectionIPOnly, os controles de fuso horário em chrome://settings serão desativados. A detecção automática de fuso horário ficará sempre ativada. A detecção de fuso horário usará o método "somente IP" para determinar o local.
+
+      Se definida para TimezoneAutomaticDetectionSendWiFiAccessPoints, os controles de fuso horário em chrome://settings serão desativados. A detecção automática de fuso horário ficará sempre ativada. A lista de pontos de acesso Wi-Fi visíveis sempre será enviada ao servidor da API de geolocalização para garantir uma detecção de fuso horário refinada.
+
+      Se esta política for definida para TimezoneAutomaticDetectionSendAllLocationInfo, os controles de fuso horário em chrome://settings serão desativados. A detecção automática de fuso horário ficará sempre ativada. As informações de local (como pontos de acesso Wi-Fi, torres de celular acessíveis, GPS) serão enviadas a um servidor para garantir uma detecção de fuso horário refinada.
+
+      Se esta política não for definida, ela se comportará como se TimezoneAutomaticDetectionUsersDecide estivesse definida.
+
+      Se a política SystemTimezone for definida, ela substituirá esta política. Nesse caso, a detecção automática de fuso horário será completamente desativada.</translation>
 <translation id="2178899310296064282">Aplicar pelo menos o Modo restrito moderado no YouTube</translation>
 <translation id="2183294522275408937">Esta configuração controla com que frequência a tela de bloqueio solicitará que a senha seja informada para continuar usando o desbloqueio rápido. Se a senha tiver sido informada pela última vez em uma data fora do período dessa configuração, o desbloqueio rápido não estará disponível ao acessar a tela de bloqueio. Se o usuário ficar na tela de bloqueio após esse período, uma senha será solicitada na próxima vez que ele informar o código errado ou acessar novamente a tela de bloqueio, o que ocorrer primeiro.
 
@@ -1365,7 +1381,17 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="5378985487213287085">Permite que você defina se os websites são autorizados a exibir notificações na área de trabalho. A exibição de notificações na área de trabalho pode ser autorizada ou recusada por padrão ou o usuário pode ser solicitado a autorizar todas as vezes em que um website desejar exibir notificações na área de trabalho. Se esta política for deixada sem definição, a política "AskNotifications" será utilizada, podendo ser modificada pelo usuário.</translation>
 <translation id="538108065117008131">Permitir que o <ph name="PRODUCT_FRAME_NAME" /> lide com os seguintes tipos de conteúdo.</translation>
 <translation id="5388730678841939057">Seleciona a estratégia usada para liberar espaço em disco durante a limpeza automática (obsoleta)</translation>
+<translation id="5392172595902933844">As informações sobre o status do Android são enviadas de volta para o
+      servidor.
+
+      Se a política for definida como "false" ou não for configurada, nenhuma informação de status será enviada.
+      Se for definida como "true", as informações de status serão enviadas.
+
+      Esta política se aplicará somente se os apps Android estiverem ativados.</translation>
 <translation id="5395271912574071439">Ativa as cortinas de hosts de acesso remoto enquanto uma conexão está em andamento. Se essa configuração for ativada, os dispositivos de entrada e saída físicas dos hosts serão desativados enquanto houver uma conexão remota em andamento. Se essa configuração for desativada ou não estiver definida, os usuários locais e remotos poderão interagir com o host quando ele estiver sendo compartilhado.</translation>
+<translation id="5405289061476885481">Configura quais layouts de teclado são permitidos na tela de login do <ph name="PRODUCT_OS_NAME" />.
+
+      Se esta política for definida como uma lista de identificadores de método de entrada, os métodos de entrada fornecidos ficarão disponíveis na tela de login. O primeiro método de entrada fornecido será pré-selecionado. Enquanto um grupo de usuários estiver focado na tela de login, o último método de entrada usado pelo usuário ficará disponível juntamente com os métodos de entrada fornecidos por esta política. Se esta política não for definida, os métodos de entrada na tela de login serão derivados da localidade em que a tela de login é exibida. Os valores que não forem identificadores de método de entrada válidos serão ignorados.</translation>
 <translation id="5423001109873148185">Caso ativada, esta política força mecanismos de pesquisa a serem importados do navegador padrão atual. Se ativada, esta política também afeta a caixa de diálogo de importação. Caso seja desativada, o mecanismo de pesquisa padrão não é importado. Se não for definida, o usuário pode ser solicitado a responder se deseja importar ou permitir a importação automática.</translation>
 <translation id="5423197884968724595">Nome de restrição do Android WebView:</translation>
 <translation id="543559563129402336">O uso desta política foi suspenso. Recomendamos que você use <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" />, que substitui esta política e permite um ajuste mais refinado.
@@ -1433,6 +1459,11 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       Se esta política for definida, os usuários não poderão alterar nem substituí-la.
 
       Se esta política não for definida, os usuários poderão decidir se a estante deve ser ocultada automaticamente.</translation>
+<translation id="557360560705413259">Quando esta configuração estiver ativada, o <ph name="PRODUCT_NAME" /> usará o commonName de um certificado de servidor para ser associado a um nome de host se o certificado estiver sem uma extensão subjectAlternativeName, contanto que ele seja validado e vinculado a certificados de CA (Autoridade de certificação) instalados localmente.
+
+      Isso não é recomendado, pois a extensão nameConstraints, que restringe os nomes de host para os quais um determinado certificado pode ser autorizado, pode ser ignorada.
+
+      Se esta política não for definida ou for definida como false, os certificados de servidor sem a extensão subjectAlternativeName que contém um nome DNS ou endereço IP não serão confiáveis.</translation>
 <translation id="557658534286111200">Ativa ou desativa a edição de favoritos</translation>
 <translation id="5586942249556966598">Não fazer nada</translation>
 <translation id="5613179474872285001">Configura o nome de domínio de cliente obrigatório que será imposto aos clientes de acesso remoto e impede os usuários de alterá-lo.
@@ -2657,6 +2688,11 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       Se for ativada, não será possível capturar telas usando atalhos do teclado ou APIs de extensão.
 
       Se for desativada ou não for especificada, a captura de tela será permitida.</translation>
+<translation id="9212233969680267790">Aviso: a política de versão máxima de TLS será completamente removida do <ph name="PRODUCT_NAME" /> por volta da versão 66 (aproximadamente em fevereiro de 2018).
+
+      Se essa política não for configurada, o <ph name="PRODUCT_NAME" /> usará uma versão máxima padrão.
+
+      Caso contrário, ela poderá ser definida para um dos seguintes valores: "tls1.2" ou "tls1.3". Quando definida, o <ph name="PRODUCT_NAME" /> não usará versões SSL/TLS maiores que a versão especificada. Um valor não reconhecido será ignorado.</translation>
 <translation id="9213347477683611358">Configura a imagem de plano de fundo do dispositivo que é exibida na tela de login se nenhum usuário está conectado ao dispositivo. A política é definida pela especificação do URL no qual o dispositivo Chrome OS pode fazer o download da imagem de plano de fundo e de um hash criptográfico usado para verificar a integridade do download. A imagem deve estar no formato JPEG, e seu tamanho não deve ultrapassar 16 MB. O URL deve ser acessado sem nenhuma autenticação. A imagem de plano de fundo é transferida por download e armazenada em cash. Sempre que o URL ou o hash muda, o download é feito novamente.
 
       A política deve ser especificada como uma string que expressa o URL e o hash no formato JSON, por exemplo,

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="hr">
 <translation id="1135328998467923690">Paket je nevažeći: "<ph name="ERROR_CODE" />".</translation>
+<translation id="1140871961407805696">Prema okruženju</translation>
 <translation id="1256619696651732561">Raščlanjivanje manifesta proširenja</translation>
 <translation id="1445572445564823378">Ovo proširenje usporava uslugu <ph name="PRODUCT_NAME" />. Trebali biste ga onemogućiti da biste vratili uspješan rad usluge <ph name="PRODUCT_NAME" />.</translation>
 <translation id="149347756975725155">Nije uspjelo učitavanje ikone proširenja "<ph name="ICON" />".</translation>
@@ -42,6 +43,7 @@
 <translation id="7217838517480956708">Administrator ovog računala zahtijeva instalaciju proširenja <ph name="EXTENSION_NAME" />. Ona se ne može ukloniti ni izmijeniti.</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME" /> (ID proširenja "<ph name="EXTENSION_ID" />") blokirao je administrator.</translation>
 <translation id="7972881773422714442">Opcije: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
+<translation id="8035920974645200807">Prema korisniku</translation>
 <translation id="8047248493720652249">To proširenje nije uspjelo dodijeliti naziv preuzimanju "<ph name="ATTEMPTED_FILENAME" />" jer je drugo proširenje (<ph name="EXTENSION_NAME" />) odredilo drugačiji naziv datoteke "<ph name="ACTUAL_FILENAME" />".</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> od dobavljača <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Ovo proširenje nije uspješno dodijelilo vjerodajnice za mrežni zahtjev jer je drugo proširenje (<ph name="EXTENSION_NAME" />) dodijelilo druge vjerodajnice.</translation>

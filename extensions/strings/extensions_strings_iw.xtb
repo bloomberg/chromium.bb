@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="iw">
 <translation id="1135328998467923690">החבילה לא חוקית: '<ph name="ERROR_CODE" />'.</translation>
+<translation id="1140871961407805696">מצלמה אחורית</translation>
 <translation id="1256619696651732561">מנתח מניפסט התוספים</translation>
 <translation id="1445572445564823378">תוסף זה מאט את <ph name="PRODUCT_NAME" />. עליך להשבית אותו כדי לשחזר את הביצועים של <ph name="PRODUCT_NAME" />.</translation>
 <translation id="149347756975725155">לא היתה אפשרות לטעון את אייקון התוסף '<ph name="ICON" />'.</translation>
@@ -42,6 +43,7 @@
 <translation id="7217838517480956708">מנהל המערכת של מחשב זה דורש התקנת <ph name="EXTENSION_NAME" />. לא ניתן להסיר או לשנות אותו.</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME" /> (זיהוי תוסף '<ph name="EXTENSION_ID" />') נחסם על ידי מנהל המערכת.</translation>
 <translation id="7972881773422714442">אפשרויות: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
+<translation id="8035920974645200807">מצלמה קדמית</translation>
 <translation id="8047248493720652249">תוסף זה לא הצליח לתת שם לקובץ "<ph name="ATTEMPTED_FILENAME" />" שהורד, משום שתוסף אחר (<ph name="EXTENSION_NAME" />) קבע שם קובץ אחר - "<ph name="ACTUAL_FILENAME" />".</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> מאת <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">תוסף זה נכשל באספקת אישורים לבקשת רשת מכיוון שתוסף אחר (<ph name="EXTENSION_NAME" />) סיפק אישורים אחרים.</translation>

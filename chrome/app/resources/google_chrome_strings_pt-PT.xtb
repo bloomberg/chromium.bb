@@ -33,6 +33,7 @@
 <translation id="1759301979429102118">Os detalhes dos seus contactos podem ajudar a preencher formulários mais rapidamente no Chrome.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1773601347087397504">Obter ajuda para utilizar o SO Chrome</translation>
+<translation id="1795405610103747296">Instale o Chrome no telemóvel. Vamos enviar uma SMS para o seu telemóvel: <ph name="PHONE_NUMBER" /></translation>
 <translation id="1818142563254268765">Não foi possível atualizar automaticamente o Chrome para a versão mais recente, pelo que está a perder novas funcionalidades e correções de segurança fantásticas. Tem de atualizar o Chrome.</translation>
 <translation id="1877026089748256423">O Chrome está desatualizado</translation>
 <translation id="2063848847527508675">O SO Chrome tem de ser reiniciado para aplicar a atualização.</translation>
@@ -40,6 +41,7 @@
 <translation id="2084710999043359739">Adicionar ao Chrome</translation>
 <translation id="2120620239521071941">Esta ação elimina <ph name="ITEMS_COUNT" /> itens deste dispositivo. Para recuperar os seus dados mais tarde, inicie sessão no Chrome como <ph name="USER_EMAIL" />.</translation>
 <translation id="2147651015520127414">O Chrome confirmou que <ph name="ISSUER" /> emitiu o certificado deste Website.</translation>
+<translation id="216054706567564023">Instale o Chrome no telemóvel. Vamos enviar uma SMS para o seu número de telefone de recuperação de conta.</translation>
 <translation id="2246246234298806438">O Google Chrome não pode mostrar a pré-visualização de impressão quando o visualizador de PDF incorporado está em falta.</translation>
 <translation id="2252923619938421629">Ajude a melhorar o Google Chrome, comunicando as definições atuais</translation>
 <translation id="2286950485307333924">Tem agora sessão iniciada no Chrome</translation>
@@ -139,7 +141,6 @@ Para obter mais instruções, verifique o seu email em <ph name="ACCOUNT_EMAIL" 
 <translation id="5037239767309817516">Feche todas as janelas do Google Chrome e reinicie-o para que esta alteração tenha efeito.</translation>
 <translation id="5132929315877954718">Descubra fantásticas aplicações, jogos, extensões e temas para o Google Chrome.</translation>
 <translation id="5170938038195470297">O seu perfil não pode ser utilizado pois pertence a uma versão mais recente do Google Chrome. Algumas funcionalidades poderão estar indisponíveis. Especifique um diretório de perfil diferente ou utilize uma versão mais recente do Google Chrome.</translation>
-<translation id="5176234269072261959">Ajude a melhorar o Google Chrome ao comunicar as definições atuais.</translation>
 <translation id="5193136243808726294">O Google Chrome SO não consegue abrir esta página.</translation>
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK" />Termos de Utilização<ph name="END_TERMS_OF_SERVICE_LINK" /> do Google Chrome</translation>
 <translation id="5243785881901838525">Google Payments (copiado para o Chrome)</translation>
@@ -178,7 +179,6 @@ Para obter mais instruções, verifique o seu email em <ph name="ACCOUNT_EMAIL" 
 <translation id="6291549208091401781">O Google Chrome já está instalado para todos os utilizadores no seu computador.</translation>
 <translation id="629218512217695915">Utilizar palavra-passe gerada pelo Chrome</translation>
 <translation id="6338556085225130112">A atualizar o Google Chrome…</translation>
-<translation id="6368805772029492593">Para uma segurança adicional, o Google Chrome encripta os seus dados.</translation>
 <translation id="6368958679917195344">O SO Chrome é possível através de <ph name="BEGIN_LINK_CROS_OSS" />software de código aberto<ph name="END_LINK_CROS_OSS" /> adicional.</translation>
 <translation id="6400076122676892962">Em breve, este computador deixará de receber atualizações do Google Chrome, uma vez que o Mac OS X 10.6, o Mac OS X 10.7 e o Mac OS X 10.8 já não serão suportados.</translation>
 <translation id="6410540444482791104">Pode ajudar a tornar o Chrome mais seguro e fácil de utilizar ao enviar automaticamente algumas informações do sistema e conteúdo de páginas para a Google para ajudar a detetar aplicações e sites perigosos.</translation>
@@ -197,7 +197,6 @@ Para obter mais instruções, verifique o seu email em <ph name="ACCOUNT_EMAIL" 
 <translation id="6970811910055250180">A atualizar o dispositivo...</translation>
 <translation id="6982337800632491844"><ph name="DOMAIN" /> requer a leitura e aceitação dos seguintes Termos de Utilização antes de utilizar este dispositivo. Estes termos não ampliam, modificam nem limitam os Termos do SO Google Chrome.</translation>
 <translation id="6989339256997917931">O Google Chrome foi atualizado, mas já não o utiliza há, pelo menos, 30 dias.</translation>
-<translation id="7048801529101012374">O Google Chrome é o seu navegador predefinido.</translation>
 <translation id="7098166902387133879">O Google Chrome está a utilizar o microfone.</translation>
 <translation id="7106741999175697885">Gestor de tarefas - Google Chrome</translation>
 <translation id="7125719106133729027">Não foi possível atualizar automaticamente o Chrome para a versão mais recente, pelo que está a perder novas funcionalidades e correções de segurança fantásticas. Tem de reinstalar manualmente o Chrome.</translation>
@@ -205,7 +204,6 @@ Para obter mais instruções, verifique o seu email em <ph name="ACCOUNT_EMAIL" 
 <translation id="7164397146364144019">Pode contribuir para tornar o Chrome mais seguro e fácil de utilizar ao comunicar automaticamente os detalhes de possíveis incidentes de segurança à Google.</translation>
 <translation id="7177347454226092725">Esta ação elimina permanentemente os seus dados de navegação deste dispositivo. Para recuperar os seus dados mais tarde, inicie sessão no Chrome como $2.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME" /> foi adicionado ao Chrome.</translation>
-<translation id="7193750696137290001">O Google Chrome é apresentado neste idioma.</translation>
 <translation id="7196020411877309443">Por que motivo estou a ver esta caixa de diálogo?</translation>
 <translation id="7242029209006116544">Está a iniciar sessão com uma conta gerida e a permitir que o administrador controle o seu perfil do Google Chrome. Os seus dados do Chrome, como aplicações, marcadores, histórico, palavras-passe e outras definições, ficarão associados definitivamente a <ph name="USER_NAME" />. Poderá eliminar estes dados através do Painel de Controlo das Contas Google, mas não poderá associá-los a outra conta. Opcionalmente, pode criar um perfil novo para manter os seus dados atuais do Chrome em separado. <ph name="LEARN_MORE" /></translation>
 <translation id="729375352412857283">Em breve, este computador deixará de receber atualizações do Google Chrome, uma vez que o Windows XP e o Windows Vista já não serão suportados.</translation>
@@ -236,7 +234,6 @@ Para obter mais instruções, verifique o seu email em <ph name="ACCOUNT_EMAIL" 
 <translation id="7896673875602241923">Anteriormente, alguém iniciou sessão no Chrome neste computador com a conta <ph name="ACCOUNT_EMAIL_LAST" />. Crie um novo utilizador do Chrome para manter as informações em separado.</translation>
 <translation id="7908168227788431038">Quase atualizado! Reinicie o Google Chrome para concluir a atualização.</translation>
 <translation id="795025003224538582">Não reiniciar</translation>
-<translation id="7964230182933713106">O SO Chrome é apresentado neste idioma.</translation>
 <translation id="8005540215158006229">O Chrome está quase pronto.</translation>
 <translation id="8008534537613507642">Reinstalar Chrome</translation>
 <translation id="8030318113982266900">A atualizar o dispositivo para o canal <ph name="CHANNEL_NAME" />...</translation>
@@ -251,6 +248,7 @@ Para obter mais instruções, verifique o seu email em <ph name="ACCOUNT_EMAIL" 
 <translation id="8342675569599923794">Este ficheiro é perigoso. Como tal, o Chrome bloqueou-o.</translation>
 <translation id="8406086379114794905">Ajude a melhorar o Chrome</translation>
 <translation id="8455999171311319804">Opcional: ajude a melhorar o SO Chrome ao enviar automaticamente dados de diagnóstico e de utilização para a Google.</translation>
+<translation id="8478823064122749032">Instale o Chrome no telemóvel. Vamos enviar uma SMS para o seu número de telefone de recuperação de conta: <ph name="PHONE_NUMBER" /></translation>
 <translation id="8540666473246803645">Google Chrome</translation>
 <translation id="8547799825197623713">Iniciador de Aplicações do Chrome para o Canary</translation>
 <translation id="8556340503434111824">Está disponível uma nova versão do Google Chrome, mais rápida do que nunca.</translation>

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="es">
 <translation id="1135328998467923690">El paquete no es válido: "<ph name="ERROR_CODE" />".</translation>
+<translation id="1140871961407805696">Trasera</translation>
 <translation id="1256619696651732561">Analizador de archivos de manifiesto de extensiones</translation>
 <translation id="1445572445564823378">Esta extensión está ralentizando <ph name="PRODUCT_NAME" />. Deberías inhabilitarla para restaurar el rendimiento de <ph name="PRODUCT_NAME" />.</translation>
 <translation id="149347756975725155">No se ha podido cargar el icono de la extensión "<ph name="ICON" />".</translation>
@@ -42,6 +43,7 @@
 <translation id="7217838517480956708">El administrador de este ordenador necesita que se instale <ph name="EXTENSION_NAME" />. No se puede eliminar ni modificar.</translation>
 <translation id="7809034755304591547">El administrador de la extensión <ph name="EXTENSION_NAME" /> (con ID "<ph name="EXTENSION_ID" />") ha bloqueado la extensión.</translation>
 <translation id="7972881773422714442">Opciones: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
+<translation id="8035920974645200807">Delantera</translation>
 <translation id="8047248493720652249">Esta extensión no ha podido asignar un nombre a la descarga "<ph name="ATTEMPTED_FILENAME" />" porque otra extensión (<ph name="EXTENSION_NAME" />) ha determinado un nombre de archivo diferente "<ph name="ACTUAL_FILENAME" />".</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> de <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Esta extensión no ha podido proporcionar credenciales a una solicitud de red porque otra extensión (<ph name="EXTENSION_NAME" />) ha proporcionado otras credenciales.</translation>

@@ -286,6 +286,7 @@
       Ett standardvärde används om en inställning inte specificeras.
 
       Om principen inte ställs in används standardvärden för alla inställningar.</translation>
+<translation id="1960840544413786116">Om certifikat som utfärdats av lokala tillitsankare och saknar tillägget subjectAlternativeName tillåts eller inte</translation>
 <translation id="1964634611280150550">Inkognitoläget är inaktiverat</translation>
 <translation id="1964802606569741174">Den här principen gäller inte YouTube-appen för Android. Om Säkert läge på YouTube ska vara obligatoriskt bör du blockera möjligheten att installera YouTube-appen för Android.</translation>
 <translation id="1969212217917526199">Åsidosätter policyer på felsökningsversioner av fjärråtkomstvärden.
@@ -340,6 +341,21 @@
       Om HardwareAccelerationModeEnabled är inställd på falskt ignoreras Disable3DAPIs och det motsvarar att Disable3DAPIs är inställd på sant.</translation>
 <translation id="2168397434410358693">Inaktivitetstid när enheten är ansluten till elnätet</translation>
 <translation id="2170233653554726857">Aktivera WPAD-optimering</translation>
+<translation id="2176565653304920879">När den här principen har ställts in fungerar den automatiska identifieringen av tidszon på något av följande sätt beroende på vilken inställning som har valts:
+
+      Med inställningen TimezoneAutomaticDetectionUsersDecide kan användarna bestämma om tidszonen ska identifieras automatiskt via de vanliga valmöjligheterna i chrome://settings.
+
+      Med inställningen TimezoneAutomaticDetectionDisabled inaktiveras valmöjligheterna i chrome://settings. Automatisk identifiering av tidszon är alltid inaktiverat.
+
+      Med inställningen TimezoneAutomaticDetectionIPOnly inaktiveras valmöjligheterna i chrome://settings. Automatisk identifiering av tidszon är alltid aktiverat. Platsen fastställs endast med hjälp av IP när tidszonen identifieras.
+
+      Med inställningen TimezoneAutomaticDetectionSendWiFiAccessPoints inaktiveras valmöjligheterna i chrome://settings. Automatisk identifiering av tidszon är alltid aktiverat. Listan med synliga Wi-Fi-åtkomstpunkter skickas alltid till servern för Geolocation API så att tidszonen ska kunna identifieras med hög precision.
+
+      Med inställningen TimezoneAutomaticDetectionSendAllLocationInfo inaktiveras valmöjligheterna i chrome://settings. Automatisk identifiering av tidszon är alltid aktiverat. Platsinformation (som Wi-Fi-åtkomstpunkter, åtkomliga mobilmaster, GPS) skickas till en server så att tidszonen ska kunna identifieras med hög precision.
+
+      Om principen inte har ställts in fungerar det på samma sätt som med inställningen TimezoneAutomaticDetectionUsersDecide.
+
+      Om principen SystemTimezone har ställts in har den företräde framför den här principen. I så fall inaktiveras automatisk identifiering av tidszon helt.</translation>
 <translation id="2178899310296064282">Tillämpa minst medelbegränsat läge på YouTube</translation>
 <translation id="2183294522275408937">Inställningen styr hur ofta låsskärmen ska begära att lösenordet anges för att snabb upplåsning ska användas. Snabb upplåsning blir inte tillgänglig när låsskärmen visas om du översteg inställningen senaste gången du angav lösenordet. Om användaren har låsskärmen öppen längre än den här tidsperioden krävs ett lösenord nästa gång användaren anger fel kod eller när låsskärmen visas på nytt.
 
@@ -1480,11 +1496,20 @@
           Om policyn inte anges används AskNotifications och användaren kan ändra inställningen.</translation>
 <translation id="538108065117008131">Tillåt att <ph name="PRODUCT_FRAME_NAME" /> hanterar följande innehållstyper.</translation>
 <translation id="5388730678841939057">Väljer den strategi som används för att frigöra diskutrymme under automatisk rensning (föråldrad).</translation>
+<translation id="5392172595902933844">Android-statusrapporter skickas till servern.
+
+      Om principen har ställts in på falskt eller lämnats utan värde skickas ingen statusinformation.
+      Om principen har ställts in på sant skickas statusinformation.
+
+      Principen gäller bara om Android-appar har aktiverats.</translation>
 <translation id="5395271912574071439">Aktiverar avskärmning av fjärråtkomstvärdar när en anslutning har upprättats.
 
           Om den här inställningen är aktiverad inaktiveras värdens fysiska indata- och utadataenheter när en fjärranslutning har upprättats.
 
           Om inställningen inaktiveras eller inte har konfigurerats kan både lokala användare och fjärranvändare kommunicera med värden när den delas.</translation>
+<translation id="5405289061476885481">Konfigurerar vilka tangentbordslayouter som är tillåtna på inloggningsskärmen i <ph name="PRODUCT_OS_NAME" />.
+
+      Om en lista med identifierare för inmatningsmetoder har angetts för principen blir de angivna inmatningsmetoderna tillgängliga på inloggningsskärmen. Den inmatningsmetod som anges först blir standardvärde. När fokus ligger på ett användarfält på inloggningsskärmen blir användarens äldsta inmatningsmetod tillgänglig förutom de inmatningsmetoder som angetts i principen. Om principen inte har ställts in styrs valet av inmatningsmetoder av vilken språkkod som används för inloggningsskärmen. Ogiltiga värden som inte identifierar någon inmatningsmetod ignoreras.</translation>
 <translation id="5423001109873148185">Om den här policyn är aktiverad tvingar den sökmotorer att importeras från standardwebbläsaren. Policyn påverkar också dialogrutan för import.
 
       Om policyn är inaktiverad importeras inte standardsökmotorn.
@@ -1559,6 +1584,11 @@
       Om du tillämpar den här policyn kan inte användarna ändra eller förbigå den.
 
       Om policyn inte tillämpas kan användarna välja om de vill att hyllan ska döljas automatiskt.</translation>
+<translation id="557360560705413259">Om den här inställningen har aktiverats används ett servercertifikats commonName i <ph name="PRODUCT_NAME" /> för att matcha ett värdnamn om certifikatet saknar tillägget subjectAlternativeName, förutsatt att certifikatet kan valideras i en obruten kedja till ett lokalt installerat CA-certifikat.
+
+      Observera att detta inte rekommenderas eftersom det kan användas för att förbigå tillägget nameConstraints som begränsar värdnamnen som ett visst certifikat kan auktoriseras för.
+
+      Om den här principen inte har ställts in eller har ställts in på falskt betraktas servercertifikat som saknar tillägget subjectAlternativeName och innehåller antingen ett DNS-namn eller en IP-adress som otillförlitliga.</translation>
 <translation id="557658534286111200">Aktiverar eller inaktiverar bokmärkesredigering</translation>
 <translation id="5586942249556966598">Gör ingenting</translation>
 <translation id="5613179474872285001">Konfigurerar vilket klientdomännamn som fjärråtkomstklienter måste använda och hindrar användare från att ändra det.
@@ -2450,6 +2480,7 @@
 <translation id="7937766917976512374">Tillåta eller neka videoinspelning</translation>
 <translation id="7941975817681987555">Förutsäg inte nätverksåtgärder för någon nätverksanslutning</translation>
 <translation id="7953256619080733119">Värdar för hanterade användares manuella undantag</translation>
+<translation id="7965394584578183156">Skicka alltid Wi-Fi-åtkomstpunkter till servern medan tidszon fastställs.</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Policyn stöds inte längre.
           Gör att STUN och reläservrar kan användas för att ansluta till en fjärrklient.
@@ -2616,6 +2647,7 @@
 <translation id="8390049129576938611">Inaktiverar den interna PDF-läsaren i <ph name="PRODUCT_NAME" />. PDF-filer behandlas i stället som nedladdningar så att användaren kan öppna dem med standardappen.
 
       Om den här principen inte anges eller är inaktiverad öppnas PDF-filer med PDF-pluginprogrammet såvida användaren inte inaktiverar det.</translation>
+<translation id="8398203849316312944">Skicka alltid tillgängliga platssignaler till servern medan tidszon fastställs.</translation>
 <translation id="8402079500086185021">Öppna alltid PDF-filer med en extern app</translation>
 <translation id="8412312801707973447">Anger huruvida OCSP/CRL-onlinekontroller ska utföras</translation>
 <translation id="8413348101535146315">Gör det möjligt att avsluta aktiviteter i Aktivitetshanteraren i <ph name="PRODUCT_NAME" />.
@@ -2877,6 +2909,11 @@
       Om inställningen aktiveras kan du ta skärmdumpar med kortkommandon eller API:er för tillägg.
 
       Om inställningen inaktiveras eller inte anges är tagning av skärmdumpar tillåtet.</translation>
+<translation id="9212233969680267790">Varning! Principen för den högsta TLS-versionen tas bort helt från <ph name="PRODUCT_NAME" /> kring version 66 (runt februari 2018).
+
+      Om denna princip inte konfigureras används den högsta standardversionen (TLSv1.3) av <ph name="PRODUCT_NAME" />.
+
+      I annat fall kan den anges till värdena tls1.2 eller tls1.3. När ett värde har angetts används inte versioner av SSL/TLS som är tidigare än den angivna versionen av <ph name="PRODUCT_NAME" />. Ett värde som inte känns igen ignoreras.</translation>
 <translation id="9213347477683611358">Konfigurera den bakgrundsbild på enhetsnivå som visas på inloggningsskärmen om ingen användare har loggat in på enheten. Ange policyn genom att ange webbadressen som Chrome OS-enheten kan ladda ned bakgrundsbilden från och en kryptografisk hash som används för att verifiera nedladdningens integritet. Bilden måste vara i JPEG-format och dess filstorlek får inte överskrida 16 MB. Webbadressen måste vara tillgänglig utan autentisering. Bakgrundsbilden laddas ned och lagras i cacheminnet. Den laddas ned igen varje gång webbadressen eller hashen ändras.
 
       Policyn ska anges som en sträng som uttrycker webbadressen och hashen i JSON-format, till exempel

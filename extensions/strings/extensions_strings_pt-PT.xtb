@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-PT">
 <translation id="1135328998467923690">O pacote é inválido: "<ph name="ERROR_CODE" />".</translation>
+<translation id="1140871961407805696">Virada para o ambiente</translation>
 <translation id="1256619696651732561">Analisador de manifestos de extensão</translation>
 <translation id="1445572445564823378">Esta extensão está a tornar o <ph name="PRODUCT_NAME" /> lento. Deve desativá-la para restaurar o desempenho do <ph name="PRODUCT_NAME" />.</translation>
 <translation id="149347756975725155">Não foi possível carregar o ícone de extensão "<ph name="ICON" />".</translation>
@@ -42,6 +43,7 @@
 <translation id="7217838517480956708">O administrador desta máquina exige que o <ph name="EXTENSION_NAME" /> seja instalado. Este não pode ser removido ou modificado.</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME" /> (ID da extensão "<ph name="EXTENSION_ID" />") foi bloqueado pelo administrador.</translation>
 <translation id="7972881773422714442">Opções: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
+<translation id="8035920974645200807">Virada para o utilizador</translation>
 <translation id="8047248493720652249">Esta extensão não conseguiu atribuir o nome "<ph name="ATTEMPTED_FILENAME" />" à transferência, porque outra extensão (<ph name="EXTENSION_NAME" />) determinou um nome de ficheiro diferente: "<ph name="ACTUAL_FILENAME" />".</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> de <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Falha desta extensão ao fornecer credenciais a um pedido de rede, porque outra extensão (<ph name="EXTENSION_NAME" />) forneceu credenciais diferentes.</translation>

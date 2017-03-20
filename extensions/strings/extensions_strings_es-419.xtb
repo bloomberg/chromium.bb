@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="es-419">
 <translation id="1135328998467923690">El paquete no es válido: '<ph name="ERROR_CODE" />'.</translation>
+<translation id="1140871961407805696">Cámara posterior</translation>
 <translation id="1256619696651732561">Analizador de manifiesto de extensiones</translation>
 <translation id="1445572445564823378">Esta extensión está ralentizando <ph name="PRODUCT_NAME" />. Deberías inhabilitarla para restaurar el rendimiento de <ph name="PRODUCT_NAME" />.</translation>
 <translation id="149347756975725155">No se pudo cargar el ícono de extensión '<ph name="ICON" />'.</translation>
@@ -42,6 +43,7 @@
 <translation id="7217838517480956708">El administrador de esta máquina requiere que instales <ph name="EXTENSION_NAME" />. No se puede eliminar ni modificar.</translation>
 <translation id="7809034755304591547">El administrador bloqueó la extensión <ph name="EXTENSION_NAME" /> (con ID "<ph name="EXTENSION_ID" />").</translation>
 <translation id="7972881773422714442">Opciones: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
+<translation id="8035920974645200807">Cámara frontal</translation>
 <translation id="8047248493720652249">Esta extensión no pudo asignar el nombre "<ph name="ATTEMPTED_FILENAME" />" a la descarga porque otra extensión (<ph name="EXTENSION_NAME" />) determinó un nombre de archivo diferente: "<ph name="ACTUAL_FILENAME" />".</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> en <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Esta extensión no pudo proporcionar credenciales a una solicitud de red porque otra extensión (<ph name="EXTENSION_NAME" />) proporcionó otras credenciales.</translation>

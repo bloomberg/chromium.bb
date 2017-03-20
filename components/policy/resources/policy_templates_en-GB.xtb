@@ -281,6 +281,7 @@
       If a setting is left unspecified, a default value is used.
 
       If this policy is unset, defaults are used for all settings.</translation>
+<translation id="1960840544413786116">Whether to allow certificates issued by local trust anchors that are missing the subjectAlternativeName extension</translation>
 <translation id="1964634611280150550">Incognito mode disabled.</translation>
 <translation id="1964802606569741174">This policy has no effect on the Android YouTube app. If Safety Mode on YouTube should be enforced, installation of the Android YouTube app should be disallowed.</translation>
 <translation id="1969212217917526199">Overrides policies on Debug builds of the remote access host.
@@ -335,6 +336,21 @@
       If HardwareAccelerationModeEnabled is set to false, Disable3DAPIs is ignored and it is equivalent to Disable3DAPIs being set to true.</translation>
 <translation id="2168397434410358693">Idle delay when running on AC power</translation>
 <translation id="2170233653554726857">Enable WPAD optimisation</translation>
+<translation id="2176565653304920879">When this policy is set, automatic time zone detection flow will be in one of the following ways depending on the value of the setting:
+
+      If set to TimezoneAutomaticDetectionUsersDecide, users would be able to control automatic time zone detection using normal controls in chrome://settings.
+
+      If set to TimezoneAutomaticDetectionDisabled, automatic time zone controls in chrome://settings will be disabled. Automatic time zone detection will always be off.
+
+      If set to TimezoneAutomaticDetectionIPOnly, time zone controls in chrome://settings will be disabled. Automatic time zone detection will always be on. Time zone detection will use IP-only method to resolve location.
+
+      If set to TimezoneAutomaticDetectionSendWiFiAccessPoints, time zone controls in chrome://settings will be disabled. Automatic time zone detection will always be on. The list of visible Wi-Fi access points will always be sent to Geolocation API server for fine-grained time zone detection.
+
+      If set to TimezoneAutomaticDetectionSendAllLocationInfo, time zone controls in chrome://settings will be disabled. Automatic time zone detection will always be on. Location information (such as Wi-Fi access points, reachable mobile masts, GPS) will be sent to a server for fine-grained time zone detection.
+
+      If this policy is not set, it will behave as if TimezoneAutomaticDetectionUsersDecide is set.
+
+      If SystemTimezone policy is set, it overrides this policy. In this case automatic time zone detection is completely disabled.</translation>
 <translation id="2178899310296064282">Enforce at least Moderate Restricted Mode on YouTube</translation>
 <translation id="2183294522275408937">This setting controls how often the lock screen will request the password to be entered in order to continue using quick unlock. Each time the lock screen is entered, if the last password entry was more than this setting, the quick unlock will not be available on entering the lock screen. Should the user stay on the lock screen past this period of time, a password will be requested next time the user enters the wrong code, or re-enters the lock screen, whichever comes first.
 
@@ -1475,11 +1491,21 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
           If this policy is left not set, 'AskNotifications' will be used and the user will be able to change it.</translation>
 <translation id="538108065117008131">Allow <ph name="PRODUCT_FRAME_NAME" /> to handle the following content types.</translation>
 <translation id="5388730678841939057">Selects the strategy used to free up disk space during automatic clean-up</translation>
+<translation id="5392172595902933844">Information about the status of Android is sent back to the
+      server.
+
+      If the policy is set to false or left unset, no status information is reported.
+      If set to true, status information is reported.
+
+      This policy only applies if Android apps are enabled.</translation>
 <translation id="5395271912574071439">Enables curtaining of remote access hosts while a connection is in progress.
 
           If this setting is enabled, then hosts' physical input and output devices are disabled while a remote connection is in progress.
 
           If this setting is disabled or not set, then both local and remote users can interact with the host when it is being shared.</translation>
+<translation id="5405289061476885481">Configures which keyboard layouts are allowed on the <ph name="PRODUCT_OS_NAME" /> sign-in screen.
+
+      If this policy is set to a list of input method identifiers, the given input methods will be available on the sign-in screen. The first given input method will be preselected. While a user pod is focused on the sign-in screen, the user's last used input method will be available in addition to the input methods given by this policy. If this policy is not set, the input methods on the sign-in screen will be derived from the locale in which the sign-in screen is displayed. Values which are not valid input method identifiers will be ignored.</translation>
 <translation id="5423001109873148185">This policy forces search engines to be imported from the current default browser, if enabled. If enabled, this policy also affects the import dialogue.
 
       If disabled, the default search engine is not imported.
@@ -1555,6 +1581,11 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If you set this policy, users cannot change or override it.
 
       If the policy is left not set, users can choose whether the shelf should auto-hide.</translation>
+<translation id="557360560705413259">When this setting is enabled, <ph name="PRODUCT_NAME" /> will use the commonName of a server certificate to match a hostname if the certificate is missing a subjectAlternativeName extension, as long as it successfully validates and chains to a locally-installed CA certificates.
+
+      Note that this is not recommended, as this may allow bypassing the nameConstraints extension that restricts the hostnames that a given certificate can be authorised for.
+
+      If this policy is not set, or is set to false, server certificates that lack a subjectAlternativeName extension containing either a DNS name or IP address will not be trusted.</translation>
 <translation id="557658534286111200">Enables or disables bookmark editing</translation>
 <translation id="5586942249556966598">Do nothing</translation>
 <translation id="5613179474872285001">Configures the required client domain name that will be imposed on remote access clients and prevents users from changing it.
@@ -2853,6 +2884,11 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If enabled screenshots cannot be taken using keyboard shortcuts or extension APIs.
 
       If disabled or not specified, taking screenshots is allowed.</translation>
+<translation id="9212233969680267790">Warning: The max TLS version policy will be entirely removed from <ph name="PRODUCT_NAME" /> around version 66 (around February 2018).
+
+      If this policy is not configured then <ph name="PRODUCT_NAME" /> uses the default maximum version.
+
+      Otherwise it may be set to one of the following values: "tls1.2" or "tls1.3". When set, <ph name="PRODUCT_NAME" /> will not use SSL/TLS versions greater than the specified version. An unrecognised value will be ignored.</translation>
 <translation id="9213347477683611358">Configure device-level wallpaper image that is shown on the login screen if no user has yet signed in to the device. The policy is set by specifying the URL from which the Chrome OS device can download the wallpaper image and a cryptographic hash used to verify the integrity of the download. The image must be in JPEG format, its file size must not exceed 16 MB. The URL must be accessible without any authentication. The wallpaper image is downloaded and cached. It will be re-downloaded whenever the URL or the hash changes.
 
       The policy should be specified as a string that expresses the URL and hash in JSON format, e.g.,

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="bn">
 <translation id="1135328998467923690">এই প্যাকেজটি অবৈধ: '<ph name="ERROR_CODE" />'৷</translation>
+<translation id="1140871961407805696">পেছন দিকে মুখ করা</translation>
 <translation id="1256619696651732561">এক্সটেনশান ম্যানিফেস্ট বিশ্লেষক</translation>
 <translation id="1445572445564823378">এই এক্সটেনশানটির গতি কমে যাচ্ছে <ph name="PRODUCT_NAME" />৷ আপনাকে <ph name="PRODUCT_NAME" />-এর সম্পাদনা পুনঃস্থাপন করার জন্য এটিকে অক্ষম করা উচিত৷</translation>
 <translation id="149347756975725155">এক্সটেনশান আইকন '<ph name="ICON" />' লোড করা যায়নি৷</translation>
@@ -42,6 +43,7 @@
 <translation id="7217838517480956708">এই মেশিনের প্রশাসকের <ph name="EXTENSION_NAME" /> ইনস্টল করার প্রয়োজন৷ এটি সরানো অথবা সংশোধন করা যাবে না৷</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME" /> (এক্সটেশন ID "<ph name="EXTENSION_ID" />") টি প্রশাসকের দ্বারা অবরুদ্ধ করা আছে৷</translation>
 <translation id="7972881773422714442">বিকল্পগুলি: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
+<translation id="8035920974645200807">ব্যবহারকারীর দিকে মুখ করা</translation>
 <translation id="8047248493720652249">এই এক্সটেনশানটি ডাউনলোড "<ph name="ATTEMPTED_FILENAME" />" এর নাম দিতে ব্যর্থ হয়েছে কারণ অন্য এক্সটেনশান (<ph name="EXTENSION_NAME" />) একটি ভিন্ন ফাইল নাম "<ph name="ACTUAL_FILENAME" />" নির্ধারণ করেছে৷</translation>
 <translation id="8284835137979141223"><ph name="VENDOR_NAME" /> এর <ph name="PRODUCT_NAME" /></translation>
 <translation id="8341840687457896278">এই এক্সটেনশনটি একটি নেটওয়ার্ক অনুরোধের শংসাপত্রগুলি প্রদান করতে ব্যর্থ হয়েছে কারণ অন্য এক্সটেনশন (<ph name="EXTENSION_NAME" />) ভিন্ন শংসাপত্রগুলি প্রদান করেছে৷</translation>

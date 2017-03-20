@@ -273,6 +273,7 @@
       Ha egy beállítás nincs megadva, akkor az alapértelmezett érték használandó.
 
       Ha ez a házirend nincs beállítva, az összes beállítás az alapértelmezett értéket használja.</translation>
+<translation id="1960840544413786116">A helyi bizalmi horgonyok által nyújtott, de a subjectAlternativeName bővítménnyel nem rendelkező tanúsítványok engedélyezése</translation>
 <translation id="1964634611280150550">Inkognitómód letiltva</translation>
 <translation id="1964802606569741174">A házirend nincs hatással az androidos YouTube alkalmazásra. Ha a YouTube-on kényszeríteni kell a Biztonságos módot, akkor az androidos YouTube alkalmazás telepítését nem szabad megengedni.</translation>
 <translation id="1969212217917526199">Felülírja a távoli elérésű gazdagép hibakeresést végző buildjein lévő házirendeket.
@@ -327,6 +328,21 @@
       Ha a HardwareAccelerationModeEnabled értéke false (hamis), a rendszer figyelmen kívül hagyja a Disable3DAPIs értékét, ami megegyezik azzal, mintha a Disable3DAPIs értéke true (igaz) lenne.</translation>
 <translation id="2168397434410358693">Tétlenség késleltetése hálózati áramról való működés során</translation>
 <translation id="2170233653554726857">A WPAD-optimalizálás engedélyezése</translation>
+<translation id="2176565653304920879">Ha be van állítva ez a házirend, akkor az automatikus időzóna-érzékelési folyamat az alábbi módok valamelyikén történik a beállítás értékétől függően:
+
+      A TimezoneAutomaticDetectionUsersDecide beállítás esetén a felhasználók normál módon állíthatják be az időzóna automatikus érzékelését a chrome://settings oldalon.
+
+      A TimezoneAutomaticDetectionDisabled beállítás esetén le vannak tiltva az automatikus időzóna-érzékelésre vonatkozó beállítások a chrome://settings oldalon. Ezzel a beállítással a rendszer soha nem érzékeli automatikusan az időzónát.
+
+      A TimezoneAutomaticDetectionIPOnly beállítás esetén az időzóna-beállítások le vannak tiltva a chrome://settings oldalon. Ezzel a beállítással a rendszer mindig automatikusan érzékeli az időzónát. Az időzóna-érzékelés csak IP-címen alapuló módszert használ a hely meghatározásához.
+
+      A TimezoneAutomaticDetectionSendWiFiAccessPoints beállítás esetén az időzóna-beállítások le vannak tiltva a chrome://settings oldalon. Ezzel a beállítással a rendszer mindig automatikusan érzékeli az időzónát. Az időzóna pontos érzékelése érdekében a rendszer minden esetben elküldi a látható Wi-Fi hozzáférési pontok listáját a Geolocation API szerver felé.
+
+      A TimezoneAutomaticDetectionSendAllLocationInfo beállítás esetén az időzóna-beállítások le vannak tiltva a chrome://settings oldalon. Ezzel a beállítással a rendszer mindig automatikusan érzékeli az időzónát. Az időzóna pontosabb érzékelése érdekében a rendszer továbbítja a helyadatokat (például a Wi-Fi hozzáférési pontokat, az elérhető adótornyokat és a GPS-adatokat) az egyik szervernek.
+
+      Ha nincs beállítva ez a házirend, akkor úgy viselkedik, mintha a TimezoneAutomaticDetectionUsersDecide házirend lenne beállítva.
+
+      Ha be van állítva a SystemTimezone házirend, akkor felülbírálja ezt a házirendet. Ebben az esetben teljes mértékben le van tiltva az időzóna automatikus érzékelése.</translation>
 <translation id="2178899310296064282">Legalább mérsékelt Korlátozott mód kényszerítése a YouTube-on</translation>
 <translation id="2183294522275408937">Ez a beállítás azt szabályozza, hogy a lezárási képernyő milyen gyakran kéri jelszó megadását a gyorsfeloldás használatának folytatásához. Amikor megnyitja a lezárási képernyőt, a gyorsfeloldás nem áll rendelkezésre, ha az utolsó jelszó megadása az itt beállított időtartamnál régebben történt. Ha a felhasználó az adott időtartamnál tovább marad a lezárási képernyőn, a program jelszót kér a legközelebbi alkalommal, amikor a felhasználó rossz kódot ír be, vagy újra megnyitja a lezárási képernyőt, attól függően, melyik következik be előbb.
 
@@ -1376,11 +1392,21 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="5378985487213287085">Meghatározhatja, hogy a weboldalak megjeleníthessenek-e asztali értesítéseket. Az asztali értesítések megjelenítése lehet alapértelmezés szerint engedélyezett, alapértelmezés szerint tiltott, vagy megkérdezheti a felhasználót minden alkalommal, amikor egy webhely asztali értesítéseket kíván megjeleníteni. Ha a házirend konfigurálatlanul marad, a rendszer az "AskNotifications" értéket használja, amelyet a felhasználó módosíthat.</translation>
 <translation id="538108065117008131">A következő tartalomtípusok kezelésének engedélyezése a <ph name="PRODUCT_FRAME_NAME" /> számára.</translation>
 <translation id="5388730678841939057">Kiválasztja az automatikus megtisztítás során a lemezterület felszabadításához használt stratégiát (elavult)</translation>
+<translation id="5392172595902933844">Információk küldése az Android állapotáról a
+      szervernek.
+
+      Ha a házirend értéke hamis vagy nincs megadva, akkor nem készül jelentés az állapotadatokról.
+      Ha a beállítás igaz, az állapotadatokról jelentés készül.
+
+      A házirend csak akkor van érvényben, ha engedélyezve vannak az Android-alkalmazások.</translation>
 <translation id="5395271912574071439">Engedélyezi a távoli hozzáférésű gazdagépek lefüggönyözését, miközben kapcsolat van folyamatban.
 
           Ha engedélyezve van ez a beállítás, akkor a gazdagép fizikai be- és kimeneti eszközei a távoli kapcsolat folyamán le vannak tiltva.
 
           Ha le van tiltva vagy nincs beállítva ez a beállítás, akkor a gazdagéppel mind helyi, mind távoli felhasználók interakcióba léphetnek, miközben az meg van osztva.</translation>
+<translation id="5405289061476885481">Azt határozza meg, hogy milyen billentyűzetkiosztásokat lehet használni a(z) <ph name="PRODUCT_OS_NAME" /> bejelentkezési képernyőn.
+
+      Ha beviteli módszerek azonosítóinak listáját adja meg a házirendben, akkor ezek a beviteli módszerek mind használhatók majd a bejelentkezési képernyőn. A rendszer az elsőként megadott beviteli módszert fogja előzetesen kiválasztani. Ha felhasználócsoport van a bejelentkezési képernyő fókuszában, akkor a jelen házirendben megadottak mellett a felhasználó által utoljára használt beviteli módszer is rendelkezésre áll majd. Ha nincs beállítva a házirend, akkor a bejelentkezési képernyőn használható beviteli módszereket a rendszer a bejelentkezési képernyő megjelenítési nyelvéből következteti ki. A rendszer figyelmen kívül hagyja azokat az értékeket, amelyek érvénytelen bevitelimódszer-azonosítók.</translation>
 <translation id="5423001109873148185">Bekapcsolása esetén a házirend kikényszeríti a keresőmotorok importálását az alapértelmezett böngészőből. Bekapcsolása esetén a házirend az importálás párbeszédpanelére is hatással van. Ha ki van kapcsolva, akkor a rendszer nem importálja az alapértelmezett keresőt. Ha nincs beállítva, akkor a rendszer a felhasználótól kérdezheti meg, hogy megtörténjen-e az importálás, vagy hogy lehet-e automatikus az importálás.</translation>
 <translation id="5423197884968724595">Android WebView-korlátozás neve:</translation>
 <translation id="543559563129402336">A házirend elavult. Fontolja meg a(z) <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" /> használatát, amely felülírja ezt a házirendet, és finomabb hangolást tesz lehetővé.
@@ -1448,6 +1474,11 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Ha beállítja ezt az irányelvet, a felhasználók nem módosíthatják vagy bírálhatják felül.
 
       Ha az irányelvet beállítatlanul hagyja, akkor a felhasználók választhatnak, hogy a polc automatikusan el legyen-e rejtve vagy sem.</translation>
+<translation id="557360560705413259">Ha a beállítás engedélyezve van, a <ph name="PRODUCT_NAME" /> a szervertanúsítvány commonName attribútuma alapján egyezteti a gazdagépnevet, ha hiányzik a subjectAlternativeName bővítmény – amennyiben a böngésző sikeresen ellenőrzi, és összekapcsolja a helyileg telepített CA-tanúsítványokkal.
+
+      Felhívjuk figyelmét, hogy nem javasoljuk ennek a módszernek a használatát, ugyanis lehetővé teheti a nameConstraints bővítmény megkerülését. Ez a bővítmény szolgál annak korlátozására, hogy az adott tanúsítvány mely gazdagépnevekhez kaphat jogosultságot.
+
+      Ha a házirend nincs beállítva, vagy ha az értéke hamis, akkor a DNS-nevet vagy IP-címet tartalmazó subjectAlternativeName bővítménnyel nem rendelkező szervertanúsítványokat a böngésző nem fogja megbízhatónak tekinteni.</translation>
 <translation id="557658534286111200">Engedélyezi vagy letiltja a könyvjelzők szerkesztését</translation>
 <translation id="5586942249556966598">Ne tegyen semmit</translation>
 <translation id="5613179474872285001">Beállítja a távoli hozzáférésű ügyfelek számára kötelező domainnevet, és megakadályozza, hogy a felhasználók megváltoztassák azt.
@@ -2290,6 +2321,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="7937766917976512374">Videorögzítés engedélyezése vagy tiltása</translation>
 <translation id="7941975817681987555">A hálózati műveletek előrejelzése semmilyen hálózaton ne történjen meg</translation>
 <translation id="7953256619080733119">Felügyelt felhasználó manuális kivételi gazdagépei</translation>
+<translation id="7965394584578183156">Mindig elküldi a Wi-Fi hozzáférési pontokat a szervernek az időzóna meghatározása során.</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Ez a házirend már nem támogatott. Távoli ügyfélhez való csatlakozáskor lehetővé teszi a STUN és továbbítószerverek használatát. Ha ez a beállítás engedélyezett, akkor ez a gép láthatja a távoli szervereket, és csatlakozni is tud hozzájuk, még akkor is, ha tűzfal választja el őket. Amennyiben ez a lehetőség ki van kapcsolva, és a tűzfal szűri a kimenő UDP-kapcsolatokat, akkor ez a gép csak a helyi hálózaton belül található szerverekhez tud csatlakozni.</translation>
 <translation id="7986374692540430898">Az Android-alkalmazások nem kényszeríthetők proxy használatára. A proxybeállítások egy része hozzáférhető az Android-alkalmazások számára is, amelyek aztán saját belátásuk szerint vesznek figyelembe. Részletesebb tájékoztatásért lásd: <ph name="PROXY_MODE_POLICY" />.</translation>
@@ -2443,6 +2475,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="8390049129576938611">Kikapcsolja a belső PDF-olvasót a(z) <ph name="PRODUCT_NAME" /> termékben. Ehelyett letöltésként kezeli, és engedélyezi a felhasználó számára PDF-fájlok megnyitását az alapértelmezett alkalmazással.
 
       Ha a házirend nincs megadva vagy ki van kapcsolva, a rendszer a PDF beépülő modult használja a PDF-fájlok megnyitásához, kivéve, ha a felhasználó letiltja ezt.</translation>
+<translation id="8398203849316312944">Mindig elküldi a rendelkezésre álló helyjeleket a szervernek az időzóna meghatározása során.</translation>
 <translation id="8402079500086185021">A PDF-fájlok megnyitása mindig külsőleg történjen</translation>
 <translation id="8412312801707973447">Végbemenjenek-e online OCSP-/CRL-ellenőrzések</translation>
 <translation id="8413348101535146315">Lehetővé teszi a folyamatok befejezését a <ph name="PRODUCT_NAME" /> Folyamatkezelőjében.
@@ -2682,6 +2715,11 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Ha engedélyezve van, nem lehet képernyőképeket készíteni billentyűkódokkal vagy bővítmény API-kkal.
 
       Ha le van tiltva vagy nincs megadva, akkor lehetséges képernyőképek készítése.</translation>
+<translation id="9212233969680267790">Figyelmeztetés: A legmagasabb TLS-verziójú házirendet teljes egészében eltávolítjuk a <ph name="PRODUCT_NAME" /> 66-os verziójának érkezésekor (2018. február környékén).
+
+      Ha a házirend nincs beállítva, akkor a <ph name="PRODUCT_NAME" /> az alapértelmezés szerinti legnagyobb verziót használja majd.
+
+      Ellenkező esetben a következő értékek egyike állítható be: „tls1.2” vagy „tls1.3”. Ha beállítja a házirendet, a <ph name="PRODUCT_NAME" /> nem használ majd a megadottnál magasabb verziószámú SSL/TLS-verziót. Az ismeretlen értékeket a böngésző figyelmen kívül hagyja.</translation>
 <translation id="9213347477683611358">Beállítja az eszközszintű háttérképet, amely akkor jelenik meg a bejelentkezési képernyőn, ha még nem jelentkezett be felhasználó az eszközre. Az irányelv annak az URL-nek a megadásával állítható be, ahonnan a Chrome OS-eszköz letöltheti a háttérképet és a letöltés integritásának ellenőrzésére szolgáló kriptográfiai hash-értéket. A képnek JPEG formátumban kell lennie, mérete pedig nem haladhatja meg a 16 MB-ot. Az URL-nek hitelesítés nélkül is elérhetőnek kell lennie. A letöltés után a háttérkép a gyorsítótárba kerül. A rendszer az URL vagy a hash-érték változása esetén minden esetben újból letölti a képet.
 
       Az irányelvet olyan karakterláncként kell megadni, amely JSON formátumban fejezi ki az URL-t és a hash-értéket, például:

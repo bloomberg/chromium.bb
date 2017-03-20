@@ -101,6 +101,7 @@
 <translation id="2871695793448672541">目前为隐藏状态的密码</translation>
 <translation id="2898963176829412617">新建文件夹…</translation>
 <translation id="2903493209154104877">地址</translation>
+<translation id="291754862089661335">将 QR 码或条形码放到此框内</translation>
 <translation id="2921219216347069551">无法分享网页</translation>
 <translation id="292639812446257861">标记为未读</translation>
 <translation id="2933759065870693102">闪光灯</translation>
@@ -172,7 +173,6 @@
 <translation id="4359125752503270327">此页面将在其他应用中打开。</translation>
 <translation id="4378154925671717803">电话</translation>
 <translation id="441868831736628555">隐私权声明</translation>
-<translation id="4473991315115669931">进入隐身模式</translation>
 <translation id="4526249700380860531">通过 <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> 查看和管理已保存的密码</translation>
 <translation id="4536418791685807335">请尝试重新登录。</translation>
 <translation id="4620246317052452550">您浏览过的网页</translation>
@@ -246,7 +246,6 @@
 <translation id="6042308850641462728">更多</translation>
 <translation id="605721222689873409">YY</translation>
 <translation id="6066301408025741299">点按可取消。</translation>
-<translation id="60851516108411750">您的阅读清单现已可供离线访问。要向该清单中添加网页，请依次点按<ph name="SHARE_OPENING_ICON" />。</translation>
 <translation id="6122191549521593678">在线</translation>
 <translation id="6127379762771434464">该项已移除</translation>
 <translation id="6136914049981179737">几秒前</translation>
@@ -381,7 +380,6 @@
 <translation id="8741995161408053644">您的 Google 帐号在 <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> 上可能有其他形式的浏览记录。</translation>
 <translation id="8775144690796719618">网址无效</translation>
 <translation id="8820817407110198400">书签</translation>
-<translation id="882482397944455431">退出隐身模式</translation>
 <translation id="8840513115188359703">您不会因此而退出自己的 Google 帐号。</translation>
 <translation id="8904976895050290827">酷容浏览器同步</translation>
 <translation id="895541991026785598">报告问题</translation>

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ms">
 <translation id="1135328998467923690">Pakej adalah tidak sah: '<ph name="ERROR_CODE" />'.</translation>
+<translation id="1140871961407805696">Menghadap persekitaran</translation>
 <translation id="1256619696651732561">Penghurai Manifes Sambungan</translation>
 <translation id="1445572445564823378">Sambungan ini melambatkan <ph name="PRODUCT_NAME" />. Anda perlu melumpuhkannya untuk memulihkan prestasi <ph name="PRODUCT_NAME" />.</translation>
 <translation id="149347756975725155">Tidak dapat memuatkan ikon sambungan '<ph name="ICON" />'.</translation>
@@ -42,6 +43,7 @@
 <translation id="7217838517480956708">Pentadbir mesin ini memerlukan <ph name="EXTENSION_NAME" /> dipasang. Sambungan ini tidak boleh dialih keluar atau diubah suai.</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME" /> (ID sambungan "<ph name="EXTENSION_ID" />") disekat oleh pentadbir.</translation>
 <translation id="7972881773422714442">Pilihan: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
+<translation id="8035920974645200807">Menghadap pengguna</translation>
 <translation id="8047248493720652249">Sambungan ini gagal menamakan muat turun "<ph name="ATTEMPTED_FILENAME" />" kerana sambungan lain (<ph name="EXTENSION_NAME" />) menetapkan nama fail lain "<ph name="ACTUAL_FILENAME" />".</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> daripada <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Sambungan ini gagal memberikan bukti kelayakan kepada permintaan rangkaian kerana sambungan lain (<ph name="EXTENSION_NAME" />) memberikan bukti kelayakan yang berbeza.</translation>

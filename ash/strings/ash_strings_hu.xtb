@@ -7,6 +7,7 @@
 <translation id="1127238861555034875">Nagyító mód</translation>
 <translation id="1153356358378277386">Párosított eszközök</translation>
 <translation id="1195412055398077112">túlpásztázás</translation>
+<translation id="1247372569136754018">Mikrofon (belső)</translation>
 <translation id="1252999807265626933">Töltési forrás: <ph name="POWER_SOURCE" /></translation>
 <translation id="1270290102613614947">Képernyő-billentyűzet kikapcsolva</translation>
 <translation id="1272079795634619415">Leállítás</translation>
@@ -23,16 +24,21 @@
 <translation id="1525508553941733066">ELVETÉS</translation>
 <translation id="15373452373711364">Nagy egérmutató</translation>
 <translation id="1550523713251050646">Kattintson további lehetőségekért</translation>
+<translation id="1571442141242456645">A beviteli mód a következőre változott: <ph name="INPUT_METHOD_ID" />.
+    A váltáshoz nyomja meg a Shift+Alt billentyűkombinációt.</translation>
 <translation id="1602076796624386989">Mobiladatok engedélyezése</translation>
 <translation id="1621499497873603021">Akkumulátor lemerüléséig hátralévő idő: <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Chrome-eszköz</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> van hátra</translation>
 <translation id="1747827819627189109">Képernyő-billentyűzet bekapcsolva</translation>
 <translation id="1850504506766569011">Wi-Fi kikapcsolva.</translation>
+<translation id="1854357586517521894">A CAPS LOCK be van kapcsolva.
+    Kikapcsolásához nyomja meg a Keresés vagy a Shift billentyűt.</translation>
 <translation id="1864454756846565995">C típusú USB-vel kompatibilis eszköz (hátsó port)</translation>
 <translation id="1882897271359938046">Tükrözés: <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Megváltozott a feladatkezelő megnyitásának billentyűkódja. A <ph name="OLD_SHORTCUT" /> helyett használja a következőt: <ph name="NEW_SHORTCUT" />.</translation>
 <translation id="1923539912171292317">Automatikus kattintások</translation>
+<translation id="1942830294380034169">Túlcsordulás gomb</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME" /> (USB)</translation>
 <translation id="2122028596993374965">„<ph name="TAB_NAME" />” lap „<ph name="RECEIVER_NAME" />” eszközre történő átküldésének leállítása</translation>
@@ -60,6 +66,8 @@
 <translation id="2857608528410806398">A gyorsfeloldás funkció értesítésének a törzse ide kerül. A gyorsfeloldás funkció értesítésének a törzse ide kerül. A gyorsfeloldás funkció értesítésének a törzse ide kerül. A gyorsfeloldás funkció értesítésének a törzse ide kerül. A gyorsfeloldás funkció értesítésének a törzse ide kerül.</translation>
 <translation id="2865888419503095837">Hálózatinformáció</translation>
 <translation id="2872961005593481000">Leállítás</translation>
+<translation id="291653379653113090">A beviteli mód a következőre változott: <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />harmadik fél<ph name="END_LINK" />).
+    A váltáshoz nyomja meg a Shift+Alt billentyűkombinációt.</translation>
 <translation id="2942516765047364088">Polc pozíciója</translation>
 <translation id="2946119680249604491">Kapcsolat hozzáadása</translation>
 <translation id="2963773877003373896">mod3</translation>
@@ -70,6 +78,8 @@
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Alja</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
+<translation id="3109220592788908353">A CAPS LOCK be van kapcsolva.
+    Kikapcsolásához nyomja meg az Alt+Keresés billentyűkombinációt vagy a Shift billentyűt.</translation>
 <translation id="3126069444801937830">Indítsa újra a frissítéshez</translation>
 <translation id="3147142846278915599">Indító (alkalmazások szinkronizálása…)</translation>
 <translation id="315116470104423982">Mobiladatok</translation>
@@ -92,16 +102,19 @@
 <translation id="3683428399328702079"><ph name="DISPLAY_NAME" /> felbontása erre módosult: <ph name="RESOLUTION" /></translation>
 <translation id="370649949373421643">Wi-Fi engedélyezése</translation>
 <translation id="3712407551474845318">Terület rögzítése</translation>
+<translation id="371370241367527062">Elülső mikrofon</translation>
 <translation id="3742055079367172538">Képernyőkép elkészítve</translation>
 <translation id="3775358506042162758">Legfeljebb három fiókot használhat a többfiókos bejelentkezés során.</translation>
 <translation id="3783640748446814672">alt</translation>
 <translation id="3784455785234192852">Zárolás</translation>
+<translation id="3798670284305777884">Hangszóró (belső)</translation>
 <translation id="3799026279081545374">Lehet, hogy rossz a töltője. Ha az Amerikai Egyesült Államokban él, segítség és csere ügyében hívja a következő telefonszámot: 866-628-1371. Ha az Egyesült Királyságban él, hívja a következő telefonszámot: 0800-026-0613. Ha Írországban él, hívja a következő telefonszámot: 1-800-832-664. Ha Kanadában él, hívja a következő telefonszámot: 866-628-1372. Ha Ausztráliában él, hívja a következő telefonszámot: 1-800-067-460.</translation>
 <translation id="3846575436967432996">Nem áll rendelkezésre hálózati információ</translation>
 <translation id="3891340733213178823">Nyomja meg a Ctrl+Shift+Q billentyűkombinációt kétszer a kijelentkezéshez.</translation>
 <translation id="3893630138897523026">ChromeVox (beszélt visszajelzés)</translation>
 <translation id="3899995891769452915">Hangbevitel</translation>
 <translation id="3901991538546252627">Csatlakozás a következőhöz: <ph name="NAME" /></translation>
+<translation id="394485226368336402">Hangbeállítások</translation>
 <translation id="3967919079500697218">A képernyőkép-készítést letiltotta a rendszergazda.</translation>
 <translation id="397105322502079400">Számítás…</translation>
 <translation id="3995138139523574647">C típusú USB-vel kompatibilis eszköz (jobb hátsó port)</translation>
@@ -114,7 +127,6 @@
 <translation id="4421231901400348175">A képernyő irányításának megosztása <ph name="HELPER_NAME" /> segítővel a Távsegítség szolgáltatás keretein belül.</translation>
 <translation id="4430019312045809116">Hangerő</translation>
 <translation id="4448844063988177157">Wi-Fi hálózatok keresése...</translation>
-<translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Párosítatlan eszközök</translation>
 <translation id="4508225577814909926"><ph name="NAME" />: csatlakozás...</translation>
 <translation id="4527045527269911712">A(z) „<ph name="DEVICE_NAME" />” Bluetooth-eszköz engedélyt kér a párosításra.</translation>
@@ -132,14 +144,18 @@
 <translation id="5170568018924773124">Megjelenítés mappában</translation>
 <translation id="5222676887888702881">Kijelentkezés</translation>
 <translation id="523505283826916779">Kisegítő beállítások</translation>
+<translation id="5313326810920013265">Bluetooth-beállítások</translation>
 <translation id="532063867737390965">Ezt a hálózati beállítást letiltotta a rendszergazda.</translation>
 <translation id="5331975486040154427">C típusú USB-vel kompatibilis eszköz (bal hátsó port)</translation>
+<translation id="5430931332414098647">Azonnali internetmegosztás</translation>
 <translation id="5431825016875453137">OpenVPN / L2TP</translation>
 <translation id="544691375626129091">Minden elérhető felhasználót hozzáadott a munkamenethez.</translation>
 <translation id="5507786745520522457">Mobiladat-kapcsolat beállítása</translation>
+<translation id="553675580533261935">Kilépés a munkamenetből</translation>
 <translation id="5548285847212963613">A(z) „<ph name="EXTENSION_NAME" />” bővítmény segíthet a hálózathoz való csatlakozásban.</translation>
 <translation id="5571066253365925590">Bluetooth engedélyezve</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
+<translation id="5648021990716966815">Mikrofon jack csatlakozója</translation>
 <translation id="5777841717266010279">Leállítja a képernyőmegosztást?</translation>
 <translation id="57838592816432529">Némítás</translation>
 <translation id="5895138241574237353">Újraindítás</translation>
@@ -197,11 +213,11 @@ letiltásához nyomja le a Ctrl+Alt+Z billentyűkombinációt.</translation>
 <translation id="7129360219436193655">Lézermutató mód</translation>
 <translation id="714034171374937760">Chromebase</translation>
 <translation id="7168224885072002358">Visszaállítás a régi felbontásra <ph name="TIMEOUT_SECONDS" /> mp múlva</translation>
+<translation id="7256634071279256947">Hátulsó mikrofon</translation>
 <translation id="7348093485538360975">Képernyő-billentyűzet</translation>
 <translation id="735745346212279324">A VPN nincs csatlakoztatva</translation>
 <translation id="742594950370306541">A kamera épp használatban van.</translation>
 <translation id="743058460480092004">A kamera és a mikrofon épp használatban van.</translation>
-<translation id="7502658306369382406">IPv6-cím</translation>
 <translation id="7510334386202674593">Ctrl+Shift+L</translation>
 <translation id="7561014039265304140">A(z) <ph name="DISPLAY_NAME" /> nem támogatja a következő felbontást: <ph name="SPECIFIED_RESOLUTION" />. A felbontás megváltozott erre: <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">Hangulatjel-paletta</translation>
@@ -231,7 +247,6 @@ letiltásához nyomja le a Ctrl+Alt+Z billentyűkombinációt.</translation>
 <translation id="8428213095426709021">Beállítások</translation>
 <translation id="8433186206711564395">Hálózati beállítások</translation>
 <translation id="8454013096329229812">Wi-Fi bekapcsolva.</translation>
-<translation id="8483248364096924578">IP-cím</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Újracsatlakozás…</translation>
 <translation id="8517041960877371778">Előfordulhat, hogy a(z) <ph name="DEVICE_TYPE" /> nem töltődik, amíg be van kapcsolva.</translation>
 <translation id="8528322925433439945">Mobil...</translation>

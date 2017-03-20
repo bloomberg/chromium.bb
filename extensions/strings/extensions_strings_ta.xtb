@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ta">
 <translation id="1135328998467923690">தொகுப்பு செல்லாதது: '<ph name="ERROR_CODE" />'.</translation>
+<translation id="1140871961407805696">பின்புறக் கேமரா</translation>
 <translation id="1256619696651732561">எக்ஸ்டன்ஷன் மேனிஃபெஸ்ட் பார்சர்</translation>
 <translation id="1445572445564823378">இந்த நீட்டிப்பு, <ph name="PRODUCT_NAME" /> ஐ மந்தமாக்குகிறது. <ph name="PRODUCT_NAME" /> இன்
 செயல்திறனை மீட்டமைக்க, இதை நீங்கள் முடக்க வேண்டும்.</translation>
@@ -43,6 +44,7 @@
 <translation id="7217838517480956708">இந்தக் கணினியின் நிர்வாகிக்கு, <ph name="EXTENSION_NAME" /> ஐ நிறுவ வேண்டும். இதை அகற்றவோ மாற்றவோ முடியாது.</translation>
 <translation id="7809034755304591547">நிர்வாகியால் <ph name="EXTENSION_NAME" /> (நீட்டிப்பு ஐடி "<ph name="EXTENSION_ID" />") தடுக்கப்படுகிறது.</translation>
 <translation id="7972881773422714442">விருப்பங்கள்: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
+<translation id="8035920974645200807">முன்புறக் கேமரா</translation>
 <translation id="8047248493720652249">இந்த நீட்டிப்பு, பதிவிறக்கத்திற்கு "<ph name="ATTEMPTED_FILENAME" />" என்று பெயரிடுவதில் தோல்வி, ஏனெனில் மற்றொரு நீட்டிப்பு (<ph name="EXTENSION_NAME" />) வேறொரு கோப்புப்பெயரை "<ph name="ACTUAL_FILENAME" />" நிர்ணயித்து விட்டது.</translation>
 <translation id="8284835137979141223"><ph name="VENDOR_NAME" /> இன் <ph name="PRODUCT_NAME" /></translation>
 <translation id="8341840687457896278">(<ph name="EXTENSION_NAME" />) என்ற வேறொரு நீட்டிப்பு வேறுபட்ட நற்சான்றிதழ்களை வழங்கியதன் காரணமாக பிணைய கோரிக்கைக்கு நற்சான்றிதழ்களை வழங்குவதில் இந்த நீட்டிப்பு தோல்வியடைந்தது.</translation>

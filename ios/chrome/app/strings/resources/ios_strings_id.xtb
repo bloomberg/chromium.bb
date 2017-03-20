@@ -49,7 +49,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="1752547299766512813">Simpan Sandi</translation>
 <translation id="1753905327828125965">Sering Dibuka</translation>
 <translation id="1809939268435598390">Hapus Folder</translation>
-<translation id="1813414402673211292">Hapus Data Perambanan</translation>
+<translation id="1813414402673211292">Hapus Data Browsing</translation>
 <translation id="1820259098641718022">Ditambahkan ke Daftar Baca</translation>
 <translation id="1876721852596493031">Krm Data Penggunaan</translation>
 <translation id="1886928167269928266">Awal Waktu</translation>
@@ -101,6 +101,7 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="2871695793448672541">Sandi Tersembunyi</translation>
 <translation id="2898963176829412617">Folder Baru…</translation>
 <translation id="2903493209154104877">Alamat</translation>
+<translation id="291754862089661335">Letakkan kode QR atau kode batang dalam bingkai ini</translation>
 <translation id="2921219216347069551">Gagal Berbagi Laman</translation>
 <translation id="292639812446257861">Tandai Belum Dibaca</translation>
 <translation id="2933759065870693102">Senter</translation>
@@ -172,7 +173,6 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="4359125752503270327">Laman ini akan dibuka di aplikasi lain.</translation>
 <translation id="4378154925671717803">Telepon</translation>
 <translation id="441868831736628555">Notifikasi Privasi</translation>
-<translation id="4473991315115669931">Masuk Mode Penyamaran</translation>
 <translation id="4526249700380860531">Melihat dan mengelola sandi yang tersimpan di <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Coba masuk lagi.</translation>
 <translation id="4620246317052452550">Halaman yang Telah Anda Baca</translation>
@@ -246,7 +246,6 @@ Handoff juga harus diaktifkan pada bagian General di Settings, dan perangkat And
 <translation id="6042308850641462728">Lainnya</translation>
 <translation id="605721222689873409">TT</translation>
 <translation id="6066301408025741299">Ketuk untuk membatalkan.</translation>
-<translation id="60851516108411750">Daftar bacaan Anda tersedia secara offline. Untuk menambahkan halaman ke daftar bacaan, tap<ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="6122191549521593678">Online</translation>
 <translation id="6127379762771434464">Item dihapus</translation>
 <translation id="6136914049981179737">Detik lalu</translation>
@@ -381,7 +380,6 @@ Data Anda dienkripsi dengan frasa sandi sinkronisasi pada tanggal <ph name="TIME
 <translation id="8741995161408053644">Akun Google Anda mungkin memiliki bentuk riwayat penjelajahan lainnya di <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8775144690796719618">URL tidak valid</translation>
 <translation id="8820817407110198400">Bookmark</translation>
-<translation id="882482397944455431">Keluar dari Mode Penyamaran</translation>
 <translation id="8840513115188359703">Anda tidak akan keluar dari Akun Google.</translation>
 <translation id="8904976895050290827">Sinkronisasi Chrome</translation>
 <translation id="895541991026785598">Laporkan Masalah</translation>

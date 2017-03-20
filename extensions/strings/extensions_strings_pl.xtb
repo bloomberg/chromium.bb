@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="pl">
 <translation id="1135328998467923690">Pakiet jest nieprawidłowy: „<ph name="ERROR_CODE" />”.</translation>
+<translation id="1140871961407805696">Tylny</translation>
 <translation id="1256619696651732561">Parser pliku manifestu rozszerzenia</translation>
 <translation id="1445572445564823378">To rozszerzenie spowalnia pracę <ph name="PRODUCT_NAME" />. Wyłącz je, aby przywrócić wydajność przeglądarki <ph name="PRODUCT_NAME" />.</translation>
 <translation id="149347756975725155">Nie można wczytać ikony rozszerzenia „<ph name="ICON" />”.</translation>
@@ -42,6 +43,7 @@
 <translation id="7217838517480956708">Administrator tego komputera wymaga zainstalowanego rozszerzenia <ph name="EXTENSION_NAME" />. Nie można go usunąć ani modyfikować.</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME" /> (ID rozszerzenia „<ph name="EXTENSION_ID" />”) jest zablokowane przez administratora.</translation>
 <translation id="7972881773422714442">Opcje: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
+<translation id="8035920974645200807">Przedni</translation>
 <translation id="8047248493720652249">Rozszerzenie nie może odczytać nazwy pobieranego pliku „<ph name="ATTEMPTED_FILENAME" />”, ponieważ inne rozszerzenie (<ph name="EXTENSION_NAME" />) odczytało odmienną jego nazwę „<ph name="ACTUAL_FILENAME" />”.</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> od <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Rozszerzenie nie podało danych logowania do żądania sieciowego, bo inne rozszerzenie (<ph name="EXTENSION_NAME" />) podało inne dane.</translation>

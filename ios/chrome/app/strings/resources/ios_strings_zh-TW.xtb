@@ -101,6 +101,7 @@
 <translation id="2871695793448672541">目前為隱藏狀態的密碼</translation>
 <translation id="2898963176829412617">新資料夾…</translation>
 <translation id="2903493209154104877">地址</translation>
+<translation id="291754862089661335">將這個方框對準 QR 圖碼或條碼</translation>
 <translation id="2921219216347069551">無法分享網頁</translation>
 <translation id="292639812446257861">標示為未讀取</translation>
 <translation id="2933759065870693102">閃光燈</translation>
@@ -172,7 +173,6 @@
 <translation id="4359125752503270327">這個網頁會在其他應用程式中開啟。</translation>
 <translation id="4378154925671717803">電話</translation>
 <translation id="441868831736628555">隱私權聲明</translation>
-<translation id="4473991315115669931">進入無痕模式</translation>
 <translation id="4526249700380860531">您可以前往 <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> 查看及管理已儲存的密碼</translation>
 <translation id="4536418791685807335">請嘗試重新登入。</translation>
 <translation id="4620246317052452550">你看過的網頁</translation>
@@ -243,10 +243,9 @@
 <translation id="6021332621416007159">在其他應用程式中開啟...</translation>
 <translation id="6039694632319341016">要讓 <ph name="PASSWORD_MANAGER_BRAND" /> 更新你在這個網站為 <ph name="USERNAME" /> 設定的密碼嗎？</translation>
 <translation id="6040143037577758943">關閉</translation>
-<translation id="6042308850641462728">詳細資訊</translation>
+<translation id="6042308850641462728">更多</translation>
 <translation id="605721222689873409">年</translation>
 <translation id="6066301408025741299">輕觸即可取消。</translation>
-<translation id="60851516108411750">閱讀清單可供離線存取。如要將特定網頁加入閱讀清單，請輕觸 <ph name="SHARE_OPENING_ICON" />。</translation>
 <translation id="6122191549521593678">線上</translation>
 <translation id="6127379762771434464">已移除項目</translation>
 <translation id="6136914049981179737">幾秒前</translation>
@@ -381,7 +380,6 @@
 <translation id="8741995161408053644">您仍可前往 <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> 存取 Google 帳戶中保存的各種瀏覽紀錄。</translation>
 <translation id="8775144690796719618">網址無效</translation>
 <translation id="8820817407110198400">書籤</translation>
-<translation id="882482397944455431">離開無痕模式</translation>
 <translation id="8840513115188359703">您不會因此登出 Google 帳戶。</translation>
 <translation id="8904976895050290827">Google Chrome 同步功能</translation>
 <translation id="895541991026785598">回報問題</translation>

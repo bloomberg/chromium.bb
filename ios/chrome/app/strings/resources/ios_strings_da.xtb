@@ -101,6 +101,7 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="2871695793448672541">Skjult, adgangskode</translation>
 <translation id="2898963176829412617">Ny mappe...</translation>
 <translation id="2903493209154104877">Adresser</translation>
+<translation id="291754862089661335">Placer QR-kode eller stregkode i denne ramme</translation>
 <translation id="2921219216347069551">Siden kan ikke deles</translation>
 <translation id="292639812446257861">Markér som ulæst</translation>
 <translation id="2933759065870693102">Lommelygte</translation>
@@ -172,7 +173,6 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="4359125752503270327">Denne side åbner i en anden app.</translation>
 <translation id="4378154925671717803">Telefon</translation>
 <translation id="441868831736628555">Erklæring om privatliv</translation>
-<translation id="4473991315115669931">Slå inkognitotilstand til</translation>
 <translation id="4526249700380860531">Se og administrer gemte adgangskoder på <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Prøv at logge ind igen.</translation>
 <translation id="4620246317052452550">Sider, du har læst</translation>
@@ -246,7 +246,6 @@ Handoff skal være aktiveret i afsnittet Generelt i Indstillinger, og dine enhed
 <translation id="6042308850641462728">Mere</translation>
 <translation id="605721222689873409">ÅÅ</translation>
 <translation id="6066301408025741299">Tryk for at annullere.</translation>
-<translation id="60851516108411750">Din læseliste er tilgængelig offline. Du kan føje en side til din læseliste ved at trykke på <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="6122191549521593678">Online</translation>
 <translation id="6127379762771434464">Elementet blev fjernet</translation>
 <translation id="6136914049981179737">Sek. siden</translation>
@@ -381,7 +380,6 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="8741995161408053644">Din Google-konto kan have andre former for browserhistorik på <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8775144690796719618">Ugyldig webadresse</translation>
 <translation id="8820817407110198400">Bogmærker</translation>
-<translation id="882482397944455431">Slå inkognitotilstand fra</translation>
 <translation id="8840513115188359703">Du bliver ikke logget ud af din Google-konto.</translation>
 <translation id="8904976895050290827">Chrome-synkronisering</translation>
 <translation id="895541991026785598">Rapportér et problem</translation>

@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="hi">
 <translation id="1135328998467923690">पैकेज अमान्य है: '<ph name="ERROR_CODE" />'.</translation>
+<translation id="1140871961407805696">पीछे वाला कैमरा</translation>
 <translation id="1256619696651732561">एक्‍सटेंशन मेनिफ़ेस्‍ट पार्सर</translation>
 <translation id="1445572445564823378">यह एक्‍सटेंशन धीमा हो रहा है <ph name="PRODUCT_NAME" />. आपको <ph name="PRODUCT_NAME" /> का निष्पादन पुनर्स्‍थापित करने के लिए इसे अक्षम करना चाहिए.</translation>
 <translation id="149347756975725155">एक्सटेंशन आइकन '<ph name="ICON" />' लोड नहीं कर सका.</translation>
@@ -42,6 +43,7 @@
 <translation id="7217838517480956708">इस मशीन का व्यवस्थापक चाहता है कि <ph name="EXTENSION_NAME" /> इंस्टॉल किया हुआ हो. इसे निकाला या संशोधित नहीं किया जा सकता.</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME" /> (एक्सटेंशन आईडी "<ph name="EXTENSION_ID" />") को व्यवस्थापक द्वारा प्रतिबंधित किया गया है.</translation>
 <translation id="7972881773422714442">विकल्‍प: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
+<translation id="8035920974645200807">सामने वाला कैमरा</translation>
 <translation id="8047248493720652249">यह एक्सटेंशन "<ph name="ATTEMPTED_FILENAME" />" डाउनलोड को नाम देने में विफल रहा क्योंकि किसी अन्य एक्सटेंशन (<ph name="EXTENSION_NAME" />) ने एक भिन्न फ़ाइलनाम "<ph name="ACTUAL_FILENAME" />" निर्धारित कर लिया है.</translation>
 <translation id="8284835137979141223"><ph name="VENDOR_NAME" /> की ओर से <ph name="PRODUCT_NAME" /></translation>
 <translation id="8341840687457896278">यह एक्सटेंशन किसी नेटवर्क अनुरोध को प्रमाणिकता प्रदान करने में विफल रहा क्योंकि एक अन्य एक्सटेंशन (<ph name="EXTENSION_NAME" />) ने भिन्न प्रमाणिकता प्रदान कर दिए थे.</translation>

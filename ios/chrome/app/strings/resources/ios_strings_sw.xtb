@@ -101,6 +101,7 @@ Kwa mfano, tovuti nyingine zinaweza kujibu ombi hili kwa kukuonyesha matangazo y
 <translation id="2871695793448672541">Nenosiri Lililofichika</translation>
 <translation id="2898963176829412617">Folda Mpya…</translation>
 <translation id="2903493209154104877">Anwani</translation>
+<translation id="291754862089661335">Weka msimbo wa QR au msimbo upau katika fremu hii</translation>
 <translation id="2921219216347069551">Haiwezi Kushiriki Ukurasa</translation>
 <translation id="292639812446257861">Tia Alama Kuwa Hujasoma</translation>
 <translation id="2933759065870693102">Tochi</translation>
@@ -172,7 +173,6 @@ Ili kurekebisha hoja yako ya utafutaji, bonyeza kwa muda mrefu ili kuchagua. Ili
 <translation id="4359125752503270327">Ukurasa huu utafunguka katika programu nyingine.</translation>
 <translation id="4378154925671717803">Simu</translation>
 <translation id="441868831736628555">Ilani ya Faragha</translation>
-<translation id="4473991315115669931">Ingia katika Hali Fiche</translation>
 <translation id="4526249700380860531">Angalia na udhibiti manenosiri yaliyohifadhiwa kwenye <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Jaribu kuingia katika akaunti tena.</translation>
 <translation id="4620246317052452550">Kurasa Ulizosoma</translation>
@@ -246,7 +246,6 @@ Lazima Handoff iwashwe pia katika sehemu ya Jumla ya Mipangilio, na lazima vifaa
 <translation id="6042308850641462728">Zaidi</translation>
 <translation id="605721222689873409">MK</translation>
 <translation id="6066301408025741299">Gonga ili kughairi.</translation>
-<translation id="60851516108411750">Orodha yako ya kusoma inapatikana nje ya mtandao. Ili kuongeza ukurasa kwenye orodha yako ya kusoma, gonga<ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="6122191549521593678">Mtandaoni</translation>
 <translation id="6127379762771434464">Kipengee kimeondolewa</translation>
 <translation id="6136914049981179737">Sekunde chache</translation>
@@ -381,7 +380,6 @@ Data yako ilisimbwa kwa njia fiche kwa kauli yako ya siri ya kusawazisha mnamo <
 <translation id="8741995161408053644">Huenda Akaunti yako ya Google ina aina nyingine za historia ya kuvinjari kwenye <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8775144690796719618">URL si sahihi</translation>
 <translation id="8820817407110198400">Alamisho</translation>
-<translation id="882482397944455431">Ondoka kwenye Hali Fiche</translation>
 <translation id="8840513115188359703">Hutaondolewa katika Akaunti yako ya Google.</translation>
 <translation id="8904976895050290827">Usawazishaji wa Chrome</translation>
 <translation id="895541991026785598">Ripoti Tatizo</translation>

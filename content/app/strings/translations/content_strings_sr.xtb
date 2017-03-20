@@ -64,6 +64,7 @@
 <translation id="3450233048674729344">Вредност сме да буде највише <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">дефиниција</translation>
 <translation id="3557673793733683882">заглавље <ph name="HEADING_LEVEL" /></translation>
+<translation id="3639613635497528239">број преосталих секунди филма</translation>
 <translation id="3706100364254443312">прекидач</translation>
 <translation id="3732799496749320381">мм</translation>
 <translation id="3785482301506746191">клизач за трајање филма</translation>
@@ -127,6 +128,7 @@
 <translation id="6404546809543547843">клизач за трајање аудио-садржаја</translation>
 <translation id="648732519525291180">бирач времена</translation>
 <translation id="658823671542763450">пређите на режим целог екрана</translation>
+<translation id="663493177488814956">фид</translation>
 <translation id="6637586476836377253">log</translation>
 <translation id="6643016212128521049">Обриши</translation>
 <translation id="6663448176199120256">Недавне претраге</translation>

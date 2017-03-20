@@ -102,6 +102,7 @@
 <translation id="2871695793448672541">گذرواژه پنهان</translation>
 <translation id="2898963176829412617">پوشه جدید…</translation>
 <translation id="2903493209154104877">آدرس‌ها</translation>
+<translation id="291754862089661335">‏کد QR یا بارکد را در این قاب قرار دهید</translation>
 <translation id="2921219216347069551">امکان اشتراک‌گذاری صفحه وجود ندارد</translation>
 <translation id="292639812446257861">علامت‌گذاری به‌‌عنوان خوانده‌نشده</translation>
 <translation id="2933759065870693102">چراغ</translation>
@@ -173,7 +174,6 @@
 <translation id="4359125752503270327">این صفحه در برنامه دیگری باز می‌شود.</translation>
 <translation id="4378154925671717803">تلفن</translation>
 <translation id="441868831736628555">اعلامیه حریم خصوصی</translation>
-<translation id="4473991315115669931">ورود به حالت ناشناس</translation>
 <translation id="4526249700380860531">‏مشاهده و مدیریت گذرواژه‌های ذخیره شده در <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">دوباره برای ورود به سیستم تلاش کنید.</translation>
 <translation id="4620246317052452550">صفحه‌هایی که خوانده‌اید</translation>
@@ -247,7 +247,6 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="6042308850641462728">بیشتر</translation>
 <translation id="605721222689873409">سال</translation>
 <translation id="6066301408025741299">برای لغو ضربه بزنید.</translation>
-<translation id="60851516108411750">فهرست خواندن شما در حالت آفلاین دردسترس است. برای افزودن صفحه‌ای به فهرست خواندنتان، روی <ph name="SHARE_OPENING_ICON" /> ضربه بزنید.</translation>
 <translation id="6122191549521593678">آنلاین</translation>
 <translation id="6127379762771434464">مورد برداشته شد</translation>
 <translation id="6136914049981179737">ثانیه‌هایی قبل</translation>
@@ -382,7 +381,6 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="8741995161408053644">‏ممکن است حساب Google شما اشکال سابقه مرور دیگری در <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" /> داشته باشد.</translation>
 <translation id="8775144690796719618">نشانی وب نامعتبر</translation>
 <translation id="8820817407110198400">نشانک‌ها</translation>
-<translation id="882482397944455431">خروج از حالت ناشناس</translation>
 <translation id="8840513115188359703">‏از حساب Google خود خارج نمی‌شوید.</translation>
 <translation id="8904976895050290827">‏همگام‌سازی Chrome</translation>
 <translation id="895541991026785598">گزارش یک مسئله</translation>

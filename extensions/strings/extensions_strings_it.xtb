@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="it">
 <translation id="1135328998467923690">Il pacchetto non è valido: "<ph name="ERROR_CODE" />".</translation>
+<translation id="1140871961407805696">Fotocamera posteriore</translation>
 <translation id="1256619696651732561">Extension Manifest Parser</translation>
 <translation id="1445572445564823378">Questa estensione sta rallentando <ph name="PRODUCT_NAME" />. È necessario disabilitarla per ripristinare le prestazioni di <ph name="PRODUCT_NAME" />.</translation>
 <translation id="149347756975725155">Impossibile caricare l'icona estensione "<ph name="ICON" />".</translation>
@@ -42,6 +43,7 @@
 <translation id="7217838517480956708">L'amministratore di questo computer richiede che l'estensione <ph name="EXTENSION_NAME" /> sia installata. Non è possibile rimuovere o modificare l'estensione.</translation>
 <translation id="7809034755304591547">L'estensione <ph name="EXTENSION_NAME" /> (ID "<ph name="EXTENSION_ID" />") è stata bloccata dall'amministratore.</translation>
 <translation id="7972881773422714442">Opzioni: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
+<translation id="8035920974645200807">Fotocamera anteriore</translation>
 <translation id="8047248493720652249">Questa estensione non è riuscita a denominare il download "<ph name="ATTEMPTED_FILENAME" />" perché un'altra estensione (<ph name="EXTENSION_NAME" />) ha determinato un nome di file diverso "<ph name="ACTUAL_FILENAME" />".</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> di <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Questa estensione non è riuscita a fornire le credenziali per una richiesta di rete perché un'altra estensione (<ph name="EXTENSION_NAME" />) ha fornito credenziali diverse.</translation>

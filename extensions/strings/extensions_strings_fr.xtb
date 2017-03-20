@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="fr">
 <translation id="1135328998467923690">Package incorrect : "<ph name="ERROR_CODE" />".</translation>
+<translation id="1140871961407805696">Caméra arrière</translation>
 <translation id="1256619696651732561">Analyse des fichiers manifestes des extensions</translation>
 <translation id="1445572445564823378">Cette extension ralentit <ph name="PRODUCT_NAME" />. Vous devez la désactiver pour rétablir les performances de <ph name="PRODUCT_NAME" />.</translation>
 <translation id="149347756975725155">Impossible de charger l'icône de l'extension "<ph name="ICON" />".</translation>
@@ -42,6 +43,7 @@
 <translation id="7217838517480956708">L'administrateur de cet ordinateur exige que l'extension <ph name="EXTENSION_NAME" /> soit installée. Celle-ci ne peut pas être supprimée ni modifiée.</translation>
 <translation id="7809034755304591547">L'administrateur a bloqué l'extension <ph name="EXTENSION_NAME" /> (ID : <ph name="EXTENSION_ID" />).</translation>
 <translation id="7972881773422714442">Options : <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
+<translation id="8035920974645200807">Caméra frontale</translation>
 <translation id="8047248493720652249">Échec de l'attribution du nom "<ph name="ATTEMPTED_FILENAME" />" au fichier téléchargé via l'extension, car un nom de fichier différent, "<ph name="ACTUAL_FILENAME" />", a été attribué via une autre extension (<ph name="EXTENSION_NAME" />).</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> de <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Des certificats n'ont pas pu être fournis à la requête réseau par cette extension, car des certificats différents ont été fournis par une autre extension (<ph name="EXTENSION_NAME" />).</translation>

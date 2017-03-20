@@ -269,6 +269,7 @@ Jos tämä asetus ei ole käytössä, järjestelmäpalkissa ei näytetä suurta 
       Jos jotain asetusta ei ole määritetty, käytetään oletusarvoa.
 
       Jos tätä käytäntöä ei ole määritetty, kaikille asetuksille käytetään oletusarvoja.</translation>
+<translation id="1960840544413786116">Hyväksytäänkö paikallisen luottamusankkurin myöntämä varmenne, jos siitä puuttuu subjectAlternativeName-laajennus</translation>
 <translation id="1964634611280150550">Incognito-tila poistettu käytöstä</translation>
 <translation id="1964802606569741174">Tällä käytännöllä ei ole mitään vaikutusta Androidin YouTube-sovellukseen. Jos YouTuben suojattu tila on käytössä, Androidin YouTube-sovelluksen asentamisen ei pitäisi olla sallittua.</translation>
 <translation id="1969212217917526199">Ohittaa käytännöt etäkäytön isännän vianetsintäversioissa.
@@ -323,6 +324,21 @@ Jos tämä asetus ei ole käytössä, järjestelmäpalkissa ei näytetä suurta 
       Jos käytännön HardwareAccelerationModeEnabled arvoksi asetetaan Epätosi, Disable3DAPIs ohitetaan, jolloin lopputulos vastaa Disable3DAPIs-käytännön arvoa Tosi.</translation>
 <translation id="2168397434410358693">Käyttämättömyysaika käytettäessä laitetta verkkovirralla</translation>
 <translation id="2170233653554726857">Ota WPAD-optimointi käyttöön</translation>
+<translation id="2176565653304920879">Kun tämä käytäntö on määritetty, aikavyöhykkeen automaattinen tunnistaminen tapahtuu jollakin seuraavista tavoista, määritetystä arvosta riippuen:
+
+      Jos arvo on TimezoneAutomaticDetectionUsersDecide, käyttäjät voivat hallita aikavyöhykkeen tunnistamista normaalisti osoitteessa chrome://settings.
+
+      Jos arvo on TimezoneAutomaticDetectionDisabled, osoitteen chrome://settings automaattiset aikavyöhykevalinnat poistetaan käytöstä. Aikavyöhykkeen automaattinen tunnistaminen on aina poissa käytöstä.
+
+      Jos arvo on TimezoneAutomaticDetectionIPOnly, osoitteen chrome://settings aikavyöhykevalinnat poistetaan käytöstä. Aikavyöhykkeen automaattinen tunnistaminen on aina käytössä. Aikavyöhyke tunnistetaan sijainnista, joka perustuu pelkkään IP-osoitteeseen.
+
+      Jos arvo on TimezoneAutomaticDetectionSendWiFiAccessPoints, osoitteen chrome://settings aikavyöhykevalinnat poistetaan käytöstä. Aikavyöhykkeen automaattinen tunnistaminen on aina käytössä. Aikavyöhyke tunnistetaan aina tarkasti lähettämällä näkyvien Wi-Fi-tukiasemien luettelo sijainnin sovellusliittymän palvelimelle.
+
+      Jos arvo on TimezoneAutomaticDetectionSendAllLocationInfo, osoitteen chrome://settings aikavyöhykevalinnat poistetaan käytöstä. Aikavyöhykkeen automaattinen tunnistaminen on aina käytössä. Aikavyöhyke tunnistetaan aina tarkasti lähettämällä palvelimelle sijaintitietoja (esim. Wi-Fin ja matkapuhelinverkon tukiasemia ja GPS-signaaleja).
+
+      Jos käytännölle ei määritetä arvoa, se käyttäytyy arvon TimezoneAutomaticDetectionUsersDecide mukaisesti.
+
+      Jos SystemTimezone-käytäntö on määritetty, se ohittaa tämän käytännön. Tässä tapauksessa aikavyöhykkeen automaattinen tunnistaminen poistetaan käytöstä.</translation>
 <translation id="2178899310296064282">Pakota vähintään keskitason rajoitettu tila YouTubessa</translation>
 <translation id="2183294522275408937">Tämä asetus määrittää, kuinka usein lukitusnäyttö pyytää salasanaa, ennen kuin lukituksen pika-avaamisen käyttöä voi jatkaa. Kun käyttäjä siirtyy lukitusnäytölle, lukituksen pika-avaaminen ei ole käytettävissä, jos salasanan edellisestä antamiskerrasta kulunut aika ylittää tässä asetuksessa määritetyn ajan. Jos käyttäjä pysyy määritetyn ajan yli lukitusnäytöllä, häneltä pyydetään salasanaa, kun hän seuraavan kerran antaa virheellisen PIN-koodin tai siirtyy lukitusnäytölle uudelleen (riippuen siitä, kumpi tapahtuu ensin).
 
@@ -1378,11 +1394,21 @@ Jos tätä asetusta ei ole määritetty, kaikentyyppisiä sovelluksia ja laajenn
 <translation id="5378985487213287085">Voit määrittää, saavatko sivustot näyttää työpöytäilmoituksia. Työpöytäilmoituksien näyttäminen voidaan sallia oletuksena, kieltää oletuksena, tai käyttäjältä voidaan kysyä aina sivuston halutessa näyttää työpöytäilmoituksia. Jos tätä käytäntöä ei ole määritetty, käytetään AskNotifications-käytäntöä, ja käyttäjä voi muuttaa sitä.</translation>
 <translation id="538108065117008131">Anna tuotteen <ph name="PRODUCT_FRAME_NAME" /> käsitellä seuraavia sisältötyyppejä.</translation>
 <translation id="5388730678841939057">Valitsee tavan, jolla automaattinen puhdistus vapauttaa levytilaa (vanhentunut)</translation>
+<translation id="5392172595902933844">Androidin tilatietoja lähetetään takaisin
+      palvelimelle.
+
+      Jos käytännön arvoksi on määritetty epätosi tai sitä ei ole määritetty, tilatietoja ei lähetetä.
+      Jos käytännön arvoksi on määritetty tosi, tilatiedot lähetetään.
+
+      Tätä käytäntöä sovelletaan vain, jos Android-sovellukset on otettu käyttöön.</translation>
 <translation id="5395271912574071439">Mahdollistaa etäisäntien verhoamisen, kun yhteys on muodostettu.
 
           Jos tämä asetus on käytössä, isännän tulo- ja lähtölaitteet poistetaan käytöstä, kun etäyhteys on muodostettu.
 
           Jos tämä asetus on poistettu käytöstä tai sitä ei ole määritetty, paikalliset ja etäkäyttäjät voivat olla vuorovaikutuksessa isännän kanssa, kun se jaetaan.</translation>
+<translation id="5405289061476885481">Määrittää näppäimistöasettelut, joiden käytön <ph name="PRODUCT_OS_NAME" /> sallii kirjautumisnäytöllä.
+
+      Jos tämän käytännön arvo on syöttötapojen tunnusten luettelo, luettelossa olevat syöttötavat ovat käytettävissä kirjautumisnäytöllä. Oletuksena valittuna on luettelon ensimmäinen syöttötapa. Kun kohdistus on käyttäjän tiedoissa kirjautumisnäytöllä, käyttäjän viimeksi käyttämä syöttötapa on käytettävissä tässä käytännössä määritettyjen syöttötapojen lisäksi. Jos tätä käytäntöä ei ole määritetty, syöttötavat päätellään kirjautumisnäytön kieli- ja maa-asetuksen perusteella. Jos arvo ei ole kelvollinen syöttötavan tunnus, se ohitetaan.</translation>
 <translation id="5423001109873148185">Tämä käytäntö pakottaa hakukoneiden tuonnin nykyisestä oletusselaimesta. Jos käytäntö on käytössä, käytäntö vaikuttaa myös tuonti-ikkunaan. Jos käytäntö ei ole käytössä, oletushakukonetta ei tuoda. Jos käytäntöä ei ole määritetty, käyttäjiltä voidaan kysyä, haluavatko he tuoda hakukoneen, tai hakukone voidaan tuoda automaattisesti.</translation>
 <translation id="5423197884968724595">Android WebView -rajoituksen nimi:</translation>
 <translation id="543559563129402336">Tämä käytäntö on poistettu käytöstä. Harkitse sen sijaan käytäntöä <ph name="FORCEYOUTUBERESTRICT_POLICY_NAME" />, joka ohittaa tämän käytännön ja sallii tarkemmat asetukset.
@@ -1450,6 +1476,11 @@ Jos tämän käytännön arvo on NeverAutoHideShelf, hyllyä ei koskaan piilotet
 Jos määrität tämän käytännön, käyttäjät eivät voi muuttaa tai ohittaa sitä.
 
 Jos käytäntöä ei määritetä, käyttäjät voivat valita, tuleeko hylly piilottaa automaattisesti.</translation>
+<translation id="557360560705413259">Kun tämä asetus on käytössä, <ph name="PRODUCT_NAME" /> liittää palvelinvarmenteen isäntänimeen käyttämällä commonName-tunnistetta, jos varmenteesta puuttuu subjectAlternativeName-laajennus. Tämä edellyttää, että varmenteen tarkistus onnistuu ja että varmenne kuuluu ketjuun paikallisesti asennetun CA-varmenteen kanssa.
+
+      Huom. Tämän asetuksen käyttöä ei suositella, sillä se voi mahdollistaa nameConstraints-laajennuksen ohittamisen. Kyseinen laajennus rajoittaa isäntänimiä, joiden käyttöön varmenne voidaan valtuuttaa.
+
+      Jos tämän käytännön arvo on epätosi tai sitä ei ole määritetty, DNS-nimen tai IP-osoitteen sisältäviä palvelinvarmenteita ei pidetä luotettavina, jos niistä puuttuu subjectAlternativeName-laajennus.</translation>
 <translation id="557658534286111200">Ottaa kirjanmerkkien muokkauksen käyttöön tai poistaa sen käytöstä</translation>
 <translation id="5586942249556966598">Ei toimia</translation>
 <translation id="5613179474872285001">Määrittää pakollisen asiakasverkkotunnuksen nimen, joka pakotetaan käyttöön etäkäytön asiakassovelluksissa ja jota käyttäjät eivät voi muokata.
@@ -2287,6 +2318,7 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 <translation id="7937766917976512374">Salli tai estä videon kaappaaminen</translation>
 <translation id="7941975817681987555">Älä ennakoi verkon toimia millään verkkoyhteydellä</translation>
 <translation id="7953256619080733119">Hallinnoidun käyttäjän manuaalisten poikkeuksien isännät</translation>
+<translation id="7965394584578183156">Lähetä aina Wi-Fi-tukiasemien nimet palvelimelle aikavyöhykkeen selvittämisen yhteydessä.</translation>
 <translation id="7971839631300653352">SSL 3.0</translation>
 <translation id="7974114691960514888">Tätä käytäntöä ei enää tueta. Ottaa käyttöön STUN- ja relay-palvelimet, kun muodostetaan yhteyttä etäasiakkaaseen. Jos tämä asetus on käytössä, tämä kone voi löytää etäasiakkaan ja muodostaa yhteyden, vaikka asiakkaat olisivat palomuurin takana. Jos asetus ei ole käytössä ja lähtevät UDP-yhteydet menevät palomuurin kautta, tämä kone hyväksyy vain paikallisessa verkossa olevien isäntäkoneiden yhteydet.</translation>
 <translation id="7986374692540430898">Et voi pakottaa Android-sovelluksia käyttämään välityspalvelinta. Osa välityspalvelinasetuksista on Android-sovellusten käytettävissä, ja ne voivat halutessaan noudattaa niitä. Lue lisää käytännöstä <ph name="PROXY_MODE_POLICY" />.</translation>
@@ -2440,6 +2472,7 @@ Tämä käytäntö ei ole käytössä tavallisilla käyttäjätileillä.</transl
 <translation id="8390049129576938611">Poista käytöstä tuotteen <ph name="PRODUCT_NAME" /> sisäinen PDF-katseluohjelma. Tuote kohtelee PDF-tiedostoja latauksina ja sallii niiden avaamisen käyttäjän valitsemalla oletussovelluksella.
 
       Jos tätä käytäntöä ei määritetä tai se poistetaan käytöstä, PDF-tiedostot avataan käyttämällä PDF-laajennusta, ellei käyttäjä poista laajennusta käytöstä.</translation>
+<translation id="8398203849316312944">Lähetä aina käytettävissä olevat sijaintisignaalit palvelimelle aikavyöhykkeen selvittämisen yhteydessä.</translation>
 <translation id="8402079500086185021">Avaa PDF-tiedostot aina ulkoisella sovelluksella</translation>
 <translation id="8412312801707973447">OCSP-/CRL-tarkistusten suorittaminen</translation>
 <translation id="8413348101535146315">Tämä käytäntö sallii prosessien lopettamisen <ph name="PRODUCT_NAME" />n tehtävänhallinnassa.
@@ -2677,6 +2710,11 @@ Tämä käytäntö ei ole käytössä tavallisilla käyttäjätileillä.</transl
       Jos asetus on käytössä, kuvakaappauksia ei voi ottaa pikanäppäimien tai laajennuksien sovellusliittymien avulla.
 
       Jos asetus ei ole käytössä tai sitä ei ole määritetty, kuvakaappauksia saa ottaa.</translation>
+<translation id="9212233969680267790">Varoitus: <ph name="PRODUCT_NAME" /> ei enää tue uusimman TLS-version käytäntöä versiosta 66 (arviolta helmikuusta 2018) eteenpäin.
+
+      Jos tätä käytäntöä ei ole määritetty, <ph name="PRODUCT_NAME" /> käyttää oletuksena uusinta versiota.
+
+      Muussa tapauksessa käytännön arvoksi voidaan määrittää tls1.2 tai tls1.3. Jos arvo on toinen näistä, <ph name="PRODUCT_NAME" /> ei käytä kyseistä arvoa uudempaa SSL/TLS-versiota. Tunnistamattomat arvot ohitetaan.</translation>
 <translation id="9213347477683611358">Määritä laitetason taustakuva, joka näytetään kirjautumisnäytöllä, kun yksikään käyttäjä ei ole kirjautuneena laitteelle. Käytäntö määritetään antamalla URL-osoite, josta Chrome-käyttöjärjestelmää käyttävä laite voi ladata taustakuvan ja hajautusarvo, jonka avulla lataus todennetaan. Kuvan on oltava JPEG-muodossa, ja sen enimmäiskoko on 16 Mt. URL-osoitteen käyttäminen ei saa edellyttää todennusta. Taustakuva ladataan ja tallennetaan välimuistiin. Kuva ladataan uudelleen, jos URL-osoite tai hajautusarvo muuttuu.
 
       Määritä käytäntö merkkijonona, joka sisältää URL-osoitteen ja hajautusarvon JSON-muodossa, esim.

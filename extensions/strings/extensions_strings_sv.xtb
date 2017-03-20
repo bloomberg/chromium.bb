@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sv">
 <translation id="1135328998467923690">Paketet är ogiltigt: <ph name="ERROR_CODE" />.</translation>
+<translation id="1140871961407805696">Vänd mot omgivningen</translation>
 <translation id="1256619696651732561">Textanalysator för tilläggsmanifest</translation>
 <translation id="1445572445564823378">Detta tillägg gör <ph name="PRODUCT_NAME" /> långsammare. Om du vill utnyttja den fulla prestandan i <ph name="PRODUCT_NAME" /> bör du inaktivera tillägget.</translation>
 <translation id="149347756975725155">Det gick inte att läsa in tilläggsikonen <ph name="ICON" />.</translation>
@@ -42,6 +43,7 @@
 <translation id="7217838517480956708">Administratören av den här enheten kräver att <ph name="EXTENSION_NAME" /> ska installeras. Det kan inte tas bort eller ändras.</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME" /> (tilläggs-ID <ph name="EXTENSION_ID" />) har blockerats av administratören.</translation>
 <translation id="7972881773422714442">Alternativ: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
+<translation id="8035920974645200807">Vänd mot användaren</translation>
 <translation id="8047248493720652249">Det gick inte att namnge nedladdningen <ph name="ATTEMPTED_FILENAME" /> eftersom ett annat tillägg (<ph name="EXTENSION_NAME" />) valde ett annat filnamn <ph name="ACTUAL_FILENAME" />.</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> från <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Det här tillägget kunde inte uppge några användaruppgifter till en nätverksbegäran eftersom ett annat tillägg  (<ph name="EXTENSION_NAME" />) uppgav andra användaruppgifter.</translation>

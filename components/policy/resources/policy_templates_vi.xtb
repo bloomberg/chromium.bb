@@ -279,6 +279,7 @@
       Nếu cài đặt không được chỉ định, giá trị mặc định sẽ được sử dụng.
 
       Nếu chính sách này không được thiết lập, các giá trị mặc định sẽ được sử dụng cho tất cả cài đặt.</translation>
+<translation id="1960840544413786116">Có cho phép chứng chỉ được cấp bởi mẩu neo đáng tin cậy cục bộ bị thiếu tiện ích subjectAlternativeName hay không</translation>
 <translation id="1964634611280150550">Đã tắt chế độ ẩn danh</translation>
 <translation id="1964802606569741174">Chính sách này không ảnh hưởng đến ứng dụng YouTube trên Android. Nếu bị buộc phải sử dụng Chế độ an toàn trên YouTube thì việc cài đặt ứng dụng YouTube trên Android sẽ không được cho phép.</translation>
 <translation id="1969212217917526199">Ghi đè chính sách trên bản dựng Gỡ lỗi của máy chủ truy cập từ xa.
@@ -333,6 +334,21 @@
       Nếu HardwareAccelerationModeEnabled được đặt thành false thì Disable3DAPIs sẽ được bỏ qua và tương đương với Disable3DAPIs đang được đặt thành true.</translation>
 <translation id="2168397434410358693">Độ trễ lúc không sử dụng khi chạy trên nguồn AC</translation>
 <translation id="2170233653554726857">Bật tối ưu hóa WPAD</translation>
+<translation id="2176565653304920879">Khi chính sách này được đặt, tính năng phát hiện múi giờ tự động sẽ là một trong những cách sau đây tùy thuộc vào giá trị của cài đặt:
+
+      Nếu được đặt thành TimezoneAutomaticDetectionUsersDecide, người dùng có thể kiểm soát tính năng phát hiện múi giờ tự động bằng cách sử dụng các biện pháp kiểm soát thông thường trong chrome://settings.
+
+      Nếu được đặt thành TimezoneAutomaticDetectionDisabled, các biện pháp kiểm soát múi giờ tự động trong chrome://settings sẽ bị tắt. Tính năng phát hiện múi giờ tự động sẽ luôn được tắt.
+
+      Nếu được đặt thành TimezoneAutomaticDetectionIPOnly, các biện pháp kiểm soát múi giờ trong chrome://settings sẽ bị tắt. Tính năng phát hiện múi giờ tự động sẽ luôn được bật. Phát hiện múi giờ sẽ sử dụng phương pháp chỉ IP để phân giải vị trí.
+
+      Nếu được đặt thành TimezoneAutomaticDetectionSendWiFiAccessPoints, các biện pháp kiểm soát múi giờ trong chrome://settings sẽ bị tắt. Tính năng phát hiện múi giờ tự động sẽ luôn được bật. Danh sách các điểm truy cập Wi-Fi hiển thị sẽ luôn được gửi tới máy chủ API vị trí địa lý để phát hiện múi giờ chi tiết.
+
+      Nếu được đặt thành TimezoneAutomaticDetectionSendAllLocationInfo, các biện pháp kiểm soát múi giờ trong chrome://settings sẽ bị tắt. Tính năng phát hiện múi giờ tự động sẽ luôn được bật. Thông tin vị trí (như các điểm truy cập Wi-Fi, Tháp di động có thể truy cập, GPS) sẽ được gửi tới máy chủ để phát hiện múi giờ chi tiết.
+
+      Nếu chính sách này không được đặt, tính năng sẽ hoạt động như thể TimezoneAutomaticDetectionUsersDecide được đặt.
+
+      Nếu chính sách SystemTimezone được đặt, tính năng này sẽ ghi đè chính sách này. Trong trường hợp này, tính năng phát hiện múi giờ tự động bị tắt hoàn toàn.</translation>
 <translation id="2178899310296064282">Buộc sử dụng ít nhất Chế độ hạn chế trung bình trên YouTube</translation>
 <translation id="2183294522275408937">Cài đặt này kiểm soát tần suất màn hình khóa yêu cầu nhập mật khẩu để tiếp tục sử dụng mở khóa nhanh. Mỗi khi truy cập màn hình khóa, nếu mục nhập mật khẩu cuối cùng không thuộc cài đặt này, thì tính năng mở khóa nhanh sẽ không khả dụng khi truy cập màn hình khóa. Nếu người dùng ở trên màn hình khóa quá khoảng thời gian này, mật khẩu sẽ được yêu cầu vào lần tiếp theo người dùng nhập sai mã hoặc truy cập lại màn hình khóa, tùy theo trường hợp nào đến trước.
 
@@ -1461,11 +1477,21 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Nếu không thiết lập chính sách này, 'AskNotifications' sẽ được sử dụng và người dùng có thể thay đổi cài đặt này.</translation>
 <translation id="538108065117008131">Cho phép <ph name="PRODUCT_FRAME_NAME" /> xử lý các loại nội dung sau.</translation>
 <translation id="5388730678841939057">Lựa chọn chiến lược dùng để giải phóng dung lượng đĩa trong khi dọn sạch tự động (không được dùng nữa)</translation>
+<translation id="5392172595902933844">Thông tin về trạng thái của Android được gửi lại cho
+      máy chủ.
+
+      Nếu chính sách được đặt thành false hoặc chưa được đặt thì không có thông tin trạng thái nào được báo cáo.
+      Nếu được đặt thành true, thông tin trạng thái sẽ được báo cáo.
+
+      Chính sách này chỉ áp dụng nếu các ứng dụng Android được bật.</translation>
 <translation id="5395271912574071439">Bật tính năng ẩn của máy máy chủ truy cập từ xa trong khi đang thực hiện kết nối.
 
           Nếu bạn bật cài đặt này thì các thiết bị đầu vào và đầu ra vật lý của máy chủ sẽ bị tắt khi đang thực hiện kết nối từ xa.
 
           Nếu bạn tắt hoặc chưa đặt cài đặt này thì cả người dùng cục bộ và người dùng từ xa đều có thể tương tác với máy chủ khi máy chủ đang được chia sẻ.</translation>
+<translation id="5405289061476885481">Định cấu hình bố cục bàn phím được cho phép trên màn hình đăng nhập <ph name="PRODUCT_OS_NAME" />.
+
+      Nếu chính sách này được đặt thành danh sách số nhận dạng phương thức nhập, phương thức nhập được cung cấp sẽ có sẵn trên màn hình đăng nhập. Phương thức nhập được cung cấp đầu tiên sẽ được chọn sẵn. Mặc dù nhóm người dùng được lấy tiêu điểm trên màn hình đăng nhập, phương thức nhập được sử dụng gần đây nhất của người dùng sẽ có sẵn ngoài phương thức nhập được cung cấp bởi chính sách này. Nếu chính sách này chưa được đặt, các phương thức nhập trên màn hình đăng nhập sẽ được lấy từ ngôn ngữ mà màn hình đăng nhập hiển thị. Các giá trị không phải số nhận dạng phương thức nhập hợp lệ sẽ bị bỏ qua.</translation>
 <translation id="5423001109873148185">Chính sách này nếu được bật sẽ buộc công cụ tìm kiếm phải được nhập từ trình duyệt mặc định hiện tại. Nếu được bật, chính sách này cũng ảnh hưởng đến hộp thoại nhập.
 
       Nếu tắt chính sách này, sẽ không có công cụ tìm kiếm mặc định nào được nhập.
@@ -1540,6 +1566,11 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu bạn đặt chính sách này, người dùng không thể thay đổi hoặc ghi đè chính sách.
 
       Nếu chính sách không được đặt, người dùng có thể chọn có nên tự động ẩn giá không.</translation>
+<translation id="557360560705413259">Khi cài đặt này được bật, <ph name="PRODUCT_NAME" /> sẽ sử dụng commonName của chứng chỉ máy chủ để khớp với tên máy chủ nếu chứng chỉ thiếu tiện ích subjectAlternativeName miễn là chứng chỉ xác thực thành công và liên kết với chứng chỉ CA được cài đặt cục bộ.
+
+      Lưu ý rằng tùy chọn này không được đề xuất, vì điều này có thể cho phép bỏ qua tiện ích nameConstraints hạn chế tên máy chủ mà một chứng chỉ đã cho có thể được ủy quyền.
+
+      Nếu chính sách này chưa được đặt hoặc được đặt thành false, chứng chỉ máy chủ thiếu tiện ích subjectAlternativeName chứa tên DNS hoặc địa chỉ IP sẽ không được tin tưởng.</translation>
 <translation id="557658534286111200">Cho phép hoặc vô hiệu hóa chỉnh sửa dấu trang</translation>
 <translation id="5586942249556966598">Không làm gì</translation>
 <translation id="5613179474872285001">Định cấu hình tên miền ứng dụng được yêu cầu sẽ được áp dụng cho ứng dụng truy cập từ xa và ngăn người dùng thay đổi tên miền đó.
@@ -2831,6 +2862,11 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu được bật, không thể chụp các ảnh chụp màn hình bằng phím tắt hoặc các API tiện ích.
 
       Nếu bị tắt hoặc không được chỉ định, tính năng chụp ảnh chụp màn hình sẽ được phép.</translation>
+<translation id="9212233969680267790">Cảnh báo: Chính sách phiên bản TLS tối đa sẽ bị xóa hoàn toàn khỏi <ph name="PRODUCT_NAME" /> từ khoảng phiên bản 66 (khoảng tháng 2 năm 2018).
+
+      Nếu chính sách này không được định cấu hình thì <ph name="PRODUCT_NAME" /> sẽ sử dụng phiên bản tối đa mặc định.
+
+      Ngoài ra, chính sách có thể được đặt thành một trong các giá trị sau: "tls1.2" hoặc "tls1.3". Khi được đặt, <ph name="PRODUCT_NAME" /> sẽ không sử dụng các phiên bản SSL/TLS cao hơn phiên bản đã chỉ định. Giá trị không xác định sẽ bị bỏ qua.</translation>
 <translation id="9213347477683611358">Định cấu hình hình nền cấp thiết bị được hiển thị trên màn hình đăng nhập nếu chưa có người dùng nào đăng nhập vào thiết bị. Bạn có thể đặt chính sách bằng cách chỉ định URL mà từ đó thiết bị Chrome OS có thể tải xuống hình nền và sử dụng một hàm mã hóa để xác minh tính toàn vẹn của nội dung tải xuống. Hình ảnh phải ở định dạng JPEG với kích thước tệp hình ảnh không được vượt quá 16MB. URL phải truy cập được mà không cần bất kỳ hình thức xác thực nào. Hình nền được tải xuống và lưu vào bộ nhớ cache. Hình ảnh sẽ được tải xuống lại mỗi khi URL hoặc hàm băm thay đổi.
 
       Chính sách phải được chỉ định dưới dạng một chuỗi biểu thị URL và hàm mã hóa ở định dạng JSON, ví dụ:

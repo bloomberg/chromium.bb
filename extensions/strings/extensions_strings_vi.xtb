@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="vi">
 <translation id="1135328998467923690">Gói không hợp lệ: '<ph name="ERROR_CODE" />'.</translation>
+<translation id="1140871961407805696">Máy ảnh mặt sau</translation>
 <translation id="1256619696651732561">Trình phân tích cú pháp tệp kê khai tiện ích</translation>
 <translation id="1445572445564823378">Tiện ích này đang làm chậm <ph name="PRODUCT_NAME" />. Bạn phải tắt tiện ích để khôi phục hiệu suất của <ph name="PRODUCT_NAME" />.</translation>
 <translation id="149347756975725155">Không thể tải biểu tượng tiện ích '<ph name="ICON" />'.</translation>
@@ -42,6 +43,7 @@
 <translation id="7217838517480956708">Quản trị viên của máy này yêu cầu cài đặt <ph name="EXTENSION_NAME" />. Bạn không thể xóa hoặc sửa đổi tiện ích này.</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME" /> (ID tiện ích "<ph name="EXTENSION_ID" />") bị quản trị viên chặn.</translation>
 <translation id="7972881773422714442">Tùy chọn: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
+<translation id="8035920974645200807">Máy ảnh mặt trước</translation>
 <translation id="8047248493720652249">Tiện ích này không thể đặt tên cho bản tải xuống "<ph name="ATTEMPTED_FILENAME" />" vì một tiện ích khác (<ph name="EXTENSION_NAME" />) đã xác định tên tệp khác "<ph name="ACTUAL_FILENAME" />".</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> từ <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Tiện ích này không thể cung cấp bằng chứng xác thực cho một yêu cầu mạng do tiện ích khác (<ph name="EXTENSION_NAME" />) đã cung cấp các bằng chứng xác thực khác nhau.</translation>

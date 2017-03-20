@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sl">
 <translation id="1135328998467923690">Paket je neveljaven: »<ph name="ERROR_CODE" />«.</translation>
+<translation id="1140871961407805696">Hrbtni</translation>
 <translation id="1256619696651732561">Razčlenjevalnik manifesta razširitve</translation>
 <translation id="1445572445564823378">Ta razširitev upočasnjuje <ph name="PRODUCT_NAME" />. Onemogočite jo, če želite obnoviti delovanje storitve <ph name="PRODUCT_NAME" />.</translation>
 <translation id="149347756975725155">Ikone razširitve »<ph name="ICON" />« ni bilo mogoče naložiti.</translation>
@@ -42,6 +43,7 @@
 <translation id="7217838517480956708">Skrbnik tega računalnika zahteva namestitev razširitve <ph name="EXTENSION_NAME" />. Ni je mogoče odstraniti ali spremeniti.</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME" /> (ID razširitve »<ph name="EXTENSION_ID" />«) je blokiral skrbnik.</translation>
 <translation id="7972881773422714442">Možnosti: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
+<translation id="8035920974645200807">Sprednji</translation>
 <translation id="8047248493720652249">Ta razširitev ni mogla prenosa poimenovati »<ph name="ATTEMPTED_FILENAME" />«, ker je druga razširitev (<ph name="EXTENSION_NAME" />) določila drugo ime datoteke: »<ph name="ACTUAL_FILENAME" />«.</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> proizvajalca <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Razširitev je neuspešno podala poverilnice omrežni zahtevi, ker je druga razširitev (<ph name="EXTENSION_NAME" />) podala druge poverilnice.</translation>

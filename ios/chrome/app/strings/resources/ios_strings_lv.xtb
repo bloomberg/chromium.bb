@@ -101,6 +101,7 @@ Piemēram, dažas vietnes var atbildēt uz šo pieprasījumu un rādīt reklāma
 <translation id="2871695793448672541">Slēpta, parole</translation>
 <translation id="2898963176829412617">Jauna mape...</translation>
 <translation id="2903493209154104877">Adreses</translation>
+<translation id="291754862089661335">Novietojiet QR kodu vai svītrkodu šajā ietvarā.</translation>
 <translation id="2921219216347069551">Nevar kopīgot lapu</translation>
 <translation id="292639812446257861">Atzīmēt kā nelasītus</translation>
 <translation id="2933759065870693102">Lukturītis</translation>
@@ -172,7 +173,6 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="4359125752503270327">Šī lapa tiks atvērta citā lietojumprogrammā.</translation>
 <translation id="4378154925671717803">Tālrunis</translation>
 <translation id="441868831736628555">Konfidencialitātes paziņojums</translation>
-<translation id="4473991315115669931">Pāriet inkognito režīmā</translation>
 <translation id="4526249700380860531">Skatīt un pārvaldīt saglabātās paroles vietnē <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Mēģiniet pierakstīties vēlreiz.</translation>
 <translation id="4620246317052452550">Lapas, kuras esat lasījis</translation>
@@ -246,7 +246,6 @@ Funkcija Handoff ir jāiespējo arī iestatījumu sadaļā General (Vispārīgi)
 <translation id="6042308850641462728">Vairāk</translation>
 <translation id="605721222689873409">GG</translation>
 <translation id="6066301408025741299">Pieskarieties, lai atceltu.</translation>
-<translation id="60851516108411750">Jūsu lasīšanas saraksts ir pieejams bezsaistē. Lai tam pievienotu kādu lapu, pieskarieties ikonai <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="6122191549521593678">Tiešsaistē</translation>
 <translation id="6127379762771434464">Vienums ir noņemts</translation>
 <translation id="6136914049981179737">Pirms sek.</translation>
@@ -381,7 +380,6 @@ Jūsu dati tika šifrēti, izmantojot jūsu sinhronizācijas ieejas frāzi šād
 <translation id="8741995161408053644">Jūsu Google kontam var būt cita veida pārlūkošanas vēstures dati vietnē <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8775144690796719618">Nederīgs URL</translation>
 <translation id="8820817407110198400">Grāmatzīmes</translation>
-<translation id="882482397944455431">Iziet no inkognito režīma</translation>
 <translation id="8840513115188359703">Jūs netiksiet izrakstīts no sava Google konta.</translation>
 <translation id="8904976895050290827">Chrome Sync</translation>
 <translation id="895541991026785598">Ziņot par problēmu</translation>

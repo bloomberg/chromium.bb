@@ -101,6 +101,7 @@
 <translation id="2871695793448672541">مخفية، كلمة المرور</translation>
 <translation id="2898963176829412617">مجلد جديد...</translation>
 <translation id="2903493209154104877">العناوين</translation>
+<translation id="291754862089661335">ضَع رمز الاستجابة السريعة أو الرمز الشريطي في هذا الإطار</translation>
 <translation id="2921219216347069551">تتعذر مشاركة الصفحة</translation>
 <translation id="292639812446257861">وضع علامة كغير مقروءة</translation>
 <translation id="2933759065870693102">الكشاف</translation>
@@ -172,7 +173,6 @@
 <translation id="4359125752503270327">ستفتح هذه الصفحة في تطبيق آخر.</translation>
 <translation id="4378154925671717803">الهاتف</translation>
 <translation id="441868831736628555">إشعار الخصوصية</translation>
-<translation id="4473991315115669931">الدخول إلى وضع التصفح المتخفي</translation>
 <translation id="4526249700380860531">‏عرض كلمات المرور المحفوظة وإدارتها في <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">حاول تسجيل الدخول مرة أخرى.</translation>
 <translation id="4620246317052452550">الصفحات التي قرأتها</translation>
@@ -246,7 +246,6 @@
 <translation id="6042308850641462728">المزيد</translation>
 <translation id="605721222689873409">العام</translation>
 <translation id="6066301408025741299">انقر للإلغاء.</translation>
-<translation id="60851516108411750">قائمة القراءة متاحة بلا اتصال بالإنترنت. لإضافة صفحة إلى قائمة القراءة، انقر على <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="6122191549521593678">متصل</translation>
 <translation id="6127379762771434464">أُزيلَ عنصر</translation>
 <translation id="6136914049981179737">قبل ثانية</translation>
@@ -381,7 +380,6 @@
 <translation id="8741995161408053644">‏قد يتضمن حسابك في Google على نماذج أخرى من سجل التصفح في <ph name="BEGIN_LINK" /> history.google.com <ph name="END_LINK" />.</translation>
 <translation id="8775144690796719618">‏عنوان URL غير صالح</translation>
 <translation id="8820817407110198400">إشارات</translation>
-<translation id="882482397944455431">مغادرة وضع التصفح المتخفي</translation>
 <translation id="8840513115188359703">‏لن يتم تسجيل خروجك من حساب Google.</translation>
 <translation id="8904976895050290827">‏مزامنة Chrome</translation>
 <translation id="895541991026785598">الإبلاغ عن مشكلة</translation>

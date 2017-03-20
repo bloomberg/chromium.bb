@@ -101,6 +101,7 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="2871695793448672541">Verborgen, wachtwoord</translation>
 <translation id="2898963176829412617">Nieuwe map…</translation>
 <translation id="2903493209154104877">Adressen</translation>
+<translation id="291754862089661335">Positioneer de QR-/streepjescode binnen dit kader</translation>
 <translation id="2921219216347069551">Kan pagina niet delen</translation>
 <translation id="292639812446257861">Markeren als ongelezen</translation>
 <translation id="2933759065870693102">Zaklamp</translation>
@@ -172,7 +173,6 @@ Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecte
 <translation id="4359125752503270327">Deze pagina wordt geopend in een andere app.</translation>
 <translation id="4378154925671717803">Telefoon</translation>
 <translation id="441868831736628555">Privacybeleid</translation>
-<translation id="4473991315115669931">Incognitomodus starten</translation>
 <translation id="4526249700380860531">Opgeslagen wachtwoorden bekijken en beheren via <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Probeer opnieuw in te loggen.</translation>
 <translation id="4620246317052452550">Pagina's die je hebt gelezen</translation>
@@ -246,7 +246,6 @@ Handoff moet ook zijn ingeschakeld in het gedeelte 'Algemeen' van 'Instellingen'
 <translation id="6042308850641462728">Meer</translation>
 <translation id="605721222689873409">JJ</translation>
 <translation id="6066301408025741299">Tik om te annuleren.</translation>
-<translation id="60851516108411750">Je leeslijst is offline beschikbaar. Als je een pagina aan je leeslijst wilt toevoegen, tik je op <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="6122191549521593678">Online</translation>
 <translation id="6127379762771434464">Item verwijderd</translation>
 <translation id="6136914049981179737">Sec. geleden</translation>
@@ -381,7 +380,6 @@ Je gegevens zijn op <ph name="TIME" /> versleuteld met je wachtwoordzin voor syn
 <translation id="8741995161408053644">Voor je Google-account kunnen andere vormen van browsegeschiedenis beschikbaar zijn via <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8775144690796719618">Ongeldige URL</translation>
 <translation id="8820817407110198400">Bladwijzers</translation>
-<translation id="882482397944455431">Incognitomodus verlaten</translation>
 <translation id="8840513115188359703">Je wordt niet uitgelogd van je Google-account.</translation>
 <translation id="8904976895050290827">Chrome-synchronisatie</translation>
 <translation id="895541991026785598">Een probleem melden</translation>

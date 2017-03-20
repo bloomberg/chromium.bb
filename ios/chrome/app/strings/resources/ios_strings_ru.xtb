@@ -101,6 +101,7 @@
 <translation id="2871695793448672541">Скрытый пароль</translation>
 <translation id="2898963176829412617">Новая папка</translation>
 <translation id="2903493209154104877">Адреса</translation>
+<translation id="291754862089661335">Поместите QR-код или штрихкод в эту рамку</translation>
 <translation id="2921219216347069551">Ошибка</translation>
 <translation id="292639812446257861">Отметить как непрочитанное</translation>
 <translation id="2933759065870693102">Вспышка</translation>
@@ -172,7 +173,6 @@
 <translation id="4359125752503270327">Страница откроется в другом приложении.</translation>
 <translation id="4378154925671717803">Телефон</translation>
 <translation id="441868831736628555">Примечание о конфиденциальности</translation>
-<translation id="4473991315115669931">Включить режим инкогнито</translation>
 <translation id="4526249700380860531">Просматривайте сохраненные пароли и управляйте ими на странице <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Войдите в аккаунт снова.</translation>
 <translation id="4620246317052452550">Прочитанные</translation>
@@ -246,7 +246,6 @@
 <translation id="6042308850641462728">Подробнее...</translation>
 <translation id="605721222689873409">ГГ</translation>
 <translation id="6066301408025741299">Нажмите, чтобы отменить загрузку</translation>
-<translation id="60851516108411750">Ваш список для чтения доступен без подключения к Интернету. Чтобы добавить в него страницу, выберите <ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="6122191549521593678">Онлайн</translation>
 <translation id="6127379762771434464">Быстрая ссылка удалена</translation>
 <translation id="6136914049981179737">только что</translation>
@@ -381,7 +380,6 @@
 <translation id="8741995161408053644">История просмотра также может храниться в вашем аккаунте Google: <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8775144690796719618">Недействительный URL</translation>
 <translation id="8820817407110198400">Закладки</translation>
-<translation id="882482397944455431">Выключить режим инкогнито</translation>
 <translation id="8840513115188359703">Вы останетесь в аккаунте Google.</translation>
 <translation id="8904976895050290827">Синхронизация Chrome</translation>
 <translation id="895541991026785598">Сообщить о проблеме</translation>

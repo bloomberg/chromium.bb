@@ -101,6 +101,7 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="2871695793448672541">Nakatago, Password</translation>
 <translation id="2898963176829412617">Bagong Folder…</translation>
 <translation id="2903493209154104877">Mga Address</translation>
+<translation id="291754862089661335">Itapat ang QR code o barcode sa loob ng frame na ito.</translation>
 <translation id="2921219216347069551">Di Maibahagi Pahina</translation>
 <translation id="292639812446257861">Markahan Bilang Hindi pa Nababasa</translation>
 <translation id="2933759065870693102">Torch</translation>
@@ -172,7 +173,6 @@ Upang baguhin ang iyong termino para sa paghahanap, pindutin ito nang matagal up
 <translation id="4359125752503270327">Magbubukas ang page na ito sa ibang application.</translation>
 <translation id="4378154925671717803">Telepono</translation>
 <translation id="441868831736628555">Notification ng Privacy</translation>
-<translation id="4473991315115669931">Pumasok sa Mode na Incognito</translation>
 <translation id="4526249700380860531">Tingnan at pamahalaan ang mga naka-save na password sa <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4536418791685807335">Subukang mag-sign in muli.</translation>
 <translation id="4620246317052452550">Mga Page na Nabasa Mo Na</translation>
@@ -246,7 +246,6 @@ Dapat ding naka-enable ang handoff sa Pangkalahatang seksyon ng Mga Setting, at 
 <translation id="6042308850641462728">Higit pa</translation>
 <translation id="605721222689873409">YY</translation>
 <translation id="6066301408025741299">Pindutin upang kanselahin.</translation>
-<translation id="60851516108411750">Available offline ang iyong listahan ng babasahin. Upang magdagdag ng page sa iyong listahan ng babasahin, i-tap ang<ph name="SHARE_OPENING_ICON" />.</translation>
 <translation id="6122191549521593678">Online</translation>
 <translation id="6127379762771434464">Inalis ang item</translation>
 <translation id="6136914049981179737">Segundo</translation>
@@ -381,7 +380,6 @@ Na-encrypt ang iyong data gamit ang iyong passphrase sa pag-sync noong <ph name=
 <translation id="8741995161408053644">Maaaring may iba pang mga uri ng history ng pagba-browse ang iyong Google Account sa <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="8775144690796719618">Di-wastong URL</translation>
 <translation id="8820817407110198400">Mga Bookmark</translation>
-<translation id="882482397944455431">Umalis sa Mode na Incognito</translation>
 <translation id="8840513115188359703">Hindi ka masa-sign out sa iyong Google Account.</translation>
 <translation id="8904976895050290827">Chrome Sync</translation>
 <translation id="895541991026785598">Mag-ulat ng Isyu</translation>

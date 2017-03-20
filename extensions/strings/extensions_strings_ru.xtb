@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ru">
 <translation id="1135328998467923690">Пакет недействителен: "<ph name="ERROR_CODE" />".</translation>
+<translation id="1140871961407805696">Основная</translation>
 <translation id="1256619696651732561">Синтаксический анализатор манифестов расширений</translation>
 <translation id="1445572445564823378">Это расширение замедляет работу <ph name="PRODUCT_NAME" />. Чтобы восстановить нормальную работу <ph name="PRODUCT_NAME" />, отключите его.</translation>
 <translation id="149347756975725155">Не удается загрузить значок расширения "<ph name="ICON" />".</translation>
@@ -42,6 +43,7 @@
 <translation id="7217838517480956708">Удаление и изменение расширения <ph name="EXTENSION_NAME" /> на этом компьютере запрещено администратором.</translation>
 <translation id="7809034755304591547">Расширение <ph name="EXTENSION_NAME" /> (идентификатор: <ph name="EXTENSION_ID" />) заблокировано администратором.</translation>
 <translation id="7972881773422714442">Options: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
+<translation id="8035920974645200807">Фронтальная</translation>
 <translation id="8047248493720652249">Данному расширению не удалось присвоить скачанному файлу имя "<ph name="ATTEMPTED_FILENAME" />", поскольку другое расширение (<ph name="EXTENSION_NAME" />) уже присвоило ему другое имя: "<ph name="ACTUAL_FILENAME" />".</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> от <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Это расширение не может предоставить учетные данные для сетевого запроса, поскольку другое расширение (<ph name="EXTENSION_NAME" />) передало иные учетные данные.</translation>
