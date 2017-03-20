@@ -538,12 +538,11 @@ function testTwoChannelAudio() {
       });
 }
 
-
-// Tests that MediaRecorder can handle a mid-stream resize of the video input
-function testResizeVideoInput(mimeType) {
+// Tests that MediaRecorder can handle video input with alpha channel.
+function testRecordWithTransparency(mimeType) {
   const ON_DATA_AVAILABLE_THRESHOLD = 10;
   const NUMBER_OF_EVENTS_TO_RECORD = 5;
-  
+
   var canvas = document.createElement('canvas');
   canvas.width = canvas.height = 64;
   var stream = canvas.captureStream();
@@ -553,7 +552,7 @@ function testResizeVideoInput(mimeType) {
   var recordedEvents = 0;
 
   function drawOnCanvas(canvas) {
-    var ctx = canvas.getContext('2d');
+    var ctx = canvas.getContext('2d', {alpha: true});
     ctx.fillStyle = 'green';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     requestAnimationFrame( function() { drawOnCanvas(canvas); });
@@ -567,16 +566,6 @@ function testResizeVideoInput(mimeType) {
         };
         recorder.start(0);
         drawOnCanvas(canvas);
-      })
-      .then(function() {
-        return waitFor('Make sure the recording has data',
-            function() {
-              return recordedEvents > NUMBER_OF_EVENTS_TO_RECORD;
-            });
-      })
-      .then(function() {
-        canvas.width = canvas.height = 48;
-        recordedEvents = 0;
       })
       .then(function() {
         return waitFor('Make sure the recording has data',

@@ -124,9 +124,9 @@ IN_PROC_BROWSER_TEST_F(WebRtcMediaRecorderTest, TwoChannelAudioRecording) {
   MakeTypicalCall("testTwoChannelAudio();", kMediaRecorderHtmlFile);
 }
 
-IN_PROC_BROWSER_TEST_P(WebRtcMediaRecorderTest, ResizeVideoInput) {
+IN_PROC_BROWSER_TEST_P(WebRtcMediaRecorderTest, RecordWithTransparency) {
   MaybeForceDisableEncodeAccelerator(GetParam().disable_accelerator);
-  MakeTypicalCall(base::StringPrintf("testResizeVideoInput(\"%s\");",
+  MakeTypicalCall(base::StringPrintf("testRecordWithTransparency(\"%s\");",
                                      GetParam().mime_type.c_str()),
                   kMediaRecorderHtmlFile);
 }
