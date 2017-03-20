@@ -4261,6 +4261,22 @@ void BrowserAccessibilityWin::OnLocationChanged() {
   FireNativeEvent(EVENT_OBJECT_LOCATIONCHANGE);
 }
 
+gfx::Rect BrowserAccessibilityWin::RelativeToAbsoluteBounds(
+    gfx::RectF bounds,
+    bool frame_only) const {
+  gfx::Rect result =
+      BrowserAccessibility::RelativeToAbsoluteBounds(bounds, frame_only);
+
+  // On Windows, we have to divide by the device scale factor to get
+  // pixels in the coordinates that MSAA clients expect.
+  float device_scale_factor = manager()->device_scale_factor();
+  if (device_scale_factor > 0.0 && device_scale_factor != 1.0) {
+    result = ScaleToEnclosingRect(result, 1.0 / device_scale_factor,
+                                  1.0 / device_scale_factor);
+  }
+  return result;
+}
+
 std::vector<base::string16> BrowserAccessibilityWin::ComputeTextAttributes()
     const {
   std::vector<base::string16> attributes;

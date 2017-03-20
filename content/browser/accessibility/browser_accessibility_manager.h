@@ -73,6 +73,7 @@ class CONTENT_EXPORT BrowserAccessibilityDelegate {
   virtual gfx::Rect AccessibilityGetViewBounds() const = 0;
   virtual gfx::Point AccessibilityOriginInScreen(
       const gfx::Rect& bounds) const = 0;
+  virtual float AccessibilityGetDeviceScaleFactor() const = 0;
   virtual void AccessibilityFatalError() = 0;
   virtual gfx::AcceleratedWidget AccessibilityGetAcceleratedWidget() = 0;
   virtual gfx::NativeViewAccessible AccessibilityGetNativeViewAccessible() = 0;
@@ -326,6 +327,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
 
   // Accessors.
   ui::AXTreeIDRegistry::AXTreeID ax_tree_id() const { return ax_tree_id_; }
+  float device_scale_factor() const { return device_scale_factor_; }
 
   // AXTreeDelegate implementation.
   void OnNodeDataWillChange(ui::AXTree* tree,
@@ -362,6 +364,9 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
 
   // Get a snapshot of the current tree as an AXTreeUpdate.
   ui::AXTreeUpdate SnapshotAXTreeForTesting();
+
+  // Use a custom device scale factor for testing.
+  void UseCustomDeviceScaleFactorForTesting(float device_scale_factor);
 
   // Given a point in screen coordinates, trigger an asynchronous hit test
   // but return the best possible match instantly.
@@ -466,6 +471,14 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeDelegate {
   // node within that parent tree. It's computed as needed and cached for
   // speed so that it can be accessed quickly if it hasn't changed.
   int parent_node_id_from_parent_tree_;
+
+  // The device scale factor for the view associated with this frame,
+  // cached each time there's any update to the accessibility tree.
+  float device_scale_factor_;
+
+  // For testing only: If true, the manually-set device scale factor will be
+  // used and it won't be updated from the delegate.
+  bool use_custom_device_scale_factor_for_testing_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserAccessibilityManager);

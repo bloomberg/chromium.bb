@@ -750,6 +750,12 @@ BrowserAccessibilityWin
   }
 
  private:
+  // Override the bounds calculation to take the device scale factor
+  // into account, which doesn't need to be done on all platforms.
+  CONTENT_EXPORT gfx::Rect RelativeToAbsoluteBounds(
+      gfx::RectF bounds,
+      bool frame_only) const override;
+
   // Returns the IA2 text attributes for this object.
   std::vector<base::string16> ComputeTextAttributes() const;
 

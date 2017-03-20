@@ -74,6 +74,7 @@ class TestBrowserAccessibilityDelegate
       const gfx::Rect& bounds) const override {
     return gfx::Point();
   }
+  float AccessibilityGetDeviceScaleFactor() const override { return 1.0f; }
   void AccessibilityFatalError() override { got_fatal_error_ = true; }
   gfx::AcceleratedWidget AccessibilityGetAcceleratedWidget() override {
     return gfx::kNullAcceleratedWidget;

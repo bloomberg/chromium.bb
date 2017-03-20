@@ -42,6 +42,7 @@
 #include "content/browser/permissions/permission_service_context.h"
 #include "content/browser/permissions/permission_service_impl.h"
 #include "content/browser/presentation/presentation_service_impl.h"
+#include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/input/input_router_impl.h"
 #include "content/browser/renderer_host/input/timeout_monitor.h"
 #include "content/browser/renderer_host/media/media_devices_dispatcher_host.h"
@@ -810,6 +811,13 @@ gfx::Point RenderFrameHostImpl::AccessibilityOriginInScreen(
   if (view)
     return view->AccessibilityOriginInScreen(bounds);
   return gfx::Point();
+}
+
+float RenderFrameHostImpl::AccessibilityGetDeviceScaleFactor() const {
+  RenderWidgetHostView* view = render_view_host_->GetWidget()->GetView();
+  if (view)
+    return GetScaleFactorForView(view);
+  return 1.0f;
 }
 
 void RenderFrameHostImpl::AccessibilityReset() {

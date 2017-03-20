@@ -164,7 +164,8 @@ class CONTENT_EXPORT BrowserAccessibility {
   // (which is relative to its nearest scrollable ancestor) to
   // absolute bounds, either in page coordinates (when |frameOnly| is
   // false), or in frame coordinates (when |frameOnly| is true).
-  gfx::Rect RelativeToAbsoluteBounds(gfx::RectF bounds, bool frame_only) const;
+  virtual gfx::Rect RelativeToAbsoluteBounds(gfx::RectF bounds,
+                                             bool frame_only) const;
 
   // This is to handle the cases such as ARIA textbox, where the value should
   // be calculated from the object's inner text.

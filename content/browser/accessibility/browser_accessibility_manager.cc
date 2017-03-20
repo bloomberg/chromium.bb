@@ -136,7 +136,9 @@ BrowserAccessibilityManager::BrowserAccessibilityManager(
       last_focused_manager_(nullptr),
       connected_to_parent_tree_node_(false),
       ax_tree_id_(ui::AXTreeIDRegistry::kNoAXTreeID),
-      parent_node_id_from_parent_tree_(0) {
+      parent_node_id_from_parent_tree_(0),
+      device_scale_factor_(1.0f),
+      use_custom_device_scale_factor_for_testing_(false) {
   tree_->SetDelegate(this);
 }
 
@@ -152,7 +154,9 @@ BrowserAccessibilityManager::BrowserAccessibilityManager(
       last_focused_node_(nullptr),
       last_focused_manager_(nullptr),
       ax_tree_id_(ui::AXTreeIDRegistry::kNoAXTreeID),
-      parent_node_id_from_parent_tree_(0) {
+      parent_node_id_from_parent_tree_(0),
+      device_scale_factor_(1.0f),
+      use_custom_device_scale_factor_for_testing_(false) {
   tree_->SetDelegate(this);
   Initialize(initial_tree);
 }
@@ -336,6 +340,10 @@ bool BrowserAccessibilityManager::UseRootScrollOffsetsWhenComputingBounds() {
 
 void BrowserAccessibilityManager::OnAccessibilityEvents(
     const std::vector<AXEventNotificationDetails>& details) {
+  // Update the cached device scale factor.
+  if (delegate_ && !use_custom_device_scale_factor_for_testing_)
+    device_scale_factor_ = delegate_->AccessibilityGetDeviceScaleFactor();
+
   // Process all changes to the accessibility tree first.
   for (uint32_t index = 0; index < details.size(); ++index) {
     const AXEventNotificationDetails& detail = details[index];
@@ -1197,6 +1205,12 @@ BrowserAccessibilityManager::SnapshotAXTreeForTesting() {
   ui::AXTreeUpdate update;
   serializer.SerializeChanges(tree_->root(), &update);
   return update;
+}
+
+void BrowserAccessibilityManager::UseCustomDeviceScaleFactorForTesting(
+    float device_scale_factor) {
+  use_custom_device_scale_factor_for_testing_ = true;
+  device_scale_factor_ = device_scale_factor;
 }
 
 BrowserAccessibility* BrowserAccessibilityManager::CachingAsyncHitTest(

@@ -126,6 +126,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
   ASSERT_TRUE(hovered_node != NULL);
   ASSERT_EQ(ui::AX_ROLE_BUTTON, hovered_node->GetRole());
   ASSERT_EQ("Button", hovered_node->GetStringAttribute(ui::AX_ATTR_NAME));
+  gfx::Rect bounds = hovered_node->GetScreenBoundsRect();
+  EXPECT_EQ(250, bounds.width());
+  EXPECT_EQ(50, bounds.height());
 
   // (50, 305) -> div in first iframe
   hovered_node = HitTestAndWaitForResult(gfx::Point(50, 305));
@@ -219,5 +222,49 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
   hovered_node = CallCachingAsyncHitTest(gfx::Point(50, 505));
   ASSERT_EQ(ui::AX_ROLE_DIV, hovered_node->GetRole());
 }
+
+#if defined(OS_WIN)
+IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
+                       HitTestingWithDeviceScaleFactorOnWin) {
+  host_resolver()->AddRule("*", "127.0.0.1");
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+
+  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                         kAccessibilityModeComplete,
+                                         ui::AX_EVENT_LOAD_COMPLETE);
+  GURL url(embedded_test_server()->GetURL(
+      "/accessibility/html/iframe-coordinates.html"));
+  NavigateToURL(shell(), url);
+  waiter.WaitForNotification();
+
+  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
+                                                "Ordinary Button");
+  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
+                                                "Scrolled Button");
+
+  // Set device scale factor to 2.0.
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  BrowserAccessibilityManager* manager =
+      web_contents->GetRootBrowserAccessibilityManager();
+  manager->UseCustomDeviceScaleFactorForTesting(2.0);
+
+  // We're calling the hit test function internally, so the input coordinates
+  // should not be transformed, but the resulting object's dimensions should
+  // be halved (give or take a pixel due to rounding).
+
+  // (50, 50) -> "Button"
+  BrowserAccessibility* hovered_node;
+  hovered_node = HitTestAndWaitForResult(gfx::Point(50, 50));
+  ASSERT_TRUE(hovered_node != NULL);
+  ASSERT_EQ(ui::AX_ROLE_BUTTON, hovered_node->GetRole());
+  ASSERT_EQ("Button", hovered_node->GetStringAttribute(ui::AX_ATTR_NAME));
+  gfx::Rect bounds = hovered_node->GetScreenBoundsRect();
+  EXPECT_LE(std::abs(bounds.width() - 125), 1);
+  EXPECT_LE(std::abs(bounds.height() - 25), 1);
+}
+#endif  // defined(OS_WIN)
 
 }  // namespace content
