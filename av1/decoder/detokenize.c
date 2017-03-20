@@ -149,26 +149,25 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
       if (comb_token == 0) return 0;
     }
     token = comb_token >> 1;
-    more_data = !token || ((comb_token & 1) == 1);
+    more_data = comb_token & 1;
+    if (counts && !last_pos) {
+#if !CONFIG_EC_ADAPT
+      ++coef_counts[band][ctx][token];
+#endif
+      if (token) {
+        ++eob_branch_count[band][ctx];
+        if (!more_data) ++coef_counts[band][ctx][EOB_MODEL_TOKEN];
+      }
+    }
 
     if (token > ONE_TOKEN)
       token += aom_read_symbol(r, *cdf_tail, TAIL_TOKENS, ACCT_STR);
-#if !CONFIG_EC_ADAPT
-    if (!last_pos)
-      INCREMENT_COUNT(ZERO_TOKEN + (token > ZERO_TOKEN) + (token > ONE_TOKEN));
-#endif
 #if CONFIG_NEW_QUANT
     dqv_val = &dq_val[band][0];
 #endif  // CONFIG_NEW_QUANT
 
     *max_scan_line = AOMMAX(*max_scan_line, scan[c]);
 
-    if (token && !last_pos) {
-      if (counts) ++eob_branch_count[band][ctx];
-      if (!more_data) {
-        if (counts) ++coef_counts[band][ctx][EOB_MODEL_TOKEN];
-      }
-    }
     token_cache[scan[c]] = av1_pt_energy_class[token];
 
     switch (token) {
