@@ -35,6 +35,7 @@ using content::MediaSessionUmaHelper;
 using content::MockMediaSessionPlayerObserver;
 
 using ::testing::Expectation;
+using ::testing::NiceMock;
 using ::testing::_;
 
 namespace {
@@ -71,8 +72,8 @@ class MediaSessionImplBrowserTest : public content::ContentBrowserTest {
 
     media_session_ = MediaSessionImpl::Get(shell()->web_contents());
     mock_media_session_observer_.reset(
-        new content::MockMediaSessionObserver(media_session_));
-    mock_audio_focus_delegate_ = new MockAudioFocusDelegate;
+        new NiceMock<content::MockMediaSessionObserver>(media_session_));
+    mock_audio_focus_delegate_ = new NiceMock<MockAudioFocusDelegate>;
     media_session_->SetDelegateForTests(
         base::WrapUnique(mock_audio_focus_delegate_));
     ASSERT_TRUE(media_session_);
@@ -145,7 +146,7 @@ class MediaSessionImplBrowserTest : public content::ContentBrowserTest {
   void SystemStopDucking() { media_session_->StopDucking(); }
 
   void EnsureMediaSessionService() {
-    mock_media_session_service_.reset(new MockMediaSessionServiceImpl(
+    mock_media_session_service_.reset(new NiceMock<MockMediaSessionServiceImpl>(
         shell()->web_contents()->GetMainFrame()));
   }
 
