@@ -86,13 +86,13 @@ class PrintersSyncBridge::StoreProxy {
 
   // Returns a new WriteBatch.
   std::unique_ptr<ModelTypeStore::WriteBatch> CreateWriteBatch() {
-    CHECK(store_);
+    DCHECK(store_);
     return store_->CreateWriteBatch();
   }
 
   // Commits writes to the database and updates metadata.
   void Commit(std::unique_ptr<ModelTypeStore::WriteBatch> batch) {
-    CHECK(store_);
+    DCHECK(store_);
     store_->CommitWriteBatch(
         std::move(batch),
         base::Bind(&StoreProxy::OnCommit, weak_ptr_factory_.GetWeakPtr()));
