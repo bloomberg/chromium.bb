@@ -83,6 +83,79 @@ class TypeResolver(object):
         return set(['platform/heap/Handle.h'])
 
 
+class MethodOverloadSplitter(object):
+    """Because of union and optional types being used as arguments, some
+       operations may result in more than one generated method. This class
+       contains the logic for spliting an operation into multiple C++ overloads.
+    """
+
+    def __init__(self, idl_operation):
+        self.idl_operation = idl_operation
+
+    def _update_argument_lists(self, argument_lists, idl_types):
+        """Given a list of IdlTypes and an existing list of argument lists (yes,
+           this is a list of lists), produces a next generation of the list of
+           lists. This is where the actual splitting into overloads happens.
+        """
+        result = []
+        for argument_list in argument_lists:
+            for idl_type in idl_types:
+                new_argument_list = list(argument_list)
+                if idl_type is not None:
+                    new_argument_list.append(idl_type)
+                result.append(new_argument_list)
+        return result
+
+    def _enumerate_argument_types(self, idl_argument):
+        """Given an IdlArgument, returns a list of types that are included
+           in this argument. If optional, the list will include a 'None'."""
+        argument_type = idl_argument.idl_type
+        # TODO(dglazkov): What should we do with primitive nullable args?
+        if (argument_type.is_nullable and
+                argument_type.inner_type.is_primitive_type):
+            raise ValueError('Primitive nullable types are not supported.')
+
+        idl_types = []
+        if idl_argument.is_optional:
+            idl_types.append(None)  # None is used to convey optionality.
+        if argument_type.is_union_type:
+            idl_types = idl_types + argument_type.member_types
+        else:
+            idl_types.append(argument_type)
+        return idl_types
+
+    def split_into_overloads(self):
+        """Splits an operation into one or more overloads that correctly reflect
+           the WebIDL semantics of the operation arguments. For example,
+           running this method on an IdlOperation that represents this WebIDL
+           definition:
+
+           void addEventListener(
+                DOMString type,
+                EventListener? listener,
+                optional (AddEventListenerOptions or boolean) options)
+
+            will produce a list of 3 argument lists:
+
+            1) [DOMString, EventListener], since the third argument is optional,
+            2) [DOMString, EventListener, AddEventListenerOptions], since the
+               third argument is a union type with AddEventListenerOptions as
+               one of its member types, and
+            3) [DOMString, EventListener, boolean], since the other union member
+               type of the third argument is boolean.
+
+            This example is also captured as test in
+            MethodOverloadSplitterTest.test_split_add_event_listener.
+        """
+
+        argument_lists = [[]]
+        for idl_argument in self.idl_operation.arguments:
+            idl_types = self._enumerate_argument_types(idl_argument)
+            argument_lists = self._update_argument_lists(argument_lists,
+                                                         idl_types)
+        return argument_lists
+
+
 class InterfaceContextBuilder(object):
     def __init__(self, code_generator, type_resolver):
         self.result = {'code_generator': code_generator}
@@ -118,17 +191,35 @@ class InterfaceContextBuilder(object):
     def add_operation(self, idl_operation):
         if not idl_operation.name:
             return
-        self._ensure_list('methods').append(
-            self.create_method(idl_operation))
-        self._ensure_set('cpp_includes').update(
-            self.type_resolver.includes_from_definition(idl_operation))
+        overload_splitter = MethodOverloadSplitter(idl_operation)
+        overloads = overload_splitter.split_into_overloads()
+        argument_names = [argument.name for argument
+                          in idl_operation.arguments]
+        for argument_types in overloads:
+            arguments = []
+            for position, argument_type in enumerate(argument_types):
+                arguments.append(
+                    self.create_argument(argument_names[position],
+                                         argument_type))
+            self._ensure_list('methods').append(
+                self.create_method(idl_operation, arguments))
+            self._ensure_set('cpp_includes').update(
+                self.type_resolver.includes_from_definition(idl_operation))
 
-    def create_method(self, idl_operation):
-        name = idl_operation.name
+    def create_argument(self, argument_name, argument_type):
+        name_converter = NameStyleConverter(argument_name)
+        return {
+            'name': name_converter.to_snake_case(),
+            'type': argument_type.base_type,
+        }
+
+    def create_method(self, idl_operation, arguments):
+        name_converter = NameStyleConverter(idl_operation.name)
         return_type = self.type_resolver.type_from_definition(idl_operation)
         return {
-            'name': name,
-            'return_type': return_type
+            'name': name_converter.to_upper_camel_case(),
+            'type': return_type,
+            'arguments': arguments
         }
 
     def create_attribute(self, idl_attribute):
@@ -136,7 +227,7 @@ class InterfaceContextBuilder(object):
         return_type = self.type_resolver.type_from_definition(idl_attribute)
         return {
             'name': name,
-            'return_type': return_type
+            'type': return_type
         }
 
     def build(self):
