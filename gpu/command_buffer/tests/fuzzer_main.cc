@@ -22,6 +22,7 @@
 #include "gpu/command_buffer/service/command_executor.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
+#include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/logger.h"
 #include "gpu/command_buffer/service/mailbox_manager_impl.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
@@ -96,27 +97,31 @@ class CommandBufferSetup {
     logging::SetMinLogLevel(logging::LOG_FATAL);
     base::CommandLine::Init(0, NULL);
 
-#if defined(GPU_FUZZER_USE_ANGLE)
     auto* command_line = base::CommandLine::ForCurrentProcess();
+    ALLOW_UNUSED_LOCAL(command_line);
+
+#if defined(GPU_FUZZER_USE_PASSTHROUGH_CMD_DECODER)
+    command_line->AppendSwitch(switches::kUsePassthroughCmdDecoder);
+    gpu_preferences_.use_passthrough_cmd_decoder = true;
+    recreate_context_ = true;
+#endif
+
+#if defined(GPU_FUZZER_USE_ANGLE)
     command_line->AppendSwitchASCII(switches::kUseGL,
                                     gl::kGLImplementationANGLEName);
     command_line->AppendSwitchASCII(switches::kUseANGLE,
                                     gl::kANGLEImplementationNullName);
     gl::init::InitializeGLOneOffImplementation(gl::kGLImplementationEGLGLES2,
                                                false, false, false);
+
     surface_ = new gl::PbufferGLSurfaceEGL(gfx::Size());
     surface_->Initialize();
-
-    context_ = new gl::GLContextEGL(share_group_.get());
-    context_->Initialize(surface_.get(), gl::GLContextAttribs());
+    if (!recreate_context_) {
+      InitContext();
+    }
 #else
     surface_ = new gl::GLSurfaceStub;
-    scoped_refptr<gl::GLContextStub> context_stub =
-        new gl::GLContextStub(share_group_.get());
-    context_stub->SetGLVersionString("OpenGL ES 3.1");
-    context_stub->SetExtensionsString(kExtensions);
-    context_stub->SetUseStubApi(true);
-    context_ = context_stub;
+    InitContext();
     gl::GLSurfaceTestSupport::InitializeOneOffWithMockBindings();
 #endif
 
@@ -129,6 +134,10 @@ class CommandBufferSetup {
   }
 
   void InitDecoder() {
+    if (recreate_context_) {
+      InitContext();
+    }
+
     context_->MakeCurrent(surface_.get());
     scoped_refptr<gles2::FeatureInfo> feature_info =
         new gles2::FeatureInfo();
@@ -181,6 +190,10 @@ class CommandBufferSetup {
   }
 
   void ResetDecoder() {
+    if (recreate_context_) {
+      context_->ReleaseCurrent(nullptr);
+      context_ = nullptr;
+    }
     decoder_->Destroy(true);
     decoder_.reset();
     command_buffer_.reset();
@@ -269,6 +282,20 @@ class CommandBufferSetup {
     CreateTransferBuffer(kTinyTransferBufferSize, 5);
   }
 
+  void InitContext() {
+#if defined(GPU_FUZZER_USE_ANGLE)
+    context_ = new gl::GLContextEGL(share_group_.get());
+    context_->Initialize(surface_.get(), gl::GLContextAttribs());
+#else
+    scoped_refptr<gl::GLContextStub> context_stub =
+        new gl::GLContextStub(share_group_.get());
+    context_stub->SetGLVersionString("OpenGL ES 3.1");
+    context_stub->SetExtensionsString(kExtensions);
+    context_stub->SetUseStubApi(true);
+    context_ = context_stub;
+#endif
+  }
+
   base::AtExitManager atexit_manager_;
 
   GpuPreferences gpu_preferences_;
@@ -280,6 +307,7 @@ class CommandBufferSetup {
   scoped_refptr<gl::GLShareGroup> share_group_;
   const gpu::CommandBufferId command_buffer_id_;
 
+  bool recreate_context_ = false;
   scoped_refptr<gl::GLSurface> surface_;
   scoped_refptr<gl::GLContext> context_;
 
