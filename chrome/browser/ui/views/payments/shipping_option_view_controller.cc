@@ -25,13 +25,23 @@ class ShippingOptionItem : public PaymentRequestItemList::Item {
 
  private:
   // payments::PaymentRequestItemList::Item:
-  std::unique_ptr<views::View> CreateItemView() override {
+  std::unique_ptr<views::View> CreateContentView() override {
     return CreateShippingOptionLabel(
         shipping_option_,
         spec()->GetFormattedCurrencyAmount(shipping_option_->amount->value));
   }
 
   void SelectedStateChanged() override {}
+
+  bool CanBeSelected() const override {
+    // Shipping options are vetted by the website; they're all OK to select.
+    return true;
+  }
+
+  void PerformSelectionFallback() override {
+    // Since CanBeSelected() is always true, this should never be called.
+    NOTREACHED();
+  }
 
   mojom::PaymentShippingOption* shipping_option_;
 

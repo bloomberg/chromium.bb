@@ -10,8 +10,6 @@
 #include "components/payments/content/payment_request_state.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/views/controls/image_view.h"
-#include "ui/views/layout/grid_layout.h"
 
 namespace payments {
 
@@ -41,47 +39,25 @@ class ProfileItem : public PaymentRequestItemList::Item {
 
  private:
   // payments::PaymentRequestItemList::Item:
-  std::unique_ptr<views::View> CreateItemView() override {
+  std::unique_ptr<views::View> CreateContentView() override {
     DCHECK(profile_);
 
-    std::unique_ptr<views::View> content = parent_view_->GetLabel(profile_);
-
-    std::unique_ptr<PaymentRequestRowView> row =
-        base::MakeUnique<PaymentRequestRowView>(this);
-    views::GridLayout* layout = new views::GridLayout(row.get());
-    row->SetLayoutManager(layout);
-
-    layout->SetInsets(
-        kPaymentRequestRowVerticalInsets, kPaymentRequestRowHorizontalInsets,
-        kPaymentRequestRowVerticalInsets,
-        kPaymentRequestRowHorizontalInsets + kPaymentRequestRowExtraRightInset);
-
-    // Add a column listing the profile information.
-    views::ColumnSet* columns = layout->AddColumnSet(0);
-    columns->AddColumn(views::GridLayout::FILL, views::GridLayout::LEADING, 1,
-                       views::GridLayout::USE_PREF, 0, 0);
-
-    columns->AddPaddingColumn(1, 0);
-
-    // Add a column for the checkmark shown next to the selected profile.
-    columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
-                       0, views::GridLayout::USE_PREF, 0, 0);
-
-    layout->StartRow(0, 0);
-    content->set_can_process_events_within_subtree(false);
-    layout->AddView(content.release());
-
-    checkmark_ = CreateCheckmark(selected());
-    layout->AddView(checkmark_.get());
-
-    return std::move(row);
+    return parent_view_->GetLabel(profile_);
   }
 
   void SelectedStateChanged() override {}
 
+  bool CanBeSelected() const override {
+    // TODO(anthonyvd): Check for profile completedness.
+    return true;
+  }
+
+  void PerformSelectionFallback() override {
+    // TODO(anthonyvd): Open the editor pre-populated with this profile's data.
+  }
+
   ProfileListViewController* parent_view_;
   autofill::AutofillProfile* profile_;
-  std::unique_ptr<views::ImageView> checkmark_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileItem);
 };

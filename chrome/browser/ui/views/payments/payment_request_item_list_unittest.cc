@@ -27,9 +27,13 @@ class TestListItem : public PaymentRequestItemList::Item {
   }
 
  private:
-  std::unique_ptr<views::View> CreateItemView() override {
+  std::unique_ptr<views::View> CreateContentView() override {
     return base::MakeUnique<views::View>();
   }
+
+  bool CanBeSelected() const override { return true; }
+
+  void PerformSelectionFallback() override {}
 
   void SelectedStateChanged() override {
     ++selected_state_changed_calls_count_;

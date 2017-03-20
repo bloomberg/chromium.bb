@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/browser_process.h"
@@ -55,39 +56,14 @@ class PaymentMethodListItem : public payments::PaymentRequestItemList::Item {
 
  private:
   // payments::PaymentRequestItemList::Item:
-  std::unique_ptr<views::View> CreateItemView() override {
-    std::unique_ptr<PaymentRequestRowView> row =
-        base::MakeUnique<PaymentRequestRowView>(this);
-    views::GridLayout* layout = new views::GridLayout(row.get());
-    layout->SetInsets(
-        kPaymentRequestRowVerticalInsets, kPaymentRequestRowHorizontalInsets,
-        kPaymentRequestRowVerticalInsets, kPaymentRequestRowHorizontalInsets);
-    row->SetLayoutManager(layout);
-    views::ColumnSet* columns = layout->AddColumnSet(0);
+  std::unique_ptr<views::View> CreateExtraView() override {
+    std::unique_ptr<views::ImageView> card_icon_view = CreateInstrumentIconView(
+        instrument_->icon_resource_id(), instrument_->label());
+    card_icon_view->SetImageSize(gfx::Size(32, 20));
+    return std::move(card_icon_view);
+  }
 
-    // A column for the masked number and name on card
-    columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 0,
-                       views::GridLayout::USE_PREF, 0, 0);
-
-    // A padding column that resizes to take up the empty space between the
-    // leading and trailing parts.
-    columns->AddPaddingColumn(1, 0);
-
-    // A column for the checkmark when the row is selected.
-    columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
-                       0, views::GridLayout::USE_PREF, 0, 0);
-
-    columns->AddPaddingColumn(0, kPaymentRequestButtonSpacing);
-
-    // A column for the card icon
-    columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
-                       0, views::GridLayout::USE_PREF, 0, 0);
-
-    // A column for the edit button
-    columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
-                       0, views::GridLayout::USE_PREF, 0, 0);
-
-    layout->StartRow(0, 0);
+  std::unique_ptr<views::View> CreateContentView() override {
     std::unique_ptr<views::View> card_info_container =
         base::MakeUnique<views::View>();
     card_info_container->set_can_process_events_within_subtree(false);
@@ -104,42 +80,20 @@ class PaymentMethodListItem : public payments::PaymentRequestItemList::Item {
         new views::Label(instrument_->sublabel()));
     // TODO(anthonyvd): Add the "card is incomplete" label once the
     // completedness logic is implemented.
-    layout->AddView(card_info_container.release());
-
-    checkmark_ = CreateCheckmark(selected());
-    layout->AddView(checkmark_.get());
-
-    std::unique_ptr<views::ImageView> card_icon_view = CreateInstrumentIconView(
-        instrument_->icon_resource_id(), instrument_->label());
-    card_icon_view->SetImageSize(gfx::Size(32, 20));
-    layout->AddView(card_icon_view.release());
-
-    return std::move(row);
+    return card_info_container;
   }
 
   void SelectedStateChanged() override {
-    // This could be called before CreateItemView, so before |checkmark_| is
-    // instantiated.
-    if (checkmark_)
-      checkmark_->SetVisible(selected());
-
     state()->SetSelectedInstrument(instrument_);
   }
 
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override {
-    if (IsComplete()) {
-      list()->SelectItem(this);
-    } else {
-      // TODO(anthonyvd): Display the editor, pre-populated with the data that
-      // already exists in |card|.
-    }
+  bool CanBeSelected() const override {
+    // TODO(anthonyvd): Check for card completedness.
+    return true;
   }
 
-  bool IsComplete() const {
-    // TODO(anthonyvd): Hook this up to the card completedness logic when it's
-    // implemented in PaymentRequest.
-    return true;
+  void PerformSelectionFallback() override {
+    // TODO(anthonyvd): Open the editor pre-populated with this card's data.
   }
 
   PaymentInstrument* instrument_;

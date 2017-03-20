@@ -58,9 +58,6 @@ class PaymentRequestItemList {
     PaymentRequestState* state() { return state_; }
 
    protected:
-    // Creates and returns the view associated with this list item.
-    virtual std::unique_ptr<views::View> CreateItemView() = 0;
-
     // Called when the selected state of this item changes. Subclasses may
     // assume that they are the only selected item in |list| when this is
     // called. This could be called before CreateItemView so subclasses should
@@ -71,15 +68,35 @@ class PaymentRequestItemList {
     // selected.
     std::unique_ptr<views::ImageView> CreateCheckmark(bool selected);
 
+    // Creates the view that represents this item's content. Typically this will
+    // be a label describing the payment method, shipping adress, etc.
+    virtual std::unique_ptr<views::View> CreateContentView() = 0;
+
+    // Creates the view that should be displayed after the checkmark in the
+    // item's view, such as the credit card icon.
+    virtual std::unique_ptr<views::View> CreateExtraView();
+
+    // Returns whether this item is complete/valid and can be selected by the
+    // user. If this returns false when the user attempts to select this item,
+    // PerformSelectionFallback will be called instead.
+    virtual bool CanBeSelected() const = 0;
+
+    // Performs the action that replaces selection when CanBeSelected returns
+    // false. This will usually be to display an editor.
+    virtual void PerformSelectionFallback() = 0;
+
    private:
+    // Creates and returns the view associated with this list item.
+    std::unique_ptr<views::View> CreateItemView();
+
     // views::ButtonListener:
-    void ButtonPressed(views::Button* sender, const ui::Event& event) override {
-    }
+    void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
     std::unique_ptr<views::View> item_view_;
     PaymentRequestSpec* spec_;
     PaymentRequestState* state_;
     PaymentRequestItemList* list_;
+    std::unique_ptr<views::ImageView> checkmark_;
     bool selected_;
 
     DISALLOW_COPY_AND_ASSIGN(Item);
