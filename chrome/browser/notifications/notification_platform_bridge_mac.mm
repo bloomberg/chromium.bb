@@ -14,6 +14,7 @@
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_mach_port.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/nullable_string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
@@ -100,6 +101,18 @@ void DoProcessNotificationResponse(NotificationCommon::Operation operation,
   profileManager->LoadProfile(
       profile_id, incognito, base::Bind(&ProfileLoadedCallback, operation, type,
                                         origin, notification_id, button_index));
+}
+
+// This enum backs an UMA histogram, so it should be treated as append-only.
+enum XPCConnectionEvent {
+  INTERRUPTED = 0,
+  INVALIDATED,
+  XPC_CONNECTION_EVENT_COUNT
+};
+
+void RecordXPCEvent(XPCConnectionEvent event) {
+  UMA_HISTOGRAM_ENUMERATION("Notifications.XPCConnectionEvent", event,
+                            XPC_CONNECTION_EVENT_COUNT);
 }
 
 }  // namespace
@@ -453,14 +466,16 @@ bool NotificationPlatformBridgeMac::VerifyNotificationData(
         [NSXPCInterface interfaceWithProtocol:@protocol(NotificationDelivery)];
 
     xpcConnection_.get().interruptionHandler = ^{
-      LOG(WARNING) << "connection interrupted: interruptionHandler: ";
-      setExceptionPort_ = NO;
-      // TODO(miguelg): perhaps add some UMA here.
       // We will be getting this handler both when the XPC server crashes or
       // when it decides to close the connection.
+      LOG(WARNING) << "AlertNotificationService: XPC connection interrupted.";
+      RecordXPCEvent(INTERRUPTED);
+      setExceptionPort_ = NO;
     };
+
     xpcConnection_.get().invalidationHandler = ^{
-      LOG(WARNING) << "connection invalidationHandler received";
+      LOG(WARNING) << "AlertNotificationService: XPC connection invalidated.";
+      RecordXPCEvent(INVALIDATED);
       setExceptionPort_ = NO;
       // This means that the connection should be recreated if it needs
       // to be used again. It should not really happen.
