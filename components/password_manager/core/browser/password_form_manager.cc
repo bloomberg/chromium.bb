@@ -1233,7 +1233,12 @@ void PasswordFormManager::ResetStoredMatches() {
 void PasswordFormManager::GrabFetcher(std::unique_ptr<FormFetcher> fetcher) {
   DCHECK(!owned_form_fetcher_);
   owned_form_fetcher_ = std::move(fetcher);
-  DCHECK_EQ(owned_form_fetcher_.get(), form_fetcher_);
+  if (owned_form_fetcher_.get() == form_fetcher_)
+    return;
+  ResetStoredMatches();
+  form_fetcher_->RemoveConsumer(this);
+  form_fetcher_ = owned_form_fetcher_.get();
+  form_fetcher_->AddConsumer(this);
 }
 
 void PasswordFormManager::SendVotesOnSave() {

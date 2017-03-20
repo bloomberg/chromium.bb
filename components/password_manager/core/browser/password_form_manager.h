@@ -248,9 +248,9 @@ class PasswordFormManager : public FormFetcher::Consumer {
   // a consumer of |form_fetcher_|.
   void ResetStoredMatches();
 
-  // Takes ownership of |fetcher|.
-  // TODO(crbug.com/621355) Until https://codereview.chromium.org/2758773002/,
-  // |fetcher.get()| must be the same as |form_fetcher_|.
+  // Takes ownership of |fetcher|. If |fetcher| is different from the current
+  // |form_fetcher_| then also resets matches stored from the old fetcher and
+  // adds itself as a consumer of the new one.
   void GrabFetcher(std::unique_ptr<FormFetcher> fetcher);
 
  protected:

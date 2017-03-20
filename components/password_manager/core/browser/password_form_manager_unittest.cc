@@ -2993,7 +2993,52 @@ TEST_F(PasswordFormManagerTest, GrabFetcher_Same) {
       base::MakeUnique<MockFormSaver>(), fetcher.get());
 
   EXPECT_CALL(*fetcher, AddConsumer(_)).Times(0);
+  EXPECT_CALL(*fetcher, RemoveConsumer(_)).Times(0);
   form_manager.GrabFetcher(std::move(fetcher));
+  // There will be a RemoveConsumer call as soon as form_manager goes out of
+  // scope, but the test needs to ensure that there is none as a result of
+  // GrabFetcher.
+  Mock::VerifyAndClearExpectations(form_manager.form_fetcher());
+}
+
+// Check that if asked to take ownership of a different FormFetcher than which
+// it had consumed before, the PasswordFormManager adds itself as a consumer
+// and replaces the references to the old results.
+TEST_F(PasswordFormManagerTest, GrabFetcher_Different) {
+  PasswordForm old_match = *observed_form();
+  old_match.username_value = ASCIIToUTF16("user1");
+  old_match.password_value = ASCIIToUTF16("pass");
+  fake_form_fetcher()->SetNonFederated({&old_match}, 0u);
+  EXPECT_EQ(1u, form_manager()->best_matches().size());
+  EXPECT_EQ(&old_match, form_manager()->best_matches().begin()->second);
+
+  // |form_manager()| uses |fake_form_fetcher()|, which is an instance different
+  // from |fetcher| below.
+  auto fetcher = base::MakeUnique<MockFormFetcher>();
+  fetcher->Fetch();
+  fetcher->SetNonFederated(std::vector<const PasswordForm*>(), 0u);
+  EXPECT_CALL(*fetcher, AddConsumer(form_manager()));
+  form_manager()->GrabFetcher(std::move(fetcher));
+
+  EXPECT_EQ(0u, form_manager()->best_matches().size());
+}
+
+// Check that on changing FormFetcher, the PasswordFormManager removes itself
+// from consuming the old one.
+TEST_F(PasswordFormManagerTest, GrabFetcher_Remove) {
+  MockFormFetcher old_fetcher;
+  FormFetcher::Consumer* added_consumer = nullptr;
+  EXPECT_CALL(old_fetcher, AddConsumer(_))
+      .WillOnce(SaveArg<0>(&added_consumer));
+  PasswordFormManager form_manager(
+      password_manager(), client(), client()->driver(), *observed_form(),
+      base::MakeUnique<MockFormSaver>(), &old_fetcher);
+  EXPECT_EQ(&form_manager, added_consumer);
+
+  auto new_fetcher = base::MakeUnique<MockFormFetcher>();
+  EXPECT_CALL(*new_fetcher, AddConsumer(&form_manager));
+  EXPECT_CALL(old_fetcher, RemoveConsumer(&form_manager));
+  form_manager.GrabFetcher(std::move(new_fetcher));
 }
 
 }  // namespace password_manager
