@@ -14,6 +14,7 @@
 
 namespace cc {
 
+class DisplayItemList;
 class PaintFlags;
 
 class CC_PAINT_EXPORT PaintCanvas {
@@ -163,6 +164,10 @@ class CC_PAINT_EXPORT PaintCanvas {
                             SkScalar x,
                             SkScalar y,
                             const PaintFlags& flags) = 0;
+
+  virtual void drawDisplayItemList(
+      const SkRect& bounds,
+      const DisplayItemList* display_item_list) = 0;
 
   virtual void drawPicture(sk_sp<const PaintRecord> record,
                            const SkMatrix* matrix,

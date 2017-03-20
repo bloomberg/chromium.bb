@@ -5,6 +5,7 @@
 #include "cc/paint/paint_canvas.h"
 
 #include "base/memory/ptr_util.h"
+#include "cc/paint/display_item_list.h"
 #include "cc/paint/paint_record.h"
 #include "cc/paint/paint_recorder.h"
 #include "third_party/skia/include/core/SkAnnotation.h"
@@ -263,6 +264,15 @@ void SkiaPaintCanvas::drawTextBlob(sk_sp<SkTextBlob> blob,
                                    SkScalar y,
                                    const PaintFlags& flags) {
   canvas_->drawTextBlob(blob.get(), x, y, ToSkPaint(flags));
+}
+
+void SkiaPaintCanvas::drawDisplayItemList(
+    const SkRect& bounds,
+    const DisplayItemList* display_item_list) {
+  SkPictureRecorder recorder;
+  SkCanvas* canvas = recorder.beginRecording(bounds);
+  display_item_list->Raster(canvas, nullptr);
+  canvas_->drawPicture(recorder.finishRecordingAsPicture());
 }
 
 void SkiaPaintCanvas::drawPicture(sk_sp<const PaintRecord> record,

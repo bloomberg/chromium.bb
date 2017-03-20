@@ -130,6 +130,9 @@ class CC_PAINT_EXPORT SkiaPaintCanvas final : public PaintCanvas {
                     SkScalar y,
                     const PaintFlags& flags) override;
 
+  void drawDisplayItemList(const SkRect& bounds,
+                           const DisplayItemList*) override;
+
   void drawPicture(sk_sp<const PaintRecord> record,
                    const SkMatrix* matrix,
                    const PaintFlags* flags) override;
