@@ -706,7 +706,8 @@ std::unique_ptr<StreamValidator> StreamValidator::Create(
   return validator;
 }
 
-class VideoFrameQualityValidator {
+class VideoFrameQualityValidator
+    : public base::SupportsWeakPtr<VideoFrameQualityValidator> {
  public:
   VideoFrameQualityValidator(const VideoCodecProfile profile,
                              const base::Closure& flush_complete_cb,
@@ -746,10 +747,10 @@ VideoFrameQualityValidator::VideoFrameQualityValidator(
     const base::Closure& decode_error_cb)
     : profile_(profile),
       decoder_(new FFmpegVideoDecoder()),
-      decode_cb_(base::Bind(&VideoFrameQualityValidator::DecodeDone,
-                            base::Unretained(this))),
-      eos_decode_cb_(base::Bind(&VideoFrameQualityValidator::FlushDone,
-                                base::Unretained(this))),
+      decode_cb_(
+          base::Bind(&VideoFrameQualityValidator::DecodeDone, AsWeakPtr())),
+      eos_decode_cb_(
+          base::Bind(&VideoFrameQualityValidator::FlushDone, AsWeakPtr())),
       flush_complete_cb_(flush_complete_cb),
       decode_error_cb_(decode_error_cb),
       decoder_state_(UNINITIALIZED) {
