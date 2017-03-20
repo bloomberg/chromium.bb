@@ -433,7 +433,7 @@ void LocalFrame::detach(FrameDetachType type) {
   script().clearForClose();
   setView(nullptr);
 
-  m_host->page().eventHandlerRegistry().didRemoveAllEventHandlers(*domWindow());
+  m_page->eventHandlerRegistry().didRemoveAllEventHandlers(*domWindow());
 
   domWindow()->frameDestroyed();
 
@@ -706,10 +706,10 @@ void LocalFrame::deviceScaleFactorChanged() {
 }
 
 double LocalFrame::devicePixelRatio() const {
-  if (!m_host)
+  if (!m_page)
     return 0;
 
-  double ratio = m_host->page().deviceScaleFactorDeprecated();
+  double ratio = m_page->deviceScaleFactorDeprecated();
   ratio *= pageZoomFactor();
   return ratio;
 }
@@ -848,7 +848,10 @@ inline LocalFrame::LocalFrame(LocalFrameClient* client,
                               FrameOwner* owner,
                               InterfaceProvider* interfaceProvider,
                               InterfaceRegistry* interfaceRegistry)
-    : Frame(client, host, owner, LocalWindowProxyManager::create(*this)),
+    : Frame(client,
+            host ? &host->page() : nullptr,
+            owner,
+            LocalWindowProxyManager::create(*this)),
       m_frameScheduler(page()->chromeClient().createFrameScheduler(
           client->frameBlameContext())),
       m_loader(this),

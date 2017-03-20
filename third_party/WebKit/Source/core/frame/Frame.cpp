@@ -63,7 +63,7 @@ Frame::~Frame() {
 
 DEFINE_TRACE(Frame) {
   visitor->trace(m_treeNode);
-  visitor->trace(m_host);
+  visitor->trace(m_page);
   visitor->trace(m_owner);
   visitor->trace(m_windowProxyManager);
   visitor->trace(m_domWindow);
@@ -78,7 +78,7 @@ void Frame::detach(FrameDetachType type) {
   // its owning reference back to our owning LocalFrame.
   m_client->detached(type);
   m_client = nullptr;
-  m_host = nullptr;
+  m_page = nullptr;
 }
 
 void Frame::disconnectOwnerElement() {
@@ -95,13 +95,13 @@ void Frame::disconnectOwnerElement() {
 }
 
 Page* Frame::page() const {
-  if (m_host)
-    return &m_host->page();
-  return nullptr;
+  return m_page;
 }
 
 FrameHost* Frame::host() const {
-  return m_host;
+  if (m_page)
+    return &m_page->frameHost();
+  return nullptr;
 }
 
 bool Frame::isMainFrame() const {
@@ -419,23 +419,23 @@ bool Frame::isFeatureEnabled(WebFeaturePolicyFeature feature) const {
 }
 
 Frame::Frame(FrameClient* client,
-             FrameHost* host,
+             Page* page,
              FrameOwner* owner,
              WindowProxyManager* windowProxyManager)
     : m_treeNode(this),
-      m_host(host),
+      m_page(page),
       m_owner(owner),
       m_client(client),
       m_windowProxyManager(windowProxyManager),
       m_isLoading(false) {
   InstanceCounters::incrementCounter(InstanceCounters::FrameCounter);
 
-  ASSERT(page());
+  DCHECK(m_page);
 
   if (m_owner)
     m_owner->setContentFrame(*this);
   else
-    page()->setMainFrame(this);
+    m_page->setMainFrame(this);
 }
 
 }  // namespace blink

@@ -7,6 +7,7 @@
 #include "bindings/core/v8/WindowProxy.h"
 #include "bindings/core/v8/WindowProxyManager.h"
 #include "core/dom/RemoteSecurityContext.h"
+#include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/RemoteDOMWindow.h"
 #include "core/frame/RemoteFrameClient.h"
@@ -28,7 +29,10 @@ namespace blink {
 inline RemoteFrame::RemoteFrame(RemoteFrameClient* client,
                                 FrameHost* host,
                                 FrameOwner* owner)
-    : Frame(client, host, owner, RemoteWindowProxyManager::create(*this)),
+    : Frame(client,
+            host ? &host->page() : nullptr,
+            owner,
+            RemoteWindowProxyManager::create(*this)),
       m_securityContext(RemoteSecurityContext::create()) {
   m_domWindow = RemoteDOMWindow::create(*this);
 }

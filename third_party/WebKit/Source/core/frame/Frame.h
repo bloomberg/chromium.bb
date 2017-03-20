@@ -89,11 +89,11 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
 
   FrameClient* client() const;
 
-  // NOTE: Page is moving out of Blink up into the browser process as
-  // part of the site-isolation (out of process iframes) work.
-  // FrameHost should be used instead where possible.
-  Page* page() const;
-  FrameHost* host() const;  // Null when the frame is detached.
+  Page* page() const;  // Null when the frame is detached.
+
+  // Deprecated; use page() instead.
+  // TODO(sashab): Remove this method.
+  FrameHost* host() const;
 
   bool isMainFrame() const;
   bool isLocalRoot() const;
@@ -156,11 +156,11 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   bool isFeatureEnabled(WebFeaturePolicyFeature) const;
 
  protected:
-  Frame(FrameClient*, FrameHost*, FrameOwner*, WindowProxyManager*);
+  Frame(FrameClient*, Page*, FrameOwner*, WindowProxyManager*);
 
   mutable FrameTree m_treeNode;
 
-  Member<FrameHost> m_host;
+  Member<Page> m_page;
   Member<FrameOwner> m_owner;
   Member<DOMWindow> m_domWindow;
 
