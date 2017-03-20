@@ -667,8 +667,6 @@ Shell::~Shell() {
   focus_controller_.reset();
   screen_position_controller_.reset();
 
-  keyboard::KeyboardController::ResetInstance(nullptr);
-
   display_color_manager_.reset();
   if (display_change_observer_)
     display_configurator_->RemoveObserver(display_change_observer_.get());
