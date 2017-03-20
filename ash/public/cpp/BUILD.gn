@@ -5,6 +5,8 @@
 # C++ headers and sources that can be used outside ash.
 component("ash_public_cpp") {
   sources = [
+    "app_launch_id.cc",
+    "app_launch_id.h",
     "ash_public_export.h",
     "mus_property_mirror_ash.cc",
     "mus_property_mirror_ash.h",

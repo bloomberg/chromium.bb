@@ -1279,8 +1279,6 @@ split_static_library("ui") {
   }
   if (use_ash) {
     sources += [
-      "ash/app_launcher_id.cc",
-      "ash/app_launcher_id.h",
       "ash/app_list/app_list_controller_ash.cc",
       "ash/app_list/app_list_controller_ash.h",
       "ash/app_list/app_list_presenter_delegate_mus.cc",

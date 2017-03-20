@@ -119,7 +119,7 @@ void AppShortcutLauncherItemController::ItemSelected(
 
     // Launching some items replaces this item controller instance, which
     // destroys the app and launch id strings; making copies avoid crashes.
-    launcher_controller()->LaunchApp(ash::AppLauncherId(app_id(), launch_id()),
+    launcher_controller()->LaunchApp(ash::AppLaunchId(app_id(), launch_id()),
                                      source, ui::EF_NONE);
     callback.Run(ash::SHELF_ACTION_NEW_WINDOW_CREATED, base::nullopt);
     return;

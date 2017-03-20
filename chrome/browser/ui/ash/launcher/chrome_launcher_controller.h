@@ -9,12 +9,12 @@
 #include <string>
 #include <vector>
 
+#include "ash/public/cpp/app_launch_id.h"
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/interfaces/shelf.mojom.h"
 #include "chrome/browser/ui/app_icon_loader.h"
 #include "chrome/browser/ui/app_icon_loader_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
-#include "chrome/browser/ui/ash/app_launcher_id.h"
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/settings_window_observer.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
@@ -132,9 +132,9 @@ class ChromeLauncherController : public ash::mojom::ShelfObserver,
   // Returns true if the specified item is for a platform app.
   virtual bool IsPlatformApp(ash::ShelfID id) = 0;
 
-  // Opens a new instance of the application identified by the AppLauncherId.
+  // Opens a new instance of the application identified by the AppLaunchId.
   // Used by the app-list, and by pinned-app shelf items.
-  void LaunchApp(ash::AppLauncherId id,
+  void LaunchApp(ash::AppLaunchId id,
                  ash::ShelfLaunchSource source,
                  int event_flags);
 

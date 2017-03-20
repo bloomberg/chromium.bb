@@ -169,7 +169,7 @@ bool LauncherControllerHelper::IsValidIDForCurrentUser(
   return true;
 }
 
-void LauncherControllerHelper::LaunchApp(ash::AppLauncherId id,
+void LauncherControllerHelper::LaunchApp(ash::AppLaunchId id,
                                          ash::ShelfLaunchSource source,
                                          int event_flags) {
   const std::string& app_id = id.app_id();
@@ -218,7 +218,7 @@ ArcAppListPrefs* LauncherControllerHelper::GetArcAppListPrefs() const {
 }
 
 void LauncherControllerHelper::ExtensionEnableFlowFinished() {
-  LaunchApp(ash::AppLauncherId(extension_enable_flow_->extension_id()),
+  LaunchApp(ash::AppLaunchId(extension_enable_flow_->extension_id()),
             ash::LAUNCH_FROM_UNKNOWN, ui::EF_NONE);
   extension_enable_flow_.reset();
 }

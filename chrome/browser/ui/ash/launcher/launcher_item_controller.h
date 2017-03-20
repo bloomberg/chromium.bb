@@ -20,7 +20,7 @@ using MenuItemList = std::vector<ash::mojom::MenuItemPtr>;
 
 // LauncherItemController is used by ChromeLauncherController to track one
 // or more windows associated with a shelf item.
-// TODO (khmel): Consider using ash::AppLauncherId instead of pair
+// TODO (khmel): Consider using ash::AppLaunchId instead of pair
 // |app_id| and |launch_id|.
 class LauncherItemController : public ash::mojom::ShelfItemDelegate {
  public:

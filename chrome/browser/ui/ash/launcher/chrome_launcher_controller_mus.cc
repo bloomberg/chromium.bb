@@ -4,10 +4,10 @@
 
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_mus.h"
 
+#include "ash/public/cpp/app_launch_id.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/ash/app_launcher_id.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #include "chrome/browser/ui/ash/launcher/launcher_controller_helper.h"
 #include "extensions/grit/extensions_browser_resources.h"
@@ -233,13 +233,13 @@ void ChromeLauncherControllerMus::PinAppsFromPrefs() {
   if (!ConnectToShelfController())
     return;
 
-  std::vector<ash::AppLauncherId> pinned_apps =
+  std::vector<ash::AppLaunchId> pinned_apps =
       ash::launcher::GetPinnedAppsFromPrefs(profile()->GetPrefs(),
                                             launcher_controller_helper());
 
-  for (const auto& app_launcher_id : pinned_apps) {
-    const std::string app_id = app_launcher_id.app_id();
-    if (app_launcher_id.app_id() == ash::launcher::kPinnedAppsPlaceholder)
+  for (const auto& app_launch_id : pinned_apps) {
+    const std::string app_id = app_launch_id.app_id();
+    if (app_launch_id.app_id() == ash::launcher::kPinnedAppsPlaceholder)
       continue;
 
     ash::mojom::ShelfItemPtr item(ash::mojom::ShelfItem::New());

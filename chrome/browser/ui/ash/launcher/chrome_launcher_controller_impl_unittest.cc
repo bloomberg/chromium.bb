@@ -22,6 +22,7 @@
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/display/screen_orientation_controller_chromeos.h"
+#include "ash/public/cpp/app_launch_id.h"
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_helper.h"
@@ -54,7 +55,6 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/app_list/arc/arc_default_app_list.h"
 #include "chrome/browser/ui/apps/chrome_app_delegate.h"
-#include "chrome/browser/ui/ash/app_launcher_id.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_deferred_launcher_controller.h"
@@ -446,7 +446,7 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
     DCHECK(!test_controller_);
     ash::ShelfID id =
         launcher_controller_->CreateAppShortcutLauncherItemWithType(
-            ash::AppLauncherId(app_id), model_->item_count(), ash::TYPE_APP);
+            ash::AppLaunchId(app_id), model_->item_count(), ash::TYPE_APP);
     DCHECK(id);
     // Change the created launcher controller into a V2 app controller.
     test_controller_ = new TestV2AppLauncherItemController(app_id,

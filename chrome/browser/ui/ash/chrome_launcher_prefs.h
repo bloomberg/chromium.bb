@@ -27,7 +27,7 @@ class PrefRegistrySyncable;
 
 namespace ash {
 
-class AppLauncherId;
+class AppLaunchId;
 
 namespace launcher {
 
@@ -67,23 +67,23 @@ void SetShelfAlignmentPref(PrefService* prefs,
                            ShelfAlignment alignment);
 
 // Get the list of pinned apps from preferences.
-std::vector<AppLauncherId> GetPinnedAppsFromPrefs(
+std::vector<AppLaunchId> GetPinnedAppsFromPrefs(
     const PrefService* prefs,
     LauncherControllerHelper* helper);
 
 // Removes information about pin position from sync model for the app. Note,
-// |app_launcher_id| with non-empty launch_id is not supported.
-void RemovePinPosition(Profile* profile, const AppLauncherId& app_launcher_id);
+// |app_launch_id| with non-empty launch_id is not supported.
+void RemovePinPosition(Profile* profile, const AppLaunchId& app_launch_id);
 
 // Updates information about pin position in sync model for the app
-// |app_launcher_id|. |app_launcher_id_before| optionally specifies an app that
-// exists right before the target app. |app_launcher_ids_after| optionally
+// |app_launch_id|. |app_launch_id_before| optionally specifies an app that
+// exists right before the target app. |app_launch_ids_after| optionally
 // specifies sorted by position apps that exist right after the target app.
-// Note, |app_launcher_id| with non-empty launch_id is not supported.
+// Note, |app_launch_id| with non-empty launch_id is not supported.
 void SetPinPosition(Profile* profile,
-                    const AppLauncherId& app_launcher_id,
-                    const AppLauncherId& app_launcher_id_before,
-                    const std::vector<AppLauncherId>& app_launcher_ids_after);
+                    const AppLaunchId& app_launch_id,
+                    const AppLaunchId& app_launch_id_before,
+                    const std::vector<AppLaunchId>& app_launch_ids_after);
 
 // Used to propagate remote preferences to local during the first run.
 class ChromeLauncherPrefsObserver

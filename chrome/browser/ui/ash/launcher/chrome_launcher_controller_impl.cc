@@ -14,6 +14,7 @@
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
+#include "ash/public/cpp/app_launch_id.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
@@ -38,7 +39,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
-#include "chrome/browser/ui/ash/app_launcher_id.h"
 #include "chrome/browser/ui/ash/app_sync_ui_state.h"
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 #include "chrome/browser/ui/ash/launcher/app_shortcut_launcher_item_controller.h"
@@ -374,7 +374,7 @@ void ChromeLauncherControllerImpl::UnpinAndUpdatePrefs(ash::ShelfID id,
   if (update_prefs) {
     ash::launcher::RemovePinPosition(
         profile(),
-        ash::AppLauncherId(GetAppIDForShelfID(id), GetLaunchIDForShelfID(id)));
+        ash::AppLaunchId(GetAppIDForShelfID(id), GetLaunchIDForShelfID(id)));
   }
 
   const ash::ShelfItem* item = GetItem(id);
@@ -403,7 +403,7 @@ void ChromeLauncherControllerImpl::TogglePinned(ash::ShelfID id) {
 void ChromeLauncherControllerImpl::LockV1AppWithID(const std::string& app_id) {
   ash::ShelfID id = GetShelfIDForAppID(app_id);
   if (id == ash::kInvalidShelfID) {
-    CreateAppShortcutLauncherItemWithType(ash::AppLauncherId(app_id),
+    CreateAppShortcutLauncherItemWithType(ash::AppLaunchId(app_id),
                                           model_->item_count(), ash::TYPE_APP);
     id = GetShelfIDForAppID(app_id);
   }
@@ -428,7 +428,7 @@ void ChromeLauncherControllerImpl::Launch(ash::ShelfID id, int event_flags) {
 
   // Launching some items replaces the associated item controller instance,
   // which destroys the app and launch id strings; making copies avoid crashes.
-  LaunchApp(ash::AppLauncherId(controller->app_id(), controller->launch_id()),
+  LaunchApp(ash::AppLaunchId(controller->app_id(), controller->launch_id()),
             ash::LAUNCH_FROM_UNKNOWN, event_flags);
 }
 
@@ -472,7 +472,7 @@ void ChromeLauncherControllerImpl::ActivateApp(const std::string& app_id,
   if (!controller->GetRunningApplications().empty())
     SelectItemWithSource(controller.get(), source);
   else
-    LaunchApp(ash::AppLauncherId(app_id), source, event_flags);
+    LaunchApp(ash::AppLaunchId(app_id), source, event_flags);
 }
 
 void ChromeLauncherControllerImpl::SetLauncherItemImage(
@@ -963,9 +963,9 @@ void ChromeLauncherControllerImpl::OnInit() {
 }
 
 ash::ShelfID ChromeLauncherControllerImpl::CreateAppShortcutLauncherItem(
-    const ash::AppLauncherId& app_launcher_id,
+    const ash::AppLaunchId& app_launch_id,
     int index) {
-  return CreateAppShortcutLauncherItemWithType(app_launcher_id, index,
+  return CreateAppShortcutLauncherItemWithType(app_launch_id, index,
                                                ash::TYPE_PINNED_APP);
 }
 
@@ -1006,14 +1006,14 @@ void ChromeLauncherControllerImpl::RestoreUnpinnedRunningApplicationOrder(
 
 ash::ShelfID
 ChromeLauncherControllerImpl::CreateAppShortcutLauncherItemWithType(
-    const ash::AppLauncherId& app_launcher_id,
+    const ash::AppLaunchId& app_launch_id,
     int index,
     ash::ShelfItemType shelf_item_type) {
   AppShortcutLauncherItemController* controller =
       AppShortcutLauncherItemController::Create(
-          app_launcher_id.app_id(), app_launcher_id.launch_id(), this);
+          app_launch_id.app_id(), app_launch_id.launch_id(), this);
   ash::ShelfID shelf_id =
-      InsertAppLauncherItem(controller, app_launcher_id.app_id(),
+      InsertAppLauncherItem(controller, app_launch_id.app_id(),
                             ash::STATUS_CLOSED, index, shelf_item_type);
   return shelf_id;
 }
@@ -1045,7 +1045,7 @@ void ChromeLauncherControllerImpl::DoPinAppWithID(const std::string& app_id) {
     Pin(shelf_id);
   } else {
     // Otherwise, create a shortcut item for it.
-    shelf_id = CreateAppShortcutLauncherItem(ash::AppLauncherId(app_id),
+    shelf_id = CreateAppShortcutLauncherItem(ash::AppLaunchId(app_id),
                                              model_->item_count());
     SyncPinPosition(shelf_id);
   }
@@ -1092,7 +1092,7 @@ void ChromeLauncherControllerImpl::SyncPinPosition(ash::ShelfID shelf_id) {
 
   std::string app_id_before;
   std::string launch_id_before;
-  std::vector<ash::AppLauncherId> app_launcher_ids_after;
+  std::vector<ash::AppLaunchId> app_launch_ids_after;
 
   for (int i = index - 1; i > 0; --i) {
     const ash::ShelfID shelf_id_before = model_->items()[i].id;
@@ -1110,19 +1110,17 @@ void ChromeLauncherControllerImpl::SyncPinPosition(ash::ShelfID shelf_id) {
       const std::string app_id_after = GetAppIDForShelfID(shelf_id_after);
       DCHECK(!app_id_after.empty());
       const std::string launch_id_after = GetLaunchIDForShelfID(shelf_id_after);
-      app_launcher_ids_after.push_back(
-          ash::AppLauncherId(app_id_after, launch_id_after));
+      app_launch_ids_after.push_back(
+          ash::AppLaunchId(app_id_after, launch_id_after));
     }
   }
 
-  ash::AppLauncherId app_launcher_id_before =
-      app_id_before.empty()
-          ? ash::AppLauncherId()
-          : ash::AppLauncherId(app_id_before, launch_id_before);
+  ash::AppLaunchId app_launch_id_before =
+      app_id_before.empty() ? ash::AppLaunchId()
+                            : ash::AppLaunchId(app_id_before, launch_id_before);
 
-  ash::launcher::SetPinPosition(profile(),
-                                ash::AppLauncherId(app_id, launch_id),
-                                app_launcher_id_before, app_launcher_ids_after);
+  ash::launcher::SetPinPosition(profile(), ash::AppLaunchId(app_id, launch_id),
+                                app_launch_id_before, app_launch_ids_after);
 }
 
 void ChromeLauncherControllerImpl::OnSyncModelUpdated() {
@@ -1149,7 +1147,7 @@ void ChromeLauncherControllerImpl::UpdateAppLaunchersFromPref() {
   // into the pref state. Therefore we tell |persistPinnedState| to ignore any
   // invocations while we are running.
   base::AutoReset<bool> auto_reset(&ignore_persist_pinned_state_change_, true);
-  const std::vector<ash::AppLauncherId> pinned_apps =
+  const std::vector<ash::AppLaunchId> pinned_apps =
       ash::launcher::GetPinnedAppsFromPrefs(profile()->GetPrefs(),
                                             launcher_controller_helper());
 
@@ -1161,10 +1159,10 @@ void ChromeLauncherControllerImpl::UpdateAppLaunchersFromPref() {
   // Apply pins in two steps. At the first step, go through the list of apps to
   // pin, move existing pin to current position specified by |index| or create
   // the new pin at that position.
-  for (const auto& pref_app_launcher_id : pinned_apps) {
+  for (const auto& pref_app_launch_id : pinned_apps) {
     // Filter out apps that may be mapped wrongly.
     // TODO(khmel):  b/31703859 is to refactore shelf mapping.
-    const std::string app_id = pref_app_launcher_id.app_id();
+    const std::string app_id = pref_app_launch_id.app_id();
     const std::string shelf_app_id =
         ArcAppWindowLauncherController::GetShelfAppIdFromArcAppId(app_id);
     if (shelf_app_id != app_id)
@@ -1181,7 +1179,7 @@ void ChromeLauncherControllerImpl::UpdateAppLaunchersFromPref() {
           id_to_item_controller_map_.find(item.id);
       if (it != id_to_item_controller_map_.end() &&
           it->second->app_id() == app_id &&
-          it->second->launch_id() == pref_app_launcher_id.launch_id()) {
+          it->second->launch_id() == pref_app_launch_id.launch_id()) {
         break;
       }
     }
@@ -1199,7 +1197,7 @@ void ChromeLauncherControllerImpl::UpdateAppLaunchersFromPref() {
     } else {
       // This is fresh pin. Create new one.
       DCHECK_NE(app_id, extension_misc::kChromeAppId);
-      CreateAppShortcutLauncherItem(pref_app_launcher_id, index);
+      CreateAppShortcutLauncherItem(pref_app_launch_id, index);
     }
     ++index;
   }
