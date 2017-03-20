@@ -41,6 +41,9 @@ class ImageWriterHandler {
  private:
   void Cancel();
 
+  bool ShouldResetImageWriter(const base::FilePath& image,
+                              const base::FilePath& device);
+
   extensions::mojom::RemovableStorageWriterClientPtr client_;
   std::unique_ptr<ImageWriter> image_writer_;
 };
