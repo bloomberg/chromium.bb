@@ -241,129 +241,17 @@ static void set_good_speed_feature(AV1_COMP *cpi, AV1_COMMON *cm,
     sf->mv.reduce_first_step_size = 1;
     sf->simple_model_rd_from_var = 1;
   }
-}
-
-static void set_rt_speed_feature_framesize_dependent(AV1_COMP *cpi,
-                                                     SPEED_FEATURES *sf,
-                                                     int speed) {
-  AV1_COMMON *const cm = &cpi->common;
-  if (speed >= 1) {
-    if (AOMMIN(cm->width, cm->height) >= 720) {
-      sf->disable_split_mask =
-          cm->show_frame ? DISABLE_ALL_SPLIT : DISABLE_ALL_INTER_SPLIT;
-    } else {
-      sf->disable_split_mask = DISABLE_COMPOUND_SPLIT;
-    }
-  }
-
-  if (speed >= 2) {
-    if (AOMMIN(cm->width, cm->height) >= 720) {
-      sf->disable_split_mask =
-          cm->show_frame ? DISABLE_ALL_SPLIT : DISABLE_ALL_INTER_SPLIT;
-    } else {
-      sf->disable_split_mask = LAST_AND_INTRA_SPLIT_ONLY;
-    }
-  }
-
-  if (speed >= 5) {
-    if (AOMMIN(cm->width, cm->height) >= 720) {
-      sf->partition_search_breakout_dist_thr = (1 << 25);
-    } else {
-      sf->partition_search_breakout_dist_thr = (1 << 23);
-    }
-  }
-}
-
-static void set_rt_speed_feature(AV1_COMP *cpi, SPEED_FEATURES *sf, int speed,
-                                 aom_tune_content content) {
-  AV1_COMMON *const cm = &cpi->common;
-  const int is_keyframe = cm->frame_type == KEY_FRAME;
-  const int frames_since_key = is_keyframe ? 0 : cpi->rc.frames_since_key;
-  sf->static_segmentation = 0;
-  sf->adaptive_rd_thresh = 1;
-  sf->use_fast_coef_costing = 1;
-  sf->allow_exhaustive_searches = 0;
-  sf->exhaustive_searches_thresh = INT_MAX;
-  sf->use_upsampled_references = 0;
-#if CONFIG_EXT_INTER
-  sf->disable_wedge_search_var_thresh = 100;
-  sf->fast_wedge_sign_estimate = 1;
-#endif  // CONFIG_EXT_INTER
-
-  // Use transform domain distortion computation
-  // Note var-tx expt always uses pixel domain distortion.
-  sf->use_transform_domain_distortion = 1;
-
-  if (speed >= 1) {
-    sf->use_square_partition_only = !frame_is_intra_only(cm);
-    sf->less_rectangular_check = 1;
-    sf->tx_size_search_method =
-        frame_is_intra_only(cm) ? USE_FULL_RD : USE_LARGESTALL;
-
-    sf->use_rd_breakout = 1;
-
-    sf->adaptive_motion_search = 1;
-    sf->adaptive_pred_interp_filter = 1;
-    sf->mv.auto_mv_step_size = 1;
-    sf->adaptive_rd_thresh = 2;
-#if CONFIG_TX64X64
-    sf->intra_y_mode_mask[TX_64X64] = INTRA_DC_H_V;
-    sf->intra_uv_mode_mask[TX_64X64] = INTRA_DC_H_V;
-#endif  // CONFIG_TX64X64
-    sf->intra_y_mode_mask[TX_32X32] = INTRA_DC_H_V;
-    sf->intra_uv_mode_mask[TX_32X32] = INTRA_DC_H_V;
-    sf->intra_uv_mode_mask[TX_16X16] = INTRA_DC_H_V;
-  }
-
-  if (speed >= 2) {
-    sf->mode_search_skip_flags =
-        (cm->frame_type == KEY_FRAME)
-            ? 0
-            : FLAG_SKIP_INTRA_DIRMISMATCH | FLAG_SKIP_INTRA_BESTINTER |
-                  FLAG_SKIP_COMP_BESTINTRA | FLAG_SKIP_INTRA_LOWVAR;
-    sf->adaptive_pred_interp_filter = 2;
-    sf->disable_filter_search_var_thresh = 50;
-    sf->comp_inter_joint_search_thresh = BLOCK_SIZES;
-    sf->auto_min_max_partition_size = RELAXED_NEIGHBORING_MIN_MAX;
-    sf->lf_motion_threshold = LOW_MOTION_THRESHOLD;
-    sf->adjust_partitioning_from_last_frame = 1;
-    sf->last_partitioning_redo_frequency = 3;
-    sf->mode_skip_start = 11;
-    sf->intra_y_mode_mask[TX_16X16] = INTRA_DC_H_V;
-  }
-
-  if (speed >= 3) {
-    sf->use_square_partition_only = 1;
-    sf->disable_filter_search_var_thresh = 100;
-    sf->mv.subpel_iters_per_step = 1;
-    sf->adaptive_rd_thresh = 4;
-    sf->mode_skip_start = 6;
-    sf->optimize_coefficients = 0;
-    sf->disable_split_mask = DISABLE_ALL_SPLIT;
-    sf->lpf_pick = LPF_PICK_FROM_Q;
-  }
-
-  if (speed >= 4) {
-    int i;
-    sf->last_partitioning_redo_frequency = 4;
-    sf->adaptive_rd_thresh = 5;
-    sf->use_fast_coef_costing = 0;
-    sf->auto_min_max_partition_size = STRICT_NEIGHBORING_MIN_MAX;
-    sf->adjust_partitioning_from_last_frame =
-        cm->last_frame_type != cm->frame_type ||
-        (0 == (frames_since_key + 1) % sf->last_partitioning_redo_frequency);
-    sf->mv.subpel_force_stop = 1;
-    for (i = 0; i < TX_SIZES; i++) {
-      sf->intra_y_mode_mask[i] = INTRA_DC_H_V;
-      sf->intra_uv_mode_mask[i] = INTRA_DC;
-    }
+  if (speed >= 7) {
+    const int is_keyframe = cm->frame_type == KEY_FRAME;
+    const int frames_since_key = is_keyframe ? 0 : cpi->rc.frames_since_key;
+    sf->default_max_partition_size = BLOCK_32X32;
+    sf->default_min_partition_size = BLOCK_8X8;
 #if CONFIG_TX64X64
     sf->intra_y_mode_mask[TX_64X64] = INTRA_DC;
 #endif  // CONFIG_TX64X64
     sf->intra_y_mode_mask[TX_32X32] = INTRA_DC;
     sf->frame_parameter_update = 0;
     sf->mv.search_method = FAST_HEX;
-
     sf->inter_mode_mask[BLOCK_32X32] = INTER_NEAREST_NEAR_NEW;
     sf->inter_mode_mask[BLOCK_32X64] = INTER_NEAREST;
     sf->inter_mode_mask[BLOCK_64X32] = INTER_NEAREST;
@@ -373,69 +261,20 @@ static void set_rt_speed_feature(AV1_COMP *cpi, SPEED_FEATURES *sf, int speed,
     sf->inter_mode_mask[BLOCK_128X64] = INTER_NEAREST;
     sf->inter_mode_mask[BLOCK_128X128] = INTER_NEAREST;
 #endif  // CONFIG_EXT_PARTITION
-    sf->max_intra_bsize = BLOCK_32X32;
-  }
-
-  if (speed >= 5) {
-    sf->auto_min_max_partition_size =
-        is_keyframe ? RELAXED_NEIGHBORING_MIN_MAX : STRICT_NEIGHBORING_MIN_MAX;
-    sf->default_max_partition_size = BLOCK_32X32;
+    sf->partition_search_type = REFERENCE_PARTITION;
     sf->default_min_partition_size = BLOCK_8X8;
+    sf->reuse_inter_pred_sby = 1;
     sf->force_frame_boost =
         is_keyframe ||
         (frames_since_key % (sf->last_partitioning_redo_frequency << 1) == 1);
     sf->max_delta_qindex = is_keyframe ? 20 : 15;
-    sf->partition_search_type = REFERENCE_PARTITION;
-    sf->inter_mode_mask[BLOCK_32X32] = INTER_NEAREST_NEW_ZERO;
-    sf->inter_mode_mask[BLOCK_32X64] = INTER_NEAREST_NEW_ZERO;
-    sf->inter_mode_mask[BLOCK_64X32] = INTER_NEAREST_NEW_ZERO;
-    sf->inter_mode_mask[BLOCK_64X64] = INTER_NEAREST_NEW_ZERO;
-#if CONFIG_EXT_PARTITION
-    sf->inter_mode_mask[BLOCK_64X128] = INTER_NEAREST_NEW_ZERO;
-    sf->inter_mode_mask[BLOCK_128X64] = INTER_NEAREST_NEW_ZERO;
-    sf->inter_mode_mask[BLOCK_128X128] = INTER_NEAREST_NEW_ZERO;
-#endif  // CONFIG_EXT_PARTITION
-    sf->adaptive_rd_thresh = 2;
-    // This feature is only enabled when partition search is disabled.
-    sf->reuse_inter_pred_sby = 1;
-    sf->partition_search_breakout_rate_thr = 200;
     sf->coeff_prob_appx_step = 4;
-    sf->use_fast_coef_updates = is_keyframe ? TWO_LOOP : ONE_LOOP_REDUCED;
-    sf->mode_search_skip_flags = FLAG_SKIP_INTRA_DIRMISMATCH;
-    sf->tx_size_search_method = is_keyframe ? USE_LARGESTALL : USE_TX_8X8;
-    sf->simple_model_rd_from_var = 1;
-
-    if (!is_keyframe) {
-      int i;
-      if (content == AOM_CONTENT_SCREEN) {
-        for (i = 0; i < BLOCK_SIZES; ++i)
-          sf->intra_y_mode_bsize_mask[i] = INTRA_DC_TM_H_V;
-      } else {
-        for (i = 0; i < BLOCK_SIZES; ++i)
-          if (i >= BLOCK_16X16)
-            sf->intra_y_mode_bsize_mask[i] = INTRA_DC;
-          else
-            // Use H and V intra mode for block sizes <= 16X16.
-            sf->intra_y_mode_bsize_mask[i] = INTRA_DC_H_V;
-      }
-    }
-  }
-
-  if (speed >= 6) {
-    // Adaptively switch between SOURCE_VAR_BASED_PARTITION and FIXED_PARTITION.
-    sf->partition_search_type = VAR_BASED_PARTITION;
-    // Turn on this to use non-RD key frame coding mode.
-    sf->mv.search_method = NSTEP;
-    sf->mv.reduce_first_step_size = 1;
-  }
-
-  if (speed >= 7) {
-    sf->adaptive_rd_thresh = 3;
-    sf->mv.search_method = FAST_DIAMOND;
-    sf->mv.fullpel_search_step_param = 10;
+    sf->mode_search_skip_flags |= FLAG_SKIP_INTRA_DIRMISMATCH;
   }
   if (speed >= 8) {
-    sf->adaptive_rd_thresh = 4;
+    sf->mv.search_method = FAST_DIAMOND;
+    sf->partition_search_type = VAR_BASED_PARTITION;
+    sf->mv.fullpel_search_step_param = 10;
     sf->mv.subpel_force_stop = 2;
     sf->lpf_pick = LPF_PICK_MINIMAL_LPF;
   }
@@ -469,9 +308,7 @@ void av1_set_speed_features_framesize_dependent(AV1_COMP *cpi) {
   }
 #endif  // CONFIG_EXT_REFS
 
-  if (oxcf->mode == REALTIME) {
-    set_rt_speed_feature_framesize_dependent(cpi, sf, oxcf->speed);
-  } else if (oxcf->mode == GOOD) {
+  if (oxcf->mode == GOOD) {
     set_good_speed_feature_framesize_dependent(cpi, sf, oxcf->speed);
   }
 
@@ -576,13 +413,11 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   sf->use_transform_domain_distortion = 0;
 #endif  // CONFIG_EXT_TILE
 
-  if (oxcf->mode == REALTIME)
-    set_rt_speed_feature(cpi, sf, oxcf->speed, oxcf->content);
-  else if (oxcf->mode == GOOD
+  if (oxcf->mode == GOOD
 #if CONFIG_XIPHRC
-           || oxcf->pass == 1
+      || oxcf->pass == 1
 #endif
-           )
+      )
     set_good_speed_feature(cpi, cm, sf, oxcf->speed);
 
   // sf->partition_search_breakout_dist_thr is set assuming max 64x64

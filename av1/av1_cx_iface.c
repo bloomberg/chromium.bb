@@ -917,7 +917,6 @@ static void pick_quickcompress_mode(aom_codec_alg_priv_t *ctx,
   switch (ctx->cfg.g_pass) {
     case AOM_RC_ONE_PASS:
       switch (deadline) {
-        case AOM_DL_REALTIME: new_mode = REALTIME; break;
         default: new_mode = GOOD; break;
       }
       break;

@@ -105,14 +105,15 @@ void EncoderTest::InitializeConfig() {
 
 void EncoderTest::SetMode(TestMode mode) {
   switch (mode) {
-    case kRealTime: deadline_ = AOM_DL_REALTIME; break;
-
     case kOnePassGood:
     case kTwoPassGood: deadline_ = AOM_DL_GOOD_QUALITY; break;
-
+    case kRealTime:
+      deadline_ = AOM_DL_GOOD_QUALITY;
+      cfg_.g_lag_in_frames = 0;
+      break;
     default: ASSERT_TRUE(false) << "Unexpected mode " << mode;
   }
-
+  mode_ = mode;
   if (mode == kTwoPassGood)
     passes_ = 2;
   else
@@ -232,6 +233,11 @@ void EncoderTest::RunLoop(VideoSource *video) {
 
     ASSERT_NO_FATAL_FAILURE(video->Begin());
     encoder->InitEncoder(video);
+
+    if (mode_ == kRealTime) {
+      encoder->Control(AOME_SET_ENABLEAUTOALTREF, 0);
+    }
+
     ASSERT_FALSE(::testing::Test::HasFatalFailure());
 
     unsigned long dec_init_flags = 0;  // NOLINT

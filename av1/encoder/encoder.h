@@ -99,12 +99,7 @@ typedef enum {
 typedef enum {
   // Good Quality Fast Encoding. The encoder balances quality with the amount of
   // time it takes to encode the output. Speed setting controls how fast.
-  GOOD,
-
-  // Realtime/Live Encoding. This mode is optimized for realtime encoding (for
-  // example, capturing a television signal or feed from a live camera). Speed
-  // setting controls how fast.
-  REALTIME
+  GOOD
 } MODE;
 
 typedef enum {
@@ -815,8 +810,7 @@ YV12_BUFFER_CONFIG *av1_scale_if_required(AV1_COMMON *cm,
 void av1_apply_encoding_flags(AV1_COMP *cpi, aom_enc_frame_flags_t flags);
 
 static INLINE int is_altref_enabled(const AV1_COMP *const cpi) {
-  return cpi->oxcf.mode != REALTIME && cpi->oxcf.lag_in_frames > 0 &&
-         cpi->oxcf.enable_auto_arf;
+  return cpi->oxcf.lag_in_frames > 0 && cpi->oxcf.enable_auto_arf;
 }
 
 // TODO(zoeliu): To set up cpi->oxcf.enable_auto_brf

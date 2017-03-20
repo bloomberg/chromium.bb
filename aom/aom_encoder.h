@@ -695,8 +695,6 @@ aom_codec_err_t aom_codec_enc_config_set(aom_codec_ctx_t *ctx,
  */
 aom_fixed_buf_t *aom_codec_get_global_headers(aom_codec_ctx_t *ctx);
 
-/*!\brief deadline parameter analogous to AVx REALTIME mode. */
-#define AOM_DL_REALTIME (1)
 /*!\brief deadline parameter analogous to  AVx GOOD QUALITY mode. */
 #define AOM_DL_GOOD_QUALITY (1000000)
 /*!\brief Encode a frame
@@ -712,7 +710,7 @@ aom_fixed_buf_t *aom_codec_get_global_headers(aom_codec_ctx_t *ctx);
  * best possible frame by specifying a deadline of '0'. This deadline
  * supercedes the AVx notion of "best quality, good quality, realtime".
  * Applications that wish to map these former settings to the new deadline
- * based system can use the symbols #AOM_DL_REALTIME and #AOM_DL_GOOD_QUALITY.
+ * based system can use the symbol #AOM_DL_GOOD_QUALITY.
  *
  * When the last frame has been passed to the encoder, this function should
  * continue to be called, with the img parameter set to NULL. This will

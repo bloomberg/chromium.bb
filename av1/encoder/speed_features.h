@@ -134,8 +134,7 @@ typedef enum {
 
 typedef enum {
   NOT_IN_USE = 0,
-  RELAXED_NEIGHBORING_MIN_MAX = 1,
-  STRICT_NEIGHBORING_MIN_MAX = 2
+  RELAXED_NEIGHBORING_MIN_MAX = 1
 } AUTO_MIN_MAX_MODE;
 
 typedef enum {

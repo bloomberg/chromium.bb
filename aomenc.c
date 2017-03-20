@@ -157,8 +157,6 @@ static const arg_def_t deadline =
     ARG_DEF("d", "deadline", 1, "Deadline per frame (usec)");
 static const arg_def_t good_dl =
     ARG_DEF(NULL, "good", 0, "Use Good Quality Deadline");
-static const arg_def_t rt_dl =
-    ARG_DEF(NULL, "rt", 0, "Use Realtime Quality Deadline");
 static const arg_def_t quietarg =
     ARG_DEF("q", "quiet", 0, "Do not print encode progress");
 static const arg_def_t verbosearg =
@@ -219,7 +217,6 @@ static const arg_def_t *main_args[] = { &debugmode,
                                         &skip,
                                         &deadline,
                                         &good_dl,
-                                        &rt_dl,
                                         &quietarg,
                                         &verbosearg,
                                         &psnrarg,
@@ -935,8 +932,6 @@ static void parse_global_config(struct AvxEncoderConfig *global, char **argv) {
       global->deadline = arg_parse_uint(&arg);
     else if (arg_match(&arg, &good_dl, argi))
       global->deadline = AOM_DL_GOOD_QUALITY;
-    else if (arg_match(&arg, &rt_dl, argi))
-      global->deadline = AOM_DL_REALTIME;
     else if (arg_match(&arg, &use_yv12, argi))
       global->color_type = YV12;
     else if (arg_match(&arg, &use_i420, argi))
@@ -993,18 +988,10 @@ static void parse_global_config(struct AvxEncoderConfig *global, char **argv) {
     // Make default AV1 passes = 2 until there is a better quality 1-pass
     // encoder
     if (global->codec != NULL && global->codec->name != NULL)
-      global->passes = (strcmp(global->codec->name, "av1") == 0 &&
-                        global->deadline != AOM_DL_REALTIME)
-                           ? 2
-                           : 1;
+      global->passes = (strcmp(global->codec->name, "av1") == 0) ? 2 : 1;
 #else
     global->passes = 1;
 #endif
-  }
-
-  if (global->deadline == AOM_DL_REALTIME && global->passes > 1) {
-    warn("Enforcing one-pass encoding in realtime mode\n");
-    global->passes = 1;
   }
 }
 
@@ -1102,10 +1089,6 @@ static struct stream_state *new_stream(struct AvxEncoderConfig *global,
 
     /* Allows removal of the application version from the EBML tags */
     stream->webm_ctx.debug = global->debug;
-
-    /* Default lag_in_frames is 0 in realtime mode */
-    if (global->deadline == AOM_DL_REALTIME)
-      stream->config.cfg.g_lag_in_frames = 0;
   }
 
   /* Output files must be specified for each stream */
@@ -1193,11 +1176,6 @@ static int parse_stream_params(struct AvxEncoderConfig *global,
       config->cfg.g_error_resilient = arg_parse_uint(&arg);
     } else if (arg_match(&arg, &lag_in_frames, argi)) {
       config->cfg.g_lag_in_frames = arg_parse_uint(&arg);
-      if (global->deadline == AOM_DL_REALTIME &&
-          config->cfg.g_lag_in_frames != 0) {
-        warn("non-zero %s option ignored in realtime mode.\n", arg.name);
-        config->cfg.g_lag_in_frames = 0;
-      }
     } else if (arg_match(&arg, &dropframe_thresh, argi)) {
       config->cfg.rc_dropframe_thresh = arg_parse_uint(&arg);
     } else if (arg_match(&arg, &resize_allowed, argi)) {

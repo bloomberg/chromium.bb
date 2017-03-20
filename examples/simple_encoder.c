@@ -61,8 +61,7 @@
 // is passed, indicating the End-Of-Stream condition to the encoder. The
 // `frame_cnt` is reused as the presentation time stamp (PTS) and each
 // frame is shown for one frame-time in duration. The flags parameter is
-// unused in this example. The deadline is set to AOM_DL_REALTIME to
-// make the example run as quickly as possible.
+// unused in this example.
 
 // Forced Keyframes
 // ----------------
