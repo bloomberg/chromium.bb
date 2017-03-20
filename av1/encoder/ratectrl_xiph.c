@@ -754,12 +754,7 @@ int od_enc_rc_select_quantizers_and_lambdas(od_rc_state *rc,
     range.*/
   lossy_quantizer_min = convert_to_ac_quant(rc->minq, rc->bit_depth);
   lossy_quantizer_max = convert_to_ac_quant(rc->maxq, rc->bit_depth);
-  /*P-frames can be golden, and thus boosted.
-    Boosted and un-boosted P-frames are treated as different subtypes for
-    convenience. */
-  frame_subtype = is_golden_frame && frame_type == OD_P_FRAME
-                      ? OD_GOLDEN_P_FRAME
-                      : frame_type;
+  frame_subtype = frame_type;
   /*Stash quantizer modulation by frame type.*/
   mqp_Q12[OD_I_FRAME] = OD_F_Q12(mqp_i);
   mqp_Q12[OD_P_FRAME] = OD_F_Q12(mqp_p);
