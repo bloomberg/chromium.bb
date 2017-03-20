@@ -168,7 +168,8 @@ class PLATFORM_EXPORT ResourceFetcher
       const ResourceRequest&,
       ResourcePriority::VisibilityStatus,
       FetchRequest::DeferOption = FetchRequest::NoDefer,
-      bool speculativePreload = false);
+      bool isSpeculativePreload = false,
+      bool isLinkPreload = false);
 
   enum PrepareRequestResult { Abort, Continue, Block };
 

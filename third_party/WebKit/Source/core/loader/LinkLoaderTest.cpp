@@ -115,8 +115,8 @@ TEST(LinkLoaderTest, Preload) {
        ResourceLoadPriorityLow, WebURLRequest::RequestContextTrack, true, true,
        ReferrerPolicyDefault},
       {"http://example.test/cat.woff", "font", "", "", ReferrerPolicyDefault,
-       ResourceLoadPriorityVeryHigh, WebURLRequest::RequestContextFont, true,
-       true, ReferrerPolicyDefault},
+       ResourceLoadPriorityHigh, WebURLRequest::RequestContextFont, true, true,
+       ReferrerPolicyDefault},
       // TODO(yoav): subresource should be *very* low priority (rather than
       // low).
       {"http://example.test/cat.empty", "", "", "", ReferrerPolicyDefault,
@@ -170,7 +170,7 @@ TEST(LinkLoaderTest, Preload) {
        ReferrerPolicyDefault, ResourceLoadPriorityUnresolved,
        WebURLRequest::RequestContextTrack, false, false, ReferrerPolicyDefault},
       {"http://example.test/cat.woff", "font", "font/woff2", "",
-       ReferrerPolicyDefault, ResourceLoadPriorityVeryHigh,
+       ReferrerPolicyDefault, ResourceLoadPriorityHigh,
        WebURLRequest::RequestContextFont, true, true, ReferrerPolicyDefault},
       {"http://example.test/cat.woff", "font", "font/woff84", "",
        ReferrerPolicyDefault, ResourceLoadPriorityUnresolved,

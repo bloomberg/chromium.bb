@@ -45,6 +45,24 @@ function sendStyleRequest()
     document.head.appendChild(link);
 }
 
+function sendScriptRequestPrecededByImage()
+{
+    var iframe = document.createElement("iframe");
+    document.body.appendChild(iframe);
+    iframe.srcdoc = '<html><body><img src="resources/abe.png?preceding">'
+        + '<script src="http://localhost:8000/inspector/network/resources/empty-script.js?preceded"></s'
+        + 'cript>;</body></html>';
+}
+
+function sendScriptRequestPrecededByPreloadedImage()
+{
+    var iframe = document.createElement("iframe");
+    document.body.appendChild(iframe);
+    iframe.srcdoc = '<html><body><link href="resources/abe.png?precedingPreload" rel=preload as=image>'
+        + '<script src="http://localhost:8000/inspector/network/resources/empty-script.js?precededByPreload"></s'
+        + 'cript>;</body></html>';
+}
+
 function createIFrame()
 {
     var iframe = document.createElement("iframe");
@@ -57,6 +75,8 @@ function test()
     var actions = [
         "sendSyncScriptRequest",
         "sendAsyncScriptRequest",
+        "sendScriptRequestPrecededByImage",
+        "sendScriptRequestPrecededByPreloadedImage",
         "sendXHRSync",
         "sendXHRAsync",
         "sendImageRequest",
@@ -81,7 +101,8 @@ function test()
     {
         var request = event.data;
         InspectorTest.addResult("Request: " + request.name() + " priority: " + request.initialPriority());
-        performNextRequest();
+        if (request.name().indexOf("preceded") == -1)
+            performNextRequest();
     }
 }
 </script>

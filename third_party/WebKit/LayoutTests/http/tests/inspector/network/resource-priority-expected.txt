@@ -4,6 +4,10 @@ Tests resource priorities.
 
 Request: empty-script.js?sync priority: High
 Request: empty-script.js?async priority: Low
+Request: abe.png?preceding priority: Low
+Request: empty-script.js?preceded priority: Medium
+Request: abe.png?precedingPreload priority: Low
+Request: empty-script.js?precededByPreload priority: High
 Request: empty.html?xhr-sync priority: VeryHigh
 Request: empty.html?xhr-async priority: High
 Request: abe.png priority: Low
