@@ -406,25 +406,33 @@ audit.define('offline-audio-context', (task, should) => {
       () => new OfflineAudioContext(32, 100, context.sampleRate),
       'new OfflineAudioContext(32, 100, context.sampleRate)')
       .notThrow();
-  // Invalid number of channels (unspecified error)
+  // Invalid number of channels
+  should(
+      () => new OfflineAudioContext(0, 100, context.sampleRate),
+      'new OfflineAudioContext(0, 100, context.sampleRate)')
+      .throw('NotSupportedError');
   should(
       () => new OfflineAudioContext(99, 100, context.sampleRate),
       'new OfflineAudioContext(99, 100, context.sampleRate)')
-      .throw();
-  // Invalid sample rate. (unspecified error)
+      .throw('NotSupportedError');
+  // Invalid sample rate.
   should(
       () => new OfflineAudioContext(1, 100, 1),
       'new OfflineAudioContext(1, 100, 1)')
-      .throw();
+      .throw('NotSupportedError');
   should(
       () => new OfflineAudioContext(1, 100, 1e6),
       'new OfflineAudioContext(1, 100, 1e6)')
-      .throw();
+      .throw('NotSupportedError');
   // Invalid frame length (crbug.com/351277)
   should(
       () => new OfflineAudioContext(1, -88200000000000, 44100),
       'new OfflineAudioContext(1, -88200000000000, 44100)')
-      .throw();
+      .throw('NotSupportedError');
+  should(
+      () => new OfflineAudioContext(1, 0, 44100),
+      'new OfflineAudioContext(1, 0, 44100)')
+      .throw('NotSupportedError');
 
   task.done();
 });

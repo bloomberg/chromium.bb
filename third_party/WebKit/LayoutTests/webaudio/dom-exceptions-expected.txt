@@ -1,8 +1,8 @@
 CONSOLE WARNING: line 308: The provided value 'fancy' is not a valid enum value of type ChannelCountMode.
 CONSOLE WARNING: line 314: The provided value 'undefined' is not a valid enum value of type ChannelInterpretation.
-CONSOLE WARNING: line 436: The provided value '9x' is not a valid enum value of type OverSampleType.
-CONSOLE WARNING: line 651: The provided value 'junk' is not a valid enum value of type ChannelCountMode.
-CONSOLE WARNING: line 680: The provided value 'junk' is not a valid enum value of type ChannelCountMode.
+CONSOLE WARNING: line 444: The provided value '9x' is not a valid enum value of type OverSampleType.
+CONSOLE WARNING: line 659: The provided value 'junk' is not a valid enum value of type ChannelCountMode.
+CONSOLE WARNING: line 688: The provided value 'junk' is not a valid enum value of type ChannelCountMode.
 This is a testharness.js-based test.
 PASS # AUDIT TASK RUNNER STARTED. 
 PASS > [initialize] Initialize contexts for testing 
@@ -114,11 +114,13 @@ PASS   node.getFrequencyResponse(new Float32Array(1), new Float32Array(1), null)
 PASS < [biquad] All assertions passed. (total 4 assertions) 
 PASS > [offline-audio-context]  
 PASS   new OfflineAudioContext(32, 100, context.sampleRate) did not throw an exception. 
-PASS   new OfflineAudioContext(99, 100, context.sampleRate) threw IndexSizeError: "Failed to construct 'OfflineAudioContext': The number of channels provided (99) is outside the range [0, 32].". 
-PASS   new OfflineAudioContext(1, 100, 1) threw IndexSizeError: "Failed to construct 'OfflineAudioContext': The sampleRate provided (1) is outside the range [3000, 384000].". 
-PASS   new OfflineAudioContext(1, 100, 1e6) threw IndexSizeError: "Failed to construct 'OfflineAudioContext': The sampleRate provided (1.00000e+6) is outside the range [3000, 384000].". 
+PASS   new OfflineAudioContext(0, 100, context.sampleRate) threw NotSupportedError: "Failed to construct 'OfflineAudioContext': The number of channels provided (0) is outside the range [1, 32].". 
+PASS   new OfflineAudioContext(99, 100, context.sampleRate) threw NotSupportedError: "Failed to construct 'OfflineAudioContext': The number of channels provided (99) is outside the range [1, 32].". 
+PASS   new OfflineAudioContext(1, 100, 1) threw NotSupportedError: "Failed to construct 'OfflineAudioContext': The sampleRate provided (1) is outside the range [3000, 384000].". 
+PASS   new OfflineAudioContext(1, 100, 1e6) threw NotSupportedError: "Failed to construct 'OfflineAudioContext': The sampleRate provided (1.00000e+6) is outside the range [3000, 384000].". 
 PASS   new OfflineAudioContext(1, -88200000000000, 44100) threw NotSupportedError: "Failed to construct 'OfflineAudioContext': OfflineAudioContext(1, 1448390656, 44100)". 
-PASS < [offline-audio-context] All assertions passed. (total 5 assertions) 
+PASS   new OfflineAudioContext(1, 0, 44100) threw NotSupportedError: "Failed to construct 'OfflineAudioContext': The number of frames provided (0) is less than the minimum bound (1).". 
+PASS < [offline-audio-context] All assertions passed. (total 7 assertions) 
 PASS > [waveshaper]  
 PASS   node.oversample = "9x" did not throw an exception. 
 PASS   node.oversample is equal to none. 
