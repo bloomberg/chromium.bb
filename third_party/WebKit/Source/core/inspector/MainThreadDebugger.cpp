@@ -59,7 +59,6 @@
 #include "core/inspector/InspectedFrames.h"
 #include "core/inspector/InspectorTaskRunner.h"
 #include "core/inspector/V8InspectorString.h"
-#include "core/inspector/protocol/Protocol.h"
 #include "core/page/Page.h"
 #include "core/timing/MemoryInfo.h"
 #include "core/workers/MainThreadWorkletGlobalScope.h"
@@ -68,6 +67,7 @@
 #include "platform/UserGestureIndicator.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/ThreadingPrimitives.h"
+#include "wtf/text/StringBuilder.h"
 
 namespace blink {
 
@@ -144,11 +144,13 @@ void MainThreadDebugger::contextCreated(ScriptState* scriptState,
   ASSERT(isMainThread());
   v8::HandleScope handles(scriptState->isolate());
   DOMWrapperWorld& world = scriptState->world();
-  std::unique_ptr<protocol::DictionaryValue> auxDataValue =
-      protocol::DictionaryValue::create();
-  auxDataValue->setBoolean("isDefault", world.isMainWorld());
-  auxDataValue->setString("frameId", IdentifiersFactory::frameId(frame));
-  String auxData = auxDataValue->serialize();
+  StringBuilder auxDataBuilder;
+  auxDataBuilder.append("{\"isDefault\":");
+  auxDataBuilder.append(world.isMainWorld() ? "true" : "false");
+  auxDataBuilder.append(",\"frameId\":\"");
+  auxDataBuilder.append(IdentifiersFactory::frameId(frame));
+  auxDataBuilder.append("\"}");
+  String auxData = auxDataBuilder.toString();
   String humanReadableName = world.isIsolatedWorld()
                                  ? world.isolatedWorldHumanReadableName()
                                  : String();
