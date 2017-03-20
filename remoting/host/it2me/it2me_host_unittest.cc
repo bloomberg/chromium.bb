@@ -37,6 +37,7 @@ typedef It2MeConfirmationDialog::Result DialogResult;
 
 const char kTestClientUserName[] = "ficticious_user@gmail.com";
 const char kTestClientJid[] = "ficticious_user@gmail.com/jid_resource";
+const char kTestClientJid2[] = "ficticious_user_2@gmail.com/jid_resource";
 const char kTestClientUsernameNoJid[] = "completely_ficticious_user@gmail.com";
 const char kTestClientJidWithSlash[] = "fake/user@gmail.com/jid_resource";
 const char kResourceOnly[] = "/jid_resource";
@@ -354,6 +355,19 @@ TEST_F(It2MeHostTest, ConnectionValidation_ConfirmationDialog_Reject) {
   RunUntilStateChanged(It2MeHostState::kDisconnected);
   ASSERT_EQ(It2MeHostState::kDisconnected, last_host_state_);
   ASSERT_STREQ(kTestClientUserName, remote_user_email_.c_str());
+}
+
+TEST_F(It2MeHostTest, MultipleConnectionsTriggerDisconnect) {
+  SimulateClientConnection();
+  RunValidationCallback(kTestClientJid);
+  ASSERT_EQ(ValidationResult::SUCCESS, validation_result_);
+  ASSERT_EQ(It2MeHostState::kConnecting, last_host_state_);
+  ASSERT_STREQ(kTestClientUserName, remote_user_email_.c_str());
+
+  RunValidationCallback(kTestClientJid2);
+  ASSERT_EQ(ValidationResult::ERROR_TOO_MANY_CONNECTIONS, validation_result_);
+  RunUntilStateChanged(It2MeHostState::kDisconnected);
+  ASSERT_EQ(It2MeHostState::kDisconnected, last_host_state_);
 }
 
 }  // namespace remoting

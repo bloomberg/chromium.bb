@@ -53,7 +53,7 @@ class Authenticator {
     // Next message is ready to be sent to the peer.
     MESSAGE_READY,
 
-    // Session is authenticated successufully.
+    // Session is authenticated successfully.
     ACCEPTED,
 
     // Session is rejected.
@@ -64,10 +64,20 @@ class Authenticator {
   };
 
   enum RejectionReason {
+    // The account credentials were not valid (i.e. incorrect PIN).
     INVALID_CREDENTIALS,
+
+    // The client JID was not valid (i.e. violated a policy or was malformed).
     INVALID_ACCOUNT,
+
+    // Generic error used when something goes wrong establishing a session.
     PROTOCOL_ERROR,
+
+    // Session was rejected by the user (i.e. via the confirmation dialog).
     REJECTED_BY_USER,
+
+    // Multiple, valid connection requests were received for the same session.
+    TOO_MANY_CONNECTIONS,
   };
 
   // Callback used for layered Authenticator implementations, particularly
@@ -134,7 +144,7 @@ class AuthenticatorFactory {
   // authenticator for the new session. |first_message| specifies
   // authentication part of the session-initiate stanza so that
   // appropriate type of Authenticator can be chosen for the session
-  // (useful when multiple authenticators is supported). Returns nullptr
+  // (useful when multiple authenticators are supported). Returns nullptr
   // if the |first_message| is invalid and the session should be
   // rejected. ProcessMessage() should be called with |first_message|
   // for the result of this method.

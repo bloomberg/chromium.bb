@@ -66,6 +66,8 @@ ErrorCode AuthRejectionReasonToErrorCode(
       return INCOMPATIBLE_PROTOCOL;
     case Authenticator::INVALID_ACCOUNT:
       return INVALID_ACCOUNT;
+    case Authenticator::TOO_MANY_CONNECTIONS:
+      return SESSION_REJECTED;
     case Authenticator::REJECTED_BY_USER:
       return SESSION_REJECTED;
   }

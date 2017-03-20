@@ -193,10 +193,6 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   // variable contains the thunk if it is necessary.
   base::Closure pending_connect_;
 
-  // Called after the client machine initiates the connection process and
-  // determines whether to reject the connection or allow it to continue.
-  protocol::ValidatingAuthenticator::ValidationCallback validation_callback_;
-
   DISALLOW_COPY_AND_ASSIGN(It2MeHost);
 };
 

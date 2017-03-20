@@ -52,6 +52,7 @@ const int kMaxLoginAttempts = 5;
 using protocol::ValidatingAuthenticator;
 typedef ValidatingAuthenticator::Result ValidationResult;
 typedef ValidatingAuthenticator::ValidationCallback ValidationCallback;
+typedef ValidatingAuthenticator::ResultCallback ValidationResultCallback;
 
 }  // namespace
 
@@ -482,7 +483,7 @@ void It2MeHost::OnReceivedSupportID(
 
 void It2MeHost::ValidateConnectionDetails(
     const std::string& remote_jid,
-    const protocol::ValidatingAuthenticator::ResultCallback& result_callback) {
+    const ValidationResultCallback& result_callback) {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
 
   // First ensure the JID we received is valid.
@@ -517,6 +518,16 @@ void It2MeHost::ValidateConnectionDetails(
     }
   }
 
+  // If we receive valid connection details multiple times, then we don't know
+  // which remote user (if either) is valid so disconnect everyone.
+  if (state_ != kReceivedAccessCode) {
+    DCHECK_EQ(kConnecting, state_);
+    LOG(ERROR) << "Received too many connection requests.";
+    result_callback.Run(ValidationResult::ERROR_TOO_MANY_CONNECTIONS);
+    DisconnectOnNetworkThread();
+    return;
+  }
+
   HOST_LOG << "Client " << client_username << " connecting.";
   SetState(kConnecting, std::string());
 
@@ -530,7 +541,7 @@ void It2MeHost::ValidateConnectionDetails(
 }
 
 void It2MeHost::OnConfirmationResult(
-    const protocol::ValidatingAuthenticator::ResultCallback& result_callback,
+    const ValidationResultCallback& result_callback,
     It2MeConfirmationDialog::Result result) {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
 

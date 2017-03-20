@@ -29,7 +29,7 @@ using testing::Return;
 
 typedef ValidatingAuthenticator::Result ValidationResult;
 
-const char kRemoteTestJid[] = "ficticious_jid_for_testing";
+constexpr char kRemoteTestJid[] = "ficticious_jid_for_testing";
 
 // testing::InvokeArgument<N> does not work with base::Callback, fortunately
 // gmock makes it simple to create action templates that do for the various
@@ -63,13 +63,13 @@ class ValidatingAuthenticatorTest : public testing::Test {
   // to |validating_authenticator_|.  Lifetime of the object is controlled by
   // |validating_authenticator_| so this pointer is no longer valid once
   // the owner is destroyed.
-  MockAuthenticator* mock_authenticator_ = nullptr;
+  testing::NiceMock<MockAuthenticator>* mock_authenticator_ = nullptr;
 
   // This member is used to drive behavior in |validating_authenticator_| when
-  // it's validation complete callback is run.
+  // its validation complete callback is run.
   ValidationResult validation_result_ = ValidationResult::SUCCESS;
 
-  // Tracks whether our ValidateCallback has been called or not.
+  // Tracks whether our validation callback has been called or not.
   bool validate_complete_called_ = false;
 
   // The object under test.
@@ -93,7 +93,7 @@ void ValidatingAuthenticatorTest::ValidateCallback(
 }
 
 void ValidatingAuthenticatorTest::SetUp() {
-  mock_authenticator_ = new MockAuthenticator();
+  mock_authenticator_ = new testing::NiceMock<MockAuthenticator>();
   std::unique_ptr<Authenticator> authenticator(mock_authenticator_);
 
   validating_authenticator_.reset(new ValidatingAuthenticator(
@@ -121,7 +121,7 @@ TEST_F(ValidatingAuthenticatorTest, ValidConnection_SingleMessage) {
 
   SendMessageAndWaitForCallback();
   ASSERT_TRUE(validate_complete_called_);
-  ASSERT_EQ(validating_authenticator_->state(), Authenticator::ACCEPTED);
+  ASSERT_EQ(Authenticator::ACCEPTED, validating_authenticator_->state());
 }
 
 TEST_F(ValidatingAuthenticatorTest, ValidConnection_TwoMessages) {
@@ -135,8 +135,8 @@ TEST_F(ValidatingAuthenticatorTest, ValidConnection_TwoMessages) {
       .WillRepeatedly(Return(Authenticator::MESSAGE_READY));
 
   SendMessageAndWaitForCallback();
-  ASSERT_TRUE(validate_complete_called_);
-  ASSERT_EQ(validating_authenticator_->state(), Authenticator::MESSAGE_READY);
+  ASSERT_FALSE(validate_complete_called_);
+  ASSERT_EQ(Authenticator::MESSAGE_READY, validating_authenticator_->state());
 
   // Now 'retrieve' the message for the client which resets the state.
   EXPECT_CALL(*mock_authenticator_, state())
@@ -152,83 +152,98 @@ TEST_F(ValidatingAuthenticatorTest, ValidConnection_TwoMessages) {
       .WillOnce(Return(next_message.release()));
 
   validating_authenticator_->GetNextMessage();
-  ASSERT_EQ(validating_authenticator_->state(), Authenticator::WAITING_MESSAGE);
+  ASSERT_EQ(Authenticator::WAITING_MESSAGE, validating_authenticator_->state());
 
   // Now send the second message for processing.
   EXPECT_CALL(*mock_authenticator_, state())
       .WillRepeatedly(Return(Authenticator::ACCEPTED));
 
-  // Reset the callback state, we don't expect the validate function to be
-  // called for the second message.
-  validate_complete_called_ = false;
   SendMessageAndWaitForCallback();
-  ASSERT_FALSE(validate_complete_called_);
-  ASSERT_EQ(validating_authenticator_->state(), Authenticator::ACCEPTED);
+  ASSERT_TRUE(validate_complete_called_);
+  ASSERT_EQ(Authenticator::ACCEPTED, validating_authenticator_->state());
 }
 
-TEST_F(ValidatingAuthenticatorTest, InvalidConnection_RejectedByUser) {
-  EXPECT_CALL(*mock_authenticator_, ProcessMessage(_, _)).Times(0);
-  EXPECT_CALL(*mock_authenticator_, state()).Times(0);
-  EXPECT_CALL(*mock_authenticator_, rejection_reason()).Times(0);
+TEST_F(ValidatingAuthenticatorTest, ValidConnection_SendBeforeAccept) {
+  // This test simulates an authenticator which needs to send a message before
+  // transitioning to the ACCEPTED state.
+  EXPECT_CALL(*mock_authenticator_, ProcessMessage(_, _))
+      .Times(1)
+      .WillRepeatedly(InvokeCallbackArgument<1>());
 
-  validation_result_ = ValidationResult::ERROR_REJECTED_BY_USER;
+  EXPECT_CALL(*mock_authenticator_, state())
+      .WillOnce(Return(Authenticator::MESSAGE_READY))
+      .WillOnce(Return(Authenticator::ACCEPTED));
+
+  // This dance is needed because GMock doesn't handle unique_ptrs very well.
+  // The mock method receives a raw pointer which it wraps and returns when
+  // GetNextMessage() is called.
+  std::unique_ptr<buzz::XmlElement> next_message(
+      Authenticator::CreateEmptyAuthenticatorMessage());
+  EXPECT_CALL(*mock_authenticator_, GetNextMessagePtr())
+      .Times(1)
+      .WillOnce(Return(next_message.release()));
 
   SendMessageAndWaitForCallback();
   ASSERT_TRUE(validate_complete_called_);
-  ASSERT_EQ(validating_authenticator_->state(), Authenticator::REJECTED);
-  ASSERT_EQ(validating_authenticator_->rejection_reason(),
-            Authenticator::REJECTED_BY_USER);
+  ASSERT_EQ(Authenticator::MESSAGE_READY, validating_authenticator_->state());
+
+  // Now 'retrieve' the message for the client which resets the state.
+  validating_authenticator_->GetNextMessage();
+  ASSERT_EQ(Authenticator::ACCEPTED, validating_authenticator_->state());
 }
 
-TEST_F(ValidatingAuthenticatorTest, InvalidConnection_InvalidCredentials) {
-  EXPECT_CALL(*mock_authenticator_, ProcessMessage(_, _)).Times(0);
-  EXPECT_CALL(*mock_authenticator_, state()).Times(0);
-  EXPECT_CALL(*mock_authenticator_, rejection_reason()).Times(0);
-
-  validation_result_ = ValidationResult::ERROR_INVALID_CREDENTIALS;
-
-  SendMessageAndWaitForCallback();
-  ASSERT_TRUE(validate_complete_called_);
-  ASSERT_EQ(validating_authenticator_->state(), Authenticator::REJECTED);
-  ASSERT_EQ(validating_authenticator_->rejection_reason(),
-            Authenticator::INVALID_CREDENTIALS);
-}
-
-TEST_F(ValidatingAuthenticatorTest, InvalidConnection_InvalidAccount) {
-  EXPECT_CALL(*mock_authenticator_, ProcessMessage(_, _)).Times(0);
-  EXPECT_CALL(*mock_authenticator_, state()).Times(0);
-  EXPECT_CALL(*mock_authenticator_, rejection_reason()).Times(0);
-
-  validation_result_ = ValidationResult::ERROR_INVALID_ACCOUNT;
-
-  SendMessageAndWaitForCallback();
-  ASSERT_TRUE(validate_complete_called_);
-  ASSERT_EQ(validating_authenticator_->state(), Authenticator::REJECTED);
-  ASSERT_EQ(validating_authenticator_->rejection_reason(),
-            Authenticator::INVALID_ACCOUNT);
-}
-
-TEST_F(ValidatingAuthenticatorTest,
-       WrappedAuthenticatorRejectsConnection_InvalidCredentials) {
+TEST_F(ValidatingAuthenticatorTest, ValidConnection_ErrorInvalidCredentials) {
   EXPECT_CALL(*mock_authenticator_, ProcessMessage(_, _))
       .Times(1)
       .WillOnce(InvokeCallbackArgument<1>());
 
   ON_CALL(*mock_authenticator_, state())
-      .WillByDefault(Return(Authenticator::REJECTED));
+      .WillByDefault(Return(Authenticator::ACCEPTED));
 
-  ON_CALL(*mock_authenticator_, rejection_reason())
-      .WillByDefault(Return(Authenticator::REJECTED_BY_USER));
+  validation_result_ = ValidationResult::ERROR_INVALID_CREDENTIALS;
 
   SendMessageAndWaitForCallback();
   ASSERT_TRUE(validate_complete_called_);
-  ASSERT_EQ(validating_authenticator_->state(), Authenticator::REJECTED);
-  ASSERT_EQ(validating_authenticator_->rejection_reason(),
-            Authenticator::REJECTED_BY_USER);
+  ASSERT_EQ(Authenticator::REJECTED, validating_authenticator_->state());
+  ASSERT_EQ(Authenticator::INVALID_CREDENTIALS,
+            validating_authenticator_->rejection_reason());
 }
 
-TEST_F(ValidatingAuthenticatorTest,
-       WrappedAuthenticatorRejectsConnection_InvalidAccount) {
+TEST_F(ValidatingAuthenticatorTest, ValidConnection_ErrorRejectedByUser) {
+  EXPECT_CALL(*mock_authenticator_, ProcessMessage(_, _))
+      .Times(1)
+      .WillOnce(InvokeCallbackArgument<1>());
+
+  ON_CALL(*mock_authenticator_, state())
+      .WillByDefault(Return(Authenticator::ACCEPTED));
+
+  validation_result_ = ValidationResult::ERROR_REJECTED_BY_USER;
+
+  SendMessageAndWaitForCallback();
+  ASSERT_TRUE(validate_complete_called_);
+  ASSERT_EQ(Authenticator::REJECTED, validating_authenticator_->state());
+  ASSERT_EQ(Authenticator::REJECTED_BY_USER,
+            validating_authenticator_->rejection_reason());
+}
+
+TEST_F(ValidatingAuthenticatorTest, ValidConnection_ErrorTooManyConnections) {
+  EXPECT_CALL(*mock_authenticator_, ProcessMessage(_, _))
+      .Times(1)
+      .WillOnce(InvokeCallbackArgument<1>());
+
+  ON_CALL(*mock_authenticator_, state())
+      .WillByDefault(Return(Authenticator::ACCEPTED));
+
+  validation_result_ = ValidationResult::ERROR_TOO_MANY_CONNECTIONS;
+
+  SendMessageAndWaitForCallback();
+  ASSERT_TRUE(validate_complete_called_);
+  ASSERT_EQ(Authenticator::REJECTED, validating_authenticator_->state());
+  ASSERT_EQ(Authenticator::TOO_MANY_CONNECTIONS,
+            validating_authenticator_->rejection_reason());
+}
+
+TEST_F(ValidatingAuthenticatorTest, InvalidConnection_InvalidCredentials) {
   EXPECT_CALL(*mock_authenticator_, ProcessMessage(_, _))
       .Times(1)
       .WillOnce(InvokeCallbackArgument<1>());
@@ -239,15 +254,34 @@ TEST_F(ValidatingAuthenticatorTest,
   ON_CALL(*mock_authenticator_, rejection_reason())
       .WillByDefault(Return(Authenticator::INVALID_CREDENTIALS));
 
+  // Verify validation callback is not called for invalid connections.
   SendMessageAndWaitForCallback();
-  ASSERT_TRUE(validate_complete_called_);
-  ASSERT_EQ(validating_authenticator_->state(), Authenticator::REJECTED);
-  ASSERT_EQ(validating_authenticator_->rejection_reason(),
-            Authenticator::INVALID_CREDENTIALS);
+  ASSERT_FALSE(validate_complete_called_);
+  ASSERT_EQ(Authenticator::REJECTED, validating_authenticator_->state());
+  ASSERT_EQ(Authenticator::INVALID_CREDENTIALS,
+            validating_authenticator_->rejection_reason());
 }
 
-TEST_F(ValidatingAuthenticatorTest,
-       WrappedAuthenticatorRejectsConnection_PROTOCOL_ERROR) {
+TEST_F(ValidatingAuthenticatorTest, InvalidConnection_InvalidAccount) {
+  EXPECT_CALL(*mock_authenticator_, ProcessMessage(_, _))
+      .Times(1)
+      .WillOnce(InvokeCallbackArgument<1>());
+
+  ON_CALL(*mock_authenticator_, state())
+      .WillByDefault(Return(Authenticator::REJECTED));
+
+  ON_CALL(*mock_authenticator_, rejection_reason())
+      .WillByDefault(Return(Authenticator::INVALID_ACCOUNT));
+
+  // Verify validation callback is not called for invalid connections.
+  SendMessageAndWaitForCallback();
+  ASSERT_FALSE(validate_complete_called_);
+  ASSERT_EQ(Authenticator::REJECTED, validating_authenticator_->state());
+  ASSERT_EQ(Authenticator::INVALID_ACCOUNT,
+            validating_authenticator_->rejection_reason());
+}
+
+TEST_F(ValidatingAuthenticatorTest, InvalidConnection_ProtocolError) {
   EXPECT_CALL(*mock_authenticator_, ProcessMessage(_, _))
       .Times(1)
       .WillOnce(InvokeCallbackArgument<1>());
@@ -258,11 +292,12 @@ TEST_F(ValidatingAuthenticatorTest,
   ON_CALL(*mock_authenticator_, rejection_reason())
       .WillByDefault(Return(Authenticator::PROTOCOL_ERROR));
 
+  // Verify validation callback is not called for invalid connections.
   SendMessageAndWaitForCallback();
-  ASSERT_TRUE(validate_complete_called_);
-  ASSERT_EQ(validating_authenticator_->state(), Authenticator::REJECTED);
-  ASSERT_EQ(validating_authenticator_->rejection_reason(),
-            Authenticator::PROTOCOL_ERROR);
+  ASSERT_FALSE(validate_complete_called_);
+  ASSERT_EQ(Authenticator::REJECTED, validating_authenticator_->state());
+  ASSERT_EQ(Authenticator::PROTOCOL_ERROR,
+            validating_authenticator_->rejection_reason());
 }
 
 }  // namespace protocol

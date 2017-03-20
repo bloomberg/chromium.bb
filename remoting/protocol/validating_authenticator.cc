@@ -30,14 +30,14 @@ ValidatingAuthenticator::ValidatingAuthenticator(
       current_authenticator_(std::move(current_authenticator)),
       weak_factory_(this) {
   DCHECK(!remote_jid_.empty());
-  DCHECK(!validation_callback_.is_null());
+  DCHECK(validation_callback_);
   DCHECK(current_authenticator_);
 }
 
 ValidatingAuthenticator::~ValidatingAuthenticator() {}
 
 Authenticator::State ValidatingAuthenticator::state() const {
-  return state_;
+  return pending_auth_message_ ? MESSAGE_READY : state_;
 }
 
 bool ValidatingAuthenticator::started() const {
@@ -64,21 +64,17 @@ void ValidatingAuthenticator::ProcessMessage(
   DCHECK_EQ(state_, WAITING_MESSAGE);
   state_ = PROCESSING_MESSAGE;
 
-  if (first_message_received_) {
-    current_authenticator_->ProcessMessage(
-        message, base::Bind(&ValidatingAuthenticator::UpdateState,
-                            weak_factory_.GetWeakPtr(), resume_callback));
-  } else {
-    first_message_received_ = true;
-    validation_callback_.Run(
-        remote_jid_, base::Bind(&ValidatingAuthenticator::OnValidateComplete,
-                                weak_factory_.GetWeakPtr(),
-                                base::Owned(new buzz::XmlElement(*message)),
-                                resume_callback));
-  }
+  current_authenticator_->ProcessMessage(
+      message, base::Bind(&ValidatingAuthenticator::UpdateState,
+                          weak_factory_.GetWeakPtr(), resume_callback));
 }
 
 std::unique_ptr<buzz::XmlElement> ValidatingAuthenticator::GetNextMessage() {
+  if (pending_auth_message_) {
+    DCHECK(state_ == ACCEPTED || state_ == WAITING_MESSAGE);
+    return std::move(pending_auth_message_);
+  }
+
   std::unique_ptr<buzz::XmlElement> result(
       current_authenticator_->GetNextMessage());
   state_ = current_authenticator_->state();
@@ -87,18 +83,14 @@ std::unique_ptr<buzz::XmlElement> ValidatingAuthenticator::GetNextMessage() {
   return result;
 }
 
-void ValidatingAuthenticator::OnValidateComplete(
-    const buzz::XmlElement* message,
-    const base::Closure& resume_callback,
-    Result validation_result) {
-  // Process the original message in the success case, otherwise map
-  // |rejection_reason_| to a known reason, set |state_| to REJECTED and notify
-  // the listener of the connection error via the callback.
+void ValidatingAuthenticator::OnValidateComplete(const base::Closure& callback,
+                                                 Result validation_result) {
+  // Map |rejection_reason_| to a known reason, set |state_| to REJECTED and
+  // notify the listener of the connection error via the callback.
   switch (validation_result) {
     case Result::SUCCESS:
-      current_authenticator_->ProcessMessage(
-          message, base::Bind(&ValidatingAuthenticator::UpdateState,
-                              weak_factory_.GetWeakPtr(), resume_callback));
+      state_ = ACCEPTED;
+      callback.Run();
       return;
 
     case Result::ERROR_INVALID_CREDENTIALS:
@@ -109,13 +101,17 @@ void ValidatingAuthenticator::OnValidateComplete(
       rejection_reason_ = Authenticator::INVALID_ACCOUNT;
       break;
 
+    case Result::ERROR_TOO_MANY_CONNECTIONS:
+      rejection_reason_ = Authenticator::TOO_MANY_CONNECTIONS;
+      break;
+
     case Result::ERROR_REJECTED_BY_USER:
       rejection_reason_ = Authenticator::REJECTED_BY_USER;
       break;
   }
 
   state_ = Authenticator::REJECTED;
-  resume_callback.Run();
+  callback.Run();
 }
 
 void ValidatingAuthenticator::UpdateState(
@@ -126,9 +122,20 @@ void ValidatingAuthenticator::UpdateState(
   state_ = current_authenticator_->state();
   if (state_ == REJECTED) {
     rejection_reason_ = current_authenticator_->rejection_reason();
+  } else if (state_ == MESSAGE_READY) {
+    DCHECK(!pending_auth_message_);
+    pending_auth_message_ = current_authenticator_->GetNextMessage();
+    state_ = current_authenticator_->state();
   }
 
-  resume_callback.Run();
+  if (state_ == ACCEPTED) {
+    state_ = PROCESSING_MESSAGE;
+    validation_callback_.Run(
+        remote_jid_, base::Bind(&ValidatingAuthenticator::OnValidateComplete,
+                                weak_factory_.GetWeakPtr(), resume_callback));
+  } else {
+    resume_callback.Run();
+  }
 }
 
 }  // namespace protocol
