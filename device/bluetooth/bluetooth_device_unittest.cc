@@ -46,6 +46,39 @@ int8_t ToInt8(BluetoothTest::TestTxPower tx_power) {
 using UUIDSet = BluetoothDevice::UUIDSet;
 using ServiceDataMap = BluetoothDevice::ServiceDataMap;
 
+class BluetoothGetServiceOrCharacteristicTest : public BluetoothTest {
+ public:
+  // Creates |device_|, |services_|.
+  void FakeServiceBoilerplate() {
+    InitWithFakeAdapter();
+    StartLowEnergyDiscoverySession();
+    device_ = SimulateLowEnergyDevice(3);
+    EXPECT_FALSE(device_->IsConnected());
+
+    // Connect to the device.
+    ResetEventCounts();
+    device_->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
+                                  GetConnectErrorCallback(Call::NOT_EXPECTED));
+    TestBluetoothAdapterObserver observer(adapter_);
+    SimulateGattConnection(device_);
+    base::RunLoop().RunUntilIdle();
+    EXPECT_TRUE(device_->IsConnected());
+
+    // Discover services.
+    services_.push_back("00000000-0000-1000-8000-00805f9b34fb");
+    // 2 duplicate UUIDs creating 2 instances.
+    services_.push_back("00000001-0000-1000-8000-00805f9b34fb");
+    services_.push_back("00000001-0000-1000-8000-00805f9b34fb");
+    SimulateGattServicesDiscovered(device_, services_);
+    base::RunLoop().RunUntilIdle();
+    EXPECT_TRUE(device_->IsGattServicesDiscoveryComplete());
+  }
+
+ protected:
+  BluetoothDevice* device_ = nullptr;
+  std::vector<std::string> services_;
+};
+
 TEST(BluetoothDeviceTest, CanonicalizeAddressFormat_AcceptsAllValidFormats) {
   // There are three valid separators (':', '-', and none).
   // Case shouldn't matter.
@@ -1482,5 +1515,108 @@ TEST_F(BluetoothTest, GetDeviceTransportType) {
   EXPECT_EQ(BLUETOOTH_TRANSPORT_CLASSIC, device3->GetType());
 }
 #endif  // defined(OS_CHROMEOS) || defined(OS_LINUX)
+
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
+TEST_F(BluetoothGetServiceOrCharacteristicTest, GetPrimaryServices) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+  ASSERT_NO_FATAL_FAILURE(FakeServiceBoilerplate());
+
+  EXPECT_EQ(3u, device_->GetPrimaryServices().size());
+}
+
+TEST_F(BluetoothGetServiceOrCharacteristicTest, GetPrimaryServicesByUUID) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+  ASSERT_NO_FATAL_FAILURE(FakeServiceBoilerplate());
+
+  EXPECT_EQ(
+      1u,
+      device_->GetPrimaryServicesByUUID(BluetoothUUID(services_[0])).size());
+  EXPECT_EQ(
+      2u,
+      device_->GetPrimaryServicesByUUID(BluetoothUUID(services_[1])).size());
+  std::string service_uuid_not_exist_in_setup =
+      "00000002-0000-1000-8000-00805f9b34fb";
+  EXPECT_TRUE(device_
+                  ->GetPrimaryServicesByUUID(
+                      BluetoothUUID(service_uuid_not_exist_in_setup))
+                  .empty());
+}
+
+TEST_F(BluetoothGetServiceOrCharacteristicTest, GetCharacteristicsByUUID) {
+  if (!PlatformSupportsLowEnergy()) {
+    LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
+    return;
+  }
+  ASSERT_NO_FATAL_FAILURE(FakeServiceBoilerplate());
+
+  std::vector<BluetoothRemoteGattService*> primary_services =
+      device_->GetPrimaryServices();
+  std::string service_instance_id0 = primary_services[0]->GetIdentifier();
+  std::string service_instance_id1 = primary_services[1]->GetIdentifier();
+  std::string service_instance_id2 = primary_services[2]->GetIdentifier();
+
+  std::string characteristic_uuid0 = "00000002-0000-1000-8000-00805f9b34fb";
+  std::string characteristic_uuid1 = "00000003-0000-1000-8000-00805f9b34fb";
+  SimulateGattCharacteristic(primary_services[0], characteristic_uuid0,
+                             0 /* properties */);
+  SimulateGattCharacteristic(primary_services[1], characteristic_uuid1,
+                             0 /* properties */);
+  SimulateGattCharacteristic(primary_services[2], characteristic_uuid1,
+                             0 /* properties */);
+
+  EXPECT_EQ(1u,
+            device_
+                ->GetCharacteristicsByUUID(service_instance_id0,
+                                           BluetoothUUID(characteristic_uuid0))
+                .size());
+  EXPECT_EQ(1u,
+            device_
+                ->GetCharacteristicsByUUID(service_instance_id1,
+                                           BluetoothUUID(characteristic_uuid1))
+                .size());
+  EXPECT_EQ(1u,
+            device_
+                ->GetCharacteristicsByUUID(service_instance_id2,
+                                           BluetoothUUID(characteristic_uuid1))
+                .size());
+
+  std::string service_instance_id_not_exist_in_setup =
+      "non-existent platform specific service instance id";
+  EXPECT_TRUE(
+      device_
+          ->GetCharacteristicsByUUID(service_instance_id_not_exist_in_setup,
+                                     BluetoothUUID(characteristic_uuid0))
+          .empty());
+  EXPECT_TRUE(
+      device_
+          ->GetCharacteristicsByUUID(service_instance_id_not_exist_in_setup,
+                                     BluetoothUUID(characteristic_uuid1))
+          .empty());
+
+  std::string characteristic_uuid_not_exist_in_setup =
+      "00000005-0000-1000-8000-00805f9b34fb";
+  EXPECT_TRUE(device_
+                  ->GetCharacteristicsByUUID(
+                      service_instance_id0,
+                      BluetoothUUID(characteristic_uuid_not_exist_in_setup))
+                  .empty());
+  EXPECT_TRUE(device_
+                  ->GetCharacteristicsByUUID(
+                      service_instance_id1,
+                      BluetoothUUID(characteristic_uuid_not_exist_in_setup))
+                  .empty());
+  EXPECT_TRUE(device_
+                  ->GetCharacteristicsByUUID(
+                      service_instance_id2,
+                      BluetoothUUID(characteristic_uuid_not_exist_in_setup))
+                  .empty());
+}
+#endif  // defined(OS_ANDROID) || defined(OS_MACOSX)
 
 }  // namespace device
