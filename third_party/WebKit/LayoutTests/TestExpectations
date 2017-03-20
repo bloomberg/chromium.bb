@@ -118,8 +118,6 @@ crbug.com/646015 virtual/disable-spinvalidation/paint/invalidation/hover-invalid
 crbug.com/646016 paint/invalidation/selected-replaced.html [ Failure ]
 crbug.com/646016 virtual/disable-spinvalidation/paint/invalidation/selected-replaced.html [ Failure ]
 
-crbug.com/659192 virtual/gpu/fast/canvas/canvas-imageSmoothingQuality-pixel.html [ NeedsManualRebaseline ]
-
 crbug.com/664850 virtual/display_list_2d_canvas/fast/canvas/canvas-createImageBitmap-webgl.html [ Pass Failure ]
 crbug.com/664850 virtual/display_list_2d_canvas/fast/canvas/OffscreenCanvas-2d-drawImage.html [ Pass Failure ]
 crbug.com/664850 virtual/display_list_2d_canvas/fast/canvas/OffscreenCanvas-commit-invalid-call.html [ Pass Failure ]
