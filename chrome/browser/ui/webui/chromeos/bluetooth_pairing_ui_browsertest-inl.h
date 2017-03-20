@@ -57,7 +57,9 @@ void BluetoothPairingUITest::ShowDialog() {
       .WillOnce(testing::Return(mock_device_.get()));
 
   chromeos::BluetoothPairingDialog* dialog =
-      new chromeos::BluetoothPairingDialog(mock_device_.get());
+      new chromeos::BluetoothPairingDialog(
+          mock_device_->GetAddress(), mock_device_->GetNameForDisplay(),
+          mock_device_->IsPaired(), mock_device_->IsConnected());
   dialog->ShowInContainer(ash::kShellWindowId_SystemModalContainer);
 
   content::WebUI* webui = dialog->GetWebUIForTest();

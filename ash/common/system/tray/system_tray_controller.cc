@@ -23,6 +23,11 @@ void SystemTrayController::ShowSettings() {
     system_tray_client_->ShowSettings();
 }
 
+void SystemTrayController::ShowBluetoothSettings() {
+  if (system_tray_client_)
+    system_tray_client_->ShowBluetoothSettings();
+}
+
 void SystemTrayController::ShowDateSettings() {
   if (system_tray_client_)
     system_tray_client_->ShowDateSettings();

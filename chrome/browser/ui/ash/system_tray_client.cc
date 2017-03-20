@@ -11,10 +11,12 @@
 #include "ash/shell.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/metrics/user_metrics.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
+#include "chrome/browser/chromeos/bluetooth/bluetooth_pairing_dialog.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/options/network_config_view.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -39,6 +41,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/service_manager_connection.h"
+#include "device/bluetooth/bluetooth_device.h"
 #include "extensions/browser/api/vpn_provider/vpn_service.h"
 #include "extensions/browser/api/vpn_provider/vpn_service_factory.h"
 #include "net/base/escape.h"
@@ -49,8 +52,10 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_delegate.h"
 
+using chromeos::BluetoothPairingDialog;
 using chromeos::DBusThreadManager;
 using chromeos::LoginState;
+using device::BluetoothDevice;
 using views::Widget;
 
 namespace {
@@ -211,6 +216,28 @@ void SystemTrayClient::SetPrimaryTrayVisible(bool visible) {
 
 void SystemTrayClient::ShowSettings() {
   ShowSettingsSubPageForActiveUser(std::string());
+}
+
+void SystemTrayClient::ShowBluetoothSettings() {
+  base::RecordAction(base::UserMetricsAction("ShowBluetoothSettingsPage"));
+  ShowSettingsSubPageForActiveUser(chrome::kBluetoothSubPage);
+}
+
+void SystemTrayClient::ShowBluetoothPairingDialog(
+    const std::string& address,
+    const base::string16& name_for_display,
+    bool paired,
+    bool connected) {
+  std::string canonical_address = BluetoothDevice::CanonicalizeAddress(address);
+  if (canonical_address.empty())  // Address was invalid.
+    return;
+
+  base::RecordAction(
+      base::UserMetricsAction("StatusArea_Bluetooth_Connect_Unknown"));
+  BluetoothPairingDialog* dialog = new BluetoothPairingDialog(
+      canonical_address, name_for_display, paired, connected);
+  // The dialog deletes itself on close.
+  dialog->ShowInContainer(GetDialogParentContainerId());
 }
 
 void SystemTrayClient::ShowDateSettings() {

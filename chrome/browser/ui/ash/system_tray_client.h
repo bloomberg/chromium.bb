@@ -56,6 +56,11 @@ class SystemTrayClient : public ash::mojom::SystemTrayClient,
 
   // ash::mojom::SystemTrayClient:
   void ShowSettings() override;
+  void ShowBluetoothSettings() override;
+  void ShowBluetoothPairingDialog(const std::string& address,
+                                  const base::string16& name_for_display,
+                                  bool paired,
+                                  bool connected) override;
   void ShowDateSettings() override;
   void ShowSetTimeDialog() override;
   void ShowDisplaySettings() override;

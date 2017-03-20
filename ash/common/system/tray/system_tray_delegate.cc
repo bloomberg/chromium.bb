@@ -94,8 +94,6 @@ void SystemTrayDelegate::SwitchIME(const std::string& ime_id) {}
 
 void SystemTrayDelegate::ActivateIMEProperty(const std::string& key) {}
 
-void SystemTrayDelegate::ManageBluetoothDevices() {}
-
 void SystemTrayDelegate::ToggleBluetooth() {}
 
 bool SystemTrayDelegate::IsBluetoothDiscovering() const {

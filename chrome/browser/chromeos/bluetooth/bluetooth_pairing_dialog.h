@@ -6,19 +6,19 @@
 #define CHROME_BROWSER_CHROMEOS_BLUETOOTH_BLUETOOTH_PAIRING_DIALOG_H_
 
 #include "base/macros.h"
+#include "base/strings/string16.h"
 #include "base/values.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
-
-namespace device {
-class BluetoothDevice;
-}
 
 namespace chromeos {
 
 // Bluetooth device pairing dialog shown from ash tray bubble.
 class BluetoothPairingDialog : public ui::WebDialogDelegate {
  public:
-  explicit BluetoothPairingDialog(const device::BluetoothDevice* device);
+  BluetoothPairingDialog(const std::string& address,
+                         const base::string16& name_for_display,
+                         bool paired,
+                         bool connected);
   ~BluetoothPairingDialog() override;
 
   // Shows the dialog in an ash window container (which must be a system modal

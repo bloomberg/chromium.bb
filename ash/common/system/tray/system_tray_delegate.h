@@ -152,9 +152,6 @@ class ASH_EXPORT SystemTrayDelegate {
   // Activates an IME property.
   virtual void ActivateIMEProperty(const std::string& key);
 
-  // Shows UI to manage bluetooth devices.
-  virtual void ManageBluetoothDevices();
-
   // Toggles bluetooth.
   virtual void ToggleBluetooth();
 

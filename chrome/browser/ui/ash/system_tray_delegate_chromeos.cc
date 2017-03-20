@@ -428,13 +428,6 @@ void SystemTrayDelegateChromeOS::ActivateIMEProperty(const std::string& key) {
   input_method::InputMethodManager::Get()->ActivateInputMethodMenuItem(key);
 }
 
-// TODO(jamescook): Move to SystemTrayClient where other Web UI lives.
-void SystemTrayDelegateChromeOS::ManageBluetoothDevices() {
-  content::RecordAction(base::UserMetricsAction("ShowBluetoothSettingsPage"));
-  chrome::ShowSettingsSubPageForProfile(ProfileManager::GetActiveUserProfile(),
-                                        chrome::kBluetoothSubPage);
-}
-
 void SystemTrayDelegateChromeOS::ToggleBluetooth() {
   bluetooth_helper_->ToggleEnabled();
 }

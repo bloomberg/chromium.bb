@@ -16,7 +16,6 @@
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
-#include "device/bluetooth/bluetooth_device.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -41,12 +40,15 @@ const int kDefaultHeight = 280;
 // BluetoothPairingDialog, public:
 
 BluetoothPairingDialog::BluetoothPairingDialog(
-    const device::BluetoothDevice* device)
+    const std::string& address,
+    const base::string16& name_for_display,
+    bool paired,
+    bool connected)
     : webui_(nullptr) {
-  device_data_.SetString("address", device->GetAddress());
-  device_data_.SetString("name", device->GetNameForDisplay());
-  device_data_.SetBoolean("paired", device->IsPaired());
-  device_data_.SetBoolean("connected", device->IsConnected());
+  device_data_.SetString("address", address);
+  device_data_.SetString("name", name_for_display);
+  device_data_.SetBoolean("paired", paired);
+  device_data_.SetBoolean("connected", connected);
 }
 
 BluetoothPairingDialog::~BluetoothPairingDialog() {

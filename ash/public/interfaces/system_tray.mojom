@@ -5,6 +5,7 @@
 module ash.mojom;
 
 import "ash/public/interfaces/update.mojom";
+import "mojo/common/string16.mojom";
 
 // Allows clients (e.g. Chrome browser) to control the ash system tray menu.
 interface SystemTray {
@@ -33,6 +34,18 @@ interface SystemTray {
 interface SystemTrayClient {
   // Shows general settings UI.
   ShowSettings();
+
+  // Shows settings related to Bluetooth devices (e.g. to add a device).
+  ShowBluetoothSettings();
+
+  // Shows the web UI dialog to pair a Bluetooth device.
+  // |address| is the unique device address in the form "XX:XX:XX:XX:XX:XX"
+  // with hex digits X. |name_for_display| is a human-readable name, not
+  // necessarily the device name.
+  ShowBluetoothPairingDialog(string address,
+                             mojo.common.mojom.String16 name_for_display,
+                             bool paired,
+                             bool connected);
 
   // Shows the settings related to date, timezone etc.
   ShowDateSettings();

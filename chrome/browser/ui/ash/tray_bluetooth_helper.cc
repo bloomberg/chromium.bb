@@ -10,14 +10,11 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/metrics/user_metrics.h"
-#include "chrome/browser/chromeos/bluetooth/bluetooth_pairing_dialog.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
-
-using chromeos::BluetoothPairingDialog;
 
 namespace {
 
@@ -109,12 +106,9 @@ void TrayBluetoothHelper::ConnectToDevice(const std::string& address) {
     return;
   }
   // Show pairing dialog for the unpaired device.
-  // TODO(jamescook): Move into SystemTrayClient and wire up with mojo.
-  base::RecordAction(
-      base::UserMetricsAction("StatusArea_Bluetooth_Connect_Unknown"));
-  BluetoothPairingDialog* dialog = new BluetoothPairingDialog(device);
-  // The dialog deletes itself on close.
-  dialog->ShowInContainer(SystemTrayClient::GetDialogParentContainerId());
+  SystemTrayClient::Get()->ShowBluetoothPairingDialog(
+      device->GetAddress(), device->GetNameForDisplay(), device->IsPaired(),
+      device->IsConnected());
 }
 
 bool TrayBluetoothHelper::IsDiscovering() const {
