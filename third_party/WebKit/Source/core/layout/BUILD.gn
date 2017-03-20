@@ -326,6 +326,8 @@ blink_core_sources("layout") {
     "ng/ng_exclusion.cc",
     "ng/ng_exclusion.h",
     "ng/ng_floating_object.h",
+    "ng/ng_floats_utils.cc",
+    "ng/ng_floats_utils.h",
     "ng/ng_fragment.cc",
     "ng/ng_fragment.h",
     "ng/ng_fragment_builder.cc",

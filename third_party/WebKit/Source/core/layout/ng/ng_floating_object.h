@@ -50,6 +50,11 @@ struct CORE_EXPORT NGFloatingObject : public RefCounted<NGFloatingObject> {
   // would be attached.
   LayoutUnit left_offset;
 
+  String ToString() const {
+    return String::format("Type: '%d' Fragment: '%s'", exclusion_type,
+                          fragment->ToString().ascii().data());
+  }
+
  private:
   NGFloatingObject(const NGConstraintSpace* space,
                    const NGConstraintSpace* parent_space,

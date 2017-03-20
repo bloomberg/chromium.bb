@@ -91,6 +91,8 @@ class CORE_EXPORT NGPhysicalFragment : public RefCounted<NGPhysicalFragment> {
 
   bool IsPlaced() const { return is_placed_; }
 
+  String ToString() const;
+
  protected:
   NGPhysicalFragment(LayoutObject* layout_object,
                      NGPhysicalSize size,
