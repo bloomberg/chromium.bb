@@ -4737,6 +4737,7 @@ test("net_unittests") {
     "//net/base/registry_controlled_domains",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/protobuf:protobuf_lite",
     "//third_party/zlib",
     "//url",
     "//url:url_features",
