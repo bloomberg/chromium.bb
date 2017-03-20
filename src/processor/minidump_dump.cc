@@ -34,6 +34,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "common/scoped_ptr.h"
 #include "google_breakpad/processor/minidump.h"
@@ -51,6 +52,13 @@ using google_breakpad::MinidumpAssertion;
 using google_breakpad::MinidumpSystemInfo;
 using google_breakpad::MinidumpMiscInfo;
 using google_breakpad::MinidumpBreakpadInfo;
+
+struct Options {
+  Options()
+      : minidumpPath() {}
+
+  string minidumpPath;
+};
 
 static void DumpRawStream(Minidump *minidump,
                           uint32_t stream_type,
@@ -91,7 +99,7 @@ static void DumpRawStream(Minidump *minidump,
   printf("\n\n");
 }
 
-static bool PrintMinidumpDump(const char *minidump_file) {
+static bool PrintMinidumpDump(const string& minidump_file) {
   Minidump minidump(minidump_file);
   if (!minidump.Read()) {
     BPLOG(ERROR) << "minidump.Read() failed";
@@ -199,15 +207,52 @@ static bool PrintMinidumpDump(const char *minidump_file) {
   return errors == 0;
 }
 
-}  // namespace
+//=============================================================================
+static void
+Usage(int argc, const char *argv[], bool error) {
+  FILE *fp = error ? stderr : stdout;
 
-int main(int argc, char **argv) {
-  BPLOG_INIT(&argc, &argv);
+  fprintf(fp,
+          "Usage: %s [options...] <minidump>\n"
+          "Dump data in a minidump.\n"
+          "\n"
+          "Options:\n"
+          "  <minidump> should be a minidump.\n"
+          "  -h:\t Usage\n",
+          argv[0]);
+}
 
-  if (argc != 2) {
-    fprintf(stderr, "usage: %s <file>\n", argv[0]);
-    return 1;
+//=============================================================================
+static void
+SetupOptions(int argc, const char *argv[], Options *options) {
+  int ch;
+
+  while ((ch = getopt(argc, (char * const *)argv, "h")) != -1) {
+    switch (ch) {
+      case 'h':
+        Usage(argc, argv, false);
+        exit(0);
+
+      default:
+        Usage(argc, argv, true);
+        exit(1);
+        break;
+    }
   }
 
-  return PrintMinidumpDump(argv[1]) ? 0 : 1;
+  if ((argc - optind) != 1) {
+    fprintf(stderr, "%s: Missing minidump file\n", argv[0]);
+    exit(1);
+  }
+
+  options->minidumpPath = argv[optind];
+}
+
+}  // namespace
+
+int main(int argc, const char *argv[]) {
+  Options options;
+  BPLOG_INIT(&argc, &argv);
+  SetupOptions(argc, argv, &options);
+  return PrintMinidumpDump(options.minidumpPath) ? 0 : 1;
 }
