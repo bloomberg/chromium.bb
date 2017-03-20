@@ -23,11 +23,12 @@ ContentBrowserSanityChecker::ContentBrowserSanityChecker() {
   creation_hook_ =
       base::Bind(&ContentBrowserSanityChecker::OnWebContentsCreated,
                  base::Unretained(this));
-  WebContentsImpl::FriendZone::AddCreatedCallbackForTesting(creation_hook_);
+  WebContentsImpl::FriendWrapper::AddCreatedCallbackForTesting(creation_hook_);
 }
 
 ContentBrowserSanityChecker::~ContentBrowserSanityChecker() {
-  WebContentsImpl::FriendZone::RemoveCreatedCallbackForTesting(creation_hook_);
+  WebContentsImpl::FriendWrapper::RemoveCreatedCallbackForTesting(
+      creation_hook_);
   g_sanity_checks_already_enabled = false;
 }
 

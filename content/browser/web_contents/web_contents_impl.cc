@@ -287,12 +287,12 @@ WebContents* WebContents::CreateWithSessionStorage(
   return new_contents;
 }
 
-void WebContentsImpl::FriendZone::AddCreatedCallbackForTesting(
+void WebContentsImpl::FriendWrapper::AddCreatedCallbackForTesting(
     const CreatedCallback& callback) {
   g_created_callbacks.Get().push_back(callback);
 }
 
-void WebContentsImpl::FriendZone::RemoveCreatedCallbackForTesting(
+void WebContentsImpl::FriendWrapper::RemoveCreatedCallbackForTesting(
     const CreatedCallback& callback) {
   for (size_t i = 0; i < g_created_callbacks.Get().size(); ++i) {
     if (g_created_callbacks.Get().at(i).Equals(callback)) {

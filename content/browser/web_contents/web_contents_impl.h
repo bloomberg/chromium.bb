@@ -121,7 +121,7 @@ class CONTENT_EXPORT WebContentsImpl
       public NON_EXPORTED_BASE(NavigationControllerDelegate),
       public NON_EXPORTED_BASE(NavigatorDelegate) {
  public:
-  class FriendZone;
+  class FriendWrapper;
 
   ~WebContentsImpl() override;
 
@@ -1550,19 +1550,19 @@ class CONTENT_EXPORT WebContentsImpl
 
 // Dangerous methods which should never be made part of the public API, so we
 // grant their use only to an explicit friend list (c++ attorney/client idiom).
-class CONTENT_EXPORT WebContentsImpl::FriendZone {
+class CONTENT_EXPORT WebContentsImpl::FriendWrapper {
  private:
   friend class TestNavigationObserver;
   friend class WebContentsAddedObserver;
   friend class ContentBrowserSanityChecker;
 
-  FriendZone();  // Not instantiable.
+  FriendWrapper();  // Not instantiable.
 
   // Adds/removes a callback called on creation of each new WebContents.
   static void AddCreatedCallbackForTesting(const CreatedCallback& callback);
   static void RemoveCreatedCallbackForTesting(const CreatedCallback& callback);
 
-  DISALLOW_COPY_AND_ASSIGN(FriendZone);
+  DISALLOW_COPY_AND_ASSIGN(FriendWrapper);
 };
 
 }  // namespace content
