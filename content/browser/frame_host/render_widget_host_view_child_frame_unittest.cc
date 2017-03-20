@@ -142,9 +142,12 @@ cc::CompositorFrame CreateDelegatedFrame(float scale_factor,
 #if defined(OS_WIN)
 #define MAYBE_VisibilityTest DISABLED_VisibilityTest
 #define MAYBE_SwapCompositorFrame DISABLED_SwapCompositorFrame
+#define MAYBE_FrameEvictionKeepsLocalSurfaceId \
+  DISABLED_FrameEvictionKeepsLocalSurfaceId
 #else
 #define MAYBE_VisibilityTest VisibilityTest
 #define MAYBE_SwapCompositorFrame SwapCompositorFrame
+#define MAYBE_FrameEvictionKeepsLocalSurfaceId FrameEvictionKeepsLocalSurfaceId
 #endif
 
 TEST_F(RenderWidgetHostViewChildFrameTest, MAYBE_VisibilityTest) {
@@ -189,7 +192,8 @@ TEST_F(RenderWidgetHostViewChildFrameTest, MAYBE_SwapCompositorFrame) {
 
 // Check that frame eviction does not trigger allocation of a new local surface
 // id.
-TEST_F(RenderWidgetHostViewChildFrameTest, FrameEvictionKeepsLocalSurfaceId) {
+TEST_F(RenderWidgetHostViewChildFrameTest,
+       MAYBE_FrameEvictionKeepsLocalSurfaceId) {
   gfx::Size view_size(100, 100);
   gfx::Rect view_rect(view_size);
   float scale_factor = 1.f;
