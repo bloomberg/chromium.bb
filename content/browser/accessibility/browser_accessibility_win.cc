@@ -5470,6 +5470,8 @@ void BrowserAccessibilityWin::InitRoleAndState() {
     }
     case ui::AX_ROLE_HEADING:
       role_name = html_tag;
+      if (html_tag.empty())
+        ia_role = ROLE_SYSTEM_GROUPING;
       ia2_role = IA2_ROLE_HEADING;
       break;
     case ui::AX_ROLE_IFRAME:

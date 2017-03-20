@@ -5,3 +5,5 @@ android.webkit.WebView focusable focused scrollable
 ++android.view.View role_description='heading 4' heading name='ARIA Heading 4'
 ++android.view.View role_description='heading 5' heading name='ARIA Heading 5'
 ++android.view.View role_description='heading 6' heading name='ARIA Heading 6'
+++android.view.View
+++++android.view.View role_description='heading' heading name='Heading'

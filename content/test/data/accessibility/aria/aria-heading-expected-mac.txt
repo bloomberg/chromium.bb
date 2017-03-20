@@ -11,3 +11,6 @@ AXWebArea
 ++++AXStaticText AXValue='ARIA Heading 5'
 ++AXHeading AXTitle='ARIA Heading 6' AXValue='6'
 ++++AXStaticText AXValue='ARIA Heading 6'
+++AXGroup
+++++AXHeading AXTitle='Heading'
+++++++AXStaticText AXValue='Heading'
