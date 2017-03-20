@@ -80,11 +80,11 @@ ResultExpr SandboxBPFBasePolicyAndroid::EvaluateSyscall(int sysno) const {
 #endif
 #if defined(__x86_64__) || defined(__aarch64__)
     case __NR_newfstatat:
-    case __NR_getdents64:
 #elif defined(__i386__) || defined(__arm__) || defined(__mips__)
     case __NR_fstatat64:
     case __NR_getdents:
 #endif
+    case __NR_getdents64:
     case __NR_getpriority:
     case __NR_ioctl:
 #if defined(__i386__)
