@@ -25,6 +25,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
+#include "ash/test/ash_test_base.h"
 #include "ash/wm/window_state_aura.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
@@ -597,13 +598,14 @@ TEST_F(WorkspaceLayoutManagerTest,
 }
 
 // Following "Solo" tests were originally written for BaseLayoutManager.
-using WorkspaceLayoutManagerSoloTest = AshTest;
+using WorkspaceLayoutManagerSoloTest = test::AshTestBase;
 
 // Tests normal->maximize->normal.
 TEST_F(WorkspaceLayoutManagerSoloTest, Maximize) {
   gfx::Rect bounds(100, 100, 200, 200);
-  std::unique_ptr<WindowOwner> window_owner(CreateTestWindow(bounds));
-  WmWindow* window = window_owner->window();
+  std::unique_ptr<aura::Window> window_owner(
+      CreateTestWindowInShellWithBounds(bounds));
+  WmWindow* window = WmWindow::Get(window_owner.get());
   window->SetShowState(ui::SHOW_STATE_MAXIMIZED);
   // Maximized window fills the work area, not the whole display.
   EXPECT_EQ(wm::GetMaximizedWindowBoundsInParent(window).ToString(),
@@ -615,8 +617,9 @@ TEST_F(WorkspaceLayoutManagerSoloTest, Maximize) {
 // Tests normal->minimize->normal.
 TEST_F(WorkspaceLayoutManagerSoloTest, Minimize) {
   gfx::Rect bounds(100, 100, 200, 200);
-  std::unique_ptr<WindowOwner> window_owner(CreateTestWindow(bounds));
-  WmWindow* window = window_owner->window();
+  std::unique_ptr<aura::Window> window_owner(
+      CreateTestWindowInShellWithBounds(bounds));
+  WmWindow* window = WmWindow::Get(window_owner.get());
   window->SetShowState(ui::SHOW_STATE_MINIMIZED);
   EXPECT_FALSE(window->IsVisible());
   EXPECT_TRUE(window->GetWindowState()->IsMinimized());
@@ -669,9 +672,9 @@ class FocusDuringUnminimizeWindowObserver : public aura::WindowObserver {
 // callback doesn't cause DCHECK error.  See crbug.com/168383.
 TEST_F(WorkspaceLayoutManagerSoloTest, FocusDuringUnminimize) {
   FocusDuringUnminimizeWindowObserver observer;
-  std::unique_ptr<WindowOwner> window_owner(
-      CreateTestWindow(gfx::Rect(100, 100, 100, 100)));
-  WmWindow* window = window_owner->window();
+  std::unique_ptr<aura::Window> window_owner(
+      CreateTestWindowInShellWithBounds(gfx::Rect(100, 100, 100, 100)));
+  WmWindow* window = WmWindow::Get(window_owner.get());
   observer.SetWindow(window);
   window->SetShowState(ui::SHOW_STATE_MINIMIZED);
   EXPECT_FALSE(window->IsVisible());
@@ -685,8 +688,9 @@ TEST_F(WorkspaceLayoutManagerSoloTest, FocusDuringUnminimize) {
 // Tests maximized window size during root window resize.
 TEST_F(WorkspaceLayoutManagerSoloTest, MaximizeRootWindowResize) {
   gfx::Rect bounds(100, 100, 200, 200);
-  std::unique_ptr<WindowOwner> window_owner(CreateTestWindow(bounds));
-  WmWindow* window = window_owner->window();
+  std::unique_ptr<aura::Window> window_owner(
+      CreateTestWindowInShellWithBounds(bounds));
+  WmWindow* window = WmWindow::Get(window_owner.get());
   window->SetShowState(ui::SHOW_STATE_MAXIMIZED);
   gfx::Rect initial_work_area_bounds =
       wm::GetMaximizedWindowBoundsInParent(window);
@@ -703,8 +707,9 @@ TEST_F(WorkspaceLayoutManagerSoloTest, MaximizeRootWindowResize) {
 // Tests normal->fullscreen->normal.
 TEST_F(WorkspaceLayoutManagerSoloTest, Fullscreen) {
   gfx::Rect bounds(100, 100, 200, 200);
-  std::unique_ptr<WindowOwner> window_owner(CreateTestWindow(bounds));
-  WmWindow* window = window_owner->window();
+  std::unique_ptr<aura::Window> window_owner(
+      CreateTestWindowInShellWithBounds(bounds));
+  WmWindow* window = WmWindow::Get(window_owner.get());
   window->SetShowState(ui::SHOW_STATE_FULLSCREEN);
   // Fullscreen window fills the whole display.
   EXPECT_EQ(window->GetDisplayNearestWindow().bounds().ToString(),
@@ -716,15 +721,17 @@ TEST_F(WorkspaceLayoutManagerSoloTest, Fullscreen) {
 // Tests that fullscreen window causes always_on_top windows to stack below.
 TEST_F(WorkspaceLayoutManagerSoloTest, FullscreenSuspendsAlwaysOnTop) {
   gfx::Rect bounds(100, 100, 200, 200);
-  std::unique_ptr<WindowOwner> fullscreen_window_owner(
-      CreateTestWindow(bounds));
-  WmWindow* fullscreen_window = fullscreen_window_owner->window();
-  std::unique_ptr<WindowOwner> always_on_top_window1_owner(
-      CreateTestWindow(bounds));
-  WmWindow* always_on_top_window1 = always_on_top_window1_owner->window();
-  std::unique_ptr<WindowOwner> always_on_top_window2_owner(
-      CreateTestWindow(bounds));
-  WmWindow* always_on_top_window2 = always_on_top_window2_owner->window();
+  std::unique_ptr<aura::Window> fullscreen_window_owner(
+      CreateTestWindowInShellWithBounds(bounds));
+  WmWindow* fullscreen_window = WmWindow::Get(fullscreen_window_owner.get());
+  std::unique_ptr<aura::Window> always_on_top_window1_owner(
+      CreateTestWindowInShellWithBounds(bounds));
+  WmWindow* always_on_top_window1 =
+      WmWindow::Get(always_on_top_window1_owner.get());
+  std::unique_ptr<aura::Window> always_on_top_window2_owner(
+      CreateTestWindowInShellWithBounds(bounds));
+  WmWindow* always_on_top_window2 =
+      WmWindow::Get(always_on_top_window2_owner.get());
   always_on_top_window1->SetAlwaysOnTop(true);
   always_on_top_window2->SetAlwaysOnTop(true);
   // Making a window fullscreen temporarily suspends always on top state.
@@ -734,9 +741,10 @@ TEST_F(WorkspaceLayoutManagerSoloTest, FullscreenSuspendsAlwaysOnTop) {
   EXPECT_NE(nullptr, wm::GetWindowForFullscreenMode(fullscreen_window));
 
   // Adding a new always-on-top window is not affected by fullscreen.
-  std::unique_ptr<WindowOwner> always_on_top_window3_owner(
-      CreateTestWindow(bounds));
-  WmWindow* always_on_top_window3 = always_on_top_window3_owner->window();
+  std::unique_ptr<aura::Window> always_on_top_window3_owner(
+      CreateTestWindowInShellWithBounds(bounds));
+  WmWindow* always_on_top_window3 =
+      WmWindow::Get(always_on_top_window3_owner.get());
   always_on_top_window3->SetAlwaysOnTop(true);
   EXPECT_TRUE(always_on_top_window3->IsAlwaysOnTop());
 
@@ -755,14 +763,17 @@ TEST_F(WorkspaceLayoutManagerSoloTest, PinnedSuspendsAlwaysOnTop) {
     return;
 
   gfx::Rect bounds(100, 100, 200, 200);
-  std::unique_ptr<WindowOwner> pinned_window_owner(CreateTestWindow(bounds));
-  WmWindow* pinned_window = pinned_window_owner->window();
-  std::unique_ptr<WindowOwner> always_on_top_window1_owner(
-      CreateTestWindow(bounds));
-  WmWindow* always_on_top_window1 = always_on_top_window1_owner->window();
-  std::unique_ptr<WindowOwner> always_on_top_window2_owner(
-      CreateTestWindow(bounds));
-  WmWindow* always_on_top_window2 = always_on_top_window2_owner->window();
+  std::unique_ptr<aura::Window> pinned_window_owner(
+      CreateTestWindowInShellWithBounds(bounds));
+  WmWindow* pinned_window = WmWindow::Get(pinned_window_owner.get());
+  std::unique_ptr<aura::Window> always_on_top_window1_owner(
+      CreateTestWindowInShellWithBounds(bounds));
+  WmWindow* always_on_top_window1 =
+      WmWindow::Get(always_on_top_window1_owner.get());
+  std::unique_ptr<aura::Window> always_on_top_window2_owner(
+      CreateTestWindowInShellWithBounds(bounds));
+  WmWindow* always_on_top_window2 =
+      WmWindow::Get(always_on_top_window2_owner.get());
   always_on_top_window1->SetAlwaysOnTop(true);
   always_on_top_window2->SetAlwaysOnTop(true);
 
@@ -773,9 +784,10 @@ TEST_F(WorkspaceLayoutManagerSoloTest, PinnedSuspendsAlwaysOnTop) {
   EXPECT_FALSE(always_on_top_window2->IsAlwaysOnTop());
 
   // Adding a new always-on-top window also is affected by pinned mode.
-  std::unique_ptr<WindowOwner> always_on_top_window3_owner(
-      CreateTestWindow(bounds));
-  WmWindow* always_on_top_window3 = always_on_top_window3_owner->window();
+  std::unique_ptr<aura::Window> always_on_top_window3_owner(
+      CreateTestWindowInShellWithBounds(bounds));
+  WmWindow* always_on_top_window3 =
+      WmWindow::Get(always_on_top_window3_owner.get());
   always_on_top_window3->SetAlwaysOnTop(true);
   EXPECT_FALSE(always_on_top_window3->IsAlwaysOnTop());
 
@@ -789,8 +801,9 @@ TEST_F(WorkspaceLayoutManagerSoloTest, PinnedSuspendsAlwaysOnTop) {
 // Tests fullscreen window size during root window resize.
 TEST_F(WorkspaceLayoutManagerSoloTest, FullscreenRootWindowResize) {
   gfx::Rect bounds(100, 100, 200, 200);
-  std::unique_ptr<WindowOwner> window_owner(CreateTestWindow(bounds));
-  WmWindow* window = window_owner->window();
+  std::unique_ptr<aura::Window> window_owner(
+      CreateTestWindowInShellWithBounds(bounds));
+  WmWindow* window = WmWindow::Get(window_owner.get());
   // Fullscreen window fills the whole display.
   window->SetShowState(ui::SHOW_STATE_FULLSCREEN);
   EXPECT_EQ(window->GetDisplayNearestWindow().bounds().ToString(),
@@ -804,9 +817,9 @@ TEST_F(WorkspaceLayoutManagerSoloTest, FullscreenRootWindowResize) {
 // Tests that when the screen gets smaller the windows aren't bigger than
 // the screen.
 TEST_F(WorkspaceLayoutManagerSoloTest, RootWindowResizeShrinksWindows) {
-  std::unique_ptr<WindowOwner> window_owner(
-      CreateTestWindow(gfx::Rect(10, 20, 500, 400)));
-  WmWindow* window = window_owner->window();
+  std::unique_ptr<aura::Window> window_owner(
+      CreateTestWindowInShellWithBounds(gfx::Rect(10, 20, 500, 400)));
+  WmWindow* window = WmWindow::Get(window_owner.get());
   gfx::Rect work_area = window->GetDisplayNearestWindow().work_area();
   // Invariant: Window is smaller than work area.
   EXPECT_LE(window->GetBounds().width(), work_area.width());
@@ -835,8 +848,9 @@ TEST_F(WorkspaceLayoutManagerSoloTest, RootWindowResizeShrinksWindows) {
 // restores the bounds.
 TEST_F(WorkspaceLayoutManagerSoloTest, MaximizeSetsRestoreBounds) {
   const gfx::Rect initial_bounds(10, 20, 30, 40);
-  std::unique_ptr<WindowOwner> window_owner(CreateTestWindow(initial_bounds));
-  WmWindow* window = window_owner->window();
+  std::unique_ptr<aura::Window> window_owner(
+      CreateTestWindowInShellWithBounds(initial_bounds));
+  WmWindow* window = WmWindow::Get(window_owner.get());
   EXPECT_EQ(initial_bounds, window->GetBounds());
   wm::WindowState* window_state = window->GetWindowState();
 
@@ -852,9 +866,9 @@ TEST_F(WorkspaceLayoutManagerSoloTest, MaximizeSetsRestoreBounds) {
 
 // Verifies maximizing keeps the restore bounds if set.
 TEST_F(WorkspaceLayoutManagerSoloTest, MaximizeResetsRestoreBounds) {
-  std::unique_ptr<WindowOwner> window_owner(
-      CreateTestWindow(gfx::Rect(1, 2, 3, 4)));
-  WmWindow* window = window_owner->window();
+  std::unique_ptr<aura::Window> window_owner(
+      CreateTestWindowInShellWithBounds(gfx::Rect(1, 2, 3, 4)));
+  WmWindow* window = WmWindow::Get(window_owner.get());
   wm::WindowState* window_state = window->GetWindowState();
   window_state->SetRestoreBoundsInParent(gfx::Rect(10, 11, 12, 13));
 
@@ -867,9 +881,9 @@ TEST_F(WorkspaceLayoutManagerSoloTest, MaximizeResetsRestoreBounds) {
 // maximzied state from a minimized state.
 TEST_F(WorkspaceLayoutManagerSoloTest,
        BoundsAfterRestoringToMaximizeFromMinimize) {
-  std::unique_ptr<WindowOwner> window_owner(
-      CreateTestWindow(gfx::Rect(1, 2, 3, 4)));
-  WmWindow* window = window_owner->window();
+  std::unique_ptr<aura::Window> window_owner(
+      CreateTestWindowInShellWithBounds(gfx::Rect(1, 2, 3, 4)));
+  WmWindow* window = WmWindow::Get(window_owner.get());
   gfx::Rect bounds(10, 15, 25, 35);
   window->SetBounds(bounds);
 
@@ -897,9 +911,9 @@ TEST_F(WorkspaceLayoutManagerSoloTest,
 // Verify if the window is not resized during screen lock. See: crbug.com/173127
 TEST_F(WorkspaceLayoutManagerSoloTest, NotResizeWhenScreenIsLocked) {
   test::TestSessionStateDelegate::SetCanLockScreen(true);
-  std::unique_ptr<WindowOwner> window_owner(
-      CreateTestWindow(gfx::Rect(1, 2, 3, 4)));
-  WmWindow* window = window_owner->window();
+  std::unique_ptr<aura::Window> window_owner(
+      CreateTestWindowInShellWithBounds(gfx::Rect(1, 2, 3, 4)));
+  WmWindow* window = WmWindow::Get(window_owner.get());
   // window with AlwaysOnTop will be managed by BaseLayoutManager.
   window->SetAlwaysOnTop(true);
   window->Show();
