@@ -12,6 +12,12 @@
 <dom-module id="settings-address-edit-dialog">
   <template>
     <style include="settings-shared md-select">
+      :host {
+        --iron-autogrow-textarea: {
+          box-sizing: border-box;
+        };
+      }
+
       .address-row {
         display: flex;
       }
