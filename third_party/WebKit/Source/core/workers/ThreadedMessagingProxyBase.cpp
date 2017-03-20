@@ -45,6 +45,11 @@ int ThreadedMessagingProxyBase::proxyCount() {
   return s_liveMessagingProxyCount;
 }
 
+void ThreadedMessagingProxyBase::setWorkerThreadForTest(
+    std::unique_ptr<WorkerThread> workerThread) {
+  m_workerThread = std::move(workerThread);
+}
+
 void ThreadedMessagingProxyBase::initializeWorkerThread(
     std::unique_ptr<WorkerThreadStartupData> startupData) {
   DCHECK(isParentContextThread());

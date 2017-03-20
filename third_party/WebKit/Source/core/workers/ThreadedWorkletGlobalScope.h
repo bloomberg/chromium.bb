@@ -15,7 +15,7 @@ class WorkerThread;
 class CORE_EXPORT ThreadedWorkletGlobalScope : public WorkletGlobalScope {
  public:
   ~ThreadedWorkletGlobalScope() override;
-  void dispose() final;
+  void dispose() override;
   void countFeature(UseCounter::Feature) final;
   void countDeprecation(UseCounter::Feature) final;
 

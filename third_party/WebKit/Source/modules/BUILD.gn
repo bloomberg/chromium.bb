@@ -292,6 +292,7 @@ source_set("unit_tests") {
     "serviceworkers/ServiceWorkerContainerTest.cpp",
     "webaudio/AudioBasicProcessorHandlerTest.cpp",
     "webaudio/AudioContextTest.cpp",
+    "webaudio/AudioWorkletGlobalScopeTest.cpp",
     "webaudio/AudioWorkletThreadTest.cpp",
     "webaudio/BaseAudioContextTest.cpp",
     "webaudio/ConvolverNodeTest.cpp",

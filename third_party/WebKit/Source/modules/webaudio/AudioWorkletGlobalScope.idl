@@ -9,6 +9,5 @@
     Global=(Worklet,AudioWorklet),
     RuntimeEnabled=AudioWorklet,
 ] interface AudioWorkletGlobalScope : WorkletGlobalScope {
-    // TODO(hongchan): implement this.
-    // [RaiseException] void registerProcessor(DOMString name, Function processorCtor);
+    [RaisesException] void registerProcessor(DOMString name, Function processorConstructor);
 };

@@ -57,6 +57,8 @@ class CORE_EXPORT ThreadedMessagingProxyBase
   // Number of live messaging proxies, used by leak detection.
   static int proxyCount();
 
+  void setWorkerThreadForTest(std::unique_ptr<WorkerThread>);
+
  protected:
   ThreadedMessagingProxyBase(ExecutionContext*);
   ~ThreadedMessagingProxyBase() override;
