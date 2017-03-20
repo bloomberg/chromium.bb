@@ -1520,7 +1520,16 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, TabWithDownloadDoesNotGetRestored) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(SmartSessionRestoreTest, PRE_CorrectLoadingOrder) {
+// PRE_CorrectLoadingOrder is flaky on ChromeOS MSAN and Mac.
+// See http://crbug.com/493167.
+#if (defined(OS_CHROMEOS) && defined(MEMORY_SANITIZER)) || defined(OS_MACOSX)
+#define MAYBE_PRE_CorrectLoadingOrder DISABLED_PRE_CorrectLoadingOrder
+#define MAYBE_CorrectLoadingOrder DISABLED_CorrectLoadingOrder
+#else
+#define MAYBE_PRE_CorrectLoadingOrder PRE_CorrectLoadingOrder
+#define MAYBE_CorrectLoadingOrder CorrectLoadingOrder
+#endif
+IN_PROC_BROWSER_TEST_F(SmartSessionRestoreTest, MAYBE_PRE_CorrectLoadingOrder) {
   Profile* profile = browser()->profile();
 
   const int activation_order[] = {4, 2, 1, 5, 0, 3};
@@ -1573,13 +1582,6 @@ IN_PROC_BROWSER_TEST_F(SmartSessionRestoreTest, PRE_CorrectLoadingOrder) {
   new_browser->tab_strip_model()->ActivateTabAt(1, true);
 }
 
-// PRE_CorrectLoadingOrder is flaky on ChromeOS MSAN: https://crbug.com/582323
-// And Mac: https://crbug.com/656687
-#if (defined(OS_CHROMEOS) && defined(MEMORY_SANITIZER)) || defined(OS_MACOSX)
-#define MAYBE_CorrectLoadingOrder DISABLED_CorrectLoadingOrder
-#else
-#define MAYBE_CorrectLoadingOrder CorrectLoadingOrder
-#endif
 IN_PROC_BROWSER_TEST_F(SmartSessionRestoreTest, MAYBE_CorrectLoadingOrder) {
   const int activation_order[] = {4, 2, 5, 0, 3, 1};
   Profile* profile = browser()->profile();
