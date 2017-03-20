@@ -2144,12 +2144,12 @@ TEST_P(VideoEncodeAcceleratorSimpleTest, TestSimpleEncode) {
 }
 
 #if defined(OS_CHROMEOS)
+// TODO(kcwu): add back test of verify_output=true after crbug.com/694131 fixed.
 INSTANTIATE_TEST_CASE_P(
     SimpleEncode,
     VideoEncodeAcceleratorTest,
     ::testing::Values(
-        std::make_tuple(1, true, 0, false, false, false, false, false, false),
-        std::make_tuple(1, true, 0, false, false, false, false, true, false)));
+        std::make_tuple(1, true, 0, false, false, false, false, false, false)));
 
 INSTANTIATE_TEST_CASE_P(
     EncoderPerf,
