@@ -160,12 +160,6 @@ IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_GetSaveFileName,
 // Utility process host messages:
 // These are messages from the utility process to the browser.
 
-// Reply when the utility process has failed while unpacking and parsing a
-// web resource.  |error_message| is a user-readable explanation of what
-// went wrong.
-IPC_MESSAGE_CONTROL1(ChromeUtilityHostMsg_UnpackWebResource_Failed,
-                     std::string /* error_message, if any */)
-
 #if defined(OS_WIN)
 IPC_MESSAGE_CONTROL0(ChromeUtilityHostMsg_GetOpenFileName_Failed)
 IPC_MESSAGE_CONTROL2(ChromeUtilityHostMsg_GetOpenFileName_Result,
