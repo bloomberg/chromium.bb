@@ -342,6 +342,7 @@ Polymer({
    */
   onPhotoTaken_: function(event) {
     this.browserProxy_.photoTaken(event.detail.photoDataUrl);
+    this.$.container.focus();
   },
 
   /**
