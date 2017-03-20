@@ -1210,9 +1210,11 @@ void AwContents::UpdateRendererPriority(
     if (view && rph == view->GetProcess()) {
       content::WebContents* wc = content::WebContents::FromRenderViewHost(view);
       if (wc && wc != web_contents_.get()) {
-        computed_priority =
-            std::max(FromWebContents(wc)->GetComputedRendererPriority(),
-                     computed_priority);
+        AwContents* aw_contents = FromWebContents(wc);
+        if (aw_contents) {
+          computed_priority = std::max(
+              aw_contents->GetComputedRendererPriority(), computed_priority);
+        }
       }
     }
   }
