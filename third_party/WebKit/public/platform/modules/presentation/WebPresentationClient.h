@@ -39,29 +39,34 @@ class WebPresentationClient {
   // Passes the Blink-side delegate to the embedder.
   virtual void setReceiver(WebPresentationReceiver*) = 0;
 
-  // Called when the frame requests to start a new session.
-  virtual void startSession(
+  // Called when the frame requests to start a new presentation.
+  virtual void startPresentation(
       const WebVector<WebURL>& presentationUrls,
       std::unique_ptr<WebPresentationConnectionCallbacks>) = 0;
 
-  // Called when the frame requests to join an existing session.
-  virtual void joinSession(
+  // Called when the frame requests to reconnect to an existing presentation.
+  virtual void reconnectPresentation(
       const WebVector<WebURL>& presentationUrls,
       const WebString& presentationId,
       std::unique_ptr<WebPresentationConnectionCallbacks>) = 0;
 
-  // Called when the frame requests to send String message to an existing
-  // session.
-  // |proxy|: proxy of blink connection object initiating send String message
+  // Called when the frame requests to terminate a presentation.
+  virtual void terminatePresentation(const WebURL& presentationUrl,
+                                     const WebString& presentationId) = 0;
+
+  // Called when the frame requests to send String message to a presentation
+  // via a presentation connection.
+  // |proxy|: proxy of Blink connection object initiating send String message
   //          request. Does not pass ownership.
   virtual void sendString(const WebURL& presentationUrl,
                           const WebString& presentationId,
                           const WebString& message,
                           const WebPresentationConnectionProxy*) = 0;
 
-  // Called when the frame requests to send ArrayBuffer/View data to an existing
-  // session.  Embedder copies the |data| and the ownership is not transferred.
-  // |proxy|: proxy of blink connection object initiating send ArrayBuffer
+  // Called when the frame requests to send ArrayBuffer/View data to a
+  // presentation via a presentation connection.
+  // Embedder copies the |data| and the ownership is not transferred.
+  // |proxy|: proxy of Blink connection object initiating send ArrayBuffer
   //          request. Does not pass ownership.
   virtual void sendArrayBuffer(const WebURL& presentationUrl,
                                const WebString& presentationId,
@@ -69,7 +74,9 @@ class WebPresentationClient {
                                size_t length,
                                const WebPresentationConnectionProxy*) = 0;
 
-  // Called when the frame requests to send Blob data to an existing session.
+  // Called when the frame requests to send Blob data to a presentation via a
+  // presentation connection.
+  // TODO(mfoltz): Combine with sendArrayBuffer?
   // Embedder copies the |data| and the ownership is not transferred.
   // |proxy|: proxy of blink connection object initiating send Blob data
   //          request. Does not pass ownership.
@@ -79,14 +86,10 @@ class WebPresentationClient {
                             size_t length,
                             const WebPresentationConnectionProxy*) = 0;
 
-  // Called when the frame requests to close an existing session.
-  virtual void closeSession(const WebURL& presentationUrl,
-                            const WebString& presentationId,
-                            const WebPresentationConnectionProxy*) = 0;
-
-  // Called when the frame requests to terminate an existing session.
-  virtual void terminateConnection(const WebURL& presentationUrl,
-                                   const WebString& presentationId) = 0;
+  // Called when the frame requests to close its connection to the presentation.
+  virtual void closeConnection(const WebURL& presentationUrl,
+                               const WebString& presentationId,
+                               const WebPresentationConnectionProxy*) = 0;
 
   // Called when the frame wants to know the availability of a presentation
   // display for |availabilityUrl|.

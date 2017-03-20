@@ -9,7 +9,7 @@ public_headers = [
   "//chrome/browser/media/router/media_route.h",
   "//chrome/browser/media/router/route_message.h",
   "//chrome/browser/media/router/route_request_result.h",
-  "//content/public/common/presentation_session.h",
+  "//content/public/common/presentation_info.h",
 ]
 deps = [
   "//net",

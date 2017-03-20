@@ -9,8 +9,8 @@
 
 namespace blink {
 
-struct WebPresentationSessionInfo;
 class WebPresentationConnection;
+struct WebPresentationInfo;
 enum class WebPresentationConnectionState;
 
 // The delegate Blink provides to WebPresentationReceiverClient in order to get
@@ -21,10 +21,11 @@ class BLINK_PLATFORM_EXPORT WebPresentationReceiver {
 
   // Called when receiver page gets an incoming connection.
   virtual WebPresentationConnection* onReceiverConnectionAvailable(
-      const WebPresentationSessionInfo&) = 0;
+      const WebPresentationInfo&) = 0;
 
   // Called when receiver page gets destroyed.
-  virtual void didChangeSessionState(WebPresentationConnectionState) = 0;
+  // TODO: Rename to onReceiverTerminated?
+  virtual void didChangeConnectionState(WebPresentationConnectionState) = 0;
 
   // Called when any PresentationConnection object on receiver page invokes
   // connnection.terminate().

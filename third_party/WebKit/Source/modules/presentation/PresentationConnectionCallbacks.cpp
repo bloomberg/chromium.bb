@@ -24,14 +24,14 @@ PresentationConnectionCallbacks::PresentationConnectionCallbacks(
 }
 
 void PresentationConnectionCallbacks::onSuccess(
-    const WebPresentationSessionInfo& sessionInfo) {
+    const WebPresentationInfo& presentationInfo) {
   if (!m_resolver->getExecutionContext() ||
       m_resolver->getExecutionContext()->isContextDestroyed()) {
     return;
   }
 
-  m_connection =
-      PresentationConnection::take(m_resolver.get(), sessionInfo, m_request);
+  m_connection = PresentationConnection::take(m_resolver.get(),
+                                              presentationInfo, m_request);
   m_resolver->resolve(m_connection);
 }
 

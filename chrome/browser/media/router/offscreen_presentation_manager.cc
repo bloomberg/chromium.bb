@@ -120,7 +120,7 @@ void OffscreenPresentationManager::OffscreenPresentation::RegisterController(
     const MediaRoute& route) {
   if (!receiver_callback_.is_null()) {
     receiver_callback_.Run(
-        content::PresentationSessionInfo(presentation_url_, presentation_id_),
+        content::PresentationInfo(presentation_url_, presentation_id_),
         std::move(controller_connection_ptr),
         std::move(receiver_connection_request));
   } else {
@@ -144,7 +144,7 @@ void OffscreenPresentationManager::OffscreenPresentation::RegisterReceiver(
 
   for (auto& controller : pending_controllers_) {
     receiver_callback.Run(
-        content::PresentationSessionInfo(presentation_url_, presentation_id_),
+        content::PresentationInfo(presentation_url_, presentation_id_),
         std::move(controller.second->controller_connection_ptr),
         std::move(controller.second->receiver_connection_request));
   }

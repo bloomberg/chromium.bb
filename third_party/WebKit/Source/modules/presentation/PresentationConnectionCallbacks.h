@@ -15,8 +15,8 @@ namespace blink {
 class PresentationConnection;
 class PresentationRequest;
 class ScriptPromiseResolver;
-struct WebPresentationSessionInfo;
 struct WebPresentationError;
+struct WebPresentationInfo;
 
 // PresentationConnectionCallbacks extends WebCallbacks to resolve the
 // underlying promise depending on the result passed to the callback. It takes
@@ -29,7 +29,7 @@ class PresentationConnectionCallbacks final
   ~PresentationConnectionCallbacks() override = default;
 
   // WebCallbacks implementation
-  void onSuccess(const WebPresentationSessionInfo&) override;
+  void onSuccess(const WebPresentationInfo&) override;
   void onError(const WebPresentationError&) override;
 
   // WebPresentationConnectionCallbacks implementation

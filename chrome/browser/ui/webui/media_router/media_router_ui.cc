@@ -203,7 +203,7 @@ MediaRouterUI::~MediaRouterUI() {
         });
     if (presentation_sinks_available) {
       create_session_request_->InvokeErrorCallback(content::PresentationError(
-          content::PRESENTATION_ERROR_SESSION_REQUEST_CANCELLED,
+          content::PRESENTATION_ERROR_PRESENTATION_REQUEST_CANCELLED,
           "Dialog closed."));
     } else {
       create_session_request_->InvokeErrorCallback(content::PresentationError(

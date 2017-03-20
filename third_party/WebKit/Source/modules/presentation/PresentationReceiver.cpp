@@ -43,10 +43,10 @@ ScriptPromise PresentationReceiver::connectionList(ScriptState* scriptState) {
 }
 
 WebPresentationConnection* PresentationReceiver::onReceiverConnectionAvailable(
-    const WebPresentationSessionInfo& sessionInfo) {
+    const WebPresentationInfo& presentationInfo) {
   // take() will call PresentationReceiver::registerConnection()
   // and register the connection.
-  auto connection = PresentationConnection::take(this, sessionInfo);
+  auto connection = PresentationConnection::take(this, presentationInfo);
 
   // receiver.connectionList property not accessed
   if (!m_connectionListProperty)
@@ -63,7 +63,7 @@ WebPresentationConnection* PresentationReceiver::onReceiverConnectionAvailable(
   return connection;
 }
 
-void PresentationReceiver::didChangeSessionState(
+void PresentationReceiver::didChangeConnectionState(
     WebPresentationConnectionState state) {
   // TODO(zhaobin): remove or modify DCHECK when receiver supports more
   // connection state change.

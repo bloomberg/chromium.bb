@@ -12,9 +12,9 @@ var button = document.querySelector('button');
 
 async_test(t => {
   presentationServiceMock.then(service => {
-    service.startSession = urls => {
+    service.startPresentation = urls => {
       return Promise.resolve({
-        sessionInfo: null,
+        presentation_info: null,
         error: {
           error_type: 3 /* PresentationErrorType.PREVIOUS_START_IN_PROGRESS */,
           message: 'Previous start in progress'

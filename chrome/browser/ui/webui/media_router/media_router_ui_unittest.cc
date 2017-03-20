@@ -45,7 +45,7 @@ class PresentationRequestCallbacks {
       const content::PresentationError& expected_error)
       : expected_error_(expected_error) {}
 
-  void Success(const content::PresentationSessionInfo&, const MediaRoute&) {}
+  void Success(const content::PresentationInfo&, const MediaRoute&) {}
 
   void Error(const content::PresentationError& error) {
     EXPECT_EQ(expected_error_.error_type, error.error_type);
@@ -512,7 +512,7 @@ TEST_F(MediaRouterUITest, NotFoundErrorOnCloseWithNoCompatibleSinks) {
 TEST_F(MediaRouterUITest, AbortErrorOnClose) {
   content::PresentationError expected_error(
       content::PresentationErrorType::
-          PRESENTATION_ERROR_SESSION_REQUEST_CANCELLED,
+          PRESENTATION_ERROR_PRESENTATION_REQUEST_CANCELLED,
       "Dialog closed.");
   PresentationRequestCallbacks request_callbacks(expected_error);
   GURL presentation_url("http://google.com/presentation");

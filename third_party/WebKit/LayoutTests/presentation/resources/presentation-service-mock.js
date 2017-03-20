@@ -38,16 +38,16 @@ let presentationServiceMock = loadMojoModules(
             this.onSetClient();
         }
 
-        startSession(urls) {
+        startPresentation(urls) {
           return Promise.resolve({
-              sessionInfo: { url: urls[0], id: 'fakesession' },
+              presentation_info: { url: urls[0], id: 'fakePresentationId' },
               error: null,
           });
         }
 
-        joinSession(urls) {
+        reconnectPresentation(urls) {
           return Promise.resolve({
-              sessionInfo: { url: urls[0], id: 'fakeSessionId' },
+              presentation_info: { url: urls[0], id: 'fakePresentationId' },
               error: null,
           });
         }
@@ -59,11 +59,12 @@ let presentationServiceMock = loadMojoModules(
         }
 
         setPresentationConnection(
-            seesionInfo, controllerConnectionPtr, receiverConnectionRequest) {
+            presentation_info, controllerConnectionPtr,
+            receiverConnectionRequest) {
           this.controllerConnectionPtr_ = controllerConnectionPtr;
           this.receiverConnectionRequest_ = receiverConnectionRequest;
           this.client_.onConnectionStateChanged(
-              seesionInfo,
+              presentation_info,
               presentationService.PresentationConnectionState.CONNECTED);
         }
 

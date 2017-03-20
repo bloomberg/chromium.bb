@@ -95,7 +95,7 @@ void MediaRouterDialogControllerAndroid::CancelPresentationRequest() {
     return;
 
   request->InvokeErrorCallback(content::PresentationError(
-      content::PRESENTATION_ERROR_SESSION_REQUEST_CANCELLED,
+      content::PRESENTATION_ERROR_PRESENTATION_REQUEST_CANCELLED,
       "Dialog closed."));
 }
 

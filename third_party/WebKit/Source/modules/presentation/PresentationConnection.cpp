@@ -168,7 +168,7 @@ void PresentationConnection::bindProxy(
 // static
 PresentationConnection* PresentationConnection::take(
     ScriptPromiseResolver* resolver,
-    const WebPresentationSessionInfo& sessionInfo,
+    const WebPresentationInfo& presentationInfo,
     PresentationRequest* request) {
   ASSERT(resolver);
   ASSERT(request);
@@ -183,19 +183,19 @@ PresentationConnection* PresentationConnection::take(
   if (!controller)
     return nullptr;
 
-  return take(controller, sessionInfo, request);
+  return take(controller, presentationInfo, request);
 }
 
 // static
 PresentationConnection* PresentationConnection::take(
     PresentationController* controller,
-    const WebPresentationSessionInfo& sessionInfo,
+    const WebPresentationInfo& presentationInfo,
     PresentationRequest* request) {
   ASSERT(controller);
   ASSERT(request);
 
   PresentationConnection* connection = new PresentationConnection(
-      controller->frame(), sessionInfo.id, sessionInfo.url);
+      controller->frame(), presentationInfo.id, presentationInfo.url);
   controller->registerConnection(connection);
 
   // Fire onconnectionavailable event asynchronously.
@@ -212,11 +212,11 @@ PresentationConnection* PresentationConnection::take(
 // static
 PresentationConnection* PresentationConnection::take(
     PresentationReceiver* receiver,
-    const WebPresentationSessionInfo& sessionInfo) {
+    const WebPresentationInfo& presentationInfo) {
   DCHECK(receiver);
 
   PresentationConnection* connection = new PresentationConnection(
-      receiver->frame(), sessionInfo.id, sessionInfo.url);
+      receiver->frame(), presentationInfo.id, presentationInfo.url);
   receiver->registerConnection(connection);
 
   return connection;
@@ -399,7 +399,7 @@ void PresentationConnection::close() {
   }
   WebPresentationClient* client = presentationClient(getExecutionContext());
   if (client)
-    client->closeSession(m_url, m_id, m_proxy.get());
+    client->closeConnection(m_url, m_id, m_proxy.get());
 
   tearDown();
 }
@@ -409,14 +409,15 @@ void PresentationConnection::terminate() {
     return;
   WebPresentationClient* client = presentationClient(getExecutionContext());
   if (client)
-    client->terminateConnection(m_url, m_id);
+    client->terminatePresentation(m_url, m_id);
 
   tearDown();
 }
 
 bool PresentationConnection::matches(
-    const WebPresentationSessionInfo& sessionInfo) const {
-  return m_url == KURL(sessionInfo.url) && m_id == String(sessionInfo.id);
+    const WebPresentationInfo& presentationInfo) const {
+  return m_url == KURL(presentationInfo.url) &&
+         m_id == String(presentationInfo.id);
 }
 
 bool PresentationConnection::matches(const String& id, const KURL& url) const {

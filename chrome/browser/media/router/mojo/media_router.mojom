@@ -380,7 +380,7 @@ interface MediaRouter {
     AVAILABLE
   };
 
-  // Keep in sync with content/public/common/presentation_session.h.
+  // Keep in sync with content/public/common/presentation_info.h.
   enum PresentationConnectionState {
     CONNECTING,
     CONNECTED,
@@ -388,7 +388,7 @@ interface MediaRouter {
     TERMINATED
   };
 
-  // Keep in sync with content/public/common/presentation_session.h.
+  // Keep in sync with content/public/common/presentation_info.h.
   enum PresentationConnectionCloseReason {
     CONNECTION_ERROR,
     CLOSED,

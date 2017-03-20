@@ -5,12 +5,12 @@
 #include "content/renderer/presentation/presentation_connection_proxy.h"
 
 #include "base/logging.h"
-#include "content/public/common/presentation_session.h"
+#include "content/public/common/presentation_info.h"
 #include "content/renderer/presentation/presentation_dispatcher.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/modules/presentation/WebPresentationConnection.h"
 #include "third_party/WebKit/public/platform/modules/presentation/WebPresentationController.h"
-#include "third_party/WebKit/public/platform/modules/presentation/WebPresentationSessionInfo.h"
+#include "third_party/WebKit/public/platform/modules/presentation/WebPresentationInfo.h"
 
 namespace content {
 

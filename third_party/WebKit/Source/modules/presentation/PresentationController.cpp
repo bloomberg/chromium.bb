@@ -66,48 +66,48 @@ DEFINE_TRACE(PresentationController) {
   ContextLifecycleObserver::trace(visitor);
 }
 
-WebPresentationConnection* PresentationController::didStartDefaultSession(
-    const WebPresentationSessionInfo& sessionInfo) {
+WebPresentationConnection* PresentationController::didStartDefaultPresentation(
+    const WebPresentationInfo& presentationInfo) {
   if (!m_presentation || !m_presentation->defaultRequest())
     return nullptr;
 
-  return PresentationConnection::take(this, sessionInfo,
+  return PresentationConnection::take(this, presentationInfo,
                                       m_presentation->defaultRequest());
 }
 
-void PresentationController::didChangeSessionState(
-    const WebPresentationSessionInfo& sessionInfo,
+void PresentationController::didChangeConnectionState(
+    const WebPresentationInfo& presentationInfo,
     WebPresentationConnectionState state) {
-  PresentationConnection* connection = findConnection(sessionInfo);
+  PresentationConnection* connection = findConnection(presentationInfo);
   if (!connection)
     return;
   connection->didChangeState(state);
 }
 
 void PresentationController::didCloseConnection(
-    const WebPresentationSessionInfo& sessionInfo,
+    const WebPresentationInfo& presentationInfo,
     WebPresentationConnectionCloseReason reason,
     const WebString& message) {
-  PresentationConnection* connection = findConnection(sessionInfo);
+  PresentationConnection* connection = findConnection(presentationInfo);
   if (!connection)
     return;
   connection->didClose(reason, message);
 }
 
-void PresentationController::didReceiveSessionTextMessage(
-    const WebPresentationSessionInfo& sessionInfo,
+void PresentationController::didReceiveConnectionTextMessage(
+    const WebPresentationInfo& presentationInfo,
     const WebString& message) {
-  PresentationConnection* connection = findConnection(sessionInfo);
+  PresentationConnection* connection = findConnection(presentationInfo);
   if (!connection)
     return;
   connection->didReceiveTextMessage(message);
 }
 
-void PresentationController::didReceiveSessionBinaryMessage(
-    const WebPresentationSessionInfo& sessionInfo,
+void PresentationController::didReceiveConnectionBinaryMessage(
+    const WebPresentationInfo& presentationInfo,
     const uint8_t* data,
     size_t length) {
-  PresentationConnection* connection = findConnection(sessionInfo);
+  PresentationConnection* connection = findConnection(presentationInfo);
   if (!connection)
     return;
   connection->didReceiveBinaryMessage(data, length);
@@ -159,9 +159,9 @@ PresentationConnection* PresentationController::findExistingConnection(
 }
 
 PresentationConnection* PresentationController::findConnection(
-    const WebPresentationSessionInfo& sessionInfo) {
+    const WebPresentationInfo& presentationInfo) {
   for (const auto& connection : m_connections) {
-    if (connection->matches(sessionInfo))
+    if (connection->matches(presentationInfo))
       return connection.get();
   }
 

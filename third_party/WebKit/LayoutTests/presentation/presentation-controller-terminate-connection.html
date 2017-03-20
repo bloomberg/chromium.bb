@@ -9,8 +9,8 @@
 <script>
 
 async_test(t => {
-  presentationServiceMock.then(mockService => {
-    var button = document.querySelector('button');
+    presentationServiceMock.then(mockService => {
+    const button = document.querySelector('button');
     // This is receiving the user gesture and runs the callback.
     waitForClick(() => {
       new PresentationRequest('https://example.com').start().then(

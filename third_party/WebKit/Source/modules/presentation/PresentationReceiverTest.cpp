@@ -34,16 +34,16 @@ class MockEventListener : public EventListener {
 };
 
 class MockWebPresentationClient : public WebPresentationClient {
-  void startSession(
+  void startPresentation(
       const WebVector<WebURL>& presentationUrls,
       std::unique_ptr<WebPresentationConnectionCallbacks> callbacks) override {
-    return startSession_(presentationUrls, callbacks);
+    return startPresentation_(presentationUrls, callbacks);
   }
-  void joinSession(
+  void reconnectPresentation(
       const WebVector<WebURL>& presentationUrls,
       const WebString& presentationId,
       std::unique_ptr<WebPresentationConnectionCallbacks> callbacks) override {
-    return joinSession_(presentationUrls, presentationId, callbacks);
+    return reconnectPresentation_(presentationUrls, presentationId, callbacks);
   }
 
   void getAvailability(const WebVector<WebURL>& availabilityURLs,
@@ -57,11 +57,11 @@ class MockWebPresentationClient : public WebPresentationClient {
 
   MOCK_METHOD1(setReceiver, void(WebPresentationReceiver*));
 
-  MOCK_METHOD2(startSession_,
+  MOCK_METHOD2(startPresentation_,
                void(const WebVector<WebURL>& presentationUrls,
                     std::unique_ptr<WebPresentationConnectionCallbacks>&));
 
-  MOCK_METHOD3(joinSession_,
+  MOCK_METHOD3(reconnectPresentation_,
                void(const WebVector<WebURL>& presentationUrls,
                     const WebString& presentationId,
                     std::unique_ptr<WebPresentationConnectionCallbacks>&));
@@ -86,12 +86,12 @@ class MockWebPresentationClient : public WebPresentationClient {
                     size_t length,
                     const WebPresentationConnectionProxy* proxy));
 
-  MOCK_METHOD3(closeSession,
+  MOCK_METHOD3(closeConnection,
                void(const WebURL& presentationUrl,
                     const WebString& presentationId,
                     const WebPresentationConnectionProxy*));
 
-  MOCK_METHOD2(terminateConnection,
+  MOCK_METHOD2(terminatePresentation,
                void(const WebURL& presentationUrl,
                     const WebString& presentationId));
 
@@ -164,7 +164,7 @@ TEST_F(PresentationReceiverTest, OneConnectionResolvedConnectionListNoEvent) {
 
   // Receive first connection.
   receiver->onReceiverConnectionAvailable(
-      WebPresentationSessionInfo(KURL(KURL(), "http://example.com"), "id"));
+      WebPresentationInfo(KURL(KURL(), "http://example.com"), "id"));
 
   verifyConnectionListPropertyState(ScriptPromisePropertyBase::Resolved,
                                     receiver);
@@ -182,12 +182,12 @@ TEST_F(PresentationReceiverTest, TwoConnectionsFireOnconnectionavailableEvent) {
 
   receiver->connectionList(scope.getScriptState());
 
-  WebPresentationSessionInfo sessionInfo(KURL(KURL(), "http://example.com"),
-                                         "id");
+  WebPresentationInfo presentationInfo(KURL(KURL(), "http://example.com"),
+                                       "id");
   // Receive first connection.
-  receiver->onReceiverConnectionAvailable(sessionInfo);
+  receiver->onReceiverConnectionAvailable(presentationInfo);
   // Receive second connection.
-  receiver->onReceiverConnectionAvailable(sessionInfo);
+  receiver->onReceiverConnectionAvailable(presentationInfo);
 
   verifyConnectionListSize(2, receiver);
 }
@@ -201,14 +201,14 @@ TEST_F(PresentationReceiverTest, TwoConnectionsNoEvent) {
   addConnectionavailableEventListener(eventHandler, receiver);
   EXPECT_CALL(*eventHandler, handleEvent(testing::_, testing::_)).Times(0);
 
-  WebPresentationSessionInfo sessionInfo(KURL(KURL(), "http://example.com"),
-                                         "id");
+  WebPresentationInfo presentationInfo(KURL(KURL(), "http://example.com"),
+                                       "id");
   // Receive first connection.
-  auto* connection1 = receiver->onReceiverConnectionAvailable(sessionInfo);
+  auto* connection1 = receiver->onReceiverConnectionAvailable(presentationInfo);
   EXPECT_TRUE(connection1);
 
   // Receive second connection.
-  auto* connection2 = receiver->onReceiverConnectionAvailable(sessionInfo);
+  auto* connection2 = receiver->onReceiverConnectionAvailable(presentationInfo);
   EXPECT_TRUE(connection2);
 
   receiver->connectionList(scope.getScriptState());

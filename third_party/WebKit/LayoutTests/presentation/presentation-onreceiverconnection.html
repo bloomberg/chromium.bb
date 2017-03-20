@@ -13,7 +13,7 @@ async_test(t => {
 
   presentationServiceMock.then(mockService => {
     const url = 'http://example.com/a.html';
-    const id = 'fakeSessionId';
+    const id = 'fakePresentationId';
 
     mockService.onSetClient = () => {
       mockService.onReceiverConnectionAvailable(url, id);

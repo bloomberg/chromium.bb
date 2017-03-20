@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_COMMON_PRESENTATION_SESSION_H_
-#define CONTENT_PUBLIC_COMMON_PRESENTATION_SESSION_H_
+#ifndef CONTENT_PUBLIC_COMMON_PRESENTATION_INFO_H_
+#define CONTENT_PUBLIC_COMMON_PRESENTATION_INFO_H_
 
 #include <string>
 
@@ -27,14 +27,13 @@ enum PresentationConnectionCloseReason {
   PRESENTATION_CONNECTION_CLOSE_REASON_WENT_AWAY
 };
 
-// TODO(imcheng): Rename to PresentationConnectionInfo.
-// Represents a presentation session that has been established via either
+// Represents a presentation that has been established via either
 // browser actions or Presentation API.
-struct CONTENT_EXPORT PresentationSessionInfo {
-  PresentationSessionInfo() = default;
-  PresentationSessionInfo(const GURL& presentation_url,
-                          const std::string& presentation_id);
-  ~PresentationSessionInfo();
+struct CONTENT_EXPORT PresentationInfo {
+  PresentationInfo() = default;
+  PresentationInfo(const GURL& presentation_url,
+                   const std::string& presentation_id);
+  ~PresentationInfo();
 
   static constexpr size_t kMaxIdLength = 256;
 
@@ -42,16 +41,16 @@ struct CONTENT_EXPORT PresentationSessionInfo {
   std::string presentation_id;
 };
 
-// Possible reasons why an attempt to create a presentation session failed.
+// Possible reasons why an attempt to create a presentation failed.
 enum PresentationErrorType {
   PRESENTATION_ERROR_NO_AVAILABLE_SCREENS,
-  PRESENTATION_ERROR_SESSION_REQUEST_CANCELLED,
+  PRESENTATION_ERROR_PRESENTATION_REQUEST_CANCELLED,
   PRESENTATION_ERROR_NO_PRESENTATION_FOUND,
   PRESENTATION_ERROR_PREVIOUS_START_IN_PROGRESS,
   PRESENTATION_ERROR_UNKNOWN,
 };
 
-// Struct returned when an attempt to create a presentation session failed.
+// Struct returned when an attempt to create a presentation failed.
 struct CONTENT_EXPORT PresentationError {
   PresentationError() = default;
   PresentationError(PresentationErrorType error_type,
@@ -66,4 +65,4 @@ struct CONTENT_EXPORT PresentationError {
 
 }  // namespace content
 
-#endif  // CONTENT_PUBLIC_COMMON_PRESENTATION_SESSION_H_
+#endif  // CONTENT_PUBLIC_COMMON_PRESENTATION_INFO_H_

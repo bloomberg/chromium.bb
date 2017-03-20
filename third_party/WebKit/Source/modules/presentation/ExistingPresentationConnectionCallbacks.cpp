@@ -23,7 +23,7 @@ ExistingPresentationConnectionCallbacks::
 }
 
 void ExistingPresentationConnectionCallbacks::onSuccess(
-    const WebPresentationSessionInfo& sessionInfo) {
+    const WebPresentationInfo& presentationInfo) {
   if (!m_resolver->getExecutionContext() ||
       m_resolver->getExecutionContext()->isContextDestroyed()) {
     return;

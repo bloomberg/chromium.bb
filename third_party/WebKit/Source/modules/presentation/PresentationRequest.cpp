@@ -152,7 +152,7 @@ ScriptPromise PresentationRequest::start(ScriptState* scriptState) {
             "The PresentationRequest is no longer associated to a frame."));
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
-  client->startSession(
+  client->startPresentation(
       m_urls, WTF::makeUnique<PresentationConnectionCallbacks>(resolver, this));
   return resolver->promise();
 }
@@ -179,11 +179,12 @@ ScriptPromise PresentationRequest::reconnect(ScriptState* scriptState,
   PresentationConnection* existingConnection =
       controller->findExistingConnection(m_urls, id);
   if (existingConnection) {
-    client->joinSession(
-        m_urls, id, WTF::makeUnique<ExistingPresentationConnectionCallbacks>(
-                        resolver, existingConnection));
+    client->reconnectPresentation(
+        m_urls, id,
+        WTF::makeUnique<ExistingPresentationConnectionCallbacks>(
+            resolver, existingConnection));
   } else {
-    client->joinSession(
+    client->reconnectPresentation(
         m_urls, id,
         WTF::makeUnique<PresentationConnectionCallbacks>(resolver, this));
   }

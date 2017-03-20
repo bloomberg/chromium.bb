@@ -12,7 +12,7 @@ namespace blink {
 struct WebPresentationError {
   enum ErrorType {
     ErrorTypeNoAvailableScreens = 0,
-    ErrorTypeSessionRequestCancelled,
+    ErrorTypePresentationRequestCancelled,
     ErrorTypeNoPresentationFound,
     ErrorTypeAvailabilityNotSupported,
     ErrorTypePreviousStartInProgress,

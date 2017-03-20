@@ -32,8 +32,8 @@ class CreatePresentationConnectionRequestTest : public ::testing::Test {
 
   ~CreatePresentationConnectionRequestTest() override {}
 
-  void OnSuccess(const content::PresentationSessionInfo& expected_info,
-                 const content::PresentationSessionInfo& actual_info,
+  void OnSuccess(const content::PresentationInfo& expected_info,
+                 const content::PresentationInfo& actual_info,
                  const MediaRoute& route) {
     cb_invoked_ = true;
     EXPECT_EQ(expected_info.presentation_url, actual_info.presentation_url);
@@ -48,7 +48,7 @@ class CreatePresentationConnectionRequestTest : public ::testing::Test {
     EXPECT_EQ(expected_error.message, actual_error.message);
   }
 
-  void FailOnSuccess(const content::PresentationSessionInfo& info,
+  void FailOnSuccess(const content::PresentationInfo& info,
                      const MediaRoute& route) {
     FAIL() << "Success callback should not have been called.";
   }
@@ -82,12 +82,12 @@ TEST_F(CreatePresentationConnectionRequestTest, Getters) {
 }
 
 TEST_F(CreatePresentationConnectionRequestTest, SuccessCallback) {
-  content::PresentationSessionInfo session_info(presentation_url_,
-                                                kPresentationId);
+  content::PresentationInfo presentation_info(presentation_url_,
+                                              kPresentationId);
   CreatePresentationConnectionRequest request(
       render_frame_host_id_, {presentation_url_}, url::Origin(GURL(kFrameUrl)),
       base::Bind(&CreatePresentationConnectionRequestTest::OnSuccess,
-                 base::Unretained(this), session_info),
+                 base::Unretained(this), presentation_info),
       base::Bind(&CreatePresentationConnectionRequestTest::FailOnError,
                  base::Unretained(this)));
   MediaRoute route(kRouteId, MediaSourceForTab(1), "sinkId", "Description",
@@ -98,7 +98,7 @@ TEST_F(CreatePresentationConnectionRequestTest, SuccessCallback) {
 
 TEST_F(CreatePresentationConnectionRequestTest, ErrorCallback) {
   content::PresentationError error(
-      content::PRESENTATION_ERROR_SESSION_REQUEST_CANCELLED,
+      content::PRESENTATION_ERROR_PRESENTATION_REQUEST_CANCELLED,
       "This is an error message");
   CreatePresentationConnectionRequest request(
       render_frame_host_id_, presentation_urls_, url::Origin(GURL(kFrameUrl)),

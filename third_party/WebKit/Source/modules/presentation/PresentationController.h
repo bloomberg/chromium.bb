@@ -45,18 +45,18 @@ class MODULES_EXPORT PresentationController final
   DECLARE_VIRTUAL_TRACE();
 
   // Implementation of WebPresentationController.
-  WebPresentationConnection* didStartDefaultSession(
-      const WebPresentationSessionInfo&) override;
-  void didChangeSessionState(const WebPresentationSessionInfo&,
-                             WebPresentationConnectionState) override;
-  void didCloseConnection(const WebPresentationSessionInfo&,
+  WebPresentationConnection* didStartDefaultPresentation(
+      const WebPresentationInfo&) override;
+  void didChangeConnectionState(const WebPresentationInfo&,
+                                WebPresentationConnectionState) override;
+  void didCloseConnection(const WebPresentationInfo&,
                           WebPresentationConnectionCloseReason,
                           const WebString& message) override;
-  void didReceiveSessionTextMessage(const WebPresentationSessionInfo&,
-                                    const WebString&) override;
-  void didReceiveSessionBinaryMessage(const WebPresentationSessionInfo&,
-                                      const uint8_t* data,
-                                      size_t length) override;
+  void didReceiveConnectionTextMessage(const WebPresentationInfo&,
+                                       const WebString&) override;
+  void didReceiveConnectionBinaryMessage(const WebPresentationInfo&,
+                                         const uint8_t* data,
+                                         size_t length) override;
 
   // Called by the Presentation object to advertize itself to the controller.
   // The Presentation object is kept as a WeakMember in order to avoid keeping
@@ -86,7 +86,7 @@ class MODULES_EXPORT PresentationController final
 
   // Return the connection associated with the given |connectionClient| or
   // null if it doesn't exist.
-  PresentationConnection* findConnection(const WebPresentationSessionInfo&);
+  PresentationConnection* findConnection(const WebPresentationInfo&);
 
   // The WebPresentationClient which allows communicating with the embedder.
   // It is not owned by the PresentationController but the controller will

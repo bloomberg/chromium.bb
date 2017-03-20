@@ -5,6 +5,7 @@
 #ifndef PresentationConnection_h
 #define PresentationConnection_h
 
+#include <memory>
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/events/EventTarget.h"
 #include "core/fileapi/Blob.h"
@@ -14,9 +15,8 @@
 #include "public/platform/modules/presentation/WebPresentationConnection.h"
 #include "public/platform/modules/presentation/WebPresentationConnectionProxy.h"
 #include "public/platform/modules/presentation/WebPresentationController.h"
-#include "public/platform/modules/presentation/WebPresentationSessionInfo.h"
+#include "public/platform/modules/presentation/WebPresentationInfo.h"
 #include "wtf/text/WTFString.h"
-#include <memory>
 
 namespace WTF {
 class AtomicString;
@@ -39,13 +39,13 @@ class PresentationConnection final : public EventTargetWithInlineData,
  public:
   // For CallbackPromiseAdapter.
   static PresentationConnection* take(ScriptPromiseResolver*,
-                                      const WebPresentationSessionInfo&,
+                                      const WebPresentationInfo&,
                                       PresentationRequest*);
   static PresentationConnection* take(PresentationController*,
-                                      const WebPresentationSessionInfo&,
+                                      const WebPresentationInfo&,
                                       PresentationRequest*);
   static PresentationConnection* take(PresentationReceiver*,
-                                      const WebPresentationSessionInfo&);
+                                      const WebPresentationInfo&);
   ~PresentationConnection() override;
 
   // EventTarget implementation.
@@ -73,9 +73,9 @@ class PresentationConnection final : public EventTargetWithInlineData,
   DEFINE_ATTRIBUTE_EVENT_LISTENER(close);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(terminate);
 
-  // Returns true if and only if the the session info represents this
+  // Returns true if and only if the the presentation info matches this
   // connection.
-  bool matches(const WebPresentationSessionInfo&) const;
+  bool matches(const WebPresentationInfo&) const;
 
   // Returns true if this connection's id equals to |id| and its url equals to
   // |url|.

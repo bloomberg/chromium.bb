@@ -17,8 +17,8 @@
 #include "third_party/WebKit/public/platform/modules/presentation/WebPresentationConnectionCallbacks.h"
 #include "third_party/WebKit/public/platform/modules/presentation/WebPresentationController.h"
 #include "third_party/WebKit/public/platform/modules/presentation/WebPresentationError.h"
+#include "third_party/WebKit/public/platform/modules/presentation/WebPresentationInfo.h"
 #include "third_party/WebKit/public/platform/modules/presentation/WebPresentationReceiver.h"
-#include "third_party/WebKit/public/platform/modules/presentation/WebPresentationSessionInfo.h"
 #include "third_party/WebKit/public/web/WebArrayBuffer.h"
 
 using ::testing::_;
@@ -28,7 +28,7 @@ using blink::WebPresentationAvailabilityCallbacks;
 using blink::WebPresentationAvailabilityObserver;
 using blink::WebPresentationConnectionCallbacks;
 using blink::WebPresentationError;
-using blink::WebPresentationSessionInfo;
+using blink::WebPresentationInfo;
 using blink::WebString;
 using blink::WebURL;
 using blink::WebVector;
@@ -67,33 +67,31 @@ class MockPresentationService : public PresentationService {
   MOCK_METHOD1(ListenForScreenAvailability, void(const GURL& availability_url));
   MOCK_METHOD1(StopListeningForScreenAvailability,
                void(const GURL& availability_url));
-  MOCK_METHOD2(StartSession,
+  MOCK_METHOD2(StartPresentation,
                void(const std::vector<GURL>& presentation_urls,
-                    const StartSessionCallback& callback));
-  MOCK_METHOD3(JoinSession,
+                    const StartPresentationCallback& callback));
+  MOCK_METHOD3(ReconnectPresentation,
                void(const std::vector<GURL>& presentation_urls,
                     const base::Optional<std::string>& presentation_id,
-                    const JoinSessionCallback& callback));
+                    const ReconnectPresentationCallback& callback));
+  void SetPresentationConnection(
+      const PresentationInfo& presentation_info,
+      blink::mojom::PresentationConnectionPtr controller_conn_ptr,
+      blink::mojom::PresentationConnectionRequest receiver_conn_request)
+      override {
+    SetPresentationConnection(presentation_info, controller_conn_ptr.get());
+  }
+  MOCK_METHOD2(SetPresentationConnection,
+               void(const PresentationInfo& presentation_info,
+                    PresentationConnection* connection));
   MOCK_METHOD2(CloseConnection,
                void(const GURL& presentation_url,
                     const std::string& presentation_id));
   MOCK_METHOD2(Terminate,
                void(const GURL& presentation_url,
                     const std::string& presentation_id));
-
   MOCK_METHOD1(ListenForConnectionMessages,
-               void(const PresentationSessionInfo& session_info));
-
-  void SetPresentationConnection(
-      const PresentationSessionInfo& session_info,
-      blink::mojom::PresentationConnectionPtr controller_conn_ptr,
-      blink::mojom::PresentationConnectionRequest receiver_conn_request)
-      override {
-    SetPresentationConnection(session_info, controller_conn_ptr.get());
-  }
-  MOCK_METHOD2(SetPresentationConnection,
-               void(const PresentationSessionInfo& session_info,
-                    PresentationConnection* connection));
+               void(const PresentationInfo& presentation_info));
 };
 
 class TestPresentationConnectionProxy : public PresentationConnectionProxy {
@@ -115,11 +113,11 @@ class TestPresentationConnectionProxy : public PresentationConnectionProxy {
 class TestPresentationReceiver : public blink::WebPresentationReceiver {
  public:
   blink::WebPresentationConnection* onReceiverConnectionAvailable(
-      const blink::WebPresentationSessionInfo&) override {
+      const blink::WebPresentationInfo&) override {
     return &connection_;
   }
 
-  MOCK_METHOD1(didChangeSessionState,
+  MOCK_METHOD1(didChangeConnectionState,
                void(blink::WebPresentationConnectionState));
   MOCK_METHOD0(terminateConnection, void());
 
@@ -145,7 +143,7 @@ class TestWebPresentationConnectionCallback
     EXPECT_TRUE(callback_called_);
   }
 
-  void onSuccess(const WebPresentationSessionInfo& info) override {
+  void onSuccess(const WebPresentationInfo& info) override {
     callback_called_ = true;
     EXPECT_EQ(info.url, url_);
     EXPECT_EQ(info.id, id_);
@@ -314,22 +312,24 @@ class PresentationDispatcherTest : public ::testing::Test {
   content::TestBrowserThreadBundle thread_bundle_;
 };
 
-TEST_F(PresentationDispatcherTest, TestStartSession) {
+TEST_F(PresentationDispatcherTest, TestStartPresentation) {
   TestPresentationConnection connection;
   EXPECT_FALSE(connection.proxy());
   {
     base::RunLoop run_loop;
     EXPECT_CALL(presentation_service_, ListenForConnectionMessages(_));
     EXPECT_CALL(presentation_service_, SetPresentationConnection(_, _));
-    EXPECT_CALL(presentation_service_, StartSession(gurls_, _))
-        .WillOnce(Invoke([this](
-            const std::vector<GURL>& presentation_urls,
-            const PresentationService::StartSessionCallback& callback) {
-          PresentationSessionInfo session_info(gurl1_, presentation_id_.utf8());
-          callback.Run(session_info, base::nullopt);
-        }));
+    EXPECT_CALL(presentation_service_, StartPresentation(gurls_, _))
+        .WillOnce(
+            Invoke([this](const std::vector<GURL>& presentation_urls,
+                          const PresentationService::StartPresentationCallback&
+                              callback) {
+              PresentationInfo presentation_info(gurl1_,
+                                                 presentation_id_.utf8());
+              callback.Run(presentation_info, base::nullopt);
+            }));
 
-    dispatcher_.startSession(
+    dispatcher_.startPresentation(
         urls_, base::MakeUnique<TestWebPresentationConnectionCallback>(
                    url1_, presentation_id_, &connection));
     run_loop.RunUntilIdle();
@@ -337,68 +337,72 @@ TEST_F(PresentationDispatcherTest, TestStartSession) {
   EXPECT_TRUE(connection.proxy());
 }
 
-TEST_F(PresentationDispatcherTest, TestStartSessionError) {
+TEST_F(PresentationDispatcherTest, TestStartPresentationError) {
   WebString error_message = WebString::fromUTF8("Test error message");
   base::RunLoop run_loop;
 
-  EXPECT_CALL(presentation_service_, StartSession(gurls_, _))
+  EXPECT_CALL(presentation_service_, StartPresentation(gurls_, _))
       .WillOnce(Invoke([&error_message](
-          const std::vector<GURL>& presentation_urls,
-          const PresentationService::StartSessionCallback& callback) {
+                           const std::vector<GURL>& presentation_urls,
+                           const PresentationService::StartPresentationCallback&
+                               callback) {
         callback.Run(
             base::nullopt,
             PresentationError(content::PRESENTATION_ERROR_NO_AVAILABLE_SCREENS,
                               error_message.utf8()));
       }));
-  dispatcher_.startSession(
+  dispatcher_.startPresentation(
       urls_,
       base::MakeUnique<TestWebPresentationConnectionErrorCallback>(
           WebPresentationError::ErrorTypeNoAvailableScreens, error_message));
   run_loop.RunUntilIdle();
 }
 
-TEST_F(PresentationDispatcherTest, TestJoinSessionError) {
+TEST_F(PresentationDispatcherTest, TestReconnectPresentationError) {
   WebString error_message = WebString::fromUTF8("Test error message");
   base::RunLoop run_loop;
 
-  EXPECT_CALL(presentation_service_, JoinSession(gurls_, _, _))
-      .WillOnce(Invoke([this, &error_message](
-          const std::vector<GURL>& presentation_urls,
-          const base::Optional<std::string>& presentation_id,
-          const PresentationService::JoinSessionCallback& callback) {
-        EXPECT_TRUE(presentation_id.has_value());
-        EXPECT_EQ(presentation_id_.utf8(), presentation_id.value());
-        callback.Run(
-            base::nullopt,
-            PresentationError(content::PRESENTATION_ERROR_NO_AVAILABLE_SCREENS,
-                              error_message.utf8()));
-      }));
-  dispatcher_.joinSession(
+  EXPECT_CALL(presentation_service_, ReconnectPresentation(gurls_, _, _))
+      .WillOnce(
+          Invoke([this, &error_message](
+                     const std::vector<GURL>& presentation_urls,
+                     const base::Optional<std::string>& presentation_id,
+                     const PresentationService::ReconnectPresentationCallback&
+                         callback) {
+            EXPECT_TRUE(presentation_id.has_value());
+            EXPECT_EQ(presentation_id_.utf8(), presentation_id.value());
+            callback.Run(base::nullopt,
+                         PresentationError(
+                             content::PRESENTATION_ERROR_NO_AVAILABLE_SCREENS,
+                             error_message.utf8()));
+          }));
+  dispatcher_.reconnectPresentation(
       urls_, presentation_id_,
       base::MakeUnique<TestWebPresentationConnectionErrorCallback>(
           WebPresentationError::ErrorTypeNoAvailableScreens, error_message));
   run_loop.RunUntilIdle();
 }
 
-TEST_F(PresentationDispatcherTest, TestJoinSession) {
+TEST_F(PresentationDispatcherTest, TestReconnectPresentation) {
   TestPresentationConnection connection;
   EXPECT_FALSE(connection.proxy());
   {
     base::RunLoop run_loop;
     EXPECT_CALL(presentation_service_, ListenForConnectionMessages(_));
     EXPECT_CALL(presentation_service_, SetPresentationConnection(_, _));
-    EXPECT_CALL(presentation_service_, JoinSession(gurls_, _, _))
-        .WillOnce(Invoke([this](
-            const std::vector<GURL>& presentation_urls,
-            const base::Optional<std::string>& presentation_id,
-            const PresentationService::JoinSessionCallback& callback) {
-          EXPECT_TRUE(presentation_id.has_value());
-          EXPECT_EQ(presentation_id_.utf8(), presentation_id.value());
-          callback.Run(PresentationSessionInfo(gurl1_, presentation_id_.utf8()),
-                       base::nullopt);
-        }));
+    EXPECT_CALL(presentation_service_, ReconnectPresentation(gurls_, _, _))
+        .WillOnce(Invoke(
+            [this](const std::vector<GURL>& presentation_urls,
+                   const base::Optional<std::string>& presentation_id,
+                   const PresentationService::ReconnectPresentationCallback&
+                       callback) {
+              EXPECT_TRUE(presentation_id.has_value());
+              EXPECT_EQ(presentation_id_.utf8(), presentation_id.value());
+              callback.Run(PresentationInfo(gurl1_, presentation_id_.utf8()),
+                           base::nullopt);
+            }));
 
-    dispatcher_.joinSession(
+    dispatcher_.reconnectPresentation(
         urls_, presentation_id_,
         base::MakeUnique<TestWebPresentationConnectionCallback>(
             url1_, presentation_id_, &connection));
@@ -468,7 +472,7 @@ TEST_F(PresentationDispatcherTest, TestSendBlobData) {
 }
 
 TEST_F(PresentationDispatcherTest, TestOnReceiverConnectionAvailable) {
-  PresentationSessionInfo session_info(gurl1_, presentation_id_.utf8());
+  PresentationInfo presentation_info(gurl1_, presentation_id_.utf8());
 
   blink::mojom::PresentationConnectionPtr controller_connection_ptr;
   TestPresentationConnection controller_connection;
@@ -490,7 +494,7 @@ TEST_F(PresentationDispatcherTest, TestOnReceiverConnectionAvailable) {
               didChangeState(blink::WebPresentationConnectionState::Connected));
 
   dispatcher_.OnReceiverConnectionAvailable(
-      std::move(session_info), std::move(controller_connection_ptr),
+      std::move(presentation_info), std::move(controller_connection_ptr),
       mojo::MakeRequest(&receiver_connection_ptr));
 
   EXPECT_TRUE(receiver_connection_ptr);
@@ -498,22 +502,22 @@ TEST_F(PresentationDispatcherTest, TestOnReceiverConnectionAvailable) {
   run_loop.RunUntilIdle();
 }
 
-TEST_F(PresentationDispatcherTest, TestCloseSession) {
+TEST_F(PresentationDispatcherTest, TestCloseConnection) {
   base::RunLoop run_loop;
   TestPresentationConnection connection;
   TestPresentationConnectionProxy test_proxy(&connection);
   EXPECT_CALL(test_proxy, close());
   EXPECT_CALL(presentation_service_,
               CloseConnection(gurl1_, presentation_id_.utf8()));
-  dispatcher_.closeSession(url1_, presentation_id_, &test_proxy);
+  dispatcher_.closeConnection(url1_, presentation_id_, &test_proxy);
   run_loop.RunUntilIdle();
 }
 
-TEST_F(PresentationDispatcherTest, TestTerminateSession) {
+TEST_F(PresentationDispatcherTest, TestTerminatePresentation) {
   base::RunLoop run_loop;
   EXPECT_CALL(presentation_service_,
               Terminate(gurl1_, presentation_id_.utf8()));
-  dispatcher_.terminateConnection(url1_, presentation_id_);
+  dispatcher_.terminatePresentation(url1_, presentation_id_);
   run_loop.RunUntilIdle();
 }
 

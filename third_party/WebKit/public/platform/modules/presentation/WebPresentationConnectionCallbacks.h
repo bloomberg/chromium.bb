@@ -12,13 +12,13 @@ namespace blink {
 
 class WebPresentationConnection;
 struct WebPresentationError;
-struct WebPresentationSessionInfo;
+struct WebPresentationInfo;
 
-// If session was created, callback's onSuccess() is invoked with the
-// information about the presentation session created by the embedder.
-// Otherwise, onError() is invoked with the error code and message.
+// If a presentation was created, callback's onSuccess() is invoked with the
+// information about the presentation.  Otherwise, onError() is invoked with the
+// error code and message.
 class WebPresentationConnectionCallbacks
-    : public WebCallbacks<const WebPresentationSessionInfo&,
+    : public WebCallbacks<const WebPresentationInfo&,
                           const WebPresentationError&> {
  public:
   // Returns newly created PresentationConnection object if

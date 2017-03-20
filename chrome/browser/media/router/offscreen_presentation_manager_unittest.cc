@@ -25,14 +25,14 @@ const char kPresentationUrl[] = "http://www.example.com/presentation.html";
 class MockReceiverConnectionAvailableCallback {
  public:
   void OnReceiverConnectionAvailable(
-      const content::PresentationSessionInfo& session_info,
+      const content::PresentationInfo& presentation_info,
       content::PresentationConnectionPtr controller_conn,
       content::PresentationConnectionRequest receiver_conn_request) {
-    OnReceiverConnectionAvailableRaw(session_info, controller_conn.get());
+    OnReceiverConnectionAvailableRaw(presentation_info, controller_conn.get());
   }
 
   MOCK_METHOD2(OnReceiverConnectionAvailableRaw,
-               void(const content::PresentationSessionInfo&,
+               void(const content::PresentationInfo&,
                     blink::mojom::PresentationConnection*));
 };
 

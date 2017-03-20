@@ -59,11 +59,11 @@ namespace media_router {
 //   |receiver_connection_request|: Mojo InterfaceRequest to be bind to
 //   blink::PresentationConnection object in receiver frame's render process.
 //   void PresentationServiceImpl::OnReceiverConnectionAvailable(
-//       const content::PresentationSessionInfo& session,
+//       const content::PresentationInfo& presentation_info,
 //       PresentationConnectionPtr controller_connection_ptr,
 //       PresentationConnectionRequest receiver_connection_request) {
 //     presentation_receiver_client_->OnReceiverConnectionAvailable(
-//         blink::mojom::PresentationSessionInfo::From(session_info),
+//         blink::mojom::PresentationInfo::From(presentation_info),
 //         std::move(controller_connection_ptr),
 //         std::move(receiver_connection_request));
 //   }
@@ -77,7 +77,8 @@ namespace media_router {
 //   |message|: Text message to be sent.
 //   PresentationConnctionPtr::SendString(
 //       const blink::WebString& message) {
-//     target_connection_->OnSessionMessageReceived(std::move(session_message));
+//     target_connection_->OnConnectionMessageReceived(
+//         std::move(connection_message));
 //   }
 //
 // A controller or receiver leaves the offscreen presentation (e.g., due to

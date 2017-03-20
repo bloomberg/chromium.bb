@@ -23,7 +23,7 @@ class PresentationConnectionList;
 class WebPresentationClient;
 
 // Implements the PresentationReceiver interface from the Presentation API from
-// which websites can implement the receiving side of a presentation session.
+// which websites can implement the receiving side of a presentation.
 class MODULES_EXPORT PresentationReceiver final
     : public GarbageCollectedFinalized<PresentationReceiver>,
       public ScriptWrappable,
@@ -45,8 +45,8 @@ class MODULES_EXPORT PresentationReceiver final
 
   // Implementation of WebPresentationController.
   WebPresentationConnection* onReceiverConnectionAvailable(
-      const WebPresentationSessionInfo&) override;
-  void didChangeSessionState(WebPresentationConnectionState) override;
+      const WebPresentationInfo&) override;
+  void didChangeConnectionState(WebPresentationConnectionState) override;
   void terminateConnection() override;
 
   void registerConnection(PresentationConnection*);

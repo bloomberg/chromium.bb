@@ -27,8 +27,8 @@
 namespace content {
 class PresentationScreenAvailabilityListener;
 class WebContents;
-struct PresentationSessionInfo;
 struct PresentationConnectionMessage;
+struct PresentationInfo;
 }  // namespace content
 
 namespace url {
@@ -45,8 +45,8 @@ class RouteRequestResult;
 // WebContents with the Chrome Media Router. It uses the Media Router to handle
 // presentation API calls forwarded from PresentationServiceImpl. In addition,
 // it also provides default presentation URL that is required for creating
-// browser-initiated sessions.  It is scoped to the lifetime of a WebContents,
-// and is managed by the associated WebContents.
+// browser-initiated presentations.  It is scoped to the lifetime of a
+// WebContents, and is managed by the associated WebContents.
 class PresentationServiceDelegateImpl
     : public content::WebContentsUserData<PresentationServiceDelegateImpl>,
       public content::ControllerPresentationServiceDelegate {
@@ -95,20 +95,20 @@ class PresentationServiceDelegateImpl
       int render_process_id,
       int render_frame_id,
       const std::vector<GURL>& default_presentation_urls,
-      const content::PresentationSessionStartedCallback& callback) override;
-  void StartSession(
+      const content::PresentationConnectionCallback& callback) override;
+  void StartPresentation(
       int render_process_id,
       int render_frame_id,
       const std::vector<GURL>& presentation_urls,
-      const content::PresentationSessionStartedCallback& success_cb,
-      const content::PresentationSessionErrorCallback& error_cb) override;
-  void JoinSession(
+      const content::PresentationConnectionCallback& success_cb,
+      const content::PresentationConnectionErrorCallback& error_cb) override;
+  void ReconnectPresentation(
       int render_process_id,
       int render_frame_id,
       const std::vector<GURL>& presentation_urls,
       const std::string& presentation_id,
-      const content::PresentationSessionStartedCallback& success_cb,
-      const content::PresentationSessionErrorCallback& error_cb) override;
+      const content::PresentationConnectionCallback& success_cb,
+      const content::PresentationConnectionErrorCallback& error_cb) override;
   void CloseConnection(int render_process_id,
                        int render_frame_id,
                        const std::string& presentation_id) override;
@@ -118,24 +118,24 @@ class PresentationServiceDelegateImpl
   void ListenForConnectionMessages(
       int render_process_id,
       int render_frame_id,
-      const content::PresentationSessionInfo& session,
+      const content::PresentationInfo& presentation_info,
       const content::PresentationConnectionMessageCallback& message_cb)
       override;
   void SendMessage(int render_process_id,
                    int render_frame_id,
-                   const content::PresentationSessionInfo& session,
+                   const content::PresentationInfo& presentation_info,
                    content::PresentationConnectionMessage message,
                    const SendMessageCallback& send_message_cb) override;
   void ListenForConnectionStateChange(
       int render_process_id,
       int render_frame_id,
-      const content::PresentationSessionInfo& connection,
+      const content::PresentationInfo& connection,
       const content::PresentationConnectionStateChangedCallback&
           state_changed_cb) override;
   void ConnectToPresentation(
       int render_process_id,
       int render_frame_id,
-      const content::PresentationSessionInfo& session,
+      const content::PresentationInfo& presentation_info,
       content::PresentationConnectionPtr controller_connection_ptr,
       content::PresentationConnectionRequest receiver_connection_request)
       override;
@@ -200,15 +200,15 @@ class PresentationServiceDelegateImpl
       int render_frame_id,
       const GURL& presentation_url,
       const std::string& presentation_id,
-      const content::PresentationSessionStartedCallback& success_cb,
-      const content::PresentationSessionErrorCallback& error_cb,
+      const content::PresentationConnectionCallback& success_cb,
+      const content::PresentationConnectionErrorCallback& error_cb,
       const RouteRequestResult& result);
 
-  void OnStartSessionSucceeded(
+  void OnStartPresentationSucceeded(
       int render_process_id,
       int render_frame_id,
-      const content::PresentationSessionStartedCallback& success_cb,
-      const content::PresentationSessionInfo& new_session,
+      const content::PresentationConnectionCallback& success_cb,
+      const content::PresentationInfo& new_presentation_info,
       const MediaRoute& route);
 
 #if !defined(OS_ANDROID)

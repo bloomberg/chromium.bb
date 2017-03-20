@@ -18,7 +18,7 @@ DOMException* PresentationError::take(const WebPresentationError& error) {
     case WebPresentationError::ErrorTypeNoPresentationFound:
       code = NotFoundError;
       break;
-    case WebPresentationError::ErrorTypeSessionRequestCancelled:
+    case WebPresentationError::ErrorTypePresentationRequestCancelled:
       code = NotAllowedError;
       break;
     case WebPresentationError::ErrorTypeAvailabilityNotSupported:
