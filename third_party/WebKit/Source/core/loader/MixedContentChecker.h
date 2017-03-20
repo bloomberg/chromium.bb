@@ -47,7 +47,6 @@ class LocalFrame;
 class KURL;
 class ResourceResponse;
 class SecurityOrigin;
-class SourceLocation;
 
 // Checks resource loads for mixed content. If PlzNavigate is enabled then this
 // class only checks for sub-resource loads while frame-level loads are
@@ -114,8 +113,7 @@ class CORE_EXPORT MixedContentChecker final {
                                 const KURL& mixedContentUrl,
                                 WebURLRequest::RequestContext,
                                 bool wasAllowed,
-                                bool hadRedirect,
-                                std::unique_ptr<SourceLocation>);
+                                bool hadRedirect);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MixedContentCheckerTest, HandleCertificateError);
@@ -128,8 +126,7 @@ class CORE_EXPORT MixedContentChecker final {
                                      const KURL&,
                                      const KURL&,
                                      WebURLRequest::RequestContext,
-                                     bool allowed,
-                                     std::unique_ptr<SourceLocation>);
+                                     bool allowed);
   static void logToConsoleAboutWebSocket(LocalFrame*,
                                          const KURL&,
                                          const KURL&,

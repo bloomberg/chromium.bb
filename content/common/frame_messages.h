@@ -615,15 +615,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::FileChooserParams)
   IPC_STRUCT_TRAITS_MEMBER(requestor)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_BEGIN(FrameMsg_MixedContentFound_Params)
-  IPC_STRUCT_MEMBER(GURL, main_resource_url)
-  IPC_STRUCT_MEMBER(GURL, mixed_content_url)
-  IPC_STRUCT_MEMBER(content::RequestContextType, request_context_type)
-  IPC_STRUCT_MEMBER(bool, was_allowed)
-  IPC_STRUCT_MEMBER(bool, had_redirect)
-  IPC_STRUCT_MEMBER(content::SourceLocation, source_location)
-IPC_STRUCT_END()
-
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
 // This message is used for supporting popup menus on Mac OS X and Android using
 // native controls. See the FrameHostMsg_ShowPopup message.
@@ -1020,8 +1011,12 @@ IPC_MESSAGE_ROUTED1(FrameMsg_BlinkFeatureUsageReport,
 // Informs the renderer that mixed content was found by the browser. The
 // included data is used for instance to report to the CSP policy and to log to
 // the frame console.
-IPC_MESSAGE_ROUTED1(FrameMsg_MixedContentFound,
-                    FrameMsg_MixedContentFound_Params)
+IPC_MESSAGE_ROUTED5(FrameMsg_MixedContentFound,
+                    GURL,                        /* main_resource_url */
+                    GURL,                        /* mixed_content_url */
+                    content::RequestContextType, /* request_context_type */
+                    bool,                        /* was_allowed */
+                    bool)                        /* had_redirect */
 
 // -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.

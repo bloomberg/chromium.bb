@@ -82,7 +82,6 @@
 #include "content/renderer/media/android/renderer_media_player_manager.h"
 #endif
 
-struct FrameMsg_MixedContentFound_Params;
 struct FrameMsg_PostMessage_Params;
 struct FrameMsg_SerializeAsMHTML_Params;
 struct FrameMsg_TextTrackSettings_Params;
@@ -918,7 +917,11 @@ class CONTENT_EXPORT RenderFrameImpl
       const std::vector<content::FileChooserFileInfo>& files);
   void OnClearFocusedElement();
   void OnBlinkFeatureUsageReport(const std::set<int>& features);
-  void OnMixedContentFound(const FrameMsg_MixedContentFound_Params& params);
+  void OnMixedContentFound(const GURL& main_resource_url,
+                           const GURL& mixed_content_url,
+                           RequestContextType request_context_type,
+                           bool was_allowed,
+                           bool had_redirect);
 #if defined(OS_ANDROID)
   void OnActivateNearestFindResult(int request_id, float x, float y);
   void OnGetNearestFindResult(int request_id, float x, float y);
@@ -1409,9 +1412,16 @@ class CONTENT_EXPORT RenderFrameImpl
     bool client_redirect;
     bool cache_disabled;
     blink::WebFormElement form;
-    blink::WebSourceLocation source_location;
 
-    PendingNavigationInfo(const NavigationPolicyInfo& info);
+    PendingNavigationInfo(const NavigationPolicyInfo& info)
+        : navigation_type(info.navigationType),
+          policy(info.defaultPolicy),
+          replaces_current_history_item(info.replacesCurrentHistoryItem),
+          history_navigation_in_new_child_frame(
+              info.isHistoryNavigationInNewChildFrame),
+          client_redirect(info.isClientRedirect),
+          cache_disabled(info.isCacheDisabled),
+          form(info.form) {}
   };
 
   // PlzNavigate: Contains information about a pending navigation to be sent to

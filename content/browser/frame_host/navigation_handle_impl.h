@@ -370,11 +370,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
     return should_check_main_world_csp_;
   }
 
-  const SourceLocation& source_location() const { return source_location_; }
-  void set_source_location(const SourceLocation& source_location) {
-    source_location_ = source_location;
-  }
-
  private:
   friend class NavigationHandleImplTest;
 
@@ -550,11 +545,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
 
   // Whether or not the navigation results from the submission of a form.
   bool is_form_submission_;
-
-  // PlzNavigate
-  // Information about the JavaScript that started the navigation. For
-  // navigations initiated by Javascript.
-  SourceLocation source_location_;
 
   base::WeakPtrFactory<NavigationHandleImpl> weak_factory_;
 

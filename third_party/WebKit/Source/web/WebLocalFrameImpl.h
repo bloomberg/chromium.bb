@@ -274,8 +274,7 @@ class WEB_EXPORT WebLocalFrameImpl final
                          const WebURL& mixedContentUrl,
                          WebURLRequest::RequestContext,
                          bool wasAllowed,
-                         bool hadRedirect,
-                         const WebSourceLocation&) override;
+                         bool hadRedirect) override;
   void sendOrientationChangeEvent() override;
   WebSandboxFlags effectiveSandboxFlags() const override;
   void forceSandboxFlags(WebSandboxFlags) override;
