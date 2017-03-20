@@ -936,8 +936,6 @@ WebInputEventResult MouseEventManager::dispatchDragEvent(
 }
 
 void MouseEventManager::clearDragDataTransfer() {
-  if (!m_frame->page())
-    return;
   if (dragState().m_dragDataTransfer) {
     dragState().m_dragDataTransfer->clearDragImage();
     dragState().m_dragDataTransfer->setAccessPolicy(DataTransferNumb);
