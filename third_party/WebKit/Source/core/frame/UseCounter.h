@@ -1489,6 +1489,7 @@ class CORE_EXPORT UseCounter {
     VRPoseAngularAcceleration = 1866,
     CSSOverflowPaged = 1867,
     ChildSrcAllowedWorkerThatScriptSrcBlocked = 1868,
+    HTMLTableElementPresentationAttributeBackground = 1869,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.

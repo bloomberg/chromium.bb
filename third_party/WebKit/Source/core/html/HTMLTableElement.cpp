@@ -38,6 +38,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/NodeListsNodeData.h"
 #include "core/dom/StyleChangeReason.h"
+#include "core/frame/UseCounter.h"
 #include "core/html/HTMLTableCaptionElement.h"
 #include "core/html/HTMLTableCellElement.h"
 #include "core/html/HTMLTableRowElement.h"
@@ -316,6 +317,9 @@ void HTMLTableElement::collectStyleForPresentationAttribute(
   } else if (name == backgroundAttr) {
     String url = stripLeadingAndTrailingHTMLSpaces(value);
     if (!url.isEmpty()) {
+      UseCounter::count(
+          document(),
+          UseCounter::HTMLTableElementPresentationAttributeBackground);
       CSSImageValue* imageValue =
           CSSImageValue::create(url, document().completeURL(url));
       imageValue->setReferrer(Referrer(document().outgoingReferrer(),
