@@ -1047,10 +1047,16 @@ static void gatherSecurityPolicyViolationEventData(
     // If this load was blocked via 'frame-ancestors', then the URL of
     // |document| has not yet been initialized. In this case, we'll set both
     // 'documentURI' and 'blockedURI' to the blocked document's URL.
-    init.setDocumentURI(blockedURL.getString());
-    init.setBlockedURI(blockedURL.getString());
+    String strippedURL = stripURLForUseInReport(
+        context, blockedURL, RedirectStatus::NoRedirect,
+        ContentSecurityPolicy::DirectiveType::DefaultSrc);
+    init.setDocumentURI(strippedURL);
+    init.setBlockedURI(strippedURL);
   } else {
-    init.setDocumentURI(context->url().getString());
+    String strippedURL = stripURLForUseInReport(
+        context, context->url(), RedirectStatus::NoRedirect,
+        ContentSecurityPolicy::DirectiveType::DefaultSrc);
+    init.setDocumentURI(strippedURL);
     switch (violationType) {
       case ContentSecurityPolicy::InlineViolation:
         init.setBlockedURI("inline");
@@ -1183,6 +1189,9 @@ void ContentSecurityPolicy::postViolationReport(
   // case), but the Referer is sent implicitly whereas this request is only
   // sent explicitly. As for which directive was violated, that's pretty
   // harmless information.
+  //
+  // TODO(mkwst): This justification is BS. Insecure reports are mixed content,
+  // let's kill them. https://crbug.com/695363
 
   std::unique_ptr<JSONObject> cspReport = JSONObject::create();
   cspReport->setString("document-uri", violationData.documentURI());
