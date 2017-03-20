@@ -541,11 +541,9 @@ public class ChildProcessLauncher {
      * binding to a render process when it is created and remove the moderate binding when Chrome is
      * sent to the background.
      */
-    public static void startModerateBindingManagement(
-            Context context, boolean moderateBindingTillBackgrounded) {
-        sBindingManager.startModerateBindingManagement(context,
-                getNumberOfServices(context, true, context.getPackageName()),
-                moderateBindingTillBackgrounded);
+    public static void startModerateBindingManagement(Context context) {
+        sBindingManager.startModerateBindingManagement(
+                context, getNumberOfServices(context, true, context.getPackageName()));
     }
 
     /**

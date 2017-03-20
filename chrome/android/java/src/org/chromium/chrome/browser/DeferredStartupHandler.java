@@ -17,7 +17,6 @@ import android.view.inputmethod.InputMethodManager;
 import android.view.inputmethod.InputMethodSubtype;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.base.FieldTrialList;
 import org.chromium.base.Log;
 import org.chromium.base.PowerMonitor;
 import org.chromium.base.SysUtils;
@@ -409,12 +408,7 @@ public class DeferredStartupHandler {
     private void startModerateBindingManagementIfNeeded() {
         // Moderate binding doesn't apply to low end devices.
         if (SysUtils.isLowEndDevice()) return;
-
-        boolean moderateBindingTillBackgrounded =
-                FieldTrialList.findFullName("ModerateBindingOnBackgroundTabCreation")
-                        .equals("Enabled");
-        ChildProcessLauncher.startModerateBindingManagement(
-                mAppContext, moderateBindingTillBackgrounded);
+        ChildProcessLauncher.startModerateBindingManagement(mAppContext);
     }
 
     /**

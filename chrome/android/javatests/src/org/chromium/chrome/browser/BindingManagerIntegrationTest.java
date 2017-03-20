@@ -140,8 +140,7 @@ public class BindingManagerIntegrationTest extends ChromeActivityTestCaseBase<Ch
         public void clearConnection(int pid) {}
 
         @Override
-        public void startModerateBindingManagement(
-                Context context, int maxSize, boolean moderateBindingTillBackgrounded) {}
+        public void startModerateBindingManagement(Context context, int maxSize) {}
 
         @Override
         public void releaseAllModerateBindings() {

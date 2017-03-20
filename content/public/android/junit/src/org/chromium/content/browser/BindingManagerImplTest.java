@@ -191,7 +191,7 @@ public class BindingManagerImplTest {
         mLowEndManager = BindingManagerImpl.createBindingManagerForTesting(true);
         mHighEndManager = BindingManagerImpl.createBindingManagerForTesting(false);
         mModerateBindingManager = BindingManagerImpl.createBindingManagerForTesting(false);
-        mModerateBindingManager.startModerateBindingManagement(mActivity, 4, false);
+        mModerateBindingManager.startModerateBindingManagement(mActivity, 4);
         mAllManagers = new ManagerEntry[] {
                 new ManagerEntry(mLowEndManager, "low-end"),
                 new ManagerEntry(mHighEndManager, "high-end"),
@@ -635,37 +635,15 @@ public class BindingManagerImplTest {
         }
     }
 
-    /**
-     * Test that when the "Moderate Binding Till Backgrounded" experiment is disabled that no
-     * moderate binding is added to background renderer processes when the initial binding is
-     * removed.
+    /*
+     * Test that a moderate binding is added to background renderer processes when the initial
+     * binding is removed.
      */
     @Test
     @Feature({"ProcessManagement"})
-    public void testModerateBindingTillBackgroundedExperimentDisabledBackgroundProcess() {
+    public void testModerateBindingTillBackgroundedBackgroundProcess() {
         BindingManagerImpl manager = BindingManagerImpl.createBindingManagerForTesting(false);
-        manager.startModerateBindingManagement(mActivity, 4, false);
-
-        MockChildProcessConnection connection = new MockChildProcessConnection(0);
-        manager.addNewConnection(connection.getPid(), connection);
-        Assert.assertTrue(connection.isInitialBindingBound());
-        Assert.assertFalse(connection.isModerateBindingBound());
-
-        manager.setInForeground(connection.getPid(), false);
-        manager.determinedVisibility(connection.getPid());
-        Assert.assertFalse(connection.isInitialBindingBound());
-        Assert.assertFalse(connection.isModerateBindingBound());
-    }
-
-    /**
-     * Test that when the "Moderate Binding Till Backgrounded" experiment is enabled that a moderate
-     * binding is added to background renderer processes when the initial binding is removed.
-     */
-    @Test
-    @Feature({"ProcessManagement"})
-    public void testModerateBindingTillBackgroundedExperimentBackgroundProcess() {
-        BindingManagerImpl manager = BindingManagerImpl.createBindingManagerForTesting(false);
-        manager.startModerateBindingManagement(mActivity, 4, true);
+        manager.startModerateBindingManagement(mActivity, 4);
 
         MockChildProcessConnection connection = new MockChildProcessConnection(0);
         manager.addNewConnection(connection.getPid(), connection);
@@ -678,15 +656,15 @@ public class BindingManagerImplTest {
         Assert.assertTrue(connection.isModerateBindingBound());
     }
 
-    /**
-     * Test that when the "Moderate Binding Till Backgrounded" experiment is enabled that a moderate
-     * binding is not added to foreground renderer processes when the initial binding is removed.
+    /*
+     * Test that a moderate binding is not added to foreground renderer processes when the initial
+     * binding is removed.
      */
     @Test
     @Feature({"ProcessManagement"})
-    public void testModerateBindingTillBackgroundedExperimentForegroundProcess() {
+    public void testModerateBindingTillBackgroundedForegroundProcess() {
         BindingManagerImpl manager = BindingManagerImpl.createBindingManagerForTesting(false);
-        manager.startModerateBindingManagement(mActivity, 4, true);
+        manager.startModerateBindingManagement(mActivity, 4);
 
         MockChildProcessConnection connection = new MockChildProcessConnection(0);
         manager.addNewConnection(connection.getPid(), connection);
@@ -701,16 +679,15 @@ public class BindingManagerImplTest {
         Assert.assertFalse(connection.isModerateBindingBound());
     }
 
-    /**
-     * Test that when the "Moderate Binding Till Backgrounded" experiment is enabled and that Chrome
-     * is sent to the background, that the initially added moderate bindings are removed and are not
-     * re-added when Chrome is brought back to the foreground.
+    /*
+     * Test that Chrome is sent to the background, that the initially added moderate bindings are
+     * removed and are not re-added when Chrome is brought back to the foreground.
      */
     @Test
     @Feature({"ProcessManagement"})
-    public void testModerateBindingTillBackgroundedExperimentSentToBackground() {
+    public void testModerateBindingTillBackgroundedSentToBackground() {
         BindingManagerImpl manager = BindingManagerImpl.createBindingManagerForTesting(false);
-        manager.startModerateBindingManagement(mActivity, 4, true);
+        manager.startModerateBindingManagement(mActivity, 4);
 
         MockChildProcessConnection connection = new MockChildProcessConnection(0);
         manager.addNewConnection(connection.getPid(), connection);

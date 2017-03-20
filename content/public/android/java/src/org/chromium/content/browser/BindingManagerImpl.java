@@ -296,10 +296,9 @@ class BindingManagerImpl implements BindingManager {
          */
         void determinedVisibility() {
             if (!removeInitialBinding()) return;
-
-            if (mModerateBindingTillBackgrounded) {
-                addConnectionToModerateBindingPool(mConnection);
-            }
+            // Decrease the likelihood of a recently created background tab getting evicted by
+            // immediately adding moderate binding.
+            addConnectionToModerateBindingPool(mConnection);
         }
 
         /**
@@ -338,10 +337,6 @@ class BindingManagerImpl implements BindingManager {
             return mConnection == null;
         }
     }
-
-    // Whether a moderate binding should be added to a render process on process creation and
-    // removed when Chrome is sent to the background.
-    private boolean mModerateBindingTillBackgrounded;
 
     // This can be manipulated on different threads, synchronize access on mManagedConnections.
     private final SparseArray<ManagedConnection> mManagedConnections =
@@ -488,13 +483,10 @@ class BindingManagerImpl implements BindingManager {
     }
 
     @Override
-    public void startModerateBindingManagement(
-            Context context, int maxSize, boolean moderateBindingTillBackgrounded) {
+    public void startModerateBindingManagement(Context context, int maxSize) {
         if (mIsLowMemoryDevice) return;
         ModerateBindingPool pool = new ModerateBindingPool(maxSize);
         if (mModerateBindingPool.compareAndSet(null, pool)) {
-            mModerateBindingTillBackgrounded = moderateBindingTillBackgrounded;
-
             Log.i(TAG, "Moderate binding enabled: maxSize=%d", maxSize);
             if (context != null) context.registerComponentCallbacks(pool);
         }

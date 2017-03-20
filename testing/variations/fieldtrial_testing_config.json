@@ -1270,18 +1270,6 @@
             ]
         }
     ],
-    "ModerateBindingOnBackgroundTabCreation": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled"
-                }
-            ]
-        }
-    ],
     "MojoChannel": [
         {
             "platforms": [
