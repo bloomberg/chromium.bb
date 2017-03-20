@@ -4,6 +4,8 @@
 
 ## Usage
 
+**Note: currently only Android Studio 2.2 is supported**
+
 Make sure you have followed
 [android build instructions](android_build_instructions.md) already.
 
