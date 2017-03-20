@@ -14,13 +14,13 @@
 #include "modules/EventTargetModules.h"
 #include "modules/ModulesExport.h"
 #include "modules/mediastream/MediaTrackCapabilities.h"
+#include "modules/mediastream/MediaTrackConstraintSet.h"
 #include "platform/AsyncMethodRunner.h"
 
 namespace blink {
 
 class ExceptionState;
 class MediaStreamTrack;
-class MediaTrackConstraintSet;
 class PhotoSettings;
 class ScriptPromiseResolver;
 class WebImageCaptureFrameGrabber;
@@ -64,6 +64,7 @@ class MODULES_EXPORT ImageCapture final
 
   void setMediaTrackConstraints(ScriptPromiseResolver*,
                                 const MediaTrackConstraintSet&);
+  const MediaTrackConstraintSet& getMediaTrackConstraints() const;
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -81,6 +82,8 @@ class MODULES_EXPORT ImageCapture final
   std::unique_ptr<WebImageCaptureFrameGrabber> m_frameGrabber;
   media::mojom::blink::ImageCapturePtr m_service;
   MediaTrackCapabilities m_capabilities;
+
+  MediaTrackConstraintSet m_currentConstraints;
 
   HeapHashSet<Member<ScriptPromiseResolver>> m_serviceRequests;
 };

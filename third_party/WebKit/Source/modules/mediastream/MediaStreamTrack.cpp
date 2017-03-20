@@ -216,10 +216,6 @@ MediaStreamTrack* MediaStreamTrack::clone(ScriptState* scriptState) {
   return clonedTrack;
 }
 
-void MediaStreamTrack::getConstraints(MediaTrackConstraints& constraints) {
-  MediaConstraintsImpl::convertConstraints(m_constraints, constraints);
-}
-
 void MediaStreamTrack::setConstraints(const WebMediaConstraints& constraints) {
   m_constraints = constraints;
 }
@@ -229,18 +225,43 @@ void MediaStreamTrack::getCapabilities(MediaTrackCapabilities& capabilities) {
     capabilities = m_imageCapture->getMediaTrackCapabilities();
 }
 
+void MediaStreamTrack::getConstraints(MediaTrackConstraints& constraints) {
+  MediaConstraintsImpl::convertConstraints(m_constraints, constraints);
+
+  if (!m_imageCapture)
+    return;
+  HeapVector<MediaTrackConstraintSet> vector;
+  if (constraints.hasAdvanced())
+    vector = constraints.advanced();
+  // TODO(mcasas): consider consolidating this code in MediaContraintsImpl.
+  auto imageCaptureConstraints = m_imageCapture->getMediaTrackConstraints();
+  // TODO(mcasas): add |torch|, https://crbug.com/700607.
+  if (imageCaptureConstraints.hasWhiteBalanceMode() ||
+      imageCaptureConstraints.hasExposureMode() ||
+      imageCaptureConstraints.hasFocusMode() ||
+      imageCaptureConstraints.hasExposureCompensation() ||
+      imageCaptureConstraints.hasColorTemperature() ||
+      imageCaptureConstraints.hasIso() ||
+      imageCaptureConstraints.hasBrightness() ||
+      imageCaptureConstraints.hasContrast() ||
+      imageCaptureConstraints.hasSaturation() ||
+      imageCaptureConstraints.hasSharpness() ||
+      imageCaptureConstraints.hasZoom()) {
+    // Add image capture constraints, if any, as another entry to advanced().
+    vector.emplace_back(imageCaptureConstraints);
+    constraints.setAdvanced(vector);
+  }
+}
+
 void MediaStreamTrack::getSettings(MediaTrackSettings& settings) {
   WebMediaStreamTrack::Settings platformSettings;
   m_component->getSettings(platformSettings);
-  if (platformSettings.hasFrameRate()) {
+  if (platformSettings.hasFrameRate())
     settings.setFrameRate(platformSettings.frameRate);
-  }
-  if (platformSettings.hasWidth()) {
+  if (platformSettings.hasWidth())
     settings.setWidth(platformSettings.width);
-  }
-  if (platformSettings.hasHeight()) {
+  if (platformSettings.hasHeight())
     settings.setHeight(platformSettings.height);
-  }
   if (RuntimeEnabledFeatures::mediaCaptureDepthEnabled() &&
       m_component->source()->type() == MediaStreamSource::TypeVideo) {
     if (platformSettings.hasVideoKind())
@@ -296,6 +317,7 @@ ScriptPromise MediaStreamTrack::applyConstraints(
     return promise;
   }
 
+  // TODO(mcasas): support more advanced constraints, https://crbug.com/700607.
   m_imageCapture->setMediaTrackConstraints(resolver, constraints.advanced()[0]);
   return promise;
 }
