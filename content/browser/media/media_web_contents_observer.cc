@@ -62,9 +62,7 @@ void MediaWebContentsObserver::MaybeUpdateAudibleState() {
 }
 
 bool MediaWebContentsObserver::HasActiveEffectivelyFullscreenVideo() const {
-  DCHECK(web_contents()->IsFullscreen());
-
-  if (!fullscreen_player_)
+  if (!web_contents()->IsFullscreen() || !fullscreen_player_)
     return false;
 
   // Check that the player is active.
