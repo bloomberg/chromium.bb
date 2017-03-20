@@ -2408,7 +2408,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBlackBoxBrowserTest, Registration) {
   }
 }
 
-#if defined(ANDROID)
+// Times out on CrOS and Linux. https://crbug.com/702256
+#if defined(ANDROID) || defined(OS_LINUX) || defined(OS_CHROMEOS)
 #define MAYBE_CrossSiteTransfer DISABLED_CrossSiteTransfer
 #else
 #define MAYBE_CrossSiteTransfer CrossSiteTransfer
