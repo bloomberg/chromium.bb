@@ -77,7 +77,7 @@ class MockCursorEvdev : public CursorDelegateEvdev {
 MATCHER_P4(MatchesMouseEvent, type, button, x, y, "") {
   if (arg->type() != type) {
     *result_listener << "Expected type: " << type << " actual: " << arg->type()
-                     << " (" << arg->name() << ")";
+                     << " (" << arg->GetName() << ")";
     return false;
   }
   if (button == EF_LEFT_MOUSE_BUTTON && !arg->IsLeftMouseButton()) {

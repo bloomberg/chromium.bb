@@ -21,8 +21,8 @@ UserActivityDetector* g_instance = nullptr;
 // Returns a string describing |event|.
 std::string GetEventDebugString(const ui::Event* event) {
   std::string details = base::StringPrintf(
-      "type=%d name=%s flags=%d time=%" PRId64, event->type(),
-      event->name().c_str(), event->flags(),
+      "type=%d name=%s flags=%d time=%" PRId64, event->type(), event->GetName(),
+      event->flags(),
       (event->time_stamp() - base::TimeTicks()).InMilliseconds());
 
   if (event->IsKeyEvent()) {
@@ -120,7 +120,7 @@ void UserActivityDetector::ProcessReceivedEvent(const ui::Event* event) {
 void UserActivityDetector::HandleActivity(const ui::Event* event) {
   base::TimeTicks now = GetCurrentTime();
   last_activity_time_ = now;
-  last_activity_name_ = event ? event->name() : std::string();
+  last_activity_name_ = event ? event->GetName() : std::string();
   if (last_observer_notification_time_.is_null() ||
       (now - last_observer_notification_time_).InMillisecondsF() >=
       kNotifyIntervalMs) {

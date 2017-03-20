@@ -73,10 +73,12 @@ class EVENTS_EXPORT Event {
 
   const base::NativeEvent& native_event() const { return native_event_; }
   EventType type() const { return type_; }
-  const std::string& name() const { return name_; }
   // time_stamp represents time since machine was booted.
   const base::TimeTicks time_stamp() const { return time_stamp_; }
   int flags() const { return flags_; }
+
+  // Returns a name for the event, typically used in logging/debugging.
+  const char* GetName() const;
 
   // This is only intended to be used externally by classes that are modifying
   // events in an EventRewriter.
@@ -301,13 +303,10 @@ class EVENTS_EXPORT Event {
     time_stamp_ = time_stamp;
   }
 
-  void set_name(const std::string& name) { name_ = name; }
-
  private:
   friend class EventTestApi;
 
   EventType type_;
-  std::string name_;
   base::TimeTicks time_stamp_;
   LatencyInfo latency_;
   int flags_;

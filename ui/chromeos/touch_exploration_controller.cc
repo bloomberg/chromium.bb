@@ -78,7 +78,7 @@ ui::EventRewriteStatus TouchExplorationController::RewriteEvent(
   if (!event.IsTouchEvent()) {
     if (event.IsKeyEvent()) {
       const ui::KeyEvent& key_event = static_cast<const ui::KeyEvent&>(event);
-      VLOG(1) << "\nKeyboard event: " << key_event.name()
+      VLOG(1) << "\nKeyboard event: " << key_event.GetName()
               << "\n Key code: " << key_event.key_code()
               << ", Flags: " << key_event.flags()
               << ", Is char: " << key_event.is_char();
@@ -158,7 +158,7 @@ ui::EventRewriteStatus TouchExplorationController::RewriteEvent(
 
     touch_locations_[*it] = location;
   } else {
-    NOTREACHED() << "Unexpected event type received: " << event.name();
+    NOTREACHED() << "Unexpected event type received: " << event.GetName();
     return ui::EVENT_REWRITE_CONTINUE;
   }
   VLOG_EVENT(touch_event);
@@ -261,7 +261,7 @@ ui::EventRewriteStatus TouchExplorationController::InNoFingersDown(
     std::unique_ptr<ui::Event>* rewritten_event) {
   const ui::EventType type = event.type();
   if (type != ui::ET_TOUCH_PRESSED) {
-    NOTREACHED() << "Unexpected event type received: " << event.name();
+    NOTREACHED() << "Unexpected event type received: " << event.GetName();
     return ui::EVENT_REWRITE_CONTINUE;
   }
 
@@ -1150,7 +1150,7 @@ void TouchExplorationController::VlogEvent(const ui::TouchEvent& touch_event,
     return;
   }
 
-  const std::string& type = touch_event.name();
+  const std::string& type = touch_event.GetName();
   const gfx::PointF& location = touch_event.location_f();
   const int touch_id = touch_event.pointer_details().id;
 

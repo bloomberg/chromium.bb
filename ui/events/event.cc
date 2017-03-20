@@ -44,11 +44,16 @@
 #include "ui/events/keycodes/platform_key_map_win.h"
 #endif
 
+namespace ui {
 namespace {
 
-std::string EventTypeName(ui::EventType type) {
-#define RETURN_IF_TYPE(t) if (type == ui::t)  return #t
-#define CASE_TYPE(t) case ui::t:  return #t
+const char* EventTypeName(EventType type) {
+  if (type >= ET_LAST)
+    return "";
+
+#define CASE_TYPE(t) \
+  case t:            \
+    return #t
   switch (type) {
     CASE_TYPE(ET_UNKNOWN);
     CASE_TYPE(ET_MOUSE_PRESSED);
@@ -97,81 +102,83 @@ std::string EventTypeName(ui::EventType type) {
     CASE_TYPE(ET_SCROLL_FLING_CANCEL);
     CASE_TYPE(ET_CANCEL_MODE);
     CASE_TYPE(ET_UMA_DATA);
-    case ui::ET_LAST: NOTREACHED(); return std::string();
-    // Don't include default, so that we get an error when new type is added.
+    case ET_LAST:
+      NOTREACHED();
+      return "";
+      // Don't include default, so that we get an error when new type is added.
   }
 #undef CASE_TYPE
 
   NOTREACHED();
-  return std::string();
+  return "";
 }
 
-ui::SourceEventType EventTypeToLatencySourceEventType(ui::EventType type) {
+SourceEventType EventTypeToLatencySourceEventType(EventType type) {
   switch (type) {
-    case ui::ET_UNKNOWN:
+    case ET_UNKNOWN:
     // SourceEventType for PointerEvents/GestureEvents can be either TOUCH or
     // WHEEL. The proper value is assigned in the constructors.
-    case ui::ET_POINTER_DOWN:
-    case ui::ET_POINTER_MOVED:
-    case ui::ET_POINTER_UP:
-    case ui::ET_POINTER_CANCELLED:
-    case ui::ET_POINTER_ENTERED:
-    case ui::ET_POINTER_EXITED:
-    case ui::ET_POINTER_CAPTURE_CHANGED:
-    case ui::ET_GESTURE_SCROLL_BEGIN:
-    case ui::ET_GESTURE_SCROLL_END:
-    case ui::ET_GESTURE_SCROLL_UPDATE:
-    case ui::ET_GESTURE_TAP:
-    case ui::ET_GESTURE_TAP_DOWN:
-    case ui::ET_GESTURE_TAP_CANCEL:
-    case ui::ET_GESTURE_TAP_UNCONFIRMED:
-    case ui::ET_GESTURE_DOUBLE_TAP:
-    case ui::ET_GESTURE_BEGIN:
-    case ui::ET_GESTURE_END:
-    case ui::ET_GESTURE_TWO_FINGER_TAP:
-    case ui::ET_GESTURE_PINCH_BEGIN:
-    case ui::ET_GESTURE_PINCH_END:
-    case ui::ET_GESTURE_PINCH_UPDATE:
-    case ui::ET_GESTURE_LONG_PRESS:
-    case ui::ET_GESTURE_LONG_TAP:
-    case ui::ET_GESTURE_SWIPE:
-    case ui::ET_GESTURE_SHOW_PRESS:
+    case ET_POINTER_DOWN:
+    case ET_POINTER_MOVED:
+    case ET_POINTER_UP:
+    case ET_POINTER_CANCELLED:
+    case ET_POINTER_ENTERED:
+    case ET_POINTER_EXITED:
+    case ET_POINTER_CAPTURE_CHANGED:
+    case ET_GESTURE_SCROLL_BEGIN:
+    case ET_GESTURE_SCROLL_END:
+    case ET_GESTURE_SCROLL_UPDATE:
+    case ET_GESTURE_TAP:
+    case ET_GESTURE_TAP_DOWN:
+    case ET_GESTURE_TAP_CANCEL:
+    case ET_GESTURE_TAP_UNCONFIRMED:
+    case ET_GESTURE_DOUBLE_TAP:
+    case ET_GESTURE_BEGIN:
+    case ET_GESTURE_END:
+    case ET_GESTURE_TWO_FINGER_TAP:
+    case ET_GESTURE_PINCH_BEGIN:
+    case ET_GESTURE_PINCH_END:
+    case ET_GESTURE_PINCH_UPDATE:
+    case ET_GESTURE_LONG_PRESS:
+    case ET_GESTURE_LONG_TAP:
+    case ET_GESTURE_SWIPE:
+    case ET_GESTURE_SHOW_PRESS:
     // Flings can be GestureEvents too.
-    case ui::ET_SCROLL_FLING_START:
-    case ui::ET_SCROLL_FLING_CANCEL:
-      return ui::SourceEventType::UNKNOWN;
+    case ET_SCROLL_FLING_START:
+    case ET_SCROLL_FLING_CANCEL:
+      return SourceEventType::UNKNOWN;
 
-    case ui::ET_MOUSE_PRESSED:
-    case ui::ET_MOUSE_DRAGGED:
-    case ui::ET_MOUSE_RELEASED:
-    case ui::ET_MOUSE_MOVED:
-    case ui::ET_MOUSE_ENTERED:
-    case ui::ET_MOUSE_EXITED:
-    case ui::ET_KEY_PRESSED:
-    case ui::ET_KEY_RELEASED:
-    case ui::ET_MOUSE_CAPTURE_CHANGED:
-    case ui::ET_DROP_TARGET_EVENT:
-    case ui::ET_CANCEL_MODE:
-    case ui::ET_UMA_DATA:
-      return ui::SourceEventType::OTHER;
+    case ET_MOUSE_PRESSED:
+    case ET_MOUSE_DRAGGED:
+    case ET_MOUSE_RELEASED:
+    case ET_MOUSE_MOVED:
+    case ET_MOUSE_ENTERED:
+    case ET_MOUSE_EXITED:
+    case ET_KEY_PRESSED:
+    case ET_KEY_RELEASED:
+    case ET_MOUSE_CAPTURE_CHANGED:
+    case ET_DROP_TARGET_EVENT:
+    case ET_CANCEL_MODE:
+    case ET_UMA_DATA:
+      return SourceEventType::OTHER;
 
-    case ui::ET_TOUCH_RELEASED:
-    case ui::ET_TOUCH_PRESSED:
-    case ui::ET_TOUCH_MOVED:
-    case ui::ET_TOUCH_CANCELLED:
-      return ui::SourceEventType::TOUCH;
+    case ET_TOUCH_RELEASED:
+    case ET_TOUCH_PRESSED:
+    case ET_TOUCH_MOVED:
+    case ET_TOUCH_CANCELLED:
+      return SourceEventType::TOUCH;
 
-    case ui::ET_MOUSEWHEEL:
-    case ui::ET_POINTER_WHEEL_CHANGED:
-    case ui::ET_SCROLL:
-      return ui::SourceEventType::WHEEL;
+    case ET_MOUSEWHEEL:
+    case ET_POINTER_WHEEL_CHANGED:
+    case ET_SCROLL:
+      return SourceEventType::WHEEL;
 
-    case ui::ET_LAST:
+    case ET_LAST:
       NOTREACHED();
-      return ui::SourceEventType::UNKNOWN;
+      return SourceEventType::UNKNOWN;
   }
   NOTREACHED();
-  return ui::SourceEventType::UNKNOWN;
+  return SourceEventType::UNKNOWN;
 }
 
 bool IsX11SendEventTrue(const base::NativeEvent& event) {
@@ -195,8 +202,6 @@ bool X11EventHasNonStandardState(const base::NativeEvent& event) {
 }
 
 }  // namespace
-
-namespace ui {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Event
@@ -241,6 +246,10 @@ std::unique_ptr<Event> Event::Clone(const Event& event) {
 Event::~Event() {
   if (delete_native_event_)
     ReleaseCopiedNativeEvent(native_event_);
+}
+
+const char* Event::GetName() const {
+  return EventTypeName(type_);
 }
 
 bool Event::IsMousePointerEvent() const {
@@ -378,10 +387,8 @@ Event::Event(EventType type, base::TimeTicks time_stamp, int flags)
       phase_(EP_PREDISPATCH),
       result_(ER_UNHANDLED),
       source_device_id_(ED_UNKNOWN_DEVICE) {
-  if (type_ < ET_LAST) {
+  if (type_ < ET_LAST)
     latency()->set_source_event_type(EventTypeToLatencySourceEventType(type));
-    name_ = EventTypeName(type_);
-  }
 }
 
 Event::Event(const base::NativeEvent& native_event,
@@ -398,10 +405,8 @@ Event::Event(const base::NativeEvent& native_event,
       result_(ER_UNHANDLED),
       source_device_id_(ED_UNKNOWN_DEVICE) {
   base::TimeDelta delta = EventTimeForNow() - time_stamp_;
-  if (type_ < ET_LAST) {
+  if (type_ < ET_LAST)
     latency()->set_source_event_type(EventTypeToLatencySourceEventType(type));
-    name_ = EventTypeName(type_);
-  }
   base::HistogramBase::Sample delta_sample =
       static_cast<base::HistogramBase::Sample>(delta.InMicroseconds());
   UMA_HISTOGRAM_CUSTOM_COUNTS("Event.Latency.Browser", delta_sample, 1, 1000000,
@@ -412,12 +417,11 @@ Event::Event(const base::NativeEvent& native_event,
   // instance will be used only for DCHECK builds and the second won't be
   // executed at all if the histogram was previously accessed here.
   STATIC_HISTOGRAM_POINTER_GROUP(
-      base::StringPrintf("Event.Latency.Browser.%s", name_.c_str()),
-      type_, ET_LAST, Add(delta_sample),
+      base::StringPrintf("Event.Latency.Browser.%s", GetName()), type_, ET_LAST,
+      Add(delta_sample),
       base::Histogram::FactoryGet(
-          base::StringPrintf("Event.Latency.Browser.%s", name_.c_str()),
-          1, 1000000, 100,
-          base::HistogramBase::kUmaTargetedHistogramFlag));
+          base::StringPrintf("Event.Latency.Browser.%s", GetName()), 1, 1000000,
+          100, base::HistogramBase::kUmaTargetedHistogramFlag));
 
 #if defined(USE_X11)
   if (native_event->type == GenericEvent) {
@@ -444,18 +448,12 @@ Event::Event(const Event& copy)
       phase_(EP_PREDISPATCH),
       result_(ER_UNHANDLED),
       source_device_id_(copy.source_device_id_) {
-  if (type_ < ET_LAST)
-    name_ = EventTypeName(type_);
 }
 
 void Event::SetType(EventType type) {
-  if (type_ < ET_LAST)
-    name_ = std::string();
   type_ = type;
-  if (type_ < ET_LAST) {
-    name_ = EventTypeName(type_);
+  if (type_ < ET_LAST)
     latency()->set_source_event_type(EventTypeToLatencySourceEventType(type));
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
