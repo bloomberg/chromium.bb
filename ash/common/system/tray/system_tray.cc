@@ -129,7 +129,7 @@ class SystemBubbleWrapper {
                 bool is_persistent) {
     DCHECK(anchor);
     LoginStatus login_status =
-        WmShell::Get()->system_tray_delegate()->GetUserLoginStatus();
+        Shell::Get()->system_tray_delegate()->GetUserLoginStatus();
     bubble_->InitView(anchor, login_status, init_params);
     bubble_->bubble_view()->set_anchor_view_insets(anchor_insets);
     bubble_wrapper_.reset(new TrayBubbleWrapper(tray, bubble_->bubble_view()));
@@ -328,7 +328,7 @@ void SystemTray::AddTrayItem(std::unique_ptr<SystemTrayItem> item) {
   SystemTrayItem* item_ptr = item.get();
   items_.push_back(std::move(item));
 
-  SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
+  SystemTrayDelegate* delegate = Shell::Get()->system_tray_delegate();
   views::View* tray_item =
       item_ptr->CreateTrayView(delegate->GetUserLoginStatus());
   item_ptr->UpdateAfterShelfAlignmentChange(shelf_alignment());
@@ -478,7 +478,7 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
                            bool persistent) {
   // No system tray bubbles in kiosk mode.
   SystemTrayDelegate* system_tray_delegate =
-      WmShell::Get()->system_tray_delegate();
+      Shell::Get()->system_tray_delegate();
   if (system_tray_delegate->GetUserLoginStatus() == LoginStatus::KIOSK_APP ||
       system_tray_delegate->GetUserLoginStatus() ==
           LoginStatus::ARC_KIOSK_APP) {
@@ -516,7 +516,7 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
       // The menu width is fixed, and it is a per language setting.
       menu_width = std::max(
           kTrayMenuMinimumWidth,
-          WmShell::Get()->system_tray_delegate()->GetSystemTrayMenuWidth());
+          Shell::Get()->system_tray_delegate()->GetSystemTrayMenuWidth());
     }
 
     TrayBubbleView::InitParams init_params(GetAnchorAlignment(), menu_width,
@@ -589,7 +589,7 @@ void SystemTray::UpdateWebNotifications() {
 base::string16 SystemTray::GetAccessibleTimeString(
     const base::Time& now) const {
   base::HourClockType hour_type =
-      WmShell::Get()->system_tray_controller()->hour_clock_type();
+      Shell::Get()->system_tray_controller()->hour_clock_type();
   return base::TimeFormatTimeOfDayWithHourClockType(now, hour_type,
                                                     base::kKeepAmPm);
 }

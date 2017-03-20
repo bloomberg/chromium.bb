@@ -85,20 +85,20 @@ ActiveWindowStateType GetActiveWindowState() {
 
 // Returns true if kiosk mode is active.
 bool IsKioskModeActive() {
-  return WmShell::Get()->system_tray_delegate()->GetUserLoginStatus() ==
+  return Shell::Get()->system_tray_delegate()->GetUserLoginStatus() ==
          LoginStatus::KIOSK_APP;
 }
 
 // Returns true if ARC kiosk mode is active.
 bool IsArcKioskModeActive() {
-  return WmShell::Get()->system_tray_delegate()->GetUserLoginStatus() ==
+  return Shell::Get()->system_tray_delegate()->GetUserLoginStatus() ==
          LoginStatus::ARC_KIOSK_APP;
 }
 
 // Returns true if there is an active user and their session isn't currently
 // locked.
 bool IsUserActive() {
-  switch (WmShell::Get()->system_tray_delegate()->GetUserLoginStatus()) {
+  switch (Shell::Get()->system_tray_delegate()->GetUserLoginStatus()) {
     case LoginStatus::NOT_LOGGED_IN:
     case LoginStatus::LOCKED:
       return false;

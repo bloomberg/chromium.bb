@@ -38,7 +38,7 @@ bool IsSmartVirtualKeyboardEnabled() {
 
 void MoveKeyboardToDisplayInternal(const int64_t display_id) {
   // Remove the keyboard from curent root window controller
-  WmShell::Get()->keyboard_ui()->Hide();
+  Shell::Get()->keyboard_ui()->Hide();
   RootWindowController::ForWindow(
       keyboard::KeyboardController::GetInstance()->GetContainerWindow())
       ->DeactivateKeyboard(keyboard::KeyboardController::GetInstance());

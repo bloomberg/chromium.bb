@@ -19,6 +19,7 @@
 #include "ash/common/system/user/rounded_image_view.h"
 #include "ash/common/wm_shell.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/ptr_util.h"
@@ -126,7 +127,7 @@ PublicAccountUserDetails::PublicAccountUserDetails(int max_width)
   display_name = kDisplayNameMark[0] + display_name + kDisplayNameMark[0];
   // Retrieve the domain managing the device and wrap it with markers.
   base::string16 domain = base::UTF8ToUTF16(
-      WmShell::Get()->system_tray_delegate()->GetEnterpriseDomain());
+      Shell::Get()->system_tray_delegate()->GetEnterpriseDomain());
   base::RemoveChars(domain, kDisplayNameMark, &domain);
   base::i18n::WrapStringWithLTRFormatting(&domain);
   // Retrieve the label text, inserting the display name and domain.
@@ -230,7 +231,7 @@ void PublicAccountUserDetails::GetAccessibleNodeData(
 void PublicAccountUserDetails::LinkClicked(views::Link* source,
                                            int event_flags) {
   DCHECK_EQ(source, learn_more_);
-  WmShell::Get()->system_tray_controller()->ShowPublicAccountInfo();
+  Shell::Get()->system_tray_controller()->ShowPublicAccountInfo();
 }
 
 void PublicAccountUserDetails::CalculatePreferredSize() {
@@ -416,7 +417,7 @@ void UserCardView::AddUserContent(views::BoxLayout* layout,
   base::string16 user_email_string;
   if (login_status != LoginStatus::GUEST) {
     user_email_string =
-        WmShell::Get()->system_tray_delegate()->IsUserSupervised()
+        Shell::Get()->system_tray_delegate()->IsUserSupervised()
             ? l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SUPERVISED_LABEL)
             : base::UTF8ToUTF16(
                   controller->GetUserSession(user_index_)->display_email);

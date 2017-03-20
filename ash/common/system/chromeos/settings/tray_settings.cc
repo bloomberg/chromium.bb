@@ -16,6 +16,7 @@
 #include "ash/common/system/tray/tray_popup_utils.h"
 #include "ash/common/wm_shell.h"
 #include "ash/resources/grit/ash_resources.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
@@ -87,7 +88,7 @@ class SettingsDefaultView : public ActionableView,
       return false;
     }
 
-    WmShell::Get()->system_tray_controller()->ShowSettings();
+    Shell::Get()->system_tray_controller()->ShowSettings();
     CloseSystemBubble();
     return true;
   }
@@ -149,7 +150,7 @@ views::View* TraySettings::CreateDefaultView(LoginStatus status) {
   if ((status == LoginStatus::NOT_LOGGED_IN || status == LoginStatus::LOCKED) &&
       !PowerStatus::Get()->IsBatteryPresent())
     return nullptr;
-  if (!WmShell::Get()->system_tray_delegate()->ShouldShowSettings())
+  if (!Shell::Get()->system_tray_delegate()->ShouldShowSettings())
     return nullptr;
   CHECK(default_view_ == nullptr);
   default_view_ = new tray::SettingsDefaultView(this, status);

@@ -4,7 +4,6 @@
 
 #include "ash/mus/test/wm_test_helper.h"
 
-#include "ash/common/test/wm_shell_test_api.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/mus/screen_mus.h"

@@ -18,8 +18,10 @@
 #include "ash/common/accelerators/ash_focus_manager_factory.h"
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/ash_constants.h"
+#include "ash/common/cast_config_controller.h"
 #include "ash/common/devtools/ash_devtools_css_agent.h"
 #include "ash/common/devtools/ash_devtools_dom_agent.h"
+#include "ash/common/focus_cycler.h"
 #include "ash/common/frame/custom_frame_view_ash.h"
 #include "ash/common/gpu_support.h"
 #include "ash/common/keyboard/keyboard_ui.h"
@@ -29,12 +31,20 @@
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_delegate.h"
 #include "ash/common/shell_observer.h"
+#include "ash/common/system/brightness_control_delegate.h"
 #include "ash/common/system/chromeos/bluetooth/bluetooth_notification_controller.h"
+#include "ash/common/system/chromeos/brightness/brightness_controller_chromeos.h"
+#include "ash/common/system/chromeos/keyboard_brightness_controller.h"
 #include "ash/common/system/chromeos/network/sms_observer.h"
 #include "ash/common/system/chromeos/power/power_status.h"
+#include "ash/common/system/chromeos/session/logout_confirmation_controller.h"
+#include "ash/common/system/keyboard_brightness_control_delegate.h"
+#include "ash/common/system/locale/locale_notification_controller.h"
 #include "ash/common/system/status_area_widget.h"
 #include "ash/common/system/toast/toast_manager.h"
+#include "ash/common/system/tray/system_tray_controller.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
+#include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/wallpaper/wallpaper_controller.h"
 #include "ash/common/wallpaper/wallpaper_delegate.h"
 #include "ash/common/wm/container_finder.h"
@@ -339,7 +349,7 @@ void Shell::CreateKeyboard() {
 
 void Shell::DeactivateKeyboard() {
   // TODO(jamescook): Move keyboard create and hide into WmShell.
-  wm_shell_->keyboard_ui()->Hide();
+  keyboard_ui_->Hide();
   if (keyboard::KeyboardController::GetInstance()) {
     RootWindowControllerList controllers = GetAllRootWindowControllers();
     for (RootWindowControllerList::iterator iter = controllers.begin();
@@ -505,7 +515,16 @@ void Shell::NotifyShelfAutoHideBehaviorChanged(WmWindow* root_window) {
 Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
              std::unique_ptr<WmShell> wm_shell)
     : wm_shell_(std::move(wm_shell)),
+      brightness_control_delegate_(
+          base::MakeUnique<system::BrightnessControllerChromeos>()),
+      cast_config_(base::MakeUnique<CastConfigController>()),
+      focus_cycler_(base::MakeUnique<FocusCycler>()),
+      keyboard_brightness_control_delegate_(
+          base::MakeUnique<KeyboardBrightnessController>()),
+      locale_notification_controller_(
+          base::MakeUnique<LocaleNotificationController>()),
       shell_delegate_(std::move(shell_delegate)),
+      system_tray_controller_(base::MakeUnique<SystemTrayController>()),
       app_list_(base::MakeUnique<app_list::AppList>()),
       link_handler_model_factory_(nullptr),
       display_configurator_(new display::DisplayConfigurator()),
@@ -590,7 +609,7 @@ Shell::~Shell() {
   // to deinitialize the shelf first, as it is initialized after the delegate.
   for (WmWindow* root : wm_shell_->GetAllRootWindows())
     root->GetRootWindowController()->GetShelf()->ShutdownShelfWidget();
-  wm_shell_->DeleteSystemTrayDelegate();
+  DeleteSystemTrayDelegate();
 
   // Drag-and-drop must be canceled prior to close all windows.
   drag_drop_controller_.reset();
@@ -949,7 +968,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   resize_shadow_controller_.reset(new ResizeShadowController());
   shadow_controller_.reset(new ::wm::ShadowController(focus_controller_.get()));
 
-  wm_shell_->SetSystemTrayDelegate(
+  SetSystemTrayDelegate(
       base::WrapUnique(shell_delegate_->CreateSystemTrayDelegate()));
 
   // Create AshTouchTransformController before
@@ -961,8 +980,7 @@ void Shell::Init(const ShellInitParams& init_params) {
         display_configurator_.get(), display_manager_.get()));
   }
 
-  if (!is_mash)
-    wm_shell_->SetKeyboardUI(KeyboardUI::Create());
+  keyboard_ui_ = wm_shell_->CreateKeyboardUI();
 
   wm_shell_->InitHosts(init_params);
 
@@ -1045,6 +1063,24 @@ void Shell::InitRootWindow(aura::Window* root_window) {
                                     toplevel_window_event_handler_.get());
   root_window->AddPreTargetHandler(toplevel_window_event_handler_.get());
   root_window->AddPostTargetHandler(toplevel_window_event_handler_.get());
+}
+
+void Shell::SetSystemTrayDelegate(
+    std::unique_ptr<SystemTrayDelegate> delegate) {
+  DCHECK(delegate);
+  system_tray_delegate_ = std::move(delegate);
+  system_tray_delegate_->Initialize();
+  // Accesses WmShell in its constructor.
+  logout_confirmation_controller_.reset(new LogoutConfirmationController(
+      base::Bind(&SystemTrayController::SignOut,
+                 base::Unretained(system_tray_controller_.get()))));
+}
+
+void Shell::DeleteSystemTrayDelegate() {
+  DCHECK(system_tray_delegate_);
+  // Accesses WmShell in its destructor.
+  logout_confirmation_controller_.reset();
+  system_tray_delegate_.reset();
 }
 
 void Shell::CloseAllRootWindowChildWindows() {

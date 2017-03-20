@@ -18,6 +18,7 @@
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/shell.h"
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/events/event.h"
@@ -84,9 +85,9 @@ void LogoutButtonTray::ButtonPressed(views::Button* sender,
 
   if (dialog_duration_ <= base::TimeDelta()) {
     // Sign out immediately if |dialog_duration_| is non-positive.
-    WmShell::Get()->system_tray_controller()->SignOut();
-  } else if (WmShell::Get()->logout_confirmation_controller()) {
-    WmShell::Get()->logout_confirmation_controller()->ConfirmLogout(
+    Shell::Get()->system_tray_controller()->SignOut();
+  } else if (Shell::Get()->logout_confirmation_controller()) {
+    Shell::Get()->logout_confirmation_controller()->ConfirmLogout(
         base::TimeTicks::Now() + dialog_duration_);
   }
 }

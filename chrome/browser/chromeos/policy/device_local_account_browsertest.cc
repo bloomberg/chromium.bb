@@ -15,7 +15,7 @@
 
 #include "ash/common/system/chromeos/session/logout_confirmation_controller.h"
 #include "ash/common/system/chromeos/session/logout_confirmation_dialog.h"
-#include "ash/common/wm_shell.h"
+#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -1537,7 +1537,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, LastWindowClosedLogoutReminder) {
 
   // Verify that the logout confirmation dialog is not showing.
   ash::LogoutConfirmationController* logout_confirmation_controller =
-      ash::WmShell::Get()->logout_confirmation_controller();
+      ash::Shell::Get()->logout_confirmation_controller();
   ASSERT_TRUE(logout_confirmation_controller);
   EXPECT_FALSE(logout_confirmation_controller->dialog_for_testing());
 

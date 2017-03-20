@@ -10,9 +10,9 @@
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/system/tray/tray_constants.h"
-#include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display.h"
@@ -35,8 +35,8 @@ VirtualKeyboardTray::VirtualKeyboardTray(WmShelf* wm_shelf)
   tray_container()->AddChildView(icon_);
 
   // The Shell may not exist in some unit tests.
-  if (WmShell::HasInstance())
-    WmShell::Get()->keyboard_ui()->AddObserver(this);
+  if (Shell::HasInstance())
+    Shell::Get()->keyboard_ui()->AddObserver(this);
   // Try observing keyboard controller, in case it is already constructed.
   ObserveKeyboardController();
 }
@@ -45,8 +45,8 @@ VirtualKeyboardTray::~VirtualKeyboardTray() {
   // Try unobserving keyboard controller, in case it still exists.
   UnobserveKeyboardController();
   // The Shell may not exist in some unit tests.
-  if (WmShell::HasInstance())
-    WmShell::Get()->keyboard_ui()->RemoveObserver(this);
+  if (Shell::HasInstance())
+    Shell::Get()->keyboard_ui()->RemoveObserver(this);
 }
 
 void VirtualKeyboardTray::SetShelfAlignment(ShelfAlignment alignment) {
@@ -70,7 +70,7 @@ void VirtualKeyboardTray::ClickedOutsideBubble() {}
 bool VirtualKeyboardTray::PerformAction(const ui::Event& event) {
   const int64_t display_id =
       wm_shelf_->GetWindow()->GetDisplayNearestWindow().id();
-  WmShell::Get()->keyboard_ui()->ShowInDisplay(display_id);
+  Shell::Get()->keyboard_ui()->ShowInDisplay(display_id);
   // Normally, active status is set when virtual keyboard is shown/hidden,
   // however, showing virtual keyboard happens asynchronously and, especially
   // the first time, takes some time. We need to set active status here to

@@ -10,6 +10,7 @@
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/wm_shell.h"
 #include "ash/resources/grit/ash_resources.h"
+#include "ash/shell.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
 
@@ -26,7 +27,7 @@ TrayEnterprise::~TrayEnterprise() {
 
 void TrayEnterprise::UpdateEnterpriseMessage() {
   base::string16 message =
-      WmShell::Get()->system_tray_delegate()->GetEnterpriseMessage();
+      Shell::Get()->system_tray_delegate()->GetEnterpriseMessage();
   if (tray_view_)
     tray_view_->SetMessage(message);
 }
@@ -51,7 +52,7 @@ void TrayEnterprise::OnEnterpriseDomainChanged() {
 }
 
 void TrayEnterprise::OnViewClicked(views::View* sender) {
-  WmShell::Get()->system_tray_delegate()->ShowEnterpriseInfo();
+  Shell::Get()->system_tray_delegate()->ShowEnterpriseInfo();
 }
 
 }  // namespace ash

@@ -15,6 +15,7 @@
 #include "ash/common/wm_shell.h"
 #include "ash/public/interfaces/update.mojom.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
@@ -96,7 +97,7 @@ class TrayUpdate::UpdateView : public ActionableView {
  private:
   // Overridden from ActionableView.
   bool PerformAction(const ui::Event& event) override {
-    WmShell::Get()->system_tray_controller()->RequestRestartForUpdate();
+    Shell::Get()->system_tray_controller()->RequestRestartForUpdate();
     WmShell::Get()->RecordUserMetricsAction(
         UMA_STATUS_AREA_OS_UPDATE_DEFAULT_SELECTED);
     CloseSystemBubble();

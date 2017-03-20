@@ -38,16 +38,10 @@ enum class PointerWatcherEventTypes;
 
 namespace ash {
 class AcceleratorController;
-class BrightnessControlDelegate;
-class CastConfigController;
-class FocusCycler;
 class ImmersiveContextAsh;
 class ImmersiveFullscreenController;
 class KeyEventWatcher;
-class KeyboardBrightnessControlDelegate;
 class KeyboardUI;
-class LocaleNotificationController;
-class LogoutConfirmationController;
 class MaximizeModeController;
 class MediaController;
 class MruWindowTracker;
@@ -62,8 +56,6 @@ class ShelfModel;
 class ShelfWindowWatcher;
 struct ShellInitParams;
 class ShutdownController;
-class SystemTrayDelegate;
-class SystemTrayController;
 class SystemTrayNotifier;
 class VpnList;
 class WindowCycleController;
@@ -92,28 +84,6 @@ class ASH_EXPORT WmShell : public SessionStateObserver {
 
   virtual void Shutdown();
 
-  BrightnessControlDelegate* brightness_control_delegate() {
-    return brightness_control_delegate_.get();
-  }
-
-  CastConfigController* cast_config() { return cast_config_.get(); }
-
-  FocusCycler* focus_cycler() { return focus_cycler_.get(); }
-
-  KeyboardBrightnessControlDelegate* keyboard_brightness_control_delegate() {
-    return keyboard_brightness_control_delegate_.get();
-  }
-
-  KeyboardUI* keyboard_ui() { return keyboard_ui_.get(); }
-
-  LocaleNotificationController* locale_notification_controller() {
-    return locale_notification_controller_.get();
-  }
-
-  LogoutConfirmationController* logout_confirmation_controller() {
-    return logout_confirmation_controller_.get();
-  }
-
   MaximizeModeController* maximize_mode_controller() {
     return maximize_mode_controller_.get();
   }
@@ -138,16 +108,8 @@ class ASH_EXPORT WmShell : public SessionStateObserver {
     return shutdown_controller_.get();
   }
 
-  SystemTrayController* system_tray_controller() {
-    return system_tray_controller_.get();
-  }
-
   SystemTrayNotifier* system_tray_notifier() {
     return system_tray_notifier_.get();
-  }
-
-  SystemTrayDelegate* system_tray_delegate() {
-    return system_tray_delegate_.get();
   }
 
   VpnList* vpn_list() { return vpn_list_.get(); }
@@ -273,6 +235,9 @@ class ASH_EXPORT WmShell : public SessionStateObserver {
   virtual std::unique_ptr<ImmersiveFullscreenController>
   CreateImmersiveFullscreenController() = 0;
 
+  // Creates the KeyboardUI. This is called early on.
+  virtual std::unique_ptr<KeyboardUI> CreateKeyboardUI() = 0;
+
   virtual std::unique_ptr<KeyEventWatcher> CreateKeyEventWatcher() = 0;
 
   // Creates the ShelfView for each display and populates it with items.
@@ -333,13 +298,6 @@ class ASH_EXPORT WmShell : public SessionStateObserver {
   virtual std::unique_ptr<AcceleratorController>
   CreateAcceleratorController() = 0;
 
-  void SetKeyboardUI(std::unique_ptr<KeyboardUI> keyboard_ui);
-
-  // Helpers to set (and initialize) or destroy various delegates.
-  // TODO(msw|jamescook): Remove these once ShellDelegate, etc. are ported.
-  void SetSystemTrayDelegate(std::unique_ptr<SystemTrayDelegate> delegate);
-  void DeleteSystemTrayDelegate();
-
   void DeleteWindowCycleController();
 
   void DeleteWindowSelectorController();
@@ -356,19 +314,10 @@ class ASH_EXPORT WmShell : public SessionStateObserver {
  private:
   friend class AcceleratorControllerTest;
   friend class Shell;
-  friend class WmShellTestApi;
 
   static WmShell* instance_;
 
-  std::unique_ptr<BrightnessControlDelegate> brightness_control_delegate_;
-  std::unique_ptr<CastConfigController> cast_config_;
-  std::unique_ptr<FocusCycler> focus_cycler_;
   std::unique_ptr<ImmersiveContextAsh> immersive_context_;
-  std::unique_ptr<KeyboardBrightnessControlDelegate>
-      keyboard_brightness_control_delegate_;
-  std::unique_ptr<KeyboardUI> keyboard_ui_;
-  std::unique_ptr<LocaleNotificationController> locale_notification_controller_;
-  std::unique_ptr<LogoutConfirmationController> logout_confirmation_controller_;
   std::unique_ptr<MaximizeModeController> maximize_mode_controller_;
   std::unique_ptr<MediaController> media_controller_;
   std::unique_ptr<MruWindowTracker> mru_window_tracker_;
@@ -378,9 +327,7 @@ class ASH_EXPORT WmShell : public SessionStateObserver {
   std::unique_ptr<ShelfDelegate> shelf_delegate_;
   std::unique_ptr<ShelfWindowWatcher> shelf_window_watcher_;
   std::unique_ptr<ShutdownController> shutdown_controller_;
-  std::unique_ptr<SystemTrayController> system_tray_controller_;
   std::unique_ptr<SystemTrayNotifier> system_tray_notifier_;
-  std::unique_ptr<SystemTrayDelegate> system_tray_delegate_;
   std::unique_ptr<VpnList> vpn_list_;
   std::unique_ptr<WindowCycleController> window_cycle_controller_;
   std::unique_ptr<WindowSelectorController> window_selector_controller_;

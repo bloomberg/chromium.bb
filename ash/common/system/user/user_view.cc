@@ -269,7 +269,7 @@ void UserView::ButtonPressed(views::Button* sender, const ui::Event& event) {
   if (sender == logout_button_) {
     WmShell::Get()->RecordUserMetricsAction(UMA_STATUS_AREA_SIGN_OUT);
     RemoveAddUserMenuOption();
-    WmShell::Get()->system_tray_controller()->SignOut();
+    Shell::Get()->system_tray_controller()->SignOut();
   } else if (sender == user_card_view_ &&
              IsMultiProfileSupportedAndUserActive()) {
     if (IsActiveUser()) {
@@ -286,7 +286,7 @@ void UserView::ButtonPressed(views::Button* sender, const ui::Event& event) {
     RemoveAddUserMenuOption();
     // Let the user add another account to the session.
     MultiProfileUMA::RecordSigninUser(MultiProfileUMA::SIGNIN_USER_BY_TRAY);
-    WmShell::Get()->system_tray_delegate()->ShowUserLogin();
+    Shell::Get()->system_tray_delegate()->ShowUserLogin();
     owner_->system_tray()->CloseSystemBubble();
   } else {
     NOTREACHED();

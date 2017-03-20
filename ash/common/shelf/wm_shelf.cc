@@ -77,11 +77,11 @@ WmShelf* WmShelf::ForWindow(WmWindow* window) {
 
 // static
 bool WmShelf::CanChangeShelfAlignment() {
-  if (WmShell::Get()->system_tray_delegate()->IsUserSupervised())
+  if (Shell::Get()->system_tray_delegate()->IsUserSupervised())
     return false;
 
   LoginStatus login_status =
-      WmShell::Get()->system_tray_delegate()->GetUserLoginStatus();
+      Shell::Get()->system_tray_delegate()->GetUserLoginStatus();
 
   switch (login_status) {
     case LoginStatus::LOCKED:

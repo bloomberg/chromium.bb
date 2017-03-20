@@ -24,6 +24,7 @@
 #include "ash/common/system/tray/tri_view.h"
 #include "ash/common/wm_shell.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -359,11 +360,12 @@ void VPNListView::OnViewClicked(views::View* sender) {
     if (provider.third_party) {
       shell->RecordUserMetricsAction(
           UMA_STATUS_AREA_VPN_ADD_THIRD_PARTY_CLICKED);
-      shell->system_tray_controller()->ShowThirdPartyVpnCreate(
+      Shell::Get()->system_tray_controller()->ShowThirdPartyVpnCreate(
           provider.extension_id);
     } else {
       shell->RecordUserMetricsAction(UMA_STATUS_AREA_VPN_ADD_BUILT_IN_CLICKED);
-      shell->system_tray_controller()->ShowNetworkCreate(shill::kTypeVPN);
+      Shell::Get()->system_tray_controller()->ShowNetworkCreate(
+          shill::kTypeVPN);
     }
     return;
   }

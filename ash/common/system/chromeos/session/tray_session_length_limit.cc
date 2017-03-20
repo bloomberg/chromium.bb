@@ -15,6 +15,7 @@
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/wm_shell.h"
 #include "ash/resources/grit/ash_resources.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
@@ -90,7 +91,7 @@ void TraySessionLengthLimit::Update() {
 }
 
 void TraySessionLengthLimit::UpdateState() {
-  SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
+  SystemTrayDelegate* delegate = Shell::Get()->system_tray_delegate();
   if (delegate->GetSessionStartTime(&session_start_time_) &&
       delegate->GetSessionLengthLimit(&time_limit_)) {
     const base::TimeDelta expiring_soon_threshold(

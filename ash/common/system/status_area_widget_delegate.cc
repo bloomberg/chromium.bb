@@ -9,9 +9,9 @@
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/system/tray/tray_constants.h"
-#include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/root_window_controller.h"
+#include "ash/shell.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/animation/tween.h"
@@ -90,7 +90,7 @@ bool StatusAreaWidgetDelegate::CanActivate() const {
   // activation when the user is using the keyboard (FocusCycler).
   const FocusCycler* focus_cycler = focus_cycler_for_testing_
                                         ? focus_cycler_for_testing_
-                                        : WmShell::Get()->focus_cycler();
+                                        : Shell::Get()->focus_cycler();
   return focus_cycler->widget_activating() == GetWidget();
 }
 

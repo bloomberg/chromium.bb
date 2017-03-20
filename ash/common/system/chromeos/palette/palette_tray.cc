@@ -67,7 +67,7 @@ bool IsInUserSession() {
   return !session_controller->IsUserSessionBlocked() &&
          session_controller->GetSessionState() ==
              session_manager::SessionState::ACTIVE &&
-         WmShell::Get()->system_tray_delegate()->GetUserLoginStatus() !=
+         Shell::Get()->system_tray_delegate()->GetUserLoginStatus() !=
              LoginStatus::KIOSK_APP;
 }
 
@@ -125,12 +125,12 @@ class TitleView : public views::View, public views::ButtonListener {
     if (sender == settings_button_) {
       palette_tray_->RecordPaletteOptionsUsage(
           PaletteTrayOptions::PALETTE_SETTINGS_BUTTON);
-      WmShell::Get()->system_tray_controller()->ShowPaletteSettings();
+      Shell::Get()->system_tray_controller()->ShowPaletteSettings();
       palette_tray_->HidePalette();
     } else if (sender == help_button_) {
       palette_tray_->RecordPaletteOptionsUsage(
           PaletteTrayOptions::PALETTE_HELP_BUTTON);
-      WmShell::Get()->system_tray_controller()->ShowPaletteHelp();
+      Shell::Get()->system_tray_controller()->ShowPaletteHelp();
       palette_tray_->HidePalette();
     } else {
       NOTREACHED();

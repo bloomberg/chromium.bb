@@ -16,10 +16,10 @@
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/web_notification/web_notification_tray.h"
-#include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
+#include "ash/shell.h"
 #include "base/i18n/time_formatting.h"
 #include "ui/display/display.h"
 #include "ui/native_theme/native_theme_dark_aura.h"
@@ -62,7 +62,7 @@ void StatusAreaWidget::CreateTrayViews() {
   AddImeMenuTray();
   AddLogoutButtonTray();
 
-  SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
+  SystemTrayDelegate* delegate = Shell::Get()->system_tray_delegate();
   DCHECK(delegate);
   // Initialize after all trays have been created.
   system_tray_->InitializeTrayItems(delegate, web_notification_tray_);

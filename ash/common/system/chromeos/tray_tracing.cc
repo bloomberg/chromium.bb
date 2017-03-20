@@ -16,6 +16,7 @@
 #include "ash/common/system/tray/tri_view.h"
 #include "ash/common/wm_shell.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"
@@ -57,7 +58,7 @@ class DefaultTracingView : public ActionableView {
   bool PerformAction(const ui::Event& event) override {
     WmShell::Get()->RecordUserMetricsAction(
         UMA_STATUS_AREA_TRACING_DEFAULT_SELECTED);
-    WmShell::Get()->system_tray_controller()->ShowChromeSlow();
+    Shell::Get()->system_tray_controller()->ShowChromeSlow();
     CloseSystemBubble();
     return true;
   }

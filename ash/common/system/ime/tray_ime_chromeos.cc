@@ -189,7 +189,7 @@ class IMEDetailedView : public ImeListView {
 
   void ShowSettings() {
     WmShell::Get()->RecordUserMetricsAction(UMA_STATUS_AREA_IME_SHOW_DETAILED);
-    WmShell::Get()->system_tray_controller()->ShowIMESettings();
+    Shell::Get()->system_tray_controller()->ShowIMESettings();
     if (owner()->system_tray())
       owner()->system_tray()->CloseSystemBubble();
   }
@@ -282,7 +282,7 @@ bool TrayIME::ShouldShowKeyboardToggle() {
 base::string16 TrayIME::GetDefaultViewLabel(bool show_ime_label) {
   if (show_ime_label) {
     IMEInfo current;
-    WmShell::Get()->system_tray_delegate()->GetCurrentIME(&current);
+    Shell::Get()->system_tray_delegate()->GetCurrentIME(&current);
     return current.name;
   } else {
     // Display virtual keyboard status instead.
@@ -334,7 +334,7 @@ void TrayIME::DestroyDetailedView() {
 
 void TrayIME::OnIMERefresh() {
   // Caches the current ime state.
-  SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
+  SystemTrayDelegate* delegate = Shell::Get()->system_tray_delegate();
   ime_list_.clear();
   property_list_.clear();
   delegate->GetCurrentIME(&current_ime_);

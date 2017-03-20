@@ -615,7 +615,7 @@ void ChromeLauncherControllerImpl::ActiveUserChanged(
   // user.
   RestoreUnpinnedRunningApplicationOrder(user_email);
   // Inform the system tray of the change.
-  ash::WmShell::Get()->system_tray_delegate()->ActiveUserWasChanged();
+  ash::Shell::Get()->system_tray_delegate()->ActiveUserWasChanged();
   // Force on-screen keyboard to reset.
   if (keyboard::IsKeyboardEnabled())
     ash::Shell::GetInstance()->CreateKeyboard();

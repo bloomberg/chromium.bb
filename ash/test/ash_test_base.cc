@@ -306,7 +306,7 @@ TestSessionControllerClient* AshTestBase::GetSessionControllerClient() {
 
 TestSystemTrayDelegate* AshTestBase::GetSystemTrayDelegate() {
   return static_cast<TestSystemTrayDelegate*>(
-      WmShell::Get()->system_tray_delegate());
+      Shell::Get()->system_tray_delegate());
 }
 
 void AshTestBase::SetSessionStarted(bool session_started) {

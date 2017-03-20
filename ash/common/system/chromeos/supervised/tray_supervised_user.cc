@@ -10,8 +10,8 @@
 #include "ash/common/system/system_notifier.h"
 #include "ash/common/system/tray/label_tray_view.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
-#include "ash/common/wm_shell.h"
 #include "ash/resources/grit/ash_resources.h"
+#include "ash/shell.h"
 #include "base/callback.h"
 #include "base/logging.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -31,20 +31,20 @@ TraySupervisedUser::TraySupervisedUser(SystemTray* system_tray)
       tray_view_(NULL),
       status_(LoginStatus::NOT_LOGGED_IN),
       is_user_supervised_(false) {
-  WmShell::Get()->system_tray_delegate()->AddCustodianInfoTrayObserver(this);
+  Shell::Get()->system_tray_delegate()->AddCustodianInfoTrayObserver(this);
 }
 
 TraySupervisedUser::~TraySupervisedUser() {
   // We need the check as on shell destruction delegate is destroyed first.
   SystemTrayDelegate* system_tray_delegate =
-      WmShell::Get()->system_tray_delegate();
+      Shell::Get()->system_tray_delegate();
   if (system_tray_delegate)
     system_tray_delegate->RemoveCustodianInfoTrayObserver(this);
 }
 
 void TraySupervisedUser::UpdateMessage() {
   base::string16 message =
-      WmShell::Get()->system_tray_delegate()->GetSupervisedUserMessage();
+      Shell::Get()->system_tray_delegate()->GetSupervisedUserMessage();
   if (tray_view_)
     tray_view_->SetMessage(message);
   if (message_center::MessageCenter::Get()->FindVisibleNotificationById(
@@ -54,7 +54,7 @@ void TraySupervisedUser::UpdateMessage() {
 
 views::View* TraySupervisedUser::CreateDefaultView(LoginStatus status) {
   CHECK(tray_view_ == NULL);
-  SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
+  SystemTrayDelegate* delegate = Shell::Get()->system_tray_delegate();
   if (!delegate->IsUserSupervised())
     return NULL;
 
@@ -72,7 +72,7 @@ void TraySupervisedUser::OnViewClicked(views::View* sender) {
 }
 
 void TraySupervisedUser::UpdateAfterLoginStatusChange(LoginStatus status) {
-  SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
+  SystemTrayDelegate* delegate = Shell::Get()->system_tray_delegate();
 
   bool is_user_supervised = delegate->IsUserSupervised();
   if (status == status_ && is_user_supervised == is_user_supervised_)
@@ -101,12 +101,12 @@ void TraySupervisedUser::CreateOrUpdateNotification(
 }
 
 void TraySupervisedUser::CreateOrUpdateSupervisedWarningNotification() {
-  SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
+  SystemTrayDelegate* delegate = Shell::Get()->system_tray_delegate();
   CreateOrUpdateNotification(delegate->GetSupervisedUserMessage());
 }
 
 void TraySupervisedUser::OnCustodianInfoChanged() {
-  SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
+  SystemTrayDelegate* delegate = Shell::Get()->system_tray_delegate();
   std::string manager_name = delegate->GetSupervisedUserManager();
   if (!manager_name.empty()) {
     if (!delegate->IsUserChild() &&
@@ -119,7 +119,7 @@ void TraySupervisedUser::OnCustodianInfoChanged() {
 }
 
 int TraySupervisedUser::GetSupervisedUserIconId() const {
-  SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
+  SystemTrayDelegate* delegate = Shell::Get()->system_tray_delegate();
 
   // Not intended to be used for non-supervised users.
   CHECK(delegate->IsUserSupervised());

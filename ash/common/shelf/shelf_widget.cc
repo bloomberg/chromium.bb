@@ -170,7 +170,7 @@ ShelfWidget::ShelfWidget(WmWindow* shelf_container, WmShelf* wm_shelf)
 ShelfWidget::~ShelfWidget() {
   // Must call Shutdown() before destruction.
   DCHECK(!status_area_widget_);
-  WmShell::Get()->focus_cycler()->RemoveWidget(this);
+  Shell::Get()->focus_cycler()->RemoveWidget(this);
   SetFocusCycler(nullptr);
   RemoveObserver(this);
   background_animator_.RemoveObserver(delegate_view_);
@@ -185,7 +185,7 @@ void ShelfWidget::CreateStatusAreaWidget(WmWindow* status_container) {
   status_area_widget_->CreateTrayViews();
   if (WmShell::Get()->session_controller()->IsActiveUserSessionStarted())
     status_area_widget_->Show();
-  WmShell::Get()->focus_cycler()->AddWidget(status_area_widget_);
+  Shell::Get()->focus_cycler()->AddWidget(status_area_widget_);
   background_animator_.AddObserver(status_area_widget_);
   status_container->SetLayoutManager(
       base::MakeUnique<StatusAreaLayoutManager>(this));
@@ -240,7 +240,7 @@ ShelfView* ShelfWidget::CreateShelfView() {
 }
 
 void ShelfWidget::PostCreateShelf() {
-  SetFocusCycler(WmShell::Get()->focus_cycler());
+  SetFocusCycler(Shell::Get()->focus_cycler());
 
   // Ensure the newly created |shelf_| gets current values.
   background_animator_.NotifyObserver(this);
@@ -294,7 +294,7 @@ void ShelfWidget::Shutdown() {
 
   if (status_area_widget_) {
     background_animator_.RemoveObserver(status_area_widget_);
-    WmShell::Get()->focus_cycler()->RemoveWidget(status_area_widget_);
+    Shell::Get()->focus_cycler()->RemoveWidget(status_area_widget_);
     status_area_widget_->Shutdown();
     status_area_widget_ = nullptr;
   }

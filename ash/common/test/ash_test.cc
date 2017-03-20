@@ -12,6 +12,7 @@
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/root_window_controller.h"
+#include "ash/shell.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "ui/aura/window.h"
@@ -46,7 +47,7 @@ SystemTray* AshTest::GetPrimarySystemTray() {
 // static
 test::TestSystemTrayDelegate* AshTest::GetSystemTrayDelegate() {
   return static_cast<test::TestSystemTrayDelegate*>(
-      WmShell::Get()->system_tray_delegate());
+      Shell::Get()->system_tray_delegate());
 }
 
 void AshTest::UpdateDisplay(const std::string& display_spec) {

@@ -130,8 +130,7 @@ IN_PROC_BROWSER_TEST_F(SystemTrayDelegateBluetoothTest, Basics) {
           BluezDBusManager::Get()->GetBluetoothAdapterClient());
   adapter_client->SetSimulationIntervalMs(0);
 
-  ash::SystemTrayDelegate* delegate =
-      ash::WmShell::Get()->system_tray_delegate();
+  ash::SystemTrayDelegate* delegate = ash::Shell::Get()->system_tray_delegate();
   EXPECT_TRUE(delegate->GetBluetoothAvailable());
   EXPECT_FALSE(delegate->GetBluetoothEnabled());
   EXPECT_FALSE(delegate->GetBluetoothDiscovering());

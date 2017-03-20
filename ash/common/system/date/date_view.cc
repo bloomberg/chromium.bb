@@ -10,7 +10,7 @@
 #include "ash/common/system/tray/tray_popup_item_style.h"
 #include "ash/common/system/tray/tray_popup_utils.h"
 #include "ash/common/system/tray/tray_utils.h"
-#include "ash/common/wm_shell.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/i18n/rtl.h"
 #include "base/i18n/time_formatting.h"
@@ -116,7 +116,7 @@ void BaseDateTimeView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 
 BaseDateTimeView::BaseDateTimeView(SystemTrayItem* owner)
     : ActionableView(owner, TrayPopupInkDropStyle::INSET_BOUNDS),
-      hour_type_(WmShell::Get()->system_tray_controller()->hour_clock_type()) {
+      hour_type_(Shell::Get()->system_tray_controller()->hour_clock_type()) {
   SetTimer(base::Time::Now());
   SetFocusBehavior(FocusBehavior::NEVER);
 }
@@ -213,7 +213,7 @@ void DateView::SetAction(DateAction action) {
 }
 
 void DateView::UpdateTimeFormat() {
-  hour_type_ = WmShell::Get()->system_tray_controller()->hour_clock_type();
+  hour_type_ = Shell::Get()->system_tray_controller()->hour_clock_type();
   UpdateText();
 }
 
@@ -240,9 +240,9 @@ bool DateView::PerformAction(const ui::Event& event) {
   if (action_ == DateAction::NONE)
     return false;
   if (action_ == DateAction::SHOW_DATE_SETTINGS)
-    WmShell::Get()->system_tray_controller()->ShowDateSettings();
+    Shell::Get()->system_tray_controller()->ShowDateSettings();
   else if (action_ == DateAction::SET_SYSTEM_TIME)
-    WmShell::Get()->system_tray_controller()->ShowSetTimeDialog();
+    Shell::Get()->system_tray_controller()->ShowSetTimeDialog();
   else
     return false;
   CloseSystemBubble();
@@ -282,7 +282,7 @@ TimeView::TimeView(ClockLayout clock_layout) : BaseDateTimeView(nullptr) {
 TimeView::~TimeView() {}
 
 void TimeView::UpdateTimeFormat() {
-  hour_type_ = WmShell::Get()->system_tray_controller()->hour_clock_type();
+  hour_type_ = Shell::Get()->system_tray_controller()->hour_clock_type();
   UpdateText();
 }
 

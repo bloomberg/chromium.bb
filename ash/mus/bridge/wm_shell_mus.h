@@ -94,6 +94,7 @@ class WmShellMus : public WmShell {
   CreateScopedDisableInternalMouseAndKeyboard() override;
   std::unique_ptr<ImmersiveFullscreenController>
   CreateImmersiveFullscreenController() override;
+  std::unique_ptr<KeyboardUI> CreateKeyboardUI() override;
   std::unique_ptr<KeyEventWatcher> CreateKeyEventWatcher() override;
   SessionStateDelegate* GetSessionStateDelegate() override;
   void AddDisplayObserver(WmDisplayObserver* observer) override;

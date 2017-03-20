@@ -71,7 +71,7 @@ uint32_t GetAccessibilityState() {
 }
 
 LoginStatus GetCurrentLoginStatus() {
-  return WmShell::Get()->system_tray_delegate()->GetUserLoginStatus();
+  return Shell::Get()->system_tray_delegate()->GetUserLoginStatus();
 }
 
 }  // namespace
@@ -304,14 +304,14 @@ void AccessibilityDetailedView::CreateExtraTitleRowButtons() {
 
 void AccessibilityDetailedView::ShowSettings() {
   if (TrayPopupUtils::CanOpenWebUISettings(login_)) {
-    WmShell::Get()->system_tray_controller()->ShowAccessibilitySettings();
+    Shell::Get()->system_tray_controller()->ShowAccessibilitySettings();
     owner()->system_tray()->CloseSystemBubble();
   }
 }
 
 void AccessibilityDetailedView::ShowHelp() {
   if (TrayPopupUtils::CanOpenWebUISettings(login_)) {
-    WmShell::Get()->system_tray_controller()->ShowAccessibilityHelp();
+    Shell::Get()->system_tray_controller()->ShowAccessibilityHelp();
     owner()->system_tray()->CloseSystemBubble();
   }
 }

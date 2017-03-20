@@ -32,6 +32,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/root_window_controller.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
@@ -284,7 +285,7 @@ void NetworkStateListDetailedView::HandleButtonPressed(views::Button* sender,
   if (sender == settings_button_)
     ShowSettings();
   else if (sender == proxy_settings_button_)
-    WmShell::Get()->system_tray_controller()->ShowProxySettings();
+    Shell::Get()->system_tray_controller()->ShowProxySettings();
 
   if (owner()->system_tray())
     owner()->system_tray()->CloseSystemBubble();
@@ -306,7 +307,7 @@ void NetworkStateListDetailedView::HandleViewClicked(views::View* view) {
         list_type_ == LIST_TYPE_VPN
             ? UMA_STATUS_AREA_SHOW_VPN_CONNECTION_DETAILS
             : UMA_STATUS_AREA_SHOW_NETWORK_CONNECTION_DETAILS);
-    WmShell::Get()->system_tray_controller()->ShowNetworkSettings(
+    Shell::Get()->system_tray_controller()->ShowNetworkSettings(
         network ? network->guid() : std::string());
   } else {
     WmShell::Get()->RecordUserMetricsAction(
@@ -339,7 +340,7 @@ void NetworkStateListDetailedView::CreateExtraTitleRowButtons() {
     // and showing settings is allowed. There are situations (supervised user
     // creation flow) when session is started but UI flow continues within
     // login UI, i.e., no browser window is yet avaialable.
-    if (!WmShell::Get()->system_tray_delegate()->ShouldShowSettings())
+    if (!Shell::Get()->system_tray_delegate()->ShouldShowSettings())
       settings_button_->SetEnabled(false);
 
     tri_view()->AddView(TriView::Container::END, settings_button_);
@@ -355,7 +356,7 @@ void NetworkStateListDetailedView::ShowSettings() {
   WmShell::Get()->RecordUserMetricsAction(
       list_type_ == LIST_TYPE_VPN ? UMA_STATUS_AREA_VPN_SETTINGS_OPENED
                                   : UMA_STATUS_AREA_NETWORK_SETTINGS_OPENED);
-  WmShell::Get()->system_tray_controller()->ShowNetworkSettings(std::string());
+  Shell::Get()->system_tray_controller()->ShowNetworkSettings(std::string());
 }
 
 void NetworkStateListDetailedView::UpdateNetworkList() {
@@ -461,7 +462,7 @@ views::View* NetworkStateListDetailedView::CreateNetworkInfoView() {
 views::View* NetworkStateListDetailedView::CreateControlledByExtensionView(
     const NetworkInfo& info) {
   NetworkingConfigDelegate* networking_config_delegate =
-      WmShell::Get()->system_tray_delegate()->GetNetworkingConfigDelegate();
+      Shell::Get()->system_tray_delegate()->GetNetworkingConfigDelegate();
   if (!networking_config_delegate)
     return nullptr;
   std::unique_ptr<const NetworkingConfigDelegate::ExtensionInfo>
@@ -554,7 +555,7 @@ void NetworkStateListDetailedView::OnNetworkEntryClicked(views::View* sender) {
 void NetworkStateListDetailedView::OnOtherWifiClicked() {
   WmShell::Get()->RecordUserMetricsAction(
       UMA_STATUS_AREA_NETWORK_JOIN_OTHER_CLICKED);
-  WmShell::Get()->system_tray_controller()->ShowNetworkCreate(shill::kTypeWifi);
+  Shell::Get()->system_tray_controller()->ShowNetworkCreate(shill::kTypeWifi);
 }
 
 void NetworkStateListDetailedView::RelayoutScrollList() {

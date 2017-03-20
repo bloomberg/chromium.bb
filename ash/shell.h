@@ -95,6 +95,8 @@ class AshNativeCursorManager;
 class AshTouchTransformController;
 class AutoclickController;
 class BluetoothNotificationController;
+class BrightnessControlDelegate;
+class CastConfigController;
 class DisplayColorManager;
 class DisplayConfigurationController;
 class DisplayErrorObserver;
@@ -102,13 +104,18 @@ class DragDropController;
 class EventClientImpl;
 class EventTransformationHandler;
 class FirstRunHelper;
+class FocusCycler;
 class GPUSupport;
 class HighContrastController;
 class ImmersiveHandlerFactoryAsh;
+class KeyboardBrightnessControlDelegate;
+class KeyboardUI;
 class LaserPointerController;
 class LinkHandlerModelFactory;
+class LocaleNotificationController;
 class LockStateController;
 enum class LoginStatus;
+class LogoutConfirmationController;
 class MagnificationController;
 class MouseCursorEventFilter;
 class OverlayEventFilter;
@@ -135,6 +142,8 @@ class StickyKeysController;
 class SystemGestureEventFilter;
 class SystemModalContainerEventFilter;
 class SystemTray;
+class SystemTrayController;
+class SystemTrayDelegate;
 class ToplevelWindowEventHandler;
 class ScreenLayoutObserver;
 class ToastManager;
@@ -283,11 +292,32 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   const scoped_refptr<base::SequencedWorkerPool>& blocking_pool() {
     return blocking_pool_;
   }
+  BrightnessControlDelegate* brightness_control_delegate() {
+    return brightness_control_delegate_.get();
+  }
+  CastConfigController* cast_config() { return cast_config_.get(); }
   display::DisplayManager* display_manager() { return display_manager_.get(); }
   DisplayConfigurationController* display_configuration_controller() {
     return display_configuration_controller_.get();
   }
   ::wm::CompoundEventFilter* env_filter() { return env_filter_.get(); }
+  FocusCycler* focus_cycler() { return focus_cycler_.get(); }
+  KeyboardBrightnessControlDelegate* keyboard_brightness_control_delegate() {
+    return keyboard_brightness_control_delegate_.get();
+  }
+  KeyboardUI* keyboard_ui() { return keyboard_ui_.get(); }
+  LocaleNotificationController* locale_notification_controller() {
+    return locale_notification_controller_.get();
+  }
+  LogoutConfirmationController* logout_confirmation_controller() {
+    return logout_confirmation_controller_.get();
+  }
+  SystemTrayController* system_tray_controller() {
+    return system_tray_controller_.get();
+  }
+  SystemTrayDelegate* system_tray_delegate() {
+    return system_tray_delegate_.get();
+  }
   views::corewm::TooltipController* tooltip_controller() {
     return tooltip_controller_.get();
   }
@@ -514,6 +544,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   FRIEND_TEST_ALL_PREFIXES(ExtendedDesktopTest, TestCursor);
   FRIEND_TEST_ALL_PREFIXES(WindowManagerTest, MouseEventCursors);
   FRIEND_TEST_ALL_PREFIXES(WindowManagerTest, TransformActivate);
+  friend class AcceleratorControllerTest;
   friend class RootWindowController;
   friend class ScopedRootWindowForNewWindows;
   friend class SmsObserverTest;
@@ -531,6 +562,9 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
 
   // Initializes the root window so that it can host browser windows.
   void InitRootWindow(aura::Window* root_window);
+
+  void SetSystemTrayDelegate(std::unique_ptr<SystemTrayDelegate> delegate);
+  void DeleteSystemTrayDelegate();
 
   // Destroys all child windows including widgets across all roots.
   void CloseAllRootWindowChildWindows();
@@ -572,10 +606,20 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
 
   std::unique_ptr<AcceleratorController> accelerator_controller_;
   std::unique_ptr<AccessibilityDelegate> accessibility_delegate_;
-  std::unique_ptr<PaletteDelegate> palette_delegate_;
+  std::unique_ptr<BrightnessControlDelegate> brightness_control_delegate_;
+  std::unique_ptr<CastConfigController> cast_config_;
   std::unique_ptr<DragDropController> drag_drop_controller_;
+  std::unique_ptr<FocusCycler> focus_cycler_;
+  std::unique_ptr<KeyboardBrightnessControlDelegate>
+      keyboard_brightness_control_delegate_;
+  std::unique_ptr<KeyboardUI> keyboard_ui_;
+  std::unique_ptr<LocaleNotificationController> locale_notification_controller_;
+  std::unique_ptr<LogoutConfirmationController> logout_confirmation_controller_;
+  std::unique_ptr<PaletteDelegate> palette_delegate_;
   std::unique_ptr<ResizeShadowController> resize_shadow_controller_;
   std::unique_ptr<ShellDelegate> shell_delegate_;
+  std::unique_ptr<SystemTrayController> system_tray_controller_;
+  std::unique_ptr<SystemTrayDelegate> system_tray_delegate_;
   std::unique_ptr<ToastManager> toast_manager_;
   std::unique_ptr<WallpaperController> wallpaper_controller_;
   std::unique_ptr<WallpaperDelegate> wallpaper_delegate_;

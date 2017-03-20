@@ -10,6 +10,7 @@
 #include "ash/aura/key_event_watcher_aura.h"
 #include "ash/aura/pointer_watcher_adapter.h"
 #include "ash/common/accelerators/accelerator_controller.h"
+#include "ash/common/keyboard/keyboard_ui.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shell_delegate.h"
 #include "ash/common/shell_observer.h"
@@ -213,6 +214,10 @@ WmShellAura::CreateScopedDisableInternalMouseAndKeyboard() {
 std::unique_ptr<ImmersiveFullscreenController>
 WmShellAura::CreateImmersiveFullscreenController() {
   return base::MakeUnique<ImmersiveFullscreenController>();
+}
+
+std::unique_ptr<KeyboardUI> WmShellAura::CreateKeyboardUI() {
+  return KeyboardUI::Create();
 }
 
 std::unique_ptr<KeyEventWatcher> WmShellAura::CreateKeyEventWatcher() {

@@ -68,7 +68,7 @@ base::string16 GetDisplaySize(int64_t display_id) {
 bool OpenSettings() {
   // switch is intentionally introduced without default, to cause an error when
   // a new type of login status is introduced.
-  switch (WmShell::Get()->system_tray_delegate()->GetUserLoginStatus()) {
+  switch (Shell::Get()->system_tray_delegate()->GetUserLoginStatus()) {
     case LoginStatus::NOT_LOGGED_IN:
     case LoginStatus::LOCKED:
       return false;
@@ -80,9 +80,9 @@ bool OpenSettings() {
     case LoginStatus::SUPERVISED:
     case LoginStatus::KIOSK_APP:
     case LoginStatus::ARC_KIOSK_APP:
-      SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
+      SystemTrayDelegate* delegate = Shell::Get()->system_tray_delegate();
       if (delegate->ShouldShowSettings()) {
-        WmShell::Get()->system_tray_controller()->ShowDisplaySettings();
+        Shell::Get()->system_tray_controller()->ShowDisplaySettings();
         return true;
       }
       break;

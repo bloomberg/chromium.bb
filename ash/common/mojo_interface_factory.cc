@@ -39,12 +39,12 @@ void BindAppListRequestOnMainThread(app_list::mojom::AppListRequest request) {
 }
 
 void BindCastConfigOnMainThread(mojom::CastConfigRequest request) {
-  WmShell::Get()->cast_config()->BindRequest(std::move(request));
+  Shell::Get()->cast_config()->BindRequest(std::move(request));
 }
 
 void BindLocaleNotificationControllerOnMainThread(
     mojom::LocaleNotificationControllerRequest request) {
-  WmShell::Get()->locale_notification_controller()->BindRequest(
+  Shell::Get()->locale_notification_controller()->BindRequest(
       std::move(request));
 }
 
@@ -73,7 +73,7 @@ void BindShutdownControllerRequestOnMainThread(
 }
 
 void BindSystemTrayRequestOnMainThread(mojom::SystemTrayRequest request) {
-  WmShell::Get()->system_tray_controller()->BindRequest(std::move(request));
+  Shell::Get()->system_tray_controller()->BindRequest(std::move(request));
 }
 
 void BindTouchViewRequestOnMainThread(mojom::TouchViewManagerRequest request) {

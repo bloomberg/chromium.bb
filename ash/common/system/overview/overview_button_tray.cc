@@ -118,9 +118,9 @@ void OverviewButtonTray::UpdateIconVisibility() {
       !session_controller->IsScreenLocked() &&
       session_controller->GetSessionState() ==
           session_manager::SessionState::ACTIVE &&
-      shell->system_tray_delegate()->GetUserLoginStatus() !=
+      Shell::Get()->system_tray_delegate()->GetUserLoginStatus() !=
           LoginStatus::KIOSK_APP &&
-      shell->system_tray_delegate()->GetUserLoginStatus() !=
+      Shell::Get()->system_tray_delegate()->GetUserLoginStatus() !=
           LoginStatus::ARC_KIOSK_APP);
 }
 

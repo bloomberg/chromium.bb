@@ -13,6 +13,7 @@
 #include "ash/common/system/tray/tray_bubble_wrapper.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/wm_shell.h"
+#include "ash/shell.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/compositor/layer.h"
@@ -141,7 +142,7 @@ void SystemTrayBubble::UpdateView(
 
   items_ = items;
   bubble_type_ = bubble_type;
-  CreateItemViews(WmShell::Get()->system_tray_delegate()->GetUserLoginStatus());
+  CreateItemViews(Shell::Get()->system_tray_delegate()->GetUserLoginStatus());
 
   // Close bubble view if we failed to create the item view.
   if (!bubble_view_->has_children()) {

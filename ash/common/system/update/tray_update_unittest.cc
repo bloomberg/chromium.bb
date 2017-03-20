@@ -7,8 +7,8 @@
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/system_tray_controller.h"
 #include "ash/common/test/ash_test.h"
-#include "ash/common/wm_shell.h"
 #include "ash/public/interfaces/update.mojom.h"
+#include "ash/shell.h"
 
 namespace ash {
 
@@ -23,7 +23,7 @@ TEST_F(TrayUpdateTest, VisibilityAfterUpdate) {
   EXPECT_FALSE(tray_update->tray_view()->visible());
 
   // Simulate an update.
-  WmShell::Get()->system_tray_controller()->ShowUpdateIcon(
+  Shell::Get()->system_tray_controller()->ShowUpdateIcon(
       mojom::UpdateSeverity::LOW, false);
 
   // Tray item is now visible.

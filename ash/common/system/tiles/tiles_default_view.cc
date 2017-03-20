@@ -66,7 +66,8 @@ void TilesDefaultView::Init() {
   settings_button_ = new SystemMenuButton(
       this, TrayPopupInkDropStyle::HOST_CENTERED, kSystemMenuSettingsIcon,
       IDS_ASH_STATUS_TRAY_SETTINGS);
-  if (disable_buttons || !shell->system_tray_delegate()->ShouldShowSettings())
+  if (disable_buttons ||
+      !Shell::Get()->system_tray_delegate()->ShouldShowSettings())
     settings_button_->SetEnabled(false);
   AddChildView(settings_button_);
   AddChildView(TrayPopupUtils::CreateVerticalSeparator());
@@ -112,10 +113,10 @@ void TilesDefaultView::ButtonPressed(views::Button* sender,
   WmShell* shell = WmShell::Get();
   if (sender == settings_button_) {
     shell->RecordUserMetricsAction(UMA_TRAY_SETTINGS);
-    shell->system_tray_controller()->ShowSettings();
+    Shell::Get()->system_tray_controller()->ShowSettings();
   } else if (sender == help_button_) {
     shell->RecordUserMetricsAction(UMA_TRAY_HELP);
-    shell->system_tray_controller()->ShowHelp();
+    Shell::Get()->system_tray_controller()->ShowHelp();
   } else if (sender == lock_button_) {
     shell->RecordUserMetricsAction(UMA_TRAY_LOCK_SCREEN);
     chromeos::DBusThreadManager::Get()

@@ -10,6 +10,7 @@
 #include "ash/common/wm/wm_event.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
+#include "ash/shell.h"
 #include "ui/events/event.h"
 
 namespace ash {
@@ -55,7 +56,7 @@ bool MaximizeModeEventHandler::ToggleFullscreen(const ui::TouchEvent& event) {
 
   // Do not exit fullscreen in kiosk mode.
   SystemTrayDelegate* system_tray_delegate =
-      WmShell::Get()->system_tray_delegate();
+      Shell::Get()->system_tray_delegate();
   if (system_tray_delegate->GetUserLoginStatus() == LoginStatus::KIOSK_APP ||
       system_tray_delegate->GetUserLoginStatus() ==
           LoginStatus::ARC_KIOSK_APP) {

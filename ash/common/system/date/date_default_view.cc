@@ -128,7 +128,7 @@ void DateDefaultView::ButtonPressed(views::Button* sender,
   WmShell* shell = WmShell::Get();
   if (sender == help_button_) {
     shell->RecordUserMetricsAction(UMA_TRAY_HELP);
-    shell->system_tray_controller()->ShowHelp();
+    Shell::Get()->system_tray_controller()->ShowHelp();
   } else if (sender == shutdown_button_) {
     shell->RecordUserMetricsAction(UMA_TRAY_SHUT_DOWN);
     Shell::GetInstance()->lock_state_controller()->RequestShutdown();

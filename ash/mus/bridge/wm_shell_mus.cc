@@ -90,8 +90,6 @@ WmShellMus::WmShellMus(
   DCHECK(primary_root_window_);
 
   immersive_handler_factory_.reset(new ImmersiveHandlerFactoryMus);
-
-  SetKeyboardUI(KeyboardUIMus::Create(window_manager_->connector()));
 }
 
 WmShellMus::~WmShellMus() {
@@ -285,6 +283,10 @@ std::unique_ptr<WorkspaceEventHandler> WmShellMus::CreateWorkspaceEventHandler(
 std::unique_ptr<ImmersiveFullscreenController>
 WmShellMus::CreateImmersiveFullscreenController() {
   return base::MakeUnique<ImmersiveFullscreenController>();
+}
+
+std::unique_ptr<KeyboardUI> WmShellMus::CreateKeyboardUI() {
+  return KeyboardUIMus::Create(window_manager_->connector());
 }
 
 std::unique_ptr<KeyEventWatcher> WmShellMus::CreateKeyEventWatcher() {

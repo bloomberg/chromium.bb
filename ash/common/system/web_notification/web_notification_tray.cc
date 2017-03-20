@@ -20,6 +20,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/root_window_controller.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/auto_reset.h"
 #include "base/i18n/number_formatting.h"
@@ -396,7 +397,7 @@ void WebNotificationTray::HidePopups() {
 // Private methods.
 
 bool WebNotificationTray::ShouldShowMessageCenter() {
-  return WmShell::Get()->system_tray_delegate()->ShouldShowNotificationTray();
+  return Shell::Get()->system_tray_delegate()->ShouldShowNotificationTray();
 }
 
 bool WebNotificationTray::ShouldBlockShelfAutoHide() const {
@@ -613,10 +614,9 @@ message_center::MessageCenter* WebNotificationTray::message_center() const {
 }
 
 bool WebNotificationTray::IsLoggedIn() const {
-  WmShell* shell = WmShell::Get();
-  return shell->system_tray_delegate()->GetUserLoginStatus() !=
+  return Shell::Get()->system_tray_delegate()->GetUserLoginStatus() !=
              LoginStatus::NOT_LOGGED_IN &&
-         !shell->session_controller()->IsInSecondaryLoginScreen();
+         !WmShell::Get()->session_controller()->IsInSecondaryLoginScreen();
 }
 
 // Methods for testing

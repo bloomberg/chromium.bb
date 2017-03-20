@@ -387,7 +387,7 @@ TEST_F(RootWindowControllerTest, ModalContainer) {
   WmShell* wm_shell = WmShell::Get();
   RootWindowController* controller = wm_shell->GetPrimaryRootWindowController();
   EXPECT_EQ(LoginStatus::USER,
-            wm_shell->system_tray_delegate()->GetUserLoginStatus());
+            Shell::Get()->system_tray_delegate()->GetUserLoginStatus());
   EXPECT_EQ(GetLayoutManager(controller, kShellWindowId_SystemModalContainer),
             controller->GetSystemModalLayoutManager(NULL));
 
@@ -399,7 +399,7 @@ TEST_F(RootWindowControllerTest, ModalContainer) {
 
   wm_shell->session_controller()->LockScreenAndFlushForTest();
   EXPECT_EQ(LoginStatus::LOCKED,
-            wm_shell->system_tray_delegate()->GetUserLoginStatus());
+            Shell::Get()->system_tray_delegate()->GetUserLoginStatus());
   EXPECT_EQ(
       GetLayoutManager(controller, kShellWindowId_LockSystemModalContainer),
       controller->GetSystemModalLayoutManager(nullptr));
@@ -426,7 +426,7 @@ TEST_F(RootWindowControllerTest, ModalContainerNotLoggedInLoggedIn) {
   SessionController* session_controller = WmShell::Get()->session_controller();
   SetUserLoggedIn(false);
   EXPECT_EQ(LoginStatus::NOT_LOGGED_IN,
-            WmShell::Get()->system_tray_delegate()->GetUserLoginStatus());
+            Shell::Get()->system_tray_delegate()->GetUserLoginStatus());
   EXPECT_EQ(0, session_controller->NumberOfLoggedInUsers());
   EXPECT_FALSE(session_controller->IsActiveUserSessionStarted());
 
@@ -450,7 +450,7 @@ TEST_F(RootWindowControllerTest, ModalContainerNotLoggedInLoggedIn) {
   SetUserLoggedIn(true);
   SetSessionStarted(true);
   EXPECT_EQ(LoginStatus::USER,
-            WmShell::Get()->system_tray_delegate()->GetUserLoginStatus());
+            Shell::Get()->system_tray_delegate()->GetUserLoginStatus());
   EXPECT_EQ(1, session_controller->NumberOfLoggedInUsers());
   EXPECT_TRUE(session_controller->IsActiveUserSessionStarted());
   EXPECT_EQ(GetLayoutManager(controller, kShellWindowId_SystemModalContainer),

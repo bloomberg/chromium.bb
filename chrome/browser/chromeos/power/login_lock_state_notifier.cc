@@ -22,8 +22,8 @@ namespace chromeos {
 namespace {
 
 ash::LoginStatus GetCurrentLoginStatus() {
-  if (ash::WmShell::Get()->system_tray_delegate())
-    return ash::WmShell::Get()->system_tray_delegate()->GetUserLoginStatus();
+  if (ash::Shell::Get()->system_tray_delegate())
+    return ash::Shell::Get()->system_tray_delegate()->GetUserLoginStatus();
 
   return ash::LoginStatus::NOT_LOGGED_IN;
 }

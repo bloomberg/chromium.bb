@@ -94,7 +94,7 @@ void LogoutConfirmationController::OnDialogClosed() {
 }
 
 void LogoutConfirmationController::OnLastWindowClosed() {
-  if (WmShell::Get()->system_tray_delegate()->GetUserLoginStatus() !=
+  if (Shell::Get()->system_tray_delegate()->GetUserLoginStatus() !=
       LoginStatus::PUBLIC) {
     return;
   }

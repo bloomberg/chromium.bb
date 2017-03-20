@@ -7,9 +7,6 @@
 #include <utility>
 
 #include "ash/common/accelerators/accelerator_controller.h"
-#include "ash/common/cast_config_controller.h"
-#include "ash/common/focus_cycler.h"
-#include "ash/common/keyboard/keyboard_ui.h"
 #include "ash/common/media_controller.h"
 #include "ash/common/new_window_controller.h"
 #include "ash/common/session/session_controller.h"
@@ -21,15 +18,7 @@
 #include "ash/common/shelf/shelf_window_watcher.h"
 #include "ash/common/shell_delegate.h"
 #include "ash/common/shutdown_controller.h"
-#include "ash/common/system/brightness_control_delegate.h"
-#include "ash/common/system/chromeos/brightness/brightness_controller_chromeos.h"
-#include "ash/common/system/chromeos/keyboard_brightness_controller.h"
 #include "ash/common/system/chromeos/network/vpn_list.h"
-#include "ash/common/system/chromeos/session/logout_confirmation_controller.h"
-#include "ash/common/system/keyboard_brightness_control_delegate.h"
-#include "ash/common/system/locale/locale_notification_controller.h"
-#include "ash/common/system/tray/system_tray_controller.h"
-#include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/wm/immersive_context_ash.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
@@ -143,21 +132,12 @@ void WmShell::SetShelfDelegateForTesting(
 }
 
 WmShell::WmShell()
-    : brightness_control_delegate_(
-          base::MakeUnique<system::BrightnessControllerChromeos>()),
-      cast_config_(base::MakeUnique<CastConfigController>()),
-      focus_cycler_(base::MakeUnique<FocusCycler>()),
-      immersive_context_(base::MakeUnique<ImmersiveContextAsh>()),
-      keyboard_brightness_control_delegate_(
-          base::MakeUnique<KeyboardBrightnessController>()),
-      locale_notification_controller_(
-          base::MakeUnique<LocaleNotificationController>()),
+    : immersive_context_(base::MakeUnique<ImmersiveContextAsh>()),
       media_controller_(base::MakeUnique<MediaController>()),
       new_window_controller_(base::MakeUnique<NewWindowController>()),
       session_controller_(base::MakeUnique<SessionController>()),
       shelf_controller_(base::MakeUnique<ShelfController>()),
       shutdown_controller_(base::MakeUnique<ShutdownController>()),
-      system_tray_controller_(base::MakeUnique<SystemTrayController>()),
       system_tray_notifier_(base::MakeUnique<SystemTrayNotifier>()),
       vpn_list_(base::MakeUnique<VpnList>()),
       window_cycle_controller_(base::MakeUnique<WindowCycleController>()),
@@ -218,28 +198,6 @@ void WmShell::OnModalWindowRemoved(WmWindow* removed) {
         ->GetSystemModalLayoutManager(removed)
         ->DestroyModalBackground();
   }
-}
-
-void WmShell::SetKeyboardUI(std::unique_ptr<KeyboardUI> keyboard_ui) {
-  keyboard_ui_ = std::move(keyboard_ui);
-}
-
-void WmShell::SetSystemTrayDelegate(
-    std::unique_ptr<SystemTrayDelegate> delegate) {
-  DCHECK(delegate);
-  system_tray_delegate_ = std::move(delegate);
-  system_tray_delegate_->Initialize();
-  // Accesses WmShell in its constructor.
-  logout_confirmation_controller_.reset(new LogoutConfirmationController(
-      base::Bind(&SystemTrayController::SignOut,
-                 base::Unretained(system_tray_controller_.get()))));
-}
-
-void WmShell::DeleteSystemTrayDelegate() {
-  DCHECK(system_tray_delegate_);
-  // Accesses WmShell in its destructor.
-  logout_confirmation_controller_.reset();
-  system_tray_delegate_.reset();
 }
 
 void WmShell::DeleteWindowCycleController() {

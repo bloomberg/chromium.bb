@@ -5,7 +5,7 @@
 #include "ash/mus/network_connect_delegate_mus.h"
 
 #include "ash/common/system/tray/system_tray_controller.h"
-#include "ash/common/wm_shell.h"
+#include "ash/shell.h"
 #include "base/logging.h"
 
 namespace ash {
@@ -17,12 +17,12 @@ NetworkConnectDelegateMus::~NetworkConnectDelegateMus() {}
 
 void NetworkConnectDelegateMus::ShowNetworkConfigure(
     const std::string& network_id) {
-  WmShell::Get()->system_tray_controller()->ShowNetworkConfigure(network_id);
+  Shell::Get()->system_tray_controller()->ShowNetworkConfigure(network_id);
 }
 
 void NetworkConnectDelegateMus::ShowNetworkSettings(
     const std::string& network_id) {
-  WmShell::Get()->system_tray_controller()->ShowNetworkSettings(network_id);
+  Shell::Get()->system_tray_controller()->ShowNetworkSettings(network_id);
 }
 
 bool NetworkConnectDelegateMus::ShowEnrollNetwork(

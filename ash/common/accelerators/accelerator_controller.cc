@@ -199,14 +199,14 @@ void HandleRotatePaneFocus(FocusCycler::Direction direction) {
       break;
     }
   }
-  WmShell::Get()->focus_cycler()->RotateFocus(direction);
+  Shell::Get()->focus_cycler()->RotateFocus(direction);
 }
 
 void HandleFocusShelf() {
   base::RecordAction(UserMetricsAction("Accel_Focus_Shelf"));
   // TODO(jamescook): Should this be GetWmRootWindowForNewWindows()?
   WmShelf* shelf = WmShelf::ForWindow(WmShell::Get()->GetPrimaryRootWindow());
-  WmShell::Get()->focus_cycler()->FocusWidget(shelf->shelf_widget());
+  Shell::Get()->focus_cycler()->FocusWidget(shelf->shelf_widget());
 }
 
 void HandleLaunchAppN(int n) {
@@ -997,14 +997,14 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
   switch (action) {
     case BRIGHTNESS_DOWN: {
       BrightnessControlDelegate* delegate =
-          WmShell::Get()->brightness_control_delegate();
+          Shell::Get()->brightness_control_delegate();
       if (delegate)
         delegate->HandleBrightnessDown(accelerator);
       break;
     }
     case BRIGHTNESS_UP: {
       BrightnessControlDelegate* delegate =
-          WmShell::Get()->brightness_control_delegate();
+          Shell::Get()->brightness_control_delegate();
       if (delegate)
         delegate->HandleBrightnessUp(accelerator);
       break;
@@ -1044,14 +1044,14 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
       break;
     case KEYBOARD_BRIGHTNESS_DOWN: {
       KeyboardBrightnessControlDelegate* delegate =
-          WmShell::Get()->keyboard_brightness_control_delegate();
+          Shell::Get()->keyboard_brightness_control_delegate();
       if (delegate)
         delegate->HandleKeyboardBrightnessDown(accelerator);
       break;
     }
     case KEYBOARD_BRIGHTNESS_UP: {
       KeyboardBrightnessControlDelegate* delegate =
-          WmShell::Get()->keyboard_brightness_control_delegate();
+          Shell::Get()->keyboard_brightness_control_delegate();
       if (delegate)
         delegate->HandleKeyboardBrightnessUp(accelerator);
       break;

@@ -152,7 +152,7 @@ TEST_F(WindowCycleControllerTest, SingleWindowNotActive) {
 
   // Rotate focus, this should move focus to another window that isn't part of
   // the default container.
-  WmShell::Get()->focus_cycler()->RotateFocus(FocusCycler::FORWARD);
+  Shell::Get()->focus_cycler()->RotateFocus(FocusCycler::FORWARD);
   EXPECT_FALSE(wm::IsActiveWindow(window0.get()));
 
   // Cycling should activate the window.

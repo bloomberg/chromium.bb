@@ -128,7 +128,7 @@ CastCastView::CastCastView()
 CastCastView::~CastCastView() {}
 
 void CastCastView::StopCasting() {
-  WmShell::Get()->cast_config()->StopCasting(displayed_route_.Clone());
+  Shell::Get()->cast_config()->StopCasting(displayed_route_.Clone());
   WmShell::Get()->RecordUserMetricsAction(UMA_STATUS_AREA_CAST_STOP_CAST);
 }
 
@@ -415,7 +415,7 @@ void CastDetailedView::HandleViewClicked(views::View* view) {
   // Find the receiver we are going to cast to.
   auto it = view_to_sink_map_.find(view);
   if (it != view_to_sink_map_.end()) {
-    WmShell::Get()->cast_config()->CastToSink(it->second.Clone());
+    Shell::Get()->cast_config()->CastToSink(it->second.Clone());
     WmShell::Get()->RecordUserMetricsAction(
         UMA_STATUS_AREA_DETAILED_CAST_VIEW_LAUNCH_CAST);
   }
@@ -426,12 +426,12 @@ void CastDetailedView::HandleViewClicked(views::View* view) {
 TrayCast::TrayCast(SystemTray* system_tray)
     : SystemTrayItem(system_tray, UMA_CAST) {
   Shell::GetInstance()->AddShellObserver(this);
-  WmShell::Get()->cast_config()->AddObserver(this);
-  WmShell::Get()->cast_config()->RequestDeviceRefresh();
+  Shell::Get()->cast_config()->AddObserver(this);
+  Shell::Get()->cast_config()->RequestDeviceRefresh();
 }
 
 TrayCast::~TrayCast() {
-  WmShell::Get()->cast_config()->RemoveObserver(this);
+  Shell::Get()->cast_config()->RemoveObserver(this);
   Shell::GetInstance()->RemoveShellObserver(this);
 }
 
@@ -505,8 +505,7 @@ void TrayCast::OnDevicesUpdated(std::vector<mojom::SinkAndRoutePtr> devices) {
 }
 
 void TrayCast::UpdatePrimaryView() {
-  if (WmShell::Get()->cast_config()->Connected() &&
-      !sinks_and_routes_.empty()) {
+  if (Shell::Get()->cast_config()->Connected() && !sinks_and_routes_.empty()) {
     if (default_) {
       if (HasActiveRoute())
         default_->ActivateCastView();

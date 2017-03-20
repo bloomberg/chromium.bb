@@ -13,7 +13,7 @@
 namespace ash {
 
 LoginStatus StatusAreaWidgetTestHelper::GetUserLoginStatus() {
-  return WmShell::Get()->system_tray_delegate()->GetUserLoginStatus();
+  return Shell::Get()->system_tray_delegate()->GetUserLoginStatus();
 }
 
 StatusAreaWidget* StatusAreaWidgetTestHelper::GetStatusAreaWidget() {

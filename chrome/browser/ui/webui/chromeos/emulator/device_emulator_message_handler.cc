@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "ash/common/system/tray/system_tray_delegate.h"
-#include "ash/common/wm_shell.h"
+#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
@@ -287,7 +287,7 @@ void DeviceEmulatorMessageHandler::HandleRequestBluetoothPair(
 
   // Try to pair the device with the main adapter. The device is identified
   // by its device ID, which, in this case is the same as its address.
-  ash::WmShell::Get()->system_tray_delegate()->ConnectToBluetoothDevice(
+  ash::Shell::Get()->system_tray_delegate()->ConnectToBluetoothDevice(
       props->address.value());
   if (!props->paired.value()) {
     web_ui()->CallJavascriptFunctionUnsafe(kPairFailedJSCallback,

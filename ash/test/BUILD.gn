@@ -82,8 +82,6 @@ static_library("test_support_common") {
     "../common/test/test_shelf_item_delegate.h",
     "../common/test/test_system_tray_delegate.cc",
     "../common/test/test_system_tray_delegate.h",
-    "../common/test/wm_shell_test_api.cc",
-    "../common/test/wm_shell_test_api.h",
     "../common/test/workspace_event_handler_test_helper.cc",
     "../common/test/workspace_event_handler_test_helper.h",
 

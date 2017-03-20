@@ -265,12 +265,12 @@ class AcceleratorControllerTest : public test::AshTestBase {
 
   void SetBrightnessControlDelegate(
       std::unique_ptr<BrightnessControlDelegate> delegate) {
-    WmShell::Get()->brightness_control_delegate_ = std::move(delegate);
+    Shell::Get()->brightness_control_delegate_ = std::move(delegate);
   }
 
   void SetKeyboardBrightnessControlDelegate(
       std::unique_ptr<KeyboardBrightnessControlDelegate> delegate) {
-    WmShell::Get()->keyboard_brightness_control_delegate_ = std::move(delegate);
+    Shell::Get()->keyboard_brightness_control_delegate_ = std::move(delegate);
   }
 
  private:

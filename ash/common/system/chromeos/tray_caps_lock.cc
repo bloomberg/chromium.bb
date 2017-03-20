@@ -90,7 +90,7 @@ class CapsLockDefaultView : public ActionableView {
 
     int shortcut_string_id = 0;
     bool search_mapped_to_caps_lock =
-        WmShell::Get()->system_tray_delegate()->IsSearchKeyMappedToCapsLock();
+        Shell::Get()->system_tray_delegate()->IsSearchKeyMappedToCapsLock();
     if (caps_lock_enabled) {
       shortcut_string_id =
           search_mapped_to_caps_lock
@@ -209,7 +209,7 @@ views::View* TrayCapsLock::CreateDetailedView(LoginStatus status) {
   detailed_->AddChildView(image);
 
   const int string_id =
-      WmShell::Get()->system_tray_delegate()->IsSearchKeyMappedToCapsLock()
+      Shell::Get()->system_tray_delegate()->IsSearchKeyMappedToCapsLock()
           ? IDS_ASH_STATUS_TRAY_CAPS_LOCK_CANCEL_BY_SEARCH
           : IDS_ASH_STATUS_TRAY_CAPS_LOCK_CANCEL_BY_ALT_SEARCH;
   views::Label* label = TrayPopupUtils::CreateDefaultLabel();

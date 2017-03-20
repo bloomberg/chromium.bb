@@ -67,7 +67,7 @@ int GetMinimumMenuWidth() {
 // Shows language and input settings page.
 void ShowIMESettings() {
   WmShell::Get()->RecordUserMetricsAction(UMA_STATUS_AREA_IME_SHOW_DETAILED);
-  WmShell::Get()->system_tray_controller()->ShowIMESettings();
+  Shell::Get()->system_tray_controller()->ShowIMESettings();
 }
 
 // Records the number of times users click buttons in opt-in IME menu.
@@ -95,7 +95,7 @@ void RecordButtonsClicked(const std::string& button_name) {
 // Returns true if the current screen is login or lock screen.
 bool IsInLoginOrLockScreen() {
   LoginStatus login =
-      WmShell::Get()->system_tray_delegate()->GetUserLoginStatus();
+      Shell::Get()->system_tray_delegate()->GetUserLoginStatus();
   return !TrayPopupUtils::CanOpenWebUISettings(login);
 }
 
@@ -535,7 +535,7 @@ bool ImeMenuTray::PerformAction(const ui::Event& event) {
 void ImeMenuTray::OnIMERefresh() {
   UpdateTrayLabel();
   if (bubble_ && ime_list_view_) {
-    SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
+    SystemTrayDelegate* delegate = Shell::Get()->system_tray_delegate();
     IMEInfoList list;
     delegate->GetAvailableIMEList(&list);
     IMEPropertyInfoList property_list;
@@ -636,7 +636,7 @@ void ImeMenuTray::OnKeyboardSuppressionChanged(bool suppressed) {
 }
 
 void ImeMenuTray::UpdateTrayLabel() {
-  WmShell::Get()->system_tray_delegate()->GetCurrentIME(&current_ime_);
+  Shell::Get()->system_tray_delegate()->GetCurrentIME(&current_ime_);
 
   // Updates the tray label based on the current input method.
   if (current_ime_.third_party)

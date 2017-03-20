@@ -35,7 +35,8 @@ bool WindowSelectorController::CanSelect() {
   // open or running in kiosk app session.
   WmShell* wm_shell = WmShell::Get();
   SessionController* session_controller = wm_shell->session_controller();
-  SystemTrayDelegate* system_tray_delegate = wm_shell->system_tray_delegate();
+  SystemTrayDelegate* system_tray_delegate =
+      Shell::Get()->system_tray_delegate();
   return session_controller->IsActiveUserSessionStarted() &&
          !session_controller->IsScreenLocked() &&
          !wm_shell->IsSystemModalWindowOpen() && !wm_shell->IsPinned() &&
