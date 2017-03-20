@@ -27,7 +27,6 @@ class SkBitmap;
 namespace favicon {
 
 class FaviconService;
-class TestFaviconHandler;
 
 // FaviconHandler works with FaviconDriver to fetch the specific type of
 // favicon.
@@ -121,7 +120,7 @@ class FaviconHandler {
   FaviconHandler(FaviconService* service,
                  Delegate* delegate,
                  FaviconDriverObserver::NotificationIconType handler_type);
-  virtual ~FaviconHandler();
+  ~FaviconHandler();
 
   // Initiates loading the favicon for the specified url.
   void FetchFavicon(const GURL& url);
@@ -140,42 +139,11 @@ class FaviconHandler {
   // data from the FaviconService. Reserved for testing.
   bool HasPendingTasksForTest();
 
- protected:
-  // These virtual methods make FaviconHandler testable and are overridden by
-  // TestFaviconHandler.
-
-  // Ask the favicon from history
-  virtual void UpdateFaviconMappingAndFetch(
-      const GURL& page_url,
-      const GURL& icon_url,
-      favicon_base::IconType icon_type,
-      const favicon_base::FaviconResultsCallback& callback,
-      base::CancelableTaskTracker* tracker);
-
-  virtual void GetFaviconFromFaviconService(
-      const GURL& icon_url,
-      favicon_base::IconType icon_type,
-      const favicon_base::FaviconResultsCallback& callback,
-      base::CancelableTaskTracker* tracker);
-
-  virtual void GetFaviconForURLFromFaviconService(
-      const GURL& page_url,
-      int icon_types,
-      const favicon_base::FaviconResultsCallback& callback,
-      base::CancelableTaskTracker* tracker);
-
-  virtual void SetHistoryFavicons(const GURL& page_url,
-                                  const GURL& icon_url,
-                                  favicon_base::IconType icon_type,
-                                  const gfx::Image& image);
-
-  // Returns true if the favicon should be saved.
-  virtual bool ShouldSaveFavicon();
+  // Get the maximal icon size in pixels for a icon of type |icon_type| for the
+  // current platform.
+  static int GetMaximalIconSize(favicon_base::IconType icon_type);
 
  private:
-  // For testing:
-  friend class TestFaviconHandler;
-
   // Represents an in progress download of an image from the renderer.
   struct DownloadRequest {
     DownloadRequest();
@@ -207,10 +175,6 @@ class FaviconHandler {
   static int GetIconTypesFromHandlerType(
       FaviconDriverObserver::NotificationIconType handler_type);
 
-  // Get the maximal icon size in pixels for a icon of type |icon_type| for the
-  // current platform.
-  static int GetMaximalIconSize(favicon_base::IconType icon_type);
-
   // Called when the history request for favicon data mapped to |url_| has
   // completed and the renderer has told us the icon URLs used by |url_|
   void OnGotInitialHistoryDataAndIconURLCandidates();
@@ -241,6 +205,8 @@ class FaviconHandler {
       const GURL& image_url,
       const std::vector<SkBitmap>& bitmaps,
       const std::vector<gfx::Size>& original_bitmap_sizes);
+
+  bool ShouldSaveFavicon();
 
   // Updates |favicon_candidate_| and returns true if it is an exact match.
   bool UpdateFaviconCandidate(const GURL& image_url,

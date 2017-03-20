@@ -60,6 +60,7 @@ source_set("unit_tests") {
   deps = [
     ":core",
     "//base",
+    "//base/test:test_support",
     "//components/favicon/core/test:test_support",
     "//components/favicon_base",
     "//components/history/core/browser:browser",
