@@ -899,6 +899,7 @@ if (!is_ios) {
     data_deps = [
       "//content/shell:content_shell",
       "//mojo/public/interfaces/bindings/tests:test_interfaces",
+      "//skia/public/interfaces",
       "//third_party/WebKit/public:blink_devtools_frontend_resources_files",
       "//third_party/mesa:osmesa",
       "//tools/imagediff",

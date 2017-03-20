@@ -50,22 +50,20 @@ BarcodeDetectionImplMac::BarcodeDetectionImplMac() {
 
 BarcodeDetectionImplMac::~BarcodeDetectionImplMac() {}
 
-void BarcodeDetectionImplMac::Detect(mojo::ScopedSharedBufferHandle frame_data,
-                                     uint32_t width,
-                                     uint32_t height,
+void BarcodeDetectionImplMac::Detect(const SkBitmap& bitmap,
                                      const DetectCallback& callback) {
   media::ScopedResultCallback<DetectCallback> scoped_callback(
       base::Bind(&RunCallbackWithBarcodes, callback),
       base::Bind(&RunCallbackWithNoBarcodes));
 
-  base::scoped_nsobject<CIImage> ci_image =
-      CreateCIImageFromSharedMemory(std::move(frame_data), width, height);
+  base::scoped_nsobject<CIImage> ci_image = CreateCIImageFromSkBitmap(bitmap);
   if (!ci_image)
     return;
 
   NSArray* const features = [detector_ featuresInImage:ci_image];
 
   std::vector<mojom::BarcodeDetectionResultPtr> results;
+  const int height = bitmap.height();
   for (CIQRCodeFeature* const f in features) {
     shape_detection::mojom::BarcodeDetectionResultPtr result =
         shape_detection::mojom::BarcodeDetectionResult::New();

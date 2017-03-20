@@ -7,6 +7,7 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "services/shape_detection/public/interfaces/barcodedetection.mojom.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 @class CIDetector;
 
@@ -18,9 +19,7 @@ class BarcodeDetectionImplMac
   BarcodeDetectionImplMac();
   ~BarcodeDetectionImplMac() override;
 
-  void Detect(mojo::ScopedSharedBufferHandle frame_data,
-              uint32_t width,
-              uint32_t height,
+  void Detect(const SkBitmap& bitmap,
               const shape_detection::mojom::BarcodeDetection::DetectCallback&
                   callback) override;
 

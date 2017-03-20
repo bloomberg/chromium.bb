@@ -17,8 +17,8 @@ let mockTextDetectionReady = define(
           handle => this.bindingSet_.addBinding(this, handle));
     }
 
-    detect(frame_data, width, height) {
-      let receivedStruct = mojo.mapBuffer(frame_data, 0, width*height*4, 0);
+    detect(bitmap_data) {
+      let receivedStruct = new Uint8Array(bitmap_data.pixel_data);
       this.buffer_data_ = new Uint32Array(receivedStruct.buffer);
       return Promise.resolve({
         results: [
@@ -32,7 +32,6 @@ let mockTextDetectionReady = define(
           },
         ],
       });
-      mojo.unmapBuffer(receivedStruct.buffer);
     }
 
     getFrameData() {
