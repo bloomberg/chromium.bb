@@ -84,8 +84,8 @@ void ChildAccountInfoFetcherImpl::FetchIfNotInProgress() {
   fetch_in_progress_ = true;
   OAuth2TokenService::ScopeSet scopes;
   scopes.insert(GaiaConstants::kOAuth1LoginScope);
-  login_token_request_.reset(
-      token_service_->StartRequest(account_id_, scopes, this).release());
+  login_token_request_ =
+      token_service_->StartRequest(account_id_, scopes, this);
 }
 
 void ChildAccountInfoFetcherImpl::OnGetTokenSuccess(

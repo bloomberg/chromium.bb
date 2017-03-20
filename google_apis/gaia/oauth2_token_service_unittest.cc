@@ -36,8 +36,8 @@ class RetryingTestingOAuth2TokenServiceConsumer
   void OnGetTokenFailure(const OAuth2TokenService::Request* request,
                          const GoogleServiceAuthError& error) override {
     TestingOAuth2TokenServiceConsumer::OnGetTokenFailure(request, error);
-    request_.reset(oauth2_service_->StartRequest(
-        account_id_, OAuth2TokenService::ScopeSet(), this).release());
+    request_ = oauth2_service_->StartRequest(
+        account_id_, OAuth2TokenService::ScopeSet(), this);
   }
 
   OAuth2TokenService* oauth2_service_;
