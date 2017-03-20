@@ -3484,6 +3484,7 @@ void RenderFrameImpl::didStartProvisionalLoad(blink::WebDataSource* data_source,
     info.isClientRedirect = pending_navigation_info_->client_redirect;
     info.isCacheDisabled = pending_navigation_info_->cache_disabled;
     info.form = pending_navigation_info_->form;
+    info.sourceLocation = pending_navigation_info_->source_location;
 
     pending_navigation_info_.reset(nullptr);
 
@@ -5753,15 +5754,16 @@ void RenderFrameImpl::OnBlinkFeatureUsageReport(const std::set<int>& features) {
 }
 
 void RenderFrameImpl::OnMixedContentFound(
-    const GURL& main_resource_url,
-    const GURL& mixed_content_url,
-    RequestContextType request_context_type,
-    bool was_allowed,
-    bool had_redirect) {
-  auto request_context =
-      static_cast<blink::WebURLRequest::RequestContext>(request_context_type);
-  frame_->mixedContentFound(main_resource_url, mixed_content_url,
-                            request_context, was_allowed, had_redirect);
+    const FrameMsg_MixedContentFound_Params& params) {
+  blink::WebSourceLocation source_location;
+  source_location.url = WebString::fromLatin1(params.source_location.url);
+  source_location.lineNumber = params.source_location.line_number;
+  source_location.columnNumber = params.source_location.column_number;
+  auto request_context = static_cast<blink::WebURLRequest::RequestContext>(
+      params.request_context_type);
+  frame_->mixedContentFound(params.main_resource_url, params.mixed_content_url,
+                            request_context, params.was_allowed,
+                            params.had_redirect, source_location);
 }
 
 #if defined(OS_ANDROID)
@@ -6923,5 +6925,17 @@ void RenderFrameImpl::RenderWidgetWillHandleMouseEvent() {
   pepper_last_mouse_event_target_ = nullptr;
 #endif
 }
+
+RenderFrameImpl::PendingNavigationInfo::PendingNavigationInfo(
+    const NavigationPolicyInfo& info)
+    : navigation_type(info.navigationType),
+      policy(info.defaultPolicy),
+      replaces_current_history_item(info.replacesCurrentHistoryItem),
+      history_navigation_in_new_child_frame(
+          info.isHistoryNavigationInNewChildFrame),
+      client_redirect(info.isClientRedirect),
+      cache_disabled(info.isCacheDisabled),
+      form(info.form),
+      source_location(info.sourceLocation) {}
 
 }  // namespace content

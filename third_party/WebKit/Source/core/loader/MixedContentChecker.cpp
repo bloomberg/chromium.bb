@@ -221,7 +221,8 @@ void MixedContentChecker::logToConsoleAboutFetch(
     const KURL& mainResourceUrl,
     const KURL& url,
     WebURLRequest::RequestContext requestContext,
-    bool allowed) {
+    bool allowed,
+    std::unique_ptr<SourceLocation> sourceLocation) {
   String message = String::format(
       "Mixed Content: The page at '%s' was loaded over HTTPS, but requested an "
       "insecure %s '%s'. %s",
@@ -231,8 +232,14 @@ void MixedContentChecker::logToConsoleAboutFetch(
               : "This request has been blocked; the content must be served "
                 "over HTTPS.");
   MessageLevel messageLevel = allowed ? WarningMessageLevel : ErrorMessageLevel;
-  frame->document()->addConsoleMessage(
-      ConsoleMessage::create(SecurityMessageSource, messageLevel, message));
+  if (sourceLocation) {
+    frame->document()->addConsoleMessage(
+        ConsoleMessage::create(SecurityMessageSource, messageLevel, message,
+                               std::move(sourceLocation)));
+  } else {
+    frame->document()->addConsoleMessage(
+        ConsoleMessage::create(SecurityMessageSource, messageLevel, message));
+  }
 }
 
 // static
@@ -396,7 +403,7 @@ bool MixedContentChecker::shouldBlockFetch(
 
   if (reportingPolicy == SecurityViolationReportingPolicy::Report) {
     logToConsoleAboutFetch(frame, mainResourceUrlForFrame(mixedFrame), url,
-                           requestContext, allowed);
+                           requestContext, allowed, nullptr);
   }
   return !allowed;
 }
@@ -578,10 +585,11 @@ void MixedContentChecker::mixedContentFound(
     const KURL& mixedContentUrl,
     WebURLRequest::RequestContext requestContext,
     bool wasAllowed,
-    bool hadRedirect) {
+    bool hadRedirect,
+    std::unique_ptr<SourceLocation> sourceLocation) {
   // Logs to the frame console.
   logToConsoleAboutFetch(frame, mainResourceUrl, mixedContentUrl,
-                         requestContext, wasAllowed);
+                         requestContext, wasAllowed, std::move(sourceLocation));
   // Reports to the CSP policy.
   ContentSecurityPolicy* policy =
       frame->securityContext()->contentSecurityPolicy();
