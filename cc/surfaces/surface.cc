@@ -121,6 +121,13 @@ void Surface::RequestCopyOfOutput(
   copy_requests.push_back(std::move(copy_request));
 }
 
+void Surface::Reset() {
+  active_frame_.reset();
+  pending_frame_.reset();
+  blocking_surfaces_.clear();
+  RunDrawCallbacks();
+}
+
 void Surface::NotifySurfaceIdAvailable(const SurfaceId& surface_id) {
   auto it = blocking_surfaces_.find(surface_id);
   // This surface may no longer have blockers if the deadline has passed.

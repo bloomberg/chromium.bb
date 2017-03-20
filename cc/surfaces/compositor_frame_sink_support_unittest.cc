@@ -155,6 +155,15 @@ class CompositorFrameSinkSupportTest : public testing::Test {
     return begin_frame_source_.get();
   }
 
+  std::unique_ptr<CompositorFrameSinkSupport> CreateCompositorFrameSinkSupport(
+      FrameSinkId frame_sink_id,
+      bool is_root = false) {
+    return base::MakeUnique<CompositorFrameSinkSupport>(
+        &support_client_, &surface_manager_, frame_sink_id, is_root,
+        true /* handles_frame_sink_id_invalidation */,
+        true /* needs_sync_points */);
+  }
+
   // testing::Test:
   void SetUp() override {
     testing::Test::SetUp();
@@ -164,23 +173,11 @@ class CompositorFrameSinkSupportTest : public testing::Test {
         new SurfaceDependencyTracker(&surface_manager_,
                                      begin_frame_source_.get()));
     surface_manager_.SetDependencyTracker(std::move(dependency_tracker));
-    supports_.push_back(base::MakeUnique<CompositorFrameSinkSupport>(
-        &support_client_, &surface_manager_, kDisplayFrameSink,
-        true /* is_root */, true /* handles_frame_sink_id_invalidation */,
-        true /* needs_sync_points */));
-    supports_.push_back(base::MakeUnique<CompositorFrameSinkSupport>(
-        &support_client_, &surface_manager_, kParentFrameSink,
-        false /* is_root */, true /* handles_frame_sink_id_invalidation */,
-        true /* needs_sync_points */));
-    supports_.push_back(base::MakeUnique<CompositorFrameSinkSupport>(
-        &support_client_, &surface_manager_, kChildFrameSink1,
-        false /* is_root */, true /* handles_frame_sink_id_invalidation */,
-        true /* needs_sync_points */));
-    supports_.push_back(base::MakeUnique<CompositorFrameSinkSupport>(
-        &support_client_, &surface_manager_, kChildFrameSink2,
-        false /* is_root */, true /* handles_frame_sink_id_invalidation */,
-        true /* needs_sync_points */));
-
+    supports_.push_back(CreateCompositorFrameSinkSupport(kDisplayFrameSink,
+                                                         true /* is_root */));
+    supports_.push_back(CreateCompositorFrameSinkSupport(kParentFrameSink));
+    supports_.push_back(CreateCompositorFrameSinkSupport(kChildFrameSink1));
+    supports_.push_back(CreateCompositorFrameSinkSupport(kChildFrameSink2));
     // Normally, the BeginFrameSource would be registered by the Display. We
     // register it here so that BeginFrames are received by the display support,
     // for use in the PassesOnBeginFrameAcks test. Other supports do not receive
@@ -1050,6 +1047,45 @@ TEST_F(CompositorFrameSinkSupportTest, LocalSurfaceIdIsReusable) {
   child_support1().SubmitCompositorFrame(child_id.local_surface_id(),
                                          CompositorFrame());
   EXPECT_NE(nullptr, surface_manager().GetSurfaceForId(child_id));
+}
+
+// Checks whether a LocalSurfaceId can be reused after the
+// CompositorFrameSinkSupport is destroyed and recreated with the same
+// FrameSinkId.
+TEST_F(CompositorFrameSinkSupportTest, ReuseSurfaceAfterSupportDestroyed) {
+  const SurfaceId parent_id = MakeSurfaceId(kParentFrameSink, 1);
+  const SurfaceId child_id = MakeSurfaceId(kArbitraryFrameSink, 1);
+  std::unique_ptr<CompositorFrameSinkSupport> child_support =
+      CreateCompositorFrameSinkSupport(kArbitraryFrameSink);
+
+  // Add a reference from parent to child to preserve the child surface.
+  parent_support().SubmitCompositorFrame(parent_id.local_surface_id(),
+                                         MakeCompositorFrame({child_id}));
+
+  // Submit the first frame. A surface must be created.
+  child_support->SubmitCompositorFrame(
+      child_id.local_surface_id(), MakeCompositorFrame(empty_surface_ids()));
+  Surface* surface = surface_manager().GetSurfaceForId(child_id);
+  ASSERT_TRUE(surface);
+  base::WeakPtr<SurfaceFactory> factory = surface->factory();
+  EXPECT_TRUE(factory);
+  EXPECT_FALSE(surface->destroyed());
+
+  // Recreate child_support. The surface must be marked as destroyed and its
+  // factory must be gone.
+  child_support.reset();
+  child_support = CreateCompositorFrameSinkSupport(kArbitraryFrameSink);
+  EXPECT_EQ(surface, surface_manager().GetSurfaceForId(child_id));
+  EXPECT_FALSE(factory);
+  EXPECT_TRUE(surface->destroyed());
+
+  // Submit another frame for the same local surface id. The same surface must
+  // be used and destroyed() must return false. The surface must have a factory.
+  child_support->SubmitCompositorFrame(
+      child_id.local_surface_id(), MakeCompositorFrame(empty_surface_ids()));
+  EXPECT_EQ(surface, surface_manager().GetSurfaceForId(child_id));
+  EXPECT_TRUE(surface->factory());
+  EXPECT_FALSE(surface->destroyed());
 }
 
 }  // namespace test

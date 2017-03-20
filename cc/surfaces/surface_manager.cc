@@ -122,12 +122,24 @@ std::unique_ptr<Surface> SurfaceManager::CreateSurface(
   std::unique_ptr<Surface> surface = std::move(*it);
   surfaces_to_destroy_.erase(it);
   surface->set_destroyed(false);
+  // If the surface was used by another factory, we should update its factory.
+  // The old frames must be evicted because the new factory is not capable of
+  // returning their resources.
+  // TODO(samans): This should not be necessary once crbug.com/701988 is fixed.
+  if (surface->factory() == nullptr) {
+    DLOG(ERROR) << "Surface is being reused by another factory. "
+                   "Resources can potentially leak. id="
+                << surface_id;
+    surface->Reset();
+    surface->set_factory(surface_factory);
+  }
   DCHECK_EQ(surface_factory.get(), surface->factory().get());
   return surface;
 }
 
 void SurfaceManager::DestroySurface(std::unique_ptr<Surface> surface) {
   DCHECK(thread_checker_.CalledOnValidThread());
+
   surface->set_destroyed(true);
   surfaces_to_destroy_.push_back(std::move(surface));
   GarbageCollectSurfaces();
