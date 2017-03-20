@@ -20,6 +20,7 @@
 
 #include "core/svg/SVGScriptElement.h"
 
+#include "bindings/core/v8/HTMLScriptElementOrSVGScriptElement.h"
 #include "bindings/core/v8/ScriptEventListener.h"
 #include "core/HTMLNames.h"
 #include "core/XLinkNames.h"
@@ -34,10 +35,9 @@ namespace blink {
 inline SVGScriptElement::SVGScriptElement(Document& document,
                                           bool wasInsertedByParser,
                                           bool alreadyStarted)
-    : SVGElement(SVGNames::scriptTag, document),
-      SVGURIReference(this),
-      m_loader(
-          ScriptLoader::create(this, wasInsertedByParser, alreadyStarted)) {}
+    : SVGElement(SVGNames::scriptTag, document), SVGURIReference(this) {
+  initializeScriptLoader(wasInsertedByParser, alreadyStarted, false);
+}
 
 SVGScriptElement* SVGScriptElement::create(Document& document,
                                            bool insertedByParser) {
@@ -114,36 +114,48 @@ String SVGScriptElement::sourceAttributeValue() const {
   return hrefString();
 }
 
-String SVGScriptElement::charsetAttributeValue() const {
-  return String();
-}
-
 String SVGScriptElement::typeAttributeValue() const {
   return getAttribute(SVGNames::typeAttr).getString();
 }
 
-String SVGScriptElement::languageAttributeValue() const {
-  return String();
+String SVGScriptElement::textFromChildren() {
+  return Element::textFromChildren();
 }
 
-String SVGScriptElement::forAttributeValue() const {
-  return String();
-}
-
-String SVGScriptElement::eventAttributeValue() const {
-  return String();
-}
-
-bool SVGScriptElement::asyncAttributeValue() const {
-  return false;
-}
-
-bool SVGScriptElement::deferAttributeValue() const {
-  return false;
+String SVGScriptElement::textContent() const {
+  return Node::textContent();
 }
 
 bool SVGScriptElement::hasSourceAttribute() const {
   return href()->isSpecified();
+}
+
+bool SVGScriptElement::isConnected() const {
+  return Node::isConnected();
+}
+
+bool SVGScriptElement::hasChildren() const {
+  return Node::hasChildren();
+}
+
+bool SVGScriptElement::isNonceableElement() const {
+  return ContentSecurityPolicy::isNonceableElement(this);
+}
+
+bool SVGScriptElement::allowInlineScriptForCSP(
+    const AtomicString& nonce,
+    const WTF::OrdinalNumber& contextLine,
+    const String& scriptContent) {
+  return document().contentSecurityPolicy()->allowInlineScript(
+      this, document().url(), nonce, contextLine, scriptContent);
+}
+
+AtomicString SVGScriptElement::initiatorName() const {
+  return Element::localName();
+}
+
+Document& SVGScriptElement::document() const {
+  return Node::document();
 }
 
 Element* SVGScriptElement::cloneElementWithoutAttributesAndChildren() {
@@ -152,6 +164,16 @@ Element* SVGScriptElement::cloneElementWithoutAttributesAndChildren() {
 
 void SVGScriptElement::dispatchLoadEvent() {
   dispatchEvent(Event::create(EventTypeNames::load));
+}
+
+void SVGScriptElement::dispatchErrorEvent() {
+  dispatchEvent(Event::create(EventTypeNames::error));
+}
+
+void SVGScriptElement::setScriptElementForBinding(
+    HTMLScriptElementOrSVGScriptElement& element) {
+  if (!isInV1ShadowTree())
+    element.setSVGScriptElement(this);
 }
 
 #if DCHECK_IS_ON()
@@ -164,9 +186,9 @@ bool SVGScriptElement::isAnimatableAttribute(const QualifiedName& name) const {
 #endif
 
 DEFINE_TRACE(SVGScriptElement) {
-  visitor->trace(m_loader);
   SVGElement::trace(visitor);
   SVGURIReference::trace(visitor);
+  ScriptElementBase::trace(visitor);
 }
 
 }  // namespace blink

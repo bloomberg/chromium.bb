@@ -31,7 +31,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/DocumentParserTiming.h"
 #include "core/dom/IgnoreDestructiveWriteCountIncrementer.h"
-#include "core/dom/ScriptLoaderClient.h"
+#include "core/dom/ScriptElementBase.h"
 #include "core/dom/ScriptRunner.h"
 #include "core/dom/ScriptableDocumentParser.h"
 #include "core/dom/Text.h"
@@ -41,11 +41,9 @@
 #include "core/frame/UseCounter.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/CrossOriginAttribute.h"
-#include "core/html/HTMLScriptElement.h"
 #include "core/html/imports/HTMLImport.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/inspector/ConsoleMessage.h"
-#include "core/svg/SVGScriptElement.h"
 #include "platform/WebFrameScheduler.h"
 #include "platform/loader/fetch/AccessControlStatus.h"
 #include "platform/loader/fetch/FetchRequest.h"
@@ -60,7 +58,7 @@
 
 namespace blink {
 
-ScriptLoader::ScriptLoader(Element* element,
+ScriptLoader::ScriptLoader(ScriptElementBase* element,
                            bool parserInserted,
                            bool alreadyStarted,
                            bool createdDuringDocumentWrite)
@@ -73,8 +71,6 @@ ScriptLoader::ScriptLoader(Element* element,
       m_asyncExecType(ScriptRunner::None),
       m_documentWriteIntervention(
           DocumentWriteIntervention::DocumentWriteInterventionNone) {
-  DCHECK(m_element);
-
   // https://html.spec.whatwg.org/#already-started
   // "The cloning steps for script elements must set the "already started"
   //  flag on the copy if it is set on the element being cloned."
@@ -96,10 +92,11 @@ ScriptLoader::ScriptLoader(Element* element,
     m_nonBlocking = false;
   }
 
-  if (parserInserted && element->document().scriptableDocumentParser() &&
-      !element->document().isInDocumentWrite())
+  if (parserInserted && m_element->document().scriptableDocumentParser() &&
+      !m_element->document().isInDocumentWrite()) {
     m_startLineNumber =
-        element->document().scriptableDocumentParser()->lineNumber();
+        m_element->document().scriptableDocumentParser()->lineNumber();
+  }
 }
 
 ScriptLoader::~ScriptLoader() {}
@@ -175,12 +172,11 @@ static bool isLegacySupportedJavaScriptLanguage(const String& language) {
 }
 
 void ScriptLoader::dispatchErrorEvent() {
-  m_element->dispatchEvent(Event::create(EventTypeNames::error));
+  m_element->dispatchErrorEvent();
 }
 
 void ScriptLoader::dispatchLoadEvent() {
-  if (ScriptLoaderClient* client = this->client())
-    client->dispatchLoadEvent();
+  m_element->dispatchLoadEvent();
   setHaveFiredLoadEvent(true);
 }
 
@@ -215,8 +211,8 @@ bool ScriptLoader::isValidScriptTypeAndLanguage(
 
 bool ScriptLoader::isScriptTypeSupported(
     LegacyTypeSupport supportLegacyTypes) const {
-  return isValidScriptTypeAndLanguage(client()->typeAttributeValue(),
-                                      client()->languageAttributeValue(),
+  return isValidScriptTypeAndLanguage(m_element->typeAttributeValue(),
+                                      m_element->languageAttributeValue(),
                                       supportLegacyTypes);
 }
 
@@ -227,8 +223,6 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition,
   //     abort these steps at this point. The script is not executed."
   if (m_alreadyStarted)
     return false;
-
-  ScriptLoaderClient* client = this->client();
 
   // 2. "If the element has its "parser-inserted" flag set, then
   //     set was-parser-inserted to true and unset the element's
@@ -244,7 +238,7 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition,
 
   // 3. "If was-parser-inserted is true and the element does not have an
   //     async attribute, then set the element's "non-blocking" flag to true."
-  if (wasParserInserted && !client->asyncAttributeValue())
+  if (wasParserInserted && !m_element->asyncAttributeValue())
     m_nonBlocking = true;
 
   // 4. "If the element has no src attribute, and its child nodes, if any,
@@ -252,7 +246,7 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition,
   //     then abort these steps at this point. The script is not executed."
   // FIXME: HTML5 spec says we should check that all children are either
   // comments or empty text nodes.
-  if (!client->hasSourceAttribute() && !m_element->hasChildren())
+  if (!m_element->hasSourceAttribute() && !m_element->hasChildren())
     return false;
 
   // 5. "If the element is not connected, then abort these steps.
@@ -283,12 +277,14 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition,
   // document.
   Document& elementDocument = m_element->document();
   Document* contextDocument = elementDocument.contextDocument();
-  if (!contextDocument)
+  if (!elementDocument.executingFrame())
+    return false;
+  if (!contextDocument || !contextDocument->executingFrame())
     return false;
 
   // 10. "If scripting is disabled for the script element, then abort these
   //      steps at this point. The script is not executed."
-  if (!contextDocument->allowExecutingScripts(m_element))
+  if (!contextDocument->canExecuteScripts(AboutToExecuteScript))
     return false;
 
   // 13.
@@ -303,23 +299,23 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition,
   //      be the same as the encoding of the script element's node document."
   // TODO(hiroshige): Should we handle failure in getting an encoding?
   String encoding;
-  if (!client->charsetAttributeValue().isEmpty())
-    encoding = client->charsetAttributeValue();
+  if (!m_element->charsetAttributeValue().isEmpty())
+    encoding = m_element->charsetAttributeValue();
   else
     encoding = elementDocument.characterSet();
 
   // Steps 15--20 are handled in fetchScript().
 
   // 21. "If the element has a src content attribute, run these substeps:"
-  if (client->hasSourceAttribute()) {
+  if (m_element->hasSourceAttribute()) {
     FetchRequest::DeferOption defer = FetchRequest::NoDefer;
-    if (!m_parserInserted || client->asyncAttributeValue() ||
-        client->deferAttributeValue())
+    if (!m_parserInserted || m_element->asyncAttributeValue() ||
+        m_element->deferAttributeValue())
       defer = FetchRequest::LazyLoad;
     if (m_documentWriteIntervention ==
         DocumentWriteIntervention::FetchDocWrittenScriptDeferIdle)
       defer = FetchRequest::IdleLoad;
-    if (!fetchScript(client->sourceAttributeValue(), encoding, defer))
+    if (!fetchScript(m_element->sourceAttributeValue(), encoding, defer))
       return false;
   }
 
@@ -351,7 +347,7 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition,
   // completion to be able to remove it from the memory cache.
   if (m_documentWriteIntervention ==
       DocumentWriteIntervention::FetchDocWrittenScriptDeferIdle) {
-    m_pendingScript = PendingScript::create(m_element, m_resource.get());
+    m_pendingScript = PendingScript::create(m_element.get(), m_resource.get());
     m_pendingScript->watchForLoad(this);
     return true;
   }
@@ -372,8 +368,8 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition,
   //    and the element has been flagged as "parser-inserted",
   //    and the element does not have an async attribute"
   // TODO(hiroshige): Check the script's type and implement "module" case.
-  if (client->hasSourceAttribute() && client->deferAttributeValue() &&
-      m_parserInserted && !client->asyncAttributeValue()) {
+  if (m_element->hasSourceAttribute() && m_element->deferAttributeValue() &&
+      m_parserInserted && !m_element->asyncAttributeValue()) {
     // This clause is implemented by the caller-side of prepareScript():
     // - HTMLParserScriptRunner::requestDeferredScript(), and
     // - TODO(hiroshige): Investigate XMLDocumentParser::endElementNs()
@@ -389,8 +385,8 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition,
   //    and the element has been flagged as "parser-inserted",
   //    and the element does not have an async attribute"
   // TODO(hiroshige): Check the script's type.
-  if (client->hasSourceAttribute() && m_parserInserted &&
-      !client->asyncAttributeValue()) {
+  if (m_element->hasSourceAttribute() && m_parserInserted &&
+      !m_element->asyncAttributeValue()) {
     // This clause is implemented by the caller-side of prepareScript():
     // - HTMLParserScriptRunner::requestParsingBlockingScript()
     // - TODO(hiroshige): Investigate XMLDocumentParser::endElementNs()
@@ -413,7 +409,7 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition,
   // Part of the condition check is done in
   // HTMLParserScriptRunner::processScriptElementInternal().
   // TODO(hiroshige): Clean up the split condition check.
-  if (!client->hasSourceAttribute() && m_parserInserted &&
+  if (!m_element->hasSourceAttribute() && m_parserInserted &&
       !elementDocument.isScriptExecutionReady()) {
     // The former part of this clause is
     // implemented by the caller-side of prepareScript():
@@ -432,12 +428,12 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition,
   //    and the element does not have an async attribute,
   //    and the element does not have the "non-blocking" flag set"
   // TODO(hiroshige): Check the script's type and implement "module" case.
-  if (client->hasSourceAttribute() && !client->asyncAttributeValue() &&
+  if (m_element->hasSourceAttribute() && !m_element->asyncAttributeValue() &&
       !m_nonBlocking) {
     // "Add the element to the end of the list of scripts that will execute
     // in order as soon as possible associated with the node document of the
     // script element at the time the prepare a script algorithm started."
-    m_pendingScript = PendingScript::create(m_element, m_resource.get());
+    m_pendingScript = PendingScript::create(m_element.get(), m_resource.get());
     m_asyncExecType = ScriptRunner::InOrder;
     // TODO(hiroshige): Here |contextDocument| is used as "node document"
     // while Step 14 uses |elementDocument| as "node document". Fix this.
@@ -455,11 +451,11 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition,
   // 4th Clause:
   // - "If the script's type is "classic", and the element has a src attribute"
   // TODO(hiroshige): Check the script's type and implement "module" case.
-  if (client->hasSourceAttribute()) {
+  if (m_element->hasSourceAttribute()) {
     // "The element must be added to the set of scripts that will execute
     //  as soon as possible of the node document of the script element at the
     //  time the prepare a script algorithm started."
-    m_pendingScript = PendingScript::create(m_element, m_resource.get());
+    m_pendingScript = PendingScript::create(m_element.get(), m_resource.get());
     m_asyncExecType = ScriptRunner::Async;
     LocalFrame* frame = m_element->document().frame();
     if (frame) {
@@ -513,8 +509,6 @@ bool ScriptLoader::prepareScript(const TextPosition& scriptStartPosition,
 bool ScriptLoader::fetchScript(const String& sourceUrl,
                                const String& encoding,
                                FetchRequest::DeferOption defer) {
-  DCHECK(m_element);
-
   Document* elementDocument = &(m_element->document());
   if (!m_element->isConnected() || m_element->document() != elementDocument)
     return false;
@@ -533,12 +527,12 @@ bool ScriptLoader::fetchScript(const String& sourceUrl,
           "<https://www.chromestatus.com/feature/5718547946799104>");
     }
 
-    FetchRequest request(resourceRequest, m_element->localName());
+    FetchRequest request(resourceRequest, m_element->initiatorName());
 
     // 15. "Let CORS setting be the current state of the element's
     //      crossorigin content attribute."
-    CrossOriginAttributeValue crossOrigin = crossOriginAttributeValue(
-        m_element->fastGetAttribute(HTMLNames::crossoriginAttr));
+    CrossOriginAttributeValue crossOrigin =
+        crossOriginAttributeValue(m_element->crossOriginAttributeValue());
 
     // 16. "Let module script credentials mode be determined by switching
     //      on CORS setting:"
@@ -555,8 +549,8 @@ bool ScriptLoader::fetchScript(const String& sourceUrl,
     // 17. "If the script element has a nonce attribute,
     //      then let cryptographic nonce be that attribute's value.
     //      Otherwise, let cryptographic nonce be the empty string."
-    if (ContentSecurityPolicy::isNonceableElement(m_element.get()))
-      request.setContentSecurityPolicyNonce(client()->nonce());
+    if (m_element->isNonceableElement())
+      request.setContentSecurityPolicyNonce(m_element->nonce());
 
     // 19. "Let parser state be "parser-inserted"
     //      if the script element has been flagged as "parser-inserted",
@@ -569,8 +563,7 @@ bool ScriptLoader::fetchScript(const String& sourceUrl,
     // 18. "If the script element has an integrity attribute,
     //      then let integrity metadata be that attribute's value.
     //      Otherwise, let integrity metadata be the empty string."
-    String integrityAttr =
-        m_element->fastGetAttribute(HTMLNames::integrityAttr);
+    String integrityAttr = m_element->integrityAttributeValue();
     if (!integrityAttr.isEmpty()) {
       IntegrityMetadataSet metadataSet;
       SubresourceIntegrity::parseIntegrityAttribute(integrityAttr, metadataSet,
@@ -623,16 +616,6 @@ bool ScriptLoader::fetchScript(const String& sourceUrl,
   }
 
   return true;
-}
-
-bool isHTMLScriptLoader(Element* element) {
-  DCHECK(element);
-  return isHTMLScriptElement(*element);
-}
-
-bool isSVGScriptLoader(Element* element) {
-  DCHECK(element);
-  return isSVGScriptElement(*element);
 }
 
 void ScriptLoader::logScriptMIMEType(LocalFrame* frame,
@@ -704,13 +687,10 @@ bool ScriptLoader::doExecuteScript(const ScriptSourceCode& sourceCode) {
                                ContentSecurityPolicy::InlineType::Block);
 
   AtomicString nonce =
-      ContentSecurityPolicy::isNonceableElement(m_element.get())
-          ? client()->nonce()
-          : nullAtom;
-  if (!m_isExternalScript &&
-      (!shouldBypassMainWorldCSP &&
-       !csp->allowInlineScript(m_element, elementDocument->url(), nonce,
-                               m_startLineNumber, sourceCode.source()))) {
+      m_element->isNonceableElement() ? m_element->nonce() : nullAtom;
+  if (!m_isExternalScript && !shouldBypassMainWorldCSP &&
+      !m_element->allowInlineScriptForCSP(nonce, m_startLineNumber,
+                                          sourceCode.source())) {
     return false;
   }
 
@@ -786,8 +766,7 @@ bool ScriptLoader::doExecuteScript(const ScriptSourceCode& sourceCode) {
   //    1. "If the script element's root is not a shadow root,
   //        then set the script element's node document's currentScript
   //        attribute to the script element. Otherwise, set it to null."
-  if (isHTMLScriptLoader(m_element) || isSVGScriptLoader(m_element))
-    contextDocument->pushCurrentScript(m_element);
+  contextDocument->pushCurrentScript(m_element.get());
 
   //    2. "Run the classic script given by the script's script."
   // Note: This is where the script is compiled and actually executed.
@@ -798,10 +777,7 @@ bool ScriptLoader::doExecuteScript(const ScriptSourceCode& sourceCode) {
 
   // 6. "Set the script element's node document's currentScript attribute
   //     to old script element."
-  if (isHTMLScriptLoader(m_element) || isSVGScriptLoader(m_element)) {
-    DCHECK(contextDocument->currentScript() == m_element);
-    contextDocument->popCurrentScript();
-  }
+  contextDocument->popCurrentScript(m_element.get());
 
   return true;
 
@@ -865,15 +841,15 @@ void ScriptLoader::pendingScriptFinished(PendingScript* pendingScript) {
 
 bool ScriptLoader::ignoresLoadRequest() const {
   return m_alreadyStarted || m_isExternalScript || m_parserInserted ||
-         !element() || !element()->isConnected();
+         !m_element->isConnected();
 }
 
 // Step 13 of https://html.spec.whatwg.org/#prepare-a-script
 bool ScriptLoader::isScriptForEventSupported() const {
   // 1. "Let for be the value of the for attribute."
-  String eventAttribute = client()->eventAttributeValue();
+  String eventAttribute = m_element->eventAttributeValue();
   // 2. "Let event be the value of the event attribute."
-  String forAttribute = client()->forAttributeValue();
+  String forAttribute = m_element->forAttributeValue();
 
   // "If the script element has an event attribute and a for attribute, and
   //  the script's type is "classic", then run these substeps:"
@@ -898,27 +874,6 @@ bool ScriptLoader::isScriptForEventSupported() const {
 
 String ScriptLoader::scriptContent() const {
   return m_element->textFromChildren();
-}
-
-ScriptLoaderClient* ScriptLoader::client() const {
-  if (isHTMLScriptLoader(m_element))
-    return toHTMLScriptElement(m_element);
-
-  if (isSVGScriptLoader(m_element))
-    return toSVGScriptElement(m_element);
-
-  NOTREACHED();
-  return 0;
-}
-
-ScriptLoader* toScriptLoaderIfPossible(Element* element) {
-  if (isHTMLScriptLoader(element))
-    return toHTMLScriptElement(element)->loader();
-
-  if (isSVGScriptLoader(element))
-    return toSVGScriptElement(element)->loader();
-
-  return 0;
 }
 
 }  // namespace blink

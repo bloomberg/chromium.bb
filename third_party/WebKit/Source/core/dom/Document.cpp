@@ -5137,24 +5137,17 @@ KURL Document::openSearchDescriptionURL() {
 
 void Document::currentScriptForBinding(
     HTMLScriptElementOrSVGScriptElement& scriptElement) const {
-  if (Element* script = currentScript()) {
-    if (script->isInV1ShadowTree())
-      return;
-    if (isHTMLScriptElement(script))
-      scriptElement.setHTMLScriptElement(toHTMLScriptElement(script));
-    else if (isSVGScriptElement(script))
-      scriptElement.setSVGScriptElement(toSVGScriptElement(script));
-  }
+  if (!m_currentScriptStack.isEmpty())
+    m_currentScriptStack.back()->setScriptElementForBinding(scriptElement);
 }
 
-void Document::pushCurrentScript(Element* newCurrentScript) {
-  DCHECK(isHTMLScriptElement(newCurrentScript) ||
-         isSVGScriptElement(newCurrentScript));
+void Document::pushCurrentScript(ScriptElementBase* newCurrentScript) {
   m_currentScriptStack.push_back(newCurrentScript);
 }
 
-void Document::popCurrentScript() {
+void Document::popCurrentScript(ScriptElementBase* script) {
   DCHECK(!m_currentScriptStack.isEmpty());
+  DCHECK_EQ(m_currentScriptStack.back(), script);
   m_currentScriptStack.pop_back();
 }
 
@@ -5678,20 +5671,6 @@ bool Document::allowInlineEventHandler(Node* node,
                                                 contextLine))
     return false;
 
-  return true;
-}
-
-bool Document::allowExecutingScripts(Node* node) {
-  // FIXME: Eventually we'd like to evaluate scripts which are inserted into a
-  // viewless document but this'll do for now.
-  // See http://bugs.webkit.org/show_bug.cgi?id=5727
-  LocalFrame* frame = executingFrame();
-  if (!frame)
-    return false;
-  if (!node->document().executingFrame())
-    return false;
-  if (!canExecuteScripts(AboutToExecuteScript))
-    return false;
   return true;
 }
 

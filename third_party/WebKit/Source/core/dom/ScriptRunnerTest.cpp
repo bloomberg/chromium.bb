@@ -4,8 +4,8 @@
 
 #include "core/dom/ScriptRunner.h"
 
+#include "bindings/core/v8/HTMLScriptElementOrSVGScriptElement.h"
 #include "core/dom/Document.h"
-#include "core/dom/Element.h"
 #include "core/dom/ScriptLoader.h"
 #include "platform/heap/Handle.h"
 #include "platform/testing/TestingPlatformSupport.h"
@@ -22,26 +22,63 @@ using ::testing::ElementsAreArray;
 
 namespace blink {
 
+class MockScriptElementBase
+    : public GarbageCollectedFinalized<MockScriptElementBase>,
+      public ScriptElementBase {
+  USING_GARBAGE_COLLECTED_MIXIN(MockScriptElementBase);
+
+ public:
+  static MockScriptElementBase* create() {
+    return new testing::StrictMock<MockScriptElementBase>();
+  }
+
+  MOCK_METHOD0(dispatchLoadEvent, void());
+  MOCK_METHOD0(dispatchErrorEvent, void());
+  MOCK_CONST_METHOD0(asyncAttributeValue, bool());
+  MOCK_CONST_METHOD0(charsetAttributeValue, String());
+  MOCK_CONST_METHOD0(crossOriginAttributeValue, String());
+  MOCK_CONST_METHOD0(deferAttributeValue, bool());
+  MOCK_CONST_METHOD0(eventAttributeValue, String());
+  MOCK_CONST_METHOD0(forAttributeValue, String());
+  MOCK_CONST_METHOD0(integrityAttributeValue, String());
+  MOCK_CONST_METHOD0(languageAttributeValue, String());
+  MOCK_CONST_METHOD0(sourceAttributeValue, String());
+  MOCK_CONST_METHOD0(typeAttributeValue, String());
+
+  MOCK_METHOD0(textFromChildren, String());
+  MOCK_CONST_METHOD0(textContent, String());
+  MOCK_CONST_METHOD0(hasSourceAttribute, bool());
+  MOCK_CONST_METHOD0(isConnected, bool());
+  MOCK_CONST_METHOD0(hasChildren, bool());
+  MOCK_CONST_METHOD0(isNonceableElement, bool());
+  MOCK_CONST_METHOD0(initiatorName, AtomicString());
+  MOCK_METHOD3(allowInlineScriptForCSP,
+               bool(const AtomicString&,
+                    const WTF::OrdinalNumber&,
+                    const String&));
+  MOCK_CONST_METHOD0(document, Document&());
+  MOCK_METHOD1(setScriptElementForBinding,
+               void(HTMLScriptElementOrSVGScriptElement&));
+
+  DEFINE_INLINE_VIRTUAL_TRACE() { ScriptElementBase::trace(visitor); }
+};
+
 class MockScriptLoader final : public ScriptLoader {
  public:
-  static MockScriptLoader* create(Element* element) {
-    return new MockScriptLoader(element);
-  }
+  static MockScriptLoader* create() { return new MockScriptLoader(); }
   ~MockScriptLoader() override {}
 
   MOCK_METHOD0(execute, void());
   MOCK_CONST_METHOD0(isReady, bool());
 
  private:
-  explicit MockScriptLoader(Element* element)
-      : ScriptLoader(element, false, false, false) {}
+  explicit MockScriptLoader()
+      : ScriptLoader(MockScriptElementBase::create(), false, false, false) {}
 };
 
 class ScriptRunnerTest : public testing::Test {
  public:
-  ScriptRunnerTest()
-      : m_document(Document::create()),
-        m_element(m_document->createElement("foo")) {}
+  ScriptRunnerTest() : m_document(Document::create()) {}
 
   void SetUp() override {
     // We have to create ScriptRunner after initializing platform, because we
@@ -54,7 +91,6 @@ class ScriptRunnerTest : public testing::Test {
 
  protected:
   Persistent<Document> m_document;
-  Persistent<Element> m_element;
   Persistent<ScriptRunner> m_scriptRunner;
   WTF::Vector<int> m_order;
   ScopedTestingPlatformSupport<TestingPlatformSupportWithMockScheduler>
@@ -62,7 +98,7 @@ class ScriptRunnerTest : public testing::Test {
 };
 
 TEST_F(ScriptRunnerTest, QueueSingleScript_Async) {
-  MockScriptLoader* scriptLoader = MockScriptLoader::create(m_element.get());
+  MockScriptLoader* scriptLoader = MockScriptLoader::create();
   m_scriptRunner->queueScriptForExecution(scriptLoader, ScriptRunner::Async);
   m_scriptRunner->notifyScriptReady(scriptLoader, ScriptRunner::Async);
 
@@ -71,7 +107,7 @@ TEST_F(ScriptRunnerTest, QueueSingleScript_Async) {
 }
 
 TEST_F(ScriptRunnerTest, QueueSingleScript_InOrder) {
-  MockScriptLoader* scriptLoader = MockScriptLoader::create(m_element.get());
+  MockScriptLoader* scriptLoader = MockScriptLoader::create();
   m_scriptRunner->queueScriptForExecution(scriptLoader, ScriptRunner::InOrder);
 
   EXPECT_CALL(*scriptLoader, isReady()).WillOnce(Return(true));
@@ -83,9 +119,9 @@ TEST_F(ScriptRunnerTest, QueueSingleScript_InOrder) {
 }
 
 TEST_F(ScriptRunnerTest, QueueMultipleScripts_InOrder) {
-  MockScriptLoader* scriptLoader1 = MockScriptLoader::create(m_element.get());
-  MockScriptLoader* scriptLoader2 = MockScriptLoader::create(m_element.get());
-  MockScriptLoader* scriptLoader3 = MockScriptLoader::create(m_element.get());
+  MockScriptLoader* scriptLoader1 = MockScriptLoader::create();
+  MockScriptLoader* scriptLoader2 = MockScriptLoader::create();
+  MockScriptLoader* scriptLoader3 = MockScriptLoader::create();
 
   HeapVector<Member<MockScriptLoader>> scriptLoaders;
   scriptLoaders.push_back(scriptLoader1);
@@ -122,11 +158,11 @@ TEST_F(ScriptRunnerTest, QueueMultipleScripts_InOrder) {
 }
 
 TEST_F(ScriptRunnerTest, QueueMixedScripts) {
-  MockScriptLoader* scriptLoader1 = MockScriptLoader::create(m_element.get());
-  MockScriptLoader* scriptLoader2 = MockScriptLoader::create(m_element.get());
-  MockScriptLoader* scriptLoader3 = MockScriptLoader::create(m_element.get());
-  MockScriptLoader* scriptLoader4 = MockScriptLoader::create(m_element.get());
-  MockScriptLoader* scriptLoader5 = MockScriptLoader::create(m_element.get());
+  MockScriptLoader* scriptLoader1 = MockScriptLoader::create();
+  MockScriptLoader* scriptLoader2 = MockScriptLoader::create();
+  MockScriptLoader* scriptLoader3 = MockScriptLoader::create();
+  MockScriptLoader* scriptLoader4 = MockScriptLoader::create();
+  MockScriptLoader* scriptLoader5 = MockScriptLoader::create();
 
   m_scriptRunner->queueScriptForExecution(scriptLoader1, ScriptRunner::InOrder);
   m_scriptRunner->queueScriptForExecution(scriptLoader2, ScriptRunner::InOrder);
@@ -171,9 +207,9 @@ TEST_F(ScriptRunnerTest, QueueMixedScripts) {
 }
 
 TEST_F(ScriptRunnerTest, QueueReentrantScript_Async) {
-  MockScriptLoader* scriptLoader1 = MockScriptLoader::create(m_element.get());
-  MockScriptLoader* scriptLoader2 = MockScriptLoader::create(m_element.get());
-  MockScriptLoader* scriptLoader3 = MockScriptLoader::create(m_element.get());
+  MockScriptLoader* scriptLoader1 = MockScriptLoader::create();
+  MockScriptLoader* scriptLoader2 = MockScriptLoader::create();
+  MockScriptLoader* scriptLoader3 = MockScriptLoader::create();
 
   m_scriptRunner->queueScriptForExecution(scriptLoader1, ScriptRunner::Async);
   m_scriptRunner->queueScriptForExecution(scriptLoader2, ScriptRunner::Async);
@@ -209,9 +245,9 @@ TEST_F(ScriptRunnerTest, QueueReentrantScript_Async) {
 }
 
 TEST_F(ScriptRunnerTest, QueueReentrantScript_InOrder) {
-  MockScriptLoader* scriptLoader1 = MockScriptLoader::create(m_element.get());
-  MockScriptLoader* scriptLoader2 = MockScriptLoader::create(m_element.get());
-  MockScriptLoader* scriptLoader3 = MockScriptLoader::create(m_element.get());
+  MockScriptLoader* scriptLoader1 = MockScriptLoader::create();
+  MockScriptLoader* scriptLoader2 = MockScriptLoader::create();
+  MockScriptLoader* scriptLoader3 = MockScriptLoader::create();
 
   EXPECT_CALL(*scriptLoader1, isReady()).WillRepeatedly(Return(true));
   EXPECT_CALL(*scriptLoader2, isReady()).WillRepeatedly(Return(true));
@@ -260,7 +296,7 @@ TEST_F(ScriptRunnerTest, QueueReentrantScript_ManyAsyncScripts) {
     scriptLoaders[i] = nullptr;
 
   for (int i = 0; i < 20; i++) {
-    scriptLoaders[i] = MockScriptLoader::create(m_element.get());
+    scriptLoaders[i] = MockScriptLoader::create();
     EXPECT_CALL(*scriptLoaders[i], isReady()).WillRepeatedly(Return(true));
 
     m_scriptRunner->queueScriptForExecution(scriptLoaders[i],
@@ -293,9 +329,9 @@ TEST_F(ScriptRunnerTest, QueueReentrantScript_ManyAsyncScripts) {
 }
 
 TEST_F(ScriptRunnerTest, ResumeAndSuspend_InOrder) {
-  MockScriptLoader* scriptLoader1 = MockScriptLoader::create(m_element.get());
-  MockScriptLoader* scriptLoader2 = MockScriptLoader::create(m_element.get());
-  MockScriptLoader* scriptLoader3 = MockScriptLoader::create(m_element.get());
+  MockScriptLoader* scriptLoader1 = MockScriptLoader::create();
+  MockScriptLoader* scriptLoader2 = MockScriptLoader::create();
+  MockScriptLoader* scriptLoader3 = MockScriptLoader::create();
 
   m_scriptRunner->queueScriptForExecution(scriptLoader1, ScriptRunner::InOrder);
   m_scriptRunner->queueScriptForExecution(scriptLoader2, ScriptRunner::InOrder);
@@ -335,9 +371,9 @@ TEST_F(ScriptRunnerTest, ResumeAndSuspend_InOrder) {
 }
 
 TEST_F(ScriptRunnerTest, ResumeAndSuspend_Async) {
-  MockScriptLoader* scriptLoader1 = MockScriptLoader::create(m_element.get());
-  MockScriptLoader* scriptLoader2 = MockScriptLoader::create(m_element.get());
-  MockScriptLoader* scriptLoader3 = MockScriptLoader::create(m_element.get());
+  MockScriptLoader* scriptLoader1 = MockScriptLoader::create();
+  MockScriptLoader* scriptLoader2 = MockScriptLoader::create();
+  MockScriptLoader* scriptLoader3 = MockScriptLoader::create();
 
   m_scriptRunner->queueScriptForExecution(scriptLoader1, ScriptRunner::Async);
   m_scriptRunner->queueScriptForExecution(scriptLoader2, ScriptRunner::Async);
@@ -367,8 +403,8 @@ TEST_F(ScriptRunnerTest, ResumeAndSuspend_Async) {
 }
 
 TEST_F(ScriptRunnerTest, LateNotifications) {
-  MockScriptLoader* scriptLoader1 = MockScriptLoader::create(m_element.get());
-  MockScriptLoader* scriptLoader2 = MockScriptLoader::create(m_element.get());
+  MockScriptLoader* scriptLoader1 = MockScriptLoader::create();
+  MockScriptLoader* scriptLoader2 = MockScriptLoader::create();
 
   EXPECT_CALL(*scriptLoader1, isReady()).WillRepeatedly(Return(true));
   EXPECT_CALL(*scriptLoader2, isReady()).WillRepeatedly(Return(true));
@@ -395,10 +431,8 @@ TEST_F(ScriptRunnerTest, LateNotifications) {
 }
 
 TEST_F(ScriptRunnerTest, TasksWithDeadScriptRunner) {
-  Persistent<MockScriptLoader> scriptLoader1 =
-      MockScriptLoader::create(m_element.get());
-  Persistent<MockScriptLoader> scriptLoader2 =
-      MockScriptLoader::create(m_element.get());
+  Persistent<MockScriptLoader> scriptLoader1 = MockScriptLoader::create();
+  Persistent<MockScriptLoader> scriptLoader2 = MockScriptLoader::create();
 
   EXPECT_CALL(*scriptLoader1, isReady()).WillRepeatedly(Return(true));
   EXPECT_CALL(*scriptLoader2, isReady()).WillRepeatedly(Return(true));

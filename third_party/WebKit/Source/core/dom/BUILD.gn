@@ -246,6 +246,8 @@ blink_core_sources("dom") {
     "SandboxFlags.cpp",
     "SandboxFlags.h",
     "ScopedWindowFocusAllowedIndicator.h",
+    "ScriptElementBase.cpp",
+    "ScriptElementBase.h",
     "ScriptLoader.cpp",
     "ScriptLoader.h",
     "ScriptModuleResolver.h",

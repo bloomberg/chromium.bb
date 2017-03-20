@@ -448,7 +448,8 @@ void XMLDocumentParser::notifyFinished(Resource* unusedResource) {
   Element* e = m_scriptElement;
   m_scriptElement = nullptr;
 
-  ScriptLoader* scriptLoader = toScriptLoaderIfPossible(e);
+  ScriptLoader* scriptLoader =
+      ScriptElementBase::fromElementIfPossible(e)->loader();
   DCHECK(scriptLoader);
 
   if (errorOccurred) {
@@ -1030,8 +1031,7 @@ void XMLDocumentParser::startElementNs(const AtomicString& localName,
 
   newElement->beginParsingChildren();
 
-  ScriptLoader* scriptLoader = toScriptLoaderIfPossible(newElement);
-  if (scriptLoader)
+  if (newElement->isScriptElement())
     m_scriptStartPosition = textPosition();
 
   m_currentNode->parserAppendChild(newElement);
@@ -1076,8 +1076,12 @@ void XMLDocumentParser::endElementNs() {
   if (m_currentNode->isElementNode())
     toElement(n)->finishParsingChildren();
 
+  ScriptElementBase* scriptElementBase =
+      n->isElementNode()
+          ? ScriptElementBase::fromElementIfPossible(toElement(n))
+          : nullptr;
   if (!scriptingContentIsAllowed(getParserContentPolicy()) &&
-      n->isElementNode() && toScriptLoaderIfPossible(toElement(n))) {
+      scriptElementBase) {
     popCurrentNode();
     n->remove(IGNORE_EXCEPTION_FOR_TESTING);
     return;
@@ -1097,7 +1101,8 @@ void XMLDocumentParser::endElementNs() {
     return;
   }
 
-  ScriptLoader* scriptLoader = toScriptLoaderIfPossible(element);
+  ScriptLoader* scriptLoader =
+      scriptElementBase ? scriptElementBase->loader() : nullptr;
   if (!scriptLoader) {
     popCurrentNode();
     return;

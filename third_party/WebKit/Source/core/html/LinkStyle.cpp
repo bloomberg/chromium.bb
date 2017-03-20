@@ -89,7 +89,9 @@ void LinkStyle::setCSSStyleSheet(
         size = cachedStyleSheet->resourceBuffer()->size();
       }
       checkResult = SubresourceIntegrity::CheckSubresourceIntegrity(
-          *m_owner, data, size, KURL(baseURL, href), *cachedStyleSheet);
+          m_owner->fastGetAttribute(HTMLNames::integrityAttr),
+          m_owner->document(), data, size, KURL(baseURL, href),
+          *cachedStyleSheet);
       disposition = checkResult ? ResourceIntegrityDisposition::Passed
                                 : ResourceIntegrityDisposition::Failed;
 

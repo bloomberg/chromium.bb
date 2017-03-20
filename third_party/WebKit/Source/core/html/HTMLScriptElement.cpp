@@ -24,6 +24,7 @@
 #include "core/html/HTMLScriptElement.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "bindings/core/v8/HTMLScriptElementOrSVGScriptElement.h"
 #include "bindings/core/v8/ScriptEventListener.h"
 #include "core/HTMLNames.h"
 #include "core/dom/Attribute.h"
@@ -43,11 +44,10 @@ inline HTMLScriptElement::HTMLScriptElement(Document& document,
                                             bool wasInsertedByParser,
                                             bool alreadyStarted,
                                             bool createdDuringDocumentWrite)
-    : HTMLElement(scriptTag, document),
-      m_loader(ScriptLoader::create(this,
-                                    wasInsertedByParser,
-                                    alreadyStarted,
-                                    createdDuringDocumentWrite)) {}
+    : HTMLElement(scriptTag, document) {
+  initializeScriptLoader(wasInsertedByParser, alreadyStarted,
+                         createdDuringDocumentWrite);
+}
 
 HTMLScriptElement* HTMLScriptElement::create(Document& document,
                                              bool wasInsertedByParser,
@@ -157,6 +157,22 @@ String HTMLScriptElement::eventAttributeValue() const {
   return getAttribute(eventAttr).getString();
 }
 
+String HTMLScriptElement::crossOriginAttributeValue() const {
+  return getAttribute(crossoriginAttr);
+}
+
+String HTMLScriptElement::integrityAttributeValue() const {
+  return getAttribute(integrityAttr);
+}
+
+String HTMLScriptElement::textFromChildren() {
+  return Element::textFromChildren();
+}
+
+String HTMLScriptElement::textContent() const {
+  return Element::textContent();
+}
+
 bool HTMLScriptElement::asyncAttributeValue() const {
   return fastHasAttribute(asyncAttr);
 }
@@ -169,9 +185,47 @@ bool HTMLScriptElement::hasSourceAttribute() const {
   return fastHasAttribute(srcAttr);
 }
 
+bool HTMLScriptElement::isConnected() const {
+  return Node::isConnected();
+}
+
+bool HTMLScriptElement::hasChildren() const {
+  return Node::hasChildren();
+}
+
+bool HTMLScriptElement::isNonceableElement() const {
+  return ContentSecurityPolicy::isNonceableElement(this);
+}
+
+bool HTMLScriptElement::allowInlineScriptForCSP(
+    const AtomicString& nonce,
+    const WTF::OrdinalNumber& contextLine,
+    const String& scriptContent) {
+  return document().contentSecurityPolicy()->allowInlineScript(
+      this, document().url(), nonce, contextLine, scriptContent);
+}
+
+AtomicString HTMLScriptElement::initiatorName() const {
+  return Element::localName();
+}
+
+Document& HTMLScriptElement::document() const {
+  return Node::document();
+}
+
 void HTMLScriptElement::dispatchLoadEvent() {
   DCHECK(!m_loader->haveFiredLoadEvent());
   dispatchEvent(Event::create(EventTypeNames::load));
+}
+
+void HTMLScriptElement::dispatchErrorEvent() {
+  dispatchEvent(Event::create(EventTypeNames::error));
+}
+
+void HTMLScriptElement::setScriptElementForBinding(
+    HTMLScriptElementOrSVGScriptElement& element) {
+  if (!isInV1ShadowTree())
+    element.setHTMLScriptElement(this);
 }
 
 Element* HTMLScriptElement::cloneElementWithoutAttributesAndChildren() {
@@ -180,8 +234,8 @@ Element* HTMLScriptElement::cloneElementWithoutAttributesAndChildren() {
 }
 
 DEFINE_TRACE(HTMLScriptElement) {
-  visitor->trace(m_loader);
   HTMLElement::trace(visitor);
+  ScriptElementBase::trace(visitor);
 }
 
 }  // namespace blink

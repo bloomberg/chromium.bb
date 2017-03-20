@@ -177,7 +177,7 @@ class SubresourceIntegrityTest : public ::testing::Test {
                        CorsStatus corsStatus = WithCors) {
     scriptElement->setAttribute(HTMLNames::integrityAttr, integrity);
     EXPECT_TRUE(SubresourceIntegrity::CheckSubresourceIntegrity(
-        *scriptElement, script, size, url,
+        String(integrity), scriptElement->document(), script, size, url,
         *createTestResource(url, requestorUrl, corsStatus)));
   }
 
@@ -189,7 +189,7 @@ class SubresourceIntegrityTest : public ::testing::Test {
                               CorsStatus corsStatus = WithCors) {
     scriptElement->setAttribute(HTMLNames::integrityAttr, integrity);
     EXPECT_FALSE(SubresourceIntegrity::CheckSubresourceIntegrity(
-        *scriptElement, script, size, url,
+        String(integrity), scriptElement->document(), script, size, url,
         *createTestResource(url, requestorUrl, corsStatus)));
   }
 

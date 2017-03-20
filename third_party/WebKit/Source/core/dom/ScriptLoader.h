@@ -32,17 +32,16 @@
 
 namespace blink {
 
-class Element;
-class ScriptLoaderClient;
-class ScriptSourceCode;
 class LocalFrame;
+class ScriptElementBase;
+class ScriptSourceCode;
 
 class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
                                  public PendingScriptClient {
   USING_GARBAGE_COLLECTED_MIXIN(ScriptLoader);
 
  public:
-  static ScriptLoader* create(Element* element,
+  static ScriptLoader* create(ScriptElementBase* element,
                               bool createdByParser,
                               bool isEvaluated,
                               bool createdDuringDocumentWrite = false) {
@@ -52,8 +51,6 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
 
   ~ScriptLoader() override;
   DECLARE_VIRTUAL_TRACE();
-
-  Element* element() const { return m_element; }
 
   enum LegacyTypeSupport {
     DisallowLegacyTypeInTypeAttribute,
@@ -116,7 +113,7 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
   void setFetchDocWrittenScriptDeferIdle();
 
  protected:
-  ScriptLoader(Element*,
+  ScriptLoader(ScriptElementBase*,
                bool createdByParser,
                bool isEvaluated,
                bool createdDuringDocumentWrite);
@@ -131,15 +128,13 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
                    FetchRequest::DeferOption);
   bool doExecuteScript(const ScriptSourceCode&);
 
-  ScriptLoaderClient* client() const;
-
   // Clears the connection to the PendingScript.
   void detachPendingScript();
 
   // PendingScriptClient
   void pendingScriptFinished(PendingScript*) override;
 
-  Member<Element> m_element;
+  Member<ScriptElementBase> m_element;
   Member<ScriptResource> m_resource;
   WTF::OrdinalNumber m_startLineNumber;
 
@@ -196,8 +191,6 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
 
   Member<PendingScript> m_pendingScript;
 };
-
-ScriptLoader* toScriptLoaderIfPossible(Element*);
 
 }  // namespace blink
 

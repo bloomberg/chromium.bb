@@ -26,15 +26,16 @@
 #define HTMLScriptElement_h
 
 #include "core/CoreExport.h"
+#include "core/dom/ScriptElementBase.h"
 #include "core/dom/ScriptLoader.h"
-#include "core/dom/ScriptLoaderClient.h"
 #include "core/html/HTMLElement.h"
 
 namespace blink {
 
 class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
-                                            public ScriptLoaderClient {
+                                            public ScriptElementBase {
   DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(HTMLScriptElement);
 
  public:
   static HTMLScriptElement* create(Document&,
@@ -51,6 +52,9 @@ class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
   bool async() const;
 
   ScriptLoader* loader() const { return m_loader.get(); }
+
+  bool isScriptElement() const override { return true; }
+  Document& document() const override;
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -70,21 +74,33 @@ class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
   bool hasLegalLinkAttribute(const QualifiedName&) const override;
   const QualifiedName& subResourceAttributeName() const override;
 
+  // ScriptElementBase overrides:
   String sourceAttributeValue() const override;
   String charsetAttributeValue() const override;
   String typeAttributeValue() const override;
   String languageAttributeValue() const override;
   String forAttributeValue() const override;
   String eventAttributeValue() const override;
+  String crossOriginAttributeValue() const override;
+  String integrityAttributeValue() const override;
+  String textFromChildren() override;
+  String textContent() const override;
   bool asyncAttributeValue() const override;
   bool deferAttributeValue() const override;
   bool hasSourceAttribute() const override;
-
+  bool isConnected() const override;
+  bool hasChildren() const override;
+  bool isNonceableElement() const override;
+  bool allowInlineScriptForCSP(const AtomicString& nonce,
+                               const WTF::OrdinalNumber&,
+                               const String& scriptContent) override;
+  AtomicString initiatorName() const override;
   void dispatchLoadEvent() override;
+  void dispatchErrorEvent() override;
+  void setScriptElementForBinding(
+      HTMLScriptElementOrSVGScriptElement&) override;
 
   Element* cloneElementWithoutAttributesAndChildren() override;
-
-  Member<ScriptLoader> m_loader;
 };
 
 }  // namespace blink

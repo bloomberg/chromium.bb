@@ -56,18 +56,18 @@ namespace {
 // TODO(bmcquade): move this to a shared location if we find ourselves wanting
 // to trace similar data elsewhere in the codebase.
 std::unique_ptr<TracedValue> getTraceArgsForScriptElement(
-    Element* element,
+    ScriptElementBase* element,
     const TextPosition& textPosition) {
   std::unique_ptr<TracedValue> value = TracedValue::create();
-  ScriptLoader* scriptLoader = toScriptLoaderIfPossible(element);
+  ScriptLoader* scriptLoader = element->loader();
   if (scriptLoader && scriptLoader->resource())
     value->setString("url", scriptLoader->resource()->url().getString());
-  if (element->ownerDocument() && element->ownerDocument()->frame()) {
+  if (element->document().frame()) {
     value->setString(
         "frame",
         String::format("0x%" PRIx64,
                        static_cast<uint64_t>(reinterpret_cast<intptr_t>(
-                           element->ownerDocument()->frame()))));
+                           element->document().frame()))));
   }
   if (textPosition.m_line.zeroBasedInt() > 0 ||
       textPosition.m_column.zeroBasedInt() > 0) {
@@ -77,15 +77,14 @@ std::unique_ptr<TracedValue> getTraceArgsForScriptElement(
   return value;
 }
 
-bool doExecuteScript(Element* scriptElement,
+bool doExecuteScript(ScriptElementBase* element,
                      const ScriptSourceCode& sourceCode,
                      const TextPosition& textPosition) {
-  ScriptLoader* scriptLoader = toScriptLoaderIfPossible(scriptElement);
+  ScriptLoader* scriptLoader = element->loader();
   DCHECK(scriptLoader);
-  TRACE_EVENT_WITH_FLOW1(
-      "blink", "HTMLParserScriptRunner ExecuteScript", scriptElement,
-      TRACE_EVENT_FLAG_FLOW_IN, "data",
-      getTraceArgsForScriptElement(scriptElement, textPosition));
+  TRACE_EVENT_WITH_FLOW1("blink", "HTMLParserScriptRunner ExecuteScript",
+                         element, TRACE_EVENT_FLAG_FLOW_IN, "data",
+                         getTraceArgsForScriptElement(element, textPosition));
   return scriptLoader->executeScript(sourceCode);
 }
 
@@ -108,7 +107,7 @@ void traceParserBlockingScript(const PendingScript* pendingScript,
   // both when these yields occur, as well as how long the parser had
   // to yield. The connecting flow events are traced once the parser becomes
   // unblocked when the script actually executes, in doExecuteScript.
-  Element* element = pendingScript->element();
+  ScriptElementBase* element = pendingScript->element();
   if (!element)
     return;
   TextPosition scriptStartPosition = pendingScript->startingPosition();
@@ -225,7 +224,7 @@ void HTMLParserScriptRunner::executePendingScriptAndDispatchEvent(
   TextPosition scriptStartPosition = pendingScript->startingPosition();
   double scriptParserBlockingTime =
       pendingScript->parserBlockingLoadStartTime();
-  Element* element = pendingScript->element();
+  ScriptElementBase* element = pendingScript->element();
 
   // 1. "Let the script be the pending parsing-blocking script.
   //     There is no longer a pending parsing-blocking script."
@@ -237,7 +236,7 @@ void HTMLParserScriptRunner::executePendingScriptAndDispatchEvent(
     m_parserBlockingScript = nullptr;
   }
 
-  if (ScriptLoader* scriptLoader = toScriptLoaderIfPossible(element)) {
+  if (ScriptLoader* scriptLoader = element->loader()) {
     // 7. "Increment the parser's script nesting level by one (it should be
     //     zero before this step, so this sets it to one)."
     HTMLParserReentryPermit::ScriptNestingLevelIncrementer
@@ -265,7 +264,7 @@ void HTMLParserScriptRunner::executePendingScriptAndDispatchEvent(
       if (!doExecuteScript(element, sourceCode, scriptStartPosition)) {
         scriptLoader->dispatchErrorEvent();
       } else {
-        element->dispatchEvent(Event::create(EventTypeNames::load));
+        element->dispatchLoadEvent();
       }
     }
 
@@ -279,13 +278,13 @@ void HTMLParserScriptRunner::executePendingScriptAndDispatchEvent(
   DCHECK(!isExecutingScript());
 }
 
-void fetchBlockedDocWriteScript(Element* script,
+void fetchBlockedDocWriteScript(ScriptElementBase* element,
                                 bool isParserInserted,
                                 const TextPosition& scriptStartPosition) {
-  DCHECK(script);
+  DCHECK(element);
 
   ScriptLoader* scriptLoader =
-      ScriptLoader::create(script, isParserInserted, false, false);
+      ScriptLoader::create(element, isParserInserted, false, false);
   DCHECK(scriptLoader);
   scriptLoader->setFetchDocWrittenScriptDeferIdle();
   scriptLoader->prepareScript(scriptStartPosition);
@@ -327,9 +326,9 @@ void HTMLParserScriptRunner::possiblyFetchBlockedDocWriteScript(
   if (parserBlockingScript() != pendingScript)
     return;
 
-  Element* element = parserBlockingScript()->element();
+  ScriptElementBase* element = parserBlockingScript()->element();
 
-  ScriptLoader* scriptLoader = toScriptLoaderIfPossible(element);
+  ScriptLoader* scriptLoader = element->loader();
   if (!scriptLoader || !scriptLoader->disallowedFetchForDocWrittenScript())
     return;
 
@@ -397,9 +396,7 @@ void HTMLParserScriptRunner::processScriptElement(
     Element* scriptElement,
     const TextPosition& scriptStartPosition) {
   DCHECK(scriptElement);
-  TRACE_EVENT1(
-      "blink", "HTMLParserScriptRunner::execute", "data",
-      getTraceArgsForScriptElement(scriptElement, scriptStartPosition));
+
   // FIXME: If scripting is disabled, always just return.
 
   bool hadPreloadScanner = m_host->hasPreloadScanner();
@@ -596,12 +593,14 @@ void HTMLParserScriptRunner::requestDeferredScript(Element* element) {
 
 PendingScript* HTMLParserScriptRunner::requestPendingScript(
     Element* element) const {
-  ScriptResource* resource = toScriptLoaderIfPossible(element)->resource();
+  ScriptElementBase* scriptElement =
+      ScriptElementBase::fromElementIfPossible(element);
+  ScriptResource* resource = scriptElement->loader()->resource();
   // Here |resource| should be non-null. If it were nullptr,
   // ScriptLoader::fetchScript() should have returned false and
   // thus the control shouldn't have reached here.
   CHECK(resource);
-  return PendingScript::create(element, resource);
+  return PendingScript::create(scriptElement, resource);
 }
 
 // The initial steps for 'An end tag whose tag name is "script"'
@@ -612,16 +611,15 @@ void HTMLParserScriptRunner::processScriptElementInternal(
   DCHECK(m_document);
   DCHECK(!hasParserBlockingScript());
   {
-    ScriptLoader* scriptLoader = toScriptLoaderIfPossible(script);
-
-    // This contains both a DCHECK and a null check since we should not
-    // be getting into the case of a null script element, but seem to be from
-    // time to time. The assertion is left in to help find those cases and
-    // is being tracked by <https://bugs.webkit.org/show_bug.cgi?id=60559>.
+    ScriptElementBase* element =
+        ScriptElementBase::fromElementIfPossible(script);
+    DCHECK(element);
+    ScriptLoader* scriptLoader = element->loader();
     DCHECK(scriptLoader);
-    if (!scriptLoader)
-      return;
 
+    // FIXME: Align trace event name and function name.
+    TRACE_EVENT1("blink", "HTMLParserScriptRunner::execute", "data",
+                 getTraceArgsForScriptElement(element, scriptStartPosition));
     DCHECK(scriptLoader->isParserInserted());
 
     if (!isExecutingScript())
@@ -660,7 +658,7 @@ void HTMLParserScriptRunner::processScriptElementInternal(
         //  (There can only be one such script per Document at a time.)"
         CHECK(!m_parserBlockingScript);
         m_parserBlockingScript =
-            PendingScript::create(script, scriptStartPosition);
+            PendingScript::create(element, scriptStartPosition);
       } else {
         // 6th Clause of Step 23.
         // "Immediately execute the script block,
@@ -673,7 +671,7 @@ void HTMLParserScriptRunner::processScriptElementInternal(
         ScriptSourceCode sourceCode(script->textContent(),
                                     documentURLForScriptExecution(m_document),
                                     scriptStartPosition);
-        doExecuteScript(script, sourceCode, scriptStartPosition);
+        doExecuteScript(element, sourceCode, scriptStartPosition);
       }
     } else {
       // 2nd Clause of Step 23.

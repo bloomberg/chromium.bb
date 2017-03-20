@@ -14,7 +14,7 @@
 
 namespace blink {
 
-class Element;
+class Document;
 class ExecutionContext;
 class KURL;
 class Resource;
@@ -31,13 +31,14 @@ class CORE_EXPORT SubresourceIntegrity {
   // The versions with the IntegrityMetadataSet passed as the first argument
   // assume that the integrity attribute has already been parsed, and the
   // IntegrityMetadataSet represents the result of that parsing.
-  static bool CheckSubresourceIntegrity(const Element&,
+  static bool CheckSubresourceIntegrity(const String& integrityAttribute,
+                                        Document&,  // the embedding document
                                         const char* content,
                                         size_t,
                                         const KURL& resourceUrl,
                                         const Resource&);
   static bool CheckSubresourceIntegrity(const IntegrityMetadataSet&,
-                                        const Element&,
+                                        Document&,
                                         const char* content,
                                         size_t,
                                         const KURL& resourceUrl,

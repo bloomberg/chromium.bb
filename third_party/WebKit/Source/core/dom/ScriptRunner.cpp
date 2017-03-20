@@ -27,7 +27,6 @@
 
 #include <algorithm>
 #include "core/dom/Document.h"
-#include "core/dom/Element.h"
 #include "core/dom/ScriptLoader.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "platform/heap/Handle.h"

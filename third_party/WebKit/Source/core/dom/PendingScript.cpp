@@ -26,19 +26,19 @@
 #include "core/dom/PendingScript.h"
 
 #include "bindings/core/v8/ScriptSourceCode.h"
-#include "core/dom/Element.h"
+#include "core/dom/ScriptElementBase.h"
 #include "core/frame/SubresourceIntegrity.h"
 #include "platform/SharedBuffer.h"
 #include "wtf/CurrentTime.h"
 
 namespace blink {
 
-PendingScript* PendingScript::create(Element* element,
+PendingScript* PendingScript::create(ScriptElementBase* element,
                                      ScriptResource* resource) {
   return new PendingScript(element, resource, TextPosition());
 }
 
-PendingScript* PendingScript::create(Element* element,
+PendingScript* PendingScript::create(ScriptElementBase* element,
                                      const TextPosition& startingPosition) {
   return new PendingScript(element, nullptr, startingPosition);
 }
@@ -47,7 +47,7 @@ PendingScript* PendingScript::createForTesting(ScriptResource* resource) {
   return new PendingScript(nullptr, resource, TextPosition(), true);
 }
 
-PendingScript::PendingScript(Element* element,
+PendingScript::PendingScript(ScriptElementBase* element,
                              ScriptResource* resource,
                              const TextPosition& startingPosition,
                              bool isForTesting)
@@ -112,9 +112,10 @@ void PendingScript::stopWatchingForLoad() {
   m_watchingForLoad = false;
 }
 
-Element* PendingScript::element() const {
-  // As mentioned in the comment at |m_element| declaration, |m_element|
-  // must points to the corresponding ScriptLoader's element.
+ScriptElementBase* PendingScript::element() const {
+  // As mentioned in the comment at |m_element| declaration,
+  // |m_element|  must point to the corresponding ScriptLoader's
+  // client.
   CHECK(m_element);
   return m_element.get();
 }
@@ -132,10 +133,11 @@ void PendingScript::markParserBlockingLoadStartTime() {
 }
 
 // Returns true if SRI check passed.
-static bool checkScriptResourceIntegrity(Resource* resource, Element* element) {
+static bool checkScriptResourceIntegrity(Resource* resource,
+                                         ScriptElementBase* element) {
   DCHECK_EQ(resource->getType(), Resource::Script);
   ScriptResource* scriptResource = toScriptResource(resource);
-  String integrityAttr = element->fastGetAttribute(HTMLNames::integrityAttr);
+  String integrityAttr = element->integrityAttributeValue();
 
   // It is possible to get back a script resource with integrity metadata
   // for a request with an empty integrity attribute. In that case, the
@@ -160,7 +162,7 @@ static bool checkScriptResourceIntegrity(Resource* resource, Element* element) {
         return true;
 
       bool passed = SubresourceIntegrity::CheckSubresourceIntegrity(
-          scriptResource->integrityMetadata(), *element,
+          scriptResource->integrityMetadata(), element->document(),
           resource->resourceBuffer()->data(),
           resource->resourceBuffer()->size(), resource->url(), *resource);
       scriptResource->setIntegrityDisposition(
@@ -198,8 +200,9 @@ void PendingScript::notifyFinished(Resource* resource) {
   //
   // See https://crbug.com/500701 for more information.
   checkState();
-  if (m_element)
+  if (m_element) {
     m_integrityFailure = !checkScriptResourceIntegrity(resource, m_element);
+  }
 
   // If script streaming is in use, the client will be notified in
   // streamingFinished.

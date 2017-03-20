@@ -101,37 +101,35 @@ HashAlgorithm SubresourceIntegrity::getPrioritizedHashFunction(
   return algorithm2;
 }
 
-bool SubresourceIntegrity::CheckSubresourceIntegrity(const Element& element,
-                                                     const char* content,
-                                                     size_t size,
-                                                     const KURL& resourceUrl,
-                                                     const Resource& resource) {
-  Document& document = element.document();
-  String attribute = element.fastGetAttribute(HTMLNames::integrityAttr);
-  if (attribute.isEmpty())
+bool SubresourceIntegrity::CheckSubresourceIntegrity(
+    const String& integrityAttribute,
+    Document& document,
+    const char* content,
+    size_t size,
+    const KURL& resourceUrl,
+    const Resource& resource) {
+  if (integrityAttribute.isEmpty())
     return true;
 
   IntegrityMetadataSet metadataSet;
   IntegrityParseResult integrityParseResult =
-      parseIntegrityAttribute(attribute, metadataSet, &document);
+      parseIntegrityAttribute(integrityAttribute, metadataSet, &document);
   // On failed parsing, there's no need to log an error here, as
   // parseIntegrityAttribute() will output an appropriate console message.
   if (integrityParseResult != IntegrityParseValidResult)
     return true;
 
-  return CheckSubresourceIntegrity(metadataSet, element, content, size,
+  return CheckSubresourceIntegrity(metadataSet, document, content, size,
                                    resourceUrl, resource);
 }
 
 bool SubresourceIntegrity::CheckSubresourceIntegrity(
     const IntegrityMetadataSet& metadataSet,
-    const Element& element,
+    Document& document,
     const char* content,
     size_t size,
     const KURL& resourceUrl,
     const Resource& resource) {
-  Document& document = element.document();
-
   if (!resource.isEligibleForIntegrityCheck(document.getSecurityOrigin())) {
     UseCounter::count(document,
                       UseCounter::SRIElementIntegrityAttributeButIneligible);

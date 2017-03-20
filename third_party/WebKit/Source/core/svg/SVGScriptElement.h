@@ -22,7 +22,7 @@
 #define SVGScriptElement_h
 
 #include "core/SVGNames.h"
-#include "core/dom/ScriptLoaderClient.h"
+#include "core/dom/ScriptElementBase.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/SVGURIReference.h"
 #include "platform/heap/Handle.h"
@@ -33,7 +33,7 @@ class ScriptLoader;
 
 class SVGScriptElement final : public SVGElement,
                                public SVGURIReference,
-                               public ScriptLoaderClient {
+                               public ScriptElementBase {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(SVGScriptElement);
 
@@ -45,6 +45,8 @@ class SVGScriptElement final : public SVGElement,
 #if DCHECK_IS_ON()
   bool isAnimatableAttribute(const QualifiedName&) const override;
 #endif
+
+  bool isScriptElement() const override { return true; }
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -64,22 +66,35 @@ class SVGScriptElement final : public SVGElement,
 
   bool haveLoadedRequiredResources() override;
 
+  // ScriptElementBase overrides:
+  bool asyncAttributeValue() const { return false; }
+  String charsetAttributeValue() const { return String(); }
+  String crossOriginAttributeValue() const { return String(); }
+  bool deferAttributeValue() const { return false; }
+  String eventAttributeValue() const { return String(); }
+  String forAttributeValue() const { return String(); }
+  String integrityAttributeValue() const { return String(); }
+  String languageAttributeValue() const { return String(); }
   String sourceAttributeValue() const override;
-  String charsetAttributeValue() const override;
   String typeAttributeValue() const override;
-  String languageAttributeValue() const override;
-  String forAttributeValue() const override;
-  String eventAttributeValue() const override;
-  bool asyncAttributeValue() const override;
-  bool deferAttributeValue() const override;
+  String textFromChildren() override;
+  String textContent() const override;
   bool hasSourceAttribute() const override;
-
+  bool isConnected() const override;
+  bool hasChildren() const override;
+  bool isNonceableElement() const;
+  bool allowInlineScriptForCSP(const AtomicString& nonce,
+                               const WTF::OrdinalNumber&,
+                               const String& scriptContent) override;
+  AtomicString initiatorName() const override;
+  Document& document() const override;
   void dispatchLoadEvent() override;
+  void dispatchErrorEvent() override;
+  void setScriptElementForBinding(
+      HTMLScriptElementOrSVGScriptElement&) override;
 
   Element* cloneElementWithoutAttributesAndChildren() override;
   bool layoutObjectIsNeeded(const ComputedStyle&) override { return false; }
-
-  Member<ScriptLoader> m_loader;
 };
 
 }  // namespace blink

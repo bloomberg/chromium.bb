@@ -28,6 +28,7 @@
 
 #include "bindings/core/v8/ScriptStreamer.h"
 #include "core/CoreExport.h"
+#include "core/dom/ScriptElementBase.h"
 #include "core/loader/resource/ScriptResource.h"
 #include "platform/MemoryCoordinator.h"
 #include "platform/heap/Handle.h"
@@ -37,7 +38,6 @@
 
 namespace blink {
 
-class Element;
 class PendingScript;
 class ScriptSourceCode;
 
@@ -71,9 +71,9 @@ class CORE_EXPORT PendingScript final
 
  public:
   // For script from an external file.
-  static PendingScript* create(Element*, ScriptResource*);
+  static PendingScript* create(ScriptElementBase*, ScriptResource*);
   // For inline script.
-  static PendingScript* create(Element*, const TextPosition&);
+  static PendingScript* create(ScriptElementBase*, const TextPosition&);
 
   static PendingScript* createForTesting(ScriptResource*);
 
@@ -91,7 +91,7 @@ class CORE_EXPORT PendingScript final
   void watchForLoad(PendingScriptClient*);
   void stopWatchingForLoad();
 
-  Element* element() const;
+  ScriptElementBase* element() const;
 
   DECLARE_TRACE();
 
@@ -107,7 +107,7 @@ class CORE_EXPORT PendingScript final
   void dispose();
 
  private:
-  PendingScript(Element*,
+  PendingScript(ScriptElementBase*,
                 ScriptResource*,
                 const TextPosition&,
                 bool isForTesting = false);
@@ -125,9 +125,10 @@ class CORE_EXPORT PendingScript final
 
   bool m_watchingForLoad;
 
-  // |m_element| must points to the corresponding ScriptLoader's element and
-  // thus must be non-null before dispose() is called (except for unit tests).
-  Member<Element> m_element;
+  // |m_element| must points to the corresponding ScriptLoader's
+  // ScriptElementBase and thus must be non-null before dispose() is called
+  // (except for unit tests).
+  Member<ScriptElementBase> m_element;
 
   TextPosition m_startingPosition;  // Only used for inline script tags.
   bool m_integrityFailure;
@@ -136,8 +137,8 @@ class CORE_EXPORT PendingScript final
   Member<ScriptStreamer> m_streamer;
   Member<PendingScriptClient> m_client;
 
-  // This flag is used to skip non-null checks of |m_element| in unit tests,
-  // because |m_element| can be null in unit tests.
+  // This flag is used to skip non-null checks of |m_element| in unit
+  // tests, because |m_element| can be null in unit tests.
   const bool m_isForTesting;
 };
 

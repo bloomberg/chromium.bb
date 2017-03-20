@@ -37,7 +37,6 @@
 #include "core/dom/Element.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/IgnoreDestructiveWriteCountIncrementer.h"
-#include "core/dom/ScriptLoader.h"
 #include "core/dom/TemplateContentDocumentFragment.h"
 #include "core/dom/Text.h"
 #include "core/dom/ThrowOnDynamicMarkupInsertionCountIncrementer.h"
@@ -287,8 +286,7 @@ void HTMLConstructionSite::attachLater(ContainerNode* parent,
                                        Node* child,
                                        bool selfClosing) {
   ASSERT(scriptingContentIsAllowed(m_parserContentPolicy) ||
-         !child->isElementNode() ||
-         !toScriptLoaderIfPossible(toElement(child)));
+         !child->isElementNode() || !toElement(child)->isScriptElement());
   ASSERT(pluginContentIsAllowed(m_parserContentPolicy) ||
          !isHTMLPlugInElement(child));
 
@@ -758,8 +756,9 @@ void HTMLConstructionSite::insertForeignElement(
 
   Element* element = createElement(token, namespaceURI);
   if (scriptingContentIsAllowed(m_parserContentPolicy) ||
-      !toScriptLoaderIfPossible(element))
+      !element->isScriptElement()) {
     attachLater(currentNode(), element, token->selfClosing());
+  }
   if (!token->selfClosing())
     m_openElements.push(HTMLStackItem::create(element, token, namespaceURI));
 }
