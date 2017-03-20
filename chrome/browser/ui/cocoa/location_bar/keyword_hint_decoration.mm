@@ -32,7 +32,7 @@ const CGFloat kHintImagePadding = 1.0;
 const CGFloat kHintAvailableRatio = 2.0 / 3.0;
 
 // Extra padding at the right of the decoration.
-const CGFloat kHintRightPadding = 5.0;
+const CGFloat kHintTrailingPadding = 5.0;
 
 // Helper to convert |s| to an |NSString|, trimming whitespace at
 // ends.
@@ -107,7 +107,7 @@ CGFloat KeywordHintDecoration::GetWidthForSpace(CGFloat width) {
       std::floor(GetLabelSize(hint_prefix_, attributes_).width + 0.5) +
       kHintImagePadding + image_width + kHintImagePadding +
       std::floor(GetLabelSize(hint_suffix_, attributes_).width + 0.5) +
-      kHintRightPadding;
+      kHintTrailingPadding;
   if (full_width <= width * kHintAvailableRatio)
     return full_width;
 
@@ -123,6 +123,10 @@ void KeywordHintDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
   BOOL is_rtl = cocoa_l10n_util::ShouldDoExperimentalRTLLayout();
   NSString* left_string = is_rtl ? hint_suffix_ : hint_prefix_;
   NSString* right_string = is_rtl ? hint_prefix_ : hint_suffix_;
+  if (is_rtl) {
+    frame.origin.x += kHintTrailingPadding;
+    frame.size.width -= kHintTrailingPadding;
+  }
 
   if (draw_full) {
     NSRect left_rect = frame;
