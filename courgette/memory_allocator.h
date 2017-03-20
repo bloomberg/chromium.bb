@@ -181,16 +181,15 @@ class MemoryAllocator {
     typedef MemoryAllocator<OtherT> other;
   };
 
-  MemoryAllocator() _THROW0() {
-  }
+  MemoryAllocator() {}
 
   // We can't use an explicit constructor here, as dictated by our style guide.
   // The implementation of basic_string in Visual Studio 2010 prevents this.
-  MemoryAllocator(const MemoryAllocator<T>& other) _THROW0() {  // NOLINT
+  MemoryAllocator(const MemoryAllocator<T>& other) {  // NOLINT
   }
 
-  template<class OtherT>
-  MemoryAllocator(const MemoryAllocator<OtherT>& other) _THROW0() {  // NOLINT
+  template <class OtherT>
+  MemoryAllocator(const MemoryAllocator<OtherT>& other) {  // NOLINT
   }
 
   ~MemoryAllocator() {
@@ -252,7 +251,7 @@ class MemoryAllocator {
     ptr->~T();
   }
 
-  size_type max_size() const _THROW0() {
+  size_type max_size() const {
     size_type count = static_cast<size_type>(-1) / sizeof(T);
     return (0 < count ? count : 1);
   }
