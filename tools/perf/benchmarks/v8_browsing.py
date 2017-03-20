@@ -42,6 +42,11 @@ class _V8BrowsingBenchmark(perf_benchmark.PerfBenchmark):
       '-*',
       # Memory categories.
       'disabled-by-default-memory-infra',
+      # EQT categories.
+      'blink.user_timing',
+      'loading',
+      'navigation',
+      'toplevel',
       # V8 categories.
       'blink.console',
       'disabled-by-default-v8.gc',
@@ -61,7 +66,8 @@ class _V8BrowsingBenchmark(perf_benchmark.PerfBenchmark):
     memory_dump_config = chrome_trace_config.MemoryDumpConfig()
     memory_dump_config.AddTrigger('light', 1000)
     options.config.chrome_trace_config.SetMemoryDumpConfig(memory_dump_config)
-    options.SetTimelineBasedMetrics(['v8AndMemoryMetrics'])
+    options.SetTimelineBasedMetrics([
+      'expectedQueueingTimeMetric', 'v8AndMemoryMetrics'])
     return options
 
   def CreateStorySet(self, options):
@@ -77,8 +83,8 @@ class _V8BrowsingBenchmark(perf_benchmark.PerfBenchmark):
     if 'v8-gc' in value.name:
       return (_V8_GC_HIGH_LEVEL_STATS_RE.search(value.name) and
               not _IGNORED_V8_STATS_RE.search(value.name))
-    # Allow all other non-GC metrics.
-    return 'v8' in value.name
+    # Allow all other metrics.
+    return True
 
   @classmethod
   def ShouldTearDownStateAfterEachStoryRun(cls):
@@ -101,6 +107,11 @@ class _V8RuntimeStatsBrowsingBenchmark(perf_benchmark.PerfBenchmark):
       # UE categories requred by runtimeStatsTotalMetric to bucket
       # runtimeStats by UE.
       'rail',
+      # EQT categories.
+      'blink.user_timing',
+      'loading',
+      'navigation',
+      'toplevel',
       # V8 categories.
       'blink.console',
       'disabled-by-default-v8.gc',
@@ -118,7 +129,8 @@ class _V8RuntimeStatsBrowsingBenchmark(perf_benchmark.PerfBenchmark):
     memory_dump_config.AddTrigger('light', 1000)
     options.config.chrome_trace_config.SetMemoryDumpConfig(memory_dump_config)
 
-    options.SetTimelineBasedMetrics(['runtimeStatsTotalMetric', 'gcMetric'])
+    options.SetTimelineBasedMetrics([
+      'expectedQueueingTimeMetric', 'runtimeStatsTotalMetric', 'gcMetric'])
     return options
 
   def CreateStorySet(self, options):
