@@ -1,0 +1,314 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "u2f_hid_device.h"
+
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/command_line.h"
+#include "crypto/random.h"
+#include "device/base/device_client.h"
+#include "device/hid/hid_connection.h"
+#include "u2f_apdu_command.h"
+#include "u2f_message.h"
+
+namespace device {
+
+namespace switches {
+static constexpr char kEnableU2fHidTest[] = "enable-u2f-hid-tests";
+}  // namespace switches
+
+U2fHidDevice::U2fHidDevice(scoped_refptr<HidDeviceInfo> device_info)
+    : U2fDevice(),
+      state_(State::INIT),
+      device_info_(device_info),
+      weak_factory_(this) {
+  channel_id_ = kBroadcastChannel;
+}
+
+U2fHidDevice::~U2fHidDevice() {
+  // Cleanup connection
+  if (connection_)
+    connection_->Close();
+}
+
+void U2fHidDevice::DeviceTransact(scoped_refptr<U2fApduCommand> command,
+                                  const DeviceCallback& callback) {
+  Transition(command, callback);
+}
+
+void U2fHidDevice::Transition(scoped_refptr<U2fApduCommand> command,
+                              const DeviceCallback& callback) {
+  switch (state_) {
+    case State::INIT:
+      state_ = State::BUSY;
+      Connect(base::Bind(&U2fHidDevice::OnConnect, weak_factory_.GetWeakPtr(),
+                         command, callback));
+      break;
+    case State::CONNECTED:
+      state_ = State::BUSY;
+      AllocateChannel(command, callback);
+      break;
+    case State::IDLE: {
+      state_ = State::BUSY;
+      scoped_refptr<U2fMessage> msg = U2fMessage::Create(
+          channel_id_, U2fMessage::Type::CMD_MSG, command->GetEncodedCommand());
+      WriteMessage(msg, true,
+                   base::Bind(&U2fHidDevice::MessageReceived,
+                              weak_factory_.GetWeakPtr(), callback));
+      break;
+    }
+    case State::BUSY:
+      pending_transactions_.push_back({std::move(command), callback});
+      break;
+    case State::DEVICE_ERROR:
+    default:
+      base::WeakPtr<U2fHidDevice> self = weak_factory_.GetWeakPtr();
+      callback.Run(false, nullptr);
+      // Executing callbacks may free |this|. Check |self| first.
+      while (self && !pending_transactions_.empty()) {
+        // Respond to any pending requests
+        DeviceCallback pending_cb = pending_transactions_.front().second;
+        pending_transactions_.pop_front();
+        pending_cb.Run(false, nullptr);
+      }
+      break;
+  }
+}
+
+void U2fHidDevice::Connect(const HidService::ConnectCallback& callback) {
+  HidService* hid_service = DeviceClient::Get()->GetHidService();
+
+  hid_service->Connect(device_info_->device_id(), callback);
+}
+
+void U2fHidDevice::OnConnect(scoped_refptr<U2fApduCommand> command,
+                             const DeviceCallback& callback,
+                             scoped_refptr<HidConnection> connection) {
+  if (connection) {
+    connection_ = connection;
+    state_ = State::CONNECTED;
+  } else {
+    state_ = State::DEVICE_ERROR;
+  }
+  Transition(command, callback);
+}
+
+void U2fHidDevice::AllocateChannel(scoped_refptr<U2fApduCommand> command,
+                                   const DeviceCallback& callback) {
+  // Send random nonce to device to verify received message
+  std::vector<uint8_t> nonce(8);
+  crypto::RandBytes(nonce.data(), nonce.size());
+  scoped_refptr<U2fMessage> message =
+      U2fMessage::Create(channel_id_, U2fMessage::Type::CMD_INIT, nonce);
+
+  WriteMessage(
+      message, true,
+      base::Bind(&U2fHidDevice::OnAllocateChannel, weak_factory_.GetWeakPtr(),
+                 nonce, command, callback));
+}
+
+void U2fHidDevice::OnAllocateChannel(std::vector<uint8_t> nonce,
+                                     scoped_refptr<U2fApduCommand> command,
+                                     const DeviceCallback& callback,
+                                     bool success,
+                                     scoped_refptr<U2fMessage> message) {
+  if (!success || !message) {
+    state_ = State::DEVICE_ERROR;
+    Transition(nullptr, callback);
+    return;
+  }
+  // Channel allocation response is defined as:
+  // 0: 8 byte nonce
+  // 8: 4 byte channel id
+  // 12: Protocol version id
+  // 13: Major device version
+  // 14: Minor device version
+  // 15: Build device version
+  // 16: Capabilities
+  std::vector<uint8_t> payload = message->GetMessagePayload();
+  if (payload.size() != 17) {
+    state_ = State::DEVICE_ERROR;
+    Transition(nullptr, callback);
+    return;
+  }
+
+  std::vector<uint8_t> received_nonce(std::begin(payload),
+                                      std::begin(payload) + 8);
+  if (nonce != received_nonce) {
+    state_ = State::DEVICE_ERROR;
+    Transition(nullptr, callback);
+    return;
+  }
+
+  size_t index = 8;
+  channel_id_ = payload[index++] << 24;
+  channel_id_ |= payload[index++] << 16;
+  channel_id_ |= payload[index++] << 8;
+  channel_id_ |= payload[index++];
+  capabilities_ = payload[16];
+
+  state_ = State::IDLE;
+  Transition(command, callback);
+}
+
+void U2fHidDevice::WriteMessage(scoped_refptr<U2fMessage> message,
+                                bool response_expected,
+                                U2fHidMessageCallback callback) {
+  if (!connection_ || !message || message->NumPackets() == 0) {
+    std::move(callback).Run(false, nullptr);
+    return;
+  }
+
+  scoped_refptr<net::IOBufferWithSize> buffer = message->PopNextPacket();
+
+  connection_->Write(
+      buffer, buffer->size(),
+      base::Bind(&U2fHidDevice::PacketWritten, weak_factory_.GetWeakPtr(),
+                 message, true, base::Passed(std::move(callback))));
+}
+
+void U2fHidDevice::PacketWritten(scoped_refptr<U2fMessage> message,
+                                 bool response_expected,
+                                 U2fHidMessageCallback callback,
+                                 bool success) {
+  if (success && message->NumPackets() > 0) {
+    WriteMessage(message, response_expected, std::move(callback));
+  } else if (success && response_expected) {
+    ReadMessage(std::move(callback));
+  } else {
+    std::move(callback).Run(success, nullptr);
+  }
+}
+
+void U2fHidDevice::ReadMessage(U2fHidMessageCallback callback) {
+  if (!connection_) {
+    std::move(callback).Run(false, nullptr);
+    return;
+  }
+
+  connection_->Read(base::Bind(&U2fHidDevice::OnRead,
+                               weak_factory_.GetWeakPtr(),
+                               base::Passed(std::move(callback))));
+}
+
+void U2fHidDevice::OnRead(U2fHidMessageCallback callback,
+                          bool success,
+                          scoped_refptr<net::IOBuffer> buf,
+                          size_t size) {
+  if (!success) {
+    std::move(callback).Run(success, nullptr);
+    return;
+  }
+
+  scoped_refptr<net::IOBufferWithSize> buffer(new net::IOBufferWithSize(size));
+  memcpy(buffer->data(), buf->data(), size);
+  scoped_refptr<U2fMessage> read_message =
+      U2fMessage::CreateFromSerializedData(buffer);
+
+  if (!read_message) {
+    std::move(callback).Run(false, nullptr);
+    return;
+  }
+
+  // Received a message from a different channel, so try again
+  if (channel_id_ != read_message->channel_id()) {
+    connection_->Read(base::Bind(&U2fHidDevice::OnRead,
+                                 weak_factory_.GetWeakPtr(),
+                                 base::Passed(std::move(callback))));
+    return;
+  }
+
+  if (read_message->MessageComplete()) {
+    std::move(callback).Run(success, read_message);
+    return;
+  }
+
+  // Continue reading additional packets
+  connection_->Read(base::Bind(&U2fHidDevice::OnReadContinuation,
+                               weak_factory_.GetWeakPtr(), read_message,
+                               base::Passed(std::move(callback))));
+}
+
+void U2fHidDevice::OnReadContinuation(scoped_refptr<U2fMessage> message,
+                                      U2fHidMessageCallback callback,
+                                      bool success,
+                                      scoped_refptr<net::IOBuffer> buf,
+                                      size_t size) {
+  if (!success) {
+    std::move(callback).Run(success, nullptr);
+    return;
+  }
+
+  scoped_refptr<net::IOBufferWithSize> buffer(new net::IOBufferWithSize(size));
+  memcpy(buffer->data(), buf->data(), size);
+  message->AddContinuationPacket(buffer);
+  if (message->MessageComplete()) {
+    std::move(callback).Run(success, message);
+    return;
+  }
+  connection_->Read(base::Bind(&U2fHidDevice::OnReadContinuation,
+                               weak_factory_.GetWeakPtr(), message,
+                               base::Passed(std::move(callback))));
+}
+
+void U2fHidDevice::MessageReceived(const DeviceCallback& callback,
+                                   bool success,
+                                   scoped_refptr<U2fMessage> message) {
+  if (!success) {
+    state_ = State::DEVICE_ERROR;
+    Transition(nullptr, callback);
+    return;
+  }
+  scoped_refptr<U2fApduResponse> response = nullptr;
+  if (message)
+    response = U2fApduResponse::CreateFromMessage(message->GetMessagePayload());
+  state_ = State::IDLE;
+  base::WeakPtr<U2fHidDevice> self = weak_factory_.GetWeakPtr();
+  callback.Run(success, response);
+
+  // Executing |callback| may have freed |this|. Check |self| first.
+  if (self && !pending_transactions_.empty()) {
+    // If any transactions were queued, process the first one
+    scoped_refptr<U2fApduCommand> pending_cmd =
+        std::move(pending_transactions_.front().first);
+    DeviceCallback pending_cb = pending_transactions_.front().second;
+    pending_transactions_.pop_front();
+    Transition(pending_cmd, pending_cb);
+  }
+}
+
+void U2fHidDevice::TryWink(const WinkCallback& callback) {
+  // Only try to wink if device claims support
+  if (!(capabilities_ & kWinkCapability) || state_ != State::IDLE) {
+    callback.Run();
+    return;
+  }
+
+  scoped_refptr<U2fMessage> wink_message = device::U2fMessage::Create(
+      channel_id_, U2fMessage::Type::CMD_WINK, std::vector<uint8_t>());
+  WriteMessage(
+      wink_message, true,
+      base::Bind(&U2fHidDevice::OnWink, weak_factory_.GetWeakPtr(), callback));
+}
+
+void U2fHidDevice::OnWink(const WinkCallback& callback,
+                          bool success,
+                          scoped_refptr<U2fMessage> response) {
+  callback.Run();
+}
+
+std::string U2fHidDevice::GetId() {
+  std::ostringstream id("hid:");
+  id << device_info_->device_id();
+  return id.str();
+}
+
+// static
+bool U2fHidDevice::IsTestEnabled() {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  return command_line->HasSwitch(switches::kEnableU2fHidTest);
+}
+
+}  // namespace device

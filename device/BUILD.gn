@@ -73,6 +73,8 @@ test("device_unittests") {
     "sensors/sensor_manager_android_unittest.cc",
     "sensors/sensor_manager_chromeos_unittest.cc",
     "test/run_all_unittests.cc",
+    "u2f/u2f_apdu_unittest.cc",
+    "u2f/u2f_message_unittest.cc",
     "wake_lock/wake_lock_service_context_unittest.cc",
   ]
 
@@ -131,9 +133,11 @@ test("device_unittests") {
       "hid/test_report_descriptors.cc",
       "hid/test_report_descriptors.h",
       "serial/serial_io_handler_posix_unittest.cc",
+      "u2f/u2f_hid_device_unittest.cc",
     ]
     deps += [
       "//device/hid",
+      "//device/hid:mocks",
       "//device/serial",
       "//device/serial:test_support",
     ]
@@ -150,8 +154,6 @@ test("device_unittests") {
       "test/test_device_client.cc",
       "test/test_device_client.h",
       "test/usb_test_gadget_impl.cc",
-      "u2f/u2f_apdu_unittest.cc",
-      "u2f/u2f_message_unittest.cc",
       "usb/mojo/device_impl_unittest.cc",
       "usb/mojo/device_manager_impl_unittest.cc",
       "usb/mojo/mock_permission_provider.cc",
