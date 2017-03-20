@@ -22,6 +22,9 @@ class LayoutObject;
 // It's responsible for bookkeeping tree state in other order, for example, the
 // most recent position container seen.
 struct PaintPropertyTreeBuilderContext {
+  USING_FAST_MALLOC(PaintPropertyTreeBuilderContext);
+
+ public:
   // State that propagates on the containing block chain (and so is adjusted
   // when an absolute or fixed position object is encountered).
   struct ContainingBlockContext {
@@ -62,7 +65,7 @@ struct PaintPropertyTreeBuilderContext {
   // are also inherited by containing block tree instead of DOM tree, thus they
   // are included in the additional context too.
   ContainingBlockContext absolutePosition;
-  const LayoutObject* containerForAbsolutePosition = nullptr;
+  const LayoutObject* containerForAbsolutePosition;
 
   ContainingBlockContext fixedPosition;
 
@@ -75,17 +78,23 @@ struct PaintPropertyTreeBuilderContext {
   // guaranteed that every DOM descendant is also a stacking context descendant.
   // Therefore, we don't need extra bookkeeping for effect nodes and can
   // generate the effect tree from a DOM-order traversal.
-  const EffectPaintPropertyNode* currentEffect = nullptr;
+  const EffectPaintPropertyNode* currentEffect;
   // Some effects are spatial, i.e. may refer to input pixels outside of output
   // clip. The cull rect for its input shall be derived from its output clip.
   // This variable represents the input cull of current effect, also serves as
   // output clip of child effects that don't have a hard clip.
-  const ClipPaintPropertyNode* inputClipOfCurrentEffect = nullptr;
+  const ClipPaintPropertyNode* inputClipOfCurrentEffect;
 
   // True if a change has forced all properties in a subtree to be updated. This
   // can be set due to paint offset changes or when the structure of the
   // property tree changes (i.e., a node is added or removed).
-  bool forceSubtreeUpdate = false;
+  bool forceSubtreeUpdate;
+
+  PaintPropertyTreeBuilderContext()
+      : containerForAbsolutePosition(nullptr),
+        currentEffect(nullptr),
+        inputClipOfCurrentEffect(nullptr),
+        forceSubtreeUpdate(false) {}
 };
 
 // Creates paint property tree nodes for special things in the layout tree.
