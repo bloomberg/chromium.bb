@@ -355,8 +355,24 @@ bool WindowTree::DeleteWindow(const ClientWindowId& window_id) {
 bool WindowTree::SetModalType(const ClientWindowId& window_id,
                               ModalType modal_type) {
   ServerWindow* window = GetWindowByClientId(window_id);
-  if (!window || !access_policy_->CanSetModal(window))
+  if (!window) {
+    DVLOG(1) << "SetModalType failed (invalid id)";
     return false;
+  }
+
+  if (ShouldRouteToWindowManager(window)) {
+    WindowTree* wm_tree = GetWindowManagerDisplayRoot(window)
+                              ->window_manager_state()
+                              ->window_tree();
+    wm_tree->window_manager_internal_->WmSetModalType(
+        wm_tree->ClientWindowIdForWindow(window).id, modal_type);
+    return true;
+  }
+
+  if (!access_policy_->CanSetModal(window)) {
+    DVLOG(1) << "SetModalType failed (access denied)";
+    return false;
+  }
 
   if (window->modal_type() == modal_type)
     return true;
@@ -366,8 +382,14 @@ bool WindowTree::SetModalType(const ClientWindowId& window_id,
   auto* display_root = GetWindowManagerDisplayRoot(window);
   switch (modal_type) {
     case MODAL_TYPE_SYSTEM:
-      if (user_id_ == InvalidUserId() || !display_root)
+      if (user_id_ == InvalidUserId()) {
+        DVLOG(1) << "SetModalType failed (invalid user id)";
         return false;
+      }
+      if (!display_root) {
+        DVLOG(1) << "SetModalType failed (no display root)";
+        return false;
+      }
       window->SetModalType(modal_type);
       display_root->window_manager_state()->AddSystemModalWindow(window);
       break;

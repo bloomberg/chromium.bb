@@ -331,6 +331,7 @@ class TestWindowManager : public mojom::WindowManager {
   uint32_t on_accelerator_id() { return on_accelerator_id_; }
   bool got_display_removed() const { return got_display_removed_; }
   int64_t display_removed_id() const { return display_removed_id_; }
+  bool on_set_modal_type_called() { return on_set_modal_type_called_; }
 
  private:
   // WindowManager:
@@ -348,6 +349,7 @@ class TestWindowManager : public mojom::WindowManager {
       uint32_t window_id,
       const std::string& name,
       const base::Optional<std::vector<uint8_t>>& value) override {}
+  void WmSetModalType(uint32_t window_id, ui::ModalType type) override;
   void WmSetCanFocus(uint32_t window_id, bool can_focus) override {}
   void WmCreateTopLevelWindow(
       uint32_t change_id,
@@ -370,6 +372,7 @@ class TestWindowManager : public mojom::WindowManager {
                      std::unique_ptr<ui::Event> event) override;
 
   bool on_perform_move_loop_called_ = false;
+  bool on_set_modal_type_called_ = false;
 
   bool got_create_top_level_window_;
   uint32_t change_id_;

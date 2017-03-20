@@ -29,6 +29,7 @@
 #include "ui/aura/mus/mus_types.h"
 #include "ui/aura/mus/window_manager_delegate.h"
 #include "ui/aura/mus/window_tree_host_mus_delegate.h"
+#include "ui/base/ui_base_types.h"
 
 namespace base {
 class Thread;
@@ -404,6 +405,7 @@ class AURA_EXPORT WindowTreeClient
       Id window_id,
       const std::string& name,
       const base::Optional<std::vector<uint8_t>>& transit_data) override;
+  void WmSetModalType(Id window_id, ui::ModalType type) override;
   void WmSetCanFocus(Id window_id, bool can_focus) override;
   void WmCreateTopLevelWindow(
       uint32_t change_id,

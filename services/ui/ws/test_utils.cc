@@ -226,6 +226,10 @@ void TestWindowManager::WmDisplayRemoved(int64_t display_id) {
   display_removed_id_ = display_id;
 }
 
+void TestWindowManager::WmSetModalType(uint32_t window_id, ui::ModalType type) {
+  on_set_modal_type_called_ = true;
+}
+
 void TestWindowManager::WmCreateTopLevelWindow(
     uint32_t change_id,
     ClientSpecificId requesting_client_id,
