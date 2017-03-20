@@ -6227,7 +6227,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_LO_FI_DISABLED" desc="Option for IDS_FLAGS_DATA_REDUCTION_PROXY_LO_FI_NAME to disable Lo-Fi" translateable="false">
          Disable
       </message>
-      <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_LO_FI_SLOW_CONNECTIONS_ONLY" desc="Option for IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_LO_FI_NAME to enable Lo-Fi only on slow connections" translateable="false">
+      <message name="IDS_FLAGS_DATA_REDUCTION_PROXY_LO_FI_SLOW_CONNECTIONS_ONLY" desc="Option for IDS_FLAGS_DATA_REDUCTION_PROXY_LO_FI_NAME to enable Lo-Fi only on slow connections" translateable="false">
          Slow connections only
       </message>
       <message name="IDS_FLAGS_ENABLE_DATA_REDUCTION_PROXY_LITE_PAGE_NAME" desc="An about:flags experiment title to enable Data Saver lite pages" translateable="false">
