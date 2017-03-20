@@ -8,6 +8,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/image_decoder.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -122,12 +123,14 @@ void LogoService::GetLogo(search_provider_logos::LogoObserver* observer) {
             new ChromeLogoDelegate())));
   }
 
+  bool use_gray_background =
+      !base::FeatureList::IsEnabled(chrome::android::kChromeHomeFeature);
   logo_tracker_->SetServerAPI(
       GetGoogleDoodleURL(profile_),
       base::Bind(&search_provider_logos::GoogleParseLogoResponse),
       base::Bind(&search_provider_logos::GoogleAppendQueryparamsToLogoURL),
       true, /* wants_cta */
-      true /* transparent */);
+      use_gray_background);
   logo_tracker_->GetLogo(observer);
 }
 

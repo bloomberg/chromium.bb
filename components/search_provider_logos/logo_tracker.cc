@@ -96,7 +96,7 @@ void LogoTracker::SetServerAPI(
     const ParseLogoResponse& parse_logo_response_func,
     const AppendQueryparamsToLogoURL& append_queryparams_func,
     bool wants_cta,
-    bool transparent) {
+    bool gray_background) {
   if (logo_url == logo_url_)
     return;
 
@@ -106,7 +106,7 @@ void LogoTracker::SetServerAPI(
   parse_logo_response_func_ = parse_logo_response_func;
   append_queryparams_func_ = append_queryparams_func;
   wants_cta_ = wants_cta;
-  transparent_ = transparent;
+  gray_background_ = gray_background;
 }
 
 void LogoTracker::GetLogo(LogoObserver* observer) {
@@ -223,8 +223,8 @@ void LogoTracker::FetchLogo() {
   if (command_line->HasSwitch(switches::kGoogleDoodleUrl)) {
     url = GURL(command_line->GetSwitchValueASCII(switches::kGoogleDoodleUrl));
   } else {
-    url = append_queryparams_func_.Run(
-        logo_url_, fingerprint, wants_cta_, transparent_);
+    url = append_queryparams_func_.Run(logo_url_, fingerprint, wants_cta_,
+                                       gray_background_);
   }
 
   net::NetworkTrafficAnnotationTag traffic_annotation =

@@ -23,7 +23,7 @@ const char kResponsePreamble[] = ")]}'";
 GURL GoogleAppendQueryparamsToLogoURL(const GURL& logo_url,
                                       const std::string& fingerprint,
                                       bool wants_cta,
-                                      bool transparent) {
+                                      bool gray_background) {
   // Note: we can't just use net::AppendQueryParameter() because it escapes
   // ":" to "%3A", but the server requires the colon not to be escaped.
   // See: http://crbug.com/413845
@@ -43,7 +43,7 @@ GURL GoogleAppendQueryparamsToLogoURL(const GURL& logo_url,
     if (wants_cta)
       params.push_back("cta:1");
 
-    if (transparent) {
+    if (gray_background) {
       params.push_back("transp:1");
       params.push_back("graybg:1");
     }

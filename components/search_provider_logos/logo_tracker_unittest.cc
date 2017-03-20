@@ -427,7 +427,7 @@ TEST_F(LogoTrackerTest, CTAURLHasComma) {
   EXPECT_EQ("http://logourl.com/?a=b&async=cta:1", url_with_fp.spec());
 }
 
-TEST_F(LogoTrackerTest, CTATransparentHasCommas) {
+TEST_F(LogoTrackerTest, CTAGrayBackgroundHasCommas) {
   GURL url_with_fp = GoogleAppendQueryparamsToLogoURL(
       GURL("http://logourl.com/path"), "abc123", true, true);
   EXPECT_EQ(
