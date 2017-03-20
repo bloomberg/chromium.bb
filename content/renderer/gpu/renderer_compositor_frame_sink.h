@@ -104,6 +104,7 @@ class RendererCompositorFrameSink
   std::unique_ptr<cc::BeginFrameSource> begin_frame_source_;
   int routing_id_;
   base::ThreadChecker thread_checker_;
+  bool bound_ = false;
 };
 
 }  // namespace content

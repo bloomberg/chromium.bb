@@ -74,7 +74,11 @@ RendererCompositorFrameSink::RendererCompositorFrameSink(
   thread_checker_.DetachFromThread();
 }
 
-RendererCompositorFrameSink::~RendererCompositorFrameSink() = default;
+RendererCompositorFrameSink::~RendererCompositorFrameSink() {
+  // TODO(crbug.com/702764): If not detached then IPC messages would crash
+  // after this class is destroyed.
+  CHECK(!bound_);
+}
 
 bool RendererCompositorFrameSink::BindToClient(
     cc::CompositorFrameSinkClient* client) {
@@ -91,6 +95,7 @@ bool RendererCompositorFrameSink::BindToClient(
                  compositor_frame_sink_proxy_);
   compositor_frame_sink_filter_->AddHandlerOnCompositorThread(
       routing_id_, compositor_frame_sink_filter_handler_);
+  bound_ = true;
   return true;
 }
 
@@ -105,6 +110,7 @@ void RendererCompositorFrameSink::DetachFromClient() {
       routing_id_, compositor_frame_sink_filter_handler_);
 
   cc::CompositorFrameSink::DetachFromClient();
+  bound_ = false;
 }
 
 void RendererCompositorFrameSink::SubmitCompositorFrame(
