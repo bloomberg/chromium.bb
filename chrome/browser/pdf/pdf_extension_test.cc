@@ -61,6 +61,8 @@
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
 #endif
 
+using content::WebContents;
+
 const int kNumberLoadTestParts = 10;
 
 #if defined(OS_MACOSX)
@@ -76,8 +78,7 @@ const int kDefaultKeyModifier = blink::WebInputEvent::ControlKey;
         << "Expected:\n" << expected \
         << "\n\nActual:\n" << actual
 
-bool GetGuestCallback(content::WebContents** guest_out,
-                      content::WebContents* guest) {
+bool GetGuestCallback(WebContents** guest_out, WebContents* guest) {
   EXPECT_FALSE(*guest_out);
   *guest_out = guest;
   // Return false so that we iterate through all the guests and verify there is
@@ -136,7 +137,7 @@ class PDFExtensionTest : public ExtensionApiTest,
     // being seen due to the BrowserPluginGuest not being available yet (see
     // crbug.com/498077). So instead use |LoadPdf| which ensures that the PDF is
     // loaded before continuing.
-    content::WebContents* guest_contents = LoadPdfGetGuestContents(url);
+    WebContents* guest_contents = LoadPdfGetGuestContents(url);
     ASSERT_TRUE(guest_contents);
 
     base::FilePath test_data_dir;
@@ -164,23 +165,20 @@ class PDFExtensionTest : public ExtensionApiTest,
   // correctly from there.
   bool LoadPdf(const GURL& url) {
     ui_test_utils::NavigateToURL(browser(), url);
-    content::WebContents* web_contents =
-        browser()->tab_strip_model()->GetActiveWebContents();
+    WebContents* web_contents = GetActiveWebContents();
     return pdf_extension_test_util::EnsurePDFHasLoaded(web_contents);
   }
 
   // Same as |LoadPdf|, but also returns a pointer to the guest WebContents for
   // the loaded PDF. Returns nullptr if the load fails.
-  content::WebContents* LoadPdfGetGuestContents(const GURL& url) {
+  WebContents* LoadPdfGetGuestContents(const GURL& url) {
     if (!LoadPdf(url))
       return nullptr;
 
-    content::WebContents* contents =
-        browser()->tab_strip_model()->GetActiveWebContents();
+    WebContents* contents = GetActiveWebContents();
     content::BrowserPluginGuestManager* guest_manager =
         contents->GetBrowserContext()->GetGuestManager();
-    content::WebContents* guest_contents =
-        guest_manager->GetFullPageGuest(contents);
+    WebContents* guest_contents = guest_manager->GetFullPageGuest(contents);
     return guest_contents;
   }
 
@@ -214,16 +212,14 @@ class PDFExtensionTest : public ExtensionApiTest,
   }
 
   void TestGetSelectedTextReply(GURL url, bool expect_success) {
-    ui_test_utils::NavigateToURL(browser(), url);
-    content::WebContents* web_contents =
-        browser()->tab_strip_model()->GetActiveWebContents();
-    ASSERT_TRUE(pdf_extension_test_util::EnsurePDFHasLoaded(web_contents));
+    ASSERT_TRUE(LoadPdf(url));
 
     // Reach into the guest and hook into it such that it posts back a 'flush'
     // message after every getSelectedTextReply message sent.
+    WebContents* web_contents = GetActiveWebContents();
     content::BrowserPluginGuestManager* guest_manager =
         web_contents->GetBrowserContext()->GetGuestManager();
-    content::WebContents* guest_contents = nullptr;
+    WebContents* guest_contents = nullptr;
     ASSERT_NO_FATAL_FAILURE(guest_manager->ForEachGuest(
         web_contents, base::Bind(&GetGuestCallback, &guest_contents)));
     ASSERT_TRUE(guest_contents);
@@ -255,8 +251,7 @@ class PDFExtensionTest : public ExtensionApiTest,
     ASSERT_EQ(expect_success, success);
   }
 
-  void ConvertPageCoordToScreenCoord(content::WebContents* contents,
-                                     gfx::Point* point) {
+  void ConvertPageCoordToScreenCoord(WebContents* contents, gfx::Point* point) {
     ASSERT_TRUE(contents);
     ASSERT_TRUE(content::ExecuteScript(contents,
         "var visiblePage = viewer.viewport.getMostVisiblePage();"
@@ -284,6 +279,10 @@ class PDFExtensionTest : public ExtensionApiTest,
         &y));
 
     point->SetPoint(x, y);
+  }
+
+  WebContents* GetActiveWebContents() {
+    return browser()->tab_strip_model()->GetActiveWebContents();
   }
 };
 
@@ -327,8 +326,7 @@ class DisablePluginHelper : public content::DownloadManager::Observer {
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, DisablePlugin) {
   // Disable the PDF plugin.
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
+  WebContents* web_contents = GetActiveWebContents();
   content::BrowserContext* browser_context = web_contents->GetBrowserContext();
   Profile* profile = Profile::FromBrowserContext(browser_context);
   DisablePluginHelper helper;
@@ -423,8 +421,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, EnsureInternalPluginDisabled) {
       "\">"
       "</body></html>";
   ui_test_utils::NavigateToURL(browser(), GURL(data_url));
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
+  WebContents* web_contents = GetActiveWebContents();
   bool plugin_loaded = false;
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
       web_contents,
@@ -456,8 +453,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, EnsureSameOriginRepliesAllowed) {
 
 // Ensure that the PDF component extension cannot be loaded directly.
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, BlockDirectAccess) {
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
+  WebContents* web_contents = GetActiveWebContents();
 
   std::unique_ptr<content::ConsoleObserverDelegate> console_delegate(
       new content::ConsoleObserverDelegate(
@@ -480,14 +476,14 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, EnsurePDFFromLocalFileLoads) {
   base::FilePath test_data_file = test_data_dir.AppendASCII("test.pdf");
   ASSERT_TRUE(PathExists(test_data_file));
   GURL test_pdf_url("file://" + test_data_file.MaybeAsASCII());
-  content::WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
+  WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
   ASSERT_TRUE(guest_contents);
 }
 
 // This test ensures that link permissions are enforced properly in PDFs.
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkPermissions) {
   GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test.pdf"));
-  content::WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
+  WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
   ASSERT_TRUE(guest_contents);
 
   // chrome://favicon links should be allowed for PDFs, while chrome://settings
@@ -508,21 +504,20 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkPermissions) {
 // This test ensures that titles are set properly for PDFs without /Title.
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, TabTitleWithNoTitle) {
   GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test.pdf"));
-  content::WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
+  WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
   ASSERT_TRUE(guest_contents);
   EXPECT_EQ(base::ASCIIToUTF16("test.pdf"), guest_contents->GetTitle());
-  EXPECT_EQ(base::ASCIIToUTF16("test.pdf"),
-            browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
+  EXPECT_EQ(base::ASCIIToUTF16("test.pdf"), GetActiveWebContents()->GetTitle());
 }
 
 // This test ensures that titles are set properly for PDFs with /Title.
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, TabTitleWithTitle) {
   GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test-title.pdf"));
-  content::WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
+  WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
   ASSERT_TRUE(guest_contents);
   EXPECT_EQ(base::ASCIIToUTF16("PDF title test"), guest_contents->GetTitle());
   EXPECT_EQ(base::ASCIIToUTF16("PDF title test"),
-            browser()->tab_strip_model()->GetActiveWebContents()->GetTitle());
+            GetActiveWebContents()->GetTitle());
 }
 
 // This test ensures that titles are set properly for embedded PDFs with /Title.
@@ -535,22 +530,18 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, TabTitleWithEmbeddedPdf) {
       "<embed type=\"application/pdf\" src=\"" +
       url +
       "\"></body></html>";
-  ui_test_utils::NavigateToURL(browser(), GURL(data_url));
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  ASSERT_TRUE(pdf_extension_test_util::EnsurePDFHasLoaded(web_contents));
+  ASSERT_TRUE(LoadPdf(GURL(data_url)));
   EXPECT_EQ(base::ASCIIToUTF16("TabTitleWithEmbeddedPdf"),
-            web_contents->GetTitle());
+            GetActiveWebContents()->GetTitle());
 }
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfZoomWithoutBubble) {
   using namespace zoom;
 
   GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test.pdf"));
-  content::WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
+  WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
   ASSERT_TRUE(guest_contents);
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
+  WebContents* web_contents = GetActiveWebContents();
 
   // The PDF viewer always starts at default zoom, which for tests is 100% or
   // zoom level 0.0. Here we look at the presets to find the next zoom level
@@ -650,7 +641,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, DISABLED_PdfAccessibility) {
   content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
 
   GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test-bookmarks.pdf"));
-  content::WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
+  WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
   ASSERT_TRUE(guest_contents);
 
   WaitForAccessibilityTreeToContainNodeWithName(guest_contents,
@@ -668,7 +659,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibilityCharCountCrash) {
   GURL test_pdf_url(embedded_test_server()->GetURL(
       "/pdf_private/accessibility_crash_1.pdf"));
 
-  content::WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
+  WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
   ASSERT_TRUE(guest_contents);
 
   WaitForAccessibilityTreeToContainNodeWithName(guest_contents, "Page 1");
@@ -679,7 +670,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibilityCharCountCrash) {
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, DISABLED_PdfAccessibilityEnableLater) {
   // In this test, load the PDF file first, with accessibility off.
   GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test-bookmarks.pdf"));
-  content::WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
+  WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
   ASSERT_TRUE(guest_contents);
 
   // Now enable accessibility globally, and assert that the PDF accessibility
@@ -692,9 +683,8 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, DISABLED_PdfAccessibilityEnableLater) {
   ASSERT_MULTILINE_STREQ(kExpectedPDFAXTree, ax_tree_dump);
 }
 
-bool RetrieveGuestContents(
-    content::WebContents** out_guest_contents,
-    content::WebContents* in_guest_contents) {
+bool RetrieveGuestContents(WebContents** out_guest_contents,
+                           WebContents* in_guest_contents) {
   *out_guest_contents = in_guest_contents;
   return true;
 }
@@ -704,12 +694,11 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, DISABLED_PdfAccessibilityInIframe) {
   content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
   GURL test_iframe_url(embedded_test_server()->GetURL("/pdf/test-iframe.html"));
   ui_test_utils::NavigateToURL(browser(), test_iframe_url);
-  content::WebContents* contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
+  WebContents* contents = GetActiveWebContents();
   WaitForAccessibilityTreeToContainNodeWithName(contents,
                                                 "1 First Section\r\n");
 
-  content::WebContents* guest_contents = nullptr;
+  WebContents* guest_contents = nullptr;
   content::BrowserPluginGuestManager* guest_manager =
         contents->GetBrowserContext()->GetGuestManager();
   guest_manager->ForEachGuest(contents,
@@ -728,12 +717,11 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, DISABLED_PdfAccessibilityInOOPIF) {
   GURL test_iframe_url(embedded_test_server()->GetURL(
       "/pdf/test-cross-site-iframe.html"));
   ui_test_utils::NavigateToURL(browser(), test_iframe_url);
-  content::WebContents* contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
+  WebContents* contents = GetActiveWebContents();
   WaitForAccessibilityTreeToContainNodeWithName(contents,
                                                 "1 First Section\r\n");
 
-  content::WebContents* guest_contents = nullptr;
+  WebContents* guest_contents = nullptr;
   content::BrowserPluginGuestManager* guest_manager =
         contents->GetBrowserContext()->GetGuestManager();
   guest_manager->ForEachGuest(contents,
@@ -754,7 +742,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibilityTextRunCrash) {
   GURL test_pdf_url(embedded_test_server()->GetURL(
       "/pdf_private/accessibility_crash_2.pdf"));
 
-  content::WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
+  WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
   ASSERT_TRUE(guest_contents);
 
   WaitForAccessibilityTreeToContainNodeWithName(guest_contents, "Page 1");
@@ -764,7 +752,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibilityTextRunCrash) {
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkCtrlLeftClick) {
   host_resolver()->AddRule("www.example.com", "127.0.0.1");
   GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test-link.pdf"));
-  content::WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
+  WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
   ASSERT_TRUE(guest_contents);
 
   // The link position of the test-link.pdf in page coordinates is (110, 110).
@@ -772,8 +760,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkCtrlLeftClick) {
   gfx::Point link_position(110, 110);
   ConvertPageCoordToScreenCoord(guest_contents, &link_position);
 
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
+  WebContents* web_contents = GetActiveWebContents();
 
   content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_TAB_ADDED,
@@ -785,11 +772,10 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkCtrlLeftClick) {
   int tab_count = browser()->tab_strip_model()->count();
   ASSERT_EQ(2, tab_count);
 
-  content::WebContents* active_web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
+  WebContents* active_web_contents = GetActiveWebContents();
   ASSERT_EQ(web_contents, active_web_contents);
 
-  content::WebContents* new_web_contents =
+  WebContents* new_web_contents =
       browser()->tab_strip_model()->GetWebContentsAt(1);
   ASSERT_TRUE(new_web_contents);
   ASSERT_NE(web_contents, new_web_contents);
@@ -801,7 +787,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkCtrlLeftClick) {
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkMiddleClick) {
   host_resolver()->AddRule("www.example.com", "127.0.0.1");
   GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test-link.pdf"));
-  content::WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
+  WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
   ASSERT_TRUE(guest_contents);
 
   // The link position of the test-link.pdf in page coordinates is (110, 110).
@@ -809,8 +795,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkMiddleClick) {
   gfx::Point link_position(110, 110);
   ConvertPageCoordToScreenCoord(guest_contents, &link_position);
 
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
+  WebContents* web_contents = GetActiveWebContents();
 
   content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_TAB_ADDED,
@@ -822,11 +807,10 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkMiddleClick) {
   int tab_count = browser()->tab_strip_model()->count();
   ASSERT_EQ(2, tab_count);
 
-  content::WebContents* active_web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
+  WebContents* active_web_contents = GetActiveWebContents();
   ASSERT_EQ(web_contents, active_web_contents);
 
-  content::WebContents* new_web_contents =
+  WebContents* new_web_contents =
       browser()->tab_strip_model()->GetWebContentsAt(1);
   ASSERT_TRUE(new_web_contents);
   ASSERT_NE(web_contents, new_web_contents);
@@ -838,7 +822,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkMiddleClick) {
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkCtrlShiftLeftClick) {
   host_resolver()->AddRule("www.example.com", "127.0.0.1");
   GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test-link.pdf"));
-  content::WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
+  WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
   ASSERT_TRUE(guest_contents);
 
   // The link position of the test-link.pdf in page coordinates is (110, 110).
@@ -846,8 +830,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkCtrlShiftLeftClick) {
   gfx::Point link_position(110, 110);
   ConvertPageCoordToScreenCoord(guest_contents, &link_position);
 
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
+  WebContents* web_contents = GetActiveWebContents();
 
   int modifiers = blink::WebInputEvent::ShiftKey | kDefaultKeyModifier;
 
@@ -861,8 +844,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkCtrlShiftLeftClick) {
   int tab_count = browser()->tab_strip_model()->count();
   ASSERT_EQ(2, tab_count);
 
-  content::WebContents* active_web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
+  WebContents* active_web_contents = GetActiveWebContents();
   ASSERT_NE(web_contents, active_web_contents);
 
   const GURL& url = active_web_contents->GetURL();
@@ -872,7 +854,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkCtrlShiftLeftClick) {
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkShiftMiddleClick) {
   host_resolver()->AddRule("www.example.com", "127.0.0.1");
   GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test-link.pdf"));
-  content::WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
+  WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
   ASSERT_TRUE(guest_contents);
 
   // The link position of the test-link.pdf in page coordinates is (110, 110).
@@ -880,8 +862,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkShiftMiddleClick) {
   gfx::Point link_position(110, 110);
   ConvertPageCoordToScreenCoord(guest_contents, &link_position);
 
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
+  WebContents* web_contents = GetActiveWebContents();
 
   content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_TAB_ADDED,
@@ -893,8 +874,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkShiftMiddleClick) {
   int tab_count = browser()->tab_strip_model()->count();
   ASSERT_EQ(2, tab_count);
 
-  content::WebContents* active_web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
+  WebContents* active_web_contents = GetActiveWebContents();
   ASSERT_NE(web_contents, active_web_contents);
 
   const GURL& url = active_web_contents->GetURL();
@@ -904,7 +884,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkShiftMiddleClick) {
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkShiftLeftClick) {
   host_resolver()->AddRule("www.example.com", "127.0.0.1");
   GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test-link.pdf"));
-  content::WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
+  WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
   ASSERT_TRUE(guest_contents);
   ASSERT_EQ(1U, chrome::GetTotalBrowserCount());
 
@@ -913,8 +893,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkShiftLeftClick) {
   gfx::Point link_position(110, 110);
   ConvertPageCoordToScreenCoord(guest_contents, &link_position);
 
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
+  WebContents* web_contents = GetActiveWebContents();
 
   content::WindowedNotificationObserver observer(
       chrome::NOTIFICATION_BROWSER_WINDOW_READY,
@@ -926,7 +905,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, LinkShiftLeftClick) {
 
   ASSERT_EQ(2U, chrome::GetTotalBrowserCount());
 
-  content::WebContents* active_web_contents =
+  WebContents* active_web_contents =
       chrome::FindLastActive()->tab_strip_model()->GetActiveWebContents();
   ASSERT_NE(web_contents, active_web_contents);
 
@@ -945,18 +924,16 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, RedirectsFailInPlugin) {
 // the correct tab still gets navigated (see crbug.com/672563).
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, NavigationOnCorrectTab) {
   GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test.pdf"));
-  content::WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
+  WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
   ASSERT_TRUE(guest_contents);
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
+  WebContents* web_contents = GetActiveWebContents();
 
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GURL("about:blank"),
       WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB |
           ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  content::WebContents* active_web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
+  WebContents* active_web_contents = GetActiveWebContents();
   ASSERT_NE(web_contents, active_web_contents);
 
   ASSERT_TRUE(content::ExecuteScript(
@@ -979,8 +956,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, OpenPDFOnLinkClickWithReplaceState) {
   GURL test_url(
       embedded_test_server()->GetURL("/pdf/pdf_href_replace_state.html"));
   ui_test_utils::NavigateToURL(browser(), test_url);
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
+  WebContents* web_contents = GetActiveWebContents();
   ASSERT_TRUE(web_contents);
 
   // Click on the link which opens the PDF via JS.
@@ -990,7 +966,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, OpenPDFOnLinkClickWithReplaceState) {
                                      kPdfLinkClick));
   navigation_observer.Wait();
   const GURL& current_url = web_contents->GetURL();
-  ASSERT_TRUE(current_url.path() == "/pdf/test-link.pdf");
+  ASSERT_EQ("/pdf/test-link.pdf", current_url.path());
 
   ASSERT_TRUE(pdf_extension_test_util::EnsurePDFHasLoaded(web_contents));
 
@@ -998,8 +974,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, OpenPDFOnLinkClickWithReplaceState) {
   // tab.
   content::BrowserPluginGuestManager* guest_manager =
       web_contents->GetBrowserContext()->GetGuestManager();
-  content::WebContents* guest_contents =
-      guest_manager->GetFullPageGuest(web_contents);
+  WebContents* guest_contents = guest_manager->GetFullPageGuest(web_contents);
   ASSERT_TRUE(guest_contents);
   // The link position of the test-link.pdf in page coordinates is (110, 110).
   // Convert the link position from page coordinates to screen coordinates.
@@ -1019,15 +994,25 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, OpenPDFOnLinkClickWithReplaceState) {
   int tab_count = browser()->tab_strip_model()->count();
   ASSERT_EQ(2, tab_count);
 
-  content::WebContents* active_web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
+  WebContents* active_web_contents = GetActiveWebContents();
   ASSERT_EQ(web_contents, active_web_contents);
 
-  content::WebContents* new_web_contents =
+  WebContents* new_web_contents =
       browser()->tab_strip_model()->GetWebContentsAt(1);
   ASSERT_TRUE(new_web_contents);
   ASSERT_NE(web_contents, new_web_contents);
 
   const GURL& url = new_web_contents->GetURL();
   ASSERT_EQ(GURL("http://www.example.com"), url);
+}
+
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, OpenFromFTP) {
+  net::SpawnedTestServer ftp_server(
+      net::SpawnedTestServer::TYPE_FTP, net::SpawnedTestServer::kLocalhost,
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data/pdf")));
+  ASSERT_TRUE(ftp_server.Start());
+
+  GURL url(ftp_server.GetURL("/test.pdf"));
+  ASSERT_TRUE(LoadPdf(url));
+  EXPECT_EQ(base::ASCIIToUTF16("test.pdf"), GetActiveWebContents()->GetTitle());
 }
