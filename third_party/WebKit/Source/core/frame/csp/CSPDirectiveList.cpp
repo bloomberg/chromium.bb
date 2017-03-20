@@ -8,6 +8,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/SecurityContext.h"
 #include "core/dom/SpaceSplitString.h"
+#include "core/frame/Deprecation.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLScriptElement.h"
@@ -792,19 +793,43 @@ bool CSPDirectiveList::allowWorkerFromSource(
     const KURL& url,
     ResourceRequest::RedirectStatus redirectStatus,
     SecurityViolationReportingPolicy reportingPolicy) const {
-  // 'worker-src' overrides 'child-src', which overrides the default
   // sources. So, we do this nested set of calls to 'operativeDirective()' to
-  // grab 'worker-src' if it exists, 'child-src' if it doesn't, and 'defaut-src'
-  // if neither are available.
-  SourceListDirective* whichDirective = operativeDirective(
-      m_workerSrc.get(), operativeDirective(m_childSrc.get()));
+  // grab 'worker-src' if it exists, 'script-src' if it doesn't, and
+  // 'defaut-src' if neither are available.
+  SourceListDirective* workerSrc = operativeDirective(
+      m_workerSrc.get(), operativeDirective(m_scriptSrc.get()));
+
+  // In CSP2, workers are controlled via 'child-src'. CSP3 moves them to
+  // 'script-src'. In order to avoid breaking sites that allowed workers via
+  // 'child-src' that would have been blocked via 'script-src', we'll
+  // temporarily check whether a worker blocked via 'script-src' would have been
+  // allowed under 'child-src'. If the new 'worker-src' directive is present,
+  // however, we'll assume that the developer knows what they're asking for, and
+  // skip the extra fallback.
+  //
+  // That is, we'll block 'https://example.com/worker' given the policy
+  // "worker-src 'none'", "worker-src 'none'; child-src https://example.com",
+  // but we'll allow it given the policy
+  // "script-src https://not-example.com; child-src https://example.com"
+  // (because 'child-src' allows it) or "child-src https://not-example.com"
+  // (because the absent 'script-src' allows it).
+  //
+  // TODO(mkwst): Remove this once other vendors follow suit.
+  // https://crbug.com/662930
+  if (!checkSource(workerSrc, url, redirectStatus) && !m_workerSrc &&
+      m_childSrc && checkSource(m_childSrc, url, redirectStatus)) {
+    Deprecation::countDeprecation(
+        m_policy->document(),
+        UseCounter::ChildSrcAllowedWorkerThatScriptSrcBlocked);
+    return true;
+  }
 
   return reportingPolicy == SecurityViolationReportingPolicy::Report
              ? checkSourceAndReportViolation(
-                   whichDirective, url,
+                   workerSrc, url,
                    ContentSecurityPolicy::DirectiveType::WorkerSrc,
                    redirectStatus)
-             : checkSource(whichDirective, url, redirectStatus);
+             : checkSource(workerSrc, url, redirectStatus);
 }
 
 bool CSPDirectiveList::allowAncestors(
@@ -1161,8 +1186,7 @@ void CSPDirectiveList::addDirective(const String& name, const String& value) {
     setCSPDirective<SourceListDirective>(name, value, m_baseURI);
   } else if (type == ContentSecurityPolicy::DirectiveType::ChildSrc) {
     setCSPDirective<SourceListDirective>(name, value, m_childSrc);
-  } else if (type == ContentSecurityPolicy::DirectiveType::WorkerSrc &&
-             m_policy->experimentalFeaturesEnabled()) {
+  } else if (type == ContentSecurityPolicy::DirectiveType::WorkerSrc) {
     setCSPDirective<SourceListDirective>(name, value, m_workerSrc);
   } else if (type == ContentSecurityPolicy::DirectiveType::FormAction) {
     setCSPDirective<SourceListDirective>(name, value, m_formAction);
@@ -1218,14 +1242,14 @@ SourceListDirective* CSPDirectiveList::operativeDirective(
       return operativeDirective(m_scriptSrc.get());
     case ContentSecurityPolicy::DirectiveType::StyleSrc:
       return operativeDirective(m_styleSrc.get());
-    // Directives that default to child-src, which defaults to default-src.
+    // Directives that default to 'child-src' (which defaults to 'default-src')
     case ContentSecurityPolicy::DirectiveType::FrameSrc:
       return operativeDirective(m_frameSrc.get(),
                                 operativeDirective(m_childSrc.get()));
-    // TODO(mkwst): Reevaluate this.
+    // Directives that default to 'script-src' (which defaults to 'default-src')
     case ContentSecurityPolicy::DirectiveType::WorkerSrc:
       return operativeDirective(m_workerSrc.get(),
-                                operativeDirective(m_childSrc.get()));
+                                operativeDirective(m_scriptSrc.get()));
     default:
       return nullptr;
   }

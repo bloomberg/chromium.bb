@@ -1,6 +1,0 @@
-CONSOLE ERROR: line 9: Refused to create a worker from 'http://127.0.0.1:8000/security/contentSecurityPolicy/resources/service-worker.js' because it violates the following Content Security Policy directive: "child-src 'none'". Note that 'worker-src' was not explicitly set, so 'child-src' is used as a fallback.
-
-This is a testharness.js-based test.
-PASS Test that a service worker cannot be registered if the CSP does not allow it 
-Harness: the test ran to completion.
-

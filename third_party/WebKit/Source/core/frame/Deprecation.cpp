@@ -429,6 +429,11 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature) {
       return willBeRemoved("indexedDB.webkitGetDatabaseNames()", M60,
                            "5725741740195840");
 
+    case UseCounter::ChildSrcAllowedWorkerThatScriptSrcBlocked:
+      return replacedWillBeRemoved("The 'child-src' directive",
+                                   "the 'script-src' directive for Workers",
+                                   M60, "5922594955984896");
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
       return String();

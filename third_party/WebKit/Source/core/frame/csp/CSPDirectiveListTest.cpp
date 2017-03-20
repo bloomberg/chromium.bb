@@ -407,7 +407,7 @@ TEST_F(CSPDirectiveListTest, allowRequestWithoutIntegrity) {
   }
 }
 
-TEST_F(CSPDirectiveListTest, workerSrc) {
+TEST_F(CSPDirectiveListTest, WorkerSrc) {
   struct TestCase {
     const char* list;
     bool allowed;
@@ -418,25 +418,71 @@ TEST_F(CSPDirectiveListTest, workerSrc) {
       {"default-src *; worker-src 'none'", false},
       {"default-src *; worker-src http://not.example.test", false},
       {"default-src *; worker-src https://example.test", true},
-      {"child-src *; worker-src 'none'", false},
-      {"child-src *; worker-src http://not.example.test", false},
-      {"child-src *; worker-src https://example.test", true},
-      {"default-src *; child-src *; worker-src 'none'", false},
-      {"default-src *; child-src *; worker-src http://not.example.test", false},
-      {"default-src *; child-src *; worker-src https://example.test", true},
+      {"script-src *; worker-src 'none'", false},
+      {"script-src *; worker-src http://not.example.test", false},
+      {"script-src *; worker-src https://example.test", true},
+      {"default-src *; script-src *; worker-src 'none'", false},
+      {"default-src *; script-src *; worker-src http://not.example.test",
+       false},
+      {"default-src *; script-src *; worker-src https://example.test", true},
 
-      // Fallback to child-src.
-      {"child-src 'none'", false},
-      {"child-src http://not.example.test", false},
-      {"child-src https://example.test", true},
-      {"default-src *; child-src 'none'", false},
-      {"default-src *; child-src http://not.example.test", false},
-      {"default-src *; child-src https://example.test", true},
+      // Fallback to script-src.
+      {"script-src 'none'", false},
+      {"script-src http://not.example.test", false},
+      {"script-src https://example.test", true},
+      {"default-src *; script-src 'none'", false},
+      {"default-src *; script-src http://not.example.test", false},
+      {"default-src *; script-src https://example.test", true},
 
       // Fallback to default-src.
       {"default-src 'none'", false},
       {"default-src http://not.example.test", false},
       {"default-src https://example.test", true},
+  };
+
+  for (const auto& test : cases) {
+    SCOPED_TRACE(test.list);
+    KURL resource = KURL(KURL(), "https://example.test/worker.js");
+    Member<CSPDirectiveList> directiveList =
+        createList(test.list, ContentSecurityPolicyHeaderTypeEnforce);
+    EXPECT_EQ(test.allowed,
+              directiveList->allowWorkerFromSource(
+                  resource, ResourceRequest::RedirectStatus::NoRedirect,
+                  SecurityViolationReportingPolicy::SuppressReporting));
+  }
+}
+
+TEST_F(CSPDirectiveListTest, WorkerSrcChildSrcFallback) {
+  // TODO(mkwst): Remove this test once we remove the temporary fallback
+  // behavior. https://crbug.com/662930
+  struct TestCase {
+    const char* list;
+    bool allowed;
+  } cases[] = {
+      // When 'worker-src' is not present, 'child-src' can allow a worker when
+      // present.
+      {"child-src https://example.test", true},
+      {"child-src https://not-example.test", true},
+      {"script-src https://example.test", true},
+      {"script-src https://not-example.test", false},
+      {"child-src https://example.test; script-src https://example.test", true},
+      {"child-src https://example.test; script-src https://not-example.test",
+       true},
+      {"child-src https://not-example.test; script-src https://example.test",
+       true},
+      {"child-src https://not-example.test; script-src "
+       "https://not-example.test",
+       false},
+
+      // If 'worker-src' is present, 'child-src' will not allow a worker.
+      {"worker-src https://example.test; child-src https://example.test", true},
+      {"worker-src https://example.test; child-src https://not-example.test",
+       true},
+      {"worker-src https://not-example.test; child-src https://example.test",
+       false},
+      {"worker-src https://not-example.test; child-src "
+       "https://not-example.test",
+       false},
   };
 
   for (const auto& test : cases) {
@@ -717,7 +763,12 @@ TEST_F(CSPDirectiveListTest, SubsumesPluginTypes) {
 }
 
 TEST_F(CSPDirectiveListTest, OperativeDirectiveGivenType) {
-  enum DefaultBehaviour { Default, NoDefault, ChildAndDefault };
+  enum DefaultBehaviour {
+    Default,
+    NoDefault,
+    ChildAndDefault,
+    ScriptAndDefault
+  };
 
   struct TestCase {
     ContentSecurityPolicy::DirectiveType directive;
@@ -740,7 +791,7 @@ TEST_F(CSPDirectiveListTest, OperativeDirectiveGivenType) {
       {ContentSecurityPolicy::DirectiveType::FormAction, NoDefault},
       // Directive with multiple default directives.
       {ContentSecurityPolicy::DirectiveType::FrameSrc, ChildAndDefault},
-      {ContentSecurityPolicy::DirectiveType::WorkerSrc, ChildAndDefault},
+      {ContentSecurityPolicy::DirectiveType::WorkerSrc, ScriptAndDefault},
   };
 
   // Initial set-up.
@@ -769,6 +820,7 @@ TEST_F(CSPDirectiveListTest, OperativeDirectiveGivenType) {
 
     std::stringstream allExceptThis;
     std::stringstream allExceptChildSrcAndThis;
+    std::stringstream allExceptScriptSrcAndThis;
     for (const auto& subtest : cases) {
       if (subtest.directive == test.directive)
         continue;
@@ -779,11 +831,19 @@ TEST_F(CSPDirectiveListTest, OperativeDirectiveGivenType) {
         allExceptChildSrcAndThis << directiveName << " http://" << directiveName
                                  << ".com; ";
       }
+      if (subtest.directive !=
+          ContentSecurityPolicy::DirectiveType::ScriptSrc) {
+        allExceptScriptSrcAndThis << directiveName << " http://"
+                                  << directiveName << ".com; ";
+      }
     }
     CSPDirectiveList* allExceptThisList = createList(
         allExceptThis.str().c_str(), ContentSecurityPolicyHeaderTypeEnforce);
     CSPDirectiveList* allExceptChildSrcAndThisList =
         createList(allExceptChildSrcAndThis.str().c_str(),
+                   ContentSecurityPolicyHeaderTypeEnforce);
+    CSPDirectiveList* allExceptScriptSrcAndThisList =
+        createList(allExceptScriptSrcAndThis.str().c_str(),
                    ContentSecurityPolicyHeaderTypeEnforce);
 
     switch (test.type) {
@@ -801,6 +861,16 @@ TEST_F(CSPDirectiveListTest, OperativeDirectiveGivenType) {
         EXPECT_EQ(sources[0]->m_host, "child-src.com");
         sources =
             allExceptChildSrcAndThisList->operativeDirective(test.directive)
+                ->m_list;
+        EXPECT_EQ(sources.size(), 1u);
+        EXPECT_EQ(sources[0]->m_host, "default-src.com");
+        break;
+      case ScriptAndDefault:
+        sources = allExceptThisList->operativeDirective(test.directive)->m_list;
+        EXPECT_EQ(sources.size(), 1u);
+        EXPECT_EQ(sources[0]->m_host, "script-src.com");
+        sources =
+            allExceptScriptSrcAndThisList->operativeDirective(test.directive)
                 ->m_list;
         EXPECT_EQ(sources.size(), 1u);
         EXPECT_EQ(sources[0]->m_host, "default-src.com");

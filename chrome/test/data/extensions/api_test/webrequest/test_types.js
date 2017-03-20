@@ -24,7 +24,7 @@ function getFontURL() {
 function getWorkerURL() {
   // This file is empty, so it does not generate JavaScript errors when loaded
   // as a worker script.
-  return getServerURL('empty.html?as-worker');
+  return getServerURL('empty.html?as-worker', '127.0.0.1');
 }
 
 function getPingURL() {
