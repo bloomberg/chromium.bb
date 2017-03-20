@@ -196,6 +196,11 @@ void ReadingListDistillerPage::DelayedOnLoadURLDone(int delayed_task_id) {
 }
 
 void ReadingListDistillerPage::ContinuePageDistillation() {
+  if (!CurrentWebState()) {
+    // Something interrupted the distillation.
+    // Abort here.
+    return;
+  }
   // The page is ready to be distilled.
   // If the visible URL is not the original URL, notify the caller that URL
   // changed.
