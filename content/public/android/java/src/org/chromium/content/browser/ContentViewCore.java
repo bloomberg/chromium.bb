@@ -993,7 +993,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
                 mGestureStateListenersIterator.hasNext();) {
             mGestureStateListenersIterator.next().onScrollUpdateGestureConsumed();
         }
-        hidePastePopup();
+        destroyPastePopup();
     }
 
     @SuppressWarnings("unused")
@@ -1022,7 +1022,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
                 mGestureStateListenersIterator.hasNext();) {
             mGestureStateListenersIterator.next().onSingleTap(consumed);
         }
-        hidePastePopup();
+        destroyPastePopup();
     }
 
     @SuppressWarnings("unused")
@@ -1149,7 +1149,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
 
     private void hidePopupsAndClearSelection() {
         mSelectionPopupController.destroyActionModeAndUnselect();
-        hidePastePopup();
+        destroyPastePopup();
         hideSelectPopupWithCancelMessage();
         mPopupZoomer.hide(false);
         if (mWebContents != null) mWebContents.dismissTextHandles();
@@ -1158,7 +1158,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
     @CalledByNative
     private void hidePopupsAndPreserveSelection() {
         mSelectionPopupController.destroyActionModeAndKeepSelection();
-        hidePastePopup();
+        destroyPastePopup();
         hideSelectPopupWithCancelMessage();
         mPopupZoomer.hide(false);
     }
@@ -1878,11 +1878,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
 
     @CalledByNative
     private void showPastePopup(int x, int y) {
-        mSelectionPopupController.showPastePopup(x, y);
-    }
-
-    private void hidePastePopup() {
-        mSelectionPopupController.hidePastePopup();
+        mSelectionPopupController.createAndShowPastePopup(x, y);
     }
 
     private void destroyPastePopup() {

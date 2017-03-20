@@ -32,9 +32,4 @@ public interface PastePopupMenu {
      * Hides the paste popup.
      */
     public void hide();
-
-    /**
-     * @return Whether the popup is active and showing.
-     */
-    public boolean isShowing();
 }

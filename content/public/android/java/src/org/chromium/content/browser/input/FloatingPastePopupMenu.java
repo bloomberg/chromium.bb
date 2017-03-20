@@ -59,11 +59,9 @@ public class FloatingPastePopupMenu implements PastePopupMenu {
 
     @Override
     public void show(int x, int y) {
-        if (isShowing()) {
-            int dx = mRawPositionX - x;
-            int dy = mRawPositionY - y;
-            if (dx * dx + dy * dy < mSlopLengthSquared) return;
-        }
+        int dx = mRawPositionX - x;
+        int dy = mRawPositionY - y;
+        if (dx * dx + dy * dy < mSlopLengthSquared) return;
 
         mRawPositionX = x;
         mRawPositionY = y;
@@ -81,11 +79,6 @@ public class FloatingPastePopupMenu implements PastePopupMenu {
             mActionMode.finish();
             mActionMode = null;
         }
-    }
-
-    @Override
-    public boolean isShowing() {
-        return mActionMode != null;
     }
 
     private void ensureActionMode() {

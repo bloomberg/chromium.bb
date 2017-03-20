@@ -223,23 +223,43 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         return actionMode;
     }
 
-    void showPastePopup(int x, int y) {
+    void createAndShowPastePopup(int x, int y) {
         if (mView.getParent() == null || mView.getVisibility() != View.VISIBLE) {
             return;
         }
 
         if (!supportsFloatingActionMode() && !canPaste()) return;
+        destroyPastePopup();
+        PastePopupMenuDelegate delegate = new PastePopupMenuDelegate() {
+            @Override
+            public void paste() {
+                mWebContents.paste();
+                mWebContents.dismissTextHandles();
+            }
 
-        PastePopupMenu pastePopupMenu = getPastePopup();
-        if (pastePopupMenu == null) return;
+            @Override
+            public boolean canPaste() {
+                return SelectionPopupController.this.canPaste();
+            }
+        };
+        Context windowContext = mWindowAndroid.getContext().get();
+        if (windowContext == null) return;
+        if (supportsFloatingActionMode()) {
+            mPastePopupMenu = new FloatingPastePopupMenu(windowContext, mView, delegate);
+        } else {
+            mPastePopupMenu = new LegacyPastePopupMenu(windowContext, mView, delegate);
+        }
+        showPastePopup(x, y);
+    }
 
+    private void showPastePopup(int x, int y) {
         // Coordinates are in DIP.
         final float deviceScale = mRenderCoordinates.getDeviceScaleFactor();
         final int xPix = (int) (x * deviceScale);
         final int yPix = (int) (y * deviceScale);
         final float browserControlsShownPix = mRenderCoordinates.getContentOffsetYPix();
         try {
-            pastePopupMenu.show(xPix, (int) (yPix + browserControlsShownPix));
+            mPastePopupMenu.show(xPix, (int) (yPix + browserControlsShownPix));
         } catch (WindowManager.BadTokenException e) {
         }
     }
@@ -249,43 +269,16 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
     }
 
-    void hidePastePopup() {
-        if (mPastePopupMenu != null) mPastePopupMenu.hide();
-    }
-
-    private PastePopupMenu getPastePopup() {
-        if (mPastePopupMenu == null) {
-            PastePopupMenuDelegate delegate = new PastePopupMenuDelegate() {
-                @Override
-                public void paste() {
-                    mWebContents.paste();
-                    mWebContents.dismissTextHandles();
-                }
-
-                @Override
-                public boolean canPaste() {
-                    return SelectionPopupController.this.canPaste();
-                }
-            };
-            Context windowContext = mWindowAndroid.getContext().get();
-            if (windowContext == null) return null;
-            if (supportsFloatingActionMode()) {
-                mPastePopupMenu = new FloatingPastePopupMenu(windowContext, mView, delegate);
-            } else {
-                mPastePopupMenu = new LegacyPastePopupMenu(windowContext, mView, delegate);
-            }
-        }
-        return mPastePopupMenu;
-    }
-
     void destroyPastePopup() {
-        hidePastePopup();
-        mPastePopupMenu = null;
+        if (isPastePopupShowing()) {
+            mPastePopupMenu.hide();
+            mPastePopupMenu = null;
+        }
     }
 
     @VisibleForTesting
     public boolean isPastePopupShowing() {
-        return mPastePopupMenu != null && mPastePopupMenu.isShowing();
+        return mPastePopupMenu != null;
     }
 
     // Composition methods for android.view.ActionMode
@@ -800,33 +793,33 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
                 if (!isScrollInProgress && isPastePopupShowing()) {
                     showPastePopup(xAnchor, yAnchor);
                 } else {
-                    hidePastePopup();
+                    destroyPastePopup();
                 }
                 break;
 
             case SelectionEventType.INSERTION_HANDLE_TAPPED:
                 if (mWasPastePopupShowingOnInsertionDragStart) {
-                    hidePastePopup();
+                    destroyPastePopup();
                 } else {
-                    showPastePopup(xAnchor, yAnchor);
+                    createAndShowPastePopup(xAnchor, yAnchor);
                 }
                 mWasPastePopupShowingOnInsertionDragStart = false;
                 break;
 
             case SelectionEventType.INSERTION_HANDLE_CLEARED:
-                hidePastePopup();
+                destroyPastePopup();
                 setIsInsertion(false);
                 mSelectionRect.setEmpty();
                 break;
 
             case SelectionEventType.INSERTION_HANDLE_DRAG_STARTED:
                 mWasPastePopupShowingOnInsertionDragStart = isPastePopupShowing();
-                hidePastePopup();
+                destroyPastePopup();
                 break;
 
             case SelectionEventType.INSERTION_HANDLE_DRAG_STOPPED:
                 if (mWasPastePopupShowingOnInsertionDragStart) {
-                    showPastePopup(xAnchor, yAnchor);
+                    createAndShowPastePopup(xAnchor, yAnchor);
                 }
                 mWasPastePopupShowingOnInsertionDragStart = false;
                 break;
@@ -881,7 +874,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
     }
 
     void updateSelectionState(boolean editable, boolean isPassword) {
-        if (!editable) hidePastePopup();
+        if (!editable) destroyPastePopup();
         if (editable != isSelectionEditable() || isPassword != isSelectionPassword()) {
             mEditable = editable;
             mIsPasswordType = isPassword;
