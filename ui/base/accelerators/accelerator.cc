@@ -90,16 +90,9 @@ bool Accelerator::operator <(const Accelerator& rhs) const {
 }
 
 bool Accelerator::operator ==(const Accelerator& rhs) const {
-  if ((key_code_ == rhs.key_code_) && (key_state_ == rhs.key_state_) &&
-      (MaskOutKeyEventFlags(modifiers_) ==
-       MaskOutKeyEventFlags(rhs.modifiers_)))
-    return true;
-
-  bool platform_equal =
-      platform_accelerator_.get() && rhs.platform_accelerator_.get() &&
-      platform_accelerator_.get() == rhs.platform_accelerator_.get();
-
-  return platform_equal;
+  return (key_code_ == rhs.key_code_) && (key_state_ == rhs.key_state_) &&
+         (MaskOutKeyEventFlags(modifiers_) ==
+          MaskOutKeyEventFlags(rhs.modifiers_));
 }
 
 bool Accelerator::operator !=(const Accelerator& rhs) const {

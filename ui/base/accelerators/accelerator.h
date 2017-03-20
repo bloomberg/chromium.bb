@@ -97,6 +97,8 @@ class UI_BASE_EXPORT Accelerator {
   int modifiers_;
 
   // Stores platform specific data. May be NULL.
+  // TODO: this is only used in Mac code and should be removed from here.
+  // http://crbug.com/702823.
   std::unique_ptr<PlatformAccelerator> platform_accelerator_;
 };
 
