@@ -98,6 +98,11 @@ class MockFormSaver : public StubFormSaver {
   DISALLOW_COPY_AND_ASSIGN(MockFormSaver);
 };
 
+class MockFormFetcher : public FakeFormFetcher {
+ public:
+  MOCK_METHOD1(AddConsumer, void(Consumer*));
+};
+
 MATCHER_P(CheckUsername, username_value, "Username incorrect") {
   return arg.username_value == username_value;
 }
@@ -2957,6 +2962,20 @@ TEST_F(PasswordFormManagerTest, ResetStoredMatches) {
   form_manager()->Save();
 
   EXPECT_THAT(credentials_to_update, IsEmpty());
+}
+
+// Check that if asked to take ownership of the same FormFetcher which it had
+// consumed before, the PasswordFormManager does not add itself as a consumer
+// again.
+TEST_F(PasswordFormManagerTest, GrabFetcher_Same) {
+  auto fetcher = base::MakeUnique<MockFormFetcher>();
+  fetcher->Fetch();
+  PasswordFormManager form_manager(
+      password_manager(), client(), client()->driver(), *observed_form(),
+      base::MakeUnique<MockFormSaver>(), fetcher.get());
+
+  EXPECT_CALL(*fetcher, AddConsumer(_)).Times(0);
+  form_manager.GrabFetcher(std::move(fetcher));
 }
 
 }  // namespace password_manager

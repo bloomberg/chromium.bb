@@ -1228,6 +1228,12 @@ void PasswordFormManager::ResetStoredMatches() {
   new_blacklisted_.reset();
 }
 
+void PasswordFormManager::GrabFetcher(std::unique_ptr<FormFetcher> fetcher) {
+  DCHECK(!owned_form_fetcher_);
+  owned_form_fetcher_ = std::move(fetcher);
+  DCHECK_EQ(owned_form_fetcher_.get(), form_fetcher_);
+}
+
 void PasswordFormManager::SendVotesOnSave() {
   if (observed_form_.IsPossibleChangePasswordFormWithoutUsername())
     return;

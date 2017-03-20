@@ -246,6 +246,11 @@ class PasswordFormManager : public FormFetcher::Consumer {
   // owned by the associated FormFetcher.
   void ResetStoredMatches();
 
+  // Takes ownership of |fetcher|.
+  // TODO(crbug.com/621355) Until https://codereview.chromium.org/2758773002/,
+  // |fetcher.get()| must be the same as |form_fetcher_|.
+  void GrabFetcher(std::unique_ptr<FormFetcher> fetcher);
+
  protected:
   // FormFetcher::Consumer:
   void ProcessMatches(
@@ -565,7 +570,7 @@ class PasswordFormManager : public FormFetcher::Consumer {
   std::unique_ptr<FormFetcher> owned_form_fetcher_;
 
   // FormFetcher instance which owns the login data from PasswordStore.
-  FormFetcher* const form_fetcher_;
+  FormFetcher* form_fetcher_;
 
   // True if the main frame's visible URL, at the time this PasswordFormManager
   // was created, is secure.
