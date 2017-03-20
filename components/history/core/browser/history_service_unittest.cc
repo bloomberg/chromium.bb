@@ -204,13 +204,8 @@ TEST_F(HistoryServiceTest, AddPage) {
 
 TEST_F(HistoryServiceTest, AddRedirect) {
   ASSERT_TRUE(history_service_.get());
-  const char* first_sequence[] = {
-    "http://first.page.com/",
-    "http://second.page.com/"};
-  int first_count = arraysize(first_sequence);
-  history::RedirectList first_redirects;
-  for (int i = 0; i < first_count; i++)
-    first_redirects.push_back(GURL(first_sequence[i]));
+  history::RedirectList first_redirects = {GURL("http://first.page.com/"),
+                                           GURL("http://second.page.com/")};
 
   // Add the sequence of pages as a server with no referrer. Note that we need
   // to have a non-NULL page ID scope.
@@ -252,9 +247,8 @@ TEST_F(HistoryServiceTest, AddRedirect) {
   // Now add a client redirect from that second visit to a third, client
   // redirects are tracked by the RenderView prior to updating history,
   // so we pass in a CLIENT_REDIRECT qualifier to mock that behavior.
-  history::RedirectList second_redirects;
-  second_redirects.push_back(first_redirects[1]);
-  second_redirects.push_back(GURL("http://last.page.com/"));
+  history::RedirectList second_redirects = {first_redirects[1],
+                                            GURL("http://last.page.com/")};
   history_service_->AddPage(second_redirects[1], base::Time::Now(),
                    reinterpret_cast<ContextID>(1), 1,
                    second_redirects[0], second_redirects,
@@ -363,6 +357,48 @@ TEST_F(HistoryServiceTest, MakeIntranetURLsTyped) {
   EXPECT_EQ(1, query_url_row_.typed_count());
   ASSERT_EQ(2U, query_url_visits_.size());
   EXPECT_TRUE(ui::PageTransitionCoreTypeIs(query_url_visits_[1].transition,
+                                           ui::PAGE_TRANSITION_LINK));
+
+  // A redirect chain with an intranet URL at the head should be promoted.
+  history::RedirectList redirects1 = {GURL("http://intranet1/path"),
+                                      GURL("http://second1.com/"),
+                                      GURL("http://third1.com/")};
+  history_service_->AddPage(redirects1.back(), base::Time::Now(), NULL, 0,
+                            GURL(), redirects1, ui::PAGE_TRANSITION_LINK,
+                            history::SOURCE_BROWSED, false);
+  EXPECT_TRUE(QueryURL(history_service_.get(), redirects1.front()));
+  EXPECT_EQ(1, query_url_row_.visit_count());
+  EXPECT_EQ(1, query_url_row_.typed_count());
+  ASSERT_EQ(1U, query_url_visits_.size());
+  EXPECT_TRUE(ui::PageTransitionCoreTypeIs(query_url_visits_[0].transition,
+                                           ui::PAGE_TRANSITION_TYPED));
+
+  // As should one with an intranet URL at the tail.
+  history::RedirectList redirects2 = {GURL("http://first2.com/"),
+                                      GURL("http://second2.com/"),
+                                      GURL("http://intranet2/path")};
+  history_service_->AddPage(redirects2.back(), base::Time::Now(), NULL, 0,
+                            GURL(), redirects2, ui::PAGE_TRANSITION_LINK,
+                            history::SOURCE_BROWSED, false);
+  EXPECT_TRUE(QueryURL(history_service_.get(), redirects2.back()));
+  EXPECT_EQ(1, query_url_row_.visit_count());
+  EXPECT_EQ(0, query_url_row_.typed_count());
+  ASSERT_EQ(1U, query_url_visits_.size());
+  EXPECT_TRUE(ui::PageTransitionCoreTypeIs(query_url_visits_[0].transition,
+                                           ui::PAGE_TRANSITION_TYPED));
+
+  // But not one with an intranet URL in the middle.
+  history::RedirectList redirects3 = {GURL("http://first3.com/"),
+                                      GURL("http://intranet3/path"),
+                                      GURL("http://third3.com/")};
+  history_service_->AddPage(redirects3.back(), base::Time::Now(), NULL, 0,
+                            GURL(), redirects3, ui::PAGE_TRANSITION_LINK,
+                            history::SOURCE_BROWSED, false);
+  EXPECT_TRUE(QueryURL(history_service_.get(), redirects3[1]));
+  EXPECT_EQ(1, query_url_row_.visit_count());
+  EXPECT_EQ(0, query_url_row_.typed_count());
+  ASSERT_EQ(1U, query_url_visits_.size());
+  EXPECT_TRUE(ui::PageTransitionCoreTypeIs(query_url_visits_[0].transition,
                                            ui::PAGE_TRANSITION_LINK));
 }
 
@@ -532,12 +568,8 @@ TEST_F(HistoryServiceTest, MostVisitedURLs) {
   EXPECT_EQ(url2, most_visited_urls_[1].url);
   EXPECT_EQ(url0, most_visited_urls_[2].url);
 
-  // Redirects
-  history::RedirectList redirects;
-  redirects.push_back(url3);
-  redirects.push_back(url4);
-
   // Visit url4 using redirects.
+  history::RedirectList redirects = {url3, url4};
   history_service_->AddPage(
       url4, base::Time::Now(), context_id, 0, GURL(),
       redirects, ui::PAGE_TRANSITION_TYPED,

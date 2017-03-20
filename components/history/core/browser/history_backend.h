@@ -606,8 +606,11 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   // at |cur_visit|.
   void GetRedirectsToSpecificVisit(VisitID cur_visit, RedirectList* redirects);
 
-  // Update the visit_duration information in visits table.
+  // Updates the visit_duration information in visits table.
   void UpdateVisitDuration(VisitID visit_id, const base::Time end_ts);
+
+  // Returns whether |url| is on an untyped intranet host.
+  bool IsUntypedIntranetHost(const GURL& url);
 
   // Querying ------------------------------------------------------------------
 

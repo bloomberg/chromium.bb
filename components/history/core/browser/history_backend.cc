@@ -372,6 +372,19 @@ void HistoryBackend::UpdateVisitDuration(VisitID visit_id, const Time end_ts) {
   }
 }
 
+bool HistoryBackend::IsUntypedIntranetHost(const GURL& url) {
+  if (!url.SchemeIs(url::kHttpScheme) && !url.SchemeIs(url::kHttpsScheme) &&
+      !url.SchemeIs(url::kFtpScheme))
+    return false;
+
+  const std::string host = url.host();
+  const size_t registry_length =
+      net::registry_controlled_domains::GetCanonicalHostRegistryLength(
+          host, net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
+          net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
+  return (registry_length == 0) && !db_->IsTypedHost(host);
+}
+
 TopHostsList HistoryBackend::TopHosts(size_t num_hosts) const {
   if (!db_)
     return TopHostsList();
@@ -450,21 +463,13 @@ void HistoryBackend::AddPage(const HistoryAddPageArgs& request) {
       !ui::PageTransitionCoreTypeIs(request_transition,
                                     ui::PAGE_TRANSITION_TYPED) &&
       !is_keyword_generated) {
-    const GURL& origin_url(has_redirects ? request.redirects[0] : request.url);
-    if (origin_url.SchemeIs(url::kHttpScheme) ||
-        origin_url.SchemeIs(url::kHttpsScheme) ||
-        origin_url.SchemeIs(url::kFtpScheme)) {
-      std::string host(origin_url.host());
-      size_t registry_length =
-          net::registry_controlled_domains::GetCanonicalHostRegistryLength(
-              host,
-              net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
-              net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
-      if (registry_length == 0 && !db_->IsTypedHost(host)) {
-        request_transition = ui::PageTransitionFromInt(
-            ui::PAGE_TRANSITION_TYPED |
-            ui::PageTransitionGetQualifier(request_transition));
-      }
+    // Check both the start and end of a redirect chain, since the user will
+    // consider both to have been "navigated to".
+    if (IsUntypedIntranetHost(request.url) ||
+        (has_redirects && IsUntypedIntranetHost(request.redirects[0]))) {
+      request_transition = ui::PageTransitionFromInt(
+          ui::PAGE_TRANSITION_TYPED |
+          ui::PageTransitionGetQualifier(request_transition));
     }
   }
 
