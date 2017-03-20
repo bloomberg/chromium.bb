@@ -24,8 +24,11 @@ TextDetector::TextDetector() : ShapeDetector() {
       &TextDetector::onTextServiceConnectionError, wrapWeakPersistent(this))));
 }
 
-ScriptPromise TextDetector::doDetect(ScriptPromiseResolver* resolver,
-                                     skia::mojom::blink::BitmapPtr bitmap) {
+ScriptPromise TextDetector::doDetect(
+    ScriptPromiseResolver* resolver,
+    mojo::ScopedSharedBufferHandle sharedBufferHandle,
+    int imageWidth,
+    int imageHeight) {
   ScriptPromise promise = resolver->promise();
   if (!m_textService) {
     resolver->reject(DOMException::create(
@@ -33,7 +36,7 @@ ScriptPromise TextDetector::doDetect(ScriptPromiseResolver* resolver,
     return promise;
   }
   m_textServiceRequests.insert(resolver);
-  m_textService->Detect(std::move(bitmap),
+  m_textService->Detect(std::move(sharedBufferHandle), imageWidth, imageHeight,
                         convertToBaseCallback(WTF::bind(
                             &TextDetector::onDetectText, wrapPersistent(this),
                             wrapPersistent(resolver))));
