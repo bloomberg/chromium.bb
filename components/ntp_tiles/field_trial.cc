@@ -42,12 +42,10 @@ bool ShouldShowPopularSites() {
   }
 #endif
 
-#if defined(OS_IOS)
-  // On iOS, if not enrolled in the experiment, the default is to enable the
-  // feature.
-  if (group_name.empty())
+  // Until any configuration is fetched, the default is to enable popular sites.
+  if (group_name.empty()) {
     return true;
-#endif
+  }
 
   return base::StartsWith(group_name, "Enabled",
                           base::CompareCase::INSENSITIVE_ASCII);
