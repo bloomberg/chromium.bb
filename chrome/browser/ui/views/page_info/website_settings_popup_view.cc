@@ -309,10 +309,12 @@ InternalPageInfoPopupView::InternalPageInfoPopupView(
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal, kSpacing,
                                         kSpacing, kSpacing));
   set_margins(gfx::Insets());
-  views::ImageView* icon_view = new NonAccessibleImageView();
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  icon_view->SetImage(rb.GetImageSkiaNamed(icon));
-  AddChildView(icon_view);
+  if (LayoutDelegate::Get()->ShouldShowWindowIcon()) {
+    views::ImageView* icon_view = new NonAccessibleImageView();
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    icon_view->SetImage(rb.GetImageSkiaNamed(icon));
+    AddChildView(icon_view);
+  }
 
   views::Label* label = new views::Label(l10n_util::GetStringUTF16(text));
   label->SetMultiLine(true);
