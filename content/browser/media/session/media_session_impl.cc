@@ -130,10 +130,20 @@ void MediaSessionImpl::DidFinishNavigation(
 
 void MediaSessionImpl::AddObserver(MediaSessionObserver* observer) {
   observers_.AddObserver(observer);
+  NotifyAddedObserver(observer);
 }
 
 void MediaSessionImpl::RemoveObserver(MediaSessionObserver* observer) {
   observers_.RemoveObserver(observer);
+}
+
+void MediaSessionImpl::NotifyAddedObserver(MediaSessionObserver* observer) {
+  observer->MediaSessionMetadataChanged(
+      routed_service_ ? routed_service_->metadata() : base::nullopt);
+  observer->MediaSessionActionsChanged(
+      routed_service_ ? routed_service_->actions()
+                      : std::set<blink::mojom::MediaSessionAction>());
+  observer->MediaSessionStateChanged(IsControllable(), IsActuallyPaused());
 }
 
 void MediaSessionImpl::NotifyMediaSessionMetadataChange(
@@ -389,6 +399,15 @@ bool MediaSessionImpl::IsControllable() const {
          one_shot_players_.empty();
 }
 
+bool MediaSessionImpl::IsActuallyPaused() const {
+  if (routed_service_ && routed_service_->playback_state() ==
+                             blink::mojom::MediaSessionPlaybackState::PLAYING) {
+    return false;
+  }
+
+  return !IsActive();
+}
+
 bool MediaSessionImpl::HasPepper() const {
   return !pepper_players_.empty();
 }
@@ -529,21 +548,11 @@ void MediaSessionImpl::AbandonSystemAudioFocusIfNeeded() {
 }
 
 void MediaSessionImpl::NotifyAboutStateChange() {
-  bool is_actually_suspended = IsSuspended();
-  // Compute the actual playback state using both the MediaSessionService state
-  // and real state.
-  //
-  // TODO(zqzhang): Maybe also compute for IsControllable()? See
-  // https://crbug.com/674983
-  if (routed_service_ &&
-      routed_service_->playback_state() ==
-          blink::mojom::MediaSessionPlaybackState::PLAYING) {
-    is_actually_suspended = false;
-  }
-
   media_session_state_listeners_.Notify(audio_focus_state_);
+
+  bool is_actually_paused = IsActuallyPaused();
   for (auto& observer : observers_)
-    observer.MediaSessionStateChanged(IsControllable(), is_actually_suspended);
+    observer.MediaSessionStateChanged(IsControllable(), is_actually_paused);
 }
 
 void MediaSessionImpl::SetAudioFocusState(State audio_focus_state) {

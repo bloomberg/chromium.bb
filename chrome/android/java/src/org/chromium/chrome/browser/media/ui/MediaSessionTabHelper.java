@@ -254,10 +254,10 @@ public class MediaSessionTabHelper implements MediaImageCallback {
         }
 
         cleanupMediaSessionObserver();
+        mMediaImageManager.setWebContents(webContents);
         if (mediaSession != null) {
             mMediaSessionObserver = createMediaSessionObserver(mediaSession);
         }
-        mMediaImageManager.setWebContents(webContents);
     }
 
     private void cleanupMediaSessionObserver() {

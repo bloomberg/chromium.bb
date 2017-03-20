@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_samples.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "content/browser/media/session/audio_focus_delegate.h"
@@ -34,6 +35,7 @@ using content::MediaSessionPlayerObserver;
 using content::MediaSessionUmaHelper;
 using content::MockMediaSessionPlayerObserver;
 
+using ::testing::Eq;
 using ::testing::Expectation;
 using ::testing::NiceMock;
 using ::testing::_;
@@ -1413,4 +1415,49 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
   EXPECT_EQ(2, samples->TotalCount());
   EXPECT_EQ(1, samples->GetCount(1000));
   EXPECT_EQ(1, samples->GetCount(10000));
+}
+
+IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
+                       AddingObserverNotifiesCurrentInformation_EmptyInfo) {
+  media_session_->RemoveObserver(mock_media_session_observer());
+  EXPECT_CALL(*mock_media_session_observer(),
+              MediaSessionStateChanged(false, true));
+  EXPECT_CALL(*mock_media_session_observer(),
+              MediaSessionMetadataChanged(Eq(base::nullopt)));
+  EXPECT_CALL(*mock_media_session_observer(),
+              MediaSessionActionsChanged(
+                  Eq(std::set<blink::mojom::MediaSessionAction>())));
+  media_session_->AddObserver(mock_media_session_observer());
+}
+
+IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
+                       AddingObserverNotifiesCurrentInformation_WithInfo) {
+  // Set up the service and information.
+  EnsureMediaSessionService();
+
+  content::MediaMetadata metadata;
+  metadata.title = base::ASCIIToUTF16("title");
+  metadata.artist = base::ASCIIToUTF16("artist");
+  metadata.album = base::ASCIIToUTF16("album");
+  mock_media_session_service_->SetMetadata(metadata);
+
+  mock_media_session_service_->EnableAction(
+      blink::mojom::MediaSessionAction::PLAY);
+  std::set<blink::mojom::MediaSessionAction> expectedActions =
+      mock_media_session_service_->actions();
+
+  // Make sure the service is routed,
+  auto player_observer = base::MakeUnique<MockMediaSessionPlayerObserver>(
+      shell()->web_contents()->GetMainFrame());
+  StartNewPlayer(player_observer.get(), media::MediaContentType::Persistent);
+
+  // Check if the expectations are met when the observer is newly added.
+  media_session_->RemoveObserver(mock_media_session_observer());
+  EXPECT_CALL(*mock_media_session_observer(),
+              MediaSessionStateChanged(true, false));
+  EXPECT_CALL(*mock_media_session_observer(),
+              MediaSessionMetadataChanged(Eq(metadata)));
+  EXPECT_CALL(*mock_media_session_observer(),
+              MediaSessionActionsChanged(Eq(expectedActions)));
+  media_session_->AddObserver(mock_media_session_observer());
 }
