@@ -570,7 +570,7 @@ void ImageBuffer::setSurface(std::unique_ptr<ImageBufferSurface> surface) {
     // will fail at playback time.
     image = image->makeNonTextureImage();
   }
-  surface->canvas()->drawImage(image.get(), 0, 0);
+  surface->canvas()->drawImage(std::move(image), 0, 0);
 
   surface->setImageBuffer(this);
   if (m_client)

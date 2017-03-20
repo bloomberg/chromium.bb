@@ -75,7 +75,7 @@ scoped_refptr<DisplayItemList> PictureImageLayer::PaintContentsToDisplayList(
   // Because Android WebView resourceless software draw mode rasters directly
   // to the root canvas, this draw must use the kSrcOver_Mode so that
   // transparent images blend correctly.
-  canvas->drawImage(image_.get(), 0, 0);
+  canvas->drawImage(image_, 0, 0);
 
   display_list->CreateAndAppendDrawingItem<DrawingDisplayItem>(
       PaintableRegion(), recorder.finishRecordingAsPicture());

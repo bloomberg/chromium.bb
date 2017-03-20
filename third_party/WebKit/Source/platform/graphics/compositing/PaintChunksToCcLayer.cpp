@@ -182,7 +182,7 @@ static gfx::Rect largeRect(-200000, -200000, 400000, 400000);
 static void appendDisplayItemToCcDisplayItemList(const DisplayItem& displayItem,
                                                  cc::DisplayItemList* list) {
   if (DisplayItem::isDrawingType(displayItem.getType())) {
-    const PaintRecord* record =
+    sk_sp<const PaintRecord> record =
         static_cast<const DrawingDisplayItem&>(displayItem).GetPaintRecord();
     if (!record)
       return;
@@ -193,7 +193,7 @@ static void appendDisplayItemToCcDisplayItemList(const DisplayItem& displayItem,
     // reworking visual rects further for SPv2, so for now we just pass a
     // visual rect large enough to make sure items raster.
     list->CreateAndAppendDrawingItem<cc::DrawingDisplayItem>(largeRect,
-                                                             sk_ref_sp(record));
+                                                             std::move(record));
   }
 }
 

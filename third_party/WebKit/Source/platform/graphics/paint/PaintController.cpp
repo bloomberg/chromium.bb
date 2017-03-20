@@ -766,14 +766,16 @@ void PaintController::showUnderInvalidationError(
   LOG(ERROR) << "See http://crbug.com/619103.";
 
 #ifndef NDEBUG
-  const PaintRecord* newRecord =
-      newItem.isDrawing()
-          ? static_cast<const DrawingDisplayItem&>(newItem).GetPaintRecord()
-          : nullptr;
-  const PaintRecord* oldRecord =
-      oldItem && oldItem->isDrawing()
-          ? static_cast<const DrawingDisplayItem*>(oldItem)->GetPaintRecord()
-          : nullptr;
+  const PaintRecord* newRecord = nullptr;
+  if (newItem.isDrawing()) {
+    newRecord =
+        static_cast<const DrawingDisplayItem&>(newItem).GetPaintRecord().get();
+  }
+  const PaintRecord* oldRecord = nullptr;
+  if (oldItem->isDrawing()) {
+    oldRecord =
+        static_cast<const DrawingDisplayItem*>(oldItem)->GetPaintRecord().get();
+  }
   LOG(INFO) << "new record:\n"
             << (newRecord ? recordAsDebugString(newRecord) : "None");
   LOG(INFO) << "old record:\n"

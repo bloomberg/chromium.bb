@@ -34,7 +34,7 @@ class PLATFORM_EXPORT DrawingDisplayItem final : public DisplayItem {
                                   WebDisplayItemList*) const override;
   bool drawsContent() const override;
 
-  const PaintRecord* GetPaintRecord() const { return m_record.get(); }
+  const sk_sp<const PaintRecord>& GetPaintRecord() const { return m_record; }
 
   bool knownToBeOpaque() const {
     DCHECK(RuntimeEnabledFeatures::slimmingPaintV2Enabled());

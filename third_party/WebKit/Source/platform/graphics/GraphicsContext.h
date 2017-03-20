@@ -177,7 +177,7 @@ class PLATFORM_EXPORT GraphicsContext {
 
   void strokeRect(const FloatRect&, float lineWidth);
 
-  void drawRecord(const PaintRecord*);
+  void drawRecord(sk_sp<const PaintRecord>);
   void compositeRecord(sk_sp<PaintRecord>,
                        const FloatRect& dest,
                        const FloatRect& src,

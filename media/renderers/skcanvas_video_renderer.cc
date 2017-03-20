@@ -420,7 +420,7 @@ void SkCanvasVideoRenderer::Paint(const scoped_refptr<VideoFrame>& video_frame,
     sk_sp<SkImage> swImage = last_image_->makeNonTextureImage();
     canvas->drawImage(swImage, 0, 0, &video_flags);
   } else {
-    canvas->drawImage(last_image_.get(), 0, 0, &video_flags);
+    canvas->drawImage(last_image_, 0, 0, &video_flags);
   }
 
   if (need_transform)

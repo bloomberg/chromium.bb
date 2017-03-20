@@ -105,20 +105,12 @@ void SkiaPaintCanvas::rotate(SkScalar degrees) {
   canvas_->rotate(degrees);
 }
 
-void SkiaPaintCanvas::rotate(SkScalar degrees, SkScalar px, SkScalar py) {
-  canvas_->rotate(degrees, px, py);
-}
-
 void SkiaPaintCanvas::concat(const SkMatrix& matrix) {
   canvas_->concat(matrix);
 }
 
 void SkiaPaintCanvas::setMatrix(const SkMatrix& matrix) {
   canvas_->setMatrix(matrix);
-}
-
-void SkiaPaintCanvas::resetMatrix() {
-  canvas_->resetMatrix();
 }
 
 void SkiaPaintCanvas::clipRect(const SkRect& rect,
@@ -228,26 +220,19 @@ void SkiaPaintCanvas::drawPath(const SkPath& path, const PaintFlags& flags) {
   canvas_->drawPath(path, ToSkPaint(flags));
 }
 
-void SkiaPaintCanvas::drawImage(const SkImage* image,
+void SkiaPaintCanvas::drawImage(sk_sp<const SkImage> image,
                                 SkScalar left,
                                 SkScalar top,
                                 const PaintFlags* flags) {
-  canvas_->drawImage(image, left, top, ToSkPaint(flags));
+  canvas_->drawImage(image.get(), left, top, ToSkPaint(flags));
 }
 
-void SkiaPaintCanvas::drawImage(const sk_sp<SkImage>& image,
-                                SkScalar left,
-                                SkScalar top,
-                                const PaintFlags* flags) {
-  canvas_->drawImage(image, left, top, ToSkPaint(flags));
-}
-
-void SkiaPaintCanvas::drawImageRect(const SkImage* image,
+void SkiaPaintCanvas::drawImageRect(sk_sp<const SkImage> image,
                                     const SkRect& src,
                                     const SkRect& dst,
                                     const PaintFlags* flags,
                                     SrcRectConstraint constraint) {
-  canvas_->drawImageRect(image, src, dst, ToSkPaint(flags),
+  canvas_->drawImageRect(image.get(), src, dst, ToSkPaint(flags),
                          static_cast<SkCanvas::SrcRectConstraint>(constraint));
 }
 
@@ -273,32 +258,17 @@ void SkiaPaintCanvas::drawPosText(const void* text,
   canvas_->drawPosText(text, byte_length, pos, ToSkPaint(flags));
 }
 
-void SkiaPaintCanvas::drawTextBlob(const SkTextBlob* blob,
+void SkiaPaintCanvas::drawTextBlob(sk_sp<SkTextBlob> blob,
                                    SkScalar x,
                                    SkScalar y,
                                    const PaintFlags& flags) {
-  canvas_->drawTextBlob(blob, x, y, ToSkPaint(flags));
+  canvas_->drawTextBlob(blob.get(), x, y, ToSkPaint(flags));
 }
 
-void SkiaPaintCanvas::drawTextBlob(const sk_sp<SkTextBlob>& blob,
-                                   SkScalar x,
-                                   SkScalar y,
-                                   const PaintFlags& flags) {
-  canvas_->drawTextBlob(blob, x, y, ToSkPaint(flags));
-}
-
-void SkiaPaintCanvas::drawPicture(const PaintRecord* record) {
-  canvas_->drawPicture(ToSkPicture(record));
-}
-
-void SkiaPaintCanvas::drawPicture(const PaintRecord* record,
+void SkiaPaintCanvas::drawPicture(sk_sp<const PaintRecord> record,
                                   const SkMatrix* matrix,
                                   const PaintFlags* flags) {
-  canvas_->drawPicture(ToSkPicture(record), matrix, ToSkPaint(flags));
-}
-
-void SkiaPaintCanvas::drawPicture(sk_sp<PaintRecord> record) {
-  drawPicture(record.get());
+  canvas_->drawPicture(ToSkPicture(record.get()), matrix, ToSkPaint(flags));
 }
 
 bool SkiaPaintCanvas::isClipEmpty() const {

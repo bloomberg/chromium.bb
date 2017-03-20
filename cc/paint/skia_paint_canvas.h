@@ -59,10 +59,8 @@ class CC_PAINT_EXPORT SkiaPaintCanvas final : public PaintCanvas {
   void translate(SkScalar dx, SkScalar dy) override;
   void scale(SkScalar sx, SkScalar sy) override;
   void rotate(SkScalar degrees) override;
-  void rotate(SkScalar degrees, SkScalar px, SkScalar py) override;
   void concat(const SkMatrix& matrix) override;
   void setMatrix(const SkMatrix& matrix) override;
-  void resetMatrix() override;
 
   void clipRect(const SkRect& rect, SkClipOp op, bool do_anti_alias) override;
   void clipRRect(const SkRRect& rrect,
@@ -104,16 +102,11 @@ class CC_PAINT_EXPORT SkiaPaintCanvas final : public PaintCanvas {
                      SkScalar ry,
                      const PaintFlags& flags) override;
   void drawPath(const SkPath& path, const PaintFlags& flags) override;
-  void drawImage(const SkImage* image,
+  void drawImage(sk_sp<const SkImage> image,
                  SkScalar left,
                  SkScalar top,
                  const PaintFlags* flags) override;
-  void drawImage(const sk_sp<SkImage>& image,
-                 SkScalar left,
-                 SkScalar top,
-                 const PaintFlags* flags) override;
-
-  void drawImageRect(const SkImage* image,
+  void drawImageRect(sk_sp<const SkImage> image,
                      const SkRect& src,
                      const SkRect& dst,
                      const PaintFlags* flags,
@@ -132,20 +125,14 @@ class CC_PAINT_EXPORT SkiaPaintCanvas final : public PaintCanvas {
                    size_t byte_length,
                    const SkPoint pos[],
                    const PaintFlags& flags) override;
-  void drawTextBlob(const SkTextBlob* blob,
-                    SkScalar x,
-                    SkScalar y,
-                    const PaintFlags& flags) override;
-  void drawTextBlob(const sk_sp<SkTextBlob>& blob,
+  void drawTextBlob(sk_sp<SkTextBlob> blob,
                     SkScalar x,
                     SkScalar y,
                     const PaintFlags& flags) override;
 
-  void drawPicture(const PaintRecord* record) override;
-  void drawPicture(const PaintRecord* record,
+  void drawPicture(sk_sp<const PaintRecord> record,
                    const SkMatrix* matrix,
                    const PaintFlags* flags) override;
-  void drawPicture(sk_sp<PaintRecord> record) override;
 
   bool isClipEmpty() const override;
   bool isClipRect() const override;
@@ -166,6 +153,7 @@ class CC_PAINT_EXPORT SkiaPaintCanvas final : public PaintCanvas {
   using PaintCanvas::drawBitmap;
   using PaintCanvas::drawColor;
   using PaintCanvas::drawImage;
+  using PaintCanvas::drawPicture;
 
  private:
   SkCanvas* canvas_;

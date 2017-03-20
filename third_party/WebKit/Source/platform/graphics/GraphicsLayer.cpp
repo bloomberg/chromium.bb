@@ -280,7 +280,7 @@ void GraphicsLayer::paint(const IntRect* interestRect,
         offsetFromLayoutObjectWithSubpixelAccumulation());
     if (RuntimeEnabledFeatures::paintUnderInvalidationCheckingEnabled()) {
       sk_sp<PaintRecord> record = captureRecord();
-      checkPaintUnderInvalidations(*record);
+      checkPaintUnderInvalidations(record);
       RasterInvalidationTracking& tracking =
           rasterInvalidationTrackingMap().add(this);
       tracking.lastPaintedRecord = std::move(record);
@@ -1202,7 +1202,7 @@ static bool pixelsDiffer(SkColor p1, SkColor p2) {
          pixelComponentsDiffer(SkColorGetB(p1), SkColorGetB(p2));
 }
 
-void GraphicsLayer::checkPaintUnderInvalidations(const PaintRecord& newRecord) {
+void GraphicsLayer::checkPaintUnderInvalidations(sk_sp<PaintRecord> newRecord) {
   if (!drawsContent())
     return;
 
@@ -1225,7 +1225,7 @@ void GraphicsLayer::checkPaintUnderInvalidations(const PaintRecord& newRecord) {
     SkiaPaintCanvas canvas(oldBitmap);
     canvas.clear(SK_ColorTRANSPARENT);
     canvas.translate(-rect.x(), -rect.y());
-    canvas.drawPicture(tracking->lastPaintedRecord.get());
+    canvas.drawPicture(tracking->lastPaintedRecord);
   }
 
   SkBitmap newBitmap;
@@ -1235,7 +1235,7 @@ void GraphicsLayer::checkPaintUnderInvalidations(const PaintRecord& newRecord) {
     SkiaPaintCanvas canvas(newBitmap);
     canvas.clear(SK_ColorTRANSPARENT);
     canvas.translate(-rect.x(), -rect.y());
-    canvas.drawPicture(&newRecord);
+    canvas.drawPicture(std::move(newRecord));
   }
 
   oldBitmap.lockPixels();

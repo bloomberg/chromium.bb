@@ -37,7 +37,7 @@ class PLATFORM_EXPORT BoxReflection {
 
   ReflectionDirection direction() const { return m_direction; }
   float offset() const { return m_offset; }
-  PaintRecord* mask() const { return m_mask.get(); }
+  const sk_sp<PaintRecord>& mask() const { return m_mask; }
 
   // Returns a matrix which maps points between the original content and its
   // reflection. Reflections are self-inverse, so this matrix can be used to

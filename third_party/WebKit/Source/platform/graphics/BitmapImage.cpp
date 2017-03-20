@@ -298,11 +298,15 @@ void BitmapImage::draw(
     }
   }
 
-  canvas->drawImageRect(image.get(), adjustedSrcRect, adjustedDstRect, &flags,
+  uint32_t uniqueID = image->uniqueID();
+  bool isLazyGenerated = image->isLazyGenerated();
+
+  canvas->drawImageRect(std::move(image), adjustedSrcRect, adjustedDstRect,
+                        &flags,
                         WebCoreClampingModeToSkiaRectConstraint(clampMode));
 
-  if (image->isLazyGenerated())
-    PlatformInstrumentation::didDrawLazyPixelRef(image->uniqueID());
+  if (isLazyGenerated)
+    PlatformInstrumentation::didDrawLazyPixelRef(uniqueID);
 
   startAnimation();
 }

@@ -16,7 +16,7 @@ namespace blink {
 
 void DrawingDisplayItem::replay(GraphicsContext& context) const {
   if (m_record)
-    context.drawRecord(m_record.get());
+    context.drawRecord(m_record);
 }
 
 void DrawingDisplayItem::appendToWebDisplayItemList(
@@ -64,19 +64,19 @@ static bool recordsEqual(const PaintRecord* record1,
   return data1->equals(data2.get());
 }
 
-static SkBitmap recordToBitmap(const PaintRecord* record) {
+static SkBitmap recordToBitmap(sk_sp<const PaintRecord> record) {
   SkBitmap bitmap;
   SkRect rect = record->cullRect();
   bitmap.allocPixels(SkImageInfo::MakeN32Premul(rect.width(), rect.height()));
   SkiaPaintCanvas canvas(bitmap);
   canvas.clear(SK_ColorTRANSPARENT);
   canvas.translate(-rect.x(), -rect.y());
-  canvas.drawPicture(record);
+  canvas.drawPicture(std::move(record));
   return bitmap;
 }
 
-static bool bitmapsEqual(const PaintRecord* record1,
-                         const PaintRecord* record2) {
+static bool bitmapsEqual(sk_sp<const PaintRecord> record1,
+                         sk_sp<const PaintRecord> record2) {
   SkRect rect = record1->cullRect();
   if (rect != record2->cullRect())
     return false;
@@ -107,8 +107,8 @@ bool DrawingDisplayItem::equals(const DisplayItem& other) const {
   if (!DisplayItem::equals(other))
     return false;
 
-  const PaintRecord* record = this->GetPaintRecord();
-  const PaintRecord* otherRecord =
+  const sk_sp<const PaintRecord>& record = this->GetPaintRecord();
+  const sk_sp<const PaintRecord>& otherRecord =
       static_cast<const DrawingDisplayItem&>(other).GetPaintRecord();
 
   if (!record && !otherRecord)
@@ -116,12 +116,12 @@ bool DrawingDisplayItem::equals(const DisplayItem& other) const {
   if (!record || !otherRecord)
     return false;
 
-  if (recordsEqual(record, otherRecord))
+  if (recordsEqual(record.get(), otherRecord.get()))
     return true;
 
   // Sometimes the client may produce different records for the same visual
   // result, which should be treated as equal.
-  return bitmapsEqual(record, otherRecord);
+  return bitmapsEqual(std::move(record), std::move(otherRecord));
 }
 
 }  // namespace blink

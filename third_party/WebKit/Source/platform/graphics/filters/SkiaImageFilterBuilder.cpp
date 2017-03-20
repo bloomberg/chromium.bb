@@ -116,7 +116,7 @@ static float kMaxMaskBufferSize =
 sk_sp<SkImageFilter> buildBoxReflectFilter(const BoxReflection& reflection,
                                            sk_sp<SkImageFilter> input) {
   sk_sp<SkImageFilter> maskedInput;
-  if (PaintRecord* maskRecord = reflection.mask()) {
+  if (sk_sp<PaintRecord> maskRecord = reflection.mask()) {
     // Since PaintRecords can't be serialized to the browser process, first
     // raster the mask to a bitmap, then encode it in an SkImageSource, which
     // can be serialized.
@@ -148,7 +148,7 @@ sk_sp<SkImageFilter> buildBoxReflectFilter(const BoxReflection& reflection,
       SkImageFilter::CropRect cropRect(maskRecord->cullRect());
       maskedInput = SkXfermodeImageFilter::Make(
           SkBlendMode::kSrcOver,
-          SkPictureImageFilter::Make(sk_ref_sp(ToSkPicture(maskRecord))), input,
+          SkPictureImageFilter::Make(ToSkPicture(std::move(maskRecord))), input,
           &cropRect);
     }
   } else {

@@ -162,7 +162,7 @@ TEST_F(DeferredImageDecoderTest, drawIntoPaintRecord) {
 
   PaintRecorder recorder;
   PaintCanvas* tempCanvas = recorder.beginRecording(100, 100);
-  tempCanvas->drawImage(image.get(), 0, 0);
+  tempCanvas->drawImage(image, 0, 0);
   sk_sp<PaintRecord> record = recorder.finishRecordingAsPicture();
   EXPECT_EQ(0, m_decodeRequestCount);
 
@@ -186,7 +186,7 @@ TEST_F(DeferredImageDecoderTest, drawIntoPaintRecordProgressive) {
   ASSERT_TRUE(image);
   PaintRecorder recorder;
   PaintCanvas* tempCanvas = recorder.beginRecording(100, 100);
-  tempCanvas->drawImage(image.get(), 0, 0);
+  tempCanvas->drawImage(std::move(image), 0, 0);
   m_surface->getCanvas()->drawPicture(recorder.finishRecordingAsPicture());
 
   // Fully received the file and draw the PaintRecord again.
@@ -194,7 +194,7 @@ TEST_F(DeferredImageDecoderTest, drawIntoPaintRecordProgressive) {
   image = m_lazyDecoder->createFrameAtIndex(0);
   ASSERT_TRUE(image);
   tempCanvas = recorder.beginRecording(100, 100);
-  tempCanvas->drawImage(image.get(), 0, 0);
+  tempCanvas->drawImage(std::move(image), 0, 0);
   m_surface->getCanvas()->drawPicture(recorder.finishRecordingAsPicture());
 
   SkBitmap canvasBitmap;
@@ -204,7 +204,7 @@ TEST_F(DeferredImageDecoderTest, drawIntoPaintRecordProgressive) {
   EXPECT_EQ(SkColorSetARGB(255, 255, 255, 255), canvasBitmap.getColor(0, 0));
 }
 
-static void rasterizeMain(PaintCanvas* canvas, PaintRecord* record) {
+static void rasterizeMain(PaintCanvas* canvas, sk_sp<PaintRecord> record) {
   canvas->drawPicture(record);
 }
 
@@ -217,7 +217,7 @@ TEST_F(DeferredImageDecoderTest, decodeOnOtherThread) {
 
   PaintRecorder recorder;
   PaintCanvas* tempCanvas = recorder.beginRecording(100, 100);
-  tempCanvas->drawImage(image.get(), 0, 0);
+  tempCanvas->drawImage(std::move(image), 0, 0);
   sk_sp<PaintRecord> record = recorder.finishRecordingAsPicture();
   EXPECT_EQ(0, m_decodeRequestCount);
 
@@ -227,8 +227,7 @@ TEST_F(DeferredImageDecoderTest, decodeOnOtherThread) {
   thread->getWebTaskRunner()->postTask(
       BLINK_FROM_HERE,
       crossThreadBind(&rasterizeMain,
-                      crossThreadUnretained(m_surface->getCanvas()),
-                      crossThreadUnretained(record.get())));
+                      crossThreadUnretained(m_surface->getCanvas()), record));
   thread.reset();
   EXPECT_EQ(0, m_decodeRequestCount);
 
@@ -317,7 +316,7 @@ TEST_F(DeferredImageDecoderTest, decodedSize) {
   // The following code should not fail any assert.
   PaintRecorder recorder;
   PaintCanvas* tempCanvas = recorder.beginRecording(100, 100);
-  tempCanvas->drawImage(image.get(), 0, 0);
+  tempCanvas->drawImage(std::move(image), 0, 0);
   sk_sp<PaintRecord> record = recorder.finishRecordingAsPicture();
   EXPECT_EQ(0, m_decodeRequestCount);
   m_surface->getCanvas()->drawPicture(record);

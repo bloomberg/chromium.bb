@@ -39,7 +39,6 @@ class CC_PAINT_EXPORT PaintSurface : public SkRefCntBase {
 
   int width() const { return surface_->width(); }
   int height() const { return surface_->height(); }
-  uint32_t generationID() { return surface_->generationID(); }
 
   PaintCanvas* getCanvas() {
     if (!canvas_.has_value())

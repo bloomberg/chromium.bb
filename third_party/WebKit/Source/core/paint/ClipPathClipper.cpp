@@ -211,8 +211,7 @@ bool ClipPathClipper::drawClipAsMask(const FloatRect& targetBoundingBox,
 
   LayoutObjectDrawingRecorder drawingRecorder(
       m_context, m_layoutObject, DisplayItem::kSVGClip, targetVisualRect);
-  sk_sp<PaintRecord> maskPaintRecord = maskBuilder.endRecording();
-  m_context.drawRecord(maskPaintRecord.get());
+  m_context.drawRecord(maskBuilder.endRecording());
   return true;
 }
 

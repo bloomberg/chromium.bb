@@ -81,7 +81,7 @@ void SVGMaskPainter::drawMaskForLayoutObject(
       context, layoutObject, DisplayItem::kSVGMask, targetVisualRect);
   context.save();
   context.concatCTM(contentTransformation);
-  context.drawRecord(record.get());
+  context.drawRecord(std::move(record));
   context.restore();
 }
 

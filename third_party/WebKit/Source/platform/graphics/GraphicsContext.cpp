@@ -297,12 +297,12 @@ sk_sp<PaintRecord> GraphicsContext::endRecording() {
   return record;
 }
 
-void GraphicsContext::drawRecord(const PaintRecord* record) {
+void GraphicsContext::drawRecord(sk_sp<const PaintRecord> record) {
   if (contextDisabled() || !record || record->cullRect().isEmpty())
     return;
 
   DCHECK(m_canvas);
-  m_canvas->drawPicture(record);
+  m_canvas->drawPicture(std::move(record));
 }
 
 void GraphicsContext::compositeRecord(sk_sp<PaintRecord> record,

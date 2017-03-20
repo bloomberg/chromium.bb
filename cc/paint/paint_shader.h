@@ -16,14 +16,7 @@ inline sk_sp<PaintShader> WrapSkShader(sk_sp<SkShader> shader) {
   return shader;
 }
 
-inline sk_sp<PaintShader> MakePaintShaderImage(const SkImage* image,
-                                               SkShader::TileMode tx,
-                                               SkShader::TileMode ty,
-                                               const SkMatrix* local_matrix) {
-  return image->makeShader(tx, ty, local_matrix);
-}
-
-inline sk_sp<PaintShader> MakePaintShaderImage(const sk_sp<SkImage> image,
+inline sk_sp<PaintShader> MakePaintShaderImage(sk_sp<const SkImage> image,
                                                SkShader::TileMode tx,
                                                SkShader::TileMode ty,
                                                const SkMatrix* local_matrix) {

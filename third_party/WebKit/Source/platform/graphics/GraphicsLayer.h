@@ -323,7 +323,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
                                                   RenderingContextMap&) const;
 
   sk_sp<PaintRecord> captureRecord();
-  void checkPaintUnderInvalidations(const PaintRecord&);
+  void checkPaintUnderInvalidations(sk_sp<PaintRecord>);
 
   GraphicsLayerClient* m_client;
 

@@ -35,7 +35,7 @@ void StaticBitmapImage::drawHelper(PaintCanvas* canvas,
   if (dstRect.isEmpty() || adjustedSrcRect.isEmpty())
     return;  // Nothing to draw.
 
-  canvas->drawImageRect(image.get(), adjustedSrcRect, dstRect, &flags,
+  canvas->drawImageRect(std::move(image), adjustedSrcRect, dstRect, &flags,
                         WebCoreClampingModeToSkiaRectConstraint(clampMode));
 }
 

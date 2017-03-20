@@ -222,7 +222,7 @@ void Image::drawTiledBorder(GraphicsContext& ctxt,
 
 namespace {
 
-sk_sp<PaintShader> createPatternShader(const SkImage* image,
+sk_sp<PaintShader> createPatternShader(sk_sp<const SkImage> image,
                                        const SkMatrix& shaderMatrix,
                                        const PaintFlags& paint,
                                        const FloatSize& spacing,
@@ -310,7 +310,7 @@ void Image::drawPattern(GraphicsContext& context,
       context.computeFilterQuality(this, destRect, normSrcRect));
   flags.setAntiAlias(context.shouldAntialias());
   flags.setShader(
-      createPatternShader(image.get(), localMatrix, flags,
+      createPatternShader(std::move(image), localMatrix, flags,
                           FloatSize(repeatSpacing.width() / scale.width(),
                                     repeatSpacing.height() / scale.height()),
                           tmx, tmy));

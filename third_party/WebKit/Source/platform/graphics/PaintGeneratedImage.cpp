@@ -23,12 +23,12 @@ void PaintGeneratedImage::draw(PaintCanvas* canvas,
     canvas->scale(destRect.width() / srcRect.width(),
                   destRect.height() / srcRect.height());
   canvas->translate(-srcRect.x(), -srcRect.y());
-  canvas->drawPicture(m_record.get(), nullptr, &flags);
+  canvas->drawPicture(m_record, nullptr, &flags);
 }
 
 void PaintGeneratedImage::drawTile(GraphicsContext& context,
                                    const FloatRect& srcRect) {
-  context.drawRecord(m_record.get());
+  context.drawRecord(m_record);
 }
 
 }  // namespace blink

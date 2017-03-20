@@ -434,7 +434,7 @@ void BaseRenderingContext2D::compositedDraw(
   sk_sp<SkImageFilter> filter = stateGetFilter();
   ASSERT(isFullCanvasCompositeMode(state().globalComposite()) || filter);
   SkMatrix ctm = c->getTotalMatrix();
-  c->resetMatrix();
+  c->setMatrix(SkMatrix::I());
   PaintFlags compositeFlags;
   compositeFlags.setBlendMode((SkBlendMode)state().globalComposite());
   if (state().shouldDrawShadows()) {

@@ -91,9 +91,9 @@ std::unique_ptr<JSONArray> DisplayItemList::subsequenceAsJSON(
       }
 #ifndef NDEBUG
       if ((options & ShowPaintRecords) && displayItem.isDrawing()) {
-        if (const PaintRecord* record =
-                static_cast<const DrawingDisplayItem&>(displayItem)
-                    .GetPaintRecord()) {
+        const DrawingDisplayItem& item =
+            static_cast<const DrawingDisplayItem&>(displayItem);
+        if (const PaintRecord* record = item.GetPaintRecord().get()) {
           json->setString("record", recordAsDebugString(record));
         }
       }

@@ -486,7 +486,6 @@ void SVGImage::drawInternal(PaintCanvas* canvas,
       SkRect layerRect = dstRect;
       canvas->saveLayer(&layerRect, &flags);
     }
-
     canvas->drawPicture(paintRecordForCurrentFrame(srcRect, dstRect, url));
   }
 

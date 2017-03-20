@@ -798,11 +798,11 @@ TEST_P(PaintControllerTest, CachedDisplayItems) {
                       TestDisplayItem(second, backgroundDrawingType));
   EXPECT_TRUE(getPaintController().clientCacheIsValid(first));
   EXPECT_TRUE(getPaintController().clientCacheIsValid(second));
-  const PaintRecord* firstPaintRecord =
+  sk_sp<const PaintRecord> firstPaintRecord =
       static_cast<const DrawingDisplayItem&>(
           getPaintController().getDisplayItemList()[0])
           .GetPaintRecord();
-  const PaintRecord* secondPaintRecord =
+  sk_sp<const PaintRecord> secondPaintRecord =
       static_cast<const DrawingDisplayItem&>(
           getPaintController().getDisplayItemList()[1])
           .GetPaintRecord();
@@ -1593,13 +1593,13 @@ TEST_P(PaintControllerTest, SkipCache) {
                       TestDisplayItem(content, foregroundDrawingType),
                       TestDisplayItem(content, foregroundDrawingType));
   sk_sp<const PaintRecord> record1 =
-      sk_ref_sp(static_cast<const DrawingDisplayItem&>(
-                    getPaintController().getDisplayItemList()[1])
-                    .GetPaintRecord());
+      static_cast<const DrawingDisplayItem&>(
+          getPaintController().getDisplayItemList()[1])
+          .GetPaintRecord();
   sk_sp<const PaintRecord> record2 =
-      sk_ref_sp(static_cast<const DrawingDisplayItem&>(
-                    getPaintController().getDisplayItemList()[2])
-                    .GetPaintRecord());
+      static_cast<const DrawingDisplayItem&>(
+          getPaintController().getDisplayItemList()[2])
+          .GetPaintRecord();
   EXPECT_NE(record1, record2);
 
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
@@ -1634,12 +1634,12 @@ TEST_P(PaintControllerTest, SkipCache) {
                       TestDisplayItem(multicol, backgroundDrawingType),
                       TestDisplayItem(content, foregroundDrawingType),
                       TestDisplayItem(content, foregroundDrawingType));
-  EXPECT_NE(record1.get(), static_cast<const DrawingDisplayItem&>(
-                               getPaintController().getDisplayItemList()[1])
-                               .GetPaintRecord());
-  EXPECT_NE(record2.get(), static_cast<const DrawingDisplayItem&>(
-                               getPaintController().getDisplayItemList()[2])
-                               .GetPaintRecord());
+  EXPECT_NE(record1, static_cast<const DrawingDisplayItem&>(
+                         getPaintController().getDisplayItemList()[1])
+                         .GetPaintRecord());
+  EXPECT_NE(record2, static_cast<const DrawingDisplayItem&>(
+                         getPaintController().getDisplayItemList()[2])
+                         .GetPaintRecord());
 
   if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
     EXPECT_EQ(1u, getPaintController().paintChunks().size());
@@ -1670,12 +1670,12 @@ TEST_P(PaintControllerTest, SkipCache) {
                       TestDisplayItem(content, foregroundDrawingType),
                       TestDisplayItem(content, foregroundDrawingType),
                       TestDisplayItem(content, foregroundDrawingType));
-  EXPECT_NE(record1.get(), static_cast<const DrawingDisplayItem&>(
-                               getPaintController().newDisplayItemList()[1])
-                               .GetPaintRecord());
-  EXPECT_NE(record2.get(), static_cast<const DrawingDisplayItem&>(
-                               getPaintController().newDisplayItemList()[2])
-                               .GetPaintRecord());
+  EXPECT_NE(record1, static_cast<const DrawingDisplayItem&>(
+                         getPaintController().newDisplayItemList()[1])
+                         .GetPaintRecord());
+  EXPECT_NE(record2, static_cast<const DrawingDisplayItem&>(
+                         getPaintController().newDisplayItemList()[2])
+                         .GetPaintRecord());
 
   getPaintController().commitNewDisplayItems();
 
@@ -1716,17 +1716,17 @@ TEST_P(PaintControllerTest, PartialSkipCache) {
                       TestDisplayItem(content, foregroundDrawingType),
                       TestDisplayItem(content, foregroundDrawingType));
   sk_sp<const PaintRecord> record0 =
-      sk_ref_sp(static_cast<const DrawingDisplayItem&>(
-                    getPaintController().getDisplayItemList()[0])
-                    .GetPaintRecord());
+      static_cast<const DrawingDisplayItem&>(
+          getPaintController().getDisplayItemList()[0])
+          .GetPaintRecord();
   sk_sp<const PaintRecord> record1 =
-      sk_ref_sp(static_cast<const DrawingDisplayItem&>(
-                    getPaintController().getDisplayItemList()[1])
-                    .GetPaintRecord());
+      static_cast<const DrawingDisplayItem&>(
+          getPaintController().getDisplayItemList()[1])
+          .GetPaintRecord();
   sk_sp<const PaintRecord> record2 =
-      sk_ref_sp(static_cast<const DrawingDisplayItem&>(
-                    getPaintController().getDisplayItemList()[2])
-                    .GetPaintRecord());
+      static_cast<const DrawingDisplayItem&>(
+          getPaintController().getDisplayItemList()[2])
+          .GetPaintRecord();
   EXPECT_NE(record1, record2);
 
   // Content's cache is invalid because it has display items skipped cache.
@@ -1757,15 +1757,15 @@ TEST_P(PaintControllerTest, PartialSkipCache) {
                       TestDisplayItem(content, backgroundDrawingType),
                       TestDisplayItem(content, foregroundDrawingType),
                       TestDisplayItem(content, foregroundDrawingType));
-  EXPECT_NE(record0.get(), static_cast<const DrawingDisplayItem&>(
-                               getPaintController().getDisplayItemList()[0])
-                               .GetPaintRecord());
-  EXPECT_NE(record1.get(), static_cast<const DrawingDisplayItem&>(
-                               getPaintController().getDisplayItemList()[1])
-                               .GetPaintRecord());
-  EXPECT_NE(record2.get(), static_cast<const DrawingDisplayItem&>(
-                               getPaintController().getDisplayItemList()[2])
-                               .GetPaintRecord());
+  EXPECT_NE(record0, static_cast<const DrawingDisplayItem&>(
+                         getPaintController().getDisplayItemList()[0])
+                         .GetPaintRecord());
+  EXPECT_NE(record1, static_cast<const DrawingDisplayItem&>(
+                         getPaintController().getDisplayItemList()[1])
+                         .GetPaintRecord());
+  EXPECT_NE(record2, static_cast<const DrawingDisplayItem&>(
+                         getPaintController().getDisplayItemList()[2])
+                         .GetPaintRecord());
 }
 
 TEST_F(PaintControllerTestBase, OptimizeNoopPairs) {
