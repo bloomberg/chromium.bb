@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CONTENT_RENDERER_PEPPER_PEPPER_IN_PROCESS_ROUTER_H_
+#define CONTENT_RENDERER_PEPPER_PEPPER_IN_PROCESS_ROUTER_H_
+
 #include <memory>
 
 #include "base/callback.h"
@@ -102,3 +105,5 @@ class PepperInProcessRouter {
 };
 
 }  // namespace content
+
+#endif  // CONTENT_RENDERER_PEPPER_PEPPER_IN_PROCESS_ROUTER_H_

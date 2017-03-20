@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CONTENT_CHILD_IMAGE_DECODER_H_
+#define CONTENT_CHILD_IMAGE_DECODER_H_
+
 #include <stddef.h>
 
 #include <vector>
@@ -44,3 +47,5 @@ class ImageDecoder {
 };
 
 }  // namespace content
+
+#endif  // CONTENT_CHILD_IMAGE_DECODER_H_
