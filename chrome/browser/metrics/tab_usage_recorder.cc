@@ -90,9 +90,9 @@ void TabUsageRecorder::WebContentsData::RecordTabReactivation() {
 }
 
 // static
-void TabUsageRecorder::Initialize() {
-  DCHECK(!g_tab_usage_recorder);
-  g_tab_usage_recorder = new TabUsageRecorder();
+void TabUsageRecorder::InitializeIfNeeded() {
+  if (!g_tab_usage_recorder)
+    g_tab_usage_recorder = new TabUsageRecorder();
 }
 
 void TabUsageRecorder::OnTabDeactivated(content::WebContents* contents) {

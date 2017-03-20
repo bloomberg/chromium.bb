@@ -24,7 +24,7 @@ class TabUsageRecorder : public TabReactivationTracker::Delegate,
   class WebContentsData;
 
   // Starts recording tab usage for all browsers.
-  static void Initialize();
+  static void InitializeIfNeeded();
 
   // TabReactivationTracker::Delegate:
   void OnTabDeactivated(content::WebContents* contents) override;
