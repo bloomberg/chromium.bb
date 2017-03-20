@@ -17,7 +17,6 @@
 #include "build/build_config.h"
 #include "content/child/child_process.h"
 #include "content/child/thread_safe_sender.h"
-#include "content/common/establish_channel_params.h"
 #include "content/common/gpu_host_messages.h"
 #include "content/gpu/gpu_service_factory.h"
 #include "content/public/common/content_client.h"

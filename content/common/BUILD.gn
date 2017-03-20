@@ -122,8 +122,6 @@ source_set("common") {
     "drag_traits.h",
     "dwrite_font_proxy_messages.h",
     "edit_command.h",
-    "establish_channel_params.cc",
-    "establish_channel_params.h",
     "feature_policy/feature_policy.cc",
     "feature_policy/feature_policy.h",
     "file_utilities_messages.h",
