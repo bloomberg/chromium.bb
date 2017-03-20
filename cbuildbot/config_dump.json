@@ -1790,7 +1790,9 @@
         "boards": [
             "amd64-generic"
         ],
-        "buildslave_type": "baremetal"
+        "buildslave_type": "baremetal",
+        "disk_layout": "4gb-rootfs",
+        "hw_tests_override": []
     },
     "amd64-generic-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",

@@ -2720,6 +2720,9 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
   site_config.Add(
       'amd64-generic-tot-asan-informational',
       site_config.templates.tot_asan_informational,
+      site_config.templates.no_hwtest_builder,
+      # THESE IMAGES CAN DAMAGE THE LAB and cannot be used for hardware testing.
+      disk_layout='4gb-rootfs',
       boards=['amd64-generic'],
   )
 
