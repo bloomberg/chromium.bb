@@ -353,6 +353,10 @@ static int mp3_read_header(AVFormatContext *s)
     int ret;
     int i;
 
+    // Chromium: Disable ID3v1 tag reading to avoid costly seeks to end of file
+    // for data we don't use.
+    int skip_id3v1 = !!av_dict_get(s->metadata, "skip_id3v1_tags", NULL,
+                                   AV_DICT_IGNORE_SUFFIX);
     s->metadata = s->internal->id3v2_meta;
     s->internal->id3v2_meta = NULL;
 
@@ -371,7 +375,7 @@ static int mp3_read_header(AVFormatContext *s)
     s->pb->maxsize = -1;
     off = avio_tell(s->pb);
 
-    if (!av_dict_get(s->metadata, "", NULL, AV_DICT_IGNORE_SUFFIX))
+    if (!skip_id3v1 && !av_dict_get(s->metadata, "", NULL, AV_DICT_IGNORE_SUFFIX))
         ff_id3v1_read(s);
 
     if(s->pb->seekable)
