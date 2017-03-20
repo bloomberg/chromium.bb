@@ -67,6 +67,9 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
                      TranslateErrors::Type error_type,
                      bool triggered_from_menu);
 
+  // Returns true if compact translate UI is enabled.
+  static bool IsCompactUIEnabled();
+
   // Returns the number of languages supported.
   size_t num_languages() const { return ui_delegate_.GetNumberOfLanguages(); }
 
