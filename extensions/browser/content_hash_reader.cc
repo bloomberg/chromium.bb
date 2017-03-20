@@ -61,12 +61,13 @@ bool ContentHashReader::Init() {
   if (!base::PathExists(verified_contents_path))
     return false;
 
-  verified_contents_.reset(new VerifiedContents(key_.data, key_.size));
-  if (!verified_contents_->InitFrom(verified_contents_path) ||
-      !verified_contents_->valid_signature() ||
-      verified_contents_->version() != extension_version_ ||
-      verified_contents_->extension_id() != extension_id_)
+  VerifiedContents verified_contents(key_.data, key_.size);
+  if (!verified_contents.InitFrom(verified_contents_path) ||
+      !verified_contents.valid_signature() ||
+      verified_contents.version() != extension_version_ ||
+      verified_contents.extension_id() != extension_id_) {
     return false;
+  }
 
   have_verified_contents_ = true;
 
@@ -87,7 +88,7 @@ bool ContentHashReader::Init() {
 
   std::string root =
       ComputeTreeHashRoot(hashes_, block_size_ / crypto::kSHA256Length);
-  if (!verified_contents_->TreeHashRootEquals(relative_path_, root))
+  if (!verified_contents.TreeHashRootEquals(relative_path_, root))
     return false;
 
   status_ = SUCCESS;

@@ -17,8 +17,6 @@
 
 namespace extensions {
 
-class VerifiedContents;
-
 // This class creates an object that will read expected hashes that may have
 // been fetched/calculated by the ContentHashFetcher, and vends them out for
 // use in ContentVerifyJob's.
@@ -81,8 +79,6 @@ class ContentHashReader : public base::RefCountedThreadSafe<ContentHashReader> {
 
   // The blocksize used for generating the hashes.
   int block_size_;
-
-  std::unique_ptr<VerifiedContents> verified_contents_;
 
   std::vector<std::string> hashes_;
 
