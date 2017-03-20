@@ -4,7 +4,7 @@
 
 #include "ash/common/session/session_state_observer.h"
 
-#include "ash/common/session/session_state_delegate.h"
+#include "ash/common/session/session_controller.h"
 #include "ash/common/wm_shell.h"
 
 namespace ash {
@@ -12,13 +12,12 @@ namespace ash {
 ScopedSessionStateObserver::ScopedSessionStateObserver(
     SessionStateObserver* observer)
     : observer_(observer) {
-  WmShell::Get()->GetSessionStateDelegate()->AddSessionStateObserver(observer_);
+  WmShell::Get()->session_controller()->AddSessionStateObserver(observer_);
 }
 
 ScopedSessionStateObserver::~ScopedSessionStateObserver() {
   if (WmShell::Get()) {
-    WmShell::Get()->GetSessionStateDelegate()->RemoveSessionStateObserver(
-        observer_);
+    WmShell::Get()->session_controller()->RemoveSessionStateObserver(observer_);
   }
 }
 

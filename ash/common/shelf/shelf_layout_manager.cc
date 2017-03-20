@@ -11,7 +11,6 @@
 #include "ash/animation/animation_change_type.h"
 #include "ash/common/keyboard/keyboard_observer_register.h"
 #include "ash/common/session/session_controller.h"
-#include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/shelf_layout_manager_observer.h"
 #include "ash/common/shelf/shelf_widget.h"
@@ -341,8 +340,8 @@ void ShelfLayoutManager::RemoveObserver(ShelfLayoutManagerObserver* observer) {
 
 bool ShelfLayoutManager::ProcessGestureEvent(const ui::GestureEvent& event) {
   // The gestures are disabled in the lock/login screen.
-  SessionStateDelegate* delegate = WmShell::Get()->GetSessionStateDelegate();
-  if (!delegate->NumberOfLoggedInUsers() || delegate->IsScreenLocked())
+  SessionController* controller = WmShell::Get()->session_controller();
+  if (!controller->NumberOfLoggedInUsers() || controller->IsScreenLocked())
     return false;
 
   if (IsShelfHiddenForFullscreen())
@@ -438,7 +437,7 @@ void ShelfLayoutManager::OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) {
   // On login screen if keyboard has been just hidden, update bounds just once
   // but ignore target_bounds.work_area_insets since shelf overlaps with login
   // window.
-  if (WmShell::Get()->GetSessionStateDelegate()->IsUserSessionBlocked() &&
+  if (WmShell::Get()->session_controller()->IsUserSessionBlocked() &&
       keyboard_is_about_to_hide) {
     WmWindow* window = WmWindow::Get(shelf_widget_->GetNativeWindow());
     WmShell::Get()->SetDisplayWorkAreaInsets(window, gfx::Insets());

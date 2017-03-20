@@ -20,6 +20,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager_test_utils.h"
+#include "chrome/browser/ui/ash/session_controller_client.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -115,9 +116,9 @@ class WallpaperManagerBrowserTest : public InProcessBrowserTest {
   // Logs in |account_id|.
   void LogIn(const AccountId& account_id, const std::string& user_id_hash) {
     SessionManager::Get()->CreateSession(account_id, user_id_hash);
-    // Adding a secondary display creates a shelf on that display, which
-    // assumes a shelf on the primary display if the user was logged in.
-    ash::WmShell::Get()->CreateShelfView();
+    SessionManager::Get()->SessionStarted();
+    // Flush to ensure the created session and ACTIVE state reaches ash.
+    SessionControllerClient::FlushForTesting();
     WaitAsyncWallpaperLoadStarted();
   }
 

@@ -26,36 +26,11 @@ namespace {
 
 class SessionStateDelegateStub : public SessionStateDelegate {
  public:
-  SessionStateDelegateStub()
-      : screen_locked_(false), user_info_(new user_manager::UserInfoImpl()) {}
+  SessionStateDelegateStub() : user_info_(new user_manager::UserInfoImpl()) {}
 
   ~SessionStateDelegateStub() override {}
 
   // SessionStateDelegate:
-  int GetMaximumNumberOfLoggedInUsers() const override { return 3; }
-  int NumberOfLoggedInUsers() const override {
-    // ash_shell has 2 users.
-    return 2;
-  }
-  bool IsActiveUserSessionStarted() const override { return true; }
-  bool CanLockScreen() const override { return true; }
-  bool IsScreenLocked() const override { return screen_locked_; }
-  bool ShouldLockScreenAutomatically() const override { return false; }
-  void LockScreen() override {
-    screen_locked_ = true;
-    NOTIMPLEMENTED();
-  }
-  void UnlockScreen() override {
-    NOTIMPLEMENTED();
-    screen_locked_ = false;
-  }
-  bool IsUserSessionBlocked() const override { return false; }
-  session_manager::SessionState GetSessionState() const override {
-    return session_manager::SessionState::ACTIVE;
-  }
-  const user_manager::UserInfo* GetUserInfo(UserIndex index) const override {
-    return user_info_.get();
-  }
   bool ShouldShowAvatar(WmWindow* window) const override {
     NOTIMPLEMENTED();
     return !user_info_->GetImage().isNull();
@@ -64,18 +39,8 @@ class SessionStateDelegateStub : public SessionStateDelegate {
     NOTIMPLEMENTED();
     return gfx::ImageSkia();
   }
-  void SwitchActiveUser(const AccountId& account_id) override {}
-  void CycleActiveUser(CycleUserDirection direction) override {}
-  bool IsMultiProfileAllowedByPrimaryUserPolicy() const override {
-    return true;
-  }
-  void AddSessionStateObserver(ash::SessionStateObserver* observer) override {}
-  void RemoveSessionStateObserver(
-      ash::SessionStateObserver* observer) override {}
 
  private:
-  bool screen_locked_;
-
   // A pseudo user info.
   std::unique_ptr<user_manager::UserInfo> user_info_;
 

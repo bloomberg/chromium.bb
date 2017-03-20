@@ -1549,7 +1549,13 @@ TEST_F(ShelfLayoutManagerTest, WorkAreaChangeWorkspace) {
 }
 
 TEST_F(ShelfLayoutManagerTest, BackgroundTypeWhenLockingScreen) {
-  EXPECT_NE(SHELF_BACKGROUND_DEFAULT, GetShelfWidget()->GetBackgroundType());
+  // Creates a maximized window to have a background type other than default.
+  std::unique_ptr<aura::Window> window(CreateTestWindow());
+  window->Show();
+  wm::ActivateWindow(window.get());
+  EXPECT_EQ(SHELF_BACKGROUND_DEFAULT, GetShelfWidget()->GetBackgroundType());
+  window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
+  EXPECT_EQ(SHELF_BACKGROUND_MAXIMIZED, GetShelfWidget()->GetBackgroundType());
 
   Shell::GetInstance()
       ->lock_state_controller()
@@ -1558,12 +1564,6 @@ TEST_F(ShelfLayoutManagerTest, BackgroundTypeWhenLockingScreen) {
 }
 
 TEST_F(ShelfLayoutManagerTest, ShelfBackgroundColor) {
-  // TODO(bruthig|xiyuan): Move SessionState setup into AshTestBase or
-  // AshTestHelper.
-  mojom::SessionInfoPtr info = mojom::SessionInfo::New();
-  info->state = session_manager::SessionState::ACTIVE;
-  ash::WmShell::Get()->session_controller()->SetSessionInfo(std::move(info));
-
   EXPECT_EQ(SHELF_BACKGROUND_DEFAULT, GetShelfWidget()->GetBackgroundType());
 
   std::unique_ptr<aura::Window> w1(CreateTestWindow());
@@ -1596,12 +1596,6 @@ TEST_F(ShelfLayoutManagerTest, ShelfBackgroundColor) {
 // Verify that the shelf doesn't have the opaque background if it's auto-hide
 // status.
 TEST_F(ShelfLayoutManagerTest, ShelfBackgroundColorAutoHide) {
-  // TODO(bruthig|xiyuan): Move SessionState setup into AshTestBase or
-  // AshTestHelper.
-  mojom::SessionInfoPtr info = mojom::SessionInfo::New();
-  info->state = session_manager::SessionState::ACTIVE;
-  ash::WmShell::Get()->session_controller()->SetSessionInfo(std::move(info));
-
   EXPECT_EQ(SHELF_BACKGROUND_DEFAULT, GetShelfWidget()->GetBackgroundType());
 
   GetPrimaryShelf()->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS);

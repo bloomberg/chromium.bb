@@ -42,7 +42,7 @@ class ASH_EXPORT ShelfLockingManager : public ShellObserver,
   WmShelf* shelf_;
   bool session_locked_ = false;
   bool screen_locked_ = false;
-  ShelfAlignment stored_alignment_ = SHELF_ALIGNMENT_BOTTOM;
+  ShelfAlignment stored_alignment_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfLockingManager);
 };

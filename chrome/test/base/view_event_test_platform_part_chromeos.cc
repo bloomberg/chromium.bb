@@ -6,7 +6,8 @@
 
 #include <memory>
 
-#include "ash/common/test/test_session_state_delegate.h"
+#include "ash/common/test/test_session_controller_client.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/shell_init_params.h"
 #include "ash/test/ash_test_helper.h"
@@ -70,8 +71,9 @@ ViewEventTestPlatformPartChromeOS::ViewEventTestPlatformPartChromeOS(
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kHostWindowBounds, "0+0-1280x800");
   ash::Shell::CreateInstance(init_params);
-  ash::test::AshTestHelper::GetTestSessionStateDelegate()->
-      SetActiveUserSessionStarted(true);
+  ash::test::TestSessionControllerClient session_controller_client(
+      ash::WmShell::Get()->session_controller());
+  session_controller_client.CreatePredefinedUserSessions(1);
   GetContext()->GetHost()->Show();
 }
 

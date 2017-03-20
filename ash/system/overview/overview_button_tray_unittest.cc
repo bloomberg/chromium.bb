@@ -5,8 +5,8 @@
 #include "ash/common/system/overview/overview_button_tray.h"
 
 #include "ash/common/login_status.h"
+#include "ash/common/session/session_controller.h"
 #include "ash/common/system/status_area_widget.h"
-#include "ash/common/test/test_session_state_delegate.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm/overview/window_selector_controller.h"
 #include "ash/common/wm_shell.h"
@@ -73,7 +73,7 @@ void OverviewButtonTrayTest::SetUp() {
 
 void OverviewButtonTrayTest::NotifySessionStateChanged() {
   GetTray()->SessionStateChanged(
-      test::AshTestHelper::GetTestSessionStateDelegate()->GetSessionState());
+      WmShell::Get()->session_controller()->GetSessionState());
 }
 
 // Ensures that creation doesn't cause any crashes and adds the image icon.

@@ -4,20 +4,20 @@
 
 #include <vector>
 
+#include "ash/common/session/session_controller.h"
 #include "ash/common/shell_delegate.h"
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/user/tray_user.h"
 #include "ash/common/system/user/user_view.h"
-#include "ash/common/test/test_session_state_delegate.h"
+#include "ash/common/test/test_session_controller_client.h"
+#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
-#include "ash/test/ash_test_helper.h"
 #include "ash/test/test_shell_delegate.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/signin/core/account_id/account_id.h"
-#include "components/user_manager/user_info.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/animation/animation_container_element.h"
@@ -27,6 +27,12 @@
 namespace ash {
 
 namespace {
+
+const char* kPredefinedUserEmails[] = {
+    // This is intended to be capitalized.
+    "First@tray",
+    // This is intended to be capitalized.
+    "Second@tray"};
 
 class TrayUserTest : public test::AshTestBase {
  public:
@@ -49,12 +55,13 @@ class TrayUserTest : public test::AshTestBase {
 
   // Accessors to various system components.
   SystemTray* tray() { return tray_; }
-  test::TestSessionStateDelegate* delegate() { return delegate_; }
+  SessionController* controller() {
+    return WmShell::Get()->session_controller();
+  }
   TrayUser* tray_user(int index) { return tray_user_[index]; }
 
  private:
   SystemTray* tray_ = nullptr;
-  test::TestSessionStateDelegate* delegate_ = nullptr;
 
   // Note that the ownership of these items is on the shelf.
   std::vector<TrayUser*> tray_user_;
@@ -65,21 +72,27 @@ class TrayUserTest : public test::AshTestBase {
 void TrayUserTest::SetUp() {
   test::AshTestBase::SetUp();
   tray_ = GetPrimarySystemTray();
-  delegate_ = test::AshTestHelper::GetTestSessionStateDelegate();
 }
 
 void TrayUserTest::InitializeParameters(int users_logged_in,
                                         bool multiprofile) {
   // Set our default assumptions. Note that it is sufficient to set these
   // after everything was created.
-  delegate_->set_logged_in_users(users_logged_in);
+  GetSessionControllerClient()->Reset();
+  ASSERT_LE(users_logged_in,
+            static_cast<int>(arraysize(kPredefinedUserEmails)));
+  for (int i = 0; i < users_logged_in; ++i)
+    GetSessionControllerClient()->AddUserSession(kPredefinedUserEmails[i]);
+  GetSessionControllerClient()->SetSessionState(
+      session_manager::SessionState::ACTIVE);
+
   test::TestShellDelegate* shell_delegate =
       static_cast<test::TestShellDelegate*>(Shell::Get()->shell_delegate());
   shell_delegate->set_multi_profiles_enabled(multiprofile);
 
   // Instead of using the existing tray panels we create new ones which makes
   // the access easier.
-  for (int i = 0; i < delegate_->GetMaximumNumberOfLoggedInUsers(); i++) {
+  for (int i = 0; i < controller()->GetMaximumNumberOfLoggedInUsers(); i++) {
     tray_user_.push_back(new TrayUser(tray_, i));
     tray_->AddTrayItem(base::WrapUnique(tray_user_[i]));
   }
@@ -129,7 +142,7 @@ TEST_F(TrayUserTest, SingleUserModeDoesNotAllowAddingUser) {
 
   EXPECT_FALSE(tray()->IsSystemBubbleVisible());
 
-  for (int i = 0; i < delegate()->GetMaximumNumberOfLoggedInUsers(); i++)
+  for (int i = 0; i < controller()->GetMaximumNumberOfLoggedInUsers(); i++)
     EXPECT_EQ(TrayUser::HIDDEN, tray_user(i)->GetStateForTest());
 
   ShowTrayMenu(&generator);
@@ -137,7 +150,7 @@ TEST_F(TrayUserTest, SingleUserModeDoesNotAllowAddingUser) {
   EXPECT_TRUE(tray()->HasSystemBubble());
   EXPECT_TRUE(tray()->IsSystemBubbleVisible());
 
-  for (int i = 0; i < delegate()->GetMaximumNumberOfLoggedInUsers(); i++)
+  for (int i = 0; i < controller()->GetMaximumNumberOfLoggedInUsers(); i++)
     EXPECT_EQ(i == 0 ? TrayUser::SHOWN : TrayUser::HIDDEN,
               tray_user(i)->GetStateForTest());
   tray()->CloseSystemBubble();
@@ -184,11 +197,11 @@ TEST_F(TrayUserTest, MultiUserModeDoesNotAllowToAddUser) {
   ui::test::EventGenerator& generator = GetEventGenerator();
   generator.set_async(false);
 
-  int max_users = delegate()->GetMaximumNumberOfLoggedInUsers();
+  int max_users = controller()->GetMaximumNumberOfLoggedInUsers();
   // Checking now for each amount of users that the correct is done.
   for (int j = 1; j < max_users; j++) {
     // Set the number of logged in users.
-    delegate()->set_logged_in_users(j);
+    GetSessionControllerClient()->CreatePredefinedUserSessions(j);
 
     // Verify that nothing is shown.
     EXPECT_FALSE(tray()->IsSystemBubbleVisible());
@@ -227,7 +240,7 @@ TEST_F(TrayUserTest, MultiUserModeDoesNotAllowToAddUser) {
     // Close and check that everything is deleted.
     tray()->CloseSystemBubble();
     EXPECT_FALSE(tray()->IsSystemBubbleVisible());
-    for (int i = 0; i < delegate()->GetMaximumNumberOfLoggedInUsers(); i++)
+    for (int i = 0; i < controller()->GetMaximumNumberOfLoggedInUsers(); i++)
       EXPECT_EQ(TrayUser::HIDDEN, tray_user(i)->GetStateForTest());
   }
 }
@@ -239,15 +252,20 @@ TEST_F(TrayUserTest, MultiUserModeButtonClicks) {
   ui::test::EventGenerator& generator = GetEventGenerator();
   ShowTrayMenu(&generator);
 
-  // Switch to a new user - which has a capitalized name.
+  // Gets the second user before user switching.
+  const mojom::UserSession* second_user = controller()->GetUserSession(1);
+
+  // Switch to a new user "Second@tray" - which has a capitalized name.
   ClickUserItem(&generator, 1);
-  const user_manager::UserInfo* active_user = delegate()->GetActiveUserInfo();
-  const user_manager::UserInfo* second_user = delegate()->GetUserInfo(1);
-  EXPECT_EQ(active_user->GetAccountId(), second_user->GetAccountId());
+
+  // SwitchActiverUser is an async mojo call. Spin the loop to let it finish.
+  RunAllPendingInMessageLoop();
+
+  const mojom::UserSession* active_user = controller()->GetUserSession(0);
+  EXPECT_EQ(active_user->account_id, second_user->account_id);
   // Since the name is capitalized, the email should be different than the
   // user_id.
-  EXPECT_NE(active_user->GetAccountId().GetUserEmail(),
-            second_user->GetDisplayEmail());
+  EXPECT_NE(active_user->account_id.GetUserEmail(), second_user->display_email);
   tray()->CloseSystemBubble();
 }
 

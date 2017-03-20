@@ -6,7 +6,7 @@
 
 #include <vector>
 
-#include "ash/common/session/session_state_delegate.h"
+#include "ash/common/session/session_controller.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/overview/window_selector.h"
@@ -34,11 +34,10 @@ bool WindowSelectorController::CanSelect() {
   // Don't allow a window overview if the screen is locked or a modal dialog is
   // open or running in kiosk app session.
   WmShell* wm_shell = WmShell::Get();
-  SessionStateDelegate* session_state_delegate =
-      wm_shell->GetSessionStateDelegate();
+  SessionController* session_controller = wm_shell->session_controller();
   SystemTrayDelegate* system_tray_delegate = wm_shell->system_tray_delegate();
-  return session_state_delegate->IsActiveUserSessionStarted() &&
-         !session_state_delegate->IsScreenLocked() &&
+  return session_controller->IsActiveUserSessionStarted() &&
+         !session_controller->IsScreenLocked() &&
          !wm_shell->IsSystemModalWindowOpen() && !wm_shell->IsPinned() &&
          system_tray_delegate->GetUserLoginStatus() != LoginStatus::KIOSK_APP &&
          system_tray_delegate->GetUserLoginStatus() !=

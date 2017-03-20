@@ -7,7 +7,8 @@
 #include <string>
 #include <vector>
 
-#include "ash/common/test/test_session_state_delegate.h"
+#include "ash/common/session/session_controller.h"
+#include "ash/common/test/test_session_controller_client.h"
 #include "ash/common/test/test_system_tray_delegate.h"
 #include "ash/common/wm/window_positioner.h"
 #include "ash/common/wm_shell.h"
@@ -299,51 +300,53 @@ TestScreenshotDelegate* AshTestBase::GetScreenshotDelegate() {
   return ash_test_helper_->test_screenshot_delegate();
 }
 
+TestSessionControllerClient* AshTestBase::GetSessionControllerClient() {
+  return ash_test_helper_->test_session_controller_client();
+}
+
 TestSystemTrayDelegate* AshTestBase::GetSystemTrayDelegate() {
   return static_cast<TestSystemTrayDelegate*>(
       WmShell::Get()->system_tray_delegate());
 }
 
 void AshTestBase::SetSessionStarted(bool session_started) {
-  AshTestHelper::GetTestSessionStateDelegate()->SetActiveUserSessionStarted(
-      session_started);
-}
-
-void AshTestBase::SetSessionStarting() {
-  AshTestHelper::GetTestSessionStateDelegate()->set_session_state(
-      session_manager::SessionState::ACTIVE);
+  if (session_started)
+    GetSessionControllerClient()->CreatePredefinedUserSessions(1);
+  else
+    GetSessionControllerClient()->Reset();
 }
 
 void AshTestBase::SetUserLoggedIn(bool user_logged_in) {
-  AshTestHelper::GetTestSessionStateDelegate()->SetHasActiveUser(
-      user_logged_in);
+  SetSessionStarted(user_logged_in);
+}
+
+void AshTestBase::SetCanLockScreen(bool can_lock) {
+  GetSessionControllerClient()->SetCanLockScreen(can_lock);
 }
 
 void AshTestBase::SetShouldLockScreenAutomatically(bool should_lock) {
-  AshTestHelper::GetTestSessionStateDelegate()
-      ->SetShouldLockScreenAutomatically(should_lock);
+  GetSessionControllerClient()->SetShouldLockScreenAutomatically(should_lock);
 }
 
 void AshTestBase::SetUserAddingScreenRunning(bool user_adding_screen_running) {
-  AshTestHelper::GetTestSessionStateDelegate()->SetUserAddingScreenRunning(
-      user_adding_screen_running);
+  GetSessionControllerClient()->SetSessionState(
+      user_adding_screen_running
+          ? session_manager::SessionState::LOGIN_SECONDARY
+          : session_manager::SessionState::ACTIVE);
 }
 
 void AshTestBase::BlockUserSession(UserSessionBlockReason block_reason) {
   switch (block_reason) {
     case BLOCKED_BY_LOCK_SCREEN:
       SetSessionStarted(true);
-      SetUserAddingScreenRunning(false);
-      WmShell::Get()->GetSessionStateDelegate()->LockScreen();
+      WmShell::Get()->session_controller()->LockScreenAndFlushForTest();
       Shell::GetInstance()->OnLockStateChanged(true);
       break;
     case BLOCKED_BY_LOGIN_SCREEN:
-      SetUserAddingScreenRunning(false);
       SetSessionStarted(false);
       break;
     case BLOCKED_BY_USER_ADDING_SCREEN:
       SetUserAddingScreenRunning(true);
-      SetSessionStarted(true);
       break;
     default:
       NOTREACHED();
@@ -352,9 +355,8 @@ void AshTestBase::BlockUserSession(UserSessionBlockReason block_reason) {
 }
 
 void AshTestBase::UnblockUserSession() {
-  WmShell::Get()->GetSessionStateDelegate()->UnlockScreen();
   SetSessionStarted(true);
-  SetUserAddingScreenRunning(false);
+  GetSessionControllerClient()->UnlockScreen();
 }
 
 void AshTestBase::DisableIME() {

@@ -8,8 +8,10 @@
 #include <stdint.h>
 
 #include <memory>
+#include <utility>
 #include <vector>
 
+#include "ash/common/test/test_session_controller_client.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "ui/aura/test/mus/test_window_tree_client_setup.h"
@@ -45,6 +47,7 @@ class AshTestEnvironment;
 class AshTestViewsDelegate;
 class TestScreenshotDelegate;
 class TestShellDelegate;
+class TestSessionControllerClient;
 class TestSessionStateDelegate;
 
 // A helper class that does common initialization required for Ash. Creates a
@@ -91,6 +94,14 @@ class AshTestHelper {
     return window_manager_app_.get();
   }
 
+  TestSessionControllerClient* test_session_controller_client() {
+    return session_controller_client_.get();
+  }
+  void set_test_session_controller_client(
+      std::unique_ptr<TestSessionControllerClient> session_controller_client) {
+    session_controller_client_ = std::move(session_controller_client);
+  }
+
  private:
   // Called when running in mash to create the WindowManager.
   void CreateMashWindowManager();
@@ -131,6 +142,8 @@ class AshTestHelper {
   std::unique_ptr<aura::WindowTreeClientPrivate> window_tree_client_private_;
   // Id for the next Display created by CreateRootWindowController().
   int64_t next_display_id_ = 1;
+
+  std::unique_ptr<TestSessionControllerClient> session_controller_client_;
 
   DISALLOW_COPY_AND_ASSIGN(AshTestHelper);
 };

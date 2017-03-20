@@ -5,7 +5,7 @@
 #include "ash/common/system/chromeos/palette/palette_tray.h"
 
 #include "ash/common/material_design/material_design_controller.h"
-#include "ash/common/session/session_state_delegate.h"
+#include "ash/common/session/session_controller.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shelf/wm_shelf_util.h"
@@ -63,10 +63,9 @@ const SkColor kPaletteSeparatorColor = SkColorSetARGB(0x1E, 0x00, 0x00, 0x00);
 
 // Returns true if we are in a user session that can show the stylus tools.
 bool IsInUserSession() {
-  SessionStateDelegate* session_state_delegate =
-      WmShell::Get()->GetSessionStateDelegate();
-  return !session_state_delegate->IsUserSessionBlocked() &&
-         session_state_delegate->GetSessionState() ==
+  SessionController* session_controller = WmShell::Get()->session_controller();
+  return !session_controller->IsUserSessionBlocked() &&
+         session_controller->GetSessionState() ==
              session_manager::SessionState::ACTIVE &&
          WmShell::Get()->system_tray_delegate()->GetUserLoginStatus() !=
              LoginStatus::KIOSK_APP;
@@ -166,7 +165,7 @@ PaletteTray::PaletteTray(WmShelf* wm_shelf)
   tray_container()->AddChildView(icon_);
 
   Shell::GetInstance()->AddShellObserver(this);
-  WmShell::Get()->GetSessionStateDelegate()->AddSessionStateObserver(this);
+  WmShell::Get()->session_controller()->AddSessionStateObserver(this);
   ui::InputDeviceManager::GetInstance()->AddObserver(this);
 }
 
@@ -176,7 +175,7 @@ PaletteTray::~PaletteTray() {
 
   ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
   Shell::GetInstance()->RemoveShellObserver(this);
-  WmShell::Get()->GetSessionStateDelegate()->RemoveSessionStateObserver(this);
+  WmShell::Get()->session_controller()->RemoveSessionStateObserver(this);
 }
 
 bool PaletteTray::PerformAction(const ui::Event& event) {

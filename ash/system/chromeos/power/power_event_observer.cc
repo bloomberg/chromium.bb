@@ -4,7 +4,7 @@
 
 #include "ash/system/chromeos/power/power_event_observer.h"
 
-#include "ash/common/session/session_state_delegate.h"
+#include "ash/common/session/session_controller.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/wm_shell.h"
 #include "ash/shell.h"
@@ -76,7 +76,7 @@ void PowerEventObserver::BrightnessChanged(int level, bool user_initiated) {
 }
 
 void PowerEventObserver::SuspendImminent() {
-  SessionStateDelegate* delegate = WmShell::Get()->GetSessionStateDelegate();
+  SessionController* controller = WmShell::Get()->session_controller();
 
   // This class is responsible for disabling all rendering requests at suspend
   // time and then enabling them at resume time.  When the
@@ -91,8 +91,8 @@ void PowerEventObserver::SuspendImminent() {
   // process starts rendering again.  To deal with this, the suspend is delayed
   // until all the lock screen animations have completed and the suspend request
   // is unblocked from OnLockAnimationsComplete().
-  if (!screen_locked_ && delegate->ShouldLockScreenAutomatically() &&
-      delegate->CanLockScreen()) {
+  if (!screen_locked_ && controller->ShouldLockScreenAutomatically() &&
+      controller->CanLockScreen()) {
     screen_lock_callback_ = chromeos::DBusThreadManager::Get()
                                 ->GetPowerManagerClient()
                                 ->GetSuspendReadinessCallback();

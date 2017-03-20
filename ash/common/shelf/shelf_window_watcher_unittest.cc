@@ -4,7 +4,7 @@
 
 #include "ash/common/shelf/shelf_window_watcher.h"
 
-#include "ash/common/session/session_state_delegate.h"
+#include "ash/common/session/session_controller.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/wm/window_resizer.h"
 #include "ash/common/wm/window_state.h"
@@ -377,7 +377,7 @@ using ShelfWindowWatcherSessionStartTest = test::NoSessionAshTestBase;
 TEST_F(ShelfWindowWatcherSessionStartTest, PreExistingWindow) {
   ShelfModel* model = WmShell::Get()->shelf_model();
   ASSERT_FALSE(
-      WmShell::Get()->GetSessionStateDelegate()->IsActiveUserSessionStarted());
+      WmShell::Get()->session_controller()->IsActiveUserSessionStarted());
 
   // ShelfModel only has an APP_LIST item.
   EXPECT_EQ(1, model->item_count());

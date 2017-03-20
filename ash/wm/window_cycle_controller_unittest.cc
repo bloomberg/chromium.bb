@@ -9,9 +9,10 @@
 
 #include "ash/common/focus_cycler.h"
 #include "ash/common/scoped_root_window_for_new_windows.h"
-#include "ash/common/session/session_state_delegate.h"
+#include "ash/common/session/session_controller.h"
 #include "ash/common/shelf/shelf_widget.h"
 #include "ash/common/shelf/wm_shelf.h"
+#include "ash/common/test/test_session_controller_client.h"
 #include "ash/common/test/test_shelf_delegate.h"
 #include "ash/common/wm/window_cycle_list.h"
 #include "ash/common/wm/window_state.h"
@@ -226,13 +227,13 @@ TEST_F(WindowCycleControllerTest, HandleCycleWindow) {
   wm::ActivateWindow(window0.get());
 
   // When the screen is locked, cycling window does not take effect.
-  WmShell::Get()->GetSessionStateDelegate()->LockScreen();
+  WmShell::Get()->session_controller()->LockScreenAndFlushForTest();
   EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
   controller->HandleCycleWindow(WindowCycleController::FORWARD);
   EXPECT_FALSE(controller->IsCycling());
 
   // Unlock, it works again.
-  WmShell::Get()->GetSessionStateDelegate()->UnlockScreen();
+  GetSessionControllerClient()->UnlockScreen();
   EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
   controller->HandleCycleWindow(WindowCycleController::FORWARD);
   controller->HandleCycleWindow(WindowCycleController::FORWARD);

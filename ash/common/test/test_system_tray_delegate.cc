@@ -7,7 +7,7 @@
 #include <string>
 
 #include "ash/common/login_status.h"
-#include "ash/common/session/session_state_delegate.h"
+#include "ash/common/session/session_controller.h"
 #include "ash/common/wm_shell.h"
 #include "base/time/time.h"
 
@@ -57,11 +57,11 @@ LoginStatus TestSystemTrayDelegate::GetUserLoginStatus() const {
 
   // At new user image screen manager->IsUserLoggedIn() would return true
   // but there's no browser session available yet so use SessionStarted().
-  SessionStateDelegate* delegate = WmShell::Get()->GetSessionStateDelegate();
+  SessionController* controller = WmShell::Get()->session_controller();
 
-  if (!delegate->IsActiveUserSessionStarted())
+  if (!controller->IsActiveUserSessionStarted())
     return LoginStatus::NOT_LOGGED_IN;
-  if (delegate->IsScreenLocked())
+  if (controller->IsScreenLocked())
     return LoginStatus::LOCKED;
   return login_status_;
 }

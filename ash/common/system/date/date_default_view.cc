@@ -5,7 +5,7 @@
 #include "ash/common/system/date/date_default_view.h"
 
 #include "ash/common/metrics/user_metrics_action.h"
-#include "ash/common/session/session_state_delegate.h"
+#include "ash/common/session/session_controller.h"
 #include "ash/common/shutdown_controller.h"
 #include "ash/common/system/date/date_view.h"
 #include "ash/common/system/tray/special_popup_row.h"
@@ -55,7 +55,7 @@ DateDefaultView::DateDefaultView(SystemTrayItem* owner, LoginStatus login)
 
   WmShell* shell = WmShell::Get();
   const bool adding_user =
-      shell->GetSessionStateDelegate()->IsInSecondaryLoginScreen();
+      shell->session_controller()->IsInSecondaryLoginScreen();
 
   if (login == LoginStatus::LOCKED || login == LoginStatus::NOT_LOGGED_IN ||
       adding_user)
@@ -94,7 +94,7 @@ DateDefaultView::DateDefaultView(SystemTrayItem* owner, LoginStatus login)
         reboot ? IDS_ASH_STATUS_TRAY_REBOOT : IDS_ASH_STATUS_TRAY_SHUTDOWN));
   }
 
-  if (shell->GetSessionStateDelegate()->CanLockScreen()) {
+  if (shell->session_controller()->CanLockScreen()) {
     lock_button_ = new TrayPopupHeaderButton(
         this, IDR_AURA_UBER_TRAY_LOCKSCREEN, IDR_AURA_UBER_TRAY_LOCKSCREEN,
         IDR_AURA_UBER_TRAY_LOCKSCREEN_HOVER,

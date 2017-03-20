@@ -7,10 +7,11 @@
 #include <algorithm>
 #include <vector>
 
-#include "ash/common/session/session_state_delegate.h"
+#include "ash/common/session/session_controller.h"
 #include "ash/common/shelf/shelf_layout_manager.h"
 #include "ash/common/shelf/shelf_widget.h"
 #include "ash/common/shelf/wm_shelf.h"
+#include "ash/common/test/test_session_controller_client.h"
 #include "ash/common/wallpaper/wallpaper_widget_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
@@ -156,20 +157,20 @@ class ShellTest : public test::AshTestBase {
     // Create a LockScreen window.
     views::Widget::InitParams widget_params(
         views::Widget::InitParams::TYPE_WINDOW);
-    SessionStateDelegate* delegate = WmShell::Get()->GetSessionStateDelegate();
-    delegate->LockScreen();
+    SessionController* controller = WmShell::Get()->session_controller();
+    controller->LockScreenAndFlushForTest();
     views::Widget* lock_widget = CreateTestWindow(widget_params);
     Shell::GetContainer(Shell::GetPrimaryRootWindow(),
                         kShellWindowId_LockScreenContainer)
         ->AddChild(lock_widget->GetNativeView());
     lock_widget->Show();
-    EXPECT_TRUE(delegate->IsScreenLocked());
+    EXPECT_TRUE(controller->IsScreenLocked());
     EXPECT_TRUE(lock_widget->GetNativeView()->HasFocus());
 
     // Verify menu is closed.
     EXPECT_EQ(nullptr, views::MenuController::GetActiveInstance());
     lock_widget->Close();
-    delegate->UnlockScreen();
+    GetSessionControllerClient()->UnlockScreen();
   }
 };
 
@@ -270,7 +271,7 @@ TEST_F(ShellTest, CreateLockScreenModalWindow) {
   EXPECT_TRUE(
       GetDefaultContainer()->Contains(widget->GetNativeWindow()->parent()));
 
-  WmShell::Get()->GetSessionStateDelegate()->LockScreen();
+  WmShell::Get()->session_controller()->LockScreenAndFlushForTest();
   // Create a LockScreen window.
   views::Widget* lock_widget = CreateTestWindow(widget_params);
   Shell::GetContainer(Shell::GetPrimaryRootWindow(),
@@ -327,11 +328,11 @@ TEST_F(ShellTest, CreateLockScreenModalWindow) {
 }
 
 TEST_F(ShellTest, IsScreenLocked) {
-  SessionStateDelegate* delegate = WmShell::Get()->GetSessionStateDelegate();
-  delegate->LockScreen();
-  EXPECT_TRUE(delegate->IsScreenLocked());
-  delegate->UnlockScreen();
-  EXPECT_FALSE(delegate->IsScreenLocked());
+  SessionController* controller = WmShell::Get()->session_controller();
+  controller->LockScreenAndFlushForTest();
+  EXPECT_TRUE(controller->IsScreenLocked());
+  GetSessionControllerClient()->UnlockScreen();
+  EXPECT_FALSE(controller->IsScreenLocked());
 }
 
 TEST_F(ShellTest, LockScreenClosesActiveMenu) {

@@ -5,7 +5,7 @@
 #include "ash/system/chromeos/power/tablet_power_button_controller.h"
 
 #include "ash/common/accessibility_delegate.h"
-#include "ash/common/session/session_state_delegate.h"
+#include "ash/common/session/session_controller.h"
 #include "ash/common/shell_delegate.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm_shell.h"
@@ -252,13 +252,12 @@ void TabletPowerButtonController::OnShutdownTimeout() {
 }
 
 void TabletPowerButtonController::LockScreenIfRequired() {
-  SessionStateDelegate* session_state_delegate =
-      WmShell::Get()->GetSessionStateDelegate();
-  if (session_state_delegate->ShouldLockScreenAutomatically() &&
-      session_state_delegate->CanLockScreen() &&
-      !session_state_delegate->IsUserSessionBlocked() &&
+  SessionController* session_controller = WmShell::Get()->session_controller();
+  if (session_controller->ShouldLockScreenAutomatically() &&
+      session_controller->CanLockScreen() &&
+      !session_controller->IsUserSessionBlocked() &&
       !controller_->LockRequested()) {
-    session_state_delegate->LockScreen();
+    session_controller->LockScreen();
   }
 }
 

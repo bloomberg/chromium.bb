@@ -5,7 +5,7 @@
 #include "ash/common/system/chromeos/settings/tray_settings.h"
 
 #include "ash/common/material_design/material_design_controller.h"
-#include "ash/common/session/session_state_delegate.h"
+#include "ash/common/session/session_controller.h"
 #include "ash/common/system/chromeos/power/power_status.h"
 #include "ash/common/system/chromeos/power/power_status_view.h"
 #include "ash/common/system/tray/actionable_view.h"
@@ -49,9 +49,7 @@ class SettingsDefaultView : public ActionableView,
     bool power_view_right_align = false;
     if (login_status_ != LoginStatus::NOT_LOGGED_IN &&
         login_status_ != LoginStatus::LOCKED &&
-        !WmShell::Get()
-             ->GetSessionStateDelegate()
-             ->IsInSecondaryLoginScreen()) {
+        !WmShell::Get()->session_controller()->IsInSecondaryLoginScreen()) {
       ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
       views::ImageView* icon = TrayPopupUtils::CreateMainImageView();
 
@@ -85,7 +83,7 @@ class SettingsDefaultView : public ActionableView,
   bool PerformAction(const ui::Event& event) override {
     if (login_status_ == LoginStatus::NOT_LOGGED_IN ||
         login_status_ == LoginStatus::LOCKED ||
-        WmShell::Get()->GetSessionStateDelegate()->IsInSecondaryLoginScreen()) {
+        WmShell::Get()->session_controller()->IsInSecondaryLoginScreen()) {
       return false;
     }
 

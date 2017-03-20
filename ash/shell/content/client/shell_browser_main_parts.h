@@ -31,6 +31,7 @@ namespace ash {
 namespace shell {
 
 class ExampleAppListPresenter;
+class ExampleSessionControllerClient;
 class ShellDelegateImpl;
 class WindowWatcher;
 
@@ -59,6 +60,8 @@ class ShellBrowserMainParts : public content::BrowserMainParts {
   ShellDelegateImpl* delegate_;  // owned by Shell
   std::unique_ptr<wm::WMState> wm_state_;
   std::unique_ptr<ExampleAppListPresenter> example_app_list_presenter_;
+  std::unique_ptr<ExampleSessionControllerClient>
+      example_session_controller_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellBrowserMainParts);
 };

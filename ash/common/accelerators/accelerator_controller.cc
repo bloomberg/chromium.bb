@@ -17,7 +17,7 @@
 #include "ash/common/multi_profile_uma.h"
 #include "ash/common/new_window_controller.h"
 #include "ash/common/palette_delegate.h"
-#include "ash/common/session/session_state_delegate.h"
+#include "ash/common/session/session_controller.h"
 #include "ash/common/shelf/shelf_widget.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_delegate.h"
@@ -85,7 +85,7 @@ class DeprecatedAcceleratorNotificationDelegate
   bool HasClickedListener() override { return true; }
 
   void Click() override {
-    if (!WmShell::Get()->GetSessionStateDelegate()->IsUserSessionBlocked())
+    if (!WmShell::Get()->session_controller()->IsUserSessionBlocked())
       Shell::Get()->shell_delegate()->OpenKeyboardShortcutHelpPage();
   }
 
@@ -501,12 +501,12 @@ void HandleGetHelp() {
 }
 
 bool CanHandleLock() {
-  return WmShell::Get()->GetSessionStateDelegate()->CanLockScreen();
+  return WmShell::Get()->session_controller()->CanLockScreen();
 }
 
 void HandleLock() {
   base::RecordAction(UserMetricsAction("Accel_LockScreen_L"));
-  WmShell::Get()->GetSessionStateDelegate()->LockScreen();
+  WmShell::Get()->session_controller()->LockScreen();
 }
 
 void HandleShowStylusTools() {
@@ -533,7 +533,7 @@ void HandleSuspend() {
 
 bool CanHandleCycleUser() {
   return Shell::Get()->shell_delegate()->IsMultiProfilesEnabled() &&
-         WmShell::Get()->GetSessionStateDelegate()->NumberOfLoggedInUsers() > 1;
+         WmShell::Get()->session_controller()->NumberOfLoggedInUsers() > 1;
 }
 
 void HandleCycleUser(CycleUserDirection direction) {
@@ -547,7 +547,7 @@ void HandleCycleUser(CycleUserDirection direction) {
       base::RecordAction(UserMetricsAction("Accel_Switch_To_Previous_User"));
       break;
   }
-  WmShell::Get()->GetSessionStateDelegate()->CycleActiveUser(direction);
+  WmShell::Get()->session_controller()->CycleActiveUser(direction);
 }
 
 bool CanHandleToggleCapsLock(const ui::Accelerator& accelerator,
@@ -1227,13 +1227,12 @@ AcceleratorController::GetAcceleratorProcessingRestriction(int action) {
           actions_allowed_in_pinned_mode_.end()) {
     return RESTRICTION_PREVENT_PROCESSING_AND_PROPAGATION;
   }
-  // TODO(xiyuan): Replace with SessionController. http://crbug.com/648964
-  if (!wm_shell->GetSessionStateDelegate()->IsActiveUserSessionStarted() &&
+  if (!wm_shell->session_controller()->IsActiveUserSessionStarted() &&
       actions_allowed_at_login_screen_.find(action) ==
           actions_allowed_at_login_screen_.end()) {
     return RESTRICTION_PREVENT_PROCESSING;
   }
-  if (wm_shell->GetSessionStateDelegate()->IsScreenLocked() &&
+  if (wm_shell->session_controller()->IsScreenLocked() &&
       actions_allowed_at_lock_screen_.find(action) ==
           actions_allowed_at_lock_screen_.end()) {
     return RESTRICTION_PREVENT_PROCESSING;

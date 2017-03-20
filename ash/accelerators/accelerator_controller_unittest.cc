@@ -9,7 +9,7 @@
 #include "ash/common/accessibility_types.h"
 #include "ash/common/ash_switches.h"
 #include "ash/common/ime_control_delegate.h"
-#include "ash/common/session/session_state_delegate.h"
+#include "ash/common/session/session_controller.h"
 #include "ash/common/system/brightness_control_delegate.h"
 #include "ash/common/system/keyboard_brightness_control_delegate.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
@@ -1490,8 +1490,8 @@ class DeprecatedAcceleratorTester : public AcceleratorControllerTest {
   }
 
   void ResetStateIfNeeded() {
-    if (WmShell::Get()->GetSessionStateDelegate()->IsScreenLocked() ||
-        WmShell::Get()->GetSessionStateDelegate()->IsUserSessionBlocked()) {
+    if (WmShell::Get()->session_controller()->IsScreenLocked() ||
+        WmShell::Get()->session_controller()->IsUserSessionBlocked()) {
       UnblockUserSession();
     }
   }

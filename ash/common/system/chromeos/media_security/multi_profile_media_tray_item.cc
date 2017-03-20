@@ -6,7 +6,7 @@
 
 #include "ash/common/ash_view_ids.h"
 #include "ash/common/media_controller.h"
-#include "ash/common/session/session_state_delegate.h"
+#include "ash/common/session/session_controller.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_item_view.h"
@@ -39,11 +39,10 @@ class MultiProfileMediaTrayView : public TrayItemView,
   // MediaCaptureObserver:
   void OnMediaCaptureChanged(
       const std::vector<mojom::MediaCaptureState>& capture_states) override {
-    SessionStateDelegate* session_state_delegate =
-        WmShell::Get()->GetSessionStateDelegate();
+    SessionController* controller = WmShell::Get()->session_controller();
     // The user at 0 is the current desktop user.
-    for (UserIndex index = 1;
-         index < session_state_delegate->NumberOfLoggedInUsers(); ++index) {
+    for (UserIndex index = 1; index < controller->NumberOfLoggedInUsers();
+         ++index) {
       if (capture_states[index] != mojom::MediaCaptureState::NONE) {
         SetVisible(true);
         return;

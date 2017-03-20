@@ -9,7 +9,7 @@
 
 #include "ash/common/ash_constants.h"
 #include "ash/common/ash_view_ids.h"
-#include "ash/common/session/session_state_delegate.h"
+#include "ash/common/session/session_controller.h"
 #include "ash/common/system/tray/fixed_sized_image_view.h"
 #include "ash/common/system/tray/size_range_layout.h"
 #include "ash/common/system/tray/tray_constants.h"
@@ -431,7 +431,7 @@ bool TrayPopupUtils::CanOpenWebUISettings(LoginStatus status) {
   // ShowSettings() method.
   return status != LoginStatus::NOT_LOGGED_IN &&
          status != LoginStatus::LOCKED &&
-         !WmShell::Get()->GetSessionStateDelegate()->IsInSecondaryLoginScreen();
+         !WmShell::Get()->session_controller()->IsInSecondaryLoginScreen();
 }
 
 }  // namespace ash

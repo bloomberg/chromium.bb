@@ -6,7 +6,7 @@
 
 #include "ash/animation/animation_change_type.h"
 #include "ash/common/focus_cycler.h"
-#include "ash/common/session/session_state_delegate.h"
+#include "ash/common/session/session_controller.h"
 #include "ash/common/shelf/app_list_button.h"
 #include "ash/common/shelf/shelf_background_animator_observer.h"
 #include "ash/common/shelf/shelf_constants.h"
@@ -183,7 +183,7 @@ void ShelfWidget::CreateStatusAreaWidget(WmWindow* status_container) {
   // TODO(jamescook): Move ownership to RootWindowController.
   status_area_widget_ = new StatusAreaWidget(status_container, wm_shelf_);
   status_area_widget_->CreateTrayViews();
-  if (WmShell::Get()->GetSessionStateDelegate()->IsActiveUserSessionStarted())
+  if (WmShell::Get()->session_controller()->IsActiveUserSessionStarted())
     status_area_widget_->Show();
   WmShell::Get()->focus_cycler()->AddWidget(status_area_widget_);
   background_animator_.AddObserver(status_area_widget_);
@@ -252,7 +252,7 @@ void ShelfWidget::PostCreateShelf() {
   // hidden because ShelfWidget is transparent. Some of the ShelfView visibility
   // code could be simplified. http://crbug.com/674773
   shelf_view_->SetVisible(
-      WmShell::Get()->GetSessionStateDelegate()->IsActiveUserSessionStarted());
+      WmShell::Get()->session_controller()->IsActiveUserSessionStarted());
   shelf_layout_manager_->LayoutShelf();
   shelf_layout_manager_->UpdateAutoHideState();
   Show();

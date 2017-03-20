@@ -6,7 +6,7 @@
 
 #include "ash/common/accelerators/accelerator_controller.h"
 #include "ash/common/ash_switches.h"
-#include "ash/common/session/session_state_delegate.h"
+#include "ash/common/session/session_controller.h"
 #include "ash/common/system/chromeos/audio/tray_audio.h"
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
@@ -103,15 +103,15 @@ void PowerButtonController::OnPowerButtonEvent(
     return;
   }
 
-  const SessionStateDelegate* session_state_delegate =
-      WmShell::Get()->GetSessionStateDelegate();
+  const SessionController* const session_controller =
+      WmShell::Get()->session_controller();
   if (has_legacy_power_button_) {
     // If power button releases won't get reported correctly because we're not
     // running on official hardware, just lock the screen or shut down
     // immediately.
     if (down) {
-      if (session_state_delegate->CanLockScreen() &&
-          !session_state_delegate->IsUserSessionBlocked() &&
+      if (session_controller->CanLockScreen() &&
+          !session_controller->IsUserSessionBlocked() &&
           !lock_state_controller_->LockRequested()) {
         lock_state_controller_->StartLockAnimationAndLockImmediately(false);
       } else {
@@ -124,8 +124,8 @@ void PowerButtonController::OnPowerButtonEvent(
       if (lock_state_controller_->LockRequested())
         return;
 
-      if (session_state_delegate->CanLockScreen() &&
-          !session_state_delegate->IsUserSessionBlocked()) {
+      if (session_controller->CanLockScreen() &&
+          !session_controller->IsUserSessionBlocked()) {
         lock_state_controller_->StartLockAnimation(true);
       } else {
         lock_state_controller_->StartShutdownAnimation();
@@ -144,10 +144,10 @@ void PowerButtonController::OnLockButtonEvent(
     const base::TimeTicks& timestamp) {
   lock_button_down_ = down;
 
-  const SessionStateDelegate* session_state_delegate =
-      WmShell::Get()->GetSessionStateDelegate();
-  if (!session_state_delegate->CanLockScreen() ||
-      session_state_delegate->IsScreenLocked() ||
+  const SessionController* const session_controller =
+      WmShell::Get()->session_controller();
+  if (!session_controller->CanLockScreen() ||
+      session_controller->IsScreenLocked() ||
       lock_state_controller_->LockRequested() ||
       lock_state_controller_->ShutdownRequested()) {
     return;

@@ -10,12 +10,36 @@
 #include "ash/common/session/session_state_observer.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/command_line.h"
+#include "chromeos/chromeos_switches.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace ash {
 
-SessionController::SessionController() {}
+namespace {
+
+// Get the default session state. Default session state is ACTIVE when the
+// process starts with a user session, i.e. the process has kLoginUser command
+// line switch. This is needed because ash focus rules depends on whether
+// session is blocked to pick an activatable window and chrome needs to create a
+// focused browser window when starting with a user session (both in production
+// and in tests). Using ACTIVE as default in this situation allows chrome to run
+// without having to wait for session state to reach to ash. For other cases
+// (oobe/login), there is only one login window. The login window always gets
+// focus so default session state does not matter. Use UNKNOWN and wait for
+// chrome to update ash for such cases.
+session_manager::SessionState GetDefaultSessionState() {
+  const bool start_with_user =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kLoginUser);
+  return start_with_user ? session_manager::SessionState::ACTIVE
+                         : session_manager::SessionState::UNKNOWN;
+}
+
+}  // namespace
+
+SessionController::SessionController() : state_(GetDefaultSessionState()) {}
 
 SessionController::~SessionController() {}
 
@@ -40,7 +64,7 @@ bool SessionController::IsActiveUserSessionStarted() const {
 }
 
 bool SessionController::CanLockScreen() const {
-  return can_lock_;
+  return IsActiveUserSessionStarted() && can_lock_;
 }
 
 bool SessionController::IsScreenLocked() const {
@@ -55,6 +79,10 @@ bool SessionController::IsUserSessionBlocked() const {
   return state_ != session_manager::SessionState::ACTIVE;
 }
 
+bool SessionController::IsInSecondaryLoginScreen() const {
+  return state_ == session_manager::SessionState::LOGIN_SECONDARY;
+}
+
 session_manager::SessionState SessionController::GetSessionState() const {
   return state_;
 }
@@ -62,6 +90,14 @@ session_manager::SessionState SessionController::GetSessionState() const {
 const std::vector<mojom::UserSessionPtr>& SessionController::GetUserSessions()
     const {
   return user_sessions_;
+}
+
+const mojom::UserSession* SessionController::GetUserSession(
+    UserIndex index) const {
+  if (index < 0 || index >= static_cast<UserIndex>(user_sessions_.size()))
+    return nullptr;
+
+  return user_sessions_[index].get();
 }
 
 void SessionController::LockScreen() {
@@ -170,6 +206,19 @@ void SessionController::SetUserSessionOrder(
     for (auto& observer : observers_)
       observer.ActiveUserChanged(user_sessions_[0]->account_id);
   }
+}
+
+void SessionController::ClearUserSessionsForTest() {
+  user_sessions_.clear();
+}
+
+void SessionController::FlushMojoForTest() {
+  client_.FlushForTesting();
+}
+
+void SessionController::LockScreenAndFlushForTest() {
+  LockScreen();
+  FlushMojoForTest();
 }
 
 void SessionController::SetSessionState(session_manager::SessionState state) {

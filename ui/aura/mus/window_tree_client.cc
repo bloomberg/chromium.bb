@@ -1607,8 +1607,10 @@ void WindowTreeClient::SetFrameDecorationValues(
 
 void WindowTreeClient::SetNonClientCursor(Window* window,
                                           ui::mojom::Cursor cursor_id) {
-  window_manager_internal_client_->WmSetNonClientCursor(
-      WindowMus::Get(window)->server_id(), cursor_id);
+  if (window_manager_internal_client_) {
+    window_manager_internal_client_->WmSetNonClientCursor(
+        WindowMus::Get(window)->server_id(), cursor_id);
+  }
 }
 
 void WindowTreeClient::AddAccelerators(

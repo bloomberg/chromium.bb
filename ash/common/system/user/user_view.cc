@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "ash/common/multi_profile_uma.h"
-#include "ash/common/session/session_state_delegate.h"
+#include "ash/common/session/session_controller.h"
 #include "ash/common/shell_delegate.h"
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/system_tray_controller.h"
@@ -50,19 +50,25 @@ namespace {
 // Switch to a user with the given |user_index|.
 void SwitchUser(UserIndex user_index) {
   // Do not switch users when the log screen is presented.
-  SessionStateDelegate* delegate = WmShell::Get()->GetSessionStateDelegate();
-  if (delegate->IsUserSessionBlocked())
+  SessionController* controller = WmShell::Get()->session_controller();
+  if (controller->IsUserSessionBlocked())
     return;
 
-  DCHECK(user_index > 0);
+  // |user_index| must be in range (0, number_of_user). Note 0 is excluded
+  // because it represents the active user and SwitchUser should not be called
+  // for such case.
+  DCHECK_GT(user_index, 0);
+  DCHECK_LT(user_index, controller->NumberOfLoggedInUsers());
+
   MultiProfileUMA::RecordSwitchActiveUser(
       MultiProfileUMA::SWITCH_ACTIVE_USER_BY_TRAY);
-  delegate->SwitchActiveUser(delegate->GetUserInfo(user_index)->GetAccountId());
+  controller->SwitchActiveUser(
+      controller->GetUserSession(user_index)->account_id);
 }
 
 bool IsMultiProfileSupportedAndUserActive() {
   return Shell::Get()->shell_delegate()->IsMultiProfilesEnabled() &&
-         !WmShell::Get()->GetSessionStateDelegate()->IsUserSessionBlocked();
+         !WmShell::Get()->session_controller()->IsUserSessionBlocked();
 }
 
 // Creates the view shown in the user switcher popup ("AddUserMenuOption").
@@ -345,10 +351,8 @@ void UserView::ToggleAddUserMenuOption() {
           &params);
   add_menu_option_->Init(params);
 
-  const SessionStateDelegate* delegate =
-      WmShell::Get()->GetSessionStateDelegate();
   const AddUserSessionPolicy add_user_policy =
-      delegate->GetAddUserSessionPolicy();
+      WmShell::Get()->session_controller()->GetAddUserPolicy();
   add_user_enabled_ = add_user_policy == AddUserSessionPolicy::ALLOWED;
 
   // Position the widget on top of the user card view (which is still in the

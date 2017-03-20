@@ -7,8 +7,8 @@
 #include <memory>
 
 #include "ash/common/session/session_controller.h"
-#include "ash/common/session/session_state_delegate.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
+#include "ash/common/test/test_session_controller_client.h"
 #include "ash/common/wm/system_modal_container_layout_manager.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_shell.h"
@@ -397,7 +397,7 @@ TEST_F(RootWindowControllerTest, ModalContainer) {
             controller->GetSystemModalLayoutManager(
                 WmWindow::Get(session_modal_widget->GetNativeWindow())));
 
-  wm_shell->GetSessionStateDelegate()->LockScreen();
+  wm_shell->session_controller()->LockScreenAndFlushForTest();
   EXPECT_EQ(LoginStatus::LOCKED,
             wm_shell->system_tray_delegate()->GetUserLoginStatus());
   EXPECT_EQ(
@@ -416,20 +416,19 @@ TEST_F(RootWindowControllerTest, ModalContainer) {
             controller->GetSystemModalLayoutManager(
                 WmWindow::Get(session_modal_widget->GetNativeWindow())));
 
-  wm_shell->GetSessionStateDelegate()->UnlockScreen();
+  GetSessionControllerClient()->UnlockScreen();
 }
 
 TEST_F(RootWindowControllerTest, ModalContainerNotLoggedInLoggedIn) {
   UpdateDisplay("600x600");
 
   // Configure login screen environment.
-  SessionStateDelegate* session_state_delegate =
-      WmShell::Get()->GetSessionStateDelegate();
+  SessionController* session_controller = WmShell::Get()->session_controller();
   SetUserLoggedIn(false);
   EXPECT_EQ(LoginStatus::NOT_LOGGED_IN,
             WmShell::Get()->system_tray_delegate()->GetUserLoginStatus());
-  EXPECT_EQ(0, session_state_delegate->NumberOfLoggedInUsers());
-  EXPECT_FALSE(session_state_delegate->IsActiveUserSessionStarted());
+  EXPECT_EQ(0, session_controller->NumberOfLoggedInUsers());
+  EXPECT_FALSE(session_controller->IsActiveUserSessionStarted());
 
   RootWindowController* controller =
       WmShell::Get()->GetPrimaryRootWindowController();
@@ -452,8 +451,8 @@ TEST_F(RootWindowControllerTest, ModalContainerNotLoggedInLoggedIn) {
   SetSessionStarted(true);
   EXPECT_EQ(LoginStatus::USER,
             WmShell::Get()->system_tray_delegate()->GetUserLoginStatus());
-  EXPECT_EQ(1, session_state_delegate->NumberOfLoggedInUsers());
-  EXPECT_TRUE(session_state_delegate->IsActiveUserSessionStarted());
+  EXPECT_EQ(1, session_controller->NumberOfLoggedInUsers());
+  EXPECT_TRUE(session_controller->IsActiveUserSessionStarted());
   EXPECT_EQ(GetLayoutManager(controller, kShellWindowId_SystemModalContainer),
             controller->GetSystemModalLayoutManager(NULL));
 
@@ -933,6 +932,9 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
   keyboard_window->set_owned_by_parent(false);
   keyboard_window->SetBounds(gfx::Rect());
   keyboard_window->Show();
+
+  // Make sure no pending mouse events in the queue.
+  RunAllPendingInMessageLoop();
 
   ui::test::TestEventHandler handler;
   root_window->AddPreTargetHandler(&handler);

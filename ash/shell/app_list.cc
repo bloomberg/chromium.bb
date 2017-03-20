@@ -7,7 +7,7 @@
 #include <utility>
 #include <vector>
 
-#include "ash/common/session/session_state_delegate.h"
+#include "ash/common/session/session_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "ash/shell/example_factory.h"
@@ -112,7 +112,7 @@ class WindowTypeShelfItem : public app_list::AppListItem {
         break;
       }
       case LOCK_SCREEN: {
-        WmShell::Get()->GetSessionStateDelegate()->LockScreen();
+        WmShell::Get()->session_controller()->LockScreen();
         break;
       }
       case WIDGETS_WINDOW: {

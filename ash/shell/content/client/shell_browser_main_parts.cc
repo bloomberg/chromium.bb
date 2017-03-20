@@ -10,6 +10,7 @@
 #include "ash/shell.h"
 #include "ash/shell/content/shell_content_state_impl.h"
 #include "ash/shell/example_app_list_presenter.h"
+#include "ash/shell/example_session_controller_client.h"
 #include "ash/shell/shell_delegate_impl.h"
 #include "ash/shell/window_watcher.h"
 #include "ash/shell_init_params.h"
@@ -131,6 +132,14 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   init_params.context_factory_private = content::GetContextFactoryPrivate();
   init_params.blocking_pool = content::BrowserThread::GetBlockingPool();
   ash::Shell::CreateInstance(init_params);
+
+  // Initialize session controller client and create fake sessions before
+  // creating shelf.
+  example_session_controller_client_ =
+      base::MakeUnique<ExampleSessionControllerClient>(
+          WmShell::Get()->session_controller());
+  example_session_controller_client_->Initialize();
+
   ash::WmShell::Get()->CreateShelfView();
   ash::WmShell::Get()->UpdateAfterLoginStatusChange(LoginStatus::USER);
 

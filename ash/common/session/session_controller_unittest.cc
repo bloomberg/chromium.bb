@@ -123,6 +123,7 @@ TEST_F(SessionControllerTest, SimpleSessionInfo) {
   mojom::SessionInfo info;
   FillDefaultSessionInfo(&info);
   SetSessionInfo(info);
+  UpdateSession(1u, "user1@test.com");
 
   EXPECT_EQ(session_manager::kMaxmiumNumberOfUserSessions,
             controller()->GetMaximumNumberOfLoggedInUsers());
@@ -138,6 +139,22 @@ TEST_F(SessionControllerTest, SimpleSessionInfo) {
   SetSessionInfo(info);
   EXPECT_FALSE(controller()->CanLockScreen());
   EXPECT_FALSE(controller()->ShouldLockScreenAutomatically());
+}
+
+// Tests that the CanLockScreen is only true with an active user session.
+TEST_F(SessionControllerTest, CanLockScreen) {
+  mojom::SessionInfo info;
+  FillDefaultSessionInfo(&info);
+  ASSERT_TRUE(info.can_lock_screen);  // Check can_lock_screen default to true.
+  SetSessionInfo(info);
+
+  // Cannot lock screen when there is no active user session.
+  EXPECT_FALSE(controller()->IsActiveUserSessionStarted());
+  EXPECT_FALSE(controller()->CanLockScreen());
+
+  UpdateSession(1u, "user1@test.com");
+  EXPECT_TRUE(controller()->IsActiveUserSessionStarted());
+  EXPECT_TRUE(controller()->CanLockScreen());
 }
 
 // Tests that AddUserSessionPolicy is set properly.

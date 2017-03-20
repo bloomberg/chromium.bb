@@ -6,7 +6,6 @@
 #include "ash/common/login_status.h"
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray_accessibility.h"
-#include "ash/common/test/test_session_state_delegate.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/shell.h"
 #include "ash/test/shell_test_api.h"
@@ -890,11 +889,9 @@ IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, CheckMenuVisibilityOnDetailMenu) {
   EXPECT_FALSE(IsSettingsAvailableOnDetailMenu());
   CloseDetailMenu();
 
-  ash::test::TestSessionStateDelegate* session_state_delegate =
-      new ash::test::TestSessionStateDelegate;
-  ash::test::ShellTestApi test_api(ash::Shell::GetInstance());
-  test_api.SetSessionStateDelegate(session_state_delegate);
-  session_state_delegate->SetUserAddingScreenRunning(true);
+  session_manager::SessionManager::Get()->SetSessionState(
+      session_manager::SessionState::LOGIN_SECONDARY);
+  base::RunLoop().RunUntilIdle();  // Flush session state to ash.
   SetLoginStatus(ash::LoginStatus::USER);
   EXPECT_TRUE(CreateDetailedMenu());
   EXPECT_TRUE(IsSpokenFeedbackMenuShownOnDetailMenu());

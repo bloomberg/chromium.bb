@@ -4,26 +4,28 @@
 
 #include "ash/common/shelf/shelf_locking_manager.h"
 
-#include "ash/common/session/session_state_delegate.h"
+#include "ash/common/session/session_controller.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 
 namespace ash {
 
-ShelfLockingManager::ShelfLockingManager(WmShelf* shelf) : shelf_(shelf) {
+ShelfLockingManager::ShelfLockingManager(WmShelf* shelf)
+    : shelf_(shelf), stored_alignment_(shelf->GetAlignment()) {
+  DCHECK(shelf_);
   WmShell::Get()->AddLockStateObserver(this);
-  SessionStateDelegate* delegate = WmShell::Get()->GetSessionStateDelegate();
+  SessionController* controller = WmShell::Get()->session_controller();
   session_locked_ =
-      delegate->GetSessionState() != session_manager::SessionState::ACTIVE;
-  screen_locked_ = delegate->IsScreenLocked();
-  delegate->AddSessionStateObserver(this);
+      controller->GetSessionState() != session_manager::SessionState::ACTIVE;
+  screen_locked_ = controller->IsScreenLocked();
+  controller->AddSessionStateObserver(this);
   Shell::GetInstance()->AddShellObserver(this);
 }
 
 ShelfLockingManager::~ShelfLockingManager() {
   WmShell::Get()->RemoveLockStateObserver(this);
-  WmShell::Get()->GetSessionStateDelegate()->RemoveSessionStateObserver(this);
+  WmShell::Get()->session_controller()->RemoveSessionStateObserver(this);
   Shell::GetInstance()->RemoveShellObserver(this);
 }
 

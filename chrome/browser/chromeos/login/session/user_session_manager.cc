@@ -1752,6 +1752,11 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
 
   BootTimesRecorder::Get()->AddLoginTimeMarker("BrowserLaunched", false);
 
+  // Mark user session as started before creating browser window. Otherwise,
+  // ash would not activate the created browser window because it thinks
+  // user session is blocked.
+  session_manager::SessionManager::Get()->SessionStarted();
+
   VLOG(1) << "Launching browser...";
   TRACE_EVENT0("login", "LaunchBrowser");
 
@@ -1798,7 +1803,6 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
   // browser before it is dereferenced by the login host.
   if (login_host)
     login_host->Finalize();
-  session_manager::SessionManager::Get()->SessionStarted();
   chromeos::BootTimesRecorder::Get()->LoginDone(
       user_manager::UserManager::Get()->IsCurrentUserNew());
 

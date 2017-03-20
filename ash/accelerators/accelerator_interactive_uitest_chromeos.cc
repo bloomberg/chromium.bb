@@ -18,7 +18,6 @@
 #include "base/run_loop.h"
 #include "base/test/user_action_tester.cc"
 #include "chromeos/network/network_handler.h"
-#include "mojo/edk/embedder/embedder.h"
 #include "ui/app_list/presenter/app_list.h"
 #include "ui/app_list/presenter/test/test_app_list_presenter.h"
 #include "ui/base/test/ui_controls.h"
@@ -198,7 +197,6 @@ TEST_F(AcceleratorInteractiveUITest, MAYBE_ChromeOsAccelerators) {
 
 // Tests the app list accelerator.
 TEST_F(AcceleratorInteractiveUITest, MAYBE_ToggleAppList) {
-  mojo::edk::Init();
   app_list::test::TestAppListPresenter test_app_list_presenter;
   Shell::Get()->app_list()->SetAppListPresenter(
       test_app_list_presenter.CreateInterfacePtrAndBind());

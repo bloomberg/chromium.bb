@@ -4,7 +4,7 @@
 
 #include "ash/common/system/chromeos/network/tray_vpn.h"
 
-#include "ash/common/session/session_state_delegate.h"
+#include "ash/common/session/session_controller.h"
 #include "ash/common/system/chromeos/network/network_icon.h"
 #include "ash/common/system/chromeos/network/network_icon_animation.h"
 #include "ash/common/system/chromeos/network/network_icon_animation_observer.h"
@@ -161,7 +161,7 @@ views::View* TrayVPN::CreateDefaultView(LoginStatus status) {
     return NULL;
 
   const bool is_in_secondary_login_screen =
-      WmShell::Get()->GetSessionStateDelegate()->IsInSecondaryLoginScreen();
+      WmShell::Get()->session_controller()->IsInSecondaryLoginScreen();
 
   default_ = new tray::VpnDefaultView(this);
   default_->SetEnabled(status != LoginStatus::LOCKED &&

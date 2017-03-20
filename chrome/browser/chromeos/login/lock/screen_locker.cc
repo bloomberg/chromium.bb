@@ -473,12 +473,23 @@ void ScreenLocker::Hide() {
   }
 
   DCHECK(screen_locker_);
-  base::Callback<void(void)> callback =
-      base::Bind(&ScreenLocker::ScheduleDeletion);
-  ash::Shell::GetInstance()->lock_state_controller()->
-    OnLockScreenHide(callback);
+
+  // Sets session state to ACTIVE before destroying screen locker. Otherwise,
+  // ash thinks the session is blocked and does not correct set focus on
+  // screen lock dismissal.
+  // TODO(xiyuan): Figure out a better way to ensure state change go through.
+  session_manager::SessionManager::Get()->SetSessionState(
+      session_manager::SessionState::ACTIVE);
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE, base::Bind([] {
+        base::Callback<void(void)> callback =
+            base::Bind(&ScreenLocker::ScheduleDeletion);
+        ash::Shell::GetInstance()->lock_state_controller()->OnLockScreenHide(
+            callback);
+      }));
 }
 
+// static
 void ScreenLocker::ScheduleDeletion() {
   // Avoid possible multiple calls.
   if (screen_locker_ == NULL)
@@ -517,9 +528,6 @@ ScreenLocker::~ScreenLocker() {
   VLOG(1) << "Calling session manager's HandleLockScreenDismissed D-Bus method";
   DBusThreadManager::Get()->GetSessionManagerClient()->
       NotifyLockScreenDismissed();
-
-  session_manager::SessionManager::Get()->SetSessionState(
-      session_manager::SessionState::ACTIVE);
 
   if (saved_ime_state_.get()) {
     input_method::InputMethodManager::Get()->SetState(saved_ime_state_);

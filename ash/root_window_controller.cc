@@ -14,7 +14,7 @@
 #include "ash/common/ash_switches.h"
 #include "ash/common/focus_cycler.h"
 #include "ash/common/login_status.h"
-#include "ash/common/session/session_state_delegate.h"
+#include "ash/common/session/session_controller.h"
 #include "ash/common/shelf/shelf_delegate.h"
 #include "ash/common/shelf/shelf_layout_manager.h"
 #include "ash/common/shelf/shelf_widget.h"
@@ -409,7 +409,7 @@ RootWindowController::GetSystemModalLayoutManager(WmWindow* window) {
     }
   } else {
     int modal_window_id =
-        WmShell::Get()->GetSessionStateDelegate()->IsUserSessionBlocked()
+        WmShell::Get()->session_controller()->IsUserSessionBlocked()
             ? kShellWindowId_LockSystemModalContainer
             : kShellWindowId_SystemModalContainer;
     modal_container = GetWmContainer(modal_window_id);
@@ -443,7 +443,7 @@ bool RootWindowController::CanWindowReceiveEvents(aura::Window* window) {
   aura::Window* blocking_container = nullptr;
 
   int modal_container_id = 0;
-  if (WmShell::Get()->GetSessionStateDelegate()->IsUserSessionBlocked()) {
+  if (WmShell::Get()->session_controller()->IsUserSessionBlocked()) {
     blocking_container =
         GetContainer(kShellWindowId_LockScreenContainersContainer);
     modal_container_id = kShellWindowId_LockSystemModalContainer;
@@ -802,7 +802,7 @@ void RootWindowController::Init(RootWindowType root_window_type) {
     window_tree_host_->Show();
 
     // Create a shelf if a user is already logged in.
-    if (wm_shell->GetSessionStateDelegate()->NumberOfLoggedInUsers())
+    if (wm_shell->session_controller()->NumberOfLoggedInUsers())
       CreateShelfView();
 
     // Notify shell observers about new root window.

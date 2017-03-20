@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "ash/common/session/session_state_delegate.h"
+#include "ash/common/session/session_controller.h"
 #include "ash/common/system/status_area_widget.h"
 #include "ash/common/system/web_notification/web_notification_tray.h"
 #include "ash/common/wm_shell.h"
@@ -269,7 +269,7 @@ void WindowTypeLauncher::ButtonPressed(views::Button* sender,
   } else if (sender == bubble_button_) {
     CreatePointyBubble(sender);
   } else if (sender == lock_button_) {
-    WmShell::Get()->GetSessionStateDelegate()->LockScreen();
+    WmShell::Get()->session_controller()->LockScreen();
   } else if (sender == widgets_button_) {
     CreateWidgetsWindow();
   } else if (sender == system_modal_button_) {

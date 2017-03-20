@@ -61,16 +61,23 @@ class ASH_EXPORT SessionController
   // is turned off or the system is suspended.
   bool ShouldLockScreenAutomatically() const;
 
-  // Returns |true| if user session blocked by some overlying UI. It can be
+  // Returns true if user session blocked by some overlying UI. It can be
   // login screen, lock screen or screen for adding users into multi-profile
   // session.
   bool IsUserSessionBlocked() const;
+
+  // Convenience function that returns true if session state is LOGIN_SECONDARY.
+  bool IsInSecondaryLoginScreen() const;
 
   // Gets the ash session state.
   session_manager::SessionState GetSessionState() const;
 
   // Gets the user sessions in LRU order with the active session being first.
   const std::vector<mojom::UserSessionPtr>& GetUserSessions() const;
+
+  // Convenience helper to gets the user session at a given index. Returns
+  // nullptr if no user session is found for the index.
+  const mojom::UserSession* GetUserSession(UserIndex index) const;
 
   // Locks the screen. The locking happens asynchronously.
   void LockScreen();
@@ -98,6 +105,11 @@ class ASH_EXPORT SessionController
   void SetUserSessionOrder(
       const std::vector<uint32_t>& user_session_order) override;
 
+  // Test helpers.
+  void ClearUserSessionsForTest();
+  void FlushMojoForTest();
+  void LockScreenAndFlushForTest();
+
  private:
   void SetSessionState(session_manager::SessionState state);
   void AddUserSession(mojom::UserSessionPtr user_session);
@@ -115,7 +127,7 @@ class ASH_EXPORT SessionController
   bool can_lock_ = false;
   bool should_lock_screen_automatically_ = false;
   AddUserSessionPolicy add_user_session_policy_ = AddUserSessionPolicy::ALLOWED;
-  session_manager::SessionState state_ = session_manager::SessionState::UNKNOWN;
+  session_manager::SessionState state_;
 
   // Cached user session info sorted by the order from SetUserSessionOrder.
   // Currently the session manager code (chrome) sets a LRU order with the

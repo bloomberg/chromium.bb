@@ -142,11 +142,13 @@ void AshTestHelper::SetUp(bool start_session) {
   aura::test::EnvTestHelper().SetInputStateLookup(
       std::unique_ptr<aura::InputStateLookup>());
 
+  session_controller_client_.reset(
+      new TestSessionControllerClient(WmShell::Get()->session_controller()));
+  session_controller_client_->InitializeAndBind();
+
   Shell* shell = Shell::GetInstance();
-  if (start_session) {
-    GetTestSessionStateDelegate()->SetActiveUserSessionStarted(true);
-    GetTestSessionStateDelegate()->SetHasActiveUser(true);
-  }
+  if (start_session)
+    session_controller_client_->CreatePredefinedUserSessions(1);
 
   if (!is_mash) {
     // ScreenLayoutObserver is specific to classic-ash.

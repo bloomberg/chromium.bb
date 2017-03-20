@@ -72,6 +72,8 @@ static_library("test_support_common") {
     "../common/test/ash_test_impl.h",
     "../common/test/test_palette_delegate.cc",
     "../common/test/test_palette_delegate.h",
+    "../common/test/test_session_controller_client.cc",
+    "../common/test/test_session_controller_client.h",
     "../common/test/test_session_state_delegate.cc",
     "../common/test/test_session_state_delegate.h",
     "../common/test/test_shelf_delegate.cc",

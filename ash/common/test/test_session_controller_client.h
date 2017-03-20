@@ -1,0 +1,81 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef ASH_COMMON_TEST_TEST_SESSION_CONTROLLER_CLIENT_H_
+#define ASH_COMMON_TEST_TEST_SESSION_CONTROLLER_CLIENT_H_
+
+#include <stdint.h>
+
+#include <string>
+
+#include "ash/public/interfaces/session_controller.mojom.h"
+#include "base/macros.h"
+#include "mojo/public/cpp/bindings/binding.h"
+
+class AccountId;
+
+namespace ash {
+
+class SessionController;
+
+namespace test {
+
+// Implement SessionControllerClient mojo interface to simulate chrome behavior
+// in tests. This breaks the ash/chrome dependency to allow testing ash code in
+// isolation. Note that tests that have an instance of SessionControllerClient
+// should NOT use this, i.e. tests that run BrowserMain to have chrome's
+// SessionControllerClient created, e.g. InProcessBrowserTest based tests. On
+// the other hand, tests code in chrome can use this class as long as it does
+// not run BrowserMain, e.g. testing::Test based test.
+class TestSessionControllerClient : public ash::mojom::SessionControllerClient {
+ public:
+  explicit TestSessionControllerClient(SessionController* controller);
+  ~TestSessionControllerClient() override;
+
+  // Initialize using existing info in |controller| and bind as its client.
+  void InitializeAndBind();
+
+  // Sets up the default state of SessionController.
+  void Reset();
+
+  // Helpers to set SessionController state.
+  void SetCanLockScreen(bool can_lock);
+  void SetShouldLockScreenAutomatically(bool should_lock);
+  void SetSessionState(session_manager::SessionState state);
+
+  // Creates the |count| pre-defined user sessions. The users are named by
+  // numbers using "user%d@tray" template. Note that existing user sessions
+  // prior this call will be removed without sending out notifications.
+  void CreatePredefinedUserSessions(int count);
+
+  // Adds a user session from a given display email. The display email will be
+  // canonicalized and used to construct an AccountId.
+  void AddUserSession(const std::string& display_email);
+
+  // Simulates screen unlocking. It is virtual so that test cases can override
+  // it. The default implementation sets the session state of SessionController
+  // to be ACTIVE.
+  virtual void UnlockScreen();
+
+  // ash::mojom::SessionControllerClient:
+  void RequestLockScreen() override;
+  void SwitchActiveUser(const AccountId& account_id) override;
+  void CycleActiveUser(CycleUserDirection direction) override;
+
+ private:
+  SessionController* const controller_;
+
+  // Binds to the client interface.
+  mojo::Binding<ash::mojom::SessionControllerClient> binding_;
+
+  int fake_session_id_ = 0;
+  mojom::SessionInfoPtr session_info_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestSessionControllerClient);
+};
+
+}  // namespace test
+}  // namespace ash
+
+#endif  // ASH_COMMON_TEST_TEST_SESSION_CONTROLLER_CLIENT_H_

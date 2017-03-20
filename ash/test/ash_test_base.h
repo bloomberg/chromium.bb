@@ -57,6 +57,7 @@ namespace test {
 class AshTestEnvironment;
 class AshTestHelper;
 class TestScreenshotDelegate;
+class TestSessionControllerClient;
 class TestSystemTrayDelegate;
 
 class AshTestBase : public testing::Test {
@@ -146,16 +147,15 @@ class AshTestBase : public testing::Test {
 
   TestScreenshotDelegate* GetScreenshotDelegate();
 
+  TestSessionControllerClient* GetSessionControllerClient();
+
   TestSystemTrayDelegate* GetSystemTrayDelegate();
 
   // Utility methods to emulate user logged in or not, session started or not
   // and user able to lock screen or not cases.
   void SetSessionStarted(bool session_started);
-  // Sets the SessionState to active, marking the begining of transitioning to
-  // a user session. The session is considered blocked until SetSessionStarted
-  // is called.
-  void SetSessionStarting();
   void SetUserLoggedIn(bool user_logged_in);
+  void SetCanLockScreen(bool can_lock);
   void SetShouldLockScreenAutomatically(bool should_lock);
   void SetUserAddingScreenRunning(bool user_adding_screen_running);
 

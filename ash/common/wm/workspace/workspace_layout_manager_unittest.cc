@@ -7,13 +7,13 @@
 #include <string>
 #include <utility>
 
-#include "ash/common/session/session_state_delegate.h"
+#include "ash/common/session/session_controller.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/shelf_layout_manager.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_observer.h"
 #include "ash/common/test/ash_test.h"
-#include "ash/common/test/test_session_state_delegate.h"
+#include "ash/common/test/test_session_controller_client.h"
 #include "ash/common/wm/fullscreen_window_finder.h"
 #include "ash/common/wm/maximize_mode/workspace_backdrop_delegate.h"
 #include "ash/common/wm/window_state.h"
@@ -910,7 +910,7 @@ TEST_F(WorkspaceLayoutManagerSoloTest,
 
 // Verify if the window is not resized during screen lock. See: crbug.com/173127
 TEST_F(WorkspaceLayoutManagerSoloTest, NotResizeWhenScreenIsLocked) {
-  test::TestSessionStateDelegate::SetCanLockScreen(true);
+  SetCanLockScreen(true);
   std::unique_ptr<aura::Window> window_owner(
       CreateTestWindowInShellWithBounds(gfx::Rect(1, 2, 3, 4)));
   WmWindow* window = WmWindow::Get(window_owner.get());
@@ -927,13 +927,13 @@ TEST_F(WorkspaceLayoutManagerSoloTest, NotResizeWhenScreenIsLocked) {
             window_bounds.ToString());
 
   // The window size should not get touched while we are in lock screen.
-  WmShell::Get()->GetSessionStateDelegate()->LockScreen();
+  WmShell::Get()->session_controller()->LockScreenAndFlushForTest();
   ShelfLayoutManager* shelf_layout_manager = shelf->shelf_layout_manager();
   shelf_layout_manager->UpdateVisibilityState();
   EXPECT_EQ(window_bounds.ToString(), window->GetBounds().ToString());
 
   // Coming out of the lock screen the window size should still remain.
-  WmShell::Get()->GetSessionStateDelegate()->UnlockScreen();
+  GetSessionControllerClient()->UnlockScreen();
   shelf_layout_manager->UpdateVisibilityState();
   EXPECT_EQ(wm::GetMaximizedWindowBoundsInParent(window).ToString(),
             window_bounds.ToString());

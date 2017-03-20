@@ -59,59 +59,19 @@ class PaletteDelegateImpl : public PaletteDelegate {
 
 class SessionStateDelegateImpl : public SessionStateDelegate {
  public:
-  SessionStateDelegateImpl()
-      : screen_locked_(false), user_info_(new user_manager::UserInfoImpl()) {}
+  SessionStateDelegateImpl() : user_info_(new user_manager::UserInfoImpl()) {}
 
   ~SessionStateDelegateImpl() override {}
 
   // SessionStateDelegate:
-  int GetMaximumNumberOfLoggedInUsers() const override { return 3; }
-  int NumberOfLoggedInUsers() const override {
-    // ash_shell has 2 users.
-    return 2;
-  }
-  bool IsActiveUserSessionStarted() const override { return true; }
-  bool CanLockScreen() const override { return true; }
-  bool IsScreenLocked() const override { return screen_locked_; }
-  bool ShouldLockScreenAutomatically() const override { return false; }
-  void LockScreen() override {
-    shell::CreateLockScreen();
-    screen_locked_ = true;
-    Shell::GetInstance()->UpdateShelfVisibility();
-  }
-  void UnlockScreen() override {
-    screen_locked_ = false;
-    Shell::GetInstance()->UpdateShelfVisibility();
-  }
-  bool IsUserSessionBlocked() const override {
-    return !IsActiveUserSessionStarted() || IsScreenLocked();
-  }
-  session_manager::SessionState GetSessionState() const override {
-    // Assume that if session is not active we're at login.
-    return IsActiveUserSessionStarted()
-               ? session_manager::SessionState::ACTIVE
-               : session_manager::SessionState::LOGIN_PRIMARY;
-  }
-  const user_manager::UserInfo* GetUserInfo(UserIndex index) const override {
-    return user_info_.get();
-  }
   bool ShouldShowAvatar(WmWindow* window) const override {
     return !user_info_->GetImage().isNull();
   }
   gfx::ImageSkia GetAvatarImageForWindow(WmWindow* window) const override {
     return gfx::ImageSkia();
   }
-  void SwitchActiveUser(const AccountId& account_id) override {}
-  void CycleActiveUser(CycleUserDirection direction) override {}
-  bool IsMultiProfileAllowedByPrimaryUserPolicy() const override {
-    return true;
-  }
-  void AddSessionStateObserver(SessionStateObserver* observer) override {}
-  void RemoveSessionStateObserver(SessionStateObserver* observer) override {}
 
  private:
-  bool screen_locked_;
-
   // A pseudo user info.
   std::unique_ptr<user_manager::UserInfo> user_info_;
 

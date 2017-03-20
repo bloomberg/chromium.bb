@@ -4,7 +4,7 @@
 
 #include "ash/common/system/overview/overview_button_tray.h"
 
-#include "ash/common/session/session_state_delegate.h"
+#include "ash/common/session/session_controller.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_constants.h"
@@ -34,12 +34,12 @@ OverviewButtonTray::OverviewButtonTray(WmShelf* wm_shelf)
   set_separator_visibility(false);
 
   Shell::GetInstance()->AddShellObserver(this);
-  WmShell::Get()->GetSessionStateDelegate()->AddSessionStateObserver(this);
+  WmShell::Get()->session_controller()->AddSessionStateObserver(this);
 }
 
 OverviewButtonTray::~OverviewButtonTray() {
   Shell::GetInstance()->RemoveShellObserver(this);
-  WmShell::Get()->GetSessionStateDelegate()->RemoveSessionStateObserver(this);
+  WmShell::Get()->session_controller()->RemoveSessionStateObserver(this);
 }
 
 void OverviewButtonTray::UpdateAfterLoginStatusChange(LoginStatus status) {
@@ -110,14 +110,13 @@ void OverviewButtonTray::UpdateIconVisibility() {
   // not change during transient times in which CanSelect is false. Such as when
   // a modal dialog is present.
   WmShell* shell = WmShell::Get();
-  SessionStateDelegate* session_state_delegate =
-      shell->GetSessionStateDelegate();
+  SessionController* session_controller = shell->session_controller();
 
   SetVisible(
       shell->maximize_mode_controller()->IsMaximizeModeWindowManagerEnabled() &&
-      session_state_delegate->IsActiveUserSessionStarted() &&
-      !session_state_delegate->IsScreenLocked() &&
-      session_state_delegate->GetSessionState() ==
+      session_controller->IsActiveUserSessionStarted() &&
+      !session_controller->IsScreenLocked() &&
+      session_controller->GetSessionState() ==
           session_manager::SessionState::ACTIVE &&
       shell->system_tray_delegate()->GetUserLoginStatus() !=
           LoginStatus::KIOSK_APP &&

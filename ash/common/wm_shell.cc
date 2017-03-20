@@ -83,8 +83,8 @@ ShelfModel* WmShell::shelf_model() {
 void WmShell::ShowContextMenu(const gfx::Point& location_in_screen,
                               ui::MenuSourceType source_type) {
   // Bail if there is no active user session or if the screen is locked.
-  if (GetSessionStateDelegate()->NumberOfLoggedInUsers() < 1 ||
-      GetSessionStateDelegate()->IsScreenLocked()) {
+  if (session_controller()->NumberOfLoggedInUsers() < 1 ||
+      session_controller()->IsScreenLocked()) {
     return;
   }
 
@@ -94,9 +94,9 @@ void WmShell::ShowContextMenu(const gfx::Point& location_in_screen,
 }
 
 void WmShell::CreateShelfView() {
-  // Must occur after SessionStateDelegate creation and user login.
-  DCHECK(GetSessionStateDelegate());
-  DCHECK_GT(GetSessionStateDelegate()->NumberOfLoggedInUsers(), 0);
+  // Must occur after SessionController creation and user login.
+  DCHECK(session_controller());
+  DCHECK_GT(session_controller()->NumberOfLoggedInUsers(), 0);
   CreateShelfDelegate();
 
   for (WmWindow* root_window : GetAllRootWindows())
@@ -107,11 +107,11 @@ void WmShell::CreateShelfDelegate() {
   // May be called multiple times as shelves are created and destroyed.
   if (shelf_delegate_)
     return;
-  // Must occur after SessionStateDelegate creation and user login because
+  // Must occur after SessionController creation and user login because
   // Chrome's implementation of ShelfDelegate assumes it can get information
   // about multi-profile login state.
-  DCHECK(GetSessionStateDelegate());
-  DCHECK_GT(GetSessionStateDelegate()->NumberOfLoggedInUsers(), 0);
+  DCHECK(session_controller());
+  DCHECK_GT(session_controller()->NumberOfLoggedInUsers(), 0);
   shelf_delegate_.reset(
       Shell::Get()->shell_delegate()->CreateShelfDelegate(shelf_model()));
   shelf_window_watcher_.reset(new ShelfWindowWatcher(shelf_model()));

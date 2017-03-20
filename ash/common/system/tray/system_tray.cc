@@ -11,7 +11,7 @@
 #include "ash/common/key_event_watcher.h"
 #include "ash/common/login_status.h"
 #include "ash/common/material_design/material_design_controller.h"
-#include "ash/common/session/session_state_delegate.h"
+#include "ash/common/session/session_controller.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/system/chromeos/audio/tray_audio.h"
@@ -266,9 +266,8 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
   const bool use_md = MaterialDesignController::IsSystemTrayMenuMaterial();
 
   // Create user items for each possible user.
-  int maximum_user_profiles = WmShell::Get()
-                                  ->GetSessionStateDelegate()
-                                  ->GetMaximumNumberOfLoggedInUsers();
+  const int maximum_user_profiles =
+      WmShell::Get()->session_controller()->GetMaximumNumberOfLoggedInUsers();
   for (int i = 0; i < maximum_user_profiles; i++)
     AddTrayItem(base::MakeUnique<TrayUser>(this, i));
 

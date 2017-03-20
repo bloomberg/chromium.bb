@@ -4,7 +4,9 @@
 
 #include "ash/test/ash_interactive_ui_test_base.h"
 
+#include "base/lazy_instance.h"
 #include "base/path_service.h"
+#include "mojo/edk/embedder/embedder.h"
 #include "ui/aura/env.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
@@ -13,11 +15,29 @@
 namespace ash {
 namespace test {
 
+namespace {
+
+class MojoInitializer {
+ public:
+  MojoInitializer() { mojo::edk::Init(); }
+};
+
+base::LazyInstance<MojoInitializer>::Leaky mojo_initializer;
+
+// Initialize mojo once per process.
+void InitializeMojo() {
+  mojo_initializer.Get();
+}
+
+}  // namespace
+
 AshInteractiveUITestBase::AshInteractiveUITestBase() {}
 
 AshInteractiveUITestBase::~AshInteractiveUITestBase() {}
 
 void AshInteractiveUITestBase::SetUp() {
+  InitializeMojo();
+
   gl::GLSurfaceTestSupport::InitializeOneOff();
 
   ui::RegisterPathProvider();

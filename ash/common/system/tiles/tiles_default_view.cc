@@ -5,7 +5,7 @@
 #include "ash/common/system/tiles/tiles_default_view.h"
 
 #include "ash/common/metrics/user_metrics_action.h"
-#include "ash/common/session/session_state_delegate.h"
+#include "ash/common/session/session_controller.h"
 #include "ash/common/shutdown_controller.h"
 #include "ash/common/system/tray/system_menu_button.h"
 #include "ash/common/system/tray/system_tray.h"
@@ -89,7 +89,7 @@ void TilesDefaultView::Init() {
   lock_button_ =
       new SystemMenuButton(this, TrayPopupInkDropStyle::HOST_CENTERED,
                            kSystemMenuLockIcon, IDS_ASH_STATUS_TRAY_LOCK);
-  if (disable_buttons || !shell->GetSessionStateDelegate()->CanLockScreen())
+  if (disable_buttons || !shell->session_controller()->CanLockScreen())
     lock_button_->SetEnabled(false);
 
   AddChildView(lock_button_);
