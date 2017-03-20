@@ -9,9 +9,7 @@ PASS Calling initEvent must not have an effect during dispatching.
 PASS Calling initEvent must unset the stop propagation flag. 
 PASS Calling initEvent must unset the stop immediate propagation flag. 
 PASS Calling initEvent during propagation. 
-FAIL First parameter to initEvent should be mandatory. assert_throws: function "function () {
-    e.initEvent()
-  }" did not throw
+PASS First parameter to initEvent should be mandatory. 
 PASS Tests initEvent's default parameter values. 
 Harness: the test ran to completion.
 

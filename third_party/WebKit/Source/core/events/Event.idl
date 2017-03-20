@@ -49,10 +49,7 @@
 
     [CallWith=ScriptState] readonly attribute DOMHighResTimeStamp timeStamp;
 
-    // FIXME: initEvent()'s arguments should not be optional.
-    [Measure] void initEvent([Default=Undefined] optional DOMString type,
-                             [Default=Undefined] optional boolean bubbles,
-                             [Default=Undefined] optional boolean cancelable);
+    [Measure] void initEvent(DOMString type, optional boolean bubbles = false, optional boolean cancelable = false);
 
     // Non-standard APIs
     [MeasureAs=EventSrcElement] readonly attribute EventTarget srcElement;
