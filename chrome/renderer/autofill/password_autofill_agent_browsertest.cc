@@ -2175,6 +2175,65 @@ TEST_F(PasswordAutofillAgentTest,
   ASSERT_FALSE(fake_driver_.called_password_form_submitted());
 }
 
+// Tests that no save promt is shown when an unowned form is changed and AJAX
+// completed but the form is still visible.
+TEST_F(PasswordAutofillAgentTest,
+       NoForm_NoPromptForAJAXSubmitWithoutNavigationAndNewElementAppeared) {
+  const char kNoFormHTMLWithHiddenField[] =
+      "<INPUT type='text' id='username'/>"
+      "<INPUT type='password' id='password'/>"
+      "<INPUT type='text' id='captcha' style='display:none'/>";
+  LoadHTML(kNoFormHTMLWithHiddenField);
+
+  UpdateUsernameAndPasswordElements();
+  WebElement captcha_element =
+      GetMainFrame()->document().getElementById(WebString::fromUTF8("captcha"));
+  ASSERT_FALSE(captcha_element.isNull());
+
+  SimulateUsernameChange("Bob");
+  SimulatePasswordChange("mypassword");
+
+  // Simulate captcha element show up right before AJAX completed.
+  captcha_element.setAttribute("style", "display:inline;");
+  password_autofill_agent_->AJAXSucceeded();
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(fake_driver_.called_inpage_navigation());
+  EXPECT_FALSE(fake_driver_.called_password_form_submitted());
+}
+
+// Tests that no save promt is shown when a form with empty action URL is
+// changed and AJAX completed but the form is still visible.
+TEST_F(PasswordAutofillAgentTest,
+       NoAction_NoPromptForAJAXSubmitWithoutNavigationAndNewElementAppeared) {
+  // Form without an action URL.
+  const char kHTMLWithHiddenField[] =
+      "<FORM name='LoginTestForm'>"
+      "  <INPUT type='text' id='username'/>"
+      "  <INPUT type='password' id='password'/>"
+      "  <INPUT type='text' id='captcha' style='display:none'/>"
+      "  <INPUT type='submit' value='Login'/>"
+      "</FORM>";
+  // Set the valid URL so the form action URL can be generated properly.
+  LoadHTMLWithUrlOverride(kHTMLWithHiddenField, "https://www.example.com");
+
+  UpdateUsernameAndPasswordElements();
+  WebElement captcha_element =
+      GetMainFrame()->document().getElementById(WebString::fromUTF8("captcha"));
+  ASSERT_FALSE(captcha_element.isNull());
+
+  SimulateUsernameChange("Bob");
+  SimulatePasswordChange("mypassword");
+
+  // Simulate captcha element show up right before AJAX completed.
+  captcha_element.setAttribute("style", "display:inline;");
+  password_autofill_agent_->AJAXSucceeded();
+
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(fake_driver_.called_inpage_navigation());
+  EXPECT_FALSE(fake_driver_.called_password_form_submitted());
+}
+
 // Tests that credential suggestions are autofilled on a password (and change
 // password) forms having either ambiguous or empty name.
 TEST_F(PasswordAutofillAgentTest,

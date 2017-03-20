@@ -83,14 +83,16 @@ GURL StripAuthAndParams(const GURL& gurl);
 // successful.
 bool ExtractFormData(const blink::WebFormElement& form_element, FormData* data);
 
-// Helper function to check if there exist any form on |frame| where its action
+// Helper function to check if there exist any visible form on |frame| which
+// equals |form_element|. If |form_element| is null, checks if forms action
 // equals |action|. Returns true if so. For forms with empty or unspecified
 // actions, all form data are used for comparison. Form data comparison is
-// disabled on Mac and Android because the update prompt isn't implemented.
-// It may cause many false password updates.
+// disabled on Mac and Android because the update prompt isn't implemented. It
+// may cause many false password updates.
 // TODO(kolos) Turn on all data comparing when the update prompt will be
 // implemented on Mac and Android.
 bool IsFormVisible(blink::WebFrame* frame,
+                   const blink::WebFormElement& form_element,
                    const GURL& action,
                    const GURL& origin,
                    const FormData& form_data);

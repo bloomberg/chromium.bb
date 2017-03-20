@@ -21,6 +21,8 @@ static_library("renderer") {
     "password_form_conversion_utils.h",
     "password_generation_agent.cc",
     "password_generation_agent.h",
+    "provisionally_saved_password_form.cc",
+    "provisionally_saved_password_form.h",
     "renderer_save_password_progress_logger.cc",
     "renderer_save_password_progress_logger.h",
   ]

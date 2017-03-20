@@ -1203,6 +1203,7 @@ bool ExtractFormData(const WebFormElement& form_element, FormData* data) {
 }
 
 bool IsFormVisible(blink::WebFrame* frame,
+                   const blink::WebFormElement& form_element,
                    const GURL& canonical_action,
                    const GURL& canonical_origin,
                    const FormData& form_data) {
@@ -1225,6 +1226,11 @@ bool IsFormVisible(blink::WebFrame* frame,
   for (const WebFormElement& form : forms) {
     if (!AreFormContentsVisible(form))
       continue;
+
+    // Try to match the WebFormElement reference first.
+    if (!form_element.isNull() && form == form_element) {
+      return true;  // Form still exists.
+    }
 
     GURL iter_canonical_action = GetCanonicalActionForForm(form);
     bool form_action_is_empty = iter_canonical_action.is_empty() ||
