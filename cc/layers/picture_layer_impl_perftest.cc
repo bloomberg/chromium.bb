@@ -6,7 +6,7 @@
 
 #include "base/macros.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "cc/debug/lap_timer.h"
+#include "cc/base/lap_timer.h"
 #include "cc/test/fake_compositor_frame_sink.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host_impl.h"

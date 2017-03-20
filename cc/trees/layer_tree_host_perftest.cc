@@ -13,7 +13,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
-#include "cc/debug/lap_timer.h"
+#include "cc/base/lap_timer.h"
 #include "cc/layers/nine_patch_layer.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/texture_layer.h"

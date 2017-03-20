@@ -12,7 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "cc/base/completion_event.h"
-#include "cc/debug/lap_timer.h"
+#include "cc/base/lap_timer.h"
 #include "cc/raster/synchronous_task_graph_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"

@@ -10,7 +10,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_event.h"
-#include "cc/debug/benchmark_instrumentation.h"
+#include "cc/benchmarks/benchmark_instrumentation.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/output/direct_renderer.h"
 #include "cc/output/gl_renderer.h"

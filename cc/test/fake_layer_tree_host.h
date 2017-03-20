@@ -5,7 +5,7 @@
 #ifndef CC_TEST_FAKE_LAYER_TREE_HOST_H_
 #define CC_TEST_FAKE_LAYER_TREE_HOST_H_
 
-#include "cc/debug/micro_benchmark_controller.h"
+#include "cc/benchmarks/micro_benchmark_controller.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_layer_tree_host_impl.h"

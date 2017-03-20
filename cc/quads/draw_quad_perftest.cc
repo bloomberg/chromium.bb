@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/time/time.h"
-#include "cc/debug/lap_timer.h"
+#include "cc/base/lap_timer.h"
 #include "cc/quads/draw_quad.h"
 #include "cc/quads/render_pass.h"
 #include "cc/quads/texture_draw_quad.h"

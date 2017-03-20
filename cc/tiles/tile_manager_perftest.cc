@@ -10,7 +10,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "cc/debug/lap_timer.h"
+#include "cc/base/lap_timer.h"
 #include "cc/raster/raster_buffer.h"
 #include "cc/test/begin_frame_args_test.h"
 #include "cc/test/fake_compositor_frame_sink.h"

@@ -8,7 +8,7 @@
 #include "cc/animation/animation_id_provider.h"
 #include "cc/animation/animation_player.h"
 #include "cc/animation/animation_timeline.h"
-#include "cc/debug/lap_timer.h"
+#include "cc/base/lap_timer.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_layer_tree_host_client.h"

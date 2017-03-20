@@ -9,7 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
-#include "cc/debug/lap_timer.h"
+#include "cc/base/lap_timer.h"
 #include "cc/output/context_cache_controller.h"
 #include "cc/output/context_provider.h"
 #include "cc/raster/bitmap_raster_buffer_provider.h"

@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 #include "base/logging.h"
-#include "cc/debug/lap_timer.h"
+#include "cc/base/lap_timer.h"
 #include "cc/raster/texture_compressor.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"

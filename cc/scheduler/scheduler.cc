@@ -13,7 +13,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
-#include "cc/debug/devtools_instrumentation.h"
+#include "cc/base/devtools_instrumentation.h"
 #include "cc/debug/traced_value.h"
 #include "cc/scheduler/compositor_timing_history.h"
 #include "cc/scheduler/delay_based_time_source.h"

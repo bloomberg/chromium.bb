@@ -12,7 +12,7 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "cc/debug/ring_buffer.h"
+#include "cc/base/ring_buffer.h"
 
 namespace cc {
 

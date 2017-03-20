@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/memory/ptr_util.h"
-#include "cc/debug/lap_timer.h"
+#include "cc/base/lap_timer.h"
 #include "cc/output/compositor_frame.h"
 #include "cc/quads/surface_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"

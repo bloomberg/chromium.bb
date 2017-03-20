@@ -16,7 +16,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
-#include "cc/debug/devtools_instrumentation.h"
+#include "cc/base/devtools_instrumentation.h"
 #include "cc/output/context_provider.h"
 #include "cc/raster/tile_task.h"
 #include "cc/resources/resource_format_utils.h"

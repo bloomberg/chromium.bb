@@ -4,7 +4,7 @@
 
 #include <vector>
 
-#include "cc/debug/lap_timer.h"
+#include "cc/base/lap_timer.h"
 #include "cc/paint/draw_image.h"
 #include "cc/raster/tile_task.h"
 #include "cc/tiles/software_image_decode_cache.h"

@@ -6,7 +6,7 @@
 
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/animation/animation_host.h"
-#include "cc/debug/lap_timer.h"
+#include "cc/base/lap_timer.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_layer_tree_host_client.h"

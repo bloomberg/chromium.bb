@@ -14,7 +14,7 @@
 #include "base/strings/string_piece.h"
 #include "base/threading/thread.h"
 #include "base/time/time.h"
-#include "cc/debug/lap_timer.h"
+#include "cc/base/lap_timer.h"
 #include "cc/layers/layer.h"
 #include "cc/output/bsp_tree.h"
 #include "cc/quads/draw_polygon.h"

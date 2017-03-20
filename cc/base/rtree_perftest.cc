@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "cc/base/lap_timer.h"
 #include "cc/base/rtree.h"
-#include "cc/debug/lap_timer.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
