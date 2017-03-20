@@ -723,7 +723,8 @@ def main():
     constants.CheckOutputDirectory()
     devil_chromium.Initialize()
     build_vars = _ReadBuildVars(constants.GetOutDirectory())
-    tools_prefix = build_vars['android_tool_prefix']
+    tools_prefix = os.path.join(constants.GetOutDirectory(),
+                                build_vars['android_tool_prefix'])
   else:
     tools_prefix = ''
 

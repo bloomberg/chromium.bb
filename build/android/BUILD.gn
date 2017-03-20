@@ -52,7 +52,8 @@ if (enable_java_templates) {
   _data +=
       "android_sdk_root=" + rebase_path(android_sdk_root, root_build_dir) + CR
   _data += "android_sdk_version=$android_sdk_version$CR"
-  _data += "android_tool_prefix=$android_tool_prefix"
+  _data += "android_tool_prefix=" +
+           rebase_path(android_tool_prefix, root_build_dir) + CR
   write_file("$root_build_dir/build_vars.txt", _data)
 }
 
