@@ -358,6 +358,7 @@ _COPY_PATHS_CHROME = (
     Path('chrome-wrapper'),
     Path('chrome_100_percent.pak'),
     Path('chrome_200_percent.pak', cond=C.StagingFlagSet(_HIGHDPI_FLAG)),
+    Path('dbus/', optional=True),
     Path('keyboard_resources.pak'),
     # Widevine binaries are already pre-stripped.  In addition, they don't
     # play well with the binutils stripping tools, so skip stripping.
