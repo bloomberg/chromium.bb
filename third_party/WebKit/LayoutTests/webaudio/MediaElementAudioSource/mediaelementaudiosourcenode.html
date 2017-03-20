@@ -2,51 +2,64 @@
 
 <html>
 <head>
-<script src="../../resources/js-test.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script> 
 <script src="../resources/audit-util.js"></script>
-<script src="../resources/audio-testing.js"></script>
+<script src="../resources/audit.js"></script>
 </head>
 
 <body>
-<div id="description"></div>
-<div id="console"></div>
-
 <script>
-description("Basic tests for MediaElementAudioSourceNode API.");
+let audit = Audit.createTaskRunner();
 
-var context = 0;
-var audioElement = 0;
-var audioNode = 0;
+audit.define(
+    {
+      label: 'test',
+      description: 'Basic tests for MediaElementAudioSourceNode API'
+    },
+    (task, should) => {
 
-function runTest() {
-    window.jsTestIsAsync = true;
+      let context = new AudioContext();
 
-    context = new AudioContext();
+      let audioElement = new Audio();
+      let mediaSource = context.createMediaElementSource(audioElement);
+      let audioNode = mediaSource;
 
-    audioElement = new Audio();
-    mediaSource = context.createMediaElementSource(audioElement);
-    audioNode = mediaSource;
+      // Check number of inputs and outputs.
+      should(audioNode.numberOfInputs, 'audioNode.numberOfInputs').beEqualTo(0);
+      should(audioNode.numberOfOutputs, 'audioNode.numberOfOutputs')
+          .beEqualTo(1);
 
-    // Check number of inputs and outputs.
-    shouldBeEqualToNumber("audioNode.numberOfInputs", 0);
-    shouldBeEqualToNumber("audioNode.numberOfOutputs", 1);
+      // Try calling connect() method with illegal values: illegal destination,
+      // illegal output index, and illegal input index.
+      should(() => audioNode.connect(0, 0, 0), 'audioNode.connect(0, 0, 0)')
+          .throw('TypeError');
+      should(
+          () => audioNode.connect(context.destination, 5, 0),
+          'audioNode.connect(context.destination, 5, 0)')
+          .throw('IndexSizeError');
+      should(
+          () => audioNode.connect(context.destination, 0, 5),
+          'audioNode.connect(context.destination, 0, 5)')
+          .throw('IndexSizeError');
 
-    // Try calling connect() method with illegal values: illegal destination, illegal output index,
-    // and illegal input index.
-    shouldThrow("audioNode.connect(0, 0, 0)");
-    shouldThrow("audioNode.connect(context.destination, 5, 0)");
-    shouldThrow("audioNode.connect(context.destination, 0, 5)");
+      // Try calling connect() with proper values.
+      should(
+          () => audioNode.connect(context.destination, 0, 0),
+          'audioNode.connect(context.destination, 0, 0)')
+          .notThrow();
 
-    // Try calling connect() with proper values.
-    shouldNotThrow("audioNode.connect(context.destination, 0, 0)");
-    
-    // Try creating another MediaElementAudioSourceNode using the same audio element.
-    shouldThrow("context.createMediaElementSource(audioElement)");
+      // Try creating another MediaElementAudioSourceNode using the same audio
+      // element.
+      should(
+          () => context.createMediaElementSource(audioElement),
+          'context.createMediaElementSource(audioElement)')
+          .throw();
 
-    finishJSTest();
-}
+      task.done();
+    });
 
-runTest();
+audit.run();
 
 </script>
 
