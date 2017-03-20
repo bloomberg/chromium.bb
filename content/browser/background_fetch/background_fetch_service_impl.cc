@@ -50,11 +50,14 @@ void BackgroundFetchServiceImpl::UpdateUI(
 }
 
 void BackgroundFetchServiceImpl::Abort(int64_t service_worker_registration_id,
-                                       const std::string& tag) {
+                                       const std::string& tag,
+                                       const AbortCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // TODO(peter): Get the BackgroundFetchJobController for the
   // {service_worker_registration_id, tag} pair and call Abort() on it.
+
+  callback.Run(blink::mojom::BackgroundFetchError::NONE);
 }
 
 void BackgroundFetchServiceImpl::GetRegistration(

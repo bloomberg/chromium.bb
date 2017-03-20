@@ -9,11 +9,14 @@
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "platform/heap/GarbageCollected.h"
 #include "platform/heap/Handle.h"
+#include "public/platform/modules/background_fetch/background_fetch.mojom-blink.h"
 #include "wtf/text/WTFString.h"
 
 namespace blink {
 
 class IconDefinition;
+class ScriptPromiseResolver;
+class ScriptState;
 class ServiceWorkerRegistration;
 
 // Represents an individual Background Fetch registration. Gives developers
@@ -36,11 +39,13 @@ class BackgroundFetchRegistration final
   long long totalDownloadSize() const;
   String title() const;
 
-  void abort();
+  ScriptPromise abort(ScriptState*);
 
   DECLARE_TRACE();
 
  private:
+  void didAbort(ScriptPromiseResolver*, mojom::blink::BackgroundFetchError);
+
   Member<ServiceWorkerRegistration> m_registration;
 
   String m_tag;

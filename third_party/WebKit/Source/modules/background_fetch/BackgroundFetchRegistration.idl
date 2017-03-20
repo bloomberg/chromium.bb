@@ -14,5 +14,5 @@
     readonly attribute DOMString title;
     // TODO(crbug.com/699957): Implement the `activeFetches` attribute.
 
-    void abort();
+    [CallWith=ScriptState] Promise<bool> abort();
 };

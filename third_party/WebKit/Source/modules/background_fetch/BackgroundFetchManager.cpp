@@ -78,6 +78,7 @@ void BackgroundFetchManager::didGetRegistration(
       resolver->resolve(registration);
       return;
     case mojom::blink::BackgroundFetchError::DUPLICATED_TAG:
+    case mojom::blink::BackgroundFetchError::INVALID_TAG:
       // Not applicable for this callback.
       break;
   }
@@ -112,6 +113,7 @@ void BackgroundFetchManager::didGetTags(
       resolver->resolve(tags);
       return;
     case mojom::blink::BackgroundFetchError::DUPLICATED_TAG:
+    case mojom::blink::BackgroundFetchError::INVALID_TAG:
       // Not applicable for this callback.
       break;
   }

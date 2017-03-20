@@ -68,9 +68,10 @@ BackgroundFetchBridge::BackgroundFetchBridge(
 
 BackgroundFetchBridge::~BackgroundFetchBridge() = default;
 
-void BackgroundFetchBridge::abort(const String& tag) {
+void BackgroundFetchBridge::abort(const String& tag,
+                                  std::unique_ptr<AbortCallback> callback) {
   getService()->Abort(supplementable()->webRegistration()->registrationId(),
-                      tag);
+                      tag, convertToBaseCallback(std::move(callback)));
 }
 
 void BackgroundFetchBridge::updateUI(

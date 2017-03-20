@@ -28,12 +28,13 @@ class BackgroundFetchBridge final
   WTF_MAKE_NONCOPYABLE(BackgroundFetchBridge);
 
  public:
-  using UpdateUICallback = Function<void(mojom::blink::BackgroundFetchError)>;
+  using AbortCallback = Function<void(mojom::blink::BackgroundFetchError)>;
   using GetRegistrationCallback =
       Function<void(mojom::blink::BackgroundFetchError,
                     BackgroundFetchRegistration*)>;
   using GetTagsCallback =
       Function<void(mojom::blink::BackgroundFetchError, const Vector<String>&)>;
+  using UpdateUICallback = Function<void(mojom::blink::BackgroundFetchError)>;
 
   static BackgroundFetchBridge* from(ServiceWorkerRegistration*);
   static const char* supplementName();
@@ -49,8 +50,10 @@ class BackgroundFetchBridge final
                 const String& title,
                 std::unique_ptr<UpdateUICallback>);
 
-  // Aborts the active Background Fetch for |tag|. Does not respond.
-  void abort(const String& tag);
+  // Aborts the active Background Fetch for |tag|. Will invoke the |callback|
+  // when the Background Fetch identified by |tag| has been aborted, or could
+  // not be aborted for operational reasons.
+  void abort(const String& tag, std::unique_ptr<AbortCallback>);
 
   // Gets the Background Fetch registration for the given |tag|. Will invoke the
   // |callback| with the Background Fetch registration, which may be a nullptr

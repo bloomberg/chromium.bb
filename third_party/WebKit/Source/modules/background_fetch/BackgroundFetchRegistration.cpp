@@ -4,6 +4,7 @@
 
 #include "modules/background_fetch/BackgroundFetchRegistration.h"
 
+#include "bindings/core/v8/ScriptState.h"
 #include "modules/background_fetch/BackgroundFetchBridge.h"
 #include "modules/background_fetch/IconDefinition.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
@@ -40,8 +41,33 @@ String BackgroundFetchRegistration::title() const {
   return m_title;
 }
 
-void BackgroundFetchRegistration::abort() {
-  BackgroundFetchBridge::from(m_registration)->abort(m_tag);
+ScriptPromise BackgroundFetchRegistration::abort(ScriptState* scriptState) {
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
+  ScriptPromise promise = resolver->promise();
+
+  BackgroundFetchBridge::from(m_registration)
+      ->abort(m_tag, WTF::bind(&BackgroundFetchRegistration::didAbort,
+                               wrapPersistent(this), wrapPersistent(resolver)));
+
+  return promise;
+}
+
+void BackgroundFetchRegistration::didAbort(
+    ScriptPromiseResolver* resolver,
+    mojom::blink::BackgroundFetchError error) {
+  switch (error) {
+    case mojom::blink::BackgroundFetchError::NONE:
+      resolver->resolve(true /* success */);
+      return;
+    case mojom::blink::BackgroundFetchError::INVALID_TAG:
+      resolver->resolve(false /* success */);
+      return;
+    case mojom::blink::BackgroundFetchError::DUPLICATED_TAG:
+      // Not applicable for this callback.
+      break;
+  }
+
+  NOTREACHED();
 }
 
 DEFINE_TRACE(BackgroundFetchRegistration) {

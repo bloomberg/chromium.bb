@@ -6,7 +6,8 @@ module blink.mojom;
 
 enum BackgroundFetchError {
   NONE,
-  DUPLICATED_TAG
+  DUPLICATED_TAG,
+  INVALID_TAG
 };
 
 struct IconDefinition {
@@ -32,7 +33,8 @@ interface BackgroundFetchService {
 
   // Aborts the Background Fetch registration identified by the
   // |service_worker_registration_id| and the |tag|.
-  Abort(int64 service_worker_registration_id, string tag);
+  Abort(int64 service_worker_registration_id, string tag)
+      => (BackgroundFetchError error);
 
   // Gets the Background Fetch registration identified by the
   // |service_worker_registration_id| and the |tag|.

@@ -35,7 +35,8 @@ class BackgroundFetchServiceImpl : public blink::mojom::BackgroundFetchService {
                 const std::string& title,
                 const UpdateUICallback& callback) override;
   void Abort(int64_t service_worker_registration_id,
-             const std::string& tag) override;
+             const std::string& tag,
+             const AbortCallback& callback) override;
   void GetRegistration(int64_t service_worker_registration_id,
                        const std::string& tag,
                        const GetRegistrationCallback& callback) override;
