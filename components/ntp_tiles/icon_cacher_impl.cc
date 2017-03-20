@@ -78,10 +78,12 @@ void IconCacherImpl::OnGetFaviconImageForPageURLFinished(
                  site, icon_available));
 }
 
-void IconCacherImpl::OnFaviconDownloaded(PopularSites::Site site,
-                                         const base::Closure& icon_available,
-                                         const std::string& id,
-                                         const gfx::Image& fetched_image) {
+void IconCacherImpl::OnFaviconDownloaded(
+    PopularSites::Site site,
+    const base::Closure& icon_available,
+    const std::string& id,
+    const gfx::Image& fetched_image,
+    const image_fetcher::RequestMetadata& metadata) {
   if (fetched_image.IsEmpty()) {
     return;
   }

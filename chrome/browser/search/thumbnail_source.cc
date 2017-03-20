@@ -119,7 +119,8 @@ void ThumbnailSource::ExtractPageAndThumbnailUrls(
 void ThumbnailSource::SendFetchedUrlImage(
     const content::URLDataSource::GotDataCallback& callback,
     const std::string& url,
-    const gfx::Image& image) {
+    const gfx::Image& image,
+    const image_fetcher::RequestMetadata& metadata) {
   // In case the image could not be retrieved an empty image is returned.
   if (image.IsEmpty()) {
     callback.Run(default_thumbnail_.get());

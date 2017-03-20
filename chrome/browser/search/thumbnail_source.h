@@ -26,6 +26,7 @@ class Image;
 
 namespace image_fetcher {
 class ImageFetcher;
+struct RequestMetadata;
 }
 
 namespace thumbnails {
@@ -64,7 +65,8 @@ class ThumbnailSource : public content::URLDataSource {
   void SendFetchedUrlImage(
       const content::URLDataSource::GotDataCallback& callback,
       const std::string& url,
-      const gfx::Image& image);
+      const gfx::Image& image,
+      const image_fetcher::RequestMetadata& metadata);
 
   // Raw PNG representation of the thumbnail to show when the thumbnail
   // database doesn't have a thumbnail for a webpage.

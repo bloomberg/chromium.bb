@@ -28,6 +28,7 @@ class Image;
 
 namespace image_fetcher {
 class ImageFetcher;
+struct RequestMetadata;
 }  // namespace image_fetcher
 
 // The C++ counterpart to LogoBridge.java. Enables Java code to access the
@@ -71,7 +72,8 @@ class LogoBridge : public doodle::DoodleService::Observer {
                           const std::string& alt_text,
                           const GURL& animated_image_url,
                           const std::string& image_fetch_id,
-                          const gfx::Image& image);
+                          const gfx::Image& image,
+                          const image_fetcher::RequestMetadata& metadata);
 
   // Only valid if UseNewDoodleApi is disabled.
   LogoService* logo_service_;

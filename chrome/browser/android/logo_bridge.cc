@@ -283,12 +283,14 @@ void LogoBridge::DoodleConfigReceived(
                  from_cache, on_click_url, alt_text, animated_image_url));
 }
 
-void LogoBridge::DoodleImageFetched(bool config_from_cache,
-                                    const GURL& on_click_url,
-                                    const std::string& alt_text,
-                                    const GURL& animated_image_url,
-                                    const std::string& image_fetch_id,
-                                    const gfx::Image& image) {
+void LogoBridge::DoodleImageFetched(
+    bool config_from_cache,
+    const GURL& on_click_url,
+    const std::string& alt_text,
+    const GURL& animated_image_url,
+    const std::string& image_fetch_id,
+    const gfx::Image& image,
+    const image_fetcher::RequestMetadata& metadata) {
   JNIEnv* env = base::android::AttachCurrentThread();
 
   if (image.IsEmpty()) {

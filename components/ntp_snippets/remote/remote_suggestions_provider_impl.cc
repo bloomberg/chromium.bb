@@ -194,7 +194,8 @@ void CachedImageFetcher::OnImageDataFetched(
 void CachedImageFetcher::OnImageDecodingDone(
     const ImageFetchedCallback& callback,
     const std::string& id_within_category,
-    const gfx::Image& image) {
+    const gfx::Image& image,
+    const image_fetcher::RequestMetadata& metadata) {
   callback.Run(image);
 }
 

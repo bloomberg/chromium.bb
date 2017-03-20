@@ -46,7 +46,7 @@ void ImageFetcherImpl::SetDesiredImageFrameSize(const gfx::Size& size) {
 void ImageFetcherImpl::StartOrQueueNetworkRequest(
     const std::string& id,
     const GURL& image_url,
-    base::Callback<void(const std::string&, const gfx::Image&)> callback) {
+    const ImageFetcherCallback& callback) {
   // Before starting to fetch the image. Look for a request in progress for
   // |image_url|, and queue if appropriate.
   ImageRequestMap::iterator it = pending_net_requests_.find(image_url);
@@ -76,12 +76,14 @@ void ImageFetcherImpl::OnImageURLFetched(const GURL& image_url,
     delegate_->OnImageDataFetched(it->second.id, image_data);
   }
 
-  image_decoder_->DecodeImage(image_data, desired_image_frame_size_,
-                              base::Bind(&ImageFetcherImpl::OnImageDecoded,
-                                         base::Unretained(this), image_url));
+  image_decoder_->DecodeImage(
+      image_data, desired_image_frame_size_,
+      base::Bind(&ImageFetcherImpl::OnImageDecoded, base::Unretained(this),
+                 image_url, metadata));
 }
 
 void ImageFetcherImpl::OnImageDecoded(const GURL& image_url,
+                                      const RequestMetadata& metadata,
                                       const gfx::Image& image) {
   // Get request for the given image_url from the request queue.
   ImageRequestMap::iterator image_iter = pending_net_requests_.find(image_url);
@@ -90,7 +92,7 @@ void ImageFetcherImpl::OnImageDecoded(const GURL& image_url,
 
   // Run all callbacks
   for (const auto& callback : request->callbacks) {
-    callback.Run(request->id, image);
+    callback.Run(request->id, image, metadata);
   }
 
   // Inform the ImageFetcherDelegate.

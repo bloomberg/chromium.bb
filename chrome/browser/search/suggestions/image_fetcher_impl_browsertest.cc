@@ -85,7 +85,8 @@ class ImageFetcherImplBrowserTest : public InProcessBrowserTest {
 
   void OnImageAvailable(base::RunLoop* loop,
                         const std::string& id,
-                        const gfx::Image& image) {
+                        const gfx::Image& image,
+                        const image_fetcher::RequestMetadata& metadata) {
     if (!image.IsEmpty()) {
       num_callback_valid_called_++;
     } else {

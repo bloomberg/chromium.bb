@@ -28,6 +28,7 @@ class Image;
 
 namespace image_fetcher {
 class ImageFetcher;
+struct RequestMetadata;
 }  // namespace image_fetcher
 
 namespace ntp_tiles {
@@ -52,7 +53,8 @@ class IconCacherImpl : public IconCacher {
   void OnFaviconDownloaded(PopularSites::Site site,
                            const base::Closure& icon_available,
                            const std::string& id,
-                           const gfx::Image& fetched_image);
+                           const gfx::Image& fetched_image,
+                           const image_fetcher::RequestMetadata& metadata);
 
   bool ProvideDefaultIcon(const PopularSites::Site& site);
   void SaveIconForSite(const PopularSites::Site& site, const gfx::Image image);

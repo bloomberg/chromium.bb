@@ -26,6 +26,7 @@
 #include "components/image_fetcher/image_decoder.h"
 #include "components/image_fetcher/image_fetcher.h"
 #include "components/image_fetcher/image_fetcher_delegate.h"
+#include "components/image_fetcher/request_metadata.h"
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/category_info.h"
 #include "components/ntp_snippets/category_rankers/category_ranker.h"
@@ -287,14 +288,19 @@ std::string GetIncompleteSuggestion() {
 
 using ServeImageCallback = base::Callback<void(
     const std::string&,
-    base::Callback<void(const std::string&, const gfx::Image&)>)>;
+    base::Callback<void(const std::string&,
+                        const gfx::Image&,
+                        const image_fetcher::RequestMetadata&)>)>;
 
 void ServeOneByOneImage(
     image_fetcher::ImageFetcherDelegate* notify,
     const std::string& id,
-    base::Callback<void(const std::string&, const gfx::Image&)> callback) {
+    base::Callback<void(const std::string&,
+                        const gfx::Image&,
+                        const image_fetcher::RequestMetadata&)> callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, id, gfx::test::CreateImage(1, 1)));
+      FROM_HERE, base::Bind(callback, id, gfx::test::CreateImage(1, 1),
+                            image_fetcher::RequestMetadata()));
   notify->OnImageDataFetched(id, "1-by-1-image-data");
 }
 
@@ -345,11 +351,10 @@ class MockImageFetcher : public ImageFetcher {
   MOCK_METHOD1(SetImageFetcherDelegate, void(ImageFetcherDelegate*));
   MOCK_METHOD1(SetDataUseServiceName, void(DataUseServiceName));
   MOCK_METHOD1(SetDesiredImageFrameSize, void(const gfx::Size&));
-  MOCK_METHOD3(
-      StartOrQueueNetworkRequest,
-      void(const std::string&,
-           const GURL&,
-           base::Callback<void(const std::string&, const gfx::Image&)>));
+  MOCK_METHOD3(StartOrQueueNetworkRequest,
+               void(const std::string&,
+                    const GURL&,
+                    const ImageFetcherCallback&));
   MOCK_METHOD0(GetImageDecoder, image_fetcher::ImageDecoder*());
 };
 

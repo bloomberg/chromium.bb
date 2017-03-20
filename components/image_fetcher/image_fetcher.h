@@ -22,12 +22,19 @@ namespace image_fetcher {
 
 class ImageDecoder;
 
+struct RequestMetadata;
+
 // A class used to fetch server images. It can be called from any thread and the
 // callback will be called on the thread which initiated the fetch.
 class ImageFetcher {
  public:
   ImageFetcher() {}
   virtual ~ImageFetcher() {}
+
+  using ImageFetcherCallback =
+      base::Callback<void(const std::string& id,
+                          const gfx::Image& image,
+                          const RequestMetadata& metadata)>;
 
   using DataUseServiceName = data_use_measurement::DataUseUserData::ServiceName;
 
@@ -50,7 +57,7 @@ class ImageFetcher {
   virtual void StartOrQueueNetworkRequest(
       const std::string& id,
       const GURL& image_url,
-      base::Callback<void(const std::string&, const gfx::Image&)> callback) = 0;
+      const ImageFetcherCallback& callback) = 0;
 
   virtual ImageDecoder* GetImageDecoder() = 0;
 

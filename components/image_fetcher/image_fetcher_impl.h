@@ -50,15 +50,11 @@ class ImageFetcherImpl : public image_fetcher::ImageFetcher {
   void StartOrQueueNetworkRequest(
       const std::string& id,
       const GURL& image_url,
-      base::Callback<void(const std::string&, const gfx::Image&)> callback)
-      override;
+      const ImageFetcherCallback& callback) override;
 
   ImageDecoder* GetImageDecoder() override;
 
  private:
-  using CallbackVector =
-      std::vector<base::Callback<void(const std::string&, const gfx::Image&)>>;
-
   // State related to an image fetch (id, pending callbacks).
   struct ImageRequest {
     ImageRequest();
@@ -73,7 +69,7 @@ class ImageFetcherImpl : public image_fetcher::ImageFetcher {
     std::string id;
     // Queue for pending callbacks, which may accumulate while the request is in
     // flight.
-    CallbackVector callbacks;
+    std::vector<ImageFetcherCallback> callbacks;
   };
 
   using ImageRequestMap = std::map<const GURL, ImageRequest>;
@@ -86,7 +82,9 @@ class ImageFetcherImpl : public image_fetcher::ImageFetcher {
 
   // Processes image decoded events. This is the continuation method used for
   // creating callbacks that are passed to the ImageDecoder.
-  void OnImageDecoded(const GURL& image_url, const gfx::Image& image);
+  void OnImageDecoded(const GURL& image_url,
+                      const RequestMetadata& metadata,
+                      const gfx::Image& image);
 
   ImageFetcherDelegate* delegate_;
 

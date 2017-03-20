@@ -49,9 +49,9 @@ class MockImageFetcher : public ImageFetcher {
   MockImageFetcher() {}
   virtual ~MockImageFetcher() {}
   MOCK_METHOD3(StartOrQueueNetworkRequest,
-               void(const std::string&, const GURL&,
-                    base::Callback<void(const std::string&,
-                                        const gfx::Image&)>));
+               void(const std::string&,
+                    const GURL&,
+                    const ImageFetcherCallback&));
   MOCK_METHOD1(SetImageFetcherDelegate, void(ImageFetcherDelegate*));
   MOCK_METHOD1(SetDataUseServiceName, void(DataUseServiceName));
   MOCK_METHOD1(SetDesiredImageFrameSize, void(const gfx::Size&));

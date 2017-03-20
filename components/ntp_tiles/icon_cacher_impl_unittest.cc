@@ -20,6 +20,7 @@
 #include "components/history/core/browser/history_database_params.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/image_fetcher/image_fetcher.h"
+#include "components/image_fetcher/request_metadata.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -46,8 +47,7 @@ class MockImageFetcher : public image_fetcher::ImageFetcher {
   MOCK_METHOD3(StartOrQueueNetworkRequest,
                void(const std::string& id,
                     const GURL& image_url,
-                    base::Callback<void(const std::string& id,
-                                        const gfx::Image& image)> callback));
+                    const ImageFetcherCallback& callback));
   MOCK_METHOD1(SetDesiredImageFrameSize, void(const gfx::Size&));
   MOCK_METHOD0(GetImageDecoder, image_fetcher::ImageDecoder*());
 };
@@ -177,12 +177,14 @@ class IconCacherTest : public ::testing::Test {
 
 ACTION(FailFetch) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(arg2, arg0, gfx::Image()));
+      FROM_HERE,
+      base::Bind(arg2, arg0, gfx::Image(), image_fetcher::RequestMetadata()));
 }
 
 ACTION_P2(PassFetch, width, height) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(arg2, arg0, gfx::test::CreateImage(width, height)));
+      FROM_HERE, base::Bind(arg2, arg0, gfx::test::CreateImage(width, height),
+                            image_fetcher::RequestMetadata()));
 }
 
 ACTION_P(Quit, run_loop) {

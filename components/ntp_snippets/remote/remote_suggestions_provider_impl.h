@@ -40,6 +40,7 @@ class Image;
 
 namespace image_fetcher {
 class ImageFetcher;
+struct RequestMetadata;
 }  // namespace image_fetcher
 
 namespace ntp_snippets {
@@ -76,7 +77,8 @@ class CachedImageFetcher : public image_fetcher::ImageFetcherDelegate {
 
   void OnImageDecodingDone(const ImageFetchedCallback& callback,
                            const std::string& id_within_category,
-                           const gfx::Image& image);
+                           const gfx::Image& image,
+                           const image_fetcher::RequestMetadata& metadata);
   void OnImageFetchedFromDatabase(
       const ImageFetchedCallback& callback,
       const ContentSuggestion::ID& suggestion_id,

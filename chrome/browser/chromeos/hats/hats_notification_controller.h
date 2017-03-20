@@ -22,6 +22,7 @@ class Image;
 
 namespace image_fetcher {
 class ImageFetcher;
+struct RequestMetadata;
 }
 
 namespace chromeos {
@@ -67,7 +68,9 @@ class HatsNotificationController : public NotificationDelegate,
   void Click() override;
   std::string id() const override;
 
-  void OnImageFetched(const std::string& id, const gfx::Image& image);
+  void OnImageFetched(const std::string& id,
+                      const gfx::Image& image,
+                      const image_fetcher::RequestMetadata& metadata);
 
   // NetworkPortalDetector::Observer override:
   void OnPortalDetectionCompleted(

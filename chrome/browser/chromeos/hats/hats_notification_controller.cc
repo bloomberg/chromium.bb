@@ -242,8 +242,10 @@ void HatsNotificationController::OnPortalDetectionCompleted(
                  weak_pointer_factory_.GetWeakPtr()));
 }
 
-void HatsNotificationController::OnImageFetched(const std::string& id,
-                                                const gfx::Image& image) {
+void HatsNotificationController::OnImageFetched(
+    const std::string& id,
+    const gfx::Image& image,
+    const image_fetcher::RequestMetadata& metadata) {
   DCHECK(id == kImageFetcher1xId || id == kImageFetcher2xId);
 
   completed_requests_++;

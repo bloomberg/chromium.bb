@@ -34,7 +34,8 @@ std::unique_ptr<SkBitmap> DecodeImage(
 void WrapCallback(
     const suggestions::ImageManager::ImageCallback& wrapped_callback,
     const std::string& url,
-    const gfx::Image& image) {
+    const gfx::Image& image,
+    const image_fetcher::RequestMetadata& metadata) {
   wrapped_callback.Run(GURL(url), image);
 }
 
