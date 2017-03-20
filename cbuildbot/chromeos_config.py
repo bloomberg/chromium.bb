@@ -3358,9 +3358,6 @@ def ApplyCustomOverrides(site_config, ge_build_config):
           'hw_tests': hw_test_list.SharedPoolPFQ(),
       },
 
-      'falco-chrome-pfq': {
-          'hw_tests': hw_test_list.SharedPoolPFQ(),
-      },
 
       'veyron_minnie-chrome-pfq': {
           'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
