@@ -30,7 +30,6 @@ namespace blink {
 class Animation;
 class CSSStyleSheetResource;
 class ContainerNode;
-class Document;
 class DocumentLoader;
 class Element;
 class Event;
@@ -314,11 +313,6 @@ std::unique_ptr<TracedValue> data(ExecutionContext*,
 
 namespace InspectorAnimationFrameEvent {
 std::unique_ptr<TracedValue> data(ExecutionContext*, int callbackId);
-}
-
-namespace InspectorParseHtmlEvent {
-std::unique_ptr<TracedValue> beginData(Document*, unsigned startLine);
-std::unique_ptr<TracedValue> endData(unsigned endLine);
 }
 
 namespace InspectorParseAuthorStyleSheetEvent {

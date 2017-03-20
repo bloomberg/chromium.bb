@@ -666,10 +666,7 @@ void HTMLDocumentParser::pumpTokenizer() {
   // FIXME: m_input.current().length() is only accurate if we end up parsing the
   // whole buffer in this pump.  We should pass how much we parsed as part of
   // didWriteHTML instead of willWriteHTML.
-  TRACE_EVENT_BEGIN1(
-      "devtools.timeline", "ParseHTML", "beginData",
-      InspectorParseHtmlEvent::beginData(
-          document(), m_input.current().currentLine().zeroBasedInt()));
+  probe::ParseHTML probe(document(), this);
 
   if (!isParsingFragment())
     m_xssAuditor.init(document(), &m_xssAuditorDelegate);
@@ -724,10 +721,6 @@ void HTMLDocumentParser::pumpTokenizer() {
       scanAndPreload(m_preloadScanner.get());
     }
   }
-
-  TRACE_EVENT_END1("devtools.timeline", "ParseHTML", "endData",
-                   InspectorParseHtmlEvent::endData(
-                       m_input.current().currentLine().zeroBasedInt() - 1));
 }
 
 void HTMLDocumentParser::constructTreeFromHTMLToken() {

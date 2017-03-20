@@ -51,6 +51,22 @@ void* asyncId(unsigned long identifier) {
   return reinterpret_cast<void*>((identifier << 1) | 1);
 }
 
+std::unique_ptr<TracedValue> inspectorParseHtmlBeginData(Document* document,
+                                                         unsigned startLine) {
+  std::unique_ptr<TracedValue> value = TracedValue::create();
+  value->setInteger("startLine", startLine);
+  value->setString("frame", toHexString(document->frame()));
+  value->setString("url", document->url().getString());
+  setCallStack(value.get());
+  return value;
+}
+
+std::unique_ptr<TracedValue> inspectorParseHtmlEndData(unsigned endLine) {
+  std::unique_ptr<TracedValue> value = TracedValue::create();
+  value->setInteger("endLine", endLine);
+  return value;
+}
+
 }  //  namespace
 
 String toHexString(const void* p) {
@@ -159,14 +175,14 @@ void InspectorTraceEvents::will(const probe::ParseHTML& probe) {
   // FIXME: Pass in current input length.
   TRACE_EVENT_BEGIN1(
       "devtools.timeline", "ParseHTML", "beginData",
-      InspectorParseHtmlEvent::beginData(
-          probe.parser->document(), probe.parser->lineNumber().zeroBasedInt()));
+      inspectorParseHtmlBeginData(probe.parser->document(),
+                                  probe.parser->lineNumber().zeroBasedInt()));
 }
 
 void InspectorTraceEvents::did(const probe::ParseHTML& probe) {
-  TRACE_EVENT_END1("devtools.timeline", "ParseHTML", "endData",
-                   InspectorParseHtmlEvent::endData(
-                       probe.parser->lineNumber().zeroBasedInt() - 1));
+  TRACE_EVENT_END1(
+      "devtools.timeline", "ParseHTML", "endData",
+      inspectorParseHtmlEndData(probe.parser->lineNumber().zeroBasedInt() - 1));
   TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"),
                        "UpdateCounters", TRACE_EVENT_SCOPE_THREAD, "data",
                        InspectorUpdateCountersEvent::data());
@@ -826,24 +842,6 @@ std::unique_ptr<TracedValue> InspectorIdleCallbackFireEvent::data(
   std::unique_ptr<TracedValue> value = genericIdleCallbackEvent(context, id);
   value->setDouble("allottedMilliseconds", allottedMilliseconds);
   value->setBoolean("timedOut", timedOut);
-  return value;
-}
-
-std::unique_ptr<TracedValue> InspectorParseHtmlEvent::beginData(
-    Document* document,
-    unsigned startLine) {
-  std::unique_ptr<TracedValue> value = TracedValue::create();
-  value->setInteger("startLine", startLine);
-  value->setString("frame", toHexString(document->frame()));
-  value->setString("url", document->url().getString());
-  setCallStack(value.get());
-  return value;
-}
-
-std::unique_ptr<TracedValue> InspectorParseHtmlEvent::endData(
-    unsigned endLine) {
-  std::unique_ptr<TracedValue> value = TracedValue::create();
-  value->setInteger("endLine", endLine);
   return value;
 }
 
