@@ -101,6 +101,7 @@ void MouseEventManager::clear() {
   m_svgPan = false;
   m_dragStartPos = LayoutPoint();
   m_fakeMouseMoveEventTimer.stop();
+  resetDragState();
 }
 
 MouseEventManager::~MouseEventManager() = default;
