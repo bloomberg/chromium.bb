@@ -36,6 +36,9 @@ import math
 import os
 import subprocess
 
+_FILEBYFILE_JAR_PATH = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), 'lib', 'file-by-file-tools.jar'))
+
 bsdiff_path = None
 gzip_path = None
 head_path = None
@@ -259,8 +262,8 @@ def calculate_filebyfile(old_file, new_file, save_patch_path, temp_path):
   # We use a jar from https://github.com/andrewhayden/archive-patcher
   if os.path.exists(filebyfile_patch_path): os.remove(filebyfile_patch_path)
   p = subprocess.Popen(
-      [java_path, '-jar', 'lib/file-by-file-tools.jar', '--generate',
-       '--old', old_file, '--new', new_file, '--patch', filebyfile_patch_path],
+      [java_path, '-jar', _FILEBYFILE_JAR_PATH, '--generate', '--old', old_file,
+       '--new', new_file, '--patch', filebyfile_patch_path],
       shell=False)
   ret_code = p.wait()
   if ret_code != 0: raise Exception(
