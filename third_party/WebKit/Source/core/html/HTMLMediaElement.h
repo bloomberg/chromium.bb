@@ -333,6 +333,9 @@ class CORE_EXPORT HTMLMediaElement
   bool isURLAttribute(const Attribute&) const override;
   void attachLayoutTree(const AttachContext& = AttachContext()) override;
 
+  InsertionNotificationRequest insertedInto(ContainerNode*) override;
+  void removedFrom(ContainerNode*) override;
+
   void didMoveToNewDocument(Document& oldDocument) override;
   virtual KURL posterImageURL() const { return KURL(); }
 
@@ -353,9 +356,7 @@ class CORE_EXPORT HTMLMediaElement
   bool isMouseFocusable() const final;
   bool layoutObjectIsNeeded(const ComputedStyle&) override;
   LayoutObject* createLayoutObject(const ComputedStyle&) override;
-  InsertionNotificationRequest insertedInto(ContainerNode*) final;
   void didNotifySubtreeInsertionsToDocument() override;
-  void removedFrom(ContainerNode*) final;
   void didRecalcStyle() final;
 
   bool canStartSelection() const override { return false; }

@@ -79,6 +79,21 @@ DEFINE_TRACE(HTMLVideoElement) {
   HTMLMediaElement::trace(visitor);
 }
 
+Node::InsertionNotificationRequest HTMLVideoElement::insertedInto(
+    ContainerNode* insertionPoint) {
+  if (insertionPoint->isConnected() && m_customControlsFullscreenDetector)
+    m_customControlsFullscreenDetector->attach();
+
+  return HTMLMediaElement::insertedInto(insertionPoint);
+}
+
+void HTMLVideoElement::removedFrom(ContainerNode* insertionPoint) {
+  HTMLMediaElement::removedFrom(insertionPoint);
+
+  if (m_customControlsFullscreenDetector)
+    m_customControlsFullscreenDetector->detach();
+}
+
 void HTMLVideoElement::contextDestroyed(ExecutionContext* context) {
   if (m_customControlsFullscreenDetector)
     m_customControlsFullscreenDetector->contextDestroyed();

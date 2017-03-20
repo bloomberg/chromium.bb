@@ -25,6 +25,8 @@ class CORE_EXPORT MediaCustomControlsFullscreenDetector final
   // EventListener implementation.
   bool operator==(const EventListener&) const override;
 
+  void attach();
+  void detach();
   void contextDestroyed();
 
   DECLARE_VIRTUAL_TRACE();
@@ -35,9 +37,6 @@ class CORE_EXPORT MediaCustomControlsFullscreenDetector final
 
   // EventListener implementation.
   void handleEvent(ExecutionContext*, Event*) override;
-
-  void attach();
-  void detach();
 
   HTMLVideoElement& videoElement() { return *m_videoElement; }
 

@@ -53,6 +53,10 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
   static HTMLVideoElement* create(Document&);
   DECLARE_VIRTUAL_TRACE();
 
+  // Node override.
+  Node::InsertionNotificationRequest insertedInto(ContainerNode*) override;
+  void removedFrom(ContainerNode*) override;
+
   unsigned videoWidth() const;
   unsigned videoHeight() const;
 

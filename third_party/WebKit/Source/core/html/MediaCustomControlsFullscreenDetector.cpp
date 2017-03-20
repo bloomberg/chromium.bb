@@ -29,12 +29,8 @@ MediaCustomControlsFullscreenDetector::MediaCustomControlsFullscreenDetector(
           this,
           &MediaCustomControlsFullscreenDetector::
               onCheckViewportIntersectionTimerFired) {
-  videoElement().addEventListener(EventTypeNames::DOMNodeInsertedIntoDocument,
-                                  this, false);
-  videoElement().addEventListener(EventTypeNames::DOMNodeRemovedFromDocument,
-                                  this, false);
-
-  videoElement().addEventListener(EventTypeNames::loadedmetadata, this, true);
+  if (videoElement().isConnected())
+    attach();
 }
 
 bool MediaCustomControlsFullscreenDetector::operator==(
@@ -43,6 +39,7 @@ bool MediaCustomControlsFullscreenDetector::operator==(
 }
 
 void MediaCustomControlsFullscreenDetector::attach() {
+  videoElement().addEventListener(EventTypeNames::loadedmetadata, this, true);
   videoElement().document().addEventListener(
       EventTypeNames::webkitfullscreenchange, this, true);
   videoElement().document().addEventListener(EventTypeNames::fullscreenchange,
@@ -50,6 +47,8 @@ void MediaCustomControlsFullscreenDetector::attach() {
 }
 
 void MediaCustomControlsFullscreenDetector::detach() {
+  videoElement().removeEventListener(EventTypeNames::loadedmetadata, this,
+                                     true);
   videoElement().document().removeEventListener(
       EventTypeNames::webkitfullscreenchange, this, true);
   videoElement().document().removeEventListener(
@@ -99,19 +98,9 @@ bool MediaCustomControlsFullscreenDetector::computeIsDominantVideoForTests(
 void MediaCustomControlsFullscreenDetector::handleEvent(
     ExecutionContext* context,
     Event* event) {
-  DCHECK(event->type() == EventTypeNames::DOMNodeInsertedIntoDocument ||
-         event->type() == EventTypeNames::DOMNodeRemovedFromDocument ||
-         event->type() == EventTypeNames::loadedmetadata ||
+  DCHECK(event->type() == EventTypeNames::loadedmetadata ||
          event->type() == EventTypeNames::webkitfullscreenchange ||
          event->type() == EventTypeNames::fullscreenchange);
-
-  // Don't early return when the video is inserted into/removed from the
-  // document, as the document might already be in fullscreen.
-  if (event->type() == EventTypeNames::DOMNodeInsertedIntoDocument) {
-    attach();
-  } else if (event->type() == EventTypeNames::DOMNodeRemovedFromDocument) {
-    detach();
-  }
 
   // Video is not loaded yet.
   if (videoElement().getReadyState() < HTMLMediaElement::kHaveMetadata)
