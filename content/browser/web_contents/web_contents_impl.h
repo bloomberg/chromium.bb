@@ -37,6 +37,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_binding_set.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/page_importance_signals.h"
 #include "content/public/common/renderer_preferences.h"
@@ -79,7 +80,6 @@ class TestWebContents;
 class TextInputManager;
 class WakeLockServiceContext;
 class WebContentsAudioMuter;
-class WebContentsBindingSet;
 class WebContentsDelegate;
 class WebContentsImpl;
 class WebContentsView;
@@ -261,6 +261,18 @@ class CONTENT_EXPORT WebContentsImpl
   // explicitly removed before being destroyed.
   base::Closure AddBindingSet(const std::string& interface_name,
                               WebContentsBindingSet* binding_set);
+
+  // Overrides the incoming Channel-associated interface request handler for
+  // interfaces registered with this WebContents via a WebContentsBindingSet.
+  // |binder| will live until either the binder is overridden again or the
+  // WebContents is destroyed.
+  template <typename Interface>
+  void OverrideBinderForTesting(
+      std::unique_ptr<WebContentsBindingSet::Binder> binder) {
+    auto it = binding_sets_.find(Interface::Name_);
+    DCHECK(it != binding_sets_.end());
+    it->second->SetBinderForTesting(std::move(binder));
+  }
 
   // WebContents ------------------------------------------------------
   WebContentsDelegate* GetDelegate() override;

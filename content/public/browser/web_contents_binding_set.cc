@@ -20,9 +20,8 @@ void WebContentsBindingSet::Binder::OnRequestForFrame(
 WebContentsBindingSet::WebContentsBindingSet(WebContents* web_contents,
                                              const std::string& interface_name,
                                              std::unique_ptr<Binder> binder)
-    : remove_callback_(
-          static_cast<WebContentsImpl*>(web_contents)->AddBindingSet(
-              interface_name, this)),
+    : remove_callback_(static_cast<WebContentsImpl*>(web_contents)
+                           ->AddBindingSet(interface_name, this)),
       binder_(std::move(binder)) {}
 
 WebContentsBindingSet::~WebContentsBindingSet() {
@@ -30,12 +29,18 @@ WebContentsBindingSet::~WebContentsBindingSet() {
 }
 
 void WebContentsBindingSet::CloseAllBindings() {
+  binder_for_testing_.reset();
   binder_.reset();
 }
 
 void WebContentsBindingSet::OnRequestForFrame(
     RenderFrameHost* render_frame_host,
     mojo::ScopedInterfaceEndpointHandle handle) {
+  if (binder_for_testing_) {
+    binder_for_testing_->OnRequestForFrame(render_frame_host,
+                                           std::move(handle));
+    return;
+  }
   DCHECK(binder_);
   binder_->OnRequestForFrame(render_frame_host, std::move(handle));
 }

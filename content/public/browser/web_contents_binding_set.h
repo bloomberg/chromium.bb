@@ -25,7 +25,7 @@ class WebContentsImpl;
 // Base class for something which owns a mojo::AssociatedBindingSet on behalf
 // of a WebContents. See WebContentsFrameBindingSet<T> below.
 class CONTENT_EXPORT WebContentsBindingSet {
- protected:
+ public:
   class CONTENT_EXPORT Binder {
    public:
     virtual ~Binder() {}
@@ -35,6 +35,11 @@ class CONTENT_EXPORT WebContentsBindingSet {
         mojo::ScopedInterfaceEndpointHandle handle);
   };
 
+  void SetBinderForTesting(std::unique_ptr<Binder> binder) {
+    binder_for_testing_ = std::move(binder);
+  }
+
+ protected:
   WebContentsBindingSet(WebContents* web_contents,
                         const std::string& interface_name,
                         std::unique_ptr<Binder> binder);
@@ -49,6 +54,7 @@ class CONTENT_EXPORT WebContentsBindingSet {
 
   const base::Closure remove_callback_;
   std::unique_ptr<Binder> binder_;
+  std::unique_ptr<Binder> binder_for_testing_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsBindingSet);
 };
