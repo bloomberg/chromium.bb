@@ -37,7 +37,6 @@ import android.view.Window;
 import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -50,6 +49,7 @@ import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.LineItemBre
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.OptionSection;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.SectionSeparator;
 import org.chromium.chrome.browser.widget.AlwaysDismissedDialog;
+import org.chromium.chrome.browser.widget.FadingEdgeScrollView;
 import org.chromium.chrome.browser.widget.animation.AnimatorProperties;
 import org.chromium.chrome.browser.widget.animation.FocusAnimator;
 import org.chromium.components.signin.ChromeSigninController;
@@ -313,7 +313,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
     private final Callback<PaymentInformation> mUpdateSectionsCallback;
     private final ShippingStrings mShippingStrings;
 
-    private ScrollView mPaymentContainer;
+    private FadingEdgeScrollView mPaymentContainer;
     private LinearLayout mPaymentContainerLayout;
     private ViewGroup mBottomBar;
     private Button mEditButton;
@@ -554,7 +554,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
 
         // Create all the possible sections.
         mSectionSeparators = new ArrayList<>();
-        mPaymentContainer = (ScrollView) mRequestView.findViewById(R.id.option_container);
+        mPaymentContainer = (FadingEdgeScrollView) mRequestView.findViewById(R.id.option_container);
         mPaymentContainerLayout =
                 (LinearLayout) mRequestView.findViewById(R.id.payment_container_layout);
         mOrderSummarySection = new LineItemBreakdownSection(context,
@@ -1004,7 +1004,8 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
             }
 
             // New separators appear at the top and bottom of the list.
-            mSectionSeparators.add(new SectionSeparator(mPaymentContainerLayout, 0));
+            mPaymentContainer.setEdgeVisibility(
+                    FadingEdgeScrollView.DRAW_HARD_EDGE, FadingEdgeScrollView.DRAW_FADING_EDGE);
             mSectionSeparators.add(new SectionSeparator(mPaymentContainerLayout, -1));
 
             // Add a link to Autofill settings.
