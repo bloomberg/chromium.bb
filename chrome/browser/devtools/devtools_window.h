@@ -98,14 +98,6 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
       Browser* browser,
       const DevToolsToggleAction& action);
 
-  // External frontend is always undocked.
-  static void OpenExternalFrontend(
-      Profile* profile,
-      const std::string& frontend_uri,
-      const scoped_refptr<content::DevToolsAgentHost>& agent_host,
-      bool is_worker,
-      bool is_v8_only);
-
   // Node frontend is always undocked.
   static void OpenNodeFrontendWindow(Profile* profile);
 
@@ -245,26 +237,37 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
     kClosing
   };
 
+  enum FrontendType {
+    kFrontendDefault,
+    kFrontendRemote,
+    kFrontendWorker,
+    kFrontendV8,
+    kFrontendNode
+  };
+
   DevToolsWindow(Profile* profile,
                  content::WebContents* main_web_contents,
                  DevToolsUIBindings* bindings,
                  content::WebContents* inspected_web_contents,
                  bool can_dock);
 
+  // External frontend is always undocked.
+  static void OpenExternalFrontend(
+      Profile* profile,
+      const std::string& frontend_uri,
+      const scoped_refptr<content::DevToolsAgentHost>& agent_host,
+      FrontendType frontend_type);
+
   static DevToolsWindow* Create(Profile* profile,
                                 content::WebContents* inspected_web_contents,
-                                bool shared_worker_frontend,
-                                bool v8_only_frontend,
-                                bool node_frontend,
-                                const std::string& remote_frontend,
+                                FrontendType frontend_type,
+                                const std::string& frontend_url,
                                 bool can_dock,
                                 const std::string& settings,
                                 const std::string& panel);
   static GURL GetDevToolsURL(Profile* profile,
-                             bool shared_worker_frontend,
-                             bool v8_only_frontend,
-                             bool node_frontend,
-                             const std::string& remote_frontend,
+                             FrontendType frontend_type,
+                             const std::string& frontend_url,
                              bool can_dock,
                              const std::string& panel);
 

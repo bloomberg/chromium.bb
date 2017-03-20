@@ -42,17 +42,6 @@ std::string PathWithoutParams(const std::string& path) {
 
 const char kHttpNotFound[] = "HTTP/1.1 404 Not Found\n\n";
 
-#if BUILDFLAG(DEBUG_DEVTOOLS)
-// Local frontend url provided by InspectUI.
-const char kFallbackFrontendURL[] =
-    "chrome-devtools://devtools/bundled/inspector.html";
-#else
-// URL causing the DevTools window to display a plain text warning.
-const char kFallbackFrontendURL[] =
-    "data:text/plain,Cannot load DevTools frontend from an untrusted origin";
-#endif  // BUILDFLAG(DEBUG_DEVTOOLS)
-
-
 // DevToolsDataSource ---------------------------------------------------------
 
 std::string GetMimeTypeForPath(const std::string& path) {
@@ -337,9 +326,8 @@ GURL DevToolsUI::GetProxyURL(const std::string& frontend_url) {
   if (url.scheme() == content::kChromeDevToolsScheme &&
       url.host() == chrome::kChromeUIDevToolsHost)
     return GURL();
-
   if (!url.is_valid() || url.host() != kRemoteFrontendDomain)
-    return GURL(kFallbackFrontendURL);
+    return GURL();
   return GURL(base::StringPrintf("%s://%s/%s/%s",
               content::kChromeDevToolsScheme,
               chrome::kChromeUIDevToolsHost,
