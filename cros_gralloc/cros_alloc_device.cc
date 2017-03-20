@@ -79,8 +79,8 @@ static struct cros_gralloc_handle *cros_gralloc_handle_from_bo(struct bo *bo)
 		hnd->sizes[p] = drv_bo_get_plane_size(bo, p);
 
 		mod = drv_bo_get_plane_format_modifier(bo, p);
-		hnd->format_modifiers[p] = static_cast<uint32_t>(mod >> 32);
-		hnd->format_modifiers[p + 1] = static_cast<uint32_t>(mod);
+		hnd->format_modifiers[2 * p] = static_cast<uint32_t>(mod >> 32);
+		hnd->format_modifiers[2 * p + 1] = static_cast<uint32_t>(mod);
 	}
 
 	hnd->width = drv_bo_get_width(bo);

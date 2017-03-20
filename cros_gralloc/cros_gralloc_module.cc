@@ -80,23 +80,21 @@ static int cros_gralloc_register_buffer(struct gralloc_module_t const *module,
 		bo->refcount++;
 	} else {
 		struct drv_import_fd_data data;
-		size_t num_planes = drv_num_planes_from_format(hnd->format);
-
 		data.format = hnd->format;
 		data.width = hnd->width;
 		data.height = hnd->height;
-		for (size_t p = 0; p < num_planes; p++) {
-			data.fds[p] = hnd->fds[p];
-			data.strides[p] = hnd->strides[p];
-			data.offsets[p] = hnd->offsets[p];
-			data.sizes[p] = hnd->sizes[p];
-			data.format_modifiers[p] = static_cast<uint64_t>(hnd->format_modifiers[p])
-						   << 32;
-			data.format_modifiers[p] |= hnd->format_modifiers[p + 1];
+
+		memcpy(data.fds, hnd->fds, sizeof(data.fds));
+		memcpy(data.strides, hnd->strides, sizeof(data.strides));
+		memcpy(data.offsets, hnd->offsets, sizeof(data.offsets));
+		memcpy(data.sizes, hnd->sizes, sizeof(data.sizes));
+		for (uint32_t p = 0; p < DRV_MAX_PLANES; p++) {
+			data.format_modifiers[p] =
+			    static_cast<uint64_t>(hnd->format_modifiers[2 * p]) << 32;
+			data.format_modifiers[p] |= hnd->format_modifiers[2 * p + 1];
 		}
 
 		bo = new cros_gralloc_bo();
-
 		bo->bo = drv_bo_import(mod->drv, &data);
 		if (!bo->bo) {
 			delete bo;
