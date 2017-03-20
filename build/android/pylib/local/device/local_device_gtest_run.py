@@ -234,6 +234,8 @@ class _ExeDelegate(object):
     except (device_errors.CommandFailedError, KeyError):
       pass
 
+    # Executable tests return a nonzero exit code on test failure, which is
+    # fine from the test runner's perspective; thus check_return=False.
     output = device.RunShellCommand(
         cmd, cwd=cwd, env=env, check_return=False, large_output=True, **kwargs)
     return output

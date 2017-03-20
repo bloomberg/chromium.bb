@@ -380,8 +380,9 @@ class LocalDeviceInstrumentationTestRun(
     if self._test_instance.coverage_directory:
       device.PullFile(coverage_directory,
           self._test_instance.coverage_directory)
-      device.RunShellCommand('rm -f %s' % os.path.join(coverage_directory,
-          '*'))
+      device.RunShellCommand(
+          'rm -f %s' % posixpath.join(coverage_directory, '*'),
+          check_return=True, shell=True)
     if self._test_instance.store_tombstones:
       tombstones_url = None
       for result in results:
@@ -435,4 +436,3 @@ class LocalDeviceInstrumentationTestRun(
     timeout *= cls._GetTimeoutScaleFromAnnotations(annotations)
 
     return timeout
-
