@@ -70,7 +70,7 @@
       Channel changed. Restart your device to apply changes.
     </message>
     <message name="IDS_SETTINGS_UPGRADE_UP_TO_DATE" desc="Status label: Already up to date (ChromiumOS/ChromeOS)">
-      Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> is up to date.
+      Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> is up to date
     </message>
 
     <!-- About Page: Channel switcher dialog -->
@@ -84,7 +84,7 @@
       You are changing to a channel with an older version of <ph name="PRODUCT_NAME">$1<ex>Chrome OS</ex></ph>. The channel change will be applied when the channel version matches the version currently installed on your device.
     </message>
     <message name="IDS_SETTINGS_ABOUT_PAGE_DELAYED_WARNING_TITLE" desc="Title for the message that the channel change will be applied later.">
-      Channel change will be applied later.
+      Channel change will be applied later
     </message>
     <message name="IDS_SETTINGS_ABOUT_PAGE_POWERWASH_WARNING_MESSAGE" desc="Message that warns user about powerwash.">
       This will remove all local users, files, data, and other settings after your next restart. All users will need to sign in again.
@@ -123,10 +123,10 @@
   </message>
   <if expr="is_macosx">
     <message name="IDS_ABOUT_CHROME_AUTOUPDATE_ALL" desc="The 'Automatically update Chrome for all users.' button in the About window.  Mac-only.">
-      Automatically update Chrome for all users.
+      Automatically update Chrome for all users
     </message>
     <message name="IDS_ABOUT_CHROME_AUTOUPDATE_ALL_IS_ON" desc="The text in About Page to indicate automatic update is turned on.  Mac-only.">
-      Automatic updates are turned on.
+      Automatic updates are turned on
     </message>
   </if>
 
@@ -400,7 +400,7 @@
     Expiration year
   </message>
   <message name="IDS_SETTINGS_CREDIT_CARD_EXPIRED" desc="The error message that is shown when user attempts to enter or save an expired credit card.">
-    Your credit card is expired.
+    Your credit card is expired
   </message>
   <message name="IDS_SETTINGS_PASSWORDS" desc="Name for the password section and toggle">
     Manage passwords
@@ -454,16 +454,16 @@
     Password
   </message>
   <message name="IDS_SETTINGS_ADDRESS_NONE" desc="Placeholder that is shown when there are no addresses in the list of saved addresses.">
-    No addresses were found
+    Saved addresses will appear here
   </message>
   <message name="IDS_SETTINGS_CREDIT_CARD_NONE" desc="Placeholder that is shown when there are no credit cards in the list of saved credit cards.">
-    No credit cards were found
+    Saved cards will appear here
   </message>
   <message name="IDS_SETTINGS_PASSWORDS_NONE" desc="Placeholder that is shown when there are no passwords in the list of saved passwords.">
-    No passwords were found
+    Saved passwords will appear here
   </message>
   <message name="IDS_SETTINGS_PASSWORDS_EXCEPTIONS_NONE" desc="Placeholder text that is shown when there are no sites in the list of sites for which to never save passwords.">
-    Passwords saved for all websites
+    Sites which never save passwords will appear here
   </message>
   <if expr="is_macosx">
     <then>
@@ -506,10 +506,10 @@
       Pair Bluetooth device
     </message>
     <message name="IDS_SETTINGS_BLUETOOTH_NO_DEVICES" desc="Message displayed when there are no paired Bluetooth devices scan.">
-      No paired devices.
+      No paired devices
     </message>
     <message name="IDS_SETTINGS_BLUETOOTH_NO_DEVICES_FOUND" desc="Message displayed when no Bluetooth devices are found after a scan.">
-      No Bluetooth devices found.
+      No Bluetooth devices found
     </message>
     <message name="IDS_SETTINGS_BLUETOOTH_TOGGLE_ACCESSIBILITY_LABEL" desc="Accessibility only label for Bluetooth enable/disable toggle .">
       Bluetooth enable
@@ -545,10 +545,10 @@
       Connecting...
     </message>
     <message name="IDS_SETTINGS_BLUETOOTH_START_CONNECTING">
-      Connecting to "<ph name="DEVICE_NAME">$1<ex>Nexus S</ex></ph>".
+      Connecting to "<ph name="DEVICE_NAME">$1<ex>Nexus S</ex></ph>"
     </message>
     <message name="IDS_SETTINGS_BLUETOOTH_CONNECT_IN_PROGRESS">
-      Connection to "<ph name="DEVICE_NAME">$1<ex>Nexus 4</ex></ph>" still in progress.
+      Connection to "<ph name="DEVICE_NAME">$1<ex>Nexus 4</ex></ph>" still in progress
     </message>
     <message name="IDS_SETTINGS_BLUETOOTH_CONNECT_FAILED">
       Failed to connect to "<ph name="DEVICE_NAME">$1<ex>Nexus S</ex></ph>".
@@ -659,7 +659,7 @@
       Trust settings
     </message>
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_CA_TRUST_EDIT_DIALOG_EXPLANATION" desc="Description in dialog for editing Certification Authority trust flags">
-      The certificate "<ph name="CERTIFICATE_NAME">$1<ex>Verisign Class 1 Public Primary Certification Authority</ex></ph>" represents a Certification Authority.
+      The certificate "<ph name="CERTIFICATE_NAME">$1<ex>Verisign Class 1 Public Primary Certification Authority</ex></ph>" represents a Certification Authority
     </message>
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_CA_TRUST_EDIT_DIALOG_SSL" desc="Description in Certification Authority trust dialog for the SSL trust checkbox.">
       Trust this certificate for identifying websites
@@ -713,22 +713,22 @@
 
     <!-- Certificate Manager Page, error dialog -->
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_BAD_PASSWORD" desc="The text in the error dialog for entering an incorrect password when importing an encrypted certificate file.">
-      Incorrect password.
+      Incorrect password
     </message>
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_CA_IMPORT_ERROR_TITLE" desc="The title in the error dialog for Certification Authority file import errors.">
       Certification Authority Import Error
     </message>
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_CERT_PARSE_ERROR" desc="The message in the certificate manager error dialog for importing invalid certificate files.">
-      Unable to parse file.
+      Unable to parse file
     </message>
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_DELETE_CERT_ERROR_TITLE" desc="The title in the error dialog for certificate delete errors.">
       Certificate Deletion Error
     </message>
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_ERROR_CERT_ALREADY_EXISTS" desc="The error message when trying to import certificate which already exists.">
-      Certificate already exists.
+      Certificate already exists
     </message>
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_ERROR_NOT_CA" desc="The error message when trying to import certificate authorities and a certificate is not a certification authority">
-      Not a Certification Authority.
+      Not a Certification Authority
     </message>
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_IMPORT_ALL_NOT_IMPORTED" desc="The header in certificate manager error dialog for list of certificates that could not be imported, when none were successfully imported.">
       The file contained multiple certificates, none of which were imported:
@@ -737,13 +737,13 @@
       Certificate Import Error
     </message>
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_IMPORT_INVALID_FILE" desc="The message in the error dialog for corrupt certificate files.">
-      Invalid or corrupt file.
+      Invalid or corrupt file
     </message>
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_IMPORT_INVALID_MAC" desc="The message in the error dialog for certificate files with invalid MAC.">
-      Incorrect password or corrupt file.
+      Incorrect password or corrupt file
     </message>
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_IMPORT_MISSING_KEY" desc="The message in the error dialog for certificates without a local private key.">
-      The Private Key for this Client Certificate is missing or invalid.
+      The Private Key for this Client Certificate is missing or invalid
     </message>
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_IMPORT_SINGLE_NOT_IMPORTED" desc="The header in certificate manager error dialog for single certificates that could not be imported.">
       The file contained one certificate, which was not imported:
@@ -752,7 +752,7 @@
       The file contained multiple certificates, some of which were not imported:
     </message>
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_IMPORT_UNSUPPORTED" desc="The message in the error dialog for unsupported certificate files.">
-      File uses unsupported features.
+      File uses unsupported features
     </message>
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_PKCS12_EXPORT_ERROR_TITLE" desc="The title in the error dialog for PKCS #12 file export errors.">
       PKCS #12 Export Error
@@ -773,7 +773,7 @@
       Error Setting Certificate Trust
     </message>
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_UNKNOWN_ERROR" desc="The text in the error dialog when an unknown error occurs during an operation on the certificate database.">
-      Unknown error.
+      Unknown error
     </message>
     <message name="IDS_SETTINGS_CERTIFICATE_MANAGER_WRITE_ERROR_FORMAT" desc="The text in the error dialog for PKCS #12 file write errors.">
       There was an error while trying to write the file: <ph name="ERROR_TEXT">$1<ex>Permission denied.</ex></ph>.
@@ -1027,7 +1027,7 @@
       Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> can be unlocked with your Android phone.
     </message>
     <message name="IDS_SETTINGS_EASY_UNLOCK_REQUIRE_PROXIMITY_LABEL" desc="The text label that describes the checkbox that controls whether the user's Android phone must be in close proximity to the Chromebook in order to unlock it..">
-      Only unlock this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> when your phone is within arm’s reach.
+      Only unlock this <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> when your phone is within arm’s reach
     </message>
     <message name="IDS_SETTINGS_EASY_UNLOCK_TURN_OFF" desc="The label of the button to disable Easy unlock on the settings page and the turn off Easy unlock dialog.">
       Turn off
@@ -1071,7 +1071,7 @@
       Add network connection
     </message>
     <message name="IDS_SETTINGS_INTERNET_ADD_CONNECTION_NOT_ALLOWED" desc="Settings > Internet > Message when Add connection is not allowed.">
-      Add connection is disabled by your administrator.
+      Add connection is disabled by your administrator
     </message>
     <message name="IDS_SETTINGS_INTERNET_ADD_WIFI" desc="Settings > Internet > Add Wi-Fi label.">
       Add Wi-Fi...
@@ -1104,13 +1104,13 @@
       Web Proxy Auto Discovery URL:
     </message>
     <message name="IDS_SETTINGS_INTERNET_NETWORK_SHARED" desc="Settings > Internet > Network details: Text to show when a network is shared.">
-      This network is shared with other users.
+      This network is shared with other users
     </message>
     <message name="IDS_SETTINGS_INTERNET_NETWORK_PRIMARY_USER_CONTROLLED" desc="Settings > Internet > Network details: Text to show when a network configuration is controlled by the primary user.">
       Network configuration is controlled by <ph name="USER_EMAIL">$1<ex>joe@gmail.com</ex></ph>.
     </message>
     <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_ENFORCED_POLICY" desc="Settings > Internet > Network details: Text to show when a network proxy is policy enforced.">
-      This proxy is enforced by your administrator.
+      This proxy is enforced by your administrator
     </message>
     <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_ALLOW_SHARED" desc="Settings > Internet > Network details: Text next to the checkbox for allowing proxy settings for shared networks.">
       Allow proxies for shared networks
@@ -1119,7 +1119,7 @@
       Confirm change to allow proxies for shared networks
     </message>
     <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_ALLOW_SHARED_WARNING_MESSAGE" desc="Settings > Internet > Network details: Warning message when changing the allow shared proxies setting.">
-      Changing this setting will affect all shared networks.
+      Changing this setting will affect all shared networks
     </message>
     <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_TYPE_DIRECT" desc="Radio used to tell it to just connect directly, not use a proxy.">
       Direct Internet connection
@@ -1197,8 +1197,7 @@
       SIM Card is locked
     </message>
     <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_LOCKED_WARNING" desc="Settings > Internet > Network details > Lock/unlock SIM card: Warning for SIM locked dialog when PUK is required.">
-      Your SIM card will be permanently disabled if you cannot enter
-      the correct PIN Unlock Key.
+      Your SIM card will be permanently disabled if you cannot enter the correct PIN Unlock Key.
     </message>
     <message name="IDS_SETTINGS_INTERNET_NETWORK_SIM_ENTER_PIN" desc="Settings > Internet > Network details > Lock/unlock SIM card: Label for entering a PIN.">
       Enter PIN
@@ -1246,7 +1245,7 @@
       Disconnect
     </message>
     <message name="IDS_SETTINGS_INTERNET_CONNECT_NOT_ALLOWED" desc="Settings > Internet > Message when connecting to a non policy network is not allowed.">
-      Connecting to this network is disabled by your administrator.
+      Connecting to this network is disabled by your administrator
     </message>
     <message name="IDS_SETTINGS_INTERNET_KNOWN_NETWORKS_BUTTON" desc="Text for button that opens the known networks subpage.">
       Known networks
@@ -1255,7 +1254,7 @@
       Preferred networks
     </message>
     <message name="IDS_SETTINGS_INTERNET_KNOWN_NETWORKS_MESSAGE" desc="Message describing the behavior of the known networks page.">
-      Preferred networks will be preferred over other known networks if more than one is available.
+      Preferred networks will be preferred over other known networks if more than one is available
     </message>
     <message name="IDS_SETTINGS_INTERNET_KNOWN_NETWORKS_ALL" desc="Title for list of all other (non preferred) networks.">
       All networks
@@ -1576,7 +1575,7 @@
       Custom words
     </message>
     <message name="IDS_SETTINGS_LANGUAGES_DICTIONARY_WORDS_NONE" desc="Placeholder that is shown when there are no custom words in the list of saved custom words dictionary.">
-      No custom words were found
+      Saved custom words will appear here
     </message>
   </if>
 
@@ -1683,10 +1682,10 @@
     Manage search engines
   </message>
   <message name="IDS_SETTINGS_SEARCH_OK_GOOGLE_LABEL" desc="Label for the checkbox which enables the OK Google hotword.">
-    Enable "Ok Google" to start a voice search.
+    Enable "Ok Google" to start a voice search
   </message>
   <message name="IDS_SETTINGS_SEARCH_OK_GOOGLE_SUBTEXT_ALWAYS_ON" desc="Subtext describing when the OK Google hotword may be used.">
-    Say "Ok Google" when the screen is on and unlocked.
+    Say "Ok Google" when the screen is on and unlocked
   </message>
   <if expr="chromeos">
     <message name="IDS_SETTINGS_SEARCH_OK_GOOGLE_SUBTEXT_NO_HARDWARE" desc="Subtext describing when the OK Google hotword may be used for devices without hardware support.">
@@ -1698,9 +1697,6 @@
       Say "Ok Google" in a new tab and google.com
     </message>
   </if>
-  <message name="IDS_SETTINGS_SEARCH_OK_GOOGLE_LEARN_MORE" desc="In Search Settings, the text for the 'learn more' link next to the OK Google hotword enable checkbox.">
-    Learn more.
-  </message>
   <message name="IDS_SETTINGS_SEARCH_OK_GOOGLE_AUDIO_HISTORY_LABEL" desc="Text to display when the user has audio history enabled.">
     Voice and Audio Activity for <ph name="USER_EMAIL">$1<ex>joe@gmail.com</ex></ph>.
   </message>
@@ -1734,7 +1730,7 @@
     Other search engines
   </message>
   <message name="IDS_SETTINGS_SEARCH_ENGINES_NO_OTHER_ENGINES" desc="Label shown when the 'other' Search engines section is empty">
-    No other search engines found
+    Other saved search engines will appear here
   </message>
   <message name="IDS_SETTINGS_SEARCH_ENGINES_EXTENSION_ENGINES" desc="Label for a section that displays search engines added by extensions">
     Search engines added by extensions
@@ -1818,7 +1814,7 @@
   </message>
   <if expr="chromeos or is_win">
     <message name="IDS_SETTINGS_SITE_SETTINGS_PROTECTED_CONTENT_IDENTIFIERS_EXPLANATION" desc="Text that is displayed on the Protected Content section of Content Settings. This text explains that enabling protected content may require using a uniquely identifiable machine identifier.">
-      Some content services use unique identifiers for the purposes of authorizing access to protected content.
+      Some content services use unique identifiers for the purposes of authorizing access to protected content
     </message>
     <message name="IDS_SETTINGS_SITE_SETTINGS_PROTECTED_CONTENT_ENABLE_IDENTIFIERS" desc="The label of the checkbox for enabling machine identifiers to uniquely identiy the user for protected content.">
       Allow identifiers for protected content (computer restart may be required)
@@ -1927,7 +1923,7 @@
     Ask when a site tries to download files automatically after the first file (recommended)
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_AUTOMATIC_DOWNLOAD_BLOCK" desc="The block label for automatic download in site settings.">
-    Do not allow any site to download multiple files automatically.
+    Do not allow any site to download multiple files automatically
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_UNSANDBOXED_PLUGINS_ASK" desc="The allow label for unsandboxed plugins in site settings.">
     Ask when a site wants to use a plugin to access your computer
@@ -1936,7 +1932,7 @@
     Ask when a site wants to use a plugin to access your computer (recommended)
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_UNSANDBOXED_PLUGINS_BLOCK" desc="The block label for unsandboxed plugins in site settings.">
-    Do not allow any site to use a plugin to access your computer.
+    Do not allow any site to use a plugin to access your computer
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_ALLOWED" desc="A generic Allowed label to show in Site Settings when Allow is NOT the recommended option.">
     Allowed
@@ -2059,7 +2055,7 @@
     Current incognito session (<ph name="EMBEDDING">$1<ex>embedded on google.com</ex></ph>)
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_NO_ZOOMED_SITES" desc="A label explaining that no sites have a configured zoom in/out value.">
-    No sites have been zoomed in or out.
+    No sites have been zoomed in or out
   </message>
   <message name="IDS_SETTINGS_SITE_DETAILS" desc="A title for the site settings details subpage.">
     Site details
@@ -2271,10 +2267,10 @@
       Add a fingerprint
     </message>
     <message name="IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_INSTRUCTION_LOCATE_SCANNER" desc="Text in the add fingerprint dialog telling users what to do for step 1.">
-      Find the fingerprint sensor on your device and touch it with your finger.
+      Find the fingerprint sensor on your device and touch it with your finger
     </message>
     <message name="IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_INSTRUCTION_MOVE_FINGER" desc="Text in the add fingerprint dialog telling users what to do for step 2.">
-      Now move your finger slightly to capture all the different parts of your fingerprint.
+      Now move your finger slightly to capture all the different parts of your fingerprint
     </message>
     <message name="IDS_SETTINGS_ADD_FINGERPRINT_DIALOG_INSTRUCTION_READY" desc="Text in the add fingerprint dialog telling users what to do for step 3.">
       Fingerprint added!
@@ -2310,7 +2306,7 @@
       Add another
     </message>
     <message name="IDS_SETTINGS_PEOPLE_PASSWORD_PROMPT_ENTER_PASSWORD" desc="Text above a password input field that tells the user they need to submit their password to configure these settings.">
-      Enter your password to configure screen lock.
+      Enter your password to configure screen lock
     </message>
     <message name="IDS_SETTINGS_PEOPLE_PASSWORD_PROMPT_PASSWORD_LABEL" desc="An input box label that tells the user to enter their password in that input box.">
       Password
@@ -2322,7 +2318,7 @@
       Change picture
     </message>
     <message name="IDS_SETTINGS_CHANGE_PICTURE_DIALOG_TEXT" desc="Text with description of what to do on Change picture subpage.">
-      Choose a picture to display for your account on the sign-in screen.
+      Choose a picture to display for your account on the sign-in screen
     </message>
     <message name="IDS_SETTINGS_CHANGE_PICTURE_CHOOSE_FILE" desc="Text on a button that shows file dialog to choose a picture from file.">
       Choose a file
@@ -2390,7 +2386,7 @@
     Show profile stats
   </message>
   <message name="IDS_SETTINGS_SYNC_DISCONNECT_DELETE_PROFILE" desc="The text to display by the checkbox asking user whether to also delete profile when stopping sync.">
-    Also remove your existing data from this device.
+    Also remove your existing data from this device
   </message>
   <message name="IDS_SETTINGS_SYNC_DISCONNECT_CONFIRM" desc="The text to display on the button to confirm the user wishes to stop syncing.">
     Clear and Sign Out
@@ -2463,13 +2459,13 @@
     To change this setting, <ph name="BEGIN_LINK">&lt;a href="$1" target=&quot;_blank&quot;&gt;<ex>&lt;a href="$1" target=&quot;_blank&quot;&gt;</ex></ph>reset sync<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
   </message>
   <message name="IDS_SETTINGS_EMPTY_PASSPHRASE_ERROR" desc="Error message when the passphrase is empty.">
-    Empty passphrase is not allowed.
+    Empty passphrase is not allowed
   </message>
   <message name="IDS_SETTINGS_MISMATCHED_PASSPHRASE_ERROR" desc="Error message when the passphrase and confirmation don't match.">
-    You must enter the same passphrase twice.
+    You must enter the same passphrase twice
   </message>
   <message name="IDS_SETTINGS_INCORRECT_PASSPHRASE_ERROR" desc="Message when the passphrase is incorrect.">
-    The passphrase you entered is incorrect.
+    The passphrase you entered is incorrect
   </message>
   <message name="IDS_SETTINGS_PASSPHRASE_RECOVER" desc="Message about how to recover from a lost passphrase.">
     If you forgot your passphrase or want to change this setting, <ph name="BEGIN_LINK">&lt;a href="$1" target=&quot;_blank&quot;&gt;<ex>&lt;a href="$1" target=&quot;_blank&quot;&gt;</ex></ph>reset sync<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.
@@ -2531,7 +2527,7 @@
       Import
     </message>
     <message name="IDS_SETTINGS_IMPORT_SUCCESS" desc="Message displayed after settings and bookmarks have been imported">
-      Your bookmarks and settings are ready.
+      Your bookmarks and settings are ready
     </message>
     <message name="IDS_SETTINGS_IMPORT_NO_PROFILE_FOUND" desc="Message displayed when we do not find any supported browser to import from.">
       No supported browser found
@@ -2724,7 +2720,7 @@
       Treat top-row keys as function keys
     </message>
     <message name="IDS_SETTINGS_KEYBOARD_SEND_FUNCTION_KEYS_DESCRIPTION" desc="In Device Settings, the label describing how to use the top-row keys' original actions when they are set to behave like function keys.">
-      Hold the Search key to switch the behavior of the top-row keys.
+      Hold the Search key to switch the behavior of the top-row keys
     </message>
     <message name="IDS_SETTINGS_KEYBOARD_AUTO_REPEAT_ENABLE" desc="The checkbox label for enabling keyboard auto-repeat.">
       Enable auto-repeat
@@ -2827,10 +2823,10 @@
       Overscan
     </message>
     <message name="IDS_SETTINGS_DISPLAY_OVERSCAN_SUBTITLE" desc="Subtitle for the display overscan settings subpage.">
-      Adjust the boundaries of your display.
+      Adjust the boundaries of your display
     </message>
     <message name="IDS_SETTINGS_DISPLAY_OVERSCAN_INSTRUCTIONS" desc="Instructions for changing the display overscan calibration.">
-      Tap the following keys to adjust or move the cropping area.
+      Tap the following keys to adjust or move the cropping area
     </message>
     <message name="IDS_SETTINGS_DISPLAY_OVERSCAN_RESIZE" desc="Label for resizing overscan calibration.">
       Shrink / Expand

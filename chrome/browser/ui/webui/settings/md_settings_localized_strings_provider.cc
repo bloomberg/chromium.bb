@@ -368,7 +368,7 @@ void AddBluetoothStrings(content::WebUIDataSource* html_source) {
       {"bluetooth_requestPasskey", IDS_SETTINGS_BLUETOOTH_REQUEST_PASSKEY},
       {"bluetooth_displayPasskey", IDS_SETTINGS_BLUETOOTH_DISPLAY_PASSKEY},
       {"bluetooth_confirmPasskey", IDS_SETTINGS_BLUETOOTH_CONFIRM_PASSKEY},
-      // These ids are generated in JS using 'bluetooth_result_' + a value from
+      // These ids are generated in JS using 'bluetooth_connect_' + a value from
       // bluetoothPrivate.ConnectResultType (see bluetooth_private.idl).
       {"bluetooth_connect_attributeLengthInvalid",
        IDS_SETTINGS_BLUETOOTH_CONNECT_ATTRIBUTE_LENGTH_INVALID},
@@ -1529,7 +1529,6 @@ void AddSearchStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_SEARCH_OK_GOOGLE_SUBTEXT_ALWAYS_ON},
       {"searchOkGoogleSubtextNoHardware",
        IDS_SETTINGS_SEARCH_OK_GOOGLE_SUBTEXT_NO_HARDWARE},
-      {"searchOkGoogleLearnMore", IDS_SETTINGS_SEARCH_OK_GOOGLE_LEARN_MORE},
       {"searchOkGoogleAudioHistoryLabel",
        IDS_SETTINGS_SEARCH_OK_GOOGLE_AUDIO_HISTORY_LABEL},
       {"searchOkGoogleAudioHistorySubtext",

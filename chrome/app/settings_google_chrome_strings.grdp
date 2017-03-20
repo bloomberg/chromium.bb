@@ -19,7 +19,7 @@
       Nearly up to date! Relaunch Google Chrome to finish updating.
     </message>
     <message name="IDS_SETTINGS_UPGRADE_UP_TO_DATE" desc="Status label: Already up to date (Google Chrome)">
-      Google Chrome is up to date.
+      Google Chrome is up to date
     </message>
   </if>
   <if expr="chromeos">
@@ -39,13 +39,13 @@
   <!-- Default Browser Page -->
   <if expr="not chromeos">
     <message name="IDS_SETTINGS_DEFAULT_BROWSER_DEFAULT" desc="The text displayed when Chrome is not the default browser">
-      Google Chrome is your default browser.
+      Google Chrome is your default browser
     </message>
     <message name="IDS_SETTINGS_DEFAULT_BROWSER_MAKE_DEFAULT" desc="Default browser checkbox label">
       Make Google Chrome the default browser
     </message>
     <message name="IDS_SETTINGS_DEFAULT_BROWSER_ERROR" desc="The text displayed when Chrome cannot determine or set the default browser">
-      Google Chrome cannot determine or set the default browser.
+      Google Chrome cannot determine or set the default browser
     </message>
     <message name="IDS_SETTINGS_DEFAULT_BROWSER_SECONDARY" desc="The text displayed when Chrome is installed in side-by-side mode, which does not support setting as the default browser.">
       This is a secondary installation of Google Chrome, and cannot be made your default browser.
