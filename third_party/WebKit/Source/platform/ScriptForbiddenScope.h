@@ -44,15 +44,11 @@ class PLATFORM_EXPORT ScriptForbiddenScope final {
     ++s_scriptForbiddenCount;
   }
   static void exit() {
-    DCHECK(isMainThread());
     DCHECK(s_scriptForbiddenCount);
     --s_scriptForbiddenCount;
   }
   static bool isScriptForbidden() {
-    // Check s_scriptForbiddenCount first to avoid any calls to isMainThread()
-    // since under normal situations where we check this (ex. inside
-    // V8ScriptRunner) the value should always be zero.
-    return s_scriptForbiddenCount && isMainThread();
+    return isMainThread() && s_scriptForbiddenCount;
   }
 
  private:
