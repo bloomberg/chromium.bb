@@ -69,7 +69,9 @@ extern "C" {
 # define OD_DISABLE_CFL (1)
 # define OD_DISABLE_FILTER (1)
 
+#if !defined(NDEBUG)
 # define OD_ENABLE_ASSERTIONS (1)
+#endif
 
 # define OD_LOG(a)
 # define OD_LOG_PARTIAL(a)

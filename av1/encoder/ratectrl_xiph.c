@@ -675,6 +675,7 @@ int od_enc_rc_select_quantizers_and_lambdas(od_rc_state *rc,
         od_frame_type(rc, rc->cur_frame, &closed_form_golden,
                       &closed_form_altref, &closed_form_cur_frame);
     OD_UNUSED(closed_form_type);
+    OD_UNUSED(is_altref_frame);
     OD_ASSERT(closed_form_type == frame_type);
     OD_ASSERT(closed_form_cur_frame == rc->cur_frame);
     OD_ASSERT(closed_form_altref == is_altref_frame);

@@ -493,6 +493,7 @@ static double od_compute_dist_8x8(int qm, int use_activity_masking, od_coeff *x,
 
   vardist = 0;
   OD_ASSERT(qm != OD_FLAT_QM);
+  (void)qm;
 #if 1
   min_var = INT_MAX;
   mean_var = 0;
