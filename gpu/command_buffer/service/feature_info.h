@@ -109,6 +109,7 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool ext_disjoint_timer_query = false;
     bool angle_client_arrays = false;
     bool angle_request_extension = false;
+    bool ext_debug_marker = false;
   };
 
   FeatureInfo();

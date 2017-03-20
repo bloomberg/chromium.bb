@@ -2498,19 +2498,31 @@ error::Error GLES2DecoderPassthroughImpl::DoSetDisjointValueSyncCHROMIUM(
 error::Error GLES2DecoderPassthroughImpl::DoInsertEventMarkerEXT(
     GLsizei length,
     const char* marker) {
-  NOTIMPLEMENTED();
+  if (!feature_info_->feature_flags().ext_debug_marker) {
+    return error::kUnknownCommand;
+  }
+
+  glInsertEventMarkerEXT(length, marker);
   return error::kNoError;
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoPushGroupMarkerEXT(
     GLsizei length,
     const char* marker) {
-  NOTIMPLEMENTED();
+  if (!feature_info_->feature_flags().ext_debug_marker) {
+    return error::kUnknownCommand;
+  }
+
+  glPushGroupMarkerEXT(length, marker);
   return error::kNoError;
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoPopGroupMarkerEXT() {
-  NOTIMPLEMENTED();
+  if (!feature_info_->feature_flags().ext_debug_marker) {
+    return error::kUnknownCommand;
+  }
+
+  glPopGroupMarkerEXT();
   return error::kNoError;
 }
 

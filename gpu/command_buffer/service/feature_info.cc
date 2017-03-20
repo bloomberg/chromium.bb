@@ -1360,6 +1360,7 @@ void FeatureInfo::InitializeFeatures() {
       extensions.Contains("GL_ANGLE_client_arrays");
   feature_flags_.angle_request_extension =
       extensions.Contains("GL_ANGLE_request_extension");
+  feature_flags_.ext_debug_marker = extensions.Contains("GL_EXT_debug_marker");
 }
 
 void FeatureInfo::InitializeFloatAndHalfFloatFeatures(
