@@ -3583,6 +3583,41 @@ TEST_F(InputHandlerProxyEventQueueTest, GestureScrollFlingOrder) {
       !input_handler_proxy_->gesture_scroll_on_impl_thread_for_testing());
 }
 
+TEST_F(InputHandlerProxyEventQueueTest, GestureScrollAfterFling) {
+  // Handle scroll on compositor.
+  cc::InputHandlerScrollResult scroll_result_did_scroll_;
+  scroll_result_did_scroll_.did_scroll = true;
+
+  EXPECT_CALL(mock_input_handler_, ScrollBegin(testing::_, testing::_))
+      .WillRepeatedly(testing::Return(kImplThreadScrollState));
+  EXPECT_CALL(mock_input_handler_, SetNeedsAnimateInput())
+      .Times(::testing::AtLeast(1));
+  EXPECT_CALL(
+      mock_input_handler_,
+      ScrollBy(testing::Property(&cc::ScrollState::delta_y, testing::Gt(0))))
+      .WillRepeatedly(testing::Return(scroll_result_did_scroll_));
+  EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_))
+      .Times(::testing::AtLeast(1));
+
+  // Simulate fling.
+  HandleGestureEvent(WebInputEvent::GestureScrollBegin);
+  HandleGestureEvent(WebInputEvent::GestureScrollUpdate, -20);
+  HandleGestureEvent(WebInputEvent::GestureFlingStart, -10);
+  HandleGestureEvent(WebInputEvent::GestureFlingCancel);
+
+  // Dispatch events.
+  input_handler_proxy_->DeliverInputForBeginFrame();
+  EXPECT_EQ(0ul, event_queue().size());
+  EXPECT_EQ(4ul, event_disposition_recorder_.size());
+  EXPECT_FALSE(
+      input_handler_proxy_->gesture_scroll_on_impl_thread_for_testing());
+
+  // New ScrollBegin should be dispatched immediately as there is no on-going
+  // scroll, fling or pinch.
+  HandleGestureEvent(WebInputEvent::GestureScrollBegin);
+  EXPECT_EQ(0ul, event_queue().size());
+}
+
 INSTANTIATE_TEST_CASE_P(AnimateInput,
                         InputHandlerProxyTest,
                         testing::ValuesIn(test_types));

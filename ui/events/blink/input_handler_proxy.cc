@@ -266,7 +266,7 @@ InputHandlerProxy::InputHandlerProxy(cc::InputHandler* input_handler,
       touch_start_result_(kEventDispositionUndefined),
       mouse_wheel_result_(kEventDispositionUndefined),
       current_overscroll_params_(nullptr),
-      has_ongoing_compositor_scroll_pinch_(false),
+      has_ongoing_compositor_scroll_fling_pinch_(false),
       tick_clock_(base::MakeUnique<base::DefaultTickClock>()) {
   DCHECK(client);
   input_handler_->BindToClient(this);
@@ -317,7 +317,7 @@ void InputHandlerProxy::HandleInputEventWithLatencyInfo(
     return;
   }
 
-  if (has_ongoing_compositor_scroll_pinch_) {
+  if (has_ongoing_compositor_scroll_fling_pinch_) {
     bool needs_animate_input = compositor_event_queue_->empty();
     compositor_event_queue_->Queue(std::move(event_with_callback),
                                    tick_clock_->NowTicks());
@@ -373,15 +373,17 @@ void InputHandlerProxy::DispatchSingleInputEvent(
 
   switch (event_with_callback->event().type()) {
     case blink::WebGestureEvent::GestureScrollBegin:
+    case blink::WebGestureEvent::GestureFlingStart:
     case blink::WebGestureEvent::GesturePinchBegin:
     case blink::WebGestureEvent::GestureScrollUpdate:
     case blink::WebGestureEvent::GesturePinchUpdate:
-      has_ongoing_compositor_scroll_pinch_ = disposition == DID_HANDLE;
+      has_ongoing_compositor_scroll_fling_pinch_ = disposition == DID_HANDLE;
       break;
 
     case blink::WebGestureEvent::GestureScrollEnd:
+    case blink::WebGestureEvent::GestureFlingCancel:
     case blink::WebGestureEvent::GesturePinchEnd:
-      has_ongoing_compositor_scroll_pinch_ = false;
+      has_ongoing_compositor_scroll_fling_pinch_ = false;
       break;
     default:
       break;

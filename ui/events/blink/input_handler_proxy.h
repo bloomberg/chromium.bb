@@ -260,7 +260,7 @@ class InputHandlerProxy
   std::unique_ptr<DidOverscrollParams> current_overscroll_params_;
 
   std::unique_ptr<CompositorThreadEventQueue> compositor_event_queue_;
-  bool has_ongoing_compositor_scroll_pinch_;
+  bool has_ongoing_compositor_scroll_fling_pinch_;
 
   std::unique_ptr<base::TickClock> tick_clock_;
 
