@@ -24,7 +24,6 @@ source_set("eg_tests") {
   ]
   deps = [
     "//ios/showcase/test",
-    "//ios/testing/earl_grey:earl_grey_support",
     "//ios/third_party/earl_grey",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]

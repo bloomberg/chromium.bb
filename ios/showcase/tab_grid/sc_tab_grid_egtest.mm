@@ -5,7 +5,6 @@
 #import <EarlGrey/EarlGrey.h>
 
 #import "ios/showcase/test/showcase_test_case.h"
-#import "ios/testing/earl_grey/disabled_test_macros.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
