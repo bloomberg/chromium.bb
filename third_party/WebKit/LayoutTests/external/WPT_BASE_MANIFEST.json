@@ -20125,6 +20125,11 @@
      {}
     ]
    ],
+   "pointerevents/pointerevent_click_during_capture-manual-expected.txt": [
+    [
+     {}
+    ]
+   ],
    "pointerevents/pointerevent_styles.css": [
     [
      {}
@@ -80326,6 +80331,10 @@
   "pointerevents/pointerevent_change-touch-action-onpointerdown_touch-manual.html": [
    "c1bc66cc70a1d58ab31d00717a688c66e39533c2",
    "manual"
+  ],
+  "pointerevents/pointerevent_click_during_capture-manual-expected.txt": [
+   "7d70941668b87a9c5095d08a4d9beda5546ca3c4",
+   "support"
   ],
   "pointerevents/pointerevent_click_during_capture-manual.html": [
    "19fedd25b597078b6a828e6fa0cd997e68cdf661",
