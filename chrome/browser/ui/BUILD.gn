@@ -391,6 +391,8 @@ split_static_library("ui") {
     "webui/predictors/predictors_handler.h",
     "webui/predictors/predictors_ui.cc",
     "webui/predictors/predictors_ui.h",
+    "webui/prefs_internals_source.cc",
+    "webui/prefs_internals_source.h",
     "webui/profiler_ui.cc",
     "webui/profiler_ui.h",
     "webui/quota_internals/quota_internals_handler.cc",

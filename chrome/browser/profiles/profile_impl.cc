@@ -75,6 +75,7 @@
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate.h"
 #include "chrome/browser/ssl/chrome_ssl_host_state_delegate_factory.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
+#include "chrome/browser/ui/webui/prefs_internals_source.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
@@ -692,6 +693,8 @@ void ProfileImpl::DoFinalInit() {
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   signin_ui_util::InitializePrefsForProfile(this);
 #endif
+
+  content::URLDataSource::Add(this, new PrefsInternalsSource(this));
 }
 
 base::FilePath ProfileImpl::last_selected_directory() {

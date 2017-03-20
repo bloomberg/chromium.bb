@@ -1833,6 +1833,7 @@ test("browser_tests") {
       "../browser/ui/webui/options/preferences_browsertest.h",
       "../browser/ui/webui/password_manager_internals/password_manager_internals_ui_browsertest.cc",
       "../browser/ui/webui/policy_ui_browsertest.cc",
+      "../browser/ui/webui/prefs_internals_browsertest.cc",
       "../browser/ui/webui/print_preview/print_preview_ui_browsertest.cc",
       "../browser/ui/webui/set_as_default_browser_ui_browsertest_win.cc",
       "../browser/ui/webui/settings/md_settings_ui_browsertest.cc",

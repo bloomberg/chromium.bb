@@ -229,6 +229,7 @@ const char kChromeUIOmniboxHost[] = "omnibox";
 const char kChromeUIPasswordManagerInternalsHost[] =
     "password-manager-internals";
 const char kChromeUIPhysicalWebHost[] = "physical-web";
+const char kChromeUIPrefsInternalsHost[] = "prefs-internals";
 const char kChromeUIComponentsHost[] = "components";
 const char kChromeUIPolicyHost[] = "policy";
 const char kChromeUIMdUserManagerHost[] = "md-user-manager";
