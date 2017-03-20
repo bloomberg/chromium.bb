@@ -920,9 +920,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   const scoped_refptr<SiteInstanceImpl> site_instance_;
 
   // The renderer process this RenderFrameHost is associated with. It is
-  // equivalent to the result of site_instance_->GetProcess(), but that
-  // method has the side effect of creating the process if it doesn't exist.
-  // Cache a pointer to avoid unnecessary process creation.
+  // initialized through a call to site_instance_->GetProcess() at creation
+  // time. RenderFrameHost::GetProcess() uses this cached pointer to avoid
+  // recreating the renderer process if it has crashed, since using
+  // SiteInstance::GetProcess() has the side effect of creating the process
+  // again if it is gone.
   RenderProcessHost* const process_;
 
   // Reference to the whole frame tree that this RenderFrameHost belongs to.
