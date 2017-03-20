@@ -523,8 +523,9 @@ static void predict_and_reconstruct_intra_block(
 #if !CONFIG_PVQ
 #if CONFIG_LV_MAP
     int16_t max_scan_line = 0;
-    const int eob = av1_read_coeffs_txb_facade(
-        cm, xd, r, row, col, block_idx, plane, pd->dqcoeff, &max_scan_line);
+    int eob;
+    av1_read_coeffs_txb_facade(cm, xd, r, row, col, block_idx, plane,
+                               pd->dqcoeff, &max_scan_line, &eob);
 #else   // CONFIG_LV_MAP
     const SCAN_ORDER *scan_order = get_scan(cm, tx_size, tx_type, 0);
     int16_t max_scan_line = 0;
@@ -572,8 +573,9 @@ static void decode_reconstruct_tx(AV1_COMMON *cm, MACROBLOCKD *const xd,
 #if CONFIG_LV_MAP
     (void)segment_id;
     int16_t max_scan_line = 0;
-    const int eob = av1_read_coeffs_txb_facade(
-        cm, xd, r, row, col, block_idx, plane, pd->dqcoeff, &max_scan_line);
+    int eob;
+    av1_read_coeffs_txb_facade(cm, xd, r, row, col, block_idx, plane,
+                               pd->dqcoeff, &max_scan_line, &eob);
 #else   // CONFIG_LV_MAP
     const SCAN_ORDER *sc = get_scan(cm, plane_tx_size, tx_type, 1);
     int16_t max_scan_line = 0;
@@ -632,8 +634,9 @@ static int reconstruct_inter_block(AV1_COMMON *cm, MACROBLOCKD *const xd,
 #if CONFIG_LV_MAP
   (void)segment_id;
   int16_t max_scan_line = 0;
-  const int eob = av1_read_coeffs_txb_facade(
-      cm, xd, r, row, col, block_idx, plane, pd->dqcoeff, &max_scan_line);
+  int eob;
+  av1_read_coeffs_txb_facade(cm, xd, r, row, col, block_idx, plane, pd->dqcoeff,
+                             &max_scan_line, &eob);
 #else   // CONFIG_LV_MAP
   int16_t max_scan_line = 0;
   const SCAN_ORDER *scan_order = get_scan(cm, tx_size, tx_type, 1);
