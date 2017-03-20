@@ -57,8 +57,6 @@ bool CheckUniqueAndNonNullIds(GLsizei n, const GLuint* client_ids);
 const char* GetServiceVersionString(const FeatureInfo* feature_info);
 const char* GetServiceShadingLanguageVersionString(
     const FeatureInfo* feature_info);
-const char* GetServiceRendererString(const FeatureInfo* feature_info);
-const char* GetServiceVendorString(const FeatureInfo* feature_info);
 
 void APIENTRY LogGLDebugMessage(GLenum source,
                                 GLenum type,

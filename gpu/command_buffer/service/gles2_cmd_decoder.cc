@@ -12465,13 +12465,6 @@ error::Error GLES2DecoderImpl::HandleGetString(uint32_t immediate_data_size,
     case GL_SHADING_LANGUAGE_VERSION:
       str = GetServiceShadingLanguageVersionString(feature_info_.get());
       break;
-    case GL_RENDERER:
-      str = GetServiceRendererString(feature_info_.get());
-      break;
-    case GL_VENDOR:
-      str = GetServiceVendorString(feature_info_.get());
-      break;
-      break;
     case GL_EXTENSIONS:
       {
         // For WebGL contexts, strip out shader extensions if they have not

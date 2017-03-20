@@ -133,13 +133,6 @@ TEST_F(GLTest, GetString) {
   EXPECT_STREQ(
       "OpenGL ES GLSL ES 1.0 Chromium",
       reinterpret_cast<const char*>(glGetString(GL_SHADING_LANGUAGE_VERSION)));
-  EXPECT_STREQ(
-      "Chromium",
-      reinterpret_cast<const char*>(glGetString(GL_RENDERER)));
-  EXPECT_STREQ(
-      "Chromium",
-      reinterpret_cast<const char*>(glGetString(GL_VENDOR)));
 }
 
 }  // namespace gpu
-

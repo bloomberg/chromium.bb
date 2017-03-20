@@ -1215,12 +1215,6 @@ error::Error GLES2DecoderPassthroughImpl::DoGetString(GLenum name,
     case GL_SHADING_LANGUAGE_VERSION:
       *result = GetServiceShadingLanguageVersionString(feature_info_.get());
       break;
-    case GL_RENDERER:
-      *result = GetServiceRendererString(feature_info_.get());
-      break;
-    case GL_VENDOR:
-      *result = GetServiceVendorString(feature_info_.get());
-      break;
     case GL_EXTENSIONS:
       *result = feature_info_->extensions().c_str();
       break;
