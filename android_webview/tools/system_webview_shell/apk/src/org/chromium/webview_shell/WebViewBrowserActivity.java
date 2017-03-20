@@ -269,6 +269,7 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
                 setUrlBarText(url);
             }
 
+            @SuppressWarnings("deprecation") // because we support api level 19 and up.
             @Override
             public boolean shouldOverrideUrlLoading(WebView webView, String url) {
                 // "about:" and "chrome:" schemes are internal to Chromium;
@@ -460,6 +461,9 @@ public class WebViewBrowserActivity extends Activity implements PopupMenu.OnMenu
         }
     }
 
+    // setGeolocationDatabasePath deprecated in api level 24,
+    // but we still use it because we support api level 19 and up.
+    @SuppressWarnings("deprecation")
     private void initializeSettings(WebSettings settings) {
         settings.setJavaScriptEnabled(true);
 

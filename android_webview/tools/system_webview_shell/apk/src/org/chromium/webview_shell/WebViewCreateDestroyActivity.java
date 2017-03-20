@@ -61,10 +61,11 @@ public class WebViewCreateDestroyActivity extends Activity {
         webSettings.setLoadWithOverviewMode(true);
 
         sWebView.setWebViewClient(new WebViewClient() {
-                @Override
-                public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                    return false;
-                }
+            @SuppressWarnings("deprecation") // because we support api level 19 and up.
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                return false;
+            }
         });
 
         String url = getUrlFromIntent(intent);

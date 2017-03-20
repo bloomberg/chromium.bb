@@ -33,10 +33,11 @@ public class TelemetryMemoryPressureActivity extends Activity {
         webview.getSettings().setJavaScriptEnabled(true);
 
         webview.setWebViewClient(new WebViewClient() {
-                @Override
-                public boolean shouldOverrideUrlLoading(WebView webView, String url) {
-                    return false;
-                }
+            @SuppressWarnings("deprecation") // because we support api level 19 and up.
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView webView, String url) {
+                return false;
+            }
         });
 
         webview.loadUrl("about:blank");

@@ -28,6 +28,7 @@ public class JankActivity extends Activity {
         CookieManager.setAcceptFileSchemeCookies(true);
 
         webView.setWebViewClient(new WebViewClient() {
+            @SuppressWarnings("deprecation") // because we support api level 19 and up.
             @Override
             public boolean shouldOverrideUrlLoading(WebView webView, String url) {
                 return false;

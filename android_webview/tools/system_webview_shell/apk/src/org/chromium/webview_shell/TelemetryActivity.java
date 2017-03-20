@@ -53,17 +53,18 @@ public class TelemetryActivity extends Activity {
         }
 
         webView.setWebViewClient(new WebViewClient() {
-                @Override
-                public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                    return false;
-                }
+            @SuppressWarnings("deprecation") // because we support api level 19 and up.
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+                return false;
+            }
 
-                @Override
-                public void onPageFinished(WebView view, String url) {
-                    super.onPageFinished(view, url);
-                    Trace.endSection();
-                    Trace.endSection();
-                }
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                Trace.endSection();
+                Trace.endSection();
+            }
         });
 
         Trace.beginSection(loadUrlTraceTag == null ? DEFAULT_LOAD_URL_TRACE_TAG : loadUrlTraceTag);
