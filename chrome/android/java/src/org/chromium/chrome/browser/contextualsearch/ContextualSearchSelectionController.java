@@ -416,11 +416,17 @@ public class ContextualSearchSelectionController {
     }
 
     /**
-     * @return The Base Page's {@link WebContents}, or {@code null} if there is no current tab.
+     * @return The Base Page's {@link WebContents}, or {@code null} if there is no current tab or
+     *         the current tab has no {@link ContentViewCore}.
      */
     WebContents getBaseWebContents() {
         Tab currentTab = mActivity.getActivityTab();
-        return currentTab != null ? currentTab.getContentViewCore().getWebContents() : null;
+        if (currentTab == null) return null;
+
+        ContentViewCore contentViewCore = currentTab.getContentViewCore();
+        if (contentViewCore == null) return null;
+
+        return contentViewCore.getWebContents();
     }
 
     /**
