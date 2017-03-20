@@ -4,9 +4,10 @@
 
 #include "chrome/browser/ui/libgtkui/gtk_ui.h"
 
+#include <X11/Xcursor/Xcursor.h>
+#include <dlfcn.h>
 #include <math.h>
 #include <pango/pango.h>
-#include <X11/Xcursor/Xcursor.h>
 
 #include <cmath>
 #include <set>
@@ -376,6 +377,19 @@ SkColor GetToolbarTopSeparatorColor(SkColor header_fg,
 }  // namespace
 
 GtkUi::GtkUi() : middle_click_action_(GetDefaultMiddleClickAction()) {
+#if GTK_MAJOR_VERSION > 2
+  // Force Gtk to use Xwayland if it would have used wayland.  libgtkui assumes
+  // the use of X11 (eg. X11InputMethodContextImplGtk) and will crash under
+  // other backends.
+  // TODO(thomasanderson): Change this logic once Wayland support is added.
+  static auto* _gdk_set_allowed_backends =
+      reinterpret_cast<void (*)(const gchar*)>(
+          dlsym(GetGdkSharedLibrary(), "gdk_set_allowed_backends"));
+  if (GtkVersionCheck(3, 10))
+    DCHECK(_gdk_set_allowed_backends);
+  if (_gdk_set_allowed_backends)
+    _gdk_set_allowed_backends("x11");
+#endif
   GtkInitFromCommandLine(*base::CommandLine::ForCurrentProcess());
 #if GTK_MAJOR_VERSION == 2
   native_theme_ = NativeThemeGtk2::instance();

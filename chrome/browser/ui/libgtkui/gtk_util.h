@@ -83,6 +83,9 @@ void ClearAuraTransientParent(GtkWidget* dialog);
 #define GTK_STATE_FLAG_VISITED static_cast<GtkStateFlags>(1 << 10)
 #define GTK_STATE_FLAG_CHECKED static_cast<GtkStateFlags>(1 << 11)
 
+void* GetGdkSharedLibrary();
+void* GetGtkSharedLibrary();
+
 class CairoSurface {
  public:
   // Attaches a cairo surface to an SkBitmap so that GTK can render

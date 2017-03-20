@@ -53,14 +53,6 @@ void CommonInitFromCommandLine(const base::CommandLine& command_line,
   }
 }
 
-#if GTK_MAJOR_VERSION == 3
-void* GetGtk3SharedLibrary() {
-  static void* gtk3lib = dlopen("libgtk-3.so.0", RTLD_LAZY);
-  DCHECK(gtk3lib);
-  return gtk3lib;
-}
-#endif
-
 }  // namespace
 
 namespace libgtkui {
@@ -207,6 +199,22 @@ void ClearAuraTransientParent(GtkWidget* dialog) {
 }
 
 #if GTK_MAJOR_VERSION > 2
+void* GetGdkSharedLibrary() {
+  std::string lib_name =
+      "libgdk-" + std::to_string(GTK_MAJOR_VERSION) + ".so.0";
+  static void* gdk_lib = dlopen(lib_name.c_str(), RTLD_LAZY);
+  DCHECK(gdk_lib);
+  return gdk_lib;
+}
+
+void* GetGtkSharedLibrary() {
+  std::string lib_name =
+      "libgtk-" + std::to_string(GTK_MAJOR_VERSION) + ".so.0";
+  static void* gtk_lib = dlopen(lib_name.c_str(), RTLD_LAZY);
+  DCHECK(gtk_lib);
+  return gtk_lib;
+}
+
 CairoSurface::CairoSurface(SkBitmap& bitmap)
     : surface_(cairo_image_surface_create_for_data(
           static_cast<unsigned char*>(bitmap.getAddr(0, 0)),
@@ -347,7 +355,7 @@ ScopedStyleContext AppendCssNodeToStyleContext(GtkStyleContext* context,
     } else {
       static auto* _gtk_widget_path_iter_set_object_name =
           reinterpret_cast<void (*)(GtkWidgetPath*, gint, const char*)>(dlsym(
-              GetGtk3SharedLibrary(), "gtk_widget_path_iter_set_object_name"));
+              GetGtkSharedLibrary(), "gtk_widget_path_iter_set_object_name"));
       switch (part_type) {
         case CSS_NAME: {
           if (GtkVersionCheck(3, 20)) {
@@ -393,7 +401,7 @@ ScopedStyleContext AppendCssNodeToStyleContext(GtkStyleContext* context,
   if (GtkVersionCheck(3, 14)) {
     static auto* _gtk_widget_path_iter_set_state =
         reinterpret_cast<void (*)(GtkWidgetPath*, gint, GtkStateFlags)>(
-            dlsym(GetGtk3SharedLibrary(), "gtk_widget_path_iter_set_state"));
+            dlsym(GetGtkSharedLibrary(), "gtk_widget_path_iter_set_state"));
     DCHECK(_gtk_widget_path_iter_set_state);
     _gtk_widget_path_iter_set_state(path, -1, state);
   }
