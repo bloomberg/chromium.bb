@@ -206,8 +206,8 @@ TEST_F(GamepadProviderTest, UserGesture) {
   EXPECT_TRUE(listener.has_user_gesture());
 }
 
-// Flaky on MSAN: http://crbug.com/640086
-#if defined(MEMORY_SANITIZER)
+// Flaky on CrOS and Linux: http://crbug.com/640086, https://crbug.com/702712
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
 #define MAYBE_Sanitization DISABLED_Sanitization
 #else
 #define MAYBE_Sanitization Sanitization
