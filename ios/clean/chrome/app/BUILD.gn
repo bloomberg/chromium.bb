@@ -46,6 +46,7 @@ ios_app_bundle("chrome_clean_skeleton") {
     "CHROMIUM_URL_SCHEME_2=$url_secure_scheme",
     "CHROMIUM_URL_SCHEME_3=$url_x_callback_scheme",
     "CHROMIUM_URL_SCHEME_4=$url_channel_scheme",
+    "IOS_BUNDLE_ID_PREFIX=$ios_app_bundle_id_prefix",
   ]
 
   if (ios_encryption_export_compliance_code != "") {
