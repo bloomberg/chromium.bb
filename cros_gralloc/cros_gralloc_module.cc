@@ -169,7 +169,7 @@ static int cros_gralloc_lock(struct gralloc_module_t const *module, buffer_handl
 		return CROS_GRALLOC_ERROR_BAD_HANDLE;
 	}
 
-	if (sw_access() & usage) {
+	if (sw_access & usage) {
 		if (bo->map_data) {
 			*vaddr = bo->map_data->addr;
 		} else {
@@ -303,7 +303,7 @@ static int cros_gralloc_lock_ycbcr(struct gralloc_module_t const *module, buffer
 		return CROS_GRALLOC_ERROR_BAD_HANDLE;
 	}
 
-	if (sw_access() & usage) {
+	if (sw_access & usage) {
 		void *vaddr;
 		if (bo->map_data) {
 			vaddr = bo->map_data->addr;

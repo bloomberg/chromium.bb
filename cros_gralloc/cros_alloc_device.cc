@@ -70,7 +70,7 @@ static struct cros_gralloc_handle *cros_gralloc_handle_from_bo(struct bo *bo)
 
 	hnd->base.version = sizeof(hnd->base);
 	hnd->base.numFds = num_planes;
-	hnd->base.numInts = num_ints_handle() - num_planes;
+	hnd->base.numInts = num_ints_handle - num_planes;
 
 	for (size_t p = 0; p < num_planes; p++) {
 		hnd->fds[p] = drv_bo_get_plane_fd(bo, p);
@@ -88,7 +88,7 @@ static struct cros_gralloc_handle *cros_gralloc_handle_from_bo(struct bo *bo)
 	hnd->format = drv_bo_get_format(bo);
 	hnd->pixel_stride = drv_bo_get_stride_in_pixels(bo);
 
-	hnd->magic = cros_gralloc_magic();
+	hnd->magic = cros_gralloc_magic;
 
 	return hnd;
 }

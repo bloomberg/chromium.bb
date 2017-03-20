@@ -42,30 +42,11 @@ enum {
 };
 // clang-format on
 
-constexpr uint32_t cros_gralloc_magic(void)
-{
-	return 0xABCDDCBA;
-}
+constexpr uint32_t cros_gralloc_magic = 0xABCDDCBA;
 
-constexpr uint32_t num_ints_handle()
-{
-	return ((sizeof(struct cros_gralloc_handle)) / sizeof(int));
-}
+constexpr uint32_t num_ints_handle = ((sizeof(struct cros_gralloc_handle)) / sizeof(int));
 
-constexpr uint32_t sw_access(void)
-{
-	return GRALLOC_USAGE_SW_READ_MASK | GRALLOC_USAGE_SW_WRITE_MASK;
-}
-
-constexpr uint32_t sw_read(void)
-{
-	return GRALLOC_USAGE_SW_READ_MASK;
-}
-
-constexpr uint32_t sw_write(void)
-{
-	return GRALLOC_USAGE_SW_WRITE_MASK;
-}
+constexpr uint32_t sw_access = GRALLOC_USAGE_SW_READ_MASK | GRALLOC_USAGE_SW_WRITE_MASK;
 
 uint64_t cros_gralloc_convert_flags(int flags);
 

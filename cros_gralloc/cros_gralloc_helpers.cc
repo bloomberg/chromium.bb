@@ -17,13 +17,13 @@ uint64_t cros_gralloc_convert_flags(int flags)
 
 	if (flags & GRALLOC_USAGE_CURSOR)
 		usage |= BO_USE_NONE;
-	if ((flags & sw_read()) == GRALLOC_USAGE_SW_READ_RARELY)
+	if ((flags & GRALLOC_USAGE_SW_READ_MASK) == GRALLOC_USAGE_SW_READ_RARELY)
 		usage |= BO_USE_SW_READ_RARELY;
-	if ((flags & sw_read()) == GRALLOC_USAGE_SW_READ_OFTEN)
+	if ((flags & GRALLOC_USAGE_SW_READ_MASK) == GRALLOC_USAGE_SW_READ_OFTEN)
 		usage |= BO_USE_SW_READ_OFTEN;
-	if ((flags & sw_write()) == GRALLOC_USAGE_SW_WRITE_RARELY)
+	if ((flags & GRALLOC_USAGE_SW_WRITE_MASK) == GRALLOC_USAGE_SW_WRITE_RARELY)
 		usage |= BO_USE_SW_WRITE_RARELY;
-	if ((flags & sw_write()) == GRALLOC_USAGE_SW_WRITE_OFTEN)
+	if ((flags & GRALLOC_USAGE_SW_WRITE_MASK) == GRALLOC_USAGE_SW_WRITE_OFTEN)
 		usage |= BO_USE_SW_WRITE_OFTEN;
 	if (flags & GRALLOC_USAGE_HW_TEXTURE)
 		usage |= BO_USE_TEXTURE;
@@ -147,7 +147,7 @@ int32_t cros_gralloc_rendernode_open(struct driver **drv)
 
 int32_t cros_gralloc_validate_handle(struct cros_gralloc_handle *hnd)
 {
-	if (!hnd || hnd->magic != cros_gralloc_magic())
+	if (!hnd || hnd->magic != cros_gralloc_magic)
 		return CROS_GRALLOC_ERROR_BAD_HANDLE;
 
 	return CROS_GRALLOC_ERROR_NONE;
