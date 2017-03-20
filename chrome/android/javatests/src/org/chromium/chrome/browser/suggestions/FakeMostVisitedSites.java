@@ -5,15 +5,16 @@
 package org.chromium.chrome.browser.suggestions;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.ntp.NTPTileSource;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
  * A fake implementation of MostVisitedSites that returns a fixed list of most visited sites.
  */
-public class FakeMostVisitedSites extends MostVisitedSites {
+public class FakeMostVisitedSites implements MostVisitedSites {
     private final List<String> mBlacklistedUrls = new ArrayList<>();
 
     private String[] mTitles = new String[] {};
@@ -22,13 +23,8 @@ public class FakeMostVisitedSites extends MostVisitedSites {
     private int[] mSources = new int[] {};
     private Observer mObserver;
 
-    /**
-     * @param profile The profile for which to fetch site suggestions.
-     */
-    public FakeMostVisitedSites(Profile profile) {
-        // TODO(mvanouwerkerk): Do not let the fake inherit from the real implementation.
-        super(profile);
-    }
+    @Override
+    public void destroy() {}
 
     @Override
     public void setObserver(Observer observer, int numResults) {
@@ -79,6 +75,23 @@ public class FakeMostVisitedSites extends MostVisitedSites {
         mWhitelistIconPaths = whitelistIconPaths.clone();
         mSources = sources.clone();
         notifyTileSuggestionsAvailable();
+    }
+
+    /**
+     * Sets new tile suggestion data, generating dummy data for the missing properties.
+     * If there is an observer it is notified.
+     *
+     * @param urls The URLs of the site suggestions.
+     * @see #setTileSuggestions(String[], String[], String[], int[])
+     */
+    public void setTileSuggestions(String... urls) {
+        String[] whitelistIconPaths = new String[urls.length];
+        Arrays.fill(whitelistIconPaths, "");
+
+        int[] sources = new int[urls.length];
+        Arrays.fill(sources, NTPTileSource.TOP_SITES);
+
+        setTileSuggestions(urls, urls.clone(), whitelistIconPaths, sources);
     }
 
     private void notifyTileSuggestionsAvailable() {

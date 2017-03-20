@@ -18,6 +18,7 @@
 #include "components/ntp_tiles/metrics.h"
 #include "components/ntp_tiles/most_visited_sites.h"
 #include "components/rappor/rappor_service_impl.h"
+#include "jni/MostVisitedSitesBridge_jni.h"
 #include "jni/MostVisitedSites_jni.h"
 #include "ui/gfx/android/java_bitmap.h"
 

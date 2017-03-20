@@ -119,7 +119,7 @@ public class TileGroupDelegateImpl implements TileGroup.Delegate {
         if (sMostVisitedSitesForTests != null) {
             return sMostVisitedSitesForTests;
         } else {
-            return new MostVisitedSites(profile);
+            return new MostVisitedSitesBridge(profile);
         }
     }
 

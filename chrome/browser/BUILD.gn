@@ -4112,6 +4112,7 @@ if (is_android) {
       "../android/java/src/org/chromium/chrome/browser/snackbar/smartlockautosignin/AutoSigninSnackbarController.java",
       "../android/java/src/org/chromium/chrome/browser/ssl/SecurityStateModel.java",
       "../android/java/src/org/chromium/chrome/browser/suggestions/MostVisitedSites.java",
+      "../android/java/src/org/chromium/chrome/browser/suggestions/MostVisitedSitesBridge.java",
       "../android/java/src/org/chromium/chrome/browser/superviseduser/SupervisedUserContentProvider.java",
       "../android/java/src/org/chromium/chrome/browser/sync/ProfileSyncService.java",
       "../android/java/src/org/chromium/chrome/browser/sync/SyncSessionsMetrics.java",

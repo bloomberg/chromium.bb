@@ -323,7 +323,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"LogoBridge", RegisterLogoBridge},
     {"MediaDrmCredentialManager",
      MediaDrmCredentialManager::RegisterMediaDrmCredentialManager},
-    {"MostVisitedSites", MostVisitedSitesBridge::Register},
+    {"MostVisitedSitesBridge", MostVisitedSitesBridge::Register},
     {"NativeInfoBar", RegisterNativeInfoBar},
     {"ExternalEstimateProviderAndroid",
      chrome::android::RegisterExternalEstimateProviderAndroid},

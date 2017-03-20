@@ -73,38 +73,25 @@ public class NewTabPageTest extends ChromeTabbedActivityTestBase {
     protected void setUp() throws Exception {
         mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
         mSiteSuggestionUrls = new String[] {mTestServer.getURL(TEST_PAGE)};
+
+        mMostVisitedSites = new FakeMostVisitedSites();
+        mMostVisitedSites.setTileSuggestions(FAKE_MOST_VISITED_TITLES, mSiteSuggestionUrls,
+                FAKE_MOST_VISITED_WHITELIST_ICON_PATHS, FAKE_MOST_VISITED_SOURCES);
+        TileGroupDelegateImpl.setMostVisitedSitesForTests(mMostVisitedSites);
         super.setUp();
     }
 
     @Override
     protected void tearDown() throws Exception {
         mTestServer.stopAndDestroyServer();
+        TileGroupDelegateImpl.setMostVisitedSitesForTests(null);
         super.tearDown();
     }
 
     @Override
     public void startMainActivity() throws InterruptedException {
-        startMainActivityOnBlankPage();
+        startMainActivityWithURL(UrlConstants.NTP_URL);
         mTab = getActivity().getActivityTab();
-
-        try {
-            runTestOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    // Create FakeMostVisitedSites after starting the activity, since it depends on
-                    // native code.
-                    mMostVisitedSites = new FakeMostVisitedSites(mTab.getProfile());
-                    mMostVisitedSites.setTileSuggestions(FAKE_MOST_VISITED_TITLES,
-                            mSiteSuggestionUrls, FAKE_MOST_VISITED_WHITELIST_ICON_PATHS,
-                            FAKE_MOST_VISITED_SOURCES);
-                }
-            });
-        } catch (Throwable t) {
-            fail(t.getMessage());
-        }
-        TileGroupDelegateImpl.setMostVisitedSitesForTests(mMostVisitedSites);
-
-        loadUrl(UrlConstants.NTP_URL);
         NewTabPageTestUtils.waitForNtpLoaded(mTab);
 
         assertTrue(mTab.getNativePage() instanceof NewTabPage);
