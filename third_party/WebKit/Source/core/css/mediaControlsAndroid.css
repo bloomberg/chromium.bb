@@ -32,6 +32,10 @@ audio {
 
 audio::-webkit-media-controls-enclosure, video::-webkit-media-controls-enclosure {
     height: 48px;
+    min-width: 48px;
+    /* This is a magic CSS entry to fix crbug.com/519557. Please don't change
+     * without consulting that crbug. */
+    overflow: hidden;
 }
 
 audio::-webkit-media-controls-panel, video::-webkit-media-controls-panel {
