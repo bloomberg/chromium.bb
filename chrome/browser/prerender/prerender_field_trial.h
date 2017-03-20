@@ -11,11 +11,15 @@ class Profile;
 
 namespace prerender {
 
+// These Finch feature and parameter strings exposed for for testing.
 extern const base::Feature kNoStatePrefetchFeature;
 extern const char kNoStatePrefetchFeatureModeParameterName[];
+extern const char kNoStatePrefetchFeatureInstantModeParameterName[];
+extern const char kNoStatePrefetchFeatureOmniboxModeParameterName[];
 extern const char kNoStatePrefetchFeatureModeParameterPrefetch[];
 extern const char kNoStatePrefetchFeatureModeParameterPrerender[];
 extern const char kNoStatePrefetchFeatureModeParameterSimpleLoad[];
+extern const char kNoStatePrefetchFeatureModeParameterDisabled[];
 
 // Configures prerender using kNoStatePrefetchFeature and field trial
 // parameters.

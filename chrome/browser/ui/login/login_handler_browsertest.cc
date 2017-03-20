@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/prerender/prerender_manager.h"
+#include "chrome/browser/prerender/prerender_origin.h"
 #include "chrome/browser/ssl/ssl_blocking_page.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -131,7 +132,8 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, PrefetchAuthCancels) {
   class SetPrefetchForTest {
    public:
     explicit SetPrefetchForTest(bool prefetch)
-        : old_prerender_mode_(prerender::PrerenderManager::GetMode()) {
+        : old_prerender_mode_(
+              prerender::PrerenderManager::GetMode(prerender::ORIGIN_NONE)) {
       std::string exp_group = prefetch ? "ExperimentYes" : "ExperimentNo";
       base::FieldTrialList::CreateFieldTrial("Prefetch", exp_group);
       // Disable prerender so this is just a prefetch of the top-level page.

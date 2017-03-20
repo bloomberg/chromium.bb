@@ -166,6 +166,10 @@ int PrerenderManager::prerenders_per_session_count_ = 0;
 // static
 PrerenderManager::PrerenderManagerMode PrerenderManager::mode_ =
     PRERENDER_MODE_ENABLED;
+PrerenderManager::PrerenderManagerMode PrerenderManager::instant_mode_ =
+    PRERENDER_MODE_ENABLED;
+PrerenderManager::PrerenderManagerMode PrerenderManager::omnibox_mode_ =
+    PRERENDER_MODE_ENABLED;
 
 struct PrerenderManager::NavigationRecord {
   NavigationRecord(const GURL& url, base::TimeTicks time, Origin origin)
@@ -618,8 +622,16 @@ void PrerenderManager::RecordPrerenderFirstContentfulPaint(
 }
 
 // static
-PrerenderManager::PrerenderManagerMode PrerenderManager::GetMode() {
-  return mode_;
+PrerenderManager::PrerenderManagerMode PrerenderManager::GetMode(
+    Origin origin) {
+  switch (origin) {
+    case ORIGIN_INSTANT:
+      return instant_mode_;
+    case ORIGIN_OMNIBOX:
+      return omnibox_mode_;
+    default:
+      return mode_;
+  }
 }
 
 // static
@@ -628,20 +640,32 @@ void PrerenderManager::SetMode(PrerenderManagerMode mode) {
 }
 
 // static
-bool PrerenderManager::IsPrerenderingPossible() {
-  return GetMode() != PRERENDER_MODE_DISABLED;
+void PrerenderManager::SetInstantMode(PrerenderManagerMode mode) {
+  instant_mode_ = mode;
+}
+
+// static
+void PrerenderManager::SetOmniboxMode(PrerenderManagerMode mode) {
+  omnibox_mode_ = mode;
+}
+
+// static
+bool PrerenderManager::IsAnyPrerenderingPossible() {
+  return mode_ != PRERENDER_MODE_DISABLED ||
+         instant_mode_ != PRERENDER_MODE_DISABLED ||
+         omnibox_mode_ != PRERENDER_MODE_DISABLED;
 }
 
 // static
 bool PrerenderManager::IsNoStatePrefetch(Origin origin) {
   return !IsPrerenderingForced(origin) &&
-         GetMode() == PRERENDER_MODE_NOSTATE_PREFETCH;
+         GetMode(origin) == PRERENDER_MODE_NOSTATE_PREFETCH;
 }
 
 // static
 bool PrerenderManager::IsSimpleLoadExperiment(Origin origin) {
   return !IsPrerenderingForced(origin) &&
-         GetMode() == PRERENDER_MODE_SIMPLE_LOAD_EXPERIMENT;
+         GetMode(origin) == PRERENDER_MODE_SIMPLE_LOAD_EXPERIMENT;
 }
 
 bool PrerenderManager::IsWebContentsPrerendering(
@@ -1326,7 +1350,7 @@ void PrerenderManager::OnCreatingAudioStream(int render_process_id,
 void PrerenderManager::RecordNetworkBytes(Origin origin,
                                           bool used,
                                           int64_t prerender_bytes) {
-  if (!IsPrerenderingPossible())
+  if (!IsAnyPrerenderingPossible())
     return;
   int64_t recent_profile_bytes =
       profile_network_bytes_ - last_recorded_profile_network_bytes_;
@@ -1406,7 +1430,7 @@ NetworkPredictionStatus PrerenderManager::GetPredictionStatusForOrigin(
 void PrerenderManager::AddProfileNetworkBytesIfEnabled(int64_t bytes) {
   DCHECK_GE(bytes, 0);
   if (GetPredictionStatus() == NetworkPredictionStatus::ENABLED &&
-      IsPrerenderingPossible())
+      IsAnyPrerenderingPossible())
     profile_network_bytes_ += bytes;
 }
 

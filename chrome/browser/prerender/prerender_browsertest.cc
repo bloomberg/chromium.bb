@@ -487,16 +487,6 @@ class FakeDevToolsClient : public content::DevToolsAgentHostClient {
   void AgentHostClosed(DevToolsAgentHost* agent_host, bool replaced) override {}
 };
 
-class RestorePrerenderMode {
- public:
-  RestorePrerenderMode() : prev_mode_(PrerenderManager::GetMode()) {
-  }
-
-  ~RestorePrerenderMode() { PrerenderManager::SetMode(prev_mode_); }
- private:
-  PrerenderManager::PrerenderManagerMode prev_mode_;
-};
-
 // A ContentBrowserClient that cancels all prerenderers on OpenURL.
 class TestContentBrowserClient : public ChromeContentBrowserClient {
  public:
