@@ -31,10 +31,12 @@
 #include "media/base/wall_clock_time_source.h"
 #include "media/renderers/mock_gpu_memory_buffer_video_frame_pool.h"
 #include "media/renderers/video_renderer_impl.h"
+#include "testing/gmock_mutant.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
 using ::testing::AnyNumber;
+using ::testing::CreateFunctor;
 using ::testing::Invoke;
 using ::testing::Mock;
 using ::testing::NiceMock;
@@ -201,8 +203,7 @@ class VideoRendererImplTest : public testing::Test {
 
     WaitableMessageLoopEvent event;
     PipelineStatusCB error_cb = event.GetPipelineStatusCB();
-    EXPECT_CALL(mock_cb_, OnError(_))
-        .WillOnce(Invoke(&error_cb, &PipelineStatusCB::Run));
+    EXPECT_CALL(mock_cb_, OnError(_)).WillOnce(Invoke(CreateFunctor(error_cb)));
     event.RunAndWaitForStatus(expected);
   }
 

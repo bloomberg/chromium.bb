@@ -23,6 +23,7 @@
 #include "content/public/test/mock_download_item.h"
 #include "content/public/test/mock_download_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gmock_mutant.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::MockDownloadItem;
@@ -30,6 +31,7 @@ using content::MockDownloadManager;
 using history::HistoryService;
 using testing::AnyNumber;
 using testing::Assign;
+using testing::CreateFunctor;
 using testing::Return;
 using testing::ReturnRefOfCopy;
 using testing::SaveArg;
@@ -341,10 +343,10 @@ TEST_F(DownloadUIControllerTest, DownloadUIController_HistoryDownload) {
                    base::Unretained(download_history_manager_observer()),
                    manager(),
                    item.get());
-    EXPECT_CALL(*manager(), MockCreateDownloadItem(_)).WillOnce(
-        testing::DoAll(testing::InvokeWithoutArgs(&history_on_created_callback,
-                                                  &base::Closure::Run),
-                       Return(item.get())));
+    EXPECT_CALL(*manager(), MockCreateDownloadItem(_))
+        .WillOnce(testing::DoAll(testing::InvokeWithoutArgs(CreateFunctor(
+                                     history_on_created_callback)),
+                                 Return(item.get())));
     EXPECT_CALL(mock_function, Call());
 
     history_query_callback().Run(std::move(history_downloads));
