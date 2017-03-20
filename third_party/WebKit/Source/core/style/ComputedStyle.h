@@ -207,13 +207,11 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   struct InheritedData {
     InheritedData()
         : m_hasSimpleUnderline(false),
-          m_cursorStyle(static_cast<unsigned>(initialCursor())),
           m_insideLink(static_cast<unsigned>(EInsideLink::kNotInsideLink)) {}
 
     bool operator==(const InheritedData& other) const {
       // Generated properties are compared in ComputedStyleBase
       return (m_hasSimpleUnderline == other.m_hasSimpleUnderline) &&
-             (m_cursorStyle == other.m_cursorStyle) &&
              (m_insideLink == other.m_insideLink);
     }
 
@@ -223,7 +221,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
     unsigned m_hasSimpleUnderline : 1;  // True if 'underline solid' is the only
                                         // text decoration on this element.
-    unsigned m_cursorStyle : 6;     // ECursor
 
     // non CSS2 inherited
     unsigned m_insideLink : 2;     // EInsideLink
@@ -1868,15 +1865,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   static short initialVerticalBorderSpacing() { return 0; }
   short verticalBorderSpacing() const;
   void setVerticalBorderSpacing(short);
-
-  // cursor
-  static ECursor initialCursor() { return ECursor::kAuto; }
-  ECursor cursor() const {
-    return static_cast<ECursor>(m_inheritedData.m_cursorStyle);
-  }
-  void setCursor(ECursor c) {
-    m_inheritedData.m_cursorStyle = static_cast<unsigned>(c);
-  }
 
   // color
   static Color initialColor() { return Color::black; }

@@ -295,45 +295,6 @@ enum TextUnderlinePosition {
   TextUnderlinePositionUnder
 };
 
-enum class ECursor : unsigned {
-  kAuto,
-  kCrosshair,
-  kDefault,
-  kPointer,
-  kMove,
-  kVerticalText,
-  kCell,
-  kContextMenu,
-  kAlias,
-  kProgress,
-  kNoDrop,
-  kNotAllowed,
-  kZoomIn,
-  kZoomOut,
-  kEResize,
-  kNeResize,
-  kNwResize,
-  kNResize,
-  kSeResize,
-  kSwResize,
-  kSResize,
-  kWResize,
-  kEwResize,
-  kNsResize,
-  kNeswResize,
-  kNwseResize,
-  kColResize,
-  kRowResize,
-  kText,
-  kWait,
-  kHelp,
-  kAllScroll,
-  kWebkitGrab,
-  kWebkitGrabbing,
-  kCopy,
-  kNone
-};
-
 enum class EDisplay : unsigned {
   kInline,
   kBlock,

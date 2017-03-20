@@ -65,6 +65,15 @@ inline WritingMode cssValueIDToPlatformEnum(CSSValueID v) {
   return WritingMode::kHorizontalTb;
 }
 
+template <>
+inline ECursor cssValueIDToPlatformEnum(CSSValueID v) {
+  if (v == CSSValueWebkitZoomIn)
+    return ECursor::kZoomIn;
+  if (v == CSSValueWebkitZoomOut)
+    return ECursor::kZoomOut;
+  return detail::cssValueIDToPlatformEnumGenerated<ECursor>(v);
+}
+
 }  // namespace blink
 
 #endif
