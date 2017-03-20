@@ -5232,7 +5232,7 @@ bool Projection::Parse(IMkvReader* reader, long long start, long long size,
       double value = 0;
       const long long value_parse_status =
           UnserializeFloat(reader, read_pos, child_size, value);
-      if (value_parse_status < 0) {
+      if (value_parse_status < 0 || value < FLT_MIN || value > FLT_MAX) {
         return false;
       }
 
