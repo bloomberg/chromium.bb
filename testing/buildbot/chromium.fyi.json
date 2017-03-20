@@ -12910,7 +12910,7 @@
       {
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
-          "script": "//third_party/WebKit/Tools/Scripts/merge-layout-test-results.py"
+          "script": "//third_party/WebKit/Tools/Scripts/merge-layout-test-results"
         },
         "name": "webkit_layout_tests_exparchive",
         "results_handler": "layout tests",
