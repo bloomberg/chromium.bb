@@ -55,7 +55,6 @@ class CORE_EXPORT InProcessWorkerMessagingProxy
   void startWorkerGlobalScope(const KURL& scriptURL,
                               const String& userAgent,
                               const String& sourceCode,
-                              ContentSecurityPolicy*,
                               const String& referrerPolicy);
   void postMessageToWorkerGlobalScope(PassRefPtr<SerializedScriptValue>,
                                       MessagePortChannelArray);

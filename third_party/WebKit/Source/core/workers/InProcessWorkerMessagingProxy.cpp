@@ -83,7 +83,6 @@ void InProcessWorkerMessagingProxy::startWorkerGlobalScope(
     const KURL& scriptURL,
     const String& userAgent,
     const String& sourceCode,
-    ContentSecurityPolicy* contentSecurityPolicy,
     const String& referrerPolicy) {
   DCHECK(isParentContextThread());
   if (askedToTerminate()) {
@@ -95,9 +94,7 @@ void InProcessWorkerMessagingProxy::startWorkerGlobalScope(
   Document* document = toDocument(getExecutionContext());
   SecurityOrigin* starterOrigin = document->getSecurityOrigin();
 
-  ContentSecurityPolicy* csp = contentSecurityPolicy
-                                   ? contentSecurityPolicy
-                                   : document->contentSecurityPolicy();
+  ContentSecurityPolicy* csp = document->contentSecurityPolicy();
   DCHECK(csp);
 
   WorkerThreadStartMode startMode =

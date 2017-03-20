@@ -8,7 +8,6 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ScriptState.h"
 #include "core/events/MessageEvent.h"
-#include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/workers/InProcessWorkerMessagingProxy.h"
 #include "core/workers/WorkerScriptLoader.h"
@@ -100,7 +99,6 @@ void InProcessWorkerBase::onFinished() {
     m_contextProxy->startWorkerGlobalScope(
         m_scriptLoader->url(), getExecutionContext()->userAgent(),
         m_scriptLoader->script(),
-        m_scriptLoader->releaseContentSecurityPolicy(),
         m_scriptLoader->getReferrerPolicy());
     probe::scriptImported(getExecutionContext(), m_scriptLoader->identifier(),
                           m_scriptLoader->script());

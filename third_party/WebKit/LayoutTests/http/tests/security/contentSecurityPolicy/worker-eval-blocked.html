@@ -20,10 +20,12 @@ function runWorkerTest(type, policy, expectation) {
         fetch_tests_from_worker(worker);
     }
 }
-runWorkerTest("eval", "script-src 'none'", { "none": "blocked" });
-runWorkerTest("eval", "default-src 'none'", { "none": "blocked" });
-runWorkerTest("eval", "script-src 'self'", "blocked");
-runWorkerTest("eval", "default-src 'self'", "blocked");
+
+// The policy delivered with the worker does not affect the worker context.
+runWorkerTest("eval", "script-src 'none'", { "none": "allowed" });
+runWorkerTest("eval", "default-src 'none'", { "none": "allowed" });
+runWorkerTest("eval", "script-src 'self'", "allowed");
+runWorkerTest("eval", "default-src 'self'", "allowed");
 runWorkerTest("eval", "script-src 'self' 'unsafe-eval'", "allowed");
 runWorkerTest("eval", "default-src 'self' 'unsafe-eval'", "allowed");
 </script>

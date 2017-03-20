@@ -30,6 +30,7 @@
 
 #include <memory>
 #include "core/CoreExport.h"
+#include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/loader/ThreadableLoader.h"
 #include "core/loader/ThreadableLoaderClient.h"
 #include "platform/loader/fetch/ResourceRequest.h"
@@ -44,7 +45,6 @@
 
 namespace blink {
 
-class ContentSecurityPolicy;
 class ResourceRequest;
 class ResourceResponse;
 class ExecutionContext;
