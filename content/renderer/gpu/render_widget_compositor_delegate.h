@@ -8,12 +8,12 @@
 #include <memory>
 #include <vector>
 
+#include "base/callback.h"
 #include "content/common/content_export.h"
 
 namespace cc {
 class CopyOutputRequest;
 class CompositorFrameSink;
-class FrameSinkId;
 class SwapPromise;
 }
 
@@ -22,6 +22,9 @@ class Vector2dF;
 }
 
 namespace content {
+
+using CompositorFrameSinkCallback =
+    base::Callback<void(std::unique_ptr<cc::CompositorFrameSink>)>;
 
 // Consumers of RenderWidgetCompositor implement this delegate in order to
 // transport compositing information across processes.
@@ -39,10 +42,10 @@ class CONTENT_EXPORT RenderWidgetCompositorDelegate {
   // Notifies that the compositor has issed a BeginMainFrame.
   virtual void BeginMainFrame(double frame_time_sec) = 0;
 
-  // Requests a CompositorFrameSink to submit to.
-  virtual std::unique_ptr<cc::CompositorFrameSink> CreateCompositorFrameSink(
-      const cc::FrameSinkId& frame_sink_id,
-      bool fallback) = 0;
+  // Requests a CompositorFrameSink to submit CompositorFrames to.
+  virtual void RequestNewCompositorFrameSink(
+      bool fallback,
+      const CompositorFrameSinkCallback& callback) = 0;
 
   // Notifies that the draw commands for a committed frame have been issued.
   virtual void DidCommitAndDrawCompositorFrame() = 0;

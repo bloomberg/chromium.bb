@@ -43,10 +43,10 @@ class StubRenderWidgetCompositorDelegate
                            float page_scale,
                            float top_controls_delta) override {}
   void BeginMainFrame(double frame_time_sec) override {}
-  std::unique_ptr<cc::CompositorFrameSink> CreateCompositorFrameSink(
-      const cc::FrameSinkId& frame_sink_id,
-      bool fallback) override {
-    return nullptr;
+  void RequestNewCompositorFrameSink(
+      bool fallback,
+      const CompositorFrameSinkCallback& callback) override {
+    callback.Run(nullptr);
   }
   void DidCommitAndDrawCompositorFrame() override {}
   void DidCommitCompositorFrame() override {}
@@ -67,9 +67,9 @@ class FakeRenderWidgetCompositorDelegate
  public:
   FakeRenderWidgetCompositorDelegate() = default;
 
-  std::unique_ptr<cc::CompositorFrameSink> CreateCompositorFrameSink(
-      const cc::FrameSinkId& frame_sink_id,
-      bool fallback) override {
+  void RequestNewCompositorFrameSink(
+      bool fallback,
+      const CompositorFrameSinkCallback& callback) override {
     EXPECT_EQ(num_requests_since_last_success_ >
                   RenderWidgetCompositor::
                       COMPOSITOR_FRAME_SINK_RETRIES_BEFORE_FALLBACK,
@@ -77,15 +77,18 @@ class FakeRenderWidgetCompositorDelegate
     last_create_was_fallback_ = fallback;
 
     bool success = num_failures_ >= num_failures_before_success_;
-    if (!success && use_null_compositor_frame_sink_)
-      return nullptr;
+    if (!success && use_null_compositor_frame_sink_) {
+      callback.Run(std::unique_ptr<cc::CompositorFrameSink>());
+      return;
+    }
 
     auto context_provider = cc::TestContextProvider::Create();
     if (!success) {
       context_provider->UnboundTestContext3d()->loseContextCHROMIUM(
           GL_GUILTY_CONTEXT_RESET_ARB, GL_INNOCENT_CONTEXT_RESET_ARB);
     }
-    return cc::FakeCompositorFrameSink::Create3d(std::move(context_provider));
+    callback.Run(
+        cc::FakeCompositorFrameSink::Create3d(std::move(context_provider)));
   }
 
   void add_success() {

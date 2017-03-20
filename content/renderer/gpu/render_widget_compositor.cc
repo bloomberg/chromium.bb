@@ -11,6 +11,7 @@
 #include <string>
 #include <utility>
 
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -917,6 +918,15 @@ void RenderWidgetCompositor::layoutAndPaintAsync(
   }
 }
 
+void RenderWidgetCompositor::SetCompositorFrameSink(
+    std::unique_ptr<cc::CompositorFrameSink> compositor_frame_sink) {
+  if (!compositor_frame_sink) {
+    DidFailToInitializeCompositorFrameSink();
+    return;
+  }
+  layer_tree_host_->SetCompositorFrameSink(std::move(compositor_frame_sink));
+}
+
 void RenderWidgetCompositor::LayoutAndUpdateLayers() {
   DCHECK(CompositeIsSynchronous());
   layer_tree_host_->LayoutAndUpdateLayers();
@@ -1061,15 +1071,9 @@ void RenderWidgetCompositor::RequestNewCompositorFrameSink() {
 
   bool fallback = num_failed_recreate_attempts_ >=
                   COMPOSITOR_FRAME_SINK_RETRIES_BEFORE_FALLBACK;
-  std::unique_ptr<cc::CompositorFrameSink> surface(
-      delegate_->CreateCompositorFrameSink(frame_sink_id_, fallback));
-
-  if (!surface) {
-    DidFailToInitializeCompositorFrameSink();
-    return;
-  }
-
-  layer_tree_host_->SetCompositorFrameSink(std::move(surface));
+  delegate_->RequestNewCompositorFrameSink(
+      fallback, base::Bind(&RenderWidgetCompositor::SetCompositorFrameSink,
+                           weak_factory_.GetWeakPtr()));
 }
 
 void RenderWidgetCompositor::DidInitializeCompositorFrameSink() {

@@ -74,7 +74,6 @@ class Thread;
 namespace cc {
 class BeginFrameSource;
 class CompositorFrameSink;
-class FrameSinkId;
 class TaskGraphRunner;
 }
 
@@ -255,12 +254,14 @@ class CONTENT_EXPORT RenderThreadImpl
 
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager();
 
-  std::unique_ptr<cc::CompositorFrameSink> CreateCompositorFrameSink(
-      const cc::FrameSinkId& frame_sink_id,
+  using CompositorFrameSinkCallback =
+      base::Callback<void(std::unique_ptr<cc::CompositorFrameSink>)>;
+  void RequestNewCompositorFrameSink(
       bool use_software,
       int routing_id,
       scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue,
-      const GURL& url);
+      const GURL& url,
+      const CompositorFrameSinkCallback& callback);
 
   AssociatedInterfaceRegistry* GetAssociatedInterfaceRegistry();
 

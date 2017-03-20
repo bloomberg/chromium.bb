@@ -219,6 +219,8 @@ class CONTENT_EXPORT RenderWidgetCompositor
   cc::LayerTreeHost* layer_tree_host() { return layer_tree_host_.get(); }
 
  private:
+  void SetCompositorFrameSink(
+      std::unique_ptr<cc::CompositorFrameSink> compositor_frame_sink);
   void LayoutAndUpdateLayers();
   void InvokeLayoutAndPaintCallback();
   bool CompositeIsSynchronous() const;
