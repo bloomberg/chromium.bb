@@ -2035,7 +2035,7 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
     const int dq = (mbmi->current_q_index - xd->prev_qindex) / cm->delta_q_res;
     const int absdq = abs(dq);
     int i;
-    for (i = 0; i < absdq; ++i) {
+    for (i = 0; i < AOMMIN(absdq, DELTA_Q_SMALL); ++i) {
       td->counts->delta_q[i][1]++;
     }
     if (absdq < DELTA_Q_SMALL) td->counts->delta_q[absdq][0]++;
@@ -4615,7 +4615,7 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
     }
 
 #if CONFIG_DELTA_Q
-    if (cpi->oxcf.aq_mode == DELTA_AQ) {
+    if (cm->delta_q_present_flag) {
       // Test mode for delta quantization
       int sb_row = mi_row >> 3;
       int sb_col = mi_col >> 3;
@@ -4627,9 +4627,11 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
       int qmask = ~(cm->delta_q_res - 1);
       int current_qindex = clamp(cm->base_qindex + offset_qindex,
                                  cm->delta_q_res, 256 - cm->delta_q_res);
+
       current_qindex =
           ((current_qindex - cm->base_qindex + cm->delta_q_res / 2) & qmask) +
           cm->base_qindex;
+      assert(current_qindex > 0);
 
       xd->delta_qindex = current_qindex - cm->base_qindex;
       set_offsets(cpi, tile_info, x, mi_row, mi_col, BLOCK_64X64);
@@ -5090,6 +5092,15 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   if (!cm->seg.enabled && xd->lossless[0]) x->optimize = 0;
 
   cm->tx_mode = select_tx_mode(cpi, xd);
+
+#if CONFIG_DELTA_Q
+  // Fix delta q resolution for the moment
+  cm->delta_q_res = DEFAULT_DELTA_Q_RES;
+  // Set delta_q_present_flag before it is used for the first time
+  cm->delta_q_present_flag =
+      cpi->oxcf.aq_mode == DELTA_AQ && cm->base_qindex > 0;
+#endif
+
   av1_frame_init_quantizer(cpi);
 
   av1_initialize_rd_consts(cpi);
@@ -5108,11 +5119,6 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   cm->use_prev_frame_mvs =
       !cm->error_resilient_mode && cm->width == cm->last_width &&
       cm->height == cm->last_height && !cm->intra_only && cm->last_show_frame;
-#endif
-
-#if CONFIG_DELTA_Q
-  // Fix delta q resolution for the moment
-  cm->delta_q_res = DEFAULT_DELTA_Q_RES;
 #endif
 
 #if CONFIG_EXT_REFS

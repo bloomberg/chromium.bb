@@ -1868,7 +1868,7 @@ void av1_init_plane_quantizers(const AV1_COMP *cpi, MACROBLOCK *x,
 
 #if CONFIG_DELTA_Q
   int current_q_index = AOMMAX(
-      0, AOMMIN(QINDEX_RANGE - 1, cpi->oxcf.aq_mode == DELTA_AQ
+      0, AOMMIN(QINDEX_RANGE - 1, cm->delta_q_present_flag
                                       ? cm->base_qindex + xd->delta_qindex
                                       : cm->base_qindex));
   const int qindex = av1_get_qindex(&cm->seg, segment_id, current_q_index);

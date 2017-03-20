@@ -890,6 +890,8 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
     xd->current_qindex =
         xd->prev_qindex +
         read_delta_qindex(cm, xd, r, mbmi, mi_col, mi_row) * cm->delta_q_res;
+    /* Normative: Clamp to [1,MAXQ] to not interfere with lossless mode */
+    xd->current_qindex = clamp(xd->current_qindex, 1, MAXQ);
     xd->prev_qindex = xd->current_qindex;
   }
 #endif
@@ -2117,6 +2119,8 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
     xd->current_qindex =
         xd->prev_qindex +
         read_delta_qindex(cm, xd, r, mbmi, mi_col, mi_row) * cm->delta_q_res;
+    /* Normative: Clamp to [1,MAXQ] to not interfere with lossless mode */
+    xd->current_qindex = clamp(xd->current_qindex, 1, MAXQ);
     xd->prev_qindex = xd->current_qindex;
   }
 #endif

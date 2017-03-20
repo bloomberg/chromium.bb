@@ -1604,6 +1604,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
     int super_block_upper_left =
         ((mi_row & MAX_MIB_MASK) == 0) && ((mi_col & MAX_MIB_MASK) == 0);
     if ((bsize != BLOCK_64X64 || skip == 0) && super_block_upper_left) {
+      assert(mbmi->current_q_index > 0);
       int reduced_delta_qindex =
           (mbmi->current_q_index - xd->prev_qindex) / cm->delta_q_res;
       write_delta_qindex(cm, xd, reduced_delta_qindex, w);
@@ -1971,6 +1972,7 @@ static void write_mb_modes_kf(AV1_COMMON *cm, const MACROBLOCKD *xd,
   if (cm->delta_q_present_flag) {
     int super_block_upper_left = ((mi_row & 7) == 0) && ((mi_col & 7) == 0);
     if ((bsize != BLOCK_64X64 || skip == 0) && super_block_upper_left) {
+      assert(mbmi->current_q_index > 0);
       int reduced_delta_qindex =
           (mbmi->current_q_index - xd->prev_qindex) / cm->delta_q_res;
       write_delta_qindex(cm, xd, reduced_delta_qindex, w);
@@ -4458,8 +4460,10 @@ static void write_uncompressed_header(AV1_COMP *cpi,
         segment_quantizer_active = 1;
       }
     }
-    if (segment_quantizer_active == 0) {
-      cm->delta_q_present_flag = cpi->oxcf.aq_mode == DELTA_AQ;
+
+    if (cm->delta_q_present_flag)
+      assert(segment_quantizer_active == 0 && cm->base_qindex > 0);
+    if (segment_quantizer_active == 0 && cm->base_qindex > 0) {
       aom_wb_write_bit(wb, cm->delta_q_present_flag);
       if (cm->delta_q_present_flag) {
         aom_wb_write_literal(wb, OD_ILOG_NZ(cm->delta_q_res) - 1, 2);
