@@ -95,11 +95,7 @@ class WebRtcAudioDebugRecordingsBrowserTest
   ~WebRtcAudioDebugRecordingsBrowserTest() override {}
 };
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
-// Timing out on ARM linux bot: http://crbug.com/238490
-// TODO(grunell): Re-enable for ARM Linux. Bug is closed as fixed.
-#define MAYBE_CallWithAudioDebugRecordings DISABLED_CallWithAudioDebugRecordings
-#elif defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
+#if defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
 // Renderer crashes under Android ASAN: https://crbug.com/408496.
 #define MAYBE_CallWithAudioDebugRecordings DISABLED_CallWithAudioDebugRecordings
 #elif defined(OS_ANDROID)
@@ -193,11 +189,7 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
 // TODO(grunell): Add test for multiple dumps when re-use of
 // MediaStreamAudioProcessor in AudioCapturer has been removed.
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY)
-// Timing out on ARM linux bot: http://crbug.com/238490
-// TODO(grunell): Re-enable for ARM Linux. Bug is closed as fixed.
-#define MAYBE_CallWithAudioDebugRecordingsEnabledThenDisabled DISABLED_CallWithAudioDebugRecordingsEnabledThenDisabled
-#elif defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
+#if defined(OS_ANDROID) && defined(ADDRESS_SANITIZER)
 // Renderer crashes under Android ASAN: https://crbug.com/408496.
 #define MAYBE_CallWithAudioDebugRecordingsEnabledThenDisabled DISABLED_CallWithAudioDebugRecordingsEnabledThenDisabled
 #else
@@ -243,10 +235,10 @@ IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
   base::ThreadRestrictions::SetIOAllowed(prev_io_allowed);
 }
 
-// Timing out on ARM linux bot: http://crbug.com/238490
 // Renderer crashes under Android ASAN: https://crbug.com/408496.
-// TODO(grunell): Re-enable on all but Android ASAN. ARM Linux bug is closed
-// as fixed. See conditions for the above two tests.
+// Renderer crashes on Android M. https://crbug.com/535728.
+// TODO(grunell): Re-enable on all but Android. See conditions for the above two
+// tests.
 IN_PROC_BROWSER_TEST_F(WebRtcAudioDebugRecordingsBrowserTest,
                        DISABLED_TwoCallsWithAudioDebugRecordings) {
   if (!media::AudioManager::Get()->HasAudioOutputDevices()) {
