@@ -142,7 +142,8 @@ VolumeView::VolumeView(SystemTrayItem* owner,
   more_button_->AddChildView(device_type_);
 
   more_button_->AddChildView(TrayPopupUtils::CreateMoreImageView());
-
+  more_button_->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_AUDIO));
   Update();
 }
 
