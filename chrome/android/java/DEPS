@@ -8,6 +8,7 @@ include_rules = [
   "+components/location/android/java",
   "+components/minidump_uploader",
   "+components/navigation_interception",
+  "+components/offline_items_collection/core/android/java",
   "+components/payments/content/android/java/src/org/chromium/components/payments",
   "+components/precache/android/java",
   "+components/safe_json/android/java",

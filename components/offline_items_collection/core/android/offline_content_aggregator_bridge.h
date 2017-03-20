@@ -31,10 +31,10 @@ class OfflineContentAggregatorBridge : public OfflineContentProvider::Observer,
   // Helper method to initialize the JNI hooks between Java and C++.
   static bool Register(JNIEnv* env);
 
-  // Returns an OfflineContentAggregatorBridge for |aggregator|.  There will be
-  // only one bridge per OfflineContentAggregator.
-  static OfflineContentAggregatorBridge* GetForOfflineContentAggregator(
-      OfflineContentAggregator* aggregator);
+  // Returns a Java OfflineContentAggregatorBridge for |aggregator|.  There will
+  // be only one bridge per OfflineContentAggregator.
+  static base::android::ScopedJavaLocalRef<jobject>
+  GetBridgeForOfflineContentAggregator(OfflineContentAggregator* aggregator);
 
   ~OfflineContentAggregatorBridge() override;
 

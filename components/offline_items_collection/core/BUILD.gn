@@ -14,15 +14,13 @@ static_library("core") {
     "offline_content_provider.h",
     "offline_item.cc",
     "offline_item.h",
-
-    # TODO(dtrainor): Generate the Java version of these enums when the Android
-    # bridge is built.
     "offline_item_filter.h",
     "offline_item_state.h",
   ]
 
   public_deps = [
     "//base",
+    "//components/keyed_service/core",
     "//url",
   ]
 

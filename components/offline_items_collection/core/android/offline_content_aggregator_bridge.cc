@@ -36,16 +36,18 @@ bool OfflineContentAggregatorBridge::Register(JNIEnv* env) {
 }
 
 // static
-OfflineContentAggregatorBridge*
-OfflineContentAggregatorBridge::GetForOfflineContentAggregator(
+base::android::ScopedJavaLocalRef<jobject>
+OfflineContentAggregatorBridge::GetBridgeForOfflineContentAggregator(
     OfflineContentAggregator* aggregator) {
   if (!aggregator->GetUserData(kOfflineContentAggregatorBridgeUserDataKey)) {
     aggregator->SetUserData(kOfflineContentAggregatorBridgeUserDataKey,
                             new OfflineContentAggregatorBridge(aggregator));
   }
+  OfflineContentAggregatorBridge* bridge =
+      static_cast<OfflineContentAggregatorBridge*>(
+          aggregator->GetUserData(kOfflineContentAggregatorBridgeUserDataKey));
 
-  return static_cast<OfflineContentAggregatorBridge*>(
-      aggregator->GetUserData(kOfflineContentAggregatorBridgeUserDataKey));
+  return ScopedJavaLocalRef<jobject>(bridge->java_ref_);
 }
 
 OfflineContentAggregatorBridge::OfflineContentAggregatorBridge(

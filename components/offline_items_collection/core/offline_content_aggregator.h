@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/supports_user_data.h"
+#include "components/keyed_service/core/keyed_service.h"
 #include "components/offline_items_collection/core/offline_content_provider.h"
 #include "url/gurl.h"
 
@@ -47,7 +48,7 @@ struct OfflineItem;
 class OfflineContentAggregator : public OfflineContentProvider,
                                  public OfflineContentProvider::Observer,
                                  public base::SupportsUserData,
-                                 public base::SupportsUserData::Data {
+                                 public KeyedService {
  public:
   OfflineContentAggregator();
   ~OfflineContentAggregator() override;
