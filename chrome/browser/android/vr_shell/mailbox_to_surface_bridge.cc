@@ -28,8 +28,8 @@
 
 namespace {
 
+/* clang-format off */
 const char kQuadCopyVertex[] = SHADER(
-    /* clang-format off */
     attribute vec4 a_Position;
     attribute vec2 a_TexCoordinate;
     varying vec2 v_TexCoordinate;
@@ -37,25 +37,25 @@ const char kQuadCopyVertex[] = SHADER(
       v_TexCoordinate = a_TexCoordinate;
       gl_Position = a_Position;
     }
-); /* clang-format on */
+);
 
 const char kQuadCopyFragment[] = SHADER(
-    /* clang-format off */
     precision highp float;
     uniform sampler2D u_Texture;
     varying vec2 v_TexCoordinate;
     void main() {
       gl_FragColor = texture2D(u_Texture, v_TexCoordinate);
     }
-); /* clang-format on */
+);
 
 const float kQuadVertices[] = {
-    // clang-format off
     // x     y    u,   v
     -1.f,  1.f, 0.f, 1.f,
     -1.f, -1.f, 0.f, 0.f,
      1.f, -1.f, 1.f, 0.f,
      1.f,  1.f, 1.f, 1.f};
+/* clang-format on */
+
 static constexpr int kQuadVerticesSize = sizeof(kQuadVertices);
 
 GLuint CompileShader(gpu::gles2::GLES2Interface* gl,
@@ -239,6 +239,7 @@ bool MailboxToSurfaceBridge::CopyMailboxToSurfaceAndSwap(
 
   GLuint sourceTexture = ConsumeTexture(gl_, mailbox);
   DrawQuad(sourceTexture);
+  gl_->DeleteTextures(1, &sourceTexture);
   gl_->SwapBuffers();
   return true;
 }
