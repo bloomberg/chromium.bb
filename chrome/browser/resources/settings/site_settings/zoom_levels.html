@@ -19,13 +19,12 @@
         color: var(--paper-grey-600);
       }
 
-      .empty-message {
+      #empty {
         margin-top: 15px;
       }
     </style>
     <div class="list-frame vertical-list" id="listContainer">
-      <template is="dom-repeat" items="[[sites_]]" id="list"
-          rendered-item-count="{{renderedCount}}">
+      <template is="dom-repeat" items="[[sites_]]" id="list">
         <div class="list-item">
           <div class="favicon-image"
               style$="[[computeSiteIcon(item.originForFavicon)]]">
@@ -40,8 +39,8 @@
           </div>
         </div>
       </template>
-      <template is="dom-if" if="{{!renderedCount}}">
-        <div class="empty-message" id="empty">
+      <template is="dom-if" if="[[!sites_.length]]">
+        <div id="empty">
           $i18n{siteSettingsNoZoomedSites}
         </div>
       </template>
