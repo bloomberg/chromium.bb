@@ -194,7 +194,6 @@ class BASE_EXPORT Value {
   void InternalCopyConstructFrom(const Value& that);
   void InternalMoveConstructFrom(Value&& that);
   void InternalCopyAssignFromSameType(const Value& that);
-  void InternalMoveAssignFromSameType(Value&& that);
   void InternalCleanup();
 };
 

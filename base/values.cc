@@ -173,27 +173,21 @@ Value::Value(std::vector<char>&& in_blob) : type_(Type::BINARY) {
 }
 
 Value& Value::operator=(const Value& that) {
-  if (this != &that) {
-    if (type_ == that.type_) {
-      InternalCopyAssignFromSameType(that);
-    } else {
-      InternalCleanup();
-      InternalCopyConstructFrom(that);
-    }
+  if (type_ == that.type_) {
+    InternalCopyAssignFromSameType(that);
+  } else {
+    // This is not a self assignment because the type_ doesn't match.
+    InternalCleanup();
+    InternalCopyConstructFrom(that);
   }
 
   return *this;
 }
 
 Value& Value::operator=(Value&& that) {
-  if (this != &that) {
-    if (type_ == that.type_) {
-      InternalMoveAssignFromSameType(std::move(that));
-    } else {
-      InternalCleanup();
-      InternalMoveConstructFrom(std::move(that));
-    }
-  }
+  DCHECK(this != &that) << "attempt to self move assign.";
+  InternalCleanup();
+  InternalMoveConstructFrom(std::move(that));
 
   return *this;
 }
@@ -534,6 +528,8 @@ void Value::InternalMoveConstructFrom(Value&& that) {
 }
 
 void Value::InternalCopyAssignFromSameType(const Value& that) {
+  // TODO(crbug.com/646113): make this a DCHECK once base::Value does not have
+  // subclasses.
   CHECK_EQ(type_, that.type_);
 
   switch (type_) {
@@ -559,32 +555,6 @@ void Value::InternalCopyAssignFromSameType(const Value& that) {
       return;
     case Type::LIST:
       *list_ = std::move(*that.CreateDeepCopy()->list_);
-      return;
-  }
-}
-
-void Value::InternalMoveAssignFromSameType(Value&& that) {
-  CHECK_EQ(type_, that.type_);
-
-  switch (type_) {
-    case Type::NONE:
-    case Type::BOOLEAN:
-    case Type::INTEGER:
-    case Type::DOUBLE:
-      InternalCopyFundamentalValue(that);
-      return;
-
-    case Type::STRING:
-      *string_value_ = std::move(*that.string_value_);
-      return;
-    case Type::BINARY:
-      *binary_value_ = std::move(*that.binary_value_);
-      return;
-    case Type::DICTIONARY:
-      *dict_ptr_ = std::move(*that.dict_ptr_);
-      return;
-    case Type::LIST:
-      *list_ = std::move(*that.list_);
       return;
   }
 }
