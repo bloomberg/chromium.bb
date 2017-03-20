@@ -252,7 +252,6 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
                  bool can_dock);
 
   static DevToolsWindow* Create(Profile* profile,
-                                const GURL& frontend_url,
                                 content::WebContents* inspected_web_contents,
                                 bool shared_worker_frontend,
                                 bool v8_only_frontend,
@@ -262,7 +261,6 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
                                 const std::string& settings,
                                 const std::string& panel);
   static GURL GetDevToolsURL(Profile* profile,
-                             const GURL& base_url,
                              bool shared_worker_frontend,
                              bool v8_only_frontend,
                              bool node_frontend,

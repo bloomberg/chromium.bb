@@ -467,8 +467,8 @@ void DevToolsWindow::OpenDevToolsWindowForWorker(
 DevToolsWindow* DevToolsWindow::CreateDevToolsWindowForWorker(
     Profile* profile) {
   content::RecordAction(base::UserMetricsAction("DevTools_InspectWorker"));
-  return Create(profile, GURL(), NULL, true, false, false, std::string(),
-                false, "", "");
+  return Create(profile, NULL, true, false, false, std::string(), false, "",
+                "");
 }
 
 // static
@@ -527,8 +527,8 @@ void DevToolsWindow::OpenDevToolsWindowForFrame(
     const scoped_refptr<content::DevToolsAgentHost>& agent_host) {
   DevToolsWindow* window = FindDevToolsWindow(agent_host.get());
   if (!window) {
-    window = DevToolsWindow::Create(profile, GURL(), nullptr, false, false,
-                                    false, std::string(), false, std::string(),
+    window = DevToolsWindow::Create(profile, nullptr, false, false, false,
+                                    std::string(), false, std::string(),
                                     std::string());
     if (!window)
       return;
@@ -562,7 +562,7 @@ void DevToolsWindow::OpenExternalFrontend(
     bool is_v8_only) {
   DevToolsWindow* window = FindDevToolsWindow(agent_host.get());
   if (!window) {
-    window = Create(profile, GURL(), nullptr, is_worker, is_v8_only, false,
+    window = Create(profile, nullptr, is_worker, is_v8_only, false,
                     DevToolsUI::GetProxyURL(frontend_url).spec(), false,
                     std::string(), std::string());
     if (!window)
@@ -576,9 +576,9 @@ void DevToolsWindow::OpenExternalFrontend(
 
 // static
 void DevToolsWindow::OpenNodeFrontendWindow(Profile* profile) {
-  DevToolsWindow* window = Create(profile, GURL(), nullptr, false, true, true,
-                                  std::string(), false, std::string(),
-                                  std::string());
+  DevToolsWindow* window =
+      Create(profile, nullptr, false, true, true, std::string(), false,
+             std::string(), std::string());
   if (!window)
     return;
   window->bindings_->AttachTo(DevToolsAgentHost::CreateForDiscovery());
@@ -615,8 +615,8 @@ void DevToolsWindow::ToggleDevToolsWindow(
       case DevToolsToggleAction::kNoOp:
         break;
     }
-    window = Create(profile, GURL(), inspected_web_contents, false, false,
-                    false, std::string(), true, settings, panel);
+    window = Create(profile, inspected_web_contents, false, false, false,
+                    std::string(), true, settings, panel);
     if (!window)
       return;
     window->bindings_->AttachTo(agent.get());
@@ -867,7 +867,6 @@ DevToolsWindow::DevToolsWindow(Profile* profile,
 // static
 DevToolsWindow* DevToolsWindow::Create(
     Profile* profile,
-    const GURL& frontend_url,
     content::WebContents* inspected_web_contents,
     bool shared_worker_frontend,
     bool v8_only_frontend,
@@ -892,8 +891,8 @@ DevToolsWindow* DevToolsWindow::Create(
   }
 
   // Create WebContents with devtools.
-  GURL url(GetDevToolsURL(profile, frontend_url, shared_worker_frontend,
-      v8_only_frontend, node_frontend, remote_frontend, can_dock, panel));
+  GURL url(GetDevToolsURL(profile, shared_worker_frontend, v8_only_frontend,
+                          node_frontend, remote_frontend, can_dock, panel));
   std::unique_ptr<WebContents> main_web_contents(
       WebContents::Create(WebContents::CreateParams(profile)));
   main_web_contents->GetController().LoadURL(
@@ -911,22 +910,15 @@ DevToolsWindow* DevToolsWindow::Create(
 
 // static
 GURL DevToolsWindow::GetDevToolsURL(Profile* profile,
-                                    const GURL& base_url,
                                     bool shared_worker_frontend,
                                     bool v8_only_frontend,
                                     bool node_frontend,
                                     const std::string& remote_frontend,
                                     bool can_dock,
                                     const std::string& panel) {
-  // Compatibility errors are encoded with data urls, pass them
-  // through with no decoration.
-  if (base_url.SchemeIs("data"))
-    return base_url;
-
-  std::string frontend_url(
-      !remote_frontend.empty() ?
-          remote_frontend :
-          base_url.is_empty() ? chrome::kChromeUIDevToolsURL : base_url.spec());
+  std::string frontend_url(!remote_frontend.empty()
+                               ? remote_frontend
+                               : chrome::kChromeUIDevToolsURL);
   std::string url_string(
       frontend_url +
       ((frontend_url.find("?") == std::string::npos) ? "?" : "&"));
