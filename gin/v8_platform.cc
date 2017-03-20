@@ -5,6 +5,7 @@
 #include "gin/public/v8_platform.h"
 
 #include "base/bind.h"
+#include "base/debug/stack_trace.h"
 #include "base/location.h"
 #include "base/sys_info.h"
 #include "base/threading/worker_pool.h"
@@ -41,6 +42,11 @@ class IdleTaskWithLocker : public v8::IdleTask {
 
   DISALLOW_COPY_AND_ASSIGN(IdleTaskWithLocker);
 };
+
+void PrintStackTrace() {
+  base::debug::StackTrace trace;
+  trace.Print();
+}
 
 }  // namespace
 
@@ -261,6 +267,10 @@ void V8Platform::AddTraceStateObserver(
 void V8Platform::RemoveTraceStateObserver(
     v8::Platform::TraceStateObserver* observer) {
   g_trace_state_dispatcher.Get().RemoveObserver(observer);
+}
+
+v8::Platform::StackTracePrinter V8Platform::GetStackTracePrinter() {
+  return PrintStackTrace;
 }
 
 }  // namespace gin
