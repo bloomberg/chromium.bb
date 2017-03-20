@@ -956,6 +956,12 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                 RecordUserAction.record("MobileTabbedModeViewIntentFromApp");
             }
 
+            if (getBottomSheet() != null) {
+                // Either a new tab is opening, a tab is being clobbered, or a tab is being brought
+                // to the front. In all scenarios, the bottom sheet should be closed.
+                getBottomSheet().setSheetState(BottomSheet.SHEET_STATE_PEEK, true);
+            }
+
             TabModel tabModel = getCurrentTabModel();
             boolean fromLauncherShortcut = IntentUtils.safeGetBooleanExtra(
                     intent, IntentHandler.EXTRA_INVOKED_FROM_SHORTCUT, false);
