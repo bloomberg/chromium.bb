@@ -1272,6 +1272,36 @@
     <message name="IDS_SETTINGS_INTERNET_NO_NETWORKS" desc="Entry when there are no preferred networks or no networks of a particular type.">
       None
     </message>
+    <message name="IDS_SETTINGS_INTERNET_TETHER_CONNECTION_DIALOG_TITLE" desc="Settings > Internet > Tether Connection Dialog > Title asking the user to create a new hotspot.">
+      Connect to new hotspot?
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_TETHER_CONNECTION_BATTERY_PERCENTAGE" desc="Settings > Internet > Tether Connection Dialog > Description of how much battery a device has.">
+      <ph name="BATTERY_PERCENTAGE">$1<ex>100</ex></ph>% Battery
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_TETHER_CONNECTION_EXPLANATION" desc="Settings > Internet > Tether Connection Dialog > Explanation of what will happen if the user connects to a tether hotspot.">
+      Your <ph name="PHONE_NAME">$1<ex>Google Pixel XL</ex></ph> will create a private Wi-Fi connection.
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_TETHER_CONNECTION_CARRIER_WARNING" desc="Settings > Internet > Tether Connection Dialog > Warning to users that cellular providers may block the use of tethering.">
+      Some carriers might block this feature.
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_TETHER_CONNECTION_DESCRIPTION_TITLE" desc="Settings > Internet > Tether Connection Dialog > Title of the section describing what will happen when tethering is enabled.">
+      While the hotspot is on, your <ph name="PHONE_NAME">$1<ex>Google Pixel XL</ex></ph> will:
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_TETHER_CONNECTION_DESCRIPTION_CELLULAR_DATA" desc="Settings > Internet > Tether Connection Dialog > Bulletpoint alerting the user that tethering will use cellular data.">
+      Use cellular data
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_TETHER_CONNECTION_DESCRIPTION_BATTERY" desc="Settings > Internet > Tether Connection Dialog > Bullet point alerting the user that tethering will use both devices' batteries.">
+      Use the battery more quickly (currently <ph name="BATTERY_PERCENTAGE">$1<ex>100</ex></ph>%)
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_TETHER_CONNECTION_DESCRIPTION_WIFI" desc="Settings > Internet > Tether Connection Dialog > Bullet point alerting the user that the tether host (i.e., the device to which the current device will connect to) will disconnect from Wi-Fi.">
+      Disconnect from Wi-Fi
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_TETHER_CONNECTION_NOT_NOW_BUTTON" desc="Settings > Internet > Tether Connection Dialog > Button which, when tapped, closes the dialog and does not connect the device.">
+      Not now
+    </message>
+    <message name="IDS_SETTINGS_INTERNET_TETHER_CONNECTION_CONNECT_BUTTON" desc="Settings > Internet > Tether Connection Dialog > Button which, when tapped, starts a connection attempt to the device.">
+      Connect
+    </message>
     <message name="IDS_SETTINGS_INTERNET_TOGGLE_MOBILE_ACCESSIBILITY_LABEL" desc="Accessibility only label for mobile data enable/disable toggle .">
       Mobile data enable
     </message>
