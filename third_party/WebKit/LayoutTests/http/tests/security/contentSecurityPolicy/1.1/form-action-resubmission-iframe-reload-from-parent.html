@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<!--
+  This test documents the current behavior with Content-Security-Policy and
+  form resubmission. It makes a first navigation with a form submission in an
+  iframe and then makes the iframe reload. This is a form resubmission. The
+  thing is that the iframe has the "form-action 'none'" policy and the
+  navigation is blocked. It is blocked even if the reload was initiated by a
+  frame that has not defined any policies.
+  TODO(mkwst). This seems wrong.
+-->
+<html>
+  <head>
+    <script src="/resources/testharness.js"></script>
+    <script src="/resources/testharnessreport.js"></script>
+  </head>
+  <body>
+    <iframe name="iframe" id="iframe"></iframe>
+
+    <form
+      id="form"
+      method="post"
+      target="iframe"
+      action="/security/contentSecurityPolicy/resources/form-action-none.html">
+    </form>
+
+    <script>
+
+      async_test(t => {
+        var reload_called = false;
+
+        // The iframe is expected to notify its parent when it is loaded. Then
+        // its parent asks it to reload in order to trigger a form resubmission.
+        window.addEventListener("message", t.step_func(e => {
+          if (e.data == "page loaded") {
+            assert_equals(e.source, document.getElementById("iframe").contentWindow);
+            var iframe = document.getElementById("iframe");
+            reload_called = true;
+            iframe.contentWindow.location.reload();
+          }
+        }));
+
+        // The iframe is expected to block the form resubmission when its parent
+        // asks it to reload.
+        window.addEventListener("message", t.step_func(e => {
+          if (e.data.effectiveDirective) {
+            assert_equals(e.data.effectiveDirective, "form-action");
+            assert_equals(e.data.blockedURI, location.origin + "/security/contentSecurityPolicy/resources/form-action-none.html");
+            assert_equals(reload_called, true);
+            t.done();
+          }
+        }));
+
+        document.getElementById("form").submit();
+      }, "The form resubmission should be blocked by the iframe's CSP.");
+    </script>
+  </body>
+</html>

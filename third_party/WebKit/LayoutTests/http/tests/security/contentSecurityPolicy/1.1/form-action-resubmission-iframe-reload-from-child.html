@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<!--
+  This test documents the current behavior with Content-Security-Policy and
+  form resubmission. It makes a first navigation with a form submission in an
+  iframe, then the iframe reloads itself. This is a form resubmission. The
+  thing is that the iframe has set the "form-action 'none'" policy and so the
+  reload is blocked.
+-->
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<html>
+  <body>
+    <iframe name="iframe" id="iframe"></iframe>
+
+    <form
+      id="form"
+      method="post"
+      target="iframe"
+      action="/security/contentSecurityPolicy/resources/form-action-none-and-reload.html">
+    </form>
+
+    <script>
+      async_test(t => {
+        window.addEventListener("message", t.step_func(e => {
+          assert_equals(e.source, document.getElementById("iframe").contentWindow);
+          assert_equals(e.data.effectiveDirective, "form-action");
+          assert_equals(e.data.blockedURI, location.origin + "/security/contentSecurityPolicy/resources/form-action-none-and-reload.html");
+          t.done();
+        }));
+        document.getElementById("form").submit();
+      }, "The form resubmission should be blocked by the iframe's CSP.");
+    </script>
+  </body>
+</html>

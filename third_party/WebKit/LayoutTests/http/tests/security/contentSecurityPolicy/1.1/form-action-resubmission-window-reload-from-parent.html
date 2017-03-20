@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<!--
+  This test documents the current behavior with Content-Security-Policy and
+  form resubmission. It makes a first navigation with a form submission in a
+  new window and then makes it reload. This is a form resubmission. The thing
+  is that the window has the "form-action 'none'" policy and the navigation is
+  blocked. It is blocked even if the navigation was initiated by a window that
+  has not defined any policies.
+  TODO(mkwst). This seems wrong.
+-->
+<html>
+  <head>
+    <script src="/resources/testharness.js"></script>
+    <script src="/resources/testharnessreport.js"></script>
+  </head>
+  <body>
+
+    <form
+      id="form"
+      method="post"
+      target="popup"
+      action="/security/contentSecurityPolicy/resources/form-action-none.html">
+    </form>
+
+    <script>
+      async_test(t => {
+        var popup = window.open("", "popup");
+        var reload_called = false;
+
+        // The window is expected to notify its opener when it is loaded. Then
+        // its opener ask it to reload in order to trigger a form resubmission.
+        window.addEventListener("message", t.step_func(e => {
+          if (e.data == "page loaded") {
+            assert_equals(e.source, popup);
+            reload_called = true;
+            popup.location.reload();
+          }
+        }));
+
+        // The window is expected to block the form resubmission when its opener
+        // asks it to reload.
+        window.addEventListener("message", t.step_func(e => {
+          if (e.data.effectiveDirective) {
+            assert_equals(e.source, popup);
+            assert_equals(e.data.effectiveDirective, "form-action");
+            assert_equals(e.data.blockedURI, location.origin + "/security/contentSecurityPolicy/resources/form-action-none.html");
+            assert_equals(reload_called, true);
+            popup.close();
+            t.done();
+          }
+        }));
+
+        document.getElementById("form").submit();
+      }, "The form resubmission should be blocked by the new window's CSP.");
+
+    </script>
+  </body>
+</html>

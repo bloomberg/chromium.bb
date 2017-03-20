@@ -1,0 +1,23 @@
+<html>
+  <head>
+    <meta http-equiv="Content-Security-Policy" content="form-action 'none'">
+  </head>
+  <body>
+    <script>
+      window.addEventListener('securitypolicyviolation', function(event) {
+        // Notify the parent frame or the parent window that the reload was
+        // blocked by the CSP.
+        let data = {
+          "blockedURI":event.blockedURI,
+          "effectiveDirective":event.effectiveDirective
+        };
+        if (window.opener)
+          window.opener.postMessage(data, "*");
+        else if (window.parent != window)
+          window.parent.postMessage(data, "*");
+      });
+
+      location.reload();
+    </script>
+  </body>
+</html>

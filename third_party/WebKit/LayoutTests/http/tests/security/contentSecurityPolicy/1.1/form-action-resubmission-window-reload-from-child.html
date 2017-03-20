@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<!--
+  This test documents the current behavior with Content-Security-Policy and
+  form resubmission. It makes a first navigation with a form submission in a
+  new window and then the window reloads itself. This is a form resubmission.
+  The thing is that the window has the "form-action 'none'" policy and the
+  navigation is blocked.
+-->
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<html>
+  <body>
+    <form
+      id="form"
+      method="post"
+      target="popup"
+      action="/security/contentSecurityPolicy/resources/form-action-none-and-reload.html">
+    </form>
+
+    <script>
+      async_test(t => {
+        var popup = window.open("", "popup");
+        window.addEventListener("message", t.step_func(e => {
+          assert_equals(e.source, popup);
+          assert_equals(e.data.effectiveDirective, "form-action");
+          assert_equals(e.data.blockedURI, location.origin + "/security/contentSecurityPolicy/resources/form-action-none-and-reload.html");
+          popup.close();
+          t.done();
+        }));
+        document.getElementById("form").submit();
+      }, "The form resubmission should be blocked by the new window's CSP");
+    </script>
+  </body>
+</html>
