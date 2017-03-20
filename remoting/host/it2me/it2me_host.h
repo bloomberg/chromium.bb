@@ -65,7 +65,7 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
 
   It2MeHost(std::unique_ptr<ChromotingHostContext> context,
             std::unique_ptr<PolicyWatcher> policy_watcher,
-            std::unique_ptr<It2MeConfirmationDialog> confirmation_dialog,
+            std::unique_ptr<It2MeConfirmationDialogFactory> dialog_factory_,
             base::WeakPtr<It2MeHost::Observer> observer,
             std::unique_ptr<SignalStrategy> signal_strategy,
             const std::string& username,
@@ -172,7 +172,7 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   int failed_login_attempts_ = 0;
 
   std::unique_ptr<PolicyWatcher> policy_watcher_;
-  std::unique_ptr<It2MeConfirmationDialog> confirmation_dialog_;
+  std::unique_ptr<It2MeConfirmationDialogFactory> confirmation_dialog_factory_;
   std::unique_ptr<It2MeConfirmationDialogProxy> confirmation_dialog_proxy_;
 
   // Host the current nat traversal policy setting.
@@ -181,6 +181,9 @@ class It2MeHost : public base::RefCountedThreadSafe<It2MeHost>,
   // The client and host domain policy setting.
   std::string required_client_domain_;
   std::string required_host_domain_;
+
+  // Tracks the JID of the remote user when in a connecting state.
+  std::string connecting_jid_;
 
   // Indicates whether or not a policy has ever been read. This is to ensure
   // that on startup, we do not accidentally start a connection before we have

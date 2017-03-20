@@ -223,8 +223,8 @@ It2MeConfirmationDialogWin::TaskDialogCallbackProc(HWND hwnd,
 
 }  // namespace
 
-// static
-std::unique_ptr<It2MeConfirmationDialog> It2MeConfirmationDialog::Create() {
+std::unique_ptr<It2MeConfirmationDialog>
+It2MeConfirmationDialogFactory::Create() {
   return base::MakeUnique<It2MeConfirmationDialogWin>();
 }
 

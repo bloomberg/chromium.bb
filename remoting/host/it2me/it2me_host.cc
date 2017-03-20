@@ -59,7 +59,7 @@ typedef ValidatingAuthenticator::ResultCallback ValidationResultCallback;
 It2MeHost::It2MeHost(
     std::unique_ptr<ChromotingHostContext> host_context,
     std::unique_ptr<PolicyWatcher> policy_watcher,
-    std::unique_ptr<It2MeConfirmationDialog> confirmation_dialog,
+    std::unique_ptr<It2MeConfirmationDialogFactory> dialog_factory,
     base::WeakPtr<It2MeHost::Observer> observer,
     std::unique_ptr<SignalStrategy> signal_strategy,
     const std::string& username,
@@ -70,7 +70,7 @@ It2MeHost::It2MeHost(
       username_(username),
       directory_bot_jid_(directory_bot_jid),
       policy_watcher_(std::move(policy_watcher)),
-      confirmation_dialog_(std::move(confirmation_dialog)) {
+      confirmation_dialog_factory_(std::move(dialog_factory)) {
   DCHECK(host_context_->ui_task_runner()->BelongsToCurrentThread());
 }
 
@@ -257,6 +257,11 @@ void It2MeHost::OnAccessDenied(const std::string& jid) {
   ++failed_login_attempts_;
   if (failed_login_attempts_ == kMaxLoginAttempts) {
     DisconnectOnNetworkThread();
+  } else if (connecting_jid_ == jid) {
+    DCHECK_EQ(state_, kConnecting);
+    connecting_jid_.clear();
+    confirmation_dialog_proxy_.reset();
+    SetState(kReceivedAccessCode, std::string());
   }
 }
 
@@ -529,11 +534,12 @@ void It2MeHost::ValidateConnectionDetails(
   }
 
   HOST_LOG << "Client " << client_username << " connecting.";
+  connecting_jid_ = remote_jid;
   SetState(kConnecting, std::string());
 
   // Show a confirmation dialog to the user to allow them to confirm/reject it.
   confirmation_dialog_proxy_.reset(new It2MeConfirmationDialogProxy(
-      host_context_->ui_task_runner(), std::move(confirmation_dialog_)));
+      host_context_->ui_task_runner(), confirmation_dialog_factory_->Create()));
 
   confirmation_dialog_proxy_->Show(
       client_username, base::Bind(&It2MeHost::OnConfirmationResult,
@@ -545,6 +551,7 @@ void It2MeHost::OnConfirmationResult(
     It2MeConfirmationDialog::Result result) {
   DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
 
+  connecting_jid_.clear();
   switch (result) {
     case It2MeConfirmationDialog::Result::OK:
       result_callback.Run(ValidationResult::SUCCESS);
@@ -573,8 +580,9 @@ scoped_refptr<It2MeHost> It2MeHostFactory::CreateIt2MeHost(
   std::unique_ptr<PolicyWatcher> policy_watcher =
       PolicyWatcher::Create(policy_service, context->file_task_runner());
   return new It2MeHost(std::move(context), std::move(policy_watcher),
-                       It2MeConfirmationDialog::Create(), observer,
-                       std::move(signal_strategy), username, directory_bot_jid);
+                       base::MakeUnique<It2MeConfirmationDialogFactory>(),
+                       observer, std::move(signal_strategy), username,
+                       directory_bot_jid);
 }
 
 }  // namespace remoting

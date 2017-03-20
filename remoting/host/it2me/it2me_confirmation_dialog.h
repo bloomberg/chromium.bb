@@ -25,14 +25,23 @@ class It2MeConfirmationDialog {
 
   typedef base::Callback<void(Result)> ResultCallback;
 
-  static std::unique_ptr<It2MeConfirmationDialog> Create();
-
   virtual ~It2MeConfirmationDialog() {}
 
   // Shows the dialog. |callback| will be called with the user's selection.
   // |callback| will not be called if the dialog is destroyed.
   virtual void Show(const std::string& remote_user_email,
                     const ResultCallback& callback) = 0;
+};
+
+class It2MeConfirmationDialogFactory {
+ public:
+  It2MeConfirmationDialogFactory() {}
+  virtual ~It2MeConfirmationDialogFactory() {}
+
+  virtual std::unique_ptr<It2MeConfirmationDialog> Create();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(It2MeConfirmationDialogFactory);
 };
 
 }  // namespace remoting

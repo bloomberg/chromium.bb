@@ -50,20 +50,17 @@ const char kMismatchedDomain3[] = "not_even_close.com";
 
 class FakeIt2MeConfirmationDialog : public It2MeConfirmationDialog {
  public:
-  FakeIt2MeConfirmationDialog();
+  FakeIt2MeConfirmationDialog(const std::string& remote_user_email,
+                              DialogResult dialog_result);
   ~FakeIt2MeConfirmationDialog() override;
 
   // It2MeConfirmationDialog implementation.
   void Show(const std::string& remote_user_email,
             const ResultCallback& callback) override;
 
-  void set_dialog_result(DialogResult dialog_result) {
-    dialog_result_ = dialog_result;
-  }
-
-  const std::string& get_remote_user_email() { return remote_user_email_; }
-
  private:
+  FakeIt2MeConfirmationDialog();
+
   std::string remote_user_email_;
   DialogResult dialog_result_ = DialogResult::OK;
 
@@ -72,14 +69,52 @@ class FakeIt2MeConfirmationDialog : public It2MeConfirmationDialog {
 
 FakeIt2MeConfirmationDialog::FakeIt2MeConfirmationDialog() {}
 
+FakeIt2MeConfirmationDialog::FakeIt2MeConfirmationDialog(
+    const std::string& remote_user_email,
+    DialogResult dialog_result)
+    : remote_user_email_(remote_user_email), dialog_result_(dialog_result) {}
+
 FakeIt2MeConfirmationDialog::~FakeIt2MeConfirmationDialog() {}
 
 void FakeIt2MeConfirmationDialog::Show(const std::string& remote_user_email,
                                        const ResultCallback& callback) {
-  remote_user_email_ = remote_user_email;
+  EXPECT_STREQ(remote_user_email_.c_str(), remote_user_email.c_str());
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(callback, dialog_result_));
+}
+
+class FakeIt2MeDialogFactory : public It2MeConfirmationDialogFactory {
+ public:
+  FakeIt2MeDialogFactory();
+  ~FakeIt2MeDialogFactory() override;
+
+  std::unique_ptr<It2MeConfirmationDialog> Create() override;
+
+  void set_dialog_result(DialogResult dialog_result) {
+    dialog_result_ = dialog_result;
+  }
+
+  void set_remote_user_email(const std::string& remote_user_email) {
+    remote_user_email_ = remote_user_email;
+  }
+
+ private:
+  std::string remote_user_email_;
+  DialogResult dialog_result_ = DialogResult::OK;
+
+  DISALLOW_COPY_AND_ASSIGN(FakeIt2MeDialogFactory);
+};
+
+FakeIt2MeDialogFactory::FakeIt2MeDialogFactory()
+    : remote_user_email_(kTestClientUserName) {}
+
+FakeIt2MeDialogFactory::~FakeIt2MeDialogFactory() {}
+
+std::unique_ptr<It2MeConfirmationDialog> FakeIt2MeDialogFactory::Create() {
+  EXPECT_FALSE(remote_user_email_.empty());
+  return base::MakeUnique<FakeIt2MeConfirmationDialog>(remote_user_email_,
+                                                       dialog_result_);
 }
 
 class It2MeHostTest : public testing::Test, public It2MeHost::Observer {
@@ -114,14 +149,13 @@ class It2MeHostTest : public testing::Test, public It2MeHost::Observer {
   void DisconnectClient();
 
   ValidationResult validation_result_ = ValidationResult::SUCCESS;
-  std::string remote_user_email_;
 
   base::Closure state_change_callback_;
 
   It2MeHostState last_host_state_ = It2MeHostState::kDisconnected;
 
   // Used to set ConfirmationDialog behavior.
-  FakeIt2MeConfirmationDialog* dialog_ = nullptr;
+  FakeIt2MeDialogFactory* dialog_factory_ = nullptr;
 
  private:
   std::unique_ptr<base::MessageLoop> message_loop_;
@@ -151,11 +185,12 @@ void It2MeHostTest::SetUp() {
   network_task_runner_ = host_context->network_task_runner();
   ui_task_runner_ = host_context->ui_task_runner();
 
-  dialog_ = new FakeIt2MeConfirmationDialog();
+  std::unique_ptr<FakeIt2MeDialogFactory> dialog_factory(
+      new FakeIt2MeDialogFactory());
+  dialog_factory_ = dialog_factory.get();
   it2me_host_ =
-      new It2MeHost(std::move(host_context),
-                    /*policy_watcher=*/nullptr, base::WrapUnique(dialog_),
-                    weak_factory_.GetWeakPtr(),
+      new It2MeHost(std::move(host_context), /*policy_watcher=*/nullptr,
+                    std::move(dialog_factory), weak_factory_.GetWeakPtr(),
                     base::WrapUnique(new FakeSignalStrategy("fake_local_jid")),
                     "fake_user_name", "fake_bot_jid");
 }
@@ -170,7 +205,6 @@ void It2MeHostTest::TearDown() {
 void It2MeHostTest::OnValidationComplete(const base::Closure& resume_callback,
                                          ValidationResult validation_result) {
   validation_result_ = validation_result;
-  remote_user_email_ = dialog_->get_remote_user_email();
 
   ui_task_runner_->PostTask(FROM_HERE, resume_callback);
 }
@@ -267,6 +301,7 @@ TEST_F(It2MeHostTest, ConnectionValidation_NoClientDomainPolicy_InvalidJid) {
 TEST_F(It2MeHostTest,
        ConnectionValidation_NoClientDomainPolicy_InvalidUsername) {
   SimulateClientConnection();
+  dialog_factory_->set_remote_user_email("fake");
   RunValidationCallback(kTestClientJidWithSlash);
   ASSERT_EQ(ValidationResult::SUCCESS, validation_result_);
   ASSERT_EQ(It2MeHostState::kConnecting, last_host_state_);
@@ -341,20 +376,18 @@ TEST_F(It2MeHostTest, ConnectionValidation_ConfirmationDialog_Accept) {
   SimulateClientConnection();
   RunValidationCallback(kTestClientJid);
   ASSERT_EQ(ValidationResult::SUCCESS, validation_result_);
-  ASSERT_STREQ(kTestClientUserName, remote_user_email_.c_str());
   ASSERT_EQ(It2MeHostState::kConnecting, last_host_state_);
   DisconnectClient();
   ASSERT_EQ(It2MeHostState::kDisconnected, last_host_state_);
 }
 
 TEST_F(It2MeHostTest, ConnectionValidation_ConfirmationDialog_Reject) {
-  dialog_->set_dialog_result(DialogResult::CANCEL);
+  dialog_factory_->set_dialog_result(DialogResult::CANCEL);
   SimulateClientConnection();
   RunValidationCallback(kTestClientJid);
   ASSERT_EQ(ValidationResult::ERROR_REJECTED_BY_USER, validation_result_);
   RunUntilStateChanged(It2MeHostState::kDisconnected);
   ASSERT_EQ(It2MeHostState::kDisconnected, last_host_state_);
-  ASSERT_STREQ(kTestClientUserName, remote_user_email_.c_str());
 }
 
 TEST_F(It2MeHostTest, MultipleConnectionsTriggerDisconnect) {
@@ -362,7 +395,6 @@ TEST_F(It2MeHostTest, MultipleConnectionsTriggerDisconnect) {
   RunValidationCallback(kTestClientJid);
   ASSERT_EQ(ValidationResult::SUCCESS, validation_result_);
   ASSERT_EQ(It2MeHostState::kConnecting, last_host_state_);
-  ASSERT_STREQ(kTestClientUserName, remote_user_email_.c_str());
 
   RunValidationCallback(kTestClientJid2);
   ASSERT_EQ(ValidationResult::ERROR_TOO_MANY_CONNECTIONS, validation_result_);
