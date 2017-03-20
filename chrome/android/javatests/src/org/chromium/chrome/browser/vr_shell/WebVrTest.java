@@ -4,7 +4,8 @@
 
 package org.chromium.chrome.browser.vr_shell;
 
-import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_DAYDREAM_VIEW;
+import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM;
+import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_NON_DAYDREAM;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_WEBVR_SUPPORTED;
 
 import android.support.test.filters.SmallTest;
@@ -137,7 +138,7 @@ public class WebVrTest extends ChromeTabbedActivityTestBase {
         String result = "false";
         try {
             result = JavaScriptUtils.executeJavaScriptAndWaitForResult(
-                    webContents, "testPassed", 50, TimeUnit.MILLISECONDS);
+                    webContents, "testPassed", 1000, TimeUnit.MILLISECONDS);
         } catch (InterruptedException | TimeoutException e) {
             // Do nothing - if it times out, the test will be marked as failed
         }
@@ -147,7 +148,7 @@ public class WebVrTest extends ChromeTabbedActivityTestBase {
 
         try {
             result = JavaScriptUtils.executeJavaScriptAndWaitForResult(
-                    webContents, "resultString", 50, TimeUnit.MILLISECONDS);
+                    webContents, "resultString", 1000, TimeUnit.MILLISECONDS);
         } catch (InterruptedException | TimeoutException e) {
             result = "Unable to retrieve failure reason";
         }
@@ -236,11 +237,45 @@ public class WebVrTest extends ChromeTabbedActivityTestBase {
      * fires the vrdisplayactivate event.
      */
     @SmallTest
-    @Restriction(RESTRICTION_TYPE_DAYDREAM_VIEW)
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     public void testNfcFiresVrdisplayactivate() throws InterruptedException {
         String testName = "test_nfc_fires_vrdisplayactivate";
         loadUrl(getHtmlTestFile(testName), 10);
         simNfcScanAndWait(mWebContents);
+        endTest(mWebContents);
+    }
+
+    /**
+     * Tests that screen touches are not registered when the viewer is a
+     * Daydream View.
+     */
+    @SmallTest
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+    public void testScreenTapsNotRegisteredOnDaydream() throws InterruptedException {
+        String testName = "test_screen_taps_not_registered_on_daydream";
+        loadUrl(getHtmlTestFile(testName), 10);
+        assertTrue("VRDisplay found", vrDisplayFound(mWebContents));
+        executeStepAndWait("stepVerifyNoInitialTaps()", mWebContents);
+        enterVrTapAndWait(mWebContents);
+        enterVrTap();
+        executeStepAndWait("stepVerifyNoAdditionalTaps()", mWebContents);
+        endTest(mWebContents);
+    }
+
+    /**
+     * Tests that screen touches are still registered when the viewer is
+     * Cardboard.
+     */
+    @SmallTest
+    @Restriction(RESTRICTION_TYPE_VIEWER_NON_DAYDREAM)
+    public void testScreenTapsRegisteredOnCardboard() throws InterruptedException {
+        String testName = "test_screen_taps_registered_on_cardboard";
+        loadUrl(getHtmlTestFile(testName), 10);
+        assertTrue("VRDisplay found", vrDisplayFound(mWebContents));
+        executeStepAndWait("stepVerifyNoInitialTaps()", mWebContents);
+        enterVrTapAndWait(mWebContents);
+        enterVrTap();
+        executeStepAndWait("stepVerifyAdditionalTap()", mWebContents);
         endTest(mWebContents);
     }
 

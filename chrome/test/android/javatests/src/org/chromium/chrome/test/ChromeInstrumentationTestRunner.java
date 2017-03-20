@@ -139,25 +139,33 @@ public class ChromeInstrumentationTestRunner extends BaseChromiumInstrumentation
                     && (!ChromeVersionInfo.isOfficialBuild())) {
                 return true;
             }
-            if (TextUtils.equals(restriction,
-                    ChromeRestriction.RESTRICTION_TYPE_DAYDREAM)
+            if (TextUtils.equals(restriction, ChromeRestriction.RESTRICTION_TYPE_DEVICE_DAYDREAM)
                     || TextUtils.equals(restriction,
-                    ChromeRestriction.RESTRICTION_TYPE_NON_DAYDREAM)) {
+                               ChromeRestriction.RESTRICTION_TYPE_DEVICE_NON_DAYDREAM)) {
                 boolean isDaydream = isDaydreamReady();
-                if (TextUtils.equals(restriction,
-                        ChromeRestriction.RESTRICTION_TYPE_DAYDREAM)
+                if (TextUtils.equals(
+                            restriction, ChromeRestriction.RESTRICTION_TYPE_DEVICE_DAYDREAM)
                         && !isDaydream) {
                     return true;
                 } else if (TextUtils.equals(restriction,
-                        ChromeRestriction.RESTRICTION_TYPE_NON_DAYDREAM)
+                                   ChromeRestriction.RESTRICTION_TYPE_DEVICE_NON_DAYDREAM)
                         && isDaydream) {
                     return true;
                 }
             }
-            if (TextUtils.equals(restriction,
-                    ChromeRestriction.RESTRICTION_TYPE_DAYDREAM_VIEW)
-                    && !isDaydreamViewPaired()) {
-                return true;
+            if (TextUtils.equals(restriction, ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM)
+                    || TextUtils.equals(restriction,
+                               ChromeRestriction.RESTRICTION_TYPE_VIEWER_NON_DAYDREAM)) {
+                boolean daydreamViewPaired = isDaydreamViewPaired();
+                if (TextUtils.equals(
+                            restriction, ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM)
+                        && !daydreamViewPaired) {
+                    return true;
+                } else if (TextUtils.equals(restriction,
+                                   ChromeRestriction.RESTRICTION_TYPE_VIEWER_NON_DAYDREAM)
+                        && daydreamViewPaired) {
+                    return true;
+                }
             }
             if (TextUtils.equals(restriction, ChromeRestriction.RESTRICTION_TYPE_WEBVR_SUPPORTED)
                     || TextUtils.equals(

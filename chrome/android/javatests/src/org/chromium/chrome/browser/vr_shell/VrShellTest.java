@@ -4,9 +4,9 @@
 
 package org.chromium.chrome.browser.vr_shell;
 
-import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_DAYDREAM;
-import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_DAYDREAM_VIEW;
-import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_NON_DAYDREAM;
+import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_DEVICE_DAYDREAM;
+import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_DEVICE_NON_DAYDREAM;
+import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM;
 
 import android.content.pm.ActivityInfo;
 import android.support.test.filters.MediumTest;
@@ -131,7 +131,7 @@ public class VrShellTest extends ChromeTabbedActivityTestBase {
      * NFC tag is scanned on a Daydream-ready device. Requires that the phone
      * is unlocked.
      */
-    @Restriction({RESTRICTION_TYPE_DAYDREAM, RESTRICTION_TYPE_DAYDREAM_VIEW})
+    @Restriction({RESTRICTION_TYPE_DEVICE_DAYDREAM, RESTRICTION_TYPE_VIEWER_DAYDREAM})
     @MediumTest
     public void testSimNfcSupported() {
         enterVrModeNfc(true);
@@ -141,7 +141,7 @@ public class VrShellTest extends ChromeTabbedActivityTestBase {
      * Verifies that the browser does not enter VR mode on Non-Daydream-ready
      * devices when the Daydream headset NFC tag is scanned.
      */
-    @Restriction(RESTRICTION_TYPE_NON_DAYDREAM)
+    @Restriction(RESTRICTION_TYPE_DEVICE_NON_DAYDREAM)
     @SmallTest
     public void testSimNfcUnsupported() {
         enterVrModeNfc(false);
@@ -151,7 +151,7 @@ public class VrShellTest extends ChromeTabbedActivityTestBase {
      * Verifies that browser successfully enters and exits VR mode when told to
      * on Daydream-ready devices. Requires that the phone is unlocked.
      */
-    @Restriction(RESTRICTION_TYPE_DAYDREAM)
+    @Restriction(RESTRICTION_TYPE_DEVICE_DAYDREAM)
     @SmallTest
     public void testEnterExitVrModeSupported() {
         enterExitVrMode(true);
@@ -160,7 +160,7 @@ public class VrShellTest extends ChromeTabbedActivityTestBase {
     /**
      * Verifies that browser does not enter VR mode on Non-Daydream-ready devices.
      */
-    @Restriction(RESTRICTION_TYPE_NON_DAYDREAM)
+    @Restriction(RESTRICTION_TYPE_DEVICE_NON_DAYDREAM)
     @SmallTest
     public void testEnterExitVrModeUnsupported() {
         enterExitVrMode(false);
@@ -171,7 +171,7 @@ public class VrShellTest extends ChromeTabbedActivityTestBase {
      * on Daydream-ready devices via a screendiffing check.
      * Requires that the phone is unlocked.
      */
-    @Restriction(RESTRICTION_TYPE_DAYDREAM)
+    @Restriction(RESTRICTION_TYPE_DEVICE_DAYDREAM)
     @Feature("RenderTest")
     @MediumTest
     public void testEnterExitVrModeSupportedImage() throws IOException {
@@ -182,7 +182,7 @@ public class VrShellTest extends ChromeTabbedActivityTestBase {
      * Verifies that browser does not enter VR mode on Non-Daydream-ready devices
      * via a screendiffing check. Requires that the phone is unlocked.
      */
-    @Restriction(RESTRICTION_TYPE_NON_DAYDREAM)
+    @Restriction(RESTRICTION_TYPE_DEVICE_NON_DAYDREAM)
     @Feature("RenderTest")
     @MediumTest
     public void testEnterExitVrModeUnsupportedImage() throws IOException {
