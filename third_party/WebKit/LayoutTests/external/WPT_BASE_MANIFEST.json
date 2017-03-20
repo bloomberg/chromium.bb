@@ -8705,6 +8705,11 @@
      {}
     ]
    ],
+   "dom/lists/README.md": [
+    [
+     {}
+    ]
+   ],
    "dom/nodes/ChildNode-remove.js": [
     [
      {}
@@ -33954,6 +33959,16 @@
    "encoding/textdecoder-byte-order-marks.html": [
     [
      "/encoding/textdecoder-byte-order-marks.html",
+     {}
+    ]
+   ],
+   "encoding/textdecoder-copy.any.js": [
+    [
+     "/encoding/textdecoder-copy.any.html",
+     {}
+    ],
+    [
+     "/encoding/textdecoder-copy.any.worker.html",
      {}
     ]
    ],
@@ -61861,15 +61876,15 @@
    "testharness"
   ],
   "content-security-policy/worker-src/service-child.https.sub.html": [
-   "fb10554640b19d3f9cf7c3a60247deaea2c80596",
+   "0ccf56794d55c4ea8800cbe8f0805fd02450549f",
    "testharness"
   ],
   "content-security-policy/worker-src/service-fallback.https.sub.html": [
-   "b7dc101d006ca9454925e3d4511cae61c32fb2a4",
+   "84207a36ed3d686f14f88cda4725d3a97653dd3e",
    "testharness"
   ],
   "content-security-policy/worker-src/service-list.https.sub.html": [
-   "c2e217ddab84012bc78358821a247b81dc0a611f",
+   "e4822e57b4095ecb3d9c9563902bc03a77c87c15",
    "testharness"
   ],
   "content-security-policy/worker-src/service-none.https.sub.html": [
@@ -62459,6 +62474,10 @@
   "dom/lists/DOMTokenList-value.html": [
    "0bede0dd94315dc5788d04e539d35005be411255",
    "testharness"
+  ],
+  "dom/lists/README.md": [
+   "d3af38159bb2869ad7b18a8c4142f063e21939fa",
+   "support"
   ],
   "dom/nodes/CharacterData-appendChild.html": [
    "a6abec61abc5fd295fd3f900d6ef45c6b4540daf",
@@ -64505,11 +64524,15 @@
    "testharness"
   ],
   "encoding/resources/encodings.js": [
-   "cb100c35109c68c57ab17767917aeb21d9301b23",
+   "27b7c95700ec1b5bfa45257574a01cf9ff30ca96",
    "support"
   ],
   "encoding/textdecoder-byte-order-marks.html": [
    "d53e5217cd1cfe73c01b1136449a6dd2a0ef0c21",
+   "testharness"
+  ],
+  "encoding/textdecoder-copy.any.js": [
+   "50a59f2691a7f483b262239935d9dbcc6b918d9d",
    "testharness"
   ],
   "encoding/textdecoder-fatal-single-byte.html": [
@@ -64529,7 +64552,7 @@
    "testharness"
   ],
   "encoding/textdecoder-labels.html": [
-   "9b1dd122e3f42ad192bed72be377a278cc487830",
+   "e1eda76bf8bed9a0e8778fad772fa0504089c919",
    "testharness"
   ],
   "encoding/textdecoder-streaming.html": [
@@ -64541,7 +64564,7 @@
    "testharness"
   ],
   "encoding/textencoder-constructor-non-utf.html": [
-   "9d0cf40e30011f6f95a3fd11ab2145148dbebd6e",
+   "9b727c86e718400dcc4bec2a4b4a974cce81a66b",
    "testharness"
   ],
   "encoding/textencoder-utf16-surrogates.html": [
