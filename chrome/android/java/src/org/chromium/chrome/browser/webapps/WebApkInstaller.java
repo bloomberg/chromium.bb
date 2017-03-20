@@ -183,7 +183,7 @@ public class WebApkInstaller {
                 WebApkInstaller.this.notify(result);
             }
         };
-        mGooglePlayWebApkInstallDelegate.installAsync(
+        mGooglePlayWebApkInstallDelegate.updateAsync(
                 packageName, version, title, token, url, callback);
     }
 

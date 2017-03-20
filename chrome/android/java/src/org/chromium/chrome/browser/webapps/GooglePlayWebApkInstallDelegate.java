@@ -44,6 +44,17 @@ public interface GooglePlayWebApkInstallDelegate {
             Callback<Integer> callback);
 
     /**
+     * Uses Google Play to update WebAPK asynchronously.
+     * @param packageName The package name of WebAPK to update.
+     * @param version The version of WebAPK to update.
+     * @param title The title of the WebAPK to display during update.
+     * @param token The token from WebAPK Minter Server.
+     * @param url The start URL of the WebAPK to update.
+     * @param callback The callback to invoke when the update completes, times out or fails.
+     */
+    void updateAsync(String packageName, int version, String title, String token, String url,
+            Callback<Integer> callback);
+    /**
      * Calls the callback once the installation either succeeded or failed.
      * @param packageName The package name of WebAPK for the installation.
      * @param event The result of the install.
