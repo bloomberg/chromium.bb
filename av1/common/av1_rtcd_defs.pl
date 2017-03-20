@@ -11,6 +11,7 @@ print <<EOF
 #include "av1/common/filter.h"
 #include "av1/common/convolve.h"
 #include "av1/common/av1_txfm.h"
+#include "av1/common/odintrin.h"
 
 struct macroblockd;
 
@@ -765,7 +766,7 @@ if (aom_config("CONFIG_CDEF") eq "yes") {
 # PVQ Functions
 
 if (aom_config("CONFIG_PVQ") eq "yes") {
-  add_proto qw/double pvq_search_rdo_double/, "const int16_t *xcoeff, int n, int k, int *ypulse, double g2, double pvq_norm_lambda, int prev_k";
+  add_proto qw/double pvq_search_rdo_double/, "const od_val16 *xcoeff, int n, int k, int *ypulse, double g2, double pvq_norm_lambda, int prev_k";
   specialize qw/pvq_search_rdo_double sse4_1/;
 }
 

@@ -58,7 +58,7 @@ static inline float rsqrtf(float x) {
  *                          reuse for the search (or 0 for a new search)
  * @return                  cosine distance between x and y (between 0 and 1)
  */
-double pvq_search_rdo_double_sse4_1(const int16_t *xcoeff, int n, int k,
+double pvq_search_rdo_double_sse4_1(const od_val16 *xcoeff, int n, int k,
                                     int *ypulse, double g2,
                                     double pvq_norm_lambda, int prev_k) {
   int i, j;
