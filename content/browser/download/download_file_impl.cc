@@ -75,6 +75,10 @@ DownloadFileImpl::DownloadFileImpl(
       default_download_directory_(default_download_directory),
       is_sparse_file_(is_sparse_file),
       bytes_seen_(0),
+      num_active_streams_(0),
+      record_stream_bandwidth_(true),
+      bytes_seen_with_parallel_streams_(0),
+      bytes_seen_without_parallel_streams_(0),
       received_slices_(received_slices),
       observer_(observer),
       weak_factory_(this) {
@@ -118,6 +122,7 @@ void DownloadFileImpl::Initialize(const InitializeCallback& callback) {
   }
 
   download_start_ = base::TimeTicks::Now();
+  last_update_time_ = download_start_;
 
   // Primarily to make reset to zero in restart visible to owner.
   SendUpdate();
@@ -310,6 +315,10 @@ bool DownloadFileImpl::InProgress() const {
   return file_.in_progress();
 }
 
+void DownloadFileImpl::WasPaused() {
+  record_stream_bandwidth_ = false;
+}
+
 void DownloadFileImpl::StreamActive(SourceStream* source_stream) {
   DCHECK(source_stream->stream_reader());
   base::TimeTicks start(base::TimeTicks::Now());
@@ -406,10 +415,12 @@ void DownloadFileImpl::StreamActive(SourceStream* source_stream) {
         BrowserThread::UI, FROM_HERE,
         base::Bind(&DownloadDestinationObserver::DestinationError, observer_,
                    reason, TotalBytesReceived(), base::Passed(&hash_state)));
+    num_active_streams_--;
   } else if (state == ByteStreamReader::STREAM_COMPLETE || should_terminate) {
     // Signal successful completion or termination of the current stream.
     source_stream->stream_reader()->RegisterCallback(base::Closure());
     source_stream->set_finished(true);
+    num_active_streams_--;
 
     // Inform observers.
     SendUpdate();
@@ -418,6 +429,12 @@ void DownloadFileImpl::StreamActive(SourceStream* source_stream) {
     if (IsDownloadCompleted()) {
       RecordFileBandwidth(bytes_seen_, disk_writes_time_,
                           base::TimeTicks::Now() - download_start_);
+      if (is_sparse_file_ && record_stream_bandwidth_) {
+        RecordParallelDownloadStats(bytes_seen_with_parallel_streams_,
+                                    download_time_with_parallel_streams_,
+                                    bytes_seen_without_parallel_streams_,
+                                    download_time_without_parallel_streams_);
+      }
       weak_factory_.InvalidateWeakPtrs();
       std::unique_ptr<crypto::SecureHash> hash_state = file_.Finish();
       update_timer_.reset();
@@ -443,6 +460,7 @@ void DownloadFileImpl::RegisterAndActivateStream(SourceStream* source_stream) {
                                                weak_factory_.GetWeakPtr(),
                                                source_stream));
     StreamActive(source_stream);
+    num_active_streams_++;
   }
 }
 
@@ -467,6 +485,18 @@ void DownloadFileImpl::WillWriteToDisk(size_t data_len) {
                          this, &DownloadFileImpl::SendUpdate);
   }
   rate_estimator_.Increment(data_len);
+  if (is_sparse_file_) {
+    base::TimeTicks now = base::TimeTicks::Now();
+    base::TimeDelta time_elapsed = (now - last_update_time_);
+    last_update_time_ = now;
+    if (num_active_streams_ > 1) {
+      download_time_with_parallel_streams_ += time_elapsed;
+      bytes_seen_with_parallel_streams_ += data_len;
+    } else {
+      download_time_without_parallel_streams_ += time_elapsed;
+      bytes_seen_without_parallel_streams_ += data_len;
+    }
+  }
 }
 
 void DownloadFileImpl::AddNewSlice(int64_t offset, int64_t length) {

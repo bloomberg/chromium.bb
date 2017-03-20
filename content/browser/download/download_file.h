@@ -77,6 +77,7 @@ class CONTENT_EXPORT DownloadFile {
 
   virtual const base::FilePath& FullPath() const = 0;
   virtual bool InProgress() const = 0;
+  virtual void WasPaused() = 0;
 };
 
 }  // namespace content

@@ -378,6 +378,13 @@ void DownloadItemImpl::Pause() {
     case TARGET_PENDING_INTERNAL:
       job_->Pause();
       UpdateObservers();
+      if (download_file_) {
+        BrowserThread::PostTask(
+            BrowserThread::FILE, FROM_HERE,
+            base::Bind(&DownloadFile::WasPaused,
+                       // Safe because we control download file lifetime.
+                       base::Unretained(download_file_.get())));
+      }
       return;
 
     case MAX_DOWNLOAD_INTERNAL_STATE:

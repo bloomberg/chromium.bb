@@ -202,6 +202,14 @@ void RecordFileBandwidth(size_t length,
                          base::TimeDelta disk_write_time,
                          base::TimeDelta elapsed_time);
 
+// Records the bandwidth for parallel download and estimates the saved time at
+// the file end. Does not count in any hash computation or file open/close time.
+void RecordParallelDownloadStats(
+    size_t bytes_downloaded_with_parallel_streams,
+    base::TimeDelta time_with_parallel_streams,
+    size_t bytes_downloaded_without_parallel_streams,
+    base::TimeDelta time_without_parallel_streams);
+
 // Record the result of a download file rename.
 void RecordDownloadFileRenameResultAfterRetry(
     base::TimeDelta time_since_first_failure,

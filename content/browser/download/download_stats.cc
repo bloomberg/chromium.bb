@@ -5,6 +5,7 @@
 #include "content/browser/download/download_stats.h"
 
 #include "base/macros.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/strings/string_util.h"
@@ -344,6 +345,21 @@ int GetDangerousFileType(const base::FilePath& file_path) {
       return i + 1;
   }
   return 0;  // Unknown extension.
+}
+
+// Helper method to calculate the bandwidth given the data length and time.
+int CalculateBandwidthBytesPerSecond(size_t length,
+                                     base::TimeDelta elapsed_time) {
+  size_t elapsed_time_ms = elapsed_time.InMilliseconds();
+  if (0u == elapsed_time_ms)
+    elapsed_time_ms = 1;
+
+  return 1000 * length / elapsed_time_ms;
+}
+
+// Helper method to record the bandwidth for a given metric.
+void RecordBandwidthMetric(const std::string& metric, int bandwidth) {
+  base::UmaHistogramCustomCounts(metric, bandwidth, 1, 50 * 1000 * 1000, 50);
 }
 
 } // namespace
@@ -703,19 +719,46 @@ void RecordNetworkBlockage(base::TimeDelta resource_handler_lifetime,
 void RecordFileBandwidth(size_t length,
                          base::TimeDelta disk_write_time,
                          base::TimeDelta elapsed_time) {
-  size_t elapsed_time_ms = elapsed_time.InMilliseconds();
-  if (0u == elapsed_time_ms)
-    elapsed_time_ms = 1;
-  size_t disk_write_time_ms = disk_write_time.InMilliseconds();
-  if (0u == disk_write_time_ms)
-    disk_write_time_ms = 1;
-
-  UMA_HISTOGRAM_CUSTOM_COUNTS(
-      "Download.BandwidthOverallBytesPerSecond",
-      (1000 * length / elapsed_time_ms), 1, 50000000, 50);
-  UMA_HISTOGRAM_CUSTOM_COUNTS(
+  RecordBandwidthMetric("Download.BandwidthOverallBytesPerSecond",
+                        CalculateBandwidthBytesPerSecond(length, elapsed_time));
+  RecordBandwidthMetric(
       "Download.BandwidthDiskBytesPerSecond",
-      (1000 * length / disk_write_time_ms), 1, 50000000, 50);
+      CalculateBandwidthBytesPerSecond(length, disk_write_time));
+}
+
+void RecordParallelDownloadStats(
+    size_t bytes_downloaded_with_parallel_streams,
+    base::TimeDelta time_with_parallel_streams,
+    size_t bytes_downloaded_without_parallel_streams,
+    base::TimeDelta time_without_parallel_streams) {
+  int bandwidth_without_parallel_streams = CalculateBandwidthBytesPerSecond(
+      bytes_downloaded_without_parallel_streams, time_without_parallel_streams);
+  RecordBandwidthMetric(
+      "Download.BandwidthWithoutParallelStreamsBytesPerSecond",
+      bandwidth_without_parallel_streams);
+  RecordBandwidthMetric(
+      "Download.BandwidthWithParallelStreamsBytesPerSecond",
+      CalculateBandwidthBytesPerSecond(bytes_downloaded_with_parallel_streams,
+                                       time_with_parallel_streams));
+
+  base::TimeDelta time_saved;
+  if (bandwidth_without_parallel_streams > 0) {
+    time_saved = base::TimeDelta::FromMilliseconds(
+                     1000.0 * bytes_downloaded_with_parallel_streams /
+                     bandwidth_without_parallel_streams) -
+                 time_with_parallel_streams;
+  }
+  int kMillisecondsPerHour =
+      base::checked_cast<int>(base::Time::kMillisecondsPerSecond * 60 * 60);
+  if (time_saved >= base::TimeDelta()) {
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "Download.EstimatedTimeSavedWithParallelDownload",
+        time_saved.InMilliseconds(), 0, kMillisecondsPerHour, 50);
+  } else {
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "Download.EstimatedTimeWastedWithParallelDownload",
+        -time_saved.InMilliseconds(), 0, kMillisecondsPerHour, 50);
+  }
 }
 
 void RecordDownloadFileRenameResultAfterRetry(

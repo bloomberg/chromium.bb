@@ -54,6 +54,7 @@ class MockDownloadFile : public DownloadFile {
   MOCK_METHOD0(Finish, void());
   MOCK_CONST_METHOD0(FullPath, const base::FilePath&());
   MOCK_CONST_METHOD0(InProgress, bool());
+  MOCK_METHOD0(WasPaused, void());
   MOCK_CONST_METHOD0(BytesSoFar, int64_t());
   MOCK_CONST_METHOD0(CurrentSpeed, int64_t());
   MOCK_METHOD1(GetHash, bool(std::string* hash));

@@ -72,6 +72,7 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
   void Cancel() override;
   const base::FilePath& FullPath() const override;
   bool InProgress() const override;
+  void WasPaused() override;
 
  protected:
   // For test class overrides.
@@ -243,6 +244,13 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
   base::TimeDelta disk_writes_time_;
   base::TimeTicks download_start_;
   RateEstimator rate_estimator_;
+  int num_active_streams_;
+  bool record_stream_bandwidth_;
+  base::TimeTicks last_update_time_;
+  size_t bytes_seen_with_parallel_streams_;
+  size_t bytes_seen_without_parallel_streams_;
+  base::TimeDelta download_time_with_parallel_streams_;
+  base::TimeDelta download_time_without_parallel_streams_;
 
   std::vector<DownloadItem::ReceivedSlice> received_slices_;
 
