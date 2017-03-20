@@ -42,7 +42,8 @@ class PasswordFormManager : public FormFetcher::Consumer {
   // |password_manager| owns |this|, |client| and |driver| serve to
   // communicate with embedder, |observed_form| is the associated form |this|
   // is managing, |form_saver| is used to save/update the form and
-  // |form_fetcher| to get saved data about the form.
+  // |form_fetcher| to get saved data about the form. |form_fetcher| must not be
+  // destroyed before |this|.
   //
   // TODO(crbug.com/621355): So far, |form_fetcher| can be null. In that case
   // |this| creates an instance of it itself (meant for production code). Once
@@ -243,7 +244,8 @@ class PasswordFormManager : public FormFetcher::Consumer {
 
   // Clears references to matches derived from the associated FormFetcher data.
   // After calling this, the PasswordFormManager holds no references to objects
-  // owned by the associated FormFetcher.
+  // owned by the associated FormFetcher. This does not cause removing |this| as
+  // a consumer of |form_fetcher_|.
   void ResetStoredMatches();
 
   // Takes ownership of |fetcher|.

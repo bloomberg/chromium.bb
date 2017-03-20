@@ -101,6 +101,7 @@ class MockFormSaver : public StubFormSaver {
 class MockFormFetcher : public FakeFormFetcher {
  public:
   MOCK_METHOD1(AddConsumer, void(Consumer*));
+  MOCK_METHOD1(RemoveConsumer, void(Consumer*));
 };
 
 MATCHER_P(CheckUsername, username_value, "Username incorrect") {
@@ -700,8 +701,10 @@ class PasswordFormManagerTest : public testing::Test {
   PasswordForm psl_saved_match_;
   TestPasswordManagerClient client_;
   std::unique_ptr<PasswordManager> password_manager_;
-  std::unique_ptr<PasswordFormManager> form_manager_;
+  // Define |fake_form_fetcher_| before |form_manager_|, because the former
+  // needs to outlive the latter.
   FakeFormFetcher fake_form_fetcher_;
+  std::unique_ptr<PasswordFormManager> form_manager_;
 };
 
 class PasswordFormManagerFillOnAccountSelectTest
@@ -2962,6 +2965,21 @@ TEST_F(PasswordFormManagerTest, ResetStoredMatches) {
   form_manager()->Save();
 
   EXPECT_THAT(credentials_to_update, IsEmpty());
+}
+
+// Check that on changing FormFetcher, the PasswordFormManager removes itself
+// from consuming the old one.
+TEST_F(PasswordFormManagerTest, DropFetcherOnDestruction) {
+  MockFormFetcher fetcher;
+  FormFetcher::Consumer* added_consumer = nullptr;
+  EXPECT_CALL(fetcher, AddConsumer(_)).WillOnce(SaveArg<0>(&added_consumer));
+  auto form_manager = base::MakeUnique<PasswordFormManager>(
+      password_manager(), client(), client()->driver(), *observed_form(),
+      base::MakeUnique<MockFormSaver>(), &fetcher);
+  EXPECT_EQ(form_manager.get(), added_consumer);
+
+  EXPECT_CALL(fetcher, RemoveConsumer(form_manager.get()));
+  form_manager.reset();
 }
 
 // Check that if asked to take ownership of the same FormFetcher which it had

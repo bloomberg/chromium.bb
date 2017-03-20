@@ -617,4 +617,14 @@ TEST_F(FormFetcherImplTest, Clone_Stats) {
   EXPECT_EQ(1u, clone->GetInteractionsStats().size());
 }
 
+// Check that removing consumers stops them from receiving store updates.
+TEST_F(FormFetcherImplTest, RemoveConsumer) {
+  Fetch();
+  form_fetcher_->AddConsumer(&consumer_);
+  form_fetcher_->RemoveConsumer(&consumer_);
+  EXPECT_CALL(consumer_, ProcessMatches(_, _)).Times(0);
+  form_fetcher_->OnGetPasswordStoreResults(
+      std::vector<std::unique_ptr<PasswordForm>>());
+}
+
 }  // namespace password_manager

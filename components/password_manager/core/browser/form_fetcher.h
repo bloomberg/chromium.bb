@@ -56,6 +56,9 @@ class FormFetcher {
   // |consumer| outlives |this|.
   virtual void AddConsumer(Consumer* consumer) = 0;
 
+  // Call this to stop |consumer| from receiving updates from |this|.
+  virtual void RemoveConsumer(Consumer* consumer) = 0;
+
   // Returns the current state of the FormFetcher
   virtual State GetState() const = 0;
 

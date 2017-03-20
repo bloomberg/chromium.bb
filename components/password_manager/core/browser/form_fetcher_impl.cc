@@ -87,6 +87,11 @@ void FormFetcherImpl::AddConsumer(FormFetcher::Consumer* consumer) {
     consumer->ProcessMatches(weak_non_federated_, filtered_count_);
 }
 
+void FormFetcherImpl::RemoveConsumer(FormFetcher::Consumer* consumer) {
+  size_t removed_consumers = consumers_.erase(consumer);
+  DCHECK_EQ(1u, removed_consumers);
+}
+
 FormFetcherImpl::State FormFetcherImpl::GetState() const {
   return state_;
 }

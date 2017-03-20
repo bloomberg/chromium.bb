@@ -35,6 +35,7 @@ class FormFetcherImpl : public FormFetcher,
 
   // FormFetcher:
   void AddConsumer(FormFetcher::Consumer* consumer) override;
+  void RemoveConsumer(FormFetcher::Consumer* consumer) override;
   State GetState() const override;
   const std::vector<InteractionsStats>& GetInteractionsStats() const override;
   const std::vector<const autofill::PasswordForm*>& GetFederatedMatches()

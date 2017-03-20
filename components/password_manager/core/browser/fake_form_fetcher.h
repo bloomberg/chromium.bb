@@ -33,6 +33,8 @@ class FakeFormFetcher : public FormFetcher {
   // has to first call AddConsumer and then SetNonFederated.
   void AddConsumer(Consumer* consumer) override;
 
+  void RemoveConsumer(Consumer* consumer) override;
+
   // Returns State::WAITING if Fetch() was called after any Set* calls, and
   // State::NOT_WAITING otherwise.
   State GetState() const override;

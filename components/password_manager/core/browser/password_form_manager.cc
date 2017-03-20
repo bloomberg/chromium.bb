@@ -247,6 +247,8 @@ PasswordFormManager::PasswordFormManager(
 }
 
 PasswordFormManager::~PasswordFormManager() {
+  form_fetcher_->RemoveConsumer(this);
+
   UMA_HISTOGRAM_ENUMERATION("PasswordManager.ActionsTakenV3", GetActionsTaken(),
                             kMaxNumActionsTaken);
   // Use the visible main frame URL at the time the PasswordFormManager

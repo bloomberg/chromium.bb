@@ -19,6 +19,10 @@ void FakeFormFetcher::AddConsumer(Consumer* consumer) {
   consumers_.insert(consumer);
 }
 
+void FakeFormFetcher::RemoveConsumer(Consumer* consumer) {
+  consumers_.erase(consumer);
+}
+
 FormFetcher::State FakeFormFetcher::GetState() const {
   return state_;
 }
