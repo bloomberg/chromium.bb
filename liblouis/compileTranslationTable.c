@@ -5498,7 +5498,9 @@ lou_getEmphClasses(const char* tableList)
     unsigned int size = count * sizeof(names[0]);
     char const* * result = malloc(size);
     if (!result) return NULL;
-    memcpy(result, names, size);
+    /* The void* cast is necessary to stop MSVC from warning about
+     * different 'const' qualifiers (C4090). */
+    memcpy((void*)result, names, size);
     return result;
   }
 }
