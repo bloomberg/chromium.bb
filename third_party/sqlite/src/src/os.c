@@ -13,9 +13,29 @@
 ** This file contains OS interface code that is common to all
 ** architectures.
 */
-#define _SQLITE_OS_C_ 1
 #include "sqliteInt.h"
-#undef _SQLITE_OS_C_
+
+/*
+** If we compile with the SQLITE_TEST macro set, then the following block
+** of code will give us the ability to simulate a disk I/O error.  This
+** is used for testing the I/O recovery logic.
+*/
+#if defined(SQLITE_TEST)
+int sqlite3_io_error_hit = 0;            /* Total number of I/O Errors */
+int sqlite3_io_error_hardhit = 0;        /* Number of non-benign errors */
+int sqlite3_io_error_pending = 0;        /* Count down to first I/O error */
+int sqlite3_io_error_persist = 0;        /* True if I/O errors persist */
+int sqlite3_io_error_benign = 0;         /* True if errors are benign */
+int sqlite3_diskfull_pending = 0;
+int sqlite3_diskfull = 0;
+#endif /* defined(SQLITE_TEST) */
+
+/*
+** When testing, also keep a count of the number of open files.
+*/
+#if defined(SQLITE_TEST)
+int sqlite3_open_file_count = 0;
+#endif /* defined(SQLITE_TEST) */
 
 /*
 ** The default SQLite sqlite3_vfs implementations do not allocate
@@ -24,7 +44,7 @@
 ** So we test the effects of a malloc() failing and the sqlite3OsXXX()
 ** function returning SQLITE_IOERR_NOMEM using the DO_OS_MALLOC_TEST macro.
 **
-** The following functions are instrumented for malloc() failure 
+** The following functions are instrumented for malloc() failure
 ** testing:
 **
 **     sqlite3OsRead()
@@ -44,9 +64,9 @@
 #if defined(SQLITE_TEST)
 int sqlite3_memdebug_vfs_oom_test = 1;
   #define DO_OS_MALLOC_TEST(x)                                       \
-  if (sqlite3_memdebug_vfs_oom_test && (!x || !sqlite3IsMemJournal(x))) {  \
+  if (sqlite3_memdebug_vfs_oom_test && (!x || !sqlite3JournalIsInMemory(x))) { \
     void *pTstAlloc = sqlite3Malloc(10);                             \
-    if (!pTstAlloc) return SQLITE_IOERR_NOMEM;                       \
+    if (!pTstAlloc) return SQLITE_IOERR_NOMEM_BKPT;                  \
     sqlite3_free(pTstAlloc);                                         \
   }
 #else
@@ -59,13 +79,11 @@ int sqlite3_memdebug_vfs_oom_test = 1;
 ** of this would be completely automatic if SQLite were coded using
 ** C++ instead of plain old C.
 */
-int sqlite3OsClose(sqlite3_file *pId){
-  int rc = SQLITE_OK;
+void sqlite3OsClose(sqlite3_file *pId){
   if( pId->pMethods ){
-    rc = pId->pMethods->xClose(pId);
+    pId->pMethods->xClose(pId);
     pId->pMethods = 0;
   }
-  return rc;
 }
 int sqlite3OsRead(sqlite3_file *id, void *pBuf, int amt, i64 offset){
   DO_OS_MALLOC_TEST(id);
@@ -110,8 +128,8 @@ int sqlite3OsFileControl(sqlite3_file *id, int op, void *pArg){
 #ifdef SQLITE_TEST
   if( op!=SQLITE_FCNTL_COMMIT_PHASETWO ){
     /* Faults are not injected into COMMIT_PHASETWO because, assuming SQLite
-    ** is using a regular VFS, it is called after the corresponding 
-    ** transaction has been committed. Injecting a fault at this point 
+    ** is using a regular VFS, it is called after the corresponding
+    ** transaction has been committed. Injecting a fault at this point
     ** confuses the test scripts - the COMMIT comand returns SQLITE_NOMEM
     ** but the transaction is committed anyway.
     **
@@ -180,10 +198,10 @@ int sqlite3OsUnfetch(sqlite3_file *id, i64 iOff, void *p){
 ** VFS methods.
 */
 int sqlite3OsOpen(
-  sqlite3_vfs *pVfs, 
-  const char *zPath, 
-  sqlite3_file *pFile, 
-  int flags, 
+  sqlite3_vfs *pVfs,
+  const char *zPath,
+  sqlite3_file *pFile,
+  int flags,
   int *pFlagsOut
 ){
   int rc;
@@ -202,18 +220,18 @@ int sqlite3OsDelete(sqlite3_vfs *pVfs, const char *zPath, int dirSync){
   return pVfs->xDelete(pVfs, zPath, dirSync);
 }
 int sqlite3OsAccess(
-  sqlite3_vfs *pVfs, 
-  const char *zPath, 
-  int flags, 
+  sqlite3_vfs *pVfs,
+  const char *zPath,
+  int flags,
   int *pResOut
 ){
   DO_OS_MALLOC_TEST(0);
   return pVfs->xAccess(pVfs, zPath, flags, pResOut);
 }
 int sqlite3OsFullPathname(
-  sqlite3_vfs *pVfs, 
-  const char *zPath, 
-  int nPathOut, 
+  sqlite3_vfs *pVfs,
+  const char *zPath,
+  int nPathOut,
   char *zPathOut
 ){
   DO_OS_MALLOC_TEST(0);
@@ -240,6 +258,9 @@ int sqlite3OsRandomness(sqlite3_vfs *pVfs, int nByte, char *zBufOut){
 int sqlite3OsSleep(sqlite3_vfs *pVfs, int nMicro){
   return pVfs->xSleep(pVfs, nMicro);
 }
+int sqlite3OsGetLastError(sqlite3_vfs *pVfs){
+  return pVfs->xGetLastError ? pVfs->xGetLastError(pVfs, 0, 0) : 0;
+}
 int sqlite3OsCurrentTimeInt64(sqlite3_vfs *pVfs, sqlite3_int64 *pTimeOut){
   int rc;
   /* IMPLEMENTATION-OF: R-49045-42493 SQLite will use the xCurrentTimeInt64()
@@ -259,13 +280,13 @@ int sqlite3OsCurrentTimeInt64(sqlite3_vfs *pVfs, sqlite3_int64 *pTimeOut){
 }
 
 int sqlite3OsOpenMalloc(
-  sqlite3_vfs *pVfs, 
-  const char *zFile, 
-  sqlite3_file **ppFile, 
+  sqlite3_vfs *pVfs,
+  const char *zFile,
+  sqlite3_file **ppFile,
   int flags,
   int *pOutFlags
 ){
-  int rc = SQLITE_NOMEM;
+  int rc;
   sqlite3_file *pFile;
   pFile = (sqlite3_file *)sqlite3MallocZero(pVfs->szOsFile);
   if( pFile ){
@@ -275,15 +296,15 @@ int sqlite3OsOpenMalloc(
     }else{
       *ppFile = pFile;
     }
+  }else{
+    rc = SQLITE_NOMEM_BKPT;
   }
   return rc;
 }
-int sqlite3OsCloseFree(sqlite3_file *pFile){
-  int rc = SQLITE_OK;
+void sqlite3OsCloseFree(sqlite3_file *pFile){
   assert( pFile );
-  rc = sqlite3OsClose(pFile);
+  sqlite3OsClose(pFile);
   sqlite3_free(pFile);
-  return rc;
 }
 
 /*
@@ -294,7 +315,7 @@ int sqlite3OsCloseFree(sqlite3_file *pFile){
 */
 int sqlite3OsInit(void){
   void *p = sqlite3_malloc(10);
-  if( p==0 ) return SQLITE_NOMEM;
+  if( p==0 ) return SQLITE_NOMEM_BKPT;
   sqlite3_free(p);
   return sqlite3_os_init();
 }

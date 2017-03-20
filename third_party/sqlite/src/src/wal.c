@@ -445,6 +445,7 @@ struct Wal {
   u8 padToSectorBoundary;    /* Pad transactions out to the next sector */
   WalIndexHdr hdr;           /* Wal-index header for current transaction */
   u32 minFrame;              /* Ignore wal frames before this one */
+  u32 iReCksum;              /* On commit, recalculate checksums from here */
   const char *zWalName;      /* Name of WAL file */
   u32 nCkpt;                 /* Checkpoint sequence counter in the wal-header */
 #ifdef SQLITE_DEBUG
@@ -545,7 +546,7 @@ static int walIndexPage(Wal *pWal, int iPage, volatile u32 **ppPage){
     apNew = (volatile u32 **)sqlite3_realloc64((void *)pWal->apWiData, nByte);
     if( !apNew ){
       *ppPage = 0;
-      return SQLITE_NOMEM;
+      return SQLITE_NOMEM_BKPT;
     }
     memset((void*)&apNew[pWal->nWiData], 0,
            sizeof(u32*)*(iPage+1-pWal->nWiData));
@@ -557,7 +558,7 @@ static int walIndexPage(Wal *pWal, int iPage, volatile u32 **ppPage){
   if( pWal->apWiData[iPage]==0 ){
     if( pWal->exclusiveMode==WAL_HEAPMEMORY_MODE ){
       pWal->apWiData[iPage] = (u32 volatile *)sqlite3MallocZero(WALINDEX_PGSZ);
-      if( !pWal->apWiData[iPage] ) rc = SQLITE_NOMEM;
+      if( !pWal->apWiData[iPage] ) rc = SQLITE_NOMEM_BKPT;
     }else{
       rc = sqlite3OsShmMap(pWal->pDbFd, iPage, WALINDEX_PGSZ, 
           pWal->writeLock, (void volatile **)&pWal->apWiData[iPage]
@@ -698,14 +699,18 @@ static void walEncodeFrame(
   assert( WAL_FRAME_HDRSIZE==24 );
   sqlite3Put4byte(&aFrame[0], iPage);
   sqlite3Put4byte(&aFrame[4], nTruncate);
-  memcpy(&aFrame[8], pWal->hdr.aSalt, 8);
+  if( pWal->iReCksum==0 ){
+    memcpy(&aFrame[8], pWal->hdr.aSalt, 8);
 
-  nativeCksum = (pWal->hdr.bigEndCksum==SQLITE_BIGENDIAN);
-  walChecksumBytes(nativeCksum, aFrame, 8, aCksum, aCksum);
-  walChecksumBytes(nativeCksum, aData, pWal->szPage, aCksum, aCksum);
+    nativeCksum = (pWal->hdr.bigEndCksum==SQLITE_BIGENDIAN);
+    walChecksumBytes(nativeCksum, aFrame, 8, aCksum, aCksum);
+    walChecksumBytes(nativeCksum, aData, pWal->szPage, aCksum, aCksum);
 
-  sqlite3Put4byte(&aFrame[16], aCksum[0]);
-  sqlite3Put4byte(&aFrame[20], aCksum[1]);
+    sqlite3Put4byte(&aFrame[16], aCksum[0]);
+    sqlite3Put4byte(&aFrame[20], aCksum[1]);
+  }else{
+    memset(&aFrame[8], 0, 16);
+  }
 }
 
 /*
@@ -1168,7 +1173,7 @@ static int walIndexRecover(Wal *pWal){
     szFrame = szPage + WAL_FRAME_HDRSIZE;
     aFrame = (u8 *)sqlite3_malloc64(szFrame);
     if( !aFrame ){
-      rc = SQLITE_NOMEM;
+      rc = SQLITE_NOMEM_BKPT;
       goto recovery_error;
     }
     aData = &aFrame[WAL_FRAME_HDRSIZE];
@@ -1306,7 +1311,7 @@ int sqlite3WalOpen(
   *ppWal = 0;
   pRet = (Wal*)sqlite3MallocZero(sizeof(Wal) + pVfs->szOsFile);
   if( !pRet ){
-    return SQLITE_NOMEM;
+    return SQLITE_NOMEM_BKPT;
   }
 
   pRet->pVfs = pVfs;
@@ -1570,7 +1575,7 @@ static int walIteratorInit(Wal *pWal, WalIterator **pp){
         + iLast*sizeof(ht_slot);
   p = (WalIterator *)sqlite3_malloc64(nByte);
   if( !p ){
-    return SQLITE_NOMEM;
+    return SQLITE_NOMEM_BKPT;
   }
   memset(p, 0, nByte);
   p->nSegment = nSegment;
@@ -1582,7 +1587,7 @@ static int walIteratorInit(Wal *pWal, WalIterator **pp){
       sizeof(ht_slot) * (iLast>HASHTABLE_NPAGE?HASHTABLE_NPAGE:iLast)
   );
   if( !aTmp ){
-    rc = SQLITE_NOMEM;
+    rc = SQLITE_NOMEM_BKPT;
   }
 
   for(i=0; rc==SQLITE_OK && i<nSegment; i++){
@@ -1718,6 +1723,7 @@ static void walRestartHdr(Wal *pWal, u32 salt1){
 */
 static int walCheckpoint(
   Wal *pWal,                      /* Wal connection */
+  sqlite3 *db,                    /* Check for interrupts on this handle */
   int eMode,                      /* One of PASSIVE, FULL or RESTART */
   int (*xBusy)(void*),            /* Function to call when busy */
   void *pBusyArg,                 /* Context argument for xBusyHandler */
@@ -1812,6 +1818,10 @@ static int walCheckpoint(
       while( rc==SQLITE_OK && 0==walIteratorNext(pIter, &iDbpage, &iFrame) ){
         i64 iOffset;
         assert( walFramePgno(pWal, iFrame)==iDbpage );
+        if( db->u1.isInterrupted ){
+          rc = db->mallocFailed ? SQLITE_NOMEM_BKPT : SQLITE_INTERRUPT;
+          break;
+        }
         if( iFrame<=nBackfill || iFrame>mxSafeFrame || iDbpage>mxPage ){
           continue;
         }
@@ -1916,6 +1926,7 @@ static void walLimitSize(Wal *pWal, i64 nMax){
 */
 int sqlite3WalClose(
   Wal *pWal,                      /* Wal to close */
+  sqlite3 *db,                    /* For interrupt flag */
   int sync_flags,                 /* Flags to pass to OsSync() (or 0) */
   int nBuf,
   u8 *zBuf                        /* Buffer of at least nBuf bytes */
@@ -1932,13 +1943,14 @@ int sqlite3WalClose(
     **
     ** The EXCLUSIVE lock is not released before returning.
     */
-    rc = sqlite3OsLock(pWal->pDbFd, SQLITE_LOCK_EXCLUSIVE);
-    if( rc==SQLITE_OK ){
+    if( zBuf!=0
+     && SQLITE_OK==(rc = sqlite3OsLock(pWal->pDbFd, SQLITE_LOCK_EXCLUSIVE))
+    ){
       if( pWal->exclusiveMode==WAL_NORMAL_MODE ){
         pWal->exclusiveMode = WAL_EXCLUSIVE_MODE;
       }
-      rc = sqlite3WalCheckpoint(
-          pWal, SQLITE_CHECKPOINT_PASSIVE, 0, 0, sync_flags, nBuf, zBuf, 0, 0
+      rc = sqlite3WalCheckpoint(pWal, db, 
+          SQLITE_CHECKPOINT_PASSIVE, 0, 0, sync_flags, nBuf, zBuf, 0, 0
       );
       if( rc==SQLITE_OK ){
         int bPersist = -1;
@@ -2367,6 +2379,84 @@ static int walTryBeginRead(Wal *pWal, int *pChanged, int useWal, int cnt){
   return rc;
 }
 
+#ifdef SQLITE_ENABLE_SNAPSHOT
+/*
+** Attempt to reduce the value of the WalCkptInfo.nBackfillAttempted 
+** variable so that older snapshots can be accessed. To do this, loop
+** through all wal frames from nBackfillAttempted to (nBackfill+1), 
+** comparing their content to the corresponding page with the database
+** file, if any. Set nBackfillAttempted to the frame number of the
+** first frame for which the wal file content matches the db file.
+**
+** This is only really safe if the file-system is such that any page 
+** writes made by earlier checkpointers were atomic operations, which 
+** is not always true. It is also possible that nBackfillAttempted
+** may be left set to a value larger than expected, if a wal frame
+** contains content that duplicate of an earlier version of the same
+** page.
+**
+** SQLITE_OK is returned if successful, or an SQLite error code if an
+** error occurs. It is not an error if nBackfillAttempted cannot be
+** decreased at all.
+*/
+int sqlite3WalSnapshotRecover(Wal *pWal){
+  int rc;
+
+  assert( pWal->readLock>=0 );
+  rc = walLockExclusive(pWal, WAL_CKPT_LOCK, 1);
+  if( rc==SQLITE_OK ){
+    volatile WalCkptInfo *pInfo = walCkptInfo(pWal);
+    int szPage = (int)pWal->szPage;
+    i64 szDb;                   /* Size of db file in bytes */
+
+    rc = sqlite3OsFileSize(pWal->pDbFd, &szDb);
+    if( rc==SQLITE_OK ){
+      void *pBuf1 = sqlite3_malloc(szPage);
+      void *pBuf2 = sqlite3_malloc(szPage);
+      if( pBuf1==0 || pBuf2==0 ){
+        rc = SQLITE_NOMEM;
+      }else{
+        u32 i = pInfo->nBackfillAttempted;
+        for(i=pInfo->nBackfillAttempted; i>pInfo->nBackfill; i--){
+          volatile ht_slot *dummy;
+          volatile u32 *aPgno;      /* Array of page numbers */
+          u32 iZero;                /* Frame corresponding to aPgno[0] */
+          u32 pgno;                 /* Page number in db file */
+          i64 iDbOff;               /* Offset of db file entry */
+          i64 iWalOff;              /* Offset of wal file entry */
+
+          rc = walHashGet(pWal, walFramePage(i), &dummy, &aPgno, &iZero);
+          if( rc!=SQLITE_OK ) break;
+          pgno = aPgno[i-iZero];
+          iDbOff = (i64)(pgno-1) * szPage;
+
+          if( iDbOff+szPage<=szDb ){
+            iWalOff = walFrameOffset(i, szPage) + WAL_FRAME_HDRSIZE;
+            rc = sqlite3OsRead(pWal->pWalFd, pBuf1, szPage, iWalOff);
+
+            if( rc==SQLITE_OK ){
+              rc = sqlite3OsRead(pWal->pDbFd, pBuf2, szPage, iDbOff);
+            }
+
+            if( rc!=SQLITE_OK || 0==memcmp(pBuf1, pBuf2, szPage) ){
+              break;
+            }
+          }
+
+          pInfo->nBackfillAttempted = i-1;
+        }
+      }
+
+      sqlite3_free(pBuf1);
+      sqlite3_free(pBuf2);
+    }
+    walUnlockExclusive(pWal, WAL_CKPT_LOCK, 1);
+  }
+
+  return rc;
+}
+#endif /* SQLITE_ENABLE_SNAPSHOT */
+
 /*
 ** Begin a read transaction on the database.
 **
@@ -2429,7 +2519,11 @@ int sqlite3WalBeginReadTransaction(Wal *pWal, int *pChanged){
       ** has not yet set the pInfo->nBackfillAttempted variable to indicate 
       ** its intent. To avoid the race condition this leads to, ensure that
       ** there is no checkpointer process by taking a shared CKPT lock 
-      ** before checking pInfo->nBackfillAttempted.  */
+      ** before checking pInfo->nBackfillAttempted.  
+      **
+      ** TODO: Does the aReadMark[] lock prevent a checkpointer from doing
+      **       this already?
+      */
       rc = walLockShared(pWal, WAL_CKPT_LOCK);
 
       if( rc==SQLITE_OK ){
@@ -2632,6 +2726,7 @@ int sqlite3WalBeginWriteTransaction(Wal *pWal){
   /* Cannot start a write transaction without first holding a read
   ** transaction. */
   assert( pWal->readLock>=0 );
+  assert( pWal->writeLock==0 && pWal->iReCksum==0 );
 
   if( pWal->readOnly ){
     return SQLITE_READONLY;
@@ -2667,6 +2762,7 @@ int sqlite3WalEndWriteTransaction(Wal *pWal){
   if( pWal->writeLock ){
     walUnlockExclusive(pWal, WAL_WRITE_LOCK, 1);
     pWal->writeLock = 0;
+    pWal->iReCksum = 0;
     pWal->truncateOnCommit = 0;
   }
   return SQLITE_OK;
@@ -2873,7 +2969,7 @@ static int walWriteOneFrame(
   void *pData;                    /* Data actually written */
   u8 aFrame[WAL_FRAME_HDRSIZE];   /* Buffer to assemble frame-header in */
 #if defined(SQLITE_HAS_CODEC)
-  if( (pData = sqlite3PagerCodec(pPage))==0 ) return SQLITE_NOMEM;
+  if( (pData = sqlite3PagerCodec(pPage))==0 ) return SQLITE_NOMEM_BKPT;
 #else
   pData = pPage->pData;
 #endif
@@ -2882,6 +2978,59 @@ static int walWriteOneFrame(
   if( rc ) return rc;
   /* Write the page data */
   rc = walWriteToLog(p, pData, p->szPage, iOffset+sizeof(aFrame));
+  return rc;
+}
+
+/*
+** This function is called as part of committing a transaction within which
+** one or more frames have been overwritten. It updates the checksums for
+** all frames written to the wal file by the current transaction starting
+** with the earliest to have been overwritten.
+**
+** SQLITE_OK is returned if successful, or an SQLite error code otherwise.
+*/
+static int walRewriteChecksums(Wal *pWal, u32 iLast){
+  const int szPage = pWal->szPage;/* Database page size */
+  int rc = SQLITE_OK;             /* Return code */
+  u8 *aBuf;                       /* Buffer to load data from wal file into */
+  u8 aFrame[WAL_FRAME_HDRSIZE];   /* Buffer to assemble frame-headers in */
+  u32 iRead;                      /* Next frame to read from wal file */
+  i64 iCksumOff;
+
+  aBuf = sqlite3_malloc(szPage + WAL_FRAME_HDRSIZE);
+  if( aBuf==0 ) return SQLITE_NOMEM_BKPT;
+
+  /* Find the checksum values to use as input for the recalculating the
+  ** first checksum. If the first frame is frame 1 (implying that the current
+  ** transaction restarted the wal file), these values must be read from the
+  ** wal-file header. Otherwise, read them from the frame header of the
+  ** previous frame.  */
+  assert( pWal->iReCksum>0 );
+  if( pWal->iReCksum==1 ){
+    iCksumOff = 24;
+  }else{
+    iCksumOff = walFrameOffset(pWal->iReCksum-1, szPage) + 16;
+  }
+  rc = sqlite3OsRead(pWal->pWalFd, aBuf, sizeof(u32)*2, iCksumOff);
+  pWal->hdr.aFrameCksum[0] = sqlite3Get4byte(aBuf);
+  pWal->hdr.aFrameCksum[1] = sqlite3Get4byte(&aBuf[sizeof(u32)]);
+
+  iRead = pWal->iReCksum;
+  pWal->iReCksum = 0;
+  for(; rc==SQLITE_OK && iRead<=iLast; iRead++){
+    i64 iOff = walFrameOffset(iRead, szPage);
+    rc = sqlite3OsRead(pWal->pWalFd, aBuf, szPage+WAL_FRAME_HDRSIZE, iOff);
+    if( rc==SQLITE_OK ){
+      u32 iPgno, nDbSize;
+      iPgno = sqlite3Get4byte(aBuf);
+      nDbSize = sqlite3Get4byte(&aBuf[4]);
+
+      walEncodeFrame(pWal, iPgno, nDbSize, &aBuf[WAL_FRAME_HDRSIZE], aFrame);
+      rc = sqlite3OsWrite(pWal->pWalFd, aFrame, sizeof(aFrame), iOff);
+    }
+  }
+
+  sqlite3_free(aBuf);
   return rc;
 }
 
@@ -2905,6 +3054,8 @@ int sqlite3WalFrames(
   int szFrame;                    /* The size of a single frame */
   i64 iOffset;                    /* Next byte to write in WAL file */
   WalWriter w;                    /* The writer */
+  u32 iFirst = 0;                 /* First frame that may be overwritten */
+  WalIndexHdr *pLive;             /* Pointer to shared header */
 
   assert( pList );
   assert( pWal->writeLock );
@@ -2919,6 +3070,11 @@ int sqlite3WalFrames(
               pWal, cnt, pWal->hdr.mxFrame, isCommit ? "Commit" : "Spill"));
   }
 #endif
+
+  pLive = (WalIndexHdr*)walIndexHdr(pWal);
+  if( memcmp(&pWal->hdr, (void *)pLive, sizeof(WalIndexHdr))!=0 ){
+    iFirst = pLive->mxFrame+1;
+  }
 
   /* See if it is possible to write these frames into the start of the
   ** log file, instead of appending to it at pWal->hdr.mxFrame.
@@ -2984,6 +3140,33 @@ int sqlite3WalFrames(
   /* Write all frames into the log file exactly once */
   for(p=pList; p; p=p->pDirty){
     int nDbSize;   /* 0 normally.  Positive == commit flag */
+
+    /* Check if this page has already been written into the wal file by
+    ** the current transaction. If so, overwrite the existing frame and
+    ** set Wal.writeLock to WAL_WRITELOCK_RECKSUM - indicating that 
+    ** checksums must be recomputed when the transaction is committed.  */
+    if( iFirst && (p->pDirty || isCommit==0) ){
+      u32 iWrite = 0;
+      VVA_ONLY(rc =) sqlite3WalFindFrame(pWal, p->pgno, &iWrite);
+      assert( rc==SQLITE_OK || iWrite==0 );
+      if( iWrite>=iFirst ){
+        i64 iOff = walFrameOffset(iWrite, szPage) + WAL_FRAME_HDRSIZE;
+        void *pData;
+        if( pWal->iReCksum==0 || iWrite<pWal->iReCksum ){
+          pWal->iReCksum = iWrite;
+        }
+#if defined(SQLITE_HAS_CODEC)
+        if( (pData = sqlite3PagerCodec(p))==0 ) return SQLITE_NOMEM;
+#else
+        pData = p->pData;
+#endif
+        rc = sqlite3OsWrite(pWal->pWalFd, pData, szPage, iOff);
+        if( rc ) return rc;
+        p->flags &= ~PGHDR_WAL_APPEND;
+        continue;
+      }
+    }
+
     iFrame++;
     assert( iOffset==walFrameOffset(iFrame, szPage) );
     nDbSize = (isCommit && p->pDirty==0) ? nTruncate : 0;
@@ -2991,6 +3174,13 @@ int sqlite3WalFrames(
     if( rc ) return rc;
     pLast = p;
     iOffset += szFrame;
+    p->flags |= PGHDR_WAL_APPEND;
+  }
+
+  /* Recalculate checksums within the wal file if required. */
+  if( isCommit && pWal->iReCksum ){
+    rc = walRewriteChecksums(pWal, iFrame);
+    if( rc ) return rc;
   }
 
   /* If this is the end of a transaction, then we might need to pad
@@ -3008,16 +3198,21 @@ int sqlite3WalFrames(
   ** past the sector boundary is written after the sync.
   */
   if( isCommit && (sync_flags & WAL_SYNC_TRANSACTIONS)!=0 ){
+    int bSync = 1;
     if( pWal->padToSectorBoundary ){
       int sectorSize = sqlite3SectorSize(pWal->pWalFd);
       w.iSyncPoint = ((iOffset+sectorSize-1)/sectorSize)*sectorSize;
+      bSync = (w.iSyncPoint==iOffset);
+      testcase( bSync );
       while( iOffset<w.iSyncPoint ){
         rc = walWriteOneFrame(&w, pLast, nTruncate, iOffset);
         if( rc ) return rc;
         iOffset += szFrame;
         nExtra++;
       }
-    }else{
+    }
+    if( bSync ){
+      assert( rc==SQLITE_OK );
       rc = sqlite3OsSync(w.pFd, sync_flags & SQLITE_SYNC_MASK);
     }
   }
@@ -3042,6 +3237,7 @@ int sqlite3WalFrames(
   */
   iFrame = pWal->hdr.mxFrame;
   for(p=pList; p && rc==SQLITE_OK; p=p->pDirty){
+    if( (p->flags & PGHDR_WAL_APPEND)==0 ) continue;
     iFrame++;
     rc = walIndexAppend(pWal, iFrame, p->pgno);
   }
@@ -3084,6 +3280,7 @@ int sqlite3WalFrames(
 */
 int sqlite3WalCheckpoint(
   Wal *pWal,                      /* Wal connection */
+  sqlite3 *db,                    /* Check this handle's interrupt flag */
   int eMode,                      /* PASSIVE, FULL, RESTART, or TRUNCATE */
   int (*xBusy)(void*),            /* Function to call when busy */
   void *pBusyArg,                 /* Context argument for xBusyHandler */
@@ -3154,10 +3351,11 @@ int sqlite3WalCheckpoint(
 
   /* Copy data from the log to the database file. */
   if( rc==SQLITE_OK ){
+
     if( pWal->hdr.mxFrame && walPagesize(pWal)!=nBuf ){
       rc = SQLITE_CORRUPT_BKPT;
     }else{
-      rc = walCheckpoint(pWal, eMode2, xBusy2, pBusyArg, sync_flags, zBuf);
+      rc = walCheckpoint(pWal, db, eMode2, xBusy2, pBusyArg, sync_flags, zBuf);
     }
 
     /* If no error occurred, set the output variables. */
@@ -3277,12 +3475,17 @@ int sqlite3WalHeapMemory(Wal *pWal){
 int sqlite3WalSnapshotGet(Wal *pWal, sqlite3_snapshot **ppSnapshot){
   int rc = SQLITE_OK;
   WalIndexHdr *pRet;
+  static const u32 aZero[4] = { 0, 0, 0, 0 };
 
   assert( pWal->readLock>=0 && pWal->writeLock==0 );
 
+  if( memcmp(&pWal->hdr.aFrameCksum[0],aZero,16)==0 ){
+    *ppSnapshot = 0;
+    return SQLITE_ERROR;
+  }
   pRet = (WalIndexHdr*)sqlite3_malloc(sizeof(WalIndexHdr));
   if( pRet==0 ){
-    rc = SQLITE_NOMEM;
+    rc = SQLITE_NOMEM_BKPT;
   }else{
     memcpy(pRet, &pWal->hdr, sizeof(WalIndexHdr));
     *ppSnapshot = (sqlite3_snapshot*)pRet;
@@ -3295,6 +3498,23 @@ int sqlite3WalSnapshotGet(Wal *pWal, sqlite3_snapshot **ppSnapshot){
 */
 void sqlite3WalSnapshotOpen(Wal *pWal, sqlite3_snapshot *pSnapshot){
   pWal->pSnapshot = (WalIndexHdr*)pSnapshot;
+}
+
+/* 
+** Return a +ve value if snapshot p1 is newer than p2. A -ve value if
+** p1 is older than p2 and zero if p1 and p2 are the same snapshot.
+*/
+int sqlite3_snapshot_cmp(sqlite3_snapshot *p1, sqlite3_snapshot *p2){
+  WalIndexHdr *pHdr1 = (WalIndexHdr*)p1;
+  WalIndexHdr *pHdr2 = (WalIndexHdr*)p2;
+
+  /* aSalt[0] is a copy of the value stored in the wal file header. It
+  ** is incremented each time the wal file is restarted.  */
+  if( pHdr1->aSalt[0]<pHdr2->aSalt[0] ) return -1;
+  if( pHdr1->aSalt[0]>pHdr2->aSalt[0] ) return +1;
+  if( pHdr1->mxFrame<pHdr2->mxFrame ) return -1;
+  if( pHdr1->mxFrame>pHdr2->mxFrame ) return +1;
+  return 0;
 }
 #endif /* SQLITE_ENABLE_SNAPSHOT */
 

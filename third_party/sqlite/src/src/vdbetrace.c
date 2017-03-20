@@ -81,10 +81,13 @@ char *sqlite3VdbeExpandSql(
   int i;                   /* Loop counter */
   Mem *pVar;               /* Value of a host parameter */
   StrAccum out;            /* Accumulate the output here */
+#ifndef SQLITE_OMIT_UTF16
+  Mem utf8;                /* Used to convert UTF16 parameters into UTF8 for display */
+#endif
   char zBase[100];         /* Initial working space */
 
   db = p->db;
-  sqlite3StrAccumInit(&out, db, zBase, sizeof(zBase), 
+  sqlite3StrAccumInit(&out, 0, zBase, sizeof(zBase), 
                       db->aLimit[SQLITE_LIMIT_LENGTH]);
   if( db->nVdbeExec>1 ){
     while( *zRawSql ){
@@ -128,19 +131,21 @@ char *sqlite3VdbeExpandSql(
       if( pVar->flags & MEM_Null ){
         sqlite3StrAccumAppend(&out, "NULL", 4);
       }else if( pVar->flags & MEM_Int ){
-        sqlite3XPrintf(&out, 0, "%lld", pVar->u.i);
+        sqlite3XPrintf(&out, "%lld", pVar->u.i);
       }else if( pVar->flags & MEM_Real ){
-        sqlite3XPrintf(&out, 0, "%!.15g", pVar->u.r);
+        sqlite3XPrintf(&out, "%!.15g", pVar->u.r);
       }else if( pVar->flags & MEM_Str ){
         int nOut;  /* Number of bytes of the string text to include in output */
 #ifndef SQLITE_OMIT_UTF16
         u8 enc = ENC(db);
-        Mem utf8;
         if( enc!=SQLITE_UTF8 ){
           memset(&utf8, 0, sizeof(utf8));
           utf8.db = db;
           sqlite3VdbeMemSetStr(&utf8, pVar->z, pVar->n, enc, SQLITE_STATIC);
-          sqlite3VdbeChangeEncoding(&utf8, SQLITE_UTF8);
+          if( SQLITE_NOMEM==sqlite3VdbeChangeEncoding(&utf8, SQLITE_UTF8) ){
+            out.accError = STRACCUM_NOMEM;
+            out.nAlloc = 0;
+          }
           pVar = &utf8;
         }
 #endif
@@ -151,17 +156,17 @@ char *sqlite3VdbeExpandSql(
           while( nOut<pVar->n && (pVar->z[nOut]&0xc0)==0x80 ){ nOut++; }
         }
 #endif    
-        sqlite3XPrintf(&out, 0, "'%.*q'", nOut, pVar->z);
+        sqlite3XPrintf(&out, "'%.*q'", nOut, pVar->z);
 #ifdef SQLITE_TRACE_SIZE_LIMIT
         if( nOut<pVar->n ){
-          sqlite3XPrintf(&out, 0, "/*+%d bytes*/", pVar->n-nOut);
+          sqlite3XPrintf(&out, "/*+%d bytes*/", pVar->n-nOut);
         }
 #endif
 #ifndef SQLITE_OMIT_UTF16
         if( enc!=SQLITE_UTF8 ) sqlite3VdbeMemRelease(&utf8);
 #endif
       }else if( pVar->flags & MEM_Zero ){
-        sqlite3XPrintf(&out, 0, "zeroblob(%d)", pVar->u.nZero);
+        sqlite3XPrintf(&out, "zeroblob(%d)", pVar->u.nZero);
       }else{
         int nOut;  /* Number of bytes of the blob to include in output */
         assert( pVar->flags & MEM_Blob );
@@ -171,17 +176,18 @@ char *sqlite3VdbeExpandSql(
         if( nOut>SQLITE_TRACE_SIZE_LIMIT ) nOut = SQLITE_TRACE_SIZE_LIMIT;
 #endif
         for(i=0; i<nOut; i++){
-          sqlite3XPrintf(&out, 0, "%02x", pVar->z[i]&0xff);
+          sqlite3XPrintf(&out, "%02x", pVar->z[i]&0xff);
         }
         sqlite3StrAccumAppend(&out, "'", 1);
 #ifdef SQLITE_TRACE_SIZE_LIMIT
         if( nOut<pVar->n ){
-          sqlite3XPrintf(&out, 0, "/*+%d bytes*/", pVar->n-nOut);
+          sqlite3XPrintf(&out, "/*+%d bytes*/", pVar->n-nOut);
         }
 #endif
       }
     }
   }
+  if( out.accError ) sqlite3StrAccumReset(&out);
   return sqlite3StrAccumFinish(&out);
 }
 

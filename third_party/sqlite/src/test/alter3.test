@@ -270,7 +270,7 @@ ifcapable attach {
   if {!$has_codec} {
     do_test alter3-5.5 {
       list [get_file_format test2.db] [get_file_format]
-    } {2 3}
+    } {3 3}
   }
   do_test alter3-5.6 {
     execsql {
@@ -347,7 +347,7 @@ if {!$has_codec} {
         ALTER TABLE abc ADD d DEFAULT NULL;
       }
       get_file_format
-    } {2}
+    } {3}
     do_test alter3-7.3 {
       execsql {
         ALTER TABLE abc ADD e DEFAULT 10;

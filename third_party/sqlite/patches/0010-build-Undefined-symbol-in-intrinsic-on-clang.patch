@@ -1,0 +1,36 @@
+From 0233385c56d2b900b6f709a1af07d399285445a2 Mon Sep 17 00:00:00 2001
+From: Scott Hess <shess@chromium.org>
+Date: Tue, 14 Mar 2017 13:51:07 -0700
+Subject: [PATCH 10/10] [build] Undefined symbol in intrinsic on clang.
+
+SQLite implements sqlite3MulInt64() using __builtin_mul_overflow() for
+appropriate versions of GCC or clang.  But the Chromium clang package
+doesn't seem to provide the necessary library for Android or Linux i386.
+
+BUG=701524
+---
+ third_party/sqlite/src/src/util.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/third_party/sqlite/src/src/util.c b/third_party/sqlite/src/src/util.c
+index c6d2bae3a7b4..0a76ddec683d 100644
+--- a/third_party/sqlite/src/src/util.c
++++ b/third_party/sqlite/src/src/util.c
+@@ -1310,7 +1310,13 @@ int sqlite3SubInt64(i64 *pA, i64 iB){
+ #endif
+ }
+ int sqlite3MulInt64(i64 *pA, i64 iB){
+-#if GCC_VERSION>=5004000 || CLANG_VERSION>=4000000
++/* TODO(shess): Chromium Android clang generates a link error:
++**   undefined reference to '__mulodi4'
++** UPDATE(shess): Also, apparently, 32-bit Linux clang.
++*/
++#if GCC_VERSION>=5004000 || \
++    (CLANG_VERSION>=4000000 && !defined(__ANDROID__) && \
++     (!defined(__linux__) || !defined(__i386__)))
+   return __builtin_mul_overflow(*pA, iB, pA);
+ #else
+   i64 iA = *pA;
+-- 
+2.11.0
+

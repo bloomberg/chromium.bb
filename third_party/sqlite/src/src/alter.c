@@ -229,7 +229,7 @@ static void renameTriggerFunc(
 ** Register built-in functions used to help implement ALTER TABLE
 */
 void sqlite3AlterFunctions(void){
-  static SQLITE_WSD FuncDef aAlterTableFuncs[] = {
+  static FuncDef aAlterTableFuncs[] = {
     FUNCTION(sqlite_rename_table,   2, 0, 0, renameTableFunc),
 #ifndef SQLITE_OMIT_TRIGGER
     FUNCTION(sqlite_rename_trigger, 2, 0, 0, renameTriggerFunc),
@@ -238,13 +238,7 @@ void sqlite3AlterFunctions(void){
     FUNCTION(sqlite_rename_parent,  3, 0, 0, renameParentFunc),
 #endif
   };
-  int i;
-  FuncDefHash *pHash = &GLOBAL(FuncDefHash, sqlite3GlobalFunctions);
-  FuncDef *aFunc = (FuncDef*)&GLOBAL(FuncDef, aAlterTableFuncs);
-
-  for(i=0; i<ArraySize(aAlterTableFuncs); i++){
-    sqlite3FuncDefInsert(pHash, &aFunc[i]);
-  }
+  sqlite3InsertBuiltinFuncs(aAlterTableFuncs, ArraySize(aAlterTableFuncs));
 }
 
 /*
@@ -419,7 +413,7 @@ void sqlite3AlterRenameTable(
   pTab = sqlite3LocateTableItem(pParse, 0, &pSrc->a[0]);
   if( !pTab ) goto exit_rename_table;
   iDb = sqlite3SchemaToIndex(pParse->db, pTab->pSchema);
-  zDb = db->aDb[iDb].zName;
+  zDb = db->aDb[iDb].zDbSName;
   db->flags |= SQLITE_PreferBuiltin;
 
   /* Get a NULL terminated version of the new table name. */
@@ -510,7 +504,7 @@ void sqlite3AlterRenameTable(
       sqlite3NestedParse(pParse, 
           "UPDATE \"%w\".%s SET "
               "sql = sqlite_rename_parent(sql, %Q, %Q) "
-              "WHERE %s;", zDb, SCHEMA_TABLE(iDb), zTabName, zName, zWhere);
+              "WHERE %s;", zDb, MASTER_NAME, zTabName, zName, zWhere);
       sqlite3DbFree(db, zWhere);
     }
   }
@@ -534,7 +528,7 @@ void sqlite3AlterRenameTable(
             "ELSE name END "
       "WHERE tbl_name=%Q COLLATE nocase AND "
           "(type='table' OR type='index' OR type='trigger');", 
-      zDb, SCHEMA_TABLE(iDb), zName, zName, zName, 
+      zDb, MASTER_NAME, zName, zName, zName, 
 #ifndef SQLITE_OMIT_TRIGGER
       zName,
 #endif
@@ -588,33 +582,6 @@ exit_rename_table:
   db->flags = savedDbFlags;
 }
 
-
-/*
-** Generate code to make sure the file format number is at least minFormat.
-** The generated code will increase the file format number if necessary.
-*/
-void sqlite3MinimumFileFormat(Parse *pParse, int iDb, int minFormat){
-  Vdbe *v;
-  v = sqlite3GetVdbe(pParse);
-  /* The VDBE should have been allocated before this routine is called.
-  ** If that allocation failed, we would have quit before reaching this
-  ** point */
-  if( ALWAYS(v) ){
-    int r1 = sqlite3GetTempReg(pParse);
-    int r2 = sqlite3GetTempReg(pParse);
-    int addr1;
-    sqlite3VdbeAddOp3(v, OP_ReadCookie, iDb, r1, BTREE_FILE_FORMAT);
-    sqlite3VdbeUsesBtree(v, iDb);
-    sqlite3VdbeAddOp2(v, OP_Integer, minFormat, r2);
-    addr1 = sqlite3VdbeAddOp3(v, OP_Ge, r2, 0, r1);
-    sqlite3VdbeChangeP5(v, SQLITE_NOTNULL); VdbeCoverage(v);
-    sqlite3VdbeAddOp3(v, OP_SetCookie, iDb, BTREE_FILE_FORMAT, r2);
-    sqlite3VdbeJumpHere(v, addr1);
-    sqlite3ReleaseTempReg(pParse, r1);
-    sqlite3ReleaseTempReg(pParse, r2);
-  }
-}
-
 /*
 ** This function is called after an "ALTER TABLE ... ADD" statement
 ** has been parsed. Argument pColDef contains the text of the new
@@ -633,15 +600,18 @@ void sqlite3AlterFinishAddColumn(Parse *pParse, Token *pColDef){
   Column *pCol;             /* The new column */
   Expr *pDflt;              /* Default value for the new column */
   sqlite3 *db;              /* The database connection; */
+  Vdbe *v = pParse->pVdbe;  /* The prepared statement under construction */
+  int r1;                   /* Temporary registers */
 
   db = pParse->db;
   if( pParse->nErr || db->mallocFailed ) return;
+  assert( v!=0 );
   pNew = pParse->pNewTable;
   assert( pNew );
 
   assert( sqlite3BtreeHoldsAllMutexes(db) );
   iDb = sqlite3SchemaToIndex(db, pNew->pSchema);
-  zDb = db->aDb[iDb].zName;
+  zDb = db->aDb[iDb].zDbSName;
   zTab = &pNew->zName[16];  /* Skip the "sqlite_altertab_" prefix on the name */
   pCol = &pNew->aCol[pNew->nCol-1];
   pDflt = pCol->pDflt;
@@ -659,7 +629,8 @@ void sqlite3AlterFinishAddColumn(Parse *pParse, Token *pColDef){
   ** literal NULL, then set pDflt to 0. This simplifies checking
   ** for an SQL NULL default below.
   */
-  if( pDflt && pDflt->op==TK_NULL ){
+  assert( pDflt==0 || pDflt->op==TK_SPAN );
+  if( pDflt && pDflt->pLeft->op==TK_NULL ){
     pDflt = 0;
   }
 
@@ -695,7 +666,7 @@ void sqlite3AlterFinishAddColumn(Parse *pParse, Token *pColDef){
     rc = sqlite3ValueFromExpr(db, pDflt, SQLITE_UTF8, SQLITE_AFF_BLOB, &pVal);
     assert( rc==SQLITE_OK || rc==SQLITE_NOMEM );
     if( rc!=SQLITE_OK ){
-      db->mallocFailed = 1;
+      assert( db->mallocFailed == 1 );
       return;
     }
     if( !pVal ){
@@ -718,18 +689,25 @@ void sqlite3AlterFinishAddColumn(Parse *pParse, Token *pColDef){
         "UPDATE \"%w\".%s SET "
           "sql = substr(sql,1,%d) || ', ' || %Q || substr(sql,%d) "
         "WHERE type = 'table' AND name = %Q", 
-      zDb, SCHEMA_TABLE(iDb), pNew->addColOffset, zCol, pNew->addColOffset+1,
+      zDb, MASTER_NAME, pNew->addColOffset, zCol, pNew->addColOffset+1,
       zTab
     );
     sqlite3DbFree(db, zCol);
     db->flags = savedDbFlags;
   }
 
-  /* If the default value of the new column is NULL, then set the file
-  ** format to 2. If the default value of the new column is not NULL,
-  ** the file format becomes 3.
+  /* Make sure the schema version is at least 3.  But do not upgrade
+  ** from less than 3 to 4, as that will corrupt any preexisting DESC
+  ** index.
   */
-  sqlite3MinimumFileFormat(pParse, iDb, pDflt ? 3 : 2);
+  r1 = sqlite3GetTempReg(pParse);
+  sqlite3VdbeAddOp3(v, OP_ReadCookie, iDb, r1, BTREE_FILE_FORMAT);
+  sqlite3VdbeUsesBtree(v, iDb);
+  sqlite3VdbeAddOp2(v, OP_AddImm, r1, -2);
+  sqlite3VdbeAddOp2(v, OP_IfPos, r1, sqlite3VdbeCurrentAddr(v)+2);
+  VdbeCoverage(v);
+  sqlite3VdbeAddOp3(v, OP_SetCookie, iDb, BTREE_FILE_FORMAT, 3);
+  sqlite3ReleaseTempReg(pParse, r1);
 
   /* Reload the schema of the modified table. */
   reloadTableSchema(pParse, pTab, pTab->zName);
@@ -795,7 +773,7 @@ void sqlite3AlterBeginAddColumn(Parse *pParse, SrcList *pSrc){
   pNew = (Table*)sqlite3DbMallocZero(db, sizeof(Table));
   if( !pNew ) goto exit_begin_add_column;
   pParse->pNewTable = pNew;
-  pNew->nRef = 1;
+  pNew->nTabRef = 1;
   pNew->nCol = pTab->nCol;
   assert( pNew->nCol>0 );
   nAlloc = (((pNew->nCol-1)/8)*8)+8;
@@ -803,7 +781,7 @@ void sqlite3AlterBeginAddColumn(Parse *pParse, SrcList *pSrc){
   pNew->aCol = (Column*)sqlite3DbMallocZero(db, sizeof(Column)*nAlloc);
   pNew->zName = sqlite3MPrintf(db, "sqlite_altertab_%s", pTab->zName);
   if( !pNew->aCol || !pNew->zName ){
-    db->mallocFailed = 1;
+    assert( db->mallocFailed );
     goto exit_begin_add_column;
   }
   memcpy(pNew->aCol, pTab->aCol, sizeof(Column)*pNew->nCol);
@@ -811,13 +789,11 @@ void sqlite3AlterBeginAddColumn(Parse *pParse, SrcList *pSrc){
     Column *pCol = &pNew->aCol[i];
     pCol->zName = sqlite3DbStrDup(db, pCol->zName);
     pCol->zColl = 0;
-    pCol->zType = 0;
     pCol->pDflt = 0;
-    pCol->zDflt = 0;
   }
   pNew->pSchema = db->aDb[iDb].pSchema;
   pNew->addColOffset = pTab->addColOffset;
-  pNew->nRef = 1;
+  pNew->nTabRef = 1;
 
   /* Begin a transaction and increment the schema cookie.  */
   sqlite3BeginWriteOperation(pParse, 0, iDb);

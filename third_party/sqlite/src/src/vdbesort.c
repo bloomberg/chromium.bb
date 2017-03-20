@@ -540,7 +540,7 @@ static int vdbePmaReadBlob(
       int nNew = MAX(128, p->nAlloc*2);
       while( nByte>nNew ) nNew = nNew*2;
       aNew = sqlite3Realloc(p->aAlloc, nNew);
-      if( !aNew ) return SQLITE_NOMEM;
+      if( !aNew ) return SQLITE_NOMEM_BKPT;
       p->nAlloc = nNew;
       p->aAlloc = aNew;
     }
@@ -652,7 +652,7 @@ static int vdbePmaReaderSeek(
     int iBuf = pReadr->iReadOff % pgsz;
     if( pReadr->aBuffer==0 ){
       pReadr->aBuffer = (u8*)sqlite3Malloc(pgsz);
-      if( pReadr->aBuffer==0 ) rc = SQLITE_NOMEM;
+      if( pReadr->aBuffer==0 ) rc = SQLITE_NOMEM_BKPT;
       pReadr->nBuffer = pgsz;
     }
     if( rc==SQLITE_OK && iBuf ){
@@ -737,7 +737,7 @@ static int vdbePmaReaderInit(
 
   rc = vdbePmaReaderSeek(pTask, pReadr, pFile, iStart);
   if( rc==SQLITE_OK ){
-    u64 nByte;                    /* Size of PMA in bytes */
+    u64 nByte = 0;                 /* Size of PMA in bytes */
     rc = vdbePmaReadVarint(pReadr, &nByte);
     pReadr->iEof = pReadr->iReadOff + nByte;
     *pnByte += nByte;
@@ -931,7 +931,6 @@ int sqlite3VdbeSorterInit(
 ){
   int pgsz;                       /* Page size of main database */
   int i;                          /* Used to iterate through aTask[] */
-  int mxCache;                    /* Cache size */
   VdbeSorter *pSorter;            /* The new sorter */
   KeyInfo *pKeyInfo;              /* Copy of pCsr->pKeyInfo with db==0 */
   int szKeyInfo;                  /* Size of pCsr->pKeyInfo in bytes */
@@ -960,7 +959,7 @@ int sqlite3VdbeSorterInit(
   }
 #endif
 
-  assert( pCsr->pKeyInfo && pCsr->pBt==0 );
+  assert( pCsr->pKeyInfo && pCsr->pBtx==0 );
   assert( pCsr->eCurType==CURTYPE_SORTER );
   szKeyInfo = sizeof(KeyInfo) + (pCsr->pKeyInfo->nField-1)*sizeof(CollSeq*);
   sz = sizeof(VdbeSorter) + nWorker * sizeof(SortSubtask);
@@ -968,7 +967,7 @@ int sqlite3VdbeSorterInit(
   pSorter = (VdbeSorter*)sqlite3DbMallocZero(db, sz + szKeyInfo);
   pCsr->uc.pSorter = pSorter;
   if( pSorter==0 ){
-    rc = SQLITE_NOMEM;
+    rc = SQLITE_NOMEM_BKPT;
   }else{
     pSorter->pKeyInfo = pKeyInfo = (KeyInfo*)((u8*)pSorter + sz);
     memcpy(pKeyInfo, pCsr->pKeyInfo, szKeyInfo);
@@ -988,11 +987,20 @@ int sqlite3VdbeSorterInit(
     }
 
     if( !sqlite3TempInMemory(db) ){
+      i64 mxCache;                /* Cache size in bytes*/
       u32 szPma = sqlite3GlobalConfig.szPma;
       pSorter->mnPmaSize = szPma * pgsz;
+
       mxCache = db->aDb[0].pSchema->cache_size;
-      if( mxCache<(int)szPma ) mxCache = (int)szPma;
-      pSorter->mxPmaSize = MIN((i64)mxCache*pgsz, SQLITE_MAX_PMASZ);
+      if( mxCache<0 ){
+        /* A negative cache-size value C indicates that the cache is abs(C)
+        ** KiB in size.  */
+        mxCache = mxCache * -1024;
+      }else{
+        mxCache = mxCache * pgsz;
+      }
+      mxCache = MIN(mxCache, SQLITE_MAX_PMASZ);
+      pSorter->mxPmaSize = MAX(pSorter->mnPmaSize, (int)mxCache);
 
       /* EVIDENCE-OF: R-26747-61719 When the application provides any amount of
       ** scratch memory using SQLITE_CONFIG_SCRATCH, SQLite avoids unnecessary
@@ -1002,7 +1010,7 @@ int sqlite3VdbeSorterInit(
         assert( pSorter->iMemory==0 );
         pSorter->nMemory = pgsz;
         pSorter->list.aMemory = (u8*)sqlite3Malloc(pgsz);
-        if( !pSorter->list.aMemory ) rc = SQLITE_NOMEM;
+        if( !pSorter->list.aMemory ) rc = SQLITE_NOMEM_BKPT;
       }
     }
 
@@ -1319,12 +1327,8 @@ static int vdbeSorterOpenTempFile(
 */
 static int vdbeSortAllocUnpacked(SortSubtask *pTask){
   if( pTask->pUnpacked==0 ){
-    char *pFree;
-    pTask->pUnpacked = sqlite3VdbeAllocUnpackedRecord(
-        pTask->pSorter->pKeyInfo, 0, 0, &pFree
-    );
-    assert( pTask->pUnpacked==(UnpackedRecord*)pFree );
-    if( pFree==0 ) return SQLITE_NOMEM;
+    pTask->pUnpacked = sqlite3VdbeAllocUnpackedRecord(pTask->pSorter->pKeyInfo);
+    if( pTask->pUnpacked==0 ) return SQLITE_NOMEM_BKPT;
     pTask->pUnpacked->nField = pTask->pSorter->pKeyInfo->nField;
     pTask->pUnpacked->errCode = 0;
   }
@@ -1334,19 +1338,18 @@ static int vdbeSortAllocUnpacked(SortSubtask *pTask){
 
 /*
 ** Merge the two sorted lists p1 and p2 into a single list.
-** Set *ppOut to the head of the new list.
 */
-static void vdbeSorterMerge(
+static SorterRecord *vdbeSorterMerge(
   SortSubtask *pTask,             /* Calling thread context */
   SorterRecord *p1,               /* First list to merge */
-  SorterRecord *p2,               /* Second list to merge */
-  SorterRecord **ppOut            /* OUT: Head of merged list */
+  SorterRecord *p2                /* Second list to merge */
 ){
   SorterRecord *pFinal = 0;
   SorterRecord **pp = &pFinal;
   int bCached = 0;
 
-  while( p1 && p2 ){
+  assert( p1!=0 && p2!=0 );
+  for(;;){
     int res;
     res = pTask->xCompare(
         pTask, &bCached, SRVAL(p1), p1->nVal, SRVAL(p2), p2->nVal
@@ -1356,15 +1359,22 @@ static void vdbeSorterMerge(
       *pp = p1;
       pp = &p1->u.pNext;
       p1 = p1->u.pNext;
+      if( p1==0 ){
+        *pp = p2;
+        break;
+      }
     }else{
       *pp = p2;
       pp = &p2->u.pNext;
       p2 = p2->u.pNext;
       bCached = 0;
+      if( p2==0 ){
+        *pp = p1;
+        break;
+      }
     }
   }
-  *pp = p1 ? p1 : p2;
-  *ppOut = pFinal;
+  return pFinal;
 }
 
 /*
@@ -1399,7 +1409,7 @@ static int vdbeSorterSort(SortSubtask *pTask, SorterList *pList){
 
   aSlot = (SorterRecord **)sqlite3MallocZero(64 * sizeof(SorterRecord *));
   if( !aSlot ){
-    return SQLITE_NOMEM;
+    return SQLITE_NOMEM_BKPT;
   }
 
   while( p ){
@@ -1417,7 +1427,7 @@ static int vdbeSorterSort(SortSubtask *pTask, SorterList *pList){
 
     p->u.pNext = 0;
     for(i=0; aSlot[i]; i++){
-      vdbeSorterMerge(pTask, p, aSlot[i], &p);
+      p = vdbeSorterMerge(pTask, p, aSlot[i]);
       aSlot[i] = 0;
     }
     aSlot[i] = p;
@@ -1426,7 +1436,8 @@ static int vdbeSorterSort(SortSubtask *pTask, SorterList *pList){
 
   p = 0;
   for(i=0; i<64; i++){
-    vdbeSorterMerge(pTask, p, aSlot[i], &p);
+    if( aSlot[i]==0 ) continue;
+    p = p ? vdbeSorterMerge(pTask, p, aSlot[i]) : aSlot[i];
   }
   pList->pList = p;
 
@@ -1449,7 +1460,7 @@ static void vdbePmaWriterInit(
   memset(p, 0, sizeof(PmaWriter));
   p->aBuffer = (u8*)sqlite3Malloc(nBuf);
   if( !p->aBuffer ){
-    p->eFWErr = SQLITE_NOMEM;
+    p->eFWErr = SQLITE_NOMEM_BKPT;
   }else{
     p->iBufEnd = p->iBufStart = (iStart % nBuf);
     p->iWriteOff = iStart - p->iBufStart;
@@ -1737,7 +1748,7 @@ static int vdbeSorterFlushPMA(VdbeSorter *pSorter){
         pSorter->nMemory = sqlite3MallocSize(aMem);
       }else if( pSorter->list.aMemory ){
         pSorter->list.aMemory = sqlite3Malloc(pSorter->nMemory);
-        if( !pSorter->list.aMemory ) return SQLITE_NOMEM;
+        if( !pSorter->list.aMemory ) return SQLITE_NOMEM_BKPT;
       }
 
       rc = vdbeSorterCreateThread(pTask, vdbeSorterFlushThread, pCtx);
@@ -1821,27 +1832,28 @@ int sqlite3VdbeSorterWrite(
 
     if( nMin>pSorter->nMemory ){
       u8 *aNew;
+      int iListOff = (u8*)pSorter->list.pList - pSorter->list.aMemory;
       int nNew = pSorter->nMemory * 2;
       while( nNew < nMin ) nNew = nNew*2;
       if( nNew > pSorter->mxPmaSize ) nNew = pSorter->mxPmaSize;
       if( nNew < nMin ) nNew = nMin;
 
       aNew = sqlite3Realloc(pSorter->list.aMemory, nNew);
-      if( !aNew ) return SQLITE_NOMEM;
-      pSorter->list.pList = (SorterRecord*)(
-          aNew + ((u8*)pSorter->list.pList - pSorter->list.aMemory)
-      );
+      if( !aNew ) return SQLITE_NOMEM_BKPT;
+      pSorter->list.pList = (SorterRecord*)&aNew[iListOff];
       pSorter->list.aMemory = aNew;
       pSorter->nMemory = nNew;
     }
 
     pNew = (SorterRecord*)&pSorter->list.aMemory[pSorter->iMemory];
     pSorter->iMemory += ROUND8(nReq);
-    pNew->u.iNext = (int)((u8*)(pSorter->list.pList) - pSorter->list.aMemory);
+    if( pSorter->list.pList ){
+      pNew->u.iNext = (int)((u8*)(pSorter->list.pList) - pSorter->list.aMemory);
+    }
   }else{
     pNew = (SorterRecord *)sqlite3Malloc(nReq);
     if( pNew==0 ){
-      return SQLITE_NOMEM;
+      return SQLITE_NOMEM_BKPT;
     }
     pNew->u.pNext = pSorter->list.pList;
   }
@@ -1988,7 +2000,7 @@ static int vdbeIncrMergerNew(
     pTask->file2.iEof += pIncr->mxSz;
   }else{
     vdbeMergeEngineFree(pMerger);
-    rc = SQLITE_NOMEM;
+    rc = SQLITE_NOMEM_BKPT;
   }
   return rc;
 }
@@ -2293,10 +2305,10 @@ static int vdbeMergeEngineLevel0(
   int rc = SQLITE_OK;
 
   *ppOut = pNew = vdbeMergeEngineNew(nPMA);
-  if( pNew==0 ) rc = SQLITE_NOMEM;
+  if( pNew==0 ) rc = SQLITE_NOMEM_BKPT;
 
   for(i=0; i<nPMA && rc==SQLITE_OK; i++){
-    i64 nDummy;
+    i64 nDummy = 0;
     PmaReader *pReadr = &pNew->aReadr[i];
     rc = vdbePmaReaderInit(pTask, &pTask->file, iOff, pReadr, &nDummy);
     iOff = pReadr->iEof;
@@ -2364,7 +2376,7 @@ static int vdbeSorterAddToTree(
     if( pReadr->pIncr==0 ){
       MergeEngine *pNew = vdbeMergeEngineNew(SORTER_MAX_MERGE_COUNT);
       if( pNew==0 ){
-        rc = SQLITE_NOMEM;
+        rc = SQLITE_NOMEM_BKPT;
       }else{
         rc = vdbeIncrMergerNew(pTask, pNew, &pReadr->pIncr);
       }
@@ -2409,7 +2421,7 @@ static int vdbeSorterMergeTreeBuild(
   assert( pSorter->bUseThreads || pSorter->nTask==1 );
   if( pSorter->nTask>1 ){
     pMain = vdbeMergeEngineNew(pSorter->nTask);
-    if( pMain==0 ) rc = SQLITE_NOMEM;
+    if( pMain==0 ) rc = SQLITE_NOMEM_BKPT;
   }
 #endif
 
@@ -2427,7 +2439,7 @@ static int vdbeSorterMergeTreeBuild(
         int i;
         int iSeq = 0;
         pRoot = vdbeMergeEngineNew(SORTER_MAX_MERGE_COUNT);
-        if( pRoot==0 ) rc = SQLITE_NOMEM;
+        if( pRoot==0 ) rc = SQLITE_NOMEM_BKPT;
         for(i=0; i<pTask->nPMA && rc==SQLITE_OK; i += SORTER_MAX_MERGE_COUNT){
           MergeEngine *pMerger = 0; /* New level-0 PMA merger */
           int nReader;              /* Number of level-0 PMAs to merge */
@@ -2498,7 +2510,7 @@ static int vdbeSorterSetupMerge(VdbeSorter *pSorter){
       if( rc==SQLITE_OK ){
         pReadr = (PmaReader*)sqlite3DbMallocZero(db, sizeof(PmaReader));
         pSorter->pReader = pReadr;
-        if( pReadr==0 ) rc = SQLITE_NOMEM;
+        if( pReadr==0 ) rc = SQLITE_NOMEM_BKPT;
       }
       if( rc==SQLITE_OK ){
         rc = vdbeIncrMergerNew(pLast, pMain, &pReadr->pIncr);
@@ -2675,7 +2687,7 @@ int sqlite3VdbeSorterRowkey(const VdbeCursor *pCsr, Mem *pOut){
   pSorter = pCsr->uc.pSorter;
   pKey = vdbeSorterRowkey(pSorter, &nKey);
   if( sqlite3VdbeMemClearAndResize(pOut, nKey) ){
-    return SQLITE_NOMEM;
+    return SQLITE_NOMEM_BKPT;
   }
   pOut->n = nKey;
   MemSetTypeFlag(pOut, MEM_Blob);
@@ -2717,10 +2729,8 @@ int sqlite3VdbeSorterCompare(
   r2 = pSorter->pUnpacked;
   pKeyInfo = pCsr->pKeyInfo;
   if( r2==0 ){
-    char *p;
-    r2 = pSorter->pUnpacked = sqlite3VdbeAllocUnpackedRecord(pKeyInfo,0,0,&p);
-    assert( pSorter->pUnpacked==(UnpackedRecord*)p );
-    if( r2==0 ) return SQLITE_NOMEM;
+    r2 = pSorter->pUnpacked = sqlite3VdbeAllocUnpackedRecord(pKeyInfo);
+    if( r2==0 ) return SQLITE_NOMEM_BKPT;
     r2->nField = nKeyCol;
   }
   assert( r2->nField==nKeyCol );
