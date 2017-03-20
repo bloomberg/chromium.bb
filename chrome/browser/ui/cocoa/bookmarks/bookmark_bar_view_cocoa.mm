@@ -120,6 +120,10 @@ static const CGFloat kTextFieldTrailingPadding = 5;
     [noItemContainer_ addSubview:importBookmarksButton_];
 
     [noItemContainer_ addSubview:noItemTextfield_];
+    NSRect containerFrame = [noItemContainer_ frame];
+    containerFrame.size.width = std::max(
+        NSWidth(containerFrame), NSMaxX([importBookmarksButton_ frame]));
+    [noItemContainer_ setFrame:containerFrame];
 
     [self addSubview:noItemContainer_];
     [self registerForNotificationsAndDraggedTypes];
