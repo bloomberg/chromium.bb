@@ -32,31 +32,32 @@ void SetURLAndDragImage(const GURL& url,
                         const base::string16& title,
                         const gfx::ImageSkia& icon,
                         const gfx::Point* press_pt,
-                        ui::OSExchangeData* data,
-                        views::Widget* widget) {
-  DCHECK(url.is_valid() && data);
+                        const views::Widget& widget,
+                        ui::OSExchangeData* data) {
+  DCHECK(url.is_valid());
+  DCHECK(data);
   data->SetURL(url, title);
-  SetDragImage(url, title, icon, press_pt, data, widget);
+  SetDragImage(url, title, icon, press_pt, widget, data);
 }
 
 void SetDragImage(const GURL& url,
                   const base::string16& title,
                   const gfx::ImageSkia& icon,
                   const gfx::Point* press_pt,
-                  ui::OSExchangeData* data,
-                  views::Widget* widget) {
+                  const views::Widget& widget,
+                  ui::OSExchangeData* data) {
   // Create a button to render the drag image for us.
   views::LabelButton button(NULL,
                             title.empty() ? base::UTF8ToUTF16(url.spec())
                                           : title);
   button.SetTextSubpixelRenderingEnabled(false);
-  const ui::NativeTheme* theme = widget->GetNativeTheme();
+  const ui::NativeTheme* theme = widget.GetNativeTheme();
   button.SetTextColor(views::Button::STATE_NORMAL,
       theme->GetSystemColor(ui::NativeTheme::kColorId_TextfieldDefaultColor));
 
   SkColor bg_color = theme->GetSystemColor(
       ui::NativeTheme::kColorId_TextfieldDefaultBackground);
-  if (widget->IsTranslucentWindowOpacitySupported()) {
+  if (widget.IsTranslucentWindowOpacitySupported()) {
     button.SetTextShadows(gfx::ShadowValues(
         10, gfx::ShadowValue(gfx::Vector2d(0, 0), 2.0f, bg_color)));
   } else {
@@ -82,7 +83,7 @@ void SetDragImage(const GURL& url,
     press_point = gfx::Vector2d(size.width() / 2, size.height() / 2);
 
   SkBitmap bitmap;
-  float raster_scale = ScaleFactorForDragFromWidget(widget);
+  float raster_scale = ScaleFactorForDragFromWidget(&widget);
   SkColor color = SK_ColorTRANSPARENT;
   button.Paint(ui::CanvasPainter(&bitmap, size, raster_scale, color).context());
   gfx::ImageSkia image(gfx::ImageSkiaRep(bitmap, raster_scale));

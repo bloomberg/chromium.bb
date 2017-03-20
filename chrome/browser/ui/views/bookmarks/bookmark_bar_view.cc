@@ -1411,7 +1411,7 @@ void BookmarkBarView::WriteDragDataForView(View* sender,
       }
 
       button_drag_utils::SetDragImage(node->url(), node->GetTitle(), icon,
-                                      &press_pt, data, widget);
+                                      &press_pt, *widget, data);
       WriteBookmarkDragData(node, data);
       return;
     }

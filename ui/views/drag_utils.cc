@@ -11,7 +11,7 @@
 
 namespace views {
 
-float ScaleFactorForDragFromWidget(Widget* widget) {
+float ScaleFactorForDragFromWidget(const Widget* widget) {
   float device_scale = 1.0f;
   if (widget && widget->GetNativeView()) {
     gfx::NativeView view = widget->GetNativeView();
@@ -20,7 +20,7 @@ float ScaleFactorForDragFromWidget(Widget* widget) {
   return device_scale;
 }
 
-gfx::Canvas* GetCanvasForDragImage(Widget* widget,
+gfx::Canvas* GetCanvasForDragImage(const Widget* widget,
                                    const gfx::Size& canvas_size) {
   float device_scale = ScaleFactorForDragFromWidget(widget);
   return new gfx::Canvas(canvas_size, device_scale, false);

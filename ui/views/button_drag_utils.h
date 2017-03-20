@@ -32,16 +32,16 @@ VIEWS_EXPORT void SetURLAndDragImage(const GURL& url,
                                      const base::string16& title,
                                      const gfx::ImageSkia& icon,
                                      const gfx::Point* press_pt,
-                                     ui::OSExchangeData* data,
-                                     views::Widget* widget);
+                                     const views::Widget& widget,
+                                     ui::OSExchangeData* data);
 
 // As above, but only sets the image.
 VIEWS_EXPORT void SetDragImage(const GURL& url,
                                const base::string16& title,
                                const gfx::ImageSkia& icon,
                                const gfx::Point* press_pt,
-                               ui::OSExchangeData* data,
-                               views::Widget* widget);
+                               const views::Widget& widget,
+                               ui::OSExchangeData* data);
 
 }  // namespace drag_utils
 
