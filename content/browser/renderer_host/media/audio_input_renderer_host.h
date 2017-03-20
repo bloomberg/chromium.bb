@@ -87,7 +87,6 @@ class CONTENT_EXPORT AudioInputRendererHost
   // Called from UI thread from the owner of this object.
   // |user_input_monitor| is used for typing detection and can be NULL.
   AudioInputRendererHost(int render_process_id,
-                         int32_t renderer_pid,
                          media::AudioManager* audio_manager,
                          MediaStreamManager* media_stream_manager,
                          AudioMirroringManager* audio_mirroring_manager,
@@ -203,12 +202,19 @@ class CONTENT_EXPORT AudioInputRendererHost
       const AudioInputHostMsg_CreateStream_Config& config);
 
 #if BUILDFLAG(ENABLE_WEBRTC)
+  // TODO(grunell): Move debug recording handling to AudioManager.
   void MaybeEnableDebugRecordingForId(int stream_id);
 
   base::FilePath GetDebugRecordingFilePathWithExtensions(
       const base::FilePath& file);
 
   void EnableDebugRecordingForId(const base::FilePath& file, int stream_id);
+
+  // Calls GetDebugRecordingFilePathWithExtensions() and
+  // EnableDebugRecordingForId().
+  void AddExtensionsToPathAndEnableDebugRecordingForId(
+      const base::FilePath& file,
+      int stream_id);
 
   void DoEnableDebugRecording(int stream_id, base::File file);
   void DoDisableDebugRecording(int stream_id);

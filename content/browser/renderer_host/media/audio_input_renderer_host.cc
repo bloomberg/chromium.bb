@@ -94,14 +94,13 @@ AudioInputRendererHost::AudioEntry::~AudioEntry() {
 
 AudioInputRendererHost::AudioInputRendererHost(
     int render_process_id,
-    int32_t renderer_pid,
     media::AudioManager* audio_manager,
     MediaStreamManager* media_stream_manager,
     AudioMirroringManager* audio_mirroring_manager,
     media::UserInputMonitor* user_input_monitor)
     : BrowserMessageFilter(AudioMsgStart),
       render_process_id_(render_process_id),
-      renderer_pid_(renderer_pid),
+      renderer_pid_(0),
       audio_manager_(audio_manager),
       media_stream_manager_(media_stream_manager),
       audio_mirroring_manager_(audio_mirroring_manager),
@@ -117,6 +116,8 @@ AudioInputRendererHost::~AudioInputRendererHost() {
 #if BUILDFLAG(ENABLE_WEBRTC)
 void AudioInputRendererHost::EnableDebugRecording(const base::FilePath& file) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (audio_entries_.empty())
+    return;
   base::FilePath file_with_extensions =
       GetDebugRecordingFilePathWithExtensions(file);
   for (const auto& entry : audio_entries_)
@@ -555,14 +556,12 @@ void AudioInputRendererHost::MaybeEnableDebugRecordingForId(int stream_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (WebRTCInternals::GetInstance()->IsAudioDebugRecordingsEnabled()) {
     BrowserThread::PostTask(
-        BrowserThread::IO,
-        FROM_HERE,
+        BrowserThread::IO, FROM_HERE,
         base::Bind(
-            &AudioInputRendererHost::EnableDebugRecordingForId,
+            &AudioInputRendererHost::
+                AddExtensionsToPathAndEnableDebugRecordingForId,
             this,
-            GetDebugRecordingFilePathWithExtensions(
-                WebRTCInternals::GetInstance()->
-                    GetAudioDebugRecordingsFilePath()),
+            WebRTCInternals::GetInstance()->GetAudioDebugRecordingsFilePath(),
             stream_id));
   }
 }
@@ -575,6 +574,9 @@ void AudioInputRendererHost::MaybeEnableDebugRecordingForId(int stream_id) {
 
 base::FilePath AudioInputRendererHost::GetDebugRecordingFilePathWithExtensions(
     const base::FilePath& file) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  // We expect |renderer_pid_| to be set.
+  DCHECK_GT(renderer_pid_, 0);
   return file.AddExtension(IntToStringType(renderer_pid_))
              .AddExtension(kDebugRecordingFileNameAddition);
 }
@@ -592,6 +594,14 @@ void AudioInputRendererHost::EnableDebugRecordingForId(
 }
 
 #undef IntToStringType
+
+void AudioInputRendererHost::AddExtensionsToPathAndEnableDebugRecordingForId(
+    const base::FilePath& file,
+    int stream_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  EnableDebugRecordingForId(GetDebugRecordingFilePathWithExtensions(file),
+                            stream_id);
+}
 
 #endif  // BUILDFLAG(ENABLE_WEBRTC)
 

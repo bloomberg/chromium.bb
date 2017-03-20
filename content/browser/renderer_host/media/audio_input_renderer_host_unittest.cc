@@ -99,13 +99,13 @@ class AudioInputRendererHostWithInterception : public AudioInputRendererHost {
       media::UserInputMonitor* user_input_monitor,
       MockRenderer* renderer)
       : AudioInputRendererHost(render_process_id,
-                               renderer_pid,
                                audio_manager,
                                media_stream_manager,
                                audio_mirroring_manager,
                                user_input_monitor),
         renderer_(renderer) {
     set_peer_process_for_testing(base::Process::Current());
+    set_renderer_pid(renderer_pid);
   }
 
  protected:

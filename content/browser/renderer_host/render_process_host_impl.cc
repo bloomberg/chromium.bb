@@ -1094,8 +1094,8 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   // The AudioInputRendererHost and AudioRendererHost needs to be available for
   // lookup, so it's stashed in a member variable.
   audio_input_renderer_host_ = new AudioInputRendererHost(
-      GetID(), base::GetProcId(GetHandle()), audio_manager,
-      media_stream_manager, AudioMirroringManager::GetInstance(),
+      GetID(), audio_manager, media_stream_manager,
+      AudioMirroringManager::GetInstance(),
       BrowserMainLoop::GetInstance()->user_input_monitor());
   AddFilter(audio_input_renderer_host_.get());
   audio_renderer_host_ = new AudioRendererHost(
