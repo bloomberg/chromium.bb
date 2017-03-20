@@ -6,18 +6,17 @@
   1. the history URL database.
   2. the visit database.
 
-  1. 
+  1.
   The schema of the URL database is defined by HISTORY_URL_ROW_FIELDS found in
   url_database.h and is equivalent to:
 
-  CREATE TABLE urls(id INTEGER PRIMARY KEY,
+  CREATE TABLE urls(id INTEGER PRIMARY KEY AUTOINCREMENT,
                     url LONGVARCHAR,
                     title LONGVARCHAR,
                     visit_count INTEGER DEFAULT 0 NOT NULL,
                     typed_count INTEGER DEFAULT 0 NOT NULL,
                     last_visit_time INTEGER NOT NULL,
-                    hidden INTEGER DEFAULT 0 NOT NULL,
-                    favicon_id INTEGER DEFAULT 0 NOT NULL);
+                    hidden INTEGER DEFAULT 0 NOT NULL);
 
   The quick history autocomplete provider filters out history items that:
     1) have not been visited in kLowQualityMatchAgeLimitInDays, AND
@@ -47,40 +46,40 @@
                       is_indexed BOOLEAN,
                       visit_duration INTEGER DEFAULT 0 NOT NULL)
 */
-INSERT INTO "urls" VALUES(1,'http://www.reuters.com/article/idUSN0839880620100708','UPDATE 1-US 30-yr mortgage rate drops to new record low | Reuters',3,1,2,0,29);  // Qualifies
-INSERT INTO "urls" VALUES(2,'http://www.golfweek.com/news/2010/jul/08/goydos-opens-john-deere-classic-59/','Goydos opens John Deere Classic with 59',3,1,4,0,27);  // Qualifies
-INSERT INTO "urls" VALUES(3,'http://www.businessandmedia.org/articles/2010/20100708120415.aspx','LeBronomics: Could High Taxes Influence James'' Team Decision?',4,1,2,0,28);  // Qualifies
-INSERT INTO "urls" VALUES(4,'http://www.realclearmarkets.com/articles/2010/07/08/diversity_in_the_financial_sector_98562.html','RealClearMarkets - Racial, Gender Quotas in the Financial Bill?',4,1,4,0,0);  // Qualifies
-INSERT INTO "urls" VALUES(5,'http://drudgereport.com/','DRUDGE REPORT 2010',3,2,2,0,0);  // Qualifies
-INSERT INTO "urls" VALUES(6,'http://totalfinder.binaryage.com/','TotalFinder brings tabs to your native Finder and more!',3,2,4,0,26);  // Qualifies
-INSERT INTO "urls" VALUES(7,'http://getsharekit.com/','ShareKit : Drop-in Share Features for all iOS Apps',4,2,4,0,20);  // Qualifies
-INSERT INTO "urls" VALUES(8,'http://getsharekit.com/index.html','ShareKit : Drop-in Share Features for all iOS Apps',3,0,4,0,20);
-INSERT INTO "urls" VALUES(9,'http://en.wikipedia.org/wiki/Control-Z','Control-Z - Wikipedia, the free encyclopedia',0,0,6,0,0);
-INSERT INTO "urls" VALUES(10,'http://vmware.com/info?id=724','VMware Account Management Login',1,0,6,0,0);
-INSERT INTO "urls" VALUES(11,'http://www.tech-recipes.com/rx/2621/os_x_change_path_environment_variable/','OS X: Change your PATH environment variable | Mac system administration | Tech-Recipes',0,1,6,0,14);  // Qualifies
-INSERT INTO "urls" VALUES(12,'http://view.atdmt.com/PPJ/iview/194841301/direct;wi.160;hi.600/01?click=','',6,6,0,1,0);  // Qualifies
-INSERT INTO "urls" VALUES(15,'http://www.cnn.com/','CNN.com International - Breaking, World, Business, Sports, Entertainment and Video News',6,6,0,0,89);  // Qualifies
-INSERT INTO "urls" VALUES(16,'http://www.zdnet.com/','Technology News, Analysis, Comments and Product Reviews for IT Professionals | ZDNet',6,6,0,0,652);  // Qualifies
-INSERT INTO "urls" VALUES(17,'http://www.crash.net/','Crash.Net | Formula 1 & MotoGP | Motorsport News',6,6,0,0,239);  // Qualifies
-INSERT INTO "urls" VALUES(18,'http://www.theinquirer.net/','THE INQUIRER - Microprocessor, Server, Memory, PCS, Graphics, Networking, Storage',6,6,0,0,79);  // Qualifies
-INSERT INTO "urls" VALUES(19,'http://www.theregister.co.uk/','The Register: Sci/Tech News for the World',6,6,0,0,74);  // Qualifies
-INSERT INTO "urls" VALUES(20,'http://blogs.technet.com/markrussinovich/','Mark''s Blog - Site Home - TechNet Blogs',6,6,0,0,685);  // Qualifies
-INSERT INTO "urls" VALUES(21,'http://www.icu-project.org/','ICU Home Page (ICU - International Components for Unicode)',6,6,0,0,445);  // Qualifies
-INSERT INTO "urls" VALUES(22,'http://site.icu-project.org/','ICU Home Page (ICU - International Components for Unicode)',6,6,0,0,445);  // Qualifies
-INSERT INTO "urls" VALUES(23,'http://icu-project.org/apiref/icu4c/','ICU 4.2: Main Page',6,6,0,0,212);  // Qualifies
-INSERT INTO "urls" VALUES(24,'http://www.danilatos.com/event-test/ExperimentTest.html','Experimentation Harness',6,6,0,0,0);  // Qualifies
-INSERT INTO "urls" VALUES(25,'http://www.codeguru.com/','CodeGuru : codeguru',6,6,0,0,110);  // Qualifies
-INSERT INTO "urls" VALUES(26,'http://www.codeproject.com/','Your Development Resource - CodeProject',6,6,0,0,369);  // Qualifies
-INSERT INTO "urls" VALUES(27,'http://www.tomshardware.com/us/#redir','Tom''s Hardware: Hardware News, Tests and Reviews',6,6,0,0,65);  // Qualifies
-INSERT INTO "urls" VALUES(28,'http://www.ddj.com/windows/184416623','Dr. ABRACADABRA''s | Avoiding the Visual C++ Runtime Library | 2 1, 2003',6,6,0,0,0);  // Qualifies
-INSERT INTO "urls" VALUES(29,'http://svcs.cnn.com/weather/getForecast?time=34&mode=json_html&zipCode=336736767676&locCode=EGLL&celcius=true&csiID=csi2','',6,6,0,1,0);  // Qualifies
-INSERT INTO "urls" VALUES(30,'http://www.drudgery.com/Dogs%20and%20Mice','Life in the Slow Lane',8,2,2,0,0);  // Qualifies
-INSERT INTO "urls" VALUES(31,'http://www.redrudgerydo.com/','Music of the Wild Landscape',0,0,6,0,0);
-INSERT INTO "urls" VALUES(32,'https://NearlyPerfectResult.com/','Practically Perfect Search Result',99,99,0,0,0);  // Qualifies
-INSERT INTO "urls" VALUES(33,'http://QuiteUselessSearchResultxyz.com/','Practically Useless Search Result',4,0,99,0,0);  // Qualifies
-INSERT INTO "urls" VALUES(34,'http://FubarFubarAndFubar.com/','Situation Normal -- FUBARED',99,99,0,0,0);  // Qualifies
-INSERT INTO "urls" VALUES(35,'http://en.wikipedia.org/wiki/1%25_rule_(Internet_culture)','Do Not Need Title',2,2,0,0,0);  // Qualifies
-INSERT INTO "urls" VALUES(36,'http://default-engine.com?q=query','Query Query Query',2,2,0,0,0);  // Qualifies
+INSERT INTO "urls" VALUES(1,'http://www.reuters.com/article/idUSN0839880620100708','UPDATE 1-US 30-yr mortgage rate drops to new record low | Reuters',3,1,2,0);  // Qualifies
+INSERT INTO "urls" VALUES(2,'http://www.golfweek.com/news/2010/jul/08/goydos-opens-john-deere-classic-59/','Goydos opens John Deere Classic with 59',3,1,4,0);  // Qualifies
+INSERT INTO "urls" VALUES(3,'http://www.businessandmedia.org/articles/2010/20100708120415.aspx','LeBronomics: Could High Taxes Influence James'' Team Decision?',4,1,2,0);  // Qualifies
+INSERT INTO "urls" VALUES(4,'http://www.realclearmarkets.com/articles/2010/07/08/diversity_in_the_financial_sector_98562.html','RealClearMarkets - Racial, Gender Quotas in the Financial Bill?',4,1,4,0);  // Qualifies
+INSERT INTO "urls" VALUES(5,'http://drudgereport.com/','DRUDGE REPORT 2010',3,2,2,0);  // Qualifies
+INSERT INTO "urls" VALUES(6,'http://totalfinder.binaryage.com/','TotalFinder brings tabs to your native Finder and more!',3,2,4,0);  // Qualifies
+INSERT INTO "urls" VALUES(7,'http://getsharekit.com/','ShareKit : Drop-in Share Features for all iOS Apps',4,2,4,0);  // Qualifies
+INSERT INTO "urls" VALUES(8,'http://getsharekit.com/index.html','ShareKit : Drop-in Share Features for all iOS Apps',3,0,4,0);
+INSERT INTO "urls" VALUES(9,'http://en.wikipedia.org/wiki/Control-Z','Control-Z - Wikipedia, the free encyclopedia',0,0,6,0);
+INSERT INTO "urls" VALUES(10,'http://vmware.com/info?id=724','VMware Account Management Login',1,0,6,0);
+INSERT INTO "urls" VALUES(11,'http://www.tech-recipes.com/rx/2621/os_x_change_path_environment_variable/','OS X: Change your PATH environment variable | Mac system administration | Tech-Recipes',0,1,6,0);  // Qualifies
+INSERT INTO "urls" VALUES(12,'http://view.atdmt.com/PPJ/iview/194841301/direct;wi.160;hi.600/01?click=','',6,6,0,1);  // Qualifies
+INSERT INTO "urls" VALUES(15,'http://www.cnn.com/','CNN.com International - Breaking, World, Business, Sports, Entertainment and Video News',6,6,0,0);  // Qualifies
+INSERT INTO "urls" VALUES(16,'http://www.zdnet.com/','Technology News, Analysis, Comments and Product Reviews for IT Professionals | ZDNet',6,6,0,0);  // Qualifies
+INSERT INTO "urls" VALUES(17,'http://www.crash.net/','Crash.Net | Formula 1 & MotoGP | Motorsport News',6,6,0,0);  // Qualifies
+INSERT INTO "urls" VALUES(18,'http://www.theinquirer.net/','THE INQUIRER - Microprocessor, Server, Memory, PCS, Graphics, Networking, Storage',6,6,0,0);  // Qualifies
+INSERT INTO "urls" VALUES(19,'http://www.theregister.co.uk/','The Register: Sci/Tech News for the World',6,6,0,0);  // Qualifies
+INSERT INTO "urls" VALUES(20,'http://blogs.technet.com/markrussinovich/','Mark''s Blog - Site Home - TechNet Blogs',6,6,0,0);  // Qualifies
+INSERT INTO "urls" VALUES(21,'http://www.icu-project.org/','ICU Home Page (ICU - International Components for Unicode)',6,6,0,0);  // Qualifies
+INSERT INTO "urls" VALUES(22,'http://site.icu-project.org/','ICU Home Page (ICU - International Components for Unicode)',6,6,0,0);  // Qualifies
+INSERT INTO "urls" VALUES(23,'http://icu-project.org/apiref/icu4c/','ICU 4.2: Main Page',6,6,0,0);  // Qualifies
+INSERT INTO "urls" VALUES(24,'http://www.danilatos.com/event-test/ExperimentTest.html','Experimentation Harness',6,6,0,0);  // Qualifies
+INSERT INTO "urls" VALUES(25,'http://www.codeguru.com/','CodeGuru : codeguru',6,6,0,0);  // Qualifies
+INSERT INTO "urls" VALUES(26,'http://www.codeproject.com/','Your Development Resource - CodeProject',6,6,0,0);  // Qualifies
+INSERT INTO "urls" VALUES(27,'http://www.tomshardware.com/us/#redir','Tom''s Hardware: Hardware News, Tests and Reviews',6,6,0,0);  // Qualifies
+INSERT INTO "urls" VALUES(28,'http://www.ddj.com/windows/184416623','Dr. ABRACADABRA''s | Avoiding the Visual C++ Runtime Library | 2 1, 2003',6,6,0,0);  // Qualifies
+INSERT INTO "urls" VALUES(29,'http://svcs.cnn.com/weather/getForecast?time=34&mode=json_html&zipCode=336736767676&locCode=EGLL&celcius=true&csiID=csi2','',6,6,0,1);  // Qualifies
+INSERT INTO "urls" VALUES(30,'http://www.drudgery.com/Dogs%20and%20Mice','Life in the Slow Lane',8,2,2,0);  // Qualifies
+INSERT INTO "urls" VALUES(31,'http://www.redrudgerydo.com/','Music of the Wild Landscape',0,0,6,0);
+INSERT INTO "urls" VALUES(32,'https://NearlyPerfectResult.com/','Practically Perfect Search Result',99,99,0,0);  // Qualifies
+INSERT INTO "urls" VALUES(33,'http://QuiteUselessSearchResultxyz.com/','Practically Useless Search Result',4,0,99,0);  // Qualifies
+INSERT INTO "urls" VALUES(34,'http://FubarFubarAndFubar.com/','Situation Normal -- FUBARED',99,99,0,0);  // Qualifies
+INSERT INTO "urls" VALUES(35,'http://en.wikipedia.org/wiki/1%25_rule_(Internet_culture)','Do Not Need Title',2,2,0,0);  // Qualifies
+INSERT INTO "urls" VALUES(36,'http://default-engine.com?q=query','Query Query Query',2,2,0,0);  // Qualifies
 
 /*
  This file creates some visits, enough to test (in InMemoryURLIndexTest)

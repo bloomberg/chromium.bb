@@ -266,6 +266,9 @@ class URLDatabase {
   // Creates the index over URLs so we can quickly look up based on URL.
   bool CreateMainURLIndex();
 
+  // Recreate URL table, and keep all existing contents.
+  bool RecreateURLTableWithAllContents();
+
   // Ensures the keyword search terms table exists.
   bool InitKeywordSearchTermsTable();
 

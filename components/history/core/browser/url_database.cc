@@ -568,26 +568,7 @@ bool URLDatabase::DropStarredIDFromURLs() {
   if (!GetDB().DoesColumnExist("urls", "starred_id"))
     return true;  // urls is already updated, no need to continue.
 
-  // Create a temporary table to contain the new URLs table.
-  if (!CreateTemporaryURLTable()) {
-    NOTREACHED();
-    return false;
-  }
-
-  // Copy the contents.
-  if (!GetDB().Execute(
-      "INSERT INTO temp_urls (id, url, title, visit_count, typed_count, "
-      "last_visit_time, hidden, favicon_id) "
-      "SELECT id, url, title, visit_count, typed_count, last_visit_time, "
-      "hidden, favicon_id FROM urls")) {
-    NOTREACHED() << GetDB().GetErrorMessage();
-    return false;
-  }
-
-  // Rename/commit the tmp table.
-  CommitTemporaryURLTable();
-
-  return true;
+  return RecreateURLTableWithAllContents();
 }
 
 bool URLDatabase::CreateURLTable(bool is_temporary) {
@@ -600,15 +581,21 @@ bool URLDatabase::CreateURLTable(bool is_temporary) {
   std::string sql;
   sql.append("CREATE TABLE ");
   sql.append(name);
-  sql.append("("
-      "id INTEGER PRIMARY KEY,"
+  sql.append(
+      "("
+      "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+      // Using AUTOINCREMENT is for sync propose. Sync uses this |id| as an
+      // unique key to identify the URLs. If here did not use AUTOINCREMENT, and
+      // Sync was not working somehow, a ROWID could be deleted and re-used
+      // during this period. Once Sync come back, Sync would use ROWIDs and
+      // timestamps to see if there are any updates need to be synced. And sync
+      //  will only see the new URL, but missed the deleted URL.
       "url LONGVARCHAR,"
       "title LONGVARCHAR,"
       "visit_count INTEGER DEFAULT 0 NOT NULL,"
       "typed_count INTEGER DEFAULT 0 NOT NULL,"
       "last_visit_time INTEGER NOT NULL,"
-      "hidden INTEGER DEFAULT 0 NOT NULL,"
-      "favicon_id INTEGER DEFAULT 0 NOT NULL)"); // favicon_id is not used now.
+      "hidden INTEGER DEFAULT 0 NOT NULL)");
 
   return GetDB().Execute(sql.c_str());
 }
@@ -616,6 +603,29 @@ bool URLDatabase::CreateURLTable(bool is_temporary) {
 bool URLDatabase::CreateMainURLIndex() {
   return GetDB().Execute(
       "CREATE INDEX IF NOT EXISTS urls_url_index ON urls (url)");
+}
+
+bool URLDatabase::RecreateURLTableWithAllContents() {
+  // Create a temporary table to contain the new URLs table.
+  if (!CreateTemporaryURLTable()) {
+    NOTREACHED();
+    return false;
+  }
+
+  // Copy the contents.
+  if (!GetDB().Execute(
+          "INSERT INTO temp_urls (id, url, title, visit_count, typed_count, "
+          "last_visit_time, hidden) "
+          "SELECT id, url, title, visit_count, typed_count, last_visit_time, "
+          "hidden FROM urls")) {
+    NOTREACHED() << GetDB().GetErrorMessage();
+    return false;
+  }
+
+  // Rename/commit the tmp table.
+  CommitTemporaryURLTable();
+
+  return true;
 }
 
 const int kLowQualityMatchTypedLimit = 1;

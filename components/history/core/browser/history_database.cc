@@ -22,6 +22,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/history/core/browser/url_utils.h"
+#include "sql/meta_table.h"
 #include "sql/statement.h"
 #include "sql/transaction.h"
 
@@ -36,7 +37,7 @@ namespace {
 // Current version number. We write databases at the "current" version number,
 // but any previous version that can read the "compatible" one can make do with
 // our database without *too* many bad effects.
-const int kCurrentVersionNumber = 34;
+const int kCurrentVersionNumber = 35;
 const int kCompatibleVersionNumber = 16;
 const char kEarlyExpirationThresholdKey[] = "early_expiration_threshold";
 const int kMaxHostsInMemory = 10000;
@@ -96,7 +97,7 @@ sql::InitStatus HistoryDatabase::Init(const base::FilePath& history_name) {
     return sql::INIT_FAILURE;
   if (!CreateURLTable(false) || !InitVisitTable() ||
       !InitKeywordSearchTermsTable() || !InitDownloadTable() ||
-      !InitSegmentTables())
+      !InitSegmentTables() || !InitSyncTable())
     return sql::INIT_FAILURE;
   CreateMainURLIndex();
   CreateKeywordSearchTermsIndices();
@@ -364,6 +365,10 @@ sql::Connection& HistoryDatabase::GetDB() {
   return db_;
 }
 
+sql::MetaTable& HistoryDatabase::GetMetaTable() {
+  return meta_table_;
+}
+
 // Migration -------------------------------------------------------------------
 
 sql::InitStatus HistoryDatabase::EnsureCurrentVersion() {
@@ -545,6 +550,20 @@ sql::InitStatus HistoryDatabase::EnsureCurrentVersion() {
   if (cur_version == 33) {
     if (!MigrateDownloadLastAccessTime()) {
       LOG(WARNING) << "Unable to migrate to version 34";
+      return sql::INIT_FAILURE;
+    }
+    cur_version++;
+    meta_table_.SetVersionNumber(cur_version);
+  }
+
+  if (cur_version == 34) {
+    // AUTOINCREMENT is added to urls table PRIMARY KEY(id), need to recreate a
+    // new table and copy all contents over. favicon_id is removed from urls
+    // table since we never use it. Also typed_url_sync_metadata and
+    // autofill_model_type_state tables are introduced, no migration needed for
+    // those two tables.
+    if (!RecreateURLTableWithAllContents()) {
+      LOG(WARNING) << "Unable to update history database to version 35.";
       return sql::INIT_FAILURE;
     }
     cur_version++;

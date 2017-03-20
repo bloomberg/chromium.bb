@@ -38,6 +38,25 @@ class URLDatabaseTest : public testing::Test,
   URLDatabaseTest() {
   }
 
+  void CreateVersion33URLTable() {
+    EXPECT_TRUE(GetDB().Execute("DROP TABLE urls"));
+
+    std::string sql;
+    // create a version 33 urls table
+    sql.append(
+        "CREATE TABLE urls ("
+        "id INTEGER PRIMARY KEY,"
+        "url LONGVARCHAR,"
+        "title LONGVARCHAR,"
+        "visit_count INTEGER DEFAULT 0 NOT NULL,"
+        "typed_count INTEGER DEFAULT 0 NOT NULL,"
+        "last_visit_time INTEGER NOT NULL,"
+        "hidden INTEGER DEFAULT 0 NOT NULL,"
+        "favicon_id INTEGER DEFAULT 0 NOT NULL)");  // favicon_id is not used
+                                                    // now.
+    EXPECT_TRUE(GetDB().Execute(sql.c_str()));
+  }
+
  protected:
   // Provided for URL/VisitDatabase.
   sql::Connection& GetDB() override { return db_; }
@@ -326,6 +345,100 @@ TEST_F(URLDatabaseTest, GetAndDeleteKeywordSearchTermByTerm) {
   // No row for keyword.
   ASSERT_TRUE(GetKeywordSearchTermRows(keyword, &rows));
   EXPECT_TRUE(rows.empty());
+}
+
+// Test for migration of update URL table, verify AUTOINCREMENT is working
+// properly.
+TEST_F(URLDatabaseTest, MigrationURLTableForAddingAUTOINCREMENT) {
+  CreateVersion33URLTable();
+  // First, add two URLs.
+  const GURL url1("http://www.google.com/");
+  URLRow url_info1(url1);
+  url_info1.set_title(base::UTF8ToUTF16("Google"));
+  url_info1.set_visit_count(4);
+  url_info1.set_typed_count(2);
+  url_info1.set_last_visit(Time::Now() - TimeDelta::FromDays(1));
+  url_info1.set_hidden(false);
+  URLID id1_initially = AddURL(url_info1);
+  EXPECT_TRUE(id1_initially);
+
+  const GURL url2("http://mail.google.com/");
+  URLRow url_info2(url2);
+  url_info2.set_title(base::UTF8ToUTF16("Google Mail"));
+  url_info2.set_visit_count(3);
+  url_info2.set_typed_count(0);
+  url_info2.set_last_visit(Time::Now() - TimeDelta::FromDays(2));
+  url_info2.set_hidden(true);
+  EXPECT_TRUE(AddURL(url_info2));
+
+  // Verify both are added.
+  URLRow info1;
+  EXPECT_TRUE(GetRowForURL(url1, &info1));
+  EXPECT_TRUE(IsURLRowEqual(url_info1, info1));
+  URLRow info2;
+  EXPECT_TRUE(GetRowForURL(url2, &info2));
+  EXPECT_TRUE(IsURLRowEqual(url_info2, info2));
+
+  // Delete second URL, and add a new URL, verify id got re-used.
+  EXPECT_TRUE(DeleteURLRow(info2.id()));
+
+  const GURL url3("http://maps.google.com/");
+  URLRow url_info3(url3);
+  url_info3.set_title(base::UTF8ToUTF16("Google Maps"));
+  url_info3.set_visit_count(7);
+  url_info3.set_typed_count(6);
+  url_info3.set_last_visit(Time::Now() - TimeDelta::FromDays(3));
+  url_info3.set_hidden(false);
+  EXPECT_TRUE(AddURL(url_info3));
+
+  URLRow info3;
+  EXPECT_TRUE(GetRowForURL(url3, &info3));
+  EXPECT_TRUE(IsURLRowEqual(url_info3, info3));
+  // Verify the id re-used.
+  EXPECT_EQ(info2.id(), info3.id());
+
+  // Upgrade urls table.
+  RecreateURLTableWithAllContents();
+
+  // Verify all data keeped.
+  EXPECT_TRUE(GetRowForURL(url1, &info1));
+  EXPECT_TRUE(IsURLRowEqual(url_info1, info1));
+  EXPECT_FALSE(GetRowForURL(url2, &info2));
+  EXPECT_TRUE(GetRowForURL(url3, &info3));
+  EXPECT_TRUE(IsURLRowEqual(url_info3, info3));
+
+  // Add a new URL
+  const GURL url4("http://plus.google.com/");
+  URLRow url_info4(url4);
+  url_info4.set_title(base::UTF8ToUTF16("Google Plus"));
+  url_info4.set_visit_count(4);
+  url_info4.set_typed_count(3);
+  url_info4.set_last_visit(Time::Now() - TimeDelta::FromDays(4));
+  url_info4.set_hidden(false);
+  EXPECT_TRUE(AddURL(url_info4));
+
+  // Verify The URL are added.
+  URLRow info4;
+  EXPECT_TRUE(GetRowForURL(url4, &info4));
+  EXPECT_TRUE(IsURLRowEqual(url_info4, info4));
+
+  // Delete the newest URL, and add a new URL, verify id is not re-used.
+  EXPECT_TRUE(DeleteURLRow(info4.id()));
+
+  const GURL url5("http://docs.google.com/");
+  URLRow url_info5(url5);
+  url_info5.set_title(base::UTF8ToUTF16("Google Docs"));
+  url_info5.set_visit_count(9);
+  url_info5.set_typed_count(2);
+  url_info5.set_last_visit(Time::Now() - TimeDelta::FromDays(5));
+  url_info5.set_hidden(false);
+  EXPECT_TRUE(AddURL(url_info5));
+
+  URLRow info5;
+  EXPECT_TRUE(GetRowForURL(url5, &info5));
+  EXPECT_TRUE(IsURLRowEqual(url_info5, info5));
+  // Verify the id is not re-used.
+  EXPECT_NE(info4.id(), info5.id());
 }
 
 }  // namespace history
