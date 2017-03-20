@@ -114,11 +114,6 @@ _DEPRECATED_MACROS = [
     ['WTF_LOG', 'DVLOG']
 ]
 
-# These constants define types of headers for use with
-# _IncludeState.check_next_include_order().
-_PRIMARY_HEADER = 0
-_OTHER_HEADER = 1
-
 
 # The regexp compilation caching is inlined in all regexp functions for
 # performance reasons; factoring it out into a separate function turns out
@@ -292,10 +287,6 @@ class _IncludeState(dict):
 
     As a dict, an _IncludeState object serves as a mapping between include
     filename and line number on which that file was included.
-
-    Call check_next_include_order() once for each header in the file, passing
-    in the type constants defined above. Calls in an illegal order will
-    raise an _IncludeError with an appropriate error message.
     """
     # self._section will move monotonically through this set. If it ever
     # needs to move backwards, check_next_include_order will raise an error.
@@ -303,10 +294,6 @@ class _IncludeState(dict):
     _PRIMARY_SECTION = 1
     _OTHER_SECTION = 2
 
-    _TYPE_NAMES = {
-        _PRIMARY_HEADER: 'header this file implements',
-        _OTHER_HEADER: 'other header',
-    }
     _SECTION_NAMES = {
         _INITIAL_SECTION: '... nothing.',
         _PRIMARY_SECTION: 'a header this file implements.',
@@ -321,46 +308,6 @@ class _IncludeState(dict):
 
     def visited_primary_section(self):
         return self._visited_primary_section
-
-    def check_next_include_order(self, header_type, file_is_header, primary_header_exists):
-        """Returns a non-empty error message if the next header is out of order.
-
-        This function also updates the internal state to be ready to check
-        the next include.
-
-        Args:
-          header_type: One of the _XXX_HEADER constants defined above.
-          file_is_header: Whether the file that owns this _IncludeState is itself a header
-
-        Returns:
-          The empty string if the header is in the right order, or an
-          error message describing what's wrong.
-        """
-        if header_type == _PRIMARY_HEADER and file_is_header:
-            return 'Header file should not contain itself.'
-
-        error_message = ''
-        if self._section != self._OTHER_SECTION:
-            before_error_message = ('Found %s before %s' %
-                                    (self._TYPE_NAMES[header_type],
-                                     self._SECTION_NAMES[self._section + 1]))
-        after_error_message = ('Found %s after %s' %
-                               (self._TYPE_NAMES[header_type],
-                                self._SECTION_NAMES[self._section]))
-
-        if header_type == _PRIMARY_HEADER:
-            if self._section >= self._PRIMARY_SECTION:
-                error_message = after_error_message
-            self._section = self._PRIMARY_SECTION
-            self._visited_primary_section = True
-        else:
-            assert header_type == _OTHER_HEADER
-            if not file_is_header and self._section < self._PRIMARY_SECTION:
-                if primary_header_exists:
-                    error_message = before_error_message
-            self._section = self._OTHER_SECTION
-
-        return error_message
 
 
 class Position(object):
@@ -2430,92 +2377,6 @@ _RE_PATTERN_INCLUDE = re.compile(r'^\s*#\s*include\s*([<"])([^>"]*)[>"].*$')
 _RE_FIRST_COMPONENT = re.compile(r'^[^-_.]+')
 
 
-def _drop_common_suffixes(filename):
-    """Drops common suffixes like _test.cpp or -inl.h from filename.
-
-    For example:
-      >>> _drop_common_suffixes('foo/foo-inl.h')
-      'foo/foo'
-      >>> _drop_common_suffixes('foo/bar/foo.cpp')
-      'foo/bar/foo'
-      >>> _drop_common_suffixes('foo/foo_internal.h')
-      'foo/foo'
-      >>> _drop_common_suffixes('foo/foo_unusualinternal.h')
-      'foo/foo_unusualinternal'
-
-    Args:
-      filename: The input filename.
-
-    Returns:
-      The filename with the common suffix removed.
-    """
-    for suffix in ('test.cpp', 'regtest.cpp', 'unittest.cpp',
-                   'inl.h', 'impl.h', 'internal.h'):
-        if (filename.endswith(suffix) and len(filename) > len(suffix)
-                and filename[-len(suffix) - 1] in ('-', '_')):
-            return filename[:-len(suffix) - 1]
-    return os.path.splitext(filename)[0]
-
-
-def _classify_include(filename, include, is_system, include_state):
-    """Figures out what kind of header 'include' is.
-
-    Args:
-      filename: The current file cpp_style is running over.
-      include: The path to a #included file.
-      is_system: True if the #include used <> rather than "".
-      include_state: An _IncludeState instance in which the headers are inserted.
-
-    Returns:
-      One of the _XXX_HEADER constants.
-
-    For example:
-      >>> _classify_include('foo.cpp', 'foo.h', False)
-      _PRIMARY_HEADER
-      >>> _classify_include('foo.cpp', 'bar.h', False)
-      _OTHER_HEADER
-    """
-
-    # If it is a system header we know it is classified as _OTHER_HEADER.
-    if is_system and not include.startswith('public/'):
-        return _OTHER_HEADER
-
-    # There cannot be primary includes in header files themselves. Only an
-    # include exactly matches the header filename will be is flagged as
-    # primary, so that it triggers the "don't include yourself" check.
-    if filename.endswith('.h') and filename != include:
-        return _OTHER_HEADER
-
-    # If the target file basename starts with the include we're checking
-    # then we consider it the primary header.
-    target_base = FileInfo(filename).base_name()
-    include_base = FileInfo(include).base_name()
-
-    # If we haven't encountered a primary header, then be lenient in checking.
-    if not include_state.visited_primary_section():
-        if target_base.find(include_base) != -1:
-            return _PRIMARY_HEADER
-
-    # If we already encountered a primary header, perform a strict comparison.
-    # In case the two filename bases are the same then the above lenient check
-    # probably was a false positive.
-    elif include_state.visited_primary_section() and target_base == include_base:
-        return _PRIMARY_HEADER
-
-    return _OTHER_HEADER
-
-
-def _does_primary_header_exist(filename):
-    """Return a primary header file name for a file, or empty string
-    if the file is not source file or primary header does not exist.
-    """
-    fileinfo = FileInfo(filename)
-    if not fileinfo.is_source():
-        return False
-    primary_header = fileinfo.no_extension() + '.h'
-    return os.path.isfile(primary_header)
-
-
 def check_include_line(filename, file_extension, clean_lines, line_number, include_state, error):
     """Check rules that are applicable to #include lines.
 
@@ -2567,40 +2428,6 @@ def check_include_line(filename, file_extension, clean_lines, line_number, inclu
               (include, filename, include_state[include]))
     else:
         include_state[include] = line_number
-
-    header_type = _classify_include(filename, include, is_system, include_state)
-    primary_header_exists = _does_primary_header_exist(filename)
-    include_state.header_types[line_number] = header_type
-
-    # Only proceed if this isn't a duplicate header.
-    if duplicate_header:
-        return
-
-    # We want to ensure that headers appear in the right order:
-    # 1) for implementation files: primary header, blank line, alphabetically sorted
-    # 2) for header files: alphabetically sorted
-    # The include_state object keeps track of the last type seen
-    # and complains if the header types are out of order or missing.
-    error_message = include_state.check_next_include_order(header_type,
-                                                           file_extension == 'h',
-                                                           primary_header_exists)
-
-    # Check to make sure we have a blank line after primary header.
-    if not error_message and header_type == _PRIMARY_HEADER:
-        next_line = clean_lines.raw_lines[line_number + 1]
-        if not is_blank_line(next_line):
-            error(line_number, 'build/include_order', 4,
-                  'You should add a blank line after implementation file\'s own header.')
-
-    if error_message:
-        if file_extension == 'h':
-            error(line_number, 'build/include_order', 4,
-                  '%s Should be: alphabetically sorted.' %
-                  error_message)
-        else:
-            error(line_number, 'build/include_order', 4,
-                  '%s Should be: primary header, blank line, and then alphabetically sorted.' %
-                  error_message)
 
 
 def check_language(filename, clean_lines, line_number, file_extension, include_state,
