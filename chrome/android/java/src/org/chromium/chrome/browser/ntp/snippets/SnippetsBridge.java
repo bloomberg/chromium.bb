@@ -14,7 +14,6 @@ import org.chromium.chrome.browser.ntp.cards.SuggestionsCategoryInfo;
 import org.chromium.chrome.browser.ntp.snippets.CategoryStatus.CategoryStatusEnum;
 import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsCardLayout.ContentSuggestionsCardLayoutEnum;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.suggestions.ContentSuggestionsAdditionalAction;
 import org.chromium.chrome.browser.suggestions.ContentSuggestionsAdditionalAction.ContentSuggestionsAdditionalActionEnum;
 import org.chromium.chrome.browser.suggestions.DestructionObserver;
 import org.chromium.chrome.browser.suggestions.SuggestionsMetricsReporter;
@@ -295,10 +294,8 @@ public class SnippetsBridge
             @ContentSuggestionsCardLayoutEnum int cardLayout,
             @ContentSuggestionsAdditionalActionEnum int additionalAction, boolean showIfEmpty,
             String noSuggestionsMessage) {
-        boolean hasFetchAction = additionalAction == ContentSuggestionsAdditionalAction.FETCH;
-        boolean hasViewAllAction = additionalAction == ContentSuggestionsAdditionalAction.VIEW_ALL;
-        return new SuggestionsCategoryInfo(category, title, cardLayout, hasFetchAction,
-                hasViewAllAction, showIfEmpty, noSuggestionsMessage);
+        return new SuggestionsCategoryInfo(
+                category, title, cardLayout, additionalAction, showIfEmpty, noSuggestionsMessage);
     }
 
     @CalledByNative

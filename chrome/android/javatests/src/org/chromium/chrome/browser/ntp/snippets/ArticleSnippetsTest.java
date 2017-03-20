@@ -22,6 +22,7 @@ import org.chromium.chrome.browser.ntp.cards.NewTabPageAdapter;
 import org.chromium.chrome.browser.ntp.cards.SuggestionsCategoryInfo;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.suggestions.ContentSuggestionsAdditionalAction;
 import org.chromium.chrome.browser.suggestions.DestructionObserver;
 import org.chromium.chrome.browser.suggestions.SuggestionsMetricsReporter;
 import org.chromium.chrome.browser.suggestions.SuggestionsNavigationDelegate;
@@ -155,22 +156,20 @@ public class ArticleSnippetsTest extends ChromeActivityTestCaseBase<ChromeActivi
                 10f, // Score
                 1466634774); // Fetch timestamp
 
-        mSnippetsSource.setInfoForCategory(
-                fullCategory, new SuggestionsCategoryInfo(fullCategory, "Section Title",
-                                      ContentSuggestionsCardLayout.FULL_CARD,
-                                      /*has_fetch_action=*/false,
-                                      /*has_view_all_action=*/false,
-                                      /*show_if_empty=*/true, "No suggestions"));
+        mSnippetsSource.setInfoForCategory(fullCategory,
+                new SuggestionsCategoryInfo(fullCategory, "Section Title",
+                        ContentSuggestionsCardLayout.FULL_CARD,
+                        ContentSuggestionsAdditionalAction.NONE,
+                        /*show_if_empty=*/true, "No suggestions"));
         mSnippetsSource.setStatusForCategory(fullCategory, CategoryStatus.AVAILABLE);
         mSnippetsSource.setSuggestionsForCategory(
                 fullCategory, Arrays.asList(shortSnippet, longSnippet));
 
-        mSnippetsSource.setInfoForCategory(
-                minimalCategory, new SuggestionsCategoryInfo(minimalCategory, "Section Title",
-                                         ContentSuggestionsCardLayout.MINIMAL_CARD,
-                                         /* has_fetch_action = */ false,
-                                         /* has_view_all_action = */ false,
-                                         /* show_if_empty = */ true, "No suggestions"));
+        mSnippetsSource.setInfoForCategory(minimalCategory,
+                new SuggestionsCategoryInfo(minimalCategory, "Section Title",
+                        ContentSuggestionsCardLayout.MINIMAL_CARD,
+                        ContentSuggestionsAdditionalAction.NONE,
+                        /* show_if_empty = */ true, "No suggestions"));
         mSnippetsSource.setStatusForCategory(minimalCategory, CategoryStatus.AVAILABLE);
         mSnippetsSource.setSuggestionsForCategory(
                 minimalCategory, Arrays.asList(minimalSnippet, minimalSnippet2));

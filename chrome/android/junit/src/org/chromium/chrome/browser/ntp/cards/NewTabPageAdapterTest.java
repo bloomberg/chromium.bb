@@ -64,6 +64,7 @@ import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.signin.SigninManager;
 import org.chromium.chrome.browser.signin.SigninManager.SignInAllowedObserver;
 import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
+import org.chromium.chrome.browser.suggestions.ContentSuggestionsAdditionalAction;
 import org.chromium.chrome.browser.suggestions.DestructionObserver;
 import org.chromium.chrome.browser.suggestions.SuggestionsMetricsReporter;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
@@ -500,7 +501,10 @@ public class NewTabPageAdapterTest {
         FakeSuggestionsSource suggestionsSource = new FakeSuggestionsSource();
         suggestionsSource.setStatusForCategory(TEST_CATEGORY, CategoryStatus.INITIALIZING);
         suggestionsSource.setInfoForCategory(TEST_CATEGORY,
-                new CategoryInfoBuilder(TEST_CATEGORY).withViewAllAction().showIfEmpty().build());
+                new CategoryInfoBuilder(TEST_CATEGORY)
+                        .withAction(ContentSuggestionsAdditionalAction.VIEW_ALL)
+                        .showIfEmpty()
+                        .build());
 
         // 1.1 - Initial state.
         when(mUiDelegate.getSuggestionsSource()).thenReturn(suggestionsSource);
@@ -578,9 +582,10 @@ public class NewTabPageAdapterTest {
 
         int dynamicCategory1 = 1010;
         List<SnippetArticle> dynamics1 = createDummySuggestions(5, dynamicCategory1);
-        mSource.setInfoForCategory(dynamicCategory1, new CategoryInfoBuilder(dynamicCategory1)
-                                                             .withViewAllAction()
-                                                             .build());
+        mSource.setInfoForCategory(dynamicCategory1,
+                new CategoryInfoBuilder(dynamicCategory1)
+                        .withAction(ContentSuggestionsAdditionalAction.VIEW_ALL)
+                        .build());
         mSource.setStatusForCategory(dynamicCategory1, CategoryStatus.AVAILABLE);
         mSource.setSuggestionsForCategory(dynamicCategory1, dynamics1);
         reloadNtp();

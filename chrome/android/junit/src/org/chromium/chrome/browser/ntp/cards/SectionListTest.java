@@ -34,6 +34,7 @@ import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
 import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
+import org.chromium.chrome.browser.suggestions.ContentSuggestionsAdditionalAction;
 import org.chromium.chrome.browser.suggestions.DestructionObserver;
 import org.chromium.chrome.browser.suggestions.SuggestionsMetricsReporter;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
@@ -225,7 +226,10 @@ public class SectionListTest {
     public void testGetActionItemRank() {
         registerCategory(mSuggestionSource, CATEGORY1, 0);
         registerCategory(mSuggestionSource,
-                new CategoryInfoBuilder(CATEGORY2).withViewAllAction().build(), 3);
+                new CategoryInfoBuilder(CATEGORY2)
+                        .withAction(ContentSuggestionsAdditionalAction.VIEW_ALL)
+                        .build(),
+                3);
 
         SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge);
         sectionList.refreshSuggestions();
@@ -246,7 +250,10 @@ public class SectionListTest {
     public void testRemovesSectionsWhenUiDelegateDestroyed() {
         registerCategory(mSuggestionSource, CATEGORY1, 1);
         registerCategory(mSuggestionSource,
-                new CategoryInfoBuilder(CATEGORY2).withViewAllAction().build(), 3);
+                new CategoryInfoBuilder(CATEGORY2)
+                        .withAction(ContentSuggestionsAdditionalAction.VIEW_ALL)
+                        .build(),
+                3);
 
         SectionList sectionList = new SectionList(mUiDelegate, mOfflinePageBridge);
         sectionList.refreshSuggestions();
