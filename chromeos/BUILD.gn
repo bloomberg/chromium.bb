@@ -47,6 +47,9 @@ component("chromeos") {
     "//third_party/protobuf:protobuf_lite",
     "//url",
   ]
+  data_deps = [
+    ":dbus_service_files",
+  ]
   sources = [
     "accelerometer/accelerometer_reader.cc",
     "accelerometer/accelerometer_reader.h",
@@ -459,6 +462,16 @@ component("chromeos") {
   if (current_cpu == "arm" || current_cpu == "x86") {
     defines += [ "BINDER_IPC_32BIT" ]
   }
+}
+
+copy("dbus_service_files") {
+  sources = [
+    "dbus/services/org.chromium.LibCrosService.conf",
+    "dbus/services/org.chromium.LivenessService.conf",
+  ]
+  outputs = [
+    "$root_out_dir/dbus/{{source_file_part}}",
+  ]
 }
 
 # This must be a static library instead of a source set because some of the
