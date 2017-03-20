@@ -33,7 +33,6 @@ static struct cros_gralloc_bo *cros_gralloc_bo_create(struct driver *drv, int wi
 	}
 
 	bo = new cros_gralloc_bo();
-	memset(bo, 0, sizeof(*bo));
 
 	bo->bo = drv_bo_create(drv, width, height, drv_format, drv_usage);
 	if (!bo->bo) {
@@ -66,7 +65,6 @@ static struct cros_gralloc_handle *cros_gralloc_handle_from_bo(struct bo *bo)
 	struct cros_gralloc_handle *hnd;
 
 	hnd = new cros_gralloc_handle();
-	memset(hnd, 0, sizeof(*hnd));
 
 	num_planes = drv_bo_get_num_planes(bo);
 
@@ -184,7 +182,6 @@ int cros_gralloc_open(const struct hw_module_t *mod, const char *name, struct hw
 	}
 
 	auto alloc = new alloc_device_t();
-	memset(alloc, 0, sizeof(*alloc));
 
 	alloc->alloc = cros_gralloc_alloc;
 	alloc->free = cros_gralloc_free;
