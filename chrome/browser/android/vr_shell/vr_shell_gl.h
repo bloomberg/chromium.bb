@@ -116,17 +116,18 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
   void InitializeRenderer();
   void DrawFrame(int16_t frame_index);
   void DrawVrShellAndUnbind(const gvr::Mat4f& head_pose, gvr::Frame& frame);
-  void DrawUiView(const gvr::Mat4f* head_pose,
+  void DrawUiView(const gvr::Mat4f& head_pose,
                   const std::vector<const ContentRectangle*>& elements,
                   const gvr::Sizei& render_size,
-                  int viewport_offset);
+                  int viewport_offset,
+                  bool draw_cursor);
   void DrawElements(const gvr::Mat4f& view_proj_matrix,
-                    const gvr::Mat4f& view_matrix,
                     const std::vector<const ContentRectangle*>& elements);
   std::vector<const ContentRectangle*> GetElementsInDrawOrder(
       const gvr::Mat4f& view_matrix,
       const std::vector<const ContentRectangle*>& elements);
   void DrawCursor(const gvr::Mat4f& render_matrix);
+  bool ShouldDrawWebVr();
   void DrawWebVr();
   bool WebVrPoseByteIsValid(int pose_index_byte);
 

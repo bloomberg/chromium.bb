@@ -475,7 +475,7 @@ void VrShellGl::InitializeRenderer() {
 void VrShellGl::UpdateController(const gvr::Vec3f& forward_vector) {
   controller_->UpdateState();
 
-  if (web_vr_mode_) {
+  if (ShouldDrawWebVr()) {
     // Process screen touch events for Cardboard button compatibility.
     // Also send tap events for controller "touchpad click" events.
     if (touch_pending_ ||
@@ -717,7 +717,7 @@ void VrShellGl::DrawFrame(int16_t frame_index) {
 
   // If needed, resize the primary buffer for use with WebVR. Resizing
   // needs to happen before acquiring a frame.
-  if (web_vr_mode_) {
+  if (ShouldDrawWebVr()) {
     // Process all pending_bounds_ changes targeted for before this
     // frame, being careful of wrapping frame indices.
     static constexpr unsigned max =
@@ -779,7 +779,7 @@ void VrShellGl::DrawFrame(int16_t frame_index) {
   }
   frame.BindBuffer(kFramePrimaryBuffer);
 
-  if (web_vr_mode_) {
+  if (ShouldDrawWebVr()) {
     DrawWebVr();
   }
 
@@ -790,7 +790,7 @@ void VrShellGl::DrawFrame(int16_t frame_index) {
   // submitting. Technically we don't need a pose if not reprojecting,
   // but keeping it uninitialized seems likely to cause problems down
   // the road. Copying it is cheaper than fetching a new one.
-  if (web_vr_mode_) {
+  if (ShouldDrawWebVr()) {
     static_assert(!((kPoseRingBufferSize - 1) & kPoseRingBufferSize),
                   "kPoseRingBufferSize must be a power of 2");
     head_pose = webvr_head_pose_[frame_index % kPoseRingBufferSize];
@@ -851,7 +851,7 @@ void VrShellGl::DrawVrShellAndUnbind(const gvr::Mat4f& head_pose,
     }
   }
 
-  if (web_vr_mode_) {
+  if (ShouldDrawWebVr()) {
     // WebVR is incompatible with 3D world compositing since the
     // depth buffer was already populated with unknown scaling - the
     // WebVR app has full control over zNear/zFar. Just leave the
@@ -871,8 +871,8 @@ void VrShellGl::DrawVrShellAndUnbind(const gvr::Mat4f& head_pose,
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   }
   if (!world_elements.empty()) {
-    DrawUiView(&head_pose, world_elements, render_size_primary_,
-               kViewportListPrimaryOffset);
+    DrawUiView(head_pose, world_elements, render_size_primary_,
+               kViewportListPrimaryOffset, !ShouldDrawWebVr());
   }
   frame.Unbind();  // Done with the primary buffer.
 
@@ -890,32 +890,29 @@ void VrShellGl::DrawVrShellAndUnbind(const gvr::Mat4f& head_pose,
     frame.BindBuffer(kFrameHeadlockedBuffer);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    DrawUiView(nullptr, head_locked_elements, render_size_headlocked_,
-               kViewportListHeadlockedOffset);
+    gvr::Mat4f identity_matrix;
+    SetIdentityM(identity_matrix);
+    DrawUiView(identity_matrix, head_locked_elements, render_size_headlocked_,
+               kViewportListHeadlockedOffset, false);
     frame.Unbind();  // Done with the headlocked buffer.
   }
 }
 
-void VrShellGl::DrawUiView(const gvr::Mat4f* head_pose,
+void VrShellGl::DrawUiView(const gvr::Mat4f& head_pose,
                            const std::vector<const ContentRectangle*>& elements,
                            const gvr::Sizei& render_size,
-                           int viewport_offset) {
+                           int viewport_offset,
+                           bool draw_cursor) {
   TRACE_EVENT0("gpu", "VrShellGl::DrawUiView");
 
-  gvr::Mat4f view_matrix;
-  if (head_pose) {
-    view_matrix = *head_pose;
-  } else {
-    SetIdentityM(view_matrix);
-  }
-  auto elementsInDrawOrder = GetElementsInDrawOrder(view_matrix, elements);
+  auto elementsInDrawOrder = GetElementsInDrawOrder(head_pose, elements);
 
   for (auto eye : {GVR_LEFT_EYE, GVR_RIGHT_EYE}) {
     buffer_viewport_list_->GetBufferViewport(eye + viewport_offset,
                                              buffer_viewport_.get());
 
     const gvr::Mat4f eye_view_matrix =
-        MatrixMul(gvr_api_->GetEyeFromHeadMatrix(eye), view_matrix);
+        MatrixMul(gvr_api_->GetEyeFromHeadMatrix(eye), head_pose);
 
     gvr::Recti pixel_rect =
         CalculatePixelSpaceRect(render_size, buffer_viewport_->GetSourceUv());
@@ -928,8 +925,8 @@ void VrShellGl::DrawUiView(const gvr::Mat4f* head_pose,
                                             kZNear, kZFar),
                   eye_view_matrix);
 
-    DrawElements(render_matrix, eye_view_matrix, elementsInDrawOrder);
-    if (head_pose != nullptr && !web_vr_mode_) {
+    DrawElements(render_matrix, elementsInDrawOrder);
+    if (draw_cursor) {
       DrawCursor(render_matrix);
     }
   }
@@ -937,7 +934,6 @@ void VrShellGl::DrawUiView(const gvr::Mat4f* head_pose,
 
 void VrShellGl::DrawElements(
     const gvr::Mat4f& view_proj_matrix,
-    const gvr::Mat4f& view_matrix,
     const std::vector<const ContentRectangle*>& elements) {
   for (const auto* rect : elements) {
     gvr::Mat4f transform = MatrixMul(view_proj_matrix, rect->TransformMatrix());
@@ -1092,6 +1088,10 @@ void VrShellGl::DrawCursor(const gvr::Mat4f& render_matrix) {
   }
 }
 
+bool VrShellGl::ShouldDrawWebVr() {
+  return web_vr_mode_ && scene_->GetWebVrRenderingEnabled();
+}
+
 void VrShellGl::DrawWebVr() {
   TRACE_EVENT0("gpu", "VrShellGl::DrawWebVr");
   // Don't need face culling, depth testing, blending, etc. Turn it all off.
@@ -1208,7 +1208,7 @@ void VrShellGl::OnVSync() {
     pending_vsync_ = true;
     pending_time_ = time;
   }
-  if (!web_vr_mode_) {
+  if (!ShouldDrawWebVr()) {
     DrawFrame(-1);
   }
 }

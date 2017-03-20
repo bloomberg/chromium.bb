@@ -130,23 +130,41 @@ scene.Scene = class {
   }
 
   /**
-   * Set the background color of the scene.
-   * @param {{r: number, b: number, g: number, a: number}} color
+   * Configure scene parameters.
+   * @param {api.SceneConfiguration} configuration
    */
-  setBackgroundColor(color) {
-    this.commands.push(
-        {'type': api.Command.UPDATE_BACKGROUND, 'data': {'color': color}});
+  configureScene(configuration) {
+    this.commands.push({
+      'type': api.Command.CONFIGURE_SCENE,
+      'data': configuration.getCommandPayload(),
+    });
   }
 
   /**
-   * Set the radius of background-bounding sphere.
+   * @param {{r: number, b: number, g: number, a: number}} color
+   */
+  setBackgroundColor(color) {
+    let configuration = new api.SceneConfiguration();
+    configuration.setBackgroundColor(color);
+    this.configureScene(configuration);
+  }
+
+  /**
    * @param {number} distance
    */
   setBackgroundDistance(distance) {
-    this.commands.push({
-      'type': api.Command.UPDATE_BACKGROUND,
-      'data': {'distance': distance}
-    });
+    let configuration = new api.SceneConfiguration();
+    configuration.setBackgroundDistance(distance);
+    this.configureScene(configuration);
+  }
+
+  /**
+   * @param {boolean} enabled
+   */
+  setWebVrRenderingModeEnabled(enabled) {
+    let configuration = new api.SceneConfiguration();
+    configuration.setWebVrRenderingModeEnabled(enabled);
+    this.configureScene(configuration);
   }
 
   /**

@@ -284,11 +284,6 @@ void UiScene::RemoveAnimation(int element_id, int animation_id) {
   }
 }
 
-void UiScene::UpdateBackgroundFromDict(const base::DictionaryValue& dict) {
-  ParseColorf(dict, "color", &background_color_);
-  ParseFloat(dict, "distance", &background_distance_);
-}
-
 void UiScene::HandleCommands(std::unique_ptr<base::ListValue> commands,
                              int64_t time_in_micro) {
   for (auto& item : *commands) {
@@ -323,8 +318,10 @@ void UiScene::HandleCommands(std::unique_ptr<base::ListValue> commands,
         RemoveAnimation(element_id, animation_id);
         break;
       }
-      case Command::UPDATE_BACKGROUND:
-        UpdateBackgroundFromDict(*data);
+      case Command::CONFIGURE_SCENE:
+        ParseColorf(*data, "backgroundColor", &background_color_);
+        ParseFloat(*data, "backgroundDistance", &background_distance_);
+        data->GetBoolean("drawWebVr", &webvr_rendering_enabled_);
         break;
     }
   }
@@ -357,12 +354,16 @@ ContentRectangle* UiScene::GetUiElementById(int element_id) {
   return nullptr;
 }
 
-const Colorf& UiScene::GetBackgroundColor() {
+const Colorf& UiScene::GetBackgroundColor() const {
   return background_color_;
 }
 
-float UiScene::GetBackgroundDistance() {
+float UiScene::GetBackgroundDistance() const {
   return background_distance_;
+}
+
+bool UiScene::GetWebVrRenderingEnabled() const {
+  return webvr_rendering_enabled_;
 }
 
 const std::vector<std::unique_ptr<ContentRectangle>>& UiScene::GetUiElements()

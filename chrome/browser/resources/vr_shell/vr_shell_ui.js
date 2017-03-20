@@ -101,14 +101,14 @@ var vrShellUi = (function() {
       if (this.menuMode == enabled)
         return;
       this.menuMode = enabled;
-      this.updateState()
+      this.updateState();
     }
 
     setFullscreen(enabled) {
       if (this.fullscreen == enabled)
         return;
       this.fullscreen = enabled;
-      this.updateState()
+      this.updateState();
     }
 
     updateState() {
@@ -1145,8 +1145,9 @@ var vrShellUi = (function() {
       let fullscreen = this.fullscreen;
 
       api.doAction(api.Action.SET_CONTENT_PAUSED, {'paused': menuMode});
+      ui.setWebVrRenderingModeEnabled(mode == api.Mode.WEB_VR && !menuMode);
 
-      this.contentQuad.setEnabled(mode == api.Mode.STANDARD);
+      this.contentQuad.setEnabled(mode == api.Mode.STANDARD || menuMode);
       this.contentQuad.setFullscreen(fullscreen);
       this.contentQuad.setMenuMode(menuMode);
       // TODO(crbug/643815): Set aspect ratio on content quad when available.
@@ -1162,10 +1163,11 @@ var vrShellUi = (function() {
       this.secureOriginWarnings.setEnabled(
           mode == api.Mode.WEB_VR && !menuMode);
       this.background.setState(mode, menuMode, fullscreen);
-      this.tabContainer.setEnabled(mode == api.Mode.STANDARD && menuMode);
+      this.tabContainer.setEnabled(menuMode);
 
       this.reloadUiButton.setEnabled(mode == api.Mode.STANDARD);
       this.keyboard.setEnabled(mode == api.Mode.STANDARD && menuMode);
+
 
       api.setUiCssSize(
           uiRootElement.clientWidth, uiRootElement.clientHeight, UI_DPR);

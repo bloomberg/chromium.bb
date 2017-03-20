@@ -30,7 +30,7 @@ class UiScene {
     REMOVE_ELEMENT,
     ADD_ANIMATION,
     REMOVE_ANIMATION,
-    UPDATE_BACKGROUND,
+    CONFIGURE_SCENE,
   };
 
   UiScene();
@@ -56,8 +56,6 @@ class UiScene {
   // Remove |animation_id| from element |element_id|.
   void RemoveAnimation(int element_id, int animation_id);
 
-  void UpdateBackgroundFromDict(const base::DictionaryValue& dict);
-
   // Update the positions of all elements in the scene, according to active
   // animations and time.  The units of time are arbitrary, but must match the
   // unit used in animations.
@@ -71,8 +69,9 @@ class UiScene {
 
   ContentRectangle* GetUiElementById(int element_id);
 
-  const Colorf& GetBackgroundColor();
-  float GetBackgroundDistance();
+  const Colorf& GetBackgroundColor() const;
+  float GetBackgroundDistance() const;
+  bool GetWebVrRenderingEnabled() const;
 
  private:
   void ApplyRecursiveTransforms(const ContentRectangle& element,
@@ -86,6 +85,7 @@ class UiScene {
   ContentRectangle* content_element_ = nullptr;
   Colorf background_color_ = {0.1f, 0.1f, 0.1f, 1.0f};
   float background_distance_ = 10.0f;
+  bool webvr_rendering_enabled_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(UiScene);
 };

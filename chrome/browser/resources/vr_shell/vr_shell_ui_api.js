@@ -15,7 +15,7 @@ api.Command = {
   'REMOVE_ELEMENT': 2,
   'ADD_ANIMATION': 3,
   'REMOVE_ANIMATION': 4,
-  'UPDATE_BACKGROUND': 5
+  'CONFIGURE_SCENE': 5
 };
 
 /**
@@ -556,6 +556,49 @@ api.Animation = class {
    */
   setEasing(easing) {
     this.easing = easing;
+  }
+};
+
+/**
+ * Scene configuration class. Use this object to generate the payload of a
+ * CONFIGURE_SCENE command.
+ * @struct
+ */
+api.SceneConfiguration = class {
+  constructor() {
+    /** @private {!Object} */
+    this.properties = {};
+  }
+
+  getCommandPayload() {
+    return this.properties;
+  }
+
+  /**
+   * Set the background color of the scene.
+   * @param {{r: number, b: number, g: number, a: number}} color
+   */
+  setBackgroundColor(color) {
+    this.properties.backgroundColor = color;
+  }
+
+  /**
+   * Set the radius of the background-bounding sphere.
+   * @param {number} distance
+   */
+  setBackgroundDistance(distance) {
+    this.properties.backgroundDistance = distance;
+  }
+
+  /**
+   * Enable or disable rendering of WebVR content in the foreground. Rendering
+   * defaults to enabled when on a WebVR page. This property allows rendering to
+   * be disabled, for purposes of showing an alternate UI (such as a menu). When
+   * disabled, the cursor is rendered.
+   * @param {boolean} enabled
+   */
+  setWebVrRenderingModeEnabled(enabled) {
+    this.properties.drawWebVr = enabled;
   }
 };
 
