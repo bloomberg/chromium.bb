@@ -16,6 +16,7 @@ def infra_buildbot(c):
   c.base_paths['root'] = c.START_DIR[:-4]
   c.base_paths['cache'] = c.base_paths['root'] + (
       'build', 'slave', 'cache')
+  c.base_paths['builder_cache'] = c.START_DIR
   c.base_paths['git_cache'] = c.base_paths['root'] + (
       'build', 'slave', 'cache_dir')
   c.base_paths['goma_cache'] = c.base_paths['root'] + (
