@@ -401,8 +401,6 @@ split_static_library("browser") {
     "favicon/favicon_utils.h",
     "favicon/large_icon_service_factory.cc",
     "favicon/large_icon_service_factory.h",
-    "features.cc",
-    "features.h",
     "file_select_helper.cc",
     "file_select_helper.h",
     "file_select_helper_mac.mm",

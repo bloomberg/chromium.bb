@@ -20,7 +20,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/time/time.h"
-#include "chrome/browser/features.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
@@ -206,12 +205,6 @@ void SetupDesktopFieldTrials() {
   SetupStabilityDebugging();
   base::FeatureList::IsEnabled(features::kModuleDatabase);
 #endif  // defined(OS_WIN)
-  // Activate the experiment as early as possible to increase its visibility
-  // (e.g. the likelihood of its presence in the serialized system profile).
-  // This also needs to happen before the browser rendez-vous attempt
-  // (NotifyOtherProcessOrCreate) in PreMainMessageLoopRun so the corresponding
-  // metrics are tagged.
-  base::FeatureList::IsEnabled(features::kDesktopFastShutdown);
 }
 
 }  // namespace chrome

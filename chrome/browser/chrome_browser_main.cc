@@ -176,9 +176,7 @@
 #include "chrome/browser/metrics/thread_watcher_android.h"
 #include "ui/base/resource/resource_bundle_android.h"
 #else
-#include "chrome/browser/features.h"
 #include "chrome/browser/feedback/feedback_profile_observer.h"
-#include "chrome/browser/lifetime/application_lifetime.h"
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
@@ -1989,12 +1987,6 @@ bool ChromeBrowserMainParts::MainMessageLoopRun(int* result_code) {
       metrics::ExecutionPhase::MAIN_MESSAGE_LOOP_RUN,
       g_browser_process->local_state());
   run_loop.Run();
-
-  if (base::FeatureList::IsEnabled(features::kDesktopFastShutdown)) {
-    // Experiment to determine the impact of always taking the quick exit path.
-    // There is no returning from this call as it terminates the process.
-    chrome::SessionEnding();
-  }
 
   return true;
 #endif  // defined(OS_ANDROID)
