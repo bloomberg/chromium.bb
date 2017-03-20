@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -192,6 +193,9 @@ class CONTENT_EXPORT WebRtcAudioRenderer
   // of playing renderers.
   void OnPlayStateChanged(const blink::WebMediaStream& media_stream,
                           PlayingState* state);
+
+  // Called when |state| is about to be destructed.
+  void OnPlayStateRemoved(PlayingState* state);
 
   // Updates |sink_params_| and |audio_fifo_| based on |sink_|, and initializes
   // |sink_|.
