@@ -95,7 +95,7 @@ public class PhysicalWebBroadcastService extends Service {
         filter.addAction(STOP_SERVICE);
         registerReceiver(mBroadcastReceiver, filter);
 
-        // TODO(iankc): implement parsing, broadcasting, Url Shortener.
+        // TODO(iankc): implement broadcasting, Url Shortener.
         createBroadcastNotification(displayUrl);
         return START_STICKY;
     }
@@ -161,4 +161,6 @@ public class PhysicalWebBroadcastService extends Service {
                 (NotificationManager) getSystemService(NOTIFICATION_SERVICE));
         notificationManager.cancel(NotificationConstants.NOTIFICATION_ID_PHYSICAL_WEB);
     }
+
+    private native byte[] nativeEncodeUrl(String url);
 }
