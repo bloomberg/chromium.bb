@@ -14,6 +14,7 @@
 #include "chrome/browser/notifications/notification_platform_bridge.h"
 #include "chrome/browser/notifications/persistent_notification_handler.h"
 #include "chrome/browser/profiles/profile.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace {
 
@@ -69,10 +70,10 @@ void NativeNotificationDisplayService::Close(
   handler->OnClose(profile_, "", notification_id, false /* by user */);
 }
 
-bool NativeNotificationDisplayService::GetDisplayed(
-    std::set<std::string>* notifications) const {
+void NativeNotificationDisplayService::GetDisplayed(
+    const DisplayedNotificationsCallback& callback) const {
   return notification_bridge_->GetDisplayed(
-      GetProfileId(profile_), profile_->IsOffTheRecord(), notifications);
+      GetProfileId(profile_), profile_->IsOffTheRecord(), callback);
 }
 
 void NativeNotificationDisplayService::ProcessNotificationOperation(

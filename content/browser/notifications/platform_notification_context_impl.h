@@ -101,7 +101,12 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
 
   ~PlatformNotificationContextImpl() override;
 
-  void InitializeOnIO();
+  void DidGetNotificationsOnUI(
+      std::unique_ptr<std::set<std::string>> displayed_notifications,
+      bool supports_synchronization);
+  void InitializeOnIO(
+      std::unique_ptr<std::set<std::string>> displayed_notifications,
+      bool supports_synchronization);
   void ShutdownOnIO();
   void CreateServiceOnIO(
       int render_process_id,
@@ -129,14 +134,22 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
                               const ReadResultCallback& callback);
 
   // Updates the database (and the result callback) based on
-  // |displayed_notifications|
-  // if |sync_supported|. Called on the IO thread.
-  void SynchronizeDisplayedNotificationsForServiceWorkerRegistration(
+  // |displayed_notifications| if |supports_synchronization|.
+  void SynchronizeDisplayedNotificationsForServiceWorkerRegistrationOnUI(
       const GURL& origin,
       int64_t service_worker_registration_id,
       const ReadAllResultCallback& callback,
       std::unique_ptr<std::set<std::string>> displayed_notifications,
-      bool sync_supported);
+      bool supports_synchronization);
+
+  // Updates the database (and the result callback) based on
+  // |displayed_notifications| if |supports_synchronization|.
+  void SynchronizeDisplayedNotificationsForServiceWorkerRegistrationOnIO(
+      const GURL& origin,
+      int64_t service_worker_registration_id,
+      const ReadAllResultCallback& callback,
+      std::unique_ptr<std::set<std::string>> displayed_notifications,
+      bool supports_synchronization);
 
   // Actually reads all notification data from the database. Must only be
   // called on the |task_runner_| thread. |callback| will be invoked on the
@@ -146,7 +159,7 @@ class CONTENT_EXPORT PlatformNotificationContextImpl
       int64_t service_worker_registration_id,
       const ReadAllResultCallback& callback,
       std::unique_ptr<std::set<std::string>> displayed_notifications,
-      bool synchronization_supported);
+      bool supports_synchronization);
 
   // Actually writes the notification database to the database. Must only be
   // called on the |task_runner_| thread. |callback| will be invoked on the

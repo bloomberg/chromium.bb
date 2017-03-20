@@ -27,7 +27,6 @@
 
 // Closes all the alerts being displayed.
 - (void)closeAllNotifications;
-
 @end
 
 // Response protocol for the XPC notification service to notify Chrome of

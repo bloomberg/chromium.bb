@@ -57,35 +57,50 @@ void PlatformNotificationContextImpl::Initialize() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   PlatformNotificationService* service =
       GetContentClient()->browser()->GetPlatformNotificationService();
-  if (service) {
-    std::set<std::string> displayed_notifications;
-
-    bool notification_synchronization_supported =
-        service->GetDisplayedNotifications(browser_context_,
-                                           &displayed_notifications);
-
-    // Synchronize the notifications stored in the database with the set of
-    // displaying notifications in |displayed_notifications|. This is necessary
-    // because flakiness may cause a platform to inform Chrome of a notification
-    // that has since been closed, or because the platform does not support
-    // notifications that exceed the lifetime of the browser process.
-
-    // TODO(peter): Synchronizing the actual notifications will be done when the
-    // persistent notification ids are stable. For M44 we need to support the
-    // case where there may be no notifications after a Chrome restart.
-    if (notification_synchronization_supported &&
-        displayed_notifications.empty()) {
-      prune_database_on_open_ = true;
-    }
+  if (!service) {
+    auto displayed_notifications = base::MakeUnique<std::set<std::string>>();
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&PlatformNotificationContextImpl::InitializeOnIO, this,
+                   base::Passed(&displayed_notifications), false));
+    return;
   }
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&PlatformNotificationContextImpl::InitializeOnIO, this));
+  service->GetDisplayedNotifications(
+      browser_context_,
+      base::Bind(&PlatformNotificationContextImpl::DidGetNotificationsOnUI,
+                 this));
 }
 
-void PlatformNotificationContextImpl::InitializeOnIO() {
+void PlatformNotificationContextImpl::DidGetNotificationsOnUI(
+    std::unique_ptr<std::set<std::string>> displayed_notifications,
+    bool supports_synchronization) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&PlatformNotificationContextImpl::InitializeOnIO, this,
+                 base::Passed(&displayed_notifications),
+                 supports_synchronization));
+}
+
+void PlatformNotificationContextImpl::InitializeOnIO(
+    std::unique_ptr<std::set<std::string>> displayed_notifications,
+    bool supports_synchronization) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  // Synchronize the notifications stored in the database with the set of
+  // displaying notifications in |displayed_notifications|. This is necessary
+  // because flakiness may cause a platform to inform Chrome of a notification
+  // that has since been closed, or because the platform does not support
+  // notifications that exceed the lifetime of the browser process.
+
+  // TODO(peter): Synchronizing the actual notifications will be done when the
+  // persistent notification ids are stable. For M44 we need to support the
+  // case where there may be no notifications after a Chrome restart.
+
+  if (supports_synchronization && displayed_notifications->empty()) {
+    prune_database_on_open_ = true;
+  }
 
   // |service_worker_context_| may be NULL in tests.
   if (service_worker_context_)
@@ -181,18 +196,36 @@ void PlatformNotificationContextImpl::DoReadNotificationData(
 }
 
 void PlatformNotificationContextImpl::
-    SynchronizeDisplayedNotificationsForServiceWorkerRegistration(
+    SynchronizeDisplayedNotificationsForServiceWorkerRegistrationOnUI(
         const GURL& origin,
         int64_t service_worker_registration_id,
         const ReadAllResultCallback& callback,
         std::unique_ptr<std::set<std::string>> notification_ids,
-        bool sync_supported) {
+        bool supports_synchronization) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(
+          &PlatformNotificationContextImpl::
+              SynchronizeDisplayedNotificationsForServiceWorkerRegistrationOnIO,
+          this, origin, service_worker_registration_id, callback,
+          base::Passed(&notification_ids), supports_synchronization));
+}
+
+void PlatformNotificationContextImpl::
+    SynchronizeDisplayedNotificationsForServiceWorkerRegistrationOnIO(
+        const GURL& origin,
+        int64_t service_worker_registration_id,
+        const ReadAllResultCallback& callback,
+        std::unique_ptr<std::set<std::string>> notification_ids,
+        bool supports_synchronization) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   LazyInitialize(
       base::Bind(&PlatformNotificationContextImpl::
                      DoReadAllNotificationDataForServiceWorkerRegistration,
                  this, origin, service_worker_registration_id, callback,
-                 base::Passed(&notification_ids), sync_supported),
+                 base::Passed(&notification_ids), supports_synchronization),
       base::Bind(callback, false /* success */,
                  std::vector<NotificationDatabaseData>()));
 }
@@ -204,32 +237,28 @@ void PlatformNotificationContextImpl::
         const ReadAllResultCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  std::unique_ptr<std::set<std::string>> notification_ids =
-      base::MakeUnique<std::set<std::string>>();
+  auto notification_ids = base::MakeUnique<std::set<std::string>>();
 
   PlatformNotificationService* service =
       GetContentClient()->browser()->GetPlatformNotificationService();
 
   if (!service) {
     // Rely on the database only
-    SynchronizeDisplayedNotificationsForServiceWorkerRegistration(
+    SynchronizeDisplayedNotificationsForServiceWorkerRegistrationOnIO(
         origin, service_worker_registration_id, callback,
-        std::move(notification_ids), false /* sync_supported */);
+        std::move(notification_ids), false /* supports_synchronization */);
     return;
   }
 
-  std::set<std::string>* notification_ids_ptr = notification_ids.get();
-
-  BrowserThread::PostTaskAndReplyWithResult(
+  BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&PlatformNotificationService::GetDisplayedNotifications,
-                 base::Unretained(service), browser_context_,
-                 notification_ids_ptr),
       base::Bind(
-          &PlatformNotificationContextImpl::
-              SynchronizeDisplayedNotificationsForServiceWorkerRegistration,
-          this, origin, service_worker_registration_id, callback,
-          base::Passed(&notification_ids)));
+          &PlatformNotificationService::GetDisplayedNotifications,
+          base::Unretained(service), browser_context_,
+          base::Bind(
+              &PlatformNotificationContextImpl::
+                  SynchronizeDisplayedNotificationsForServiceWorkerRegistrationOnUI,
+              this, origin, service_worker_registration_id, callback)));
 }
 
 void PlatformNotificationContextImpl::
@@ -238,7 +267,7 @@ void PlatformNotificationContextImpl::
         int64_t service_worker_registration_id,
         const ReadAllResultCallback& callback,
         std::unique_ptr<std::set<std::string>> displayed_notifications,
-        bool synchronization_supported) {
+        bool supports_synchronization) {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
   DCHECK(displayed_notifications);
 
@@ -252,7 +281,7 @@ void PlatformNotificationContextImpl::
                             status, NotificationDatabase::STATUS_COUNT);
 
   if (status == NotificationDatabase::STATUS_OK) {
-    if (synchronization_supported) {
+    if (supports_synchronization) {
       // Filter out notifications that are not actually on display anymore.
       // TODO(miguelg) synchronize the database if there are inconsistencies.
       for (auto it = notification_datas.begin();

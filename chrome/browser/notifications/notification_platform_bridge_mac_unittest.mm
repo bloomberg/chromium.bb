@@ -5,7 +5,9 @@
 #import <AppKit/AppKit.h>
 #import <objc/runtime.h>
 
+#include "base/bind.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_platform_bridge_mac.h"
@@ -16,12 +18,15 @@
 #include "chrome/browser/ui/cocoa/notifications/notification_constants_mac.h"
 #include "chrome/browser/ui/cocoa/notifications/notification_response_builder_mac.h"
 #include "chrome/common/features.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "url/gurl.h"
 
 class NotificationPlatformBridgeMacTest : public testing::Test {
  public:
+  NotificationPlatformBridgeMacTest()
+      : thread_bundle_(content::TestBrowserThreadBundle::DEFAULT) {}
   void SetUp() override {
     notification_center_.reset([[StubNotificationCenter alloc] init]);
     alert_dispatcher_.reset([[StubAlertDispatcher alloc] init]);
@@ -51,6 +56,15 @@ class NotificationPlatformBridgeMacTest : public testing::Test {
     [builder setNotificationType:@(NotificationCommon::PERSISTENT)];
 
     return [builder buildUserNotification];
+  }
+
+  static void StoreNotificationCount(
+      int* out_notification_count,
+      std::unique_ptr<std::set<std::string>> notifications,
+      bool supports_synchronization) {
+    DCHECK(out_notification_count);
+    DCHECK(notifications);
+    *out_notification_count = notifications->size();
   }
 
   std::unique_ptr<Notification> CreateBanner(const char* title,
@@ -116,6 +130,7 @@ class NotificationPlatformBridgeMacTest : public testing::Test {
  private:
   base::scoped_nsobject<StubNotificationCenter> notification_center_;
   base::scoped_nsobject<StubAlertDispatcher> alert_dispatcher_;
+  content::TestBrowserThreadBundle thread_bundle_;
 };
 
 TEST_F(NotificationPlatformBridgeMacTest, TestNotificationVerifyValidResponse) {
@@ -263,9 +278,12 @@ TEST_F(NotificationPlatformBridgeMacTest, TestGetDisplayed) {
                   "profile_id", false, *notification);
   EXPECT_EQ(1u, [[notification_center() deliveredNotifications] count]);
 
-  std::set<std::string> notifications;
-  EXPECT_TRUE(bridge->GetDisplayed("profile_id", false, &notifications));
-  EXPECT_EQ(1u, notifications.size());
+  int notification_count = -1;
+  bridge->GetDisplayed(
+      "profile_id", false /* incognito */,
+      base::Bind(&StoreNotificationCount, &notification_count));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, notification_count);
 }
 
 TEST_F(NotificationPlatformBridgeMacTest, TestGetDisplayedUnknownProfile) {
@@ -277,11 +295,12 @@ TEST_F(NotificationPlatformBridgeMacTest, TestGetDisplayedUnknownProfile) {
   bridge->Display(NotificationCommon::PERSISTENT, "notification_id",
                   "profile_id", false, *notification);
   EXPECT_EQ(1u, [[notification_center() deliveredNotifications] count]);
-
-  std::set<std::string> notifications;
-  EXPECT_TRUE(
-      bridge->GetDisplayed("unknown_profile_id", false, &notifications));
-  EXPECT_EQ(0u, notifications.size());
+  int notification_count = -1;
+  bridge->GetDisplayed(
+      "unknown_profile_id", false /* incognito */,
+      base::Bind(&StoreNotificationCount, &notification_count));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0, notification_count);
 }
 
 TEST_F(NotificationPlatformBridgeMacTest, TestQuitRemovesNotifications) {

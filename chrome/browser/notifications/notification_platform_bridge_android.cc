@@ -25,6 +25,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/common/persistent_notification_status.h"
 #include "content/public/common/platform_notification_data.h"
 #include "jni/ActionInfo_jni.h"
@@ -311,12 +312,15 @@ void NotificationPlatformBridgeAndroid::Close(
       webapk_package);
 }
 
-bool NotificationPlatformBridgeAndroid::GetDisplayed(
+void NotificationPlatformBridgeAndroid::GetDisplayed(
     const std::string& profile_id,
     bool incognito,
-    std::set<std::string>* notifications) const {
-  // TODO(miguelg): This can actually be implemented for M+
-  return false;
+    const DisplayedNotificationsCallback& callback) const {
+  auto displayed_notifications = base::MakeUnique<std::set<std::string>>();
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(callback, base::Passed(&displayed_notifications),
+                 false /* supports_synchronization */));
 }
 
 // static

@@ -2,11 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <set>
+#include <string>
+
 #include "chrome/browser/notifications/message_center_display_service.h"
 
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "content/public/browser/browser_thread.h"
 
 MessageCenterDisplayService::MessageCenterDisplayService(
     Profile* profile,
@@ -32,12 +36,14 @@ void MessageCenterDisplayService::Close(
                           NotificationUIManager::GetProfileID(profile_));
 }
 
-bool MessageCenterDisplayService::GetDisplayed(
-    std::set<std::string>* notifications) const {
-  DCHECK(notifications);
-  for (auto notification_id : ui_manager_->GetAllIdsByProfile(
-           NotificationUIManager::GetProfileID(profile_))) {
-    notifications->insert(notification_id);
-  }
-  return true;
+void MessageCenterDisplayService::GetDisplayed(
+    const DisplayedNotificationsCallback& callback) const {
+  auto displayed_notifications =
+      base::MakeUnique<std::set<std::string>>(ui_manager_->GetAllIdsByProfile(
+          NotificationUIManager::GetProfileID(profile_)));
+
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(callback, base::Passed(&displayed_notifications),
+                 true /* supports_synchronization */));
 }

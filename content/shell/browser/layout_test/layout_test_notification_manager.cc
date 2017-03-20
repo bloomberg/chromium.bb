@@ -83,14 +83,14 @@ void LayoutTestNotificationManager::ClosePersistentNotification(
   persistent_notifications_.erase(notification_id);
 }
 
-bool LayoutTestNotificationManager::GetDisplayedNotifications(
+void LayoutTestNotificationManager::GetDisplayedNotifications(
     BrowserContext* browser_context,
-    std::set<std::string>* displayed_notifications) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(displayed_notifications);
-
-  // Notifications will never outlive the lifetime of running layout tests.
-  return false;
+    const DisplayedNotificationsCallback& callback) {
+  auto displayed_notifications = base::MakeUnique<std::set<std::string>>();
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(callback, base::Passed(&displayed_notifications),
+                 false /* supports_synchronization */));
 }
 
 void LayoutTestNotificationManager::SimulateClick(
@@ -113,10 +113,9 @@ void LayoutTestNotificationManager::SimulateClick(
     DCHECK(non_persistent_iter == non_persistent_notifications_.end());
 
     const PersistentNotification& notification = persistent_iter->second;
-    content::NotificationEventDispatcher::GetInstance()
-        ->DispatchNotificationClickEvent(
-            notification.browser_context, notification_id, notification.origin,
-            action_index, reply, base::Bind(&OnEventDispatchComplete));
+    NotificationEventDispatcher::GetInstance()->DispatchNotificationClickEvent(
+        notification.browser_context, notification_id, notification.origin,
+        action_index, reply, base::Bind(&OnEventDispatchComplete));
   } else if (non_persistent_iter != non_persistent_notifications_.end()) {
     DCHECK_EQ(action_index, -1) << "Action buttons are only supported for "
                                    "persistent notifications";
@@ -140,10 +139,9 @@ void LayoutTestNotificationManager::SimulateClose(const std::string& title,
     return;
 
   const PersistentNotification& notification = persistent_iter->second;
-  content::NotificationEventDispatcher::GetInstance()
-      ->DispatchNotificationCloseEvent(
-          notification.browser_context, notification_id, notification.origin,
-          by_user, base::Bind(&OnEventDispatchComplete));
+  NotificationEventDispatcher::GetInstance()->DispatchNotificationCloseEvent(
+      notification.browser_context, notification_id, notification.origin,
+      by_user, base::Bind(&OnEventDispatchComplete));
 }
 
 blink::mojom::PermissionStatus

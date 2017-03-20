@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/mac/bundle_locations.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
@@ -276,23 +277,25 @@ void NotificationPlatformBridgeMac::Close(const std::string& profile_id,
 #endif  // ENABLE_XPC_NOTIFICATIONS
 }
 
-bool NotificationPlatformBridgeMac::GetDisplayed(
+void NotificationPlatformBridgeMac::GetDisplayed(
     const std::string& profile_id,
     bool incognito,
-    std::set<std::string>* notifications) const {
-  DCHECK(notifications);
-
+    const DisplayedNotificationsCallback& callback) const {
+  auto displayed_notifications = base::MakeUnique<std::set<std::string>>();
   NSString* current_profile_id = base::SysUTF8ToNSString(profile_id);
   for (NSUserNotification* toast in
        [notification_center_ deliveredNotifications]) {
     NSString* toast_profile_id = [toast.userInfo
         objectForKey:notification_constants::kNotificationProfileId];
     if ([toast_profile_id isEqualToString:current_profile_id]) {
-      notifications->insert(base::SysNSStringToUTF8([toast.userInfo
+      displayed_notifications->insert(base::SysNSStringToUTF8([toast.userInfo
           objectForKey:notification_constants::kNotificationId]));
     }
   }
-  return true;
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(callback, base::Passed(&displayed_notifications),
+                 true /* supports_synchronization */));
 }
 
 // static
@@ -488,7 +491,6 @@ bool NotificationPlatformBridgeMac::VerifyNotificationData(
 }
 
 // NotificationReply:
-
 - (void)notificationClick:(NSDictionary*)notificationResponseData {
   NotificationPlatformBridgeMac::ProcessNotificationResponse(
       notificationResponseData);

@@ -4,6 +4,9 @@
 
 #include "chrome/browser/notifications/stub_notification_platform_bridge.h"
 
+#include "base/memory/ptr_util.h"
+#include "content/public/browser/browser_thread.h"
+
 StubNotificationPlatformBridge::StubNotificationPlatformBridge()
     : NotificationPlatformBridge() {}
 
@@ -16,6 +19,14 @@ Notification StubNotificationPlatformBridge::GetNotificationAt(
   DCHECK_GT(notifications_[profile_id].size(), index);
 
   return notifications_[profile_id][index];
+}
+
+size_t StubNotificationPlatformBridge::GetNotificationCount() {
+  int count = 0;
+  for (const auto& pair : notifications_) {
+    count += pair.second.size();
+  }
+  return count;
 }
 
 void StubNotificationPlatformBridge::Display(
@@ -43,16 +54,21 @@ void StubNotificationPlatformBridge::Close(const std::string& profile_id,
   }
 }
 
-bool StubNotificationPlatformBridge::GetDisplayed(
+void StubNotificationPlatformBridge::GetDisplayed(
     const std::string& profile_id,
     bool incognito,
-    std::set<std::string>* notifications) const {
-  if (notifications_.find(profile_id) == notifications_.end())
-    return true;
+    const DisplayedNotificationsCallback& callback) const {
+  auto displayed_notifications = base::MakeUnique<std::set<std::string>>();
 
-  const std::vector<Notification>& profile_notifications =
-      notifications_.at(profile_id);
-  for (auto notification : profile_notifications)
-    notifications->insert(notification.id());
-  return true;
+  if (notifications_.find(profile_id) != notifications_.end()) {
+    const std::vector<Notification>& profile_notifications =
+        notifications_.at(profile_id);
+    for (auto notification : profile_notifications)
+      displayed_notifications->insert(notification.id());
+  }
+
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(callback, base::Passed(&displayed_notifications),
+                 true /* supports_synchronization */));
 }

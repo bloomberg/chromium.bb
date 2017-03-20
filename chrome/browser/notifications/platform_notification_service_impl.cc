@@ -381,18 +381,20 @@ void PlatformNotificationServiceImpl::ClosePersistentNotification(
                                                 notification_id);
 }
 
-bool PlatformNotificationServiceImpl::GetDisplayedNotifications(
+void PlatformNotificationServiceImpl::GetDisplayedNotifications(
     BrowserContext* browser_context,
-    std::set<std::string>* displayed_notifications) {
-  DCHECK(displayed_notifications);
+    const DisplayedNotificationsCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   Profile* profile = Profile::FromBrowserContext(browser_context);
-  if (!profile || profile->AsTestingProfile())
-    return false;  // Tests will not have a message center.
-
-  return GetNotificationDisplayService(profile)->GetDisplayed(
-      displayed_notifications);
+  // Tests will not have a message center.
+  if (!profile || profile->AsTestingProfile()) {
+    auto displayed_notifications = base::MakeUnique<std::set<std::string>>();
+    callback.Run(std::move(displayed_notifications),
+                 false /* supports_synchronization */);
+    return;
+  }
+  GetNotificationDisplayService(profile)->GetDisplayed(callback);
 }
 
 void PlatformNotificationServiceImpl::OnClickEventDispatchComplete(

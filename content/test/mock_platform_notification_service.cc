@@ -80,16 +80,19 @@ void MockPlatformNotificationService::ClosePersistentNotification(
   persistent_notifications_.erase(notification_id);
 }
 
-bool MockPlatformNotificationService::GetDisplayedNotifications(
+void MockPlatformNotificationService::GetDisplayedNotifications(
     BrowserContext* browser_context,
-    std::set<std::string>* displayed_notifications) {
+    const DisplayedNotificationsCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(displayed_notifications);
+  auto displayed_notifications = base::MakeUnique<std::set<std::string>>();
 
   for (const auto& kv : persistent_notifications_)
     displayed_notifications->insert(kv.first);
 
-  return true;
+  BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(callback, base::Passed(&displayed_notifications),
+                 true /* supports_synchronization */));
 }
 
 void MockPlatformNotificationService::SimulateClick(

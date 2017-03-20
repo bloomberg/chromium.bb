@@ -22,6 +22,9 @@ class StubNotificationPlatformBridge : public NotificationPlatformBridge {
   // Returns the notification being displayed at position |index|.
   Notification GetNotificationAt(std::string profile_id, size_t index);
 
+  // Returns the number of notifications displayed.
+  size_t GetNotificationCount();
+
   // NotificationPlatformBridge implementation.
   void Display(NotificationCommon::Type notification_type,
                const std::string& notification_id,
@@ -30,9 +33,10 @@ class StubNotificationPlatformBridge : public NotificationPlatformBridge {
                const Notification& notification) override;
   void Close(const std::string& profile_id,
              const std::string& notification_id) override;
-  bool GetDisplayed(const std::string& profile_id,
-                    bool incognito,
-                    std::set<std::string>* notifications) const override;
+  void GetDisplayed(
+      const std::string& profile_id,
+      bool incognito,
+      const DisplayedNotificationsCallback& callback) const override;
 
  private:
   // Map of profile Ids to list of notifications shown for said profile.

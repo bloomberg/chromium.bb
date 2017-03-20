@@ -69,9 +69,10 @@ class NotificationPlatformBridgeAndroid : public NotificationPlatformBridge {
                const Notification& notification) override;
   void Close(const std::string& profile_id,
              const std::string& notification_id) override;
-  bool GetDisplayed(const std::string& profile_id,
-                    bool incognito,
-                    std::set<std::string>* notifications) const override;
+  void GetDisplayed(
+      const std::string& profile_id,
+      bool incognito,
+      const DisplayedNotificationsCallback& callback) const override;
 
   static bool RegisterNotificationPlatformBridge(JNIEnv* env);
 

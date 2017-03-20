@@ -5,9 +5,11 @@
 #ifndef CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_DISPLAY_SERVICE_H_
 #define CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_DISPLAY_SERVICE_H_
 
+#include <memory>
 #include <set>
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "chrome/browser/notifications/notification_common.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -21,9 +23,11 @@ class Profile;
 // instance can be retrieved through the NotificationDisplayServiceFactory.
 //
 // TODO(peter): Add a NotificationHandler mechanism for registering listeners.
-// TODO(miguelg): Remove the SupportsNotificationCenter method.
 class NotificationDisplayService : public KeyedService {
  public:
+  using DisplayedNotificationsCallback =
+      base::Callback<void(std::unique_ptr<std::set<std::string>>,
+                          bool /* supports_synchronization */)>;
   NotificationDisplayService() {}
   ~NotificationDisplayService() override {}
 
@@ -36,9 +40,10 @@ class NotificationDisplayService : public KeyedService {
   virtual void Close(NotificationCommon::Type notification_type,
                      const std::string& notification_id) = 0;
 
-  // Returns whether the implementation can retrieve a list of currently visible
-  // notifications and stores them in |*notification_ids| when possible.
-  virtual bool GetDisplayed(std::set<std::string>* notifications) const = 0;
+  // Writes the ids of all currently displaying notifications and
+  // invokes |callback| with the result once known.
+  virtual void GetDisplayed(
+      const DisplayedNotificationsCallback& callback) const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NotificationDisplayService);

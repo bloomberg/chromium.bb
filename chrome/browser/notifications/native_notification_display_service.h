@@ -38,7 +38,8 @@ class NativeNotificationDisplayService : public NotificationDisplayService {
                const Notification& notification) override;
   void Close(NotificationCommon::Type notification_type,
              const std::string& notification_id) override;
-  bool GetDisplayed(std::set<std::string>* notifications) const override;
+  void GetDisplayed(
+      const DisplayedNotificationsCallback& callback) const override;
 
   // Used by the notification bridge to propagate back events (click, close...).
   void ProcessNotificationOperation(NotificationCommon::Operation operation,

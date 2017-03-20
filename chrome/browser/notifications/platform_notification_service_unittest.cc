@@ -6,8 +6,10 @@
 
 #include <utility>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
@@ -107,6 +109,12 @@ class PlatformNotificationServiceTest : public testing::Test {
     TestingBrowserProcess::DeleteInstance();
   }
 
+  void DidGetDisplayedNotifications(
+      std::unique_ptr<std::set<std::string>> displayed_notifications,
+      bool supports_synchronization) const {
+    displayed_notifications_ = std::move(displayed_notifications);
+  }
+
  protected:
   // Displays a simple, fake notifications and returns a weak pointer to the
   // delegate receiving events for it (ownership is transferred to the service).
@@ -143,9 +151,13 @@ class PlatformNotificationServiceTest : public testing::Test {
   Profile* profile() const { return profile_; }
 
   size_t GetNotificationCount() const {
-    std::set<std::string> notifications;
-    EXPECT_TRUE(display_service()->GetDisplayed(&notifications));
-    return notifications.size();
+    display_service()->GetDisplayed(base::Bind(
+        &PlatformNotificationServiceTest::DidGetDisplayedNotifications,
+        base::Unretained(this)));
+    base::RunLoop().RunUntilIdle();
+
+    EXPECT_TRUE(displayed_notifications_.get());
+    return displayed_notifications_->size();
   }
 
   Notification GetDisplayedNotification() {
@@ -168,6 +180,7 @@ class PlatformNotificationServiceTest : public testing::Test {
   std::unique_ptr<TestingProfileManager> profile_manager_;
   TestingProfile* profile_;
   content::TestBrowserThreadBundle thread_bundle_;
+  mutable std::unique_ptr<std::set<std::string>> displayed_notifications_;
 };
 
 TEST_F(PlatformNotificationServiceTest, DisplayPageDisplayedEvent) {
