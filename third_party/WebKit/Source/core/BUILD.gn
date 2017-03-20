@@ -409,6 +409,7 @@ css_properties("make_core_generated_computed_style_base") {
     "../build/scripts/templates/fields/keyword.tmpl",
     "../build/scripts/templates/fields/flag.tmpl",
     "../build/scripts/templates/fields/monotonic_flag.tmpl",
+    "../build/scripts/templates/fields/storage_only.tmpl",
     "../build/scripts/templates/ComputedStyleBase.cpp.tmpl",
     "../build/scripts/templates/ComputedStyleBase.h.tmpl",
     "../build/scripts/templates/ComputedStyleBaseConstants.h.tmpl",

@@ -2411,10 +2411,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   bool hasRemUnits() const { return m_nonInheritedData.m_hasRemUnits; }
   void setHasRemUnits() const { m_nonInheritedData.m_hasRemUnits = true; }
 
-  bool emptyState() const { return m_nonInheritedData.m_emptyState; }
+  bool emptyState() const { return m_emptyState; }
   void setEmptyState(bool b) {
     setUnique();
-    m_nonInheritedData.m_emptyState = b;
+    m_emptyState = b;
   }
 
   bool hasInlineTransform() const {

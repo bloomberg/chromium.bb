@@ -16,7 +16,10 @@
 {% import 'fields/keyword.tmpl' as keyword %}
 {% import 'fields/flag.tmpl' as flag %}
 {% import 'fields/monotonic_flag.tmpl' as monotonic_flag %}
-{% set field_templates = { 'keyword': keyword, 'flag': flag, 'monotonic_flag': monotonic_flag } %}
+{% import 'fields/storage_only.tmpl' as storage_only %}
+{% set field_templates = {
+     'keyword': keyword, 'flag': flag, 'monotonic_flag': monotonic_flag, 'storage_only': storage_only
+   } %}
 
 namespace blink {
 

@@ -27,7 +27,10 @@ NONPROPERTY_FIELDS = [
     # A non-inherited property references a variable or @apply is used
     {'name': 'hasVariableReferenceFromNonInheritedProperty', 'field_template': 'monotonic_flag'},
     # Explicitly inherits a non-inherited property
-    {'name': 'hasExplicitlyInheritedProperties', 'field_template': 'monotonic_flag'}
+    {'name': 'hasExplicitlyInheritedProperties', 'field_template': 'monotonic_flag'},
+    # These properties only have generated storage, and their methods are handwritten in ComputedStyle.
+    # TODO(shend): Remove these fields and delete the 'storage_only' template.
+    {'name': 'emptyState', 'field_template': 'storage_only', 'size': 1}
 ]
 
 
@@ -206,10 +209,17 @@ def _create_nonproperty_field(property_):
     Create a nonproperty field from an entry in NONPROPERTY_FIELDS and return the Field object.
     """
     # TODO(shend): Make this work for nonflags
-    assert property_['field_template'] in ('flag', 'monotonic_flag'), \
+    assert property_['field_template'] in ('flag', 'monotonic_flag', 'storage_only'), \
         "Nonproperties with arbitrary templates are not yet supported"
     member_name = 'm_' + property_['name']
     field_name_upper = upper_first_letter(property_['name'])
+
+    if property_['field_template'] == 'storage_only':
+        assert 'size' in property_, 'storage_only fields need to specify a size'
+        size = property_['size']
+    else:
+        # Otherwise the field must be some type of flag.
+        size = 1
 
     return Field(
         'nonproperty',
@@ -217,7 +227,7 @@ def _create_nonproperty_field(property_):
         property_name=property_['name'],
         type_name='bool',
         field_template=property_['field_template'],
-        size=1,
+        size=size,
         default_value='false',
         getter_method_name=property_['name'],
         setter_method_name='set' + field_name_upper,
