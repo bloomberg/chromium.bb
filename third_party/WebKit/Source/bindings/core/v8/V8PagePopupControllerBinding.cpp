@@ -47,7 +47,7 @@ void V8PagePopupControllerBinding::installPagePopupController(
 
   windowWrapper->SetAccessor(
       context, v8AtomicString(context->GetIsolate(), "pagePopupController"),
-      pagePopupControllerAttributeGetterCallback);
+      pagePopupControllerAttributeGetterCallback).ToChecked();
 }
 
 }  // namespace blink

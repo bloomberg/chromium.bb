@@ -29,7 +29,6 @@
  */
 
 #include "bindings/core/v8/ScriptPromise.h"
-
 #include "bindings/core/v8/ExceptionMessages.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/ToV8.h"
@@ -188,15 +187,15 @@ void ScriptPromise::InternalResolver::resolve(v8::Local<v8::Value> value) {
   if (m_resolver.isEmpty())
     return;
   m_resolver.v8Value().As<v8::Promise::Resolver>()->Resolve(
-      m_resolver.context(), value);
+      m_resolver.context(), value).ToChecked();
   clear();
 }
 
 void ScriptPromise::InternalResolver::reject(v8::Local<v8::Value> value) {
   if (m_resolver.isEmpty())
     return;
-  m_resolver.v8Value().As<v8::Promise::Resolver>()->Reject(m_resolver.context(),
-                                                           value);
+  m_resolver.v8Value().As<v8::Promise::Resolver>()->Reject(
+      m_resolver.context(), value).ToChecked();
   clear();
 }
 
@@ -311,7 +310,7 @@ v8::Local<v8::Promise> ScriptPromise::rejectRaw(ScriptState* scriptState,
   if (!v8::Promise::Resolver::New(scriptState->context()).ToLocal(&resolver))
     return v8::Local<v8::Promise>();
   v8::Local<v8::Promise> promise = resolver->GetPromise();
-  resolver->Reject(scriptState->context(), value);
+  resolver->Reject(scriptState->context(), value).ToChecked();
   return promise;
 }
 

@@ -401,7 +401,7 @@ void LocalWindowProxy::namedItemAdded(HTMLDocument* document,
   // name already exists or not, and if it exists, we shouldn't define a new
   // accessor property (it fails).
   documentWrapper->SetAccessor(isolate()->GetCurrentContext(),
-                               v8String(isolate(), name), getter);
+                               v8String(isolate(), name), getter).ToChecked();
 }
 
 void LocalWindowProxy::namedItemRemoved(HTMLDocument* document,

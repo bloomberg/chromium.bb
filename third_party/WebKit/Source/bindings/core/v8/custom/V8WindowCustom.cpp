@@ -214,8 +214,10 @@ void V8Window::openerAttributeSetterCustom(
   }
 
   // Delete the accessor from the inner object.
-  info.Holder()->Delete(isolate->GetCurrentContext(),
-                        v8AtomicString(isolate, "opener"));
+  if (info.Holder()->Delete(isolate->GetCurrentContext(),
+                            v8AtomicString(isolate, "opener")).IsNothing()) {
+    return;
+  }
 
   // Put property on the inner object.
   if (info.Holder()->IsObject()) {

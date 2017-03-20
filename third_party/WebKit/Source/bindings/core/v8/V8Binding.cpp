@@ -917,7 +917,7 @@ void removeHiddenValueFromArray(v8::Isolate* isolate,
     if (!array->Get(isolate->GetCurrentContext(), i).ToLocal(&item))
       return;
     if (item->StrictEquals(value)) {
-      array->Delete(isolate->GetCurrentContext(), i);
+      array->Delete(isolate->GetCurrentContext(), i).ToChecked();
       return;
     }
   }

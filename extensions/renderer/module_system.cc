@@ -494,7 +494,8 @@ void ModuleSystem::LazyFieldGetterInner(
   v8::Local<v8::Value> val = info.This();
   if (val->IsObject()) {
     v8::Local<v8::Object> object = v8::Local<v8::Object>::Cast(val);
-    object->Delete(context, property);
+    auto maybe = object->Delete(context, property);
+    CHECK(IsTrue(maybe));
     SetProperty(context, object, property, new_field);
   } else {
     NOTREACHED();
@@ -628,8 +629,12 @@ void ModuleSystem::RequireAsync(
       gin::ModuleRegistry::From(v8_context);
   if (!module_registry) {
     Warn(GetIsolate(), "Extension view no longer exists");
-    resolver->Reject(v8_context, v8::Exception::Error(ToV8StringUnsafe(
-        GetIsolate(), "Extension view no longer exists")));
+    auto maybe = resolver->Reject(
+        v8_context,
+        v8::Exception::Error(ToV8StringUnsafe(
+            GetIsolate(),
+            "Extension view no longer exists")));
+    CHECK(IsTrue(maybe));
     return;
   }
   module_registry->LoadModule(
@@ -835,7 +840,8 @@ void ModuleSystem::OnModuleLoaded(
   v8::HandleScope handle_scope(GetIsolate());
   v8::Local<v8::Promise::Resolver> resolver_local(
       v8::Local<v8::Promise::Resolver>::New(GetIsolate(), *resolver));
-  resolver_local->Resolve(context()->v8_context(), value);
+  auto maybe = resolver_local->Resolve(context()->v8_context(), value);
+  CHECK(IsTrue(maybe));
 }
 
 void ModuleSystem::ClobberExistingNativeHandler(const std::string& name) {

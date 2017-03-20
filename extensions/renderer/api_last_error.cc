@@ -143,7 +143,7 @@ void APILastError::ClearError(v8::Local<v8::Context> context,
 
   // This Delete() can fail, but there's nothing to do if it does (the exception
   // will be caught by the TryCatch above).
-  parent->Delete(context, key);
+  parent->Delete(context, key).ToChecked();
 }
 
 }  // namespace extensions

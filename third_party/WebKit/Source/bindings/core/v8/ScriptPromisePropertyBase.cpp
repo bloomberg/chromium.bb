@@ -115,10 +115,12 @@ void ScriptPromisePropertyBase::resolveOrRejectInternal(
       ASSERT_NOT_REACHED();
       break;
     case Resolved:
-      resolver->Resolve(context, resolvedValue(m_isolate, context->Global()));
+      resolver->Resolve(context, resolvedValue(
+           m_isolate, context->Global())).ToChecked();
       break;
     case Rejected:
-      resolver->Reject(context, rejectedValue(m_isolate, context->Global()));
+      resolver->Reject(context, rejectedValue(
+          m_isolate, context->Global())).ToChecked();
       break;
   }
 }
