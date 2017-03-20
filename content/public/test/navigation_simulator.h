@@ -120,6 +120,10 @@ class NavigationSimulator : public WebContentsObserver {
   // or pushState/popState navigations.
   virtual void CommitSameDocument();
 
+  // Must be called after the simulated navigation or an error page has
+  // committed. Returns the RenderFrameHost the navigation committed in.
+  virtual RenderFrameHost* GetFinalRenderFrameHost();
+
   // --------------------------------------------------------------------------
 
   // The following functions are used to specify the parameters of the

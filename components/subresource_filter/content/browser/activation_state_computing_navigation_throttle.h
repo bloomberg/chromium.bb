@@ -63,22 +63,23 @@ class ActivationStateComputingNavigationThrottle
   // frame.
   std::unique_ptr<AsyncDocumentSubresourceFilter> ReleaseFilter();
 
-  // Gets the activation state calculated for this navigation. Must be called
-  // after the navigation is resumed from getting paused in WillProcessResponse,
-  // which, for example, will have happened at ReadyToCommitNavigation.
-  const ActivationState& GetActivationState() const;
+  AsyncDocumentSubresourceFilter* filter() { return async_filter_.get(); }
+
+  void WillSendActivationToRenderer();
 
  private:
-  void SetActivationStateAndResume(ActivationState state);
+  void OnActivationStateComputed(ActivationState state);
+  void set_filter(
+      std::unique_ptr<AsyncDocumentSubresourceFilter> async_filter) {
+    async_filter_ = std::move(async_filter);
+  }
 
   ActivationStateComputingNavigationThrottle(
       content::NavigationHandle* navigation_handle,
       const base::Optional<ActivationState> parent_activation_state,
       VerifiedRuleset::Handle* ruleset_handle);
 
-  // These members are optional to allow DCHECKing their existence at certain
-  // points in the navigation flow.
-  base::Optional<ActivationState> activation_state_;
+  // Optional to allow for DCHECKing.
   base::Optional<ActivationState> parent_activation_state_;
 
   std::unique_ptr<AsyncDocumentSubresourceFilter> async_filter_;
@@ -86,6 +87,12 @@ class ActivationStateComputingNavigationThrottle
   // Must outlive this class. For main frame navigations, this member will be
   // nullptr until NotifyPageActivationWithRuleset is called.
   VerifiedRuleset::Handle* ruleset_handle_;
+
+  // Becomes true when the throttle manager reaches ReadyToCommitNavigation and
+  // sends an activation IPC to the render process. Makes sure a caller cannot
+  // take ownership of the subresource filter unless an activation IPC is sent
+  // to the renderer.
+  bool will_send_activation_to_renderer_ = false;
 
   base::WeakPtrFactory<ActivationStateComputingNavigationThrottle>
       weak_ptr_factory_;

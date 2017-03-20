@@ -354,8 +354,8 @@ void NavigationSimulator::Fail(int error_code) {
   }
 
   if (IsBrowserSideNavigationEnabled()) {
-    CHECK_EQ(1, num_ready_to_commit_called_);
     if (should_result_in_error_page) {
+      CHECK_EQ(1, num_ready_to_commit_called_);
       // Update the RenderFrameHost now that we know which RenderFrameHost will
       // commit the error page.
       render_frame_host_ =
@@ -558,6 +558,11 @@ void NavigationSimulator::PrepareCompleteCallbackOnHandle() {
   handle_->set_complete_callback_for_testing(
       base::Bind(&NavigationSimulator::OnThrottleChecksComplete,
                  weak_factory_.GetWeakPtr()));
+}
+
+RenderFrameHost* NavigationSimulator::GetFinalRenderFrameHost() {
+  CHECK_EQ(state_, FINISHED);
+  return render_frame_host_;
 }
 
 }  // namespace content

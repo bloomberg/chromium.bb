@@ -170,12 +170,15 @@ class ActivationStateComputingNavigationThrottleTest
     if (!test_throttle_)
       return;
     ASSERT_EQ(navigation_handle, test_throttle_->navigation_handle());
-    last_activation_state_ = test_throttle_->GetActivationState();
-    if (last_activation_state_.value().activation_level ==
-        ActivationLevel::DISABLED) {
-      EXPECT_FALSE(test_throttle_->ReleaseFilter());
+    if (test_throttle_->filter())
+      test_throttle_->WillSendActivationToRenderer();
+
+    if (auto filter = test_throttle_->ReleaseFilter()) {
+      EXPECT_NE(ActivationLevel::DISABLED,
+                filter->activation_state().activation_level);
+      last_activation_state_ = filter->activation_state();
     } else {
-      EXPECT_TRUE(test_throttle_->ReleaseFilter());
+      last_activation_state_ = ActivationState(ActivationLevel::DISABLED);
     }
   }
 

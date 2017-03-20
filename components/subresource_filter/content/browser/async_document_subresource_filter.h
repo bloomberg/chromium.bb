@@ -82,14 +82,10 @@ class AsyncDocumentSubresourceFilter {
   // with the current thread. If MemoryMappedRuleset is not present or
   // malformed, then a default ActivationState is reported (with ActivationLevel
   // equal to DISABLED).
-  //
-  // The |first_disallowed_load_callback|, if it is non-null, is invoked on the
-  // first ReportDisallowedLoad() call.
   AsyncDocumentSubresourceFilter(
       VerifiedRuleset::Handle* ruleset_handle,
       InitializationParams params,
-      base::Callback<void(ActivationState)> activation_state_callback,
-      base::OnceClosure first_disallowed_load_callback);
+      base::Callback<void(ActivationState)> activation_state_callback);
 
   ~AsyncDocumentSubresourceFilter();
 
@@ -104,13 +100,32 @@ class AsyncDocumentSubresourceFilter {
   // |task_runner|.
   void ReportDisallowedLoad();
 
+  // Must be called after activation state computation is finished.
+  const ActivationState& activation_state() const {
+    return activation_state_.value();
+  }
+
+  // The |first_disallowed_load_callback|, if it is non-null, is invoked on the
+  // first ReportDisallowedLoad() call.
+  void set_first_disallowed_load_callback(base::OnceClosure callback) {
+    first_disallowed_load_callback_ = std::move(callback);
+  }
+
  private:
+  void OnActivateStateCalculated(
+      base::Callback<void(ActivationState)> activation_state_callback,
+      ActivationState activation_state);
+
   // Note: Raw pointer, |core_| already holds a reference to |task_runner_|.
   base::SequencedTaskRunner* task_runner_;
   std::unique_ptr<Core, base::OnTaskRunnerDeleter> core_;
   base::OnceClosure first_disallowed_load_callback_;
 
+  base::Optional<ActivationState> activation_state_;
+
   base::ThreadChecker thread_checker_;
+
+  base::WeakPtrFactory<AsyncDocumentSubresourceFilter> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AsyncDocumentSubresourceFilter);
 };

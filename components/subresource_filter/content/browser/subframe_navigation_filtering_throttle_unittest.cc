@@ -79,7 +79,7 @@ class SubframeNavigationFilteringThrottleTest
         AsyncDocumentSubresourceFilter::InitializationParams(
             document_url, ActivationLevel::ENABLED,
             false /* measure_performance */),
-        activation_state.GetCallback(), base::OnceClosure());
+        activation_state.GetCallback());
     RunUntilIdle();
     activation_state.ExpectReceivedOnce(
         ActivationState(ActivationLevel::ENABLED));

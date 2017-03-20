@@ -141,8 +141,7 @@ TEST_F(AsyncDocumentSubresourceFilterTest, ActivationStateIsReported) {
 
   testing::TestActivationStateCallbackReceiver activation_state;
   auto filter = base::MakeUnique<AsyncDocumentSubresourceFilter>(
-      ruleset_handle.get(), std::move(params), activation_state.GetCallback(),
-      base::OnceClosure());
+      ruleset_handle.get(), std::move(params), activation_state.GetCallback());
 
   RunUntilIdle();
   activation_state.ExpectReceivedOnce(
@@ -159,8 +158,7 @@ TEST_F(AsyncDocumentSubresourceFilterTest, ActivationStateIsComputedCorrectly) {
 
   testing::TestActivationStateCallbackReceiver activation_state;
   auto filter = base::MakeUnique<AsyncDocumentSubresourceFilter>(
-      ruleset_handle.get(), std::move(params), activation_state.GetCallback(),
-      base::OnceClosure());
+      ruleset_handle.get(), std::move(params), activation_state.GetCallback());
 
   RunUntilIdle();
 
@@ -180,8 +178,7 @@ TEST_F(AsyncDocumentSubresourceFilterTest, DisabledForCorruptRuleset) {
 
   testing::TestActivationStateCallbackReceiver activation_state;
   auto filter = base::MakeUnique<AsyncDocumentSubresourceFilter>(
-      ruleset_handle.get(), std::move(params), activation_state.GetCallback(),
-      base::OnceClosure());
+      ruleset_handle.get(), std::move(params), activation_state.GetCallback());
 
   RunUntilIdle();
   activation_state.ExpectReceivedOnce(
@@ -197,8 +194,7 @@ TEST_F(AsyncDocumentSubresourceFilterTest, GetLoadPolicyForSubdocument) {
 
   testing::TestActivationStateCallbackReceiver activation_state;
   auto filter = base::MakeUnique<AsyncDocumentSubresourceFilter>(
-      ruleset_handle.get(), std::move(params), activation_state.GetCallback(),
-      base::OnceClosure());
+      ruleset_handle.get(), std::move(params), activation_state.GetCallback());
 
   LoadPolicyCallbackReceiver load_policy_1;
   LoadPolicyCallbackReceiver load_policy_2;
@@ -222,7 +218,8 @@ TEST_F(AsyncDocumentSubresourceFilterTest, FirstDisallowedLoadIsReported) {
 
   testing::TestActivationStateCallbackReceiver activation_state;
   auto filter = base::MakeUnique<AsyncDocumentSubresourceFilter>(
-      ruleset_handle.get(), std::move(params), activation_state.GetCallback(),
+      ruleset_handle.get(), std::move(params), activation_state.GetCallback());
+  filter->set_first_disallowed_load_callback(
       first_disallowed_load_receiver.GetClosure());
 
   LoadPolicyCallbackReceiver load_policy_1;

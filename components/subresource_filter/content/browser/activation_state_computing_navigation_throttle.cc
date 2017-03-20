@@ -58,12 +58,11 @@ void ActivationStateComputingNavigationThrottle::
         const ActivationState& page_activation_state) {
   DCHECK(navigation_handle()->IsInMainFrame());
   DCHECK(!parent_activation_state_);
-  DCHECK(!activation_state_);
   DCHECK(!ruleset_handle_);
   // DISABLED implies null ruleset.
   DCHECK(page_activation_state.activation_level != ActivationLevel::DISABLED ||
          !ruleset_handle);
-  parent_activation_state_.emplace(page_activation_state);
+  parent_activation_state_ = page_activation_state;
   ruleset_handle_ = ruleset_handle;
 }
 
@@ -75,7 +74,6 @@ ActivationStateComputingNavigationThrottle::WillProcessResponse() {
       parent_activation_state_->activation_level == ActivationLevel::DISABLED) {
     DCHECK(navigation_handle()->IsInMainFrame());
     DCHECK(!ruleset_handle_);
-    activation_state_.emplace(ActivationLevel::DISABLED);
     return content::NavigationThrottle::ThrottleCheckResult::PROCEED;
   }
 
@@ -90,34 +88,31 @@ ActivationStateComputingNavigationThrottle::WillProcessResponse() {
     DCHECK(parent);
     params.parent_document_origin = parent->GetLastCommittedOrigin();
   }
-  // TODO(csharrison): Replace the empty OnceClosure with a UI-triggering
-  // callback.
+
   async_filter_ = base::MakeUnique<AsyncDocumentSubresourceFilter>(
       ruleset_handle_, std::move(params),
       base::Bind(&ActivationStateComputingNavigationThrottle::
-                     SetActivationStateAndResume,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::OnceClosure());
+                     OnActivationStateComputed,
+                 weak_ptr_factory_.GetWeakPtr()));
   return content::NavigationThrottle::ThrottleCheckResult::DEFER;
 }
 
-void ActivationStateComputingNavigationThrottle::SetActivationStateAndResume(
+void ActivationStateComputingNavigationThrottle::OnActivationStateComputed(
     ActivationState state) {
-  // Cannot send activation level to the renderer until ReadyToCommitNavigation,
-  // the driver will pull the state out of |this| when that callback occurs.
-  DCHECK(!activation_state_);
-  activation_state_.emplace(state);
   navigation_handle()->Resume();
 }
 
+// Ensure the caller cannot take ownership of a subresource filter for cases
+// when activation IPCs are not sent to the render process.
 std::unique_ptr<AsyncDocumentSubresourceFilter>
 ActivationStateComputingNavigationThrottle::ReleaseFilter() {
-  return std::move(async_filter_);
+  return will_send_activation_to_renderer_ ? std::move(async_filter_) : nullptr;
 }
 
-const ActivationState&
-ActivationStateComputingNavigationThrottle::GetActivationState() const {
-  return activation_state_.value();
+void ActivationStateComputingNavigationThrottle::
+    WillSendActivationToRenderer() {
+  DCHECK(async_filter_);
+  will_send_activation_to_renderer_ = true;
 }
 
 }  // namespace subresource_filter

@@ -53,12 +53,10 @@ InitializationParams& InitializationParams::operator=(InitializationParams&&) =
 AsyncDocumentSubresourceFilter::AsyncDocumentSubresourceFilter(
     VerifiedRuleset::Handle* ruleset_handle,
     InitializationParams params,
-    base::Callback<void(ActivationState)> activation_state_callback,
-    base::OnceClosure first_disallowed_load_callback)
+    base::Callback<void(ActivationState)> activation_state_callback)
     : task_runner_(ruleset_handle->task_runner()),
       core_(new Core(), base::OnTaskRunnerDeleter(task_runner_)),
-      first_disallowed_load_callback_(
-          std::move(first_disallowed_load_callback)) {
+      weak_ptr_factory_(this) {
   DCHECK_NE(ActivationLevel::DISABLED,
             params.parent_activation_state.activation_level);
 
@@ -70,11 +68,20 @@ AsyncDocumentSubresourceFilter::AsyncDocumentSubresourceFilter(
       task_runner_, FROM_HERE,
       base::Bind(&Core::Initialize, base::Unretained(core_.get()),
                  base::Passed(&params), ruleset_handle->ruleset_.get()),
-      std::move(activation_state_callback));
+      base::Bind(&AsyncDocumentSubresourceFilter::OnActivateStateCalculated,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 std::move(activation_state_callback)));
 }
 
 AsyncDocumentSubresourceFilter::~AsyncDocumentSubresourceFilter() {
   DCHECK(thread_checker_.CalledOnValidThread());
+}
+
+void AsyncDocumentSubresourceFilter::OnActivateStateCalculated(
+    base::Callback<void(ActivationState)> activation_state_callback,
+    ActivationState activation_state) {
+  activation_state_ = activation_state;
+  activation_state_callback.Run(activation_state);
 }
 
 void AsyncDocumentSubresourceFilter::GetLoadPolicyForSubdocument(
