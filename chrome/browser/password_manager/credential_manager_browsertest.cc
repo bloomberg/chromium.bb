@@ -162,8 +162,9 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
   EXPECT_TRUE(base::ContainsKey(passwords, www_url.spec()));
 }
 
+// Flaky. See crbug.com/703305
 IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
-                       ObsoleteHttpCredentialMovedOnMigrationToHstsSite) {
+    DISABLED_ObsoleteHttpCredentialMovedOnMigrationToHstsSite) {
   // Add an http credential to the password store.
   GURL https_origin = https_test_server().base_url();
   ASSERT_TRUE(https_origin.SchemeIs(url::kHttpsScheme));
