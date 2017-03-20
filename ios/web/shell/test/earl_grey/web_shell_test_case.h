@@ -7,6 +7,8 @@
 
 #import <XCTest/XCTest.h>
 
+#import "ios/testing/earl_grey/disabled_test_macros.h"
+
 // Base class for all web shell Earl Grey tests.
 @interface WebShellTestCase : XCTestCase
 

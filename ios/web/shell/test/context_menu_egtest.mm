@@ -9,7 +9,6 @@
 
 #import "base/ios/block_types.h"
 #include "base/strings/sys_string_conversions.h"
-#import "ios/testing/earl_grey/disabled_test_macros.h"
 #import "ios/testing/earl_grey/matchers.h"
 #import "ios/web/public/test/http_server.h"
 #include "ios/web/public/test/http_server_util.h"

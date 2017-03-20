@@ -16,7 +16,6 @@
 #import "ios/web/public/test/http_server.h"
 #include "ios/web/public/test/http_server_util.h"
 #import "ios/web/public/test/response_providers/http_auth_response_provider.h"
-#import "ios/testing/earl_grey/disabled_test_macros.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "url/gurl.h"
 

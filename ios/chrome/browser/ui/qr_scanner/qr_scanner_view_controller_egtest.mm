@@ -26,7 +26,6 @@
 #import "ios/chrome/test/base/scoped_block_swizzler.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
-#import "ios/testing/earl_grey/disabled_test_macros.h"
 #include "ios/web/public/test/http_server.h"
 #include "ios/web/public/test/http_server_util.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
