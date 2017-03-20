@@ -4,7 +4,10 @@
 
 #include "content/public/browser/overscroll_configuration.h"
 
+#include "base/command_line.h"
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
+#include "content/public/common/content_switches.h"
 
 namespace {
 
@@ -18,7 +21,23 @@ float g_vert_threshold_start = 0.f;
 float g_horiz_resist_after = 30.f;
 float g_vert_resist_after = 30.f;
 
+float GetHorizontalStartThresholdMultiplier() {
+  base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
+  if (!cmd->HasSwitch(switches::kOverscrollStartThreshold))
+    return 1.f;
+  std::string string_value =
+      cmd->GetSwitchValueASCII(switches::kOverscrollStartThreshold);
+  int percentage;
+  if (base::StringToInt(string_value, &percentage) && percentage > 0) {
+    return percentage / 100.f;
+  }
+
+  DLOG(WARNING) << "Failed to parse switch "
+               << switches::kOverscrollStartThreshold << ": " << string_value;
+  return 1.f;
 }
+
+}  // namespace
 
 namespace content {
 
@@ -31,10 +50,16 @@ float GetOverscrollConfig(OverscrollConfig config) {
       return g_vert_threshold_complete;
 
     case OVERSCROLL_CONFIG_HORIZ_THRESHOLD_START_TOUCHSCREEN:
-      return g_horiz_threshold_start_touchscreen;
+      static const float horiz_threshold_start_touchscreen =
+          GetHorizontalStartThresholdMultiplier() *
+          g_horiz_threshold_start_touchscreen;
+      return horiz_threshold_start_touchscreen;
 
     case OVERSCROLL_CONFIG_HORIZ_THRESHOLD_START_TOUCHPAD:
-      return g_horiz_threshold_start_touchpad;
+      static const float horiz_threshold_start_touchpad =
+          GetHorizontalStartThresholdMultiplier() *
+          g_horiz_threshold_start_touchpad;
+      return horiz_threshold_start_touchpad;
 
     case OVERSCROLL_CONFIG_VERT_THRESHOLD_START:
       return g_vert_threshold_start;

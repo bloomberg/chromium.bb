@@ -167,6 +167,19 @@ const FeatureEntry::Choice kOverscrollHistoryNavigationChoices[] = {
     switches::kOverscrollHistoryNavigation,
     "2" }
 };
+
+const FeatureEntry::Choice kOverscrollStartThresholdChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_OVERSCROLL_START_THRESHOLD_133_PERCENT,
+    switches::kOverscrollStartThreshold,
+    "133" },
+  { IDS_OVERSCROLL_START_THRESHOLD_166_PERCENT,
+    switches::kOverscrollStartThreshold,
+    "166" },
+  { IDS_OVERSCROLL_START_THRESHOLD_200_PERCENT,
+    switches::kOverscrollStartThreshold,
+    "200" }
+};
 #endif  // USE_AURA
 
 const FeatureEntry::Choice kTouchTextSelectionStrategyChoices[] = {
@@ -1159,6 +1172,10 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_OVERSCROLL_HISTORY_NAVIGATION_NAME,
      IDS_FLAGS_OVERSCROLL_HISTORY_NAVIGATION_DESCRIPTION, kOsAura,
      MULTI_VALUE_TYPE(kOverscrollHistoryNavigationChoices)},
+    {"overscroll-start-threshold",
+     IDS_FLAGS_OVERSCROLL_START_THRESHOLD_NAME,
+     IDS_FLAGS_OVERSCROLL_START_THRESHOLD_DESCRIPTION, kOsAura,
+     MULTI_VALUE_TYPE(kOverscrollStartThresholdChoices)},
 #endif  // USE_AURA
     {"scroll-end-effect", IDS_FLAGS_SCROLL_END_EFFECT_NAME,
      IDS_FLAGS_SCROLL_END_EFFECT_DESCRIPTION, kOsCrOS,
