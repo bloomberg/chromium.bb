@@ -11,6 +11,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.toolbar.BottomToolbarPhone;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContentController;
 
 /**
  * A {@link BottomSheetContent} holding a {@link BookmarkManager} for display in the BottomSheet.
@@ -51,5 +52,10 @@ public class BookmarkSheetContent implements BottomSheetContent {
     public void destroy() {
         mBookmarkManager.destroy();
         mBookmarkManager = null;
+    }
+
+    @Override
+    public int getType() {
+        return BottomSheetContentController.TYPE_BOOKMARKS;
     }
 }

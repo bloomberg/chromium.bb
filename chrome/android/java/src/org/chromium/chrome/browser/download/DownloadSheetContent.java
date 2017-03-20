@@ -16,6 +16,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.download.ui.DownloadManagerUi;
 import org.chromium.chrome.browser.toolbar.BottomToolbarPhone;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContentController;
 
 /**
  * A {@link BottomSheetContent} holding a {@link DownloadManagerUi} for display in the BottomSheet.
@@ -77,5 +78,10 @@ public class DownloadSheetContent implements BottomSheetContent {
         mDownloadManager.onDestroyed();
         mDownloadManager = null;
         ApplicationStatus.unregisterActivityStateListener(mActivityStateListener);
+    }
+
+    @Override
+    public int getType() {
+        return BottomSheetContentController.TYPE_DOWNLOADS;
     }
 }

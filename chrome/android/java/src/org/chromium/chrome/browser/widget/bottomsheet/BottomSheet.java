@@ -33,6 +33,7 @@ import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.widget.FadingBackgroundView;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContentController.ContentType;
 import org.chromium.content_public.browser.LoadUrlParams;
 
 import java.lang.annotation.Retention;
@@ -151,6 +152,9 @@ public class BottomSheet
     /** The last non-default toolbar view that was attached to mToolbarHolder. */
     private View mLastToolbarView;
 
+    /** Whether the sheet is currently open. */
+    private boolean mIsSheetOpen;
+
     /**
      * An interface defining content that can be displayed inside of the bottom sheet for Chrome
      * Home.
@@ -182,6 +186,12 @@ public class BottomSheet
          * Called to destroy the BottomSheetContent when it is no longer in use.
          */
         void destroy();
+
+        /**
+         * @return The {@link BottomSheetContentController.ContentType} for this content.
+         */
+        @ContentType
+        int getType();
     }
 
     /**
@@ -271,6 +281,8 @@ public class BottomSheet
 
         mGestureDetector = new GestureDetector(context, new BottomSheetSwipeDetector());
         mGestureDetector.setIsLongpressEnabled(false);
+
+        addObserver(new BottomSheetMetrics());
     }
 
     @Override
@@ -505,6 +517,10 @@ public class BottomSheet
         } else {
             mDefaultToolbarView.setVisibility(View.VISIBLE);
         }
+
+        for (BottomSheetObserver o : mObservers) {
+            o.onSheetContentChanged(mSheetContent);
+        }
     }
 
     /**
@@ -525,6 +541,9 @@ public class BottomSheet
      * A notification that the sheet is exiting the peek state into one that shows content.
      */
     private void onSheetOpened() {
+        if (mIsSheetOpen) return;
+
+        mIsSheetOpen = true;
         for (BottomSheetObserver o : mObservers) o.onSheetOpened();
     }
 
@@ -532,6 +551,9 @@ public class BottomSheet
      * A notification that the sheet has returned to the peeking state.
      */
     private void onSheetClosed() {
+        if (!mIsSheetOpen) return;
+
+        mIsSheetOpen = false;
         for (BottomSheetObserver o : mObservers) o.onSheetClosed();
     }
 
@@ -728,12 +750,19 @@ public class BottomSheet
      *                move there instantly.
      */
     public void setSheetState(@SheetState int state, boolean animate) {
+        boolean stateChanged = state != mCurrentState;
         mCurrentState = state;
 
         if (animate) {
             createSettleAnimation(state);
         } else {
             setSheetOffsetFromBottom(getSheetHeightForState(state));
+        }
+
+        if (!stateChanged) return;
+
+        for (BottomSheetObserver o : mObservers) {
+            o.onSheetStateChanged(mCurrentState);
         }
     }
 

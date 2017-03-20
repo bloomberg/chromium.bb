@@ -10,6 +10,7 @@ import android.view.View;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.toolbar.BottomToolbarPhone;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContentController;
 
 /**
  * A {@link BottomSheetContent} holding a {@link HistoryManager} for display in the BottomSheet.
@@ -49,5 +50,10 @@ public class HistorySheetContent implements BottomSheetContent {
     public void destroy() {
         mHistoryManager.onDestroyed();
         mHistoryManager = null;
+    }
+
+    @Override
+    public int getType() {
+        return BottomSheetContentController.TYPE_HISTORY;
     }
 }

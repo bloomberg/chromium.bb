@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.widget.bottomsheet;
 
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.SheetState;
+
 /**
  * An interface for notifications about the state of the bottom sheet.
  */
@@ -47,4 +50,16 @@ public interface BottomSheetObserver {
      *                           when the sheet is half expanded.
      */
     void onTransitionPeekToHalf(float transitionFraction);
+
+    /**
+     * An event for when the sheet changes state.
+     * @param newState The new sheet state. See {@link SheetState}.
+     */
+    void onSheetStateChanged(@SheetState int newState);
+
+    /**
+     * An event for when the sheet content changes.
+     * @param newContent The new {@link BottomSheetContent}.
+     */
+    void onSheetContentChanged(BottomSheetContent newContent);
 }

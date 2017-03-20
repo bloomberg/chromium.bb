@@ -20,11 +20,45 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
+import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 
 /**
  * Phone specific toolbar that exists at the bottom of the screen.
  */
-public class BottomToolbarPhone extends ToolbarPhone implements BottomSheetObserver {
+public class BottomToolbarPhone extends ToolbarPhone {
+    /**
+     * The observer used to listen to {@link BottomSheet} events.
+     */
+    private final BottomSheetObserver mBottomSheetObserver = new EmptyBottomSheetObserver() {
+        @Override
+        public void onTransitionPeekToHalf(float transitionFraction) {
+            // TODO(twellington): animate end toolbar button appearance/disappearance.
+            if (transitionFraction >= 0.5 && !mShouldHideEndToolbarButtons) {
+                mShouldHideEndToolbarButtons = true;
+                updateUrlExpansionAnimation();
+            } else if (transitionFraction < 0.5 && mShouldHideEndToolbarButtons) {
+                mShouldHideEndToolbarButtons = false;
+                updateUrlExpansionAnimation();
+            }
+
+            boolean buttonsClickable = transitionFraction == 0.f;
+            mToggleTabStackButton.setClickable(buttonsClickable);
+            mMenuButton.setClickable(buttonsClickable);
+        }
+
+        @Override
+        public void onSheetOffsetChanged(float heightFraction) {
+            boolean isMovingDown = heightFraction < mLastHeightFraction;
+            mLastHeightFraction = heightFraction;
+
+            // The only time the omnibox should have focus is when the sheet is fully expanded. Any
+            // movement of the sheet should unfocus it.
+            if (isMovingDown && getLocationBar().isUrlBarFocused()) {
+                getLocationBar().setUrlBarFocus(false);
+            }
+        }
+    };
+
     /** The white version of the toolbar handle; used for dark themes and incognito. */
     private final Bitmap mHandleLight;
 
@@ -87,7 +121,7 @@ public class BottomToolbarPhone extends ToolbarPhone implements BottomSheetObser
 
         mBottomSheet = sheet;
         getLocationBar().setBottomSheet(mBottomSheet);
-        mBottomSheet.addObserver(this);
+        mBottomSheet.addObserver(mBottomSheetObserver);
     }
 
     @Override
@@ -193,43 +227,6 @@ public class BottomToolbarPhone extends ToolbarPhone implements BottomSheetObser
     @Override
     protected boolean shouldHideEndToolbarButtons() {
         return mShouldHideEndToolbarButtons;
-    }
-
-    @Override
-    public void onSheetOpened() {}
-
-    @Override
-    public void onSheetClosed() {}
-
-    @Override
-    public void onLoadUrl(String url) {}
-
-    @Override
-    public void onTransitionPeekToHalf(float transitionFraction) {
-        // TODO(twellington): animate end toolbar button appearance/disappearance.
-        if (transitionFraction >= 0.5 && !mShouldHideEndToolbarButtons) {
-            mShouldHideEndToolbarButtons = true;
-            updateUrlExpansionAnimation();
-        } else if (transitionFraction < 0.5 && mShouldHideEndToolbarButtons) {
-            mShouldHideEndToolbarButtons = false;
-            updateUrlExpansionAnimation();
-        }
-
-        boolean buttonsClickable = transitionFraction == 0.f;
-        mToggleTabStackButton.setClickable(buttonsClickable);
-        mMenuButton.setClickable(buttonsClickable);
-    }
-
-    @Override
-    public void onSheetOffsetChanged(float heightFraction) {
-        boolean isMovingDown = heightFraction < mLastHeightFraction;
-        mLastHeightFraction = heightFraction;
-
-        // The only time the omnibox should have focus is when the sheet is fully expanded. Any
-        // movement of the sheet should unfocus it.
-        if (isMovingDown && getLocationBar().isUrlBarFocused()) {
-            getLocationBar().setUrlBarFocus(false);
-        }
     }
 
     /**

@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.widget.bottomsheet;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.support.annotation.IntDef;
 import android.support.design.internal.BottomNavigationItemView;
 import android.support.design.internal.BottomNavigationMenuView;
 import android.support.design.widget.BottomNavigationView;
@@ -23,6 +24,8 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -34,14 +37,60 @@ import java.util.Map.Entry;
  * {@link BottomSheet}. Also manages {@link BottomSheetContent} displayed in the BottomSheet.
  */
 public class BottomSheetContentController extends BottomNavigationView
-        implements BottomSheetObserver, OnNavigationItemSelectedListener {
+        implements OnNavigationItemSelectedListener {
+    /** The different types of content that may be displayed in the bottom sheet. */
+    @IntDef({TYPE_SUGGESTIONS, TYPE_DOWNLOADS, TYPE_BOOKMARKS, TYPE_HISTORY})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface ContentType {}
+    public static final int TYPE_SUGGESTIONS = 0;
+    public static final int TYPE_DOWNLOADS = 1;
+    public static final int TYPE_BOOKMARKS = 2;
+    public static final int TYPE_HISTORY = 3;
+
+    private final Map<Integer, BottomSheetContent> mBottomSheetContents = new HashMap<>();
+
+    private final BottomSheetObserver mBottomSheetObserver = new EmptyBottomSheetObserver() {
+        @Override
+        public void onTransitionPeekToHalf(float transitionFraction) {
+            float offsetY = (mBottomSheet.getMinOffset() - mBottomSheet.getSheetOffsetFromBottom())
+                    + mDistanceBelowToolbarPx;
+            setTranslationY((int) Math.max(offsetY, 0f));
+            setVisibility(
+                    MathUtils.areFloatsEqual(transitionFraction, 0f) ? View.GONE : View.VISIBLE);
+        }
+
+        @Override
+        public void onSheetOpened() {
+            if (!mDefaultContentInitialized && mTabModelSelector.getCurrentTab() != null) {
+                initializeDefaultContent();
+            }
+        }
+
+        @Override
+        public void onSheetClosed() {
+            Iterator<Entry<Integer, BottomSheetContent>> contentIterator =
+                    mBottomSheetContents.entrySet().iterator();
+            while (contentIterator.hasNext()) {
+                Entry<Integer, BottomSheetContent> entry = contentIterator.next();
+                if (entry.getKey() == R.id.action_home) continue;
+
+                entry.getValue().destroy();
+                contentIterator.remove();
+            }
+            // TODO(twellington): determine a policy for destroying the
+            //                    SuggestionsBottomSheetContent.
+
+            if (mSelectedItemId == 0 || mSelectedItemId == R.id.action_home) return;
+
+            showBottomSheetContent(R.id.action_home);
+        }
+    };
+
     private BottomSheet mBottomSheet;
     private TabModelSelector mTabModelSelector;
     private float mDistanceBelowToolbarPx;
     private int mSelectedItemId;
     private boolean mDefaultContentInitialized;
-
-    private final Map<Integer, BottomSheetContent> mBottomSheetContents = new HashMap<>();
 
     public BottomSheetContentController(Context context, AttributeSet atts) {
         super(context, atts);
@@ -56,7 +105,7 @@ public class BottomSheetContentController extends BottomNavigationView
     public void init(BottomSheet bottomSheet, int controlContainerHeight,
             TabModelSelector tabModelSelector) {
         mBottomSheet = bottomSheet;
-        mBottomSheet.addObserver(this);
+        mBottomSheet.addObserver(mBottomSheetObserver);
         mTabModelSelector = tabModelSelector;
 
         Resources res = getContext().getResources();
@@ -83,45 +132,6 @@ public class BottomSheetContentController extends BottomNavigationView
         showBottomSheetContent(item.getItemId());
         return true;
     }
-
-    @Override
-    public void onTransitionPeekToHalf(float transitionFraction) {
-        float offsetY = (mBottomSheet.getMinOffset() - mBottomSheet.getSheetOffsetFromBottom())
-                + mDistanceBelowToolbarPx;
-        setTranslationY((int) Math.max(offsetY, 0f));
-        setVisibility(MathUtils.areFloatsEqual(transitionFraction, 0f) ? View.GONE : View.VISIBLE);
-    }
-
-    @Override
-    public void onSheetOpened() {
-        if (!mDefaultContentInitialized && mTabModelSelector.getCurrentTab() != null) {
-            initializeDefaultContent();
-        }
-    }
-
-    @Override
-    public void onSheetClosed() {
-        Iterator<Entry<Integer, BottomSheetContent>> contentIterator =
-                mBottomSheetContents.entrySet().iterator();
-        while (contentIterator.hasNext()) {
-            Entry<Integer, BottomSheetContent> entry = contentIterator.next();
-            if (entry.getKey() == R.id.action_home) continue;
-
-            entry.getValue().destroy();
-            contentIterator.remove();
-        }
-        // TODO(twellington): determine a policy for destroying the SuggestionsBottomSheetContent.
-
-        if (mSelectedItemId == 0 || mSelectedItemId == R.id.action_home) return;
-
-        showBottomSheetContent(R.id.action_home);
-    }
-
-    @Override
-    public void onLoadUrl(String url) {}
-
-    @Override
-    public void onSheetOffsetChanged(float heightFraction) {}
 
     // TODO(twellington): remove this once the support library is updated to allow disabling
     //                    shifting mode or determines shifting mode based on the width of the

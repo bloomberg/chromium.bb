@@ -16,6 +16,7 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContentController;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 
@@ -93,9 +94,15 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
         return mContextMenuManager;
     }
 
+    @Override
     public void destroy() {
         mSuggestionsManager.onDestroy();
         mTileGroupDelegate.destroy();
+    }
+
+    @Override
+    public int getType() {
+        return BottomSheetContentController.TYPE_SUGGESTIONS;
     }
 
     public static void setSuggestionsSourceForTesting(SuggestionsSource suggestionsSource) {

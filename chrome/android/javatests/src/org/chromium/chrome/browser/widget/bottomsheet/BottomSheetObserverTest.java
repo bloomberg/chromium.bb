@@ -8,6 +8,7 @@ import android.support.test.filters.MediumTest;
 
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.util.MathUtils;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
 import org.chromium.chrome.test.BottomSheetTestCaseBase;
 
 import java.util.concurrent.TimeoutException;
@@ -61,6 +62,12 @@ public class BottomSheetObserverTest extends BottomSheetTestCaseBase {
 
         @Override
         public void onLoadUrl(String url) {}
+
+        @Override
+        public void onSheetStateChanged(int newState) {}
+
+        @Override
+        public void onSheetContentChanged(BottomSheetContent newContent) {}
     }
 
     @Override
