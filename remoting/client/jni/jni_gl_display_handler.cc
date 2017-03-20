@@ -83,11 +83,12 @@ JniGlDisplayHandler::Core::Core(base::WeakPtr<JniGlDisplayHandler> shell)
     : shell_(shell), weak_factory_(this) {
   runtime_ = ChromotingClientRuntime::GetInstance();
   DCHECK(!runtime_->display_task_runner()->BelongsToCurrentThread());
+
+  weak_ptr_ = weak_factory_.GetWeakPtr();
+
   runtime_->display_task_runner()->PostTask(
       FROM_HERE, base::Bind(&JniGlDisplayHandler::Core::Initialize,
                             base::Unretained(this)));
-
-  weak_ptr_ = weak_factory_.GetWeakPtr();
 
   // Do not bind GlRenderer::OnFrameReceived. |renderer_| is not ready yet.
   owned_frame_consumer_.reset(new DualBufferFrameConsumer(
