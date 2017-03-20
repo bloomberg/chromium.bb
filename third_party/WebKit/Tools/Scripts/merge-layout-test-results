@@ -1,0 +1,135 @@
+#!/usr/bin/python
+#
+# Copyright 2017 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import argparse
+import logging
+import os
+import sys
+import tempfile
+
+from webkitpy.common.system.log_utils import configure_logging
+from webkitpy.layout_tests import merge_results
+
+# ------------------------------------------------------------------------
+
+
+def main(argv):
+
+    parser = argparse.ArgumentParser()
+    parser.description = """\
+Merges sharded layout test results into a single output directory.
+"""
+    parser.epilog = """\
+
+If a post merge script is given, it will be run on the resulting merged output
+directory. The script will be given the arguments plus
+'--results_dir <output_directory>'.
+"""
+
+    parser.add_argument(
+        '-v', '--verbose', action='store_true',
+        help='Output information about merging progress.')
+
+    parser.add_argument(
+        '--results-json-override-value',
+        nargs=2, metavar=('KEY', 'VALUE'), default=[],
+        action='append',
+        help='Override the value of a value in the result style JSON file '
+             '(--result-jsons-override-value layout_test_dirs /tmp/output).')
+    parser.add_argument(
+        '--results-json-allow-unknown-if-matching',
+        action='store_true', default=False,
+        help='Allow unknown values in the result.json file as long as the '
+             'value match on all shards.')
+
+    parser.add_argument(
+        '--output-directory',
+        help='Directory to create the merged results in.')
+    parser.add_argument(
+        '--input-directories', nargs='+',
+        help='Directories to merge the results from.')
+
+    # Swarming Isolated Merge Script API
+    # script.py --build-properties /s/build.json --output-json /tmp/output.json  shard0/output.json shard1/output.json
+    parser.add_argument(
+        '-o', '--output-json',
+        help='(Swarming Isolated Merge Script API) Output JSON file to create.')
+    parser.add_argument(
+        '--build-properties',
+        help='(Swarming Isolated Merge Script API) Build property JSON file provided by recipes.')
+
+    # Script to run after merging the directories together. Normally used with archive_layout_test_results.py
+    # scripts/slave/chromium/archive_layout_test_results.py \
+    #     --results-dir /b/rr/tmpIcChUS/w/layout-test-results \
+    #     --build-dir /b/rr/tmpIcChUS/w/src/out \
+    #     --build-number 3665 \
+    #     --builder-name 'WebKit Linux - RandomOrder' \
+    #     --gs-bucket gs://chromium-layout-test-archives \
+    #     --staging-dir /b/c/chrome_staging \
+    #     --slave-utils-gsutil-py-path /b/rr/tmpIcChUS/rw/scripts/slave/.recipe_deps/depot_tools/gsutil.py
+    # in dir /b/rr/tmpIcChUS/w
+    parser.add_argument(
+        '--post-merge-script',
+        nargs='*',
+        help='Script to call after the results have been merged.')
+
+    # The position arguments depend on if we are using the isolated merge
+    # script API mode or not.
+    parser.add_argument(
+        'positional', nargs='*',
+        help='output.json from shards.')
+
+    args = parser.parse_args(argv)
+    if args.verbose:
+        logging_level = logging.DEBUG
+    else:
+        logging_level = logging.INFO
+    configure_logging(logging_level=logging_level)
+
+    # Map the isolate arguments back to our output / input arguments.
+    if args.output_json:
+        assert args.positional
+
+        assert not args.output_directory
+        args.output_directory = os.path.dirname(args.output_json)
+
+        assert not args.input_directories
+        args.input_directories = [os.path.dirname(f) for f in args.positional]
+        args.positional = []
+
+    # Allow skipping the --input-directories bit, for example,
+    #   merge-layout-test-results -o outputdir shard0 shard1 shard2
+    if args.positional and not args.input_directories:
+        args.input_directories = args.positional
+
+    if not args.output_directory:
+        args.output_directory = tempfile.mkdtemp(suffix='webkit_layout_test_results.')
+
+    assert args.output_directory
+    assert args.input_directories
+
+    results_json_value_overrides = {}
+    for k, v in args.results_json_override_value:
+        assert k not in results_json_value_overrides
+        try:
+            results_json_value_overrides[k] = eval(v)
+        except NameError:
+            results_json_value_overrides[k] = v
+
+    merger = merge_results.LayoutTestDirMerger(
+        results_json_value_overrides=results_json_value_overrides,
+        results_json_allow_unknown_if_matching=args.results_json_allow_unknown_if_matching)
+    merger.merge(args.output_directory, args.input_directories)
+
+    if args.post_merge_script:
+        os.chdir(args.output_directory)
+
+        post_script = list(args.post_merge_script)
+        post_script.append('--result-dir', args.output_directory)
+
+        os.execlp(post_script)
+
+main(sys.argv[1:])

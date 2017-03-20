@@ -198,6 +198,9 @@ class FileSystem(object):
     def open_binary_file_for_reading(self, path):
         return codecs.open(path, 'rb')
 
+    def open_binary_file_for_writing(self, path):
+        return file(path, 'wb')
+
     def read_binary_file(self, path):
         """Return the contents of the file at the given path as a byte string."""
         with file(path, 'rb') as f:

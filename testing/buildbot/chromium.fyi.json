@@ -12909,7 +12909,11 @@
     "isolated_scripts": [
       {
         "isolate_name": "webkit_layout_tests_exparchive",
+        "merge": {
+          "script": "//third_party/WebKit/Tools/Scripts/merge-layout-test-results.py"
+        },
         "name": "webkit_layout_tests_exparchive",
+        "results_handler": "layout tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
@@ -12917,7 +12921,7 @@
               "os": "Ubuntu-14.04"
             }
           ],
-          "shards": 1
+          "shards": 10
         }
       }
     ]
