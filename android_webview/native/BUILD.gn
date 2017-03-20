@@ -19,7 +19,7 @@ source_set("native") {
     "//components/web_contents_delegate_android:web_contents_delegate_android",
     "//content/public/common",
     "//device/battery:mojo_bindings",
-    "//media/base/android:android",
+    "//media",
     "//net",
     "//skia",
     "//storage/browser",

@@ -10,9 +10,11 @@ import("//media/media_options.gni")
 if (is_android) {
   import("//build/config/android/rules.gni")
 
-  # APK targets that depend on this, either directly or indirectly, should also
+  # This is bundled into //media, so all dependencies should be on //media.
+  # APK targets that depend on this indirectly, should also
   # depend on :media_java to get the corresponding Java classes.
   source_set("android") {
+    visibility = [ "//media/base:base" ]
     sources = [
       "android_cdm_factory.cc",
       "android_cdm_factory.h",
@@ -69,6 +71,7 @@ if (is_android) {
 
   source_set("unit_tests") {
     testonly = true
+    visibility = [ "//media/base:unit_tests" ]
     sources = [
       "media_codec_bridge_impl_unittest.cc",
       "media_codec_loop_unittest.cc",
@@ -81,7 +84,7 @@ if (is_android) {
     ]
 
     deps = [
-      ":android",
+      "//media",
       "//media/base:test_support",
       "//testing/gmock",
       "//testing/gtest",

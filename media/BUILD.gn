@@ -389,11 +389,6 @@ component("media") {
       "filters/decrypting_video_decoder.cc",
       "filters/decrypting_video_decoder.h",
     ]
-    deps += [
-      "//media/base/android",
-      "//media/base/android:media_jni_headers",
-    ]
-    allow_circular_includes_from = [ "//media/base/android" ]
   }
 
   if (current_cpu != "arm" && is_chromeos) {

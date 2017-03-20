@@ -37,7 +37,5 @@ source_set("cdm") {
       "playready_drm_delegate_android.cc",
       "playready_drm_delegate_android.h",
     ]
-
-    deps += [ "//media/base/android" ]
   }
 }

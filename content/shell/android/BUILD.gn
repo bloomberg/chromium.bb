@@ -23,7 +23,7 @@ shared_library("libcontent_shell_content_view") {
     "//components/crash/content/browser",
     "//content/shell:content_shell_lib",
     "//content/shell:pak",
-    "//media/base/android",
+    "//media",
     "//skia",
   ]
   sources = [

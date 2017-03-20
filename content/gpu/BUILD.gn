@@ -60,6 +60,10 @@ target(link_target_type, "gpu_sources") {
     "//gpu/ipc/service",
     "//ipc",
     "//media/gpu",
+
+    # TODO(jrummell): As //media/gpu/ipc/service is a source_set in a
+    # component build, determine if it should not be included here.
+    # http://crbug.com/702833.
     "//media/gpu/ipc/service",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/interfaces",
@@ -75,7 +79,7 @@ target(link_target_type, "gpu_sources") {
   ]
 
   if (is_android) {
-    deps += [ "//media/base/android" ]
+    deps += [ "//media" ]
   }
 
   if (mojo_media_host == "gpu") {
