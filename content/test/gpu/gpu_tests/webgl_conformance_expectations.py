@@ -253,15 +253,14 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     self.Fail('conformance/extensions/ext-sRGB.html',
         ['win', 'nvidia', 'no_passthrough'], bug=679696)
 
-    # Win10 / NVIDIA Quadro M2000 / D3D9 failures
+    # Win10 / NVIDIA Quadro P400 / D3D9 failures
     self.Fail('conformance/canvas/drawingbuffer-static-canvas-test.html',
-        ['win10', ('nvidia', 0x1430), 'd3d9'], bug=680754)
+        ['win10', ('nvidia', 0x1cb3), 'd3d9'], bug=680754)
     self.Fail('conformance/canvas/' +
         'framebuffer-bindings-affected-by-to-data-url.html',
-        ['win10', ('nvidia', 0x1430), 'd3d9'], bug=680754)
+        ['win10', ('nvidia', 0x1cb3), 'd3d9'], bug=680754)
     self.Fail('conformance/ogles/GL/cos/cos_001_to_006.html',
-        ['win10', ('nvidia', 0x1430), 'd3d9'], bug=680754)
-
+        ['win10', ('nvidia', 0x1cb3), 'd3d9'], bug=680754)
 
     # Win7 / Intel failures
     self.Fail('conformance/textures/misc/' +
@@ -314,6 +313,13 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'intel', 'd3d9'], bug=540538)
 
     # WIN / OpenGL / NVIDIA failures
+    self.Fail('conformance/textures/misc/texture-size.html',
+        ['win10', ('nvidia', 0x1cb3), 'opengl'], bug=703779)
+    self.Fail('conformance/extensions/webgl-compressed-texture-size-limit.html',
+        ['win10', ('nvidia', 0x1cb3), 'opengl'], bug=703779)
+    self.Fail('conformance/textures/misc/texture-size-limit.html',
+        ['win10', ('nvidia', 0x1cb3), 'opengl'], bug=703779)
+
     # Mark ANGLE's OpenGL as flaky on Windows Nvidia
     self.Flaky('conformance/*', ['win', 'nvidia', 'opengl'], bug=582083)
 
@@ -452,6 +458,14 @@ class WebGLConformanceExpectations(GpuTestExpectations):
                ['linux', 'nvidia'], bug=596622)
     self.Fail('conformance/glsl/bugs/unary-minus-operator-float-bug.html',
         ['linux', 'nvidia'], bug=672380)
+
+    # NVIDIA P400 OpenGL
+    self.Fail('conformance/textures/misc/texture-size.html',
+        ['linux', ('nvidia', 0x1cb3), 'opengl'], bug=703779)
+    self.Fail('conformance/extensions/webgl-compressed-texture-size-limit.html',
+        ['linux', ('nvidia', 0x1cb3), 'opengl'], bug=703779)
+    self.Fail('conformance/textures/misc/texture-size-limit.html',
+        ['linux', ('nvidia', 0x1cb3), 'opengl'], bug=703779)
 
     # AMD
     self.Flaky('conformance/more/functions/uniformi.html',

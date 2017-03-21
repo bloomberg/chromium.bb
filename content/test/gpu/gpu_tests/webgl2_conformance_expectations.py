@@ -64,33 +64,33 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'draw-with-integer-texture-base-level.html',
         ['win', 'nvidia', 'd3d11'], bug=679639)
 
-    # Win10 / NVIDIA Quadro M2000 failures
+    # Win10 / NVIDIA Quadro P400 failures
     self.Fail('deqp/functional/gles3/transformfeedback/' +
         'basic_types_interleaved_lines.html',
-        ['win10', ('nvidia', 0x1430), 'd3d11'], bug=680754)
+        ['win10', ('nvidia', 0x1cb3), 'd3d11'], bug=680754)
     self.Fail('deqp/functional/gles3/transformfeedback/' +
         'basic_types_interleaved_triangles.html',
-        ['win10', ('nvidia', 0x1430), 'd3d11'], bug=680754)
+        ['win10', ('nvidia', 0x1cb3), 'd3d11'], bug=680754)
     self.Fail('deqp/functional/gles3/transformfeedback/' +
         'basic_types_separate_lines.html',
-        ['win10', ('nvidia', 0x1430), 'd3d11'], bug=680754)
+        ['win10', ('nvidia', 0x1cb3), 'd3d11'], bug=680754)
     self.Fail('deqp/functional/gles3/transformfeedback/' +
         'basic_types_separate_triangles.html',
-        ['win10', ('nvidia', 0x1430), 'd3d11'], bug=680754)
+        ['win10', ('nvidia', 0x1cb3), 'd3d11'], bug=680754)
     self.Fail('deqp/functional/gles3/transformfeedback/' +
         'random_interleaved_lines.html',
-        ['win10', ('nvidia', 0x1430), 'd3d11'], bug=680754)
+        ['win10', ('nvidia', 0x1cb3), 'd3d11'], bug=680754)
     self.Fail('deqp/functional/gles3/transformfeedback/' +
         'random_interleaved_triangles.html',
-        ['win10', ('nvidia', 0x1430), 'd3d11'], bug=680754)
+        ['win10', ('nvidia', 0x1cb3), 'd3d11'], bug=680754)
     self.Fail('deqp/functional/gles3/transformfeedback/' +
         'random_separate_lines.html',
-        ['win10', ('nvidia', 0x1430), 'd3d11'], bug=680754)
+        ['win10', ('nvidia', 0x1cb3), 'd3d11'], bug=680754)
     self.Fail('deqp/functional/gles3/transformfeedback/' +
         'random_separate_triangles.html',
-        ['win10', ('nvidia', 0x1430), 'd3d11'], bug=680754)
+        ['win10', ('nvidia', 0x1cb3), 'd3d11'], bug=680754)
     self.Fail('deqp/functional/gles3/transformfeedback/interpolation_flat.html',
-        ['win10', ('nvidia', 0x1430), 'd3d11'], bug=680754)
+        ['win10', ('nvidia', 0x1cb3), 'd3d11'], bug=680754)
 
     # Win / NVIDIA / OpenGL
     self.Fail('conformance2/rendering/framebuffer-texture-level1.html',
@@ -709,9 +709,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'tex-2d-srgb8-rgb-unsigned_byte.html',
         ['linux', 'nvidia'], bug=694354)
 
-    # Linux NVIDIA Quadro M2000
+    # Linux NVIDIA Quadro P400
     self.Fail('deqp/functional/gles3/multisample.html',
-        ['linux', ('nvidia', 0x1430)], bug=702861)
+        ['linux', ('nvidia', 0x1cb3)], bug=702861)
 
     # Linux Intel
     self.Fail('conformance2/extensions/ext-color-buffer-float.html',
