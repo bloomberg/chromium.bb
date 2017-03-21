@@ -1059,15 +1059,16 @@ class MetaBuildWrapper(object):
     isolate_map = self.ReadIsolateMap()
 
     android = 'target_os="android"' in vals['gn_args']
-    ozone = 'use_ozone=true' in vals['gn_args']
-    chromeos = 'target_os="chromeos"' in vals['gn_args']
 
     # This should be true if tests with type='windowed_test_launcher' are
     # expected to run using xvfb. For example, Linux Desktop, X11 CrOS and
-    # Ozone CrOS builds.
+    # Ozone CrOS builds. Note that one Ozone build can be used to run differen
+    # backends. Currently, tests are executed for the headless and X11 backends
+    # and both can run under Xvfb.
+    # TODO(tonikitoo,msisov,fwang): Find a way to run tests for the Wayland
+    # backend.
     use_xvfb = (self.platform == 'linux2' and
-               not android and
-               ((not ozone) or (ozone and chromeos)))
+                       not android)
 
     asan = 'is_asan=true' in vals['gn_args']
     msan = 'is_msan=true' in vals['gn_args']
