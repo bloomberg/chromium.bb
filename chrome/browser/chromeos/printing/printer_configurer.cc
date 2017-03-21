@@ -67,7 +67,7 @@ class PrinterConfigurerImpl : public PrinterConfigurer {
     // It's expected that debug daemon posts callbacks on the UI thread.
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-    SetupResult result = UNKNOWN;
+    PrinterSetupResult result = UNKNOWN;
     switch (result_code) {
       case 0:
         result = SUCCESS;
@@ -85,7 +85,7 @@ class PrinterConfigurerImpl : public PrinterConfigurer {
     // The callback is expected to run on the UI thread.
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     LOG(WARNING) << "Could not contact debugd";
-    cb.Run(SetupResult::DBUS_ERROR);
+    cb.Run(PrinterSetupResult::DBUS_ERROR);
   }
 
   void AddPrinter(const Printer& printer,

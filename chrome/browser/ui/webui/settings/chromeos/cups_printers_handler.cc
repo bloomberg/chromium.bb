@@ -242,10 +242,11 @@ void CupsPrintersHandler::HandleAddCupsPrinter(const base::ListValue* args) {
                  weak_factory_.GetWeakPtr(), base::Passed(&printer)));
 }
 
-void CupsPrintersHandler::OnAddedPrinter(std::unique_ptr<Printer> printer,
-                                         chromeos::SetupResult result_code) {
+void CupsPrintersHandler::OnAddedPrinter(
+    std::unique_ptr<Printer> printer,
+    chromeos::PrinterSetupResult result_code) {
   std::string printer_name = printer->display_name();
-  bool success = (result_code == chromeos::SetupResult::SUCCESS);
+  bool success = (result_code == chromeos::PrinterSetupResult::SUCCESS);
   if (success) {
     PrintersManagerFactory::GetForBrowserContext(profile_)->RegisterPrinter(
         std::move(printer));

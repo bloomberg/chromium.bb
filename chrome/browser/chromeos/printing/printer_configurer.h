@@ -14,7 +14,7 @@ class Profile;
 
 namespace chromeos {
 
-enum SetupResult {
+enum PrinterSetupResult {
   UNKNOWN,
   FATAL_ERROR,
   SUCCESS,              // Printer set up successfully
@@ -28,7 +28,7 @@ enum SetupResult {
   PPD_UNRETRIEVABLE  // Could not download PPD
 };
 
-using PrinterSetupCallback = base::Callback<void(SetupResult)>;
+using PrinterSetupCallback = base::Callback<void(PrinterSetupResult)>;
 
 // Configures printers by retrieving PPDs and registering the printer with CUPS.
 // Class must be constructed and used on the UI thread.

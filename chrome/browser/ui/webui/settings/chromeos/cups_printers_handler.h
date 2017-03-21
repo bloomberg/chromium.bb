@@ -51,7 +51,7 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
 
   void HandleAddCupsPrinter(const base::ListValue* args);
   void OnAddedPrinter(std::unique_ptr<Printer> printer,
-                      chromeos::SetupResult result);
+                      chromeos::PrinterSetupResult result);
   void OnAddPrinterError();
 
   // Get a list of all manufacturers for which we have at least one model of

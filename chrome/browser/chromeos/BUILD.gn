@@ -1232,6 +1232,8 @@ source_set("chromeos") {
     "printing/printers_sync_bridge.h",
     "printing/specifics_translation.cc",
     "printing/specifics_translation.h",
+    "printing/usb_printer_util.cc",
+    "printing/usb_printer_util.h",
     "profiles/avatar_menu_actions_chromeos.cc",
     "profiles/avatar_menu_actions_chromeos.h",
     "profiles/avatar_menu_chromeos.cc",

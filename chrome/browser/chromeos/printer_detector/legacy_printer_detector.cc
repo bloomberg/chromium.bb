@@ -17,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/printer_detector/printer_detector.h"
+#include "chrome/browser/chromeos/printing/usb_printer_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_delegate.h"
@@ -57,10 +58,6 @@ const char kPrinterProviderFoundNotificationID[] =
 
 const char kNoPrinterProviderNotificationID[] =
     "chrome://settings/printer/no_printer_app";
-
-// Base class used for printer USB interfaces
-// (https://www.usb.org/developers/defined_class).
-const uint8_t kPrinterInterfaceClass = 7;
 
 enum PrinterServiceEvent {
   PRINTER_ADDED,
@@ -233,10 +230,9 @@ class LegacyPrinterDetectorImpl : public PrinterDetector,
       return;
     }
 
-    device::UsbDeviceFilter printer_filter;
-    printer_filter.interface_class = kPrinterInterfaceClass;
-    if (!printer_filter.Matches(device))
+    if (!UsbDeviceIsPrinter(device)) {
       return;
+    }
 
     if (notification_ui_manager_ == nullptr) {
       notification_ui_manager_ = g_browser_process->notification_ui_manager();

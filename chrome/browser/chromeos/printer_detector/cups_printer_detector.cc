@@ -11,67 +11,60 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/scoped_observer.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/printer_detector/printer_detector.h"
+#include "chrome/browser/chromeos/printing/ppd_provider_factory.h"
+#include "chrome/browser/chromeos/printing/printer_configurer.h"
+#include "chrome/browser/chromeos/printing/printers_manager_factory.h"
+#include "chrome/browser/chromeos/printing/usb_printer_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/notifications/notification.h"
-#include "chrome/browser/notifications/notification_delegate.h"
-#include "chrome/browser/notifications/notification_ui_manager.h"
-#include "chrome/browser/ui/browser_navigator.h"
-#include "chrome/browser/ui/browser_navigator_params.h"
-#include "chrome/common/url_constants.h"
-#include "chrome/grit/generated_resources.h"
-#include "chrome/grit/theme_resources.h"
-#include "components/user_manager/user.h"
-#include "components/user_manager/user_manager.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/debug_daemon_client.h"
+#include "chromeos/printing/ppd_provider.h"
+#include "content/public/browser/browser_thread.h"
 #include "device/base/device_client.h"
 #include "device/usb/usb_device.h"
 #include "device/usb/usb_device_filter.h"
 #include "device/usb/usb_service.h"
-#include "extensions/browser/extension_registry.h"
-#include "extensions/browser/extension_system.h"
-#include "extensions/common/one_shot_event.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 
 namespace chromeos {
 namespace {
 
-const char kUSBPrinterFoundNotificationID[] =
-    "chrome://settings/cupsPrinters/printer_found";
+using printing::PpdProvider;
 
-// Base class used for printer USB interfaces
-// (https://www.usb.org/developers/defined_class).
-const uint8_t kPrinterInterfaceClass = 7;
+// Aggregates the information needed for printer setup so it's easier to pass it
+// around.
+struct SetUpPrinterData {
+  // The configurer running the SetUpPrinter call.
+  std::unique_ptr<PrinterConfigurer> configurer;
 
-// USBPrinterSetupNotificationDelegate takes a pointer to the Impl class, so
-// we have to forward declare it.
-class CupsPrinterDetectorImpl;
+  // The printer being set up.
+  std::unique_ptr<Printer> printer;
 
-class USBPrinterSetupNotificationDelegate : public NotificationDelegate {
- public:
-  explicit USBPrinterSetupNotificationDelegate(
-      CupsPrinterDetectorImpl* printer_detector)
-      : printer_detector_(printer_detector) {}
+  // The usb device causing this setup flow.
+  scoped_refptr<device::UsbDevice> device;
 
-  // NotificationDelegate override:
-  std::string id() const override { return kUSBPrinterFoundNotificationID; }
+  // True if this printer is one that the user doesn't already have a
+  // configuration for.
+  bool is_new;
 
-  // This is defined out of line because it needs the PrinterDetectorImpl
-  // full class declaration, not just the forward declaration.
-  void ButtonClick(int button_index) override;
-
-  bool HasClickedListener() override { return true; }
-
- private:
-  ~USBPrinterSetupNotificationDelegate() override = default;
-
-  CupsPrinterDetectorImpl* printer_detector_;
-
-  DISALLOW_COPY_AND_ASSIGN(USBPrinterSetupNotificationDelegate);
+  // True if this was a printer that was plugged in during the session, false if
+  // it was already plugged in when the session started.
+  bool hotplugged;
 };
+
+// Given a usb device, guesses the make and model for a driver lookup.
+//
+// TODO(justincarlson): Possibly go deeper and query the IEEE1284 fields
+// for make and model if we determine those are more likely to contain
+// what we want.
+std::string GuessEffectiveMakeAndModel(const device::UsbDevice& device) {
+  return base::UTF16ToUTF8(device.manufacturer_string()) + " " +
+         base::UTF16ToUTF8(device.product_string());
+}
 
 // The PrinterDetector that drives the flow for setting up a USB printer to use
 // CUPS backend.
@@ -80,70 +73,159 @@ class CupsPrinterDetectorImpl : public PrinterDetector,
  public:
   explicit CupsPrinterDetectorImpl(Profile* profile)
       : profile_(profile), observer_(this), weak_ptr_factory_(this) {
-    extensions::ExtensionSystem::Get(profile)->ready().Post(
-        FROM_HERE, base::Bind(&CupsPrinterDetectorImpl::Initialize,
-                              weak_ptr_factory_.GetWeakPtr()));
+    device::UsbService* usb_service =
+        device::DeviceClient::Get()->GetUsbService();
+    if (usb_service) {
+      observer_.Add(usb_service);
+      usb_service->GetDevices(base::Bind(&CupsPrinterDetectorImpl::OnGetDevices,
+                                         weak_ptr_factory_.GetWeakPtr()));
+    }
   }
   ~CupsPrinterDetectorImpl() override = default;
 
-  void ClickOnNotificationButton(int button_index) {
-    // Remove the old notification first.
-    const ProfileID profile_id = NotificationUIManager::GetProfileID(profile_);
-    g_browser_process->notification_ui_manager()->CancelById(
-        kUSBPrinterFoundNotificationID, profile_id);
-
-    if (command_ == ButtonCommand::SETUP) {
-      OnSetUpUSBPrinterStarted();
-      // TODO(skau/xdai): call the CUPS backend to set up the USB printer and
-      // then call OnSetUpPrinterDone() or OnSetUpPrinterError() depending on
-      // the setup result.
-    } else if (command_ == ButtonCommand::CANCEL_SETUP) {
-      // TODO(skau/xdai): call the CUPS backend to cancel the printer setup.
-    } else if (command_ == ButtonCommand::GET_HELP) {
-      chrome::NavigateParams params(profile_,
-                                    GURL(chrome::kChromeUIMdCupsSettingsURL),
-                                    ui::PAGE_TRANSITION_LINK);
-      params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
-      params.window_action = chrome::NavigateParams::SHOW_WINDOW;
-      chrome::Navigate(&params);
-    }
-  }
-
  private:
-  // Action that should be performed when a notification button is clicked.
-  enum class ButtonCommand {
-    SETUP,
-    CANCEL_SETUP,
-    CLOSE,
-    GET_HELP,
-  };
+  // Callback for initial enumeration of usb devices.
+  void OnGetDevices(
+      const std::vector<scoped_refptr<device::UsbDevice>>& devices) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    for (const auto& device : devices) {
+      MaybeSetUpDevice(device, false);
+    }
+  }
 
-  // UsbService::observer override:
+  // UsbService::observer override.
   void OnDeviceAdded(scoped_refptr<device::UsbDevice> device) override {
-    const user_manager::User* user =
-        ProfileHelper::Get()->GetUserByProfile(profile_);
-    // TODO(justincarlson) - See if it's appropriate to relax any of these
-    // constraints.
-    if (!user || !user->HasGaiaAccount() || !user_manager::UserManager::Get() ||
-        user != user_manager::UserManager::Get()->GetActiveUser()) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    MaybeSetUpDevice(device, true);
+  }
+
+  // UsbService::observer override.
+  void OnDeviceRemoved(scoped_refptr<device::UsbDevice> device) override {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    if (!UsbDeviceIsPrinter(device)) {
+      return;
+    }
+    known_printers_.erase(device->guid());
+    // TODO(justincarlson):  Update failed printers.
+  }
+
+  // Returns the existing printer using this URI, if one exists, or
+  // null otherwise.
+  std::unique_ptr<Printer> FindExistingPrinter(const std::string& uri) {
+    // TODO(justincarlson): add a GetPrinterByURI to PrintersManager.
+    // https://crbug.com/700602
+    auto existing_printers =
+        PrintersManagerFactory::GetForBrowserContext(profile_)->GetPrinters();
+    for (std::unique_ptr<Printer>& printer : existing_printers) {
+      if (printer->uri() == uri) {
+        // Found a match, so use the existing configuration.
+        return std::move(printer);
+      }
+    }
+    return nullptr;
+  }
+
+  // If this device is a printer and we haven't already tried to set it up,
+  // starts the process of setting the printer up.  |hotplugged|
+  // should be true if this was plugged in during the session.
+  void MaybeSetUpDevice(scoped_refptr<device::UsbDevice> device,
+                        bool hotplugged) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+    if (!UsbDeviceIsPrinter(device) ||
+        base::ContainsKey(known_printers_, device->guid())) {
+      return;
+    }
+    known_printers_.insert(device->guid());
+
+    auto data = base::MakeUnique<SetUpPrinterData>();
+    data->configurer = PrinterConfigurer::Create(profile_);
+    data->device = device;
+    data->hotplugged = hotplugged;
+
+    data->printer = FindExistingPrinter(UsbPrinterUri(*device));
+    if (data->printer != nullptr) {
+      data->is_new = false;
+      OnPrinterResolved(std::move(data));
       return;
     }
 
-    device::UsbDeviceFilter printer_filter;
-    printer_filter.interface_class = kPrinterInterfaceClass;
-    if (!printer_filter.Matches(device))
+    // It's not a device we have configured previously.
+    //
+    // TODO(justincarlson): Add a notification that we are attempting to set up
+    // this printer at this point.
+    data->is_new = true;
+    data->printer = UsbDeviceToPrinter(*device);
+    if (data->printer == nullptr) {
       return;
+    }
 
-    ShowUSBPrinterSetupNotification(device);
+    // Look for an exact match based on USB ids.
+    scoped_refptr<PpdProvider> ppd_provider =
+        printing::CreateProvider(profile_);
+    ppd_provider->ResolveUsbIds(
+        device->vendor_id(), device->product_id(),
+        base::Bind(&CupsPrinterDetectorImpl::ResolveUsbIdsDone,
+                   weak_ptr_factory_.GetWeakPtr(), ppd_provider,
+                   base::Passed(std::move(data))));
   }
 
-  // Initializes the printer detector.
-  void Initialize() {
-    device::UsbService* usb_service =
-        device::DeviceClient::Get()->GetUsbService();
-    if (!usb_service)
-      return;
-    observer_.Add(usb_service);
+  void OnPrinterResolved(std::unique_ptr<SetUpPrinterData> data) {
+    // |data| will be invalidated by the move below, so we have to latch it
+    // before the call.
+    SetUpPrinterData* data_ptr = data.get();
+    data_ptr->configurer->SetUpPrinter(
+        *(data_ptr->printer),
+        base::Bind(&CupsPrinterDetectorImpl::SetUpPrinterDone,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   base::Passed(std::move(data))));
+  }
+
+  // Called when the query for a driver based on usb ids completes.
+  //
+  // Note |provider| is not used in this function, it's just passed along to
+  // keep it alive during the USB resolution.
+  void ResolveUsbIdsDone(scoped_refptr<PpdProvider> provider,
+                         std::unique_ptr<SetUpPrinterData> data,
+                         PpdProvider::CallbackResultCode result,
+                         const std::string& effective_make_and_model) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    if (result == PpdProvider::SUCCESS) {
+      // Got something based on usb ids.  Go with it.
+      data->printer->mutable_ppd_reference()->effective_make_and_model =
+          effective_make_and_model;
+    } else {
+      // Couldn't figure this printer out based on usb ids, fall back to
+      // guessing the make/model string from what the USB system reports.
+      //
+      // TODO(justincarlson): Consider adding a mechanism for aggregating data
+      // about which usb devices are in the wild but unsupported?
+      data->printer->mutable_ppd_reference()->effective_make_and_model =
+          GuessEffectiveMakeAndModel(*data->device);
+    }
+    OnPrinterResolved(std::move(data));
+  }
+
+  // Called with the result of asking to have a printer configured for CUPS.  If
+  // |printer_to_register| is non-null and we successfully configured, then the
+  // printer is registered with the printers manager.
+  void SetUpPrinterDone(std::unique_ptr<SetUpPrinterData> data,
+                        PrinterSetupResult result) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    if (result == PrinterSetupResult::SUCCESS) {
+      if (data->is_new) {
+        PrintersManagerFactory::GetForBrowserContext(profile_)->RegisterPrinter(
+            std::move(data->printer));
+      }
+      // TODO(justincarlson): If the device was hotplugged, pop a timed
+      // notification that says the printer is now available for printing.
+    }
+    // TODO(justincarlson): If this doesn't succeed, Pop a notification that
+    // tells the user automatic setup failed and offers to open the CUPS printer
+    // configuration settings.
+    //
+    // TODO(justincarlson): If this doesn't succeed, Update the list of printers
+    // that failed to set up.
   }
 
   void SetNotificationUIManagerForTesting(
@@ -151,83 +233,16 @@ class CupsPrinterDetectorImpl : public PrinterDetector,
     LOG(FATAL) << "Not implemented for CUPS";
   }
 
-  void ShowUSBPrinterSetupNotification(
-      scoped_refptr<device::UsbDevice> device) {
-    // TODO(justincarlson) - Test this notification across a wide variety of
-    // less-than-sane printers to make sure the notification text stays as
-    // intelligible as possible.
-    base::string16 printer_name = device->manufacturer_string() +
-                                  base::UTF8ToUTF16(" ") +
-                                  device->product_string();
-    ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-    message_center::RichNotificationData data;
-    data.buttons.push_back(message_center::ButtonInfo(l10n_util::GetStringUTF16(
-        IDS_PRINTER_DETECTED_NOTIFICATION_SET_UP_BUTTON)));
-    notification_.reset(new Notification(
-        message_center::NOTIFICATION_TYPE_SIMPLE,
-        l10n_util::GetStringUTF16(
-            IDS_PRINTER_DETECTED_NOTIFICATION_SET_UP_TITLE),      // title
-        printer_name,                                             // body
-        bundle.GetImageNamed(IDR_PRINTER_DETECTED_NOTIFICATION),  // icon
-        message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
-                                   kUSBPrinterFoundNotificationID),
-        base::string16(),  // display_source
-        GURL(), kUSBPrinterFoundNotificationID, data,
-        new USBPrinterSetupNotificationDelegate(this)));
-    notification_->SetSystemPriority();
-    command_ = ButtonCommand::SETUP;
-
-    g_browser_process->notification_ui_manager()->Add(*notification_, profile_);
-  }
-
-  void OnSetUpUSBPrinterStarted() {
-    notification_->set_title(l10n_util::GetStringUTF16(
-        IDS_PRINTER_DETECTED_NOTIFICATION_SET_UP_IN_PROGRESS_TITLE));
-    notification_->set_type(message_center::NOTIFICATION_TYPE_PROGRESS);
-    notification_->set_progress(-1);
-    std::vector<message_center::ButtonInfo> buttons;
-    buttons.push_back(message_center::ButtonInfo(l10n_util::GetStringUTF16(
-        IDS_PRINTER_DETECTED_NOTIFICATION_SET_UP_CANCEL_BUTTON)));
-    notification_->set_buttons(buttons);
-    command_ = ButtonCommand::CANCEL_SETUP;
-    g_browser_process->notification_ui_manager()->Add(*notification_, profile_);
-  }
-
-  void OnSetUpUSBPrinterDone() {
-    notification_->set_title(l10n_util::GetStringUTF16(
-        IDS_PRINTER_DETECTED_NOTIFICATION_SET_UP_SUCCESS_TITLE));
-    notification_->set_type(message_center::NOTIFICATION_TYPE_SIMPLE);
-    std::vector<message_center::ButtonInfo> buttons;
-    buttons.push_back(message_center::ButtonInfo(l10n_util::GetStringUTF16(
-        IDS_PRINTER_DETECTED_NOTIFICATION_SET_UP_CLOSE_BUTTON)));
-    notification_->set_buttons(buttons);
-    command_ = ButtonCommand::CLOSE;
-    g_browser_process->notification_ui_manager()->Add(*notification_, profile_);
-  }
-
-  void OnSetUpUSBPrinterError() {
-    notification_->set_title(l10n_util::GetStringUTF16(
-        IDS_PRINTER_DETECTED_NOTIFICATION_SET_UP_FAILED_TITLE));
-    notification_->set_type(message_center::NOTIFICATION_TYPE_SIMPLE);
-    std::vector<message_center::ButtonInfo> buttons;
-    buttons.push_back(message_center::ButtonInfo(l10n_util::GetStringUTF16(
-        IDS_PRINTER_DETECTED_NOTIFICATION_SET_UP_GET_HELP_BUTTON)));
-    notification_->set_buttons(buttons);
-    command_ = ButtonCommand::GET_HELP;
-    g_browser_process->notification_ui_manager()->Add(*notification_, profile_);
-  }
-
-  std::unique_ptr<Notification> notification_;
-  ButtonCommand command_ = ButtonCommand::SETUP;
+  // USB GUIDs of printers we've already dealt with.  There's an inherent race
+  // between initially querying all usb devices and receiving a notification
+  // about a new device, so this set lets us guarantee that we handle a given
+  // printer exactly once.
+  std::set<std::string> known_printers_;
 
   Profile* profile_;
   ScopedObserver<device::UsbService, device::UsbService::Observer> observer_;
   base::WeakPtrFactory<CupsPrinterDetectorImpl> weak_ptr_factory_;
 };
-
-void USBPrinterSetupNotificationDelegate::ButtonClick(int button_index) {
-  printer_detector_->ClickOnNotificationButton(button_index);
-}
 
 }  // namespace
 
