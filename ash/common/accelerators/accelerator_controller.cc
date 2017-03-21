@@ -404,7 +404,7 @@ void HandleToggleOverview() {
   WmShell::Get()->window_selector_controller()->ToggleOverview();
 }
 
-bool CanHandleWindowSnapOrDock() {
+bool CanHandleWindowSnap() {
   WmWindow* active_window = WmShell::Get()->GetActiveWindow();
   if (!active_window)
     return false;
@@ -415,15 +415,15 @@ bool CanHandleWindowSnapOrDock() {
           !window_state->IsFullscreen());
 }
 
-void HandleWindowSnapOrDock(AcceleratorAction action) {
-  if (action == WINDOW_CYCLE_SNAP_DOCK_LEFT)
+void HandleWindowSnap(AcceleratorAction action) {
+  if (action == WINDOW_CYCLE_SNAP_LEFT)
     base::RecordAction(UserMetricsAction("Accel_Window_Snap_Left"));
   else
     base::RecordAction(UserMetricsAction("Accel_Window_Snap_Right"));
 
-  const wm::WMEvent event(action == WINDOW_CYCLE_SNAP_DOCK_LEFT
-                              ? wm::WM_EVENT_CYCLE_SNAP_DOCK_LEFT
-                              : wm::WM_EVENT_CYCLE_SNAP_DOCK_RIGHT);
+  const wm::WMEvent event(action == WINDOW_CYCLE_SNAP_LEFT
+                              ? wm::WM_EVENT_CYCLE_SNAP_LEFT
+                              : wm::WM_EVENT_CYCLE_SNAP_RIGHT);
   WmWindow* active_window = WmShell::Get()->GetActiveWindow();
   DCHECK(active_window);
   active_window->GetWindowState()->OnWMEvent(&event);
@@ -435,9 +435,7 @@ void HandleWindowMinimize() {
 }
 
 bool CanHandlePositionCenter() {
-  // Docked windows do not support centering.
-  WmWindow* active_window = WmShell::Get()->GetActiveWindow();
-  return (active_window && !active_window->GetWindowState()->IsDocked());
+  return WmShell::Get()->GetActiveWindow() != nullptr;
 }
 
 void HandlePositionCenter() {
@@ -922,9 +920,9 @@ bool AcceleratorController::CanPerformAction(
       return CanHandleToggleAppList(accelerator, previous_accelerator);
     case TOGGLE_CAPS_LOCK:
       return CanHandleToggleCapsLock(accelerator, previous_accelerator);
-    case WINDOW_CYCLE_SNAP_DOCK_LEFT:
-    case WINDOW_CYCLE_SNAP_DOCK_RIGHT:
-      return CanHandleWindowSnapOrDock();
+    case WINDOW_CYCLE_SNAP_LEFT:
+    case WINDOW_CYCLE_SNAP_RIGHT:
+      return CanHandleWindowSnap();
     case WINDOW_POSITION_CENTER:
       return CanHandlePositionCenter();
 
@@ -1194,9 +1192,9 @@ void AcceleratorController::PerformAction(AcceleratorAction action,
     case VOLUME_UP:
       HandleVolumeUp(volume_controller_.get(), accelerator);
       break;
-    case WINDOW_CYCLE_SNAP_DOCK_LEFT:
-    case WINDOW_CYCLE_SNAP_DOCK_RIGHT:
-      HandleWindowSnapOrDock(action);
+    case WINDOW_CYCLE_SNAP_LEFT:
+    case WINDOW_CYCLE_SNAP_RIGHT:
+      HandleWindowSnap(action);
       break;
     case WINDOW_MINIMIZE:
       HandleWindowMinimize();

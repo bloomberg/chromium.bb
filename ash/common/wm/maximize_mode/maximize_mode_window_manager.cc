@@ -264,10 +264,6 @@ bool MaximizeModeWindowManager::ShouldHandleWindow(WmWindow* window) {
   if (window->IsAlwaysOnTop())
     return false;
 
-  // Windows in the dock should not be managed by us.
-  if (window->GetWindowState()->IsDocked())
-    return false;
-
   // If the changing bounds in the maximized/fullscreen is allowed, then
   // let the client manage it even in maximized mode.
   if (window->GetWindowState()->allow_set_bounds_in_maximized())

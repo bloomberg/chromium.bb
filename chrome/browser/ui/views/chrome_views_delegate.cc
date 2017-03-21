@@ -102,8 +102,6 @@ void ChromeViewsDelegate::SaveWindowPlacement(const views::Widget* window,
   window_preferences->SetInteger("bottom", bounds.bottom());
   window_preferences->SetBoolean("maximized",
                                  show_state == ui::SHOW_STATE_MAXIMIZED);
-  // TODO(afakhry): Remove Docked Windows in M58.
-  window_preferences->SetBoolean("docked", show_state == ui::SHOW_STATE_DOCKED);
 
   gfx::Rect work_area(display::Screen::GetScreen()
                           ->GetDisplayNearestView(window->GetNativeView())

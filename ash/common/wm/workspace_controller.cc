@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "ash/common/shelf/wm_shelf.h"
-#include "ash/common/wm/dock/docked_window_layout_manager.h"
 #include "ash/common/wm/fullscreen_window_finder.h"
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm/wm_window_animations.h"
@@ -59,32 +58,24 @@ wm::WorkspaceWindowState WorkspaceController::GetWindowState() const {
   if (fullscreen && !fullscreen->GetWindowState()->ignored_by_shelf())
     return wm::WORKSPACE_WINDOW_STATE_FULL_SCREEN;
 
-  // These are the container ids of containers which may contain windows that
-  // may overlap the launcher shelf and affect its transparency.
-  const int kWindowContainerIds[] = {
-      kShellWindowId_DefaultContainer, kShellWindowId_DockedContainer,
-  };
   const gfx::Rect shelf_bounds(WmShelf::ForWindow(viewport_)->GetIdealBounds());
   bool window_overlaps_launcher = false;
-  for (size_t i = 0; i < arraysize(kWindowContainerIds); i++) {
-    WmWindow* container = viewport_->GetRootWindow()->GetChildByShellWindowId(
-        kWindowContainerIds[i]);
-    for (WmWindow* window : container->GetChildren()) {
-      wm::WindowState* window_state = window->GetWindowState();
-      if (window_state->ignored_by_shelf() ||
-          (window->GetLayer() && !window->GetLayer()->GetTargetVisibility())) {
-        continue;
-      }
-      if (window_state->IsMaximized())
-        return wm::WORKSPACE_WINDOW_STATE_MAXIMIZED;
-      window_overlaps_launcher |= window->GetBounds().Intersects(shelf_bounds);
+  // The default container may contain windows that may overlap the launcher
+  // shelf and affect its transparency.
+  WmWindow* container = viewport_->GetRootWindow()->GetChildByShellWindowId(
+      kShellWindowId_DefaultContainer);
+  for (WmWindow* window : container->GetChildren()) {
+    wm::WindowState* window_state = window->GetWindowState();
+    if (window_state->ignored_by_shelf() ||
+        (window->GetLayer() && !window->GetLayer()->GetTargetVisibility())) {
+      continue;
     }
+    if (window_state->IsMaximized())
+      return wm::WORKSPACE_WINDOW_STATE_MAXIMIZED;
+    window_overlaps_launcher |= window->GetBounds().Intersects(shelf_bounds);
   }
 
-  // Check if there are visible docked windows in the same display.
-  DockedWindowLayoutManager* dock = DockedWindowLayoutManager::Get(viewport_);
-  const bool docked_area_visible = dock && !dock->docked_bounds().IsEmpty();
-  return (window_overlaps_launcher || docked_area_visible)
+  return window_overlaps_launcher
              ? wm::WORKSPACE_WINDOW_STATE_WINDOW_OVERLAPS_SHELF
              : wm::WORKSPACE_WINDOW_STATE_DEFAULT;
 }

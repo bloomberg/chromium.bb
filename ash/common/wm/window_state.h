@@ -110,7 +110,6 @@ class ASH_EXPORT WindowState {
   bool IsNormalOrSnapped() const;
 
   bool IsActive() const;
-  bool IsDocked() const;
 
   // Returns true if the window's location can be controlled by the user.
   bool IsUserPositionable() const;

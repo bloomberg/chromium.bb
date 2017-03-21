@@ -34,9 +34,6 @@ WMEventType WMEventTypeFromShowState(ui::WindowShowState requested_show_state) {
     case ui::SHOW_STATE_INACTIVE:
       return WM_EVENT_SHOW_INACTIVE;
 
-    // TODO(afakhry): Remove Docked Windows in M58.
-    case ui::SHOW_STATE_DOCKED:
-      return WM_EVENT_DOCK;
     case ui::SHOW_STATE_END:
       NOTREACHED() << "No WMEvent defined for the show state:"
                    << requested_show_state;
@@ -62,8 +59,7 @@ WindowStateType WindowState::GetStateType() const {
 }
 
 bool WindowState::IsMinimized() const {
-  return GetStateType() == WINDOW_STATE_TYPE_MINIMIZED ||
-         GetStateType() == WINDOW_STATE_TYPE_DOCKED_MINIMIZED;
+  return GetStateType() == WINDOW_STATE_TYPE_MINIMIZED;
 }
 
 bool WindowState::IsMaximized() const {
@@ -104,11 +100,6 @@ bool WindowState::IsNormalOrSnapped() const {
 
 bool WindowState::IsActive() const {
   return window_->IsActive();
-}
-
-bool WindowState::IsDocked() const {
-  return GetStateType() == WINDOW_STATE_TYPE_DOCKED ||
-         GetStateType() == WINDOW_STATE_TYPE_DOCKED_MINIMIZED;
 }
 
 bool WindowState::IsUserPositionable() const {

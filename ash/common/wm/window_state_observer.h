@@ -25,7 +25,6 @@ class ASH_EXPORT WindowStateObserver {
   // the window's bounds has been updated for the new type.
   // This is used to update the shell state such as work area so
   // that the window can use the correct environment to update its bounds.
-  // TODO(oshima): Remove this once docked windows has its own state.
   virtual void OnPreWindowStateTypeChange(WindowState* window_state,
                                           WindowStateType old_type) {}
 

@@ -30,16 +30,12 @@
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/hit_test.h"
-#include "ui/base/ui_base_types.h"
-#include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/display/screen.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/widget/widget.h"
-#include "ui/wm/core/window_animations.h"
 #include "ui/wm/core/window_util.h"
 
 using aura::Window;
@@ -1343,42 +1339,6 @@ TEST_F(WorkspaceControllerTest, RestoreMinimizedSnappedWindow) {
   EXPECT_EQ(snapped_bounds, window->bounds());
 }
 
-namespace {
-
-// Used by DragMaximizedNonTrackedWindow to track how many times the window
-// hierarchy changes affecting the specified window.
-class DragMaximizedNonTrackedWindowObserver : public aura::WindowObserver {
- public:
-  DragMaximizedNonTrackedWindowObserver(aura::Window* window)
-      : change_count_(0), window_(window) {}
-
-  // Number of times OnWindowHierarchyChanged() has been received.
-  void clear_change_count() { change_count_ = 0; }
-  int change_count() const { return change_count_; }
-
-  // aura::WindowObserver overrides:
-  // Counts number of times a window is reparented. Ignores reparenting into and
-  // from a docked container which is expected when a tab is dragged.
-  void OnWindowHierarchyChanged(const HierarchyChangeParams& params) override {
-    if (params.target != window_ ||
-        (params.old_parent->id() == kShellWindowId_DefaultContainer &&
-         params.new_parent->id() == kShellWindowId_DockedContainer) ||
-        (params.old_parent->id() == kShellWindowId_DockedContainer &&
-         params.new_parent->id() == kShellWindowId_DefaultContainer)) {
-      return;
-    }
-    change_count_++;
-  }
-
- private:
-  int change_count_;
-  aura::Window* window_;
-
-  DISALLOW_COPY_AND_ASSIGN(DragMaximizedNonTrackedWindowObserver);
-};
-
-}  // namespace
-
 // Verifies that a new maximized window becomes visible after its activation
 // is requested, even though it does not become activated because a system
 // modal window is active.
@@ -1398,24 +1358,9 @@ TEST_F(WorkspaceControllerTest, SwitchFromModal) {
   EXPECT_TRUE(maximized_window->IsVisible());
 }
 
-namespace {
-
-// Subclass of WorkspaceControllerTest that runs tests with docked windows
-// enabled and disabled.
-class WorkspaceControllerTestDragging : public WorkspaceControllerTest {
- public:
-  WorkspaceControllerTestDragging() {}
-  ~WorkspaceControllerTestDragging() override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(WorkspaceControllerTestDragging);
-};
-
-}  // namespace
-
 // Verifies that when dragging a window over the shelf overlap is detected
 // during and after the drag.
-TEST_F(WorkspaceControllerTestDragging, DragWindowOverlapShelf) {
+TEST_F(WorkspaceControllerTest, DragWindowOverlapShelf) {
   aura::test::TestWindowDelegate delegate;
   delegate.set_window_component(HTCAPTION);
   std::unique_ptr<Window> w1(aura::test::CreateTestWindowWithDelegate(
@@ -1444,7 +1389,7 @@ TEST_F(WorkspaceControllerTestDragging, DragWindowOverlapShelf) {
 
 // Verifies that when dragging a window autohidden shelf stays hidden during
 // and after the drag.
-TEST_F(WorkspaceControllerTestDragging, DragWindowKeepsShelfAutohidden) {
+TEST_F(WorkspaceControllerTest, DragWindowKeepsShelfAutohidden) {
   aura::test::TestWindowDelegate delegate;
   delegate.set_window_component(HTCAPTION);
   std::unique_ptr<Window> w1(aura::test::CreateTestWindowWithDelegate(
@@ -1592,57 +1537,6 @@ TEST_F(WorkspaceControllerTest, WindowEdgeTouchHitTestPanel) {
         ui::ET_TOUCH_PRESSED, location, ui::EventTimeForNow(),
         ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
     ui::EventTarget* target = targeter->FindTargetForEvent(root, &touch);
-    if (points[i].is_target_hit)
-      EXPECT_EQ(window.get(), target);
-    else
-      EXPECT_NE(window.get(), target);
-  }
-}
-
-// Verifies events targeting just outside the window edges for docked windows.
-TEST_F(WorkspaceControllerTest, WindowEdgeHitTestDocked) {
-  aura::test::TestWindowDelegate delegate;
-  // Make window smaller than the minimum docked area so that the window edges
-  // are exposed.
-  delegate.set_maximum_size(gfx::Size(180, 200));
-  std::unique_ptr<Window> window(aura::test::CreateTestWindowWithDelegate(
-      &delegate, 123, gfx::Rect(20, 10, 100, 50), NULL));
-  ParentWindowInPrimaryRootWindow(window.get());
-  aura::Window* docked_container = Shell::GetContainer(
-      window->GetRootWindow(), kShellWindowId_DockedContainer);
-  docked_container->AddChild(window.get());
-  window->Show();
-  aura::Window* root = window->GetRootWindow();
-  ui::EventTargeter* targeter =
-      root->GetHost()->dispatcher()->GetDefaultEventTargeter();
-  const gfx::Rect bounds = window->bounds();
-  const int kNumPoints = 5;
-  struct {
-    const char* direction;
-    gfx::Point location;
-    bool is_target_hit;
-  } points[kNumPoints] = {
-      {"left", gfx::Point(bounds.x() - 2, bounds.y() + 10), true},
-      {"top", gfx::Point(bounds.x() + 10, bounds.y() - 2), true},
-      {"right", gfx::Point(bounds.right() + 2, bounds.y() + 10), true},
-      {"bottom", gfx::Point(bounds.x() + 10, bounds.bottom() + 2), true},
-      {"outside", gfx::Point(bounds.x() + 10, bounds.y() - 31), false},
-  };
-  for (int i = 0; i < kNumPoints; ++i) {
-    SCOPED_TRACE(points[i].direction);
-    const gfx::Point& location = points[i].location;
-    ui::MouseEvent mouse(ui::ET_MOUSE_MOVED, location, location,
-                         ui::EventTimeForNow(), ui::EF_NONE, ui::EF_NONE);
-    ui::EventTarget* target = targeter->FindTargetForEvent(root, &mouse);
-    if (points[i].is_target_hit)
-      EXPECT_EQ(window.get(), target);
-    else
-      EXPECT_NE(window.get(), target);
-
-    ui::TouchEvent touch(
-        ui::ET_TOUCH_PRESSED, location, ui::EventTimeForNow(),
-        ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
-    target = targeter->FindTargetForEvent(root, &touch);
     if (points[i].is_target_hit)
       EXPECT_EQ(window.get(), target);
     else

@@ -146,8 +146,8 @@ const AcceleratorData kAcceleratorData[] = {
     {true, ui::VKEY_9, ui::EF_ALT_DOWN, LAUNCH_LAST_APP},
 
     // Window management shortcuts.
-    {true, ui::VKEY_OEM_4, ui::EF_ALT_DOWN, WINDOW_CYCLE_SNAP_DOCK_LEFT},
-    {true, ui::VKEY_OEM_6, ui::EF_ALT_DOWN, WINDOW_CYCLE_SNAP_DOCK_RIGHT},
+    {true, ui::VKEY_OEM_4, ui::EF_ALT_DOWN, WINDOW_CYCLE_SNAP_LEFT},
+    {true, ui::VKEY_OEM_6, ui::EF_ALT_DOWN, WINDOW_CYCLE_SNAP_RIGHT},
     {true, ui::VKEY_OEM_MINUS, ui::EF_ALT_DOWN, WINDOW_MINIMIZE},
     {true, ui::VKEY_OEM_PLUS, ui::EF_ALT_DOWN, TOGGLE_MAXIMIZED},
     {true, ui::VKEY_OEM_PLUS, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
@@ -459,8 +459,8 @@ const AcceleratorAction kActionsNeedingWindow[] = {
     CYCLE_BACKWARD_MRU,
     CYCLE_FORWARD_MRU,
     TOGGLE_OVERVIEW,
-    WINDOW_CYCLE_SNAP_DOCK_LEFT,
-    WINDOW_CYCLE_SNAP_DOCK_RIGHT,
+    WINDOW_CYCLE_SNAP_LEFT,
+    WINDOW_CYCLE_SNAP_RIGHT,
     WINDOW_MINIMIZE,
     TOGGLE_FULLSCREEN,
     TOGGLE_MAXIMIZED,

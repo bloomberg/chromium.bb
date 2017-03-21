@@ -12,8 +12,7 @@ namespace wm {
 
 const int kSwitchableWindowContainerIds[] = {
     kShellWindowId_DefaultContainer, kShellWindowId_AlwaysOnTopContainer,
-    kShellWindowId_DockedContainer, kShellWindowId_PanelContainer,
-    kShellWindowId_AppListContainer};
+    kShellWindowId_PanelContainer, kShellWindowId_AppListContainer};
 
 const size_t kSwitchableWindowContainerIdsLength =
     arraysize(kSwitchableWindowContainerIds);

@@ -4,7 +4,6 @@
 
 #include "ash/common/wm/window_resizer.h"
 
-#include "ash/common/wm/dock/docked_window_layout_manager.h"
 #include "ash/common/wm/root_window_finder.h"
 #include "ash/common/wm/window_positioning_utils.h"
 #include "ash/common/wm/window_state.h"
@@ -127,10 +126,6 @@ gfx::Rect WindowResizer::CalculateBoundsForDrag(
   // on the size.
   if (details().bounds_change & kBoundsChange_Resizes) {
     gfx::Rect work_area = GetTarget()->GetDisplayNearestWindow().work_area();
-    DockedWindowLayoutManager* dock_layout =
-        DockedWindowLayoutManager::Get(GetTarget());
-
-    work_area.Union(dock_layout->docked_bounds());
     work_area = GetTarget()->GetParent()->ConvertRectFromScreen(work_area);
     if (details().size_change_direction & kBoundsChangeDirection_Horizontal) {
       if (IsRightEdge(details().window_component) &&
@@ -193,11 +188,7 @@ gfx::Rect WindowResizer::CalculateBoundsForDrag(
     // calculate the target display after the drag.
     const display::Display& display =
         display::Screen::GetScreen()->GetDisplayMatching(near_passed_location);
-    DockedWindowLayoutManager* dock_layout = DockedWindowLayoutManager::Get(
-        wm::GetRootWindowMatching(near_passed_location));
-
     gfx::Rect screen_work_area = display.work_area();
-    screen_work_area.Union(dock_layout->docked_bounds());
     screen_work_area.Inset(wm::kMinimumOnScreenArea, 0);
     gfx::Rect new_bounds_in_screen = parent->ConvertRectToScreen(new_bounds);
     if (!screen_work_area.Intersects(new_bounds_in_screen)) {

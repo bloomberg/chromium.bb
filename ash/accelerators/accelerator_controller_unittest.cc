@@ -441,13 +441,13 @@ TEST_F(AcceleratorControllerTest, WindowSnap) {
   window_state->Activate();
 
   {
-    GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_LEFT);
+    GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_LEFT);
     gfx::Rect expected_bounds = wm::GetDefaultLeftSnappedWindowBoundsInParent(
         WmWindow::Get(window.get()));
     EXPECT_EQ(expected_bounds.ToString(), window->bounds().ToString());
   }
   {
-    GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_RIGHT);
+    GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_RIGHT);
     gfx::Rect expected_bounds = wm::GetDefaultRightSnappedWindowBoundsInParent(
         WmWindow::Get(window.get()));
     EXPECT_EQ(expected_bounds.ToString(), window->bounds().ToString());
@@ -466,11 +466,11 @@ TEST_F(AcceleratorControllerTest, WindowSnap) {
     EXPECT_EQ(normal_bounds.ToString(), window->bounds().ToString());
 
     GetController()->PerformActionIfEnabled(TOGGLE_MAXIMIZED);
-    GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_LEFT);
+    GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_LEFT);
     EXPECT_FALSE(window_state->IsMaximized());
 
     GetController()->PerformActionIfEnabled(TOGGLE_MAXIMIZED);
-    GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_RIGHT);
+    GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_RIGHT);
     EXPECT_FALSE(window_state->IsMaximized());
 
     GetController()->PerformActionIfEnabled(TOGGLE_MAXIMIZED);
@@ -487,9 +487,8 @@ TEST_F(AcceleratorControllerTest, WindowSnap) {
   }
 }
 
-// Tests that when window docking is disabled, only snapping windows works.
-TEST_F(AcceleratorControllerTest, WindowSnapWithoutDocking) {
-  ASSERT_FALSE(ash::switches::DockedWindowsEnabled());
+// Tests that window snapping works.
+TEST_F(AcceleratorControllerTest, TestRepeatedSnap) {
   std::unique_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
 
@@ -497,32 +496,28 @@ TEST_F(AcceleratorControllerTest, WindowSnapWithoutDocking) {
   window_state->Activate();
 
   // Snap right.
-  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_RIGHT);
+  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_RIGHT);
   gfx::Rect normal_bounds = window_state->GetRestoreBoundsInParent();
   gfx::Rect expected_bounds = wm::GetDefaultRightSnappedWindowBoundsInParent(
       WmWindow::Get(window.get()));
   EXPECT_EQ(expected_bounds.ToString(), window->bounds().ToString());
   EXPECT_TRUE(window_state->IsSnapped());
   // Snap right again ->> becomes normal.
-  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_RIGHT);
+  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_RIGHT);
   EXPECT_TRUE(window_state->IsNormalStateType());
-  EXPECT_FALSE(window_state->IsDocked());
   EXPECT_EQ(normal_bounds.ToString(), window->bounds().ToString());
   // Snap right.
-  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_RIGHT);
+  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_RIGHT);
   EXPECT_TRUE(window_state->IsSnapped());
-  EXPECT_FALSE(window_state->IsDocked());
   // Snap left.
-  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_LEFT);
+  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_LEFT);
   EXPECT_TRUE(window_state->IsSnapped());
-  EXPECT_FALSE(window_state->IsDocked());
   expected_bounds = wm::GetDefaultLeftSnappedWindowBoundsInParent(
       WmWindow::Get(window.get()));
   EXPECT_EQ(expected_bounds.ToString(), window->bounds().ToString());
   // Snap left again ->> becomes normal.
-  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_LEFT);
+  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_LEFT);
   EXPECT_TRUE(window_state->IsNormalStateType());
-  EXPECT_FALSE(window_state->IsDocked());
   EXPECT_EQ(normal_bounds.ToString(), window->bounds().ToString());
 }
 
@@ -543,205 +538,6 @@ TEST_F(AcceleratorControllerTest, RotateScreen) {
       GetActiveDisplayRotation(display.id());
   // |new_rotation| is determined by the AcceleratorControllerDelegate.
   EXPECT_NE(initial_rotation, new_rotation);
-}
-
-// Test class used for testing docked windows.
-class EnabledDockedWindowsAcceleratorControllerTest
-    : public AcceleratorControllerTest {
- public:
-  EnabledDockedWindowsAcceleratorControllerTest() = default;
-  ~EnabledDockedWindowsAcceleratorControllerTest() override = default;
-
-  void SetUp() override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        ash::switches::kAshEnableDockedWindows);
-    AcceleratorControllerTest::SetUp();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(EnabledDockedWindowsAcceleratorControllerTest);
-};
-
-TEST_F(EnabledDockedWindowsAcceleratorControllerTest,
-       WindowSnapLeftDockLeftRestore) {
-  std::unique_ptr<aura::Window> window0(
-      CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
-  std::unique_ptr<aura::Window> window1(
-      CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
-  wm::WindowState* window1_state = wm::GetWindowState(window1.get());
-  window1_state->Activate();
-
-  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_LEFT);
-  gfx::Rect normal_bounds = window1_state->GetRestoreBoundsInParent();
-  gfx::Rect expected_bounds = wm::GetDefaultLeftSnappedWindowBoundsInParent(
-      WmWindow::Get(window1.get()));
-  EXPECT_EQ(expected_bounds.ToString(), window1->bounds().ToString());
-  EXPECT_TRUE(window1_state->IsSnapped());
-  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_LEFT);
-  EXPECT_FALSE(window1_state->IsNormalOrSnapped());
-  EXPECT_TRUE(window1_state->IsDocked());
-  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_LEFT);
-  EXPECT_FALSE(window1_state->IsDocked());
-  EXPECT_EQ(normal_bounds.ToString(), window1->bounds().ToString());
-}
-
-TEST_F(EnabledDockedWindowsAcceleratorControllerTest,
-       WindowSnapRightDockRightRestore) {
-  std::unique_ptr<aura::Window> window0(
-      CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
-  std::unique_ptr<aura::Window> window1(
-      CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
-
-  wm::WindowState* window1_state = wm::GetWindowState(window1.get());
-  window1_state->Activate();
-
-  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_RIGHT);
-  gfx::Rect normal_bounds = window1_state->GetRestoreBoundsInParent();
-  gfx::Rect expected_bounds = wm::GetDefaultRightSnappedWindowBoundsInParent(
-      WmWindow::Get(window1.get()));
-  EXPECT_EQ(expected_bounds.ToString(), window1->bounds().ToString());
-  EXPECT_TRUE(window1_state->IsSnapped());
-  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_RIGHT);
-  EXPECT_FALSE(window1_state->IsNormalOrSnapped());
-  EXPECT_TRUE(window1_state->IsDocked());
-  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_RIGHT);
-  EXPECT_FALSE(window1_state->IsDocked());
-  EXPECT_EQ(normal_bounds.ToString(), window1->bounds().ToString());
-}
-
-TEST_F(EnabledDockedWindowsAcceleratorControllerTest,
-       WindowSnapLeftDockLeftSnapRight) {
-  std::unique_ptr<aura::Window> window0(
-      CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
-  std::unique_ptr<aura::Window> window1(
-      CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
-
-  wm::WindowState* window1_state = wm::GetWindowState(window1.get());
-  window1_state->Activate();
-
-  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_LEFT);
-  gfx::Rect expected_bounds = wm::GetDefaultLeftSnappedWindowBoundsInParent(
-      WmWindow::Get(window1.get()));
-  gfx::Rect expected_bounds2 = wm::GetDefaultRightSnappedWindowBoundsInParent(
-      WmWindow::Get(window1.get()));
-  EXPECT_EQ(expected_bounds.ToString(), window1->bounds().ToString());
-  EXPECT_TRUE(window1_state->IsSnapped());
-  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_LEFT);
-  EXPECT_FALSE(window1_state->IsNormalOrSnapped());
-  EXPECT_TRUE(window1_state->IsDocked());
-  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_RIGHT);
-  EXPECT_FALSE(window1_state->IsDocked());
-  EXPECT_TRUE(window1_state->IsSnapped());
-  EXPECT_EQ(expected_bounds2.ToString(), window1->bounds().ToString());
-}
-
-TEST_F(EnabledDockedWindowsAcceleratorControllerTest,
-       WindowDockLeftMinimizeWindowWithRestore) {
-  std::unique_ptr<aura::Window> window0(
-      CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
-  std::unique_ptr<aura::Window> window1(
-      CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
-
-  wm::WindowState* window1_state = wm::GetWindowState(window1.get());
-  window1_state->Activate();
-
-  std::unique_ptr<aura::Window> window2(
-      CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
-
-  wm::WindowState* window2_state = wm::GetWindowState(window2.get());
-
-  std::unique_ptr<aura::Window> window3(
-      CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
-
-  wm::WindowState* window3_state = wm::GetWindowState(window3.get());
-  window3_state->Activate();
-
-  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_LEFT);
-  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_LEFT);
-  gfx::Rect window3_docked_bounds = window3->bounds();
-
-  window2_state->Activate();
-  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_LEFT);
-  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_LEFT);
-  window1_state->Activate();
-  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_LEFT);
-  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_LEFT);
-
-  EXPECT_TRUE(window3_state->IsDocked());
-  EXPECT_TRUE(window2_state->IsDocked());
-  EXPECT_TRUE(window1_state->IsDocked());
-  EXPECT_TRUE(window3_state->IsMinimized());
-
-  window1_state->Activate();
-  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_LEFT);
-  window2_state->Activate();
-  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_LEFT);
-  window3_state->Unminimize();
-  EXPECT_FALSE(window1_state->IsDocked());
-  EXPECT_FALSE(window2_state->IsDocked());
-  EXPECT_TRUE(window3_state->IsDocked());
-  EXPECT_EQ(window3_docked_bounds.ToString(), window3->bounds().ToString());
-}
-
-TEST_F(EnabledDockedWindowsAcceleratorControllerTest,
-       WindowPanelDockLeftDockRightRestore) {
-  // TODO: http://crbug.com/632209.
-  if (WmShell::Get()->IsRunningInMash())
-    return;
-  std::unique_ptr<aura::Window> window0(
-      CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
-
-  std::unique_ptr<aura::Window> window(CreatePanel());
-  wm::WindowState* window_state = wm::GetWindowState(window.get());
-  window_state->Activate();
-
-  gfx::Rect window_restore_bounds2 = window->bounds();
-  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_LEFT);
-  gfx::Rect expected_bounds = wm::GetDefaultLeftSnappedWindowBoundsInParent(
-      WmWindow::Get(window.get()));
-  gfx::Rect window_restore_bounds = window_state->GetRestoreBoundsInScreen();
-  EXPECT_NE(expected_bounds.ToString(), window->bounds().ToString());
-  EXPECT_FALSE(window_state->IsSnapped());
-  EXPECT_FALSE(window_state->IsNormalOrSnapped());
-  EXPECT_TRUE(window_state->IsDocked());
-  window_state->Restore();
-  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_RIGHT);
-  EXPECT_TRUE(window_state->IsDocked());
-  GetController()->PerformActionIfEnabled(WINDOW_CYCLE_SNAP_DOCK_RIGHT);
-  EXPECT_FALSE(window_state->IsDocked());
-  EXPECT_EQ(window_restore_bounds.ToString(),
-            window_restore_bounds2.ToString());
-  EXPECT_EQ(window_restore_bounds.ToString(), window->bounds().ToString());
-}
-
-TEST_F(EnabledDockedWindowsAcceleratorControllerTest, CenterWindowAccelerator) {
-  std::unique_ptr<aura::Window> window(
-      CreateTestWindowInShellWithBounds(gfx::Rect(5, 5, 20, 20)));
-  wm::WindowState* window_state = wm::GetWindowState(window.get());
-  window_state->Activate();
-
-  // Center the window using accelerator.
-  GetController()->PerformActionIfEnabled(WINDOW_POSITION_CENTER);
-  gfx::Rect work_area = display::Screen::GetScreen()
-                            ->GetDisplayNearestWindow(window.get())
-                            .work_area();
-  gfx::Rect bounds = window->GetBoundsInScreen();
-  EXPECT_NEAR(bounds.x() - work_area.x(), work_area.right() - bounds.right(),
-              1);
-  EXPECT_NEAR(bounds.y() - work_area.y(), work_area.bottom() - bounds.bottom(),
-              1);
-
-  // Add the window to docked container and try to center it.
-  window->SetBounds(gfx::Rect(0, 0, 20, 20));
-  const wm::WMEvent event(wm::WM_EVENT_DOCK);
-  wm::GetWindowState(window.get())->OnWMEvent(&event);
-  EXPECT_EQ(kShellWindowId_DockedContainer, window->parent()->id());
-
-  gfx::Rect docked_bounds = window->GetBoundsInScreen();
-  GetController()->PerformActionIfEnabled(WINDOW_POSITION_CENTER);
-  // It should not get centered and should remain docked.
-  EXPECT_EQ(kShellWindowId_DockedContainer, window->parent()->id());
-  EXPECT_EQ(docked_bounds.ToString(), window->GetBoundsInScreen().ToString());
 }
 
 TEST_F(AcceleratorControllerTest, AutoRepeat) {

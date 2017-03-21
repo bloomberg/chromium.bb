@@ -151,34 +151,6 @@ TEST_F(AshPopupAlignmentDelegateTest, AutoHide) {
   EXPECT_LT(baseline, alignment_delegate()->GetBaseLine());
 }
 
-// Verify that docked window doesn't affect the popup alignment.
-TEST_F(AshPopupAlignmentDelegateTest, DockedWindow) {
-  const gfx::Rect toast_size(0, 0, 10, 10);
-  UpdateDisplay("600x600");
-  int origin_x = alignment_delegate()->GetToastOriginX(toast_size);
-  int baseline = alignment_delegate()->GetBaseLine();
-
-  std::unique_ptr<views::Widget> widget = CreateTestWidget(
-      nullptr, kShellWindowId_DockedContainer, gfx::Rect(0, 0, 50, 50));
-
-  // Left-side dock should not affect popup alignment
-  EXPECT_EQ(origin_x, alignment_delegate()->GetToastOriginX(toast_size));
-  EXPECT_EQ(baseline, alignment_delegate()->GetBaseLine());
-  EXPECT_FALSE(alignment_delegate()->IsTopDown());
-  EXPECT_FALSE(alignment_delegate()->IsFromLeft());
-
-  // Force dock to right-side
-  WmShelf* shelf = GetPrimaryShelf();
-  shelf->SetAlignment(SHELF_ALIGNMENT_LEFT);
-  shelf->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
-
-  // Right-side dock should not affect popup alignment
-  EXPECT_EQ(origin_x, alignment_delegate()->GetToastOriginX(toast_size));
-  EXPECT_EQ(baseline, alignment_delegate()->GetBaseLine());
-  EXPECT_FALSE(alignment_delegate()->IsTopDown());
-  EXPECT_FALSE(alignment_delegate()->IsFromLeft());
-}
-
 TEST_F(AshPopupAlignmentDelegateTest, DisplayResize) {
   const gfx::Rect toast_size(0, 0, 10, 10);
   UpdateDisplay("600x600");

@@ -37,7 +37,6 @@ enum ActiveWindowStateType {
   ACTIVE_WINDOW_STATE_TYPE_MAXIMIZED,
   ACTIVE_WINDOW_STATE_TYPE_FULLSCREEN,
   ACTIVE_WINDOW_STATE_TYPE_SNAPPED,
-  ACTIVE_WINDOW_STATE_TYPE_DOCKED,
   ACTIVE_WINDOW_STATE_TYPE_PINNED,
   ACTIVE_WINDOW_STATE_TYPE_TRUSTED_PINNED,
   ACTIVE_WINDOW_STATE_TYPE_COUNT,
@@ -58,10 +57,6 @@ ActiveWindowStateType GetActiveWindowState() {
       case wm::WINDOW_STATE_TYPE_LEFT_SNAPPED:
       case wm::WINDOW_STATE_TYPE_RIGHT_SNAPPED:
         active_window_state_type = ACTIVE_WINDOW_STATE_TYPE_SNAPPED;
-        break;
-      case wm::WINDOW_STATE_TYPE_DOCKED:
-      case wm::WINDOW_STATE_TYPE_DOCKED_MINIMIZED:
-        active_window_state_type = ACTIVE_WINDOW_STATE_TYPE_DOCKED;
         break;
       case wm::WINDOW_STATE_TYPE_PINNED:
         active_window_state_type = ACTIVE_WINDOW_STATE_TYPE_PINNED;
@@ -120,8 +115,10 @@ bool IsUserActive() {
 // container to the lowest to allow the |GetNumVisibleWindows| method to short
 // circuit when processing a maximized or fullscreen window.
 int kVisibleWindowContainerIds[] = {
-    kShellWindowId_PanelContainer, kShellWindowId_DockedContainer,
-    kShellWindowId_AlwaysOnTopContainer, kShellWindowId_DefaultContainer};
+    kShellWindowId_PanelContainer,
+    kShellWindowId_AlwaysOnTopContainer,
+    kShellWindowId_DefaultContainer
+};
 
 // Returns an approximate count of how many windows are currently visible in the
 // primary root window.
@@ -149,11 +146,9 @@ int GetNumVisibleWindowsInPrimaryDisplay() {
       if (!child_window->IsVisible() || child_window_state->IsMinimized())
         continue;
 
-      // Only count activatable windows for 2 reasons:
-      //  1. Ensures that a browser window and its transient, modal child will
-      //     only count as 1 visible window.
-      //  2. Prevents counting some windows in the
-      //     kShellWindowId_DockedContainer that were not opened by the user.
+      // Only count activatable windows for 1 reason:
+      //  - Ensures that a browser window and its transient, modal child will
+      //    only count as 1 visible window.
       if (child_window_state->CanActivate())
         ++visible_window_count;
 

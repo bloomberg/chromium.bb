@@ -114,7 +114,7 @@ enum PersistedWindowShowState {
   PERSISTED_SHOW_STATE_FULLSCREEN = 5,
   PERSISTED_SHOW_STATE_DETACHED_DEPRECATED = 6,
   PERSISTED_SHOW_STATE_DOCKED_DEPRECATED = 7,
-  PERSISTED_SHOW_STATE_END = 7
+  PERSISTED_SHOW_STATE_END = 8,
 };
 
 using IdToSessionTab =
@@ -125,9 +125,10 @@ using IdToSessionWindow =
 // Assert to ensure PersistedWindowShowState is updated if ui::WindowShowState
 // is changed.
 static_assert(ui::SHOW_STATE_END ==
-                  static_cast<ui::WindowShowState>(PERSISTED_SHOW_STATE_END),
-              "SHOW_STATE_END must equal PERSISTED_SHOW_STATE_END");
-
+                  (static_cast<ui::WindowShowState>(PERSISTED_SHOW_STATE_END) -
+                   2),
+              "SHOW_STATE_END must equal PERSISTED_SHOW_STATE_END minus the "
+              "deprecated entries");
 // Returns the show state to store to disk based |state|.
 PersistedWindowShowState ShowStateToPersistedShowState(
     ui::WindowShowState state) {
@@ -140,11 +141,6 @@ PersistedWindowShowState ShowStateToPersistedShowState(
       return PERSISTED_SHOW_STATE_MAXIMIZED;
     case ui::SHOW_STATE_FULLSCREEN:
       return PERSISTED_SHOW_STATE_FULLSCREEN;
-
-    // TODO(afakhry): Remove Docked Windows in M58.
-    case ui::SHOW_STATE_DOCKED:
-      return PERSISTED_SHOW_STATE_DOCKED_DEPRECATED;
-
     case ui::SHOW_STATE_DEFAULT:
     case ui::SHOW_STATE_INACTIVE:
       return PERSISTED_SHOW_STATE_NORMAL;
@@ -167,9 +163,8 @@ ui::WindowShowState PersistedShowStateToShowState(int state) {
       return ui::SHOW_STATE_MAXIMIZED;
     case PERSISTED_SHOW_STATE_FULLSCREEN:
       return ui::SHOW_STATE_FULLSCREEN;
-    case PERSISTED_SHOW_STATE_DOCKED_DEPRECATED:
-      return ui::SHOW_STATE_DOCKED;
     case PERSISTED_SHOW_STATE_DETACHED_DEPRECATED:
+    case PERSISTED_SHOW_STATE_DOCKED_DEPRECATED:
       return ui::SHOW_STATE_NORMAL;
   }
   NOTREACHED();

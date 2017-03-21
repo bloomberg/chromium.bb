@@ -87,15 +87,15 @@ const int kStackedDistance = 36;
 const int kMaximizedWindowInset = 10;  // DIPs.
 
 #if defined(USE_ASH)
-// Returns true if |tab_strip| browser window is docked.
-bool IsDockedOrSnapped(const TabStrip* tab_strip) {
+// Returns true if |tab_strip| browser window is snapped.
+bool IsSnapped(const TabStrip* tab_strip) {
   DCHECK(tab_strip);
   ash::wm::WindowState* window_state =
       ash::wm::GetWindowState(tab_strip->GetWidget()->GetNativeWindow());
-  return window_state->IsDocked() || window_state->IsSnapped();
+  return window_state->IsSnapped();
 }
 #else
-bool IsDockedOrSnapped(const TabStrip* tab_strip) {
+bool IsSnapped(const TabStrip* tab_strip) {
   return false;
 }
 #endif
@@ -1476,7 +1476,7 @@ void TabDragController::CompleteDrag() {
 
   if (attached_tabstrip_) {
     if (is_dragging_new_browser_ || did_restore_window_) {
-      if (IsDockedOrSnapped(attached_tabstrip_)) {
+      if (IsSnapped(attached_tabstrip_)) {
         was_source_maximized_ = false;
         was_source_fullscreen_ = false;
       }

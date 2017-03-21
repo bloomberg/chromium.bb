@@ -135,7 +135,6 @@ TEST_F(ToplevelWindowEventHandlerTest, WindowPositionAutoManagement) {
   generator.PressLeftButton();
   aura::client::WindowMoveClient* move_client =
       aura::client::GetWindowMoveClient(w1->GetRootWindow());
-  // generator.PressLeftButton();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&ContinueAndCompleteDrag, base::Unretained(&generator),
@@ -167,36 +166,6 @@ TEST_F(ToplevelWindowEventHandlerTest, WindowPositionAutoManagement) {
   EXPECT_EQ("200,200", w1->bounds().origin().ToString());
   // Size should remain the same.
   EXPECT_EQ(size.ToString(), w1->bounds().size().ToString());
-}
-
-namespace {
-
-class CancelDragObserver : public aura::WindowObserver {
- public:
-  CancelDragObserver() {}
-  ~CancelDragObserver() override {}
-
-  void OnWindowHierarchyChanging(const HierarchyChangeParams& params) override {
-    aura::client::CaptureClient* client =
-        aura::client::GetCaptureClient(params.target->GetRootWindow());
-    client->SetCapture(nullptr);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CancelDragObserver);
-};
-
-}  // namespace
-
-// Cancelling drag while starting window drag should not crash.
-TEST_F(ToplevelWindowEventHandlerTest, CancelWhileDragStart) {
-  std::unique_ptr<aura::Window> w1(CreateWindow(HTCAPTION));
-  CancelDragObserver observer;
-  w1->AddObserver(&observer);
-  gfx::Point origin = w1->bounds().origin();
-  DragFromCenterBy(w1.get(), 100, 100);
-  EXPECT_EQ(origin, w1->bounds().origin());
-  w1->RemoveObserver(&observer);
 }
 
 TEST_F(ToplevelWindowEventHandlerTest, BottomRight) {
@@ -836,7 +805,7 @@ TEST_F(ToplevelWindowEventHandlerTest, DragSnappedWindowToExternalDisplay) {
   // Snap the window to the right.
   wm::WindowState* window_state = wm::GetWindowState(w1.get());
   ASSERT_TRUE(window_state->CanSnap());
-  const wm::WMEvent event(wm::WM_EVENT_CYCLE_SNAP_DOCK_RIGHT);
+  const wm::WMEvent event(wm::WM_EVENT_CYCLE_SNAP_RIGHT);
   window_state->OnWMEvent(&event);
   ASSERT_TRUE(window_state->IsSnapped());
 

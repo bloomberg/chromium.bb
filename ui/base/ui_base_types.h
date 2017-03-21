@@ -14,14 +14,13 @@ class Event;
 // Window "show" state.
 enum WindowShowState {
   // A default un-set state.
-  SHOW_STATE_DEFAULT    = 0,
-  SHOW_STATE_NORMAL     = 1,
-  SHOW_STATE_MINIMIZED  = 2,
-  SHOW_STATE_MAXIMIZED  = 3,
-  SHOW_STATE_INACTIVE   = 4,  // Views only, not persisted.
+  SHOW_STATE_DEFAULT = 0,
+  SHOW_STATE_NORMAL = 1,
+  SHOW_STATE_MINIMIZED = 2,
+  SHOW_STATE_MAXIMIZED = 3,
+  SHOW_STATE_INACTIVE = 4,  // Views only, not persisted.
   SHOW_STATE_FULLSCREEN = 5,
-  SHOW_STATE_DOCKED     = 6,
-  SHOW_STATE_END        = 7   // The end of show state enum.
+  SHOW_STATE_END = 6  // The end of show state enum.
 };
 
 // Dialog button identifiers used to specify which buttons to show the user.

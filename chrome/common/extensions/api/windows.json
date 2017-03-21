@@ -20,7 +20,22 @@
         "id": "WindowState",
         "type": "string",
         "description": "The state of this browser window. Under some circumstances a Window may not be assigned state property, for example when querying closed windows from the $(ref:sessions) API.",
-        "enum": ["normal", "minimized", "maximized", "fullscreen", "docked"]
+        "enum": [{
+          "name": "normal",
+          "description": "Normal window state (i.e. not minimized, maximized, or fullscreen)."
+        }, {
+          "name": "minimized",
+          "description": "Minimized window state."
+        }, {
+          "name": "maximized",
+          "description": "Maximized window state."
+        }, {
+          "name": "fullscreen",
+          "description": "Fullscreen window state."
+        }, {
+          "name": "docked",
+          "description": "<i>Deprecated since Chrome M59.</i> Docked windows are no longer supported. This state will be converted to \"normal\"."
+        }]
       },
       {
         "id": "Window",

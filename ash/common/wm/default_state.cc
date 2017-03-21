@@ -4,8 +4,6 @@
 
 #include "ash/common/wm/default_state.h"
 
-#include "ash/common/ash_switches.h"
-#include "ash/common/wm/dock/docked_window_layout_manager.h"
 #include "ash/common/wm/window_animation_types.h"
 #include "ash/common/wm/window_parenting_utils.h"
 #include "ash/common/wm/window_positioning_utils.h"
@@ -35,8 +33,7 @@ const float kMinimumPercentOnScreenArea = 0.3f;
 const int kMaximizedWindowInset = 10;  // DIPs.
 
 bool IsMinimizedWindowState(const WindowStateType state_type) {
-  return state_type == WINDOW_STATE_TYPE_MINIMIZED ||
-         state_type == WINDOW_STATE_TYPE_DOCKED_MINIMIZED;
+  return state_type == WINDOW_STATE_TYPE_MINIMIZED;
 }
 
 void MoveToDisplayForRestore(WindowState* window_state) {
@@ -66,53 +63,10 @@ void MoveToDisplayForRestore(WindowState* window_state) {
   }
 }
 
-DockedWindowLayoutManager* GetDockedWindowLayoutManager(WmShell* shell) {
-  return DockedWindowLayoutManager::Get(shell->GetActiveWindow());
-}
-
-class ScopedPreferredAlignmentResetter {
- public:
-  ScopedPreferredAlignmentResetter(DockedAlignment dock_alignment,
-                                   DockedWindowLayoutManager* dock_layout)
-      : docked_window_layout_manager_(dock_layout) {
-    docked_window_layout_manager_->set_preferred_alignment(dock_alignment);
-  }
-  ~ScopedPreferredAlignmentResetter() {
-    docked_window_layout_manager_->set_preferred_alignment(
-        DOCKED_ALIGNMENT_NONE);
-  }
-
- private:
-  DockedWindowLayoutManager* docked_window_layout_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedPreferredAlignmentResetter);
-};
-
-class ScopedDockedLayoutEventSourceResetter {
- public:
-  ScopedDockedLayoutEventSourceResetter(DockedWindowLayoutManager* dock_layout)
-      : docked_window_layout_manager_(dock_layout) {
-    docked_window_layout_manager_->set_event_source(
-        DOCKED_ACTION_SOURCE_KEYBOARD);
-  }
-  ~ScopedDockedLayoutEventSourceResetter() {
-    docked_window_layout_manager_->set_event_source(
-        DOCKED_ACTION_SOURCE_UNKNOWN);
-  }
-
- private:
-  DockedWindowLayoutManager* docked_window_layout_manager_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedDockedLayoutEventSourceResetter);
-};
-
 void CycleSnap(WindowState* window_state, WMEventType event) {
-  DCHECK(!ash::switches::DockedWindowsEnabled());
-
   wm::WindowStateType desired_snap_state =
-      event == WM_EVENT_CYCLE_SNAP_DOCK_LEFT
-          ? wm::WINDOW_STATE_TYPE_LEFT_SNAPPED
-          : wm::WINDOW_STATE_TYPE_RIGHT_SNAPPED;
+      event == WM_EVENT_CYCLE_SNAP_LEFT ? wm::WINDOW_STATE_TYPE_LEFT_SNAPPED
+                                        : wm::WINDOW_STATE_TYPE_RIGHT_SNAPPED;
 
   if (window_state->CanSnap() &&
       window_state->GetStateType() != desired_snap_state &&
@@ -126,60 +80,6 @@ void CycleSnap(WindowState* window_state, WMEventType event) {
   }
 
   if (window_state->IsSnapped()) {
-    window_state->Restore();
-    return;
-  }
-  window_state->window()->Animate(::wm::WINDOW_ANIMATION_TYPE_BOUNCE);
-}
-
-void CycleSnapDock(WindowState* window_state, WMEventType event) {
-  DCHECK(ash::switches::DockedWindowsEnabled());
-
-  DockedWindowLayoutManager* dock_layout =
-      GetDockedWindowLayoutManager(window_state->window()->GetShell());
-  wm::WindowStateType desired_snap_state =
-      event == WM_EVENT_CYCLE_SNAP_DOCK_LEFT
-          ? wm::WINDOW_STATE_TYPE_LEFT_SNAPPED
-          : wm::WINDOW_STATE_TYPE_RIGHT_SNAPPED;
-  DockedAlignment desired_dock_alignment =
-      event == WM_EVENT_CYCLE_SNAP_DOCK_LEFT ? DOCKED_ALIGNMENT_LEFT
-                                             : DOCKED_ALIGNMENT_RIGHT;
-  DockedAlignment current_dock_alignment =
-      dock_layout ? dock_layout->CalculateAlignment() : DOCKED_ALIGNMENT_NONE;
-
-  if (!window_state->IsDocked() ||
-      (current_dock_alignment != DOCKED_ALIGNMENT_NONE &&
-       current_dock_alignment != desired_dock_alignment)) {
-    if (window_state->CanSnap() &&
-        window_state->GetStateType() != desired_snap_state &&
-        window_state->window()->GetType() != ui::wm::WINDOW_TYPE_PANEL) {
-      const wm::WMEvent event(desired_snap_state ==
-                                      wm::WINDOW_STATE_TYPE_LEFT_SNAPPED
-                                  ? wm::WM_EVENT_SNAP_LEFT
-                                  : wm::WM_EVENT_SNAP_RIGHT);
-      window_state->OnWMEvent(&event);
-      return;
-    }
-
-    if (dock_layout &&
-        dock_layout->CanDockWindow(window_state->window(),
-                                   desired_dock_alignment)) {
-      if (window_state->IsDocked()) {
-        dock_layout->MaybeSetDesiredDockedAlignment(desired_dock_alignment);
-        return;
-      }
-
-      ScopedDockedLayoutEventSourceResetter event_source_resetter(dock_layout);
-      ScopedPreferredAlignmentResetter alignmentResetter(desired_dock_alignment,
-                                                         dock_layout);
-      const wm::WMEvent event(wm::WM_EVENT_DOCK);
-      window_state->OnWMEvent(&event);
-      return;
-    }
-  }
-
-  if (window_state->IsDocked() || window_state->IsSnapped()) {
-    ScopedDockedLayoutEventSourceResetter event_source_resetter(dock_layout);
     window_state->Restore();
     return;
   }
@@ -207,17 +107,13 @@ void DefaultState::OnWMEvent(WindowState* window_state, const WMEvent* event) {
   WindowStateType next_state_type = WINDOW_STATE_TYPE_NORMAL;
   switch (event->type()) {
     case WM_EVENT_NORMAL:
-      next_state_type = current_state_type == WINDOW_STATE_TYPE_DOCKED_MINIMIZED
-                            ? WINDOW_STATE_TYPE_DOCKED
-                            : WINDOW_STATE_TYPE_NORMAL;
+      next_state_type = WINDOW_STATE_TYPE_NORMAL;
       break;
     case WM_EVENT_MAXIMIZE:
       next_state_type = WINDOW_STATE_TYPE_MAXIMIZED;
       break;
     case WM_EVENT_MINIMIZE:
-      next_state_type = current_state_type == WINDOW_STATE_TYPE_DOCKED
-                            ? WINDOW_STATE_TYPE_DOCKED_MINIMIZED
-                            : WINDOW_STATE_TYPE_MINIMIZED;
+      next_state_type = WINDOW_STATE_TYPE_MINIMIZED;
       break;
     case WM_EVENT_FULLSCREEN:
       next_state_type = WINDOW_STATE_TYPE_FULLSCREEN;
@@ -227,9 +123,6 @@ void DefaultState::OnWMEvent(WindowState* window_state, const WMEvent* event) {
       break;
     case WM_EVENT_SNAP_RIGHT:
       next_state_type = WINDOW_STATE_TYPE_RIGHT_SNAPPED;
-      break;
-    case WM_EVENT_DOCK:
-      next_state_type = WINDOW_STATE_TYPE_DOCKED;
       break;
     case WM_EVENT_SET_BOUNDS:
       SetBounds(window_state, static_cast<const SetBoundsEvent*>(event));
@@ -258,8 +151,8 @@ void DefaultState::OnWMEvent(WindowState* window_state, const WMEvent* event) {
     case WM_EVENT_TOGGLE_VERTICAL_MAXIMIZE:
     case WM_EVENT_TOGGLE_HORIZONTAL_MAXIMIZE:
     case WM_EVENT_TOGGLE_FULLSCREEN:
-    case WM_EVENT_CYCLE_SNAP_DOCK_LEFT:
-    case WM_EVENT_CYCLE_SNAP_DOCK_RIGHT:
+    case WM_EVENT_CYCLE_SNAP_LEFT:
+    case WM_EVENT_CYCLE_SNAP_RIGHT:
     case WM_EVENT_CENTER:
       NOTREACHED() << "Compound event should not reach here:" << event;
       return;
@@ -411,12 +304,9 @@ bool DefaultState::ProcessCompoundEvents(WindowState* window_state,
     case WM_EVENT_TOGGLE_FULLSCREEN:
       ToggleFullScreen(window_state, window_state->delegate());
       return true;
-    case WM_EVENT_CYCLE_SNAP_DOCK_LEFT:
-    case WM_EVENT_CYCLE_SNAP_DOCK_RIGHT:
-      if (ash::switches::DockedWindowsEnabled())
-        CycleSnapDock(window_state, event->type());
-      else
-        CycleSnap(window_state, event->type());
+    case WM_EVENT_CYCLE_SNAP_LEFT:
+    case WM_EVENT_CYCLE_SNAP_RIGHT:
+      CycleSnap(window_state, event->type());
       return true;
     case WM_EVENT_CENTER:
       CenterWindow(window_state);
@@ -431,7 +321,6 @@ bool DefaultState::ProcessCompoundEvents(WindowState* window_state,
     case WM_EVENT_SNAP_RIGHT:
     case WM_EVENT_SET_BOUNDS:
     case WM_EVENT_SHOW_INACTIVE:
-    case WM_EVENT_DOCK:
       break;
     case WM_EVENT_ADDED_TO_WORKSPACE:
     case WM_EVENT_WORKAREA_BOUNDS_CHANGED:
@@ -471,8 +360,7 @@ bool DefaultState::ProcessWorkspaceEvents(WindowState* window_state,
       if (!window_state->IsUserPositionable())
         return true;
 
-      // Use entire display instead of workarea because the workarea can
-      // be further shrunk by the docked area. The logic ensures 30%
+      // Use entire display instead of workarea. The logic ensures 30%
       // visibility which should be enough to see where the window gets
       // moved.
       gfx::Rect display_area = GetDisplayBoundsInParent(window);
@@ -532,8 +420,8 @@ bool DefaultState::ProcessWorkspaceEvents(WindowState* window_state,
     case WM_EVENT_TOGGLE_VERTICAL_MAXIMIZE:
     case WM_EVENT_TOGGLE_HORIZONTAL_MAXIMIZE:
     case WM_EVENT_TOGGLE_FULLSCREEN:
-    case WM_EVENT_CYCLE_SNAP_DOCK_LEFT:
-    case WM_EVENT_CYCLE_SNAP_DOCK_RIGHT:
+    case WM_EVENT_CYCLE_SNAP_LEFT:
+    case WM_EVENT_CYCLE_SNAP_RIGHT:
     case WM_EVENT_CENTER:
     case WM_EVENT_NORMAL:
     case WM_EVENT_MAXIMIZE:
@@ -545,7 +433,6 @@ bool DefaultState::ProcessWorkspaceEvents(WindowState* window_state,
     case WM_EVENT_SNAP_RIGHT:
     case WM_EVENT_SET_BOUNDS:
     case WM_EVENT_SHOW_INACTIVE:
-    case WM_EVENT_DOCK:
       break;
   }
   return false;
@@ -571,8 +458,7 @@ bool DefaultState::SetMaximizedOrFullscreenBounds(WindowState* window_state) {
 void DefaultState::SetBounds(WindowState* window_state,
                              const SetBoundsEvent* event) {
   if (window_state->is_dragged()) {
-    // TODO(oshima|varkha): This may be no longer needed, as the dragging
-    // happens in docked window container. crbug.com/485612.
+    // TODO(oshima|varkha): Is this still needed? crbug.com/485612.
     window_state->SetBoundsDirect(event->requested_bounds());
   } else if (window_state->IsSnapped()) {
     gfx::Rect work_area_in_parent =
@@ -693,22 +579,7 @@ void DefaultState::UpdateBoundsFromState(WindowState* window_state,
               ? GetDefaultLeftSnappedWindowBoundsInParent(window)
               : GetDefaultRightSnappedWindowBoundsInParent(window);
       break;
-    case WINDOW_STATE_TYPE_DOCKED: {
-      // TODO(afakhry): Remove in M58.
-      DCHECK(ash::switches::DockedWindowsEnabled());
-      if (window->GetParent()->GetShellWindowId() !=
-          kShellWindowId_DockedContainer) {
-        WmWindow* docked_container =
-            window->GetRootWindow()->GetChildByShellWindowId(
-                kShellWindowId_DockedContainer);
-        ReparentChildWithTransientChildren(window->aura_window(),
-                                           window->aura_window()->parent(),
-                                           docked_container->aura_window());
-      }
-      // Return early because we don't want to update the bounds of the
-      // window below; as the bounds are managed by the dock layout.
-      return;
-    }
+
     case WINDOW_STATE_TYPE_DEFAULT:
     case WINDOW_STATE_TYPE_NORMAL: {
       gfx::Rect work_area_in_parent = GetDisplayWorkAreaBoundsInParent(window);
@@ -747,7 +618,6 @@ void DefaultState::UpdateBoundsFromState(WindowState* window_state,
       bounds_in_parent = GetDisplayBoundsInParent(window);
       break;
 
-    case WINDOW_STATE_TYPE_DOCKED_MINIMIZED:
     case WINDOW_STATE_TYPE_MINIMIZED:
       break;
     case WINDOW_STATE_TYPE_INACTIVE:

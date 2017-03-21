@@ -55,10 +55,6 @@ const char kAshEnableMagnifierKeyScroller[] =
 const char kAshEnablePaletteOnAllDisplays[] =
     "ash-enable-palette-on-all-displays";
 
-// Enables docking windows to the right or left (not to be confused with snapped
-// windows).
-const char kAshEnableDockedWindows[] = "ash-enable-docked-windows";
-
 // Enables the observation of accelerometer events to enter touch-view mode.
 const char kAshEnableTouchView[] = "enable-touchview";
 
@@ -103,11 +99,6 @@ bool ConstrainPointerToRoot() {
   return base::SysInfo::IsRunningOnChromeOS() ||
          base::CommandLine::ForCurrentProcess()->HasSwitch(
              kAshConstrainPointerToRoot);
-}
-
-bool DockedWindowsEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      ash::switches::kAshEnableDockedWindows);
 }
 
 }  // namespace switches

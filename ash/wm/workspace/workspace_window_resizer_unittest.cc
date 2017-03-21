@@ -4,7 +4,6 @@
 
 #include "ash/common/wm/workspace/workspace_window_resizer.h"
 
-#include "ash/common/ash_switches.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/wm/window_positioning_utils.h"
@@ -543,7 +542,6 @@ TEST_F(WorkspaceWindowResizerTest, Edge) {
   UpdateDisplay("800x700");
   // TODO(varkha): Insets are reset after every drag because of
   // http://crbug.com/292238.
-  // Window is wide enough not to get docked right away.
   window_->SetBounds(gfx::Rect(20, 30, 400, 60));
   window_->SetProperty(aura::client::kResizeBehaviorKey,
                        ui::mojom::kResizeBehaviorCanResize |
@@ -592,7 +590,6 @@ TEST_F(WorkspaceWindowResizerTest, Edge) {
   UpdateDisplay("800x600,500x600");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   EXPECT_EQ(root_windows[0], window_->GetRootWindow());
-  // Window is wide enough not to get docked right away.
   window_->SetBoundsInScreen(gfx::Rect(800, 10, 400, 60),
                              GetSecondaryDisplay());
   EXPECT_EQ(root_windows[1], window_->GetRootWindow());
@@ -1494,17 +1491,9 @@ TEST_F(WorkspaceWindowResizerTest, PhantomSnapMaxSize) {
   window_->SetProperty(aura::client::kResizeBehaviorKey,
                        ui::mojom::kResizeBehaviorCanResize |
                            ui::mojom::kResizeBehaviorCanMaximize);
-
-  // Enable docking for this test.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      ash::switches::kAshEnableDockedWindows);
-
   {
     // With max size not set we get a phantom window controller for dragging off
     // the right hand side.
-    // Make the window wider than maximum docked width.
-    window_->SetBounds(gfx::Rect(0, 0, 400, 200));
-
     std::unique_ptr<WindowResizer> resizer(
         CreateResizerForTest(window_.get(), gfx::Point(), HTCAPTION));
     EXPECT_FALSE(snap_phantom_window_controller());
@@ -1513,23 +1502,20 @@ TEST_F(WorkspaceWindowResizerTest, PhantomSnapMaxSize) {
     resizer->RevertDrag();
   }
   {
-    // With max size defined, we get no phantom window for snapping but we still
-    // get a phantom window (docking guide).
+    // With max size defined, we get no phantom window for snapping.
     window_->SetBounds(gfx::Rect(0, 0, 400, 200));
     delegate_.set_max_size(gfx::Size(400, 200));
 
     std::unique_ptr<WindowResizer> resizer(
         CreateResizerForTest(window_.get(), gfx::Point(), HTCAPTION));
     resizer->Drag(CalculateDragPoint(*resizer, 801, 0), 0);
-    EXPECT_TRUE(snap_phantom_window_controller());
+    EXPECT_FALSE(snap_phantom_window_controller());
     resizer->RevertDrag();
   }
   {
     // With max size defined, we get no phantom window for snapping.
     window_->SetBounds(gfx::Rect(0, 0, 400, 200));
     delegate_.set_max_size(gfx::Size(400, 200));
-    // With min size defined, we get no phantom window for docking.
-    delegate_.set_min_size(gfx::Size(400, 200));
 
     std::unique_ptr<WindowResizer> resizer(
         CreateResizerForTest(window_.get(), gfx::Point(), HTCAPTION));

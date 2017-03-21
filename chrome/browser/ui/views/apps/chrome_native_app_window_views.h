@@ -29,8 +29,7 @@ class ChromeNativeAppWindowViews
       views::Widget* widget);
   // Called before views::Widget::Init() in InitializeDefaultWindow() to allow
   // subclasses to customize the InitParams that would be passed.
-  virtual void OnBeforePanelWidgetInit(bool use_default_bounds,
-                                       views::Widget::InitParams* init_params,
+  virtual void OnBeforePanelWidgetInit(views::Widget::InitParams* init_params,
                                        views::Widget* widget);
 
   virtual void InitializeDefaultWindow(

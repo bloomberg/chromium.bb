@@ -714,14 +714,6 @@ void ShelfLayoutManager::CalculateTargetBounds(const State& state,
     target_bounds->work_area_insets += keyboard_insets;
   }
 
-  // Also push in the work area inset for the dock if it is visible.
-  if (!dock_bounds_.IsEmpty()) {
-    gfx::Insets dock_insets(
-        0, (dock_bounds_.x() > 0 ? 0 : dock_bounds_.width()), 0,
-        (dock_bounds_.x() > 0 ? dock_bounds_.width() : 0));
-    target_bounds->work_area_insets += dock_insets;
-  }
-
   // Also push in the work area insets for the ChromeVox panel if it's visible.
   if (chromevox_panel_height_) {
     gfx::Insets chromevox_insets(chromevox_panel_height_, 0, 0, 0);
@@ -981,20 +973,6 @@ int ShelfLayoutManager::GetWorkAreaInsets(const State& state, int size) const {
   if (state.visibility_state == SHELF_AUTO_HIDE)
     return GetShelfConstant(SHELF_INSETS_FOR_AUTO_HIDE);
   return 0;
-}
-
-void ShelfLayoutManager::OnDockBoundsChanging(
-    const gfx::Rect& dock_bounds,
-    DockedWindowLayoutManagerObserver::Reason reason) {
-  // Skip shelf layout in case docked notification originates from this class.
-  if (reason == DISPLAY_INSETS_CHANGED)
-    return;
-  if (dock_bounds_ != dock_bounds) {
-    dock_bounds_ = dock_bounds;
-    OnWindowResized();
-    UpdateVisibilityState();
-    MaybeUpdateShelfBackground(AnimationChangeType::ANIMATE);
-  }
 }
 
 void ShelfLayoutManager::OnLockStateEvent(LockStateObserver::EventType event) {

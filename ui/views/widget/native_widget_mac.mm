@@ -420,7 +420,6 @@ void NativeWidgetMac::ShowWithWindowState(ui::WindowShowState state) {
     case ui::SHOW_STATE_MINIMIZED:
     case ui::SHOW_STATE_MAXIMIZED:
     case ui::SHOW_STATE_FULLSCREEN:
-    case ui::SHOW_STATE_DOCKED:
       NOTIMPLEMENTED();
       break;
     case ui::SHOW_STATE_END:

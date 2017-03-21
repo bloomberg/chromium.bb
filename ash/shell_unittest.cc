@@ -22,6 +22,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shell_test_api.h"
 #include "ash/wm/window_util.h"
+#include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/aura/client/aura_constants.h"
@@ -57,6 +58,12 @@ aura::Window* GetAlwaysOnTopContainer() {
 
 // Expect ALL the containers!
 void ExpectAllContainers() {
+  // Validate no duplicate container IDs.
+  const size_t all_shell_container_ids_size = arraysize(kAllShellContainerIds);
+  std::set<int32_t> container_ids;
+  for (size_t i = 0; i < all_shell_container_ids_size; ++i)
+    EXPECT_TRUE(container_ids.insert(kAllShellContainerIds[i]).second);
+
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
   EXPECT_TRUE(
       Shell::GetContainer(root_window, kShellWindowId_WallpaperContainer));

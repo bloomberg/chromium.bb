@@ -11,7 +11,6 @@
 #include "ash/common/session/session_state_observer.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_observer.h"
-#include "ash/common/wm/dock/docked_window_layout_manager_observer.h"
 #include "ash/common/wm/lock_state_observer.h"
 #include "ash/common/wm/wm_snap_to_pixel_layout_manager.h"
 #include "ash/common/wm/workspace/workspace_types.h"
@@ -53,7 +52,6 @@ class WmShelf;
 class ASH_EXPORT ShelfLayoutManager
     : public ShellObserver,
       public aura::client::ActivationChangeObserver,
-      public DockedWindowLayoutManagerObserver,
       public keyboard::KeyboardControllerObserver,
       public LockStateObserver,
       public wm::WmSnapToPixelLayoutManager,
@@ -76,9 +74,6 @@ class ASH_EXPORT ShelfLayoutManager
 
   // Returns the preferred size of the shelf for the target visibility state.
   gfx::Size GetPreferredSize();
-
-  // Returns the docked area bounds.
-  const gfx::Rect& dock_bounds() const { return dock_bounds_; }
 
   // Returns the bounds within the root window not occupied by the shelf nor the
   // virtual keyboard.
@@ -275,11 +270,6 @@ class ASH_EXPORT ShelfLayoutManager
 
   int GetWorkAreaInsets(const State& state, int size) const;
 
-  // Overridden from DockedWindowLayoutManagerObserver:
-  void OnDockBoundsChanging(
-      const gfx::Rect& dock_bounds,
-      DockedWindowLayoutManagerObserver::Reason reason) override;
-
   // Called when the LoginUI changes from visible to invisible.
   void UpdateShelfVisibilityAfterLoginUIChange();
 
@@ -346,9 +336,6 @@ class ASH_EXPORT ShelfLayoutManager
 
   // The bounds of the keyboard.
   gfx::Rect keyboard_bounds_;
-
-  // The bounds of the dock.
-  gfx::Rect dock_bounds_;
 
   // The bounds within the root window not occupied by the shelf nor the virtual
   // keyboard.

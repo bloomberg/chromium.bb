@@ -7,15 +7,10 @@
 
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/accessibility_types.h"
-#include "ash/common/ash_switches.h"
-#include "ash/common/shelf/shelf_widget.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/test/test_shelf_delegate.h"
-#include "ash/common/wm/dock/docked_window_layout_manager.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
-#include "ash/common/wm/mru_window_tracker.h"
-#include "ash/common/wm/overview/scoped_transform_overview_window.h"
 #include "ash/common/wm/overview/window_grid.h"
 #include "ash/common/wm/overview/window_selector.h"
 #include "ash/common/wm/overview/window_selector_controller.h"
@@ -27,8 +22,6 @@
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/drag_drop/drag_drop_controller.h"
-#include "ash/public/cpp/shell_window_ids.h"
-#include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/shelf_view_test_api.h"
@@ -36,21 +29,12 @@
 #include "ash/test/test_app_list_view_presenter_impl.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
-#include "base/command_line.h"
-#include "base/compiler_specific.h"
-#include "base/memory/ptr_util.h"
-#include "base/run_loop.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/user_action_tester.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/focus_client.h"
-#include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/display/display_layout.h"
@@ -60,14 +44,8 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/geometry/point_conversions.h"
-#include "ui/gfx/geometry/rect_conversions.h"
-#include "ui/gfx/geometry/safe_integer_conversions.h"
 #include "ui/gfx/transform.h"
 #include "ui/gfx/transform_util.h"
-#include "ui/views/controls/button/image_button.h"
-#include "ui/views/controls/label.h"
-#include "ui/views/widget/native_widget_aura.h"
-#include "ui/views/widget/widget_delegate.h"
 #include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_delegate.h"
@@ -560,289 +538,6 @@ TEST_F(WindowSelectorTest, WindowsOrder) {
   EXPECT_EQ(1, overview2[1]->GetWindow()->GetShellWindowId());
   EXPECT_EQ(3, overview2[2]->GetWindow()->GetShellWindowId());
   ToggleOverview();
-}
-
-// Test class used for tests that need docked windows enabled.
-class EnabledDockedWindowsWindowSelectorTest : public WindowSelectorTest {
- public:
-  EnabledDockedWindowsWindowSelectorTest() = default;
-  ~EnabledDockedWindowsWindowSelectorTest() override = default;
-
-  void SetUp() override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        ash::switches::kAshEnableDockedWindows);
-    WindowSelectorTest::SetUp();
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(EnabledDockedWindowsWindowSelectorTest);
-};
-
-// Tests entering overview mode with docked windows
-TEST_F(EnabledDockedWindowsWindowSelectorTest, BasicWithDocked) {
-  // aura::Window* root_window = Shell::GetPrimaryRootWindow();
-  gfx::Rect bounds(300, 0, 200, 200);
-  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
-  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
-  std::unique_ptr<aura::Window> docked1(CreateWindow(bounds));
-  std::unique_ptr<aura::Window> docked2(CreateWindow(bounds));
-
-  wm::WMEvent dock_event(wm::WM_EVENT_DOCK);
-  wm::GetWindowState(docked1.get())->OnWMEvent(&dock_event);
-
-  wm::WindowState* docked_state2 = wm::GetWindowState(docked2.get());
-  docked_state2->OnWMEvent(&dock_event);
-  wm::WMEvent minimize_event(wm::WM_EVENT_MINIMIZE);
-  docked_state2->OnWMEvent(&minimize_event);
-
-  EXPECT_TRUE(WindowsOverlapping(window1.get(), window2.get()));
-  gfx::Rect docked_bounds = docked1->GetBoundsInScreen();
-
-  EXPECT_NE(bounds.ToString(), docked_bounds.ToString());
-  EXPECT_FALSE(WindowsOverlapping(window1.get(), docked1.get()));
-  EXPECT_FALSE(WindowsOverlapping(window1.get(), docked2.get()));
-  EXPECT_FALSE(docked2->IsVisible());
-
-  EXPECT_EQ(wm::WINDOW_STATE_TYPE_DOCKED,
-            wm::GetWindowState(docked1.get())->GetStateType());
-  EXPECT_EQ(wm::WINDOW_STATE_TYPE_DOCKED_MINIMIZED,
-            wm::GetWindowState(docked2.get())->GetStateType());
-
-  ToggleOverview();
-
-  EXPECT_FALSE(WindowsOverlapping(window1.get(), window2.get()));
-
-  gfx::Rect container_bounds = docked1->parent()->bounds();
-  ShelfWidget* shelf = GetPrimaryShelf()->shelf_widget();
-  DockedWindowLayoutManager* manager =
-      DockedWindowLayoutManager::Get(WmWindow::Get(docked1.get()));
-
-  // Minimized docked windows stays invisible.
-  EXPECT_FALSE(docked2->IsVisible());
-  EXPECT_TRUE(GetOverviewWindowForMinimizedState(0, docked2.get()));
-
-  // Docked area shrinks.
-  EXPECT_EQ(0, manager->docked_bounds().width());
-
-  // Work area takes the whole screen minus the shelf.
-  gfx::Rect work_area = display::Screen::GetScreen()
-                            ->GetDisplayNearestWindow(docked1.get())
-                            .work_area();
-  gfx::Size expected_work_area_bounds(container_bounds.size());
-  expected_work_area_bounds.Enlarge(0,
-                                    -shelf->GetWindowBoundsInScreen().height());
-  EXPECT_EQ(expected_work_area_bounds.ToString(), work_area.size().ToString());
-
-  // Docked window can still be activated, which will exit the overview mode.
-  ClickWindow(docked1.get());
-  EXPECT_TRUE(wm::IsActiveWindow(docked1.get()));
-  EXPECT_FALSE(window_selector_controller()->IsSelecting());
-
-  // Docked area has a window in it.
-  EXPECT_GT(manager->docked_bounds().width(), 0);
-
-  // Work area takes the whole screen minus the shelf and the docked area.
-  work_area = display::Screen::GetScreen()
-                  ->GetDisplayNearestWindow(docked1.get())
-                  .work_area();
-  expected_work_area_bounds = container_bounds.size();
-  expected_work_area_bounds.Enlarge(-manager->docked_bounds().width(),
-                                    -shelf->GetWindowBoundsInScreen().height());
-  EXPECT_EQ(expected_work_area_bounds.ToString(), work_area.size().ToString());
-}
-
-// Tests that selecting a docked window updates docked layout pushing another
-// window to get docked-minimized.
-TEST_F(EnabledDockedWindowsWindowSelectorTest, ActivateDockedWindow) {
-  // aura::Window* root_window = Shell::GetPrimaryRootWindow();
-  gfx::Rect bounds(300, 0, 200, 200);
-  std::unique_ptr<views::Widget> widget1 = CreateWindowWidget(bounds);
-  std::unique_ptr<views::Widget> widget2 = CreateWindowWidget(bounds);
-
-  aura::test::TestWindowDelegate delegate;
-  delegate.set_minimum_size(gfx::Size(200, 500));
-  std::unique_ptr<aura::Window> docked_window1(
-      CreateTestWindowInShellWithDelegate(&delegate, -1, bounds));
-  docked_window1->SetProperty(aura::client::kTopViewInset, kHeaderHeight);
-  std::unique_ptr<aura::Window> docked_window2(
-      CreateTestWindowInShellWithDelegate(&delegate, -1, bounds));
-  docked_window2->SetProperty(aura::client::kTopViewInset, kHeaderHeight);
-  wm::WindowState* state1 = wm::GetWindowState(docked_window1.get());
-  wm::WindowState* state2 = wm::GetWindowState(docked_window2.get());
-
-  // Dock the second window first, then the first window.
-  wm::WMEvent dock_event(wm::WM_EVENT_DOCK);
-  state2->OnWMEvent(&dock_event);
-  state1->OnWMEvent(&dock_event);
-
-  // Both windows' restored bounds are same.
-  const gfx::Rect expected_bounds = docked_window1->bounds();
-  EXPECT_EQ(expected_bounds.ToString(), docked_window2->bounds().ToString());
-
-  // |docked_window1| is docked and visible.
-  EXPECT_TRUE(docked_window1->IsVisible());
-  EXPECT_EQ(wm::WINDOW_STATE_TYPE_DOCKED, state1->GetStateType());
-  // |docked_window2| is docked-minimized and hidden.
-  EXPECT_FALSE(docked_window2->IsVisible());
-  EXPECT_EQ(wm::WINDOW_STATE_TYPE_DOCKED_MINIMIZED, state2->GetStateType());
-
-  ToggleOverview();
-
-  // Minimized should stay minimized.
-  EXPECT_FALSE(docked_window2->IsVisible());
-  EXPECT_EQ(wm::WINDOW_STATE_TYPE_DOCKED_MINIMIZED, state2->GetStateType());
-
-  aura::Window* window_for_minimized_docked_window2 =
-      GetOverviewWindowForMinimizedState(0, docked_window2.get());
-  ASSERT_TRUE(window_for_minimized_docked_window2);
-
-  // Activate |docked_window2| leaving the overview.
-  const gfx::Rect rect =
-      GetTransformedBoundsInRootWindow(window_for_minimized_docked_window2);
-  gfx::Point point(rect.top_right().x() - 50, rect.top_right().y() + 50);
-  ui::test::EventGenerator event_generator(docked_window2->GetRootWindow(),
-                                           point);
-  event_generator.ClickLeftButton();
-
-  EXPECT_FALSE(IsSelecting());
-
-  // Windows' bounds are still the same.
-  EXPECT_EQ(expected_bounds.ToString(), docked_window1->bounds().ToString());
-  EXPECT_EQ(expected_bounds.ToString(), docked_window2->bounds().ToString());
-
-  // |docked_window1| is docked-minimized and hidden.
-  EXPECT_FALSE(docked_window1->IsVisible());
-  EXPECT_EQ(wm::WINDOW_STATE_TYPE_DOCKED_MINIMIZED, state1->GetStateType());
-  // |docked_window2| is docked and visible.
-  EXPECT_TRUE(docked_window2->IsVisible());
-  EXPECT_EQ(wm::WINDOW_STATE_TYPE_DOCKED, state2->GetStateType());
-}
-
-// Tests that clicking on the close button closes the docked window.
-TEST_F(EnabledDockedWindowsWindowSelectorTest, CloseDockedWindow) {
-  // aura::Window* root_window = Shell::GetPrimaryRootWindow();
-  gfx::Rect bounds(300, 0, 200, 200);
-  std::unique_ptr<views::Widget> widget1 = CreateWindowWidget(bounds);
-  std::unique_ptr<views::Widget> widget2 = CreateWindowWidget(bounds);
-
-  aura::test::TestWindowDelegate delegate;
-  delegate.set_minimum_size(gfx::Size(200, 500));
-  std::unique_ptr<aura::Window> docked_window1(
-      CreateTestWindowInShellWithDelegate(&delegate, -1, bounds));
-  docked_window1->SetProperty(aura::client::kTopViewInset, kHeaderHeight);
-  std::unique_ptr<views::Widget> docked2 = CreateWindowWidget(bounds);
-  aura::Window* docked_window2 = docked2->GetNativeWindow();
-  wm::WindowState* state1 = wm::GetWindowState(docked_window1.get());
-  wm::WindowState* state2 = wm::GetWindowState(docked_window2);
-
-  // Dock the first window first, then the second window.
-  wm::WMEvent dock_event(wm::WM_EVENT_DOCK);
-  state1->OnWMEvent(&dock_event);
-  state2->OnWMEvent(&dock_event);
-
-  const gfx::Rect expected_bounds1 = docked_window1->bounds();
-
-  // |docked_window1| is docked-minimized and hidden.
-  EXPECT_FALSE(docked_window1->IsVisible());
-  EXPECT_EQ(wm::WINDOW_STATE_TYPE_DOCKED_MINIMIZED, state1->GetStateType());
-  // |docked_window2| is docked and visible.
-  EXPECT_TRUE(docked_window2->IsVisible());
-  EXPECT_EQ(wm::WINDOW_STATE_TYPE_DOCKED, state2->GetStateType());
-
-  ToggleOverview();
-
-  // Close |docked_window2| (staying in overview).
-  const gfx::Rect rect = GetTransformedBoundsInRootWindow(docked_window2);
-  gfx::Point point(rect.top_right().x() - 5, rect.top_right().y() + 5);
-  ui::test::EventGenerator event_generator(docked_window2->GetRootWindow(),
-                                           point);
-
-  // Minimized window stays invisible and in the minimized state while in
-  // overview.
-  EXPECT_FALSE(docked_window1->IsVisible());
-  EXPECT_EQ(wm::WINDOW_STATE_TYPE_DOCKED_MINIMIZED, state1->GetStateType());
-  EXPECT_TRUE(docked_window2->IsVisible());
-  EXPECT_EQ(wm::WINDOW_STATE_TYPE_DOCKED, state2->GetStateType());
-
-  EXPECT_TRUE(GetOverviewWindowForMinimizedState(0, docked_window1.get()));
-
-  event_generator.ClickLeftButton();
-  // |docked2| widget is closed.
-  EXPECT_TRUE(docked2->IsClosed());
-
-  // Exit overview.
-  ToggleOverview();
-
-  // Window bounds are still the same.
-  EXPECT_EQ(expected_bounds1.ToString(), docked_window1->bounds().ToString());
-
-  // |docked_window1| returns to docked-minimized and hidden state.
-  EXPECT_FALSE(docked_window1->IsVisible());
-  EXPECT_EQ(wm::WINDOW_STATE_TYPE_DOCKED_MINIMIZED, state1->GetStateType());
-}
-
-// Tests that clicking on the close button closes the docked-minimized window.
-TEST_F(EnabledDockedWindowsWindowSelectorTest, CloseDockedMinimizedWindow) {
-  // aura::Window* root_window = Shell::GetPrimaryRootWindow();
-  gfx::Rect bounds(300, 0, 200, 200);
-  std::unique_ptr<views::Widget> widget1 = CreateWindowWidget(bounds);
-  std::unique_ptr<views::Widget> widget2 = CreateWindowWidget(bounds);
-
-  aura::test::TestWindowDelegate delegate;
-  delegate.set_minimum_size(gfx::Size(200, 500));
-  std::unique_ptr<aura::Window> docked_window1(
-      CreateTestWindowInShellWithDelegate(&delegate, -1, bounds));
-  docked_window1->SetProperty(aura::client::kTopViewInset, kHeaderHeight);
-  std::unique_ptr<views::Widget> docked2 = CreateWindowWidget(bounds);
-  aura::Window* docked_window2 = docked2->GetNativeWindow();
-  wm::WindowState* state1 = wm::GetWindowState(docked_window1.get());
-  wm::WindowState* state2 = wm::GetWindowState(docked_window2);
-
-  // Dock the second window first, then the first window.
-  wm::WMEvent dock_event(wm::WM_EVENT_DOCK);
-  state2->OnWMEvent(&dock_event);
-  state1->OnWMEvent(&dock_event);
-
-  const gfx::Rect expected_bounds1 = docked_window1->bounds();
-
-  // |docked_window1| is docked and visible.
-  EXPECT_TRUE(docked_window1->IsVisible());
-  EXPECT_EQ(wm::WINDOW_STATE_TYPE_DOCKED, state1->GetStateType());
-  // |docked_window2| is docked-minimized and hidden.
-  EXPECT_FALSE(docked_window2->IsVisible());
-  EXPECT_EQ(wm::WINDOW_STATE_TYPE_DOCKED_MINIMIZED, state2->GetStateType());
-
-  ToggleOverview();
-
-  // Both windows are visible while in overview.
-  EXPECT_TRUE(docked_window1->IsVisible());
-  EXPECT_EQ(wm::WINDOW_STATE_TYPE_DOCKED, state1->GetStateType());
-  EXPECT_FALSE(docked_window2->IsVisible());
-  EXPECT_EQ(wm::WINDOW_STATE_TYPE_DOCKED_MINIMIZED, state2->GetStateType());
-
-  // Close |docked_window2| (staying in overview).
-  aura::Window* window_for_minimized_docked_window2 =
-      GetOverviewWindowForMinimizedState(0, docked_window2);
-  ASSERT_TRUE(window_for_minimized_docked_window2);
-  const gfx::Rect rect =
-      GetTransformedBoundsInRootWindow(window_for_minimized_docked_window2);
-  gfx::Point point(rect.top_right().x() - 10, rect.top_right().y() - 10);
-  ui::test::EventGenerator event_generator(docked_window2->GetRootWindow(),
-                                           point);
-  event_generator.ClickLeftButton();
-  // |docked2| widget is closed.
-  EXPECT_TRUE(docked2->IsClosed());
-
-  // Exit overview.
-  ToggleOverview();
-
-  // Window bounds are still the same.
-  EXPECT_EQ(expected_bounds1.ToString(),
-            docked_window1->GetTargetBounds().ToString());
-
-  // |docked_window1| returns to docked and visible state.
-  EXPECT_TRUE(docked_window1->IsVisible());
-  EXPECT_EQ(wm::WINDOW_STATE_TYPE_DOCKED, state1->GetStateType());
 }
 
 // Tests selecting a window by tapping on it.

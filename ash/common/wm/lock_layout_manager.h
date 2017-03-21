@@ -25,8 +25,8 @@ class WMEvent;
 // LockLayoutManager is used for the windows created in LockScreenContainer.
 // For Chrome OS this includes out-of-box/login/lock/multi-profile login use
 // cases. LockScreenContainer does not use default work area definition.
-// By default work area is defined as display area minus shelf, docked windows
-// and minus virtual keyboard bounds.
+// By default work area is defined as display area minus shelf, and minus
+// virtual keyboard bounds.
 // For windows in LockScreenContainer work area is display area minus virtual
 // keyboard bounds (only if keyboard overscroll is disabled). If keyboard
 // overscroll is enabled then work area always equals to display area size since

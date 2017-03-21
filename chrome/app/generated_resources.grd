@@ -5711,12 +5711,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_ASH_SCREEN_ORIENTATION_LOCK_DESCRIPTION" desc="Description for the flag which can be used for support for javascript locking rotation" translateable="false">
           Allows javascript to lock the screen orienation.
         </message>
-        <message name="IDS_FLAGS_ASH_ENABLE_DOCKED_WINDOWS_NAME" desc="Title for the flag which can be used to enable docking windows to right or left." translateable="false">
-          Enable docked windows.
-        </message>
-        <message name="IDS_FLAGS_ASH_ENABLE_DOCKED_WINDOWS_DESCRIPTION" desc="Description for the flag which can be used to enable docking windows to right or left." translateable="false">
-          Enable docking windows to the left and right of the screen.
-        </message>
         <message name="IDS_FLAGS_ASH_ENABLE_MIRRORED_SCREEN_NAME" desc="Title for the flag to enable the mirrored screen mode." translateable="false">
           Enable mirrored screen mode.
         </message>

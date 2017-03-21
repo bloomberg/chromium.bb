@@ -18,7 +18,6 @@
 #include "ash/test/ash_test_base.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
-#include "ui/compositor/layer_type.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -223,45 +222,6 @@ TEST_F(ShelfWindowWatcherTest, MaximizeAndRestoreWindow) {
   // Index and id are not changed after maximizing a window |window|.
   EXPECT_EQ(index, model_->ItemIndexByID(id));
   EXPECT_EQ(id, model_->items()[index].id);
-}
-
-// Check that an item is maintained when its associated Window is docked.
-TEST_F(ShelfWindowWatcherTest, DockWindow) {
-  // TODO: investigate failure in mash. http://crbug.com/695562.
-  if (WmShell::Get()->IsRunningInMash())
-    return;
-
-  // ShelfModel only has an APP_LIST item.
-  EXPECT_EQ(1, model_->item_count());
-
-  std::unique_ptr<views::Widget> widget =
-      CreateTestWidget(nullptr, kShellWindowId_DefaultContainer, gfx::Rect());
-  WmWindow* window = WmWindow::Get(widget->GetNativeWindow());
-
-  // Create a ShelfItem for |window|.
-  ShelfID id = CreateShelfItem(window);
-  EXPECT_EQ(2, model_->item_count());
-
-  int index = model_->ItemIndexByID(id);
-  EXPECT_EQ(STATUS_ACTIVE, model_->items()[index].status);
-
-  WmWindow* root_window = window->GetRootWindow();
-  WmWindow* default_container =
-      root_window->GetChildByShellWindowId(kShellWindowId_DefaultContainer);
-  EXPECT_EQ(default_container, window->GetParent());
-
-  WmWindow* docked_container =
-      root_window->GetChildByShellWindowId(kShellWindowId_DockedContainer);
-
-  // Check |window|'s item is not removed when it is re-parented to the dock.
-  docked_container->AddChild(window);
-  EXPECT_EQ(docked_container, window->GetParent());
-  EXPECT_EQ(2, model_->item_count());
-
-  // The shelf item is removed when the window is closed, even if it is in the
-  // docked container at the time.
-  widget.reset();
-  EXPECT_EQ(1, model_->item_count());
 }
 
 // Check |window|'s item is not changed during the dragging.

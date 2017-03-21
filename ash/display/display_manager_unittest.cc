@@ -2670,32 +2670,6 @@ TEST_F(DisplayManagerTest, NoRotateUnifiedDesktop) {
   EXPECT_EQ("400x500", screen->GetPrimaryDisplay().size().ToString());
 }
 
-// Makes sure the transition from unified to single won't crash
-// with docked windows.
-TEST_F(DisplayManagerTest, UnifiedWithDockWindows) {
-  // Enable window docking for this test.
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      ash::switches::kAshEnableDockedWindows);
-
-  display_manager()->SetUnifiedDesktopEnabled(true);
-
-  // Don't check root window destruction in unified mode.
-  Shell::GetPrimaryRootWindow()->RemoveObserver(this);
-
-  UpdateDisplay("400x500,300x200");
-
-  std::unique_ptr<aura::Window> docked(
-      CreateTestWindowInShellWithBounds(gfx::Rect(10, 10, 50, 50)));
-  docked->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_DOCKED);
-  ASSERT_TRUE(wm::GetWindowState(docked.get())->IsDocked());
-  // 48 pixels reserved for launcher shelf height.
-  EXPECT_EQ(gfx::Rect(0, 0, 250, 452).ToString(), docked->bounds().ToString());
-  UpdateDisplay("300x300");
-  // Make sure the window is still docked.
-  EXPECT_TRUE(wm::GetWindowState(docked.get())->IsDocked());
-  EXPECT_EQ(gfx::Rect(0, 0, 250, 252).ToString(), docked->bounds().ToString());
-}
-
 TEST_F(DisplayManagerTest, DockMode) {
   const int64_t internal_id = 1;
   const int64_t external_id = 2;

@@ -73,18 +73,7 @@ gfx::Rect GetRestoreBounds(wm::WindowState* window_state) {
     if (!restore_bounds.IsEmpty())
       return restore_bounds;
   }
-  gfx::Rect bounds = window_state->window()->GetBoundsInScreen();
-  if (window_state->IsDocked()) {
-    gfx::Rect restore_bounds = window_state->GetRestoreBoundsInScreen();
-    // Use current window horizontal offset origin in order to preserve docked
-    // alignment but preserve restored size and vertical offset for the time
-    // when the window gets undocked.
-    if (!restore_bounds.IsEmpty()) {
-      bounds.set_size(restore_bounds.size());
-      bounds.set_y(restore_bounds.y());
-    }
-  }
-  return bounds;
+  return window_state->window()->GetBoundsInScreen();
 }
 
 }  // namespace
@@ -150,14 +139,13 @@ void MaximizeModeWindowState::OnWMEvent(wm::WindowState* window_state,
     case wm::WM_EVENT_TOGGLE_VERTICAL_MAXIMIZE:
     case wm::WM_EVENT_TOGGLE_HORIZONTAL_MAXIMIZE:
     case wm::WM_EVENT_TOGGLE_MAXIMIZE:
-    case wm::WM_EVENT_CYCLE_SNAP_DOCK_LEFT:
-    case wm::WM_EVENT_CYCLE_SNAP_DOCK_RIGHT:
+    case wm::WM_EVENT_CYCLE_SNAP_LEFT:
+    case wm::WM_EVENT_CYCLE_SNAP_RIGHT:
     case wm::WM_EVENT_CENTER:
     case wm::WM_EVENT_SNAP_LEFT:
     case wm::WM_EVENT_SNAP_RIGHT:
     case wm::WM_EVENT_NORMAL:
     case wm::WM_EVENT_MAXIMIZE:
-    case wm::WM_EVENT_DOCK:
       UpdateWindow(window_state, GetMaximizedOrCenteredWindowType(window_state),
                    true);
       return;

@@ -27,15 +27,12 @@ enum WindowStateType {
   WINDOW_STATE_TYPE_MAXIMIZED,
   WINDOW_STATE_TYPE_INACTIVE,
   WINDOW_STATE_TYPE_FULLSCREEN,
-  WINDOW_STATE_TYPE_DOCKED,
   WINDOW_STATE_TYPE_END,  // to avoid using SHOW_STATE_END
 
   // Ash specific states:
 
   WINDOW_STATE_TYPE_LEFT_SNAPPED,
   WINDOW_STATE_TYPE_RIGHT_SNAPPED,
-
-  WINDOW_STATE_TYPE_DOCKED_MINIMIZED,
 
   // A window is in this state when it is automatically placed and
   // sized by the window manager. (it's newly opened, or pushed to the side

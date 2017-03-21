@@ -216,12 +216,6 @@ DesktopWindowTreeHostMus::~DesktopWindowTreeHostMus() {
   desktop_native_widget_aura_->OnDesktopWindowTreeHostDestroyed(this);
 }
 
-// TODO(afakhry): Remove Docked Windows in M58.
-bool DesktopWindowTreeHostMus::IsDocked() const {
-  return window()->GetProperty(aura::client::kShowStateKey) ==
-         ui::SHOW_STATE_DOCKED;
-}
-
 void DesktopWindowTreeHostMus::SendClientAreaToServer() {
   if (!ShouldSendClientAreaToServer())
     return;
@@ -395,11 +389,8 @@ aura::WindowTreeHost* DesktopWindowTreeHostMus::AsWindowTreeHost() {
 }
 
 void DesktopWindowTreeHostMus::ShowWindowWithState(ui::WindowShowState state) {
-  // TODO(afakhry): Remove Docked Windows in M58.
-  if (state == ui::SHOW_STATE_MAXIMIZED || state == ui::SHOW_STATE_FULLSCREEN ||
-      state == ui::SHOW_STATE_DOCKED) {
+  if (state == ui::SHOW_STATE_MAXIMIZED || state == ui::SHOW_STATE_FULLSCREEN)
     window()->SetProperty(aura::client::kShowStateKey, state);
-  }
   window()->Show();
   if (compositor())
     compositor()->SetVisible(true);
@@ -501,7 +492,7 @@ gfx::Rect DesktopWindowTreeHostMus::GetClientAreaBoundsInScreen() const {
 
 gfx::Rect DesktopWindowTreeHostMus::GetRestoredBounds() const {
   // Restored bounds should only be relevant if the window is minimized,
-  // maximized, fullscreen or docked. However, in some places the code expects
+  // maximized, or fullscreen. However, in some places the code expects
   // GetRestoredBounds() to return the current window bounds if the window is
   // not in either state.
   if (IsMinimized() || IsMaximized() || IsFullscreen()) {
@@ -511,20 +502,7 @@ gfx::Rect DesktopWindowTreeHostMus::GetRestoredBounds() const {
     if (restore_bounds)
       return *restore_bounds;
   }
-  gfx::Rect bounds = GetWindowBoundsInScreen();
-  if (IsDocked()) {
-    // Restore bounds are in screen coordinates, no need to convert.
-    gfx::Rect* restore_bounds =
-        window()->GetProperty(aura::client::kRestoreBoundsKey);
-    // Use current window horizontal offset origin in order to preserve docked
-    // alignment but preserve restored size and vertical offset for the time
-    // when the |window_| gets undocked.
-    if (restore_bounds) {
-      bounds.set_size(restore_bounds->size());
-      bounds.set_y(restore_bounds->y());
-    }
-  }
-  return bounds;
+  return GetWindowBoundsInScreen();
 }
 
 std::string DesktopWindowTreeHostMus::GetWorkspace() const {

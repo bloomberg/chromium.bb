@@ -46,8 +46,7 @@ bool ValidateShowState(int64_t value) {
          value == int64_t(ui::mojom::ShowState::MINIMIZED) ||
          value == int64_t(ui::mojom::ShowState::MAXIMIZED) ||
          value == int64_t(ui::mojom::ShowState::INACTIVE) ||
-         value == int64_t(ui::mojom::ShowState::FULLSCREEN) ||
-         value == int64_t(ui::mojom::ShowState::DOCKED);
+         value == int64_t(ui::mojom::ShowState::FULLSCREEN);
 }
 
 }  // namespace

@@ -9,11 +9,8 @@
 #include <utility>
 #include <vector>
 
-#include "ash/common/ash_switches.h"
 #include "ash/common/metrics/user_metrics_action.h"
 #include "ash/common/wm/default_window_resizer.h"
-#include "ash/common/wm/dock/docked_window_layout_manager.h"
-#include "ash/common/wm/dock/docked_window_resizer.h"
 #include "ash/common/wm/panels/panel_window_resizer.h"
 #include "ash/common/wm/window_positioning_utils.h"
 #include "ash/common/wm/window_state.h"
@@ -59,15 +56,13 @@ std::unique_ptr<WindowResizer> CreateWindowResizer(
   // classes using reparenting during drag operations it becomes challenging to
   // implement proper transition from one resizer to another during or at the
   // end of the drag. This also causes http://crbug.com/247085.
-  // It seems the only thing the panel or dock resizer needs to do is notify the
-  // layout manager when a docked window is being dragged. We should have a
-  // better way of doing this, perhaps by having a way of observing drags or
-  // having a generic drag window wrapper which informs a layout manager that a
-  // drag has started or stopped.
-  // It may be possible to refactor and eliminate chaining.
+  // We should have a better way of doing this, perhaps by having a way of
+  // observing drags or having a generic drag window wrapper which informs a
+  // layout manager that a drag has started or stopped. It may be possible to
+  // refactor and eliminate chaining.
   std::unique_ptr<WindowResizer> window_resizer;
 
-  if (!window_state->IsNormalOrSnapped() && !window_state->IsDocked())
+  if (!window_state->IsNormalOrSnapped())
     return std::unique_ptr<WindowResizer>();
 
   int bounds_change =
@@ -80,7 +75,6 @@ std::unique_ptr<WindowResizer> CreateWindowResizer(
       window->GetParent() ? window->GetParent()->GetShellWindowId() : -1;
   if (window->GetParent() &&
       (parent_shell_window_id == kShellWindowId_DefaultContainer ||
-       parent_shell_window_id == kShellWindowId_DockedContainer ||
        parent_shell_window_id == kShellWindowId_PanelContainer)) {
     window_resizer.reset(
         WorkspaceWindowResizer::Create(window_state, std::vector<WmWindow*>()));
@@ -89,15 +83,9 @@ std::unique_ptr<WindowResizer> CreateWindowResizer(
   }
   window_resizer = window->GetShell()->CreateDragWindowResizer(
       std::move(window_resizer), window_state);
-  if (window->GetType() == ui::wm::WINDOW_TYPE_PANEL)
+  if (window->GetType() == ui::wm::WINDOW_TYPE_PANEL) {
     window_resizer.reset(
         PanelWindowResizer::Create(window_resizer.release(), window_state));
-  if (window_resizer && window->GetParent() && !window->GetTransientParent() &&
-      (parent_shell_window_id == kShellWindowId_DefaultContainer ||
-       parent_shell_window_id == kShellWindowId_DockedContainer ||
-       parent_shell_window_id == kShellWindowId_PanelContainer)) {
-    window_resizer.reset(
-        DockedWindowResizer::Create(window_resizer.release(), window_state));
   }
   return window_resizer;
 }
@@ -388,7 +376,6 @@ void WorkspaceWindowResizer::Drag(const gfx::Point& location_in_parent,
     snap_type_ = SNAP_NONE;
     snap_phantom_window_controller_.reset();
     edge_cycler_.reset();
-    SetDraggedWindowDocked(false);
   }
 }
 
@@ -414,18 +401,15 @@ void WorkspaceWindowResizer::CompleteDrag() {
           details().restore_bounds.IsEmpty() ? initial_bounds
                                              : details().restore_bounds);
     }
-    if (!dock_layout_->is_dragged_window_docked()) {
-      // TODO(oshima): Add event source type to WMEvent and move
-      // metrics recording inside WindowState::OnWMEvent.
-      const wm::WMEvent event(snap_type_ == SNAP_LEFT
-                                  ? wm::WM_EVENT_SNAP_LEFT
-                                  : wm::WM_EVENT_SNAP_RIGHT);
-      window_state()->OnWMEvent(&event);
-      shell_->RecordUserMetricsAction(snap_type_ == SNAP_LEFT
-                                          ? UMA_DRAG_MAXIMIZE_LEFT
-                                          : UMA_DRAG_MAXIMIZE_RIGHT);
-      snapped = true;
-    }
+    // TODO(oshima): Add event source type to WMEvent and move
+    // metrics recording inside WindowState::OnWMEvent.
+    const wm::WMEvent event(snap_type_ == SNAP_LEFT ? wm::WM_EVENT_SNAP_LEFT
+                                                    : wm::WM_EVENT_SNAP_RIGHT);
+    window_state()->OnWMEvent(&event);
+    shell_->RecordUserMetricsAction(snap_type_ == SNAP_LEFT
+                                        ? UMA_DRAG_MAXIMIZE_LEFT
+                                        : UMA_DRAG_MAXIMIZE_RIGHT);
+    snapped = true;
   }
 
   if (!snapped) {
@@ -443,11 +427,10 @@ void WorkspaceWindowResizer::CompleteDrag() {
         window_state()->SaveCurrentBoundsForRestore();
         window_state()->Restore();
       }
-    } else if (!dock_layout_->is_dragged_window_docked()) {
+    } else {
       // The window was not snapped and is not snapped. This is a user
       // resize/drag and so the current bounds should be maintained, clearing
-      // any prior restore bounds. When the window is docked the restore bound
-      // must be kept so the docked state can be reverted properly.
+      // any prior restore bounds.
       window_state()->ClearRestoreBounds();
     }
   }
@@ -508,8 +491,6 @@ WorkspaceWindowResizer::WorkspaceWindowResizer(
     shell_->LockCursor();
     did_lock_cursor_ = true;
   }
-
-  dock_layout_ = DockedWindowLayoutManager::Get(GetTarget());
 
   // Only support attaching to the right/bottom.
   DCHECK(attached_windows_.empty() || (details().window_component == HTRIGHT ||
@@ -874,28 +855,13 @@ void WorkspaceWindowResizer::UpdateSnapPhantomWindow(const gfx::Point& location,
   if (snap_type_ == SNAP_NONE || snap_type_ != last_type) {
     snap_phantom_window_controller_.reset();
     edge_cycler_.reset();
-    if (snap_type_ == SNAP_NONE) {
-      SetDraggedWindowDocked(false);
+    if (snap_type_ == SNAP_NONE)
       return;
-    }
   }
 
   DCHECK(snap_type_ == SNAP_LEFT || snap_type_ == SNAP_RIGHT);
-  DockedAlignment desired_alignment = (snap_type_ == SNAP_LEFT)
-                                          ? DOCKED_ALIGNMENT_LEFT
-                                          : DOCKED_ALIGNMENT_RIGHT;
-  const bool can_dock =
-      ash::switches::DockedWindowsEnabled() &&
-      dock_layout_->CanDockWindow(GetTarget(), desired_alignment) &&
-      dock_layout_->GetAlignmentOfWindow(GetTarget()) != DOCKED_ALIGNMENT_NONE;
-  if (!can_dock) {
-    // If the window cannot be docked, undock the window. This may change the
-    // workspace bounds and hence |snap_type_|.
-    SetDraggedWindowDocked(false);
-    snap_type_ = GetSnapType(location);
-  }
   const bool can_snap = snap_type_ != SNAP_NONE && window_state()->CanSnap();
-  if (!can_snap && !can_dock) {
+  if (!can_snap) {
     snap_type_ = SNAP_NONE;
     snap_phantom_window_controller_.reset();
     edge_cycler_.reset();
@@ -910,26 +876,11 @@ void WorkspaceWindowResizer::UpdateSnapPhantomWindow(const gfx::Point& location,
     edge_cycler_->OnMove(location);
   }
 
-  // Update phantom window with snapped or docked guide bounds.
-  // Windows that cannot be snapped or are less wide than kMaxDockWidth can get
-  // docked without going through a snapping sequence.
-  gfx::Rect phantom_bounds;
-  const bool should_dock =
-      can_dock && (!can_snap ||
-                   GetTarget()->GetBounds().width() <=
-                       DockedWindowLayoutManager::kMaxDockWidth ||
-                   edge_cycler_->use_second_mode() ||
-                   dock_layout_->is_dragged_window_docked());
-  if (should_dock) {
-    SetDraggedWindowDocked(true);
-    phantom_bounds = GetTarget()->GetParent()->ConvertRectFromScreen(
-        dock_layout_->dragged_bounds());
-  } else {
-    phantom_bounds =
-        (snap_type_ == SNAP_LEFT)
-            ? wm::GetDefaultLeftSnappedWindowBoundsInParent(GetTarget())
-            : wm::GetDefaultRightSnappedWindowBoundsInParent(GetTarget());
-  }
+  // Update phantom window with snapped guide bounds.
+  const gfx::Rect phantom_bounds =
+      (snap_type_ == SNAP_LEFT)
+          ? wm::GetDefaultLeftSnappedWindowBoundsInParent(GetTarget())
+          : wm::GetDefaultRightSnappedWindowBoundsInParent(GetTarget());
 
   if (!snap_phantom_window_controller_) {
     snap_phantom_window_controller_.reset(
@@ -990,20 +941,6 @@ WorkspaceWindowResizer::SnapType WorkspaceWindowResizer::GetSnapType(
   if (location.x() >= area.right() - 1)
     return SNAP_RIGHT;
   return SNAP_NONE;
-}
-
-void WorkspaceWindowResizer::SetDraggedWindowDocked(bool should_dock) {
-  if (should_dock) {
-    if (!dock_layout_->is_dragged_window_docked()) {
-      window_state()->set_bounds_changed_by_user(false);
-      dock_layout_->DockDraggedWindow(GetTarget());
-    }
-  } else {
-    if (dock_layout_->is_dragged_window_docked()) {
-      dock_layout_->UndockDraggedWindow();
-      window_state()->set_bounds_changed_by_user(true);
-    }
-  }
 }
 
 bool WorkspaceWindowResizer::AreBoundsValidSnappedBounds(

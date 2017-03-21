@@ -97,12 +97,6 @@ TEST_F(MruWindowTrackerTest, DraggedWindowsInListOnlyOnce) {
   w1->GetWindowState()->CreateDragDetails(
       gfx::Point(), HTRIGHT, aura::client::WINDOW_MOVE_SOURCE_TOUCH);
 
-  // During a drag the window is reparented by the Docked container.
-  WmWindow* drag_container = w1->GetRootWindow()->GetChildByShellWindowId(
-      kShellWindowId_DockedContainer);
-  drag_container->AddChild(w1);
-  EXPECT_TRUE(w1->GetWindowState()->is_dragged());
-
   // The dragged window should only be in the list once.
   WmWindow::Windows window_list =
       mru_window_tracker()->BuildWindowListIgnoreModal();

@@ -1110,11 +1110,6 @@ const FeatureEntry kFeatureEntries[] = {
             ash::switches::kAshDisableMaximizeModeWindowBackdrop),
     },
     {
-        "ash-enable-docked-windows", IDS_FLAGS_ASH_ENABLE_DOCKED_WINDOWS_NAME,
-        IDS_FLAGS_ASH_ENABLE_DOCKED_WINDOWS_DESCRIPTION, kOsAll,
-        SINGLE_VALUE_TYPE(ash::switches::kAshEnableDockedWindows),
-    },
-    {
         "ash-enable-mirrored-screen", IDS_FLAGS_ASH_ENABLE_MIRRORED_SCREEN_NAME,
         IDS_FLAGS_ASH_ENABLE_MIRRORED_SCREEN_DESCRIPTION, kOsCrOS,
         SINGLE_VALUE_TYPE(ash::switches::kAshEnableMirroredScreen),

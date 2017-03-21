@@ -42,8 +42,7 @@ class ChromeNativeAppWindowViewsAuraAsh : public ChromeNativeAppWindowViewsAura,
       const extensions::AppWindow::CreateParams& create_params,
       views::Widget::InitParams* init_params,
       views::Widget* widget) override;
-  void OnBeforePanelWidgetInit(bool use_default_bounds,
-                               views::Widget::InitParams* init_params,
+  void OnBeforePanelWidgetInit(views::Widget::InitParams* init_params,
                                views::Widget* widget) override;
   views::NonClientFrameView* CreateNonStandardAppFrame() override;
 

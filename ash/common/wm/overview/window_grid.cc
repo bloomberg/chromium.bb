@@ -267,8 +267,7 @@ views::Widget* CreateBackgroundWidget(WmWindow* root_window,
 }
 
 bool IsMinimizedStateType(wm::WindowStateType type) {
-  return type == wm::WINDOW_STATE_TYPE_DOCKED_MINIMIZED ||
-         type == wm::WINDOW_STATE_TYPE_MINIMIZED;
+  return type == wm::WINDOW_STATE_TYPE_MINIMIZED;
 }
 
 }  // namespace

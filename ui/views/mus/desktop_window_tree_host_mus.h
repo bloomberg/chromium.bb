@@ -47,8 +47,6 @@ class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
   }
 
  private:
-  bool IsDocked() const;
-
   void SendClientAreaToServer();
   void SendHitTestMaskToServer();
 

@@ -21,10 +21,10 @@ WmWindow* GetWindowForFullscreenMode(WmWindow* context) {
       active_window->GetRootWindow() == context->GetRootWindow() &&
       IsSwitchableContainer(active_window->GetParent())) {
     // Use the active window when it is on the current root window to determine
-    // the fullscreen state to allow temporarily using a panel or docked window
-    // (which are always above the default container) while a fullscreen
-    // window is open. We only use the active window when in a switchable
-    // container as the launcher should not exit fullscreen mode.
+    // the fullscreen state to allow temporarily using a panel (which is always
+    // above the default container) while a fullscreen window is open. We only
+    // use the active window when in a switchable container as the launcher
+    // should not exit fullscreen mode.
     topmost_window = active_window;
   } else {
     // Otherwise, use the topmost window on the root window's default container

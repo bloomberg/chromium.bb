@@ -18,7 +18,6 @@
 #include "ui/aura/window_tracker.h"
 
 namespace ash {
-class DockedWindowLayoutManager;
 class PhantomWindowController;
 class TwoStepEdgeCycler;
 class WindowSize;
@@ -156,9 +155,6 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   bool AreBoundsValidSnappedBounds(wm::WindowStateType snapped_type,
                                    const gfx::Rect& bounds_in_parent) const;
 
-  // Docks or undocks the dragged window.
-  void SetDraggedWindowDocked(bool should_dock);
-
   wm::WindowState* window_state() { return window_state_; }
 
   const std::vector<WmWindow*> attached_windows_;
@@ -190,8 +186,8 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   // is a grid and the caption is being dragged.
   std::unique_ptr<PhantomWindowController> snap_phantom_window_controller_;
 
-  // Used to determine whether the window should be snapped or docked when
-  // the user drags a window to the edge of the screen.
+  // Used to determine whether the window should be snapped when the user drags
+  // a window to the edge of the screen.
   std::unique_ptr<TwoStepEdgeCycler> edge_cycler_;
 
   // The edge to which the window should be snapped to at the end of the drag.
@@ -214,9 +210,6 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   // If |magnetism_window_| is non-NULL this indicates how the two windows
   // should attach.
   MatchedEdge magnetism_edge_;
-
-  // Dock container window layout manager.
-  DockedWindowLayoutManager* dock_layout_;
 
   // Used to determine if this has been deleted during a drag such as when a tab
   // gets dragged into another browser window.

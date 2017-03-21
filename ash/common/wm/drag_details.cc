@@ -69,8 +69,8 @@ DragDetails::DragDetails(WmWindow* window,
           window->GetType() == ui::wm::WINDOW_TYPE_PANEL &&
           window->aura_window()->GetProperty(kPanelAttachedKey)) {
   wm::WindowState* window_state = window->GetWindowState();
-  if ((window_state->IsNormalOrSnapped() || window_state->IsDocked()) &&
-      window_state->HasRestoreBounds() && window_component == HTCAPTION) {
+  if (window_state->IsNormalOrSnapped() && window_state->HasRestoreBounds() &&
+      window_component == HTCAPTION) {
     restore_bounds = window_state->GetRestoreBoundsInScreen();
   }
 }
