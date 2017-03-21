@@ -106,6 +106,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/metrics/chromeos_metrics_provider.h"
 #include "chrome/browser/signin/signin_status_metrics_provider_chromeos.h"
 #endif
@@ -904,6 +905,11 @@ void ChromeMetricsServiceClient::RegisterForNotifications() {
 }
 
 void ChromeMetricsServiceClient::RegisterForProfileEvents(Profile* profile) {
+#if defined(OS_CHROMEOS)
+  // Ignore the signin profile for sync disables / history deletion.
+  if (chromeos::ProfileHelper::IsSigninProfile(profile))
+    return;
+#endif
   history::HistoryService* history_service =
       HistoryServiceFactory::GetForProfile(profile,
                                            ServiceAccessType::IMPLICIT_ACCESS);
