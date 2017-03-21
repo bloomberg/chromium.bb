@@ -104,8 +104,6 @@ ServiceWorkerGlobalScope::ServiceWorkerGlobalScope(
                         std::move(starterOriginPrivilegeData),
                         workerClients),
       m_didEvaluateScript(false),
-      m_hadErrorInTopLevelEventHandler(false),
-      m_eventNestingLevel(0),
       m_scriptCount(0),
       m_scriptTotalSize(0),
       m_scriptCachedMetadataTotalSize(0) {}
@@ -200,33 +198,15 @@ const AtomicString& ServiceWorkerGlobalScope::interfaceName() const {
   return EventTargetNames::ServiceWorkerGlobalScope;
 }
 
-DispatchEventResult ServiceWorkerGlobalScope::dispatchEventInternal(
-    Event* event) {
-  m_eventNestingLevel++;
-  DispatchEventResult dispatchResult =
-      WorkerGlobalScope::dispatchEventInternal(event);
-  if (event->interfaceName() == EventNames::ErrorEvent &&
-      m_eventNestingLevel == 2)
-    m_hadErrorInTopLevelEventHandler = true;
-  m_eventNestingLevel--;
-  return dispatchResult;
-}
-
 void ServiceWorkerGlobalScope::dispatchExtendableEvent(
     Event* event,
     WaitUntilObserver* observer) {
-  ASSERT(m_eventNestingLevel == 0);
-  m_hadErrorInTopLevelEventHandler = false;
-
   observer->willDispatchEvent();
   dispatchEvent(event);
 
   // Check if the worker thread is forcibly terminated during the event
   // because of timeout etc.
-  if (thread()->isForciblyTerminated())
-    m_hadErrorInTopLevelEventHandler = true;
-
-  observer->didDispatchEvent(m_hadErrorInTopLevelEventHandler);
+  observer->didDispatchEvent(thread()->isForciblyTerminated());
 }
 
 DEFINE_TRACE(ServiceWorkerGlobalScope) {

@@ -98,7 +98,6 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
 
  protected:
   // EventTarget
-  DispatchEventResult dispatchEventInternal(Event*) override;
   bool addEventListenerInternal(
       const AtomicString& eventType,
       EventListener*,
@@ -120,8 +119,6 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
   Member<ServiceWorkerClients> m_clients;
   Member<ServiceWorkerRegistration> m_registration;
   bool m_didEvaluateScript;
-  bool m_hadErrorInTopLevelEventHandler;
-  unsigned m_eventNestingLevel;
   size_t m_scriptCount;
   size_t m_scriptTotalSize;
   size_t m_scriptCachedMetadataTotalSize;
