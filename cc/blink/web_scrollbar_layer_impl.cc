@@ -34,23 +34,19 @@ namespace cc_blink {
 WebScrollbarLayerImpl::WebScrollbarLayerImpl(
     std::unique_ptr<blink::WebScrollbar> scrollbar,
     blink::WebScrollbarThemePainter painter,
-    std::unique_ptr<blink::WebScrollbarThemeGeometry> geometry)
-    : layer_(new WebLayerImpl(PaintedScrollbarLayer::Create(
-          base::MakeUnique<ScrollbarImpl>(std::move(scrollbar),
-                                          painter,
-                                          std::move(geometry)),
-          cc::Layer::INVALID_ID))) {}
-
-WebScrollbarLayerImpl::WebScrollbarLayerImpl(
-    std::unique_ptr<blink::WebScrollbar> scrollbar,
-    blink::WebScrollbarThemePainter painter,
     std::unique_ptr<blink::WebScrollbarThemeGeometry> geometry,
-    bool)
-    : layer_(new WebLayerImpl(PaintedOverlayScrollbarLayer::Create(
-          base::MakeUnique<ScrollbarImpl>(std::move(scrollbar),
-                                          painter,
-                                          std::move(geometry)),
-          cc::Layer::INVALID_ID))) {}
+    bool is_overlay)
+    : layer_(is_overlay
+                 ? new WebLayerImpl(PaintedOverlayScrollbarLayer::Create(
+                       base::MakeUnique<ScrollbarImpl>(std::move(scrollbar),
+                                                       painter,
+                                                       std::move(geometry)),
+                       cc::Layer::INVALID_ID))
+                 : new WebLayerImpl(PaintedScrollbarLayer::Create(
+                       base::MakeUnique<ScrollbarImpl>(std::move(scrollbar),
+                                                       painter,
+                                                       std::move(geometry)),
+                       cc::Layer::INVALID_ID))) {}
 
 WebScrollbarLayerImpl::WebScrollbarLayerImpl(
     blink::WebScrollbar::Orientation orientation,

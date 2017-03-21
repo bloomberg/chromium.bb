@@ -67,7 +67,8 @@ WebCompositorSupportImpl::createScrollbarLayer(
     WebScrollbarThemePainter painter,
     std::unique_ptr<WebScrollbarThemeGeometry> geometry) {
   return base::MakeUnique<WebScrollbarLayerImpl>(std::move(scrollbar), painter,
-                                                 std::move(geometry));
+                                                 std::move(geometry),
+                                                 /* is overlay */ false);
 }
 
 std::unique_ptr<WebScrollbarLayer>
@@ -76,7 +77,8 @@ WebCompositorSupportImpl::createOverlayScrollbarLayer(
     WebScrollbarThemePainter painter,
     std::unique_ptr<WebScrollbarThemeGeometry> geometry) {
   return base::MakeUnique<WebScrollbarLayerImpl>(std::move(scrollbar), painter,
-                                                 std::move(geometry), true);
+                                                 std::move(geometry),
+                                                 /* is overlay */ true);
 }
 
 std::unique_ptr<WebScrollbarLayer>
