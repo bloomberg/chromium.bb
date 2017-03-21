@@ -189,7 +189,7 @@ void ExtensionsHandler::ExposeInterfacesToBrowser(
     service_manager::InterfaceRegistry* registry,
     bool running_elevated) {
   // If our process runs with elevated privileges, only add elevated Mojo
-  // services to the interface registry.
+  // interfaces to the interface registry.
   if (running_elevated) {
 #if defined(OS_WIN)
     registry->AddInterface(base::Bind(&RemovableStorageWriterImpl::Create));

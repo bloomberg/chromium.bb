@@ -277,7 +277,7 @@ void ChromeContentUtilityClient::ExposeInterfacesToBrowser(
       registry, utility_process_running_elevated_);
 #endif
   // If our process runs with elevated privileges, only add elevated Mojo
-  // services to the interface registry.
+  // interfaces to the interface registry.
   if (utility_process_running_elevated_)
     return;
 
