@@ -301,6 +301,15 @@ AC_DEFINE_UNQUOTED(USE_ICONV,$use_iconv,[Use iconv.])
 PKG_CHECK_MODULES(FREETYPE, freetype2)
 PKGCONFIG_REQUIRES="$PKGCONFIG_REQUIRES freetype2"
 
+dnl See http://git.savannah.gnu.org/cgit/freetype/freetype2.git/tree/docs/VERSIONS.TXT for versioning in freetype
+dnl
+dnl The outcome of the family property has been changed in freetype-2.7.1.
+dnl Our test cases relies on it and need to update the dependency to get it success.
+dnl However it isn't exactly required to run fontconfig itself.
+dnl so adding another test here for compatibility. it might be simplified in the future.
+PKG_CHECK_EXISTS([freetype2 >= 19.0.13], [have_freetype_2_7_1=yes], [have_freetype_2_7_1=no])
+AM_CONDITIONAL(FREETYPE_2_7_1, test "x$have_freetype_2_7_1" = xyes)
+
 AC_SUBST(FREETYPE_LIBS)
 AC_SUBST(FREETYPE_CFLAGS)
 

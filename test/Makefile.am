@@ -10,7 +10,11 @@ AM_TESTS_ENVIRONMENT= \
 
 SH_LOG_COMPILER = sh
 
+if FREETYPE_2_7_1
+TESTS=run-test271.sh
+else
 TESTS=run-test.sh
+endif
 
 TESTDATA=4x6.pcf 8x16.pcf out.expected fonts.conf.in
 
