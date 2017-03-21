@@ -55,16 +55,6 @@
 // Property declared in NewTabPagePanelProtocol.
 @synthesize delegate = _delegate;
 
-- (instancetype)init {
-  NOTREACHED();
-  return nil;
-}
-
-- (instancetype)initWithNibNamed:(NSString*)nibName {
-  NOTREACHED();
-  return nil;
-}
-
 - (instancetype)initWithLoader:(id<UrlLoader>)loader
                   browserState:(ios::ChromeBrowserState*)browserState {
   return [self initWithController:[[[RecentTabsTableViewController alloc]
@@ -188,7 +178,6 @@
   return [_tableViewController view];
 }
 
-#pragma mark
 #pragma mark - Private
 
 - (BOOL)isSignedIn {
