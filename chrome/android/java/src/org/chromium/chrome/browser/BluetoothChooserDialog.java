@@ -286,9 +286,6 @@ public class BluetoothChooserDialog
                 case EXPLAIN_BLUETOOTH: {
                     // No need to close the dialog here because
                     // ShowBluetoothOverviewLink will close it.
-                    // TODO(ortuno): The BluetoothChooserDialog should dismiss
-                    // itself when a new tab is opened or the current tab navigates.
-                    // https://crbug.com/588127
                     nativeShowBluetoothOverviewLink(mNativeBluetoothChooserDialogPtr);
                     break;
                 }
