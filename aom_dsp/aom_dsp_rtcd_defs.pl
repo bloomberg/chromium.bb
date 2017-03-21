@@ -853,6 +853,7 @@ specialize qw/aom_lpf_horizontal_4_dual sse2 neon dspr2 msa/;
 
 if (aom_config("CONFIG_CDEF") eq "yes") {
   add_proto qw/void aom_clpf_block_hbd/, "const uint16_t *src, uint16_t *dst, int sstride, int dstride, int x0, int y0, int sizex, int sizey, unsigned int strength, unsigned int bd";
+  add_proto qw/void aom_clpf_hblock_hbd/, "const uint16_t *src, uint16_t *dst, int sstride, int dstride, int x0, int y0, int sizex, int sizey, unsigned int strength, unsigned int bd";
   if (aom_config("CONFIG_AOM_HIGHBITDEPTH") eq "yes") {
     add_proto qw/void aom_clpf_detect_hbd/, "const uint16_t *rec, const uint16_t *org, int rstride, int ostride, int x0, int y0, int width, int height, int *sum0, int *sum1, unsigned int strength, int size, unsigned int bd, unsigned int dmp";
     add_proto qw/void aom_clpf_detect_multi_hbd/, "const uint16_t *rec, const uint16_t *org, int rstride, int ostride, int x0, int y0, int width, int height, int *sum, int size, unsigned int bd, unsigned int dmp";
@@ -866,6 +867,7 @@ if (aom_config("CONFIG_CDEF") eq "yes") {
   }
   if ($opts{config} !~ /libs-x86-win32-vs.*/) {
     specialize qw/aom_clpf_block_hbd sse2 ssse3 sse4_1 neon/;
+    specialize qw/aom_clpf_hblock_hbd sse2 ssse3 sse4_1 neon/;
   }
   add_proto qw/void aom_clpf_block/, "const uint8_t *src, uint8_t *dst, int sstride, int dstride, int x0, int y0, int sizex, int sizey, unsigned int strength, unsigned int bd";
   add_proto qw/void aom_clpf_detect/, "const uint8_t *rec, const uint8_t *org, int rstride, int ostride, int x0, int y0, int width, int height, int *sum0, int *sum1, unsigned int strength, int size, unsigned int dmp";

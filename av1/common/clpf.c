@@ -31,6 +31,13 @@ int av1_clpf_sample(int X, int A, int B, int C, int D, int E, int F, int G,
   return (8 + delta - (delta < 0)) >> 4;
 }
 
+int av1_clpf_hsample(int X, int A, int B, int C, int D, int s,
+                     unsigned int dmp) {
+  int delta = 1 * constrain(A - X, s, dmp) + 3 * constrain(B - X, s, dmp) +
+              3 * constrain(C - X, s, dmp) + 1 * constrain(D - X, s, dmp);
+  return (4 + delta - (delta < 0)) >> 3;
+}
+
 void aom_clpf_block_c(const uint8_t *src, uint8_t *dst, int sstride,
                       int dstride, int x0, int y0, int sizex, int sizey,
                       unsigned int strength, unsigned int damping) {
@@ -74,6 +81,25 @@ void aom_clpf_block_hbd_c(const uint16_t *src, uint16_t *dst, int sstride,
       const int H = src[(y + 2) * sstride + x];
       const int delta =
           av1_clpf_sample(X, A, B, C, D, E, F, G, H, strength, damping);
+      dst[y * dstride + x] = X + delta;
+    }
+  }
+}
+
+// TODO(stemidts): Put under CONFIG_AOM_HIGHBITDEPTH if CDEF do 8 bit internally
+void aom_clpf_hblock_hbd_c(const uint16_t *src, uint16_t *dst, int sstride,
+                           int dstride, int x0, int y0, int sizex, int sizey,
+                           unsigned int strength, unsigned int damping) {
+  int x, y;
+
+  for (y = y0; y < y0 + sizey; y++) {
+    for (x = x0; x < x0 + sizex; x++) {
+      const int X = src[y * sstride + x];
+      const int A = src[y * sstride + x - 2];
+      const int B = src[y * sstride + x - 1];
+      const int C = src[y * sstride + x + 1];
+      const int D = src[y * sstride + x + 2];
+      const int delta = av1_clpf_hsample(X, A, B, C, D, strength, damping);
       dst[y * dstride + x] = X + delta;
     }
   }
