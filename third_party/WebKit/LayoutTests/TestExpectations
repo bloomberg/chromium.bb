@@ -2649,3 +2649,5 @@ crbug.com/703518 virtual/threaded/inspector/tracing/worker-js-frames.html [ Fail
 crbug.com/703446 http/tests/inspector/network/resource-priority.html [ Failure Pass ]
 crbug.com/703446 virtual/mojo-loading/http/tests/inspector/network/resource-priority.html [ Failure Pass ]
 crbug.com/703533 [ Mac ] shapedetection/detection-security-test.html  [ Crash Failure Pass ]
+crbug.com/674720 http/tests/loading/preload-img-test.html [ Pass Failure ]
+crbug.com/674720 virtual/mojo-loading/http/tests/loading/preload-img-test.html [ Pass Failure ]
