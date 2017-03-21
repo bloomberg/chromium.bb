@@ -112,11 +112,11 @@ public class ToolbarPhone extends ToolbarLayout
     private static final Interpolator NTP_SEARCH_BOX_EXPANSION_INTERPOLATOR =
             new FastOutSlowInInterpolator();
 
-    private LocationBarPhone mLocationBar;
+    protected LocationBarPhone mLocationBar;
 
     private ViewGroup mToolbarButtonsContainer;
     protected ImageView mToggleTabStackButton;
-    private NewTabButton mNewTabButton;
+    protected NewTabButton mNewTabButton;
     private TintedImageButton mHomeButton;
     private TextView mUrlBar;
     private View mUrlActionContainer;
@@ -128,7 +128,7 @@ public class ToolbarPhone extends ToolbarLayout
     private ObjectAnimator mDelayedTabSwitcherModeAnimation;
 
     private final List<View> mTabSwitcherModeViews = new ArrayList<>();
-    private final Set<View> mBrowsingModeViews = new HashSet<>();
+    protected final Set<View> mBrowsingModeViews = new HashSet<>();
     @ViewDebug.ExportedProperty(category = "chrome")
     protected int mTabSwitcherState;
 
@@ -136,7 +136,7 @@ public class ToolbarPhone extends ToolbarLayout
     // draws as if it's showing the non-tabswitcher, non-animating toolbar. This is used in grabbing
     // a bitmap to use as a texture representation of this view.
     @ViewDebug.ExportedProperty(category = "chrome")
-    private boolean mTextureCaptureMode;
+    protected boolean mTextureCaptureMode;
     private boolean mForceTextureCapture;
     private boolean mUseLightDrawablesForTextureCapture;
     private boolean mLightDrawablesUsedForLastTextureCapture;
@@ -146,7 +146,7 @@ public class ToolbarPhone extends ToolbarLayout
     @ViewDebug.ExportedProperty(category = "chrome")
     private boolean mDelayingTabSwitcherAnimation;
 
-    private ColorDrawable mTabSwitcherAnimationBgOverlay;
+    protected ColorDrawable mTabSwitcherAnimationBgOverlay;
     private TabSwitcherDrawable mTabSwitcherAnimationTabStackDrawable;
     private Drawable mTabSwitcherAnimationMenuDrawable;
     private Drawable mTabSwitcherAnimationMenuBadgeDarkDrawable;
@@ -189,7 +189,7 @@ public class ToolbarPhone extends ToolbarLayout
 
     private int mLocationBarBackgroundAlpha = 255;
     private float mNtpSearchBoxScrollPercent = UNINITIALIZED_PERCENT;
-    private ColorDrawable mToolbarBackground;
+    protected ColorDrawable mToolbarBackground;
 
     /** The omnibox background (white with a shadow). */
     private Drawable mLocationBarBackground;
@@ -655,16 +655,16 @@ public class ToolbarPhone extends ToolbarLayout
         }
     }
 
-    private void updateToolbarBackground(int color) {
+    protected void updateToolbarBackground(int color) {
         mToolbarBackground.setColor(color);
         invalidate();
     }
 
-    private void updateToolbarBackground(VisualState visualState) {
+    protected void updateToolbarBackground(VisualState visualState) {
         updateToolbarBackground(getToolbarColorForVisualState(visualState));
     }
 
-    private int getToolbarColorForVisualState(final VisualState visualState) {
+    protected int getToolbarColorForVisualState(final VisualState visualState) {
         Resources res = getResources();
         switch (visualState) {
             case NEW_TAB_NORMAL:
@@ -888,7 +888,7 @@ public class ToolbarPhone extends ToolbarLayout
      * Reset the parameters for the New Tab Page transition animation (expanding the location bar as
      * a result of scrolling the New Tab Page) to their default values.
      */
-    private void resetNtpAnimationValues() {
+    protected void resetNtpAnimationValues() {
         mLocationBarBackgroundNtpOffset.setEmpty();
         mNtpSearchBoxTranslation.set(0, 0);
         mLocationBar.setTranslationY(0);
@@ -981,7 +981,7 @@ public class ToolbarPhone extends ToolbarLayout
         }
     }
 
-    private void drawTabSwitcherFadeAnimation(boolean animationFinished, float progress) {
+    protected void drawTabSwitcherFadeAnimation(boolean animationFinished, float progress) {
         setAlpha(progress);
         if (animationFinished) {
             mClipRect = null;
@@ -996,7 +996,7 @@ public class ToolbarPhone extends ToolbarLayout
      * mode of the toolbar on top of the TabSwitcher mode version of it.  We do this by
      * drawing all of the browsing mode views on top of the android view.
      */
-    private void drawTabSwitcherAnimationOverlay(Canvas canvas, float animationProgress) {
+    protected void drawTabSwitcherAnimationOverlay(Canvas canvas, float animationProgress) {
         if (!isNativeLibraryReady()) return;
 
         float floatAlpha = 1 - animationProgress;
@@ -1161,11 +1161,18 @@ public class ToolbarPhone extends ToolbarLayout
         return retVal;
     }
 
+    /**
+     * @return Whether or not the location bar should be drawing at any particular state of the
+     *         toolbar.
+     */
+    protected boolean shouldDrawLocationBar() {
+        return mLocationBarBackground != null
+                && (mTabSwitcherState == STATIC_TAB || mTextureCaptureMode);
+    }
+
     private boolean drawLocationBar(Canvas canvas, long drawingTime) {
         boolean clipped = false;
-
-        if (mLocationBarBackground != null
-                && (mTabSwitcherState == STATIC_TAB || mTextureCaptureMode)) {
+        if (shouldDrawLocationBar()) {
             canvas.save();
             int backgroundAlpha;
             if (mTabSwitcherModeAnimation != null) {
@@ -1844,16 +1851,8 @@ public class ToolbarPhone extends ToolbarLayout
         mTabSwitcherButtonDrawableLight.updateForTabCount(numberOfTabs, isIncognito());
         mTabSwitcherButtonDrawable.updateForTabCount(numberOfTabs, isIncognito());
 
-        int themeColor;
-        if (getToolbarDataProvider() != null) {
-            themeColor = getToolbarDataProvider().getPrimaryColor();
-        } else {
-            themeColor = getToolbarColorForVisualState(
-                    isIncognito() ? VisualState.INCOGNITO : VisualState.NORMAL);
-        }
-
         boolean useTabStackDrawableLight = isIncognito()
-                || ColorUtils.shouldUseLightForegroundOnBackground(themeColor);
+                || ColorUtils.shouldUseLightForegroundOnBackground(getTabThemeColor());
         if (mTabSwitcherAnimationTabStackDrawable == null
                 || mIsOverlayTabStackDrawableLight != useTabStackDrawableLight) {
             mTabSwitcherAnimationTabStackDrawable =
@@ -1870,6 +1869,17 @@ public class ToolbarPhone extends ToolbarLayout
             mTabSwitcherAnimationTabStackDrawable.updateForTabCount(
                     numberOfTabs, isIncognito());
         }
+    }
+
+    /**
+     * Get the theme color for the currently active tab. This is not affected by the tab switcher's
+     * theme color.
+     * @return The current tab's theme color.
+     */
+    protected int getTabThemeColor() {
+        if (getToolbarDataProvider() != null) return getToolbarDataProvider().getPrimaryColor();
+        return getToolbarColorForVisualState(
+                isIncognito() ? VisualState.INCOGNITO : VisualState.NORMAL);
     }
 
     @Override

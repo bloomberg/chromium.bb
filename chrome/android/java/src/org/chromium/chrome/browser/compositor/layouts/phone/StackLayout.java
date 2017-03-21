@@ -752,6 +752,7 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
         }
 
         float getTopHeightOffset() {
+            if (FeatureUtilities.isChromeHomeEnabled()) return 0;
             return (StackLayout.this.getHeight() - getHeightMinusBrowserControls())
                     * mStackOffsetYPercent;
         }

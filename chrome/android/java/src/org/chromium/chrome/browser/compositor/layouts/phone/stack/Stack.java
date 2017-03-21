@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.compositor.layouts.phone.stack.StackAnimation
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.ui.base.LocalizationUtils;
 
@@ -1998,7 +1999,7 @@ public class Stack {
                 LayoutTab layoutTab = mLayout.createLayoutTab(tabId, isIncognito,
                         Layout.SHOW_CLOSE_BUTTON, needTitle, maxContentWidth, maxContentHeight);
                 layoutTab.setInsetBorderVertical(true);
-                layoutTab.setShowToolbar(true);
+                layoutTab.setShowToolbar(!FeatureUtilities.isChromeHomeEnabled());
                 layoutTab.setToolbarAlpha(0.f);
                 layoutTab.setAnonymizeToolbar(!mIsStackForCurrentTabModel
                         || mTabModel.index() != i);

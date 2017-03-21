@@ -18,6 +18,7 @@ import android.widget.ImageView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
@@ -58,6 +59,9 @@ public class BottomToolbarPhone extends ToolbarPhone {
             }
         }
     };
+
+    /** The background alpha for the tab switcher. */
+    private static final float TAB_SWITCHER_TOOLBAR_ALPHA = 0.7f;
 
     /** The white version of the toolbar handle; used for dark themes and incognito. */
     private final Bitmap mHandleLight;
@@ -152,6 +156,10 @@ public class BottomToolbarPhone extends ToolbarPhone {
     public void onFinishInflate() {
         super.onFinishInflate();
 
+        // Exclude the location bar from the list of browsing mode views. This prevents its
+        // visibility from changing during transitions.
+        mBrowsingModeViews.remove(mLocationBar);
+
         // Programmatically apply a top margin to all the children of the toolbar container. This
         // is done so the view hierarchy does not need to be changed.
         int topMarginForControls = getExtraTopMargin();
@@ -222,6 +230,50 @@ public class BottomToolbarPhone extends ToolbarPhone {
         canvas.drawRoundRect(rect, handleHeight / 2f, handleHeight / 2f, paint);
 
         return handle;
+    }
+
+    @Override
+    protected boolean shouldDrawLocationBar() {
+        return true;
+    }
+
+    @Override
+    protected void drawTabSwitcherFadeAnimation(boolean animationFinished, float progress) {
+        mNewTabButton.setAlpha(progress);
+
+        mLocationBar.setAlpha(1f - progress);
+
+        int tabSwitcherThemeColor = getToolbarColorForVisualState(VisualState.TAB_SWITCHER_NORMAL);
+
+        updateToolbarBackground(ColorUtils.getColorWithOverlay(
+                getTabThemeColor(), tabSwitcherThemeColor, progress));
+        float alphaTransition = 1f - TAB_SWITCHER_TOOLBAR_ALPHA;
+        mToolbarBackground.setAlpha((int) ((1f - (alphaTransition * progress)) * 255));
+    }
+
+    @Override
+    protected void drawTabSwitcherAnimationOverlay(Canvas canvas, float animationProgress) {
+        // Intentionally overridden to block everything but the compositor screen shot. Otherwise
+        // the toolbar in Chrome Home does not have an animation overlay component.
+        if (mTextureCaptureMode) super.drawTabSwitcherAnimationOverlay(canvas, 0f);
+    }
+
+    @Override
+    protected void resetNtpAnimationValues() {
+        // The NTP animations don't matter if the browser is in tab switcher mode.
+        if (mTabSwitcherState != ToolbarPhone.STATIC_TAB) return;
+        super.resetNtpAnimationValues();
+    }
+
+    @Override
+    protected void updateToolbarBackground(VisualState visualState) {
+        if (visualState == VisualState.TAB_SWITCHER_NORMAL
+                || visualState == VisualState.TAB_SWITCHER_INCOGNITO) {
+            // drawTabSwitcherFadeAnimation will handle the background color transition.
+            return;
+        }
+
+        super.updateToolbarBackground(visualState);
     }
 
     @Override

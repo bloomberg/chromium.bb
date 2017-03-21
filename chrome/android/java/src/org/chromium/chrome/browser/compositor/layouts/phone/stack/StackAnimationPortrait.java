@@ -89,7 +89,7 @@ class StackAnimationPortrait extends StackAnimation {
                 addAnimation(set, tab.getLayoutTab(), SIDE_BORDER_SCALE, 0.f, 1.f,
                         ENTER_STACK_BORDER_ALPHA_DURATION, TAB_FOCUSED_TOOLBAR_ALPHA_DELAY);
 
-                tab.setYOutOfStack(mHeight - mHeightMinusBrowserControls - mBorderTopHeight);
+                tab.setYOutOfStack(getStaticTabPosition());
             }
         }
 
@@ -142,7 +142,7 @@ class StackAnimationPortrait extends StackAnimation {
                         tab.getLayoutTab().getMaxContentHeight(),
                         tab.getLayoutTab().getUnclampedOriginalContentHeight(),
                         TAB_FOCUSED_ANIMATION_DURATION, 0);
-                tab.setYOutOfStack(mHeight - mHeightMinusBrowserControls - mBorderTopHeight);
+                tab.setYOutOfStack(getStaticTabPosition());
                 if (layoutTab.shouldStall()) {
                     addAnimation(set, layoutTab, SATURATION, 1.0f, 0.0f,
                             TAB_FOCUSED_BORDER_ALPHA_DURATION, TAB_FOCUSED_BORDER_ALPHA_DELAY);

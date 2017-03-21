@@ -14,6 +14,7 @@ import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation;
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.Animatable;
 import org.chromium.chrome.browser.compositor.layouts.Layout.Orientation;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 
 /**
@@ -39,15 +40,12 @@ public abstract class StackAnimation {
     }
 
     public static final float SCALE_AMOUNT = 0.90f;
-    protected static final float INITIAL_ALPHA_AMOUNT = 0.1f;
-    protected static final float INITIAL_SCALE_AMOUNT = 0.75f;
 
     protected static final int ENTER_STACK_TOOLBAR_ALPHA_DURATION = 100;
     protected static final int ENTER_STACK_TOOLBAR_ALPHA_DELAY = 100;
     protected static final int ENTER_STACK_ANIMATION_DURATION = 300;
     protected static final int ENTER_STACK_RESIZE_DELAY = 10;
     protected static final int ENTER_STACK_BORDER_ALPHA_DURATION = 200;
-    protected static final int ENTER_STACK_BORDER_ALPHA_DELAY = 0;
     protected static final float ENTER_STACK_SIZE_RATIO = 0.35f;
 
     protected static final int TAB_FOCUSED_TOOLBAR_ALPHA_DURATION = 250;
@@ -67,8 +65,6 @@ public abstract class StackAnimation {
     protected static final int UNDISCARD_ANIMATION_DURATION = 150;
 
     protected static final int TAB_OPENED_ANIMATION_DURATION = 300;
-    protected static final int TAB_OPENED_BORDER_ALPHA_DURATION = 100;
-    protected static final int TAB_OPENED_BORDER_ALPHA_DELAY = 100;
 
     protected static final int DISCARD_ANIMATION_DURATION = 150;
     protected static final int TAB_REORDER_DURATION = 500;
@@ -433,5 +429,18 @@ public abstract class StackAnimation {
     protected float getToolbarOffsetToLineUpWithBorder() {
         final float toolbarHeight = mHeight - mHeightMinusBrowserControls;
         return toolbarHeight - mBorderTopOpaqueHeight;
+    }
+
+    /**
+     * @return The position of the static tab when entering or exiting the tab switcher.
+     */
+    protected float getStaticTabPosition() {
+        // The y position of the tab will depend on whether or not the toolbar is at the top or
+        // bottom of the screen.
+        float yPos = -mBorderTopHeight;
+        if (!FeatureUtilities.isChromeHomeEnabled()) {
+            yPos += mHeight - mHeightMinusBrowserControls;
+        }
+        return yPos;
     }
 }

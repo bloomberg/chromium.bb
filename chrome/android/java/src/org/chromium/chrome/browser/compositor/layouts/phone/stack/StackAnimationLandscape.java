@@ -135,7 +135,7 @@ class StackAnimationLandscape extends StackAnimation {
                         tab.getLayoutTab().getMaxContentHeight(),
                         tab.getLayoutTab().getUnclampedOriginalContentHeight(),
                         TAB_FOCUSED_ANIMATION_DURATION, 0);
-                tab.setYOutOfStack(mHeight - mHeightMinusBrowserControls - mBorderTopHeight);
+                tab.setYOutOfStack(getStaticTabPosition());
 
                 if (layoutTab.shouldStall()) {
                     addAnimation(set, layoutTab, SATURATION, 1.0f, 0.0f,
