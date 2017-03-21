@@ -113,6 +113,25 @@ CastSocketImpl::CastSocketImpl(const std::string& owner_extension_id,
                                bool keep_alive,
                                const scoped_refptr<Logger>& logger,
                                uint64_t device_capabilities)
+    : CastSocketImpl(owner_extension_id,
+                     ip_endpoint,
+                     channel_auth,
+                     net_log,
+                     timeout,
+                     keep_alive,
+                     logger,
+                     device_capabilities,
+                     AuthContext::Create()) {}
+
+CastSocketImpl::CastSocketImpl(const std::string& owner_extension_id,
+                               const net::IPEndPoint& ip_endpoint,
+                               ChannelAuthType channel_auth,
+                               net::NetLog* net_log,
+                               const base::TimeDelta& timeout,
+                               bool keep_alive,
+                               const scoped_refptr<Logger>& logger,
+                               uint64_t device_capabilities,
+                               const AuthContext& auth_context)
     : CastSocket(owner_extension_id),
       owner_extension_id_(owner_extension_id),
       channel_id_(0),
@@ -121,6 +140,7 @@ CastSocketImpl::CastSocketImpl(const std::string& owner_extension_id,
       net_log_(net_log),
       keep_alive_(keep_alive),
       logger_(logger),
+      auth_context_(auth_context),
       connect_timeout_(timeout),
       connect_timeout_timer_(new base::OneShotTimer),
       is_canceled_(false),
@@ -232,7 +252,7 @@ bool CastSocketImpl::VerifyChannelPolicy(const AuthResult& result) {
 bool CastSocketImpl::VerifyChallengeReply() {
   DCHECK(peer_cert_);
   AuthResult result =
-      AuthenticateChallengeReply(*challenge_reply_, *peer_cert_);
+      AuthenticateChallengeReply(*challenge_reply_, *peer_cert_, auth_context_);
   logger_->LogSocketChallengeReplyEvent(channel_id_, result);
   if (result.success()) {
     VLOG(1) << result.error_message;
@@ -443,7 +463,7 @@ int CastSocketImpl::DoAuthChallengeSend() {
   SetConnectState(proto::CONN_STATE_AUTH_CHALLENGE_SEND_COMPLETE);
 
   CastMessage challenge_message;
-  CreateAuthChallengeMessage(&challenge_message);
+  CreateAuthChallengeMessage(&challenge_message, auth_context_);
   VLOG_WITH_CONNECTION(1) << "Sending challenge: "
                           << CastMessageToString(challenge_message);
 
@@ -602,6 +622,7 @@ void CastSocketImpl::SetErrorState(ChannelError error_state) {
   error_state_ = error_state;
   delegate_->OnError(error_state_);
 }
+
 }  // namespace cast_channel
 }  // namespace api
 }  // namespace extensions

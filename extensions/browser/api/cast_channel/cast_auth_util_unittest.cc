@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "components/cast_certificate/cast_cert_validator.h"
 #include "components/cast_certificate/cast_cert_validator_test_helpers.h"
@@ -14,6 +15,7 @@
 #include "components/cast_certificate/proto/test_suite.pb.h"
 #include "extensions/common/api/cast_channel/cast_channel.pb.h"
 #include "net/cert/internal/trust_store_in_memory.h"
+#include "net/cert/x509_certificate.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -102,6 +104,83 @@ TEST_F(CastAuthUtilTest, VerifyBadPeerCert) {
   AuthResult result = VerifyCredentials(auth_response, signed_data);
   EXPECT_FALSE(result.success());
   EXPECT_EQ(AuthResult::ERROR_SIGNED_BLOBS_MISMATCH, result.error_type);
+}
+
+TEST_F(CastAuthUtilTest, VerifySenderNonceMatch) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      base::Feature{"CastNonceEnforced", base::FEATURE_DISABLED_BY_DEFAULT});
+  AuthContext context = AuthContext::Create();
+  AuthResult result = context.VerifySenderNonce(context.nonce());
+  EXPECT_TRUE(result.success());
+}
+
+TEST_F(CastAuthUtilTest, VerifySenderNonceMismatch) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      base::Feature{"CastNonceEnforced", base::FEATURE_DISABLED_BY_DEFAULT});
+  AuthContext context = AuthContext::Create();
+  std::string received_nonce = "test2";
+  EXPECT_NE(received_nonce, context.nonce());
+  AuthResult result = context.VerifySenderNonce(received_nonce);
+  EXPECT_FALSE(result.success());
+  EXPECT_EQ(AuthResult::ERROR_SENDER_NONCE_MISMATCH, result.error_type);
+}
+
+TEST_F(CastAuthUtilTest, VerifySenderNonceMissing) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      base::Feature{"CastNonceEnforced", base::FEATURE_DISABLED_BY_DEFAULT});
+  AuthContext context = AuthContext::Create();
+  std::string received_nonce = "";
+  EXPECT_FALSE(context.nonce().empty());
+  AuthResult result = context.VerifySenderNonce(received_nonce);
+  EXPECT_FALSE(result.success());
+  EXPECT_EQ(AuthResult::ERROR_SENDER_NONCE_MISMATCH, result.error_type);
+}
+
+TEST_F(CastAuthUtilTest, VerifyTLSCertificateSuccess) {
+  auto tls_cert_der = cast_certificate::testing::ReadCertificateChainFromFile(
+      "certificates/test_tls_cert.pem");
+
+  scoped_refptr<net::X509Certificate> tls_cert =
+      net::X509Certificate::CreateFromBytes(tls_cert_der[0].data(),
+                                            tls_cert_der[0].size());
+  std::string peer_cert_der;
+  AuthResult result =
+      VerifyTLSCertificate(*tls_cert, &peer_cert_der, tls_cert->valid_start());
+  EXPECT_TRUE(result.success());
+}
+
+TEST_F(CastAuthUtilTest, VerifyTLSCertificateTooEarly) {
+  auto tls_cert_der = cast_certificate::testing::ReadCertificateChainFromFile(
+      "certificates/test_tls_cert.pem");
+
+  scoped_refptr<net::X509Certificate> tls_cert =
+      net::X509Certificate::CreateFromBytes(tls_cert_der[0].data(),
+                                            tls_cert_der[0].size());
+  std::string peer_cert_der;
+  AuthResult result = VerifyTLSCertificate(
+      *tls_cert, &peer_cert_der,
+      tls_cert->valid_start() - base::TimeDelta::FromSeconds(1));
+  EXPECT_FALSE(result.success());
+  EXPECT_EQ(AuthResult::ERROR_TLS_CERT_VALID_START_DATE_IN_FUTURE,
+            result.error_type);
+}
+
+TEST_F(CastAuthUtilTest, VerifyTLSCertificateTooLate) {
+  auto tls_cert_der = cast_certificate::testing::ReadCertificateChainFromFile(
+      "certificates/test_tls_cert.pem");
+
+  scoped_refptr<net::X509Certificate> tls_cert =
+      net::X509Certificate::CreateFromBytes(tls_cert_der[0].data(),
+                                            tls_cert_der[0].size());
+  std::string peer_cert_der;
+  AuthResult result = VerifyTLSCertificate(
+      *tls_cert, &peer_cert_der,
+      tls_cert->valid_expiry() + base::TimeDelta::FromSeconds(2));
+  EXPECT_FALSE(result.success());
+  EXPECT_EQ(AuthResult::ERROR_TLS_CERT_EXPIRED, result.error_type);
 }
 
 // Indicates the expected result of test step's verification.

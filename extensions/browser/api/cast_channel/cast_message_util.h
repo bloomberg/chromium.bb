@@ -11,6 +11,7 @@ namespace extensions {
 namespace api {
 namespace cast_channel {
 
+class AuthContext;
 class CastMessage;
 class DeviceAuthMessage;
 struct MessageInfo;
@@ -33,7 +34,9 @@ std::string CastMessageToString(const CastMessage& message_proto);
 std::string AuthMessageToString(const DeviceAuthMessage& message);
 
 // Fills |message_proto| appropriately for an auth challenge request message.
-void CreateAuthChallengeMessage(CastMessage* message_proto);
+// Uses the nonce challenge in |auth_context|.
+void CreateAuthChallengeMessage(CastMessage* message_proto,
+                                const AuthContext& auth_context);
 
 // Returns whether the given message is an auth handshake message.
 bool IsAuthMessage(const CastMessage& message);

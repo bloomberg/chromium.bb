@@ -9,11 +9,15 @@
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
+#include "base/memory/singleton.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "components/cast_certificate/cast_cert_validator.h"
 #include "components/cast_certificate/cast_crl.h"
+#include "crypto/random.h"
 #include "extensions/browser/api/cast_channel/cast_message_util.h"
 #include "extensions/common/api/cast_channel/cast_channel.pb.h"
 #include "net/cert/x509_certificate.h"
@@ -29,6 +33,12 @@ const char kParseErrorPrefix[] = "Failed to parse auth message: ";
 // The maximum number of days a cert can live for.
 const int kMaxSelfSignedCertLifetimeInDays = 4;
 
+// The size of the nonce challenge in bytes.
+const int kNonceSizeInBytes = 16;
+
+// The number of hours after which a nonce is regenerated.
+long kNonceExpirationTimeInHours = 24;
+
 // Enforce certificate revocation when enabled.
 // If disabled, any revocation failures are ignored.
 //
@@ -37,6 +47,15 @@ const int kMaxSelfSignedCertLifetimeInDays = 4;
 // This flag tracks the changes necessary to fully enforce revocation.
 const base::Feature kEnforceRevocationChecking{
     "CastCertificateRevocation", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enforce nonce checking when enabled.
+// If disabled, the nonce value returned from the device is not checked against
+// the one sent to the device. As a result, the nonce can be empty and omitted
+// from the signature. This allows backwards compatibility with legacy Cast
+// receivers.
+
+const base::Feature kEnforceNonceChecking{"CastNonceEnforced",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 namespace cast_crypto = ::cast_certificate;
 
@@ -75,6 +94,43 @@ AuthResult ParseAuthMessage(const CastMessage& challenge_reply,
   return AuthResult();
 }
 
+class CastNonce {
+ public:
+  static CastNonce* GetInstance() {
+    return base::Singleton<CastNonce,
+                           base::LeakySingletonTraits<CastNonce>>::get();
+  }
+
+  static const std::string& Get() {
+    GetInstance()->EnsureNonceTimely();
+    return GetInstance()->nonce_;
+  }
+
+ private:
+  friend struct base::DefaultSingletonTraits<CastNonce>;
+
+  CastNonce() { GenerateNonce(); }
+  void GenerateNonce() {
+    // Create a cryptographically secure nonce.
+    crypto::RandBytes(base::WriteInto(&nonce_, kNonceSizeInBytes + 1),
+                      kNonceSizeInBytes);
+    nonce_generation_time_ = base::Time::Now();
+  }
+
+  void EnsureNonceTimely() {
+    if (base::Time::Now() >
+        (nonce_generation_time_ +
+         base::TimeDelta::FromHours(kNonceExpirationTimeInHours))) {
+      GenerateNonce();
+    }
+  }
+
+  // The nonce challenge to send to the Cast receiver.
+  // The nonce is updated daily.
+  std::string nonce_;
+  base::Time nonce_generation_time_;
+};
+
 // Must match with histogram enum CastCertificateStatus.
 // This should never be reordered.
 enum CertVerificationStatus {
@@ -84,6 +140,26 @@ enum CertVerificationStatus {
   CERT_STATUS_REVOKED,
   CERT_STATUS_COUNT,
 };
+
+// Must match with histogram enum CastNonce.
+// This should never be reordered.
+enum NonceVerificationStatus {
+  NONCE_MATCH,
+  NONCE_MISMATCH,
+  NONCE_MISSING,
+  NONCE_COUNT,
+};
+
+// Record certificate verification histogram events.
+void RecordCertificateEvent(CertVerificationStatus event) {
+  UMA_HISTOGRAM_ENUMERATION("Cast.Channel.Certificate", event,
+                            CERT_STATUS_COUNT);
+}
+
+// Record nonce verification histogram events.
+void RecordNonceEvent(NonceVerificationStatus event) {
+  UMA_HISTOGRAM_ENUMERATION("Cast.Channel.Nonce", event, NONCE_COUNT);
+}
 
 }  // namespace
 
@@ -102,19 +178,42 @@ AuthResult AuthResult::CreateWithParseError(const std::string& error_message,
   return AuthResult(kParseErrorPrefix + error_message, error_type);
 }
 
-AuthResult AuthenticateChallengeReply(const CastMessage& challenge_reply,
-                                      const net::X509Certificate& peer_cert) {
-  DeviceAuthMessage auth_message;
-  AuthResult result = ParseAuthMessage(challenge_reply, &auth_message);
-  if (!result.success()) {
-    return result;
-  }
+// static
+AuthContext AuthContext::Create() {
+  return AuthContext(CastNonce::Get());
+}
 
+AuthContext::AuthContext(const std::string& nonce) : nonce_(nonce) {}
+
+AuthContext::~AuthContext() {}
+
+AuthResult AuthContext::VerifySenderNonce(
+    const std::string& nonce_response) const {
+  if (nonce_ != nonce_response) {
+    if (nonce_response.empty()) {
+      RecordNonceEvent(NONCE_MISSING);
+    } else {
+      RecordNonceEvent(NONCE_MISMATCH);
+    }
+    if (base::FeatureList::IsEnabled(kEnforceNonceChecking)) {
+      return AuthResult("Sender nonce mismatched.",
+                        AuthResult::ERROR_SENDER_NONCE_MISMATCH);
+    }
+  } else {
+    RecordNonceEvent(NONCE_MATCH);
+  }
+  return AuthResult();
+}
+
+// Verifies the peer certificate and populates |peer_cert_der| with the DER
+// encoded certificate.
+AuthResult VerifyTLSCertificate(const net::X509Certificate& peer_cert,
+                                std::string* peer_cert_der,
+                                const base::Time& verification_time) {
   // Get the DER-encoded form of the certificate.
-  std::string peer_cert_der;
   if (!net::X509Certificate::GetDEREncoded(peer_cert.os_cert_handle(),
-                                           &peer_cert_der) ||
-      peer_cert_der.empty()) {
+                                           peer_cert_der) ||
+      peer_cert_der->empty()) {
     return AuthResult::CreateWithParseError(
         "Could not create DER-encoded peer cert.",
         AuthResult::ERROR_CERT_PARSING_FAILED);
@@ -126,15 +225,15 @@ AuthResult AuthenticateChallengeReply(const CastMessage& challenge_reply,
   // is repurposed as this signature's expiration.
   base::Time expiry = peer_cert.valid_expiry();
   base::Time lifetime_limit =
-      base::Time::Now() +
+      verification_time +
       base::TimeDelta::FromDays(kMaxSelfSignedCertLifetimeInDays);
   if (peer_cert.valid_start().is_null() ||
-      peer_cert.valid_start() > base::Time::Now()) {
+      peer_cert.valid_start() > verification_time) {
     return AuthResult::CreateWithParseError(
         "Certificate's valid start date is in the future.",
         AuthResult::ERROR_TLS_CERT_VALID_START_DATE_IN_FUTURE);
   }
-  if (expiry.is_null() || peer_cert.HasExpired()) {
+  if (expiry.is_null() || peer_cert.valid_expiry() < verification_time) {
     return AuthResult::CreateWithParseError("Certificate has expired.",
                                             AuthResult::ERROR_TLS_CERT_EXPIRED);
   }
@@ -143,9 +242,33 @@ AuthResult AuthenticateChallengeReply(const CastMessage& challenge_reply,
         "Peer cert lifetime is too long.",
         AuthResult::ERROR_TLS_CERT_VALIDITY_PERIOD_TOO_LONG);
   }
+  return AuthResult();
+}
+
+AuthResult AuthenticateChallengeReply(const CastMessage& challenge_reply,
+                                      const net::X509Certificate& peer_cert,
+                                      const AuthContext& auth_context) {
+  DeviceAuthMessage auth_message;
+  AuthResult result = ParseAuthMessage(challenge_reply, &auth_message);
+  if (!result.success()) {
+    return result;
+  }
+
+  std::string peer_cert_der;
+  result = VerifyTLSCertificate(peer_cert, &peer_cert_der, base::Time::Now());
+  if (!result.success()) {
+    return result;
+  }
 
   const AuthResponse& response = auth_message.response();
-  return VerifyCredentials(response, peer_cert_der);
+  const std::string& nonce_response = response.sender_nonce();
+
+  result = auth_context.VerifySenderNonce(nonce_response);
+  if (!result.success()) {
+    return result;
+  }
+
+  return VerifyCredentials(response, nonce_response + peer_cert_der);
 }
 
 // This function does the following
@@ -189,8 +312,7 @@ AuthResult VerifyCredentialsImpl(const AuthResponse& response,
           response.crl(), verification_time, crl_trust_store);
   if (!crl) {
     // CRL is invalid.
-    UMA_HISTOGRAM_ENUMERATION("Cast.Channel.Certificate",
-                              CERT_STATUS_INVALID_CRL, CERT_STATUS_COUNT);
+    RecordCertificateEvent(CERT_STATUS_INVALID_CRL);
     if (crl_policy == cast_crypto::CRLPolicy::CRL_REQUIRED) {
       return AuthResult("Failed verifying Cast CRL.",
                         AuthResult::ERROR_CRL_INVALID);
@@ -213,16 +335,13 @@ AuthResult VerifyCredentialsImpl(const AuthResponse& response,
             cast_trust_store);
     if (!verification_no_crl_success) {
       // TODO(eroman): The error information was lost; this error is ambiguous.
-      UMA_HISTOGRAM_ENUMERATION("Cast.Channel.Certificate",
-                                CERT_STATUS_VERIFICATION_FAILED,
-                                CERT_STATUS_COUNT);
+      RecordCertificateEvent(CERT_STATUS_VERIFICATION_FAILED);
       return AuthResult("Failed verifying cast device certificate",
                         AuthResult::ERROR_CERT_NOT_SIGNED_BY_TRUSTED_CA);
     }
     if (crl) {
       // If CRL was not present, it should've been recorded as such.
-      UMA_HISTOGRAM_ENUMERATION("Cast.Channel.Certificate", CERT_STATUS_REVOKED,
-                                CERT_STATUS_COUNT);
+      RecordCertificateEvent(CERT_STATUS_REVOKED);
     }
     if (crl_policy == cast_crypto::CRLPolicy::CRL_REQUIRED) {
       // Device is revoked.
@@ -231,8 +350,7 @@ AuthResult VerifyCredentialsImpl(const AuthResponse& response,
     }
   }
   // The certificate is verified at this point.
-  UMA_HISTOGRAM_ENUMERATION("Cast.Channel.Certificate", CERT_STATUS_OK,
-                            CERT_STATUS_COUNT);
+  RecordCertificateEvent(CERT_STATUS_OK);
   if (!verification_context->VerifySignatureOverData(response.signature(),
                                                      signature_input)) {
     return AuthResult("Failed verifying signature over data",

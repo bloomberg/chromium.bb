@@ -18,6 +18,7 @@
 #include "base/timer/timer.h"
 #include "extensions/browser/api/api_resource.h"
 #include "extensions/browser/api/api_resource_manager.h"
+#include "extensions/browser/api/cast_channel/cast_auth_util.h"
 #include "extensions/browser/api/cast_channel/cast_socket.h"
 #include "extensions/browser/api/cast_channel/cast_transport.h"
 #include "extensions/common/api/cast_channel.h"
@@ -155,6 +156,18 @@ class CastSocketImpl : public CastSocket {
                  bool keep_alive,
                  const scoped_refptr<Logger>& logger,
                  uint64_t device_capabilities);
+
+  // For test-only.
+  // This constructor allows for setting a custom AuthContext.
+  CastSocketImpl(const std::string& owner_extension_id,
+                 const net::IPEndPoint& ip_endpoint,
+                 ChannelAuthType channel_auth,
+                 net::NetLog* net_log,
+                 const base::TimeDelta& connect_timeout,
+                 bool keep_alive,
+                 const scoped_refptr<Logger>& logger,
+                 uint64_t device_capabilities,
+                 const AuthContext& auth_context);
 
   // Ensures that the socket is closed.
   ~CastSocketImpl() override;
@@ -321,6 +334,9 @@ class CastSocketImpl : public CastSocket {
   // Certificate of the peer. This field may be empty if the peer
   // certificate is not yet fetched.
   scoped_refptr<net::X509Certificate> peer_cert_;
+
+  // The challenge context for the current connection.
+  const AuthContext auth_context_;
 
   // Reply received from the receiver to a challenge request.
   std::unique_ptr<CastMessage> challenge_reply_;

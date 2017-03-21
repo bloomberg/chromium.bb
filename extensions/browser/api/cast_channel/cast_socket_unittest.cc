@@ -59,7 +59,7 @@ const char kAuthNamespace[] = "urn:x-cast:com.google.cast.tp.deviceauth";
 // Returns an auth challenge message inline.
 CastMessage CreateAuthChallenge() {
   CastMessage output;
-  CreateAuthChallengeMessage(&output);
+  CreateAuthChallengeMessage(&output, AuthContext::Create());
   return output;
 }
 
@@ -206,7 +206,8 @@ class TestCastSocket : public CastSocketImpl {
                        base::TimeDelta::FromMilliseconds(timeout_ms),
                        false,
                        logger,
-                       device_capabilities),
+                       device_capabilities,
+                       AuthContext::Create()),
         capturing_net_log_(capturing_net_log),
         ip_(ip_endpoint),
         extract_cert_result_(true),
