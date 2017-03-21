@@ -46,11 +46,13 @@ const char kMojoPrimordialPipeToken[] = "mojo-primordial-pipe-token";
 const char kMojoNamedPipeName[] = "mojo-named-pipe-name";
 
 template <typename Func>
-int RunClientFunction(Func handler) {
+int RunClientFunction(Func handler, bool pass_pipe_ownership_to_main) {
   CHECK(MultiprocessTestHelper::primordial_pipe.is_valid());
   ScopedMessagePipeHandle pipe =
       std::move(MultiprocessTestHelper::primordial_pipe);
-  return handler(pipe.get().value());
+  MessagePipeHandle pipe_handle =
+      pass_pipe_ownership_to_main ? pipe.release() : pipe.get();
+  return handler(pipe_handle.value());
 }
 
 }  // namespace
@@ -232,20 +234,25 @@ void MultiprocessTestHelper::ChildSetup() {
 
 // static
 int MultiprocessTestHelper::RunClientMain(
-    const base::Callback<int(MojoHandle)>& main) {
-  return RunClientFunction([main](MojoHandle handle){
-    return main.Run(handle);
-  });
+    const base::Callback<int(MojoHandle)>& main,
+    bool pass_pipe_ownership_to_main) {
+  return RunClientFunction(
+      [main](MojoHandle handle) { return main.Run(handle); },
+      pass_pipe_ownership_to_main);
 }
 
 // static
 int MultiprocessTestHelper::RunClientTestMain(
     const base::Callback<void(MojoHandle)>& main) {
-  return RunClientFunction([main](MojoHandle handle) {
-    main.Run(handle);
-    return (::testing::Test::HasFatalFailure() ||
-            ::testing::Test::HasNonfatalFailure()) ? 1 : 0;
-  });
+  return RunClientFunction(
+      [main](MojoHandle handle) {
+        main.Run(handle);
+        return (::testing::Test::HasFatalFailure() ||
+                ::testing::Test::HasNonfatalFailure())
+                   ? 1
+                   : 0;
+      },
+      true /* close_pipe_on_exit */);
 }
 
 // static

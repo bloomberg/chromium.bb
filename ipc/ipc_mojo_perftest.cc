@@ -459,7 +459,8 @@ class MojoPerfTestClient {
 MULTIPROCESS_TEST_MAIN(MojoPerfTestClientTestChildMain) {
   MojoPerfTestClient client;
   int rv = mojo::edk::test::MultiprocessTestHelper::RunClientMain(
-      base::Bind(&MojoPerfTestClient::Run, base::Unretained(&client)));
+      base::Bind(&MojoPerfTestClient::Run, base::Unretained(&client)),
+      true /* pass_pipe_ownership_to_main */);
 
   base::RunLoop run_loop;
   run_loop.RunUntilIdle();

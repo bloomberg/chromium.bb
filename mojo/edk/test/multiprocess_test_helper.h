@@ -85,7 +85,8 @@ class MultiprocessTestHelper {
   // Used by macros in mojo/edk/test/mojo_test_base.h to support multiprocess
   // test client initialization.
   static void ChildSetup();
-  static int RunClientMain(const base::Callback<int(MojoHandle)>& main);
+  static int RunClientMain(const base::Callback<int(MojoHandle)>& main,
+                           bool pass_pipe_ownership_to_main = false);
   static int RunClientTestMain(const base::Callback<void(MojoHandle)>& main);
 
   // For use (and only valid) in the child process:
