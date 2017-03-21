@@ -181,9 +181,10 @@ class DragControllerTest : public testing::Test,
                                bool mouse_released,
                                uint32_t flags,
                                const gfx::Point& position) {
-    ui::PointerEvent event(ET_POINTER_DOWN, position, position, flags,
-                           drag_pointer, 0, PointerDetails(),
-                           base::TimeTicks());
+    ui::PointerEvent event(
+        ET_POINTER_DOWN, position, position, flags, 0,
+        PointerDetails(ui::EventPointerType::POINTER_TYPE_MOUSE, drag_pointer),
+        base::TimeTicks());
     drag_operation_->DispatchPointerEvent(event,
                                           window ? window->window() : nullptr);
   }

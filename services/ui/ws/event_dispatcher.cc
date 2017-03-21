@@ -465,9 +465,9 @@ void EventDispatcher::UpdateTargetForPointer(int32_t pointer_id,
   if (event.IsMousePointerEvent()) {
     ui::PointerEvent exit_event(
         ui::ET_POINTER_EXITED, event.location(), event.root_location(),
-        event.flags(), ui::PointerEvent::kMousePointerId,
-        0 /* changed_button_flags */,
-        ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_MOUSE),
+        event.flags(), 0 /* changed_button_flags */,
+        ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_MOUSE,
+                           ui::PointerEvent::kMousePointerId),
         event.time_stamp());
     DispatchToPointerTarget(pointer_targets_[pointer_id], exit_event);
   }
@@ -618,8 +618,8 @@ void EventDispatcher::CancelImplicitCaptureExcept(ServerWindow* window,
     // TODO(jonross): Track previous location in PointerTarget for sending
     // cancels.
     ui::PointerEvent event(event_type, gfx::Point(), gfx::Point(), ui::EF_NONE,
-                           pair.first, 0 /* changed_button_flags */,
-                           ui::PointerDetails(pointer_type),
+                           0 /* changed_button_flags */,
+                           ui::PointerDetails(pointer_type, pair.first),
                            ui::EventTimeForNow());
     DispatchToPointerTarget(pair.second, event);
   }

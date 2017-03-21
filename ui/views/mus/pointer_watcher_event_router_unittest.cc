@@ -122,20 +122,20 @@ TEST_F(PointerWatcherEventRouterTest, PointerWatcherNoMove) {
   ASSERT_TRUE(pointer_watcher_event_router);
 
   ui::PointerEvent pointer_event_down(
-      ui::ET_POINTER_DOWN, gfx::Point(), gfx::Point(), ui::EF_NONE, 1, 0,
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH),
+      ui::ET_POINTER_DOWN, gfx::Point(), gfx::Point(), ui::EF_NONE, 0,
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1),
       base::TimeTicks());
   ui::PointerEvent pointer_event_up(
-      ui::ET_POINTER_UP, gfx::Point(), gfx::Point(), ui::EF_NONE, 1, 0,
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_MOUSE),
+      ui::ET_POINTER_UP, gfx::Point(), gfx::Point(), ui::EF_NONE, 0,
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_MOUSE, 1),
       base::TimeTicks());
   ui::PointerEvent pointer_event_wheel(
-      ui::ET_POINTER_WHEEL_CHANGED, gfx::Point(), gfx::Point(), ui::EF_NONE, 1,
-      0, ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_MOUSE),
+      ui::ET_POINTER_WHEEL_CHANGED, gfx::Point(), gfx::Point(), ui::EF_NONE, 0,
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_MOUSE, 1),
       base::TimeTicks());
   ui::PointerEvent pointer_event_capture(
       ui::ET_POINTER_CAPTURE_CHANGED, gfx::Point(), gfx::Point(), ui::EF_NONE,
-      1, 0, ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_MOUSE),
+      0, ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_MOUSE, 1),
       base::TimeTicks());
 
   // PointerWatchers receive pointer down events.
@@ -195,12 +195,12 @@ TEST_F(PointerWatcherEventRouterTest, PointerWatcherMove) {
   ASSERT_TRUE(pointer_watcher_event_router);
 
   ui::PointerEvent pointer_event_down(
-      ui::ET_POINTER_DOWN, gfx::Point(), gfx::Point(), ui::EF_NONE, 1, 0,
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH),
+      ui::ET_POINTER_DOWN, gfx::Point(), gfx::Point(), ui::EF_NONE, 0,
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1),
       base::TimeTicks());
   ui::PointerEvent pointer_event_move(
-      ui::ET_POINTER_MOVED, gfx::Point(), gfx::Point(), ui::EF_NONE, 1, 0,
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH),
+      ui::ET_POINTER_MOVED, gfx::Point(), gfx::Point(), ui::EF_NONE, 0,
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1),
       base::TimeTicks());
 
   // PointerWatchers receive pointer down events.

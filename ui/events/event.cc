@@ -1067,7 +1067,6 @@ PointerEvent::PointerEvent(EventType type,
                            const gfx::Point& location,
                            const gfx::Point& root_location,
                            int flags,
-                           int pointer_id,
                            int changed_button_flags,
                            const PointerDetails& pointer_details,
                            base::TimeTicks time_stamp)
@@ -1078,7 +1077,6 @@ PointerEvent::PointerEvent(EventType type,
                    flags),
       changed_button_flags_(changed_button_flags),
       details_(pointer_details) {
-  details_.id = pointer_id;
   if (details_.pointer_type == EventPointerType::POINTER_TYPE_TOUCH)
     latency()->set_source_event_type(ui::SourceEventType::TOUCH);
   else if (type == ET_POINTER_WHEEL_CHANGED)

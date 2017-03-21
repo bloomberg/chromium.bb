@@ -578,8 +578,8 @@ TEST_F(WindowManagerStateTest, CursorResetOverNoTarget) {
   // Move the mouse outside the bounds of the child, so that the mouse is not
   // over any valid windows. Cursor should change to POINTER.
   ui::PointerEvent move(
-      ui::ET_POINTER_MOVED, gfx::Point(25, 25), gfx::Point(25, 25), 0, 0, 0,
-      ui::PointerDetails(EventPointerType::POINTER_TYPE_MOUSE),
+      ui::ET_POINTER_MOVED, gfx::Point(25, 25), gfx::Point(25, 25), 0, 0,
+      ui::PointerDetails(EventPointerType::POINTER_TYPE_MOUSE, 0),
       base::TimeTicks());
   window_manager_state()->ProcessEvent(move, 0);
   // The event isn't over a valid target, which should trigger resetting the

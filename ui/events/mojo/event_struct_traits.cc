@@ -282,7 +282,7 @@ bool StructTraits<ui::mojom::EventDataView, EventUniquePtr>::Read(
         case ui::mojom::PointerKind::MOUSE: {
           out->reset(new ui::PointerEvent(
               MojoPointerEventTypeToUIEvent(event.action()), location,
-              screen_location, event.flags(), ui::PointerEvent::kMousePointerId,
+              screen_location, event.flags(),
               pointer_data->changed_button_flags,
               event.action() == ui::mojom::EventType::POINTER_WHEEL_CHANGED
                   ? ui::PointerDetails(
@@ -290,19 +290,20 @@ bool StructTraits<ui::mojom::EventDataView, EventUniquePtr>::Read(
                         gfx::Vector2d(
                             static_cast<int>(pointer_data->wheel_data->delta_x),
                             static_cast<int>(
-                                pointer_data->wheel_data->delta_y)))
-                  : ui::PointerDetails(
-                        ui::EventPointerType::POINTER_TYPE_MOUSE),
+                                pointer_data->wheel_data->delta_y)),
+                        ui::PointerEvent::kMousePointerId)
+                  : ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_MOUSE,
+                                       ui::PointerEvent::kMousePointerId),
               ui::EventTimeForNow()));
           break;
         }
         case ui::mojom::PointerKind::TOUCH: {
           out->reset(new ui::PointerEvent(
               MojoPointerEventTypeToUIEvent(event.action()), location,
-              screen_location, event.flags(), pointer_data->pointer_id,
+              screen_location, event.flags(),
               pointer_data->changed_button_flags,
               ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
-                                 /* pointer_id*/ 0,
+                                 /* pointer_id*/ pointer_data->pointer_id,
                                  pointer_data->brush_data->width,
                                  pointer_data->brush_data->height,
                                  pointer_data->brush_data->pressure,

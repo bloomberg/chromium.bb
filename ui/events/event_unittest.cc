@@ -978,8 +978,8 @@ TEST(EventTest, PointerEventToMouseEvent) {
   for (size_t i = 0; i < arraysize(kTestData); i++) {
     ui::PointerEvent pointer_event(
         kTestData[i].in_type, kTestData[i].location, kTestData[i].root_location,
-        kTestData[i].flags, 0, kTestData[i].changed_button_flags,
-        ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_MOUSE),
+        kTestData[i].flags, kTestData[i].changed_button_flags,
+        ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_MOUSE, 0),
         base::TimeTicks());
     ui::MouseEvent mouse_event(pointer_event);
 
@@ -1002,7 +1002,7 @@ TEST(EventTest, PointerEventToTouchEventType) {
 
   for (size_t i = 0; i < arraysize(kTouchTypeMap); i++) {
     ui::PointerEvent pointer_event(
-        kTouchTypeMap[i][0], gfx::Point(), gfx::Point(), 0, 0, 0,
+        kTouchTypeMap[i][0], gfx::Point(), gfx::Point(), 0, 0,
         ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0),
         base::TimeTicks());
     ui::TouchEvent touch_event(pointer_event);
@@ -1032,14 +1032,14 @@ TEST(EventTest, PointerEventToTouchEventDetails) {
 
 TEST(EventTest, PointerEventSourceEventTypeExistsInLatencyInfo) {
   ui::PointerEvent wheel_poniter_event(
-      ui::ET_POINTER_WHEEL_CHANGED, gfx::Point(), gfx::Point(), 0, 0, 0,
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_MOUSE),
+      ui::ET_POINTER_WHEEL_CHANGED, gfx::Point(), gfx::Point(), 0, 0,
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_MOUSE, 0),
       ui::EventTimeForNow());
   EXPECT_EQ(wheel_poniter_event.latency()->source_event_type(),
             ui::SourceEventType::WHEEL);
 
   ui::PointerEvent touch_poniter_event(
-      ui::ET_TOUCH_PRESSED, gfx::Point(), gfx::Point(), 0, 0, 0,
+      ui::ET_TOUCH_PRESSED, gfx::Point(), gfx::Point(), 0, 0,
       ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0),
       ui::EventTimeForNow());
   EXPECT_EQ(touch_poniter_event.latency()->source_event_type(),
