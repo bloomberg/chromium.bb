@@ -58,7 +58,7 @@ void StartChildProcess(const base::CommandLine::StringVector& argv,
   DCHECK(file_count > 0);
 
   ScopedJavaLocalRef<jclass> j_file_info_class = base::android::GetClass(
-      env, "org/chromium/content/common/FileDescriptorInfo");
+      env, "org/chromium/base/process_launcher/FileDescriptorInfo");
   ScopedJavaLocalRef<jobjectArray> j_file_infos(
       env, env->NewObjectArray(file_count, j_file_info_class.obj(), NULL));
   base::android::CheckException(env);

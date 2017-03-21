@@ -5,7 +5,7 @@
 package org.chromium.content.browser;
 
 import org.chromium.base.process_launcher.ChildProcessCreationParams;
-import org.chromium.content.common.FileDescriptorInfo;
+import org.chromium.base.process_launcher.FileDescriptorInfo;
 import org.chromium.content.common.IChildProcessCallback;
 import org.chromium.content.common.IChildProcessService;
 

@@ -1,35 +1,43 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.base;
+package org.chromium.base.process_launcher;
 
-import android.annotation.SuppressLint;
 import android.os.Parcel;
 import android.os.ParcelFileDescriptor;
 import android.os.Parcelable;
 
+import org.chromium.base.annotations.MainDex;
+import org.chromium.base.annotations.UsedByReflection;
+
+import javax.annotation.concurrent.Immutable;
+
 /**
- * Parcelable class that contains file descriptor and a key that identifies it.
- * TODO(jcivelli): should be merged with
- * org.chromium.content.common.FileDescriptorInfo
+ * Parcelable class that contains file descriptor and file region information to
+ * be passed to child processes.
  */
-@SuppressLint("ParcelClassLoader")
+@Immutable
+@MainDex
+@UsedByReflection("child_process_launcher_helper_android.cc")
 public final class FileDescriptorInfo implements Parcelable {
-    /** An consumer chosen ID that uniquely identifies a file descriptor. */
-    public final int key;
-
-    /** A file descriptor to access the file. */
+    public final int id;
     public final ParcelFileDescriptor fd;
+    public final long offset;
+    public final long size;
 
-    public FileDescriptorInfo(int key, ParcelFileDescriptor fd) {
-        this.key = key;
+    public FileDescriptorInfo(int id, ParcelFileDescriptor fd, long offset, long size) {
+        this.id = id;
         this.fd = fd;
+        this.offset = offset;
+        this.size = size;
     }
 
     FileDescriptorInfo(Parcel in) {
-        key = in.readInt();
-        fd = in.readParcelable(null);
+        id = in.readInt();
+        fd = in.readParcelable(ParcelFileDescriptor.class.getClassLoader());
+        offset = in.readLong();
+        size = in.readLong();
     }
 
     @Override
@@ -39,8 +47,10 @@ public final class FileDescriptorInfo implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeInt(key);
+        dest.writeInt(id);
         dest.writeParcelable(fd, CONTENTS_FILE_DESCRIPTOR);
+        dest.writeLong(offset);
+        dest.writeLong(size);
     }
 
     public static final Parcelable.Creator<FileDescriptorInfo> CREATOR =

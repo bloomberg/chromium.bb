@@ -31,9 +31,9 @@ import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.Linker;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.process_launcher.ChildProcessCreationParams;
+import org.chromium.base.process_launcher.FileDescriptorInfo;
 import org.chromium.content.browser.ChildProcessConstants;
 import org.chromium.content.common.ContentSwitches;
-import org.chromium.content.common.FileDescriptorInfo;
 import org.chromium.content.common.IChildProcessCallback;
 import org.chromium.content.common.IChildProcessService;
 import org.chromium.content.common.SurfaceWrapper;
@@ -268,10 +268,10 @@ public class ChildProcessServiceImpl {
                     long[] regionSizes = new long[mFdInfos.length];
                     for (int i = 0; i < mFdInfos.length; i++) {
                         FileDescriptorInfo fdInfo = mFdInfos[i];
-                        fileIds[i] = fdInfo.mId;
-                        fds[i] = fdInfo.mFd.detachFd();
-                        regionOffsets[i] = fdInfo.mOffset;
-                        regionSizes[i] = fdInfo.mSize;
+                        fileIds[i] = fdInfo.id;
+                        fds[i] = fdInfo.fd.detachFd();
+                        regionOffsets[i] = fdInfo.offset;
+                        regionSizes[i] = fdInfo.size;
                     }
                     nativeRegisterFileDescriptors(fileIds, fds, regionOffsets, regionSizes);
                     nativeInitChildProcessImpl(ChildProcessServiceImpl.this, mCpuCount,

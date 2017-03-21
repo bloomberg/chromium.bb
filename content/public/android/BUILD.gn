@@ -215,7 +215,6 @@ android_library("content_java") {
     "java/src/org/chromium/content/browser/webcontents/WebContentsImpl.java",
     "java/src/org/chromium/content/browser/webcontents/WebContentsObserverProxy.java",
     "java/src/org/chromium/content/common/ContentSwitches.java",
-    "java/src/org/chromium/content/common/FileDescriptorInfo.java",
     "java/src/org/chromium/content/common/SurfaceWrapper.java",
     "java/src/org/chromium/content_public/browser/AccessibilitySnapshotCallback.java",
     "java/src/org/chromium/content_public/browser/AccessibilitySnapshotNode.java",
