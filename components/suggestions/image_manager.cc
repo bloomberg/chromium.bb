@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/task_runner_util.h"
-#include "components/image_fetcher/image_fetcher.h"
+#include "components/image_fetcher/core/image_fetcher.h"
 #include "components/suggestions/image_encoder.h"
 #include "ui/gfx/image/image.h"
 

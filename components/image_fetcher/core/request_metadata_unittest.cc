@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/image_fetcher/request_metadata.h"
+#include "components/image_fetcher/core/request_metadata.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 

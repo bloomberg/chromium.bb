@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_IMAGE_FETCHER_IMAGE_DATA_FETCHER_H_
-#define COMPONENTS_IMAGE_FETCHER_IMAGE_DATA_FETCHER_H_
+#ifndef COMPONENTS_IMAGE_FETCHER_CORE_IMAGE_DATA_FETCHER_H_
+#define COMPONENTS_IMAGE_FETCHER_CORE_IMAGE_DATA_FETCHER_H_
 
 #include <map>
 #include <memory>
@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
-#include "components/image_fetcher/request_metadata.h"
+#include "components/image_fetcher/core/request_metadata.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request.h"
 #include "url/gurl.h"
@@ -27,7 +27,6 @@ namespace image_fetcher {
 
 class ImageDataFetcher : public net::URLFetcherDelegate {
  public:
-
   // Callback with the |image_data|. If an error prevented a http response,
   // |request_metadata.response_code| will be RESPONSE_CODE_INVALID.
   using ImageDataFetcherCallback =
@@ -81,4 +80,4 @@ class ImageDataFetcher : public net::URLFetcherDelegate {
 
 }  // namespace image_fetcher
 
-#endif  // COMPONENTS_IMAGE_FETCHER_IMAGE_DATA_FETCHER_H_
+#endif  // COMPONENTS_IMAGE_FETCHER_CORE_IMAGE_DATA_FETCHER_H_

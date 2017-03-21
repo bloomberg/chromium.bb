@@ -16,7 +16,7 @@
 #include "chrome/browser/thumbnails/thumbnail_service.h"
 #include "chrome/browser/thumbnails/thumbnail_service_factory.h"
 #include "chrome/common/url_constants.h"
-#include "components/image_fetcher/image_fetcher_impl.h"
+#include "components/image_fetcher/core/image_fetcher_impl.h"
 #include "components/suggestions/image_encoder.h"
 #include "net/url_request/url_request.h"
 #include "ui/gfx/image/image.h"

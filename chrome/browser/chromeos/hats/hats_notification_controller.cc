@@ -24,7 +24,7 @@
 #include "chrome/grit/theme_resources.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/network/network_state.h"
-#include "components/image_fetcher/image_fetcher_impl.h"
+#include "components/image_fetcher/core/image_fetcher_impl.h"
 #include "components/prefs/pref_service.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"

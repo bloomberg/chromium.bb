@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/image_fetcher/image_fetcher_impl.h"
+#include "components/image_fetcher/core/image_fetcher_impl.h"
 
 #include <memory>
 
@@ -15,7 +15,7 @@
 #include "chrome/browser/search/suggestions/image_decoder_impl.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "components/image_fetcher/image_fetcher_delegate.h"
+#include "components/image_fetcher/core/image_fetcher_delegate.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/image/image.h"

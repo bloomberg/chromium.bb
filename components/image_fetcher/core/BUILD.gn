@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-static_library("image_fetcher") {
+static_library("core") {
   sources = [
     "image_data_fetcher.cc",
     "image_data_fetcher.h",
@@ -31,7 +31,7 @@ source_set("unit_tests") {
     "request_metadata_unittest.cc",
   ]
   deps = [
-    ":image_fetcher",
+    ":core",
     "//net",
     "//net:test_support",
     "//testing/gmock",

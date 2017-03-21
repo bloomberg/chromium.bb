@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_IMAGE_FETCHER_IMAGE_FETCHER_IMPL_H_
-#define COMPONENTS_IMAGE_FETCHER_IMAGE_FETCHER_IMPL_H_
+#ifndef COMPONENTS_IMAGE_FETCHER_CORE_IMAGE_FETCHER_IMPL_H_
+#define COMPONENTS_IMAGE_FETCHER_CORE_IMAGE_FETCHER_IMPL_H_
 
 #include <map>
 #include <memory>
@@ -13,9 +13,9 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "components/image_fetcher/image_data_fetcher.h"
-#include "components/image_fetcher/image_decoder.h"
-#include "components/image_fetcher/image_fetcher.h"
+#include "components/image_fetcher/core/image_data_fetcher.h"
+#include "components/image_fetcher/core/image_decoder.h"
+#include "components/image_fetcher/core/image_fetcher.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 
@@ -32,9 +32,8 @@ namespace image_fetcher {
 // The standard (non-test) implementation of ImageFetcher.
 class ImageFetcherImpl : public image_fetcher::ImageFetcher {
  public:
-  ImageFetcherImpl(
-      std::unique_ptr<ImageDecoder> image_decoder,
-      net::URLRequestContextGetter* url_request_context);
+  ImageFetcherImpl(std::unique_ptr<ImageDecoder> image_decoder,
+                   net::URLRequestContextGetter* url_request_context);
   ~ImageFetcherImpl() override;
 
   // Sets the |delegate| of the ImageFetcherImpl. The |delegate| has to be alive
@@ -105,4 +104,4 @@ class ImageFetcherImpl : public image_fetcher::ImageFetcher {
 
 }  // namespace image_fetcher
 
-#endif  // COMPONENTS_IMAGE_FETCHER_IMAGE_FETCHER_IMPL_H_
+#endif  // COMPONENTS_IMAGE_FETCHER_CORE_IMAGE_FETCHER_IMPL_H_

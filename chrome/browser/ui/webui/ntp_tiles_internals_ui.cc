@@ -16,7 +16,7 @@
 #include "chrome/common/url_constants.h"
 #include "components/grit/components_resources.h"
 #include "components/history/core/browser/top_sites.h"
-#include "components/image_fetcher/image_fetcher_impl.h"
+#include "components/image_fetcher/core/image_fetcher_impl.h"
 #include "components/ntp_tiles/field_trial.h"
 #include "components/ntp_tiles/icon_cacher.h"
 #include "components/ntp_tiles/most_visited_sites.h"

@@ -22,7 +22,7 @@
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
 #include "chrome/browser/thumbnails/thumbnail_list_source.h"
 #include "components/history/core/browser/top_sites.h"
-#include "components/image_fetcher/image_fetcher_impl.h"
+#include "components/image_fetcher/core/image_fetcher_impl.h"
 #include "components/ntp_tiles/icon_cacher_impl.h"
 #include "components/ntp_tiles/metrics.h"
 #include "components/ntp_tiles/most_visited_sites.h"

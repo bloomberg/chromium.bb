@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "chrome/browser/image_decoder.h"
-#include "components/image_fetcher/image_decoder.h"
+#include "components/image_fetcher/core/image_decoder.h"
 
 namespace suggestions {
 

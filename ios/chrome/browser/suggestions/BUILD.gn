@@ -11,7 +11,7 @@ source_set("suggestions") {
   deps = [
     "//base",
     "//components/browser_sync",
-    "//components/image_fetcher",
+    "//components/image_fetcher/core",
     "//components/image_fetcher/ios",
     "//components/keyed_service/ios",
     "//components/leveldb_proto",

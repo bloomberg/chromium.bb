@@ -18,7 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/task_runner.h"
 #include "base/threading/thread_checker.h"
-#include "components/image_fetcher/image_fetcher_delegate.h"
+#include "components/image_fetcher/core/image_fetcher_delegate.h"
 #include "components/leveldb_proto/proto_database.h"
 #include "components/suggestions/proto/suggestions.pb.h"
 #include "ui/gfx/image/image_skia.h"

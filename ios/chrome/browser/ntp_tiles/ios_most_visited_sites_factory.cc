@@ -7,7 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "components/history/core/browser/top_sites.h"
-#include "components/image_fetcher/image_fetcher_impl.h"
+#include "components/image_fetcher/core/image_fetcher_impl.h"
 #include "components/image_fetcher/ios/ios_image_decoder_impl.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/ntp_tiles/icon_cacher_impl.h"

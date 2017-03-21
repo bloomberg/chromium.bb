@@ -9,7 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
-#include "components/image_fetcher/image_data_fetcher.h"
+#include "components/image_fetcher/core/image_data_fetcher.h"
 
 namespace base {
 class TaskRunner;

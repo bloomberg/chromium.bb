@@ -19,7 +19,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/search/suggestions/image_decoder_impl.h"
-#include "components/image_fetcher/image_fetcher_impl.h"
+#include "components/image_fetcher/core/image_fetcher_impl.h"
 #include "components/search_provider_logos/logo_tracker.h"
 #include "jni/LogoBridge_jni.h"
 #include "net/url_request/url_fetcher.h"

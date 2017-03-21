@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/image_fetcher/image_fetcher_impl.h"
+#include "components/image_fetcher/core/image_fetcher_impl.h"
 
 #include <string>
 
@@ -15,10 +15,10 @@ namespace image_fetcher {
 ImageFetcherImpl::ImageFetcherImpl(
     std::unique_ptr<ImageDecoder> image_decoder,
     net::URLRequestContextGetter* url_request_context)
-    : delegate_(nullptr), url_request_context_(url_request_context),
+    : delegate_(nullptr),
+      url_request_context_(url_request_context),
       image_decoder_(std::move(image_decoder)),
-      image_data_fetcher_(new ImageDataFetcher(url_request_context_.get())) {
-}
+      image_data_fetcher_(new ImageDataFetcher(url_request_context_.get())) {}
 
 ImageFetcherImpl::~ImageFetcherImpl() {}
 
@@ -27,7 +27,7 @@ ImageFetcherImpl::ImageRequest::ImageRequest() {}
 ImageFetcherImpl::ImageRequest::ImageRequest(const ImageRequest& other) =
     default;
 
-ImageFetcherImpl::ImageRequest::~ImageRequest() { }
+ImageFetcherImpl::ImageRequest::~ImageRequest() {}
 
 void ImageFetcherImpl::SetImageFetcherDelegate(ImageFetcherDelegate* delegate) {
   DCHECK(delegate);
@@ -57,9 +57,8 @@ void ImageFetcherImpl::StartOrQueueNetworkRequest(
     pending_net_requests_[image_url].swap(&request);
 
     image_data_fetcher_->FetchImageData(
-        image_url,
-        base::Bind(&ImageFetcherImpl::OnImageURLFetched,
-                   base::Unretained(this), image_url));
+        image_url, base::Bind(&ImageFetcherImpl::OnImageURLFetched,
+                              base::Unretained(this), image_url));
   } else {
     // Request in progress. Register as an interested callback.
     it->second.callbacks.push_back(callback);

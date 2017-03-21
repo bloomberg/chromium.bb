@@ -10,7 +10,7 @@
 #include "components/favicon/core/favicon_util.h"
 #include "components/favicon_base/favicon_types.h"
 #include "components/favicon_base/favicon_util.h"
-#include "components/image_fetcher/image_fetcher.h"
+#include "components/image_fetcher/core/image_fetcher.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"

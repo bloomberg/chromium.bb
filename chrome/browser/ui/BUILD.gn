@@ -512,7 +512,7 @@ split_static_library("ui") {
     "//components/google/core/browser",
     "//components/guest_view/browser",
     "//components/history/content/browser",
-    "//components/image_fetcher",
+    "//components/image_fetcher/core",
     "//components/infobars/core",
     "//components/invalidation/impl",
     "//components/keyed_service/content",

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/image_fetcher/image_data_fetcher.h"
+#include "components/image_fetcher/core/image_data_fetcher.h"
 
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
@@ -21,8 +21,7 @@ namespace image_fetcher {
 struct ImageDataFetcher::ImageDataFetcherRequest {
   ImageDataFetcherRequest(const ImageDataFetcherCallback& callback,
                           std::unique_ptr<net::URLFetcher> url_fetcher)
-    : callback(callback),
-      url_fetcher(std::move(url_fetcher)) {}
+      : callback(callback), url_fetcher(std::move(url_fetcher)) {}
 
   ~ImageDataFetcherRequest() {}
 

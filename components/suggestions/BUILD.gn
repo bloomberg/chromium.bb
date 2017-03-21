@@ -29,7 +29,7 @@ static_library("suggestions") {
   deps = [
     "//components/data_use_measurement/core",
     "//components/google/core/browser",
-    "//components/image_fetcher",
+    "//components/image_fetcher/core",
     "//components/keyed_service/core",
     "//components/leveldb_proto",
     "//components/pref_registry",
@@ -58,7 +58,7 @@ source_set("unit_tests") {
   deps = [
     ":suggestions",
     "//base/test:test_support",
-    "//components/image_fetcher",
+    "//components/image_fetcher/core",
     "//components/leveldb_proto:test_support",
     "//components/signin/core/browser:test_support",
     "//components/sync",

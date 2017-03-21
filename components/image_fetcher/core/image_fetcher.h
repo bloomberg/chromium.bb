@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_IMAGE_FETCHER_IMAGE_FETCHER_H_
-#define COMPONENTS_IMAGE_FETCHER_IMAGE_FETCHER_H_
+#ifndef COMPONENTS_IMAGE_FETCHER_CORE_IMAGE_FETCHER_H_
+#define COMPONENTS_IMAGE_FETCHER_CORE_IMAGE_FETCHER_H_
 
 #include <string>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
-#include "components/image_fetcher/image_fetcher_delegate.h"
+#include "components/image_fetcher/core/image_fetcher_delegate.h"
 #include "url/gurl.h"
 
 namespace gfx {
@@ -67,4 +67,4 @@ class ImageFetcher {
 
 }  // namespace image_fetcher
 
-#endif  // COMPONENTS_IMAGE_FETCHER_IMAGE_FETCHER_H_
+#endif  // COMPONENTS_IMAGE_FETCHER_CORE_IMAGE_FETCHER_H_

@@ -10,7 +10,7 @@ source_set("ntp_snippets") {
   deps = [
     "//base",
     "//components/bookmarks/browser",
-    "//components/image_fetcher",
+    "//components/image_fetcher/core",
     "//components/image_fetcher/ios",
     "//components/keyed_service/core",
     "//components/keyed_service/ios",

@@ -6,7 +6,7 @@
 #define COMPONENTS_IMAGE_FETCHER_IOS_IMAGE_DECODER_IMPL_H_
 
 #include "base/memory/ref_counted.h"
-#include "components/image_fetcher/image_decoder.h"
+#include "components/image_fetcher/core/image_decoder.h"
 
 namespace base {
 class TaskRunner;

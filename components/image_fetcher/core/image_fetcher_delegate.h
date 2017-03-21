@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_IMAGE_FETCHER_IMAGE_FETCHER_DELEGATE_H_
-#define COMPONENTS_IMAGE_FETCHER_IMAGE_FETCHER_DELEGATE_H_
+#ifndef COMPONENTS_IMAGE_FETCHER_CORE_IMAGE_FETCHER_DELEGATE_H_
+#define COMPONENTS_IMAGE_FETCHER_CORE_IMAGE_FETCHER_DELEGATE_H_
 
 #include <string>
 
@@ -24,13 +24,12 @@ class ImageFetcherDelegate {
   // stores (generally compressed) image data owned by the caller, and can be
   // empty if the fetch failed.
   virtual void OnImageDataFetched(const std::string& id,
-                                  const std::string& data) {};
+                                  const std::string& data) {}
 
   // Called when an image was fetched and decoded. |id| is an identifier for the
   // fetch (as passed to ImageFetcher::StartOrQueueNetworkRequest); |image|
   // stores image data owned by the caller, and can be an empty gfx::Image.
-  virtual void OnImageFetched(const std::string& id,
-                              const gfx::Image& image) {};
+  virtual void OnImageFetched(const std::string& id, const gfx::Image& image) {}
 
  protected:
   virtual ~ImageFetcherDelegate() {}
@@ -40,4 +39,4 @@ class ImageFetcherDelegate {
 
 }  // namespace image_fetcher
 
-#endif  // COMPONENTS_IMAGE_FETCHER_IMAGE_FETCHER_DELEGATE_H_
+#endif  // COMPONENTS_IMAGE_FETCHER_CORE_IMAGE_FETCHER_DELEGATE_H_

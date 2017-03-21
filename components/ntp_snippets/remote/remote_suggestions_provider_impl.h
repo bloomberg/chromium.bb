@@ -19,7 +19,7 @@
 #include "base/macros.h"
 #include "base/time/clock.h"
 #include "base/time/time.h"
-#include "components/image_fetcher/image_fetcher_delegate.h"
+#include "components/image_fetcher/core/image_fetcher_delegate.h"
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/category_status.h"
 #include "components/ntp_snippets/content_suggestion.h"

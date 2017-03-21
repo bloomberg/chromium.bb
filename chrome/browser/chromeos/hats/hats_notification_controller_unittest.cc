@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/strings/string_split.h"
 #include "chrome/browser/chromeos/hats/hats_notification_controller.h"
+
+#include "base/strings/string_split.h"
 #include "chrome/browser/notifications/message_center_notification_manager.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
@@ -14,9 +15,9 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
-#include "components/image_fetcher/image_fetcher.h"
-#include "components/image_fetcher/image_fetcher_delegate.h"
-#include "components/image_fetcher/request_metadata.h"
+#include "components/image_fetcher/core/image_fetcher.h"
+#include "components/image_fetcher/core/image_fetcher_delegate.h"
+#include "components/image_fetcher/core/request_metadata.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"

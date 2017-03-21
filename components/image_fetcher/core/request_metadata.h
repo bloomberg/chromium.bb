@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_IMAGE_FETCHER_REQUEST_METADATA_H_
-#define COMPONENTS_IMAGE_FETCHER_REQUEST_METADATA_H_
+#ifndef COMPONENTS_IMAGE_FETCHER_CORE_REQUEST_METADATA_H_
+#define COMPONENTS_IMAGE_FETCHER_CORE_REQUEST_METADATA_H_
 
 #include <string>
 
@@ -31,4 +31,4 @@ bool operator!=(const RequestMetadata& lhs, const RequestMetadata& rhs);
 
 }  // namespace image_fetcher
 
-#endif  // COMPONENTS_IMAGE_FETCHER_REQUEST_METADATA_H_
+#endif  // COMPONENTS_IMAGE_FETCHER_CORE_REQUEST_METADATA_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/image_fetcher/image_data_fetcher.h"
+#include "components/image_fetcher/core/image_data_fetcher.h"
 
 #include <memory>
 
@@ -60,9 +60,8 @@ class ImageDataFetcherTest : public testing::Test {
 
 TEST_F(ImageDataFetcherTest, FetchImageData) {
   image_data_fetcher_.FetchImageData(
-      GURL(kImageURL),
-      base::Bind(&ImageDataFetcherTest::OnImageDataFetched,
-                 base::Unretained(this)));
+      GURL(kImageURL), base::Bind(&ImageDataFetcherTest::OnImageDataFetched,
+                                  base::Unretained(this)));
 
   RequestMetadata expected_metadata;
   expected_metadata.mime_type = std::string("image/png");
@@ -174,9 +173,8 @@ TEST_F(ImageDataFetcherTest, FetchImageData_FailedRequest) {
   // Get and configure the TestURLFetcher.
   net::TestURLFetcher* test_url_fetcher = fetcher_factory_.GetFetcherByID(0);
   ASSERT_NE(nullptr, test_url_fetcher);
-  test_url_fetcher->set_status(
-      net::URLRequestStatus(net::URLRequestStatus::FAILED,
-                            net::ERR_INVALID_URL));
+  test_url_fetcher->set_status(net::URLRequestStatus(
+      net::URLRequestStatus::FAILED, net::ERR_INVALID_URL));
 
   // Call the URLFetcher delegate to continue the test.
   test_url_fetcher->delegate()->OnURLFetchComplete(test_url_fetcher);
