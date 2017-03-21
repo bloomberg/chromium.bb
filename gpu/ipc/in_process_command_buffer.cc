@@ -180,8 +180,8 @@ gpu::gles2::ProgramCache* InProcessCommandBuffer::Service::program_cache() {
 
 InProcessCommandBuffer::InProcessCommandBuffer(
     const scoped_refptr<Service>& service)
-    : command_buffer_id_(
-          CommandBufferId::FromUnsafeValue(g_next_command_buffer_id.GetNext())),
+    : command_buffer_id_(CommandBufferId::FromUnsafeValue(
+          g_next_command_buffer_id.GetNext() + 1)),
       delayed_work_pending_(false),
       image_factory_(nullptr),
       gpu_control_client_(nullptr),
@@ -347,10 +347,12 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
     return false;
   }
 
-  sync_point_order_data_ = SyncPointOrderData::Create();
-  sync_point_client_ = base::MakeUnique<SyncPointClient>(
-      service_->sync_point_manager(), sync_point_order_data_, GetNamespaceID(),
-      GetCommandBufferID());
+  sync_point_order_data_ =
+      service_->sync_point_manager()->CreateSyncPointOrderData();
+  sync_point_client_state_ =
+      service_->sync_point_manager()->CreateSyncPointClientState(
+          GetNamespaceID(), GetCommandBufferID(),
+          sync_point_order_data_->sequence_id());
 
   if (service_->UseVirtualizedGLContexts() ||
       decoder_->GetContextGroup()
@@ -459,10 +461,13 @@ bool InProcessCommandBuffer::DestroyOnGpuThread() {
   }
   context_ = nullptr;
   surface_ = nullptr;
-  sync_point_client_ = nullptr;
   if (sync_point_order_data_) {
     sync_point_order_data_->Destroy();
     sync_point_order_data_ = nullptr;
+  }
+  if (sync_point_client_state_) {
+    sync_point_client_state_->Destroy();
+    sync_point_client_state_ = nullptr;
   }
   gl_share_group_ = nullptr;
   context_group_ = nullptr;
@@ -507,9 +512,7 @@ void InProcessCommandBuffer::QueueTask(bool out_of_order,
   }
   // Release the |task_queue_lock_| before calling ScheduleTask because
   // the callback may get called immediately and attempt to acquire the lock.
-  SyncPointManager* sync_manager = service_->sync_point_manager();
-  uint32_t order_num =
-      sync_point_order_data_->GenerateUnprocessedOrderNumber(sync_manager);
+  uint32_t order_num = sync_point_order_data_->GenerateUnprocessedOrderNumber();
   {
     base::AutoLock lock(task_queue_lock_);
     task_queue_.push(base::MakeUnique<GpuTask>(task, order_num));
@@ -802,7 +805,7 @@ void InProcessCommandBuffer::CreateImageOnGpuThread(
   }
 
   if (fence_sync)
-    sync_point_client_->ReleaseFenceSync(fence_sync);
+    sync_point_client_state_->ReleaseFenceSync(fence_sync);
 }
 
 void InProcessCommandBuffer::DestroyImage(int32_t id) {
@@ -834,7 +837,7 @@ void InProcessCommandBuffer::FenceSyncReleaseOnGpuThread(uint64_t release) {
       decoder_->GetContextGroup()->mailbox_manager();
   mailbox_manager->PushTextureUpdates(sync_token);
 
-  sync_point_client_->ReleaseFenceSync(release);
+  sync_point_client_state_->ReleaseFenceSync(release);
 }
 
 bool InProcessCommandBuffer::WaitSyncTokenOnGpuThread(
@@ -849,7 +852,7 @@ bool InProcessCommandBuffer::WaitSyncTokenOnGpuThread(
 
   if (service_->BlockThreadOnWaitSyncToken()) {
     // Wait if sync point wait is valid.
-    if (sync_point_client_->Wait(
+    if (sync_point_client_state_->Wait(
             sync_token,
             base::Bind(&base::WaitableEvent::Signal,
                        base::Unretained(&fence_sync_wait_event_)))) {
@@ -860,7 +863,7 @@ bool InProcessCommandBuffer::WaitSyncTokenOnGpuThread(
     return false;
   }
 
-  waiting_for_sync_point_ = sync_point_client_->Wait(
+  waiting_for_sync_point_ = sync_point_client_state_->Wait(
       sync_token,
       base::Bind(&InProcessCommandBuffer::OnWaitSyncTokenCompleted,
                  gpu_thread_weak_ptr_factory_.GetWeakPtr(), sync_token));
@@ -906,7 +909,7 @@ void InProcessCommandBuffer::RescheduleAfterFinishedOnGpuThread() {
 void InProcessCommandBuffer::SignalSyncTokenOnGpuThread(
     const SyncToken& sync_token,
     const base::Closure& callback) {
-  if (!sync_point_client_->Wait(sync_token, WrapCallback(callback)))
+  if (!sync_point_client_state_->Wait(sync_token, WrapCallback(callback)))
     callback.Run();
 }
 

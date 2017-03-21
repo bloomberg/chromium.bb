@@ -23,6 +23,7 @@
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/command_executor.h"
 #include "gpu/command_buffer/service/context_group.h"
+#include "gpu/command_buffer/service/sequence_id.h"
 #include "gpu/gpu_export.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "gpu/ipc/service/gpu_memory_manager.h"
@@ -44,7 +45,7 @@ class GLShareGroup;
 namespace gpu {
 struct Mailbox;
 struct SyncToken;
-class SyncPointClient;
+class SyncPointClientState;
 }
 
 struct GPUCreateCommandBufferConfig;
@@ -74,11 +75,14 @@ class GPU_EXPORT GpuCommandBufferStub
       LatencyInfoCallback;
 
   static std::unique_ptr<GpuCommandBufferStub> Create(
-    GpuChannel* channel,
-    GpuCommandBufferStub* share_group,
-    const GPUCreateCommandBufferConfig& init_params,
-    int32_t route_id,
-    std::unique_ptr<base::SharedMemory> shared_state_shm);
+      GpuChannel* channel,
+      GpuCommandBufferStub* share_group,
+      const GPUCreateCommandBufferConfig& init_params,
+      CommandBufferId command_buffer_id,
+      SequenceId sequence_id,
+      int32_t stream_id,
+      int32_t route_id,
+      std::unique_ptr<base::SharedMemory> shared_state_shm);
 
   ~GpuCommandBufferStub() override;
 
@@ -118,7 +122,8 @@ class GPU_EXPORT GpuCommandBufferStub
   // Unique command buffer ID for this command buffer stub.
   CommandBufferId command_buffer_id() const { return command_buffer_id_; }
 
-  // Identifies the stream for this command buffer.
+  SequenceId sequence_id() const { return sequence_id_; }
+
   int32_t stream_id() const { return stream_id_; }
 
   // Sends a message to the console.
@@ -136,6 +141,9 @@ class GPU_EXPORT GpuCommandBufferStub
  private:
   GpuCommandBufferStub(GpuChannel* channel,
                        const GPUCreateCommandBufferConfig& init_params,
+                       CommandBufferId command_buffer_id,
+                       SequenceId sequence_id,
+                       int32_t stream_id,
                        int32_t route_id);
 
   bool Initialize(GpuCommandBufferStub* share_group,
@@ -220,6 +228,7 @@ class GPU_EXPORT GpuCommandBufferStub
   const SurfaceHandle surface_handle_;
   bool use_virtualized_gl_context_;
   const CommandBufferId command_buffer_id_;
+  const SequenceId sequence_id_;
   const int32_t stream_id_;
   const int32_t route_id_;
   uint32_t last_flush_count_;
@@ -227,7 +236,7 @@ class GPU_EXPORT GpuCommandBufferStub
   std::unique_ptr<CommandBufferService> command_buffer_;
   std::unique_ptr<gles2::GLES2Decoder> decoder_;
   std::unique_ptr<CommandExecutor> executor_;
-  std::unique_ptr<SyncPointClient> sync_point_client_;
+  scoped_refptr<SyncPointClientState> sync_point_client_state_;
   scoped_refptr<gl::GLSurface> surface_;
   scoped_refptr<gl::GLShareGroup> share_group_;
 

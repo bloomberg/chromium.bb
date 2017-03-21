@@ -343,7 +343,7 @@ bool GpuVideoDecodeAccelerator::Initialize(
     const VideoDecodeAccelerator::Config& config) {
   DCHECK(!video_decode_accelerator_);
 
-  if (!stub_->channel()->AddRoute(host_route_id_, stub_->stream_id(), this)) {
+  if (!stub_->channel()->AddRoute(host_route_id_, stub_->sequence_id(), this)) {
     DLOG(ERROR) << "Initialize(): failed to add route";
     return false;
   }

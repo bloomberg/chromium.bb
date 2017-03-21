@@ -28,26 +28,27 @@ class SyncPointManagerTest : public testing::Test {
 
 struct SyncPointStream {
   scoped_refptr<SyncPointOrderData> order_data;
-  std::unique_ptr<SyncPointClient> client;
+  scoped_refptr<SyncPointClientState> client_state;
   std::queue<uint32_t> order_numbers;
 
   SyncPointStream(SyncPointManager* sync_point_manager,
                   CommandBufferNamespace namespace_id,
                   CommandBufferId command_buffer_id)
-      : order_data(SyncPointOrderData::Create()),
-        client(base::MakeUnique<SyncPointClient>(sync_point_manager,
-                                                 order_data,
-                                                 namespace_id,
-                                                 command_buffer_id)) {}
+      : order_data(sync_point_manager->CreateSyncPointOrderData()),
+        client_state(sync_point_manager->CreateSyncPointClientState(
+            namespace_id,
+            command_buffer_id,
+            order_data->sequence_id())) {}
 
   ~SyncPointStream() {
-    order_data->Destroy();
-    order_data = nullptr;
+    if (order_data)
+      order_data->Destroy();
+    if (client_state)
+      client_state->Destroy();
   }
 
-  void AllocateOrderNum(SyncPointManager* sync_point_manager) {
-    order_numbers.push(
-        order_data->GenerateUnprocessedOrderNumber(sync_point_manager));
+  void AllocateOrderNum() {
+    order_numbers.push(order_data->GenerateUnprocessedOrderNumber());
   }
 
   void BeginProcessing() {
@@ -63,14 +64,14 @@ struct SyncPointStream {
 };
 
 TEST_F(SyncPointManagerTest, BasicSyncPointOrderDataTest) {
-  scoped_refptr<SyncPointOrderData> order_data = SyncPointOrderData::Create();
+  scoped_refptr<SyncPointOrderData> order_data =
+      sync_point_manager_->CreateSyncPointOrderData();
 
   EXPECT_EQ(0u, order_data->current_order_num());
   EXPECT_EQ(0u, order_data->processed_order_num());
   EXPECT_EQ(0u, order_data->unprocessed_order_num());
 
-  uint32_t order_num =
-      order_data->GenerateUnprocessedOrderNumber(sync_point_manager_.get());
+  uint32_t order_num = order_data->GenerateUnprocessedOrderNumber();
   EXPECT_EQ(1u, order_num);
 
   EXPECT_EQ(0u, order_data->current_order_num());
@@ -94,6 +95,8 @@ TEST_F(SyncPointManagerTest, BasicSyncPointOrderDataTest) {
   EXPECT_EQ(order_num, order_data->processed_order_num());
   EXPECT_EQ(order_num, order_data->unprocessed_order_num());
   EXPECT_FALSE(order_data->IsProcessingOrderNumber());
+
+  order_data->Destroy();
 }
 
 TEST_F(SyncPointManagerTest, BasicFenceSyncRelease) {
@@ -108,12 +111,12 @@ TEST_F(SyncPointManagerTest, BasicFenceSyncRelease) {
 
   SyncPointStream stream(sync_point_manager_.get(), kNamespaceId, kBufferId);
 
-  stream.AllocateOrderNum(sync_point_manager_.get());
+  stream.AllocateOrderNum();
 
   EXPECT_FALSE(sync_point_manager_->IsSyncTokenReleased(sync_token));
 
   stream.order_data->BeginProcessingOrderNumber(1);
-  stream.client->ReleaseFenceSync(release_count);
+  stream.client_state->ReleaseFenceSync(release_count);
   stream.order_data->FinishProcessingOrderNumber(1);
 
   EXPECT_TRUE(sync_point_manager_->IsSyncTokenReleased(sync_token));
@@ -131,16 +134,16 @@ TEST_F(SyncPointManagerTest, MultipleClientsPerOrderData) {
 
   uint64_t release_count = 1;
   SyncToken sync_token1(kNamespaceId, 0, kCmdBufferId1, release_count);
-  stream1.AllocateOrderNum(sync_point_manager_.get());
+  stream1.AllocateOrderNum();
 
   SyncToken sync_token2(kNamespaceId, 0, kCmdBufferId2, release_count);
-  stream2.AllocateOrderNum(sync_point_manager_.get());
+  stream2.AllocateOrderNum();
 
   EXPECT_FALSE(sync_point_manager_->IsSyncTokenReleased(sync_token1));
   EXPECT_FALSE(sync_point_manager_->IsSyncTokenReleased(sync_token2));
 
   stream1.order_data->BeginProcessingOrderNumber(1);
-  stream1.client->ReleaseFenceSync(release_count);
+  stream1.client_state->ReleaseFenceSync(release_count);
   stream1.order_data->FinishProcessingOrderNumber(1);
 
   EXPECT_TRUE(sync_point_manager_->IsSyncTokenReleased(sync_token1));
@@ -157,15 +160,15 @@ TEST_F(SyncPointManagerTest, BasicFenceSyncWaitRelease) {
   SyncPointStream wait_stream(sync_point_manager_.get(), kNamespaceId,
                               kWaitCmdBufferId);
 
-  release_stream.AllocateOrderNum(sync_point_manager_.get());
-  wait_stream.AllocateOrderNum(sync_point_manager_.get());
+  release_stream.AllocateOrderNum();
+  wait_stream.AllocateOrderNum();
 
   uint64_t release_count = 1;
   SyncToken sync_token(kNamespaceId, 0, kReleaseCmdBufferId, release_count);
 
   wait_stream.BeginProcessing();
   int test_num = 10;
-  bool valid_wait = wait_stream.client->Wait(
+  bool valid_wait = wait_stream.client_state->Wait(
       sync_token,
       base::Bind(&SyncPointManagerTest::SetIntegerFunction, &test_num, 123));
   EXPECT_TRUE(valid_wait);
@@ -173,7 +176,7 @@ TEST_F(SyncPointManagerTest, BasicFenceSyncWaitRelease) {
   EXPECT_FALSE(sync_point_manager_->IsSyncTokenReleased(sync_token));
 
   release_stream.BeginProcessing();
-  release_stream.client->ReleaseFenceSync(release_count);
+  release_stream.client_state->ReleaseFenceSync(release_count);
   EXPECT_EQ(123, test_num);
   EXPECT_TRUE(sync_point_manager_->IsSyncTokenReleased(sync_token));
 }
@@ -188,15 +191,15 @@ TEST_F(SyncPointManagerTest, WaitOnSelfFails) {
   SyncPointStream wait_stream(sync_point_manager_.get(), kNamespaceId,
                               kWaitCmdBufferId);
 
-  release_stream.AllocateOrderNum(sync_point_manager_.get());
-  wait_stream.AllocateOrderNum(sync_point_manager_.get());
+  release_stream.AllocateOrderNum();
+  wait_stream.AllocateOrderNum();
 
   uint64_t release_count = 1;
   SyncToken sync_token(kNamespaceId, 0, kWaitCmdBufferId, release_count);
 
   wait_stream.BeginProcessing();
   int test_num = 10;
-  bool valid_wait = wait_stream.client->Wait(
+  bool valid_wait = wait_stream.client_state->Wait(
       sync_token,
       base::Bind(&SyncPointManagerTest::SetIntegerFunction, &test_num, 123));
   EXPECT_FALSE(valid_wait);
@@ -215,15 +218,15 @@ TEST_F(SyncPointManagerTest, OutOfOrderRelease) {
                               kWaitCmdBufferId);
 
   // Generate wait order number first.
-  wait_stream.AllocateOrderNum(sync_point_manager_.get());
-  release_stream.AllocateOrderNum(sync_point_manager_.get());
+  wait_stream.AllocateOrderNum();
+  release_stream.AllocateOrderNum();
 
   uint64_t release_count = 1;
   SyncToken sync_token(kNamespaceId, 0, kReleaseCmdBufferId, release_count);
 
   wait_stream.BeginProcessing();
   int test_num = 10;
-  bool valid_wait = wait_stream.client->Wait(
+  bool valid_wait = wait_stream.client_state->Wait(
       sync_token,
       base::Bind(&SyncPointManagerTest::SetIntegerFunction, &test_num, 123));
   EXPECT_FALSE(valid_wait);
@@ -242,21 +245,21 @@ TEST_F(SyncPointManagerTest, HigherOrderNumberRelease) {
                               kWaitCmdBufferId);
 
   // Generate wait order number first.
-  wait_stream.AllocateOrderNum(sync_point_manager_.get());
-  release_stream.AllocateOrderNum(sync_point_manager_.get());
+  wait_stream.AllocateOrderNum();
+  release_stream.AllocateOrderNum();
 
   uint64_t release_count = 1;
   SyncToken sync_token(kNamespaceId, 0, kReleaseCmdBufferId, release_count);
 
   // Order number was higher but it was actually released.
   release_stream.BeginProcessing();
-  release_stream.client->ReleaseFenceSync(release_count);
+  release_stream.client_state->ReleaseFenceSync(release_count);
   release_stream.EndProcessing();
 
   // Release stream has already released so there's no need to wait.
   wait_stream.BeginProcessing();
   int test_num = 10;
-  bool valid_wait = wait_stream.client->Wait(
+  bool valid_wait = wait_stream.client_state->Wait(
       sync_token,
       base::Bind(&SyncPointManagerTest::SetIntegerFunction, &test_num, 123));
   EXPECT_FALSE(valid_wait);
@@ -274,8 +277,8 @@ TEST_F(SyncPointManagerTest, DestroyedClientRelease) {
   SyncPointStream wait_stream(sync_point_manager_.get(), kNamespaceId,
                               kWaitCmdBufferId);
 
-  release_stream.AllocateOrderNum(sync_point_manager_.get());
-  wait_stream.AllocateOrderNum(sync_point_manager_.get());
+  release_stream.AllocateOrderNum();
+  wait_stream.AllocateOrderNum();
 
   uint64_t release_count = 1;
   SyncToken sync_token(kNamespaceId, 0, kReleaseCmdBufferId, release_count);
@@ -283,14 +286,16 @@ TEST_F(SyncPointManagerTest, DestroyedClientRelease) {
   wait_stream.BeginProcessing();
 
   int test_num = 10;
-  bool valid_wait = wait_stream.client->Wait(
+  bool valid_wait = wait_stream.client_state->Wait(
       sync_token,
       base::Bind(&SyncPointManagerTest::SetIntegerFunction, &test_num, 123));
   EXPECT_TRUE(valid_wait);
   EXPECT_EQ(10, test_num);
 
   // Destroying the client should release the wait.
-  release_stream.client.reset();
+  release_stream.client_state->Destroy();
+  release_stream.client_state = nullptr;
+
   EXPECT_EQ(123, test_num);
   EXPECT_TRUE(sync_point_manager_->IsSyncTokenReleased(sync_token));
 }
@@ -309,15 +314,15 @@ TEST_F(SyncPointManagerTest, NonExistentRelease) {
   // This test simply tests that a wait stream of order [2] waiting on
   // release stream of order [1] will still release the fence sync even
   // though nothing was released.
-  release_stream.AllocateOrderNum(sync_point_manager_.get());
-  wait_stream.AllocateOrderNum(sync_point_manager_.get());
+  release_stream.AllocateOrderNum();
+  wait_stream.AllocateOrderNum();
 
   uint64_t release_count = 1;
   SyncToken sync_token(kNamespaceId, 0, kReleaseCmdBufferId, release_count);
 
   wait_stream.BeginProcessing();
   int test_num = 10;
-  bool valid_wait = wait_stream.client->Wait(
+  bool valid_wait = wait_stream.client_state->Wait(
       sync_token,
       base::Bind(&SyncPointManagerTest::SetIntegerFunction, &test_num, 123));
   EXPECT_TRUE(valid_wait);
@@ -348,9 +353,9 @@ TEST_F(SyncPointManagerTest, NonExistentRelease2) {
   // The wait stream [3] is waiting on release stream [1] even though
   // order [2] was also generated. Although order [2] only exists on the
   // wait stream so the release stream should only know about order [1].
-  release_stream.AllocateOrderNum(sync_point_manager_.get());
-  wait_stream.AllocateOrderNum(sync_point_manager_.get());
-  wait_stream.AllocateOrderNum(sync_point_manager_.get());
+  release_stream.AllocateOrderNum();
+  wait_stream.AllocateOrderNum();
+  wait_stream.AllocateOrderNum();
 
   uint64_t release_count = 1;
   SyncToken sync_token(kNamespaceId, 0, kReleaseCmdBufferId, release_count);
@@ -363,7 +368,7 @@ TEST_F(SyncPointManagerTest, NonExistentRelease2) {
   wait_stream.BeginProcessing();
   EXPECT_EQ(3u, wait_stream.order_data->current_order_num());
   int test_num = 10;
-  bool valid_wait = wait_stream.client->Wait(
+  bool valid_wait = wait_stream.client_state->Wait(
       sync_token,
       base::Bind(&SyncPointManagerTest::SetIntegerFunction, &test_num, 123));
   EXPECT_TRUE(valid_wait);
@@ -381,9 +386,9 @@ TEST_F(SyncPointManagerTest, NonExistentRelease2) {
   // Ensure that the wait callback does not get triggered again when it is
   // actually released.
   test_num = 1;
-  release_stream.AllocateOrderNum(sync_point_manager_.get());
+  release_stream.AllocateOrderNum();
   release_stream.BeginProcessing();
-  release_stream.client->ReleaseFenceSync(release_count);
+  release_stream.client_state->ReleaseFenceSync(release_count);
   release_stream.EndProcessing();
   EXPECT_EQ(1, test_num);
   EXPECT_TRUE(sync_point_manager_->IsSyncTokenReleased(sync_token));
@@ -405,10 +410,10 @@ TEST_F(SyncPointManagerTest, NonExistentOrderNumRelease) {
   // to the release stream so it is essentially non-existent to the release
   // stream's point of view. Once the release stream begins processing the next
   // order [3], it should realize order [2] didn't exist and release the fence.
-  release_stream.AllocateOrderNum(sync_point_manager_.get());
-  wait_stream.AllocateOrderNum(sync_point_manager_.get());
-  wait_stream.AllocateOrderNum(sync_point_manager_.get());
-  release_stream.AllocateOrderNum(sync_point_manager_.get());
+  release_stream.AllocateOrderNum();
+  wait_stream.AllocateOrderNum();
+  wait_stream.AllocateOrderNum();
+  release_stream.AllocateOrderNum();
 
   uint64_t release_count = 1;
   SyncToken sync_token(kNamespaceId, 0, kReleaseCmdBufferId, release_count);
@@ -420,7 +425,7 @@ TEST_F(SyncPointManagerTest, NonExistentOrderNumRelease) {
   wait_stream.BeginProcessing();
   EXPECT_EQ(3u, wait_stream.order_data->current_order_num());
   int test_num = 10;
-  bool valid_wait = wait_stream.client->Wait(
+  bool valid_wait = wait_stream.client_state->Wait(
       sync_token,
       base::Bind(&SyncPointManagerTest::SetIntegerFunction, &test_num, 123));
   EXPECT_TRUE(valid_wait);
@@ -444,7 +449,7 @@ TEST_F(SyncPointManagerTest, NonExistentOrderNumRelease) {
   // Ensure that the wait callback does not get triggered again when it is
   // actually released.
   test_num = 1;
-  release_stream.client->ReleaseFenceSync(1);
+  release_stream.client_state->ReleaseFenceSync(1);
   EXPECT_EQ(1, test_num);
   EXPECT_TRUE(sync_point_manager_->IsSyncTokenReleased(sync_token));
 }

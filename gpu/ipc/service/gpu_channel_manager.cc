@@ -188,24 +188,6 @@ void GpuChannelManager::PopulateShaderCache(const std::string& program_proto) {
     program_cache()->LoadProgram(program_proto);
 }
 
-uint32_t GpuChannelManager::GetUnprocessedOrderNum() const {
-  uint32_t unprocessed_order_num = 0;
-  for (auto& kv : gpu_channels_) {
-    unprocessed_order_num =
-        std::max(unprocessed_order_num, kv.second->GetUnprocessedOrderNum());
-  }
-  return unprocessed_order_num;
-}
-
-uint32_t GpuChannelManager::GetProcessedOrderNum() const {
-  uint32_t processed_order_num = 0;
-  for (auto& kv : gpu_channels_) {
-    processed_order_num =
-        std::max(processed_order_num, kv.second->GetProcessedOrderNum());
-  }
-  return processed_order_num;
-}
-
 void GpuChannelManager::LoseAllContexts() {
   for (auto& kv : gpu_channels_) {
     kv.second->MarkAllContextsLost();

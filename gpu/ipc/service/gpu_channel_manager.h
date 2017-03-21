@@ -121,14 +121,6 @@ class GPU_EXPORT GpuChannelManager {
     return gpu_memory_buffer_factory_;
   }
 
-  // Returns the maximum order number for unprocessed IPC messages across all
-  // channels.
-  uint32_t GetUnprocessedOrderNum() const;
-
-  // Returns the maximum order number for processed IPC messages across all
-  // channels.
-  uint32_t GetProcessedOrderNum() const;
-
 #if defined(OS_ANDROID)
   void DidAccessGpu();
 #endif

@@ -90,7 +90,7 @@ class CommandBufferSetup {
   CommandBufferSetup()
       : atexit_manager_(),
         sync_point_manager_(new SyncPointManager()),
-        sync_point_order_data_(SyncPointOrderData::Create()),
+        sync_point_order_data_(sync_point_manager_->CreateSyncPointOrderData()),
         mailbox_manager_(new gles2::MailboxManagerImpl),
         share_group_(new gl::GLShareGroup),
         command_buffer_id_(CommandBufferId::FromUnsafeValue(1)) {
@@ -125,9 +125,9 @@ class CommandBufferSetup {
     gl::GLSurfaceTestSupport::InitializeOneOffWithMockBindings();
 #endif
 
-    sync_point_client_ = base::MakeUnique<SyncPointClient>(
-        sync_point_manager_.get(), sync_point_order_data_,
-        CommandBufferNamespace::IN_PROCESS, command_buffer_id_);
+    sync_point_client_state_ = sync_point_manager_->CreateSyncPointClientState(
+        CommandBufferNamespace::IN_PROCESS, command_buffer_id_,
+        sync_point_order_data_->sequence_id());
 
     translator_cache_ = new gles2::ShaderTranslatorCache(gpu_preferences_);
     completeness_cache_ = new gles2::FramebufferCompletenessCache;
@@ -200,10 +200,13 @@ class CommandBufferSetup {
   }
 
   ~CommandBufferSetup() {
-    sync_point_client_ = nullptr;
     if (sync_point_order_data_) {
       sync_point_order_data_->Destroy();
       sync_point_order_data_ = nullptr;
+    }
+    if (sync_point_client_state_) {
+      sync_point_client_state_->Destroy();
+      sync_point_client_state_ = nullptr;
     }
   }
 
@@ -236,8 +239,8 @@ class CommandBufferSetup {
       return;
     }
 
-    uint32_t order_num = sync_point_order_data_->GenerateUnprocessedOrderNumber(
-        sync_point_manager_.get());
+    uint32_t order_num =
+        sync_point_order_data_->GenerateUnprocessedOrderNumber();
     sync_point_order_data_->BeginProcessingOrderNumber(order_num);
 
     executor_->PutChanged();
@@ -250,8 +253,8 @@ class CommandBufferSetup {
   }
 
   void OnFenceSyncRelease(uint64_t release) {
-    CHECK(sync_point_client_);
-    sync_point_client_->ReleaseFenceSync(release);
+    CHECK(sync_point_client_state_);
+    sync_point_client_state_->ReleaseFenceSync(release);
   }
 
   bool OnWaitSyncToken(const SyncToken& sync_token) {
@@ -302,7 +305,7 @@ class CommandBufferSetup {
 
   std::unique_ptr<SyncPointManager> sync_point_manager_;
   scoped_refptr<SyncPointOrderData> sync_point_order_data_;
-  std::unique_ptr<SyncPointClient> sync_point_client_;
+  scoped_refptr<SyncPointClientState> sync_point_client_state_;
   scoped_refptr<gles2::MailboxManager> mailbox_manager_;
   scoped_refptr<gl::GLShareGroup> share_group_;
   const gpu::CommandBufferId command_buffer_id_;

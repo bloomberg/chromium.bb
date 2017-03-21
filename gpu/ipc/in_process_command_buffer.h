@@ -52,7 +52,7 @@ class Size;
 
 namespace gpu {
 
-class SyncPointClient;
+class SyncPointClientState;
 class SyncPointOrderData;
 class SyncPointManager;
 struct GpuProcessHostedCALayerTreeParamsMac;
@@ -279,7 +279,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   scoped_refptr<gl::GLContext> context_;
   scoped_refptr<gl::GLSurface> surface_;
   scoped_refptr<SyncPointOrderData> sync_point_order_data_;
-  std::unique_ptr<SyncPointClient> sync_point_client_;
+  scoped_refptr<SyncPointClientState> sync_point_client_state_;
   base::Closure context_lost_callback_;
   // Used to throttle PerformDelayedWorkOnGpuThread.
   bool delayed_work_pending_;

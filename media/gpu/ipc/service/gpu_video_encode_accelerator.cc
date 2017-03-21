@@ -203,7 +203,7 @@ bool GpuVideoEncodeAccelerator::Initialize(VideoPixelFormat input_format,
            << ", initial_bitrate=" << initial_bitrate;
   DCHECK(!encoder_);
 
-  if (!stub_->channel()->AddRoute(host_route_id_, stub_->stream_id(), this)) {
+  if (!stub_->channel()->AddRoute(host_route_id_, stub_->sequence_id(), this)) {
     DLOG(ERROR) << __func__ << " failed to add route";
     return false;
   }

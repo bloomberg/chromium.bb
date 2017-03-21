@@ -68,7 +68,7 @@ StreamTexture::StreamTexture(GpuCommandBufferStub* owner_stub,
       weak_factory_(this) {
   owner_stub->AddDestructionObserver(this);
   memset(current_matrix_, 0, sizeof(current_matrix_));
-  owner_stub->channel()->AddRoute(route_id, owner_stub->stream_id(), this);
+  owner_stub->channel()->AddRoute(route_id, owner_stub->sequence_id(), this);
   surface_texture_->SetFrameAvailableCallback(base::Bind(
       &StreamTexture::OnFrameAvailable, weak_factory_.GetWeakPtr()));
 }

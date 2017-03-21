@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 
@@ -29,8 +30,26 @@ void RunOnThread(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
 
 }  // namespace
 
-scoped_refptr<SyncPointOrderData> SyncPointOrderData::Create() {
-  return new SyncPointOrderData;
+SyncPointOrderData::OrderFence::OrderFence(
+    uint32_t order,
+    uint64_t release,
+    const base::Closure& callback,
+    scoped_refptr<SyncPointClientState> state)
+    : order_num(order),
+      fence_release(release),
+      release_callback(callback),
+      client_state(std::move(state)) {}
+
+SyncPointOrderData::OrderFence::OrderFence(const OrderFence& other) = default;
+
+SyncPointOrderData::OrderFence::~OrderFence() {}
+
+SyncPointOrderData::SyncPointOrderData(SyncPointManager* sync_point_manager,
+                                       SequenceId sequence_id)
+    : sync_point_manager_(sync_point_manager), sequence_id_(sequence_id) {}
+
+SyncPointOrderData::~SyncPointOrderData() {
+  DCHECK(destroyed_);
 }
 
 void SyncPointOrderData::Destroy() {
@@ -38,20 +57,23 @@ void SyncPointOrderData::Destroy() {
   // SyncPointClientState, we must remove the references on destroy. Releasing
   // the fence syncs in the order fence queue would be redundant at this point
   // because they are assumed to be released on the destruction of the
-  // SyncPointClient.
-  base::AutoLock auto_lock(lock_);
-  destroyed_ = true;
-  while (!order_fence_queue_.empty()) {
-    order_fence_queue_.pop();
+  // SyncPointClientState.
+  {
+    base::AutoLock auto_lock(lock_);
+    DCHECK(!destroyed_);
+    destroyed_ = true;
+    while (!order_fence_queue_.empty())
+      order_fence_queue_.pop();
   }
+  // Call DestroyedSyncPointOrderData outside the lock to prevent deadlock.
+  sync_point_manager_->DestroyedSyncPointOrderData(sequence_id_);
 }
 
-uint32_t SyncPointOrderData::GenerateUnprocessedOrderNumber(
-    SyncPointManager* sync_point_manager) {
-  const uint32_t order_num = sync_point_manager->GenerateOrderNumber();
+uint32_t SyncPointOrderData::GenerateUnprocessedOrderNumber() {
   base::AutoLock auto_lock(lock_);
-  unprocessed_order_num_ = order_num;
-  return order_num;
+  DCHECK(!destroyed_);
+  unprocessed_order_num_ = sync_point_manager_->GenerateOrderNumber();
+  return unprocessed_order_num_;
 }
 
 void SyncPointOrderData::BeginProcessingOrderNumber(uint32_t order_num) {
@@ -127,24 +149,6 @@ void SyncPointOrderData::FinishProcessingOrderNumber(uint32_t order_num) {
   }
 }
 
-SyncPointOrderData::OrderFence::OrderFence(
-    uint32_t order,
-    uint64_t release,
-    const base::Closure& callback,
-    scoped_refptr<SyncPointClientState> state)
-    : order_num(order),
-      fence_release(release),
-      release_callback(callback),
-      client_state(std::move(state)) {}
-
-SyncPointOrderData::OrderFence::OrderFence(const OrderFence& other) = default;
-
-SyncPointOrderData::OrderFence::~OrderFence() {}
-
-SyncPointOrderData::SyncPointOrderData() {}
-
-SyncPointOrderData::~SyncPointOrderData() {}
-
 bool SyncPointOrderData::ValidateReleaseOrderNumber(
     scoped_refptr<SyncPointClientState> client_state,
     uint32_t wait_order_num,
@@ -184,10 +188,48 @@ SyncPointClientState::ReleaseCallback::ReleaseCallback(
 SyncPointClientState::ReleaseCallback::~ReleaseCallback() {}
 
 SyncPointClientState::SyncPointClientState(
-    scoped_refptr<SyncPointOrderData> order_data)
-    : order_data_(std::move(order_data)) {}
+    SyncPointManager* sync_point_manager,
+    scoped_refptr<SyncPointOrderData> order_data,
+    CommandBufferNamespace namespace_id,
+    CommandBufferId command_buffer_id)
+    : sync_point_manager_(sync_point_manager),
+      order_data_(std::move(order_data)),
+      namespace_id_(namespace_id),
+      command_buffer_id_(command_buffer_id) {}
 
-SyncPointClientState::~SyncPointClientState() {}
+SyncPointClientState::~SyncPointClientState() {
+  DCHECK_EQ(UINT64_MAX, fence_sync_release_);
+}
+
+void SyncPointClientState::Destroy() {
+  // Release all fences on destruction.
+  ReleaseFenceSyncHelper(UINT64_MAX);
+  DCHECK(sync_point_manager_);  // not destroyed
+  sync_point_manager_->DestroyedSyncPointClientState(namespace_id_,
+                                                     command_buffer_id_);
+  sync_point_manager_ = nullptr;
+}
+
+bool SyncPointClientState::Wait(const SyncToken& sync_token,
+                                const base::Closure& callback) {
+  DCHECK(sync_point_manager_);  // not destroyed
+  // Validate that this Wait call is between BeginProcessingOrderNumber() and
+  // FinishProcessingOrderNumber(), or else we may deadlock.
+  DCHECK(order_data_->IsProcessingOrderNumber());
+  if (sync_token.namespace_id() == namespace_id_ &&
+      sync_token.command_buffer_id() == command_buffer_id_) {
+    return false;
+  }
+  uint32_t wait_order_number = order_data_->current_order_num();
+  return sync_point_manager_->Wait(sync_token, wait_order_number, callback);
+}
+
+bool SyncPointClientState::WaitNonThreadSafe(
+    const SyncToken& sync_token,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+    const base::Closure& callback) {
+  return Wait(sync_token, base::Bind(&RunOnThread, task_runner, callback));
+}
 
 bool SyncPointClientState::IsFenceSyncReleased(uint64_t release) {
   base::AutoLock lock(fence_sync_lock_);
@@ -214,6 +256,13 @@ bool SyncPointClientState::WaitForRelease(uint64_t release,
 }
 
 void SyncPointClientState::ReleaseFenceSync(uint64_t release) {
+  // Validate that this Release call is between BeginProcessingOrderNumber() and
+  // FinishProcessingOrderNumber(), or else we may deadlock.
+  DCHECK(order_data_->IsProcessingOrderNumber());
+  ReleaseFenceSyncHelper(release);
+}
+
+void SyncPointClientState::ReleaseFenceSyncHelper(uint64_t release) {
   // Call callbacks without the lock to avoid possible deadlocks.
   std::vector<base::Closure> callback_list;
   {
@@ -230,9 +279,8 @@ void SyncPointClientState::ReleaseFenceSync(uint64_t release) {
     }
   }
 
-  for (const base::Closure& closure : callback_list) {
+  for (const base::Closure& closure : callback_list)
     closure.Run();
-  }
 }
 
 void SyncPointClientState::EnsureWaitReleased(uint64_t release,
@@ -273,60 +321,63 @@ void SyncPointClientState::EnsureWaitReleased(uint64_t release,
   }
 }
 
-SyncPointClient::SyncPointClient(SyncPointManager* sync_point_manager,
-                                 scoped_refptr<SyncPointOrderData> order_data,
-                                 CommandBufferNamespace namespace_id,
-                                 CommandBufferId command_buffer_id)
-    : sync_point_manager_(sync_point_manager),
-      order_data_(std::move(order_data)),
-      client_state_(new SyncPointClientState(order_data_)),
-      namespace_id_(namespace_id),
-      command_buffer_id_(command_buffer_id) {
-  sync_point_manager_->RegisterSyncPointClient(client_state_, namespace_id,
-                                               command_buffer_id);
-}
-
-SyncPointClient::~SyncPointClient() {
-  // Release all fences on destruction.
-  client_state_->ReleaseFenceSync(UINT64_MAX);
-  sync_point_manager_->DeregisterSyncPointClient(namespace_id_,
-                                                 command_buffer_id_);
-}
-
-bool SyncPointClient::Wait(const SyncToken& sync_token,
-                           const base::Closure& callback) {
-  // Validate that this Wait call is between BeginProcessingOrderNumber() and
-  // FinishProcessingOrderNumber(), or else we may deadlock.
-  DCHECK(order_data_->IsProcessingOrderNumber());
-  if (sync_token.namespace_id() == namespace_id_ &&
-      sync_token.command_buffer_id() == command_buffer_id_) {
-    return false;
-  }
-  uint32_t wait_order_number = order_data_->current_order_num();
-  return sync_point_manager_->Wait(sync_token, wait_order_number, callback);
-}
-
-bool SyncPointClient::WaitNonThreadSafe(
-    const SyncToken& sync_token,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    const base::Closure& callback) {
-  return Wait(sync_token, base::Bind(&RunOnThread, task_runner, callback));
-}
-
-void SyncPointClient::ReleaseFenceSync(uint64_t release) {
-  // Validate that this Release call is between BeginProcessingOrderNumber() and
-  // FinishProcessingOrderNumber(), or else we may deadlock.
-  DCHECK(order_data_->IsProcessingOrderNumber());
-  client_state_->ReleaseFenceSync(release);
-}
-
 SyncPointManager::SyncPointManager() {
-  global_order_num_.GetNext();
+  order_num_generator_.GetNext();
 }
 
 SyncPointManager::~SyncPointManager() {
+  DCHECK(order_data_map_.empty());
   for (const ClientStateMap& client_state_map : client_state_maps_)
     DCHECK(client_state_map.empty());
+}
+
+scoped_refptr<SyncPointOrderData> SyncPointManager::CreateSyncPointOrderData() {
+  base::AutoLock auto_lock(lock_);
+  SequenceId sequence_id = SequenceId::FromUnsafeValue(next_sequence_id_++);
+  scoped_refptr<SyncPointOrderData> order_data =
+      new SyncPointOrderData(this, sequence_id);
+  DCHECK(!order_data_map_.count(sequence_id));
+  order_data_map_.insert(std::make_pair(sequence_id, order_data));
+  return order_data;
+}
+
+void SyncPointManager::DestroyedSyncPointOrderData(SequenceId sequence_id) {
+  base::AutoLock auto_lock(lock_);
+  DCHECK(order_data_map_.count(sequence_id));
+  order_data_map_.erase(sequence_id);
+}
+
+scoped_refptr<SyncPointClientState>
+SyncPointManager::CreateSyncPointClientState(
+    CommandBufferNamespace namespace_id,
+    CommandBufferId command_buffer_id,
+    SequenceId sequence_id) {
+  scoped_refptr<SyncPointOrderData> order_data =
+      GetSyncPointOrderData(sequence_id);
+
+  scoped_refptr<SyncPointClientState> client_state = new SyncPointClientState(
+      this, order_data, namespace_id, command_buffer_id);
+
+  {
+    base::AutoLock auto_lock(lock_);
+    DCHECK_GE(namespace_id, 0);
+    DCHECK_LT(static_cast<size_t>(namespace_id), arraysize(client_state_maps_));
+    DCHECK(!client_state_maps_[namespace_id].count(command_buffer_id));
+    client_state_maps_[namespace_id].insert(
+        std::make_pair(command_buffer_id, client_state));
+  }
+
+  return client_state;
+}
+
+void SyncPointManager::DestroyedSyncPointClientState(
+    CommandBufferNamespace namespace_id,
+    CommandBufferId command_buffer_id) {
+  base::AutoLock auto_lock(lock_);
+  DCHECK_GE(namespace_id, 0);
+  DCHECK_LT(static_cast<size_t>(namespace_id), arraysize(client_state_maps_));
+  DCHECK(client_state_maps_[namespace_id].count(command_buffer_id));
+  client_state_maps_[namespace_id].erase(command_buffer_id);
 }
 
 bool SyncPointManager::IsSyncTokenReleased(const SyncToken& sync_token) {
@@ -335,6 +386,35 @@ bool SyncPointManager::IsSyncTokenReleased(const SyncToken& sync_token) {
   if (release_state)
     return release_state->IsFenceSyncReleased(sync_token.release_count());
   return true;
+}
+
+SequenceId SyncPointManager::GetSyncTokenReleaseSequenceId(
+    const SyncToken& sync_token) {
+  scoped_refptr<SyncPointClientState> client_state = GetSyncPointClientState(
+      sync_token.namespace_id(), sync_token.command_buffer_id());
+  if (client_state)
+    return client_state->sequence_id();
+  return SequenceId();
+}
+
+uint32_t SyncPointManager::GetProcessedOrderNum() const {
+  base::AutoLock auto_lock(lock_);
+  uint32_t processed_order_num = 0;
+  for (const auto& kv : order_data_map_) {
+    processed_order_num =
+        std::max(processed_order_num, kv.second->processed_order_num());
+  }
+  return processed_order_num;
+}
+
+uint32_t SyncPointManager::GetUnprocessedOrderNum() const {
+  base::AutoLock auto_lock(lock_);
+  uint32_t unprocessed_order_num = 0;
+  for (const auto& kv : order_data_map_) {
+    unprocessed_order_num =
+        std::max(unprocessed_order_num, kv.second->unprocessed_order_num());
+  }
+  return unprocessed_order_num;
 }
 
 bool SyncPointManager::Wait(const SyncToken& sync_token,
@@ -376,32 +456,8 @@ bool SyncPointManager::WaitOutOfOrderNonThreadSafe(
                         base::Bind(&RunOnThread, task_runner, callback));
 }
 
-void SyncPointManager::RegisterSyncPointClient(
-    scoped_refptr<SyncPointClientState> client_state,
-    CommandBufferNamespace namespace_id,
-    CommandBufferId command_buffer_id) {
-  DCHECK_GE(namespace_id, 0);
-  DCHECK_LT(static_cast<size_t>(namespace_id), arraysize(client_state_maps_));
-
-  base::AutoLock auto_lock(client_state_maps_lock_);
-  DCHECK(!client_state_maps_[namespace_id].count(command_buffer_id));
-  client_state_maps_[namespace_id].insert(
-      std::make_pair(command_buffer_id, std::move(client_state)));
-}
-
-void SyncPointManager::DeregisterSyncPointClient(
-    CommandBufferNamespace namespace_id,
-    CommandBufferId command_buffer_id) {
-  DCHECK_GE(namespace_id, 0);
-  DCHECK_LT(static_cast<size_t>(namespace_id), arraysize(client_state_maps_));
-
-  base::AutoLock auto_lock(client_state_maps_lock_);
-  DCHECK(client_state_maps_[namespace_id].count(command_buffer_id));
-  client_state_maps_[namespace_id].erase(command_buffer_id);
-}
-
 uint32_t SyncPointManager::GenerateOrderNumber() {
-  return global_order_num_.GetNext();
+  return order_num_generator_.GetNext();
 }
 
 scoped_refptr<SyncPointClientState> SyncPointManager::GetSyncPointClientState(
@@ -409,12 +465,21 @@ scoped_refptr<SyncPointClientState> SyncPointManager::GetSyncPointClientState(
     CommandBufferId command_buffer_id) {
   if (namespace_id >= 0) {
     DCHECK_LT(static_cast<size_t>(namespace_id), arraysize(client_state_maps_));
-    base::AutoLock auto_lock(client_state_maps_lock_);
+    base::AutoLock auto_lock(lock_);
     ClientStateMap& client_state_map = client_state_maps_[namespace_id];
     auto it = client_state_map.find(command_buffer_id);
     if (it != client_state_map.end())
       return it->second;
   }
+  return nullptr;
+}
+
+scoped_refptr<SyncPointOrderData> SyncPointManager::GetSyncPointOrderData(
+    SequenceId sequence_id) {
+  base::AutoLock auto_lock(lock_);
+  auto it = order_data_map_.find(sequence_id);
+  if (it != order_data_map_.end())
+    return it->second;
   return nullptr;
 }
 

@@ -24,6 +24,7 @@
 #include "gpu/command_buffer/common/command_buffer_id.h"
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/sync_token.h"
+#include "gpu/command_buffer/service/sequence_id.h"
 #include "gpu/gpu_export.h"
 
 namespace base {
@@ -39,13 +40,9 @@ class SyncPointManager;
 class GPU_EXPORT SyncPointOrderData
     : public base::RefCountedThreadSafe<SyncPointOrderData> {
  public:
-  static scoped_refptr<SyncPointOrderData> Create();
   void Destroy();
 
-  uint32_t GenerateUnprocessedOrderNumber(SyncPointManager* sync_point_manager);
-  void BeginProcessingOrderNumber(uint32_t order_num);
-  void PauseProcessingOrderNumber(uint32_t order_num);
-  void FinishProcessingOrderNumber(uint32_t order_num);
+  SequenceId sequence_id() { return sequence_id_; }
 
   uint32_t processed_order_num() const {
     base::AutoLock auto_lock(lock_);
@@ -67,14 +64,15 @@ class GPU_EXPORT SyncPointOrderData
     return !paused_ && current_order_num_ > processed_order_num();
   }
 
-  bool ValidateReleaseOrderNumber(
-      scoped_refptr<SyncPointClientState> client_state,
-      uint32_t wait_order_num,
-      uint64_t fence_release,
-      const base::Closure& release_callback);
+  uint32_t GenerateUnprocessedOrderNumber();
+  void BeginProcessingOrderNumber(uint32_t order_num);
+  void PauseProcessingOrderNumber(uint32_t order_num);
+  void FinishProcessingOrderNumber(uint32_t order_num);
 
  private:
   friend class base::RefCountedThreadSafe<SyncPointOrderData>;
+  friend class SyncPointManager;
+  friend class SyncPointClientState;
 
   struct OrderFence {
     uint32_t order_num;
@@ -99,8 +97,20 @@ class GPU_EXPORT SyncPointOrderData
                               std::greater<OrderFence>>
       OrderFenceQueue;
 
-  SyncPointOrderData();
+  SyncPointOrderData(SyncPointManager* sync_point_manager,
+                     SequenceId seqeunce_id);
+
   ~SyncPointOrderData();
+
+  bool ValidateReleaseOrderNumber(
+      scoped_refptr<SyncPointClientState> client_state,
+      uint32_t wait_order_num,
+      uint64_t fence_release,
+      const base::Closure& release_callback);
+
+  SyncPointManager* const sync_point_manager_;
+
+  const SequenceId sequence_id_;
 
   // Non thread-safe functions need to be called from a single thread.
   base::ThreadChecker processing_thread_checker_;
@@ -137,30 +147,35 @@ class GPU_EXPORT SyncPointOrderData
   DISALLOW_COPY_AND_ASSIGN(SyncPointOrderData);
 };
 
-// Internal state for sync point clients.
 class GPU_EXPORT SyncPointClientState
     : public base::RefCountedThreadSafe<SyncPointClientState> {
  public:
-  explicit SyncPointClientState(scoped_refptr<SyncPointOrderData> order_data);
+  void Destroy();
 
-  bool IsFenceSyncReleased(uint64_t release);
+  CommandBufferNamespace namespace_id() const { return namespace_id_; }
+  CommandBufferId command_buffer_id() const { return command_buffer_id_; }
+  SequenceId sequence_id() const { return order_data_->sequence_id(); }
 
-  // Queues the callback to be called if the release is valid. If the release
-  // is invalid this function will return False and the callback will never
-  // be called.
-  bool WaitForRelease(uint64_t release,
-                      uint32_t wait_order_num,
-                      const base::Closure& callback);
+  // This behaves similarly to SyncPointManager::Wait but uses the order data
+  // to guarantee no deadlocks with other clients. Must be called on order
+  // number processing thread.
+  bool Wait(const SyncToken& sync_token, const base::Closure& callback);
 
-  // Releases a fence sync and all fence syncs below.
+  // Like Wait but runs the callback on the given task runner's thread. Must be
+  // called on order number processing thread.
+  bool WaitNonThreadSafe(
+      const SyncToken& sync_token,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+      const base::Closure& callback);
+
+  // Release fence sync and run queued callbacks. Must be called on order number
+  // processing thread.
   void ReleaseFenceSync(uint64_t release);
-
-  // Does not release the fence sync, but releases callbacks waiting on that
-  // fence sync.
-  void EnsureWaitReleased(uint64_t release, const base::Closure& callback);
 
  private:
   friend class base::RefCountedThreadSafe<SyncPointClientState>;
+  friend class SyncPointManager;
+  friend class SyncPointOrderData;
 
   struct ReleaseCallback {
     uint64_t release_count;
@@ -179,10 +194,38 @@ class GPU_EXPORT SyncPointClientState
                               std::greater<ReleaseCallback>>
       ReleaseCallbackQueue;
 
+  SyncPointClientState(SyncPointManager* sync_point_manager,
+                       scoped_refptr<SyncPointOrderData> order_data,
+                       CommandBufferNamespace namespace_id,
+                       CommandBufferId command_buffer_id);
+
   ~SyncPointClientState();
+
+  // Returns true if fence sync has been released.
+  bool IsFenceSyncReleased(uint64_t release);
+
+  // Queues the callback to be called if the release is valid. If the release
+  // is invalid this function will return False and the callback will never
+  // be called.
+  bool WaitForRelease(uint64_t release,
+                      uint32_t wait_order_num,
+                      const base::Closure& callback);
+
+  // Does not release the fence sync, but releases callbacks waiting on that
+  // fence sync.
+  void EnsureWaitReleased(uint64_t release, const base::Closure& callback);
+
+  void ReleaseFenceSyncHelper(uint64_t release);
+
+  // Sync point manager is guaranteed to exist in the lifetime of the client.
+  SyncPointManager* sync_point_manager_ = nullptr;
 
   // Global order data where releases will originate from.
   scoped_refptr<SyncPointOrderData> order_data_;
+
+  // Unique namespace/client id pair for this sync point client.
+  const CommandBufferNamespace namespace_id_;
+  const CommandBufferId command_buffer_id_;
 
   // Protects fence_sync_release_, fence_callback_queue_.
   base::Lock fence_sync_lock_;
@@ -197,42 +240,6 @@ class GPU_EXPORT SyncPointClientState
   DISALLOW_COPY_AND_ASSIGN(SyncPointClientState);
 };
 
-class GPU_EXPORT SyncPointClient {
- public:
-  SyncPointClient(SyncPointManager* sync_point_manager,
-                  scoped_refptr<SyncPointOrderData> order_data,
-                  CommandBufferNamespace namespace_id,
-                  CommandBufferId command_buffer_id);
-  ~SyncPointClient();
-
-  // This behaves similarly to SyncPointManager::Wait but uses the order data
-  // to guarantee no deadlocks with other clients.
-  bool Wait(const SyncToken& sync_token, const base::Closure& callback);
-
-  // Like Wait but runs the callback on the given task runner's thread.
-  bool WaitNonThreadSafe(
-      const SyncToken& sync_token,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      const base::Closure& callback);
-
-  // Release fence sync and run queued callbacks.
-  void ReleaseFenceSync(uint64_t release);
-
- private:
-  // Sync point manager is guaranteed to exist in the lifetime of the client.
-  SyncPointManager* const sync_point_manager_;
-
-  scoped_refptr<SyncPointOrderData> order_data_;
-
-  scoped_refptr<SyncPointClientState> client_state_;
-
-  // Unique namespace/client id pair for this sync point client.
-  const CommandBufferNamespace namespace_id_;
-  const CommandBufferId command_buffer_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(SyncPointClient);
-};
-
 // This class manages the sync points, which allow cross-channel
 // synchronization.
 class GPU_EXPORT SyncPointManager {
@@ -240,9 +247,25 @@ class GPU_EXPORT SyncPointManager {
   SyncPointManager();
   ~SyncPointManager();
 
-  // Returns true if the sync token has been released or if the command buffer
-  // does not exist.
+  scoped_refptr<SyncPointOrderData> CreateSyncPointOrderData();
+
+  scoped_refptr<SyncPointClientState> CreateSyncPointClientState(
+      CommandBufferNamespace namespace_id,
+      CommandBufferId command_buffer_id,
+      SequenceId sequence_id);
+
+  // Returns true if the sync token has been released or if the command
+  // buffer does not exist.
   bool IsSyncTokenReleased(const SyncToken& sync_token);
+
+  // Returns the sequence ID that will release this sync token.
+  SequenceId GetSyncTokenReleaseSequenceId(const SyncToken& sync_token);
+
+  // Returns the global last processed order number.
+  uint32_t GetProcessedOrderNum() const;
+
+  // // Returns the global last unprocessed order number.
+  uint32_t GetUnprocessedOrderNum() const;
 
   // If the wait is valid (sync token hasn't been processed or command buffer
   // does not exist), the callback is queued to run when the sync point is
@@ -272,32 +295,43 @@ class GPU_EXPORT SyncPointManager {
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       const base::Closure& callback);
 
-  // Used by SyncPointClient.
-  void RegisterSyncPointClient(scoped_refptr<SyncPointClientState> client_state,
-                               CommandBufferNamespace namespace_id,
-                               CommandBufferId command_buffer_id);
-
-  void DeregisterSyncPointClient(CommandBufferNamespace namespace_id,
-                                 CommandBufferId command_buffer_id);
-
   // Used by SyncPointOrderData.
   uint32_t GenerateOrderNumber();
+
+  void DestroyedSyncPointOrderData(SequenceId sequence_id);
+
+  void DestroyedSyncPointClientState(CommandBufferNamespace namespace_id,
+                                     CommandBufferId command_buffer_id);
 
  private:
   using ClientStateMap = std::unordered_map<CommandBufferId,
                                             scoped_refptr<SyncPointClientState>,
                                             CommandBufferId::Hasher>;
 
+  using OrderDataMap = std::unordered_map<SequenceId,
+                                          scoped_refptr<SyncPointOrderData>,
+                                          SequenceId::Hasher>;
+
+  scoped_refptr<SyncPointOrderData> GetSyncPointOrderData(
+      SequenceId sequence_id);
+
   scoped_refptr<SyncPointClientState> GetSyncPointClientState(
       CommandBufferNamespace namespace_id,
       CommandBufferId command_buffer_id);
 
   // Order number is global for all clients.
-  base::AtomicSequenceNumber global_order_num_;
+  base::AtomicSequenceNumber order_num_generator_;
 
-  // Client map holds a map of clients id to client for each namespace.
-  base::Lock client_state_maps_lock_;
+  // The following are protected by |lock_|.
+  // Map of command buffer id to client state for each namespace.
   ClientStateMap client_state_maps_[NUM_COMMAND_BUFFER_NAMESPACES];
+
+  // Map of sequence id to order data.
+  OrderDataMap order_data_map_;
+
+  uint32_t next_sequence_id_ = 1;
+
+  mutable base::Lock lock_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncPointManager);
 };

@@ -55,7 +55,7 @@
 namespace gpu {
 namespace {
 
-uint64_t g_next_command_buffer_id = 0;
+uint64_t g_next_command_buffer_id = 1;
 
 void InitializeGpuPreferencesForTestingFromCommandLine(
     const base::CommandLine& command_line,
@@ -349,10 +349,10 @@ void GLManager::InitializeWithCommandLine(
 
   if (options.sync_point_manager) {
     sync_point_manager_ = options.sync_point_manager;
-    sync_point_order_data_ = SyncPointOrderData::Create();
-    sync_point_client_ = base::MakeUnique<SyncPointClient>(
-        sync_point_manager_, sync_point_order_data_, GetNamespaceID(),
-        GetCommandBufferID());
+    sync_point_order_data_ = sync_point_manager_->CreateSyncPointOrderData();
+    sync_point_client_state_ = sync_point_manager_->CreateSyncPointClientState(
+        GetNamespaceID(), GetCommandBufferID(),
+        sync_point_order_data_->sequence_id());
 
     decoder_->SetFenceSyncReleaseCallback(
         base::Bind(&GLManager::OnFenceSyncRelease, base::Unretained(this)));
@@ -361,7 +361,7 @@ void GLManager::InitializeWithCommandLine(
   } else {
     sync_point_manager_ = nullptr;
     sync_point_order_data_ = nullptr;
-    sync_point_client_ = nullptr;
+    sync_point_client_state_ = nullptr;
   }
 
   command_buffer_->SetPutOffsetChangeCallback(
@@ -409,9 +409,9 @@ void GLManager::SetupBaseContext() {
 }
 
 void GLManager::OnFenceSyncRelease(uint64_t release) {
-  DCHECK(sync_point_client_);
+  DCHECK(sync_point_client_state_);
   command_buffer_->SetReleaseCount(release);
-  sync_point_client_->ReleaseFenceSync(release);
+  sync_point_client_state_->ReleaseFenceSync(release);
 }
 
 bool GLManager::OnWaitSyncToken(const SyncToken& sync_token) {
@@ -445,10 +445,13 @@ void GLManager::Destroy() {
   gles2_helper_.reset();
   command_buffer_.reset();
   sync_point_manager_ = nullptr;
-  sync_point_client_ = nullptr;
   if (sync_point_order_data_) {
     sync_point_order_data_->Destroy();
     sync_point_order_data_ = nullptr;
+  }
+  if (sync_point_client_state_) {
+    sync_point_client_state_->Destroy();
+    sync_point_client_state_ = nullptr;
   }
   if (decoder_.get()) {
     bool have_context = decoder_->GetGLContext() &&
@@ -476,8 +479,7 @@ void GLManager::PumpCommands() {
       order_num = paused_order_num_;
       paused_order_num_ = 0;
     } else {
-      order_num = sync_point_order_data_->GenerateUnprocessedOrderNumber(
-          sync_point_manager_);
+      order_num = sync_point_order_data_->GenerateUnprocessedOrderNumber();
     }
     sync_point_order_data_->BeginProcessingOrderNumber(order_num);
   }
@@ -610,10 +612,10 @@ void GLManager::SignalSyncToken(const gpu::SyncToken& sync_token,
                                 const base::Closure& callback) {
   if (sync_point_manager_) {
     DCHECK(!paused_order_num_);
-    uint32_t order_num = sync_point_order_data_->GenerateUnprocessedOrderNumber(
-        sync_point_manager_);
+    uint32_t order_num =
+        sync_point_order_data_->GenerateUnprocessedOrderNumber();
     sync_point_order_data_->BeginProcessingOrderNumber(order_num);
-    if (!sync_point_client_->Wait(sync_token, callback))
+    if (!sync_point_client_state_->Wait(sync_token, callback))
       callback.Run();
     sync_point_order_data_->FinishProcessingOrderNumber(order_num);
   } else {
