@@ -32,11 +32,6 @@ const double kAspectRatioEpsilon = 0.01;
 const int kEssentialVideoMinimumArea = 120000;
 
 bool IsTiny(const gfx::Size& unobscured_size) {
-  // Empty plugins can't be classified as tiny - they might just be of unknown
-  // size.
-  if (unobscured_size.IsEmpty())
-    return false;
-
   return unobscured_size.width() <= kTinyContentSize &&
          unobscured_size.height() <= kTinyContentSize;
 }
@@ -60,9 +55,6 @@ PeripheralContentHeuristic::GetPeripheralStatus(
 
   if (origin_whitelist.count(content_origin))
     return RenderFrame::CONTENT_STATUS_ESSENTIAL_CROSS_ORIGIN_WHITELISTED;
-
-  if (unobscured_size.IsEmpty())
-    return RenderFrame::CONTENT_STATUS_UNKNOWN_SIZE;
 
   if (IsTiny(unobscured_size))
     return RenderFrame::CONTENT_STATUS_TINY;

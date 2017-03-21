@@ -81,8 +81,8 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
     CONTENT_STATUS_ESSENTIAL_CROSS_ORIGIN_WHITELISTED = 3,
     // Content is tiny in size. These are usually blocked.
     CONTENT_STATUS_TINY = 4,
-    // Content has an unknown size.
-    CONTENT_STATUS_UNKNOWN_SIZE = 5,
+    // Deprecated, as now entirely obscured content is treated as tiny.
+    DEPRECATED_CONTENT_STATUS_UNKNOWN_SIZE = 5,
     // Must be last.
     CONTENT_STATUS_NUM_ITEMS
   };

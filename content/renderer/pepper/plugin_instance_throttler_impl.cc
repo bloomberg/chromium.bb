@@ -153,7 +153,8 @@ void PluginInstanceThrottlerImpl::Initialize(
         gfx::Size(roundf(unobscured_size.width() / zoom_factor),
                   roundf(unobscured_size.height() / zoom_factor)),
         record_decision_);
-    if (status != RenderFrame::CONTENT_STATUS_PERIPHERAL) {
+    if (status != RenderFrame::CONTENT_STATUS_PERIPHERAL &&
+        status != RenderFrame::CONTENT_STATUS_TINY) {
       DCHECK_NE(THROTTLER_STATE_MARKED_ESSENTIAL, state_);
       state_ = THROTTLER_STATE_MARKED_ESSENTIAL;
       for (auto& observer : observer_list_)

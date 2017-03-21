@@ -213,7 +213,8 @@ void LoadablePluginPlaceholder::OnUnobscuredRectUpdate(
 
   // Early exit for plugins that we've discovered to be essential.
   if (!plugin_is_tiny_and_blocked &&
-      status != RenderFrame::CONTENT_STATUS_PERIPHERAL) {
+      status != RenderFrame::CONTENT_STATUS_PERIPHERAL &&
+      status != RenderFrame::CONTENT_STATUS_TINY) {
     MarkPluginEssential(
         heuristic_run_before_
             ? PluginInstanceThrottler::UNTHROTTLE_METHOD_BY_SIZE_CHANGE

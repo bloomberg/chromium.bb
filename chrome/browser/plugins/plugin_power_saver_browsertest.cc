@@ -569,6 +569,7 @@ IN_PROC_BROWSER_TEST_F(PluginPowerSaverBrowserTest, BlockTinyPlugins) {
   VerifyPluginMarkedEssential(GetActiveWebContents(), "tiny_same_origin");
   VerifyPluginIsPlaceholderOnly("tiny_cross_origin_1");
   VerifyPluginIsPlaceholderOnly("tiny_cross_origin_2");
+  VerifyPluginIsPlaceholderOnly("completely_obscured");
 
   TabSpecificContentSettings* tab_specific_content_settings =
       TabSpecificContentSettings::FromWebContents(GetActiveWebContents());

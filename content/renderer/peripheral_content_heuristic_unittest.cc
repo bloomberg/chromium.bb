@@ -99,7 +99,8 @@ TEST(PeripheralContentHeuristic, UndefinedSize) {
                 whitelist, url::Origin(GURL(kSameOrigin)),
                 url::Origin(GURL(kOtherOrigin)), gfx::Size()));
 
-  EXPECT_EQ(RenderFrame::CONTENT_STATUS_UNKNOWN_SIZE,
+  // Undefined size plugins are now marked as Tiny.
+  EXPECT_EQ(RenderFrame::CONTENT_STATUS_TINY,
             PeripheralContentHeuristic::GetPeripheralStatus(
                 std::set<url::Origin>(), url::Origin(GURL(kSameOrigin)),
                 url::Origin(GURL(kOtherOrigin)), gfx::Size()));
