@@ -281,6 +281,10 @@ void DataUseTabModel::OnNavigationEvent(
     StartTrackingDataUse(
         transition, tab_id, new_label,
         ((transition == TRANSITION_CUSTOM_TAB) && is_package_match));
+  } else if (!current_label.empty() && current_label == new_label) {
+    TabEntryMap::iterator tab_entry_iterator = active_tabs_.find(tab_id);
+    if (tab_entry_iterator != active_tabs_.end())
+      tab_entry_iterator->second.NotifyPageLoad();
   }
   if (navigation_entry && !new_label.empty()) {
     // Save the label to be used for back-forward navigations.
@@ -543,6 +547,7 @@ void DataUseTabModel::StartTrackingDataUse(TransitionType transition,
   if (tab_entry_iterator->second.StartTracking(label)) {
     tab_entry_iterator->second.set_custom_tab_package_match(
         is_custom_tab_package_match);
+    tab_entry_iterator->second.NotifyPageLoad();
     RecordStartTrackingMetrics(transition, is_custom_tab_package_match);
     NotifyObserversOfTrackingStarting(tab_id);
   }

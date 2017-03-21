@@ -23,7 +23,7 @@ class DataUseTabModel;
 struct TabDataUseTrackingSession {
   TabDataUseTrackingSession(const std::string& label,
                             const base::TimeTicks& start_time)
-      : label(label), start_time(start_time) {}
+      : label(label), start_time(start_time), page_loads(0) {}
 
   // Tracking label to be associated with the data usage of this session.
   std::string label;
@@ -34,6 +34,9 @@ struct TabDataUseTrackingSession {
   // Time the data use tracking session ended. |end_time| will be null if the
   // tracking session is currently active.
   base::TimeTicks end_time;
+
+  // Number of page loads within the tracking session.
+  uint32_t page_loads;
 };
 
 // TabDataUseEntry contains the history of the disjoint tracking sessions for a
@@ -92,6 +95,9 @@ class TabDataUseEntry {
   }
 
   void set_custom_tab_package_match(bool is_custom_tab_package_match);
+
+  // Notifies a page load event for the active tracking session.
+  void NotifyPageLoad();
 
  private:
   friend class TabDataUseEntryTest;

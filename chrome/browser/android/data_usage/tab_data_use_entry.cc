@@ -154,6 +154,13 @@ void TabDataUseEntry::set_custom_tab_package_match(
   is_custom_tab_package_match_ = is_custom_tab_package_match;
 }
 
+void TabDataUseEntry::NotifyPageLoad() {
+  DCHECK(IsTrackingDataUse());
+  sessions_.back().page_loads++;
+  UMA_HISTOGRAM_COUNTS_100("DataUsage.PageLoadSequence",
+                           sessions_.back().page_loads);
+}
+
 void TabDataUseEntry::CompactSessionHistory() {
   if (sessions_.size() <= tab_model_->max_sessions_per_tab())
     return;
