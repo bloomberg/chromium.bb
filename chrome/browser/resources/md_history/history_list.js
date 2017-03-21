@@ -460,14 +460,10 @@ Polymer({
 
   /**
    * @param {string} searchedTerm
-   * @param {boolean} isLoading
    * @return {string}
    * @private
    */
-  noResultsMessage_: function(searchedTerm, isLoading) {
-    if (isLoading)
-      return '';
-
+  noResultsMessage_: function(searchedTerm) {
     var messageId = searchedTerm !== '' ? 'noSearchResults' : 'noResults';
     return loadTimeData.getString(messageId);
   },

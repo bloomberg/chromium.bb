@@ -32,7 +32,7 @@
     </style>
     <div id="no-results" class="centered-message"
         hidden$="[[hasResults_(historyData_.length)]]">
-      [[noResultsMessage_(searchedTerm, queryState.querying)]]
+      [[noResultsMessage_(searchedTerm)]]
     </div>
 
     <iron-list items="{{historyData_}}" as="item" id="infinite-list"
