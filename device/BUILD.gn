@@ -96,7 +96,7 @@ test("device_unittests") {
     "//device/geolocation:unittests",
     "//device/power_save_blocker",
     "//device/sensors",
-    "//device/sensors/public/cpp",
+    "//device/sensors/public/cpp:full",
     "//device/sensors/public/interfaces",
     "//device/wake_lock",
     "//mojo/common",

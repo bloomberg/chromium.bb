@@ -33,14 +33,16 @@
 
 #include "public/platform/WebPlatformEventListener.h"
 
-namespace blink {
+namespace device {
+class OrientationData;
+}
 
-class WebDeviceOrientationData;
+namespace blink {
 
 class WebDeviceOrientationListener : public WebPlatformEventListener {
  public:
   // This method is called every time new device orientation data is available.
-  virtual void didChangeDeviceOrientation(const WebDeviceOrientationData&) = 0;
+  virtual void didChangeDeviceOrientation(const device::OrientationData&) = 0;
 
   virtual ~WebDeviceOrientationListener() {}
 };

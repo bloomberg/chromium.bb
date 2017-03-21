@@ -10,6 +10,7 @@ include_rules = [
   # Testing utilities can access anything in content/
   "+content",
   "+device/bluetooth", # For WebBluetooth tests
+  "+device/sensors/public/cpp",
   # For loading V8's initial snapshot from external files.
   "+gin/v8_initializer.h",
   "+services/catalog",

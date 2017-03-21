@@ -28,7 +28,7 @@ class MockDeviceOrientationListener
   ~MockDeviceOrientationListener() override {}
 
   void didChangeDeviceOrientation(
-      const blink::WebDeviceOrientationData& data) override {
+      const device::OrientationData& data) override {
     memcpy(&data_, &data, sizeof(data));
     did_change_device_orientation_ = true;
   }
@@ -39,13 +39,11 @@ class MockDeviceOrientationListener
   void set_did_change_device_orientation(bool value) {
     did_change_device_orientation_ = value;
   }
-  const blink::WebDeviceOrientationData& data() const {
-    return data_;
-  }
+  const device::OrientationData& data() const { return data_; }
 
  private:
   bool did_change_device_orientation_;
-  blink::WebDeviceOrientationData data_;
+  device::OrientationData data_;
 
   DISALLOW_COPY_AND_ASSIGN(MockDeviceOrientationListener);
 };
@@ -88,7 +86,7 @@ class DeviceOrientationEventPumpTest : public testing::Test {
   }
 
   void InitBuffer() {
-    blink::WebDeviceOrientationData& data = buffer()->data;
+    device::OrientationData& data = buffer()->data;
     data.alpha = 1;
     data.hasAlpha = true;
     data.beta = 2;
@@ -99,7 +97,7 @@ class DeviceOrientationEventPumpTest : public testing::Test {
   }
 
   void InitBufferNoData() {
-    blink::WebDeviceOrientationData& data = buffer()->data;
+    device::OrientationData& data = buffer()->data;
     data.allAvailableSensorsAreActive = true;
   }
 
@@ -133,7 +131,7 @@ TEST_F(DeviceOrientationEventPumpTest, DidStartPolling) {
 
   base::RunLoop().Run();
 
-  const blink::WebDeviceOrientationData& received_data = listener()->data();
+  const device::OrientationData& received_data = listener()->data();
   EXPECT_TRUE(listener()->did_change_device_orientation());
   EXPECT_TRUE(received_data.allAvailableSensorsAreActive);
   EXPECT_EQ(1, static_cast<double>(received_data.alpha));
@@ -151,7 +149,7 @@ TEST_F(DeviceOrientationEventPumpTest, FireAllNullEvent) {
 
   base::RunLoop().Run();
 
-  const blink::WebDeviceOrientationData& received_data = listener()->data();
+  const device::OrientationData& received_data = listener()->data();
   EXPECT_TRUE(listener()->did_change_device_orientation());
   EXPECT_TRUE(received_data.allAvailableSensorsAreActive);
   EXPECT_FALSE(received_data.hasAlpha);
@@ -166,7 +164,7 @@ TEST_F(DeviceOrientationEventPumpTest, UpdateRespectsOrientationThreshold) {
 
   base::RunLoop().Run();
 
-  const blink::WebDeviceOrientationData& received_data = listener()->data();
+  const device::OrientationData& received_data = listener()->data();
   EXPECT_TRUE(listener()->did_change_device_orientation());
   EXPECT_TRUE(received_data.allAvailableSensorsAreActive);
   EXPECT_EQ(1, static_cast<double>(received_data.alpha));

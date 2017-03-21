@@ -99,8 +99,8 @@ using blink::Platform;
 using blink::WebArrayBufferView;
 using blink::WebContextMenuData;
 using blink::WebDevToolsAgent;
-using blink::WebDeviceMotionData;
-using blink::WebDeviceOrientationData;
+using device::MotionData;
+using device::OrientationData;
 using blink::WebElement;
 using blink::WebLocalFrame;
 using blink::WebHistoryItem;
@@ -285,12 +285,11 @@ void BlinkTestRunner::SetDeviceLightData(const double data) {
   SetMockDeviceLightData(data);
 }
 
-void BlinkTestRunner::SetDeviceMotionData(const WebDeviceMotionData& data) {
+void BlinkTestRunner::SetDeviceMotionData(const MotionData& data) {
   SetMockDeviceMotionData(data);
 }
 
-void BlinkTestRunner::SetDeviceOrientationData(
-    const WebDeviceOrientationData& data) {
+void BlinkTestRunner::SetDeviceOrientationData(const OrientationData& data) {
   SetMockDeviceOrientationData(data);
 }
 

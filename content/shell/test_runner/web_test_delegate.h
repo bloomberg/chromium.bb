@@ -23,8 +23,6 @@ class DictionaryValue;
 }
 
 namespace blink {
-class WebDeviceMotionData;
-class WebDeviceOrientationData;
 class WebFrame;
 class WebInputEvent;
 class WebLocalFrame;
@@ -39,6 +37,11 @@ class WebView;
 
 namespace cc {
 class SharedBitmapManager;
+}
+
+namespace device {
+class MotionData;
+class OrientationData;
 }
 
 namespace test_runner {
@@ -64,11 +67,11 @@ class WebTestDelegate {
   virtual void SetDeviceLightData(const double data) = 0;
   // Set data to return when registering via
   // Platform::setDeviceMotionListener().
-  virtual void SetDeviceMotionData(const blink::WebDeviceMotionData& data) = 0;
+  virtual void SetDeviceMotionData(const device::MotionData& data) = 0;
   // Set data to return when registering via
   // Platform::setDeviceOrientationListener().
   virtual void SetDeviceOrientationData(
-      const blink::WebDeviceOrientationData& data) = 0;
+      const device::OrientationData& data) = 0;
 
   // Add a message to stderr (not saved to expected output files, for debugging
   // only).

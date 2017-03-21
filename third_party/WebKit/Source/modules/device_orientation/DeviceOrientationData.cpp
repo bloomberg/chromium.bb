@@ -25,8 +25,8 @@
 
 #include "modules/device_orientation/DeviceOrientationData.h"
 
+#include "device/sensors/public/cpp/orientation_data.h"
 #include "modules/device_orientation/DeviceOrientationEventInit.h"
-#include "public/platform/modules/device_orientation/WebDeviceOrientationData.h"
 
 namespace blink {
 
@@ -57,7 +57,7 @@ DeviceOrientationData* DeviceOrientationData::create(
 }
 
 DeviceOrientationData* DeviceOrientationData::create(
-    const WebDeviceOrientationData& data) {
+    const device::OrientationData& data) {
   Nullable<double> alpha;
   Nullable<double> beta;
   Nullable<double> gamma;

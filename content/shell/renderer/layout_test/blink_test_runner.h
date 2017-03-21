@@ -28,8 +28,8 @@ class DictionaryValue;
 }
 
 namespace blink {
-class WebDeviceMotionData;
-class WebDeviceOrientationData;
+class MotionData;
+class OrientationData;
 class WebFrame;
 class WebURLRequest;
 class WebView;
@@ -69,9 +69,8 @@ class BlinkTestRunner : public RenderViewObserver,
                       const std::string& value) override;
   void SetGamepadProvider(test_runner::GamepadController* controller) override;
   void SetDeviceLightData(const double data) override;
-  void SetDeviceMotionData(const blink::WebDeviceMotionData& data) override;
-  void SetDeviceOrientationData(
-      const blink::WebDeviceOrientationData& data) override;
+  void SetDeviceMotionData(const device::MotionData& data) override;
+  void SetDeviceOrientationData(const device::OrientationData& data) override;
   void PrintMessageToStderr(const std::string& message) override;
   void PrintMessage(const std::string& message) override;
   void PostTask(const base::Closure& task) override;

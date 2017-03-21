@@ -32,6 +32,8 @@
 #include "content/shell/test_runner/test_runner_for_specific_view.h"
 #include "content/shell/test_runner/web_test_delegate.h"
 #include "content/shell/test_runner/web_view_test_proxy.h"
+#include "device/sensors/public/cpp/motion_data.h"
+#include "device/sensors/public/cpp/orientation_data.h"
 #include "gin/arguments.h"
 #include "gin/array_buffer.h"
 #include "gin/handle.h"
@@ -42,8 +44,6 @@
 #include "third_party/WebKit/public/platform/WebPasswordCredential.h"
 #include "third_party/WebKit/public/platform/WebPoint.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
-#include "third_party/WebKit/public/platform/modules/device_orientation/WebDeviceMotionData.h"
-#include "third_party/WebKit/public/platform/modules/device_orientation/WebDeviceOrientationData.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerRegistration.h"
 #include "third_party/WebKit/public/web/WebArrayBuffer.h"
 #include "third_party/WebKit/public/web/WebArrayBufferConverter.h"
@@ -2242,7 +2242,7 @@ void TestRunner::SetMockDeviceMotion(bool has_acceleration_x,
                                      bool has_rotation_rate_gamma,
                                      double rotation_rate_gamma,
                                      double interval) {
-  WebDeviceMotionData motion;
+  device::MotionData motion;
 
   // acceleration
   motion.hasAccelerationX = has_acceleration_x;
@@ -2284,7 +2284,7 @@ void TestRunner::SetMockDeviceOrientation(bool has_alpha,
                                           bool has_gamma,
                                           double gamma,
                                           bool absolute) {
-  WebDeviceOrientationData orientation;
+  device::OrientationData orientation;
 
   // alpha
   orientation.hasAlpha = has_alpha;

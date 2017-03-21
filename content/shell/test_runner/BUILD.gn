@@ -114,6 +114,7 @@ component("test_runner") {
     "//cc/blink",
     "//cc/paint",
     "//content/public/common",
+    "//device/sensors/public/cpp:full",
     "//gin",
     "//gpu",
     "//gpu/command_buffer/client:gles2_interface",

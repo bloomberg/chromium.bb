@@ -36,10 +36,13 @@
 #include "public/platform/modules/device_orientation/WebDeviceMotionListener.h"
 #include "wtf/RefPtr.h"
 
+namespace device {
+class MotionData;
+}
+
 namespace blink {
 
 class DeviceMotionData;
-class WebDeviceMotionData;
 
 // This class listens to device motion data and notifies all registered
 // controllers.
@@ -58,7 +61,7 @@ class DeviceMotionDispatcher final
   DeviceMotionData* latestDeviceMotionData();
 
   // Inherited from WebDeviceMotionListener.
-  void didChangeDeviceMotion(const WebDeviceMotionData&) override;
+  void didChangeDeviceMotion(const device::MotionData&) override;
 
   DECLARE_VIRTUAL_TRACE();
 

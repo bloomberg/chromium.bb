@@ -29,10 +29,13 @@
 #include "bindings/core/v8/Nullable.h"
 #include "platform/heap/Handle.h"
 
+namespace device {
+class OrientationData;
+}
+
 namespace blink {
 
 class DeviceOrientationEventInit;
-class WebDeviceOrientationData;
 
 class DeviceOrientationData final
     : public GarbageCollected<DeviceOrientationData> {
@@ -43,7 +46,7 @@ class DeviceOrientationData final
                                        const Nullable<double>& gamma,
                                        bool absolute);
   static DeviceOrientationData* create(const DeviceOrientationEventInit&);
-  static DeviceOrientationData* create(const WebDeviceOrientationData&);
+  static DeviceOrientationData* create(const device::OrientationData&);
   DEFINE_INLINE_TRACE() {}
 
   double alpha() const;

@@ -439,7 +439,7 @@ target(link_target_type, "renderer") {
     "//device/battery:mojo_bindings",
     "//device/gamepad/public/interfaces",
     "//device/screen_orientation/public/interfaces",
-    "//device/sensors/public/cpp",
+    "//device/sensors/public/cpp:full",
     "//device/sensors/public/interfaces",
     "//device/usb/public/interfaces",
     "//device/vibration:mojo_bindings",

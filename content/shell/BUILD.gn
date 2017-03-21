@@ -237,6 +237,7 @@ static_library("content_shell_lib") {
     "//device/bluetooth",
     "//device/bluetooth:mocks",
     "//device/geolocation",
+    "//device/sensors/public/cpp:full",
     "//gin",
     "//gpu",
     "//ipc",

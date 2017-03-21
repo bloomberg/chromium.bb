@@ -23,7 +23,7 @@ DeviceOrientationEventPumpBase::~DeviceOrientationEventPumpBase() {}
 
 void DeviceOrientationEventPumpBase::FireEvent() {
   DCHECK(listener());
-  blink::WebDeviceOrientationData data;
+  device::OrientationData data;
   if (reader_->GetLatestData(&data) && ShouldFireEvent(data)) {
     memcpy(&data_, &data, sizeof(data));
     listener()->didChangeDeviceOrientation(data);
@@ -40,7 +40,7 @@ static bool IsSignificantlyDifferent(bool hasAngle1, double angle1,
 }
 
 bool DeviceOrientationEventPumpBase::ShouldFireEvent(
-    const blink::WebDeviceOrientationData& data) const {
+    const device::OrientationData& data) const {
   if (!data.allAvailableSensorsAreActive)
     return false;
 
@@ -66,8 +66,8 @@ bool DeviceOrientationEventPumpBase::InitializeReader(
 }
 
 void DeviceOrientationEventPumpBase::SendFakeDataForTesting(void* fake_data) {
-  blink::WebDeviceOrientationData data =
-      *static_cast<blink::WebDeviceOrientationData*>(fake_data);
+  device::OrientationData data =
+      *static_cast<device::OrientationData*>(fake_data);
 
   listener()->didChangeDeviceOrientation(data);
 }

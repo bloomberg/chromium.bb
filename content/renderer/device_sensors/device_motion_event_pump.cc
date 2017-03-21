@@ -19,7 +19,7 @@ DeviceMotionEventPump::~DeviceMotionEventPump() {
 
 void DeviceMotionEventPump::FireEvent() {
   DCHECK(listener());
-  blink::WebDeviceMotionData data;
+  device::MotionData data;
   if (reader_->GetLatestData(&data) && data.allAvailableSensorsAreActive)
     listener()->didChangeDeviceMotion(data);
 }
@@ -31,8 +31,7 @@ bool DeviceMotionEventPump::InitializeReader(base::SharedMemoryHandle handle) {
 }
 
 void DeviceMotionEventPump::SendFakeDataForTesting(void* fake_data) {
-  blink::WebDeviceMotionData data =
-      *static_cast<blink::WebDeviceMotionData*>(fake_data);
+  device::MotionData data = *static_cast<device::MotionData*>(fake_data);
 
   listener()->didChangeDeviceMotion(data);
 }

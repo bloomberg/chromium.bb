@@ -61,7 +61,7 @@ void DeviceMotionDispatcher::stopListening() {
 }
 
 void DeviceMotionDispatcher::didChangeDeviceMotion(
-    const WebDeviceMotionData& motion) {
+    const device::MotionData& motion) {
   m_lastDeviceMotionData = DeviceMotionData::create(motion);
   notifyControllers();
 }

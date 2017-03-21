@@ -25,10 +25,10 @@
 
 #include "modules/device_orientation/DeviceMotionData.h"
 
+#include "device/sensors/public/cpp/motion_data.h"
 #include "modules/device_orientation/DeviceAccelerationInit.h"
 #include "modules/device_orientation/DeviceMotionEventInit.h"
 #include "modules/device_orientation/DeviceRotationRateInit.h"
-#include "public/platform/modules/device_orientation/WebDeviceMotionData.h"
 
 namespace blink {
 
@@ -126,7 +126,7 @@ DeviceMotionData* DeviceMotionData::create(const DeviceMotionEventInit& init) {
       init.hasInterval(), init.hasInterval() ? init.interval() : 0);
 }
 
-DeviceMotionData* DeviceMotionData::create(const WebDeviceMotionData& data) {
+DeviceMotionData* DeviceMotionData::create(const device::MotionData& data) {
   return DeviceMotionData::create(
       DeviceMotionData::Acceleration::create(
           data.hasAccelerationX, data.accelerationX, data.hasAccelerationY,

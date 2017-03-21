@@ -10,8 +10,8 @@
 #include "base/macros.h"
 #include "content/renderer/device_sensors/device_sensor_event_pump.h"
 #include "content/renderer/shared_memory_seqlock_reader.h"
+#include "device/sensors/public/cpp/orientation_data.h"
 #include "device/sensors/public/interfaces/orientation.mojom.h"
-#include "third_party/WebKit/public/platform/modules/device_orientation/WebDeviceOrientationData.h"
 
 namespace blink {
 class WebDeviceOrientationListener;
@@ -19,7 +19,7 @@ class WebDeviceOrientationListener;
 
 namespace content {
 
-typedef SharedMemorySeqLockReader<blink::WebDeviceOrientationData>
+typedef SharedMemorySeqLockReader<device::OrientationData>
     DeviceOrientationSharedMemoryReader;
 
 class CONTENT_EXPORT DeviceOrientationEventPumpBase
@@ -39,9 +39,9 @@ class CONTENT_EXPORT DeviceOrientationEventPumpBase
   void FireEvent() override;
   bool InitializeReader(base::SharedMemoryHandle handle) override;
 
-  bool ShouldFireEvent(const blink::WebDeviceOrientationData& data) const;
+  bool ShouldFireEvent(const device::OrientationData& data) const;
 
-  blink::WebDeviceOrientationData data_;
+  device::OrientationData data_;
   std::unique_ptr<DeviceOrientationSharedMemoryReader> reader_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceOrientationEventPumpBase);

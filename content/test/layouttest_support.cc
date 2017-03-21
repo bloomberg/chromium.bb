@@ -40,14 +40,14 @@
 #include "content/shell/test_runner/web_frame_test_proxy.h"
 #include "content/shell/test_runner/web_view_test_proxy.h"
 #include "content/shell/test_runner/web_widget_test_proxy.h"
+#include "device/sensors/public/cpp/motion_data.h"
+#include "device/sensors/public/cpp/orientation_data.h"
 #include "gpu/ipc/service/image_transport_surface.h"
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 #include "third_party/WebKit/public/platform/WebFloatRect.h"
 #include "third_party/WebKit/public/platform/WebGamepads.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
-#include "third_party/WebKit/public/platform/modules/device_orientation/WebDeviceMotionData.h"
-#include "third_party/WebKit/public/platform/modules/device_orientation/WebDeviceOrientationData.h"
 #include "third_party/WebKit/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/WebKit/public/web/WebHistoryItem.h"
 #include "third_party/WebKit/public/web/WebView.h"
@@ -67,8 +67,8 @@
 #include "ui/gfx/win/direct_write.h"
 #endif
 
-using blink::WebDeviceMotionData;
-using blink::WebDeviceOrientationData;
+using device::MotionData;
+using device::OrientationData;
 using blink::WebGamepad;
 using blink::WebGamepads;
 using blink::WebRect;
@@ -278,11 +278,11 @@ void SetMockDeviceLightData(const double data) {
   RendererBlinkPlatformImpl::SetMockDeviceLightDataForTesting(data);
 }
 
-void SetMockDeviceMotionData(const WebDeviceMotionData& data) {
+void SetMockDeviceMotionData(const MotionData& data) {
   RendererBlinkPlatformImpl::SetMockDeviceMotionDataForTesting(data);
 }
 
-void SetMockDeviceOrientationData(const WebDeviceOrientationData& data) {
+void SetMockDeviceOrientationData(const OrientationData& data) {
   RendererBlinkPlatformImpl::SetMockDeviceOrientationDataForTesting(data);
 }
 

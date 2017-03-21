@@ -30,7 +30,7 @@ class MockDeviceMotionListener : public blink::WebDeviceMotionListener {
   }
   ~MockDeviceMotionListener() override {}
 
-  void didChangeDeviceMotion(const blink::WebDeviceMotionData& data) override {
+  void didChangeDeviceMotion(const device::MotionData& data) override {
     memcpy(&data_, &data, sizeof(data));
     did_change_device_motion_ = true;
     ++number_of_events_;
@@ -42,14 +42,12 @@ class MockDeviceMotionListener : public blink::WebDeviceMotionListener {
 
   int number_of_events() const { return number_of_events_; }
 
-  const blink::WebDeviceMotionData& data() const {
-    return data_;
-  }
+  const device::MotionData& data() const { return data_; }
 
  private:
   bool did_change_device_motion_;
   int number_of_events_;
-  blink::WebDeviceMotionData data_;
+  device::MotionData data_;
 
   DISALLOW_COPY_AND_ASSIGN(MockDeviceMotionListener);
 };
@@ -103,7 +101,7 @@ class DeviceMotionEventPumpTest : public testing::Test {
   }
 
   void InitBuffer(bool allAvailableSensorsActive) {
-    blink::WebDeviceMotionData& data = buffer()->data;
+    device::MotionData& data = buffer()->data;
     data.accelerationX = 1;
     data.hasAccelerationX = true;
     data.accelerationY = 2;
@@ -142,7 +140,7 @@ TEST_F(DeviceMotionEventPumpTest, DidStartPolling) {
 
   base::RunLoop().Run();
 
-  const blink::WebDeviceMotionData& received_data = listener()->data();
+  const device::MotionData& received_data = listener()->data();
   EXPECT_TRUE(listener()->did_change_device_motion());
   EXPECT_TRUE(received_data.hasAccelerationX);
   EXPECT_EQ(1, static_cast<double>(received_data.accelerationX));
@@ -167,7 +165,7 @@ TEST_F(DeviceMotionEventPumpTest, DidStartPollingNotAllSensorsActive) {
 
   base::RunLoop().Run();
 
-  const blink::WebDeviceMotionData& received_data = listener()->data();
+  const device::MotionData& received_data = listener()->data();
   // No change in device motion because allAvailableSensorsAreActive is false.
   EXPECT_FALSE(listener()->did_change_device_motion());
   EXPECT_FALSE(received_data.hasAccelerationX);

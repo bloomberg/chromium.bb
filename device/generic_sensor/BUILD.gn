@@ -65,7 +65,7 @@ component("generic_sensor") {
   }
 
   if (is_mac) {
-    deps += [ "//device/sensors/public/cpp" ]
+    deps += [ "//device/sensors/public/cpp:full" ]
     libs = [ "IOKit.framework" ]
   }
 

@@ -38,7 +38,7 @@ component("sensors") {
 
   deps = [
     "//base",
-    "//device/sensors/public/cpp",
+    "//device/sensors/public/cpp:full",
     "//mojo/public/cpp/bindings",
   ]
 

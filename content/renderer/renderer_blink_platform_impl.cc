@@ -172,9 +172,9 @@ namespace {
 
 bool g_sandbox_enabled = true;
 double g_test_device_light_data = -1;
-base::LazyInstance<blink::WebDeviceMotionData>::Leaky
-    g_test_device_motion_data = LAZY_INSTANCE_INITIALIZER;
-base::LazyInstance<blink::WebDeviceOrientationData>::Leaky
+base::LazyInstance<device::MotionData>::Leaky g_test_device_motion_data =
+    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<device::OrientationData>::Leaky
     g_test_device_orientation_data = LAZY_INSTANCE_INITIALIZER;
 
 media::AudioParameters GetAudioHardwareParams() {
@@ -1094,7 +1094,7 @@ void RendererBlinkPlatformImpl::SetMockDeviceLightDataForTesting(double data) {
 
 // static
 void RendererBlinkPlatformImpl::SetMockDeviceMotionDataForTesting(
-    const blink::WebDeviceMotionData& data) {
+    const device::MotionData& data) {
   g_test_device_motion_data.Get() = data;
 }
 
@@ -1102,7 +1102,7 @@ void RendererBlinkPlatformImpl::SetMockDeviceMotionDataForTesting(
 
 // static
 void RendererBlinkPlatformImpl::SetMockDeviceOrientationDataForTesting(
-    const blink::WebDeviceOrientationData& data) {
+    const device::OrientationData& data) {
   g_test_device_orientation_data.Get() = data;
 }
 

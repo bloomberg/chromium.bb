@@ -10,8 +10,8 @@
 #include "base/macros.h"
 #include "content/renderer/device_sensors/device_sensor_event_pump.h"
 #include "content/renderer/shared_memory_seqlock_reader.h"
+#include "device/sensors/public/cpp/motion_data.h"
 #include "device/sensors/public/interfaces/motion.mojom.h"
-#include "third_party/WebKit/public/platform/modules/device_orientation/WebDeviceMotionData.h"
 
 namespace blink {
 class WebDeviceMotionListener;
@@ -19,7 +19,7 @@ class WebDeviceMotionListener;
 
 namespace content {
 
-typedef SharedMemorySeqLockReader<blink::WebDeviceMotionData>
+typedef SharedMemorySeqLockReader<device::MotionData>
     DeviceMotionSharedMemoryReader;
 
 class CONTENT_EXPORT DeviceMotionEventPump

@@ -31,4 +31,8 @@ blink_modules_sources("device_orientation") {
     "DeviceRotationRate.cpp",
     "DeviceRotationRate.h",
   ]
+
+  deps = [
+    "//device/sensors/public/cpp:shared_with_blink",
+  ]
 }

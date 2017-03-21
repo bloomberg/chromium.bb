@@ -1,6 +1,12 @@
 include_rules = [
     "+bindings",
     "+core",
+
+    # NOTE: These files are POD structs used to interpret shared memory across
+    # the Device Sensors implementation and the Blink client.
+    "+device/sensors/public/cpp/motion_data.h",
+    "+device/sensors/public/cpp/orientation_data.h",
+
     "-modules",
     "+modules/EventModules.h",
     "+modules/EventTargetModules.h",

@@ -34,14 +34,17 @@ namespace scheduler {
 class RendererScheduler;
 }
 class WebCanvasCaptureHandler;
-class WebDeviceMotionData;
-class WebDeviceOrientationData;
 class WebGraphicsContext3DProvider;
 class WebMediaPlayer;
 class WebMediaRecorderHandler;
 class WebMediaStream;
 class WebSecurityOrigin;
 class WebServiceWorkerCacheStorage;
+}
+
+namespace device {
+class MotionData;
+class OrientationData;
 }
 
 namespace service_manager {
@@ -217,13 +220,12 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
 
   //  Set a double to return when setDeviceLightListener is invoked.
   static void SetMockDeviceLightDataForTesting(double data);
-  // Set WebDeviceMotionData to return when setDeviceMotionListener is invoked.
-  static void SetMockDeviceMotionDataForTesting(
-      const blink::WebDeviceMotionData& data);
-  // Set WebDeviceOrientationData to return when setDeviceOrientationListener
+  // Set MotionData to return when setDeviceMotionListener is invoked.
+  static void SetMockDeviceMotionDataForTesting(const device::MotionData& data);
+  // Set OrientationData to return when setDeviceOrientationListener
   // is invoked.
   static void SetMockDeviceOrientationDataForTesting(
-      const blink::WebDeviceOrientationData& data);
+      const device::OrientationData& data);
 
   WebDatabaseObserverImpl* web_database_observer_impl() {
     return web_database_observer_impl_.get();

@@ -6,11 +6,11 @@
 #define DEVICE_SENSORS_PUBLIC_CPP_DEVICE_ORIENTATION_HARDWARE_BUFFER_H_
 
 #include "device/base/synchronization/shared_memory_seqlock_buffer.h"
-#include "third_party/WebKit/public/platform/modules/device_orientation/WebDeviceOrientationData.h"
+#include "device/sensors/public/cpp/orientation_data.h"
 
 namespace device {
 
-typedef SharedMemorySeqLockBuffer<blink::WebDeviceOrientationData>
+typedef SharedMemorySeqLockBuffer<OrientationData>
     DeviceOrientationHardwareBuffer;
 
 }  // namespace device

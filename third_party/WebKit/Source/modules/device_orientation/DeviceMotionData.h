@@ -28,12 +28,15 @@
 
 #include "platform/heap/Handle.h"
 
+namespace device {
+class MotionData;
+}
+
 namespace blink {
 
 class DeviceAccelerationInit;
 class DeviceMotionEventInit;
 class DeviceRotationRateInit;
-class WebDeviceMotionData;
 
 class DeviceMotionData final : public GarbageCollected<DeviceMotionData> {
  public:
@@ -118,7 +121,7 @@ class DeviceMotionData final : public GarbageCollected<DeviceMotionData> {
                                   bool canProvideInterval,
                                   double interval);
   static DeviceMotionData* create(const DeviceMotionEventInit&);
-  static DeviceMotionData* create(const WebDeviceMotionData&);
+  static DeviceMotionData* create(const device::MotionData&);
   DECLARE_TRACE();
 
   Acceleration* getAcceleration() const { return m_acceleration.get(); }

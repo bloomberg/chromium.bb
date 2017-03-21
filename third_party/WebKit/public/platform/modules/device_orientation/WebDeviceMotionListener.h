@@ -33,14 +33,16 @@
 
 #include "public/platform/WebPlatformEventListener.h"
 
-namespace blink {
+namespace device {
+class MotionData;
+}
 
-class WebDeviceMotionData;
+namespace blink {
 
 class WebDeviceMotionListener : public WebPlatformEventListener {
  public:
   // This method is called every time new device motion data is available.
-  virtual void didChangeDeviceMotion(const WebDeviceMotionData&) = 0;
+  virtual void didChangeDeviceMotion(const device::MotionData&) = 0;
 
   virtual ~WebDeviceMotionListener() {}
 };
