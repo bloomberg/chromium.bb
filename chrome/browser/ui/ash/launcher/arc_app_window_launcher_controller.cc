@@ -8,7 +8,6 @@
 #include "ash/common/shelf/shelf_delegate.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm/window_state.h"
-#include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/display/screen_orientation_controller_chromeos.h"
 #include "ash/shared/app_types.h"
@@ -423,7 +422,7 @@ void ArcAppWindowLauncherController::AttachControllerToWindowIfNeeded(
   RegisterApp(info);
   DCHECK(info->app_window()->controller());
   window->SetProperty(ash::kShelfIDKey, info->app_window()->shelf_id());
-  if (ash::WmShell::Get()
+  if (ash::Shell::Get()
           ->maximize_mode_controller()
           ->IsMaximizeModeWindowManagerEnabled()) {
     SetOrientationLockForAppWindow(info->app_window());
@@ -555,7 +554,7 @@ void ArcAppWindowLauncherController::OnTaskOrientationLockRequested(
     return;
   info->set_requested_orientation_lock(orientation_lock);
 
-  if (ash::WmShell::Get()
+  if (ash::Shell::Get()
           ->maximize_mode_controller()
           ->IsMaximizeModeWindowManagerEnabled()) {
     AppWindow* app_window = info->app_window();

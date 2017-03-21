@@ -844,7 +844,7 @@ TEST_F(PanelLayoutManagerTest, PanelsHideAndRestoreWithShelf) {
   // While in full-screen mode, the panel windows should still be in the
   // switchable window list - http://crbug.com/313919.
   aura::Window::Windows switchable_window_list = WmWindow::ToAuraWindows(
-      WmShell::Get()->mru_window_tracker()->BuildMruWindowList());
+      Shell::Get()->mru_window_tracker()->BuildMruWindowList());
   EXPECT_EQ(3u, switchable_window_list.size());
   EXPECT_NE(switchable_window_list.end(),
             std::find(switchable_window_list.begin(),

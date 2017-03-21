@@ -38,14 +38,9 @@ enum class PointerWatcherEventTypes;
 
 namespace ash {
 class AcceleratorController;
-class ImmersiveContextAsh;
 class ImmersiveFullscreenController;
 class KeyEventWatcher;
 class KeyboardUI;
-class MaximizeModeController;
-class MediaController;
-class MruWindowTracker;
-class NewWindowController;
 class RootWindowController;
 class ScopedDisableInternalMouseAndKeyboard;
 class SessionController;
@@ -83,18 +78,6 @@ class ASH_EXPORT WmShell : public SessionStateObserver {
   static bool HasInstance() { return instance_ != nullptr; }
 
   virtual void Shutdown();
-
-  MaximizeModeController* maximize_mode_controller() {
-    return maximize_mode_controller_.get();
-  }
-
-  MruWindowTracker* mru_window_tracker() { return mru_window_tracker_.get(); }
-
-  MediaController* media_controller() { return media_controller_.get(); }
-
-  NewWindowController* new_window_controller() {
-    return new_window_controller_.get();
-  }
 
   SessionController* session_controller() { return session_controller_.get(); }
 
@@ -302,12 +285,6 @@ class ASH_EXPORT WmShell : public SessionStateObserver {
 
   void DeleteWindowSelectorController();
 
-  void CreateMaximizeModeController();
-  void DeleteMaximizeModeController();
-
-  void CreateMruWindowTracker();
-  void DeleteMruWindowTracker();
-
   // SessionStateObserver:
   void SessionStateChanged(session_manager::SessionState state) override;
 
@@ -317,11 +294,6 @@ class ASH_EXPORT WmShell : public SessionStateObserver {
 
   static WmShell* instance_;
 
-  std::unique_ptr<ImmersiveContextAsh> immersive_context_;
-  std::unique_ptr<MaximizeModeController> maximize_mode_controller_;
-  std::unique_ptr<MediaController> media_controller_;
-  std::unique_ptr<MruWindowTracker> mru_window_tracker_;
-  std::unique_ptr<NewWindowController> new_window_controller_;
   std::unique_ptr<SessionController> session_controller_;
   std::unique_ptr<ShelfController> shelf_controller_;
   std::unique_ptr<ShelfDelegate> shelf_delegate_;

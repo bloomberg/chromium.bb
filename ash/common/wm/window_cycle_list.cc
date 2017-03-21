@@ -384,7 +384,7 @@ WindowCycleList::WindowCycleList(const WindowList& windows)
     : windows_(windows),
       screen_observer_(this) {
   if (!ShouldShowUi())
-    WmShell::Get()->mru_window_tracker()->SetIgnoreActivations(true);
+    Shell::Get()->mru_window_tracker()->SetIgnoreActivations(true);
 
   for (WmWindow* window : windows_)
     window->aura_window()->AddObserver(this);
@@ -401,7 +401,7 @@ WindowCycleList::WindowCycleList(const WindowList& windows)
 
 WindowCycleList::~WindowCycleList() {
   if (!ShouldShowUi())
-    WmShell::Get()->mru_window_tracker()->SetIgnoreActivations(false);
+    Shell::Get()->mru_window_tracker()->SetIgnoreActivations(false);
 
   for (WmWindow* window : windows_)
     window->aura_window()->RemoveObserver(this);

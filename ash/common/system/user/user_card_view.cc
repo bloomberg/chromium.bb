@@ -306,7 +306,7 @@ UserCardView::UserCardView(LoginStatus login_status,
   if (!is_active_user())
     SetBorder(views::CreateEmptyBorder(0, kMenuExtraMarginFromLeftEdge, 0, 0));
 
-  WmShell::Get()->media_controller()->AddObserver(this);
+  Shell::Get()->media_controller()->AddObserver(this);
 
   if (login_status == LoginStatus::PUBLIC)
     AddPublicModeUserContent(max_width);
@@ -315,7 +315,7 @@ UserCardView::UserCardView(LoginStatus login_status,
 }
 
 UserCardView::~UserCardView() {
-  WmShell::Get()->media_controller()->RemoveObserver(this);
+  Shell::Get()->media_controller()->RemoveObserver(this);
 }
 
 void UserCardView::PaintChildren(const ui::PaintContext& context) {
@@ -464,7 +464,7 @@ void UserCardView::AddUserContent(views::BoxLayout* layout,
     media_capture_icon_->set_id(VIEW_ID_USER_VIEW_MEDIA_INDICATOR);
     AddChildView(media_capture_icon_);
 
-    WmShell::Get()->media_controller()->RequestCaptureState();
+    Shell::Get()->media_controller()->RequestCaptureState();
   }
 }
 

@@ -396,7 +396,7 @@ void MultiUserWindowManagerChromeOS::ActiveUserChanged(
       GetAdjustedAnimationTimeInMS(kUserFadeTimeMS)));
   // Call notifier here instead of observing ActiveUserChanged because
   // this must happen after MultiUserWindowManagerChromeOS is notified.
-  ash::WmShell::Get()->media_controller()->RequestCaptureState();
+  ash::Shell::Get()->media_controller()->RequestCaptureState();
 }
 
 void MultiUserWindowManagerChromeOS::OnWindowDestroyed(aura::Window* window) {
@@ -692,7 +692,7 @@ void MultiUserWindowManagerChromeOS::SetWindowVisible(
   // we tell it to maximize / track this window now before it gets shown, to
   // reduce animation jank from multiple resizes.
   if (visible) {
-    ash::WmShell::Get()->maximize_mode_controller()->AddWindow(
+    ash::Shell::Get()->maximize_mode_controller()->AddWindow(
         ash::WmWindow::Get(window));
   }
 

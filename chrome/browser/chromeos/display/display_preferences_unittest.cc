@@ -839,7 +839,7 @@ TEST_F(DisplayPreferencesTest, DontSaveMaximizeModeControllerRotations) {
              kMeanGravity);
   update->Set(chromeos::ACCELEROMETER_SOURCE_SCREEN, 0.0f, -kMeanGravity, 0.0f);
   ash::MaximizeModeController* controller =
-      ash::WmShell::Get()->maximize_mode_controller();
+      ash::Shell::Get()->maximize_mode_controller();
   controller->OnAccelerometerUpdated(update);
   EXPECT_TRUE(controller->IsMaximizeModeWindowManagerEnabled());
 
@@ -984,7 +984,7 @@ TEST_F(DisplayPreferencesTest, LoadRotationNoLogin) {
              kMeanGravity);
   update->Set(chromeos::ACCELEROMETER_SOURCE_SCREEN, 0.0f, -kMeanGravity, 0.0f);
   ash::MaximizeModeController* maximize_mode_controller =
-      ash::WmShell::Get()->maximize_mode_controller();
+      ash::Shell::Get()->maximize_mode_controller();
   maximize_mode_controller->OnAccelerometerUpdated(update);
   EXPECT_TRUE(maximize_mode_controller->IsMaximizeModeWindowManagerEnabled());
   bool screen_orientation_rotation_lock = IsRotationLocked();

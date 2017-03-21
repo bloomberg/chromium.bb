@@ -79,7 +79,7 @@ void WindowPositionerTest::SetUp() {
   // as they need it.
   window()->Hide();
   popup()->Hide();
-  window_positioner_.reset(new WindowPositioner(WmShell::Get()));
+  window_positioner_ = base::MakeUnique<WindowPositioner>();
 }
 
 void WindowPositionerTest::TearDown() {

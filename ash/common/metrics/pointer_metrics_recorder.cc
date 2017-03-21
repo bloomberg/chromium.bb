@@ -8,6 +8,7 @@
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/shared/app_types.h"
+#include "ash/shell.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/events/event_constants.h"
 #include "ui/views/widget/widget.h"
@@ -45,7 +46,7 @@ int GetDestination(views::Widget* target) {
 
 void RecordUMA(ui::EventPointerType type, views::Widget* target) {
   DownEventFormFactor form_factor = DownEventFormFactor::CLAMSHELL;
-  if (ash::WmShell::Get()
+  if (Shell::Get()
           ->maximize_mode_controller()
           ->IsMaximizeModeWindowManagerEnabled()) {
     form_factor = DownEventFormFactor::TOUCH_VIEW;

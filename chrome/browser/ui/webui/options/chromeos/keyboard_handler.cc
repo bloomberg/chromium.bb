@@ -10,7 +10,7 @@
 #include <utility>
 
 #include "ash/common/new_window_controller.h"
-#include "ash/common/wm_shell.h"
+#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -178,7 +178,7 @@ void KeyboardHandler::OnKeyboardDeviceConfigurationChanged() {
 }
 
 void KeyboardHandler::HandleShowKeyboardShortcuts(const base::ListValue* args) {
-  ash::WmShell::Get()->new_window_controller()->ShowKeyboardOverlay();
+  ash::Shell::Get()->new_window_controller()->ShowKeyboardOverlay();
 }
 
 void KeyboardHandler::UpdateCapsLockOptions() const {

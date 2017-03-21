@@ -11,7 +11,6 @@
 #include "ash/common/system/tray/tray_popup_utils.h"
 #include "ash/common/system/tray/tri_view.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
-#include "ash/common/wm_shell.h"
 #include "ash/display/screen_orientation_controller_chromeos.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
@@ -29,7 +28,7 @@ namespace ash {
 namespace {
 
 bool IsMaximizeModeWindowManagerEnabled() {
-  return WmShell::Get()
+  return Shell::Get()
       ->maximize_mode_controller()
       ->IsMaximizeModeWindowManagerEnabled();
 }

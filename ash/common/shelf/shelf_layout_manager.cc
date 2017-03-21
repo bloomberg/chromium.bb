@@ -889,7 +889,7 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
           ->GetDisplayNearestWindow()
           .id();
   const std::vector<WmWindow*> windows =
-      WmShell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal();
+      Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal();
   // Process the window list and check if there are any visible windows.
   // Ignore app list windows that may be animating to hide after dismissal.
   bool visible_window = false;

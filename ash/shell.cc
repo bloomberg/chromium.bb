@@ -26,6 +26,8 @@
 #include "ash/common/gpu_support.h"
 #include "ash/common/keyboard/keyboard_ui.h"
 #include "ash/common/login_status.h"
+#include "ash/common/media_controller.h"
+#include "ash/common/new_window_controller.h"
 #include "ash/common/palette_delegate.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/wm_shelf.h"
@@ -49,6 +51,7 @@
 #include "ash/common/wallpaper/wallpaper_controller.h"
 #include "ash/common/wallpaper/wallpaper_delegate.h"
 #include "ash/common/wm/container_finder.h"
+#include "ash/common/wm/immersive_context_ash.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_window_manager.h"
 #include "ash/common/wm/mru_window_tracker.h"
@@ -520,10 +523,13 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
           base::MakeUnique<system::BrightnessControllerChromeos>()),
       cast_config_(base::MakeUnique<CastConfigController>()),
       focus_cycler_(base::MakeUnique<FocusCycler>()),
+      immersive_context_(base::MakeUnique<ImmersiveContextAsh>()),
       keyboard_brightness_control_delegate_(
           base::MakeUnique<KeyboardBrightnessController>()),
       locale_notification_controller_(
           base::MakeUnique<LocaleNotificationController>()),
+      media_controller_(base::MakeUnique<MediaController>()),
+      new_window_controller_(base::MakeUnique<NewWindowController>()),
       shell_delegate_(std::move(shell_delegate)),
       system_tray_controller_(base::MakeUnique<SystemTrayController>()),
       app_list_(base::MakeUnique<app_list::AppList>()),
@@ -599,7 +605,7 @@ Shell::~Shell() {
 
   // Destroy maximize mode controller early on since it has some observers which
   // need to be removed.
-  wm_shell_->DeleteMaximizeModeController();
+  maximize_mode_controller_.reset();
 
   // Destroy the keyboard before closing the shelf, since it will invoke a shelf
   // layout.
@@ -639,7 +645,7 @@ Shell::~Shell() {
   // MruWindowTracker must be destroyed after all windows have been deleted to
   // avoid a possible crash when Shell is destroyed from a non-normal shutdown
   // path. (crbug.com/485438).
-  wm_shell_->DeleteMruWindowTracker();
+  mru_window_tracker_.reset();
 
   // These need a valid Shell instance to clean up properly, so explicitly
   // delete them before invalidating the instance.
@@ -765,7 +771,7 @@ void Shell::Init(const ShellInitParams& init_params) {
 
   scoped_overview_animation_settings_factory_.reset(
       new ScopedOverviewAnimationSettingsFactoryAura);
-  window_positioner_.reset(new WindowPositioner(wm_shell_.get()));
+  window_positioner_ = base::MakeUnique<WindowPositioner>();
 
   if (!is_mash) {
     native_cursor_manager_ = new AshNativeCursorManager;
@@ -864,7 +870,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   }
 
   accelerator_controller_ = wm_shell_->CreateAcceleratorController();
-  wm_shell_->CreateMaximizeModeController();
+  maximize_mode_controller_ = base::MakeUnique<MaximizeModeController>();
 
   if (!is_mash) {
     AddPreTargetHandler(
@@ -947,7 +953,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   partial_magnification_controller_.reset(new PartialMagnificationController());
 
   magnification_controller_.reset(MagnificationController::CreateInstance());
-  wm_shell_->CreateMruWindowTracker();
+  mru_window_tracker_ = base::MakeUnique<MruWindowTracker>();
 
   autoclick_controller_.reset(AutoclickController::CreateInstance());
 

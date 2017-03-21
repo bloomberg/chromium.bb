@@ -104,7 +104,7 @@ class TabletPowerButtonControllerTest : public AshTestBase {
   }
 
   void EnableMaximizeMode(bool enabled) {
-    WmShell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+    Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
         enabled);
   }
 

@@ -880,7 +880,7 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
 
   void EnableTabletMode(bool enable) {
     ash::MaximizeModeController* controller =
-        ash::WmShell::Get()->maximize_mode_controller();
+        ash::Shell::Get()->maximize_mode_controller();
     controller->EnableMaximizeModeWindowManager(enable);
   }
 

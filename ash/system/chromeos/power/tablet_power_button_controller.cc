@@ -43,7 +43,7 @@ constexpr int kIgnoreRepeatedButtonUpMs = 500;
 // Returns true if device is a convertible/tablet device, otherwise false.
 bool IsTabletModeSupported() {
   MaximizeModeController* maximize_mode_controller =
-      WmShell::Get()->maximize_mode_controller();
+      Shell::Get()->maximize_mode_controller();
   return maximize_mode_controller &&
          maximize_mode_controller->CanEnterMaximizeMode();
 }
@@ -51,7 +51,7 @@ bool IsTabletModeSupported() {
 // Returns true if device is currently in tablet/maximize mode, otherwise false.
 bool IsTabletModeActive() {
   MaximizeModeController* maximize_mode_controller =
-      WmShell::Get()->maximize_mode_controller();
+      Shell::Get()->maximize_mode_controller();
   return maximize_mode_controller &&
          maximize_mode_controller->IsMaximizeModeWindowManagerEnabled();
 }

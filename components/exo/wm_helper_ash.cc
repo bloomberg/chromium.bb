@@ -94,7 +94,7 @@ void WMHelperAsh::RemovePostTargetHandler(ui::EventHandler* handler) {
 }
 
 bool WMHelperAsh::IsMaximizeModeWindowManagerEnabled() const {
-  return ash::WmShell::Get()
+  return ash::Shell::Get()
       ->maximize_mode_controller()
       ->IsMaximizeModeWindowManagerEnabled();
 }

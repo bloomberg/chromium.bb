@@ -7,8 +7,6 @@
 #include <utility>
 
 #include "ash/common/accelerators/accelerator_controller.h"
-#include "ash/common/media_controller.h"
-#include "ash/common/new_window_controller.h"
 #include "ash/common/session/session_controller.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/app_list_shelf_item_delegate.h"
@@ -20,9 +18,6 @@
 #include "ash/common/shutdown_controller.h"
 #include "ash/common/system/chromeos/network/vpn_list.h"
 #include "ash/common/system/tray/system_tray_notifier.h"
-#include "ash/common/wm/immersive_context_ash.h"
-#include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
-#include "ash/common/wm/mru_window_tracker.h"
 #include "ash/common/wm/overview/window_selector_controller.h"
 #include "ash/common/wm/root_window_finder.h"
 #include "ash/common/wm/system_modal_container_layout_manager.h"
@@ -132,10 +127,7 @@ void WmShell::SetShelfDelegateForTesting(
 }
 
 WmShell::WmShell()
-    : immersive_context_(base::MakeUnique<ImmersiveContextAsh>()),
-      media_controller_(base::MakeUnique<MediaController>()),
-      new_window_controller_(base::MakeUnique<NewWindowController>()),
-      session_controller_(base::MakeUnique<SessionController>()),
+    : session_controller_(base::MakeUnique<SessionController>()),
       shelf_controller_(base::MakeUnique<ShelfController>()),
       shutdown_controller_(base::MakeUnique<ShutdownController>()),
       system_tray_notifier_(base::MakeUnique<SystemTrayNotifier>()),
@@ -206,22 +198,6 @@ void WmShell::DeleteWindowCycleController() {
 
 void WmShell::DeleteWindowSelectorController() {
   window_selector_controller_.reset();
-}
-
-void WmShell::CreateMaximizeModeController() {
-  maximize_mode_controller_.reset(new MaximizeModeController);
-}
-
-void WmShell::DeleteMaximizeModeController() {
-  maximize_mode_controller_.reset();
-}
-
-void WmShell::CreateMruWindowTracker() {
-  mru_window_tracker_.reset(new MruWindowTracker);
-}
-
-void WmShell::DeleteMruWindowTracker() {
-  mru_window_tracker_.reset();
 }
 
 void WmShell::SessionStateChanged(session_manager::SessionState state) {

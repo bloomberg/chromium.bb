@@ -9,6 +9,7 @@
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/shell.h"
 #include "ui/base/hit_test.h"
 
 namespace ash {
@@ -23,7 +24,7 @@ class MruWindowTrackerTest : public AshTest {
   }
 
   MruWindowTracker* mru_window_tracker() {
-    return WmShell::Get()->mru_window_tracker();
+    return Shell::Get()->mru_window_tracker();
   }
 
  private:

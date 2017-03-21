@@ -19,7 +19,6 @@ class Rect;
 
 namespace ash {
 
-class WmShell;
 class WmWindow;
 
 namespace test {
@@ -73,7 +72,7 @@ class ASH_EXPORT WindowPositioner {
   // rearrange accordingly.
   static void RearrangeVisibleWindowOnShow(WmWindow* added_window);
 
-  explicit WindowPositioner(WmShell* shell);
+  WindowPositioner();
   ~WindowPositioner();
 
   // Find a suitable screen position for a popup window and return it. The
@@ -107,8 +106,6 @@ class ASH_EXPORT WindowPositioner {
 
   // Constant exposed for unittest.
   static const int kMinimumWindowOffset;
-
-  WmShell* shell_;
 
   // The offset in X and Y for the next popup which opens.
   int pop_position_offset_increment_x;

@@ -107,6 +107,7 @@ class FirstRunHelper;
 class FocusCycler;
 class GPUSupport;
 class HighContrastController;
+class ImmersiveContextAsh;
 class ImmersiveHandlerFactoryAsh;
 class KeyboardBrightnessControlDelegate;
 class KeyboardUI;
@@ -117,7 +118,11 @@ class LockStateController;
 enum class LoginStatus;
 class LogoutConfirmationController;
 class MagnificationController;
+class MaximizeModeController;
+class MediaController;
 class MouseCursorEventFilter;
+class MruWindowTracker;
+class NewWindowController;
 class OverlayEventFilter;
 class PaletteDelegate;
 class PartialMagnificationController;
@@ -312,6 +317,14 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   }
   LogoutConfirmationController* logout_confirmation_controller() {
     return logout_confirmation_controller_.get();
+  }
+  MaximizeModeController* maximize_mode_controller() {
+    return maximize_mode_controller_.get();
+  }
+  MediaController* media_controller() { return media_controller_.get(); }
+  MruWindowTracker* mru_window_tracker() { return mru_window_tracker_.get(); }
+  NewWindowController* new_window_controller() {
+    return new_window_controller_.get();
   }
   SystemTrayController* system_tray_controller() {
     return system_tray_controller_.get();
@@ -615,11 +628,16 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   std::unique_ptr<CastConfigController> cast_config_;
   std::unique_ptr<DragDropController> drag_drop_controller_;
   std::unique_ptr<FocusCycler> focus_cycler_;
+  std::unique_ptr<ImmersiveContextAsh> immersive_context_;
   std::unique_ptr<KeyboardBrightnessControlDelegate>
       keyboard_brightness_control_delegate_;
   std::unique_ptr<KeyboardUI> keyboard_ui_;
   std::unique_ptr<LocaleNotificationController> locale_notification_controller_;
   std::unique_ptr<LogoutConfirmationController> logout_confirmation_controller_;
+  std::unique_ptr<MaximizeModeController> maximize_mode_controller_;
+  std::unique_ptr<MediaController> media_controller_;
+  std::unique_ptr<MruWindowTracker> mru_window_tracker_;
+  std::unique_ptr<NewWindowController> new_window_controller_;
   std::unique_ptr<PaletteDelegate> palette_delegate_;
   std::unique_ptr<ResizeShadowController> resize_shadow_controller_;
   std::unique_ptr<ShellDelegate> shell_delegate_;

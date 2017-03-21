@@ -147,8 +147,7 @@ void HandleToggleTouchscreen() {
 }
 
 void HandleToggleTouchView() {
-  MaximizeModeController* controller =
-      WmShell::Get()->maximize_mode_controller();
+  MaximizeModeController* controller = Shell::Get()->maximize_mode_controller();
   controller->EnableMaximizeModeWindowManager(
       !controller->IsMaximizeModeWindowManagerEnabled());
 }

@@ -7,7 +7,6 @@
 #include <stdint.h>
 
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
-#include "ash/common/wm_shell.h"
 #include "ash/display/screen_orientation_controller_chromeos.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -921,7 +920,7 @@ TEST_F(DisplayInfoProviderChromeosTest, SetRotationBeforeMaximizeMode) {
   EXPECT_FALSE(screen_orientation_controller->rotation_locked());
 
   // Entering maximize mode enables accelerometer screen rotations.
-  ash::WmShell::Get()
+  ash::Shell::Get()
       ->maximize_mode_controller()
       ->EnableMaximizeModeWindowManager(true);
   // Rotation lock should not activate because DisplayInfoProvider::SetInfo()
@@ -934,7 +933,7 @@ TEST_F(DisplayInfoProviderChromeosTest, SetRotationBeforeMaximizeMode) {
   EXPECT_EQ(display::Display::ROTATE_0, GetCurrentInternalDisplayRotation());
 
   // Exiting maximize mode should restore the initial rotation
-  ash::WmShell::Get()
+  ash::Shell::Get()
       ->maximize_mode_controller()
       ->EnableMaximizeModeWindowManager(false);
   EXPECT_EQ(display::Display::ROTATE_90, GetCurrentInternalDisplayRotation());
@@ -944,7 +943,7 @@ TEST_F(DisplayInfoProviderChromeosTest, SetRotationBeforeMaximizeMode) {
 // against accelerometer rotations.
 TEST_F(DisplayInfoProviderChromeosTest, SetRotationDuringMaximizeMode) {
   // Entering maximize mode enables accelerometer screen rotations.
-  ash::WmShell::Get()
+  ash::Shell::Get()
       ->maximize_mode_controller()
       ->EnableMaximizeModeWindowManager(true);
 

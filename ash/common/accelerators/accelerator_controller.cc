@@ -220,15 +220,15 @@ void HandleLaunchLastApp() {
 }
 
 void HandleMediaNextTrack() {
-  WmShell::Get()->media_controller()->HandleMediaNextTrack();
+  Shell::Get()->media_controller()->HandleMediaNextTrack();
 }
 
 void HandleMediaPlayPause() {
-  WmShell::Get()->media_controller()->HandleMediaPlayPause();
+  Shell::Get()->media_controller()->HandleMediaPlayPause();
 }
 
 void HandleMediaPrevTrack() {
-  WmShell::Get()->media_controller()->HandleMediaPrevTrack();
+  Shell::Get()->media_controller()->HandleMediaPrevTrack();
 }
 
 bool CanHandleNewIncognitoWindow() {
@@ -237,18 +237,18 @@ bool CanHandleNewIncognitoWindow() {
 
 void HandleNewIncognitoWindow() {
   base::RecordAction(UserMetricsAction("Accel_New_Incognito_Window"));
-  WmShell::Get()->new_window_controller()->NewWindow(true /* is_incognito */);
+  Shell::Get()->new_window_controller()->NewWindow(true /* is_incognito */);
 }
 
 void HandleNewTab(const ui::Accelerator& accelerator) {
   if (accelerator.key_code() == ui::VKEY_T)
     base::RecordAction(UserMetricsAction("Accel_NewTab_T"));
-  WmShell::Get()->new_window_controller()->NewTab();
+  Shell::Get()->new_window_controller()->NewTab();
 }
 
 void HandleNewWindow() {
   base::RecordAction(UserMetricsAction("Accel_New_Window"));
-  WmShell::Get()->new_window_controller()->NewWindow(false /* is_incognito */);
+  Shell::Get()->new_window_controller()->NewWindow(false /* is_incognito */);
 }
 
 bool CanHandleNextIme(ImeControlDelegate* ime_control_delegate) {
@@ -274,7 +274,7 @@ void HandleNextIme(ImeControlDelegate* ime_control_delegate) {
 
 void HandleOpenFeedbackPage() {
   base::RecordAction(UserMetricsAction("Accel_Open_Feedback_Page"));
-  WmShell::Get()->new_window_controller()->OpenFeedbackPage();
+  Shell::Get()->new_window_controller()->OpenFeedbackPage();
 }
 
 bool CanHandlePreviousIme(ImeControlDelegate* ime_control_delegate) {
@@ -291,7 +291,7 @@ void HandlePreviousIme(ImeControlDelegate* ime_control_delegate,
 
 void HandleRestoreTab() {
   base::RecordAction(UserMetricsAction("Accel_Restore_Tab"));
-  WmShell::Get()->new_window_controller()->RestoreTab();
+  Shell::Get()->new_window_controller()->RestoreTab();
 }
 
 // Rotate the active window.
@@ -313,7 +313,7 @@ void HandleRotateActiveWindow() {
 
 void HandleShowKeyboardOverlay() {
   base::RecordAction(UserMetricsAction("Accel_Show_Keyboard_Overlay"));
-  WmShell::Get()->new_window_controller()->ShowKeyboardOverlay();
+  Shell::Get()->new_window_controller()->ShowKeyboardOverlay();
 }
 
 bool CanHandleShowMessageCenterBubble() {
@@ -349,7 +349,7 @@ void HandleShowSystemTrayBubble() {
 
 void HandleShowTaskManager() {
   base::RecordAction(UserMetricsAction("Accel_Show_Task_Manager"));
-  WmShell::Get()->new_window_controller()->ShowTaskManager();
+  Shell::Get()->new_window_controller()->ShowTaskManager();
 }
 
 bool CanHandleSwitchIme(ImeControlDelegate* ime_control_delegate,
@@ -461,7 +461,7 @@ void HandleShowImeMenuBubble() {
 void HandleCrosh() {
   base::RecordAction(UserMetricsAction("Accel_Open_Crosh"));
 
-  WmShell::Get()->new_window_controller()->OpenCrosh();
+  Shell::Get()->new_window_controller()->OpenCrosh();
 }
 
 bool CanHandleDisableCapsLock(const ui::Accelerator& previous_accelerator) {
@@ -491,11 +491,11 @@ void HandleDisableCapsLock() {
 void HandleFileManager() {
   base::RecordAction(UserMetricsAction("Accel_Open_File_Manager"));
 
-  WmShell::Get()->new_window_controller()->OpenFileManager();
+  Shell::Get()->new_window_controller()->OpenFileManager();
 }
 
 void HandleGetHelp() {
-  WmShell::Get()->new_window_controller()->OpenGetHelp();
+  Shell::Get()->new_window_controller()->OpenGetHelp();
 }
 
 bool CanHandleLock() {
@@ -1240,7 +1240,7 @@ AcceleratorController::GetAcceleratorProcessingRestriction(int action) {
           actions_allowed_in_app_mode_.end()) {
     return RESTRICTION_PREVENT_PROCESSING;
   }
-  if (WmShell::Get()->IsSystemModalWindowOpen() &&
+  if (wm_shell->IsSystemModalWindowOpen() &&
       actions_allowed_at_modal_window_.find(action) ==
           actions_allowed_at_modal_window_.end()) {
     // Note we prevent the shortcut from propagating so it will not
@@ -1249,7 +1249,7 @@ AcceleratorController::GetAcceleratorProcessingRestriction(int action) {
     // cycling through its window elements.
     return RESTRICTION_PREVENT_PROCESSING_AND_PROPAGATION;
   }
-  if (wm_shell->mru_window_tracker()->BuildMruWindowList().empty() &&
+  if (Shell::Get()->mru_window_tracker()->BuildMruWindowList().empty() &&
       actions_needing_window_.find(action) != actions_needing_window_.end()) {
     Shell::GetInstance()->accessibility_delegate()->TriggerAccessibilityAlert(
         A11Y_ALERT_WINDOW_NEEDED);

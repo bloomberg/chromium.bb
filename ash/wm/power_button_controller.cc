@@ -68,7 +68,7 @@ void PowerButtonController::OnPowerButtonEvent(
     return;
 
   bool should_take_screenshot = down && volume_down_pressed_ &&
-                                WmShell::Get()
+                                Shell::Get()
                                     ->maximize_mode_controller()
                                     ->IsMaximizeModeWindowManagerEnabled();
 

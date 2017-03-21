@@ -11,6 +11,7 @@
 #include "ash/common/frame/caption_buttons/frame_size_button.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm_shell.h"
+#include "ash/shell.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
@@ -306,7 +307,7 @@ void FrameCaptionButtonContainerView::SetButtonIcon(FrameCaptionButton* button,
 }
 
 bool FrameCaptionButtonContainerView::ShouldSizeButtonBeVisible() const {
-  return !WmShell::Get()
+  return !Shell::Get()
               ->maximize_mode_controller()
               ->IsMaximizeModeWindowManagerEnabled() &&
          frame_->widget_delegate()->CanMaximize();

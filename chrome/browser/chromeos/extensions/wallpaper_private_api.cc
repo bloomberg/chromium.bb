@@ -218,7 +218,7 @@ void WindowStateManager::BuildWindowListAndMinimizeInactiveForUser(
       &user_id_hash_window_list_map_[user_id_hash];
 
   std::vector<aura::Window*> windows = ash::WmWindow::ToAuraWindows(
-      ash::WmShell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal());
+      ash::Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal());
 
   for (std::vector<aura::Window*>::iterator iter = windows.begin();
        iter != windows.end(); ++iter) {

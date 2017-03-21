@@ -12,6 +12,7 @@
 #include "ash/common/system/tray/tray_item_view.h"
 #include "ash/common/wm_shell.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/shell.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/image_view.h"
 
@@ -26,14 +27,14 @@ class MultiProfileMediaTrayView : public TrayItemView,
     CreateImageView();
     image_view()->SetImage(
         gfx::CreateVectorIcon(kSystemTrayRecordingIcon, kTrayIconColor));
-    WmShell::Get()->media_controller()->AddObserver(this);
+    Shell::Get()->media_controller()->AddObserver(this);
     SetVisible(false);
-    WmShell::Get()->media_controller()->RequestCaptureState();
+    Shell::Get()->media_controller()->RequestCaptureState();
     set_id(VIEW_ID_MEDIA_TRAY_VIEW);
   }
 
   ~MultiProfileMediaTrayView() override {
-    WmShell::Get()->media_controller()->RemoveObserver(this);
+    Shell::Get()->media_controller()->RemoveObserver(this);
   }
 
   // MediaCaptureObserver:

@@ -58,7 +58,7 @@ class DisplayErrorNotificationDelegate
   // message_center::NotificationDelegate:
   void ButtonClick(int index) override {
     DCHECK_EQ(0, index);
-    WmShell::Get()->new_window_controller()->OpenFeedbackPage();
+    Shell::Get()->new_window_controller()->OpenFeedbackPage();
   }
 
  private:

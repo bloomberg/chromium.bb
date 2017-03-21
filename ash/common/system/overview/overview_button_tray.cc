@@ -109,18 +109,18 @@ void OverviewButtonTray::UpdateIconVisibility() {
   // WindowSelectorController::CanSelect. The visibility of the button should
   // not change during transient times in which CanSelect is false. Such as when
   // a modal dialog is present.
-  WmShell* shell = WmShell::Get();
-  SessionController* session_controller = shell->session_controller();
+  SessionController* session_controller = WmShell::Get()->session_controller();
 
+  Shell* shell = Shell::Get();
   SetVisible(
       shell->maximize_mode_controller()->IsMaximizeModeWindowManagerEnabled() &&
       session_controller->IsActiveUserSessionStarted() &&
       !session_controller->IsScreenLocked() &&
       session_controller->GetSessionState() ==
           session_manager::SessionState::ACTIVE &&
-      Shell::Get()->system_tray_delegate()->GetUserLoginStatus() !=
+      shell->system_tray_delegate()->GetUserLoginStatus() !=
           LoginStatus::KIOSK_APP &&
-      Shell::Get()->system_tray_delegate()->GetUserLoginStatus() !=
+      shell->system_tray_delegate()->GetUserLoginStatus() !=
           LoginStatus::ARC_KIOSK_APP);
 }
 

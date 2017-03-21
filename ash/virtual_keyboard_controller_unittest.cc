@@ -47,7 +47,7 @@ class VirtualKeyboardControllerTest : public AshTestBase {
   // Sets the event blocker on the maximized window controller.
   void SetEventBlocker(
       std::unique_ptr<ScopedDisableInternalMouseAndKeyboard> blocker) {
-    WmShell::Get()->maximize_mode_controller()->event_blocker_ =
+    Shell::Get()->maximize_mode_controller()->event_blocker_ =
         std::move(blocker);
   }
 
@@ -66,11 +66,11 @@ class VirtualKeyboardControllerTest : public AshTestBase {
 TEST_F(VirtualKeyboardControllerTest, EnabledDuringMaximizeMode) {
   ASSERT_FALSE(keyboard::IsKeyboardEnabled());
   // Toggle maximized mode on.
-  WmShell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
       true);
   EXPECT_TRUE(keyboard::IsKeyboardEnabled());
   // Toggle maximized mode off.
-  WmShell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
       false);
   EXPECT_FALSE(keyboard::IsKeyboardEnabled());
 }
@@ -97,7 +97,7 @@ class MockEventBlocker : public ScopedDisableInternalMouseAndKeyboard {
 // cause the Virtual Keyboard Controller to crash. See crbug.com/446204.
 TEST_F(VirtualKeyboardControllerTest, RestoreKeyboardDevices) {
   // Toggle maximized mode on.
-  WmShell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
       true);
   std::unique_ptr<ScopedDisableInternalMouseAndKeyboard> blocker(
       new MockEventBlocker);
@@ -246,11 +246,11 @@ TEST_F(VirtualKeyboardControllerAutoTest, EnabledDuringMaximizeMode) {
   UpdateKeyboardDevices(keyboard_devices);
   ASSERT_FALSE(keyboard::IsKeyboardEnabled());
   // Toggle maximized mode on.
-  WmShell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
       true);
   ASSERT_TRUE(keyboard::IsKeyboardEnabled());
   // Toggle maximized mode off.
-  WmShell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
       false);
   ASSERT_FALSE(keyboard::IsKeyboardEnabled());
 }
@@ -269,7 +269,7 @@ TEST_F(VirtualKeyboardControllerAutoTest, SuppressedInMaximizedMode) {
       2, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, "Keyboard"));
   UpdateKeyboardDevices(keyboard_devices);
   // Toggle maximized mode on.
-  WmShell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
       true);
   ASSERT_FALSE(keyboard::IsKeyboardEnabled());
   ASSERT_TRUE(notified());
@@ -299,7 +299,7 @@ TEST_F(VirtualKeyboardControllerAutoTest, SuppressedInMaximizedMode) {
   ASSERT_TRUE(notified());
   ASSERT_FALSE(IsVirtualKeyboardSuppressed());
   // Toggle maximized mode oFF.
-  WmShell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
       false);
   ASSERT_FALSE(keyboard::IsKeyboardEnabled());
 }

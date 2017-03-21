@@ -9,6 +9,7 @@
 #include "ash/common/wm/wm_event.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
+#include "ash/shell.h"
 #include "base/metrics/user_metrics.h"
 
 namespace ash {
@@ -20,7 +21,7 @@ bool ToggleMinimized() {
   // the launcher when there is no active window.
   if (!window) {
     MruWindowTracker::WindowList mru_windows(
-        WmShell::Get()->mru_window_tracker()->BuildMruWindowList());
+        Shell::Get()->mru_window_tracker()->BuildMruWindowList());
     if (!mru_windows.empty())
       mru_windows.front()->GetWindowState()->Activate();
     return true;

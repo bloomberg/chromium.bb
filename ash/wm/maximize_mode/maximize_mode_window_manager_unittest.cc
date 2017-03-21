@@ -85,21 +85,21 @@ class MaximizeModeWindowManagerTest : public test::AshTestBase {
   // Create the Maximized mode window manager.
   MaximizeModeWindowManager* CreateMaximizeModeWindowManager() {
     EXPECT_FALSE(maximize_mode_window_manager());
-    WmShell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+    Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
         true);
     return maximize_mode_window_manager();
   }
 
   // Destroy the maximized mode window manager.
   void DestroyMaximizeModeWindowManager() {
-    WmShell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+    Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
         false);
     EXPECT_FALSE(maximize_mode_window_manager());
   }
 
   // Get the maximze window manager.
   MaximizeModeWindowManager* maximize_mode_window_manager() {
-    return WmShell::Get()
+    return Shell::Get()
         ->maximize_mode_controller()
         ->maximize_mode_window_manager_.get();
   }
@@ -771,7 +771,7 @@ TEST_F(MaximizeModeWindowManagerTest, ModeChangeKeepsMRUOrder) {
   // The windows should be in the reverse order of creation in the MRU list.
   {
     aura::Window::Windows windows = WmWindow::ToAuraWindows(
-        WmShell::Get()->mru_window_tracker()->BuildMruWindowList());
+        Shell::Get()->mru_window_tracker()->BuildMruWindowList());
 
     EXPECT_EQ(w1.get(), windows[4]);
     EXPECT_EQ(w2.get(), windows[3]);
@@ -786,7 +786,7 @@ TEST_F(MaximizeModeWindowManagerTest, ModeChangeKeepsMRUOrder) {
   EXPECT_EQ(5, manager->GetNumberOfManagedWindows());
   {
     aura::Window::Windows windows = WmWindow::ToAuraWindows(
-        WmShell::Get()->mru_window_tracker()->BuildMruWindowList());
+        Shell::Get()->mru_window_tracker()->BuildMruWindowList());
     // We do not test maximization here again since that was done already.
     EXPECT_EQ(w1.get(), windows[4]);
     EXPECT_EQ(w2.get(), windows[3]);
@@ -799,7 +799,7 @@ TEST_F(MaximizeModeWindowManagerTest, ModeChangeKeepsMRUOrder) {
   DestroyMaximizeModeWindowManager();
   {
     aura::Window::Windows windows = WmWindow::ToAuraWindows(
-        WmShell::Get()->mru_window_tracker()->BuildMruWindowList());
+        Shell::Get()->mru_window_tracker()->BuildMruWindowList());
     // We do not test maximization here again since that was done already.
     EXPECT_EQ(w1.get(), windows[4]);
     EXPECT_EQ(w2.get(), windows[3]);
@@ -833,7 +833,7 @@ TEST_F(MaximizeModeWindowManagerTest, TestMinimize) {
       CreateWindow(ui::wm::WINDOW_TYPE_NORMAL, rect));
   wm::WindowState* window_state = wm::GetWindowState(window.get());
   EXPECT_EQ(rect.ToString(), window->bounds().ToString());
-  WmShell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
       true);
   EXPECT_TRUE(window_state->IsMaximized());
   EXPECT_FALSE(window_state->IsMinimized());
@@ -849,7 +849,7 @@ TEST_F(MaximizeModeWindowManagerTest, TestMinimize) {
   EXPECT_FALSE(window_state->IsMinimized());
   EXPECT_TRUE(window->IsVisible());
 
-  WmShell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
       false);
   EXPECT_FALSE(window_state->IsMaximized());
   EXPECT_FALSE(window_state->IsMinimized());
@@ -1235,7 +1235,7 @@ TEST_F(MaximizeModeWindowManagerTest, TryToDesktopSizeDragUnmaximizable) {
 
   // 2. Check that turning on the manager will stop allowing the window from
   // dragging.
-  WmShell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
       true);
   gfx::Rect center_bounds(window->bounds());
   EXPECT_NE(rect.origin().ToString(), center_bounds.origin().ToString());
@@ -1247,7 +1247,7 @@ TEST_F(MaximizeModeWindowManagerTest, TryToDesktopSizeDragUnmaximizable) {
   generator.ReleaseLeftButton();
   EXPECT_EQ(center_bounds.x(), window->bounds().x());
   EXPECT_EQ(center_bounds.y(), window->bounds().y());
-  WmShell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
+  Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
       false);
 
   // 3. Releasing the mazimize manager again will restore the window to its

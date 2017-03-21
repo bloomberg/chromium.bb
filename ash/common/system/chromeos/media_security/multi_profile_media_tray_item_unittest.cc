@@ -13,6 +13,7 @@
 #include "ash/common/system/tray/tray_item_view.h"
 #include "ash/common/wm_shell.h"
 #include "ash/public/interfaces/media.mojom.h"
+#include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/status_area_widget_test_helper.h"
@@ -32,7 +33,7 @@ class MultiProfileMediaTrayItemTest : public test::AshTestBase {
     std::vector<mojom::MediaCaptureState> v;
     for (int i = 0; i < controller->NumberOfLoggedInUsers(); ++i)
       v.push_back(state);
-    WmShell::Get()->media_controller()->NotifyCaptureState(v);
+    Shell::Get()->media_controller()->NotifyCaptureState(v);
   }
 
  private:

@@ -8,6 +8,7 @@
 #include "ash/common/wm/window_state.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
+#include "ash/shell.h"
 #include "ui/views/accessible_pane_view.h"
 #include "ui/views/focus/focus_search.h"
 #include "ui/views/widget/widget.h"
@@ -18,7 +19,7 @@ namespace ash {
 namespace {
 
 bool HasFocusableWindow() {
-  return !WmShell::Get()->mru_window_tracker()->BuildMruWindowList().empty();
+  return !Shell::Get()->mru_window_tracker()->BuildMruWindowList().empty();
 }
 
 }  // namespace
@@ -80,7 +81,7 @@ void FocusCycler::RotateFocus(Direction direction) {
     if (index == browser_index) {
       // Activate the most recently active browser window.
       MruWindowTracker::WindowList mru_windows(
-          WmShell::Get()->mru_window_tracker()->BuildMruWindowList());
+          Shell::Get()->mru_window_tracker()->BuildMruWindowList());
       if (mru_windows.empty())
         break;
       WmWindow* window = mru_windows.front();

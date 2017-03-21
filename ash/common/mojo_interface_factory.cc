@@ -50,12 +50,12 @@ void BindLocaleNotificationControllerOnMainThread(
 
 void BindMediaControllerRequestOnMainThread(
     mojom::MediaControllerRequest request) {
-  WmShell::Get()->media_controller()->BindRequest(std::move(request));
+  Shell::Get()->media_controller()->BindRequest(std::move(request));
 }
 
 void BindNewWindowControllerRequestOnMainThread(
     mojom::NewWindowControllerRequest request) {
-  WmShell::Get()->new_window_controller()->BindRequest(std::move(request));
+  Shell::Get()->new_window_controller()->BindRequest(std::move(request));
 }
 
 void BindSessionControllerRequestOnMainThread(
@@ -77,7 +77,7 @@ void BindSystemTrayRequestOnMainThread(mojom::SystemTrayRequest request) {
 }
 
 void BindTouchViewRequestOnMainThread(mojom::TouchViewManagerRequest request) {
-  WmShell::Get()->maximize_mode_controller()->BindRequest(std::move(request));
+  Shell::Get()->maximize_mode_controller()->BindRequest(std::move(request));
 }
 
 void BindVpnListRequestOnMainThread(mojom::VpnListRequest request) {

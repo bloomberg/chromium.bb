@@ -163,9 +163,8 @@ WmWindow* GetReferenceWindow(const WmWindow* root_window,
     active = NULL;
 
   // Get a list of all windows.
-  const std::vector<WmWindow*> windows = root_window->GetShell()
-                                             ->mru_window_tracker()
-                                             ->BuildWindowListIgnoreModal();
+  const std::vector<WmWindow*> windows =
+      Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal();
 
   if (windows.empty())
     return nullptr;
@@ -376,9 +375,8 @@ void WindowPositioner::RearrangeVisibleWindowOnShow(WmWindow* added_window) {
     added_window->SetBounds(added_bounds);
 }
 
-WindowPositioner::WindowPositioner(WmShell* shell)
-    : shell_(shell),
-      pop_position_offset_increment_x(0),
+WindowPositioner::WindowPositioner()
+    : pop_position_offset_increment_x(0),
       pop_position_offset_increment_y(0),
       popup_position_offset_from_screen_corner_x(0),
       popup_position_offset_from_screen_corner_y(0),
@@ -420,7 +418,7 @@ gfx::Rect WindowPositioner::GetPopupPosition(const gfx::Rect& old_pos) {
   pop_position_offset_increment_y = grid;
   // We handle the Multi monitor support by retrieving the active window's
   // work area.
-  WmWindow* window = shell_->GetActiveWindow();
+  WmWindow* window = WmShell::Get()->GetActiveWindow();
   const gfx::Rect work_area =
       window && window->IsVisible()
           ? window->GetDisplayNearestWindow().work_area()
@@ -479,7 +477,7 @@ gfx::Rect WindowPositioner::SmartPopupPosition(const gfx::Rect& old_pos,
                                                const gfx::Rect& work_area,
                                                int grid) {
   const std::vector<WmWindow*> windows =
-      shell_->mru_window_tracker()->BuildWindowListIgnoreModal();
+      Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal();
 
   std::vector<const gfx::Rect*> regions;
   // Process the window list and check if we can bail immediately.

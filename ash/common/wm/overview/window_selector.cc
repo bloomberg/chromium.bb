@@ -421,7 +421,7 @@ bool WindowSelector::AcceptSelection() {
 void WindowSelector::SelectWindow(WindowSelectorItem* item) {
   WmWindow* window = item->GetWindow();
   std::vector<WmWindow*> window_list =
-      WmShell::Get()->mru_window_tracker()->BuildMruWindowList();
+      Shell::Get()->mru_window_tracker()->BuildMruWindowList();
   if (!window_list.empty()) {
     // Record UMA_WINDOW_OVERVIEW_ACTIVE_WINDOW_CHANGED if the user is selecting
     // a window other than the window that was active prior to entering overview
