@@ -128,6 +128,9 @@ class ContentPasswordManagerDriver
   const autofill::mojom::PasswordGenerationAgentPtr&
   GetPasswordGenerationAgent();
 
+  gfx::RectF TransformToRootCoordinates(
+      const gfx::RectF& bounds_in_frame_coordinates);
+
   content::RenderFrameHost* render_frame_host_;
   PasswordManagerClient* client_;
   PasswordGenerationManager password_generation_manager_;

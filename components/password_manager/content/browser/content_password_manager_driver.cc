@@ -20,6 +20,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/web_contents.h"
@@ -284,13 +285,15 @@ void ContentPasswordManagerDriver::ShowPasswordSuggestions(
     int options,
     const gfx::RectF& bounds) {
   password_autofill_manager_.OnShowPasswordSuggestions(
-      key, text_direction, typed_username, options, bounds);
+      key, text_direction, typed_username, options,
+      TransformToRootCoordinates(bounds));
 }
 
 void ContentPasswordManagerDriver::ShowNotSecureWarning(
     base::i18n::TextDirection text_direction,
     const gfx::RectF& bounds) {
-  password_autofill_manager_.OnShowNotSecureWarning(text_direction, bounds);
+  password_autofill_manager_.OnShowNotSecureWarning(
+      text_direction, TransformToRootCoordinates(bounds));
 }
 
 void ContentPasswordManagerDriver::RecordSavePasswordProgress(
@@ -344,6 +347,16 @@ ContentPasswordManagerDriver::GetPasswordGenerationAgent() {
   }
 
   return password_gen_agent_;
+}
+
+gfx::RectF ContentPasswordManagerDriver::TransformToRootCoordinates(
+    const gfx::RectF& bounds_in_frame_coordinates) {
+  content::RenderWidgetHostView* rwhv = render_frame_host_->GetView();
+  if (!rwhv)
+    return bounds_in_frame_coordinates;
+  return gfx::RectF(rwhv->TransformPointToRootCoordSpaceF(
+                        bounds_in_frame_coordinates.origin()),
+                    bounds_in_frame_coordinates.size());
 }
 
 }  // namespace password_manager
