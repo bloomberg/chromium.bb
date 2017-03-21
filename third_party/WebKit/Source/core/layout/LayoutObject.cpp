@@ -1736,6 +1736,9 @@ void LayoutObject::setStyle(PassRefPtr<ComputedStyle> style) {
       setShouldDoFullPaintInvalidationWithoutGeometryChange();
   }
 
+  if (diff.needsVisualRectUpdate())
+    setMayNeedPaintInvalidation();
+
   // Text nodes share style with their parents but the paint properties don't
   // apply to them, hence the !isText() check.
   if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled() && !isText() &&
@@ -1757,20 +1760,18 @@ void LayoutObject::setStyle(PassRefPtr<ComputedStyle> style) {
 void LayoutObject::styleWillChange(StyleDifference diff,
                                    const ComputedStyle& newStyle) {
   if (m_style) {
+    bool visibilityChanged = m_style->visibility() != newStyle.visibility();
     // If our z-index changes value or our visibility changes,
     // we need to dirty our stacking context's z-order list.
-    bool visibilityChanged =
-        m_style->visibility() != newStyle.visibility() ||
-        m_style->zIndex() != newStyle.zIndex() ||
-        m_style->isStackingContext() != newStyle.isStackingContext();
-    if (visibilityChanged) {
+    if (visibilityChanged || m_style->zIndex() != newStyle.zIndex() ||
+        m_style->isStackingContext() != newStyle.isStackingContext()) {
       document().setAnnotatedRegionsDirty(true);
       if (AXObjectCache* cache = document().existingAXObjectCache())
         cache->childrenChanged(parent());
     }
 
     // Keep layer hierarchy visibility bits up to date if visibility changes.
-    if (m_style->visibility() != newStyle.visibility()) {
+    if (visibilityChanged) {
       // We might not have an enclosing layer yet because we might not be in the
       // tree.
       if (PaintLayer* layer = enclosingLayer())

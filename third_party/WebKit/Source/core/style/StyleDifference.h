@@ -24,6 +24,7 @@ class StyleDifference {
     // The object needs to issue paint invalidations if it is affected by text
     // decorations or properties dependent on color (e.g., border or outline).
     TextDecorationOrColorChanged = 1 << 6,
+    ScrollAnchorDisablingPropertyChanged = 1 << 7,
     // If you add a value here, be sure to update the number of bits on
     // m_propertySpecificDifferences.
   };
@@ -32,17 +33,13 @@ class StyleDifference {
       : m_paintInvalidationType(NoPaintInvalidation),
         m_layoutType(NoLayout),
         m_recomputeOverflow(false),
-        m_propertySpecificDifferences(0),
-        m_scrollAnchorDisablingPropertyChanged(false) {}
+        m_visualRectUpdate(false),
+        m_propertySpecificDifferences(0) {}
 
   bool hasDifference() const {
-    bool result = m_paintInvalidationType || m_layoutType ||
-                  m_propertySpecificDifferences;
-    // m_recomputeOverflow, m_scrollAnchorDisablingPropertyChanged and
-    // are never set without other flags set.
-    DCHECK(result ||
-           (!m_recomputeOverflow && !m_scrollAnchorDisablingPropertyChanged));
-    return result;
+    return m_paintInvalidationType || m_layoutType ||
+           m_propertySpecificDifferences || m_recomputeOverflow ||
+           m_visualRectUpdate;
   }
 
   bool hasAtMostPropertySpecificDifferences(
@@ -90,6 +87,9 @@ class StyleDifference {
   bool needsRecomputeOverflow() const { return m_recomputeOverflow; }
   void setNeedsRecomputeOverflow() { m_recomputeOverflow = true; }
 
+  bool needsVisualRectUpdate() const { return m_visualRectUpdate; }
+  void setNeedsVisualRectUpdate() { m_visualRectUpdate = true; }
+
   bool transformChanged() const {
     return m_propertySpecificDifferences & TransformChanged;
   }
@@ -132,10 +132,10 @@ class StyleDifference {
   }
 
   bool scrollAnchorDisablingPropertyChanged() const {
-    return m_scrollAnchorDisablingPropertyChanged;
+    return m_propertySpecificDifferences & ScrollAnchorDisablingPropertyChanged;
   }
   void setScrollAnchorDisablingPropertyChanged() {
-    m_scrollAnchorDisablingPropertyChanged = true;
+    m_propertySpecificDifferences |= ScrollAnchorDisablingPropertyChanged;
   }
 
  private:
@@ -149,8 +149,8 @@ class StyleDifference {
   enum LayoutType { NoLayout = 0, PositionedMovement, FullLayout };
   unsigned m_layoutType : 2;
   unsigned m_recomputeOverflow : 1;
-  unsigned m_propertySpecificDifferences : 7;
-  unsigned m_scrollAnchorDisablingPropertyChanged : 1;
+  unsigned m_visualRectUpdate : 1;
+  unsigned m_propertySpecificDifferences : 8;
 };
 
 }  // namespace blink
