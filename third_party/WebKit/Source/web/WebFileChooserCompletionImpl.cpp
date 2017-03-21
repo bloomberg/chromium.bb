@@ -37,7 +37,7 @@ namespace blink {
 
 WebFileChooserCompletionImpl::WebFileChooserCompletionImpl(
     PassRefPtr<FileChooser> chooser)
-    : m_fileChooser(chooser) {}
+    : m_fileChooser(std::move(chooser)) {}
 
 WebFileChooserCompletionImpl::~WebFileChooserCompletionImpl() {}
 

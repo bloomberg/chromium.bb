@@ -85,7 +85,7 @@ class ShapeValue final : public GarbageCollectedFinalized<ShapeValue> {
 
  private:
   ShapeValue(PassRefPtr<BasicShape> shape, CSSBoxType cssBox)
-      : m_type(Shape), m_shape(shape), m_cssBox(cssBox) {}
+      : m_type(Shape), m_shape(std::move(shape)), m_cssBox(cssBox) {}
   ShapeValue(ShapeValueType type) : m_type(type), m_cssBox(BoxMissing) {}
   ShapeValue(StyleImage* image)
       : m_type(Image), m_image(image), m_cssBox(ContentBox) {}

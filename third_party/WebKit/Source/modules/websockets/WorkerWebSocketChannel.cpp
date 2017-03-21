@@ -165,7 +165,7 @@ Peer::Peer(Bridge* bridge,
            WorkerThreadLifecycleContext* workerThreadLifecycleContext)
     : WorkerThreadLifecycleObserver(workerThreadLifecycleContext),
       m_bridge(bridge),
-      m_loaderProxy(loaderProxy),
+      m_loaderProxy(std::move(loaderProxy)),
       m_mainWebSocketChannel(nullptr) {
   DCHECK(isMainThread());
 }

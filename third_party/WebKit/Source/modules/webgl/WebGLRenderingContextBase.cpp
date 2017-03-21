@@ -4615,7 +4615,7 @@ PassRefPtr<Image> WebGLRenderingContextBase::drawImageIntoBuffer(
     int width,
     int height,
     const char* functionName) {
-  RefPtr<Image> image(passImage);
+  RefPtr<Image> image(std::move(passImage));
   ASSERT(image);
 
   IntSize size(width, height);

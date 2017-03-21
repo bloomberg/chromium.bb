@@ -145,7 +145,7 @@ struct BidiStatus final {
       : eor(eorDir),
         lastStrong(lastStrongDir),
         last(lastDir),
-        context(bidiContext) {}
+        context(std::move(bidiContext)) {}
 
   // Creates a BidiStatus for Isolates (RLI/LRI).
   // The rule X5a ans X5b of UAX#9: http://unicode.org/reports/tr9/#X5a

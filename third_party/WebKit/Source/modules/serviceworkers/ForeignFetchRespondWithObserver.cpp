@@ -110,6 +110,6 @@ ForeignFetchRespondWithObserver::ForeignFetchRespondWithObserver(
                                frameType,
                                requestContext,
                                observer),
-      m_requestOrigin(requestOrigin) {}
+      m_requestOrigin(std::move(requestOrigin)) {}
 
 }  // namespace blink

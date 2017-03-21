@@ -46,7 +46,7 @@ FELighting::FELighting(Filter* filter,
                        PassRefPtr<LightSource> lightSource)
     : FilterEffect(filter),
       m_lightingType(lightingType),
-      m_lightSource(lightSource),
+      m_lightSource(std::move(lightSource)),
       m_lightingColor(lightingColor),
       m_surfaceScale(surfaceScale),
       m_diffuseConstant(std::max(diffuseConstant, 0.0f)),

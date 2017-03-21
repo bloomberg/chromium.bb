@@ -59,7 +59,7 @@ class CSSCustomPropertyDeclaration : public CSSValue {
                                PassRefPtr<CSSVariableData> value)
       : CSSValue(CustomPropertyDeclarationClass),
         m_name(name),
-        m_value(value),
+        m_value(std::move(value)),
         m_valueId(CSSValueInvalid) {}
 
   const AtomicString m_name;

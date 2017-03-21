@@ -29,7 +29,8 @@ class UnderlyingCompatibilityChecker
  private:
   UnderlyingCompatibilityChecker(
       PassRefPtr<NonInterpolableValue> underlyingNonInterpolableValue)
-      : m_underlyingNonInterpolableValue(underlyingNonInterpolableValue) {}
+      : m_underlyingNonInterpolableValue(
+            std::move(underlyingNonInterpolableValue)) {}
 
   bool isValid(const InterpolationEnvironment&,
                const InterpolationValue& underlying) const final {
@@ -52,7 +53,7 @@ class InheritedShapeChecker : public InterpolationType::ConversionChecker {
  private:
   InheritedShapeChecker(CSSPropertyID property,
                         PassRefPtr<BasicShape> inheritedShape)
-      : m_property(property), m_inheritedShape(inheritedShape) {}
+      : m_property(property), m_inheritedShape(std::move(inheritedShape)) {}
 
   bool isValid(const InterpolationEnvironment& environment,
                const InterpolationValue&) const final {

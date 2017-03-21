@@ -41,7 +41,7 @@ class PLATFORM_EXPORT FontDataForRangeSet
  public:
   explicit FontDataForRangeSet(PassRefPtr<SimpleFontData> fontData = nullptr,
                                PassRefPtr<UnicodeRangeSet> rangeSet = nullptr)
-      : m_fontData(fontData), m_rangeSet(rangeSet) {}
+      : m_fontData(std::move(fontData)), m_rangeSet(std::move(rangeSet)) {}
 
   FontDataForRangeSet(const FontDataForRangeSet& other);
 

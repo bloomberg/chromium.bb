@@ -142,7 +142,7 @@ class CORE_EXPORT KeyframeEffectModelBase : public EffectModel {
       : m_lastIteration(0),
         m_lastFraction(std::numeric_limits<double>::quiet_NaN()),
         m_lastIterationDuration(0),
-        m_defaultKeyframeEasing(defaultKeyframeEasing),
+        m_defaultKeyframeEasing(std::move(defaultKeyframeEasing)),
         m_hasSyntheticKeyframes(false),
         m_needsCompositorKeyframesSnapshot(true) {}
 

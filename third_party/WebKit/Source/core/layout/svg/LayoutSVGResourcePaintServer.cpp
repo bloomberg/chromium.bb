@@ -36,11 +36,15 @@ SVGPaintServer::SVGPaintServer(Color color) : m_color(color) {}
 
 SVGPaintServer::SVGPaintServer(PassRefPtr<Gradient> gradient,
                                const AffineTransform& transform)
-    : m_gradient(gradient), m_transform(transform), m_color(Color::black) {}
+    : m_gradient(std::move(gradient)),
+      m_transform(transform),
+      m_color(Color::black) {}
 
 SVGPaintServer::SVGPaintServer(PassRefPtr<Pattern> pattern,
                                const AffineTransform& transform)
-    : m_pattern(pattern), m_transform(transform), m_color(Color::black) {}
+    : m_pattern(std::move(pattern)),
+      m_transform(transform),
+      m_color(Color::black) {}
 
 void SVGPaintServer::applyToPaintFlags(PaintFlags& flags, float alpha) {
   SkColor baseColor = m_gradient || m_pattern ? SK_ColorBLACK : m_color.rgb();

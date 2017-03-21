@@ -115,7 +115,7 @@ class MODULES_EXPORT IDBKey : public GarbageCollectedFinalized<IDBKey> {
   IDBKey(Type type, double number) : m_type(type), m_number(number) {}
   explicit IDBKey(const String& value) : m_type(StringType), m_string(value) {}
   explicit IDBKey(PassRefPtr<SharedBuffer> value)
-      : m_type(BinaryType), m_binary(value) {}
+      : m_type(BinaryType), m_binary(std::move(value)) {}
   explicit IDBKey(const KeyArray& keyArray)
       : m_type(ArrayType), m_array(keyArray) {}
 

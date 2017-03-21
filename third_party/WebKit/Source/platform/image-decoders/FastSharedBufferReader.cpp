@@ -33,7 +33,10 @@
 namespace blink {
 
 FastSharedBufferReader::FastSharedBufferReader(PassRefPtr<SegmentReader> data)
-    : m_data(data), m_segment(0), m_segmentLength(0), m_dataPosition(0) {}
+    : m_data(std::move(data)),
+      m_segment(0),
+      m_segmentLength(0),
+      m_dataPosition(0) {}
 
 void FastSharedBufferReader::setData(PassRefPtr<SegmentReader> data) {
   if (data == m_data)

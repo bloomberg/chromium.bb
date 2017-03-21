@@ -53,7 +53,7 @@ class AnimatableLengthBoxAndBool final : public AnimatableValue {
 
  private:
   AnimatableLengthBoxAndBool(PassRefPtr<AnimatableValue> box, bool flag)
-      : m_box(box), m_flag(flag) {}
+      : m_box(std::move(box)), m_flag(flag) {}
   AnimatableType type() const override { return TypeLengthBoxAndBool; }
   bool equalTo(const AnimatableValue*) const override;
 

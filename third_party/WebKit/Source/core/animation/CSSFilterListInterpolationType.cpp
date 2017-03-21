@@ -45,7 +45,7 @@ class UnderlyingFilterListChecker
  private:
   UnderlyingFilterListChecker(
       PassRefPtr<NonInterpolableList> nonInterpolableList)
-      : m_nonInterpolableList(nonInterpolableList) {}
+      : m_nonInterpolableList(std::move(nonInterpolableList)) {}
 
   RefPtr<NonInterpolableList> m_nonInterpolableList;
 };

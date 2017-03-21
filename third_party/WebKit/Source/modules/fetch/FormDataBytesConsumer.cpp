@@ -29,7 +29,7 @@ bool isSimple(const EncodedFormData* formData) {
 class SimpleFormDataBytesConsumer : public BytesConsumer {
  public:
   explicit SimpleFormDataBytesConsumer(PassRefPtr<EncodedFormData> formData)
-      : m_formData(formData) {}
+      : m_formData(std::move(formData)) {}
 
   // BytesConsumer implementation
   Result beginRead(const char** buffer, size_t* available) override {
@@ -105,7 +105,7 @@ class ComplexFormDataBytesConsumer final : public BytesConsumer {
   ComplexFormDataBytesConsumer(ExecutionContext* executionContext,
                                PassRefPtr<EncodedFormData> formData,
                                BytesConsumer* consumer)
-      : m_formData(formData) {
+      : m_formData(std::move(formData)) {
     if (consumer) {
       // For testing.
       m_blobBytesConsumer = consumer;

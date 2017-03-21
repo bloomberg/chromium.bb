@@ -26,7 +26,7 @@ FontFallbackIterator::FontFallbackIterator(
     PassRefPtr<FontFallbackList> fallbackList,
     FontFallbackPriority fontFallbackPriority)
     : m_fontDescription(description),
-      m_fontFallbackList(fallbackList),
+      m_fontFallbackList(std::move(fallbackList)),
       m_currentFontDataIndex(0),
       m_segmentedFaceIndex(0),
       m_fallbackStage(FontGroupFonts),

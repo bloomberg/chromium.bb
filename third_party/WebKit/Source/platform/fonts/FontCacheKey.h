@@ -57,7 +57,7 @@ struct FontCacheKey {
       : m_creationParams(creationParams),
         m_fontSize(fontSize * s_fontSizePrecisionMultiplier),
         m_options(options),
-        m_variationSettings(variationSettings) {}
+        m_variationSettings(std::move(variationSettings)) {}
 
   FontCacheKey(WTF::HashTableDeletedValueType)
       : m_fontSize(hashTableDeletedSize()) {}

@@ -30,7 +30,9 @@ namespace blink {
 DOMMimeType::DOMMimeType(PassRefPtr<PluginData> pluginData,
                          LocalFrame* frame,
                          unsigned index)
-    : ContextClient(frame), m_pluginData(pluginData), m_index(index) {}
+    : ContextClient(frame),
+      m_pluginData(std::move(pluginData)),
+      m_index(index) {}
 
 DOMMimeType::~DOMMimeType() {}
 

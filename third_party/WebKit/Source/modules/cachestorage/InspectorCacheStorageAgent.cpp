@@ -231,7 +231,7 @@ class GetCacheResponsesForRequestData
   GetCacheResponsesForRequestData(const DataRequestParams& params,
                                   const WebServiceWorkerRequest& request,
                                   PassRefPtr<ResponsesAccumulator> accum)
-      : m_params(params), m_request(request), m_accumulator(accum) {}
+      : m_params(params), m_request(request), m_accumulator(std::move(accum)) {}
   ~GetCacheResponsesForRequestData() override {}
 
   void onSuccess(const WebServiceWorkerResponse& response) override {

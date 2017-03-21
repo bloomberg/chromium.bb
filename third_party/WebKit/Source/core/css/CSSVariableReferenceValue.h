@@ -28,7 +28,7 @@ class CSSVariableReferenceValue : public CSSValue {
 
  private:
   CSSVariableReferenceValue(PassRefPtr<CSSVariableData> data)
-      : CSSValue(VariableReferenceClass), m_data(data) {}
+      : CSSValue(VariableReferenceClass), m_data(std::move(data)) {}
 
   RefPtr<CSSVariableData> m_data;
 };

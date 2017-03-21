@@ -84,7 +84,7 @@ class TypedArrayBase : public ArrayBufferView {
   static PassRefPtr<Subclass> create(PassRefPtr<ArrayBuffer> buffer,
                                      unsigned byteOffset,
                                      unsigned length) {
-    RefPtr<ArrayBuffer> buf(buffer);
+    RefPtr<ArrayBuffer> buf(std::move(buffer));
     RELEASE_ASSERT(verifySubRange<T>(buf, byteOffset, length));
     return adoptRef(new Subclass(buf.release(), byteOffset, length));
   }

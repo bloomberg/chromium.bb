@@ -59,7 +59,7 @@ class InheritedShadowListChecker : public InterpolationType::ConversionChecker {
  private:
   InheritedShadowListChecker(CSSPropertyID property,
                              PassRefPtr<ShadowList> shadowList)
-      : m_property(property), m_shadowList(shadowList) {}
+      : m_property(property), m_shadowList(std::move(shadowList)) {}
 
   bool isValid(const InterpolationEnvironment& environment,
                const InterpolationValue& underlying) const final {

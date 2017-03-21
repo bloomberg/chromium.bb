@@ -199,14 +199,14 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
       CompositingReasons directCompositingReasons,
       CompositorElementId compositorElementId,
       PassRefPtr<ScrollPaintPropertyNode> scroll = nullptr)
-      : m_parent(parent),
+      : m_parent(std::move(parent)),
         m_matrix(matrix),
         m_origin(origin),
         m_flattensInheritedTransform(flattensInheritedTransform),
         m_renderingContextId(renderingContextId),
         m_directCompositingReasons(directCompositingReasons),
         m_compositorElementId(compositorElementId),
-        m_scroll(scroll) {}
+        m_scroll(std::move(scroll)) {}
 
   // For access to getTransformCache() and setCachedTransform.
   friend class GeometryMapper;

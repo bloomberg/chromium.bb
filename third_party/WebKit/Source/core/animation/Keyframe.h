@@ -126,7 +126,7 @@ class CORE_EXPORT Keyframe : public RefCounted<Keyframe> {
   Keyframe(double offset,
            EffectModel::CompositeOperation composite,
            PassRefPtr<TimingFunction> easing)
-      : m_offset(offset), m_composite(composite), m_easing(easing) {}
+      : m_offset(offset), m_composite(composite), m_easing(std::move(easing)) {}
 
   double m_offset;
   EffectModel::CompositeOperation m_composite;

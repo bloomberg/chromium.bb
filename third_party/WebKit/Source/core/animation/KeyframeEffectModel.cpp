@@ -274,7 +274,7 @@ Keyframe::PropertySpecificKeyframe::PropertySpecificKeyframe(
     double offset,
     PassRefPtr<TimingFunction> easing,
     EffectModel::CompositeOperation composite)
-    : m_offset(offset), m_easing(easing), m_composite(composite) {
+    : m_offset(offset), m_easing(std::move(easing)), m_composite(composite) {
   DCHECK(!isNull(offset));
 }
 

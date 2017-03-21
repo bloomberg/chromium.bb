@@ -97,7 +97,7 @@ class WTF_EXPORT String {
 
   // Construct a string referencing an existing StringImpl.
   String(StringImpl* impl) : m_impl(impl) {}
-  String(PassRefPtr<StringImpl> impl) : m_impl(impl) {}
+  String(PassRefPtr<StringImpl> impl) : m_impl(std::move(impl)) {}
 
   void swap(String& o) { m_impl.swap(o.m_impl); }
 

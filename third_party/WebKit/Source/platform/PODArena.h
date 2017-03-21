@@ -108,7 +108,7 @@ class PODArena final : public RefCounted<PODArena> {
         m_currentChunkSize(DefaultChunkSize) {}
 
   explicit PODArena(PassRefPtr<Allocator> allocator)
-      : m_allocator(allocator),
+      : m_allocator(std::move(allocator)),
         m_current(0),
         m_currentChunkSize(DefaultChunkSize) {}
 

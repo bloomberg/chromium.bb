@@ -40,7 +40,7 @@
 namespace blink {
 
 SharedBufferReader::SharedBufferReader(PassRefPtr<const SharedBuffer> buffer)
-    : m_buffer(buffer), m_currentOffset(0) {}
+    : m_buffer(std::move(buffer)), m_currentOffset(0) {}
 
 SharedBufferReader::~SharedBufferReader() {}
 

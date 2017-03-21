@@ -155,7 +155,7 @@ class InspectorFileReaderLoaderClient final : public FileReaderLoaderClient {
       const String& mimeType,
       const String& textEncodingName,
       std::unique_ptr<GetResponseBodyCallback> callback)
-      : m_blob(blob),
+      : m_blob(std::move(blob)),
         m_mimeType(mimeType),
         m_textEncodingName(textEncodingName),
         m_callback(std::move(callback)) {

@@ -324,7 +324,7 @@ void IDBRequest::onSuccess(PassRefPtr<IDBValue> prpValue) {
   if (!shouldEnqueueEvent())
     return;
 
-  RefPtr<IDBValue> value(prpValue);
+  RefPtr<IDBValue> value(std::move(prpValue));
   ackReceivedBlobs(value.get());
 
   if (m_pendingCursor) {

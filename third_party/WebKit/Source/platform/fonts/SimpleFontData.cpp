@@ -65,7 +65,7 @@ SimpleFontData::SimpleFontData(const FontPlatformData& platformData,
       m_isTextOrientationFallback(isTextOrientationFallback),
       m_verticalData(nullptr),
       m_hasVerticalGlyphs(false),
-      m_customFontData(customData) {
+      m_customFontData(std::move(customData)) {
   platformInit(subpixelAscentDescent);
   platformGlyphInit();
   if (platformData.isVerticalAnyUpright() && !isTextOrientationFallback) {
@@ -84,7 +84,7 @@ SimpleFontData::SimpleFontData(PassRefPtr<CustomFontData> customData,
       m_isTextOrientationFallback(false),
       m_verticalData(nullptr),
       m_hasVerticalGlyphs(false),
-      m_customFontData(customData) {}
+      m_customFontData(std::move(customData)) {}
 
 void SimpleFontData::platformInit(bool subpixelAscentDescent) {
   if (!m_platformData.size()) {

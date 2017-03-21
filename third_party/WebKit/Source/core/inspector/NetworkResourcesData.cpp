@@ -65,7 +65,7 @@ XHRReplayData::XHRReplayData(ExecutionContext* executionContext,
       m_method(method),
       m_url(url),
       m_async(async),
-      m_formData(formData),
+      m_formData(std::move(formData)),
       m_includeCredentials(includeCredentials) {}
 
 DEFINE_TRACE(XHRReplayData) {

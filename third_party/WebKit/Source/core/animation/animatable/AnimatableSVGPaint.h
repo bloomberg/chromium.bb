@@ -79,7 +79,7 @@ class AnimatableSVGPaint final : public AnimatableValue {
                      const String& visitedLinkURI)
       : m_type(type),
         m_visitedLinkType(visitedLinkType),
-        m_color(color),
+        m_color(std::move(color)),
         m_uri(uri),
         m_visitedLinkURI(visitedLinkURI) {}
   AnimatableType type() const override { return TypeSVGPaint; }

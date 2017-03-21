@@ -95,8 +95,8 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
       PassRefPtr<const TransformPaintPropertyNode> localTransformSpace,
       const FloatRoundedRect& clipRect,
       CompositingReasons directCompositingReasons)
-      : m_parent(parent),
-        m_localTransformSpace(localTransformSpace),
+      : m_parent(std::move(parent)),
+        m_localTransformSpace(std::move(localTransformSpace)),
         m_clipRect(clipRect),
         m_directCompositingReasons(directCompositingReasons) {}
 

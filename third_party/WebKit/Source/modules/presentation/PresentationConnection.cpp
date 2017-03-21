@@ -101,7 +101,7 @@ class PresentationConnection::Message final
       : type(MessageTypeArrayBuffer), arrayBuffer(arrayBuffer) {}
 
   Message(PassRefPtr<BlobDataHandle> blobDataHandle)
-      : type(MessageTypeBlob), blobDataHandle(blobDataHandle) {}
+      : type(MessageTypeBlob), blobDataHandle(std::move(blobDataHandle)) {}
 
   DEFINE_INLINE_TRACE() { visitor->trace(arrayBuffer); }
 

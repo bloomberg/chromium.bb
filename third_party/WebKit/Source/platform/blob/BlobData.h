@@ -73,7 +73,7 @@ struct PLATFORM_EXPORT BlobDataItem {
   // Constructor for String type (complete string).
   explicit BlobDataItem(PassRefPtr<RawData> data)
       : type(Data),
-        data(data),
+        data(std::move(data)),
         offset(0),
         length(toEndOfFile),
         expectedModificationTime(invalidFileTime()) {}
@@ -102,7 +102,7 @@ struct PLATFORM_EXPORT BlobDataItem {
                long long offset,
                long long length)
       : type(Blob),
-        blobDataHandle(blobDataHandle),
+        blobDataHandle(std::move(blobDataHandle)),
         offset(offset),
         length(length),
         expectedModificationTime(invalidFileTime()) {}
@@ -138,7 +138,7 @@ struct PLATFORM_EXPORT BlobDataItem {
   // Constructor for String type (partial string).
   BlobDataItem(PassRefPtr<RawData> data, long long offset, long long length)
       : type(Data),
-        data(data),
+        data(std::move(data)),
         offset(offset),
         length(length),
         expectedModificationTime(invalidFileTime()) {}

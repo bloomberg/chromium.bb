@@ -41,7 +41,7 @@ using namespace HTMLNames;
 AXInlineTextBox::AXInlineTextBox(
     PassRefPtr<AbstractInlineTextBox> inlineTextBox,
     AXObjectCacheImpl& axObjectCache)
-    : AXObject(axObjectCache), m_inlineTextBox(inlineTextBox) {}
+    : AXObject(axObjectCache), m_inlineTextBox(std::move(inlineTextBox)) {}
 
 AXInlineTextBox* AXInlineTextBox::create(
     PassRefPtr<AbstractInlineTextBox> inlineTextBox,

@@ -50,7 +50,7 @@ class CSSSizeNonInterpolableValue : public NonInterpolableValue {
   CSSSizeNonInterpolableValue(
       PassRefPtr<NonInterpolableValue> lengthNonInterpolableValue)
       : m_keyword(CSSValueInvalid),
-        m_lengthNonInterpolableValue(lengthNonInterpolableValue) {}
+        m_lengthNonInterpolableValue(std::move(lengthNonInterpolableValue)) {}
 
   CSSValueID m_keyword;
   RefPtr<NonInterpolableValue> m_lengthNonInterpolableValue;

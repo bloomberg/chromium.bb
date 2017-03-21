@@ -35,9 +35,8 @@ ScriptState::ScriptState(v8::Local<v8::Context> context,
                          PassRefPtr<DOMWrapperWorld> world)
     : m_isolate(context->GetIsolate()),
       m_context(m_isolate, context),
-      m_world(world),
-      m_perContextData(V8PerContextData::create(context))
-{
+      m_world(std::move(world)),
+      m_perContextData(V8PerContextData::create(context)) {
   DCHECK(m_world);
   m_context.setWeak(this, &contextCollectedCallback);
   context->SetAlignedPointerInEmbedderData(v8ContextPerContextDataIndex, this);

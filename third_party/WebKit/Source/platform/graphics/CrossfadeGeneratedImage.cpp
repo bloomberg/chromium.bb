@@ -36,8 +36,8 @@ CrossfadeGeneratedImage::CrossfadeGeneratedImage(PassRefPtr<Image> fromImage,
                                                  IntSize crossfadeSize,
                                                  const IntSize& size)
     : GeneratedImage(size),
-      m_fromImage(fromImage),
-      m_toImage(toImage),
+      m_fromImage(std::move(fromImage)),
+      m_toImage(std::move(toImage)),
       m_percentage(percentage),
       m_crossfadeSize(crossfadeSize) {}
 

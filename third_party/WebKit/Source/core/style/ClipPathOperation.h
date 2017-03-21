@@ -116,7 +116,8 @@ class ShapeClipPathOperation final : public ClipPathOperation {
   bool operator==(const ClipPathOperation&) const override;
   OperationType type() const override { return SHAPE; }
 
-  ShapeClipPathOperation(PassRefPtr<BasicShape> shape) : m_shape(shape) {}
+  ShapeClipPathOperation(PassRefPtr<BasicShape> shape)
+      : m_shape(std::move(shape)) {}
 
   RefPtr<BasicShape> m_shape;
   std::unique_ptr<Path> m_path;

@@ -79,12 +79,12 @@ class CORE_EXPORT DOMArrayBufferView
 
  protected:
   explicit DOMArrayBufferView(PassRefPtr<WTF::ArrayBufferView> bufferView)
-      : m_bufferView(bufferView) {
+      : m_bufferView(std::move(bufferView)) {
     DCHECK(m_bufferView);
   }
   DOMArrayBufferView(PassRefPtr<WTF::ArrayBufferView> bufferView,
                      DOMArrayBufferBase* domArrayBuffer)
-      : m_bufferView(bufferView), m_domArrayBuffer(domArrayBuffer) {
+      : m_bufferView(std::move(bufferView)), m_domArrayBuffer(domArrayBuffer) {
     DCHECK(m_bufferView);
     DCHECK(m_domArrayBuffer);
     DCHECK_EQ(m_domArrayBuffer->buffer(), m_bufferView->buffer());

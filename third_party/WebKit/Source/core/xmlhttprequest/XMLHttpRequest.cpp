@@ -240,7 +240,7 @@ XMLHttpRequest::XMLHttpRequest(
           XMLHttpRequestProgressEventThrottle::create(this)),
       m_responseTypeCode(ResponseTypeDefault),
       m_isIsolatedWorld(isIsolatedWorld),
-      m_isolatedWorldSecurityOrigin(isolatedWorldSecurityOrigin),
+      m_isolatedWorldSecurityOrigin(std::move(isolatedWorldSecurityOrigin)),
       m_eventDispatchRecursionLevel(0),
       m_async(true),
       m_includeCredentials(false),

@@ -308,7 +308,7 @@ SiblingInvalidationSet::SiblingInvalidationSet(
     PassRefPtr<DescendantInvalidationSet> descendants)
     : InvalidationSet(InvalidateSiblings),
       m_maxDirectAdjacentSelectors(1),
-      m_descendantInvalidationSet(descendants) {}
+      m_descendantInvalidationSet(std::move(descendants)) {}
 
 DescendantInvalidationSet& SiblingInvalidationSet::ensureSiblingDescendants() {
   if (!m_siblingDescendantInvalidationSet)

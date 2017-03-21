@@ -43,8 +43,8 @@ class CORE_EXPORT InvalidatableInterpolation : public Interpolation {
         m_property(property),
         m_interpolationTypes(nullptr),
         m_interpolationTypesVersion(0),
-        m_startKeyframe(startKeyframe),
-        m_endKeyframe(endKeyframe),
+        m_startKeyframe(std::move(startKeyframe)),
+        m_endKeyframe(std::move(endKeyframe)),
         m_currentFraction(std::numeric_limits<double>::quiet_NaN()),
         m_isConversionCached(false) {}
 

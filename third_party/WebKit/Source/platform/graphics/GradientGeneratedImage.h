@@ -56,7 +56,7 @@ class PLATFORM_EXPORT GradientGeneratedImage final : public GeneratedImage {
   void drawTile(GraphicsContext&, const FloatRect&) override;
 
   GradientGeneratedImage(PassRefPtr<Gradient> generator, const IntSize& size)
-      : GeneratedImage(size), m_gradient(generator) {}
+      : GeneratedImage(size), m_gradient(std::move(generator)) {}
 
   RefPtr<Gradient> m_gradient;
 };

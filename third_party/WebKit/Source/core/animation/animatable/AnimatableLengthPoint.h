@@ -54,7 +54,7 @@ class AnimatableLengthPoint final : public AnimatableValue {
  private:
   AnimatableLengthPoint(PassRefPtr<AnimatableValue> x,
                         PassRefPtr<AnimatableValue> y)
-      : m_x(x), m_y(y) {}
+      : m_x(std::move(x)), m_y(std::move(y)) {}
   AnimatableType type() const override { return TypeLengthPoint; }
   bool equalTo(const AnimatableValue*) const override;
 

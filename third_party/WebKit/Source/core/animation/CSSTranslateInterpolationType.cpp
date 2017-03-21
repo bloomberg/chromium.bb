@@ -47,7 +47,7 @@ class InheritedTranslateChecker : public InterpolationType::ConversionChecker {
  private:
   InheritedTranslateChecker(
       PassRefPtr<TranslateTransformOperation> inheritedTranslate)
-      : m_inheritedTranslate(inheritedTranslate) {}
+      : m_inheritedTranslate(std::move(inheritedTranslate)) {}
 
   RefPtr<TransformOperation> m_inheritedTranslate;
 };

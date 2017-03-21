@@ -66,7 +66,7 @@ class WorkerThreadableLoader::AsyncTaskForwarder final
     : public WorkerThreadableLoader::TaskForwarder {
  public:
   explicit AsyncTaskForwarder(PassRefPtr<WorkerLoaderProxy> loaderProxy)
-      : m_loaderProxy(loaderProxy) {
+      : m_loaderProxy(std::move(loaderProxy)) {
     DCHECK(isMainThread());
   }
   ~AsyncTaskForwarder() override { DCHECK(isMainThread()); }
@@ -162,7 +162,7 @@ class WorkerThreadableLoader::SyncTaskForwarder final
     : public WorkerThreadableLoader::TaskForwarder {
  public:
   explicit SyncTaskForwarder(PassRefPtr<WaitableEventWithTasks> eventWithTasks)
-      : m_eventWithTasks(eventWithTasks) {
+      : m_eventWithTasks(std::move(eventWithTasks)) {
     DCHECK(isMainThread());
   }
   ~SyncTaskForwarder() override { DCHECK(isMainThread()); }

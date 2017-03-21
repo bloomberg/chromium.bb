@@ -64,7 +64,7 @@ class CORE_EXPORT AnimatableValueKeyframe : public Keyframe {
         : Keyframe::PropertySpecificKeyframe(offset,
                                              std::move(easing),
                                              composite),
-          m_value(value) {}
+          m_value(std::move(value)) {}
 
     PassRefPtr<Keyframe::PropertySpecificKeyframe> cloneWithOffset(
         double offset) const override;

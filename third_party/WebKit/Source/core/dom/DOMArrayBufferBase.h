@@ -43,7 +43,7 @@ class CORE_EXPORT DOMArrayBufferBase
 
  protected:
   explicit DOMArrayBufferBase(PassRefPtr<WTF::ArrayBuffer> buffer)
-      : m_buffer(buffer) {
+      : m_buffer(std::move(buffer)) {
     DCHECK(m_buffer);
   }
 

@@ -164,7 +164,7 @@ class InterpolableAnimatableValue : public InterpolableValue {
   RefPtr<AnimatableValue> m_value;
 
   InterpolableAnimatableValue(PassRefPtr<AnimatableValue> value)
-      : m_value(value) {}
+      : m_value(std::move(value)) {}
 };
 
 DEFINE_TYPE_CASTS(InterpolableNumber,

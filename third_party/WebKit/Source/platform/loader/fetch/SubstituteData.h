@@ -48,7 +48,7 @@ class SubstituteData {
       const AtomicString& textEncoding,
       const KURL& failingURL,
       SubstituteDataLoadPolicy substituteDataLoadPolicy = LoadNormally)
-      : m_content(content),
+      : m_content(std::move(content)),
         m_mimeType(mimeType),
         m_textEncoding(textEncoding),
         m_failingURL(failingURL),

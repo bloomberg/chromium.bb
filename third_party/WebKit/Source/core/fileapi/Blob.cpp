@@ -82,7 +82,7 @@ URLRegistry& BlobURLRegistry::registry() {
 }  // namespace
 
 Blob::Blob(PassRefPtr<BlobDataHandle> dataHandle)
-    : m_blobDataHandle(dataHandle), m_isClosed(false) {}
+    : m_blobDataHandle(std::move(dataHandle)), m_isClosed(false) {}
 
 Blob::~Blob() {}
 

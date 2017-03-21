@@ -53,7 +53,7 @@ class PLATFORM_EXPORT FormDataElement final {
                            PassRefPtr<BlobDataHandle> optionalHandle)
       : m_type(encodedBlob),
         m_blobUUID(blobUUID),
-        m_optionalBlobDataHandle(optionalHandle) {}
+        m_optionalBlobDataHandle(std::move(optionalHandle)) {}
   FormDataElement(const KURL& fileSystemURL,
                   long long start,
                   long long length,

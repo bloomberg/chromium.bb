@@ -303,7 +303,7 @@ WorkerThread::WorkerThread(PassRefPtr<WorkerLoaderProxy> workerLoaderProxy,
     : m_workerThreadId(getNextWorkerThreadId()),
       m_forcibleTerminationDelayInMs(kForcibleTerminationDelayInMs),
       m_inspectorTaskRunner(WTF::makeUnique<InspectorTaskRunner>()),
-      m_workerLoaderProxy(workerLoaderProxy),
+      m_workerLoaderProxy(std::move(workerLoaderProxy)),
       m_workerReportingProxy(workerReportingProxy),
       m_shutdownEvent(WTF::wrapUnique(
           new WaitableEvent(WaitableEvent::ResetPolicy::Manual,

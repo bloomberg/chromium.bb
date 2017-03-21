@@ -36,7 +36,8 @@ class FilterNonInterpolableValue : public NonInterpolableValue {
   FilterNonInterpolableValue(
       FilterOperation::OperationType type,
       PassRefPtr<NonInterpolableValue> typeNonInterpolableValue)
-      : m_type(type), m_typeNonInterpolableValue(typeNonInterpolableValue) {}
+      : m_type(type),
+        m_typeNonInterpolableValue(std::move(typeNonInterpolableValue)) {}
 
   const FilterOperation::OperationType m_type;
   RefPtr<NonInterpolableValue> m_typeNonInterpolableValue;

@@ -129,7 +129,7 @@ ExtendableMessageEvent::ExtendableMessageEvent(
     : ExtendableEvent(EventTypeNames::message,
                       ExtendableMessageEventInit(),
                       observer),
-      m_serializedData(data),
+      m_serializedData(std::move(data)),
       m_origin(origin),
       m_lastEventId(String()),
       m_ports(ports) {

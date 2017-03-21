@@ -47,7 +47,7 @@ struct SerializedResource {
   SerializedResource(const KURL& url,
                      const String& mimeType,
                      PassRefPtr<const SharedBuffer> data)
-      : url(url), mimeType(mimeType), data(data) {}
+      : url(url), mimeType(mimeType), data(std::move(data)) {}
 };
 
 }  // namespace blink

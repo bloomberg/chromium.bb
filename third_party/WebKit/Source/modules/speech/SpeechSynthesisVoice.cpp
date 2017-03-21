@@ -34,7 +34,7 @@ SpeechSynthesisVoice* SpeechSynthesisVoice::create(
 
 SpeechSynthesisVoice::SpeechSynthesisVoice(
     PassRefPtr<PlatformSpeechSynthesisVoice> voice)
-    : m_platformVoice(voice) {}
+    : m_platformVoice(std::move(voice)) {}
 
 SpeechSynthesisVoice::~SpeechSynthesisVoice() {}
 

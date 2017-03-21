@@ -69,7 +69,7 @@ class PairwisePrimitiveInterpolation : public PrimitiveInterpolation {
       : m_type(type),
         m_start(std::move(start)),
         m_end(std::move(end)),
-        m_nonInterpolableValue(nonInterpolableValue) {
+        m_nonInterpolableValue(std::move(nonInterpolableValue)) {
     DCHECK(m_start);
     DCHECK(m_end);
   }

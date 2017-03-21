@@ -37,7 +37,7 @@ ArchiveResource::ArchiveResource(PassRefPtr<SharedBuffer> data,
                                  const AtomicString& textEncoding)
     : m_url(url),
       m_contentID(contentID),
-      m_data(data),
+      m_data(std::move(data)),
       m_mimeType(mimeType),
       m_textEncoding(textEncoding) {
   ASSERT(m_data);

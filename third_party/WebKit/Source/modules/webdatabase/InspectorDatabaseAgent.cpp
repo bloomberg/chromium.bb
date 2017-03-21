@@ -135,7 +135,7 @@ class StatementCallback final : public SQLStatementCallback {
 
  private:
   StatementCallback(PassRefPtr<ExecuteSQLCallbackWrapper> requestCallback)
-      : m_requestCallback(requestCallback) {}
+      : m_requestCallback(std::move(requestCallback)) {}
   RefPtr<ExecuteSQLCallbackWrapper> m_requestCallback;
 };
 
@@ -157,7 +157,7 @@ class StatementErrorCallback final : public SQLStatementErrorCallback {
 
  private:
   StatementErrorCallback(PassRefPtr<ExecuteSQLCallbackWrapper> requestCallback)
-      : m_requestCallback(requestCallback) {}
+      : m_requestCallback(std::move(requestCallback)) {}
   RefPtr<ExecuteSQLCallbackWrapper> m_requestCallback;
 };
 
@@ -187,7 +187,8 @@ class TransactionCallback final : public SQLTransactionCallback {
  private:
   TransactionCallback(const String& sqlStatement,
                       PassRefPtr<ExecuteSQLCallbackWrapper> requestCallback)
-      : m_sqlStatement(sqlStatement), m_requestCallback(requestCallback) {}
+      : m_sqlStatement(sqlStatement),
+        m_requestCallback(std::move(requestCallback)) {}
   String m_sqlStatement;
   RefPtr<ExecuteSQLCallbackWrapper> m_requestCallback;
 };
@@ -211,7 +212,7 @@ class TransactionErrorCallback final : public SQLTransactionErrorCallback {
  private:
   TransactionErrorCallback(
       PassRefPtr<ExecuteSQLCallbackWrapper> requestCallback)
-      : m_requestCallback(requestCallback) {}
+      : m_requestCallback(std::move(requestCallback)) {}
   RefPtr<ExecuteSQLCallbackWrapper> m_requestCallback;
 };
 

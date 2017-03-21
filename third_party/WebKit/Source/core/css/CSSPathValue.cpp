@@ -20,7 +20,7 @@ CSSPathValue* CSSPathValue::create(
 }
 
 CSSPathValue::CSSPathValue(PassRefPtr<StylePath> stylePath)
-    : CSSValue(PathClass), m_stylePath(stylePath) {
+    : CSSValue(PathClass), m_stylePath(std::move(stylePath)) {
   ASSERT(m_stylePath);
 }
 

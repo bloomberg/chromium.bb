@@ -21,7 +21,7 @@ BlobBytesConsumer::BlobBytesConsumer(ExecutionContext* executionContext,
                                      PassRefPtr<BlobDataHandle> blobDataHandle,
                                      ThreadableLoader* loader)
     : ContextLifecycleObserver(executionContext),
-      m_blobDataHandle(blobDataHandle),
+      m_blobDataHandle(std::move(blobDataHandle)),
       m_loader(loader) {
   if (!m_blobDataHandle) {
     // Note that |m_loader| is non-null only in tests.

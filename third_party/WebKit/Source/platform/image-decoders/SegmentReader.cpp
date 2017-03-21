@@ -32,7 +32,7 @@ class SharedBufferSegmentReader final : public SegmentReader {
 
 SharedBufferSegmentReader::SharedBufferSegmentReader(
     PassRefPtr<SharedBuffer> buffer)
-    : m_sharedBuffer(buffer) {}
+    : m_sharedBuffer(std::move(buffer)) {}
 
 size_t SharedBufferSegmentReader::size() const {
   return m_sharedBuffer->size();

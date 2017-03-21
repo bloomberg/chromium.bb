@@ -61,7 +61,10 @@ class AnimatableLengthBox final : public AnimatableValue {
                       PassRefPtr<AnimatableValue> right,
                       PassRefPtr<AnimatableValue> top,
                       PassRefPtr<AnimatableValue> bottom)
-      : m_left(left), m_right(right), m_top(top), m_bottom(bottom) {}
+      : m_left(std::move(left)),
+        m_right(std::move(right)),
+        m_top(std::move(top)),
+        m_bottom(std::move(bottom)) {}
   AnimatableType type() const override { return TypeLengthBox; }
   bool equalTo(const AnimatableValue*) const override;
 

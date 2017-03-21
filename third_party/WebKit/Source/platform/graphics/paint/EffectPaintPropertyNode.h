@@ -151,9 +151,9 @@ class PLATFORM_EXPORT EffectPaintPropertyNode
       CompositingReasons directCompositingReasons,
       CompositorElementId compositorElementId,
       const FloatPoint& paintOffset)
-      : m_parent(parent),
-        m_localTransformSpace(localTransformSpace),
-        m_outputClip(outputClip),
+      : m_parent(std::move(parent)),
+        m_localTransformSpace(std::move(localTransformSpace)),
+        m_outputClip(std::move(outputClip)),
         m_colorFilter(colorFilter),
         m_filter(std::move(filter)),
         m_opacity(opacity),

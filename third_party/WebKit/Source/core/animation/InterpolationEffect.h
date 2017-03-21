@@ -60,8 +60,8 @@ class CORE_EXPORT InterpolationEffect {
                         double end,
                         double applyFrom,
                         double applyTo)
-        : m_interpolation(interpolation),
-          m_easing(easing),
+        : m_interpolation(std::move(interpolation)),
+          m_easing(std::move(easing)),
           m_start(start),
           m_end(end),
           m_applyFrom(applyFrom),

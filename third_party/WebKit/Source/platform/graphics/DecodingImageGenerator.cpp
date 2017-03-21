@@ -44,7 +44,7 @@ DecodingImageGenerator::DecodingImageGenerator(
     size_t index,
     uint32_t uniqueID)
     : SkImageGenerator(info, uniqueID),
-      m_frameGenerator(frameGenerator),
+      m_frameGenerator(std::move(frameGenerator)),
       m_data(data),
       m_allDataReceived(allDataReceived),
       m_frameIndex(index),

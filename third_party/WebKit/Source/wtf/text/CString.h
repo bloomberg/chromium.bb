@@ -76,7 +76,7 @@ class WTF_EXPORT CString {
 
   // Construct a string referencing an existing buffer.
   CString(CStringImpl* buffer) : m_buffer(buffer) {}
-  CString(PassRefPtr<CStringImpl> buffer) : m_buffer(buffer) {}
+  CString(PassRefPtr<CStringImpl> buffer) : m_buffer(std::move(buffer)) {}
 
   static CString createUninitialized(size_t length, char*& data) {
     return CStringImpl::createUninitialized(length, data);

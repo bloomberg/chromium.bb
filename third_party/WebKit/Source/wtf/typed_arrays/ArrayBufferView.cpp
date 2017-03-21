@@ -33,7 +33,7 @@ ArrayBufferView::ArrayBufferView(PassRefPtr<ArrayBuffer> buffer,
                                  unsigned byteOffset)
     : m_byteOffset(byteOffset),
       m_isNeuterable(true),
-      m_buffer(buffer),
+      m_buffer(std::move(buffer)),
       m_prevView(nullptr),
       m_nextView(nullptr) {
   m_baseAddress =

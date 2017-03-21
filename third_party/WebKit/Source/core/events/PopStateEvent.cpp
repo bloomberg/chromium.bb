@@ -44,7 +44,7 @@ PopStateEvent::PopStateEvent(const AtomicString& type,
 PopStateEvent::PopStateEvent(PassRefPtr<SerializedScriptValue> serializedState,
                              History* history)
     : Event(EventTypeNames::popstate, false, true),
-      m_serializedState(serializedState),
+      m_serializedState(std::move(serializedState)),
       m_history(history) {}
 
 PopStateEvent::~PopStateEvent() {}

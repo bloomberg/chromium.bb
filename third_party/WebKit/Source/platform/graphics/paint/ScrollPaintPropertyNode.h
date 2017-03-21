@@ -136,7 +136,7 @@ class PLATFORM_EXPORT ScrollPaintPropertyNode
                           bool userScrollableVertical,
                           MainThreadScrollingReasons mainThreadScrollingReasons,
                           WebLayerScrollClient* scrollClient)
-      : m_parent(parent),
+      : m_parent(std::move(parent)),
         m_clip(clip),
         m_bounds(bounds),
         m_userScrollableHorizontal(userScrollableHorizontal),

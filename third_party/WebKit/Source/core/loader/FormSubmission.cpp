@@ -155,7 +155,7 @@ inline FormSubmission::FormSubmission(SubmitMethod method,
       m_target(target),
       m_contentType(contentType),
       m_form(form),
-      m_formData(data),
+      m_formData(std::move(data)),
       m_boundary(boundary),
       m_event(event) {}
 

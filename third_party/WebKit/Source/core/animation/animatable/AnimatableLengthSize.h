@@ -56,7 +56,7 @@ class AnimatableLengthSize final : public AnimatableValue {
  private:
   AnimatableLengthSize(PassRefPtr<AnimatableValue> width,
                        PassRefPtr<AnimatableValue> height)
-      : m_width(width), m_height(height) {}
+      : m_width(std::move(width)), m_height(std::move(height)) {}
   AnimatableType type() const override { return TypeLengthSize; }
   bool equalTo(const AnimatableValue*) const override;
 

@@ -347,7 +347,7 @@ DocumentWebSocketChannel::Message::Message(const CString& text)
 
 DocumentWebSocketChannel::Message::Message(
     PassRefPtr<BlobDataHandle> blobDataHandle)
-    : type(MessageTypeBlob), blobDataHandle(blobDataHandle) {}
+    : type(MessageTypeBlob), blobDataHandle(std::move(blobDataHandle)) {}
 
 DocumentWebSocketChannel::Message::Message(DOMArrayBuffer* arrayBuffer)
     : type(MessageTypeArrayBuffer), arrayBuffer(arrayBuffer) {}
