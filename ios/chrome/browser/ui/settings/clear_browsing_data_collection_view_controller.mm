@@ -640,6 +640,8 @@ const int kMaxTimesHistoryNoticeShown = 1;
               handler:^(UIAlertAction* action) {
                 [weakSelf clearDataForDataTypes:dataTypeMaskToRemove];
               }];
+  clearDataAction.accessibilityLabel =
+      l10n_util::GetNSString(IDS_IOS_CONFIRM_CLEAR_BUTTON);
   UIAlertAction* cancelAction =
       [UIAlertAction actionWithTitle:l10n_util::GetNSString(IDS_CANCEL)
                                style:UIAlertActionStyleCancel
