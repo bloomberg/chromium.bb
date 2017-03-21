@@ -15,14 +15,10 @@ ClipNode::ClipNode()
     : id(ClipTree::kInvalidNodeId),
       parent_id(ClipTree::kInvalidNodeId),
       owning_layer_id(Layer::INVALID_ID),
-      clip_type(ClipType::NONE),
-      transform_id(TransformTree::kInvalidNodeId),
-      target_transform_id(TransformTree::kInvalidNodeId),
-      target_effect_id(EffectTree::kInvalidNodeId),
-      layer_clipping_uses_only_local_clip(false),
-      layers_are_clipped(false),
-      layers_are_clipped_when_surfaces_disabled(false),
-      resets_clip(false) {}
+      clip_type(ClipType::APPLIES_LOCAL_CLIP),
+      transform_id(TransformTree::kInvalidNodeId) {
+  cached_clip_rects = std::vector<ClipRectData>(defaultCachedClipsSize);
+}
 
 ClipNode::ClipNode(const ClipNode& other)
     : id(other.id),
@@ -30,21 +26,14 @@ ClipNode::ClipNode(const ClipNode& other)
       owning_layer_id(other.owning_layer_id),
       clip_type(other.clip_type),
       clip(other.clip),
-      combined_clip_in_target_space(other.combined_clip_in_target_space),
-      clip_in_target_space(other.clip_in_target_space),
-      transform_id(other.transform_id),
-      target_transform_id(other.target_transform_id),
-      target_effect_id(other.target_effect_id),
-      layer_clipping_uses_only_local_clip(
-          other.layer_clipping_uses_only_local_clip),
-      layers_are_clipped(other.layers_are_clipped),
-      layers_are_clipped_when_surfaces_disabled(
-          other.layers_are_clipped_when_surfaces_disabled),
-      resets_clip(other.resets_clip) {
+      transform_id(other.transform_id) {
   if (other.clip_expander) {
     DCHECK_EQ(clip_type, ClipType::EXPANDS_CLIP);
     clip_expander = base::MakeUnique<ClipExpander>(*other.clip_expander);
   }
+  cached_clip_rects = other.cached_clip_rects;
+  cached_accumulated_rect_in_screen_space =
+      other.cached_accumulated_rect_in_screen_space;
 }
 
 ClipNode& ClipNode::operator=(const ClipNode& other) {
@@ -53,17 +42,7 @@ ClipNode& ClipNode::operator=(const ClipNode& other) {
   owning_layer_id = other.owning_layer_id;
   clip_type = other.clip_type;
   clip = other.clip;
-  combined_clip_in_target_space = other.combined_clip_in_target_space;
-  clip_in_target_space = other.clip_in_target_space;
   transform_id = other.transform_id;
-  target_transform_id = other.target_transform_id;
-  target_effect_id = other.target_effect_id;
-  layer_clipping_uses_only_local_clip =
-      other.layer_clipping_uses_only_local_clip;
-  layers_are_clipped = other.layers_are_clipped;
-  layers_are_clipped_when_surfaces_disabled =
-      other.layers_are_clipped_when_surfaces_disabled;
-  resets_clip = other.resets_clip;
 
   if (other.clip_expander) {
     DCHECK_EQ(clip_type, ClipType::EXPANDS_CLIP);
@@ -71,7 +50,9 @@ ClipNode& ClipNode::operator=(const ClipNode& other) {
   } else {
     clip_expander.reset();
   }
-
+  cached_clip_rects = other.cached_clip_rects;
+  cached_accumulated_rect_in_screen_space =
+      other.cached_accumulated_rect_in_screen_space;
   return *this;
 }
 
@@ -87,17 +68,7 @@ bool ClipNode::operator==(const ClipNode& other) const {
   return id == other.id && parent_id == other.parent_id &&
          owning_layer_id == other.owning_layer_id &&
          clip_type == other.clip_type && clip == other.clip &&
-         combined_clip_in_target_space == other.combined_clip_in_target_space &&
-         clip_in_target_space == other.clip_in_target_space &&
-         transform_id == other.transform_id &&
-         target_transform_id == other.target_transform_id &&
-         target_effect_id == other.target_effect_id &&
-         layer_clipping_uses_only_local_clip ==
-             other.layer_clipping_uses_only_local_clip &&
-         layers_are_clipped == other.layers_are_clipped &&
-         layers_are_clipped_when_surfaces_disabled ==
-             other.layers_are_clipped_when_surfaces_disabled &&
-         resets_clip == other.resets_clip;
+         transform_id == other.transform_id;
 }
 
 void ClipNode::AsValueInto(base::trace_event::TracedValue* value) const {
@@ -107,14 +78,6 @@ void ClipNode::AsValueInto(base::trace_event::TracedValue* value) const {
   value->SetInteger("clip_type", static_cast<int>(clip_type));
   MathUtil::AddToTracedValue("clip", clip, value);
   value->SetInteger("transform_id", transform_id);
-  value->SetInteger("target_transform_id", target_transform_id);
-  value->SetInteger("target_effect_id", target_effect_id);
-  value->SetBoolean("layer_clipping_uses_only_local_clip",
-                    layer_clipping_uses_only_local_clip);
-  value->SetBoolean("layers_are_clipped", layers_are_clipped);
-  value->SetBoolean("layers_are_clipped_when_surfaces_disabled",
-                    layers_are_clipped_when_surfaces_disabled);
-  value->SetBoolean("resets_clip", resets_clip);
 }
 
 }  // namespace cc

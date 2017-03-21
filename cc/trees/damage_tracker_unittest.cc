@@ -27,7 +27,6 @@ namespace {
 
 void ExecuteCalculateDrawProperties(LayerImpl* root,
                                     float device_scale_factor,
-                                    bool skip_verify_visible_rect_calculations,
                                     LayerImplList* render_surface_layer_list) {
   // Sanity check: The test itself should create the root layer's render
   //               surface, so that the surface (and its damage tracker) can
@@ -37,8 +36,6 @@ void ExecuteCalculateDrawProperties(LayerImpl* root,
   FakeLayerTreeHostImpl::RecursiveUpdateNumChildren(root);
   LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
       root, root->bounds(), device_scale_factor, render_surface_layer_list);
-  if (skip_verify_visible_rect_calculations)
-    inputs.verify_visible_rect_calculations = false;
   LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
   ASSERT_TRUE(root->GetRenderSurface());
 }
@@ -50,10 +47,7 @@ void ClearDamageForAllSurfaces(LayerImpl* root) {
   }
 }
 
-void EmulateDrawingOneFrame(
-    LayerImpl* root,
-    float device_scale_factor = 1.f,
-    bool skip_verify_visible_rect_calculations = false) {
+void EmulateDrawingOneFrame(LayerImpl* root, float device_scale_factor = 1.f) {
   // This emulates only steps that are relevant to testing the damage tracker:
   //   1. computing the render passes and layerlists
   //   2. updating all damage trackers in the correct order
@@ -62,7 +56,6 @@ void EmulateDrawingOneFrame(
 
   LayerImplList render_surface_layer_list;
   ExecuteCalculateDrawProperties(root, device_scale_factor,
-                                 skip_verify_visible_rect_calculations,
                                  &render_surface_layer_list);
 
   // Iterate back-to-front, so that damage correctly propagates from descendant
@@ -1451,9 +1444,7 @@ TEST_F(DamageTrackerTest, HugeDamageRect) {
     // Visible rects computed from combining clips in target space and root
     // space don't match because of the loss in floating point accuracy. So, we
     // skip verify_clip_tree_calculations.
-    bool skip_verify_visible_rect_calculations = true;
-    EmulateDrawingOneFrame(root, device_scale_factor,
-                           skip_verify_visible_rect_calculations);
+    EmulateDrawingOneFrame(root, device_scale_factor);
 
     // The expected damage should cover the visible part of the child layer,
     // which is (0, 0, i, i) in the viewport.
@@ -1482,9 +1473,7 @@ TEST_F(DamageTrackerTest, DamageRectTooBig) {
 
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   float device_scale_factor = 1.f;
-  bool skip_verify_visible_rect_calculations = true;
-  EmulateDrawingOneFrame(root, device_scale_factor,
-                         skip_verify_visible_rect_calculations);
+  EmulateDrawingOneFrame(root, device_scale_factor);
 
   // The expected damage would be too large to store in a gfx::Rect, so we
   // should damage everything (ie, we don't have a valid rect).
@@ -1515,9 +1504,7 @@ TEST_F(DamageTrackerTest, DamageRectTooBigWithFilter) {
 
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   float device_scale_factor = 1.f;
-  bool skip_verify_visible_rect_calculations = true;
-  EmulateDrawingOneFrame(root, device_scale_factor,
-                         skip_verify_visible_rect_calculations);
+  EmulateDrawingOneFrame(root, device_scale_factor);
 
   // The expected damage would be too large to store in a gfx::Rect, so we
   // should damage everything (ie, we don't have a valid rect).
@@ -1548,10 +1535,8 @@ TEST_F(DamageTrackerTest, DamageRectTooBigInRenderSurface) {
 
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   float device_scale_factor = 1.f;
-  bool skip_verify_visible_rect_calculations = true;
   LayerImplList render_surface_layer_list;
   ExecuteCalculateDrawProperties(root, device_scale_factor,
-                                 skip_verify_visible_rect_calculations,
                                  &render_surface_layer_list);
 
   auto* surface = child1->GetRenderSurface();
@@ -1590,7 +1575,6 @@ TEST_F(DamageTrackerTest, DamageRectTooBigInRenderSurface) {
   // Recompute all damage / properties.
   render_surface_layer_list.clear();
   ExecuteCalculateDrawProperties(root, device_scale_factor,
-                                 skip_verify_visible_rect_calculations,
                                  &render_surface_layer_list);
   surface = child1->GetRenderSurface();
   surface->damage_tracker()->UpdateDamageTrackingState(
@@ -1645,10 +1629,8 @@ TEST_F(DamageTrackerTest, DamageRectTooBigInRenderSurfaceWithFilter) {
 
   root->layer_tree_impl()->property_trees()->needs_rebuild = true;
   float device_scale_factor = 1.f;
-  bool skip_verify_visible_rect_calculations = true;
   LayerImplList render_surface_layer_list;
   ExecuteCalculateDrawProperties(root, device_scale_factor,
-                                 skip_verify_visible_rect_calculations,
                                  &render_surface_layer_list);
 
   auto* surface = child1->GetRenderSurface();
@@ -1687,7 +1669,6 @@ TEST_F(DamageTrackerTest, DamageRectTooBigInRenderSurfaceWithFilter) {
   // Recompute all damage / properties.
   render_surface_layer_list.clear();
   ExecuteCalculateDrawProperties(root, device_scale_factor,
-                                 skip_verify_visible_rect_calculations,
                                  &render_surface_layer_list);
   surface = child1->GetRenderSurface();
   surface->damage_tracker()->UpdateDamageTrackingState(

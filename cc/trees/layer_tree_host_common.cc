@@ -80,8 +80,7 @@ LayerTreeHostCommon::CalcDrawPropsImplInputs::CalcDrawPropsImplInputs(
     int max_texture_size,
     bool can_render_to_separate_surface,
     bool can_adjust_raster_scales,
-    bool verify_clip_tree_calculations,
-    bool verify_visible_rect_calculations,
+    bool use_layer_lists,
     LayerImplList* render_surface_layer_list,
     PropertyTrees* property_trees)
     : root_layer(root_layer),
@@ -98,8 +97,7 @@ LayerTreeHostCommon::CalcDrawPropsImplInputs::CalcDrawPropsImplInputs(
       max_texture_size(max_texture_size),
       can_render_to_separate_surface(can_render_to_separate_surface),
       can_adjust_raster_scales(can_adjust_raster_scales),
-      verify_clip_tree_calculations(verify_clip_tree_calculations),
-      verify_visible_rect_calculations(verify_visible_rect_calculations),
+      use_layer_lists(use_layer_lists),
       render_surface_layer_list(render_surface_layer_list),
       property_trees(property_trees) {}
 
@@ -122,8 +120,7 @@ LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting::
                               std::numeric_limits<int>::max() / 2,
                               true,
                               false,
-                              true,
-                              true,
+                              false,
                               render_surface_layer_list,
                               GetPropertyTrees(root_layer)) {
   DCHECK(root_layer);
@@ -286,7 +283,8 @@ static void ComputeInitialRenderSurfaceLayerList(
     LayerTreeImpl* layer_tree_impl,
     PropertyTrees* property_trees,
     LayerImplList* render_surface_layer_list,
-    bool can_render_to_separate_surface) {
+    bool can_render_to_separate_surface,
+    bool use_layer_lists) {
   // Add all non-skipped surfaces to the initial render surface layer list. Add
   // all non-skipped layers to the layer list of their target surface, and
   // add their content rect to their target surface's accumulated content rect.
@@ -326,8 +324,8 @@ static void ComputeInitialRenderSurfaceLayerList(
             contributes_to_drawn_surface);
       }
 
-      draw_property_utils::ComputeSurfaceDrawProperties(property_trees,
-                                                        render_surface);
+      draw_property_utils::ComputeSurfaceDrawProperties(
+          property_trees, render_surface, use_layer_lists);
 
       // Ignore occlusion from outside the surface when surface contents need to
       // be fully drawn. Layers with copy-request need to be complete.  We could
@@ -437,6 +435,7 @@ static void CalculateRenderSurfaceLayerList(
     PropertyTrees* property_trees,
     LayerImplList* render_surface_layer_list,
     const bool can_render_to_separate_surface,
+    const bool use_layer_lists,
     const int max_texture_size) {
   // This calculates top level Render Surface Layer List, and Layer List for all
   // Render Surfaces.
@@ -447,9 +446,9 @@ static void CalculateRenderSurfaceLayerList(
   // First compute an RSLL that might include surfaces that later turn out to
   // have an empty content rect. After surface content rects are computed,
   // produce a final RSLL that omits empty surfaces.
-  ComputeInitialRenderSurfaceLayerList(layer_tree_impl, property_trees,
-                                       &initial_render_surface_list,
-                                       can_render_to_separate_surface);
+  ComputeInitialRenderSurfaceLayerList(
+      layer_tree_impl, property_trees, &initial_render_surface_list,
+      can_render_to_separate_surface, use_layer_lists);
   ComputeSurfaceContentRects(layer_tree_impl, property_trees,
                              &initial_render_surface_list, max_texture_size);
   ComputeListOfNonEmptySurfaces(layer_tree_impl, property_trees,
@@ -477,15 +476,17 @@ void CalculateDrawPropertiesInternal(
             "LayerTreeHostCommon::ComputeVisibleRectsWithPropertyTrees");
       }
 
-      draw_property_utils::BuildPropertyTreesAndComputeVisibleRects(
+      PropertyTreeBuilder::BuildPropertyTrees(
           inputs->root_layer, inputs->page_scale_layer,
           inputs->inner_viewport_scroll_layer,
           inputs->outer_viewport_scroll_layer,
           inputs->elastic_overscroll_application_layer,
           inputs->elastic_overscroll, inputs->page_scale_factor,
           inputs->device_scale_factor, gfx::Rect(inputs->device_viewport_size),
-          inputs->device_transform, inputs->can_render_to_separate_surface,
-          inputs->property_trees, &visible_layer_list);
+          inputs->device_transform, inputs->property_trees);
+      draw_property_utils::UpdatePropertyTreesAndRenderSurfaces(
+          inputs->root_layer, inputs->property_trees,
+          inputs->can_render_to_separate_surface);
 
       // Property trees are normally constructed on the main thread and
       // passed to compositor thread. Source to parent updates on them are not
@@ -529,9 +530,9 @@ void CalculateDrawPropertiesInternal(
       property_trees->transform_tree.SetRootTransformsAndScales(
           inputs->device_scale_factor, page_scale_factor_for_root,
           inputs->device_transform, inputs->root_layer->position());
-      draw_property_utils::ComputeVisibleRects(
+      draw_property_utils::UpdatePropertyTreesAndRenderSurfaces(
           inputs->root_layer, inputs->property_trees,
-          inputs->can_render_to_separate_surface, &visible_layer_list);
+          inputs->can_render_to_separate_surface);
       break;
     }
   }
@@ -541,24 +542,18 @@ void CalculateDrawPropertiesInternal(
                        "LayerTreeHostCommon::CalculateDrawProperties");
   }
 
+  draw_property_utils::FindLayersThatNeedUpdates(
+      inputs->root_layer->layer_tree_impl(), inputs->property_trees,
+      &visible_layer_list);
   DCHECK(inputs->can_render_to_separate_surface ==
          inputs->property_trees->non_root_surfaces_enabled);
-  for (LayerImpl* layer : visible_layer_list) {
-    draw_property_utils::ComputeLayerDrawProperties(layer,
-                                                    inputs->property_trees);
-  }
+  draw_property_utils::ComputeDrawPropertiesOfVisibleLayers(
+      &visible_layer_list, inputs->property_trees);
 
   CalculateRenderSurfaceLayerList(
       inputs->root_layer->layer_tree_impl(), inputs->property_trees,
       inputs->render_surface_layer_list, inputs->can_render_to_separate_surface,
-      inputs->max_texture_size);
-
-  if (inputs->verify_clip_tree_calculations)
-    draw_property_utils::VerifyClipTreeCalculations(visible_layer_list,
-                                                    inputs->property_trees);
-  if (inputs->verify_visible_rect_calculations)
-    draw_property_utils::VerifyVisibleRectsCalculations(visible_layer_list,
-                                                        inputs->property_trees);
+      inputs->use_layer_lists, inputs->max_texture_size);
 
   if (should_measure_property_tree_performance) {
     TRACE_EVENT_END0(TRACE_DISABLED_BY_DEFAULT("cc.debug.cdp-perf"),

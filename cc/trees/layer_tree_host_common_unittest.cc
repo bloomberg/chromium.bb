@@ -62,7 +62,6 @@ namespace {
 class VerifyTreeCalcsLayerTreeSettings : public LayerTreeSettings {
  public:
   VerifyTreeCalcsLayerTreeSettings() {
-    verify_clip_tree_calculations = true;
   }
 };
 
@@ -124,14 +123,12 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
     LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
   }
 
-  void ExecuteCalculateDrawProperties(
-      LayerImpl* root_layer,
-      float device_scale_factor,
-      float page_scale_factor,
-      LayerImpl* page_scale_layer,
-      LayerImpl* inner_viewport_scroll_layer,
-      LayerImpl* outer_viewport_scroll_layer,
-      bool skip_verify_visible_rect_calculations = false) {
+  void ExecuteCalculateDrawProperties(LayerImpl* root_layer,
+                                      float device_scale_factor,
+                                      float page_scale_factor,
+                                      LayerImpl* page_scale_layer,
+                                      LayerImpl* inner_viewport_scroll_layer,
+                                      LayerImpl* outer_viewport_scroll_layer) {
     if (device_scale_factor !=
         root_layer->layer_tree_impl()->device_scale_factor())
       root_layer->layer_tree_impl()->property_trees()->needs_rebuild = true;
@@ -158,8 +155,6 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
     inputs.inner_viewport_scroll_layer = inner_viewport_scroll_layer;
     inputs.outer_viewport_scroll_layer = outer_viewport_scroll_layer;
     inputs.can_adjust_raster_scales = true;
-    if (skip_verify_visible_rect_calculations)
-      inputs.verify_visible_rect_calculations = false;
 
     LayerTreeHostCommon::CalculateDrawPropertiesForTesting(&inputs);
   }
@@ -224,19 +219,18 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
   }
 
   void ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(
-      LayerImpl* root_layer,
-      bool skip_verify_visible_rect_calculations = false) {
+      LayerImpl* root_layer) {
     DCHECK(root_layer->layer_tree_impl());
     PropertyTreeBuilder::PreCalculateMetaInformationForTesting(root_layer);
 
     bool can_render_to_separate_surface = true;
 
-    LayerImpl* page_scale_layer = nullptr;
+    const LayerImpl* page_scale_layer = nullptr;
     LayerImpl* inner_viewport_scroll_layer =
         root_layer->layer_tree_impl()->InnerViewportScrollLayer();
     LayerImpl* outer_viewport_scroll_layer =
         root_layer->layer_tree_impl()->OuterViewportScrollLayer();
-    LayerImpl* overscroll_elasticity_layer =
+    const LayerImpl* overscroll_elasticity_layer =
         root_layer->layer_tree_impl()->OverscrollElasticityLayer();
     gfx::Vector2dF elastic_overscroll =
         root_layer->layer_tree_impl()->elastic_overscroll()->Current(
@@ -250,18 +244,18 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
     root_layer->layer_tree_impl()->BuildLayerListForTesting();
     PropertyTrees* property_trees =
         root_layer->layer_tree_impl()->property_trees();
-    draw_property_utils::BuildPropertyTreesAndComputeVisibleRects(
+    PropertyTreeBuilder::BuildPropertyTrees(
         root_layer, page_scale_layer, inner_viewport_scroll_layer,
         outer_viewport_scroll_layer, overscroll_elasticity_layer,
         elastic_overscroll, page_scale_factor, device_scale_factor,
-        gfx::Rect(device_viewport_size), gfx::Transform(),
-        can_render_to_separate_surface, property_trees,
+        gfx::Rect(device_viewport_size), gfx::Transform(), property_trees);
+    draw_property_utils::UpdatePropertyTreesAndRenderSurfaces(
+        root_layer, property_trees, can_render_to_separate_surface);
+    draw_property_utils::FindLayersThatNeedUpdates(
+        root_layer->layer_tree_impl(), property_trees,
         update_layer_list_impl_.get());
-    draw_property_utils::VerifyClipTreeCalculations(*update_layer_list_impl_,
-                                                    property_trees);
-    if (!skip_verify_visible_rect_calculations)
-      draw_property_utils::VerifyVisibleRectsCalculations(
-          *update_layer_list_impl_, property_trees);
+    draw_property_utils::ComputeDrawPropertiesOfVisibleLayers(
+        update_layer_list_impl(), property_trees);
   }
 
   void ExecuteCalculateDrawPropertiesWithoutSeparateSurfaces(
@@ -1126,20 +1120,13 @@ TEST_F(LayerTreeHostCommonTest, LayerFullyContainedWithinClipInTargetSpace) {
   LayerImpl* page_scale_layer = nullptr;
   LayerImpl* inner_viewport_scroll_layer = nullptr;
   LayerImpl* outer_viewport_scroll_layer = nullptr;
-  // Visible rects computed by combining clips in target space and root space
-  // don't match because of rotation transforms. So, we skip
-  // verify_visible_rect_calculations.
-  bool skip_verify_visible_rect_calculations = true;
   ExecuteCalculateDrawProperties(root, device_scale_factor, page_scale_factor,
                                  page_scale_layer, inner_viewport_scroll_layer,
-                                 outer_viewport_scroll_layer,
-                                 skip_verify_visible_rect_calculations);
+                                 outer_viewport_scroll_layer);
 
-  // Mapping grand_child's bounds to target space produces a non-empty rect
-  // that is fully contained within the target's bounds, so grand_child should
-  // be considered fully visible.
-  EXPECT_EQ(gfx::Rect(grand_child->bounds()),
-            grand_child->visible_layer_rect());
+  // Mapping grand_child's bounds to screen space produces an empty rect so
+  // grand_child should be hidden.
+  EXPECT_EQ(gfx::Rect(), grand_child->visible_layer_rect());
 }
 
 TEST_F(LayerTreeHostCommonTest, TransformsForDegenerateIntermediateLayer) {
@@ -3986,6 +3973,28 @@ TEST_F(LayerTreeHostCommonTest,
   EXPECT_EQ(gfx::Rect(100, 100), render_surface2->visible_layer_rect());
 }
 
+TEST_F(LayerTreeHostCommonTest, VisibleRectOfUnclippedRenderSurface) {
+  LayerImpl* root = root_layer_for_testing();
+  LayerImpl* clip = AddChildToRoot<LayerImpl>();
+  LayerImpl* render_surface1 = AddChild<LayerImpl>(clip);
+  LayerImpl* render_surface2 = AddChild<LayerImpl>(render_surface1);
+
+  root->SetBounds(gfx::Size(100, 100));
+  clip->SetBounds(gfx::Size(50, 50));
+  clip->SetMasksToBounds(true);
+  render_surface1->SetBounds(gfx::Size(100, 100));
+  render_surface1->test_properties()->force_render_surface = true;
+  render_surface2->SetBounds(gfx::Size(100, 100));
+  render_surface2->test_properties()->force_render_surface = true;
+  render_surface2->SetDrawsContent(true);
+
+  ExecuteCalculateDrawProperties(root);
+  // The clip should be handled by render_surface1 and render_surface2 should
+  // be unclipped and its visible rect should be clipped only by viewport clip.
+  EXPECT_FALSE(render_surface2->is_clipped());
+  EXPECT_EQ(gfx::Rect(100, 100), render_surface2->visible_layer_rect());
+}
+
 TEST_F(LayerTreeHostCommonTest,
        VisibleRectsWhenClipChildIsBetweenTwoRenderSurfaces) {
   LayerImpl* root = root_layer_for_testing();
@@ -6502,50 +6511,6 @@ TEST_F(LayerTreeHostCommonTest, ScrollChildAndScrollParentDifferentTargets) {
   EXPECT_TRANSFORMATION_MATRIX_EQ(scroll_child->DrawTransform(), scale);
 }
 
-TEST_F(LayerTreeHostCommonTest, TargetBetweenScrollChildandScrollParentTarget) {
-  LayerImpl* root = root_layer_for_testing();
-  LayerImpl* scroll_child_target = AddChildToRoot<LayerImpl>();
-  LayerImpl* scroll_child = AddChild<LayerImpl>(scroll_child_target);
-  LayerImpl* child_of_scroll_child = AddChild<LayerImpl>(scroll_child);
-  LayerImpl* intervening_target = AddChild<LayerImpl>(scroll_child_target);
-  LayerImpl* clip = AddChild<LayerImpl>(intervening_target);
-  LayerImpl* scroll_parent_target = AddChild<LayerImpl>(clip);
-  LayerImpl* scroll_parent = AddChild<LayerImpl>(scroll_parent_target);
-
-  scroll_parent->SetDrawsContent(true);
-  child_of_scroll_child->SetDrawsContent(true);
-
-  scroll_child->test_properties()->scroll_parent = scroll_parent;
-  scroll_parent->test_properties()->scroll_children =
-      base::MakeUnique<std::set<LayerImpl*>>();
-  scroll_parent->test_properties()->scroll_children->insert(scroll_child);
-
-  root->SetBounds(gfx::Size(50, 50));
-  scroll_child_target->SetBounds(gfx::Size(50, 50));
-  scroll_child_target->SetMasksToBounds(true);
-  scroll_child_target->test_properties()->force_render_surface = true;
-  scroll_child->SetBounds(gfx::Size(50, 50));
-  child_of_scroll_child->SetBounds(gfx::Size(50, 50));
-  child_of_scroll_child->test_properties()->force_render_surface = true;
-  intervening_target->SetBounds(gfx::Size(50, 50));
-  intervening_target->test_properties()->force_render_surface = true;
-  clip->SetBounds(gfx::Size(50, 50));
-  clip->SetMasksToBounds(true);
-  scroll_parent_target->SetBounds(gfx::Size(50, 50));
-  scroll_parent_target->SetMasksToBounds(true);
-  scroll_parent_target->test_properties()->force_render_surface = true;
-  scroll_parent->SetBounds(gfx::Size(50, 50));
-
-  ExecuteCalculateDrawProperties(root);
-  PropertyTrees* property_trees = root->layer_tree_impl()->property_trees();
-  ClipNode* clip_node =
-      property_trees->clip_tree.Node(child_of_scroll_child->clip_tree_index());
-  ClipNode* parent_clip_node = property_trees->clip_tree.parent(clip_node);
-  DCHECK_GT(parent_clip_node->target_transform_id,
-            property_trees->transform_tree.TargetId(
-                child_of_scroll_child->transform_tree_index()));
-}
-
 TEST_F(LayerTreeHostCommonTest, SingularTransformSubtreesDoNotDraw) {
   LayerImpl* root = root_layer_for_testing();
   LayerImpl* parent = AddChildToRoot<LayerImpl>();
@@ -8979,30 +8944,17 @@ TEST_F(LayerTreeHostCommonTest,
   zero_matrix.Scale3d(0.f, 0.f, 0.f);
   root->layer_tree_impl()->property_trees()->transform_tree.OnTransformAnimated(
       zero_matrix, animated->transform_tree_index(), root->layer_tree_impl());
-  // While computing visible rects by combining clips in screen space, we set
-  // the entire layer as visible if the screen space transform is singular. This
-  // is not always true when we combine clips in target space because if the
-  // intersection of combined_clip in taret space with layer_rect projected to
-  // target space is empty, we set it to an empty rect.
-  bool skip_verify_visible_rect_calculations = true;
-  ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(
-      root, skip_verify_visible_rect_calculations);
-
-  // The animated layer maps to the empty rect in clipped target space, so is
-  // treated as having an empty visible rect.
-  EXPECT_EQ(gfx::Rect(), animated->visible_layer_rect());
+  ExecuteCalculateDrawPropertiesAndSaveUpdateLayerList(root);
 
   // The animated layer will be treated as fully visible when we combine clips
   // in screen space.
-  gfx::Rect visible_rect = draw_property_utils::ComputeLayerVisibleRectDynamic(
-      root->layer_tree_impl()->property_trees(), animated);
-  EXPECT_EQ(gfx::Rect(120, 120), visible_rect);
+  EXPECT_EQ(gfx::Rect(120, 120), animated->visible_layer_rect());
 
   // This time, flattening does not make |animated|'s transform invertible. This
   // means the clip cannot be projected into |surface|'s space, so we treat
   // |surface| and layers that draw into it as having empty visible rect.
-  EXPECT_EQ(gfx::Rect(), surface->visible_layer_rect());
-  EXPECT_EQ(gfx::Rect(), descendant_of_animation->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(100, 100), surface->visible_layer_rect());
+  EXPECT_EQ(gfx::Rect(200, 200), descendant_of_animation->visible_layer_rect());
 }
 
 // Verify that having animated opacity but current opacity 1 still creates
@@ -9799,14 +9751,9 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceClipsSubtree) {
   LayerImpl* page_scale_layer = nullptr;
   LayerImpl* inner_viewport_scroll_layer = nullptr;
   LayerImpl* outer_viewport_scroll_layer = nullptr;
-  // Visible rects computed by combining clips in target space and root space
-  // don't match because of rotation transforms. So, we skip
-  // verify_visible_rect_calculations.
-  bool skip_verify_visible_rect_calculations = true;
   ExecuteCalculateDrawProperties(root, device_scale_factor, page_scale_factor,
                                  page_scale_layer, inner_viewport_scroll_layer,
-                                 outer_viewport_scroll_layer,
-                                 skip_verify_visible_rect_calculations);
+                                 outer_viewport_scroll_layer);
 
   TransformTree& transform_tree =
       root->layer_tree_impl()->property_trees()->transform_tree;
@@ -9820,15 +9767,7 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceClipsSubtree) {
   EXPECT_TRUE(render_surface->GetRenderSurface());
   EXPECT_FALSE(test_layer->GetRenderSurface());
 
-  ClipTree& clip_tree = root->layer_tree_impl()->property_trees()->clip_tree;
-  ClipNode* clip_node = clip_tree.Node(render_surface->clip_tree_index());
-  EXPECT_EQ(clip_node->clip_type, ClipNode::ClipType::NONE);
-  EXPECT_EQ(gfx::Rect(20, 20), test_layer->visible_layer_rect());
-
-  // Also test the visible rects computed by combining clips in root space.
-  gfx::Rect visible_rect = draw_property_utils::ComputeLayerVisibleRectDynamic(
-      root->layer_tree_impl()->property_trees(), test_layer);
-  EXPECT_EQ(gfx::Rect(30, 20), visible_rect);
+  EXPECT_EQ(gfx::Rect(30, 20), test_layer->visible_layer_rect());
 }
 
 TEST_F(LayerTreeHostCommonTest, TransformOfParentClipNodeAncestorOfTarget) {
@@ -10270,9 +10209,6 @@ TEST_F(LayerTreeHostCommonTest, TwoUnclippedRenderSurfaces) {
   ExecuteCalculateDrawProperties(root);
 
   EXPECT_EQ(gfx::Rect(-10, -10, 30, 30), render_surface2->clip_rect());
-  // A clip node is created for every render surface and for layers that have
-  // local clip. So, here it should be craeted for every layer.
-  EXPECT_EQ(root->layer_tree_impl()->property_trees()->clip_tree.size(), 5u);
 }
 
 TEST_F(LayerTreeHostCommonTest, MaskLayerDrawProperties) {

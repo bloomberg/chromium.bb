@@ -139,6 +139,7 @@ TEST(LayerImplTest, VerifyLayerChangesAreTrackedProperly) {
   host_impl.active_tree()->SetRootLayerForTesting(std::move(root_clip_ptr));
 
   root->test_properties()->force_render_surface = true;
+  root->SetMasksToBounds(true);
   root->layer_tree_impl()->ResetAllChangeTracking();
 
   root->test_properties()->AddChild(
@@ -443,7 +444,6 @@ class LayerImplScrollTest : public testing::Test {
 
   LayerTreeSettings settings() {
     LayerTreeSettings settings;
-    settings.verify_clip_tree_calculations = true;
     return settings;
   }
 

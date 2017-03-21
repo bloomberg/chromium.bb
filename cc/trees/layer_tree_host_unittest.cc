@@ -804,7 +804,7 @@ class LayerTreeHostTestPushNodeOwnerToNodeIdMap : public LayerTreeHostTest {
   void DidCommit() override {
     switch (layer_tree_host()->SourceFrameNumber()) {
       case 1:
-        // child_ should create transform, effect, clip node.
+        // child_ should create transform, effect node.
         child_->SetForceRenderSurfaceForTesting(true);
         break;
       case 2:
@@ -812,7 +812,12 @@ class LayerTreeHostTestPushNodeOwnerToNodeIdMap : public LayerTreeHostTest {
         child_->SetScrollClipLayerId(root_->id());
         break;
       case 3:
+        // child_ should create a clip node.
+        child_->SetMasksToBounds(true);
+        break;
+      case 4:
         // child_ should not create any property tree node.
+        child_->SetMasksToBounds(false);
         child_->SetForceRenderSurfaceForTesting(false);
         child_->SetScrollClipLayerId(Layer::INVALID_ID);
     }
@@ -838,30 +843,28 @@ class LayerTreeHostTestPushNodeOwnerToNodeIdMap : public LayerTreeHostTest {
         property_trees->scroll_tree.FindNodeFromOwningLayerId(child_->id());
     switch (impl->sync_tree()->source_frame_number()) {
       case 0:
-        // root_ should create every property tree node and child_ should not
-        // create any.
+        // root_ should create transform, scroll and effect tree nodes but not
+        // a clip node.
         EXPECT_NE(root_transform_node, nullptr);
         EXPECT_EQ(root_transform_node->id, root_->transform_tree_index());
         EXPECT_NE(root_effect_node, nullptr);
         EXPECT_EQ(root_effect_node->id, root_->effect_tree_index());
-        EXPECT_NE(root_clip_node, nullptr);
-        EXPECT_EQ(root_clip_node->id, root_->clip_tree_index());
         EXPECT_NE(root_scroll_node, nullptr);
         EXPECT_EQ(root_scroll_node->id, root_->scroll_tree_index());
+        EXPECT_EQ(root_clip_node, nullptr);
         EXPECT_EQ(child_transform_node, nullptr);
         EXPECT_EQ(child_effect_node, nullptr);
         EXPECT_EQ(child_clip_node, nullptr);
         EXPECT_EQ(child_scroll_node, nullptr);
         break;
       case 1:
-        // child_ should create a transfrom, clip, effect nodes but not a scroll
+        // child_ should create a transfrom, effect nodes but not a scroll, clip
         // node.
         EXPECT_NE(child_transform_node, nullptr);
         EXPECT_EQ(child_transform_node->id, child_->transform_tree_index());
         EXPECT_NE(child_effect_node, nullptr);
         EXPECT_EQ(child_effect_node->id, child_->effect_tree_index());
-        EXPECT_NE(child_clip_node, nullptr);
-        EXPECT_EQ(child_clip_node->id, child_->clip_tree_index());
+        EXPECT_EQ(child_clip_node, nullptr);
         EXPECT_EQ(child_scroll_node, nullptr);
         break;
       case 2:
@@ -870,6 +873,11 @@ class LayerTreeHostTestPushNodeOwnerToNodeIdMap : public LayerTreeHostTest {
         EXPECT_EQ(child_scroll_node->id, child_->scroll_tree_index());
         break;
       case 3:
+        // child_ should create a clip node.
+        EXPECT_NE(child_clip_node, nullptr);
+        EXPECT_EQ(child_clip_node->id, child_->clip_tree_index());
+        break;
+      case 4:
         // child_ should not create any property tree nodes.
         EXPECT_EQ(child_transform_node, nullptr);
         EXPECT_EQ(child_effect_node, nullptr);

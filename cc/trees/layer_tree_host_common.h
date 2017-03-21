@@ -74,8 +74,7 @@ class CC_EXPORT LayerTreeHostCommon {
         int max_texture_size,
         bool can_render_to_separate_surface,
         bool can_adjust_raster_scales,
-        bool verify_clip_tree_calculations,
-        bool verify_visible_rect_calculations,
+        bool use_layer_lists,
         LayerImplList* render_surface_layer_list,
         PropertyTrees* property_trees);
 
@@ -92,8 +91,7 @@ class CC_EXPORT LayerTreeHostCommon {
     int max_texture_size;
     bool can_render_to_separate_surface;
     bool can_adjust_raster_scales;
-    bool verify_clip_tree_calculations;
-    bool verify_visible_rect_calculations;
+    bool use_layer_lists;
     LayerImplList* render_surface_layer_list;
     PropertyTrees* property_trees;
   };

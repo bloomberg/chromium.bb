@@ -1012,9 +1012,7 @@ void LayerTreeImpl::SetElementIdsForTesting() {
   }
 }
 
-bool LayerTreeImpl::UpdateDrawProperties(
-    bool update_lcd_text,
-    bool force_skip_verify_visible_rect_calculations) {
+bool LayerTreeImpl::UpdateDrawProperties(bool update_lcd_text) {
   if (!needs_update_draw_properties_)
     return true;
 
@@ -1046,10 +1044,6 @@ bool LayerTreeImpl::UpdateDrawProperties(
     // We verify visible rect calculations whenever we verify clip tree
     // calculations except when this function is explicitly passed a flag asking
     // us to skip it.
-    bool verify_visible_rect_calculations =
-        force_skip_verify_visible_rect_calculations
-            ? false
-            : settings().verify_clip_tree_calculations;
     LayerTreeHostCommon::CalcDrawPropsImplInputs inputs(
         layer_list_[0], DrawViewportSize(),
         layer_tree_host_impl_->DrawTransform(), device_scale_factor(),
@@ -1059,8 +1053,7 @@ bool LayerTreeImpl::UpdateDrawProperties(
         OverscrollElasticityLayer(), resource_provider()->max_texture_size(),
         can_render_to_separate_surface,
         settings().layer_transforms_should_scale_layer_contents,
-        settings().verify_clip_tree_calculations,
-        verify_visible_rect_calculations, &render_surface_layer_list_,
+        settings().use_layer_lists, &render_surface_layer_list_,
         &property_trees_);
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
     if (const char* client_name = GetClientNameForMetrics()) {

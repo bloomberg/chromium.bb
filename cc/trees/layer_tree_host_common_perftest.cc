@@ -114,9 +114,8 @@ class CalcDrawPropsTest : public LayerTreeHostCommonPerfTest {
         active_tree->elastic_overscroll()->Current(active_tree->IsActiveTree()),
         active_tree->OverscrollElasticityLayer(), max_texture_size,
         can_render_to_separate_surface,
+        false,  // don't use layer lists for perf tests
         host_impl->settings().layer_transforms_should_scale_layer_contents,
-        false,  // do not verify_clip_tree_calculation for perf tests
-        false,  // do not verify_visible_rect_calculation for perf tests
         &update_list, active_tree->property_trees());
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
   }

@@ -80,7 +80,6 @@ class CC_EXPORT LayerTreeSettings {
   bool ignore_root_layer_flings = false;
   size_t scheduled_raster_task_limit = 32;
   bool use_occlusion_for_tile_prioritization = false;
-  bool verify_clip_tree_calculations = false;
 
   // TODO(khushalsagar): Enable for all client and remove this flag if possible.
   // See crbug/com/696864.

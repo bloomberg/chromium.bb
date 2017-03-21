@@ -9,7 +9,6 @@
 #include "cc/layers/layer_collections.h"
 
 namespace gfx {
-class Rect;
 class Transform;
 class Vector2dF;
 }  // namespace gfx
@@ -19,6 +18,7 @@ namespace cc {
 class Layer;
 class LayerImpl;
 class LayerTreeHost;
+class LayerTreeImpl;
 class RenderSurfaceImpl;
 class EffectTree;
 class TransformTree;
@@ -32,10 +32,6 @@ void CC_EXPORT PostConcatSurfaceContentsScale(const EffectNode* effect_node,
 
 void CC_EXPORT ConcatInverseSurfaceContentsScale(const EffectNode* effect_node,
                                                  gfx::Transform* transform);
-// Computes combined clips for every node in |clip_tree|. This function requires
-// that |transform_tree| has been updated via |ComputeTransforms|.
-void CC_EXPORT ComputeClips(PropertyTrees* property_trees,
-                            bool non_root_surfaces_enabled);
 
 // Computes combined (screen space) transforms for every node in the transform
 // tree. This must be done prior to calling |ComputeClips|.
@@ -44,49 +40,35 @@ void CC_EXPORT ComputeTransforms(TransformTree* transform_tree);
 // Computes screen space opacity for every node in the opacity tree.
 void CC_EXPORT ComputeEffects(EffectTree* effect_tree);
 
-void CC_EXPORT BuildPropertyTreesAndComputeVisibleRects(
-    LayerImpl* root_layer,
-    const LayerImpl* page_scale_layer,
-    const LayerImpl* inner_viewport_scroll_layer,
-    const LayerImpl* outer_viewport_scroll_layer,
-    const LayerImpl* overscroll_elasticity_layer,
-    const gfx::Vector2dF& elastic_overscroll,
-    float page_scale_factor,
-    float device_scale_factor,
-    const gfx::Rect& viewport,
-    const gfx::Transform& device_transform,
-    bool can_render_to_separate_surface,
-    PropertyTrees* property_trees,
-    LayerImplList* visible_layer_list);
 
 void CC_EXPORT UpdatePropertyTrees(LayerTreeHost* layer_tree_host,
                                    PropertyTrees* property_trees,
                                    bool can_render_to_separate_surface);
 
+void CC_EXPORT
+UpdatePropertyTreesAndRenderSurfaces(LayerImpl* root_layer,
+                                     PropertyTrees* property_trees,
+                                     bool can_render_to_separate_surface);
+
 void CC_EXPORT FindLayersThatNeedUpdates(LayerTreeHost* layer_tree_host,
                                          const PropertyTrees* property_trees,
                                          LayerList* update_layer_list);
 
-void CC_EXPORT ComputeVisibleRects(LayerImpl* root_layer,
-                                   PropertyTrees* property_trees,
-                                   bool can_render_to_separate_surface,
-                                   LayerImplList* visible_layer_list);
-
-gfx::Rect CC_EXPORT
-ComputeLayerVisibleRectDynamic(const PropertyTrees* property_trees,
-                               const LayerImpl* layer);
 void CC_EXPORT
-VerifyVisibleRectsCalculations(const LayerImplList& layer_list,
-                               const PropertyTrees* property_trees);
+FindLayersThatNeedUpdates(LayerTreeImpl* layer_tree_impl,
+                          const PropertyTrees* property_trees,
+                          std::vector<LayerImpl*>* visible_layer_list);
 
-void CC_EXPORT ComputeLayerDrawProperties(LayerImpl* layer,
-                                          const PropertyTrees* property_trees);
+void CC_EXPORT
+ComputeDrawPropertiesOfVisibleLayers(const LayerImplList* layer_list,
+                                     PropertyTrees* property_trees);
 
 void CC_EXPORT ComputeMaskDrawProperties(LayerImpl* mask_layer,
                                          const PropertyTrees* property_trees);
 
-void CC_EXPORT ComputeSurfaceDrawProperties(const PropertyTrees* property_trees,
-                                            RenderSurfaceImpl* render_surface);
+void CC_EXPORT ComputeSurfaceDrawProperties(PropertyTrees* property_trees,
+                                            RenderSurfaceImpl* render_surface,
+                                            const bool use_layer_lists);
 
 bool CC_EXPORT LayerShouldBeSkipped(LayerImpl* layer,
                                     const TransformTree& transform_tree,
@@ -99,9 +81,6 @@ bool CC_EXPORT LayerNeedsUpdate(Layer* layer,
 bool CC_EXPORT LayerNeedsUpdate(LayerImpl* layer,
                                 bool layer_is_drawn,
                                 const PropertyTrees* property_trees);
-
-void CC_EXPORT VerifyClipTreeCalculations(const LayerImplList& layer_list,
-                                          PropertyTrees* property_trees);
 
 gfx::Transform CC_EXPORT DrawTransform(const LayerImpl* layer,
                                        const TransformTree& transform_tree,

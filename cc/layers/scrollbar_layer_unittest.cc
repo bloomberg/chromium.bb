@@ -111,7 +111,6 @@ class ScrollbarLayerTest : public testing::Test {
         base::TimeDelta::FromMilliseconds(20);
     layer_tree_settings_.scrollbar_fade_out_duration =
         base::TimeDelta::FromMilliseconds(20);
-    layer_tree_settings_.verify_clip_tree_calculations = true;
 
     scrollbar_layer_id_ = -1;
 
@@ -693,7 +692,6 @@ class ScrollbarLayerSolidColorThumbTest : public testing::Test {
  public:
   ScrollbarLayerSolidColorThumbTest() {
     LayerTreeSettings layer_tree_settings;
-    layer_tree_settings.verify_clip_tree_calculations = true;
     host_impl_.reset(new FakeLayerTreeHostImpl(
         layer_tree_settings, &task_runner_provider_, &task_graph_runner_));
 

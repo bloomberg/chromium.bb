@@ -582,6 +582,18 @@ struct DrawTransformData {
         transforms(gfx::Transform(), gfx::Transform()) {}
 };
 
+struct ConditionalClip {
+  bool is_clipped;
+  gfx::RectF clip_rect;
+};
+
+struct ClipRectData {
+  int target_id;
+  ConditionalClip clip;
+
+  ClipRectData() : target_id(-1) {}
+};
+
 struct PropertyTreesCachedData {
   int transform_tree_update_number;
   std::vector<AnimationScaleData> animation_scales;
@@ -678,6 +690,8 @@ class CC_EXPORT PropertyTrees final {
   gfx::Transform ToScreenSpaceTransformWithoutSurfaceContentsScale(
       int transform_id,
       int effect_id) const;
+
+  ClipRectData* FetchClipRectFromCache(int clip_id, int target_id);
 
  private:
   gfx::Vector2dF inner_viewport_container_bounds_delta_;

@@ -1951,6 +1951,10 @@ void PropertyTrees::SetAnimationScalesForTesting(
 bool PropertyTrees::GetToTarget(int transform_id,
                                 int effect_id,
                                 gfx::Transform* to_target) const {
+  if (effect_id == EffectTree::kContentsRootNodeId) {
+    *to_target = transform_tree.ToScreen(transform_id);
+    return true;
+  }
   DrawTransforms& transforms = GetDrawTransforms(transform_id, effect_id);
   if (transforms.to_valid) {
     *to_target = transforms.to_target;
@@ -1969,6 +1973,12 @@ bool PropertyTrees::GetToTarget(int transform_id,
 bool PropertyTrees::GetFromTarget(int transform_id,
                                   int effect_id,
                                   gfx::Transform* from_target) const {
+  const TransformNode* node = transform_tree.Node(transform_id);
+  if (node->ancestors_are_invertible &&
+      effect_id == EffectTree::kContentsRootNodeId) {
+    *from_target = transform_tree.FromScreen(transform_id);
+    return true;
+  }
   DrawTransforms& transforms = GetDrawTransforms(transform_id, effect_id);
   if (transforms.from_valid) {
     *from_target = transforms.from_target;
@@ -2002,6 +2012,17 @@ DrawTransformData& PropertyTrees::FetchDrawTransformsDataFromCache(
   data.update_number = -1;
   data.target_id = dest_id;
   return data;
+}
+
+ClipRectData* PropertyTrees::FetchClipRectFromCache(int clip_id,
+                                                    int target_id) {
+  ClipNode* clip_node = clip_tree.Node(clip_id);
+  for (auto& data : clip_node->cached_clip_rects) {
+    if (data.target_id == target_id || data.target_id == -1)
+      return &data;
+  }
+  clip_node->cached_clip_rects.push_back(ClipRectData());
+  return &clip_node->cached_clip_rects.back();
 }
 
 DrawTransforms& PropertyTrees::GetDrawTransforms(int transform_id,

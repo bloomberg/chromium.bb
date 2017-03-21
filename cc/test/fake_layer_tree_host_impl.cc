@@ -9,7 +9,6 @@
 #include "cc/animation/animation_host.h"
 #include "cc/test/begin_frame_args_test.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
-#include "cc/test/layer_tree_settings_for_testing.h"
 #include "cc/trees/layer_tree_impl.h"
 
 namespace cc {
@@ -17,7 +16,7 @@ namespace cc {
 FakeLayerTreeHostImpl::FakeLayerTreeHostImpl(
     TaskRunnerProvider* task_runner_provider,
     TaskGraphRunner* task_graph_runner)
-    : FakeLayerTreeHostImpl(LayerTreeSettingsForTesting(),
+    : FakeLayerTreeHostImpl(LayerTreeSettings(),
                             task_runner_provider,
                             task_graph_runner) {}
 
@@ -92,20 +91,16 @@ int FakeLayerTreeHostImpl::RecursiveUpdateNumChildren(LayerImpl* layer) {
   return num_children_that_draw_content + (layer->DrawsContent() ? 1 : 0);
 }
 
-void FakeLayerTreeHostImpl::UpdateNumChildrenAndDrawPropertiesForActiveTree(
-    bool force_skip_verify_visible_rect_calculations) {
-  UpdateNumChildrenAndDrawProperties(
-      active_tree(), force_skip_verify_visible_rect_calculations);
+void FakeLayerTreeHostImpl::UpdateNumChildrenAndDrawPropertiesForActiveTree() {
+  UpdateNumChildrenAndDrawProperties(active_tree());
 }
 
 void FakeLayerTreeHostImpl::UpdateNumChildrenAndDrawProperties(
-    LayerTreeImpl* layerTree,
-    bool force_skip_verify_visible_rect_calculations) {
+    LayerTreeImpl* layerTree) {
   RecursiveUpdateNumChildren(layerTree->root_layer_for_testing());
   bool update_lcd_text = false;
   layerTree->BuildLayerListAndPropertyTreesForTesting();
-  layerTree->UpdateDrawProperties(update_lcd_text,
-                                  force_skip_verify_visible_rect_calculations);
+  layerTree->UpdateDrawProperties(update_lcd_text);
 }
 
 AnimationHost* FakeLayerTreeHostImpl::animation_host() const {

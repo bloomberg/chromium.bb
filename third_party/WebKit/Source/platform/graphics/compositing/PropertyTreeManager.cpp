@@ -103,14 +103,11 @@ void PropertyTreeManager::setupRootClipNode() {
       *clipTree.Node(clipTree.Insert(cc::ClipNode(), kRealRootNodeId));
   DCHECK_EQ(clipNode.id, kSecondaryRootNodeId);
 
-  clipNode.resets_clip = true;
   clipNode.owning_layer_id = m_rootLayer->id();
   clipNode.clip_type = cc::ClipNode::ClipType::APPLIES_LOCAL_CLIP;
   clipNode.clip = gfx::RectF(
       gfx::SizeF(m_rootLayer->layer_tree_host()->device_viewport_size()));
   clipNode.transform_id = kRealRootNodeId;
-  clipNode.target_transform_id = kRealRootNodeId;
-  clipNode.target_effect_id = kSecondaryRootNodeId;
   clipTree.SetOwningLayerIdForNode(&clipNode, clipNode.owning_layer_id);
 
   m_clipNodeMap.set(ClipPaintPropertyNode::root(), clipNode.id);
@@ -230,11 +227,7 @@ int PropertyTreeManager::ensureCompositorClipNode(
   compositorNode.clip = clipNode->clipRect().rect();
   compositorNode.transform_id =
       ensureCompositorTransformNode(clipNode->localTransformSpace());
-  compositorNode.target_transform_id = kRealRootNodeId;
-  compositorNode.target_effect_id = kSecondaryRootNodeId;
   compositorNode.clip_type = cc::ClipNode::ClipType::APPLIES_LOCAL_CLIP;
-  compositorNode.layers_are_clipped = true;
-  compositorNode.layers_are_clipped_when_surfaces_disabled = true;
 
   m_rootLayer->AddChild(dummyLayer);
   dummyLayer->SetTransformTreeIndex(compositorNode.transform_id);

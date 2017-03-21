@@ -76,7 +76,6 @@ class MockLayerTreeHost : public LayerTreeHost {
     params.task_graph_runner = task_graph_runner;
     params.mutator_host = mutator_host;
     LayerTreeSettings settings;
-    settings.verify_clip_tree_calculations = true;
     params.settings = &settings;
     return base::WrapUnique(new MockLayerTreeHost(&params));
   }

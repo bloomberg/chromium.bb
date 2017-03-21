@@ -18,7 +18,6 @@
 #include "cc/quads/render_pass.h"
 #include "cc/test/animation_test_common.h"
 #include "cc/test/fake_compositor_frame_sink.h"
-#include "cc/test/layer_tree_settings_for_testing.h"
 #include "cc/test/mock_occlusion_tracker.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -118,12 +117,11 @@ void LayerTestCommon::VerifyQuadsAreOccluded(const QuadList& quads,
 }
 
 LayerTestCommon::LayerImplTest::LayerImplTest()
-    : LayerImplTest(LayerTreeSettingsForTesting()) {}
+    : LayerImplTest(LayerTreeSettings()) {}
 
 LayerTestCommon::LayerImplTest::LayerImplTest(
     std::unique_ptr<CompositorFrameSink> compositor_frame_sink)
-    : LayerImplTest(LayerTreeSettingsForTesting(),
-                    std::move(compositor_frame_sink)) {}
+    : LayerImplTest(LayerTreeSettings(), std::move(compositor_frame_sink)) {}
 
 LayerTestCommon::LayerImplTest::LayerImplTest(const LayerTreeSettings& settings)
     : LayerImplTest(settings, FakeCompositorFrameSink::Create3d()) {}
