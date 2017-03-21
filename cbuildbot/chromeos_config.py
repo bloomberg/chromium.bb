@@ -2858,7 +2858,6 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       'peppy',
       'tricky',
       'veyron_minnie',
-      'veyron_pinky',
       'veyron_rialto',
       'x86-alex',
   ])

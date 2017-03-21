@@ -28123,10 +28123,10 @@
     },
     "veyron_pinky-chrome-pfq": {
         "_template": "chrome_pfq",
-        "active_waterfall": "chromeos",
         "boards": [
             "veyron_pinky"
         ],
+        "important": false,
         "manifest": "official.xml",
         "vm_tests": []
     },
