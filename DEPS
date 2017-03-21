@@ -404,7 +404,7 @@ deps_os = {
 
     # For Linux and Chromium OS.
     'src/third_party/cros_system_api':
-      Var('chromium_git') + '/chromiumos/platform/system_api.git' + '@' + 'e53891844ed52496f2d26076d6ed0625f6130a1c',
+      Var('chromium_git') + '/chromiumos/platform/system_api.git' + '@' + '47a097813e20193093ae5f2dfa8a4f9027129935',
 
     'src/third_party/freetype/src':
       Var('chromium_git') + '/chromium/src/third_party/freetype2.git' + '@' + Var('freetype_revision'),
