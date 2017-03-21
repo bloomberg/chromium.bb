@@ -33,7 +33,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
-using base::StringPiece;
 using std::string;
 using testing::_;
 
@@ -465,7 +464,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
   }
 
   void OnAltSvc(SpdyStreamId stream_id,
-                StringPiece origin,
+                SpdyStringPiece origin,
                 const SpdyAltSvcWireFormat::AlternativeServiceVector&
                     altsvc_vector) override {
     VLOG(1) << "OnAltSvc(" << stream_id << ", \"" << origin
@@ -650,8 +649,8 @@ class TestExtension : public ExtensionVisitorInterface {
 };
 
 // Retrieves serialized headers from a HEADERS frame.
-StringPiece GetSerializedHeaders(const SpdySerializedFrame& frame,
-                                 const SpdyFramer& framer) {
+SpdyStringPiece GetSerializedHeaders(const SpdySerializedFrame& frame,
+                                     const SpdyFramer& framer) {
   SpdyFrameReader reader(frame.data(), frame.size());
   reader.Seek(3);  // Seek past the frame length.
 
@@ -663,8 +662,8 @@ StringPiece GetSerializedHeaders(const SpdySerializedFrame& frame,
   uint8_t flags;
   reader.ReadUInt8(&flags);
 
-  return StringPiece(frame.data() + framer.GetHeadersMinimumSize(),
-                     frame.size() - framer.GetHeadersMinimumSize());
+  return SpdyStringPiece(frame.data() + framer.GetHeadersMinimumSize(),
+                         frame.size() - framer.GetHeadersMinimumSize());
 }
 
 enum DecoderChoice { DECODER_SELF, DECODER_NESTED, DECODER_HTTP2 };
@@ -808,9 +807,10 @@ TEST_P(SpdyFramerTest, RejectUpperCaseHeaderBlockValue) {
   frame.OverwriteLength(framer, frame2.length() - framer.GetFrameHeaderSize());
 
   SpdySerializedFrame control_frame(frame.take());
-  StringPiece serialized_headers = GetSerializedHeaders(control_frame, framer);
+  SpdyStringPiece serialized_headers =
+      GetSerializedHeaders(control_frame, framer);
   SpdySerializedFrame control_frame2(frame2.take());
-  StringPiece serialized_headers2 =
+  SpdyStringPiece serialized_headers2 =
       GetSerializedHeaders(control_frame2, framer);
 
   SpdyHeaderBlock new_headers;
@@ -1252,7 +1252,8 @@ TEST_P(SpdyFramerTest, DuplicateHeader) {
 
   SpdyHeaderBlock new_headers;
   SpdySerializedFrame control_frame(frame.take());
-  StringPiece serialized_headers = GetSerializedHeaders(control_frame, framer);
+  SpdyStringPiece serialized_headers =
+      GetSerializedHeaders(control_frame, framer);
   // This should fail because duplicate headers are verboten by the spec.
   EXPECT_FALSE(framer.ParseHeaderBlockInBuffer(
       serialized_headers.data(), serialized_headers.size(), &new_headers));
@@ -1286,8 +1287,8 @@ TEST_P(SpdyFramerTest, MultiValueHeader) {
       reinterpret_cast<unsigned char*>(control_frame.data()),
       control_frame.size());
 
-  EXPECT_THAT(visitor.headers_,
-              testing::ElementsAre(testing::Pair("name", StringPiece(value))));
+  EXPECT_THAT(visitor.headers_, testing::ElementsAre(testing::Pair(
+                                    "name", SpdyStringPiece(value))));
 }
 
 TEST_P(SpdyFramerTest, CompressEmptyHeaders) {
@@ -1478,7 +1479,7 @@ TEST_P(SpdyFramerTest, UnclosedStreamDataCompressorsOneByteAtATime) {
       &framer, headers, use_output_ ? &output_ : nullptr));
 
   const char bytes[] = "this is a test test test test test!";
-  SpdyDataIR data_ir(1, StringPiece(bytes, arraysize(bytes)));
+  SpdyDataIR data_ir(1, SpdyStringPiece(bytes, arraysize(bytes)));
   data_ir.set_fin(true);
   SpdySerializedFrame send_frame(framer.SerializeData(data_ir));
 
@@ -4295,7 +4296,7 @@ TEST_P(SpdyFramerTest, OnAltSvcWithOrigin) {
   altsvc_vector.push_back(altsvc1);
   altsvc_vector.push_back(altsvc2);
   EXPECT_CALL(visitor,
-              OnAltSvc(kStreamId, StringPiece("o_r|g!n"), altsvc_vector));
+              OnAltSvc(kStreamId, SpdyStringPiece("o_r|g!n"), altsvc_vector));
 
   SpdyAltSvcIR altsvc_ir(kStreamId);
   altsvc_ir.set_origin("o_r|g!n");
@@ -4328,7 +4329,7 @@ TEST_P(SpdyFramerTest, OnAltSvcNoOrigin) {
   SpdyAltSvcWireFormat::AlternativeServiceVector altsvc_vector;
   altsvc_vector.push_back(altsvc1);
   altsvc_vector.push_back(altsvc2);
-  EXPECT_CALL(visitor, OnAltSvc(kStreamId, StringPiece(""), altsvc_vector));
+  EXPECT_CALL(visitor, OnAltSvc(kStreamId, SpdyStringPiece(""), altsvc_vector));
 
   SpdyAltSvcIR altsvc_ir(kStreamId);
   altsvc_ir.add_altsvc(altsvc1);

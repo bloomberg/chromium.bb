@@ -21,7 +21,6 @@
 #include "net/spdy/spdy_test_utils.h"
 
 using ::base::MakeUnique;
-using ::base::StringPiece;
 using ::std::string;
 using ::testing::AssertionFailure;
 using ::testing::AssertionResult;
@@ -138,7 +137,7 @@ class SpdyTestDeframerImpl : public SpdyTestDeframer,
   // alphabetical order for ease of navigation, and are not in same order
   // as in SpdyFramerVisitorInterface.
   void OnAltSvc(SpdyStreamId stream_id,
-                StringPiece origin,
+                SpdyStringPiece origin,
                 const SpdyAltSvcWireFormat::AlternativeServiceVector&
                     altsvc_vector) override;
   void OnBlocked(SpdyStreamId stream_id) override;
@@ -184,7 +183,7 @@ class SpdyTestDeframerImpl : public SpdyTestDeframer,
   // Callbacks defined in SpdyHeadersHandlerInterface.
 
   void OnHeaderBlockStart() override;
-  void OnHeader(StringPiece key, StringPiece value) override;
+  void OnHeader(SpdyStringPiece key, SpdyStringPiece value) override;
   void OnHeaderBlockEnd(size_t header_bytes_parsed) override;
   void OnHeaderBlockEnd(size_t header_bytes_parsed,
                         size_t compressed_header_bytes_parsed) override;
@@ -413,7 +412,7 @@ bool SpdyTestDeframerImpl::AtFrameEnd() {
 
 void SpdyTestDeframerImpl::OnAltSvc(
     SpdyStreamId stream_id,
-    StringPiece origin,
+    SpdyStringPiece origin,
     const SpdyAltSvcWireFormat::AlternativeServiceVector& altsvc_vector) {
   DVLOG(1) << "OnAltSvc stream_id: " << stream_id;
   CHECK_EQ(frame_type_, UNSET) << "   frame_type_="
@@ -755,7 +754,8 @@ void SpdyTestDeframerImpl::OnHeaderBlockStart() {
   got_hpack_end_ = false;
 }
 
-void SpdyTestDeframerImpl::OnHeader(StringPiece key, StringPiece value) {
+void SpdyTestDeframerImpl::OnHeader(SpdyStringPiece key,
+                                    SpdyStringPiece value) {
   CHECK(frame_type_ == HEADERS || frame_type_ == CONTINUATION ||
         frame_type_ == PUSH_PROMISE)
       << "   frame_type_=" << Http2FrameTypeToString(frame_type_);

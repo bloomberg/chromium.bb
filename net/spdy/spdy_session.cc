@@ -280,7 +280,7 @@ std::unique_ptr<base::Value> NetLogSpdyRecvGoAwayCallback(
     int active_streams,
     int unclaimed_streams,
     SpdyErrorCode error_code,
-    base::StringPiece debug_data,
+    SpdyStringPiece debug_data,
     NetLogCaptureMode capture_mode) {
   auto dict = base::MakeUnique<base::DictionaryValue>();
   dict->SetInteger("last_accepted_stream_id", static_cast<int>(last_stream_id));
@@ -2683,7 +2683,7 @@ void SpdySession::OnRstStream(SpdyStreamId stream_id,
 
 void SpdySession::OnGoAway(SpdyStreamId last_accepted_stream_id,
                            SpdyErrorCode error_code,
-                           base::StringPiece debug_data) {
+                           SpdyStringPiece debug_data) {
   CHECK(in_io_loop_);
 
   // TODO(jgraettinger): UMA histogram on |error_code|.
@@ -2940,7 +2940,7 @@ void SpdySession::OnHeaders(SpdyStreamId stream_id,
 
 void SpdySession::OnAltSvc(
     SpdyStreamId stream_id,
-    base::StringPiece origin,
+    SpdyStringPiece origin,
     const SpdyAltSvcWireFormat::AlternativeServiceVector& altsvc_vector) {
   if (!is_secure_)
     return;

@@ -35,7 +35,6 @@
 #include "net/spdy/spdy_frame_reader.h"
 #include "net/spdy/spdy_framer_decoder_adapter.h"
 
-using base::StringPiece;
 using std::hex;
 using std::string;
 using std::vector;
@@ -1483,14 +1482,14 @@ size_t SpdyFramer::ProcessAltSvcFramePayload(const char* data, size_t len) {
   }
 
   SpdyFrameReader reader(altsvc_scratch_->data(), altsvc_scratch_->len());
-  StringPiece origin;
+  SpdyStringPiece origin;
   bool successful_read = reader.ReadStringPiece16(&origin);
   if (!successful_read) {
     set_error(SPDY_INVALID_CONTROL_FRAME);
     return 0;
   }
-  StringPiece value(altsvc_scratch_->data() + reader.GetBytesConsumed(),
-                    altsvc_scratch_->len() - reader.GetBytesConsumed());
+  SpdyStringPiece value(altsvc_scratch_->data() + reader.GetBytesConsumed(),
+                        altsvc_scratch_->len() - reader.GetBytesConsumed());
 
   SpdyAltSvcWireFormat::AlternativeServiceVector altsvc_vector;
   bool success =
@@ -1643,7 +1642,7 @@ bool SpdyFramer::ParseHeaderBlockInBuffer(const char* header_data,
 
   // Read each header.
   for (uint32_t index = 0; index < num_headers; ++index) {
-    base::StringPiece temp;
+    SpdyStringPiece temp;
 
     // Read header name.
     if (!reader.ReadStringPiece32(&temp)) {

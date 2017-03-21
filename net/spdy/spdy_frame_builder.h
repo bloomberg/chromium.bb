@@ -12,9 +12,9 @@
 #include <string>
 
 #include "base/gtest_prod_util.h"
-#include "base/strings/string_piece.h"
 #include "base/sys_byteorder.h"
 #include "net/base/net_export.h"
+#include "net/spdy/platform/api/spdy_string_piece.h"
 #include "net/spdy/spdy_bug_tracker.h"
 #include "net/spdy/spdy_protocol.h"
 #include "net/spdy/zero_copy_output_buffer.h"
@@ -99,8 +99,8 @@ class NET_EXPORT_PRIVATE SpdyFrameBuilder {
     return (WriteBytes(&upper, sizeof(upper)) &&
             WriteBytes(&lower, sizeof(lower)));
   }
-  bool WriteStringPiece16(const base::StringPiece& value);
-  bool WriteStringPiece32(const base::StringPiece& value);
+  bool WriteStringPiece16(const SpdyStringPiece& value);
+  bool WriteStringPiece32(const SpdyStringPiece& value);
   bool WriteBytes(const void* data, uint32_t data_len);
 
   // Update (in-place) the length field in the frame being built to reflect the
