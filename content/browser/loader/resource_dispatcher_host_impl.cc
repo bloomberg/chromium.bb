@@ -583,7 +583,9 @@ void ResourceDispatcherHostImpl::CancelRequestsForContext(
         (loader->GetRequestInfo()->detachable_handler() &&
          loader->GetRequestInfo()->detachable_handler()->is_detached()) ||
         loader->GetRequestInfo()->requester_info()->IsBrowserSideNavigation() ||
-        loader->is_transferring());
+        loader->is_transferring() ||
+        loader->GetRequestInfo()->GetResourceType() ==
+            RESOURCE_TYPE_SERVICE_WORKER);
   }
 #endif
 

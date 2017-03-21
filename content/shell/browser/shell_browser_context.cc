@@ -67,11 +67,15 @@ ShellBrowserContext::ShellBrowserContext(bool off_the_record,
 ShellBrowserContext::~ShellBrowserContext() {
   BrowserContextDependencyManager::GetInstance()->
       DestroyBrowserContextServices(this);
-  ShutdownStoragePartitions();
+  // Need to destruct the ResourceContext before posting tasks which may delete
+  // the URLRequestContext because ResourceContext's destructor will remove any
+  // outstanding request while URLRequestContext's destructor ensures that there
+  // are no more outstanding requests.
   if (resource_context_) {
     BrowserThread::DeleteSoon(
       BrowserThread::IO, FROM_HERE, resource_context_.release());
   }
+  ShutdownStoragePartitions();
 }
 
 void ShellBrowserContext::InitWhileIOAllowed() {
