@@ -68,8 +68,8 @@ const char kPreTestPrefix[] = "PRE_";
 // add a new binary that must be compiled on all builds.
 const char kManualTestPrefix[] = "MANUAL_";
 
-TestLauncherDelegate* g_launcher_delegate;
-ContentMainParams* g_params;
+TestLauncherDelegate* g_launcher_delegate = nullptr;
+ContentMainParams* g_params = nullptr;
 
 std::string RemoveAnyPrePrefixes(const std::string& test_name) {
   std::string result(test_name);
