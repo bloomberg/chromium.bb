@@ -18,7 +18,6 @@
 #include "mojo/edk/embedder/embedder_internal.h"
 #include "mojo/edk/embedder/entrypoints.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
-#include "mojo/edk/system/channel.h"
 #include "mojo/edk/system/core.h"
 #include "mojo/edk/system/node_controller.h"
 
@@ -75,18 +74,12 @@ void Init() {
   MojoSystemThunks thunks = MakeSystemThunks();
   size_t expected_size = MojoEmbedderSetSystemThunks(&thunks);
   DCHECK_EQ(expected_size, sizeof(thunks));
-#if defined(MOJO_EDK_LEGACY_PROTOCOL)
-  SetUseLegacyTransportProtocol(true);
-#endif
+
   internal::g_core = new Core();
 }
 
 void SetDefaultProcessErrorCallback(const ProcessErrorCallback& callback) {
   internal::g_core->SetDefaultProcessErrorCallback(callback);
-}
-
-void SetUseLegacyTransportProtocol(bool use_legacy_protocol) {
-  Channel::Message::SetUseLegacyTransportProtocol(use_legacy_protocol);
 }
 
 MojoResult CreatePlatformHandleWrapper(

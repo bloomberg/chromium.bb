@@ -171,7 +171,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
                                PlatformHandleVector* handles);
 #endif
 
-    static void SetUseLegacyTransportProtocol(bool use_legacy_protocol);
+    void SetVersionForTest(uint16_t version_number);
 
    private:
     size_t size_ = 0;

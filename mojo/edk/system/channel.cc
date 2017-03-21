@@ -14,7 +14,6 @@
 #include "base/macros.h"
 #include "base/memory/aligned_memory.h"
 #include "base/process/process_handle.h"
-#include "mojo/edk/embedder/embedder_internal.h"
 #include "mojo/edk/embedder/platform_handle.h"
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
@@ -46,8 +45,6 @@ static_assert(offsetof(Channel::Message::LegacyHeader, message_type) ==
               "message_type should be at the same offset in both Header "
               "structs.");
 
-bool g_use_legacy_protocol = false;
-
 }  // namespace
 
 const size_t kReadBufferSize = 4096;
@@ -56,10 +53,13 @@ const size_t kMaxChannelMessageSize = 256 * 1024 * 1024;
 const size_t kMaxAttachedHandles = 128;
 
 Channel::Message::Message(size_t payload_size, size_t max_handles)
-    : Message(payload_size,
-              max_handles,
-              g_use_legacy_protocol ? MessageType::NORMAL_LEGACY
-                                    : MessageType::NORMAL) {}
+#if defined(MOJO_EDK_LEGACY_PROTOCOL)
+    : Message(payload_size, max_handles, MessageType::NORMAL_LEGACY) {
+}
+#else
+    : Message(payload_size, max_handles, MessageType::NORMAL) {
+}
+#endif
 
 Channel::Message::Message(size_t payload_size,
                           size_t max_handles,
@@ -393,13 +393,6 @@ ScopedPlatformHandleVectorPtr Channel::Message::TakeHandlesForTransport() {
 #else
   return std::move(handle_vector_);
 #endif
-}
-
-// static
-void Channel::Message::SetUseLegacyTransportProtocol(bool use_legacy_protocol) {
-  // Make sure this is called before mojo::edk::Init() is called.
-  DCHECK(!internal::g_core);
-  g_use_legacy_protocol = use_legacy_protocol;
 }
 
 #if defined(OS_WIN)

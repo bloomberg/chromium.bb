@@ -74,13 +74,6 @@ MOJO_SYSTEM_IMPL_EXPORT void Init();
 MOJO_SYSTEM_IMPL_EXPORT void SetDefaultProcessErrorCallback(
     const ProcessErrorCallback& callback);
 
-// Used to select whether mojo:edk::Channel should use the legacy or normal
-// header.
-// TODO(jcivelli): http://crbug.com/695645 remove this when legacy mode is not
-//                 in use anymore.
-MOJO_SYSTEM_IMPL_EXPORT void SetUseLegacyTransportProtocol(
-    bool use_legacy_protocol);
-
 // Basic functions -------------------------------------------------------------
 
 // The functions in this section are available once |Init()| has been called.
