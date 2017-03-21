@@ -138,10 +138,12 @@ void FindRequestManager::OnFindReply(RenderFrameHost* rfh,
                                      const gfx::Rect& selection_rect,
                                      int active_match_ordinal,
                                      bool final_update) {
-  // Ignore stale replies from abandoned find sessions.
-  if (current_session_id_ == kInvalidId || request_id < current_session_id_)
+  // Ignore stale replies from abandoned find sessions or dead frames.
+  if (current_session_id_ == kInvalidId ||
+      request_id < current_session_id_ ||
+      !CheckFrame(rfh)) {
     return;
-  DCHECK(CheckFrame(rfh));
+  }
 
   // Update the stored find results.
 
