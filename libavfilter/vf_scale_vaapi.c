@@ -31,6 +31,7 @@
 #include "avfilter.h"
 #include "formats.h"
 #include "internal.h"
+#include "scale.h"
 
 typedef struct ScaleVAAPIContext {
     const AVClass *class;
@@ -50,9 +51,12 @@ typedef struct ScaleVAAPIContext {
 
     char *output_format_string;
     enum AVPixelFormat output_format;
-    int output_width;
-    int output_height;
 
+    char *w_expr;      // width expression string
+    char *h_expr;      // height expression string
+
+    int output_width;  // computed width
+    int output_height; // computed height
 } ScaleVAAPIContext;
 
 
@@ -61,11 +65,14 @@ static int scale_vaapi_query_formats(AVFilterContext *avctx)
     enum AVPixelFormat pix_fmts[] = {
         AV_PIX_FMT_VAAPI, AV_PIX_FMT_NONE,
     };
+    int err;
 
-    ff_formats_ref(ff_make_format_list(pix_fmts),
-                   &avctx->inputs[0]->out_formats);
-    ff_formats_ref(ff_make_format_list(pix_fmts),
-                   &avctx->outputs[0]->in_formats);
+    if ((err = ff_formats_ref(ff_make_format_list(pix_fmts),
+                              &avctx->inputs[0]->out_formats)) < 0)
+        return err;
+    if ((err = ff_formats_ref(ff_make_format_list(pix_fmts),
+                              &avctx->outputs[0]->in_formats)) < 0)
+        return err;
 
     return 0;
 }
@@ -110,6 +117,7 @@ static int scale_vaapi_config_input(AVFilterLink *inlink)
 
 static int scale_vaapi_config_output(AVFilterLink *outlink)
 {
+    AVFilterLink *inlink = outlink->src->inputs[0];
     AVFilterContext *avctx = outlink->src;
     ScaleVAAPIContext *ctx = avctx->priv;
     AVVAAPIHWConfig *hwconfig = NULL;
@@ -161,6 +169,12 @@ static int scale_vaapi_config_output(AVFilterLink *outlink)
             goto fail;
         }
     }
+
+    if ((err = ff_scale_eval_dimensions(ctx,
+                                        ctx->w_expr, ctx->h_expr,
+                                        inlink, outlink,
+                                        &ctx->output_width, &ctx->output_height)) < 0)
+        goto fail;
 
     if (ctx->output_width  < constraints->min_width  ||
         ctx->output_height < constraints->min_height ||
@@ -414,9 +428,9 @@ static av_cold void scale_vaapi_uninit(AVFilterContext *avctx)
 #define FLAGS (AV_OPT_FLAG_FILTERING_PARAM|AV_OPT_FLAG_VIDEO_PARAM)
 static const AVOption scale_vaapi_options[] = {
     { "w", "Output video width",
-      OFFSET(output_width),  AV_OPT_TYPE_INT, { .i64 = 0 }, 0, INT_MAX, .flags = FLAGS },
+      OFFSET(w_expr), AV_OPT_TYPE_STRING, {.str = "iw"}, .flags = FLAGS },
     { "h", "Output video height",
-      OFFSET(output_height), AV_OPT_TYPE_INT, { .i64 = 0 }, 0, INT_MAX, .flags = FLAGS },
+      OFFSET(h_expr), AV_OPT_TYPE_STRING, {.str = "ih"}, .flags = FLAGS },
     { "format", "Output video format (software format of hardware frames)",
       OFFSET(output_format_string), AV_OPT_TYPE_STRING, .flags = FLAGS },
     { NULL },

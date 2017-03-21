@@ -1921,8 +1921,6 @@ static int mkv_parse_video_projection(AVStream *st, const MatroskaTrack *track) 
 
     switch (track->video.projection.type) {
     case MATROSKA_VIDEO_PROJECTION_TYPE_EQUIRECTANGULAR:
-        if (track->video.projection.private.size < 4)
-            return AVERROR_INVALIDDATA;
         projection = AV_SPHERICAL_EQUIRECTANGULAR;
         break;
     case MATROSKA_VIDEO_PROJECTION_TYPE_CUBEMAP:
@@ -2296,7 +2294,7 @@ static int matroska_parse_tracks(AVFormatContext *s)
                 track->audio.coded_framesize <= 0 ||
                 track->audio.sub_packet_h    <= 0 ||
                 track->audio.frame_size      <= 0 ||
-                track->audio.sub_packet_size <= 0)
+                track->audio.sub_packet_size <= 0 && codec_id != AV_CODEC_ID_SIPR)
                 return AVERROR_INVALIDDATA;
             track->audio.buf = av_malloc_array(track->audio.sub_packet_h,
                                                track->audio.frame_size);

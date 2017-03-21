@@ -636,6 +636,16 @@ Calculate PSNR of compressed frames.
 Dump video coding statistics to @file{vstats_HHMMSS.log}.
 @item -vstats_file @var{file}
 Dump video coding statistics to @var{file}.
+@item -vstats_version @var{file}
+Specifies which version of the vstats format to use. Default is 2.
+
+version = 1 :
+
+@code{frame= %5d q= %2.1f PSNR= %6.2f f_size= %6d s_size= %8.0fkB time= %0.3f br= %7.1fkbits/s avg_br= %7.1fkbits/s}
+
+version > 1:
+
+@code{out= %2d st= %2d frame= %5d q= %2.1f PSNR= %6.2f f_size= %6d s_size= %8.0fkB time= %0.3f br= %7.1fkbits/s avg_br= %7.1fkbits/s}
 @item -top[:@var{stream_specifier}] @var{n} (@emph{output,per-stream})
 top=1/bottom=0/auto=-1 field first
 @item -dc @var{precision}
@@ -861,7 +871,7 @@ Set the size of the canvas used to render subtitles.
 @section Advanced options
 
 @table @option
-@item -map [-]@var{input_file_id}[:@var{stream_specifier}][,@var{sync_file_id}[:@var{stream_specifier}]] | @var{[linklabel]} (@emph{output})
+@item -map [-]@var{input_file_id}[:@var{stream_specifier}][?][,@var{sync_file_id}[:@var{stream_specifier}]] | @var{[linklabel]} (@emph{output})
 
 Designate one or more input streams as a source for the output file. Each input
 stream is identified by the input file index @var{input_file_id} and
@@ -876,6 +886,11 @@ the source for output stream 1, etc.
 
 A @code{-} character before the stream identifier creates a "negative" mapping.
 It disables matching streams from already created mappings.
+
+A trailing @code{?} after the stream index will allow the map to be
+optional: if the map matches no streams the map will be ignored instead
+of failing. Note the map will still fail if an invalid input file index
+is used; such as if the map refers to a non-existant input.
 
 An alternative @var{[linklabel]} form will map outputs from complex filter
 graphs (see the @option{-filter_complex} option) to the output file.
@@ -912,6 +927,13 @@ ffmpeg -i INPUT -map 0:v -map 0:a:2 OUTPUT
 To map all the streams except the second audio, use negative mappings
 @example
 ffmpeg -i INPUT -map 0 -map -0:a:1 OUTPUT
+@end example
+
+To map the video and audio streams from the first input, and using the
+trailing @code{?}, ignore the audio mapping if no audio streams exist in
+the first input:
+@example
+ffmpeg -i INPUT -map 0:v -map 0:a? OUTPUT
 @end example
 
 To pick the English audio stream:
@@ -1537,7 +1559,7 @@ to enable LAME support by passing @code{--enable-libmp3lame} to configure.
 The mapping is particularly useful for DVD transcoding
 to get the desired audio language.
 
-NOTE: To see the supported input formats, use @code{ffmpeg -formats}.
+NOTE: To see the supported input formats, use @code{ffmpeg -demuxers}.
 
 @item
 You can extract images from a video, or create a video from many images:

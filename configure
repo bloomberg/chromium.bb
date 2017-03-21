@@ -1993,6 +1993,7 @@ SYSTEM_FUNCS="
 
 TOOLCHAIN_FEATURES="
     as_dn_directive
+    as_fpu_directive
     as_func
     as_object_arch
     asm_mod_q
@@ -2106,7 +2107,7 @@ CONFIG_EXTRA="
     huffyuvencdsp
     idctdsp
     iirfilter
-    imdct15
+    mdct15
     intrax8
     iso_media
     ividsp
@@ -2338,6 +2339,7 @@ h264dsp_select="startcode"
 frame_thread_encoder_deps="encoders threads"
 intrax8_select="blockdsp idctdsp"
 mdct_select="fft"
+mdct15_select="fft"
 me_cmp_select="fdctdsp idctdsp pixblockdsp"
 mpeg_er_select="error_resilience"
 mpegaudio_select="mpegaudiodsp"
@@ -2348,7 +2350,7 @@ vc1dsp_select="h264chroma qpeldsp startcode"
 rdft_select="fft"
 
 # decoders / encoders
-aac_decoder_select="imdct15 mdct sinewin"
+aac_decoder_select="mdct15 mdct sinewin"
 aac_fixed_decoder_select="mdct sinewin"
 aac_encoder_select="audio_frame_queue iirfilter lpc mdct sinewin"
 aac_latm_decoder_select="aac_decoder aac_latm_parser"
@@ -2490,7 +2492,8 @@ nellymoser_encoder_select="audio_frame_queue mdct sinewin"
 nuv_decoder_select="idctdsp lzo"
 on2avc_decoder_select="mdct"
 opus_decoder_deps="swresample"
-opus_decoder_select="imdct15"
+opus_decoder_select="mdct15"
+opus_encoder_select="audio_frame_queue mdct15"
 png_decoder_select="zlib"
 png_encoder_select="llvidencdsp zlib"
 prores_decoder_select="blockdsp idctdsp"
@@ -2510,7 +2513,7 @@ rv20_encoder_select="h263_encoder"
 rv30_decoder_select="golomb h264pred h264qpel mpegvideo rv34dsp"
 rv40_decoder_select="golomb h264pred h264qpel mpegvideo rv34dsp"
 screenpresso_decoder_select="zlib"
-shorten_decoder_select="golomb"
+shorten_decoder_select="golomb bswapdsp"
 sipr_decoder_select="lsp"
 snow_decoder_select="dwt h264qpel hpeldsp me_cmp rangecoder videodsp"
 snow_encoder_select="aandcttables dwt h264qpel hpeldsp me_cmp mpegvideoenc rangecoder"
@@ -2767,6 +2770,8 @@ mpeg2_qsv_decoder_deps="libmfx"
 mpeg2_qsv_decoder_select="qsvdec mpeg2_qsv_hwaccel"
 mpeg2_qsv_encoder_deps="libmfx"
 mpeg2_qsv_encoder_select="qsvenc"
+mpeg2_vaapi_encoder_deps="VAEncPictureParameterBufferMPEG2"
+mpeg2_vaapi_encoder_select="vaapi_encode"
 mpeg4_cuvid_decoder_deps="cuda cuvid"
 mpeg4_cuvid_decoder_select="mpeg4_cuvid_hwaccel"
 nvenc_h264_encoder_deps="nvenc"
@@ -2776,6 +2781,8 @@ vc1_cuvid_decoder_deps="cuda cuvid"
 vc1_cuvid_decoder_select="vc1_cuvid_hwaccel"
 vp8_cuvid_decoder_deps="cuda cuvid"
 vp8_cuvid_decoder_select="vp8_cuvid_hwaccel"
+vp8_vaapi_encoder_deps="VAEncPictureParameterBufferVP8"
+vp8_vaapi_encoder_select="vaapi_encode"
 vp9_cuvid_decoder_deps="cuda cuvid"
 vp9_cuvid_decoder_select="vp9_cuvid_hwaccel"
 
@@ -3077,6 +3084,7 @@ bs2b_filter_deps="libbs2b"
 colormatrix_filter_deps="gpl"
 cover_rect_filter_deps="avcodec avformat gpl"
 cropdetect_filter_deps="gpl"
+deinterlace_vaapi_filter_deps="vaapi"
 delogo_filter_deps="gpl"
 deshake_filter_select="pixelutils"
 drawtext_filter_deps="libfreetype"
@@ -4803,7 +4811,7 @@ case $target_os in
         SLIBNAME_WITH_MAJOR='$(SLIBPREF)$(FULLNAME)-$(LIBMAJOR)$(SLIBSUF)'
         dlltool="${cross_prefix}dlltool"
         if check_cmd lib.exe -list; then
-            SLIB_EXTRA_CMD=-'sed -e "s/ @[^ ]*//" $$(@:$(SLIBSUF)=.orig.def) > $$(@:$(SLIBSUF)=.def); lib.exe /machine:$(LIBTARGET) /def:$$(@:$(SLIBSUF)=.def) /out:$(SUBDIR)$(SLIBNAME:$(SLIBSUF)=.lib)'
+            SLIB_EXTRA_CMD=-'sed -e "s/ @[^ ]*//" $$(@:$(SLIBSUF)=.orig.def) > $$(@:$(SLIBSUF)=.def); lib.exe -nologo -machine:$(LIBTARGET) -def:$$(@:$(SLIBSUF)=.def) -out:$(SUBDIR)$(SLIBNAME:$(SLIBSUF)=.lib)'
             if enabled x86_64; then
                 LIBTARGET=x64
             fi
@@ -5317,6 +5325,9 @@ EOF
 ra .dn d0.i16
 .unreq ra
 EOF
+    check_as <<EOF && enable as_fpu_directive
+.fpu neon
+EOF
 
     # llvm's integrated assembler supports .object_arch from llvm 3.5
     [ "$objformat" = elf ] && check_as <<EOF && enable as_object_arch
@@ -5663,6 +5674,8 @@ check_type "va/va.h va/va_vpp.h" "VAProcPipelineParameterBuffer"
 check_type "va/va.h va/va_enc_h264.h" "VAEncPictureParameterBufferH264"
 check_type "va/va.h va/va_enc_hevc.h" "VAEncPictureParameterBufferHEVC"
 check_type "va/va.h va/va_enc_jpeg.h" "VAEncPictureParameterBufferJPEG"
+check_type "va/va.h va/va_enc_mpeg2.h" "VAEncPictureParameterBufferMPEG2"
+check_type "va/va.h va/va_enc_vp8.h"  "VAEncPictureParameterBufferVP8"
 
 check_type "vdpau/vdpau.h" "VdpPictureInfoHEVC"
 
@@ -6338,6 +6351,9 @@ EOF
     # Issue has been fixed in MSVC v19.00.24218.
     check_cpp_condition windows.h "_MSC_FULL_VER >= 190024218" ||
         check_cflags -d2SSAOptimizer-
+    # enable utf-8 source processing on VS2015 U2 and newer
+    check_cpp_condition windows.h "_MSC_FULL_VER >= 190023918" &&
+        add_cflags -utf-8
 fi
 
 for pfx in "" host_; do

@@ -228,7 +228,7 @@ target(link_target_type, "ffmpeg_internal") {
       include_dirs += [ "compat/atomics/gcc" ]
     } else if (is_win) {
       # Windows doesn't provide stdatomic.h, so use the compat version.
-      include_dirs += [ "compat/atomics/win" ]
+      include_dirs += [ "compat/atomics/win32" ]
     }
   }
 

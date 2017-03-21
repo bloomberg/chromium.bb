@@ -182,6 +182,8 @@ const AVCodecTag ff_codec_movvideo_tags[] = {
     { AV_CODEC_ID_H264, MKTAG('A', 'V', 'i', 'n') }, /* AVC-Intra with implicit SPS/PPS */
     { AV_CODEC_ID_H264, MKTAG('a', 'i', 'v', 'x') }, /* XAVC 10-bit 4:2:2 */
     { AV_CODEC_ID_H264, MKTAG('r', 'v', '6', '4') }, /* X-Com Radvision */
+    { AV_CODEC_ID_H264, MKTAG('x', 'a', 'l', 'g') }, /* XAVC-L HD422 produced by FCP */
+    { AV_CODEC_ID_H264, MKTAG('a', 'v', 'l', 'g') }, /* Panasonic P2 AVC-LongG */
 
     { AV_CODEC_ID_VP9,  MKTAG('v', 'p', '0', '9') }, /* VP9 */
 
@@ -312,6 +314,7 @@ const AVCodecTag ff_codec_movaudio_tags[] = {
     { AV_CODEC_ID_DTS,             MKTAG('d', 't', 's', 'c') }, /* DTS formats prior to DTS-HD */
     { AV_CODEC_ID_DTS,             MKTAG('d', 't', 's', 'h') }, /* DTS-HD audio formats */
     { AV_CODEC_ID_DTS,             MKTAG('d', 't', 's', 'l') }, /* DTS-HD Lossless formats */
+    { AV_CODEC_ID_DTS,             MKTAG('d', 't', 's', 'e') }, /* DTS Express */
     { AV_CODEC_ID_DTS,             MKTAG('D', 'T', 'S', ' ') }, /* non-standard */
     { AV_CODEC_ID_EAC3,            MKTAG('e', 'c', '-', '3') }, /* ETSI TS 102 366 Annex F (only valid in ISOBMFF) */
     { AV_CODEC_ID_DVAUDIO,         MKTAG('v', 'd', 'v', 'a') },

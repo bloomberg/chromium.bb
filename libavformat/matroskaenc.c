@@ -393,6 +393,23 @@ static void put_xiph_size(AVIOContext *pb, int size)
  * Free the members allocated in the mux context.
  */
 static void mkv_free(MatroskaMuxContext *mkv) {
+    uint8_t* buf;
+    if (mkv->dyn_bc) {
+        avio_close_dyn_buf(mkv->dyn_bc, &buf);
+        av_free(buf);
+    }
+    if (mkv->info_bc) {
+        avio_close_dyn_buf(mkv->info_bc, &buf);
+        av_free(buf);
+    }
+    if (mkv->tracks_bc) {
+        avio_close_dyn_buf(mkv->tracks_bc, &buf);
+        av_free(buf);
+    }
+    if (mkv->tags_bc) {
+        avio_close_dyn_buf(mkv->tags_bc, &buf);
+        av_free(buf);
+    }
     if (mkv->main_seekhead) {
         av_freep(&mkv->main_seekhead->entries);
         av_freep(&mkv->main_seekhead);
@@ -893,7 +910,7 @@ static int mkv_write_video_color(AVIOContext *pb, AVCodecParameters *par, AVStre
 
     colorinfo_size = avio_close_dyn_buf(dyn_cp, &colorinfo_ptr);
     if (colorinfo_size) {
-        ebml_master colorinfo = start_ebml_master(pb, MATROSKA_ID_VIDEOCOLOR, 0);
+        ebml_master colorinfo = start_ebml_master(pb, MATROSKA_ID_VIDEOCOLOR, colorinfo_size);
         avio_write(pb, colorinfo_ptr, colorinfo_size);
         end_ebml_master(pb, colorinfo);
     }
@@ -1121,7 +1138,7 @@ static int mkv_write_track(AVFormatContext *s, MatroskaMuxContext *mkv,
         // if none are found, use AVI codes
         if (par->codec_id != AV_CODEC_ID_RAWVIDEO || par->codec_tag) {
             for (j = 0; ff_mkv_codec_tags[j].id != AV_CODEC_ID_NONE; j++) {
-                if (ff_mkv_codec_tags[j].id == par->codec_id) {
+                if (ff_mkv_codec_tags[j].id == par->codec_id && par->codec_id != AV_CODEC_ID_FFV1) {
                     put_ebml_string(pb, MATROSKA_ID_CODECID, ff_mkv_codec_tags[j].str);
                     native_id = 1;
                     break;
@@ -1241,7 +1258,7 @@ static int mkv_write_track(AVFormatContext *s, MatroskaMuxContext *mkv,
         } else if (display_width_div != 1 || display_height_div != 1) {
             put_ebml_uint(pb, MATROSKA_ID_VIDEODISPLAYWIDTH , par->width / display_width_div);
             put_ebml_uint(pb, MATROSKA_ID_VIDEODISPLAYHEIGHT, par->height / display_height_div);
-        } else
+        } else if (mkv->mode != MODE_WEBM)
             put_ebml_uint(pb, MATROSKA_ID_VIDEODISPLAYUNIT, MATROSKA_VIDEO_DISPLAYUNIT_UNKNOWN);
 
         if (par->codec_id == AV_CODEC_ID_RAWVIDEO) {
@@ -2511,6 +2528,7 @@ static const AVCodecTag additional_audio_tags[] = {
     { AV_CODEC_ID_PCM_S16BE, 0xFFFFFFFF },
     { AV_CODEC_ID_PCM_S24BE, 0xFFFFFFFF },
     { AV_CODEC_ID_PCM_S32BE, 0xFFFFFFFF },
+    { AV_CODEC_ID_QDMC,      0xFFFFFFFF },
     { AV_CODEC_ID_QDM2,      0xFFFFFFFF },
     { AV_CODEC_ID_RA_144,    0xFFFFFFFF },
     { AV_CODEC_ID_RA_288,    0xFFFFFFFF },

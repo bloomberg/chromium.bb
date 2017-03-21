@@ -4,14 +4,6 @@ Autorename:
     by generate_gn.py. https://chromium-review.googlesource.com/#/c/274543/
 
 Current patches:
-  Changes to libavformat/flacdec.c crbug.com/686387
-    95bde49982a82bc10470c0adab5969ffe635d064  Check avio_read result when reading
-                                              flac block header. (upstreamed)
-
-  Changes to libavcodec/flac_parser.c crbug.com/665305
-    Started decrementing buffered header count during flac parsing, to prevent
-    a clusterfuzz hang.
-
   .gitignore has a "Chromium stuff" section.
 
   Changes to configure
@@ -88,6 +80,9 @@ Current patches:
     crbug.com/689339
 
   Changes to libavformat/mp3dec.c
+    Change to mp3_read_header: check for the custom "skip_id3v1_tag" metadata
+    flag we set in Chromium code, to avoid the costly reads of id3v1 tags.
+
     Other changes: TODO(chcunningham/dalecurtis): https://crbug.com/504623 -
     Determine whether these changes are still necessary and either remove or
     document them.
