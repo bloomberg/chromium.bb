@@ -52,6 +52,29 @@ const char kUMAUnexpiredTabEntryRemovalDurationHistogram[] =
 // Key used to save the data use tracking label in navigation entry extra data.
 const char kDataUseTabModelLabel[] = "data_use_tab_model_label";
 
+// Reason for starting or ending the tracking session. These enums must remain
+// synchronized with the enum of the same name in
+// metrics/histograms/histograms.xml. These values are written to logs.  New
+// enum values can be added, but existing enums must never be renumbered or
+// deleted and reused.
+enum DataUsageTrackingSessionStartReason {
+  START_REASON_CUSTOM_TAB_PACKAGE_MATCH = 0,
+  START_REASON_OMNIBOX_SEARCH = 1,
+  START_REASON_OMNIBOX_NAVIGATION = 2,
+  START_REASON_BOOKMARK = 3,
+  START_REASON_LINK = 4,
+  START_REASON_RELOAD = 5,
+  START_REASON_MAX = 6
+};
+
+enum DataUsageTrackingSessionEndReason {
+  END_REASON_OMNIBOX_SEARCH = 0,
+  END_REASON_OMNIBOX_NAVIGATION = 1,
+  END_REASON_BOOKMARK = 2,
+  END_REASON_HISTORY = 3,
+  END_REASON_MAX = 4
+};
+
 // Returns true if |tab_id| is a valid tab ID.
 bool IsValidTabID(SessionID::id_type tab_id) {
   return tab_id >= 0;
@@ -126,6 +149,71 @@ base::TimeDelta GetDefaultMatchingRuleExpirationDuration() {
       kDefaultMatchingRuleExpirationDurationSeconds);
 }
 
+void RecordStartTrackingMetrics(
+    chrome::android::DataUseTabModel::TransitionType transition,
+    bool is_custom_tab_package_match) {
+  DataUsageTrackingSessionStartReason start_reason;
+  switch (transition) {
+    case chrome::android::DataUseTabModel::TRANSITION_OMNIBOX_SEARCH:
+      start_reason = START_REASON_OMNIBOX_SEARCH;
+      break;
+    case chrome::android::DataUseTabModel::TRANSITION_OMNIBOX_NAVIGATION:
+      start_reason = START_REASON_OMNIBOX_NAVIGATION;
+      break;
+    case chrome::android::DataUseTabModel::TRANSITION_BOOKMARK:
+      start_reason = START_REASON_BOOKMARK;
+      break;
+    case chrome::android::DataUseTabModel::TRANSITION_LINK:
+      start_reason = START_REASON_LINK;
+      break;
+    case chrome::android::DataUseTabModel::TRANSITION_RELOAD:
+      start_reason = START_REASON_RELOAD;
+      break;
+    case chrome::android::DataUseTabModel::TRANSITION_CUSTOM_TAB:
+      if (!is_custom_tab_package_match)
+        return;
+      start_reason = START_REASON_CUSTOM_TAB_PACKAGE_MATCH;
+      break;
+    case chrome::android::DataUseTabModel::TRANSITION_FORWARD_BACK:
+      return;
+    case chrome::android::DataUseTabModel::TRANSITION_HISTORY_ITEM:
+    case chrome::android::DataUseTabModel::TRANSITION_FORM_SUBMIT:
+      NOTREACHED();
+      return;
+  }
+  UMA_HISTOGRAM_ENUMERATION("DataUsage.TrackingSessionStartReason",
+                            start_reason, START_REASON_MAX);
+}
+
+void RecordEndTrackingMetrics(
+    chrome::android::DataUseTabModel::TransitionType transition) {
+  DataUsageTrackingSessionEndReason end_reason;
+  switch (transition) {
+    case chrome::android::DataUseTabModel::TRANSITION_OMNIBOX_SEARCH:
+      end_reason = END_REASON_OMNIBOX_SEARCH;
+      break;
+    case chrome::android::DataUseTabModel::TRANSITION_OMNIBOX_NAVIGATION:
+      end_reason = END_REASON_OMNIBOX_NAVIGATION;
+      break;
+    case chrome::android::DataUseTabModel::TRANSITION_BOOKMARK:
+      end_reason = END_REASON_BOOKMARK;
+      break;
+    case chrome::android::DataUseTabModel::TRANSITION_HISTORY_ITEM:
+      end_reason = END_REASON_HISTORY;
+      break;
+    case chrome::android::DataUseTabModel::TRANSITION_FORWARD_BACK:
+      return;
+    case chrome::android::DataUseTabModel::TRANSITION_CUSTOM_TAB:
+    case chrome::android::DataUseTabModel::TRANSITION_FORM_SUBMIT:
+    case chrome::android::DataUseTabModel::TRANSITION_LINK:
+    case chrome::android::DataUseTabModel::TRANSITION_RELOAD:
+      NOTREACHED();
+      return;
+  }
+  UMA_HISTOGRAM_ENUMERATION("DataUsage.TrackingSessionEndReason", end_reason,
+                            END_REASON_MAX);
+}
+
 }  // namespace
 
 namespace chrome {
@@ -188,10 +276,10 @@ void DataUseTabModel::OnNavigationEvent(
                                           navigation_entry, &current_label,
                                           &new_label, &is_package_match);
   if (!current_label.empty() && new_label.empty()) {
-    EndTrackingDataUse(tab_id);
+    EndTrackingDataUse(transition, tab_id);
   } else if (current_label.empty() && !new_label.empty()) {
     StartTrackingDataUse(
-        tab_id, new_label,
+        transition, tab_id, new_label,
         ((transition == TRANSITION_CUSTOM_TAB) && is_package_match));
   }
   if (navigation_entry && !new_label.empty()) {
@@ -434,7 +522,8 @@ void DataUseTabModel::GetCurrentAndNewLabelForNavigationEvent(
   }
 }
 
-void DataUseTabModel::StartTrackingDataUse(SessionID::id_type tab_id,
+void DataUseTabModel::StartTrackingDataUse(TransitionType transition,
+                                           SessionID::id_type tab_id,
                                            const std::string& label,
                                            bool is_custom_tab_package_match) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -454,6 +543,7 @@ void DataUseTabModel::StartTrackingDataUse(SessionID::id_type tab_id,
   if (tab_entry_iterator->second.StartTracking(label)) {
     tab_entry_iterator->second.set_custom_tab_package_match(
         is_custom_tab_package_match);
+    RecordStartTrackingMetrics(transition, is_custom_tab_package_match);
     NotifyObserversOfTrackingStarting(tab_id);
   }
 
@@ -461,13 +551,15 @@ void DataUseTabModel::StartTrackingDataUse(SessionID::id_type tab_id,
     CompactTabEntries();  // Keep total number of tab entries within limit.
 }
 
-void DataUseTabModel::EndTrackingDataUse(SessionID::id_type tab_id) {
+void DataUseTabModel::EndTrackingDataUse(TransitionType transition,
+                                         SessionID::id_type tab_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   TabEntryMap::iterator tab_entry_iterator = active_tabs_.find(tab_id);
   if (tab_entry_iterator != active_tabs_.end() &&
       tab_entry_iterator->second.EndTracking()) {
     NotifyObserversOfTrackingEnding(tab_id);
+    RecordEndTrackingMetrics(transition);
   }
 }
 

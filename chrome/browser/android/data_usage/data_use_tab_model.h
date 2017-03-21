@@ -266,12 +266,13 @@ class DataUseTabModel {
   // Initiates a new tracking session with the |label| for tab with id |tab_id|.
   // |is_custom_tab_package_match| is true if |tab_id| is a custom tab and
   // started tracking due to package name match.
-  void StartTrackingDataUse(SessionID::id_type tab_id,
+  void StartTrackingDataUse(TransitionType transition,
+                            SessionID::id_type tab_id,
                             const std::string& label,
                             bool is_custom_tab_package_match);
 
   // Ends the current tracking session for tab with id |tab_id|.
-  void EndTrackingDataUse(SessionID::id_type tab_id);
+  void EndTrackingDataUse(TransitionType transition, SessionID::id_type tab_id);
 
   // Compacts the tab entry map |active_tabs_| by removing expired tab entries.
   // After removing expired tab entries, if the size of |active_tabs_| exceeds

@@ -212,11 +212,13 @@ class DataUseTabModelTest : public testing::Test {
 
   void StartTrackingDataUse(SessionID::id_type tab_id,
                             const std::string& label) {
-    data_use_tab_model_->StartTrackingDataUse(tab_id, label, false);
+    data_use_tab_model_->StartTrackingDataUse(
+        DataUseTabModel::TRANSITION_OMNIBOX_SEARCH, tab_id, label, false);
   }
 
   void EndTrackingDataUse(SessionID::id_type tab_id) {
-    data_use_tab_model_->EndTrackingDataUse(tab_id);
+    data_use_tab_model_->EndTrackingDataUse(
+        DataUseTabModel::TRANSITION_OMNIBOX_SEARCH, tab_id);
   }
 
   void RegisterURLRegexes(const std::vector<std::string>& app_package_names,
