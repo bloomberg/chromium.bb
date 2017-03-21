@@ -63,9 +63,9 @@ class WebUIIOS;
 class WebStateImpl : public WebState, public NavigationManagerDelegate {
  public:
   // Constructor for WebStateImpls created for new sessions.
-  WebStateImpl(BrowserState* browser_state);
+  WebStateImpl(const CreateParams& params);
   // Constructor for WebStatesImpls created for deserialized sessions
-  WebStateImpl(BrowserState* browser_state, CRWSessionStorage* session_storage);
+  WebStateImpl(const CreateParams& params, CRWSessionStorage* session_storage);
   ~WebStateImpl() override;
 
   // Gets/Sets the CRWWebController that backs this object.
@@ -236,6 +236,7 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   void RemoveScriptCommandCallback(const std::string& command_prefix) override;
   id<CRWWebViewProxy> GetWebViewProxy() const override;
   service_manager::InterfaceRegistry* GetMojoInterfaceRegistry() override;
+  bool HasOpener() const override;
   base::WeakPtr<WebState> AsWeakPtr() override;
 
   // Adds |interstitial|'s view to the web controller's content view.
@@ -363,6 +364,10 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
 
   // Callbacks associated to command prefixes.
   std::map<std::string, ScriptCommandCallback> script_command_callbacks_;
+
+  // Whether this WebState has an opener.  See
+  // WebState::CreateParams::created_with_opener_ for more details.
+  bool created_with_opener_;
 
   // Member variables should appear before the WeakPtrFactory<> to ensure that
   // any WeakPtrs to WebStateImpl are invalidated before its member variable's

@@ -97,10 +97,9 @@ void NavigationManagerImpl::SetSessionController(
   [session_controller_ setNavigationManager:this];
 }
 
-void NavigationManagerImpl::InitializeSession(BOOL opened_by_dom) {
-  SetSessionController([[CRWSessionController alloc]
-      initWithBrowserState:browser_state_
-               openedByDOM:opened_by_dom]);
+void NavigationManagerImpl::InitializeSession() {
+  SetSessionController(
+      [[CRWSessionController alloc] initWithBrowserState:browser_state_]);
 }
 
 void NavigationManagerImpl::ReplaceSessionHistory(

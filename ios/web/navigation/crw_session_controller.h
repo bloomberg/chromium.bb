@@ -35,9 +35,6 @@ struct Referrer;
 // The index of the pending item if it is in |items|, or -1 if |pendingItem|
 // corresponds with a new navigation (created by addPendingItem:).
 @property(nonatomic, readwrite, assign) NSInteger pendingItemIndex;
-// Indicates whether the page was opened by DOM (e.g. with |window.open|
-// JavaScript call or by clicking a link with |_blank| target).
-@property(nonatomic, readonly, getter=isOpenedByDOM) BOOL openedByDOM;
 @property(nonatomic, readonly, strong)
     CRWSessionCertificatePolicyManager* sessionCertificatePolicyManager;
 

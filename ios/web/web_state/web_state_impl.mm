@@ -43,12 +43,10 @@ namespace web {
 
 /* static */
 std::unique_ptr<WebState> WebState::Create(const CreateParams& params) {
-  std::unique_ptr<WebStateImpl> web_state(
-      new WebStateImpl(params.browser_state));
+  std::unique_ptr<WebStateImpl> web_state(new WebStateImpl(params));
 
   // Initialize the new session.
-  BOOL opened_by_dom = NO;
-  web_state->GetNavigationManagerImpl().InitializeSession(opened_by_dom);
+  web_state->GetNavigationManagerImpl().InitializeSession();
 
   // This std::move is required to compile with the version of clang shipping
   // with Xcode 8.0+. Evalute whether the issue is fixed once a new version of
@@ -60,7 +58,7 @@ std::unique_ptr<WebState> WebState::Create(const CreateParams& params) {
 std::unique_ptr<WebState> WebState::Create(const CreateParams& params,
                                            CRWSessionStorage* session_storage) {
   std::unique_ptr<WebStateImpl> web_state(
-      new WebStateImpl(params.browser_state, session_storage));
+      new WebStateImpl(params, session_storage));
 
   // This std::move is required to compile with the version of clang shipping
   // with Xcode 8.0+. Evalute whether the issue is fixed once a new version of
@@ -68,10 +66,10 @@ std::unique_ptr<WebState> WebState::Create(const CreateParams& params,
   return std::move(web_state);
 }
 
-WebStateImpl::WebStateImpl(BrowserState* browser_state)
-    : WebStateImpl(browser_state, nullptr) {}
+WebStateImpl::WebStateImpl(const CreateParams& params)
+    : WebStateImpl(params, nullptr) {}
 
-WebStateImpl::WebStateImpl(BrowserState* browser_state,
+WebStateImpl::WebStateImpl(const CreateParams& params,
                            CRWSessionStorage* session_storage)
     : delegate_(nullptr),
       is_loading_(false),
@@ -79,6 +77,7 @@ WebStateImpl::WebStateImpl(BrowserState* browser_state,
       facade_delegate_(nullptr),
       web_controller_(nil),
       interstitial_(nullptr),
+      created_with_opener_(params.created_with_opener),
       weak_factory_(this) {
   // Create or deserialize the NavigationManager.
   if (session_storage) {
@@ -88,7 +87,7 @@ WebStateImpl::WebStateImpl(BrowserState* browser_state,
     navigation_manager_.reset(new NavigationManagerImpl());
   }
   navigation_manager_->SetDelegate(this);
-  navigation_manager_->SetBrowserState(browser_state);
+  navigation_manager_->SetBrowserState(params.browser_state);
   // Send creation event and create the web controller.
   GlobalWebStateEventTracker::GetInstance()->OnWebStateCreated(this);
   web_controller_.reset([[CRWWebController alloc] initWithWebState:this]);
@@ -725,6 +724,10 @@ void WebStateImpl::RemoveScriptCommandCallback(
 
 id<CRWWebViewProxy> WebStateImpl::GetWebViewProxy() const {
   return [web_controller_ webViewProxy];
+}
+
+bool WebStateImpl::HasOpener() const {
+  return created_with_opener_;
 }
 
 void WebStateImpl::OnProvisionalNavigationStarted(const GURL& url) {

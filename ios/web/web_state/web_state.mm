@@ -7,7 +7,7 @@
 namespace web {
 
 WebState::CreateParams::CreateParams(web::BrowserState* browser_state)
-    : browser_state(browser_state) {}
+    : browser_state(browser_state), created_with_opener(false) {}
 
 WebState::CreateParams::~CreateParams() {}
 

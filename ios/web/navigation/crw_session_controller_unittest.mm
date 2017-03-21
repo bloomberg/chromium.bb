@@ -45,9 +45,8 @@ namespace {
 class CRWSessionControllerTest : public PlatformTest {
  protected:
   void SetUp() override {
-    session_controller_.reset([[CRWSessionController alloc]
-        initWithBrowserState:&browser_state_
-                 openedByDOM:NO]);
+    session_controller_.reset(
+        [[CRWSessionController alloc] initWithBrowserState:&browser_state_]);
   }
 
   web::Referrer MakeReferrer(const std::string& url) {
@@ -60,7 +59,6 @@ class CRWSessionControllerTest : public PlatformTest {
 };
 
 TEST_F(CRWSessionControllerTest, Init) {
-  EXPECT_FALSE([session_controller_ isOpenedByDOM]);
   EXPECT_TRUE([session_controller_ items].empty());
   EXPECT_FALSE([session_controller_ currentItem]);
 }
@@ -489,8 +487,7 @@ TEST_F(CRWSessionControllerTest, CopyState) {
 
   // Create source session controller with 1 committed item.
   base::scoped_nsobject<CRWSessionController> other_session_controller(
-      [[CRWSessionController alloc] initWithBrowserState:&browser_state_
-                                             openedByDOM:NO]);
+      [[CRWSessionController alloc] initWithBrowserState:&browser_state_]);
   [other_session_controller
       addPendingItem:GURL("http://www.url.com/0")
             referrer:web::Referrer()
@@ -539,8 +536,7 @@ TEST_F(CRWSessionControllerTest, CopyStateFromEmptySessionController) {
 
   // Create empty source session controller.
   base::scoped_nsobject<CRWSessionController> other_session_controller(
-      [[CRWSessionController alloc] initWithBrowserState:&browser_state_
-                                             openedByDOM:NO]);
+      [[CRWSessionController alloc] initWithBrowserState:&browser_state_]);
 
   // Insert and verify the state of target session controller.
   EXPECT_TRUE([session_controller_ canPruneAllButLastCommittedItem]);
@@ -564,8 +560,7 @@ TEST_F(CRWSessionControllerTest, CopyStateToEmptySessionController) {
 
   // Create source session controller with 1 committed item.
   base::scoped_nsobject<CRWSessionController> other_session_controller(
-      [[CRWSessionController alloc] initWithBrowserState:&browser_state_
-                                             openedByDOM:NO]);
+      [[CRWSessionController alloc] initWithBrowserState:&browser_state_]);
   [other_session_controller
       addPendingItem:GURL("http://www.url.com/0")
             referrer:web::Referrer()
@@ -609,8 +604,7 @@ TEST_F(CRWSessionControllerTest, CopyStateDuringPendingHistoryNavigation) {
 
   // Create source session controller with 1 committed item.
   base::scoped_nsobject<CRWSessionController> other_session_controller(
-      [[CRWSessionController alloc] initWithBrowserState:&browser_state_
-                                             openedByDOM:NO]);
+      [[CRWSessionController alloc] initWithBrowserState:&browser_state_]);
   [other_session_controller
       addPendingItem:GURL("http://www.url.com/0")
             referrer:web::Referrer()
@@ -660,8 +654,7 @@ TEST_F(CRWSessionControllerTest, CopyStateWithTransientItem) {
 
   // Create source session controller with 1 committed item.
   base::scoped_nsobject<CRWSessionController> other_session_controller(
-      [[CRWSessionController alloc] initWithBrowserState:&browser_state_
-                                             openedByDOM:NO]);
+      [[CRWSessionController alloc] initWithBrowserState:&browser_state_]);
   [other_session_controller
       addPendingItem:GURL("http://www.url.com/0")
             referrer:web::Referrer()

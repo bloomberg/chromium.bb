@@ -16,7 +16,7 @@ namespace {
 NSString* const kCertificatePolicyManagerKey = @"certificatePolicyManager";
 NSString* const kCurrentNavigationIndexKey = @"currentNavigationIndex";
 NSString* const kItemStoragesKey = @"entries";
-NSString* const kOpenedByDOMKey = @"openedByDOM";
+NSString* const kHasOpenerKey = @"openedByDOM";
 NSString* const kPreviousNavigationIndexKey = @"previousNavigationIndex";
 }
 
@@ -29,7 +29,7 @@ NSString* const kPreviousNavigationIndexKey = @"previousNavigationIndex";
 
 @implementation CRWSessionStorage
 
-@synthesize openedByDOM = _openedByDOM;
+@synthesize hasOpener = _hasOpener;
 @synthesize currentNavigationIndex = _currentNavigationIndex;
 @synthesize previousNavigationIndex = _previousNavigationIndex;
 @synthesize itemStorages = _itemStorages;
@@ -51,7 +51,7 @@ NSString* const kPreviousNavigationIndexKey = @"previousNavigationIndex";
 - (instancetype)initWithCoder:(nonnull NSCoder*)decoder {
   self = [super init];
   if (self) {
-    _openedByDOM = [decoder decodeBoolForKey:kOpenedByDOMKey];
+    _hasOpener = [decoder decodeBoolForKey:kHasOpenerKey];
     _currentNavigationIndex =
         [decoder decodeIntForKey:kCurrentNavigationIndexKey];
     _previousNavigationIndex =
@@ -74,7 +74,7 @@ NSString* const kPreviousNavigationIndexKey = @"previousNavigationIndex";
 }
 
 - (void)encodeWithCoder:(NSCoder*)coder {
-  [coder encodeBool:self.openedByDOM forKey:kOpenedByDOMKey];
+  [coder encodeBool:self.hasOpener forKey:kHasOpenerKey];
   [coder encodeInt:self.currentNavigationIndex
             forKey:kCurrentNavigationIndexKey];
   [coder encodeInt:self.previousNavigationIndex

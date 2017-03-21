@@ -29,13 +29,12 @@ WebTestWithWebState::~WebTestWithWebState() {}
 
 void WebTestWithWebState::SetUp() {
   WebTest::SetUp();
-  std::unique_ptr<WebStateImpl> web_state(new WebStateImpl(GetBrowserState()));
-  web_state->GetNavigationManagerImpl().InitializeSession(NO);
-  web_state->SetWebUsageEnabled(true);
-  web_state_.reset(web_state.release());
+  web::WebState::CreateParams params(GetBrowserState());
+  web_state_ = web::WebState::Create(params);
+  web_state_->SetWebUsageEnabled(true);
 
   // Force generation of child views; necessary for some tests.
-  [GetWebController(web_state_.get()) triggerPendingLoad];
+  [GetWebController(web_state()) triggerPendingLoad];
 }
 
 void WebTestWithWebState::TearDown() {

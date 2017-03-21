@@ -9,8 +9,6 @@
 
 #include <memory>
 
-#import "ios/web/web_state/web_state_impl.h"
-
 @class CRWSessionStorage;
 
 // Encapsulates everything required to save a session "window". For iOS, there

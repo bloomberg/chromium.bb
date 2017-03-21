@@ -482,9 +482,9 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
                               opener:(Tab*)opener
                          openedByDOM:(BOOL)openedByDOM
                                model:(TabModel*)parentModel {
-  std::unique_ptr<web::WebStateImpl> webState(
-      new web::WebStateImpl(browserState));
-  webState->GetNavigationManagerImpl().InitializeSession(openedByDOM);
+  web::WebState::CreateParams params(browserState);
+  params.created_with_opener = openedByDOM;
+  std::unique_ptr<web::WebState> webState = web::WebState::Create(params);
   if ([opener navigationManager]) {
     web::SerializableUserDataManager* userDataManager =
         web::SerializableUserDataManager::FromWebState(webState.get());
@@ -1505,8 +1505,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   // |reloadURL| will be empty if a page was open by DOM.
   GURL reloadURL(lastNonRedirectedItem->GetOriginalRequestURL());
   if (reloadURL.is_empty()) {
-    DCHECK(
-        [[self navigationManagerImpl]->GetSessionController() isOpenedByDOM]);
+    DCHECK(self.webState && self.webState->HasOpener());
     reloadURL = lastNonRedirectedItem->GetVirtualURL();
   }
 

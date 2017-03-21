@@ -192,6 +192,10 @@ service_manager::InterfaceRegistry* TestWebState::GetMojoInterfaceRegistry() {
   return nullptr;
 }
 
+bool TestWebState::HasOpener() const {
+  return false;
+}
+
 base::WeakPtr<WebState> TestWebState::AsWeakPtr() {
   NOTREACHED();
   return base::WeakPtr<WebState>();

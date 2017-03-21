@@ -162,7 +162,10 @@ bool HandleScriptCommand(bool* is_called,
 // Test fixture for web::WebStateImpl class.
 class WebStateImplTest : public web::WebTest {
  protected:
-  WebStateImplTest() : web_state_(new WebStateImpl(GetBrowserState())) {}
+  WebStateImplTest() : web::WebTest() {
+    web::WebState::CreateParams params(GetBrowserState());
+    web_state_ = base::MakeUnique<web::WebStateImpl>(params);
+  }
 
   std::unique_ptr<WebStateImpl> web_state_;
 };
@@ -679,6 +682,21 @@ TEST_F(WebStateImplTest, ScriptCommand) {
   EXPECT_TRUE(is_called_2);
 
   web_state_->RemoveScriptCommandCallback(kPrefix2);
+}
+
+// Tests that WebState::CreateParams::created_with_opener is translated to
+// WebState::HasOpener() return values.
+TEST_F(WebStateImplTest, CreatedWithOpener) {
+  // Verify that the HasOpener() returns false if not specified in the create
+  // params.
+  EXPECT_FALSE(web_state_->HasOpener());
+  // Set |created_with_opener| to true and verify that HasOpener() returns true.
+  WebState::CreateParams params_with_opener =
+      WebState::CreateParams(GetBrowserState());
+  params_with_opener.created_with_opener = true;
+  std::unique_ptr<WebState> web_state_with_opener =
+      WebState::Create(params_with_opener);
+  EXPECT_TRUE(web_state_with_opener->HasOpener());
 }
 
 }  // namespace web

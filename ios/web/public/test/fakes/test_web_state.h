@@ -71,6 +71,7 @@ class TestWebState : public WebState {
   void AddPolicyDecider(WebStatePolicyDecider* decider) override {}
   void RemovePolicyDecider(WebStatePolicyDecider* decider) override {}
   service_manager::InterfaceRegistry* GetMojoInterfaceRegistry() override;
+  bool HasOpener() const override;
   base::WeakPtr<WebState> AsWeakPtr() override;
 
   // Setters for test data.

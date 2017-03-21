@@ -5,7 +5,6 @@
 #import "ios/web/public/test/fakes/test_web_state_delegate.h"
 
 #include "base/memory/ptr_util.h"
-#import "ios/web/web_state/web_state_impl.h"
 
 namespace web {
 
@@ -55,9 +54,9 @@ WebState* TestWebStateDelegate::CreateNewWebState(WebState* source,
     return nullptr;
   }
 
-  std::unique_ptr<WebStateImpl> child(
-      base::MakeUnique<WebStateImpl>(source->GetBrowserState()));
-  child->GetNavigationManagerImpl().InitializeSession(YES /*opened_by_dom*/);
+  web::WebState::CreateParams params(source->GetBrowserState());
+  params.created_with_opener = true;
+  std::unique_ptr<web::WebState> child = web::WebState::Create(params);
   child->SetWebUsageEnabled(true);
 
   child_windows_.push_back(std::move(child));

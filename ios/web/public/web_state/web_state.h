@@ -57,7 +57,13 @@ class WebState : public base::SupportsUserData {
     explicit CreateParams(web::BrowserState* browser_state);
     ~CreateParams();
 
+    // The corresponding BrowserState for the new WebState.
     web::BrowserState* browser_state;
+
+    // Whether the WebState is created as the result of a window.open or by
+    // clicking a link with a blank targer.  Used to determin whether the
+    // WebState is allowed to be closed via window.close().
+    bool created_with_opener;
   };
 
   // Parameters for the OpenURL() method.
@@ -230,6 +236,10 @@ class WebState : public base::SupportsUserData {
 
   // Returns Mojo interface registry for this WebState.
   virtual service_manager::InterfaceRegistry* GetMojoInterfaceRegistry() = 0;
+
+  // Returns whether this WebState was created with an opener.  See
+  // CreateParams::created_with_opener for more details.
+  virtual bool HasOpener() const = 0;
 
  protected:
   friend class WebStateObserver;

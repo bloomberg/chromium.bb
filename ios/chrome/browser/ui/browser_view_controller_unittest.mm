@@ -49,7 +49,6 @@
 #include "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
 #include "ios/chrome/test/testing_application_context.h"
 #import "ios/testing/ocmock_complex_type_helper.h"
-#import "ios/web/navigation/crw_session_controller.h"
 #include "ios/web/public/referrer.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #import "ios/web/public/web_state/ui/crw_native_content_provider.h"
@@ -171,13 +170,11 @@ class BrowserViewControllerTest : public BlockCleanupTest {
     [[[currentTab stub] andReturn:dummyView] view];
     [[[currentTab stub] andReturn:webControllerMock] webController];
 
-    id sessionControllerMock =
-        [OCMockObject niceMockForClass:[CRWSessionController class]];
-    webStateImpl_.reset(new WebStateImpl(chrome_browser_state_.get()));
+    web::WebState::CreateParams params(chrome_browser_state_.get());
+    std::unique_ptr<web::WebState> webState = web::WebState::Create(params);
+    webStateImpl_.reset(static_cast<web::WebStateImpl*>(webState.release()));
     [currentTab setWebState:webStateImpl_.get()];
     webStateImpl_->SetWebController(webControllerMock);
-    webStateImpl_->GetNavigationManagerImpl().SetSessionController(
-        sessionControllerMock);
 
     // Set up mock ShareController.
     id shareController =

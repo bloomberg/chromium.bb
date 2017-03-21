@@ -14,11 +14,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/sessions/NSCoder+Compatibility.h"
 #import "ios/chrome/browser/sessions/session_service.h"
-#import "ios/web/navigation/crw_session_controller.h"
 #import "ios/web/public/web_thread.h"
-#import "ios/web/web_state/web_state_impl.h"
-
-using web::WebStateImpl;
 
 // Serialization keys.
 NSString* const kSessionsKey = @"sessions";

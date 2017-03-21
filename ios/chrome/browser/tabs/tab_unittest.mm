@@ -193,9 +193,10 @@ class TabTest : public BlockCleanupTest {
 
     mock_web_controller_ =
         [OCMockObject niceMockForClass:[CRWWebController class]];
-    auto web_state_impl = base::MakeUnique<WebStateImpl>(browser_state);
+    web::WebState::CreateParams create_params(browser_state);
+    auto web_state_impl = base::MakeUnique<WebStateImpl>(create_params);
     web_state_impl->SetWebController(mock_web_controller_);
-    web_state_impl->GetNavigationManagerImpl().InitializeSession(NO);
+    web_state_impl->GetNavigationManagerImpl().InitializeSession();
     web_state_impl_ = web_state_impl.get();
     [[[static_cast<OCMockObject*>(mock_web_controller_) stub]
         andReturnValue:OCMOCK_VALUE(web_state_impl_)] webStateImpl];
@@ -205,8 +206,9 @@ class TabTest : public BlockCleanupTest {
     tab_.reset([[Tab alloc] initWithWebState:std::move(web_state_impl)
                                        model:nil
                             attachTabHelpers:NO]);
-    web::NavigationManager::WebLoadParams params(GURL("chrome://version/"));
-    [[tab_ webController] loadWithParams:params];
+    web::NavigationManager::WebLoadParams load_params(
+        GURL("chrome://version/"));
+    [[tab_ webController] loadWithParams:load_params];
 
     // There should be no entries in the history at this point.
     history::QueryResults results;

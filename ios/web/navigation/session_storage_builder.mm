@@ -20,7 +20,6 @@
 // as this functionality moves from CRWSessionController to
 // NavigationManagerImpl;
 @interface CRWSessionController (ExposedForSerialization)
-@property(nonatomic, readwrite, getter=isOpenedByDOM) BOOL openedByDOM;
 @property(nonatomic, readwrite, assign) NSInteger previousNavigationIndex;
 @property(nonatomic, readwrite, retain)
     CRWSessionCertificatePolicyManager* sessionCertificatePolicyManager;
@@ -34,16 +33,15 @@ CRWSessionStorage* SessionStorageBuilder::BuildStorage(
   web::NavigationManagerImpl* navigation_manager =
       web_state->navigation_manager_.get();
   DCHECK(navigation_manager);
-  CRWSessionStorage* serialized_navigation_manager =
-      [[CRWSessionStorage alloc] init];
+  CRWSessionStorage* session_storage = [[CRWSessionStorage alloc] init];
+  session_storage.hasOpener = web_state->HasOpener();
   CRWSessionController* session_controller =
       navigation_manager->GetSessionController();
-  serialized_navigation_manager.openedByDOM = session_controller.openedByDOM;
-  serialized_navigation_manager.currentNavigationIndex =
+  session_storage.currentNavigationIndex =
       session_controller.currentNavigationIndex;
-  serialized_navigation_manager.previousNavigationIndex =
+  session_storage.previousNavigationIndex =
       session_controller.previousNavigationIndex;
-  serialized_navigation_manager.sessionCertificatePolicyManager =
+  session_storage.sessionCertificatePolicyManager =
       session_controller.sessionCertificatePolicyManager;
   NSMutableArray* item_storages = [[NSMutableArray alloc] init];
   NavigationItemStorageBuilder item_storage_builder;
@@ -51,12 +49,12 @@ CRWSessionStorage* SessionStorageBuilder::BuildStorage(
     web::NavigationItemImpl* item = session_controller.items[index].get();
     [item_storages addObject:item_storage_builder.BuildStorage(item)];
   }
-  serialized_navigation_manager.itemStorages = item_storages;
+  session_storage.itemStorages = item_storages;
   web::SerializableUserDataManager* user_data_manager =
       web::SerializableUserDataManager::FromWebState(web_state);
-  [serialized_navigation_manager
+  [session_storage
       setSerializableUserData:user_data_manager->CreateSerializableUserData()];
-  return serialized_navigation_manager;
+  return session_storage;
 }
 
 void SessionStorageBuilder::ExtractSessionState(
@@ -64,6 +62,7 @@ void SessionStorageBuilder::ExtractSessionState(
     CRWSessionStorage* storage) const {
   DCHECK(web_state);
   DCHECK(storage);
+  web_state->created_with_opener_ = storage.hasOpener;
   NSArray* item_storages = storage.itemStorages;
   web::ScopedNavigationItemList items(item_storages.count);
   NavigationItemStorageBuilder item_storage_builder;
@@ -77,7 +76,6 @@ void SessionStorageBuilder::ExtractSessionState(
       [[CRWSessionController alloc] initWithBrowserState:nullptr
                                          navigationItems:std::move(items)
                                             currentIndex:current_index]);
-  [session_controller setOpenedByDOM:storage.openedByDOM];
   [session_controller
       setPreviousNavigationIndex:storage.previousNavigationIndex];
   [session_controller

@@ -75,7 +75,6 @@
 // Expose setters for serialization properties.  These are exposed in a category
 // in SessionStorageBuilder, and will be removed as ownership of
 // their backing ivars moves to NavigationManagerImpl.
-@property(nonatomic, readwrite, getter=isOpenedByDOM) BOOL openedByDOM;
 @property(nonatomic, readwrite, assign) NSInteger previousNavigationIndex;
 
 // Removes all items after currentNavigationIndex_.
@@ -99,14 +98,11 @@ initiationType:(web::NavigationInitiationType)initiationType;
 @synthesize currentNavigationIndex = _currentNavigationIndex;
 @synthesize previousNavigationIndex = _previousNavigationIndex;
 @synthesize pendingItemIndex = _pendingItemIndex;
-@synthesize openedByDOM = _openedByDOM;
 @synthesize sessionCertificatePolicyManager = _sessionCertificatePolicyManager;
 
-- (instancetype)initWithBrowserState:(web::BrowserState*)browserState
-                         openedByDOM:(BOOL)openedByDOM {
+- (instancetype)initWithBrowserState:(web::BrowserState*)browserState {
   self = [super init];
   if (self) {
-    _openedByDOM = openedByDOM;
     _browserState = browserState;
     _currentNavigationIndex = -1;
     _previousNavigationIndex = -1;

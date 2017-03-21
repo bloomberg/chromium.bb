@@ -132,10 +132,10 @@ class TestWebUIControllerFactory : public WebUIIOSControllerFactory {
 // A test fixture for verifying mojo comminication for WebUI.
 class WebUIMojoTest : public WebIntTest {
  protected:
-  WebUIMojoTest()
-      : web_state_(new WebStateImpl(GetBrowserState())),
-        ui_handler_(new TestUIHandler()) {
-    web_state_->GetNavigationManagerImpl().InitializeSession(NO);
+  WebUIMojoTest() : ui_handler_(new TestUIHandler()) {
+    web::WebState::CreateParams params(GetBrowserState());
+    web_state_ = base::MakeUnique<web::WebStateImpl>(params);
+    web_state_->GetNavigationManagerImpl().InitializeSession();
     WebUIIOSControllerFactory::RegisterFactory(
         new TestWebUIControllerFactory(ui_handler_.get()));
   }

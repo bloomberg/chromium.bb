@@ -67,9 +67,8 @@ class NavigationManagerImpl : public NavigationManager {
   // logic into it.
   void SetSessionController(CRWSessionController* session_controller);
 
-  // Initializes a new session history. |opened_by_dom| is YES if the page was
-  // opened by DOM.
-  void InitializeSession(BOOL opened_by_dom);
+  // Initializes a new session history.
+  void InitializeSession();
 
   // Replace the session history with a new one, where |items| is the
   // complete set of navigation items in the new history, and |current_index|

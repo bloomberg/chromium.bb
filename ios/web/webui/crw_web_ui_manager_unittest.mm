@@ -47,8 +47,8 @@ NSString* kMojoModule = @"service_provider.connect('Test');";
 // as expected.
 class MockWebStateImpl : public WebStateImpl {
  public:
-  MockWebStateImpl(BrowserState* browser_state)
-      : WebStateImpl(browser_state), last_committed_url_(kTestWebUIUrl) {}
+  MockWebStateImpl(const WebState::CreateParams& params)
+      : WebStateImpl(params), last_committed_url_(kTestWebUIUrl) {}
   MOCK_METHOD2(LoadWebUIHtml,
                void(const base::string16& html, const GURL& url));
   MOCK_METHOD1(ExecuteJavaScript, void(const base::string16& javascript));
@@ -125,7 +125,8 @@ class CRWWebUIManagerTest : public web::WebTest {
   void SetUp() override {
     PlatformTest::SetUp();
     test_browser_state_.reset(new TestBrowserState());
-    web_state_impl_.reset(new MockWebStateImpl(test_browser_state_.get()));
+    WebState::CreateParams params(test_browser_state_.get());
+    web_state_impl_.reset(new MockWebStateImpl(params));
     web_ui_manager_.reset(
         [[CRWTestWebUIManager alloc] initWithWebState:web_state_impl_.get()]);
   }

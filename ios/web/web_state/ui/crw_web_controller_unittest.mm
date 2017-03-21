@@ -675,7 +675,6 @@ class CRWWebControllerNativeContentTest : public web::WebTestWithWebController {
   void Load(const GURL& URL) {
     NavigationManagerImpl& navigation_manager =
         [web_controller() webStateImpl]->GetNavigationManagerImpl();
-    navigation_manager.InitializeSession(NO);
     navigation_manager.AddPendingItem(
         URL, web::Referrer(), ui::PAGE_TRANSITION_TYPED,
         web::NavigationInitiationType::USER_INITIATED);
