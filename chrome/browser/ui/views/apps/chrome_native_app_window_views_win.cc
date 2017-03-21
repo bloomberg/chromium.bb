@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/views/apps/glass_app_window_frame_view_win.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_win.h"
-#include "chrome/common/chrome_icon_resources_win.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/app_window/app_window.h"
