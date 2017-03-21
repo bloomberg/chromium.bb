@@ -44,6 +44,8 @@ NavigatorInstalledApp& NavigatorInstalledApp::from(Navigator& navigator) {
 ScriptPromise NavigatorInstalledApp::getInstalledRelatedApps(
     ScriptState* scriptState,
     Navigator& navigator) {
+  // [SecureContext] from the IDL ensures this.
+  DCHECK(scriptState->getExecutionContext()->isSecureContext());
   return NavigatorInstalledApp::from(navigator).getInstalledRelatedApps(
       scriptState);
 }
