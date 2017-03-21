@@ -49,7 +49,7 @@ scoped_refptr<gl::GLSurface> ImageTransportSurface::CreateNativeSurface(
       vsync_provider.reset(new gl::VSyncProviderWin(surface_handle));
 
     if (gl::GLSurfaceEGL::IsDirectCompositionSupported()) {
-      if (base::FeatureList::IsEnabled(switches::kDirectCompositionOverlays)) {
+      if (DirectCompositionSurfaceWin::AreOverlaysSupported()) {
         scoped_refptr<DirectCompositionSurfaceWin> egl_surface =
             make_scoped_refptr(
                 new DirectCompositionSurfaceWin(delegate, surface_handle));

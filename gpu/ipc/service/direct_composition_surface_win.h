@@ -25,6 +25,10 @@ class GPU_EXPORT DirectCompositionSurfaceWin : public gl::GLSurfaceEGL {
       base::WeakPtr<ImageTransportSurfaceDelegate> delegate,
       HWND parent_window);
 
+  // Returns true if there's an output on the current adapter that can
+  // use overlays.
+  static bool AreOverlaysSupported();
+
   bool InitializeNativeWindow();
 
   // GLSurfaceEGL implementation.

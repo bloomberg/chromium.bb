@@ -7,6 +7,7 @@
 #include "base/optional.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
+#include "gpu/ipc/service/switches.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_angle_util_win.h"
@@ -59,6 +60,44 @@ DirectCompositionSurfaceWin::DirectCompositionSurfaceWin(
 
 DirectCompositionSurfaceWin::~DirectCompositionSurfaceWin() {
   Destroy();
+}
+
+// static
+bool DirectCompositionSurfaceWin::AreOverlaysSupported() {
+  if (!base::FeatureList::IsEnabled(switches::kDirectCompositionOverlays))
+    return false;
+
+  if (!gl::GLSurfaceEGL::IsDirectCompositionSupported())
+    return false;
+
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kEnableDirectCompositionLayers))
+    return true;
+  if (command_line->HasSwitch(switches::kDisableDirectCompositionLayers))
+    return false;
+
+  base::win::ScopedComPtr<ID3D11Device> d3d11_device =
+      gl::QueryD3D11DeviceObjectFromANGLE();
+  DCHECK(d3d11_device);
+
+  base::win::ScopedComPtr<IDXGIDevice> dxgi_device;
+  d3d11_device.QueryInterface(dxgi_device.Receive());
+  base::win::ScopedComPtr<IDXGIAdapter> dxgi_adapter;
+  dxgi_device->GetAdapter(dxgi_adapter.Receive());
+
+  unsigned int i = 0;
+  while (true) {
+    base::win::ScopedComPtr<IDXGIOutput> output;
+    if (FAILED(dxgi_adapter->EnumOutputs(i++, output.Receive())))
+      break;
+    base::win::ScopedComPtr<IDXGIOutput2> output2;
+    if (FAILED(output.QueryInterface(output2.Receive())))
+      return false;
+
+    if (output2->SupportsOverlays())
+      return true;
+  }
+  return false;
 }
 
 bool DirectCompositionSurfaceWin::InitializeNativeWindow() {

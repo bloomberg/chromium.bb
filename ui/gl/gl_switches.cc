@@ -113,6 +113,15 @@ const char kDisableGLExtensions[] = "disable-gl-extensions";
 // Enables SwapBuffersWithBounds if it is supported.
 const char kEnableSwapBuffersWithBounds[] = "enable-swap-buffers-with-bounds";
 
+// Enables using DirectComposition layers, even if hardware overlays aren't
+// supported.
+const char kEnableDirectCompositionLayers[] =
+    "enable-direct-composition-layers";
+
+// Disables using DirectComposition layers.
+const char kDisableDirectCompositionLayers[] =
+    "disable-direct-composition-layers";
+
 // This is the list of switches passed from this file that are passed from the
 // GpuProcessHost to the GPU Process. Add your switch to this list if you need
 // to read it in the GPU process, else don't add it.
@@ -128,6 +137,8 @@ const char* kGLSwitchesCopiedFromGpuProcessHost[] = {
     kUseANGLE,
     kDisableDirectComposition,
     kEnableSwapBuffersWithBounds,
+    kEnableDirectCompositionLayers,
+    kDisableDirectCompositionLayers,
 };
 const int kGLSwitchesCopiedFromGpuProcessHostNumSwitches =
     arraysize(kGLSwitchesCopiedFromGpuProcessHost);
