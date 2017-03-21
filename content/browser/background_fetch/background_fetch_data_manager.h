@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_BACKGROUND_FETCH_BACKGROUND_FETCH_DATA_MANAGER_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <unordered_map>
 
@@ -32,11 +33,11 @@ class CONTENT_EXPORT BackgroundFetchDataManager {
   // Called by BackgroundFetchContext when a new request is started, this will
   // store all of the necessary metadata to track the request.
   std::unique_ptr<BackgroundFetchJobData> CreateRequest(
-      const BackgroundFetchJobInfo& job_info,
+      std::unique_ptr<BackgroundFetchJobInfo> job_info,
       BackgroundFetchRequestInfos request_infos);
 
  private:
-  void WriteJobToStorage(const BackgroundFetchJobInfo& job_info,
+  void WriteJobToStorage(std::unique_ptr<BackgroundFetchJobInfo> job_info,
                          BackgroundFetchRequestInfos request_infos);
 
   BackgroundFetchRequestInfos& ReadRequestsFromStorage(
@@ -52,7 +53,8 @@ class CONTENT_EXPORT BackgroundFetchDataManager {
 
   // Temporary map to hold data which will be written to storage.
   // Map from job_guid to JobInfo.
-  std::unordered_map<std::string, BackgroundFetchJobInfo> job_map_;
+  std::unordered_map<std::string, std::unique_ptr<BackgroundFetchJobInfo>>
+      job_map_;
   // Map from job_guid to RequestInfos.
   std::unordered_map<std::string, BackgroundFetchRequestInfos> request_map_;
 

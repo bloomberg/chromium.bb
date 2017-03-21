@@ -55,7 +55,7 @@ class CONTENT_EXPORT BackgroundFetchContext
 
   ~BackgroundFetchContext();
 
-  void CreateRequest(const BackgroundFetchJobInfo& job_info,
+  void CreateRequest(std::unique_ptr<BackgroundFetchJobInfo> job_info,
                      std::vector<BackgroundFetchRequestInfo>& request_infos);
 
   // Callback for the JobController when the job is complete.

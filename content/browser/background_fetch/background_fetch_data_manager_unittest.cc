@@ -57,13 +57,14 @@ TEST_F(BackgroundFetchDataManagerTest, AddRequest) {
     request_guids.push_back(request_info.guid());
     request_infos.push_back(std::move(request_info));
   }
-  BackgroundFetchJobInfo job_info(kTag, url::Origin(GURL(kOrigin)),
-                                  kServiceWorkerRegistrationId);
+  std::unique_ptr<BackgroundFetchJobInfo> job_info =
+      base::MakeUnique<BackgroundFetchJobInfo>(kTag, url::Origin(GURL(kOrigin)),
+                                               kServiceWorkerRegistrationId);
 
   // Initialize a BackgroundFetchJobData with the constructed requests.
   BackgroundFetchDataManager* data_manager = GetDataManager();
   std::unique_ptr<BackgroundFetchJobData> job_data =
-      data_manager->CreateRequest(job_info, request_infos);
+      data_manager->CreateRequest(std::move(job_info), request_infos);
 
   // Get all of the fetch requests from the BackgroundFetchJobData.
   for (int i = 0; i < 10; i++) {

@@ -17,16 +17,6 @@ BackgroundFetchJobInfo::BackgroundFetchJobInfo(
       origin_(origin),
       service_worker_registration_id_(service_worker_registration_id) {}
 
-BackgroundFetchJobInfo::BackgroundFetchJobInfo() = default;
-
-BackgroundFetchJobInfo::BackgroundFetchJobInfo(
-    const BackgroundFetchJobInfo& other)
-    : guid_(other.guid_),
-      tag_(other.tag_),
-      origin_(other.origin_),
-      service_worker_registration_id_(other.service_worker_registration_id_),
-      request_guids_(other.request_guids_) {}
-
 BackgroundFetchJobInfo::~BackgroundFetchJobInfo() = default;
 
 }  // namespace content
