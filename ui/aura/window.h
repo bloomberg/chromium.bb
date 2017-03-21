@@ -353,12 +353,8 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
   // Schedules a paint for the Window's entire bounds.
   void SchedulePaint();
 
-  // Asks the delegate to paint the window and invokes PaintLayerlessChildren()
-  // to paint any children with no layers.
+  // Asks the delegate to paint the window.
   void Paint(const ui::PaintContext& context);
-
-  // Paints any layerless children to |canvas|.
-  void PaintLayerlessChildren(const ui::PaintContext& context);
 
   // Gets a Window (either this one or a subwindow) containing |local_point|.
   // If |return_tightest| is true, returns the tightest-containing (i.e.
