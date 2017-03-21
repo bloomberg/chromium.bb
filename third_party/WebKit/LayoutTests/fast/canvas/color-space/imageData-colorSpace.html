@@ -8,42 +8,42 @@ var dataU8 = new Uint8ClampedArray([255, 192, 128, 64]);
 var dataU16 = new Uint16Array([65535, 256*192, 256*128, 256*64]);
 var dataF32 = new Float32Array([1.0, 0.75, 0.5, 0.25]);
 
-function checkDataTypeAgainstColorSettings(data, colorSettings) {
-  if (colorSettings.storageFormat == "uint8")
+function checkDataTypeAgainstStorageFormat(data, storageFormat) {
+  if (storageFormat == "uint8")
     assert_equals(Object.prototype.toString.call(data), "[object Uint8ClampedArray]");
-  else if (colorSettings.storageFormat == "uint16")
+  else if (storageFormat == "uint16")
     assert_equals(Object.prototype.toString.call(data), "[object Uint16Array]");
-  else if (colorSettings.storageFormat == "float32")
+  else if (storageFormat == "float32")
     assert_equals(Object.prototype.toString.call(data), "[object Float32Array]");
 }
 
-function checkColorSettings(colorSettings, expectedColorSettings) {
-  assert_equals(colorSettings.colorSpace, expectedColorSettings.colorSpace);
-  assert_equals(colorSettings.storageFormat, expectedColorSettings.storageFormat);
+function checkColorSettings(colorSettings, colorSpace, storageFormat) {
+  assert_equals(colorSpace, colorSettings.colorSpace);
+  assert_equals(storageFormat, colorSettings.storageFormat);
 }
 
 function runTest(colorSettings, expectedColorSettings) {
   experimental = new ImageData(1,1);
   
   imageData = experimental.createImageData(1, 1, colorSettings);
-  checkDataTypeAgainstColorSettings(imageData.dataUnion, colorSettings);
+  checkDataTypeAgainstStorageFormat(imageData.dataUnion, colorSettings.storageFormat);
   assert_array_equals(imageData.dataUnion, [0, 0, 0, 0]);
-  checkColorSettings(imageData.colorSettings, expectedColorSettings);
+  checkColorSettings(imageData.colorSettings, expectedColorSettings.colorSpace, expectedColorSettings.storageFormat);
 
   imageData = experimental.createImageData(dataU8, 1, 1, colorSettings);
   assert_equals(Object.prototype.toString.call(imageData.dataUnion), "[object Uint8ClampedArray]");
   assert_array_equals(imageData.dataUnion, dataU8);
-  checkColorSettings(imageData.colorSettings, expectedColorSettings);
+  checkColorSettings(imageData.colorSettings, expectedColorSettings.colorSpace, "uint8");
 
   imageData = experimental.createImageData(dataU16, 1, 1, colorSettings);
   assert_equals(Object.prototype.toString.call(imageData.dataUnion), "[object Uint16Array]");
   assert_array_equals(imageData.dataUnion, dataU16);
-  checkColorSettings(imageData.colorSettings, expectedColorSettings);
+  checkColorSettings(imageData.colorSettings, expectedColorSettings.colorSpace, "uint16");
 
   imageData = experimental.createImageData(dataF32, 1, 1, colorSettings);
   assert_equals(Object.prototype.toString.call(imageData.dataUnion), "[object Float32Array]");
   assert_array_equals(imageData.dataUnion, dataF32);
-  checkColorSettings(imageData.colorSettings, expectedColorSettings);
+  checkColorSettings(imageData.colorSettings, expectedColorSettings.colorSpace, "float32");
 }
 
 var testScenarios = [

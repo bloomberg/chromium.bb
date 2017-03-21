@@ -64,6 +64,11 @@ enum ImageDataStorageFormat {
   kFloat32ArrayStorageFormat,
 };
 
+enum StorageFormatSource {
+  kStorageFormatFromColorSettings,
+  kStorageFormatFromBufferType,
+};
+
 constexpr const char* kUint8ClampedArrayStorageFormatName = "uint8";
 constexpr const char* kUint16ArrayStorageFormatName = "uint16";
 constexpr const char* kFloat32ArrayStorageFormatName = "float32";
@@ -143,7 +148,8 @@ class CORE_EXPORT ImageData final : public GarbageCollectedFinalized<ImageData>,
  private:
   ImageData(const IntSize&,
             DOMArrayBufferView*,
-            const ImageDataColorSettings* = nullptr);
+            const ImageDataColorSettings* = nullptr,
+            StorageFormatSource = kStorageFormatFromColorSettings);
 
   IntSize m_size;
   ImageDataColorSettings m_colorSettings;
