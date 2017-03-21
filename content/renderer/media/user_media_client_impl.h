@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_MEDIA_USER_MEDIA_CLIENT_IMPL_H_
 #define CONTENT_RENDERER_MEDIA_USER_MEDIA_CLIENT_IMPL_H_
 
+#include <list>
 #include <memory>
 #include <string>
 #include <vector>
@@ -13,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/threading/non_thread_safe.h"
 #include "content/common/content_export.h"
 #include "content/common/media/media_devices.h"
@@ -96,26 +98,14 @@ class CONTENT_EXPORT UserMediaClientImpl
       ::mojom::MediaDevicesDispatcherHostPtr media_devices_dispatcher);
 
  protected:
-  // Called when |source| has been stopped from JavaScript.
-  void OnLocalSourceStopped(const blink::WebMediaStreamSource& source);
-
   // These methods are virtual for test purposes. A test can override them to
   // test requesting local media streams. The function notifies WebKit that the
   // |request| have completed.
-  virtual void GetUserMediaRequestSucceeded(
-       const blink::WebMediaStream& stream,
-       blink::WebUserMediaRequest request_info);
-  void DelayedGetUserMediaRequestSucceeded(
-      const blink::WebMediaStream& stream,
-      blink::WebUserMediaRequest request_info);
-  virtual void GetUserMediaRequestFailed(
-      blink::WebUserMediaRequest request_info,
-      MediaStreamRequestResult result,
-      const blink::WebString& result_name);
-  void DelayedGetUserMediaRequestFailed(
-      blink::WebUserMediaRequest request_info,
-      MediaStreamRequestResult result,
-      const blink::WebString& result_name);
+  virtual void GetUserMediaRequestSucceeded(const blink::WebMediaStream& stream,
+                                            blink::WebUserMediaRequest request);
+  virtual void GetUserMediaRequestFailed(blink::WebUserMediaRequest request,
+                                         MediaStreamRequestResult result,
+                                         const blink::WebString& result_name);
 
   virtual void EnumerateDevicesSucceded(
       blink::WebMediaDevicesRequest* request,
@@ -131,79 +121,31 @@ class CONTENT_EXPORT UserMediaClientImpl
       const StreamDeviceInfo& device,
       const MediaStreamSource::SourceStoppedCallback& stop_callback);
 
-  // Class for storing information about a WebKit request to create a
-  // MediaStream.
-  class UserMediaRequestInfo
-      : public base::SupportsWeakPtr<UserMediaRequestInfo> {
-   public:
-    typedef base::Callback<void(UserMediaRequestInfo* request_info,
-                                MediaStreamRequestResult result,
-                                const blink::WebString& result_name)>
-      ResourcesReady;
-
-    UserMediaRequestInfo(int request_id,
-                         const blink::WebUserMediaRequest& request,
-                         bool enable_automatic_output_device_selection);
-    ~UserMediaRequestInfo();
-    int request_id;
-    // True if MediaStreamDispatcher has generated the stream, see
-    // OnStreamGenerated.
-    bool generated;
-    const bool enable_automatic_output_device_selection;
-    blink::WebMediaStream web_stream;
-    blink::WebUserMediaRequest request;
-
-    void StartAudioTrack(const blink::WebMediaStreamTrack& track,
-                         bool is_pending);
-
-    blink::WebMediaStreamTrack CreateAndStartVideoTrack(
-        const blink::WebMediaStreamSource& source,
-        const blink::WebMediaConstraints& constraints);
-
-    // Triggers |callback| when all sources used in this request have either
-    // successfully started, or a source has failed to start.
-    void CallbackOnTracksStarted(const ResourcesReady& callback);
-
-    bool HasPendingSources() const;
-
-    // Called when a local audio source has finished (or failed) initializing.
-    void OnAudioSourceStarted(MediaStreamSource* source,
-                              MediaStreamRequestResult result,
-                              const blink::WebString& result_name);
-
-   private:
-    void OnTrackStarted(
-        MediaStreamSource* source,
-        MediaStreamRequestResult result,
-        const blink::WebString& result_name);
-
-    // Cheks if the sources for all tracks have been started and if so,
-    // invoke the |ready_callback_|.  Note that the caller should expect
-    // that |this| might be deleted when the function returns.
-    void CheckAllTracksStarted();
-
-    ResourcesReady ready_callback_;
-    MediaStreamRequestResult request_result_;
-    blink::WebString request_result_name_;
-    // Sources used in this request.
-    std::vector<blink::WebMediaStreamSource> sources_;
-    std::vector<MediaStreamSource*> sources_waiting_for_callback_;
-  };
-  typedef std::vector<std::unique_ptr<UserMediaRequestInfo>> UserMediaRequests;
-
- protected:
-  // These methods can be accessed in unit tests.
-  UserMediaRequestInfo* FindUserMediaRequestInfo(int request_id);
-  UserMediaRequestInfo* FindUserMediaRequestInfo(
-      const blink::WebUserMediaRequest& request);
-
-  void DeleteUserMediaRequestInfo(UserMediaRequestInfo* request);
+  // Returns no value if there is no request being processed. Use only for
+  // testing.
+  // TODO(guidou): Remove this method once spec-compliant constraints algorithm
+  // for audio is implemented. http://crbug.com/657733
+  base::Optional<bool> AutomaticOutputDeviceSelectionEnabledForCurrentRequest();
 
  private:
+  class UserMediaRequestInfo;
   typedef std::vector<blink::WebMediaStreamSource> LocalStreamSources;
+
+  void MaybeProcessNextRequestInfo();
+  bool IsCurrentRequestInfo(int request_id) const;
+  bool IsCurrentRequestInfo(const blink::WebUserMediaRequest& request) const;
+  bool DeleteRequestInfo(const blink::WebUserMediaRequest& request);
+  void DelayedGetUserMediaRequestSucceeded(const blink::WebMediaStream& stream,
+                                           blink::WebUserMediaRequest request);
+  void DelayedGetUserMediaRequestFailed(blink::WebUserMediaRequest request,
+                                        MediaStreamRequestResult result,
+                                        const blink::WebString& result_name);
 
   // RenderFrameObserver implementation.
   void OnDestruct() override;
+
+  // Called when |source| has been stopped from JavaScript.
+  void OnLocalSourceStopped(const blink::WebMediaStreamSource& source);
 
   // Creates a WebKit representation of stream sources based on
   // |devices| from the MediaStreamDispatcher.
@@ -219,14 +161,12 @@ class CONTENT_EXPORT UserMediaClientImpl
   void CreateVideoTracks(
       const StreamDeviceInfoArray& devices,
       const blink::WebMediaConstraints& constraints,
-      blink::WebVector<blink::WebMediaStreamTrack>* webkit_tracks,
-      UserMediaRequestInfo* request);
+      blink::WebVector<blink::WebMediaStreamTrack>* webkit_tracks);
 
   void CreateAudioTracks(
       const StreamDeviceInfoArray& devices,
       const blink::WebMediaConstraints& constraints,
-      blink::WebVector<blink::WebMediaStreamTrack>* webkit_tracks,
-      UserMediaRequestInfo* request);
+      blink::WebVector<blink::WebMediaStreamTrack>* webkit_tracks);
 
   // Callback function triggered when all native versions of the
   // underlying media sources and tracks have been created and started.
@@ -250,7 +190,7 @@ class CONTENT_EXPORT UserMediaClientImpl
                             MediaStreamRequestResult result,
                             const blink::WebString& result_name);
 
-  void NotifyAllRequestsOfAudioSourceStarted(
+  void NotifyCurrentRequestInfoOfAudioSourceStarted(
       MediaStreamSource* source,
       MediaStreamRequestResult result,
       const blink::WebString& result_name);
@@ -289,47 +229,26 @@ class CONTENT_EXPORT UserMediaClientImpl
 
   const ::mojom::MediaDevicesDispatcherHostPtr& GetMediaDevicesDispatcher();
 
-  struct RequestSettings;
-
   void SelectAudioInputDevice(
-      int request_id,
       const blink::WebUserMediaRequest& user_media_request,
-      std::unique_ptr<StreamControls> controls,
-      const RequestSettings& request_settings,
       const EnumerationResult& device_enumeration);
 
-  void SetupVideoInput(int request_id,
-                       const blink::WebUserMediaRequest& user_media_request,
-                       std::unique_ptr<StreamControls> controls,
-                       const RequestSettings& request_settings);
+  void SetupVideoInput(const blink::WebUserMediaRequest& user_media_request);
 
   void SelectVideoDeviceSourceSettings(
-      int request_id,
       const blink::WebUserMediaRequest& user_media_request,
-      std::unique_ptr<StreamControls> controls,
-      const RequestSettings& request_settings,
       std::vector<::mojom::VideoInputDeviceCapabilitiesPtr>
           video_input_capabilities);
 
   void FinalizeSelectVideoDeviceSourceSettings(
-      int request_id,
       const blink::WebUserMediaRequest& user_media_request,
-      std::unique_ptr<StreamControls> controls,
-      const RequestSettings& request_settings,
       const VideoDeviceCaptureSourceSelectionResult& selection_result);
 
   void FinalizeSelectVideoContentSourceSettings(
-      int request_id,
       const blink::WebUserMediaRequest& user_media_request,
-      std::unique_ptr<StreamControls> controls,
-      const RequestSettings& request_settings,
       const VideoContentCaptureSourceSelectionResult& selection_result);
 
-  void FinalizeRequestUserMedia(
-      int request_id,
-      const blink::WebUserMediaRequest& user_media_request,
-      std::unique_ptr<StreamControls> controls,
-      const RequestSettings& request_settings);
+  void GenerateStreamForCurrentRequestInfo();
 
   // Callback invoked by MediaDevicesEventDispatcher when a device-change
   // notification arrives.
@@ -351,7 +270,12 @@ class CONTENT_EXPORT UserMediaClientImpl
   LocalStreamSources local_sources_;
   LocalStreamSources pending_local_sources_;
 
-  UserMediaRequests user_media_requests_;
+  // UserMedia requests are processed sequentially. |current_request_info_|
+  // contains the request currently being processed, if any, and
+  // |pending_request_infos_| is a list of queued requests.
+  std::unique_ptr<UserMediaRequestInfo> current_request_info_;
+  std::list<std::unique_ptr<UserMediaRequestInfo>> pending_request_infos_;
+
   MediaDevicesEventDispatcher::SubscriptionIdList
       device_change_subscription_ids_;
 

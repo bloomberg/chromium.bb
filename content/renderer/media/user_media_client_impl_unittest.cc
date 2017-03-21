@@ -308,15 +308,11 @@ class UserMediaClientImplUnderTest : public UserMediaClientImpl {
   blink::WebString error_name() const { return result_name_; }
 
   // Access to the request queue for testing.
-  bool UserMediaRequestHasAutomaticDeviceSelection(int request_id) {
-    auto* request = FindUserMediaRequestInfo(request_id);
-    EXPECT_TRUE(request != nullptr);
-    return request && request->enable_automatic_output_device_selection;
-  }
-
-  void DeleteRequest(int request_id) {
-    auto* request = FindUserMediaRequestInfo(request_id);
-    DeleteUserMediaRequestInfo(request);
+  bool UserMediaRequestHasAutomaticDeviceSelection() {
+    base::Optional<bool> enabled =
+        AutomaticOutputDeviceSelectionEnabledForCurrentRequest();
+    EXPECT_TRUE(enabled);
+    return *enabled;
   }
 
  private:
@@ -422,10 +418,8 @@ class UserMediaClientImplTest : public ::testing::Test {
                                                      null_constraints);
     user_media_client_impl_->RequestUserMediaForTest(request);
     bool result =
-        user_media_client_impl_->UserMediaRequestHasAutomaticDeviceSelection(
-            ms_dispatcher_->audio_input_request_id());
-    user_media_client_impl_->DeleteRequest(
-        ms_dispatcher_->audio_input_request_id());
+        user_media_client_impl_->UserMediaRequestHasAutomaticDeviceSelection();
+    user_media_client_impl_->cancelUserMediaRequest(request);
     return result;
   }
 
@@ -752,13 +746,14 @@ TEST_F(UserMediaClientImplTest, EnumerateMediaDevices) {
 }
 
 TEST_F(UserMediaClientImplTest, RenderToAssociatedSinkConstraint) {
-  // For a null UserMediaRequest (no audio requested), we expect false.
-  user_media_client_impl_->RequestUserMediaForTest();
+  // For a UserMediaRequest without audio, we expect false.
+  blink::WebUserMediaRequest request =
+      blink::WebUserMediaRequest::createForTesting(blink::WebMediaConstraints(),
+                                                   CreateDefaultConstraints());
+  user_media_client_impl_->RequestUserMediaForTest(request);
   EXPECT_FALSE(
-      user_media_client_impl_->UserMediaRequestHasAutomaticDeviceSelection(
-          ms_dispatcher_->audio_input_request_id()));
-  user_media_client_impl_->DeleteRequest(
-      ms_dispatcher_->audio_input_request_id());
+      user_media_client_impl_->UserMediaRequestHasAutomaticDeviceSelection());
+  user_media_client_impl_->cancelUserMediaRequest(request);
 
   // If audio is requested, but no constraint, it should be true.
   // Currently we expect it to be false due to a suspected bug in the
