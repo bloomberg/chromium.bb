@@ -12,7 +12,6 @@
 
 #include "base/files/file_path.h"
 #include "base/logging.h"
-#include "base/process/process_metrics.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/win/windows_version.h"
@@ -69,10 +68,7 @@ int64_t SysInfo::AmountOfPhysicalMemory() {
 
 // static
 int64_t SysInfo::AmountOfAvailablePhysicalMemory() {
-  SystemMemoryInfoKB info;
-  if (!GetSystemMemoryInfo(&info))
-    return 0;
-  return static_cast<int64_t>(info.avail_phys) * 1024;
+  return AmountOfMemory(&MEMORYSTATUSEX::ullAvailPhys);
 }
 
 // static

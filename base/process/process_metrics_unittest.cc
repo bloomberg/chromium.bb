@@ -17,7 +17,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/sys_info.h"
 #include "base/test/multiprocess_test.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
@@ -107,7 +106,6 @@ TEST_F(SystemMetricsTest, ParseMeminfo) {
   std::string valid_input1 =
     "MemTotal:        3981504 kB\n"
     "MemFree:          140764 kB\n"
-    "MemAvailable:     535413 kB\n"
     "Buffers:          116480 kB\n"
     "Cached:           406160 kB\n"
     "SwapCached:        21304 kB\n"
@@ -173,7 +171,6 @@ TEST_F(SystemMetricsTest, ParseMeminfo) {
   EXPECT_TRUE(ParseProcMeminfo(valid_input1, &meminfo));
   EXPECT_EQ(meminfo.total, 3981504);
   EXPECT_EQ(meminfo.free, 140764);
-  EXPECT_EQ(meminfo.available, 535413);
   EXPECT_EQ(meminfo.buffers, 116480);
   EXPECT_EQ(meminfo.cached, 406160);
   EXPECT_EQ(meminfo.active_anon, 2972352);
@@ -183,29 +180,18 @@ TEST_F(SystemMetricsTest, ParseMeminfo) {
   EXPECT_EQ(meminfo.swap_total, 5832280);
   EXPECT_EQ(meminfo.swap_free, 3672368);
   EXPECT_EQ(meminfo.dirty, 184);
-  EXPECT_EQ(meminfo.reclaimable, 30936);
 #if defined(OS_CHROMEOS)
   EXPECT_EQ(meminfo.shmem, 140204);
   EXPECT_EQ(meminfo.slab, 54212);
 #endif
-  EXPECT_EQ(355725,
-            base::SysInfo::AmountOfAvailablePhysicalMemory(meminfo) / 1024);
-  // Simulate as if there is no MemAvailable.
-  meminfo.available = 0;
-  EXPECT_EQ(374448,
-            base::SysInfo::AmountOfAvailablePhysicalMemory(meminfo) / 1024);
-  meminfo = {};
   EXPECT_TRUE(ParseProcMeminfo(valid_input2, &meminfo));
   EXPECT_EQ(meminfo.total, 255908);
   EXPECT_EQ(meminfo.free, 69936);
-  EXPECT_EQ(meminfo.available, 0);
   EXPECT_EQ(meminfo.buffers, 15812);
   EXPECT_EQ(meminfo.cached, 115124);
   EXPECT_EQ(meminfo.swap_total, 524280);
   EXPECT_EQ(meminfo.swap_free, 524200);
   EXPECT_EQ(meminfo.dirty, 4);
-  EXPECT_EQ(69936,
-            base::SysInfo::AmountOfAvailablePhysicalMemory(meminfo) / 1024);
 }
 
 TEST_F(SystemMetricsTest, ParseVmstat) {
@@ -355,19 +341,15 @@ TEST_F(SystemMetricsTest, TestNoNegativeCpuUsage) {
 
 #endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
 
-#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
-    defined(OS_ANDROID)
+#if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS)) || \
+    defined(OS_LINUX) || defined(OS_ANDROID)
 TEST(SystemMetrics2Test, GetSystemMemoryInfo) {
   SystemMemoryInfoKB info;
   EXPECT_TRUE(GetSystemMemoryInfo(&info));
 
   // Ensure each field received a value.
   EXPECT_GT(info.total, 0);
-#if defined(OS_WIN)
-  EXPECT_GT(info.avail_phys, 0);
-#else
   EXPECT_GT(info.free, 0);
-#endif
 #if defined(OS_LINUX) || defined(OS_ANDROID)
   EXPECT_GT(info.buffers, 0);
   EXPECT_GT(info.cached, 0);
@@ -378,9 +360,7 @@ TEST(SystemMetrics2Test, GetSystemMemoryInfo) {
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
   // All the values should be less than the total amount of memory.
-#if !defined(OS_WIN)
   EXPECT_LT(info.free, info.total);
-#endif
 #if defined(OS_LINUX) || defined(OS_ANDROID)
   EXPECT_LT(info.buffers, info.total);
   EXPECT_LT(info.cached, info.total);
@@ -390,10 +370,6 @@ TEST(SystemMetrics2Test, GetSystemMemoryInfo) {
   EXPECT_LT(info.inactive_file, info.total);
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
-#if defined(OS_MACOSX) || defined(OS_IOS)
-  EXPECT_GT(info.file_backed, 0);
-#endif
-
 #if defined(OS_CHROMEOS)
   // Chrome OS exposes shmem.
   EXPECT_GT(info.shmem, 0);
@@ -402,8 +378,8 @@ TEST(SystemMetrics2Test, GetSystemMemoryInfo) {
   // and gem_size cannot be tested here.
 #endif
 }
-#endif  // defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) ||
-        // defined(OS_ANDROID)
+#endif  // defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS)) ||
+        // defined(OS_LINUX) || defined(OS_ANDROID)
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
 TEST(ProcessMetricsTest, ParseProcStatCPU) {
