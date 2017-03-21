@@ -133,12 +133,13 @@ def GenerateAlertStage(build, stage, exceptions, buildinfo, logdog_client):
     prefix = buildinfo['annotationStream']['prefix']
     annotation = buildinfo['steps'][stage['name']]
     AddLogsLink(logdog_client, 'stdout', build['waterfall'],
-                prefix, annotation.get('stdoutStream', None), logs_links)
+                prefix, annotation.get('stdoutStream'), logs_links)
     AddLogsLink(logdog_client, 'stderr', build['waterfall'],
-                prefix, annotation.get('stderrStream', None), logs_links)
+                prefix, annotation.get('stderrStream'), logs_links)
 
     # Use the logs in an attempt to classify the failure.
-    if annotation['stdoutStream'] and annotation['stdoutStream']['name']:
+    if (annotation.get('stdoutStream') and
+        annotation['stdoutStream'].get('name')):
       path = '%s/+/%s' % (prefix, annotation['stdoutStream']['name'])
       try:
         logs = logdog_client.GetLines(build['waterfall'], path)
