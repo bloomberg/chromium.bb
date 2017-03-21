@@ -50,7 +50,7 @@
 </script>
 <script type="text/plain" id="tested">
     interface CredentialsContainer {
-      Promise<Credential?> get(CredentialRequestOptions options);
+      Promise<Credential> get(optional CredentialRequestOptions options);
       Promise<Credential> store(Credential credential);
       Promise<void> requireUserMediation();
     };
