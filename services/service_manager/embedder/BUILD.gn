@@ -1,0 +1,38 @@
+# Copyright 2017 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+component("embedder") {
+  sources = [
+    "main.cc",
+    "main.h",
+    "main_delegate.h",
+    "service_manager_embedder_export.h",
+    "set_process_title.cc",
+    "set_process_title.h",
+    "set_process_title_linux.cc",
+    "set_process_title_linux.h",
+    "shared_file_util.cc",
+    "shared_file_util.h",
+    "switches.cc",
+    "switches.h",
+  ]
+
+  if (is_mac) {
+    sources += [
+      "mac_init.h",
+      "mac_init.mm",
+    ]
+
+    libs = [ "Foundation.framework" ]
+  }
+
+  deps = [
+    "//base",
+    "//base/allocator:features",
+    "//mojo/edk/system",
+    "//ui/base",
+  ]
+
+  defines = [ "SERVICE_MANAGER_EMBEDDER_IMPL" ]
+}

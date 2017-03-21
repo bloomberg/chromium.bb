@@ -6,16 +6,14 @@
 
 #include <memory>
 
-#include "base/at_exit.h"
-#include "base/base_switches.h"
-#include "base/command_line.h"
 #include "base/lazy_instance.h"
+#include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
+#include "content/app/content_service_manager_main_delegate.h"
 #include "content/public/app/content_main.h"
 #include "content/public/app/content_main_delegate.h"
-#include "content/public/app/content_main_runner.h"
-#include "content/public/common/content_switches.h"
 #include "jni/ContentMain_jni.h"
+#include "services/service_manager/embedder/main.h"
 
 using base::LazyInstance;
 using base::android::JavaParamRef;
@@ -23,8 +21,9 @@ using base::android::JavaParamRef;
 namespace content {
 
 namespace {
-LazyInstance<std::unique_ptr<ContentMainRunner>>::DestructorAtExit
-    g_content_runner = LAZY_INSTANCE_INITIALIZER;
+
+LazyInstance<std::unique_ptr<service_manager::MainDelegate>>::DestructorAtExit
+    g_service_manager_main_delegate = LAZY_INSTANCE_INITIALIZER;
 
 LazyInstance<std::unique_ptr<ContentMainDelegate>>::DestructorAtExit
     g_content_main_delegate = LAZY_INSTANCE_INITIALIZER;
@@ -38,12 +37,15 @@ static jint Start(JNIEnv* env, const JavaParamRef<jclass>& clazz) {
   // simultaneously. If we get an asynchonous request followed by a synchronous
   // request then we have to call this a second time to finish starting the
   // browser synchronously.
-  if (!g_content_runner.Get().get()) {
-    ContentMainParams params(g_content_main_delegate.Get().get());
-    g_content_runner.Get().reset(ContentMainRunner::Create());
-    g_content_runner.Get()->Initialize(params);
+  if (!g_service_manager_main_delegate.Get()) {
+    g_service_manager_main_delegate.Get() =
+        base::MakeUnique<ContentServiceManagerMainDelegate>(
+            ContentMainParams(g_content_main_delegate.Get().get()));
   }
-  return g_content_runner.Get()->Run();
+
+  service_manager::MainParams main_params(
+      g_service_manager_main_delegate.Get().get());
+  return service_manager::Main(main_params);
 }
 
 void SetContentMainDelegate(ContentMainDelegate* delegate) {

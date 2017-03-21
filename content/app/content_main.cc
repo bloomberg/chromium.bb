@@ -4,46 +4,19 @@
 
 #include "content/public/app/content_main.h"
 
-#include <memory>
-
-#include "base/debug/activity_tracker.h"
-#include "content/public/app/content_main_runner.h"
+#include "content/app/content_service_manager_main_delegate.h"
+#include "services/service_manager/embedder/main.h"
 
 namespace content {
 
 int ContentMain(const ContentMainParams& params) {
-  std::unique_ptr<ContentMainRunner> main_runner(ContentMainRunner::Create());
-
-  int exit_code = main_runner->Initialize(params);
-  if (exit_code >= 0) {
-    base::debug::GlobalActivityTracker* tracker =
-        base::debug::GlobalActivityTracker::Get();
-    if (tracker) {
-      tracker->SetProcessPhase(
-          base::debug::GlobalActivityTracker::PROCESS_LAUNCH_FAILED);
-      tracker->process_data().SetInt("exit-code", exit_code);
-    }
-    return exit_code;
-  }
-
-  exit_code = main_runner->Run();
-
-  main_runner->Shutdown();
-
-  base::debug::GlobalActivityTracker* tracker =
-      base::debug::GlobalActivityTracker::Get();
-  if (tracker) {
-    if (exit_code == 0) {
-      tracker->SetProcessPhaseIfEnabled(
-          base::debug::GlobalActivityTracker::PROCESS_EXITED_CLEANLY);
-    } else {
-      tracker->SetProcessPhaseIfEnabled(
-          base::debug::GlobalActivityTracker::PROCESS_EXITED_WITH_CODE);
-      tracker->process_data().SetInt("exit-code", exit_code);
-    }
-  }
-
-  return exit_code;
+  ContentServiceManagerMainDelegate delegate(params);
+  service_manager::MainParams main_params(&delegate);
+#if defined(OS_POSIX) && !defined(OS_ANDROID)
+  main_params.argc = params.argc;
+  main_params.argv = params.argv;
+#endif
+  return service_manager::Main(main_params);
 }
 
 }  // namespace content

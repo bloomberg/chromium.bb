@@ -16,7 +16,8 @@
 #include "content/public/common/content_switches.h"
 #include "mojo/edk/embedder/platform_handle.h"
 #include "services/catalog/public/cpp/manifest_parsing_util.h"
-#include "services/service_manager/public/cpp/shared_file_util.h"
+#include "services/service_manager/embedder/shared_file_util.h"
+#include "services/service_manager/embedder/switches.h"
 
 namespace content {
 namespace internal {

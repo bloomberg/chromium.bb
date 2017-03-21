@@ -791,11 +791,6 @@ const char kSandboxIPCProcess[]             = "sandbox-ipc";
 // Defaults to disabled.
 const char kScrollEndEffect[] = "scroll-end-effect";
 
-// Describes the file descriptors passed to the child process. List:
-// <file id from manifest>:<global descriptor id>,<file id string from manifest>
-// :<global descriptor id>,...
-const char kSharedFiles[] = "shared-files";
-
 // Visibly render a border around paint rects in the web page to help debug
 // and study painting behavior.
 const char kShowPaintRects[]                = "show-paint-rects";

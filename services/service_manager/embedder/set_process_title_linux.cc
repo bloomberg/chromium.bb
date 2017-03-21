@@ -37,7 +37,7 @@
 // this position within the glibc project, leaving applications caught in the
 // middle. (Also, only a very few applications need or want this anyway.)
 
-#include "content/common/set_process_title_linux.h"
+#include "services/service_manager/embedder/set_process_title_linux.h"
 
 #include <stdarg.h>
 #include <stddef.h>
@@ -67,14 +67,14 @@ void setproctitle(const char* fmt, ...) {
   }
   page_size = sysconf(_SC_PAGESIZE);
   // Get the page on which the argument list and environment live.
-  page = (uintptr_t) g_main_argv[0];
+  page = (uintptr_t)g_main_argv[0];
   page -= page % page_size;
   page_end = page + page_size;
   // Move the environment out of the way. Note that we are moving the values,
   // not the environment array itself (which may not be on the page we need
   // to overwrite anyway).
   for (i = 0; environ[i]; ++i) {
-    uintptr_t env_i = (uintptr_t) environ[i];
+    uintptr_t env_i = (uintptr_t)environ[i];
     // Only move the value if it's actually in the way. This avoids
     // leaking copies of the values if this function is called again.
     if (page <= env_i && env_i < page_end) {
@@ -88,7 +88,7 @@ void setproctitle(const char* fmt, ...) {
   // Put the title in argv[0]. We have to zero out the space first since the
   // kernel doesn't actually look for a null terminator unless we make the
   // argument list longer than it started.
-  avail_size = page_end - (uintptr_t) g_main_argv[0];
+  avail_size = page_end - (uintptr_t)g_main_argv[0];
   memset(g_main_argv[0], 0, avail_size);
   va_start(ap, fmt);
   if (fmt[0] == '-') {
@@ -111,6 +111,6 @@ void setproctitle_init(const char** main_argv) {
   uintptr_t page_size = sysconf(_SC_PAGESIZE);
   // Check that the argv array is in fact on the same page of memory
   // as the environment array just as an added measure of protection.
-  if (((uintptr_t) environ) / page_size == ((uintptr_t) main_argv) / page_size)
+  if (((uintptr_t)environ) / page_size == ((uintptr_t)main_argv) / page_size)
     g_main_argv = const_cast<char**>(main_argv);
 }
