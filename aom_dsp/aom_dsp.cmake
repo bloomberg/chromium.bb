@@ -98,6 +98,27 @@ set(AOM_DSP_COMMON_INTRIN_NEON
     "${AOM_ROOT}/aom_dsp/arm/subtract_neon.c"
     "${AOM_ROOT}/aom_dsp/arm/variance_neon.c")
 
+if ("${AOM_TARGET_CPU}" STREQUAL "arm64")
+  set(AOM_DSP_COMMON_INTRIN_NEON
+      ${AOM_DSP_COMMON_INTRIN_NEON}
+      "${AOM_ROOT}/aom_dsp/arm/aom_convolve8_avg_neon.c"
+      "${AOM_ROOT}/aom_dsp/arm/aom_convolve8_neon.c"
+      "${AOM_ROOT}/aom_dsp/arm/aom_convolve_avg_neon.c"
+      "${AOM_ROOT}/aom_dsp/arm/aom_convolve_copy_neon.c"
+      "${AOM_ROOT}/aom_dsp/arm/idct16x16_1_add_neon.c"
+      "${AOM_ROOT}/aom_dsp/arm/idct16x16_add_neon.c"
+      "${AOM_ROOT}/aom_dsp/arm/idct32x32_1_add_neon.c"
+      "${AOM_ROOT}/aom_dsp/arm/idct32x32_add_neon.c"
+      "${AOM_ROOT}/aom_dsp/arm/idct4x4_1_add_neon.c"
+      "${AOM_ROOT}/aom_dsp/arm/idct4x4_add_neon.c"
+      "${AOM_ROOT}/aom_dsp/arm/idct8x8_1_add_neon.c"
+      "${AOM_ROOT}/aom_dsp/arm/idct8x8_add_neon.c"
+      "${AOM_ROOT}/aom_dsp/arm/intrapred_neon.c"
+      "${AOM_ROOT}/aom_dsp/arm/loopfilter_16_neon.c"
+      "${AOM_ROOT}/aom_dsp/arm/loopfilter_4_neon.c"
+      "${AOM_ROOT}/aom_dsp/arm/loopfilter_8_neon.c")
+endif ()
+
 if (CONFIG_AOM_HIGHBITDEPTH)
   set(AOM_DSP_COMMON_ASM_SSE2
       ${AOM_DSP_COMMON_ASM_SSE2}

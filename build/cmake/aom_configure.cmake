@@ -57,8 +57,9 @@ if (NOT AOM_TARGET_CPU)
   elseif ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "i386" OR
           "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86")
     set(AOM_TARGET_CPU "x86")
-  elseif ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "armv7s")
-    set(AOM_TARGET_CPU "armv7s")
+  elseif ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "armv7s" OR
+          "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "arm64")
+    set(AOM_TARGET_CPU "${CMAKE_SYSTEM_PROCESSOR}")
   endif ()
 endif ()
 
