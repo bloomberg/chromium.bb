@@ -43,8 +43,8 @@ async_test(function(t) {
     .then(mock => {
       theMock = mock;
       return new ImageCapture(stream.getVideoTracks()[0]);
-    })
-    .catch(error => {
+    },
+    error => {
       assert_unreached("Error creating MockImageCapture: " + error);
     })
     .then(capturer => {
@@ -109,8 +109,8 @@ async_test(function(t) {
       t.done();
     })
     .catch(error => {
-      assert_unreached("Error during setOptions(): " + error);
+      assert_unreached("Error during setOptions(): " + error.message);
     });
-}, 'exercises the ImageCapture API setOptions()');
+}, 'exercises ImageCapture.setOptions(options)');
 
 </script>

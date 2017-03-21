@@ -129,11 +129,11 @@ async_test(function(t) {
 
         t.done();
       }, 100);
-    })
-    .catch(error => {
+    },
+    error => {
       assert_unreached("Error creating MockImageCapture: " + error);
     })
 
-}, 'exercises the retrieval of MediaTrackCapabilities');
+}, 'exercises MediaStreamTrack.getCapabilities()');
 
 </script>

@@ -21,8 +21,8 @@ async_test(function(t) {
   mockImageCaptureReady
     .then(mock => {
       return new ImageCapture(stream.getVideoTracks()[0]);
-    })
-    .catch(error => {
+    },
+    error => {
       assert_unreached("Error creating MockImageCapture: " + error);
     })
     .then(capturer => {
@@ -35,8 +35,8 @@ async_test(function(t) {
       t.done();
     })
     .catch(error => {
-      assert_unreached("Error during takePhoto(): " + error);
+      assert_unreached("Error during takePhoto(): " + error.message);
     });
-}, 'exercises the ImageCapture API takePhoto()');
+}, 'exercises ImageCapture.takePhoto()');
 
 </script>
