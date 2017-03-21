@@ -33,6 +33,21 @@
     waitForVideo('remote-view-2');
   }
 
+  // Hang up a call.
+  function hangup() {
+    gFirstConnection.close();
+    gSecondConnection.close();
+    gFirstConnection = null;
+    gSecondConnection = null;
+
+    gLocalStream.getTracks().forEach(function(track) {
+      track.stop();
+    });
+    gLocalStream = null;
+
+    sendValueToTest('OK');
+  }
+
   // Test that we can setup a call with a video track and that the remote peer
   // receives black frames if the local video track is disabled.
   function callAndDisableLocalVideo(constraints) {
