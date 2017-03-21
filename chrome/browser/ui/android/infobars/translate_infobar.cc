@@ -15,6 +15,7 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "components/translate/core/browser/translate_infobar_delegate.h"
+#include "jni/TranslateCompactInfoBar_jni.h"
 #include "jni/TranslateInfoBar_jni.h"
 
 using base::android::JavaParamRef;
@@ -62,11 +63,15 @@ ScopedJavaLocalRef<jobject> TranslateInfoBar::CreateRenderInfoBar(JNIEnv* env) {
       base::android::ConvertUTF8ToJavaString(env,
                                              delegate->target_language_code());
 
-  return Java_TranslateInfoBar_show(
-      env, delegate->translate_step(), source_language_code,
-      target_language_code, delegate->ShouldAlwaysTranslate(),
-      ShouldDisplayNeverTranslateInfoBarOnCancel(),
-      delegate->triggered_from_menu(), java_languages, java_codes);
+  if (translate::TranslateInfoBarDelegate::IsCompactUIEnabled()) {
+    return Java_TranslateCompactInfoBar_create(env);
+  } else {
+    return Java_TranslateInfoBar_show(
+        env, delegate->translate_step(), source_language_code,
+        target_language_code, delegate->ShouldAlwaysTranslate(),
+        ShouldDisplayNeverTranslateInfoBarOnCancel(),
+        delegate->triggered_from_menu(), java_languages, java_codes);
+  }
 }
 
 void TranslateInfoBar::ProcessButton(int action) {
@@ -104,8 +109,13 @@ void TranslateInfoBar::SetJavaInfoBar(
     const base::android::JavaRef<jobject>& java_info_bar) {
   InfoBarAndroid::SetJavaInfoBar(java_info_bar);
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_TranslateInfoBar_setNativePtr(env, java_info_bar,
-                                     reinterpret_cast<intptr_t>(this));
+  if (translate::TranslateInfoBarDelegate::IsCompactUIEnabled()) {
+    Java_TranslateCompactInfoBar_setNativePtr(env, java_info_bar,
+                                              reinterpret_cast<intptr_t>(this));
+  } else {
+    Java_TranslateInfoBar_setNativePtr(env, java_info_bar,
+                                       reinterpret_cast<intptr_t>(this));
+  }
 }
 
 void TranslateInfoBar::ApplyTranslateOptions(
