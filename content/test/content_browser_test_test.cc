@@ -25,6 +25,10 @@
 #include "content/shell/common/shell_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
+
 namespace content {
 
 // Disabled on official builds because symbolization in sandboxes processes
@@ -69,6 +73,13 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, MANUAL_RendererCrash) {
 
 // Tests that browser tests print the callstack when a child process crashes.
 IN_PROC_BROWSER_TEST_F(ContentBrowserTest, RendererCrashCallStack) {
+#if defined(OS_WIN)
+  // Matches the same condition in RouteStdioToConsole, which makes this test
+  // fail on XP.
+  if (base::win::GetVersion() < base::win::VERSION_VISTA)
+    return;
+#endif
+
   base::ThreadRestrictions::ScopedAllowIO allow_io_for_temp_dir;
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
