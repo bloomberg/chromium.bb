@@ -2448,7 +2448,7 @@
             ]
         }
     ],
-    "SearchGeolocationDisclosure": [
+    "SearchGeolocationConsistency": [
         {
             "platforms": [
                 "android"
