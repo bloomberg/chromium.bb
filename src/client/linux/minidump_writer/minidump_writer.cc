@@ -147,6 +147,7 @@ class MinidumpWriter {
         skip_stacks_if_mapping_unreferenced_(
             skip_stacks_if_mapping_unreferenced),
         principal_mapping_address_(principal_mapping_address),
+        principal_mapping_(nullptr),
     sanitize_stacks_(sanitize_stacks) {
     // Assert there should be either a valid fd or a valid path, not both.
     assert(fd_ != -1 || minidump_path);
@@ -157,12 +158,22 @@ class MinidumpWriter {
     if (!dumper_->Init())
       return false;
 
+    if (!dumper_->ThreadsSuspend() || !dumper_->LateInit())
+      return false;
+
+    if (skip_stacks_if_mapping_unreferenced_) {
+      principal_mapping_ =
+          dumper_->FindMappingNoBias(principal_mapping_address_);
+      if (!CrashingThreadReferencesPrincipalMapping())
+        return false;
+    }
+
     if (fd_ != -1)
       minidump_writer_.SetFile(fd_);
     else if (!minidump_writer_.Open(path_))
       return false;
 
-    return dumper_->ThreadsSuspend() && dumper_->LateInit();
+    return true;
   }
 
   ~MinidumpWriter() {
@@ -171,6 +182,38 @@ class MinidumpWriter {
     if (fd_ == -1)
       minidump_writer_.Close();
     dumper_->ThreadsResume();
+  }
+
+  bool CrashingThreadReferencesPrincipalMapping() {
+    if (!ucontext_ || !principal_mapping_)
+      return false;
+
+    const uintptr_t low_addr =
+        principal_mapping_->system_mapping_info.start_addr;
+    const uintptr_t high_addr =
+        principal_mapping_->system_mapping_info.end_addr;
+
+    const uintptr_t stack_pointer = UContextReader::GetStackPointer(ucontext_);
+    const uintptr_t pc = UContextReader::GetInstructionPointer(ucontext_);
+
+    if (pc >= low_addr && pc < high_addr)
+      return true;
+
+    uint8_t* stack_copy;
+    const void* stack;
+    size_t stack_len;
+
+    if (!dumper_->GetStackInfo(&stack, &stack_len, stack_pointer))
+      return false;
+
+    stack_copy = reinterpret_cast<uint8_t*>(Alloc(stack_len));
+    dumper_->CopyFromProcess(stack_copy, GetCrashThread(), stack, stack_len);
+
+    uintptr_t stack_pointer_offset =
+        stack_pointer - reinterpret_cast<uintptr_t>(stack);
+
+    return dumper_->StackHasPointerToMapping(
+        stack_copy, stack_len, stack_pointer_offset, *principal_mapping_);
   }
 
   bool Dump() {
@@ -302,17 +345,15 @@ class MinidumpWriter {
       uintptr_t stack_pointer_offset =
           stack_pointer - reinterpret_cast<uintptr_t>(stack);
       if (skip_stacks_if_mapping_unreferenced_) {
-        const MappingInfo* principal_mapping =
-            dumper_->FindMappingNoBias(principal_mapping_address_);
-        if (!principal_mapping) {
+        if (!principal_mapping_) {
           return true;
         }
-        uintptr_t low_addr = principal_mapping->system_mapping_info.start_addr;
-        uintptr_t high_addr = principal_mapping->system_mapping_info.end_addr;
+        uintptr_t low_addr = principal_mapping_->system_mapping_info.start_addr;
+        uintptr_t high_addr = principal_mapping_->system_mapping_info.end_addr;
         if ((pc < low_addr || pc > high_addr) &&
             !dumper_->StackHasPointerToMapping(*stack_copy, stack_len,
                                                stack_pointer_offset,
-                                               *principal_mapping)) {
+                                               *principal_mapping_)) {
           return true;
         }
       }
@@ -1303,6 +1344,7 @@ class MinidumpWriter {
   // mapping containing principal_mapping_address_.
   bool skip_stacks_if_mapping_unreferenced_;
   uintptr_t principal_mapping_address_;
+  const MappingInfo* principal_mapping_;
   // If true, apply stack sanitization to stored stack data.
   bool sanitize_stacks_;
 };
