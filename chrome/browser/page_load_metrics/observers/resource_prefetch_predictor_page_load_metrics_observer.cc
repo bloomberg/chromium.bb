@@ -13,10 +13,10 @@
 namespace internal {
 
 const char kHistogramResourcePrefetchPredictorFirstContentfulPaint[] =
-    "PageLoad.Clients.ResourcePrefetchPredictor.ParseTiming."
+    "PageLoad.Clients.ResourcePrefetchPredictor.PaintTiming."
     "NavigationToFirstContentfulPaint.Prefetchable";
 const char kHistogramResourcePrefetchPredictorFirstMeaningfulPaint[] =
-    "PageLoad.Clients.ResourcePrefetchPredictor.ParseTiming."
+    "PageLoad.Clients.ResourcePrefetchPredictor.PaintTiming."
     "NavigationToFirstMeaningfulPaint.Prefetchable";
 
 }  // namespace internal
