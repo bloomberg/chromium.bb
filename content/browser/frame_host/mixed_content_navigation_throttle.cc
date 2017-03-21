@@ -94,9 +94,15 @@ void UpdateRendererOnMixedContentFound(NavigationHandleImpl* navigation_handle,
   DCHECK(navigation_handle->frame_tree_node()->parent());
   RenderFrameHost* rfh =
       navigation_handle->frame_tree_node()->current_frame_host();
-  rfh->Send(new FrameMsg_MixedContentFound(
-      rfh->GetRoutingID(), mixed_content_url, navigation_handle->GetURL(),
-      navigation_handle->request_context_type(), was_allowed, for_redirect));
+  FrameMsg_MixedContentFound_Params params;
+  params.main_resource_url = mixed_content_url;
+  params.mixed_content_url = navigation_handle->GetURL();
+  params.request_context_type = navigation_handle->request_context_type();
+  params.was_allowed = was_allowed;
+  params.had_redirect = for_redirect;
+  params.source_location = navigation_handle->source_location();
+
+  rfh->Send(new FrameMsg_MixedContentFound(rfh->GetRoutingID(), params));
 }
 
 }  // namespace

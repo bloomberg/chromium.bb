@@ -2161,11 +2161,18 @@ void WebLocalFrameImpl::mixedContentFound(
     const WebURL& mixedContentUrl,
     WebURLRequest::RequestContext requestContext,
     bool wasAllowed,
-    bool hadRedirect) {
+    bool hadRedirect,
+    const WebSourceLocation& sourceLocation) {
   DCHECK(frame());
-  MixedContentChecker::mixedContentFound(frame(), mainResourceUrl,
-                                         mixedContentUrl, requestContext,
-                                         wasAllowed, hadRedirect);
+  std::unique_ptr<SourceLocation> source;
+  if (!sourceLocation.url.isNull()) {
+    source =
+        SourceLocation::create(sourceLocation.url, sourceLocation.lineNumber,
+                               sourceLocation.columnNumber, nullptr);
+  }
+  MixedContentChecker::mixedContentFound(
+      frame(), mainResourceUrl, mixedContentUrl, requestContext, wasAllowed,
+      hadRedirect, std::move(source));
 }
 
 void WebLocalFrameImpl::sendOrientationChangeEvent() {

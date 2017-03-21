@@ -425,6 +425,11 @@ void NavigationRequest::CreateNavigationHandle(int pending_nav_entry_id) {
     navigation_handle_->set_searchable_form_encoding(
         begin_params_.searchable_form_encoding);
   }
+
+  if (common_params_.source_location) {
+    navigation_handle_->set_source_location(
+        common_params_.source_location.value());
+  }
 }
 
 void NavigationRequest::TransferNavigationHandleOwnership(

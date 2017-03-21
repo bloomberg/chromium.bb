@@ -41,6 +41,7 @@ struct WebContentSecurityPolicyViolation;
 struct WebFindOptions;
 struct WebFloatRect;
 struct WebPrintPresetOptions;
+struct WebSourceLocation;
 
 // Interface for interacting with in process frames. This contains methods that
 // require interacting with a frame's document.
@@ -198,7 +199,8 @@ class WebLocalFrame : public WebFrame {
                                  const WebURL& mixedContentUrl,
                                  WebURLRequest::RequestContext,
                                  bool wasAllowed,
-                                 bool hadRedirect) = 0;
+                                 bool hadRedirect,
+                                 const WebSourceLocation&) = 0;
 
   // Orientation Changes ----------------------------------------------------
 
