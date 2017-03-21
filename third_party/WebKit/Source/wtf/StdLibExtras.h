@@ -263,13 +263,6 @@ char (&ArrayLengthHelperFunction(T (&)[0]))[0];
 
 }  // namespace WTF
 
-// This version of placement new omits a 0 check.
-enum NotNullTag { NotNull };
-inline void* operator new(size_t, NotNullTag, void* location) {
-  DCHECK(location);
-  return location;
-}
-
 using WTF::bitwiseCast;
 using WTF::safeCast;
 

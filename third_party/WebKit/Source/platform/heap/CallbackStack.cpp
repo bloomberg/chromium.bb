@@ -4,6 +4,7 @@
 
 #include "platform/heap/CallbackStack.h"
 #include "wtf/PtrUtil.h"
+#include "wtf/StdLibExtras.h"
 #include "wtf/allocator/Partitions.h"
 
 namespace blink {

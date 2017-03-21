@@ -6,7 +6,7 @@
 #define WTF_Allocator_h
 
 #include "wtf/Assertions.h"
-#include "wtf/StdLibExtras.h"
+#include "wtf/TypeTraits.h"
 #include "wtf/allocator/Partitions.h"
 
 namespace WTF {
@@ -145,5 +145,12 @@ namespace WTF {
   USING_FAST_MALLOC_INTERNAL(type, #type)
 
 }  // namespace WTF
+
+// This version of placement new omits a 0 check.
+enum NotNullTag { NotNull };
+inline void* operator new(size_t, NotNullTag, void* location) {
+  DCHECK(location);
+  return location;
+}
 
 #endif /* WTF_Allocator_h */

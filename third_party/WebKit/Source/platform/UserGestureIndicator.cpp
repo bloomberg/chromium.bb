@@ -28,6 +28,7 @@
 #include "platform/Histogram.h"
 #include "wtf/Assertions.h"
 #include "wtf/CurrentTime.h"
+#include "wtf/StdLibExtras.h"
 
 namespace blink {
 

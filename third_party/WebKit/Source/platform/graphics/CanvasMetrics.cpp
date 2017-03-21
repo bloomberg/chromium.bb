@@ -5,6 +5,7 @@
 #include "platform/graphics/CanvasMetrics.h"
 
 #include "platform/Histogram.h"
+#include "wtf/StdLibExtras.h"
 #include "wtf/Threading.h"
 
 namespace blink {
