@@ -126,7 +126,7 @@ class FrameFetchContextTest : public ::testing::Test {
   FrameFetchContext* createChildFrame() {
     childClient = StubLocalFrameClientWithParent::create(document->frame());
     childFrame = LocalFrame::create(childClient.get(),
-                                    document->frame()->host(), owner.get());
+                                    document->frame()->page(), owner.get());
     childFrame->setView(FrameView::create(*childFrame, IntSize(500, 500)));
     childFrame->init();
     childDocument = childFrame->document();

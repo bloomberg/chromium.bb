@@ -675,7 +675,7 @@ Image::SizeAvailability SVGImage::dataChanged(bool allDataReceived) {
     LocalFrame* frame = nullptr;
     {
       TRACE_EVENT0("blink", "SVGImage::dataChanged::createFrame");
-      frame = LocalFrame::create(&dummyLocalFrameClient, &page->frameHost(), 0);
+      frame = LocalFrame::create(&dummyLocalFrameClient, page, 0);
       frame->setView(FrameView::create(*frame));
       frame->init();
     }

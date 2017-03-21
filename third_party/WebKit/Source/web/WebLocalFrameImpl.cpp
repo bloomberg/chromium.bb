@@ -1530,7 +1530,7 @@ WebLocalFrameImpl* WebLocalFrameImpl::createProvisional(
   // TODO(dcheng): This block is very similar to initializeCoreFrame. Try to
   // reuse it here.
   LocalFrame* frame = LocalFrame::create(webFrame->m_localFrameClientImpl.get(),
-                                         oldFrame->host(), tempOwner,
+                                         oldFrame->page(), tempOwner,
                                          interfaceProvider, interfaceRegistry);
   // Set the name and unique name directly, bypassing any of the normal logic
   // to calculate unique name.
@@ -1610,7 +1610,8 @@ void WebLocalFrameImpl::initializeCoreFrame(FrameHost* host,
                                             FrameOwner* owner,
                                             const AtomicString& name,
                                             const AtomicString& uniqueName) {
-  setCoreFrame(LocalFrame::create(m_localFrameClientImpl.get(), host, owner,
+  setCoreFrame(LocalFrame::create(m_localFrameClientImpl.get(),
+                                  host ? &host->page() : nullptr, owner,
                                   m_interfaceProvider, m_interfaceRegistry));
   frame()->tree().setPrecalculatedName(name, uniqueName);
   // We must call init() after m_frame is assigned because it is referenced

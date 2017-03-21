@@ -24,7 +24,7 @@ LocalFrame* SingleChildLocalFrameClient::createFrame(
 
   LocalFrame* parentFrame = ownerElement->document().frame();
   auto* childClient = LocalFrameClientWithParent::create(parentFrame);
-  m_child = LocalFrame::create(childClient, parentFrame->host(), ownerElement);
+  m_child = LocalFrame::create(childClient, parentFrame->page(), ownerElement);
   m_child->createView(IntSize(500, 500), Color(), true /* transparent */);
   m_child->init();
 

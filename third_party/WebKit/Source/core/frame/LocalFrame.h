@@ -90,7 +90,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
  public:
   static LocalFrame* create(LocalFrameClient*,
-                            FrameHost*,
+                            Page*,
                             FrameOwner*,
                             InterfaceProvider* = nullptr,
                             InterfaceRegistry* = nullptr);
@@ -231,7 +231,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   friend class FrameNavigationDisabler;
 
   LocalFrame(LocalFrameClient*,
-             FrameHost*,
+             Page*,
              FrameOwner*,
              InterfaceProvider*,
              InterfaceRegistry*);

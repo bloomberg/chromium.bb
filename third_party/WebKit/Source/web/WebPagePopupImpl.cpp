@@ -307,8 +307,7 @@ bool WebPagePopupImpl::initializePage() {
   provideContextFeaturesTo(*m_page, WTF::makeUnique<PagePopupFeaturesClient>());
   DEFINE_STATIC_LOCAL(LocalFrameClient, emptyLocalFrameClient,
                       (EmptyLocalFrameClient::create()));
-  LocalFrame* frame =
-      LocalFrame::create(&emptyLocalFrameClient, &m_page->frameHost(), 0);
+  LocalFrame* frame = LocalFrame::create(&emptyLocalFrameClient, m_page, 0);
   frame->setPagePopupOwner(m_popupClient->ownerElement());
   frame->setView(FrameView::create(*frame));
   frame->init();

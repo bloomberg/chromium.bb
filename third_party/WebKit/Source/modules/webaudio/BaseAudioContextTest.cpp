@@ -100,7 +100,7 @@ class BaseAudioContextTest : public ::testing::Test {
   void createChildFrame() {
     m_childFrame = LocalFrame::create(
         MockCrossOriginLocalFrameClient::create(document().frame()),
-        document().frame()->host(), m_dummyFrameOwner.get());
+        document().frame()->page(), m_dummyFrameOwner.get());
     m_childFrame->setView(FrameView::create(*m_childFrame, IntSize(500, 500)));
     m_childFrame->init();
 
