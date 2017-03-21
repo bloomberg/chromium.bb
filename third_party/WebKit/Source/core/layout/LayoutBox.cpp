@@ -2103,7 +2103,7 @@ void LayoutBox::deleteLineBoxWrapper() {
 void LayoutBox::setSpannerPlaceholder(
     LayoutMultiColumnSpannerPlaceholder& placeholder) {
   // Not expected to change directly from one spanner to another.
-  RELEASE_ASSERT(!m_rareData || !m_rareData->m_spannerPlaceholder);
+  CHECK(!m_rareData || !m_rareData->m_spannerPlaceholder);
   ensureRareData().m_spannerPlaceholder = &placeholder;
 }
 

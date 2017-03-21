@@ -96,12 +96,12 @@ class ExpansionOpportunities {
       if (r->m_lineLayoutItem.isText()) {
         unsigned opportunitiesInRun = m_runsWithExpansions[i++];
 
-        RELEASE_ASSERT(opportunitiesInRun <= m_totalOpportunities);
+        CHECK_LE(opportunitiesInRun, m_totalOpportunities);
 
         // Don't justify for white-space: pre.
         if (r->m_lineLayoutItem.style()->whiteSpace() != EWhiteSpace::kPre) {
           InlineTextBox* textBox = toInlineTextBox(r->m_box);
-          RELEASE_ASSERT(m_totalOpportunities);
+          CHECK(m_totalOpportunities);
           int expansion = ((availableLogicalWidth - totalLogicalWidth) *
                            opportunitiesInRun / m_totalOpportunities)
                               .toInt();

@@ -87,9 +87,9 @@ void CellSpan::ensureConsistency(const unsigned maximumSpanSize) {
                 "Asserts below assume m_start is unsigned");
   static_assert(std::is_same<decltype(m_end), unsigned>::value,
                 "Asserts below assume m_end is unsigned");
-  RELEASE_ASSERT(m_start <= maximumSpanSize);
-  RELEASE_ASSERT(m_end <= maximumSpanSize);
-  RELEASE_ASSERT(m_start <= m_end);
+  CHECK_LE(m_start, maximumSpanSize);
+  CHECK_LE(m_end, maximumSpanSize);
+  CHECK_LE(m_start, m_end);
 }
 
 LayoutTableSection::CellStruct::CellStruct() : inColSpan(false) {}
@@ -940,7 +940,7 @@ int LayoutTableSection::calcRowLogicalHeight() {
 void LayoutTableSection::layout() {
   ASSERT(needsLayout());
   LayoutAnalyzer::Scope analyzer(*this);
-  RELEASE_ASSERT(!needsCellRecalc());
+  CHECK(!needsCellRecalc());
   ASSERT(!table()->needsSectionRecalc());
 
   // addChild may over-grow m_grid but we don't want to throw away the memory
@@ -1535,7 +1535,7 @@ CellSpan LayoutTableSection::dirtiedRows(const LayoutRect& damageRect) const {
 
   // To issue paint invalidations for the border we might need to paint
   // invalidate the first or last row even if they are not spanned themselves.
-  RELEASE_ASSERT(coveredRows.start() < m_rowPos.size());
+  CHECK_LT(coveredRows.start(), m_rowPos.size());
   if (coveredRows.start() == m_rowPos.size() - 1 &&
       m_rowPos[m_rowPos.size() - 1] + table()->outerBorderAfter() >=
           damageRect.y())
@@ -1555,14 +1555,14 @@ CellSpan LayoutTableSection::dirtiedEffectiveColumns(
   if (m_forceSlowPaintPathWithOverflowingCell)
     return fullTableEffectiveColumnSpan();
 
-  RELEASE_ASSERT(table()->numEffectiveColumns());
+  CHECK(table()->numEffectiveColumns());
   CellSpan coveredColumns = spannedEffectiveColumns(damageRect);
 
   const Vector<int>& columnPos = table()->effectiveColumnPositions();
   // To issue paint invalidations for the border we might need to paint
   // invalidate the first or last column even if they are not spanned
   // themselves.
-  RELEASE_ASSERT(coveredColumns.start() < columnPos.size());
+  CHECK_LT(coveredColumns.start(), columnPos.size());
   if (coveredColumns.start() == columnPos.size() - 1 &&
       columnPos[columnPos.size() - 1] + table()->outerBorderEnd() >=
           damageRect.x())

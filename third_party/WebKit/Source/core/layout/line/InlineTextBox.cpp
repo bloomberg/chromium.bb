@@ -648,8 +648,8 @@ TextRun InlineTextBox::constructTextRun(
   unsigned length = len();
   // Ensure |this| is in sync with the corresponding LayoutText. Checking here
   // has less binary size/perf impact than in StringView().
-  RELEASE_ASSERT(startPos <= string.length() &&
-                 length <= string.length() - startPos);
+  CHECK_LE(startPos, string.length());
+  CHECK_LE(length, string.length() - startPos);
   return constructTextRun(style, StringView(string, startPos, length),
                           getLineLayoutItem().textLength() - startPos,
                           charactersWithHyphen);

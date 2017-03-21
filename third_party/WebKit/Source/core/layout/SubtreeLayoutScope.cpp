@@ -36,11 +36,11 @@
 namespace blink {
 
 SubtreeLayoutScope::SubtreeLayoutScope(LayoutObject& root) : m_root(root) {
-  RELEASE_ASSERT(m_root.document().view()->isInPerformLayout());
+  CHECK(m_root.document().view()->isInPerformLayout());
 }
 
 SubtreeLayoutScope::~SubtreeLayoutScope() {
-  RELEASE_ASSERT(!m_root.needsLayout());
+  CHECK(!m_root.needsLayout());
 
 #if DCHECK_IS_ON()
   for (auto* layoutObject : m_layoutObjectsToLayout)

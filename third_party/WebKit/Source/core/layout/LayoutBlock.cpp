@@ -299,7 +299,7 @@ void LayoutBlock::addChildBeforeDescendant(LayoutObject* newChild,
   // We really can't go on if what we have found isn't anonymous. We're not
   // supposed to use some random non-anonymous object and put the child there.
   // That's a recipe for security issues.
-  RELEASE_ASSERT(beforeDescendantContainer->isAnonymous());
+  CHECK(beforeDescendantContainer->isAnonymous());
 
   // If the requested insertion point is not one of our children, then this is
   // because there is an anonymous container within this object that contains

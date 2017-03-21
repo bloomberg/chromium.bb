@@ -211,11 +211,11 @@ class NGLayoutInlineItemRange {
   unsigned Size() const { return size_; }
 
   NGLayoutInlineItem& operator[](unsigned index) {
-    RELEASE_ASSERT(index < size_);
+    CHECK_LT(index, size_);
     return start_item_[index];
   }
   const NGLayoutInlineItem& operator[](unsigned index) const {
-    RELEASE_ASSERT(index < size_);
+    CHECK_LT(index, size_);
     return start_item_[index];
   }
 

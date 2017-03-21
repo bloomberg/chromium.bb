@@ -2854,7 +2854,7 @@ void LayoutObject::removeFromLayoutFlowThreadRecursive(
   if (layoutFlowThread && layoutFlowThread != this)
     layoutFlowThread->flowThreadDescendantWillBeRemoved(this);
   setIsInsideFlowThread(false);
-  RELEASE_ASSERT(!spannerPlaceholder());
+  CHECK(!spannerPlaceholder());
 }
 
 void LayoutObject::destroyAndCleanupAnonymousWrappers() {

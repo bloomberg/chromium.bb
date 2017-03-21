@@ -365,7 +365,8 @@ NGLayoutInlineItemRange::NGLayoutInlineItemRange(
     : start_item_(&(*items)[start_index]),
       size_(end_index - start_index),
       start_index_(start_index) {
-  RELEASE_ASSERT(start_index <= end_index && end_index <= items->size());
+  CHECK_LE(start_index, end_index);
+  CHECK_LE(end_index, items->size());
 }
 
 }  // namespace blink
