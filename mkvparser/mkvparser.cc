@@ -4979,29 +4979,27 @@ bool PrimaryChromaticity::Parse(IMkvReader* reader, long long read_pos,
   if (!reader)
     return false;
 
-  std::auto_ptr<PrimaryChromaticity> chromaticity_ptr;
+  if (!*chromaticity)
+    *chromaticity = new PrimaryChromaticity();
 
-  if (!*chromaticity) {
-    chromaticity_ptr.reset(new PrimaryChromaticity());
-  } else {
-    chromaticity_ptr.reset(*chromaticity);
-  }
-
-  if (!chromaticity_ptr.get())
+  if (!*chromaticity)
     return false;
 
-  float* value = is_x ? &chromaticity_ptr->x : &chromaticity_ptr->y;
+  PrimaryChromaticity* pc = *chromaticity;
+  float* value = is_x ? &pc->x : &pc->y;
 
   double parser_value = 0;
-  const long long value_parse_status =
+  const long long parse_status =
       UnserializeFloat(reader, read_pos, value_size, parser_value);
+
+  if (parse_status < 0 || parser_value < FLT_MIN || parser_value > FLT_MAX)
+    return false;
 
   *value = static_cast<float>(parser_value);
 
-  if (value_parse_status < 0 || *value < 0.0 || *value > 1.0)
+  if (*value < 0.0 || *value > 1.0)
     return false;
 
-  *chromaticity = chromaticity_ptr.release();
   return true;
 }
 
