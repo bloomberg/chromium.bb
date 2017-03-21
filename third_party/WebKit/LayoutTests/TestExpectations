@@ -2669,3 +2669,5 @@ crbug.com/703518 virtual/threaded/inspector/tracing/worker-js-frames.html [ Fail
 crbug.com/703533 [ Mac ] shapedetection/detection-security-test.html  [ Crash Failure Pass ]
 crbug.com/674720 http/tests/loading/preload-img-test.html [ Pass Failure ]
 crbug.com/674720 virtual/mojo-loading/http/tests/loading/preload-img-test.html [ Pass Failure ]
+crbug.com/703650 virtual/enable_wasm/http/tests/wasm/wasm_serialization_tests.html [ Skip ]
+crbug.com/703650 virtual/enable_wasm/http/tests/wasm/wasm_indexeddb_test.html [ Skip ]
