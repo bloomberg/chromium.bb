@@ -18,6 +18,7 @@
 #include "core/layout/ng/ng_length_utils.h"
 #include "core/layout/ng/ng_line_builder.h"
 #include "core/layout/ng/ng_out_of_flow_layout_part.h"
+#include "core/layout/ng/ng_space_utils.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/LengthFunctions.h"
 #include "wtf/Optional.h"
@@ -39,48 +40,6 @@ bool ShouldShrinkToFit(const NGConstraintSpace& parent_space,
 
   return child_style.display() == EDisplay::kInlineBlock ||
          child_style.isFloating() || !is_in_parallel_flow;
-}
-
-// Returns max of 2 {@code WTF::Optional} values.
-template <typename T>
-WTF::Optional<T> OptionalMax(const WTF::Optional<T>& value1,
-                             const WTF::Optional<T>& value2) {
-  if (value1 && value2) {
-    return std::max(value1.value(), value2.value());
-  } else if (value1) {
-    return value1;
-  }
-  return value2;
-}
-
-WTF::Optional<LayoutUnit> GetClearanceOffset(
-    const std::shared_ptr<NGExclusions>& exclusions,
-    const ComputedStyle& style) {
-  const NGExclusion* right_exclusion = exclusions->last_right_float;
-  const NGExclusion* left_exclusion = exclusions->last_left_float;
-
-  WTF::Optional<LayoutUnit> left_offset;
-  if (left_exclusion) {
-    left_offset = left_exclusion->rect.BlockEndOffset();
-  }
-  WTF::Optional<LayoutUnit> right_offset;
-  if (right_exclusion) {
-    right_offset = right_exclusion->rect.BlockEndOffset();
-  }
-
-  switch (style.clear()) {
-    case EClear::kNone:
-      return WTF::nullopt;  // nothing to do here.
-    case EClear::kLeft:
-      return left_offset;
-    case EClear::kRight:
-      return right_offset;
-    case EClear::kBoth:
-      return OptionalMax<LayoutUnit>(left_offset, right_offset);
-    default:
-      ASSERT_NOT_REACHED();
-  }
-  return WTF::nullopt;
 }
 
 // Positions pending floats stored on the fragment builder starting from
@@ -106,41 +65,6 @@ void PositionPendingFloats(const LayoutUnit origin_point_block_offset,
     builder->AddFloatingObject(floating_object, float_fragment_offset);
   }
   builder->MutableUnpositionedFloats().clear();
-}
-
-// Whether an in-flow block-level child creates a new formatting context.
-//
-// This will *NOT* check the following cases:
-//  - The child is out-of-flow, e.g. floating or abs-pos.
-//  - The child is a inline-level, e.g. "display: inline-block".
-//  - The child establishes a new formatting context, but should be a child of
-//    another layout algorithm, e.g. "display: table-caption" or flex-item.
-bool IsNewFormattingContextForInFlowBlockLevelChild(
-    const NGConstraintSpace& space,
-    const ComputedStyle& style) {
-  // TODO(layout-dev): This doesn't capture a few cases which can't be computed
-  // directly from style yet:
-  //  - The child is a <fieldset>.
-  //  - "column-span: all" is set on the child (requires knowledge that we are
-  //    in a multi-col formatting context).
-  //    (https://drafts.csswg.org/css-multicol-1/#valdef-column-span-all)
-
-  if (style.specifiesColumns() || style.containsPaint() ||
-      style.containsLayout())
-    return true;
-
-  if (!style.isOverflowVisible())
-    return true;
-
-  EDisplay display = style.display();
-  if (display == EDisplay::kGrid || display == EDisplay::kFlex ||
-      display == EDisplay::kWebkitBox)
-    return true;
-
-  if (space.WritingMode() != FromPlatformWritingMode(style.getWritingMode()))
-    return true;
-
-  return false;
 }
 
 // Whether we've run out of space in this flow. If so, there will be no work
