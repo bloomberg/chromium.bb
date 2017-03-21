@@ -18,6 +18,7 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/omnibox/clipboard_utils.h"
@@ -140,8 +141,7 @@ SearchTabHelper::SearchTabHelper(content::WebContents* web_contents)
           web_contents,
           this,
           base::WrapUnique(new SearchIPCRouterPolicyImpl(web_contents))),
-      instant_service_(nullptr),
-      omnibox_view_(nullptr) {
+      instant_service_(nullptr) {
   if (!is_search_enabled_)
     return;
 
@@ -195,10 +195,6 @@ void SearchTabHelper::SetSuggestionToPrefetch(
 void SearchTabHelper::Submit(const base::string16& text,
                              const EmbeddedSearchRequestParams& params) {
   ipc_router_.Submit(text, params);
-}
-
-void SearchTabHelper::OnTabAttachedToWindow(BrowserWindow* window) {
-  omnibox_view_ = window->GetLocationBar()->GetOmniboxView();
 }
 
 void SearchTabHelper::OnTabActivated() {
@@ -344,7 +340,8 @@ void SearchTabHelper::MostVisitedItemsChanged(
 void SearchTabHelper::FocusOmnibox(OmniboxFocusState state) {
 // TODO(kmadhusu): Move platform specific code from here and get rid of #ifdef.
 #if !defined(OS_ANDROID)
-  if (!omnibox_view_)
+  OmniboxView* omnibox_view = GetOmniboxView();
+  if (!omnibox_view)
     return;
 
   // Do not add a default case in the switch block for the following reasons:
@@ -356,25 +353,25 @@ void SearchTabHelper::FocusOmnibox(OmniboxFocusState state) {
   // doing nothing instead of crashing the browser process (intentional no-op).
   switch (state) {
     case OMNIBOX_FOCUS_VISIBLE:
-      omnibox_view_->SetFocus();
-      omnibox_view_->model()->SetCaretVisibility(true);
+      omnibox_view->SetFocus();
+      omnibox_view->model()->SetCaretVisibility(true);
       break;
     case OMNIBOX_FOCUS_INVISIBLE:
-      omnibox_view_->SetFocus();
-      omnibox_view_->model()->SetCaretVisibility(false);
+      omnibox_view->SetFocus();
+      omnibox_view->model()->SetCaretVisibility(false);
       // If the user clicked on the fakebox, any text already in the omnibox
       // should get cleared when they start typing. Selecting all the existing
       // text is a convenient way to accomplish this. It also gives a slight
       // visual cue to users who really understand selection state about what
       // will happen if they start typing.
-      omnibox_view_->SelectAll(false);
-      omnibox_view_->ShowImeIfNeeded();
+      omnibox_view->SelectAll(false);
+      omnibox_view->ShowImeIfNeeded();
       break;
     case OMNIBOX_FOCUS_NONE:
       // Remove focus only if the popup is closed. This will prevent someone
       // from changing the omnibox value and closing the popup without user
       // interaction.
-      if (!omnibox_view_->model()->popup_model()->IsOpen())
+      if (!omnibox_view->model()->popup_model()->IsOpen())
         web_contents()->Focus();
       break;
   }
@@ -430,26 +427,27 @@ void SearchTabHelper::OnLogMostVisitedNavigation(
 void SearchTabHelper::PasteIntoOmnibox(const base::string16& text) {
 // TODO(kmadhusu): Move platform specific code from here and get rid of #ifdef.
 #if !defined(OS_ANDROID)
-  if (!omnibox_view_)
+  OmniboxView* omnibox_view = GetOmniboxView();
+  if (!omnibox_view)
     return;
   // The first case is for right click to paste, where the text is retrieved
   // from the clipboard already sanitized. The second case is needed to handle
   // drag-and-drop value and it has to be sanitazed before setting it into the
   // omnibox.
-  base::string16 text_to_paste =
-      text.empty() ? GetClipboardText()
-                   : omnibox_view_->SanitizeTextForPaste(text);
+  base::string16 text_to_paste = text.empty()
+                                     ? GetClipboardText()
+                                     : omnibox_view->SanitizeTextForPaste(text);
 
   if (text_to_paste.empty())
     return;
 
-  if (!omnibox_view_->model()->has_focus())
-    omnibox_view_->SetFocus();
+  if (!omnibox_view->model()->has_focus())
+    omnibox_view->SetFocus();
 
-  omnibox_view_->OnBeforePossibleChange();
-  omnibox_view_->model()->OnPaste();
-  omnibox_view_->SetUserText(text_to_paste);
-  omnibox_view_->OnAfterPossibleChange(true);
+  omnibox_view->OnBeforePossibleChange();
+  omnibox_view->model()->OnPaste();
+  omnibox_view->SetUserText(text_to_paste);
+  omnibox_view->OnAfterPossibleChange(true);
 #endif
 }
 
@@ -489,7 +487,8 @@ void SearchTabHelper::UpdateMode(bool update_origin) {
   if (!update_origin)
     origin = model_.mode().origin;
 
-  if (omnibox_view_ && omnibox_view_->model()->user_input_in_progress())
+  OmniboxView* omnibox_view = GetOmniboxView();
+  if (omnibox_view && omnibox_view->model()->user_input_in_progress())
     type = SearchMode::MODE_SEARCH_SUGGESTIONS;
 
   SearchMode old_mode(model_.mode());
@@ -514,11 +513,31 @@ void SearchTabHelper::DetermineIfPageSupportsInstant() {
   }
 }
 
+const OmniboxView* SearchTabHelper::GetOmniboxView() const {
+#if defined(OS_ANDROID)
+  return nullptr;
+#else
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
+  if (!browser)
+    return nullptr;
+
+  return browser->window()->GetLocationBar()->GetOmniboxView();
+#endif  // OS_ANDROID
+}
+
+OmniboxView* SearchTabHelper::GetOmniboxView() {
+  return const_cast<OmniboxView*>(
+      const_cast<const SearchTabHelper*>(this)->GetOmniboxView());
+}
+
 Profile* SearchTabHelper::profile() const {
   return Profile::FromBrowserContext(web_contents_->GetBrowserContext());
 }
 
 bool SearchTabHelper::IsInputInProgress() const {
-  return !model_.mode().is_ntp() && omnibox_view_ &&
-         omnibox_view_->model()->focus_state() == OMNIBOX_FOCUS_VISIBLE;
+  if (model_.mode().is_ntp())
+    return false;
+  const OmniboxView* omnibox_view = GetOmniboxView();
+  return omnibox_view &&
+         omnibox_view->model()->focus_state() == OMNIBOX_FOCUS_VISIBLE;
 }

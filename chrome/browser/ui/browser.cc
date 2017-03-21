@@ -971,8 +971,6 @@ void Browser::TabInsertedAt(TabStripModel* tab_strip_model,
 
   SessionTabHelper::FromWebContents(contents)->SetWindowID(session_id());
 
-  SearchTabHelper::FromWebContents(contents)->OnTabAttachedToWindow(window_);
-
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_PARENTED,
       content::Source<content::WebContents>(contents),

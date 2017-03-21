@@ -27,7 +27,6 @@ class WebContents;
 struct LoadCommittedDetails;
 }
 
-class BrowserWindow;
 class GURL;
 class InstantService;
 class InstantTabTest;
@@ -74,10 +73,6 @@ class SearchTabHelper : public content::WebContentsObserver,
   // Tells the page that the user pressed Enter in the omnibox.
   void Submit(const base::string16& text,
               const EmbeddedSearchRequestParams& params);
-
-  // Called when the tab corresponding to |this| instance is attached to a
-  // browser window.
-  void OnTabAttachedToWindow(BrowserWindow* window);
 
   // Called when the tab corresponding to |this| instance is activated.
   void OnTabActivated();
@@ -172,6 +167,9 @@ class SearchTabHelper : public content::WebContentsObserver,
   // received.
   void DetermineIfPageSupportsInstant();
 
+  OmniboxView* GetOmniboxView();
+  const OmniboxView* GetOmniboxView() const;
+
   Profile* profile() const;
 
   // Returns whether input is in progress, i.e. if the omnibox has focus and the
@@ -188,8 +186,6 @@ class SearchTabHelper : public content::WebContentsObserver,
   SearchIPCRouter ipc_router_;
 
   InstantService* instant_service_;
-
-  OmniboxView* omnibox_view_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchTabHelper);
 };

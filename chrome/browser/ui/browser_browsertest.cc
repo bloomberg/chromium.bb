@@ -56,6 +56,7 @@
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
+#include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
 #include "chrome/browser/ui/tabs/pinned_tab_codec.h"
@@ -74,6 +75,7 @@
 #include "components/app_modal/javascript_app_modal_dialog.h"
 #include "components/app_modal/native_app_modal_dialog.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/omnibox/common/omnibox_focus_state.h"
 #include "components/prefs/pref_service.h"
 #include "components/sessions/core/base_session_service_test_helper.h"
 #include "components/translate/core/browser/language_state.h"
@@ -1511,6 +1513,51 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ShouldShowLocationBar) {
   // from their starting origin.
   EXPECT_TRUE(
       app_browser->SupportsWindowFeature(Browser::FEATURE_LOCATIONBAR));
+
+  DevToolsWindowTesting::CloseDevToolsWindowSync(devtools_window);
+}
+
+// Regression test for crbug.com/702505.
+IN_PROC_BROWSER_TEST_F(BrowserTest, ReattachDevToolsWindow) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  GURL ntp_url = search::GetNewTabPageURL(browser()->profile());
+  ui_test_utils::NavigateToURL(browser(), ntp_url);
+
+  // Open a devtools window.
+  DevToolsWindow* devtools_window =
+      DevToolsWindowTesting::OpenDevToolsWindowSync(browser(),
+                                                    /*is_docked=*/true);
+  ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
+
+  // Grab its main web contents.
+  content::WebContents* devtools_main_web_contents =
+      DevToolsWindow::GetInTabWebContents(
+          devtools_window->GetInspectedWebContents(), nullptr);
+  ASSERT_NE(web_contents, devtools_main_web_contents);
+
+  // Detach the devtools window.
+  DevToolsUIBindings::Delegate* devtools_delegate =
+      static_cast<DevToolsUIBindings::Delegate*>(devtools_window);
+  devtools_delegate->SetIsDocked(false);
+  // This should have created a new dev tools browser.
+  ASSERT_EQ(2u, chrome::GetBrowserCount(browser()->profile()));
+
+  // Re-attach the dev tools window. This resets its Browser*.
+  devtools_delegate->SetIsDocked(true);
+  // Wait until the browser actually gets closed.
+  content::RunAllPendingInMessageLoop();
+  ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
+
+  // Do something that will make SearchTabHelper access its OmniboxView. This
+  // should not crash, even though the Browser association and thus the
+  // OmniboxView* has changed, and the old OmniboxView has been deleted.
+  SearchTabHelper* search_tab_helper =
+      SearchTabHelper::FromWebContents(devtools_main_web_contents);
+  SearchIPCRouter::Delegate* search_ipc_router_delegate =
+      static_cast<SearchIPCRouter::Delegate*>(search_tab_helper);
+  search_ipc_router_delegate->FocusOmnibox(OMNIBOX_FOCUS_INVISIBLE);
 
   DevToolsWindowTesting::CloseDevToolsWindowSync(devtools_window);
 }
