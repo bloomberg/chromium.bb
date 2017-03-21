@@ -38,3 +38,6 @@ class GpuProcessExpectations(GpuTestExpectations):
     # There is currently no entry in kSoftwareRenderingListJson that enables
     # a software GL driver on Android.
     self.Skip('GpuProcess_software_gpu_process', ['android'])
+
+    # Seems to have become flaky on Windows recently.
+    self.Flaky('GpuProcess_only_one_workaround', ['win'], bug=700522)
