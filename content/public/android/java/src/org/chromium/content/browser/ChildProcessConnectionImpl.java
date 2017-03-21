@@ -91,14 +91,12 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
         final String[] mCommandLine;
         final FileDescriptorInfo[] mFilesToBeMapped;
         final IChildProcessCallback mCallback;
-        final Bundle mSharedRelros;
 
         ConnectionParams(String[] commandLine, FileDescriptorInfo[] filesToBeMapped,
-                IChildProcessCallback callback, Bundle sharedRelros) {
+                IChildProcessCallback callback) {
             mCommandLine = commandLine;
             mFilesToBeMapped = filesToBeMapped;
             mCallback = callback;
-            mSharedRelros = sharedRelros;
         }
     }
 
@@ -350,12 +348,8 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
     }
 
     @Override
-    public void setupConnection(
-            String[] commandLine,
-            FileDescriptorInfo[] filesToBeMapped,
-            IChildProcessCallback processCallback,
-            ConnectionCallback connectionCallback,
-            Bundle sharedRelros) {
+    public void setupConnection(String[] commandLine, FileDescriptorInfo[] filesToBeMapped,
+            IChildProcessCallback processCallback, ConnectionCallback connectionCallback) {
         synchronized (mLock) {
             assert mConnectionParams == null;
             if (mServiceDisconnected) {
@@ -366,8 +360,8 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
             try {
                 TraceEvent.begin("ChildProcessConnectionImpl.setupConnection");
                 mConnectionCallback = connectionCallback;
-                mConnectionParams = new ConnectionParams(
-                        commandLine, filesToBeMapped, processCallback, sharedRelros);
+                mConnectionParams =
+                        new ConnectionParams(commandLine, filesToBeMapped, processCallback);
                 // Run the setup if the service is already connected. If not,
                 // doConnectionSetupLocked() will be called from onServiceConnected().
                 if (mServiceConnectComplete) {
@@ -405,9 +399,8 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
             assert mServiceConnectComplete && mService != null;
             assert mConnectionParams != null;
 
-            Bundle bundle =
-                    ChildProcessLauncher.createsServiceBundle(mConnectionParams.mCommandLine,
-                            mConnectionParams.mFilesToBeMapped, mConnectionParams.mSharedRelros);
+            Bundle bundle = ChildProcessLauncher.createsServiceBundle(
+                    mConnectionParams.mCommandLine, mConnectionParams.mFilesToBeMapped);
             try {
                 mPid = mService.setupConnection(bundle, mConnectionParams.mCallback);
                 assert mPid != 0 : "Child service claims to be run by a process of pid=0.";

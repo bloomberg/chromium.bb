@@ -4,8 +4,6 @@
 
 package org.chromium.content.browser;
 
-import android.os.Bundle;
-
 import org.chromium.base.process_launcher.ChildProcessCreationParams;
 import org.chromium.content.common.FileDescriptorInfo;
 import org.chromium.content.common.IChildProcessCallback;
@@ -88,12 +86,8 @@ public interface ChildProcessConnection {
      * @param connectionCallback will be called exactly once after the connection is set up or the
      *                           setup fails
      */
-    void setupConnection(
-            String[] commandLine,
-            FileDescriptorInfo[] filesToBeMapped,
-            IChildProcessCallback processCallback,
-            ConnectionCallback connectionCallback,
-            Bundle sharedRelros);
+    void setupConnection(String[] commandLine, FileDescriptorInfo[] filesToBeMapped,
+            IChildProcessCallback processCallback, ConnectionCallback connectionCallback);
 
     /**
      * Terminates the connection to IChildProcessService, closing all bindings. It is safe to call

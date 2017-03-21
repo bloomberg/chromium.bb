@@ -765,13 +765,13 @@ public class ChildProcessLauncher {
      * @param linkerParams Linker params to start the service.
      */
     protected static Bundle createsServiceBundle(
-            String[] commandLine, FileDescriptorInfo[] filesToBeMapped, Bundle sharedRelros) {
+            String[] commandLine, FileDescriptorInfo[] filesToBeMapped) {
         Bundle bundle = new Bundle();
         bundle.putStringArray(ChildProcessConstants.EXTRA_COMMAND_LINE, commandLine);
         bundle.putParcelableArray(ChildProcessConstants.EXTRA_FILES, filesToBeMapped);
         bundle.putInt(ChildProcessConstants.EXTRA_CPU_COUNT, CpuFeatures.getCount());
         bundle.putLong(ChildProcessConstants.EXTRA_CPU_FEATURES, CpuFeatures.getMask());
-        bundle.putBundle(Linker.EXTRA_LINKER_SHARED_RELROS, sharedRelros);
+        bundle.putBundle(Linker.EXTRA_LINKER_SHARED_RELROS, Linker.getInstance().getSharedRelros());
         return bundle;
     }
 
@@ -803,11 +803,8 @@ public class ChildProcessLauncher {
                 };
 
         assert callbackType != CALLBACK_FOR_UNKNOWN_PROCESS;
-        connection.setupConnection(commandLine,
-                                   filesToBeMapped,
-                                   createCallback(childProcessId, callbackType),
-                                   connectionCallback,
-                                   Linker.getInstance().getSharedRelros());
+        connection.setupConnection(commandLine, filesToBeMapped,
+                createCallback(childProcessId, callbackType), connectionCallback);
     }
 
     /**

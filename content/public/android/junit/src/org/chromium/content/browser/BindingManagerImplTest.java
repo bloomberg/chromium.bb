@@ -10,7 +10,6 @@ import static android.content.ComponentCallbacks2.TRIM_MEMORY_RUNNING_MODERATE;
 
 import android.app.Activity;
 import android.app.Application;
-import android.os.Bundle;
 import android.util.Pair;
 
 import org.junit.Assert;
@@ -127,8 +126,7 @@ public class BindingManagerImplTest {
 
         @Override
         public void setupConnection(String[] commandLine, FileDescriptorInfo[] filesToBeMapped,
-                IChildProcessCallback processCallback, ConnectionCallback connectionCallbacks,
-                Bundle sharedRelros) {
+                IChildProcessCallback processCallback, ConnectionCallback connectionCallbacks) {
             throw new UnsupportedOperationException();
         }
 
