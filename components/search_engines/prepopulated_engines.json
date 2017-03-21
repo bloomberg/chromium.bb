@@ -30,7 +30,7 @@
 
     // Increment this if you change the data in ways that mean users with
     // existing data should get a new version.
-    "kCurrentDataVersion": 97
+    "kCurrentDataVersion": 98
   },
 
   // The following engines are included in country lists and are added to the
@@ -39,8 +39,8 @@
     "aol": {
       "name": "AOL",
       "keyword": "aol.com",
-      "favicon_url": "http://search.aol.com/favicon.ico",
-      "search_url": "http://search.aol.com/aol/search?q={searchTerms}",
+      "favicon_url": "https://search.aol.com/favicon.ico",
+      "search_url": "https://search.aol.com/aol/search?q={searchTerms}",
       "suggest_url": "http://autocomplete.search.aol.com/autocomplete/get?output=json&it=&q={searchTerms}",
       "type": "SEARCH_ENGINE_AOL",
       "id": 35
@@ -78,8 +78,8 @@
     "baidu": {
       "name": "\u767e\u5ea6",
       "keyword": "baidu.com",
-      "favicon_url": "http://www.baidu.com/favicon.ico",
-      "search_url": "http://www.baidu.com/#ie={inputEncoding}&wd={searchTerms}",
+      "favicon_url": "https://www.baidu.com/favicon.ico",
+      "search_url": "https://www.baidu.com/#ie={inputEncoding}&wd={searchTerms}",
       "suggest_url": "http://suggestion.baidu.com/su?wd={searchTerms}&action=opensearch&ie={inputEncoding}",
       "type": "SEARCH_ENGINE_BAIDU",
       "id": 21
@@ -134,8 +134,8 @@
     "kvasir": {
       "name": "Kvasir",
       "keyword": "kvasir.no",
-      "favicon_url": "http://kvasir.no/grafikk/favicon.ico",
-      "search_url": "http://kvasir.no/alle?q={searchTerms}",
+      "favicon_url": "https://kvasir.no/grafikk/favicon.ico",
+      "search_url": "https://kvasir.no/alle?q={searchTerms}",
       "type": "SEARCH_ENGINE_KVASIR",
       "id": 73
     },
@@ -143,10 +143,10 @@
     "mail_ru": {
       "name": "@MAIL.RU",
       "keyword": "mail.ru",
-      "favicon_url": "http://go.imgsmail.ru/favicon.ico",
-      "search_url": "http://go.mail.ru/search?q={searchTerms}",
+      "favicon_url": "https://go.imgsmail.ru/favicon.ico",
+      "search_url": "https://go.mail.ru/search?q={searchTerms}",
       "encoding": "windows-1251",
-      "suggest_url": "http://suggests.go.mail.ru/chrome?q={searchTerms}",
+      "suggest_url": "https://suggests.go.mail.ru/chrome?q={searchTerms}",
       "type": "SEARCH_ENGINE_MAILRU",
       "id": 83
     },
@@ -154,8 +154,8 @@
     "najdi": {
       "name": "Najdi.si",
       "keyword": "najdi.si",
-      "favicon_url": "http://www.najdi.si/assets/PROD-1.4.10/ctx/images/favicon.ico",
-      "search_url": "http://www.najdi.si/search.jsp?q={searchTerms}",
+      "favicon_url": "https://www.najdi.si/assets/PROD-1.5.16/ctx/images/favicon.ico",
+      "search_url": "https://www.najdi.si/search.jsp?q={searchTerms}",
       "type": "SEARCH_ENGINE_NAJDI",
       "id": 87
     },
@@ -182,9 +182,9 @@
     "seznam": {
       "name": "Seznam",
       "keyword": "seznam.cz",
-      "favicon_url": "http://search.seznam.cz/r/img/favicon.ico",
-      "search_url": "http://search.seznam.cz/?q={searchTerms}",
-      "suggest_url": "http://suggest.fulltext.seznam.cz/fulltext_ff?phrase={searchTerms}",
+      "favicon_url": "https://search.seznam.cz/r/img/favicon.ico",
+      "search_url": "https://search.seznam.cz/?q={searchTerms}",
+      "suggest_url": "https://suggest.fulltext.seznam.cz/fulltext_ff?phrase={searchTerms}",
       "type": "SEARCH_ENGINE_SEZNAM",
       "id": 25
     },
@@ -212,8 +212,8 @@
     "vinden": {
       "name": "Vinden.nl",
       "keyword": "vinden.nl",
-      "favicon_url": "http://www.vinden.nl/favicon.ico",
-      "search_url": "http://www.vinden.nl/?q={searchTerms}",
+      "favicon_url": "https://www.vinden.nl/favicon.ico",
+      "search_url": "https://www.vinden.nl/?q={searchTerms}",
       "type": "SEARCH_ENGINE_VINDEN",
       "id": 53
     },
@@ -412,9 +412,9 @@
     "yahoo_jp": {
       "name": "Yahoo! JAPAN",
       "keyword": "yahoo.co.jp",
-      "favicon_url": "http://search.yahoo.co.jp/favicon.ico",
-      "search_url": "http://search.yahoo.co.jp/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
-      "suggest_url": "http://search.yahooapis.jp/AssistSearchService/V2/webassistSearch?p={searchTerms}&appid=oQsoxcyxg66enp0TYoirkKoryq6rF8bK76mW0KYxZ0v0WPLtn.Lix6wy8F_LwGWHUII-&output=fxjson&fr=crmas",
+      "favicon_url": "https://search.yahoo.co.jp/favicon.ico",
+      "search_url": "https://search.yahoo.co.jp/search?ei={inputEncoding}&fr=crmas&p={searchTerms}",
+      "suggest_url": "https://search.yahooapis.jp/AssistSearchService/V2/webassistSearch?p={searchTerms}&appid=oQsoxcyxg66enp0TYoirkKoryq6rF8bK76mW0KYxZ0v0WPLtn.Lix6wy8F_LwGWHUII-&output=fxjson&fr=crmas",
       "type": "SEARCH_ENGINE_YAHOO",
       "id": 2
     },
@@ -683,7 +683,9 @@
       "search_url": "http://search.avg.com/search?q={searchTerms}",
       "alternate_urls": [
         "http://isearch.avg.com/search?q={searchTerms}",
-        "http://search.avg.com/route/?q={searchTerms}&lng={language}"
+        "http://search.avg.com/route/?q={searchTerms}&lng={language}",
+        "https://isearch.avg.com/search?q={searchTerms}",
+        "https://search.avg.com/route/?q={searchTerms}&lng={language}"
       ],
       "type": "SEARCH_ENGINE_AVG",
       "id": 50
@@ -767,9 +769,13 @@
     "goo": {
       "name": "goo",
       "keyword": "search.goo.ne.jp",
-      "favicon_url": "http://goo.ne.jp/favicon.ico",
-      "search_url": "http://search.goo.ne.jp/web.jsp?MT={searchTerms}&IE={inputEncoding}",
-      "suggest_url": "http://search.goo.ne.jp/sgt.jsp?MT={searchTerms}&CL=plugin&FM=json&IE={inputEncoding}",
+      "favicon_url": "https://search.goo.ne.jp/cdn/common/img/favicon.ico",
+      "search_url": "https://search.goo.ne.jp/web.jsp?MT={searchTerms}&IE={inputEncoding}",
+      "suggest_url": "https://search.goo.ne.jp/sgt.jsp?MT={searchTerms}&CL=plugin&FM=json&IE={inputEncoding}",
+      "alternate_urls": [
+        "http://search.goo.ne.jp/web.jsp?MT={searchTerms}&IE={inputEncoding}",
+        "http://search.goo.ne.jp/sgt.jsp?MT={searchTerms}&CL=plugin&FM=json&IE={inputEncoding}"
+      ],
       "encoding": "EUC-JP",
       "type": "SEARCH_ENGINE_GOO",
       "id": 23
@@ -837,6 +843,10 @@
       "favicon_url": "http://www.neti.ee/favicon.ico",
       "search_url": "http://www.neti.ee/cgi-bin/otsing?query={searchTerms}",
       "suggest_url": "http://www.neti.ee/api/suggestOS?suggestQuery={searchTerms}",
+      "alternate_urls": [
+        "https://www.neti.ee/cgi-bin/otsing?query={searchTerms}&src=web",
+        "https://www.neti.ee/api/suggestOS?suggestVersion=1&suggestQuery={searchTerms}"
+      ],
       "encoding": "ISO-8859-1",
       "type": "SEARCH_ENGINE_NETI",
       "id": 44
@@ -865,9 +875,13 @@
     "rambler": {
       "name": "\u0420\u0430\u043c\u0431\u043b\u0435\u0440",
       "keyword": "rambler.ru",
-      "favicon_url": "http://nova.rambler.ru/static/blocks/images/favicon.ico",
+      "favicon_url": "http://i.rl0.ru/2011/icons/rambler.ico",
       "search_url": "http://nova.rambler.ru/search?query={searchTerms}",
       "suggest_url": "http://nova.rambler.ru/suggest?v=3&query={searchTerms}",
+      "alternate_urls": [
+        "https://nova.rambler.ru/search?query={searchTerms}",
+        "https://nova.rambler.ru/suggest?v=3&query={searchTerms}"
+      ],
       "type": "SEARCH_ENGINE_RAMBLER",
       "id": 16
     },
@@ -927,7 +941,13 @@
         "http://www.softonic.com/s/{searchTerms}",
         "http://www.softonic.com.br/s/{searchTerms}",
         "http://buscador.softonic.com/?q={searchTerms}",
-        "http://nl.softonic.com/s/{searchTerms}"
+        "http://nl.softonic.com/s/{searchTerms}",
+        "https://search.softonic.com/?q={searchTerms}",
+        "https://en.softonic.com/s/{searchTerms}",
+        "https://www.softonic.com/s/{searchTerms}",
+        "https://www.softonic.com.br/s/{searchTerms}",
+        "https://buscador.softonic.com/?q={searchTerms}",
+        "https://nl.softonic.com/s/{searchTerms}"
       ],
       "type": "SEARCH_ENGINE_SOFTONIC",
       "id": 80
@@ -960,6 +980,9 @@
       "keyword": "terra.com.ar",
       "favicon_url": "http://buscar.terra.com.ar/favicon.ico",
       "search_url": "http://buscar.terra.com.ar/Default.aspx?source=Search&ca=s&query={searchTerms}",
+      "alternate_urls": [
+        "https://buscador.terra.com.ar/Default.aspx?source=Search&ca=s&query={searchTerms}"
+      ],
       "encoding": "ISO-8859-1",
       "type": "SEARCH_ENGINE_TERRA",
       "id": 90
@@ -970,6 +993,9 @@
       "keyword": "terra.es",
       "favicon_url": "http://buscador.terra.es/favicon.ico",
       "search_url": "http://buscador.terra.es/Default.aspx?source=Search&ca=s&query={searchTerms}",
+      "alternate_urls": [
+        "https://buscador.terra.es/Default.aspx?source=Search&ca=s&query={searchTerms}"
+      ],
       "encoding": "ISO-8859-1",
       "type": "SEARCH_ENGINE_TERRA",
       "id": 90
@@ -990,6 +1016,9 @@
       "keyword": "walla.co.il",
       "favicon_url": "http://www.walla.co.il/favicon.ico",
       "search_url": "http://search.walla.co.il/?q={searchTerms}",
+      "alternate_urls": [
+        "https://search.walla.co.il/?q={searchTerms}"
+      ],
       "type": "SEARCH_ENGINE_WALLA",
       "id": 55
     },
