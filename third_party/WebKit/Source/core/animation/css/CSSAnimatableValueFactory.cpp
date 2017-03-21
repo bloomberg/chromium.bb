@@ -418,7 +418,7 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(
     case CSSPropertyBottom:
       return createFromLength(style.bottom(), style);
     case CSSPropertyBoxShadow:
-      return AnimatableShadow::create(style.boxShadow(), style.color());
+      return AnimatableShadow::create(style.boxShadow());
     case CSSPropertyClip:
       if (style.hasAutoClip()) {
         return AnimatableUnknown::create(
@@ -549,7 +549,7 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(
     case CSSPropertyTextIndent:
       return createFromLength(style.textIndent(), style);
     case CSSPropertyTextShadow:
-      return AnimatableShadow::create(style.textShadow(), style.color());
+      return AnimatableShadow::create(style.textShadow());
     case CSSPropertyTop:
       return createFromLength(style.top(), style);
     case CSSPropertyWebkitBorderHorizontalSpacing:

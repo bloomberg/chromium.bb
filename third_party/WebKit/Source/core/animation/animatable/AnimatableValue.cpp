@@ -30,17 +30,10 @@
 
 #include "core/animation/animatable/AnimatableValue.h"
 
-#include "core/animation/animatable/AnimatableNeutral.h"
 #include "wtf/StdLibExtras.h"
 #include <algorithm>
 
 namespace blink {
-
-PassRefPtr<AnimatableValue> AnimatableValue::neutralValue() {
-  DEFINE_STATIC_REF(AnimatableNeutral, neutralSentinelValue,
-                    (AnimatableNeutral::create()));
-  return neutralSentinelValue;
-}
 
 PassRefPtr<AnimatableValue> AnimatableValue::interpolate(
     const AnimatableValue* left,
@@ -48,8 +41,6 @@ PassRefPtr<AnimatableValue> AnimatableValue::interpolate(
     double fraction) {
   DCHECK(left);
   DCHECK(right);
-  DCHECK(!left->isNeutral());
-  DCHECK(!right->isNeutral());
 
   if (fraction && fraction != 1 && left->isSameType(right))
     return left->interpolateTo(right, fraction);

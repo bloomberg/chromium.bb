@@ -43,13 +43,6 @@ class AnimatableLengthBoxAndBool final : public AnimatableValue {
       bool flag) {
     return adoptRef(new AnimatableLengthBoxAndBool(std::move(box), flag));
   }
-  const AnimatableValue* box() const { return m_box.get(); }
-  bool flag() const { return m_flag; }
-
- protected:
-  PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*,
-                                            double fraction) const override;
-  bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
 
  private:
   AnimatableLengthBoxAndBool(PassRefPtr<AnimatableValue> box, bool flag)

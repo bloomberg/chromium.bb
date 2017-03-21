@@ -39,26 +39,18 @@ namespace blink {
 class AnimatableShadow final : public AnimatableValue {
  public:
   ~AnimatableShadow() override {}
-  static PassRefPtr<AnimatableShadow> create(PassRefPtr<ShadowList> shadowList,
-                                             const Color& currentColor) {
-    return adoptRef(new AnimatableShadow(std::move(shadowList), currentColor));
+  static PassRefPtr<AnimatableShadow> create(
+      PassRefPtr<ShadowList> shadowList) {
+    return adoptRef(new AnimatableShadow(std::move(shadowList)));
   }
-  ShadowList* getShadowList() const { return m_shadowList.get(); }
-
- protected:
-  PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*,
-                                            double fraction) const override;
-  bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
 
  private:
-  explicit AnimatableShadow(PassRefPtr<ShadowList> shadowList,
-                            const Color& currentColor)
-      : m_shadowList(shadowList), m_currentColor(currentColor) {}
+  explicit AnimatableShadow(PassRefPtr<ShadowList> shadowList)
+      : m_shadowList(shadowList) {}
   AnimatableType type() const override { return TypeShadow; }
   bool equalTo(const AnimatableValue*) const override;
 
   const RefPtr<ShadowList> m_shadowList;
-  const Color m_currentColor;
 };
 
 DEFINE_ANIMATABLE_VALUE_TYPE_CASTS(AnimatableShadow, isShadow());

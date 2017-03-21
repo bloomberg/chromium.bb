@@ -53,12 +53,4 @@ AnimatableValueKeyframe::PropertySpecificKeyframe::createInterpolation(
       property.cssProperty());
 }
 
-PassRefPtr<Keyframe::PropertySpecificKeyframe>
-AnimatableValueKeyframe::PropertySpecificKeyframe::neutralKeyframe(
-    double offset,
-    PassRefPtr<TimingFunction> easing) const {
-  return create(offset, std::move(easing), AnimatableValue::neutralValue(),
-                EffectModel::CompositeAdd);
-}
-
 }  // namespace blink

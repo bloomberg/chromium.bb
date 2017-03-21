@@ -43,13 +43,6 @@ class AnimatableLengthPoint final : public AnimatableValue {
       PassRefPtr<AnimatableValue> y) {
     return adoptRef(new AnimatableLengthPoint(std::move(x), std::move(y)));
   }
-  const AnimatableValue* x() const { return m_x.get(); }
-  const AnimatableValue* y() const { return m_y.get(); }
-
- protected:
-  PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*,
-                                            double fraction) const override;
-  bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
 
  private:
   AnimatableLengthPoint(PassRefPtr<AnimatableValue> x,

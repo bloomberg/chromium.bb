@@ -11,19 +11,12 @@
 
 namespace blink {
 
-class CORE_EXPORT AnimatablePath final : public AnimatableValue {
+class AnimatablePath final : public AnimatableValue {
  public:
   ~AnimatablePath() override {}
   static PassRefPtr<AnimatablePath> create(PassRefPtr<StylePath> path) {
     return adoptRef(new AnimatablePath(std::move(path)));
   }
-
-  StylePath* path() const { return m_path.get(); }
-
- protected:
-  PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*,
-                                            double fraction) const override;
-  bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
 
  private:
   explicit AnimatablePath(PassRefPtr<StylePath> path) : m_path(path) {}

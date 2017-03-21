@@ -37,8 +37,7 @@
 
 namespace blink {
 
-class CORE_EXPORT AnimatableStrokeDasharrayList final
-    : public AnimatableRepeatable {
+class AnimatableStrokeDasharrayList final : public AnimatableRepeatable {
  public:
   ~AnimatableStrokeDasharrayList() override {}
 
@@ -49,18 +48,11 @@ class CORE_EXPORT AnimatableStrokeDasharrayList final
         new AnimatableStrokeDasharrayList(std::move(lengths), zoom));
   }
 
-  PassRefPtr<SVGDashArray> toSVGDashArray(float zoom) const;
-
- protected:
-  PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*,
-                                            double fraction) const override;
-  bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
-
  private:
-  AnimatableStrokeDasharrayList(PassRefPtr<SVGDashArray>, float zoom);
-  // This will consume the vector passed into it.
-  AnimatableStrokeDasharrayList(Vector<RefPtr<AnimatableValue>>& values)
-      : AnimatableRepeatable(values) {}
+  AnimatableStrokeDasharrayList(PassRefPtr<SVGDashArray> lengths, float zoom) {
+    for (const Length& dashLength : lengths->vector())
+      m_values.push_back(AnimatableLength::create(dashLength, zoom));
+  }
 
   AnimatableType type() const override { return TypeStrokeDasharrayList; }
 };

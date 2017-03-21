@@ -32,7 +32,6 @@
 #define AnimatableImage_h
 
 #include "core/animation/animatable/AnimatableValue.h"
-#include "core/css/CSSCrossfadeValue.h"
 #include "core/style/StyleImage.h"
 
 namespace blink {
@@ -43,12 +42,6 @@ class AnimatableImage final : public AnimatableValue {
   static PassRefPtr<AnimatableImage> create(CSSValue* value) {
     return adoptRef(new AnimatableImage(value));
   }
-  CSSValue* toCSSValue() const { return m_value.get(); }
-
- protected:
-  PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*,
-                                            double fraction) const override;
-  bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
 
  private:
   AnimatableImage(CSSValue* value) : m_value(value) { DCHECK(m_value.get()); }

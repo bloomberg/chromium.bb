@@ -46,30 +46,10 @@ class AnimatableSVGPaint final : public AnimatableValue {
                                                const Color& visitedLinkColor,
                                                const String& uri,
                                                const String& visitedLinkURI) {
-    return create(type, visitedLinkType,
-                  AnimatableColor::create(color, visitedLinkColor), uri,
-                  visitedLinkURI);
-  }
-  static PassRefPtr<AnimatableSVGPaint> create(
-      SVGPaintType type,
-      SVGPaintType visitedLinkType,
-      PassRefPtr<AnimatableColor> color,
-      const String& uri,
-      const String& visitedLinkURI) {
     return adoptRef(new AnimatableSVGPaint(
-        type, visitedLinkType, std::move(color), uri, visitedLinkURI));
+        type, visitedLinkType, AnimatableColor::create(color, visitedLinkColor),
+        uri, visitedLinkURI));
   }
-  SVGPaintType paintType() const { return m_type; }
-  SVGPaintType visitedLinkPaintType() const { return m_visitedLinkType; }
-  Color getColor() const { return m_color->getColor(); }
-  Color visitedLinkColor() const { return m_color->visitedLinkColor(); }
-  const String& uri() const { return m_uri; }
-  const String& visitedLinkURI() const { return m_visitedLinkURI; }
-
- protected:
-  PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*,
-                                            double fraction) const override;
-  bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
 
  private:
   AnimatableSVGPaint(SVGPaintType type,

@@ -30,55 +30,14 @@
 
 #include "core/animation/animatable/AnimatableLengthBoxAndBool.h"
 
-#include "core/animation/animatable/AnimatableLength.h"
 #include "core/animation/animatable/AnimatableLengthBox.h"
 
 namespace blink {
 
-static bool sidesHaveSameUnits(const AnimatableValue* sideA,
-                               const AnimatableValue* sideB) {
-  if (!sideA->isLength() || !sideB->isLength())
-    return false;
-  return toAnimatableLength(sideA)->hasSameUnits(toAnimatableLength(sideB));
-}
-
-// This is only used by *-image-slice properties which cannot interpolate
-// between numbers and percentages. Numbers are internally represented by pixels
-// on the ComputedStyle so we must manually type check both sides.
-bool AnimatableLengthBoxAndBool::usesDefaultInterpolationWith(
-    const AnimatableValue* value) const {
-  const AnimatableLengthBoxAndBool* lengthBoxAndBool =
-      toAnimatableLengthBoxAndBool(value);
-  if (lengthBoxAndBool->flag() != flag())
-    return true;
-  if (!box()->isLengthBox() || !lengthBoxAndBool->box()->isLengthBox())
-    return AnimatableValue::usesDefaultInterpolation(box(),
-                                                     lengthBoxAndBool->box());
-  const AnimatableLengthBox* boxA = toAnimatableLengthBox(box());
-  const AnimatableLengthBox* boxB =
-      toAnimatableLengthBox(lengthBoxAndBool->box());
-  return !sidesHaveSameUnits(boxA->left(), boxB->left()) ||
-         !sidesHaveSameUnits(boxA->right(), boxB->right()) ||
-         !sidesHaveSameUnits(boxA->top(), boxB->top()) ||
-         !sidesHaveSameUnits(boxA->bottom(), boxB->bottom());
-}
-
-PassRefPtr<AnimatableValue> AnimatableLengthBoxAndBool::interpolateTo(
-    const AnimatableValue* value,
-    double fraction) const {
-  const AnimatableLengthBoxAndBool* lengthBoxAndBool =
-      toAnimatableLengthBoxAndBool(value);
-  if (usesDefaultInterpolationWith(lengthBoxAndBool))
-    return defaultInterpolateTo(this, value, fraction);
-  return AnimatableLengthBoxAndBool::create(
-      AnimatableValue::interpolate(box(), lengthBoxAndBool->box(), fraction),
-      flag());
-}
-
 bool AnimatableLengthBoxAndBool::equalTo(const AnimatableValue* value) const {
   const AnimatableLengthBoxAndBool* lengthBox =
       toAnimatableLengthBoxAndBool(value);
-  return box()->equals(lengthBox->box()) && flag() == lengthBox->flag();
+  return m_box->equals(lengthBox->m_box.get()) && m_flag == lengthBox->m_flag;
 }
 
 }  // namespace blink

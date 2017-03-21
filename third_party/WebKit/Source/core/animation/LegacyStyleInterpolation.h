@@ -9,7 +9,6 @@
 #include "core/CoreExport.h"
 #include "core/animation/Interpolation.h"
 #include "core/animation/PropertyHandle.h"
-#include "core/css/resolver/AnimatedStyleBuilder.h"
 #include <memory>
 
 namespace blink {
@@ -27,16 +26,7 @@ class CORE_EXPORT LegacyStyleInterpolation : public Interpolation {
         InterpolableAnimatableValue::create(std::move(end)), id));
   }
 
-  // 1) convert m_cachedValue into an X
-  // 2) shove X into StyleResolverState
-  // X can be:
-  // (1) a CSSValue (and applied via StyleBuilder::applyProperty)
-  // (2) an AnimatableValue (and applied via
-  //     AnimatedStyleBuilder::applyProperty)
-  // (3) a custom value that is inserted directly into the StyleResolverState.
-  void apply(StyleResolverState& state) const {
-    AnimatedStyleBuilder::applyProperty(id(), state, currentValue().get());
-  }
+  void apply(StyleResolverState&) const;
 
   bool isLegacyStyleInterpolation() const final { return true; }
 

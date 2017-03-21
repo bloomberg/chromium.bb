@@ -10,20 +10,12 @@
 
 namespace blink {
 
-class CORE_EXPORT AnimatableDoubleAndBool final : public AnimatableValue {
+class AnimatableDoubleAndBool final : public AnimatableValue {
  public:
   ~AnimatableDoubleAndBool() override {}
   static PassRefPtr<AnimatableDoubleAndBool> create(double number, bool flag) {
     return adoptRef(new AnimatableDoubleAndBool(number, flag));
   }
-
-  double toDouble() const { return m_number; }
-  bool flag() const { return m_flag; }
-
- protected:
-  PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*,
-                                            double fraction) const override;
-  bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
 
  private:
   AnimatableDoubleAndBool(double number, bool flag)

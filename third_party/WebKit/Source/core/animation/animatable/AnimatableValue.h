@@ -42,8 +42,6 @@ class CORE_EXPORT AnimatableValue : public RefCounted<AnimatableValue> {
  public:
   virtual ~AnimatableValue() {}
 
-  static PassRefPtr<AnimatableValue> neutralValue();
-
   static PassRefPtr<AnimatableValue> interpolate(const AnimatableValue*,
                                                  const AnimatableValue*,
                                                  double fraction);
@@ -69,7 +67,6 @@ class CORE_EXPORT AnimatableValue : public RefCounted<AnimatableValue> {
   bool isLengthPoint() const { return type() == TypeLengthPoint; }
   bool isLengthPoint3D() const { return type() == TypeLengthPoint3D; }
   bool isLengthSize() const { return type() == TypeLengthSize; }
-  bool isNeutral() const { return type() == TypeNeutral; }
   bool isPath() const { return type() == TypePath; }
   bool isRepeatable() const { return type() == TypeRepeatable; }
   bool isSVGLength() const { return type() == TypeSVGLength; }
@@ -102,7 +99,6 @@ class CORE_EXPORT AnimatableValue : public RefCounted<AnimatableValue> {
     TypeLengthPoint,
     TypeLengthPoint3D,
     TypeLengthSize,
-    TypeNeutral,
     TypePath,
     TypeRepeatable,
     TypeSVGLength,
@@ -117,10 +113,14 @@ class CORE_EXPORT AnimatableValue : public RefCounted<AnimatableValue> {
 
   virtual bool usesDefaultInterpolationWith(
       const AnimatableValue* value) const {
+    NOTREACHED();
     return false;
   }
   virtual PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*,
-                                                    double fraction) const = 0;
+                                                    double fraction) const {
+    NOTREACHED();
+    return nullptr;
+  }
   static PassRefPtr<AnimatableValue> defaultInterpolateTo(
       const AnimatableValue* left,
       const AnimatableValue* right,

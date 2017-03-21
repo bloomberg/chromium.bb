@@ -44,34 +44,8 @@ class CORE_EXPORT AnimatableLength final : public AnimatableValue {
   }
   Length getLength(float zoom, ValueRange) const;
 
-  bool hasSameUnits(const AnimatableLength* other) const {
-    return m_hasPixels == other->m_hasPixels &&
-           m_hasPercent == other->m_hasPercent;
-  }
-
- protected:
-  PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*,
-                                            double fraction) const override;
-
  private:
-  static PassRefPtr<AnimatableLength> create(double pixels,
-                                             double percent,
-                                             bool hasPixels,
-                                             bool hasPercent) {
-    return adoptRef(
-        new AnimatableLength(pixels, percent, hasPixels, hasPercent));
-  }
   AnimatableLength(const Length&, float zoom);
-  AnimatableLength(double pixels,
-                   double percent,
-                   bool hasPixels,
-                   bool hasPercent)
-      : m_pixels(pixels),
-        m_percent(percent),
-        m_hasPixels(hasPixels),
-        m_hasPercent(hasPercent) {
-    DCHECK(m_hasPixels || m_hasPercent);
-  }
   AnimatableType type() const override { return TypeLength; }
   bool equalTo(const AnimatableValue*) const override;
 

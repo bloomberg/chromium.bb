@@ -40,7 +40,7 @@ namespace blink {
 // This class represents collections of values that animate in a repeated
 // fashion as described by the CSS Transitions spec:
 // http://www.w3.org/TR/css3-transitions/#animtype-repeatable-list
-class CORE_EXPORT AnimatableRepeatable : public AnimatableValue {
+class AnimatableRepeatable : public AnimatableValue {
  public:
   ~AnimatableRepeatable() override {}
 
@@ -50,8 +50,6 @@ class CORE_EXPORT AnimatableRepeatable : public AnimatableValue {
     return adoptRef(new AnimatableRepeatable(values));
   }
 
-  const Vector<RefPtr<AnimatableValue>>& values() const { return m_values; }
-
  protected:
   AnimatableRepeatable() {}
   AnimatableRepeatable(Vector<RefPtr<AnimatableValue>>& values) {
@@ -59,20 +57,9 @@ class CORE_EXPORT AnimatableRepeatable : public AnimatableValue {
     m_values.swap(values);
   }
 
-  static bool interpolateLists(
-      const Vector<RefPtr<AnimatableValue>>& fromValues,
-      const Vector<RefPtr<AnimatableValue>>& toValues,
-      double fraction,
-      Vector<RefPtr<AnimatableValue>>& interpolatedValues);
-
-  bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
-
   Vector<RefPtr<AnimatableValue>> m_values;
 
  private:
-  PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*,
-                                            double fraction) const override;
-
   AnimatableType type() const override { return TypeRepeatable; }
   bool equalTo(const AnimatableValue*) const final;
 };

@@ -30,7 +30,6 @@
 
 #include "core/animation/animatable/AnimatableColor.h"
 
-#include "platform/animation/AnimationUtilities.h"
 
 namespace blink {
 
@@ -49,20 +48,6 @@ AnimatableColorImpl::AnimatableColorImpl(Color color)
       m_green(color.green() / 255.0f * m_alpha),
       m_blue(color.blue() / 255.0f * m_alpha) {}
 
-Color AnimatableColorImpl::toColor() const {
-  if (!m_alpha)
-    return Color::transparent;
-  return Color(m_red / m_alpha, m_green / m_alpha, m_blue / m_alpha, m_alpha);
-}
-
-AnimatableColorImpl AnimatableColorImpl::interpolateTo(
-    const AnimatableColorImpl& to,
-    double fraction) const {
-  return AnimatableColorImpl(
-      blend(m_red, to.m_red, fraction), blend(m_green, to.m_green, fraction),
-      blend(m_blue, to.m_blue, fraction), blend(m_alpha, to.m_alpha, fraction));
-}
-
 bool AnimatableColorImpl::operator==(const AnimatableColorImpl& other) const {
   return m_red == other.m_red && m_green == other.m_green &&
          m_blue == other.m_blue && m_alpha == other.m_alpha;
@@ -72,15 +57,6 @@ PassRefPtr<AnimatableColor> AnimatableColor::create(
     const AnimatableColorImpl& color,
     const AnimatableColorImpl& visitedLinkColor) {
   return adoptRef(new AnimatableColor(color, visitedLinkColor));
-}
-
-PassRefPtr<AnimatableValue> AnimatableColor::interpolateTo(
-    const AnimatableValue* value,
-    double fraction) const {
-  const AnimatableColor* color = toAnimatableColor(value);
-  return create(
-      m_color.interpolateTo(color->m_color, fraction),
-      m_visitedLinkColor.interpolateTo(color->m_visitedLinkColor, fraction));
 }
 
 bool AnimatableColor::equalTo(const AnimatableValue* value) const {

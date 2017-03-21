@@ -37,14 +37,14 @@
 namespace blink {
 
 class AnimatableValue;
-class StyleResolverState;
+class ComputedStyle;
 
 class AnimatedStyleBuilder {
   STATIC_ONLY(AnimatedStyleBuilder);
 
  public:
   static void applyProperty(CSSPropertyID,
-                            StyleResolverState&,
+                            ComputedStyle&,
                             const AnimatableValue*);
 };
 

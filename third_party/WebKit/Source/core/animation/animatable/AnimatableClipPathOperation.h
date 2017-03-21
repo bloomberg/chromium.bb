@@ -37,19 +37,13 @@
 
 namespace blink {
 
-class CORE_EXPORT AnimatableClipPathOperation final : public AnimatableValue {
+class AnimatableClipPathOperation final : public AnimatableValue {
  public:
   ~AnimatableClipPathOperation() override {}
   static PassRefPtr<AnimatableClipPathOperation> create(
       ClipPathOperation* operation) {
     return adoptRef(new AnimatableClipPathOperation(operation));
   }
-  ClipPathOperation* getClipPathOperation() const { return m_operation.get(); }
-
- protected:
-  PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*,
-                                            double fraction) const override;
-  bool usesDefaultInterpolationWith(const AnimatableValue*) const override;
 
  private:
   AnimatableClipPathOperation(ClipPathOperation* operation)

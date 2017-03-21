@@ -38,7 +38,6 @@
 #include "core/animation/animatable/AnimatableDouble.h"
 #include "core/animation/animatable/AnimatableFilterOperations.h"
 #include "core/animation/animatable/AnimatableTransform.h"
-#include "core/animation/animatable/AnimatableValueTestHelper.h"
 #include "core/dom/Document.h"
 #include "core/layout/LayoutObject.h"
 #include "core/paint/ObjectPaintProperties.h"
@@ -368,32 +367,6 @@ TEST_F(AnimationCompositorAnimationsTest,
       duplicateSingleKeyframeAndTestIsCandidateOnResult(badKeyframe2.get()));
 }
 
-TEST_F(
-    AnimationCompositorAnimationsTest,
-    isCandidateForAnimationOnCompositorKeyframeEffectModelMultipleFramesOkay) {
-  AnimatableValueKeyframeVector framesSame;
-  framesSame.push_back(createDefaultKeyframe(CSSPropertyOpacity,
-                                             EffectModel::CompositeReplace, 0.0)
-                           .get());
-  framesSame.push_back(createDefaultKeyframe(CSSPropertyOpacity,
-                                             EffectModel::CompositeReplace, 1.0)
-                           .get());
-  EXPECT_TRUE(isCandidateForAnimationOnCompositor(
-      m_timing, *AnimatableValueKeyframeEffectModel::create(framesSame)));
-
-  AnimatableValueKeyframeVector framesMixed;
-  framesMixed.push_back(createDefaultKeyframe(CSSPropertyOpacity,
-                                              EffectModel::CompositeReplace,
-                                              0.0)
-                            .get());
-  framesMixed.push_back(createDefaultKeyframe(CSSPropertyTransform,
-                                              EffectModel::CompositeReplace,
-                                              1.0)
-                            .get());
-  EXPECT_FALSE(isCandidateForAnimationOnCompositor(
-      m_timing, *AnimatableValueKeyframeEffectModel::create(framesMixed)));
-}
-
 TEST_F(AnimationCompositorAnimationsTest,
        isCandidateForAnimationOnCompositorKeyframeEffectModel) {
   AnimatableValueKeyframeVector framesSame;
@@ -407,14 +380,16 @@ TEST_F(AnimationCompositorAnimationsTest,
       m_timing, *AnimatableValueKeyframeEffectModel::create(framesSame)));
 
   AnimatableValueKeyframeVector framesMixedProperties;
-  framesMixedProperties.push_back(
-      createDefaultKeyframe(CSSPropertyOpacity, EffectModel::CompositeReplace,
-                            0.0)
-          .get());
-  framesMixedProperties.push_back(
-      createDefaultKeyframe(CSSPropertyColor, EffectModel::CompositeReplace,
-                            1.0)
-          .get());
+  RefPtr<AnimatableValueKeyframe> keyframe = AnimatableValueKeyframe::create();
+  keyframe->setOffset(0);
+  keyframe->setPropertyValue(CSSPropertyColor, AnimatableDouble::create(0));
+  keyframe->setPropertyValue(CSSPropertyOpacity, AnimatableDouble::create(0));
+  framesMixedProperties.push_back(keyframe.release());
+  keyframe = AnimatableValueKeyframe::create();
+  keyframe->setOffset(1);
+  keyframe->setPropertyValue(CSSPropertyColor, AnimatableDouble::create(1));
+  keyframe->setPropertyValue(CSSPropertyOpacity, AnimatableDouble::create(1));
+  framesMixedProperties.push_back(keyframe.release());
   EXPECT_FALSE(isCandidateForAnimationOnCompositor(
       m_timing,
       *AnimatableValueKeyframeEffectModel::create(framesMixedProperties)));

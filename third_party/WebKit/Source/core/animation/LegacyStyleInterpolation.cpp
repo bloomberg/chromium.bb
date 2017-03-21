@@ -4,6 +4,9 @@
 
 #include "core/animation/LegacyStyleInterpolation.h"
 
+#include "core/css/resolver/AnimatedStyleBuilder.h"
+#include "core/css/resolver/StyleResolverState.h"
+
 #include <memory>
 
 namespace blink {
@@ -46,6 +49,11 @@ LegacyStyleInterpolation::LegacyStyleInterpolation(
       m_cachedIteration(0),
       m_cachedValue(m_start ? m_start->clone() : nullptr) {
   RELEASE_ASSERT(typesMatch(m_start.get(), m_end.get()));
+}
+
+void LegacyStyleInterpolation::apply(StyleResolverState& state) const {
+  AnimatedStyleBuilder::applyProperty(id(), *state.style(),
+                                      currentValue().get());
 }
 
 void LegacyStyleInterpolation::interpolate(int iteration, double fraction) {

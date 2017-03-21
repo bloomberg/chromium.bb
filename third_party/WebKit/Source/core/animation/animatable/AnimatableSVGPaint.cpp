@@ -32,39 +32,12 @@
 
 namespace blink {
 
-bool AnimatableSVGPaint::usesDefaultInterpolationWith(
-    const AnimatableValue* value) const {
-  const AnimatableSVGPaint* svgPaint = toAnimatableSVGPaint(value);
-  return (paintType() != SVG_PAINTTYPE_RGBCOLOR ||
-          svgPaint->paintType() != SVG_PAINTTYPE_RGBCOLOR) &&
-         (visitedLinkPaintType() != SVG_PAINTTYPE_RGBCOLOR ||
-          svgPaint->visitedLinkPaintType() != SVG_PAINTTYPE_RGBCOLOR);
-}
-
-PassRefPtr<AnimatableValue> AnimatableSVGPaint::interpolateTo(
-    const AnimatableValue* value,
-    double fraction) const {
-  if (usesDefaultInterpolationWith(value))
-    return defaultInterpolateTo(this, value, fraction);
-
-  const AnimatableSVGPaint* svgPaint = toAnimatableSVGPaint(value);
-  RefPtr<AnimatableColor> color =
-      toAnimatableColor(AnimatableValue::interpolate(
-                            m_color.get(), svgPaint->m_color.get(), fraction)
-                            .get());
-  if (fraction < 0.5)
-    return create(paintType(), visitedLinkPaintType(), color, uri(),
-                  visitedLinkURI());
-  return create(svgPaint->paintType(), svgPaint->visitedLinkPaintType(), color,
-                svgPaint->uri(), svgPaint->visitedLinkURI());
-}
-
 bool AnimatableSVGPaint::equalTo(const AnimatableValue* value) const {
   const AnimatableSVGPaint* svgPaint = toAnimatableSVGPaint(value);
-  return paintType() == svgPaint->paintType() &&
-         visitedLinkPaintType() == svgPaint->visitedLinkPaintType() &&
-         getColor() == svgPaint->getColor() && uri() == svgPaint->uri() &&
-         visitedLinkURI() == svgPaint->visitedLinkURI();
+  return m_type == svgPaint->m_type &&
+         m_visitedLinkType == svgPaint->m_visitedLinkType &&
+         m_color->equals(svgPaint->m_color.get()) && m_uri == svgPaint->m_uri &&
+         m_visitedLinkURI == svgPaint->m_visitedLinkURI;
 }
 
 }  // namespace blink

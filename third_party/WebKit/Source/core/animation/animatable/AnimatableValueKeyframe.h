@@ -48,10 +48,13 @@ class CORE_EXPORT AnimatableValueKeyframe : public Keyframe {
       return m_value;
     }
 
-    bool isNeutral() const final { return m_value->isNeutral(); }
+    bool isNeutral() const final { return false; }
     PassRefPtr<Keyframe::PropertySpecificKeyframe> neutralKeyframe(
         double offset,
-        PassRefPtr<TimingFunction> easing) const final;
+        PassRefPtr<TimingFunction> easing) const final {
+      NOTREACHED();
+      return nullptr;
+    }
     PassRefPtr<Interpolation> createInterpolation(
         const PropertyHandle&,
         const Keyframe::PropertySpecificKeyframe& end) const final;

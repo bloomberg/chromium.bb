@@ -64,16 +64,6 @@ Length AnimatableLength::getLength(float zoom, ValueRange range) const {
       PixelsAndPercent(m_pixels * zoom, m_percent), range));
 }
 
-PassRefPtr<AnimatableValue> AnimatableLength::interpolateTo(
-    const AnimatableValue* value,
-    double fraction) const {
-  const AnimatableLength* length = toAnimatableLength(value);
-  return create(blend(m_pixels, length->m_pixels, fraction),
-                blend(m_percent, length->m_percent, fraction),
-                m_hasPixels || length->m_hasPixels,
-                m_hasPercent || length->m_hasPercent);
-}
-
 bool AnimatableLength::equalTo(const AnimatableValue* value) const {
   const AnimatableLength* length = toAnimatableLength(value);
   return m_pixels == length->m_pixels && m_percent == length->m_percent &&

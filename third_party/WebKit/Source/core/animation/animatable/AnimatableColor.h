@@ -38,15 +38,12 @@
 
 namespace blink {
 
-class CORE_EXPORT AnimatableColorImpl {
+class AnimatableColorImpl {
   DISALLOW_NEW();
 
  public:
   AnimatableColorImpl(float red, float green, float blue, float alpha);
   AnimatableColorImpl(Color);
-  Color toColor() const;
-  AnimatableColorImpl interpolateTo(const AnimatableColorImpl&,
-                                    double fraction) const;
   bool operator==(const AnimatableColorImpl&) const;
 
  private:
@@ -60,17 +57,11 @@ class CORE_EXPORT AnimatableColorImpl {
 // property. Currently it is used for all properties, even those which do not
 // support a separate 'visited link' color (eg SVG properties). This is correct
 // but inefficient.
-class CORE_EXPORT AnimatableColor final : public AnimatableValue {
+class AnimatableColor final : public AnimatableValue {
  public:
   static PassRefPtr<AnimatableColor> create(
       const AnimatableColorImpl&,
       const AnimatableColorImpl& visitedLinkColor);
-  Color getColor() const { return m_color.toColor(); }
-  Color visitedLinkColor() const { return m_visitedLinkColor.toColor(); }
-
- protected:
-  PassRefPtr<AnimatableValue> interpolateTo(const AnimatableValue*,
-                                            double fraction) const override;
 
  private:
   AnimatableColor(const AnimatableColorImpl& color,
