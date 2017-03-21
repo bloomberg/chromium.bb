@@ -209,6 +209,7 @@ struct drm_amdgpu_gem_userptr {
 	__u32		handle;
 };
 
+/* SI-CI-VI: */
 /* same meaning as the GB_TILE_MODE and GL_MACRO_TILE_MODE fields */
 #define AMDGPU_TILING_ARRAY_MODE_SHIFT			0
 #define AMDGPU_TILING_ARRAY_MODE_MASK			0xf
@@ -227,10 +228,14 @@ struct drm_amdgpu_gem_userptr {
 #define AMDGPU_TILING_NUM_BANKS_SHIFT			21
 #define AMDGPU_TILING_NUM_BANKS_MASK			0x3
 
+/* GFX9 and later: */
+#define AMDGPU_TILING_SWIZZLE_MODE_SHIFT		0
+#define AMDGPU_TILING_SWIZZLE_MODE_MASK			0x1f
+
 #define AMDGPU_TILING_SET(field, value) \
-	(((value) & AMDGPU_TILING_##field##_MASK) << AMDGPU_TILING_##field##_SHIFT)
+	(((__u64)(value) & AMDGPU_TILING_##field##_MASK) << AMDGPU_TILING_##field##_SHIFT)
 #define AMDGPU_TILING_GET(value, field) \
-	(((value) >> AMDGPU_TILING_##field##_SHIFT) & AMDGPU_TILING_##field##_MASK)
+	(((__u64)(value) >> AMDGPU_TILING_##field##_SHIFT) & AMDGPU_TILING_##field##_MASK)
 
 #define AMDGPU_GEM_METADATA_OP_SET_METADATA                  1
 #define AMDGPU_GEM_METADATA_OP_GET_METADATA                  2
@@ -755,6 +760,7 @@ struct drm_amdgpu_info_vce_clock_table {
 #define AMDGPU_FAMILY_KV			125 /* Kaveri, Kabini, Mullins */
 #define AMDGPU_FAMILY_VI			130 /* Iceland, Tonga */
 #define AMDGPU_FAMILY_CZ			135 /* Carrizo, Stoney */
+#define AMDGPU_FAMILY_AI			141 /* Vega10 */
 
 #if defined(__cplusplus)
 }
