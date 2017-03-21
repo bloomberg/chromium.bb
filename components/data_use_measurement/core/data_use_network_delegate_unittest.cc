@@ -39,6 +39,9 @@ class TestURLRequestClassifier : public base::SupportsUserData::Data,
       const net::HttpResponseHeaders& response_headers) const override {
     return DataUseUserData::OTHER;
   }
+
+  void RecordPageTransitionUMA(uint64_t page_transition,
+                               int64_t received_bytes) const override {}
 };
 
 class TestDataUseAscriber : public DataUseAscriber {

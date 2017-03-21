@@ -12,5 +12,6 @@ static_library("content") {
     "//content/public/browser",
     "//content/public/common",
     "//net:net",
+    "//ui/base",
   ]
 }

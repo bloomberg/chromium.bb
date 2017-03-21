@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_DATA_USE_MEASUREMENT_CORE_URL_REQUEST_CLASSIFIER_H_
 #define COMPONENTS_DATA_USE_MEASUREMENT_CORE_URL_REQUEST_CLASSIFIER_H_
 
+#include <stdint.h>
+
 #include "components/data_use_measurement/core/data_use_user_data.h"
 
 namespace net {
@@ -28,6 +30,10 @@ class URLRequestClassifier {
   virtual DataUseUserData::DataUseContentType GetContentType(
       const net::URLRequest& request,
       const net::HttpResponseHeaders& response_headers) const = 0;
+
+  // Records the page transition histograms.
+  virtual void RecordPageTransitionUMA(uint64_t page_transition,
+                                       int64_t received_bytes) const = 0;
 };
 
 }  // namespace data_use_measurement

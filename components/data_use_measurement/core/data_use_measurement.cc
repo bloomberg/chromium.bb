@@ -169,6 +169,7 @@ void DataUseMeasurement::OnCompleted(const net::URLRequest& request,
   // of redirected requests.
   UpdateDataUsePrefs(request);
   ReportServicesMessageSizeUMA(request);
+  RecordPageTransitionUMA(request);
 #if defined(OS_ANDROID)
   MaybeRecordNetworkBytesOS();
 #endif
@@ -392,7 +393,7 @@ void DataUseMeasurement::RecordTabStateHistogram(
     TrafficDirection dir,
     DataUseUserData::AppState app_state,
     bool is_tab_visible,
-    int64_t bytes) {
+    int64_t bytes) const {
   if (app_state == DataUseUserData::UNKNOWN)
     return;
 
@@ -441,6 +442,18 @@ void DataUseMeasurement::RecordContentTypeHistogram(
             "DataUse.ContentType.Services", 1, DataUseUserData::TYPE_MAX,
             DataUseUserData::TYPE_MAX + 1,
             base::HistogramBase::kUmaTargetedHistogramFlag));
+  }
+}
+
+void DataUseMeasurement::RecordPageTransitionUMA(
+    const net::URLRequest& request) const {
+  if (!url_request_classifier_->IsUserRequest(request))
+    return;
+
+  const DataUseRecorder* recorder = ascriber_->GetDataUseRecorder(request);
+  if (recorder) {
+    url_request_classifier_->RecordPageTransitionUMA(
+        recorder->page_transition(), request.GetTotalReceivedBytes());
   }
 }
 

@@ -55,6 +55,9 @@ class TestURLRequestClassifier : public base::SupportsUserData::Data,
     content_type_ = content_type;
   }
 
+  void RecordPageTransitionUMA(uint64_t page_transition,
+                               int64_t received_bytes) const override {}
+
  private:
   DataUseUserData::DataUseContentType content_type_;
 };

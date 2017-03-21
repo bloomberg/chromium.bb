@@ -104,6 +104,10 @@ class ChromeDataUseAscriber : public DataUseAscriber {
                               int new_render_process_id,
                               int new_render_frame_id);
 
+  void DidFinishNavigation(int render_process_id,
+                           int render_frame_id,
+                           uint32_t page_transition);
+
  private:
   friend class ChromeDataUseAscriberTest;
 

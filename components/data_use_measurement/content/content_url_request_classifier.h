@@ -17,12 +17,16 @@ namespace data_use_measurement {
 bool IsUserRequest(const net::URLRequest& request);
 
 class ContentURLRequestClassifier : public URLRequestClassifier {
- public:
+ private:
+  // UrlRequestClassifier:
   bool IsUserRequest(const net::URLRequest& request) const override;
 
   DataUseUserData::DataUseContentType GetContentType(
       const net::URLRequest& request,
       const net::HttpResponseHeaders& response_headers) const override;
+
+  void RecordPageTransitionUMA(uint64_t page_transition,
+                               int64_t received_bytes) const override;
 };
 
 }  // namespace data_use_measurement

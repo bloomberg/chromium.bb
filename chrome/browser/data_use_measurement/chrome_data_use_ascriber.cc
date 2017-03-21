@@ -358,6 +358,16 @@ void ChromeDataUseAscriber::ReadyToCommitMainFrameNavigation(
   }
 }
 
+void ChromeDataUseAscriber::DidFinishNavigation(int render_process_id,
+                                                int render_frame_id,
+                                                uint32_t page_transition) {
+  auto frame_it = main_render_frame_data_use_map_.find(
+      RenderFrameHostID(render_process_id, render_frame_id));
+  if (frame_it != main_render_frame_data_use_map_.end()) {
+    frame_it->second->set_page_transition(page_transition);
+  }
+}
+
 void ChromeDataUseAscriber::OnDataUseCompleted(DataUseRecorderEntry entry) {
   // TODO(ryansturm): Notify observers that data use is complete.
 }

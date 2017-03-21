@@ -63,6 +63,9 @@ class ChromeDataUseAscriberService : public KeyedService {
   void RenderFrameHostChanged(content::RenderFrameHost* old_host,
                               content::RenderFrameHost* new_host);
 
+  // Forwarded from DataUseWebContentsObserver
+  void DidFinishNavigation(content::NavigationHandle* navigation_handle);
+
  private:
   friend class ChromeDataUseAscriberServiceTest;
 

@@ -86,4 +86,9 @@ void DataUseWebContentsObserver::RenderFrameHostChanged(
   service_->RenderFrameHostChanged(old_host, new_host);
 }
 
+void DataUseWebContentsObserver::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  service_->DidFinishNavigation(navigation_handle);
+}
+
 }  // namespace data_use_measurement

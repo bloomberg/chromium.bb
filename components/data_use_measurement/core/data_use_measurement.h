@@ -140,7 +140,10 @@ class DataUseMeasurement {
   void RecordTabStateHistogram(TrafficDirection dir,
                                DataUseUserData::AppState app_state,
                                bool is_tab_visible,
-                               int64_t bytes);
+                               int64_t bytes) const;
+
+  // Records data use histograms split on page tranition.
+  void RecordPageTransitionUMA(const net::URLRequest& request) const;
 
   // Records data use histograms of user traffic and services traffic split on
   // content type, AppState and TabState.

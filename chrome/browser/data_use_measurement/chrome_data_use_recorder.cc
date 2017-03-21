@@ -3,10 +3,13 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/data_use_measurement/chrome_data_use_recorder.h"
+#include "ui/base/page_transition_types.h"
 
 namespace data_use_measurement {
 
-ChromeDataUseRecorder::ChromeDataUseRecorder() : main_frame_id_(-1, -1) {}
+ChromeDataUseRecorder::ChromeDataUseRecorder() : main_frame_id_(-1, -1) {
+  set_page_transition(ui::PAGE_TRANSITION_LAST_CORE + 1);
+}
 
 ChromeDataUseRecorder::~ChromeDataUseRecorder() {}
 

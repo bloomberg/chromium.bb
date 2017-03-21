@@ -43,6 +43,8 @@ class DataUseWebContentsObserver
   void WasHidden() override;
   void RenderFrameHostChanged(content::RenderFrameHost* old_host,
                               content::RenderFrameHost* new_host) override;
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
 
  private:
   friend class content::WebContentsUserData<DataUseWebContentsObserver>;
