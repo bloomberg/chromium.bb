@@ -258,7 +258,7 @@ bool ContextMenuClientImpl::showContextMenu(const ContextMenu* defaultMenu,
       if (frameViewBase && frameViewBase->isPluginContainer()) {
         data.mediaType = WebContextMenuData::MediaTypePlugin;
         WebPluginContainerImpl* plugin =
-            toWebPluginContainerImpl(frameViewBase);
+            toWebPluginContainerImpl(toPluginView(frameViewBase));
         WebString text = plugin->plugin()->selectionAsText();
         if (!text.isEmpty()) {
           data.selectedText = text;

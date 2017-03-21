@@ -92,23 +92,35 @@ HTMLPlugInElement::~HTMLPlugInElement() {
 
 DEFINE_TRACE(HTMLPlugInElement) {
   visitor->trace(m_imageLoader);
-  visitor->trace(m_persistedPluginWidget);
+  visitor->trace(m_persistedPlugin);
   HTMLFrameOwnerElement::trace(visitor);
 }
 
-void HTMLPlugInElement::setPersistedPluginWidget(FrameViewBase* frameViewBase) {
-  if (m_persistedPluginWidget == frameViewBase)
+// TODO(joelhockey): Move implementation of HTMLFrameOwnerElement
+// setWidget/releaseWidget/ownedWidget that relates to plugins to here and
+// remove inheritance from PluginView to FrameViewBase.
+void HTMLPlugInElement::setPlugin(PluginView* pluginView) {
+  setWidget(pluginView);
+}
+
+PluginView* HTMLPlugInElement::releasePlugin() {
+  FrameViewBase* plugin = releaseWidget();
+  return plugin && plugin->isPluginView() ? toPluginView(plugin) : nullptr;
+}
+
+PluginView* HTMLPlugInElement::ownedPlugin() const {
+  FrameViewBase* plugin = ownedWidget();
+  return plugin && plugin->isPluginView() ? toPluginView(plugin) : nullptr;
+}
+
+void HTMLPlugInElement::setPersistedPlugin(PluginView* plugin) {
+  if (m_persistedPlugin == plugin)
     return;
-  if (m_persistedPluginWidget) {
-    if (m_persistedPluginWidget->isPluginView()) {
-      m_persistedPluginWidget->hide();
-      disposeWidgetSoon(m_persistedPluginWidget.release());
-    } else {
-      DCHECK(m_persistedPluginWidget->isFrameView() ||
-             m_persistedPluginWidget->isRemoteFrameView());
-    }
+  if (m_persistedPlugin) {
+    m_persistedPlugin->hide();
+    disposeWidgetSoon(m_persistedPlugin.release());
   }
-  m_persistedPluginWidget = frameViewBase;
+  m_persistedPlugin = plugin;
 }
 
 bool HTMLPlugInElement::requestObjectInternal(
@@ -176,9 +188,9 @@ void HTMLPlugInElement::attachLayoutTree(const AttachContext& context) {
   if (!layoutObject() || useFallbackContent()) {
     // If we don't have a layoutObject we have to dispose of any plugins
     // which we persisted over a reattach.
-    if (m_persistedPluginWidget) {
+    if (m_persistedPlugin) {
       HTMLFrameOwnerElement::UpdateSuspendScope suspendWidgetHierarchyUpdates;
-      setPersistedPluginWidget(nullptr);
+      setPersistedPlugin(nullptr);
     }
     return;
   }
@@ -208,11 +220,11 @@ void HTMLPlugInElement::updatePlugin() {
 void HTMLPlugInElement::removedFrom(ContainerNode* insertionPoint) {
   // If we've persisted the plugin and we're removed from the tree then
   // make sure we cleanup the persistance pointer.
-  if (m_persistedPluginWidget) {
+  if (m_persistedPlugin) {
     // TODO(dcheng): This UpdateSuspendScope doesn't seem to provide much;
     // investigate removing it.
     HTMLFrameOwnerElement::UpdateSuspendScope suspendWidgetHierarchyUpdates;
-    setPersistedPluginWidget(nullptr);
+    setPersistedPlugin(nullptr);
   }
   HTMLFrameOwnerElement::removedFrom(insertionPoint);
 }
@@ -252,11 +264,7 @@ void HTMLPlugInElement::createPluginWithoutLayoutObject() {
 }
 
 bool HTMLPlugInElement::shouldAccelerate() const {
-  if (FrameViewBase* frameViewBase = ownedWidget()) {
-    return frameViewBase->isPluginView() &&
-           toPluginView(frameViewBase)->platformLayer();
-  }
-  return false;
+  return ownedPlugin() && ownedPlugin()->platformLayer();
 }
 
 void HTMLPlugInElement::detachLayoutTree(const AttachContext& context) {
@@ -271,13 +279,13 @@ void HTMLPlugInElement::detachLayoutTree(const AttachContext& context) {
     document().decrementLoadEventDelayCount();
   }
 
-  // Only try to persist a plugin FrameViewBase we actually own.
-  FrameViewBase* plugin = ownedWidget();
+  // Only try to persist a plugin we actually own.
+  PluginView* plugin = ownedPlugin();
   if (plugin && context.performingReattach) {
-    setPersistedPluginWidget(releaseWidget());
+    setPersistedPlugin(releasePlugin());
   } else {
-    // Clear the FrameViewBase; will trigger disposal of it with Oilpan.
-    setWidget(nullptr);
+    // Clear the plugin; will trigger disposal of it with Oilpan.
+    setPlugin(nullptr);
   }
 
   resetInstance();
@@ -328,8 +336,8 @@ SharedPersistent<v8::Object>* HTMLPlugInElement::pluginWrapper() {
   if (!m_pluginWrapper) {
     FrameViewBase* plugin;
 
-    if (m_persistedPluginWidget)
-      plugin = m_persistedPluginWidget.get();
+    if (m_persistedPlugin)
+      plugin = m_persistedPlugin.get();
     else
       plugin = pluginWidget();
 
@@ -430,7 +438,7 @@ bool HTMLPlugInElement::isPluginElement() const {
 
 void HTMLPlugInElement::disconnectContentFrame() {
   HTMLFrameOwnerElement::disconnectContentFrame();
-  setPersistedPluginWidget(nullptr);
+  setPersistedPlugin(nullptr);
 }
 
 bool HTMLPlugInElement::layoutObjectIsFocusable() const {
@@ -524,17 +532,17 @@ bool HTMLPlugInElement::loadPlugin(const KURL& url,
   VLOG(1) << "Loaded URL: " << url.getString();
   m_loadedUrl = url;
 
-  if (m_persistedPluginWidget) {
-    setWidget(m_persistedPluginWidget.release());
+  if (m_persistedPlugin) {
+    setPlugin(m_persistedPlugin.release());
   } else {
     bool loadManually =
         document().isPluginDocument() && !document().containsPlugins();
     LocalFrameClient::DetachedPluginPolicy policy =
         requireLayoutObject ? LocalFrameClient::FailOnDetachedPlugin
                             : LocalFrameClient::AllowDetachedPlugin;
-    FrameViewBase* frameViewBase = frame->loader().client()->createPlugin(
+    PluginView* plugin = frame->loader().client()->createPlugin(
         this, url, paramNames, paramValues, mimeType, loadManually, policy);
-    if (!frameViewBase) {
+    if (!plugin) {
       if (!layoutItem.isNull() &&
           !layoutItem.showsUnavailablePluginIndicator()) {
         m_pluginIsAvailable = false;
@@ -544,9 +552,9 @@ bool HTMLPlugInElement::loadPlugin(const KURL& url,
     }
 
     if (!layoutItem.isNull())
-      setWidget(frameViewBase);
+      setPlugin(plugin);
     else
-      setPersistedPluginWidget(frameViewBase);
+      setPersistedPlugin(plugin);
   }
 
   document().setContainsPlugins();
@@ -652,7 +660,7 @@ void HTMLPlugInElement::lazyReattachIfNeeded() {
   if (!useFallbackContent() && needsPluginUpdate() && layoutObject() &&
       !isImageType()) {
     lazyReattachIfAttached();
-    setPersistedPluginWidget(nullptr);
+    setPersistedPlugin(nullptr);
   }
 }
 

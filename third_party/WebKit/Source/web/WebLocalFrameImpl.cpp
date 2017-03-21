@@ -254,7 +254,7 @@ WebPluginContainerImpl* WebLocalFrameImpl::pluginContainerFromFrame(
   if (!frame->document() || !frame->document()->isPluginDocument())
     return 0;
   PluginDocument* pluginDocument = toPluginDocument(frame->document());
-  return toWebPluginContainerImpl(pluginDocument->pluginWidget());
+  return toWebPluginContainerImpl(pluginDocument->pluginView());
 }
 
 WebPluginContainerImpl* WebLocalFrameImpl::currentPluginContainer(

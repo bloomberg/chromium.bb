@@ -160,13 +160,13 @@ LocalFrame* EmptyLocalFrameClient::createFrame(const FrameLoadRequest&,
   return nullptr;
 }
 
-FrameViewBase* EmptyLocalFrameClient::createPlugin(HTMLPlugInElement*,
-                                                   const KURL&,
-                                                   const Vector<String>&,
-                                                   const Vector<String>&,
-                                                   const String&,
-                                                   bool,
-                                                   DetachedPluginPolicy) {
+PluginView* EmptyLocalFrameClient::createPlugin(HTMLPlugInElement*,
+                                                const KURL&,
+                                                const Vector<String>&,
+                                                const Vector<String>&,
+                                                const String&,
+                                                bool,
+                                                DetachedPluginPolicy) {
   return nullptr;
 }
 

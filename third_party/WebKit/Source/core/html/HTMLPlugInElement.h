@@ -31,10 +31,10 @@
 
 namespace blink {
 
-class FrameViewBase;
 class HTMLImageLoader;
 class LayoutPart;
 class LayoutEmbeddedItem;
+class PluginView;
 
 enum PreferPlugInsForImagesOption {
   ShouldPreferPlugInsForImages,
@@ -157,7 +157,10 @@ class CORE_EXPORT HTMLPlugInElement : public HTMLFrameOwnerElement {
   bool allowedToLoadObject(const KURL&, const String& mimeType);
   bool wouldLoadAsNetscapePlugin(const String& url, const String& serviceType);
 
-  void setPersistedPluginWidget(FrameViewBase*);
+  void setPlugin(PluginView*);
+  PluginView* releasePlugin();
+  PluginView* ownedPlugin() const;
+  void setPersistedPlugin(PluginView*);
 
   bool requestObjectInternal(const String& url,
                              const String& mimeType,
@@ -172,12 +175,12 @@ class CORE_EXPORT HTMLPlugInElement : public HTMLFrameOwnerElement {
   // avoid accessing |layoutObject()| in layoutObjectIsFocusable().
   bool m_pluginIsAvailable = false;
 
-  // Normally the Widget is stored in HTMLFrameOwnerElement::m_widget.
+  // Normally the plugin is stored in HTMLFrameOwnerElement::m_widget.
   // However, plugins can persist even when not rendered. In order to
-  // prevent confusing code which may assume that widget() != null
+  // prevent confusing code which may assume that ownedWidget() != null
   // means the frame is active, we save off m_widget here while
   // the plugin is persisting but not being displayed.
-  Member<FrameViewBase> m_persistedPluginWidget;
+  Member<PluginView> m_persistedPlugin;
 };
 
 inline bool isHTMLPlugInElement(const HTMLElement& element) {

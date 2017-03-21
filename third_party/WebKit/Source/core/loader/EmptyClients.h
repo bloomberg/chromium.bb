@@ -326,13 +326,13 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   LocalFrame* createFrame(const FrameLoadRequest&,
                           const AtomicString&,
                           HTMLFrameOwnerElement*) override;
-  FrameViewBase* createPlugin(HTMLPlugInElement*,
-                              const KURL&,
-                              const Vector<String>&,
-                              const Vector<String>&,
-                              const String&,
-                              bool,
-                              DetachedPluginPolicy) override;
+  PluginView* createPlugin(HTMLPlugInElement*,
+                           const KURL&,
+                           const Vector<String>&,
+                           const Vector<String>&,
+                           const String&,
+                           bool,
+                           DetachedPluginPolicy) override;
   bool canCreatePluginWithoutRenderer(const String& mimeType) const override {
     return false;
   }
