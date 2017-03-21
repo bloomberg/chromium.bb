@@ -28,8 +28,8 @@
 #include "content/public/common/resource_response.h"
 #include "mojo/public/c/system/data_pipe.h"
 #include "mojo/public/cpp/bindings/message.h"
-#include "net/base/io_buffer.h"
 #include "net/base/mime_sniffer.h"
+#include "net/base/net_errors.h"
 #include "net/url_request/redirect_info.h"
 
 namespace content {
@@ -227,12 +227,20 @@ void MojoAsyncResourceHandler::OnWillRead(
     scoped_refptr<net::IOBuffer>* buf,
     int* buf_size,
     std::unique_ptr<ResourceController> controller) {
+  // |buffer_| is set to nullptr on successful read completion (Except for the
+  // final 0-byte read, so this DCHECK will also catch OnWillRead being called
+  // after OnReadCompelted(0)).
+  DCHECK(!buffer_);
+  DCHECK_EQ(0u, buffer_offset_);
+
   if (!CheckForSufficientResource()) {
     controller->CancelWithError(net::ERR_INSUFFICIENT_RESOURCES);
     return;
   }
 
+  bool first_call = false;
   if (!shared_writer_) {
+    first_call = true;
     MojoCreateDataPipeOptions options;
     options.struct_size = sizeof(MojoCreateDataPipeOptions);
     options.flags = MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE;
@@ -249,33 +257,38 @@ void MojoAsyncResourceHandler::OnWillRead(
                           base::Bind(&MojoAsyncResourceHandler::OnWritable,
                                      base::Unretained(this)));
     handle_watcher_.ArmOrNotify();
+  }
 
-    bool defer = false;
-    scoped_refptr<net::IOBufferWithSize> buffer;
-    if (!AllocateWriterIOBuffer(&buffer, &defer)) {
+  bool defer = false;
+  if (!AllocateWriterIOBuffer(&buffer_, &defer)) {
+    controller->CancelWithError(net::ERR_INSUFFICIENT_RESOURCES);
+    return;
+  }
+
+  if (defer) {
+    DCHECK(!buffer_);
+    parent_buffer_ = buf;
+    parent_buffer_size_ = buf_size;
+    HoldController(std::move(controller));
+    request()->LogBlockedBy("MojoAsyncResourceHandler");
+    did_defer_on_will_read_ = true;
+    return;
+  }
+
+  // The first call to OnWillRead must return a buffer of at least
+  // kMinAllocationSize. If the Mojo buffer is too small, need to allocate an
+  // intermediary buffer.
+  if (first_call && static_cast<size_t>(buffer_->size()) < kMinAllocationSize) {
+    // The allocated buffer is too small, so need to create an intermediary one.
+    if (EndWrite(0) != MOJO_RESULT_OK) {
       controller->CancelWithError(net::ERR_INSUFFICIENT_RESOURCES);
       return;
-    }
-    if (!defer) {
-      if (static_cast<size_t>(buffer->size()) >= kMinAllocationSize) {
-        *buf = buffer_ = buffer;
-        *buf_size = buffer_->size();
-        controller->Resume();
-        return;
-      }
-
-      // The allocated buffer is too small.
-      if (EndWrite(0) != MOJO_RESULT_OK) {
-        controller->CancelWithError(net::ERR_INSUFFICIENT_RESOURCES);
-        return;
-      }
     }
     DCHECK(!is_using_io_buffer_not_from_writer_);
     is_using_io_buffer_not_from_writer_ = true;
     buffer_ = new net::IOBufferWithSize(kMinAllocationSize);
   }
 
-  DCHECK_EQ(0u, buffer_offset_);
   *buf = buffer_;
   *buf_size = buffer_->size();
   controller->Resume();
@@ -288,7 +301,9 @@ void MojoAsyncResourceHandler::OnReadCompleted(
   DCHECK_GE(bytes_read, 0);
   DCHECK(buffer_);
 
-  if (!bytes_read) {
+  if (bytes_read == 0) {
+    // Note that |buffer_| is not cleared here, which will cause a DCHECK on
+    // subsequent OnWillRead calls.
     controller->Resume();
     return;
   }
@@ -308,12 +323,12 @@ void MojoAsyncResourceHandler::OnReadCompleted(
   }
 
   if (is_using_io_buffer_not_from_writer_) {
-    // Couldn't allocate a buffer on the data pipe in OnWillRead.
+    // Couldn't allocate a large enough buffer on the data pipe in OnWillRead.
     DCHECK_EQ(0u, buffer_bytes_read_);
     buffer_bytes_read_ = bytes_read;
     bool defer = false;
     if (!CopyReadDataToDataPipe(&defer)) {
-      controller->Cancel();
+      controller->CancelWithError(net::ERR_INSUFFICIENT_RESOURCES);
       return;
     }
     if (defer) {
@@ -330,20 +345,8 @@ void MojoAsyncResourceHandler::OnReadCompleted(
     controller->Cancel();
     return;
   }
-  // Allocate a buffer for the next OnWillRead call here, because OnWillRead
-  // doesn't have |defer| parameter.
-  bool defer = false;
-  if (!AllocateWriterIOBuffer(&buffer_, &defer)) {
-    controller->Cancel();
-    return;
-  }
-  if (defer) {
-    request()->LogBlockedBy("MojoAsyncResourceHandler");
-    did_defer_on_writing_ = true;
-    HoldController(std::move(controller));
-    return;
-  }
 
+  buffer_ = nullptr;
   controller->Resume();
 }
 
@@ -363,6 +366,7 @@ void MojoAsyncResourceHandler::FollowRedirect() {
     return;
   }
 
+  DCHECK(!did_defer_on_will_read_);
   DCHECK(!did_defer_on_writing_);
   did_defer_on_redirect_ = false;
   request()->LogUnblocked();
@@ -454,17 +458,12 @@ void MojoAsyncResourceHandler::OnResponseCompleted(
 }
 
 bool MojoAsyncResourceHandler::CopyReadDataToDataPipe(bool* defer) {
-  while (true) {
+  while (buffer_bytes_read_ > 0) {
     scoped_refptr<net::IOBufferWithSize> dest;
     if (!AllocateWriterIOBuffer(&dest, defer))
       return false;
     if (*defer)
       return true;
-    if (buffer_bytes_read_ == 0) {
-      // All bytes are copied. Save the buffer for the next OnWillRead call.
-      buffer_ = std::move(dest);
-      return true;
-    }
 
     size_t copied_size =
         std::min(buffer_bytes_read_, static_cast<size_t>(dest->size()));
@@ -473,13 +472,13 @@ bool MojoAsyncResourceHandler::CopyReadDataToDataPipe(bool* defer) {
     buffer_bytes_read_ -= copied_size;
     if (EndWrite(copied_size) != MOJO_RESULT_OK)
       return false;
-
-    if (buffer_bytes_read_ == 0) {
-      // All bytes are copied.
-      buffer_offset_ = 0;
-      is_using_io_buffer_not_from_writer_ = false;
-    }
   }
+
+  // All bytes are copied.
+  buffer_ = nullptr;
+  buffer_offset_ = 0;
+  is_using_io_buffer_not_from_writer_ = false;
+  return true;
 }
 
 bool MojoAsyncResourceHandler::AllocateWriterIOBuffer(
@@ -494,6 +493,7 @@ bool MojoAsyncResourceHandler::AllocateWriterIOBuffer(
   }
   if (result != MOJO_RESULT_OK)
     return false;
+  DCHECK_GT(available, 0u);
   *buf = new WriterIOBuffer(shared_writer_, data, available);
   return true;
 }
@@ -510,26 +510,36 @@ bool MojoAsyncResourceHandler::CheckForSufficientResource() {
 }
 
 void MojoAsyncResourceHandler::OnWritable(MojoResult result) {
+  if (did_defer_on_will_read_) {
+    DCHECK(has_controller());
+    DCHECK(!did_defer_on_writing_);
+    DCHECK(!did_defer_on_redirect_);
+
+    did_defer_on_will_read_ = false;
+
+    scoped_refptr<net::IOBuffer>* parent_buffer = parent_buffer_;
+    parent_buffer_ = nullptr;
+    int* parent_buffer_size = parent_buffer_size_;
+    parent_buffer_size_ = nullptr;
+
+    request()->LogUnblocked();
+    OnWillRead(parent_buffer, parent_buffer_size, ReleaseController());
+    return;
+  }
+
   if (!did_defer_on_writing_)
     return;
   DCHECK(has_controller());
   DCHECK(!did_defer_on_redirect_);
   did_defer_on_writing_ = false;
 
-  if (is_using_io_buffer_not_from_writer_) {
-    // |buffer_| is set to a net::IOBufferWithSize. Write the buffer contents
-    // to the data pipe.
-    DCHECK_GT(buffer_bytes_read_, 0u);
-    if (!CopyReadDataToDataPipe(&did_defer_on_writing_)) {
-      CancelWithError(net::ERR_FAILED);
-      return;
-    }
-  } else {
-    // Allocate a buffer for the next OnWillRead call here.
-    if (!AllocateWriterIOBuffer(&buffer_, &did_defer_on_writing_)) {
-      CancelWithError(net::ERR_FAILED);
-      return;
-    }
+  DCHECK(is_using_io_buffer_not_from_writer_);
+  // |buffer_| is set to a net::IOBufferWithSize. Write the buffer contents
+  // to the data pipe.
+  DCHECK_GT(buffer_bytes_read_, 0u);
+  if (!CopyReadDataToDataPipe(&did_defer_on_writing_)) {
+    CancelWithError(net::ERR_INSUFFICIENT_RESOURCES);
+    return;
   }
 
   if (did_defer_on_writing_) {

@@ -132,10 +132,18 @@ class CONTENT_EXPORT MojoAsyncResourceHandler
   bool has_checked_for_sufficient_resources_ = false;
   bool sent_received_response_message_ = false;
   bool is_using_io_buffer_not_from_writer_ = false;
+  // True if OnWillRead was deferred, in order to wait to be able to allocate a
+  // buffer.
+  bool did_defer_on_will_read_ = false;
   bool did_defer_on_writing_ = false;
   bool did_defer_on_redirect_ = false;
   base::TimeTicks response_started_ticks_;
   int64_t reported_total_received_bytes_ = 0;
+
+  // Pointer to parent's information about the read buffer. Only non-null while
+  // OnWillRead is deferred.
+  scoped_refptr<net::IOBuffer>* parent_buffer_ = nullptr;
+  int* parent_buffer_size_ = nullptr;
 
   mojo::SimpleWatcher handle_watcher_;
   std::unique_ptr<mojom::URLLoader> url_loader_;
