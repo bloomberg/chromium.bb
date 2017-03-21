@@ -10,6 +10,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/time/clock.h"
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -181,8 +182,10 @@ double GetMetricValueForEstimateHoursBetweenEvents(
 
 }  // namespace
 
-UserClassifier::UserClassifier(PrefService* pref_service)
+UserClassifier::UserClassifier(PrefService* pref_service,
+                               std::unique_ptr<base::Clock> clock)
     : pref_service_(pref_service),
+      clock_(std::move(clock)),
       discount_rate_per_hour_(GetDiscountRatePerHour()),
       min_hours_(GetMinHours()),
       max_hours_(GetMaxHours()),
@@ -353,8 +356,8 @@ double UserClassifier::GetHoursSinceLastTime(Metric metric) const {
   }
 
   base::TimeDelta since_last_time =
-      base::Time::Now() - base::Time::FromInternalValue(pref_service_->GetInt64(
-                              kLastTimeKeys[static_cast<int>(metric)]));
+      clock_->Now() - base::Time::FromInternalValue(pref_service_->GetInt64(
+                          kLastTimeKeys[static_cast<int>(metric)]));
   return since_last_time.InSecondsF() / 3600;
 }
 
@@ -364,7 +367,7 @@ bool UserClassifier::HasLastTime(Metric metric) const {
 
 void UserClassifier::SetLastTimeToNow(Metric metric) {
   pref_service_->SetInt64(kLastTimeKeys[static_cast<int>(metric)],
-                          base::Time::Now().ToInternalValue());
+                          clock_->Now().ToInternalValue());
 }
 
 double UserClassifier::GetMetricValue(Metric metric) const {

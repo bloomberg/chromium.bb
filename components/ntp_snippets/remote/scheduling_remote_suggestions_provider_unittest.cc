@@ -18,6 +18,7 @@
 #include "base/test/simple_test_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/clock.h"
+#include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "components/ntp_snippets/features.h"
 #include "components/ntp_snippets/ntp_snippets_constants.h"
@@ -125,7 +126,8 @@ class SchedulingRemoteSuggestionsProviderTest
                         {kArticleSuggestionsFeature.name}),
         underlying_provider_(nullptr),
         scheduling_provider_(nullptr),
-        user_classifier_(/*pref_service=*/nullptr) {
+        user_classifier_(/*pref_service=*/nullptr,
+                         base::MakeUnique<base::DefaultClock>()) {
     SchedulingRemoteSuggestionsProvider::RegisterProfilePrefs(
         utils_.pref_service()->registry());
     RequestThrottler::RegisterProfilePrefs(utils_.pref_service()->registry());

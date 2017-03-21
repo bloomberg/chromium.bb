@@ -11,8 +11,10 @@
 
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/default_clock.h"
 #include "base/values.h"
 #include "components/ntp_snippets/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -33,7 +35,7 @@ ContentSuggestionsService::ContentSuggestionsService(
       remote_suggestions_provider_(nullptr),
       remote_suggestions_scheduler_(nullptr),
       pref_service_(pref_service),
-      user_classifier_(pref_service),
+      user_classifier_(pref_service, base::MakeUnique<base::DefaultClock>()),
       category_ranker_(std::move(category_ranker)) {
   // Can be null in tests.
   if (signin_manager) {

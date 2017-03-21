@@ -5,13 +5,17 @@
 #ifndef COMPONENTS_NTP_SNIPPETS_USER_CLASSIFIER_H_
 #define COMPONENTS_NTP_SNIPPETS_USER_CLASSIFIER_H_
 
+#include <memory>
 #include <string>
 
 #include "base/macros.h"
-#include "base/time/time.h"
 
 class PrefRegistrySimple;
 class PrefService;
+
+namespace base {
+class Clock;
+}  // namespace base
 
 namespace ntp_snippets {
 
@@ -52,7 +56,7 @@ class UserClassifier {
   };
 
   // The provided |pref_service| may be nullptr in unit-tests.
-  explicit UserClassifier(PrefService* pref_service);
+  UserClassifier(PrefService* pref_service, std::unique_ptr<base::Clock> clock);
   ~UserClassifier();
 
   // Registers profile prefs for all metrics. Called from browser_prefs.cc.
@@ -93,6 +97,7 @@ class UserClassifier {
   void ClearMetricValue(Metric metric);
 
   PrefService* pref_service_;
+  std::unique_ptr<base::Clock> clock_;
 
   // Params of the metric.
   const double discount_rate_per_hour_;

@@ -22,6 +22,7 @@
 #include "base/test/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "components/image_fetcher/image_decoder.h"
 #include "components/image_fetcher/image_fetcher.h"
@@ -401,7 +402,8 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
             /*default_factory=*/&failing_url_fetcher_factory_),
         test_url_(kTestContentSuggestionsServerWithAPIKey),
         category_ranker_(base::MakeUnique<ConstantCategoryRanker>()),
-        user_classifier_(/*pref_service=*/nullptr),
+        user_classifier_(/*pref_service=*/nullptr,
+                         base::MakeUnique<base::DefaultClock>()),
         suggestions_fetcher_(nullptr),
         image_fetcher_(nullptr),
         database_(nullptr) {
