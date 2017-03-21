@@ -41,6 +41,7 @@
 #include "ui/android/overscroll_refresh_handler.h"
 #include "ui/android/window_android.h"
 #include "ui/gfx/android/java_bitmap.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 
 using base::android::AttachCurrentThread;
@@ -706,6 +707,16 @@ void WebContentsAndroid::DismissTextHandles(
   RenderWidgetHostViewAndroid* view = GetRenderWidgetHostViewAndroid();
   if (view)
     view->DismissTextHandles();
+}
+
+void WebContentsAndroid::ShowContextMenuAtPoint(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    int x,
+    int y) {
+  RenderWidgetHostViewAndroid* view = GetRenderWidgetHostViewAndroid();
+  if (view)
+    view->ShowContextMenuAtPoint(gfx::Point(x, y));
 }
 
 void WebContentsAndroid::SetHasPersistentVideo(

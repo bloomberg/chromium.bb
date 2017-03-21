@@ -1787,6 +1787,12 @@ void RenderWidgetHostViewAndroid::MoveCaret(const gfx::Point& point) {
     host_->MoveCaret(point);
 }
 
+void RenderWidgetHostViewAndroid::ShowContextMenuAtPoint(
+    const gfx::Point& point) {
+  if (host_)
+    host_->ShowContextMenuAtPoint(point);
+}
+
 void RenderWidgetHostViewAndroid::DismissTextHandles() {
   if (selection_controller_)
     selection_controller_->HideAndDisallowShowingAutomatically();

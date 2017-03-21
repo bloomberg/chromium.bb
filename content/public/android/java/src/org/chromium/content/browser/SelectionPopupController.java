@@ -801,7 +801,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
                 if (mWasPastePopupShowingOnInsertionDragStart) {
                     destroyPastePopup();
                 } else {
-                    createAndShowPastePopup(xAnchor, yAnchor);
+                    mWebContents.showContextMenuAtPoint(xAnchor, yAnchor);
                 }
                 mWasPastePopupShowingOnInsertionDragStart = false;
                 break;
@@ -819,7 +819,7 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
 
             case SelectionEventType.INSERTION_HANDLE_DRAG_STOPPED:
                 if (mWasPastePopupShowingOnInsertionDragStart) {
-                    createAndShowPastePopup(xAnchor, yAnchor);
+                    mWebContents.showContextMenuAtPoint(xAnchor, yAnchor);
                 }
                 mWasPastePopupShowingOnInsertionDragStart = false;
                 break;

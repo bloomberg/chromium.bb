@@ -237,6 +237,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   bool HasValidFrame() const;
 
   void MoveCaret(const gfx::Point& point);
+  void ShowContextMenuAtPoint(const gfx::Point& point);
   void DismissTextHandles();
   void SetTextHandlesTemporarilyHidden(bool hidden);
   void OnShowUnhandledTapUIIfNeeded(int x_dip, int y_dip);
