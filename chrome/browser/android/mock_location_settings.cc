@@ -40,6 +40,10 @@ bool MockLocationSettings::HasShownLocationSettingsDialog() {
   return has_shown_location_settings_dialog_;
 }
 
+void MockLocationSettings::ClearHasShownLocationSettingsDialog() {
+  has_shown_location_settings_dialog_ = false;
+}
+
 bool MockLocationSettings::HasAndroidLocationPermission() {
   return has_android_location_permission_;
 }

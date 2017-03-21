@@ -18,13 +18,38 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/common/pref_names.h"
 #include "components/infobars/core/infobar.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
+
+namespace {
+
+int g_day_offset_for_testing = 0;
+
+const char* g_dse_origin_for_testing = nullptr;
+
+base::Time GetTimeNow() {
+  return base::Time::Now() +
+         base::TimeDelta::FromDays(g_day_offset_for_testing);
+}
+
+}  // namespace
+
+// static
+void GeolocationPermissionContextAndroid::RegisterProfilePrefs(
+    PrefRegistrySimple* registry) {
+  registry->RegisterIntegerPref(prefs::kLocationSettingsBackoffLevelDSE, 0);
+  registry->RegisterIntegerPref(prefs::kLocationSettingsBackoffLevelDefault, 0);
+  registry->RegisterInt64Pref(prefs::kLocationSettingsNextShowDSE, 0);
+  registry->RegisterInt64Pref(prefs::kLocationSettingsNextShowDefault, 0);
+}
 
 GeolocationPermissionContextAndroid::
     GeolocationPermissionContextAndroid(Profile* profile)
@@ -75,6 +100,17 @@ ContentSetting GeolocationPermissionContextAndroid::GetPermissionStatusInternal(
   }
 
   return value;
+}
+
+// static
+void GeolocationPermissionContextAndroid::AddDayOffsetForTesting(int days) {
+  g_day_offset_for_testing += days;
+}
+
+// static
+void GeolocationPermissionContextAndroid::SetDSEOriginForTesting(
+    const char* dse_origin) {
+  g_dse_origin_for_testing = dse_origin;
 }
 
 void GeolocationPermissionContextAndroid::RequestPermission(
@@ -129,6 +165,17 @@ void GeolocationPermissionContextAndroid::CancelPermissionRequest(
   GeolocationPermissionContext::CancelPermissionRequest(web_contents, id);
 }
 
+void GeolocationPermissionContextAndroid::UserMadePermissionDecision(
+    const PermissionRequestID& id,
+    const GURL& requesting_origin,
+    const GURL& embedding_origin,
+    ContentSetting content_setting) {
+  // If the user has accepted geolocation, reset the location settings dialog
+  // backoff.
+  if (content_setting == CONTENT_SETTING_ALLOW)
+    ResetLocationSettingsBackOff(requesting_origin);
+}
+
 void GeolocationPermissionContextAndroid::NotifyPermissionSet(
     const PermissionRequestID& id,
     const GURL& requesting_origin,
@@ -139,13 +186,25 @@ void GeolocationPermissionContextAndroid::NotifyPermissionSet(
   if (content_setting == CONTENT_SETTING_ALLOW &&
       !location_settings_->IsSystemLocationSettingEnabled()) {
     // There is no need to check CanShowLocationSettingsDialog here again, as it
-    // must have been checked to get this far.
+    // must have been checked to get this far. But, the backoff will not have
+    // been checked, so check that. Backoff isn't checked earlier because if the
+    // content setting is ASK the backoff should be ignored. However if we get
+    // here and the content setting was ASK, the user must have accepted which
+    // would reset the backoff.
+    if (IsInLocationSettingsBackOff(requesting_origin)) {
+      FinishNotifyPermissionSet(id, requesting_origin, embedding_origin,
+                                callback, false /* persist */,
+                                CONTENT_SETTING_BLOCK);
+      return;
+    }
+
     content::WebContents* web_contents =
         content::WebContents::FromRenderFrameHost(
             content::RenderFrameHost::FromID(id.render_process_id(),
                                              id.render_frame_id()));
     location_settings_->PromptToEnableSystemLocationSetting(
-        GetLocationSettingsDialogContext(requesting_origin), web_contents,
+        IsRequestingOriginDSE(requesting_origin) ? SEARCH : DEFAULT,
+        web_contents,
         base::BindOnce(
             &GeolocationPermissionContextAndroid::OnLocationSettingsDialogShown,
             weak_factory_.GetWeakPtr(), id, requesting_origin, embedding_origin,
@@ -170,8 +229,15 @@ GeolocationPermissionContextAndroid::UpdatePermissionStatusWithDeviceStatus(
       // gesture here. If there is a possibility of PROMPT (i.e. if there is a
       // user gesture attached to the later request) that should be returned,
       // not BLOCK.
-      if (CanShowLocationSettingsDialog(requesting_origin,
-                                        true /* user_gesture */)) {
+      // If the permission is in the ASK state, backoff is ignored. Permission
+      // prompts are shown regardless of backoff, if the location is off and the
+      // LSD can be shown, as permission prompts are less annoying than the
+      // modal LSD, and if the user accepts the permission prompt the LSD
+      // backoff will be reset.
+      if (CanShowLocationSettingsDialog(
+              requesting_origin, true /* user_gesture */,
+              result.content_setting ==
+                  CONTENT_SETTING_ASK /* ignore_backoff */)) {
         result.content_setting = CONTENT_SETTING_ASK;
       } else {
         result.content_setting = CONTENT_SETTING_BLOCK;
@@ -191,6 +257,71 @@ GeolocationPermissionContextAndroid::UpdatePermissionStatusWithDeviceStatus(
   return result;
 }
 
+std::string
+GeolocationPermissionContextAndroid::GetLocationSettingsBackOffLevelPref(
+    const GURL& requesting_origin) const {
+  if (IsRequestingOriginDSE(requesting_origin))
+    return prefs::kLocationSettingsBackoffLevelDSE;
+
+  return prefs::kLocationSettingsBackoffLevelDefault;
+}
+
+std::string
+GeolocationPermissionContextAndroid::GetLocationSettingsNextShowPref(
+    const GURL& requesting_origin) const {
+  if (IsRequestingOriginDSE(requesting_origin))
+    return prefs::kLocationSettingsNextShowDSE;
+
+  return prefs::kLocationSettingsNextShowDefault;
+}
+
+bool GeolocationPermissionContextAndroid::IsInLocationSettingsBackOff(
+    const GURL& requesting_origin) const {
+  base::Time next_show =
+      base::Time::FromInternalValue(profile()->GetPrefs()->GetInt64(
+          GetLocationSettingsNextShowPref(requesting_origin)));
+
+  return GetTimeNow() < next_show;
+}
+
+void GeolocationPermissionContextAndroid::ResetLocationSettingsBackOff(
+    const GURL& requesting_origin) {
+  PrefService* prefs = profile()->GetPrefs();
+  prefs->ClearPref(GetLocationSettingsNextShowPref(requesting_origin));
+  prefs->ClearPref(GetLocationSettingsBackOffLevelPref(requesting_origin));
+}
+
+void GeolocationPermissionContextAndroid::UpdateLocationSettingsBackOff(
+    const GURL& requesting_origin) {
+  // Backoff levels:
+  // 0: 1 week
+  // 1: 1 month
+  // 2: 3 months
+  PrefService* prefs = profile()->GetPrefs();
+  int backoff_level =
+      prefs->GetInteger(GetLocationSettingsBackOffLevelPref(requesting_origin));
+
+  base::Time next_show = GetTimeNow();
+  switch (backoff_level) {
+    case 0:
+      next_show += base::TimeDelta::FromDays(7);
+      break;
+    case 1:
+      next_show += base::TimeDelta::FromDays(30);
+      break;
+    default:
+      next_show += base::TimeDelta::FromDays(90);
+  }
+
+  if (backoff_level < 2)
+    backoff_level++;
+
+  prefs->SetInteger(GetLocationSettingsBackOffLevelPref(requesting_origin),
+                    backoff_level);
+  prefs->SetInt64(GetLocationSettingsNextShowPref(requesting_origin),
+                  next_show.ToInternalValue());
+}
+
 bool GeolocationPermissionContextAndroid::IsLocationAccessPossible(
     content::WebContents* web_contents,
     const GURL& requesting_origin,
@@ -199,26 +330,30 @@ bool GeolocationPermissionContextAndroid::IsLocationAccessPossible(
           location_settings_->CanPromptForAndroidLocationPermission(
               web_contents)) &&
          (location_settings_->IsSystemLocationSettingEnabled() ||
-          CanShowLocationSettingsDialog(requesting_origin, user_gesture));
+          CanShowLocationSettingsDialog(requesting_origin, user_gesture,
+                                        true /* ignore_backoff */));
 }
 
-LocationSettingsDialogContext
-GeolocationPermissionContextAndroid::GetLocationSettingsDialogContext(
+bool GeolocationPermissionContextAndroid::IsRequestingOriginDSE(
     const GURL& requesting_origin) const {
-  bool is_dse_origin = false;
-  TemplateURLService* template_url_service =
-      TemplateURLServiceFactory::GetForProfile(profile());
-  if (template_url_service) {
-    const TemplateURL* template_url =
-        template_url_service->GetDefaultSearchProvider();
-    if (template_url) {
-      GURL search_url = template_url->GenerateSearchURL(
-          template_url_service->search_terms_data());
-      is_dse_origin = url::IsSameOriginWith(requesting_origin, search_url);
+  GURL dse_url;
+
+  if (g_dse_origin_for_testing) {
+    dse_url = GURL(g_dse_origin_for_testing);
+  } else {
+    TemplateURLService* template_url_service =
+        TemplateURLServiceFactory::GetForProfile(profile());
+    if (template_url_service) {
+      const TemplateURL* template_url =
+          template_url_service->GetDefaultSearchProvider();
+      if (template_url) {
+        dse_url = template_url->GenerateSearchURL(
+            template_url_service->search_terms_data());
+      }
     }
   }
 
-  return is_dse_origin ? SEARCH : DEFAULT;
+  return url::IsSameOriginWith(requesting_origin, dse_url);
 }
 
 void GeolocationPermissionContextAndroid::HandleUpdateAndroidPermissions(
@@ -239,17 +374,19 @@ void GeolocationPermissionContextAndroid::HandleUpdateAndroidPermissions(
 
 bool GeolocationPermissionContextAndroid::CanShowLocationSettingsDialog(
     const GURL& requesting_origin,
-    bool user_gesture) const {
+    bool user_gesture,
+    bool ignore_backoff) const {
   if (!base::FeatureList::IsEnabled(features::kLsdPermissionPrompt))
     return false;
 
   // If this isn't the default search engine, a gesture is needed.
-  if (GetLocationSettingsDialogContext(requesting_origin) == DEFAULT &&
-      !user_gesture) {
+  if (!IsRequestingOriginDSE(requesting_origin) && !user_gesture) {
     return false;
   }
 
-  // TODO(benwells): Also check backoff for |requesting_origin|.
+  if (!ignore_backoff && IsInLocationSettingsBackOff(requesting_origin))
+    return false;
+
   return location_settings_->CanPromptToEnableSystemLocationSetting();
 }
 
@@ -261,7 +398,10 @@ void GeolocationPermissionContextAndroid::OnLocationSettingsDialogShown(
     bool persist,
     ContentSetting content_setting,
     LocationSettingsDialogOutcome prompt_outcome) {
-  if (prompt_outcome != GRANTED) {
+  if (prompt_outcome == GRANTED) {
+    ResetLocationSettingsBackOff(requesting_origin);
+  } else {
+    UpdateLocationSettingsBackOff(requesting_origin);
     content_setting = CONTENT_SETTING_BLOCK;
     persist = false;
   }

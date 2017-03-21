@@ -24,6 +24,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "chrome/browser/android/location_settings.h"
 #include "chrome/browser/geolocation/geolocation_permission_context.h"
 #include "components/location/android/location_settings_dialog_context.h"
@@ -39,10 +40,13 @@ class InfoBar;
 
 class GURL;
 class PermissionRequestID;
+class PrefRegistrySimple;
 
 class GeolocationPermissionContextAndroid
     : public GeolocationPermissionContext {
  public:
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
+
   explicit GeolocationPermissionContextAndroid(Profile* profile);
   ~GeolocationPermissionContextAndroid() override;
 
@@ -56,6 +60,9 @@ class GeolocationPermissionContextAndroid
  private:
   friend class GeolocationPermissionContextTests;
 
+  static void AddDayOffsetForTesting(int days);
+  static void SetDSEOriginForTesting(const char* dse_origin);
+
   // GeolocationPermissionContext:
   void RequestPermission(
       content::WebContents* web_contents,
@@ -65,6 +72,10 @@ class GeolocationPermissionContextAndroid
       const BrowserPermissionCallback& callback) override;
   void CancelPermissionRequest(content::WebContents* web_contents,
                                const PermissionRequestID& id) override;
+  void UserMadePermissionDecision(const PermissionRequestID& id,
+                                  const GURL& requesting_origin,
+                                  const GURL& embedding_origin,
+                                  ContentSetting content_setting) override;
   void NotifyPermissionSet(const PermissionRequestID& id,
                            const GURL& requesting_origin,
                            const GURL& embedding_origin,
@@ -76,12 +87,23 @@ class GeolocationPermissionContextAndroid
       const GURL& requesting_origin,
       const GURL& embedding_origin) const override;
 
+  // Functions to handle back off for showing the Location Settings Dialog.
+  std::string GetLocationSettingsBackOffLevelPref(
+      const GURL& requesting_origin) const;
+  std::string GetLocationSettingsNextShowPref(
+      const GURL& requesting_origin) const;
+  bool IsInLocationSettingsBackOff(const GURL& requesting_origin) const;
+  void ResetLocationSettingsBackOff(const GURL& requesting_origin);
+  void UpdateLocationSettingsBackOff(const GURL& requesting_origin);
+
+  // Returns whether location access is possible for the given origin. Ignores
+  // Location Settings Dialog backoff, as the backoff is ignored if the user
+  // will be prompted for permission.
   bool IsLocationAccessPossible(content::WebContents* web_contents,
                                 const GURL& requesting_origin,
                                 bool user_gesture);
 
-  LocationSettingsDialogContext GetLocationSettingsDialogContext(
-      const GURL& requesting_origin) const;
+  bool IsRequestingOriginDSE(const GURL& requesting_origin) const;
 
   void HandleUpdateAndroidPermissions(const PermissionRequestID& id,
                                       const GURL& requesting_frame_origin,
@@ -94,7 +116,8 @@ class GeolocationPermissionContextAndroid
   // be shown, any gesture requirements for the origin are met, and the dialog
   // is not being suppressed for backoff.
   bool CanShowLocationSettingsDialog(const GURL& requesting_origin,
-                                     bool user_gesture) const;
+                                     bool user_gesture,
+                                     bool ignore_backoff) const;
 
   void OnLocationSettingsDialogShown(
       const PermissionRequestID& id,

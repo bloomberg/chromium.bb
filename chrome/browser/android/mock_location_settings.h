@@ -23,6 +23,7 @@ class MockLocationSettings : public LocationSettings {
       bool enabled,
       LocationSettingsDialogOutcome outcome);
   static bool HasShownLocationSettingsDialog();
+  static void ClearHasShownLocationSettingsDialog();
 
   // LocationSettings implementation:
   bool HasAndroidLocationPermission() override;

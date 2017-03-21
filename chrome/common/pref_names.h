@@ -877,6 +877,11 @@ extern const char kOriginTrialDisabledTokens[];
 extern const char kComponentUpdatesEnabled[];
 
 #if defined(OS_ANDROID)
+extern const char kLocationSettingsBackoffLevelDSE[];
+extern const char kLocationSettingsBackoffLevelDefault[];
+extern const char kLocationSettingsNextShowDSE[];
+extern const char kLocationSettingsNextShowDefault[];
+
 extern const char kSearchGeolocationDisclosureDismissed[];
 extern const char kSearchGeolocationDisclosureShownCount[];
 extern const char kSearchGeolocationDisclosureLastShowDate[];

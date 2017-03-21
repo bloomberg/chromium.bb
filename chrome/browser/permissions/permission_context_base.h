@@ -194,6 +194,14 @@ class PermissionContextBase : public KeyedService {
                                  const BrowserPermissionCallback& callback,
                                  bool permission_blocked);
 
+  // Called when the user has made a permission decision. This is a hook for
+  // descendent classes to do appropriate things they might need to do when this
+  // happens.
+  virtual void UserMadePermissionDecision(const PermissionRequestID& id,
+                                          const GURL& requesting_origin,
+                                          const GURL& embedding_origin,
+                                          ContentSetting content_setting);
+
   Profile* profile_;
   const ContentSettingsType content_settings_type_;
 #if defined(OS_ANDROID)

@@ -189,6 +189,12 @@ void PermissionContextBase::ContinueRequestPermission(
                    user_gesture, callback);
 }
 
+void PermissionContextBase::UserMadePermissionDecision(
+    const PermissionRequestID& id,
+    const GURL& requesting_origin,
+    const GURL& embedding_origin,
+    ContentSetting content_setting) {}
+
 PermissionResult PermissionContextBase::GetPermissionStatus(
     content::RenderFrameHost* render_frame_host,
     const GURL& requesting_origin,
@@ -359,6 +365,8 @@ void PermissionContextBase::PermissionDecided(
     PermissionUmaUtil::RecordEmbargoStatus(embargo_status);
   }
 
+  UserMadePermissionDecision(id, requesting_origin, embedding_origin,
+                             content_setting);
   NotifyPermissionSet(id, requesting_origin, embedding_origin, callback,
                       persist, content_setting);
 }
