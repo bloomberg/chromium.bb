@@ -75,3 +75,26 @@ def ParseJsonFileWithComments(path):
   lines = ['' if prog.match(line) else line for line in lines]
   parsed_contents = json.loads('\n'.join(lines))
   return parsed_contents
+
+
+def GetNestedDictValue(a_dict, nested_key):
+  """Obtains nested dict's value given hierarchical key sequence.
+
+  For example, given d['a']['b']['c'] = 'z':
+  GetNestedDictValue(d, ['a', 'b', 'c']) returns 'z'
+
+  Args:
+    a_dict: nested dict.
+    nested_key: hierarchical key sequence.
+
+  Returns:
+    Value if found. None if any of keys doesn't exist.
+  """
+  obj = a_dict
+  for k in nested_key:
+    if not isinstance(obj, dict):
+      return None
+    obj = obj.get(k)
+    if obj is None:
+      return None
+  return obj

@@ -67,3 +67,34 @@ class JsonHelpersTest(cros_test_lib.MockTestCase):
     self.assertRaises(ValueError,
                       json_lib.ParseJsonFileWithComments,
                       'fake path')
+
+  def testGetNestedDictValue(self):
+    """Test that GetNestedDictValue is correct."""
+    NESTED_DICT = {
+        'lv1.1': {
+            'lv2.1': {'value': '1.1'},
+            'lv2.2': {'value': '1.2'}},
+        'lv1.2': {
+            'lv2.1': {'value': '2.1'},
+            'lv2.2': {'value': '2.2'}}}
+    self.assertEqual(
+        '1.1',
+        json_lib.GetNestedDictValue(NESTED_DICT, ['lv1.1', 'lv2.1', 'value']))
+    self.assertEqual(
+        '2.1',
+        json_lib.GetNestedDictValue(NESTED_DICT, ['lv1.2', 'lv2.1', 'value']))
+    # level 2 key missing
+    self.assertIsNone(
+        json_lib.GetNestedDictValue(NESTED_DICT, ['lv1.1', 'lv2.3', 'value']))
+    # level 1 key missing
+    self.assertIsNone(
+        json_lib.GetNestedDictValue(NESTED_DICT, ['lv1.3', 'lv2.1', 'value']))
+    # no level 3 key
+    self.assertIsNone(
+        json_lib.GetNestedDictValue(NESTED_DICT,
+                                    ['lv1.1', 'lv2.1', 'lv3', 'value']))
+
+    # no level 4
+    self.assertIsNone(
+        json_lib.GetNestedDictValue(NESTED_DICT,
+                                    ['lv1.1', 'lv2.1', 'value', '1.1']))
