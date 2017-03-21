@@ -80,7 +80,7 @@ void FontFaceCache::remove(const StyleRuleFontFace* fontFaceRule) {
   StyleRuleToFontFace::iterator it = m_styleRuleToFontFace.find(fontFaceRule);
   if (it != m_styleRuleToFontFace.end()) {
     removeFontFace(it->value.get(), true);
-    m_styleRuleToFontFace.remove(it);
+    m_styleRuleToFontFace.erase(it);
   }
 }
 
@@ -99,9 +99,9 @@ void FontFaceCache::removeFontFace(FontFace* fontFace, bool cssConnected) {
 
   segmentedFontFace->removeFontFace(fontFace);
   if (segmentedFontFace->isEmpty()) {
-    familyFontFaces->remove(familyFontFacesIter);
+    familyFontFaces->erase(familyFontFacesIter);
     if (familyFontFaces->isEmpty())
-      m_fontFaces.remove(fontFacesIter);
+      m_fontFaces.erase(fontFacesIter);
   }
   m_fonts.erase(fontFace->family());
   if (cssConnected)

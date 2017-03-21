@@ -224,7 +224,7 @@ void ScrollbarThemeMac::registerScrollbar(ScrollbarThemeClient& scrollbar) {
 }
 
 void ScrollbarThemeMac::unregisterScrollbar(ScrollbarThemeClient& scrollbar) {
-  scrollbarPainterMap().remove(&scrollbar);
+  scrollbarPainterMap().erase(&scrollbar);
   scrollbarSet().erase(&scrollbar);
 }
 

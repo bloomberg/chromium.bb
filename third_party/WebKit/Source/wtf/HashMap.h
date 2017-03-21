@@ -150,12 +150,8 @@ class HashMap {
   template <typename IncomingKeyType, typename IncomingMappedType>
   AddResult insert(IncomingKeyType&&, IncomingMappedType&&);
 
-  // TODO(pilgrim) remove remove() method once all references migrated to
-  // erase()
-  // https://crbug.com/662431
-  void remove(KeyPeekInType);
   void erase(KeyPeekInType);
-  void remove(iterator);
+  void erase(iterator);
   void clear();
   template <typename Collection>
   void removeAll(const Collection& toBeRemoved) {
@@ -608,7 +604,7 @@ template <typename T,
           typename W,
           typename X,
           typename Y>
-inline void HashMap<T, U, V, W, X, Y>::remove(iterator it) {
+inline void HashMap<T, U, V, W, X, Y>::erase(iterator it) {
   m_impl.remove(it.m_impl);
 }
 
@@ -618,18 +614,8 @@ template <typename T,
           typename W,
           typename X,
           typename Y>
-inline void HashMap<T, U, V, W, X, Y>::remove(KeyPeekInType key) {
-  remove(find(key));
-}
-
-template <typename T,
-          typename U,
-          typename V,
-          typename W,
-          typename X,
-          typename Y>
 inline void HashMap<T, U, V, W, X, Y>::erase(KeyPeekInType key) {
-  remove(find(key));
+  erase(find(key));
 }
 
 template <typename T,
@@ -653,7 +639,7 @@ auto HashMap<T, U, V, W, X, Y>::take(KeyPeekInType key) -> MappedType {
   if (it == end())
     return MappedTraits::emptyValue();
   MappedType result = std::move(it->value);
-  remove(it);
+  erase(it);
   return result;
 }
 

@@ -66,7 +66,7 @@ void GenericFontFamilySettings::setGenericFontFamilyMap(
   if (family.isEmpty()) {
     if (it == fontMap.end())
       return;
-    fontMap.remove(it);
+    fontMap.erase(it);
   } else if (it != fontMap.end() && it->value == family) {
     return;
   } else {

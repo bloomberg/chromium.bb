@@ -19,7 +19,7 @@ TEST(WTFMapTest, StructKey) {
   ASSERT_NE(map.end(), map.find(key));
   ASSERT_EQ(123, map.find(key)->value);
 
-  map.remove(key);
+  map.erase(key);
   ASSERT_EQ(0u, map.size());
 }
 
@@ -32,7 +32,7 @@ TEST(WTFMapTest, TypemappedStructKey) {
   ASSERT_NE(map.end(), map.find(key));
   ASSERT_EQ(123, map.find(key)->value);
 
-  map.remove(key);
+  map.erase(key);
   ASSERT_EQ(0u, map.size());
 }
 

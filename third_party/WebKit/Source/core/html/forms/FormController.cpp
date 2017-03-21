@@ -280,7 +280,7 @@ FormControlState SavedFormState::takeControlState(const AtomicString& name,
   FormControlState state = it->value.takeFirst();
   m_controlStateCount--;
   if (!it->value.size())
-    m_stateForNewFormElements.remove(it);
+    m_stateForNewFormElements.erase(it);
   return state;
 }
 
@@ -489,7 +489,7 @@ FormControlState FormController::takeStateForFormElement(
   FormControlState state =
       it->value->takeControlState(control.name(), control.type());
   if (it->value->isEmpty())
-    m_savedFormStateMap.remove(it);
+    m_savedFormStateMap.erase(it);
   return state;
 }
 

@@ -82,7 +82,7 @@ inline void UserActionElementSet::clearFlags(Element* element, unsigned flags) {
   unsigned updated = found->value & ~flags;
   if (!updated) {
     element->setUserActionElement(false);
-    m_elements.remove(found);
+    m_elements.erase(found);
     return;
   }
 

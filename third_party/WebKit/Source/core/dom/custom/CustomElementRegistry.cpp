@@ -199,7 +199,7 @@ CustomElementDefinition* CustomElementRegistry::define(
   const auto& entry = m_whenDefinedPromiseMap.find(name);
   if (entry != m_whenDefinedPromiseMap.end()) {
     entry->value->resolve();
-    m_whenDefinedPromiseMap.remove(entry);
+    m_whenDefinedPromiseMap.erase(entry);
   }
   return definition;
 }
@@ -302,7 +302,7 @@ void CustomElementRegistry::collectCandidates(
     sorter.add(element);
   }
 
-  m_upgradeCandidates->remove(it);
+  m_upgradeCandidates->erase(it);
 
   Document* document = m_owner->document();
   if (!document)

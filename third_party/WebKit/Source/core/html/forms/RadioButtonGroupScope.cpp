@@ -151,7 +151,7 @@ void RadioButtonGroup::remove(HTMLInputElement* button) {
   bool wasValid = isValid();
   DCHECK_EQ(it->value, button->isRequired());
   updateRequiredButton(*it, false);
-  m_members.remove(it);
+  m_members.erase(it);
   if (m_checkedButton == button)
     m_checkedButton = nullptr;
 

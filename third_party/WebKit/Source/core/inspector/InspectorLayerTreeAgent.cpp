@@ -412,7 +412,7 @@ Response InspectorLayerTreeAgent::releaseSnapshot(const String& snapshotId) {
   SnapshotById::iterator it = m_snapshotById.find(snapshotId);
   if (it == m_snapshotById.end())
     return Response::Error("Snapshot not found");
-  m_snapshotById.remove(it);
+  m_snapshotById.erase(it);
   return Response::OK();
 }
 

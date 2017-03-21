@@ -102,7 +102,7 @@ void DocumentOrderedMap::remove(const AtomicString& key, Element* element) {
   DCHECK(entry->count);
   if (entry->count == 1) {
     DCHECK(!entry->element || entry->element == element);
-    m_map.remove(it);
+    m_map.erase(it);
   } else {
     if (entry->element == element) {
       DCHECK(entry->orderedList.isEmpty() ||

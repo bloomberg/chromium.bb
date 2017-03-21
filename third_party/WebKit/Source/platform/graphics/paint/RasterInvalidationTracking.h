@@ -65,7 +65,7 @@ class PLATFORM_EXPORT RasterInvalidationTrackingMap {
   void remove(TargetClass* key) {
     auto it = m_invalidationTrackingMap.find(key);
     if (it != m_invalidationTrackingMap.end())
-      m_invalidationTrackingMap.remove(it);
+      m_invalidationTrackingMap.erase(it);
   }
 
   RasterInvalidationTracking& add(TargetClass* key) {

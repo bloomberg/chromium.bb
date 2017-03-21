@@ -137,7 +137,7 @@ ScriptPromise RemotePlayback::cancelWatchAvailability(ScriptState* scriptState,
     return promise;
   }
 
-  m_availabilityCallbacks.remove(iter);
+  m_availabilityCallbacks.erase(iter);
 
   resolver->resolve();
   return promise;

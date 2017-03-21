@@ -182,7 +182,7 @@ class CSSAnimationUpdate final {
     m_newTransitions.set(property, newTransition);
   }
   void unstartTransition(const PropertyHandle& property) {
-    m_newTransitions.remove(property);
+    m_newTransitions.erase(property);
   }
   bool isCancelledTransition(const PropertyHandle& property) const {
     return m_cancelledTransitions.contains(property);

@@ -142,7 +142,7 @@ inline bool HashCountedSet<T, U, V, W>::remove(iterator it) {
     return false;
   }
 
-  m_impl.remove(it);
+  m_impl.erase(it);
   return true;
 }
 
@@ -151,7 +151,7 @@ inline void HashCountedSet<T, U, V, W>::removeAll(iterator it) {
   if (it == end())
     return;
 
-  m_impl.remove(it);
+  m_impl.erase(it);
 }
 
 template <typename Value,

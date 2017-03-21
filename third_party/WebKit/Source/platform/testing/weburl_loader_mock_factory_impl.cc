@@ -66,11 +66,11 @@ void WebURLLoaderMockFactoryImpl::registerErrorURL(
 void WebURLLoaderMockFactoryImpl::unregisterURL(const blink::WebURL& url) {
   URLToResponseMap::iterator iter = url_to_response_info_.find(url);
   DCHECK(iter != url_to_response_info_.end());
-  url_to_response_info_.remove(iter);
+  url_to_response_info_.erase(iter);
 
   URLToErrorMap::iterator error_iter = url_to_error_info_.find(url);
   if (error_iter != url_to_error_info_.end())
-    url_to_error_info_.remove(error_iter);
+    url_to_error_info_.erase(error_iter);
 }
 
 void WebURLLoaderMockFactoryImpl::unregisterAllURLsAndClearMemoryCache() {

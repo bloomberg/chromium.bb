@@ -696,7 +696,7 @@ void DocumentMarkerController::removeMarkersFromList(
   }
 
   if (nodeCanBeRemoved) {
-    m_markers.remove(iterator);
+    m_markers.erase(iterator);
     if (m_markers.isEmpty())
       m_possiblyExistingMarkerTypes = 0;
   }

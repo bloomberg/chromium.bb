@@ -249,7 +249,7 @@ void ImageDecodingStore::removeFromCacheInternal(
   ASSERT(iter != identifierMap->end());
   iter->value.erase(cacheEntry->cacheKey());
   if (!iter->value.size())
-    identifierMap->remove(iter);
+    identifierMap->erase(iter);
 
   // Remove entry from cache map.
   deletionList->push_back(cacheMap->take(cacheEntry->cacheKey()));

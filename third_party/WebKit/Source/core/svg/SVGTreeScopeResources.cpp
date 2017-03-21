@@ -108,7 +108,7 @@ void SVGTreeScopeResources::unregisterResource(ResourceMap::iterator it) {
   resource->detachAllClients(it->key);
 
   resource->setRegistered(false);
-  m_resources.remove(it);
+  m_resources.erase(it);
 }
 
 LayoutSVGResourceContainer* SVGTreeScopeResources::resourceById(

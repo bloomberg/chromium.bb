@@ -523,7 +523,7 @@ void LayoutCounter::destroyCounterNodes(LayoutObject& owner) {
   for (CounterMap::const_iterator it = map->begin(); it != end; ++it) {
     destroyCounterNodeWithoutMapRemoval(it->key, it->value.get());
   }
-  maps.remove(mapsIterator);
+  maps.erase(mapsIterator);
   owner.setHasCounterNodeMap(false);
 }
 
@@ -536,7 +536,7 @@ void LayoutCounter::destroyCounterNode(LayoutObject& owner,
   if (mapIterator == map->end())
     return;
   destroyCounterNodeWithoutMapRemoval(identifier, mapIterator->value.get());
-  map->remove(mapIterator);
+  map->erase(mapIterator);
   // We do not delete "map" here even if empty because we expect to reuse
   // it soon. In order for a layoutObject to lose all its counters permanently,
   // a style change for the layoutObject involving removal of all counter

@@ -418,7 +418,7 @@ void OfflineAudioContext::resolveSuspendOnMainThread(size_t frame) {
     SuspendMap::iterator it = m_scheduledSuspends.find(frame);
     it->value->resolve();
 
-    m_scheduledSuspends.remove(it);
+    m_scheduledSuspends.erase(it);
   }
 }
 

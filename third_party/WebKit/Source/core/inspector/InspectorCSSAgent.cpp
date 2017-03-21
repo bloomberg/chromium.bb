@@ -827,7 +827,7 @@ void InspectorCSSAgent::setActiveStyleSheets(
   }
 
   if (documentCSSStyleSheets->isEmpty())
-    m_documentToCSSStyleSheets.remove(document);
+    m_documentToCSSStyleSheets.erase(document);
 }
 
 void InspectorCSSAgent::documentDetached(Document* document) {
@@ -1552,7 +1552,7 @@ Response InspectorCSSAgent::forcePseudoState(
   if (forcedPseudoState)
     m_nodeIdToForcedPseudoState.set(nodeId, forcedPseudoState);
   else
-    m_nodeIdToForcedPseudoState.remove(nodeId);
+    m_nodeIdToForcedPseudoState.erase(nodeId);
   element->ownerDocument()->setNeedsStyleRecalc(
       SubtreeStyleChange,
       StyleChangeReasonForTracing::create(StyleChangeReason::Inspector));
@@ -1816,7 +1816,7 @@ String InspectorCSSAgent::styleSheetId(CSSStyleSheet* styleSheet) {
 String InspectorCSSAgent::unbindStyleSheet(
     InspectorStyleSheet* inspectorStyleSheet) {
   String id = inspectorStyleSheet->id();
-  m_idToInspectorStyleSheet.remove(id);
+  m_idToInspectorStyleSheet.erase(id);
   if (inspectorStyleSheet->pageStyleSheet())
     m_cssStyleSheetToInspectorStyleSheet.erase(
         inspectorStyleSheet->pageStyleSheet());
@@ -2010,15 +2010,15 @@ void InspectorCSSAgent::didRemoveDOMNode(Node* node) {
 
   int nodeId = m_domAgent->boundNodeId(node);
   if (nodeId)
-    m_nodeIdToForcedPseudoState.remove(nodeId);
+    m_nodeIdToForcedPseudoState.erase(nodeId);
 
   NodeToInspectorStyleSheet::iterator it =
       m_nodeToInspectorStyleSheet.find(node);
   if (it == m_nodeToInspectorStyleSheet.end())
     return;
 
-  m_idToInspectorStyleSheetForInlineStyle.remove(it->value->id());
-  m_nodeToInspectorStyleSheet.remove(node);
+  m_idToInspectorStyleSheetForInlineStyle.erase(it->value->id());
+  m_nodeToInspectorStyleSheet.erase(node);
 }
 
 void InspectorCSSAgent::didModifyDOMAttr(Element* element) {

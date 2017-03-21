@@ -47,7 +47,7 @@ void ResizeObserver::unobserve(Element* target) {
   auto observation = observerMap->find(this);
   if (observation != observerMap->end()) {
     m_observations.erase((*observation).value);
-    observerMap->remove(observation);
+    observerMap->erase(observation);
   }
 }
 

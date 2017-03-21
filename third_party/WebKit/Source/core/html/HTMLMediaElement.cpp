@@ -185,7 +185,7 @@ void removeElementFromDocumentMap(HTMLMediaElement* element,
   WeakMediaElementSet* set = it->value;
   set->erase(element);
   if (set->isEmpty())
-    map.remove(it);
+    map.erase(it);
 }
 
 class AudioSourceProviderClientLockScope {

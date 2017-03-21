@@ -188,7 +188,7 @@ void MemoryCache::removeInternal(ResourceMap* resourceMap,
   DCHECK(resource);
 
   update(resource, resource->size(), 0);
-  resourceMap->remove(it);
+  resourceMap->erase(it);
 }
 
 bool MemoryCache::contains(const Resource* resource) const {
@@ -351,7 +351,7 @@ void MemoryCache::evictResources(EvictResourcePolicy policy) {
     // We may iterate multiple times over resourceMaps with unused preloads.
     // That's extremely unlikely to have any real-life performance impact.
     if (!resources->size()) {
-      m_resourceMaps.remove(resourceMapIter);
+      m_resourceMaps.erase(resourceMapIter);
       resourceMapIter = m_resourceMaps.begin();
     } else {
       ++resourceMapIter;

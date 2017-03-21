@@ -1238,7 +1238,7 @@ bool TextAutosizer::FingerprintMapper::remove(LayoutObject* layoutObject) {
   BlockSet& blocks = *blocksIter->value;
   blocks.erase(toLayoutBlock(layoutObject));
   if (blocks.isEmpty()) {
-    m_blocksForFingerprint.remove(blocksIter);
+    m_blocksForFingerprint.erase(blocksIter);
 
     SuperclusterMap::iterator superclusterIter =
         m_superclusters.find(fingerprint);
@@ -1246,7 +1246,7 @@ bool TextAutosizer::FingerprintMapper::remove(LayoutObject* layoutObject) {
     if (superclusterIter != m_superclusters.end()) {
       Supercluster* supercluster = superclusterIter->value.get();
       m_potentiallyInconsistentSuperclusters.erase(supercluster);
-      m_superclusters.remove(superclusterIter);
+      m_superclusters.erase(superclusterIter);
     }
   }
 #if DCHECK_IS_ON()

@@ -110,7 +110,7 @@ void SMILTimeContainer::unschedule(SVGSMILElement* animation,
   scheduled->erase(itAnimation);
 
   if (scheduled->isEmpty())
-    m_scheduledAnimations.remove(it);
+    m_scheduledAnimations.erase(it);
 }
 
 bool SMILTimeContainer::hasAnimations() const {

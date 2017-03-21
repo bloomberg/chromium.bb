@@ -129,7 +129,7 @@ void SVGElementProxy::removeClient(SVGResourceClient* client) {
     observer->unregister();
     m_observers.erase(observer->treeScope());
   }
-  m_clients.remove(entry);
+  m_clients.erase(entry);
 }
 
 void SVGElementProxy::resolve(Document& document) {

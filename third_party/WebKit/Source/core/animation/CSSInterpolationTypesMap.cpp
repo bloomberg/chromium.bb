@@ -67,7 +67,7 @@ const InterpolationTypes& CSSInterpolationTypesMap::get(
     const auto* registration = getRegistration(m_registry.get(), property);
     if (registration) {
       if (foundEntry) {
-        applicableTypesMap.remove(entry);
+        applicableTypesMap.erase(entry);
       }
       return registration->interpolationTypes();
     }

@@ -248,7 +248,7 @@ void SecurityPolicy::removeOriginAccessWhitelistEntry(
   list->remove(index);
 
   if (list->isEmpty())
-    map.remove(it);
+    map.erase(it);
 }
 
 void SecurityPolicy::resetOriginAccessWhitelists() {

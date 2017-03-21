@@ -36,7 +36,7 @@ void GeolocationWatchers::remove(int id) {
   if (iter == m_idToNotifierMap.end())
     return;
   m_notifierToIdMap.erase(iter->value);
-  m_idToNotifierMap.remove(iter);
+  m_idToNotifierMap.erase(iter);
 }
 
 void GeolocationWatchers::remove(GeoNotifier* notifier) {
@@ -44,7 +44,7 @@ void GeolocationWatchers::remove(GeoNotifier* notifier) {
   if (iter == m_notifierToIdMap.end())
     return;
   m_idToNotifierMap.erase(iter->value);
-  m_notifierToIdMap.remove(iter);
+  m_notifierToIdMap.erase(iter);
 }
 
 bool GeolocationWatchers::contains(GeoNotifier* notifier) const {

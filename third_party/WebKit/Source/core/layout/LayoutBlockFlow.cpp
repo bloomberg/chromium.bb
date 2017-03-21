@@ -1386,7 +1386,7 @@ void LayoutBlockFlow::rebuildFloatsFromIntruding() {
             oldFloatingObject->originatingLine()->markDirty();
           }
 
-          floatMap.remove(floatingObject.layoutObject());
+          floatMap.erase(floatingObject.layoutObject());
         } else {
           changeLogicalTop = LayoutUnit();
           changeLogicalBottom = std::max(changeLogicalBottom, logicalBottom);

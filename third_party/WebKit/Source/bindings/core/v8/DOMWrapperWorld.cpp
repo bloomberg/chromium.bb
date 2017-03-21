@@ -168,7 +168,7 @@ void DOMWrapperWorld::dispose() {
   m_domObjectHolders.clear();
   m_domDataStore.reset();
   DCHECK(worldMap().contains(m_worldId));
-  worldMap().remove(m_worldId);
+  worldMap().erase(m_worldId);
 }
 
 PassRefPtr<DOMWrapperWorld> DOMWrapperWorld::ensureIsolatedWorld(
@@ -209,7 +209,7 @@ void DOMWrapperWorld::setIsolatedWorldSecurityOrigin(
   if (securityOrigin)
     isolatedWorldSecurityOrigins().set(worldId, std::move(securityOrigin));
   else
-    isolatedWorldSecurityOrigins().remove(worldId);
+    isolatedWorldSecurityOrigins().erase(worldId);
 }
 
 typedef HashMap<int, String> IsolatedWorldHumanReadableNameMap;
@@ -254,7 +254,7 @@ void DOMWrapperWorld::setIsolatedWorldContentSecurityPolicy(
   if (!policy.isEmpty())
     isolatedWorldContentSecurityPolicies().set(worldId, true);
   else
-    isolatedWorldContentSecurityPolicies().remove(worldId);
+    isolatedWorldContentSecurityPolicies().erase(worldId);
 }
 
 template <typename T>

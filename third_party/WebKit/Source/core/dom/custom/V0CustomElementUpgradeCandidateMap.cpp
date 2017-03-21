@@ -70,7 +70,7 @@ void V0CustomElementUpgradeCandidateMap::elementWasDestroyed(Element* element) {
       m_unresolvedDefinitions.find(candidate->value);
   SECURITY_DCHECK(elements != m_unresolvedDefinitions.end());
   elements->value->erase(element);
-  m_upgradeCandidates.remove(candidate);
+  m_upgradeCandidates.erase(candidate);
 }
 
 V0CustomElementUpgradeCandidateMap::ElementSet*

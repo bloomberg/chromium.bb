@@ -203,7 +203,7 @@ bool CrossOriginPreflightResultCache::canSkipPreflight(
   if (cacheIt->value->allowsRequest(includeCredentials, method, requestHeaders))
     return true;
 
-  m_preflightHashMap.remove(cacheIt);
+  m_preflightHashMap.erase(cacheIt);
   return false;
 }
 

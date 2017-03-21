@@ -60,7 +60,7 @@ void MediaSourceRegistry::unregisterURL(const KURL& url) {
     return;
 
   MediaSource* source = iter->value;
-  m_mediaSources.remove(iter);
+  m_mediaSources.erase(iter);
   source->removedFromRegistry();
 }
 

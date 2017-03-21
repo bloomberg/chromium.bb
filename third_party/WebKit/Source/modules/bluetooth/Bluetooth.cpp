@@ -235,7 +235,7 @@ void Bluetooth::AddToConnectedDevicesMap(const String& deviceId,
 }
 
 void Bluetooth::RemoveFromConnectedDevicesMap(const String& deviceId) {
-  m_connectedDevices.remove(deviceId);
+  m_connectedDevices.erase(deviceId);
 }
 
 void Bluetooth::RegisterCharacteristicObject(
@@ -246,7 +246,7 @@ void Bluetooth::RegisterCharacteristicObject(
 
 void Bluetooth::CharacteristicObjectRemoved(
     const String& characteristicInstanceId) {
-  m_activeCharacteristics.remove(characteristicInstanceId);
+  m_activeCharacteristics.erase(characteristicInstanceId);
 }
 
 DEFINE_TRACE(Bluetooth) {
@@ -272,7 +272,7 @@ void Bluetooth::GattServerDisconnected(const WTF::String& deviceId) {
     // Remove device from the map before calling dispatchGattServerDisconnected
     // to avoid removing a device the gattserverdisconnected event handler might
     // have re-connected.
-    m_connectedDevices.remove(deviceId);
+    m_connectedDevices.erase(deviceId);
     device->DispatchGattServerDisconnected();
   }
 }
