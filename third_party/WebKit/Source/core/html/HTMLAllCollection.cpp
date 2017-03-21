@@ -47,18 +47,18 @@ Element* HTMLAllCollection::namedItemWithIndex(const AtomicString& name,
   updateIdNameCache();
 
   const NamedItemCache& cache = namedItemCache();
-  if (HeapVector<Member<Element>>* elements = cache.getElementsById(name)) {
+  if (const auto* elements = cache.getElementsById(name)) {
     if (index < elements->size())
       return elements->at(index);
     index -= elements->size();
   }
 
-  if (HeapVector<Member<Element>>* elements = cache.getElementsByName(name)) {
+  if (const auto* elements = cache.getElementsByName(name)) {
     if (index < elements->size())
       return elements->at(index);
   }
 
-  return 0;
+  return nullptr;
 }
 
 void HTMLAllCollection::namedGetter(const AtomicString& name,

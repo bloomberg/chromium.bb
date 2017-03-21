@@ -122,12 +122,19 @@ class CORE_EXPORT HTMLCollection
    public:
     static NamedItemCache* create() { return new NamedItemCache; }
 
-    HeapVector<Member<Element>>* getElementsById(const AtomicString& id) const {
-      return m_idCache.at(id.impl());
+    const HeapVector<Member<Element>>* getElementsById(
+        const AtomicString& id) const {
+      auto it = m_idCache.find(id.impl());
+      if (it == m_idCache.end())
+        return nullptr;
+      return &it->value;
     }
-    HeapVector<Member<Element>>* getElementsByName(
+    const HeapVector<Member<Element>>* getElementsByName(
         const AtomicString& name) const {
-      return m_nameCache.at(name.impl());
+      auto it = m_nameCache.find(name.impl());
+      if (it == m_nameCache.end())
+        return nullptr;
+      return &it->value;
     }
     void addElementWithId(const AtomicString& id, Element* element) {
       addElementToMap(m_idCache, id, element);
@@ -143,16 +150,15 @@ class CORE_EXPORT HTMLCollection
 
    private:
     NamedItemCache();
-    typedef HeapHashMap<StringImpl*, Member<HeapVector<Member<Element>>>>
+    typedef HeapHashMap<StringImpl*, HeapVector<Member<Element>>>
         StringToElementsMap;
     static void addElementToMap(StringToElementsMap& map,
                                 const AtomicString& key,
                                 Element* element) {
-      Member<HeapVector<Member<Element>>>& vector =
-          map.insert(key.impl(), nullptr).storedValue->value;
-      if (!vector)
-        vector = new HeapVector<Member<Element>>;
-      vector->push_back(element);
+      HeapVector<Member<Element>>& vector =
+          map.insert(key.impl(), HeapVector<Member<Element>>())
+              .storedValue->value;
+      vector.push_back(element);
     }
 
     StringToElementsMap m_idCache;

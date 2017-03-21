@@ -419,11 +419,11 @@ Element* HTMLCollection::namedItem(const AtomicString& name) const {
   updateIdNameCache();
 
   const NamedItemCache& cache = namedItemCache();
-  HeapVector<Member<Element>>* idResults = cache.getElementsById(name);
+  const auto* idResults = cache.getElementsById(name);
   if (idResults && !idResults->isEmpty())
     return idResults->front();
 
-  HeapVector<Member<Element>>* nameResults = cache.getElementsByName(name);
+  const auto* nameResults = cache.getElementsByName(name);
   if (nameResults && !nameResults->isEmpty())
     return nameResults->front();
 
@@ -511,15 +511,10 @@ void HTMLCollection::namedItems(const AtomicString& name,
   updateIdNameCache();
 
   const NamedItemCache& cache = namedItemCache();
-  if (HeapVector<Member<Element>>* idResults = cache.getElementsById(name)) {
-    for (const auto& element : *idResults)
-      result.push_back(element);
-  }
-  if (HeapVector<Member<Element>>* nameResults =
-          cache.getElementsByName(name)) {
-    for (const auto& element : *nameResults)
-      result.push_back(element);
-  }
+  if (const auto* idResults = cache.getElementsById(name))
+    result.appendVector(*idResults);
+  if (const auto* nameResults = cache.getElementsByName(name))
+    result.appendVector(*nameResults);
 }
 
 HTMLCollection::NamedItemCache::NamedItemCache() {}
