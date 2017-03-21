@@ -1,0 +1,24 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// Next MinVersion: 1
+
+module arc.mojom;
+
+// Handles voice interaction queries from Android.
+// Next method ID: 1
+interface VoiceInteractionFrameworkHost {
+  // Returns a screenshot of currently focused window or empty array if
+  // no window is focused.
+  CaptureFocusedWindow@0() => (array<uint8> png_data);
+};
+
+// Connects with Android system server.
+// Next method ID:2
+interface VoiceInteractionFrameworkInstance {
+  Init@0(VoiceInteractionFrameworkHost host_ptr);
+
+  // Starts the voice interaction session in container.
+  StartVoiceInteractionSession@1();
+};
