@@ -43,7 +43,6 @@
 /** @const */ var ACCELERATOR_ENABLE_DEBBUGING = 'debugging';
 /** @const */ var ACCELERATOR_TOGGLE_EASY_BOOTSTRAP = 'toggle_easy_bootstrap';
 /** @const */ var ACCELERATOR_ENROLLMENT = 'enrollment';
-/** @const */ var ACCELERATOR_ENROLLMENT_AD = 'enrollment_ad';
 /** @const */ var ACCELERATOR_KIOSK_ENABLE = 'kiosk_enable';
 /** @const */ var ACCELERATOR_VERSION = 'version';
 /** @const */ var ACCELERATOR_RESET = 'reset';
@@ -348,10 +347,7 @@ cr.define('cr.ui.login', function() {
                 currentStepId) != -1) {
           chrome.send('toggleEnableDebuggingScreen');
         }
-      } else if (name == ACCELERATOR_ENROLLMENT ||
-                 name == ACCELERATOR_ENROLLMENT_AD) {
-        if (name == ACCELERATOR_ENROLLMENT_AD)
-          chrome.send('toggleEnrollmentAd');
+      } else if (name == ACCELERATOR_ENROLLMENT) {
         if (currentStepId == SCREEN_GAIA_SIGNIN ||
             currentStepId == SCREEN_ACCOUNT_PICKER) {
           chrome.send('toggleEnrollmentScreen');

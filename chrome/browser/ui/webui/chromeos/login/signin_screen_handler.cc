@@ -591,8 +591,6 @@ void SigninScreenHandler::RegisterMessages() {
   AddCallback("removeUser", &SigninScreenHandler::HandleRemoveUser);
   AddCallback("toggleEnrollmentScreen",
               &SigninScreenHandler::HandleToggleEnrollmentScreen);
-  AddCallback("toggleEnrollmentAd",
-              &SigninScreenHandler::HandleToggleEnrollmentAd);
   AddCallback("toggleEnableDebuggingScreen",
               &SigninScreenHandler::HandleToggleEnableDebuggingScreen);
   AddCallback("toggleKioskEnableScreen",
@@ -1270,17 +1268,6 @@ void SigninScreenHandler::HandleShowAddUser(const base::ListValue* args) {
 void SigninScreenHandler::HandleToggleEnrollmentScreen() {
   if (delegate_)
     delegate_->ShowEnterpriseEnrollmentScreen();
-}
-
-void SigninScreenHandler::HandleToggleEnrollmentAd() {
-  // TODO(rsorokin): Cleanup enrollment flow for Active Directory. (see
-  // crbug.com/668491).
-  if (chrome::GetChannel() == version_info::Channel::BETA ||
-      chrome::GetChannel() == version_info::Channel::STABLE) {
-    return;
-  }
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      chromeos::switches::kEnableAd);
 }
 
 void SigninScreenHandler::HandleToggleEnableDebuggingScreen() {

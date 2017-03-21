@@ -106,12 +106,6 @@ void DeviceCloudPolicyInitializer::StartEnrollment(
   DCHECK(!enrollment_handler_);
 
   manager_->core()->Disconnect();
-  // TODO(rsorokin): Remove that once DM server does not require requisition.
-  // See crbug.com/668455
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableAd)) {
-    manager_->SetDeviceRequisition("chrome_ad");
-  }
 
   enrollment_handler_.reset(new EnrollmentHandlerChromeOS(
       device_store_, install_attributes_, state_keys_broker_,

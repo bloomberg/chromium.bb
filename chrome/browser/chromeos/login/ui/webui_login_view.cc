@@ -71,8 +71,6 @@ namespace {
 const char kAccelNameCancel[] = "cancel";
 const char kAccelNameEnableDebugging[] = "debugging";
 const char kAccelNameEnrollment[] = "enrollment";
-// TODO(rsorokin): Remove custom Active Directory shortcut for the launch.
-const char kAccelNameEnrollmentAd[] = "enrollment_ad";
 const char kAccelNameKioskEnable[] = "kiosk_enable";
 const char kAccelNameVersion[] = "version";
 const char kAccelNameReset[] = "reset";
@@ -127,9 +125,6 @@ WebUILoginView::WebUILoginView(const WebViewSettings& settings)
   accel_map_[ui::Accelerator(ui::VKEY_E,
                              ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)] =
       kAccelNameEnrollment;
-  accel_map_[ui::Accelerator(
-      ui::VKEY_A, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN)] =
-      kAccelNameEnrollmentAd;
   if (KioskAppManager::IsConsumerKioskEnabled()) {
     accel_map_[ui::Accelerator(ui::VKEY_K,
                                ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN)] =
