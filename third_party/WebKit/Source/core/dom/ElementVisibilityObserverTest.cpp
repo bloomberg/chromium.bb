@@ -50,7 +50,7 @@ class ElementVisibilityObserverTest : public ::testing::Test {
   }
 
   Document& document() { return m_dummyPageHolder->document(); }
-  FrameHost& frameHost() { return m_dummyPageHolder->page().frameHost(); }
+  Page& page() { return m_dummyPageHolder->page(); }
   StubLocalFrameClient* localFrameClient() const { return m_localFrameClient; }
 
  private:
@@ -70,7 +70,7 @@ TEST_F(ElementVisibilityObserverTest, ObserveElementWithoutDocumentFrame) {
 
 TEST_F(ElementVisibilityObserverTest, ObserveElementInRemoteFrame) {
   Persistent<RemoteFrame> remoteFrame =
-      RemoteFrame::create(new EmptyRemoteFrameClient(), &frameHost(), nullptr);
+      RemoteFrame::create(new EmptyRemoteFrameClient(), &page(), nullptr);
   localFrameClient()->setParent(remoteFrame);
 
   Persistent<HTMLElement> element = HTMLDivElement::create(document());

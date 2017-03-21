@@ -21,7 +21,7 @@ struct FrameLoadRequest;
 
 class CORE_EXPORT RemoteFrame final : public Frame {
  public:
-  static RemoteFrame* create(RemoteFrameClient*, FrameHost*, FrameOwner*);
+  static RemoteFrame* create(RemoteFrameClient*, Page*, FrameOwner*);
 
   ~RemoteFrame() override;
 
@@ -57,7 +57,7 @@ class CORE_EXPORT RemoteFrame final : public Frame {
   RemoteFrameClient* client() const;
 
  private:
-  RemoteFrame(RemoteFrameClient*, FrameHost*, FrameOwner*);
+  RemoteFrame(RemoteFrameClient*, Page*, FrameOwner*);
 
   // Intentionally private to prevent redundant checks when the type is
   // already RemoteFrame.

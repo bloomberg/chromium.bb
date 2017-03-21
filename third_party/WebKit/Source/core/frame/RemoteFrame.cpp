@@ -27,20 +27,17 @@
 namespace blink {
 
 inline RemoteFrame::RemoteFrame(RemoteFrameClient* client,
-                                FrameHost* host,
+                                Page* page,
                                 FrameOwner* owner)
-    : Frame(client,
-            host ? &host->page() : nullptr,
-            owner,
-            RemoteWindowProxyManager::create(*this)),
+    : Frame(client, page, owner, RemoteWindowProxyManager::create(*this)),
       m_securityContext(RemoteSecurityContext::create()) {
   m_domWindow = RemoteDOMWindow::create(*this);
 }
 
 RemoteFrame* RemoteFrame::create(RemoteFrameClient* client,
-                                 FrameHost* host,
+                                 Page* page,
                                  FrameOwner* owner) {
-  return new RemoteFrame(client, host, owner);
+  return new RemoteFrame(client, page, owner);
 }
 
 RemoteFrame::~RemoteFrame() {

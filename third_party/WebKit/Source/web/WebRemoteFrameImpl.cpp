@@ -9,6 +9,7 @@
 #include "core/dom/Fullscreen.h"
 #include "core/dom/RemoteSecurityContext.h"
 #include "core/dom/SecurityContext.h"
+#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
@@ -353,7 +354,8 @@ void WebRemoteFrameImpl::initializeCoreFrame(FrameHost* host,
                                              FrameOwner* owner,
                                              const AtomicString& name,
                                              const AtomicString& uniqueName) {
-  setCoreFrame(RemoteFrame::create(m_frameClient.get(), host, owner));
+  setCoreFrame(RemoteFrame::create(m_frameClient.get(),
+                                   host ? &host->page() : nullptr, owner));
   frame()->createView();
   m_frame->tree().setPrecalculatedName(name, uniqueName);
 }
