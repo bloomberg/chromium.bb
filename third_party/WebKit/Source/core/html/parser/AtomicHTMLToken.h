@@ -42,68 +42,68 @@ class CORE_EXPORT AtomicHTMLToken {
 
  public:
   bool forceQuirks() const {
-    ASSERT(m_type == HTMLToken::DOCTYPE);
+    DCHECK_EQ(m_type, HTMLToken::DOCTYPE);
     return m_doctypeData->m_forceQuirks;
   }
 
   HTMLToken::TokenType type() const { return m_type; }
 
   const AtomicString& name() const {
-    ASSERT(usesName());
+    DCHECK(usesName());
     return m_name;
   }
 
   void setName(const AtomicString& name) {
-    ASSERT(usesName());
+    DCHECK(usesName());
     m_name = name;
   }
 
   bool selfClosing() const {
-    ASSERT(m_type == HTMLToken::StartTag || m_type == HTMLToken::EndTag);
+    DCHECK(m_type == HTMLToken::StartTag || m_type == HTMLToken::EndTag);
     return m_selfClosing;
   }
 
   Attribute* getAttributeItem(const QualifiedName& attributeName) {
-    ASSERT(usesAttributes());
+    DCHECK(usesAttributes());
     return findAttributeInVector(m_attributes, attributeName);
   }
 
   Vector<Attribute>& attributes() {
-    ASSERT(usesAttributes());
+    DCHECK(usesAttributes());
     return m_attributes;
   }
 
   const Vector<Attribute>& attributes() const {
-    ASSERT(usesAttributes());
+    DCHECK(usesAttributes());
     return m_attributes;
   }
 
   const String& characters() const {
-    ASSERT(m_type == HTMLToken::Character);
+    DCHECK_EQ(m_type, HTMLToken::Character);
     return m_data;
   }
 
   const String& comment() const {
-    ASSERT(m_type == HTMLToken::Comment);
+    DCHECK_EQ(m_type, HTMLToken::Comment);
     return m_data;
   }
 
   // FIXME: Distinguish between a missing public identifer and an empty one.
   Vector<UChar>& publicIdentifier() const {
-    ASSERT(m_type == HTMLToken::DOCTYPE);
+    DCHECK_EQ(m_type, HTMLToken::DOCTYPE);
     return m_doctypeData->m_publicIdentifier;
   }
 
   // FIXME: Distinguish between a missing system identifer and an empty one.
   Vector<UChar>& systemIdentifier() const {
-    ASSERT(m_type == HTMLToken::DOCTYPE);
+    DCHECK_EQ(m_type, HTMLToken::DOCTYPE);
     return m_doctypeData->m_systemIdentifier;
   }
 
   explicit AtomicHTMLToken(HTMLToken& token) : m_type(token.type()) {
     switch (m_type) {
       case HTMLToken::Uninitialized:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         break;
       case HTMLToken::DOCTYPE:
         m_name = AtomicString(token.name());
@@ -136,7 +136,7 @@ class CORE_EXPORT AtomicHTMLToken {
       : m_type(token.type()) {
     switch (m_type) {
       case HTMLToken::Uninitialized:
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
         break;
       case HTMLToken::DOCTYPE:
         m_name = AtomicString(token.data());
@@ -182,7 +182,7 @@ class CORE_EXPORT AtomicHTMLToken {
         m_name(name),
         m_selfClosing(false),
         m_attributes(attributes) {
-    ASSERT(usesName());
+    DCHECK(usesName());
   }
 
 #ifndef NDEBUG

@@ -86,7 +86,7 @@ static bool match(const StringImpl* impl, const QualifiedName& qName) {
 }
 
 static bool match(const AtomicString& name, const QualifiedName& qName) {
-  ASSERT(isMainThread());
+  DCHECK(isMainThread());
   return qName.localName() == name;
 }
 
@@ -110,7 +110,7 @@ static const StringImpl* tagImplFor(const String& tagName) {
 }
 
 static String initiatorFor(const StringImpl* tagImpl) {
-  ASSERT(tagImpl);
+  DCHECK(tagImpl);
   if (match(tagImpl, imgTag))
     return imgTag.localName();
   if (match(tagImpl, inputTag))
@@ -163,7 +163,7 @@ class TokenPreloadScanner::StartTagScanner {
   enum URLReplacement { AllowURLReplacement, DisallowURLReplacement };
 
   void processAttributes(const HTMLToken::AttributeList& attributes) {
-    ASSERT(isMainThread());
+    DCHECK(isMainThread());
     if (!m_tagImpl)
       return;
     for (const HTMLToken::Attribute& htmlTokenAttribute : attributes) {
@@ -591,7 +591,7 @@ TokenPreloadScannerCheckpoint TokenPreloadScanner::createCheckpoint() {
 void TokenPreloadScanner::rewindTo(
     TokenPreloadScannerCheckpoint checkpointIndex) {
   // If this ASSERT fires, checkpointIndex is invalid.
-  ASSERT(checkpointIndex < m_checkpoints.size());
+  DCHECK_LT(checkpointIndex, m_checkpoints.size());
   const Checkpoint& checkpoint = m_checkpoints[checkpointIndex];
   m_predictedBaseElementURL = checkpoint.predictedBaseElementURL;
   m_inStyle = checkpoint.inStyle;
@@ -857,7 +857,7 @@ void TokenPreloadScanner::scanCommon(const Token& token,
 
 template <typename Token>
 void TokenPreloadScanner::updatePredictedBaseURL(const Token& token) {
-  ASSERT(m_predictedBaseElementURL.isEmpty());
+  DCHECK(m_predictedBaseElementURL.isEmpty());
   if (const typename Token::Attribute* hrefAttribute =
           token.getAttributeItem(hrefAttr)) {
     KURL url(m_documentURL, stripLeadingAndTrailingHTMLSpaces(
@@ -887,7 +887,7 @@ PreloadRequestStream HTMLPreloadScanner::scan(
     const KURL& startingBaseElementURL,
     ViewportDescriptionWrapper* viewport) {
   // HTMLTokenizer::updateStateFor only works on the main thread.
-  ASSERT(isMainThread());
+  DCHECK(isMainThread());
 
   TRACE_EVENT1("blink", "HTMLPreloadScanner::scan", "source_length",
                m_source.length());
@@ -917,8 +917,8 @@ PreloadRequestStream HTMLPreloadScanner::scan(
 }
 
 CachedDocumentParameters::CachedDocumentParameters(Document* document) {
-  ASSERT(isMainThread());
-  ASSERT(document);
+  DCHECK(isMainThread());
+  DCHECK(document);
   doHtmlPreloadScanning =
       !document->settings() || document->settings()->getDoHtmlPreloadScanning();
   doDocumentWritePreloadScanning = doHtmlPreloadScanning && document->frame() &&

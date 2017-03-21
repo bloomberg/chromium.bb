@@ -100,12 +100,12 @@ inline bool isSelectScopeMarker(HTMLStackItem* item) {
 HTMLElementStack::ElementRecord::ElementRecord(HTMLStackItem* item,
                                                ElementRecord* next)
     : m_item(item), m_next(next) {
-  ASSERT(m_item);
+  DCHECK(m_item);
 }
 
 void HTMLElementStack::ElementRecord::replaceElement(HTMLStackItem* item) {
-  ASSERT(item);
-  ASSERT(!m_item || m_item->isElementNode());
+  DCHECK(item);
+  DCHECK(!m_item || m_item->isElementNode());
   // FIXME: Should this call finishParsingChildren?
   m_item = item;
 }
@@ -139,7 +139,7 @@ bool HTMLElementStack::secondElementIsHTMLBodyElement() const {
   // This is used the fragment case of <body> and <frameset> in the "in body"
   // insertion mode.
   // http://www.whatwg.org/specs/web-apps/current-work/multipage/tokenization.html#parsing-main-inbody
-  ASSERT(m_rootNode);
+  DCHECK(m_rootNode);
   // If we have a body element, it must always be the second element on the
   // stack, as we always start with an html element, and any other element
   // would cause the implicit creation of a body element.
@@ -147,13 +147,13 @@ bool HTMLElementStack::secondElementIsHTMLBodyElement() const {
 }
 
 void HTMLElementStack::popHTMLHeadElement() {
-  ASSERT(top() == m_headElement);
+  DCHECK_EQ(top(), m_headElement);
   m_headElement = nullptr;
   popCommon();
 }
 
 void HTMLElementStack::popHTMLBodyElement() {
-  ASSERT(top() == m_bodyElement);
+  DCHECK_EQ(top(), m_bodyElement);
   m_bodyElement = nullptr;
   popCommon();
 }
@@ -175,7 +175,7 @@ void HTMLElementStack::popAll() {
 }
 
 void HTMLElementStack::pop() {
-  ASSERT(!topStackItem()->hasTagName(HTMLNames::headTag));
+  DCHECK(!topStackItem()->hasTagName(HTMLNames::headTag));
   popCommon();
 }
 
@@ -260,53 +260,53 @@ void HTMLElementStack::popUntilForeignContentScopeMarker() {
 }
 
 void HTMLElementStack::pushRootNode(HTMLStackItem* rootItem) {
-  ASSERT(rootItem->isDocumentFragmentNode());
+  DCHECK(rootItem->isDocumentFragmentNode());
   pushRootNodeCommon(rootItem);
 }
 
 void HTMLElementStack::pushHTMLHtmlElement(HTMLStackItem* item) {
-  ASSERT(item->hasTagName(htmlTag));
+  DCHECK(item->hasTagName(htmlTag));
   pushRootNodeCommon(item);
 }
 
 void HTMLElementStack::pushRootNodeCommon(HTMLStackItem* rootItem) {
-  ASSERT(!m_top);
-  ASSERT(!m_rootNode);
+  DCHECK(!m_top);
+  DCHECK(!m_rootNode);
   m_rootNode = rootItem->node();
   pushCommon(rootItem);
 }
 
 void HTMLElementStack::pushHTMLHeadElement(HTMLStackItem* item) {
-  ASSERT(item->hasTagName(HTMLNames::headTag));
-  ASSERT(!m_headElement);
+  DCHECK(item->hasTagName(HTMLNames::headTag));
+  DCHECK(!m_headElement);
   m_headElement = item->element();
   pushCommon(item);
 }
 
 void HTMLElementStack::pushHTMLBodyElement(HTMLStackItem* item) {
-  ASSERT(item->hasTagName(HTMLNames::bodyTag));
-  ASSERT(!m_bodyElement);
+  DCHECK(item->hasTagName(HTMLNames::bodyTag));
+  DCHECK(!m_bodyElement);
   m_bodyElement = item->element();
   pushCommon(item);
 }
 
 void HTMLElementStack::push(HTMLStackItem* item) {
-  ASSERT(!item->hasTagName(htmlTag));
-  ASSERT(!item->hasTagName(headTag));
-  ASSERT(!item->hasTagName(bodyTag));
-  ASSERT(m_rootNode);
+  DCHECK(!item->hasTagName(htmlTag));
+  DCHECK(!item->hasTagName(headTag));
+  DCHECK(!item->hasTagName(bodyTag));
+  DCHECK(m_rootNode);
   pushCommon(item);
 }
 
 void HTMLElementStack::insertAbove(HTMLStackItem* item,
                                    ElementRecord* recordBelow) {
-  ASSERT(item);
-  ASSERT(recordBelow);
-  ASSERT(m_top);
-  ASSERT(!item->hasTagName(htmlTag));
-  ASSERT(!item->hasTagName(headTag));
-  ASSERT(!item->hasTagName(bodyTag));
-  ASSERT(m_rootNode);
+  DCHECK(item);
+  DCHECK(recordBelow);
+  DCHECK(m_top);
+  DCHECK(!item->hasTagName(htmlTag));
+  DCHECK(!item->hasTagName(headTag));
+  DCHECK(!item->hasTagName(bodyTag));
+  DCHECK(m_rootNode);
   if (recordBelow == m_top) {
     push(item);
     return;
@@ -322,25 +322,25 @@ void HTMLElementStack::insertAbove(HTMLStackItem* item,
     recordAbove->next()->element()->beginParsingChildren();
     return;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
 }
 
 HTMLElementStack::ElementRecord* HTMLElementStack::topRecord() const {
-  ASSERT(m_top);
+  DCHECK(m_top);
   return m_top.get();
 }
 
 HTMLStackItem* HTMLElementStack::oneBelowTop() const {
   // We should never call this if there are fewer than 2 elements on the stack.
-  ASSERT(m_top);
-  ASSERT(m_top->next());
+  DCHECK(m_top);
+  DCHECK(m_top->next());
   if (m_top->next()->stackItem()->isElementNode())
     return m_top->next()->stackItem();
   return nullptr;
 }
 
 void HTMLElementStack::removeHTMLHeadElement(Element* element) {
-  ASSERT(m_headElement == element);
+  DCHECK_EQ(m_headElement, element);
   if (m_top->element() == element) {
     popHTMLHeadElement();
     return;
@@ -350,7 +350,7 @@ void HTMLElementStack::removeHTMLHeadElement(Element* element) {
 }
 
 void HTMLElementStack::remove(Element* element) {
-  ASSERT(!isHTMLHeadElement(element));
+  DCHECK(!isHTMLHeadElement(element));
   if (m_top->element() == element) {
     pop();
     return;
@@ -394,7 +394,7 @@ bool inScopeCommon(HTMLElementStack::ElementRecord* top,
     if (isMarker(item))
       return false;
   }
-  ASSERT_NOT_REACHED();  // <html> is always on the stack and is a scope marker.
+  NOTREACHED();  // <html> is always on the stack and is a scope marker.
   return false;
 }
 
@@ -406,7 +406,7 @@ bool HTMLElementStack::hasNumberedHeaderElementInScope() const {
     if (isScopeMarker(item))
       return false;
   }
-  ASSERT_NOT_REACHED();  // <html> is always on the stack and is a scope marker.
+  NOTREACHED();  // <html> is always on the stack and is a scope marker.
   return false;
 }
 
@@ -418,7 +418,7 @@ bool HTMLElementStack::inScope(Element* targetElement) const {
     if (isScopeMarker(item))
       return false;
   }
-  ASSERT_NOT_REACHED();  // <html> is always on the stack and is a scope marker.
+  NOTREACHED();  // <html> is always on the stack and is a scope marker.
   return false;
 }
 
@@ -467,36 +467,36 @@ bool HTMLElementStack::hasTemplateInHTMLScope() const {
 }
 
 Element* HTMLElementStack::htmlElement() const {
-  ASSERT(m_rootNode);
+  DCHECK(m_rootNode);
   return toElement(m_rootNode);
 }
 
 Element* HTMLElementStack::headElement() const {
-  ASSERT(m_headElement);
+  DCHECK(m_headElement);
   return m_headElement;
 }
 
 Element* HTMLElementStack::bodyElement() const {
-  ASSERT(m_bodyElement);
+  DCHECK(m_bodyElement);
   return m_bodyElement;
 }
 
 ContainerNode* HTMLElementStack::rootNode() const {
-  ASSERT(m_rootNode);
+  DCHECK(m_rootNode);
   return m_rootNode;
 }
 
 void HTMLElementStack::pushCommon(HTMLStackItem* item) {
-  ASSERT(m_rootNode);
+  DCHECK(m_rootNode);
 
   m_stackDepth++;
   m_top = new ElementRecord(item, m_top.release());
 }
 
 void HTMLElementStack::popCommon() {
-  ASSERT(!topStackItem()->hasTagName(htmlTag));
-  ASSERT(!topStackItem()->hasTagName(headTag) || !m_headElement);
-  ASSERT(!topStackItem()->hasTagName(bodyTag) || !m_bodyElement);
+  DCHECK(!topStackItem()->hasTagName(htmlTag));
+  DCHECK(!topStackItem()->hasTagName(headTag) || !m_headElement);
+  DCHECK(!topStackItem()->hasTagName(bodyTag) || !m_bodyElement);
   top()->finishParsingChildren();
   m_top = m_top->releaseNext();
 
@@ -504,9 +504,9 @@ void HTMLElementStack::popCommon() {
 }
 
 void HTMLElementStack::removeNonTopCommon(Element* element) {
-  ASSERT(!isHTMLHtmlElement(element));
-  ASSERT(!isHTMLBodyElement(element));
-  ASSERT(top() != element);
+  DCHECK(!isHTMLHtmlElement(element));
+  DCHECK(!isHTMLBodyElement(element));
+  DCHECK_NE(top(), element);
   for (ElementRecord* pos = m_top.get(); pos; pos = pos->next()) {
     if (pos->next()->element() == element) {
       // FIXME: Is it OK to call finishParsingChildren()
@@ -517,7 +517,7 @@ void HTMLElementStack::removeNonTopCommon(Element* element) {
       return;
     }
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
 }
 
 HTMLElementStack::ElementRecord*
@@ -530,7 +530,7 @@ HTMLElementStack::furthestBlockForFormattingElement(
     if (pos->stackItem()->isSpecialNode())
       furthestBlock = pos;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return nullptr;
 }
 

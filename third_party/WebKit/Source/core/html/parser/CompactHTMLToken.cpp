@@ -48,7 +48,7 @@ CompactHTMLToken::CompactHTMLToken(const HTMLToken* token,
       m_textPosition(textPosition) {
   switch (m_type) {
     case HTMLToken::Uninitialized:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       break;
     case HTMLToken::DOCTYPE: {
       m_data = attemptStaticStringCreation(token->name(), Likely8Bit);
@@ -81,7 +81,7 @@ CompactHTMLToken::CompactHTMLToken(const HTMLToken* token,
       break;
     }
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       break;
   }
 }

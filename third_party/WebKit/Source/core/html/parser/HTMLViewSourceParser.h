@@ -50,7 +50,7 @@ class CORE_EXPORT HTMLViewSourceParser final
   HTMLViewSourceParser(HTMLViewSourceDocument&, const String& mimeType);
 
   // DocumentParser
-  void insert(const SegmentedString&) override { ASSERT_NOT_REACHED(); }
+  void insert(const SegmentedString&) override { NOTREACHED(); }
   void append(const String&) override;
   void finish() override;
 

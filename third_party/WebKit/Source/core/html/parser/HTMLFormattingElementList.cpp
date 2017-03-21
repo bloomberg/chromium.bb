@@ -70,17 +70,17 @@ HTMLFormattingElementList::Entry* HTMLFormattingElementList::find(
 HTMLFormattingElementList::Bookmark HTMLFormattingElementList::bookmarkFor(
     Element* element) {
   size_t index = m_entries.reverseFind(element);
-  ASSERT(index != kNotFound);
+  DCHECK_NE(index, kNotFound);
   return Bookmark(&at(index));
 }
 
 void HTMLFormattingElementList::swapTo(Element* oldElement,
                                        HTMLStackItem* newItem,
                                        const Bookmark& bookmark) {
-  ASSERT(contains(oldElement));
-  ASSERT(!contains(newItem->element()));
+  DCHECK(contains(oldElement));
+  DCHECK(!contains(newItem->element()));
   if (!bookmark.hasBeenMoved()) {
-    ASSERT(bookmark.mark()->element() == oldElement);
+    DCHECK(bookmark.mark()->element() == oldElement);
     bookmark.mark()->replaceElement(newItem);
     return;
   }
@@ -118,7 +118,7 @@ void HTMLFormattingElementList::clearToLastMarker() {
 void HTMLFormattingElementList::tryToEnsureNoahsArkConditionQuickly(
     HTMLStackItem* newItem,
     HeapVector<Member<HTMLStackItem>>& remainingCandidates) {
-  ASSERT(remainingCandidates.isEmpty());
+  DCHECK(remainingCandidates.isEmpty());
 
   if (m_entries.size() < kNoahsArkCapacity)
     return;
@@ -170,9 +170,9 @@ void HTMLFormattingElementList::ensureNoahsArkCondition(
     for (const auto& candidate : candidates) {
       // These properties should already have been checked by
       // tryToEnsureNoahsArkConditionQuickly.
-      ASSERT(newItem->attributes().size() == candidate->attributes().size());
-      ASSERT(newItem->localName() == candidate->localName() &&
-             newItem->namespaceURI() == candidate->namespaceURI());
+      DCHECK_EQ(newItem->attributes().size(), candidate->attributes().size());
+      DCHECK_EQ(newItem->localName(), candidate->localName());
+      DCHECK_EQ(newItem->namespaceURI(), candidate->namespaceURI());
 
       Attribute* candidateAttribute =
           candidate->getAttributeItem(attribute.name());

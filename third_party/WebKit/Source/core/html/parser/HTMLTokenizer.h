@@ -204,7 +204,7 @@ class CORE_EXPORT HTMLTokenizer {
   inline void parseError();
 
   inline void bufferCharacter(UChar character) {
-    ASSERT(character != kEndOfFileMarker);
+    DCHECK_NE(character, kEndOfFileMarker);
     m_token->ensureIsCharacterToken();
     m_token->appendToCharacter(character);
   }
@@ -245,7 +245,7 @@ class CORE_EXPORT HTMLTokenizer {
   inline void addToPossibleEndTag(LChar cc);
 
   inline void saveEndTagNameIfNeeded() {
-    ASSERT(m_token->type() != HTMLToken::Uninitialized);
+    DCHECK_NE(m_token->type(), HTMLToken::Uninitialized);
     if (m_token->type() == HTMLToken::StartTag)
       m_appropriateEndTagName = m_token->name();
   }

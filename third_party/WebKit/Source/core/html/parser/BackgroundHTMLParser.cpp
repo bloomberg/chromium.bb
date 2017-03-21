@@ -69,19 +69,19 @@ using namespace HTMLNames;
 static void checkThatTokensAreSafeToSendToAnotherThread(
     const CompactHTMLTokenStream* tokens) {
   for (size_t i = 0; i < tokens->size(); ++i)
-    ASSERT(tokens->at(i).isSafeToSendToAnotherThread());
+    DCHECK(tokens->at(i).isSafeToSendToAnotherThread());
 }
 
 static void checkThatPreloadsAreSafeToSendToAnotherThread(
     const PreloadRequestStream& preloads) {
   for (size_t i = 0; i < preloads.size(); ++i)
-    ASSERT(preloads[i]->isSafeToSendToAnotherThread());
+    DCHECK(preloads[i]->isSafeToSendToAnotherThread());
 }
 
 static void checkThatXSSInfosAreSafeToSendToAnotherThread(
     const XSSInfoStream& infos) {
   for (size_t i = 0; i < infos.size(); ++i)
-    ASSERT(infos[i]->isSafeToSendToAnotherThread());
+    DCHECK(infos[i]->isSafeToSendToAnotherThread());
 }
 
 #endif
@@ -128,9 +128,9 @@ BackgroundHTMLParser::BackgroundHTMLParser(
       m_startingScript(false),
       m_lastBytesReceivedTime(0.0),
       m_shouldCoalesceChunks(config->shouldCoalesceChunks) {
-  ASSERT(m_outstandingTokenLimit > 0);
-  ASSERT(m_pendingTokenLimit > 0);
-  ASSERT(m_outstandingTokenLimit >= m_pendingTokenLimit);
+  DCHECK_GT(m_outstandingTokenLimit, 0u);
+  DCHECK_GT(m_pendingTokenLimit, 0u);
+  DCHECK_GE(m_outstandingTokenLimit, m_pendingTokenLimit);
 }
 
 BackgroundHTMLParser::~BackgroundHTMLParser() {}
@@ -138,7 +138,7 @@ BackgroundHTMLParser::~BackgroundHTMLParser() {}
 void BackgroundHTMLParser::appendRawBytesFromMainThread(
     std::unique_ptr<Vector<char>> buffer,
     double bytesReceivedTime) {
-  ASSERT(m_decoder);
+  DCHECK(m_decoder);
   m_lastBytesReceivedTime = bytesReceivedTime;
   DEFINE_STATIC_LOCAL(CustomCountHistogram, queueDelay,
                       ("Parser.AppendBytesDelay", 1, 5000, 50));
@@ -147,19 +147,19 @@ void BackgroundHTMLParser::appendRawBytesFromMainThread(
 }
 
 void BackgroundHTMLParser::appendDecodedBytes(const String& input) {
-  ASSERT(!m_input.current().isClosed());
+  DCHECK(!m_input.current().isClosed());
   m_input.append(input);
   pumpTokenizer();
 }
 
 void BackgroundHTMLParser::setDecoder(
     std::unique_ptr<TextResourceDecoder> decoder) {
-  ASSERT(decoder);
+  DCHECK(decoder);
   m_decoder = std::move(decoder);
 }
 
 void BackgroundHTMLParser::flush() {
-  ASSERT(m_decoder);
+  DCHECK(m_decoder);
   updateDocument(m_decoder->flush());
 }
 
@@ -220,7 +220,7 @@ void BackgroundHTMLParser::forcePlaintextForTextDocument() {
 }
 
 void BackgroundHTMLParser::markEndOfFile() {
-  ASSERT(!m_input.current().isClosed());
+  DCHECK(!m_input.current().isClosed());
   m_input.append(String(&kEndOfFileMarker, 1));
   m_input.close();
 }

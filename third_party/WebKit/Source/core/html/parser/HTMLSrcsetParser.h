@@ -57,28 +57,28 @@ class DescriptorParsingResult {
   bool hasHeight() const { return m_resourceHeight >= 0; }
 
   float density() const {
-    ASSERT(hasDensity());
+    DCHECK(hasDensity());
     return m_density;
   }
   unsigned getResourceWidth() const {
-    ASSERT(hasWidth());
+    DCHECK(hasWidth());
     return m_resourceWidth;
   }
   unsigned resourceHeight() const {
-    ASSERT(hasHeight());
+    DCHECK(hasHeight());
     return m_resourceHeight;
   }
 
   void setResourceWidth(int width) {
-    ASSERT(width >= 0);
+    DCHECK_GE(width, 0);
     m_resourceWidth = (unsigned)width;
   }
   void setResourceHeight(int height) {
-    ASSERT(height >= 0);
+    DCHECK_GE(height, 0);
     m_resourceHeight = (unsigned)height;
   }
   void setDensity(float densityToSet) {
-    ASSERT(densityToSet >= 0);
+    DCHECK_GE(densityToSet, 0);
     m_density = densityToSet;
   }
 

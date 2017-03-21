@@ -46,7 +46,7 @@ class DecodedHTMLEntity {
   bool isEmpty() const { return !length; }
 
   void append(UChar c) {
-    RELEASE_ASSERT(length < kMaxLength);
+    CHECK(length < kMaxLength);
     data[length++] = c;
   }
 

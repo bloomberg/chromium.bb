@@ -180,7 +180,7 @@ inline void CSSPreloadScanner::tokenize(UChar c,
       }
       break;
     case DoneParsingImportRules:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       break;
   }
 }

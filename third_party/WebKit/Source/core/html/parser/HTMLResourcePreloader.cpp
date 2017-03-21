@@ -58,8 +58,8 @@ int HTMLResourcePreloader::countPreloads() {
 
 static void preconnectHost(PreloadRequest* request,
                            const NetworkHintsInterface& networkHintsInterface) {
-  ASSERT(request);
-  ASSERT(request->isPreconnect());
+  DCHECK(request);
+  DCHECK(request->isPreconnect());
   KURL host(request->baseURL(), request->resourceURL());
   if (!host.isValid() || !host.protocolIsInHTTPFamily())
     return;

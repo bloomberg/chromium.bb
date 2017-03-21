@@ -334,9 +334,9 @@ static void parseImageCandidatesFromSrcsetAttribute(
       }
     }
 
-    ASSERT(imageURLEnd > attributeStart);
+    DCHECK_GT(imageURLEnd, attributeStart);
     unsigned imageURLStartingPosition = imageURLStart - attributeStart;
-    ASSERT(imageURLEnd > imageURLStart);
+    DCHECK_GT(imageURLEnd, imageURLStart);
     unsigned imageURLLength = imageURLEnd - imageURLStart;
     imageCandidates.push_back(
         ImageCandidate(attribute, imageURLStartingPosition, imageURLLength,
@@ -434,7 +434,7 @@ static ImageCandidate pickBestImageCandidate(
     prevDensity = image.density();
   }
   unsigned winner = selectionLogic(deDupedImageCandidates, deviceScaleFactor);
-  ASSERT(winner < deDupedImageCandidates.size());
+  DCHECK_LT(winner, deDupedImageCandidates.size());
   winner = avoidDownloadIfHigherDensityResourceIsInCache(deDupedImageCandidates,
                                                          winner, document);
 

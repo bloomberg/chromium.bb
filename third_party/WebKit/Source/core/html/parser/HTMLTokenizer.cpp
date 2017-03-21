@@ -45,7 +45,7 @@ namespace blink {
 using namespace HTMLNames;
 
 static inline UChar toLowerCase(UChar cc) {
-  ASSERT(isASCIIUpper(cc));
+  DCHECK(isASCIIUpper(cc));
   const int lowerCaseOffset = 0x20;
   return cc + lowerCaseOffset;
 }
@@ -88,7 +88,7 @@ inline bool HTMLTokenizer::processEntity(SegmentedString& source) {
   if (notEnoughCharacters)
     return false;
   if (!success) {
-    ASSERT(decodedEntity.isEmpty());
+    DCHECK(decodedEntity.isEmpty());
     bufferCharacter('&');
   } else {
     for (unsigned i = 0; i < decodedEntity.length; ++i)
@@ -98,7 +98,7 @@ inline bool HTMLTokenizer::processEntity(SegmentedString& source) {
 }
 
 bool HTMLTokenizer::flushBufferedEndTag(SegmentedString& source) {
-  ASSERT(m_token->type() == HTMLToken::Character ||
+  DCHECK(m_token->type() == HTMLToken::Character ||
          m_token->type() == HTMLToken::Uninitialized);
   source.advanceAndUpdateLineNumber();
   if (m_token->type() == HTMLToken::Character)
@@ -131,7 +131,7 @@ bool HTMLTokenizer::flushEmitAndResumeIn(SegmentedString& source,
 bool HTMLTokenizer::nextToken(SegmentedString& source, HTMLToken& token) {
   // If we have a token in progress, then we're supposed to be called back
   // with the same token so we can finish it.
-  ASSERT(!m_token || m_token == &token ||
+  DCHECK(!m_token || m_token == &token ||
          token.type() == HTMLToken::Uninitialized);
   m_token = &token;
 
@@ -305,7 +305,7 @@ bool HTMLTokenizer::nextToken(SegmentedString& source, HTMLToken& token) {
     HTML_BEGIN_STATE(RCDATALessThanSignState) {
       if (cc == '/') {
         m_temporaryBuffer.clear();
-        ASSERT(m_bufferedEndTagName.isEmpty());
+        DCHECK(m_bufferedEndTagName.isEmpty());
         HTML_ADVANCE_TO(RCDATAEndTagOpenState);
       } else {
         bufferCharacter('<');
@@ -370,7 +370,7 @@ bool HTMLTokenizer::nextToken(SegmentedString& source, HTMLToken& token) {
     HTML_BEGIN_STATE(RAWTEXTLessThanSignState) {
       if (cc == '/') {
         m_temporaryBuffer.clear();
-        ASSERT(m_bufferedEndTagName.isEmpty());
+        DCHECK(m_bufferedEndTagName.isEmpty());
         HTML_ADVANCE_TO(RAWTEXTEndTagOpenState);
       } else {
         bufferCharacter('<');
@@ -435,7 +435,7 @@ bool HTMLTokenizer::nextToken(SegmentedString& source, HTMLToken& token) {
     HTML_BEGIN_STATE(ScriptDataLessThanSignState) {
       if (cc == '/') {
         m_temporaryBuffer.clear();
-        ASSERT(m_bufferedEndTagName.isEmpty());
+        DCHECK(m_bufferedEndTagName.isEmpty());
         HTML_ADVANCE_TO(ScriptDataEndTagOpenState);
       } else if (cc == '!') {
         bufferCharacter('<');
@@ -573,7 +573,7 @@ bool HTMLTokenizer::nextToken(SegmentedString& source, HTMLToken& token) {
     HTML_BEGIN_STATE(ScriptDataEscapedLessThanSignState) {
       if (cc == '/') {
         m_temporaryBuffer.clear();
-        ASSERT(m_bufferedEndTagName.isEmpty());
+        DCHECK(m_bufferedEndTagName.isEmpty());
         HTML_ADVANCE_TO(ScriptDataEscapedEndTagOpenState);
       } else if (isASCIIUpper(cc)) {
         bufferCharacter('<');
@@ -930,7 +930,7 @@ bool HTMLTokenizer::nextToken(SegmentedString& source, HTMLToken& token) {
       if (notEnoughCharacters)
         return haveBufferedCharacterToken();
       if (!success) {
-        ASSERT(decodedEntity.isEmpty());
+        DCHECK(decodedEntity.isEmpty());
         m_token->appendToAttributeValue('&');
       } else {
         for (unsigned i = 0; i < decodedEntity.length; ++i)
@@ -947,7 +947,7 @@ bool HTMLTokenizer::nextToken(SegmentedString& source, HTMLToken& token) {
       else if (m_additionalAllowedCharacter == '>')
         HTML_SWITCH_TO(AttributeValueUnquotedState);
       else
-        ASSERT_NOT_REACHED();
+        NOTREACHED();
     }
     END_STATE()
 
@@ -1513,7 +1513,7 @@ bool HTMLTokenizer::nextToken(SegmentedString& source, HTMLToken& token) {
     END_STATE()
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return false;
 }
 
@@ -1549,7 +1549,7 @@ inline bool HTMLTokenizer::temporaryBufferIs(const String& expectedString) {
 }
 
 inline void HTMLTokenizer::addToPossibleEndTag(LChar cc) {
-  ASSERT(isEndTagBufferingState(m_state));
+  DCHECK(isEndTagBufferingState(m_state));
   m_bufferedEndTagName.push_back(cc);
 }
 

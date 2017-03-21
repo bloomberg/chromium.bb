@@ -71,8 +71,8 @@ bool XSSInfo::isSafeToSendToAnotherThread() const {
 
 XSSAuditorDelegate::XSSAuditorDelegate(Document* document)
     : m_document(document), m_didSendNotifications(false) {
-  ASSERT(isMainThread());
-  ASSERT(m_document);
+  DCHECK(isMainThread());
+  DCHECK(m_document);
 }
 
 DEFINE_TRACE(XSSAuditorDelegate) {
@@ -81,7 +81,7 @@ DEFINE_TRACE(XSSAuditorDelegate) {
 
 PassRefPtr<EncodedFormData> XSSAuditorDelegate::generateViolationReport(
     const XSSInfo& xssInfo) {
-  ASSERT(isMainThread());
+  DCHECK(isMainThread());
 
   FrameLoader& frameLoader = m_document->frame()->loader();
   String httpBody;
@@ -102,7 +102,7 @@ PassRefPtr<EncodedFormData> XSSAuditorDelegate::generateViolationReport(
 }
 
 void XSSAuditorDelegate::didBlockScript(const XSSInfo& xssInfo) {
-  ASSERT(isMainThread());
+  DCHECK(isMainThread());
 
   UseCounter::count(m_document, xssInfo.m_didBlockEntirePage
                                     ? UseCounter::XSSAuditorBlockedEntirePage

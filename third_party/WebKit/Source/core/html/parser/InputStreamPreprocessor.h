@@ -87,7 +87,7 @@ class InputStreamPreprocessor {
  private:
   bool processNextInputCharacter(SegmentedString& source) {
   ProcessAgain:
-    ASSERT(m_nextInputCharacter == source.currentChar());
+    DCHECK_EQ(m_nextInputCharacter, source.currentChar());
 
     if (m_nextInputCharacter == '\n' && m_skipNextNewLine) {
       m_skipNextNewLine = false;

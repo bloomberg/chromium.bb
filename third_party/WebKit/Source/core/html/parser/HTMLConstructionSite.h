@@ -133,7 +133,7 @@ class HTMLConstructionSite final {
     flushPendingText(mode);
     // NOTE: Possible reentrancy via JavaScript execution.
     executeQueuedTasks();
-    ASSERT(mode == FlushIfAtTextLimit || !hasPendingTasks());
+    DCHECK(mode == FlushIfAtTextLimit || !hasPendingTasks());
   }
 
   bool hasPendingTasks() {
@@ -291,9 +291,9 @@ class HTMLConstructionSite final {
                 Node* newNextChild,
                 const StringView& newString,
                 WhitespaceMode newWhitespaceMode) {
-      ASSERT(!parent || parent == newParent);
+      DCHECK(!parent || parent == newParent);
       parent = newParent;
-      ASSERT(!nextChild || nextChild == newNextChild);
+      DCHECK(!nextChild || nextChild == newNextChild);
       nextChild = newNextChild;
       stringBuilder.append(newString);
       whitespaceMode = std::min(whitespaceMode, newWhitespaceMode);
@@ -314,9 +314,9 @@ class HTMLConstructionSite final {
     bool isEmpty() {
       // When the stringbuilder is empty, the parent and whitespace should also
       // be "empty".
-      ASSERT(stringBuilder.isEmpty() == !parent);
-      ASSERT(!stringBuilder.isEmpty() || !nextChild);
-      ASSERT(!stringBuilder.isEmpty() || (whitespaceMode == WhitespaceUnknown));
+      DCHECK_EQ(stringBuilder.isEmpty(), !parent);
+      DCHECK(!stringBuilder.isEmpty() || !nextChild);
+      DCHECK(!stringBuilder.isEmpty() || (whitespaceMode == WhitespaceUnknown));
       return stringBuilder.isEmpty();
     }
 

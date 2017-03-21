@@ -112,7 +112,7 @@ static inline void insert(HTMLConstructionSiteTask& task) {
 }
 
 static inline void executeInsertTask(HTMLConstructionSiteTask& task) {
-  ASSERT(task.operation == HTMLConstructionSiteTask::Insert);
+  DCHECK_EQ(task.operation, HTMLConstructionSiteTask::Insert);
 
   insert(task);
 
@@ -125,8 +125,8 @@ static inline void executeInsertTask(HTMLConstructionSiteTask& task) {
 }
 
 static inline void executeInsertTextTask(HTMLConstructionSiteTask& task) {
-  ASSERT(task.operation == HTMLConstructionSiteTask::InsertText);
-  ASSERT(task.child->isTextNode());
+  DCHECK_EQ(task.operation, HTMLConstructionSiteTask::InsertText);
+  DCHECK(task.child->isTextNode());
 
   // Merge text nodes into previous ones if possible:
   // http://www.whatwg.org/specs/web-apps/current-work/multipage/tree-construction.html#insert-a-character
@@ -146,26 +146,26 @@ static inline void executeInsertTextTask(HTMLConstructionSiteTask& task) {
 }
 
 static inline void executeReparentTask(HTMLConstructionSiteTask& task) {
-  ASSERT(task.operation == HTMLConstructionSiteTask::Reparent);
+  DCHECK_EQ(task.operation, HTMLConstructionSiteTask::Reparent);
 
   task.parent->parserAppendChild(task.child);
 }
 
 static inline void executeInsertAlreadyParsedChildTask(
     HTMLConstructionSiteTask& task) {
-  ASSERT(task.operation == HTMLConstructionSiteTask::InsertAlreadyParsedChild);
+  DCHECK_EQ(task.operation, HTMLConstructionSiteTask::InsertAlreadyParsedChild);
 
   insert(task);
 }
 
 static inline void executeTakeAllChildrenTask(HTMLConstructionSiteTask& task) {
-  ASSERT(task.operation == HTMLConstructionSiteTask::TakeAllChildren);
+  DCHECK_EQ(task.operation, HTMLConstructionSiteTask::TakeAllChildren);
 
   task.parent->parserTakeAllChildrenFrom(*task.oldParent());
 }
 
 void HTMLConstructionSite::executeTask(HTMLConstructionSiteTask& task) {
-  ASSERT(m_taskQueue.isEmpty());
+  DCHECK(m_taskQueue.isEmpty());
   if (task.operation == HTMLConstructionSiteTask::Insert)
     return executeInsertTask(task);
 
@@ -183,7 +183,7 @@ void HTMLConstructionSite::executeTask(HTMLConstructionSiteTask& task) {
   if (task.operation == HTMLConstructionSiteTask::TakeAllChildren)
     return executeTakeAllChildrenTask(task);
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
 }
 
 // This is only needed for TextDocuments where we might have text nodes
@@ -192,8 +192,8 @@ void HTMLConstructionSite::executeTask(HTMLConstructionSiteTask& task) {
 static unsigned findBreakIndexBetween(const StringBuilder& string,
                                       unsigned currentPosition,
                                       unsigned proposedBreakIndex) {
-  ASSERT(currentPosition < proposedBreakIndex);
-  ASSERT(proposedBreakIndex <= string.length());
+  DCHECK_LT(currentPosition, proposedBreakIndex);
+  DCHECK_LE(proposedBreakIndex, string.length());
   // The end of the string is always a valid break.
   if (proposedBreakIndex == string.length())
     return proposedBreakIndex;
@@ -244,7 +244,7 @@ void HTMLConstructionSite::flushPendingText(FlushMode mode) {
   // Hold onto the current pending text on the stack so that queueTask doesn't
   // recurse infinitely.
   m_pendingText.swap(pendingText);
-  ASSERT(m_pendingText.isEmpty());
+  DCHECK(m_pendingText.isEmpty());
 
   // Splitting text nodes into smaller chunks contradicts HTML5 spec, but is
   // necessary for performance, see:
@@ -258,7 +258,7 @@ void HTMLConstructionSite::flushPendingText(FlushMode mode) {
         std::min(currentPosition + lengthLimit, string.length());
     unsigned breakIndex =
         findBreakIndexBetween(string, currentPosition, proposedBreakIndex);
-    ASSERT(breakIndex <= string.length());
+    DCHECK_LE(breakIndex, string.length());
     String substring =
         string.substring(currentPosition, breakIndex - currentPosition);
     substring = atomizeIfAllWhitespace(substring, pendingText.whitespaceMode);
@@ -269,25 +269,25 @@ void HTMLConstructionSite::flushPendingText(FlushMode mode) {
     task.child = Text::create(task.parent->document(), substring);
     queueTask(task);
 
-    ASSERT(breakIndex > currentPosition);
-    ASSERT(breakIndex - currentPosition == substring.length());
-    ASSERT(toText(task.child.get())->length() == substring.length());
+    DCHECK_GT(breakIndex, currentPosition);
+    DCHECK_EQ(breakIndex - currentPosition, substring.length());
+    DCHECK_EQ(toText(task.child.get())->length(), substring.length());
     currentPosition = breakIndex;
   }
 }
 
 void HTMLConstructionSite::queueTask(const HTMLConstructionSiteTask& task) {
   flushPendingText(FlushAlways);
-  ASSERT(m_pendingText.isEmpty());
+  DCHECK(m_pendingText.isEmpty());
   m_taskQueue.push_back(task);
 }
 
 void HTMLConstructionSite::attachLater(ContainerNode* parent,
                                        Node* child,
                                        bool selfClosing) {
-  ASSERT(scriptingContentIsAllowed(m_parserContentPolicy) ||
+  DCHECK(scriptingContentIsAllowed(m_parserContentPolicy) ||
          !child->isElementNode() || !toElement(child)->isScriptElement());
-  ASSERT(pluginContentIsAllowed(m_parserContentPolicy) ||
+  DCHECK(pluginContentIsAllowed(m_parserContentPolicy) ||
          !isHTMLPlugInElement(child));
 
   HTMLConstructionSiteTask task(HTMLConstructionSiteTask::Insert);
@@ -306,7 +306,7 @@ void HTMLConstructionSite::attachLater(ContainerNode* parent,
       task.parent->parentNode())
     task.parent = task.parent->parentNode();
 
-  ASSERT(task.parent);
+  DCHECK(task.parent);
   queueTask(task);
 }
 
@@ -339,7 +339,7 @@ HTMLConstructionSite::HTMLConstructionSite(
       m_isParsingFragment(false),
       m_redirectAttachToFosterParent(false),
       m_inQuirksMode(document.inQuirksMode()) {
-  ASSERT(m_document->isHTMLDocument() || m_document->isXHTMLDocument());
+  DCHECK(m_document->isHTMLDocument() || m_document->isXHTMLDocument());
 }
 
 void HTMLConstructionSite::initFragmentParsing(DocumentFragment* fragment,
@@ -360,10 +360,10 @@ void HTMLConstructionSite::initFragmentParsing(DocumentFragment* fragment,
 HTMLConstructionSite::~HTMLConstructionSite() {
   // Depending on why we're being destroyed it might be OK to forget queued
   // tasks, but currently we don't expect to.
-  ASSERT(m_taskQueue.isEmpty());
+  DCHECK(m_taskQueue.isEmpty());
   // Currently we assume that text will never be the last token in the document
   // and that we'll always queue some additional task to cause it to flush.
-  ASSERT(m_pendingText.isEmpty());
+  DCHECK(m_pendingText.isEmpty());
 }
 
 DEFINE_TRACE(HTMLConstructionSite) {
@@ -392,7 +392,7 @@ HTMLFormElement* HTMLConstructionSite::takeForm() {
 
 void HTMLConstructionSite::insertHTMLHtmlStartTagBeforeHTML(
     AtomicHTMLToken* token) {
-  ASSERT(m_document);
+  DCHECK(m_document);
   HTMLHtmlElement* element = HTMLHtmlElement::create(*m_document);
   setAttributes(element, token, m_parserContentPolicy);
   attachLater(m_attachmentRoot, element);
@@ -605,7 +605,7 @@ void HTMLConstructionSite::setCompatibilityModeFromDoctype(
 }
 
 void HTMLConstructionSite::processEndOfFile() {
-  ASSERT(currentNode());
+  DCHECK(currentNode());
   flush(FlushAlways);
   openElements()->popAll();
 }
@@ -613,13 +613,13 @@ void HTMLConstructionSite::processEndOfFile() {
 void HTMLConstructionSite::finishedParsing() {
   // We shouldn't have any queued tasks but we might have pending text which we
   // need to promote to tasks and execute.
-  ASSERT(m_taskQueue.isEmpty());
+  DCHECK(m_taskQueue.isEmpty());
   flush(FlushAlways);
   m_document->finishedParsing();
 }
 
 void HTMLConstructionSite::insertDoctype(AtomicHTMLToken* token) {
-  ASSERT(token->type() == HTMLToken::DOCTYPE);
+  DCHECK_EQ(token->type(), HTMLToken::DOCTYPE);
 
   const String& publicId =
       StringImpl::create8BitIfPossible(token->publicIdentifier());
@@ -636,7 +636,7 @@ void HTMLConstructionSite::insertDoctype(AtomicHTMLToken* token) {
   // inside <table>).  For now we ASSERT that we never hit this code in a
   // fragment, as changing the owning document's compatibility mode would be
   // wrong.
-  ASSERT(!m_isParsingFragment);
+  DCHECK(!m_isParsingFragment);
   if (m_isParsingFragment)
     return;
 
@@ -648,33 +648,33 @@ void HTMLConstructionSite::insertDoctype(AtomicHTMLToken* token) {
 }
 
 void HTMLConstructionSite::insertComment(AtomicHTMLToken* token) {
-  ASSERT(token->type() == HTMLToken::Comment);
+  DCHECK_EQ(token->type(), HTMLToken::Comment);
   attachLater(currentNode(),
               Comment::create(ownerDocumentForCurrentNode(), token->comment()));
 }
 
 void HTMLConstructionSite::insertCommentOnDocument(AtomicHTMLToken* token) {
-  ASSERT(token->type() == HTMLToken::Comment);
-  ASSERT(m_document);
+  DCHECK_EQ(token->type(), HTMLToken::Comment);
+  DCHECK(m_document);
   attachLater(m_attachmentRoot, Comment::create(*m_document, token->comment()));
 }
 
 void HTMLConstructionSite::insertCommentOnHTMLHtmlElement(
     AtomicHTMLToken* token) {
-  ASSERT(token->type() == HTMLToken::Comment);
+  DCHECK_EQ(token->type(), HTMLToken::Comment);
   ContainerNode* parent = m_openElements.rootNode();
   attachLater(parent, Comment::create(parent->document(), token->comment()));
 }
 
 void HTMLConstructionSite::insertHTMLHeadElement(AtomicHTMLToken* token) {
-  ASSERT(!shouldFosterParent());
+  DCHECK(!shouldFosterParent());
   m_head = HTMLStackItem::create(createHTMLElement(token), token);
   attachLater(currentNode(), m_head->element());
   m_openElements.pushHTMLHeadElement(m_head);
 }
 
 void HTMLConstructionSite::insertHTMLBodyElement(AtomicHTMLToken* token) {
-  ASSERT(!shouldFosterParent());
+  DCHECK(!shouldFosterParent());
   HTMLElement* body = createHTMLElement(token);
   attachLater(currentNode(), body);
   m_openElements.pushHTMLBodyElement(HTMLStackItem::create(body, token));
@@ -685,7 +685,7 @@ void HTMLConstructionSite::insertHTMLBodyElement(AtomicHTMLToken* token) {
 void HTMLConstructionSite::insertHTMLFormElement(AtomicHTMLToken* token,
                                                  bool isDemoted) {
   HTMLElement* element = createHTMLElement(token);
-  ASSERT(isHTMLFormElement(element));
+  DCHECK(isHTMLFormElement(element));
   HTMLFormElement* formElement = toHTMLFormElement(element);
   if (!openElements()->hasTemplateInHTMLScope())
     m_form = formElement;
@@ -702,7 +702,7 @@ void HTMLConstructionSite::insertHTMLElement(AtomicHTMLToken* token) {
 
 void HTMLConstructionSite::insertSelfClosingHTMLElementDestroyingToken(
     AtomicHTMLToken* token) {
-  ASSERT(token->type() == HTMLToken::StartTag);
+  DCHECK_EQ(token->type(), HTMLToken::StartTag);
   // Normally HTMLElementStack is responsible for calling finishParsingChildren,
   // but self-closing elements are never in the element stack so the stack
   // doesn't get a chance to tell them that we're done parsing their children.
@@ -750,7 +750,7 @@ void HTMLConstructionSite::insertScriptElement(AtomicHTMLToken* token) {
 void HTMLConstructionSite::insertForeignElement(
     AtomicHTMLToken* token,
     const AtomicString& namespaceURI) {
-  ASSERT(token->type() == HTMLToken::StartTag);
+  DCHECK_EQ(token->type(), HTMLToken::StartTag);
   // parseError when xmlns or xmlns:xlink are wrong.
   DVLOG(1) << "Not implemented.";
 
@@ -995,7 +995,7 @@ void HTMLConstructionSite::reconstructTheActiveFormattingElements() {
     return;
 
   unsigned unopenEntryIndex = firstUnopenElementIndex;
-  ASSERT(unopenEntryIndex < m_activeFormattingElements.size());
+  DCHECK_LT(unopenEntryIndex, m_activeFormattingElements.size());
   for (; unopenEntryIndex < m_activeFormattingElements.size();
        ++unopenEntryIndex) {
     HTMLFormattingElementList::Entry& unopenedEntry =
@@ -1070,7 +1070,7 @@ void HTMLConstructionSite::fosterParent(Node* node) {
   HTMLConstructionSiteTask task(HTMLConstructionSiteTask::Insert);
   findFosterSite(task);
   task.child = node;
-  ASSERT(task.parent);
+  DCHECK(task.parent);
   queueTask(task);
 }
 

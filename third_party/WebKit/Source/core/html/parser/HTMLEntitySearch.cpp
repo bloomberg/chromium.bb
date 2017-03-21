@@ -69,11 +69,11 @@ const HTMLEntityTableEntry* HTMLEntitySearch::findFirst(
     if (result == Before)
       left = probe;
     else {
-      ASSERT(result == After || result == Prefix);
+      DCHECK(result == After || result == Prefix);
       right = probe;
     }
   }
-  ASSERT(left + 1 == right);
+  DCHECK_EQ(left + 1, right);
   return right;
 }
 
@@ -94,16 +94,16 @@ const HTMLEntityTableEntry* HTMLEntitySearch::findLast(
     if (result == After)
       right = probe;
     else {
-      ASSERT(result == Before || result == Prefix);
+      DCHECK(result == Before || result == Prefix);
       left = probe;
     }
   }
-  ASSERT(left + 1 == right);
+  DCHECK_EQ(left + 1, right);
   return left;
 }
 
 void HTMLEntitySearch::advance(UChar nextCharacter) {
-  ASSERT(isEntityPrefix());
+  DCHECK(isEntityPrefix());
   if (!m_currentLength) {
     m_first = HTMLEntityTable::firstEntryStartingWith(nextCharacter);
     m_last = HTMLEntityTable::lastEntryStartingWith(nextCharacter);

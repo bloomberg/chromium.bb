@@ -63,7 +63,7 @@ class HTMLFormattingElementList {
     Element* element() const {
       // The fact that !m_item == isMarker() is an implementation detail callers
       // should check isMarker() before calling element().
-      ASSERT(m_item);
+      DCHECK(m_item);
       return m_item->element();
     }
     void replaceElement(HTMLStackItem* item) { m_item = item; }

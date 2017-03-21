@@ -228,11 +228,11 @@ class HTMLTreeBuilder final
 
     DocumentFragment* fragment() const { return m_fragment; }
     Element* contextElement() const {
-      ASSERT(m_fragment);
+      DCHECK(m_fragment);
       return m_contextElementStackItem->element();
     }
     HTMLStackItem* contextElementStackItem() const {
-      ASSERT(m_fragment);
+      DCHECK(m_fragment);
       return m_contextElementStackItem.get();
     }
 

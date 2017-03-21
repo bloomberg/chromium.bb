@@ -81,17 +81,17 @@ class HTMLElementStack {
   // Inlining this function is a (small) performance win on the parsing
   // benchmark.
   Element* top() const {
-    ASSERT(m_top->element());
+    DCHECK(m_top->element());
     return m_top->element();
   }
 
   ContainerNode* topNode() const {
-    ASSERT(m_top->node());
+    DCHECK(m_top->node());
     return m_top->node();
   }
 
   HTMLStackItem* topStackItem() const {
-    ASSERT(m_top->stackItem());
+    DCHECK(m_top->stackItem());
     return m_top->stackItem();
   }
 

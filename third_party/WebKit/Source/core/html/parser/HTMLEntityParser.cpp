@@ -78,7 +78,7 @@ static UChar asHexDigit(UChar cc) {
     return 10 + cc - 'a';
   if (cc >= 'A' && cc <= 'Z')
     return 10 + cc - 'A';
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return 0;
 }
 
@@ -136,7 +136,7 @@ static bool consumeNamedEntity(SegmentedString& source,
       DCHECK_EQ(cc, static_cast<UChar>(*reference++));
       consumedCharacters.push_back(cc);
       source.advanceAndASSERT(cc);
-      ASSERT(!source.isEmpty());
+      DCHECK(!source.isEmpty());
     }
     cc = source.currentChar();
   }
@@ -155,11 +155,11 @@ bool consumeHTMLEntity(SegmentedString& source,
                        DecodedHTMLEntity& decodedEntity,
                        bool& notEnoughCharacters,
                        UChar additionalAllowedCharacter) {
-  ASSERT(!additionalAllowedCharacter || additionalAllowedCharacter == '"' ||
+  DCHECK(!additionalAllowedCharacter || additionalAllowedCharacter == '"' ||
          additionalAllowedCharacter == '\'' ||
          additionalAllowedCharacter == '>');
-  ASSERT(!notEnoughCharacters);
-  ASSERT(decodedEntity.isEmpty());
+  DCHECK(!notEnoughCharacters);
+  DCHECK(decodedEntity.isEmpty());
 
   enum EntityState {
     Initial,
@@ -267,7 +267,7 @@ bool consumeHTMLEntity(SegmentedString& source,
     consumedCharacters.push_back(cc);
     source.advanceAndASSERT(cc);
   }
-  ASSERT(source.isEmpty());
+  DCHECK(source.isEmpty());
   notEnoughCharacters = true;
   unconsumeCharacters(source, consumedCharacters);
   return false;
@@ -276,7 +276,7 @@ bool consumeHTMLEntity(SegmentedString& source,
 static size_t appendUChar32ToUCharArray(UChar32 value, UChar* result) {
   if (U_IS_BMP(value)) {
     UChar character = static_cast<UChar>(value);
-    ASSERT(character == value);
+    DCHECK_EQ(character, value);
     result[0] = character;
     return 1;
   }

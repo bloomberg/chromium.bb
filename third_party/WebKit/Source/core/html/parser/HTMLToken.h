@@ -166,7 +166,7 @@ class HTMLToken {
   TokenType type() const { return m_type; }
 
   void makeEndOfFile() {
-    ASSERT(m_type == Uninitialized);
+    DCHECK_EQ(m_type, Uninitialized);
     m_type = EndOfFile;
   }
 
@@ -180,7 +180,7 @@ class HTMLToken {
   void end(int endOffset) { m_range.end = endOffset - m_baseOffset; }
 
   const DataVector& data() const {
-    ASSERT(m_type == Character || m_type == Comment || m_type == StartTag ||
+    DCHECK(m_type == Character || m_type == Comment || m_type == StartTag ||
            m_type == EndTag);
     return m_data;
   }
@@ -188,13 +188,13 @@ class HTMLToken {
   bool isAll8BitData() const { return (m_orAllData <= 0xff); }
 
   const DataVector& name() const {
-    ASSERT(m_type == StartTag || m_type == EndTag || m_type == DOCTYPE);
+    DCHECK(m_type == StartTag || m_type == EndTag || m_type == DOCTYPE);
     return m_data;
   }
 
   void appendToName(UChar character) {
-    ASSERT(m_type == StartTag || m_type == EndTag || m_type == DOCTYPE);
-    ASSERT(character);
+    DCHECK(m_type == StartTag || m_type == EndTag || m_type == DOCTYPE);
+    DCHECK(character);
     m_data.push_back(character);
     m_orAllData |= character;
   }
@@ -202,23 +202,23 @@ class HTMLToken {
   /* DOCTYPE Tokens */
 
   bool forceQuirks() const {
-    ASSERT(m_type == DOCTYPE);
+    DCHECK_EQ(m_type, DOCTYPE);
     return m_doctypeData->m_forceQuirks;
   }
 
   void setForceQuirks() {
-    ASSERT(m_type == DOCTYPE);
+    DCHECK_EQ(m_type, DOCTYPE);
     m_doctypeData->m_forceQuirks = true;
   }
 
   void beginDOCTYPE() {
-    ASSERT(m_type == Uninitialized);
+    DCHECK_EQ(m_type, Uninitialized);
     m_type = DOCTYPE;
     m_doctypeData = WTF::wrapUnique(new DoctypeData);
   }
 
   void beginDOCTYPE(UChar character) {
-    ASSERT(character);
+    DCHECK(character);
     beginDOCTYPE();
     m_data.push_back(character);
     m_orAllData |= character;
@@ -226,39 +226,39 @@ class HTMLToken {
 
   // FIXME: Distinguish between a missing public identifer and an empty one.
   const WTF::Vector<UChar>& publicIdentifier() const {
-    ASSERT(m_type == DOCTYPE);
+    DCHECK_EQ(m_type, DOCTYPE);
     return m_doctypeData->m_publicIdentifier;
   }
 
   // FIXME: Distinguish between a missing system identifer and an empty one.
   const WTF::Vector<UChar>& systemIdentifier() const {
-    ASSERT(m_type == DOCTYPE);
+    DCHECK_EQ(m_type, DOCTYPE);
     return m_doctypeData->m_systemIdentifier;
   }
 
   void setPublicIdentifierToEmptyString() {
-    ASSERT(m_type == DOCTYPE);
+    DCHECK_EQ(m_type, DOCTYPE);
     m_doctypeData->m_hasPublicIdentifier = true;
     m_doctypeData->m_publicIdentifier.clear();
   }
 
   void setSystemIdentifierToEmptyString() {
-    ASSERT(m_type == DOCTYPE);
+    DCHECK_EQ(m_type, DOCTYPE);
     m_doctypeData->m_hasSystemIdentifier = true;
     m_doctypeData->m_systemIdentifier.clear();
   }
 
   void appendToPublicIdentifier(UChar character) {
-    ASSERT(character);
-    ASSERT(m_type == DOCTYPE);
-    ASSERT(m_doctypeData->m_hasPublicIdentifier);
+    DCHECK(character);
+    DCHECK_EQ(m_type, DOCTYPE);
+    DCHECK(m_doctypeData->m_hasPublicIdentifier);
     m_doctypeData->m_publicIdentifier.push_back(character);
   }
 
   void appendToSystemIdentifier(UChar character) {
-    ASSERT(character);
-    ASSERT(m_type == DOCTYPE);
-    ASSERT(m_doctypeData->m_hasSystemIdentifier);
+    DCHECK(character);
+    DCHECK_EQ(m_type, DOCTYPE);
+    DCHECK(m_doctypeData->m_hasSystemIdentifier);
     m_doctypeData->m_systemIdentifier.push_back(character);
   }
 
@@ -269,18 +269,18 @@ class HTMLToken {
   /* Start/End Tag Tokens */
 
   bool selfClosing() const {
-    ASSERT(m_type == StartTag || m_type == EndTag);
+    DCHECK(m_type == StartTag || m_type == EndTag);
     return m_selfClosing;
   }
 
   void setSelfClosing() {
-    ASSERT(m_type == StartTag || m_type == EndTag);
+    DCHECK(m_type == StartTag || m_type == EndTag);
     m_selfClosing = true;
   }
 
   void beginStartTag(UChar character) {
-    ASSERT(character);
-    ASSERT(m_type == Uninitialized);
+    DCHECK(character);
+    DCHECK_EQ(m_type, Uninitialized);
     m_type = StartTag;
     m_selfClosing = false;
     m_currentAttribute = 0;
@@ -291,7 +291,7 @@ class HTMLToken {
   }
 
   void beginEndTag(LChar character) {
-    ASSERT(m_type == Uninitialized);
+    DCHECK_EQ(m_type, Uninitialized);
     m_type = EndTag;
     m_selfClosing = false;
     m_currentAttribute = 0;
@@ -301,7 +301,7 @@ class HTMLToken {
   }
 
   void beginEndTag(const Vector<LChar, 32>& characters) {
-    ASSERT(m_type == Uninitialized);
+    DCHECK_EQ(m_type, Uninitialized);
     m_type = EndTag;
     m_selfClosing = false;
     m_currentAttribute = 0;
@@ -311,7 +311,7 @@ class HTMLToken {
   }
 
   void addNewAttribute() {
-    ASSERT(m_type == StartTag || m_type == EndTag);
+    DCHECK(m_type == StartTag || m_type == EndTag);
     m_attributes.grow(m_attributes.size() + 1);
     m_currentAttribute = &m_attributes.back();
     m_currentAttribute->mutableNameRange().clear();
@@ -343,27 +343,27 @@ class HTMLToken {
   }
 
   void appendToAttributeName(UChar character) {
-    ASSERT(character);
-    ASSERT(m_type == StartTag || m_type == EndTag);
+    DCHECK(character);
+    DCHECK(m_type == StartTag || m_type == EndTag);
     m_currentAttribute->nameRange().checkValidStart();
     m_currentAttribute->appendToName(character);
   }
 
   void appendToAttributeValue(UChar character) {
-    ASSERT(character);
-    ASSERT(m_type == StartTag || m_type == EndTag);
+    DCHECK(character);
+    DCHECK(m_type == StartTag || m_type == EndTag);
     m_currentAttribute->valueRange().checkValidStart();
     m_currentAttribute->appendToValue(character);
   }
 
   void appendToAttributeValue(size_t i, const String& value) {
-    ASSERT(!value.isEmpty());
-    ASSERT(m_type == StartTag || m_type == EndTag);
+    DCHECK(!value.isEmpty());
+    DCHECK(m_type == StartTag || m_type == EndTag);
     m_attributes[i].appendToValue(value);
   }
 
   const AttributeList& attributes() const {
-    ASSERT(m_type == StartTag || m_type == EndTag);
+    DCHECK(m_type == StartTag || m_type == EndTag);
     return m_attributes;
   }
 
@@ -377,7 +377,7 @@ class HTMLToken {
 
   // Used by the XSSAuditor to nuke XSS-laden attributes.
   void eraseValueOfAttribute(size_t i) {
-    ASSERT(m_type == StartTag || m_type == EndTag);
+    DCHECK(m_type == StartTag || m_type == EndTag);
     m_attributes[i].clearValue();
   }
 
@@ -386,53 +386,53 @@ class HTMLToken {
   // Starting a character token works slightly differently than starting
   // other types of tokens because we want to save a per-character branch.
   void ensureIsCharacterToken() {
-    ASSERT(m_type == Uninitialized || m_type == Character);
+    DCHECK(m_type == Uninitialized || m_type == Character);
     m_type = Character;
   }
 
   const DataVector& characters() const {
-    ASSERT(m_type == Character);
+    DCHECK_EQ(m_type, Character);
     return m_data;
   }
 
   void appendToCharacter(char character) {
-    ASSERT(m_type == Character);
+    DCHECK_EQ(m_type, Character);
     m_data.push_back(character);
   }
 
   void appendToCharacter(UChar character) {
-    ASSERT(m_type == Character);
+    DCHECK_EQ(m_type, Character);
     m_data.push_back(character);
     m_orAllData |= character;
   }
 
   void appendToCharacter(const Vector<LChar, 32>& characters) {
-    ASSERT(m_type == Character);
+    DCHECK_EQ(m_type, Character);
     m_data.appendVector(characters);
   }
 
   /* Comment Tokens */
 
   const DataVector& comment() const {
-    ASSERT(m_type == Comment);
+    DCHECK_EQ(m_type, Comment);
     return m_data;
   }
 
   void beginComment() {
-    ASSERT(m_type == Uninitialized);
+    DCHECK_EQ(m_type, Uninitialized);
     m_type = Comment;
   }
 
   void appendToComment(UChar character) {
-    ASSERT(character);
-    ASSERT(m_type == Comment);
+    DCHECK(character);
+    DCHECK_EQ(m_type, Comment);
     m_data.push_back(character);
     m_orAllData |= character;
   }
 
   // Only for XSSAuditor
   void eraseCharacters() {
-    ASSERT(m_type == Character);
+    DCHECK_EQ(m_type, Character);
     m_data.clear();
     m_orAllData = 0;
   }

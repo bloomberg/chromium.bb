@@ -28,7 +28,7 @@ KURL PreloadRequest::completeURL(Document* document) {
 }
 
 Resource* PreloadRequest::start(Document* document) {
-  ASSERT(isMainThread());
+  DCHECK(isMainThread());
 
   FetchInitiatorInfo initiatorInfo;
   initiatorInfo.name = AtomicString(m_initiatorName);

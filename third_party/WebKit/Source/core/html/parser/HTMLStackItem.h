@@ -65,11 +65,11 @@ class HTMLStackItem : public GarbageCollectedFinalized<HTMLStackItem> {
   const AtomicString& localName() const { return m_tokenLocalName; }
 
   const Vector<Attribute>& attributes() const {
-    ASSERT(m_tokenLocalName);
+    DCHECK(m_tokenLocalName);
     return m_tokenAttributes;
   }
   Attribute* getAttributeItem(const QualifiedName& attributeName) {
-    ASSERT(m_tokenLocalName);
+    DCHECK(m_tokenLocalName);
     return findAttributeInVector(m_tokenAttributes, attributeName);
   }
 

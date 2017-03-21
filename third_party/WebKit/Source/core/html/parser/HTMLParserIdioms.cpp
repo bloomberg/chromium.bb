@@ -59,7 +59,7 @@ static String stripLeadingAndTrailingHTMLSpaces(String string,
       break;
   }
 
-  ASSERT(numLeadingSpaces + numTrailingSpaces < length);
+  DCHECK_LT(numLeadingSpaces + numTrailingSpaces, length);
 
   if (!(numLeadingSpaces | numTrailingSpaces))
     return string;
@@ -173,7 +173,7 @@ static bool parseHTMLIntegerInternal(const CharacterType* position,
   // Step 5
   if (position == end)
     return false;
-  ASSERT(position < end);
+  DCHECK_LT(position, end);
 
   // Step 6
   if (*position == '-') {
@@ -183,7 +183,7 @@ static bool parseHTMLIntegerInternal(const CharacterType* position,
     ++position;
   if (position == end)
     return false;
-  ASSERT(position < end);
+  DCHECK_LT(position, end);
 
   // Step 7
   if (!isASCIIDigit(*position))
@@ -247,7 +247,7 @@ static bool parseHTMLNonNegativeIntegerInternal(const CharacterType* position,
   // Step 5: If position is past the end of input, return an error.
   if (position == end)
     return false;
-  ASSERT(position < end);
+  DCHECK_LT(position, end);
 
   // Step 6: If the character indicated by position (the first character) is a
   // U+002D HYPHEN-MINUS character (-), ...
@@ -260,7 +260,7 @@ static bool parseHTMLNonNegativeIntegerInternal(const CharacterType* position,
 
   if (position == end)
     return false;
-  ASSERT(position < end);
+  DCHECK_LT(position, end);
 
   // Step 7: If the character indicated by position is not an ASCII digit,
   // then return an error.
@@ -376,7 +376,7 @@ String extractCharset(const String& value) {
     char quoteMark = 0;
     if (pos < length && (value[pos] == '"' || value[pos] == '\'')) {
       quoteMark = static_cast<char>(value[pos++]);
-      ASSERT(!(quoteMark & 0x80));
+      DCHECK(!(quoteMark & 0x80));
     }
 
     if (pos == length)
@@ -461,7 +461,7 @@ inline StringImpl* findStringIfStatic(const CharType* characters,
   // computeHashAndMaskTop8Bits is the function StringImpl::hash() uses.
   unsigned hash = StringHasher::computeHashAndMaskTop8Bits(characters, length);
   const WTF::StaticStringsTable& table = StringImpl::allStaticStrings();
-  ASSERT(!table.isEmpty());
+  DCHECK(!table.isEmpty());
 
   WTF::StaticStringsTable::const_iterator it = table.find(hash);
   if (it == table.end())

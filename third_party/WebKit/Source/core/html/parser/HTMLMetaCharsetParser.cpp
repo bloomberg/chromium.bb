@@ -66,7 +66,7 @@ bool HTMLMetaCharsetParser::checkForMetaCharset(const char* data,
   if (m_doneChecking)
     return true;
 
-  ASSERT(!m_encoding.isValid());
+  DCHECK(!m_encoding.isValid());
 
   // We still don't have an encoding, and are in the head. The following tags
   // are allowed in <head>: SCRIPT|STYLE|META|LINK|OBJECT|TITLE|BASE

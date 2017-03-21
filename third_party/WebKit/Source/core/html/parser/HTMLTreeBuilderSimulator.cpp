@@ -108,7 +108,7 @@ HTMLTreeBuilderSimulator::HTMLTreeBuilderSimulator(
 
 HTMLTreeBuilderSimulator::State HTMLTreeBuilderSimulator::stateFor(
     HTMLTreeBuilder* treeBuilder) {
-  ASSERT(isMainThread());
+  DCHECK(isMainThread());
   State namespaceStack;
   for (HTMLElementStack::ElementRecord* record =
            treeBuilder->openElements()->topRecord();

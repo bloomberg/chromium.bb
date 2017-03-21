@@ -76,7 +76,7 @@ String HTMLSourceTracker::sourceForToken(const HTMLToken& token) {
     // mark the end of the file.
     length = m_previousSource.length() + m_currentSource.length() - 1;
   } else {
-    ASSERT(!token.startIndex());
+    DCHECK(!token.startIndex());
     length = static_cast<size_t>(token.endIndex() - token.startIndex());
   }
 
@@ -89,7 +89,7 @@ String HTMLSourceTracker::sourceForToken(const HTMLToken& token) {
     m_previousSource.advance();
   }
   for (; i < length; ++i) {
-    ASSERT(!m_currentSource.isEmpty());
+    DCHECK(!m_currentSource.isEmpty());
     source.append(m_currentSource.currentChar());
     m_currentSource.advance();
   }

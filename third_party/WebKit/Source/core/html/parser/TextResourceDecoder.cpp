@@ -157,7 +157,7 @@ TextResourceDecoder::TextResourceDecoder(
       m_encodingDetectionOption(encodingDetectionOption) {
   m_hintLanguage[0] = 0;
   if (m_encodingDetectionOption == AlwaysUseUTF8ForText) {
-    ASSERT(m_contentType == PlainTextContent && m_encoding == UTF8Encoding());
+    DCHECK(m_contentType == PlainTextContent && m_encoding == UTF8Encoding());
   } else if (m_encodingDetectionOption == UseAllAutoDetection) {
     // Checking empty URL helps unit testing. Providing defaultLanguage() is
     // sometimes difficult in tests.
@@ -241,7 +241,7 @@ static int findXMLEncoding(const char* str, int len, int& encodingLength) {
 size_t TextResourceDecoder::checkForBOM(const char* data, size_t len) {
   // Check for UTF-16/32 or UTF-8 BOM mark at the beginning, which is a sure
   // sign of a Unicode encoding. We let it override even a user-chosen encoding.
-  ASSERT(!m_checkedForBOM);
+  DCHECK(!m_checkedForBOM);
 
   size_t lengthOfBOM = 0;
 
@@ -477,7 +477,7 @@ String TextResourceDecoder::decode(const char* data, size_t len) {
       setEncoding(detectedEncoding, EncodingFromContentSniffing);
   }
 
-  ASSERT(m_encoding.isValid());
+  DCHECK(m_encoding.isValid());
 
   if (!m_codec)
     m_codec = newTextCodec(m_encoding);
