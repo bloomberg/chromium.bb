@@ -29,17 +29,3 @@ mojom("test_interfaces") {
     ":interfaces",
   ]
 }
-
-source_set("struct_traits") {
-  sources = [
-    "latency_info_struct_traits.cc",
-    "latency_info_struct_traits.h",
-  ]
-  deps = [
-    ":interfaces_shared_cpp_sources",
-    "//mojo/common",
-    "//mojo/public/cpp/bindings",
-    "//ui/events:events_base",
-    "//ui/gfx/geometry/mojo:struct_traits",
-  ]
-}

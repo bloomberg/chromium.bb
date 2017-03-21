@@ -8,6 +8,9 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/event_types.h"
@@ -797,6 +800,8 @@ class EVENTS_EXPORT PointerEvent : public LocatedEvent {
 //
 class EVENTS_EXPORT KeyEvent : public Event {
  public:
+  using Properties = std::unordered_map<std::string, std::vector<uint8_t>>;
+
   // Create a KeyEvent from a NativeEvent. For Windows this native event can
   // be either a keystroke message (WM_KEYUP/WM_KEYDOWN) or a character message
   // (WM_CHAR). Other systems have only keystroke events.
@@ -903,6 +908,14 @@ class EVENTS_EXPORT KeyEvent : public Event {
   // (Native X11 event flags describe the state before the event.)
   void NormalizeFlags();
 
+  // Sets the properties associated with this KeyEvent.
+  void SetProperties(const Properties& properties);
+
+  // Returns the properties associated with this event, which may be null.
+  // The properties are meant to provide a way to associate arbitrary key/value
+  // pairs with KeyEvents and not used by KeyEvent.
+  const Properties* properties() const { return properties_.get(); }
+
  protected:
   friend class KeyEventTestApi;
 
@@ -912,6 +925,8 @@ class EVENTS_EXPORT KeyEvent : public Event {
  private:
   // Determine key_ on a keystroke event from code_ and flags().
   void ApplyLayout() const;
+
+  static bool IsRepeated(const KeyEvent& event);
 
   KeyboardCode key_code_;
 
@@ -939,7 +954,7 @@ class EVENTS_EXPORT KeyEvent : public Event {
   // it may be set only if and when GetCharacter() or GetDomKey() is called.
   mutable DomKey key_ = DomKey::NONE;
 
-  static bool IsRepeated(const KeyEvent& event);
+  std::unique_ptr<Properties> properties_;
 
   static KeyEvent* last_key_event_;
 };

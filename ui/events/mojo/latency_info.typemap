@@ -3,13 +3,21 @@
 # found in the LICENSE file.
 
 mojom = "//ui/events/mojo/latency_info.mojom"
-public_headers = [ "//ui/events/latency_info.h" ]
+public_headers = [
+  "//ipc/ipc_message_utils.h",
+  "//ui/events/latency_info.h",
+]
 traits_headers = [ "//ui/events/mojo/latency_info_struct_traits.h" ]
 sources = [
-  "//ui/events/mojo:struct_traits",
+  "latency_info_struct_traits.cc",
+  "latency_info_struct_traits.h",
+]
+public_deps = [
+  "//ui/events:events_base",
+  "//ui/gfx/geometry/mojo:struct_traits",
 ]
 deps = [
-  "//ui/events/mojo:struct_traits",
+  "//ipc:param_traits",
 ]
 type_mappings = [
   "ui.mojom.LatencyComponent=ui::LatencyInfo::LatencyComponent",

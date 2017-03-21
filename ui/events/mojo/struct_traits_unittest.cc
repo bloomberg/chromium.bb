@@ -5,7 +5,11 @@
 #include "base/message_loop/message_loop.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/events/event.h"
 #include "ui/events/keycodes/dom/dom_code.h"
+#include "ui/events/mojo/event.mojom.h"
+#include "ui/events/mojo/event_struct_traits.h"
+#include "ui/events/mojo/latency_info_struct_traits.h"
 #include "ui/events/mojo/traits_test_service.mojom.h"
 
 namespace ui {
@@ -253,6 +257,23 @@ TEST_F(StructTraitsTest, PointerWheelEvent) {
     EXPECT_EQ(kTestData[i].offset(),
               output_pointer_event->pointer_details().offset);
   }
+}
+
+TEST_F(StructTraitsTest, KeyEventPropertiesSerialized) {
+  KeyEvent key_event(ET_KEY_PRESSED, VKEY_T, EF_NONE);
+  const std::string key = "key";
+  const std::vector<uint8_t> value(0xCD, 2);
+  KeyEvent::Properties properties;
+  properties[key] = value;
+  key_event.SetProperties(properties);
+
+  std::unique_ptr<Event> event_ptr = Event::Clone(key_event);
+  std::unique_ptr<Event> deserialized;
+  ASSERT_TRUE(mojom::Event::Deserialize(mojom::Event::Serialize(&event_ptr),
+                                        &deserialized));
+  ASSERT_TRUE(deserialized->IsKeyEvent());
+  ASSERT_TRUE(deserialized->AsKeyEvent()->properties());
+  EXPECT_EQ(properties, *(deserialized->AsKeyEvent()->properties()));
 }
 
 }  // namespace ui

@@ -17,6 +17,7 @@
 #include <cmath>
 #include <cstring>
 
+#include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
@@ -1201,8 +1202,10 @@ KeyEvent::KeyEvent(const KeyEvent& rhs)
       key_code_(rhs.key_code_),
       code_(rhs.code_),
       is_char_(rhs.is_char_),
-      key_(rhs.key_) {
-}
+      key_(rhs.key_),
+      properties_(rhs.properties_
+                      ? base::MakeUnique<Properties>(*rhs.properties_)
+                      : nullptr) {}
 
 KeyEvent& KeyEvent::operator=(const KeyEvent& rhs) {
   if (this != &rhs) {
@@ -1211,6 +1214,10 @@ KeyEvent& KeyEvent::operator=(const KeyEvent& rhs) {
     code_ = rhs.code_;
     key_ = rhs.key_;
     is_char_ = rhs.is_char_;
+    if (rhs.properties_)
+      properties_ = base::MakeUnique<Properties>(*rhs.properties_);
+    else
+      properties_.reset();
   }
   latency()->set_source_event_type(ui::SourceEventType::OTHER);
   return *this;
@@ -1344,6 +1351,10 @@ void KeyEvent::NormalizeFlags() {
     set_flags(flags() | mask);
   else
     set_flags(flags() & ~mask);
+}
+
+void KeyEvent::SetProperties(const Properties& properties) {
+  properties_ = base::MakeUnique<Properties>(properties);
 }
 
 KeyboardCode KeyEvent::GetLocatedWindowsKeyboardCode() const {

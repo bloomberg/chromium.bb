@@ -161,6 +161,8 @@ StructTraits<ui::mojom::EventDataView, EventUniquePtr>::key_data(
       key_event->GetLocatedWindowsKeyboardCode());
   key_data->text = key_event->GetText();
   key_data->unmodified_text = key_event->GetUnmodifiedText();
+  if (key_event->properties())
+    key_data->properties = *(key_event->properties());
 
   return key_data;
 }
@@ -261,6 +263,8 @@ bool StructTraits<ui::mojom::EventDataView, EventUniquePtr>::Read(
             static_cast<ui::KeyboardCode>(key_data->key_code), event.flags(),
             base::TimeTicks::FromInternalValue(event.time_stamp())));
       }
+      if (key_data->properties)
+        (*out)->AsKeyEvent()->SetProperties(*key_data->properties);
       break;
     }
     case ui::mojom::EventType::POINTER_DOWN:
