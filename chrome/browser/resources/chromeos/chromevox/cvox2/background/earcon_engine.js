@@ -196,7 +196,7 @@ EarconEngine.prototype.loadSound = function(name, url) {
  *     An object where you can override the default
  *     gain, pan, and reverb, otherwise these are taken from
  *     masterVolume, masterPan, and masterReverb.
- * @return {AudioNode} The filters to be applied to all sounds, connected
+ * @return {!AudioNode} The filters to be applied to all sounds, connected
  *     to the destination node.
  */
 EarconEngine.prototype.createCommonFilters = function(properties) {

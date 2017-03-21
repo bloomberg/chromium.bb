@@ -55,9 +55,9 @@ if (window.JSON && window.JSON.toString() == '[object JSON]') {
                 f(this.getUTCSeconds()) + 'Z' : 'null';
       };
 
-      String.prototype.toJSON =
+      Boolean.prototype.toJSON =
       Number.prototype.toJSON =
-      Boolean.prototype.toJSON = function(key) {
+      String.prototype.toJSON = function(key) {
         return /** @type {string} */ (this.valueOf());
       };
     }

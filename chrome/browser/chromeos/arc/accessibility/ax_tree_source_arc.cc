@@ -20,8 +20,6 @@ ui::AXEvent ToAXEvent(arc::mojom::AccessibilityEventType arc_event_type) {
     case arc::mojom::AccessibilityEventType::VIEW_FOCUSED:
     case arc::mojom::AccessibilityEventType::VIEW_ACCESSIBILITY_FOCUSED:
       return ui::AX_EVENT_FOCUS;
-    case arc::mojom::AccessibilityEventType::VIEW_ACCESSIBILITY_FOCUS_CLEARED:
-      return ui::AX_EVENT_BLUR;
     case arc::mojom::AccessibilityEventType::VIEW_CLICKED:
     case arc::mojom::AccessibilityEventType::VIEW_LONG_CLICKED:
       return ui::AX_EVENT_CLICKED;
@@ -81,6 +79,20 @@ bool GetBooleanProperty(arc::mojom::AccessibilityNodeInfoData* node,
     return false;
 
   return it->second;
+}
+
+bool GetIntProperty(arc::mojom::AccessibilityNodeInfoData* node,
+                    arc::mojom::AccessibilityIntProperty prop,
+                    int32_t* out_value) {
+  if (!node->intProperties)
+    return false;
+
+  auto it = node->intProperties->find(prop);
+  if (it == node->intProperties->end())
+    return false;
+
+  *out_value = it->second;
+  return true;
 }
 
 bool GetStringProperty(arc::mojom::AccessibilityNodeInfoData* node,
@@ -219,10 +231,10 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(
 
   ExtensionMsg_AccessibilityEventParams params;
   params.event_type = ToAXEvent(event_data->eventType);
+
   if (params.event_type == ui::AX_EVENT_FOCUS)
-    focused_node_id_ = params.id;
-  else if (params.event_type == ui::AX_EVENT_BLUR)
-    focused_node_id_ = -1;
+    focused_node_id_ = event_data->sourceId;
+
   params.tree_id = tree_id_;
   params.id = event_data->sourceId;
 
@@ -306,6 +318,7 @@ void AXTreeSourceArc::SerializeNode(mojom::AccessibilityNodeInfoData* node,
     return;
   out_data->id = node->id;
 
+  using AXIntProperty = arc::mojom::AccessibilityIntProperty;
   using AXStringProperty = arc::mojom::AccessibilityStringProperty;
   std::string text;
   if (GetStringProperty(node, AXStringProperty::TEXT, &text))
@@ -329,6 +342,15 @@ void AXTreeSourceArc::SerializeNode(mojom::AccessibilityNodeInfoData* node,
 
   if (out_data->role == ui::AX_ROLE_TEXT_FIELD && !text.empty())
     out_data->AddStringAttribute(ui::AX_ATTR_VALUE, text);
+
+  // Integer properties.
+  int32_t val;
+  if (GetIntProperty(node, AXIntProperty::TEXT_SELECTION_START, &val) &&
+      val >= 0)
+    out_data->AddIntAttribute(ui::AX_ATTR_TEXT_SEL_START, val);
+
+  if (GetIntProperty(node, AXIntProperty::TEXT_SELECTION_END, &val) && val >= 0)
+    out_data->AddIntAttribute(ui::AX_ATTR_TEXT_SEL_END, val);
 }
 
 void AXTreeSourceArc::Reset() {
