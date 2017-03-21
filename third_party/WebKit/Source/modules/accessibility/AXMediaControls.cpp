@@ -75,8 +75,6 @@ AXObject* AccessibilityMediaControl::create(LayoutObject* layoutObject,
     case MediaVolumeSliderContainer:
     case MediaVolumeSlider:
     case MediaVolumeSliderThumb:
-    case MediaFullscreenVolumeSlider:
-    case MediaFullscreenVolumeSliderThumb:
     case MediaExitFullscreenButton:
     case MediaOverlayPlayButton:
     case MediaCastOffButton:
@@ -147,8 +145,6 @@ String AccessibilityMediaControl::textAlternative(
     case MediaVolumeSliderContainer:
     case MediaVolumeSlider:
     case MediaVolumeSliderThumb:
-    case MediaFullscreenVolumeSlider:
-    case MediaFullscreenVolumeSliderThumb:
     case MediaOverflowList:
       return queryString(WebLocalizedString::AXMediaDefault);
     case MediaSlider:
@@ -204,8 +200,6 @@ String AccessibilityMediaControl::description(
     case MediaVolumeSliderContainer:
     case MediaVolumeSlider:
     case MediaVolumeSliderThumb:
-    case MediaFullscreenVolumeSlider:
-    case MediaFullscreenVolumeSliderThumb:
     case MediaOverflowList:
     case MediaDownloadButton:
       return queryString(WebLocalizedString::AXMediaDefault);
@@ -260,8 +254,6 @@ AccessibilityRole AccessibilityMediaControl::roleValue() const {
     case MediaTrackSelectionCheckmark:
     case MediaVolumeSlider:
     case MediaVolumeSliderThumb:
-    case MediaFullscreenVolumeSlider:
-    case MediaFullscreenVolumeSliderThumb:
       return UnknownRole;
 
     case MediaSlider:

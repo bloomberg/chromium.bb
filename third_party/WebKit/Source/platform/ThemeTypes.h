@@ -58,8 +58,6 @@ enum ControlPart {
   ListItemPart,
   MediaEnterFullscreenButtonPart,
   MediaExitFullscreenButtonPart,
-  MediaFullscreenVolumeSliderPart,
-  MediaFullscreenVolumeSliderThumbPart,
   MediaMuteButtonPart,
   MediaPlayButtonPart,
   MediaOverlayPlayButtonPart,

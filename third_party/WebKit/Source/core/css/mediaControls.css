@@ -348,18 +348,6 @@ video::-webkit-media-controls-toggle-closed-captions-button {
     color: inherit;
 }
 
-audio::-webkit-media-controls-fullscreen-volume-slider, video::-webkit-media-controls-fullscreen-volume-slider {
-    display: none;
-}
-
-audio::-webkit-media-controls-fullscreen-volume-min-button, video::-webkit-media-controls-fullscreen-volume-min-button {
-    display: none;
-}
-
-audio::-webkit-media-controls-fullscreen-volume-max-button, video::-webkit-media-controls-fullscreen-volume-max-button {
-    display: none;
-}
-
 video::-internal-media-controls-text-track-list, video::-internal-media-controls-overflow-menu-list, audio::-internal-media-controls-overflow-menu-list {
     position: absolute;
     bottom: 4px;

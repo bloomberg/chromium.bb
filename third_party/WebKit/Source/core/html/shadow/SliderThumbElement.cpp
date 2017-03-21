@@ -302,8 +302,6 @@ const AtomicString& SliderThumbElement::shadowPseudoId() const {
     case MediaSliderThumbPart:
     case MediaVolumeSliderPart:
     case MediaVolumeSliderThumbPart:
-    case MediaFullscreenVolumeSliderPart:
-    case MediaFullscreenVolumeSliderThumbPart:
       return mediaSliderThumbShadowPartId();
     default:
       return sliderThumbShadowPartId();
@@ -434,8 +432,6 @@ const AtomicString& SliderContainerElement::shadowPseudoId() const {
     case MediaSliderThumbPart:
     case MediaVolumeSliderPart:
     case MediaVolumeSliderThumbPart:
-    case MediaFullscreenVolumeSliderPart:
-    case MediaFullscreenVolumeSliderThumbPart:
       return mediaSliderContainer;
     default:
       return sliderContainer;

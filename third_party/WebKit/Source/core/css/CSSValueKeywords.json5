@@ -648,8 +648,6 @@
     "listitem",
     "media-enter-fullscreen-button",
     "media-exit-fullscreen-button",
-    "media-fullscreen-volume-slider",
-    "media-fullscreen-volume-slider-thumb",
     "media-mute-button",
     "media-play-button",
     "media-overlay-play-button",

@@ -132,8 +132,6 @@ bool ThemePainter::paint(const LayoutObject& o,
       return MediaControlsPainter::paintMediaVolumeSlider(o, paintInfo, r);
     case MediaVolumeSliderThumbPart:
       return MediaControlsPainter::paintMediaVolumeSliderThumb(o, paintInfo, r);
-    case MediaFullscreenVolumeSliderPart:
-    case MediaFullscreenVolumeSliderThumbPart:
     case MediaTimeRemainingPart:
     case MediaCurrentTimePart:
     case MediaControlsBackgroundPart:

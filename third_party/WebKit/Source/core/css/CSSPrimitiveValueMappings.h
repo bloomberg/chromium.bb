@@ -403,12 +403,6 @@ inline CSSIdentifierValue::CSSIdentifierValue(ControlPart e)
     case MediaControlsFullscreenBackgroundPart:
       m_valueID = CSSValueMediaControlsFullscreenBackground;
       break;
-    case MediaFullscreenVolumeSliderPart:
-      m_valueID = CSSValueMediaFullscreenVolumeSlider;
-      break;
-    case MediaFullscreenVolumeSliderThumbPart:
-      m_valueID = CSSValueMediaFullscreenVolumeSliderThumb;
-      break;
     case MediaCurrentTimePart:
       m_valueID = CSSValueMediaCurrentTimeDisplay;
       break;
