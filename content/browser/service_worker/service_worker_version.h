@@ -571,8 +571,14 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // with same arguments as the IPC message.
   // Additionally only calls the callback for messages with a specific request
   // id, which must be the first argument of the IPC message.
-  template <typename ResponseMessage, typename CallbackType>
-  class EventResponseHandler : public EmbeddedWorkerInstance::Listener {
+  template <typename ResponseMessage,
+            typename CallbackType,
+            typename Signature = typename CallbackType::RunType>
+  class EventResponseHandler;
+
+  template <typename ResponseMessage, typename CallbackType, typename... Args>
+  class EventResponseHandler<ResponseMessage, CallbackType, void(Args...)>
+      : public EmbeddedWorkerInstance::Listener {
    public:
     EventResponseHandler(const base::WeakPtr<EmbeddedWorkerInstance>& worker,
                          int request_id,
@@ -587,6 +593,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
     bool OnMessageReceived(const IPC::Message& message) override;
 
    private:
+    void RunCallback(Args... args) {
+      callback_.Run(std::forward<Args>(args)...);
+    }
+
     base::WeakPtr<EmbeddedWorkerInstance> const worker_;
     const int request_id_;
     const CallbackType callback_;
@@ -895,9 +905,11 @@ void ServiceWorkerVersion::RegisterSimpleRequest(int request_id) {
       base::Bind(&ServiceWorkerVersion::OnSimpleEventResponse, this));
 }
 
-template <typename ResponseMessage, typename CallbackType>
-bool ServiceWorkerVersion::EventResponseHandler<ResponseMessage, CallbackType>::
-    OnMessageReceived(const IPC::Message& message) {
+template <typename ResponseMessage, typename CallbackType, typename... Args>
+bool ServiceWorkerVersion::EventResponseHandler<
+    ResponseMessage,
+    CallbackType,
+    void(Args...)>::OnMessageReceived(const IPC::Message& message) {
   if (message.type() != ResponseMessage::ID)
     return false;
   int received_request_id;
@@ -908,8 +920,8 @@ bool ServiceWorkerVersion::EventResponseHandler<ResponseMessage, CallbackType>::
   CallbackType protect(callback_);
   // Essentially same code as what IPC_MESSAGE_FORWARD expands to.
   void* param = nullptr;
-  if (!ResponseMessage::Dispatch(&message, &callback_, this, param,
-                                 &CallbackType::Run))
+  if (!ResponseMessage::Dispatch(&message, this, this, param,
+                                 &EventResponseHandler::RunCallback))
     message.set_dispatch_error();
 
   // At this point |this| can have been deleted, so don't do anything other
