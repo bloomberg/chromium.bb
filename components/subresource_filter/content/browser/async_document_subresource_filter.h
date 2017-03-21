@@ -10,8 +10,8 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
-#include "base/threading/thread_checker.h"
 #include "components/subresource_filter/content/browser/verified_ruleset_dealer.h"
 #include "components/subresource_filter/core/common/activation_level.h"
 #include "components/subresource_filter/core/common/activation_state.h"
@@ -123,7 +123,7 @@ class AsyncDocumentSubresourceFilter {
 
   base::Optional<ActivationState> activation_state_;
 
-  base::ThreadChecker thread_checker_;
+  base::SequenceChecker sequence_checker_;
 
   base::WeakPtrFactory<AsyncDocumentSubresourceFilter> weak_ptr_factory_;
 
@@ -140,7 +140,7 @@ class AsyncDocumentSubresourceFilter::Core {
   // Can return nullptr even after initialization in case MemoryMappedRuleset
   // was not present, or was malformed during it.
   DocumentSubresourceFilter* filter() {
-    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK(sequence_checker_.CalledOnValidSequence());
     return filter_ ? &filter_.value() : nullptr;
   }
 
@@ -153,7 +153,7 @@ class AsyncDocumentSubresourceFilter::Core {
                              VerifiedRuleset* verified_ruleset);
 
   base::Optional<DocumentSubresourceFilter> filter_;
-  base::ThreadChecker thread_checker_;
+  base::SequenceChecker sequence_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(Core);
 };

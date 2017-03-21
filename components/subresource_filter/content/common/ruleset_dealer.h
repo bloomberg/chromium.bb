@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/sequence_checker.h"
 
 namespace subresource_filter {
 
@@ -30,7 +30,7 @@ class MemoryMappedRuleset;
 //     they will use the same, cached, MemoryMappedRuleset instance, and will
 //     not call mmap() multiple times.
 //
-class RulesetDealer : protected base::NonThreadSafe {
+class RulesetDealer {
  public:
   RulesetDealer();
   virtual ~RulesetDealer();
@@ -50,11 +50,18 @@ class RulesetDealer : protected base::NonThreadSafe {
   // For testing only.
   bool has_cached_ruleset() const { return !!weak_cached_ruleset_.get(); }
 
+ protected:
+  bool CalledOnValidSequence() const {
+    return sequence_checker_.CalledOnValidSequence();
+  }
+
  private:
   friend class SubresourceFilterRulesetDealerTest;
 
   base::File ruleset_file_;
   base::WeakPtr<MemoryMappedRuleset> weak_cached_ruleset_;
+
+  base::SequenceChecker sequence_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(RulesetDealer);
 };

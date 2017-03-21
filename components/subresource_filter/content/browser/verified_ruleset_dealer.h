@@ -10,8 +10,8 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
-#include "base/threading/thread_checker.h"
 #include "components/subresource_filter/content/common/ruleset_dealer.h"
 
 namespace base {
@@ -85,7 +85,7 @@ class VerifiedRulesetDealer::Handle {
   // Note: Raw pointer, |dealer_| already holds a reference to |task_runner_|.
   base::SequencedTaskRunner* task_runner_;
   std::unique_ptr<VerifiedRulesetDealer, base::OnTaskRunnerDeleter> dealer_;
-  base::ThreadChecker thread_checker_;
+  base::SequenceChecker sequence_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(Handle);
 };
@@ -106,7 +106,7 @@ class VerifiedRuleset {
   // Can return nullptr even after initialization in case no ruleset is
   // available, or if the ruleset is corrupted.
   const MemoryMappedRuleset* Get() const {
-    DCHECK(thread_checker_.CalledOnValidThread());
+    DCHECK(sequence_checker_.CalledOnValidSequence());
     return ruleset_.get();
   }
 
@@ -115,7 +115,7 @@ class VerifiedRuleset {
   void Initialize(VerifiedRulesetDealer* dealer);
 
   scoped_refptr<const MemoryMappedRuleset> ruleset_;
-  base::ThreadChecker thread_checker_;
+  base::SequenceChecker sequence_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(VerifiedRuleset);
 };
@@ -147,7 +147,7 @@ class VerifiedRuleset::Handle {
   // Note: Raw pointer, |ruleset_| already holds a reference to |task_runner_|.
   base::SequencedTaskRunner* task_runner_;
   std::unique_ptr<VerifiedRuleset, base::OnTaskRunnerDeleter> ruleset_;
-  base::ThreadChecker thread_checker_;
+  base::SequenceChecker sequence_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(Handle);
 };

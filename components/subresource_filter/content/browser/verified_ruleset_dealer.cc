@@ -25,7 +25,7 @@ void VerifiedRulesetDealer::SetRulesetFile(base::File ruleset_file) {
 }
 
 scoped_refptr<const MemoryMappedRuleset> VerifiedRulesetDealer::GetRuleset() {
-  DCHECK(CalledOnValidThread());
+  DCHECK(CalledOnValidSequence());
 
   // TODO(pkalinnikov): Record verification status to a histogram.
   switch (status_) {
@@ -62,7 +62,7 @@ VerifiedRulesetDealer::Handle::~Handle() = default;
 
 void VerifiedRulesetDealer::Handle::GetDealerAsync(
     base::Callback<void(VerifiedRulesetDealer*)> callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
 
   // NOTE: Properties of the sequenced |task_runner| guarantee that the
   // |callback| will always be provided with a valid pointer, because the
@@ -73,7 +73,7 @@ void VerifiedRulesetDealer::Handle::GetDealerAsync(
 }
 
 void VerifiedRulesetDealer::Handle::SetRulesetFile(base::File file) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&VerifiedRulesetDealer::SetRulesetFile,
@@ -83,15 +83,15 @@ void VerifiedRulesetDealer::Handle::SetRulesetFile(base::File file) {
 // VerifiedRuleset and its Handle. ---------------------------------------------
 
 VerifiedRuleset::VerifiedRuleset() {
-  thread_checker_.DetachFromThread();
+  sequence_checker_.DetachFromSequence();
 }
 
 VerifiedRuleset::~VerifiedRuleset() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
 }
 
 void VerifiedRuleset::Initialize(VerifiedRulesetDealer* dealer) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   DCHECK(dealer);
   ruleset_ = dealer->GetRuleset();
 }
@@ -104,12 +104,12 @@ VerifiedRuleset::Handle::Handle(VerifiedRulesetDealer::Handle* dealer_handle)
 }
 
 VerifiedRuleset::Handle::~Handle() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
 }
 
 void VerifiedRuleset::Handle::GetRulesetAsync(
     base::Callback<void(VerifiedRuleset*)> callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(sequence_checker_.CalledOnValidSequence());
   task_runner_->PostTask(FROM_HERE, base::Bind(callback, ruleset_.get()));
 }
 
