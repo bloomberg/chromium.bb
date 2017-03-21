@@ -541,6 +541,10 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
     }
   }
 
+  data->display_output_surface = display_output_surface.get();
+  if (data->reflector)
+    data->reflector->OnSourceSurfaceReady(data->display_output_surface);
+
   std::unique_ptr<cc::SyntheticBeginFrameSource> synthetic_begin_frame_source;
   std::unique_ptr<GpuVSyncBeginFrameSource> gpu_vsync_begin_frame_source;
 
@@ -565,9 +569,6 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       begin_frame_source = synthetic_begin_frame_source.get();
     }
   }
-
-  if (data->reflector)
-    data->reflector->OnSourceSurfaceReady(data->display_output_surface);
 
 #if defined(OS_WIN)
   gfx::RenderingWindowManager::GetInstance()->DoSetParentOnChild(
