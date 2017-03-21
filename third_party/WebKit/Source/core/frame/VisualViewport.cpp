@@ -250,9 +250,7 @@ bool VisualViewport::didSetScaleOrLocation(float scale,
 
   bool valuesChanged = false;
 
-  CHECK(!std::isnan(scale));
-  CHECK(std::isfinite(scale));
-  if (scale != m_scale) {
+  if (scale != m_scale && !std::isnan(scale) && !std::isinf(scale)) {
     m_scale = scale;
     valuesChanged = true;
     page().chromeClient().pageScaleFactorChanged();
@@ -261,10 +259,14 @@ bool VisualViewport::didSetScaleOrLocation(float scale,
 
   ScrollOffset clampedOffset = clampScrollOffset(toScrollOffset(location));
 
-  CHECK(!std::isnan(clampedOffset.width()) &&
-        !std::isnan(clampedOffset.height()));
-  CHECK(std::isfinite(clampedOffset.width()) &&
-        std::isfinite(clampedOffset.height()));
+  // TODO(bokan): If the offset is invalid, we might end up in an infinite
+  // recursion as we reenter this function on clamping. It would be cleaner to
+  // avoid reentrancy but for now just prevent the stack overflow.
+  // crbug.com/702771.
+  if (std::isnan(clampedOffset.width()) || std::isnan(clampedOffset.height()) ||
+      std::isinf(clampedOffset.width()) || std::isinf(clampedOffset.height()))
+    return false;
+
   if (clampedOffset != m_offset) {
     m_offset = clampedOffset;
     scrollAnimator().setCurrentOffset(m_offset);
@@ -308,6 +310,9 @@ bool VisualViewport::magnifyScaleAroundAnchor(float magnifyDelta,
 
   // Keep the center-of-pinch anchor in a stable position over the course
   // of the magnify.
+  // TODO(bokan): Looks like we call into setScaleAndLocation with infinity for
+  // the location so it seems either old or newPageScale is invalid.
+  // crbug.com/702771.
   FloatPoint anchorAtOldScale = anchor.scaledBy(1.f / oldPageScale);
   FloatPoint anchorAtNewScale = anchor.scaledBy(1.f / newPageScale);
   FloatSize anchorDelta = anchorAtOldScale - anchorAtNewScale;
