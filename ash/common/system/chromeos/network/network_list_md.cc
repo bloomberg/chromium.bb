@@ -661,7 +661,7 @@ int NetworkListView::UpdateSectionHeaderRow(NetworkTypePattern pattern,
 }
 
 void NetworkListView::NetworkIconChanged() {
-  Update();
+  UpdateNetworkIcons();
 }
 
 }  // namespace ash
