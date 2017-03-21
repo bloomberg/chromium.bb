@@ -293,6 +293,7 @@ source_set("unit_tests") {
     "api_binding_test_util.h",
     "api_binding_unittest.cc",
     "api_bindings_system_unittest.cc",
+    "api_bindings_system_unittest.h",
     "api_event_handler_unittest.cc",
     "api_last_error_unittest.cc",
     "api_request_handler_unittest.cc",

@@ -13,9 +13,9 @@
 #include "extensions/common/extension_api.h"
 #include "extensions/renderer/api_binding.h"
 #include "extensions/renderer/api_binding_hooks.h"
-#include "extensions/renderer/api_binding_test.h"
 #include "extensions/renderer/api_binding_test_util.h"
 #include "extensions/renderer/api_binding_types.h"
+#include "extensions/renderer/api_bindings_system_unittest.h"
 #include "gin/arguments.h"
 #include "gin/converter.h"
 #include "gin/try_catch.h"
@@ -92,121 +92,100 @@ bool AllowAllAPIs(const std::string& name) {
 
 }  // namespace
 
-// The base class to test the APIBindingsSystem. This allows subclasses to
-// retrieve API schemas differently.
-class APIBindingsSystemTest : public APIBindingTest {
- public:
-  // Returns the DictionaryValue representing the schema with the given API
-  // name.
-  const base::DictionaryValue& GetAPISchema(const std::string& api_name) {
-    EXPECT_TRUE(base::ContainsKey(api_schemas_, api_name));
-    return *api_schemas_[api_name];
+APIBindingsSystemTest::APIBindingsSystemTest() {}
+APIBindingsSystemTest::~APIBindingsSystemTest() = default;
+
+void APIBindingsSystemTest::SetUp() {
+  APIBindingTest::SetUp();
+
+  // Create the fake API schemas.
+  for (const auto& api : GetAPIs()) {
+    std::unique_ptr<base::DictionaryValue> api_schema =
+        DictionaryValueFromString(api.spec);
+    ASSERT_TRUE(api_schema);
+    api_schemas_[api.name] = std::move(api_schema);
   }
 
-  // Stores the request in |last_request_|.
-  void OnAPIRequest(std::unique_ptr<APIRequestHandler::Request> request,
-                    v8::Local<v8::Context> context) {
-    ASSERT_FALSE(last_request_);
-    last_request_ = std::move(request);
-  }
+  bindings_system_ = base::MakeUnique<APIBindingsSystem>(
+      base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
+      base::Bind(&RunFunctionOnGlobalAndReturnHandle),
+      base::Bind(&APIBindingsSystemTest::GetAPISchema, base::Unretained(this)),
+      base::Bind(&APIBindingsSystemTest::OnAPIRequest, base::Unretained(this)),
+      base::Bind(&APIBindingsSystemTest::OnEventListenersChanged,
+                 base::Unretained(this)),
+      APILastError(base::Bind(&APIBindingsSystemTest::GetLastErrorParent,
+                              base::Unretained(this))));
+}
 
-  void OnEventListenersChanged(const std::string& event_name,
-                               binding::EventListenersChanged changed,
-                               v8::Local<v8::Context> context) {}
+void APIBindingsSystemTest::TearDown() {
+  // Dispose all contexts now so that we call WillReleaseContext().
+  DisposeAllContexts();
+  bindings_system_.reset();
+  APIBindingTest::TearDown();
+}
 
- protected:
-  APIBindingsSystemTest() {}
-  void SetUp() override {
-    APIBindingTest::SetUp();
+void APIBindingsSystemTest::OnWillDisposeContext(
+    v8::Local<v8::Context> context) {
+  bindings_system_->WillReleaseContext(context);
+}
 
-    // Create the fake API schemas.
-    {
-      struct APIData {
-        const char* name;
-        const char* spec;
-      } api_data[] = {
-          {kAlphaAPIName, kAlphaAPISpec},
-          {kBetaAPIName, kBetaAPISpec},
-          {kGammaAPIName, kGammaAPISpec},
-      };
-      for (const auto& api : api_data) {
-        std::unique_ptr<base::DictionaryValue> api_schema =
-            DictionaryValueFromString(api.spec);
-        ASSERT_TRUE(api_schema);
-        api_schemas_[api.name] = std::move(api_schema);
-      }
-    }
+std::vector<APIBindingsSystemTest::FakeSpec> APIBindingsSystemTest::GetAPIs() {
+  return {
+      {kAlphaAPIName, kAlphaAPISpec},
+      {kBetaAPIName, kBetaAPISpec},
+      {kGammaAPIName, kGammaAPISpec},
+  };
+}
 
-    bindings_system_ = base::MakeUnique<APIBindingsSystem>(
-        base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
-        base::Bind(&RunFunctionOnGlobalAndReturnHandle),
-        base::Bind(&APIBindingsSystemTest::GetAPISchema,
-                   base::Unretained(this)),
-        base::Bind(&APIBindingsSystemTest::OnAPIRequest,
-                   base::Unretained(this)),
-        base::Bind(&APIBindingsSystemTest::OnEventListenersChanged,
-                   base::Unretained(this)),
-        APILastError(APILastError::GetParent()));
-  }
+v8::Local<v8::Object> APIBindingsSystemTest::GetLastErrorParent(
+    v8::Local<v8::Context> context) {
+  return v8::Local<v8::Object>();
+}
 
-  void TearDown() override {
-    // Dispose all contexts now so that we call WillReleaseContext().
-    DisposeAllContexts();
-    bindings_system_.reset();
-    APIBindingTest::TearDown();
-  }
+const base::DictionaryValue& APIBindingsSystemTest::GetAPISchema(
+    const std::string& api_name) {
+  EXPECT_TRUE(base::ContainsKey(api_schemas_, api_name));
+  return *api_schemas_[api_name];
+}
 
-  void OnWillDisposeContext(v8::Local<v8::Context> context) override {
-    bindings_system_->WillReleaseContext(context);
-  }
+void APIBindingsSystemTest::OnAPIRequest(
+    std::unique_ptr<APIRequestHandler::Request> request,
+    v8::Local<v8::Context> context) {
+  ASSERT_FALSE(last_request_);
+  last_request_ = std::move(request);
+}
 
-  // Checks that |last_request_| exists and was provided with the
-  // |expected_name| and |expected_arguments|.
-  void ValidateLastRequest(const std::string& expected_name,
-                           const std::string& expected_arguments) {
-    ASSERT_TRUE(last_request());
-    // Note that even if no arguments are provided by the API call, we should
-    // have an empty list.
-    ASSERT_TRUE(last_request()->arguments);
-    EXPECT_EQ(expected_name, last_request()->method_name);
-    EXPECT_EQ(ReplaceSingleQuotes(expected_arguments),
-              ValueToString(*last_request()->arguments));
-  }
+void APIBindingsSystemTest::OnEventListenersChanged(
+    const std::string& event_name,
+    binding::EventListenersChanged changed,
+    v8::Local<v8::Context> context) {}
 
-  void CallFunctionOnObject(v8::Local<v8::Context> context,
-                            v8::Local<v8::Object> object,
-                            const std::string& script_source) {
-    std::string wrapped_script_source =
-        base::StringPrintf("(function(obj) { %s })", script_source.c_str());
+void APIBindingsSystemTest::ValidateLastRequest(
+    const std::string& expected_name,
+    const std::string& expected_arguments) {
+  ASSERT_TRUE(last_request());
+  // Note that even if no arguments are provided by the API call, we should
+  // have an empty list.
+  ASSERT_TRUE(last_request()->arguments);
+  EXPECT_EQ(expected_name, last_request()->method_name);
+  EXPECT_EQ(ReplaceSingleQuotes(expected_arguments),
+            ValueToString(*last_request()->arguments));
+}
 
-    v8::Local<v8::Function> func =
-        FunctionFromString(context, wrapped_script_source);
-    ASSERT_FALSE(func.IsEmpty());
+void APIBindingsSystemTest::CallFunctionOnObject(
+    v8::Local<v8::Context> context,
+    v8::Local<v8::Object> object,
+    const std::string& script_source) {
+  std::string wrapped_script_source =
+      base::StringPrintf("(function(obj) { %s })", script_source.c_str());
 
-    v8::Local<v8::Value> argv[] = {object};
-    RunFunction(func, context, 1, argv);
-  }
+  v8::Local<v8::Function> func =
+      FunctionFromString(context, wrapped_script_source);
+  ASSERT_FALSE(func.IsEmpty());
 
-  const APIRequestHandler::Request* last_request() const {
-    return last_request_.get();
-  }
-  void reset_last_request() { last_request_.reset(); }
-  APIBindingsSystem* bindings_system() { return bindings_system_.get(); }
-
- private:
-  // The API schemas for the fake APIs.
-  std::map<std::string, std::unique_ptr<base::DictionaryValue>> api_schemas_;
-
-  // The APIBindingsSystem associated with the test. Safe to use across multiple
-  // contexts.
-  std::unique_ptr<APIBindingsSystem> bindings_system_;
-
-  // The last request to be received from the APIBindingsSystem, or null if
-  // there is none.
-  std::unique_ptr<APIRequestHandler::Request> last_request_;
-
-  DISALLOW_COPY_AND_ASSIGN(APIBindingsSystemTest);
-};
+  v8::Local<v8::Value> argv[] = {object};
+  RunFunction(func, context, 1, argv);
+}
 
 // Tests API object initialization, calling a method on the supplied APIs, and
 // triggering the callback for the request.
