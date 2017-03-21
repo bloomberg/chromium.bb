@@ -39,6 +39,7 @@ std::unique_ptr<KeyedService> BuildInMemoryURLIndex(
       web::WebThread::GetBlockingPool(), browser_state->GetStatePath(),
       schemes_to_whilelist));
   in_memory_url_index->Init();
+  // TODO(crbug.com/703565): remove std::move() once Xcode 9.0+ is required.
   return std::move(in_memory_url_index);
 }
 

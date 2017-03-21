@@ -55,6 +55,7 @@ AccountFetcherServiceFactory::BuildServiceInstanceFor(
       SigninClientFactory::GetForBrowserState(browser_state),
       OAuth2TokenServiceFactory::GetForBrowserState(browser_state),
       ios::AccountTrackerServiceFactory::GetForBrowserState(browser_state));
+  // TODO(crbug.com/703565): remove std::move() once Xcode 9.0+ is required.
   return std::move(service);
 }
 

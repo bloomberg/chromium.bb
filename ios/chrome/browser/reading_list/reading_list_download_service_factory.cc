@@ -71,6 +71,7 @@ ReadingListDownloadServiceFactory::BuildServiceInstanceFor(
           chrome_browser_state->GetStatePath(),
           chrome_browser_state->GetRequestContext(),
           std::move(distiller_factory), std::move(distiller_page_factory));
+  // TODO(crbug.com/703565): remove std::move() once Xcode 9.0+ is required.
   return std::move(reading_list_download_service);
 }
 

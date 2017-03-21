@@ -72,6 +72,7 @@ std::unique_ptr<KeyedService> BuildBookmarkModel(web::BrowserState* context) {
       browser_state->GetPrefs(),
       browser_state->GetStatePath(), browser_state->GetIOTaskRunner(),
       web::WebThread::GetTaskRunnerForThread(web::WebThread::UI));
+  // TODO(crbug.com/703565): remove std::move() once Xcode 9.0+ is required.
   return std::move(bookmark_model);
 }
 

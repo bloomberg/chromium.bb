@@ -192,5 +192,6 @@ IOSChromeContentSuggestionsServiceFactory::BuildServiceInstanceFor(
     service->RegisterProvider(std::move(scheduling_provider));
   }
 
+  // TODO(crbug.com/703565): remove std::move() once Xcode 9.0+ is required.
   return std::move(service);
 }

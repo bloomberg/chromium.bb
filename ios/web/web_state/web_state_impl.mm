@@ -48,9 +48,7 @@ std::unique_ptr<WebState> WebState::Create(const CreateParams& params) {
   // Initialize the new session.
   web_state->GetNavigationManagerImpl().InitializeSession();
 
-  // This std::move is required to compile with the version of clang shipping
-  // with Xcode 8.0+. Evalute whether the issue is fixed once a new version of
-  // Xcode is released.
+  // TODO(crbug.com/703565): remove std::move() once Xcode 9.0+ is required.
   return std::move(web_state);
 }
 
@@ -60,9 +58,7 @@ std::unique_ptr<WebState> WebState::Create(const CreateParams& params,
   std::unique_ptr<WebStateImpl> web_state(
       new WebStateImpl(params, session_storage));
 
-  // This std::move is required to compile with the version of clang shipping
-  // with Xcode 8.0+. Evalute whether the issue is fixed once a new version of
-  // Xcode is released.
+  // TODO(crbug.com/703565): remove std::move() once Xcode 9.0+ is required.
   return std::move(web_state);
 }
 

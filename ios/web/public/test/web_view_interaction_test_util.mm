@@ -52,6 +52,7 @@ std::unique_ptr<base::Value> ExecuteJavaScript(web::WebState* web_state,
   // Fixes the following compilation failure:
   //   ../web_view_matchers.mm:ll:cc: error: call to implicitly-deleted copy
   //       constructor of 'std::unique_ptr<base::Value>'
+  // TODO(crbug.com/703565): remove std::move() once Xcode 9.0+ is required.
   std::unique_ptr<base::Value> stack_result = std::move(result);
   return stack_result;
 }

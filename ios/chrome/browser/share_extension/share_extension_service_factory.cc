@@ -50,6 +50,7 @@ ShareExtensionServiceFactory::BuildServiceInstanceFor(
       new ShareExtensionService(
           ios::BookmarkModelFactory::GetForBrowserState(chrome_browser_state),
           ReadingListModelFactory::GetForBrowserState(chrome_browser_state)));
+  // TODO(crbug.com/703565): remove std::move() once Xcode 9.0+ is required.
   return std::move(share_extension_service);
 }
 

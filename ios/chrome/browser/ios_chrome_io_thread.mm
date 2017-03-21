@@ -126,6 +126,7 @@ std::unique_ptr<net::HostResolver> CreateGlobalHostResolver(
       new net::MappedHostResolver(std::move(global_host_resolver)));
   remapped_resolver->SetRulesFromString(
       command_line.GetSwitchValueASCII(switches::kIOSHostResolverRules));
+  // TODO(crbug.com/703565): remove std::move() once Xcode 9.0+ is required.
   return std::move(remapped_resolver);
 }
 
