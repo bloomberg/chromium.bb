@@ -403,9 +403,10 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         PathService.override(DIR_RESOURCE_PAKS_ANDROID, "/system/framework/webview/paks");
 
         // Make sure that ResourceProvider is initialized before starting the browser process.
-        final String webViewPackageName = WebViewFactory.getLoadedPackageInfo().packageName;
+        final PackageInfo webViewPackageInfo = WebViewFactory.getLoadedPackageInfo();
+        final String webViewPackageName = webViewPackageInfo.packageName;
         final Context context = ContextUtils.getApplicationContext();
-        setUpResources(webViewPackageName, context);
+        setUpResources(webViewPackageInfo, context);
         initPlatSupportLibrary();
         doNetworkInitializations(context);
         final boolean isExternalService = true;
@@ -497,9 +498,14 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
         mDevToolsServer.setRemoteDebuggingEnabled(enable);
     }
 
-    private void setUpResources(String webViewPackageName, Context context) {
+    private void setUpResources(PackageInfo webViewPackageInfo, Context context) {
+        String packageName = webViewPackageInfo.packageName;
+        if (webViewPackageInfo.applicationInfo.metaData != null) {
+            packageName = webViewPackageInfo.applicationInfo.metaData.getString(
+                    "com.android.webview.WebViewDonorPackage", packageName);
+        }
         ResourceRewriter.rewriteRValues(
-                mWebViewDelegate.getPackageId(context.getResources(), webViewPackageName));
+                mWebViewDelegate.getPackageId(context.getResources(), packageName));
 
         AwResource.setResources(context.getResources());
         AwResource.setConfigKeySystemUuidMapping(android.R.array.config_keySystemUuidMapping);
