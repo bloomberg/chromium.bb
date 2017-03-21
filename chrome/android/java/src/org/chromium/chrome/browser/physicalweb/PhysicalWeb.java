@@ -71,32 +71,6 @@ public class PhysicalWeb {
     }
 
     /**
-     * Starts the Physical Web feature.
-     * At the moment, this only enables URL discovery over BLE.
-     */
-    public static void startPhysicalWeb() {
-        // Only subscribe to Nearby if we have the location permission.
-        LocationUtils locationUtils = LocationUtils.getInstance();
-        if (locationUtils.hasAndroidLocationPermission()
-                && locationUtils.isSystemLocationSettingEnabled()) {
-            new NearbyBackgroundSubscription(NearbySubscription.SUBSCRIBE).run();
-        }
-    }
-
-    /**
-     * Stops the Physical Web feature.
-     */
-    public static void stopPhysicalWeb() {
-        new NearbyBackgroundSubscription(NearbySubscription.UNSUBSCRIBE, new Runnable() {
-            @Override
-            public void run() {
-                // This isn't absolutely necessary, but it's nice to clean up all our shared prefs.
-                UrlManager.getInstance().clearAllUrls();
-            }
-        }).run();
-    }
-
-    /**
      * Increments a value tracking how many times we've shown the Physical Web
      * opt-in notification.
      */
@@ -120,8 +94,10 @@ public class PhysicalWeb {
      * Performs various Physical Web operations that should happen on startup.
      */
     public static void onChromeStart() {
+        // In the case that the user has disabled our flag and restarted, this is a minimal code
+        // path to disable our subscription to Nearby.
         if (!featureIsEnabled()) {
-            stopPhysicalWeb();
+            new NearbyBackgroundSubscription(NearbySubscription.UNSUBSCRIBE).run();
             return;
         }
 
@@ -130,12 +106,10 @@ public class PhysicalWeb {
             PrivacyPreferencesManager.getInstance().setPhysicalWebEnabled(true);
         }
 
-        if (isPhysicalWebPreferenceEnabled()) {
-            startPhysicalWeb();
-            // The PhysicalWebUma call in this method should be called only when the native library
-            // is loaded.  This is always the case on chrome startup.
-            PhysicalWebUma.uploadDeferredMetrics();
-        }
+        updateScans();
+        // The PhysicalWebUma call in this method should be called only when the native library
+        // is loaded.  This is always the case on chrome startup.
+        PhysicalWebUma.uploadDeferredMetrics();
     }
 
     /**
@@ -180,5 +154,20 @@ public class PhysicalWeb {
                 (BluetoothManager) context.getSystemService(Context.BLUETOOTH_SERVICE);
         BluetoothAdapter bluetoothAdapter = bluetoothManager.getAdapter();
         return bluetoothAdapter != null && bluetoothAdapter.getBluetoothLeAdvertiser() != null;
+    }
+
+    /**
+     * Examines the environment in order to decide whether we should begin or end a scan.
+     */
+    public static void updateScans() {
+        LocationUtils locationUtils = LocationUtils.getInstance();
+        if (!locationUtils.hasAndroidLocationPermission()
+                || !locationUtils.isSystemLocationSettingEnabled()
+                || !isPhysicalWebPreferenceEnabled()) {
+            new NearbyBackgroundSubscription(NearbySubscription.UNSUBSCRIBE).run();
+            return;
+        }
+
+        new NearbyBackgroundSubscription(NearbySubscription.SUBSCRIBE).run();
     }
 }

@@ -315,16 +315,10 @@ public class PrivacyPreferencesManager implements CrashReportingPermissionManage
      * @param enabled A boolean indicating whether to notify on nearby beacons.
      */
     public void setPhysicalWebEnabled(boolean enabled) {
-        int state = enabled ? PHYSICAL_WEB_ON : PHYSICAL_WEB_OFF;
-        boolean isOnboarding = isPhysicalWebOnboarding();
-        mSharedPreferences.edit().putInt(PREF_PHYSICAL_WEB, state).apply();
-        if (enabled) {
-            if (!isOnboarding) {
-                PhysicalWeb.startPhysicalWeb();
-            }
-        } else {
-            PhysicalWeb.stopPhysicalWeb();
-        }
+        mSharedPreferences.edit()
+            .putInt(PREF_PHYSICAL_WEB, enabled ? PHYSICAL_WEB_ON : PHYSICAL_WEB_OFF)
+            .apply();
+        PhysicalWeb.updateScans();
     }
 
     /**
