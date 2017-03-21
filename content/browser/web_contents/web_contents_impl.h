@@ -679,7 +679,6 @@ class CONTENT_EXPORT WebContentsImpl
   RenderWidgetHostImpl* GetMouseLockWidget() override;
   void OnRenderFrameProxyVisibilityChanged(bool visible) override;
   void SendScreenRects() override;
-  void OnFirstPaintAfterLoad(RenderWidgetHostImpl* render_widget_host) override;
   TextInputManager* GetTextInputManager() override;
   bool OnUpdateDragCursor() override;
   bool AddDomainInfoToRapporSample(rappor::Sample* sample) override;

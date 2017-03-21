@@ -2521,12 +2521,6 @@ void WebContentsImpl::SendScreenRects() {
     browser_plugin_embedder_->DidSendScreenRects();
 }
 
-void WebContentsImpl::OnFirstPaintAfterLoad(
-    RenderWidgetHostImpl* render_widget_host) {
-  for (auto& observer : observers_)
-    observer.DidFirstPaintAfterLoad(render_widget_host);
-}
-
 TextInputManager* WebContentsImpl::GetTextInputManager() {
   if (GetOuterWebContents())
     return GetOuterWebContents()->GetTextInputManager();

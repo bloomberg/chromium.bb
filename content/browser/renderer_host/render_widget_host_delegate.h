@@ -195,11 +195,6 @@ class CONTENT_EXPORT RenderWidgetHostDelegate {
   // Update the renderer's cache of the screen rect of the view and window.
   virtual void SendScreenRects() {}
 
-  // Notifies that the main frame in the renderer has performed the first paint
-  // after a navigation.
-  virtual void OnFirstPaintAfterLoad(RenderWidgetHostImpl* render_widget_host) {
-  }
-
   // Returns the TextInputManager tracking text input state.
   virtual TextInputManager* GetTextInputManager();
 
