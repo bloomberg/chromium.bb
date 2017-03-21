@@ -38,9 +38,6 @@
     <item type="id" name="menu_id_refresh" />
     <item type="id" name="menu_id_settings" />
 
-    <!-- Menu item IDs for FullscreenActivities -->
-    <item type="id" name="menu_id_open_in_chrome" />
-
     <!-- Cast notification -->
     <item type="id" name="remote_notification" />
 
@@ -70,4 +67,39 @@
 
     <!-- Password update prompt -->
     <item type="id" name="password_infobar_accounts_spinner" />
+
+    <!-- Context Menu Ids -->
+    <!-- Custom Tab Group -->
+    <item type="id" name="contextmenu_open_in_new_chrome_tab" />
+    <item type="id" name="contextmenu_open_in_chrome_incognito_tab" />
+    <item type="id" name="contextmenu_open_in_browser_id" />
+
+    <!-- Link Group -->
+    <item type="id" name="contextmenu_open_in_other_window" />
+    <item type="id" name="contextmenu_open_in_new_tab" />
+    <item type="id" name="contextmenu_open_in_incognito_tab" />
+    <item type="id" name="contextmenu_copy_link_address" />
+    <item type="id" name="contextmenu_copy_link_text" />
+    <item type="id" name="contextmenu_save_link_as" />
+
+    <!--Image Group -->
+    <item type="id" name="contextmenu_load_original_image" />
+    <item type="id" name="contextmenu_save_image" />
+    <item type="id" name="contextmenu_open_image" />
+    <item type="id" name="contextmenu_open_image_in_new_tab" />
+    <item type="id" name="contextmenu_search_by_image" />
+    <item type="id" name="contextmenu_share_image" />
+
+    <!-- Message Group -->
+    <item type="id" name="contextmenu_call" />
+    <item type="id" name="contextmenu_send_message" />
+    <item type="id" name="contextmenu_add_to_contacts" />
+    <item type="id" name="contextmenu_copy" />
+
+    <!-- Other Group -->
+    <item type="id" name="contextmenu_save_video" />
+
+    <!-- Menu item IDs for FullscreenActivities -->
+    <item type="id" name="menu_id_open_in_chrome" />
+
 </resources>
