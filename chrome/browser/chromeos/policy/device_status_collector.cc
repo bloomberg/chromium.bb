@@ -31,6 +31,7 @@
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -252,8 +253,10 @@ bool ReadAndroidStatus(
 // case we won't report its status).
 std::unique_ptr<policy::DeviceLocalAccount> GetCurrentKioskDeviceLocalAccount(
     chromeos::CrosSettings* settings) {
-  if (!user_manager::UserManager::Get()->IsLoggedInAsKioskApp())
+  if (!user_manager::UserManager::Get()->IsLoggedInAsKioskApp() &&
+      !user_manager::UserManager::Get()->IsLoggedInAsArcKioskApp()) {
     return std::unique_ptr<policy::DeviceLocalAccount>();
+  }
   const user_manager::User* const user =
       user_manager::UserManager::Get()->GetActiveUser();
   const std::vector<policy::DeviceLocalAccount> accounts =
@@ -697,9 +700,15 @@ DeviceStatusCollector::GetAutoLaunchedKioskSessionInfo() {
       GetCurrentKioskDeviceLocalAccount(cros_settings_);
   if (account) {
     chromeos::KioskAppManager::App current_app;
-    if (chromeos::KioskAppManager::Get()->GetApp(account->kiosk_app_id,
+    bool regular_app_auto_launched_with_zero_delay =
+        chromeos::KioskAppManager::Get()->GetApp(account->kiosk_app_id,
                                                  &current_app) &&
-        current_app.was_auto_launched_with_zero_delay) {
+        current_app.was_auto_launched_with_zero_delay;
+    bool arc_app_auto_launched_with_zero_delay =
+        chromeos::ArcKioskAppManager::Get()
+            ->current_app_was_auto_launched_with_zero_delay();
+    if (regular_app_auto_launched_with_zero_delay ||
+        arc_app_auto_launched_with_zero_delay) {
       return account;
     }
   }

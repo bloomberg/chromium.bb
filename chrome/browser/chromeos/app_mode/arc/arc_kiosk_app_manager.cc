@@ -184,6 +184,7 @@ void ArcKioskAppManager::UpdateApps() {
   ArcKioskApps old_apps(std::move(apps_));
 
   auto_launch_account_id_.clear();
+  auto_launched_with_zero_delay_ = false;
   std::string auto_login_account_id_from_settings;
   CrosSettings::Get()->GetString(kAccountsPrefDeviceLocalAccountAutoLoginId,
                                  &auto_login_account_id_from_settings);
@@ -197,8 +198,13 @@ void ArcKioskAppManager::UpdateApps() {
 
     const AccountId account_id(AccountId::FromUserEmail(account.user_id));
 
-    if (account.account_id == auto_login_account_id_from_settings)
+    if (account.account_id == auto_login_account_id_from_settings) {
       auto_launch_account_id_ = account_id;
+      int auto_launch_delay = 0;
+      CrosSettings::Get()->GetInteger(
+          kAccountsPrefDeviceLocalAccountAutoLoginDelay, &auto_launch_delay);
+      auto_launched_with_zero_delay_ = auto_launch_delay == 0;
+    }
 
     auto old_it =
         std::find(old_apps.begin(), old_apps.end(), account.arc_kiosk_app_info);

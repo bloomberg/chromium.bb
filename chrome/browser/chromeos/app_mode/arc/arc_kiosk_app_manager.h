@@ -81,6 +81,10 @@ class ArcKioskAppManager {
   void AddObserver(ArcKioskAppManagerObserver* observer);
   void RemoveObserver(ArcKioskAppManagerObserver* observer);
 
+  bool current_app_was_auto_launched_with_zero_delay() const {
+    return auto_launched_with_zero_delay_;
+  }
+
  private:
   // Updates apps_ based on CrosSettings.
   void UpdateApps();
@@ -91,6 +95,7 @@ class ArcKioskAppManager {
 
   ArcKioskApps apps_;
   AccountId auto_launch_account_id_;
+  bool auto_launched_with_zero_delay_ = false;
   base::ObserverList<ArcKioskAppManagerObserver, true> observers_;
 
   std::unique_ptr<CrosSettings::ObserverSubscription>
