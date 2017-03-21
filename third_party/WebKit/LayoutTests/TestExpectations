@@ -2644,3 +2644,5 @@ crbug.com/701718 [ Win7 ] fast/table/border-collapsing/001.html [ Failure Pass ]
 
 # Sheriff failures 2017-03-21
 crbug.com/703503 inspector/tracing/timeline-js/timeline-runtime-stats.html [ Failure Pass ]
+crbug.com/703518 inspector/tracing/worker-js-frames.html [ Failure Pass ]
+crbug.com/703518 virtual/threaded/inspector/tracing/worker-js-frames.html [ Failure Pass ]
