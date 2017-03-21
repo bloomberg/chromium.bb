@@ -149,6 +149,8 @@ class CC_PAINT_EXPORT SkiaPaintCanvas final : public PaintCanvas {
   void AnnotateNamedDestination(const SkPoint& point, SkData* data) override;
   void AnnotateLinkToDestination(const SkRect& rect, SkData* data) override;
 
+  void PlaybackPaintRecord(sk_sp<const PaintRecord> record) override;
+
   // Don't shadow non-virtual helper functions.
   using PaintCanvas::clipRect;
   using PaintCanvas::clipRRect;

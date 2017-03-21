@@ -228,7 +228,7 @@ void SVGShapePainter::paintMarkers(const PaintInfo& paintInfo,
       markerPaintInfo.m_cullRect.m_rect = LayoutRect::infiniteIntRect();
 
       paintMarker(markerPaintInfo, *marker, markerPosition, strokeWidth);
-      paintInfo.context.canvas()->drawPicture(builder.endRecording());
+      paintInfo.context.canvas()->PlaybackPaintRecord(builder.endRecording());
     }
   }
 }

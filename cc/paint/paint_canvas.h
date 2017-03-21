@@ -189,6 +189,10 @@ class CC_PAINT_EXPORT PaintCanvas {
   virtual void AnnotateNamedDestination(const SkPoint& point, SkData* data) = 0;
   virtual void AnnotateLinkToDestination(const SkRect& rect, SkData* data) = 0;
 
+  // TODO(enne): maybe this should live on PaintRecord, but that's not
+  // possible when PaintRecord is a typedef.
+  virtual void PlaybackPaintRecord(sk_sp<const PaintRecord> record) = 0;
+
  protected:
   friend class PaintSurface;
   friend class PaintRecorder;

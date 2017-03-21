@@ -68,6 +68,7 @@ static void paintInternal(Page& page,
     return;
 
   IntRect intRect(rect);
+  // TODO(enne): intRect is not correct: http://crbug.com/703231
   PaintRecordBuilder builder(intRect);
   {
     GraphicsContext& paintContext = builder.context();
@@ -97,7 +98,7 @@ static void paintInternal(Page& page,
     }
   }
 
-  canvas->drawPicture(builder.endRecording());
+  canvas->PlaybackPaintRecord(builder.endRecording());
 }
 
 void PageWidgetDelegate::paint(Page& page,

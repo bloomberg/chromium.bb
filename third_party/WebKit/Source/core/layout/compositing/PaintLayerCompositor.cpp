@@ -925,7 +925,7 @@ void PaintLayerCompositor::paintContents(const GraphicsLayer* graphicsLayer,
   DrawingRecorder drawingRecorder(context, *graphicsLayer,
                                   DisplayItem::kScrollbarCompositedScrollbar,
                                   layerBounds);
-  context.canvas()->drawPicture(builder.endRecording());
+  context.canvas()->PlaybackPaintRecord(builder.endRecording());
 }
 
 Scrollbar* PaintLayerCompositor::graphicsLayerToScrollbar(

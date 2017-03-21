@@ -299,6 +299,10 @@ void SkiaPaintCanvas::temporary_internal_describeTopLayer(
   return canvas_->temporary_internal_describeTopLayer(matrix, clip_bounds);
 }
 
+void SkiaPaintCanvas::PlaybackPaintRecord(sk_sp<const PaintRecord> record) {
+  record->playback(canvas_);
+}
+
 bool SkiaPaintCanvas::ToPixmap(SkPixmap* output) {
   SkImageInfo info;
   size_t row_bytes;
