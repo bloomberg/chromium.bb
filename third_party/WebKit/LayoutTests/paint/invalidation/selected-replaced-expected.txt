@@ -8,12 +8,12 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow (anonymous)",
-          "rect": [8, 52, 784, 237],
+          "rect": [8, 68, 784, 236],
           "reason": "forced by layout"
         },
         {
           "object": "LayoutImage (relative positioned) IMG id='test' class='moved'",
-          "rect": [8, 132, 214, 232],
+          "rect": [8, 148, 214, 232],
           "reason": "forced by layout"
         }
       ]

@@ -1,7 +1,7 @@
 {
-  "bounds": [800, 600],
-  "children": [
+  "layers": [
     {
+      "name": "LayoutView #document",
       "bounds": [800, 600],
       "contentsOpaque": true,
       "drawsContent": true,
@@ -9,27 +9,33 @@
         {
           "object": "LayoutBlockFlow (anonymous)",
           "rect": [8, 68, 784, 236],
-          "reason": "invalidate paint rectangle"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutImage (relative positioned) IMG id='test' class='moved'",
           "rect": [8, 148, 214, 232],
-          "reason": "bounds change"
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutImage (relative positioned) IMG id='test' class='moved'",
           "rect": [8, 68, 214, 232],
-          "reason": "bounds change"
-        },
-        {
-          "object": "InlineBox",
-          "reason": "full"
-        },
-        {
-          "object": "RootInlineBox",
-          "reason": "full"
+          "reason": "forced by layout"
         }
       ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (anonymous)",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutImage (relative positioned) IMG id='test' class='moved'",
+      "reason": "forced by layout"
     }
   ]
 }

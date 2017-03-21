@@ -1,0 +1,26 @@
+{
+  "bounds": [800, 600],
+  "children": [
+    {
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutTableRow TR class='bla'",
+          "rect": [8, 218, 70, 12],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutTableCell TD",
+          "reason": "full"
+        },
+        {
+          "object": "LayoutTableCell TD id='secondRowSpan'",
+          "reason": "full"
+        }
+      ]
+    }
+  ]
+}
+
