@@ -130,6 +130,7 @@ constexpr float kMostlyFillViewportThreshold = 0.85f;
 constexpr double kMostlyFillViewportBecomeStableSeconds = 5;
 constexpr double kCheckViewportIntersectionIntervalSeconds = 1;
 
+// This enum is used to record histograms. Do not reorder.
 enum MediaControlsShow {
   MediaControlsShowAttribute = 0,
   MediaControlsShowFullscreen,
@@ -137,6 +138,13 @@ enum MediaControlsShow {
   MediaControlsShowNotShown,
   MediaControlsShowDisabledSettings,
   MediaControlsShowMax
+};
+
+// This enum is used to record histograms. Do not reorder.
+enum VideoPersistenceControlsType {
+  VideoPersistenceControlsTypeNative = 0,
+  VideoPersistenceControlsTypeCustom,
+  VideoPersistenceControlsTypeCount
 };
 
 String urlForLoggingMedia(const KURL& url) {
@@ -3242,6 +3250,17 @@ void HTMLMediaElement::onBecamePersistentVideo(bool value) {
     return;
 
   if (value) {
+    // Record the type of video. If it is already fullscreen, it is a video with
+    // native controls, otherwise it is assumed to be with custom controls.
+    // This is only recorded when entering this mode.
+    DEFINE_STATIC_LOCAL(EnumerationHistogram, histogram,
+                        ("Media.VideoPersistence.ControlsType",
+                         VideoPersistenceControlsTypeCount));
+    if (isFullscreen())
+      histogram.count(VideoPersistenceControlsTypeNative);
+    else
+      histogram.count(VideoPersistenceControlsTypeCustom);
+
     if (isFullscreen())
       return;
 
