@@ -1152,16 +1152,16 @@ class Vector
   // All of these functions may cause a reallocation. In any case, all the
   // iterators pointing to any element in the vector will be invalidated.
   //
-  // prepend(value)
+  // push_front(value)
   //     Insert a single element to the front.
-  // prepend(buffer, size)
+  // push_front(buffer, size)
   // prependVector(vector)
   //     Insert multiple elements represented by either |buffer| and |size| or
   //     |vector| to the front. The elements will be copied.
   template <typename U>
-  void prepend(U&&);
+  void push_front(U&&);
   template <typename U>
-  void prepend(const U*, size_t);
+  void push_front(const U*, size_t);
   template <typename U, size_t otherCapacity, typename OtherAllocator>
   void prependVector(const Vector<U, otherCapacity, OtherAllocator>&);
 
@@ -1795,14 +1795,14 @@ inline void Vector<T, inlineCapacity, Allocator>::insert(
 
 template <typename T, size_t inlineCapacity, typename Allocator>
 template <typename U>
-inline void Vector<T, inlineCapacity, Allocator>::prepend(U&& val) {
+inline void Vector<T, inlineCapacity, Allocator>::push_front(U&& val) {
   insert(0, std::forward<U>(val));
 }
 
 template <typename T, size_t inlineCapacity, typename Allocator>
 template <typename U>
-void Vector<T, inlineCapacity, Allocator>::prepend(const U* data,
-                                                   size_t dataSize) {
+void Vector<T, inlineCapacity, Allocator>::push_front(const U* data,
+                                                      size_t dataSize) {
   insert(0, data, dataSize);
 }
 

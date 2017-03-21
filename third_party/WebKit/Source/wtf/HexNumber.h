@@ -69,7 +69,7 @@ class HexNumber final {
     const LChar* hexDigits = hexDigitsForMode(mode);
     Vector<LChar, 8> result;
     do {
-      result.prepend(hexDigits[number % 16]);
+      result.push_front(hexDigits[number % 16]);
       number >>= 4;
     } while (number > 0);
 
@@ -89,7 +89,7 @@ class HexNumber final {
     const LChar* hexDigits = hexDigitsForMode(mode);
     Vector<LChar, 8> result;
     do {
-      result.prepend(hexDigits[number % 16]);
+      result.push_front(hexDigits[number % 16]);
       number >>= 4;
     } while (result.size() < desiredDigits);
 

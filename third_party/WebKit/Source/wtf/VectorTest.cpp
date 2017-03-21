@@ -205,7 +205,7 @@ TEST(VectorTest, OwnPtr) {
   size_t count = 1025;
   destructNumber = 0;
   for (size_t i = 0; i < count; i++)
-    vector.prepend(WTF::wrapUnique(new DestructCounter(i, &destructNumber)));
+    vector.push_front(WTF::wrapUnique(new DestructCounter(i, &destructNumber)));
 
   // Vector relocation must not destruct std::unique_ptr element.
   EXPECT_EQ(0, destructNumber);
@@ -571,7 +571,7 @@ TEST(VectorTest, UniquePtr) {
   vector.reserveCapacity(2);
   vector.uncheckedAppend(Pointer(new int(2)));
   vector.insert(2, Pointer(new int(3)));
-  vector.prepend(Pointer(new int(0)));
+  vector.push_front(Pointer(new int(0)));
 
   ASSERT_EQ(4u, vector.size());
   EXPECT_EQ(0, *vector[0]);

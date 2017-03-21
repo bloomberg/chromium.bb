@@ -143,7 +143,7 @@ inline void SearchBuffer::prependContext(const UChar* characters,
 
   size_t usableLength = std::min(m_buffer.capacity() - m_prefixLength,
                                  length - wordBoundaryContextStart);
-  m_buffer.prepend(characters + length - usableLength, usableLength);
+  m_buffer.push_front(characters + length - usableLength, usableLength);
   m_prefixLength += usableLength;
 
   if (wordBoundaryContextStart || m_prefixLength == m_buffer.capacity())

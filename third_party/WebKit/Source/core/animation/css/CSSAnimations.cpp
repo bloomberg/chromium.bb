@@ -167,7 +167,7 @@ static StringKeyframeEffectModel* createKeyframeEffectModel(
     startKeyframe = StringKeyframe::create();
     startKeyframe->setOffset(0);
     startKeyframe->setEasing(defaultTimingFunction);
-    keyframes.prepend(startKeyframe);
+    keyframes.push_front(startKeyframe);
   }
   RefPtr<StringKeyframe> endKeyframe = keyframes[keyframes.size() - 1];
   if (endKeyframe->offset() != 1) {

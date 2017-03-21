@@ -68,7 +68,7 @@ void ICUScriptData::getScripts(UChar32 ch, Vector<UScriptCode>& dst) const {
   if (primaryScript == USCRIPT_COMMON) {
     if (count == 1) {
       // Common with a preferred script. Keep common at head.
-      dst.prepend(primaryScript);
+      dst.push_front(primaryScript);
       return;
     }
 

@@ -542,7 +542,7 @@ void CapsFeatureSettingsScopedOverlay::overlayCapsFeatures(
 
 void CapsFeatureSettingsScopedOverlay::prependCounting(
     const hb_feature_t& feature) {
-  m_features->prepend(feature);
+  m_features->push_front(feature);
   m_countFeatures++;
 }
 

@@ -174,22 +174,22 @@ static void toHebrewUnder1000(int number, Vector<UChar>& letters) {
   ASSERT(number >= 0 && number < 1000);
   int fourHundreds = number / 400;
   for (int i = 0; i < fourHundreds; i++)
-    letters.prepend(1511 + 3);
+    letters.push_front(1511 + 3);
   number %= 400;
   if (number / 100)
-    letters.prepend(1511 + (number / 100) - 1);
+    letters.push_front(1511 + (number / 100) - 1);
   number %= 100;
   if (number == 15 || number == 16) {
-    letters.prepend(1487 + 9);
-    letters.prepend(1487 + number - 9);
+    letters.push_front(1487 + 9);
+    letters.push_front(1487 + number - 9);
   } else {
     if (int tens = number / 10) {
       static const UChar hebrewTens[9] = {1497, 1499, 1500, 1502, 1504,
                                           1505, 1506, 1508, 1510};
-      letters.prepend(hebrewTens[tens - 1]);
+      letters.push_front(hebrewTens[tens - 1]);
     }
     if (int ones = number % 10)
-      letters.prepend(1487 + ones);
+      letters.push_front(1487 + ones);
   }
 }
 
@@ -205,7 +205,7 @@ static String toHebrew(int number) {
   Vector<UChar> letters;
   if (number > 999) {
     toHebrewUnder1000(number / 1000, letters);
-    letters.prepend('\'');
+    letters.push_front('\'');
     number = number % 1000;
   }
   toHebrewUnder1000(number, letters);

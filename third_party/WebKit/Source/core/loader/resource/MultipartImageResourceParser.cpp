@@ -20,7 +20,7 @@ MultipartImageResourceParser::MultipartImageResourceParser(
   // Some servers report a boundary prefixed with "--".  See
   // https://crbug.com/5786.
   if (m_boundary.size() < 2 || m_boundary[0] != '-' || m_boundary[1] != '-')
-    m_boundary.prepend("--", 2);
+    m_boundary.push_front("--", 2);
 }
 
 void MultipartImageResourceParser::appendData(const char* bytes, size_t size) {
@@ -47,7 +47,7 @@ void MultipartImageResourceParser::appendData(const char* bytes, size_t size) {
     // Some servers don't send a boundary token before the first chunk of
     // data.  We handle this case anyway (Gecko does too).
     if (0 != memcmp(m_data.data(), m_boundary.data(), m_boundary.size())) {
-      m_data.prepend("\n", 1);
+      m_data.push_front("\n", 1);
       m_data.prependVector(m_boundary);
     }
     m_isParsingTop = false;

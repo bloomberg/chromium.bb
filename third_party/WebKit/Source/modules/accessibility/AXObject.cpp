@@ -1527,7 +1527,7 @@ void AXObject::scrollToGlobalPoint(const IntPoint& globalPoint) const {
   for (parentObject = this->parentObject(); parentObject;
        parentObject = parentObject->parentObject()) {
     if (parentObject->getScrollableAreaIfScrollable())
-      objects.prepend(parentObject);
+      objects.push_front(parentObject);
   }
   objects.push_back(this);
 
