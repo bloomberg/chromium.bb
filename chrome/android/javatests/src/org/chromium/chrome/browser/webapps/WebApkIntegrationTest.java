@@ -15,6 +15,7 @@ import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.net.test.EmbeddedTestServer;
+import org.chromium.webapk.lib.common.WebApkConstants;
 
 /** Integration tests for WebAPK feature. */
 public class WebApkIntegrationTest extends ChromeActivityTestCaseBase<WebApkActivity> {
@@ -29,7 +30,7 @@ public class WebApkIntegrationTest extends ChromeActivityTestCaseBase<WebApkActi
     public void startWebApkActivity(String webApkPackageName, final String startUrl)
             throws InterruptedException {
         Intent intent = new Intent(getInstrumentation().getTargetContext(), WebApkActivity.class);
-        intent.putExtra(ShortcutHelper.EXTRA_WEBAPK_PACKAGE_NAME, webApkPackageName);
+        intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, webApkPackageName);
         intent.putExtra(ShortcutHelper.EXTRA_URL, startUrl);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         setActivity(getInstrumentation().startActivitySync(intent));

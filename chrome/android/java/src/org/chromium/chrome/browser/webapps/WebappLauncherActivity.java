@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.metrics.LaunchMetrics;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.webapk.lib.client.WebApkValidator;
+import org.chromium.webapk.lib.common.WebApkConstants;
 
 import java.lang.ref.WeakReference;
 
@@ -203,8 +204,8 @@ public class WebappLauncherActivity extends Activity {
     private boolean isValidWebApk(Intent intent) {
         if (!ChromeWebApkHost.isEnabled()) return false;
 
-        String webApkPackage = IntentUtils.safeGetStringExtra(intent,
-                ShortcutHelper.EXTRA_WEBAPK_PACKAGE_NAME);
+        String webApkPackage =
+                IntentUtils.safeGetStringExtra(intent, WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME);
         if (TextUtils.isEmpty(webApkPackage)) return false;
 
         String url = IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_URL);

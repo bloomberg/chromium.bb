@@ -48,7 +48,7 @@ public class WebApkInfo extends WebappInfo {
      */
     public static WebApkInfo create(Intent intent) {
         String webApkPackageName =
-                IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_WEBAPK_PACKAGE_NAME);
+                IntentUtils.safeGetStringExtra(intent, WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME);
         if (TextUtils.isEmpty(webApkPackageName)) {
             return null;
         }
@@ -193,7 +193,7 @@ public class WebApkInfo extends WebappInfo {
         // For launching a {@link WebApkActivity}.
         intent.putExtra(ShortcutHelper.EXTRA_URL, uri().toString());
         intent.putExtra(ShortcutHelper.EXTRA_SOURCE, source());
-        intent.putExtra(ShortcutHelper.EXTRA_WEBAPK_PACKAGE_NAME, webApkPackageName());
+        intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, webApkPackageName());
     }
 
     /**

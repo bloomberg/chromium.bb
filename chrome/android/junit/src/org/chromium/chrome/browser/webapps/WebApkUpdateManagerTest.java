@@ -274,7 +274,7 @@ public class WebApkUpdateManagerTest {
         Intent intent = new Intent();
         intent.putExtra(ShortcutHelper.EXTRA_URL, "");
         intent.putExtra(
-                ShortcutHelper.EXTRA_WEBAPK_PACKAGE_NAME, WebApkTestHelper.WEBAPK_PACKAGE_NAME);
+                WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, WebApkTestHelper.WEBAPK_PACKAGE_NAME);
         WebApkInfo info = WebApkInfo.create(intent);
 
         updateManager.updateIfNeeded(null, info);

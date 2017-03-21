@@ -72,7 +72,7 @@ public class WebApkInfoTest {
 
         Intent intent = new Intent();
         intent.putExtra(
-                ShortcutHelper.EXTRA_WEBAPK_PACKAGE_NAME, WebApkTestHelper.WEBAPK_PACKAGE_NAME);
+                WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, WebApkTestHelper.WEBAPK_PACKAGE_NAME);
         intent.putExtra(ShortcutHelper.EXTRA_URL, START_URL);
         intent.putExtra(ShortcutHelper.EXTRA_SOURCE, ShortcutSource.NOTIFICATION);
 
@@ -117,7 +117,7 @@ public class WebApkInfoTest {
 
         Intent intent = new Intent();
         intent.putExtra(
-                ShortcutHelper.EXTRA_WEBAPK_PACKAGE_NAME, WebApkTestHelper.WEBAPK_PACKAGE_NAME);
+                WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, WebApkTestHelper.WEBAPK_PACKAGE_NAME);
         intent.putExtra(ShortcutHelper.EXTRA_URL, intentStartUrl);
 
         WebApkInfo info = WebApkInfo.create(intent);
@@ -149,7 +149,7 @@ public class WebApkInfoTest {
 
         Intent intent = new Intent();
         intent.putExtra(
-                ShortcutHelper.EXTRA_WEBAPK_PACKAGE_NAME, WebApkTestHelper.WEBAPK_PACKAGE_NAME);
+                WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, WebApkTestHelper.WEBAPK_PACKAGE_NAME);
         intent.putExtra(ShortcutHelper.EXTRA_URL, intentStartUrl);
 
         WebApkInfo info = WebApkInfo.create(intent);
@@ -174,7 +174,7 @@ public class WebApkInfoTest {
         WebApkTestHelper.registerWebApkWithMetaData(bundle);
         Intent intent = new Intent();
         intent.putExtra(
-                ShortcutHelper.EXTRA_WEBAPK_PACKAGE_NAME, WebApkTestHelper.WEBAPK_PACKAGE_NAME);
+                WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, WebApkTestHelper.WEBAPK_PACKAGE_NAME);
         intent.putExtra(ShortcutHelper.EXTRA_URL, START_URL);
 
         WebApkInfo info = WebApkInfo.create(intent);
@@ -199,7 +199,7 @@ public class WebApkInfoTest {
         WebApkTestHelper.registerWebApkWithMetaData(bundle);
         Intent intent = new Intent();
         intent.putExtra(
-                ShortcutHelper.EXTRA_WEBAPK_PACKAGE_NAME, WebApkTestHelper.WEBAPK_PACKAGE_NAME);
+                WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, WebApkTestHelper.WEBAPK_PACKAGE_NAME);
         intent.putExtra(ShortcutHelper.EXTRA_URL, START_URL);
 
         WebApkInfo info = WebApkInfo.create(intent);

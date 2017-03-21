@@ -79,8 +79,6 @@ public class ShortcutHelper {
             "org.chromium.chrome.browser.webapp_shortcut_version";
     public static final String REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB =
             "REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB";
-    public static final String EXTRA_WEBAPK_PACKAGE_NAME =
-            "org.chromium.chrome.browser.webapk_package_name";
 
     /** Used for the callback intent when using the new shortcut API. */
     public static final String SHORTCUT_TOAST_CATEGORY =

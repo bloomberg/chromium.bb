@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.ShortcutSource;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.content_public.common.ScreenOrientationValues;
+import org.chromium.webapk.lib.common.WebApkConstants;
 
 import java.util.concurrent.TimeUnit;
 
@@ -276,8 +277,9 @@ public class WebappDataStorage {
             editor.putInt(KEY_SOURCE, IntentUtils.safeGetIntExtra(
                         shortcutIntent, ShortcutHelper.EXTRA_SOURCE,
                         ShortcutSource.UNKNOWN));
-            editor.putString(KEY_WEBAPK_PACKAGE_NAME, IntentUtils.safeGetStringExtra(
-                    shortcutIntent, ShortcutHelper.EXTRA_WEBAPK_PACKAGE_NAME));
+            editor.putString(KEY_WEBAPK_PACKAGE_NAME,
+                    IntentUtils.safeGetStringExtra(
+                            shortcutIntent, WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME));
             updated = true;
         }
         if (updated) editor.apply();

@@ -28,6 +28,7 @@ import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.browsing_data.UrlFilters;
 import org.chromium.testing.local.BackgroundShadowAsyncTask;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
+import org.chromium.webapk.lib.common.WebApkConstants;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -628,8 +629,8 @@ public class WebappRegistryTest {
     private Intent createWebApkIntent(String webappId, String webApkPackage) {
         Intent intent = new Intent();
         intent.putExtra(ShortcutHelper.EXTRA_ID, webappId)
-              .putExtra(ShortcutHelper.EXTRA_URL, "https://foo.com")
-              .putExtra(ShortcutHelper.EXTRA_WEBAPK_PACKAGE_NAME, webApkPackage);
+                .putExtra(ShortcutHelper.EXTRA_URL, "https://foo.com")
+                .putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, webApkPackage);
         return intent;
     }
 }
