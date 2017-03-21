@@ -122,11 +122,6 @@ bool IsNewProfileManagement() {
   return GetProcessState() >= STATE_NEW_PROFILE_MANAGEMENT;
 }
 
-bool IsNewProfileManagementPreviewEnabled() {
-  // No promotion to Enable Account Consistency.
-  return false;
-}
-
 bool UsePasswordSeparatedSigninFlow() {
   return base::FeatureList::IsEnabled(
       switches::kUsePasswordSeparatedSigninFlow);

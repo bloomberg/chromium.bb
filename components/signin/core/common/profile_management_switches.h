@@ -26,9 +26,6 @@ bool IsExtensionsMultiAccount();
 // choosers.
 bool IsNewProfileManagement();
 
-// Whether the new profile management preview has been enabled.
-bool IsNewProfileManagementPreviewEnabled();
-
 // Checks whether the new gaia password separated sign in flow is enabled.
 bool UsePasswordSeparatedSigninFlow();
 
