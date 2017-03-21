@@ -31,6 +31,10 @@
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_response_writer.h"
 
+#if !defined(OS_ANDROID)
+#include "content/public/browser/devtools_frontend_host.h"
+#endif
+
 namespace content {
 
 namespace {
@@ -164,6 +168,7 @@ ShellDevToolsFrontend::~ShellDevToolsFrontend() {
     delete pair.first;
 }
 
+#if !defined(OS_ANDROID)
 void ShellDevToolsFrontend::RenderViewCreated(
     RenderViewHost* render_view_host) {
   if (!frontend_host_) {
@@ -173,6 +178,14 @@ void ShellDevToolsFrontend::RenderViewCreated(
                    base::Unretained(this))));
   }
 }
+#endif
+
+#if defined(OS_ANDROID)
+void ShellDevToolsFrontend::RenderViewCreated(
+    RenderViewHost* render_view_host) {
+  // No devtools frontend for android
+}
+#endif
 
 void ShellDevToolsFrontend::DocumentAvailableInMainFrame() {
   agent_host_ = DevToolsAgentHost::GetOrCreateFor(inspected_contents_);

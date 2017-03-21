@@ -19,6 +19,7 @@ class RenderFrameHost;
 // which is implemented by the embedder.
 // This allows us to avoid exposing DevTools frontend messages through
 // the content public API.
+// Note: DevToolsFrontendHost is not supported on Android.
 class DevToolsFrontendHost {
  public:
   using HandleMessageCallback = base::Callback<void(const std::string&)>;

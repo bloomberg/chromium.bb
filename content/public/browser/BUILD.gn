@@ -92,7 +92,6 @@ source_set("browser_sources") {
     "devtools_agent_host_observer.h",
     "devtools_external_agent_proxy.h",
     "devtools_external_agent_proxy_delegate.h",
-    "devtools_frontend_host.h",
     "devtools_manager_delegate.cc",
     "devtools_manager_delegate.h",
     "devtools_socket_factory.h",
@@ -328,5 +327,9 @@ source_set("browser_sources") {
   if (use_aura) {
     sources -= [ "context_factory.h" ]
     deps += [ "//ui/aura" ]
+  }
+
+  if (!is_android) {
+    sources += [ "devtools_frontend_host.h" ]
   }
 }

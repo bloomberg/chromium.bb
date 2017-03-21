@@ -466,8 +466,6 @@ source_set("browser") {
     "devtools/devtools_agent_host_impl.h",
     "devtools/devtools_frame_trace_recorder.cc",
     "devtools/devtools_frame_trace_recorder.h",
-    "devtools/devtools_frontend_host_impl.cc",
-    "devtools/devtools_frontend_host_impl.h",
     "devtools/devtools_http_handler.cc",
     "devtools/devtools_http_handler.h",
     "devtools/devtools_io_context.cc",
@@ -1863,6 +1861,10 @@ source_set("browser") {
   } else {
     # Not Android.
     sources += [
+      # Devtools frontend not included in Android
+      "devtools/devtools_frontend_host_impl.cc",
+      "devtools/devtools_frontend_host_impl.h",
+
       # Most speech code is non-Android.
       "speech/audio_buffer.cc",
       "speech/audio_buffer.h",

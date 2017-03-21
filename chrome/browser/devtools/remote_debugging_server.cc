@@ -20,7 +20,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/devtools_agent_host.h"
-#include "content/public/browser/devtools_frontend_host.h"
 #include "content/public/browser/devtools_socket_factory.h"
 #include "net/base/net_errors.h"
 #include "net/log/net_log_source.h"

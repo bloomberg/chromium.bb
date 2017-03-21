@@ -10,7 +10,6 @@
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "content/public/browser/devtools_agent_host.h"
-#include "content/public/browser/devtools_frontend_host.h"
 #include "content/public/browser/devtools_socket_factory.h"
 #include "content/public/browser/navigation_entry.h"
 #include "headless/grit/headless_lib_resources.h"

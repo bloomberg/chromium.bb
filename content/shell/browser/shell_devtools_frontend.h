@@ -13,9 +13,12 @@
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "content/public/browser/devtools_agent_host.h"
-#include "content/public/browser/devtools_frontend_host.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "net/url_request/url_fetcher_delegate.h"
+
+#if !defined(OS_ANDROID)
+#include "content/public/browser/devtools_frontend_host.h"
+#endif
 
 namespace base {
 class Value;
@@ -75,7 +78,9 @@ class ShellDevToolsFrontend : public WebContentsObserver,
   scoped_refptr<DevToolsAgentHost> agent_host_;
   int inspect_element_at_x_;
   int inspect_element_at_y_;
+#if !defined(OS_ANDROID)
   std::unique_ptr<DevToolsFrontendHost> frontend_host_;
+#endif
   using PendingRequestsMap = std::map<const net::URLFetcher*, int>;
   PendingRequestsMap pending_requests_;
   base::DictionaryValue preferences_;
