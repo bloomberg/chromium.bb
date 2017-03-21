@@ -26,7 +26,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "wtf/ASCIICType.h"
+#include "platform/wtf/ASCIICType.h"
 
 namespace WTF {
 

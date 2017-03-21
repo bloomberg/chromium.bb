@@ -18,7 +18,6 @@ config("wtf_config") {
 
 component("wtf") {
   sources = [
-    "ASCIICType.cpp",
     "ASCIICType.h",
     "AddressSanitizer.h",
     "Alignment.h",

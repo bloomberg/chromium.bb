@@ -59,8 +59,12 @@ config("wtf_config") {
 
 source_set("platform_wtf") {
   sources = [
+    "ASCIICType.cpp",
+    "ASCIICType.h",
     "AddressSanitizer.h",
     "Alignment.h",
+    "Assertions.h",
+    "Atomics.h",
     "AutoReset.h",
     "BitwiseOperations.h",
     "ByteSwap.h",
@@ -83,12 +87,16 @@ source_set("platform_wtf") {
     "NotFound.h",
     "Optional.h",
     "SizeAssertions.h",
+    "SpinLock.h",
     "StaticConstructors.h",
+    "StringExtras.h",
     "Time.h",
     "TriState.h",
     "TypeTraits.h",
     "WTFExport.h",
     "build_config.h",
+    "text/Unicode.h",
+    "text/icu/UnicodeIcu.h",
   ]
 
   configs += [

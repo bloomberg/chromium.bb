@@ -187,6 +187,10 @@ ScopedLogger::~ScopedLogger() {
   }
 }
 
+void ScopedLogger::setPrintFuncForTests(PrintFunctionPtr ptr) {
+  m_printFunc = ptr;
+};
+
 void ScopedLogger::init(const char* format, va_list args) {
   current() = this;
   if (m_parent)
