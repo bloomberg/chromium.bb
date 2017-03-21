@@ -14,6 +14,7 @@ import android.widget.TextView;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
+import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 
 /**
@@ -90,7 +91,12 @@ public class AutofillServerCardEditor extends AutofillCreditCardEditor {
 
     @Override
     protected boolean saveEntry() {
-        PersonalDataManager.getInstance().updateServerCardBillingAddress(mCard);
+        if (mBillingAddress.getSelectedItem() != null
+                && mBillingAddress.getSelectedItem() instanceof AutofillProfile) {
+            mCard.setBillingAddressId(
+                    ((AutofillProfile) mBillingAddress.getSelectedItem()).getGUID());
+            PersonalDataManager.getInstance().updateServerCardBillingAddress(mCard);
+        }
         return true;
     }
 
