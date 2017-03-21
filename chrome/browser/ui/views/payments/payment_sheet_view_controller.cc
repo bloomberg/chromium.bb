@@ -42,6 +42,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/vector_icons.h"
 #include "ui/views/view.h"
@@ -193,8 +194,10 @@ PaymentSheetViewController::PaymentSheetViewController(
     PaymentRequestState* state,
     PaymentRequestDialogView* dialog)
     : PaymentRequestSheetController(spec, state, dialog),
+      container_view_(base::MakeUnique<views::View>()),
       pay_button_(nullptr),
       widest_name_column_view_width_(ComputeWidestNameColumnViewWidth()) {
+  container_view_->set_owned_by_client();
   state->AddObserver(this);
 }
 
@@ -204,30 +207,10 @@ PaymentSheetViewController::~PaymentSheetViewController() {
 
 std::unique_ptr<views::View> PaymentSheetViewController::CreateView() {
   std::unique_ptr<views::View> content_view = base::MakeUnique<views::View>();
+  content_view->SetLayoutManager(new views::FillLayout);
 
-  views::GridLayout* layout = new views::GridLayout(content_view.get());
-  content_view->SetLayoutManager(layout);
-  views::ColumnSet* columns = layout->AddColumnSet(0);
-  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
-                     1, views::GridLayout::USE_PREF, 0, 0);
-
-  // The shipping address and contact info rows are optional.
-  layout->StartRow(0, 0);
-  layout->AddView(CreatePaymentSheetSummaryRow().release());
-
-  if (spec()->request_shipping()) {
-    layout->StartRow(0, 0);
-    layout->AddView(CreateShippingRow().release());
-    layout->StartRow(0, 0);
-    layout->AddView(CreateShippingOptionRow().release());
-  }
-  layout->StartRow(0, 0);
-  layout->AddView(CreatePaymentMethodRow().release());
-  if (spec()->request_payer_name() || spec()->request_payer_email() ||
-      spec()->request_payer_phone()) {
-    layout->StartRow(0, 0);
-    layout->AddView(CreateContactInfoRow().release());
-  }
+  UpdateContentView();
+  content_view->AddChildView(container_view_.get());
 
   return CreatePaymentView(
       CreateSheetHeaderView(
@@ -239,6 +222,8 @@ std::unique_ptr<views::View> PaymentSheetViewController::CreateView() {
 
 void PaymentSheetViewController::OnSelectedInformationChanged() {
   UpdatePayButtonState(state()->is_ready_to_pay());
+  UpdateContentView();
+  container_view_->Layout();
 }
 
 std::unique_ptr<views::Button>
@@ -316,6 +301,33 @@ void PaymentSheetViewController::ButtonPressed(
 
 void PaymentSheetViewController::UpdatePayButtonState(bool enabled) {
   pay_button_->SetEnabled(enabled);
+}
+
+void PaymentSheetViewController::UpdateContentView() {
+  container_view_->RemoveAllChildViews(/*delete_children=*/true);
+  views::GridLayout* layout = new views::GridLayout(container_view_.get());
+  container_view_->SetLayoutManager(layout);
+  views::ColumnSet* columns = layout->AddColumnSet(0);
+  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 1,
+                     views::GridLayout::USE_PREF, 0, 0);
+
+  // The shipping address and contact info rows are optional.
+  layout->StartRow(0, 0);
+  layout->AddView(CreatePaymentSheetSummaryRow().release());
+
+  if (spec()->request_shipping()) {
+    layout->StartRow(0, 0);
+    layout->AddView(CreateShippingRow().release());
+    layout->StartRow(0, 0);
+    layout->AddView(CreateShippingOptionRow().release());
+  }
+  layout->StartRow(0, 0);
+  layout->AddView(CreatePaymentMethodRow().release());
+  if (spec()->request_payer_name() || spec()->request_payer_email() ||
+      spec()->request_payer_phone()) {
+    layout->StartRow(0, 0);
+    layout->AddView(CreateContactInfoRow().release());
+  }
 }
 
 // Creates the Order Summary row, which contains an "Order Summary" label,

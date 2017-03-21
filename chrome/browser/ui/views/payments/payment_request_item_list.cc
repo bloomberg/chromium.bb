@@ -40,7 +40,7 @@ views::View* PaymentRequestItemList::Item::GetItemView() {
   return item_view_.get();
 }
 
-void PaymentRequestItemList::Item::SetSelected(bool selected) {
+void PaymentRequestItemList::Item::SetSelected(bool selected, bool notify) {
   selected_ = selected;
 
   // This could be called before CreateItemView, so before |checkmark_| is
@@ -48,7 +48,8 @@ void PaymentRequestItemList::Item::SetSelected(bool selected) {
   if (checkmark_)
     checkmark_->SetVisible(selected_);
 
-  SelectedStateChanged();
+  if (notify)
+    SelectedStateChanged();
 }
 
 std::unique_ptr<views::ImageView> PaymentRequestItemList::Item::CreateCheckmark(
@@ -127,8 +128,11 @@ void PaymentRequestItemList::AddItem(
     std::unique_ptr<PaymentRequestItemList::Item> item) {
   DCHECK_EQ(this, item->list());
   items_.push_back(std::move(item));
-  if (items_.back()->selected())
-    SelectItem(items_.back().get());
+  if (items_.back()->selected()) {
+    if (selected_item_)
+      selected_item_->SetSelected(/*selected=*/false, /*notify=*/false);
+    selected_item_ = items_.back().get();
+  }
 }
 
 std::unique_ptr<views::View> PaymentRequestItemList::CreateListView() {
@@ -153,7 +157,7 @@ void PaymentRequestItemList::SelectItem(PaymentRequestItemList::Item* item) {
   UnselectSelectedItem();
 
   selected_item_ = item;
-  item->SetSelected(true);
+  item->SetSelected(/*selected=*/true, /*notify=*/true);
 }
 
 void PaymentRequestItemList::UnselectSelectedItem() {
@@ -161,7 +165,7 @@ void PaymentRequestItemList::UnselectSelectedItem() {
   // creation or in the middle of the selection operation when the previously
   // selected item has been deselected but the new one isn't selected yet.
   if (selected_item_)
-    selected_item_->SetSelected(false);
+    selected_item_->SetSelected(/*selected=*/false, /*notify=*/true);
 
   selected_item_ = nullptr;
 }

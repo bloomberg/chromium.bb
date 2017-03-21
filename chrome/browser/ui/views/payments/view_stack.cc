@@ -81,7 +81,7 @@ void ViewStack::UpdateAnimatorBounds(
   // If an animator is currently animating, figure out which views and update
   // their target bounds.
   if (animator->IsAnimating()) {
-    for (auto& view: stack_) {
+    for (auto& view : stack_) {
       if (animator->IsAnimating(view.get())) {
         animator->SetTargetBounds(view.get(), target);
       }

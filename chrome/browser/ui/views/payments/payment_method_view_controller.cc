@@ -49,9 +49,11 @@ class PaymentMethodListItem : public payments::PaymentRequestItemList::Item {
                         PaymentRequestSpec* spec,
                         PaymentRequestState* state,
                         PaymentRequestItemList* list,
+                        PaymentRequestDialogView* dialog,
                         bool selected)
       : payments::PaymentRequestItemList::Item(spec, state, list, selected),
-        instrument_(instrument) {}
+        instrument_(instrument),
+        dialog_(dialog) {}
   ~PaymentMethodListItem() override {}
 
  private:
@@ -84,7 +86,10 @@ class PaymentMethodListItem : public payments::PaymentRequestItemList::Item {
   }
 
   void SelectedStateChanged() override {
-    state()->SetSelectedInstrument(instrument_);
+    if (selected()) {
+      state()->SetSelectedInstrument(instrument_);
+      dialog_->GoBack();
+    }
   }
 
   bool CanBeSelected() const override {
@@ -97,7 +102,7 @@ class PaymentMethodListItem : public payments::PaymentRequestItemList::Item {
   }
 
   PaymentInstrument* instrument_;
-  std::unique_ptr<views::ImageView> checkmark_;
+  PaymentRequestDialogView* dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentMethodListItem);
 };
@@ -116,7 +121,7 @@ PaymentMethodViewController::PaymentMethodViewController(
        available_instruments) {
     std::unique_ptr<PaymentMethodListItem> item =
         base::MakeUnique<PaymentMethodListItem>(
-            instrument.get(), spec, state, &payment_method_list_,
+            instrument.get(), spec, state, &payment_method_list_, dialog,
             instrument.get() == state->selected_instrument());
     payment_method_list_.AddItem(std::move(item));
   }

@@ -45,9 +45,9 @@ class PaymentRequestItemList {
     views::View* GetItemView();
 
     bool selected() const { return selected_; }
-    // Changes the selected state of this item to |selected| and calls
-    // SelectedStateChanged.
-    void SetSelected(bool selected);
+    // Changes the selected state of this item to |selected|.
+    // SelectedStateChanged is called if |notify| is true.
+    void SetSelected(bool selected, bool notify);
 
     // Returns a pointer to the PaymentRequestItemList that owns this object.
     PaymentRequestItemList* list() { return list_; }

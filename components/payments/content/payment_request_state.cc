@@ -4,6 +4,8 @@
 
 #include "components/payments/content/payment_request_state.h"
 
+#include <set>
+
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/credit_card.h"
@@ -58,6 +60,12 @@ void PaymentRequestState::GeneratePaymentResponse() {
   // Fetch the instrument details, will call back into
   // PaymentRequest::OnInstrumentsDetailsReady.
   selected_instrument_->InvokePaymentApp(this);
+}
+
+void PaymentRequestState::SetSelectedShippingOption(
+    mojom::PaymentShippingOption* option) {
+  selected_shipping_option_ = option;
+  UpdateIsReadyToPayAndNotifyObservers();
 }
 
 void PaymentRequestState::SetSelectedShippingProfile(

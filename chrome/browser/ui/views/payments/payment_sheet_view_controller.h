@@ -41,6 +41,7 @@ class PaymentSheetViewController : public PaymentRequestSheetController,
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   void UpdatePayButtonState(bool enabled);
+  void UpdateContentView();
 
   std::unique_ptr<views::View> CreateShippingSectionContent();
   std::unique_ptr<views::Button> CreateShippingRow();
@@ -50,6 +51,7 @@ class PaymentSheetViewController : public PaymentRequestSheetController,
   std::unique_ptr<views::Button> CreateContactInfoRow();
   std::unique_ptr<views::Button> CreateShippingOptionRow();
 
+  std::unique_ptr<views::View> container_view_;
   views::Button* pay_button_;
 
   const int widest_name_column_view_width_;

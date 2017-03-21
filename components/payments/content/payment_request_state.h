@@ -5,6 +5,9 @@
 #ifndef COMPONENTS_PAYMENTS_CONTENT_PAYMENT_REQUEST_STATE_H_
 #define COMPONENTS_PAYMENTS_CONTENT_PAYMENT_REQUEST_STATE_H_
 
+#include <string>
+#include <vector>
+
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "components/payments/content/payment_request.mojom.h"
@@ -100,6 +103,7 @@ class PaymentRequestState : public PaymentInstrument::Delegate {
 
   // Setters to change the selected information. Will have the side effect of
   // recomputing "is ready to pay" and notify observers.
+  void SetSelectedShippingOption(mojom::PaymentShippingOption* option);
   void SetSelectedShippingProfile(autofill::AutofillProfile* profile);
   void SetSelectedContactProfile(autofill::AutofillProfile* profile);
   void SetSelectedInstrument(PaymentInstrument* instrument);

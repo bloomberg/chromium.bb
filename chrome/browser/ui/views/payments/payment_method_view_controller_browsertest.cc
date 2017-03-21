@@ -91,21 +91,28 @@ IN_PROC_BROWSER_TEST_F(PaymentMethodViewControllerTest,
       static_cast<int>(DialogViewID::CHECKMARK_VIEW));
   EXPECT_FALSE(checkmark_view2->visible());
 
+  ResetEventObserver(DialogEvent::BACK_NAVIGATION);
   // Simulate selecting the second card.
   ClickOnDialogViewAndWait(list_view->child_at(1));
 
   EXPECT_EQ(request->state()->available_instruments().back().get(),
             request->state()->selected_instrument());
-  EXPECT_FALSE(checkmark_view->visible());
-  EXPECT_TRUE(checkmark_view2->visible());
 
+  OpenPaymentMethodScreen();
+  list_view = dialog_view()->GetViewByID(
+      static_cast<int>(DialogViewID::PAYMENT_METHOD_SHEET_LIST_VIEW));
   // Clicking on the second card again should not modify any state.
   ClickOnDialogViewAndWait(list_view->child_at(1));
 
-  EXPECT_EQ(request->state()->available_instruments().back().get(),
-            request->state()->selected_instrument());
+  checkmark_view = list_view->child_at(0)->GetViewByID(
+      static_cast<int>(DialogViewID::CHECKMARK_VIEW));
+  checkmark_view2 = list_view->child_at(1)->GetViewByID(
+      static_cast<int>(DialogViewID::CHECKMARK_VIEW));
   EXPECT_FALSE(checkmark_view->visible());
   EXPECT_TRUE(checkmark_view2->visible());
+
+  EXPECT_EQ(request->state()->available_instruments().back().get(),
+            request->state()->selected_instrument());
 }
 
 }  // namespace payments

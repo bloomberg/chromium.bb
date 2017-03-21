@@ -55,6 +55,10 @@ class ProfileListViewController : public PaymentRequestSheetController {
   virtual std::unique_ptr<views::View> GetLabel(
       autofill::AutofillProfile* profile) = 0;
 
+  virtual void SelectProfile(autofill::AutofillProfile* profile) = 0;
+
+  virtual autofill::AutofillProfile* GetSelectedProfile() = 0;
+
  protected:
   // Does not take ownership of the arguments, which should outlive this object.
   ProfileListViewController(PaymentRequestSpec* spec,
