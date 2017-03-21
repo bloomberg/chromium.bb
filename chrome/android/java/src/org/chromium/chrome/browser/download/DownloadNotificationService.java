@@ -1143,8 +1143,8 @@ public class DownloadNotificationService extends Service {
                             observer.onDownloadCanceled(entry.downloadGuid);
                         }
                 } else if (ACTION_DOWNLOAD_PAUSE.equals(intent.getAction())) {
-                        downloadServiceDelegate.pauseDownload(entry.downloadGuid,
-                                entry.isOffTheRecord);
+                    notifyDownloadPaused(entry.downloadGuid, true, false);
+                    downloadServiceDelegate.pauseDownload(entry.downloadGuid, entry.isOffTheRecord);
                 } else if (ACTION_DOWNLOAD_RESUME.equals(intent.getAction())) {
                         notifyDownloadPending(entry.downloadGuid, entry.fileName,
                                 entry.isOffTheRecord, entry.canDownloadWhileMetered,
