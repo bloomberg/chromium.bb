@@ -987,6 +987,9 @@ RendererBlinkPlatformImpl::createOffscreenGraphicsContext3DProvider(
   attributes.depth_size = web_attributes.supportDepth ? 24 : 0;
   attributes.stencil_size = web_attributes.supportStencil ? 8 : 0;
   attributes.samples = web_attributes.supportAntialias ? 4 : 0;
+  attributes.own_offscreen_surface =
+      web_attributes.supportAlpha || web_attributes.supportDepth ||
+      web_attributes.supportStencil || web_attributes.supportAntialias;
   attributes.sample_buffers = 0;
   attributes.bind_generates_resource = false;
   // Prefer discrete GPU for WebGL.

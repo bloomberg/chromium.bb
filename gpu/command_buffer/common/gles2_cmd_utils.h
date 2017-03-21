@@ -333,6 +333,7 @@ struct GLES2_UTILS_EXPORT ContextCreationAttribHelper {
   bool fail_if_major_perf_caveat;
   bool lose_context_when_out_of_memory;
   bool should_use_native_gmb_for_backbuffer;
+  bool own_offscreen_surface;
 
   ContextType context_type;
 };
@@ -341,4 +342,3 @@ struct GLES2_UTILS_EXPORT ContextCreationAttribHelper {
 }  // namespace gpu
 
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_UTILS_H_
-
