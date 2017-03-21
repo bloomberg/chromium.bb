@@ -48,6 +48,18 @@ class ImageLoaderClientImpl : public ImageLoaderClient {
         base::Bind(&ImageLoaderClientImpl::OnStringMethod, callback));
   }
 
+  void RequestComponentVersion(
+      const std::string& name,
+      const StringDBusMethodCallback& callback) override {
+    dbus::MethodCall method_call(imageloader::kImageLoaderServiceInterface,
+                                 imageloader::kGetComponentVersion);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(name);
+    proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::Bind(&ImageLoaderClientImpl::OnStringMethod, callback));
+  }
+
  protected:
   // DBusClient override.
   void Init(dbus::Bus* bus) override {

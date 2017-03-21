@@ -28,10 +28,15 @@ class CHROMEOS_EXPORT ImageLoaderClient : public DBusClient {
                                  const std::string& component_folder_abs_path,
                                  const BoolDBusMethodCallback& callback) = 0;
 
-  // Mount a component given the |name| and return the mount point (if call is
+  // Mounts a component given the |name| and return the mount point (if call is
   // successful).
   virtual void LoadComponent(const std::string& name,
                              const StringDBusMethodCallback& callback) = 0;
+
+  // Requests the currently registered version of the given component |name|.
+  virtual void RequestComponentVersion(
+      const std::string& name,
+      const StringDBusMethodCallback& callback) = 0;
 
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via DBusThreadManager::Get().
