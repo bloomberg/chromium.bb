@@ -19,12 +19,6 @@
 #include "ui/aura/env.h"
 #endif
 
-namespace base {
-namespace mac {
-class ScopedNSAutoreleasePool;
-}
-}
-
 namespace sandbox {
 struct SandboxInterfaceInfo;
 }
@@ -34,32 +28,36 @@ class ContentMainDelegate;
 
 struct ContentMainParams {
   explicit ContentMainParams(ContentMainDelegate* delegate)
-      : delegate(delegate) {}
+      : delegate(delegate),
+#if defined(OS_WIN)
+        instance(NULL),
+        sandbox_info(NULL),
+#elif !defined(OS_ANDROID)
+        argc(0),
+        argv(NULL),
+#endif
+        ui_task(NULL) {
+  }
 
   ContentMainDelegate* delegate;
 
 #if defined(OS_WIN)
-  HINSTANCE instance = nullptr;
+  HINSTANCE instance;
 
   // |sandbox_info| should be initialized using InitializeSandboxInfo from
   // content_main_win.h
-  sandbox::SandboxInterfaceInfo* sandbox_info = nullptr;
+  sandbox::SandboxInterfaceInfo* sandbox_info;
 #elif !defined(OS_ANDROID)
-  int argc = 0;
-  const char** argv = nullptr;
+  int argc;
+  const char** argv;
 #endif
 
   // Used by browser_tests. If non-null BrowserMain schedules this task to run
   // on the MessageLoop. It's owned by the test code.
-  base::Closure* ui_task = nullptr;
+  base::Closure* ui_task;
 
 #if defined(USE_AURA)
   aura::Env::Mode env_mode = aura::Env::Mode::LOCAL;
-#endif
-
-#if defined(OS_MACOSX)
-  // The outermost autorelease pool to pass to main entry points.
-  base::mac::ScopedNSAutoreleasePool* autorelease_pool = nullptr;
 #endif
 };
 

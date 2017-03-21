@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/service_manager/embedder/set_process_title.h"
+#include "content/common/set_process_title.h"
 
 #include <stddef.h>
 
@@ -27,14 +27,14 @@
 #include "base/strings/string_util.h"
 #include "base/threading/platform_thread.h"
 // Linux/glibc doesn't natively have setproctitle().
-#include "services/service_manager/embedder/set_process_title_linux.h"
+#include "content/common/set_process_title_linux.h"
 #endif  // defined(OS_LINUX)
 
-namespace service_manager {
+namespace content {
 
 // TODO(jrg): Find out if setproctitle or equivalent is available on Android.
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_SOLARIS) && \
-    !defined(OS_ANDROID)
+  !defined(OS_ANDROID)
 
 void SetProcessTitleFromCommandLine(const char** main_argv) {
   // Build a single string which consists of all the arguments separated
@@ -87,8 +87,9 @@ void SetProcessTitleFromCommandLine(const char** main_argv) {
 
 // All other systems (basically Windows & Mac) have no need or way to implement
 // this function.
-void SetProcessTitleFromCommandLine(const char** /* main_argv */) {}
+void SetProcessTitleFromCommandLine(const char** /* main_argv */) {
+}
 
 #endif
 
-}  // namespace service_manager
+} // namespace content

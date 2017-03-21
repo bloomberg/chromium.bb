@@ -43,6 +43,7 @@
 #include "build/build_config.h"
 #include "components/tracing/common/trace_startup.h"
 #include "content/app/mojo/mojo_init.h"
+#include "content/common/set_process_title.h"
 #include "content/common/url_schemes.h"
 #include "content/public/app/content_main.h"
 #include "content/public/app/content_main_delegate.h"
@@ -56,6 +57,7 @@
 #include "ipc/ipc_descriptors.h"
 #include "media/base/media.h"
 #include "ppapi/features/features.h"
+#include "services/service_manager/public/cpp/shared_file_util.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
 
@@ -69,11 +71,15 @@
 #include <cstring>
 
 #include "base/trace_event/trace_event_etw_export_win.h"
+#include "base/win/process_startup_helper.h"
 #include "sandbox/win/src/sandbox_types.h"
+#include "ui/base/win/atl_module.h"
 #include "ui/display/win/dpi.h"
 #elif defined(OS_MACOSX)
+#include "base/allocator/allocator_shim.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/power_monitor/power_monitor_device_source.h"
+#include "content/app/mac/mac_init.h"
 #include "content/browser/mach_broker_mac.h"
 #include "content/common/sandbox_init_mac.h"
 #endif  // OS_WIN
@@ -231,6 +237,53 @@ base::LazyInstance<ContentRendererClient>::DestructorAtExit
 base::LazyInstance<ContentUtilityClient>::DestructorAtExit
     g_empty_content_utility_client = LAZY_INSTANCE_INITIALIZER;
 #endif  // !CHROME_MULTIPLE_DLL_BROWSER
+
+#if defined(OS_POSIX)
+
+// Setup signal-handling state: resanitize most signals, ignore SIGPIPE.
+void SetupSignalHandlers() {
+  // Sanitise our signal handling state. Signals that were ignored by our
+  // parent will also be ignored by us. We also inherit our parent's sigmask.
+  sigset_t empty_signal_set;
+  CHECK_EQ(0, sigemptyset(&empty_signal_set));
+  CHECK_EQ(0, sigprocmask(SIG_SETMASK, &empty_signal_set, NULL));
+
+  struct sigaction sigact;
+  memset(&sigact, 0, sizeof(sigact));
+  sigact.sa_handler = SIG_DFL;
+  static const int signals_to_reset[] =
+      {SIGHUP, SIGINT, SIGQUIT, SIGILL, SIGABRT, SIGFPE, SIGSEGV,
+       SIGALRM, SIGTERM, SIGCHLD, SIGBUS, SIGTRAP};  // SIGPIPE is set below.
+  for (unsigned i = 0; i < arraysize(signals_to_reset); i++) {
+    CHECK_EQ(0, sigaction(signals_to_reset[i], &sigact, NULL));
+  }
+
+  // Always ignore SIGPIPE.  We check the return value of write().
+  CHECK_NE(SIG_ERR, signal(SIGPIPE, SIG_IGN));
+}
+
+void PopulateFDsFromCommandLine() {
+  const std::string& shared_file_param =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kSharedFiles);
+  if (shared_file_param.empty())
+    return;
+
+  base::Optional<std::map<int, std::string>> shared_file_descriptors =
+      service_manager::ParseSharedFileSwitchValue(shared_file_param);
+  if (!shared_file_descriptors)
+    return;
+
+  for (const auto& descriptor : *shared_file_descriptors) {
+    base::MemoryMappedFile::Region region;
+    const std::string& key = descriptor.second;
+    base::ScopedFD fd = base::GlobalDescriptors::GetInstance()->TakeFD(
+        descriptor.first, &region);
+    base::FileDescriptorStore::GetInstance().Set(key, std::move(fd), region);
+  }
+}
+
+#endif  // OS_POSIX
 
 void CommonSubprocessInit() {
 #if defined(OS_WIN)
@@ -478,13 +531,16 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     env_mode_ = params.env_mode;
 #endif
 
+#if defined(OS_MACOSX) && BUILDFLAG(USE_EXPERIMENTAL_ALLOCATOR_SHIM)
+    base::allocator::InitializeAllocatorShim();
+#endif
+    base::EnableTerminationOnOutOfMemory();
 #if defined(OS_WIN)
+    base::win::RegisterInvalidParamHandler();
+    ui::win::CreateATLModuleIfNeeded();
+
     sandbox_info_ = *params.sandbox_info;
 #else  // !OS_WIN
-
-#if defined(OS_MACOSX)
-    autorelease_pool_ = params.autorelease_pool;
-#endif  // defined(OS_MACOSX)
 
 #if defined(OS_ANDROID)
     // See note at the initialization of ExitManager, below; basically,
@@ -496,8 +552,18 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     base::GlobalDescriptors* g_fds = base::GlobalDescriptors::GetInstance();
     ALLOW_UNUSED_LOCAL(g_fds);
 
-// On Android, the ipc_fd is passed through the Java service.
+    // On Android,
+    // - setlocale() is not supported.
+    // - We do not override the signal handlers so that we can get
+    //   stack trace when crashing.
+    // - The ipc_fd is passed through the Java service.
+    // Thus, these are all disabled.
 #if !defined(OS_ANDROID)
+    // Set C library locale to make sure CommandLine can parse argument values
+    // in correct encoding.
+    setlocale(LC_ALL, "");
+
+    SetupSignalHandlers();
     g_fds->Set(kMojoIPCChannel,
                kMojoIPCChannel + base::GlobalDescriptors::kBaseDescriptor);
 
@@ -510,6 +576,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     g_fds->Set(kCrashDumpSignal,
                kCrashDumpSignal + base::GlobalDescriptors::kBaseDescriptor);
 #endif  // OS_LINUX || OS_OPENBSD
+
 
 #endif  // !OS_WIN
 
@@ -529,9 +596,43 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     }
 #endif  // !OS_ANDROID
 
+#if defined(OS_MACOSX)
+    // We need this pool for all the objects created before we get to the
+    // event loop, but we don't want to leave them hanging around until the
+    // app quits. Each "main" needs to flush this pool right before it goes into
+    // its main event loop to get rid of the cruft.
+    autorelease_pool_.reset(new base::mac::ScopedNSAutoreleasePool());
+    InitializeMac();
+#endif
+
+// On Android, the command line is initialized and the FDs set when the
+// library is loaded and we have already started our TRACE_EVENT0.
 #if !defined(OS_ANDROID)
+    // argc/argv are ignored on Windows and Android; see command_line.h for
+    // details.
+    int argc = 0;
+    const char** argv = NULL;
+
+#if !defined(OS_WIN)
+    argc = params.argc;
+    argv = params.argv;
+#endif
+
+    base::CommandLine::Init(argc, argv);
+
+#if defined(OS_POSIX)
+    PopulateFDsFromCommandLine();
+#endif
+
+    base::EnableTerminationOnHeapCorruption();
+
+    // TODO(yiyaoliu, vadimt): Remove this once crbug.com/453640 is fixed.
+    // Enable profiler recording right after command line is initialized so that
+    // browser startup can be instrumented.
     if (delegate_ && delegate_->ShouldEnableProfilerRecording())
       tracked_objects::ScopedTracker::Enable();
+
+    SetProcessTitleFromCommandLine(argv);
 #endif  // !OS_ANDROID
 
     int exit_code = 0;
@@ -544,6 +645,9 @@ class ContentMainRunnerImpl : public ContentMainRunner {
         *base::CommandLine::ForCurrentProcess();
     std::string process_type =
         command_line.GetSwitchValueASCII(switches::kProcessType);
+
+    // Initialize mojo here so that services can be registered.
+    InitializeMojo();
 
 #if defined(OS_WIN)
     if (command_line.HasSwitch(switches::kDeviceScaleFactor)) {
@@ -605,6 +709,8 @@ class ContentMainRunnerImpl : public ContentMainRunner {
         (!delegate_ || delegate_->ShouldSendMachPort(process_type))) {
       MachBroker::ChildSendTaskPortToParent();
     }
+#elif defined(OS_WIN)
+    base::win::SetupCRT(command_line);
 #endif
 
     // If we are on a platform where the default allocator is overridden (shim
@@ -720,7 +826,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 #if defined(OS_WIN)
     main_params.sandbox_info = &sandbox_info_;
 #elif defined(OS_MACOSX)
-    main_params.autorelease_pool = autorelease_pool_;
+    main_params.autorelease_pool = autorelease_pool_.get();
 #endif
 #if defined(USE_AURA)
     main_params.env_mode = env_mode_;
@@ -748,6 +854,10 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 #endif  // _CRTDBG_MAP_ALLOC
 #endif  // OS_WIN
 
+#if defined(OS_MACOSX)
+    autorelease_pool_.reset(NULL);
+#endif
+
     exit_manager_.reset(NULL);
 
     delegate_ = NULL;
@@ -774,7 +884,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 #if defined(OS_WIN)
   sandbox::SandboxInterfaceInfo sandbox_info_;
 #elif defined(OS_MACOSX)
-  base::mac::ScopedNSAutoreleasePool* autorelease_pool_ = nullptr;
+  std::unique_ptr<base::mac::ScopedNSAutoreleasePool> autorelease_pool_;
 #endif
 
   base::Closure* ui_task_;
