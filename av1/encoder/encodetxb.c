@@ -523,6 +523,15 @@ static void update_and_record_txb_context(int plane, int block, int blk_row,
   // DC value
   set_dc_sign(&cul_level, tcoeff[0]);
   av1_set_contexts(xd, pd, plane, tx_size, cul_level, blk_col, blk_row);
+
+#if CONFIG_ADAPT_SCAN
+  // Since dqcoeff is not available here, we pass qcoeff into
+  // av1_update_scan_count_facade(). The update behavior should be the same
+  // because av1_update_scan_count_facade() only cares if coefficients are zero
+  // or not.
+  av1_update_scan_count_facade((AV1_COMMON *)cm, td->counts, tx_size, tx_type,
+                               qcoeff, eob);
+#endif
 }
 
 void av1_update_txb_context(const AV1_COMP *cpi, ThreadData *td,
