@@ -502,14 +502,14 @@ WebInputEventResult PointerEventManager::sendMousePointerEvent(
         result,
         m_mouseEventManager->dispatchMouseEvent(
             mouseTarget, mouseEventType, mouseEvent, canvasRegionId, nullptr));
-  }
 
-  if (selectionOverLink && mouseEventType == EventTypeNames::mouseup) {
-    WebInputEventResult clickEventResult =
-        m_mouseEventManager->dispatchMouseClickIfNeeded(
-            pointerEventTarget ? pointerEventTarget->toNode() : nullptr,
-            mouseEvent, canvasRegionId, target);
-    result = EventHandlingUtil::mergeEventResult(clickEventResult, result);
+    if (selectionOverLink && mouseTarget &&
+        mouseEventType == EventTypeNames::mouseup) {
+      WebInputEventResult clickEventResult =
+          m_mouseEventManager->dispatchMouseClickIfNeeded(
+              mouseTarget->toNode(), mouseEvent, canvasRegionId, target);
+      result = EventHandlingUtil::mergeEventResult(clickEventResult, result);
+    }
   }
 
   if (pointerEvent->type() == EventTypeNames::pointerup ||
