@@ -39,7 +39,7 @@ ACTION_P2(VerifyNewPageContext, web_state, url) {
 
 // Verifies correctness of |NavigationContext| for same page navigation passed
 // to |DidFinishNavigation|.
-ACTION_P2(VerifySamePageContext, web_state, url) {
+ACTION_P2(VerifySameDocumentContext, web_state, url) {
   NavigationContext* context = arg0;
   ASSERT_TRUE(context);
   EXPECT_EQ(web_state, context->GetWebState());
@@ -103,12 +103,12 @@ TEST_F(DidFinishNavigationTest, UserInitiatedHashChangeNavigation) {
   // Perform same-page navigation.
   const GURL hash_url = HttpServer::MakeUrl("http://chromium.test#1");
   EXPECT_CALL(*observer_, DidFinishNavigation(_))
-      .WillOnce(VerifySamePageContext(web_state(), hash_url));
+      .WillOnce(VerifySameDocumentContext(web_state(), hash_url));
   LoadUrl(hash_url);
 
   // Perform same-page navigation by going back.
   EXPECT_CALL(*observer_, DidFinishNavigation(_))
-      .WillOnce(VerifySamePageContext(web_state(), url));
+      .WillOnce(VerifySameDocumentContext(web_state(), url));
   ExecuteBlockAndWaitForLoad(url, ^{
     navigation_manager()->GoBack();
   });
@@ -129,7 +129,7 @@ TEST_F(DidFinishNavigationTest, RendererInitiatedHashChangeNavigation) {
   // Perform same-page navigation using JavaScript.
   const GURL hash_url = HttpServer::MakeUrl("http://chromium.test#1");
   EXPECT_CALL(*observer_, DidFinishNavigation(_))
-      .WillOnce(VerifySamePageContext(web_state(), hash_url));
+      .WillOnce(VerifySameDocumentContext(web_state(), hash_url));
   ExecuteJavaScript(@"window.location.hash = '#1'");
 }
 
@@ -148,13 +148,13 @@ TEST_F(DidFinishNavigationTest, StateNavigation) {
   // Perform push state using JavaScript.
   const GURL push_url = HttpServer::MakeUrl("http://chromium.test/test.html");
   EXPECT_CALL(*observer_, DidFinishNavigation(_))
-      .WillOnce(VerifySamePageContext(web_state(), push_url));
+      .WillOnce(VerifySameDocumentContext(web_state(), push_url));
   ExecuteJavaScript(@"window.history.pushState('', 'Test', 'test.html')");
 
   // Perform replace state using JavaScript.
   const GURL replace_url = HttpServer::MakeUrl("http://chromium.test/1.html");
   EXPECT_CALL(*observer_, DidFinishNavigation(_))
-      .WillOnce(VerifySamePageContext(web_state(), replace_url));
+      .WillOnce(VerifySameDocumentContext(web_state(), replace_url));
   ExecuteJavaScript(@"window.history.replaceState('', 'Test', '1.html')");
 }
 

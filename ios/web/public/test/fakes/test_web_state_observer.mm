@@ -71,7 +71,7 @@ void TestWebStateObserver::DidFinishNavigation(NavigationContext* context) {
   if (context->IsSameDocument()) {
     ASSERT_FALSE(context->IsErrorPage());
     did_finish_navigation_info_->context =
-        NavigationContextImpl::CreateSamePageNavigationContext(
+        NavigationContextImpl::CreateSameDocumentNavigationContext(
             context->GetWebState(), context->GetUrl());
   } else if (context->IsErrorPage()) {
     ASSERT_FALSE(context->IsSameDocument());

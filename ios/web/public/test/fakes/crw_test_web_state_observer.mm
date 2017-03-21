@@ -149,7 +149,7 @@ TestUpdateFaviconUrlCandidatesInfo::~TestUpdateFaviconUrlCandidatesInfo() =
   if (navigation->IsSameDocument()) {
     ASSERT_FALSE(navigation->IsErrorPage());
     _didFinishNavigationInfo->context =
-        web::NavigationContextImpl::CreateSamePageNavigationContext(
+        web::NavigationContextImpl::CreateSameDocumentNavigationContext(
             navigation->GetWebState(), navigation->GetUrl());
   } else if (navigation->IsErrorPage()) {
     ASSERT_FALSE(navigation->IsSameDocument());

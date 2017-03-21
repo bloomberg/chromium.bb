@@ -22,7 +22,7 @@ class NavigationContextImpl : public NavigationContext {
       const GURL& url);
 
   // Creates navigation context for sucessful same page navigation.
-  static std::unique_ptr<NavigationContext> CreateSamePageNavigationContext(
+  static std::unique_ptr<NavigationContext> CreateSameDocumentNavigationContext(
       WebState* web_state,
       const GURL& url);
 

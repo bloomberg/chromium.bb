@@ -1312,7 +1312,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   [[self sessionController] pushNewItemWithURL:pageURL
                                    stateObject:stateObject
                                     transition:transition];
-  _webStateImpl->OnSamePageNavigation(pageURL);
+  _webStateImpl->OnSameDocumentNavigation(pageURL);
   self.userInteractionRegistered = NO;
 }
 
@@ -1320,7 +1320,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
                     stateObject:(NSString*)stateObject {
   [[self sessionController] updateCurrentItemWithURL:pageURL
                                          stateObject:stateObject];
-  _webStateImpl->OnSamePageNavigation(pageURL);
+  _webStateImpl->OnSameDocumentNavigation(pageURL);
 }
 
 - (void)setDocumentURL:(const GURL&)newURL {
@@ -4736,7 +4736,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     [self setDocumentURL:webViewURL];
     [self webPageChanged];
     if (isSameDocumentNavigation) {
-      _webStateImpl->OnSamePageNavigation(webViewURL);
+      _webStateImpl->OnSameDocumentNavigation(webViewURL);
     } else {
       _webStateImpl->OnNavigationCommitted(webViewURL);
     }
@@ -4892,7 +4892,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
   if (!_changingHistoryState) {
     [self didStartLoadingURL:_documentURL];
-    _webStateImpl->OnSamePageNavigation(newURL);
+    _webStateImpl->OnSameDocumentNavigation(newURL);
     [self updateSSLStatusForCurrentNavigationItem];
     [self didFinishNavigation];
   }

@@ -69,7 +69,7 @@ const char kTestURL[] =
   ExecuteJavaScript(@"sessionStorage.setItem('key', 'value');", &error);
   GREYAssert(!error, @"Error during script execution: %@", error);
 
-  TapWebViewElementWithId("webScenarioWindowOpenSamePageWithBlankTarget");
+  TapWebViewElementWithId("webScenarioWindowOpenSameURLWithBlankTarget");
   AssertMainTabCount(2);
   [[EarlGrey selectElementWithMatcher:WebViewContainingText("Expected result")]
       assertWithMatcher:grey_notNil()];

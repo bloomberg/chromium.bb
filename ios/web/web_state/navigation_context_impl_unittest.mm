@@ -31,10 +31,11 @@ TEST_F(NavigationContextImplTest, NavigationContext) {
   EXPECT_FALSE(context->IsErrorPage());
 }
 
-// Tests CreateSamePageNavigationContext factory method.
-TEST_F(NavigationContextImplTest, SamePageNavigationContext) {
+// Tests CreateSameDocumentNavigationContext factory method.
+TEST_F(NavigationContextImplTest, SameDocumentNavigationContext) {
   std::unique_ptr<NavigationContext> context =
-      NavigationContextImpl::CreateSamePageNavigationContext(&web_state_, url_);
+      NavigationContextImpl::CreateSameDocumentNavigationContext(&web_state_,
+                                                                 url_);
   ASSERT_TRUE(context);
 
   EXPECT_EQ(&web_state_, context->GetWebState());

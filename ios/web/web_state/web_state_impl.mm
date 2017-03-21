@@ -182,9 +182,9 @@ void WebStateImpl::OnNavigationCommitted(const GURL& url) {
     observer.DidFinishNavigation(context.get());
 }
 
-void WebStateImpl::OnSamePageNavigation(const GURL& url) {
+void WebStateImpl::OnSameDocumentNavigation(const GURL& url) {
   std::unique_ptr<NavigationContext> context =
-      NavigationContextImpl::CreateSamePageNavigationContext(this, url);
+      NavigationContextImpl::CreateSameDocumentNavigationContext(this, url);
   for (auto& observer : observers_)
     observer.DidFinishNavigation(context.get());
 }

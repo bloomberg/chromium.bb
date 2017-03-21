@@ -19,8 +19,8 @@ NavigationContextImpl::CreateNavigationContext(WebState* web_state,
 
 // static
 std::unique_ptr<NavigationContext>
-NavigationContextImpl::CreateSamePageNavigationContext(WebState* web_state,
-                                                       const GURL& url) {
+NavigationContextImpl::CreateSameDocumentNavigationContext(WebState* web_state,
+                                                           const GURL& url) {
   std::unique_ptr<NavigationContext> result(new NavigationContextImpl(
       web_state, url, true /* is_same_document */, false /* is_error_page */));
   return result;

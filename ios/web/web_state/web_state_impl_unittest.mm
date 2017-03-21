@@ -395,7 +395,7 @@ TEST_F(WebStateImplTest, ObserverTest) {
 
   // Test that DidFinishNavigation() is called for same page navigations.
   ASSERT_FALSE(observer->did_finish_navigation_info());
-  web_state_->OnSamePageNavigation(url);
+  web_state_->OnSameDocumentNavigation(url);
   ASSERT_TRUE(observer->did_finish_navigation_info());
   EXPECT_EQ(web_state_.get(),
             observer->did_finish_navigation_info()->web_state);

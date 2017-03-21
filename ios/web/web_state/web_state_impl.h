@@ -83,7 +83,7 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
   void OnNavigationCommitted(const GURL& url);
 
   // Notifies the observers that same page navigation did finish.
-  void OnSamePageNavigation(const GURL& url);
+  void OnSameDocumentNavigation(const GURL& url);
 
   // Notifies the observers that navigation to error page did finish.
   void OnErrorPageNavigation(const GURL& url);
