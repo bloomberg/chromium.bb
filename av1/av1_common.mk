@@ -34,6 +34,7 @@ AV1_COMMON_SRCS-yes += common/idct.h
 AV1_COMMON_SRCS-yes += common/idct.c
 AV1_COMMON_SRCS-yes += common/thread_common.h
 AV1_COMMON_SRCS-$(CONFIG_LV_MAP) += common/txb_common.h
+AV1_COMMON_SRCS-$(CONFIG_LV_MAP) += common/txb_common.c
 AV1_COMMON_SRCS-yes += common/mv.h
 AV1_COMMON_SRCS-yes += common/onyxc_int.h
 AV1_COMMON_SRCS-yes += common/pred_common.h
