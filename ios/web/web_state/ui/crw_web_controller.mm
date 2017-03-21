@@ -1980,7 +1980,9 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   // cancelled.
   _lastUserInteraction.reset();
   base::RecordAction(UserMetricsAction("Reload"));
-  if (_webView) {
+  if ([self shouldLoadURLInNativeView:self.currentNavItem->GetURL()]) {
+    [self.nativeController reload];
+  } else {
     web::NavigationItem* transientItem =
         self.navigationManagerImpl->GetTransientItem();
     if (transientItem) {
@@ -1998,8 +2000,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
       // TODO(eugenebut): revisit this for WKWebView.
       [self loadCurrentURL];
     }
-  } else {
-    [self.nativeController reload];
   }
 }
 
