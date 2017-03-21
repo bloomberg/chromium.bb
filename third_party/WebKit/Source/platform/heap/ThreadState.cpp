@@ -570,7 +570,6 @@ ThreadState* ThreadState::fromObject(const void* object) {
 
 void ThreadState::performIdleGC(double deadlineSeconds) {
   ASSERT(checkThread());
-  ASSERT(isMainThread());
   ASSERT(Platform::current()->currentThread()->scheduler());
 
   if (gcState() != IdleGCScheduled)
@@ -603,7 +602,6 @@ void ThreadState::performIdleGC(double deadlineSeconds) {
 
 void ThreadState::performIdleLazySweep(double deadlineSeconds) {
   ASSERT(checkThread());
-  ASSERT(isMainThread());
 
   // If we are not in a sweeping phase, there is nothing to do here.
   if (!isSweepingInProgress())
@@ -646,10 +644,6 @@ void ThreadState::performIdleLazySweep(double deadlineSeconds) {
 }
 
 void ThreadState::scheduleIdleGC() {
-  // TODO(haraken): Idle GC should be supported in worker threads as well.
-  if (!isMainThread())
-    return;
-
   if (isSweepingInProgress()) {
     setGCState(SweepingAndIdleGCScheduled);
     return;
@@ -666,10 +660,6 @@ void ThreadState::scheduleIdleGC() {
 }
 
 void ThreadState::scheduleIdleLazySweep() {
-  // TODO(haraken): Idle complete sweep should be supported in worker threads.
-  if (!isMainThread())
-    return;
-
   // Some threads (e.g. PPAPI thread) don't have a scheduler.
   if (!Platform::current()->currentThread()->scheduler())
     return;
