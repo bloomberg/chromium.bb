@@ -130,6 +130,7 @@ class TestMemoryCoordinatorImpl : public MemoryCoordinatorImpl {
       : MemoryCoordinatorImpl(task_runner,
                               base::MakeUnique<MockMemoryMonitor>()) {
     SetDelegateForTesting(base::MakeUnique<TestMemoryCoordinatorDelegate>());
+    SetTickClockForTesting(task_runner->GetMockTickClock());
   }
 
   ~TestMemoryCoordinatorImpl() override {}
@@ -446,6 +447,33 @@ TEST_F(MemoryCoordinatorImplTest, UpdateCondition) {
     EXPECT_FALSE(client.did_state_changed());
     EXPECT_EQ(base::MemoryState::NORMAL, client.state());
     base::MemoryCoordinatorClientRegistry::GetInstance()->Unregister(&client);
+  }
+
+  {
+    // Transition happends but browser state change is delayed
+    // (CRITICAL -> NORMAL).
+    base::TimeDelta transition_interval =
+        coordinator_->minimum_state_transition_period_ +
+        base::TimeDelta::FromSeconds(1);
+    coordinator_->memory_condition_ = MemoryCondition::NORMAL;
+    coordinator_->last_state_change_ = task_runner_->NowTicks();
+    GetMockMemoryMonitor()->SetFreeMemoryUntilCriticalMB(20);
+    condition_observer->UpdateCondition();
+    EXPECT_EQ(base::MemoryState::THROTTLED,
+              coordinator_->GetCurrentMemoryState());
+
+    // Back to NORMAL condition before |minimum_state_transition_period_| is
+    // passed. At this point the browser's state shouldn't be changed.
+    GetMockMemoryMonitor()->SetFreeMemoryUntilCriticalMB(50);
+    condition_observer->UpdateCondition();
+    task_runner_->FastForwardBy(transition_interval / 2);
+    EXPECT_EQ(MemoryCondition::NORMAL, coordinator_->GetMemoryCondition());
+    EXPECT_EQ(base::MemoryState::THROTTLED,
+              coordinator_->GetCurrentMemoryState());
+
+    // |minimum_state_transition_period_| is passed. State should be changed.
+    task_runner_->FastForwardBy(transition_interval / 2);
+    EXPECT_EQ(base::MemoryState::NORMAL, coordinator_->GetCurrentMemoryState());
   }
 }
 

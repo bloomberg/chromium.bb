@@ -9,6 +9,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/process/process_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/memory/memory_condition_observer.h"
 #include "content/browser/memory/memory_monitor.h"
@@ -147,10 +148,12 @@ MemoryCoordinatorImpl* MemoryCoordinatorImpl::GetInstance() {
 MemoryCoordinatorImpl::MemoryCoordinatorImpl(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     std::unique_ptr<MemoryMonitor> memory_monitor)
-    : delegate_(GetContentClient()->browser()->GetMemoryCoordinatorDelegate()),
+    : task_runner_(task_runner),
+      delegate_(GetContentClient()->browser()->GetMemoryCoordinatorDelegate()),
       memory_monitor_(std::move(memory_monitor)),
       condition_observer_(
           base::MakeUnique<MemoryConditionObserver>(this, task_runner)),
+      tick_clock_(base::MakeUnique<base::DefaultTickClock>()),
       minimum_state_transition_period_(base::TimeDelta::FromSeconds(
           kDefaultMinimumTransitionPeriodSeconds)) {
   DCHECK(memory_monitor_.get());
@@ -348,6 +351,11 @@ void MemoryCoordinatorImpl::AddChildForTesting(
   CreateChildInfoMapEntry(dummy_render_process_id, std::move(handle));
 }
 
+void MemoryCoordinatorImpl::SetTickClockForTesting(
+    std::unique_ptr<base::TickClock> tick_clock) {
+  tick_clock_ = std::move(tick_clock);
+}
+
 void MemoryCoordinatorImpl::OnConnectionError(int render_process_id) {
   children_.erase(render_process_id);
 }
@@ -424,10 +432,22 @@ void MemoryCoordinatorImpl::UpdateBrowserStateAndNotifyStateToClients(
   if (memory_state == browser_memory_state_)
     return;
 
-  base::TimeTicks now = base::TimeTicks::Now();
+  base::TimeTicks now = tick_clock_->NowTicks();
+  base::TimeDelta elapsed = now - last_state_change_;
   if (!last_state_change_.is_null() &&
-      (now - last_state_change_ < minimum_state_transition_period_))
+      (elapsed < minimum_state_transition_period_)) {
+    base::TimeDelta delay = minimum_state_transition_period_ - elapsed +
+                            base::TimeDelta::FromSeconds(1);
+    delayed_browser_memory_state_setter_.Reset(base::Bind(
+        &MemoryCoordinatorImpl::UpdateBrowserStateAndNotifyStateToClients,
+        base::Unretained(this), memory_state));
+    task_runner_->PostDelayedTask(
+        FROM_HERE, delayed_browser_memory_state_setter_.callback(), delay);
     return;
+  }
+
+  if (!delayed_browser_memory_state_setter_.IsCancelled())
+    delayed_browser_memory_state_setter_.Cancel();
 
   last_state_change_ = now;
   browser_memory_state_ = memory_state;

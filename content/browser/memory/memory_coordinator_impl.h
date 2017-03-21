@@ -6,12 +6,14 @@
 #define CONTENT_BROWSER_MEMORY_MEMORY_COORDINATOR_IMPL_H_
 
 #include "base/callback.h"
+#include "base/cancelable_callback.h"
 #include "base/memory/memory_coordinator_client.h"
 #include "base/memory/memory_coordinator_proxy.h"
 #include "base/memory/memory_pressure_monitor.h"
 #include "base/memory/singleton.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/non_thread_safe.h"
+#include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/common/memory_coordinator.mojom.h"
@@ -129,6 +131,9 @@ class CONTENT_EXPORT MemoryCoordinatorImpl : public base::MemoryCoordinator,
   void AddChildForTesting(int dummy_render_process_id,
                           mojom::ChildMemoryCoordinatorPtr child);
 
+  // Sets a TickClock for testing.
+  void SetTickClockForTesting(std::unique_ptr<base::TickClock> tick_clock);
+
   // Callback invoked by mojo when the child connection goes down. Exposed
   // for testing.
   void OnConnectionError(int render_process_id);
@@ -152,6 +157,8 @@ class CONTENT_EXPORT MemoryCoordinatorImpl : public base::MemoryCoordinator,
   using ChildInfoMap = std::map<int, ChildInfo>;
 
   ChildInfoMap& children() { return children_; }
+
+  base::SingleThreadTaskRunner* task_runner() { return task_runner_.get(); }
 
  private:
 #if !defined(OS_MACOSX)
@@ -195,9 +202,11 @@ class CONTENT_EXPORT MemoryCoordinatorImpl : public base::MemoryCoordinator,
   // Notifies a state change to child processes.
   void NotifyStateToChildren(MemoryState state);
 
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   std::unique_ptr<MemoryCoordinatorDelegate> delegate_;
   std::unique_ptr<MemoryMonitor> memory_monitor_;
   std::unique_ptr<MemoryConditionObserver> condition_observer_;
+  std::unique_ptr<base::TickClock> tick_clock_;
   NotificationRegistrar notification_registrar_;
 
   // The current memory condition.
@@ -212,6 +221,10 @@ class CONTENT_EXPORT MemoryCoordinatorImpl : public base::MemoryCoordinator,
   // Memory state for a process will remain unchanged until this period of time
   // passes.
   base::TimeDelta minimum_state_transition_period_;
+
+  // Used to delay setting browser's memory state. Cancelable to avoid executing
+  // multiple tasks in the same time frame.
+  base::CancelableClosure delayed_browser_memory_state_setter_;
 
   // Tracks child processes. An entry is added when a renderer connects to
   // MemoryCoordinator and removed automatically when an underlying binding is
