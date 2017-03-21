@@ -325,6 +325,11 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
                    const GURL& icon_url,
                    const std::vector<SkBitmap>& bitmaps);
 
+  bool SetLastResortFavicons(const GURL& page_url,
+                             favicon_base::IconType icon_type,
+                             const GURL& icon_url,
+                             const std::vector<SkBitmap>& bitmaps);
+
   void SetFaviconsOutOfDateForPage(const GURL& page_url);
 
   void SetImportedFavicons(
@@ -514,6 +519,11 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, SetFaviconsReplaceBitmapData);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest,
                            SetFaviconsSameFaviconURLForTwoPages);
+  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, SetLastResortFaviconsForEmptyDB);
+  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest,
+                           SetLastResortFaviconsForPageInDB);
+  FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest,
+                           SetLastResortFaviconsForIconInDB);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest,
                            UpdateFaviconMappingsAndFetchNoChange);
   FRIEND_TEST_ALL_PREFIXES(HistoryBackendTest, MergeFaviconPageURLNotInDB);
@@ -658,6 +668,16 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
                            const base::Time ts);
 
   // Favicons ------------------------------------------------------------------
+
+  // If |bitmaps_are_expired| is true, the icon for |icon_url| will be modified
+  // only if it's not present in the database. In that case, it will be
+  // initially set as expired. Returns whether the new bitmaps were actually
+  // written.
+  bool SetFaviconsImpl(const GURL& page_url,
+                       favicon_base::IconType icon_type,
+                       const GURL& icon_url,
+                       const std::vector<SkBitmap>& bitmaps,
+                       bool bitmaps_are_expired);
 
   // Used by both UpdateFaviconMappingsAndFetch and GetFavicons.
   // If |page_url| is non-null, the icon urls for |page_url| (and all

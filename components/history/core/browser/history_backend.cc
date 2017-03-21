@@ -1708,38 +1708,26 @@ void HistoryBackend::SetFavicons(const GURL& page_url,
                                  favicon_base::IconType icon_type,
                                  const GURL& icon_url,
                                  const std::vector<SkBitmap>& bitmaps) {
+  SetFaviconsImpl(page_url, icon_type, icon_url, bitmaps,
+                  /*bitmaps_are_expired=*/false);
+}
+
+bool HistoryBackend::SetLastResortFavicons(
+    const GURL& page_url,
+    favicon_base::IconType icon_type,
+    const GURL& icon_url,
+    const std::vector<SkBitmap>& bitmaps) {
   if (!thumbnail_db_ || !db_)
-    return;
+    return false;
 
-  DCHECK_GE(kMaxFaviconBitmapsPerIconURL, bitmaps.size());
-
-  favicon_base::FaviconID icon_id =
-      thumbnail_db_->GetFaviconIDForFaviconURL(icon_url, icon_type, nullptr);
-
-  bool favicon_created = false;
-  if (!icon_id) {
-    icon_id = thumbnail_db_->AddFavicon(icon_url, icon_type);
-    favicon_created = true;
+  // Verify there's no known data for the page URL.
+  if (thumbnail_db_->GetIconMappingsForPageURL(page_url,
+                                               /*mapping_data=*/nullptr)) {
+    return false;
   }
 
-  bool favicon_data_modified = SetFaviconBitmaps(icon_id, bitmaps);
-
-  std::vector<favicon_base::FaviconID> icon_ids(1u, icon_id);
-  bool mapping_changed =
-      SetFaviconMappingsForPageAndRedirects(page_url, icon_type, icon_ids);
-
-  if (mapping_changed) {
-    // Notify the UI that this function changed an icon mapping.
-    SendFaviconChangedNotificationForPageAndRedirects(page_url);
-  }
-
-  if (favicon_data_modified && !favicon_created) {
-    // If there was a favicon at |icon_url| prior to SetFavicons() being called,
-    // there may be page URLs which also use the favicon at |icon_url|. Notify
-    // the UI that the favicon has changed for |icon_url|.
-    SendFaviconChangedNotificationForIconURL(icon_url);
-  }
-  ScheduleCommit();
+  return SetFaviconsImpl(page_url, icon_type, icon_url, bitmaps,
+                         /*bitmaps_are_expired=*/true);
 }
 
 void HistoryBackend::SetFaviconsOutOfDateForPage(const GURL& page_url) {
@@ -1815,6 +1803,51 @@ void HistoryBackend::SetImportedFavicons(
     // Send the notification about the changed favicon URLs.
     NotifyFaviconsChanged(favicons_changed, GURL());
   }
+}
+
+bool HistoryBackend::SetFaviconsImpl(const GURL& page_url,
+                                     favicon_base::IconType icon_type,
+                                     const GURL& icon_url,
+                                     const std::vector<SkBitmap>& bitmaps,
+                                     bool bitmaps_are_expired) {
+  if (!thumbnail_db_ || !db_)
+    return false;
+
+  DCHECK_GE(kMaxFaviconBitmapsPerIconURL, bitmaps.size());
+
+  favicon_base::FaviconID icon_id =
+      thumbnail_db_->GetFaviconIDForFaviconURL(icon_url, icon_type, nullptr);
+
+  bool favicon_created = false;
+  if (!icon_id) {
+    icon_id = thumbnail_db_->AddFavicon(icon_url, icon_type);
+    favicon_created = true;
+  }
+
+  bool favicon_data_modified = false;
+  if (favicon_created || !bitmaps_are_expired)
+    favicon_data_modified = SetFaviconBitmaps(icon_id, bitmaps);
+
+  if (favicon_created && bitmaps_are_expired)
+    thumbnail_db_->SetFaviconOutOfDate(icon_id);
+
+  std::vector<favicon_base::FaviconID> icon_ids(1u, icon_id);
+  bool mapping_changed =
+      SetFaviconMappingsForPageAndRedirects(page_url, icon_type, icon_ids);
+
+  if (mapping_changed) {
+    // Notify the UI that this function changed an icon mapping.
+    SendFaviconChangedNotificationForPageAndRedirects(page_url);
+  }
+
+  if (favicon_data_modified && !favicon_created) {
+    // If there was a favicon at |icon_url| prior to SetFavicons() being called,
+    // there may be page URLs which also use the favicon at |icon_url|. Notify
+    // the UI that the favicon has changed for |icon_url|.
+    SendFaviconChangedNotificationForIconURL(icon_url);
+  }
+  ScheduleCommit();
+  return favicon_data_modified;
 }
 
 void HistoryBackend::UpdateFaviconMappingsAndFetchImpl(

@@ -621,6 +621,24 @@ void HistoryService::SetFavicons(const GURL& page_url,
                           page_url, icon_type, icon_url, bitmaps));
 }
 
+void HistoryService::SetLastResortFavicons(
+    const GURL& page_url,
+    favicon_base::IconType icon_type,
+    const GURL& icon_url,
+    const std::vector<SkBitmap>& bitmaps,
+    base::Callback<void(bool)> callback) {
+  DCHECK(backend_task_runner_) << "History service being called after cleanup";
+  DCHECK(thread_checker_.CalledOnValidThread());
+  if (history_client_ && !history_client_->CanAddURL(page_url))
+    return;
+
+  PostTaskAndReplyWithResult(
+      FROM_HERE,
+      base::Bind(&HistoryBackend::SetLastResortFavicons, history_backend_,
+                 page_url, icon_type, icon_url, bitmaps),
+      callback);
+}
+
 void HistoryService::SetFaviconsOutOfDateForPage(const GURL& page_url) {
   DCHECK(backend_task_runner_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
