@@ -4,37 +4,26 @@
 
 package org.chromium.chrome.browser.omnibox;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.support.v4.view.animation.FastOutLinearInInterpolator;
 import android.text.Selection;
 import android.util.AttributeSet;
-import android.view.KeyEvent;
-import android.view.MotionEvent;
 import android.view.TouchDelegate;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.WindowDelegate;
-import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.ntp.NewTabPage;
-import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.MathUtils;
-import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.ui.UiUtils;
 
 /**
@@ -54,19 +43,12 @@ public class LocationBarPhone extends LocationBarLayout {
     private View mGoogleGContainer;
     private View mGoogleG;
     private View mUrlActionsContainer;
-    private TintedImageButton mMenuButton;
-    private ImageView mMenuBadge;
-    private View mMenuButtonWrapper;
     private int mIncognitoBadgePadding;
     private int mGoogleGWidth;
     private int mGoogleGMargin;
     private float mUrlFocusChangePercent;
     private Runnable mKeyboardResizeModeTask;
     private ObjectAnimator mOmniboxBackgroundAnimator;
-
-    private boolean mShowMenuBadge;
-    private AnimatorSet mMenuBadgeAnimatorSet;
-    private boolean mIsMenuBadgeAnimationRunning;
 
     /**
      * Constructor used to inflate from XML.
@@ -96,38 +78,6 @@ public class LocationBarPhone extends LocationBarLayout {
         TouchDelegate touchDelegate = new TouchDelegate(delegateArea, mUrlActionsContainer);
         assert mUrlActionsContainer.getParent() == this;
         setTouchDelegate(touchDelegate);
-
-        mMenuButton = (TintedImageButton) findViewById(R.id.document_menu_button);
-        mMenuBadge = (ImageView) findViewById(R.id.document_menu_badge);
-        mMenuButtonWrapper = findViewById(R.id.document_menu_button_wrapper);
-
-        ((ViewGroup) mMenuButtonWrapper.getParent()).removeView(mMenuButtonWrapper);
-    }
-
-    @Override
-    public void setMenuButtonHelper(final AppMenuButtonHelper helper) {
-        super.setMenuButtonHelper(helper);
-        mMenuButton.setOnTouchListener(new OnTouchListener() {
-            @SuppressLint("ClickableViewAccessibility")
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                return helper.onTouch(v, event);
-            }
-        });
-        mMenuButton.setOnKeyListener(new OnKeyListener() {
-            @Override
-            public boolean onKey(View view, int keyCode, KeyEvent event) {
-                if (keyCode == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_UP) {
-                    return helper.onEnterKeyPress(view);
-                }
-                return false;
-            }
-        });
-    }
-
-    @Override
-    public View getMenuAnchor() {
-        return mMenuButton;
     }
 
     /**
@@ -355,52 +305,5 @@ public class LocationBarPhone extends LocationBarLayout {
     public void setLayoutDirection(int layoutDirection) {
         super.setLayoutDirection(layoutDirection);
         updateIncognitoBadgePadding();
-    }
-
-    /**
-     * Remove the update menu app menu badge.
-     */
-    public void removeAppMenuUpdateBadge(boolean animate) {
-        boolean wasShowingMenuBadge = mShowMenuBadge;
-        mShowMenuBadge = false;
-        mMenuButton.setContentDescription(getResources().getString(
-                R.string.accessibility_toolbar_btn_menu));
-
-        if (!animate || !wasShowingMenuBadge) return;
-
-        if (mIsMenuBadgeAnimationRunning && mMenuBadgeAnimatorSet != null) {
-            mMenuBadgeAnimatorSet.cancel();
-        }
-
-        // Set initial states.
-        mMenuButton.setAlpha(0.f);
-
-        mMenuBadgeAnimatorSet = UpdateMenuItemHelper.createHideUpdateBadgeAnimation(
-                mMenuButton, mMenuBadge);
-
-        mMenuBadgeAnimatorSet.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationStart(Animator animation) {
-                mIsMenuBadgeAnimationRunning = true;
-            }
-
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                mIsMenuBadgeAnimationRunning = false;
-            }
-
-            @Override
-            public void onAnimationCancel(Animator animation) {
-                mIsMenuBadgeAnimationRunning = false;
-            }
-        });
-
-        mMenuBadgeAnimatorSet.start();
-    }
-
-    public void cancelAppMenuUpdateBadgeAnimation() {
-        if (mIsMenuBadgeAnimationRunning && mMenuBadgeAnimatorSet != null) {
-            mMenuBadgeAnimatorSet.cancel();
-        }
     }
 }

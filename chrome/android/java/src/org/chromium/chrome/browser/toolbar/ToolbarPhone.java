@@ -401,9 +401,9 @@ public class ToolbarPhone extends ToolbarLayout
     }
 
     @Override
-    protected boolean onMenuButtonTouchEvent(View v, MotionEvent event) {
+    protected void onMenuShown() {
         dismissTabSwitcherCallout();
-        return super.onMenuButtonTouchEvent(v, event);
+        super.onMenuShown();
     }
 
     /**
@@ -2208,8 +2208,6 @@ public class ToolbarPhone extends ToolbarLayout
             mTabSwitcherAnimationMenuBadgeDarkDrawable = null;
             mTabSwitcherAnimationMenuBadgeLightDrawable = null;
         }
-
-        mLocationBar.removeAppMenuUpdateBadge(animate);
     }
 
     private void setTabSwitcherAnimationMenuDrawable() {

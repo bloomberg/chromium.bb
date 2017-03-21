@@ -394,9 +394,6 @@ public class TabWebContentsDelegateAndroid extends WebContentsDelegateAndroid {
         if (activity == null) return false;
         if (reverse) {
             View menuButton = activity.findViewById(R.id.menu_button);
-            if (menuButton == null || !menuButton.isShown()) {
-                menuButton = activity.findViewById(R.id.document_menu_button);
-            }
             if (menuButton != null && menuButton.isShown()) {
                 return menuButton.requestFocus();
             }

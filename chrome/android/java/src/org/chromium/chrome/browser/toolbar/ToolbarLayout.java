@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.toolbar;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
@@ -17,7 +16,6 @@ import android.graphics.drawable.Drawable;
 import android.os.SystemClock;
 import android.util.AttributeSet;
 import android.view.Gravity;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -201,20 +199,14 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
         mToolbarDataProvider = toolbarDataProvider;
         mToolbarTabController = tabController;
 
-        mMenuButton.setOnTouchListener(new OnTouchListener() {
-            @Override
-            @SuppressLint("ClickableViewAccessibility")
-            public boolean onTouch(View v, MotionEvent event) {
-                return onMenuButtonTouchEvent(v, event);
-            }
-        });
         mAppMenuButtonHelper = appMenuButtonHelper;
+
+        mMenuButton.setOnTouchListener(mAppMenuButtonHelper);
+        mMenuButton.setAccessibilityDelegate(mAppMenuButtonHelper);
     }
 
-    /** @return Whether or not the event is handled. */
-    protected boolean onMenuButtonTouchEvent(View v, MotionEvent event) {
-        return mAppMenuButtonHelper.onTouch(v, event);
-    }
+    /** Notified that the menu was shown. */
+    protected void onMenuShown() {}
 
     /**
      *  This function handles native dependent initialization for this class

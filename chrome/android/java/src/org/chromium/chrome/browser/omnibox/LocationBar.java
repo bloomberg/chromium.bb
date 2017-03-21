@@ -10,7 +10,6 @@ import android.view.ViewGroup;
 import android.view.Window;
 
 import org.chromium.chrome.browser.WindowDelegate;
-import org.chromium.chrome.browser.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.omnibox.UrlBar.UrlBarDelegate;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -83,18 +82,6 @@ public interface LocationBar extends UrlBarDelegate {
      * @param sheet The bottom sheet for Chrome Home if it exists.
      */
     void setBottomSheet(BottomSheet sheet);
-
-    /**
-     * Sets the menu helper that should be used if there is a menu button in {@link LocationBar}.
-     * @param helper The helper to be used.
-     */
-    void setMenuButtonHelper(AppMenuButtonHelper helper);
-
-    /**
-     * @return The anchor view that should be used for the app menu. Null if there is no menu in
-     *         {@link LocationBar} for the current configuration.
-     */
-    View getMenuAnchor();
 
     /**
      * Initialize controls that will act as hooks to various functions.

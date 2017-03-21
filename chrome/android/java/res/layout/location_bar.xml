@@ -79,29 +79,6 @@
         android:layout_gravity="end|center_vertical"
         android:visibility="gone" >
 
-        <FrameLayout
-            android:id="@+id/document_menu_button_wrapper"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:layoutDirection="locale" >
-
-            <org.chromium.chrome.browser.widget.TintedImageButton
-                android:id="@+id/document_menu_button"
-                style="@style/LocationBarMenuButton"
-                android:src="@drawable/btn_menu"
-                android:contentDescription="@string/accessibility_toolbar_btn_menu" />
-
-            <ImageView
-                android:id="@+id/document_menu_badge"
-                style="@style/LocationBarMenuButton"
-                android:src="@drawable/badge_update_dark"
-                android:scaleType="center"
-                android:contentDescription="@null"
-                android:importantForAccessibility="no"
-                android:visibility="invisible" />
-
-        </FrameLayout>
-
         <org.chromium.chrome.browser.widget.TintedImageButton
             android:id="@+id/delete_button"
             style="@style/LocationBarButton"

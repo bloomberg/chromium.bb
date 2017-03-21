@@ -8,7 +8,6 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.animation.ValueAnimator.AnimatorUpdateListener;
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -24,7 +23,6 @@ import android.util.AttributeSet;
 import android.util.Pair;
 import android.util.TypedValue;
 import android.view.GestureDetector;
-import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -436,31 +434,6 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
             ((TintedDrawable) mSecurityButton.getDrawable()).setTint(
                     mUseDarkColors ? mDarkModeTint : mLightModeTint);
         }
-    }
-
-    @Override
-    public void setMenuButtonHelper(final AppMenuButtonHelper helper) {
-        mMenuButton.setOnTouchListener(new OnTouchListener() {
-            @SuppressLint("ClickableViewAccessibility")
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                return helper.onTouch(v, event);
-            }
-        });
-        mMenuButton.setOnKeyListener(new OnKeyListener() {
-            @Override
-            public boolean onKey(View view, int keyCode, KeyEvent event) {
-                if (keyCode == KeyEvent.KEYCODE_ENTER && event.getAction() == KeyEvent.ACTION_UP) {
-                    return helper.onEnterKeyPress(view);
-                }
-                return false;
-            }
-        });
-    }
-
-    @Override
-    public View getMenuAnchor() {
-        return mMenuButton;
     }
 
     @Override

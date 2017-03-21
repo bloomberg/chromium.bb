@@ -835,9 +835,9 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
             @Override
             public void run() {
                 RecordUserAction.record("MobileToolbarShowMenu");
+                mToolbar.onMenuShown();
             }
         });
-        mLocationBar.setMenuButtonHelper(mAppMenuButtonHelper);
     }
 
     /**
