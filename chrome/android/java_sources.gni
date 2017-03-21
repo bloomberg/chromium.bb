@@ -184,7 +184,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/compositor/layouts/content/TitleBitmapFactory.java",
   "java/src/org/chromium/chrome/browser/compositor/layouts/eventfilter/AreaGestureEventFilter.java",
   "java/src/org/chromium/chrome/browser/compositor/layouts/eventfilter/BlackHoleEventFilter.java",
-  "java/src/org/chromium/chrome/browser/compositor/layouts/eventfilter/CascadeEventFilter.java",
   "java/src/org/chromium/chrome/browser/compositor/layouts/eventfilter/EdgeSwipeEventFilter.java",
   "java/src/org/chromium/chrome/browser/compositor/layouts/eventfilter/EdgeSwipeHandler.java",
   "java/src/org/chromium/chrome/browser/compositor/layouts/eventfilter/EmptyEdgeSwipeHandler.java",
