@@ -34,10 +34,36 @@ def _CheckNoProductNameInGeneratedResources(input_api, output_api):
         items=problems)]
   return []
 
+def _CheckFlagsMessageNotTranslated(input_api, output_api):
+  """Check: all about:flags messages are marked as not requiring translation.
+
+  This assumes that such messages are only added to generated_resources.grd and
+  that all such messages have names starting with IDS_FLAGS_. The expected mark
+  for not requiring translation is 'translateable="false"'.
+  """
+
+  problems = []
+  filename_filter = lambda x: x.LocalPath().endswith("generated_resources.grd")
+
+  for f, line_num, line in input_api.RightHandSideLines(filename_filter):
+    if "name=\"IDS_FLAGS_" in line and not "translateable=\"false\"" in line:
+      problems.append("Missing translateable=\"false\" in %s:%d"
+                      % (f.LocalPath(), line_num))
+      problems.append(line)
+
+  if problems:
+    return [output_api.PresubmitError(
+        "If you define a flag name, description or value, mark it as not "
+        "requiring translation by adding the 'translateable' attribute with "
+        "value \"false\". See https://crbug.com/587272 for more context.",
+        items=problems)]
+  return []
+
 def _CommonChecks(input_api, output_api):
   """Checks common to both upload and commit."""
   results = []
   results.extend(_CheckNoProductNameInGeneratedResources(input_api, output_api))
+  results.extend(_CheckFlagsMessageNotTranslated(input_api, output_api))
   return results
 
 def CheckChangeOnUpload(input_api, output_api):
