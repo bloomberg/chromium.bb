@@ -160,6 +160,9 @@ IN_PROC_BROWSER_TEST_F(WebRtcMediaRecorderTest,
 #elif defined(OS_LINUX) && defined(THREAD_SANITIZER)
 // Flaky on Linux TSan, https://crbug.com/694373.
 #define MAYBE_PeerConnection DISABLED_PeerConnection
+#elif defined(OS_WIN) && !defined(NDEBUG)
+// Fails on Win7 debug, https://crbug.com/703844.
+#define MAYBE_PeerConnection DISABLED_PeerConnection
 #else
 #define MAYBE_PeerConnection PeerConnection
 #endif
