@@ -235,7 +235,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
           m_hasViewportUnits(false),
           m_styleType(PseudoIdNone),
           m_pseudoBits(0),
-          m_emptyState(false),
           m_hasRemUnits(false) {}
 
     // Compare computed styles, differences in inherited bits or other flags
@@ -277,8 +276,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
     unsigned m_styleType : 6;  // PseudoId
     unsigned m_pseudoBits : 8;
-
-    unsigned m_emptyState : 1;
 
     // 64 bits
 
