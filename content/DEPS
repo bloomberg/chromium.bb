@@ -42,6 +42,7 @@ include_rules = [
   "+ppapi",
   "+printing",
   "+sandbox",
+  "+services/service_manager/embedder",
   "+skia",
 
   # In general, content/ should not rely on google_apis, since URLs

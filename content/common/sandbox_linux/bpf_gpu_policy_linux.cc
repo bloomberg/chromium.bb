@@ -27,7 +27,6 @@
 #include "build/build_config.h"
 #include "content/common/sandbox_linux/sandbox_bpf_base_policy_linux.h"
 #include "content/common/sandbox_linux/sandbox_seccomp_bpf_linux.h"
-#include "content/common/set_process_title.h"
 #include "content/public/common/content_switches.h"
 #include "sandbox/linux/bpf_dsl/bpf_dsl.h"
 #include "sandbox/linux/seccomp-bpf-helpers/syscall_parameters_restrictions.h"
@@ -35,6 +34,7 @@
 #include "sandbox/linux/syscall_broker/broker_file_permission.h"
 #include "sandbox/linux/syscall_broker/broker_process.h"
 #include "sandbox/linux/system_headers/linux_syscalls.h"
+#include "services/service_manager/embedder/set_process_title.h"
 
 using sandbox::arch_seccomp_data;
 using sandbox::bpf_dsl::Allow;
@@ -224,7 +224,7 @@ void UpdateProcessTypeToGpuBroker() {
   // Update the process title. The argv was already cached by the call to
   // SetProcessTitleFromCommandLine in content_main_runner.cc, so we can pass
   // NULL here (we don't have the original argv at this point).
-  SetProcessTitleFromCommandLine(NULL);
+  service_manager::SetProcessTitleFromCommandLine(nullptr);
 }
 
 bool UpdateProcessTypeAndEnableSandbox(

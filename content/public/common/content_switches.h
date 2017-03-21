@@ -229,7 +229,6 @@ CONTENT_EXPORT extern const char kRendererStartupDialog[];
 CONTENT_EXPORT extern const char kRootLayerScrolls[];
 extern const char kSandboxIPCProcess[];
 CONTENT_EXPORT extern const char kScrollEndEffect[];
-CONTENT_EXPORT extern const char kSharedFiles[];
 extern const char kShowPaintRects[];
 CONTENT_EXPORT extern const char kSingleProcess[];
 CONTENT_EXPORT extern const char kSitePerProcess[];

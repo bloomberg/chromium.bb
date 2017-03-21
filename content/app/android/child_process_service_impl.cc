@@ -25,7 +25,8 @@
 #include "gpu/ipc/common/gpu_surface_lookup.h"
 #include "ipc/ipc_descriptors.h"
 #include "jni/ChildProcessServiceImpl_jni.h"
-#include "services/service_manager/public/cpp/shared_file_util.h"
+#include "services/service_manager/embedder/shared_file_util.h"
+#include "services/service_manager/embedder/switches.h"
 #include "ui/gl/android/scoped_java_surface.h"
 #include "ui/gl/android/surface_texture.h"
 

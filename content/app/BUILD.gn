@@ -27,7 +27,7 @@ template("implement_content_app") {
     "//content:sandbox_helper_win",
     "//content/public/common:common_sources",
     "//crypto",
-    "//services/service_manager/public/cpp",
+    "//services/service_manager/embedder",
     "//services/service_manager/public/interfaces",
     "//mojo/edk/system",
     "//ppapi/features",
@@ -99,8 +99,8 @@ template("implement_content_app") {
 
   source_set(main_target_name) {
     sources = [
-      "mac/mac_init.h",
-      "mac/mac_init.mm",
+      "content_service_manager_main_delegate.cc",
+      "content_service_manager_main_delegate.h",
       "mojo/mojo_init.cc",
       "mojo/mojo_init.h",
     ]
@@ -125,6 +125,7 @@ template("implement_content_app") {
     deps = content_app_deps + [
              ":$runner_target_name",
              "//ipc",
+             "//services/service_manager/embedder",
            ]
     forward_variables_from(invoker,
                            [
