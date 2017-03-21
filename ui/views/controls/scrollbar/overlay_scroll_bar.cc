@@ -67,6 +67,7 @@ void OverlayScrollBar::Thumb::OnPaint(gfx::Canvas* canvas) {
   stroke_flags.setStyle(cc::PaintFlags::kStroke_Style);
   stroke_flags.setColor(SK_ColorWHITE);
   stroke_flags.setStrokeWidth(kThumbStroke);
+  stroke_flags.setStrokeCap(cc::PaintFlags::kSquare_Cap);
   gfx::RectF stroke_bounds(fill_bounds);
   stroke_bounds.Inset(gfx::InsetsF(kThumbStroke / 2.f));
   // The stroke doesn't apply to the far edge of the thumb.
