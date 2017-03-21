@@ -35,9 +35,11 @@ import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -150,7 +152,7 @@ public class TileGroup implements MostVisitedSites.Observer {
 
     /** Most recently received tile data that has not been displayed yet. */
     @Nullable
-    private Tile[] mPendingTileData;
+    private List<Tile> mPendingTiles;
 
     /**
      * URL of the most recently removed tile. Used to identify when a tile removal is confirmed by
@@ -213,19 +215,15 @@ public class TileGroup implements MostVisitedSites.Observer {
         boolean insertionCompleted = mPendingInsertionUrl == null;
 
         Set<String> addedUrls = new HashSet<>();
-        mPendingTileData = new Tile[titles.length];
+        mPendingTiles = new ArrayList<>();
         for (int i = 0; i < titles.length; i++) {
             assert urls[i] != null; // We assume everywhere that the url is not null.
 
-            // TODO(dgn): Add UMA to track the cause of https://crbug.com/690926. Checking this
-            // should not even be necessary as the backend is supposed to send non dupes URLs.
-            if (addedUrls.contains(urls[i])) {
-                assert false : "Incoming NTP Tiles are not unique. Dupe on " + urls[i];
-                continue;
-            }
+            // TODO(dgn): Checking this should not even be necessary as the backend is supposed to
+            // send non dupes URLs. Remove once https://crbug.com/703628 is fixed.
+            if (addedUrls.contains(urls[i])) continue;
 
-            mPendingTileData[i] =
-                    new Tile(titles[i], urls[i], whitelistIconPaths[i], i, sources[i]);
+            mPendingTiles.add(new Tile(titles[i], urls[i], whitelistIconPaths[i], i, sources[i]));
             addedUrls.add(urls[i]);
 
             if (urls[i].equals(mPendingRemovalUrl)) removalCompleted = false;
@@ -307,7 +305,7 @@ public class TileGroup implements MostVisitedSites.Observer {
 
     /** To be called when the view displaying the tile group becomes visible. */
     public void onSwitchToForeground() {
-        if (mPendingTileData != null) loadTiles();
+        if (mPendingTiles != null) loadTiles();
     }
 
     /**
@@ -353,21 +351,21 @@ public class TileGroup implements MostVisitedSites.Observer {
         return true;
     }
 
-    /** Loads tile data from {@link #mPendingTileData} and clears it afterwards. */
+    /** Loads tile data from {@link #mPendingTiles} and clears it afterwards. */
     private void loadTiles() {
-        assert mPendingTileData != null;
+        assert mPendingTiles != null;
 
         boolean isInitialLoad = !mHasReceivedData;
         mHasReceivedData = true;
 
-        boolean countChanged = isInitialLoad || mTiles.length != mPendingTileData.length;
+        boolean countChanged = isInitialLoad || mTiles.length != mPendingTiles.size();
         boolean dataChanged = countChanged;
-        for (Tile newTile : mPendingTileData) {
+        for (Tile newTile : mPendingTiles) {
             if (newTile.importData(getTile(newTile.getUrl()))) dataChanged = true;
         }
 
-        mTiles = mPendingTileData;
-        mPendingTileData = null;
+        mTiles = mPendingTiles.toArray(new Tile[mPendingTiles.size()]);
+        mPendingTiles = null;
 
         if (!dataChanged) return;
 

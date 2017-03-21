@@ -229,6 +229,25 @@ public class TileGroupTest {
     }
 
     @Test
+    public void testRenderTileViewWithDuplicatedUrl() {
+        TileGroup tileGroup =
+                new TileGroup(RuntimeEnvironment.application, mock(SuggestionsUiDelegate.class),
+                        mock(ContextMenuManager.class), mTileGroupDelegate, mTileGroupObserver,
+                        mock(OfflinePageBridge.class), TILE_TITLE_LINES);
+        tileGroup.startObserving(MAX_TILES_TO_FETCH);
+        ViewGroup layout = new FrameLayout(RuntimeEnvironment.application, null);
+
+        // Initialise the internal list of tiles
+        notifyTileUrlsAvailable(URLS[0], URLS[1], URLS[0]);
+
+        // Render them to the layout. The duplicated URL is skipped.
+        tileGroup.renderTileViews(layout, false, false);
+        assertThat(layout.getChildCount(), is(2));
+        assertThat(((TileView) layout.getChildAt(0)).getUrl(), is(URLS[0]));
+        assertThat(((TileView) layout.getChildAt(1)).getUrl(), is(URLS[1]));
+    }
+
+    @Test
     public void testRenderTileViewReplacing() {
         TileGroup tileGroup =
                 new TileGroup(RuntimeEnvironment.application, mock(SuggestionsUiDelegate.class),
