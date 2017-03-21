@@ -203,7 +203,7 @@ public class SafeBrowsingTest extends AwTestBase {
     @SmallTest
     @Feature({"AndroidWebView"})
     @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
-    public void testSafeBrowsingShowsInterstitialForMalware() throws Throwable {
+    public void testSafeBrowsingShowsInterstitialForMainFrame() throws Throwable {
         loadGreenPage();
         int count = mWebContentsObserver.getAttachedInterstitialPageHelper().getCallCount();
         final String responseUrl = mTestServer.getURL(MALWARE_HTML_PATH);
@@ -222,7 +222,7 @@ public class SafeBrowsingTest extends AwTestBase {
     @SmallTest
     @Feature({"AndroidWebView"})
     @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
-    public void testSafeBrowsingMaliciousSubresourceShowsInterstitial() throws Throwable {
+    public void testSafeBrowsingShowsInterstitialForSubresource() throws Throwable {
         loadGreenPage();
         int count = mWebContentsObserver.getAttachedInterstitialPageHelper().getCallCount();
         final String responseUrl = mTestServer.getURL(IFRAME_HTML_PATH);
@@ -241,7 +241,7 @@ public class SafeBrowsingTest extends AwTestBase {
     @SmallTest
     @Feature({"AndroidWebView"})
     @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
-    public void testSafeBrowsingCanProceedThroughInterstitial() throws Throwable {
+    public void testSafeBrowsingProceedThroughInterstitialForMainFrame() throws Throwable {
         int interstitialCount =
                 mWebContentsObserver.getAttachedInterstitialPageHelper().getCallCount();
         int pageFinishedCount =
@@ -259,7 +259,7 @@ public class SafeBrowsingTest extends AwTestBase {
     @SmallTest
     @Feature({"AndroidWebView"})
     @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
-    public void testSafeBrowsingBackToSafetyShowsNetworkError() throws Throwable {
+    public void testSafeBrowsingDontProceedCausesNetworkErrorForMainFrame() throws Throwable {
         int interstitialCount =
                 mWebContentsObserver.getAttachedInterstitialPageHelper().getCallCount();
         final String responseUrl = mTestServer.getURL(MALWARE_HTML_PATH);
@@ -270,14 +270,14 @@ public class SafeBrowsingTest extends AwTestBase {
         dontProceedThroughInterstitial();
         errorHelper.waitForCallback(errorCount);
         assertEquals(ErrorCodeConversionHelper.ERROR_UNKNOWN, errorHelper.getError().errorCode);
-        assertEquals(responseUrl, errorHelper.getRequest().url);
+        assertEquals("Network error is for the malicious page", responseUrl,
+                errorHelper.getRequest().url);
     }
 
     @SmallTest
     @Feature({"AndroidWebView"})
     @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
-    public void testSafeBrowsingBackToSafetyShowsNetworkErrorForMaliciousSubresource()
-            throws Throwable {
+    public void testSafeBrowsingDontProceedCausesNetworkErrorForSubresource() throws Throwable {
         int interstitialCount =
                 mWebContentsObserver.getAttachedInterstitialPageHelper().getCallCount();
         final String responseUrl = mTestServer.getURL(IFRAME_HTML_PATH);
