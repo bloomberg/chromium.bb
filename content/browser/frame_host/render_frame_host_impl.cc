@@ -1268,7 +1268,6 @@ void RenderFrameHostImpl::OnDidCommitProvisionalLoad(const IPC::Message& msg) {
   // should be killed.
   if (!CanCommitURL(validated_params.url)) {
     VLOG(1) << "Blocked URL " << validated_params.url.spec();
-    validated_params.url = GURL(url::kAboutBlankURL);
     // Kills the process.
     bad_message::ReceivedBadMessage(process,
                                     bad_message::RFH_CAN_COMMIT_URL_BLOCKED);
