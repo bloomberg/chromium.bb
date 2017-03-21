@@ -64,5 +64,7 @@ drm_private struct fd_device * msm_device_new(int fd)
 
 	fd_bo_cache_init(&msm_dev->ring_cache, TRUE);
 
+	dev->bo_size = sizeof(struct msm_bo);
+
 	return dev;
 }

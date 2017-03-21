@@ -5,6 +5,7 @@ AM_CFLAGS = \
 	$(WARN_CFLAGS) \
 	-I$(top_srcdir) \
 	$(PTHREADSTUBS_CFLAGS) \
+	$(VALGRIND_CFLAGS) \
 	-I$(top_srcdir)/include/drm
 
 libdrm_freedreno_la_LTLIBRARIES = libdrm_freedreno.la

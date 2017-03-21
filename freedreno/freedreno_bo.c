@@ -102,6 +102,8 @@ fd_bo_new(struct fd_device *dev, uint32_t size, uint32_t flags)
 	bo->bo_reuse = TRUE;
 	pthread_mutex_unlock(&table_lock);
 
+	VG_BO_ALLOC(bo);
+
 	return bo;
 }
 
@@ -117,6 +119,8 @@ fd_bo_from_handle(struct fd_device *dev, uint32_t handle, uint32_t size)
 		goto out_unlock;
 
 	bo = bo_from_handle(dev, size, handle);
+
+	VG_BO_ALLOC(bo);
 
 out_unlock:
 	pthread_mutex_unlock(&table_lock);
@@ -146,6 +150,8 @@ fd_bo_from_dmabuf(struct fd_device *dev, int fd)
 	lseek(fd, 0, SEEK_CUR);
 
 	bo = bo_from_handle(dev, size, handle);
+
+	VG_BO_ALLOC(bo);
 
 out_unlock:
 	pthread_mutex_unlock(&table_lock);
@@ -177,8 +183,10 @@ struct fd_bo * fd_bo_from_name(struct fd_device *dev, uint32_t name)
 		goto out_unlock;
 
 	bo = bo_from_handle(dev, req.size, req.handle);
-	if (bo)
+	if (bo) {
 		set_name(bo, name);
+		VG_BO_ALLOC(bo);
+	}
 
 out_unlock:
 	pthread_mutex_unlock(&table_lock);
@@ -213,6 +221,8 @@ out:
 /* Called under table_lock */
 drm_private void bo_del(struct fd_bo *bo)
 {
+	VG_BO_FREE(bo);
+
 	if (bo->map)
 		drm_munmap(bo->map, bo->size);
 

@@ -33,7 +33,6 @@
 #include "freedreno_drmif.h"
 #include "freedreno_priv.h"
 
-
 drm_private void bo_del(struct fd_bo *bo);
 drm_private extern pthread_mutex_t table_lock;
 
@@ -102,6 +101,7 @@ fd_bo_cache_cleanup(struct fd_bo_cache *cache, time_t time)
 			if (time && ((time - bo->free_time) <= 1))
 				break;
 
+			VG_BO_OBTAIN(bo);
 			list_del(&bo->list);
 			bo_del(bo);
 		}
@@ -177,6 +177,7 @@ retry:
 		*size = bucket->size;
 		bo = find_in_bucket(bucket, flags);
 		if (bo) {
+			VG_BO_OBTAIN(bo);
 			if (bo->funcs->madvise(bo, TRUE) <= 0) {
 				/* we've lost the backing pages, delete and try again: */
 				pthread_mutex_lock(&table_lock);
@@ -207,6 +208,7 @@ fd_bo_cache_free(struct fd_bo_cache *cache, struct fd_bo *bo)
 		clock_gettime(CLOCK_MONOTONIC, &time);
 
 		bo->free_time = time.tv_sec;
+		VG_BO_RELEASE(bo);
 		list_addtail(&bo->list, &bucket->list);
 		fd_bo_cache_cleanup(cache, time.tv_sec);
 

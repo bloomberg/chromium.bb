@@ -61,5 +61,7 @@ drm_private struct fd_device * kgsl_device_new(int fd)
 	dev = &kgsl_dev->base;
 	dev->funcs = &funcs;
 
+	dev->bo_size = sizeof(struct kgsl_bo);
+
 	return dev;
 }

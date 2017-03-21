@@ -102,6 +102,9 @@ struct fd_device {
 	struct fd_bo_cache bo_cache;
 
 	int closefd;        /* call close(fd) upon destruction */
+
+	/* just for valgrind: */
+	int bo_size;
 };
 
 drm_private void fd_bo_cache_init(struct fd_bo_cache *cache, int coarse);
@@ -195,5 +198,58 @@ offset_bytes(void *end, void *start)
 {
 	return ((char *)end) - ((char *)start);
 }
+
+#ifdef HAVE_VALGRIND
+#  include <memcheck.h>
+
+/*
+ * For tracking the backing memory (if valgrind enabled, we force a mmap
+ * for the purposes of tracking)
+ */
+static inline void VG_BO_ALLOC(struct fd_bo *bo)
+{
+	if (bo && RUNNING_ON_VALGRIND) {
+		VALGRIND_MALLOCLIKE_BLOCK(fd_bo_map(bo), bo->size, 0, 1);
+	}
+}
+
+static inline void VG_BO_FREE(struct fd_bo *bo)
+{
+	VALGRIND_FREELIKE_BLOCK(bo->map, 0);
+}
+
+/*
+ * For tracking bo structs that are in the buffer-cache, so that valgrind
+ * doesn't attribute ownership to the first one to allocate the recycled
+ * bo.
+ *
+ * Note that the list_head in fd_bo is used to track the buffers in cache
+ * so disable error reporting on the range while they are in cache so
+ * valgrind doesn't squawk about list traversal.
+ *
+ */
+static inline void VG_BO_RELEASE(struct fd_bo *bo)
+{
+	if (RUNNING_ON_VALGRIND) {
+		VALGRIND_DISABLE_ADDR_ERROR_REPORTING_IN_RANGE(bo, bo->dev->bo_size);
+		VALGRIND_MAKE_MEM_NOACCESS(bo, bo->dev->bo_size);
+		VALGRIND_FREELIKE_BLOCK(bo->map, 0);
+	}
+}
+static inline void VG_BO_OBTAIN(struct fd_bo *bo)
+{
+	if (RUNNING_ON_VALGRIND) {
+		VALGRIND_MAKE_MEM_DEFINED(bo, bo->dev->bo_size);
+		VALGRIND_ENABLE_ADDR_ERROR_REPORTING_IN_RANGE(bo, bo->dev->bo_size);
+		VALGRIND_MALLOCLIKE_BLOCK(bo->map, bo->size, 0, 1);
+	}
+}
+#else
+static inline void VG_BO_ALLOC(struct fd_bo *bo)   {}
+static inline void VG_BO_FREE(struct fd_bo *bo)    {}
+static inline void VG_BO_RELEASE(struct fd_bo *bo) {}
+static inline void VG_BO_OBTAIN(struct fd_bo *bo)  {}
+#endif
+
 
 #endif /* FREEDRENO_PRIV_H_ */
