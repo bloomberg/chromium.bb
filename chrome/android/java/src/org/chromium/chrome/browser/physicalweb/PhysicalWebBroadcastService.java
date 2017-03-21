@@ -79,6 +79,16 @@ public class PhysicalWebBroadcastService extends Service {
         }
     };
 
+    /**
+     * Starts the PhysicalWebBroadcastService.
+     */
+    public static void startBroadcastService(String url) {
+        Context context = ContextUtils.getApplicationContext();
+        Intent intent = new Intent(context, PhysicalWebBroadcastService.class);
+        intent.putExtra(DISPLAY_URL_KEY, url);
+        context.startService(intent);
+    }
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         String displayUrl = fetchDisplayUrl(intent);

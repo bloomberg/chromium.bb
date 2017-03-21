@@ -653,6 +653,16 @@ by a child template that "extends" this file.
             </intent-filter>
         </activity>
 
+        <!-- This activity is to expose the PhysicalWeb Share option via the generic Android share action. -->
+        <activity
+            android:name="org.chromium.chrome.browser.physicalweb.PhysicalWebShareEntryActivity"
+            android:label="@string/physical_web_share_entry_title"
+            android:excludeFromRecents="true"
+            android:noHistory="true"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar"
+            android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize" >
+        </activity>
+
         <!-- Service for Broadcasting a Physical Web URL -->
         <service
             android:name="org.chromium.chrome.browser.physicalweb.PhysicalWebBroadcastService"

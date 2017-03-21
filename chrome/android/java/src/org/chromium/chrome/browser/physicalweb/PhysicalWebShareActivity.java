@@ -18,9 +18,15 @@ public class PhysicalWebShareActivity extends ShareActivity {
     protected void handleShareAction(ChromeActivity triggeringActivity) {
         String url = triggeringActivity.getActivityTab().getUrl();
 
-        Intent intent = new Intent(this, PhysicalWebBroadcastService.class);
-        intent.putExtra(PhysicalWebBroadcastService.DISPLAY_URL_KEY, url);
-        startService(intent);
+        if (!PhysicalWeb.sharingIsOptedIn()) {
+            // This shows an interstitial for the user to opt-in for sending URL to Google.
+            Intent intent = new Intent(this, PhysicalWebShareEntryActivity.class);
+            intent.putExtra(PhysicalWebShareEntryActivity.SHARING_ENTRY_URL, url);
+            triggeringActivity.startActivity(intent);
+            return;
+        }
+
+        PhysicalWebBroadcastService.startBroadcastService(url);
     }
 
     /**

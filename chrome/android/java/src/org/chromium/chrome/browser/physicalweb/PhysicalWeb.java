@@ -27,6 +27,7 @@ import org.chromium.components.location.LocationUtils;
  */
 public class PhysicalWeb {
     public static final int OPTIN_NOTIFY_MAX_TRIES = 1;
+    private static final String PHYSICAL_WEB_SHARING_PREFERENCE = "physical_web_sharing";
     private static final String PREF_PHYSICAL_WEB_NOTIFY_COUNT = "physical_web_notify_count";
     private static final String FEATURE_NAME = "PhysicalWeb";
     private static final String PHYSICAL_WEB_SHARING_FEATURE_NAME = "PhysicalWebSharing";
@@ -58,6 +59,26 @@ public class PhysicalWeb {
      */
     public static boolean sharingIsEnabled() {
         return ChromeFeatureList.isEnabled(PHYSICAL_WEB_SHARING_FEATURE_NAME);
+    }
+
+    /**
+     * Checks whether the user has consented to use the Sharing feature.
+     *
+     * @return boolean {@code true} if the feature is enabled
+     */
+    public static boolean sharingIsOptedIn() {
+        SharedPreferences sharedPrefs = ContextUtils.getAppSharedPreferences();
+        return sharedPrefs.getBoolean(PHYSICAL_WEB_SHARING_PREFERENCE, false);
+    }
+
+    /**
+     * Sets the preference that the user has opted into use the Sharing feature.
+     */
+    public static void setSharingOptedIn() {
+        ContextUtils.getAppSharedPreferences()
+                .edit()
+                .putBoolean(PHYSICAL_WEB_SHARING_PREFERENCE, true)
+                .apply();
     }
 
     /**
