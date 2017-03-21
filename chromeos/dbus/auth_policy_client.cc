@@ -131,16 +131,11 @@ class AuthPolicyClientImpl : public AuthPolicyClient {
     }
     dbus::MessageReader reader(response);
     const authpolicy::ErrorType error(GetErrorFromReader(&reader));
-    if (reader.PopArrayOfBytesAsProto(&account_data)) {
-      callback.Run(error, account_data);
+    if (!reader.PopArrayOfBytesAsProto(&account_data)) {
+      DLOG(ERROR) << "Failed to parse protobuf.";
+      callback.Run(authpolicy::ErrorType::ERROR_DBUS_FAILURE, account_data);
       return;
     }
-    DLOG(WARNING) << "Failed to parse protobuf. Fallback to string";
-    // TODO(rsorokin): Remove once both ChromiumOS and Chromium use protobuf.
-    std::string account_id;
-    if (!reader.PopString(&account_id))
-      DLOG(ERROR) << "Auth: Failed to get user_id from the response";
-    account_data.set_account_id(account_id);
     callback.Run(error, account_data);
   }
 
