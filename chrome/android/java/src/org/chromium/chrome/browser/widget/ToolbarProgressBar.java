@@ -160,6 +160,17 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
         ViewCompat.setAccessibilityLiveRegion(this, ViewCompat.ACCESSIBILITY_LIVE_REGION_POLITE);
     }
 
+    /**
+     * Set the top progress bar's top margin.
+     * @param topMargin The top margin of the progress bar in px.
+     */
+    public void setTopMargin(int topMargin) {
+        mMarginTop = topMargin;
+
+        assert getLayoutParams() != null;
+        ((ViewGroup.MarginLayoutParams) getLayoutParams()).topMargin = mMarginTop;
+    }
+
     @Override
     public void onAttachedToWindow() {
         super.onAttachedToWindow();

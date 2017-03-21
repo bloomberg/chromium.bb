@@ -92,16 +92,16 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
                 ApiCompatibilityUtils.getColorStateList(getResources(), R.color.dark_mode_tint);
         mLightModeTint =
                 ApiCompatibilityUtils.getColorStateList(getResources(), R.color.light_mode_tint);
+        mProgressBar = new ToolbarProgressBar(getContext(), getProgressBarHeight(),
+                getProgressBarTopMargin(), getProgressBarUsesThemeColors());
 
         addOnLayoutChangeListener(new OnLayoutChangeListener() {
             @Override
             public void onLayoutChange(View view, int left, int top, int right, int bottom,
                     int oldLeft, int oldTop, int oldRight, int oldBottom) {
-                // Creation of the progress bar is done here so the toolbar height is available.
-                mProgressBar = new ToolbarProgressBar(getContext(), getProgressBarHeight(),
-                        getProgressBarTopMargin(), getProgressBarUsesThemeColors());
                 if (isNativeLibraryReady()) mProgressBar.initializeAnimation();
                 addProgressBarToHierarchy();
+                mProgressBar.setTopMargin(getProgressBarTopMargin());
 
                 // Since this only needs to happen once, remove this listener from the view.
                 removeOnLayoutChangeListener(this);
