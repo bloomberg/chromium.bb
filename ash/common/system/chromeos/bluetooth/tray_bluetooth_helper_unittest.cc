@@ -31,35 +31,32 @@ TEST_F(TrayBluetoothHelperTest, Basics) {
   TrayBluetoothHelper helper;
   helper.Initialize();
   RunAllPendingInMessageLoop();
-  EXPECT_TRUE(helper.GetAvailable());
-  EXPECT_FALSE(helper.GetEnabled());
-  EXPECT_FALSE(helper.HasDiscoverySession());
-  EXPECT_FALSE(helper.IsDiscovering());
+  EXPECT_TRUE(helper.GetBluetoothAvailable());
+  EXPECT_FALSE(helper.GetBluetoothEnabled());
+  EXPECT_FALSE(helper.HasBluetoothDiscoverySession());
 
   std::vector<ash::BluetoothDeviceInfo> devices;
-  helper.GetAvailableDevices(&devices);
+  helper.GetAvailableBluetoothDevices(&devices);
   // The devices are fake in tests, so don't assume any particular number.
   EXPECT_FALSE(devices.empty());
 
   // Turn Bluetooth on.
-  helper.ToggleEnabled();
+  helper.ToggleBluetoothEnabled();
   RunAllPendingInMessageLoop();
-  EXPECT_TRUE(helper.GetEnabled());
+  EXPECT_TRUE(helper.GetBluetoothEnabled());
 
-  helper.StartDiscovering();
+  helper.StartBluetoothDiscovering();
   RunAllPendingInMessageLoop();
-  EXPECT_TRUE(helper.HasDiscoverySession());
-  EXPECT_TRUE(helper.IsDiscovering());
+  EXPECT_TRUE(helper.HasBluetoothDiscoverySession());
 
-  helper.StopDiscovering();
+  helper.StopBluetoothDiscovering();
   RunAllPendingInMessageLoop();
-  EXPECT_FALSE(helper.HasDiscoverySession());
-  EXPECT_FALSE(helper.IsDiscovering());
+  EXPECT_FALSE(helper.HasBluetoothDiscoverySession());
 
   // Turn Bluetooth off.
-  helper.ToggleEnabled();
+  helper.ToggleBluetoothEnabled();
   RunAllPendingInMessageLoop();
-  EXPECT_FALSE(helper.GetEnabled());
+  EXPECT_FALSE(helper.GetBluetoothEnabled());
 }
 
 }  // namespace

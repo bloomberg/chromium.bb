@@ -22,16 +22,9 @@ class ASH_EXPORT DefaultSystemTrayDelegate : public SystemTrayDelegate {
   bool IsUserSupervised() const override;
   bool ShouldShowSettings() const override;
   bool ShouldShowNotificationTray() const override;
-  void ToggleBluetooth() override;
-  bool IsBluetoothDiscovering() const override;
-  bool GetBluetoothAvailable() override;
-  bool GetBluetoothEnabled() override;
-  bool GetBluetoothDiscovering() override;
   int GetSystemTrayMenuWidth() override;
 
  private:
-  bool bluetooth_enabled_;
-
   DISALLOW_COPY_AND_ASSIGN(DefaultSystemTrayDelegate);
 };
 

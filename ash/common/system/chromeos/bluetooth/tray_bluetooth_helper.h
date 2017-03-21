@@ -20,7 +20,22 @@ class BluetoothDiscoverySession;
 
 namespace ash {
 
-struct BluetoothDeviceInfo;
+// TODO(jamescook): Convert TrayBlueooth to use device::BluetoothDevice and
+// delete this. http://crbug.com/660043
+struct ASH_EXPORT BluetoothDeviceInfo {
+  BluetoothDeviceInfo();
+  BluetoothDeviceInfo(const BluetoothDeviceInfo& other);
+  ~BluetoothDeviceInfo();
+
+  std::string address;
+  base::string16 display_name;
+  bool connected;
+  bool connecting;
+  bool paired;
+  device::BluetoothDeviceType device_type;
+};
+
+using BluetoothDeviceList = std::vector<BluetoothDeviceInfo>;
 
 // Maps UI concepts from the Bluetooth system tray (e.g. "Bluetooth is on") into
 // device concepts ("Bluetooth adapter enabled"). Note that most Bluetooth
@@ -41,33 +56,29 @@ class ASH_EXPORT TrayBluetoothHelper
 
   // Returns a list of available bluetooth devices.
   // TODO(jamescook): Just return the list.
-  void GetAvailableDevices(std::vector<BluetoothDeviceInfo>* list);
+  void GetAvailableBluetoothDevices(std::vector<BluetoothDeviceInfo>* list);
 
   // Requests bluetooth start discovering devices, which happens asynchronously.
-  void StartDiscovering();
+  void StartBluetoothDiscovering();
 
   // Requests bluetooth stop discovering devices.
-  void StopDiscovering();
+  void StopBluetoothDiscovering();
 
   // Connect to a specific bluetooth device.
-  void ConnectToDevice(const std::string& address);
-
-  // Returns true if bluetooth adapter is discovering bluetooth devices.
-  bool IsDiscovering() const;
+  void ConnectToBluetoothDevice(const std::string& address);
 
   // Toggles whether bluetooth is enabled.
-  void ToggleEnabled();
+  void ToggleBluetoothEnabled();
 
   // Returns whether bluetooth capability is available (e.g. the device has
   // hardware support).
-  bool GetAvailable();
+  bool GetBluetoothAvailable();
 
   // Returns whether bluetooth is enabled.
-  bool GetEnabled();
+  bool GetBluetoothEnabled();
 
   // Returns whether the delegate has initiated a bluetooth discovery session.
-  // TODO(jamescook): Why do we need both this and IsDiscovering()?
-  bool HasDiscoverySession();
+  bool HasBluetoothDiscoverySession();
 
   // BluetoothAdapter::Observer:
   void AdapterPresentChanged(device::BluetoothAdapter* adapter,

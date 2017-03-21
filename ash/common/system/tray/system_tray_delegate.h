@@ -21,10 +21,6 @@ class TimeDelta;
 class TimeTicks;
 }
 
-namespace device {
-enum class BluetoothDeviceType;
-}
-
 namespace ash {
 struct IMEInfo;
 struct IMEPropertyInfo;
@@ -35,23 +31,6 @@ class SystemTrayItem;
 
 using IMEInfoList = std::vector<IMEInfo>;
 using IMEPropertyInfoList = std::vector<IMEPropertyInfo>;
-
-// TODO(jamescook): Convert TrayBlueooth to use device::BluetoothDevice and
-// delete this. http://crbug.com/660043
-struct ASH_EXPORT BluetoothDeviceInfo {
-  BluetoothDeviceInfo();
-  BluetoothDeviceInfo(const BluetoothDeviceInfo& other);
-  ~BluetoothDeviceInfo();
-
-  std::string address;
-  base::string16 display_name;
-  bool connected;
-  bool connecting;
-  bool paired;
-  device::BluetoothDeviceType device_type;
-};
-
-using BluetoothDeviceList = std::vector<BluetoothDeviceInfo>;
 
 class NetworkingConfigDelegate;
 
@@ -119,21 +98,6 @@ class ASH_EXPORT SystemTrayDelegate {
   // Shows login UI to add other users to this session.
   virtual void ShowUserLogin();
 
-  // Returns a list of available bluetooth devices.
-  virtual void GetAvailableBluetoothDevices(BluetoothDeviceList* devices);
-
-  // Requests bluetooth start discovering devices.
-  virtual void BluetoothStartDiscovering();
-
-  // Requests bluetooth stop discovering devices.
-  virtual void BluetoothStopDiscovering();
-
-  // Connect to a specific bluetooth device.
-  virtual void ConnectToBluetoothDevice(const std::string& address);
-
-  // Returns true if bluetooth adapter is discovering bluetooth devices.
-  virtual bool IsBluetoothDiscovering() const;
-
   // Returns the currently selected IME.
   virtual void GetCurrentIME(IMEInfo* info);
 
@@ -151,18 +115,6 @@ class ASH_EXPORT SystemTrayDelegate {
 
   // Activates an IME property.
   virtual void ActivateIMEProperty(const std::string& key);
-
-  // Toggles bluetooth.
-  virtual void ToggleBluetooth();
-
-  // Returns whether bluetooth capability is available.
-  virtual bool GetBluetoothAvailable();
-
-  // Returns whether bluetooth is enabled.
-  virtual bool GetBluetoothEnabled();
-
-  // Returns whether the delegate has initiated a bluetooth discovery session.
-  virtual bool GetBluetoothDiscovering();
 
   // Returns NetworkingConfigDelegate. May return nullptr.
   virtual NetworkingConfigDelegate* GetNetworkingConfigDelegate() const;

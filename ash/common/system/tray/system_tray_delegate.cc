@@ -9,14 +9,6 @@
 
 namespace ash {
 
-BluetoothDeviceInfo::BluetoothDeviceInfo()
-    : connected(false), connecting(false), paired(false) {}
-
-BluetoothDeviceInfo::BluetoothDeviceInfo(const BluetoothDeviceInfo& other) =
-    default;
-
-BluetoothDeviceInfo::~BluetoothDeviceInfo() {}
-
 SystemTrayDelegate::SystemTrayDelegate() {}
 
 SystemTrayDelegate::~SystemTrayDelegate() {}
@@ -71,15 +63,6 @@ void SystemTrayDelegate::ShowEnterpriseInfo() {}
 
 void SystemTrayDelegate::ShowUserLogin() {}
 
-void SystemTrayDelegate::GetAvailableBluetoothDevices(
-    BluetoothDeviceList* list) {}
-
-void SystemTrayDelegate::BluetoothStartDiscovering() {}
-
-void SystemTrayDelegate::BluetoothStopDiscovering() {}
-
-void SystemTrayDelegate::ConnectToBluetoothDevice(const std::string& address) {}
-
 void SystemTrayDelegate::GetCurrentIME(IMEInfo* info) {}
 
 void SystemTrayDelegate::GetAvailableIMEList(IMEInfoList* list) {}
@@ -93,24 +76,6 @@ base::string16 SystemTrayDelegate::GetIMEManagedMessage() {
 void SystemTrayDelegate::SwitchIME(const std::string& ime_id) {}
 
 void SystemTrayDelegate::ActivateIMEProperty(const std::string& key) {}
-
-void SystemTrayDelegate::ToggleBluetooth() {}
-
-bool SystemTrayDelegate::IsBluetoothDiscovering() const {
-  return false;
-}
-
-bool SystemTrayDelegate::GetBluetoothAvailable() {
-  return false;
-}
-
-bool SystemTrayDelegate::GetBluetoothEnabled() {
-  return false;
-}
-
-bool SystemTrayDelegate::GetBluetoothDiscovering() {
-  return false;
-}
 
 NetworkingConfigDelegate* SystemTrayDelegate::GetNetworkingConfigDelegate()
     const {

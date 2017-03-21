@@ -7,7 +7,7 @@
 #include <stdint.h>
 #include <utility>
 
-#include "ash/common/system/tray/system_tray_delegate.h"
+#include "ash/common/system/chromeos/bluetooth/tray_bluetooth_helper.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/macros.h"
@@ -287,7 +287,7 @@ void DeviceEmulatorMessageHandler::HandleRequestBluetoothPair(
 
   // Try to pair the device with the main adapter. The device is identified
   // by its device ID, which, in this case is the same as its address.
-  ash::Shell::Get()->system_tray_delegate()->ConnectToBluetoothDevice(
+  ash::Shell::Get()->tray_bluetooth_helper()->ConnectToBluetoothDevice(
       props->address.value());
   if (!props->paired.value()) {
     web_ui()->CallJavascriptFunctionUnsafe(kPairFailedJSCallback,

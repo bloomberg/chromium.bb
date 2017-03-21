@@ -15,7 +15,6 @@
 
 #include "ash/common/login_status.h"
 #include "ash/common/shell_delegate.h"
-#include "ash/common/system/chromeos/bluetooth/tray_bluetooth_helper.h"
 #include "ash/common/system/chromeos/power/power_status.h"
 #include "ash/common/system/chromeos/session/logout_button_observer.h"
 #include "ash/common/system/date/clock_observer.h"
@@ -341,28 +340,6 @@ void SystemTrayDelegateChromeOS::ShowUserLogin() {
   }
 }
 
-void SystemTrayDelegateChromeOS::GetAvailableBluetoothDevices(
-    ash::BluetoothDeviceList* list) {
-  ash::Shell::Get()->tray_bluetooth_helper()->GetAvailableDevices(list);
-}
-
-void SystemTrayDelegateChromeOS::BluetoothStartDiscovering() {
-  ash::Shell::Get()->tray_bluetooth_helper()->StartDiscovering();
-}
-
-void SystemTrayDelegateChromeOS::BluetoothStopDiscovering() {
-  ash::Shell::Get()->tray_bluetooth_helper()->StopDiscovering();
-}
-
-void SystemTrayDelegateChromeOS::ConnectToBluetoothDevice(
-    const std::string& address) {
-  ash::Shell::Get()->tray_bluetooth_helper()->ConnectToDevice(address);
-}
-
-bool SystemTrayDelegateChromeOS::IsBluetoothDiscovering() const {
-  return ash::Shell::Get()->tray_bluetooth_helper()->IsDiscovering();
-}
-
 void SystemTrayDelegateChromeOS::GetCurrentIME(ash::IMEInfo* info) {
   input_method::InputMethodManager* manager =
       input_method::InputMethodManager::Get();
@@ -421,22 +398,6 @@ void SystemTrayDelegateChromeOS::SwitchIME(const std::string& ime_id) {
 
 void SystemTrayDelegateChromeOS::ActivateIMEProperty(const std::string& key) {
   input_method::InputMethodManager::Get()->ActivateInputMethodMenuItem(key);
-}
-
-void SystemTrayDelegateChromeOS::ToggleBluetooth() {
-  ash::Shell::Get()->tray_bluetooth_helper()->ToggleEnabled();
-}
-
-bool SystemTrayDelegateChromeOS::GetBluetoothAvailable() {
-  return ash::Shell::Get()->tray_bluetooth_helper()->GetAvailable();
-}
-
-bool SystemTrayDelegateChromeOS::GetBluetoothEnabled() {
-  return ash::Shell::Get()->tray_bluetooth_helper()->GetEnabled();
-}
-
-bool SystemTrayDelegateChromeOS::GetBluetoothDiscovering() {
-  return ash::Shell::Get()->tray_bluetooth_helper()->HasDiscoverySession();
 }
 
 ash::NetworkingConfigDelegate*

@@ -12,7 +12,6 @@
 #include "ash/common/system/date/tray_date.h"
 #include "ash/common/system/date/tray_system_info.h"
 #include "ash/common/system/tray/system_tray.h"
-#include "ash/common/wm_shell.h"
 #include "ash/shell.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/login/login_manager_test.h"
@@ -26,11 +25,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/test/test_utils.h"
-#include "device/bluetooth/dbus/bluez_dbus_manager.h"
-#include "device/bluetooth/dbus/fake_bluetooth_adapter_client.h"
-
-using bluez::BluezDBusManager;
-using bluez::FakeBluetoothAdapterClient;
 
 namespace chromeos {
 
@@ -115,51 +109,6 @@ IN_PROC_BROWSER_TEST_F(SystemTrayDelegateChromeOSTest,
   content::RunAllPendingInMessageLoop();
   CreateDefaultView();
   EXPECT_EQ(base::k24HourClock, GetHourType());
-}
-
-using SystemTrayDelegateBluetoothTest = InProcessBrowserTest;
-
-// Tests basic functionality of the Bluetooth interface.
-// TODO(jamescook): Delete this test when TrayBluetoothHelper moves to ash.
-// http://crbug.com/660043
-IN_PROC_BROWSER_TEST_F(SystemTrayDelegateBluetoothTest, Basics) {
-  // Set Bluetooth discovery simulation delay to 0 so the test doesn't have to
-  // wait or use timers.
-  FakeBluetoothAdapterClient* adapter_client =
-      static_cast<FakeBluetoothAdapterClient*>(
-          BluezDBusManager::Get()->GetBluetoothAdapterClient());
-  adapter_client->SetSimulationIntervalMs(0);
-
-  ash::SystemTrayDelegate* delegate = ash::Shell::Get()->system_tray_delegate();
-  EXPECT_TRUE(delegate->GetBluetoothAvailable());
-  EXPECT_FALSE(delegate->GetBluetoothEnabled());
-  EXPECT_FALSE(delegate->GetBluetoothDiscovering());
-  EXPECT_FALSE(delegate->IsBluetoothDiscovering());
-
-  ash::BluetoothDeviceList devices;
-  delegate->GetAvailableBluetoothDevices(&devices);
-  // The devices are fake in tests, so don't assume any particular number.
-  EXPECT_FALSE(devices.empty());
-
-  // Turn Bluetooth on.
-  delegate->ToggleBluetooth();
-  content::RunAllPendingInMessageLoop();
-  EXPECT_TRUE(delegate->GetBluetoothEnabled());
-
-  delegate->BluetoothStartDiscovering();
-  content::RunAllPendingInMessageLoop();
-  EXPECT_TRUE(delegate->GetBluetoothDiscovering());
-  EXPECT_TRUE(delegate->IsBluetoothDiscovering());
-
-  delegate->BluetoothStopDiscovering();
-  content::RunAllPendingInMessageLoop();
-  EXPECT_FALSE(delegate->GetBluetoothDiscovering());
-  EXPECT_FALSE(delegate->IsBluetoothDiscovering());
-
-  // Turn Bluetooth off.
-  delegate->ToggleBluetooth();
-  content::RunAllPendingInMessageLoop();
-  EXPECT_FALSE(delegate->GetBluetoothEnabled());
 }
 
 }  // namespace chromeos

@@ -5,7 +5,6 @@
 #include "ash/common/system/chromeos/bluetooth/tray_bluetooth_helper.h"
 
 #include "ash/common/system/tray/system_tray_controller.h"
-#include "ash/common/system/tray/system_tray_delegate.h"  // BluetoothDeviceInfo
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/wm_shell.h"
 #include "ash/shell.h"
@@ -33,6 +32,14 @@ ash::SystemTrayNotifier* GetSystemTrayNotifier() {
 
 }  // namespace
 
+BluetoothDeviceInfo::BluetoothDeviceInfo()
+    : connected(false), connecting(false), paired(false) {}
+
+BluetoothDeviceInfo::BluetoothDeviceInfo(const BluetoothDeviceInfo& other) =
+    default;
+
+BluetoothDeviceInfo::~BluetoothDeviceInfo() {}
+
 TrayBluetoothHelper::TrayBluetoothHelper() : weak_ptr_factory_(this) {}
 
 TrayBluetoothHelper::~TrayBluetoothHelper() {
@@ -53,7 +60,7 @@ void TrayBluetoothHelper::InitializeOnAdapterReady(
   adapter_->AddObserver(this);
 }
 
-void TrayBluetoothHelper::GetAvailableDevices(
+void TrayBluetoothHelper::GetAvailableBluetoothDevices(
     std::vector<BluetoothDeviceInfo>* list) {
   device::BluetoothAdapter::DeviceList devices = adapter_->GetDevices();
   for (device::BluetoothDevice* device : devices) {
@@ -68,8 +75,8 @@ void TrayBluetoothHelper::GetAvailableDevices(
   }
 }
 
-void TrayBluetoothHelper::StartDiscovering() {
-  if (HasDiscoverySession()) {
+void TrayBluetoothHelper::StartBluetoothDiscovering() {
+  if (HasBluetoothDiscoverySession()) {
     LOG(WARNING) << "Already have active Bluetooth device discovery session.";
     return;
   }
@@ -81,9 +88,9 @@ void TrayBluetoothHelper::StartDiscovering() {
       base::Bind(&BluetoothSetDiscoveringError));
 }
 
-void TrayBluetoothHelper::StopDiscovering() {
+void TrayBluetoothHelper::StopBluetoothDiscovering() {
   should_run_discovery_ = false;
-  if (!HasDiscoverySession()) {
+  if (!HasBluetoothDiscoverySession()) {
     LOG(WARNING) << "No active Bluetooth device discovery session.";
     return;
   }
@@ -92,7 +99,7 @@ void TrayBluetoothHelper::StopDiscovering() {
                            base::Bind(&BluetoothSetDiscoveringError));
 }
 
-void TrayBluetoothHelper::ConnectToDevice(const std::string& address) {
+void TrayBluetoothHelper::ConnectToBluetoothDevice(const std::string& address) {
   device::BluetoothDevice* device = adapter_->GetDevice(address);
   if (!device || device->IsConnecting() ||
       (device->IsConnected() && device->IsPaired())) {
@@ -113,24 +120,20 @@ void TrayBluetoothHelper::ConnectToDevice(const std::string& address) {
       device->IsConnected());
 }
 
-bool TrayBluetoothHelper::IsDiscovering() const {
-  return adapter_ && adapter_->IsDiscovering();
-}
-
-void TrayBluetoothHelper::ToggleEnabled() {
+void TrayBluetoothHelper::ToggleBluetoothEnabled() {
   adapter_->SetPowered(!adapter_->IsPowered(), base::Bind(&base::DoNothing),
                        base::Bind(&base::DoNothing));
 }
 
-bool TrayBluetoothHelper::GetAvailable() {
+bool TrayBluetoothHelper::GetBluetoothAvailable() {
   return adapter_ && adapter_->IsPresent();
 }
 
-bool TrayBluetoothHelper::GetEnabled() {
+bool TrayBluetoothHelper::GetBluetoothEnabled() {
   return adapter_ && adapter_->IsPowered();
 }
 
-bool TrayBluetoothHelper::HasDiscoverySession() {
+bool TrayBluetoothHelper::HasBluetoothDiscoverySession() {
   return discovery_session_ && discovery_session_->IsActive();
 }
 

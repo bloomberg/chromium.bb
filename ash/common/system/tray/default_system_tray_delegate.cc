@@ -8,8 +8,7 @@
 
 namespace ash {
 
-DefaultSystemTrayDelegate::DefaultSystemTrayDelegate()
-    : bluetooth_enabled_(true) {}
+DefaultSystemTrayDelegate::DefaultSystemTrayDelegate() {}
 
 DefaultSystemTrayDelegate::~DefaultSystemTrayDelegate() {}
 
@@ -33,26 +32,6 @@ bool DefaultSystemTrayDelegate::ShouldShowSettings() const {
 
 bool DefaultSystemTrayDelegate::ShouldShowNotificationTray() const {
   return true;
-}
-
-void DefaultSystemTrayDelegate::ToggleBluetooth() {
-  bluetooth_enabled_ = !bluetooth_enabled_;
-}
-
-bool DefaultSystemTrayDelegate::IsBluetoothDiscovering() const {
-  return false;
-}
-
-bool DefaultSystemTrayDelegate::GetBluetoothAvailable() {
-  return true;
-}
-
-bool DefaultSystemTrayDelegate::GetBluetoothEnabled() {
-  return bluetooth_enabled_;
-}
-
-bool DefaultSystemTrayDelegate::GetBluetoothDiscovering() {
-  return false;
 }
 
 int DefaultSystemTrayDelegate::GetSystemTrayMenuWidth() {
