@@ -1662,20 +1662,20 @@ void WindowTree::DeactivateWindow(Id window_id) {
 void WindowTree::StackAbove(uint32_t change_id, Id above_id, Id below_id) {
   ServerWindow* above = GetWindowByClientId(ClientWindowId(above_id));
   if (!above) {
-    DVLOG(1) << "StackAtTop failed (invalid above id)";
+    DVLOG(1) << "StackAbove failed (invalid above id)";
     client()->OnChangeCompleted(change_id, false);
     return;
   }
 
   ServerWindow* below = GetWindowByClientId(ClientWindowId(below_id));
   if (!below) {
-    DVLOG(1) << "StackAtTop failed (invalid below id)";
+    DVLOG(1) << "StackAbove failed (invalid below id)";
     client()->OnChangeCompleted(change_id, false);
     return;
   }
 
   if (!access_policy_->CanStackAbove(above, below)) {
-    DVLOG(1) << "StackAtTop failed (access denied)";
+    DVLOG(1) << "StackAbove failed (access denied)";
     client()->OnChangeCompleted(change_id, false);
     return;
   }
@@ -1683,24 +1683,24 @@ void WindowTree::StackAbove(uint32_t change_id, Id above_id, Id below_id) {
   ServerWindow* parent = above->parent();
   ServerWindow* below_parent = below->parent();
   if (!parent) {
-    DVLOG(1) << "StackAtTop failed (above unparented)";
+    DVLOG(1) << "StackAbove failed (above unparented)";
     client()->OnChangeCompleted(change_id, false);
     return;
   }
   if (!below_parent) {
-    DVLOG(1) << "StackAtTop failed (below unparented)";
+    DVLOG(1) << "StackAbove failed (below unparented)";
     client()->OnChangeCompleted(change_id, false);
     return;
   }
   if (parent != below_parent) {
-    DVLOG(1) << "StackAtTop failed (windows have different parents)";
+    DVLOG(1) << "StackAbove failed (windows have different parents)";
     client()->OnChangeCompleted(change_id, false);
     return;
   }
 
   WindowManagerDisplayRoot* display_root = GetWindowManagerDisplayRoot(above);
   if (!display_root) {
-    DVLOG(1) << "StackAtTop (no display root)";
+    DVLOG(1) << "StackAbove (no display root)";
     client()->OnChangeCompleted(change_id, false);
     return;
   }
