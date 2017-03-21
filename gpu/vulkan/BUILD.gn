@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("features.gni")
+import("//build/config/ui.gni")
 import("//build/buildflag_header.gni")
 import("//testing/test.gni")
 
