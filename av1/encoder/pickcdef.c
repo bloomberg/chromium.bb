@@ -140,7 +140,7 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
         }
         for (i = 0; i < CLPF_STRENGTHS; i++) {
           od_dering(tmp_dst, in, 0, dir, 0, dlist, dering_count, threshold,
-                    i + (i == 3), clpf_damping, coeff_shift, 0);
+                    i + (i == 3), clpf_damping, coeff_shift);
           copy_dering_16bit_to_16bit(dst, MAX_MIB_SIZE << bsize[0], tmp_dst,
                                      dlist, dering_count, bsize[0]);
           mse[sb_count][gi][i] = (int)compute_dist(

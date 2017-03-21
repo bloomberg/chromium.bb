@@ -265,10 +265,12 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm, MACROBLOCKD *xd,
       int level, clpf_strength;
       int nhb, nvb;
       int cstart = 0;
+#if 0  // TODO(stemidts/jmvalin): Handle tile borders correctly
       BOUNDARY_TYPE boundary_type =
           cm->mi_grid_visible[MAX_MIB_SIZE * sbr * cm->mi_stride +
                               MAX_MIB_SIZE * sbc]
               ->mbmi.boundary_info;
+#endif
       if (!dering_left) cstart = -OD_FILT_HBORDER;
       nhb = AOMMIN(MAX_MIB_SIZE, cm->mi_cols - MAX_MIB_SIZE * sbc);
       nvb = AOMMIN(MAX_MIB_SIZE, cm->mi_rows - MAX_MIB_SIZE * sbr);
@@ -435,7 +437,7 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm, MACROBLOCKD *xd,
         od_dering(dst,
                   &src[OD_FILT_VBORDER * OD_FILT_BSTRIDE + OD_FILT_HBORDER],
                   dec[pli], dir, pli, dlist, dering_count, threshold,
-                  clpf_strength, clpf_damping, coeff_shift, boundary_type);
+                  clpf_strength, clpf_damping, coeff_shift);
 #if CONFIG_AOM_HIGHBITDEPTH
         if (cm->use_highbitdepth) {
           copy_dering_16bit_to_16bit(

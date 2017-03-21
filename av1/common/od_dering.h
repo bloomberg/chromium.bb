@@ -49,8 +49,7 @@ void copy_dering_16bit_to_16bit(uint16_t *dst, int dstride, uint16_t *src,
 void od_dering(uint16_t *y, uint16_t *in, int xdec,
                int dir[OD_DERING_NBLOCKS][OD_DERING_NBLOCKS], int pli,
                dering_list *dlist, int dering_count, int threshold,
-               int clpf_strength, int clpf_damping, int coeff_shift,
-               BOUNDARY_TYPE bt);
+               int clpf_strength, int clpf_damping, int coeff_shift);
 int od_filter_dering_direction_4x4_c(uint16_t *y, int ystride,
                                      const uint16_t *in, int threshold,
                                      int dir);
