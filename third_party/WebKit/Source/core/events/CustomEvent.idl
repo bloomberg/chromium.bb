@@ -33,5 +33,5 @@
 ] interface CustomEvent : Event {
     [Custom=Getter] readonly attribute any detail;
 
-    [Measure,Custom=(CallEpilogue)] void initCustomEvent(DOMString type, boolean bubbles, boolean cancelable, any detail);
+    [Measure,Custom=(CallEpilogue)] void initCustomEvent(DOMString type, optional boolean bubbles = false, optional boolean cancelable = false, optional any detail = null);
 };
