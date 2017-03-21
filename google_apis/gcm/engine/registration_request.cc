@@ -20,6 +20,7 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
@@ -144,9 +145,36 @@ RegistrationRequest::~RegistrationRequest() {}
 void RegistrationRequest::Start() {
   DCHECK(!callback_.is_null());
   DCHECK(!url_fetcher_.get());
-
-  url_fetcher_ =
-      net::URLFetcher::Create(registration_url_, net::URLFetcher::POST, this);
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("gcm_registration", R"(
+        semantics {
+          sender: "GCM Driver"
+          description:
+            "Chromium interacts with Google Cloud Messaging to receive push "
+            "messages for various browser features, as well as on behalf of "
+            "websites and extensions. This requests Google Cloud Messaging to "
+            "create a new subscription through which messages can be sent to "
+            "the registering entity, through Chromium."
+          trigger:
+            "Immediately after a feature, website or extension creates a new "
+            "registration with the GCM Driver."
+          data:
+            "The profile-bound Android ID and associated secret, and the "
+            "identifiers for the feature, website or extension that is "
+            "creating the registration."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: false
+          setting:
+            "Support for interacting with Google Cloud Messaging is enabled by "
+            "default, and there is no configuration option to completely "
+            "disable it."
+          policy_exception_justification:
+            "Not implemented, considered not useful."
+        })");
+  url_fetcher_ = net::URLFetcher::Create(
+      registration_url_, net::URLFetcher::POST, this, traffic_annotation);
   url_fetcher_->SetRequestContext(request_context_getter_.get());
   url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
                              net::LOAD_DO_NOT_SAVE_COOKIES);

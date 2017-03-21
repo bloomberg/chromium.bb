@@ -11,6 +11,7 @@
 #include "google_apis/gcm/monitoring/gcm_stats_recorder.h"
 #include "google_apis/gcm/protocol/checkin.pb.h"
 #include "net/base/load_flags.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 
@@ -144,9 +145,40 @@ void CheckinRequest::Start() {
 
   std::string upload_data;
   CHECK(request.SerializeToString(&upload_data));
-
-  url_fetcher_ =
-      net::URLFetcher::Create(checkin_url_, net::URLFetcher::POST, this);
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("gcm_checkin", R"(
+        semantics {
+          sender: "GCM Driver"
+          description:
+            "Chromium interacts with Google Cloud Messaging to receive push "
+            "messages for various browser features, as well as on behalf of "
+            "websites and extensions. The check-in periodically verifies the "
+            "client's validity with Google servers, and receive updates to "
+            "configuration regarding interacting with Google services."
+          trigger:
+            "Immediately after a feature creates the first Google Cloud "
+            "Messaging registration. By default, Chromium will check in with "
+            "Google Cloud Messaging every two days. Google can adjust this "
+            "interval when it deems necessary."
+          data:
+            "The profile-bound Android ID and associated secret and account "
+            "tokens. A structure containing the Chromium version, channel, and "
+            "platform of the host operating system."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: false
+          setting:
+            "Support for interacting with Google Cloud Messaging is enabled by "
+            "default, and there is no configuration option to completely "
+            "disable it. Websites wishing to receive push messages must "
+            "acquire express permission from the user for the 'Notification' "
+            "permission."
+          policy_exception_justification:
+            "Not implemented, considered not useful."
+        })");
+  url_fetcher_ = net::URLFetcher::Create(checkin_url_, net::URLFetcher::POST,
+                                         this, traffic_annotation);
   url_fetcher_->SetRequestContext(request_context_getter_);
   url_fetcher_->SetUploadData(kRequestContentType, upload_data);
   url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
