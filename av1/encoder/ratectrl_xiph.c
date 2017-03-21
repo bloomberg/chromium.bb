@@ -676,10 +676,10 @@ int od_enc_rc_select_quantizers_and_lambdas(od_rc_state *rc,
                       &closed_form_altref, &closed_form_cur_frame);
     OD_UNUSED(closed_form_type);
     OD_UNUSED(is_altref_frame);
-    OD_ASSERT(closed_form_type == frame_type);
-    OD_ASSERT(closed_form_cur_frame == rc->cur_frame);
-    OD_ASSERT(closed_form_altref == is_altref_frame);
-    OD_ASSERT(closed_form_golden == is_golden_frame);
+    assert(closed_form_type == frame_type);
+    assert(closed_form_cur_frame == rc->cur_frame);
+    assert(closed_form_altref == is_altref_frame);
+    assert(closed_form_golden == is_golden_frame);
   }
 
   log_cur_scale = (int64_t)rc->scalefilter[frame_type].y[0] << 33;
