@@ -137,8 +137,9 @@ class StreamMixerAlsa {
 
     // Sets the multiplier based on this stream's content type. The resulting
     // output volume should be the content type volume * the per-stream volume
-    // multiplier.
-    virtual void SetContentTypeVolume(float volume) = 0;
+    // multiplier. If |fade_ms| is >= 0, the volume change should be faded over
+    // that many milliseconds; otherwise, the default fade time should be used.
+    virtual void SetContentTypeVolume(float volume, int fade_ms) = 0;
 
     // Sets whether or not this stream should be muted.
     virtual void SetMuted(bool muted) = 0;

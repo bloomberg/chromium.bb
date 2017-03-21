@@ -17,11 +17,12 @@ namespace media {
 class SlewVolume {
  public:
   SlewVolume();
-  SlewVolume(int max_slew_up_ms, int max_slew_down_ms);
+  SlewVolume(int max_slew_time_ms);
   ~SlewVolume() = default;
 
   void SetSampleRate(int sample_rate);
   void SetVolume(double volume_scale);
+  void SetMaxSlewTimeMs(int max_slew_time_ms);
 
   // Called to indicate that the stream was interrupted; volume changes can be
   // applied immediately.
@@ -44,10 +45,8 @@ class SlewVolume {
   double volume_scale_ = 1.0;
   double current_volume_ = 1.0;
   double last_starting_volume_ = 1.0;
-  int max_slew_time_up_ms_;
-  int max_slew_time_down_ms_;
-  double max_slew_up_;
-  double max_slew_down_;
+  double max_slew_time_ms_;
+  double max_slew_per_sample_;
   bool interrupted_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(SlewVolume);

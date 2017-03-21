@@ -174,7 +174,7 @@ class MockInputQueue : public StreamMixerAlsa::InputQueue {
   MOCK_METHOD1(SignalError, void(StreamMixerAlsaInput::MixerError error));
   MOCK_METHOD1(PrepareToDelete, void(const OnReadyToDeleteCb& delete_cb));
 
-  void SetContentTypeVolume(float volume) override {}
+  void SetContentTypeVolume(float volume, int fade_ms) override {}
   void SetMuted(bool muted) override {}
 
   // Setters and getters for test control.

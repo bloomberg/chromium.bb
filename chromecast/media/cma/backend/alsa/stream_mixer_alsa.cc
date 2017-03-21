@@ -119,6 +119,10 @@ const snd_pcm_format_t kPreferredSampleFormats[] = {SND_PCM_FORMAT_S32,
 
 const int64_t kNoTimestamp = std::numeric_limits<int64_t>::min();
 
+const int kUseDefaultFade = -1;
+const int kMediaDuckFadeMs = 150;
+const int kMediaUnduckFadeMs = 700;
+
 int64_t TimespecToMicroseconds(struct timespec time) {
   return static_cast<int64_t>(time.tv_sec) *
              base::Time::kMicrosecondsPerSecond +
@@ -606,9 +610,10 @@ void StreamMixerAlsa::AddInput(std::unique_ptr<InputQueue> input) {
 
   auto type = input->content_type();
   if (input->primary()) {
-    input->SetContentTypeVolume(volume_info_[type].GetEffectiveVolume());
+    input->SetContentTypeVolume(volume_info_[type].GetEffectiveVolume(),
+                                kUseDefaultFade);
   } else {
-    input->SetContentTypeVolume(volume_info_[type].volume);
+    input->SetContentTypeVolume(volume_info_[type].volume, kUseDefaultFade);
   }
   input->SetMuted(volume_info_[type].muted);
 
@@ -926,10 +931,10 @@ void StreamMixerAlsa::SetVolume(AudioContentType type, float level) {
   for (auto&& input : inputs_) {
     if (input->content_type() == type) {
       if (input->primary()) {
-        input->SetContentTypeVolume(effective_volume);
+        input->SetContentTypeVolume(effective_volume, kUseDefaultFade);
       } else {
         // Volume limits don't apply to effects streams.
-        input->SetContentTypeVolume(level);
+        input->SetContentTypeVolume(level, kUseDefaultFade);
       }
     }
   }
@@ -957,10 +962,18 @@ void StreamMixerAlsa::SetOutputLimit(AudioContentType type, float limit) {
             << limit;
   volume_info_[type].limit = limit;
   float effective_volume = volume_info_[type].GetEffectiveVolume();
+  int fade_ms = kUseDefaultFade;
+  if (type == AudioContentType::kMedia) {
+    if (limit >= 1.0f) {  // Unducking.
+      fade_ms = kMediaUnduckFadeMs;
+    } else {
+      fade_ms = kMediaDuckFadeMs;
+    }
+  }
   for (auto&& input : inputs_) {
     // Volume limits don't apply to effects streams.
     if (input->primary() && input->content_type() == type) {
-      input->SetContentTypeVolume(effective_volume);
+      input->SetContentTypeVolume(effective_volume, fade_ms);
     }
   }
 

@@ -139,7 +139,7 @@ class StreamMixerAlsaInputImpl : public StreamMixerAlsa::InputQueue {
                             mixer_rendering_delay) override;
   void SignalError(StreamMixerAlsaInput::MixerError error) override;
   void PrepareToDelete(const OnReadyToDeleteCb& delete_cb) override;
-  void SetContentTypeVolume(float volume) override;
+  void SetContentTypeVolume(float volume, int fade_ms) override;
   void SetMuted(bool muted) override;
 
   // Tells the mixer to delete |this|. Makes sure not to call |delete_cb_| more

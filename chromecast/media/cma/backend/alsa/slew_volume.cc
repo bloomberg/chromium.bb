@@ -19,15 +19,13 @@ const int kDefaultSampleRate = 44100;
 namespace chromecast {
 namespace media {
 
-SlewVolume::SlewVolume() : SlewVolume(kMaxSlewTimeMs, kMaxSlewTimeMs) {}
+SlewVolume::SlewVolume() : SlewVolume(kMaxSlewTimeMs) {}
 
-SlewVolume::SlewVolume(int max_slew_time_up_ms, int max_slew_time_down_ms)
+SlewVolume::SlewVolume(int max_slew_time_ms)
     : sample_rate_(kDefaultSampleRate),
-      max_slew_time_up_ms_(max_slew_time_up_ms),
-      max_slew_time_down_ms_(max_slew_time_down_ms),
-      max_slew_up_(1000.0 / (max_slew_time_up_ms * sample_rate_)),
-      max_slew_down_(1000.0 / (max_slew_time_down_ms * sample_rate_)) {
-  LOG(INFO) << "Creating a slew volume: " << max_slew_time_up_ms;
+      max_slew_time_ms_(max_slew_time_ms),
+      max_slew_per_sample_(1000.0 / (max_slew_time_ms_ * sample_rate_)) {
+  LOG(INFO) << "Creating a slew volume: " << max_slew_time_ms;
 }
 
 void SlewVolume::SetSampleRate(int sample_rate) {
@@ -42,12 +40,16 @@ void SlewVolume::SetVolume(double volume_scale) {
     current_volume_ = volume_scale_;
   }
   if (volume_scale_ > current_volume_) {
-    max_slew_up_ = (volume_scale_ - current_volume_) * 1000.0 /
-                   (max_slew_time_up_ms_ * sample_rate_);
+    max_slew_per_sample_ = (volume_scale_ - current_volume_) * 1000.0 /
+                           (max_slew_time_ms_ * sample_rate_);
   } else {
-    max_slew_down_ = (current_volume_ - volume_scale_) * 1000.0 /
-                     (max_slew_time_down_ms_ * sample_rate_);
+    max_slew_per_sample_ = (current_volume_ - volume_scale_) * 1000.0 /
+                           (max_slew_time_ms_ * sample_rate_);
   }
+}
+
+void SlewVolume::SetMaxSlewTimeMs(int max_slew_time_ms) {
+  max_slew_time_ms_ = max_slew_time_ms;
 }
 
 void SlewVolume::Interrupted() {
@@ -90,7 +92,7 @@ void SlewVolume::ProcessFMAC(bool repeat_transition,
       ++src;
       ++dest;
       --frames;
-      current_volume_ += max_slew_up_;
+      current_volume_ += max_slew_per_sample_;
     } while (current_volume_ < volume_scale_ && frames);
     current_volume_ = std::min(current_volume_, volume_scale_);
   } else {  // current_volume_ > volume_scale_
@@ -99,7 +101,7 @@ void SlewVolume::ProcessFMAC(bool repeat_transition,
       ++src;
       ++dest;
       --frames;
-      current_volume_ -= max_slew_down_;
+      current_volume_ -= max_slew_per_sample_;
     } while (current_volume_ > volume_scale_ && frames);
     current_volume_ = std::max(current_volume_, volume_scale_);
   }
@@ -137,7 +139,7 @@ bool SlewVolume::ProcessInterleaved(int32_t* data, int frames) {
       (*data) *= current_volume_;
       ++data;
       --frames;
-      current_volume_ += max_slew_up_;
+      current_volume_ += max_slew_per_sample_;
     } while (current_volume_ < volume_scale_ && frames);
     current_volume_ = std::min(current_volume_, volume_scale_);
   } else {
@@ -147,7 +149,7 @@ bool SlewVolume::ProcessInterleaved(int32_t* data, int frames) {
       (*data) *= current_volume_;
       ++data;
       --frames;
-      current_volume_ -= max_slew_down_;
+      current_volume_ -= max_slew_per_sample_;
     } while (current_volume_ > volume_scale_ && frames);
     current_volume_ = std::max(current_volume_, volume_scale_);
   }

@@ -56,8 +56,7 @@ const int kPausedReadSamples = 512;
 const int kDefaultReadSize = ::media::SincResampler::kDefaultRequestSize;
 const int64_t kNoTimestamp = std::numeric_limits<int64_t>::min();
 
-const int kMaxSlewTimeUpMs = 15;
-const int kMaxSlewTimeDownMs = 15;
+const int kDefaultSlewTimeMs = 15;
 
 std::string AudioContentTypeToString(media::AudioContentType type) {
   switch (type) {
@@ -93,7 +92,7 @@ StreamMixerAlsaInputImpl::StreamMixerAlsaInputImpl(
       stream_volume_multiplier_(1.0f),
       type_volume_multiplier_(1.0f),
       mute_volume_multiplier_(1.0f),
-      slew_volume_(kMaxSlewTimeUpMs, kMaxSlewTimeDownMs),
+      slew_volume_(kDefaultSlewTimeMs),
       queued_frames_(0),
       queued_frames_including_resampler_(0),
       current_buffer_offset_(0),
@@ -557,10 +556,11 @@ void StreamMixerAlsaInputImpl::SetVolumeMultiplier(float multiplier) {
   LOG(INFO) << device_id_ << "(" << this
             << "): stream volume = " << stream_volume_multiplier_
             << ", effective multiplier = " << effective_volume;
+  slew_volume_.SetMaxSlewTimeMs(kDefaultSlewTimeMs);
   slew_volume_.SetVolume(effective_volume);
 }
 
-void StreamMixerAlsaInputImpl::SetContentTypeVolume(float volume) {
+void StreamMixerAlsaInputImpl::SetContentTypeVolume(float volume, int fade_ms) {
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
   type_volume_multiplier_ = std::max(0.0f, std::min(volume, 1.0f));
   float effective_volume = stream_volume_multiplier_ * type_volume_multiplier_ *
@@ -568,6 +568,12 @@ void StreamMixerAlsaInputImpl::SetContentTypeVolume(float volume) {
   LOG(INFO) << device_id_ << "(" << this
             << "): type volume = " << type_volume_multiplier_
             << ", effective multiplier = " << effective_volume;
+  if (fade_ms < 0) {
+    fade_ms = kDefaultSlewTimeMs;
+  } else {
+    LOG(INFO) << "Fade over " << fade_ms << " ms";
+  }
+  slew_volume_.SetMaxSlewTimeMs(fade_ms);
   slew_volume_.SetVolume(effective_volume);
 }
 
@@ -579,6 +585,7 @@ void StreamMixerAlsaInputImpl::SetMuted(bool muted) {
   LOG(INFO) << device_id_ << "(" << this
             << "): mute volume = " << mute_volume_multiplier_
             << ", effective multiplier = " << effective_volume;
+  slew_volume_.SetMaxSlewTimeMs(kDefaultSlewTimeMs);
   slew_volume_.SetVolume(effective_volume);
 }
 
