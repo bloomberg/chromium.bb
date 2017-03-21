@@ -201,11 +201,11 @@ Cache.prototype = {
 /**
  * Returns the root element of the node.  Found by traversing parentNodes until
  * a node with no parent is found.  This node is considered the root.
- * @param {!Node} node The node to find the root element for.
- * @return {!Node} The root node.
+ * @param {?Node} node The node to find the root element for.
+ * @return {?Node} The root node.
  */
 function getNodeRoot(node) {
-  while (node.parentNode) {
+  while (node && node.parentNode) {
     node = node.parentNode;
   }
   return node;
