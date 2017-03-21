@@ -4737,6 +4737,7 @@ test("net_unittests") {
     "//crypto:platform",
     "//crypto:test_support",
     "//net/base/registry_controlled_domains",
+    "//net/http:transport_security_state_unittest_data",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/protobuf:protobuf_lite",
@@ -5673,37 +5674,4 @@ fuzzer_test("net_spdy_session_fuzzer") {
   ]
   dict = "data/fuzzer_dictionaries/net_spdy_session_fuzzer.dict"
   seed_corpus = "data/fuzzer_data/net_spdy_session_fuzzer/"
-}
-
-if (host_toolchain == current_toolchain && !is_proto_quic) {
-  executable("transport_security_state_generator") {
-    sources = [
-      "tools/transport_security_state_generator/bit_writer.cc",
-      "tools/transport_security_state_generator/bit_writer.h",
-      "tools/transport_security_state_generator/cert_util.cc",
-      "tools/transport_security_state_generator/cert_util.h",
-      "tools/transport_security_state_generator/huffman/huffman_builder.cc",
-      "tools/transport_security_state_generator/huffman/huffman_builder.h",
-      "tools/transport_security_state_generator/pinset.cc",
-      "tools/transport_security_state_generator/pinset.h",
-      "tools/transport_security_state_generator/pinsets.cc",
-      "tools/transport_security_state_generator/pinsets.h",
-      "tools/transport_security_state_generator/preloaded_state_generator.cc",
-      "tools/transport_security_state_generator/preloaded_state_generator.h",
-      "tools/transport_security_state_generator/spki_hash.cc",
-      "tools/transport_security_state_generator/spki_hash.h",
-      "tools/transport_security_state_generator/transport_security_state_entry.cc",
-      "tools/transport_security_state_generator/transport_security_state_entry.h",
-      "tools/transport_security_state_generator/transport_security_state_generator.cc",
-      "tools/transport_security_state_generator/trie/trie_bit_buffer.cc",
-      "tools/transport_security_state_generator/trie/trie_bit_buffer.h",
-      "tools/transport_security_state_generator/trie/trie_writer.cc",
-      "tools/transport_security_state_generator/trie/trie_writer.h",
-    ]
-    deps = [
-      "//base",
-      "//crypto",
-      "//third_party/boringssl",
-    ]
-  }
 }
