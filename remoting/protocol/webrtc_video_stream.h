@@ -90,11 +90,6 @@ class WebrtcVideoStream : public VideoStream,
 
   HostVideoStatsDispatcher video_stats_dispatcher_;
 
-  // In case when the capturer failed to capture a frame the corresponding event
-  // timestamps are saved in |next_frame_input_event_timestamps_| to be used for
-  // the following frame.
-  InputEventTimestamps next_frame_input_event_timestamps_;
-
   // Timestamps for the frame that's being captured.
   std::unique_ptr<FrameTimestamps> captured_frame_timestamps_;
 

@@ -160,11 +160,6 @@ void WebrtcVideoStream::OnCaptureResult(
       if (observer_)
         observer_->OnVideoSizeChanged(this, frame_size_, frame_dpi_);
     }
-  } else {
-    // Save event timestamps to be used for the next frame.
-    next_frame_input_event_timestamps_ =
-        captured_frame_timestamps_->input_event_timestamps;
-    captured_frame_timestamps_->input_event_timestamps = InputEventTimestamps();
   }
 
   base::PostTaskAndReplyWithResult(
@@ -191,15 +186,8 @@ void WebrtcVideoStream::CaptureNextFrame() {
 
   captured_frame_timestamps_.reset(new FrameTimestamps());
   captured_frame_timestamps_->capture_started_time = base::TimeTicks::Now();
-
-  if (!next_frame_input_event_timestamps_.is_null()) {
-    captured_frame_timestamps_->input_event_timestamps =
-        next_frame_input_event_timestamps_;
-    next_frame_input_event_timestamps_ = InputEventTimestamps();
-  } else if (event_timestamps_source_) {
-    captured_frame_timestamps_->input_event_timestamps =
-        event_timestamps_source_->TakeLastEventTimestamps();
-  }
+  captured_frame_timestamps_->input_event_timestamps =
+      event_timestamps_source_->TakeLastEventTimestamps();
 
   capturer_->CaptureFrame();
 }

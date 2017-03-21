@@ -635,41 +635,15 @@ TEST_P(ConnectionTest, Audio) {
   client_audio_player_.Verify();
 }
 
-#if !defined(MEMORY_SANITIZER)
-// Test fails under msan, https://crbug.com/697178
 TEST_P(ConnectionTest, FirstCaptureFailed) {
   Connect();
-
-  base::TimeTicks event_timestamp = base::TimeTicks::FromInternalValue(42);
-
-  scoped_refptr<InputEventTimestampsSourceImpl> input_event_timestamps_source =
-      new InputEventTimestampsSourceImpl();
-  input_event_timestamps_source->OnEventReceived(
-      InputEventTimestamps{event_timestamp, base::TimeTicks::Now()});
 
   auto capturer = base::MakeUnique<TestScreenCapturer>();
   capturer->FailNthFrame(0);
   auto video_stream = host_connection_->StartVideoStream(std::move(capturer));
-  video_stream->SetEventTimestampsSource(input_event_timestamps_source);
 
   WaitNextVideoFrame();
-
-  // Currently stats work in this test only for WebRTC because for ICE
-  // connections stats are reported by SoftwareVideoRenderer which is not used
-  // in this test.
-  // TODO(sergeyu): Fix this.
-  if (is_using_webrtc())  {
-    WaitFirstFrameStats();
-
-    // Verify that the event timestamp received before the first frame gets used
-    // for the second frame.
-    const FrameStats& stats = client_video_renderer_.GetFrameStatsConsumer()
-                                  ->received_stats()
-                                  .front();
-    EXPECT_EQ(event_timestamp, stats.host_stats.latest_event_timestamp);
-  }
 }
-#endif
 
 TEST_P(ConnectionTest, SecondCaptureFailed) {
   Connect();
