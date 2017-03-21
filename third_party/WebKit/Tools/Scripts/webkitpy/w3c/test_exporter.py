@@ -53,9 +53,15 @@ class TestExporter(object):
             _log.info('[dry_run] Would have attempted to merge PR')
             return
 
+        # This is outside of the try block because if there's a problem communicating
+        # with the GitHub API, we should hard fail.
         branch = self.wpt_github.get_pr_branch(pull_request.number)
+
         try:
             self.wpt_github.merge_pull_request(pull_request.number)
+
+            # This is in the try block because if a PR can't be merged, we shouldn't
+            # delete its branch.
             self.wpt_github.delete_remote_branch(branch)
         except MergeError:
             _log.info('Could not merge PR.')
@@ -102,10 +108,11 @@ class TestExporter(object):
             _log.info(patch)
             return
 
-        remote_branch_name = self.local_wpt.create_branch_with_patch(message, patch, author)
+        branch_name = 'chromium-export-{sha}'.format(sha=outbound_commit.short_sha)
+        self.local_wpt.create_branch_with_patch(branch_name, message, patch, author)
 
         response_data = self.wpt_github.create_pr(
-            remote_branch_name=remote_branch_name,
+            remote_branch_name=branch_name,
             desc_title=outbound_commit.subject(),
             body=outbound_commit.body())
 

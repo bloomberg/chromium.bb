@@ -88,4 +88,4 @@ class TestExporterTest(unittest.TestCase):
 
         self.assertEqual(test_exporter.wpt_github.calls, ['in_flight_pull_requests', 'create_pr'])
         self.assertEqual(test_exporter.wpt_github.pull_requests_created,
-                         [('chromium-export-try', 'older fake text', 'older fake text')])
+                         [('chromium-export-c881563d73', 'older fake text', 'older fake text')])

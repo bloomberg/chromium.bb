@@ -48,3 +48,7 @@ class ChromiumCommitTest(unittest.TestCase):
         qualified_expected_files = [CHROMIUM_WPT_DIR + f for f in expected_files]
 
         self.assertEqual(files, qualified_expected_files)
+
+    def test_short_sha(self):
+        chromium_commit = ChromiumCommit(MockHost(), sha='c881563d734a86f7d9cd57ac509653a61c45c240')
+        self.assertEqual(chromium_commit.short_sha, 'c881563d73')

@@ -36,6 +36,10 @@ class ChromiumCommit(object):
         self.sha = sha
         self.position = position
 
+    @property
+    def short_sha(self):
+        return self.sha[0:10]
+
     def num_behind_master(self):
         """Returns the number of commits this commit is behind origin/master.
         It is inclusive of this commit and of the latest commit.
