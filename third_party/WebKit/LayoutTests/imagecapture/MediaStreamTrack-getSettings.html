@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/mojo-helpers.js"></script>
+<script src="resources/mock-imagecapture.js"></script>
+<body>
+<canvas id='canvas' width=10 height=10/>
+</body>
+<script>
+
+const meteringModeNames = ["none", "manual", "single-shot", "continuous"];
+const fillLightModeNames = ["none", "off", "auto", "flash", "torch"];
+
+// This test verifies that the settings defined in the mock Mojo service
+// implementation are the same as those returned by the corresponding
+// MediaStreamTrack.getSettings().
+
+async_test(function(t) {
+  var canvas = document.getElementById('canvas');
+  var context = canvas.getContext("2d");
+  context.fillStyle = "red";
+  context.fillRect(0, 0, 10, 10);
+
+  var mock_settings;
+  mockImageCaptureReady
+    .then(mock => {
+      mock_settings = mock.capabilities();
+
+      // |stream| must be created _after_ |mock| is constructed to give the
+      // latter time to override the bindings.
+      var stream = canvas.captureStream();
+      var videoTrack = stream.getVideoTracks()[0];
+
+      // |videoTrack|s settings retrieval, just like the actual capture, is a
+      // process kicked right after creation, we introduce a small delay to
+      // allow for those to be collected.
+      setTimeout(() => {
+        settings = videoTrack.getSettings();
+        assert_equals(typeof settings, 'object');
+
+        assert_equals(settings.whiteBalanceMode,
+            meteringModeNames[mock_settings.white_balance_mode],
+            'whiteBalanceMode');
+        assert_equals(settings.exposureMode,
+            meteringModeNames[mock_settings.exposure_mode], 'exposureMode;');
+        assert_equals(settings.focusMode,
+            meteringModeNames[mock_settings.focus_mode], 'focusMode');
+
+        assert_equals(settings.exposureCompensation,
+                      mock_settings.exposure_compensation.current);
+        assert_equals(settings.colorTemperature,
+                      mock_settings.color_temperature.current);
+        assert_equals(settings.iso, mock_settings.iso.current);
+
+        assert_equals(settings.brightness, mock_settings.brightness.current);
+        assert_equals(settings.contrast, mock_settings.contrast.current);
+        assert_equals(settings.saturation, mock_settings.saturation.current);
+        assert_equals(settings.sharpness, mock_settings.sharpness.current);
+
+        assert_equals(settings.zoom, mock_settings.zoom.current);
+
+        // TODO(mcasas): check |torch| when the mojom interface is updated,
+        // https://crbug.com/700607.
+
+        t.done();
+      }, 100);
+    },
+    error => {
+      assert_unreached("Error creating MockImageCapture: " + error);
+    });
+
+}, 'exercises MediaStreamTrack.getSettings()');
+
+</script>

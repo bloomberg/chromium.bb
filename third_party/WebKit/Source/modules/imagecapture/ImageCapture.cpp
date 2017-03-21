@@ -16,6 +16,7 @@
 #include "modules/imagecapture/PhotoSettings.h"
 #include "modules/mediastream/MediaStreamTrack.h"
 #include "modules/mediastream/MediaTrackCapabilities.h"
+#include "modules/mediastream/MediaTrackSettings.h"
 #include "platform/WaitableEvent.h"
 #include "platform/mojo/MojoHelper.h"
 #include "public/platform/InterfaceProvider.h"
@@ -386,6 +387,39 @@ const MediaTrackConstraintSet& ImageCapture::getMediaTrackConstraints() const {
   return m_currentConstraints;
 }
 
+void ImageCapture::getMediaTrackSettings(MediaTrackSettings& settings) const {
+  if (m_capabilities.hasWhiteBalanceMode())
+    settings.setWhiteBalanceMode(m_capabilities.whiteBalanceMode()[0]);
+  if (m_capabilities.hasExposureMode())
+    settings.setExposureMode(m_capabilities.exposureMode()[0]);
+  if (m_capabilities.hasFocusMode())
+    settings.setFocusMode(m_capabilities.focusMode()[0]);
+
+  if (m_capabilities.hasExposureCompensation()) {
+    settings.setExposureCompensation(
+        m_capabilities.exposureCompensation()->current());
+  }
+  if (m_capabilities.hasColorTemperature())
+    settings.setColorTemperature(m_capabilities.colorTemperature()->current());
+  if (m_capabilities.hasIso())
+    settings.setIso(m_capabilities.iso()->current());
+
+  if (m_capabilities.hasBrightness())
+    settings.setBrightness(m_capabilities.brightness()->current());
+  if (m_capabilities.hasContrast())
+    settings.setContrast(m_capabilities.contrast()->current());
+  if (m_capabilities.hasSaturation())
+    settings.setSaturation(m_capabilities.saturation()->current());
+  if (m_capabilities.hasSharpness())
+    settings.setSharpness(m_capabilities.sharpness()->current());
+
+  if (m_capabilities.hasZoom())
+    settings.setZoom(m_capabilities.zoom()->current());
+
+  // TODO(mcasas): add |torch| when the mojom interface is updated,
+  // https://crbug.com/700607.
+}
+
 ImageCapture::ImageCapture(ExecutionContext* context, MediaStreamTrack* track)
     : ContextLifecycleObserver(context), m_streamTrack(track) {
   DCHECK(m_streamTrack);
@@ -401,19 +435,21 @@ ImageCapture::ImageCapture(ExecutionContext* context, MediaStreamTrack* track)
   // to avoid blocking the main UI thread.
   m_service->GetCapabilities(
       m_streamTrack->component()->source()->id(),
-      convertToBaseCallback(WTF::bind(&ImageCapture::onCapabilitiesBootstrap,
+      convertToBaseCallback(WTF::bind(&ImageCapture::onCapabilitiesUpdate,
                                       wrapPersistent(this))));
 }
 
 void ImageCapture::onCapabilities(
     ScriptPromiseResolver* resolver,
     media::mojom::blink::PhotoCapabilitiesPtr capabilities) {
-  DVLOG(1) << __func__;
   if (!m_serviceRequests.contains(resolver))
     return;
   if (capabilities.is_null()) {
     resolver->reject(DOMException::create(UnknownError, "platform error"));
   } else {
+    // Update the local capabilities cache.
+    onCapabilitiesUpdate(capabilities.Clone());
+
     PhotoCapabilities* caps = PhotoCapabilities::create();
     // TODO(mcasas): Remove the explicit MediaSettingsRange::create() when
     // mojo::StructTraits supports garbage-collected mappings,
@@ -452,11 +488,18 @@ void ImageCapture::onSetOptions(ScriptPromiseResolver* resolver, bool result) {
   if (!m_serviceRequests.contains(resolver))
     return;
 
-  if (result)
-    resolver->resolve();
-  else
+  if (!result) {
     resolver->reject(DOMException::create(UnknownError, "setOptions failed"));
-  m_serviceRequests.erase(resolver);
+    m_serviceRequests.erase(resolver);
+    return;
+  }
+
+  // Retrieve the current device status after setting the options.
+  m_service->GetCapabilities(
+      m_streamTrack->component()->source()->id(),
+      convertToBaseCallback(WTF::bind(&ImageCapture::onCapabilities,
+                                      wrapPersistent(this),
+                                      wrapPersistent(resolver))));
 }
 
 void ImageCapture::onTakePhoto(ScriptPromiseResolver* resolver,
@@ -473,9 +516,8 @@ void ImageCapture::onTakePhoto(ScriptPromiseResolver* resolver,
   m_serviceRequests.erase(resolver);
 }
 
-void ImageCapture::onCapabilitiesBootstrap(
+void ImageCapture::onCapabilitiesUpdate(
     media::mojom::blink::PhotoCapabilitiesPtr capabilities) {
-  DVLOG(1) << __func__;
   if (capabilities.is_null())
     return;
 

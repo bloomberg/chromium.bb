@@ -295,6 +295,8 @@ void MediaStreamTrack::getSettings(MediaTrackSettings& settings) {
         break;
     }
   }
+  if (m_imageCapture)
+    m_imageCapture->getMediaTrackSettings(settings);
 }
 
 ScriptPromise MediaStreamTrack::applyConstraints(

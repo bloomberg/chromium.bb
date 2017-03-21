@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/mojo-helpers.js"></script>
+<script src="resources/mock-imagecapture.js"></script>
+<body>
+<canvas id='canvas' width=10 height=10/>
+</body>
+<script>
+
+// This test verifies that the |constraints| configured in the mock Mojo
+// service implementation, are returned by MediaStreamTrack.getSettings().
+
+async_test(function(t) {
+  var canvas = document.getElementById('canvas');
+  var context = canvas.getContext("2d");
+  context.fillStyle = "red";
+  context.fillRect(0, 0, 10, 10);
+
+  const constraints = { advanced : [{ whiteBalanceMode : "manual",
+                                      exposureMode     : "continuous",
+                                      focusMode        : "single-shot",
+
+                                      exposureCompensation : 133.77,
+                                      colorTemperature     : 6000,
+                                      iso                  : 120.0,
+
+                                      brightness           : 3,
+                                      contrast             : 4,
+                                      saturation           : 5,
+                                      sharpness            : 6,
+
+                                      zoom                 : 3.141592
+                                      // TODO: torch https://crbug.com/700607.
+                                    }]};
+  var theMock = null;
+  var videoTrack = null;
+  mockImageCaptureReady
+    .then(mock => {
+      theMock = mock;
+    },
+    error => {
+      assert_unreached("Error creating MockImageCapture: " + error);
+    })
+    .then(() => {
+      // |stream| must be created _after_ |mock| is constructed to give the
+      // latter time to override the bindings.
+      var stream = canvas.captureStream();
+      videoTrack = stream.getVideoTracks()[0];
+
+      return videoTrack.applyConstraints(constraints);
+    })
+    .then(function() {
+
+      settings = videoTrack.getSettings();
+      assert_equals(typeof settings, 'object');
+
+      assert_equals(constraints.advanced[0].whiteBalanceMode,
+                    settings.whiteBalanceMode, 'whiteBalanceMode');
+      assert_equals(constraints.advanced[0].exposureMode, settings.exposureMode,
+                    'exposureMode');
+      assert_equals(constraints.advanced[0].focusMode, settings.focusMode,
+                    'focusMode');
+
+      assert_equals(constraints.advanced[0].exposureCompensation,
+                    settings.exposureCompensation, 'exposure_compensation');
+      assert_equals(constraints.advanced[0].colorTemperature,
+                    settings.colorTemperature, 'color_temperature');
+      assert_equals(constraints.advanced[0].iso, settings.iso, 'iso');
+
+      assert_equals(constraints.advanced[0].brightness, settings.brightness,
+                    'brightness');
+      assert_equals(constraints.advanced[0].contrast, settings.contrast,
+                    'contrast');
+      assert_equals(constraints.advanced[0].saturation, settings.saturation,
+                    'saturation');
+      assert_equals(constraints.advanced[0].sharpness, settings.sharpness,
+                    'sharpness');
+
+      assert_equals(constraints.advanced[0].zoom, settings.zoom, 'zoom');
+
+      // TODO(mcasas): check |torch| when the mojom interface is updated,
+      // https://crbug.com/700607.
+
+      t.done();
+    })
+    .catch(error => {
+      assert_unreached("Error applying constraints: " + error.message);
+    });
+
+}, 'exercises an applyConstraints() - getSettings() cycle');
+
+</script>

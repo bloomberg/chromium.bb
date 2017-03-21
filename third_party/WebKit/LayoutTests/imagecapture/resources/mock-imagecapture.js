@@ -42,6 +42,53 @@ let mockImageCaptureReady = define(
 
     setOptions(source_id, settings) {
       this.settings_ = settings;
+      if (settings.has_iso)
+        this.capabilities_.capabilities.iso.current = settings.iso;
+      if (settings.has_height)
+        this.capabilities_.capabilities.height.current = settings.height;
+      if (settings.has_width)
+        this.capabilities_.capabilities.width.current = settings.width;
+      if (settings.has_zoom)
+        this.capabilities_.capabilities.zoom.current = settings.zoom;
+      if (settings.has_focus_mode) {
+        this.capabilities_.capabilities.focus_mode =
+            settings.focus_mode;
+      }
+      if (settings.has_exposure_mode) {
+        this.capabilities_.capabilities.exposure_mode =
+            settings.exposure_mode;
+      }
+      if (settings.has_exposure_compensation) {
+        this.capabilities_.capabilities.exposure_compensation.current =
+            settings.exposure_compensation;
+      }
+      if (settings.has_white_balance_mode) {
+        this.capabilities_.capabilities.white_balance_mode =
+            settings.white_balance_mode;
+      }
+      if (settings.has_fill_light_mode) {
+        this.capabilities_.capabilities.fill_light_mode =
+            settings.fill_light_mode;
+      }
+      if (settings.has_red_eye_reduction) {
+        this.capabilities_.capabilities.red_eye_reduction =
+            settings.red_eye_reduction;
+      }
+      if (settings.has_color_temperature) {
+        this.capabilities_.capabilities.color_temperature.current =
+            settings.color_temperature;
+      }
+      if (settings.has_brightness)
+        this.capabilities_.capabilities.brightness.current = settings.brightness;
+      if (settings.has_contrast)
+        this.capabilities_.capabilities.contrast.current = settings.contrast;
+      if (settings.has_saturation) {
+        this.capabilities_.capabilities.saturation.current =
+            settings.saturation;
+      }
+      if (settings.has_sharpness)
+        this.capabilities_.capabilities.sharpness.current = settings.sharpness;
+
       return Promise.resolve({ success : true });
     }
 
