@@ -204,22 +204,24 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
 
   def PerformStage(self):
     # These directories are used later to archive test artifacts.
-    test_results_dir = commands.CreateTestRoot(self._build_root)
+    test_results_root = commands.CreateTestRoot(self._build_root)
     test_basename = constants.VM_TEST_RESULTS % dict(attempt=self._attempt)
     try:
       for vm_test in self._run.config.vm_tests:
-        logging.info('Running VM test %s.', vm_test.test_type)
+        test_type = vm_test.test_type
+        logging.info('Running VM test %s.', test_type)
+        per_test_results_dir = os.path.join(test_results_root, test_type)
         with cgroups.SimpleContainChildren('VMTest'):
           r = ' Reached VMTestStage test run timeout.'
           with timeout_util.Timeout(vm_test.timeout, reason_message=r):
-            self._RunTest(vm_test.test_type, test_results_dir)
+            self._RunTest(test_type, per_test_results_dir)
 
     except Exception:
       logging.error(_VM_TEST_ERROR_MSG % dict(vm_test_results=test_basename))
-      self._ArchiveVMFiles(test_results_dir)
+      self._ArchiveVMFiles(test_results_root)
       raise
     finally:
-      self._ArchiveTestResults(test_results_dir, test_basename)
+      self._ArchiveTestResults(test_results_root, test_basename)
 
 
 class GCETestStage(VMTestStage):
