@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/suggestions/ios_image_decoder_impl.h"
+#include "components/image_fetcher/ios/ios_image_decoder_impl.h"
 
 #import <UIKit/UIKit.h>
 
@@ -54,7 +54,7 @@ static unsigned char kWEBPImage[] = {
 
 }  // namespace
 
-namespace suggestions {
+namespace image_fetcher {
 
 class IOSImageDecoderImplTest : public PlatformTest {
  public:
@@ -72,7 +72,7 @@ class IOSImageDecoderImplTest : public PlatformTest {
 
   base::MessageLoop loop_;
   scoped_refptr<base::SequencedWorkerPool> pool_;
-  std::unique_ptr<image_fetcher::ImageDecoder> ios_image_decoder_impl_;
+  std::unique_ptr<ImageDecoder> ios_image_decoder_impl_;
 
   gfx::Image decoded_image_;
 };
@@ -109,4 +109,4 @@ TEST_F(IOSImageDecoderImplTest, WebpImage) {
   EXPECT_FALSE(decoded_image_.IsEmpty());
 }
 
-}  // namespace suggestions
+}  // namespace image_fetcher

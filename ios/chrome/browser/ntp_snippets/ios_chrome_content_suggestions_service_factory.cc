@@ -17,6 +17,7 @@
 #include "components/image_fetcher/image_decoder.h"
 #include "components/image_fetcher/image_fetcher.h"
 #include "components/image_fetcher/image_fetcher_impl.h"
+#include "components/image_fetcher/ios/ios_image_decoder_impl.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/ntp_snippets/bookmarks/bookmark_suggestions_provider.h"
@@ -41,7 +42,6 @@
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/signin/oauth2_token_service_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
-#include "ios/chrome/browser/suggestions/ios_image_decoder_impl.h"
 #include "ios/chrome/common/channel_info.h"
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/web_thread.h"
@@ -49,6 +49,7 @@
 
 using bookmarks::BookmarkModel;
 using history::HistoryService;
+using image_fetcher::CreateIOSImageDecoder;
 using image_fetcher::ImageFetcherImpl;
 using ios::BookmarkModelFactory;
 using ntp_snippets::BookmarkSuggestionsProvider;
@@ -60,7 +61,6 @@ using ntp_snippets::RemoteSuggestionsFetcher;
 using ntp_snippets::RemoteSuggestionsProviderImpl;
 using ntp_snippets::RemoteSuggestionsStatusService;
 using ntp_snippets::SchedulingRemoteSuggestionsProvider;
-using suggestions::CreateIOSImageDecoder;
 
 namespace {
 

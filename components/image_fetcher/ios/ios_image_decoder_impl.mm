@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/suggestions/ios_image_decoder_impl.h"
+#include "components/image_fetcher/ios/ios_image_decoder_impl.h"
 
 #import <UIKit/UIKit.h>
 
@@ -20,24 +20,22 @@
 #error "This file requires ARC support."
 #endif
 
-namespace suggestions {
+namespace image_fetcher {
 
-class IOSImageDecoderImpl : public image_fetcher::ImageDecoder {
+class IOSImageDecoderImpl : public ImageDecoder {
  public:
   explicit IOSImageDecoderImpl(scoped_refptr<base::TaskRunner> task_runner);
   ~IOSImageDecoderImpl() override;
 
   // Note, that |desired_image_frame_size| is not supported
   // (http://crbug/697596).
-  void DecodeImage(
-      const std::string& image_data,
-      const gfx::Size& desired_image_frame_size,
-      const image_fetcher::ImageDecodedCallback& callback) override;
+  void DecodeImage(const std::string& image_data,
+                   const gfx::Size& desired_image_frame_size,
+                   const ImageDecodedCallback& callback) override;
 
  private:
-  void CreateUIImageAndRunCallback(
-      const image_fetcher::ImageDecodedCallback& callback,
-      NSData* image_data);
+  void CreateUIImageAndRunCallback(const ImageDecodedCallback& callback,
+                                   NSData* image_data);
 
   // The task runner used to decode images if necessary.
   const scoped_refptr<base::TaskRunner> task_runner_;
@@ -57,10 +55,9 @@ IOSImageDecoderImpl::IOSImageDecoderImpl(
 
 IOSImageDecoderImpl::~IOSImageDecoderImpl() {}
 
-void IOSImageDecoderImpl::DecodeImage(
-    const std::string& image_data,
-    const gfx::Size& desired_image_frame_size,
-    const image_fetcher::ImageDecodedCallback& callback) {
+void IOSImageDecoderImpl::DecodeImage(const std::string& image_data,
+                                      const gfx::Size& desired_image_frame_size,
+                                      const ImageDecodedCallback& callback) {
   // Convert the |image_data| std::string to an NSData buffer.
   // The data is copied as it may have to outlive the caller in
   // PostTaskAndReplyWithResult.
@@ -82,7 +79,7 @@ void IOSImageDecoderImpl::DecodeImage(
 }
 
 void IOSImageDecoderImpl::CreateUIImageAndRunCallback(
-    const image_fetcher::ImageDecodedCallback& callback,
+    const ImageDecodedCallback& callback,
     NSData* image_data) {
   // Decode the image data using UIImage.
   if (image_data) {
@@ -101,9 +98,9 @@ void IOSImageDecoderImpl::CreateUIImageAndRunCallback(
   callback.Run(empty_image);
 }
 
-std::unique_ptr<image_fetcher::ImageDecoder> CreateIOSImageDecoder(
+std::unique_ptr<ImageDecoder> CreateIOSImageDecoder(
     scoped_refptr<base::TaskRunner> task_runner) {
   return base::MakeUnique<IOSImageDecoderImpl>(std::move(task_runner));
 }
 
-}  // namespace suggestions
+}  // namespace image_fetcher

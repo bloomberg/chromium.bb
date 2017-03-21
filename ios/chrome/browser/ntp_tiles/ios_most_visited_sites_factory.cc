@@ -8,6 +8,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/image_fetcher/image_fetcher_impl.h"
+#include "components/image_fetcher/ios/ios_image_decoder_impl.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/ntp_tiles/icon_cacher_impl.h"
 #include "components/ntp_tiles/most_visited_sites.h"
@@ -15,7 +16,6 @@
 #include "ios/chrome/browser/favicon/favicon_service_factory.h"
 #include "ios/chrome/browser/history/top_sites_factory.h"
 #include "ios/chrome/browser/ntp_tiles/ios_popular_sites_factory.h"
-#include "ios/chrome/browser/suggestions/ios_image_decoder_impl.h"
 #include "ios/chrome/browser/suggestions/suggestions_service_factory.h"
 #include "ios/web/public/web_thread.h"
 
@@ -36,7 +36,7 @@ IOSMostVisitedSitesFactory::NewForBrowserState(
           ios::FaviconServiceFactory::GetForBrowserState(
               browser_state, ServiceAccessType::IMPLICIT_ACCESS),
           base::MakeUnique<image_fetcher::ImageFetcherImpl>(
-              suggestions::CreateIOSImageDecoder(task_runner),
+              image_fetcher::CreateIOSImageDecoder(task_runner),
               browser_state->GetRequestContext())),
       nil);
 }

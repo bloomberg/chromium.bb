@@ -14,6 +14,7 @@
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/image_fetcher/image_fetcher.h"
 #include "components/image_fetcher/image_fetcher_impl.h"
+#include "components/image_fetcher/ios/ios_image_decoder_impl.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/leveldb_proto/proto_database_impl.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
@@ -25,7 +26,6 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/signin/oauth2_token_service_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
-#include "ios/chrome/browser/suggestions/ios_image_decoder_impl.h"
 #include "ios/chrome/browser/sync/ios_chrome_profile_sync_service_factory.h"
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/web_thread.h"
@@ -93,7 +93,7 @@ SuggestionsServiceFactory::BuildServiceInstanceFor(
 
   std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher =
       base::MakeUnique<image_fetcher::ImageFetcherImpl>(
-          CreateIOSImageDecoder(sequenced_worker_pool),
+          image_fetcher::CreateIOSImageDecoder(sequenced_worker_pool),
           browser_state->GetRequestContext());
 
   std::unique_ptr<ImageManager> thumbnail_manager(new ImageManager(
