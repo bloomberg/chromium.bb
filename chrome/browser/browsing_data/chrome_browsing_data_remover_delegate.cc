@@ -65,6 +65,7 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/translate/core/browser/language_model.h"
+#include "components/web_cache/browser/web_cache_manager.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/plugin_data_remover.h"
 #include "content/public/browser/ssl_host_state_delegate.h"
@@ -799,6 +800,14 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
   //////////////////////////////////////////////////////////////////////////////
   // DATA_TYPE_CACHE
   if (remove_mask & BrowsingDataRemover::DATA_TYPE_CACHE) {
+    // Tell the renderers to clear their cache.
+    // TODO(crbug.com/668114): Renderer cache is a platform concept, and should
+    // live in BrowsingDataRemoverImpl. However, WebCacheManager itself is
+    // a component with dependency on content/browser. Untangle these
+    // dependencies or reimplement the relevant part of WebCacheManager
+    // in content/browser.
+    web_cache::WebCacheManager::GetInstance()->ClearCache();
+
 #if !defined(DISABLE_NACL)
     clear_nacl_cache_.Start();
 

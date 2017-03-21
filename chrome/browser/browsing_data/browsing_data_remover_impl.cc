@@ -20,7 +20,6 @@
 #include "chrome/common/pref_names.h"
 #include "components/browsing_data/content/storage_partition_http_cache_data_remover.h"
 #include "components/prefs/pref_service.h"
-#include "components/web_cache/browser/web_cache_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
@@ -515,10 +514,9 @@ void BrowsingDataRemoverImpl::RemoveImpl(
   //////////////////////////////////////////////////////////////////////////////
   // CACHE
   if (remove_mask & DATA_TYPE_CACHE) {
-    // Tell the renderers to clear their cache.
-    web_cache::WebCacheManager::GetInstance()->ClearCache();
-
     content::RecordAction(UserMetricsAction("ClearBrowsingData_Cache"));
+
+    // TODO(msramek): Clear the cache of all renderers.
 
     clear_cache_.Start();
     // StoragePartitionHttpCacheDataRemover deletes itself when it is done.
