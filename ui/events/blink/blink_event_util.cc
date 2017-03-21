@@ -772,8 +772,6 @@ std::unique_ptr<blink::WebInputEvent> TranslateAndScaleWebInputEvent(
     mouse_event->y += delta.y();
     mouse_event->x *= scale;
     mouse_event->y *= scale;
-    mouse_event->windowX = mouse_event->x;
-    mouse_event->windowY = mouse_event->y;
     mouse_event->movementX *= scale;
     mouse_event->movementY *= scale;
   } else if (blink::WebInputEvent::isTouchEventType(event.type())) {

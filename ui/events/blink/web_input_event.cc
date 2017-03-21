@@ -235,8 +235,8 @@ blink::WebMouseEvent MakeWebMouseEvent(
 #endif
   // Replace the event's coordinate fields with translated position data from
   // |event|.
-  webkit_event.windowX = webkit_event.x = event.x();
-  webkit_event.windowY = webkit_event.y = event.y();
+  webkit_event.x = event.x();
+  webkit_event.y = event.y();
 
 #if defined(OS_WIN)
   if (event.native_event().message)
@@ -271,8 +271,8 @@ blink::WebMouseWheelEvent MakeWebMouseWheelEvent(
 
   // Replace the event's coordinate fields with translated position data from
   // |event|.
-  webkit_event.windowX = webkit_event.x = event.x();
-  webkit_event.windowY = webkit_event.y = event.y();
+  webkit_event.x = event.x();
+  webkit_event.y = event.y();
 
   const gfx::Point screen_point =
       GetScreenLocationFromEvent(event, screen_location_callback);
@@ -302,8 +302,8 @@ blink::WebMouseWheelEvent MakeWebMouseWheelEvent(
 
   // Replace the event's coordinate fields with translated position data from
   // |event|.
-  webkit_event.windowX = webkit_event.x = event.x();
-  webkit_event.windowY = webkit_event.y = event.y();
+  webkit_event.x = event.x();
+  webkit_event.y = event.y();
 
   const gfx::Point screen_point =
       GetScreenLocationFromEvent(event, screen_location_callback);

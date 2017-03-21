@@ -172,8 +172,6 @@ WebMouseEvent WebMouseEventBuilder::Build(
   // set position fields:
   result.x = static_cast<short>(LOWORD(lparam));
   result.y = static_cast<short>(HIWORD(lparam));
-  result.windowX = result.x;
-  result.windowY = result.y;
 
   POINT global_point = {result.x, result.y};
   ClientToScreen(hwnd, &global_point);
@@ -323,8 +321,6 @@ WebMouseWheelEvent WebMouseWheelEventBuilder::Build(
   MapWindowPoints(0, hwnd, &client_point, 1);
   result.x = client_point.x;
   result.y = client_point.y;
-  result.windowX = result.x;
-  result.windowY = result.y;
 
   // Convert wheel delta amount to a number of pixels to scroll.
   //

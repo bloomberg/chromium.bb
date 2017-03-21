@@ -1129,8 +1129,6 @@ TEST_P(VisualViewportTest, TestContextMenuShownInCorrectLocation) {
                                WebInputEvent::TimeStampForTesting);
   mouseDownEvent.x = 10;
   mouseDownEvent.y = 10;
-  mouseDownEvent.windowX = 10;
-  mouseDownEvent.windowY = 10;
   mouseDownEvent.globalX = 110;
   mouseDownEvent.globalY = 210;
   mouseDownEvent.clickCount = 1;

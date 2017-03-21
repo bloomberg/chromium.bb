@@ -796,8 +796,6 @@ void RenderWidgetHostViewEventHandler::ModifyEventMovementAndCoords(
   if (mouse_locked_) {
     event->x = unlocked_mouse_position_.x();
     event->y = unlocked_mouse_position_.y();
-    event->windowX = unlocked_mouse_position_.x();
-    event->windowY = unlocked_mouse_position_.y();
     event->globalX = unlocked_global_mouse_position_.x();
     event->globalY = unlocked_global_mouse_position_.y();
   } else {

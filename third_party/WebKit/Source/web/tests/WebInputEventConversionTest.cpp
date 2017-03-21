@@ -138,8 +138,6 @@ TEST(WebInputEventConversionTest, InputEventsScaling) {
                                 WebInputEvent::TimeStampForTesting);
     webMouseEvent.x = 10;
     webMouseEvent.y = 10;
-    webMouseEvent.windowX = 10;
-    webMouseEvent.windowY = 10;
     webMouseEvent.globalX = 10;
     webMouseEvent.globalY = 10;
     webMouseEvent.movementX = 10;
@@ -370,8 +368,6 @@ TEST(WebInputEventConversionTest, InputEventsTransform) {
                                 WebInputEvent::TimeStampForTesting);
     webMouseEvent.x = 100;
     webMouseEvent.y = 110;
-    webMouseEvent.windowX = 100;
-    webMouseEvent.windowY = 110;
     webMouseEvent.globalX = 100;
     webMouseEvent.globalY = 110;
     webMouseEvent.movementX = 60;
@@ -397,8 +393,6 @@ TEST(WebInputEventConversionTest, InputEventsTransform) {
                                  WebInputEvent::TimeStampForTesting);
     webMouseEvent1.x = 100;
     webMouseEvent1.y = 110;
-    webMouseEvent1.windowX = 100;
-    webMouseEvent1.windowY = 110;
     webMouseEvent1.globalX = 100;
     webMouseEvent1.globalY = 110;
     webMouseEvent1.movementX = 60;
@@ -406,7 +400,6 @@ TEST(WebInputEventConversionTest, InputEventsTransform) {
 
     WebMouseEvent webMouseEvent2 = webMouseEvent1;
     webMouseEvent2.y = 140;
-    webMouseEvent2.windowY = 140;
     webMouseEvent2.globalY = 140;
     webMouseEvent2.movementY = 30;
 
@@ -689,8 +682,6 @@ TEST(WebInputEventConversionTest, VisualViewportOffset) {
                                 WebInputEvent::TimeStampForTesting);
     webMouseEvent.x = 10;
     webMouseEvent.y = 10;
-    webMouseEvent.windowX = 10;
-    webMouseEvent.windowY = 10;
     webMouseEvent.globalX = 10;
     webMouseEvent.globalY = 10;
 
@@ -710,8 +701,6 @@ TEST(WebInputEventConversionTest, VisualViewportOffset) {
                                           WebInputEvent::TimeStampForTesting);
     webMouseWheelEvent.x = 10;
     webMouseWheelEvent.y = 10;
-    webMouseWheelEvent.windowX = 10;
-    webMouseWheelEvent.windowY = 10;
     webMouseWheelEvent.globalX = 10;
     webMouseWheelEvent.globalY = 10;
 
@@ -798,8 +787,6 @@ TEST(WebInputEventConversionTest, ElasticOverscroll) {
                                 WebInputEvent::TimeStampForTesting);
     webMouseEvent.x = 10;
     webMouseEvent.y = 50;
-    webMouseEvent.windowX = 10;
-    webMouseEvent.windowY = 50;
     webMouseEvent.globalX = 10;
     webMouseEvent.globalY = 50;
 
@@ -827,8 +814,6 @@ TEST(WebInputEventConversionTest, ElasticOverscroll) {
                                 WebInputEvent::TimeStampForTesting);
     webMouseEvent.x = 10;
     webMouseEvent.y = 10;
-    webMouseEvent.windowX = 10;
-    webMouseEvent.windowY = 10;
     webMouseEvent.globalX = 10;
     webMouseEvent.globalY = 10;
 
@@ -875,8 +860,6 @@ TEST(WebInputEventConversionTest, ElasticOverscrollWithPageReload) {
                                 WebInputEvent::TimeStampForTesting);
     webMouseEvent.x = 10;
     webMouseEvent.y = 50;
-    webMouseEvent.windowX = 10;
-    webMouseEvent.windowY = 50;
     webMouseEvent.globalX = 10;
     webMouseEvent.globalY = 50;
 

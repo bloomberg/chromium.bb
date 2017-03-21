@@ -102,8 +102,6 @@ WebMouseEvent WebMouseEventFromGestureEvent(const WebGestureEvent& gesture) {
 
   mouse.x = gesture.x;
   mouse.y = gesture.y;
-  mouse.windowX = gesture.x;
-  mouse.windowY = gesture.y;
   mouse.globalX = gesture.globalX;
   mouse.globalY = gesture.globalY;
 
@@ -180,8 +178,6 @@ class PepperWidget : public WebWidget {
                               gesture_event->timeStampSeconds());
           mouse.x = gesture_event->x;
           mouse.y = gesture_event->y;
-          mouse.windowX = gesture_event->x;
-          mouse.windowY = gesture_event->y;
           mouse.globalX = gesture_event->globalX;
           mouse.globalY = gesture_event->globalY;
           mouse.movementX = 0;

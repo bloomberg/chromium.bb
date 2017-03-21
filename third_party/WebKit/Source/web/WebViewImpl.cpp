@@ -944,8 +944,8 @@ WebInputEventResult WebViewImpl::handleSyntheticWheelFromTouchpadPinchEvent(
       WebInputEvent::MouseWheel,
       pinchEvent.modifiers() | WebInputEvent::ControlKey,
       pinchEvent.timeStampSeconds());
-  wheelEvent.windowX = wheelEvent.x = pinchEvent.x;
-  wheelEvent.windowY = wheelEvent.y = pinchEvent.y;
+  wheelEvent.x = pinchEvent.x;
+  wheelEvent.y = pinchEvent.y;
   wheelEvent.globalX = pinchEvent.globalX;
   wheelEvent.globalY = pinchEvent.globalY;
   wheelEvent.deltaX = 0;

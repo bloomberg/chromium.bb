@@ -301,8 +301,8 @@ class WebViewInteractiveTestBase : public extensions::PlatformAppBrowserTest {
                                      blink::WebInputEvent::NoModifiers,
                                      blink::WebInputEvent::TimeStampForTesting);
     mouse_event.button = button;
-    mouse_event.x = mouse_event.windowX = x;
-    mouse_event.y = mouse_event.windowY = y;
+    mouse_event.x = x;
+    mouse_event.y = y;
     // Needed for the WebViewTest.ContextMenuPositionAfterCSSTransforms
     gfx::Rect rect = rwh->GetView()->GetViewBounds();
     mouse_event.globalX = x + rect.x();

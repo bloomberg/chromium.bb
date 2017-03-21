@@ -117,8 +117,6 @@ std::unique_ptr<blink::WebMouseEvent> MakeMouseEvent(WebInputEvent::Type type,
   mouse_event->pointerType = blink::WebPointerProperties::PointerType::Mouse;
   mouse_event->x = x;
   mouse_event->y = y;
-  mouse_event->windowX = x;
-  mouse_event->windowY = y;
   mouse_event->clickCount = 1;
 
   return mouse_event;

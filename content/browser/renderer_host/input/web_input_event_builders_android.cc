@@ -129,8 +129,6 @@ WebMouseEvent WebMouseEventBuilder::Build(WebInputEvent::Type type,
 
   result.x = window_x;
   result.y = window_y;
-  result.windowX = window_x;
-  result.windowY = window_y;
   result.clickCount = click_count;
 
   int button = action_button;
@@ -164,8 +162,6 @@ WebMouseWheelEvent WebMouseWheelEventBuilder::Build(float ticks_x,
                             WebInputEvent::NoModifiers, time_sec);
   result.x = window_x;
   result.y = window_y;
-  result.windowX = window_x;
-  result.windowY = window_y;
   result.button = WebMouseEvent::Button::NoButton;
   result.hasPreciseScrollingDeltas = true;
   result.deltaX = ticks_x * tick_multiplier;

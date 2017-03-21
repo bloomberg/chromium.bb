@@ -261,9 +261,7 @@ TEST(WebInputEventTest, TestMakeWebMouseEvent) {
     EXPECT_EQ(blink::WebInputEvent::MouseDown, webkit_event.type());
     EXPECT_EQ(ui_event.GetClickCount(), webkit_event.clickCount);
     EXPECT_EQ(123, webkit_event.x);
-    EXPECT_EQ(123, webkit_event.windowX);
     EXPECT_EQ(321, webkit_event.y);
-    EXPECT_EQ(321, webkit_event.windowY);
   }
   {
     // Left released.
@@ -281,9 +279,7 @@ TEST(WebInputEventTest, TestMakeWebMouseEvent) {
     EXPECT_EQ(blink::WebInputEvent::MouseUp, webkit_event.type());
     EXPECT_EQ(ui_event.GetClickCount(), webkit_event.clickCount);
     EXPECT_EQ(123, webkit_event.x);
-    EXPECT_EQ(123, webkit_event.windowX);
     EXPECT_EQ(321, webkit_event.y);
-    EXPECT_EQ(321, webkit_event.windowY);
   }
   {
     // Middle pressed.
@@ -301,9 +297,7 @@ TEST(WebInputEventTest, TestMakeWebMouseEvent) {
     EXPECT_EQ(blink::WebInputEvent::MouseDown, webkit_event.type());
     EXPECT_EQ(ui_event.GetClickCount(), webkit_event.clickCount);
     EXPECT_EQ(123, webkit_event.x);
-    EXPECT_EQ(123, webkit_event.windowX);
     EXPECT_EQ(321, webkit_event.y);
-    EXPECT_EQ(321, webkit_event.windowY);
   }
   {
     // Middle released.
@@ -321,9 +315,7 @@ TEST(WebInputEventTest, TestMakeWebMouseEvent) {
     EXPECT_EQ(blink::WebInputEvent::MouseUp, webkit_event.type());
     EXPECT_EQ(ui_event.GetClickCount(), webkit_event.clickCount);
     EXPECT_EQ(123, webkit_event.x);
-    EXPECT_EQ(123, webkit_event.windowX);
     EXPECT_EQ(321, webkit_event.y);
-    EXPECT_EQ(321, webkit_event.windowY);
   }
   {
     // Right pressed.
@@ -341,9 +333,7 @@ TEST(WebInputEventTest, TestMakeWebMouseEvent) {
     EXPECT_EQ(blink::WebInputEvent::MouseDown, webkit_event.type());
     EXPECT_EQ(ui_event.GetClickCount(), webkit_event.clickCount);
     EXPECT_EQ(123, webkit_event.x);
-    EXPECT_EQ(123, webkit_event.windowX);
     EXPECT_EQ(321, webkit_event.y);
-    EXPECT_EQ(321, webkit_event.windowY);
   }
   {
     // Right released.
@@ -361,9 +351,7 @@ TEST(WebInputEventTest, TestMakeWebMouseEvent) {
     EXPECT_EQ(blink::WebInputEvent::MouseUp, webkit_event.type());
     EXPECT_EQ(ui_event.GetClickCount(), webkit_event.clickCount);
     EXPECT_EQ(123, webkit_event.x);
-    EXPECT_EQ(123, webkit_event.windowX);
     EXPECT_EQ(321, webkit_event.y);
-    EXPECT_EQ(321, webkit_event.windowY);
   }
   {
     // Moved
@@ -380,9 +368,7 @@ TEST(WebInputEventTest, TestMakeWebMouseEvent) {
     EXPECT_EQ(blink::WebInputEvent::MouseMove, webkit_event.type());
     EXPECT_EQ(ui_event.GetClickCount(), webkit_event.clickCount);
     EXPECT_EQ(123, webkit_event.x);
-    EXPECT_EQ(123, webkit_event.windowX);
     EXPECT_EQ(321, webkit_event.y);
-    EXPECT_EQ(321, webkit_event.windowY);
   }
   {
     // Moved with left down
@@ -400,9 +386,7 @@ TEST(WebInputEventTest, TestMakeWebMouseEvent) {
     EXPECT_EQ(blink::WebInputEvent::MouseMove, webkit_event.type());
     EXPECT_EQ(ui_event.GetClickCount(), webkit_event.clickCount);
     EXPECT_EQ(123, webkit_event.x);
-    EXPECT_EQ(123, webkit_event.windowX);
     EXPECT_EQ(321, webkit_event.y);
-    EXPECT_EQ(321, webkit_event.windowY);
   }
   {
     // Left with shift pressed.
@@ -420,9 +404,7 @@ TEST(WebInputEventTest, TestMakeWebMouseEvent) {
     EXPECT_EQ(blink::WebInputEvent::MouseDown, webkit_event.type());
     EXPECT_EQ(ui_event.GetClickCount(), webkit_event.clickCount);
     EXPECT_EQ(123, webkit_event.x);
-    EXPECT_EQ(123, webkit_event.windowX);
     EXPECT_EQ(321, webkit_event.y);
-    EXPECT_EQ(321, webkit_event.windowY);
   }
   {
     // Default values for PointerDetails.
@@ -441,9 +423,7 @@ TEST(WebInputEventTest, TestMakeWebMouseEvent) {
     EXPECT_EQ(0.0f, webkit_event.tangentialPressure);
     EXPECT_EQ(0, webkit_event.twist);
     EXPECT_EQ(123, webkit_event.x);
-    EXPECT_EQ(123, webkit_event.windowX);
     EXPECT_EQ(321, webkit_event.y);
-    EXPECT_EQ(321, webkit_event.windowY);
   }
   {
     // Stylus values for PointerDetails.
@@ -473,9 +453,7 @@ TEST(WebInputEventTest, TestMakeWebMouseEvent) {
     EXPECT_EQ(269, webkit_event.twist);
     EXPECT_EQ(63, webkit_event.id);
     EXPECT_EQ(123, webkit_event.x);
-    EXPECT_EQ(123, webkit_event.windowX);
     EXPECT_EQ(321, webkit_event.y);
-    EXPECT_EQ(321, webkit_event.windowY);
   }
 }
 
@@ -507,9 +485,7 @@ TEST(WebInputEventTest, TestMakeWebMouseWheelEvent) {
     EXPECT_EQ(0.0f, webkit_event.tangentialPressure);
     EXPECT_EQ(0, webkit_event.twist);
     EXPECT_EQ(123, webkit_event.x);
-    EXPECT_EQ(123, webkit_event.windowX);
     EXPECT_EQ(321, webkit_event.y);
-    EXPECT_EQ(321, webkit_event.windowY);
   }
 }
 

@@ -130,9 +130,6 @@ void SetWebEventLocationFromEventInView(blink::WebMouseEvent* result,
   result->x = content_local.x;
   result->y = [view frame].size.height - content_local.y;  // Flip y.
 
-  result->windowX = result->x;
-  result->windowY = result->y;
-
   result->movementX = [event deltaX];
   result->movementY = [event deltaY];
 }

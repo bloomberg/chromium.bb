@@ -37,17 +37,10 @@ void ApppendEventDetails(const WebKeyboardEvent& event, std::string* result) {
 
 void ApppendEventDetails(const WebMouseEvent& event, std::string* result) {
   StringAppendF(result,
-                "{\n Button: %d\n Pos: (%d, %d)\n WindowPos: (%d, %d)\n"
+                "{\n Button: %d\n Pos: (%d, %d)\n"
                 " GlobalPos: (%d, %d)\n Movement: (%d, %d)\n Clicks: %d\n}",
-                static_cast<int>(event.button),
-                event.x,
-                event.y,
-                event.windowX,
-                event.windowY,
-                event.globalX,
-                event.globalY,
-                event.movementX,
-                event.movementY,
+                static_cast<int>(event.button), event.x, event.y, event.globalX,
+                event.globalY, event.movementX, event.movementY,
                 event.clickCount);
 }
 

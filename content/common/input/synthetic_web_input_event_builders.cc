@@ -37,8 +37,6 @@ WebMouseEvent SyntheticWebMouseEventBuilder::Build(
                        ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
   result.x = window_x;
   result.y = window_y;
-  result.windowX = window_x;
-  result.windowY = window_y;
   result.setModifiers(modifiers);
   result.pointerType = pointer_type;
   result.id = ui::PointerEvent::kMousePointerId;

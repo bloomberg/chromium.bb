@@ -34,6 +34,7 @@
 #include "third_party/WebKit/public/platform/WebMouseEvent.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
+#include "third_party/WebKit/public/web/WebPluginContainer.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -329,8 +330,12 @@ void ChromePluginPlaceholder::ShowContextMenu(
   hide_item.label = l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_PLUGIN_HIDE);
   params.custom_items.push_back(hide_item);
 
-  params.x = event.windowX;
-  params.y = event.windowY;
+  blink::WebPoint point(event.x, event.y);
+  if (plugin() && plugin()->container())
+    point = plugin()->container()->localToRootFramePoint(point);
+
+  params.x = point.x;
+  params.y = point.y;
 
   context_menu_request_id_ = render_frame()->ShowContextMenu(this, params);
   g_last_active_menu = this;

@@ -364,8 +364,6 @@ void InputHandler::DispatchMouseEvent(
   event.button = event_button;
   event.x = x * page_scale_factor_;
   event.y = y * page_scale_factor_;
-  event.windowX = x * page_scale_factor_;
-  event.windowY = y * page_scale_factor_;
   event.globalX = x * page_scale_factor_;
   event.globalY = y * page_scale_factor_;
   event.clickCount = click_count.fromMaybe(0);
@@ -445,8 +443,6 @@ Response InputHandler::EmulateTouchFromMouseEvent(const std::string& type,
   mouse_event->x = x;
   mouse_event->y = y;
   mouse_event->button = event_button;
-  mouse_event->windowX = x;
-  mouse_event->windowY = y;
   mouse_event->globalX = x;
   mouse_event->globalY = y;
   mouse_event->clickCount = click_count.fromMaybe(0);

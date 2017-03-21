@@ -111,8 +111,6 @@ void updateWebMouseEventFromCoreMouseEvent(const MouseEvent& event,
     pointInRootFrame = view->contentsToRootFrame(pointInRootFrame);
   webEvent.globalX = event.screenX();
   webEvent.globalY = event.screenY();
-  webEvent.windowX = pointInRootFrame.x();
-  webEvent.windowY = pointInRootFrame.y();
   IntPoint localPoint = convertAbsoluteLocationForLayoutObjectInt(
       event.absoluteLocation(), layoutItem);
   webEvent.x = localPoint.x();
@@ -306,8 +304,6 @@ WebMouseEventBuilder::WebMouseEventBuilder(const FrameViewBase* frameViewBase,
   IntPoint screenPoint = roundedIntPoint(touch->screenLocation());
   globalX = screenPoint.x();
   globalY = screenPoint.y();
-  windowX = pointInRootFrame.x();
-  windowY = pointInRootFrame.y();
 
   button = WebMouseEvent::Button::Left;
   m_modifiers |= WebInputEvent::LeftButtonDown;
