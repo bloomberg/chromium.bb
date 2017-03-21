@@ -64,7 +64,6 @@ component("wtf") {
     "InstanceCounter.cpp",
     "InstanceCounter.h",
     "LeakAnnotations.h",
-    "LinkedStack.h",
     "ListHashSet.h",
     "Locker.h",
     "MathExtras.h",

@@ -33,7 +33,6 @@
 #include "platform/heap/HeapTerminatedArray.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
-#include "wtf/LinkedStack.h"
 #include "wtf/TerminatedArray.h"
 
 namespace blink {

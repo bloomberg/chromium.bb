@@ -37,6 +37,12 @@
 
 namespace blink {
 
+// HeapLinkedStack<> is an Oilpan-managed stack that avoids pre-allocation
+// of memory and heap fragmentation.
+//
+// The API was originally implemented on the call stack by LinkedStack<>
+// (now removed: https://codereview.chromium.org/2761853003/).
+// See https://codereview.chromium.org/17314010 for the original use-case.
 template <typename T>
 class HeapLinkedStack : public GarbageCollected<HeapLinkedStack<T>> {
  public:
