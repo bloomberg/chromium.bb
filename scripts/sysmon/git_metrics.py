@@ -8,10 +8,10 @@ from __future__ import absolute_import
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import psutil
+
 import os
 import subprocess
-
-import psutil
 
 from chromite.lib import cros_logging as logging
 from infra_libs import ts_mon
@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 
 
 class _GitRepo(object):
+  """Helper class for running git commands."""
 
   def __init__(self, gitdir):
     self._gitdir = gitdir
@@ -40,12 +41,13 @@ class _GitRepo(object):
 
 
 class _GitMetricCollector(object):
+  """Class for collecting metrics about a git repository."""
 
   _commit_hash_metric = ts_mon.StringMetric(
       'git/hash',
       description='Current Git commit hash.')
 
-  _commit_time_metric = ts_mon.StringMetric(
+  _commit_time_metric = ts_mon.GaugeMetric(
       'git/commit_time',
       description='Current Git commit time as seconds since Unix Epoch.')
 
