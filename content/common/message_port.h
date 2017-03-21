@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
+#include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "mojo/public/cpp/system/watcher.h"
@@ -69,7 +70,8 @@ class CONTENT_EXPORT MessagePort {
                   std::vector<MessagePort>* ports);
 
   // This callback will be invoked on a background thread when messages are
-  // available to be read via GetMessage.
+  // available to be read via GetMessage. It must not synchronously call back
+  // into the MessagePort instance.
   void SetCallback(const base::Closure& callback);
 
   // Clears any callback specified by a prior call to SetCallback.
@@ -81,12 +83,12 @@ class CONTENT_EXPORT MessagePort {
     State();
     State(mojo::ScopedMessagePipeHandle handle);
 
-    void AddWatch();
-    void CancelWatch();
+    void StartWatching(const base::Closure& callback);
+    void StopWatching();
 
-    mojo::ScopedWatcherHandle watcher_handle_;
-    mojo::ScopedMessagePipeHandle handle_;
-    base::Closure callback_;
+    mojo::ScopedMessagePipeHandle TakeHandle();
+
+    const mojo::ScopedMessagePipeHandle& handle() const { return handle_; }
 
    private:
     friend class base::RefCountedThreadSafe<State>;
@@ -100,6 +102,16 @@ class CONTENT_EXPORT MessagePort {
                                   MojoResult result,
                                   MojoHandleSignalsState signals_state,
                                   MojoWatcherNotificationFlags flags);
+
+    // Guards access to the fields below.
+    base::Lock lock_;
+
+    mojo::ScopedWatcherHandle watcher_handle_;
+    mojo::ScopedMessagePipeHandle handle_;
+
+    // Callback to invoke when the State is notified about a change to
+    // |handle_|'s signaling state.
+    base::Closure callback_;
   };
   mutable scoped_refptr<State> state_;
 };
