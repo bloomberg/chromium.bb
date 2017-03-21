@@ -19,6 +19,25 @@ class CommandLine;
 
 namespace gpu {
 
+namespace crash_keys {
+
+// Keys that can be used for crash reporting.
+#if !defined(OS_ANDROID)
+GPU_EXPORT extern const char kGPUVendorID[];
+GPU_EXPORT extern const char kGPUDeviceID[];
+#endif
+GPU_EXPORT extern const char kGPUDriverVersion[];
+GPU_EXPORT extern const char kGPUPixelShaderVersion[];
+GPU_EXPORT extern const char kGPUVertexShaderVersion[];
+#if defined(OS_MACOSX)
+GPU_EXPORT extern const char kGPUGLVersion[];
+#elif defined(OS_POSIX)
+GPU_EXPORT extern const char kGPUVendor[];
+GPU_EXPORT extern const char kGPURenderer[];
+#endif
+
+}  // namespace crash_keys
+
 struct GPUInfo;
 
 // With provided GPUInfo, compute the driver bug workarounds and disabled
@@ -46,6 +65,8 @@ GPU_EXPORT void InitializeDualGpusIfSupported(
 GPU_EXPORT GpuFeatureInfo
 GetGpuFeatureInfo(const GPUInfo& gpu_info,
                   const base::CommandLine& command_line);
+
+GPU_EXPORT void SetKeysForCrashLogging(const GPUInfo& gpu_info);
 
 }  // namespace gpu
 

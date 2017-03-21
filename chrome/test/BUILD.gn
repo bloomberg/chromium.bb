@@ -5021,6 +5021,7 @@ if (!is_android) {
       "//chrome/child",
       "//components/crash/core/common",
       "//components/flags_ui:switches",
+      "//gpu/config",
     ]
   }
 }

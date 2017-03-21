@@ -8,10 +8,12 @@
 #include <vector>
 
 #include "base/command_line.h"
+#include "base/debug/crash_logging.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/sys_info.h"
 #include "gpu/config/gpu_blacklist.h"
 #include "gpu/config/gpu_control_list_jsons.h"
@@ -90,6 +92,24 @@ GpuFeatureStatus GetGpuRasterizationFeatureStatus(
 }
 
 }  // namespace anonymous
+
+namespace crash_keys {
+
+#if !defined(OS_ANDROID)
+const char kGPUVendorID[] = "gpu-venid";
+const char kGPUDeviceID[] = "gpu-devid";
+#endif
+const char kGPUDriverVersion[] = "gpu-driver";
+const char kGPUPixelShaderVersion[] = "gpu-psver";
+const char kGPUVertexShaderVersion[] = "gpu-vsver";
+#if defined(OS_MACOSX)
+const char kGPUGLVersion[] = "gpu-glver";
+#elif defined(OS_POSIX)
+const char kGPUVendor[] = "gpu-gl-vendor";
+const char kGPURenderer[] = "gpu-gl-renderer";
+#endif
+
+}  // namespace crash_keys
 
 void ApplyGpuDriverBugWorkarounds(const GPUInfo& gpu_info,
                                   base::CommandLine* command_line) {
@@ -197,6 +217,29 @@ GpuFeatureInfo GetGpuFeatureInfo(const GPUInfo& gpu_info,
       GetGpuRasterizationFeatureStatus(blacklisted_features, command_line);
 
   return gpu_feature_info;
+}
+
+void SetKeysForCrashLogging(const GPUInfo& gpu_info) {
+#if !defined(OS_ANDROID)
+  base::debug::SetCrashKeyValue(
+      crash_keys::kGPUVendorID,
+      base::StringPrintf("0x%04x", gpu_info.gpu.vendor_id));
+  base::debug::SetCrashKeyValue(
+      crash_keys::kGPUDeviceID,
+      base::StringPrintf("0x%04x", gpu_info.gpu.device_id));
+#endif
+  base::debug::SetCrashKeyValue(crash_keys::kGPUDriverVersion,
+                                gpu_info.driver_version);
+  base::debug::SetCrashKeyValue(crash_keys::kGPUPixelShaderVersion,
+                                gpu_info.pixel_shader_version);
+  base::debug::SetCrashKeyValue(crash_keys::kGPUVertexShaderVersion,
+                                gpu_info.vertex_shader_version);
+#if defined(OS_MACOSX)
+  base::debug::SetCrashKeyValue(crash_keys::kGPUGLVersion, gpu_info.gl_version);
+#elif defined(OS_POSIX)
+  base::debug::SetCrashKeyValue(crash_keys::kGPUVendor, gpu_info.gl_vendor);
+  base::debug::SetCrashKeyValue(crash_keys::kGPURenderer, gpu_info.gl_renderer);
+#endif
 }
 
 }  // namespace gpu
