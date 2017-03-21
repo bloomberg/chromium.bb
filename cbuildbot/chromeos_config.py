@@ -1233,24 +1233,12 @@ def GeneralTemplates(site_config, ge_build_config):
   )
 
   site_config.AddTemplate(
-      'chromium_pfq_informational_gn',
-      site_config.templates.chromium_pfq_informational,
-      useflags=append_useflags(['gn']),
-  )
-
-  site_config.AddTemplate(
       'chrome_pfq_informational',
       site_config.templates.chromium_pfq_informational,
       site_config.templates.internal,
       site_config.templates.official,
       unittests=False,
       description='Informational Chrome Uprev & Build (internal)',
-  )
-
-  site_config.AddTemplate(
-      'chrome_pfq_informational_gn',
-      site_config.templates.chrome_pfq_informational,
-      useflags=append_useflags(['gn']),
   )
 
   site_config.AddTemplate(
@@ -2687,12 +2675,6 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.chrome_pfq_informational,
       important=False)
   site_config.AddForBoards(
-      'tot-chrome-pfq-informational-gn',
-      informational_boards,
-      internal_board_configs,
-      site_config.templates.chrome_pfq_informational_gn,
-      important=False)
-  site_config.AddForBoards(
       'tot-chrome-pfq-cheets-informational',
       _cheets_boards,
       internal_board_configs,
@@ -2754,17 +2736,6 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       boards_dict['all_full_boards'],
       external_board_configs,
       site_config.templates.chromium_pfq_informational,
-      site_config.templates.build_external_chrome,
-      important=False,
-      internal=False,
-      manifest_repo_url=site_config.params['MANIFEST_URL'],
-      overlays=constants.PUBLIC_OVERLAYS)
-
-  site_config.AddForBoards(
-      'tot-chromium-pfq-informational-gn',
-      boards_dict['all_full_boards'],
-      external_board_configs,
-      site_config.templates.chromium_pfq_informational_gn,
       site_config.templates.build_external_chrome,
       important=False,
       internal=False,

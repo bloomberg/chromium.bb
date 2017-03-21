@@ -317,29 +317,6 @@
                 "chrome_internal"
             ]
         },
-        "chrome_pfq_informational_gn": {
-            "_template": "chrome_pfq_informational_gn",
-            "build_timeout": 21600,
-            "build_type": "chrome",
-            "chrome_rev": "tot",
-            "chromeos_official": true,
-            "description": "Informational Chrome Uprev & Build (internal)",
-            "hw_tests_override": [
-                "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-                "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-                "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}",
-                "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
-            ],
-            "internal": true,
-            "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
-            "overlays": "both",
-            "unittests": false,
-            "uprev": false,
-            "useflags": [
-                "chrome_internal",
-                "gn"
-            ]
-        },
         "chromium_pfq": {
             "_template": "chromium_pfq",
             "build_timeout": 21600,
@@ -377,24 +354,6 @@
             ],
             "unittests": false,
             "uprev": false
-        },
-        "chromium_pfq_informational_gn": {
-            "_template": "chromium_pfq_informational_gn",
-            "build_timeout": 21600,
-            "build_type": "chrome",
-            "chrome_rev": "tot",
-            "description": "Informational Chromium Uprev & Build (public)",
-            "hw_tests_override": [
-                "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 3,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"Build\",\n    \"retry\": true,\n    \"suite\": \"bvt-inline\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-                "{\n    \"async\": false,\n    \"blocking\": true,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"CQ\",\n    \"retry\": true,\n    \"suite\": \"au\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 10800,\n    \"warn_only\": false\n}",
-                "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-cq\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}",
-                "{\n    \"async\": true,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": false,\n    \"max_retries\": 10,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"suites\",\n    \"priority\": \"PostBuild\",\n    \"retry\": true,\n    \"suite\": \"bvt-perbuild\",\n    \"suite_min_duts\": 1,\n    \"timeout\": 15000,\n    \"warn_only\": false\n}"
-            ],
-            "unittests": false,
-            "uprev": false,
-            "useflags": [
-                "gn"
-            ]
         },
         "compile_only_pre_cq": {
             "_template": "compile_only_pre_cq",
@@ -1447,17 +1406,6 @@
             "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
-    "amd64-generic-cheets-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "amd64-generic-cheets"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml",
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ]
-    },
     "amd64-generic-cheets-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -1466,20 +1414,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ]
-    },
-    "amd64-generic-cheets-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "amd64-generic-cheets"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": [
             "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
@@ -1678,14 +1612,6 @@
         "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
-    "amd64-generic-goofy-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "amd64-generic-goofy"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
     "amd64-generic-goofy-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -1694,17 +1620,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "amd64-generic-goofy-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "amd64-generic-goofy"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "amd64-generic-goofy-unittest-stress": {
@@ -1802,17 +1717,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "amd64-generic-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "amd64-generic"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "amd64-generic-unittest-stress": {
@@ -1977,15 +1881,6 @@
         "sync_chrome": false,
         "vm_tests": []
     },
-    "arkham-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "arkham"
-        ],
-        "manifest": "official.xml",
-        "sync_chrome": false,
-        "vm_tests": []
-    },
     "arkham-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -1994,18 +1889,6 @@
         "sync_chrome": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "arkham-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "arkham"
-        ],
-        "sync_chrome": false,
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -2096,17 +1979,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "arm-generic-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "arm-generic"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -2210,17 +2082,6 @@
         ],
         "vm_tests": []
     },
-    "arm64-generic-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "arm64-generic"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
-        ],
-        "vm_tests": []
-    },
     "arm64-generic-unittest-stress": {
         "_template": "unittest_stress",
         "boards": [
@@ -2310,17 +2171,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "arm64-llvmpipe-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "arm64-llvmpipe"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -2488,14 +2338,6 @@
         "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
-    "asuka-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "asuka"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
     "asuka-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -2504,17 +2346,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "asuka-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "asuka"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "asuka-unittest-stress": {
@@ -2704,14 +2535,6 @@
         "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
-    "auron-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "auron"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
     "auron-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -2720,17 +2543,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "auron-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "auron"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "auron-unittest-stress": {
@@ -2905,14 +2717,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "auron_paine-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "auron_paine"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "auron_paine-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -2920,17 +2724,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "auron_paine-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "auron_paine"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -3107,14 +2900,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "auron_yuna-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "auron_yuna"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "auron_yuna-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -3122,17 +2907,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "auron_yuna-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "auron_yuna"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -3326,14 +3100,6 @@
         "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
-    "banjo-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "banjo"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
     "banjo-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -3342,17 +3108,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "banjo-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "banjo"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "banjo-unittest-stress": {
@@ -3535,14 +3290,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "banon-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "banon"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "banon-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -3550,17 +3297,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "banon-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "banon"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -3736,16 +3472,6 @@
         "sync_chrome": false,
         "vm_tests": []
     },
-    "beaglebone-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "beaglebone"
-        ],
-        "manifest": "official.xml",
-        "rootfs_verification": false,
-        "sync_chrome": false,
-        "vm_tests": []
-    },
     "beaglebone-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -3755,19 +3481,6 @@
         "sync_chrome": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "beaglebone-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "beaglebone"
-        ],
-        "rootfs_verification": false,
-        "sync_chrome": false,
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -3934,16 +3647,6 @@
         "sync_chrome": false,
         "vm_tests": []
     },
-    "beaglebone_servo-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "beaglebone_servo"
-        ],
-        "manifest": "official.xml",
-        "rootfs_verification": false,
-        "sync_chrome": false,
-        "vm_tests": []
-    },
     "beaglebone_servo-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -3953,19 +3656,6 @@
         "sync_chrome": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "beaglebone_servo-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "beaglebone_servo"
-        ],
-        "rootfs_verification": false,
-        "sync_chrome": false,
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -4178,17 +3868,6 @@
             "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
-    "betty-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "betty"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml",
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ]
-    },
     "betty-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -4197,20 +3876,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ]
-    },
-    "betty-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "betty"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": [
             "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
@@ -4410,14 +4075,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "bob-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "bob"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "bob-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -4425,17 +4082,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "bob-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "bob"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -4644,14 +4290,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "buddy-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "buddy"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "buddy-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -4659,17 +4297,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "buddy-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "buddy"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -4845,14 +4472,6 @@
         "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
-    "butterfly-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "butterfly"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
     "butterfly-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -4861,17 +4480,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "butterfly-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "butterfly"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "butterfly-unittest-stress": {
@@ -5064,14 +4672,6 @@
         "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
-    "candy-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "candy"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
     "candy-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -5080,17 +4680,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "candy-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "candy"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "candy-unittest-stress": {
@@ -5282,14 +4871,6 @@
         "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
-    "caroline-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "caroline"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
     "caroline-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -5298,17 +4879,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "caroline-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "caroline"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "caroline-unittest-stress": {
@@ -5389,17 +4959,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "caroline-userdebug-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "caroline-userdebug"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "caroline-userdebug-unittest-stress": {
@@ -5575,14 +5134,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "cave-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "cave"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "cave-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -5590,17 +5141,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "cave-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "cave"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -5789,17 +5329,6 @@
         ],
         "vm_tests": []
     },
-    "celes-cheets-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "celes-cheets"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
-        ],
-        "vm_tests": []
-    },
     "celes-cheets-unittest-stress": {
         "_template": "unittest_stress",
         "boards": [
@@ -5973,14 +5502,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "celes-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "celes"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "celes-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -5988,17 +5509,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "celes-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "celes"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -6184,17 +5694,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "chell-cheets-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "chell-cheets"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -6407,14 +5906,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "chell-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "chell"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "chell-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -6422,17 +5913,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "chell-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "chell"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -6661,14 +6141,6 @@
         "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
-    "clapper-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "clapper"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
     "clapper-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -6677,17 +6149,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "clapper-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "clapper"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "clapper-unittest-stress": {
@@ -6966,17 +6427,6 @@
             "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
-    "cyan-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "cyan"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml",
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ]
-    },
     "cyan-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -6985,20 +6435,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ]
-    },
-    "cyan-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "cyan"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": [
             "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
@@ -7226,14 +6662,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "daisy-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "daisy"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "daisy-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -7241,17 +6669,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "daisy-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "daisy"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -7454,14 +6871,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "daisy_skate-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "daisy_skate"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "daisy_skate-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -7469,17 +6878,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "daisy_skate-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "daisy_skate"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -7664,14 +7062,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "daisy_spring-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "daisy_spring"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "daisy_spring-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -7679,17 +7069,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "daisy_spring-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "daisy_spring"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -7873,14 +7252,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "edgar-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "edgar"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "edgar-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -7888,17 +7259,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "edgar-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "edgar"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -8078,14 +7438,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "elm-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "elm"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "elm-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -8093,17 +7445,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "elm-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "elm"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -8297,14 +7638,6 @@
         "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
-    "enguarde-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "enguarde"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
     "enguarde-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -8313,17 +7646,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "enguarde-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "enguarde"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "enguarde-unittest-stress": {
@@ -8496,14 +7818,6 @@
         "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
-    "eve-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "eve"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
     "eve-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -8512,17 +7826,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "eve-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "eve"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "eve-unittest-stress": {
@@ -8715,14 +8018,6 @@
         "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
-    "expresso-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "expresso"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
     "expresso-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -8731,17 +8026,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "expresso-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "expresso"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "expresso-unittest-stress": {
@@ -8963,14 +8247,6 @@
         "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
-    "falco-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "falco"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
     "falco-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -8979,17 +8255,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "falco-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "falco"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "falco-unittest-stress": {
@@ -9156,14 +8421,6 @@
         "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
-    "falco_li-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "falco_li"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
     "falco_li-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -9172,17 +8429,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "falco_li-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "falco_li"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "falco_li-unittest-stress": {
@@ -9357,14 +8603,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "fizz-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "fizz"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "fizz-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -9372,17 +8610,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "fizz-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "fizz"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -9541,15 +8768,6 @@
         "sync_chrome": false,
         "vm_tests": []
     },
-    "gale-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "gale"
-        ],
-        "manifest": "official.xml",
-        "sync_chrome": false,
-        "vm_tests": []
-    },
     "gale-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -9558,18 +8776,6 @@
         "sync_chrome": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "gale-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "gale"
-        ],
-        "sync_chrome": false,
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -9747,14 +8953,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "gandof-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "gandof"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "gandof-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -9762,17 +8960,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "gandof-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "gandof"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -9975,17 +9162,6 @@
         ],
         "vm_tests": []
     },
-    "glados-cheets-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "glados-cheets"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
-        ],
-        "vm_tests": []
-    },
     "glados-cheets-unittest-stress": {
         "_template": "unittest_stress",
         "boards": [
@@ -10175,14 +9351,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "glados-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "glados"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "glados-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -10190,17 +9358,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "glados-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "glados"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -10388,17 +9545,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "glimmer-cheets-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "glimmer-cheets"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -10592,14 +9738,6 @@
         "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
-    "glimmer-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "glimmer"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
     "glimmer-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -10608,17 +9746,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "glimmer-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "glimmer"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "glimmer-unittest-stress": {
@@ -10811,14 +9938,6 @@
         "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
-    "gnawty-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "gnawty"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
     "gnawty-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -10827,17 +9946,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "gnawty-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "gnawty"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "gnawty-unittest-stress": {
@@ -11019,14 +10127,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "gru-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "gru"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "gru-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -11034,17 +10134,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "gru-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "gru"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -11212,14 +10301,6 @@
         "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
-    "guado-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "guado"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
     "guado-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -11228,17 +10309,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "guado-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "guado"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "guado-unittest-stress": {
@@ -11412,14 +10482,6 @@
         "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
-    "guado_labstation-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "guado_labstation"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
     "guado_labstation-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -11428,17 +10490,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "guado_labstation-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "guado_labstation"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "guado_labstation-unittest-stress": {
@@ -11644,14 +10695,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "guado_moblab-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "guado_moblab"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "guado_moblab-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -11659,17 +10702,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "guado_moblab-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "guado_moblab"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -11846,14 +10878,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "hana-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "hana"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "hana-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -11861,17 +10885,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "hana-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "hana"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -12058,14 +11071,6 @@
         "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
-    "heli-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "heli"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
     "heli-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -12074,17 +11079,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "heli-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "heli"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "heli-unittest-stress": {
@@ -12258,14 +11252,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "jadeite-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "jadeite"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "jadeite-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -12273,17 +11259,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "jadeite-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "jadeite"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -12476,14 +11451,6 @@
         "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
-    "jecht-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "jecht"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
     "jecht-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -12492,17 +11459,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "jecht-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "jecht"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "jecht-unittest-stress": {
@@ -12676,14 +11632,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "kahlee-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "kahlee"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "kahlee-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -12691,17 +11639,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "kahlee-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "kahlee"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -12876,14 +11813,6 @@
         "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
-    "kefka-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "kefka"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
     "kefka-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -12892,17 +11821,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "kefka-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "kefka"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "kefka-unittest-stress": {
@@ -13192,14 +12110,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "kevin-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "kevin"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "kevin-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -13207,17 +12117,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "kevin-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "kevin"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -13415,14 +12314,6 @@
         "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
-    "kip-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "kip"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
     "kip-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -13431,17 +12322,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "kip-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "kip"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "kip-unittest-stress": {
@@ -13633,14 +12513,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "kunimitsu-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "kunimitsu"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "kunimitsu-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -13648,17 +12520,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "kunimitsu-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "kunimitsu"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -13978,19 +12839,6 @@
         "sync_chrome": false,
         "vm_tests": []
     },
-    "lakitu-gpu-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "lakitu-gpu"
-        ],
-        "disk_layout": "base",
-        "factory": false,
-        "factory_install_netboot": false,
-        "factory_toolkit": false,
-        "manifest": "official.xml",
-        "sync_chrome": false,
-        "vm_tests": []
-    },
     "lakitu-gpu-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -14003,22 +12851,6 @@
         "sync_chrome": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "lakitu-gpu-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "lakitu-gpu"
-        ],
-        "disk_layout": "base",
-        "factory": false,
-        "factory_install_netboot": false,
-        "factory_toolkit": false,
-        "sync_chrome": false,
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -14196,19 +13028,6 @@
         "sync_chrome": false,
         "vm_tests": []
     },
-    "lakitu-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "lakitu"
-        ],
-        "disk_layout": "base",
-        "factory": false,
-        "factory_install_netboot": false,
-        "factory_toolkit": false,
-        "manifest": "official.xml",
-        "sync_chrome": false,
-        "vm_tests": []
-    },
     "lakitu-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -14221,22 +13040,6 @@
         "sync_chrome": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "lakitu-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "lakitu"
-        ],
-        "disk_layout": "base",
-        "factory": false,
-        "factory_install_netboot": false,
-        "factory_toolkit": false,
-        "sync_chrome": false,
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -14486,19 +13289,6 @@
         "sync_chrome": false,
         "vm_tests": []
     },
-    "lakitu_next-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "lakitu_next"
-        ],
-        "disk_layout": "base",
-        "factory": false,
-        "factory_install_netboot": false,
-        "factory_toolkit": false,
-        "manifest": "official.xml",
-        "sync_chrome": false,
-        "vm_tests": []
-    },
     "lakitu_next-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -14511,22 +13301,6 @@
         "sync_chrome": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "lakitu_next-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "lakitu_next"
-        ],
-        "disk_layout": "base",
-        "factory": false,
-        "factory_install_netboot": false,
-        "factory_toolkit": false,
-        "sync_chrome": false,
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -14714,14 +13488,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "lars-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "lars"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "lars-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -14729,17 +13495,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "lars-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "lars"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -14933,14 +13688,6 @@
         "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
-    "leon-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "leon"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
     "leon-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -14949,17 +13696,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "leon-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "leon"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "leon-unittest-stress": {
@@ -15175,14 +13911,6 @@
         "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
-    "link-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "link"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
     "link-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -15191,17 +13919,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "link-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "link"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "link-unittest-stress": {
@@ -15357,16 +14074,6 @@
         "upload_hw_test_artifacts": false,
         "vm_tests": []
     },
-    "loonix-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "loonix"
-        ],
-        "manifest": "official.xml",
-        "sync_chrome": false,
-        "upload_hw_test_artifacts": false,
-        "vm_tests": []
-    },
     "loonix-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -15376,19 +14083,6 @@
         "upload_hw_test_artifacts": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "loonix-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "loonix"
-        ],
-        "sync_chrome": false,
-        "upload_hw_test_artifacts": false,
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -15576,17 +14270,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "lulu-cheets-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "lulu-cheets"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -15781,14 +14464,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "lulu-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "lulu"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "lulu-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -15796,17 +14471,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "lulu-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "lulu"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -16025,14 +14689,6 @@
         "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
-    "lumpy-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "lumpy"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
     "lumpy-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -16041,17 +14697,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "lumpy-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "lumpy"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "lumpy-unittest-stress": {
@@ -16325,14 +14970,6 @@
         "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
-    "mccloud-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "mccloud"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
     "mccloud-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -16341,17 +14978,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "mccloud-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "mccloud"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "mccloud-unittest-stress": {
@@ -16711,14 +15337,6 @@
         "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
-    "monroe-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "monroe"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
     "monroe-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -16727,17 +15345,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "monroe-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "monroe"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "monroe-unittest-stress": {
@@ -16947,17 +15554,6 @@
             "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ]
     },
-    "newbie-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "newbie"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml",
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ]
-    },
     "newbie-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -16966,20 +15562,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": [
-            "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
-        ]
-    },
-    "newbie-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "newbie"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": [
             "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
@@ -17179,14 +15761,6 @@
         "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
-    "ninja-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "ninja"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
     "ninja-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -17195,17 +15769,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "ninja-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "ninja"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "ninja-unittest-stress": {
@@ -17403,14 +15966,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "nyan-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "nyan"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "nyan-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -17418,17 +15973,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "nyan-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "nyan"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -17625,14 +16169,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "nyan_big-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "nyan_big"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "nyan_big-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -17640,17 +16176,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "nyan_big-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "nyan_big"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -17827,14 +16352,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "nyan_blaze-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "nyan_blaze"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "nyan_blaze-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -17842,17 +16359,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "nyan_blaze-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "nyan_blaze"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -18032,14 +16538,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "nyan_kitty-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "nyan_kitty"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "nyan_kitty-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -18047,17 +16545,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "nyan_kitty-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "nyan_kitty"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -18234,14 +16721,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "oak-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "oak"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "oak-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -18249,17 +16728,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "oak-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "oak"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -18453,14 +16921,6 @@
         "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
-    "orco-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "orco"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
     "orco-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -18469,17 +16929,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "orco-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "orco"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "orco-unittest-stress": {
@@ -18659,14 +17108,6 @@
         "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
-    "panther-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "panther"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
     "panther-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -18675,17 +17116,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "panther-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "panther"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "panther-unittest-stress": {
@@ -18876,14 +17306,6 @@
         "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
-    "parrot-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "parrot"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
     "parrot-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -18892,17 +17314,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "parrot-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "parrot"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "parrot-unittest-stress": {
@@ -19069,14 +17480,6 @@
         "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
-    "parrot_ivb-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "parrot_ivb"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
     "parrot_ivb-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -19085,17 +17488,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "parrot_ivb-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "parrot_ivb"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "parrot_ivb-unittest-stress": {
@@ -19268,14 +17660,6 @@
         "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
-    "pbody-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "pbody"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
     "pbody-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -19284,17 +17668,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "pbody-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "pbody"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "pbody-unittest-stress": {
@@ -19477,14 +17850,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "peach_pi-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "peach_pi"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "peach_pi-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -19492,17 +17857,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "peach_pi-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "peach_pi"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -19715,14 +18069,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "peach_pit-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "peach_pit"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "peach_pit-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -19730,17 +18076,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "peach_pit-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "peach_pit"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -19935,14 +18270,6 @@
         "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
-    "peppy-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "peppy"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
     "peppy-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -19951,17 +18278,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "peppy-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "peppy"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "peppy-unittest-stress": {
@@ -20126,14 +18442,6 @@
         "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
-    "plaso-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "plaso"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
     "plaso-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -20142,17 +18450,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "plaso-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "plaso"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "plaso-unittest-stress": {
@@ -20327,14 +18624,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "poppy-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "poppy"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "poppy-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -20342,17 +18631,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "poppy-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "poppy"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -20562,14 +18840,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "pyro-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "pyro"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "pyro-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -20577,17 +18847,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "pyro-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "pyro"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -20781,14 +19040,6 @@
         "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
-    "quawks-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "quawks"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
     "quawks-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -20797,17 +19048,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "quawks-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "quawks"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "quawks-unittest-stress": {
@@ -21000,14 +19240,6 @@
         "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
-    "rambi-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "rambi"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
     "rambi-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -21016,17 +19248,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "rambi-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "rambi"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "rambi-unittest-stress": {
@@ -21206,14 +19427,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "reef-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "reef"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "reef-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -21221,17 +19434,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "reef-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "reef"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -21415,14 +19617,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "reks-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "reks"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "reks-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -21430,17 +19624,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "reks-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "reks"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -21615,14 +19798,6 @@
         "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
-    "relm-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "relm"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
     "relm-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -21631,17 +19806,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "relm-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "relm"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "relm-unittest-stress": {
@@ -21834,14 +19998,6 @@
         "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
-    "rikku-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "rikku"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
     "rikku-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -21850,17 +20006,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "rikku-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "rikku"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "rikku-unittest-stress": {
@@ -22034,14 +20179,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "rowan-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "rowan"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "rowan-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -22049,17 +20186,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "rowan-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "rowan"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -22244,14 +20370,6 @@
         "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
-    "samus-cheets-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "samus-cheets"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
     "samus-cheets-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -22260,17 +20378,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "samus-cheets-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "samus-cheets"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "samus-cheets-unittest-stress": {
@@ -22493,14 +20600,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "samus-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "samus"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "samus-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -22508,17 +20607,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "samus-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "samus"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -22693,14 +20781,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "sand-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "sand"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "sand-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -22708,17 +20788,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "sand-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "sand"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -22901,14 +20970,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "scarlet-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "scarlet"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "scarlet-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -22916,17 +20977,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "scarlet-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "scarlet"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -23128,14 +21178,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "sentry-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "sentry"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "sentry-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -23143,17 +21185,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "sentry-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "sentry"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -23337,14 +21368,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "setzer-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "setzer"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "setzer-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -23352,17 +21375,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "setzer-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "setzer"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -23545,14 +21557,6 @@
         "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
-    "slippy-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "slippy"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
     "slippy-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -23561,17 +21565,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "slippy-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "slippy"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "slippy-unittest-stress": {
@@ -23757,17 +21750,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "smaug-cheets-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "smaug-cheets"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -24032,17 +22014,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "smaug-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "smaug"
-        ],
-        "factory": false,
-        "factory_install_netboot": false,
-        "factory_toolkit": false,
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "smaug-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -24053,20 +22024,6 @@
         "factory_toolkit": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "smaug-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "smaug"
-        ],
-        "factory": false,
-        "factory_install_netboot": false,
-        "factory_toolkit": false,
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -24246,14 +22203,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "snappy-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "snappy"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "snappy-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -24261,17 +22210,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "snappy-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "snappy"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -24483,14 +22421,6 @@
         "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
-    "squawks-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "squawks"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
     "squawks-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -24499,17 +22429,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "squawks-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "squawks"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "squawks-unittest-stress": {
@@ -24685,14 +22604,6 @@
         "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
-    "stout-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "stout"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
     "stout-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -24701,17 +22612,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "stout-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "stout"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "stout-unittest-stress": {
@@ -24910,14 +22810,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "strago-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "strago"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "strago-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -24925,17 +22817,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "strago-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "strago"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -25119,14 +23000,6 @@
         "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
-    "stumpy-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "stumpy"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
     "stumpy-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -25135,17 +23008,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "stumpy-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "stumpy"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "stumpy-unittest-stress": {
@@ -25338,14 +23200,6 @@
         "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
-    "sumo-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "sumo"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
     "sumo-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -25354,17 +23208,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "sumo-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "sumo"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "sumo-unittest-stress": {
@@ -25557,14 +23400,6 @@
         "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
-    "swanky-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "swanky"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
     "swanky-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -25573,17 +23408,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "swanky-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "swanky"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "swanky-unittest-stress": {
@@ -25793,14 +23617,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "terra-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "terra"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "terra-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -25808,17 +23624,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "terra-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "terra"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -26019,14 +23824,6 @@
         "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
-    "tidus-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "tidus"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
     "tidus-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -26035,17 +23832,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "tidus-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "tidus"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "tidus-unittest-stress": {
@@ -26221,14 +24007,6 @@
         ],
         "manifest": "official.xml"
     },
-    "tricky-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "tricky"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
     "tricky-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -26237,17 +24015,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "tricky-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "tricky"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "tricky-unittest-stress": {
@@ -26423,14 +24190,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "ultima-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "ultima"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "ultima-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -26438,17 +24197,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "ultima-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "ultima"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -26622,14 +24370,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "umaro-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "umaro"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "umaro-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -26637,17 +24377,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "umaro-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "umaro"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -26824,14 +24553,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "veyron_fievel-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "veyron_fievel"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "veyron_fievel-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -26839,17 +24560,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "veyron_fievel-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "veyron_fievel"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -27026,14 +24736,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "veyron_jaq-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "veyron_jaq"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "veyron_jaq-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -27041,17 +24743,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "veyron_jaq-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "veyron_jaq"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -27228,14 +24919,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "veyron_jerry-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "veyron_jerry"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "veyron_jerry-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -27243,17 +24926,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "veyron_jerry-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "veyron_jerry"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -27444,14 +25116,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "veyron_mickey-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "veyron_mickey"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "veyron_mickey-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -27459,17 +25123,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "veyron_mickey-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "veyron_mickey"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -27649,14 +25302,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "veyron_mighty-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "veyron_mighty"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "veyron_mighty-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -27664,17 +25309,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "veyron_mighty-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "veyron_mighty"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -27868,14 +25502,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "veyron_minnie-cheets-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "veyron_minnie-cheets"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "veyron_minnie-cheets-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -27883,17 +25509,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "veyron_minnie-cheets-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "veyron_minnie-cheets"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -28079,14 +25694,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "veyron_minnie-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "veyron_minnie"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "veyron_minnie-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -28094,17 +25701,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "veyron_minnie-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "veyron_minnie"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -28278,14 +25874,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "veyron_pinky-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "veyron_pinky"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "veyron_pinky-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -28293,17 +25881,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "veyron_pinky-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "veyron_pinky"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -28480,14 +26057,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "veyron_rialto-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "veyron_rialto"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "veyron_rialto-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -28495,17 +26064,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "veyron_rialto-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "veyron_rialto"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -28685,14 +26243,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "veyron_speedy-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "veyron_speedy"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "veyron_speedy-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -28700,17 +26250,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "veyron_speedy-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "veyron_speedy"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -28901,14 +26440,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "veyron_tiger-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "veyron_tiger"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "veyron_tiger-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -28916,17 +26447,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "veyron_tiger-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "veyron_tiger"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -29084,15 +26604,6 @@
         "sync_chrome": false,
         "vm_tests": []
     },
-    "whirlwind-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "whirlwind"
-        ],
-        "manifest": "official.xml",
-        "sync_chrome": false,
-        "vm_tests": []
-    },
     "whirlwind-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -29101,18 +26612,6 @@
         "sync_chrome": false,
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "whirlwind-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "whirlwind"
-        ],
-        "sync_chrome": false,
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -29310,14 +26809,6 @@
         "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
-    "winky-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "winky"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
     "winky-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -29326,17 +26817,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "winky-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "winky"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "winky-unittest-stress": {
@@ -29526,14 +27006,6 @@
         "manifest": "official.xml",
         "vm_tests": []
     },
-    "wizpig-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "wizpig"
-        ],
-        "manifest": "official.xml",
-        "vm_tests": []
-    },
     "wizpig-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -29541,17 +27013,6 @@
         ],
         "useflags": [
             "-chrome_internal"
-        ],
-        "vm_tests": []
-    },
-    "wizpig-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "wizpig"
-        ],
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "vm_tests": []
     },
@@ -29729,14 +27190,6 @@
         "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
-    "wolf-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "wolf"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
     "wolf-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -29745,17 +27198,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "wolf-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "wolf"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "wolf-tot-paladin": {
@@ -29865,18 +27307,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ],
-        "usepkg_toolchain": false
-    },
-    "x32-generic-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "x32-generic"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ],
         "usepkg_toolchain": false
     },
@@ -30038,14 +27468,6 @@
         "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
-    "x86-alex-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "x86-alex"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
     "x86-alex-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -30054,17 +27476,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "x86-alex-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "x86-alex"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "x86-alex-unittest-stress": {
@@ -30228,14 +27639,6 @@
         "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
-    "x86-alex_he-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "x86-alex_he"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
     "x86-alex_he-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -30244,17 +27647,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "x86-alex_he-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "x86-alex_he"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "x86-alex_he-unittest-stress": {
@@ -30419,17 +27811,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "x86-generic-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "x86-generic"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "x86-generic-unittest-stress": {
@@ -30620,14 +28001,6 @@
         "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
-    "x86-mario-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "x86-mario"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
     "x86-mario-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -30636,17 +28009,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "x86-mario-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "x86-mario"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "x86-mario-unittest-stress": {
@@ -30813,14 +28175,6 @@
         "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
-    "x86-zgb-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "x86-zgb"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
     "x86-zgb-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -30829,17 +28183,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "x86-zgb-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "x86-zgb"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "x86-zgb-unittest-stress": {
@@ -31003,14 +28346,6 @@
         "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
-    "x86-zgb_he-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "x86-zgb_he"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
     "x86-zgb_he-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -31019,17 +28354,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "x86-zgb_he-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "x86-zgb_he"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "x86-zgb_he-unittest-stress": {
@@ -31222,14 +28546,6 @@
         "buildslave_type": "baremetal",
         "manifest": "official.xml"
     },
-    "zako-tot-chrome-pfq-informational-gn": {
-        "_template": "chrome_pfq_informational_gn",
-        "boards": [
-            "zako"
-        ],
-        "buildslave_type": "baremetal",
-        "manifest": "official.xml"
-    },
     "zako-tot-chromium-pfq-informational": {
         "_template": "chromium_pfq_informational",
         "boards": [
@@ -31238,17 +28554,6 @@
         "buildslave_type": "baremetal",
         "useflags": [
             "-chrome_internal"
-        ]
-    },
-    "zako-tot-chromium-pfq-informational-gn": {
-        "_template": "chromium_pfq_informational_gn",
-        "boards": [
-            "zako"
-        ],
-        "buildslave_type": "baremetal",
-        "useflags": [
-            "-chrome_internal",
-            "gn"
         ]
     },
     "zako-unittest-stress": {
