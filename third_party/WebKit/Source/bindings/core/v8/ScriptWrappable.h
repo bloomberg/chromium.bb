@@ -31,6 +31,7 @@
 #ifndef ScriptWrappable_h
 #define ScriptWrappable_h
 
+#include "bindings/core/v8/ScriptWrappableVisitor.h"
 #include "bindings/core/v8/WrapperTypeInfo.h"
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
@@ -125,6 +126,7 @@ class CORE_EXPORT ScriptWrappable : public TraceWrapperBase {
     wrapperTypeInfo->configureWrapper(&m_mainWorldWrapper);
     m_mainWorldWrapper.SetWeak();
     ASSERT(containsWrapper());
+    ScriptWrappableVisitor::writeBarrier(&m_mainWorldWrapper);
     return true;
   }
 

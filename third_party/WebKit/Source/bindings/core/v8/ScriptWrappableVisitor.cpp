@@ -7,6 +7,7 @@
 #include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ScopedPersistent.h"
+#include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/ScriptWrappableVisitorVerifier.h"
 #include "bindings/core/v8/V8AbstractEventListener.h"
 #include "bindings/core/v8/WrapperTypeInfo.h"
@@ -237,6 +238,15 @@ void ScriptWrappableVisitor::writeBarrier(
           &(const_cast<TraceWrapperV8Reference<v8::Value>*>(dstObject)->get()));
 }
 
+void ScriptWrappableVisitor::writeBarrier(
+    const v8::Persistent<v8::Object>* dstObject) {
+  if (!dstObject || dstObject->IsEmpty()) {
+    return;
+  }
+  currentVisitor(ThreadState::current()->isolate())
+      ->markWrapper(&(dstObject->As<v8::Value>()));
+}
+
 void ScriptWrappableVisitor::traceWrappers(
     const TraceWrapperV8Reference<v8::Value>& tracedWrapper) const {
   markWrapper(
@@ -246,7 +256,8 @@ void ScriptWrappableVisitor::traceWrappers(
 void ScriptWrappableVisitor::markWrapper(
     const v8::PersistentBase<v8::Value>* handle) const {
   // The write barrier may try to mark a wrapper because cleanup is still
-  // delayed. Bail out in this case.
+  // delayed. Bail out in this case. We also allow unconditional marking which
+  // requires us to bail out here when tracing is not in progress.
   if (!m_tracingInProgress)
     return;
   handle->RegisterExternalReference(m_isolate);

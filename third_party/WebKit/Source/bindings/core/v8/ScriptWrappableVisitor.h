@@ -5,10 +5,10 @@
 #ifndef ScriptWrappableVisitor_h
 #define ScriptWrappableVisitor_h
 
-#include "bindings/core/v8/ScriptWrappable.h"
 #include "core/CoreExport.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/heap/HeapPage.h"
+#include "platform/heap/VisitorImpl.h"
 #include "platform/heap/WrapperVisitor.h"
 #include "v8/include/v8.h"
 #include "wtf/Deque.h"
@@ -19,6 +19,7 @@ namespace blink {
 class HeapObjectHeader;
 template <typename T>
 class Member;
+class ScriptWrappable;
 template <typename T>
 class TraceWrapperV8Reference;
 
@@ -98,6 +99,10 @@ class CORE_EXPORT ScriptWrappableVisitor : public v8::EmbedderHeapTracer,
 
   static void writeBarrier(const void*,
                            const TraceWrapperV8Reference<v8::Value>*);
+
+  // TODO(mlippautz): Remove once ScriptWrappable is converted to
+  // TraceWrapperV8Reference.
+  static void writeBarrier(const v8::Persistent<v8::Object>*);
 
   template <typename T>
   static void writeBarrier(const void* object, const Member<T> value) {
