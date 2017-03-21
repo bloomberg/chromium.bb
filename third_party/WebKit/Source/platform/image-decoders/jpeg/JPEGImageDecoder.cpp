@@ -937,10 +937,11 @@ bool JPEGImageDecoder::outputScanlines() {
     DCHECK_EQ(info->output_height,
               static_cast<JDIMENSION>(m_decodedSize.height()));
 
-    if (!buffer.setSizeAndColorSpace(info->output_width, info->output_height,
-                                     colorSpaceForSkImages()))
+    if (!buffer.allocatePixelData(info->output_width, info->output_height,
+                                  colorSpaceForSkImages()))
       return setFailed();
 
+    buffer.zeroFillPixelData();
     // The buffer is transparent outside the decoded area while the image is
     // loading. The image will be marked fully opaque in complete().
     buffer.setStatus(ImageFrame::FramePartial);

@@ -111,8 +111,9 @@ class MockImageDecoder : public ImageDecoder {
   }
 
   void initializeNewFrame(size_t index) override {
-    m_frameBufferCache[index].setSizeAndColorSpace(
-        size().width(), size().height(), colorSpaceForSkImages());
+    if (m_frameBufferCache[index].allocatePixelData(
+            size().width(), size().height(), colorSpaceForSkImages()))
+      m_frameBufferCache[index].zeroFillPixelData();
     m_frameBufferCache[index].setHasAlpha(false);
   }
 

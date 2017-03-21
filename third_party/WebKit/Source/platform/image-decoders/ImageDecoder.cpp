@@ -354,10 +354,11 @@ bool ImageDecoder::initFrameBuffer(size_t frameIndex) {
   size_t requiredPreviousFrameIndex = buffer->requiredPreviousFrameIndex();
   if (requiredPreviousFrameIndex == kNotFound) {
     // This frame doesn't rely on any previous data.
-    if (!buffer->setSizeAndColorSpace(size().width(), size().height(),
-                                      colorSpaceForSkImages())) {
+    if (!buffer->allocatePixelData(size().width(), size().height(),
+                                   colorSpaceForSkImages())) {
       return false;
     }
+    buffer->zeroFillPixelData();
   } else {
     ImageFrame* const prevBuffer =
         &m_frameBufferCache[requiredPreviousFrameIndex];

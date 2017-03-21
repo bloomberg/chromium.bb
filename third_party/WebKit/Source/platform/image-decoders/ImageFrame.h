@@ -118,11 +118,11 @@ class PLATFORM_EXPORT ImageFrame final {
       memcpy(getAddr(startX, destY), startAddr, rowBytes);
   }
 
-  // Allocates space for the pixel data.  Must be called before any pixels
-  // are written.  Must only be called once. The specified color space may
-  // be nullptr if and only if color correct rendering is enabled. Returns
-  // whether allocation succeeded.
-  bool setSizeAndColorSpace(int newWidth, int newHeight, sk_sp<SkColorSpace>);
+  // Allocates space for the pixel data. Must be called before any pixels are
+  // written, and should only be called once. The specified color space may be
+  // null if and only if color correct rendering is enabled. Returns true if the
+  // allocation succeeded.
+  bool allocatePixelData(int newWidth, int newHeight, sk_sp<SkColorSpace>);
 
   bool hasAlpha() const;
   const IntRect& originalFrameRect() const { return m_originalFrameRect; }

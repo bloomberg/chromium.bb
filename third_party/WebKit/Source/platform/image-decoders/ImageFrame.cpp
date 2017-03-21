@@ -103,22 +103,17 @@ bool ImageFrame::takeBitmapDataIfWritable(ImageFrame* other) {
   return true;
 }
 
-bool ImageFrame::setSizeAndColorSpace(int newWidth,
-                                      int newHeight,
-                                      sk_sp<SkColorSpace> colorSpace) {
-  // setSizeAndColorSpace() should only be called once, it leaks memory
-  // otherwise.
+bool ImageFrame::allocatePixelData(int newWidth,
+                                   int newHeight,
+                                   sk_sp<SkColorSpace> colorSpace) {
+  // allocatePixelData() should only be called once.
   DCHECK(!width() && !height());
 
   m_bitmap.setInfo(SkImageInfo::MakeN32(
       newWidth, newHeight,
       m_premultiplyAlpha ? kPremul_SkAlphaType : kUnpremul_SkAlphaType,
       std::move(colorSpace)));
-  if (!m_bitmap.tryAllocPixels(m_allocator, 0))
-    return false;
-
-  zeroFillPixelData();
-  return true;
+  return m_bitmap.tryAllocPixels(m_allocator, 0);
 }
 
 bool ImageFrame::hasAlpha() const {

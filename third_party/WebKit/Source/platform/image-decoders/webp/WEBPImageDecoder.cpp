@@ -457,9 +457,10 @@ bool WEBPImageDecoder::decodeSingleFrame(const uint8_t* dataBytes,
   DCHECK_NE(buffer.getStatus(), ImageFrame::FrameComplete);
 
   if (buffer.getStatus() == ImageFrame::FrameEmpty) {
-    if (!buffer.setSizeAndColorSpace(size().width(), size().height(),
-                                     colorSpaceForSkImages()))
+    if (!buffer.allocatePixelData(size().width(), size().height(),
+                                  colorSpaceForSkImages()))
       return setFailed();
+    buffer.zeroFillPixelData();
     buffer.setStatus(ImageFrame::FramePartial);
     // The buffer is transparent outside the decoded area while the image is
     // loading. The correct alpha value for the frame will be set when it is
