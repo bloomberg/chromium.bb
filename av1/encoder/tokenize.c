@@ -229,6 +229,22 @@ const uint8_t av1_cat6_skipped_bits_discount[8] = {
   0, 3, 6, 9, 12, 18, 24, 30
 };
 
+#if CONFIG_NEW_MULTISYMBOL
+const av1_extra_bit av1_extra_bits[ENTROPY_TOKENS] = {
+  { 0, 0, 0, zero_cost },                        // ZERO_TOKEN
+  { 0, 0, 1, sign_cost },                        // ONE_TOKEN
+  { 0, 0, 2, sign_cost },                        // TWO_TOKEN
+  { 0, 0, 3, sign_cost },                        // THREE_TOKEN
+  { 0, 0, 4, sign_cost },                        // FOUR_TOKEN
+  { av1_cat1_cdf, 1, CAT1_MIN_VAL, cat1_cost },  // CATEGORY1_TOKEN
+  { av1_cat2_cdf, 2, CAT2_MIN_VAL, cat2_cost },  // CATEGORY2_TOKEN
+  { av1_cat3_cdf, 3, CAT3_MIN_VAL, cat3_cost },  // CATEGORY3_TOKEN
+  { av1_cat4_cdf, 4, CAT4_MIN_VAL, cat4_cost },  // CATEGORY4_TOKEN
+  { av1_cat5_cdf, 5, CAT5_MIN_VAL, cat5_cost },  // CATEGORY5_TOKEN
+  { av1_cat6_cdf, 18, CAT6_MIN_VAL, 0 },         // CATEGORY6_TOKEN
+  { 0, 0, 0, zero_cost }                         // EOB_TOKEN
+};
+#else
 const av1_extra_bit av1_extra_bits[ENTROPY_TOKENS] = {
   { 0, 0, 0, zero_cost },                         // ZERO_TOKEN
   { 0, 0, 1, sign_cost },                         // ONE_TOKEN
@@ -243,6 +259,7 @@ const av1_extra_bit av1_extra_bits[ENTROPY_TOKENS] = {
   { av1_cat6_prob, 18, CAT6_MIN_VAL, 0 },         // CATEGORY6_TOKEN
   { 0, 0, 0, zero_cost }                          // EOB_TOKEN
 };
+#endif
 
 #if !CONFIG_EC_MULTISYMBOL
 const struct av1_token av1_coef_encodings[ENTROPY_TOKENS] = {

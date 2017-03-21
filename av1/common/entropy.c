@@ -35,6 +35,54 @@ const aom_tree_index av1_coef_con_tree[TREE_SIZE(ENTROPY_TOKENS)] = {
 };
 /* clang-format on */
 
+#if CONFIG_NEW_MULTISYMBOL
+/* Extra bits coded from LSB to MSB */
+const aom_cdf_prob av1_cat1_cdf0[CDF_SIZE(2)] = { 20352, 32768, 0 };
+const aom_cdf_prob *av1_cat1_cdf[] = { av1_cat1_cdf0 };
+
+const aom_cdf_prob av1_cat2_cdf0[CDF_SIZE(4)] = { 11963, 21121, 27719, 32768,
+                                                  0 };
+const aom_cdf_prob *av1_cat2_cdf[] = { av1_cat2_cdf0 };
+const aom_cdf_prob av1_cat3_cdf0[CDF_SIZE(8)] = {
+  7001, 12802, 17911, 22144, 25503, 28286, 30737, 32768, 0
+};
+const aom_cdf_prob *av1_cat3_cdf[] = { av1_cat3_cdf0 };
+
+const aom_cdf_prob av1_cat4_cdf0[CDF_SIZE(16)] = {
+  3934,  7460,  10719, 13640, 16203, 18500, 20624, 22528, 24316,
+  25919, 27401, 28729, 29894, 30938, 31903, 32768, 0
+};
+const aom_cdf_prob *av1_cat4_cdf[] = { av1_cat4_cdf0 };
+
+const aom_cdf_prob av1_cat5_cdf0[CDF_SIZE(16)] = {
+  2942,  5794,  8473,  11069, 13469, 15795, 17980, 20097, 21952,
+  23750, 25439, 27076, 28589, 30056, 31434, 32768, 0
+};
+const aom_cdf_prob av1_cat5_cdf1[CDF_SIZE(2)] = { 23040, 32768, 0 };
+const aom_cdf_prob *av1_cat5_cdf[] = { av1_cat5_cdf0, av1_cat5_cdf1 };
+
+const aom_cdf_prob av1_cat6_cdf0[CDF_SIZE(16)] = { 2382,  4727,  7036,  9309,
+                                                   11512, 13681, 15816, 17918,
+                                                   19892, 21835, 23748, 25632,
+                                                   27458, 29255, 31024, 32768 };
+const aom_cdf_prob av1_cat6_cdf1[CDF_SIZE(16)] = { 9314,  15584, 19741, 22540,
+                                                   25391, 27310, 28583, 29440,
+                                                   30493, 31202, 31672, 31988,
+                                                   32310, 32527, 32671, 32768 };
+const aom_cdf_prob av1_cat6_cdf2[CDF_SIZE(16)] = { 29548, 31129, 31960, 32004,
+                                                   32473, 32498, 32511, 32512,
+                                                   32745, 32757, 32764, 32764,
+                                                   32768, 32768, 32768, 32768 };
+const aom_cdf_prob av1_cat6_cdf3[CDF_SIZE(16)] = { 32006, 32258, 32510, 32512,
+                                                   32638, 32639, 32640, 32640,
+                                                   32766, 32767, 32768, 32768,
+                                                   32768, 32768, 32768, 32768 };
+const aom_cdf_prob av1_cat6_cdf4[CDF_SIZE(4)] = { 32513, 32641, 32769, 32768 };
+const aom_cdf_prob *av1_cat6_cdf[] = {
+  av1_cat6_cdf0, av1_cat6_cdf1, av1_cat6_cdf2, av1_cat6_cdf3, av1_cat6_cdf4
+};
+#endif
+/* Extra bits coded from MSB to LSB */
 const aom_prob av1_cat1_prob[] = { 159 };
 const aom_prob av1_cat2_prob[] = { 165, 145 };
 const aom_prob av1_cat3_prob[] = { 173, 148, 140 };

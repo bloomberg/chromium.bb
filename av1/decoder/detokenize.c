@@ -42,11 +42,29 @@
     if (counts) ++coef_counts[band][ctx][token]; \
   } while (0)
 
+#if CONFIG_NEW_MULTISYMBOL
+#define READ_COEFF(prob_name, cdf_name, num, r) read_coeff(cdf_name, num, r);
+static INLINE int read_coeff(const aom_cdf_prob *const *cdf, int n,
+                             aom_reader *r) {
+  int val = 0;
+  int i = 0;
+  int count = 0;
+  while (count < n) {
+    const int size = AOMMIN(n - count, 4);
+    val |= aom_read_cdf(r, cdf[i++], 1 << size, ACCT_STR) << count;
+    count += size;
+  }
+  return val;
+}
+#else
+#define READ_COEFF(prob_name, cdf_name, num, r) read_coeff(prob_name, num, r);
 static INLINE int read_coeff(const aom_prob *probs, int n, aom_reader *r) {
   int i, val = 0;
   for (i = 0; i < n; ++i) val = (val << 1) | aom_read(r, probs[i], ACCT_STR);
   return val;
 }
+
+#endif
 
 static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
                         TX_SIZE tx_size, TX_TYPE tx_type, const int16_t *dq,
@@ -79,6 +97,7 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
   aom_cdf_prob(*cdf_head)[CDF_SIZE(ENTROPY_TOKENS)];
   aom_cdf_prob(*cdf_tail)[CDF_SIZE(ENTROPY_TOKENS)];
   int val = 0;
+
 #if !CONFIG_EC_ADAPT
   unsigned int *blockz_count;
 #endif
@@ -171,19 +190,19 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
       case THREE_TOKEN:
       case FOUR_TOKEN: val = token; break;
       case CATEGORY1_TOKEN:
-        val = CAT1_MIN_VAL + read_coeff(av1_cat1_prob, 1, r);
+        val = CAT1_MIN_VAL + READ_COEFF(av1_cat1_prob, av1_cat1_cdf, 1, r);
         break;
       case CATEGORY2_TOKEN:
-        val = CAT2_MIN_VAL + read_coeff(av1_cat2_prob, 2, r);
+        val = CAT2_MIN_VAL + READ_COEFF(av1_cat2_prob, av1_cat2_cdf, 2, r);
         break;
       case CATEGORY3_TOKEN:
-        val = CAT3_MIN_VAL + read_coeff(av1_cat3_prob, 3, r);
+        val = CAT3_MIN_VAL + READ_COEFF(av1_cat3_prob, av1_cat3_cdf, 3, r);
         break;
       case CATEGORY4_TOKEN:
-        val = CAT4_MIN_VAL + read_coeff(av1_cat4_prob, 4, r);
+        val = CAT4_MIN_VAL + READ_COEFF(av1_cat4_prob, av1_cat4_cdf, 4, r);
         break;
       case CATEGORY5_TOKEN:
-        val = CAT5_MIN_VAL + read_coeff(av1_cat5_prob, 5, r);
+        val = CAT5_MIN_VAL + READ_COEFF(av1_cat5_prob, av1_cat5_cdf, 5, r);
         break;
       case CATEGORY6_TOKEN: {
 #if CONFIG_AOM_HIGHBITDEPTH
@@ -193,8 +212,8 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
         const int skip_bits = (int)sizeof(av1_cat6_prob) -
                               av1_get_cat6_extrabits_size(tx_size, 8);
 #endif
-        val = CAT6_MIN_VAL +
-              read_coeff(av1_cat6_prob + skip_bits, 18 - skip_bits, r);
+        val = CAT6_MIN_VAL + READ_COEFF(av1_cat6_prob + skip_bits, av1_cat6_cdf,
+                                        18 - skip_bits, r);
       } break;
     }
 
@@ -269,19 +288,19 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
       case THREE_TOKEN:
       case FOUR_TOKEN: val = token; break;
       case CATEGORY1_TOKEN:
-        val = CAT1_MIN_VAL + read_coeff(av1_cat1_prob, 1, r);
+        val = CAT1_MIN_VAL + READ_COEFF(av1_cat1_prob, av1_cat1_cdf, 1, r);
         break;
       case CATEGORY2_TOKEN:
-        val = CAT2_MIN_VAL + read_coeff(av1_cat2_prob, 2, r);
+        val = CAT2_MIN_VAL + READ_COEFF(av1_cat2_prob, av1_cat2_cdf, 2, r);
         break;
       case CATEGORY3_TOKEN:
-        val = CAT3_MIN_VAL + read_coeff(av1_cat3_prob, 3, r);
+        val = CAT3_MIN_VAL + READ_COEFF(av1_cat3_prob, av1_cat3_cdf, 3, r);
         break;
       case CATEGORY4_TOKEN:
-        val = CAT4_MIN_VAL + read_coeff(av1_cat4_prob, 4, r);
+        val = CAT4_MIN_VAL + READ_COEFF(av1_cat4_prob, av1_cat4_cdf, 4, r);
         break;
       case CATEGORY5_TOKEN:
-        val = CAT5_MIN_VAL + read_coeff(av1_cat5_prob, 5, r);
+        val = CAT5_MIN_VAL + READ_COEFF(av1_cat5_prob, av1_cat5_cdf, 5, r);
         break;
       case CATEGORY6_TOKEN: {
 #if CONFIG_AOM_HIGHBITDEPTH
@@ -291,8 +310,8 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
         const int skip_bits = (int)sizeof(av1_cat6_prob) -
                               av1_get_cat6_extrabits_size(tx_size, 8);
 #endif
-        val = CAT6_MIN_VAL +
-              read_coeff(av1_cat6_prob + skip_bits, 18 - skip_bits, r);
+        val = CAT6_MIN_VAL + READ_COEFF(av1_cat6_prob + skip_bits, av1_cat6_cdf,
+                                        18 - skip_bits, r);
       } break;
     }
 #else  // CONFIG_EC_MULTISYMBOL

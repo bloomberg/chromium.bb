@@ -818,6 +818,34 @@ static void update_supertx_probs(AV1_COMMON *cm, int probwt, aom_writer *w) {
 }
 #endif  // CONFIG_SUPERTX
 
+#if CONFIG_NEW_MULTISYMBOL
+static INLINE void write_coeff_extra(const aom_cdf_prob *const *cdf, int val,
+                                     int n, aom_writer *w) {
+  // Code the extra bits from LSB to MSB in groups of 4
+  int i = 0;
+  int count = 0;
+  while (count < n) {
+    const int size = AOMMIN(n - count, 4);
+    const int mask = (1 << size) - 1;
+    aom_write_cdf(w, val & mask, cdf[i++], 1 << size);
+    val >>= size;
+    count += size;
+  }
+}
+#else
+static INLINE void write_coeff_extra(const aom_prob *pb, int value,
+                                     int num_bits, int skip_bits, aom_writer *w,
+                                     TOKEN_STATS *token_stats) {
+  // Code the extra bits from MSB to LSB 1 bit at a time
+  int index;
+  for (index = skip_bits; index < num_bits; ++index) {
+    const int shift = num_bits - index - 1;
+    const int bb = (value >> shift) & 1;
+    aom_write_record(w, bb, pb[index], token_stats);
+  }
+}
+#endif
+
 #if CONFIG_NEW_TOKENSET
 static void pack_mb_tokens(aom_writer *w, const TOKENEXTRA **tp,
                            const TOKENEXTRA *const stop,
@@ -831,7 +859,6 @@ static void pack_mb_tokens(aom_writer *w, const TOKENEXTRA **tp,
 
   while (p < stop && p->token != EOSB_TOKEN) {
     const int token = p->token;
-    aom_tree_index index = 0;
     const av1_extra_bit *const extra_bits = &av1_extra_bits[token];
 
     if (token == BLOCK_Z_TOKEN) {
@@ -853,30 +880,23 @@ static void pack_mb_tokens(aom_writer *w, const TOKENEXTRA **tp,
     if (extra_bits->base_val) {
       const int bit_string = p->extra;
       const int bit_string_length = extra_bits->len;  // Length of extra bits to
+      const int is_cat6 = (extra_bits->base_val == CAT6_MIN_VAL);
       // be written excluding
       // the sign bit.
-      int skip_bits = (extra_bits->base_val == CAT6_MIN_VAL)
+      int skip_bits = is_cat6
                           ? (int)sizeof(av1_cat6_prob) -
                                 av1_get_cat6_extrabits_size(tx_size, bit_depth)
                           : 0;
 
-      if (bit_string_length > 0) {
-        const unsigned char *pb = extra_bits->prob;
-        const int value = bit_string >> 1;
-        const int num_bits = bit_string_length;  // number of bits in value
-        assert(num_bits > 0);
-
-        for (index = 0; index < num_bits; ++index) {
-          const int shift = num_bits - index - 1;
-          const int bb = (value >> shift) & 1;
-          if (skip_bits) {
-            --skip_bits;
-            assert(!bb);
-          } else {
-            aom_write_record(w, bb, pb[index], token_stats);
-          }
-        }
-      }
+      assert(!(bit_string >> (bit_string_length - skip_bits + 1)));
+      if (bit_string_length > 0)
+#if CONFIG_NEW_MULTISYMBOL
+        write_coeff_extra(extra_bits->cdf, bit_string >> 1,
+                          bit_string_length - skip_bits, w);
+#else
+        write_coeff_extra(extra_bits->prob, bit_string >> 1, bit_string_length,
+                          skip_bits, w, token_stats);
+#endif
 
       aom_write_bit_record(w, bit_string & 1, token_stats);
     }
@@ -904,7 +924,6 @@ static void pack_mb_tokens(aom_writer *w, const TOKENEXTRA **tp,
 
   while (p < stop && p->token != EOSB_TOKEN) {
     const int token = p->token;
-    aom_tree_index index = 0;
 #if !CONFIG_EC_MULTISYMBOL
     const struct av1_token *const coef_encoding = &av1_coef_encodings[token];
     int coef_value = coef_encoding->value;
@@ -951,30 +970,24 @@ static void pack_mb_tokens(aom_writer *w, const TOKENEXTRA **tp,
     if (extra_bits->base_val) {
       const int bit_string = p->extra;
       const int bit_string_length = extra_bits->len;  // Length of extra bits to
-                                                      // be written excluding
-                                                      // the sign bit.
+      // be written excluding
+      // the sign bit.
       int skip_bits = (extra_bits->base_val == CAT6_MIN_VAL)
                           ? (int)sizeof(av1_cat6_prob) -
                                 av1_get_cat6_extrabits_size(tx_size, bit_depth)
                           : 0;
+
+      assert(!(bit_string >> (bit_string_length - skip_bits + 1)));
       if (bit_string_length > 0) {
-        const unsigned char *pb = extra_bits->prob;
-        const int value = bit_string >> 1;
-        const int num_bits = bit_string_length;  // number of bits in value
-        assert(num_bits > 0);
-
-        for (index = 0; index < num_bits; ++index) {
-          const int shift = num_bits - index - 1;
-          const int bb = (value >> shift) & 1;
-          if (skip_bits) {
-            --skip_bits;
-            assert(!bb);
-          } else {
-            aom_write_record(w, bb, pb[index], token_stats);
-          }
-        }
+#if CONFIG_NEW_MULTISYMBOL
+        skip_bits &= ~3;
+        write_coeff_extra(extra_bits->cdf, bit_string >> 1,
+                          bit_string_length - skip_bits, w);
+#else
+        write_coeff_extra(extra_bits->prob, bit_string >> 1, bit_string_length,
+                          skip_bits, w, token_stats);
+#endif
       }
-
       aom_write_bit_record(w, bit_string & 1, token_stats);
     }
     ++p;
