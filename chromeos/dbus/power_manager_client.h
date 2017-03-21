@@ -23,16 +23,31 @@ class PowerSupplyProperties;
 
 namespace chromeos {
 
-// Callback used for getting the current screen brightness.  The param is in the
-// range [0.0, 100.0].
-typedef base::Callback<void(double)> GetScreenBrightnessPercentCallback;
-
-// Callback used for getting the current backlights forced off state.
-typedef base::Callback<void(bool)> GetBacklightsForcedOffCallback;
-
 // PowerManagerClient is used to communicate with the power manager.
 class CHROMEOS_EXPORT PowerManagerClient : public DBusClient {
  public:
+  enum class LidState {
+    OPEN,
+    CLOSED,
+    NOT_PRESENT,
+  };
+
+  enum class TabletMode {
+    ON,
+    OFF,
+    UNSUPPORTED,
+  };
+
+  // Callback used for getting the current screen brightness. The param is in
+  // the range [0.0, 100.0].
+  typedef base::Callback<void(double)> GetScreenBrightnessPercentCallback;
+
+  // Callback passed to GetBacklightsForcedOff().
+  typedef base::Callback<void(bool forced_off)> GetBacklightsForcedOffCallback;
+
+  // Callback passed to GetSwitchStates().
+  typedef base::Callback<void(LidState, TabletMode)> GetSwitchStatesCallback;
+
   // Interface for observing changes from the power manager.
   class Observer {
    public:
@@ -87,12 +102,14 @@ class CHROMEOS_EXPORT PowerManagerClient : public DBusClient {
     virtual void PowerButtonEventReceived(bool down,
                                           const base::TimeTicks& timestamp) {}
 
-    // Called when the device's lid is opened or closed.
-    virtual void LidEventReceived(bool open,
+    // Called when the device's lid is opened or closed. LidState::NOT_PRESENT
+    // is never passed.
+    virtual void LidEventReceived(LidState state,
                                   const base::TimeTicks& timestamp) {}
 
     // Called when the device's tablet mode switch is on or off.
-    virtual void TabletModeEventReceived(bool on,
+    // TabletMode::UNSUPPORTED is never passed.
+    virtual void TabletModeEventReceived(TabletMode mode,
                                          const base::TimeTicks& timestamp) {}
 
     // Called when the idle action will be performed after
@@ -143,7 +160,8 @@ class CHROMEOS_EXPORT PowerManagerClient : public DBusClient {
   virtual void SetScreenBrightnessPercent(double percent, bool gradual) = 0;
 
   // Asynchronously gets the current screen brightness, in the range
-  // [0.0, 100.0].
+  // [0.0, 100.0]. On error (e.g. powerd not running), |callback| will not be
+  // run.
   virtual void GetScreenBrightnessPercent(
       const GetScreenBrightnessPercentCallback& callback) = 0;
 
@@ -187,12 +205,18 @@ class CHROMEOS_EXPORT PowerManagerClient : public DBusClient {
   // causes powerd to switch to using the battery on devices with type-C ports.
   virtual void SetPowerSource(const std::string& id) = 0;
 
-  // Forces the display and keyboard backlights (if present) to |forced_off|.
+  // Forces the display and (if present) keyboard backlights to |forced_off|.
   virtual void SetBacklightsForcedOff(bool forced_off) = 0;
 
-  // Gets the display and keyboard backlights (if present) forced off state.
+  // Gets the display and (if present) keyboard backlights' forced-off state. On
+  // error (e.g. powerd not running), |callback| will not be run.
   virtual void GetBacklightsForcedOff(
       const GetBacklightsForcedOffCallback& callback) = 0;
+
+  // Asynchronously fetches the current state of various hardware switches (e.g.
+  // the lid switch and the tablet-mode switch). On error (e.g. powerd not
+  // running), |callback| will not be run.
+  virtual void GetSwitchStates(const GetSwitchStatesCallback& callback) = 0;
 
   // Returns a callback that can be called by an observer to report
   // readiness for suspend.  See Observer::SuspendImminent().

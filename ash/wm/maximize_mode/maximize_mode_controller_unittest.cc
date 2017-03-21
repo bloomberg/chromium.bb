@@ -152,12 +152,14 @@ class MaximizeModeControllerTest : public test::AshTestBase {
 
   void OpenLid() {
     maximize_mode_controller()->LidEventReceived(
-        true /* open */, maximize_mode_controller()->tick_clock_->NowTicks());
+        chromeos::PowerManagerClient::LidState::OPEN,
+        maximize_mode_controller()->tick_clock_->NowTicks());
   }
 
   void CloseLid() {
     maximize_mode_controller()->LidEventReceived(
-        false /* open */, maximize_mode_controller()->tick_clock_->NowTicks());
+        chromeos::PowerManagerClient::LidState::CLOSED,
+        maximize_mode_controller()->tick_clock_->NowTicks());
   }
 
   bool WasLidOpenedRecently() {
@@ -166,7 +168,9 @@ class MaximizeModeControllerTest : public test::AshTestBase {
 
   void SetTabletMode(bool on) {
     maximize_mode_controller()->TabletModeEventReceived(
-        on, maximize_mode_controller()->tick_clock_->NowTicks());
+        on ? chromeos::PowerManagerClient::TabletMode::ON
+           : chromeos::PowerManagerClient::TabletMode::OFF,
+        maximize_mode_controller()->tick_clock_->NowTicks());
   }
 
   bool AreEventsBlocked() {

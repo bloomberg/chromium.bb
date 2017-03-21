@@ -90,9 +90,11 @@ class ASH_EXPORT MaximizeModeController :
   void OnAccelerometerUpdated(
       scoped_refptr<const chromeos::AccelerometerUpdate> update) override;
 
-  // PowerManagerClient::Observer:
-  void LidEventReceived(bool open, const base::TimeTicks& time) override;
-  void TabletModeEventReceived(bool on, const base::TimeTicks& time) override;
+  // chromeos::PowerManagerClient::Observer:
+  void LidEventReceived(chromeos::PowerManagerClient::LidState state,
+                        const base::TimeTicks& time) override;
+  void TabletModeEventReceived(chromeos::PowerManagerClient::TabletMode mode,
+                               const base::TimeTicks& time) override;
   void SuspendImminent() override;
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
 

@@ -43,6 +43,9 @@ class CHROMEOS_EXPORT FakePowerManagerClient : public PowerManagerClient {
     return num_set_backlights_forced_off_calls_;
   }
 
+  void set_lid_state(LidState state) { lid_state_ = state; }
+  void set_tablet_mode(TabletMode mode) { tablet_mode_ = mode; }
+
   // PowerManagerClient overrides
   void Init(dbus::Bus* bus) override;
   void AddObserver(Observer* observer) override;
@@ -69,6 +72,7 @@ class CHROMEOS_EXPORT FakePowerManagerClient : public PowerManagerClient {
   void SetBacklightsForcedOff(bool forced_off) override;
   void GetBacklightsForcedOff(
       const GetBacklightsForcedOffCallback& callback) override;
+  void GetSwitchStates(const GetSwitchStatesCallback& callback) override;
   base::Closure GetSuspendReadinessCallback() override;
   int GetNumPendingSuspendReadinessCallbacks() override;
 
@@ -110,21 +114,25 @@ class CHROMEOS_EXPORT FakePowerManagerClient : public PowerManagerClient {
   power_manager::PowerSupplyProperties props_;
 
   // Number of times that various methods have been called.
-  int num_request_restart_calls_;
-  int num_request_shutdown_calls_;
-  int num_set_policy_calls_;
-  int num_set_is_projecting_calls_;
-  int num_set_backlights_forced_off_calls_;
+  int num_request_restart_calls_ = 0;
+  int num_request_shutdown_calls_ = 0;
+  int num_set_policy_calls_ = 0;
+  int num_set_is_projecting_calls_ = 0;
+  int num_set_backlights_forced_off_calls_ = 0;
 
   // Number of pending suspend readiness callbacks.
-  int num_pending_suspend_readiness_callbacks_;
+  int num_pending_suspend_readiness_callbacks_ = 0;
 
   // Last projecting state set in SetIsProjecting().
-  bool is_projecting_;
+  bool is_projecting_ = false;
 
   // Display and keyboard backlights (if present) forced off state set in
   // SetBacklightsForcedOff().
-  bool backlights_forced_off_;
+  bool backlights_forced_off_ = false;
+
+  // States returned by GetSwitchStates().
+  LidState lid_state_ = LidState::OPEN;
+  TabletMode tablet_mode_ = TabletMode::UNSUPPORTED;
 
   // Video activity reports that we were requested to send, in the order they
   // were requested. True if fullscreen.

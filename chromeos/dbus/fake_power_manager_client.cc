@@ -17,19 +17,9 @@ namespace {
 constexpr double kUsbMinAcWatts = 24;
 }
 
-FakePowerManagerClient::FakePowerManagerClient()
-    : num_request_restart_calls_(0),
-      num_request_shutdown_calls_(0),
-      num_set_policy_calls_(0),
-      num_set_is_projecting_calls_(0),
-      num_set_backlights_forced_off_calls_(0),
-      num_pending_suspend_readiness_callbacks_(0),
-      is_projecting_(false),
-      backlights_forced_off_(false),
-      weak_ptr_factory_(this) {}
+FakePowerManagerClient::FakePowerManagerClient() : weak_ptr_factory_(this) {}
 
-FakePowerManagerClient::~FakePowerManagerClient() {
-}
+FakePowerManagerClient::~FakePowerManagerClient() = default;
 
 void FakePowerManagerClient::Init(dbus::Bus* bus) {
   props_.set_battery_percent(50);
@@ -59,25 +49,19 @@ void FakePowerManagerClient::SetRenderProcessManagerDelegate(
   render_process_manager_delegate_ = delegate;
 }
 
-void FakePowerManagerClient::DecreaseScreenBrightness(bool allow_off) {
-}
+void FakePowerManagerClient::DecreaseScreenBrightness(bool allow_off) {}
 
-void FakePowerManagerClient::IncreaseScreenBrightness() {
-}
+void FakePowerManagerClient::IncreaseScreenBrightness() {}
 
 void FakePowerManagerClient::SetScreenBrightnessPercent(double percent,
-                                                        bool gradual) {
-}
+                                                        bool gradual) {}
 
 void FakePowerManagerClient::GetScreenBrightnessPercent(
-    const GetScreenBrightnessPercentCallback& callback) {
-}
+    const GetScreenBrightnessPercentCallback& callback) {}
 
-void FakePowerManagerClient::DecreaseKeyboardBrightness() {
-}
+void FakePowerManagerClient::DecreaseKeyboardBrightness() {}
 
-void FakePowerManagerClient::IncreaseKeyboardBrightness() {
-}
+void FakePowerManagerClient::IncreaseKeyboardBrightness() {}
 
 void FakePowerManagerClient::RequestStatusUpdate() {
   // RequestStatusUpdate() calls and notifies the observers
@@ -88,8 +72,7 @@ void FakePowerManagerClient::RequestStatusUpdate() {
                             weak_ptr_factory_.GetWeakPtr()));
 }
 
-void FakePowerManagerClient::RequestSuspend() {
-}
+void FakePowerManagerClient::RequestSuspend() {}
 
 void FakePowerManagerClient::RequestRestart() {
   ++num_request_restart_calls_;
@@ -100,8 +83,7 @@ void FakePowerManagerClient::RequestShutdown() {
 }
 
 void FakePowerManagerClient::NotifyUserActivity(
-    power_manager::UserActivityType type) {
-}
+    power_manager::UserActivityType type) {}
 
 void FakePowerManagerClient::NotifyVideoActivity(bool is_fullscreen) {
   video_activity_reports_.push_back(is_fullscreen);
@@ -144,6 +126,12 @@ void FakePowerManagerClient::GetBacklightsForcedOff(
     const GetBacklightsForcedOffCallback& callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(callback, backlights_forced_off_));
+}
+
+void FakePowerManagerClient::GetSwitchStates(
+    const GetSwitchStatesCallback& callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(callback, lid_state_, tablet_mode_));
 }
 
 base::Closure FakePowerManagerClient::GetSuspendReadinessCallback() {

@@ -132,7 +132,8 @@ class WebUIScreenLocker : public WebUILoginView,
   // PowerManagerClient::Observer:
   void SuspendImminent() override;
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
-  void LidEventReceived(bool open, const base::TimeTicks& time) override;
+  void LidEventReceived(PowerManagerClient::LidState state,
+                        const base::TimeTicks& time) override;
 
   // content::WebContentsObserver:
   void RenderProcessGone(base::TerminationStatus status) override;

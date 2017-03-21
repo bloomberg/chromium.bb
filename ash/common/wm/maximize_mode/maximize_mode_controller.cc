@@ -206,8 +206,10 @@ void MaximizeModeController::OnAccelerometerUpdated(
   }
 }
 
-void MaximizeModeController::LidEventReceived(bool open,
-                                              const base::TimeTicks& time) {
+void MaximizeModeController::LidEventReceived(
+    chromeos::PowerManagerClient::LidState state,
+    const base::TimeTicks& time) {
+  const bool open = state == chromeos::PowerManagerClient::LidState::OPEN;
   if (open)
     last_lid_open_time_ = time;
   lid_is_closed_ = !open;
@@ -215,8 +217,9 @@ void MaximizeModeController::LidEventReceived(bool open,
 }
 
 void MaximizeModeController::TabletModeEventReceived(
-    bool on,
+    chromeos::PowerManagerClient::TabletMode mode,
     const base::TimeTicks& time) {
+  const bool on = mode == chromeos::PowerManagerClient::TabletMode::ON;
   tablet_mode_switch_is_on_ = on;
   // Do not change if docked.
   if (!display::Display::HasInternalDisplay() ||

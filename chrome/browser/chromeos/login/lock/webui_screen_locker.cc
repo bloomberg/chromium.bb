@@ -381,9 +381,9 @@ void WebUIScreenLocker::OnWidgetDestroying(views::Widget* widget) {
 ////////////////////////////////////////////////////////////////////////////////
 // PowerManagerClient::Observer:
 
-void WebUIScreenLocker::LidEventReceived(bool open,
+void WebUIScreenLocker::LidEventReceived(PowerManagerClient::LidState state,
                                          const base::TimeTicks& time) {
-  if (open) {
+  if (state == PowerManagerClient::LidState::OPEN) {
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
         base::Bind(&WebUIScreenLocker::FocusUserPod,
