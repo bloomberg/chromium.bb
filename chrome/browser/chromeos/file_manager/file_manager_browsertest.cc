@@ -180,7 +180,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 #endif
 // Flaky: crbug.com/699426
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    DISABLE_Delete,
+    DISABLED_Delete,
     FileManagerBrowserTest,
     ::testing::Values(
         TestParameter(NOT_IN_GUEST_MODE,
@@ -350,7 +350,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 #endif
 // Flaky: crbug.com/701923
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    DISABLE_SuggestAppDialog,
+    DISABLED_SuggestAppDialog,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "suggestAppDialog")));
 
