@@ -393,10 +393,7 @@ RenderWidget::RenderWidget(int32_t widget_routing_id,
     render_widget_scheduling_state_->SetHidden(is_hidden_);
   }
 #if defined(USE_AURA)
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kNoUseMusInRenderer)) {
-    RendererWindowTreeClient::CreateIfNecessary(routing_id_);
-  }
+  RendererWindowTreeClient::CreateIfNecessary(routing_id_);
 #endif
 }
 
@@ -407,13 +404,10 @@ RenderWidget::~RenderWidget() {
   if (!is_swapped_out_ && RenderProcess::current())
     RenderProcess::current()->ReleaseProcess();
 #if defined(USE_AURA)
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kNoUseMusInRenderer)) {
-    // It is possible for a RenderWidget to be destroyed before it was embedded
-    // in a mus window. The RendererWindowTreeClient will leak in such cases. So
-    // explicitly delete it here.
-    RendererWindowTreeClient::Destroy(routing_id_);
-  }
+  // It is possible for a RenderWidget to be destroyed before it was embedded
+  // in a mus window. The RendererWindowTreeClient will leak in such cases. So
+  // explicitly delete it here.
+  RendererWindowTreeClient::Destroy(routing_id_);
 #endif
 }
 

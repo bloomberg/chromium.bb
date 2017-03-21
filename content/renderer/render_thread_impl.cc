@@ -708,9 +708,7 @@ void RenderThreadImpl::Init(
   AddFilter((new ServiceWorkerContextMessageFilter())->GetFilter());
 
 #if defined(USE_AURA)
-  if (IsRunningInMash() &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kNoUseMusInRenderer)) {
+  if (IsRunningInMash()) {
     CreateRenderWidgetWindowTreeClientFactory(GetServiceManagerConnection());
   }
 #endif
@@ -1883,8 +1881,7 @@ void RenderThreadImpl::RequestNewCompositorFrameSink(
     use_software = true;
 
 #if defined(USE_AURA)
-  if (!use_software && IsRunningInMash() &&
-      !command_line.HasSwitch(switches::kNoUseMusInRenderer)) {
+  if (!use_software && IsRunningInMash()) {
     scoped_refptr<gpu::GpuChannelHost> channel = EstablishGpuChannelSync();
     // If the channel could not be established correctly, then return null. This
     // would cause the compositor to wait and try again at a later time.

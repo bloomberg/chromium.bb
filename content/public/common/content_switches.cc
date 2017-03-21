@@ -657,9 +657,6 @@ const char kNoReferrers[]                   = "no-referrers";
 // Disables the sandbox for all process types that are normally sandboxed.
 const char kNoSandbox[]                     = "no-sandbox";
 
-// Do not use the mojo UI Service in the Chrome render process.
-const char kNoUseMusInRenderer[] = "no-use-mus-in-renderer";
-
 // Disables the use of a zygote process for forking child processes. Instead,
 // child processes will be forked and exec'd directly. Note that --no-sandbox
 // should also be used together with this flag because the sandbox needs the
