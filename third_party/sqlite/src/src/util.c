@@ -1310,13 +1310,12 @@ int sqlite3SubInt64(i64 *pA, i64 iB){
 #endif
 }
 int sqlite3MulInt64(i64 *pA, i64 iB){
-/* TODO(shess): Chromium Android clang generates a link error:
+/* TODO(shess): Removing clang support because on many platforms it generates a
+** link error for this intrinsic:
 **   undefined reference to '__mulodi4'
-** UPDATE(shess): Also, apparently, 32-bit Linux clang.
+** http://crbug.com/701524
 */
-#if GCC_VERSION>=5004000 || \
-    (CLANG_VERSION>=4000000 && !defined(__ANDROID__) && \
-     (!defined(__linux__) || !defined(__i386__)))
+#if GCC_VERSION>=5004000
   return __builtin_mul_overflow(*pA, iB, pA);
 #else
   i64 iA = *pA;
