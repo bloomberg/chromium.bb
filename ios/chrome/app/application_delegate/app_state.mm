@@ -374,10 +374,11 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
       ->CancelDistributionNotifications();
 
   // Halt the tabs, so any outstanding requests get cleaned up, without actually
-  // closing the tabs.
+  // closing the tabs. Set the BVC to inactive to cancel all the dialogs.
   if ([_browserLauncher browserInitializationStage] >=
       INITIALIZATION_STAGE_FOREGROUND) {
     [[_browserLauncher browserViewInformation] haltAllTabs];
+    [_browserLauncher browserViewInformation].currentBVC.active = NO;
   }
 
   // TODO(crbug.com/585700): remove this.

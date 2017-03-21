@@ -496,6 +496,8 @@ TEST_F(AppStateWithThreadTest, willTerminate) {
   IOSChromeScopedTestingChromeBrowserProvider provider_(
       base::MakeUnique<FakeChromeBrowserProvider>());
 
+  id browserViewController = OCMClassMock([BrowserViewController class]);
+  OCMExpect([browserViewController setActive:NO]);
   id browserLauncher =
       [OCMockObject mockForProtocol:@protocol(BrowserLauncher)];
   id applicationDelegate =
@@ -507,6 +509,7 @@ TEST_F(AppStateWithThreadTest, willTerminate) {
       browserInitializationStage];
   [[[browserLauncher stub] andReturn:browserViewInformation]
       browserViewInformation];
+  [[[browserViewInformation stub] andReturn:browserViewController] currentBVC];
 
   id settingsNavigationController =
       [OCMockObject mockForClass:[SettingsNavigationController class]];
@@ -538,6 +541,7 @@ TEST_F(AppStateWithThreadTest, willTerminate) {
                applicationNavigation:appNavigation];
 
   // Test.
+  EXPECT_OCMOCK_VERIFY(browserViewController);
   EXPECT_OCMOCK_VERIFY(startupInformation);
   EXPECT_OCMOCK_VERIFY(appNavigation);
   EXPECT_OCMOCK_VERIFY(browserViewInformation);
