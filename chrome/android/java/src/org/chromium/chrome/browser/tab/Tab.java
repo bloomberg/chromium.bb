@@ -895,7 +895,9 @@ public class Tab
     public void stopLoading() {
         if (isLoading()) {
             RewindableIterator<TabObserver> observers = getTabObservers();
-            while (observers.hasNext()) observers.next().onPageLoadFinished(this);
+            while (observers.hasNext()) {
+                observers.next().onPageLoadFinished(this);
+            }
         }
         if (getWebContents() != null) getWebContents().stop();
     }
@@ -1525,7 +1527,6 @@ public class Tab
      * Called when a page has finished loading.
      */
     protected void didFinishPageLoad() {
-        mIsBeingRestored = false;
         mIsTabStateDirty = true;
         updateTitle();
         updateFullscreenEnabledState();
@@ -1540,6 +1541,7 @@ public class Tab
         if (mTabUma != null) mTabUma.onPageLoadFinished();
 
         for (TabObserver observer : mObservers) observer.onPageLoadFinished(this);
+        mIsBeingRestored = false;
     }
 
     /**
@@ -1547,9 +1549,11 @@ public class Tab
      * @param errorCode The error code causing the page to fail loading.
      */
     protected void didFailPageLoad(int errorCode) {
-        mIsBeingRestored = false;
         if (mTabUma != null) mTabUma.onLoadFailed(errorCode);
-        for (TabObserver observer : mObservers) observer.onPageLoadFailed(this, errorCode);
+        for (TabObserver observer : mObservers) {
+            observer.onPageLoadFailed(this, errorCode);
+        }
+        mIsBeingRestored = false;
     }
 
     /**
@@ -2561,9 +2565,15 @@ public class Tab
      */
     void handleTabCrash() {
         mIsLoading = false;
-        mIsBeingRestored = false;
 
         if (mTabUma != null) mTabUma.onRendererCrashed();
+
+        boolean sadTabShown = isShowingSadTab();
+        RewindableIterator<TabObserver> observers = getTabObservers();
+        while (observers.hasNext()) {
+            observers.next().onCrash(this, sadTabShown);
+        }
+        mIsBeingRestored = false;
     }
 
     /**

@@ -131,12 +131,6 @@ public class TabWebContentsObserver extends WebContentsObserver {
                 "Tab.RendererCrashStatus", rendererCrashStatus, TAB_RENDERER_CRASH_STATUS_MAX);
 
         mTab.handleTabCrash();
-
-        boolean sadTabShown = mTab.isShowingSadTab();
-        RewindableIterator<TabObserver> observers = mTab.getTabObservers();
-        while (observers.hasNext()) {
-            observers.next().onCrash(mTab, sadTabShown);
-        }
     }
 
     @Override
