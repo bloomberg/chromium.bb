@@ -9,7 +9,7 @@
 function setupForDirectoryTreeContextMenuTest() {
   var windowId;
   return setupAndWaitUntilReady(
-      null, RootPath.DOWNLOAD).then(function(results) {
+      null, RootPath.DOWNLOADS).then(function(results) {
     windowId = results.windowId;
 
     // Add destination directory.

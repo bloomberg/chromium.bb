@@ -4,7 +4,7 @@
 
 // Delete menu item should be disabled when no item is selected.
 testcase.deleteMenuItemIsDisabledWhenNoItemIsSelected = function() {
-  testPromise(setupAndWaitUntilReady(null, RootPath.DOWNALOD).then(
+  testPromise(setupAndWaitUntilReady(null, RootPath.DOWNLOADS).then(
       function(results) {
         var windowId = results.windowId;
         // Right click the list without selecting an item.
@@ -43,7 +43,7 @@ testcase.deleteOneItemFromToolbar = function() {
       ENTRIES.beautiful
   ]);
 
-  testPromise(setupAndWaitUntilReady(null, RootPath.DOWNALOD).then(
+  testPromise(setupAndWaitUntilReady(null, RootPath.DOWNLOADS).then(
       function(results) {
         var windowId = results.windowId;
         // Confirm entries in the directory before the deletion.
