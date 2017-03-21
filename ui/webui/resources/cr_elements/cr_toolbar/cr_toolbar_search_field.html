@@ -134,10 +134,11 @@
       </paper-spinner-lite>
     </template>
     <paper-icon-button id="icon" icon="cr:search" title="[[label]]"
-        tabindex$="[[computeIconTabIndex_(narrow)]]">
+        tabindex$="[[computeIconTabIndex_(narrow)]]"
+        aria-hidden$="[[computeIconAriaHidden_(narrow)]]">
     </paper-icon-button>
     <div id="searchTerm">
-      <label id="prompt" for="searchInput">[[label]]</label>
+      <label id="prompt" for="searchInput" aria-hidden="true">[[label]]</label>
       <input id="searchInput"
           type="search"
           on-input="onSearchTermInput"

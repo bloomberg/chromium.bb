@@ -81,6 +81,15 @@ Polymer({
   },
 
   /**
+   * @param {boolean} narrow
+   * @return {string}
+   * @private
+   */
+  computeIconAriaHidden_: function(narrow) {
+    return Boolean(!narrow).toString();
+  },
+
+  /**
    * @return {boolean}
    * @private
    */
