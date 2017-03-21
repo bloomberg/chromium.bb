@@ -227,11 +227,11 @@ TEST(MimeUtilTest, ExperimentalMultiPartVp9) {
   base::test::ScopedCommandLine scoped_command_line;
 
   // Multi-part VP9 string not enabled by default.
-  EXPECT_FALSE(IsSupportedMediaFormat("video/webm", {"vp09.00.01.08"}));
+  EXPECT_FALSE(IsSupportedMediaFormat("video/webm", {"vp09.00.10.08"}));
 
   // Should work if enabled.
   EnableNewVp9CodecStringSupport();
-  EXPECT_TRUE(IsSupportedMediaFormat("video/webm", {"vp09.00.01.08"}));
+  EXPECT_TRUE(IsSupportedMediaFormat("video/webm", {"vp09.00.10.08"}));
 }
 
 TEST(IsCodecSupportedOnAndroidTest, EncryptedCodecsFailWithoutPlatformSupport) {

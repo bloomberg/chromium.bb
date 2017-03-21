@@ -119,7 +119,7 @@ class EncryptedMediaSupportedTypesTest : public InProcessBrowserTest {
     video_mp4_codecs_.push_back("avc1.4D000C");  // Main profile.
     video_mp4_codecs_.push_back("avc3.64001F");  // High profile.
 
-    video_mp4_codecs_.push_back("vp09.00.01.08.02.01.01.00");
+    video_mp4_codecs_.push_back("vp09.00.10.08");
 
     video_mp4_hi10p_codecs_.push_back("avc1.6E001E");  // Hi10P profile
 

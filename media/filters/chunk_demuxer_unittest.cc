@@ -4785,14 +4785,13 @@ TEST_P(ChunkDemuxerMp4Vp9Test, CodecSupport) {
   if (enable_mp4_vp9_demuxing) {
     expected = ChunkDemuxer::kOk;
   } else {
-    EXPECT_MEDIA_LOG(HasSubstr(
-        "Codec 'vp09.00.01.08.02.01.01.00' is not supported for 'video/mp4'"));
+    EXPECT_MEDIA_LOG(
+        HasSubstr("Codec 'vp09.00.10.08' is not supported for 'video/mp4'"));
   }
 #endif
 
-  EXPECT_EQ(
-      demuxer_->AddId("source_id", "video/mp4", "vp09.00.01.08.02.01.01.00"),
-      expected);
+  EXPECT_EQ(demuxer_->AddId("source_id", "video/mp4", "vp09.00.10.08"),
+            expected);
 }
 
 INSTANTIATE_TEST_CASE_P(EnableDisableMp4Vp9Demuxing,

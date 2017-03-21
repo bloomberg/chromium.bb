@@ -25,33 +25,33 @@ TEST(ParseVP9CodecId, NewStyleVP9CodecIDs) {
   EXPECT_FALSE(
       ParseNewStyleVp9CodecID("vp09.00", &profile, &level, &color_space));
   EXPECT_FALSE(
-      ParseNewStyleVp9CodecID("vp09.00.01", &profile, &level, &color_space));
+      ParseNewStyleVp9CodecID("vp09.00.10", &profile, &level, &color_space));
 
   // Expect success when all required fields supplied (and valid).
-  // TrnasferID not specified by string, should default to 709.
+  // TransferID not specified by string, should default to 709.
   EXPECT_TRUE(
-      ParseNewStyleVp9CodecID("vp09.00.01.08", &profile, &level, &color_space));
+      ParseNewStyleVp9CodecID("vp09.00.10.08", &profile, &level, &color_space));
   EXPECT_EQ(VP9PROFILE_PROFILE0, profile);
-  EXPECT_EQ(1, level);
+  EXPECT_EQ(10, level);
   EXPECT_EQ(VideoColorSpace::TransferID::BT709, color_space.transfer);
 
   // Verify profile's 1 and 2 parse correctly.
   EXPECT_TRUE(
-      ParseNewStyleVp9CodecID("vp09.01.01.08", &profile, &level, &color_space));
+      ParseNewStyleVp9CodecID("vp09.01.10.08", &profile, &level, &color_space));
   EXPECT_EQ(VP9PROFILE_PROFILE1, profile);
   EXPECT_TRUE(
-      ParseNewStyleVp9CodecID("vp09.02.01.08", &profile, &level, &color_space));
+      ParseNewStyleVp9CodecID("vp09.02.10.08", &profile, &level, &color_space));
   EXPECT_EQ(VP9PROFILE_PROFILE2, profile);
   EXPECT_TRUE(
-      ParseNewStyleVp9CodecID("vp09.03.01.08", &profile, &level, &color_space));
+      ParseNewStyleVp9CodecID("vp09.03.10.08", &profile, &level, &color_space));
   EXPECT_EQ(VP9PROFILE_PROFILE3, profile);
   // Profile 4 is not a thing.
   EXPECT_FALSE(
-      ParseNewStyleVp9CodecID("vp09.04.01.08", &profile, &level, &color_space));
+      ParseNewStyleVp9CodecID("vp09.04.10.08", &profile, &level, &color_space));
 
   // Verify valid levels parse correctly.
-  const std::set<int> kValidVp9Levels = {1,  2,  3,  4,  5,  6,  11,
-                                         21, 31, 41, 51, 52, 61, 62};
+  const std::set<int> kValidVp9Levels = {10, 11, 20, 21, 30, 31, 40,
+                                         41, 50, 51, 52, 60, 61, 62};
   size_t num_valid_levels = 0;
   for (int i = 0; i < 99; ++i) {
     // Write "i" as the level.
@@ -73,86 +73,86 @@ TEST(ParseVP9CodecId, NewStyleVP9CodecIDs) {
 
   // Verify bitdepths. Only 8, 10, 12 are valid.
   EXPECT_TRUE(
-      ParseNewStyleVp9CodecID("vp09.02.01.8", &profile, &level, &color_space));
+      ParseNewStyleVp9CodecID("vp09.02.10.8", &profile, &level, &color_space));
   EXPECT_TRUE(
-      ParseNewStyleVp9CodecID("vp09.02.01.10", &profile, &level, &color_space));
+      ParseNewStyleVp9CodecID("vp09.02.10.10", &profile, &level, &color_space));
   EXPECT_TRUE(
-      ParseNewStyleVp9CodecID("vp09.02.01.12", &profile, &level, &color_space));
+      ParseNewStyleVp9CodecID("vp09.02.10.12", &profile, &level, &color_space));
   EXPECT_FALSE(
-      ParseNewStyleVp9CodecID("vp09.02.01.13", &profile, &level, &color_space));
+      ParseNewStyleVp9CodecID("vp09.02.10.13", &profile, &level, &color_space));
+
+  // Verify chroma subsampling values.
+  EXPECT_TRUE(ParseNewStyleVp9CodecID("vp09.02.10.10.00", &profile, &level,
+                                      &color_space));
+  EXPECT_TRUE(ParseNewStyleVp9CodecID("vp09.02.10.10.01", &profile, &level,
+                                      &color_space));
+  EXPECT_TRUE(ParseNewStyleVp9CodecID("vp09.02.10.10.02", &profile, &level,
+                                      &color_space));
+  EXPECT_TRUE(ParseNewStyleVp9CodecID("vp09.02.10.10.03", &profile, &level,
+                                      &color_space));
+  // Values 4 - 7 are reserved.
+  EXPECT_FALSE(ParseNewStyleVp9CodecID("vp09.02.10.10.04", &profile, &level,
+                                       &color_space));
 
   // Verify a few color profiles.
   // BT709
-  EXPECT_TRUE(ParseNewStyleVp9CodecID("vp09.02.01.10.01", &profile, &level,
+  EXPECT_TRUE(ParseNewStyleVp9CodecID("vp09.02.10.10.00.01", &profile, &level,
                                       &color_space));
   // BT2020
-  EXPECT_TRUE(ParseNewStyleVp9CodecID("vp09.02.01.10.09", &profile, &level,
+  EXPECT_TRUE(ParseNewStyleVp9CodecID("vp09.02.10.10.00.09", &profile, &level,
                                       &color_space));
   // 0 is invalid.
-  EXPECT_FALSE(ParseNewStyleVp9CodecID("vp09.02.01.10.00", &profile, &level,
+  EXPECT_FALSE(ParseNewStyleVp9CodecID("vp09.02.10.10.00.00", &profile, &level,
                                        &color_space));
   // 23 - 255 are reserved.
-  EXPECT_FALSE(ParseNewStyleVp9CodecID("vp09.02.01.10.23", &profile, &level,
+  EXPECT_FALSE(ParseNewStyleVp9CodecID("vp09.02.10.10.00.23", &profile, &level,
                                        &color_space));
 
   // Verify a few common EOTFs parse correctly.
-  EXPECT_TRUE(ParseNewStyleVp9CodecID("vp09.02.01.10.01.01", &profile, &level,
-                                      &color_space));
+  EXPECT_TRUE(ParseNewStyleVp9CodecID("vp09.02.10.10.00.01.01", &profile,
+                                      &level, &color_space));
   EXPECT_EQ(VideoColorSpace::TransferID::BT709, color_space.transfer);
-  EXPECT_TRUE(ParseNewStyleVp9CodecID("vp09.02.01.10.01.04", &profile, &level,
-                                      &color_space));
+  EXPECT_TRUE(ParseNewStyleVp9CodecID("vp09.02.10.10.00.01.04", &profile,
+                                      &level, &color_space));
   EXPECT_EQ(VideoColorSpace::TransferID::GAMMA22, color_space.transfer);
-  EXPECT_TRUE(ParseNewStyleVp9CodecID("vp09.02.01.10.01.06", &profile, &level,
-                                      &color_space));
+  EXPECT_TRUE(ParseNewStyleVp9CodecID("vp09.02.10.10.00.01.06", &profile,
+                                      &level, &color_space));
   EXPECT_EQ(VideoColorSpace::TransferID::SMPTE170M, color_space.transfer);
-  EXPECT_TRUE(ParseNewStyleVp9CodecID("vp09.02.01.10.01.14", &profile, &level,
-                                      &color_space));
+  EXPECT_TRUE(ParseNewStyleVp9CodecID("vp09.02.10.10.00.01.14", &profile,
+                                      &level, &color_space));
   EXPECT_EQ(VideoColorSpace::TransferID::BT2020_10, color_space.transfer);
-  EXPECT_TRUE(ParseNewStyleVp9CodecID("vp09.02.01.12.01.15", &profile, &level,
-                                      &color_space));
+  EXPECT_TRUE(ParseNewStyleVp9CodecID("vp09.02.10.12.00.01.15", &profile,
+                                      &level, &color_space));
   EXPECT_EQ(VideoColorSpace::TransferID::BT2020_12, color_space.transfer);
-  EXPECT_TRUE(ParseNewStyleVp9CodecID("vp09.02.01.10.01.13", &profile, &level,
-                                      &color_space));
+  EXPECT_TRUE(ParseNewStyleVp9CodecID("vp09.02.10.10.00.01.13", &profile,
+                                      &level, &color_space));
   EXPECT_EQ(VideoColorSpace::TransferID::IEC61966_2_1, color_space.transfer);
-  EXPECT_TRUE(ParseNewStyleVp9CodecID("vp09.02.01.10.01.16", &profile, &level,
-                                      &color_space));
+  EXPECT_TRUE(ParseNewStyleVp9CodecID("vp09.02.10.10.00.01.16", &profile,
+                                      &level, &color_space));
   EXPECT_EQ(VideoColorSpace::TransferID::SMPTEST2084, color_space.transfer);
   // Verify 0 and 3 are reserved EOTF values.
-  EXPECT_FALSE(ParseNewStyleVp9CodecID("vp09.02.01.08.01.00", &profile, &level,
-                                       &color_space));
-  EXPECT_FALSE(ParseNewStyleVp9CodecID("vp09.02.01.08.01.03", &profile, &level,
-                                       &color_space));
+  EXPECT_FALSE(ParseNewStyleVp9CodecID("vp09.02.10.08.00.01.00", &profile,
+                                       &level, &color_space));
+  EXPECT_FALSE(ParseNewStyleVp9CodecID("vp09.02.10.08.00.01.03", &profile,
+                                       &level, &color_space));
 
   // Verify a few matrix coefficients.
-  EXPECT_TRUE(ParseNewStyleVp9CodecID("vp09.02.01.10.01.01.00", &profile,
+  EXPECT_TRUE(ParseNewStyleVp9CodecID("vp09.02.10.10.00.01.01.00", &profile,
                                       &level, &color_space));
-  EXPECT_TRUE(ParseNewStyleVp9CodecID("vp09.02.01.10.01.01.01", &profile,
+  EXPECT_TRUE(ParseNewStyleVp9CodecID("vp09.02.10.10.00.01.01.01", &profile,
                                       &level, &color_space));
-  EXPECT_TRUE(ParseNewStyleVp9CodecID("vp09.02.01.10.01.01.10", &profile,
+  EXPECT_TRUE(ParseNewStyleVp9CodecID("vp09.02.10.10.00.01.01.10", &profile,
                                       &level, &color_space));
   // Values 12 - 255 reserved.
-  EXPECT_FALSE(ParseNewStyleVp9CodecID("vp09.02.01.10.01.01.12", &profile,
+  EXPECT_FALSE(ParseNewStyleVp9CodecID("vp09.02.10.10.00.01.01.12", &profile,
                                        &level, &color_space));
 
   // Verify full range flag (boolean 0 or 1).
-  EXPECT_TRUE(ParseNewStyleVp9CodecID("vp09.02.01.10.01.01.01.00", &profile,
+  EXPECT_TRUE(ParseNewStyleVp9CodecID("vp09.02.10.10.00.01.01.01.00", &profile,
                                       &level, &color_space));
-  EXPECT_TRUE(ParseNewStyleVp9CodecID("vp09.02.01.10.01.01.01.01", &profile,
+  EXPECT_TRUE(ParseNewStyleVp9CodecID("vp09.02.10.10.00.01.01.01.01", &profile,
                                       &level, &color_space));
-  EXPECT_FALSE(ParseNewStyleVp9CodecID("vp09.02.01.10.01.01.01.02", &profile,
-                                       &level, &color_space));
-
-  // Verify chrome subsampling values.
-  EXPECT_TRUE(ParseNewStyleVp9CodecID("vp09.02.01.10.01.01.01.00.00", &profile,
-                                      &level, &color_space));
-  EXPECT_TRUE(ParseNewStyleVp9CodecID("vp09.02.01.10.01.01.01.00.01", &profile,
-                                      &level, &color_space));
-  EXPECT_TRUE(ParseNewStyleVp9CodecID("vp09.02.01.10.01.01.01.00.02", &profile,
-                                      &level, &color_space));
-  EXPECT_TRUE(ParseNewStyleVp9CodecID("vp09.02.01.10.01.01.01.00.03", &profile,
-                                      &level, &color_space));
-  // Values 4 - 7 are reserved.
-  EXPECT_FALSE(ParseNewStyleVp9CodecID("vp09.02.01.10.01.01.01.00.04", &profile,
+  EXPECT_FALSE(ParseNewStyleVp9CodecID("vp09.02.10.10.00.01.01.01.02", &profile,
                                        &level, &color_space));
 }
 

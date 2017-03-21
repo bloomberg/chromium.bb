@@ -153,18 +153,18 @@ bool ParseNewStyleVp9CodecID(const std::string& codec_id,
 
   *level_idc = values[1];
   switch (*level_idc) {
-    case 1:
+    case 10:
     case 11:
-    case 2:
+    case 20:
     case 21:
-    case 3:
+    case 30:
     case 31:
-    case 4:
+    case 40:
     case 41:
-    case 5:
+    case 50:
     case 51:
     case 52:
-    case 6:
+    case 60:
     case 61:
     case 62:
       break;
@@ -181,32 +181,46 @@ bool ParseNewStyleVp9CodecID(const std::string& codec_id,
 
   if (values.size() < 4)
     return true;
-  color_space->primaries = VideoColorSpace::GetPrimaryID(values[3]);
-  if (color_space->primaries == VideoColorSpace::PrimaryID::INVALID) {
-    DVLOG(3) << __func__ << " Invalid color primaries (" << values[3] << ")";
+  const int chroma_subsampling = values[3];
+  if (chroma_subsampling > 3) {
+    DVLOG(3) << __func__ << " Invalid chroma subsampling ("
+             << chroma_subsampling << ")";
     return false;
   }
 
   if (values.size() < 5)
     return true;
-  color_space->transfer = VideoColorSpace::GetTransferID(values[4]);
-  if (color_space->transfer == VideoColorSpace::TransferID::INVALID) {
-    DVLOG(3) << __func__ << " Invalid transfer function (" << values[4] << ")";
+  color_space->primaries = VideoColorSpace::GetPrimaryID(values[4]);
+  if (color_space->primaries == VideoColorSpace::PrimaryID::INVALID) {
+    DVLOG(3) << __func__ << " Invalid color primaries (" << values[4] << ")";
     return false;
   }
 
   if (values.size() < 6)
     return true;
-  color_space->matrix = VideoColorSpace::GetMatrixID(values[5]);
-  if (color_space->matrix == VideoColorSpace::MatrixID::INVALID) {
-    DVLOG(3) << __func__ << " Invalid matrix coefficients (" << values[5]
-             << ")";
+  color_space->transfer = VideoColorSpace::GetTransferID(values[5]);
+  if (color_space->transfer == VideoColorSpace::TransferID::INVALID) {
+    DVLOG(3) << __func__ << " Invalid transfer function (" << values[5] << ")";
     return false;
   }
 
   if (values.size() < 7)
     return true;
-  const int video_full_range_flag = values[6];
+  color_space->matrix = VideoColorSpace::GetMatrixID(values[6]);
+  if (color_space->matrix == VideoColorSpace::MatrixID::INVALID) {
+    DVLOG(3) << __func__ << " Invalid matrix coefficients (" << values[6]
+             << ")";
+    return false;
+  }
+  if (color_space->matrix == VideoColorSpace::MatrixID::RGB &&
+      chroma_subsampling != 3) {
+    DVLOG(3) << __func__ << " Invalid combination of chroma_subsampling ("
+             << ") and matrix coefficients (" << values[6] << ")";
+  }
+
+  if (values.size() < 8)
+    return true;
+  const int video_full_range_flag = values[7];
   if (video_full_range_flag > 1) {
     DVLOG(3) << __func__ << " Invalid full range flag ("
              << video_full_range_flag << ")";
@@ -215,17 +229,6 @@ bool ParseNewStyleVp9CodecID(const std::string& codec_id,
   color_space->range = video_full_range_flag == 1
                            ? gfx::ColorSpace::RangeID::FULL
                            : gfx::ColorSpace::RangeID::LIMITED;
-
-  if (values.size() < 8)
-    return true;
-  const int chroma_subsampling = values[7];
-  if (chroma_subsampling > 3 ||
-      (chroma_subsampling != 3 &&
-       color_space->matrix == VideoColorSpace::MatrixID::RGB)) {
-    DVLOG(3) << __func__ << " Invalid chroma subsampling ("
-             << chroma_subsampling << ")";
-    return false;
-  }
 
   return true;
 }

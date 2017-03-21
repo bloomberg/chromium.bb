@@ -82,8 +82,12 @@ const char kWebMVP9VideoOnly[] = "video/webm; codecs=\"vp9\"";
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 const char kMP4AudioOnly[] = "audio/mp4; codecs=\"mp4a.40.2\"";
 const char kMP4VideoOnly[] = "video/mp4; codecs=\"avc1.4D000C\"";
-const char kMP4VideoVp9Only[] =
-    "video/mp4; codecs=\"vp09.00.01.08.02.01.01.00\"";
+
+// NOTE: This string originally signalled the SMPTEST2084 EOTF, but is now
+// signalling BT709. At this time 2084 is only allowed when run with
+// --enable-hdr, and thats not really the focus of this test.
+// TODO(kqyang): update content to not use HDR transfer.
+const char kMP4VideoVp9Only[] = "video/mp4; codecs=\"vp09.00.10.08.01.01.01\"";
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 
 // Sessions to load.
