@@ -178,9 +178,9 @@ TryChromeDialogView::Result TryChromeDialogView::ShowModal(
     NOTREACHED() << "Cannot determine which headline to show.";
     return DIALOG_ERROR;
   }
-  views::Label* label = new views::Label(
-      l10n_util::GetStringUTF16(experiment.heading),
-      rb.GetFontList(ui::ResourceBundle::MediumFont));
+  views::Label* label =
+      new views::Label(l10n_util::GetStringUTF16(experiment.heading),
+                       views::style::CONTEXT_DIALOG_TITLE);
   label->SetMultiLine(true);
   label->SizeToFit(200);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);

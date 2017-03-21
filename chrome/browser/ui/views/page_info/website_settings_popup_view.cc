@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/page_info/website_settings.h"
 #include "chrome/browser/ui/views/collected_cookies_views.h"
+#include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/browser/ui/views/harmony/layout_delegate.h"
 #include "chrome/browser/ui/views/page_info/chosen_object_row.h"
 #include "chrome/browser/ui/views/page_info/non_accessible_image_view.h"
@@ -584,11 +585,9 @@ void WebsiteSettingsPopupView::SetCookieInfo(
         // implemented. See https://crbug.com/512442#c48
         views::GridLayout::LEADING);
 
-    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-    const gfx::FontList& font_list = rb.GetFontListWithDelta(1);
     views::Label* cookies_label = new views::Label(
         l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_TITLE_SITE_DATA),
-        font_list);
+        CONTEXT_BODY_TEXT_LARGE);
     layout->AddView(cookies_label);
     layout->StartRow(1, cookies_view_column);
     layout->SkipColumns(1);

@@ -8,6 +8,7 @@
 
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/font_list.h"
@@ -15,6 +16,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/style/typography.h"
 #include "ui/views/widget/widget.h"
 
 namespace {
@@ -34,6 +36,10 @@ const int kKeyNameBorderPx = 1;
 const int kKeyNameCornerRadius = 2;
 const int kKeyNamePaddingPx = 5;
 
+// The context used to obtain typography for the instruction text. It's not
+// really a dialog, but a dialog title is a good fit.
+constexpr int kInstructionTextContext = views::style::CONTEXT_DIALOG_TITLE;
+
 }  // namespace
 
 // Class containing the instruction text. Contains fancy styling on the keyboard
@@ -45,7 +51,6 @@ class SubtleNotificationView::InstructionView : public views::View {
   // will be displayed as a keyboard key. e.g., "Press |Alt|+|Q| to exit" will
   // have "Alt" and "Q" rendered as keys.
   InstructionView(const base::string16& text,
-                  const gfx::FontList& font_list,
                   SkColor foreground_color,
                   SkColor background_color);
 
@@ -57,7 +62,6 @@ class SubtleNotificationView::InstructionView : public views::View {
   // keyboard key.
   void AddTextSegment(const base::string16& text, bool format_as_key);
 
-  const gfx::FontList& font_list_;
   SkColor foreground_color_;
   SkColor background_color_;
 
@@ -68,12 +72,9 @@ class SubtleNotificationView::InstructionView : public views::View {
 
 SubtleNotificationView::InstructionView::InstructionView(
     const base::string16& text,
-    const gfx::FontList& font_list,
     SkColor foreground_color,
     SkColor background_color)
-    : font_list_(font_list),
-      foreground_color_(foreground_color),
-      background_color_(background_color) {
+    : foreground_color_(foreground_color), background_color_(background_color) {
   // The |between_child_spacing| is the horizontal margin of the key name.
   views::BoxLayout* layout = new views::BoxLayout(views::BoxLayout::kHorizontal,
                                                   0, 0, kKeyNameMarginHorizPx);
@@ -113,7 +114,7 @@ void SubtleNotificationView::InstructionView::SetText(
 
 void SubtleNotificationView::InstructionView::AddTextSegment(
     const base::string16& text, bool format_as_key) {
-  views::Label* label = new views::Label(text, font_list_);
+  views::Label* label = new views::Label(text, kInstructionTextContext);
   label->SetEnabledColor(foreground_color_);
   label->SetBackgroundColor(background_color_);
   if (!format_as_key) {
@@ -146,18 +147,15 @@ SubtleNotificationView::SubtleNotificationView(
   set_background(new views::BubbleBackground(bubble_border.get()));
   SetBorder(std::move(bubble_border));
 
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  const gfx::FontList& font_list =
-      rb.GetFontList(ui::ResourceBundle::MediumFont);
-
-  instruction_view_ = new InstructionView(base::string16(), font_list,
-                                          kForegroundColor, kBackgroundColor);
+  instruction_view_ =
+      new InstructionView(base::string16(), kForegroundColor, kBackgroundColor);
 
   link_ = new views::Link();
   link_->SetFocusBehavior(FocusBehavior::NEVER);
   link_->set_listener(link_listener);
-  link_->SetFontList(font_list);
-  link_->SetEnabledColor(kForegroundColor);
+  link_->SetFontList(
+      views::style::GetFont(kInstructionTextContext, views::style::STYLE_LINK));
+  link_->SetEnabledColor(kForegroundColor);  // Override STYLE_LINK.
   link_->SetBackgroundColor(kBackgroundColor);
   link_->SetVisible(false);
 

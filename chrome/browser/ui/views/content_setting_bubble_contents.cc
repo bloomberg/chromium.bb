@@ -18,6 +18,7 @@
 #include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/browser/ui/views/harmony/layout_delegate.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -230,14 +231,14 @@ void ContentSettingBubbleContents::Init() {
   bool bubble_content_empty = true;
 
   if (!bubble_content.title.empty()) {
-    views::Label* title_label = new views::Label(bubble_content.title);
+    const int title_context =
+        layout_delegate->IsHarmonyMode()
+            ? static_cast<int>(views::style::CONTEXT_DIALOG_TITLE)
+            : CONTEXT_BODY_TEXT_SMALL;
+    views::Label* title_label =
+        new views::Label(bubble_content.title, title_context);
     title_label->SetMultiLine(true);
     title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    if (layout_delegate->IsHarmonyMode()) {
-      ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-      title_label->SetFontList(
-          rb.GetFontListWithDelta(ui::kTitleFontSizeDelta));
-    }
     layout->StartRow(0, kSingleColumnSetId);
     layout->AddView(title_label);
     bubble_content_empty = false;
@@ -385,9 +386,6 @@ void ContentSettingBubbleContents::Init() {
     }
   }
 
-  const gfx::FontList& domain_font =
-      ui::ResourceBundle::GetSharedInstance().GetFontList(
-          ui::ResourceBundle::BoldFont);
   for (std::vector<ContentSettingBubbleModel::DomainList>::const_iterator i(
            bubble_content.domain_lists.begin());
        i != bubble_content.domain_lists.end(); ++i) {
@@ -399,7 +397,9 @@ void ContentSettingBubbleContents::Init() {
     for (std::set<std::string>::const_iterator j = i->hosts.begin();
          j != i->hosts.end(); ++j) {
       layout->StartRow(0, indented_kSingleColumnSetId);
-      layout->AddView(new views::Label(base::UTF8ToUTF16(*j), domain_font));
+      // TODO(tapted): Verify this when we have a mock. http://crbug.com/700196.
+      layout->AddView(new views::Label(
+          base::UTF8ToUTF16(*j), CONTEXT_BODY_TEXT_LARGE, STYLE_EMPHASIZED));
     }
     bubble_content_empty = false;
   }

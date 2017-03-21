@@ -107,9 +107,9 @@ OpaqueBrowserFrameView::OpaqueBrowserFrameView(BrowserFrame* frame,
     window_icon_->Update();
   }
 
-  window_title_ = new views::Label(
-      browser_view->GetWindowTitle(),
-      gfx::FontList(BrowserFrame::GetTitleFontList()));
+  window_title_ =
+      new views::Label(browser_view->GetWindowTitle(),
+                       {gfx::FontList(BrowserFrame::GetTitleFontList())});
   window_title_->SetVisible(browser_view->ShouldShowWindowTitle());
   window_title_->SetEnabledColor(SK_ColorWHITE);
   window_title_->SetSubpixelRenderingEnabled(false);

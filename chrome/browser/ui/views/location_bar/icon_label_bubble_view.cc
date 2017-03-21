@@ -27,7 +27,7 @@ constexpr int kSpaceBesideSeparator = 8;
 IconLabelBubbleView::IconLabelBubbleView(const gfx::FontList& font_list,
                                          bool elide_in_middle)
     : image_(new views::ImageView()),
-      label_(new views::Label(base::string16(), font_list)) {
+      label_(new views::Label(base::string16(), {font_list})) {
   // Disable separate hit testing for |image_|.  This prevents views treating
   // |image_| as a separate mouse hover region from |this|.
   image_->set_can_process_events_within_subtree(false);

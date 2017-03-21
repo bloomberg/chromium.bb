@@ -59,4 +59,8 @@ ui::ContextFactoryPrivate* TestViewsDelegate::GetContextFactoryPrivate() {
   return nullptr;
 }
 
+const TypographyProvider& TestViewsDelegate::GetTypographyProvider() const {
+  return typography_provider_;
+}
+
 }  // namespace views

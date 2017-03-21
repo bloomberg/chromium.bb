@@ -7,6 +7,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "chrome/browser/ui/views/chrome_views_delegate.h"
+#include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/browser/ui/views/harmony/harmony_layout_delegate.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/views/layout/layout_constants.h"
@@ -87,4 +88,11 @@ bool LayoutDelegate::IsHarmonyMode() const {
 
 int LayoutDelegate::GetDialogPreferredWidth(DialogWidth width) const {
   return 0;
+}
+
+const views::TypographyProvider& LayoutDelegate::GetTypographyProvider() const {
+  // This is not a data member because then HarmonyLayoutDelegate would inherit
+  // it, even when it provides its own.
+  CR_DEFINE_STATIC_LOCAL(LegacyTypographyProvider, legacy_provider, ());
+  return legacy_provider;
 }

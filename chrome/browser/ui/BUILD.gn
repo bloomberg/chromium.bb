@@ -1491,6 +1491,8 @@ split_static_library("ui") {
       "views/frame/native_widget_mac_frameless_nswindow.mm",
       "views/global_error_bubble_view.cc",
       "views/global_error_bubble_view.h",
+      "views/harmony/chrome_typography.cc",
+      "views/harmony/chrome_typography.h",
       "views/harmony/harmony_layout_delegate.cc",
       "views/harmony/harmony_layout_delegate.h",
       "views/harmony/layout_delegate.cc",

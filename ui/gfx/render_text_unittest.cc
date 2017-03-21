@@ -2340,6 +2340,45 @@ TEST_P(RenderTextTest, MinLineHeight) {
   EXPECT_EQ(default_size.width(), taller_size.width());
 }
 
+// Check that, for Latin characters, typesetting text in the default fonts and
+// sizes does not discover any glyphs that would exceed the line spacing
+// recommended by gfx::Font.
+// Disabled since this relies on machine configuration. http://crbug.com/701241.
+TEST_P(RenderTextTest, DISABLED_DefaultLineHeights) {
+  RenderText* render_text = GetRenderText();
+  render_text->SetText(
+      ASCIIToUTF16("A quick brown fox jumped over the lazy dog!"));
+
+#if defined(OS_MACOSX)
+  const FontList body2_font = FontList().DeriveWithSizeDelta(-1);
+#else
+  const FontList body2_font;
+#endif
+
+  const FontList headline_font = body2_font.DeriveWithSizeDelta(8);
+  const FontList title_font = body2_font.DeriveWithSizeDelta(3);
+  const FontList body1_font = body2_font.DeriveWithSizeDelta(1);
+#if defined(OS_WIN)
+  const FontList button_font =
+      body2_font.DeriveWithWeight(gfx::Font::Weight::BOLD);
+#else
+  const FontList button_font =
+      body2_font.DeriveWithWeight(gfx::Font::Weight::MEDIUM);
+#endif
+
+  EXPECT_EQ(12, body2_font.GetFontSize());
+  EXPECT_EQ(20, headline_font.GetFontSize());
+  EXPECT_EQ(15, title_font.GetFontSize());
+  EXPECT_EQ(13, body1_font.GetFontSize());
+  EXPECT_EQ(12, button_font.GetFontSize());
+
+  for (const auto& font :
+       {headline_font, title_font, body1_font, body2_font, button_font}) {
+    render_text->SetFontList(font);
+    EXPECT_EQ(font.GetHeight(), render_text->GetStringSizeF().height());
+  }
+}
+
 TEST_P(RenderTextTest, SetFontList) {
   RenderText* render_text = GetRenderText();
   render_text->SetFontList(

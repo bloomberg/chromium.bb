@@ -194,7 +194,8 @@ void LocationBarView::Init() {
 
   // Initialize the inline autocomplete view which is visible only when IME is
   // turned on.  Use the same font with the omnibox and highlighted background.
-  ime_inline_autocomplete_view_ = new views::Label(base::string16(), font_list);
+  ime_inline_autocomplete_view_ =
+      new views::Label(base::string16(), {font_list});
   ime_inline_autocomplete_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   ime_inline_autocomplete_view_->SetAutoColorReadabilityEnabled(false);
   ime_inline_autocomplete_view_->set_background(

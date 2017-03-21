@@ -86,9 +86,7 @@ BubbleFrameView::BubbleFrameView(const gfx::Insets& title_margins,
       close_button_clicked_(false) {
   AddChildView(title_icon_);
 
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  title_ = new Label(base::string16(),
-                     rb.GetFontListWithDelta(ui::kTitleFontSizeDelta));
+  title_ = new Label(base::string16(), style::CONTEXT_DIALOG_TITLE);
   title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title_->set_collapse_when_hidden(true);
   title_->SetVisible(false);

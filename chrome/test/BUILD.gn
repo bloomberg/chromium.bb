@@ -4816,6 +4816,7 @@ test("unit_tests") {
       "../browser/ui/views/apps/app_info_dialog/app_info_permissions_panel_unittest.cc",
       "../browser/ui/views/confirm_bubble_views_unittest.cc",
       "../browser/ui/views/global_error_bubble_view_unittest.cc",
+      "../browser/ui/views/harmony/layout_delegate_unittest.cc",
       "../browser/ui/views/page_info/website_settings_popup_view_unittest.cc",
       "../browser/ui/views/payments/credit_card_editor_view_controller_unittest.cc",
       "../browser/ui/views/payments/payment_request_item_list_unittest.cc",

@@ -12,6 +12,7 @@
 #include "ui/gfx/render_text.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/selection_controller_delegate.h"
+#include "ui/views/style/typography.h"
 #include "ui/views/view.h"
 #include "ui/views/word_lookup_client.h"
 
@@ -33,9 +34,34 @@ class VIEWS_EXPORT Label : public View,
   // The padding for the focus border when rendering focused text.
   static const int kFocusBorderPadding;
 
+  // Helper to construct a Label that doesn't use the views typography spec.
+  // Using this causes Label to obtain colors from ui::NativeTheme and line
+  // spacing from gfx::FontList::GetHeight().
+  // TODO(tapted): Audit users of this class when MD is default. Then add
+  // foreground/background colors, line spacing and everything else that
+  // views::TextContext abstracts away so the separate setters can be removed.
+  struct CustomFont {
+    // TODO(tapted): Change this to a size delta and font weight since that's
+    // typically all the callers really care about, and would allow Label to
+    // guarantee caching of the FontList in ResourceBundle.
+    const gfx::FontList& font_list;
+  };
+
+  // Create Labels with style::CONTEXT_CONTROL_LABEL and style::STYLE_PRIMARY.
+  // TODO(tapted): Remove these. Callers must specify a context or use the
+  // constructor taking a CustomFont.
   Label();
   explicit Label(const base::string16& text);
-  Label(const base::string16& text, const gfx::FontList& font_list);
+
+  // Construct a Label in the given |text_context|. The |text_style| can change
+  // later, so provide a default. The |text_context| is fixed.
+  Label(const base::string16& text,
+        int text_context,
+        int text_style = style::STYLE_PRIMARY);
+
+  // Construct a Label with the given |font| description.
+  Label(const base::string16& text, const CustomFont& font);
+
   ~Label() override;
 
   static const gfx::FontList& GetDefaultFontList();
@@ -43,6 +69,7 @@ class VIEWS_EXPORT Label : public View,
   // Gets or sets the fonts used by this label.
   const gfx::FontList& font_list() const { return render_text_->font_list(); }
 
+  // TODO(tapted): Replace this with a private method, e.g., OnFontChanged().
   virtual void SetFontList(const gfx::FontList& font_list);
 
   // Get or set the label text.

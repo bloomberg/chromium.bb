@@ -51,14 +51,14 @@ class PasswordTextBox : public views::View {
     SetLayoutManager(box_layout);
 
     views::Label* suggestion_label = new views::Label(
-        suggestion_text, font_list.DeriveWithWeight(gfx::Font::Weight::BOLD));
+        suggestion_text, {font_list.DeriveWithWeight(gfx::Font::Weight::BOLD)});
     suggestion_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     suggestion_label->SetEnabledColor(
         PasswordGenerationPopupView::kPasswordTextColor);
     AddChildView(suggestion_label);
 
     views::Label* password_label =
-        new views::Label(generated_password, font_list);
+        new views::Label(generated_password, {font_list});
     password_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     password_label->SetEnabledColor(
         PasswordGenerationPopupView::kPasswordTextColor);

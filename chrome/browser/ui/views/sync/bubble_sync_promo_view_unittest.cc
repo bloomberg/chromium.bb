@@ -16,9 +16,10 @@
 #include "ui/events/event_constants.h"
 #include "ui/gfx/range/range.h"
 #include "ui/views/controls/styled_label.h"
+#include "ui/views/test/views_test_base.h"
 
-class BubbleSyncPromoViewTest : public BubbleSyncPromoDelegate,
-                                public testing::Test {
+class BubbleSyncPromoViewTest : public views::ViewsTestBase,
+                                public BubbleSyncPromoDelegate {
  public:
   BubbleSyncPromoViewTest() : sign_in_clicked_count_(0) {}
 

@@ -11,10 +11,11 @@
 #include "chrome/browser/ui/crypto_module_password_dialog.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/controls/textfield/textfield.h"
+#include "ui/views/test/views_test_base.h"
 
 namespace chrome {
 
-class CryptoModulePasswordDialogViewTest : public testing::Test {
+class CryptoModulePasswordDialogViewTest : public views::ViewsTestBase {
  public:
   CryptoModulePasswordDialogViewTest() {}
   ~CryptoModulePasswordDialogViewTest() override {}

@@ -22,7 +22,6 @@
 #include "net/base/url_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
@@ -77,10 +76,8 @@ void AppInfoHeaderPanel::CreateControls() {
   vertical_info_container->SetLayoutManager(vertical_container_layout);
   AddChildView(vertical_info_container);
 
-  views::Label* app_name_label =
-      new views::Label(base::UTF8ToUTF16(app_->name()),
-                       ui::ResourceBundle::GetSharedInstance().GetFontList(
-                           ui::ResourceBundle::MediumFont));
+  views::Label* app_name_label = new views::Label(
+      base::UTF8ToUTF16(app_->name()), views::style::CONTEXT_DIALOG_TITLE);
   app_name_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   vertical_info_container->AddChildView(app_name_label);
 

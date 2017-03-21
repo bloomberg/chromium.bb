@@ -112,7 +112,7 @@ void LocationIconView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 
 gfx::Size LocationIconView::GetMinimumSizeForLabelText(
     const base::string16& text) const {
-  views::Label label(text, font_list());
+  views::Label label(text, {font_list()});
   return GetMinimumSizeForPreferredSize(
       GetSizeForLabelWidth(label.GetPreferredSize().width()));
 }

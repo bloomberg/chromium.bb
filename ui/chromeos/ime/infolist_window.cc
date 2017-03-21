@@ -118,12 +118,12 @@ InfolistEntryView::InfolistEntryView(const ui::InfolistEntry& entry,
     : entry_(entry) {
   SetLayoutManager(new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
 
-  title_label_ = new views::Label(entry.title, title_font_list);
+  title_label_ = new views::Label(entry.title, {title_font_list});
   title_label_->SetPosition(gfx::Point(0, 0));
   title_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title_label_->SetBorder(views::CreateEmptyBorder(4, 7, 2, 4));
 
-  description_label_ = new views::Label(entry.body, description_font_list);
+  description_label_ = new views::Label(entry.body, {description_font_list});
   description_label_->SetPosition(gfx::Point(0, 0));
   description_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   description_label_->SetMultiLine(true);

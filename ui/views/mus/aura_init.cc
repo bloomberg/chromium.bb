@@ -20,6 +20,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/views/mus/mus_client.h"
+#include "ui/views/style/typography_provider.h"
 #include "ui/views/views_delegate.h"
 
 #if defined(OS_LINUX)
@@ -42,6 +43,12 @@ class MusViewsDelegate : public ViewsDelegate {
   void OnBeforeWidgetInit(
       Widget::InitParams* params,
       internal::NativeWidgetDelegate* delegate) override {}
+
+  const TypographyProvider& GetTypographyProvider() const override {
+    return typography_provider_;
+  }
+
+  DefaultTypographyProvider typography_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(MusViewsDelegate);
 };

@@ -49,11 +49,7 @@ const int kHarmonyTabStripTabHeight = 40;
 class TabLabel : public Label {
  public:
   explicit TabLabel(const base::string16& tab_title)
-      : Label(tab_title,
-              ui::ResourceBundle::GetSharedInstance().GetFontListWithDelta(
-                  ui::kLabelFontSizeDelta,
-                  gfx::Font::NORMAL,
-                  kActiveWeight)) {}
+      : Label(tab_title, style::CONTEXT_LABEL, style::STYLE_TAB_ACTIVE) {}
 
   // Label:
   void GetAccessibleNodeData(ui::AXNodeData* data) override {

@@ -1067,7 +1067,7 @@ void Textfield::WriteDragDataForView(View* sender,
                                      OSExchangeData* data) {
   const base::string16& selected_text(GetSelectedText());
   data->SetString(selected_text);
-  Label label(selected_text, GetFontList());
+  Label label(selected_text, {GetFontList()});
   label.SetBackgroundColor(GetBackgroundColor());
   label.SetSubpixelRenderingEnabled(false);
   gfx::Size size(label.GetPreferredSize());

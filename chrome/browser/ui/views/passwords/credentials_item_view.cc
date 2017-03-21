@@ -7,9 +7,11 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
+#include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/autofill/core/common/password_form.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/path.h"
@@ -90,17 +92,22 @@ CredentialsItemView::CredentialsItemView(
   }
   AddChildView(image_view_);
 
-  ui::ResourceBundle* rb = &ui::ResourceBundle::GetSharedInstance();
+  // TODO(tapted): Check these (and the STYLE_ values below) against the spec on
+  // http://crbug.com/651681.
+  const int kLabelContext =
+      ui::MaterialDesignController::IsSecondaryUiMaterial()
+          ? CONTEXT_BODY_TEXT_SMALL
+          : CONTEXT_DEPRECATED_SMALL;
+
   if (!upper_text.empty()) {
-    upper_label_ = new views::Label(
-        upper_text, rb->GetFontList(ui::ResourceBundle::SmallFont));
+    upper_label_ = new views::Label(upper_text, kLabelContext,
+                                    views::style::STYLE_PRIMARY);
     upper_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     AddChildView(upper_label_);
   }
 
   if (!lower_text.empty()) {
-    lower_label_ = new views::Label(
-        lower_text, rb->GetFontList(ui::ResourceBundle::SmallFont));
+    lower_label_ = new views::Label(lower_text, kLabelContext, STYLE_SECONDARY);
     lower_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     lower_label_->SetMultiLine(true);
     AddChildView(lower_label_);

@@ -37,7 +37,7 @@ class TabKeyBubbleView : public views::Label {
 };
 
 TabKeyBubbleView::TabKeyBubbleView(const gfx::FontList& font_list)
-    : views::Label(l10n_util::GetStringUTF16(IDS_APP_TAB_KEY), font_list) {
+    : views::Label(l10n_util::GetStringUTF16(IDS_APP_TAB_KEY), {font_list}) {
   SetBorder(views::CreateEmptyBorder(
       gfx::Insets(LocationBarView::kBubbleVerticalPadding, 0)));
 }
@@ -144,7 +144,7 @@ const char* KeywordHintView::GetClassName() const {
 views::Label* KeywordHintView::CreateLabel(const gfx::FontList& font_list,
                                            SkColor text_color,
                                            SkColor background_color) {
-  views::Label* label = new views::Label(base::string16(), font_list);
+  views::Label* label = new views::Label(base::string16(), {font_list});
   label->SetEnabledColor(text_color);
   label->SetBackgroundColor(background_color);
   AddChildView(label);

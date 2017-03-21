@@ -46,18 +46,20 @@ void FirstRunBubble::Init() {
       GetDefaultSearchEngineName(
           TemplateURLServiceFactory::GetForProfile(browser_->profile())) :
       base::string16();
+
+  // TODO(tapted): Update these when there are mocks. http://crbug.com/699338.
   views::Label* title = new views::Label(
       l10n_util::GetStringFUTF16(IDS_FR_BUBBLE_TITLE, search_engine_name),
-      original_font_list.Derive(2, gfx::Font::NORMAL, gfx::Font::Weight::BOLD));
+      {original_font_list.Derive(2, gfx::Font::NORMAL,
+                                 gfx::Font::Weight::BOLD)});
 
   views::Link* change =
       new views::Link(l10n_util::GetStringUTF16(IDS_FR_BUBBLE_CHANGE));
   change->SetFontList(original_font_list);
   change->set_listener(this);
 
-  views::Label* subtext =
-      new views::Label(l10n_util::GetStringUTF16(IDS_FR_BUBBLE_SUBTEXT),
-                       original_font_list);
+  views::Label* subtext = new views::Label(
+      l10n_util::GetStringUTF16(IDS_FR_BUBBLE_SUBTEXT), {original_font_list});
 
   views::GridLayout* layout = views::GridLayout::CreatePanel(this);
   SetLayoutManager(layout);

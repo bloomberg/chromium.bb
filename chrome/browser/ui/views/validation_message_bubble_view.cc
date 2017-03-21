@@ -42,8 +42,9 @@ ValidationMessageBubbleView::ValidationMessageBubbleView(
   icon->SizeToPreferredSize();
   AddChildView(icon);
 
-  views::Label* label = new views::Label(
-      main_text, bundle.GetFontList(ui::ResourceBundle::MediumFont));
+  // TODO(tapted): Move |main_text| to WidgetDelegate::GetWindowTitle().
+  views::Label* label =
+      new views::Label(main_text, views::style::CONTEXT_DIALOG_TITLE);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   int text_start_x = icon->bounds().right() + kIconTextMargin;
   int min_available = kWindowMinWidth - text_start_x;

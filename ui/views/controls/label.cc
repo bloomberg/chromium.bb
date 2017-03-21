@@ -23,7 +23,6 @@
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/default_style.h"
 #include "ui/base/material_design/material_design_controller.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/insets.h"
@@ -44,12 +43,17 @@ const int Label::kFocusBorderPadding = 1;
 Label::Label() : Label(base::string16()) {
 }
 
-Label::Label(const base::string16& text) : Label(text, GetDefaultFontList()) {
+Label::Label(const base::string16& text)
+    : Label(text, style::CONTEXT_LABEL, style::STYLE_PRIMARY) {}
+
+Label::Label(const base::string16& text, int text_context, int text_style)
+    : context_menu_contents_(this) {
+  Init(text, style::GetFont(text_context, text_style));
 }
 
-Label::Label(const base::string16& text, const gfx::FontList& font_list)
+Label::Label(const base::string16& text, const CustomFont& font)
     : context_menu_contents_(this) {
-  Init(text, font_list);
+  Init(text, font.font_list);
 }
 
 Label::~Label() {
@@ -57,8 +61,7 @@ Label::~Label() {
 
 // static
 const gfx::FontList& Label::GetDefaultFontList() {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  return rb.GetFontListWithDelta(ui::kLabelFontSizeDelta);
+  return style::GetFont(style::CONTEXT_LABEL, style::STYLE_PRIMARY);
 }
 
 void Label::SetFontList(const gfx::FontList& font_list) {

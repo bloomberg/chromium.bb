@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_constants.h"
@@ -107,10 +108,8 @@ void AppInfoView::Init(const base::string16& title_text,
   icon_->SetImageSize(gfx::Size(kIconPreviewSizePixels,
                                 kIconPreviewSizePixels));
 
-  title_ = new views::Label(
-      title_text,
-      ui::ResourceBundle::GetSharedInstance().GetFontList(
-          ui::ResourceBundle::BoldFont));
+  title_ =
+      new views::Label(title_text, CONTEXT_BODY_TEXT_SMALL, STYLE_EMPHASIZED);
   title_->SetMultiLine(true);
   title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 

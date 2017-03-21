@@ -62,6 +62,7 @@ class ChromeViewsDelegate : public views::ViewsDelegate {
 
   gfx::Insets GetInsetsMetric(views::InsetsMetric metric) const override;
   int GetDistanceMetric(views::DistanceMetric metric) const override;
+  const views::TypographyProvider& GetTypographyProvider() const override;
 
   static int GetDefaultDistanceMetric(views::DistanceMetric metric);
 

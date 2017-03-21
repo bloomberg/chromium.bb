@@ -25,6 +25,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
+#include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/browser/ui/views/harmony/layout_delegate.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -231,17 +232,23 @@ void ExtensionInstallDialogView::InitView() {
     layout->AddView(rating);
     prompt_->AppendRatingStars(AddResourceIcon, rating);
 
-    const gfx::FontList& small_font_list =
-        rb.GetFontList(ui::ResourceBundle::SmallFont);
+    int rating_text_context, user_count_text_context;
+    if (LayoutDelegate::Get()->IsHarmonyMode()) {
+      rating_text_context = CONTEXT_BODY_TEXT_LARGE;
+      user_count_text_context = CONTEXT_BODY_TEXT_SMALL;
+    } else {
+      rating_text_context = user_count_text_context = CONTEXT_DEPRECATED_SMALL;
+    }
     views::Label* rating_count =
-        new views::Label(prompt_->GetRatingCount(), small_font_list);
+        new views::Label(prompt_->GetRatingCount(), rating_text_context,
+                         views::style::STYLE_PRIMARY);
     // Add some space between the stars and the rating count.
     rating_count->SetBorder(views::CreateEmptyBorder(0, 2, 0, 0));
     rating->AddChildView(rating_count);
 
     layout->StartRow(0, column_set_id);
-    views::Label* user_count =
-        new views::Label(prompt_->GetUserCount(), small_font_list);
+    views::Label* user_count = new views::Label(
+        prompt_->GetUserCount(), user_count_text_context, STYLE_SECONDARY);
     user_count->SetAutoColorReadabilityEnabled(false);
     user_count->SetEnabledColor(SK_ColorGRAY);
     layout->AddView(user_count);
@@ -442,10 +449,8 @@ views::GridLayout* ExtensionInstallDialogView::CreateLayout(
   column_set->AddPaddingColumn(0, views::kButtonHEdgeMarginNew);
 
   layout->StartRow(0, column_set_id);
-  views::Label* title =
-      new views::Label(prompt_->GetDialogTitle(),
-                       ui::ResourceBundle::GetSharedInstance().GetFontList(
-                           ui::ResourceBundle::MediumFont));
+  views::Label* title = new views::Label(prompt_->GetDialogTitle(),
+                                         views::style::CONTEXT_DIALOG_TITLE);
   title->SetMultiLine(true);
   title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   title->SizeToFit(left_column_width);

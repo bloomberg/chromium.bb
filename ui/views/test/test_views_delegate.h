@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
+#include "ui/views/style/typography_provider.h"
 #include "ui/views/views_delegate.h"
 
 namespace views {
@@ -47,12 +48,14 @@ class TestViewsDelegate : public ViewsDelegate {
                           internal::NativeWidgetDelegate* delegate) override;
   ui::ContextFactory* GetContextFactory() override;
   ui::ContextFactoryPrivate* GetContextFactoryPrivate() override;
+  const TypographyProvider& GetTypographyProvider() const override;
 
  private:
   ui::ContextFactory* context_factory_;
   ui::ContextFactoryPrivate* context_factory_private_;
   bool use_desktop_native_widgets_;
   bool use_transparent_windows_;
+  DefaultTypographyProvider typography_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(TestViewsDelegate);
 };

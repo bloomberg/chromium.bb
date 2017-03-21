@@ -503,8 +503,8 @@ void TouchCalibratorView::InitViewContents() {
   // calibration setup.
   exit_label_ = new views::Label(
       rb.GetLocalizedString(IDS_DISPLAY_TOUCH_CALIBRATION_EXIT_LABEL),
-      rb.GetFontListWithDelta(8, gfx::Font::FontStyle::NORMAL,
-                              gfx::Font::Weight::NORMAL));
+      {rb.GetFontListWithDelta(8, gfx::Font::FontStyle::NORMAL,
+                               gfx::Font::Weight::NORMAL)});
   exit_label_->SetBounds((display_.bounds().width() - kExitLabelWidth) / 2,
                          display_.bounds().height() * 3.f / 4, kExitLabelWidth,
                          kExitLabelHeight);
@@ -536,8 +536,8 @@ void TouchCalibratorView::InitViewContents() {
   // Initialize the tap label.
   tap_label_ = new views::Label(
       rb.GetLocalizedString(IDS_DISPLAY_TOUCH_CALIBRATION_TAP_HERE_LABEL),
-      rb.GetFontListWithDelta(6, gfx::Font::FontStyle::NORMAL,
-                              gfx::Font::Weight::NORMAL));
+      {rb.GetFontListWithDelta(6, gfx::Font::FontStyle::NORMAL,
+                               gfx::Font::Weight::NORMAL)});
   tap_label_->SetBounds(0, kThrobberCircleViewWidth, kTapLabelWidth,
                         kTapLabelHeight);
   tap_label_->SetEnabledColor(kTapHereLabelColor);

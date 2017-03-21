@@ -263,6 +263,11 @@ int ChromeViewsDelegate::GetDistanceMetric(views::DistanceMetric metric) const {
   return 0;
 }
 
+const views::TypographyProvider& ChromeViewsDelegate::GetTypographyProvider()
+    const {
+  return LayoutDelegate::Get()->GetTypographyProvider();
+}
+
 int ChromeViewsDelegate::GetDefaultDistanceMetric(
     views::DistanceMetric metric) {
   return views_delegate

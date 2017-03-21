@@ -144,7 +144,7 @@ SpeechView::SpeechView(AppListViewDelegate* delegate)
   // TODO(mukai): use BoundedLabel to cap 2 lines.
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   speech_result_ = new views::Label(
-      base::string16(), bundle.GetFontList(ui::ResourceBundle::LargeFont));
+      base::string16(), {bundle.GetFontList(ui::ResourceBundle::LargeFont)});
   speech_result_->SetMultiLine(true);
   speech_result_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 

@@ -48,6 +48,7 @@ namespace views {
 class NativeWidget;
 class NonClientFrameView;
 class ViewsTouchEditingControllerFactory;
+class TypographyProvider;
 class View;
 class Widget;
 
@@ -251,6 +252,10 @@ class VIEWS_EXPORT ViewsDelegate {
   // Returns the distance metric between elements according to the given
   // enumeration element.
   virtual int GetDistanceMetric(DistanceMetric metric) const;
+
+  // Returns the TypographyProvider, used to configure text properties such as
+  // font, weight, color, size, and line height. Never null.
+  virtual const TypographyProvider& GetTypographyProvider() const = 0;
 
  protected:
   ViewsDelegate();

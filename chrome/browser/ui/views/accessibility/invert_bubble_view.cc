@@ -82,9 +82,10 @@ void InvertBubbleView::Init() {
   const gfx::FontList& original_font_list =
       rb.GetFontList(ui::ResourceBundle::MediumFont);
 
+  // TODO(tapted): This should be using WidgetDelegate::GetWindowTitle().
   views::Label* title = new views::Label(
-      base::string16(),
-      original_font_list.Derive(2, gfx::Font::NORMAL, gfx::Font::Weight::BOLD));
+      base::string16(), {original_font_list.Derive(2, gfx::Font::NORMAL,
+                                                   gfx::Font::Weight::BOLD)});
   title->SetMultiLine(true);
 
   learn_more_ = new views::Link(l10n_util::GetStringUTF16(IDS_LEARN_MORE));

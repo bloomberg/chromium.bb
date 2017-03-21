@@ -7,6 +7,10 @@
 
 #include "ui/views/layout/grid_layout.h"
 
+namespace views {
+class TypographyProvider;
+}
+
 class LayoutDelegate {
  public:
   enum class Metric {
@@ -84,6 +88,9 @@ class LayoutDelegate {
   // Views for dialogs should not insert extra padding at their own edges.
   virtual bool UseExtraDialogPadding() const;
 
+  // Returns whether to show the icon next to the title text on a dialog.
+  virtual bool ShouldShowWindowIcon() const;
+
   // DEPRECATED.  Returns whether Harmony mode is enabled.
   //
   // Instead of using this, create a generic solution that works for all UI
@@ -96,8 +103,9 @@ class LayoutDelegate {
   // May return 0 if the dialog has no preferred width.
   virtual int GetDialogPreferredWidth(DialogWidth width) const;
 
-  // Returns whether to show the icon next to the title text on a dialog.
-  virtual bool ShouldShowWindowIcon() const;
+  // Returns the class that maps views::style values (TextContext and TextStyle)
+  // to specific font properties (e.g. typeface, size, color, line spacing).
+  virtual const views::TypographyProvider& GetTypographyProvider() const;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LayoutDelegate);
