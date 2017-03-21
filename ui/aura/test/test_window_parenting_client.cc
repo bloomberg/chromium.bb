@@ -18,8 +18,7 @@ TestWindowParentingClient::~TestWindowParentingClient() {
   client::SetWindowParentingClient(root_window_, nullptr);
 }
 
-Window* TestWindowParentingClient::GetDefaultParent(Window* context,
-                                                    Window* window,
+Window* TestWindowParentingClient::GetDefaultParent(Window* window,
                                                     const gfx::Rect& bounds) {
   return root_window_;
 }

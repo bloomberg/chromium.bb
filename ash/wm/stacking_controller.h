@@ -19,8 +19,7 @@ class ASH_EXPORT StackingController
   ~StackingController() override;
 
   // Overridden from aura::client::WindowParentingClient:
-  aura::Window* GetDefaultParent(aura::Window* context,
-                                 aura::Window* window,
+  aura::Window* GetDefaultParent(aura::Window* window,
                                  const gfx::Rect& bounds) override;
 
  private:

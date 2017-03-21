@@ -80,8 +80,7 @@ class ShellDesktopControllerAura
   void CloseAppWindows() override;
 
   // aura::client::WindowParentingClient overrides:
-  aura::Window* GetDefaultParent(aura::Window* context,
-                                 aura::Window* window,
+  aura::Window* GetDefaultParent(aura::Window* window,
                                  const gfx::Rect& bounds) override;
 
 #if defined(OS_CHROMEOS)

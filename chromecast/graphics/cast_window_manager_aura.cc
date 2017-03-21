@@ -241,8 +241,7 @@ gfx::NativeView CastWindowManagerAura::GetRootWindow() {
   return window_tree_host_->window();
 }
 
-aura::Window* CastWindowManagerAura::GetDefaultParent(aura::Window* context,
-                                                      aura::Window* window,
+aura::Window* CastWindowManagerAura::GetDefaultParent(aura::Window* window,
                                                       const gfx::Rect& bounds) {
   DCHECK(window_tree_host_);
   return window_tree_host_->window();

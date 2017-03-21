@@ -70,9 +70,7 @@ WmWindow* GetContainerForWindow(WmWindow* window) {
   return parent;
 }
 
-WmWindow* GetDefaultParent(WmWindow* context,
-                           WmWindow* window,
-                           const gfx::Rect& bounds) {
+WmWindow* GetDefaultParent(WmWindow* window, const gfx::Rect& bounds) {
   WmWindow* target_root = nullptr;
   WmWindow* transient_parent = window->GetTransientParent();
   if (transient_parent) {

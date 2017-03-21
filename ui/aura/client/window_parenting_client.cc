@@ -46,8 +46,7 @@ void ParentWindowWithContext(Window* window,
   // |context| must be attached to a hierarchy with a WindowParentingClient.
   WindowParentingClient* client = GetWindowParentingClient(context);
   DCHECK(client);
-  Window* default_parent =
-      client->GetDefaultParent(context, window, screen_bounds);
+  Window* default_parent = client->GetDefaultParent(window, screen_bounds);
   default_parent->AddChild(window);
 }
 

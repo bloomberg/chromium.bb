@@ -19,9 +19,7 @@ class TestWindowParentingClient : public client::WindowParentingClient {
   ~TestWindowParentingClient() override;
 
   // Overridden from client::WindowParentingClient:
-  Window* GetDefaultParent(Window* context,
-                           Window* window,
-                           const gfx::Rect& bounds) override;
+  Window* GetDefaultParent(Window* window, const gfx::Rect& bounds) override;
 
  private:
   Window* root_window_;

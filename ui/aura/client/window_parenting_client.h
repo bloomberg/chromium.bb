@@ -22,17 +22,10 @@ class AURA_EXPORT WindowParentingClient {
   virtual ~WindowParentingClient() {}
 
   // Called by the Window when it looks for a default parent. Returns the
-  // window that |window| should be added to instead. |context| provides a
-  // Window (generally a RootWindow) that can be used to determine which
-  // desktop type the default parent should be chosen from.  NOTE: this may
-  // have side effects. It should only be used when |window| is going to be
+  // window that |window| should be added to instead. NOTE: this may have
+  // side effects. It should only be used when |window| is going to be
   // immediately added.
-  //
-  // TODO(erg): Remove |context|, and maybe after oshima's patch lands,
-  // |bounds|.
-  virtual Window* GetDefaultParent(Window* context,
-                                   Window* window,
-                                   const gfx::Rect& bounds) = 0;
+  virtual Window* GetDefaultParent(Window* window, const gfx::Rect& bounds) = 0;
 };
 
 // Set/Get a window tree client for the RootWindow containing |window|. |window|

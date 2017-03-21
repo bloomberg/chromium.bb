@@ -19,11 +19,10 @@ StackingController::~StackingController() {}
 ////////////////////////////////////////////////////////////////////////////////
 // StackingController, aura::client::WindowParentingClient implementation:
 
-aura::Window* StackingController::GetDefaultParent(aura::Window* context,
-                                                   aura::Window* window,
+aura::Window* StackingController::GetDefaultParent(aura::Window* window,
                                                    const gfx::Rect& bounds) {
-  return WmWindow::GetAuraWindow(wm::GetDefaultParent(
-      WmWindow::Get(context), WmWindow::Get(window), bounds));
+  return WmWindow::GetAuraWindow(
+      wm::GetDefaultParent(WmWindow::Get(window), bounds));
 }
 
 }  // namespace ash

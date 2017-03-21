@@ -403,7 +403,7 @@ void Shell::PlatformCreateWindow(int width, int height) {
 #if defined(OS_CHROMEOS)
   window_widget_ = views::Widget::CreateWindowWithContextAndBounds(
       new ShellWindowDelegateView(this),
-      wm_test_helper_->GetDefaultParent(NULL, NULL, gfx::Rect()),
+      wm_test_helper_->GetDefaultParent(nullptr, gfx::Rect()),
       gfx::Rect(0, 0, width, height));
 #else
   window_widget_ = new views::Widget;

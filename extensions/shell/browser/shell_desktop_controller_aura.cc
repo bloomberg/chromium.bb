@@ -240,7 +240,6 @@ void ShellDesktopControllerAura::CloseAppWindows() {
 }
 
 aura::Window* ShellDesktopControllerAura::GetDefaultParent(
-    aura::Window* context,
     aura::Window* window,
     const gfx::Rect& bounds) {
   return host_->window();

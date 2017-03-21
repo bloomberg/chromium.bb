@@ -48,8 +48,7 @@ class WMTestHelper : public aura::client::WindowParentingClient {
   aura::WindowTreeHost* host() { return host_.get(); }
 
   // Overridden from client::WindowParentingClient:
-  aura::Window* GetDefaultParent(aura::Window* context,
-                                 aura::Window* window,
+  aura::Window* GetDefaultParent(aura::Window* window,
                                  const gfx::Rect& bounds) override;
 
  private:

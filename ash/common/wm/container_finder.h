@@ -26,11 +26,9 @@ namespace wm {
 // Returns the first ancestor of |window| that has a known container ID.
 ASH_EXPORT WmWindow* GetContainerForWindow(WmWindow* window);
 
-// Returns the parent to add |window| to in |context|. This is generally
-// used when a window is moved from one root to another. In this case |context|
-// is the new root to add |window| to.
-ASH_EXPORT WmWindow* GetDefaultParent(WmWindow* context,
-                                      WmWindow* window,
+// Returns the parent to add |window| to. This is generally used when a window
+// is moved from one root to another.
+ASH_EXPORT WmWindow* GetDefaultParent(WmWindow* window,
                                       const gfx::Rect& bounds);
 
 // Returns the list of containers that match |container_id| in all root windows.
