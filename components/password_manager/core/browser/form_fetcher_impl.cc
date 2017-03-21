@@ -201,7 +201,7 @@ std::unique_ptr<FormFetcher> FormFetcherImpl::Clone() {
   result->state_ = this->state_;
   result->need_to_refetch_ = this->need_to_refetch_;
 
-  // Move needed for upcasting.
+  // TODO(crbug.com/703565): remove std::move() once Xcode 9.0+ is required.
   return std::move(result);
 }
 
