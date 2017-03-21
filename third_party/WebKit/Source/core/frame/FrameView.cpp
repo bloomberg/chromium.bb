@@ -5093,8 +5093,6 @@ MainThreadScrollingReasons FrameView::mainThreadScrollingReasonsPerFrame()
   if (hasBackgroundAttachmentFixedObjects())
     reasons |= MainThreadScrollingReason::kHasBackgroundAttachmentFixedObjects;
 
-  reasons |= getStyleRelatedMainThreadScrollingReasons();
-
   ScrollingReasons scrollingReasons = getScrollingReasons();
   const bool mayBeScrolledByInput = (scrollingReasons == Scrollable);
   const bool mayBeScrolledByScript =

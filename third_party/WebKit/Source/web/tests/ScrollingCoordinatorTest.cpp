@@ -1104,28 +1104,31 @@ INSTANTIATE_TEST_CASE_P(All,
                         StyleRelatedMainThreadScrollingReasonTest,
                         ::testing::Bool());
 
-TEST_P(StyleRelatedMainThreadScrollingReasonTest, TransparentTest) {
+// TODO(yigu): This test and all other style realted main thread scrolling
+// reason tests below have been disabled due to https://crbug.com/701355.
+TEST_P(StyleRelatedMainThreadScrollingReasonTest, DISABLED_TransparentTest) {
   testStyle("transparent", MainThreadScrollingReason::kHasOpacityAndLCDText);
 }
 
-TEST_P(StyleRelatedMainThreadScrollingReasonTest, TransformTest) {
+TEST_P(StyleRelatedMainThreadScrollingReasonTest, DISABLED_TransformTest) {
   testStyle("transform", MainThreadScrollingReason::kHasTransformAndLCDText);
 }
 
-TEST_P(StyleRelatedMainThreadScrollingReasonTest, BackgroundNotOpaqueTest) {
+TEST_P(StyleRelatedMainThreadScrollingReasonTest,
+       DISABLED_BackgroundNotOpaqueTest) {
   testStyle("background-not-opaque",
             MainThreadScrollingReason::kBackgroundNotOpaqueInRectAndLCDText);
 }
 
-TEST_P(StyleRelatedMainThreadScrollingReasonTest, BorderRadiusTest) {
+TEST_P(StyleRelatedMainThreadScrollingReasonTest, DISABLED_BorderRadiusTest) {
   testStyle("border-radius", MainThreadScrollingReason::kHasBorderRadius);
 }
 
-TEST_P(StyleRelatedMainThreadScrollingReasonTest, ClipTest) {
+TEST_P(StyleRelatedMainThreadScrollingReasonTest, DISABLED_ClipTest) {
   testStyle("clip", MainThreadScrollingReason::kHasClipRelatedProperty);
 }
 
-TEST_P(StyleRelatedMainThreadScrollingReasonTest, ClipPathTest) {
+TEST_P(StyleRelatedMainThreadScrollingReasonTest, DISABLED_ClipPathTest) {
   uint32_t reason = MainThreadScrollingReason::kHasClipRelatedProperty;
   webViewImpl()->settings()->setPreferCompositingToLCDTextEnabled(false);
   Document* document = frame()->document();
@@ -1160,13 +1163,13 @@ TEST_P(StyleRelatedMainThreadScrollingReasonTest, ClipPathTest) {
   ASSERT_FALSE(frameView->mainThreadScrollingReasons() & reason);
 }
 
-TEST_P(StyleRelatedMainThreadScrollingReasonTest, LCDTextEnabledTest) {
+TEST_P(StyleRelatedMainThreadScrollingReasonTest, DISABLED_LCDTextEnabledTest) {
   testStyle("transparent border-radius",
             MainThreadScrollingReason::kHasOpacityAndLCDText |
                 MainThreadScrollingReason::kHasBorderRadius);
 }
 
-TEST_P(StyleRelatedMainThreadScrollingReasonTest, BoxShadowTest) {
+TEST_P(StyleRelatedMainThreadScrollingReasonTest, DISABLED_BoxShadowTest) {
   testStyle("box-shadow",
             MainThreadScrollingReason::kHasBoxShadowFromNonRootLayer);
 }
