@@ -157,10 +157,6 @@ found in the LICENSE file.
           // which display they wish to use.
           if (displays.length > 0) {
             vrDisplay = displays[displays.length - 1];
-
-            // Being able to re-center your view is a useful thing in VR. It's
-            // good practice to provide your users with a simple way to do so.
-            VRSamplesUtil.addButton("Reset Pose", "R", null, function () { vrDisplay.resetPose(); });
           } else {
             VRSamplesUtil.addInfo("WebVR supported, but no VRDisplays found.", 3000);
           }
