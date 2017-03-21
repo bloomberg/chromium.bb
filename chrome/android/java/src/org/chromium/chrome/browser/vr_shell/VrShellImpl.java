@@ -15,6 +15,7 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.view.ViewTreeObserver.OnPreDrawListener;
 import android.widget.FrameLayout;
+import android.widget.FrameLayout.LayoutParams;
 
 import com.google.vr.ndk.base.AndroidCompat;
 import com.google.vr.ndk.base.GvrLayout;
@@ -28,6 +29,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.NativePage;
+import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.omnibox.geo.GeolocationHeader;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -36,9 +38,11 @@ import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
+import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.MotionEventSynthesizer;
@@ -555,6 +559,25 @@ public class VrShellImpl
                 nativeOnTabRemoved(mNativeVrShell, tab.isIncognito(), tab.getId());
             }
         };
+    }
+
+    @CalledByNative
+    private void showTab(int id) {
+        Tab tab = mActivity.getTabModelSelector().getTabById(id);
+        if (tab == null) {
+            return;
+        }
+        int index = mActivity.getTabModelSelector().getModel(tab.isIncognito()).indexOf(tab);
+        if (index == TabModel.INVALID_TAB_INDEX) {
+            return;
+        }
+        TabModelUtils.setIndex(mActivity.getTabModelSelector().getModel(tab.isIncognito()), index);
+    }
+
+    @CalledByNative
+    private void openNewTab(boolean incognito) {
+        mActivity.getTabCreator(incognito).launchUrl(
+                UrlConstants.NTP_URL, TabLaunchType.FROM_CHROME_UI);
     }
 
     @CalledByNative

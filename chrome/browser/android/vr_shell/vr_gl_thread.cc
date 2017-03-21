@@ -14,14 +14,12 @@ namespace vr_shell {
 
 VrGLThread::VrGLThread(
     const base::WeakPtr<VrShell>& weak_vr_shell,
-    const base::WeakPtr<VrShellDelegate>& delegate_provider,
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
     gvr_context* gvr_api,
     bool initially_web_vr,
     bool reprojected_rendering)
     : base::Thread("VrShellGL"),
       weak_vr_shell_(weak_vr_shell),
-      delegate_provider_(delegate_provider),
       main_thread_task_runner_(std::move(main_thread_task_runner)),
       gvr_api_(gvr_api),
       initially_web_vr_(initially_web_vr),
@@ -32,10 +30,9 @@ VrGLThread::~VrGLThread() {
 }
 
 void VrGLThread::Init() {
-  vr_shell_gl_.reset(
-      new VrShellGl(std::move(weak_vr_shell_), std::move(delegate_provider_),
-                    std::move(main_thread_task_runner_), gvr_api_,
-                    initially_web_vr_, reprojected_rendering_));
+  vr_shell_gl_.reset(new VrShellGl(
+      std::move(weak_vr_shell_), std::move(main_thread_task_runner_), gvr_api_,
+      initially_web_vr_, reprojected_rendering_));
   weak_vr_shell_gl_ = vr_shell_gl_->GetWeakPtr();
   vr_shell_gl_->Initialize();
 }

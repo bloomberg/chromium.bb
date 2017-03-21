@@ -35,15 +35,11 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
-import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
 import org.chromium.chrome.browser.infobar.SimpleConfirmInfoBarBuilder;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tabmodel.TabModel;
-import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -795,25 +791,6 @@ public class VrShellDelegate {
     @CalledByNative
     private long getNativePointer() {
         return mNativeVrShellDelegate;
-    }
-
-    @CalledByNative
-    private void showTab(int id) {
-        Tab tab = mActivity.getTabModelSelector().getTabById(id);
-        if (tab == null) {
-            return;
-        }
-        int index = mActivity.getTabModelSelector().getModel(tab.isIncognito()).indexOf(tab);
-        if (index == TabModel.INVALID_TAB_INDEX) {
-            return;
-        }
-        TabModelUtils.setIndex(mActivity.getTabModelSelector().getModel(tab.isIncognito()), index);
-    }
-
-    @CalledByNative
-    private void openNewTab(boolean incognito) {
-        mActivity.getTabCreator(incognito).launchUrl(
-                UrlConstants.NTP_URL, TabLaunchType.FROM_CHROME_UI);
     }
 
     private void destroy() {

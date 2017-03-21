@@ -47,12 +47,9 @@ class VrShellDelegate : public device::GvrDelegateProvider {
   void OnPause(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   void OnResume(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
-  void ShowTab(int id);
-  void OpenNewTab(bool incognito);
   device::mojom::VRSubmitFrameClientPtr TakeSubmitFrameClient();
 
   device::GvrDeviceProvider* device_provider() { return device_provider_; }
-  base::WeakPtr<VrShellDelegate> GetWeakPtr();
 
  private:
   // device::GvrDelegateProvider implementation
@@ -74,8 +71,6 @@ class VrShellDelegate : public device::GvrDelegateProvider {
   int64_t timebase_nanos_ = 0;
   double interval_seconds_ = 0;
   device::mojom::VRSubmitFrameClientPtr submit_client_;
-
-  base::WeakPtrFactory<VrShellDelegate> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VrShellDelegate);
 };

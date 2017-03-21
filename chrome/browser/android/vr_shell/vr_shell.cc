@@ -98,9 +98,9 @@ VrShell::VrShell(JNIEnv* env,
   ui_input_manager_ = base::MakeUnique<VrInputManager>(ui_contents_);
   ui_compositor_->SetLayer(ui_contents_);
 
-  gl_thread_ = base::MakeUnique<VrGLThread>(
-      weak_ptr_factory_.GetWeakPtr(), delegate_provider_->GetWeakPtr(),
-      main_thread_task_runner_, gvr_api, for_web_vr, reprojected_rendering_);
+  gl_thread_ = base::MakeUnique<VrGLThread>(weak_ptr_factory_.GetWeakPtr(),
+                                            main_thread_task_runner_, gvr_api,
+                                            for_web_vr, reprojected_rendering_);
 
   base::Thread::Options options(base::MessageLoop::TYPE_DEFAULT, 0);
   options.priority = base::ThreadPriority::DISPLAY;
@@ -474,18 +474,6 @@ void VrShell::DoUiAction(const UiAction action,
     case ZOOM_OUT:  // Not handled yet.
     case ZOOM_IN:   // Not handled yet.
       return;
-    case SHOW_TAB: {
-      int id;
-      CHECK(arguments->GetInteger("id", &id));
-      delegate_provider_->ShowTab(id);
-      return;
-    }
-    case OPEN_NEW_TAB: {
-      bool incognito;
-      CHECK(arguments->GetBoolean("incognito", &incognito));
-      delegate_provider_->OpenNewTab(incognito);
-      return;
-    }
     case KEY_EVENT: {
       int char_value;
       int modifiers = 0;
@@ -508,6 +496,18 @@ void VrShell::DoUiAction(const UiAction action,
   // Actions that are handled in java.
   JNIEnv* env = base::android::AttachCurrentThread();
   switch (action) {
+    case SHOW_TAB: {
+      int id;
+      CHECK(arguments->GetInteger("id", &id));
+      Java_VrShellImpl_showTab(env, j_vr_shell_.obj(), id);
+      return;
+    }
+    case OPEN_NEW_TAB: {
+      bool incognito;
+      CHECK(arguments->GetBoolean("incognito", &incognito));
+      Java_VrShellImpl_openNewTab(env, j_vr_shell_.obj(), incognito);
+      return;
+    }
     case HISTORY_BACK:
       Java_VrShellImpl_navigateBack(env, j_vr_shell_.obj());
       break;

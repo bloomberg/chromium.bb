@@ -20,7 +20,6 @@
 #include "chrome/browser/android/vr_shell/vr_gl_util.h"
 #include "chrome/browser/android/vr_shell/vr_math.h"
 #include "chrome/browser/android/vr_shell/vr_shell.h"
-#include "chrome/browser/android/vr_shell/vr_shell_delegate.h"
 #include "chrome/browser/android/vr_shell/vr_shell_renderer.h"
 #include "device/vr/android/gvr/gvr_device.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
@@ -148,7 +147,6 @@ void RunVRDisplayInfoCallback(
 
 VrShellGl::VrShellGl(
     const base::WeakPtr<VrShell>& weak_vr_shell,
-    const base::WeakPtr<VrShellDelegate>& delegate_provider,
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
     gvr_context* gvr_api,
     bool initially_web_vr,
@@ -158,7 +156,6 @@ VrShellGl::VrShellGl(
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       binding_(this),
       weak_vr_shell_(weak_vr_shell),
-      delegate_provider_(delegate_provider),
       main_thread_task_runner_(std::move(main_thread_task_runner)),
       weak_ptr_factory_(this) {
   GvrInit(gvr_api);

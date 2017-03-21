@@ -47,7 +47,6 @@ class MailboxToSurfaceBridge;
 class UiScene;
 class VrController;
 class VrShell;
-class VrShellDelegate;
 class VrShellRenderer;
 struct ContentRectangle;
 
@@ -70,7 +69,6 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
   };
 
   VrShellGl(const base::WeakPtr<VrShell>& weak_vr_shell,
-            const base::WeakPtr<VrShellDelegate>& delegate_provider,
             scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
             gvr_context* gvr_api,
             bool initially_web_vr,
@@ -226,7 +224,6 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
   device::mojom::VRSubmitFrameClientPtr submit_client_;
 
   base::WeakPtr<VrShell> weak_vr_shell_;
-  base::WeakPtr<VrShellDelegate> delegate_provider_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
 
   uint8_t frame_index_ = 0;

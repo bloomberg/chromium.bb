@@ -18,8 +18,7 @@ using base::android::AttachCurrentThread;
 
 namespace vr_shell {
 
-VrShellDelegate::VrShellDelegate(JNIEnv* env, jobject obj)
-    : weak_ptr_factory_(this) {
+VrShellDelegate::VrShellDelegate(JNIEnv* env, jobject obj) {
   j_vr_shell_delegate_.Reset(env, obj);
 }
 
@@ -121,16 +120,6 @@ void VrShellDelegate::Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   delete this;
 }
 
-void VrShellDelegate::ShowTab(int id) {
-  JNIEnv* env = AttachCurrentThread();
-  Java_VrShellDelegate_showTab(env, j_vr_shell_delegate_.obj(), id);
-}
-
-void VrShellDelegate::OpenNewTab(bool incognito) {
-  JNIEnv* env = AttachCurrentThread();
-  Java_VrShellDelegate_openNewTab(env, j_vr_shell_delegate_.obj(), incognito);
-}
-
 device::mojom::VRSubmitFrameClientPtr VrShellDelegate::TakeSubmitFrameClient() {
   return std::move(submit_client_);
 }
@@ -179,10 +168,6 @@ void VrShellDelegate::ExitWebVRPresent() {
   // being used elsewhere.
   JNIEnv* env = AttachCurrentThread();
   Java_VrShellDelegate_exitWebVR(env, j_vr_shell_delegate_.obj());
-}
-
-base::WeakPtr<VrShellDelegate> VrShellDelegate::GetWeakPtr() {
-  return weak_ptr_factory_.GetWeakPtr();
 }
 
 void VrShellDelegate::CreateNonPresentingDelegate() {

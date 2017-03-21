@@ -16,14 +16,12 @@
 namespace vr_shell {
 
 class VrShell;
-class VrShellDelegate;
 class VrShellGl;
 
 class VrGLThread : public base::Thread {
  public:
   VrGLThread(
       const base::WeakPtr<VrShell>& weak_vr_shell,
-      const base::WeakPtr<VrShellDelegate>& delegate_provider,
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
       gvr_context* gvr_api,
       bool initially_web_vr,
@@ -43,7 +41,6 @@ class VrGLThread : public base::Thread {
 
   // This state is used for initializing vr_shell_gl_.
   base::WeakPtr<VrShell> weak_vr_shell_;
-  base::WeakPtr<VrShellDelegate> delegate_provider_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   gvr_context* gvr_api_;
   bool initially_web_vr_;
