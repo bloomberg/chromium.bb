@@ -44,6 +44,9 @@ class ReadingListDownloadService
   // Initializes the reading list download service.
   void Initialize();
 
+  // Clear the current download queue.
+  void Clear();
+
   // The root folder containing all the offline files.
   virtual base::FilePath OfflineRoot() const;
 

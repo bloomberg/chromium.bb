@@ -97,6 +97,9 @@ class URLDownloader : public net::URLFetcherDelegate,
   // URLFetcherDelegate delegate method.
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
+  // Cancels the current download task.
+  void CancelTask();
+
  private:
   enum TaskType { DELETE, DOWNLOAD };
   using Task = std::pair<TaskType, GURL>;

@@ -112,6 +112,10 @@ void ReadingListDownloadService::ReadingListDidMoveEntry(
   ProcessNewEntry(url);
 }
 
+void ReadingListDownloadService::Clear() {
+  distiller_page_factory_->ReleaseAllRetainedWebState();
+}
+
 void ReadingListDownloadService::ProcessNewEntry(const GURL& url) {
   const ReadingListEntry* entry = reading_list_model_->GetEntryByURL(url);
   if (!entry || entry->IsRead()) {

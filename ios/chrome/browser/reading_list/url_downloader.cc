@@ -219,6 +219,11 @@ void URLDownloader::OnURLFetchComplete(const net::URLFetcher* source) {
                  base::Unretained(this), source->GetOriginalURL(), "", path));
 }
 
+void URLDownloader::CancelTask() {
+  task_tracker_.TryCancelAll();
+  distiller_.reset();
+}
+
 void URLDownloader::FetchPDFFile() {
   const GURL& pdf_url =
       distilled_url_.is_valid() ? distilled_url_ : original_url_;

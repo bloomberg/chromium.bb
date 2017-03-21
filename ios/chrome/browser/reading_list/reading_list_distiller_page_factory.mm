@@ -28,4 +28,8 @@ ReadingListDistillerPageFactory::CreateReadingListDistillerPage(
       browser_state_, web_state_dispatcher_.get(), delegate);
 }
 
+void ReadingListDistillerPageFactory::ReleaseAllRetainedWebState() {
+  web_state_dispatcher_->ReleaseAll();
+}
+
 }  // namespace reading_list

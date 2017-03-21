@@ -32,6 +32,9 @@ class ReadingListDistillerPageFactory {
   std::unique_ptr<ReadingListDistillerPage> CreateReadingListDistillerPage(
       ReadingListDistillerPageDelegate* delegate) const;
 
+  // Releases all WebState owned by |web_state_dispatcher_|.
+  void ReleaseAllRetainedWebState();
+
  private:
   web::BrowserState* browser_state_;
   std::unique_ptr<FaviconWebStateDispatcher> web_state_dispatcher_;

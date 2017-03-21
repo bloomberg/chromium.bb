@@ -146,6 +146,18 @@ void ReadingListModelImpl::MarkAllSeen() {
   DCHECK(unseen_entry_count_ == 0);
 }
 
+bool ReadingListModelImpl::DeleteAllEntries() {
+  DCHECK(CalledOnValidThread());
+  if (!loaded()) {
+    return false;
+  }
+  auto scoped_model_batch_updates = BeginBatchUpdates();
+  for (const auto& url : Keys()) {
+    RemoveEntryByURL(url);
+  }
+  return entries_->empty();
+}
+
 void ReadingListModelImpl::UpdateEntryStateCountersOnEntryRemoval(
     const ReadingListEntry& entry) {
   if (!entry.HasBeenSeen()) {

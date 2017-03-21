@@ -25,6 +25,7 @@ source_set("reading_list") {
     "url_downloader.h",
   ]
   deps = [
+    ":reading_list_remover",
     "//base",
     "//components/browser_sync",
     "//components/dom_distiller/ios",
@@ -51,6 +52,19 @@ source_set("reading_list") {
   ]
   public_deps = [
     "//ios/chrome/browser/dom_distiller",
+  ]
+  allow_circular_includes_from = [ ":reading_list_remover" ]
+}
+
+source_set("reading_list_remover") {
+  sources = [
+    "reading_list_remover_helper.cc",
+    "reading_list_remover_helper.h",
+  ]
+  deps = [
+    "//base",
+    "//components/reading_list/ios",
+    "//ios/chrome/browser/browser_state",
   ]
 }
 

@@ -79,6 +79,7 @@ class ReadingListModelImpl : public ReadingListModel,
   ReadingListEntry* SyncMergeEntry(
       std::unique_ptr<ReadingListEntry> entry) override;
   void SyncRemoveEntry(const GURL& url) override;
+  bool DeleteAllEntries() override;
 
   std::unique_ptr<ReadingListModel::ScopedReadingListBatchUpdate>
   CreateBatchToken() override;

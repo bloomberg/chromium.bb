@@ -29,6 +29,7 @@ class FaviconWebStateDispatcherImpl : public FaviconWebStateDispatcher {
   // FaviconWebStateDispatcher implementation.
   std::unique_ptr<web::WebState> RequestWebState() override;
   void ReturnWebState(std::unique_ptr<web::WebState> web_state) override;
+  void ReleaseAll() override;
 
  private:
   web::BrowserState* browser_state_;

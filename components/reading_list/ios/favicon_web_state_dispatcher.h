@@ -24,6 +24,9 @@ class FaviconWebStateDispatcher {
   // returned.
   virtual void ReturnWebState(std::unique_ptr<web::WebState> web_state) = 0;
 
+  // Releases all the WebState currently retained for favicon fetching.
+  virtual void ReleaseAll() = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(FaviconWebStateDispatcher);
 };

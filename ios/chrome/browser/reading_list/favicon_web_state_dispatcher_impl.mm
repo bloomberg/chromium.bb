@@ -52,12 +52,17 @@ FaviconWebStateDispatcherImpl::RequestWebState() {
   return web_state;
 }
 
+void FaviconWebStateDispatcherImpl::ReleaseAll() {
+  web_states_.clear();
+}
+
 void FaviconWebStateDispatcherImpl::ReturnWebState(
     std::unique_ptr<web::WebState> web_state_unique) {
   web::WebState* web_state = web_state_unique.get();
-  web_states_.push_back(std::move(std::move(web_state_unique)));
+  web_states_.push_back(std::move(web_state_unique));
   base::WeakPtr<FaviconWebStateDispatcherImpl> weak_this =
       weak_ptr_factory_.GetWeakPtr();
+  // This block will delete the web_state in keep_alive_second_ seconds.
   dispatch_after(
       dispatch_time(DISPATCH_TIME_NOW, keep_alive_second_ * NSEC_PER_SEC),
       dispatch_get_main_queue(), ^{

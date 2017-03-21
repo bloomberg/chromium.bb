@@ -69,6 +69,10 @@ class ReadingListModel : public base::NonThreadSafe {
   // Mark all unseen entries as unread.
   virtual void MarkAllSeen() = 0;
 
+  // Delete all the Reading List entries. Return true if entries where indeed
+  // deleted.
+  virtual bool DeleteAllEntries() = 0;
+
   // Returns the flag about unseen entries on the device.
   // This flag is raised if some unseen items are added on this device.
   // The flag is reset if |ResetLocalUnseenFlag| is called or if all unseen
