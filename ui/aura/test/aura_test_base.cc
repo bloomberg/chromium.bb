@@ -169,6 +169,8 @@ bool AuraTestBase::OnWmSetProperty(
   return true;
 }
 
+void AuraTestBase::OnWmSetModalType(Window* window, ui::ModalType type) {}
+
 void AuraTestBase::OnWmSetCanFocus(Window* window, bool can_focus) {}
 
 Window* AuraTestBase::OnWmCreateTopLevelWindow(

@@ -38,6 +38,7 @@
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/mus/capture_synchronizer.h"
@@ -321,6 +322,23 @@ bool WindowManager::OnWmSetProperty(
     return true;
   DVLOG(1) << "unknown property changed, ignoring " << name;
   return false;
+}
+
+void WindowManager::OnWmSetModalType(aura::Window* window, ui::ModalType type) {
+  ui::ModalType old_type = window->GetProperty(aura::client::kModalKey);
+  if (type == old_type)
+    return;
+
+  window->SetProperty(aura::client::kModalKey, type);
+  if (type != ui::MODAL_TYPE_SYSTEM && old_type != ui::MODAL_TYPE_SYSTEM)
+    return;
+
+  WmWindow* new_parent =
+      wm::GetDefaultParent(WmWindow::Get(window), window->bounds());
+  DCHECK(new_parent);
+  if (window->parent())
+    window->parent()->RemoveChild(window);
+  new_parent->aura_window()->AddChild(window);
 }
 
 void WindowManager::OnWmSetCanFocus(aura::Window* window, bool can_focus) {

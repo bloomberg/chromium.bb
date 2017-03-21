@@ -1434,7 +1434,7 @@ void WindowTreeClient::WmSetProperty(
 void WindowTreeClient::WmSetModalType(Id window_id, ui::ModalType type) {
   WindowMus* window = GetWindowByServerId(window_id);
   if (window)
-    window->GetWindow()->SetProperty(aura::client::kModalKey, type);
+    window_manager_delegate_->OnWmSetModalType(window->GetWindow(), type);
 }
 
 void WindowTreeClient::WmSetCanFocus(Id window_id, bool can_focus) {

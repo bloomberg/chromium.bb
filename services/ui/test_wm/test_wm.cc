@@ -108,6 +108,7 @@ class TestWM : public service_manager::Service,
       std::unique_ptr<std::vector<uint8_t>>* new_data) override {
     return true;
   }
+  void OnWmSetModalType(aura::Window* window, ui::ModalType type) override {}
   void OnWmSetCanFocus(aura::Window* window, bool can_focus) override {}
   aura::Window* OnWmCreateTopLevelWindow(
       ui::mojom::WindowType window_type,

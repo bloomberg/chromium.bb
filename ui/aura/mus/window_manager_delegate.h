@@ -91,6 +91,9 @@ class AURA_EXPORT WindowManagerDelegate {
       const std::string& name,
       std::unique_ptr<std::vector<uint8_t>>* new_data) = 0;
 
+  // A client requested the modal type to be changed to |type|.
+  virtual void OnWmSetModalType(Window* window, ui::ModalType type) = 0;
+
   // A client requested to change focusibility of |window|. We currently assume
   // this always succeeds.
   virtual void OnWmSetCanFocus(Window* window, bool can_focus) = 0;

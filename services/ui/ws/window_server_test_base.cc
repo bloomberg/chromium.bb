@@ -168,6 +168,12 @@ bool WindowServerTestBase::OnWmSetProperty(
              : true;
 }
 
+void WindowServerTestBase::OnWmSetModalType(aura::Window* window,
+                                            ui::ModalType type) {
+  if (window_manager_delegate_)
+    window_manager_delegate_->OnWmSetModalType(window, type);
+}
+
 void WindowServerTestBase::OnWmSetCanFocus(aura::Window* window,
                                            bool can_focus) {
   if (window_manager_delegate_)

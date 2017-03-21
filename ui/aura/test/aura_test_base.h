@@ -102,6 +102,7 @@ class AuraTestBase : public testing::Test,
       Window* window,
       const std::string& name,
       std::unique_ptr<std::vector<uint8_t>>* new_data) override;
+  void OnWmSetModalType(Window* window, ui::ModalType type) override;
   void OnWmSetCanFocus(Window* window, bool can_focus) override;
   Window* OnWmCreateTopLevelWindow(
       ui::mojom::WindowType window_type,

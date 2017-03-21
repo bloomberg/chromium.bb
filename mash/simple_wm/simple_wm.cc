@@ -424,6 +424,8 @@ bool SimpleWM::OnWmSetProperty(
   return true;
 }
 
+void SimpleWM::OnWmSetModalType(aura::Window* window, ui::ModalType type) {}
+
 void SimpleWM::OnWmSetCanFocus(aura::Window* window, bool can_focus) {}
 
 aura::Window* SimpleWM::OnWmCreateTopLevelWindow(

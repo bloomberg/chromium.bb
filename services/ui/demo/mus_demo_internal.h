@@ -36,6 +36,7 @@ class MusDemoInternal : public MusDemo, public aura::WindowManagerDelegate {
   bool OnWmSetProperty(aura::Window* window,
                        const std::string& name,
                        std::unique_ptr<std::vector<uint8_t>>* new_data) final;
+  void OnWmSetModalType(aura::Window* window, ModalType type) final;
   void OnWmSetCanFocus(aura::Window* window, bool can_focus) final;
   aura::Window* OnWmCreateTopLevelWindow(
       ui::mojom::WindowType window_type,
