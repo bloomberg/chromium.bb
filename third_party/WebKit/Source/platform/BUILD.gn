@@ -2034,6 +2034,31 @@ fuzzer_test("feature_policy_fuzzer") {
   seed_corpus = "//testing/libfuzzer/fuzzers/feature_policy_corpus"
 }
 
+# Fuzzer template for WTF::TextCodec.
+template("blink_text_codec_fuzzer") {
+  forward_variables_from(invoker, "*")
+  config(target_name + "_config") {
+    defines = [ "$target_name" ]
+  }
+  name = target_name
+  fuzzer_test("blink_text_codec_" + name + "_fuzzer") {
+    sources = [
+      "TextCodecFuzzer.cpp",
+    ]
+    deps = [
+      ":blink_fuzzer_test_support",
+      ":platform",
+    ]
+    additional_configs = [ ":" + name + "_config" ]
+    seed_corpus = "text_codec_fuzzer_seed_corpus"
+  }
+}
+
+blink_text_codec_fuzzer("UTF_8") {
+}
+blink_text_codec_fuzzer("WINDOWS_1252") {
+}
+
 # NOTE: These are legacy unit tests and tests that require a Platform
 # object. Do not add more unless the test requires a Platform object.
 # These tests are a part of the webkit_unit_tests binary.
