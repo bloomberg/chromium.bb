@@ -1241,6 +1241,7 @@ source_set("unit_tests") {
     "html/HTMLTableRowElementTest.cpp",
     "html/HTMLTextAreaElementTest.cpp",
     "html/HTMLVideoElementTest.cpp",
+    "html/ImageDataTest.cpp",
     "html/ImageDocumentTest.cpp",
     "html/LinkRelAttributeTest.cpp",
     "html/MediaCustomControlsFullscreenDetectorTest.cpp",

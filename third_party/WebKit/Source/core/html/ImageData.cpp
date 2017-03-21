@@ -122,7 +122,7 @@ bool ImageData::validateConstructorArguments(const unsigned& paramFlags,
   }
 
   if (paramFlags & kParamSize) {
-    if (!size->width() || !size->height())
+    if (size->width() <= 0 || size->height() <= 0)
       return false;
     CheckedNumeric<unsigned> dataSize = 4;
     dataSize *= size->width();
@@ -147,22 +147,25 @@ DOMArrayBufferView* ImageData::allocateAndValidateDataArray(
 
   DOMArrayBufferView* dataArray = nullptr;
   unsigned dataLength = 0;
+  unsigned dataItemLength = 1;
   switch (storageFormat) {
     case kUint8ClampedArrayStorageFormat:
       dataArray = DOMUint8ClampedArray::createOrNull(length);
-      dataLength = dataArray->view()->byteLength();
       break;
     case kUint16ArrayStorageFormat:
       dataArray = DOMUint16Array::createOrNull(length);
-      dataLength = dataArray->view()->byteLength() / 2;
+      dataItemLength = 2;
       break;
     case kFloat32ArrayStorageFormat:
       dataArray = DOMFloat32Array::createOrNull(length);
-      dataLength = dataArray->view()->byteLength() / 4;
+      dataItemLength = 4;
       break;
     default:
       NOTREACHED();
   }
+
+  if (dataArray)
+    dataLength = dataArray->view()->byteLength() / dataItemLength;
 
   if (!dataArray || length != dataLength) {
     if (exceptionState)
@@ -177,9 +180,11 @@ DOMArrayBufferView* ImageData::allocateAndValidateDataArray(
 ImageData* ImageData::create(const IntSize& size) {
   if (!ImageData::validateConstructorArguments(kParamSize, &size))
     return nullptr;
-  DOMArrayBufferView* byteArray = allocateAndValidateDataArray(
-      4 * size.width() * size.height(), kUint8ClampedArrayStorageFormat);
-  return new ImageData(size, byteArray);
+  DOMArrayBufferView* byteArray =
+      allocateAndValidateDataArray(4 * static_cast<unsigned>(size.width()) *
+                                       static_cast<unsigned>(size.height()),
+                                   kUint8ClampedArrayStorageFormat);
+  return byteArray ? new ImageData(size, byteArray) : nullptr;
 }
 
 // This function accepts size (0, 0) and always returns the ImageData in
