@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_favicon_item.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_favicon_item.h"
 
 #import <UIKit/UIKit.h>
 
 #include "base/logging.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_favicon_internal_cell.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_favicon_internal_cell.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)

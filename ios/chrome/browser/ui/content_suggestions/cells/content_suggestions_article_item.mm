@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_article_item.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_article_item.h"
 
 #include "base/time/time.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"

@@ -8,8 +8,8 @@
 #import <UIKit/UIKit.h>
 
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_expandable_item.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_favicon_item.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_expandable_item.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_favicon_item.h"
 
 @class ContentSuggestion;
 @protocol ContentSuggestionsCommands;

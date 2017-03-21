@@ -1,0 +1,57 @@
+# Copyright 2017 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("cells") {
+  sources = [
+    "content_suggestions_article_item.h",
+    "content_suggestions_article_item.mm",
+    "content_suggestions_button_item.h",
+    "content_suggestions_button_item.mm",
+    "content_suggestions_button_item_actions.h",
+    "content_suggestions_expandable_item.h",
+    "content_suggestions_expandable_item.mm",
+    "content_suggestions_favicon_internal_cell.h",
+    "content_suggestions_favicon_internal_cell.mm",
+    "content_suggestions_favicon_item.h",
+    "content_suggestions_favicon_item.mm",
+    "content_suggestions_footer_item.h",
+    "content_suggestions_footer_item.mm",
+    "content_suggestions_stack_item.h",
+    "content_suggestions_stack_item.mm",
+    "content_suggestions_stack_item_actions.h",
+    "expandable_item.h",
+  ]
+  deps = [
+    "//base",
+    "//ios/chrome/browser/ui",
+    "//ios/chrome/browser/ui/collection_view",
+    "//ios/chrome/browser/ui/colors",
+    "//ios/chrome/browser/ui/content_suggestions/identifier",
+    "//ios/chrome/browser/ui/util",
+    "//ui/base",
+    "//url",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "content_suggestions_article_item_unittest.mm",
+    "content_suggestions_button_item_unittest.mm",
+    "content_suggestions_expandable_item_unittest.mm",
+    "content_suggestions_favicon_item_unittest.mm",
+    "content_suggestions_footer_item_unittest.mm",
+    "content_suggestions_stack_item_unittest.mm",
+  ]
+  deps = [
+    ":cells",
+    "//base",
+    "//ios/chrome/browser/ui/collection_view",
+    "//testing/gtest",
+    "//third_party/ocmock",
+    "//url",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}

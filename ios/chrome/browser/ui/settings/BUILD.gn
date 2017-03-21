@@ -162,7 +162,7 @@ source_set("settings") {
     "//ios/chrome/browser/ui/collection_view",
     "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/commands",
-    "//ios/chrome/browser/ui/content_suggestions",
+    "//ios/chrome/browser/ui/content_suggestions/cells",
     "//ios/chrome/browser/ui/contextual_search",
     "//ios/chrome/browser/ui/icons",
     "//ios/chrome/browser/ui/keyboard",
