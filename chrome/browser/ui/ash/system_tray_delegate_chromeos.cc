@@ -15,6 +15,7 @@
 
 #include "ash/common/login_status.h"
 #include "ash/common/shell_delegate.h"
+#include "ash/common/system/chromeos/bluetooth/tray_bluetooth_helper.h"
 #include "ash/common/system/chromeos/power/power_status.h"
 #include "ash/common/system/chromeos/session/logout_button_observer.h"
 #include "ash/common/system/date/clock_observer.h"
@@ -52,7 +53,6 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/networking_config_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
-#include "chrome/browser/ui/ash/tray_bluetooth_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -124,8 +124,7 @@ bool IsSessionInSecondaryLoginScreen() {
 }  // namespace
 
 SystemTrayDelegateChromeOS::SystemTrayDelegateChromeOS()
-    : bluetooth_helper_(base::MakeUnique<TrayBluetoothHelper>()),
-      networking_config_delegate_(
+    : networking_config_delegate_(
           base::MakeUnique<NetworkingConfigDelegateChromeos>()) {
   // Register notifications on construction so that events such as
   // PROFILE_CREATED do not get missed if they happen before Initialize().
@@ -158,8 +157,6 @@ void SystemTrayDelegateChromeOS::Initialize() {
   input_method::InputMethodManager::Get()->AddObserver(this);
   input_method::InputMethodManager::Get()->AddImeMenuObserver(this);
   ui::ime::InputMethodMenuManager::GetInstance()->AddObserver(this);
-
-  bluetooth_helper_->Initialize();
 
   BrowserList::AddObserver(this);
 
@@ -201,8 +198,6 @@ SystemTrayDelegateChromeOS::~SystemTrayDelegateChromeOS() {
   DBusThreadManager::Get()->GetSessionManagerClient()->RemoveObserver(this);
   input_method::InputMethodManager::Get()->RemoveObserver(this);
   ui::ime::InputMethodMenuManager::GetInstance()->RemoveObserver(this);
-
-  bluetooth_helper_.reset();
 
   BrowserList::RemoveObserver(this);
   StopObservingAppWindowRegistry();
@@ -348,24 +343,24 @@ void SystemTrayDelegateChromeOS::ShowUserLogin() {
 
 void SystemTrayDelegateChromeOS::GetAvailableBluetoothDevices(
     ash::BluetoothDeviceList* list) {
-  bluetooth_helper_->GetAvailableDevices(list);
+  ash::Shell::Get()->tray_bluetooth_helper()->GetAvailableDevices(list);
 }
 
 void SystemTrayDelegateChromeOS::BluetoothStartDiscovering() {
-  bluetooth_helper_->StartDiscovering();
+  ash::Shell::Get()->tray_bluetooth_helper()->StartDiscovering();
 }
 
 void SystemTrayDelegateChromeOS::BluetoothStopDiscovering() {
-  bluetooth_helper_->StopDiscovering();
+  ash::Shell::Get()->tray_bluetooth_helper()->StopDiscovering();
 }
 
 void SystemTrayDelegateChromeOS::ConnectToBluetoothDevice(
     const std::string& address) {
-  bluetooth_helper_->ConnectToDevice(address);
+  ash::Shell::Get()->tray_bluetooth_helper()->ConnectToDevice(address);
 }
 
 bool SystemTrayDelegateChromeOS::IsBluetoothDiscovering() const {
-  return bluetooth_helper_->IsDiscovering();
+  return ash::Shell::Get()->tray_bluetooth_helper()->IsDiscovering();
 }
 
 void SystemTrayDelegateChromeOS::GetCurrentIME(ash::IMEInfo* info) {
@@ -429,19 +424,19 @@ void SystemTrayDelegateChromeOS::ActivateIMEProperty(const std::string& key) {
 }
 
 void SystemTrayDelegateChromeOS::ToggleBluetooth() {
-  bluetooth_helper_->ToggleEnabled();
+  ash::Shell::Get()->tray_bluetooth_helper()->ToggleEnabled();
 }
 
 bool SystemTrayDelegateChromeOS::GetBluetoothAvailable() {
-  return bluetooth_helper_->GetAvailable();
+  return ash::Shell::Get()->tray_bluetooth_helper()->GetAvailable();
 }
 
 bool SystemTrayDelegateChromeOS::GetBluetoothEnabled() {
-  return bluetooth_helper_->GetEnabled();
+  return ash::Shell::Get()->tray_bluetooth_helper()->GetEnabled();
 }
 
 bool SystemTrayDelegateChromeOS::GetBluetoothDiscovering() {
-  return bluetooth_helper_->HasDiscoverySession();
+  return ash::Shell::Get()->tray_bluetooth_helper()->HasDiscoverySession();
 }
 
 ash::NetworkingConfigDelegate*

@@ -43,8 +43,6 @@ namespace user_manager {
 class User;
 }
 
-class TrayBluetoothHelper;
-
 namespace chromeos {
 
 class SystemTrayDelegateChromeOS
@@ -205,9 +203,6 @@ class SystemTrayDelegateChromeOS
   std::string enterprise_domain_;
   bool is_active_directory_managed_ = false;
   bool session_started_ = false;
-
-  // TODO(jamescook): Move into //ash. http://crbug.com/660043
-  std::unique_ptr<TrayBluetoothHelper> bluetooth_helper_;
 
   std::unique_ptr<ash::NetworkingConfigDelegate> networking_config_delegate_;
   std::unique_ptr<AccessibilityStatusSubscription> accessibility_subscription_;

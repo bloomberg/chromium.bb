@@ -2,20 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/tray_bluetooth_helper.h"
+#include "ash/common/system/chromeos/bluetooth/tray_bluetooth_helper.h"
 
-#include "ash/common/system/tray/system_tray_delegate.h"
+#include "ash/common/system/tray/system_tray_controller.h"
+#include "ash/common/system/tray/system_tray_delegate.h"  // BluetoothDeviceInfo
 #include "ash/common/system/tray/system_tray_notifier.h"
 #include "ash/common/wm_shell.h"
+#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/metrics/user_metrics.h"
-#include "chrome/browser/ui/ash/system_tray_client.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
 
+namespace ash {
 namespace {
 
 void BluetoothSetDiscoveringError() {
@@ -26,7 +28,7 @@ void BluetoothDeviceConnectError(
     device::BluetoothDevice::ConnectErrorCode error_code) {}
 
 ash::SystemTrayNotifier* GetSystemTrayNotifier() {
-  return ash::WmShell::Get()->system_tray_notifier();
+  return WmShell::Get()->system_tray_notifier();
 }
 
 }  // namespace
@@ -52,10 +54,10 @@ void TrayBluetoothHelper::InitializeOnAdapterReady(
 }
 
 void TrayBluetoothHelper::GetAvailableDevices(
-    std::vector<ash::BluetoothDeviceInfo>* list) {
+    std::vector<BluetoothDeviceInfo>* list) {
   device::BluetoothAdapter::DeviceList devices = adapter_->GetDevices();
   for (device::BluetoothDevice* device : devices) {
-    ash::BluetoothDeviceInfo info;
+    BluetoothDeviceInfo info;
     info.address = device->GetAddress();
     info.display_name = device->GetNameForDisplay();
     info.connected = device->IsConnected();
@@ -106,7 +108,7 @@ void TrayBluetoothHelper::ConnectToDevice(const std::string& address) {
     return;
   }
   // Show pairing dialog for the unpaired device.
-  SystemTrayClient::Get()->ShowBluetoothPairingDialog(
+  Shell::Get()->system_tray_controller()->ShowBluetoothPairingDialog(
       device->GetAddress(), device->GetNameForDisplay(), device->IsPaired(),
       device->IsConnected());
 }
@@ -179,3 +181,5 @@ void TrayBluetoothHelper::OnStartDiscoverySession(
   discovery_session_ = std::move(discovery_session);
   GetSystemTrayNotifier()->NotifyBluetoothDiscoveringChanged();
 }
+
+}  // namespace ash

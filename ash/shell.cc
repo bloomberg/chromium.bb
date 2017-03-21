@@ -33,6 +33,7 @@
 #include "ash/common/shell_observer.h"
 #include "ash/common/system/brightness_control_delegate.h"
 #include "ash/common/system/chromeos/bluetooth/bluetooth_notification_controller.h"
+#include "ash/common/system/chromeos/bluetooth/tray_bluetooth_helper.h"
 #include "ash/common/system/chromeos/brightness/brightness_controller_chromeos.h"
 #include "ash/common/system/chromeos/keyboard_brightness_controller.h"
 #include "ash/common/system/chromeos/network/sms_observer.h"
@@ -527,6 +528,7 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
       system_tray_controller_(base::MakeUnique<SystemTrayController>()),
       app_list_(base::MakeUnique<app_list::AppList>()),
       link_handler_model_factory_(nullptr),
+      tray_bluetooth_helper_(base::MakeUnique<TrayBluetoothHelper>()),
       display_configurator_(new display::DisplayConfigurator()),
       native_cursor_manager_(nullptr),
       simulate_modal_window_open_for_testing_(false),
@@ -609,6 +611,7 @@ Shell::~Shell() {
   // to deinitialize the shelf first, as it is initialized after the delegate.
   for (WmWindow* root : wm_shell_->GetAllRootWindows())
     root->GetRootWindowController()->GetShelf()->ShutdownShelfWidget();
+  tray_bluetooth_helper_.reset();
   DeleteSystemTrayDelegate();
 
   // Drag-and-drop must be canceled prior to close all windows.
@@ -970,6 +973,9 @@ void Shell::Init(const ShellInitParams& init_params) {
 
   SetSystemTrayDelegate(
       base::WrapUnique(shell_delegate_->CreateSystemTrayDelegate()));
+
+  // May trigger initialization of the Bluetooth adapter.
+  tray_bluetooth_helper_->Initialize();
 
   // Create AshTouchTransformController before
   // WindowTreeHostManager::InitDisplays()

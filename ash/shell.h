@@ -128,6 +128,7 @@ class ResizeShadowController;
 class ResolutionNotificationController;
 class RootWindowController;
 class ScopedOverviewAnimationSettingsFactoryAura;
+class ScreenLayoutObserver;
 class ScreenOrientationController;
 class ScreenshotController;
 class ScreenPinningController;
@@ -145,8 +146,8 @@ class SystemTray;
 class SystemTrayController;
 class SystemTrayDelegate;
 class ToplevelWindowEventHandler;
-class ScreenLayoutObserver;
 class ToastManager;
+class TrayBluetoothHelper;
 class VirtualKeyboardController;
 class VideoActivityNotifier;
 class VideoDetector;
@@ -438,6 +439,10 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
     return screen_orientation_controller_.get();
   }
 
+  TrayBluetoothHelper* tray_bluetooth_helper() {
+    return tray_bluetooth_helper_.get();
+  }
+
   VirtualKeyboardController* virtual_keyboard_controller() {
     return virtual_keyboard_controller_.get();
   }
@@ -680,6 +685,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
       resolution_notification_controller_;
   std::unique_ptr<BluetoothNotificationController>
       bluetooth_notification_controller_;
+  std::unique_ptr<TrayBluetoothHelper> tray_bluetooth_helper_;
   std::unique_ptr<VirtualKeyboardController> virtual_keyboard_controller_;
   std::unique_ptr<chromeos::AudioA11yController> audio_a11y_controller_;
   // Controls video output device state.

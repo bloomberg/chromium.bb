@@ -2,36 +2,37 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_ASH_TRAY_BLUETOOTH_HELPER_H_
-#define CHROME_BROWSER_UI_ASH_TRAY_BLUETOOTH_HELPER_H_
+#ifndef ASH_COMMON_SYSTEM_CHROMEOS_BLUETOOTH_TRAY_BLUETOOTH_HELPER_H_
+#define ASH_COMMON_SYSTEM_CHROMEOS_BLUETOOTH_TRAY_BLUETOOTH_HELPER_H_
 
 #include <memory>
 #include <vector>
 
+#include "ash/ash_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 
-namespace ash {
-struct BluetoothDeviceInfo;
-}
-
 namespace device {
 class BluetoothDiscoverySession;
 }
 
+namespace ash {
+
+struct BluetoothDeviceInfo;
+
 // Maps UI concepts from the Bluetooth system tray (e.g. "Bluetooth is on") into
 // device concepts ("Bluetooth adapter enabled"). Note that most Bluetooth
 // device operations are asynchronous, hence the two step initialization.
-// TODO(jamescook): Move into //ash/system next to TrayBluetooth. This isn't
-// named "delegate" because long-term there should not be any delegation.
-class TrayBluetoothHelper : public device::BluetoothAdapter::Observer {
+// Exported for test.
+class ASH_EXPORT TrayBluetoothHelper
+    : public device::BluetoothAdapter::Observer {
  public:
   TrayBluetoothHelper();
   ~TrayBluetoothHelper() override;
 
-  // Called after SystemTray has been instantiated.
+  // Initializes and gets the adapter asynchronously.
   void Initialize();
 
   // Completes initialization after the Bluetooth adapter is ready.
@@ -40,7 +41,7 @@ class TrayBluetoothHelper : public device::BluetoothAdapter::Observer {
 
   // Returns a list of available bluetooth devices.
   // TODO(jamescook): Just return the list.
-  void GetAvailableDevices(std::vector<ash::BluetoothDeviceInfo>* list);
+  void GetAvailableDevices(std::vector<BluetoothDeviceInfo>* list);
 
   // Requests bluetooth start discovering devices, which happens asynchronously.
   void StartDiscovering();
@@ -96,4 +97,6 @@ class TrayBluetoothHelper : public device::BluetoothAdapter::Observer {
   DISALLOW_COPY_AND_ASSIGN(TrayBluetoothHelper);
 };
 
-#endif  // CHROME_BROWSER_UI_ASH_TRAY_BLUETOOTH_HELPER_H_
+}  // namespace ash
+
+#endif  // ASH_COMMON_SYSTEM_CHROMEOS_BLUETOOTH_TRAY_BLUETOOTH_HELPER_H_

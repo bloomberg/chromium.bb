@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/tray_bluetooth_helper.h"
+#include "ash/common/system/chromeos/bluetooth/tray_bluetooth_helper.h"
 
 #include <vector>
 
@@ -14,7 +14,10 @@
 using bluez::BluezDBusManager;
 using bluez::FakeBluetoothAdapterClient;
 
-using TrayBluetoothHelperTest = ash::test::AshTestBase;
+namespace ash {
+namespace {
+
+using TrayBluetoothHelperTest = test::AshTestBase;
 
 // Tests basic functionality like turning Bluetooth on and off.
 TEST_F(TrayBluetoothHelperTest, Basics) {
@@ -58,3 +61,6 @@ TEST_F(TrayBluetoothHelperTest, Basics) {
   RunAllPendingInMessageLoop();
   EXPECT_FALSE(helper.GetEnabled());
 }
+
+}  // namespace
+}  // namespace ash

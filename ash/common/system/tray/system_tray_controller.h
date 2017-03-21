@@ -34,7 +34,10 @@ class ASH_EXPORT SystemTrayController
   // Wrappers around the mojom::SystemTrayClient interface.
   void ShowSettings();
   void ShowBluetoothSettings();
-  // TODO(crbug.com/660043): ShowBluetoothPairingDialog() goes here.
+  void ShowBluetoothPairingDialog(const std::string& address,
+                                  const base::string16& name_for_display,
+                                  bool paired,
+                                  bool connected);
   void ShowDateSettings();
   void ShowSetTimeDialog();
   void ShowDisplaySettings();

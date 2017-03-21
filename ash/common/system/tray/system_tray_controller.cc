@@ -28,6 +28,17 @@ void SystemTrayController::ShowBluetoothSettings() {
     system_tray_client_->ShowBluetoothSettings();
 }
 
+void SystemTrayController::ShowBluetoothPairingDialog(
+    const std::string& address,
+    const base::string16& name_for_display,
+    bool paired,
+    bool connected) {
+  if (system_tray_client_) {
+    system_tray_client_->ShowBluetoothPairingDialog(address, name_for_display,
+                                                    paired, connected);
+  }
+}
+
 void SystemTrayController::ShowDateSettings() {
   if (system_tray_client_)
     system_tray_client_->ShowDateSettings();
