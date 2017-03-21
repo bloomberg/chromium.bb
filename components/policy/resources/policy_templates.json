@@ -4715,14 +4715,13 @@
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:18-'],
-      'deprecated': True,
       'features': {
         'dynamic_refresh': False,
         'per_profile': True,
       },
       'example_value': False,
       'id': 117,
-      'caption': '''Disable Print Preview (deprecated)''',
+      'caption': '''Disable Print Preview''',
       'tags': [],
       'desc': '''Show the system print dialog instead of print preview.
 
