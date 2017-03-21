@@ -311,8 +311,9 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 #else
 #define MAYBE_ShareDialog ShareDialog
 #endif
+// Flaky: crbug.com/702119.
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    MAYBE_ShareDialog,
+    DISABLED_ShareDialog,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "shareFile"),
                       TestParameter(NOT_IN_GUEST_MODE, "shareDirectory")));
@@ -412,9 +413,10 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     MAYBE_FolderShortcuts,
     FileManagerBrowserTest,
-    ::testing::Values(
-        TestParameter(NOT_IN_GUEST_MODE, "traverseFolderShortcuts"),
-        TestParameter(NOT_IN_GUEST_MODE, "addRemoveFolderShortcuts")));
+    ::testing::Values(TestParameter(NOT_IN_GUEST_MODE,
+                                    "traverseFolderShortcuts")));
+// Flaky: crbug.com/702119.
+// TestParameter(NOT_IN_GUEST_MODE, "addRemoveFolderShortcuts")));
 
 // Fails on official build. http://crbug.com/429294
 #if defined(DISABLE_SLOW_FILESAPP_TESTS) || defined(OFFICIAL_BUILD)
@@ -565,8 +567,9 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     ::testing::Values(
         TestParameter(NOT_IN_GUEST_MODE, "requestMount"),
         TestParameter(NOT_IN_GUEST_MODE, "requestMountMultipleMounts"),
-        TestParameter(NOT_IN_GUEST_MODE, "requestMountSourceDevice"),
-        TestParameter(NOT_IN_GUEST_MODE, "requestMountSourceFile")));
+        TestParameter(NOT_IN_GUEST_MODE, "requestMountSourceDevice")));
+// Flaky: crbug.com/702119.
+// TestParameter(NOT_IN_GUEST_MODE, "requestMountSourceFile")));
 
 #if defined(DISABLE_SLOW_FILESAPP_TESTS)
 #define MAYBE_GearMenu DISABLED_GearMenu
