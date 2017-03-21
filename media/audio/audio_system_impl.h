@@ -31,6 +31,9 @@ class MEDIA_EXPORT AudioSystemImpl : public AudioSystem {
 
   void HasInputDevices(OnBoolCallback on_has_devices_cb) const override;
 
+  void GetDeviceDescriptions(OnDeviceDescriptionsCallback on_descriptions_cp,
+                             bool for_input) override;
+
   base::SingleThreadTaskRunner* GetTaskRunner() const override;
 
   AudioManager* GetAudioManager() const override;

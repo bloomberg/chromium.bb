@@ -1271,8 +1271,8 @@ void MediaStreamManager::InitializeDeviceManagersOnIOThread() {
 
   video_capture_manager_->RegisterListener(this);
 
-  media_devices_manager_.reset(new MediaDevicesManager(
-      audio_system_->GetAudioManager(), video_capture_manager_, this));
+  media_devices_manager_.reset(
+      new MediaDevicesManager(audio_system_, video_capture_manager_, this));
 }
 
 void MediaStreamManager::Opened(MediaStreamType stream_type,

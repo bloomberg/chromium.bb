@@ -14,10 +14,11 @@
 #include "base/system_monitor/system_monitor.h"
 #include "content/common/content_export.h"
 #include "content/common/media/media_devices.h"
+#include "media/audio/audio_device_description.h"
 #include "media/capture/video/video_capture_device_descriptor.h"
 
 namespace media {
-class AudioManager;
+class AudioSystem;
 }
 
 namespace content {
@@ -60,7 +61,7 @@ class CONTENT_EXPORT MediaDevicesManager
       base::Callback<void(const MediaDeviceEnumeration&)>;
 
   MediaDevicesManager(
-      media::AudioManager* audio_manager,
+      media::AudioSystem* audio_system,
       const scoped_refptr<VideoCaptureManager>& video_capture_manager,
       MediaStreamManager* media_stream_manager);
   ~MediaDevicesManager() override;
@@ -137,6 +138,11 @@ class CONTENT_EXPORT MediaDevicesManager
   void VideoInputDevicesEnumerated(
       const media::VideoCaptureDeviceDescriptors& descriptors);
 
+  // Callback for AudioSystem::GetDeviceDescriptions.
+  void AudioDevicesEnumerated(
+      MediaDeviceType type,
+      media::AudioDeviceDescriptions device_descriptions);
+
   // Helpers to handle enumeration results.
   void DevicesEnumerated(MediaDeviceType type,
                          const MediaDeviceInfoArray& snapshot);
@@ -157,7 +163,7 @@ class CONTENT_EXPORT MediaDevicesManager
 #endif
 
   bool use_fake_devices_;
-  media::AudioManager* const audio_manager_;  // not owned
+  media::AudioSystem* const audio_system_;  // not owned
   scoped_refptr<VideoCaptureManager> video_capture_manager_;
   MediaStreamManager* const media_stream_manager_;  // not owned
 

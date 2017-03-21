@@ -52,11 +52,17 @@ void MockAudioManager::ShowAudioInputSettings() {
 void MockAudioManager::GetAudioInputDeviceDescriptions(
     AudioDeviceDescriptions* device_descriptions) {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+  if (get_input_device_descriptions_cb_.is_null())
+    return;
+  get_input_device_descriptions_cb_.Run(device_descriptions);
 }
 
 void MockAudioManager::GetAudioOutputDeviceDescriptions(
     AudioDeviceDescriptions* device_descriptions) {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
+  if (get_output_device_descriptions_cb_.is_null())
+    return;
+  get_output_device_descriptions_cb_.Run(device_descriptions);
 }
 
 media::AudioOutputStream* MockAudioManager::MakeAudioOutputStream(
@@ -149,6 +155,16 @@ void MockAudioManager::SetHasInputDevices(bool has_input_devices) {
 
 void MockAudioManager::SetHasOutputDevices(bool has_output_devices) {
   has_output_devices_ = has_output_devices;
+}
+
+void MockAudioManager::SetInputDeviceDescriptionsCallback(
+    GetDeviceDescriptionsCallback callback) {
+  get_input_device_descriptions_cb_ = std::move(callback);
+}
+
+void MockAudioManager::SetOutputDeviceDescriptionsCallback(
+    GetDeviceDescriptionsCallback callback) {
+  get_output_device_descriptions_cb_ = std::move(callback);
 }
 
 }  // namespace media.

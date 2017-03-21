@@ -6,6 +6,7 @@
 #define MEDIA_AUDIO_AUDIO_SYSTEM_H_
 
 #include "base/callback.h"
+#include "media/audio/audio_device_description.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/media_export.h"
 
@@ -26,6 +27,8 @@ class MEDIA_EXPORT AudioSystem {
   // others, callbacks must always be bound to weak pointers!
   using OnAudioParamsCallback = base::Callback<void(const AudioParameters&)>;
   using OnBoolCallback = base::Callback<void(bool)>;
+  using OnDeviceDescriptionsCallback =
+      base::Callback<void(AudioDeviceDescriptions)>;
 
   static AudioSystem* Get();
 
@@ -52,6 +55,12 @@ class MEDIA_EXPORT AudioSystem {
       OnAudioParamsCallback on_params_cb) const = 0;
 
   virtual void HasInputDevices(OnBoolCallback on_has_devices_cb) const = 0;
+
+  // Replies with device descriptions of input audio devices if |for_input| is
+  // true, and of output audio devices otherwise.
+  virtual void GetDeviceDescriptions(
+      OnDeviceDescriptionsCallback on_descriptions_cp,
+      bool for_input) = 0;
 
   virtual base::SingleThreadTaskRunner* GetTaskRunner() const = 0;
 

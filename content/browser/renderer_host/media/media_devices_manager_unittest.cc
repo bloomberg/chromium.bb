@@ -16,6 +16,7 @@
 #include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "media/audio/audio_device_name.h"
+#include "media/audio/audio_system_impl.h"
 #include "media/audio/fake_audio_log_factory.h"
 #include "media/audio/fake_audio_manager.h"
 #include "media/capture/video/fake_video_capture_device_factory.h"
@@ -140,6 +141,7 @@ class MediaDevicesManagerTest : public ::testing::Test {
  protected:
   void SetUp() override {
     audio_manager_.reset(new MockAudioManager());
+    audio_system_ = media::AudioSystemImpl::Create(audio_manager_.get());
     video_capture_manager_ = new VideoCaptureManager(
         std::unique_ptr<media::VideoCaptureDeviceFactory>(
             new MockVideoCaptureDeviceFactory()),
@@ -147,7 +149,7 @@ class MediaDevicesManagerTest : public ::testing::Test {
     video_capture_device_factory_ = static_cast<MockVideoCaptureDeviceFactory*>(
         video_capture_manager_->video_capture_device_factory());
     media_devices_manager_.reset(new MediaDevicesManager(
-        audio_manager_.get(), video_capture_manager_, nullptr));
+        audio_system_.get(), video_capture_manager_, nullptr));
   }
 
   void EnableCache(MediaDeviceType type) {
@@ -163,6 +165,7 @@ class MediaDevicesManagerTest : public ::testing::Test {
   scoped_refptr<VideoCaptureManager> video_capture_manager_;
   MockVideoCaptureDeviceFactory* video_capture_device_factory_;
   std::unique_ptr<MockAudioManager, media::AudioManagerDeleter> audio_manager_;
+  std::unique_ptr<media::AudioSystem> audio_system_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MediaDevicesManagerTest);
