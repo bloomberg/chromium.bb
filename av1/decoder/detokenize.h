@@ -29,7 +29,7 @@ void av1_decode_palette_tokens(MACROBLOCKD *const xd, int plane, aom_reader *r);
 #endif  // CONFIG_PALETTE
 
 #if !CONFIG_PVQ || CONFIG_VAR_TX
-int av1_decode_block_tokens(MACROBLOCKD *const xd, int plane,
+int av1_decode_block_tokens(AV1_COMMON *cm, MACROBLOCKD *const xd, int plane,
                             const SCAN_ORDER *sc, int x, int y, TX_SIZE tx_size,
                             TX_TYPE tx_type, int16_t *max_scan_line,
                             aom_reader *r, int seg_id);

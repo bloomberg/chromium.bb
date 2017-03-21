@@ -567,14 +567,9 @@ static void predict_and_reconstruct_intra_block(
     const SCAN_ORDER *scan_order = get_scan(cm, tx_size, tx_type, 0);
     int16_t max_scan_line = 0;
     const int eob =
-        av1_decode_block_tokens(xd, plane, scan_order, col, row, tx_size,
+        av1_decode_block_tokens(cm, xd, plane, scan_order, col, row, tx_size,
                                 tx_type, &max_scan_line, r, mbmi->segment_id);
 #endif  // CONFIG_LV_MAP
-#if CONFIG_ADAPT_SCAN
-    if (xd->counts)
-      av1_update_scan_count_facade(cm, xd->counts, tx_size, tx_type,
-                                   pd->dqcoeff, eob);
-#endif
     if (eob)
       inverse_transform_block(xd, plane, tx_type, tx_size, dst, pd->dst.stride,
                               max_scan_line, eob);
@@ -616,15 +611,10 @@ static void decode_reconstruct_tx(AV1_COMMON *cm, MACROBLOCKD *const xd,
 #else   // CONFIG_LV_MAP
     const SCAN_ORDER *sc = get_scan(cm, plane_tx_size, tx_type, 1);
     int16_t max_scan_line = 0;
-    const int eob =
-        av1_decode_block_tokens(xd, plane, sc, blk_col, blk_row, plane_tx_size,
-                                tx_type, &max_scan_line, r, mbmi->segment_id);
+    const int eob = av1_decode_block_tokens(
+        cm, xd, plane, sc, blk_col, blk_row, plane_tx_size, tx_type,
+        &max_scan_line, r, mbmi->segment_id);
 #endif  // CONFIG_LV_MAP
-#if CONFIG_ADAPT_SCAN
-    if (xd->counts)
-      av1_update_scan_count_facade(cm, xd->counts, tx_size, tx_type,
-                                   pd->dqcoeff, eob);
-#endif
     inverse_transform_block(xd, plane, tx_type, plane_tx_size,
                             &pd->dst.buf[(blk_row * pd->dst.stride + blk_col)
                                          << tx_size_wide_log2[0]],
@@ -678,16 +668,11 @@ static int reconstruct_inter_block(AV1_COMMON *cm, MACROBLOCKD *const xd,
   int16_t max_scan_line = 0;
   const SCAN_ORDER *scan_order = get_scan(cm, tx_size, tx_type, 1);
   const int eob =
-      av1_decode_block_tokens(xd, plane, scan_order, col, row, tx_size, tx_type,
-                              &max_scan_line, r, segment_id);
+      av1_decode_block_tokens(cm, xd, plane, scan_order, col, row, tx_size,
+                              tx_type, &max_scan_line, r, segment_id);
 #endif  // CONFIG_LV_MAP
   uint8_t *dst =
       &pd->dst.buf[(row * pd->dst.stride + col) << tx_size_wide_log2[0]];
-#if CONFIG_ADAPT_SCAN
-  if (xd->counts)
-    av1_update_scan_count_facade(cm, xd->counts, tx_size, tx_type, pd->dqcoeff,
-                                 eob);
-#endif
   if (eob)
     inverse_transform_block(xd, plane, tx_type, tx_size, dst, pd->dst.stride,
                             max_scan_line, eob);

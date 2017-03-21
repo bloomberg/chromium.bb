@@ -440,7 +440,7 @@ void av1_decode_palette_tokens(MACROBLOCKD *const xd, int plane,
 #endif  // CONFIG_PALETTE
 
 #if !CONFIG_PVQ || CONFIG_VAR_TX
-int av1_decode_block_tokens(MACROBLOCKD *const xd, int plane,
+int av1_decode_block_tokens(AV1_COMMON *cm, MACROBLOCKD *const xd, int plane,
                             const SCAN_ORDER *sc, int x, int y, TX_SIZE tx_size,
                             TX_TYPE tx_type, int16_t *max_scan_line,
                             aom_reader *r, int seg_id) {
@@ -464,6 +464,11 @@ int av1_decode_block_tokens(MACROBLOCKD *const xd, int plane,
 #endif  // CONFIG_AOM_QM
                    ctx, sc->scan, sc->neighbors, max_scan_line, r);
   av1_set_contexts(xd, pd, plane, tx_size, eob > 0, x, y);
+#if CONFIG_ADAPT_SCAN
+  if (xd->counts)
+    av1_update_scan_count_facade(cm, xd->counts, tx_size, tx_type, pd->dqcoeff,
+                                 eob);
+#endif
   return eob;
 }
 #endif  // !CONFIG_PVQ
