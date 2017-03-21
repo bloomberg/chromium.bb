@@ -85,9 +85,15 @@ copy("common_packaging_files") {
   ]
 
   if (is_chrome_branded) {
-    sources += [ "common/google-chrome/google-chrome.info" ]
+    sources += [
+      "common/google-chrome/google-chrome.appdata.xml.template",
+      "common/google-chrome/google-chrome.info",
+    ]
   } else {
-    sources += [ "common/chromium-browser/chromium-browser.info" ]
+    sources += [
+      "common/chromium-browser/chromium-browser.appdata.xml",
+      "common/chromium-browser/chromium-browser.info",
+    ]
   }
 
   if (current_cpu == "x86") {
