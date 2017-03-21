@@ -111,6 +111,16 @@ public class BottomToolbarPhone extends ToolbarPhone {
     }
 
     @Override
+    protected int getProgressBarHeight() {
+        return getResources().getDimensionPixelSize(R.dimen.chrome_home_progress_bar_height);
+    }
+
+    @Override
+    protected boolean getProgressBarUsesThemeColors() {
+        return false;
+    }
+
+    @Override
     protected void triggerUrlFocusAnimation(final boolean hasFocus) {
         super.triggerUrlFocusAnimation(hasFocus);
 

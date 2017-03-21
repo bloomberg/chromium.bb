@@ -233,6 +233,7 @@
     <dimen name="toolbar_height_no_shadow">56dp</dimen>
     <dimen name="toolbar_shadow_height">8dp</dimen>
     <dimen name="toolbar_progress_bar_height">2dp</dimen>
+    <dimen name="chrome_home_progress_bar_height">4dp</dimen>
     <dimen name="toolbar_button_width">48dp</dimen>
     <dimen name="toolbar_handle_height">4dp</dimen>
     <dimen name="toolbar_handle_width">40dp</dimen>

@@ -98,7 +98,8 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
             public void onLayoutChange(View view, int left, int top, int right, int bottom,
                     int oldLeft, int oldTop, int oldRight, int oldBottom) {
                 // Creation of the progress bar is done here so the toolbar height is available.
-                mProgressBar = new ToolbarProgressBar(getContext(), getProgressBarTopMargin());
+                mProgressBar = new ToolbarProgressBar(getContext(), getProgressBarHeight(),
+                        getProgressBarTopMargin(), getProgressBarUsesThemeColors());
                 if (isNativeLibraryReady()) mProgressBar.initializeAnimation();
                 addProgressBarToHierarchy();
 
@@ -116,6 +117,21 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
     protected int getProgressBarTopMargin() {
         return getHeight()
                 - getResources().getDimensionPixelSize(R.dimen.toolbar_progress_bar_height);
+    }
+
+    /**
+     * Set the height that the progress bar should be.
+     * @return The progress bar height in px.
+     */
+    protected int getProgressBarHeight() {
+        return getResources().getDimensionPixelSize(R.dimen.toolbar_progress_bar_height);
+    }
+
+    /**
+     * @return Whether or not the toolbar's progress bar should use theme colors.
+     */
+    protected boolean getProgressBarUsesThemeColors() {
+        return true;
     }
 
     @Override
