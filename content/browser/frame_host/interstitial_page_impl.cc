@@ -23,7 +23,7 @@
 #include "content/browser/frame_host/interstitial_page_navigator_impl.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
-#include "content/browser/loader/resource_dispatcher_host_impl.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
@@ -848,14 +848,14 @@ void InterstitialPageImpl::TakeActionOnResourceDispatcher(
 
   switch (action) {
     case BLOCK:
-      ResourceDispatcherHost::BlockRequestsForFrameFromUI(rfh);
+      rfh->BlockRequestsForFrame();
       break;
     case RESUME:
-      ResourceDispatcherHost::ResumeBlockedRequestsForFrameFromUI(rfh);
+      rfh->ResumeBlockedRequestsForFrame();
       break;
     default:
       DCHECK_EQ(action, CANCEL);
-      ResourceDispatcherHostImpl::CancelBlockedRequestsForFrameFromUI(rfh);
+      rfh->CancelBlockedRequestsForFrame();
       break;
   }
 }

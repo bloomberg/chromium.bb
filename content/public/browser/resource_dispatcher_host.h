@@ -21,7 +21,6 @@ namespace content {
 
 class ResourceContext;
 class ResourceDispatcherHostDelegate;
-class RenderFrameHost;
 
 // This callback is invoked when the interceptor finishes processing the
 // header.
@@ -48,16 +47,6 @@ class CONTENT_EXPORT ResourceDispatcherHost {
  public:
   // Returns the singleton instance of the ResourceDispatcherHost.
   static ResourceDispatcherHost* Get();
-
-  // Causes all new requests for the root RenderFrameHost and its children to be
-  // blocked (not being started) until ResumeBlockedRequestsForFrameFromUI is
-  // called.
-  static void BlockRequestsForFrameFromUI(RenderFrameHost* root_frame_host);
-
-  // Resumes any blocked request for the specified root RenderFrameHost and
-  // child frame hosts.
-  static void ResumeBlockedRequestsForFrameFromUI(
-      RenderFrameHost* root_frame_host);
 
   // This does not take ownership of the delegate. It is expected that the
   // delegate have a longer lifetime than the ResourceDispatcherHost.

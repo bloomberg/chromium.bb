@@ -224,6 +224,15 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // RenderFrame. See BindingsPolicy for details.
   virtual int GetEnabledBindings() const = 0;
 
+  // Causes all new requests for the root RenderFrameHost and its children to
+  // be blocked (not being started) until ResumeBlockedRequestsForFrame is
+  // called.
+  virtual void BlockRequestsForFrame() = 0;
+
+  // Resumes any blocked request for the specified root RenderFrameHost and
+  // child frame hosts.
+  virtual void ResumeBlockedRequestsForFrame() = 0;
+
 #if defined(OS_ANDROID)
   // Returns an InterfaceProvider for Java-implemented interfaces that are
   // scoped to this RenderFrameHost. This provides access to interfaces

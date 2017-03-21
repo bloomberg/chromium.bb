@@ -202,7 +202,6 @@ source_set("browser_sources") {
     "render_widget_host_view.h",
     "render_widget_host_view_mac_delegate.h",
     "resource_context.h",
-    "resource_dispatcher_host.cc",
     "resource_dispatcher_host.h",
     "resource_dispatcher_host_delegate.cc",
     "resource_dispatcher_host_delegate.h",

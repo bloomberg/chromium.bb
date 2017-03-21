@@ -13,7 +13,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/renderer_preferences.h"
@@ -86,8 +85,7 @@ void AppWindowContentsImpl::OnWindowReady() {
   is_window_ready_ = true;
   if (is_blocking_requests_) {
     is_blocking_requests_ = false;
-    content::ResourceDispatcherHost::ResumeBlockedRequestsForFrameFromUI(
-        web_contents_->GetMainFrame());
+    web_contents_->GetMainFrame()->ResumeBlockedRequestsForFrame();
   }
 }
 
@@ -127,7 +125,7 @@ void AppWindowContentsImpl::SuspendRenderFrameHost(
   if (is_window_ready_)
     return;
   is_blocking_requests_ = true;
-  content::ResourceDispatcherHost::BlockRequestsForFrameFromUI(rfh);
+  rfh->BlockRequestsForFrame();
 }
 
 }  // namespace extensions

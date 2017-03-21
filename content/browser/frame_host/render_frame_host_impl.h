@@ -185,6 +185,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
       int max_length) override;
   void AllowBindings(int binding_flags) override;
   int GetEnabledBindings() const override;
+  void BlockRequestsForFrame() override;
+  void ResumeBlockedRequestsForFrame() override;
 
   // mojom::FrameHost
   void GetInterfaceProvider(
@@ -622,6 +624,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   bool has_focused_editable_element() const {
     return has_focused_editable_element_;
   }
+
+  // Cancels any blocked request for the frame and its subframes.
+  void CancelBlockedRequestsForFrame();
 
 #if defined(OS_ANDROID)
   base::android::ScopedJavaLocalRef<jobject> GetJavaRenderFrameHost();

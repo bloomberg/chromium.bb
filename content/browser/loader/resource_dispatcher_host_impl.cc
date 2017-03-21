@@ -325,65 +325,6 @@ PreviewsState GetPreviewsState(PreviewsState previews_state,
   return previews_state;
 }
 
-// The following functions simplify code paths where the UI thread notifies the
-// ResourceDispatcherHostImpl of information pertaining to loading behavior of
-// frame hosts.
-void NotifyForRouteOnIO(
-    base::Callback<void(ResourceDispatcherHostImpl*,
-                        const GlobalFrameRoutingId&)> frame_callback,
-    const GlobalFrameRoutingId& global_routing_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  ResourceDispatcherHostImpl* rdh = ResourceDispatcherHostImpl::Get();
-  if (rdh)
-    frame_callback.Run(rdh, global_routing_id);
-}
-
-void NotifyForRouteFromUI(
-    const GlobalFrameRoutingId& global_routing_id,
-    base::Callback<void(ResourceDispatcherHostImpl*,
-                        const GlobalFrameRoutingId&)> frame_callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&NotifyForRouteOnIO, frame_callback, global_routing_id));
-}
-
-void NotifyForRouteSetOnIO(
-    base::Callback<void(ResourceDispatcherHostImpl*,
-                        const GlobalFrameRoutingId&)> frame_callback,
-    std::unique_ptr<std::set<GlobalFrameRoutingId>> routing_ids) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  for (const auto& routing_id : *routing_ids)
-    NotifyForRouteOnIO(frame_callback, routing_id);
-}
-
-void NotifyForEachFrameFromUI(
-    RenderFrameHost* root_frame_host,
-    base::Callback<void(ResourceDispatcherHostImpl*,
-                        const GlobalFrameRoutingId&)> frame_callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  FrameTree* frame_tree = static_cast<RenderFrameHostImpl*>(root_frame_host)
-                              ->frame_tree_node()
-                              ->frame_tree();
-  DCHECK_EQ(root_frame_host, frame_tree->GetMainFrame());
-  std::unique_ptr<std::set<GlobalFrameRoutingId>> routing_ids(
-      new std::set<GlobalFrameRoutingId>());
-  for (FrameTreeNode* node : frame_tree->Nodes()) {
-    RenderFrameHostImpl* frame_host = node->current_frame_host();
-    RenderFrameHostImpl* pending_frame_host =
-        IsBrowserSideNavigationEnabled()
-            ? node->render_manager()->speculative_frame_host()
-            : node->render_manager()->pending_frame_host();
-    if (frame_host)
-      routing_ids->insert(frame_host->GetGlobalFrameRoutingId());
-    if (pending_frame_host)
-      routing_ids->insert(pending_frame_host->GetGlobalFrameRoutingId());
-  }
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&NotifyForRouteSetOnIO, frame_callback,
-                                     base::Passed(std::move(routing_ids))));
-}
-
 // Sends back the result of a synchronous loading result to the renderer through
 // Chrome IPC.
 void HandleSyncLoadResult(base::WeakPtr<ResourceMessageFilter> filter,
@@ -472,42 +413,6 @@ ResourceDispatcherHostImpl::~ResourceDispatcherHostImpl() {
 // static
 ResourceDispatcherHostImpl* ResourceDispatcherHostImpl::Get() {
   return g_resource_dispatcher_host;
-}
-
-// static
-void ResourceDispatcherHostImpl::ResumeBlockedRequestsForRouteFromUI(
-    const GlobalFrameRoutingId& global_routing_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  NotifyForRouteFromUI(
-      global_routing_id,
-      base::Bind(&ResourceDispatcherHostImpl::ResumeBlockedRequestsForRoute));
-}
-
-// static
-void ResourceDispatcherHostImpl::BlockRequestsForFrameFromUI(
-    RenderFrameHost* root_frame_host) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  NotifyForEachFrameFromUI(
-      root_frame_host,
-      base::Bind(&ResourceDispatcherHostImpl::BlockRequestsForRoute));
-}
-
-// static
-void ResourceDispatcherHostImpl::ResumeBlockedRequestsForFrameFromUI(
-    RenderFrameHost* root_frame_host) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  NotifyForEachFrameFromUI(
-      root_frame_host,
-      base::Bind(&ResourceDispatcherHostImpl::ResumeBlockedRequestsForRoute));
-}
-
-// static
-void ResourceDispatcherHostImpl::CancelBlockedRequestsForFrameFromUI(
-    RenderFrameHostImpl* root_frame_host) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  NotifyForEachFrameFromUI(
-      root_frame_host,
-      base::Bind(&ResourceDispatcherHostImpl::CancelBlockedRequestsForRoute));
 }
 
 void ResourceDispatcherHostImpl::SetDelegate(

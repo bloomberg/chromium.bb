@@ -62,7 +62,6 @@ class AsyncRevalidationManager;
 class LoaderDelegate;
 class NavigationURLLoaderImplCore;
 class NavigationUIData;
-class RenderFrameHostImpl;
 class ResourceContext;
 class ResourceDispatcherHostDelegate;
 class ResourceLoader;
@@ -107,17 +106,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // requests for a single frame.
   static void ResumeBlockedRequestsForRouteFromUI(
       const GlobalFrameRoutingId& global_routing_id);
-
-  // Blocks (and does not start) all requests for the frame and its subframes.
-  static void BlockRequestsForFrameFromUI(RenderFrameHost* root_frame_host);
-
-  // Resumes any blocked requests for the specified frame and its subframes.
-  static void ResumeBlockedRequestsForFrameFromUI(
-      RenderFrameHost* root_frame_host);
-
-  // Cancels any blocked request for the frame and its subframes.
-  static void CancelBlockedRequestsForFrameFromUI(
-      RenderFrameHostImpl* root_frame_host);
 
   // ResourceDispatcherHost implementation:
   void SetDelegate(ResourceDispatcherHostDelegate* delegate) override;
