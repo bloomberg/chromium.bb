@@ -41,6 +41,7 @@ import org.chromium.ui.widget.ButtonCompat;
  * -----------------------------
  */
 public final class DualControlLayout extends ViewGroup {
+    // When changing these values, you need to update ui/android/java/res/values/attrs.xml
     public static final int ALIGN_START = 0;
     public static final int ALIGN_END = 1;
     public static final int ALIGN_APART = 2;
@@ -262,5 +263,12 @@ public final class DualControlLayout extends ViewGroup {
         if (!TextUtils.isEmpty(primaryButtonText) && !TextUtils.isEmpty(secondaryButtonText)) {
             addView(createButtonForLayout(getContext(), false, secondaryButtonText, null));
         }
+
+        // Set the alignment.
+        if (a.hasValue(R.styleable.DualControlLayout_buttonAlignment)) {
+            setAlignment(a.getInt(R.styleable.DualControlLayout_buttonAlignment, ALIGN_START));
+        }
+
+        a.recycle();
     }
 }
