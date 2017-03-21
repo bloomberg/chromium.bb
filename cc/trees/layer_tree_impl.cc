@@ -727,7 +727,7 @@ void LayerTreeImpl::UpdatePropertyTreeScrollingAndAnimationFromMainThread() {
   for (auto& layer_id_to_opacity : opacity_animations_map_) {
     const int id = layer_id_to_opacity.first;
     if (EffectNode* node =
-            property_trees_.effect_tree.FindNodeFromOwningLayerId(id)) {
+            property_trees_.effect_tree.UpdateNodeFromOwningLayerId(id)) {
       if (!node->is_currently_animating_opacity ||
           node->opacity == layer_id_to_opacity.second) {
         layer_ids_to_remove.push_back(id);
@@ -744,7 +744,7 @@ void LayerTreeImpl::UpdatePropertyTreeScrollingAndAnimationFromMainThread() {
   for (auto& layer_id_to_transform : transform_animations_map_) {
     const int id = layer_id_to_transform.first;
     if (TransformNode* node =
-            property_trees_.transform_tree.FindNodeFromOwningLayerId(id)) {
+            property_trees_.transform_tree.UpdateNodeFromOwningLayerId(id)) {
       if (!node->is_currently_animating ||
           node->local == layer_id_to_transform.second) {
         layer_ids_to_remove.push_back(id);
@@ -762,7 +762,7 @@ void LayerTreeImpl::UpdatePropertyTreeScrollingAndAnimationFromMainThread() {
   for (auto& layer_id_to_filters : filter_animations_map_) {
     const int id = layer_id_to_filters.first;
     if (EffectNode* node =
-            property_trees_.effect_tree.FindNodeFromOwningLayerId(id)) {
+            property_trees_.effect_tree.UpdateNodeFromOwningLayerId(id)) {
       if (!node->is_currently_animating_filter ||
           node->filters == layer_id_to_filters.second) {
         layer_ids_to_remove.push_back(id);

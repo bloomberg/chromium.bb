@@ -689,7 +689,7 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
           TRACE_EVENT_SCOPE_THREAD, "property_trees",
           property_trees->AsTracedValue());
     }
-    draw_property_utils::UpdatePropertyTrees(property_trees,
+    draw_property_utils::UpdatePropertyTrees(this, property_trees,
                                              can_render_to_separate_surface);
     draw_property_utils::FindLayersThatNeedUpdates(this, property_trees,
                                                    &update_layer_list);
@@ -1260,7 +1260,8 @@ void LayerTreeHost::SetElementOpacityMutated(ElementId element_id,
   layer->OnOpacityAnimated(opacity);
 
   if (EffectNode* node =
-          property_trees_.effect_tree.FindNodeFromOwningLayerId(layer->id())) {
+          property_trees_.effect_tree.UpdateNodeFromOwningLayerId(
+              layer->id())) {
     DCHECK_EQ(layer->effect_tree_index(), node->id);
     if (node->opacity == opacity)
       return;
@@ -1281,7 +1282,7 @@ void LayerTreeHost::SetElementTransformMutated(
   layer->OnTransformAnimated(transform);
 
   if (TransformNode* node =
-          property_trees_.transform_tree.FindNodeFromOwningLayerId(
+          property_trees_.transform_tree.UpdateNodeFromOwningLayerId(
               layer->id())) {
     DCHECK_EQ(layer->transform_tree_index(), node->id);
     if (node->local == transform)

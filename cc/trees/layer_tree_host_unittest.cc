@@ -820,21 +820,21 @@ class LayerTreeHostTestPushNodeOwnerToNodeIdMap : public LayerTreeHostTest {
 
   void CommitCompleteOnThread(LayerTreeHostImpl* impl) override {
     PropertyTrees* property_trees = impl->sync_tree()->property_trees();
-    auto* root_transform_node =
+    const TransformNode* root_transform_node =
         property_trees->transform_tree.FindNodeFromOwningLayerId(root_->id());
-    auto* child_transform_node =
+    const TransformNode* child_transform_node =
         property_trees->transform_tree.FindNodeFromOwningLayerId(child_->id());
-    auto* root_effect_node =
+    const EffectNode* root_effect_node =
         property_trees->effect_tree.FindNodeFromOwningLayerId(root_->id());
-    auto* child_effect_node =
+    const EffectNode* child_effect_node =
         property_trees->effect_tree.FindNodeFromOwningLayerId(child_->id());
-    auto* root_clip_node =
+    const ClipNode* root_clip_node =
         property_trees->clip_tree.FindNodeFromOwningLayerId(root_->id());
-    auto* child_clip_node =
+    const ClipNode* child_clip_node =
         property_trees->clip_tree.FindNodeFromOwningLayerId(child_->id());
-    auto* root_scroll_node =
+    const ScrollNode* root_scroll_node =
         property_trees->scroll_tree.FindNodeFromOwningLayerId(root_->id());
-    auto* child_scroll_node =
+    const ScrollNode* child_scroll_node =
         property_trees->scroll_tree.FindNodeFromOwningLayerId(child_->id());
     switch (impl->sync_tree()->source_frame_number()) {
       case 0:

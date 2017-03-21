@@ -70,7 +70,7 @@ void SurfaceLayer::SetPrimarySurfaceInfo(const SurfaceInfo& surface_info) {
         layer_tree_host(), primary_surface_info_.id());
   }
   UpdateDrawsContent(HasDrawableContent());
-  SetNeedsCommitNoRebuild();
+  SetNeedsCommit();
 }
 
 void SurfaceLayer::SetFallbackSurfaceInfo(const SurfaceInfo& surface_info) {
@@ -80,7 +80,7 @@ void SurfaceLayer::SetFallbackSurfaceInfo(const SurfaceInfo& surface_info) {
     fallback_reference_returner_ = ref_factory_->CreateReference(
         layer_tree_host(), fallback_surface_info_.id());
   }
-  SetNeedsCommitNoRebuild();
+  SetNeedsCommit();
 }
 
 void SurfaceLayer::SetStretchContentToFillBounds(

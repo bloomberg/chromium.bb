@@ -216,7 +216,8 @@ class LayerTreeHostCommonTestBase : public LayerTestCommon::LayerImplTest {
         outer_viewport_scroll_layer, overscroll_elasticity_layer,
         elastic_overscroll, page_scale_factor, device_scale_factor,
         gfx::Rect(device_viewport_size), gfx::Transform(), property_trees);
-    draw_property_utils::UpdatePropertyTrees(property_trees,
+    draw_property_utils::UpdatePropertyTrees(root_layer->layer_tree_host(),
+                                             property_trees,
                                              can_render_to_separate_surface);
     draw_property_utils::FindLayersThatNeedUpdates(
         root_layer->layer_tree_host(), property_trees, &update_layer_list_);

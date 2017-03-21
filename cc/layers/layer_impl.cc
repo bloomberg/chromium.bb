@@ -477,7 +477,7 @@ int LayerImpl::num_copy_requests_in_target_subtree() {
 
 void LayerImpl::UpdatePropertyTreeTransformIsAnimated(bool is_animated) {
   if (TransformNode* node =
-          GetTransformTree().FindNodeFromOwningLayerId(id())) {
+          GetTransformTree().UpdateNodeFromOwningLayerId(id())) {
     // A LayerImpl's own current state is insufficient for determining whether
     // it owns a TransformNode, since this depends on the state of the
     // corresponding Layer at the time of the last commit. For example, if
@@ -519,14 +519,16 @@ void LayerImpl::OnIsAnimatingChanged(const PropertyAnimationState& mask,
                                      const PropertyAnimationState& state) {
   DCHECK(layer_tree_impl_);
 
-  TransformNode* transform_node =
-      GetTransformTree().FindNodeFromOwningLayerId(id());
-  EffectNode* effect_node = GetEffectTree().FindNodeFromOwningLayerId(id());
   for (int property = TargetProperty::FIRST_TARGET_PROPERTY;
        property <= TargetProperty::LAST_TARGET_PROPERTY; ++property) {
+    if (!mask.currently_running[property] &&
+        !mask.potentially_animating[property])
+      continue;
+
     switch (property) {
       case TargetProperty::TRANSFORM:
-        if (transform_node) {
+        if (TransformNode* transform_node =
+                GetTransformTree().UpdateNodeFromOwningLayerId(id())) {
           if (mask.currently_running[property])
             transform_node->is_currently_animating =
                 state.currently_running[property];
@@ -538,7 +540,8 @@ void LayerImpl::OnIsAnimatingChanged(const PropertyAnimationState& mask,
         }
         break;
       case TargetProperty::OPACITY:
-        if (effect_node) {
+        if (EffectNode* effect_node =
+                GetEffectTree().UpdateNodeFromOwningLayerId(id())) {
           if (mask.currently_running[property])
             effect_node->is_currently_animating_opacity =
                 state.currently_running[property];
@@ -550,7 +553,8 @@ void LayerImpl::OnIsAnimatingChanged(const PropertyAnimationState& mask,
         }
         break;
       case TargetProperty::FILTER:
-        if (effect_node) {
+        if (EffectNode* effect_node =
+                GetEffectTree().UpdateNodeFromOwningLayerId(id())) {
           if (mask.currently_running[property])
             effect_node->is_currently_animating_filter =
                 state.currently_running[property];
@@ -610,9 +614,9 @@ void LayerImpl::SetBoundsDelta(const gfx::Vector2dF& bounds_delta) {
 
   if (masks_to_bounds()) {
     // If layer is clipping, then update the clip node using the new bounds.
-    ClipNode* clip_node = property_trees->clip_tree.Node(clip_tree_index());
-    if (clip_node) {
-      DCHECK_EQ(clip_node, GetClipTree().FindNodeFromOwningLayerId(id()));
+    if (ClipNode* clip_node =
+            property_trees->clip_tree.UpdateNodeFromOwningLayerId(id())) {
+      DCHECK_EQ(clip_node->id, clip_tree_index());
       clip_node->clip = gfx::RectF(gfx::PointF() + offset_to_transform_parent(),
                                    gfx::SizeF(bounds()));
       property_trees->clip_tree.set_needs_update(true);
@@ -676,7 +680,7 @@ void LayerImpl::SetContentsOpaque(bool opaque) {
 }
 
 float LayerImpl::Opacity() const {
-  if (EffectNode* node = GetEffectTree().FindNodeFromOwningLayerId(id()))
+  if (const EffectNode* node = GetEffectTree().FindNodeFromOwningLayerId(id()))
     return node->opacity;
   else
     return 1.f;

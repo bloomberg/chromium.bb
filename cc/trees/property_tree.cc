@@ -1702,10 +1702,10 @@ void PropertyTrees::SetInnerViewportScrollBoundsDelta(
 
 void PropertyTrees::PushOpacityIfNeeded(PropertyTrees* target_tree) {
   for (int id : target_tree->always_use_active_tree_opacity_effect_ids) {
-    if (EffectNode* source_effect_node =
+    if (const EffectNode* source_effect_node =
             effect_tree.FindNodeFromOwningLayerId(id)) {
       EffectNode* target_effect_node =
-          target_tree->effect_tree.FindNodeFromOwningLayerId(id);
+          target_tree->effect_tree.UpdateNodeFromOwningLayerId(id);
       float source_opacity = source_effect_node->opacity;
       float target_opacity = target_effect_node->opacity;
       if (source_opacity == target_opacity)

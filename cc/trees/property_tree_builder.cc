@@ -246,6 +246,12 @@ static const gfx::Transform& Transform(LayerImpl* layer) {
   return layer->test_properties()->transform;
 }
 
+static void SetIsScrollClipLayer(Layer* layer) {
+  layer->set_is_scroll_clip_layer();
+}
+
+static void SetIsScrollClipLayer(LayerImpl* layer) {}
+
 // Methods to query state from the AnimationHost ----------------------
 template <typename LayerType>
 bool OpacityIsAnimating(LayerType* layer) {
@@ -1164,13 +1170,14 @@ void AddScrollNodeIfNeeded(
     node.main_thread_scrolling_reasons = main_thread_scrolling_reasons;
     node.non_fast_scrollable_region = layer->non_fast_scrollable_region();
     gfx::Size clip_bounds;
-    if (layer->scroll_clip_layer()) {
-      clip_bounds = layer->scroll_clip_layer()->bounds();
-      DCHECK(layer->scroll_clip_layer()->transform_tree_index() !=
+    if (LayerType* scroll_clip_layer = layer->scroll_clip_layer()) {
+      SetIsScrollClipLayer(scroll_clip_layer);
+      clip_bounds = scroll_clip_layer->bounds();
+      DCHECK(scroll_clip_layer->transform_tree_index() !=
              TransformTree::kInvalidNodeId);
       node.max_scroll_offset_affected_by_page_scale =
           !data_from_ancestor.property_trees->transform_tree
-               .Node(layer->scroll_clip_layer()->transform_tree_index())
+               .Node(scroll_clip_layer->transform_tree_index())
                ->in_subtree_of_page_scale_layer &&
           data_from_ancestor.in_subtree_of_page_scale_layer;
     }

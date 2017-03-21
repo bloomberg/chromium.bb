@@ -404,6 +404,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     visible_layer_rect_ = rect;
   }
 
+  // This is for tracking damage.
   void SetSubtreePropertyChanged();
   bool subtree_property_changed() const { return subtree_property_changed_; }
 
@@ -430,6 +431,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   void SetScrollbarsHiddenFromImplSide(bool hidden);
 
+  void set_is_scroll_clip_layer() { is_scroll_clip_layer_ = true; }
+
   const gfx::Rect& update_rect() const { return inputs_.update_rect; }
 
   LayerTreeHost* layer_tree_host() const { return layer_tree_host_; }
@@ -446,9 +449,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // immediately that a commit is required.  This implies SetNeedsPushProperties
   // to push that property.
   void SetNeedsCommit();
-  // This is identical to SetNeedsCommit, but the former requests a rebuild of
-  // the property trees.
-  void SetNeedsCommitNoRebuild();
+
   // Called when there's been a change in layer structure.  Implies
   // SetNeedsCommit and property tree rebuld, but not SetNeedsPushProperties
   // (the full tree is synced over).
@@ -516,6 +517,10 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // When we detach or attach layer to new LayerTreeHost, all property trees'
   // indices becomes invalid.
   void InvalidatePropertyTreesIndices();
+
+  // This is set whenever a property changed on layer that affects whether this
+  // layer should own a property tree node or not.
+  void SetPropertyTreesNeedRebuild();
 
   // Encapsulates all data, callbacks or interfaces received from the embedder.
   // TODO(khushalsagar): This is only valid when PropertyTrees are built
@@ -629,6 +634,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   bool force_render_surface_for_testing_ : 1;
   bool subtree_property_changed_ : 1;
   bool may_contain_video_ : 1;
+  bool is_scroll_clip_layer_ : 1;
   SkColor safe_opaque_background_color_;
   // draw_blend_mode may be different than blend_mode_,
   // when a RenderSurface re-parents the layer's blend_mode.

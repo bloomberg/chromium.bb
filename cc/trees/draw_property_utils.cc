@@ -17,6 +17,7 @@
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/property_tree.h"
 #include "cc/trees/property_tree_builder.h"
+#include "cc/trees/scroll_node.h"
 #include "cc/trees/transform_node.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
@@ -909,6 +910,23 @@ void ComputeClips(PropertyTrees* property_trees,
   clip_tree->set_needs_update(false);
 }
 
+void UpdateScrollTree(ScrollTree* scroll_tree,
+                      const LayerTreeHost* layer_tree_host) {
+  if (!scroll_tree->needs_update())
+    return;
+
+  for (int i = ScrollTree::kRootNodeId;
+       i < static_cast<int>(scroll_tree->size()); ++i) {
+    ScrollNode* scroll_node = scroll_tree->Node(i);
+    if (Layer* scroll_layer =
+            layer_tree_host->LayerById(scroll_node->owning_layer_id)) {
+      if (Layer* scroll_clip_layer = scroll_layer->scroll_clip_layer()) {
+        scroll_node->scroll_clip_layer_bounds = scroll_clip_layer->bounds();
+      }
+    }
+  }
+}
+
 void ComputeTransforms(TransformTree* transform_tree) {
   if (!transform_tree->needs_update())
     return;
@@ -1055,8 +1073,12 @@ void ComputeVisibleRects(LayerImpl* root_layer,
                         can_render_to_separate_surface);
 }
 
-void UpdatePropertyTrees(PropertyTrees* property_trees,
+void UpdatePropertyTrees(LayerTreeHost* layer_tree_host,
+                         PropertyTrees* property_trees,
                          bool can_render_to_separate_surface) {
+  DCHECK(layer_tree_host);
+  DCHECK(property_trees);
+  DCHECK_EQ(layer_tree_host->property_trees(), property_trees);
   if (property_trees->non_root_surfaces_enabled !=
       can_render_to_separate_surface) {
     property_trees->non_root_surfaces_enabled = can_render_to_separate_surface;
@@ -1066,6 +1088,7 @@ void UpdatePropertyTrees(PropertyTrees* property_trees,
     property_trees->clip_tree.set_needs_update(true);
     property_trees->effect_tree.set_needs_update(true);
   }
+  UpdateScrollTree(&property_trees->scroll_tree, layer_tree_host);
   ComputeTransforms(&property_trees->transform_tree);
   // Computation of clips uses surface contents scale which is updated while
   // computing effects. So, ComputeEffects should be before ComputeClips.

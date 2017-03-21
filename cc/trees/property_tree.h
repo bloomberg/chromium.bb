@@ -82,7 +82,9 @@ class CC_EXPORT PropertyTree {
   void clear();
   size_t size() const { return nodes_.size(); }
 
-  void set_needs_update(bool needs_update) { needs_update_ = needs_update; }
+  virtual void set_needs_update(bool needs_update) {
+    needs_update_ = needs_update;
+  }
   bool needs_update() const { return needs_update_; }
 
   std::vector<T>& nodes() { return nodes_; }
@@ -97,9 +99,18 @@ class CC_EXPORT PropertyTree {
 
   void AsValueInto(base::trace_event::TracedValue* value) const;
 
-  T* FindNodeFromOwningLayerId(int id) {
+  const T* FindNodeFromOwningLayerId(int id) const {
     return Node(FindNodeIndexFromOwningLayerId(id));
   }
+  T* UpdateNodeFromOwningLayerId(int id) {
+    int index = FindNodeIndexFromOwningLayerId(id);
+    if (index == kInvalidNodeId && property_trees()->is_main_thread) {
+      property_trees()->needs_rebuild = true;
+    }
+
+    return Node(index);
+  }
+
   int FindNodeIndexFromOwningLayerId(int id) const {
     auto iter = owning_layer_id_to_node_index.find(id);
     if (iter == owning_layer_id_to_node_index.end())
@@ -183,7 +194,7 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
       TransformNode* node,
       TransformNode* parent_node);
 
-  void set_needs_update(bool needs_update);
+  void set_needs_update(bool needs_update) final;
 
   // A TransformNode's source_to_parent value is used to account for the fact
   // that fixed-position layers are positioned by Blink wrt to their layer tree
