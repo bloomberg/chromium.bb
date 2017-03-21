@@ -218,12 +218,13 @@ bool ICOImageDecoder::decodeAtIndex(size_t index) {
   }
   // Fail if the size the PNGImageDecoder calculated does not match the size
   // in the directory.
-  if (m_pngDecoders[index]->isSizeAvailable() &&
-      (m_pngDecoders[index]->size() != dirEntry.m_size))
+  auto* pngDecoder = m_pngDecoders[index].get();
+  if (pngDecoder->isSizeAvailable() && pngDecoder->size() != dirEntry.m_size)
     return setFailed();
-  m_frameBufferCache[index] = *m_pngDecoders[index]->frameBufferAtIndex(0);
-  m_frameBufferCache[index].setPremultiplyAlpha(m_premultiplyAlpha);
-  return !m_pngDecoders[index]->failed() || setFailed();
+  const auto* frame = pngDecoder->frameBufferAtIndex(0);
+  if (frame)
+    m_frameBufferCache[index] = *frame;
+  return !pngDecoder->failed() || setFailed();
 }
 
 bool ICOImageDecoder::processDirectory() {
