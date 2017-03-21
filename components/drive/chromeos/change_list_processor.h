@@ -11,10 +11,10 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/scoped_vector.h"
 #include "components/drive/file_errors.h"
 #include "components/drive/file_errors.h"
 #include "url/gurl.h"
@@ -120,7 +120,7 @@ class ChangeListProcessor {
   //
   // Must be run on the same task runner as |resource_metadata_| uses.
   FileError Apply(std::unique_ptr<google_apis::AboutResource> about_resource,
-                  ScopedVector<ChangeList> change_lists,
+                  std::vector<std::unique_ptr<ChangeList>> change_lists,
                   bool is_delta_update);
 
   // The set of changed files as a result of change list processing.

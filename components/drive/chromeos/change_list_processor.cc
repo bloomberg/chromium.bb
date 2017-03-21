@@ -125,7 +125,7 @@ ChangeListProcessor::~ChangeListProcessor() {
 
 FileError ChangeListProcessor::Apply(
     std::unique_ptr<google_apis::AboutResource> about_resource,
-    ScopedVector<ChangeList> change_lists,
+    std::vector<std::unique_ptr<ChangeList>> change_lists,
     bool is_delta_update) {
   DCHECK(about_resource);
 
@@ -147,7 +147,7 @@ FileError ChangeListProcessor::Apply(
   // Convert ChangeList to map.
   ChangeListToEntryMapUMAStats uma_stats;
   for (size_t i = 0; i < change_lists.size(); ++i) {
-    ChangeList* change_list = change_lists[i];
+    ChangeList* change_list = change_lists[i].get();
 
     std::vector<ResourceEntry>* entries = change_list->mutable_entries();
     for (size_t i = 0; i < entries->size(); ++i) {

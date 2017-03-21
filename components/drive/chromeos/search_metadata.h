@@ -7,9 +7,10 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
+#include <vector>
 
-#include "base/memory/scoped_vector.h"
 #include "components/drive/chromeos/file_system_interface.h"
 
 namespace base {
@@ -61,8 +62,8 @@ bool MatchesType(int options, const ResourceEntry& entry);
 // contents of |highlighted_text| will be lost.
 bool FindAndHighlight(
     const std::string& text,
-    const ScopedVector<
-        base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents>& queries,
+    const std::vector<std::unique_ptr<
+        base::i18n::FixedPatternStringSearchIgnoringCaseAndAccents>>& queries,
     std::string* highlighted_text);
 
 }  // namespace internal

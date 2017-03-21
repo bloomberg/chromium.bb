@@ -30,7 +30,8 @@
 namespace drive {
 namespace internal {
 
-typedef base::Callback<void(FileError, ScopedVector<ChangeList>)>
+typedef base::Callback<void(FileError,
+                            std::vector<std::unique_ptr<ChangeList>>)>
     FeedFetcherCallback;
 
 class ChangeListLoader::FeedFetcher {
@@ -73,12 +74,12 @@ class FullFeedFetcher : public ChangeListLoader::FeedFetcher {
 
     FileError error = GDataToFileError(status);
     if (error != FILE_ERROR_OK) {
-      callback.Run(error, ScopedVector<ChangeList>());
+      callback.Run(error, std::vector<std::unique_ptr<ChangeList>>());
       return;
     }
 
     DCHECK(file_list);
-    change_lists_.push_back(new ChangeList(*file_list));
+    change_lists_.push_back(base::MakeUnique<ChangeList>(*file_list));
 
     if (!file_list->next_link().is_empty()) {
       // There is the remaining result so fetch it.
@@ -99,7 +100,7 @@ class FullFeedFetcher : public ChangeListLoader::FeedFetcher {
   }
 
   JobScheduler* scheduler_;
-  ScopedVector<ChangeList> change_lists_;
+  std::vector<std::unique_ptr<ChangeList>> change_lists_;
   base::TimeTicks start_time_;
   base::ThreadChecker thread_checker_;
   base::WeakPtrFactory<FullFeedFetcher> weak_ptr_factory_;
@@ -136,12 +137,12 @@ class DeltaFeedFetcher : public ChangeListLoader::FeedFetcher {
 
     FileError error = GDataToFileError(status);
     if (error != FILE_ERROR_OK) {
-      callback.Run(error, ScopedVector<ChangeList>());
+      callback.Run(error, std::vector<std::unique_ptr<ChangeList>>());
       return;
     }
 
     DCHECK(change_list);
-    change_lists_.push_back(new ChangeList(*change_list));
+    change_lists_.push_back(base::MakeUnique<ChangeList>(*change_list));
 
     if (!change_list->next_link().is_empty()) {
       // There is the remaining result so fetch it.
@@ -160,7 +161,7 @@ class DeltaFeedFetcher : public ChangeListLoader::FeedFetcher {
 
   JobScheduler* scheduler_;
   int64_t start_change_id_;
-  ScopedVector<ChangeList> change_lists_;
+  std::vector<std::unique_ptr<ChangeList>> change_lists_;
   base::ThreadChecker thread_checker_;
   base::WeakPtrFactory<DeltaFeedFetcher> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(DeltaFeedFetcher);
@@ -519,7 +520,7 @@ void ChangeListLoader::LoadChangeListFromServerAfterLoadChangeList(
     std::unique_ptr<google_apis::AboutResource> about_resource,
     bool is_delta_update,
     FileError error,
-    ScopedVector<ChangeList> change_lists) {
+    std::vector<std::unique_ptr<ChangeList>> change_lists) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(about_resource);
 

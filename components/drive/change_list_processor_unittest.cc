@@ -46,9 +46,9 @@ struct EntryExpectation {
 };
 
 // Returns a basic change list which contains some files and directories.
-ScopedVector<ChangeList> CreateBaseChangeList() {
-  ScopedVector<ChangeList> change_lists;
-  change_lists.push_back(new ChangeList);
+std::vector<std::unique_ptr<ChangeList>> CreateBaseChangeList() {
+  std::vector<std::unique_ptr<ChangeList>> change_lists;
+  change_lists.push_back(base::MakeUnique<ChangeList>());
 
   // Add directories to the change list.
   ResourceEntry directory;
@@ -125,7 +125,8 @@ class ChangeListProcessorTest : public testing::Test {
 
   // Applies the |changes| to |metadata_| as a full resource list of changestamp
   // |kBaseResourceListChangestamp|.
-  FileError ApplyFullResourceList(ScopedVector<ChangeList> changes) {
+  FileError ApplyFullResourceList(
+      std::vector<std::unique_ptr<ChangeList>> changes) {
     std::unique_ptr<google_apis::AboutResource> about_resource(
         new google_apis::AboutResource);
     about_resource->set_largest_change_id(kBaseResourceListChangestamp);
@@ -138,7 +139,7 @@ class ChangeListProcessorTest : public testing::Test {
 
   // Applies the |changes| to |metadata_| as a delta update. Delta changelists
   // should contain their changestamp in themselves.
-  FileError ApplyChangeList(ScopedVector<ChangeList> changes,
+  FileError ApplyChangeList(std::vector<std::unique_ptr<ChangeList>> changes,
                             FileChange* changed_files) {
     std::unique_ptr<google_apis::AboutResource> about_resource(
         new google_apis::AboutResource);
@@ -221,8 +222,8 @@ TEST_F(ChangeListProcessorTest, ApplyFullResourceList) {
 }
 
 TEST_F(ChangeListProcessorTest, DeltaFileAddedInNewDirectory) {
-  ScopedVector<ChangeList> change_lists;
-  change_lists.push_back(new ChangeList);
+  std::vector<std::unique_ptr<ChangeList>> change_lists;
+  change_lists.push_back(base::MakeUnique<ChangeList>());
 
   ResourceEntry new_folder;
   new_folder.set_resource_id("new_folder_resource_id");
@@ -262,8 +263,8 @@ TEST_F(ChangeListProcessorTest, DeltaFileAddedInNewDirectory) {
 }
 
 TEST_F(ChangeListProcessorTest, DeltaDirMovedFromRootToDirectory) {
-  ScopedVector<ChangeList> change_lists;
-  change_lists.push_back(new ChangeList);
+  std::vector<std::unique_ptr<ChangeList>> change_lists;
+  change_lists.push_back(base::MakeUnique<ChangeList>());
 
   ResourceEntry entry;
   entry.set_resource_id("1_folder_resource_id");
@@ -301,8 +302,8 @@ TEST_F(ChangeListProcessorTest, DeltaDirMovedFromRootToDirectory) {
 }
 
 TEST_F(ChangeListProcessorTest, DeltaFileMovedFromDirectoryToRoot) {
-  ScopedVector<ChangeList> change_lists;
-  change_lists.push_back(new ChangeList);
+  std::vector<std::unique_ptr<ChangeList>> change_lists;
+  change_lists.push_back(base::MakeUnique<ChangeList>());
 
   ResourceEntry entry;
   entry.set_resource_id("subdirectory_file_1_id");
@@ -333,8 +334,8 @@ TEST_F(ChangeListProcessorTest, DeltaFileMovedFromDirectoryToRoot) {
 }
 
 TEST_F(ChangeListProcessorTest, DeltaFileRenamedInDirectory) {
-  ScopedVector<ChangeList> change_lists;
-  change_lists.push_back(new ChangeList);
+  std::vector<std::unique_ptr<ChangeList>> change_lists;
+  change_lists.push_back(base::MakeUnique<ChangeList>());
 
   ResourceEntry entry;
   entry.set_resource_id("subdirectory_file_1_id");
@@ -373,8 +374,8 @@ TEST_F(ChangeListProcessorTest, DeltaFileRenamedInDirectory) {
 
 TEST_F(ChangeListProcessorTest, DeltaAddAndDeleteFileInRoot) {
   // Create ChangeList to add a file.
-  ScopedVector<ChangeList> change_lists;
-  change_lists.push_back(new ChangeList);
+  std::vector<std::unique_ptr<ChangeList>> change_lists;
+  change_lists.push_back(base::MakeUnique<ChangeList>());
 
   ResourceEntry entry;
   entry.set_resource_id("added_in_root_id");
@@ -399,7 +400,7 @@ TEST_F(ChangeListProcessorTest, DeltaAddAndDeleteFileInRoot) {
       base::FilePath::FromUTF8Unsafe("drive/root/Added file.txt")));
 
   // Create ChangeList to delete the file.
-  change_lists.push_back(new ChangeList);
+  change_lists.push_back(base::MakeUnique<ChangeList>());
 
   entry.set_deleted(true);
   change_lists[0]->mutable_entries()->push_back(entry);
@@ -421,8 +422,8 @@ TEST_F(ChangeListProcessorTest, DeltaAddAndDeleteFileInRoot) {
 
 TEST_F(ChangeListProcessorTest, DeltaAddAndDeleteFileFromExistingDirectory) {
   // Create ChangeList to add a file.
-  ScopedVector<ChangeList> change_lists;
-  change_lists.push_back(new ChangeList);
+  std::vector<std::unique_ptr<ChangeList>> change_lists;
+  change_lists.push_back(base::MakeUnique<ChangeList>());
 
   ResourceEntry entry;
   entry.set_resource_id("added_in_root_id");
@@ -448,7 +449,7 @@ TEST_F(ChangeListProcessorTest, DeltaAddAndDeleteFileFromExistingDirectory) {
       base::FilePath::FromUTF8Unsafe("drive/root/Directory 1/Added file.txt")));
 
   // Create ChangeList to delete the file.
-  change_lists.push_back(new ChangeList);
+  change_lists.push_back(base::MakeUnique<ChangeList>());
 
   entry.set_deleted(true);
   change_lists[0]->mutable_entries()->push_back(entry);
@@ -474,8 +475,8 @@ TEST_F(ChangeListProcessorTest, DeltaAddFileToNewButDeletedDirectory) {
   // 1) A new PDF file is added to a new directory
   // 2) but the new directory is marked "deleted" (i.e. moved to Trash)
   // Hence, the PDF file should be just ignored.
-  ScopedVector<ChangeList> change_lists;
-  change_lists.push_back(new ChangeList);
+  std::vector<std::unique_ptr<ChangeList>> change_lists;
+  change_lists.push_back(base::MakeUnique<ChangeList>());
 
   ResourceEntry file;
   file.set_resource_id("file_added_in_deleted_id");
@@ -591,8 +592,8 @@ TEST_F(ChangeListProcessorTest, SharedFilesWithNoParentInFeed) {
   EXPECT_EQ(FILE_ERROR_OK, ApplyFullResourceList(CreateBaseChangeList()));
 
   // Create change lists.
-  ScopedVector<ChangeList> change_lists;
-  change_lists.push_back(new ChangeList);
+  std::vector<std::unique_ptr<ChangeList>> change_lists;
+  change_lists.push_back(base::MakeUnique<ChangeList>());
 
   // Add a new file with non-existing parent resource id to the change lists.
   ResourceEntry new_file;
@@ -617,8 +618,8 @@ TEST_F(ChangeListProcessorTest, ModificationDate) {
   EXPECT_EQ(FILE_ERROR_OK, ApplyFullResourceList(CreateBaseChangeList()));
 
   // Create change lists with a new file.
-  ScopedVector<ChangeList> change_lists;
-  change_lists.push_back(new ChangeList);
+  std::vector<std::unique_ptr<ChangeList>> change_lists;
+  change_lists.push_back(base::MakeUnique<ChangeList>());
 
   const base::Time now = base::Time::Now();
   ResourceEntry new_file_remote;

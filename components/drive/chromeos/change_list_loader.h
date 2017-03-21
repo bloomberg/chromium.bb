@@ -14,7 +14,6 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "components/drive/file_errors.h"
@@ -207,7 +206,7 @@ class ChangeListLoader {
       std::unique_ptr<google_apis::AboutResource> about_resource,
       bool is_delta_update,
       FileError error,
-      ScopedVector<ChangeList> change_lists);
+      std::vector<std::unique_ptr<ChangeList>> change_lists);
 
   // Part of LoadChangeListFromServer().
   // Called when the resource metadata is updated.
