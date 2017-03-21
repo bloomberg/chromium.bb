@@ -12,9 +12,6 @@ import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
 
-import com.google.protobuf.nano.MessageNano;
-import com.google.vr.vrcore.proto.nano.Nfc.NfcParams;
-
 import org.chromium.base.ThreadUtils;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -36,7 +33,9 @@ public class VrUtils {
     private static final String VERSION_KEY =  "google.vr/ver";
     private static final String DATA_KEY =     "google.vr/data";
     private static final ByteOrder BYTE_ORDER = ByteOrder.BIG_ENDIAN;
-    private static final int VIEWER_ID = 3;
+    // Hard coded viewer ID (0x03) instead of using NfcParams and converting
+    // to a byte array because NfcParams were removed from the GVR SDK
+    private static final byte[] PROTO_BYTES = new byte[] {(byte) 0x08, (byte) 0x03};
     private static final int VERSION = 123;
     private static final int RESERVED = 456;
 
@@ -79,18 +78,11 @@ public class VrUtils {
      */
     public static Intent makeNfcIntent() {
         Intent nfcIntent = new Intent(NfcAdapter.ACTION_NDEF_DISCOVERED);
-        NfcParams nfcParams = new NfcParams();
-        nfcParams.setViewerId(VIEWER_ID);
-        byte[] protoBytes = MessageNano.toByteArray(nfcParams);
-        NdefMessage[] messages = new NdefMessage[] {
-                new NdefMessage(new NdefRecord[] {
-                        NdefRecord.createMime(
-                                RESERVED_KEY, intToByteArray(RESERVED)),
-                        NdefRecord.createMime(
-                                VERSION_KEY, intToByteArray(VERSION)),
-                        NdefRecord.createMime(DATA_KEY, protoBytes),
-                        NdefRecord.createApplicationRecord(
-                                APPLICATION_RECORD_STRING)})};
+        NdefMessage[] messages = new NdefMessage[] {new NdefMessage(
+                new NdefRecord[] {NdefRecord.createMime(RESERVED_KEY, intToByteArray(RESERVED)),
+                        NdefRecord.createMime(VERSION_KEY, intToByteArray(VERSION)),
+                        NdefRecord.createMime(DATA_KEY, PROTO_BYTES),
+                        NdefRecord.createApplicationRecord(APPLICATION_RECORD_STRING)})};
         nfcIntent.putExtra(NfcAdapter.EXTRA_NDEF_MESSAGES, messages);
         nfcIntent.setComponent(new ComponentName(APPLICATION_RECORD_STRING,
                   APPLICATION_RECORD_STRING + ".nfc.ViewerDetectionActivity"));
