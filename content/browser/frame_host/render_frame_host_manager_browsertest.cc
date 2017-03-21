@@ -1343,12 +1343,21 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, ShowLoadingURLUntilSpoof) {
   EXPECT_FALSE(contents->GetController().GetVisibleEntry());
 }
 
+#if defined(OS_ANDROID)
+// Flaky on android: https://crbug.com/703657
+#define MAYBE_DontShowLoadingURLIfNotInitialNav \
+  DISABLED_DontShowLoadingURLIfNotInitialNav
+#else
+#define MAYBE_DontShowLoadingURLIfNotInitialNav \
+  DontShowLoadingURLIfNotInitialNav
+#endif
+
 // Test for crbug.com/9682.  We should not show the URL for a pending renderer-
 // initiated navigation in a new tab if it is not the initial navigation.  In
 // this case, the renderer will not notify us of a modification, so we cannot
 // show the pending URL without allowing a spoof.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
-                       DontShowLoadingURLIfNotInitialNav) {
+                       MAYBE_DontShowLoadingURLIfNotInitialNav) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Load a page that can open a URL that won't commit in a new window.
