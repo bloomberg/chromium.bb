@@ -57,7 +57,6 @@ aggregate_vector_icons("chrome_vector_icons") {
     "navigate_reload.icon",
     "navigate_stop.1x.icon",
     "navigate_stop.icon",
-    "open_in_phone.icon",
     "overflow_chevron.1x.icon",
     "overflow_chevron.icon",
     "paintbrush.icon",
@@ -100,6 +99,10 @@ aggregate_vector_icons("chrome_vector_icons") {
       "google_search_mac_touchbar.icon",
       "new_tab_mac_touchbar.icon",
     ]
+  }
+
+  if (is_win) {
+    icons += [ "open_in_phone.icon" ]
   }
 }
 
