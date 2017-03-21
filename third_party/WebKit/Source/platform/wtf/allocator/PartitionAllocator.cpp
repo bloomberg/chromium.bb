@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "wtf/allocator/PartitionAllocator.h"
+#include "platform/wtf/allocator/PartitionAllocator.h"
 
 #include "base/allocator/partition_allocator/partition_alloc.h"
-#include "wtf/allocator/Partitions.h"
+#include "platform/wtf/allocator/Partitions.h"
 
 namespace WTF {
 

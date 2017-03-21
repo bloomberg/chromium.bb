@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "wtf/allocator/Partitions.h"
+#include "platform/wtf/allocator/Partitions.h"
 
 #include "base/allocator/partition_allocator/page_allocator.h"
 #include "base/debug/alias.h"
-#include "wtf/allocator/PartitionAllocator.h"
+#include "platform/wtf/allocator/PartitionAllocator.h"
 
 namespace WTF {
 
