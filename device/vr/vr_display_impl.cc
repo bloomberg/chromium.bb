@@ -10,27 +10,46 @@
 
 namespace device {
 
-VRDisplayImpl::VRDisplayImpl(device::VRDevice* device, VRServiceImpl* service)
+VRDisplayImpl::VRDisplayImpl(device::VRDevice* device,
+                             VRServiceImpl* service,
+                             mojom::VRServiceClient* service_client,
+                             mojom::VRDisplayInfoPtr display_info)
     : binding_(this),
       device_(device),
       service_(service),
       weak_ptr_factory_(this) {
-  base::Callback<void(mojom::VRDisplayInfoPtr)> callback = base::Bind(
-      &VRDisplayImpl::OnVRDisplayInfoCreated, weak_ptr_factory_.GetWeakPtr());
-  device->GetVRDevice(callback);
-}
-
-void VRDisplayImpl::OnVRDisplayInfoCreated(
-    mojom::VRDisplayInfoPtr display_info) {
-  if (service_->client() && display_info) {
-    service_->client()->OnDisplayConnected(binding_.CreateInterfacePtrAndBind(),
-                                           mojo::MakeRequest(&client_),
-                                           std::move(display_info));
-  }
+  device_->AddDisplay(this);
+  service_client->OnDisplayConnected(binding_.CreateInterfacePtrAndBind(),
+                                     mojo::MakeRequest(&client_),
+                                     std::move(display_info));
 }
 
 VRDisplayImpl::~VRDisplayImpl() {
   device_->RemoveDisplay(this);
+}
+
+void VRDisplayImpl::OnChanged(mojom::VRDisplayInfoPtr vr_device_info) {
+  client_->OnChanged(std::move(vr_device_info));
+}
+
+void VRDisplayImpl::OnExitPresent() {
+  client_->OnExitPresent();
+}
+
+void VRDisplayImpl::OnBlur() {
+  client_->OnBlur();
+}
+
+void VRDisplayImpl::OnFocus() {
+  client_->OnFocus();
+}
+
+void VRDisplayImpl::OnActivate(mojom::VRDisplayEventReason reason) {
+  client_->OnActivate(reason);
+}
+
+void VRDisplayImpl::OnDeactivate(mojom::VRDisplayEventReason reason) {
+  client_->OnDeactivate(reason);
 }
 
 void VRDisplayImpl::ResetPose() {

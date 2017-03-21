@@ -18,12 +18,25 @@ namespace device {
 
 class VRServiceImpl;
 
+// Browser process representation of a VRDevice within a WebVR site session
+// (see VRServiceImpl). VRDisplayImpl receives/sends VR device events
+// from/to mojom::VRDisplayClient (the render process representation of a VR
+// device).
+// VRDisplayImpl objects are owned by their respective VRServiceImpl instances.
 class VRDisplayImpl : public mojom::VRDisplay {
  public:
-  VRDisplayImpl(device::VRDevice* device, VRServiceImpl* service);
+  VRDisplayImpl(device::VRDevice* device,
+                VRServiceImpl* service,
+                mojom::VRServiceClient* service_client,
+                mojom::VRDisplayInfoPtr display_info);
   ~VRDisplayImpl() override;
 
-  mojom::VRDisplayClient* client() { return client_.get(); }
+  virtual void OnChanged(mojom::VRDisplayInfoPtr vr_device_info);
+  virtual void OnExitPresent();
+  virtual void OnBlur();
+  virtual void OnFocus();
+  virtual void OnActivate(mojom::VRDisplayEventReason reason);
+  virtual void OnDeactivate(mojom::VRDisplayEventReason reason);
 
  private:
   friend class VRDisplayImplTest;
@@ -48,8 +61,6 @@ class VRDisplayImpl : public mojom::VRDisplay {
   void RequestPresentResult(const RequestPresentCallback& callback,
                             bool secure_origin,
                             bool success);
-
-  void OnVRDisplayInfoCreated(mojom::VRDisplayInfoPtr display_info);
 
   mojo::Binding<mojom::VRDisplay> binding_;
   mojom::VRDisplayClientPtr client_;

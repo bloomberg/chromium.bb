@@ -74,8 +74,8 @@ enum VRDisplayEventReason {
 // TODO(shaobo.yan@intel.com) : Add comments to describe these interfaces about
 // how to use and where they live.
 interface VRService {
-  // TODO(shaobo.yan@intel.com) : Use a factory function which took a
-  // VRServiceClient so we would never have a half-initialized VRService.
+  // TODO(shaobo.yan@intel.com, crbug/701027): Use a factory function which
+  // takes a VRServiceClient so we will never have a half-initialized VRService.
   SetClient(VRServiceClient client) => (uint32 numberOfConnectedDevices);
   // Inform the service that the page is listening for vrdisplayactivate events.
   SetListeningForActivate(bool listening);

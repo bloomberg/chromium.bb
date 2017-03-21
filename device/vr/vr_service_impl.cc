@@ -14,7 +14,8 @@
 
 namespace device {
 
-VRServiceImpl::VRServiceImpl() : listening_for_activate_(false) {}
+VRServiceImpl::VRServiceImpl()
+    : listening_for_activate_(false), weak_ptr_factory_(this) {}
 
 VRServiceImpl::~VRServiceImpl() {
   // Destroy VRDisplay before calling RemoveService below. RemoveService might
@@ -27,22 +28,6 @@ VRServiceImpl::~VRServiceImpl() {
 void VRServiceImpl::Create(mojo::InterfaceRequest<mojom::VRService> request) {
   mojo::MakeStrongBinding(base::MakeUnique<VRServiceImpl>(),
                           std::move(request));
-}
-
-// Gets a VRDisplayPtr unique to this service so that the associated page can
-// communicate with the VRDevice.
-VRDisplayImpl* VRServiceImpl::GetVRDisplayImpl(VRDevice* device) {
-  auto it = displays_.find(device);
-  if (it != displays_.end())
-    return it->second.get();
-
-  VRDisplayImpl* display_impl = new VRDisplayImpl(device, this);
-  displays_[device] = base::WrapUnique(display_impl);
-  return display_impl;
-}
-
-void VRServiceImpl::RemoveDevice(VRDevice* device) {
-  displays_.erase(device);
 }
 
 void VRServiceImpl::SetClient(mojom::VRServiceClientPtr service_client,
@@ -58,10 +43,39 @@ void VRServiceImpl::SetClient(mojom::VRServiceClientPtr service_client,
   callback.Run(device_manager->GetNumberOfConnectedDevices());
 }
 
+void VRServiceImpl::ConnectDevice(VRDevice* device) {
+  DCHECK(displays_.count(device) == 0);
+  base::Callback<void(mojom::VRDisplayInfoPtr)> on_created =
+      base::Bind(&VRServiceImpl::OnVRDisplayInfoCreated,
+                 weak_ptr_factory_.GetWeakPtr(), device);
+  device->CreateVRDisplayInfo(on_created);
+}
+
 void VRServiceImpl::SetListeningForActivate(bool listening) {
   listening_for_activate_ = listening;
   VRDeviceManager* device_manager = VRDeviceManager::GetInstance();
   device_manager->ListeningForActivateChanged(listening);
+}
+
+// Creates a VRDisplayPtr unique to this service so that the associated page can
+// communicate with the VRDevice.
+void VRServiceImpl::OnVRDisplayInfoCreated(
+    VRDevice* device,
+    mojom::VRDisplayInfoPtr display_info) {
+  // TODO(crbug/701027): make sure that client_ is never null by initializing it
+  // in the constructor.
+  if (!client_) {
+    DLOG(ERROR) << "Cannot create VR display because connection to render "
+                   "process is not established";
+    return;
+  }
+  displays_[device] = base::MakeUnique<VRDisplayImpl>(
+      device, this, client_.get(), std::move(display_info));
+}
+
+VRDisplayImpl* VRServiceImpl::GetVRDisplayImplForTesting(VRDevice* device) {
+  auto it = displays_.find(device);
+  return (it == displays_.end()) ? nullptr : it->second.get();
 }
 
 }  // namespace device

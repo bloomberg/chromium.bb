@@ -16,6 +16,8 @@ class VRDisplayImpl;
 
 const unsigned int VR_DEVICE_LAST_ID = 0xFFFFFFFF;
 
+// Represents one of the platform's VR devices. Owned by the respective
+// VRDeviceProvider.
 class DEVICE_VR_EXPORT VRDevice {
  public:
   VRDevice();
@@ -23,8 +25,11 @@ class DEVICE_VR_EXPORT VRDevice {
 
   unsigned int id() const { return id_; }
 
-  virtual void GetVRDevice(
-      const base::Callback<void(mojom::VRDisplayInfoPtr)>& callback) = 0;
+  // Queries VR device for display info and calls onCreated once the display
+  // info object is created. If the query fails onCreated will be called with a
+  // nullptr as argument. onCreated can be called before this function returns.
+  virtual void CreateVRDisplayInfo(
+      const base::Callback<void(mojom::VRDisplayInfoPtr)>& on_created) = 0;
   virtual void ResetPose() = 0;
 
   virtual void RequestPresent(mojom::VRSubmitFrameClientPtr submit_client,

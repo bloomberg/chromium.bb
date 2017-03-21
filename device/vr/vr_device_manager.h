@@ -24,6 +24,8 @@
 
 namespace device {
 
+// Singleton used to provide the platform's VR devices to VRServiceImpl
+// instances.
 class VRDeviceManager {
  public:
   DEVICE_VR_EXPORT virtual ~VRDeviceManager();
@@ -33,10 +35,12 @@ class VRDeviceManager {
 
   // Adds a listener for device manager events. VRDeviceManager does not own
   // this object.
-  void AddService(VRServiceImpl* service);
+  // Automatically connects all currently available VR devices by querying
+  // the device providers and, for each returned device, calling
+  // VRServiceImpl::ConnectDevice.
+  DEVICE_VR_EXPORT void AddService(VRServiceImpl* service);
   void RemoveService(VRServiceImpl* service);
 
-  DEVICE_VR_EXPORT bool GetVRDevices(VRServiceImpl* service);
   DEVICE_VR_EXPORT unsigned int GetNumberOfConnectedDevices();
 
   void ListeningForActivateChanged(bool listening);

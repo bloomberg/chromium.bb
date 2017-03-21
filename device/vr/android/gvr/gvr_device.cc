@@ -24,13 +24,13 @@ GvrDevice::GvrDevice(GvrDeviceProvider* provider)
 
 GvrDevice::~GvrDevice() {}
 
-void GvrDevice::GetVRDevice(
-    const base::Callback<void(mojom::VRDisplayInfoPtr)>& callback) {
+void GvrDevice::CreateVRDisplayInfo(
+    const base::Callback<void(mojom::VRDisplayInfoPtr)>& on_created) {
   GvrDelegate* delegate = GetGvrDelegate();
   if (delegate) {
-    delegate->CreateVRDisplayInfo(callback, id());
+    delegate->CreateVRDisplayInfo(on_created, id());
   } else {
-    callback.Run(mojom::VRDisplayInfoPtr(nullptr));
+    on_created.Run(nullptr);
   }
 }
 

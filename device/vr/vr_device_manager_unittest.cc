@@ -76,17 +76,15 @@ TEST_F(VRDeviceManagerTest, InitializationTest) {
   // initialization. And SetClient method in VRService class will invoke
   // GetVRDevices too.
   auto service = BindService();
-  device_manager_->GetVRDevices(service.get());
+  device_manager_->AddService(service.get());
   EXPECT_TRUE(provider_->IsInitialized());
 }
 
-TEST_F(VRDeviceManagerTest, GetDevicesBasicTest) {
+TEST_F(VRDeviceManagerTest, GetDevicesTest) {
   auto service = BindService();
-
-  bool success = device_manager_->GetVRDevices(service.get());
+  device_manager_->AddService(service.get());
   // Calling GetVRDevices should initialize the providers.
   EXPECT_TRUE(provider_->IsInitialized());
-  EXPECT_FALSE(success);
 
   // GetDeviceByIndex should return nullptr if an invalid index in queried.
   VRDevice* queried_device = GetDevice(1);
@@ -94,16 +92,15 @@ TEST_F(VRDeviceManagerTest, GetDevicesBasicTest) {
 
   FakeVRDevice* device1 = new FakeVRDevice();
   provider_->AddDevice(base::WrapUnique(device1));
-  success = device_manager_->GetVRDevices(service.get());
-  EXPECT_TRUE(success);
+  // VRDeviceManager will query devices as a side effect.
+  service = BindService();
   // Should have successfully returned one device.
   EXPECT_EQ(device1, GetDevice(device1->id()));
 
   FakeVRDevice* device2 = new FakeVRDevice();
   provider_->AddDevice(base::WrapUnique(device2));
-  success = device_manager_->GetVRDevices(service.get());
-  EXPECT_TRUE(success);
-
+  // VRDeviceManager will query devices as a side effect.
+  service = BindService();
   // Querying the WebVRDevice index should return the correct device.
   EXPECT_EQ(device1, GetDevice(device1->id()));
   EXPECT_EQ(device2, GetDevice(device2->id()));

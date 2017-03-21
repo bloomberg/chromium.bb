@@ -19,8 +19,8 @@ class DEVICE_VR_EXPORT GvrDevice : public VRDevice {
   ~GvrDevice() override;
 
   // VRDevice
-  void GetVRDevice(
-      const base::Callback<void(mojom::VRDisplayInfoPtr)>& callback) override;
+  void CreateVRDisplayInfo(
+      const base::Callback<void(mojom::VRDisplayInfoPtr)>& on_created) override;
   void ResetPose() override;
 
   void RequestPresent(mojom::VRSubmitFrameClientPtr submit_client,

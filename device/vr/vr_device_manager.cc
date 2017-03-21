@@ -68,7 +68,26 @@ void VRDeviceManager::AddService(VRServiceImpl* service) {
   // Loop through any currently active devices and send Connected messages to
   // the service. Future devices that come online will send a Connected message
   // when they are created.
-  GetVRDevices(service);
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  InitializeProviders();
+
+  std::vector<VRDevice*> devices;
+  for (const auto& provider : providers_) {
+    provider->GetDevices(&devices);
+  }
+
+  for (auto* device : devices) {
+    if (device->id() == VR_DEVICE_LAST_ID) {
+      continue;
+    }
+
+    if (devices_.find(device->id()) == devices_.end()) {
+      devices_[device->id()] = device;
+    }
+
+    service->ConnectDevice(device);
+  }
 
   services_.insert(service);
 }
@@ -85,34 +104,6 @@ void VRDeviceManager::RemoveService(VRServiceImpl* service) {
     // Delete the device manager when it has no active connections.
     delete g_vr_device_manager;
   }
-}
-
-bool VRDeviceManager::GetVRDevices(VRServiceImpl* service) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  InitializeProviders();
-
-  std::vector<VRDevice*> devices;
-  for (const auto& provider : providers_)
-    provider->GetDevices(&devices);
-
-  if (devices.empty())
-    return false;
-
-  for (auto* device : devices) {
-    if (device->id() == VR_DEVICE_LAST_ID)
-      continue;
-
-    if (devices_.find(device->id()) == devices_.end())
-      devices_[device->id()] = device;
-
-    // Create a VRDisplayImpl for this service/device pair and attach
-    // the VRDisplayImpl to the device.
-    VRDisplayImpl* display_impl = service->GetVRDisplayImpl(device);
-    device->AddDisplay(display_impl);
-  }
-
-  return true;
 }
 
 unsigned int VRDeviceManager::GetNumberOfConnectedDevices() {

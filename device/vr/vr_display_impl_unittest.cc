@@ -65,6 +65,10 @@ class VRDisplayImplTest : public testing::Test {
 
   bool presenting() { return !!device_->presenting_display_; }
 
+  VRDisplayImpl* GetVRDisplayImpl(VRServiceImpl* service, VRDevice* device) {
+    return service->GetVRDisplayImplForTesting(device);
+  }
+
   base::MessageLoop message_loop_;
   bool is_request_presenting_success_ = false;
   FakeVRDeviceProvider* provider_;
@@ -79,8 +83,8 @@ TEST_F(VRDisplayImplTest, DevicePresentationIsolation) {
   auto service_1 = BindService();
   auto service_2 = BindService();
 
-  VRDisplayImpl* display_1 = service_1->GetVRDisplayImpl(device());
-  VRDisplayImpl* display_2 = service_2->GetVRDisplayImpl(device());
+  VRDisplayImpl* display_1 = GetVRDisplayImpl(service_1.get(), device());
+  VRDisplayImpl* display_2 = GetVRDisplayImpl(service_2.get(), device());
 
   // When not presenting either service should be able to access the device.
   EXPECT_TRUE(device()->IsAccessAllowed(display_1));
