@@ -99,18 +99,6 @@ EventSource* EventSource::create(ExecutionContext* context,
     return nullptr;
   }
 
-  // FIXME: Convert this to check the isolated world's Content Security Policy
-  // once webkit.org/b/104520 is solved.
-  if (!ContentSecurityPolicy::shouldBypassMainWorld(context) &&
-      !context->contentSecurityPolicy()->allowConnectToSource(fullURL)) {
-    // We can safely expose the URL to JavaScript, as this exception is generate
-    // synchronously before any redirects take place.
-    exceptionState.throwSecurityError(
-        "Refused to connect to '" + fullURL.elidedString() +
-        "' because it violates the document's Content Security Policy.");
-    return nullptr;
-  }
-
   EventSource* source = new EventSource(context, fullURL, eventSourceInit);
 
   source->scheduleInitialConnect();
@@ -322,6 +310,11 @@ void EventSource::didFinishLoading(unsigned long, double) {
 void EventSource::didFail(const ResourceError& error) {
   DCHECK_NE(kClosed, m_state);
   DCHECK(m_loader);
+
+  if (error.isAccessCheck()) {
+    didFailAccessControlCheck(error);
+    return;
+  }
 
   if (error.isCancellation())
     m_state = kClosed;

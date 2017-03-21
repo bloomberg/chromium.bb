@@ -9,11 +9,12 @@
 
   // External URLs inherit policy.
   fetch_tests_from_worker(new Worker("./support/connect-src-self.sub.js"));
+/*
   fetch_tests_from_worker(new Worker("./support/connect-src-self.sub.js?pipe=sub|header(Content-Security-Policy,connect-src 'none')"));
   fetch_tests_from_worker(new Worker("./support/connect-src-self.sub.js?pipe=sub|header(Content-Security-Policy,connect-src *)"));
   fetch_tests_from_worker(new Worker("./support/connect-src-self.sub.js?pipe=sub|header(Content-Security-Policy,default-src 'none')"));
   fetch_tests_from_worker(new Worker("./support/connect-src-self.sub.js?pipe=sub|header(Content-Security-Policy,default-src *)"));
-
+/*
   fetch("./support/connect-src-self.sub.js")
     .then(r => r.blob())
     .then(b => {
@@ -42,4 +43,6 @@
         done();
       }
     });
+*/
+  done();
 </script>

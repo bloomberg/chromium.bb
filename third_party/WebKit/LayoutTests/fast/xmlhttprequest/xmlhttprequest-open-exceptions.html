@@ -18,15 +18,6 @@
             shouldBeEqualToString("xhrException.message", "Failed to execute 'open' on 'XMLHttpRequest': 'TRACE' HTTP method is unsupported.");
         }
 
-        try {
-            var xhr = new XMLHttpRequest();
-            xhr.open("GET", "http://not.example.com/");
-            testFailed("xhr.open to a URL blocked by CSP should throw an exception.");
-        } catch (e) {
-            xhrException = e;
-            shouldBeEqualToString("xhrException.message", "Failed to execute 'open' on 'XMLHttpRequest': Refused to connect to 'http://not.example.com/' because it violates the document's Content Security Policy.");
-        }
-
         var badString = { toString: function() { throw "Exception in toString()"; } };
         var xhr = new XMLHttpRequest();
         shouldBe("xhr.readyState", "XMLHttpRequest.UNSENT");

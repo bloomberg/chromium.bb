@@ -3,8 +3,10 @@
 <head>
 <meta http-equiv="Content-Security-Policy" content="connect-src http://localhost:8000"<script>
 <script>
-if (window.testRunner)
+if (window.testRunner) {
     testRunner.dumpAsText();
+    testRunner.waitUntilDone();
+}
 </script>
 </head>
 <body>
@@ -15,13 +17,11 @@ function log(msg)
     document.getElementById("console").appendChild(document.createTextNode(msg + "\n"));
 }
 
-try {
-    var xhr = new XMLHttpRequest;
-    xhr.open("GET", "http://127.0.0.1:8000/xmlhttprequest/resources/get.txt", true); 
-    log("Fail");
-} catch(e) {
-    log("Pass");
-}
+var xhr = new XMLHttpRequest;
+xhr.open("GET", "http://127.0.0.1:8000/xmlhttprequest/resources/get.txt", true); 
+xhr.onerror = _ => { log("Pass"); testRunner.notifyDone(); }
+xhr.onload = _ => { log("Fail"); testRunner.notifyDone(); }
+xhr.send();
 
 </script>
 <p>This test passes if the malformed meta tag doesn't cause a crash and the resource is blocked.</p>

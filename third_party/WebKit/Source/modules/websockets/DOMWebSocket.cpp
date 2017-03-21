@@ -335,17 +335,17 @@ void DOMWebSocket::connect(const String& url,
     return;
   }
 
-  // FIXME: Convert this to check the isolated world's Content Security Policy
-  // once webkit.org/b/104520 is solved.
   if (!ContentSecurityPolicy::shouldBypassMainWorld(getExecutionContext()) &&
       !getExecutionContext()->contentSecurityPolicy()->allowConnectToSource(
           m_url)) {
     m_state = kClosed;
-    // The URL is safe to expose to JavaScript, as this check happens
-    // synchronously before redirection.
-    exceptionState.throwSecurityError(
-        "Refused to connect to '" + m_url.elidedString() +
-        "' because it violates the document's Content Security Policy.");
+
+    // Delay the event dispatch until after the current task by suspending and
+    // resuming the queue. If we don't do this, the event is fired synchronously
+    // with the constructor, meaning that it's impossible to listen for.
+    m_eventQueue->suspend();
+    m_eventQueue->dispatch(Event::create(EventTypeNames::error));
+    m_eventQueue->resume();
     return;
   }
 

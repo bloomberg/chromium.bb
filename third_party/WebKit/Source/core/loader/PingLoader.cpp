@@ -425,6 +425,13 @@ bool sendBeaconCommon(LocalFrame* frame,
   if (!frame->document())
     return false;
 
+  // TODO(mkwst): CSP is not enforced on redirects, crbug.com/372197
+  if (!ContentSecurityPolicy::shouldBypassMainWorld(frame->document()) &&
+      !frame->document()->contentSecurityPolicy()->allowConnectToSource(url)) {
+    // We're simulating a network failure here, so we return 'true'.
+    return true;
+  }
+
   unsigned long long entitySize = beacon.size();
   if (allowance < 0 || static_cast<unsigned long long>(allowance) < entitySize)
     return false;

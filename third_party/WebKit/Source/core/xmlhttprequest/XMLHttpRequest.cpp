@@ -617,17 +617,6 @@ void XMLHttpRequest::open(const AtomicString& method,
   m_error = false;
   m_uploadComplete = false;
 
-  if (!ContentSecurityPolicy::shouldBypassMainWorld(getExecutionContext()) &&
-      !getExecutionContext()->contentSecurityPolicy()->allowConnectToSource(
-          url)) {
-    // We can safely expose the URL to JavaScript, as these checks happen
-    // synchronously before redirection. JavaScript receives no new information.
-    exceptionState.throwSecurityError(
-        "Refused to connect to '" + url.elidedString() +
-        "' because it violates the document's Content Security Policy.");
-    return;
-  }
-
   if (!async && getExecutionContext()->isDocument()) {
     if (document()->settings() &&
         !document()->settings()->getSyncXHRInDocumentsEnabled()) {

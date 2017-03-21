@@ -14,7 +14,6 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
-#include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/FormData.h"
 #include "core/loader/PingLoader.h"
 #include "platform/loader/fetch/FetchUtils.h"
@@ -56,16 +55,6 @@ bool NavigatorBeacon::canSendBeacon(ExecutionContext* context,
   if (!url.protocolIsInHTTPFamily()) {
     exceptionState.throwDOMException(
         SyntaxError, "Beacons are only supported over HTTP(S).");
-    return false;
-  }
-  // FIXME: CSP is not enforced on redirects, crbug.com/372197
-  if (!ContentSecurityPolicy::shouldBypassMainWorld(context) &&
-      !context->contentSecurityPolicy()->allowConnectToSource(url)) {
-    // We can safely expose the URL to JavaScript, as these checks happen
-    // synchronously before redirection. JavaScript receives no new information.
-    exceptionState.throwSecurityError(
-        "Refused to send beacon to '" + url.elidedString() +
-        "' because it violates the document's Content Security Policy.");
     return false;
   }
 

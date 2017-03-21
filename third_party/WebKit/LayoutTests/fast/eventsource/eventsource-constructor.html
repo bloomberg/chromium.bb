@@ -38,9 +38,9 @@ try {
 
 try {
     new EventSource("http://disallowed.example.com/");
-    log("FAIL: no exception when passing an URL blocked by Content Security Policy to the EventSource constructor");
+    log("PASS: no exception when passing an URL blocked by Content Security Policy to the EventSource constructor");
 } catch (e) {
-    log("PASS: passing a Content-Security-Policy-blocked URL to the EventSource constructor resulted in an exception (" + e + ")");
+    log("FAIL: passing a Content-Security-Policy-blocked URL to the EventSource constructor resulted in an exception (" + e + ")");
 }
 
 try {
