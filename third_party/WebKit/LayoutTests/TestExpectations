@@ -1940,7 +1940,7 @@ crbug.com/626703 external/wpt/service-workers/service-worker/clients-matchall-in
 crbug.com/626703 external/wpt/service-workers/service-worker/clients-matchall-order.https.html [ Failure Pass ]
 crbug.com/626703 external/wpt/uievents/interface/click-event-manual.htm [ Timeout ]
 crbug.com/626703 external/wpt/uievents/interface/dblclick-event-manual.htm [ Timeout ]
-crbug.com/626703 [ Android Win10 ] external/wpt/fullscreen/api/document-exit-fullscreen-nested-in-iframe-manual.html [ Timeout ]
+crbug.com/626703 external/wpt/fullscreen/api/document-exit-fullscreen-nested-in-iframe-manual.html [ Timeout Pass ]
 crbug.com/626703 external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/utf-16be.html [ Timeout ]
 crbug.com/626703 external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/utf-16le.html [ Timeout ]
 crbug.com/626703 external/wpt/html/infrastructure/urls/resolving-urls/query-encoding/utf-8.html [ Timeout ]
@@ -2633,7 +2633,6 @@ crbug.com/698521 external/wpt/preload/preload-with-type.html [ Failure Pass ]
 crbug.com/402805 [ Mac10.10 Mac10.11 Mac10.12 Win10 ] inspector-protocol/input/emulateTouchFromMouseEvent.html [ Timeout ]
 crbug.com/700374 [ Win ] virtual/mojo-loading/http/tests/inspector/workers-on-navigation.html [ Failure Pass ]
 crbug.com/700374 [ Win ] http/tests/inspector/workers-on-navigation.html [ Failure Pass ]
-crbug.com/700387 [ Win7 ] external/wpt/fullscreen/api/document-exit-fullscreen-nested-in-iframe-manual.html [ Timeout Pass ]
 
 # Sheriff failures 2017-03-13
 crbug.com/701140 inspector-protocol/css/css-get-rule-list.html [ Failure Pass ]
