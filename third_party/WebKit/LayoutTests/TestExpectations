@@ -122,9 +122,6 @@ crbug.com/664850 virtual/display_list_2d_canvas/fast/canvas/canvas-createImageBi
 crbug.com/664850 virtual/display_list_2d_canvas/fast/canvas/OffscreenCanvas-2d-drawImage.html [ Pass Failure ]
 crbug.com/664850 virtual/display_list_2d_canvas/fast/canvas/OffscreenCanvas-commit-invalid-call.html [ Pass Failure ]
 crbug.com/664852 virtual/gpu/fast/canvas/canvas-createImageBitmap-webgl.html [ Pass Failure ]
-crbug.com/664852 virtual/gpu/fast/canvas/canvas-drawImage-live-video.html [ Pass Failure ]
-crbug.com/664852 virtual/gpu/fast/canvas/canvas-lose-restore-googol-size.html [ Pass Failure ]
-crbug.com/664852 virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Pass Failure ]
 crbug.com/664852 virtual/gpu/fast/canvas/OffscreenCanvas-2d-drawImage.html [ Pass Failure ]
 
 crbug.com/671048 virtual/color_space/fast/canvas/color-space/display_linear-rgb.html [ Pass Failure Crash ]
