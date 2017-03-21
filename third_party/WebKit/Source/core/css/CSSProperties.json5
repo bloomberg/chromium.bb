@@ -2012,6 +2012,7 @@
     {
       name: "-webkit-border-horizontal-spacing",
       api_class: "CSSPropertyAPIWebkitBorderSpacing",
+      api_methods: ["parseSingleValue"],
       converter: "convertComputedLength<short>",
       inherited: true,
       interpolable: true,
@@ -2026,6 +2027,7 @@
     {
       name: "-webkit-border-vertical-spacing",
       api_class: "CSSPropertyAPIWebkitBorderSpacing",
+      api_methods: ["parseSingleValue"],
       converter: "convertComputedLength<short>",
       inherited: true,
       interpolable: true,
