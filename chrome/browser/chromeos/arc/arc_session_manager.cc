@@ -295,8 +295,7 @@ void ArcSessionManager::OnProvisioningFinished(ProvisioningResult result) {
       error = ArcSupportHost::Error::SERVER_COMMUNICATION_ERROR;
       break;
     case ProvisioningResult::NO_NETWORK_CONNECTION:
-      // TODO(khmel): Use explicit error for M58+ builds.
-      error = ArcSupportHost::Error::SIGN_IN_SERVICE_UNAVAILABLE_ERROR;
+      error = ArcSupportHost::Error::NETWORK_UNAVAILABLE_ERROR;
       break;
     case ProvisioningResult::ARC_DISABLED:
       error = ArcSupportHost::Error::ANDROID_MANAGEMENT_REQUIRED_ERROR;

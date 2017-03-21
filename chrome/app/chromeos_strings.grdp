@@ -6592,6 +6592,9 @@ All users must sign out to continue.
   <message name="IDS_ARC_ANDROID_MANAGEMENT_REQUIRED_ERROR" desc="Error message shown when Android management is required for an unmanaged Chrome OS user.">
     Your organization has not enabled Google Play Store for your account. Contact your administrator for more information.
   </message>
+  <message name="IDS_ARC_NETWORK_UNAVAILABLE_ERROR" desc="Error message shown when Android cannot set up network connection.">
+    Network connection cannot be established.
+  </message>
   <message name="IDS_ARC_CRITICALLY_LOW_DISK_NOTIFICATION_TITLE" desc="Title of the notification warning users that they are critically low on disk space and Android apps can not be launched.">
     Device disk space critically low
   </message>
