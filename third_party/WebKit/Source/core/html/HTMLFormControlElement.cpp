@@ -582,9 +582,10 @@ void HTMLFormControlElement::setNeedsValidityCheck() {
     fieldSetAncestorsSetNeedsValidityCheck(parentNode());
     pseudoStateChanged(CSSSelector::PseudoValid);
     pseudoStateChanged(CSSSelector::PseudoInvalid);
-    pseudoStateChanged(CSSSelector::PseudoInRange);
-    pseudoStateChanged(CSSSelector::PseudoOutOfRange);
   }
+
+  pseudoStateChanged(CSSSelector::PseudoInRange);
+  pseudoStateChanged(CSSSelector::PseudoOutOfRange);
 
   // Updates only if this control already has a validation message.
   if (isValidationMessageVisible()) {
