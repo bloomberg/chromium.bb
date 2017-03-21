@@ -64,6 +64,11 @@ class AURA_EXPORT InputMethodMus : public ui::InputMethodBase {
 
   void UpdateTextInputType();
 
+  // Runs all pending callbacks with UNHANDLED. This is called during shutdown,
+  // or any time |input_method_ptr_| is reset to ensure we don't leave mus
+  // waiting for an ack.
+  void AckPendingCallbacksUnhandled();
+
   // Called when the server responds to our request to process an event.
   void ProcessKeyEventCallback(
       const ui::KeyEvent& event,

@@ -29,6 +29,12 @@ class InputMethodMusTestApi {
     input_method->ime_server_.reset();
   }
 
+  static void CallOnDidChangeFocusedClient(InputMethodMus* input_method,
+                                           ui::TextInputClient* focused_before,
+                                           ui::TextInputClient* focused) {
+    input_method->OnDidChangeFocusedClient(focused_before, focused);
+  }
+
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(InputMethodMusTestApi);
 };

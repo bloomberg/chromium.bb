@@ -8,6 +8,7 @@
 #include "ui/aura/test/aura_test_base.h"
 #include "ui/aura/test/mus/input_method_mus_test_api.h"
 #include "ui/aura/window.h"
+#include "ui/base/ime/dummy_text_input_client.h"
 #include "ui/base/ime/input_method_delegate.h"
 
 namespace aura {
@@ -99,6 +100,33 @@ TEST_F(InputMethodMusTest, PendingCallbackRunFromDestruction) {
   }
 
   // When the destructor is run the callback should be run.
+  EXPECT_TRUE(was_event_result_callback_run);
+}
+
+TEST_F(InputMethodMusTest, PendingCallbackRunFromOnDidChangeFocusedClient) {
+  aura::Window window(nullptr);
+  window.Init(ui::LAYER_NOT_DRAWN);
+  bool was_event_result_callback_run = false;
+  ui::DummyTextInputClient test_input_client;
+  // Create an InputMethodMus and foward an event to it.
+  TestInputMethodDelegate input_method_delegate;
+  InputMethodMus input_method_mus(&input_method_delegate, &window);
+  TestInputMethod test_input_method;
+  InputMethodMusTestApi::SetInputMethod(&input_method_mus, &test_input_method);
+  std::unique_ptr<EventResultCallback> callback =
+      base::MakeUnique<EventResultCallback>(base::Bind(
+          &RunFunctionWithEventResult, &was_event_result_callback_run));
+  InputMethodMusTestApi::CallSendKeyEventToInputMethod(
+      &input_method_mus, ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_RETURN, 0),
+      std::move(callback));
+  // The event should have been queued.
+  EXPECT_EQ(1u, test_input_method.process_key_event_callbacks()->size());
+  // Callback should not have been run yet.
+  EXPECT_FALSE(was_event_result_callback_run);
+
+  InputMethodMusTestApi::CallOnDidChangeFocusedClient(
+      &input_method_mus, nullptr, &test_input_client);
+  // Changing the focused client should trigger running the callback.
   EXPECT_TRUE(was_event_result_callback_run);
 }
 

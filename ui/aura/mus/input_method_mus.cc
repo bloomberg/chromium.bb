@@ -35,10 +35,7 @@ InputMethodMus::~InputMethodMus() {
   // Mus won't dispatch the next key event until the existing one is acked. We
   // may have KeyEvents sent to IME and awaiting the result, we need to ack
   // them otherwise mus won't process the next event until it times out.
-  for (auto& callback_ptr : pending_callbacks_) {
-    if (callback_ptr)
-      callback_ptr->Run(EventResult::UNHANDLED);
-  }
+  AckPendingCallbacksUnhandled();
 }
 
 void InputMethodMus::Init(service_manager::Connector* connector) {
@@ -153,6 +150,12 @@ void InputMethodMus::OnDidChangeFocusedClient(
     return;
 
   text_input_client_ = base::MakeUnique<TextInputClientImpl>(focused);
+
+  // We are about to close the pipe with pending callbacks. Closing the pipe
+  // results in none of the callbacks being run. We have to run the callbacks
+  // else mus won't process the next event immediately.
+  AckPendingCallbacksUnhandled();
+
   if (ime_server_) {
     ui::mojom::StartSessionDetailsPtr details =
         ui::mojom::StartSessionDetails::New();
@@ -179,6 +182,14 @@ void InputMethodMus::UpdateTextInputType() {
     else
       window_impl_mus->SetTextInputState(std::move(state));
   }
+}
+
+void InputMethodMus::AckPendingCallbacksUnhandled() {
+  for (auto& callback_ptr : pending_callbacks_) {
+    if (callback_ptr)
+      callback_ptr->Run(EventResult::UNHANDLED);
+  }
+  pending_callbacks_.clear();
 }
 
 void InputMethodMus::ProcessKeyEventCallback(
