@@ -354,6 +354,30 @@ ContentRectangle* UiScene::GetUiElementById(int element_id) {
   return nullptr;
 }
 
+std::vector<const ContentRectangle*> UiScene::GetWorldElements() const {
+  std::vector<const ContentRectangle*> elements;
+  for (const auto& element : ui_elements_) {
+    if (element->IsVisible() && !element->lock_to_fov) {
+      elements.push_back(element.get());
+    }
+  }
+  return elements;
+}
+
+std::vector<const ContentRectangle*> UiScene::GetHeadLockedElements() const {
+  std::vector<const ContentRectangle*> elements;
+  for (const auto& element : ui_elements_) {
+    if (element->IsVisible() && element->lock_to_fov) {
+      elements.push_back(element.get());
+    }
+  }
+  return elements;
+}
+
+bool UiScene::HasVisibleHeadLockedElements() const {
+  return !GetHeadLockedElements().empty();
+}
+
 const Colorf& UiScene::GetBackgroundColor() const {
   return background_color_;
 }

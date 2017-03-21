@@ -69,6 +69,10 @@ class UiScene {
 
   ContentRectangle* GetUiElementById(int element_id);
 
+  std::vector<const ContentRectangle*> GetWorldElements() const;
+  std::vector<const ContentRectangle*> GetHeadLockedElements() const;
+  bool HasVisibleHeadLockedElements() const;
+
   const Colorf& GetBackgroundColor() const;
   float GetBackgroundDistance() const;
   bool GetWebVrRenderingEnabled() const;

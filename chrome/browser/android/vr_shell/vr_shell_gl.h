@@ -113,7 +113,8 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
   void GvrInit(gvr_context* gvr_api);
   void InitializeRenderer();
   void DrawFrame(int16_t frame_index);
-  void DrawVrShellAndUnbind(const gvr::Mat4f& head_pose, gvr::Frame& frame);
+  void DrawWorldElements(const gvr::Mat4f& head_pose);
+  void DrawHeadLockedElements();
   void DrawUiView(const gvr::Mat4f& head_pose,
                   const std::vector<const ContentRectangle*>& elements,
                   const gvr::Sizei& render_size,

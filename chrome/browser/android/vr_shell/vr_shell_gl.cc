@@ -815,10 +815,16 @@ void VrShellGl::DrawFrame(int16_t frame_index) {
     UpdateController(GetForwardVector(head_pose));
   }
 
-  // Finish drawing in the primary buffer, and draw the headlocked buffer
-  // if needed. This must be the last drawing call, this method will
-  // return with no frame being bound.
-  DrawVrShellAndUnbind(head_pose, frame);
+  DrawWorldElements(head_pose);
+
+  frame.Unbind();
+
+  // Draw head-locked elements to a separate, non-reprojected buffer.
+  if (scene_->HasVisibleHeadLockedElements()) {
+    frame.BindBuffer(kFrameHeadlockedBuffer);
+    DrawHeadLockedElements();
+    frame.Unbind();
+  }
 
   {
     TRACE_EVENT0("gpu", "VrShellGl::Submit");
@@ -833,20 +839,8 @@ void VrShellGl::DrawFrame(int16_t frame_index) {
   }
 }
 
-void VrShellGl::DrawVrShellAndUnbind(const gvr::Mat4f& head_pose,
-                                     gvr::Frame& frame) {
-  TRACE_EVENT0("gpu", "VrShellGl::DrawVrShell");
-  std::vector<const ContentRectangle*> head_locked_elements;
-  std::vector<const ContentRectangle*> world_elements;
-  for (const auto& rect : scene_->GetUiElements()) {
-    if (!rect->IsVisible())
-      continue;
-    if (rect->computed_lock_to_fov) {
-      head_locked_elements.push_back(rect.get());
-    } else {
-      world_elements.push_back(rect.get());
-    }
-  }
+void VrShellGl::DrawWorldElements(const gvr::Mat4f& head_pose) {
+  TRACE_EVENT0("gpu", "VrShellGl::DrawWorldElements");
 
   if (ShouldDrawWebVr()) {
     // WebVR is incompatible with 3D world compositing since the
@@ -867,32 +861,30 @@ void VrShellGl::DrawVrShellAndUnbind(const gvr::Mat4f& head_pose,
                  backgroundColor.a);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   }
-  if (!world_elements.empty()) {
-    DrawUiView(head_pose, world_elements, render_size_primary_,
-               kViewportListPrimaryOffset, !ShouldDrawWebVr());
-  }
-  frame.Unbind();  // Done with the primary buffer.
+  std::vector<const ContentRectangle*> elements = scene_->GetWorldElements();
+  DrawUiView(head_pose, elements, render_size_primary_,
+             kViewportListPrimaryOffset, !ShouldDrawWebVr());
+}
 
-  if (!head_locked_elements.empty()) {
-    // Add head-locked viewports. The list gets reset to just
-    // the recommended viewports (for the primary buffer) each frame.
-    buffer_viewport_list_->SetBufferViewport(
-        kViewportListHeadlockedOffset + GVR_LEFT_EYE,
-        *headlocked_left_viewport_);
-    buffer_viewport_list_->SetBufferViewport(
-        kViewportListHeadlockedOffset + GVR_RIGHT_EYE,
-        *headlocked_right_viewport_);
+void VrShellGl::DrawHeadLockedElements() {
+  TRACE_EVENT0("gpu", "VrShellGl::DrawHeadLockedElements");
+  std::vector<const ContentRectangle*> elements =
+      scene_->GetHeadLockedElements();
 
-    // Bind the headlocked framebuffer.
-    frame.BindBuffer(kFrameHeadlockedBuffer);
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    gvr::Mat4f identity_matrix;
-    SetIdentityM(identity_matrix);
-    DrawUiView(identity_matrix, head_locked_elements, render_size_headlocked_,
-               kViewportListHeadlockedOffset, false);
-    frame.Unbind();  // Done with the headlocked buffer.
-  }
+  // Add head-locked viewports. The list gets reset to just
+  // the recommended viewports (for the primary buffer) each frame.
+  buffer_viewport_list_->SetBufferViewport(
+      kViewportListHeadlockedOffset + GVR_LEFT_EYE, *headlocked_left_viewport_);
+  buffer_viewport_list_->SetBufferViewport(
+      kViewportListHeadlockedOffset + GVR_RIGHT_EYE,
+      *headlocked_right_viewport_);
+
+  glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  gvr::Mat4f identity_matrix;
+  SetIdentityM(identity_matrix);
+  DrawUiView(identity_matrix, elements, render_size_headlocked_,
+             kViewportListHeadlockedOffset, false);
 }
 
 void VrShellGl::DrawUiView(const gvr::Mat4f& head_pose,
