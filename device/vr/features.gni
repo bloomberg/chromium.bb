@@ -7,5 +7,5 @@ declare_args() {
   # Still requires command line flag to access API
   # TODO(bshe): Enable for other architecture too. Currently we only support arm
   # and arm64.
-  enable_webvr = is_android && (current_cpu == "arm" || current_cpu == "arm64")
+  enable_vr = is_android && (current_cpu == "arm" || current_cpu == "arm64")
 }

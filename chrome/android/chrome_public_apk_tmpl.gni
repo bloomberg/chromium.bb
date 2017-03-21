@@ -34,7 +34,7 @@ declare_args() {
 default_chrome_public_jinja_variables = [
   "channel=$android_channel",
   "enable_leakcanary=$enable_leakcanary",
-  "enable_webvr=$enable_webvr",
+  "enable_vr=$enable_vr",
 ]
 
 template("chrome_public_apk_tmpl") {

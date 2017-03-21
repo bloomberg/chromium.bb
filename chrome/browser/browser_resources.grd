@@ -223,7 +223,7 @@
         <include name="IDR_SNIPPETS_INTERNALS_HTML" file="resources\snippets_internals.html" allowexternalscript="true" compress="gzip" type="BINDATA" />
         <include name="IDR_SNIPPETS_INTERNALS_CSS" file="resources\snippets_internals.css" compress="gzip" type="BINDATA" />
         <include name="IDR_SNIPPETS_INTERNALS_JS" file="resources\snippets_internals.js" compress="gzip" type="BINDATA" />
-        <if expr="enable_webvr">
+        <if expr="enable_vr">
           <include name="IDR_VR_SHELL_UI_HTML" file="resources\vr_shell\vr_shell_ui.html" allowexternalscript="true" flattenhtml="true" compress="gzip" type="BINDATA" />
           <include name="IDR_VR_SHELL_UI_CSS" file="resources\vr_shell\vr_shell_ui.css" compress="gzip" type="BINDATA" />
           <include name="IDR_VR_SHELL_UI_JS" file="resources\vr_shell\vr_shell_ui.js" compress="gzip" type="BINDATA" />

@@ -271,7 +271,7 @@ extern const char kChromeUISnippetsInternalsHost[];
 extern const char kChromeUIWebApksHost[];
 #endif
 
-#if BUILDFLAG(ENABLE_WEBVR)
+#if BUILDFLAG(ENABLE_VR)
 extern const char kChromeUIVrShellUIHost[];
 #endif
 

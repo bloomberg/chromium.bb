@@ -128,7 +128,7 @@
 #include "content/browser/frame_host/popup_menu_helper_mac.h"
 #endif
 
-#if BUILDFLAG(ENABLE_WEBVR)
+#if BUILDFLAG(ENABLE_VR)
 #include "device/vr/vr_service_impl.h"  // nogncheck
 #else
 #include "device/vr/vr_service.mojom.h"  // nogncheck
@@ -2416,7 +2416,7 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
                  process_->GetID(),
                  routing_id_));
 
-#if BUILDFLAG(ENABLE_WEBVR)
+#if BUILDFLAG(ENABLE_VR)
   GetInterfaceRegistry()->AddInterface<device::mojom::VRService>(
       base::Bind(&device::VRServiceImpl::Create));
 #else

@@ -255,7 +255,7 @@ test("device_unittests") {
     libs = [ "sensorsapi.lib" ]
   }
 
-  if (enable_webvr) {
+  if (enable_vr) {
     sources += [
       "vr/vr_device_manager_unittest.cc",
       "vr/vr_display_impl_unittest.cc",

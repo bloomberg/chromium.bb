@@ -7,7 +7,7 @@ import("//chrome/common/features.gni")
 import("//device/vr/features.gni")
 import("//testing/test.gni")
 
-assert(enable_webvr)
+assert(enable_vr)
 
 if (current_cpu == "arm" || current_cpu == "arm64") {
   static_library("vr_common") {
@@ -99,7 +99,7 @@ if (current_cpu == "arm" || current_cpu == "arm64") {
   }
 }
 
-if (enable_webvr) {
+if (enable_vr) {
   test("vr_shell_unittests") {
     sources = [
       "ui_elements_unittest.cc",

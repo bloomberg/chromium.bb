@@ -13,7 +13,7 @@ if (is_android) {
 # Generate a buildflag header for compile-time checking of WebVR support.
 buildflag_header("features") {
   header = "features.h"
-  flags = [ "ENABLE_WEBVR=$enable_webvr" ]
+  flags = [ "ENABLE_VR=$enable_vr" ]
 }
 
 component("vr") {
@@ -27,7 +27,7 @@ component("vr") {
     ":mojo_bindings",
   ]
 
-  if (!enable_webvr) {
+  if (!enable_vr) {
     sources += [
       # We need to include an empty .cc file so that mac and windows don't fall over when trying to
       # compile this when webvr is disabled.
@@ -77,7 +77,7 @@ component("vr") {
   }
 }
 
-if (enable_webvr) {
+if (enable_vr) {
   static_library("fakes") {
     testonly = true
 
