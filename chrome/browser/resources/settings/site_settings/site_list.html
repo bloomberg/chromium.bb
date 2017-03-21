@@ -50,7 +50,7 @@
           $i18n{siteSettingsActionSessionOnly}
         </button>
         <button class="dropdown-item" role="option" id="edit"
-            on-tap="onEditTap_" hidden$="[[!showEditAction_]]">
+            on-tap="onEditTap_">
           $i18n{edit}
         </button>
         <button class="dropdown-item" role="option" id="reset"
@@ -64,7 +64,8 @@
       </div>
       <div class="list-frame menu-content vertical-list" id="listContainer">
         <template is="dom-repeat" items="[[sites]]">
-          <div class="list-item" actionable$="[[enableSiteSettings_]]" on-tap="onOriginTap_">
+          <div class="list-item" actionable$="[[enableSiteSettings_]]"
+              on-tap="onOriginTap_">
             <div class="favicon-image"
                 style$="[[computeSiteIcon(item.origin)]]">
             </div>

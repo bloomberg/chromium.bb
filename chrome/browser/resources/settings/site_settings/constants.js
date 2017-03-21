@@ -16,11 +16,11 @@ settings.ContentSettingsTypes = {
   COOKIES: 'cookies',
   IMAGES: 'images',
   JAVASCRIPT: 'javascript',
-  PLUGINS: 'plugins',
+  PLUGINS: 'plugins',  // AKA Flash.
   POPUPS: 'popups',
   GEOLOCATION: 'location',
   NOTIFICATIONS: 'notifications',
-  MIC: 'media-stream-mic',
+  MIC: 'media-stream-mic',  // AKA Microphone.
   CAMERA: 'media-stream-camera',
   PROTOCOL_HANDLERS: 'register-protocol-handler',
   UNSANDBOXED_PLUGINS: 'ppapi-broker',

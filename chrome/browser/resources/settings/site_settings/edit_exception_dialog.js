@@ -39,21 +39,17 @@ Polymer({
   /** @private */
   onActionButtonTap_: function() {
     if (this.model.origin != this.origin_) {
-      // TODO(dpapad): Only COOKIES category can be edited currently,
-      // crbug.com/695578.
-      var category = settings.ContentSettingsTypes.COOKIES;
-
       // The way to "edit" an exception is to remove it and and a new one.
       this.browserProxy_.resetCategoryPermissionForOrigin(
           this.model.origin,
           this.model.embeddingOrigin,
-          category,
+          this.model.category,
           this.model.incognito);
 
       this.browserProxy_.setCategoryPermissionForOrigin(
           this.origin_,
           this.origin_,
-          category,
+          this.model.category,
           this.model.setting,
           this.model.incognito);
     }

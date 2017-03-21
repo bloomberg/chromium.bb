@@ -160,6 +160,7 @@ var SiteSettingsBehaviorImpl = {
     }
 
     return {
+      category: this.category,
       origin: origin,
       displayName: exception.displayName,
       embeddingOrigin: embeddingOrigin,

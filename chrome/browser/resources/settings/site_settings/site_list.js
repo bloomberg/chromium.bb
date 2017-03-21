@@ -103,12 +103,6 @@ Polymer({
     showSessionOnlyAction_: Boolean,
 
     /**
-     * Whether to show the 'edit' action in the action menu.
-     * @private
-     */
-    showEditAction_: Boolean,
-
-    /**
      * Keeps track of the incognito status of the current profile (whether one
      * exists).
      * @private
@@ -390,8 +384,6 @@ Polymer({
         this.categorySubtype != settings.PermissionValues.BLOCK;
     this.showSessionOnlyAction_ =
         this.categorySubtype != settings.PermissionValues.SESSION_ONLY &&
-        this.category == settings.ContentSettingsTypes.COOKIES;
-    this.showEditAction_ =
         this.category == settings.ContentSettingsTypes.COOKIES;
   },
 

@@ -18,24 +18,28 @@ cr.define('site_list', function() {
       cookies: [],
       geolocation: [
         {
+          category: 'geolocation',
           embeddingOrigin: 'https://bar-allow.com:443',
           origin: 'https://bar-allow.com:443',
           setting: 'allow',
           source: 'preference',
         },
         {
+          category: 'geolocation',
           embeddingOrigin: 'https://foo-allow.com:443',
           origin: 'https://foo-allow.com:443',
           setting: 'allow',
           source: 'preference',
         },
         {
+          category: 'geolocation',
           embeddingOrigin: 'https://bar-block.com:443',
           origin: 'https://bar-block.com:443',
           setting: 'block',
           source: 'preference',
         },
         {
+          category: 'geolocation',
           embeddingOrigin: 'https://foo-block.com:443',
           origin: 'https://foo-block.com:443',
           setting: 'block',
@@ -62,12 +66,14 @@ cr.define('site_list', function() {
     exceptions: {
       geolocation: [
         {
+          category: 'geolocation',
           embeddingOrigin: 'https://foo-allow.com',
           origin: 'https://foo-allow.com',
           setting: 'allow',
           source: 'preference',
         },
         {
+          category: 'geolocation',
           embeddingOrigin: 'bar-allow.com',
           origin: 'bar-allow.com',
           setting: 'allow',
@@ -87,18 +93,21 @@ cr.define('site_list', function() {
     exceptions: {
       geolocation: [
         {
+          category: 'geolocation',
           embeddingOrigin: 'https://[*.]foo.com',
           origin: 'https://[*.]foo.com',
           setting: 'block',
           source: 'policy',
         },
         {
+          category: 'geolocation',
           embeddingOrigin: 'https://bar.foo.com',
           origin: 'https://bar.foo.com',
           setting: 'block',
           source: 'preference',
         },
         {
+          category: 'geolocation',
           embeddingOrigin: 'https://[*.]foo.com',
           origin: 'https://[*.]foo.com',
           setting: 'block',
@@ -120,6 +129,7 @@ cr.define('site_list', function() {
       cookies: [],
       geolocation: [
         {
+          category: 'geolocation',
           origin: 'https://foo.com',
           embeddingOrigin: '*',
           setting: 'allow',
@@ -129,6 +139,7 @@ cr.define('site_list', function() {
       images: [],
       javascript: [
         {
+          category: 'javascript',
           origin: 'https://[*.]foo.com',
           embeddingOrigin: '*',
           setting: 'allow',
@@ -158,12 +169,14 @@ cr.define('site_list', function() {
       cookies: [],
       geolocation: [
         {
+          category: 'geolocation',
           embeddingOrigin: 'https://foo.com',
           origin: 'https://foo.com',
           setting: 'allow',
           source: 'preference',
         },
         {
+          category: 'geolocation',
           embeddingOrigin: 'https://bar.com',
           origin: 'https://bar.com',
           setting: 'block',
@@ -176,18 +189,21 @@ cr.define('site_list', function() {
       midiDevices: [],
       notifications: [
         {
+          category: 'notifications',
           embeddingOrigin: 'https://google.com',
           origin: 'https://google.com',
           setting: 'block',
           source: 'preference',
         },
         {
+          category: 'notifications',
           embeddingOrigin: 'https://bar.com',
           origin: 'https://bar.com',
           setting: 'block',
           source: 'preference',
         },
         {
+          category: 'notifications',
           embeddingOrigin: 'https://foo.com',
           origin: 'https://foo.com',
           setting: 'block',
@@ -209,6 +225,7 @@ cr.define('site_list', function() {
     exceptions: {
       geolocation: [
         {
+          category: 'geolocation',
           embeddingOrigin: 'https://foo-allow.com:443',
           origin: 'https://foo-allow.com:443',
           setting: 'allow',
@@ -226,6 +243,7 @@ cr.define('site_list', function() {
     exceptions: {
       geolocation: [
         {
+          category: 'geolocation',
           embeddingOrigin: 'https://foo-block.com:443',
           origin: 'https://foo-block.com:443',
           setting: 'block',
@@ -243,18 +261,21 @@ cr.define('site_list', function() {
     exceptions: {
       cookies: [
         {
+          category: 'cookies',
           embeddingOrigin: 'http://foo-block.com',
           origin: 'http://foo-block.com',
           setting: 'block',
           source: 'preference',
         },
         {
+          category: 'cookies',
           embeddingOrigin: 'http://foo-allow.com',
           origin: 'http://foo-allow.com',
           setting: 'allow',
           source: 'preference',
         },
         {
+          category: 'cookies',
           embeddingOrigin: 'http://foo-session.com',
           origin: 'http://foo-session.com',
           setting: 'session_only',
@@ -273,6 +294,7 @@ cr.define('site_list', function() {
       cookies: [
         // foo.com is blocked for regular sessions.
         {
+          category: 'cookies',
           embeddingOrigin: 'http://foo.com',
           incognito: false,
           origin: 'http://foo.com',
@@ -281,6 +303,7 @@ cr.define('site_list', function() {
         },
         // bar.com is an allowed incognito item without an embedder.
         {
+          category: 'cookies',
           embeddingOrigin: '',
           incognito: true,
           origin: 'http://bar.com',
@@ -289,6 +312,7 @@ cr.define('site_list', function() {
         },
         // foo.com is allowed in incognito (overridden).
         {
+          category: 'cookies',
           embeddingOrigin: 'http://foo.com',
           incognito: true,
           origin: 'http://foo.com',
@@ -308,6 +332,7 @@ cr.define('site_list', function() {
     exceptions: {
       javascript: [
         {
+          category: 'javascript',
           embeddingOrigin: '',
           origin: 'chrome-extension://cfhgfbfpcbnnbibfphagcjmgjfjmojfa/',
           setting: 'block',
@@ -456,7 +481,7 @@ cr.define('site_list', function() {
                   settings.PermissionValues.ALLOW, testElement.categorySubtype);
               Polymer.dom.flush();  // Populates action menu.
               openActionMenu(0);
-              assertMenu(['Block', 'Remove'], testElement);
+              assertMenu(['Block', 'Edit', 'Remove'], testElement);
 
               assertFalse(testElement.$.category.hidden);
             });
@@ -522,7 +547,7 @@ cr.define('site_list', function() {
                   testElement.sites[1].origin);
               Polymer.dom.flush();  // Populates action menu.
               openActionMenu(0);
-              assertMenu(['Allow', 'Remove'], testElement);
+              assertMenu(['Allow', 'Edit', 'Remove'], testElement);
 
               assertFalse(testElement.$.category.hidden);
             });
@@ -896,7 +921,7 @@ cr.define('site_list', function() {
             contentType) {
           Polymer.dom.flush();
           openActionMenu(0);
-          assertMenu(['Allow', 'Remove'], testElement);
+          assertMenu(['Allow', 'Edit', 'Remove'], testElement);
 
           var allow = testElement.$.allow;
           assertTrue(!!allow);
