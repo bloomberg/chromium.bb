@@ -442,7 +442,8 @@ bool SelectionController::selectClosestWordFromHitTestResult(
   Node* innerNode = result.innerNode();
   VisibleSelectionInFlatTree newSelection;
 
-  if (!innerNode || !innerNode->layoutObject())
+  if (!innerNode || !innerNode->layoutObject() ||
+      !innerNode->layoutObject()->isSelectable())
     return false;
 
   // Special-case image local offset to always be zero, to avoid triggering
