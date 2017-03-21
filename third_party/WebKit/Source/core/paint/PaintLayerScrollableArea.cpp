@@ -1211,16 +1211,18 @@ void PaintLayerScrollableArea::computeScrollbarExistence(
   if (box().hasAutoHorizontalScrollbar()) {
     if (option == ForbidAddingAutoBars)
       needsHorizontalScrollbar &= hasHorizontalScrollbar();
-    needsHorizontalScrollbar &= box().isRooted() &&
-                                this->hasHorizontalOverflow() &&
-                                box().pixelSnappedClientHeight();
+    needsHorizontalScrollbar &=
+        box().isRooted() && this->hasHorizontalOverflow() &&
+        box().pixelSnappedClientHeight() + box().horizontalScrollbarHeight() >
+            0;
   }
 
   if (box().hasAutoVerticalScrollbar()) {
     if (option == ForbidAddingAutoBars)
       needsVerticalScrollbar &= hasVerticalScrollbar();
-    needsVerticalScrollbar &= box().isRooted() && this->hasVerticalOverflow() &&
-                              box().pixelSnappedClientWidth();
+    needsVerticalScrollbar &=
+        box().isRooted() && this->hasVerticalOverflow() &&
+        box().pixelSnappedClientWidth() + box().verticalScrollbarWidth() > 0;
   }
 
   // Look for the scrollbarModes and reset the needs Horizontal & vertical

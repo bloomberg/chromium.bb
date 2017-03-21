@@ -567,4 +567,33 @@ TEST_F(PaintLayerScrollableAreaTest, IncludeOverlayScrollbarsInVisibleWidth) {
   scrollableArea->setScrollOffset(ScrollOffset(100, 0), ClampingScroll);
   EXPECT_EQ(scrollableArea->getScrollOffset().width(), 0);
 }
+
+TEST_F(PaintLayerScrollableAreaTest, ShowAutoScrollbarsForVisibleContent) {
+  RuntimeEnabledFeatures::setOverlayScrollbarsEnabled(false);
+  setBodyInnerHTML(
+      "<style>"
+      "#outerDiv {"
+      "  width: 15px;"
+      "  height: 100px;"
+      "  overflow-y: auto;"
+      "  overflow-x: hidden;"
+      "}"
+      "#innerDiv {"
+      "  height:300px;"
+      "  width: 1px;"
+      "}"
+      "</style>"
+      "<div id='outerDiv'>"
+      "  <div id='innerDiv'></div>"
+      "</div>");
+  document().view()->updateAllLifecyclePhases();
+  Element* outerDiv = document().getElementById("outerDiv");
+  ASSERT_TRUE(outerDiv);
+  outerDiv->layoutObject()->setNeedsLayout("test");
+  document().view()->updateAllLifecyclePhases();
+  PaintLayerScrollableArea* scrollableArea =
+      toLayoutBoxModelObject(outerDiv->layoutObject())->getScrollableArea();
+  ASSERT_TRUE(scrollableArea);
+  EXPECT_TRUE(scrollableArea->hasVerticalScrollbar());
+}
 }
