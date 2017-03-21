@@ -74,8 +74,8 @@ const char kClaimClientsShutdownErrorMesage[] =
 
 const char kNotRespondingErrorMesage[] = "Service Worker is not responding.";
 const char kForceUpdateInfoMessage[] =
-    "Service Worker was updated because \"Update on load\" was "
-    "checked in DevTools Service Workers toolbar.";
+    "Service Worker was updated because \"Update on reload\" was "
+    "checked in the DevTools Application panel.";
 
 void RunSoon(const base::Closure& callback) {
   if (!callback.is_null())
