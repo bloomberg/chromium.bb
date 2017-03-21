@@ -8,6 +8,7 @@
 
 #import "ios/web_view/public/cwv.h"
 #import "ios/web_view/public/cwv_html_element.h"
+#import "ios/web_view/public/cwv_navigation_action.h"
 #import "ios/web_view/public/cwv_navigation_delegate.h"
 #import "ios/web_view/public/cwv_ui_delegate.h"
 #import "ios/web_view/public/cwv_web_view.h"
@@ -139,6 +140,7 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
 
   self.webView = [CWV webViewWithFrame:[_containerView bounds]];
   _webView.navigationDelegate = self;
+  _webView.UIDelegate = self;
   _translateController = [[TranslateController alloc] init];
   _webView.translationDelegate = _translateController;
 
@@ -193,6 +195,18 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
 }
 
 #pragma mark CWVUIDelegate methods
+
+- (CWVWebView*)webView:(CWVWebView*)webView
+    createWebViewWithConfiguration:(CWVWebViewConfiguration*)configuration
+               forNavigationAction:(CWVNavigationAction*)action {
+  NSLog(@"Create new CWVWebView for %@. User initiated? %@", action.request.URL,
+        action.userInitiated ? @"Yes" : @"No");
+  return nil;
+}
+
+- (void)webViewDidClose:(CWVWebView*)webView {
+  NSLog(@"webViewDidClose");
+}
 
 - (void)webView:(CWVWebView*)webView
     runContextMenuWithTitle:(NSString*)menuTitle

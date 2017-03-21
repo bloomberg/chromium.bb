@@ -79,6 +79,10 @@
         base::MakeUnique<ios_web_view::WebViewWebStatePolicyDecider>(
             _webState.get(), self);
 
+    _javaScriptDialogPresenter =
+        base::MakeUnique<ios_web_view::WebViewJavaScriptDialogPresenter>(
+            self, nullptr);
+
     // Initialize Translate.
     ios_web_view::WebViewTranslateClient::CreateForWebState(_webState.get());
   }
