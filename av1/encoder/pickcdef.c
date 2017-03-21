@@ -20,6 +20,64 @@
 #include "av1/encoder/clpf_rdo.h"
 #include "av1/encoder/encoder.h"
 
+#define TOTAL_STRENGTHS (DERING_STRENGTHS * CLPF_STRENGTHS)
+
+/* Search for the best strength to add as an option, knowing we
+   already selected nb_strengths options. */
+static uint64_t search_one(int *lev, int nb_strengths,
+                           uint64_t mse[][TOTAL_STRENGTHS], int sb_count) {
+  uint64_t tot_mse[TOTAL_STRENGTHS];
+  int i, j;
+  uint64_t best_tot_mse = (uint64_t)1 << 63;
+  int best_id = 0;
+  memset(tot_mse, 0, sizeof(tot_mse));
+  for (i = 0; i < sb_count; i++) {
+    int gi;
+    uint64_t best_mse = (uint64_t)1 << 63;
+    /* Find best mse among already selected options. */
+    for (gi = 0; gi < nb_strengths; gi++) {
+      if (mse[i][lev[gi]] < best_mse) {
+        best_mse = mse[i][lev[gi]];
+      }
+    }
+    /* Find best mse when adding each possible new option. */
+    for (j = 0; j < TOTAL_STRENGTHS; j++) {
+      uint64_t best = best_mse;
+      if (mse[i][j] < best) best = mse[i][j];
+      tot_mse[j] += best;
+    }
+  }
+  for (j = 0; j < TOTAL_STRENGTHS; j++) {
+    if (tot_mse[j] < best_tot_mse) {
+      best_tot_mse = tot_mse[j];
+      best_id = j;
+    }
+  }
+  lev[nb_strengths] = best_id;
+  return best_tot_mse;
+}
+
+/* Search for the set of strengths that minimizes mse. */
+static uint64_t joint_strength_search(int *best_lev, int nb_strengths,
+                                      uint64_t mse[][TOTAL_STRENGTHS],
+                                      int sb_count) {
+  uint64_t best_tot_mse;
+  int i;
+  best_tot_mse = (uint64_t)1 << 63;
+  /* Greedy search: add one strength options at a time. */
+  for (i = 0; i < nb_strengths; i++) {
+    best_tot_mse = search_one(best_lev, i, mse, sb_count);
+  }
+  /* Trying to refine the greedy search by reconsidering each
+     already-selected option. */
+  for (i = 0; i < 4 * nb_strengths; i++) {
+    int j;
+    for (j = 0; j < nb_strengths - 1; j++) best_lev[j] = best_lev[j + 1];
+    best_tot_mse = search_one(best_lev, nb_strengths - 1, mse, sb_count);
+  }
+  return best_tot_mse;
+}
+
 static double compute_dist(uint16_t *x, int xstride, uint16_t *y, int ystride,
                            int nhb, int nvb, int coeff_shift) {
   int i, j;
@@ -50,21 +108,24 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
   int level;
   int dering_count;
   int coeff_shift = AOMMAX(cm->bit_depth - 8, 0);
-  uint64_t best_tot_mse = 0;
+  uint64_t best_tot_mse = (uint64_t)1 << 63;
+  uint64_t tot_mse;
   int sb_count;
   int nvsb = (cm->mi_rows + MAX_MIB_SIZE - 1) / MAX_MIB_SIZE;
   int nhsb = (cm->mi_cols + MAX_MIB_SIZE - 1) / MAX_MIB_SIZE;
   int *sb_index = aom_malloc(nvsb * nhsb * sizeof(*sb_index));
-  uint64_t(*mse)[DERING_STRENGTHS][CLPF_STRENGTHS] =
+  uint64_t(*mse)[DERING_STRENGTHS * CLPF_STRENGTHS] =
       aom_malloc(sizeof(*mse) * nvsb * nhsb);
   int clpf_damping = 3 + (cm->base_qindex >> 6);
   int i;
-  int lev[DERING_REFINEMENT_LEVELS];
-  int best_lev[DERING_REFINEMENT_LEVELS];
-  int str[CLPF_REFINEMENT_LEVELS];
-  int best_str[CLPF_REFINEMENT_LEVELS];
-  double lambda = exp(cm->base_qindex / 36.0);
-  static int log2[] = { 0, 1, 2, 2 };
+  int best_lev[CDEF_MAX_STRENGTHS];
+  int nb_strengths;
+  int nb_strength_bits;
+  int quantizer;
+  double lambda;
+  quantizer =
+      av1_ac_quant(cm->base_qindex, 0, cm->bit_depth) >> (cm->bit_depth - 8);
+  lambda = .12 * quantizer * quantizer / 256.;
 
   src = aom_memalign(32, sizeof(*src) * cm->mi_rows * cm->mi_cols * 64);
   ref_coeff =
@@ -143,7 +204,7 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
                     i + (i == 3), clpf_damping, coeff_shift);
           copy_dering_16bit_to_16bit(dst, MAX_MIB_SIZE << bsize[0], tmp_dst,
                                      dlist, dering_count, bsize[0]);
-          mse[sb_count][gi][i] = (int)compute_dist(
+          mse[sb_count][gi * CLPF_STRENGTHS + i] = (int)compute_dist(
               dst, MAX_MIB_SIZE << bsize[0],
               &ref_coeff[(sbr * stride * MAX_MIB_SIZE << bsize[0]) +
                          (sbc * MAX_MIB_SIZE << bsize[0])],
@@ -155,85 +216,38 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
       sb_count++;
     }
   }
-  best_tot_mse = (uint64_t)1 << 63;
 
-  int l0;
-  for (l0 = 0; l0 < DERING_STRENGTHS; l0++) {
-    int l1;
-    lev[0] = l0;
-    for (l1 = l0; l1 < DERING_STRENGTHS; l1++) {
-      int l2;
-      lev[1] = l1;
-      for (l2 = l1; l2 < DERING_STRENGTHS; l2++) {
-        int l3;
-        lev[2] = l2;
-        for (l3 = l2; l3 < DERING_STRENGTHS; l3++) {
-          int cs0;
-          lev[3] = l3;
-          for (cs0 = 0; cs0 < CLPF_STRENGTHS; cs0++) {
-            int cs1;
-            str[0] = cs0;
-            for (cs1 = cs0; cs1 < CLPF_STRENGTHS; cs1++) {
-              uint64_t tot_mse = 0;
-              str[1] = cs1;
-              for (i = 0; i < sb_count; i++) {
-                int gi;
-                int cs;
-                uint64_t best_mse = (uint64_t)1 << 63;
-                for (gi = 0; gi < DERING_REFINEMENT_LEVELS; gi++) {
-                  for (cs = 0; cs < CLPF_REFINEMENT_LEVELS; cs++) {
-                    if (mse[i][lev[gi]][str[cs]] < best_mse) {
-                      best_mse = mse[i][lev[gi]][str[cs]];
-                    }
-                  }
-                }
-                tot_mse += best_mse;
-              }
-
-              // Add the bit cost
-              int dering_diffs = 0, clpf_diffs = 0;
-              for (i = 1; i < DERING_REFINEMENT_LEVELS; i++)
-                dering_diffs += lev[i] != lev[i - 1];
-              for (i = 1; i < CLPF_REFINEMENT_LEVELS; i++)
-                clpf_diffs += str[i] != str[i - 1];
-              tot_mse += (uint64_t)(sb_count * lambda *
-                                    (log2[dering_diffs] + log2[clpf_diffs]));
-
-              if (tot_mse < best_tot_mse) {
-                for (i = 0; i < DERING_REFINEMENT_LEVELS; i++)
-                  best_lev[i] = lev[i];
-                for (i = 0; i < CLPF_REFINEMENT_LEVELS; i++)
-                  best_str[i] = str[i];
-                best_tot_mse = tot_mse;
-              }
-            }
-          }
-        }
-      }
+  nb_strength_bits = 0;
+  /* Search for different number of signalling bits. */
+  for (i = 0; i <= 3; i++) {
+    nb_strengths = 1 << i;
+    tot_mse = joint_strength_search(best_lev, nb_strengths, mse, sb_count);
+    /* Count superblock signalling cost. */
+    tot_mse += (uint64_t)(sb_count * lambda * i);
+    /* Count header signalling cost. */
+    tot_mse += (uint64_t)(nb_strengths * lambda * CDEF_STRENGTH_BITS);
+    if (tot_mse < best_tot_mse) {
+      best_tot_mse = tot_mse;
+      nb_strength_bits = i;
     }
   }
-  for (i = 0; i < DERING_REFINEMENT_LEVELS; i++) lev[i] = best_lev[i];
-  for (i = 0; i < CLPF_REFINEMENT_LEVELS; i++) str[i] = best_str[i];
+  nb_strengths = 1 << nb_strength_bits;
 
-  id_to_levels(lev, str, levels_to_id(lev, str));  // Pack tables
-  cdef_get_bits(lev, str, &cm->dering_bits, &cm->clpf_bits);
-
+  cm->cdef_bits = nb_strength_bits;
+  cm->nb_cdef_strengths = nb_strengths;
+  for (i = 0; i < nb_strengths; i++) cm->cdef_strengths[i] = best_lev[i];
   for (i = 0; i < sb_count; i++) {
-    int gi, cs;
-    int best_gi, best_clpf;
+    int gi;
+    int best_gi;
     uint64_t best_mse = (uint64_t)1 << 63;
-    best_gi = best_clpf = 0;
-    for (gi = 0; gi < (1 << cm->dering_bits); gi++) {
-      for (cs = 0; cs < (1 << cm->clpf_bits); cs++) {
-        if (mse[i][lev[gi]][str[cs]] < best_mse) {
-          best_gi = gi;
-          best_clpf = cs;
-          best_mse = mse[i][lev[gi]][str[cs]];
-        }
+    best_gi = 0;
+    for (gi = 0; gi < cm->nb_cdef_strengths; gi++) {
+      if (mse[i][best_lev[gi]] < best_mse) {
+        best_gi = gi;
+        best_mse = mse[i][best_lev[gi]];
       }
     }
-    cm->mi_grid_visible[sb_index[i]]->mbmi.dering_gain = best_gi;
-    cm->mi_grid_visible[sb_index[i]]->mbmi.clpf_strength = best_clpf;
+    cm->mi_grid_visible[sb_index[i]]->mbmi.cdef_strength = best_gi;
   }
 
   aom_free(src);
@@ -245,5 +259,4 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
                       AOM_PLANE_U);
   av1_clpf_test_plane(cm->frame_to_show, ref, cm, &cm->clpf_strength_v,
                       AOM_PLANE_V);
-  cm->dering_level = levels_to_id(best_lev, best_str);
 }

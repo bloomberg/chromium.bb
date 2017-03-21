@@ -2402,14 +2402,11 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
   if (bsize == BLOCK_64X64) {
 #endif
     if (!sb_all_skip(cm, mi_row, mi_col)) {
-      cm->mi_grid_visible[mi_row * cm->mi_stride + mi_col]->mbmi.dering_gain =
-          aom_read_literal(r, cm->dering_bits, ACCT_STR);
-      cm->mi_grid_visible[mi_row * cm->mi_stride + mi_col]->mbmi.clpf_strength =
-          aom_read_literal(r, cm->clpf_bits, ACCT_STR);
+      cm->mi_grid_visible[mi_row * cm->mi_stride + mi_col]->mbmi.cdef_strength =
+          aom_read_literal(r, cm->cdef_bits, ACCT_STR);
     } else {
-      cm->mi_grid_visible[mi_row * cm->mi_stride + mi_col]->mbmi.dering_gain =
-          cm->mi_grid_visible[mi_row * cm->mi_stride + mi_col]
-              ->mbmi.clpf_strength = 0;
+      cm->mi_grid_visible[mi_row * cm->mi_stride + mi_col]->mbmi.cdef_strength =
+          0;
     }
   }
 #endif  // CONFIG_CDEF
@@ -2673,11 +2670,14 @@ static void setup_loopfilter(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
 
 #if CONFIG_CDEF
 static void setup_cdef(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
-  cm->dering_level = aom_rb_read_literal(rb, DERING_LEVEL_BITS);
+  int i;
+  cm->cdef_bits = aom_rb_read_literal(rb, 2);
+  cm->nb_cdef_strengths = 1 << cm->cdef_bits;
+  for (i = 0; i < cm->nb_cdef_strengths; i++) {
+    cm->cdef_strengths[i] = aom_rb_read_literal(rb, CDEF_STRENGTH_BITS);
+  }
   cm->clpf_strength_u = aom_rb_read_literal(rb, 2);
   cm->clpf_strength_v = aom_rb_read_literal(rb, 2);
-  id_to_levels(cm->dering_lev, cm->clpf_str, cm->dering_level);
-  cdef_get_bits(cm->dering_lev, cm->clpf_str, &cm->dering_bits, &cm->clpf_bits);
 }
 #endif  // CONFIG_CDEF
 
@@ -4950,10 +4950,9 @@ void av1_decode_frame(AV1Decoder *pbi, const uint8_t *data,
   }
 
 #if CONFIG_CDEF
-  if ((cm->dering_level || cm->clpf_strength_u || cm->clpf_strength_v) &&
-      !cm->skip_loop_filter) {
-    av1_cdef_frame(&pbi->cur_buf->buf, cm, &pbi->mb, cm->dering_level,
-                   cm->clpf_strength_u, cm->clpf_strength_v);
+  if (!cm->skip_loop_filter) {
+    av1_cdef_frame(&pbi->cur_buf->buf, cm, &pbi->mb, cm->clpf_strength_u,
+                   cm->clpf_strength_v);
   }
 #endif  // CONFIG_CDEF
 

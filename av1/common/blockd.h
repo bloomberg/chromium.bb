@@ -366,8 +366,7 @@ typedef struct {
   int send_dq_bit;
 #endif  // CONFIG_NEW_QUANT
   /* deringing gain *per-superblock* */
-  int8_t dering_gain;
-  int8_t clpf_strength;
+  int8_t cdef_strength;
 #if CONFIG_DELTA_Q
   int current_q_index;
 #endif

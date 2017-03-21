@@ -24,74 +24,6 @@ int dering_level_table[DERING_STRENGTHS] = {
   0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 12, 14, 17, 20, 24, 28, 33, 39, 46, 54, 63
 };
 
-#ifndef NDEBUG
-static int is_sorted(const int *arr, int num) {
-  int sorted = 1;
-  while (sorted && num-- > 1) sorted &= arr[num] >= arr[num - 1];
-  return sorted;
-}
-#endif
-
-uint32_t levels_to_id(const int lev[DERING_REFINEMENT_LEVELS],
-                      const int str[CLPF_REFINEMENT_LEVELS]) {
-  uint32_t id = 0;
-  int i;
-
-  assert(is_sorted(lev, DERING_REFINEMENT_LEVELS));
-  assert(is_sorted(str, CLPF_REFINEMENT_LEVELS));
-  for (i = 0; i < DERING_REFINEMENT_LEVELS; i++)
-    id = id * DERING_STRENGTHS + lev[i];
-  for (i = 0; i < CLPF_REFINEMENT_LEVELS; i++)
-    id = id * CLPF_STRENGTHS + str[i];
-  return id;
-}
-
-void id_to_levels(int lev[DERING_REFINEMENT_LEVELS],
-                  int str[CLPF_REFINEMENT_LEVELS], uint32_t id) {
-  int i;
-  for (i = CLPF_REFINEMENT_LEVELS - 1; i >= 0; i--) {
-    str[i] = id % CLPF_STRENGTHS;
-    id /= CLPF_STRENGTHS;
-  }
-  for (i = DERING_REFINEMENT_LEVELS - 1; i >= 0; i--) {
-    lev[i] = id % DERING_STRENGTHS;
-    id /= DERING_STRENGTHS;
-  }
-
-  // Pack tables
-  int j;
-  for (i = j = 1; i < DERING_REFINEMENT_LEVELS && j < DERING_REFINEMENT_LEVELS;
-       i++)
-    if (lev[j - 1] == lev[j])
-      memmove(&lev[j - 1], &lev[j],
-              (DERING_REFINEMENT_LEVELS - j) * sizeof(*lev));
-    else
-      j++;
-  for (i = j = 1; i < CLPF_REFINEMENT_LEVELS && j < DERING_REFINEMENT_LEVELS;
-       i++)
-    if (str[j - 1] == str[j])
-      memmove(&str[j - 1], &str[j],
-              (CLPF_REFINEMENT_LEVELS - i) * sizeof(*str));
-    else
-      j++;
-
-  assert(is_sorted(lev, DERING_REFINEMENT_LEVELS));
-  assert(is_sorted(str, CLPF_REFINEMENT_LEVELS));
-}
-
-void cdef_get_bits(const int *lev, const int *str, int *dering_bits,
-                   int *clpf_bits) {
-  int i;
-  *dering_bits = *clpf_bits = 1;
-  for (i = 1; i < DERING_REFINEMENT_LEVELS; i++)
-    (*dering_bits) += lev[i] != lev[i - 1];
-  for (i = 1; i < CLPF_REFINEMENT_LEVELS; i++)
-    (*clpf_bits) += str[i] != str[i - 1];
-
-  *dering_bits = get_msb(*dering_bits);
-  *clpf_bits = get_msb(*clpf_bits);
-}
-
 int sb_all_skip(const AV1_COMMON *const cm, int mi_row, int mi_col) {
   int r, c;
   int maxc, maxr;
@@ -212,8 +144,7 @@ static void copy_sb8_16(UNUSED AV1_COMMON *cm, uint16_t *dst, int dstride,
 }
 
 void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm, MACROBLOCKD *xd,
-                    uint32_t global_level, int clpf_strength_u,
-                    int clpf_strength_v) {
+                    int clpf_strength_u, int clpf_strength_v) {
   int r, c;
   int sbr, sbc;
   int nhsb, nvsb;
@@ -231,12 +162,11 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm, MACROBLOCKD *xd,
   int dering_left;
   int coeff_shift = AOMMAX(cm->bit_depth - 8, 0);
   int nplanes = 3;
-  int lev[DERING_REFINEMENT_LEVELS];
-  int str[CLPF_REFINEMENT_LEVELS];
+  int *lev;
   int chroma_dering =
       xd->plane[1].subsampling_x == xd->plane[1].subsampling_y &&
       xd->plane[2].subsampling_x == xd->plane[2].subsampling_y;
-  id_to_levels(lev, str, global_level);
+  lev = cm->cdef_strengths;
   nvsb = (cm->mi_rows + MAX_MIB_SIZE - 1) / MAX_MIB_SIZE;
   nhsb = (cm->mi_cols + MAX_MIB_SIZE - 1) / MAX_MIB_SIZE;
   av1_setup_dst_planes(xd->plane, frame, 0, 0);
@@ -277,11 +207,13 @@ void av1_cdef_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm, MACROBLOCKD *xd,
       level = dering_level_table
           [lev[cm->mi_grid_visible[MAX_MIB_SIZE * sbr * cm->mi_stride +
                                    MAX_MIB_SIZE * sbc]
-                   ->mbmi.dering_gain]];
+                   ->mbmi.cdef_strength] /
+           CLPF_STRENGTHS];
       clpf_strength =
-          str[cm->mi_grid_visible[MAX_MIB_SIZE * sbr * cm->mi_stride +
+          lev[cm->mi_grid_visible[MAX_MIB_SIZE * sbr * cm->mi_stride +
                                   MAX_MIB_SIZE * sbc]
-                  ->mbmi.clpf_strength];
+                  ->mbmi.cdef_strength] %
+          CLPF_STRENGTHS;
       clpf_strength += clpf_strength == 3;
       curr_row_dering[sbc] = 0;
       if ((level == 0 && clpf_strength == 0) ||

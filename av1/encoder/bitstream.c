@@ -2785,14 +2785,10 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
   if (bsize == BLOCK_64X64 &&
 #endif  // CONFIG_EXT_PARTITION
              !sb_all_skip(cm, mi_row, mi_col)) {
-    if (cm->dering_bits)
+    if (cm->cdef_bits != 0)
       aom_write_literal(w, cm->mi_grid_visible[mi_row * cm->mi_stride + mi_col]
-                               ->mbmi.dering_gain,
-                        cm->dering_bits);
-    if (cm->clpf_bits)
-      aom_write_literal(w, cm->mi_grid_visible[mi_row * cm->mi_stride + mi_col]
-                               ->mbmi.clpf_strength,
-                        cm->clpf_bits);
+                               ->mbmi.cdef_strength,
+                        cm->cdef_bits);
   }
 #endif
 }
@@ -3496,7 +3492,11 @@ static void encode_loopfilter(AV1_COMMON *cm, struct aom_write_bit_buffer *wb) {
 
 #if CONFIG_CDEF
 static void encode_cdef(const AV1_COMMON *cm, struct aom_write_bit_buffer *wb) {
-  aom_wb_write_literal(wb, cm->dering_level, DERING_LEVEL_BITS);
+  int i;
+  aom_wb_write_literal(wb, cm->cdef_bits, 2);
+  for (i = 0; i < cm->nb_cdef_strengths; i++) {
+    aom_wb_write_literal(wb, cm->cdef_strengths[i], CDEF_STRENGTH_BITS);
+  }
   aom_wb_write_literal(wb, cm->clpf_strength_u, 2);
   aom_wb_write_literal(wb, cm->clpf_strength_v, 2);
 }

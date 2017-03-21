@@ -397,11 +397,9 @@ typedef struct AV1Common {
   int mib_size;        // Size of the superblock in units of MI blocks
   int mib_size_log2;   // Log 2 of above.
 #if CONFIG_CDEF
-  uint32_t dering_level;
-  int dering_lev[DERING_REFINEMENT_LEVELS];
-  int clpf_str[CLPF_REFINEMENT_LEVELS];
-  int dering_bits;
-  int clpf_bits;
+  int nb_cdef_strengths;
+  int cdef_strengths[CDEF_MAX_STRENGTHS];
+  int cdef_bits;
   int clpf_strength_u;
   int clpf_strength_v;
 #endif
