@@ -222,6 +222,12 @@ class MockCryptohomeClient : public CryptohomeClient {
       FlushAndSignBootAttributes,
       void(const cryptohome::FlushAndSignBootAttributesRequest& request,
            const ProtobufMethodCallback& callback));
+  MOCK_METHOD3(MigrateToDircrypto,
+               void(const cryptohome::Identification& cryptohome_id,
+                    const cryptohome::AuthorizationRequest& auth,
+                    const VoidDBusMethodCallback& callback));
+  MOCK_METHOD1(SetDircryptoMigrationProgressHandler,
+               void(const DircryptoMigrationProgessHandler& handler));
 };
 
 }  // namespace chromeos

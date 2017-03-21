@@ -16,6 +16,7 @@
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace cryptohome {
 
@@ -91,6 +92,12 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
            bool result,
            const cryptohome::BaseReply& reply)> ProtobufMethodCallback;
 
+  // A callback to handle DircryptoMigrationProgress signals.
+  typedef base::Callback<void(cryptohome::DircryptoMigrationStatus status,
+                              uint64_t current,
+                              uint64_t total)>
+      DircryptoMigrationProgessHandler;
+
   ~CryptohomeClient() override;
 
   // Factory function, creates a new instance and returns ownership.
@@ -115,6 +122,12 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
   // Sets LowDiskSpace signal handler.  |handler| is called when the cryptohome
   // partition is running out of disk space.
   virtual void SetLowDiskSpaceHandler(const LowDiskSpaceHandler& handler) = 0;
+
+  // A callback to handle DircryptoMigrationProgress signals.  |handler| is
+  // called periodicaly during a migration is performed by cryptohomed, as well
+  // as to notify the completion of migration.
+  virtual void SetDircryptoMigrationProgressHandler(
+      const DircryptoMigrationProgessHandler& handler) = 0;
 
   // Runs the callback as soon as the service becomes available.
   virtual void WaitForServiceToBeAvailable(
@@ -554,6 +567,17 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
   virtual void FlushAndSignBootAttributes(
       const cryptohome::FlushAndSignBootAttributesRequest& request,
       const ProtobufMethodCallback& callback) = 0;
+
+  // Asynchronously calls MigrateToDircrypto method. It tells cryptohomed to
+  // start migration, and is immediately called back by |callback|. The actual
+  // result response is done via DircryptoMigrationProgress callback with its
+  // status flag indicating the completion.
+  // MigrateToDircrypto attempts to migrate the home dir using given
+  // authorization to the new "dircrypto" encryption.
+  virtual void MigrateToDircrypto(
+      const cryptohome::Identification& cryptohome_id,
+      const cryptohome::AuthorizationRequest& auth,
+      const VoidDBusMethodCallback& callback) = 0;
 
  protected:
   // Create() should be used instead.

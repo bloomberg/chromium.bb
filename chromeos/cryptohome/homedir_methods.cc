@@ -298,6 +298,18 @@ class HomedirMethodsImpl : public HomedirMethods {
                        weak_ptr_factory_.GetWeakPtr(), callback));
   }
 
+  void MigrateToDircrypto(const Identification& id,
+                          const Authorization& auth,
+                          const DBusResultCallback& callback) override {
+    cryptohome::AuthorizationRequest auth_proto;
+    FillAuthorizationProtobuf(auth, &auth_proto);
+
+    DBusThreadManager::Get()->GetCryptohomeClient()->MigrateToDircrypto(
+        id, auth_proto,
+        base::Bind(&HomedirMethodsImpl::OnDBusResultCallback,
+                   weak_ptr_factory_.GetWeakPtr(), callback));
+  }
+
  private:
   void OnGetKeyDataExCallback(const GetKeyDataCallback& callback,
                               chromeos::DBusMethodCallStatus call_status,
@@ -457,6 +469,11 @@ class HomedirMethodsImpl : public HomedirMethods {
       }
     }
     callback.Run(true, MOUNT_ERROR_NONE);
+  }
+
+  void OnDBusResultCallback(const DBusResultCallback& callback,
+                            chromeos::DBusMethodCallStatus call_status) {
+    callback.Run(call_status == chromeos::DBUS_METHOD_CALL_SUCCESS);
   }
 
   base::WeakPtrFactory<HomedirMethodsImpl> weak_ptr_factory_;

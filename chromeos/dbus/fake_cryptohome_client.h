@@ -195,6 +195,11 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
   void FlushAndSignBootAttributes(
       const cryptohome::FlushAndSignBootAttributesRequest& request,
       const ProtobufMethodCallback& callback) override;
+  void MigrateToDircrypto(const cryptohome::Identification& cryptohome_id,
+                          const cryptohome::AuthorizationRequest& auth,
+                          const VoidDBusMethodCallback& callback) override;
+  void SetDircryptoMigrationProgressHandler(
+      const DircryptoMigrationProgessHandler& handler) override;
 
   // Changes the behavior of WaitForServiceToBeAvailable(). This method runs
   // pending callbacks if is_available is true.

@@ -63,6 +63,9 @@ void FakeCryptohomeClient::ResetAsyncCallStatusHandlers() {
 void FakeCryptohomeClient::SetLowDiskSpaceHandler(
     const LowDiskSpaceHandler& handler) {}
 
+void FakeCryptohomeClient::SetDircryptoMigrationProgressHandler(
+    const DircryptoMigrationProgessHandler& handler) {}
+
 void FakeCryptohomeClient::WaitForServiceToBeAvailable(
     const WaitForServiceToBeAvailableCallback& callback) {
   if (service_is_available_) {
@@ -572,6 +575,14 @@ void FakeCryptohomeClient::FlushAndSignBootAttributes(
     const ProtobufMethodCallback& callback) {
   cryptohome::BaseReply reply;
   ReturnProtobufMethodCallback(reply, callback);
+}
+
+void FakeCryptohomeClient::MigrateToDircrypto(
+    const cryptohome::Identification& cryptohome_id,
+    const cryptohome::AuthorizationRequest& auth,
+    const VoidDBusMethodCallback& callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(callback, DBUS_METHOD_CALL_SUCCESS));
 }
 
 void FakeCryptohomeClient::SetServiceIsAvailable(bool is_available) {

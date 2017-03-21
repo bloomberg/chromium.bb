@@ -68,6 +68,12 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
+  void SetDircryptoMigrationProgressHandler(
+      const DircryptoMigrationProgessHandler& handler) override {
+    dircrypto_migration_progress_handler_ = handler;
+  }
+
+  // CryptohomeClient override.
   void WaitForServiceToBeAvailable(
       const WaitForServiceToBeAvailableCallback& callback) override {
     proxy_->WaitForServiceToBeAvailable(callback);
@@ -927,6 +933,26 @@ class CryptohomeClientImpl : public CryptohomeClient {
                                   callback));
   }
 
+  void MigrateToDircrypto(const cryptohome::Identification& cryptohome_id,
+                          const cryptohome::AuthorizationRequest& auth,
+                          const VoidDBusMethodCallback& callback) override {
+    dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
+                                 cryptohome::kCryptohomeMigrateToDircrypto);
+
+    cryptohome::AccountIdentifier id_proto;
+    FillIdentificationProtobuf(cryptohome_id, &id_proto);
+
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendProtoAsArrayOfBytes(id_proto);
+    writer.AppendProtoAsArrayOfBytes(auth);
+
+    // The migration progress takes unpredicatable time depending on the
+    // user file size and the number. Setting the time limit to infinite.
+    proxy_->CallMethod(&method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+                       base::Bind(&CryptohomeClientImpl::OnVoidMethod,
+                                  weak_ptr_factory_.GetWeakPtr(), callback));
+  }
+
  protected:
   void Init(dbus::Bus* bus) override {
     proxy_ = bus->GetObjectProxy(
@@ -954,6 +980,13 @@ class CryptohomeClientImpl : public CryptohomeClient {
                                        weak_ptr_factory_.GetWeakPtr()),
                             base::Bind(&CryptohomeClientImpl::OnSignalConnected,
                                        weak_ptr_factory_.GetWeakPtr()));
+    proxy_->ConnectToSignal(
+        cryptohome::kCryptohomeInterface,
+        cryptohome::kSignalDircryptoMigrationProgress,
+        base::Bind(&CryptohomeClientImpl::OnDircryptoMigrationProgress,
+                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&CryptohomeClientImpl::OnSignalConnected,
+                   weak_ptr_factory_.GetWeakPtr()));
   }
 
  private:
@@ -1187,6 +1220,24 @@ class CryptohomeClientImpl : public CryptohomeClient {
       low_disk_space_handler_.Run(disk_free_bytes);
   }
 
+  // Handles DircryptoMigrationProgess signal.
+  void OnDircryptoMigrationProgress(dbus::Signal* signal) {
+    if (dircrypto_migration_progress_handler_.is_null())
+      return;
+
+    dbus::MessageReader reader(signal);
+    int status = 0;
+    uint64_t current_bytes = 0, total_bytes = 0;
+    if (!reader.PopInt32(&status) || !reader.PopUint64(&current_bytes) ||
+        !reader.PopUint64(&total_bytes)) {
+      LOG(ERROR) << "Invalid signal: " << signal->ToString();
+      return;
+    }
+    dircrypto_migration_progress_handler_.Run(
+        static_cast<cryptohome::DircryptoMigrationStatus>(status),
+        current_bytes, total_bytes);
+  }
+
   // Handles the result of signal connection setup.
   void OnSignalConnected(const std::string& interface,
                          const std::string& signal,
@@ -1200,6 +1251,7 @@ class CryptohomeClientImpl : public CryptohomeClient {
   AsyncCallStatusHandler async_call_status_handler_;
   AsyncCallStatusWithDataHandler async_call_status_data_handler_;
   LowDiskSpaceHandler low_disk_space_handler_;
+  DircryptoMigrationProgessHandler dircrypto_migration_progress_handler_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
