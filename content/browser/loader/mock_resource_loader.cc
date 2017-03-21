@@ -160,7 +160,6 @@ MockResourceLoader::OnResponseCompletedFromExternalOutOfBandCancel(
   // ResourceHandler.
   EXPECT_NE(Status::CALLING_HANDLER, status_);
 
-  waiting_on_buffer_ = false;
   io_buffer_ = nullptr;
   io_buffer_size_ = 0;
   status_ = Status::CALLING_HANDLER;
