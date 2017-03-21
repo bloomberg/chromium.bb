@@ -202,7 +202,7 @@ class CSSPropertyNamesWriter(css_properties.CSSProperties):
             'first_property_id': self._first_enum_value,
             'properties_count': len(self._properties),
             'last_property_id': self._first_enum_value + len(self._properties) - 1,
-            'last_unresolved_property_id': max(property["enum_value"] for property in self._properties_including_aliases),
+            'last_unresolved_property_id': self.last_unresolved_property_id,
             'max_name_length': max(map(len, self._properties)),
         }
 

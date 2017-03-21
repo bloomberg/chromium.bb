@@ -13,8 +13,11 @@ static_assert(
     std::is_pod<CSSPropertyDescriptor>::value,
     "CSSPropertyDescriptor must be a POD to support using initializer lists.");
 
-static CSSPropertyDescriptor cssPropertyDescriptors[] = {
-    // An invalid CSSPropertyDescriptor.
+// This must refer to the invalid descriptor in cssPropertyDescriptors.
+#define INVALID_DESCRIPTOR_INDEX {{invalid_descriptor_index}}
+
+static constexpr CSSPropertyDescriptor cssPropertyDescriptors[] = {
+    // An invalid CSSPropertyDescriptor. Must be indexed by INVALID_DESCRIPTOR_INDEX.
     {
       {% for api_method in ordered_api_method_names %}
         nullptr,
@@ -34,22 +37,21 @@ static CSSPropertyDescriptor cssPropertyDescriptors[] = {
     {% endfor %}
 };
 
+{% for api_method_name in ordered_api_method_names %}
+static_assert(cssPropertyDescriptors[INVALID_DESCRIPTOR_INDEX].{{api_method_name}} == nullptr, 
+              "Invalid CSSPropertyDescriptor contains non-nullptr member");
+{% endfor %}
+
+// Lookup table mapping CSSPropertyID to index in the cssPropertyDescriptors
+// table
+static size_t CSSDescriptorIndices[] = {
+   {% for id in descriptor_indices %}
+   {{id}},
+   {% endfor %}
+};
+
 const CSSPropertyDescriptor& CSSPropertyDescriptor::get(CSSPropertyID id) {
-  // TODO(aazzam): We are currently using hard-coded indexes for
-  // cssPropertyDescriptor since we have only implemented a few properties.
-  // Later, generate this switch statement, or alternatively return
-  // cssPropertyDescriptors[id], and generate the cssPropertyDescriptors array
-  // to hold invalid descriptors for methods which haven't been implemented yet.
-  switch (id) {
-  {% for api_class in api_classes %}
-    {% for property_id in api_class.property_ids %}
-    case {{property_id}}:
-    {% endfor %}
-      return cssPropertyDescriptors[{{api_class.index}}];
-  {% endfor %}
-    default:
-      return cssPropertyDescriptors[0];
-  }
+      return cssPropertyDescriptors[CSSDescriptorIndices[id]];
 }
 
 }  // namespace blink

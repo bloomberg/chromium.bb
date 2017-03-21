@@ -62,8 +62,10 @@ class CSSPropertyAPIWriter(StyleBuilderWriter):
                 description=api_method['description'],
             )
 
-        # Temporary map of API classname to list of propertyIDs that the API class is for.
+        # Temporary maps of API classname to list of propertyIDs and corresponding
+        # enum values that the API class is for.
         properties_for_class = defaultdict(list)
+        property_enums_for_class = defaultdict(list)
         # Map of API classname to list of methods implemented by that class.
         self.methods_for_classes = defaultdict(list)
         for property_ in self.properties().values():
@@ -71,6 +73,7 @@ class CSSPropertyAPIWriter(StyleBuilderWriter):
                 continue
             classname = get_classname(property_)
             properties_for_class[classname].append(property_['property_id'])
+            property_enums_for_class[classname].append(property_['enum_value'])
             # For api_classes that contain multiple properties, combine all implemented properties.
             # This list contains duplicate entries, but is only used to check if a method is
             # implemented for an api_class.
@@ -87,11 +90,23 @@ class CSSPropertyAPIWriter(StyleBuilderWriter):
                 methods_for_class=self.methods_for_classes[classname]
             ))
 
+        # Build a table converting id (including aliases) to api class descriptors
+        self._invalid_descriptor_index = 0
+        # Initialize the whole thing to the invalid descriptor to handle gaps
+        num_indices = self.last_unresolved_property_id + 1
+        self._descriptor_indices = [self._invalid_descriptor_index] * num_indices
+        # Now populate all entries for which there exists a class, i.e. that aren't gaps
+        for api_class in self._api_classes:
+            for property_enum in property_enums_for_class[api_class.classname]:
+                self._descriptor_indices[property_enum] = api_class.index
+
     @template_expander.use_jinja('CSSPropertyDescriptor.cpp.tmpl')
     def generate_property_descriptor_cpp(self):
         return {
             'api_classes': self._api_classes,
             'ordered_api_method_names': self.ordered_api_method_names,
+            'descriptor_indices': self._descriptor_indices,
+            'invalid_descriptor_index': self._invalid_descriptor_index
         }
 
     @template_expander.use_jinja('CSSPropertyDescriptor.h.tmpl')
