@@ -28,7 +28,7 @@ OnStartupSettingsBrowserTest.prototype = {
 
   /** @return {Element} */
   getPageElement: function(selector) {
-    var section = this.getSection(this.getPage('basic'), 'onStartup');
+    var section = this.getSection(this.basicPage, 'onStartup');
     assertTrue(!!section);
     var module = section.querySelector('settings-on-startup-page');
     assertTrue(!!module);
@@ -59,7 +59,7 @@ TEST_F('OnStartupSettingsBrowserTest', 'uiTests', function() {
 
   suite('OnStartupHandler', function() {
     suiteSetup(function() {
-      self.getPage('basic').set('pageVisibility.onStartup', true);
+      self.basicPage.set('pageVisibility.onStartup', true);
       Polymer.dom.flush();
 
       settingsPrefs = document.querySelector('settings-ui').$$(

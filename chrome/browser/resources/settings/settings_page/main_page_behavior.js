@@ -116,6 +116,11 @@ var MainPageBehaviorImpl = {
         promise = this.expandSection_(currentSection);
       else if (scrollToSection)
         currentSection.scrollIntoView();
+    } else if (settings.Route.ADVANCED.contains(currentRoute) &&
+        // Need to exclude routes that correspond to 'non-sectioned' children of
+        // ADVANCED, otherwise tryTransitionToSection_ will recurse endlessly.
+        !currentRoute.isNavigableDialog) {
+      promise = this.$$('#advancedPageTemplate').get();
     }
 
     // When this animation ends, another may be necessary. Call this function

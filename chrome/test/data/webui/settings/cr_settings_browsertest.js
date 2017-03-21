@@ -27,7 +27,9 @@ CrSettingsBrowserTest.prototype = {
   },
 
   /** @override */
-  extraLibraries: PolymerTest.getLibraries(ROOT_PATH),
+  extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
+    'ensure_lazy_loaded.js',
+  ]),
 
   /** @override */
   setUp: function() {
@@ -39,6 +41,8 @@ CrSettingsBrowserTest.prototype = {
     // https://github.com/PolymerElements/paper-slider/issues/131.
     this.accessibilityAuditConfig.ignoreSelectors(
         'badAriaAttributeValue', 'paper-slider');
+
+    settings.ensureLazyLoaded();
   },
 };
 

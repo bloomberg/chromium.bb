@@ -112,7 +112,7 @@ TEST_F('SettingsEasyUnlockBrowserTest', 'MAYBE_EasyUnlock', function() {
 
   suite('SettingsEasyUnlock', function() {
     suiteSetup(function() {
-      self.getPage('basic').set('pageVisibility.people', true);
+      self.basicPage.set('pageVisibility.people', true);
       Polymer.dom.flush();
 
       // These overrides are necessary for this test to function on ChromeOS

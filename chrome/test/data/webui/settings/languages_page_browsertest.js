@@ -43,11 +43,14 @@ GEN('#endif');
 
 // Runs languages page tests.
 TEST_F('SettingsLanguagesPageBrowserTest', 'MAYBE_LanguagesPage', function() {
+  var self = this;
+
+  suiteSetup(function() {
+    self.toggleAdvanced();
+  });
+
   suite('languages page', function() {
     testing.Test.disableAnimationsAndTransitions();
-
-    this.toggleAdvanced();
-    var page = this.getPage('basic');
 
     var languagesSection;
     var languagesPage;
@@ -81,6 +84,7 @@ TEST_F('SettingsLanguagesPageBrowserTest', 'MAYBE_LanguagesPage', function() {
     }
 
     suiteSetup(function() {
+      var page = self.basicPage;
       page.set('pageVisibility.languages', true);
       Polymer.dom.flush();
 

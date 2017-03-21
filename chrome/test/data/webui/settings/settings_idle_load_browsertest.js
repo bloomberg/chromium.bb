@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/** @fileoverview Tests for settings-idle-render. */
+/** @fileoverview Tests for settings-idle-load. */
 
 /** @const {string} Path to root from chrome/test/data/webui/settings/. */
 var ROOT_PATH = '../../../../../';
@@ -11,13 +11,13 @@ var ROOT_PATH = '../../../../../';
  * @constructor
  * @extends testing.Test
  */
-function SettingsIdleRenderBrowserTest() {}
+function SettingsIdleLoadBrowserTest() {}
 
-SettingsIdleRenderBrowserTest.prototype = {
+SettingsIdleLoadBrowserTest.prototype = {
   __proto__: testing.Test.prototype,
 
   /** @override */
-  browsePreload: 'chrome://md-settings/controls/setting_idle_render.html',
+  browsePreload: 'chrome://md-settings/controls/setting_idle_load.html',
 
   /** @override */
   extraLibraries: [
@@ -32,14 +32,14 @@ SettingsIdleRenderBrowserTest.prototype = {
   runAccessibilityChecks: false,
 };
 
-TEST_F('SettingsIdleRenderBrowserTest', 'render', function() {
+TEST_F('SettingsIdleLoadBrowserTest', 'All', function() {
   // Register mocha tests.
-  suite('Settings idle render tests', function() {
+  suite('Settings idle load tests', function() {
     setup(function() {
       var template =
-          '<template is="settings-idle-render" id="idleTemplate">' +
-          '  <div>' +
-          '  </div>' +
+          '<template is="settings-idle-load" id="idleTemplate" '+
+          '    url="chrome://resources/html/polymer.html">' +
+          '  <div></div>' +
           '</template>';
       document.body.innerHTML = template;
       // The div should not be initially accesible.
@@ -48,9 +48,11 @@ TEST_F('SettingsIdleRenderBrowserTest', 'render', function() {
 
     test('stamps after get()', function() {
       // Calling get() will force stamping without waiting for idle time.
-      var inner = document.getElementById('idleTemplate').get();
-      assertEquals('DIV', inner.nodeName);
-      assertEquals(inner, document.body.querySelector('div'));
+      return document.getElementById('idleTemplate').get().then(
+          function(inner) {
+            assertEquals('DIV', inner.nodeName);
+            assertEquals(inner, document.body.querySelector('div'));
+          });
     });
 
     test('stamps after idle', function(done) {

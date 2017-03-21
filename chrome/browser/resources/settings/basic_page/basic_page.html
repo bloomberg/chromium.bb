@@ -1,7 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="../appearance_page/appearance_page.html">
-<link rel="import" href="../controls/settings_idle_render.html">
-<link rel="import" href="../lazy_load.html">
+<link rel="import" href="../controls/settings_idle_load.html">
 <link rel="import" href="../on_startup_page/on_startup_page.html">
 <link rel="import" href="../people_page/people_page.html">
 <link rel="import" href="../reset_page/reset_profile_banner.html">
@@ -182,7 +181,8 @@
         </h2>
       </template>
 
-      <template is="settings-idle-render" id="advancedPageTemplate">
+      <template is="settings-idle-load" id="advancedPageTemplate"
+          url="/lazy_load.html">
         <div id="advancedPage" hidden$="[[!showAdvancedPage_(
             currentRoute_, inSearchMode, hasExpandedSection_,
             advancedToggleExpanded)]]">

@@ -19,6 +19,10 @@ suite('route', function() {
     return promise;
   }
 
+  teardown(function() {
+    PolymerTest.clearBody();
+  });
+
   /**
    * Tests a specific navigation situation.
    * @param {!settings.Route} previousRoute
@@ -183,5 +187,16 @@ suite('route', function() {
           settings.Route.KEYBOARD,
           settings.getRouteForPath('/keyboard-overlay/'));
     }
+  });
+
+  test('isNavigableDialog', function() {
+    assertTrue(settings.Route.CLEAR_BROWSER_DATA.isNavigableDialog);
+    assertTrue(settings.Route.IMPORT_DATA.isNavigableDialog);
+    assertTrue(settings.Route.RESET_DIALOG.isNavigableDialog);
+    assertTrue(settings.Route.SIGN_OUT.isNavigableDialog);
+    assertTrue(settings.Route.TRIGGERED_RESET_DIALOG.isNavigableDialog);
+
+    assertFalse(settings.Route.PRIVACY.isNavigableDialog);
+    assertFalse(settings.Route.DEFAULT_BROWSER.isNavigableDialog);
   });
 });

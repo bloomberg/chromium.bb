@@ -114,8 +114,10 @@ Polymer({
     ];
 
     if (this.pageVisibility.advancedSettings !== false) {
-      whenSearchDone.push(settings.getSearchManager().search(
-          query, assert(this.$$('#advancedPageTemplate').get())));
+      whenSearchDone.push(this.$$('#advancedPageTemplate').get().then(
+          function(advancedPage) {
+            return settings.getSearchManager().search(query, advancedPage);
+          }));
     }
 
     return Promise.all(whenSearchDone).then(function(requests) {

@@ -12,14 +12,8 @@ GEN_INCLUDE(['settings_page_browsertest.js']);
 /**
  * @constructor
  * @extends {SettingsPageBrowserTest}
- *
- * @param {string} pageId Just 'basic'. TODO(michaelpg): Add 'about' if we want
- *     to, but that requires wrapping its sole <settings-section> in a dom-if.
  */
-function SettingsSubPageBrowserTest(pageId) {
-  /** @type {string} */
-  this.pageId = pageId;
-
+function SettingsSubPageBrowserTest() {
   /** @type {!Array<string>} */
   this.subPages = [];
 }
@@ -36,18 +30,12 @@ SettingsSubPageBrowserTest.prototype = {
     settingsHidePagesByDefaultForTest = true;
   },
 
-  /** @override */
-  setUp: function() {
-    SettingsPageBrowserTest.prototype.setUp.call(this);
-    this.verifySubPagesHidden_();
-  },
-
   /*
    * Checks all subpages are hidden first.
    * @private
    */
   verifySubPagesHidden_: function() {
-    var page = this.getPage(this.pageId);
+    var page = this.basicPage;
     assertEquals(0, Object.keys(page.pageVisibility).length);
 
     // Ensure all pages are still hidden after the dom-ifs compute their |if|.
@@ -79,9 +67,10 @@ SettingsSubPageBrowserTest.prototype = {
   },
 
   testSubPages: function() {
-    var page = this.getPage(this.pageId);
     this.subPages.forEach(function(subPage) {
-      test(subPage, this.testSubPage.bind(this, page, subPage));
+      test(subPage, function() {
+        this.testSubPage(this.basicPage, subPage);
+      }.bind(this));
     }.bind(this));
   },
 };
@@ -108,6 +97,7 @@ SettingsBasicSubPageBrowserTest.prototype = {
 };
 
 TEST_F('SettingsBasicSubPageBrowserTest', 'SubPages', function() {
+  suiteSetup(this.verifySubPagesHidden_.bind(this));
   suite('Basic', this.testSubPages.bind(this));
   mocha.run();
 });
@@ -144,6 +134,7 @@ SettingsAdvancedSubPageBrowserTest.prototype = {
 };
 
 TEST_F('SettingsAdvancedSubPageBrowserTest', 'SubPages', function() {
+  suiteSetup(this.verifySubPagesHidden_.bind(this));
   suite('Advanced', this.testSubPages.bind(this));
   mocha.run();
 });

@@ -18,8 +18,16 @@ cr.define('settings', function() {
     /** @type {number} */
     this.depth = 0;
 
+    /**
+     * @type {boolean} Whether this route corresponds to a navigable
+     *     dialog. Those routes don't belong to a "section".
+     */
+    this.isNavigableDialog = false;
+
     // Below are all legacy properties to provide compatibility with the old
-    // routing system. TODO(tommycli): Remove once routing refactor complete.
+    // routing system.
+
+    /** @type {string} */
     this.section = '';
   };
 
@@ -94,11 +102,16 @@ cr.define('settings', function() {
   // Navigable dialogs. These are the only non-section children of root pages.
   // These are disfavored. If we add anymore, we should add explicit support.
   r.IMPORT_DATA = r.BASIC.createChild('/importData');
+  r.IMPORT_DATA.isNavigableDialog = true;
   r.SIGN_OUT = r.BASIC.createChild('/signOut');
+  r.SIGN_OUT.isNavigableDialog = true;
   r.CLEAR_BROWSER_DATA = r.ADVANCED.createChild('/clearBrowserData');
+  r.CLEAR_BROWSER_DATA.isNavigableDialog = true;
   r.RESET_DIALOG = r.ADVANCED.createChild('/resetProfileSettings');
+  r.RESET_DIALOG.isNavigableDialog = true;
   r.TRIGGERED_RESET_DIALOG =
       r.ADVANCED.createChild('/triggeredResetProfileSettings');
+  r.TRIGGERED_RESET_DIALOG.isNavigableDialog = true;
 
 // <if expr="chromeos">
   r.INTERNET = r.BASIC.createSection('/internet', 'internet');

@@ -41,7 +41,7 @@ TEST_F('SettingsAdvancedPageBrowserTest', 'MAYBE_Load', function() {
     });
 
     test('advanced pages', function() {
-      var page = self.getPage('basic');
+      var page = self.basicPage;
       var sections = ['privacy', 'passwordsAndForms', 'languages', 'downloads',
           'reset'];
       if (cr.isChromeOS)
@@ -49,7 +49,7 @@ TEST_F('SettingsAdvancedPageBrowserTest', 'MAYBE_Load', function() {
 
       for (var i = 0; i < sections.length; i++) {
         var section = self.getSection(page, sections[i]);
-        expectTrue(!!section);
+        assertTrue(!!section);
         self.verifySubpagesHidden(section);
       }
     });

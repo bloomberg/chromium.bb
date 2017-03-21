@@ -85,6 +85,13 @@ Polymer({
   /** @override */
   attached: function() {
     this.listen(this, 'freeze-scroll', 'onFreezeScroll_');
+    this.listen(this, 'lazy-loaded', 'onLazyLoaded_');
+  },
+
+  /** @private */
+  onLazyLoaded_: function() {
+    Polymer.dom.flush();
+    this.updateOverscrollForPage_();
   },
 
   /** @override */

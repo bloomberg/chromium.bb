@@ -32,6 +32,7 @@ PasswordsAndFormsBrowserTest.prototype = {
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
       '../fake_chrome_event.js',
       'fake_settings_private.js',
+      'ensure_lazy_loaded.js',
   ]),
 
   /** @override */
@@ -40,6 +41,8 @@ PasswordsAndFormsBrowserTest.prototype = {
 
     // Test is run on an individual element that won't have a page language.
     this.accessibilityAuditConfig.auditRulesToIgnore.push('humanLangMissing');
+
+    settings.ensureLazyLoaded();
   },
 };
 

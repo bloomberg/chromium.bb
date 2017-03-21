@@ -86,7 +86,7 @@ TEST_F('SettingsBasicPageBrowserTest', 'MAYBE_Load', function() {
     });
 
     test('basic pages', function() {
-      var page = self.getPage('basic');
+      var page = self.basicPage;
       var sections = ['appearance', 'onStartup', 'people', 'search'];
       expectTrue(!!self.getSection(page, 'appearance'));
       if (!cr.isChromeOS)
@@ -102,16 +102,14 @@ TEST_F('SettingsBasicPageBrowserTest', 'MAYBE_Load', function() {
     });
 
     test('scroll to section', function() {
+      var page = self.basicPage;
       // Setting the page and section will cause a scrollToSection_.
       settings.navigateTo(settings.Route.ON_STARTUP);
-
-      var page = self.getPage('basic');
 
       return new Promise(function(resolve, reject) {
         // This test checks for a regression that occurred with scrollToSection_
         // failing to find its host element.
         var intervalId = window.setInterval(function() {
-          var page = self.getPage('basic');
           if (self.getSection(page, settings.getCurrentRoute().section)) {
             window.clearInterval(intervalId);
             resolve();
@@ -140,6 +138,7 @@ TEST_F('SettingsBasicPageBrowserTest', 'MAYBE_Load', function() {
     });
 
     test('scroll to section after exiting search', function() {
+      var page = self.basicPage;
       var searchManager = new TestSearchManager();
       settings.setSearchManagerForTesting(searchManager);
 
@@ -152,7 +151,6 @@ TEST_F('SettingsBasicPageBrowserTest', 'MAYBE_Load', function() {
                               /* dynamicParams */ null,
                               /* removeSearch */ true);
 
-          var page = self.getPage('basic');
           assertTrue(!!page);
 
           // Should (after some time) be scrolled to the On Startup section.
@@ -167,7 +165,7 @@ TEST_F('SettingsBasicPageBrowserTest', 'MAYBE_Load', function() {
     });
 
     test('scroll to top before navigating to about', function() {
-      var page = self.getPage('basic');
+      var page = self.basicPage;
       // Set the viewport small to force the scrollbar to appear on ABOUT.
       Polymer.dom().querySelector('settings-ui').style.height = '200px';
 

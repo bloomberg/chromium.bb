@@ -1044,7 +1044,7 @@ if (!is_android) {
         "data/webui/settings/passwords_and_autofill_fake_data.js",
         "data/webui/settings/passwords_and_forms_browsertest.js",
         "data/webui/settings/settings_autofill_section_browsertest.js",
-        "data/webui/settings/settings_idle_render_browsertest.js",
+        "data/webui/settings/settings_idle_load_browsertest.js",
         "data/webui/settings/settings_page_browsertest.js",
         "data/webui/settings/settings_passwords_section_browsertest.js",
         "data/webui/settings/settings_subpage_browsertest.js",

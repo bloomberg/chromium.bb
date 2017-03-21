@@ -24,6 +24,12 @@ SettingsHelpPageBrowserTest.prototype = {
 
   /** @override */
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH),
+
+  /** @override */
+  setUp: function() {
+    // Intentionally bypassing SettingsPageBrowserTest#setUp.
+    PolymerTest.prototype.setUp.call(this);
+  },
 };
 
 TEST_F('SettingsHelpPageBrowserTest', 'Load', function() {
@@ -34,8 +40,9 @@ TEST_F('SettingsHelpPageBrowserTest', 'Load', function() {
   // Register mocha tests.
   suite('Help page', function() {
     test('about section', function() {
-      var page = self.getPage('about');
-      expectTrue(!!self.getSection(page, 'about'));
+      return self.getPage('about').then(function(page) {
+        expectTrue(!!self.getSection(page, 'about'));
+      });
     });
   });
 

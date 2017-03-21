@@ -419,11 +419,11 @@
       <structure name="IDR_SETTINGS_CONTROLS_RADIO_GROUP_JS"
                  file="controls/settings_radio_group.js"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_CONTROLS_SETTINGS_IDLE_RENDER_HTML"
-                 file="controls/settings_idle_render.html"
+      <structure name="IDR_SETTINGS_CONTROLS_SETTINGS_IDLE_LOAD_HTML"
+                 file="controls/settings_idle_load.html"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_CONTROLS_SETTINGS_IDLE_RENDER_JS"
-                 file="controls/settings_idle_render.js"
+      <structure name="IDR_SETTINGS_CONTROLS_SETTINGS_IDLE_LOAD_JS"
+                 file="controls/settings_idle_load.js"
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_CONTROLS_SLIDER_HTML"
                  file="controls/settings_slider.html"

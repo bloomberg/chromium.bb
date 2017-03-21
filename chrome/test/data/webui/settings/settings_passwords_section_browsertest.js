@@ -29,15 +29,18 @@ SettingsPasswordSectionBrowserTest.prototype = {
       'chrome://md-settings/passwords_and_forms_page/passwords_section.html',
 
   /** @override */
-  extraLibraries: PolymerTest.getLibraries(ROOT_PATH),
+  extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
+    'ensure_lazy_loaded.js',
+  ]),
 
   /** @override */
   setUp: function() {
     PolymerTest.prototype.setUp.call(this);
     // Test is run on an individual element that won't have a page language.
     this.accessibilityAuditConfig.auditRulesToIgnore.push('humanLangMissing');
-  },
 
+    settings.ensureLazyLoaded();
+  },
 };
 
 /** This test will validate that the section is loaded with data. */
