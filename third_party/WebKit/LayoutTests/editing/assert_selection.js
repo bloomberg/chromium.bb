@@ -22,6 +22,7 @@
 //  description: A description
 //  dumpAs: 'domtree' or 'flattree'. Default is 'domtree'.
 //  removeSampleIfSucceeded: A boolean. Default is true.
+//  dumpFromRoot: A boolean. Default is false.
 //
 // Example:
 //  test(() => {
@@ -619,9 +620,10 @@ class Serializer {
   /**
    * @public
    * @param {!HTMLDocument} document
+   * @param {boolean} dumpFromRoot
    */
-  serialize(document) {
-    if (document.body)
+  serialize(document, dumpFromRoot) {
+    if (document.body && !dumpFromRoot)
         this.serializeChildren(document.body);
     else
         this.serializeInternal(document.documentElement);
@@ -788,14 +790,15 @@ class Sample {
   /**
    * @public
    * @param {!Traversal} traversal
+   * @param {boolean} dumpFromRoot
    * @return {string}
    */
-  serialize(traversal) {
+  serialize(traversal, dumpFromRoot) {
     /** @type {!SampleSelection} */
     const selection = traversal.fromDOMSelection(this.selection_);
     /** @type {!Serializer} */
     const serializer = new Serializer(selection, traversal);
-    return serializer.serialize(this.document_);
+    return serializer.serialize(this.document_, dumpFromRoot);
   }
 }
 
@@ -873,6 +876,7 @@ function assertSelection(
   const kDescription = 'description';
   const kDumpAs = 'dumpAs';
   const kRemoveSampleIfSucceeded = 'removeSampleIfSucceeded';
+  const kDumpFromRoot = 'dumpFromRoot';
   /** @type {!Object} */
   const options = typeof(opt_options) === 'string'
       ? {description: opt_options} : opt_options;
@@ -884,6 +888,8 @@ function assertSelection(
       ? !!options[kRemoveSampleIfSucceeded] : true;
   /** @type {DumpAs} */
   const dumpAs = options[kDumpAs] || DumpAs.DOM_TREE;
+  /** @type {boolean} */
+  const dumpFromRoot = options[kDumpFromRoot] || false;
 
   checkExpectedText(expectedText);
   const sample = new Sample(inputText);
@@ -913,7 +919,7 @@ function assertSelection(
   })();
 
   /** @type {string} */
-  const actualText = sample.serialize(traversal);
+  const actualText = sample.serialize(traversal, dumpFromRoot);
   // We keep sample HTML when assertion is false for ease of debugging test
   // case.
   if (actualText === expectedText) {

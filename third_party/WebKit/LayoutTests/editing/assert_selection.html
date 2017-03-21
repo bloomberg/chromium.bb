@@ -205,6 +205,17 @@ test(() => assert_selection(
     ].join(''),
     {dumpAs: 'flattree'}), 'dump flat tree for shadow DOM V1');
 
+test(() => assert_selection(
+    '<br>',
+    selection => {
+        selection.document.documentElement.prepend('Pre-HEAD');
+        selection.document.body.before('Pre-BODY');
+        selection.document.documentElement.append('Post-BODY');
+    },
+    '<html>Pre-HEAD<head></head>Pre-BODY<body><br></body>Post-BODY</html>',
+    {dumpFromRoot: true}
+), 'Serialize with dumpFromRoot option');
+
 test(() => {
     assert_equals(checked_assert_selection('fo|o', 'noop', 'fo|o'),
         'no exception');
