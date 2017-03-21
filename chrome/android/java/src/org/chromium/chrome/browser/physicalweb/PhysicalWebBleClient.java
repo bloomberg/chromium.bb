@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.physicalweb;
 
-import android.app.Activity;
 import android.os.Handler;
 import android.os.Looper;
 
@@ -14,7 +13,6 @@ import com.google.android.gms.nearby.messages.Message;
 import com.google.android.gms.nearby.messages.MessageFilter;
 import com.google.android.gms.nearby.messages.MessageListener;
 
-import org.chromium.base.Log;
 import org.chromium.chrome.browser.AppHooks;
 
 /**
@@ -74,70 +72,11 @@ public class PhysicalWebBleClient {
     }
 
     /**
-     * Begin a background subscription to URLs broadcasted from BLE beacons.
-     * This currently does nothing and should be overridden by a subclass.
-     * @param callback Callback to be run when subscription task is done, regardless of whether it
-     *         is successful.
-     */
-    void backgroundSubscribe(Runnable callback) {
-        Log.d(TAG, "background subscribing in empty client");
-        if (callback != null) {
-            callback.run();
-        }
-    }
-
-    /**
-     * Begin a background subscription to URLs broadcasted from BLE beacons.
-     * This currently does nothing and should be overridden by a subclass.
-     */
-    void backgroundSubscribe() {
-        backgroundSubscribe(null);
-    }
-
-    /**
-     * Cancel a background subscription to URLs broadcasted from BLE beacons.
-     * This currently does nothing and should be overridden by a subclass.
-     * @param callback Callback to be run when subscription cancellation task is done, regardless of
-     *         whether it is successful.
-     */
-    void backgroundUnsubscribe(Runnable callback) {
-        Log.d(TAG, "background unsubscribing in empty client");
-        if (callback != null) {
-            callback.run();
-        }
-    }
-
-    /**
-     * Cancel a background subscription to URLs broadcasted from BLE beacons.
-     * This currently does nothing and should be overridden by a subclass.
-     */
-    void backgroundUnsubscribe() {
-        backgroundUnsubscribe(null);
-    }
-
-    /**
      * Create a MessageListener that listens during a background scan.
      * @return the MessageListener.
      */
     MessageListener createBackgroundMessageListener() {
         return new BackgroundMessageListener();
-    }
-
-    /**
-     * Begin a foreground subscription to URLs broadcasted from BLE beacons.
-     * This currently does nothing and should be overridden by a subclass.
-     * @param activity The Activity that is performing the scan.
-     */
-    void foregroundSubscribe(Activity activity) {
-        Log.d(TAG, "foreground subscribing in empty client");
-    }
-
-    /**
-     * Cancel a foreground subscription to URLs broadcasted from BLE beacons.
-     * This currently does nothing and should be overridden by a subclass.
-     */
-    void foregroundUnsubscribe() {
-        Log.d(TAG, "foreground unsubscribing in empty client");
     }
 
     /**
