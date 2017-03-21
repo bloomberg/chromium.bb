@@ -34,16 +34,16 @@ class CORE_EXPORT SerializedScriptValueFactory {
   // be thrown using v8::ThrowException(), and sets |didThrow|. In this case
   // the caller must not invoke any V8 operations until control returns to
   // V8. When serialization is successful, |didThrow| is false.
-  virtual PassRefPtr<SerializedScriptValue> create(v8::Isolate*,
-                                                   v8::Local<v8::Value>,
-                                                   Transferables*,
-                                                   WebBlobInfoArray*,
-                                                   ExceptionState&);
+  virtual PassRefPtr<SerializedScriptValue> create(
+      v8::Isolate*,
+      v8::Local<v8::Value>,
+      const SerializedScriptValue::SerializeOptions&,
+      ExceptionState&);
 
-  virtual v8::Local<v8::Value> deserialize(SerializedScriptValue*,
-                                           v8::Isolate*,
-                                           MessagePortArray*,
-                                           const WebBlobInfoArray*);
+  virtual v8::Local<v8::Value> deserialize(
+      SerializedScriptValue*,
+      v8::Isolate*,
+      const SerializedScriptValue::DeserializeOptions&);
 
   // Following methods are expected to be called in
   // SerializedScriptValueFactory{ForModules}.

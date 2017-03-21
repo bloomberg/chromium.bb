@@ -45,8 +45,9 @@ v8::Local<v8::Value> roundTrip(v8::Local<v8::Value> value,
   RefPtr<ScriptState> scriptState = scope.getScriptState();
   ExceptionState& exceptionState = scope.getExceptionState();
   RefPtr<SerializedScriptValue> serializedScriptValue =
-      V8ScriptValueSerializerForModules(scriptState)
-          .serialize(value, nullptr, exceptionState);
+      V8ScriptValueSerializerForModules(
+          scriptState, V8ScriptValueSerializerForModules::Options())
+          .serialize(value, exceptionState);
   DCHECK_EQ(!serializedScriptValue, exceptionState.hadException());
   EXPECT_TRUE(serializedScriptValue);
   if (!serializedScriptValue)
@@ -891,7 +892,7 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripDOMFileSystemNotClonable) {
   ASSERT_FALSE(fs->clonable());
   v8::Local<v8::Value> wrapper = ToV8(fs, scope.getScriptState());
   EXPECT_FALSE(V8ScriptValueSerializer(scope.getScriptState())
-                   .serialize(wrapper, nullptr, exceptionState));
+                   .serialize(wrapper, exceptionState));
   EXPECT_TRUE(hadDOMException("DataCloneError", scope.getScriptState(),
                               exceptionState));
 }

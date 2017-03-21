@@ -27,8 +27,9 @@ TEST(SerializedScriptValueTest, UserSelectedFile) {
   v8::Local<v8::Value> v8OriginalFile =
       ToV8(originalFile, scope.context()->Global(), scope.isolate());
   RefPtr<SerializedScriptValue> serializedScriptValue =
-      SerializedScriptValue::serialize(scope.isolate(), v8OriginalFile, nullptr,
-                                       nullptr, ASSERT_NO_EXCEPTION);
+      SerializedScriptValue::serialize(
+          scope.isolate(), v8OriginalFile,
+          SerializedScriptValue::SerializeOptions(), ASSERT_NO_EXCEPTION);
   v8::Local<v8::Value> v8File =
       serializedScriptValue->deserialize(scope.isolate());
 
@@ -50,8 +51,9 @@ TEST(SerializedScriptValueTest, FileConstructorFile) {
   v8::Local<v8::Value> v8OriginalFile =
       ToV8(originalFile, scope.context()->Global(), scope.isolate());
   RefPtr<SerializedScriptValue> serializedScriptValue =
-      SerializedScriptValue::serialize(scope.isolate(), v8OriginalFile, nullptr,
-                                       nullptr, ASSERT_NO_EXCEPTION);
+      SerializedScriptValue::serialize(
+          scope.isolate(), v8OriginalFile,
+          SerializedScriptValue::SerializeOptions(), ASSERT_NO_EXCEPTION);
   v8::Local<v8::Value> v8File =
       serializedScriptValue->deserialize(scope.isolate());
 

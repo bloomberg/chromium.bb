@@ -7733,7 +7733,9 @@ static void postMessageImpl(const char* interfaceName, TestObject* instance, con
   RefPtr<SerializedScriptValue> message;
   if (instance->canTransferArrayBuffersAndImageBitmaps()) {
     // This instance supports sending array buffers by move semantics.
-    message = SerializedScriptValue::serialize(info.GetIsolate(), info[0], &transferables, nullptr, exceptionState);
+    SerializedScriptValue::SerializeOptions options;
+    options.transferables = &transferables;
+    message = SerializedScriptValue::serialize(info.GetIsolate(), info[0], options, exceptionState);
     if (exceptionState.hadException())
       return;
   } else {
@@ -7749,7 +7751,9 @@ static void postMessageImpl(const char* interfaceName, TestObject* instance, con
     transferables.arrayBuffers.clear();
     ImageBitmapArray transferableImageBitmaps = transferables.imageBitmaps;
     transferables.imageBitmaps.clear();
-    message = SerializedScriptValue::serialize(info.GetIsolate(), info[0], &transferables, nullptr, exceptionState);
+    SerializedScriptValue::SerializeOptions options;
+    options.transferables = &transferables;
+    message = SerializedScriptValue::serialize(info.GetIsolate(), info[0], options, exceptionState);
     if (exceptionState.hadException())
       return;
 

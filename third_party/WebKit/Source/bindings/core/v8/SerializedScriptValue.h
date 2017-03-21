@@ -38,6 +38,7 @@
 #include "bindings/core/v8/Transferables.h"
 #include "core/CoreExport.h"
 #include "v8/include/v8.h"
+#include "wtf/Allocator.h"
 #include "wtf/HashMap.h"
 #include "wtf/ThreadSafeRefCounted.h"
 #include "wtf/allocator/Partitions.h"
@@ -76,10 +77,14 @@ class CORE_EXPORT SerializedScriptValue
   static const int varIntShift = 7;
   static const int varIntMask = (1 << varIntShift) - 1;
 
+  struct SerializeOptions {
+    STACK_ALLOCATED();
+    Transferables* transferables = nullptr;
+    WebBlobInfoArray* blobInfo = nullptr;
+  };
   static PassRefPtr<SerializedScriptValue> serialize(v8::Isolate*,
                                                      v8::Local<v8::Value>,
-                                                     Transferables*,
-                                                     WebBlobInfoArray*,
+                                                     const SerializeOptions&,
                                                      ExceptionState&);
   static PassRefPtr<SerializedScriptValue> serializeAndSwallowExceptions(
       v8::Isolate*,
@@ -99,9 +104,15 @@ class CORE_EXPORT SerializedScriptValue
 
   // Deserializes the value (in the current context). Returns a null value in
   // case of failure.
-  v8::Local<v8::Value> deserialize(v8::Isolate*,
-                                   MessagePortArray* = 0,
-                                   const WebBlobInfoArray* = 0);
+  struct DeserializeOptions {
+    STACK_ALLOCATED();
+    MessagePortArray* messagePorts = nullptr;
+    const WebBlobInfoArray* blobInfo = nullptr;
+  };
+  v8::Local<v8::Value> deserialize(v8::Isolate* isolate) {
+    return deserialize(isolate, DeserializeOptions());
+  }
+  v8::Local<v8::Value> deserialize(v8::Isolate*, const DeserializeOptions&);
 
   // Helper function which pulls the values out of a JS sequence and into a
   // MessagePortArray.  Also validates the elements per sections 4.1.13 and
@@ -199,8 +210,9 @@ struct NativeValueTraits<SerializedScriptValue>
       v8::Isolate* isolate,
       v8::Local<v8::Value> value,
       ExceptionState& exceptionState) {
-    return SerializedScriptValue::serialize(isolate, value, nullptr, nullptr,
-                                            exceptionState);
+    return SerializedScriptValue::serialize(
+        isolate, value, SerializedScriptValue::SerializeOptions(),
+        exceptionState);
   }
 };
 

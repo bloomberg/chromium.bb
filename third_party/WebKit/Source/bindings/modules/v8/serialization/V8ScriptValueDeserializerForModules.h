@@ -18,8 +18,10 @@ class MODULES_EXPORT V8ScriptValueDeserializerForModules final
  public:
   explicit V8ScriptValueDeserializerForModules(
       RefPtr<ScriptState> scriptState,
-      RefPtr<SerializedScriptValue> serializedScriptValue)
-      : V8ScriptValueDeserializer(scriptState, serializedScriptValue) {}
+      RefPtr<SerializedScriptValue> serializedScriptValue,
+      const Options& options = Options())
+      : V8ScriptValueDeserializer(scriptState, serializedScriptValue, options) {
+  }
 
  protected:
   ScriptWrappable* readDOMObject(SerializationTag) override;

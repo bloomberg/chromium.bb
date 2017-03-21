@@ -43,15 +43,16 @@ namespace blink {
 static const uint32_t kLatestVersion = 16;
 
 V8ScriptValueSerializer::V8ScriptValueSerializer(
-    RefPtr<ScriptState> scriptState)
+    RefPtr<ScriptState> scriptState,
+    const Options& options)
     : m_scriptState(std::move(scriptState)),
       m_serializedScriptValue(SerializedScriptValue::create()),
-      m_serializer(m_scriptState->isolate(), this) {
-}
+      m_serializer(m_scriptState->isolate(), this),
+      m_transferables(options.transferables),
+      m_blobInfoArray(options.blobInfo) {}
 
 RefPtr<SerializedScriptValue> V8ScriptValueSerializer::serialize(
     v8::Local<v8::Value> value,
-    Transferables* transferables,
     ExceptionState& exceptionState) {
 #if DCHECK_IS_ON()
   DCHECK(!m_serializeInvoked);
@@ -61,7 +62,7 @@ RefPtr<SerializedScriptValue> V8ScriptValueSerializer::serialize(
   AutoReset<const ExceptionState*> reset(&m_exceptionState, &exceptionState);
 
   // Prepare to transfer the provided transferables.
-  prepareTransfer(transferables, exceptionState);
+  prepareTransfer(exceptionState);
   if (exceptionState.hadException())
     return nullptr;
 
@@ -93,15 +94,13 @@ RefPtr<SerializedScriptValue> V8ScriptValueSerializer::serialize(
   return std::move(m_serializedScriptValue);
 }
 
-void V8ScriptValueSerializer::prepareTransfer(Transferables* transferables,
-                                              ExceptionState& exceptionState) {
-  if (!transferables)
+void V8ScriptValueSerializer::prepareTransfer(ExceptionState& exceptionState) {
+  if (!m_transferables)
     return;
-  m_transferables = transferables;
 
   // Transfer array buffers.
-  for (uint32_t i = 0; i < transferables->arrayBuffers.size(); i++) {
-    DOMArrayBufferBase* arrayBuffer = transferables->arrayBuffers[i].get();
+  for (uint32_t i = 0; i < m_transferables->arrayBuffers.size(); i++) {
+    DOMArrayBufferBase* arrayBuffer = m_transferables->arrayBuffers[i].get();
     if (!arrayBuffer->isShared()) {
       v8::Local<v8::Value> wrapper = ToV8(arrayBuffer, m_scriptState.get());
       m_serializer.TransferArrayBuffer(

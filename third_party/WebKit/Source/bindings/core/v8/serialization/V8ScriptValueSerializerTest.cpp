@@ -72,10 +72,12 @@ v8::Local<v8::Value> roundTrip(v8::Local<v8::Value> value,
       return v8::Local<v8::Value>();
   }
 
-  V8ScriptValueSerializer serializer(scriptState);
-  serializer.setBlobInfoArray(blobInfo);
+  V8ScriptValueSerializer::Options serializeOptions;
+  serializeOptions.transferables = transferables;
+  serializeOptions.blobInfo = blobInfo;
+  V8ScriptValueSerializer serializer(scriptState, serializeOptions);
   RefPtr<SerializedScriptValue> serializedScriptValue =
-      serializer.serialize(value, transferables, exceptionState);
+      serializer.serialize(value, exceptionState);
   DCHECK_EQ(!serializedScriptValue, exceptionState.hadException());
   if (!serializedScriptValue)
     return v8::Local<v8::Value>();
@@ -84,9 +86,11 @@ v8::Local<v8::Value> roundTrip(v8::Local<v8::Value> value,
   MessagePortArray* transferredMessagePorts = MessagePort::entanglePorts(
       *scope.getExecutionContext(), std::move(channels));
 
-  V8ScriptValueDeserializer deserializer(scriptState, serializedScriptValue);
-  deserializer.setTransferredMessagePorts(transferredMessagePorts);
-  deserializer.setBlobInfoArray(blobInfo);
+  V8ScriptValueDeserializer::Options deserializeOptions;
+  deserializeOptions.messagePorts = transferredMessagePorts;
+  deserializeOptions.blobInfo = blobInfo;
+  V8ScriptValueDeserializer deserializer(scriptState, serializedScriptValue,
+                                         deserializeOptions);
   return deserializer.deserialize();
 }
 
@@ -141,8 +145,8 @@ TEST(V8ScriptValueSerializerTest, ThrowsDataCloneError) {
                                 "postMessage");
   v8::Local<v8::Value> symbol = eval("Symbol()", scope);
   DCHECK(symbol->IsSymbol());
-  ASSERT_FALSE(V8ScriptValueSerializer(scriptState)
-                   .serialize(symbol, nullptr, exceptionState));
+  ASSERT_FALSE(
+      V8ScriptValueSerializer(scriptState).serialize(symbol, exceptionState));
   ASSERT_TRUE(hadDOMException("DataCloneError", scriptState, exceptionState));
   DOMException* domException =
       V8DOMException::toImpl(exceptionState.getException().As<v8::Object>());
@@ -161,8 +165,8 @@ TEST(V8ScriptValueSerializerTest, RethrowsScriptError) {
   v8::Local<v8::Value> object =
       eval("({ get a() { throw myException; }})", scope);
   DCHECK(object->IsObject());
-  ASSERT_FALSE(V8ScriptValueSerializer(scriptState)
-                   .serialize(object, nullptr, exceptionState));
+  ASSERT_FALSE(
+      V8ScriptValueSerializer(scriptState).serialize(object, exceptionState));
   ASSERT_TRUE(exceptionState.hadException());
   EXPECT_EQ(exception, exceptionState.getException());
 }
@@ -339,23 +343,24 @@ TEST(V8ScriptValueSerializerTest, OutOfRangeMessagePortIndex) {
     ASSERT_TRUE(deserializer.deserialize()->IsNull());
   }
   {
-    V8ScriptValueDeserializer deserializer(scriptState, input);
-    deserializer.setTransferredMessagePorts(new MessagePortArray);
+    V8ScriptValueDeserializer::Options options;
+    options.messagePorts = new MessagePortArray;
+    V8ScriptValueDeserializer deserializer(scriptState, input, options);
     ASSERT_TRUE(deserializer.deserialize()->IsNull());
   }
   {
-    MessagePortArray* ports = new MessagePortArray;
-    ports->push_back(port1);
-    V8ScriptValueDeserializer deserializer(scriptState, input);
-    deserializer.setTransferredMessagePorts(ports);
+    V8ScriptValueDeserializer::Options options;
+    options.messagePorts = new MessagePortArray;
+    options.messagePorts->push_back(port1);
+    V8ScriptValueDeserializer deserializer(scriptState, input, options);
     ASSERT_TRUE(deserializer.deserialize()->IsNull());
   }
   {
-    MessagePortArray* ports = new MessagePortArray;
-    ports->push_back(port1);
-    ports->push_back(port2);
-    V8ScriptValueDeserializer deserializer(scriptState, input);
-    deserializer.setTransferredMessagePorts(ports);
+    V8ScriptValueDeserializer::Options options;
+    options.messagePorts = new MessagePortArray;
+    options.messagePorts->push_back(port1);
+    options.messagePorts->push_back(port2);
+    V8ScriptValueDeserializer deserializer(scriptState, input, options);
     v8::Local<v8::Value> result = deserializer.deserialize();
     ASSERT_TRUE(V8MessagePort::hasInstance(result, scope.isolate()));
     EXPECT_EQ(port2, V8MessagePort::toImpl(result.As<v8::Object>()));
@@ -585,8 +590,10 @@ TEST(V8ScriptValueSerializerTest, DecodeBlobIndex) {
   WebBlobInfoArray blobInfoArray;
   blobInfoArray.emplace_back("d875dfc2-4505-461b-98fe-0cf6cc5eaf44",
                              "text/plain", 12);
-  V8ScriptValueDeserializer deserializer(scope.getScriptState(), input);
-  deserializer.setBlobInfoArray(&blobInfoArray);
+  V8ScriptValueDeserializer::Options options;
+  options.blobInfo = &blobInfoArray;
+  V8ScriptValueDeserializer deserializer(scope.getScriptState(), input,
+                                         options);
   v8::Local<v8::Value> result = deserializer.deserialize();
   ASSERT_TRUE(V8Blob::hasInstance(result, scope.isolate()));
   Blob* newBlob = V8Blob::toImpl(result.As<v8::Object>());
@@ -607,8 +614,10 @@ TEST(V8ScriptValueSerializerTest, DecodeBlobIndexOutOfRange) {
     WebBlobInfoArray blobInfoArray;
     blobInfoArray.emplace_back("d875dfc2-4505-461b-98fe-0cf6cc5eaf44",
                                "text/plain", 12);
-    V8ScriptValueDeserializer deserializer(scope.getScriptState(), input);
-    deserializer.setBlobInfoArray(&blobInfoArray);
+    V8ScriptValueDeserializer::Options options;
+    options.blobInfo = &blobInfoArray;
+    V8ScriptValueDeserializer deserializer(scope.getScriptState(), input,
+                                           options);
     ASSERT_TRUE(deserializer.deserialize()->IsNull());
   }
 }
@@ -840,8 +849,10 @@ TEST(V8ScriptValueSerializerTest, DecodeFileIndex) {
   WebBlobInfoArray blobInfoArray;
   blobInfoArray.emplace_back("d875dfc2-4505-461b-98fe-0cf6cc5eaf44",
                              "/native/path", "path", "text/plain");
-  V8ScriptValueDeserializer deserializer(scope.getScriptState(), input);
-  deserializer.setBlobInfoArray(&blobInfoArray);
+  V8ScriptValueDeserializer::Options options;
+  options.blobInfo = &blobInfoArray;
+  V8ScriptValueDeserializer deserializer(scope.getScriptState(), input,
+                                         options);
   v8::Local<v8::Value> result = deserializer.deserialize();
   ASSERT_TRUE(V8File::hasInstance(result, scope.isolate()));
   File* newFile = V8File::toImpl(result.As<v8::Object>());
@@ -863,8 +874,10 @@ TEST(V8ScriptValueSerializerTest, DecodeFileIndexOutOfRange) {
     WebBlobInfoArray blobInfoArray;
     blobInfoArray.emplace_back("d875dfc2-4505-461b-98fe-0cf6cc5eaf44",
                                "/native/path", "path", "text/plain");
-    V8ScriptValueDeserializer deserializer(scope.getScriptState(), input);
-    deserializer.setBlobInfoArray(&blobInfoArray);
+    V8ScriptValueDeserializer::Options options;
+    options.blobInfo = &blobInfoArray;
+    V8ScriptValueDeserializer deserializer(scope.getScriptState(), input,
+                                           options);
     ASSERT_TRUE(deserializer.deserialize()->IsNull());
   }
 }
@@ -963,8 +976,10 @@ TEST(V8ScriptValueSerializerTest, DecodeEmptyFileListIndex) {
   RefPtr<SerializedScriptValue> input =
       serializedValue({0xff, 0x09, 0x3f, 0x00, 0x4c, 0x00});
   WebBlobInfoArray blobInfoArray;
-  V8ScriptValueDeserializer deserializer(scope.getScriptState(), input);
-  deserializer.setBlobInfoArray(&blobInfoArray);
+  V8ScriptValueDeserializer::Options options;
+  options.blobInfo = &blobInfoArray;
+  V8ScriptValueDeserializer deserializer(scope.getScriptState(), input,
+                                         options);
   v8::Local<v8::Value> result = deserializer.deserialize();
   ASSERT_TRUE(V8FileList::hasInstance(result, scope.isolate()));
   FileList* newFileList = V8FileList::toImpl(result.As<v8::Object>());
@@ -976,8 +991,10 @@ TEST(V8ScriptValueSerializerTest, DecodeFileListIndexWithInvalidLength) {
   RefPtr<SerializedScriptValue> input =
       serializedValue({0xff, 0x09, 0x3f, 0x00, 0x4c, 0x02});
   WebBlobInfoArray blobInfoArray;
-  V8ScriptValueDeserializer deserializer(scope.getScriptState(), input);
-  deserializer.setBlobInfoArray(&blobInfoArray);
+  V8ScriptValueDeserializer::Options options;
+  options.blobInfo = &blobInfoArray;
+  V8ScriptValueDeserializer deserializer(scope.getScriptState(), input,
+                                         options);
   v8::Local<v8::Value> result = deserializer.deserialize();
   EXPECT_TRUE(result->IsNull());
 }
@@ -989,8 +1006,10 @@ TEST(V8ScriptValueSerializerTest, DecodeFileListIndex) {
   WebBlobInfoArray blobInfoArray;
   blobInfoArray.emplace_back("d875dfc2-4505-461b-98fe-0cf6cc5eaf44",
                              "/native/path", "name", "text/plain");
-  V8ScriptValueDeserializer deserializer(scope.getScriptState(), input);
-  deserializer.setBlobInfoArray(&blobInfoArray);
+  V8ScriptValueDeserializer::Options options;
+  options.blobInfo = &blobInfoArray;
+  V8ScriptValueDeserializer deserializer(scope.getScriptState(), input,
+                                         options);
   v8::Local<v8::Value> result = deserializer.deserialize();
   FileList* newFileList = V8FileList::toImpl(result.As<v8::Object>());
   EXPECT_EQ(1u, newFileList->length());

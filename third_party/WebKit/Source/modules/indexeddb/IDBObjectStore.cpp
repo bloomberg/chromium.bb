@@ -406,9 +406,11 @@ IDBRequest* IDBObjectStore::put(ScriptState* scriptState,
   v8::Isolate* isolate = scriptState->isolate();
   DCHECK(isolate->InContext());
   Vector<WebBlobInfo> blobInfo;
+  SerializedScriptValue::SerializeOptions options;
+  options.blobInfo = &blobInfo;
   RefPtr<SerializedScriptValue> serializedValue =
-      SerializedScriptValue::serialize(isolate, value.v8Value(), nullptr,
-                                       &blobInfo, exceptionState);
+      SerializedScriptValue::serialize(isolate, value.v8Value(), options,
+                                       exceptionState);
   if (exceptionState.hadException())
     return nullptr;
 

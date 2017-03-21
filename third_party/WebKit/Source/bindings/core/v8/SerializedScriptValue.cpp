@@ -62,11 +62,10 @@ namespace blink {
 PassRefPtr<SerializedScriptValue> SerializedScriptValue::serialize(
     v8::Isolate* isolate,
     v8::Local<v8::Value> value,
-    Transferables* transferables,
-    WebBlobInfoArray* blobInfo,
+    const SerializeOptions& options,
     ExceptionState& exception) {
-  return SerializedScriptValueFactory::instance().create(
-      isolate, value, transferables, blobInfo, exception);
+  return SerializedScriptValueFactory::instance().create(isolate, value,
+                                                         options, exception);
 }
 
 PassRefPtr<SerializedScriptValue>
@@ -75,7 +74,7 @@ SerializedScriptValue::serializeAndSwallowExceptions(
     v8::Local<v8::Value> value) {
   DummyExceptionStateForTesting exceptionState;
   RefPtr<SerializedScriptValue> serialized =
-      serialize(isolate, value, nullptr, nullptr, exceptionState);
+      serialize(isolate, value, SerializeOptions(), exceptionState);
   if (exceptionState.hadException())
     return nullValue();
   return serialized.release();
@@ -260,10 +259,9 @@ void SerializedScriptValue::transferArrayBuffers(
 
 v8::Local<v8::Value> SerializedScriptValue::deserialize(
     v8::Isolate* isolate,
-    MessagePortArray* messagePorts,
-    const WebBlobInfoArray* blobInfo) {
-  return SerializedScriptValueFactory::instance().deserialize(
-      this, isolate, messagePorts, blobInfo);
+    const DeserializeOptions& options) {
+  return SerializedScriptValueFactory::instance().deserialize(this, isolate,
+                                                              options);
 }
 
 bool SerializedScriptValue::extractTransferables(

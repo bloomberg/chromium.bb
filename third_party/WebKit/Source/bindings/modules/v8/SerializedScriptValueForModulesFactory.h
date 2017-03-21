@@ -18,17 +18,17 @@ class SerializedScriptValueForModulesFactory final
  public:
   SerializedScriptValueForModulesFactory() : SerializedScriptValueFactory() {}
 
-  PassRefPtr<SerializedScriptValue> create(v8::Isolate*,
-                                           v8::Local<v8::Value>,
-                                           Transferables*,
-                                           WebBlobInfoArray*,
-                                           ExceptionState&) override;
-
  protected:
-  v8::Local<v8::Value> deserialize(SerializedScriptValue*,
-                                   v8::Isolate*,
-                                   MessagePortArray*,
-                                   const WebBlobInfoArray*) override;
+  PassRefPtr<SerializedScriptValue> create(
+      v8::Isolate*,
+      v8::Local<v8::Value>,
+      const SerializedScriptValue::SerializeOptions&,
+      ExceptionState&) override;
+
+  v8::Local<v8::Value> deserialize(
+      SerializedScriptValue*,
+      v8::Isolate*,
+      const SerializedScriptValue::DeserializeOptions&) override;
 };
 
 }  // namespace blink

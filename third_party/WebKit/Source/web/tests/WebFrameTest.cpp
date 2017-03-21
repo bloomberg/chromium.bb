@@ -1006,7 +1006,7 @@ RefPtr<SerializedScriptValue> serializeString(const StringView& message,
   ScriptState::Scope scope(scriptState);
   V8ScriptValueSerializer serializer(scriptState);
   return serializer.serialize(v8String(scriptState->isolate(), message),
-                              nullptr, exceptionState);
+                              exceptionState);
 }
 
 }  // namespace

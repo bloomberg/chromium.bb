@@ -68,10 +68,12 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   // Used to control what kind of extra data is provided to the deserializer.
   unsigned hash = StringHasher::hashMemory(data, size);
 
+  SerializedScriptValue::DeserializeOptions options;
+
   // If message ports are requested, make some.
   MessagePortArray* messagePorts = nullptr;
   if (hash & kFuzzMessagePorts) {
-    messagePorts = new MessagePortArray(3);
+    options.messagePorts = new MessagePortArray(3);
     std::generate(messagePorts->begin(), messagePorts->end(), []() {
       WebMessagePortChannelUniquePtr channel(new WebMessagePortChannelImpl());
       MessagePort* port = MessagePort::create(pageHolder->document());
@@ -81,7 +83,7 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   }
 
   // If blobs are requested, supply blob info.
-  const auto* blobs = (hash & kFuzzBlobInfo) ? blobInfoArray : nullptr;
+  options.blobInfo = (hash & kFuzzBlobInfo) ? blobInfoArray : nullptr;
 
   // Set up.
   ScriptState* scriptState = ScriptState::forMainWorld(&pageHolder->frame());
@@ -92,7 +94,7 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   // Deserialize.
   RefPtr<SerializedScriptValue> serializedScriptValue =
       SerializedScriptValue::create(reinterpret_cast<const char*>(data), size);
-  serializedScriptValue->deserialize(isolate, messagePorts, blobs);
+  serializedScriptValue->deserialize(isolate, options);
   CHECK(!tryCatch.HasCaught())
       << "deserialize() should return null rather than throwing an exception.";
 

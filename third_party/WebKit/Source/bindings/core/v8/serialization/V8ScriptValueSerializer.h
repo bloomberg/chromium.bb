@@ -34,16 +34,11 @@ class GC_PLUGIN_IGNORE("https://crbug.com/644725")
   WTF_MAKE_NONCOPYABLE(V8ScriptValueSerializer);
 
  public:
-  explicit V8ScriptValueSerializer(RefPtr<ScriptState>);
-
-  // If not null, blobs will have info written into this array and be
-  // serialized by index.
-  void setBlobInfoArray(WebBlobInfoArray* blobInfoArray) {
-    m_blobInfoArray = blobInfoArray;
-  }
+  using Options = SerializedScriptValue::SerializeOptions;
+  explicit V8ScriptValueSerializer(RefPtr<ScriptState>,
+                                   const Options& = Options());
 
   RefPtr<SerializedScriptValue> serialize(v8::Local<v8::Value>,
-                                          Transferables*,
                                           ExceptionState&);
 
  protected:
@@ -70,7 +65,7 @@ class GC_PLUGIN_IGNORE("https://crbug.com/644725")
   // neuter objects in the source context).
   // This separation is required by the spec (it prevents neutering from
   // happening if there's a failure earlier in serialization).
-  void prepareTransfer(Transferables*, ExceptionState&);
+  void prepareTransfer(ExceptionState&);
   void finalizeTransfer(ExceptionState&);
 
   // Shared between File and FileList logic; does not write a leading tag.

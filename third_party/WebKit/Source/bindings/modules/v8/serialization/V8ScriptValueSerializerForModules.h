@@ -17,8 +17,10 @@ class WebCryptoKey;
 class MODULES_EXPORT V8ScriptValueSerializerForModules final
     : public V8ScriptValueSerializer {
  public:
-  explicit V8ScriptValueSerializerForModules(RefPtr<ScriptState> scriptState)
-      : V8ScriptValueSerializer(scriptState) {}
+  explicit V8ScriptValueSerializerForModules(
+      RefPtr<ScriptState> scriptState,
+      const SerializedScriptValue::SerializeOptions& options)
+      : V8ScriptValueSerializer(scriptState, options) {}
 
  protected:
   bool writeDOMObject(ScriptWrappable*, ExceptionState&) override;

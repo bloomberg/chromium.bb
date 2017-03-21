@@ -47,7 +47,8 @@ WebSerializedScriptValue WebSerializedScriptValue::serialize(
     v8::Local<v8::Value> value) {
   DummyExceptionStateForTesting exceptionState;
   WebSerializedScriptValue serializedValue = SerializedScriptValue::serialize(
-      isolate, value, nullptr, nullptr, exceptionState);
+      isolate, value, SerializedScriptValue::SerializeOptions(),
+      exceptionState);
   if (exceptionState.hadException())
     return createInvalid();
   return serializedValue;

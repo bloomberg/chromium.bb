@@ -68,7 +68,9 @@ void V8MessageEvent::dataAttributeGetterCustom(
       if (SerializedScriptValue* serializedValue =
               event->dataAsSerializedScriptValue()) {
         MessagePortArray ports = event->ports();
-        result = serializedValue->deserialize(info.GetIsolate(), &ports);
+        SerializedScriptValue::DeserializeOptions options;
+        options.messagePorts = &ports;
+        result = serializedValue->deserialize(info.GetIsolate(), options);
       } else {
         result = v8::Null(info.GetIsolate());
       }

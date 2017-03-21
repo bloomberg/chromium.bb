@@ -87,7 +87,9 @@ void V8ServiceWorkerMessageEventInternal::dataAttributeGetterCustom(
   v8::Local<v8::Value> data;
   if (SerializedScriptValue* serializedValue = event->serializedData()) {
     MessagePortArray ports = event->ports();
-    data = serializedValue->deserialize(isolate, &ports);
+    SerializedScriptValue::DeserializeOptions options;
+    options.messagePorts = &ports;
+    data = serializedValue->deserialize(isolate, options);
   } else if (DOMWrapperWorld::current(isolate).isIsolatedWorld()) {
     v8::Local<v8::Value> mainWorldData =
         privateCachedData.getFromMainWorld(scriptState, event);

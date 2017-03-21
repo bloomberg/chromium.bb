@@ -32,14 +32,10 @@ class GC_PLUGIN_IGNORE("https://crbug.com/644725") CORE_EXPORT
   WTF_MAKE_NONCOPYABLE(V8ScriptValueDeserializer);
 
  public:
-  V8ScriptValueDeserializer(RefPtr<ScriptState>, RefPtr<SerializedScriptValue>);
-
-  void setTransferredMessagePorts(const MessagePortArray* ports) {
-    m_transferredMessagePorts = ports;
-  }
-  void setBlobInfoArray(const WebBlobInfoArray* blobInfoArray) {
-    m_blobInfoArray = blobInfoArray;
-  }
+  using Options = SerializedScriptValue::DeserializeOptions;
+  V8ScriptValueDeserializer(RefPtr<ScriptState>,
+                            RefPtr<SerializedScriptValue>,
+                            const Options& = Options());
 
   v8::Local<v8::Value> deserialize();
 

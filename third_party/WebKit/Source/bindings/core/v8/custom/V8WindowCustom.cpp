@@ -279,8 +279,10 @@ void V8Window::postMessageMethodCustom(
   TOSTRING_VOID(V8StringResource<TreatNullAndUndefinedAsNullString>,
                 targetOrigin, info[targetOriginArgIndex]);
 
+  SerializedScriptValue::SerializeOptions options;
+  options.transferables = &transferables;
   RefPtr<SerializedScriptValue> message = SerializedScriptValue::serialize(
-      info.GetIsolate(), info[0], &transferables, nullptr, exceptionState);
+      info.GetIsolate(), info[0], options, exceptionState);
   if (exceptionState.hadException())
     return;
 

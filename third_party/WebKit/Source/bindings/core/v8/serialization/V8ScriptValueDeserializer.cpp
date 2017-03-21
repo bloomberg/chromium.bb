@@ -79,13 +79,16 @@ size_t readVersionEnvelope(SerializedScriptValue* serializedScriptValue,
 
 V8ScriptValueDeserializer::V8ScriptValueDeserializer(
     RefPtr<ScriptState> scriptState,
-    RefPtr<SerializedScriptValue> serializedScriptValue)
+    RefPtr<SerializedScriptValue> serializedScriptValue,
+    const Options& options)
     : m_scriptState(std::move(scriptState)),
       m_serializedScriptValue(std::move(serializedScriptValue)),
       m_deserializer(m_scriptState->isolate(),
                      m_serializedScriptValue->data(),
                      m_serializedScriptValue->dataLengthInBytes(),
-                     this) {
+                     this),
+      m_transferredMessagePorts(options.messagePorts),
+      m_blobInfoArray(options.blobInfo) {
   m_deserializer.SetSupportsLegacyWireFormat(true);
 }
 

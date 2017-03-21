@@ -62,7 +62,8 @@ void BroadcastChannel::postMessage(const ScriptValue& message,
     return;
   }
   RefPtr<SerializedScriptValue> value = SerializedScriptValue::serialize(
-      message.isolate(), message.v8Value(), nullptr, nullptr, exceptionState);
+      message.isolate(), message.v8Value(),
+      SerializedScriptValue::SerializeOptions(), exceptionState);
   if (exceptionState.hadException())
     return;
 

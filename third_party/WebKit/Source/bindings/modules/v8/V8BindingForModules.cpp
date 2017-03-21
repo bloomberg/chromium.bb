@@ -387,7 +387,9 @@ static v8::Local<v8::Value> deserializeIDBValueData(v8::Isolate* isolate,
 
   RefPtr<SerializedScriptValue> serializedValue =
       value->createSerializedValue();
-  return serializedValue->deserialize(isolate, nullptr, value->blobInfo());
+  SerializedScriptValue::DeserializeOptions options;
+  options.blobInfo = value->blobInfo();
+  return serializedValue->deserialize(isolate, options);
 }
 
 // Deserialize the entire IDBValue (injecting key & keypath if present).
@@ -541,10 +543,13 @@ ScriptValue deserializeScriptValue(ScriptState* scriptState,
                                    const Vector<WebBlobInfo>* blobInfo) {
   v8::Isolate* isolate = scriptState->isolate();
   v8::HandleScope handleScope(isolate);
-  if (serializedValue)
-    return ScriptValue(
-        scriptState, serializedValue->deserialize(isolate, nullptr, blobInfo));
-  return ScriptValue(scriptState, v8::Null(isolate));
+  if (!serializedValue)
+    return ScriptValue::createNull(scriptState);
+
+  SerializedScriptValue::DeserializeOptions options;
+  options.blobInfo = blobInfo;
+  return ScriptValue(scriptState,
+                     serializedValue->deserialize(isolate, options));
 }
 
 SQLValue NativeValueTraits<SQLValue>::nativeValue(
