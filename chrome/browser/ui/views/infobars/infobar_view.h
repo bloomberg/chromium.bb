@@ -11,23 +11,22 @@
 #include "components/infobars/core/infobar_container.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/controls/button/vector_icon_button_delegate.h"
 #include "ui/views/controls/menu/menu_types.h"
 #include "ui/views/focus/external_focus_tracker.h"
 #include "ui/views/view_targeter_delegate.h"
 
 namespace views {
+class ImageButton;
 class ImageView;
 class Label;
 class Link;
 class LinkListener;
 class MenuRunner;
-class VectorIconButton;
 }  // namespace views
 
 class InfoBarView : public infobars::InfoBar,
                     public views::View,
-                    public views::VectorIconButtonDelegate,
+                    public views::ButtonListener,
                     public views::ExternalFocusTracker,
                     public views::ViewTargeterDelegate {
  public:
@@ -59,11 +58,10 @@ class InfoBarView : public infobars::InfoBar,
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
 
-  // views::VectorIconButtonDelegate:
+  // views::ButtonListener:
   // NOTE: This must not be called if we're unowned.  (Subclasses should ignore
   // calls to ButtonPressed() in this case.)
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-  SkColor GetVectorIconBaseColor() const override;
 
   // Returns the minimum width the content (that is, everything between the icon
   // and the close button) can be shrunk to.  This is used to prevent the close
@@ -114,7 +112,7 @@ class InfoBarView : public infobars::InfoBar,
   views::ImageView* icon_;
 
   // The close button at the right edge of the InfoBar.
-  views::VectorIconButton* close_button_;
+  views::ImageButton* close_button_;
 
   // Used to run the menu.
   std::unique_ptr<views::MenuRunner> menu_runner_;

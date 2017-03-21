@@ -17,9 +17,9 @@ class AutofillProfile;
 
 namespace views {
 class Border;
+class ButtonListener;
 class ImageView;
 class Label;
-class VectorIconButtonDelegate;
 class View;
 }
 
@@ -53,7 +53,7 @@ enum class PaymentRequestCommonTags {
 std::unique_ptr<views::View> CreateSheetHeaderView(
     bool show_back_arrow,
     const base::string16& title,
-    views::VectorIconButtonDelegate* delegate);
+    views::ButtonListener* delegate);
 
 // Returns an instrument image view for the given |icon_resource_id|. Includes
 // a rounded rect border. Callers need to set the size of the resulting

@@ -9,7 +9,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "ui/gfx/geometry/insets.h"
-#include "ui/views/controls/button/vector_icon_button_delegate.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/window/non_client_view.h"
 
 namespace gfx {
@@ -19,13 +19,12 @@ class FontList;
 namespace views {
 
 class Label;
-class Button;
 class BubbleBorder;
 class ImageView;
 
 // The non-client frame view of bubble-styled widgets.
 class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
-                                     public VectorIconButtonDelegate {
+                                     public ButtonListener {
  public:
   // Internal class name.
   static const char kViewClassName[];
@@ -35,9 +34,9 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   ~BubbleFrameView() override;
 
   // Creates a close button used in the corner of the dialog.
-  static Button* CreateCloseButton(VectorIconButtonDelegate* delegate);
+  static Button* CreateCloseButton(ButtonListener* listener);
 
-  // NonClientFrameView overrides:
+  // NonClientFrameView:
   gfx::Rect GetBoundsForClientView() const override;
   gfx::Rect GetWindowBoundsForClientBounds(
       const gfx::Rect& client_bounds) const override;
@@ -53,7 +52,7 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   // Caller must arrange to update the layout to have the call take effect.
   void SetTitleFontList(const gfx::FontList& font_list);
 
-  // View overrides:
+  // View:
   const char* GetClassName() const override;
   gfx::Insets GetInsets() const override;
   gfx::Size GetPreferredSize() const override;
@@ -65,7 +64,7 @@ class VIEWS_EXPORT BubbleFrameView : public NonClientFrameView,
   void OnThemeChanged() override;
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
-  // Overridden from VectorIconButtonDelegate:
+  // ButtonListener:
   void ButtonPressed(Button* sender, const ui::Event& event) override;
 
   // Use bubble_border() and SetBubbleBorder(), not border() and SetBorder().

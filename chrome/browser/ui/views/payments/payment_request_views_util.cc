@@ -28,7 +28,8 @@
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/controls/button/vector_icon_button.h"
+#include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/styled_label.h"
@@ -123,7 +124,7 @@ class PaymentRequestRowBorderPainter : public views::Painter {
 std::unique_ptr<views::View> CreateSheetHeaderView(
     bool show_back_arrow,
     const base::string16& title,
-    views::VectorIconButtonDelegate* delegate) {
+    views::ButtonListener* listener) {
   std::unique_ptr<views::View> container = base::MakeUnique<views::View>();
   views::GridLayout* layout = new views::GridLayout(container.get());
   container->SetLayoutManager(layout);
@@ -152,8 +153,8 @@ std::unique_ptr<views::View> CreateSheetHeaderView(
   if (!show_back_arrow) {
     layout->SkipColumns(1);
   } else {
-    views::VectorIconButton* back_arrow = new views::VectorIconButton(delegate);
-    back_arrow->SetIcon(ui::kBackArrowIcon);
+    views::ImageButton* back_arrow = views::CreateVectorImageButton(listener);
+    views::SetImageFromVectorIcon(back_arrow, ui::kBackArrowIcon);
     constexpr int kBackArrowSize = 16;
     back_arrow->SetSize(gfx::Size(kBackArrowSize, kBackArrowSize));
     back_arrow->set_tag(static_cast<int>(

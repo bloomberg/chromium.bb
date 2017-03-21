@@ -1,0 +1,41 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "ui/views/controls/button/image_button_factory.h"
+
+#include "ui/gfx/color_utils.h"
+#include "ui/vector_icons/vector_icons.h"
+#include "ui/views/animation/test/ink_drop_host_view_test_api.h"
+#include "ui/views/controls/button/button.h"
+#include "ui/views/controls/button/image_button.h"
+#include "ui/views/test/views_test_base.h"
+
+namespace views {
+
+typedef ViewsTestBase ImageButtonFactoryTest;
+
+TEST_F(ImageButtonFactoryTest, CreateVectorImageButton) {
+  ImageButton* button = CreateVectorImageButton(nullptr);
+  EXPECT_EQ(ImageButton::ALIGN_CENTER, button->h_alignment_);
+  EXPECT_EQ(ImageButton::ALIGN_MIDDLE, button->v_alignment_);
+  EXPECT_TRUE(test::InkDropHostViewTestApi(button).HasGestureHandler());
+  delete button;
+}
+
+TEST_F(ImageButtonFactoryTest, SetImageFromVectorIcon) {
+  ImageButton* button = CreateVectorImageButton(nullptr);
+  SetImageFromVectorIcon(button, ui::kCloseIcon, SK_ColorRED);
+  EXPECT_FALSE(button->GetImage(CustomButton::STATE_NORMAL).isNull());
+  EXPECT_FALSE(button->GetImage(CustomButton::STATE_DISABLED).isNull());
+  EXPECT_EQ(color_utils::DeriveDefaultIconColor(SK_ColorRED),
+            button->GetInkDropBaseColor());
+
+  // Default to black.
+  SetImageFromVectorIcon(button, ui::kCloseIcon);
+  EXPECT_EQ(color_utils::DeriveDefaultIconColor(SK_ColorBLACK),
+            button->GetInkDropBaseColor());
+  delete button;
+}
+
+}  // views

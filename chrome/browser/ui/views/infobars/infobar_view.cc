@@ -27,10 +27,10 @@
 #include "ui/native_theme/native_theme.h"
 #include "ui/vector_icons/vector_icons.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/button/menu_button.h"
-#include "ui/views/controls/button/vector_icon_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
@@ -165,8 +165,9 @@ void InfoBarView::ViewHierarchyChanged(
       child_container_->AddChildView(icon_);
     }
 
-    close_button_ = new views::VectorIconButton(this);
-    close_button_->SetIcon(ui::kCloseIcon);
+    close_button_ = views::CreateVectorImageButton(this);
+    views::SetImageFromVectorIcon(close_button_, ui::kCloseIcon,
+                                  GetInfobarTextColor());
     close_button_->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
     close_button_->SetFocusForPlatform();
@@ -193,10 +194,6 @@ void InfoBarView::ButtonPressed(views::Button* sender,
     delegate()->InfoBarDismissed();
     RemoveSelf();
   }
-}
-
-SkColor InfoBarView::GetVectorIconBaseColor() const {
-  return GetInfobarTextColor();
 }
 
 int InfoBarView::ContentMinimumWidth() const {

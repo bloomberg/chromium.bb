@@ -34,8 +34,9 @@
 #include "ui/vector_icons/vector_icons.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/button/md_text_button.h"
-#include "ui/views/controls/button/vector_icon_button.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/mouse_watcher_view_host.h"
 
@@ -95,7 +96,7 @@ DownloadShelfView::DownloadShelfView(Browser* browser, BrowserView* parent)
       new_item_animation_(this),
       shelf_animation_(this),
       show_all_view_(nullptr),
-      close_button_(nullptr),
+      close_button_(views::CreateVectorImageButton(this)),
       parent_(parent),
       mouse_watcher_(new views::MouseWatcherViewHost(this, gfx::Insets()),
                      this) {
@@ -112,9 +113,6 @@ DownloadShelfView::DownloadShelfView(Browser* browser, BrowserView* parent)
       this, l10n_util::GetStringUTF16(IDS_SHOW_ALL_DOWNLOADS));
   AddChildView(show_all_view_);
 
-  views::VectorIconButton* close_button = new views::VectorIconButton(this);
-  close_button->SetIcon(ui::kCloseIcon);
-  close_button_ = close_button;
   close_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
   AddChildView(close_button_);
@@ -335,6 +333,10 @@ void DownloadShelfView::UpdateColorsFromTheme() {
 
   set_background(views::Background::CreateSolidBackground(
       GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR)));
+
+  views::SetImageFromVectorIcon(
+      close_button_, ui::kCloseIcon,
+      DownloadItemView::GetTextColorForThemeProvider(GetThemeProvider()));
 }
 
 void DownloadShelfView::OnThemeChanged() {
@@ -353,10 +355,6 @@ void DownloadShelfView::ButtonPressed(
     chrome::ShowDownloads(browser_);
   else
     NOTREACHED();
-}
-
-SkColor DownloadShelfView::GetVectorIconBaseColor() const {
-  return DownloadItemView::GetTextColorForThemeProvider(GetThemeProvider());
 }
 
 bool DownloadShelfView::IsShowing() const {

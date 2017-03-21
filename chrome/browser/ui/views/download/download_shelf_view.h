@@ -15,7 +15,7 @@
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/views/accessible_pane_view.h"
-#include "ui/views/controls/button/vector_icon_button_delegate.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/mouse_watcher.h"
 
@@ -41,7 +41,7 @@ class MdTextButton;
 class DownloadShelfView : public views::AccessiblePaneView,
                           public gfx::AnimationDelegate,
                           public DownloadShelf,
-                          public views::VectorIconButtonDelegate,
+                          public views::ButtonListener,
                           public views::LinkListener,
                           public views::MouseWatcherListener {
  public:
@@ -58,32 +58,31 @@ class DownloadShelfView : public views::AccessiblePaneView,
   // Returns the parent_.
   BrowserView* get_parent() { return parent_; }
 
-  // Implementation of View.
+  // views::View:
   gfx::Size GetPreferredSize() const override;
   void Layout() override;
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
 
-  // Implementation of gfx::AnimationDelegate.
+  // gfx::AnimationDelegate.
   void AnimationProgressed(const gfx::Animation* animation) override;
   void AnimationEnded(const gfx::Animation* animation) override;
 
-  // Implementation of views::LinkListener.
+  // views::LinkListener.
   // Invoked when the user clicks the 'show all downloads' link button.
   void LinkClicked(views::Link* source, int event_flags) override;
 
-  // Implementation of VectorIconButtonDelegate.
+  // views::ButtonListener:
   // Invoked when the user clicks the close button. Asks the browser to
   // hide the download shelf.
   void ButtonPressed(views::Button* button, const ui::Event& event) override;
-  SkColor GetVectorIconBaseColor() const override;
 
-  // Implementation of DownloadShelf.
+  // DownloadShelf:
   bool IsShowing() const override;
   bool IsClosing() const override;
   Browser* browser() const override;
 
-  // Implementation of MouseWatcherListener override.
+  // views::MouseWatcherListener:
   void MouseMovedOutOfHost() override;
 
   // Removes a specified download view. The supplied view is deleted after
@@ -94,14 +93,14 @@ class DownloadShelfView : public views::AccessiblePaneView,
   void ConfigureButtonForTheme(views::MdTextButton* button);
 
  protected:
-  // Implementation of DownloadShelf.
+  // DownloadShelf:
   void DoAddDownload(content::DownloadItem* download) override;
   void DoOpen() override;
   void DoClose(CloseReason reason) override;
   void DoHide() override;
   void DoUnhide() override;
 
-  // From AccessiblePaneView
+  // views::AccessiblePaneView:
   views::View* GetDefaultFocusableChild() override;
 
  private:
@@ -119,7 +118,7 @@ class DownloadShelfView : public views::AccessiblePaneView,
   // Called on theme change.
   void UpdateColorsFromTheme();
 
-  // Overridden from views::View.
+  // views::View:
   void OnThemeChanged() override;
 
   // Called when the "close shelf" animation ended.

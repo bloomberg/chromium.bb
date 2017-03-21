@@ -62,8 +62,9 @@
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/button/md_text_button.h"
-#include "ui/views/controls/button/vector_icon_button.h"
 #include "ui/views/controls/focusable_border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/mouse_constants.h"
@@ -154,23 +155,6 @@ class SeparatorBorder : public views::FocusableBorder {
 
 }  // namespace
 
-// Allows the DownloadItemView to control the InkDrop on the drop down button.
-class DownloadItemView::DropDownButton : public views::VectorIconButton {
- public:
-  explicit DropDownButton(views::VectorIconButtonDelegate* delegate)
-      : views::VectorIconButton(delegate) {}
-  ~DropDownButton() override {}
-
-  // Promoted visibility to public.
-  void AnimateInkDrop(views::InkDropState state) {
-    // TODO(bruthig): Plumb in the proper Event.
-    views::VectorIconButton::AnimateInkDrop(state, nullptr /* event */);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DropDownButton);
-};
-
 DownloadItemView::DownloadItemView(DownloadItem* download_item,
                                    DownloadShelfView* parent)
     : shelf_(parent),
@@ -182,7 +166,7 @@ DownloadItemView::DownloadItemView(DownloadItem* download_item,
       model_(download_item),
       save_button_(nullptr),
       discard_button_(nullptr),
-      dropdown_button_(new DropDownButton(this)),
+      dropdown_button_(views::CreateVectorImageButton(this)),
       dangerous_download_label_(nullptr),
       dangerous_download_label_sized_(false),
       disabled_while_opening_(false),
@@ -388,6 +372,13 @@ void DownloadItemView::Layout() {
   }
 }
 
+void DownloadItemView::UpdateDropdownButton() {
+  views::SetImageFromVectorIcon(
+      dropdown_button_,
+      dropdown_state_ == PUSHED ? kCaretDownIcon : kCaretUpIcon,
+      GetTextColor());
+}
+
 gfx::Size DownloadItemView::GetPreferredSize() const {
   int width = 0;
   // We set the height to the height of two rows or text plus margins.
@@ -504,6 +495,16 @@ void DownloadItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 void DownloadItemView::OnThemeChanged() {
   UpdateColorsFromTheme();
   SchedulePaint();
+  UpdateDropdownButton();
+}
+
+void DownloadItemView::ViewHierarchyChanged(
+    const ViewHierarchyChangedDetails& details) {
+  if (details.is_add && details.child == this) {
+    // This is only required because OnThemeChanged is not called when a view is
+    // added as a child.
+    UpdateDropdownButton();
+  }
 }
 
 void DownloadItemView::AddInkDropLayer(ui::Layer* ink_drop_layer) {
@@ -599,10 +600,6 @@ void DownloadItemView::ButtonPressed(views::Button* sender,
   UMA_HISTOGRAM_LONG_TIMES("clickjacking.discard_download", warning_duration);
   MaybeSubmitDownloadToFeedbackService(DownloadCommands::DISCARD);
   // WARNING: 'this' maybe deleted at this point. Don't access 'this'.
-}
-
-SkColor DownloadItemView::GetVectorIconBaseColor() const {
-  return GetTextColor();
 }
 
 void DownloadItemView::AnimationProgressed(const gfx::Animation* animation) {
@@ -882,15 +879,14 @@ void DownloadItemView::SetDropdownState(State new_state) {
       !dropdown_button_->GetImage(views::CustomButton::STATE_NORMAL).isNull())
     return;
 
-  dropdown_button_->SetIcon(new_state == PUSHED ? kCaretDownIcon
-                                                : kCaretUpIcon);
   if (new_state != dropdown_state_) {
     dropdown_button_->AnimateInkDrop(new_state == PUSHED
                                          ? views::InkDropState::ACTIVATED
-                                         : views::InkDropState::DEACTIVATED);
+                                         : views::InkDropState::DEACTIVATED,
+                                     nullptr);
   }
-  dropdown_button_->OnThemeChanged();
   dropdown_state_ = new_state;
+  UpdateDropdownButton();
   SchedulePaint();
 }
 

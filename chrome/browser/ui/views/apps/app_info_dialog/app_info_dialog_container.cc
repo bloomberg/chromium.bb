@@ -19,8 +19,7 @@
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/bubble/bubble_frame_view.h"
-#include "ui/views/controls/button/vector_icon_button.h"
-#include "ui/views/controls/button/vector_icon_button_delegate.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/client_view.h"
@@ -129,7 +128,7 @@ class BaseDialogContainer : public views::DialogDelegateView {
 // The contents view for an App List Dialog, which covers the entire app list
 // and adds a close button.
 class AppListDialogContainer : public BaseDialogContainer,
-                               public views::VectorIconButtonDelegate {
+                               public views::ButtonListener {
  public:
   AppListDialogContainer(views::View* dialog_body,
                          const base::Closure& close_callback)
@@ -141,7 +140,7 @@ class AppListDialogContainer : public BaseDialogContainer,
   ~AppListDialogContainer() override {}
 
  private:
-  // Overridden from views::View:
+  // views::View:
   void Layout() override {
     // Margin of the close button from the top right-hand corner of the dialog.
     const int kCloseButtonDialogMargin = 10;
@@ -154,13 +153,13 @@ class AppListDialogContainer : public BaseDialogContainer,
     views::DialogDelegateView::Layout();
   }
 
-  // Overridden from views::WidgetDelegate:
+  // views::WidgetDelegate:
   views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) override {
     return new views::NativeFrameView(widget);
   }
 
-  // Overridden from views::ButtonListener:
+  // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override {
     if (sender == close_button_) {
       GetWidget()->Close();

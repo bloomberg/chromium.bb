@@ -36,7 +36,7 @@
 #include "ui/views/border.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/controls/button/image_button.h"
-#include "ui/views/controls/button/vector_icon_button.h"
+#include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
@@ -117,19 +117,15 @@ FindBarView::FindBarView(FindBarHost* host)
       match_count_text_(new MatchCountLabel()),
       focus_forwarder_view_(new FocusForwarderView(find_text_)),
       separator_(new views::Separator()),
-      find_previous_button_(new views::VectorIconButton(this)),
-      find_next_button_(new views::VectorIconButton(this)),
-      close_button_(new views::VectorIconButton(this)) {
+      find_previous_button_(views::CreateVectorImageButton(this)),
+      find_next_button_(views::CreateVectorImageButton(this)),
+      close_button_(views::CreateVectorImageButton(this)) {
   find_text_->set_id(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD);
   find_text_->set_default_width_in_chars(kDefaultCharWidth);
   find_text_->set_controller(this);
   find_text_->SetAccessibleName(l10n_util::GetStringUTF16(IDS_ACCNAME_FIND));
   find_text_->SetTextInputFlags(ui::TEXT_INPUT_FLAG_AUTOCORRECT_OFF);
   AddChildView(find_text_);
-
-  find_previous_button_->SetIcon(kCaretUpIcon);
-  find_next_button_->SetIcon(kCaretDownIcon);
-  close_button_->SetIcon(ui::kCloseIcon);
 
   find_previous_button_->set_id(VIEW_ID_FIND_IN_PAGE_PREVIOUS_BUTTON);
   find_previous_button_->SetFocusForPlatform();
@@ -280,7 +276,7 @@ void FindBarView::SetFocusAndSelection(bool select_all) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// FindBarView, views::VectorIconButtonDelegate implementation:
+// FindBarView, views::ButtonListener implementation:
 
 void FindBarView::ButtonPressed(
     views::Button* sender, const ui::Event& event) {
@@ -305,11 +301,6 @@ void FindBarView::ButtonPressed(
       NOTREACHED() << "Unknown button";
       break;
   }
-}
-
-SkColor FindBarView::GetVectorIconBaseColor() const {
-  return GetNativeTheme()->GetSystemColor(
-      ui::NativeTheme::kColorId_TextfieldDefaultColor);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -422,5 +413,12 @@ void FindBarView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
       theme->GetSystemColor(ui::NativeTheme::kColorId_TextfieldDefaultColor);
   match_count_text_->SetEnabledColor(SkColorSetA(text_color, 0x69));
   separator_->SetColor(SkColorSetA(text_color, 0x26));
-}
 
+  const SkColor base_icon_color = GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_TextfieldDefaultColor);
+  views::SetImageFromVectorIcon(find_previous_button_, kCaretUpIcon,
+                                base_icon_color);
+  views::SetImageFromVectorIcon(find_next_button_, kCaretDownIcon,
+                                base_icon_color);
+  views::SetImageFromVectorIcon(close_button_, ui::kCloseIcon, base_icon_color);
+}

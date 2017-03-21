@@ -8,10 +8,9 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "ui/views/controls/button/vector_icon_button_delegate.h"
+#include "ui/views/controls/button/button.h"
 
 namespace views {
-class Button;
 class View;
 }
 
@@ -23,7 +22,7 @@ class PaymentRequestState;
 
 // The base class for objects responsible for the creation and event handling in
 // views shown in the PaymentRequestDialog.
-class PaymentRequestSheetController : public views::VectorIconButtonDelegate {
+class PaymentRequestSheetController : public views::ButtonListener {
  public:
   // Objects of this class are owned by |dialog|, so it's a non-owned pointer
   // that should be valid throughout this object's lifetime.
@@ -65,7 +64,7 @@ class PaymentRequestSheetController : public views::VectorIconButtonDelegate {
   // +---------------------------+
   virtual std::unique_ptr<views::View> CreateExtraFooterView();
 
-  // views::VectorIconButtonDelegate:
+  // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   // Creates a view to be displayed in the PaymentRequestDialog.

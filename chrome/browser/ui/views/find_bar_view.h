@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/views/dropdown_bar_host_delegate.h"
-#include "ui/views/controls/button/vector_icon_button_delegate.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/view.h"
 #include "ui/views/view_targeter_delegate.h"
@@ -24,11 +24,11 @@ class Range;
 }
 
 namespace views {
+class ImageButton;
 class Label;
 class Painter;
 class Separator;
 class Textfield;
-class VectorIconButton;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -40,7 +40,7 @@ class VectorIconButton;
 ////////////////////////////////////////////////////////////////////////////////
 class FindBarView : public views::View,
                     public DropdownBarHostDelegate,
-                    public views::VectorIconButtonDelegate,
+                    public views::ButtonListener,
                     public views::TextfieldController,
                     public views::ViewTargeterDelegate {
  public:
@@ -68,15 +68,16 @@ class FindBarView : public views::View,
   void ClearMatchCount();
 
   // views::View:
+  const char* GetClassName() const override;
   void Layout() override;
   gfx::Size GetPreferredSize() const override;
+  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
   // DropdownBarHostDelegate:
   void SetFocusAndSelection(bool select_all) override;
 
-  // views::VectorIconButtonDelegate:
+  // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-  SkColor GetVectorIconBaseColor() const override;
 
   // views::TextfieldController:
   bool HandleKeyEvent(views::Textfield* sender,
@@ -93,10 +94,6 @@ class FindBarView : public views::View,
 
   // Updates the appearance for the match count label.
   void UpdateMatchCountAppearance(bool no_match);
-
-  // DropdownBarView:
-  const char* GetClassName() const override;
-  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
   // Returns the color for the icons on the buttons per the current NativeTheme.
   SkColor GetTextColorForIcon();
@@ -115,9 +112,9 @@ class FindBarView : public views::View,
   views::Label* match_count_text_;
   views::View* focus_forwarder_view_;
   views::Separator* separator_;
-  views::VectorIconButton* find_previous_button_;
-  views::VectorIconButton* find_next_button_;
-  views::VectorIconButton* close_button_;
+  views::ImageButton* find_previous_button_;
+  views::ImageButton* find_next_button_;
+  views::ImageButton* close_button_;
 
   // The preferred height of the find bar.
   int preferred_height_;

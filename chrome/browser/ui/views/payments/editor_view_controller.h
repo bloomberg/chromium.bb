@@ -18,7 +18,6 @@
 #include "chrome/browser/ui/views/payments/payment_request_sheet_controller.h"
 #include "chrome/browser/ui/views/payments/validation_delegate.h"
 #include "components/autofill/core/browser/field_types.h"
-#include "ui/views/controls/button/vector_icon_button_delegate.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/view.h"

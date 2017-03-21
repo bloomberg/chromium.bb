@@ -34,7 +34,7 @@
 #include "ui/gfx/font_list.h"
 #include "ui/views/animation/ink_drop_host_view.h"
 #include "ui/views/context_menu_controller.h"
-#include "ui/views/controls/button/vector_icon_button_delegate.h"
+#include "ui/views/controls/button/button.h"
 
 class DownloadShelfView;
 class DownloadShelfContextMenuView;
@@ -54,14 +54,16 @@ class ThemeProvider;
 }
 
 namespace views {
+class ImageButton;
 class Label;
 class MdTextButton;
+class ViewHierarchyChangedDetails;
 }
 
 // Represents a single download item on the download shelf. Encompasses an icon,
 // text, malicious download warnings, etc.
 class DownloadItemView : public views::InkDropHostView,
-                         public views::VectorIconButtonDelegate,
+                         public views::ButtonListener,
                          public views::ContextMenuController,
                          public content::DownloadItem::Observer,
                          public gfx::AnimationDelegate {
@@ -77,7 +79,6 @@ class DownloadItemView : public views::InkDropHostView,
   // Returns the base color for text on this download item, based on |theme|.
   static SkColor GetTextColorForThemeProvider(const ui::ThemeProvider* theme);
 
-  // IconManager::Client interface.
   void OnExtractIconComplete(gfx::Image* icon);
 
   // Returns the DownloadItem model object belonging to this item.
@@ -89,12 +90,12 @@ class DownloadItemView : public views::InkDropHostView,
   void MaybeSubmitDownloadToFeedbackService(
       DownloadCommands::Command download_command);
 
-  // DownloadItem::Observer methods
+  // content::DownloadItem::Observer:
   void OnDownloadUpdated(content::DownloadItem* download) override;
   void OnDownloadOpened(content::DownloadItem* download) override;
   void OnDownloadDestroyed(content::DownloadItem* download) override;
 
-  // Overridden from views::View:
+  // views::View:
   void Layout() override;
   gfx::Size GetPreferredSize() const override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
@@ -106,31 +107,32 @@ class DownloadItemView : public views::InkDropHostView,
                       base::string16* tooltip) const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void OnThemeChanged() override;
+  void ViewHierarchyChanged(
+      const ViewHierarchyChangedDetails& details) override;
 
-  // Overridden from view::InkDropHostView:
+  // view::InkDropHostView:
   void AddInkDropLayer(ui::Layer* ink_drop_layer) override;
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override;
 
-  // Overridden from ui::EventHandler:
+  // ui::EventHandler:
   void OnGestureEvent(ui::GestureEvent* event) override;
 
-  // Overridden from views::ContextMenuController.
+  // views::ContextMenuController.
   void ShowContextMenuForView(View* source,
                               const gfx::Point& point,
                               ui::MenuSourceType source_type) override;
 
-  // VectorIconButtonDelegate implementation.
+  // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-  SkColor GetVectorIconBaseColor() const override;
 
   // gfx::AnimationDelegate implementation.
   void AnimationProgressed(const gfx::Animation* animation) override;
 
  protected:
-  // Overridden from views::View:
+  // views::View:
   void OnPaint(gfx::Canvas* canvas) override;
   void OnFocus() override;
   void OnBlur() override;
@@ -140,7 +142,6 @@ class DownloadItemView : public views::InkDropHostView,
                            AdjustTextAndGetSize);
 
   enum State { NORMAL = 0, HOT, PUSHED };
-  class DropDownButton;
 
   enum Mode {
     NORMAL_MODE = 0,  // Showing download item.
@@ -176,6 +177,8 @@ class DownloadItemView : public views::InkDropHostView,
 
   // Update the button colors based on the current theme.
   void UpdateColorsFromTheme();
+
+  void UpdateDropdownButton();
 
   // Shows the context menu at the specified location. |point| is in the view's
   // coordinate system.
@@ -305,7 +308,7 @@ class DownloadItemView : public views::InkDropHostView,
   views::MdTextButton* discard_button_;
 
   // The drop down button.
-  DropDownButton* dropdown_button_;
+  views::ImageButton* dropdown_button_;
 
   // Dangerous mode label.
   views::Label* dangerous_download_label_;

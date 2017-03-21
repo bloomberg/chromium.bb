@@ -58,6 +58,15 @@ class VIEWS_EXPORT InkDropHostView : public View, public InkDropHost {
   }
   float ink_drop_visible_opacity() const { return ink_drop_visible_opacity_; }
 
+  // Animates |ink_drop_| to the desired |ink_drop_state|. Caches |event| as the
+  // last_ripple_triggering_event().
+  //
+  // *** NOTE ***: |event| has been plumbed through on a best effort basis for
+  // the purposes of centering ink drop ripples on located Events.  Thus nullptr
+  // has been used by clients who do not have an Event instance available to
+  // them.
+  void AnimateInkDrop(InkDropState state, const ui::LocatedEvent* event);
+
  protected:
   static constexpr int kInkDropSmallCornerRadius = 2;
   static constexpr int kInkDropLargeCornerRadius = 4;
@@ -84,15 +93,6 @@ class VIEWS_EXPORT InkDropHostView : public View, public InkDropHost {
   // Returns the point of the |last_ripple_triggering_event_| if it was a
   // LocatedEvent, otherwise the center point of the local bounds is returned.
   gfx::Point GetInkDropCenterBasedOnLastEvent() const;
-
-  // Animates |ink_drop_| to the desired |ink_drop_state|. Caches |event| as the
-  // last_ripple_triggering_event().
-  //
-  // *** NOTE ***: |event| has been plumbed through on a best effort basis for
-  // the purposes of centering ink drop ripples on located Events.  Thus nullptr
-  // has been used by clients who do not have an Event instance available to
-  // them.
-  void AnimateInkDrop(InkDropState state, const ui::LocatedEvent* event);
 
   // View:
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
