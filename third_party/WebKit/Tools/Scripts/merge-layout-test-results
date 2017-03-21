@@ -5,8 +5,10 @@
 # found in the LICENSE file.
 
 import argparse
+import json
 import logging
 import os
+import shutil
 import sys
 import tempfile
 
@@ -49,6 +51,14 @@ directory. The script will be given the arguments plus
         '--output-directory',
         help='Directory to create the merged results in.')
     parser.add_argument(
+        '--allow-existing-output-directory',
+        action='store_true', default=False,
+        help='Allow merging results into a directory which already exists.')
+    parser.add_argument(
+        '--remove-existing-output-directory',
+        action='store_true', default=False,
+        help='Remove merging results into a directory which already exists.')
+    parser.add_argument(
         '--input-directories', nargs='+',
         help='Directories to merge the results from.')
 
@@ -60,6 +70,12 @@ directory. The script will be given the arguments plus
     parser.add_argument(
         '--build-properties',
         help='(Swarming Isolated Merge Script API) Build property JSON file provided by recipes.')
+    parser.add_argument(
+        '--results-json-override-with-build-property',
+        nargs=2, metavar=('RESULT_JSON_KEY', 'BUILD_PROPERTY_KEY'), default=[],
+        action='append',
+        help='Override the value of a value in the result style JSON file '
+             '(--result-jsons-override-value layout_test_dirs /tmp/output).')
 
     # Script to run after merging the directories together. Normally used with archive_layout_test_results.py
     # scripts/slave/chromium/archive_layout_test_results.py \
@@ -89,12 +105,25 @@ directory. The script will be given the arguments plus
         logging_level = logging.INFO
     configure_logging(logging_level=logging_level)
 
+    results_json_value_overrides = {}
+
     # Map the isolate arguments back to our output / input arguments.
     if args.output_json:
+        logging.info('Running with isolated arguments')
         assert args.positional
 
+        if args.results_json_override_with_build_property:
+            if not args.build_properties:
+                parser.error(
+                    '--results-json-override-with-build-property given'
+                    ' but --build-properties was not.')
+            build_properties = json.loads(args.build_properties)
+            for result_key, build_prop_key in args.results_json_override_with_build_property:
+                results_json_value_overrides[result_key] = build_properties[build_prop_key]
+
         assert not args.output_directory
-        args.output_directory = os.path.dirname(args.output_json)
+        args.output_directory = os.getcwd()
+        args.remove_existing_output_directory = True
 
         assert not args.input_directories
         args.input_directories = [os.path.dirname(f) for f in args.positional]
@@ -111,25 +140,42 @@ directory. The script will be given the arguments plus
     assert args.output_directory
     assert args.input_directories
 
-    results_json_value_overrides = {}
     for k, v in args.results_json_override_value:
         assert k not in results_json_value_overrides
         try:
             results_json_value_overrides[k] = eval(v)
         except NameError:
             results_json_value_overrides[k] = v
+    logging.debug('results_json_value_overrides: %r', results_json_value_overrides)
 
     merger = merge_results.LayoutTestDirMerger(
         results_json_value_overrides=results_json_value_overrides,
         results_json_allow_unknown_if_matching=args.results_json_allow_unknown_if_matching)
+    if os.path.exists(args.output_directory):
+        logging.warning('Output directory exists %r', args.output_directory)
+        if args.remove_existing_output_directory:
+            shutil.rmtree(args.output_directory)
+        elif not args.allow_existing_output_directory:
+            raise IOError(
+                ('Output directory %s exists!\n'
+                 'Use --allow-existing-output-directory to continue') % args.output_directory)
+
     merger.merge(args.output_directory, args.input_directories)
 
+    merged_output_json = os.path.join(args.output_directory, 'output.json')
+    if os.path.exists(merged_output_json) and args.output_json:
+        logging.debug(
+            'Copying output.json from %s to %s', merged_output_json, args.output_json)
+        shutil.copyfile(merged_output_json, args.output_json)
+
     if args.post_merge_script:
+        logging.debug('Changing directory to %s', args.output_directory)
         os.chdir(args.output_directory)
 
         post_script = list(args.post_merge_script)
         post_script.append('--result-dir', args.output_directory)
 
+        logging.info('Running post merge script %r', post_script)
         os.execlp(post_script)
 
 main(sys.argv[1:])

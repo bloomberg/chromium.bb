@@ -271,14 +271,6 @@ class MergeFilesKeepFilesTests(FileSystemTestCase):
 
 class DirMergerTests(FileSystemTestCase):
 
-    def test_failure_on_output_existing(self):
-        mock_filesystem = MockFileSystem({}, dirs=['/output'])
-        d = merge_results.DirMerger(mock_filesystem)
-        with self.assertRaises(OSError):
-            d.merge('/output', [])
-
-        self.assertDictEqual({}, mock_filesystem.files, "No new files should exist!")
-
     def test_success_no_overlapping_files(self):
         mock_filesystem = MockFileSystem({'/shard0/file1': '1', '/shard1/file2': '2'})
         d = merge_results.DirMerger(mock_filesystem)

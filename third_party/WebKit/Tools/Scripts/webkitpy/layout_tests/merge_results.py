@@ -430,8 +430,6 @@ class DirMerger(Merger):
 
     def merge(self, output_dir, to_merge_dirs):
         output_dir = self.filesystem.realpath(self.filesystem.abspath(output_dir))
-        if self.filesystem.exists(output_dir):
-            raise OSError("Output directory %s exists." % output_dir)
 
         merge_dirs = []
         # Normalize the given directory values.
@@ -466,8 +464,8 @@ class DirMerger(Merger):
         for partial_file_path, in_dirs in sorted(files.iteritems()):
             out_path = self.filesystem.join(output_dir, partial_file_path)
             if self.filesystem.exists(out_path):
-                raise MergeFailure('File %s already exist in output.' % (
-                    out_path))
+                raise MergeFailure(
+                    'File %s already exist in output.', out_path, None, None)
 
             dirname = self.filesystem.dirname(out_path)
             if not self.filesystem.exists(dirname):
