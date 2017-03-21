@@ -25,7 +25,7 @@ var commands = [
     {name: 'InsertHorizontalRule', value: null},
     {name: 'InsertImage', value: '../resources/abe.png'},
     {name: 'InsertLineBreak', value: null},
-    {name: 'InsertNewlineInQuotedContent', value: null},
+    {name: 'InsertNewlineInQuotedContent', value: null, selector: function (test) { window.getSelection().collapse(document.querySelector('a'), 0); }},
     {name: 'InsertOrderedList', value: null},
     {name: 'InsertParagraph', value: null},
     {name: 'InsertText', value: 'webkit'},
@@ -83,7 +83,7 @@ function isLogConsistent() {
 
 addEventListeners(test);
 
-var initial = 'hello, <input type="text"><blockquote align="right"><u><a href="about:blank">world</a></u></blockquote>';
+var initial = 'hello, <input type="text"><blockquote type="cite" align="right"><u><a href="about:blank">world</a></u></blockquote>';
 for (var i = 0; i < commands.length; i++) {
     test.innerHTML = initial;
     if (i)

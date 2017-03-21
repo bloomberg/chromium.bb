@@ -74,8 +74,20 @@ bool isLastVisiblePositionInNode(const VisiblePosition& visiblePosition,
 BreakBlockquoteCommand::BreakBlockquoteCommand(Document& document)
     : CompositeEditCommand(document) {}
 
+static HTMLQuoteElement* topBlockquoteOf(const Position& start) {
+  // This is a position equivalent to the caret.  We use |downstream()| so that
+  // |position| will be in the first node that we need to move (there are a few
+  // exceptions to this, see |doApply|).
+  const Position& position = mostForwardCaretPosition(start);
+  return toHTMLQuoteElement(
+      highestEnclosingNodeOfType(position, isMailHTMLBlockquoteElement));
+}
+
 void BreakBlockquoteCommand::doApply(EditingState* editingState) {
   if (endingSelection().isNone())
+    return;
+
+  if (!topBlockquoteOf(endingSelection().start()))
     return;
 
   // Delete the current selection.
@@ -103,8 +115,8 @@ void BreakBlockquoteCommand::doApply(EditingState* editingState) {
   Position pos = mostForwardCaretPosition(endingSelection().start());
 
   // Find the top-most blockquote from the start.
-  HTMLQuoteElement* topBlockquote = toHTMLQuoteElement(
-      highestEnclosingNodeOfType(pos, isMailHTMLBlockquoteElement));
+  HTMLQuoteElement* const topBlockquote =
+      topBlockquoteOf(endingSelection().start());
   if (!topBlockquote || !topBlockquote->parentNode())
     return;
 
