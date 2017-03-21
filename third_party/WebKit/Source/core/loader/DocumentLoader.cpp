@@ -41,9 +41,11 @@
 #include "core/frame/Settings.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/HTMLFrameOwnerElement.h"
+#include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/inspector/InspectorInstrumentation.h"
+#include "core/inspector/InspectorTraceEvents.h"
 #include "core/inspector/MainThreadDebugger.h"
 #include "core/loader/FrameFetchContext.h"
 #include "core/loader/FrameLoader.h"
@@ -56,10 +58,12 @@
 #include "core/loader/resource/FontResource.h"
 #include "core/loader/resource/ImageResource.h"
 #include "core/loader/resource/ScriptResource.h"
+#include "core/origin_trials/OriginTrialContext.h"
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"
 #include "platform/HTTPNames.h"
 #include "platform/UserGestureIndicator.h"
+#include "platform/feature_policy/FeaturePolicy.h"
 #include "platform/loader/fetch/FetchInitiatorTypeNames.h"
 #include "platform/loader/fetch/FetchRequest.h"
 #include "platform/loader/fetch/FetchUtils.h"
@@ -567,8 +571,9 @@ void DocumentLoader::ensureWriter(const AtomicString& mimeType,
       !Document::threadedParsingEnabledForTesting())
     parsingPolicy = ForceSynchronousParsing;
 
-  m_writer = createWriterFor(init, mimeType, encoding, false, parsingPolicy,
-                             overridingURL);
+  installNewDocument(init, mimeType, encoding,
+                     InstallNewDocumentReason::kNavigation, parsingPolicy,
+                     overridingURL);
   m_writer->setDocumentWasLoadedAsPartOfNavigation();
   m_frame->document()->maybeHandleHttpRefresh(
       m_response.httpHeaderField(HTTPNames::Refresh),
@@ -779,39 +784,149 @@ void DocumentLoader::endWriting() {
   m_writer.clear();
 }
 
-DocumentWriter* DocumentLoader::createWriterFor(
+void DocumentLoader::didInstallNewDocument(Document* document) {
+  document->setReadyState(Document::Loading);
+  document->initContentSecurityPolicy(m_contentSecurityPolicy.release());
+
+  frameLoader().didInstallNewDocument();
+
+  String suboriginHeader = m_response.httpHeaderField(HTTPNames::Suborigin);
+  if (!suboriginHeader.isNull()) {
+    Vector<String> messages;
+    Suborigin suborigin;
+    if (parseSuboriginHeader(suboriginHeader, &suborigin, messages))
+      document->enforceSuborigin(suborigin);
+
+    for (auto& message : messages) {
+      document->addConsoleMessage(
+          ConsoleMessage::create(SecurityMessageSource, ErrorMessageLevel,
+                                 "Error with Suborigin header: " + message));
+    }
+  }
+
+  document->clientHintsPreferences().updateFrom(m_clientHintsPreferences);
+
+  // TODO(japhet): There's no reason to wait until commit to set these bits.
+  Settings* settings = document->settings();
+  m_fetcher->setImagesEnabled(settings->getImagesEnabled());
+  m_fetcher->setAutoLoadImages(settings->getLoadsImagesAutomatically());
+
+  const AtomicString& dnsPrefetchControl =
+      m_response.httpHeaderField(HTTPNames::X_DNS_Prefetch_Control);
+  if (!dnsPrefetchControl.isEmpty())
+    document->parseDNSPrefetchControlHeader(dnsPrefetchControl);
+
+  String headerContentLanguage =
+      m_response.httpHeaderField(HTTPNames::Content_Language);
+  if (!headerContentLanguage.isEmpty()) {
+    size_t commaIndex = headerContentLanguage.find(',');
+    // kNotFound == -1 == don't truncate
+    headerContentLanguage.truncate(commaIndex);
+    headerContentLanguage =
+        headerContentLanguage.stripWhiteSpace(isHTMLSpace<UChar>);
+    if (!headerContentLanguage.isEmpty())
+      document->setContentLanguage(AtomicString(headerContentLanguage));
+  }
+
+  OriginTrialContext::addTokensFromHeader(
+      document, m_response.httpHeaderField(HTTPNames::Origin_Trial));
+  String referrerPolicyHeader =
+      m_response.httpHeaderField(HTTPNames::Referrer_Policy);
+  if (!referrerPolicyHeader.isNull()) {
+    UseCounter::count(*document, UseCounter::ReferrerPolicyHeader);
+    document->parseAndSetReferrerPolicy(referrerPolicyHeader);
+  }
+
+  localFrameClient().didCreateNewDocument();
+}
+
+void DocumentLoader::didCommitNavigation() {
+  if (frameLoader().stateMachine()->creatingInitialEmptyDocument())
+    return;
+  frameLoader().receivedFirstData();
+
+  // didObserveLoadingBehavior() must be called after dispatchDidCommitLoad() is
+  // called for the metrics tracking logic to handle it properly.
+  if (m_serviceWorkerNetworkProvider &&
+      m_serviceWorkerNetworkProvider->isControlledByServiceWorker()) {
+    localFrameClient().didObserveLoadingBehavior(
+        WebLoadingBehaviorServiceWorkerControlled);
+  }
+
+  // Links with media values need more information (like viewport information).
+  // This happens after the first chunk is parsed in HTMLDocumentParser.
+  dispatchLinkHeaderPreloads(nullptr, LinkLoader::OnlyLoadNonMedia);
+
+  TRACE_EVENT1("devtools.timeline", "CommitLoad", "data",
+               InspectorCommitLoadEvent::data(m_frame));
+  probe::didCommitLoad(m_frame, this);
+  m_frame->page()->didCommitLoad(m_frame);
+}
+
+void setFeaturePolicy(Document* document, const String& featurePolicyHeader) {
+  if (!RuntimeEnabledFeatures::featurePolicyEnabled())
+    return;
+  LocalFrame* frame = document->frame();
+  WebFeaturePolicy* parentFeaturePolicy =
+      frame->isMainFrame()
+          ? nullptr
+          : frame->tree().parent()->securityContext()->getFeaturePolicy();
+  Vector<String> messages;
+  const WebParsedFeaturePolicy& parsedHeader = parseFeaturePolicy(
+      featurePolicyHeader, frame->securityContext()->getSecurityOrigin(),
+      &messages);
+  WebParsedFeaturePolicy containerPolicy;
+  if (frame->owner()) {
+    containerPolicy = getContainerPolicyFromAllowedFeatures(
+        frame->owner()->allowedFeatures(),
+        frame->securityContext()->getSecurityOrigin());
+  }
+  frame->securityContext()->initializeFeaturePolicy(
+      parsedHeader, containerPolicy, parentFeaturePolicy);
+
+  for (auto& message : messages) {
+    document->addConsoleMessage(
+        ConsoleMessage::create(OtherMessageSource, ErrorMessageLevel,
+                               "Error with Feature-Policy header: " + message));
+  }
+  if (!parsedHeader.isEmpty())
+    frame->client()->didSetFeaturePolicyHeader(parsedHeader);
+}
+
+void DocumentLoader::installNewDocument(
     const DocumentInit& init,
     const AtomicString& mimeType,
     const AtomicString& encoding,
-    bool dispatchWindowObjectAvailable,
+    InstallNewDocumentReason reason,
     ParserSynchronizationPolicy parsingPolicy,
     const KURL& overridingURL) {
-  LocalFrame* frame = init.frame();
-
-  DCHECK(!frame->document() || !frame->document()->isActive());
-  DCHECK_EQ(frame->tree().childCount(), 0u);
+  DCHECK_EQ(init.frame(), m_frame);
+  DCHECK(!m_frame->document() || !m_frame->document()->isActive());
+  DCHECK_EQ(m_frame->tree().childCount(), 0u);
 
   if (!init.shouldReuseDefaultView())
-    frame->setDOMWindow(LocalDOMWindow::create(*frame));
+    m_frame->setDOMWindow(LocalDOMWindow::create(*m_frame));
 
-  Document* document = frame->domWindow()->installNewDocument(mimeType, init);
-
-  frame->page()->chromeClient().installSupplements(*frame);
-
-  // This should be set before receivedFirstData().
+  Document* document = m_frame->domWindow()->installNewDocument(mimeType, init);
+  m_frame->page()->chromeClient().installSupplements(*m_frame);
   if (!overridingURL.isEmpty())
-    frame->document()->setBaseURLOverride(overridingURL);
-
-  frame->loader().didInstallNewDocument(dispatchWindowObjectAvailable);
+    document->setBaseURLOverride(overridingURL);
+  didInstallNewDocument(document);
 
   // This must be called before DocumentWriter is created, otherwise HTML parser
   // will use stale values from HTMLParserOption.
-  if (!dispatchWindowObjectAvailable)
-    frame->loader().receivedFirstData();
+  if (reason == InstallNewDocumentReason::kNavigation)
+    didCommitNavigation();
 
-  frame->loader().didBeginDocument();
+  m_writer =
+      DocumentWriter::create(document, parsingPolicy, mimeType, encoding);
 
-  return DocumentWriter::create(document, parsingPolicy, mimeType, encoding);
+  // FeaturePolicy is reset in the browser process on commit, so this needs to
+  // be initialized and replicated to the browser process after commit messages
+  // are sent in didCommitNavigation().
+  setFeaturePolicy(document,
+                   m_response.httpHeaderField(HTTPNames::Feature_Policy));
+  frameLoader().dispatchDidClearDocumentOfWindowObject();
 }
 
 const AtomicString& DocumentLoader::mimeType() const {
@@ -825,9 +940,10 @@ const AtomicString& DocumentLoader::mimeType() const {
 void DocumentLoader::replaceDocumentWhileExecutingJavaScriptURL(
     const DocumentInit& init,
     const String& source) {
-  m_writer = createWriterFor(init, mimeType(),
-                             m_writer ? m_writer->encoding() : emptyAtom, true,
-                             ForceSynchronousParsing);
+  installNewDocument(init, mimeType(),
+                     m_writer ? m_writer->encoding() : emptyAtom,
+                     InstallNewDocumentReason::kJavascriptURL,
+                     ForceSynchronousParsing, KURL());
   if (!source.isNull())
     m_writer->appendReplacingData(source);
   endWriting();

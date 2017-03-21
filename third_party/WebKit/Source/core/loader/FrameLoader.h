@@ -137,9 +137,7 @@ class CORE_EXPORT FrameLoader final {
   void didExplicitOpen();
 
   // Callbacks from DocumentWriter
-  void didInstallNewDocument(bool dispatchWindowObjectAvailable);
-
-  void didBeginDocument();
+  void didInstallNewDocument();
 
   void receivedFirstData();
 

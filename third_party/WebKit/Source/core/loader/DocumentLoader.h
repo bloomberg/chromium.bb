@@ -166,10 +166,6 @@ class CORE_EXPORT DocumentLoader
   void clearRedirectChain();
   void appendRedirect(const KURL&);
 
-  ContentSecurityPolicy* releaseContentSecurityPolicy() {
-    return m_contentSecurityPolicy.release();
-  }
-
   ClientHintsPreferences& clientHintsPreferences() {
     return m_clientHintsPreferences;
   }
@@ -216,12 +212,19 @@ class CORE_EXPORT DocumentLoader
   Vector<KURL> m_redirectChain;
 
  private:
-  static DocumentWriter* createWriterFor(const DocumentInit&,
-                                         const AtomicString& mimeType,
-                                         const AtomicString& encoding,
-                                         bool dispatchWindowObjectAvailable,
-                                         ParserSynchronizationPolicy,
-                                         const KURL& overridingURL = KURL());
+  // installNewDocument() does the work of creating a Document and
+  // DocumentWriter, as well as creating a new LocalDOMWindow if needed. It also
+  // initalizes a bunch of state on the Document (e.g., the state based on
+  // response headers).
+  enum class InstallNewDocumentReason { kNavigation, kJavascriptURL };
+  void installNewDocument(const DocumentInit&,
+                          const AtomicString& mimeType,
+                          const AtomicString& encoding,
+                          InstallNewDocumentReason,
+                          ParserSynchronizationPolicy,
+                          const KURL& overridingURL);
+  void didInstallNewDocument(Document*);
+  void didCommitNavigation();
 
   void ensureWriter(const AtomicString& mimeType,
                     const KURL& overridingURL = KURL());
