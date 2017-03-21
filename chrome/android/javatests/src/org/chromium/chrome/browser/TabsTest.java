@@ -1805,13 +1805,7 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
     @Feature({"Android-TabSwitcher"})
     @RetryOnFailure
     public void testIncognitoTabsNotRestoredAfterSwipe() throws Exception {
-        mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
-        startMainActivityWithURL(mTestServer.getURL(TEST_PAGE_FILE_PATH));
-
         newIncognitoTabFromMenu();
-        // Tab states are not saved for empty NTP tabs, so navigate to any page to trigger a file
-        // to be saved.
-        loadUrl(mTestServer.getURL(TEST_PAGE_FILE_PATH));
 
         File tabStateDir = TabbedModeTabPersistencePolicy.getOrCreateTabbedModeStateDirectory();
         TabModel normalModel = getActivity().getTabModelSelector().getModel(false);
@@ -1845,8 +1839,7 @@ public class TabsTest extends ChromeTabbedActivityTestBase {
                 || getName().equals("testSwitchToTabThatDoesNotHaveThumbnail")
                 || getName().equals("testCloseTabPortrait")
                 || getName().equals("testCloseTabLandscape")
-                || getName().equals("testTabsAreDestroyedOnModelDestruction")
-                || getName().equals("testIncognitoTabsNotRestoredAfterSwipe")) {
+                || getName().equals("testTabsAreDestroyedOnModelDestruction")) {
             return;
         }
         startMainActivityFromLauncher();

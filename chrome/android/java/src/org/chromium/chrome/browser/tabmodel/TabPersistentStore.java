@@ -27,7 +27,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.TabState;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
-import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabIdManager;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -277,11 +276,19 @@ public class TabPersistentStore extends TabPersister {
 
             // Add current tabs to save because they did not get a save signal yet.
             Tab currentStandardTab = TabModelUtils.getCurrentTab(mTabModelSelector.getModel(false));
-            addTabToSaveQueueIfApplicable(currentStandardTab);
-
+            if (currentStandardTab != null && !mTabsToSave.contains(currentStandardTab)
+                    && currentStandardTab.isTabStateDirty()
+                    // For content URI, the read permission granted to an activity is not
+                    // persistent.
+                    && !isTabUrlContentScheme(currentStandardTab)) {
+                mTabsToSave.addLast(currentStandardTab);
+            }
             Tab currentIncognitoTab = TabModelUtils.getCurrentTab(mTabModelSelector.getModel(true));
-            addTabToSaveQueueIfApplicable(currentIncognitoTab);
-
+            if (currentIncognitoTab != null && !mTabsToSave.contains(currentIncognitoTab)
+                    && currentIncognitoTab.isTabStateDirty()
+                    && !isTabUrlContentScheme(currentIncognitoTab)) {
+                mTabsToSave.addLast(currentIncognitoTab);
+            }
             // Wait for the current tab to save.
             if (mSaveTabTask != null) {
                 // Cancel calls get() to wait for this to finish internally if it has to.
@@ -290,7 +297,11 @@ public class TabPersistentStore extends TabPersister {
                 if (mSaveTabTask.cancel(false) && !mSaveTabTask.mStateSaved) {
                     // The task was successfully cancelled.  We should try to save this state again.
                     Tab cancelledTab = mSaveTabTask.mTab;
-                    addTabToSaveQueueIfApplicable(cancelledTab);
+                    if (!mTabsToSave.contains(cancelledTab)
+                            && cancelledTab.isTabStateDirty()
+                            && !isTabUrlContentScheme(cancelledTab)) {
+                        mTabsToSave.addLast(cancelledTab);
+                    }
                 }
 
                 mSaveTabTask = null;
@@ -319,14 +330,6 @@ public class TabPersistentStore extends TabPersister {
         }
     }
 
-    @VisibleForTesting
-    void initializeRestoreVars(boolean ignoreIncognitoFiles) {
-        mCancelNormalTabLoads = false;
-        mCancelIncognitoTabLoads = ignoreIncognitoFiles;
-        mNormalTabsRestored = new SparseIntArray();
-        mIncognitoTabsRestored = new SparseIntArray();
-    }
-
     /**
      * Restore saved state. Must be called before any tabs are added to the list.
      *
@@ -345,8 +348,10 @@ public class TabPersistentStore extends TabPersister {
         waitForMigrationToFinish();
         logExecutionTime("LoadStateTime", time);
 
-        initializeRestoreVars(ignoreIncognitoFiles);
-
+        mCancelNormalTabLoads = false;
+        mCancelIncognitoTabLoads = ignoreIncognitoFiles;
+        mNormalTabsRestored = new SparseIntArray();
+        mIncognitoTabsRestored = new SparseIntArray();
         try {
             long timeLoadingState = SystemClock.uptimeMillis();
             assert mTabModelSelector.getModel(true).getCount() == 0;
@@ -416,7 +421,10 @@ public class TabPersistentStore extends TabPersister {
         }
 
         // Initialize variables.
-        initializeRestoreVars(false);
+        mCancelNormalTabLoads = false;
+        mCancelIncognitoTabLoads = false;
+        mNormalTabsRestored = new SparseIntArray();
+        mIncognitoTabsRestored = new SparseIntArray();
 
         try {
             long time = SystemClock.uptimeMillis();
@@ -546,16 +554,7 @@ public class TabPersistentStore extends TabPersister {
         }
     }
 
-    /**
-     * Handles restoring an individual tab.
-     *
-     * @param tabToRestore Meta data about the tab to be restored.
-     * @param tabState     The previously serialized state of the tab to be restored.
-     * @param setAsActive  Whether the tab should be set as the active tab as part of the
-     *                     restoration process.
-     */
-    @VisibleForTesting
-    protected void restoreTab(
+    private void restoreTab(
             TabRestoreDetails tabToRestore, TabState tabState, boolean setAsActive) {
         // If we don't have enough information about the Tab, bail out.
         boolean isIncognito = isIncognitoTabBeingRestored(tabToRestore, tabState);
@@ -595,11 +594,6 @@ public class TabPersistentStore extends TabPersister {
             mTabCreatorManager.getTabCreator(isIncognito).createFrozenTab(
                     tabState, tabToRestore.id, restoredIndex);
         } else {
-            if (NewTabPage.isNTPUrl(tabToRestore.url) && !setAsActive) {
-                Log.i(TAG, "Skipping restore of non-selected NTP.");
-                return;
-            }
-
             Log.w(TAG, "Failed to restore TabState; creating Tab with last known URL.");
             Tab fallbackTab = mTabCreatorManager.getTabCreator(isIncognito).createNewTab(
                     new LoadUrlParams(tabToRestore.url), TabModel.TabLaunchType.FROM_RESTORE, null);
@@ -690,28 +684,10 @@ public class TabPersistentStore extends TabPersister {
     }
 
     public void addTabToSaveQueue(Tab tab) {
-        addTabToSaveQueueIfApplicable(tab);
+        if (!mTabsToSave.contains(tab) && tab.isTabStateDirty() && !isTabUrlContentScheme(tab)) {
+            mTabsToSave.addLast(tab);
+        }
         saveNextTab();
-    }
-
-    /**
-     * @return Whether the specified tab is in any pending save operations.
-     */
-    @VisibleForTesting
-    boolean isTabPendingSave(Tab tab) {
-        return (mSaveTabTask != null && mSaveTabTask.mTab.equals(tab)) || mTabsToSave.contains(tab);
-    }
-
-    private void addTabToSaveQueueIfApplicable(Tab tab) {
-        if (tab == null) return;
-        if (mTabsToSave.contains(tab) || !tab.isTabStateDirty() || isTabUrlContentScheme(tab)) {
-            return;
-        }
-
-        if (NewTabPage.isNTPUrl(tab.getUrl()) && !tab.canGoBack() && !tab.canGoForward()) {
-            return;
-        }
-        mTabsToSave.addLast(tab);
     }
 
     public void removeTabFromQueues(Tab tab) {
@@ -1068,12 +1044,7 @@ public class TabPersistentStore extends TabPersister {
         return nextId;
     }
 
-    /**
-     * Triggers the next save tab task.  Clients do not need to call this as it will be triggered
-     * automatically by calling {@link #addTabToSaveQueue(Tab)}.
-     */
-    @VisibleForTesting
-    void saveNextTab() {
+    private void saveNextTab() {
         if (mSaveTabTask != null) return;
         if (!mTabsToSave.isEmpty()) {
             Tab tab = mTabsToSave.removeFirst();
@@ -1282,11 +1253,7 @@ public class TabPersistentStore extends TabPersister {
         }
     }
 
-    /**
-     * Provides additional meta data to restore an individual tab.
-     */
-    @VisibleForTesting
-    protected static final class TabRestoreDetails {
+    private static final class TabRestoreDetails {
         public final int id;
         public final int originalIndex;
         public final String url;
