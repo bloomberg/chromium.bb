@@ -15,7 +15,6 @@ import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.ShortcutSource;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.content_public.common.ScreenOrientationValues;
-import org.chromium.webapk.lib.common.WebApkConstants;
 
 /**
  * Stores info about a web app.
@@ -303,9 +302,6 @@ public class WebappInfo {
         intent.putExtra(ShortcutHelper.EXTRA_THEME_COLOR, themeColor());
         intent.putExtra(ShortcutHelper.EXTRA_BACKGROUND_COLOR, backgroundColor());
         intent.putExtra(ShortcutHelper.EXTRA_IS_ICON_GENERATED, isIconGenerated());
-        if (webApkPackageName() != null) {
-            intent.putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, webApkPackageName());
-        }
     }
 
     /**
