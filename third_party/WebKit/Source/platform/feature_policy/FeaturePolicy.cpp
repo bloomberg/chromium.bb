@@ -110,4 +110,19 @@ WebParsedFeaturePolicy parseFeaturePolicy(const String& policy,
   return whitelists;
 }
 
+// TODO(lunalu): also take information of allowfullscreen and
+// allowpaymentrequest into account when constructing the whitelist.
+WebParsedFeaturePolicy getContainerPolicyFromAllowedFeatures(
+    const WebVector<WebFeaturePolicyFeature>& features,
+    RefPtr<SecurityOrigin> origin) {
+  Vector<WebParsedFeaturePolicyDeclaration> whitelists;
+  for (const WebFeaturePolicyFeature feature : features) {
+    WebParsedFeaturePolicyDeclaration whitelist;
+    whitelist.feature = feature;
+    whitelist.origins = Vector<WebSecurityOrigin>(1UL, {origin});
+    whitelists.push_back(whitelist);
+  }
+  return whitelists;
+}
+
 }  // namespace blink

@@ -116,4 +116,31 @@ TEST_F(FeaturePolicyTest, PolicyParsedCorrectly) {
       parsedPolicy[2].origins[0].get()));
 }
 
+TEST_F(FeaturePolicyTest, ParseEmptyContainerPolicy) {
+  WebParsedFeaturePolicy containerPolicy =
+      getContainerPolicyFromAllowedFeatures(
+          std::vector<WebFeaturePolicyFeature>({}), m_originA.get());
+  EXPECT_EQ(0UL, containerPolicy.size());
+}
+
+TEST_F(FeaturePolicyTest, ParseContainerPolicy) {
+  WebParsedFeaturePolicy containerPolicy =
+      getContainerPolicyFromAllowedFeatures(
+          std::vector<WebFeaturePolicyFeature>(
+              {WebFeaturePolicyFeature::Vibrate,
+               WebFeaturePolicyFeature::Payment}),
+          m_originA.get());
+  EXPECT_EQ(2UL, containerPolicy.size());
+  EXPECT_EQ(WebFeaturePolicyFeature::Vibrate, containerPolicy[0].feature);
+  EXPECT_FALSE(containerPolicy[0].matchesAllOrigins);
+  EXPECT_EQ(1UL, containerPolicy[0].origins.size());
+  EXPECT_TRUE(m_originA->isSameSchemeHostPortAndSuborigin(
+      containerPolicy[0].origins[0].get()));
+  EXPECT_EQ(WebFeaturePolicyFeature::Payment, containerPolicy[1].feature);
+  EXPECT_FALSE(containerPolicy[1].matchesAllOrigins);
+  EXPECT_EQ(1UL, containerPolicy[1].origins.size());
+  EXPECT_TRUE(m_originA->isSameSchemeHostPortAndSuborigin(
+      containerPolicy[1].origins[0].get()));
+}
+
 }  // namespace blink

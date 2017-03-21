@@ -16,6 +16,7 @@
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/layout/LayoutObject.h"
 #include "core/page/Page.h"
+#include "platform/feature_policy/FeaturePolicy.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebFeaturePolicy.h"
 #include "public/platform/WebFloatRect.h"
@@ -433,8 +434,14 @@ void WebRemoteFrameImpl::setReplicatedFeaturePolicyHeader(
       Frame* parentFrame = frame()->client()->parent();
       parentFeaturePolicy = parentFrame->securityContext()->getFeaturePolicy();
     }
-    frame()->securityContext()->initializeFeaturePolicy(parsedHeader,
-                                                        parentFeaturePolicy);
+    WebParsedFeaturePolicy containerPolicy;
+    if (frame() && frame()->owner()) {
+      containerPolicy = getContainerPolicyFromAllowedFeatures(
+          frame()->owner()->allowedFeatures(),
+          frame()->securityContext()->getSecurityOrigin());
+    }
+    frame()->securityContext()->initializeFeaturePolicy(
+        parsedHeader, containerPolicy, parentFeaturePolicy);
   }
 }
 

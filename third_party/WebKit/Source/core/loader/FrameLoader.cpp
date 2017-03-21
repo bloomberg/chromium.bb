@@ -617,8 +617,14 @@ void FrameLoader::didBeginDocument() {
       const WebParsedFeaturePolicy& parsedHeader = parseFeaturePolicy(
           featurePolicyHeader, m_frame->securityContext()->getSecurityOrigin(),
           &messages);
-      m_frame->securityContext()->initializeFeaturePolicy(parsedHeader,
-                                                          parentFeaturePolicy);
+      WebParsedFeaturePolicy containerPolicy;
+      if (m_frame->owner()) {
+        containerPolicy = getContainerPolicyFromAllowedFeatures(
+            m_frame->owner()->allowedFeatures(),
+            m_frame->securityContext()->getSecurityOrigin());
+      }
+      m_frame->securityContext()->initializeFeaturePolicy(
+          parsedHeader, containerPolicy, parentFeaturePolicy);
       for (auto& message : messages) {
         m_frame->document()->addConsoleMessage(ConsoleMessage::create(
             OtherMessageSource, ErrorMessageLevel,

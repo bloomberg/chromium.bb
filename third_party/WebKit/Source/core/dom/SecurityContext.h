@@ -94,6 +94,7 @@ class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
 
   WebFeaturePolicy* getFeaturePolicy() const { return m_featurePolicy.get(); }
   void initializeFeaturePolicy(const WebParsedFeaturePolicy& parsedHeader,
+                               const WebParsedFeaturePolicy& containerPolicy,
                                const WebFeaturePolicy* parentFeaturePolicy);
   void updateFeaturePolicyOrigin();
 

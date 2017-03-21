@@ -30,6 +30,12 @@ parseFeaturePolicy(const String& policy,
                    RefPtr<SecurityOrigin>,
                    Vector<String>* messages);
 
+// Given a vector of WebFeaturePolicyFeatures and an origin, creates a vector of
+// whitelists, one for each feature specified.
+PLATFORM_EXPORT WebParsedFeaturePolicy getContainerPolicyFromAllowedFeatures(
+    const WebVector<WebFeaturePolicyFeature>& features,
+    RefPtr<SecurityOrigin>);
+
 }  // namespace blink
 
 #endif  // FeaturePolicy_h
