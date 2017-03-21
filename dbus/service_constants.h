@@ -117,6 +117,14 @@ const char kLivenessServiceInterface[] =
 // Methods
 const char kLivenessServiceCheckLivenessMethod[] = "CheckLiveness";
 
+const char kKioskAppServiceName[] = "org.chromium.KioskAppService";
+const char kKioskAppServicePath[] = "/org/chromium/KioskAppService";
+const char kKioskAppServiceInterface[] =
+    "org.chromium.KioskAppServiceInterface";
+// Methods
+const char kKioskAppServiceGetRequiredPlatformVersionMethod[] =
+    "GetRequiredPlatformVersion";
+
 }  // namespace chromeos
 
 namespace cromo {
