@@ -7,6 +7,10 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
 ** Braille table improvements
 - Improvements to the Swedish 8-dots table (~se-se.ctb~) thanks to
   Kevin Derome
+- Improvements to the Simplified-Chinese Braille table thanks to
+  Roshanson
+- Fixes for the International Phonetic Alphabet Braille table thanks
+  to Ludovic Oger
 ** License changes
 ** Backwards incompatible changes
 
