@@ -51,7 +51,7 @@ class PopStateEvent final : public Event {
   }
   void setSerializedState(PassRefPtr<SerializedScriptValue> state) {
     DCHECK(!m_serializedState);
-    m_serializedState = state;
+    m_serializedState = std::move(state);
   }
   History* history() const { return m_history.get(); }
 

@@ -118,7 +118,7 @@ class PLATFORM_EXPORT ImageDecoder {
   void setData(PassRefPtr<SegmentReader> data, bool allDataReceived) {
     if (m_failed)
       return;
-    m_data = data;
+    m_data = std::move(data);
     m_isAllDataReceived = allDataReceived;
     onSetData(m_data.get());
   }

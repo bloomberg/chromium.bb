@@ -186,7 +186,7 @@ void MessageEvent::initMessageEvent(const AtomicString& type,
   initEvent(type, canBubble, cancelable);
 
   m_dataType = DataTypeSerializedScriptValue;
-  m_dataAsSerializedScriptValue = data;
+  m_dataAsSerializedScriptValue = std::move(data);
   m_origin = origin;
   m_lastEventId = lastEventId;
   m_source = source;

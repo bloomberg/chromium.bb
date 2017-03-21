@@ -77,7 +77,7 @@ class PLATFORM_EXPORT Prerender final
   ReferrerPolicy getReferrerPolicy() const { return m_referrer.referrerPolicy; }
 
   void setExtraData(PassRefPtr<ExtraData> extraData) {
-    m_extraData = extraData;
+    m_extraData = std::move(extraData);
   }
   ExtraData* getExtraData() { return m_extraData.get(); }
 

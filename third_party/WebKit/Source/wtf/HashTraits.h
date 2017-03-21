@@ -218,7 +218,7 @@ struct HashTraits<RefPtr<P>> : SimpleClassHashTraits<RefPtr<P>> {
   }
 
   static void store(PassRefPtr<P> value, RefPtr<P>& storage) {
-    storage = value;
+    storage = std::move(value);
   }
 
   typedef P* PeekOutType;

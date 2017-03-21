@@ -436,7 +436,7 @@ void IDBCursor::setValueReady(IDBKey* key,
   m_primaryKeyDirty = true;
 
   if (isCursorWithValue()) {
-    m_value = value;
+    m_value = std::move(value);
     m_valueDirty = true;
   }
 

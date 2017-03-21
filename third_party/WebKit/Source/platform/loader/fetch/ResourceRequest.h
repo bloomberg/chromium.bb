@@ -236,7 +236,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   // Extra data associated with this request.
   ExtraData* getExtraData() const { return m_extraData.get(); }
   void setExtraData(PassRefPtr<ExtraData> extraData) {
-    m_extraData = extraData;
+    m_extraData = std::move(extraData);
   }
 
   WebURLRequest::RequestContext requestContext() const {

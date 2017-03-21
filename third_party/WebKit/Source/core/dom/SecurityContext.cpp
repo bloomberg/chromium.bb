@@ -46,7 +46,7 @@ DEFINE_TRACE(SecurityContext) {
 
 void SecurityContext::setSecurityOrigin(
     PassRefPtr<SecurityOrigin> securityOrigin) {
-  m_securityOrigin = securityOrigin;
+  m_securityOrigin = std::move(securityOrigin);
   updateFeaturePolicyOrigin();
 }
 

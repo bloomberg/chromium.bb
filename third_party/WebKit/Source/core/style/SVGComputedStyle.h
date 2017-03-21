@@ -149,7 +149,7 @@ class CORE_EXPORT SVGComputedStyle : public RefCounted<SVGComputedStyle> {
   }
   void setD(PassRefPtr<StylePath> d) {
     if (!(geometry->d == d))
-      geometry.access()->d = d;
+      geometry.access()->d = std::move(d);
   }
   void setCx(const Length& obj) {
     if (!(geometry->cx == obj))
@@ -237,7 +237,7 @@ class CORE_EXPORT SVGComputedStyle : public RefCounted<SVGComputedStyle> {
 
   void setStrokeDashArray(PassRefPtr<SVGDashArray> dashArray) {
     if (*stroke->dashArray != *dashArray)
-      stroke.access()->dashArray = dashArray;
+      stroke.access()->dashArray = std::move(dashArray);
   }
 
   void setStrokeMiterLimit(float obj) {

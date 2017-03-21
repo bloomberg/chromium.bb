@@ -119,13 +119,13 @@ class CORE_EXPORT StyleResolverState {
   }
 
   void setParentStyle(PassRefPtr<ComputedStyle> parentStyle) {
-    m_parentStyle = parentStyle;
+    m_parentStyle = std::move(parentStyle);
   }
   const ComputedStyle* parentStyle() const { return m_parentStyle.get(); }
   ComputedStyle* parentStyle() { return m_parentStyle.get(); }
 
   void setLayoutParentStyle(PassRefPtr<ComputedStyle> parentStyle) {
-    m_layoutParentStyle = parentStyle;
+    m_layoutParentStyle = std::move(parentStyle);
   }
   const ComputedStyle* layoutParentStyle() const {
     return m_layoutParentStyle.get();

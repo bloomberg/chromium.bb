@@ -181,7 +181,7 @@ void LayoutLocale::setHyphenationForTesting(
     PassRefPtr<Hyphenation> hyphenation) {
   const LayoutLocale& locale = valueOrDefault(get(localeString));
   locale.m_hyphenationComputed = true;
-  locale.m_hyphenation = hyphenation;
+  locale.m_hyphenation = std::move(hyphenation);
 }
 
 AtomicString LayoutLocale::localeWithBreakKeyword(

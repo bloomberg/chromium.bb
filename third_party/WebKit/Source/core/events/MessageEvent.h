@@ -159,7 +159,7 @@ class CORE_EXPORT MessageEvent final : public Event {
 
   void setSerializedData(PassRefPtr<SerializedScriptValue> data) {
     DCHECK(!m_dataAsSerializedScriptValue);
-    m_dataAsSerializedScriptValue = data;
+    m_dataAsSerializedScriptValue = std::move(data);
   }
 
   void entangleMessagePorts(ExecutionContext*);

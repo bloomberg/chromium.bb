@@ -60,7 +60,7 @@ class CORE_EXPORT CustomEvent final : public Event {
 
   SerializedScriptValue* serializedDetail() { return m_serializedDetail.get(); }
   void setSerializedDetail(PassRefPtr<SerializedScriptValue> serializedDetail) {
-    m_serializedDetail = serializedDetail;
+    m_serializedDetail = std::move(serializedDetail);
   }
 
   DECLARE_VIRTUAL_TRACE();

@@ -238,7 +238,9 @@ class BidiResolver final {
   }
 
   BidiContext* context() const { return m_status.context.get(); }
-  void setContext(PassRefPtr<BidiContext> c) { m_status.context = c; }
+  void setContext(PassRefPtr<BidiContext> c) {
+    m_status.context = std::move(c);
+  }
 
   void setLastDir(WTF::Unicode::CharDirection lastDir) {
     m_status.last = lastDir;

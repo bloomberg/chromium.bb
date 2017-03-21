@@ -92,7 +92,7 @@ const LightSource* FEDiffuseLighting::lightSource() const {
 }
 
 void FEDiffuseLighting::setLightSource(PassRefPtr<LightSource> lightSource) {
-  m_lightSource = lightSource;
+  m_lightSource = std::move(lightSource);
 }
 
 TextStream& FEDiffuseLighting::externalRepresentation(TextStream& ts,

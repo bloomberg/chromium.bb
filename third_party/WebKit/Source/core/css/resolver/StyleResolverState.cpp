@@ -85,7 +85,7 @@ StyleResolverState::~StyleResolverState() {
 
 void StyleResolverState::setStyle(PassRefPtr<ComputedStyle> style) {
   // FIXME: Improve RAII of StyleResolverState to remove this function.
-  m_style = style;
+  m_style = std::move(style);
   m_cssToLengthConversionData = CSSToLengthConversionData(
       m_style.get(), rootElementStyle(), document().layoutViewItem(),
       m_style->effectiveZoom());

@@ -511,7 +511,7 @@ void DocumentWebSocketChannel::didStartOpeningHandshake(
     probe::willSendWebSocketHandshakeRequest(document(), m_identifier,
                                              request.get());
   }
-  m_handshakeRequest = request;
+  m_handshakeRequest = std::move(request);
 }
 
 void DocumentWebSocketChannel::didFinishOpeningHandshake(

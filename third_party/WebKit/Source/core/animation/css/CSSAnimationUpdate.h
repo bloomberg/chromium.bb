@@ -175,7 +175,8 @@ class CSSAnimationUpdate final {
     newTransition.property = property;
     newTransition.from = std::move(from);
     newTransition.to = std::move(to);
-    newTransition.reversingAdjustedStartValue = reversingAdjustedStartValue;
+    newTransition.reversingAdjustedStartValue =
+        std::move(reversingAdjustedStartValue);
     newTransition.reversingShorteningFactor = reversingShorteningFactor;
     newTransition.effect = &effect;
     m_newTransitions.set(property, newTransition);

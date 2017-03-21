@@ -446,7 +446,7 @@ void LocalDOMWindow::statePopped(
   if (document()->isLoadCompleted())
     enqueuePopstateEvent(std::move(stateObject));
   else
-    m_pendingStateObject = stateObject;
+    m_pendingStateObject = std::move(stateObject);
 }
 
 LocalDOMWindow::~LocalDOMWindow() {

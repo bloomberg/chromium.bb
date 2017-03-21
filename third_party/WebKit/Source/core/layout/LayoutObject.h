@@ -1139,7 +1139,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // Updates only the local style ptr of the object.  Does not update the state
   // of the object, and so only should be called when the style is known not to
   // have changed (or from setStyle).
-  void setStyleInternal(PassRefPtr<ComputedStyle> style) { m_style = style; }
+  void setStyleInternal(PassRefPtr<ComputedStyle> style) {
+    m_style = std::move(style);
+  }
 
   void setStyleWithWritingModeOf(PassRefPtr<ComputedStyle>,
                                  LayoutObject* parent);

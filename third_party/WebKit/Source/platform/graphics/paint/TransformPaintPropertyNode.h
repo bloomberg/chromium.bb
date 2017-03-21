@@ -84,7 +84,7 @@ class PLATFORM_EXPORT TransformPaintPropertyNode
       CompositorElementId compositorElementId = CompositorElementId()) {
     DCHECK(!isRoot());
     DCHECK(parent != this);
-    m_parent = parent;
+    m_parent = std::move(parent);
     m_matrix = matrix;
     m_origin = origin;
     m_flattensInheritedTransform = flattensInheritedTransform;

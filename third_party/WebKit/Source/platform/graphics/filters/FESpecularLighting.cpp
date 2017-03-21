@@ -109,7 +109,7 @@ const LightSource* FESpecularLighting::lightSource() const {
 }
 
 void FESpecularLighting::setLightSource(PassRefPtr<LightSource> lightSource) {
-  m_lightSource = lightSource;
+  m_lightSource = std::move(lightSource);
 }
 
 TextStream& FESpecularLighting::externalRepresentation(TextStream& ts,

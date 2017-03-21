@@ -92,7 +92,7 @@ class ElementRareData : public NodeRareData {
 
   ComputedStyle* computedStyle() const { return m_computedStyle.get(); }
   void setComputedStyle(PassRefPtr<ComputedStyle> computedStyle) {
-    m_computedStyle = computedStyle;
+    m_computedStyle = std::move(computedStyle);
   }
   void clearComputedStyle() { m_computedStyle = nullptr; }
 

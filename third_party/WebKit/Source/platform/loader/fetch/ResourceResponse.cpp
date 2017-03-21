@@ -562,7 +562,7 @@ ResourceLoadTiming* ResourceResponse::resourceLoadTiming() const {
 
 void ResourceResponse::setResourceLoadTiming(
     PassRefPtr<ResourceLoadTiming> resourceLoadTiming) {
-  m_resourceLoadTiming = resourceLoadTiming;
+  m_resourceLoadTiming = std::move(resourceLoadTiming);
 }
 
 PassRefPtr<ResourceLoadInfo> ResourceResponse::resourceLoadInfo() const {
@@ -571,7 +571,7 @@ PassRefPtr<ResourceLoadInfo> ResourceResponse::resourceLoadInfo() const {
 
 void ResourceResponse::setResourceLoadInfo(
     PassRefPtr<ResourceLoadInfo> loadInfo) {
-  m_resourceLoadInfo = loadInfo;
+  m_resourceLoadInfo = std::move(loadInfo);
 }
 
 KURL ResourceResponse::originalURLViaServiceWorker() const {

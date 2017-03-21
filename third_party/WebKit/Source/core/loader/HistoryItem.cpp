@@ -138,7 +138,7 @@ void HistoryItem::clearDocumentState() {
 }
 
 void HistoryItem::setStateObject(PassRefPtr<SerializedScriptValue> object) {
-  m_stateObject = object;
+  m_stateObject = std::move(object);
 }
 
 const AtomicString& HistoryItem::formContentType() const {
@@ -159,7 +159,7 @@ void HistoryItem::setFormInfoFromRequest(const ResourceRequest& request) {
 }
 
 void HistoryItem::setFormData(PassRefPtr<EncodedFormData> formData) {
-  m_formData = formData;
+  m_formData = std::move(formData);
 }
 
 void HistoryItem::setFormContentType(const AtomicString& formContentType) {

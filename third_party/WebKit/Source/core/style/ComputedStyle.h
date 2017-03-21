@@ -996,7 +996,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
   void setBoxReflect(PassRefPtr<StyleReflection> reflect) {
     if (m_rareNonInheritedData->m_boxReflect != reflect)
-      m_rareNonInheritedData.access()->m_boxReflect = reflect;
+      m_rareNonInheritedData.access()->m_boxReflect = std::move(reflect);
   }
 
   // Grid properties.
@@ -1525,7 +1525,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     return m_rareNonInheritedData->m_transform->m_translate.get();
   }
   void setTranslate(PassRefPtr<TranslateTransformOperation> v) {
-    m_rareNonInheritedData.access()->m_transform.access()->m_translate = v;
+    m_rareNonInheritedData.access()->m_transform.access()->m_translate =
+        std::move(v);
   }
 
   // rotate
@@ -1536,7 +1537,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     return m_rareNonInheritedData->m_transform->m_rotate.get();
   }
   void setRotate(PassRefPtr<RotateTransformOperation> v) {
-    m_rareNonInheritedData.access()->m_transform.access()->m_rotate = v;
+    m_rareNonInheritedData.access()->m_transform.access()->m_rotate =
+        std::move(v);
   }
 
   // scale
@@ -1545,7 +1547,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     return m_rareNonInheritedData->m_transform->m_scale.get();
   }
   void setScale(PassRefPtr<ScaleTransformOperation> v) {
-    m_rareNonInheritedData.access()->m_transform.access()->m_scale = v;
+    m_rareNonInheritedData.access()->m_transform.access()->m_scale =
+        std::move(v);
   }
 
   // Scroll properties.
@@ -1816,7 +1819,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
   void setClipPath(PassRefPtr<ClipPathOperation> operation) {
     if (m_rareNonInheritedData->m_clipPath != operation)
-      m_rareNonInheritedData.access()->m_clipPath = operation;
+      m_rareNonInheritedData.access()->m_clipPath = std::move(operation);
   }
 
   // Mask properties.

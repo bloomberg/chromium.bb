@@ -399,7 +399,7 @@ hb_font_t* HarfBuzzFace::getScaledFont(
     PassRefPtr<UnicodeRangeSet> rangeSet) const {
   m_platformData->setupPaint(&m_harfBuzzFontData->m_paint);
   m_harfBuzzFontData->m_paint.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
-  m_harfBuzzFontData->m_rangeSet = rangeSet;
+  m_harfBuzzFontData->m_rangeSet = std::move(rangeSet);
   m_harfBuzzFontData->updateSimpleFontData(m_platformData);
 
   ASSERT(m_harfBuzzFontData->m_simpleFontData);

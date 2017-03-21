@@ -42,7 +42,7 @@ class MODULES_EXPORT ExtendableMessageEvent final : public ExtendableEvent {
     return m_serializedData.get();
   }
   void setSerializedData(PassRefPtr<SerializedScriptValue> serializedData) {
-    m_serializedData = serializedData;
+    m_serializedData = std::move(serializedData);
   }
   const String& origin() const { return m_origin; }
   const String& lastEventId() const { return m_lastEventId; }

@@ -971,7 +971,7 @@ ImageBitmap::ImageBitmap(PassRefPtr<StaticBitmapImage> image,
 }
 
 ImageBitmap::ImageBitmap(PassRefPtr<StaticBitmapImage> image) {
-  m_image = image;
+  m_image = std::move(image);
 }
 
 PassRefPtr<StaticBitmapImage> ImageBitmap::transfer() {

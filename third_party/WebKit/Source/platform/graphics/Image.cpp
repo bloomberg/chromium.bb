@@ -77,7 +77,7 @@ bool Image::supportsType(const String& type) {
 
 Image::SizeAvailability Image::setData(PassRefPtr<SharedBuffer> data,
                                        bool allDataReceived) {
-  m_encodedImageData = data;
+  m_encodedImageData = std::move(data);
   if (!m_encodedImageData.get())
     return SizeAvailable;
 

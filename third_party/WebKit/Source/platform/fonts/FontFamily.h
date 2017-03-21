@@ -88,7 +88,7 @@ inline const FontFamily* FontFamily::next() const {
 }
 
 inline void FontFamily::appendFamily(PassRefPtr<SharedFontFamily> family) {
-  m_next = family;
+  m_next = std::move(family);
 }
 
 inline PassRefPtr<SharedFontFamily> FontFamily::releaseNext() {

@@ -133,7 +133,9 @@ class NetworkResourcesData final
     }
 
     PassRefPtr<SharedBuffer> buffer() const { return m_buffer; }
-    void setBuffer(PassRefPtr<SharedBuffer> buffer) { m_buffer = buffer; }
+    void setBuffer(PassRefPtr<SharedBuffer> buffer) {
+      m_buffer = std::move(buffer);
+    }
 
     Resource* cachedResource() const { return m_cachedResource.get(); }
     void setResource(Resource*);
@@ -147,7 +149,7 @@ class NetworkResourcesData final
       return m_downloadedFileBlob.get();
     }
     void setDownloadedFileBlob(PassRefPtr<BlobDataHandle> blob) {
-      m_downloadedFileBlob = blob;
+      m_downloadedFileBlob = std::move(blob);
     }
 
     int rawHeaderSize() const { return m_rawHeaderSize; }

@@ -554,7 +554,7 @@ void AudioNode::dispose() {
 
 void AudioNode::setHandler(PassRefPtr<AudioHandler> handler) {
   DCHECK(handler);
-  m_handler = handler;
+  m_handler = std::move(handler);
 
 #if DEBUG_AUDIONODE_REFERENCES
   fprintf(stderr, "[%16p]: %16p: %2d: AudioNode::AudioNode %16p\n", context(),

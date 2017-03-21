@@ -702,7 +702,7 @@ class CORE_EXPORT FrameView final
   // Paint properties for SPv2 Only.
   void setPreTranslation(
       PassRefPtr<TransformPaintPropertyNode> preTranslation) {
-    m_preTranslation = preTranslation;
+    m_preTranslation = std::move(preTranslation);
   }
   TransformPaintPropertyNode* preTranslation() const {
     return m_preTranslation.get();
@@ -710,14 +710,14 @@ class CORE_EXPORT FrameView final
 
   void setScrollTranslation(
       PassRefPtr<TransformPaintPropertyNode> scrollTranslation) {
-    m_scrollTranslation = scrollTranslation;
+    m_scrollTranslation = std::move(scrollTranslation);
   }
   TransformPaintPropertyNode* scrollTranslation() const {
     return m_scrollTranslation.get();
   }
 
   void setContentClip(PassRefPtr<ClipPaintPropertyNode> contentClip) {
-    m_contentClip = contentClip;
+    m_contentClip = std::move(contentClip);
   }
   ClipPaintPropertyNode* contentClip() const { return m_contentClip.get(); }
 

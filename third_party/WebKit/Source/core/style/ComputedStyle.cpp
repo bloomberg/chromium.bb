@@ -1122,7 +1122,7 @@ void ComputedStyle::setCursorList(CursorList* other) {
 }
 
 void ComputedStyle::setQuotes(PassRefPtr<QuotesData> q) {
-  m_rareInheritedData.access()->quotes = q;
+  m_rareInheritedData.access()->quotes = std::move(q);
 }
 
 void ComputedStyle::clearCursorList() {
@@ -1388,11 +1388,11 @@ void ComputedStyle::applyMotionPathTransform(
 }
 
 void ComputedStyle::setTextShadow(PassRefPtr<ShadowList> s) {
-  m_rareInheritedData.access()->textShadow = s;
+  m_rareInheritedData.access()->textShadow = std::move(s);
 }
 
 void ComputedStyle::setBoxShadow(PassRefPtr<ShadowList> s) {
-  m_rareNonInheritedData.access()->m_boxShadow = s;
+  m_rareNonInheritedData.access()->m_boxShadow = std::move(s);
 }
 
 static FloatRoundedRect::Radii calcRadiiFor(const BorderData& border,
@@ -2296,7 +2296,8 @@ void ComputedStyle::setMarginEnd(const Length& margin) {
 }
 
 void ComputedStyle::setOffsetPath(PassRefPtr<StylePath> path) {
-  m_rareNonInheritedData.access()->m_transform.access()->m_motion.m_path = path;
+  m_rareNonInheritedData.access()->m_transform.access()->m_motion.m_path =
+      std::move(path);
 }
 
 int ComputedStyle::outlineOutsetExtent() const {

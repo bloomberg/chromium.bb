@@ -408,7 +408,7 @@ Document* CSSStyleSheet::ownerDocument() const {
 
 void CSSStyleSheet::setAllowRuleAccessFromOrigin(
     PassRefPtr<SecurityOrigin> allowedOrigin) {
-  m_allowRuleAccessFromOrigin = allowedOrigin;
+  m_allowRuleAccessFromOrigin = std::move(allowedOrigin);
 }
 
 bool CSSStyleSheet::sheetLoaded() {

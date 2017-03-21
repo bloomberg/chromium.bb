@@ -298,7 +298,9 @@ class PLATFORM_EXPORT GIFImageReader final {
 
   ~GIFImageReader() {}
 
-  void setData(PassRefPtr<blink::SegmentReader> data) { m_data = data; }
+  void setData(PassRefPtr<blink::SegmentReader> data) {
+    m_data = std::move(data);
+  }
   bool parse(blink::GIFImageDecoder::GIFParseQuery);
   bool decode(size_t frameIndex);
 

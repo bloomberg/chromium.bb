@@ -222,7 +222,7 @@ PassRefPtr<SecurityOrigin> ResourceRequest::requestorOrigin() const {
 
 void ResourceRequest::setRequestorOrigin(
     PassRefPtr<SecurityOrigin> requestorOrigin) {
-  m_requestorOrigin = requestorOrigin;
+  m_requestorOrigin = std::move(requestorOrigin);
 }
 
 const AtomicString& ResourceRequest::httpMethod() const {
@@ -294,7 +294,7 @@ EncodedFormData* ResourceRequest::httpBody() const {
 }
 
 void ResourceRequest::setHTTPBody(PassRefPtr<EncodedFormData> httpBody) {
-  m_httpBody = httpBody;
+  m_httpBody = std::move(httpBody);
 }
 
 EncodedFormData* ResourceRequest::attachedCredential() const {
@@ -303,7 +303,7 @@ EncodedFormData* ResourceRequest::attachedCredential() const {
 
 void ResourceRequest::setAttachedCredential(
     PassRefPtr<EncodedFormData> attachedCredential) {
-  m_attachedCredential = attachedCredential;
+  m_attachedCredential = std::move(attachedCredential);
 }
 
 bool ResourceRequest::allowStoredCredentials() const {

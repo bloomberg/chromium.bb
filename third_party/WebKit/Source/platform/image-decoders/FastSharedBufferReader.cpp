@@ -38,7 +38,7 @@ FastSharedBufferReader::FastSharedBufferReader(PassRefPtr<SegmentReader> data)
 void FastSharedBufferReader::setData(PassRefPtr<SegmentReader> data) {
   if (data == m_data)
     return;
-  m_data = data;
+  m_data = std::move(data);
   clearCache();
 }
 

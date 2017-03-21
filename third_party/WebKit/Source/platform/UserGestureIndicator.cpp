@@ -124,7 +124,7 @@ UserGestureIndicator::UserGestureIndicator(PassRefPtr<UserGestureToken> token) {
   if (!isMainThread() || !token || token == s_rootToken)
     return;
 
-  m_token = token;
+  m_token = std::move(token);
   if (!s_rootToken) {
     s_rootToken = m_token.get();
   } else {

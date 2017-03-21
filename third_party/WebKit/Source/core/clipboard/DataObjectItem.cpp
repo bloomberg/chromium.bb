@@ -85,7 +85,7 @@ DataObjectItem* DataObjectItem::createFromSharedBuffer(
   DataObjectItem* item = new DataObjectItem(
       FileKind,
       MIMETypeRegistry::getWellKnownMIMETypeForExtension(filenameExtension));
-  item->m_sharedBuffer = buffer;
+  item->m_sharedBuffer = std::move(buffer);
   item->m_filenameExtension = filenameExtension;
   // TODO(dcheng): Rename these fields to be more generically named.
   item->m_title = contentDisposition;

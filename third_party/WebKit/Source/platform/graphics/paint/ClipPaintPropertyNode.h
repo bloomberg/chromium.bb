@@ -48,8 +48,8 @@ class PLATFORM_EXPORT ClipPaintPropertyNode
               const FloatRoundedRect& clipRect) {
     DCHECK(!isRoot());
     DCHECK(parent != this);
-    m_parent = parent;
-    m_localTransformSpace = localTransformSpace;
+    m_parent = std::move(parent);
+    m_localTransformSpace = std::move(localTransformSpace);
     m_clipRect = clipRect;
   }
 

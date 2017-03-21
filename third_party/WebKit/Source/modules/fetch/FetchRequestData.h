@@ -49,7 +49,9 @@ class FetchRequestData final
     m_context = context;
   }
   PassRefPtr<SecurityOrigin> origin() { return m_origin; }
-  void setOrigin(PassRefPtr<SecurityOrigin> origin) { m_origin = origin; }
+  void setOrigin(PassRefPtr<SecurityOrigin> origin) {
+    m_origin = std::move(origin);
+  }
   bool sameOriginDataURLFlag() { return m_sameOriginDataURLFlag; }
   void setSameOriginDataURLFlag(bool flag) { m_sameOriginDataURLFlag = flag; }
   const Referrer& referrer() const { return m_referrer; }
@@ -83,7 +85,7 @@ class FetchRequestData final
     return m_attachedCredential;
   }
   void setAttachedCredential(PassRefPtr<EncodedFormData> attachedCredential) {
-    m_attachedCredential = attachedCredential;
+    m_attachedCredential = std::move(attachedCredential);
   }
 
   // We use these strings instead of "no-referrer" and "client" in the spec.

@@ -176,7 +176,7 @@ const HTTPHeaderMap& WebServiceWorkerResponse::headers() const {
 
 void WebServiceWorkerResponse::setBlobDataHandle(
     PassRefPtr<BlobDataHandle> blobDataHandle) {
-  m_private->blobDataHandle = blobDataHandle;
+  m_private->blobDataHandle = std::move(blobDataHandle);
 }
 
 PassRefPtr<BlobDataHandle> WebServiceWorkerResponse::blobDataHandle() const {

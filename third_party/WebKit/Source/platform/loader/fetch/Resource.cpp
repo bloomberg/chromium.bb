@@ -392,7 +392,7 @@ void Resource::setResourceBuffer(PassRefPtr<SharedBuffer> resourceBuffer) {
   DCHECK(!m_isRevalidating);
   DCHECK(!errorOccurred());
   DCHECK_EQ(m_options.dataBufferingPolicy, BufferData);
-  m_data = resourceBuffer;
+  m_data = std::move(resourceBuffer);
   setEncodedSize(m_data->size());
 }
 

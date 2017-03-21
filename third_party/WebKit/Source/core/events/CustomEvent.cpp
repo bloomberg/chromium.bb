@@ -55,7 +55,7 @@ void CustomEvent::initCustomEvent(
 
   initEvent(type, canBubble, cancelable);
 
-  m_serializedDetail = serializedDetail;
+  m_serializedDetail = std::move(serializedDetail);
 }
 
 const AtomicString& CustomEvent::interfaceName() const {
