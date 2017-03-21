@@ -14,10 +14,10 @@
 
 // Registers the given |target| to receive forwarded messages for the given
 // |selector|.
-- (void)registerTarget:(id)target forSelector:(SEL)selector;
+- (void)startDispatchingToTarget:(id)target forSelector:(SEL)selector;
 
 // Removes all forwarding registrations for the given |target|.
-- (void)stopDispatchingForTarget:(id)target;
+- (void)stopDispatchingToTarget:(id)target;
 
 @end
 

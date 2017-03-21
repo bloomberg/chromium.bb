@@ -116,8 +116,8 @@ TEST(CommandDispatcherTest, SimpleTarget) {
   CommandDispatcherTestSimpleTarget* target =
       [[CommandDispatcherTestSimpleTarget alloc] init];
 
-  [dispatcher registerTarget:target forSelector:@selector(show)];
-  [dispatcher registerTarget:target forSelector:@selector(hide)];
+  [dispatcher startDispatchingToTarget:target forSelector:@selector(show)];
+  [dispatcher startDispatchingToTarget:target forSelector:@selector(hide)];
 
   [dispatcher show];
   EXPECT_TRUE(target.showCalled);
@@ -135,10 +135,13 @@ TEST(CommandDispatcherTest, TargetWithArguments) {
   CommandDispatcherTestTargetWithArguments* target =
       [[CommandDispatcherTestTargetWithArguments alloc] init];
 
-  [dispatcher registerTarget:target forSelector:@selector(methodWithInt:)];
-  [dispatcher registerTarget:target forSelector:@selector(methodWithObject:)];
-  [dispatcher registerTarget:target
-                 forSelector:@selector(methodToAddFirstArgument:toSecond:)];
+  [dispatcher startDispatchingToTarget:target
+                           forSelector:@selector(methodWithInt:)];
+  [dispatcher startDispatchingToTarget:target
+                           forSelector:@selector(methodWithObject:)];
+  [dispatcher
+      startDispatchingToTarget:target
+                   forSelector:@selector(methodToAddFirstArgument:toSecond:)];
 
   const int int_argument = 4;
   [dispatcher methodWithInt:int_argument];
@@ -169,8 +172,8 @@ TEST(CommandDispatcherTest, MultipleTargets) {
   CommandDispatcherTestSimpleTarget* hideTarget =
       [[CommandDispatcherTestSimpleTarget alloc] init];
 
-  [dispatcher registerTarget:showTarget forSelector:@selector(show)];
-  [dispatcher registerTarget:hideTarget forSelector:@selector(hide)];
+  [dispatcher startDispatchingToTarget:showTarget forSelector:@selector(show)];
+  [dispatcher startDispatchingToTarget:hideTarget forSelector:@selector(hide)];
 
   [dispatcher show];
   EXPECT_TRUE(showTarget.showCalled);
@@ -190,14 +193,14 @@ TEST(CommandDispatcherTest, Deregistration) {
   CommandDispatcherTestSimpleTarget* hideTarget =
       [[CommandDispatcherTestSimpleTarget alloc] init];
 
-  [dispatcher registerTarget:showTarget forSelector:@selector(show)];
-  [dispatcher registerTarget:hideTarget forSelector:@selector(hide)];
+  [dispatcher startDispatchingToTarget:showTarget forSelector:@selector(show)];
+  [dispatcher startDispatchingToTarget:hideTarget forSelector:@selector(hide)];
 
   [dispatcher show];
   EXPECT_TRUE(showTarget.showCalled);
   EXPECT_FALSE(hideTarget.showCalled);
 
-  [dispatcher stopDispatchingForTarget:showTarget];
+  [dispatcher stopDispatchingToTarget:showTarget];
   bool exception_caught = false;
   @try {
     [dispatcher show];
@@ -219,7 +222,7 @@ TEST(CommandDispatcherTest, NoTargetRegisteredForSelector) {
   CommandDispatcherTestSimpleTarget* target =
       [[CommandDispatcherTestSimpleTarget alloc] init];
 
-  [dispatcher registerTarget:target forSelector:@selector(show)];
+  [dispatcher startDispatchingToTarget:target forSelector:@selector(show)];
 
   bool exception_caught = false;
   @try {

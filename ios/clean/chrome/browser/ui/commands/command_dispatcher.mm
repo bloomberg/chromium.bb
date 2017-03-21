@@ -19,16 +19,16 @@
   std::unordered_map<SEL, __weak id> _forwardingTargets;
 }
 
-- (void)registerTarget:(id)target forSelector:(SEL)selector {
+- (void)startDispatchingToTarget:(id)target forSelector:(SEL)selector {
   DCHECK(_forwardingTargets.find(selector) == _forwardingTargets.end());
 
   _forwardingTargets[selector] = target;
 }
 
-// |-stopDispatchingForTarget| should be called much less often than
+// |-stopDispatchingToTarget| should be called much less often than
 // |-forwardingTargetForSelector|, so removal is intentionally O(n) in order
 // to prioritize the speed of lookups.
-- (void)stopDispatchingForTarget:(id)target {
+- (void)stopDispatchingToTarget:(id)target {
   std::vector<SEL> selectorsToErase;
   for (auto& kv : _forwardingTargets) {
     if (kv.second == target) {
