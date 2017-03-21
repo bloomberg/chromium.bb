@@ -35,9 +35,8 @@ TEST_F(SpellCheckerTest, AdvanceToNextMisspellingWithEmptyInputNoCrash) {
   updateAllLifecyclePhases();
   Element* input = document().querySelector("input");
   input->focus();
-  // Do not crash in AdvanceToNextMisspelling command.
-  EXPECT_TRUE(
-      document().frame()->editor().executeCommand("AdvanceToNextMisspelling"));
+  // Do not crash in advanceToNextMisspelling.
+  document().frame()->spellChecker().advanceToNextMisspelling(false);
 }
 
 // Regression test for crbug.com/701309

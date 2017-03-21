@@ -65,7 +65,7 @@ class CORE_EXPORT SpellChecker final : public GarbageCollected<SpellChecker> {
   bool isSpellCheckingEnabledInFocusedNode() const;
   void markMisspellingsAfterApplyingCommand(const CompositeEditCommand&);
   void markAndReplaceFor(SpellCheckRequest*, const Vector<TextCheckingResult>&);
-  void advanceToNextMisspelling(bool startBeforeSelection = false);
+  void advanceToNextMisspelling(bool startBeforeSelection);
   void showSpellingGuessPanel();
   void didBeginEditing(Element*);
   void clearMisspellingsForMovingParagraphs(const SelectionInDOMTree&);
