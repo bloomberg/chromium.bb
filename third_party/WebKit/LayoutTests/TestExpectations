@@ -2534,6 +2534,8 @@ crbug.com/664819 virtual/mojo-loading/http/tests/security/isolatedWorld/bypass-m
 crbug.com/664819 virtual/mojo-loading/http/tests/security/isolatedWorld/events.html [ Pass Failure ]
 crbug.com/664839 virtual/mojo-loading/http/tests/security/link-crossorigin-preload-no-cors.html [ Pass Failure ]
 
+crbug.com/703813 mojo/union.html [ Pass Timeout ]
+
 # Possible duplicate of crbug.com/498539
 # crbug.com/664843 inspector/elements/styles-4/styles-update-from-js.html [ Pass Failure ]
 
