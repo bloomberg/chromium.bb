@@ -23,16 +23,13 @@ DEFAULT_APK = 'MonochromePublic.apk'
 
 
 def MaybeDownloadApk(builder, milestone, apk, download_path, bucket):
-  """Returns path to the downloaded APK or None if not found."""
   apk_path = os.path.join(download_path, builder, milestone, apk)
   sha1_path = apk_path + '.sha1'
   base_url = os.path.join(bucket, builder, milestone)
   if os.path.exists(apk_path):
     print '%s already exists' % apk_path
-    return apk_path
   elif not os.path.exists(sha1_path):
     print 'Skipping %s, file not found' % sha1_path
-    return None
   else:
     download_from_google_storage.download_from_google_storage(
         input_filename=sha1_path,
@@ -49,7 +46,6 @@ def MaybeDownloadApk(builder, milestone, apk, download_path, bucket):
         verbose=True,
         auto_platform=False,
         extract=False)
-    return apk_path
 
 
 def main():

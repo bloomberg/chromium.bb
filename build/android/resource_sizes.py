@@ -23,7 +23,6 @@ import tempfile
 import zipfile
 import zlib
 
-from binary_size import apk_downloader
 import devil_chromium
 from devil.android.sdk import build_tools
 from devil.utils import cmd_helper
@@ -36,8 +35,6 @@ _AAPT_PATH = lazy.WeakConstant(lambda: build_tools.GetPath('aapt'))
 _GRIT_PATH = os.path.join(host_paths.DIR_SOURCE_ROOT, 'tools', 'grit')
 _BUILD_UTILS_PATH = os.path.join(
     host_paths.DIR_SOURCE_ROOT, 'build', 'android', 'gyp')
-_APK_PATCH_SIZE_ESTIMATOR_PATH = os.path.join(
-    host_paths.DIR_SOURCE_ROOT, 'third_party', 'apk-patch-size-estimator')
 
 # Prepend the grit module from the source tree so it takes precedence over other
 # grit versions that might present in the search path.
@@ -49,9 +46,6 @@ with host_paths.SysPath(host_paths.BUILD_COMMON_PATH):
 
 with host_paths.SysPath(_BUILD_UTILS_PATH, 1):
   from util import build_utils # pylint: disable=import-error
-
-with host_paths.SysPath(_APK_PATCH_SIZE_ESTIMATOR_PATH):
-  import apk_patch_size_estimator # pylint: disable=import-error
 
 
 # Python had a bug in zipinfo parsing that triggers on ChromeModern.apk
@@ -680,26 +674,6 @@ def _PrintDexAnalysis(apk_filename, chartjson=None):
                    'bytes')
 
 
-def _PrintPatchSizeEstimate(new_apk, builder, bucket, chartjson=None):
-  apk_name = os.path.basename(new_apk)
-  title = apk_name + '_PatchSizeEstimate'
-  # Reference APK paths have spaces replaced by underscores.
-  builder = builder.replace(' ', '_')
-  old_apk = apk_downloader.MaybeDownloadApk(
-      builder, apk_downloader.CURRENT_MILESTONE, apk_name,
-      apk_downloader.DEFAULT_DOWNLOAD_PATH, bucket)
-  if old_apk:
-    # Use a temp dir in case patch size functions fail to clean up temp files.
-    with build_utils.TempDir() as tmp:
-      tmp_name = os.path.join(tmp, 'patch.tmp')
-      bsdiff = apk_patch_size_estimator.calculate_bsdiff(
-          old_apk, new_apk, None, tmp_name)
-      ReportPerfResult(chartjson, title, 'BSDiff (gzipped)', bsdiff, 'bytes')
-      fbf = apk_patch_size_estimator.calculate_filebyfile(
-          old_apk, new_apk, None, tmp_name)
-      ReportPerfResult(chartjson, title, 'FileByFile (gzipped)', fbf, 'bytes')
-
-
 @contextmanager
 def Unzip(zip_file, filename=None):
   """Utility for temporary use of a single file in a zip archive."""
@@ -738,17 +712,6 @@ def main():
                          'output-dir')
   argparser.add_argument('-d', '--device',
                          help='Dummy option for perf runner.')
-  argparser.add_argument('--estimate-patch-size', action='store_true',
-                         help='Include patch size estimates. Useful for perf '
-                         'builders where a reference APK is available but adds '
-                         '~3 mins to run time.')
-  argparser.add_argument('--reference-apk-builder',
-                         default=apk_downloader.DEFAULT_BUILDER,
-                         help='Builder name to use for reference APK for patch '
-                         'size estimates.')
-  argparser.add_argument('--reference-apk-bucket',
-                         default=apk_downloader.DEFAULT_BUCKET,
-                         help='Storage bucket holding reference APKs.')
   argparser.add_argument('apk', help='APK file path.')
   args = argparser.parse_args()
 
@@ -767,9 +730,6 @@ def main():
 
   PrintApkAnalysis(args.apk, tools_prefix, chartjson=chartjson)
   _PrintDexAnalysis(args.apk, chartjson=chartjson)
-  if args.estimate_patch_size:
-    _PrintPatchSizeEstimate(
-        args.apk, args.builder, args.bucket, chartjson=chartjson)
   if not args.no_output_dir:
     PrintPakAnalysis(args.apk, args.min_pak_resource_size)
     _PrintStaticInitializersCountFromApk(
