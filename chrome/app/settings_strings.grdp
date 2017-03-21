@@ -231,8 +231,14 @@
   <message name="IDS_SETTINGS_APPEARANCE" desc="Name of the settings page which displays appearance preferences.">
     Appearance
   </message>
-  <message name="IDS_SETTINGS_EXAMPLE_DOT_COM" desc="Placeholder text for URL input example.">
-    www.example.com
+  <message name="IDS_SETTINGS_CUSTOM_WEB_ADDRESS" desc="Sub label describing an empty custom web address for the Show home button setting.">
+    Custom
+  </message>
+  <message name="IDS_SETTINGS_ENTER_CUSTOM_WEB_ADDRESS" desc="Input label for a custom web address for the Show home button setting.">
+    Enter custom web address
+  </message>
+  <message name="IDS_SETTINGS_HOME_BUTTON_DISABLED" desc="Sub label for the Show home button setting when disabled.">
+    Disabled
   </message>
   <message name="IDS_SETTINGS_SET_WALLPAPER" desc="Name of the control which allows the user to set the wallpaper.">
     Wallpaper
@@ -266,10 +272,7 @@
     Show bookmarks bar
   </message>
   <message name="IDS_SETTINGS_HOME_PAGE_NTP" desc="Description of the New Tab Page when set as the home page.">
-    Use the New Tab Page
-  </message>
-  <message name="IDS_SETTINGS_OTHER" desc="Label of the input box for the home page.">
-    Other
+    New Tab page
   </message>
   <message name="IDS_SETTINGS_CHANGE_HOME_PAGE" desc="Label of the control to change the home page.">
     Change

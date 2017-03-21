@@ -129,15 +129,18 @@ Polymer({
   },
 
   /**
+   * @param {boolean} showHomepage Whether to show home page.
    * @param {boolean} isNtp Whether to use the NTP as the home page.
-   * @param {string} homepage If not using NTP, use this URL.
+   * @param {string} homepageValue If not using NTP, use this URL.
    * @return {string} The sub-label.
    * @private
    */
-  getShowHomeSubLabel_: function(isNtp, homepage) {
+  getShowHomeSubLabel_: function(showHomepage, isNtp, homepageValue) {
+    if (!showHomepage)
+      return this.i18n('homeButtonDisabled');
     if (isNtp)
       return this.i18n('homePageNtp');
-    return homepage || this.i18n('exampleDotCom');
+    return homepageValue || this.i18n('customWebAddress');
   },
 
   /** @private */

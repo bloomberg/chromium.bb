@@ -25,6 +25,10 @@
       .secondary-button ~ .secondary-button {
         -webkit-margin-start: 12px;
       }
+
+      #customHomePage {
+        width: 200px;
+      }
     </style>
     <settings-animated-pages id="pages" section="appearance">
       <neon-animatable route-path="default">
@@ -96,25 +100,27 @@
               pref="{{prefs.browser.show_home_button}}"
               label="$i18n{showHomeButton}"
               sub-label="[[getShowHomeSubLabel_(
-                  prefs.homepage_is_newtabpage.value, prefs.homepage.value)]]">
+                  prefs.browser.show_home_button.value,
+                  prefs.homepage_is_newtabpage.value,
+                  prefs.homepage.value)]]">
           </settings-toggle-button>
         </div>
         <template is="dom-if" if="[[prefs.browser.show_home_button.value]]">
-          <div class="list-frame"
-              hidden="[[!pageVisibility.homeButton]]">
+          <div class="list-frame" hidden="[[!pageVisibility.homeButton]]">
             <settings-radio-group pref="{{prefs.homepage_is_newtabpage}}">
               <controlled-radio-button class="list-item" name="true"
                   pref="[[prefs.homepage_is_newtabpage]]"
                   label="$i18n{homePageNtp}" no-extension-indicator>
               </controlled-radio-button>
               <controlled-radio-button class="list-item" name="false"
-                  pref="[[prefs.homepage_is_newtabpage]]" label="$i18n{other}"
+                  pref="[[prefs.homepage_is_newtabpage]]"
                   no-extension-indicator>
                 <!-- TODO(dbeam): this can show double indicators when both
                      homepage and whether to use the NTP as the homepage are
                      managed. -->
-                <settings-input no-label-float pref="{{prefs.homepage}}"
-                    label="$i18n{exampleDotCom}"
+                <settings-input id="customHomePage"
+                    no-label-float pref="{{prefs.homepage}}"
+                    label="$i18n{enterCustomWebAddress}"
                     can-tab="[[!prefs.homepage_is_newtabpage.value]]"
                     stop-keyboard-event-propagation no-extension-indicator>
                 </settings-input>
