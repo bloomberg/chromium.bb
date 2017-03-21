@@ -175,21 +175,6 @@ bool FaviconURLsEqualIgnoringSizes(const FaviconURL& u1, const FaviconURL& u2) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-FaviconHandler::DownloadRequest::DownloadRequest()
-    : icon_type(favicon_base::INVALID_ICON) {
-}
-
-FaviconHandler::DownloadRequest::~DownloadRequest() {
-}
-
-FaviconHandler::DownloadRequest::DownloadRequest(
-    const GURL& image_url,
-    favicon_base::IconType icon_type)
-    : image_url(image_url), icon_type(icon_type) {
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
 FaviconHandler::FaviconCandidate::FaviconCandidate()
     : score(0), icon_type(favicon_base::INVALID_ICON) {
 }
@@ -224,8 +209,7 @@ FaviconHandler::FaviconHandler(
       notification_icon_type_(favicon_base::INVALID_ICON),
       service_(service),
       delegate_(delegate),
-      current_candidate_index_(0u),
-      weak_ptr_factory_(this) {
+      current_candidate_index_(0u) {
   DCHECK(delegate_);
 }
 
@@ -253,7 +237,7 @@ void FaviconHandler::FetchFavicon(const GURL& url) {
   initial_history_result_expired_or_incomplete_ = false;
   redownload_icons_ = false;
   got_favicon_from_history_ = false;
-  download_requests_.clear();
+  download_request_.Cancel();
   image_urls_.clear();
   notification_icon_url_ = GURL();
   notification_icon_type_ = favicon_base::INVALID_ICON;
@@ -387,7 +371,7 @@ void FaviconHandler::OnUpdateFaviconURL(
     return;
   }
 
-  download_requests_.clear();
+  download_request_.Cancel();
   image_urls_ = pruned_candidates;
   current_candidate_index_ = 0u;
   best_favicon_candidate_ = FaviconCandidate();
@@ -435,32 +419,19 @@ void FaviconHandler::OnGotInitialHistoryDataAndIconURLCandidates() {
 }
 
 void FaviconHandler::OnDidDownloadFavicon(
+    favicon_base::IconType icon_type,
     int id,
     int http_status_code,
     const GURL& image_url,
     const std::vector<SkBitmap>& bitmaps,
     const std::vector<gfx::Size>& original_bitmap_sizes) {
+  // Mark download as finished.
+  download_request_.Cancel();
+
   if (bitmaps.empty() && http_status_code == 404) {
     DVLOG(1) << "Failed to Download Favicon:" << image_url;
     if (service_)
       service_->UnableToDownloadFavicon(image_url);
-  }
-
-  DownloadRequests::iterator i = download_requests_.find(id);
-  if (i == download_requests_.end()) {
-    // Currently WebContents notifies us of ANY downloads so that it is
-    // possible to get here.
-    return;
-  }
-
-  DownloadRequest download_request = i->second;
-  download_requests_.erase(i);
-
-  if (!current_candidate() ||
-      !DoUrlAndIconMatch(*current_candidate(),
-                         image_url,
-                         download_request.icon_type)) {
-    return;
   }
 
   bool request_next_icon = true;
@@ -491,8 +462,8 @@ void FaviconHandler::OnDidDownloadFavicon(
       gfx::Image image(image_skia);
       // The downloaded icon is still valid when there is no FaviconURL update
       // during the downloading.
-      request_next_icon = !UpdateFaviconCandidate(image_url, image, score,
-                                                  download_request.icon_type);
+      request_next_icon =
+          !UpdateFaviconCandidate(image_url, image, score, icon_type);
     }
   }
 
@@ -509,14 +480,13 @@ void FaviconHandler::OnDidDownloadFavicon(
                  best_favicon_candidate_.icon_type);
     }
     // Clear download related state.
-    download_requests_.clear();
     current_candidate_index_ = image_urls_.size();
     best_favicon_candidate_ = FaviconCandidate();
   }
 }
 
 bool FaviconHandler::HasPendingTasksForTest() {
-  return !download_requests_.empty() ||
+  return !download_request_.IsCancelled() ||
          cancelable_task_tracker_.HasTrackedTasks();
 }
 
@@ -618,27 +588,22 @@ void FaviconHandler::OnFaviconData(const std::vector<
 void FaviconHandler::ScheduleDownload(const GURL& image_url,
                                       favicon_base::IconType icon_type) {
   DCHECK(image_url.is_valid());
+  // Note that CancelableCallback starts cancelled.
+  DCHECK(download_request_.IsCancelled()) << "More than one ongoing download";
   if (service_ && service_->WasUnableToDownloadFavicon(image_url)) {
     DVLOG(1) << "Skip Failed FavIcon: " << image_url;
-    // Registration in download_requests_ is needed to prevent
-    // OnDidDownloadFavicon() from returning early.
-    download_requests_[0] = DownloadRequest(image_url, icon_type);
-    OnDidDownloadFavicon(0, 0, image_url, std::vector<SkBitmap>(),
+    OnDidDownloadFavicon(icon_type, 0, 0, image_url, std::vector<SkBitmap>(),
                          std::vector<gfx::Size>());
     return;
   }
+  download_request_.Reset(base::Bind(&FaviconHandler::OnDidDownloadFavicon,
+                                     base::Unretained(this), icon_type));
   // A max bitmap size is specified to avoid receiving huge bitmaps in
   // OnDidDownloadFavicon(). See FaviconDriver::StartDownload()
   // for more details about the max bitmap size.
-  const int download_id =
-      delegate_->DownloadImage(image_url, GetMaximalIconSize(icon_type),
-                               base::Bind(&FaviconHandler::OnDidDownloadFavicon,
-                                          weak_ptr_factory_.GetWeakPtr()));
+  const int download_id = delegate_->DownloadImage(
+      image_url, GetMaximalIconSize(icon_type), download_request_.callback());
   DCHECK_NE(download_id, 0);
-
-  // Download ids should be unique.
-  DCHECK(download_requests_.find(download_id) == download_requests_.end());
-  download_requests_[download_id] = DownloadRequest(image_url, icon_type);
 }
 
 }  // namespace favicon

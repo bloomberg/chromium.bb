@@ -7,13 +7,12 @@
 
 #include <stddef.h>
 
-#include <map>
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/cancelable_callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "components/favicon/core/favicon_driver_observer.h"
 #include "components/favicon/core/favicon_url.h"
@@ -144,17 +143,6 @@ class FaviconHandler {
   static int GetMaximalIconSize(favicon_base::IconType icon_type);
 
  private:
-  // Represents an in progress download of an image from the renderer.
-  struct DownloadRequest {
-    DownloadRequest();
-    ~DownloadRequest();
-
-    DownloadRequest(const GURL& image_url, favicon_base::IconType icon_type);
-
-    GURL image_url;
-    favicon_base::IconType icon_type;
-  };
-
   // Used to track a candidate for the favicon.
   struct FaviconCandidate {
     FaviconCandidate();
@@ -200,6 +188,7 @@ class FaviconHandler {
 
   // Triggered when a download of an image has finished.
   void OnDidDownloadFavicon(
+      favicon_base::IconType icon_type,
       int id,
       int http_status_code,
       const GURL& image_url,
@@ -268,8 +257,8 @@ class FaviconHandler {
   bool redownload_icons_;
 
   // Requests to the renderer to download favicons.
-  typedef std::map<int, DownloadRequest> DownloadRequests;
-  DownloadRequests download_requests_;
+  base::CancelableCallback<Delegate::ImageDownloadCallback::RunType>
+      download_request_;
 
   // The combination of the supported icon types.
   const int icon_types_;
@@ -301,8 +290,6 @@ class FaviconHandler {
   // available the favicon service and the current page are updated (assuming
   // the image is for a favicon).
   FaviconCandidate best_favicon_candidate_;
-
-  base::WeakPtrFactory<FaviconHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FaviconHandler);
 };
