@@ -1,25 +1,21 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/testharness-helpers.js"></script>
+<script src="../resources/mojo-helpers.js"></script>
+<script>
+'use strict';
+
+setup({ explicit_done: true });
 
 define([
-    "gin/test/expect",
-    "mojo/public/js/codec",
-    "mojo/public/interfaces/bindings/tests/rect.mojom",
-    "mojo/public/interfaces/bindings/tests/sample_service.mojom",
-    "mojo/public/interfaces/bindings/tests/test_structs.mojom",
-  ], function(expect, codec, rect, sample, structs) {
-  testBar();
-  testFoo();
-  testNamedRegion();
-  testSingleBooleanStruct();
-  testTypes();
-  testAlign();
-  testUtf8();
-  testTypedPointerValidation();
-  this.result = "PASS";
+    'mojo/public/js/codec',
+    'mojo/public/interfaces/bindings/tests/rect.mojom',
+    'mojo/public/interfaces/bindings/tests/sample_service.mojom',
+    'mojo/public/interfaces/bindings/tests/test_structs.mojom',
+], function(codec, rect, sample, structs) {
 
-  function testBar() {
+  test(() => {
     var bar = new sample.Bar();
     bar.alpha = 1;
     bar.beta = 2;
@@ -51,22 +47,22 @@ define([
     ]);
 
     var actualMemory = new Uint8Array(message.buffer.arrayBuffer);
-    expect(actualMemory).toEqual(expectedMemory);
+    assert_weak_equals(actualMemory, expectedMemory);
 
     var reader = new codec.MessageReader(message);
 
-    expect(reader.payloadSize).toBe(payloadSize);
-    expect(reader.messageName).toBe(messageName);
+    assert_equals(reader.payloadSize, payloadSize);
+    assert_equals(reader.messageName, messageName);
 
     var bar2 = reader.decodeStruct(sample.Bar);
 
-    expect(bar2.alpha).toBe(bar.alpha);
-    expect(bar2.beta).toBe(bar.beta);
-    expect(bar2.gamma).toBe(bar.gamma);
-    expect("extraProperty" in bar2).toBeFalsy();
-  }
+    assert_equals(bar2.alpha, bar.alpha);
+    assert_equals(bar2.beta, bar.beta);
+    assert_equals(bar2.gamma, bar.gamma);
+    assert_false("extraProperty" in bar2);
+  }, 'bar');
 
-  function testFoo() {
+  test(() => {
     var foo = new sample.Foo();
     foo.x = 0x212B4D5;
     foo.y = 0x16E93;
@@ -119,50 +115,52 @@ define([
     // TODO(abarth): Test more of the message's raw memory.
     var actualMemory = new Uint8Array(message.buffer.arrayBuffer,
                                       0, expectedMemory.length);
-    expect(actualMemory).toEqual(expectedMemory);
+    assert_weak_equals(actualMemory, expectedMemory);
 
     var expectedHandles = [
       23423782,
     ];
 
-    expect(message.handles).toEqual(expectedHandles);
+    assert_weak_equals(message.handles, expectedHandles);
 
     var reader = new codec.MessageReader(message);
 
-    expect(reader.payloadSize).toBe(payloadSize);
-    expect(reader.messageName).toBe(messageName);
+    assert_equals(reader.payloadSize, payloadSize);
+    assert_equals(reader.messageName, messageName);
 
     var foo2 = reader.decodeStruct(sample.Foo);
 
-    expect(foo2.x).toBe(foo.x);
-    expect(foo2.y).toBe(foo.y);
+    assert_equals(foo2.x, foo.x);
+    assert_equals(foo2.y, foo.y);
 
-    expect(foo2.a).toBe(foo.a & 1 ? true : false);
-    expect(foo2.b).toBe(foo.b & 1 ? true : false);
-    expect(foo2.c).toBe(foo.c & 1 ? true : false);
+    assert_equals(foo2.a, foo.a & 1 ? true : false);
+    assert_equals(foo2.b, foo.b & 1 ? true : false);
+    assert_equals(foo2.c, foo.c & 1 ? true : false);
 
-    expect(foo2.bar).toEqual(foo.bar);
-    expect(foo2.data).toEqual(foo.data);
+    assert_weak_equals(foo2.bar, foo.bar);
+    assert_weak_equals(foo2.data, foo.data);
 
-    expect(foo2.extra_bars).toEqual(foo.extra_bars);
-    expect(foo2.name).toBe(foo.name);
-    expect(foo2.source).toEqual(foo.source);
+    assert_weak_equals(foo2.extra_bars, foo.extra_bars);
+    assert_equals(foo2.name, foo.name);
+    assert_equals(foo2.source, foo.source);
 
-    expect(foo2.array_of_bools).toEqual(foo.array_of_bools);
-  }
+    assert_weak_equals(foo2.array_of_bools, foo.array_of_bools);
+  }, 'foo');
 
-  function createRect(x, y, width, height) {
-    var r = new rect.Rect();
-    r.x = x;
-    r.y = y;
-    r.width = width;
-    r.height = height;
-    return r;
-  }
 
   // Verify that the references to the imported Rect type in test_structs.mojom
   // are generated correctly.
-  function testNamedRegion() {
+  test(() => {
+
+    function createRect(x, y, width, height) {
+      var r = new rect.Rect();
+      r.x = x;
+      r.y = y;
+      r.width = width;
+      r.height = height;
+      return r;
+    }
+
     var r = new structs.NamedRegion();
     r.name = "rectangle";
     r.rects = new Array(createRect(1, 2, 3, 4), createRect(10, 20, 30, 40));
@@ -172,14 +170,14 @@ define([
     var reader = new codec.MessageReader(builder.finish());
     var result = reader.decodeStruct(structs.NamedRegion);
 
-    expect(result.name).toEqual("rectangle");
-    expect(result.rects[0]).toEqual(createRect(1, 2, 3, 4));
-    expect(result.rects[1]).toEqual(createRect(10, 20, 30, 40));
-  }
+    assert_equals(result.name, "rectangle");
+    assert_weak_equals(result.rects[0], createRect(1, 2, 3, 4));
+    assert_weak_equals(result.rects[1], createRect(10, 20, 30, 40));
+  }, 'named region');
 
   // Verify that a single boolean field in a struct is correctly decoded to
   // boolean type.
-  function testSingleBooleanStruct() {
+  test(() => {
     var single_bool = new structs.SingleBoolStruct();
     single_bool.value = true;
 
@@ -189,12 +187,10 @@ define([
     var reader = new codec.MessageReader(builder.finish());
     var result = reader.decodeStruct(structs.SingleBoolStruct);
 
-    // Use toEqual() instead of toBeTruthy() to make sure the field type is
-    // actually boolean.
-    expect(result.value).toEqual(true);
-  }
+    assert_true(result.value);
+  }, 'single boolean struct');
 
-  function testTypes() {
+  test(() => {
     function encodeDecode(cls, input, expectedResult, encodedSize) {
       var messageName = 42;
       var payloadSize = encodedSize || cls.encodedSize;
@@ -204,10 +200,10 @@ define([
       var message = builder.finish();
 
       var reader = new codec.MessageReader(message);
-      expect(reader.payloadSize).toBe(payloadSize);
-      expect(reader.messageName).toBe(messageName);
+      assert_equals(reader.payloadSize, payloadSize);
+      assert_equals(reader.messageName, messageName);
       var result = reader.decodeStruct(cls);
-      expect(result).toEqual(expectedResult);
+      assert_equals(result, expectedResult);
     }
     encodeDecode(codec.String, "banana", "banana", 24);
     encodeDecode(codec.NullableString, null, null, 8);
@@ -221,9 +217,9 @@ define([
     encodeDecode(codec.Int32, 0xffffffff, -1);
     encodeDecode(codec.Float, 1.0, 1.0);
     encodeDecode(codec.Double, 1.0, 1.0);
-  }
+  }, 'types');
 
-  function testAlign() {
+  test(() => {
     var aligned = [
       0, // 0
       8, // 1
@@ -248,10 +244,11 @@ define([
       24, // 20
     ];
     for (var i = 0; i < aligned.length; ++i)
-      expect(codec.align(i)).toBe(aligned[i]);
-  }
+      assert_equals(codec.align(i), aligned[i]);
 
-  function testUtf8() {
+  }, 'align');
+
+  test(() => {
     var str = "B\u03ba\u1f79";  // some UCS-2 codepoints
     var messageName = 42;
     var payloadSize = 24;
@@ -269,17 +266,16 @@ define([
       /* 40: */ 0x42, 0xCE, 0xBA, 0xE1, 0xBD, 0xB9,    0,    0,
     ]);
     var actualMemory = new Uint8Array(message.buffer.arrayBuffer);
-    expect(actualMemory.length).toEqual(expectedMemory.length);
-    expect(actualMemory).toEqual(expectedMemory);
+    assert_weak_equals(actualMemory, expectedMemory);
 
     var reader = new codec.MessageReader(message);
-    expect(reader.payloadSize).toBe(payloadSize);
-    expect(reader.messageName).toBe(messageName);
+    assert_equals(reader.payloadSize, payloadSize);
+    assert_equals(reader.messageName, messageName);
     var str2 = reader.decoder.decodeStringPointer();
-    expect(str2).toEqual(str);
-  }
+    assert_equals(str2, str);
+  }, 'utf8');
 
-  function testTypedPointerValidation() {
+  test(() => {
     var encoder = new codec.MessageBuilder(42, 24).createEncoder(8);
     function DummyClass() {};
     var testCases = [
@@ -300,9 +296,9 @@ define([
 
       var encoder = new codec.MessageBuilder(42, 24).createEncoder(8);
       invalidExamples.forEach(function(invalid) {
-        expect(function() {
+        assert_throws(null, function() {
           method.apply(encoder, baseArgs.concat(invalid));
-        }).toThrow();
+        });
       });
 
       validExamples.forEach(function(valid) {
@@ -310,5 +306,8 @@ define([
         method.apply(encoder, baseArgs.concat(valid));
       });
     });
-  }
+  }, 'typed pointer validation');
+
+  done();
 });
+</script>

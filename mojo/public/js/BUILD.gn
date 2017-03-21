@@ -39,13 +39,7 @@ group("tests") {
 
   data = [
     "//mojo/public/interfaces/bindings/tests/data/validation/",
-    "tests/codec_unittest.js",
-    "tests/connection_unittest.js",
     "tests/core_unittest.js",
-    "tests/interface_ptr_unittest.js",
-    "tests/sample_service_unittest.js",
-    "tests/struct_unittest.js",
-    "tests/union_unittest.js",
     "tests/validation_test_input_parser.js",
     "tests/validation_unittest.js",
   ]

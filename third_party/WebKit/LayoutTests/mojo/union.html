@@ -1,44 +1,49 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+<!DOCTYPE html>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script src="../resources/testharness-helpers.js"></script>
+<script src="../resources/mojo-helpers.js"></script>
+<script>
+'use strict';
+
+setup({ explicit_done: true });
 
 define([
-    "gin/test/expect",
-    "mojo/public/interfaces/bindings/tests/test_unions.mojom",
-    "mojo/public/js/codec",
-    "mojo/public/js/validator",
-], function(expect,
-            unions,
-            codec,
-            validator) {
-  function testConstructors() {
+    'mojo/public/interfaces/bindings/tests/test_unions.mojom',
+    'mojo/public/js/codec',
+    'mojo/public/js/validator',
+], function(unions, codec, validator) {
+
+  test(() => {
     var u = new unions.PodUnion();
-    expect(u.$data).toEqual(null);
-    expect(u.$tag).toBeUndefined();
+    assert_equals(u.$data, null);
+    assert_equals(u.$tag, undefined);
 
     u.f_uint32 = 32;
 
-    expect(u.f_uint32).toEqual(32);
-    expect(u.$tag).toEqual(unions.PodUnion.Tags.f_uint32);
+    assert_equals(u.f_uint32, 32);
+    assert_equals(u.$tag, unions.PodUnion.Tags.f_uint32);
 
     var u = new unions.PodUnion({f_uint64: 64});
-    expect(u.f_uint64).toEqual(64);
-    expect(u.$tag).toEqual(unions.PodUnion.Tags.f_uint64);
-    expect(function() {var v = u.f_uint32;}).toThrow();
+    assert_equals(u.f_uint64, 64);
+    assert_equals(u.$tag, unions.PodUnion.Tags.f_uint64);
+    assert_throws(null, function() {var v = u.f_uint32;});
 
-    expect(function() {
+    assert_throws(null, function() {
       var u = new unions.PodUnion({
         f_uint64: 64,
         f_uint32: 32,
       });
-    }).toThrow();
+    });
 
-    expect(function() {
-      var u = new unions.PodUnion({ foo: 64 }); }).toThrow();
+    assert_throws(null, function() {
+      var u = new unions.PodUnion({ foo: 64 });
+    });
 
-    expect(function() {
-      var u = new unions.PodUnion([1,2,3,4]); }).toThrow();
-  }
+    assert_throws(null, function() {
+      var u = new unions.PodUnion([1,2,3,4]);
+    });
+  }, 'constructors');
 
   function structEncodeDecode(struct) {
     var structClass = struct.constructor;
@@ -49,7 +54,7 @@ define([
 
     var messageValidator = new validator.Validator(message);
     var err = structClass.validate(messageValidator, codec.kMessageHeaderSize);
-    expect(err).toEqual(validator.validationError.NONE);
+    assert_equals(err, validator.validationError.NONE);
 
     var reader = new codec.MessageReader(message);
     var view = reader.decoder.buffer.dataView;
@@ -57,23 +62,21 @@ define([
     return reader.decodeStruct(structClass);
   }
 
-  function testBasicEncoding() {
+  test(() => {
     var s = new unions.WrapperStruct({
       pod_union: new unions.PodUnion({
         f_uint64: 64})});
 
     var decoded = structEncodeDecode(s);
-    expect(decoded).toEqual(s);
+    assert_weak_equals(decoded, s);
 
     var s = new unions.WrapperStruct({
       pod_union: new unions.PodUnion({
         f_bool : true})});
 
     var decoded = structEncodeDecode(s);
-    expect(decoded.pod_union.$tag).toEqual(unions.PodUnion.Tags.f_bool);
-    // Use toEqual() instead of toBeTruthy() to make sure the field type is
-    // actually boolean.
-    expect(decoded.pod_union.f_bool).toEqual(true);
+    assert_equals(decoded.pod_union.$tag, unions.PodUnion.Tags.f_bool);
+    assert_true(decoded.pod_union.f_bool);
 
     var s = new unions.WrapperStruct({
       object_union: new unions.ObjectUnion({
@@ -81,14 +84,14 @@ define([
           f_int8: 8})})});
 
     var decoded = structEncodeDecode(s);
-    expect(decoded).toEqual(s);
+    assert_weak_equals(decoded, s);
 
     var s = new unions.WrapperStruct({
       object_union: new unions.ObjectUnion({
         f_array_int8: [1, 2, 3]})});
 
     var decoded = structEncodeDecode(s);
-    expect(decoded).toEqual(s);
+    assert_weak_equals(decoded, s);
 
     var s = new unions.WrapperStruct({
       object_union: new unions.ObjectUnion({
@@ -98,16 +101,17 @@ define([
         ])})});
 
     var decoded = structEncodeDecode(s);
-    expect(decoded).toEqual(s);
+    assert_weak_equals(decoded, s);
 
     // Encoding a union with no member set is an error.
     var s = new unions.WrapperStruct({
       object_union: new unions.ObjectUnion()});
-    expect(function() {
-      structEncodeDecode(s); }).toThrow();
-  }
+    assert_throws(null, function() {
+      structEncodeDecode(s);
+    });
+  }, 'basic encoding');
 
-  function testUnionsInArrayEncoding() {
+  test(() => {
     var s = new unions.SmallStruct({
       pod_union_array: [
         new unions.PodUnion({f_uint32: 32}),
@@ -116,10 +120,10 @@ define([
     });
 
     var decoded = structEncodeDecode(s);
-    expect(decoded).toEqual(s);
-  }
+    assert_weak_equals(decoded, s);
+  }, 'unions in array encoding');
 
-  function testUnionsInMapEncoding() {
+  test(() => {
     var s = new unions.SmallStruct({
       pod_union_map: new Map([
         ["thirty-two", new unions.PodUnion({f_uint32: 32})],
@@ -128,17 +132,17 @@ define([
     });
 
     var decoded = structEncodeDecode(s);
-    expect(decoded).toEqual(s);
-  }
+    assert_weak_equals(decoded, s);
+  }, 'unions in map encoding');
 
-  function testNestedUnionsEncoding() {
+  test(() => {
     var s = new unions.WrapperStruct({
       object_union: new unions.ObjectUnion({
         f_pod_union: new unions.PodUnion({f_uint32: 32})
       })});
     var decoded = structEncodeDecode(s);
-    expect(decoded).toEqual(s);
-  }
+    assert_weak_equals(decoded, s);
+  }, 'nested unions encoding');
 
   function structValidate(struct) {
     var structClass = struct.constructor;
@@ -151,28 +155,28 @@ define([
     return structClass.validate(messageValidator, codec.kMessageHeaderSize);
   }
 
-  function testNullUnionMemberValidation() {
+  test(() => {
     var s = new unions.WrapperStruct({
       object_union: new unions.ObjectUnion({
         f_dummy: null})});
 
     var err = structValidate(s);
-    expect(err).toEqual(validator.validationError.UNEXPECTED_NULL_POINTER);
+    assert_equals(err, validator.validationError.UNEXPECTED_NULL_POINTER);
 
     var s = new unions.WrapperStruct({
       object_union: new unions.ObjectUnion({
         f_nullable: null})});
 
     var err = structValidate(s);
-    expect(err).toEqual(validator.validationError.NONE);
-  }
+    assert_equals(err, validator.validationError.NONE);
+  }, 'null union member validation');
 
-  function testNullUnionValidation() {
+  test(() => {
     var s = new unions.SmallStructNonNullableUnion({
       pod_union: null});
 
     var err = structValidate(s);
-    expect(err).toEqual(validator.validationError.UNEXPECTED_NULL_UNION);
+    assert_equals(err, validator.validationError.UNEXPECTED_NULL_UNION);
 
     var s = new unions.WrapperStruct({
       object_union: new unions.ObjectUnion({
@@ -180,15 +184,10 @@ define([
       });
 
     var err = structValidate(s);
-    expect(err).toEqual(validator.validationError.UNEXPECTED_NULL_UNION);
-  }
+    assert_equals(err, validator.validationError.UNEXPECTED_NULL_UNION);
+  }, 'null union validation');
 
-  testConstructors();
-  testBasicEncoding();
-  testUnionsInArrayEncoding();
-  testUnionsInMapEncoding();
-  testNestedUnionsEncoding();
-  testNullUnionMemberValidation();
-  testNullUnionValidation();
-  this.result = "PASS";
+  done();
+
 });
+</script>
