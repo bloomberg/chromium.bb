@@ -53,7 +53,7 @@ class CreditsWebDialog : public chromeos::LoginWebDialog {
       source->GetWebUI()->CallJavascriptFunctionUnsafe(
           "(function () {"
           "  document.body.classList.toggle('dialog', true);"
-          "  keyboard.initializeKeyboardFlow();"
+          "  keyboard.initializeKeyboardFlow(false);"
           "})");
     }
   }
