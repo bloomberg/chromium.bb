@@ -24,6 +24,14 @@ MusDemo::MusDemo() {}
 
 MusDemo::~MusDemo() {
   display::Screen::SetScreenInstance(nullptr);
+  // Destruction order is important here:
+  // 1) Windows must be destroyed before WindowTreeClient's destructor is
+  // called.
+  // 2) WindowTreeClient must be destroyed before Env and WMState.
+  window_tree_data_list_.clear();
+  window_tree_client_.reset();
+  env_.reset();
+  wm_state_.reset();
 }
 
 void MusDemo::AddPrimaryDisplay(const display::Display& display) {
