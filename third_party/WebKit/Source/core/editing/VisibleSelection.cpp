@@ -203,27 +203,45 @@ void VisibleSelectionTemplate<Strategy>::appendTrailingWhitespace() {
   DCHECK_EQ(m_granularity, WordGranularity);
   if (!isRange())
     return;
-  const EphemeralRangeTemplate<Strategy> searchRange = makeSearchRange(end());
-  if (searchRange.isNull())
+  const PositionTemplate<Strategy>& newEnd = skipWhitespace(m_end);
+  if (m_end == newEnd)
     return;
+  m_hasTrailingWhitespace = true;
+  m_end = newEnd;
+}
+
+// TODO(yosin): We should move |skipWhitespaceAlgorithm| to "VisibleUnits.cpp"
+template <typename Strategy>
+static PositionTemplate<Strategy> skipWhitespaceAlgorithm(
+    const PositionTemplate<Strategy>& position) {
+  const EphemeralRangeTemplate<Strategy>& searchRange =
+      makeSearchRange(position);
+  if (searchRange.isNull())
+    return position;
 
   CharacterIteratorAlgorithm<Strategy> charIt(
       searchRange.startPosition(), searchRange.endPosition(),
       TextIteratorBehavior::Builder()
           .setEmitsCharactersBetweenAllVisiblePositions(true)
           .build());
-  bool changed = false;
-
+  PositionTemplate<Strategy> runner = position;
   for (; charIt.length(); charIt.advance(1)) {
     UChar c = charIt.characterAt(0);
     if ((!isSpaceOrNewline(c) && c != noBreakSpaceCharacter) || c == '\n')
-      break;
-    m_end = charIt.endPosition();
-    changed = true;
+      return runner;
+    runner = charIt.endPosition();
   }
-  if (!changed)
-    return;
-  m_hasTrailingWhitespace = true;
+  return runner;
+}
+
+// TODO(yosin): We should move |skipWhitespace| to "VisibleUnits.cpp"
+Position skipWhitespace(const Position& position) {
+  return skipWhitespaceAlgorithm(position);
+}
+
+// TODO(yosin): We should move |skipWhitespace| to "VisibleUnits.cpp"
+PositionInFlatTree skipWhitespace(const PositionInFlatTree& position) {
+  return skipWhitespaceAlgorithm(position);
 }
 
 template <typename Strategy>

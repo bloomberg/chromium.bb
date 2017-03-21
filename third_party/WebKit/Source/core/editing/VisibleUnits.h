@@ -339,6 +339,9 @@ CORE_EXPORT VisiblePosition visiblePositionForContentsPoint(const IntPoint&,
 
 CORE_EXPORT bool rendersInDifferentPosition(const Position&, const Position&);
 
+CORE_EXPORT Position skipWhitespace(const Position&);
+CORE_EXPORT PositionInFlatTree skipWhitespace(const PositionInFlatTree&);
+
 }  // namespace blink
 
 #endif  // VisibleUnits_h
