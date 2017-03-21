@@ -19,7 +19,7 @@
 #include "chrome/browser/safe_browsing/settings_reset_prompt/settings_reset_prompt_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/url_formatter/elide_url.h"
@@ -68,14 +68,21 @@ void OnModelCreated(std::unique_ptr<SettingsResetPromptModel> model) {
 
   // Ensure that there is at least one non-incognito browser open for the
   // profile before attempting to show the dialog.
-  if (!chrome::FindTabbedBrowser(profile, /*match_original_profiles=*/false))
+  Browser* browser =
+      chrome::FindTabbedBrowser(profile, /*match_original_profiles=*/false);
+  if (!browser)
     return;
 
-  chrome::ScopedTabbedBrowserDisplayer displayer(profile);
+  // First, show the browser window, and only then show the dialog so that the
+  // dialog will have focus.
+  if (browser->window()->IsMinimized())
+    browser->window()->Restore();
+  browser->window()->Show();
+
   // The |SettingsResetPromptController| object will delete itself after the
   // reset prompt dialog has been closed.
   SettingsResetPromptController::ShowSettingsResetPrompt(
-      displayer.browser(), new SettingsResetPromptController(std::move(model)));
+      browser, new SettingsResetPromptController(std::move(model)));
 }
 
 void MaybeShowSettingsResetPrompt(
