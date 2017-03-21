@@ -372,11 +372,7 @@ void PaintInvalidator::updateVisualRect(const LayoutObject& object,
   context.oldLocation = objectPaintInvalidator.locationInBacking();
 
   LayoutRect newVisualRect = computeVisualRectInBacking(object, context);
-  if (object.isText()) {
-    // Use visual rect location for LayoutTexts because it suffices to check
-    // whether a visual rect changes for layout caused invalidation.
-    context.newLocation = newVisualRect.location();
-  } else {
+  if (object.isBoxModelObject()) {
     context.newLocation = computeLocationInBacking(object, context);
 
     // Location of empty visual rect doesn't affect paint invalidation. Set it
@@ -384,6 +380,10 @@ void PaintInvalidator::updateVisualRect(const LayoutObject& object,
     // ObjectPaintInvalidator.
     if (newVisualRect.isEmpty())
       newVisualRect.setLocation(context.newLocation);
+  } else {
+    // Use visual rect location for non-LayoutBoxModelObject because it suffices
+    // to check whether a visual rect changes for layout caused invalidation.
+    context.newLocation = newVisualRect.location();
   }
 
   object.getMutableForPainting().setVisualRect(newVisualRect);

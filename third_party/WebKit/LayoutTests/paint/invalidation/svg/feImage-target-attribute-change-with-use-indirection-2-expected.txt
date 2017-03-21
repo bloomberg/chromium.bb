@@ -26,7 +26,7 @@
     },
     {
       "object": "LayoutSVGRect rect id='rect'",
-      "reason": "location change"
+      "reason": "bounds change"
     },
     {
       "object": "LayoutSVGResourceFilterPrimitive feImage id='feimage'",

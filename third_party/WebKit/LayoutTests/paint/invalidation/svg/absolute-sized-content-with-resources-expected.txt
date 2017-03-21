@@ -24,7 +24,7 @@
         {
           "object": "LayoutSVGEllipse circle",
           "rect": [9, 251, 167, 200],
-          "reason": "location change"
+          "reason": "bounds change"
         },
         {
           "object": "LayoutSVGEllipse circle",
@@ -63,7 +63,7 @@
     },
     {
       "object": "LayoutSVGEllipse circle",
-      "reason": "location change"
+      "reason": "bounds change"
     },
     {
       "object": "LayoutSVGEllipse circle",
