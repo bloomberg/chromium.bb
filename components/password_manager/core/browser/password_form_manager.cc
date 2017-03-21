@@ -787,10 +787,12 @@ bool PasswordFormManager::UploadPasswordVote(
     LabelFields(field_types, &form_structure, &available_field_types);
   }
 
-  if (generation_popup_was_shown_)
-    AddGeneratedVote(&form_structure);
-  if (form_classifier_outcome_ != kNoOutcome)
-    AddFormClassifierVote(&form_structure);
+  if (password_type != autofill::ACCOUNT_CREATION_PASSWORD) {
+    if (generation_popup_was_shown_)
+      AddGeneratedVote(&form_structure);
+    if (form_classifier_outcome_ != kNoOutcome)
+      AddFormClassifierVote(&form_structure);
+  }
 
   // Force uploading as these events are relatively rare and we want to make
   // sure to receive them.
