@@ -57,6 +57,7 @@ class APIBindingsSystemTest : public APIBindingTest {
   // Callback for event listeners changing.
   void OnEventListenersChanged(const std::string& event_name,
                                binding::EventListenersChanged changed,
+                               const base::DictionaryValue* filter,
                                v8::Local<v8::Context> context);
 
   // Callback for an API request being made. Stores the request in

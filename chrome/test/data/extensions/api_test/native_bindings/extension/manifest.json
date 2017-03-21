@@ -5,7 +5,7 @@
   "manifest_version": 2,
   "version": "0.1",
   "permissions": ["idle", "tabs", "cast.streaming", "*://example.com:*/*",
-                  "storage", "privacy"],
+                  "storage", "privacy", "webNavigation"],
   "background": {
     "persistent": false,
     "page": "background.html"

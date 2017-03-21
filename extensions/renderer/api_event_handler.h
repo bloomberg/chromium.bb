@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "extensions/common/event_filter.h"
 #include "extensions/renderer/api_binding_types.h"
 #include "extensions/renderer/event_emitter.h"
 #include "v8/include/v8.h"
@@ -18,6 +19,7 @@ class ListValue;
 }
 
 namespace extensions {
+class EventFilteringInfo;
 
 // The object to handle API events. This includes vending v8::Objects for the
 // event; handling adding, removing, and querying listeners; and firing events
@@ -28,6 +30,7 @@ class APIEventHandler {
   using EventListenersChangedMethod =
       base::Callback<void(const std::string& event_name,
                           binding::EventListenersChanged,
+                          const base::DictionaryValue* filter,
                           v8::Local<v8::Context>)>;
 
   APIEventHandler(const binding::RunJSFunction& call_js,
@@ -36,6 +39,7 @@ class APIEventHandler {
 
   // Returns a new v8::Object for an event with the given |event_name|.
   v8::Local<v8::Object> CreateEventInstance(const std::string& event_name,
+                                            bool supports_filters,
                                             v8::Local<v8::Context> context);
 
   // Creates a new event without any name. This is used by custom bindings when
@@ -53,7 +57,8 @@ class APIEventHandler {
   // specified |context|, sending the included |arguments|.
   void FireEventInContext(const std::string& event_name,
                           v8::Local<v8::Context> context,
-                          const base::ListValue& arguments);
+                          const base::ListValue& arguments,
+                          const EventFilteringInfo& filter);
 
   // Registers a |function| to serve as an "argument massager" for the given
   // |event_name|, mutating the original arguments.
@@ -79,6 +84,9 @@ class APIEventHandler {
   binding::RunJSFunction call_js_;
 
   EventListenersChangedMethod listeners_changed_;
+
+  // The associated EventFilter; shared across all contexts and events.
+  EventFilter event_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(APIEventHandler);
 };

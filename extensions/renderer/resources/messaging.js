@@ -23,11 +23,17 @@
   var kPortClosedError = 'Attempting to use a disconnected port object';
 
   var jsEvent;
-  function createAnonymousEvent(schema, options) {
+  function createAnonymousEvent(schema) {
     if (bindingUtil) {
       // Native custom events ignore schema.
-      return bindingUtil.createCustomEvent(undefined, undefined, options);
+      var supportsFilters = false;
+      return bindingUtil.createCustomEvent(undefined, undefined,
+                                           supportsFilters);
     }
+    var options = {
+      __proto__: null,
+      unmanaged: true,
+    };
     if (!jsEvent)
       jsEvent = require('event_bindings').Event;
     return new jsEvent(undefined, schema, options);
@@ -61,12 +67,8 @@
       type: 'any',
       optional: true,
     };
-    var options = {
-      __proto__: null,
-      unmanaged: true,
-    };
-    this.onDisconnect = createAnonymousEvent([portSchema], options);
-    this.onMessage = createAnonymousEvent([messageSchema, portSchema], options);
+    this.onDisconnect = createAnonymousEvent([portSchema]);
+    this.onMessage = createAnonymousEvent([messageSchema, portSchema]);
   }
   $Object.setPrototypeOf(PortImpl.prototype, null);
 

@@ -10,9 +10,11 @@ var MessagingNatives = requireNative('messaging_natives');
 
 var EventBindings;
 var CreateEvent = function(name) {
+  if (bindingUtil) {
+    return bindingUtil.createCustomEvent(name, null,
+                                         true /* supportsFilters */);
+  }
   var eventOpts = {supportsListeners: true, supportsFilters: true};
-  if (bindingUtil)
-    return bindingUtil.createCustomEvent(name, null, eventOpts);
   if (!EventBindings)
     EventBindings = require('event_bindings');
   return new EventBindings.Event(name, undefined, eventOpts);

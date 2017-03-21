@@ -10,6 +10,7 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "extensions/common/event_filtering_info.h"
 #include "extensions/common/extension_api.h"
 #include "extensions/renderer/api_binding.h"
 #include "extensions/renderer/api_binding_hooks.h"
@@ -158,6 +159,7 @@ void APIBindingsSystemTest::OnAPIRequest(
 void APIBindingsSystemTest::OnEventListenersChanged(
     const std::string& event_name,
     binding::EventListenersChanged changed,
+    const base::DictionaryValue* filter,
     v8::Local<v8::Context> context) {}
 
 void APIBindingsSystemTest::ValidateLastRequest(
@@ -267,7 +269,7 @@ TEST_F(APIBindingsSystemTest, TestInitializationAndCallbacks) {
     std::unique_ptr<base::ListValue> expected_args =
         ListValueFromString(kResponseArgsJson);
     bindings_system()->FireEventInContext("alpha.alphaEvent", context,
-                                          *expected_args);
+                                          *expected_args, EventFilteringInfo());
 
     EXPECT_EQ(ReplaceSingleQuotes(kResponseArgsJson),
               GetStringPropertyFromObject(context->Global(), context,

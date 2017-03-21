@@ -15,6 +15,7 @@
 #include "base/supports_user_data.h"
 #include "base/values.h"
 #include "content/public/child/v8_value_converter.h"
+#include "extensions/renderer/api_event_listeners.h"
 #include "extensions/renderer/event_emitter.h"
 #include "gin/handle.h"
 #include "gin/per_context_data.h"
@@ -24,6 +25,7 @@ namespace extensions {
 namespace {
 
 void DoNothingOnListenersChanged(binding::EventListenersChanged change,
+                                 const base::DictionaryValue* filter,
                                  v8::Local<v8::Context> context) {}
 
 const char kExtensionAPIEventPerContextKey[] = "extension_api_events";
@@ -98,7 +100,7 @@ void DispatchEvent(const v8::FunctionCallbackInfo<v8::Value>& info) {
   gin::Converter<EventEmitter*>::FromV8(isolate, v8_emitter.Get(isolate),
                                         &emitter);
   CHECK(emitter);
-  emitter->Fire(context, &args);
+  emitter->Fire(context, &args, nullptr);
 }
 
 }  // namespace
@@ -111,6 +113,7 @@ APIEventHandler::~APIEventHandler() {}
 
 v8::Local<v8::Object> APIEventHandler::CreateEventInstance(
     const std::string& event_name,
+    bool supports_filters,
     v8::Local<v8::Context> context) {
   // We need a context scope since gin::CreateHandle only takes the isolate
   // and infers the context from that.
@@ -121,9 +124,19 @@ v8::Local<v8::Object> APIEventHandler::CreateEventInstance(
   APIEventPerContextData* data = GetContextData(context, true);
   DCHECK(data->emitters.find(event_name) == data->emitters.end());
 
+  APIEventListeners::ListenersUpdated updated =
+      base::Bind(listeners_changed_, event_name);
+  std::unique_ptr<APIEventListeners> listeners;
+  if (supports_filters) {
+    listeners = base::MakeUnique<FilteredEventListeners>(updated, event_name,
+                                                         &event_filter_);
+  } else {
+    listeners = base::MakeUnique<UnfilteredEventListeners>(updated);
+  }
+
   gin::Handle<EventEmitter> emitter_handle = gin::CreateHandle(
       context->GetIsolate(),
-      new EventEmitter(call_js_, base::Bind(listeners_changed_, event_name)));
+      new EventEmitter(supports_filters, std::move(listeners), call_js_));
   CHECK(!emitter_handle.IsEmpty());
   v8::Local<v8::Value> emitter_value = emitter_handle.ToV8();
   CHECK(emitter_value->IsObject());
@@ -139,9 +152,13 @@ v8::Local<v8::Object> APIEventHandler::CreateAnonymousEventInstance(
     v8::Local<v8::Context> context) {
   v8::Context::Scope context_scope(context);
   APIEventPerContextData* data = GetContextData(context, true);
+  bool supports_filters = false;
+  std::unique_ptr<APIEventListeners> listeners =
+      base::MakeUnique<UnfilteredEventListeners>(
+          base::Bind(&DoNothingOnListenersChanged));
   gin::Handle<EventEmitter> emitter_handle = gin::CreateHandle(
       context->GetIsolate(),
-      new EventEmitter(call_js_, base::Bind(&DoNothingOnListenersChanged)));
+      new EventEmitter(supports_filters, std::move(listeners), call_js_));
   CHECK(!emitter_handle.IsEmpty());
   v8::Local<v8::Object> emitter_object = emitter_handle.ToV8().As<v8::Object>();
   data->anonymous_emitters.push_back(
@@ -159,7 +176,7 @@ void APIEventHandler::InvalidateCustomEvent(v8::Local<v8::Context> context,
     return;
   }
 
-  emitter->Invalidate();
+  emitter->Invalidate(context);
   auto emitter_entry = std::find(data->anonymous_emitters.begin(),
                                  data->anonymous_emitters.end(), event);
   if (emitter_entry == data->anonymous_emitters.end()) {
@@ -172,7 +189,8 @@ void APIEventHandler::InvalidateCustomEvent(v8::Local<v8::Context> context,
 
 void APIEventHandler::FireEventInContext(const std::string& event_name,
                                          v8::Local<v8::Context> context,
-                                         const base::ListValue& args) {
+                                         const base::ListValue& args,
+                                         const EventFilteringInfo& filter) {
   APIEventPerContextData* data = GetContextData(context, false);
   if (!data)
     return;
@@ -187,7 +205,7 @@ void APIEventHandler::FireEventInContext(const std::string& event_name,
       &emitter);
   CHECK(emitter);
 
-  if (emitter->listeners()->empty())
+  if (emitter->GetNumListeners() == 0u)
     return;
 
   // Note: since we only convert the arguments once, if a listener modifies an
@@ -202,7 +220,7 @@ void APIEventHandler::FireEventInContext(const std::string& event_name,
     v8_args.reserve(args.GetSize());
     for (const auto& arg : args)
       v8_args.push_back(converter->ToV8Value(arg.get(), context));
-    emitter->Fire(context, &v8_args);
+    emitter->Fire(context, &v8_args, &filter);
   } else {
     v8::Isolate* isolate = context->GetIsolate();
     v8::HandleScope handle_scope(isolate);
@@ -253,17 +271,14 @@ void APIEventHandler::InvalidateContext(v8::Local<v8::Context> context) {
     gin::Converter<EventEmitter*>::FromV8(isolate, pair.second.Get(isolate),
                                           &emitter);
     CHECK(emitter);
-    emitter->Invalidate();
-    // When the context is shut down, all listeners are removed.
-    listeners_changed_.Run(
-        pair.first, binding::EventListenersChanged::NO_LISTENERS, context);
+    emitter->Invalidate(context);
   }
   for (const auto& global : data->anonymous_emitters) {
     EventEmitter* emitter = nullptr;
     gin::Converter<EventEmitter*>::FromV8(isolate, global.Get(isolate),
                                           &emitter);
     CHECK(emitter);
-    emitter->Invalidate();
+    emitter->Invalidate(context);
   }
 
   data->emitters.clear();
@@ -288,7 +303,7 @@ size_t APIEventHandler::GetNumEventListenersForTesting(
   gin::Converter<EventEmitter*>::FromV8(
       context->GetIsolate(), iter->second.Get(context->GetIsolate()), &emitter);
   CHECK(emitter);
-  return emitter->listeners()->size();
+  return emitter->GetNumListeners();
 }
 
 }  // namespace extensions
