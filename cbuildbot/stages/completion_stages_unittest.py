@@ -625,8 +625,9 @@ class BaseCommitQueueCompletionStageTest(
       self.tot_sanity_mock.assert_called_once_with(mock.ANY, mock.ANY)
 
       if alert:
-        self.alert_email_mock.called_once_with(
-            mock.ANY, mock.ANY, mock.ANY, mock.ANY)
+        self.alert_email_mock.assert_called_once_with(
+            mock.ANY, mock.ANY, server=mock.ANY, message=mock.ANY,
+            extra_fields=mock.ANY)
 
       self.assertEqual(do_submit_partial, spmock.called)
 
