@@ -217,7 +217,7 @@ string SpdyHeaderBlock::ValueProxy::as_string() const {
   if (lookup_result_ == block_->end()) {
     return "";
   } else {
-    return lookup_result_->second.value().as_string();
+    return std::string(lookup_result_->second.value());
   }
 }
 

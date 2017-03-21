@@ -419,7 +419,7 @@ void SpdyTestDeframerImpl::OnAltSvc(
                                << Http2FrameTypeToString(frame_type_);
   CHECK_GT(stream_id, 0u);
   auto ptr = MakeUnique<SpdyAltSvcIR>(stream_id);
-  ptr->set_origin(origin.as_string());
+  ptr->set_origin(std::string(origin));
   for (auto& altsvc : altsvc_vector) {
     ptr->add_altsvc(altsvc);
   }
@@ -761,7 +761,7 @@ void SpdyTestDeframerImpl::OnHeader(SpdyStringPiece key,
       << "   frame_type_=" << Http2FrameTypeToString(frame_type_);
   CHECK(!got_hpack_end_);
   CHECK(headers_);
-  headers_->emplace_back(key.as_string(), value.as_string());
+  headers_->emplace_back(std::string(key), std::string(value));
   CHECK(headers_handler_);
   headers_handler_->OnHeader(key, value);
 }

@@ -1658,7 +1658,7 @@ bool SpdyFramer::ParseHeaderBlockInBuffer(const char* header_data,
                << " contains upper-case characters.";
       return false;
     }
-    std::string name = temp.as_string();
+    std::string name(temp);
 
     // Read header value.
     if (!reader.ReadStringPiece32(&temp)) {
@@ -1666,7 +1666,7 @@ bool SpdyFramer::ParseHeaderBlockInBuffer(const char* header_data,
                << num_headers << ").";
       return false;
     }
-    std::string value = temp.as_string();
+    std::string value(temp);
 
     // Ensure no duplicates.
     if (block->find(name) != block->end()) {

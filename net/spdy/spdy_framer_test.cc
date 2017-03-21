@@ -471,7 +471,7 @@ class TestSpdyVisitor : public SpdyFramerVisitorInterface,
             << "\", altsvc_vector)";
     test_altsvc_ir_.set_stream_id(stream_id);
     if (origin.length() > 0) {
-      test_altsvc_ir_.set_origin(origin.as_string());
+      test_altsvc_ir_.set_origin(std::string(origin));
     }
     for (const SpdyAltSvcWireFormat::AlternativeService& altsvc :
          altsvc_vector) {
