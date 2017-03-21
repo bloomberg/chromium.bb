@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/base/math_util.h"
@@ -31,6 +32,16 @@
 
 namespace cc {
 namespace {
+
+// Maximum bucket size for the UMA stats.
+constexpr int kUmaStatMaxSurfaces = 30;
+
+const char kUmaValidSurface[] =
+    "Compositing.SurfaceAggregator.SurfaceDrawQuad.ValidSurface";
+const char kUmaMissingSurface[] =
+    "Compositing.SurfaceAggregator.SurfaceDrawQuad.MissingSurface";
+const char kUmaNoActiveFrame[] =
+    "Compositing.SurfaceAggregator.SurfaceDrawQuad.NoActiveFrame";
 
 void MoveMatchingRequests(
     int render_pass_id,
@@ -193,9 +204,14 @@ void SurfaceAggregator::HandleSurfaceQuad(
                         clip_rect, dest_pass, ignore_undamaged,
                         damage_rect_in_quad_space,
                         damage_rect_in_quad_space_valid);
+    } else if (!surface) {
+      ++uma_stats_.missing_surface;
+    } else {
+      ++uma_stats_.no_active_frame;
     }
     return;
   }
+  ++uma_stats_.valid_surface;
 
   if (ignore_undamaged) {
     gfx::Transform quad_to_target_transform(
@@ -816,6 +832,8 @@ void SurfaceAggregator::PropagateCopyRequestPasses() {
 }
 
 CompositorFrame SurfaceAggregator::Aggregate(const SurfaceId& surface_id) {
+  uma_stats_.Reset();
+
   Surface* surface = manager_->GetSurfaceForId(surface_id);
   DCHECK(surface);
   contained_surfaces_[surface_id] = surface->frame_index();
@@ -879,6 +897,15 @@ CompositorFrame SurfaceAggregator::Aggregate(const SurfaceId& surface_id) {
 
   // TODO(jamesr): Aggregate all resource references into the returned frame's
   // resource list.
+
+  // Log UMA stats for SurfaceDrawQuads on the number of surfaces that were
+  // aggregated together and any failures.
+  UMA_HISTOGRAM_EXACT_LINEAR(kUmaValidSurface, uma_stats_.valid_surface,
+                             kUmaStatMaxSurfaces);
+  UMA_HISTOGRAM_EXACT_LINEAR(kUmaMissingSurface, uma_stats_.missing_surface,
+                             kUmaStatMaxSurfaces);
+  UMA_HISTOGRAM_EXACT_LINEAR(kUmaNoActiveFrame, uma_stats_.no_active_frame,
+                             kUmaStatMaxSurfaces);
 
   return frame;
 }

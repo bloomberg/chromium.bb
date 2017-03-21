@@ -76,6 +76,21 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
     bool in_use = true;
   };
 
+  struct SurfaceDrawQuadUmaStats {
+    void Reset() {
+      valid_surface = 0;
+      missing_surface = 0;
+      no_active_frame = 0;
+    }
+
+    // The surface exists and has an active frame.
+    int valid_surface;
+    // The surface doesn't exist.
+    int missing_surface;
+    // The surface exists but doesn't have an active frame.
+    int no_active_frame;
+  };
+
   ClipData CalculateClipRect(const ClipData& surface_clip,
                              const ClipData& quad_clip,
                              const gfx::Transform& target_transform);
@@ -192,6 +207,9 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
 
   // Resource list for the aggregated frame.
   TransferableResourceArray* dest_resource_list_;
+
+  // Tracks UMA stats for SurfaceDrawQuads during a call to Aggregate().
+  SurfaceDrawQuadUmaStats uma_stats_;
 
   base::WeakPtrFactory<SurfaceAggregator> weak_factory_;
 
