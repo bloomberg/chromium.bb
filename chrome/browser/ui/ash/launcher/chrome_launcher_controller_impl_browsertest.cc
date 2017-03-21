@@ -1085,13 +1085,12 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, Navigation) {
 
 // Confirm that a tab can be moved between browsers while maintaining the
 // correct running state.
-// Disabled due to flake: crbug.com/693341.
-IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DISABLED_TabDragAndDrop) {
+IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, TabDragAndDrop) {
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
   TabStripModel* tab_strip_model1 = browser()->tab_strip_model();
   EXPECT_EQ(1, tab_strip_model1->count());
-  int browser_index = GetIndexOfShelfItemType(ash::TYPE_BROWSER_SHORTCUT);
-  EXPECT_TRUE(browser_index >= 0);
-  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
+  const int browser_index = GetIndexOfShelfItemType(ash::TYPE_BROWSER_SHORTCUT);
+  EXPECT_GE(browser_index, 0);
 
   // Create a shortcut for app1.
   ash::ShelfID shortcut_id = CreateShortcut("app1");

@@ -1327,11 +1327,13 @@ void ChromeLauncherControllerImpl::CreateBrowserShortcutLauncherItem() {
   browser_shortcut.title = l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
   ash::ShelfID id = model_->next_id();
   model_->AddAt(0, browser_shortcut);
-  id_to_item_controller_map_[id] =
+  BrowserShortcutLauncherItemController* controller =
       new BrowserShortcutLauncherItemController(this, model_);
-  id_to_item_controller_map_[id]->set_shelf_id(id);
+  controller->set_shelf_id(id);
+  id_to_item_controller_map_[id] = controller;
   // ShelfModel owns BrowserShortcutLauncherItemController.
-  SetShelfItemDelegate(id, id_to_item_controller_map_[id]);
+  SetShelfItemDelegate(id, controller);
+  controller->UpdateBrowserItemState();
 }
 
 bool ChromeLauncherControllerImpl::IsIncognito(
