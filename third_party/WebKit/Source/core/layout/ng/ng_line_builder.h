@@ -53,7 +53,9 @@ class CORE_EXPORT NGLineBuilder final {
   void SetEnd(unsigned end_offset);
 
   // Set the end offset if caller knows the inline size since the current end.
-  void SetEnd(unsigned end_offset, LayoutUnit inline_size_since_current_end);
+  void SetEnd(unsigned index,
+              unsigned end_offset,
+              LayoutUnit inline_size_since_current_end);
 
   // Create a line up to the end offset.
   // Then set the start to the end offset, and thus empty the current line.

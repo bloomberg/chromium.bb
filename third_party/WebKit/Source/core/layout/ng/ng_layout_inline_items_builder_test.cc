@@ -223,16 +223,16 @@ TEST_F(NGLayoutInlineItemsBuilderTest, CollapseEastAsianWidth) {
 TEST_F(NGLayoutInlineItemsBuilderTest, CollapseAroundReplacedElement) {
   NGLayoutInlineItemsBuilder builder(&items_);
   builder.Append("Hello ", style_.get());
-  builder.Append(objectReplacementCharacter);
+  builder.Append(NGLayoutInlineItem::kAtomicInline, objectReplacementCharacter);
   builder.Append(" World", style_.get());
   EXPECT_EQ(String(u"Hello \uFFFC World"), builder.ToString());
 }
 
 TEST_F(NGLayoutInlineItemsBuilderTest, CollapseNewlineAfterObject) {
   NGLayoutInlineItemsBuilder builder(&items_);
-  builder.Append(objectReplacementCharacter);
+  builder.Append(NGLayoutInlineItem::kAtomicInline, objectReplacementCharacter);
   builder.Append("\n", style_.get());
-  builder.Append(objectReplacementCharacter);
+  builder.Append(NGLayoutInlineItem::kAtomicInline, objectReplacementCharacter);
   EXPECT_EQ(String(u"\uFFFC \uFFFC"), builder.ToString());
   EXPECT_EQ(3u, items_.size());
   EXPECT_EQ(nullptr, items_[0].Style());

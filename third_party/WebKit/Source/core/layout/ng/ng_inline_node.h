@@ -108,9 +108,22 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
 // element where possible.
 class NGLayoutInlineItem {
  public:
-  NGLayoutInlineItem(unsigned start,
+  enum NGLayoutInlineItemType {
+    kText,
+    kAtomicInline,
+    kOpenTag,
+    kCloseTag,
+    kFloating,
+    kOutOfFlowPositioned,
+    kBidiControl
+    // When adding new values, make sure the bit size of |type_| is large
+    // enough to store.
+  };
+
+  NGLayoutInlineItem(NGLayoutInlineItemType type,
+                     unsigned start,
                      unsigned end,
-                     const ComputedStyle* style,
+                     const ComputedStyle* style = nullptr,
                      LayoutObject* layout_object = nullptr)
       : start_offset_(start),
         end_offset_(end),
@@ -119,12 +132,18 @@ class NGLayoutInlineItem {
         fallback_priority_(FontFallbackPriority::Invalid),
         rotate_sideways_(false),
         style_(style),
-        layout_object_(layout_object) {
+        layout_object_(layout_object),
+        type_(type) {
     DCHECK(end >= start);
+  }
+
+  NGLayoutInlineItemType Type() const {
+    return static_cast<NGLayoutInlineItemType>(type_);
   }
 
   unsigned StartOffset() const { return start_offset_; }
   unsigned EndOffset() const { return end_offset_; }
+  unsigned Length() const { return end_offset_ - start_offset_; }
   TextDirection Direction() const {
     return bidi_level_ & 1 ? TextDirection::kRtl : TextDirection::kLtr;
   }
@@ -133,10 +152,7 @@ class NGLayoutInlineItem {
   const ComputedStyle* Style() const { return style_; }
   LayoutObject* GetLayoutObject() const { return layout_object_; }
 
-  bool IsAtomicInlineLevel() const {
-    return layout_object_ && layout_object_->isAtomicInlineLevel();
-  }
-
+  void SetOffset(unsigned start, unsigned end);
   void SetEndOffset(unsigned);
 
   LayoutUnit InlineSize() const;
@@ -168,11 +184,14 @@ class NGLayoutInlineItem {
   RefPtr<const ShapeResult> shape_result_;
   LayoutObject* layout_object_;
 
+  unsigned type_ : 3;
+
   friend class NGInlineNode;
 };
 
 inline void NGLayoutInlineItem::AssertOffset(unsigned offset) const {
-  DCHECK(offset >= start_offset_ && offset < end_offset_);
+  DCHECK((offset >= start_offset_ && offset < end_offset_) ||
+         (offset == start_offset_ && start_offset_ == end_offset_));
 }
 
 inline void NGLayoutInlineItem::AssertEndOffset(unsigned offset) const {

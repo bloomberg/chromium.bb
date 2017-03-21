@@ -90,11 +90,15 @@ LayoutObject* NGInlineNode::CollectInlines(
       builder->Append(toLayoutText(node)->text(), node->style(), node);
       node->clearNeedsLayout();
 
-    } else if (node->isFloating() || node->isOutOfFlowPositioned()) {
+    } else if (node->isFloating()) {
       // Add floats and positioned objects in the same way as atomic inlines.
       // Because these objects need positions, they will be handled in
       // NGLineBuilder.
-      builder->Append(objectReplacementCharacter, nullptr, node);
+      builder->Append(NGLayoutInlineItem::kFloating, objectReplacementCharacter,
+                      nullptr, node);
+    } else if (node->isOutOfFlowPositioned()) {
+      builder->Append(NGLayoutInlineItem::kOutOfFlowPositioned,
+                      objectReplacementCharacter, nullptr, node);
 
     } else if (!node->isInline()) {
       // A block box found. End inline and transit to block layout.
@@ -106,7 +110,8 @@ LayoutObject* NGInlineNode::CollectInlines(
       // For atomic inlines add a unicode "object replacement character" to
       // signal the presence of a non-text object to the unicode bidi algorithm.
       if (node->isAtomicInlineLevel()) {
-        builder->Append(objectReplacementCharacter, nullptr, node);
+        builder->Append(NGLayoutInlineItem::kAtomicInline,
+                        objectReplacementCharacter, nullptr, node);
       }
 
       // Otherwise traverse to children if they exist.
@@ -129,10 +134,10 @@ LayoutObject* NGInlineNode::CollectInlines(
         break;
       }
       node = node->parent();
-      builder->ExitInline(node);
       if (node == block)
         return nullptr;
       DCHECK(node->isInline());
+      builder->ExitInline(node);
       node->clearNeedsLayout();
     }
   }
@@ -182,8 +187,17 @@ unsigned NGLayoutInlineItem::SetBidiLevel(Vector<NGLayoutInlineItem>& items,
   for (; items[index].end_offset_ < end_offset; index++)
     items[index].bidi_level_ = level;
   items[index].bidi_level_ = level;
-  if (items[index].end_offset_ > end_offset)
+
+  if (items[index].end_offset_ == end_offset) {
+    // Let close items have the same bidi-level as the previous item.
+    while (index + 1 < items.size() &&
+           items[index + 1].Type() == NGLayoutInlineItem::kCloseTag) {
+      items[++index].bidi_level_ = level;
+    }
+  } else {
     Split(items, index, end_offset);
+  }
+
   return index + 1;
 }
 
@@ -203,13 +217,25 @@ void NGLayoutInlineItem::Split(Vector<NGLayoutInlineItem>& items,
   items[index + 1].start_offset_ = offset;
 }
 
+void NGLayoutInlineItem::SetOffset(unsigned start, unsigned end) {
+  DCHECK_GE(end, start);
+  start_offset_ = start;
+  end_offset_ = end;
+}
+
 void NGLayoutInlineItem::SetEndOffset(unsigned end_offset) {
   DCHECK_GE(end_offset, start_offset_);
   end_offset_ = end_offset;
 }
 
 LayoutUnit NGLayoutInlineItem::InlineSize() const {
-  return InlineSize(start_offset_, end_offset_);
+  if (Type() == NGLayoutInlineItem::kText)
+    return LayoutUnit(shape_result_->width());
+
+  DCHECK(Type() != NGLayoutInlineItem::kAtomicInline)
+      << "Use NGLineBuilder::InlineSize";
+  // Bidi controls and out-of-flow objects do not have in-flow widths.
+  return LayoutUnit();
 }
 
 LayoutUnit NGLayoutInlineItem::InlineSize(unsigned start, unsigned end) const {
@@ -217,19 +243,10 @@ LayoutUnit NGLayoutInlineItem::InlineSize(unsigned start, unsigned end) const {
 
   if (start == end)
     return LayoutUnit();
-
-  if (!style_ || !shape_result_) {
-    DCHECK(start == start_offset_ && end == end_offset_);
-    DCHECK(!IsAtomicInlineLevel()) << "Use NGLineBuilder::InlineSize";
-    DCHECK(!layout_object_ ||
-           layout_object_->isFloatingOrOutOfFlowPositioned());
-    // Bidi controls and out-of-flow objects do not have in-flow widths.
-    return LayoutUnit();
-  }
-
   if (start == start_offset_ && end == end_offset_)
-    return LayoutUnit(shape_result_->width());
+    return InlineSize();
 
+  DCHECK(Type() == NGLayoutInlineItem::kText);
   return LayoutUnit(ShapeResultBuffer::getCharacterRange(
                         shape_result_, Direction(), shape_result_->width(),
                         start - StartOffset(), end - StartOffset())
@@ -253,9 +270,7 @@ void NGInlineNode::ShapeText() {
   // Shape each item with the full context of the entire node.
   HarfBuzzShaper shaper(text_content_.characters16(), text_content_.length());
   for (auto& item : items_) {
-    // Skip non-text items; e.g., bidi controls, atomic inlines, out-of-flow
-    // objects.
-    if (!item.style_)
+    if (item.Type() != NGLayoutInlineItem::kText)
       continue;
 
     item.shape_result_ = shaper.shape(&item.Style()->font(), item.Direction(),

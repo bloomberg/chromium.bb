@@ -6,6 +6,7 @@
 #define NGLayoutInlineItemsBuilder_h
 
 #include "core/CoreExport.h"
+#include "core/layout/ng/ng_inline_node.h"
 #include "wtf/Allocator.h"
 #include "wtf/Vector.h"
 #include "wtf/text/StringBuilder.h"
@@ -59,7 +60,15 @@ class CORE_EXPORT NGLayoutInlineItemsBuilder {
   // as its String version does.
   // See the String version for using nullptr for ComputedStyle and
   // LayoutObject.
-  void Append(UChar, const ComputedStyle* = nullptr, LayoutObject* = nullptr);
+  void Append(NGLayoutInlineItem::NGLayoutInlineItemType,
+              UChar,
+              const ComputedStyle* = nullptr,
+              LayoutObject* = nullptr);
+
+  // Append a non-character item.
+  void Append(NGLayoutInlineItem::NGLayoutInlineItemType,
+              const ComputedStyle* = nullptr,
+              LayoutObject* = nullptr);
 
   // Append a Bidi control character, for LTR or RTL depends on the style.
   void AppendBidiControl(const ComputedStyle*, UChar ltr, UChar rtl);

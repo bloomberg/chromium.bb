@@ -73,48 +73,55 @@ void NGLineBuilder::SetEnd(unsigned new_end_offset) {
   DCHECK_LE(new_end_offset, items.back().EndOffset());
 
   // SetEnd() while |new_end_offset| is beyond the current last item.
-  unsigned last_index = last_index_;
-  const NGLayoutInlineItem* item = &items[last_index];
+  unsigned index = last_index_;
+  const NGLayoutInlineItem* item = &items[index];
   if (new_end_offset > item->EndOffset()) {
     if (end_offset_ < item->EndOffset()) {
-      SetEnd(item->EndOffset(),
+      SetEnd(index, item->EndOffset(),
              InlineSize(*item, end_offset_, item->EndOffset()));
     }
-    item = &items[++last_index];
+    item = &items[++index];
 
     while (new_end_offset > item->EndOffset()) {
-      SetEnd(item->EndOffset(), InlineSize(*item));
-      item = &items[++last_index];
+      SetEnd(index, item->EndOffset(), InlineSize(*item));
+      item = &items[++index];
     }
   }
 
-  SetEnd(new_end_offset, InlineSize(*item, end_offset_, new_end_offset));
+  SetEnd(index, new_end_offset, InlineSize(*item, end_offset_, new_end_offset));
+
+  // Include closing elements.
+  while (new_end_offset == item->EndOffset() && index < items.size() - 1) {
+    item = &items[++index];
+    if (item->Type() != NGLayoutInlineItem::kCloseTag)
+      break;
+    SetEnd(index, new_end_offset, InlineSize(*item));
+  }
 }
 
-void NGLineBuilder::SetEnd(unsigned new_end_offset,
+void NGLineBuilder::SetEnd(unsigned index,
+                           unsigned new_end_offset,
                            LayoutUnit inline_size_since_current_end) {
-  DCHECK_GT(new_end_offset, end_offset_);
   const Vector<NGLayoutInlineItem>& items = inline_box_->Items();
   DCHECK_LE(new_end_offset, items.back().EndOffset());
 
   // |new_end_offset| should be in the current item or next.
   // TODO(kojii): Reconsider this restriction if needed.
-  const NGLayoutInlineItem* item = &items[last_index_];
-  if (end_offset_ == item->EndOffset()) {
-    item = &items[++last_index_];
-    DCHECK_EQ(end_offset_, item->StartOffset());
-  }
-  item->AssertEndOffset(new_end_offset);
+  DCHECK((index == last_index_ && new_end_offset > end_offset_) ||
+         (index == last_index_ + 1 && new_end_offset >= end_offset_ &&
+          end_offset_ == items[last_index_].EndOffset()));
+  const NGLayoutInlineItem& item = items[index];
+  item.AssertEndOffset(new_end_offset);
 
-  LayoutObject* layout_object = item->GetLayoutObject();
-  if (layout_object && layout_object->isFloating()) {
+  if (item.Type() == NGLayoutInlineItem::kFloating) {
     // Floats can affect the position and available width of the current line
     // if it fits.
     // TODO(kojii): Implement.
   }
 
-  end_position_ += inline_size_since_current_end;
+  last_index_ = index;
   end_offset_ = new_end_offset;
+  end_position_ += inline_size_since_current_end;
 }
 
 void NGLineBuilder::SetBreakOpportunity() {
@@ -128,7 +135,7 @@ void NGLineBuilder::SetStartOfHangables(unsigned offset) {
 }
 
 LayoutUnit NGLineBuilder::InlineSize(const NGLayoutInlineItem& item) {
-  if (item.IsAtomicInlineLevel())
+  if (item.Type() == NGLayoutInlineItem::kAtomicInline)
     return InlineSizeFromLayout(item);
   return item.InlineSize();
 }
@@ -136,9 +143,8 @@ LayoutUnit NGLineBuilder::InlineSize(const NGLayoutInlineItem& item) {
 LayoutUnit NGLineBuilder::InlineSize(const NGLayoutInlineItem& item,
                                      unsigned start_offset,
                                      unsigned end_offset) {
-  if (item.StartOffset() == start_offset && item.EndOffset() == end_offset &&
-      item.IsAtomicInlineLevel())
-    return InlineSizeFromLayout(item);
+  if (item.StartOffset() == start_offset && item.EndOffset() == end_offset)
+    return InlineSize(item);
   return item.InlineSize(start_offset, end_offset);
 }
 
@@ -160,7 +166,7 @@ const NGLayoutResult* NGLineBuilder::LayoutItem(
   if (*layout_result)
     return layout_result->get();
 
-  DCHECK(item.IsAtomicInlineLevel());
+  DCHECK(item.Type() == NGLayoutInlineItem::kAtomicInline);
   NGBlockNode* node = new NGBlockNode(item.GetLayoutObject());
   // TODO(kojii): Keep node in NGLayoutInlineItem.
   const ComputedStyle& style = node->Style();
@@ -283,9 +289,9 @@ void NGLineBuilder::PlaceItems(
       continue;
 
     LayoutUnit block_start;
-    const ComputedStyle* style = item.Style();
-    if (style) {
+    if (item.Type() == NGLayoutInlineItem::kText) {
       DCHECK(item.GetLayoutObject()->isText());
+      const ComputedStyle* style = item.Style();
       // |InlineTextBoxPainter| sets the baseline at |top +
       // ascent-of-primary-font|. Compute |top| to match.
       InlineItemMetrics metrics(*style, baseline_type_);
@@ -304,30 +310,29 @@ void NGLineBuilder::PlaceItems(
           .SetInlineOverflow(line_item_chunk.inline_size)
           .SetBlockSize(line_height)
           .SetBlockOverflow(line_height);
-    } else {
-      LayoutObject* layout_object = item.GetLayoutObject();
-      if (layout_object->isOutOfFlowPositioned()) {
-        // Absolute positioning blockifies the box's display type.
-        // https://drafts.csswg.org/css-display/#transformations
-        //
-        // TODO(layout-dev): Report the correct static position for the out of
-        // flow descendant. We can't do this here yet as it doesn't know the
-        // size of the line box.
-        container_builder_.AddOutOfFlowDescendant(
-            new NGBlockNode(layout_object),
-            NGStaticPosition::Create(ConstraintSpace().WritingMode(),
-                                     ConstraintSpace().Direction(),
-                                     NGPhysicalOffset()));
-        continue;
-      } else if (layout_object->isFloating()) {
-        // TODO(kojii): Implement float.
-        DLOG(ERROR) << "Floats in inline not implemented yet.";
-        // TODO(kojii): Temporarily clearNeedsLayout() for not to assert.
-        layout_object->clearNeedsLayout();
-        continue;
-      }
+    } else if (item.Type() == NGLayoutInlineItem::kAtomicInline) {
       block_start = PlaceAtomicInline(item, estimated_baseline, &line_box_data,
                                       &text_builder);
+    } else if (item.Type() == NGLayoutInlineItem::kOutOfFlowPositioned) {
+      // TODO(layout-dev): Report the correct static position for the out of
+      // flow descendant. We can't do this here yet as it doesn't know the
+      // size of the line box.
+      container_builder_.AddOutOfFlowDescendant(
+          // Absolute positioning blockifies the box's display type.
+          // https://drafts.csswg.org/css-display/#transformations
+          new NGBlockNode(item.GetLayoutObject()),
+          NGStaticPosition::Create(ConstraintSpace().WritingMode(),
+                                   ConstraintSpace().Direction(),
+                                   NGPhysicalOffset()));
+      continue;
+    } else if (item.Type() == NGLayoutInlineItem::kFloating) {
+      // TODO(kojii): Implement float.
+      DLOG(ERROR) << "Floats in inline not implemented yet.";
+      // TODO(kojii): Temporarily clearNeedsLayout() for not to assert.
+      item.GetLayoutObject()->clearNeedsLayout();
+      continue;
+    } else {
+      continue;
     }
 
     RefPtr<NGPhysicalTextFragment> text_fragment = text_builder.ToTextFragment(
