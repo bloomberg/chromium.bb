@@ -252,38 +252,46 @@ WebInputEventResult MouseEventManager::dispatchMouseClickIfNeeded(
 
   WebInputEventResult clickEventResult = WebInputEventResult::NotHandled;
   const bool shouldDispatchClickEvent = m_clickCount > 0 && !contextMenuEvent &&
-                                        target && m_clickNode &&
-                                        target->canParticipateInFlatTree() &&
+                                        m_clickNode &&
                                         m_clickNode->canParticipateInFlatTree();
   if (shouldDispatchClickEvent) {
     Node* clickTargetNode = nullptr;
     // Updates distribution because a 'mouseup' event listener can make the
     // tree dirty at dispatchMouseEvent() invocation above.
     // Unless distribution is updated, commonAncestor would hit ASSERT.
-    if (m_clickNode == target) {
-      clickTargetNode = m_clickNode;
-      clickTargetNode->updateDistribution();
-    } else if (m_clickNode->document() == target->document()) {
-      m_clickNode->updateDistribution();
-      target->updateDistribution();
-      clickTargetNode = target->commonAncestor(
-          *m_clickNode, EventHandlingUtil::parentForClickEvent);
+    if (target && target->canParticipateInFlatTree()) {
+      if (m_clickNode == target) {
+        clickTargetNode = m_clickNode;
+        clickTargetNode->updateDistribution();
+      } else if (m_clickNode->document() == target->document()) {
+        m_clickNode->updateDistribution();
+        target->updateDistribution();
+        clickTargetNode = target->commonAncestor(
+            *m_clickNode, EventHandlingUtil::parentForClickEvent);
+      }
     }
 
     // This block is only for the purpose of gathering the metric and can be
     // removed as soon as we don't need the metric.
     if (targetWithoutCapture != target) {
       Node* alternativeClickTargetNode = nullptr;
-      if (m_clickNode == targetWithoutCapture) {
-        alternativeClickTargetNode = m_clickNode;
-      } else if (m_clickNode->document() == targetWithoutCapture->document()) {
-        alternativeClickTargetNode = targetWithoutCapture->commonAncestor(
-            *m_clickNode, EventHandlingUtil::parentForClickEvent);
+      if (targetWithoutCapture &&
+          targetWithoutCapture->canParticipateInFlatTree()) {
+        if (m_clickNode == targetWithoutCapture) {
+          alternativeClickTargetNode = m_clickNode;
+        } else if (m_clickNode->document() ==
+                   targetWithoutCapture->document()) {
+          alternativeClickTargetNode = targetWithoutCapture->commonAncestor(
+              *m_clickNode, EventHandlingUtil::parentForClickEvent);
+        }
       }
       if (alternativeClickTargetNode != clickTargetNode) {
         UseCounter::count(m_frame,
                           UseCounter::PointerEventClickRetargetCausedByCapture);
       }
+      // TODO(crbug.com/699933): The following line removes the effect of
+      // pointer capture.
+      clickTargetNode = alternativeClickTargetNode;
     }
 
     if (clickTargetNode) {
