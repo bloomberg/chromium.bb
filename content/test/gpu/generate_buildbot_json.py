@@ -304,10 +304,10 @@ FYI_WATERFALL = {
       'swarming': False,
       'os_type': 'win',
     },
-    'Win10 Release (NVIDIA Quadro M2000)': {
+    'Win10 Release (NVIDIA Quadro P400)': {
       'swarming_dimensions': [
         {
-          'gpu': '10de:1430',
+          'gpu': '10de:1cb3',
           'os': 'Windows-10'
         },
       ],
@@ -542,10 +542,10 @@ FYI_WATERFALL = {
       'swarming': False,
       'os_type': 'linux',
     },
-    'Linux Release (NVIDIA Quadro M2000)': {
+    'Linux Release (NVIDIA Quadro P400)': {
       'swarming_dimensions': [
         {
-          'gpu': '10de:1430',
+          'gpu': '10de:1cb3',
           'os': 'Ubuntu'
         },
       ],
