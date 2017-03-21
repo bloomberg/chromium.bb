@@ -107,12 +107,14 @@ bool TransformBuilder::hasRelativeLengths(const CSSValueList& valueList) {
     for (const CSSValue* item : *transformValue) {
       const CSSPrimitiveValue& primitiveValue = toCSSPrimitiveValue(*item);
 
-      // TODO(hs1217.lee) : to prevent relative unit like calc(10px + 1em).
-      // but when calc() not take parameter of ralative unit like calc(1px +1
-      // px),
-      // shoud be return false;
       if (primitiveValue.isCalculated()) {
-        return true;
+        CSSCalcValue* cssCalcValue = primitiveValue.cssCalcValue();
+        CSSPrimitiveValue::UnitType resolvedType =
+            cssCalcValue->expressionNode()->typeWithCalcResolved();
+        if (CSSPrimitiveValue::isRelativeUnit(resolvedType) ||
+            resolvedType == CSSPrimitiveValue::UnitType::Unknown) {
+          return true;
+        }
       }
 
       if (CSSPrimitiveValue::isRelativeUnit(

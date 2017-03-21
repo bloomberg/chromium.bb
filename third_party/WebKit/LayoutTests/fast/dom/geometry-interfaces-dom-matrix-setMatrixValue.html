@@ -215,21 +215,18 @@ test(() => {
   assert_matrix_almost_equals(actualMatrix2, expectedMatrix);
 }, "DOMMatrix setMatrix(multiple value)");
 
-// TODO(hs1217.lee) : calc() function take only absolute unit. should be pass this test.
-// but calc() function is not supported not yet.
-// refer to hasRelativeLengths() in TransformBuilder.cpp
-// test(() => {
-//   var actualMatrix1 = new DOMMatrix(matrix2d);
-//   var actualMatrix2 = new DOMMatrix(matrix3d);
-//   var expectedMatrix = new DOMMatrix();
-//   actualMatrix1.setMatrixValue("translateX(calc(10px + 1px))");
-//   assert_true(actualMatrix1.is2D);
-//   actualMatrix2.setMatrixValue("translateX(calc(10px + 1px))");
-//   assert_true(actualMatrix2.is2D);
-//   expectedMatrix.translateSelf(11, 0)
-//   assert_matrix_almost_equals(actualMatrix1, expectedMatrix);
-//   assert_matrix_almost_equals(actualMatrix2, expectedMatrix);
-// }, "DOMMatrix setMatrix(multiple value)");
+test(() => {
+  var actualMatrix1 = new DOMMatrix(matrix2d);
+  var actualMatrix2 = new DOMMatrix(matrix3d);
+  var expectedMatrix = new DOMMatrix();
+  actualMatrix1.setMatrixValue("translateX(calc(10px + 1px))");
+  assert_true(actualMatrix1.is2D);
+  actualMatrix2.setMatrixValue("translateX(calc(10px + 1px))");
+  assert_true(actualMatrix2.is2D);
+  expectedMatrix.translateSelf(11, 0)
+  assert_matrix_almost_equals(actualMatrix1, expectedMatrix);
+  assert_matrix_almost_equals(actualMatrix2, expectedMatrix);
+}, "DOMMatrix setMatrix() with calc function");
 
 test(() => {
 
@@ -282,6 +279,14 @@ test(() => {
 
   assert_throws(new SyntaxError(), () => {
     actualMatrix.setMatrixValue("translateX(calc(10px + 1em))");
+  }, "using relative units should throw a SyntaxError");
+
+  assert_throws(new SyntaxError(), () => {
+    actualMatrix.setMatrixValue("translateX(calc(10px + 1%))");
+  }, "using relative units should throw a SyntaxError");
+
+    assert_throws(new SyntaxError(), () => {
+    actualMatrix.setMatrixValue("translateX(calc(10vw + 1%))");
   }, "using relative units should throw a SyntaxError");
 
   //actualMatrix should be not changed.
