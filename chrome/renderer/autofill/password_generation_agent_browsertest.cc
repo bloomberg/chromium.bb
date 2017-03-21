@@ -250,18 +250,6 @@ const char kNewPasswordAutocompleteAttributeFormHTML[] =
     "  <INPUT type = 'submit' value = 'LOGIN' />"
     "</FORM>";
 
-const char ChangeDetectionScript[] =
-    "<script>"
-    "  firstOnChangeCalled = false;"
-    "  secondOnChangeCalled = false;"
-    "  document.getElementById('first_password').onchange = function() {"
-    "    firstOnChangeCalled = true;"
-    "  };"
-    "  document.getElementById('second_password').onchange = function() {"
-    "    secondOnChangeCalled = true;"
-    "  };"
-    "</script>";
-
 const char kPasswordChangeFormHTML[] =
     "<FORM name = 'ChangeWithUsernameForm' action = 'http://www.bidule.com'> "
     "  <INPUT type = 'text' id = 'username'/> "
@@ -316,9 +304,15 @@ TEST_F(PasswordGenerationAgentTest, DetectionTest) {
 }
 
 TEST_F(PasswordGenerationAgentTest, FillTest) {
+  // Add event listeners for password fields.
+  std::vector<base::string16> variables_to_check;
+  std::string events_registration_script =
+      CreateScriptToRegisterListeners("first_password", &variables_to_check) +
+      CreateScriptToRegisterListeners("second_password", &variables_to_check);
+
   // Make sure that we are enabled before loading HTML.
-  std::string html = std::string(kAccountCreationFormHTML) +
-      ChangeDetectionScript;
+  std::string html =
+      std::string(kAccountCreationFormHTML) + events_registration_script;
   LoadHTMLWithUserGesture(html.c_str());
   SetNotBlacklistedMessage(password_generation_, html.c_str());
   SetAccountCreationFormsDetectedMessage(password_generation_,
@@ -346,19 +340,12 @@ TEST_F(PasswordGenerationAgentTest, FillTest) {
   EXPECT_TRUE(first_password_element.isAutofilled());
   EXPECT_TRUE(second_password_element.isAutofilled());
 
-  // Make sure onchange events are called.
-  int first_onchange_called = -1;
-  int second_onchange_called = -1;
-  ASSERT_TRUE(
-      ExecuteJavaScriptAndReturnIntValue(
-          base::ASCIIToUTF16("firstOnChangeCalled ? 1 : 0"),
-          &first_onchange_called));
-  EXPECT_EQ(1, first_onchange_called);
-  ASSERT_TRUE(
-      ExecuteJavaScriptAndReturnIntValue(
-          base::ASCIIToUTF16("secondOnChangeCalled ? 1 : 0"),
-          &second_onchange_called));
-  EXPECT_EQ(1, second_onchange_called);
+  // Make sure all events are called.
+  for (const base::string16& variable : variables_to_check) {
+    int value;
+    EXPECT_TRUE(ExecuteJavaScriptAndReturnIntValue(variable, &value));
+    EXPECT_EQ(1, value) << variable;
+  }
 
   // Focus moved to the next input field.
   // TODO(zysxqn): Change this back to the address element once Bug 90224

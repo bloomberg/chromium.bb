@@ -210,7 +210,7 @@ bool FormCache::ClearFormWithElement(const WebFormControlElement& element) {
     WebInputElement* input_element = toWebInputElement(&control_element);
     if (form_util::IsTextInput(input_element) ||
         form_util::IsMonthInput(input_element)) {
-      input_element->setValue(blink::WebString(), true);
+      input_element->setAutofillValue(blink::WebString());
 
       // Clearing the value in the focused node (above) can cause selection
       // to be lost. We force selection range to restore the text cursor.
@@ -219,7 +219,7 @@ bool FormCache::ClearFormWithElement(const WebFormControlElement& element) {
         input_element->setSelectionRange(length, length);
       }
     } else if (form_util::IsTextAreaElement(control_element)) {
-      control_element.setValue(blink::WebString(), true);
+      control_element.setAutofillValue(blink::WebString());
     } else if (form_util::IsSelectElement(control_element)) {
       WebSelectElement select_element = control_element.to<WebSelectElement>();
 
@@ -227,8 +227,8 @@ bool FormCache::ClearFormWithElement(const WebFormControlElement& element) {
           initial_value_iter = initial_select_values_.find(select_element);
       if (initial_value_iter != initial_select_values_.end() &&
           select_element.value().utf16() != initial_value_iter->second) {
-        select_element.setValue(
-            blink::WebString::fromUTF16(initial_value_iter->second), true);
+        select_element.setAutofillValue(
+            blink::WebString::fromUTF16(initial_value_iter->second));
       }
     } else {
       WebInputElement input_element = control_element.to<WebInputElement>();

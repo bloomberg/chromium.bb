@@ -6,6 +6,9 @@
 #define CHROME_RENDERER_AUTOFILL_PASSWORD_GENERATION_TEST_UTILS_H_
 
 #include <string>
+#include <vector>
+
+#include "base/strings/string16.h"
 
 namespace blink {
 class WebDocument;
@@ -21,6 +24,11 @@ void SetAccountCreationFormsDetectedMessage(TestPasswordGenerationAgent* agent,
                                             blink::WebDocument document,
                                             int form_index,
                                             int field_index);
+
+std::string CreateScriptToRegisterListeners(
+    const char* const element_name,
+    std::vector<base::string16>* variables_to_check);
+
 }  // namespace autofill
 
 #endif  // CHROME_RENDERER_AUTOFILL_PASSWORD_GENERATION_TEST_UTILS_H_

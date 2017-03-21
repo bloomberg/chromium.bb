@@ -460,7 +460,7 @@ bool FillUserNameAndPassword(
   if (!username_element->isNull() &&
       IsElementAutocompletable(*username_element)) {
     // TODO(crbug.com/507714): Why not setSuggestedValue?
-    username_element->setValue(blink::WebString::fromUTF16(username), true);
+    username_element->setAutofillValue(blink::WebString::fromUTF16(username));
     UpdateFieldValueAndPropertiesMaskMap(*username_element, &username,
                                          FieldPropertiesFlags::AUTOFILLED,
                                          field_value_and_properties_map);
@@ -555,8 +555,8 @@ bool FillFormOnPasswordReceived(
 
   if (form_has_fillable_username && username_element.value().isEmpty()) {
     // TODO(tkent): Check maxlength and pattern.
-    username_element.setValue(
-        blink::WebString::fromUTF16(fill_data.username_field.value), true);
+    username_element.setAutofillValue(
+        blink::WebString::fromUTF16(fill_data.username_field.value));
   }
 
   // Fill if we have an exact match for the username. Note that this sets
@@ -660,7 +660,7 @@ void PasswordAutofillAgent::PasswordValueGatekeeper::Reset() {
 void PasswordAutofillAgent::PasswordValueGatekeeper::ShowValue(
     blink::WebInputElement* element) {
   if (!element->isNull() && !element->suggestedValue().isEmpty())
-    element->setValue(element->suggestedValue(), true);
+    element->setAutofillValue(element->suggestedValue());
 }
 
 bool PasswordAutofillAgent::TextDidChangeInTextField(
@@ -753,14 +753,14 @@ bool PasswordAutofillAgent::FillSuggestion(
     password_info->password_field = password_element;
   } else if (!username_element.isNull() &&
              IsElementAutocompletable(username_element)) {
-    username_element.setValue(blink::WebString::fromUTF16(username), true);
+    username_element.setAutofillValue(blink::WebString::fromUTF16(username));
     username_element.setAutofilled(true);
     UpdateFieldValueAndPropertiesMaskMap(username_element, &username,
                                          FieldPropertiesFlags::AUTOFILLED,
                                          &field_value_and_properties_map_);
   }
 
-  password_element.setValue(blink::WebString::fromUTF16(password), true);
+  password_element.setAutofillValue(blink::WebString::fromUTF16(password));
   password_element.setAutofilled(true);
   UpdateFieldValueAndPropertiesMaskMap(password_element, &password,
                                        FieldPropertiesFlags::AUTOFILLED,

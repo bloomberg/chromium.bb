@@ -109,7 +109,7 @@ void CopyElementValueToOtherInputElements(
     std::vector<blink::WebInputElement>* elements) {
   for (blink::WebInputElement& it : *elements) {
     if (*element != it) {
-      it.setValue(element->value(), true /* sendEvents */);
+      it.setAutofillValue(element->value());
     }
   }
 }
@@ -318,9 +318,9 @@ void PasswordGenerationAgent::GeneratedPasswordAccepted(
       password_generation::PASSWORD_ACCEPTED);
   LogMessage(Logger::STRING_GENERATION_RENDERER_GENERATED_PASSWORD_ACCEPTED);
   for (auto& password_element : generation_form_data_->password_elements) {
-    password_element.setValue(blink::WebString::fromUTF16(password),
-                              true /* sendEvents */);
-    // setValue() above may have resulted in JavaScript closing the frame.
+    password_element.setAutofillValue(blink::WebString::fromUTF16(password));
+    // setAutofillValue() above may have resulted in JavaScript closing the
+    // frame.
     if (!render_frame())
       return;
     password_element.setAutofilled(true);
