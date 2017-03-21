@@ -15,9 +15,12 @@ import android.support.test.filters.SmallTest;
 import android.test.InstrumentationTestCase;
 import android.test.MoreAsserts;
 import android.test.UiThreadTest;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.MeasureSpec;
 import android.view.ViewGroup.LayoutParams;
+import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.Space;
 
 import org.chromium.base.test.util.MinAndroidSdkLevel;
@@ -203,8 +206,7 @@ public class DualControlLayoutTest extends InstrumentationTestCase {
         runStackedLayoutTest(ALIGN_END, true, true);
     }
 
-    /** Runs a test where the controls don't fit on the same line.
-     * @param addPadding TODO(dfalcantara):*/
+    /** Runs a test where the controls don't fit on the same line. */
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
     private void runStackedLayoutTest(int alignment, boolean isRtl, boolean addPadding) {
         DualControlLayout layout = new DualControlLayout(mContext, null);
@@ -254,5 +256,43 @@ public class DualControlLayoutTest extends InstrumentationTestCase {
         assertEquals(expectedSecondaryBottom, secondary.getBottom());
         assertEquals(expectedLayoutHeight, layout.getMeasuredHeight());
         MoreAsserts.assertNotEqual(layout.getMeasuredHeight(), primary.getMeasuredHeight());
+    }
+
+    /**
+     * Runs a test against an inflated DualControlLayout that sets all of its values.
+     * Re-uses the AutofillEditor's buttons XML layout because we have no support for test-only
+     * layout files.
+     */
+    @SmallTest
+    @UiThreadTest
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN_MR1)
+    @MinAndroidSdkLevel(Build.VERSION_CODES.JELLY_BEAN_MR1)
+    public void testInflation() {
+        // Check that the basic DualControlLayout has nothing going on.
+        DualControlLayout layout = new DualControlLayout(mContext, null);
+        assertEquals(DualControlLayout.ALIGN_START, layout.getAlignment());
+        assertEquals(0, layout.getStackedMargin());
+        assertNull(layout.findViewById(R.id.button_primary));
+        assertNull(layout.findViewById(R.id.button_secondary));
+
+        // Inflate a DualControlLayout that has all of the attributes set and confirm they're used
+        // correctly.
+        FrameLayout containerView = new FrameLayout(mContext);
+        LayoutInflater.from(mContext).inflate(
+                R.layout.autofill_editor_base_buttons, containerView, true);
+        DualControlLayout inflatedLayout =
+                (DualControlLayout) containerView.findViewById(R.id.button_bar);
+        assertEquals(DualControlLayout.ALIGN_END, inflatedLayout.getAlignment());
+        assertEquals(mContext.getResources().getDimensionPixelSize(
+                             R.dimen.infobar_margin_between_stacked_buttons),
+                inflatedLayout.getStackedMargin());
+
+        Button primaryButton = (Button) inflatedLayout.findViewById(R.id.button_primary);
+        assertNotNull(primaryButton);
+        assertEquals(mContext.getString(R.string.done), primaryButton.getText());
+
+        Button secondaryButton = (Button) inflatedLayout.findViewById(R.id.button_secondary);
+        assertNotNull(secondaryButton);
+        assertEquals(mContext.getString(R.string.cancel), secondaryButton.getText());
     }
 }
