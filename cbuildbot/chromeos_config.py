@@ -681,7 +681,6 @@ _waterfall_config_map = {
 
     constants.WATERFALL_INTERNAL: frozenset([
         # Experimental Paladins.
-        'chell-paladin',
         'fizz-paladin',
         'gale-paladin',
         'kip-paladin',
@@ -695,12 +694,6 @@ _waterfall_config_map = {
 
         # Experimental PFQs
         'reef-chrome-pfq',
-
-        # We collect profiles on chell-chrome-pfq for
-        # feedback-directed-optimization. The prebuilt chrome won't be used by
-        # other builders or developer's local builds unless they specify the
-        # same use flags.
-        'chell-chrome-pfq',
     ]),
 }
 
@@ -2120,6 +2113,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'auron',
       'beaglebone',
       'butterfly',
+      'chell',
       'cyan',
       'daisy',
       'daisy_skate',
@@ -2822,6 +2816,7 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       important=False)
 
   _chrome_pfq_important_boards = frozenset([
+      'chell',
       'cyan',
       'daisy_skate',
       'lumpy',
