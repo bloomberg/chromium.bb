@@ -16,7 +16,8 @@
 
 external/csswg-test/WOFF2-UserAgent [ Skip ]
 external/csswg-test/compositing-1 [ Skip ]
-external/csswg-test/css-align-3 [ Skip ]
+# Owners: jfernandez@igalia.com
+# external/csswg-test/css-align-3 [ Pass ]
 external/csswg-test/css-animations-1 [ Skip ]
 external/csswg-test/css-backgrounds-3 [ Skip ]
 external/csswg-test/css-box-3 [ Skip ]

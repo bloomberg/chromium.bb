@@ -2391,6 +2391,27 @@ crbug.com/659610 fast/css-grid-layout/grid-baseline.html [ Failure ]
 crbug.com/659610 fast/css-grid-layout/grid-baseline-margins.html [ Failure ]
 crbug.com/511177 external/csswg-test/css-grid-1/grid-layout-properties.html [ Failure ]
 
+# [css-align]
+crbug.com/703584 external/csswg-test/css-align-3/content-distribution/place-content-shorthand-001.html [ Failure ]
+crbug.com/703584 external/csswg-test/css-align-3/content-distribution/place-content-shorthand-002.html [ Failure ]
+crbug.com/703584 external/csswg-test/css-align-3/content-distribution/place-content-shorthand-003.html [ Failure ]
+crbug.com/703584 external/csswg-test/css-align-3/content-distribution/place-content-shorthand-004.html [ Failure ]
+crbug.com/703584 external/csswg-test/css-align-3/content-distribution/place-content-shorthand-005.html [ Failure ]
+crbug.com/703584 external/csswg-test/css-align-3/content-distribution/place-content-shorthand-006.html [ Failure ]
+crbug.com/668639 external/csswg-test/css-align-3/default-alignment/place-items-shorthand-001.html [ Failure ]
+crbug.com/668639 external/csswg-test/css-align-3/default-alignment/place-items-shorthand-002.html [ Failure ]
+crbug.com/668639 external/csswg-test/css-align-3/default-alignment/place-items-shorthand-003.html [ Failure ]
+crbug.com/668639 external/csswg-test/css-align-3/default-alignment/place-items-shorthand-004.html [ Failure ]
+crbug.com/668639 external/csswg-test/css-align-3/default-alignment/place-items-shorthand-005.html [ Failure ]
+crbug.com/668639 external/csswg-test/css-align-3/default-alignment/place-items-shorthand-006.html [ Failure ]
+crbug.com/668639 external/csswg-test/css-align-3/self-alignment/place-self-shorthand-001.html [ Failure ]
+crbug.com/668639 external/csswg-test/css-align-3/self-alignment/place-self-shorthand-002.html [ Failure ]
+crbug.com/668639 external/csswg-test/css-align-3/self-alignment/place-self-shorthand-003.html [ Failure ]
+crbug.com/668639 external/csswg-test/css-align-3/self-alignment/place-self-shorthand-004.html [ Failure ]
+crbug.com/668639 external/csswg-test/css-align-3/self-alignment/place-self-shorthand-005.html [ Failure ]
+crbug.com/668639 external/csswg-test/css-align-3/self-alignment/place-self-shorthand-006.html [ Failure ]
+
+
 # TODO(chrishall): this is a temporary mediation step as part of the P0 issue crbug.com/657646
 # this is not meant to be here for more than a few days (from 2016-11-03 SYD)
 crbug.com/657646 [ Win ] fast/text/font-weight.html [ Failure Pass ]
