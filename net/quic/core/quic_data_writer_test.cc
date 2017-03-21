@@ -7,6 +7,8 @@
 #include <cstdint>
 
 #include "net/quic/core/quic_data_reader.h"
+#include "net/quic/core/quic_flags.h"
+#include "net/quic/test_tools/quic_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -194,6 +196,30 @@ TEST(QuicDataWriterTest, RoundTripUFloat16) {
     EXPECT_EQ(i < 4096 ? i + 1 : i,
               *reinterpret_cast<uint16_t*>(writer.data() + 4));
   }
+}
+
+TEST(QuicDataWriterTest, WriteConnectionId) {
+  uint64_t connection_id = 0x0011223344556677;
+  char little_endian[] = {
+      0x77, 0x66, 0x55, 0x44, 0x33, 0x22, 0x11, 0x00,
+  };
+  char big_endian[] = {
+      0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
+  };
+  const int kBufferLength = sizeof(connection_id);
+  char buffer[kBufferLength];
+  QuicDataWriter writer(kBufferLength, buffer);
+  writer.WriteConnectionId(connection_id);
+  test::CompareCharArraysWithHexError(
+      "connection_id", buffer, kBufferLength,
+      FLAGS_quic_restart_flag_quic_big_endian_connection_id ? big_endian
+                                                            : little_endian,
+      kBufferLength);
+
+  uint64_t read_connection_id;
+  QuicDataReader reader(buffer, kBufferLength);
+  reader.ReadConnectionId(&read_connection_id);
+  EXPECT_EQ(connection_id, read_connection_id);
 }
 
 }  // namespace
