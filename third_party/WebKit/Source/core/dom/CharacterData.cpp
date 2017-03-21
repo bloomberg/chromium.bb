@@ -151,7 +151,7 @@ void CharacterData::replaceData(unsigned offset,
   setDataAndUpdate(newStr, offset, realCount, data.length(),
                    UpdateFromNonParser);
 
-  // update the markers for spell checking and grammar checking
+  // update DOM ranges
   document().didRemoveText(this, offset, realCount);
   document().didInsertText(this, offset, data.length());
 }

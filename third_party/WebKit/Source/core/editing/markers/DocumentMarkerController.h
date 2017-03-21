@@ -53,11 +53,13 @@ class MarkerRemoverPredicate final {
 };
 
 class CORE_EXPORT DocumentMarkerController final
-    : public GarbageCollected<DocumentMarkerController> {
+    : public GarbageCollected<DocumentMarkerController>,
+      public SynchronousMutationObserver {
   WTF_MAKE_NONCOPYABLE(DocumentMarkerController);
+  USING_GARBAGE_COLLECTED_MIXIN(DocumentMarkerController);
 
  public:
-  explicit DocumentMarkerController(const Document&);
+  explicit DocumentMarkerController(Document&);
 
   void clear();
   void addMarker(const Position& start,
@@ -129,6 +131,12 @@ class CORE_EXPORT DocumentMarkerController final
 #ifndef NDEBUG
   void showMarkers() const;
 #endif
+
+  // SynchronousMutationObserver
+  void didUpdateCharacterData(CharacterData*,
+                              unsigned offset,
+                              unsigned oldLength,
+                              unsigned newLength) final;
 
  private:
   void addMarker(Node*, const DocumentMarker&);

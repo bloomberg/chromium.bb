@@ -82,8 +82,10 @@ inline bool DocumentMarkerController::possiblyHasMarkers(
   return m_possiblyExistingMarkerTypes.intersects(types);
 }
 
-DocumentMarkerController::DocumentMarkerController(const Document& document)
-    : m_possiblyExistingMarkerTypes(0), m_document(&document) {}
+DocumentMarkerController::DocumentMarkerController(Document& document)
+    : m_possiblyExistingMarkerTypes(0), m_document(&document) {
+  setContext(&document);
+}
 
 void DocumentMarkerController::clear() {
   m_markers.clear();
@@ -591,6 +593,7 @@ void DocumentMarkerController::invalidateRectsForAllMarkers() {
 DEFINE_TRACE(DocumentMarkerController) {
   visitor->trace(m_markers);
   visitor->trace(m_document);
+  SynchronousMutationObserver::trace(visitor);
 }
 
 void DocumentMarkerController::removeMarkers(
@@ -867,6 +870,17 @@ void DocumentMarkerController::showMarkers() const {
             << builder.toString().utf8().data();
 }
 #endif
+
+// SynchronousMutationObserver
+void DocumentMarkerController::didUpdateCharacterData(CharacterData* node,
+                                                      unsigned offset,
+                                                      unsigned oldLength,
+                                                      unsigned newLength) {
+  // Shift markers as if we first remove the old text, then insert the new text
+  removeMarkers(node, offset, oldLength);
+  shiftMarkers(node, offset + oldLength, 0 - oldLength);
+  shiftMarkers(node, offset, newLength);
+}
 
 }  // namespace blink
 
