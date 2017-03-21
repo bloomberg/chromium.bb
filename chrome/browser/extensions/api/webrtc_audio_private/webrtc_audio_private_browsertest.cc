@@ -369,14 +369,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, GetAssociatedSink) {
   }
 }
 
-// Times out frequently on Windows, CrOS: http://crbug.com/517112
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
-#define MAYBE_TriggerEvent DISABLED_TriggerEvent
-#else
-#define MAYBE_TriggerEvent TriggerEvent
-#endif
-
-IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, MAYBE_TriggerEvent) {
+IN_PROC_BROWSER_TEST_F(WebrtcAudioPrivateTest, TriggerEvent) {
   WebrtcAudioPrivateEventService* service =
       WebrtcAudioPrivateEventService::GetFactoryInstance()->Get(profile());
 
