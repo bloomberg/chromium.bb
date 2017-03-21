@@ -994,7 +994,7 @@ const char kRecordSetLabelMethod[] = "SetLabel";
 // Signals
 const char kBiometricsManagerEnrollScanDoneSignal[] = "EnrollScanDone";
 const char kBiometricsManagerAuthScanDoneSignal[] = "AuthScanDone";
-const char kBiometricsManagerScanFailedSignal[] = "ScanFailed";
+const char kBiometricsManagerSessionFailedSignal[] = "SessionFailed";
 
 // Properties
 const char kBiometricsManagerBiometricTypeProperty[] = "Type";
@@ -1002,18 +1002,19 @@ const char kRecordLabelProperty[] = "Label";
 
 // Values
 enum BiometricType {
-  BIOMETRIC_FINGERPRINT = 0,
-  BIOMETRIC_RETINA = 1,
-  BIOMETRIC_FACE = 2,
-  BIOMETRIC_VOICE = 3,
+  BIOMETRIC_TYPE_UNKNOWN = 0,
+  BIOMETRIC_TYPE_FINGERPRINT = 1,
+  BIOMETRIC_TYPE_MAX,
 };
-enum ScanResultType {
+enum ScanResult {
   SCAN_RESULT_SUCCESS = 0,
   SCAN_RESULT_PARTIAL = 1,
   SCAN_RESULT_INSUFFICIENT = 2,
   SCAN_RESULT_SENSOR_DIRTY = 3,
   SCAN_RESULT_TOO_SLOW = 4,
   SCAN_RESULT_TOO_FAST = 5,
+  SCAN_RESULT_IMMOBILE = 6,
+  SCAN_RESULT_MAX,
 };
 }  // namespace biod
 
