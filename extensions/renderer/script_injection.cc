@@ -316,9 +316,6 @@ void ScriptInjection::InjectJs(std::set<std::string>* executing_scripts,
         world_id, &sources.front(), sources.size(), is_user_gesture, option,
         callback.release());
   }
-
-  if (injection_host_->id().type() == HostID::EXTENSIONS)
-    UMA_HISTOGRAM_TIMES("Extensions.InjectScriptTime", exec_timer.Elapsed());
 }
 
 void ScriptInjection::OnJsInjectionCompleted(
