@@ -18,7 +18,7 @@
 namespace {
 const CGFloat kImageSize = 72;
 // When updating this, make sure to update |layoutSubviews|.
-const CGFloat kStandardSpacing = 8;
+const CGFloat kStandardSpacing = 16;
 }
 
 @interface ContentSuggestionsArticleItem ()
@@ -119,7 +119,7 @@ const CGFloat kStandardSpacing = 8;
     _publisherLabel = [[UILabel alloc] initWithFrame:CGRectZero];
 
     _titleLabel.numberOfLines = 2;
-    _subtitleLabel.numberOfLines = 0;
+    _subtitleLabel.numberOfLines = 2;
     [_subtitleLabel setContentHuggingPriority:UILayoutPriorityDefaultHigh
                                       forAxis:UILayoutConstraintAxisVertical];
     [_titleLabel setContentHuggingPriority:UILayoutPriorityDefaultHigh
@@ -187,6 +187,7 @@ const CGFloat kStandardSpacing = 8;
   [NSLayoutConstraint activateConstraints:@[
     [_imageView.widthAnchor constraintEqualToConstant:kImageSize],
     [_imageView.heightAnchor constraintEqualToAnchor:_imageView.widthAnchor],
+    [_imageView.topAnchor constraintEqualToAnchor:_titleLabel.topAnchor],
     [_publisherLabel.topAnchor
         constraintGreaterThanOrEqualToAnchor:_imageView.bottomAnchor
                                     constant:kStandardSpacing],
@@ -199,9 +200,8 @@ const CGFloat kStandardSpacing = 8;
       @[
         @"H:|-(space)-[title]-(space)-[image]-(space)-|",
         @"H:|-(space)-[text]-(space)-[image]",
-        @"V:|-[title]-[text]",
-        @"V:|-[image]",
-        @"H:|-[publish]-|",
+        @"V:|-(space)-[title]-[text]",
+        @"H:|-(space)-[publish]-(space)-|",
         @"V:[publish]-|",
       ],
       @{
