@@ -61,5 +61,7 @@ for _package in ['google', 'google.protobuf']:
 for _path in _third_party_dirs:
   _pkg_resources.fixup_namespace_packages(_path)
 
+# Make sure we're only using the local google.protobuf.
 import google.protobuf
-google.protobuf.__path__ = [os.path.dirname(google.protobuf.__file__)]
+google.protobuf.__path__ = [_p for _p in google.protobuf.__path__
+                            if any(_dir in _p for _dir in _third_party_dirs)]
