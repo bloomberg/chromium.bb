@@ -1083,13 +1083,17 @@ TEST_F(MessageCenterImplTestWithChangeQueue, QueuedDirectUpdates) {
   gfx::Size new_size(16, 16);
   EXPECT_NE(original_size, new_size);
 
-  gfx::Canvas canvas(new_size, 1.0f, true);
-  canvas.DrawColor(SK_ColorBLUE);
-  gfx::Image testImage(gfx::Image(gfx::ImageSkia(canvas.ExtractImageRep())));
-  message_center()->SetNotificationIcon(id, testImage);
-  message_center()->SetNotificationImage(id, testImage);
-  message_center()->SetNotificationButtonIcon(id, 0, testImage);
-  message_center()->SetNotificationButtonIcon(id, 1, testImage);
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(new_size.width(), new_size.height(), true);
+  sk_sp<SkSurface> surface = SkSurface::MakeRasterDirect(
+      bitmap.info(), bitmap.getPixels(), bitmap.rowBytes());
+  surface->getCanvas()->drawColor(SK_ColorBLUE);
+  gfx::Image test_image(
+      gfx::Image(gfx::ImageSkia(gfx::ImageSkiaRep(bitmap, 1.f))));
+  message_center()->SetNotificationIcon(id, test_image);
+  message_center()->SetNotificationImage(id, test_image);
+  message_center()->SetNotificationButtonIcon(id, 0, test_image);
+  message_center()->SetNotificationButtonIcon(id, 1, test_image);
 
   // The notification should be in the queue.
   EXPECT_FALSE(message_center()->FindVisibleNotificationById(id));

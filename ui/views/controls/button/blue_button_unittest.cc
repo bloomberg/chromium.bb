@@ -7,6 +7,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "cc/paint/skia_paint_canvas.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/skia_util.h"
@@ -35,7 +36,12 @@ TEST_F(BlueButtonTest, Border) {
 
   widget->GetContentsView()->AddChildView(button);
   button->SizeToPreferredSize();
-  gfx::Canvas button_canvas(button->size(), 1.0, true);
+
+  SkBitmap button_bitmap;
+  button_bitmap.allocN32Pixels(button->size().width(), button->size().height(),
+                               true /* opaque */);
+  cc::SkiaPaintCanvas button_paint_canvas(button_bitmap);
+  gfx::Canvas button_canvas(&button_paint_canvas, 1.f);
   button->border()->Paint(*button, &button_canvas);
 
   // ... a special blue border should be used.
@@ -57,12 +63,16 @@ TEST_F(BlueButtonTest, Border) {
   blue_button->SetSize(button->size());
 #endif
 
-  gfx::Canvas canvas(blue_button->size(), 1.0, true);
-  blue_button->border()->Paint(*blue_button, &canvas);
+  SkBitmap blue_button_bitmap;
+  blue_button_bitmap.allocN32Pixels(blue_button->size().width(),
+                                    blue_button->size().height(),
+                                    true /* opaque */);
+  cc::SkiaPaintCanvas blue_button_paint_canvas(blue_button_bitmap);
+  gfx::Canvas blue_button_canvas(&blue_button_paint_canvas, 1.f);
+  blue_button->border()->Paint(*blue_button, &blue_button_canvas);
   EXPECT_EQ(button->GetText(), blue_button->GetText());
   EXPECT_EQ(button->size(), blue_button->size());
-  EXPECT_FALSE(gfx::BitmapsAreEqual(button_canvas.ExtractImageRep().sk_bitmap(),
-                                    canvas.ExtractImageRep().sk_bitmap()));
+  EXPECT_FALSE(gfx::BitmapsAreEqual(button_bitmap, blue_button_bitmap));
 
   widget->CloseNow();
 }

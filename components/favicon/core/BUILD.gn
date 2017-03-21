@@ -40,6 +40,7 @@ static_library("core") {
     "//url",
   ]
   if (!is_ios) {
+    deps += [ "//cc/paint" ]
     sources += [
       "fallback_icon_client.h",
       "fallback_icon_service.cc",

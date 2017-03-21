@@ -32,6 +32,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/canvas_image_source.h"
+#include "ui/gfx/skia_util.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/extensions/gfx_utils.h"
@@ -83,20 +84,21 @@ class RoundedCornersImageSource : public gfx::CanvasImageSource {
 
     canvas->DrawImageInt(icon_, 0, 0);
 
-    std::unique_ptr<gfx::Canvas> masking_canvas(
-        new gfx::Canvas(gfx::Size(icon_.width(), icon_.height()), 1.0f, false));
-    DCHECK(masking_canvas);
-
-    cc::PaintFlags opaque_flags;
-    opaque_flags.setAntiAlias(true);
-    opaque_flags.setColor(SK_ColorWHITE);
-    masking_canvas->DrawRoundRect(gfx::Rect(icon_.width(), icon_.height()),
-                                  kRoundingRadius, opaque_flags);
+    SkBitmap mask_bitmap;
+    mask_bitmap.allocN32Pixels(icon_.width(), icon_.height(), false);
+    sk_sp<SkSurface> mask_surface = SkSurface::MakeRasterDirect(
+        mask_bitmap.info(), mask_bitmap.getPixels(), mask_bitmap.rowBytes());
+    mask_surface->getCanvas()->clear(SK_ColorTRANSPARENT);
+    SkPaint mask_paint;
+    mask_paint.setAntiAlias(true);
+    mask_paint.setColor(SK_ColorWHITE);
+    mask_surface->getCanvas()->drawRoundRect(
+        gfx::RectToSkRect(gfx::Rect(icon_.width(), icon_.height())),
+        kRoundingRadius, kRoundingRadius, mask_paint);
 
     cc::PaintFlags masking_flags;
     masking_flags.setBlendMode(SkBlendMode::kDstIn);
-    canvas->DrawImageInt(gfx::ImageSkia(masking_canvas->ExtractImageRep()), 0,
-                         0, masking_flags);
+    canvas->sk_canvas()->drawBitmap(mask_bitmap, 0, 0, &masking_flags);
   }
 
   gfx::ImageSkia icon_;

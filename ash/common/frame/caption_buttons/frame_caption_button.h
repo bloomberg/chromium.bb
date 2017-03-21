@@ -66,10 +66,9 @@ class ASH_EXPORT FrameCaptionButton : public views::CustomButton {
   void OnGestureEvent(ui::GestureEvent* event) override;
 
  private:
-  // Paints |to_center| centered within the button with |alpha|.
-  void PaintCentered(gfx::Canvas* canvas,
-                     const gfx::ImageSkia& to_center,
-                     int alpha);
+  // Determines what alpha to use for the icon based on animation and
+  // active state.
+  int GetAlphaForIcon(int base_alpha) const;
 
   // The button's current icon.
   CaptionButtonIcon icon_;

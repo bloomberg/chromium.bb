@@ -8,6 +8,7 @@
 
 #include <algorithm>
 
+#include "cc/paint/skia_paint_canvas.h"
 #include "components/favicon/core/fallback_icon_client.h"
 #include "components/favicon/core/fallback_url_util.h"
 #include "components/favicon_base/fallback_icon_style.h"
@@ -40,14 +41,16 @@ std::vector<unsigned char> FallbackIconService::RenderFallbackIconBitmap(
     int size,
     const favicon_base::FallbackIconStyle& style) {
   int size_to_use = std::min(kMaxFallbackFaviconSize, size);
-  gfx::Canvas canvas(gfx::Size(size_to_use, size_to_use), 1.0f, false);
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(size_to_use, size_to_use, false);
+  cc::SkiaPaintCanvas paint_canvas(bitmap);
+  gfx::Canvas canvas(&paint_canvas, 1.f);
+
   DrawFallbackIcon(icon_url, size_to_use, style, &canvas);
 
   std::vector<unsigned char> bitmap_data;
-  if (!gfx::PNGCodec::EncodeBGRASkBitmap(canvas.ExtractImageRep().sk_bitmap(),
-                                         false, &bitmap_data)) {
+  if (!gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, false, &bitmap_data))
     bitmap_data.clear();
-  }
   return bitmap_data;
 }
 

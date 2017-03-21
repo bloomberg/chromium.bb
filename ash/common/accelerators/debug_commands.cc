@@ -25,6 +25,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_rep.h"
 #include "ui/views/debug_utils.h"
 #include "ui/views/widget/widget.h"
 
@@ -90,15 +91,19 @@ gfx::ImageSkia CreateWallpaperImage(SkColor fill, SkColor rect) {
   // TODO(oshima): Consider adding a command line option to control wallpaper
   // images for testing. The size is randomly picked.
   gfx::Size image_size(1366, 768);
-  gfx::Canvas canvas(image_size, 1.0f, true);
-  canvas.DrawColor(fill);
-  cc::PaintFlags flags;
-  flags.setColor(rect);
-  flags.setStrokeWidth(10);
-  flags.setStyle(cc::PaintFlags::kStroke_Style);
-  flags.setBlendMode(SkBlendMode::kSrcOver);
-  canvas.DrawRoundRect(gfx::Rect(image_size), 100, flags);
-  return gfx::ImageSkia(canvas.ExtractImageRep());
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(image_size.width(), image_size.height(), true);
+  sk_sp<SkSurface> surface = SkSurface::MakeRasterDirect(
+      bitmap.info(), bitmap.getPixels(), bitmap.rowBytes());
+  surface->getCanvas()->drawColor(fill);
+  SkPaint paint;
+  paint.setColor(rect);
+  paint.setStrokeWidth(10);
+  paint.setStyle(SkPaint::kStroke_Style);
+  paint.setBlendMode(SkBlendMode::kSrcOver);
+  surface->getCanvas()->drawRoundRect(gfx::RectToSkRect(gfx::Rect(image_size)),
+                                      100.f, 100.f, paint);
+  return gfx::ImageSkia(gfx::ImageSkiaRep(std::move(bitmap), 1.f));
 }
 
 void HandleToggleWallpaperMode() {
