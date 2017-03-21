@@ -118,6 +118,9 @@ void RendererCompositorFrameSink::SubmitCompositorFrame(
   // We should only submit CompositorFrames with valid BeginFrameAcks.
   DCHECK_LE(cc::BeginFrameArgs::kStartingFrameNumber,
             frame.metadata.begin_frame_ack.sequence_number);
+  if (ShouldAllocateNewLocalSurfaceId(frame))
+    local_surface_id_ = id_allocator_.GenerateId();
+  UpdateFrameData(frame);
   {
     std::unique_ptr<FrameSwapMessageQueue::SendMessageScope>
         send_message_scope =
@@ -127,9 +130,9 @@ void RendererCompositorFrameSink::SubmitCompositorFrame(
     frame_swap_message_queue_->DrainMessages(&messages);
     FrameSwapMessageQueue::TransferMessages(&messages,
                                             &messages_to_deliver_with_frame);
-    Send(new ViewHostMsg_SwapCompositorFrame(routing_id_,
-                                             compositor_frame_sink_id_, frame,
-                                             messages_to_deliver_with_frame));
+    Send(new ViewHostMsg_SwapCompositorFrame(
+        routing_id_, compositor_frame_sink_id_, local_surface_id_, frame,
+        messages_to_deliver_with_frame));
     // ~send_message_scope.
   }
 }
@@ -158,6 +161,53 @@ void RendererCompositorFrameSink::OnReclaimCompositorResources(
 
 bool RendererCompositorFrameSink::Send(IPC::Message* message) {
   return message_sender_->Send(message);
+}
+
+bool RendererCompositorFrameSink::ShouldAllocateNewLocalSurfaceId(
+    const cc::CompositorFrame& frame) {
+  cc::RenderPass* root_pass = frame.render_pass_list.back().get();
+  gfx::Size frame_size = root_pass->output_rect.size();
+
+  // Once the proposal in crbug.com/689754 is implemented, the LocalSurfaceId
+  // allocation logic will be unified across all platforms.
+  return !local_surface_id_.is_valid() ||
+         current_frame_data_.device_scale_factor !=
+             frame.metadata.device_scale_factor ||
+#ifdef OS_ANDROID
+         current_frame_data_.top_controls_height !=
+             frame.metadata.top_controls_height ||
+         current_frame_data_.top_controls_shown_ratio !=
+             frame.metadata.top_controls_shown_ratio ||
+         current_frame_data_.bottom_controls_height !=
+             frame.metadata.bottom_controls_height ||
+         current_frame_data_.bottom_controls_shown_ratio !=
+             frame.metadata.bottom_controls_shown_ratio ||
+         current_frame_data_.viewport_selection != frame.metadata.selection ||
+         current_frame_data_.has_transparent_background !=
+             root_pass->has_transparent_background ||
+#endif
+         current_frame_data_.frame_size != frame_size;
+}
+
+void RendererCompositorFrameSink::UpdateFrameData(
+    const cc::CompositorFrame& frame) {
+  cc::RenderPass* root_pass = frame.render_pass_list.back().get();
+  gfx::Size frame_size = root_pass->output_rect.size();
+
+  current_frame_data_.frame_size = frame_size;
+  current_frame_data_.device_scale_factor = frame.metadata.device_scale_factor;
+#ifdef OS_ANDROID
+  current_frame_data_.top_controls_height = frame.metadata.top_controls_height;
+  current_frame_data_.top_controls_shown_ratio =
+      frame.metadata.top_controls_shown_ratio;
+  current_frame_data_.bottom_controls_height =
+      frame.metadata.bottom_controls_height;
+  current_frame_data_.bottom_controls_shown_ratio =
+      frame.metadata.bottom_controls_shown_ratio;
+  current_frame_data_.viewport_selection = frame.metadata.selection;
+  current_frame_data_.has_transparent_background =
+      root_pass->has_transparent_background;
+#endif
 }
 
 }  // namespace content

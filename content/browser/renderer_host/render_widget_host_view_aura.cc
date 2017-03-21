@@ -905,6 +905,7 @@ void RenderWidgetHostViewAura::OnLegacyWindowDestroyed() {
 
 void RenderWidgetHostViewAura::OnSwapCompositorFrame(
     uint32_t compositor_frame_sink_id,
+    const cc::LocalSurfaceId& local_surface_id,
     cc::CompositorFrame frame) {
   TRACE_EVENT0("content", "RenderWidgetHostViewAura::OnSwapCompositorFrame");
 
@@ -915,8 +916,6 @@ void RenderWidgetHostViewAura::OnSwapCompositorFrame(
   SetBackgroundColor(frame.metadata.root_background_color);
 
   last_scroll_offset_ = frame.metadata.root_scroll_offset;
-  if (frame.render_pass_list.empty())
-    return;
 
   cc::Selection<gfx::SelectionBound> selection = frame.metadata.selection;
   if (IsUseZoomForDSFEnabled()) {
@@ -938,8 +937,8 @@ void RenderWidgetHostViewAura::OnSwapCompositorFrame(
   cc::BeginFrameAck ack(frame.metadata.begin_frame_ack);
 
   if (delegated_frame_host_) {
-    delegated_frame_host_->SwapDelegatedFrame(compositor_frame_sink_id,
-                                              std::move(frame));
+    delegated_frame_host_->SwapDelegatedFrame(
+        compositor_frame_sink_id, local_surface_id, std::move(frame));
   }
   selection_controller_->OnSelectionBoundsChanged(selection.start,
                                                   selection.end);

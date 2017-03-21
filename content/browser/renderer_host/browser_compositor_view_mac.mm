@@ -270,6 +270,7 @@ void BrowserCompositorMac::CopyFromCompositingSurfaceToVideoFrame(
 
 void BrowserCompositorMac::SwapCompositorFrame(
     uint32_t compositor_frame_sink_id,
+    const cc::LocalSurfaceId& local_surface_id,
     cc::CompositorFrame frame) {
   // Compute the frame size based on the root render pass rect size.
   cc::RenderPass* root_pass = frame.render_pass_list.back().get();
@@ -282,7 +283,7 @@ void BrowserCompositorMac::SwapCompositorFrame(
                                                           pixel_size);
   }
   delegated_frame_host_->SwapDelegatedFrame(compositor_frame_sink_id,
-                                            std::move(frame));
+                                            local_surface_id, std::move(frame));
 }
 
 void BrowserCompositorMac::SetHasTransparentBackground(bool transparent) {

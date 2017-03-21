@@ -907,6 +907,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl : public RenderWidgetHost,
   std::unique_ptr<device::PowerSaveBlocker> power_save_blocker_;
 #endif
 
+  cc::LocalSurfaceId last_local_surface_id_;
+  gfx::Size last_frame_size_;
+  float last_device_scale_factor_;
+
   base::WeakPtrFactory<RenderWidgetHostImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostImpl);

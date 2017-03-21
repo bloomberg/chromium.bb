@@ -282,11 +282,13 @@ void RenderWidgetHostViewGuest::SendSurfaceInfoToEmbedderImpl(
 
 void RenderWidgetHostViewGuest::OnSwapCompositorFrame(
     uint32_t compositor_frame_sink_id,
+    const cc::LocalSurfaceId& local_surface_id,
     cc::CompositorFrame frame) {
   TRACE_EVENT0("content", "RenderWidgetHostViewGuest::OnSwapCompositorFrame");
 
   last_scroll_offset_ = frame.metadata.root_scroll_offset;
-  ProcessCompositorFrame(compositor_frame_sink_id, std::move(frame));
+  ProcessCompositorFrame(compositor_frame_sink_id, local_surface_id,
+                         std::move(frame));
 
   // If after detaching we are sent a frame, we should finish processing it, and
   // then we should clear the surface so that we are not holding resources we

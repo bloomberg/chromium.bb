@@ -58,7 +58,6 @@ RenderWidgetHostViewChildFrame::RenderWidgetHostViewChildFrame(
       current_surface_scale_factor_(1.f),
       frame_connector_(nullptr),
       weak_factory_(this) {
-  id_allocator_.reset(new cc::LocalSurfaceIdAllocator());
   GetSurfaceManager()->RegisterFrameSinkId(frame_sink_id_);
   CreateCompositorFrameSinkSupport();
 }
@@ -351,6 +350,7 @@ void RenderWidgetHostViewChildFrame::DidReceiveCompositorFrameAck() {
 
 void RenderWidgetHostViewChildFrame::ProcessCompositorFrame(
     uint32_t compositor_frame_sink_id,
+    const cc::LocalSurfaceId& local_surface_id,
     cc::CompositorFrame frame) {
   // If the renderer changed its frame sink, reset the
   // CompositorFrameSinkSupport to avoid returning stale resources.
@@ -358,26 +358,19 @@ void RenderWidgetHostViewChildFrame::ProcessCompositorFrame(
     ResetCompositorFrameSinkSupport();
     CreateCompositorFrameSinkSupport();
     last_compositor_frame_sink_id_ = compositor_frame_sink_id;
-    local_surface_id_ = cc::LocalSurfaceId();
   }
 
-  gfx::Size new_frame_size = frame.render_pass_list.back()->output_rect.size();
-  float new_scale_factor = frame.metadata.device_scale_factor;
-  bool allocated_new_local_surface_id = false;
-  if (!local_surface_id_.is_valid() ||
-      new_frame_size != current_surface_size_ ||
-      new_scale_factor != current_surface_scale_factor_) {
-    local_surface_id_ = id_allocator_->GenerateId();
-    current_surface_size_ = frame.render_pass_list.back()->output_rect.size();
-    current_surface_scale_factor_ = frame.metadata.device_scale_factor;
-    allocated_new_local_surface_id = true;
-  }
+  current_surface_size_ = frame.render_pass_list.back()->output_rect.size();
+  current_surface_scale_factor_ = frame.metadata.device_scale_factor;
 
-  support_->SubmitCompositorFrame(local_surface_id_, std::move(frame));
+  support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
   has_frame_ = true;
 
-  if (allocated_new_local_surface_id || HasEmbedderChanged())
+  if (local_surface_id_ != local_surface_id || HasEmbedderChanged()) {
+    local_surface_id_ = local_surface_id;
     SendSurfaceInfoToEmbedder();
+  }
+
   ProcessFrameSwappedCallbacks();
 }
 
@@ -402,13 +395,15 @@ void RenderWidgetHostViewChildFrame::SendSurfaceInfoToEmbedderImpl(
 
 void RenderWidgetHostViewChildFrame::OnSwapCompositorFrame(
     uint32_t compositor_frame_sink_id,
+    const cc::LocalSurfaceId& local_surface_id,
     cc::CompositorFrame frame) {
   TRACE_EVENT0("content",
                "RenderWidgetHostViewChildFrame::OnSwapCompositorFrame");
   last_scroll_offset_ = frame.metadata.root_scroll_offset;
   if (!frame_connector_)
     return;
-  ProcessCompositorFrame(compositor_frame_sink_id, std::move(frame));
+  ProcessCompositorFrame(compositor_frame_sink_id, local_surface_id,
+                         std::move(frame));
 }
 
 void RenderWidgetHostViewChildFrame::ProcessFrameSwappedCallbacks() {

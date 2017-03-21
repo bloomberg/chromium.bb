@@ -18,7 +18,6 @@
 #include "cc/resources/returned_resource.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/compositor_frame_sink_support_client.h"
-#include "cc/surfaces/local_surface_id_allocator.h"
 #include "cc/surfaces/surface_info.h"
 #include "cc/surfaces/surface_sequence.h"
 #include "content/browser/compositor/image_transport_factory.h"
@@ -107,6 +106,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void GestureEventAck(const blink::WebGestureEvent& event,
                        InputEventAckState ack_result) override;
   void OnSwapCompositorFrame(uint32_t compositor_frame_sink_id,
+                             const cc::LocalSurfaceId& local_surface_id,
                              cc::CompositorFrame frame) override;
   // Since the URL of content rendered by this class is not displayed in
   // the URL bar, this method does not need an implementation.
@@ -191,6 +191,7 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void Init();
 
   void ProcessCompositorFrame(uint32_t compositor_frame_sink_id,
+                              const cc::LocalSurfaceId& local_surface_id,
                               cc::CompositorFrame frame);
 
   void SendSurfaceInfoToEmbedder();
@@ -211,7 +212,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   cc::FrameSinkId frame_sink_id_;
 
   // Surface-related state.
-  std::unique_ptr<cc::LocalSurfaceIdAllocator> id_allocator_;
   std::unique_ptr<cc::CompositorFrameSinkSupport> support_;
   cc::LocalSurfaceId local_surface_id_;
   uint32_t next_surface_sequence_;

@@ -220,6 +220,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
                                   const gfx::Rect& node_bounds_in_screen) {}
 
   virtual void OnSwapCompositorFrame(uint32_t compositor_frame_sink_id,
+                                     const cc::LocalSurfaceId& local_surface_id,
                                      cc::CompositorFrame frame) {}
 
   virtual void OnBeginFrameDidNotSwap(const cc::BeginFrameAck& ack) {}

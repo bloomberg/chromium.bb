@@ -1428,6 +1428,7 @@ void RenderWidgetHostViewMac::FocusedNodeChanged(
 
 void RenderWidgetHostViewMac::OnSwapCompositorFrame(
     uint32_t compositor_frame_sink_id,
+    const cc::LocalSurfaceId& local_surface_id,
     cc::CompositorFrame frame) {
   TRACE_EVENT0("browser", "RenderWidgetHostViewMac::OnSwapCompositorFrame");
 
@@ -1440,7 +1441,7 @@ void RenderWidgetHostViewMac::OnSwapCompositorFrame(
   page_at_minimum_scale_ =
       frame.metadata.page_scale_factor == frame.metadata.min_page_scale_factor;
   browser_compositor_->SwapCompositorFrame(compositor_frame_sink_id,
-                                           std::move(frame));
+                                           local_surface_id, std::move(frame));
   UpdateDisplayVSyncParameters();
 }
 

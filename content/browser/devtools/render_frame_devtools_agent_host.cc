@@ -1095,16 +1095,15 @@ void RenderFrameDevToolsAgentHost::OnSwapCompositorFrame(
   protocol::PageHandler* page_handler =
       protocol::PageHandler::FromSession(session());
   if (page_handler) {
-    page_handler->OnSwapCompositorFrame(
-        std::move(std::get<1>(param).metadata));
+    page_handler->OnSwapCompositorFrame(std::move(std::get<2>(param).metadata));
   }
-  protocol::InputHandler::FromSession(session())
-      ->OnSwapCompositorFrame(std::get<1>(param).metadata);
+  protocol::InputHandler::FromSession(session())->OnSwapCompositorFrame(
+      std::get<2>(param).metadata);
   protocol::TracingHandler* tracing_handler =
       protocol::TracingHandler::FromSession(session());
   if (frame_trace_recorder_ && tracing_handler->did_initiate_recording()) {
     frame_trace_recorder_->OnSwapCompositorFrame(
-        current_ ? current_->host() : nullptr, std::get<1>(param).metadata);
+        current_ ? current_->host() : nullptr, std::get<2>(param).metadata);
   }
 }
 

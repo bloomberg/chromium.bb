@@ -17,11 +17,15 @@
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "cc/input/selection.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/output/compositor_frame_sink.h"
 #include "cc/scheduler/begin_frame_source.h"
+#include "cc/surfaces/local_surface_id.h"
+#include "cc/surfaces/local_surface_id_allocator.h"
 #include "content/renderer/gpu/compositor_forwarding_message_filter.h"
 #include "ipc/ipc_sync_message_filter.h"
+#include "ui/gfx/selection_bound.h"
 
 namespace IPC {
 class Message;
@@ -94,6 +98,9 @@ class RendererCompositorFrameSink
                                     const cc::ReturnedResourceArray& resources);
   bool Send(IPC::Message* message);
 
+  bool ShouldAllocateNewLocalSurfaceId(const cc::CompositorFrame& frame);
+  void UpdateFrameData(const cc::CompositorFrame& frame);
+
   scoped_refptr<CompositorForwardingMessageFilter>
       compositor_frame_sink_filter_;
   CompositorForwardingMessageFilter::Handler
@@ -103,6 +110,22 @@ class RendererCompositorFrameSink
   scoped_refptr<FrameSwapMessageQueue> frame_swap_message_queue_;
   std::unique_ptr<cc::BeginFrameSource> begin_frame_source_;
   int routing_id_;
+
+  cc::LocalSurfaceId local_surface_id_;
+  cc::LocalSurfaceIdAllocator id_allocator_;
+  struct {
+    gfx::Size frame_size;
+    float device_scale_factor;
+#ifdef OS_ANDROID
+    float top_controls_height;
+    float top_controls_shown_ratio;
+    float bottom_controls_height;
+    float bottom_controls_shown_ratio;
+    cc::Selection<gfx::SelectionBound> viewport_selection;
+    bool has_transparent_background;
+#endif
+  } current_frame_data_;
+
   base::ThreadChecker thread_checker_;
   bool bound_ = false;
 };

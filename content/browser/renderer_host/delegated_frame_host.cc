@@ -19,7 +19,6 @@
 #include "cc/resources/single_release_callback.h"
 #include "cc/resources/texture_mailbox.h"
 #include "cc/surfaces/compositor_frame_sink_support.h"
-#include "cc/surfaces/local_surface_id_allocator.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_factory.h"
 #include "cc/surfaces/surface_hittest.h"
@@ -57,7 +56,6 @@ DelegatedFrameHost::DelegatedFrameHost(const cc::FrameSinkId& frame_sink_id,
       delegated_frame_evictor_(new DelegatedFrameEvictor(this)) {
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
   factory->GetContextFactory()->AddObserver(this);
-  id_allocator_.reset(new cc::LocalSurfaceIdAllocator());
   factory->GetContextFactoryPrivate()->GetSurfaceManager()->RegisterFrameSinkId(
       frame_sink_id_);
   CreateCompositorFrameSinkSupport();
@@ -373,8 +371,10 @@ void DelegatedFrameHost::AttemptFrameSubscriberCapture(
   }
 }
 
-void DelegatedFrameHost::SwapDelegatedFrame(uint32_t compositor_frame_sink_id,
-                                            cc::CompositorFrame frame) {
+void DelegatedFrameHost::SwapDelegatedFrame(
+    uint32_t compositor_frame_sink_id,
+    const cc::LocalSurfaceId& local_surface_id,
+    cc::CompositorFrame frame) {
 #if defined(OS_CHROMEOS)
   DCHECK(!resize_lock_ || !client_->IsAutoResizeEnabled());
 #endif
@@ -440,23 +440,17 @@ void DelegatedFrameHost::SwapDelegatedFrame(uint32_t compositor_frame_sink_id,
     ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
     cc::SurfaceManager* manager =
         factory->GetContextFactoryPrivate()->GetSurfaceManager();
-    bool allocated_new_local_surface_id = false;
-    if (!local_surface_id_.is_valid() || frame_size != current_surface_size_ ||
-        frame_size_in_dip != current_frame_size_in_dip_) {
-      local_surface_id_ = id_allocator_->GenerateId();
-      allocated_new_local_surface_id = true;
-    }
 
     frame.metadata.latency_info.insert(frame.metadata.latency_info.end(),
                                        skipped_latency_info_list_.begin(),
                                        skipped_latency_info_list_.end());
     skipped_latency_info_list_.clear();
 
-    support_->SubmitCompositorFrame(local_surface_id_, std::move(frame));
+    support_->SubmitCompositorFrame(local_surface_id, std::move(frame));
 
-    if (allocated_new_local_surface_id || !has_frame_) {
+    if (local_surface_id != local_surface_id_ || !has_frame_) {
       // manager must outlive compositors using it.
-      cc::SurfaceId surface_id(frame_sink_id_, local_surface_id_);
+      cc::SurfaceId surface_id(frame_sink_id_, local_surface_id);
       cc::SurfaceInfo surface_info(surface_id, frame_device_scale_factor,
                                    frame_size);
       client_->DelegatedFrameHostGetLayer()->SetShowPrimarySurface(
@@ -467,6 +461,8 @@ void DelegatedFrameHost::SwapDelegatedFrame(uint32_t compositor_frame_sink_id,
 
     has_frame_ = true;
   }
+  local_surface_id_ = local_surface_id;
+
   released_front_lock_ = NULL;
   current_frame_size_in_dip_ = frame_size_in_dip;
   CheckResizeLock();

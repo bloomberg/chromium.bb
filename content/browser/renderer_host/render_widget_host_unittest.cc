@@ -223,6 +223,22 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
 
 namespace  {
 
+cc::CompositorFrame MakeCompositorFrame(float scale_factor, gfx::Size size) {
+  cc::CompositorFrame frame;
+  frame.metadata.device_scale_factor = scale_factor;
+  frame.metadata.begin_frame_ack = cc::BeginFrameAck(0, 1, 1, 0, true);
+
+  std::unique_ptr<cc::RenderPass> pass = cc::RenderPass::Create();
+  pass->SetNew(1, gfx::Rect(size), gfx::Rect(), gfx::Transform());
+  frame.render_pass_list.push_back(std::move(pass));
+  if (!size.IsEmpty()) {
+    cc::TransferableResource resource;
+    resource.id = 1;
+    frame.resource_list.push_back(std::move(resource));
+  }
+  return frame;
+}
+
 // RenderWidgetHostProcess -----------------------------------------------------
 
 class RenderWidgetHostProcess : public MockRenderProcessHost {
@@ -1272,35 +1288,47 @@ TEST_F(RenderWidgetHostTest, NewContentRenderingTimeout) {
 // This tests that a compositor frame received with a stale content source ID
 // in its metadata is properly discarded.
 TEST_F(RenderWidgetHostTest, SwapCompositorFrameWithBadSourceId) {
+  const gfx::Size frame_size(50, 50);
+  const cc::LocalSurfaceId local_surface_id(1,
+                                            base::UnguessableToken::Create());
+
   host_->StartNewContentRenderingTimeout(100);
   host_->OnFirstPaintAfterLoad();
 
-  // First swap a frame with an invalid ID.
-  cc::CompositorFrame frame;
-  frame.metadata.begin_frame_ack = cc::BeginFrameAck(0, 1, 1, 0, true);
-  frame.metadata.content_source_id = 99;
-  host_->OnMessageReceived(ViewHostMsg_SwapCompositorFrame(
-      0, 0, frame, std::vector<IPC::Message>()));
-  EXPECT_FALSE(
-      static_cast<TestView*>(host_->GetView())->did_swap_compositor_frame());
-  static_cast<TestView*>(host_->GetView())->reset_did_swap_compositor_frame();
+  {
+    // First swap a frame with an invalid ID.
+    cc::CompositorFrame frame = MakeCompositorFrame(1.f, frame_size);
+    frame.metadata.begin_frame_ack = cc::BeginFrameAck(0, 1, 1, 0, true);
+    frame.metadata.content_source_id = 99;
+    host_->OnMessageReceived(ViewHostMsg_SwapCompositorFrame(
+        0, 0, local_surface_id, frame, std::vector<IPC::Message>()));
+    EXPECT_FALSE(
+        static_cast<TestView*>(host_->GetView())->did_swap_compositor_frame());
+    static_cast<TestView*>(host_->GetView())->reset_did_swap_compositor_frame();
+  }
 
-  // Test with a valid content ID as a control.
-  frame.metadata.content_source_id = 100;
-  host_->OnMessageReceived(ViewHostMsg_SwapCompositorFrame(
-      0, 0, frame, std::vector<IPC::Message>()));
-  EXPECT_TRUE(
-      static_cast<TestView*>(host_->GetView())->did_swap_compositor_frame());
-  static_cast<TestView*>(host_->GetView())->reset_did_swap_compositor_frame();
+  {
+    // Test with a valid content ID as a control.
+    cc::CompositorFrame frame = MakeCompositorFrame(1.f, frame_size);
+    frame.metadata.content_source_id = 100;
+    host_->OnMessageReceived(ViewHostMsg_SwapCompositorFrame(
+        0, 0, local_surface_id, frame, std::vector<IPC::Message>()));
+    EXPECT_TRUE(
+        static_cast<TestView*>(host_->GetView())->did_swap_compositor_frame());
+    static_cast<TestView*>(host_->GetView())->reset_did_swap_compositor_frame();
+  }
 
-  // We also accept frames with higher content IDs, to cover the case where
-  // the browser process receives a compositor frame for a new page before
-  // the corresponding DidCommitProvisionalLoad (it's a race).
-  frame.metadata.content_source_id = 101;
-  host_->OnMessageReceived(ViewHostMsg_SwapCompositorFrame(
-      0, 0, frame, std::vector<IPC::Message>()));
-  EXPECT_TRUE(
-      static_cast<TestView*>(host_->GetView())->did_swap_compositor_frame());
+  {
+    // We also accept frames with higher content IDs, to cover the case where
+    // the browser process receives a compositor frame for a new page before
+    // the corresponding DidCommitProvisionalLoad (it's a race).
+    cc::CompositorFrame frame = MakeCompositorFrame(1.f, frame_size);
+    frame.metadata.content_source_id = 101;
+    host_->OnMessageReceived(ViewHostMsg_SwapCompositorFrame(
+        0, 0, local_surface_id, frame, std::vector<IPC::Message>()));
+    EXPECT_TRUE(
+        static_cast<TestView*>(host_->GetView())->did_swap_compositor_frame());
+  }
 }
 
 TEST_F(RenderWidgetHostTest, TouchEmulator) {

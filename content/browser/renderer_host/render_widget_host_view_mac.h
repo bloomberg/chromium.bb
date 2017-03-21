@@ -305,6 +305,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void FocusedNodeChanged(bool is_editable_node,
                           const gfx::Rect& node_bounds_in_screen) override;
   void OnSwapCompositorFrame(uint32_t compositor_frame_sink_id,
+                             const cc::LocalSurfaceId& local_surface_id,
                              cc::CompositorFrame frame) override;
   void ClearCompositorFrame() override;
   BrowserAccessibilityManager* CreateBrowserAccessibilityManager(

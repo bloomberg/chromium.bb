@@ -34,7 +34,6 @@ class TickClock;
 
 namespace cc {
 class CompositorFrameSinkSupport;
-class LocalSurfaceIdAllocator;
 }
 
 namespace media {
@@ -125,6 +124,7 @@ class CONTENT_EXPORT DelegatedFrameHost
   // Public interface exposed to RenderWidgetHostView.
 
   void SwapDelegatedFrame(uint32_t compositor_frame_sink_id,
+                          const cc::LocalSurfaceId& local_surface_id,
                           cc::CompositorFrame frame);
   void ClearDelegatedFrame();
   void WasHidden();
@@ -288,7 +288,6 @@ class CONTENT_EXPORT DelegatedFrameHost
   SkColor background_color_;
 
   // State for rendering into a Surface.
-  std::unique_ptr<cc::LocalSurfaceIdAllocator> id_allocator_;
   std::unique_ptr<cc::CompositorFrameSinkSupport> support_;
   gfx::Size current_surface_size_;
   float current_scale_factor_;

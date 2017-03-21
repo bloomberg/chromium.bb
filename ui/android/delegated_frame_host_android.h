@@ -11,15 +11,14 @@
 #include "cc/resources/returned_resource.h"
 #include "cc/surfaces/compositor_frame_sink_support.h"
 #include "cc/surfaces/compositor_frame_sink_support_client.h"
+#include "cc/surfaces/surface_info.h"
 #include "ui/android/ui_android_export.h"
-#include "ui/gfx/selection_bound.h"
 
 namespace cc {
 
 class CompositorFrame;
 class SurfaceManager;
 class SurfaceLayer;
-class LocalSurfaceIdAllocator;
 enum class SurfaceDrawStatus;
 
 }  // namespace cc
@@ -47,7 +46,8 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
 
   ~DelegatedFrameHostAndroid() override;
 
-  void SubmitCompositorFrame(cc::CompositorFrame frame);
+  void SubmitCompositorFrame(const cc::LocalSurfaceId& local_surface_id,
+                             cc::CompositorFrame frame);
 
   void DestroyDelegatedContent();
 
@@ -90,27 +90,14 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   ViewAndroid* view_;
 
   cc::SurfaceManager* surface_manager_;
-  std::unique_ptr<cc::LocalSurfaceIdAllocator> local_surface_id_allocator_;
   WindowAndroidCompositor* registered_parent_compositor_ = nullptr;
   Client* client_;
 
   std::unique_ptr<cc::CompositorFrameSinkSupport> support_;
   cc::ExternalBeginFrameSource begin_frame_source_;
 
-  struct FrameData {
-    FrameData();
-    ~FrameData();
-
-    cc::LocalSurfaceId local_surface_id;
-    gfx::Size surface_size;
-    float top_controls_height;
-    float top_controls_shown_ratio;
-    float bottom_controls_height;
-    float bottom_controls_shown_ratio;
-    cc::Selection<gfx::SelectionBound> viewport_selection;
-    bool has_transparent_background;
-  };
-  std::unique_ptr<FrameData> current_frame_;
+  cc::SurfaceInfo surface_info_;
+  bool has_transparent_background_ = false;
 
   scoped_refptr<cc::SurfaceLayer> content_layer_;
 

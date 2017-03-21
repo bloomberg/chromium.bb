@@ -229,6 +229,7 @@ TEST_F(RenderWidgetHostViewGuestSurfaceTest, TestGuestSurface) {
   gfx::Size view_size(100, 100);
   gfx::Rect view_rect(view_size);
   float scale_factor = 1.f;
+  cc::LocalSurfaceId local_surface_id(1, base::UnguessableToken::Create());
 
   ASSERT_TRUE(browser_plugin_guest_);
 
@@ -237,7 +238,8 @@ TEST_F(RenderWidgetHostViewGuestSurfaceTest, TestGuestSurface) {
 
   browser_plugin_guest_->set_attached(true);
   view_->OnSwapCompositorFrame(
-      0, CreateDelegatedFrame(scale_factor, view_size, view_rect));
+      0, local_surface_id,
+      CreateDelegatedFrame(scale_factor, view_size, view_rect));
 
   cc::SurfaceId id = GetSurfaceId();
 
@@ -261,7 +263,8 @@ TEST_F(RenderWidgetHostViewGuestSurfaceTest, TestGuestSurface) {
   browser_plugin_guest_->set_has_attached_since_surface_set(true);
 
   view_->OnSwapCompositorFrame(
-      0, CreateDelegatedFrame(scale_factor, view_size, view_rect));
+      0, local_surface_id,
+      CreateDelegatedFrame(scale_factor, view_size, view_rect));
 
   // Since we have not changed the frame size and scale factor, the same surface
   // id must be used.
@@ -283,8 +286,8 @@ TEST_F(RenderWidgetHostViewGuestSurfaceTest, TestGuestSurface) {
   browser_plugin_guest_->ResetTestData();
 
   view_->OnSwapCompositorFrame(
-      0, CreateDelegatedFrame(scale_factor, view_size, view_rect));
-
+      0, local_surface_id,
+      CreateDelegatedFrame(scale_factor, view_size, view_rect));
   // Since guest is not attached, the CompositorFrame must be processed but the
   // frame must be evicted to return the resources immediately.
   EXPECT_FALSE(view_->has_frame());

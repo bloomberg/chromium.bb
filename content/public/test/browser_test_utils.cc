@@ -1439,7 +1439,7 @@ bool FrameWatcher::OnMessageReceived(const IPC::Message& message) {
     ViewHostMsg_SwapCompositorFrame::Param param;
     if (!ViewHostMsg_SwapCompositorFrame::Read(&message, &param))
       return false;
-    cc::CompositorFrame frame(std::move(std::get<1>(param)));
+    cc::CompositorFrame frame(std::move(std::get<2>(param)));
 
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,

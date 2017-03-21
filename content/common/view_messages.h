@@ -796,9 +796,10 @@ IPC_MESSAGE_ROUTED2(ViewHostMsg_UpdateZoomLimits,
                     int /* minimum_percent */,
                     int /* maximum_percent */)
 
-IPC_MESSAGE_ROUTED3(
+IPC_MESSAGE_ROUTED4(
     ViewHostMsg_SwapCompositorFrame,
     uint32_t /* compositor_frame_sink_id */,
+    cc::LocalSurfaceId /* local_surface_id */,
     cc::CompositorFrame /* frame */,
     std::vector<IPC::Message> /* messages_to_deliver_with_frame */)
 

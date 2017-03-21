@@ -87,6 +87,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostViewBase {
   void StopSpeaking() override;
 #endif  // defined(OS_MACOSX)
   void OnSwapCompositorFrame(uint32_t compositor_frame_sink_id,
+                             const cc::LocalSurfaceId& local_surface_id,
                              cc::CompositorFrame frame) override;
   void ClearCompositorFrame() override {}
   void SetNeedsBeginFrames(bool needs_begin_frames) override {}

@@ -62,6 +62,7 @@ class BrowserCompositorMac : public cc::BeginFrameObserver,
   ui::AcceleratedWidgetMac* GetAcceleratedWidgetMac();
 
   void SwapCompositorFrame(uint32_t compositor_frame_sink_id,
+                           const cc::LocalSurfaceId& local_surface_id,
                            cc::CompositorFrame frame);
   void SetHasTransparentBackground(bool transparent);
   void SetDisplayColorProfile(const gfx::ICCProfile& icc_profile);

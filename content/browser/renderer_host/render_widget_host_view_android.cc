@@ -1142,6 +1142,7 @@ void RenderWidgetHostViewAndroid::CheckCompositorFrameSinkChanged(
 
 void RenderWidgetHostViewAndroid::InternalSwapCompositorFrame(
     uint32_t compositor_frame_sink_id,
+    const cc::LocalSurfaceId& local_surface_id,
     cc::CompositorFrame frame) {
   last_scroll_offset_ = frame.metadata.root_scroll_offset;
   DCHECK(delegated_frame_host_);
@@ -1166,7 +1167,8 @@ void RenderWidgetHostViewAndroid::InternalSwapCompositorFrame(
   if (!has_content) {
     DestroyDelegatedContent();
   } else {
-    delegated_frame_host_->SubmitCompositorFrame(std::move(frame));
+    delegated_frame_host_->SubmitCompositorFrame(local_surface_id,
+                                                 std::move(frame));
     frame_evictor_->SwappedFrame(!host_->is_hidden());
   }
 
@@ -1195,8 +1197,10 @@ void RenderWidgetHostViewAndroid::DestroyDelegatedContent() {
 
 void RenderWidgetHostViewAndroid::OnSwapCompositorFrame(
     uint32_t compositor_frame_sink_id,
+    const cc::LocalSurfaceId& local_surface_id,
     cc::CompositorFrame frame) {
-  InternalSwapCompositorFrame(compositor_frame_sink_id, std::move(frame));
+  InternalSwapCompositorFrame(compositor_frame_sink_id, local_surface_id,
+                              std::move(frame));
 }
 
 void RenderWidgetHostViewAndroid::ClearCompositorFrame() {
