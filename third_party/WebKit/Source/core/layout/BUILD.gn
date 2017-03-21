@@ -358,6 +358,8 @@ blink_core_sources("layout") {
     "ng/ng_physical_fragment.cc",
     "ng/ng_physical_fragment.h",
     "ng/ng_physical_text_fragment.h",
+    "ng/ng_relative_utils.cc",
+    "ng/ng_relative_utils.h",
     "ng/ng_space_utils.cc",
     "ng/ng_space_utils.h",
     "ng/ng_text_fragment.cc",

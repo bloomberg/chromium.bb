@@ -1,0 +1,135 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "core/layout/ng/ng_relative_utils.h"
+
+#include "core/layout/ng/geometry/ng_logical_offset.h"
+#include "core/style/ComputedStyle.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+namespace blink {
+namespace {
+
+const LayoutUnit kInlineSize{100};
+const LayoutUnit kBlockSize{200};
+const LayoutUnit kLeft{3};
+const LayoutUnit kRight{5};
+const LayoutUnit kTop{7};
+const LayoutUnit kBottom{9};
+const LayoutUnit kAuto{-1};
+const LayoutUnit kZero{0};
+
+class NGRelativeUtilsTest : public ::testing::Test {
+ protected:
+  void SetUp() override {
+    style_ = ComputedStyle::create();
+    container_size_ = NGLogicalSize{kInlineSize, kBlockSize};
+  }
+
+  void SetTRBL(LayoutUnit top,
+               LayoutUnit right,
+               LayoutUnit bottom,
+               LayoutUnit left) {
+    style_->setTop(top == kAuto ? Length(LengthType::Auto)
+                                : Length(top.toInt(), LengthType::Fixed));
+    style_->setRight(right == kAuto ? Length(LengthType::Auto)
+                                    : Length(right.toInt(), LengthType::Fixed));
+    style_->setBottom(bottom == kAuto
+                          ? Length(LengthType::Auto)
+                          : Length(bottom.toInt(), LengthType::Fixed));
+    style_->setLeft(left == kAuto ? Length(LengthType::Auto)
+                                  : Length(left.toInt(), LengthType::Fixed));
+  }
+
+  RefPtr<ComputedStyle> style_;
+  NGLogicalSize container_size_;
+};
+
+TEST_F(NGRelativeUtilsTest, HorizontalTB) {
+  NGLogicalOffset offset;
+
+  // Everything auto defaults to kZero,kZero
+  SetTRBL(kAuto, kAuto, kAuto, kAuto);
+  offset = ComputeRelativeOffset(*style_, kHorizontalTopBottom,
+                                 TextDirection::kLtr, container_size_);
+  EXPECT_EQ(offset.inline_offset, kZero);
+  EXPECT_EQ(offset.block_offset, kZero);
+
+  // Set all sides
+  SetTRBL(kTop, kRight, kBottom, kLeft);
+
+  // kLtr
+  offset = ComputeRelativeOffset(*style_, kHorizontalTopBottom,
+                                 TextDirection::kLtr, container_size_);
+  EXPECT_EQ(offset.inline_offset, kLeft);
+  EXPECT_EQ(offset.block_offset, kTop);
+
+  // kRtl
+  offset = ComputeRelativeOffset(*style_, kHorizontalTopBottom,
+                                 TextDirection::kRtl, container_size_);
+  EXPECT_EQ(offset.inline_offset, kRight);
+  EXPECT_EQ(offset.block_offset, kTop);
+
+  // Set only non-default sides
+  SetTRBL(kAuto, kRight, kBottom, kAuto);
+  offset = ComputeRelativeOffset(*style_, kHorizontalTopBottom,
+                                 TextDirection::kLtr, container_size_);
+  EXPECT_EQ(offset.inline_offset, -kRight);
+  EXPECT_EQ(offset.block_offset, -kBottom);
+}
+
+TEST_F(NGRelativeUtilsTest, VerticalRightLeft) {
+  NGLogicalOffset offset;
+
+  // Set all sides
+  SetTRBL(kTop, kRight, kBottom, kLeft);
+
+  // kLtr
+  offset = ComputeRelativeOffset(*style_, kVerticalRightLeft,
+                                 TextDirection::kLtr, container_size_);
+  EXPECT_EQ(offset.inline_offset, kTop);
+  EXPECT_EQ(offset.block_offset, kRight);
+
+  // kRtl
+  offset = ComputeRelativeOffset(*style_, kVerticalRightLeft,
+                                 TextDirection::kRtl, container_size_);
+  EXPECT_EQ(offset.inline_offset, kBottom);
+  EXPECT_EQ(offset.block_offset, kRight);
+
+  // Set only non-default sides
+  SetTRBL(kAuto, kAuto, kBottom, kLeft);
+  offset = ComputeRelativeOffset(*style_, kVerticalRightLeft,
+                                 TextDirection::kLtr, container_size_);
+  EXPECT_EQ(offset.inline_offset, -kBottom);
+  EXPECT_EQ(offset.block_offset, -kLeft);
+}
+
+TEST_F(NGRelativeUtilsTest, VerticalLeftRight) {
+  NGLogicalOffset offset;
+
+  // Set all sides
+  SetTRBL(kTop, kRight, kBottom, kLeft);
+
+  // kLtr
+  offset = ComputeRelativeOffset(*style_, kVerticalLeftRight,
+                                 TextDirection::kLtr, container_size_);
+  EXPECT_EQ(offset.inline_offset, kTop);
+  EXPECT_EQ(offset.block_offset, kLeft);
+
+  // kRtl
+  offset = ComputeRelativeOffset(*style_, kVerticalLeftRight,
+                                 TextDirection::kRtl, container_size_);
+  EXPECT_EQ(offset.inline_offset, kBottom);
+  EXPECT_EQ(offset.block_offset, kLeft);
+
+  // Set only non-default sides
+  SetTRBL(kAuto, kRight, kBottom, kAuto);
+  offset = ComputeRelativeOffset(*style_, kVerticalLeftRight,
+                                 TextDirection::kLtr, container_size_);
+  EXPECT_EQ(offset.inline_offset, -kBottom);
+  EXPECT_EQ(offset.block_offset, -kRight);
+}
+
+}  // namespace
+}  // namespace blink

@@ -1320,6 +1320,7 @@ source_set("unit_tests") {
     "layout/ng/ng_length_utils_test.cc",
     "layout/ng/ng_min_max_content_size_test.cc",
     "layout/ng/ng_out_of_flow_layout_part_test.cc",
+    "layout/ng/ng_relative_utils_test.cc",
     "layout/ng/ng_text_layout_algorithm_test.cc",
     "layout/shapes/BoxShapeTest.cpp",
     "layout/svg/LayoutSVGRootTest.cpp",
