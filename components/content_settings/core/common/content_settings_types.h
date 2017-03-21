@@ -59,6 +59,10 @@ enum ContentSettingsType {
   // this content type, we instead share values with NOTIFICATIONS.
   CONTENT_SETTINGS_TYPE_PUSH_MESSAGING,
 
+  // This content setting type is for caching password protection service's
+  // verdicts of each origin.
+  CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION,
+
   // WARNING: This enum is going to be removed soon. Do not depend on NUM_TYPES.
   CONTENT_SETTINGS_NUM_TYPES_DO_NOT_USE,
 };

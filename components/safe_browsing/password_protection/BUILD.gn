@@ -10,8 +10,11 @@ source_set("password_protection") {
 
   deps = [
     "//base:base",
+    "//components/content_settings/core/browser:browser",
     "//components/history/core/browser:browser",
+    "//components/safe_browsing:csd_proto",
     "//components/safe_browsing_db:database_manager",
+    "//components/safe_browsing_db:v4_protocol_manager_util",
     "//content/public/browser:browser",
     "//third_party/protobuf:protobuf_lite",
   ]
@@ -27,6 +30,7 @@ source_set("password_protection_unittest") {
     "//base",
     "//base/test:test_support",
     "//components/safe_browsing_db:test_database_manager",
+    "//components/sync_preferences:test_support",
     "//content/test:test_support",
     "//testing/gmock",
     "//testing/gtest",

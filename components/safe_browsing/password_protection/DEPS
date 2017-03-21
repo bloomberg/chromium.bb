@@ -1,6 +1,10 @@
 include_rules = [
   "-content",
+  "+components/content_settings/core/browser",
+  "+components/history/core/browser",
+  "+components/safe_browsing/csd.pb.h",
   "+components/safe_browsing_db",
+  "+components/sync_preferences/testing_pref_service_syncable.h",
   "+content/public/browser",
   "+content/public/test",
 ]

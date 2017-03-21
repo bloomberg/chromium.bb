@@ -247,6 +247,20 @@ message LoginReputationClientResponse {
   // The pattern will always match the page_url of the request, and will be
   // a substring of page_url.
   optional string cache_expression = 3;
+
+  // If set true, we match target URL with cache expression up to both of their
+  // last /'s.
+  //
+  // Examples:
+  //    If set true, a cache_expression "foo.com/bar" will match
+  //      "foo.com/bar",
+  //      "foo.com/bar/bar.cgi",
+  //      "foo.com/bar/login.html?param=val",
+  //    but will NOT match
+  //      "foo.com",
+  //      "foo.com/abc/",
+  //      "foo.com/bar/abc/edf.cgi"
+  optional bool cache_expression_exact_match = 4;
 }
 
 message ClientMalwareResponse {
