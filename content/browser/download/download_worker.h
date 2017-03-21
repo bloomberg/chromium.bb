@@ -31,6 +31,9 @@ class DownloadWorker : public UrlDownloader::Delegate {
     virtual void OnByteStreamReady(
         DownloadWorker* worker,
         std::unique_ptr<ByteStreamReader> stream_reader) = 0;
+    // Called when there is an error caused by the server response.
+    virtual void OnServerResponseError(DownloadWorker* worker,
+                                       DownloadInterruptReason reason) = 0;
   };
 
   DownloadWorker(DownloadWorker::Delegate* delegate,
@@ -61,7 +64,7 @@ class DownloadWorker : public UrlDownloader::Delegate {
       std::unique_ptr<UrlDownloader, BrowserThread::DeleteOnIOThread>
           downloader);
 
-  DownloadWorker::Delegate* delegate_;
+  DownloadWorker::Delegate* const delegate_;
 
   // The starting position of the content for this worker to download.
   int64_t offset_;

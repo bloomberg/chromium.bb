@@ -28,6 +28,11 @@ void DownloadJob::StartDownload() const {
   download_item_->StartDownload();
 }
 
+void DownloadJob::Interrupt(DownloadInterruptReason reason) {
+  download_item_->InterruptAndDiscardPartialState(reason);
+  download_item_->UpdateObservers();
+}
+
 void DownloadJob::AddByteStream(std::unique_ptr<ByteStreamReader> stream_reader,
                                 int64_t offset,
                                 int64_t length) {

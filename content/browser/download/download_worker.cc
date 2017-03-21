@@ -38,7 +38,9 @@ DownloadWorker::DownloadWorker(DownloadWorker::Delegate* delegate,
     : delegate_(delegate),
       offset_(offset),
       length_(length),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  DCHECK(delegate_);
+}
 
 DownloadWorker::~DownloadWorker() = default;
 
@@ -54,15 +56,18 @@ void DownloadWorker::SendRequest(
 }
 
 void DownloadWorker::Pause() {
-  request_handle_->PauseRequest();
+  if (request_handle_)
+    request_handle_->PauseRequest();
 }
 
 void DownloadWorker::Resume() {
-  request_handle_->ResumeRequest();
+  if (request_handle_)
+    request_handle_->ResumeRequest();
 }
 
 void DownloadWorker::Cancel() {
-  request_handle_->CancelRequest();
+  if (request_handle_)
+    request_handle_->CancelRequest();
 }
 
 void DownloadWorker::OnUrlDownloaderStarted(
@@ -72,13 +77,15 @@ void DownloadWorker::OnUrlDownloaderStarted(
   // |callback| is not used in subsequent requests.
   DCHECK(callback.is_null());
 
-  // TODO(xingliu): Pass the |stream_reader| to parallel job and handle failed
-  // request.
+  // TODO(xingliu): Add the interrupt reason and metric data for precondition
+  // failure. Make DownloadRequestCore know if it should return error if the
+  // the server gives a different part of the content, e.g. "If-Match" return
+  // http 200.
   if (create_info->result !=
       DownloadInterruptReason::DOWNLOAD_INTERRUPT_REASON_NONE) {
-    VLOG(kVerboseLevel) << "Parallel download sub request failed. reason = "
+    VLOG(kVerboseLevel) << "Parallel download sub-request failed. reason = "
                         << create_info->result;
-    NOTIMPLEMENTED();
+    delegate_->OnServerResponseError(this, create_info->result);
     return;
   }
 
