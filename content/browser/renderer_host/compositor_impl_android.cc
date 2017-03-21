@@ -176,6 +176,12 @@ gpu::gles2::ContextCreationAttribHelper GetCompositorContextAttributes(
     // specified
     // (IOW check that a <= 0 && rgb > 0 && rgb <= 565) then alpha should be
     // -1.
+    // TODO(liberato): This condition is memorized in ComositorView.java, to
+    // avoid using two surfaces temporarily during alpha <-> no alpha
+    // transitions.  If these mismatch, then we risk a power regression if the
+    // SurfaceView is not marked as eOpaque (FORMAT_OPAQUE), and we have an
+    // EGL surface with an alpha channel.  SurfaceFlinger needs at least one of
+    // those hints to optimize out alpha blending.
     attributes.alpha_size = 0;
     attributes.red_size = 5;
     attributes.green_size = 6;

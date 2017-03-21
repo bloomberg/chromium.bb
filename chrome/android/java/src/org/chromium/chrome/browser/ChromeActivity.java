@@ -345,7 +345,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
         // Set up the animation placeholder to be the SurfaceView. This disables the
         // SurfaceView's 'hole' clipping during animations that are notified to the window.
-        mWindowAndroid.setAnimationPlaceholderView(mCompositorViewHolder.getSurfaceView());
+        mWindowAndroid.setAnimationPlaceholderView(mCompositorViewHolder.getCompositorView());
 
         // Inform the WindowAndroid of the keyboard accessory view.
         mWindowAndroid.setKeyboardAccessoryView((ViewGroup) findViewById(R.id.keyboard_accessory));
