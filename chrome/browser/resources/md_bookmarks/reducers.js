@@ -239,6 +239,7 @@ cr.define('bookmarks', function() {
   SelectedFolderState.updateSelectedFolder = function(
       selectedFolder, action, nodes) {
     // TODO(tsergeant): It should not be possible to select a non-folder.
+    // TODO(tsergeant): Select parent folder when selected folder is deleted.
     switch (action.name) {
       case 'select-folder':
         return action.id;

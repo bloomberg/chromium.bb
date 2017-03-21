@@ -93,20 +93,6 @@ suite('<bookmarks-store>', function() {
   //////////////////////////////////////////////////////////////////////////////
   // editing bookmarks tree tests:
 
-  test('changing selectedId changes the displayedList', function() {
-    store.selectedId = '0';
-    assertEquals(TEST_TREE.children, store.displayedList);
-    store.selectedId = '1';
-    assertEquals(TEST_TREE.children[0].children, store.displayedList);
-    store.selectedId = '3';
-    assertEquals(
-        TEST_TREE.children[0].children[1].children, store.displayedList);
-
-    // Selecting an item selects the default folder.
-    store.selectedId = '5';
-    assertEquals(TEST_TREE.children[0].children, store.displayedList);
-  });
-
   test('store updates on selected event', function() {
     // First child of root is selected by default.
     assertEquals('1', store.selectedId);
@@ -295,61 +281,6 @@ suite('<bookmarks-store>', function() {
     overrideBookmarksSearch([]);
     store.searchTerm = 'asdf';
     assertEquals(0, store.displayedList.length);
-  });
-
-  //////////////////////////////////////////////////////////////////////////////
-  // router tests:
-
-  test('search updates from route', function() {
-    overrideBookmarksSearch([]);
-    searchTerm = 'Pond';
-    navigateTo('/?q=' + searchTerm);
-    assertEquals(searchTerm, store.searchTerm);
-  });
-
-  test('search updates from route on setup', function() {
-    overrideBookmarksSearch([]);
-    var searchTerm = 'Boat24';
-    navigateTo('/?q=' + searchTerm);
-    replaceStore();
-    assertEquals(searchTerm, store.searchTerm);
-  });
-
-  test('route updates from search', function() {
-    overrideBookmarksSearch([]);
-    var searchTerm = 'Boat24';
-    store.searchTerm = searchTerm;
-    assertEquals('chrome://bookmarks/?q=' + searchTerm, window.location.href);
-  });
-
-  test('selectedId updates from route', function() {
-    // Folder id routes to the corresponding folder.
-    var selectedId = '3';
-    navigateTo('/?id=' + selectedId);
-    assertEquals(selectedId, store.selectedId);
-
-    // Bookmark id routes to the default Bookmarks Bar.
-    var selectedId = '2';
-    navigateTo('/?id=' + selectedId);
-    assertEquals(store.rootNode.children[0].id, store.selectedId);
-
-    // Invalid id routes to the default Bookmarks Bar.
-    selectedId = 'foo';
-    navigateTo('/?id=' + selectedId);
-    assertEquals(store.rootNode.children[0].id, store.selectedId);
-  });
-
-  test('selectedId updates from route on setup', function() {
-    selectedId = '3';
-    navigateTo('/?id=' + selectedId);
-    replaceStore();
-    assertEquals(selectedId, store.selectedId);
-  });
-
-  test('route updates from selectedId', function() {
-    var selectedId = '2';
-    store.selectedId = selectedId;
-    assertEquals('chrome://bookmarks/?id=' + selectedId, window.location.href);
   });
 
   //////////////////////////////////////////////////////////////////////////////

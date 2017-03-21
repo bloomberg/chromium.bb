@@ -30,6 +30,7 @@
         '<(DEPTH)/ui/webui/resources/js/cr/ui/compiled_resources2.gyp:splitter',
         '<(EXTERNS_GYP):chrome_extensions',
         'api_listener',
+        'router',
         'store_client',
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
@@ -87,6 +88,10 @@
     },
     {
       'target_name': 'router',
+      'dependencies': [
+        'actions',
+        'store_client',
+      ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {

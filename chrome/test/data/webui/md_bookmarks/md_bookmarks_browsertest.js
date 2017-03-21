@@ -97,13 +97,42 @@ TEST_F('MaterialBookmarksReducersTest', 'All', function() {
   mocha.run();
 });
 
+function MaterialBookmarksRouterTest() {}
+
+MaterialBookmarksRouterTest.prototype = {
+  __proto__: MaterialBookmarksBrowserTest.prototype,
+
+  extraLibraries: MaterialBookmarksBrowserTest.prototype.extraLibraries.concat([
+    'router_test.js',
+  ]),
+};
+
+TEST_F('MaterialBookmarksRouterTest', 'All', function() {
+  mocha.grep('<bookmarks-router>').run();
+});
+
+function MaterialBookmarksRouterOnLoadTest() {}
+
+MaterialBookmarksRouterOnLoadTest.prototype = {
+  __proto__: MaterialBookmarksRouterTest.prototype,
+
+  browsePreload: 'chrome://bookmarks/?q=testQuery',
+
+  setUp: function() {
+    chrome.bookmarks.search = function(query) {
+      window.searchedQuery = query;
+    };
+  },
+};
+
+TEST_F('MaterialBookmarksRouterOnLoadTest', 'All', function() {
+  mocha.grep('URL preload').run();
+});
+
 function MaterialBookmarksStoreClientTest() {}
 
 MaterialBookmarksStoreClientTest.prototype = {
   __proto__: MaterialBookmarksBrowserTest.prototype,
-
-  // TODO(tsergeant): Remove special preload once Client is used in the page.
-  browsePreload: 'chrome://bookmarks/store_client.html',
 
   extraLibraries: MaterialBookmarksBrowserTest.prototype.extraLibraries.concat([
     'store_client_test.js',

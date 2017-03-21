@@ -8,6 +8,9 @@
  */
 function replaceBody(element) {
   PolymerTest.clearBody();
+
+  window.history.replaceState({}, '', '/');
+
   document.body.appendChild(element);
 }
 

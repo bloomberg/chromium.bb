@@ -15,6 +15,8 @@ cr.define('bookmarks', function() {
     this.data_ = bookmarks.util.createEmptyState();
     /** @type {boolean} */
     this.initialized_ = false;
+    /** @type {!Array<!Action>} */
+    this.queuedActions_ = [];
     /** @type {!Array<!StoreObserver>} */
     this.observers_ = [];
   }
@@ -25,6 +27,11 @@ cr.define('bookmarks', function() {
      */
     init: function(initialState) {
       this.data_ = initialState;
+
+      this.queuedActions_.forEach(function(action) {
+        this.reduce_(action);
+      }.bind(this));
+
       this.initialized_ = true;
       this.notifyObservers_(this.data_);
     },
@@ -52,15 +59,26 @@ cr.define('bookmarks', function() {
 
     /**
      * Transition to a new UI state based on the supplied |action|, and notify
-     * observers of the change.
+     * observers of the change. If the Store has not yet been initialized, the
+     * action will be queued and performed upon initialization.
      * @param {Action} action
      */
     handleAction: function(action) {
-      if (!this.initialized_)
+      if (!this.initialized_) {
+        this.queuedActions_.push(action);
         return;
+      }
 
-      this.data_ = bookmarks.reduceAction(this.data_, action);
+      this.reduce_(action);
       this.notifyObservers_(this.data_);
+    },
+
+    /**
+     * @param {Action} action
+     * @private
+     */
+    reduce_: function(action) {
+      this.data_ = bookmarks.reduceAction(this.data_, action);
     },
 
     /**
