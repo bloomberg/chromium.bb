@@ -535,20 +535,16 @@ public class DownloadNotificationService extends Service {
                 && Profile.getLastUsedProfile().hasOffTheRecordProfile();
 
         List<DownloadSharedPreferenceEntry> entries = mDownloadSharedPreferenceHelper.getEntries();
-        List<Pair<String, Integer>> entriesToRemove = new ArrayList<Pair<String, Integer>>();
         for (DownloadSharedPreferenceEntry entry : entries) {
             if (!entry.isOffTheRecord) continue;
-            entriesToRemove.add(new Pair(entry.downloadGuid, entry.itemType));
-        }
 
-        for (Pair<String, Integer> entryToRemove : entriesToRemove) {
-            notifyDownloadCanceled(entryToRemove.first);
+            notifyDownloadCanceled(entry.downloadGuid);
             if (cancelActualDownload) {
-                DownloadServiceDelegate delegate = getServiceDelegate(entryToRemove.second);
-                delegate.cancelDownload(entryToRemove.first, true);
+                DownloadServiceDelegate delegate = getServiceDelegate(entry.itemType);
+                delegate.cancelDownload(entry.downloadGuid, entry.isOffTheRecord);
                 delegate.destroyServiceDelegate();
             }
-            for (Observer observer : mObservers) observer.onDownloadCanceled(entryToRemove.first);
+            for (Observer observer : mObservers) observer.onDownloadCanceled(entry.downloadGuid);
         }
     }
 
