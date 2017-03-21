@@ -141,11 +141,8 @@
     setDefaultControllerFlag(controller, FLAG_INCLOSE, value);
   }
 
-  function rejectPromises(array, e) {
-    // array is an InternalPackedArray so forEach won't work.
-    for (let i = 0; i < array.length; ++i) {
-      v8.rejectPromise(array[i], e);
-    }
+  function rejectPromises(queue, e) {
+    queue.forEach(promise => v8.rejectPromise(promise, e));
   }
 
   // https://tc39.github.io/ecma262/#sec-ispropertykey
@@ -178,7 +175,7 @@
       this[_pendingWriteRequest] = undefined;
       this[_pendingCloseRequest] = undefined;
       this[_pendingAbortRequest] = undefined;
-      this[_writeRequests] = new v8.InternalPackedArray();
+      this[_writeRequests] = new binding.SimpleQueue();
       const type = underlyingSink.type;
       if (type !== undefined) {
         throw new RangeError(streamErrors.invalidType);
@@ -331,7 +328,7 @@
 
     const storedError = stream[_storedError];
     rejectPromises(stream[_writeRequests], storedError);
-    stream[_writeRequests] = new v8.InternalPackedArray();
+    stream[_writeRequests] = new binding.SimpleQueue();
 
     if (stream[_pendingCloseRequest] !== undefined) {
       TEMP_ASSERT(
@@ -623,7 +620,7 @@
       }
       this[_controlledWritableStream] = stream;
       this[_underlyingSink] = underlyingSink;
-      this[_queue] = new v8.InternalPackedArray();
+      this[_queue] = new binding.SimpleQueue();
       this[_queueSize] = 0;
       this[_defaultControllerFlags] = 0;
       const normalizedStrategy =
@@ -665,7 +662,7 @@
   }
 
   function WritableStreamDefaultControllerAbort(controller, reason) {
-    controller[_queue] = v8.InternalPackedArray();
+    controller[_queue] = new binding.SimpleQueue();
     controller[_queueSize] = 0;
     const sinkAbortPromise =
         PromiseInvokeOrNoop(controller[_underlyingSink], 'abort', [reason]);
@@ -805,7 +802,7 @@
     stream[_pendingWriteRequest] = stream[_writeRequests].shift();
 
     const sinkWritePromise = PromiseInvokeOrNoop(controller[_underlyingSink],
-                                               'write', [chunk, controller]);
+                                                 'write', [chunk, controller]);
     thenPromise(
         sinkWritePromise,
         () => {
@@ -881,15 +878,11 @@
     TEMP_ASSERT(state === WRITABLE || state === CLOSING,
                 'stream.[[state]] is "writable" or "closing".');
     WritableStreamError(stream, e);
-    controller[_queue] = new v8.InternalPackedArray();
+    controller[_queue] = new binding.SimpleQueue();
     controller[_queueSize] = 0;
   }
 
   // Queue-with-Sizes Operations
-  //
-  // These differ from the versions in the standard: they take a controller
-  // argument in order to cache the total queue size. This is necessary to avoid
-  // O(N^2) behaviour.
   //
   // TODO(ricea): Share these operations with ReadableStream.js.
   function DequeueValueForController(controller) {
@@ -917,7 +910,7 @@
   function PeekQueueValue(queue) {
     TEMP_ASSERT(queue.length !== 0,
                 'queue is not empty.');
-    return queue[0].value;
+    return queue.peek().value;
   }
 
   // Miscellaneous Operations

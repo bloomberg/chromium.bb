@@ -32,6 +32,7 @@ default_args = {
     # Dependencies used by the extra libraries. Putting them here causes them
     # to be executed first during snapshot creation.
     "//third_party/WebKit/Source/core/streams/CommonStrings.js",
+    "//third_party/WebKit/Source/core/streams/SimpleQueue.js",
 
     # Extra libraries.
     "//third_party/WebKit/Source/core/streams/ByteLengthQueuingStrategy.js",
