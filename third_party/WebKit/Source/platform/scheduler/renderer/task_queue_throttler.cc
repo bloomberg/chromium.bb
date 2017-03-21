@@ -312,12 +312,9 @@ void TaskQueueThrottler::MaybeSchedulePumpThrottledTasks(
 }
 
 CPUTimeBudgetPool* TaskQueueThrottler::CreateCPUTimeBudgetPool(
-    const char* name,
-    base::Optional<base::TimeDelta> max_budget_level,
-    base::Optional<base::TimeDelta> max_throttling_duration) {
+    const char* name) {
   CPUTimeBudgetPool* time_budget_pool =
-      new CPUTimeBudgetPool(name, this, tick_clock_->NowTicks(),
-                            max_budget_level, max_throttling_duration);
+      new CPUTimeBudgetPool(name, this, tick_clock_->NowTicks());
   budget_pools_[time_budget_pool] = base::WrapUnique(time_budget_pool);
   return time_budget_pool;
 }

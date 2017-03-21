@@ -37,18 +37,37 @@ BudgetPool::~BudgetPool() {}
 CPUTimeBudgetPool::CPUTimeBudgetPool(
     const char* name,
     BudgetPoolController* budget_pool_controller,
-    base::TimeTicks now,
-    base::Optional<base::TimeDelta> max_budget_level,
-    base::Optional<base::TimeDelta> max_throttling_duration)
+    base::TimeTicks now)
     : name_(name),
       budget_pool_controller_(budget_pool_controller),
-      max_budget_level_(max_budget_level),
-      max_throttling_duration_(max_throttling_duration),
       last_checkpoint_(now),
       cpu_percentage_(1),
       is_enabled_(true) {}
 
 CPUTimeBudgetPool::~CPUTimeBudgetPool() {}
+
+void CPUTimeBudgetPool::SetMaxBudgetLevel(
+    base::TimeTicks now,
+    base::Optional<base::TimeDelta> max_budget_level) {
+  Advance(now);
+  max_budget_level_ = max_budget_level;
+  EnforceBudgetLevelRestrictions();
+}
+
+void CPUTimeBudgetPool::SetMaxThrottlingDelay(
+    base::TimeTicks now,
+    base::Optional<base::TimeDelta> max_throttling_delay) {
+  Advance(now);
+  max_throttling_delay_ = max_throttling_delay;
+  EnforceBudgetLevelRestrictions();
+}
+
+void CPUTimeBudgetPool::SetMinBudgetLevelToRun(
+    base::TimeTicks now,
+    base::TimeDelta min_budget_level_to_run) {
+  Advance(now);
+  min_budget_level_to_run_ = min_budget_level_to_run;
+}
 
 void CPUTimeBudgetPool::SetTimeBudgetRecoveryRate(base::TimeTicks now,
                                                   double cpu_percentage) {
@@ -128,8 +147,7 @@ void CPUTimeBudgetPool::Close() {
 }
 
 bool CPUTimeBudgetPool::HasEnoughBudgetToRun(base::TimeTicks now) {
-  Advance(now);
-  return !is_enabled_ || current_budget_level_.InMicroseconds() >= 0;
+  return now >= GetNextAllowedRunTime();
 }
 
 base::TimeTicks CPUTimeBudgetPool::GetNextAllowedRunTime() {
@@ -137,7 +155,9 @@ base::TimeTicks CPUTimeBudgetPool::GetNextAllowedRunTime() {
     return last_checkpoint_;
   } else {
     // Subtract because current_budget is negative.
-    return last_checkpoint_ - current_budget_level_ / cpu_percentage_;
+    return last_checkpoint_ +
+           (-current_budget_level_ + min_budget_level_to_run_) /
+               cpu_percentage_;
   }
 }
 
@@ -172,6 +192,17 @@ void CPUTimeBudgetPool::AsValueInto(base::trace_event::TracedValue* state,
   state->SetDouble("last_checkpoint_seconds_ago",
                    (now - last_checkpoint_).InSecondsF());
   state->SetBoolean("is_enabled", is_enabled_);
+  state->SetDouble("min_budget_level_to_run_in_seconds",
+                   min_budget_level_to_run_.InSecondsF());
+
+  if (max_throttling_delay_) {
+    state->SetDouble("max_throttling_delay_in_seconds",
+                     max_throttling_delay_.value().InSecondsF());
+  }
+  if (max_budget_level_) {
+    state->SetDouble("max_budget_level_in_seconds",
+                     max_budget_level_.value().InSecondsF());
+  }
 
   state->BeginArray("task_queues");
   for (TaskQueue* queue : associated_task_queues_) {
@@ -202,11 +233,11 @@ void CPUTimeBudgetPool::EnforceBudgetLevelRestrictions() {
     current_budget_level_ =
         std::min(current_budget_level_, max_budget_level_.value());
   }
-  if (max_throttling_duration_) {
+  if (max_throttling_delay_) {
     // Current budget level may be negative.
     current_budget_level_ =
         std::max(current_budget_level_,
-                 -max_throttling_duration_.value() * cpu_percentage_);
+                 -max_throttling_delay_.value() * cpu_percentage_);
   }
 }
 

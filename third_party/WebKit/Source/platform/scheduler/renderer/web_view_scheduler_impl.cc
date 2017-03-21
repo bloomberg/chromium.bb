@@ -338,12 +338,15 @@ void WebViewSchedulerImpl::MaybeInitializeBackgroundCPUTimeBudgetPool() {
 
   background_time_budget_pool_ =
       renderer_scheduler_->task_queue_throttler()->CreateCPUTimeBudgetPool(
-          "background", GetMaxBudgetLevel(settings_),
-          GetMaxThrottlingDelay(settings_));
+          "background");
+  LazyNow lazy_now(renderer_scheduler_->tick_clock());
+
+  background_time_budget_pool_->SetMaxBudgetLevel(lazy_now.Now(),
+                                                  GetMaxBudgetLevel(settings_));
+  background_time_budget_pool_->SetMaxThrottlingDelay(
+      lazy_now.Now(), GetMaxThrottlingDelay(settings_));
 
   UpdateBackgroundThrottlingState();
-
-  LazyNow lazy_now(renderer_scheduler_->tick_clock());
 
   background_time_budget_pool_->SetTimeBudgetRecoveryRate(
       lazy_now.Now(), GetBackgroundBudgetRecoveryRate(settings_));

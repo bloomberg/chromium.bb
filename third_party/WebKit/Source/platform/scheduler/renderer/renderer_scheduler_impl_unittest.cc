@@ -3719,8 +3719,7 @@ TEST_F(RendererSchedulerImplTest, Tracing) {
   scheduler_->AddWebViewScheduler(web_view_scheduler2.get());
 
   CPUTimeBudgetPool* time_budget_pool =
-      scheduler_->task_queue_throttler()->CreateCPUTimeBudgetPool(
-          "test", base::nullopt, base::nullopt);
+      scheduler_->task_queue_throttler()->CreateCPUTimeBudgetPool("test");
 
   time_budget_pool->AddQueue(base::TimeTicks(),
                              scheduler_->TimerTaskRunner().get());

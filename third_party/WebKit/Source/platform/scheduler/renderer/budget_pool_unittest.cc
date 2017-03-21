@@ -56,8 +56,8 @@ class BudgetPoolTest : public testing::Test {
 };
 
 TEST_F(BudgetPoolTest, CPUTimeBudgetPool) {
-  CPUTimeBudgetPool* pool = task_queue_throttler_->CreateCPUTimeBudgetPool(
-      "test", base::nullopt, base::nullopt);
+  CPUTimeBudgetPool* pool =
+      task_queue_throttler_->CreateCPUTimeBudgetPool("test");
 
   base::TimeTicks time_zero = clock_->NowTicks();
 
@@ -88,6 +88,41 @@ TEST_F(BudgetPoolTest, CPUTimeBudgetPool) {
             pool->GetNextAllowedRunTime());
 
   pool->Close();
+}
+
+TEST_F(BudgetPoolTest, CPUTimeBudgetPoolMinBudgetLevelToRun) {
+  CPUTimeBudgetPool* pool =
+      task_queue_throttler_->CreateCPUTimeBudgetPool("test");
+
+  base::TimeTicks time_zero = clock_->NowTicks();
+
+  pool->SetMinBudgetLevelToRun(time_zero,
+                               base::TimeDelta::FromMilliseconds(10));
+  pool->SetTimeBudgetRecoveryRate(time_zero, 0.1);
+
+  EXPECT_TRUE(pool->HasEnoughBudgetToRun(time_zero));
+  EXPECT_EQ(time_zero, pool->GetNextAllowedRunTime());
+
+  pool->RecordTaskRunTime(time_zero,
+                          time_zero + base::TimeDelta::FromMilliseconds(10));
+  EXPECT_FALSE(pool->HasEnoughBudgetToRun(
+      time_zero + base::TimeDelta::FromMilliseconds(15)));
+  EXPECT_FALSE(pool->HasEnoughBudgetToRun(
+      time_zero + base::TimeDelta::FromMilliseconds(150)));
+  // We need to wait extra 100ms to get budget of 10ms.
+  EXPECT_EQ(time_zero + base::TimeDelta::FromMilliseconds(200),
+            pool->GetNextAllowedRunTime());
+
+  pool->RecordTaskRunTime(time_zero + base::TimeDelta::FromMilliseconds(200),
+                          time_zero + base::TimeDelta::FromMilliseconds(205));
+  // We can run when budget is non-negative even when it less than 10ms.
+  EXPECT_EQ(time_zero + base::TimeDelta::FromMilliseconds(205),
+            pool->GetNextAllowedRunTime());
+
+  pool->RecordTaskRunTime(time_zero + base::TimeDelta::FromMilliseconds(205),
+                          time_zero + base::TimeDelta::FromMilliseconds(215));
+  EXPECT_EQ(time_zero + base::TimeDelta::FromMilliseconds(350),
+            pool->GetNextAllowedRunTime());
 }
 
 }  // namespace scheduler
