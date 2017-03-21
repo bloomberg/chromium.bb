@@ -22,7 +22,6 @@
 #include "base/process/launch.h"
 #include "base/process/process.h"
 #include "base/run_loop.h"
-#include "base/sys_info.h"
 #include "base/task_scheduler/task_scheduler.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread.h"
@@ -157,8 +156,7 @@ MashRunner::MashRunner() {}
 MashRunner::~MashRunner() {}
 
 int MashRunner::Run() {
-  base::TaskScheduler::CreateAndSetSimpleTaskScheduler(
-      base::SysInfo::NumberOfProcessors());
+  base::TaskScheduler::CreateAndSetSimpleTaskScheduler("MashRunner");
 
   if (IsChild())
     return RunChild();

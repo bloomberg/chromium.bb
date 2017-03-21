@@ -22,7 +22,6 @@
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/sys_info.h"
 #include "base/task_scheduler/task_scheduler.h"
 #include "base/threading/worker_pool.h"
 #include "components/cronet/histogram_manager.h"
@@ -119,8 +118,7 @@ void CronetEnvironment::Initialize() {
   if (!g_at_exit_)
     g_at_exit_ = new base::AtExitManager;
 
-  base::TaskScheduler::CreateAndSetSimpleTaskScheduler(
-      base::SysInfo::NumberOfProcessors());
+  base::TaskScheduler::CreateAndSetSimpleTaskScheduler("CronetIos");
 
   url::Initialize();
   base::CommandLine::Init(0, nullptr);

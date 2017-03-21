@@ -28,12 +28,7 @@ ChromotingClientRuntime* ChromotingClientRuntime::GetInstance() {
 }
 
 ChromotingClientRuntime::ChromotingClientRuntime() {
-  // TODO(sergeyu): Consider adding separate pools for different task classes.
-  const int kMaxBackgroundThreads = 5;
-  if (!base::TaskScheduler::GetInstance()) {
-    // Make sure TaskScheduler is initialized.
-    base::TaskScheduler::CreateAndSetSimpleTaskScheduler(kMaxBackgroundThreads);
-  }
+  base::TaskScheduler::CreateAndSetSimpleTaskScheduler("Remoting");
 
   if (!base::MessageLoop::current()) {
     VLOG(1) << "Starting main message loop";

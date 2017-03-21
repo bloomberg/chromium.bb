@@ -29,11 +29,9 @@ namespace remoting {
 namespace ios {
 
 AppRuntime::AppRuntime() {
-  // TODO(sergeyu): Consider adding separate pools for different task classes.
-  const int kMaxBackgroundThreads = 5;
   if (!base::TaskScheduler::GetInstance()) {
     // Make sure TaskScheduler is initialized.
-    base::TaskScheduler::CreateAndSetSimpleTaskScheduler(kMaxBackgroundThreads);
+    base::TaskScheduler::CreateAndSetSimpleTaskScheduler("RemotingIos");
   }
 
   // TODO(sergeyu): AppRuntime is not singleton, but it owns MessageLoop for the

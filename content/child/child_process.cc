@@ -55,8 +55,7 @@ ChildProcess::ChildProcess(
   if (!base::TaskScheduler::GetInstance()) {
     if (worker_pool_params.empty()) {
       DCHECK(!worker_pool_index_for_traits_callback);
-      constexpr int kMaxThreads = 2;
-      base::TaskScheduler::CreateAndSetSimpleTaskScheduler(kMaxThreads);
+      base::TaskScheduler::CreateAndSetSimpleTaskScheduler("ContentChild");
     } else {
       DCHECK(worker_pool_index_for_traits_callback);
       base::TaskScheduler::CreateAndSetDefaultTaskScheduler(

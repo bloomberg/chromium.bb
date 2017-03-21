@@ -161,9 +161,8 @@ bool ServiceProcess::Initialize(base::MessageLoopForUI* message_loop,
   }
 
   // Initialize TaskScheduler and redirect SequencedWorkerPool tasks to it.
-  constexpr int kMaxTaskSchedulerThreads = 3;
   base::TaskScheduler::CreateAndSetSimpleTaskScheduler(
-      kMaxTaskSchedulerThreads);
+      "CloudPrintServiceProcess");
   base::SequencedWorkerPool::EnableWithRedirectionToTaskSchedulerForProcess();
 
   blocking_pool_ = new base::SequencedWorkerPool(

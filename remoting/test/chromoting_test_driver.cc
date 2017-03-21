@@ -188,8 +188,7 @@ int main(int argc, char* argv[]) {
 #endif
   }
 
-  const int kMaxBackgroundThreads = 5;
-  base::TaskScheduler::CreateAndSetSimpleTaskScheduler(kMaxBackgroundThreads);
+  base::TaskScheduler::CreateAndSetSimpleTaskScheduler("ChromotingTestDriver");
 
   // Update the logging verbosity level if user specified one.
   std::string verbosity_level(

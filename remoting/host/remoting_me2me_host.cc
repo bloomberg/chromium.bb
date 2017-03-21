@@ -1642,9 +1642,7 @@ int HostProcessMain() {
   base::GetLinuxDistro();
 #endif
 
-  // TODO(sergeyu): Consider adding separate pools for different task classes.
-  const int kMaxBackgroundThreads = 5;
-  base::TaskScheduler::CreateAndSetSimpleTaskScheduler(kMaxBackgroundThreads);
+  base::TaskScheduler::CreateAndSetSimpleTaskScheduler("Me2Me");
 
   // Create the main message loop and start helper threads.
   base::MessageLoopForUI message_loop;
