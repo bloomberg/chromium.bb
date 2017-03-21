@@ -60,7 +60,7 @@ function sendScriptRequestPrecededByPreloadedImage()
     document.body.appendChild(iframe);
     iframe.srcdoc = '<html><body><link href="resources/abe.png?precedingPreload" rel=preload as=image>'
         + '<script src="http://localhost:8000/inspector/network/resources/empty-script.js?precededByPreload"></s'
-        + 'cript>;</body></html>';
+        + 'cript><img src="resources/abe.png?precedingPreload"></body></html>';
 }
 
 function createIFrame()
