@@ -302,13 +302,20 @@ config("compiler") {
   # Linux/Android common flags setup.
   # ---------------------------------
   if (is_linux || is_android) {
+    if (use_pic) {
+      cflags += [
+        "-fPIC",
+      ]
+      ldflags += [
+        "-fPIC",
+      ]
+    }
+
     cflags += [
-      "-fPIC",
       "-pipe",  # Use pipes for communicating between sub-processes. Faster.
     ]
 
     ldflags += [
-      "-fPIC",
       "-Wl,-z,noexecstack",
       "-Wl,-z,now",
       "-Wl,-z,relro",
