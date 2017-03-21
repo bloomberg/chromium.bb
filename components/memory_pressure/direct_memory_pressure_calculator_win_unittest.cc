@@ -59,8 +59,8 @@ class TestDirectMemoryPressureCalculator
     // |total| is set in the constructor and not modified.
 
     // Set the amount of free memory.
-    mem_info_.free = phys_left_mb * kKBperMB;
-    DCHECK_LT(mem_info_.free, mem_info_.total);
+    mem_info_.avail_phys = phys_left_mb * kKBperMB;
+    DCHECK_LT(mem_info_.avail_phys, mem_info_.total);
   }
 
   void SetNone() { SetMemoryFree(moderate_threshold_mb() + 1); }

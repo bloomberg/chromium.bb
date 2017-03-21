@@ -65,7 +65,7 @@ DirectMemoryPressureCalculator::CalculateCurrentPressureLevel() {
     return MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE;
 
   // How much system memory is actively available for use right now, in MBs.
-  int phys_free = mem_info.free / kKBperMB;
+  int phys_free = mem_info.avail_phys / kKBperMB;
 
   // TODO(chrisha): This should eventually care about address space pressure,
   // but the browser process (where this is running) effectively never runs out

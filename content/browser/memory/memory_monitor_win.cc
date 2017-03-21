@@ -44,7 +44,7 @@ MemoryMonitorWin::MemoryMonitorWin(MemoryMonitorDelegate* delegate,
 int MemoryMonitorWin::GetFreeMemoryUntilCriticalMB() {
   base::SystemMemoryInfoKB mem_info = {};
   delegate_->GetSystemMemoryInfo(&mem_info);
-  int free_mb = mem_info.free / kKBperMB;
+  int free_mb = mem_info.avail_phys / kKBperMB;
   free_mb -= target_free_mb_;
   return free_mb;
 }
