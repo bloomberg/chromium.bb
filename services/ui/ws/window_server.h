@@ -142,7 +142,6 @@ class WindowServer : public ServerWindowDelegate,
   bool SetFocusedWindow(ServerWindow* window);
   ServerWindow* GetFocusedWindow();
 
-  bool IsActiveUserInHighContrastMode() const;
   void SetHighContrastMode(const UserId& user, bool enabled);
 
   // Returns a change id for the window manager that is associated with

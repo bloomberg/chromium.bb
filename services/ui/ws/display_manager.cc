@@ -13,6 +13,7 @@
 #include "services/ui/ws/display.h"
 #include "services/ui/ws/display_binding.h"
 #include "services/ui/ws/event_dispatcher.h"
+#include "services/ui/ws/frame_generator.h"
 #include "services/ui/ws/server_window.h"
 #include "services/ui/ws/user_display_manager.h"
 #include "services/ui/ws/user_display_manager_delegate.h"
@@ -162,6 +163,13 @@ void DisplayManager::OnDisplayAcceleratedWidgetAvailable(Display* display) {
   displays_.insert(display);
   pending_displays_.erase(display);
   window_server_->OnDisplayReady(display, is_first_display);
+}
+
+void DisplayManager::SetHighContrastMode(bool enabled) {
+  for (Display* display : displays_) {
+    display->platform_display()->GetFrameGenerator()->SetHighContrastMode(
+        enabled);
+  }
 }
 
 void DisplayManager::OnActiveUserIdChanged(const UserId& previously_active_id,

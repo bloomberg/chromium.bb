@@ -276,15 +276,17 @@ ServerWindow* WindowServer::GetFocusedWindow() {
   return nullptr;
 }
 
-bool WindowServer::IsActiveUserInHighContrastMode() const {
-  return IsUserInHighContrastMode(user_id_tracker_.active_id());
-}
-
 void WindowServer::SetHighContrastMode(const UserId& user, bool enabled) {
   // TODO(fsamuel): This doesn't really seem like it's a window server concept?
   if (IsUserInHighContrastMode(user) == enabled)
     return;
   high_contrast_mode_[user] = enabled;
+
+  if (user == user_id_tracker_.active_id()) {
+    // Propagate the change to all Displays so that FrameGenerators start
+    // requesting BeginFrames.
+    display_manager_->SetHighContrastMode(enabled);
+  }
 }
 
 uint32_t WindowServer::GenerateWindowManagerChangeId(

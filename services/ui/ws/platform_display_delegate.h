@@ -31,8 +31,6 @@ class PlatformDisplayDelegate {
   // Called once when the AcceleratedWidget is available for drawing.
   virtual void OnAcceleratedWidgetAvailable() = 0;
 
-  virtual bool IsInHighContrastMode() = 0;
-
   // Called when an event arrives.
   virtual void OnEvent(const ui::Event& event) = 0;
 

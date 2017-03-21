@@ -257,7 +257,7 @@ void PlatformDisplayDefault::OnAcceleratedWidgetAvailable(
           std::move(display_private),
           std::move(compositor_frame_sink_client_request));
   frame_generator_ = base::MakeUnique<FrameGenerator>(
-      this, root_window_, std::move(display_client_compositor_frame_sink));
+      root_window_, std::move(display_client_compositor_frame_sink));
   frame_generator_->SetDeviceScaleFactor(init_device_scale_factor_);
 }
 
@@ -266,10 +266,6 @@ void PlatformDisplayDefault::OnAcceleratedWidgetDestroyed() {
 }
 
 void PlatformDisplayDefault::OnActivationChanged(bool active) {}
-
-bool PlatformDisplayDefault::IsInHighContrastMode() {
-  return delegate_ ? delegate_->IsInHighContrastMode() : false;
-}
 
 }  // namespace ws
 }  // namespace ui

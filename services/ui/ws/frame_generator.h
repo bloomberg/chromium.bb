@@ -28,7 +28,6 @@ class RenderPass;
 namespace ui {
 namespace ws {
 
-class FrameGeneratorDelegate;
 class ServerWindow;
 
 // Responsible for redrawing the display in response to the redraw requests by
@@ -37,12 +36,12 @@ class FrameGenerator : public cc::CompositorFrameSinkClient,
                        public cc::BeginFrameObserver {
  public:
   FrameGenerator(
-      FrameGeneratorDelegate* delegate,
       ServerWindow* root_window,
       std::unique_ptr<cc::CompositorFrameSink> compositor_frame_sink);
   ~FrameGenerator() override;
 
   void SetDeviceScaleFactor(float device_scale_factor);
+  void SetHighContrastMode(bool enabled);
 
   // Updates the WindowManager's SurfaceInfo.
   void OnSurfaceCreated(const cc::SurfaceInfo& surface_info);
@@ -80,7 +79,6 @@ class FrameGenerator : public cc::CompositorFrameSinkClient,
   // FrameGenerator as an observer to/from begin_frame_source_ accordingly.
   void SetNeedsBeginFrame(bool needs_begin_frame);
 
-  FrameGeneratorDelegate* delegate_;
   ServerWindow* const root_window_;
   float device_scale_factor_ = 1.f;
 
@@ -88,6 +86,7 @@ class FrameGenerator : public cc::CompositorFrameSinkClient,
   cc::BeginFrameArgs last_begin_frame_args_;
   cc::BeginFrameSource* begin_frame_source_ = nullptr;
   bool observing_begin_frames_ = false;
+  bool high_contrast_mode_enabled_ = false;
 
   cc::SurfaceInfo window_manager_surface_info_;
 

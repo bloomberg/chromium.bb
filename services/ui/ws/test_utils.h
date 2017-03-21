@@ -21,7 +21,6 @@
 #include "services/ui/ws/display_binding.h"
 #include "services/ui/ws/drag_controller.h"
 #include "services/ui/ws/event_dispatcher.h"
-#include "services/ui/ws/frame_generator_delegate.h"
 #include "services/ui/ws/platform_display.h"
 #include "services/ui/ws/platform_display_factory.h"
 #include "services/ui/ws/test_change_tracker.h"
@@ -285,20 +284,6 @@ class TestPlatformDisplayFactory : public PlatformDisplayFactory {
   mojom::Cursor* cursor_storage_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPlatformDisplayFactory);
-};
-
-// -----------------------------------------------------------------------------
-
-// A stub implementation of FrameGeneratorDelegate.
-class TestFrameGeneratorDelegate : public FrameGeneratorDelegate {
- public:
-  TestFrameGeneratorDelegate();
-  ~TestFrameGeneratorDelegate() override;
-
-  // FrameGeneratorDelegate:
-  bool IsInHighContrastMode() override;
-
-  DISALLOW_COPY_AND_ASSIGN(TestFrameGeneratorDelegate);
 };
 
 // -----------------------------------------------------------------------------

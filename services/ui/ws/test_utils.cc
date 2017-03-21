@@ -159,16 +159,6 @@ TestPlatformDisplayFactory::CreatePlatformDisplay(
   return base::MakeUnique<TestPlatformDisplay>(metrics, cursor_storage_);
 }
 
-// TestFrameGeneratorDelegate -------------------------------------------------
-
-TestFrameGeneratorDelegate::TestFrameGeneratorDelegate() {}
-
-TestFrameGeneratorDelegate::~TestFrameGeneratorDelegate() {}
-
-bool TestFrameGeneratorDelegate::IsInHighContrastMode() {
-  return false;
-}
-
 // WindowTreeTestApi  ---------------------------------------------------------
 
 WindowTreeTestApi::WindowTreeTestApi(WindowTree* tree) : tree_(tree) {}

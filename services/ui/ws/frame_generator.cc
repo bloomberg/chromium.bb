@@ -13,7 +13,6 @@
 #include "cc/quads/render_pass_draw_quad.h"
 #include "cc/quads/shared_quad_state.h"
 #include "cc/quads/surface_draw_quad.h"
-#include "services/ui/ws/frame_generator_delegate.h"
 #include "services/ui/ws/server_window.h"
 
 namespace ui {
@@ -21,13 +20,10 @@ namespace ui {
 namespace ws {
 
 FrameGenerator::FrameGenerator(
-    FrameGeneratorDelegate* delegate,
     ServerWindow* root_window,
     std::unique_ptr<cc::CompositorFrameSink> compositor_frame_sink)
-    : delegate_(delegate),
-      root_window_(root_window),
+    : root_window_(root_window),
       compositor_frame_sink_(std::move(compositor_frame_sink)) {
-  DCHECK(delegate_);
   compositor_frame_sink_->BindToClient(this);
 }
 
@@ -39,6 +35,15 @@ void FrameGenerator::SetDeviceScaleFactor(float device_scale_factor) {
   if (device_scale_factor_ == device_scale_factor)
     return;
   device_scale_factor_ = device_scale_factor;
+  if (window_manager_surface_info_.is_valid())
+    SetNeedsBeginFrame(true);
+}
+
+void FrameGenerator::SetHighContrastMode(bool enabled) {
+  if (high_contrast_mode_enabled_ == enabled)
+    return;
+
+  high_contrast_mode_enabled_ = enabled;
   if (window_manager_surface_info_.is_valid())
     SetNeedsBeginFrame(true);
 }
@@ -123,7 +128,7 @@ cc::CompositorFrame FrameGenerator::GenerateCompositorFrame(
 
   cc::CompositorFrame frame;
   frame.render_pass_list.push_back(std::move(render_pass));
-  if (delegate_->IsInHighContrastMode()) {
+  if (high_contrast_mode_enabled_) {
     std::unique_ptr<cc::RenderPass> invert_pass = cc::RenderPass::Create();
     invert_pass->SetNew(2, output_rect, output_rect, gfx::Transform());
     cc::SharedQuadState* shared_state =
@@ -134,7 +139,8 @@ cc::CompositorFrame FrameGenerator::GenerateCompositorFrame(
     shared_state->SetAll(gfx::Transform(), scaled_bounds, output_rect,
                          output_rect, false, 1.f, SkBlendMode::kSrcOver, 0);
     auto* quad = invert_pass->CreateAndAppendDrawQuad<cc::RenderPassDrawQuad>();
-    render_pass->filters.Append(cc::FilterOperation::CreateInvertFilter(1.f));
+    frame.render_pass_list.back()->filters.Append(
+        cc::FilterOperation::CreateInvertFilter(1.f));
     quad->SetNew(shared_state, output_rect, output_rect, render_pass_id,
                  0 /* mask_resource_id */, gfx::RectF() /* mask_uv_rect */,
                  gfx::Size() /* mask_texture_size */,

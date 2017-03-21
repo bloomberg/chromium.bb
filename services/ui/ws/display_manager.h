@@ -81,6 +81,9 @@ class DisplayManager : public UserIdTrackerObserver,
   // Called when the AcceleratedWidget is available for |display|.
   void OnDisplayAcceleratedWidgetAvailable(Display* display);
 
+  // Switch the high contrast mode of all Displays to |enabled|.
+  void SetHighContrastMode(bool enabled);
+
  private:
   // UserIdTrackerObserver:
   void OnActiveUserIdChanged(const UserId& previously_active_id,

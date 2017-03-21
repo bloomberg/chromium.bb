@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "services/ui/display/viewport_metrics.h"
 #include "services/ui/ws/frame_generator.h"
-#include "services/ui/ws/frame_generator_delegate.h"
 #include "services/ui/ws/platform_display.h"
 #include "services/ui/ws/platform_display_delegate.h"
 #include "services/ui/ws/server_window.h"
@@ -27,8 +26,7 @@ namespace ws {
 // PlatformDisplay implementation that connects to a PlatformWindow and
 // FrameGenerator for Chrome OS.
 class PlatformDisplayDefault : public PlatformDisplay,
-                               public ui::PlatformWindowDelegate,
-                               public FrameGeneratorDelegate {
+                               public ui::PlatformWindowDelegate {
  public:
   PlatformDisplayDefault(ServerWindow* root_window,
                          const display::ViewportMetrics& metrics);
@@ -67,9 +65,6 @@ class PlatformDisplayDefault : public PlatformDisplay,
                                     float device_scale_factor) override;
   void OnAcceleratedWidgetDestroyed() override;
   void OnActivationChanged(bool active) override;
-
-  // FrameGeneratorDelegate:
-  bool IsInHighContrastMode() override;
 
   ServerWindow* root_window_;
 

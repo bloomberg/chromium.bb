@@ -9,7 +9,6 @@
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/test/begin_frame_args_test.cc"
 #include "cc/test/fake_external_begin_frame_source.h"
-#include "services/ui/ws/frame_generator_delegate.h"
 #include "services/ui/ws/server_window.h"
 #include "services/ui/ws/server_window_delegate.h"
 #include "services/ui/ws/test_utils.h"
@@ -99,8 +98,12 @@ class FakeCompositorFrameSink : public cc::CompositorFrameSink,
     UpdateNeedsBeginFramesInternal();
   }
 
-  const cc::CompositorFrameMetadata& last_metadata() {
+  const cc::CompositorFrameMetadata& last_metadata() const {
     return last_frame_.metadata;
+  }
+
+  const cc::RenderPassList& last_render_pass_list() const {
+    return last_frame_.render_pass_list;
   }
 
   int number_frames_received() { return number_frames_received_; }
@@ -150,13 +153,12 @@ class FrameGeneratorTest : public testing::Test {
     begin_frame_source_ = base::MakeUnique<cc::FakeExternalBeginFrameSource>(
         kRefreshRate, kTickAutomatically);
     compositor_frame_sink_->SetBeginFrameSource(begin_frame_source_.get());
-    delegate_ = base::MakeUnique<TestFrameGeneratorDelegate>();
     server_window_delegate_ = base::MakeUnique<TestServerWindowDelegate>();
     root_window_ = base::MakeUnique<ServerWindow>(server_window_delegate_.get(),
                                                   WindowId());
     root_window_->SetVisible(true);
     frame_generator_ = base::MakeUnique<FrameGenerator>(
-        delegate_.get(), root_window_.get(), std::move(compositor_frame_sink));
+        root_window_.get(), std::move(compositor_frame_sink));
   };
 
   int NumberOfFramesReceived() {
@@ -171,14 +173,17 @@ class FrameGeneratorTest : public testing::Test {
 
   FrameGenerator* frame_generator() { return frame_generator_.get(); }
 
-  const cc::CompositorFrameMetadata& LastMetadata() {
+  const cc::CompositorFrameMetadata& LastMetadata() const {
     return compositor_frame_sink_->last_metadata();
+  }
+
+  const cc::RenderPassList& LastRenderPassList() const {
+    return compositor_frame_sink_->last_render_pass_list();
   }
 
  private:
   FakeCompositorFrameSink* compositor_frame_sink_ = nullptr;
   std::unique_ptr<cc::FakeExternalBeginFrameSource> begin_frame_source_;
-  std::unique_ptr<TestFrameGeneratorDelegate> delegate_;
   std::unique_ptr<TestServerWindowDelegate> server_window_delegate_;
   std::unique_ptr<ServerWindow> root_window_;
   std::unique_ptr<FrameGenerator> frame_generator_;
@@ -251,6 +256,30 @@ TEST_F(FrameGeneratorTest, SetDeviceScaleFactor) {
   EXPECT_EQ(2, NumberOfFramesReceived());
   const cc::CompositorFrameMetadata& second_last_metadata = LastMetadata();
   EXPECT_EQ(kArbitraryScaleFactor, second_last_metadata.device_scale_factor);
+}
+
+TEST_F(FrameGeneratorTest, SetHighContrastMode) {
+  // FrameGenerator requires a valid SurfaceInfo before generating
+  // CompositorFrames.
+  const cc::SurfaceId kArbitrarySurfaceId(
+      cc::FrameSinkId(1, 1),
+      cc::LocalSurfaceId(1, base::UnguessableToken::Create()));
+  const cc::SurfaceInfo kArbitrarySurfaceInfo(kArbitrarySurfaceId, 1.0f,
+                                              gfx::Size(100, 100));
+  frame_generator()->OnSurfaceCreated(kArbitrarySurfaceInfo);
+  IssueBeginFrame();
+  EXPECT_EQ(1, NumberOfFramesReceived());
+
+  // Changing high contrast mode should trigger a BeginFrame.
+  frame_generator()->SetHighContrastMode(true);
+  IssueBeginFrame();
+  EXPECT_EQ(2, NumberOfFramesReceived());
+
+  // Verify that the last frame has an invert filter.
+  const cc::RenderPassList& render_pass_list = LastRenderPassList();
+  const cc::FilterOperations expected_filters(
+      {cc::FilterOperation::CreateInvertFilter(1.f)});
+  EXPECT_EQ(expected_filters, render_pass_list.front()->filters);
 }
 
 }  // namespace test

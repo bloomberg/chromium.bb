@@ -179,7 +179,6 @@ class Display : public PlatformDisplayDelegate,
   // PlatformDisplayDelegate:
   ServerWindow* GetRootWindow() override;
   void OnAcceleratedWidgetAvailable() override;
-  bool IsInHighContrastMode() override;
   void OnEvent(const ui::Event& event) override;
   void OnNativeCaptureLost() override;
 
