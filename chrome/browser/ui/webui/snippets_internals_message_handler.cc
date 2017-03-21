@@ -19,6 +19,7 @@
 #include "base/optional.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/android/chrome_feature_list.h"
@@ -56,8 +57,45 @@ std::unique_ptr<base::DictionaryValue> PrepareSuggestion(
   entry->SetString("snippetText", suggestion.snippet_text());
   entry->SetString("publishDate",
                    TimeFormatShortDateAndTime(suggestion.publish_date()));
+  entry->SetString("fetchDate",
+                   TimeFormatShortDateAndTime(suggestion.fetch_date()));
   entry->SetString("publisherName", suggestion.publisher_name());
   entry->SetString("id", "content-suggestion-" + base::IntToString(index));
+  entry->SetDouble("score", suggestion.score());
+
+  if (suggestion.download_suggestion_extra()) {
+    const auto& extra = *suggestion.download_suggestion_extra();
+    auto value = base::MakeUnique<base::DictionaryValue>();
+    value->SetString("downloadGUID", extra.download_guid);
+    value->SetString("targetFilePath",
+                     extra.target_file_path.LossyDisplayName());
+    value->SetString("mimeType", extra.mime_type);
+    value->SetString(
+        "offlinePageID",
+        base::StringPrintf("0x%016llx", static_cast<long long unsigned int>(
+                                            extra.offline_page_id)));
+    value->SetBoolean("isDownloadAsset", extra.is_download_asset);
+    entry->Set("downloadSuggestionExtra", std::move(value));
+  }
+
+  if (suggestion.recent_tab_suggestion_extra()) {
+    const auto& extra = *suggestion.recent_tab_suggestion_extra();
+    auto value = base::MakeUnique<base::DictionaryValue>();
+    value->SetInteger("tabID", extra.tab_id);
+    value->SetString(
+        "offlinePageID",
+        base::StringPrintf("0x%016llx", static_cast<long long unsigned int>(
+                                            extra.offline_page_id)));
+    entry->Set("recentTabSuggestionExtra", std::move(value));
+  }
+
+  if (suggestion.notification_extra()) {
+    const auto& extra = *suggestion.notification_extra();
+    auto value = base::MakeUnique<base::DictionaryValue>();
+    value->SetString("deadline", TimeFormatShortDateAndTime(extra.deadline));
+    entry->Set("notificationExtra", std::move(value));
+  }
+
   return entry;
 }
 

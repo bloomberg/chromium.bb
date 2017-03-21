@@ -15,7 +15,7 @@ cr.define('chrome.SnippetsInternals', function() {
     });
 
     $('submit-dump').addEventListener('click', function(event) {
-      downloadJson(JSON.stringify(lastSuggestions));
+      downloadJson(JSON.stringify(lastSuggestions, null, 2));
       event.preventDefault();
     });
 
@@ -125,7 +125,7 @@ cr.define('chrome.SnippetsInternals', function() {
     // create a link with download attribute and simulate a click, instead.)
     var link = document.createElement('a');
     link.download = 'snippets.json';
-    link.href = 'data:,' + json;
+    link.href = 'data:application/json,' + encodeURI(json);
     link.click();
   }
 
