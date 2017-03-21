@@ -8,6 +8,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller_impl.h"
@@ -69,6 +70,21 @@ class MockAutofillClient : public autofill::TestAutofillClient {
   DISALLOW_COPY_AND_ASSIGN(MockAutofillClient);
 };
 
+class MockAutofillPopupView : public AutofillPopupView {
+ public:
+  MockAutofillPopupView() {}
+
+  MOCK_METHOD0(Show, void());
+  MOCK_METHOD0(Hide, void());
+  MOCK_METHOD2(OnSelectedRowChanged,
+               void(base::Optional<int> previous_row_selection,
+                    base::Optional<int> current_row_selection));
+  MOCK_METHOD0(OnSuggestionsChanged, void());
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockAutofillPopupView);
+};
+
 class TestAutofillPopupController : public AutofillPopupControllerImpl {
  public:
   TestAutofillPopupController(
@@ -95,17 +111,15 @@ class TestAutofillPopupController : public AutofillPopupControllerImpl {
   using AutofillPopupControllerImpl::element_bounds;
   using AutofillPopupControllerImpl::SetValues;
   using AutofillPopupControllerImpl::GetWeakPtr;
-  MOCK_METHOD1(InvalidateRow, void(size_t));
-  MOCK_METHOD0(UpdateBoundsAndRedrawPopup, void());
+  MOCK_METHOD0(OnSuggestionsChanged, void());
   MOCK_METHOD0(Hide, void());
 
   void DoHide() {
     AutofillPopupControllerImpl::Hide();
   }
-
- private:
-  void ShowView() override {}
 };
+
+static constexpr base::Optional<int> kNoSelection;
 
 }  // namespace
 
@@ -132,10 +146,10 @@ class AutofillPopupControllerUnitTest : public ChromeRenderViewHostTestHarness {
         new NiceMock<MockAutofillExternalDelegate>(
             driver->autofill_manager(),
             driver));
-
-    autofill_popup_controller_ =
-        new testing::NiceMock<TestAutofillPopupController>(
-            external_delegate_->GetWeakPtr(), gfx::RectF());
+    autofill_popup_view_.reset(new NiceMock<MockAutofillPopupView>());
+    autofill_popup_controller_ = new NiceMock<TestAutofillPopupController>(
+        external_delegate_->GetWeakPtr(), gfx::RectF());
+    autofill_popup_controller_->SetViewForTesting(autofill_popup_view());
   }
 
   void TearDown() override {
@@ -156,10 +170,15 @@ class AutofillPopupControllerUnitTest : public ChromeRenderViewHostTestHarness {
     return external_delegate_.get();
   }
 
+  MockAutofillPopupView* autofill_popup_view() {
+    return autofill_popup_view_.get();
+  }
+
  protected:
   std::unique_ptr<MockAutofillClient> autofill_client_;
   std::unique_ptr<NiceMock<MockAutofillExternalDelegate>> external_delegate_;
-  testing::NiceMock<TestAutofillPopupController>* autofill_popup_controller_;
+  std::unique_ptr<NiceMock<MockAutofillPopupView>> autofill_popup_view_;
+  NiceMock<TestAutofillPopupController>* autofill_popup_controller_;
 };
 
 TEST_F(AutofillPopupControllerUnitTest, ChangeSelectedLine) {
@@ -169,7 +188,7 @@ TEST_F(AutofillPopupControllerUnitTest, ChangeSelectedLine) {
   suggestions.push_back(Suggestion("", "", "", 0));
   autofill_popup_controller_->Show(suggestions);
 
-  EXPECT_LT(autofill_popup_controller_->selected_line(), 0);
+  EXPECT_FALSE(autofill_popup_controller_->selected_line());
   // Check that there are at least 2 values so that the first and last selection
   // are different.
   EXPECT_GE(2,
@@ -177,13 +196,12 @@ TEST_F(AutofillPopupControllerUnitTest, ChangeSelectedLine) {
 
   // Test wrapping before the front.
   autofill_popup_controller_->SelectPreviousLine();
-  EXPECT_EQ(static_cast<int>(
-      autofill_popup_controller_->GetLineCount() - 1),
-      autofill_popup_controller_->selected_line());
+  EXPECT_EQ(autofill_popup_controller_->GetLineCount() - 1,
+            autofill_popup_controller_->selected_line().value());
 
   // Test wrapping after the end.
   autofill_popup_controller_->SelectNextLine();
-  EXPECT_EQ(0, autofill_popup_controller_->selected_line());
+  EXPECT_EQ(0, *autofill_popup_controller_->selected_line());
 }
 
 TEST_F(AutofillPopupControllerUnitTest, RedrawSelectedLine) {
@@ -195,18 +213,21 @@ TEST_F(AutofillPopupControllerUnitTest, RedrawSelectedLine) {
 
   // Make sure that when a new line is selected, it is invalidated so it can
   // be updated to show it is selected.
-  int selected_line = 0;
-  EXPECT_CALL(*autofill_popup_controller_, InvalidateRow(selected_line));
+  base::Optional<int> selected_line = 0;
+  EXPECT_CALL(*autofill_popup_view_,
+              OnSelectedRowChanged(kNoSelection, selected_line));
+
   autofill_popup_controller_->SetSelectedLine(selected_line);
 
   // Ensure that the row isn't invalidated if it didn't change.
-  EXPECT_CALL(*autofill_popup_controller_,
-              InvalidateRow(selected_line)).Times(0);
+  EXPECT_CALL(*autofill_popup_view_, OnSelectedRowChanged(_, _)).Times(0);
   autofill_popup_controller_->SetSelectedLine(selected_line);
 
   // Change back to no selection.
-  EXPECT_CALL(*autofill_popup_controller_, InvalidateRow(selected_line));
-  autofill_popup_controller_->SetSelectedLine(-1);
+  EXPECT_CALL(*autofill_popup_view_,
+              OnSelectedRowChanged(selected_line, kNoSelection));
+
+  autofill_popup_controller_->SetSelectedLine(kNoSelection);
 }
 
 TEST_F(AutofillPopupControllerUnitTest, RemoveLine) {
@@ -227,7 +248,7 @@ TEST_F(AutofillPopupControllerUnitTest, RemoveLine) {
 
   // Remove the first entry. The popup should be redrawn since its size has
   // changed.
-  EXPECT_CALL(*autofill_popup_controller_, UpdateBoundsAndRedrawPopup());
+  EXPECT_CALL(*autofill_popup_controller_, OnSuggestionsChanged());
   autofill_popup_controller_->SetSelectedLine(0);
   EXPECT_TRUE(autofill_popup_controller_->RemoveSelectedLine());
 
@@ -248,12 +269,17 @@ TEST_F(AutofillPopupControllerUnitTest, RemoveOnlyLine) {
   autofill::GenerateTestAutofillPopup(external_delegate_.get());
 
   // Select the only line.
-  autofill_popup_controller_->SetSelectedLine(0);
+  base::Optional<int> selected_line(0);
+  autofill_popup_controller_->SetSelectedLine(selected_line);
+  EXPECT_CALL(*autofill_popup_view_,
+              OnSelectedRowChanged(kNoSelection, selected_line))
+      .Times(0);
 
-  // Remove the only line. There should be no row invalidation and the popup
-  // should then be hidden since there are no Autofill entries left.
+  // Remove the only line. The popup should then be hidden since there are no
+  // Autofill entries left.
   EXPECT_CALL(*autofill_popup_controller_, Hide());
-  EXPECT_CALL(*autofill_popup_controller_, InvalidateRow(_)).Times(0);
+  EXPECT_CALL(*autofill_popup_view_,
+              OnSelectedRowChanged(selected_line, kNoSelection));
   EXPECT_TRUE(autofill_popup_controller_->RemoveSelectedLine());
 }
 
@@ -269,11 +295,33 @@ TEST_F(AutofillPopupControllerUnitTest, SkipSeparator) {
 
   // Make sure next skips the unselectable separator.
   autofill_popup_controller_->SelectNextLine();
-  EXPECT_EQ(2, autofill_popup_controller_->selected_line());
+  EXPECT_EQ(2, *autofill_popup_controller_->selected_line());
 
   // Make sure previous skips the unselectable separator.
   autofill_popup_controller_->SelectPreviousLine();
-  EXPECT_EQ(0, autofill_popup_controller_->selected_line());
+  EXPECT_EQ(0, *autofill_popup_controller_->selected_line());
+}
+
+TEST_F(AutofillPopupControllerUnitTest, SkipInsecureFormWarning) {
+  std::vector<Suggestion> suggestions;
+  suggestions.push_back(Suggestion("", "", "", 1));
+  suggestions.push_back(Suggestion("", "", "", POPUP_ITEM_ID_SEPARATOR));
+  suggestions.push_back(Suggestion(
+      "", "", "", POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE));
+  autofill_popup_controller_->Show(suggestions);
+
+  // Make sure previous skips the unselectable form warning when there is no
+  // selection.
+  autofill_popup_controller_->SelectPreviousLine();
+  EXPECT_FALSE(autofill_popup_controller_->selected_line());
+
+  autofill_popup_controller_->SetSelectedLine(0);
+  EXPECT_EQ(0, *autofill_popup_controller_->selected_line());
+
+  // Make sure previous skips the unselectable form warning when there is a
+  // selection.
+  autofill_popup_controller_->SelectPreviousLine();
+  EXPECT_FALSE(autofill_popup_controller_->selected_line());
 }
 
 TEST_F(AutofillPopupControllerUnitTest, UpdateDataListValues) {
@@ -289,7 +337,7 @@ TEST_F(AutofillPopupControllerUnitTest, UpdateDataListValues) {
   autofill_popup_controller_->UpdateDataListValues(data_list_values,
                                                    data_list_values);
 
-  ASSERT_EQ(3u, autofill_popup_controller_->GetLineCount());
+  ASSERT_EQ(3, autofill_popup_controller_->GetLineCount());
 
   Suggestion result0 = autofill_popup_controller_->GetSuggestionAt(0);
   EXPECT_EQ(value1, result0.value);
@@ -314,7 +362,7 @@ TEST_F(AutofillPopupControllerUnitTest, UpdateDataListValues) {
 
   autofill_popup_controller_->UpdateDataListValues(data_list_values,
                                                    data_list_values);
-  ASSERT_EQ(4u, autofill_popup_controller_->GetLineCount());
+  ASSERT_EQ(4, autofill_popup_controller_->GetLineCount());
 
   // Original one first, followed by new one, then separator.
   EXPECT_EQ(value1, autofill_popup_controller_->GetSuggestionAt(0).value);
@@ -329,7 +377,7 @@ TEST_F(AutofillPopupControllerUnitTest, UpdateDataListValues) {
   autofill_popup_controller_->UpdateDataListValues(data_list_values,
                                                    data_list_values);
 
-  ASSERT_EQ(1u, autofill_popup_controller_->GetLineCount());
+  ASSERT_EQ(1, autofill_popup_controller_->GetLineCount());
   EXPECT_EQ(1, autofill_popup_controller_->GetSuggestionAt(0).frontend_id);
 }
 
@@ -347,7 +395,7 @@ TEST_F(AutofillPopupControllerUnitTest, PopupsWithOnlyDataLists) {
   autofill_popup_controller_->UpdateDataListValues(data_list_values,
                                                    data_list_values);
 
-  ASSERT_EQ(1u, autofill_popup_controller_->GetLineCount());
+  ASSERT_EQ(1, autofill_popup_controller_->GetLineCount());
   EXPECT_EQ(value1, autofill_popup_controller_->GetSuggestionAt(0).value);
   EXPECT_EQ(POPUP_ITEM_ID_DATALIST_ENTRY,
             autofill_popup_controller_->GetSuggestionAt(0).frontend_id);
@@ -386,9 +434,9 @@ TEST_F(AutofillPopupControllerUnitTest, GetOrCreate) {
   EXPECT_EQ(controller.get(), controller2.get());
   controller->Hide();
 
-  testing::NiceMock<TestAutofillPopupController>* test_controller =
-      new testing::NiceMock<TestAutofillPopupController>(delegate.GetWeakPtr(),
-                                                         gfx::RectF());
+  NiceMock<TestAutofillPopupController>* test_controller =
+      new NiceMock<TestAutofillPopupController>(delegate.GetWeakPtr(),
+                                                gfx::RectF());
   EXPECT_CALL(*test_controller, Hide());
 
   gfx::RectF bounds(0.f, 0.f, 1.f, 2.f);
@@ -414,7 +462,7 @@ TEST_F(AutofillPopupControllerUnitTest, ProperlyResetController) {
   std::vector<Suggestion> suggestions;
   suggestions.push_back(Suggestion("", "", "", 0));
   suggestions.push_back(Suggestion("", "", "", 0));
-  popup_controller()->SetValues(suggestions);
+  popup_controller()->Show(suggestions);
   popup_controller()->SetSelectedLine(0);
 
   // Now show a new popup with the same controller, but with fewer items.
@@ -422,8 +470,8 @@ TEST_F(AutofillPopupControllerUnitTest, ProperlyResetController) {
       AutofillPopupControllerImpl::GetOrCreate(
           popup_controller()->GetWeakPtr(), delegate()->GetWeakPtr(), NULL,
           NULL, gfx::RectF(), base::i18n::UNKNOWN_DIRECTION);
-  EXPECT_NE(0, controller->selected_line());
-  EXPECT_EQ(0u, controller->GetLineCount());
+  EXPECT_FALSE(controller->selected_line());
+  EXPECT_EQ(0, controller->GetLineCount());
 }
 
 #if !defined(OS_ANDROID)

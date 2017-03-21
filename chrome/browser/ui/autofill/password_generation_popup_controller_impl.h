@@ -106,8 +106,8 @@ class PasswordGenerationPopupControllerImpl
   bool IsRTL() const override;
   const std::vector<autofill::Suggestion> GetSuggestions() override;
 #if !defined(OS_ANDROID)
-  int GetElidedValueWidthForRow(size_t row) override;
-  int GetElidedLabelWidthForRow(size_t row) override;
+  int GetElidedValueWidthForRow(int row) override;
+  int GetElidedLabelWidthForRow(int row) override;
 #endif
 
   bool display_password() const override;

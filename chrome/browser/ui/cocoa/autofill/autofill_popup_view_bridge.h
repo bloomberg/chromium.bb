@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view.h"
 #include "chrome/browser/ui/cocoa/autofill/autofill_popup_view_cocoa.h"
 
@@ -24,7 +25,7 @@ class AutofillPopupViewCocoaDelegate {
  public:
   // Returns the bounds of the item at |index| in the popup, relative to
   // the top left of the popup.
-  virtual gfx::Rect GetRowBounds(size_t index) = 0;
+  virtual gfx::Rect GetRowBounds(int index) = 0;
 
   // Gets the resource value for the given resource, returning -1 if the
   // resource isn't recognized.
@@ -40,7 +41,7 @@ class AutofillPopupViewBridge : public AutofillPopupView,
   explicit AutofillPopupViewBridge(AutofillPopupController* controller);
 
   // AutofillPopupViewCocoaDelegate implementation.
-  gfx::Rect GetRowBounds(size_t index) override;
+  gfx::Rect GetRowBounds(int index) override;
   int GetIconResourceID(const base::string16& resource_name) override;
 
  private:
@@ -49,8 +50,9 @@ class AutofillPopupViewBridge : public AutofillPopupView,
   // AutofillPopupView implementation.
   void Hide() override;
   void Show() override;
-  void InvalidateRow(size_t row) override;
-  void UpdateBoundsAndRedrawPopup() override;
+  void OnSelectedRowChanged(base::Optional<int> previous_row_selection,
+                            base::Optional<int> current_row_selection) override;
+  void OnSuggestionsChanged() override;
 
   // Set the initial bounds of the popup, including its placement.
   void SetInitialBounds();

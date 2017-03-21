@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view.h"
@@ -25,12 +26,6 @@
 using base::WeakPtr;
 
 namespace autofill {
-namespace {
-
-// Used to indicate that no line is currently selected by the user.
-const int kNoSelection = -1;
-
-}  // namespace
 
 // static
 WeakPtr<AutofillPopupControllerImpl> AutofillPopupControllerImpl::GetOrCreate(
@@ -106,7 +101,7 @@ void AutofillPopupControllerImpl::Show(
 
   // Elide the name and label strings so that the popup fits in the available
   // space.
-  for (size_t i = 0; i < suggestions_.size(); ++i) {
+  for (int i = 0; i < GetLineCount(); ++i) {
     bool has_label = !suggestions_[i].label.empty();
     ElideValueAndLabelForRow(
         i, layout_model_.GetAvailableWidthForRow(i, has_label));
@@ -114,9 +109,12 @@ void AutofillPopupControllerImpl::Show(
 #endif
 
   if (just_created) {
-    ShowView();
+    view_->Show();
   } else {
-    UpdateBoundsAndRedrawPopup();
+    if (selected_line_ && *selected_line_ >= GetLineCount())
+      selected_line_.reset();
+
+    OnSuggestionsChanged();
   }
 
   controller_common_->RegisterKeyPressCallback();
@@ -153,7 +151,7 @@ void AutofillPopupControllerImpl::UpdateDataListValues(
 
      // The popup contents have changed, so either update the bounds or hide it.
     if (HasSuggestions())
-      UpdateBoundsAndRedrawPopup();
+      OnSuggestionsChanged();
     else
       Hide();
 
@@ -185,7 +183,7 @@ void AutofillPopupControllerImpl::UpdateDataListValues(
     elided_labels_[i] = labels[i];
   }
 
-  UpdateBoundsAndRedrawPopup();
+  OnSuggestionsChanged();
   DCHECK_EQ(suggestions_.size(), elided_values_.size());
   DCHECK_EQ(suggestions_.size(), elided_labels_.size());
 }
@@ -220,7 +218,7 @@ bool AutofillPopupControllerImpl::HandleKeyPressEvent(
     case ui::VKEY_PRIOR:  // Page up.
       // Set no line and then select the next line in case the first line is not
       // selectable.
-      SetSelectedLine(kNoSelection);
+      SetSelectedLine(base::nullopt);
       SelectNextLine();
       return true;
     case ui::VKEY_NEXT:  // Page down.
@@ -245,7 +243,7 @@ bool AutofillPopupControllerImpl::HandleKeyPressEvent(
   }
 }
 
-void AutofillPopupControllerImpl::UpdateBoundsAndRedrawPopup() {
+void AutofillPopupControllerImpl::OnSuggestionsChanged() {
 #if !defined(OS_ANDROID)
   // TODO(csharp): Since UpdatePopupBounds can change the position of the popup,
   // the popup could end up jumping from above the element to below it.
@@ -255,7 +253,7 @@ void AutofillPopupControllerImpl::UpdateBoundsAndRedrawPopup() {
 #endif
 
   // Platform-specific draw call.
-  view_->UpdateBoundsAndRedrawPopup();
+  view_->OnSuggestionsChanged();
 }
 
 void AutofillPopupControllerImpl::SetSelectionAtPoint(const gfx::Point& point) {
@@ -263,24 +261,23 @@ void AutofillPopupControllerImpl::SetSelectionAtPoint(const gfx::Point& point) {
 }
 
 bool AutofillPopupControllerImpl::AcceptSelectedLine() {
-  if (selected_line_ == kNoSelection)
+  if (!selected_line_)
     return false;
 
-  DCHECK_GE(selected_line_, 0);
-  DCHECK_LT(selected_line_, static_cast<int>(GetLineCount()));
+  DCHECK_LT(*selected_line_, GetLineCount());
 
-  if (!CanAccept(suggestions_[selected_line_].frontend_id))
+  if (!CanAccept(suggestions_[*selected_line_].frontend_id))
     return false;
 
-  AcceptSuggestion(selected_line_);
+  AcceptSuggestion(*selected_line_);
   return true;
 }
 
 void AutofillPopupControllerImpl::SelectionCleared() {
-  SetSelectedLine(kNoSelection);
+  SetSelectedLine(base::nullopt);
 }
 
-void AutofillPopupControllerImpl::AcceptSuggestion(size_t index) {
+void AutofillPopupControllerImpl::AcceptSuggestion(int index) {
   const autofill::Suggestion& suggestion = suggestions_[index];
   delegate_->DidAcceptSuggestion(suggestion.value, suggestion.frontend_id,
                                  index);
@@ -312,33 +309,33 @@ AutofillPopupControllerImpl::GetSuggestions() {
 }
 
 #if !defined(OS_ANDROID)
-int AutofillPopupControllerImpl::GetElidedValueWidthForRow(size_t row) {
+int AutofillPopupControllerImpl::GetElidedValueWidthForRow(int row) {
   return gfx::GetStringWidth(GetElidedValueAt(row),
                              layout_model_.GetValueFontListForRow(row));
 }
 
-int AutofillPopupControllerImpl::GetElidedLabelWidthForRow(size_t row) {
+int AutofillPopupControllerImpl::GetElidedLabelWidthForRow(int row) {
   return gfx::GetStringWidth(GetElidedLabelAt(row),
                              layout_model_.GetLabelFontListForRow(row));
 }
 #endif
 
-size_t AutofillPopupControllerImpl::GetLineCount() const {
+int AutofillPopupControllerImpl::GetLineCount() const {
   return suggestions_.size();
 }
 
 const autofill::Suggestion& AutofillPopupControllerImpl::GetSuggestionAt(
-    size_t row) const {
+    int row) const {
   return suggestions_[row];
 }
 
 const base::string16& AutofillPopupControllerImpl::GetElidedValueAt(
-    size_t row) const {
+    int row) const {
   return elided_values_[row];
 }
 
 const base::string16& AutofillPopupControllerImpl::GetElidedLabelAt(
-    size_t row) const {
+    int row) const {
   return elided_labels_[row];
 }
 
@@ -362,11 +359,11 @@ bool AutofillPopupControllerImpl::RemoveSuggestion(int list_index) {
   elided_values_.erase(elided_values_.begin() + list_index);
   elided_labels_.erase(elided_labels_.begin() + list_index);
 
-  SetSelectedLine(kNoSelection);
+  SetSelectedLine(base::nullopt);
 
   if (HasSuggestions()) {
     delegate_->ClearPreviewedForm();
-    UpdateBoundsAndRedrawPopup();
+    OnSuggestionsChanged();
   } else {
     Hide();
   }
@@ -376,12 +373,12 @@ bool AutofillPopupControllerImpl::RemoveSuggestion(int list_index) {
 
 ui::NativeTheme::ColorId
 AutofillPopupControllerImpl::GetBackgroundColorIDForRow(int index) const {
-  return index == selected_line_ ?
-    ui::NativeTheme::kColorId_ResultsTableHoveredBackground :
-    ui::NativeTheme::kColorId_ResultsTableNormalBackground;
+  return selected_line_ && index == *selected_line_
+             ? ui::NativeTheme::kColorId_ResultsTableHoveredBackground
+             : ui::NativeTheme::kColorId_ResultsTableNormalBackground;
 }
 
-int AutofillPopupControllerImpl::selected_line() const {
+base::Optional<int> AutofillPopupControllerImpl::selected_line() const {
   return selected_line_;
 }
 
@@ -390,68 +387,65 @@ const AutofillPopupLayoutModel& AutofillPopupControllerImpl::layout_model()
   return layout_model_;
 }
 
-void AutofillPopupControllerImpl::SetSelectedLine(int selected_line) {
+void AutofillPopupControllerImpl::SetSelectedLine(
+    base::Optional<int> selected_line) {
   if (selected_line_ == selected_line)
     return;
 
-  if (selected_line_ != kNoSelection &&
-      static_cast<size_t>(selected_line_) < suggestions_.size())
-    InvalidateRow(selected_line_);
-
-  if (selected_line != kNoSelection) {
-    InvalidateRow(selected_line);
-
-    if (!CanAccept(suggestions_[selected_line].frontend_id))
-      selected_line = kNoSelection;
+  if (selected_line) {
+    DCHECK_LT(*selected_line, GetLineCount());
+    if (!CanAccept(suggestions_[*selected_line].frontend_id))
+      selected_line = base::nullopt;
   }
 
+  auto previous_selected_line(selected_line_);
   selected_line_ = selected_line;
+  view_->OnSelectedRowChanged(previous_selected_line, selected_line_);
 
-  if (selected_line_ != kNoSelection) {
-    delegate_->DidSelectSuggestion(suggestions_[selected_line_].value,
-                                   suggestions_[selected_line_].frontend_id);
+  if (selected_line_) {
+    delegate_->DidSelectSuggestion(suggestions_[*selected_line_].value,
+                                   suggestions_[*selected_line_].frontend_id);
   } else {
     delegate_->ClearPreviewedForm();
   }
 }
 
 void AutofillPopupControllerImpl::SelectNextLine() {
-  int new_selected_line = selected_line_ + 1;
+  int new_selected_line = selected_line_ ? *selected_line_ + 1 : 0;
 
   // Skip over any lines that can't be selected.
-  while (static_cast<size_t>(new_selected_line) < GetLineCount() &&
+  while (new_selected_line < GetLineCount() &&
          !CanAccept(suggestions_[new_selected_line].frontend_id)) {
     ++new_selected_line;
   }
 
-  if (new_selected_line >= static_cast<int>(GetLineCount()))
+  if (new_selected_line >= GetLineCount())
     new_selected_line = 0;
 
   SetSelectedLine(new_selected_line);
 }
 
 void AutofillPopupControllerImpl::SelectPreviousLine() {
-  int new_selected_line = selected_line_ - 1;
+  int new_selected_line = selected_line_.value_or(0) - 1;
 
   // Skip over any lines that can't be selected.
-  while (new_selected_line > kNoSelection &&
+  while (new_selected_line >= 0 &&
          !CanAccept(GetSuggestionAt(new_selected_line).frontend_id)) {
     --new_selected_line;
   }
 
-  if (new_selected_line <= kNoSelection)
+  if (new_selected_line < 0)
     new_selected_line = GetLineCount() - 1;
 
   SetSelectedLine(new_selected_line);
 }
 
 bool AutofillPopupControllerImpl::RemoveSelectedLine() {
-  if (selected_line_ == kNoSelection)
+  if (!selected_line_)
     return false;
 
-  DCHECK_GE(selected_line_, 0);
-  DCHECK_LT(selected_line_, static_cast<int>(GetLineCount()));
-  return RemoveSuggestion(selected_line_);
+  DCHECK_LT(*selected_line_, GetLineCount());
+  return RemoveSuggestion(*selected_line_);
 }
 
 bool AutofillPopupControllerImpl::CanAccept(int id) {
@@ -482,23 +476,13 @@ void AutofillPopupControllerImpl::SetValues(
   }
 }
 
-void AutofillPopupControllerImpl::ShowView() {
-  view_->Show();
-}
-
-void AutofillPopupControllerImpl::InvalidateRow(size_t row) {
-  DCHECK(0 <= row);
-  DCHECK(row < suggestions_.size());
-  view_->InvalidateRow(row);
-}
-
 WeakPtr<AutofillPopupControllerImpl> AutofillPopupControllerImpl::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
 #if !defined(OS_ANDROID)
 void AutofillPopupControllerImpl::ElideValueAndLabelForRow(
-    size_t row,
+    int row,
     int available_width) {
   int value_width = gfx::GetStringWidth(
       suggestions_[row].value, layout_model_.GetValueFontListForRow(row));
@@ -531,7 +515,7 @@ void AutofillPopupControllerImpl::ClearState() {
   elided_values_.clear();
   elided_labels_.clear();
 
-  selected_line_ = kNoSelection;
+  selected_line_.reset();
 }
 
 }  // namespace autofill

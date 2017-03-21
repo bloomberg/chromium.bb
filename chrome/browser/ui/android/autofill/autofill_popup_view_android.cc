@@ -49,7 +49,7 @@ void AutofillPopupViewAndroid::Show() {
       env, view, reinterpret_cast<intptr_t>(this),
       view_android->GetWindowAndroid()->GetJavaObject()));
 
-  UpdateBoundsAndRedrawPopup();
+  OnSuggestionsChanged();
 }
 
 void AutofillPopupViewAndroid::Hide() {
@@ -63,7 +63,11 @@ void AutofillPopupViewAndroid::Hide() {
   }
 }
 
-void AutofillPopupViewAndroid::UpdateBoundsAndRedrawPopup() {
+void AutofillPopupViewAndroid::OnSelectedRowChanged(
+    base::Optional<int> previous_row_selection,
+    base::Optional<int> current_row_selection) {}
+
+void AutofillPopupViewAndroid::OnSuggestionsChanged() {
   if (java_object_.is_null())
     return;
 
@@ -169,8 +173,6 @@ void AutofillPopupViewAndroid::PopupDismissed(
 
   delete this;
 }
-
-void AutofillPopupViewAndroid::InvalidateRow(size_t) {}
 
 // static
 bool AutofillPopupViewAndroid::RegisterAutofillPopupViewAndroid(JNIEnv* env) {

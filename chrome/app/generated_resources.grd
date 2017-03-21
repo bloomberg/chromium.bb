@@ -9281,6 +9281,9 @@ I don't think this site should be blocked!
         <message name="IDS_OPTIONS_MANAGE_AUTOFILL_SETTINGS_LINK" desc="The label of the 'Manage Autofill settings' link">
           Manage Autofill settings
         </message>
+        <message name="IDS_AUTOFILL_POPUP_ACCESSIBLE_NODE_DATA" desc="The accessibility text to speak when we display an autofill popup.">
+          Autofill
+        </message>
         <message name="IDS_AUTOFILL_HELP_LABEL" desc="The label of the Help link in the Autofill settings overlay.">
           About Autofill
         </message>

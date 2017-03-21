@@ -2160,6 +2160,7 @@ test("browser_tests") {
           # the corresponding files are moved in chrome_browser_ui.gypi (i.e. out of
           # chrome_browser_ui_views_non_mac_sources). http://crbug.com/404979.
           "../browser/ui/views/autofill/autofill_popup_base_view_browsertest.cc",
+          "../browser/ui/views/autofill/autofill_popup_view_views_browsertest.cc",
           "../browser/ui/views/autofill/card_unmask_prompt_view_tester_views.cc",
           "../browser/ui/views/autofill/card_unmask_prompt_view_tester_views.h",
           "../browser/ui/views/autofill/password_generation_popup_view_tester_views.cc",

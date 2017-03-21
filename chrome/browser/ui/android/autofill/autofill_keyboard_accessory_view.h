@@ -50,8 +50,9 @@ class AutofillKeyboardAccessoryView : public AutofillPopupView {
   // AutofillPopupView implementation.
   void Show() override;
   void Hide() override;
-  void InvalidateRow(size_t row) override;
-  void UpdateBoundsAndRedrawPopup() override;
+  void OnSelectedRowChanged(base::Optional<int> previous_row_selection,
+                            base::Optional<int> current_row_selection) override;
+  void OnSuggestionsChanged() override;
 
  private:
   ~AutofillKeyboardAccessoryView() override;

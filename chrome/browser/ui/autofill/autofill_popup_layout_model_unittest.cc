@@ -59,8 +59,8 @@ class TestAutofillPopupViewDelegate : public AutofillPopupViewDelegate {
     return suggestions;
   }
 #if !defined(OS_ANDROID)
-  int GetElidedValueWidthForRow(size_t row) override { return 0; }
-  int GetElidedLabelWidthForRow(size_t row) override { return 0; }
+  int GetElidedValueWidthForRow(int row) override { return 0; }
+  int GetElidedLabelWidthForRow(int row) override { return 0; }
 #endif
 
  private:

@@ -60,8 +60,8 @@ class AutofillPopupViewDelegate {
 
 #if !defined(OS_ANDROID)
   // Returns elided values and labels for the given |row|.
-  virtual int GetElidedValueWidthForRow(size_t row) = 0;
-  virtual int GetElidedLabelWidthForRow(size_t row) = 0;
+  virtual int GetElidedValueWidthForRow(int row) = 0;
+  virtual int GetElidedLabelWidthForRow(int row) = 0;
 #endif
 
  protected:

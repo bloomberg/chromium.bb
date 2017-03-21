@@ -28,7 +28,7 @@ AutofillPopupViewBridge::~AutofillPopupViewBridge() {
   [view_ hidePopup];
 }
 
-gfx::Rect AutofillPopupViewBridge::GetRowBounds(size_t index) {
+gfx::Rect AutofillPopupViewBridge::GetRowBounds(int index) {
   return controller_->layout_model().GetRowBounds(index);
 }
 
@@ -45,11 +45,19 @@ void AutofillPopupViewBridge::Show() {
   [view_ showPopup];
 }
 
-void AutofillPopupViewBridge::InvalidateRow(size_t row) {
-  [view_ invalidateRow:row];
+void AutofillPopupViewBridge::OnSelectedRowChanged(
+    base::Optional<int> previous_row_selection,
+    base::Optional<int> current_row_selection) {
+  if (previous_row_selection) {
+    [view_ invalidateRow:*previous_row_selection];
+  }
+
+  if (current_row_selection) {
+    [view_ invalidateRow:*current_row_selection];
+  }
 }
 
-void AutofillPopupViewBridge::UpdateBoundsAndRedrawPopup() {
+void AutofillPopupViewBridge::OnSuggestionsChanged() {
   [view_ updateBoundsAndRedrawPopup];
 }
 

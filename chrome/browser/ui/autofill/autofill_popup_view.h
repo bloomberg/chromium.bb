@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view_delegate.h"
 
@@ -24,11 +25,13 @@ class AutofillPopupView {
   // Hides the popup from view. This will cause the popup to be deleted.
   virtual void Hide() = 0;
 
-  // Invalidates the given row and redraw it.
-  virtual void InvalidateRow(size_t row) = 0;
+  // If not null, invalidates the given rows and redraws them.
+  virtual void OnSelectedRowChanged(
+      base::Optional<int> previous_row_selection,
+      base::Optional<int> current_row_selection) = 0;
 
-  // Refreshes the position of the popup.
-  virtual void UpdateBoundsAndRedrawPopup() = 0;
+  // Refreshes the position and redraws popup when suggestions change.
+  virtual void OnSuggestionsChanged() = 0;
 
   // Factory function for creating the view.
   static AutofillPopupView* Create(AutofillPopupController* controller);

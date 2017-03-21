@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view_delegate.h"
@@ -24,19 +25,20 @@ struct Suggestion;
 // This interface provides data to an AutofillPopupView.
 class AutofillPopupController : public AutofillPopupViewDelegate {
  public:
-  // Recalculates the height and width of the popup and triggers a redraw.
-  virtual void UpdateBoundsAndRedrawPopup() = 0;
+  // Recalculates the height and width of the popup and triggers a redraw when
+  // suggestions change.
+  virtual void OnSuggestionsChanged() = 0;
 
   // Accepts the suggestion at |index|.
-  virtual void AcceptSuggestion(size_t index) = 0;
+  virtual void AcceptSuggestion(int index) = 0;
 
   // Returns the number of lines of data that there are.
-  virtual size_t GetLineCount() const = 0;
+  virtual int GetLineCount() const = 0;
 
   // Returns the suggestion or pre-elided string at the given row index.
-  virtual const autofill::Suggestion& GetSuggestionAt(size_t row) const = 0;
-  virtual const base::string16& GetElidedValueAt(size_t row) const = 0;
-  virtual const base::string16& GetElidedLabelAt(size_t row) const = 0;
+  virtual const autofill::Suggestion& GetSuggestionAt(int row) const = 0;
+  virtual const base::string16& GetElidedValueAt(int row) const = 0;
+  virtual const base::string16& GetElidedLabelAt(int row) const = 0;
 
   // Returns whether the item at |list_index| can be removed. If so, fills
   // out |title| and |body| (when non-null) with relevant user-facing text.
@@ -54,7 +56,7 @@ class AutofillPopupController : public AutofillPopupViewDelegate {
 
   // Returns the index of the selected line. A line is "selected" when it is
   // hovered or has keyboard focus.
-  virtual int selected_line() const = 0;
+  virtual base::Optional<int> selected_line() const = 0;
 
   virtual const AutofillPopupLayoutModel& layout_model() const = 0;
 

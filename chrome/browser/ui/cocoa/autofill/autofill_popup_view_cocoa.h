@@ -33,7 +33,7 @@ class AutofillPopupViewCocoaDelegate;
 // destroyed.
 - (void)controllerDestroyed;
 
-- (void)invalidateRow:(size_t)row;
+- (void)invalidateRow:(NSInteger)row;
 
 @end
 

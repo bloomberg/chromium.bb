@@ -10,11 +10,13 @@
 #include "base/gtest_prod_util.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "chrome/browser/ui/autofill/autofill_popup_layout_model.h"
 #include "chrome/browser/ui/autofill/popup_controller_common.h"
+#include "ui/accessibility/ax_enums.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/native_theme/native_theme.h"
@@ -72,38 +74,38 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   ~AutofillPopupControllerImpl() override;
 
   // AutofillPopupViewDelegate implementation.
-  void UpdateBoundsAndRedrawPopup() override;
   void SetSelectionAtPoint(const gfx::Point& point) override;
   bool AcceptSelectedLine() override;
   void SelectionCleared() override;
-  void AcceptSuggestion(size_t index) override;
   gfx::Rect popup_bounds() const override;
   gfx::NativeView container_view() override;
   const gfx::RectF& element_bounds() const override;
   bool IsRTL() const override;
   const std::vector<autofill::Suggestion> GetSuggestions() override;
 #if !defined(OS_ANDROID)
-  int GetElidedValueWidthForRow(size_t row) override;
-  int GetElidedLabelWidthForRow(size_t row) override;
+  int GetElidedValueWidthForRow(int row) override;
+  int GetElidedLabelWidthForRow(int row) override;
 #endif
 
   // AutofillPopupController implementation.
-  size_t GetLineCount() const override;
-  const autofill::Suggestion& GetSuggestionAt(size_t row) const override;
-  const base::string16& GetElidedValueAt(size_t row) const override;
-  const base::string16& GetElidedLabelAt(size_t row) const override;
+  void OnSuggestionsChanged() override;
+  void AcceptSuggestion(int index) override;
+  int GetLineCount() const override;
+  const autofill::Suggestion& GetSuggestionAt(int row) const override;
+  const base::string16& GetElidedValueAt(int row) const override;
+  const base::string16& GetElidedLabelAt(int row) const override;
   bool GetRemovalConfirmationText(int list_index,
                                   base::string16* title,
                                   base::string16* body) override;
   bool RemoveSuggestion(int list_index) override;
   ui::NativeTheme::ColorId GetBackgroundColorIDForRow(int index) const override;
-  int selected_line() const override;
+  base::Optional<int> selected_line() const override;
   const AutofillPopupLayoutModel& layout_model() const override;
 
   content::WebContents* web_contents();
 
   // Change which line is currently selected by the user.
-  void SetSelectedLine(int selected_line);
+  void SetSelectedLine(base::Optional<int> selected_line);
 
   // Increase the selected line by 1, properly handling wrapping.
   void SelectNextLine();
@@ -126,10 +128,6 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
 
   AutofillPopupView* view() { return view_; }
 
-  // |view_| pass throughs (virtual for testing).
-  virtual void ShowView();
-  virtual void InvalidateRow(size_t row);
-
   base::WeakPtr<AutofillPopupControllerImpl> GetWeakPtr();
 
   // Contains common popup functionality such as popup layout. Protected for
@@ -139,16 +137,18 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
  private:
 #if !defined(OS_ANDROID)
   FRIEND_TEST_ALL_PREFIXES(AutofillPopupControllerUnitTest, ElideText);
-
   // Helper method which elides the value and label for the suggestion at |row|
   // given the |available_width|. Puts the results in |elided_values_| and
   // |elided_labels_|.
-  void ElideValueAndLabelForRow(size_t row, int available_width);
+  void ElideValueAndLabelForRow(int row, int available_width);
 #endif
 
   // Clear the internal state of the controller. This is needed to ensure that
   // when the popup is reused it doesn't leak values between uses.
   void ClearState();
+
+  friend class AutofillPopupControllerUnitTest;
+  void SetViewForTesting(AutofillPopupView* view) { view_ = view; }
 
   AutofillPopupView* view_;  // Weak reference.
   AutofillPopupLayoutModel layout_model_;
@@ -165,9 +165,9 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   std::vector<base::string16> elided_values_;
   std::vector<base::string16> elided_labels_;
 
-  // The line that is currently selected by the user.
-  // |kNoSelection| indicates that no line is currently selected.
-  int selected_line_;
+  // The line that is currently selected by the user, null indicates that no
+  // line is currently selected.
+  base::Optional<int> selected_line_;
 
   base::WeakPtrFactory<AutofillPopupControllerImpl> weak_ptr_factory_;
 };

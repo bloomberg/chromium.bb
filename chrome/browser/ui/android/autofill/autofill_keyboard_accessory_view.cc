@@ -65,7 +65,7 @@ void AutofillKeyboardAccessoryView::Show() {
       env, java_object_, reinterpret_cast<intptr_t>(this),
       view_android->GetWindowAndroid()->GetJavaObject());
 
-  UpdateBoundsAndRedrawPopup();
+  OnSuggestionsChanged();
 }
 
 void AutofillKeyboardAccessoryView::Hide() {
@@ -74,7 +74,11 @@ void AutofillKeyboardAccessoryView::Hide() {
   Java_AutofillKeyboardAccessoryBridge_dismiss(env, java_object_);
 }
 
-void AutofillKeyboardAccessoryView::UpdateBoundsAndRedrawPopup() {
+void AutofillKeyboardAccessoryView::OnSelectedRowChanged(
+    base::Optional<int> previous_row_selection,
+    base::Optional<int> current_row_selection) {}
+
+void AutofillKeyboardAccessoryView::OnSuggestionsChanged() {
   JNIEnv* env = base::android::AttachCurrentThread();
   size_t count = controller_->GetLineCount();
   ScopedJavaLocalRef<jobjectArray> data_array =
@@ -156,9 +160,6 @@ void AutofillKeyboardAccessoryView::ViewDismissed(
     controller_->ViewDestroyed();
 
   delete this;
-}
-
-void AutofillKeyboardAccessoryView::InvalidateRow(size_t) {
 }
 
 // static

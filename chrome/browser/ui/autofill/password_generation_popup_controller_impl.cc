@@ -277,13 +277,11 @@ PasswordGenerationPopupControllerImpl::GetSuggestions() {
 }
 
 #if !defined(OS_ANDROID)
-int PasswordGenerationPopupControllerImpl::GetElidedValueWidthForRow(
-    size_t row) {
+int PasswordGenerationPopupControllerImpl::GetElidedValueWidthForRow(int row) {
   return 0;
 }
 
-int PasswordGenerationPopupControllerImpl::GetElidedLabelWidthForRow(
-    size_t row) {
+int PasswordGenerationPopupControllerImpl::GetElidedLabelWidthForRow(int row) {
   return 0;
 }
 #endif

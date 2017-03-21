@@ -42,7 +42,7 @@ using autofill::AutofillPopupLayoutModel;
 // if the row requires it -- such as for credit cards.
 - (void)drawSuggestionWithName:(NSString*)name
                        subtext:(NSString*)subtext
-                         index:(size_t)index
+                         index:(NSInteger)index
                         bounds:(NSRect)bounds
                       selected:(BOOL)isSelected
                    textYOffset:(CGFloat)textYOffset;
@@ -56,24 +56,24 @@ using autofill::AutofillPopupLayoutModel;
 //   Returns the x value of right border of the widget.
 - (CGFloat)drawName:(NSString*)name
                 atX:(CGFloat)x
-              index:(size_t)index
+              index:(NSInteger)index
          rightAlign:(BOOL)rightAlign
              bounds:(NSRect)bounds
         textYOffset:(CGFloat)textYOffset;
-- (CGFloat)drawIconAtIndex:(size_t)index
+- (CGFloat)drawIconAtIndex:(NSInteger)index
                        atX:(CGFloat)x
                 rightAlign:(BOOL)rightAlign
                     bounds:(NSRect)bounds;
 - (CGFloat)drawSubtext:(NSString*)subtext
                    atX:(CGFloat)x
-                 index:(size_t)index
+                 index:(NSInteger)index
             rightAlign:(BOOL)rightAlign
                 bounds:(NSRect)bounds
            textYOffset:(CGFloat)textYOffset;
 
 // Returns the icon for the row with the given |index|, or |nil| if there is
 // none.
-- (NSImage*)iconAtIndex:(size_t)index;
+- (NSImage*)iconAtIndex:(NSInteger)index;
 
 @end
 
@@ -109,7 +109,7 @@ using autofill::AutofillPopupLayoutModel;
 
   [self drawBackgroundAndBorder];
 
-  for (size_t i = 0; i < controller_->GetLineCount(); ++i) {
+  for (int i = 0; i < controller_->GetLineCount(); ++i) {
     // Skip rows outside of the dirty rect.
     NSRect rowBounds = NSRectFromCGRect(delegate_->GetRowBounds(i).ToCGRect());
     if (!NSIntersectsRect(rowBounds, dirtyRect))
@@ -126,7 +126,8 @@ using autofill::AutofillPopupLayoutModel;
 
     NSString* value = SysUTF16ToNSString(controller_->GetElidedValueAt(i));
     NSString* label = SysUTF16ToNSString(controller_->GetElidedLabelAt(i));
-    BOOL isSelected = static_cast<int>(i) == controller_->selected_line();
+    BOOL isSelected =
+        controller_->selected_line() && i == *controller_->selected_line();
     [self drawSuggestionWithName:value
                          subtext:label
                            index:i
@@ -146,7 +147,7 @@ using autofill::AutofillPopupLayoutModel;
   [super delegateDestroyed];
 }
 
-- (void)invalidateRow:(size_t)row {
+- (void)invalidateRow:(NSInteger)row {
   NSRect dirty_rect = NSRectFromCGRect(delegate_->GetRowBounds(row).ToCGRect());
   [self setNeedsDisplayInRect:dirty_rect];
 }
@@ -156,7 +157,7 @@ using autofill::AutofillPopupLayoutModel;
 
 - (void)drawSuggestionWithName:(NSString*)name
                        subtext:(NSString*)subtext
-                         index:(size_t)index
+                         index:(NSInteger)index
                         bounds:(NSRect)bounds
                       selected:(BOOL)isSelected
                    textYOffset:(CGFloat)textYOffset {
@@ -211,7 +212,7 @@ using autofill::AutofillPopupLayoutModel;
 
 - (CGFloat)drawName:(NSString*)name
                 atX:(CGFloat)x
-              index:(size_t)index
+              index:(NSInteger)index
          rightAlign:(BOOL)rightAlign
              bounds:(NSRect)bounds
         textYOffset:(CGFloat)textYOffset {
@@ -236,7 +237,7 @@ using autofill::AutofillPopupLayoutModel;
   return x;
 }
 
-- (CGFloat)drawIconAtIndex:(size_t)index
+- (CGFloat)drawIconAtIndex:(NSInteger)index
                        atX:(CGFloat)x
                 rightAlign:(BOOL)rightAlign
                     bounds:(NSRect)bounds {
@@ -260,7 +261,7 @@ using autofill::AutofillPopupLayoutModel;
 
 - (CGFloat)drawSubtext:(NSString*)subtext
                    atX:(CGFloat)x
-                 index:(size_t)index
+                 index:(NSInteger)index
             rightAlign:(BOOL)rightAlign
                 bounds:(NSRect)bounds
            textYOffset:(CGFloat)textYOffset {
@@ -281,7 +282,7 @@ using autofill::AutofillPopupLayoutModel;
   return x;
 }
 
-- (NSImage*)iconAtIndex:(size_t)index {
+- (NSImage*)iconAtIndex:(NSInteger)index {
   const int kHttpWarningIconWidth = 16;
   const base::string16& icon = controller_->GetSuggestionAt(index).icon;
   if (icon.empty())
