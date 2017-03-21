@@ -1034,26 +1034,17 @@ void FrameSelection::scheduleVisualUpdateForPaintInvalidationIfNeeded() const {
     frameView->scheduleVisualUpdateForPaintInvalidationIfNeeded();
 }
 
-static bool hasNonSeparatorCharacter(const String& text) {
-  for (unsigned i = 0; i < text.length(); i++) {
-    if (!isSeparator(text.characterStartingAt(i)))
-      return true;
-  }
-  return false;
-}
-
 bool FrameSelection::selectWordAroundPosition(const VisiblePosition& position) {
   static const EWordSide wordSideList[2] = {RightWordIfOnBoundary,
                                             LeftWordIfOnBoundary};
   for (EWordSide wordSide : wordSideList) {
     // TODO(yoichio): We should have Position version of |start/endOfWord|
     // for avoiding unnecessary canonicalization.
-    // Then we don't need |hasNonSeparatorCharacter|.
     VisiblePosition start = startOfWord(position, wordSide);
     VisiblePosition end = endOfWord(position, wordSide);
     String text =
         plainText(EphemeralRange(start.deepEquivalent(), end.deepEquivalent()));
-    if (!text.isEmpty() && hasNonSeparatorCharacter(text)) {
+    if (!text.isEmpty() && !isSeparator(text.characterStartingAt(0))) {
       setSelection(SelectionInDOMTree::Builder()
                        .collapse(start.toPositionWithAffinity())
                        .extend(end.deepEquivalent())

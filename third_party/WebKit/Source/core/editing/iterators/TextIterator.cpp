@@ -681,27 +681,6 @@ size_t TextIteratorAlgorithm<Strategy>::restoreCollapsedTrailingSpace(
 }
 
 template <typename Strategy>
-unsigned TextIteratorAlgorithm<Strategy>::restoreCollapsedLeadingSpace(
-    unsigned runStart) {
-  if (emitsImageAltText() || doesNotBreakAtReplacedElement() ||
-      forInnerText() || !m_textBox->root().prevRootBox() ||
-      m_textBox->root().firstChild() != m_textBox)
-    return runStart;
-
-  const String& text = toLayoutText(m_node->layoutObject())->text();
-  InlineBox* lastBoxOfPrevLine = m_textBox->root().prevRootBox()->lastChild();
-  if (m_textBox->getLineLayoutItem() ==
-          lastBoxOfPrevLine->getLineLayoutItem() ||
-      lastBoxOfPrevLine->getLineLayoutItem().isBR() ||
-      lastBoxOfPrevLine->isInlineFlowBox())
-    return runStart;
-  if (runStart > 0 && text.length() >= 2 && text[0] == ' ' && text[1] != ' ')
-    return runStart - 1;
-
-  return runStart;
-}
-
-template <typename Strategy>
 void TextIteratorAlgorithm<Strategy>::handleTextBox() {
   LayoutText* layoutObject = m_firstLetterText
                                  ? m_firstLetterText
@@ -785,7 +764,6 @@ void TextIteratorAlgorithm<Strategy>::handleTextBox() {
           size_t subrunEnd = str.find('\n', runStart);
           if (subrunEnd == kNotFound || subrunEnd > runEnd) {
             subrunEnd = runEnd;
-            runStart = restoreCollapsedLeadingSpace(runStart);
             subrunEnd = restoreCollapsedTrailingSpace(nextTextBox, subrunEnd);
           }
 

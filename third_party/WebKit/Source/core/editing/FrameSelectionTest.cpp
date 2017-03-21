@@ -152,8 +152,7 @@ TEST_F(FrameSelectionTest, SelectWordAroundPosition2) {
   Node* const baz = document().body()->firstChild()->lastChild();
   EXPECT_TRUE(selection().selectWordAroundPosition(
       createVisiblePosition(Position(baz, 2))));
-  // TODO(yoichio): We should select only "baz".
-  EXPECT_EQ_SELECTED_TEXT(" baz");
+  EXPECT_EQ_SELECTED_TEXT("baz");
 }
 
 TEST_F(FrameSelectionTest, ModifyExtendWithFlatTree) {

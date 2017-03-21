@@ -655,6 +655,16 @@ TEST_F(TextIteratorTest, PreserveLeadingSpace) {
             plainText(EphemeralRange(start, end), emitsImageAltTextBehavior()));
 }
 
+// We used to have a bug where the leading space was duplicated if we didn't
+// emit alt text, this tests for that bug
+TEST_F(TextIteratorTest, PreserveLeadingSpaceWithoutEmittingAltText) {
+  setBodyContent("<div style='width: 2em;'><b><i>foo</i></b> bar</div>");
+  Element* div = document().querySelector("div");
+  Position start(div->firstChild()->firstChild()->firstChild(), 0);
+  Position end(div->lastChild(), 4);
+  EXPECT_EQ("foo bar", plainText(EphemeralRange(start, end)));
+}
+
 TEST_F(TextIteratorTest, PreserveOnlyLeadingSpace) {
   setBodyContent(
       "<div style='width: 2em;'><b><i id='foo'>foo </i></b> bar</div>");
