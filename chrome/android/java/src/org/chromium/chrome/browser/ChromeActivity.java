@@ -100,7 +100,7 @@ import org.chromium.chrome.browser.ntp.NewTabPageUma;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
-import org.chromium.chrome.browser.pageinfo.WebsiteSettingsPopup;
+import org.chromium.chrome.browser.page_info.WebsiteSettingsPopup;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.physicalweb.PhysicalWebShareActivity;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;

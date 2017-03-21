@@ -818,7 +818,7 @@
     'page_info' : {
       'filepath': 'chrome/browser/ui/page_info/'\
                   '|chrome/browser/ui/.*/page_info/'\
-                  '|chrome/android/java/src/org/chromium/chrome/browser/pageinfo/'\
+                  '|chrome/android/java/src/org/chromium/chrome/browser/page_info/'\
                   '|ios/chrome/browser/ui/omnibox/page_info_'
   },
     'page_load_metrics' : {

@@ -23,7 +23,7 @@ import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.AutofillProfile;
 import org.chromium.chrome.browser.favicon.FaviconHelper;
-import org.chromium.chrome.browser.pageinfo.CertificateChainHelper;
+import org.chromium.chrome.browser.page_info.CertificateChainHelper;
 import org.chromium.chrome.browser.payments.ui.Completable;
 import org.chromium.chrome.browser.payments.ui.ContactDetailsSection;
 import org.chromium.chrome.browser.payments.ui.LineItem;

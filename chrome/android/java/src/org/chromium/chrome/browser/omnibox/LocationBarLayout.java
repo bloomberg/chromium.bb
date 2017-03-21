@@ -67,7 +67,7 @@ import org.chromium.chrome.browser.omnibox.OmniboxResultsAdapter.OmniboxSuggesti
 import org.chromium.chrome.browser.omnibox.VoiceSuggestionProvider.VoiceResult;
 import org.chromium.chrome.browser.omnibox.geo.GeolocationHeader;
 import org.chromium.chrome.browser.omnibox.geo.GeolocationSnackbarController;
-import org.chromium.chrome.browser.pageinfo.WebsiteSettingsPopup;
+import org.chromium.chrome.browser.page_info.WebsiteSettingsPopup;
 import org.chromium.chrome.browser.preferences.privacy.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;

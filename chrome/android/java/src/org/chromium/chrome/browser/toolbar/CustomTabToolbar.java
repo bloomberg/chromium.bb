@@ -48,7 +48,7 @@ import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.omnibox.LocationBarLayout;
 import org.chromium.chrome.browser.omnibox.UrlBar;
 import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
-import org.chromium.chrome.browser.pageinfo.WebsiteSettingsPopup;
+import org.chromium.chrome.browser.page_info.WebsiteSettingsPopup;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.ColorUtils;

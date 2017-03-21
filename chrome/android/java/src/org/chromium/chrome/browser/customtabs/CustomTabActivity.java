@@ -58,7 +58,7 @@ import org.chromium.chrome.browser.fullscreen.BrowserStateBrowserControlsVisibil
 import org.chromium.chrome.browser.gsa.GSAState;
 import org.chromium.chrome.browser.metrics.PageLoadMetrics;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
-import org.chromium.chrome.browser.pageinfo.WebsiteSettingsPopup;
+import org.chromium.chrome.browser.page_info.WebsiteSettingsPopup;
 import org.chromium.chrome.browser.rappor.RapporServiceBridge;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
