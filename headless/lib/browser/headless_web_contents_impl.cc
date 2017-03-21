@@ -102,6 +102,26 @@ class HeadlessWebContentsImpl::Delegate : public content::WebContentsDelegate {
     contents->GetRenderViewHost()->GetWidget()->Focus();
   }
 
+  void CloseContents(content::WebContents* source) override {
+    if (!browser_context_) {
+      return;
+    }
+
+    std::vector<HeadlessWebContents*> all_contents =
+        browser_context_->GetAllWebContents();
+
+    for (HeadlessWebContents* wc : all_contents) {
+      if (!wc) {
+        continue;
+      }
+      HeadlessWebContentsImpl* hwc = HeadlessWebContentsImpl::From(wc);
+      if (hwc->web_contents() == source) {
+        wc->Close();
+        return;
+      }
+    }
+  }
+
  private:
   HeadlessBrowserContextImpl* browser_context_;  // Not owned.
   DISALLOW_COPY_AND_ASSIGN(Delegate);
@@ -157,7 +177,6 @@ HeadlessWebContentsImpl::HeadlessWebContentsImpl(
 }
 
 HeadlessWebContentsImpl::~HeadlessWebContentsImpl() {
-  web_contents_->Close();
   if (render_process_host_)
     render_process_host_->RemoveObserver(this);
 }
