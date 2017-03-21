@@ -65,8 +65,7 @@ class AppWindowLauncherItemController : public LauncherItemController,
   const WindowList& windows() const { return windows_; }
 
  protected:
-  AppWindowLauncherItemController(const std::string& app_id,
-                                  const std::string& launch_id,
+  AppWindowLauncherItemController(const ash::AppLaunchId& app_launch_id,
                                   ChromeLauncherController* controller);
 
   // Called when app window is removed from controller.

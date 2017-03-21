@@ -53,7 +53,7 @@ void UpdateShelfItemForWindow(ShelfItem* item, aura::Window* window) {
     item->status = STATUS_ATTENTION;
 
   const std::string* app_id = window->GetProperty(aura::client::kAppIdKey);
-  item->app_id = app_id ? *app_id : std::string();
+  item->app_launch_id = app_id ? AppLaunchId(*app_id) : AppLaunchId();
 
   // Prefer app icons over window icons, they're typically larger.
   gfx::ImageSkia* image = window->GetProperty(aura::client::kAppIconKey);

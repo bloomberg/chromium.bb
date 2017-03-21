@@ -18,7 +18,7 @@ ArcAppDeferredLauncherItemController::ArcAppDeferredLauncherItemController(
     ChromeLauncherController* controller,
     int event_flags,
     const base::WeakPtr<ArcAppDeferredLauncherController>& host)
-    : LauncherItemController(arc_app_id, std::string(), controller),
+    : LauncherItemController(ash::AppLaunchId(arc_app_id), controller),
       event_flags_(event_flags),
       host_(host),
       start_time_(base::Time::Now()) {}

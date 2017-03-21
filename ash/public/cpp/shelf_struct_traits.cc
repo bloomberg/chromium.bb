@@ -24,12 +24,15 @@ const SkBitmap& ShelfItemStructTraits::image(const ash::ShelfItem& i) {
 bool ShelfItemStructTraits::Read(ash::mojom::ShelfItemDataView data,
                                  ash::ShelfItem* out) {
   SkBitmap image;
+  std::string app_id;
+  std::string launch_id;
   if (!data.ReadType(&out->type) || !data.ReadImage(&image) ||
-      !data.ReadStatus(&out->status) || !data.ReadAppId(&out->app_id) ||
-      !data.ReadTitle(&out->title)) {
+      !data.ReadStatus(&out->status) || !data.ReadAppId(&app_id) ||
+      !data.ReadLaunchId(&launch_id) || !data.ReadTitle(&out->title)) {
     return false;
   }
   out->id = data.shelf_id();
+  out->app_launch_id = ash::AppLaunchId(app_id, launch_id);
   // TODO(crbug.com/655874): Support high-dpi images via gfx::Image[Skia] mojom.
   out->image = gfx::ImageSkia::CreateFrom1xBitmap(image);
   out->shows_tooltip = data.shows_tooltip();

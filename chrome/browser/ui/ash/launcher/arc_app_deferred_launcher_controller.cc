@@ -206,8 +206,7 @@ void ArcAppDeferredLauncherController::RegisterDeferredLaunch(
       new ArcAppDeferredLauncherItemController(
           shelf_app_id, owner_, event_flags, weak_ptr_factory_.GetWeakPtr());
   if (shelf_id == 0) {
-    owner_->CreateAppLauncherItem(controller, shelf_app_id,
-                                  ash::STATUS_RUNNING);
+    owner_->CreateAppLauncherItem(controller, ash::STATUS_RUNNING);
   } else {
     owner_->SetItemController(shelf_id, controller);
     owner_->SetItemStatus(shelf_id, ash::STATUS_RUNNING);

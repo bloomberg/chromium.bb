@@ -34,8 +34,7 @@ class AppShortcutLauncherItemController : public LauncherItemController {
   ~AppShortcutLauncherItemController() override;
 
   static AppShortcutLauncherItemController* Create(
-      const std::string& app_id,
-      const std::string& launch_id,
+      const ash::AppLaunchId& app_launch_id,
       ChromeLauncherController* controller);
 
   std::vector<content::WebContents*> GetRunningApplications();
@@ -58,8 +57,7 @@ class AppShortcutLauncherItemController : public LauncherItemController {
   ChromeLauncherController* controller() { return chrome_launcher_controller_; }
 
  protected:
-  AppShortcutLauncherItemController(const std::string& app_id,
-                                    const std::string& launch_id,
+  AppShortcutLauncherItemController(const ash::AppLaunchId& app_launch_id,
                                     ChromeLauncherController* controller);
 
  private:

@@ -260,7 +260,12 @@ struct ASH_PUBLIC_EXPORT
   static const SkBitmap& image(const ShelfItem& i);
   static ash::ShelfID shelf_id(const ShelfItem& i) { return i.id; }
   static ash::ShelfItemStatus status(const ShelfItem& i) { return i.status; }
-  static const std::string& app_id(const ShelfItem& i) { return i.app_id; }
+  static const std::string& app_id(const ShelfItem& i) {
+    return i.app_launch_id.app_id();
+  }
+  static const std::string& launch_id(const ShelfItem& i) {
+    return i.app_launch_id.launch_id();
+  }
   static const base::string16& title(const ShelfItem& i) { return i.title; }
   static bool shows_tooltip(const ShelfItem& i) { return i.shows_tooltip; }
   static bool pinned_by_policy(const ShelfItem& i) {

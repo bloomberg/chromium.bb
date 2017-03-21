@@ -16,10 +16,9 @@
 #include "ui/wm/core/window_animations.h"
 
 AppWindowLauncherItemController::AppWindowLauncherItemController(
-    const std::string& app_id,
-    const std::string& launch_id,
+    const ash::AppLaunchId& app_launch_id,
     ChromeLauncherController* controller)
-    : LauncherItemController(app_id, launch_id, controller),
+    : LauncherItemController(app_launch_id, controller),
       observed_windows_(this) {}
 
 AppWindowLauncherItemController::~AppWindowLauncherItemController() {}

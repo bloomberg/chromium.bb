@@ -8,11 +8,9 @@
 #include "chrome/common/extensions/extension_constants.h"
 
 LauncherItemController::LauncherItemController(
-    const std::string& app_id,
-    const std::string& launch_id,
+    const ash::AppLaunchId& app_launch_id,
     ChromeLauncherController* launcher_controller)
-    : app_id_(app_id),
-      launch_id_(launch_id),
+    : app_launch_id_(app_launch_id),
       shelf_id_(0),
       launcher_controller_(launcher_controller),
       locked_(0),

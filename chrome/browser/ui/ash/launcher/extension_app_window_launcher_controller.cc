@@ -167,17 +167,17 @@ void ExtensionAppWindowLauncherController::RegisterApp(AppWindow* app_window) {
   } else {
     std::string launch_id = GetLaunchId(app_window);
     ExtensionAppWindowLauncherItemController* controller =
-        new ExtensionAppWindowLauncherItemController(app_id, launch_id,
-                                                     owner());
+        new ExtensionAppWindowLauncherItemController(
+            ash::AppLaunchId(app_id, launch_id), owner());
     controller->AddAppWindow(app_window);
-    // If there is already a shelf id mapped to this app_shelf_id (e.g. pinned),
+    // If there is already a shelf id mapped to this AppLaunchId (e.g. pinned),
     // use that shelf item.
     shelf_id =
         ash::WmShell::Get()->shelf_delegate()->GetShelfIDForAppIDAndLaunchID(
             app_id, launch_id);
 
     if (shelf_id == 0) {
-      shelf_id = owner()->CreateAppLauncherItem(controller, app_id, status);
+      shelf_id = owner()->CreateAppLauncherItem(controller, status);
       // Restore any existing app icon and flag as set.
       const gfx::Image& app_icon = app_window->app_icon();
       if (!app_icon.IsEmpty()) {

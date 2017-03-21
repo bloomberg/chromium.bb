@@ -7,7 +7,8 @@
 
 #include <string>
 
-#include "ash/public/cpp/shelf_item.h"
+#include "ash/public/cpp/app_launch_id.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "ash/public/interfaces/shelf.mojom.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -20,19 +21,17 @@ using MenuItemList = std::vector<ash::mojom::MenuItemPtr>;
 
 // LauncherItemController is used by ChromeLauncherController to track one
 // or more windows associated with a shelf item.
-// TODO (khmel): Consider using ash::AppLaunchId instead of pair
-// |app_id| and |launch_id|.
 class LauncherItemController : public ash::mojom::ShelfItemDelegate {
  public:
-  LauncherItemController(const std::string& app_id,
-                         const std::string& launch_id,
+  LauncherItemController(const ash::AppLaunchId& app_launch_id,
                          ChromeLauncherController* launcher_controller);
   ~LauncherItemController() override;
 
   ash::ShelfID shelf_id() const { return shelf_id_; }
   void set_shelf_id(ash::ShelfID id) { shelf_id_ = id; }
-  const std::string& app_id() const { return app_id_; }
-  const std::string& launch_id() const { return launch_id_; }
+  const ash::AppLaunchId& app_launch_id() const { return app_launch_id_; }
+  const std::string& app_id() const { return app_launch_id_.app_id(); }
+  const std::string& launch_id() const { return app_launch_id_.launch_id(); }
   ChromeLauncherController* launcher_controller() const {
     return launcher_controller_;
   }
@@ -57,13 +56,12 @@ class LauncherItemController : public ash::mojom::ShelfItemDelegate {
   virtual AppWindowLauncherItemController* AsAppWindowLauncherItemController();
 
  private:
-  // The application id; empty if there is no app associated with the item.
-  const std::string app_id_;
-
-  // An id that can be passed to an app when launched in order to support
+  // The app launch id; empty if there is no app associated with the item.
+  // Besides the application id, AppLaunchId also contains a launch id, which is
+  // an id that can be passed to an app when launched in order to support
   // multiple shelf items per app. This id is used together with the app_id to
   // uniquely identify each shelf item that has the same app_id.
-  const std::string launch_id_;
+  const ash::AppLaunchId app_launch_id_;
 
   // A unique id assigned by the shelf model for the shelf item.
   ash::ShelfID shelf_id_;

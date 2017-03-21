@@ -5,9 +5,9 @@
 #ifndef ASH_PUBLIC_CPP_SHELF_ITEM_H_
 #define ASH_PUBLIC_CPP_SHELF_ITEM_H_
 
-#include <string>
 #include <vector>
 
+#include "ash/public/cpp/app_launch_id.h"
 #include "ash/public/cpp/ash_public_export.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "base/strings/string16.h"
@@ -31,8 +31,8 @@ struct ASH_PUBLIC_EXPORT ShelfItem {
   // Running status.
   ShelfItemStatus status = STATUS_CLOSED;
 
-  // The application id for this shelf item; only populated for some items.
-  std::string app_id;
+  // The application id and launch id for this shelf item.
+  AppLaunchId app_launch_id;
 
   // The title to display for tooltips, etc.
   base::string16 title;

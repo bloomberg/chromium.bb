@@ -108,8 +108,7 @@ base::string16 GetBrowserListTitle(content::WebContents* web_contents) {
 BrowserShortcutLauncherItemController::BrowserShortcutLauncherItemController(
     ChromeLauncherController* launcher_controller,
     ash::ShelfModel* shelf_model)
-    : LauncherItemController(extension_misc::kChromeAppId,
-                             std::string(),
+    : LauncherItemController(ash::AppLaunchId(extension_misc::kChromeAppId),
                              launcher_controller),
       shelf_model_(shelf_model) {
   // Tag all open browser windows with the appropriate shelf id property. This

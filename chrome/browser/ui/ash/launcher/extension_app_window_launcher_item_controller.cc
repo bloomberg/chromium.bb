@@ -25,10 +25,9 @@
 
 ExtensionAppWindowLauncherItemController::
     ExtensionAppWindowLauncherItemController(
-        const std::string& app_id,
-        const std::string& launch_id,
+        const ash::AppLaunchId& app_launch_id,
         ChromeLauncherController* controller)
-    : AppWindowLauncherItemController(app_id, launch_id, controller) {}
+    : AppWindowLauncherItemController(app_launch_id, controller) {}
 
 ExtensionAppWindowLauncherItemController::
     ~ExtensionAppWindowLauncherItemController() {}

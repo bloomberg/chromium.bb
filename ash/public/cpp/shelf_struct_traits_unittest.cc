@@ -21,8 +21,8 @@ TEST(ShelfItemStructTraitsTest, Basic) {
   item.image = gfx::test::CreateImageSkia(32, 16);
   item.id = 123u;
   item.status = STATUS_RUNNING;
-  item.app_id = "foo";
-  item.title = base::ASCIIToUTF16("bar");
+  item.app_launch_id = AppLaunchId("app_id", "launch_id");
+  item.title = base::ASCIIToUTF16("title");
   item.shows_tooltip = false;
   item.pinned_by_policy = true;
 
@@ -35,8 +35,9 @@ TEST(ShelfItemStructTraitsTest, Basic) {
   EXPECT_EQ(gfx::Size(32, 16), out_item.image.size());
   EXPECT_EQ(123u, out_item.id);
   EXPECT_EQ(STATUS_RUNNING, out_item.status);
-  EXPECT_EQ("foo", out_item.app_id);
-  EXPECT_EQ(base::ASCIIToUTF16("bar"), out_item.title);
+  EXPECT_EQ("app_id", out_item.app_launch_id.app_id());
+  EXPECT_EQ("launch_id", out_item.app_launch_id.launch_id());
+  EXPECT_EQ(base::ASCIIToUTF16("title"), out_item.title);
   EXPECT_FALSE(out_item.shows_tooltip);
   EXPECT_TRUE(out_item.pinned_by_policy);
 }

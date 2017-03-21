@@ -22,7 +22,6 @@ ChromeLauncherControllerMus::~ChromeLauncherControllerMus() {}
 
 ash::ShelfID ChromeLauncherControllerMus::CreateAppLauncherItem(
     LauncherItemController* controller,
-    const std::string& app_id,
     ash::ShelfItemStatus status) {
   NOTIMPLEMENTED();
   return ash::TYPE_UNDEFINED;

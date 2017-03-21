@@ -123,6 +123,8 @@ struct ShelfItem {
   int64 shelf_id;           // A shelf model ID used by the shelf and clients.
   ShelfItemStatus status;   // The running/closed/etc. status of the item.
   string app_id;            // An app id string, used to match app windows.
+  string launch_id;         // A string used to support multiple items per app.
+                            // (eg. Citrix may use 'Word' or 'Excel' launch ids)
   mojo.common.mojom.String16 title;  // The title to display for tooltips, etc.
   bool shows_tooltip;       // Whether the tooltip should be shown on hover.
   bool pinned_by_policy;    // Whether the item is pinned by policy preferences,

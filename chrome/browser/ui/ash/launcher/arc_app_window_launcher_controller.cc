@@ -641,8 +641,7 @@ ArcAppWindowLauncherController::AttachControllerToTask(
   const ash::ShelfID shelf_id =
       shelf_delegate_->GetShelfIDForAppID(app_shelf_id.ToString());
   if (!shelf_id) {
-    owner()->CreateAppLauncherItem(controller, app_shelf_id.ToString(),
-                                   ash::STATUS_RUNNING);
+    owner()->CreateAppLauncherItem(controller, ash::STATUS_RUNNING);
   } else {
     owner()->SetItemController(shelf_id, controller);
     owner()->SetItemStatus(shelf_id, ash::STATUS_RUNNING);

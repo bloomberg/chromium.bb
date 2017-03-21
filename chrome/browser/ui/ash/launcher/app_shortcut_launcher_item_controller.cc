@@ -62,27 +62,27 @@ bool CanBrowserBeUsedForDirectActivation(Browser* browser,
 
 // static
 AppShortcutLauncherItemController* AppShortcutLauncherItemController::Create(
-    const std::string& app_id,
-    const std::string& launch_id,
+    const ash::AppLaunchId& app_launch_id,
     ChromeLauncherController* controller) {
-  if (app_id == ArcSupportHost::kHostAppId || app_id == arc::kPlayStoreAppId)
+  if (app_launch_id.app_id() == ArcSupportHost::kHostAppId ||
+      app_launch_id.app_id() == arc::kPlayStoreAppId) {
     return new ArcPlaystoreShortcutLauncherItemController(controller);
-  return new AppShortcutLauncherItemController(app_id, launch_id, controller);
+  }
+  return new AppShortcutLauncherItemController(app_launch_id, controller);
 }
 
 // Item controller for an app shortcut. Shortcuts track app and launcher ids,
 // but do not have any associated windows (opening a shortcut will replace the
 // item with the appropriate LauncherItemController type).
 AppShortcutLauncherItemController::AppShortcutLauncherItemController(
-    const std::string& app_id,
-    const std::string& launch_id,
+    const ash::AppLaunchId& app_launch_id,
     ChromeLauncherController* controller)
-    : LauncherItemController(app_id, launch_id, controller),
+    : LauncherItemController(app_launch_id, controller),
       chrome_launcher_controller_(controller) {
   // To detect V1 applications we use their domain and match them against the
   // used URL. This will also work with applications like Google Drive.
   const Extension* extension =
-      GetExtensionForAppID(app_id, controller->profile());
+      GetExtensionForAppID(app_launch_id.app_id(), controller->profile());
   // Some unit tests have no real extension.
   if (extension) {
     set_refocus_url(GURL(
@@ -118,9 +118,9 @@ void AppShortcutLauncherItemController::ItemSelected(
     }
 
     // Launching some items replaces this item controller instance, which
-    // destroys the app and launch id strings; making copies avoid crashes.
-    launcher_controller()->LaunchApp(ash::AppLaunchId(app_id(), launch_id()),
-                                     source, ui::EF_NONE);
+    // destroys its AppLaunchId string pair; making copies avoid crashes.
+    launcher_controller()->LaunchApp(ash::AppLaunchId(app_launch_id()), source,
+                                     ui::EF_NONE);
     callback.Run(ash::SHELF_ACTION_NEW_WINDOW_CREATED, base::nullopt);
     return;
   }

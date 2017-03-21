@@ -21,8 +21,7 @@ class ExtensionAppWindowLauncherItemController
     : public AppWindowLauncherItemController {
  public:
   ExtensionAppWindowLauncherItemController(
-      const std::string& app_id,
-      const std::string& launch_id,
+      const ash::AppLaunchId& app_launch_id,
       ChromeLauncherController* controller);
 
   ~ExtensionAppWindowLauncherItemController() override;

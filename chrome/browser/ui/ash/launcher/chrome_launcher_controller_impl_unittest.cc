@@ -258,7 +258,7 @@ class TestV2AppLauncherItemController : public LauncherItemController {
  public:
   TestV2AppLauncherItemController(const std::string& app_id,
                                   ChromeLauncherController* controller)
-      : LauncherItemController(app_id, std::string(), controller) {}
+      : LauncherItemController(ash::AppLaunchId(app_id), controller) {}
 
   ~TestV2AppLauncherItemController() override {}
 
@@ -1957,7 +1957,7 @@ TEST_P(ChromeLauncherControllerImplWithArcTest, ArcDeferredLaunchForActiveApp) {
   // Play Store app is ARC app that might be represented by native Chrome
   // platform app.
   AppWindowLauncherItemController* app_controller =
-      new ExtensionAppWindowLauncherItemController(app_id, "",
+      new ExtensionAppWindowLauncherItemController(ash::AppLaunchId(app_id),
                                                    launcher_controller_.get());
   launcher_controller_->SetItemController(shelf_id, app_controller);
   launcher_controller_->SetItemStatus(shelf_id, ash::STATUS_RUNNING);
@@ -3640,31 +3640,31 @@ TEST_F(ChromeLauncherControllerImplTest, MultipleAppIconLoaders) {
                     std::unique_ptr<AppIconLoader>(app_icon_loader2));
 
   AppWindowLauncherItemController* app_controller3 =
-      new ExtensionAppWindowLauncherItemController(app_id3, "id",
+      new ExtensionAppWindowLauncherItemController(ash::AppLaunchId(app_id3),
                                                    launcher_controller_.get());
   const ash::ShelfID shelfId3 = launcher_controller_->CreateAppLauncherItem(
-      app_controller3, app_id3, ash::STATUS_RUNNING);
+      app_controller3, ash::STATUS_RUNNING);
   EXPECT_EQ(0, app_icon_loader1->fetch_count());
   EXPECT_EQ(0, app_icon_loader1->clear_count());
   EXPECT_EQ(0, app_icon_loader2->fetch_count());
   EXPECT_EQ(0, app_icon_loader2->clear_count());
 
   AppWindowLauncherItemController* app_controller2 =
-      new ExtensionAppWindowLauncherItemController(app_id2, "id",
+      new ExtensionAppWindowLauncherItemController(ash::AppLaunchId(app_id2),
                                                    launcher_controller_.get());
   const ash::ShelfID shelfId2 = launcher_controller_->CreateAppLauncherItem(
-      app_controller2, app_id2, ash::STATUS_RUNNING);
+      app_controller2, ash::STATUS_RUNNING);
   EXPECT_EQ(0, app_icon_loader1->fetch_count());
   EXPECT_EQ(0, app_icon_loader1->clear_count());
   EXPECT_EQ(1, app_icon_loader2->fetch_count());
   EXPECT_EQ(0, app_icon_loader2->clear_count());
 
   AppWindowLauncherItemController* app_controller1 =
-      new ExtensionAppWindowLauncherItemController(app_id1, "id",
+      new ExtensionAppWindowLauncherItemController(ash::AppLaunchId(app_id1),
                                                    launcher_controller_.get());
 
   const ash::ShelfID shelfId1 = launcher_controller_->CreateAppLauncherItem(
-      app_controller1, app_id1, ash::STATUS_RUNNING);
+      app_controller1, ash::STATUS_RUNNING);
   EXPECT_EQ(1, app_icon_loader1->fetch_count());
   EXPECT_EQ(0, app_icon_loader1->clear_count());
   EXPECT_EQ(1, app_icon_loader2->fetch_count());

@@ -75,7 +75,6 @@ class ChromeLauncherController : public ash::mojom::ShelfObserver,
 
   // Creates a new app item on the shelf for |controller|.
   virtual ash::ShelfID CreateAppLauncherItem(LauncherItemController* controller,
-                                             const std::string& app_id,
                                              ash::ShelfItemStatus status) = 0;
 
   // Returns the shelf item with the given id, or null if |id| isn't found.
