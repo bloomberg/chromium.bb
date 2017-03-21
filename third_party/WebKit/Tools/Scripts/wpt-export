@@ -8,6 +8,9 @@
 This script checks LayoutTests/external/wpt for changes that can be exported,
 then creates a patch, and creates and lands a pull request for the upstream
 repository.
+
+For this script to be effective it needs to be run on a regular
+interval (e.g. every 10 mins).
 """
 
 import argparse

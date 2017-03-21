@@ -35,3 +35,15 @@ class Web(object):
 
     def get_binary(self, url, return_none_on_404=False):
         return NetworkTransaction(return_none_on_404=return_none_on_404).run(lambda: urllib2.urlopen(url).read())
+
+    def request(self, method, url, data, headers=None):
+        opener = urllib2.build_opener(urllib2.HTTPHandler)
+        request = urllib2.Request(url=url, data=data)
+
+        request.get_method = lambda: method
+
+        if headers:
+            for key, value in headers.items():
+                request.add_header(key, value)
+
+        return opener.open(request)

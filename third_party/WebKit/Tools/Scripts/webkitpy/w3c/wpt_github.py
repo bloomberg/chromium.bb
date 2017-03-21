@@ -28,14 +28,20 @@ class WPTGitHub(object):
 
     def request(self, path, method, body=None):
         assert path.startswith('/')
+
         if body:
             body = json.dumps(body)
-        opener = urllib2.build_opener(urllib2.HTTPHandler)
-        request = urllib2.Request(url=API_BASE + path, data=body)
-        request.add_header('Accept', 'application/vnd.github.v3+json')
-        request.add_header('Authorization', 'Basic {}'.format(self.auth_token()))
-        request.get_method = lambda: method
-        response = opener.open(request)
+
+        response = self.host.web.request(
+            method=method,
+            url=API_BASE + path,
+            data=body,
+            headers={
+                'Accept': 'application/vnd.github.v3+json',
+                'Authorization': 'Basic {}'.format(self.auth_token()),
+            },
+        )
+
         status_code = response.getcode()
         try:
             return json.load(response), status_code
@@ -93,6 +99,8 @@ class WPTGitHub(object):
     def merge_pull_request(self, pull_request_number):
         path = '/repos/w3c/web-platform-tests/pulls/%d/merge' % pull_request_number
         body = {
+            # This currently will noop because the feature is in an opt-in beta.
+            # Once it leaves beta this will start working.
             'merge_method': 'rebase',
         }
 
@@ -104,8 +112,8 @@ class WPTGitHub(object):
             else:
                 raise
 
-        if status_code == 200:
-            raise Exception('Received non-200 status code while merging PR #%d' % pull_request_number)
+        if status_code != 200:
+            raise Exception('Received non-200 status code (%d) while merging PR #%d' % (status_code, pull_request_number))
 
         return data
 
