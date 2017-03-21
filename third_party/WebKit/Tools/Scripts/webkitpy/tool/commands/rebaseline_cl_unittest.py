@@ -11,6 +11,7 @@ from webkitpy.common.checkout.git_mock import MockGit
 from webkitpy.common.net.layout_test_results import LayoutTestResults
 from webkitpy.common.system.log_testing import LoggingTestCase
 from webkitpy.layout_tests.builder_list import BuilderList
+from webkitpy.tool.commands.rebaseline import TestBaselineSet
 from webkitpy.tool.commands.rebaseline_cl import RebaselineCL
 from webkitpy.tool.commands.rebaseline_unittest import BaseTestCase
 
@@ -128,6 +129,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         tests = [
             'fast/dom/prototype-taco.html',
             'fast/dom/prototype-inheritance.html',
+            'fast/dom/prototype-slowtest.html',
             'fast/dom/prototype-newtest.html',
             'svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html',
         ]
@@ -151,7 +153,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         options.update(kwargs)
         return optparse.Values(dict(**options))
 
-    def test_execute_with_issue_number_given(self):
+    def test_execute_basic(self):
         return_code = self.command.execute(self.command_options(), [], self.tool)
         self.assertEqual(return_code, 0)
         self.assertLog([
@@ -169,17 +171,6 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         return_code = self.command.execute(self.command_options(), [], self.tool)
         self.assertEqual(return_code, 1)
         self.assertLog(['ERROR: No issue number for current branch.\n'])
-
-    def test_execute_with_issue_number_from_branch(self):
-        return_code = self.command.execute(self.command_options(), [], self.tool)
-        self.assertEqual(return_code, 0)
-        self.assertLog([
-            'INFO: Rebaselining fast/dom/prototype-inheritance.html\n',
-            'INFO: Rebaselining fast/dom/prototype-newtest.html\n',
-            'INFO: Rebaselining fast/dom/prototype-slowtest.html\n',
-            'INFO: Rebaselining fast/dom/prototype-taco.html\n',
-            'INFO: Rebaselining svg/dynamic-updates/SVGFEDropShadowElement-dom-stdDeviation-attr.html\n',
-        ])
 
     def test_execute_with_only_changed_tests_option(self):
         return_code = self.command.execute(self.command_options(only_changed_tests=True), [], self.tool)
@@ -273,10 +264,10 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
         self._write(
             port.host.filesystem.join(port.layout_tests_dir(), 'fast/dom/prototype-taco.html'),
             'test contents')
+        test_baseline_set = TestBaselineSet(self.tool)
+        test_baseline_set.add('fast/dom/prototype-taco.html', Build('MOCK Try Win', 5000))
 
-        self.command.rebaseline(
-            self.command_options(),
-            {'fast/dom/prototype-taco.html': [Build('MOCK Try Win', 5000)]})
+        self.command.rebaseline(self.command_options(), test_baseline_set)
 
         self.assertEqual(
             self.tool.executive.calls,

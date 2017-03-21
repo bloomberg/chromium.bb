@@ -9,7 +9,7 @@ import logging
 import optparse
 
 from webkitpy.common.net.git_cl import GitCL
-from webkitpy.tool.commands.rebaseline import AbstractParallelRebaselineCommand
+from webkitpy.tool.commands.rebaseline import AbstractParallelRebaselineCommand, TestBaselineSet
 from webkitpy.w3c.wpt_manifest import WPTManifest
 
 _log = logging.getLogger(__name__)
@@ -86,19 +86,20 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
         if builds_to_results is None:
             return 1
 
-        test_prefix_list = {}
+        test_baseline_set = TestBaselineSet(tool)
         if args:
             for test in args:
-                test_prefix_list[test] = builds
+                for build in builds:
+                    test_baseline_set.add(test, build)
         else:
-            test_prefix_list = self._test_prefix_list(
+            test_baseline_set = self._make_test_baseline_set(
                 builds_to_results,
                 only_changed_tests=options.only_changed_tests)
 
-        self._log_test_prefix_list(test_prefix_list)
+        _log.debug('Rebaselining: %s', test_baseline_set)
 
         if not options.dry_run:
-            self.rebaseline(options, test_prefix_list)
+            self.rebaseline(options, test_baseline_set)
         return 0
 
     def _get_issue_number(self):
@@ -160,7 +161,7 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
             results[build] = layout_test_results
         return results
 
-    def _test_prefix_list(self, builds_to_results, only_changed_tests):
+    def _make_test_baseline_set(self, builds_to_results, only_changed_tests):
         """Returns a dict which lists the set of baselines to fetch.
 
         The dict that is returned is a dict of tests to Build objects
@@ -185,15 +186,14 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
             # TODO(qyearsley): Do this without using a hard-coded constant.
             test_base = 'third_party/WebKit/LayoutTests/'
             tests_in_cl = [f[len(test_base):] for f in files_in_cl if f.startswith(test_base)]
-        result = {}
+
+        test_baseline_set = TestBaselineSet(self._tool)
         for build, tests in builds_to_tests.iteritems():
             for test in tests:
                 if only_changed_tests and test not in tests_in_cl:
                     continue
-                if test not in result:
-                    result[test] = []
-                result[test].append(build)
-        return result
+                test_baseline_set.add(test, build)
+        return test_baseline_set
 
     def _tests_to_rebaseline(self, build, layout_test_results):
         """Fetches a list of tests that should be rebaselined for some build."""
@@ -220,15 +220,3 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
         except (ValueError, KeyError):
             _log.warning('Unexpected retry summary content:\n%s', content)
             return None
-
-    @staticmethod
-    def _log_test_prefix_list(test_prefix_list):
-        """Logs the tests to download new baselines for."""
-        if not test_prefix_list:
-            _log.info('No tests to rebaseline; exiting.')
-            return
-        _log.debug('Tests to rebaseline:')
-        for test, builds in test_prefix_list.iteritems():
-            _log.debug('  %s:', test)
-            for build in sorted(builds):
-                _log.debug('    %s', build)

@@ -19,7 +19,7 @@ import urllib2
 
 from webkitpy.common.net.buildbot import Build, current_build_link
 from webkitpy.layout_tests.models.test_expectations import TestExpectations, BASELINE_SUFFIX_LIST
-from webkitpy.tool.commands.rebaseline import AbstractParallelRebaselineCommand
+from webkitpy.tool.commands.rebaseline import AbstractParallelRebaselineCommand, TestBaselineSet
 
 
 _log = logging.getLogger(__name__)
@@ -150,10 +150,8 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
     def link_to_patch(commit):
         return 'https://chromium.googlesource.com/chromium/src/+/' + commit
 
-    def get_test_prefix_list(self, tests):
-        test_prefix_list = {}
-        lines_to_remove = {}
-
+    def _make_test_baseline_set(self, tests):
+        test_baseline_set = TestBaselineSet(self._tool)
         for builder_name in self._release_builders():
             port_name = self._tool.builders.port_name_for_builder_name(builder_name)
             port = self._tool.port_factory.get(port_name)
@@ -161,14 +159,8 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
             for test in expectations.get_needs_rebaseline_failures():
                 if test not in tests:
                     continue
-
-                if test not in test_prefix_list:
-                    lines_to_remove[test] = []
-                    test_prefix_list[test] = {}
-                lines_to_remove[test].append(builder_name)
-                test_prefix_list[test][Build(builder_name)] = BASELINE_SUFFIX_LIST
-
-        return test_prefix_list, lines_to_remove
+                test_baseline_set.add(test, Build(builder_name))
+        return test_baseline_set
 
     def _run_git_cl_command(self, options, command):
         subprocess_command = ['git', 'cl'] + command
@@ -241,7 +233,7 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
 
         _log.info('Rebaselining %s for r%s by %s.', list(tests), revision, author)
 
-        test_prefix_list, _ = self.get_test_prefix_list(tests)
+        test_baseline_set = self._make_test_baseline_set(tests)
 
         did_switch_branches = False
         did_finish = False
@@ -257,8 +249,8 @@ class AutoRebaseline(AbstractParallelRebaselineCommand):
                 tool.git().create_clean_branch(rebaseline_branch_name)
                 did_switch_branches = True
 
-            if test_prefix_list:
-                self.rebaseline(options, test_prefix_list)
+            if test_baseline_set:
+                self.rebaseline(options, test_baseline_set)
 
             if options.dry_run:
                 return
