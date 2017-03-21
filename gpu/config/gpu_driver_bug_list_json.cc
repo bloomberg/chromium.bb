@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "9.36",
+  "version": "9.37",
   "entries": [
     {
       "id": 1,
@@ -2397,6 +2397,18 @@ LONG_STRING_CONST(
       },
       "features": [
         "disable_nv12_dxgi_video"
+      ]
+    },
+    {
+      "id": 221,
+      "description": "Very large instanced draw calls crash on some Adreno 3xx drivers",
+      "cr_bugs": [701682],
+      "os": {
+        "type": "android"
+      },
+      "gl_renderer": "Adreno \\(TM\\) 3.*",
+      "features": [
+        "disallow_large_instanced_draw"
       ]
     }
   ]

@@ -207,6 +207,8 @@
          wake_up_gpu_before_drawing)                         \
   GPU_OP(USE_TESTING_GPU_DRIVER_WORKAROUND,                  \
          use_gpu_driver_workaround_for_testing)              \
+  GPU_OP(DISALLOW_LARGE_INSTANCED_DRAW,                      \
+         disallow_large_instanced_draw)                      \
 // clang-format on
 
 namespace gpu {
