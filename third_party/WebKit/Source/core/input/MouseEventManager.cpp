@@ -234,8 +234,7 @@ WebInputEventResult MouseEventManager::setMousePositionAndDispatchMouseEvent(
 WebInputEventResult MouseEventManager::dispatchMouseClickIfNeeded(
     Node* target,
     const WebMouseEvent& mouseEvent,
-    const String& canvasRegionId,
-    Node* targetWithoutCapture) {
+    const String& canvasRegionId) {
   // We only prevent click event when the click may cause contextmenu to popup.
   // However, we always send auxclick.
   bool contextMenuEvent =
@@ -269,23 +268,6 @@ WebInputEventResult MouseEventManager::dispatchMouseClickIfNeeded(
       clickTargetNode = target->commonAncestor(
           *m_clickNode, EventHandlingUtil::parentForClickEvent);
     }
-
-    // This block is only for the purpose of gathering the metric and can be
-    // removed as soon as we don't need the metric.
-    if (targetWithoutCapture != target) {
-      Node* alternativeClickTargetNode = nullptr;
-      if (m_clickNode == targetWithoutCapture) {
-        alternativeClickTargetNode = m_clickNode;
-      } else if (m_clickNode->document() == targetWithoutCapture->document()) {
-        alternativeClickTargetNode = targetWithoutCapture->commonAncestor(
-            *m_clickNode, EventHandlingUtil::parentForClickEvent);
-      }
-      if (alternativeClickTargetNode != clickTargetNode) {
-        UseCounter::count(m_frame,
-                          UseCounter::PointerEventClickRetargetCausedByCapture);
-      }
-    }
-
     if (clickTargetNode) {
       clickEventResult = dispatchMouseEvent(
           clickTargetNode,

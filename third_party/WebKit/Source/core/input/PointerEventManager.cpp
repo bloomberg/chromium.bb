@@ -169,7 +169,6 @@ WebInputEventResult PointerEventManager::dispatchPointerEvent(
     DCHECK(!m_dispatchingPointerId);
     AutoReset<int> dispatchHolder(&m_dispatchingPointerId, pointerId);
     DispatchEventResult dispatchResult = target->dispatchEvent(pointerEvent);
-
     return EventHandlingUtil::toWebInputEventResult(dispatchResult);
   }
   return WebInputEventResult::NotHandled;
@@ -507,7 +506,7 @@ WebInputEventResult PointerEventManager::sendMousePointerEvent(
         mouseEventType == EventTypeNames::mouseup) {
       WebInputEventResult clickEventResult =
           m_mouseEventManager->dispatchMouseClickIfNeeded(
-              mouseTarget->toNode(), mouseEvent, canvasRegionId, target);
+              mouseTarget->toNode(), mouseEvent, canvasRegionId);
       result = EventHandlingUtil::mergeEventResult(clickEventResult, result);
     }
   }
