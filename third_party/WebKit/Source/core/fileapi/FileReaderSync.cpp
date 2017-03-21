@@ -36,7 +36,6 @@
 #include "core/fileapi/Blob.h"
 #include "core/fileapi/FileError.h"
 #include "core/fileapi/FileReaderLoader.h"
-#include "core/frame/Deprecation.h"
 #include "platform/Histogram.h"
 
 namespace blink {
@@ -54,11 +53,6 @@ enum class WorkerType {
 }  // namespace
 
 FileReaderSync::FileReaderSync(ExecutionContext* context) {
-  if (context->isServiceWorkerGlobalScope()) {
-    Deprecation::countDeprecation(context,
-                                  UseCounter::FileReaderSyncInServiceWorker);
-  }
-
   WorkerType type = WorkerType::OTHER;
   if (context->isDedicatedWorkerGlobalScope())
     type = WorkerType::DEDICATED_WORKER;

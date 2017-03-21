@@ -1438,7 +1438,6 @@ class CORE_EXPORT UseCounter {
     V8HTMLVideoElement_Poster_AttributeGetter = 1815,
     V8HTMLVideoElement_Poster_AttributeSetter = 1816,
     NotificationPermissionRequestedIframe = 1817,
-    FileReaderSyncInServiceWorker = 1818,
     PresentationReceiverInsecureOrigin = 1819,
     PresentationReceiverSecureOrigin = 1820,
     PresentationRequestInsecureOrigin = 1821,

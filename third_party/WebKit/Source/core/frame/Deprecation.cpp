@@ -394,10 +394,6 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature) {
           "-internal-media-controls-overlay-cast-button selector", M59,
           "5714245488476160");
 
-    case UseCounter::FileReaderSyncInServiceWorker:
-      return willBeRemoved("FileReaderSync in service workers", M59,
-                           "5739144722513920");
-
     case UseCounter::CSSZoomReset:
       return willBeRemoved("\"zoom: reset\"", M59, "4997605029314560");
 

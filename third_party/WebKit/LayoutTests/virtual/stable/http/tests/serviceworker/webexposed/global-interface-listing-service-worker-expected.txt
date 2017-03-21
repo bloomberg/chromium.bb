@@ -217,12 +217,6 @@ interface FileReader : EventTarget
     setter onloadend
     setter onloadstart
     setter onprogress
-interface FileReaderSync
-    method constructor
-    method readAsArrayBuffer
-    method readAsBinaryString
-    method readAsDataURL
-    method readAsText
 interface FormData
     method append
     method constructor

@@ -31,7 +31,7 @@
 // https://w3c.github.io/FileAPI/#FileReaderSync
 
 [
-    Exposed=Worker,
+    Exposed=(DedicatedWorker,SharedWorker),
     Constructor,
     ConstructorCallWith=ExecutionContext,
     Measure,

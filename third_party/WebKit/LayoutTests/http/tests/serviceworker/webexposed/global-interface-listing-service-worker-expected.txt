@@ -425,12 +425,6 @@ interface FileReader : EventTarget
     setter onloadend
     setter onloadstart
     setter onprogress
-interface FileReaderSync
-    method constructor
-    method readAsArrayBuffer
-    method readAsBinaryString
-    method readAsDataURL
-    method readAsText
 interface ForeignFetchEvent : ExtendableEvent
     getter origin
     getter request
