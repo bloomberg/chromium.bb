@@ -1373,6 +1373,16 @@ now we are only interested in H264, VP8 and VP9.
   </summary>
 </rappor-metric>
 
+<rappor-metric name="Media.VideoPersistence.TopFrame" type="ETLD_PLUS_ONE">
+  <owner>mlamouri@chromium.org</owner>
+  <owner>peconn@chromium.org</owner>
+  <owner>zqzhang@chromium.org</owner>
+  <summary>
+    The eTLD+1 of the top frame of the tab when a video persistence session is
+    initialized.
+  </summary>
+</rappor-metric>
+
 <rappor-metric name="NTP.ExplicitUserAction.PageNavigation.NTPTileClick"
     type="UMA_RAPPOR_TYPE">
   <owner>knn@chromium.org</owner>
