@@ -218,7 +218,7 @@ class BinhostConfWriterTest(
 
     # Provide a sample of private/public slave boards that are expected.
     public_slave_boards = ('amd64-generic', 'x86-generic', 'daisy')
-    private_slave_boards = ('x86-alex', 'lumpy', 'daisy_skate', 'falco')
+    private_slave_boards = ('x86-alex', 'lumpy', 'daisy_skate', 'peppy')
 
     self._VerifyResults(public_slave_boards=public_slave_boards,
                         private_slave_boards=private_slave_boards)

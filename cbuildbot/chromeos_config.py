@@ -2822,7 +2822,6 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
   _chrome_pfq_important_boards = frozenset([
       'cyan',
       'daisy_skate',
-      'falco',
       'lumpy',
       'nyan',
       'peach_pit',
@@ -3332,6 +3331,9 @@ def ApplyCustomOverrides(site_config, ge_build_config):
           'hw_tests': hw_test_list.SharedPoolPFQ(),
       },
 
+      'peppy-chrome-pfq': {
+          'hw_tests': hw_test_list.SharedPoolPFQ(),
+      },
 
       'reef-chrome-pfq': {
           'hw_tests': hw_test_list.SharedPoolAndroidPFQ(),
