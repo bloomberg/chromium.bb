@@ -1803,7 +1803,14 @@ void RenderWidget::OnDragSourceSystemDragEnded() {
 }
 
 void RenderWidget::showVirtualKeyboardOnElementFocus() {
+#if defined(OS_CHROMEOS)
+  // On ChromeOS, virtual keyboard is triggered only when users leave the
+  // mouse button or the finger and a text input element is focused at that
+  // time. Focus event itself shouldn't trigger virtual keyboard.
+  UpdateTextInputState();
+#else
   ShowVirtualKeyboard();
+#endif
 
 // TODO(rouslan): Fix ChromeOS and Windows 8 behavior of autofill popup with
 // virtual keyboard.
