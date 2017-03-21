@@ -27,6 +27,8 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
+skip_js_tests = is_asan || is_msan || is_tsan
+
 # This target exists to reference other test executables to bring these files
 # into the build.
 group("test") {
@@ -472,7 +474,6 @@ if (!is_android) {
     ldflags = []
 
     deps = [
-      ":interactive_ui_tests_js_webui",
       ":test_support",
       ":test_support_ui",
       "//chrome:packed_resources",
@@ -509,6 +510,10 @@ if (!is_android) {
     # should be deleted and this line removed. See the
     # chrome_extensions_interactive_uitests target for more.
     deps += [ "//extensions:chrome_extensions_interactive_uitests" ]
+
+    if (!skip_js_tests) {
+      deps += [ ":interactive_ui_tests_js_webui" ]
+    }
 
     # Runtime dependencies
     data_deps += [
@@ -934,106 +939,101 @@ if (!is_android) {
     }
   }
 
-  js2gtest("interactive_ui_tests_js_webui") {
-    test_type = "webui"
+  if (!skip_js_tests) {
+    js2gtest("interactive_ui_tests_js_webui") {
+      test_type = "webui"
 
-    sources = [
-      "data/webui/cr_elements/cr_elements_focus_test.js",
-      "data/webui/md_history/md_history_focus_test.js",
-    ]
+      sources = [
+        "data/webui/cr_elements/cr_elements_focus_test.js",
+        "data/webui/md_history/md_history_focus_test.js",
+      ]
 
-    gen_include_files = [
-      "data/webui/polymer_browser_test_base.js",
-      "data/webui/polymer_interactive_ui_test.js",
-    ]
+      gen_include_files = [
+        "data/webui/polymer_browser_test_base.js",
+        "data/webui/polymer_interactive_ui_test.js",
+      ]
 
-    deps = [
-      "//chrome/browser/ui",
-    ]
+      deps = [
+        "//chrome/browser/ui",
+      ]
 
-    defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
-  }
+      defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
+    }
 
-  js2gtest("browser_tests_js_webui") {
-    test_type = "webui"
+    js2gtest("browser_tests_js_webui") {
+      test_type = "webui"
 
-    # Javascript sources. These are combined with the .cc files in the GYP build
-    # and are handled by a rule, but in the GN build they're in a separate
-    # action so need to be separated out.
-    sources = [
-      "../browser/ui/webui/app_list/start_page_browsertest.js",
-      "../browser/ui/webui/chromeos/bluetooth_pairing_ui_browsertest.js",
-      "../browser/ui/webui/chromeos/certificate_manager_dialog_browsertest.js",
-      "../browser/ui/webui/chromeos/set_time_ui_browsertest.js",
-      "../browser/ui/webui/extensions/chromeos/kiosk_apps_browsertest.js",
-      "../browser/ui/webui/extensions/extension_settings_browsertest.js",
-      "../browser/ui/webui/help/help_browsertest.js",
-      "../browser/ui/webui/identity_internals_ui_browsertest.js",
-      "../browser/ui/webui/options/autofill_options_browsertest.js",
-      "../browser/ui/webui/options/browser_options_browsertest.js",
-      "../browser/ui/webui/options/certificate_manager_browsertest.js",
-      "../browser/ui/webui/options/chromeos/accounts_options_browsertest.js",
-      "../browser/ui/webui/options/chromeos/bluetooth_options_browsertest.js",
-      "../browser/ui/webui/options/chromeos/date_time_options_browsertest.js",
-      "../browser/ui/webui/options/chromeos/guest_mode_options_browsertest.js",
-      "../browser/ui/webui/options/chromeos/power_overlay_browsertest.js",
-      "../browser/ui/webui/options/content_options_browsertest.js",
-      "../browser/ui/webui/options/content_settings_exception_area_browsertest.js",
-      "../browser/ui/webui/options/cookies_view_browsertest.js",
-      "../browser/ui/webui/options/edit_dictionary_browsertest.js",
-      "../browser/ui/webui/options/font_settings_browsertest.js",
-      "../browser/ui/webui/options/language_options_browsertest.js",
-      "../browser/ui/webui/options/language_options_dictionary_download_browsertest.js",
-      "../browser/ui/webui/options/manage_profile_browsertest.js",
-      "../browser/ui/webui/options/multilanguage_options_webui_browsertest.js",
-      "../browser/ui/webui/options/options_browsertest.js",
-      "../browser/ui/webui/options/options_browsertest_base.js",
-      "../browser/ui/webui/options/password_manager_browsertest.js",
-      "../browser/ui/webui/options/profile_settings_reset_browsertest.js",
-      "../browser/ui/webui/options/search_engine_manager_browsertest.js",
-      "../browser/ui/webui/options/settings_format_browsertest.js",
-      "../browser/ui/webui/options/startup_page_list_browsertest.js",
-      "../browser/ui/webui/sync_internals_browsertest.js",
-      "../browser/ui/webui/sync_setup_browsertest.js",
-      "data/chromeos/oobe_webui_browsertest.js",
-      "data/webui/about_invalidations_browsertest.js",
-      "data/webui/accessibility_audit_browsertest.js",
-      "data/webui/assertions.js",
-      "data/webui/async_gen.js",
-      "data/webui/bluetooth_internals_browsertest.js",
-      "data/webui/certificate_viewer_dialog_test.js",
-      "data/webui/chrome_send_browsertest.js",
-      "data/webui/cr_elements/cr_elements_browsertest.js",
-      "data/webui/extensions/cr_extensions_browsertest.js",
-      "data/webui/history_browsertest.js",
-      "data/webui/md_bookmarks/md_bookmarks_browsertest.js",
-      "data/webui/md_downloads/downloads_browsertest.js",
-      "data/webui/md_history/md_history_browsertest.js",
-      "data/webui/md_user_manager/user_manager_browsertest.js",
-      "data/webui/mock4js_browsertest.js",
-      "data/webui/net_internals/bandwidth_view.js",
-      "data/webui/net_internals/chromeos_view.js",
-      "data/webui/net_internals/dns_view.js",
-      "data/webui/net_internals/events_view.js",
-      "data/webui/net_internals/hsts_view.js",
-      "data/webui/net_internals/log_util.js",
-      "data/webui/net_internals/log_view_painter.js",
-      "data/webui/net_internals/main.js",
-      "data/webui/net_internals/net_internals_test.js",
-      "data/webui/net_internals/prerender_view.js",
-      "data/webui/net_internals/sdch_view.js",
-      "data/webui/net_internals/timeline_view.js",
-      "data/webui/ntp4.js",
-      "data/webui/polymer_browser_test_base.js",
-      "data/webui/print_preview.js",
-      "data/webui/print_preview_destination_search_test.js",
-      "data/webui/sandboxstatus_browsertest.js",
-      "data/webui/text_defaults_browsertest.js",
-      "data/webui/webui_resource_async_browsertest.js",
-    ]
-
-    if (!is_asan) {
-      sources += [
+      # Javascript sources. These are combined with the .cc files in the GYP build
+      # and are handled by a rule, but in the GN build they're in a separate
+      # action so need to be separated out.
+      sources = [
+        "../browser/ui/webui/app_list/start_page_browsertest.js",
+        "../browser/ui/webui/chromeos/bluetooth_pairing_ui_browsertest.js",
+        "../browser/ui/webui/chromeos/certificate_manager_dialog_browsertest.js",
+        "../browser/ui/webui/chromeos/set_time_ui_browsertest.js",
+        "../browser/ui/webui/extensions/chromeos/kiosk_apps_browsertest.js",
+        "../browser/ui/webui/extensions/extension_settings_browsertest.js",
+        "../browser/ui/webui/help/help_browsertest.js",
+        "../browser/ui/webui/identity_internals_ui_browsertest.js",
+        "../browser/ui/webui/options/autofill_options_browsertest.js",
+        "../browser/ui/webui/options/browser_options_browsertest.js",
+        "../browser/ui/webui/options/certificate_manager_browsertest.js",
+        "../browser/ui/webui/options/chromeos/accounts_options_browsertest.js",
+        "../browser/ui/webui/options/chromeos/bluetooth_options_browsertest.js",
+        "../browser/ui/webui/options/chromeos/date_time_options_browsertest.js",
+        "../browser/ui/webui/options/chromeos/guest_mode_options_browsertest.js",
+        "../browser/ui/webui/options/chromeos/power_overlay_browsertest.js",
+        "../browser/ui/webui/options/content_options_browsertest.js",
+        "../browser/ui/webui/options/content_settings_exception_area_browsertest.js",
+        "../browser/ui/webui/options/cookies_view_browsertest.js",
+        "../browser/ui/webui/options/edit_dictionary_browsertest.js",
+        "../browser/ui/webui/options/font_settings_browsertest.js",
+        "../browser/ui/webui/options/language_options_browsertest.js",
+        "../browser/ui/webui/options/language_options_dictionary_download_browsertest.js",
+        "../browser/ui/webui/options/manage_profile_browsertest.js",
+        "../browser/ui/webui/options/multilanguage_options_webui_browsertest.js",
+        "../browser/ui/webui/options/options_browsertest.js",
+        "../browser/ui/webui/options/options_browsertest_base.js",
+        "../browser/ui/webui/options/password_manager_browsertest.js",
+        "../browser/ui/webui/options/profile_settings_reset_browsertest.js",
+        "../browser/ui/webui/options/search_engine_manager_browsertest.js",
+        "../browser/ui/webui/options/settings_format_browsertest.js",
+        "../browser/ui/webui/options/startup_page_list_browsertest.js",
+        "../browser/ui/webui/sync_internals_browsertest.js",
+        "../browser/ui/webui/sync_setup_browsertest.js",
+        "data/chromeos/oobe_webui_browsertest.js",
+        "data/webui/about_invalidations_browsertest.js",
+        "data/webui/accessibility_audit_browsertest.js",
+        "data/webui/assertions.js",
+        "data/webui/async_gen.js",
+        "data/webui/bluetooth_internals_browsertest.js",
+        "data/webui/certificate_viewer_dialog_test.js",
+        "data/webui/chrome_send_browsertest.js",
+        "data/webui/cr_elements/cr_elements_browsertest.js",
+        "data/webui/extensions/cr_extensions_browsertest.js",
+        "data/webui/history_browsertest.js",
+        "data/webui/md_bookmarks/md_bookmarks_browsertest.js",
+        "data/webui/md_downloads/downloads_browsertest.js",
+        "data/webui/md_history/md_history_browsertest.js",
+        "data/webui/md_user_manager/user_manager_browsertest.js",
+        "data/webui/mock4js_browsertest.js",
+        "data/webui/net_internals/bandwidth_view.js",
+        "data/webui/net_internals/chromeos_view.js",
+        "data/webui/net_internals/dns_view.js",
+        "data/webui/net_internals/events_view.js",
+        "data/webui/net_internals/hsts_view.js",
+        "data/webui/net_internals/log_util.js",
+        "data/webui/net_internals/log_view_painter.js",
+        "data/webui/net_internals/main.js",
+        "data/webui/net_internals/net_internals_test.js",
+        "data/webui/net_internals/prerender_view.js",
+        "data/webui/net_internals/sdch_view.js",
+        "data/webui/net_internals/timeline_view.js",
+        "data/webui/ntp4.js",
+        "data/webui/polymer_browser_test_base.js",
+        "data/webui/print_preview.js",
+        "data/webui/print_preview_destination_search_test.js",
+        "data/webui/sandboxstatus_browsertest.js",
         "data/webui/settings/advanced_page_browsertest.js",
         "data/webui/settings/animation_browsertest.js",
         "data/webui/settings/basic_page_browsertest.js",
@@ -1050,49 +1050,48 @@ if (!is_android) {
         "data/webui/settings/settings_subpage_browsertest.js",
         "data/webui/settings/settings_ui_browsertest.js",
         "data/webui/settings/site_settings_page_browsertest.js",
+        "data/webui/text_defaults_browsertest.js",
+        "data/webui/webui_resource_async_browsertest.js",
       ]
 
-      if (is_chromeos) {
+      if (is_chrome_branded) {
+        # crbug.com/230471
+        sources -= [ "data/webui/accessibility_audit_browsertest.js" ]
+      }
+      if (!is_chromeos) {
+        sources -= [ "data/webui/certificate_viewer_dialog_test.js" ]
+      } else {
+        sources -= [ "data/webui/md_user_manager/user_manager_browsertest.js" ]
         sources += [ "data/webui/settings/easy_unlock_browsertest_chromeos.js" ]
       }
-    }
+      if (is_mac) {
+        sources -= [
+          # TODO(rouslan): This test depends on the custom dictionary UI,
+          # which is disabled on Mac.
+          "../browser/ui/webui/options/edit_dictionary_browsertest.js",
 
-    if (is_chrome_branded) {
-      # crbug.com/230471
-      sources -= [ "data/webui/accessibility_audit_browsertest.js" ]
-    }
-    if (!is_chromeos) {
-      sources -= [ "data/webui/certificate_viewer_dialog_test.js" ]
-    } else {
-      sources -= [ "data/webui/md_user_manager/user_manager_browsertest.js" ]
-    }
-    if (is_mac) {
-      sources -= [
-        # TODO(rouslan): This test depends on the custom dictionary UI,
-        # which is disabled on Mac.
-        "../browser/ui/webui/options/edit_dictionary_browsertest.js",
-
-        # TODO(rouslan): This test depends on hunspell and we cannot run it
-        # on Mac, which does not use hunspell by default.
-        "../browser/ui/webui/options/language_options_dictionary_download_browsertest.js",
-        "../browser/ui/webui/options/multilanguage_options_webui_browsertest.js",
+          # TODO(rouslan): This test depends on hunspell and we cannot run it
+          # on Mac, which does not use hunspell by default.
+          "../browser/ui/webui/options/language_options_dictionary_download_browsertest.js",
+          "../browser/ui/webui/options/multilanguage_options_webui_browsertest.js",
+        ]
+      }
+      if (!enable_app_list) {
+        sources -= [ "../browser/ui/webui/app_list/start_page_browsertest.js" ]
+      }
+      if (!enable_print_preview) {
+        sources -= [ "data/webui/print_preview.js" ]
+      }
+      if (enable_media_router) {
+        sources +=
+            [ "data/webui/media_router/media_router_elements_browsertest.js" ]
+      }
+      deps = [
+        "//chrome/browser/ui",
+        "//skia",
       ]
+      defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
     }
-    if (!enable_app_list) {
-      sources -= [ "../browser/ui/webui/app_list/start_page_browsertest.js" ]
-    }
-    if (!enable_print_preview) {
-      sources -= [ "data/webui/print_preview.js" ]
-    }
-    if (enable_media_router) {
-      sources +=
-          [ "data/webui/media_router/media_router_elements_browsertest.js" ]
-    }
-    deps = [
-      "//chrome/browser/ui",
-      "//skia",
-    ]
-    defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
   }
 
   # TODO(GYP_GONE): Delete this after we've converted everything to GN.
@@ -1894,7 +1893,6 @@ test("browser_tests") {
     ]
 
     deps += [
-      ":browser_tests_js_webui",
       ":sync_integration_test_support",
       ":test_support_ui",
       "//base:i18n",
@@ -1952,6 +1950,10 @@ test("browser_tests") {
       "//ui/web_dialogs:test_support",
       "//v8",
     ]
+
+    if (!skip_js_tests) {
+      deps += [ ":browser_tests_js_webui" ]
+    }
 
     # Runtime dependencies
     data_deps += [
@@ -3025,37 +3027,39 @@ group("angle_perftests") {
   ]
 }
 
-js2gtest("unit_tests_js") {
-  test_type = "unit"
-  sources = [
-    "../browser/resources/md_downloads/action_service_unittest.gtestjs",
-    "../browser/resources/print_preview/data/measurement_system_unittest.gtestjs",
-    "../browser/resources/print_preview/print_preview_utils_unittest.gtestjs",
-    "../renderer/resources/extensions/notifications_custom_bindings.gtestjs",
-    "../test/data/unit/framework_unittest.gtestjs",
-  ]
-  extra_js_files = [
-    "../browser/resources/md_downloads/action_service.js",
-    "../browser/resources/print_preview/data/measurement_system.js",
-    "../browser/resources/print_preview/print_preview_utils.js",
-    "../renderer/resources/extensions/notifications_custom_bindings.js",
-    "../renderer/resources/extensions/notifications_test_util.js",
-    "//ui/webui/resources/js/cr.js",
-  ]
-  if (is_chromeos) {
-    sources += [
-      "../browser/resources/chromeos/braille_ime/braille_ime_unittest.gtestjs",
-      "../browser/resources/chromeos/select_to_speak/select_to_speak_unittest.gtestjs",
-      "../browser/resources/chromeos/switch_access/switch_access_unittest.gtestjs",
+if (!skip_js_tests) {
+  js2gtest("unit_tests_js") {
+    test_type = "unit"
+    sources = [
+      "../browser/resources/md_downloads/action_service_unittest.gtestjs",
+      "../browser/resources/print_preview/data/measurement_system_unittest.gtestjs",
+      "../browser/resources/print_preview/print_preview_utils_unittest.gtestjs",
+      "../renderer/resources/extensions/notifications_custom_bindings.gtestjs",
+      "../test/data/unit/framework_unittest.gtestjs",
     ]
-    extra_js_files += [
-      "../browser/resources/chromeos/braille_ime/braille_ime.js",
-      "../browser/resources/chromeos/select_to_speak/select_to_speak.js",
-      "../browser/resources/chromeos/select_to_speak/test_support.js",
-      "../browser/resources/chromeos/switch_access/switch_access.js",
-      "../browser/resources/chromeos/switch_access/test_support.js",
-      "../browser/resources/chromeos/switch_access/testable_switch_access.js",
+    extra_js_files = [
+      "../browser/resources/md_downloads/action_service.js",
+      "../browser/resources/print_preview/data/measurement_system.js",
+      "../browser/resources/print_preview/print_preview_utils.js",
+      "../renderer/resources/extensions/notifications_custom_bindings.js",
+      "../renderer/resources/extensions/notifications_test_util.js",
+      "//ui/webui/resources/js/cr.js",
     ]
+    if (is_chromeos) {
+      sources += [
+        "../browser/resources/chromeos/braille_ime/braille_ime_unittest.gtestjs",
+        "../browser/resources/chromeos/select_to_speak/select_to_speak_unittest.gtestjs",
+        "../browser/resources/chromeos/switch_access/switch_access_unittest.gtestjs",
+      ]
+      extra_js_files += [
+        "../browser/resources/chromeos/braille_ime/braille_ime.js",
+        "../browser/resources/chromeos/select_to_speak/select_to_speak.js",
+        "../browser/resources/chromeos/select_to_speak/test_support.js",
+        "../browser/resources/chromeos/switch_access/switch_access.js",
+        "../browser/resources/chromeos/switch_access/test_support.js",
+        "../browser/resources/chromeos/switch_access/testable_switch_access.js",
+      ]
+    }
   }
 }
 
@@ -3787,10 +3791,10 @@ test("unit_tests") {
       "../browser/ui/bluetooth/bluetooth_chooser_controller_unittest.cc",
       "../browser/ui/passwords/manage_passwords_ui_controller_unittest.cc",
     ]
-    deps += [
-      ":unit_tests_js",
-      "//components/bubble:test_support",
-    ]
+    if (!skip_js_tests) {
+      sources += [ ":unit_tests_js" ]
+    }
+    deps += [ "//components/bubble:test_support" ]
     data += [
       "$root_out_dir/test_data/chrome/browser/resources/print_preview/",
       "$root_out_dir/test_data/chrome/renderer/resources/extensions/",
