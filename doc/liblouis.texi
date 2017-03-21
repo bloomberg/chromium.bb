@@ -165,6 +165,7 @@ Programming with liblouis
 
 * Overview (library)::
 * Data structure of liblouis tables::
+* Deprecation of the logging system::
 * lou_version::
 * lou_translateString::
 * lou_translate::
@@ -2357,6 +2358,7 @@ the doctest directory in the source distribution.
 @menu
 * Overview (library)::
 * Data structure of liblouis tables::
+* Deprecation of the logging system::
 * lou_version::
 * lou_translateString::
 * lou_translate::
@@ -2513,6 +2515,24 @@ Following this is a similar array for back-translation.
 Finally is the @code{ruleArea}, an array of variable size to which
 various structures are mapped and to which almost everything else
 points.
+
+@node Deprecation of the logging system
+@section Deprecation of the logging system
+
+As of version 2.6.0 @code{lou_logFile}, @code{lou_logPrint} and
+@code{lou_logEnd} are deprecated. They are replaced by a more powerful,
+abstract API consisting of @code{lou_registerLogCallback} and
+@code{lou_setLogLevel}. 
+
+Usage of @code{lou_logFile}, @code{lou_logPrint} and @code{lou_logEnd} is
+discouraged as they may not be part of future releases. Applications using
+Liblouis should implement their own logging system.
+
+During the transitional phase, @code{lou_logPrint} is registered as default
+callback in @code{lou_registerLogCallback}. @code{lou_logPrint} is overwritten
+by the first call to @code{lou_registerLogCallback} and reattached when
+@code{NULL} is set as callback. Note that calling @code{lou_logPrint} directly
+will not cause an invokation of the registered callback.
 
 @node lou_version
 @section lou_version
@@ -2896,7 +2916,7 @@ levels. Setting the level to @code{LOG_OFF} disables logging. The
 default level is @code{LOG_INFO}.
 
 @node lou_logFile
-@section lou_logFile
+@section lou_logFile (deprecated)
 @findex lou_logFile
 
 @example
@@ -2909,6 +2929,8 @@ be printed on stderr or to use redirection, as when liblouis is used
 in a GUI application or in liblouisutdml. Any error messages generated
 will be printed to the file given in this call. The entire path name of
 the file must be given.
+
+This function is deprecated. See @ref{Deprecation of the logging system}.
 
 @node lou_logPrint
 @section lou_logPrint (deprecated)
@@ -2925,10 +2947,10 @@ libraries to print messages to the file specified by the call to
 @code{lou_logFile}. In particular, it is used by the companion
 library liblouisutdml.
 
-This function is deprecated as of version 2.6.0.
+This function is deprecated. See @ref{Deprecation of the logging system}.
 
 @node lou_logEnd
-@section lou_logEnd
+@section lou_logEnd (deprecated)
 @findex lou_logEnd
 
 @example
@@ -2937,6 +2959,8 @@ lou_logEnd ();
 
 This function is used at the end of processing a document to close the 
 log file, so that it can be read by the rest of the program.
+
+This function is deprecated. See @ref{Deprecation of the logging system}.
 
 @node lou_setDataPath
 @section lou_setDataPath
