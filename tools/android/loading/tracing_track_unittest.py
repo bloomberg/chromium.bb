@@ -10,7 +10,7 @@ import unittest
 
 import devtools_monitor
 
-from tracing import (Event, TracingTrack, _IntervalTree)
+from tracing_track import (Event, TracingTrack, _IntervalTree)
 
 
 class TracingTrackTestCase(unittest.TestCase):
