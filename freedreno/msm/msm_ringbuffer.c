@@ -496,11 +496,16 @@ static void msm_ringbuffer_emit_reloc(struct fd_ringbuffer *ring,
 	if (ring->pipe->gpu_id >= 500) {
 		struct drm_msm_gem_submit_reloc *reloc_hi;
 
+		/* NOTE: grab reloc_idx *before* APPEND() since that could
+		 * realloc() meaning that 'reloc' ptr is no longer valid:
+		 */
+		uint32_t reloc_idx = reloc->reloc_idx;
+
 		idx = APPEND(cmd, relocs);
 
 		reloc_hi = &cmd->relocs[idx];
 
-		reloc_hi->reloc_idx = reloc->reloc_idx;
+		reloc_hi->reloc_idx = reloc_idx;
 		reloc_hi->reloc_offset = r->offset;
 		reloc_hi->or = r->orhi;
 		reloc_hi->shift = r->shift - 32;
