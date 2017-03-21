@@ -298,6 +298,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
 }
 
 QuicChromiumClientSession::~QuicChromiumClientSession() {
+  net_log_.EndEvent(NetLogEventType::QUIC_SESSION);
   if (!dynamic_streams().empty())
     RecordUnexpectedOpenStreams(DESTRUCTOR);
   if (!observers_.empty())
@@ -426,7 +427,6 @@ QuicChromiumClientSession::~QuicChromiumClientSession() {
   UMA_HISTOGRAM_COUNTS(
       "Net.QuicSession.MaxReordering",
       static_cast<base::HistogramBase::Sample>(stats.max_sequence_reordering));
-  net_log_.EndEvent(NetLogEventType::QUIC_SESSION);
 }
 
 void QuicChromiumClientSession::Initialize() {
