@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/safe_browsing/threat_dom_details.h"
+#include "components/safe_browsing/renderer/threat_dom_details.h"
 
 #include <memory>
 

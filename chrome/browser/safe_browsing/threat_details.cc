@@ -31,7 +31,8 @@ using content::NavigationEntry;
 using content::RenderFrameHost;
 using content::WebContents;
 
-// Keep in sync with KMaxNodes in renderer/safe_browsing/threat_dom_details
+// Keep in sync with KMaxNodes in components/safe_browsing/renderer/
+// threat_dom_details.cc
 static const uint32_t kMaxDomNodes = 500;
 
 namespace safe_browsing {

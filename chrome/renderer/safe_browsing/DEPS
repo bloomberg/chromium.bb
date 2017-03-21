@@ -1,6 +1,7 @@
 include_rules = [
   "+components/safe_browsing/common",
   "+components/safe_browsing/csd.pb.h",
+  "+components/safe_browsing/renderer",
   "+third_party/smhasher",
 ]
 

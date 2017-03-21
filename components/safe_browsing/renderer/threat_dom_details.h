@@ -6,8 +6,8 @@
 // interesting URLs such as those of scripts and frames. When done, it sends
 // them to the ThreatDetails that requested them.
 
-#ifndef CHROME_RENDERER_SAFE_BROWSING_THREAT_DOM_DETAILS_H_
-#define CHROME_RENDERER_SAFE_BROWSING_THREAT_DOM_DETAILS_H_
+#ifndef COMPONENTS_SAFE_BROWSING_RENDERER_THREAT_DOM_DETAILS_H_
+#define COMPONENTS_SAFE_BROWSING_RENDERER_THREAT_DOM_DETAILS_H_
 
 #include <vector>
 
@@ -78,4 +78,4 @@ class ThreatDOMDetails : public content::RenderFrameObserver {
 
 }  // namespace safe_browsing
 
-#endif  // CHROME_RENDERER_SAFE_BROWSING_THREAT_DOM_DETAILS_H_
+#endif  // COMPONENTS_SAFE_BROWSING_RENDERER_THREAT_DOM_DETAILS_H_
