@@ -283,6 +283,10 @@ void PaletteTray::OnTouchscreenDeviceConfigurationChanged() {
 }
 
 void PaletteTray::OnStylusStateChanged(ui::StylusState stylus_state) {
+  // Device may have a stylus but it has been forcibly disabled.
+  if (!palette_utils::HasStylusInput())
+    return;
+
   PaletteDelegate* palette_delegate = Shell::GetInstance()->palette_delegate();
 
   // Don't do anything if the palette should not be shown or if the user has
