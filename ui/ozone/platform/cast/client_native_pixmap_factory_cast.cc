@@ -7,8 +7,8 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "ui/gfx/buffer_types.h"
-#include "ui/ozone/public/client_native_pixmap.h"
-#include "ui/ozone/public/client_native_pixmap_factory.h"
+#include "ui/gfx/client_native_pixmap.h"
+#include "ui/gfx/client_native_pixmap_factory.h"
 
 namespace ui {
 namespace {

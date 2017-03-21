@@ -113,7 +113,7 @@ source_set("platform") {
     "common/stub_client_native_pixmap_factory.h",
     "platform_selection.cc",
     "platform_selection.h",
-    "public/client_native_pixmap_factory.cc",
+    "public/client_native_pixmap_factory_ozone.cc",
     "public/ozone_gpu_test_helper.cc",
     "public/ozone_platform.cc",
     constructor_list_cc_file,
@@ -122,7 +122,7 @@ source_set("platform") {
   ]
 
   public = [
-    "public/client_native_pixmap_factory.h",
+    "public/client_native_pixmap_factory_ozone.h",
     "public/ozone_gpu_test_helper.h",
     "public/ozone_platform.h",
   ]
@@ -200,8 +200,8 @@ action("generate_constructor_list") {
     "--namespace=ui",
     "--typename=OzonePlatform",
     "--typename=ClientNativePixmapFactory",
+    "--include=\"ui/gfx/client_native_pixmap_factory.h\"",
     "--include=\"ui/ozone/public/ozone_platform.h\"",
-    "--include=\"ui/ozone/public/client_native_pixmap_factory.h\"",
   ]
 
   deps = [

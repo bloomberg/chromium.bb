@@ -11,9 +11,9 @@
 
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
+#include "ui/gfx/client_native_pixmap.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_pixmap_handle.h"
-#include "ui/ozone/public/client_native_pixmap.h"
 
 namespace ui {
 

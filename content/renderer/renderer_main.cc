@@ -59,7 +59,7 @@
 #endif
 
 #if defined(USE_OZONE)
-#include "ui/ozone/public/client_native_pixmap_factory.h"
+#include "ui/ozone/public/client_native_pixmap_factory_ozone.h"
 #endif
 
 namespace content {
@@ -119,7 +119,7 @@ int RendererMain(const MainFunctionParams& parameters) {
 #endif
 
 #if defined(USE_OZONE)
-  g_pixmap_factory.Get() = ui::ClientNativePixmapFactory::Create();
+  g_pixmap_factory.Get() = ui::CreateClientNativePixmapFactoryOzone();
   ui::ClientNativePixmapFactory::SetInstance(g_pixmap_factory.Get().get());
 #endif
 

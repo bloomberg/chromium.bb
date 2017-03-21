@@ -170,7 +170,7 @@ void Service::OnStart() {
   // TODO(kylechar): We might not always want a US keyboard layout.
   ui::KeyboardLayoutEngineManager::GetKeyboardLayoutEngine()
       ->SetCurrentLayoutByName("us");
-  client_native_pixmap_factory_ = ui::ClientNativePixmapFactory::Create();
+  client_native_pixmap_factory_ = ui::CreateClientNativePixmapFactoryOzone();
   ui::ClientNativePixmapFactory::SetInstance(
       client_native_pixmap_factory_.get());
 

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_OZONE_PUBLIC_CLIENT_NATIVE_PIXMAP_FACTORY_H_
-#define UI_OZONE_PUBLIC_CLIENT_NATIVE_PIXMAP_FACTORY_H_
+#ifndef UI_GFX_CLIENT_NATIVE_PIXMAP_FACTORY_H_
+#define UI_GFX_CLIENT_NATIVE_PIXMAP_FACTORY_H_
 
 #include <memory>
 #include <vector>
@@ -11,8 +11,8 @@
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "ui/gfx/buffer_types.h"
-#include "ui/ozone/ozone_export.h"
-#include "ui/ozone/public/client_native_pixmap.h"
+#include "ui/gfx/client_native_pixmap.h"
+#include "ui/gfx/gfx_export.h"
 
 namespace gfx {
 struct NativePixmapHandle;
@@ -23,12 +23,10 @@ namespace ui {
 
 // The Ozone interface allows external implementations to hook into Chromium to
 // provide a client pixmap for non-GPU processes.
-class OZONE_EXPORT ClientNativePixmapFactory {
+class GFX_EXPORT ClientNativePixmapFactory {
  public:
   static ClientNativePixmapFactory* GetInstance();
   static void SetInstance(ClientNativePixmapFactory* instance);
-
-  static std::unique_ptr<ClientNativePixmapFactory> Create();
 
   virtual ~ClientNativePixmapFactory();
 
@@ -53,4 +51,4 @@ class OZONE_EXPORT ClientNativePixmapFactory {
 
 }  // namespace ui
 
-#endif  // UI_OZONE_PUBLIC_CLIENT_NATIVE_PIXMAP_FACTORY_H_
+#endif  // UI_GFX_CLIENT_NATIVE_PIXMAP_FACTORY_H_

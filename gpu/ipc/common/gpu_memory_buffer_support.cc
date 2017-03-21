@@ -8,7 +8,7 @@
 #include "build/build_config.h"
 
 #if defined(USE_OZONE)
-#include "ui/ozone/public/client_native_pixmap_factory.h"
+#include "ui/ozone/public/client_native_pixmap_factory_ozone.h"
 #endif
 
 namespace gpu {

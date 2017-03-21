@@ -145,7 +145,7 @@
 #endif
 
 #if defined(USE_OZONE)
-#include "ui/ozone/public/client_native_pixmap_factory.h"
+#include "ui/ozone/public/client_native_pixmap_factory_ozone.h"
 #endif
 
 #if defined(OS_WIN)
@@ -815,7 +815,7 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
 #endif
 
 #if defined(USE_OZONE)
-  client_native_pixmap_factory_ = ui::ClientNativePixmapFactory::Create();
+  client_native_pixmap_factory_ = ui::CreateClientNativePixmapFactoryOzone();
   ui::ClientNativePixmapFactory::SetInstance(
       client_native_pixmap_factory_.get());
 #endif

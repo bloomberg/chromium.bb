@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
-#include "ui/ozone/common/stub_client_native_pixmap_factory.h"
+#include "ui/gfx/client_native_pixmap_factory.h"
 
 namespace ui {
 

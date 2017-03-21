@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_OZONE_PUBLIC_CLIENT_NATIVE_PIXMAP_H_
-#define UI_OZONE_PUBLIC_CLIENT_NATIVE_PIXMAP_H_
+#ifndef UI_GFX_CLIENT_NATIVE_PIXMAP_H_
+#define UI_GFX_CLIENT_NATIVE_PIXMAP_H_
 
-#include "ui/ozone/ozone_export.h"
+#include "ui/gfx/gfx_export.h"
 
 namespace ui {
 
 // This represents a buffer that can be written to directly by regular CPU code,
 // but can also be read by the GPU.
 // NativePixmap is its counterpart in GPU process.
-class OZONE_EXPORT ClientNativePixmap {
+class GFX_EXPORT ClientNativePixmap {
  public:
   virtual ~ClientNativePixmap() {}
 
@@ -27,4 +27,4 @@ class OZONE_EXPORT ClientNativePixmap {
 
 }  // namespace ui
 
-#endif  // UI_OZONE_PUBLIC_CLIENT_NATIVE_PIXMAP_H_
+#endif  // UI_GFX_CLIENT_NATIVE_PIXMAP_H_

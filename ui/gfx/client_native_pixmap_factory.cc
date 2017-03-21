@@ -2,11 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/ozone/public/client_native_pixmap_factory.h"
-
-#include "base/trace_event/trace_event.h"
-#include "ui/ozone/platform_object.h"
-#include "ui/ozone/platform_selection.h"
+#include "ui/gfx/client_native_pixmap_factory.h"
 
 namespace ui {
 
@@ -27,13 +23,6 @@ void ClientNativePixmapFactory::SetInstance(
   DCHECK(!g_instance);
   DCHECK(instance);
   g_instance = instance;
-}
-
-// static
-std::unique_ptr<ClientNativePixmapFactory> ClientNativePixmapFactory::Create() {
-  TRACE_EVENT1("ozone", "ClientNativePixmapFactory::Create", "platform",
-               GetOzonePlatformName());
-  return PlatformObject<ClientNativePixmapFactory>::Create();
 }
 
 ClientNativePixmapFactory::ClientNativePixmapFactory() {}

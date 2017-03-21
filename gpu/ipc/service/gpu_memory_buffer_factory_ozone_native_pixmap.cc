@@ -4,10 +4,10 @@
 
 #include "gpu/ipc/service/gpu_memory_buffer_factory_ozone_native_pixmap.h"
 
+#include "ui/gfx/client_native_pixmap.h"
 #include "ui/gfx/native_pixmap.h"
 #include "ui/gl/gl_image_native_pixmap.h"
-#include "ui/ozone/public/client_native_pixmap.h"
-#include "ui/ozone/public/client_native_pixmap_factory.h"
+#include "ui/ozone/public/client_native_pixmap_factory_ozone.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/surface_factory_ozone.h"
 
