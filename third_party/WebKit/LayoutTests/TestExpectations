@@ -2592,6 +2592,7 @@ crbug.com/680407 [ Mac ] fast/forms/select/menulist-appearance-basic.html [ Need
 
 # No mock Mojo interface for services yet
 crbug.com/659139 [ Mac ] http/tests/shapedetection/shapedetection-cross-origin.html [ Skip ]
+crbug.com/659139 [ Mac ] virtual/mojo-loading/http/tests/shapedetection/shapedetection-cross-origin.html [ Skip ]
 crbug.com/659139 [ Mac ] shapedetection/detection-HTMLCanvasElement.html [ Skip ]
 crbug.com/659139 [ Mac ] shapedetection/detection-HTMLImageElement.html [ Skip ]
 crbug.com/659139 [ Mac ] shapedetection/detection-HTMLVideoElement.html [ Skip ]
