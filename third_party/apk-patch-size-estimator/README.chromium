@@ -12,4 +12,5 @@ Estimates the size of Google Play patches and the new gzipped APK. See README.md
 for more details.
 
 Local Modifications:
-Removed the following files: CONTRIBUTING.md, tests/, images/.
+- Removed the following files: CONTRIBUTING.md, tests/, images/.
+- Changed file-by-file-tools.jar path to be absolute instead of relative.
