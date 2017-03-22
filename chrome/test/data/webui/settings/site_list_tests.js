@@ -437,6 +437,25 @@ cr.define('site_list', function() {
         testElement.category = category;
       }
 
+      test('read-only attribute', function() {
+        setUpCategory(
+            settings.ContentSettingsTypes.GEOLOCATION,
+            settings.PermissionValues.ALLOW, prefsVarious);
+        return browserProxy.whenCalled('getExceptionList')
+            .then(function(contentType) {
+              // Flush to be sure list container is populated.
+              Polymer.dom.flush();
+              var dotsMenu = testElement.$.listContainer.querySelector('#dots');
+              assertFalse(dotsMenu.hidden);
+              testElement.setAttribute('read-only-list', true);
+              Polymer.dom.flush();
+              assertTrue(dotsMenu.hidden);
+              testElement.removeAttribute('read-only-list');
+              Polymer.dom.flush();
+              assertFalse(dotsMenu.hidden);
+            });
+      });
+
       test('getExceptionList API used', function() {
         setUpCategory(settings.ContentSettingsTypes.GEOLOCATION,
             settings.PermissionValues.ALLOW, prefsEmpty);
