@@ -10,27 +10,29 @@ import json5_generator
 import template_expander
 import make_style_builder
 
-from name_utilities import camel_case, lower_first, upper_first_letter, enum_for_css_keyword
+from name_utilities import (
+    enum_for_css_keyword, enum_value_name, class_member_name, method_name
+)
 
 
 # Temporary hard-coded list of fields that are not CSS properties.
 # Ideally these would be specified in a .json5 file.
 NONPROPERTY_FIELDS = [
-    {'name': 'isLink', 'field_template': 'monotonic_flag'},
+    {'name': 'IsLink', 'field_template': 'monotonic_flag'},
     # Style can not be shared.
-    {'name': 'unique', 'field_template': 'monotonic_flag'},
+    {'name': 'Unique', 'field_template': 'monotonic_flag'},
     # Whether this style is affected by these pseudo-classes.
-    {'name': 'affectedByFocus', 'field_template': 'monotonic_flag'},
-    {'name': 'affectedByHover', 'field_template': 'monotonic_flag'},
-    {'name': 'affectedByActive', 'field_template': 'monotonic_flag'},
-    {'name': 'affectedByDrag', 'field_template': 'monotonic_flag'},
+    {'name': 'AffectedByFocus', 'field_template': 'monotonic_flag'},
+    {'name': 'AffectedByHover', 'field_template': 'monotonic_flag'},
+    {'name': 'AffectedByActive', 'field_template': 'monotonic_flag'},
+    {'name': 'AffectedByDrag', 'field_template': 'monotonic_flag'},
     # A non-inherited property references a variable or @apply is used
-    {'name': 'hasVariableReferenceFromNonInheritedProperty', 'field_template': 'monotonic_flag'},
+    {'name': 'HasVariableReferenceFromNonInheritedProperty', 'field_template': 'monotonic_flag'},
     # Explicitly inherits a non-inherited property
-    {'name': 'hasExplicitlyInheritedProperties', 'field_template': 'monotonic_flag'},
+    {'name': 'HasExplicitlyInheritedProperties', 'field_template': 'monotonic_flag'},
     # These properties only have generated storage, and their methods are handwritten in ComputedStyle.
     # TODO(shend): Remove these fields and delete the 'storage_only' template.
-    {'name': 'emptyState', 'field_template': 'storage_only', 'size': 1}
+    {'name': 'EmptyState', 'field_template': 'storage_only', 'size': 1}
 ]
 
 
@@ -121,8 +123,7 @@ def _create_enums(properties):
         # Only generate enums for keyword properties that use the default field_type_path.
         if property_['field_template'] == 'keyword' and property_['field_type_path'] is None:
             enum_name = property_['type_name']
-            # From the Blink style guide: Enum members should use InterCaps with an initial capital letter. [names-enum-members]
-            enum_values = [('k' + camel_case(k)) for k in property_['keywords']]
+            enum_values = [enum_value_name(k) for k in property_['keywords']]
 
             if enum_name in enums:
                 # There's an enum with the same name, check if the enum values are the same
@@ -140,29 +141,27 @@ def _create_property_field(property_):
     """
     Create a property field from a CSS property and return the Field object.
     """
-    property_name = property_['name_for_methods']
-    property_name_lower = lower_first(property_name)
+    name_for_methods = property_['name_for_methods']
 
-    # From the Blink style guide: Other data members should be prefixed by "m_". [names-data-members]
-    field_name = 'm_' + property_name_lower
     bits_needed = math.log(len(property_['keywords']), 2)  # TODO: implement for non-enums
     type_name = property_['type_name']
 
     # For now, the getter name should match the field name. Later, getter names
     # will start with an uppercase letter, so if they conflict with the type name,
     # add 'get' to the front.
-    getter_method_name = property_name_lower
-    if type_name == property_name:
-        getter_method_name = 'get' + property_name
+    if type_name != name_for_methods:
+        getter_method_name = method_name(name_for_methods)
+    else:
+        getter_method_name = method_name('get-' + name_for_methods)
 
     assert property_['initial_keyword'] is not None, \
         ('MakeComputedStyleBase requires an initial keyword for keyword fields, none specified '
          'for property ' + property_['name'])
-    default_value = type_name + '::k' + camel_case(property_['initial_keyword'])
+    default_value = type_name + '::' + enum_value_name(property_['initial_keyword'])
 
     return Field(
         'property',
-        name=field_name,
+        name=class_member_name(name_for_methods),
         property_name=property_['name'],
         inherited=property_['inherited'],
         independent=property_['independent'],
@@ -171,10 +170,10 @@ def _create_property_field(property_):
         size=int(math.ceil(bits_needed)),
         default_value=default_value,
         getter_method_name=getter_method_name,
-        setter_method_name='set' + property_name,
-        initial_method_name='initial' + property_name,
-        resetter_method_name='reset' + property_name,
-        is_inherited_method_name=property_name_lower + 'IsInherited',
+        setter_method_name=method_name('set-' + name_for_methods),
+        initial_method_name=method_name('initial-' + name_for_methods),
+        resetter_method_name=method_name('reset-' + name_for_methods),
+        is_inherited_method_name=method_name(name_for_methods + '-IsInherited'),
     )
 
 
@@ -183,24 +182,21 @@ def _create_inherited_flag_field(property_):
     Create the field used for an inheritance fast path from an independent CSS property,
     and return the Field object.
     """
-    property_name = property_['name_for_methods']
-    property_name_lower = lower_first(property_name)
-
-    field_name_suffix_upper = property_name + 'IsInherited'
-    field_name_suffix_lower = property_name_lower + 'IsInherited'
+    name_for_methods = property_['name_for_methods']
+    name_for_methods_suffixed = name_for_methods + 'IsInherited'
 
     return Field(
         'inherited_flag',
-        name='m_' + field_name_suffix_lower,
+        name=class_member_name(name_for_methods_suffixed),
         property_name=property_['name'],
         type_name='bool',
         field_template='flag',
         size=1,
         default_value='true',
-        getter_method_name=field_name_suffix_lower,
-        setter_method_name='set' + field_name_suffix_upper,
-        initial_method_name='initial' + field_name_suffix_upper,
-        resetter_method_name='reset' + field_name_suffix_upper,
+        getter_method_name=method_name(name_for_methods_suffixed),
+        setter_method_name=method_name('set-' + name_for_methods_suffixed),
+        initial_method_name=method_name('initial-' + name_for_methods_suffixed),
+        resetter_method_name=method_name('reset-' + name_for_methods_suffixed),
     )
 
 
@@ -211,8 +207,7 @@ def _create_nonproperty_field(property_):
     # TODO(shend): Make this work for nonflags
     assert property_['field_template'] in ('flag', 'monotonic_flag', 'storage_only'), \
         "Nonproperties with arbitrary templates are not yet supported"
-    member_name = 'm_' + property_['name']
-    field_name_upper = upper_first_letter(property_['name'])
+    name_for_methods = property_['name_for_methods']
 
     if property_['field_template'] == 'storage_only':
         assert 'size' in property_, 'storage_only fields need to specify a size'
@@ -223,16 +218,16 @@ def _create_nonproperty_field(property_):
 
     return Field(
         'nonproperty',
-        name=member_name,
-        property_name=property_['name'],
+        name=class_member_name(name_for_methods),
+        property_name=name_for_methods,
         type_name='bool',
         field_template=property_['field_template'],
         size=size,
         default_value='false',
-        getter_method_name=property_['name'],
-        setter_method_name='set' + field_name_upper,
-        initial_method_name='initial' + field_name_upper,
-        resetter_method_name='reset' + field_name_upper,
+        getter_method_name=method_name(name_for_methods),
+        setter_method_name=method_name('set-' + name_for_methods),
+        initial_method_name=method_name('initial-' + name_for_methods),
+        resetter_method_name=method_name('reset-' + name_for_methods),
     )
 
 
@@ -254,6 +249,7 @@ def _create_fields(properties):
     # TODO(shend): Merge NONPROPERTY_FIELDS with property_values so that properties and
     # nonproperties can be treated uniformly.
     for property_ in NONPROPERTY_FIELDS:
+        property_['name_for_methods'] = property_['name']
         fields.append(_create_nonproperty_field(property_))
 
     return fields
@@ -382,8 +378,8 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
         for property_ in self._properties.values():
             if property_['field_template'] == 'keyword':
                 mappings[property_['type_name']] = {
-                    'default_value': 'k' + camel_case(property_['initial_keyword']),
-                    'mapping': [('k' + camel_case(k), enum_for_css_keyword(k)) for k in property_['keywords']],
+                    'default_value': enum_value_name(property_['initial_keyword']),
+                    'mapping': [(enum_value_name(k), enum_for_css_keyword(k)) for k in property_['keywords']],
                 }
 
         return {
