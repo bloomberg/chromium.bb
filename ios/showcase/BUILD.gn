@@ -28,6 +28,7 @@ group("features") {
     "//ios/clean/chrome/browser/ui/tools:tools_ui",
     "//ios/showcase/settings",
     "//ios/showcase/suggestions",
+    "//ios/showcase/tab",
     "//ios/showcase/tab_grid",
     "//ios/showcase/tab_strip",
     "//ios/showcase/toolbar",
@@ -51,6 +52,8 @@ ios_eg_test("ios_showcase_egtests") {
 
     # Add all eg_tests targets below.
     "//ios/showcase/core:eg_tests",
+    "//ios/showcase/suggestions:eg_tests",
+    "//ios/showcase/tab:eg_tests",
     "//ios/showcase/tab_grid:eg_tests",
 
     # All shared libraries must have the sanitizer deps to properly link in
