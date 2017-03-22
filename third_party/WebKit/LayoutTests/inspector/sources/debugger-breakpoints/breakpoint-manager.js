@@ -66,6 +66,11 @@ InspectorTest.DebuggerModelMock = class extends SDK.SDKModel {
         return this._target;
     }
 
+    runtimeModel()
+    {
+        return this._target.runtimeModel;
+    }
+
     setBeforePausedCallback(callback) { }
 
     debuggerEnabled()

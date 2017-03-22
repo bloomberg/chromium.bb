@@ -5,7 +5,7 @@ InspectorTest.preloadPanel("console");
 
 InspectorTest.selectMainExecutionContext = function()
 {
-    var executionContexts = InspectorTest.mainTarget.runtimeModel.executionContexts();
+    var executionContexts = InspectorTest.runtimeModel.executionContexts();
     for (var context of executionContexts) {
         if (context.isDefault) {
             UI.context.setFlavor(SDK.ExecutionContext, context);

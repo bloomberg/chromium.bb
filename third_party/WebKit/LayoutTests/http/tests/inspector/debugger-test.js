@@ -634,16 +634,17 @@ InspectorTest.scriptFormatter = function()
 
 InspectorTest.waitForExecutionContextInTarget = function(target, callback)
 {
-    if (target.runtimeModel.executionContexts().length) {
-        callback(target.runtimeModel.executionContexts()[0]);
+    var runtimeModel = target.model(SDK.RuntimeModel);
+    if (runtimeModel.executionContexts().length) {
+        callback(runtimeModel.executionContexts()[0]);
         return;
     }
-    target.runtimeModel.addEventListener(SDK.RuntimeModel.Events.ExecutionContextCreated, contextCreated);
+    runtimeModel.addEventListener(SDK.RuntimeModel.Events.ExecutionContextCreated, contextCreated);
 
     function contextCreated()
     {
-        target.runtimeModel.removeEventListener(SDK.RuntimeModel.Events.ExecutionContextCreated, contextCreated);
-        callback(target.runtimeModel.executionContexts()[0]);
+        runtimeModel.removeEventListener(SDK.RuntimeModel.Events.ExecutionContextCreated, contextCreated);
+        callback(runtimeModel.executionContexts()[0]);
     }
 }
 
