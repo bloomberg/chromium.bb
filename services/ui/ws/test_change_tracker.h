@@ -77,6 +77,7 @@ struct Change {
   Id window_id3;
   gfx::Rect bounds;
   gfx::Rect bounds2;
+  cc::FrameSinkId frame_sink_id;
   base::Optional<cc::LocalSurfaceId> local_surface_id;
   int32_t event_action;
   bool matches_pointer_watcher;
@@ -139,7 +140,8 @@ class TestChangeTracker {
   // WindowTreeClient function.
   void OnEmbed(ClientSpecificId client_id,
                mojom::WindowDataPtr root,
-               bool drawn);
+               bool drawn,
+               const cc::FrameSinkId& frame_sink_id);
   void OnEmbeddedAppDisconnected(Id window_id);
   void OnUnembed(Id window_id);
   void OnCaptureChanged(Id new_capture_window_id, Id old_capture_window_id);
@@ -175,7 +177,8 @@ class TestChangeTracker {
   void OnChangeCompleted(uint32_t change_id, bool success);
   void OnTopLevelCreated(uint32_t change_id,
                          mojom::WindowDataPtr window_data,
-                         bool drawn);
+                         bool drawn,
+                         const cc::FrameSinkId& frame_sink_id);
   void OnWindowSurfaceChanged(Id window_id,
                               const cc::SurfaceInfo& surface_info);
 

@@ -14,7 +14,8 @@ using WindowTreeHostMusTest = aura::test::AuraMusClientTestBase;
 
 TEST_F(WindowTreeHostMusTest, UpdateClientArea) {
   std::unique_ptr<WindowTreeHostMus> window_tree_host_mus =
-      base::MakeUnique<WindowTreeHostMus>(window_tree_client_impl());
+      base::MakeUnique<WindowTreeHostMus>(window_tree_client_impl(),
+                                          cc::FrameSinkId());
 
   gfx::Insets new_insets(10, 11, 12, 13);
   window_tree_host_mus->SetClientArea(new_insets, std::vector<gfx::Rect>());
@@ -23,7 +24,8 @@ TEST_F(WindowTreeHostMusTest, UpdateClientArea) {
 
 TEST_F(WindowTreeHostMusTest, SetHitTestMask) {
   std::unique_ptr<WindowTreeHostMus> window_tree_host_mus =
-      base::MakeUnique<WindowTreeHostMus>(window_tree_client_impl());
+      base::MakeUnique<WindowTreeHostMus>(window_tree_client_impl(),
+                                          cc::FrameSinkId());
 
   EXPECT_FALSE(window_tree()->last_hit_test_mask().has_value());
   gfx::Rect mask(10, 10, 10, 10);

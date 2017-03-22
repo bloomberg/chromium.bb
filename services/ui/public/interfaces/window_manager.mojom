@@ -4,6 +4,7 @@
 
 module ui.mojom;
 
+import "cc/ipc/frame_sink_id.mojom";
 import "services/ui/public/interfaces/cursor.mojom";
 import "services/ui/public/interfaces/event_matcher.mojom";
 import "services/ui/public/interfaces/window_manager_constants.mojom";
@@ -152,7 +153,8 @@ interface WindowManager {
   // to this WindowManager for |display|.
   WmNewDisplayAdded(display.mojom.Display display,
                     WindowData root,
-                    bool parent_drawn);
+                    bool parent_drawn,
+                    cc.mojom.FrameSinkId frame_sink_id);
 
   // Called when a display is removed. The root of the specified display is
   // still valid. It is expected the client calls DeleteWindow() shortly after

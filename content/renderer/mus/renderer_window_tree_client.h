@@ -19,10 +19,6 @@ namespace gpu {
 class GpuMemoryBufferManager;
 }
 
-namespace ui {
-class ClientCompositorFrameSinkBinding;
-}
-
 namespace content {
 
 // ui.mojom.WindowTreeClient implementation for RenderWidget. This lives and
@@ -44,14 +40,21 @@ class RendererWindowTreeClient : public ui::mojom::WindowTreeClient {
 
   void Bind(ui::mojom::WindowTreeClientRequest request);
 
-  std::unique_ptr<cc::CompositorFrameSink> CreateCompositorFrameSink(
-      const cc::FrameSinkId& frame_sink_id,
+  using CompositorFrameSinkCallback =
+      base::Callback<void(std::unique_ptr<cc::CompositorFrameSink>)>;
+  void RequestCompositorFrameSink(
       scoped_refptr<cc::ContextProvider> context_provider,
-      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager);
+      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+      const CompositorFrameSinkCallback& callback);
 
  private:
   explicit RendererWindowTreeClient(int routing_id);
   ~RendererWindowTreeClient() override;
+
+  void RequestCompositorFrameSinkInternal(
+      scoped_refptr<cc::ContextProvider> context_provider,
+      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+      const CompositorFrameSinkCallback& callback);
 
   void DestroySelf();
 
@@ -65,7 +68,8 @@ class RendererWindowTreeClient : public ui::mojom::WindowTreeClient {
                ui::mojom::WindowTreePtr tree,
                int64_t display_id,
                ui::Id focused_window_id,
-               bool drawn) override;
+               bool drawn,
+               const cc::FrameSinkId& frame_sink_id) override;
   void OnEmbeddedAppDisconnected(ui::Id window_id) override;
   void OnUnembed(ui::Id window_id) override;
   void OnCaptureChanged(ui::Id new_capture_window_id,
@@ -73,7 +77,8 @@ class RendererWindowTreeClient : public ui::mojom::WindowTreeClient {
   void OnTopLevelCreated(uint32_t change_id,
                          ui::mojom::WindowDataPtr data,
                          int64_t display_id,
-                         bool drawn) override;
+                         bool drawn,
+                         const cc::FrameSinkId& frame_sink_id) override;
   void OnWindowBoundsChanged(
       ui::Id window_id,
       const gfx::Rect& old_bounds,
@@ -149,8 +154,11 @@ class RendererWindowTreeClient : public ui::mojom::WindowTreeClient {
 
   const int routing_id_;
   ui::Id root_window_id_;
+  cc::FrameSinkId frame_sink_id_;
+  scoped_refptr<cc::ContextProvider> pending_context_provider_;
+  gpu::GpuMemoryBufferManager* pending_gpu_memory_buffer_manager_ = nullptr;
+  CompositorFrameSinkCallback pending_compositor_frame_sink_callback_;
   ui::mojom::WindowTreePtr tree_;
-  std::unique_ptr<ui::ClientCompositorFrameSinkBinding> pending_frame_sink_;
   mojo::Binding<ui::mojom::WindowTreeClient> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererWindowTreeClient);

@@ -82,18 +82,39 @@ void WindowPortMus::Embed(
   window_tree_client_->Embed(window_, std::move(client), flags, callback);
 }
 
-std::unique_ptr<ui::ClientCompositorFrameSink>
-WindowPortMus::RequestCompositorFrameSink(
+void WindowPortMus::RequestCompositorFrameSink(
     scoped_refptr<cc::ContextProvider> context_provider,
-    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager) {
+    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+    const CompositorFrameSinkCallback& callback) {
+  DCHECK(pending_compositor_frame_sink_request_.is_null());
+  // If we haven't received a FrameSinkId from the window server yet then we
+  // bind the parameters to a closure that will be called once the FrameSinkId
+  // is available.
+  if (!frame_sink_id_.is_valid()) {
+    pending_compositor_frame_sink_request_ =
+        base::Bind(&WindowPortMus::RequestCompositorFrameSinkInternal,
+                   base::Unretained(this), std::move(context_provider),
+                   gpu_memory_buffer_manager, callback);
+    return;
+  }
+
+  RequestCompositorFrameSinkInternal(std::move(context_provider),
+                                     gpu_memory_buffer_manager, callback);
+}
+
+void WindowPortMus::RequestCompositorFrameSinkInternal(
+    scoped_refptr<cc::ContextProvider> context_provider,
+    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+    const CompositorFrameSinkCallback& callback) {
+  DCHECK(frame_sink_id_.is_valid());
   std::unique_ptr<ui::ClientCompositorFrameSinkBinding>
       compositor_frame_sink_binding;
   std::unique_ptr<ui::ClientCompositorFrameSink> compositor_frame_sink =
       ui::ClientCompositorFrameSink::Create(
-          cc::FrameSinkId(server_id(), 0), std::move(context_provider),
+          frame_sink_id_, std::move(context_provider),
           gpu_memory_buffer_manager, &compositor_frame_sink_binding);
   AttachCompositorFrameSink(std::move(compositor_frame_sink_binding));
-  return compositor_frame_sink;
+  callback.Run(std::move(compositor_frame_sink));
 }
 
 void WindowPortMus::AttachCompositorFrameSink(
@@ -245,6 +266,13 @@ void WindowPortMus::SetPropertyFromServer(
   ScopedServerChange change(this, ServerChangeType::PROPERTY, data);
   GetPropertyConverter()->SetPropertyFromTransportValue(window_, property_name,
                                                         property_data);
+}
+
+void WindowPortMus::SetFrameSinkIdFromServer(
+    const cc::FrameSinkId& frame_sink_id) {
+  frame_sink_id_ = frame_sink_id;
+  if (!pending_compositor_frame_sink_request_.is_null())
+    base::ResetAndReturn(&pending_compositor_frame_sink_request_).Run();
 }
 
 void WindowPortMus::SetSurfaceInfoFromServer(

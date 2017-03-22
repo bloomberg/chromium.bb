@@ -231,7 +231,8 @@ class AURA_EXPORT WindowTreeClient
   std::unique_ptr<WindowTreeHostMus> CreateWindowTreeHost(
       WindowMusType window_mus_type,
       const ui::mojom::WindowData& window_data,
-      int64_t display_id);
+      int64_t display_id,
+      const cc::FrameSinkId& frame_sink_id = cc::FrameSinkId());
 
   WindowMus* NewWindowFromWindowData(WindowMus* parent,
                                      const ui::mojom::WindowData& window_data);
@@ -257,12 +258,15 @@ class AURA_EXPORT WindowTreeClient
                    ui::mojom::WindowDataPtr root_data,
                    int64_t display_id,
                    Id focused_window_id,
-                   bool drawn);
+                   bool drawn,
+                   const cc::FrameSinkId& frame_sink_id);
 
   // Called by WmNewDisplayAdded().
-  WindowTreeHostMus* WmNewDisplayAddedImpl(const display::Display& display,
-                                           ui::mojom::WindowDataPtr root_data,
-                                           bool parent_drawn);
+  WindowTreeHostMus* WmNewDisplayAddedImpl(
+      const display::Display& display,
+      ui::mojom::WindowDataPtr root_data,
+      bool parent_drawn,
+      const cc::FrameSinkId& frame_sink_id);
 
   std::unique_ptr<EventResultCallback> CreateEventResultCallback(
       int32_t event_id);
@@ -309,7 +313,8 @@ class AURA_EXPORT WindowTreeClient
                ui::mojom::WindowTreePtr tree,
                int64_t display_id,
                Id focused_window_id,
-               bool drawn) override;
+               bool drawn,
+               const cc::FrameSinkId& frame_sink_Id) override;
   void OnEmbeddedAppDisconnected(Id window_id) override;
   void OnUnembed(Id window_id) override;
   void OnCaptureChanged(Id new_capture_window_id,
@@ -317,7 +322,8 @@ class AURA_EXPORT WindowTreeClient
   void OnTopLevelCreated(uint32_t change_id,
                          ui::mojom::WindowDataPtr data,
                          int64_t display_id,
-                         bool drawn) override;
+                         bool drawn,
+                         const cc::FrameSinkId& frame_sink_id) override;
   void OnWindowBoundsChanged(
       Id window_id,
       const gfx::Rect& old_bounds,
@@ -394,7 +400,8 @@ class AURA_EXPORT WindowTreeClient
   void OnConnect(ClientSpecificId client_id) override;
   void WmNewDisplayAdded(const display::Display& display,
                          ui::mojom::WindowDataPtr root_data,
-                         bool parent_drawn) override;
+                         bool parent_drawn,
+                         const cc::FrameSinkId& frame_sink_id) override;
   void WmDisplayRemoved(int64_t display_id) override;
   void WmDisplayModified(const display::Display& display) override;
   void WmSetBounds(uint32_t change_id,

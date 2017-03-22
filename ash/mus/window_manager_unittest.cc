@@ -99,7 +99,8 @@ TEST_F(MusWindowManagerTest, OpenWindow) {
   properties[ui::mojom::WindowManager::kWindowType_InitProperty] =
       mojo::ConvertTo<std::vector<uint8_t>>(
           static_cast<int32_t>(ui::mojom::WindowType::WINDOW));
-  aura::WindowTreeHostMus window_tree_host_mus(&client, &properties);
+  aura::WindowTreeHostMus window_tree_host_mus(&client, cc::FrameSinkId(),
+                                               &properties);
   window_tree_host_mus.InitHost();
   aura::Window* child_window = new aura::Window(nullptr);
   child_window->Init(ui::LAYER_NOT_DRAWN);

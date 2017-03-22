@@ -701,18 +701,24 @@ TEST_F(WindowTreeTest, NewTopLevelWindow) {
   static_cast<mojom::WindowManagerClient*>(wm_tree())
       ->OnWmCreatedTopLevelWindow(wm_change_id, embed_window_id2.id);
   EXPECT_FALSE(child_binding->is_paused());
-  EXPECT_EQ("TopLevelCreated id=17 window_id=" +
-                WindowIdToString(
-                    WindowIdFromTransportId(embed_window_id2_in_child.id)) +
-                " drawn=true",
-            SingleChangeToDescription(
-                *child_binding->client()->tracker()->changes()));
+  ServerWindow* embed_window = wm_tree()->GetWindowByClientId(embed_window_id2);
+  ASSERT_TRUE(embed_window);
+  // TODO(fsamuel): Currently the FrameSinkId maps directly to the server's
+  // window ID. This is likely bad from a security perspective and should be
+  // fixed.
+  EXPECT_EQ(
+      base::StringPrintf(
+          "TopLevelCreated id=17 FrameSinkId(%d, 0) window_id=%s drawn=true",
+          WindowIdToTransportId(embed_window->id()),
+          WindowIdToString(
+              WindowIdFromTransportId(embed_window_id2_in_child.id))
+              .c_str()),
+      SingleChangeToDescription(
+          *child_binding->client()->tracker()->changes()));
   child_binding->client()->tracker()->changes()->clear();
 
   // Change the visibility of the window from the owner and make sure the
   // client sees the right id.
-  ServerWindow* embed_window = wm_tree()->GetWindowByClientId(embed_window_id2);
-  ASSERT_TRUE(embed_window);
   EXPECT_TRUE(embed_window->visible());
   ASSERT_TRUE(wm_tree()->SetWindowVisibility(
       ClientWindowIdForWindow(wm_tree(), embed_window), false));

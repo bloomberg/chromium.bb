@@ -1889,11 +1889,10 @@ void RenderThreadImpl::RequestNewCompositorFrameSink(
       callback.Run(nullptr);
       return;
     }
-    callback.Run(RendererWindowTreeClient::Get(routing_id)
-                     ->CreateCompositorFrameSink(
-                         cc::FrameSinkId(client_id_, routing_id),
-                         gpu_->CreateContextProvider(std::move(channel)),
-                         GetGpuMemoryBufferManager()));
+    RendererWindowTreeClient::Get(routing_id)
+        ->RequestCompositorFrameSink(
+            gpu_->CreateContextProvider(std::move(channel)),
+            GetGpuMemoryBufferManager(), callback);
     return;
   }
 #endif

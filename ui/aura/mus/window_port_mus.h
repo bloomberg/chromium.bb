@@ -68,9 +68,17 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
              uint32_t flags,
              const ui::mojom::WindowTree::EmbedCallback& callback);
 
-  std::unique_ptr<ui::ClientCompositorFrameSink> RequestCompositorFrameSink(
+  using CompositorFrameSinkCallback =
+      base::Callback<void(std::unique_ptr<cc::CompositorFrameSink>)>;
+  void RequestCompositorFrameSink(
       scoped_refptr<cc::ContextProvider> context_provider,
-      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager);
+      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+      const CompositorFrameSinkCallback& callback);
+
+  void RequestCompositorFrameSinkInternal(
+      scoped_refptr<cc::ContextProvider> context_provider,
+      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
+      const CompositorFrameSinkCallback& callback);
 
   void AttachCompositorFrameSink(
       std::unique_ptr<ui::ClientCompositorFrameSinkBinding>
@@ -210,6 +218,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   void SetPropertyFromServer(
       const std::string& property_name,
       const std::vector<uint8_t>* property_data) override;
+  void SetFrameSinkIdFromServer(const cc::FrameSinkId& frame_sink_id) override;
   void SetSurfaceInfoFromServer(const cc::SurfaceInfo& surface_info) override;
   void DestroyFromServer() override;
   void AddTransientChildFromServer(WindowMus* child) override;
@@ -249,6 +258,9 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
 
   ServerChangeIdType next_server_change_id_ = 0;
   ServerChanges server_changes_;
+
+  cc::FrameSinkId frame_sink_id_;
+  base::Closure pending_compositor_frame_sink_request_;
 
   cc::SurfaceInfo surface_info_;
 

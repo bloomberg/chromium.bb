@@ -82,6 +82,8 @@ class AURA_EXPORT WindowMus {
   virtual void SetPredefinedCursorFromServer(ui::mojom::Cursor cursor) = 0;
   virtual void SetPropertyFromServer(const std::string& property_name,
                                      const std::vector<uint8_t>* data) = 0;
+  virtual void SetFrameSinkIdFromServer(
+      const cc::FrameSinkId& frame_sink_id) = 0;
   virtual void SetSurfaceInfoFromServer(
       const cc::SurfaceInfo& surface_info) = 0;
   // The window was deleted on the server side. DestroyFromServer() should

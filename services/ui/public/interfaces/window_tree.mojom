@@ -4,6 +4,7 @@
 
 module ui.mojom;
 
+import "cc/ipc/frame_sink_id.mojom";
 import "cc/ipc/local_surface_id.mojom";
 import "cc/ipc/surface_info.mojom";
 import "cc/ipc/mojo_compositor_frame_sink.mojom";
@@ -321,7 +322,8 @@ interface WindowTreeClient {
           WindowTree? tree,
           int64 display_id,
           uint32 focused_window,
-          bool parent_drawn);
+          bool parent_drawn,
+          cc.mojom.FrameSinkId frame_sink_id);
 
   // Invoked when the application embedded at |window| is disconnected. In other
   // words the embedded app closes the connection to the server. This is called
@@ -344,7 +346,8 @@ interface WindowTreeClient {
   OnTopLevelCreated(uint32 change_id,
                     WindowData data,
                     int64 display_id,
-                    bool parent_drawn);
+                    bool parent_drawn,
+                    cc.mojom.FrameSinkId frame_sink_id);
 
   // Invoked when a window's bounds have changed. Only the client embedded in
   // |window| gets a non_empty |local_surface_id|.

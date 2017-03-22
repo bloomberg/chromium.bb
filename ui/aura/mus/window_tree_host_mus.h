@@ -38,6 +38,7 @@ class AURA_EXPORT WindowTreeHostMus : public aura::WindowTreeHostPlatform {
       std::unique_ptr<WindowPortMus> window_port,
       WindowTreeClient* window_tree_client,
       int64_t display_id,
+      const cc::FrameSinkId& frame_sink_id = cc::FrameSinkId(),
       const std::map<std::string, std::vector<uint8_t>>* properties = nullptr);
 
   // This constructor is intended for creating top level windows in
@@ -48,6 +49,7 @@ class AURA_EXPORT WindowTreeHostMus : public aura::WindowTreeHostPlatform {
   // TODO: this should take an unordered_map, see http://crbug.com/670515.
   explicit WindowTreeHostMus(
       WindowTreeClient* window_tree_client,
+      const cc::FrameSinkId& frame_sink_id = cc::FrameSinkId(),
       const std::map<std::string, std::vector<uint8_t>>* properties = nullptr);
 
   ~WindowTreeHostMus() override;

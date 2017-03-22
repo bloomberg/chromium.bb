@@ -185,8 +185,10 @@ void OnMoveLoopEnd(bool* out_success,
 DesktopWindowTreeHostMus::DesktopWindowTreeHostMus(
     internal::NativeWidgetDelegate* native_widget_delegate,
     DesktopNativeWidgetAura* desktop_native_widget_aura,
+    const cc::FrameSinkId& frame_sink_id,
     const std::map<std::string, std::vector<uint8_t>>* mus_properties)
     : aura::WindowTreeHostMus(MusClient::Get()->window_tree_client(),
+                              frame_sink_id,
                               mus_properties),
       native_widget_delegate_(native_widget_delegate),
       desktop_native_widget_aura_(desktop_native_widget_aura),

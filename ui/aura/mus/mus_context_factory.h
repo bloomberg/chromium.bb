@@ -37,6 +37,10 @@ class AURA_EXPORT MusContextFactory : public ui::ContextFactory {
   void OnEstablishedGpuChannel(base::WeakPtr<ui::Compositor> compositor,
                                scoped_refptr<gpu::GpuChannelHost> gpu_channel);
 
+  void OnCompositorFrameSinkAvailable(
+      base::WeakPtr<ui::Compositor> compositor,
+      std::unique_ptr<cc::CompositorFrameSink> compositor_frame_sink);
+
   // ContextFactory:
   void CreateCompositorFrameSink(
       base::WeakPtr<ui::Compositor> compositor) override;

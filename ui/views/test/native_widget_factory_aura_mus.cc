@@ -32,7 +32,8 @@ NativeWidget* CreatePlatformNativeWidgetImplAuraMus(
       MusClient::Get()->ConfigurePropertiesFromParams(init_params);
   desktop_native_widget_aura->SetDesktopWindowTreeHost(
       base::MakeUnique<DesktopWindowTreeHostMus>(
-          widget, desktop_native_widget_aura, &mus_properties));
+          widget, desktop_native_widget_aura, cc::FrameSinkId(),
+          &mus_properties));
   return desktop_native_widget_aura;
 }
 

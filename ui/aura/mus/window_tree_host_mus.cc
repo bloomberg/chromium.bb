@@ -42,6 +42,7 @@ WindowTreeHostMus::WindowTreeHostMus(
     std::unique_ptr<WindowPortMus> window_port,
     WindowTreeClient* window_tree_client,
     int64_t display_id,
+    const cc::FrameSinkId& frame_sink_id,
     const std::map<std::string, std::vector<uint8_t>>* properties)
     : WindowTreeHostPlatform(std::move(window_port)),
       display_id_(display_id),
@@ -49,17 +50,16 @@ WindowTreeHostMus::WindowTreeHostMus(
   window()->SetProperty(kWindowTreeHostMusKey, this);
   // TODO(sky): find a cleaner way to set this! Better solution is to likely
   // have constructor take aura::Window.
-  WindowPortMus::Get(window())->window_ = window();
+  WindowPortMus* window_mus = WindowPortMus::Get(window());
+  window_mus->window_ = window();
   if (properties) {
     // Apply the properties before initializing the window, that way the
     // server seems them at the time the window is created.
-    WindowMus* window_mus = WindowMus::Get(window());
     for (auto& pair : *properties)
       window_mus->SetPropertyFromServer(pair.first, &pair.second);
   }
-  Id server_id = WindowMus::Get(window())->server_id();
-  cc::FrameSinkId frame_sink_id(server_id, 0);
-  DCHECK(frame_sink_id.is_valid());
+  // TODO(fsamuel): Once the display compositor is decoupled from the browser
+  // process then ui::Compositor will not a cc::FrameSinkId.
   CreateCompositor(frame_sink_id);
   gfx::AcceleratedWidget accelerated_widget;
   if (IsUsingTestContext()) {
@@ -93,6 +93,9 @@ WindowTreeHostMus::WindowTreeHostMus(
 
   // Mus windows are assumed hidden.
   compositor()->SetVisible(false);
+
+  if (frame_sink_id.is_valid())
+    window_mus->SetFrameSinkIdFromServer(frame_sink_id);
 }
 
 // Pass |properties| to CreateWindowPortForTopLevel() so that |properties|
@@ -101,12 +104,14 @@ WindowTreeHostMus::WindowTreeHostMus(
 // properties may be server specific and not applied to the Window.
 WindowTreeHostMus::WindowTreeHostMus(
     WindowTreeClient* window_tree_client,
+    const cc::FrameSinkId& frame_sink_id,
     const std::map<std::string, std::vector<uint8_t>>* properties)
     : WindowTreeHostMus(
           static_cast<WindowTreeHostMusDelegate*>(window_tree_client)
               ->CreateWindowPortForTopLevel(properties),
           window_tree_client,
           display::Screen::GetScreen()->GetPrimaryDisplay().id(),
+          frame_sink_id,
           properties) {}
 
 WindowTreeHostMus::~WindowTreeHostMus() {

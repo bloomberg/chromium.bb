@@ -48,8 +48,8 @@ views::Widget::InitParams BrowserFrameMus::GetWidgetParams() {
           static_cast<int32_t>(ash::mojom::WindowStyle::BROWSER));
 #endif
   std::unique_ptr<views::DesktopWindowTreeHostMus> desktop_window_tree_host =
-      base::MakeUnique<views::DesktopWindowTreeHostMus>(browser_frame_, this,
-                                                        &properties);
+      base::MakeUnique<views::DesktopWindowTreeHostMus>(
+          browser_frame_, this, cc::FrameSinkId(), &properties);
   // BrowserNonClientFrameViewMus::OnBoundsChanged() takes care of updating
   // the insets.
   desktop_window_tree_host->set_auto_update_client_area(false);

@@ -715,7 +715,8 @@ TEST_F(WindowServerTest, EstablishConnectionViaFactory) {
   aura::WindowTreeClient second_client(connector(), this, nullptr, nullptr,
                                        nullptr, false);
   second_client.ConnectViaWindowTreeFactory();
-  aura::WindowTreeHostMus window_tree_host_in_second_client(&second_client);
+  aura::WindowTreeHostMus window_tree_host_in_second_client(
+      &second_client, cc::FrameSinkId(1, 1));
   window_tree_host_in_second_client.InitHost();
   window_tree_host_in_second_client.window()->Show();
   ASSERT_TRUE(second_client.GetRoots().count(
@@ -744,7 +745,8 @@ TEST_F(WindowServerTest, OnWindowHierarchyChangedIncludesTransientParent) {
   aura::WindowTreeClient second_client(connector(), this, nullptr, nullptr,
                                        nullptr, false);
   second_client.ConnectViaWindowTreeFactory();
-  aura::WindowTreeHostMus window_tree_host_in_second_client(&second_client);
+  aura::WindowTreeHostMus window_tree_host_in_second_client(
+      &second_client, cc::FrameSinkId(1, 1));
   window_tree_host_in_second_client.InitHost();
   window_tree_host_in_second_client.window()->Show();
   aura::Window* second_client_child = NewVisibleWindow(

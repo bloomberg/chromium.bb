@@ -574,7 +574,8 @@ class InputEventBasicTestEventHandler : public ui::test::TestEventHandler {
 
 TEST_F(WindowTreeClientClientTest, InputEventBasic) {
   InputEventBasicTestWindowDelegate window_delegate(window_tree());
-  WindowTreeHostMus window_tree_host(window_tree_client_impl());
+  WindowTreeHostMus window_tree_host(window_tree_client_impl(),
+                                     cc::FrameSinkId(1, 1));
   Window* top_level = window_tree_host.window();
   const gfx::Rect bounds(0, 0, 100, 100);
   window_tree_host.SetBoundsInPixels(bounds);
@@ -607,7 +608,8 @@ TEST_F(WindowTreeClientClientTest, InputEventBasic) {
 }
 
 TEST_F(WindowTreeClientClientTest, InputEventFindTargetAndConversion) {
-  WindowTreeHostMus window_tree_host(window_tree_client_impl());
+  WindowTreeHostMus window_tree_host(window_tree_client_impl(),
+                                     cc::FrameSinkId(1, 1));
   Window* top_level = window_tree_host.window();
   const gfx::Rect bounds(0, 0, 100, 100);
   window_tree_host.SetBoundsInPixels(bounds);
@@ -1081,8 +1083,8 @@ TEST_F(WindowTreeClientClientTest, NewTopLevelWindow) {
   ui::mojom::WindowDataPtr data = ui::mojom::WindowData::New();
   data->window_id = server_id(top_level);
   const int64_t display_id = 1;
-  window_tree_client()->OnTopLevelCreated(change_id, std::move(data),
-                                          display_id, false);
+  window_tree_client()->OnTopLevelCreated(
+      change_id, std::move(data), display_id, false, cc::FrameSinkId(1, 1));
 
   EXPECT_FALSE(window_tree_host->window()->TargetVisibility());
 
@@ -1121,8 +1123,8 @@ TEST_F(WindowTreeClientClientTest, NewTopLevelWindowGetsPropertiesFromData) {
   uint32_t change_id;
   ASSERT_TRUE(window_tree()->GetAndRemoveFirstChangeOfType(
       WindowTreeChangeType::NEW_TOP_LEVEL, &change_id));
-  window_tree_client()->OnTopLevelCreated(change_id, std::move(data),
-                                          display_id, true);
+  window_tree_client()->OnTopLevelCreated(
+      change_id, std::move(data), display_id, true, cc::FrameSinkId(1, 1));
   EXPECT_EQ(
       0u, window_tree()->GetChangeCountForType(WindowTreeChangeType::VISIBLE));
 
@@ -1173,7 +1175,8 @@ TEST_F(WindowTreeClientClientTest, NewWindowGetsAllChangesInFlight) {
   ASSERT_TRUE(window_tree()->GetAndRemoveFirstChangeOfType(
       WindowTreeChangeType::NEW_TOP_LEVEL, &new_window_in_flight_change_id));
   window_tree_client()->OnTopLevelCreated(new_window_in_flight_change_id,
-                                          std::move(data), display_id, true);
+                                          std::move(data), display_id, true,
+                                          cc::FrameSinkId(1, 1));
 
   // The only value that should take effect is the property for 'yy' as it was
   // not in flight.
@@ -1395,8 +1398,8 @@ TEST_F(WindowTreeClientClientTest,
       WindowTreeChangeType::NEW_TOP_LEVEL, &change_id));
 
   const int64_t display_id = 1;
-  window_tree_client()->OnTopLevelCreated(change_id, std::move(data),
-                                          display_id, true);
+  window_tree_client()->OnTopLevelCreated(
+      change_id, std::move(data), display_id, true, cc::FrameSinkId(1, 1));
   EXPECT_EQ(initial_root_count, window_tree_client_impl()->GetRoots().size());
 }
 
@@ -1413,7 +1416,7 @@ TEST_F(WindowTreeClientClientTest, NewTopLevelWindowGetsProperties) {
       mojo::ConvertTo<std::vector<uint8_t>>(kUnknownPropertyValue);
   std::unique_ptr<WindowTreeHostMus> window_tree_host =
       base::MakeUnique<WindowTreeHostMus>(window_tree_client_impl(),
-                                          &properties);
+                                          cc::FrameSinkId(1, 1), &properties);
   window_tree_host->InitHost();
   window_tree_host->window()->Show();
   // Verify the property made it to the window.
@@ -1700,8 +1703,8 @@ TEST_F(WindowTreeClientClientTest, TwoWindowTreesRequestCapture) {
   data->window_id = server_id(top_level);
   data->visible = true;
   const int64_t display_id = 1;
-  window_tree_client()->OnTopLevelCreated(change_id, std::move(data),
-                                          display_id, true);
+  window_tree_client()->OnTopLevelCreated(
+      change_id, std::move(data), display_id, true, cc::FrameSinkId(1, 1));
   EXPECT_EQ(
       0u, window_tree()->GetChangeCountForType(WindowTreeChangeType::VISIBLE));
   EXPECT_TRUE(top_level->TargetVisibility());
@@ -1909,8 +1912,8 @@ TEST_F(WindowTreeClientClientTestHighDPI, NewTopLevelWindowBounds) {
   uint32_t change_id;
   ASSERT_TRUE(window_tree()->GetAndRemoveFirstChangeOfType(
       WindowTreeChangeType::NEW_TOP_LEVEL, &change_id));
-  window_tree_client()->OnTopLevelCreated(change_id, std::move(data),
-                                          display_id, true);
+  window_tree_client()->OnTopLevelCreated(
+      change_id, std::move(data), display_id, true, cc::FrameSinkId(1, 1));
 
   // aura::Window should operate in DIP and aura::WindowTreeHost should operate
   // in pixels.

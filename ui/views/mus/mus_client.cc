@@ -261,7 +261,7 @@ std::unique_ptr<DesktopWindowTreeHost> MusClient::CreateDesktopWindowTreeHost(
   std::map<std::string, std::vector<uint8_t>> mus_properties =
       ConfigurePropertiesFromParams(init_params);
   return base::MakeUnique<DesktopWindowTreeHostMus>(
-      delegate, desktop_native_widget_aura, &mus_properties);
+      delegate, desktop_native_widget_aura, cc::FrameSinkId(), &mus_properties);
 }
 
 void MusClient::OnEmbed(
