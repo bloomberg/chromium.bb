@@ -181,13 +181,6 @@ bool DisassemblerElf32::Disassemble(AssemblyProgram* program) {
     return false;
   }
 
-  // Finally sort rel32 locations.
-  std::sort(rel32_locations_.begin(),
-            rel32_locations_.end(),
-            TypedRVA::IsLessThanByRVA);
-  DCHECK(rel32_locations_.empty() ||
-         rel32_locations_.back()->rva() != kUnassignedRVA);
-
   program->DefaultAssignIndexes();
   return true;
 }
@@ -384,6 +377,11 @@ CheckBool DisassemblerElf32::ParseRel32RelocsFromSections() {
   if (!found_rel32)
     VLOG(1) << "Warning: Found no rel32 addresses. Missing .text section?";
 
+  std::sort(rel32_locations_.begin(), rel32_locations_.end(),
+            TypedRVA::IsLessThanByRVA);
+  DCHECK(rel32_locations_.empty() ||
+         rel32_locations_.back()->rva() != kUnassignedRVA);
+
   return true;
 }
 
@@ -418,15 +416,18 @@ CheckBool DisassemblerElf32::ParseFile(AssemblyProgram* program,
   // Walk all the bytes in the file, whether or not in a section.
   FileOffset file_offset = 0;
 
-  std::vector<FileOffset> abs_offsets;
-
   // File parsing follows file offset order, and we visit abs32 and rel32
   // locations in lockstep. Therefore we need to extract and sort file offsets
-  // of all abs32 and rel32 locations.
+  // of all abs32 and rel32 locations. For abs32, we copy the offsets to a new
+  // array.
+  std::vector<FileOffset> abs_offsets;
   if (!RVAsToFileOffsets(abs32_locations_, &abs_offsets))
     return false;
-  std::sort(abs32_locations_.begin(), abs32_locations_.end());
+  std::sort(abs_offsets.begin(), abs_offsets.end());
 
+  // For rel32, TypedRVA (rather than raw offset) is stored, so sort-by-offset
+  // is performed in place to save memory. At the end of function we will
+  // sort-by-RVA.
   if (!RVAsToFileOffsets(&rel32_locations_))
     return false;
   std::sort(rel32_locations_.begin(),
@@ -495,6 +496,10 @@ CheckBool DisassemblerElf32::ParseFile(AssemblyProgram* program,
   // Rest of the file past the last section
   if (!ParseSimpleRegion(file_offset, length(), receptor))
     return false;
+
+  // Restore original rel32 location order and sort by RVA order.
+  std::sort(rel32_locations_.begin(), rel32_locations_.end(),
+            TypedRVA::IsLessThanByRVA);
 
   // Make certain we consume all of the relocations as expected
   return (current_abs_offset == end_abs_offset);
