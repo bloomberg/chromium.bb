@@ -14,6 +14,16 @@
 #include "base/strings/string_split.h"
 #include "build/build_config.h"
 #include "net/base/address_list.h"
+#include "net/dns/dns_protocol.h"
+
+namespace {
+
+// RFC 1035, section 2.3.4: labels 63 octets or less.
+// Section 3.1: Each label is represented as a one octet length field followed
+// by that number of octets.
+const int kMaxLabelLength = 63;
+
+}  // namespace
 
 namespace net {
 
@@ -21,9 +31,9 @@ namespace net {
 bool DNSDomainFromDot(const base::StringPiece& dotted, std::string* out) {
   const char* buf = dotted.data();
   unsigned n = dotted.size();
-  char label[63];
+  char label[kMaxLabelLength];
   size_t labellen = 0; /* <= sizeof label */
-  char name[255];
+  char name[dns_protocol::kMaxNameLength];
   size_t namelen = 0; /* <= sizeof name */
   char ch;
 
@@ -82,7 +92,7 @@ std::string DNSDomainToString(const base::StringPiece& domain) {
     if (domain[i] < 0)
       return std::string();
 #endif
-    if (domain[i] > 63)
+    if (domain[i] > kMaxLabelLength)
       return std::string();
 
     if (i)
