@@ -113,6 +113,14 @@
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
+      'target_name': 'load_error',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+      ],
+      'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
       'target_name': 'manager',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/cr_elements/cr_drawer/compiled_resources2.gyp:cr_drawer',
@@ -124,6 +132,7 @@
         'detail_view',
         'item',
         'item_list',
+        'load_error',
         'keyboard_shortcuts',
         'sidebar',
         'toolbar',
@@ -156,6 +165,7 @@
         '<(EXTERNS_GYP):management',
         'error_page',
         'item',
+        'load_error',
         'manager',
         'pack_dialog',
         'toolbar',

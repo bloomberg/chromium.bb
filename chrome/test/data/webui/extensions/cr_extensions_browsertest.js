@@ -42,6 +42,7 @@ CrExtensionsBrowserTest.prototype = {
     'extension_error_page_test.js',
     'extension_item_test.js',
     'extension_item_list_test.js',
+    'extension_load_error_test.js',
     'extension_keyboard_shortcuts_test.js',
     'extension_options_dialog_test.js',
     'extension_pack_dialog_test.js',
@@ -190,6 +191,15 @@ TEST_F('CrExtensionsBrowserTest', 'ExtensionItemList', function() {
   extension_item_list_tests.registerTests();
   mocha.grep(
       assert(extension_item_list_tests.TestNames.ItemListFiltering)).run();
+});
+
+////////////////////////////////////////////////////////////////////////////////
+// Extension Load Error Tests
+
+TEST_F('CrExtensionsBrowserTest', 'ExtensionLoadErrorInteractionTest',
+       function() {
+  extension_load_error_tests.registerTests();
+  mocha.grep(assert(extension_load_error_tests.TestNames.Interaction)).run();
 });
 
 ////////////////////////////////////////////////////////////////////////////////

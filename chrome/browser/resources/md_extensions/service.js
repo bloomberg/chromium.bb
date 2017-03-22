@@ -7,10 +7,11 @@ cr.define('extensions', function() {
 
   /**
    * @constructor
-   * @implements {extensions.ItemDelegate}
-   * @implements {extensions.ToolbarDelegate}
-   * @implements {extensions.PackDialogDelegate}
    * @implements {extensions.ErrorPageDelegate}
+   * @implements {extensions.ItemDelegate}
+   * @implements {extensions.LoadErrorDelegate}
+   * @implements {extensions.PackDialogDelegate}
+   * @implements {extensions.ToolbarDelegate}
    */
   function Service() {}
 
@@ -25,6 +26,7 @@ cr.define('extensions', function() {
       this.manager_.toolbar.setDelegate(this);
       this.manager_.set('itemDelegate', this);
       this.manager_.packDialog.set('delegate', this);
+      this.manager_.loadError.set('delegate', this);
       this.manager_.errorPage.delegate = this;
       var keyboardShortcuts = this.manager_.keyboardShortcuts;
       keyboardShortcuts.addEventListener(
@@ -251,7 +253,14 @@ cr.define('extensions', function() {
 
     /** @override */
     loadUnpacked: function() {
-      chrome.developerPrivate.loadUnpacked({failQuietly: true});
+      chrome.developerPrivate.loadUnpacked({failQuietly: true}, () => {
+        // TODO(devlin): Show the load error dialog if something went wrong.
+      });
+    },
+
+    /** @override */
+    retryLoadUnpacked: function() {
+      // TODO(devlin): Implement this.
     },
 
     /** @override */

@@ -4434,6 +4434,21 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
         <message name="IDS_MD_EXTENSIONS_ITEM_VERSION" desc="The label above an extension's version.">
           Version
         </message>
+        <message name="IDS_MD_EXTENSIONS_LOAD_ERROR_HEADING" desc="The title of the dialog displaying the error when loading an unpacked extension fails.">
+          Failed to load extension
+        </message>
+        <message name="IDS_MD_EXTENSIONS_LOAD_ERROR_ERROR_LABEL" desc="The label next to the error of an unpacked extension that failed to load.">
+          Error
+        </message>
+        <message name="IDS_MD_EXTENSIONS_LOAD_ERROR_FILE_LABEL" desc="The label next to the file path of an unpacked extension that failed to load.">
+          File
+        </message>
+        <message name="IDS_MD_EXTENSIONS_LOAD_ERROR_CANCEL" desc="The text on the button to close the dialog when an unpacked extension failed to load.">
+          Cancel
+        </message>
+        <message name="IDS_MD_EXTENSIONS_LOAD_ERROR_RETRY" desc="The text on the button to retry loading an unpacked extension after a failed load.">
+          Retry
+        </message>
         <message name="IDS_MD_EXTENSIONS_PACK_DIALOG_TITLE" desc="The title of the dialog to pack an extension.">
           Pack extension
         </message>

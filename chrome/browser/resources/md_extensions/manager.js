@@ -124,6 +124,10 @@ cr.define('extensions', function() {
       return this.$['pack-dialog'];
     },
 
+    get loadError() {
+      return this.$['load-error'];
+    },
+
     get optionsDialog() {
       return this.$['options-dialog'];
     },

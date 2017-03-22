@@ -194,6 +194,8 @@
         <include name="IDR_MD_EXTENSIONS_ITEM_LIST_JS" file="resources\md_extensions\item_list.js" type="BINDATA" />
         <include name="IDR_MD_EXTENSIONS_ITEM_UTIL_HTML" file="resources\md_extensions\item_util.html" type="BINDATA" />
         <include name="IDR_MD_EXTENSIONS_ITEM_UTIL_JS" file="resources\md_extensions\item_util.js" type="BINDATA" />
+        <include name="IDR_MD_EXTENSIONS_LOAD_ERROR_HTML" file="resources\md_extensions\load_error.html" type="BINDATA" />
+        <include name="IDR_MD_EXTENSIONS_LOAD_ERROR_JS" file="resources\md_extensions\load_error.js" type="BINDATA" />
         <include name="IDR_MD_EXTENSIONS_OPTIONS_DIALOG_HTML" file="resources\md_extensions\options_dialog.html" type="BINDATA" />
         <include name="IDR_MD_EXTENSIONS_OPTIONS_DIALOG_JS" file="resources\md_extensions\options_dialog.js" type="BINDATA" />
         <include name="IDR_MD_EXTENSIONS_PACK_DIALOG_HTML" file="resources\md_extensions\pack_dialog.html" type="BINDATA" />

@@ -181,6 +181,16 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
       l10n_util::GetStringFUTF16(
           IDS_EXTENSIONS_ADDED_WITHOUT_KNOWLEDGE,
           l10n_util::GetStringUTF16(IDS_EXTENSION_WEB_STORE_TITLE)));
+  source->AddLocalizedString("loadErrorHeading",
+                             IDS_MD_EXTENSIONS_LOAD_ERROR_HEADING);
+  source->AddLocalizedString("loadErrorFileLabel",
+                             IDS_MD_EXTENSIONS_LOAD_ERROR_FILE_LABEL);
+  source->AddLocalizedString("loadErrorErrorLabel",
+                             IDS_MD_EXTENSIONS_LOAD_ERROR_ERROR_LABEL);
+  source->AddLocalizedString("loadErrorCancel",
+                             IDS_MD_EXTENSIONS_LOAD_ERROR_CANCEL);
+  source->AddLocalizedString("loadErrorRetry",
+                             IDS_MD_EXTENSIONS_LOAD_ERROR_RETRY);
   source->AddLocalizedString("noErrorsToShow",
                              IDS_EXTENSIONS_ERROR_NO_ERRORS_CODE_MESSAGE);
   source->AddLocalizedString("packDialogTitle",
@@ -263,6 +273,8 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
   source->AddResourcePath("item_list.js", IDR_MD_EXTENSIONS_ITEM_LIST_JS);
   source->AddResourcePath("item_util.html", IDR_MD_EXTENSIONS_ITEM_UTIL_HTML);
   source->AddResourcePath("item_util.js", IDR_MD_EXTENSIONS_ITEM_UTIL_JS);
+  source->AddResourcePath("load_error.html", IDR_MD_EXTENSIONS_LOAD_ERROR_HTML);
+  source->AddResourcePath("load_error.js", IDR_MD_EXTENSIONS_LOAD_ERROR_JS);
   source->AddResourcePath("options_dialog.html",
                           IDR_MD_EXTENSIONS_OPTIONS_DIALOG_HTML);
   source->AddResourcePath("options_dialog.js",
