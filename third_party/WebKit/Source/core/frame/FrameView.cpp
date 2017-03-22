@@ -50,7 +50,6 @@
 #include "core/events/ErrorEvent.h"
 #include "core/frame/BrowserControls.h"
 #include "core/frame/EventHandlerRegistry.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
 #include "core/frame/Location.h"
@@ -2753,8 +2752,8 @@ void FrameView::updateDocumentAnnotatedRegions() const {
 }
 
 void FrameView::didAttachDocument() {
-  FrameHost* frameHost = m_frame->host();
-  DCHECK(frameHost);
+  Page* page = m_frame->page();
+  DCHECK(page);
 
   DCHECK(m_frame->document());
 
@@ -2767,9 +2766,8 @@ void FrameView::didAttachDocument() {
         RootFrameViewport::create(visualViewport, *layoutViewport);
     m_viewportScrollableArea = rootFrameViewport;
 
-    frameHost->page()
-        .globalRootScrollerController()
-        .initializeViewportScrollCallback(*rootFrameViewport);
+    page->globalRootScrollerController().initializeViewportScrollCallback(
+        *rootFrameViewport);
   }
 }
 
