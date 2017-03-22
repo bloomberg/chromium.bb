@@ -2888,16 +2888,10 @@ TEST_F(ExtensionServiceTest, DISABLED_UpdatePendingTheme) {
   EXPECT_TRUE(service()->IsExtensionEnabled(theme_crx));
 }
 
-#if defined(OS_CHROMEOS)
-// Always fails on ChromeOS: http://crbug.com/79737
-#define MAYBE_UpdatePendingExternalCrx DISABLED_UpdatePendingExternalCrx
-#else
-#define MAYBE_UpdatePendingExternalCrx UpdatePendingExternalCrx
-#endif
 // Test updating a pending CRX as if the source is an external extension
 // with an update URL.  In this case we don't know if the CRX is a theme
 // or not.
-TEST_F(ExtensionServiceTest, MAYBE_UpdatePendingExternalCrx) {
+TEST_F(ExtensionServiceTest, UpdatePendingExternalCrx) {
   InitializeEmptyExtensionService();
   EXPECT_TRUE(service()->pending_extension_manager()->AddFromExternalUpdateUrl(
       theme_crx,
