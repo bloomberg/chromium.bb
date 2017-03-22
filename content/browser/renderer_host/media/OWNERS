@@ -5,8 +5,8 @@ emircan@chromium.org
 guidou@chromium.org
 tommi@chromium.org
 
-per-file video_*=mcasas@chromium.org
-per-file video_*=chfremer@chromium.org
+per-file *video*=mcasas@chromium.org
+per-file *video*=chfremer@chromium.org
 
 # TEAM: media-capture-and-streams@grotations.appspotmail.com
 # COMPONENT: Blink>GetUserMedia
