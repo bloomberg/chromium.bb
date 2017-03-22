@@ -299,6 +299,17 @@ def check_linux_binary(target_dir, binary_name, options):
   if has_init_array:
     si_count = init_array_size / word_size
   si_count = max(si_count, 0)
+
+  # In newer versions of gcc crtbegin.o inserts frame_dummy into .init_array
+  # but we don't want to count this entry, since it alwasy present and nothing
+  # to do with our code.
+  # TODO(sbc): Do this unconditionally once we drop support for wheezy (gcc-4.6
+  # version of crtbegin.o)
+  result, stdout = run_process(result, ['nm', binary_file])
+  if '__frame_dummy_init_array_entry' in stdout:
+    assert(si_count > 0)
+    si_count -= 1
+
   sizes.append((binary_name + '-si', 'initializers', '', si_count, 'files'))
 
   # For Release builds only, use dump-static-initializers.py to print the list
