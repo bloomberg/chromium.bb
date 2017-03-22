@@ -42,6 +42,8 @@ CSSPropertyID AnimationInputHelpers::keyframeAttributeToCSSProperty(
     return CSSPropertyInvalid;
   if (property == "cssFloat")
     return CSSPropertyFloat;
+  if (property == "cssOffset")
+    return CSSPropertyOffset;
 
   StringBuilder builder;
   for (size_t i = 0; i < property.length(); ++i) {

@@ -136,6 +136,8 @@
             property = property.substring(0, i) + property[i + 1].toUpperCase() + property.substring(i + 2);
           }
         }
+        if (property === 'offset')
+          property = 'cssOffset';
       }
       var keyframes = [];
       if (!isNeutralKeyframe(from)) {
