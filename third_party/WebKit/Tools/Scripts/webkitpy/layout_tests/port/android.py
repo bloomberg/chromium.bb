@@ -814,7 +814,7 @@ class ChromiumAndroidDriver(driver.Driver):
         try:
             tombstones = self._device.RunShellCommand(
                 'ls -n /data/tombstones/tombstone_*',
-                check_return=True)
+                check_return=True, shell=True)
         except device_errors.CommandFailedError as exc:
             # FIXME: crbug.com/321489 ... figure out why we sometimes get
             #   permission denied.
