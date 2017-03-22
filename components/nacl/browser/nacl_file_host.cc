@@ -13,6 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "components/nacl/browser/bad_message.h"
 #include "components/nacl/browser/nacl_browser.h"
@@ -73,7 +74,6 @@ void DoOpenPnaclFile(
     const std::string& filename,
     bool is_executable,
     IPC::Message* reply_msg) {
-  DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
   base::FilePath full_filepath;
 
   // PNaCl must be installed.
@@ -127,8 +127,6 @@ void DoOpenNaClExecutableOnThreadPool(
     const GURL& file_url,
     bool enable_validation_caching,
     IPC::Message* reply_msg) {
-  DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
-
   base::FilePath file_path;
   if (!nacl::NaClBrowser::GetDelegate()->MapUrlToLocalFilePath(
           file_url,
@@ -180,15 +178,10 @@ void GetReadonlyPnaclFd(
     const std::string& filename,
     bool is_executable,
     IPC::Message* reply_msg) {
-  if (!BrowserThread::PostBlockingPoolTask(
-          FROM_HERE,
-          base::Bind(&DoOpenPnaclFile,
-                     nacl_host_message_filter,
-                     filename,
-                     is_executable,
-                     reply_msg))) {
-    NotifyRendererOfError(nacl_host_message_filter.get(), reply_msg);
-  }
+  base::PostTaskWithTraits(
+      FROM_HERE, base::TaskTraits().MayBlock(),
+      base::Bind(&DoOpenPnaclFile, nacl_host_message_filter, filename,
+                 is_executable, reply_msg));
 }
 
 // This function is security sensitive.  Be sure to check with a security
@@ -266,16 +259,10 @@ void OpenNaClExecutable(
   // The URL is part of the current app. Now query the extension system for the
   // file path and convert that to a file descriptor. This should be done on a
   // blocking pool thread.
-  if (!BrowserThread::PostBlockingPoolTask(
-      FROM_HERE,
-      base::Bind(
-          &DoOpenNaClExecutableOnThreadPool,
-          nacl_host_message_filter,
-          file_url,
-          enable_validation_caching,
-          reply_msg))) {
-    NotifyRendererOfError(nacl_host_message_filter.get(), reply_msg);
-  }
+  base::PostTaskWithTraits(
+      FROM_HERE, base::TaskTraits().MayBlock(),
+      base::Bind(&DoOpenNaClExecutableOnThreadPool, nacl_host_message_filter,
+                 file_url, enable_validation_caching, reply_msg));
 }
 
 }  // namespace nacl_file_host
