@@ -270,6 +270,17 @@ TEST_F(HostScannerOperationTest, TestOperation_OneDevice_NoSimCard) {
           TetherAvailabilityResponse_ResponseCode_NO_SIM_CARD);
 }
 
+TEST_F(HostScannerOperationTest,
+       TestOperation_OneDevice_NotificationsDisabled) {
+  EXPECT_CALL(*test_host_scan_device_prioritizer_,
+              RecordSuccessfulTetherAvailabilityResponse(_))
+      .Times(0);
+
+  TestOperationWithOneDevice(
+      TetherAvailabilityResponse_ResponseCode ::
+          TetherAvailabilityResponse_ResponseCode_NOTIFICATIONS_DISABLED);
+}
+
 TEST_F(HostScannerOperationTest, TestMultipleDevices) {
   EXPECT_CALL(*test_host_scan_device_prioritizer_,
               RecordSuccessfulTetherAvailabilityResponse(test_devices_[0]));
