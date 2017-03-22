@@ -32,36 +32,6 @@ specific_include_rules = {
     "+content/common/resource_request_completion_status.h",
     "+content/common/view_messages.h",
   ],
-  "async_revalidation_driver\.(cc|h)": [
-    "-content",
-    "+content/browser/loader/async_revalidation_driver.h",
-    "+content/common/content_export.h",
-    "+content/public/browser/resource_throttle.h",
-  ],
-  "async_revalidation_driver_unittest\.cc": [
-    "-content",
-    "+content/browser/loader/async_revalidation_driver.h",
-
-    # TODO: these all have to be removed.
-    # Only one test needs these, so that can stay in content while the other
-    # tests move.
-    "+content/public/browser/client_certificate_delegate.h",
-    "+content/public/common/content_client.h",
-    "+content/public/test/test_browser_thread_bundle.h",
-    "+content/test/test_content_browser_client.h",
-  ],
-  "async_revalidation_manager\.(cc|h)": [
-    "-content",
-    "+content/browser/loader/async_revalidation_driver.h",
-    "+content/browser/loader/async_revalidation_manager.h",
-    "+content/browser/loader/resource_request_info_impl.h",
-    "+content/browser/loader/resource_scheduler.h",
-    "+content/public/browser/resource_throttle.h",
-
-    # TODO: To be replaced by mojo.
-    "+content/common/resource_messages.h",
-    "+content/common/resource_request.h",
-  ],
   "downloaded_temp_file_impl\.(cc|h)": [
     "-content",
     "+content/browser/loader/downloaded_temp_file_impl.h",
@@ -145,7 +115,6 @@ specific_include_rules = {
   "resource_dispatcher_host_impl\.(cc|h)": [
     "-content",
     "+content/browser/loader/async_resource_handler.h",
-    "+content/browser/loader/async_revalidation_manager.h",
     "+content/browser/loader/global_routing_id.h",
     "+content/browser/loader/loader_delegate.h",
     "+content/browser/loader/mojo_async_resource_handler.h",

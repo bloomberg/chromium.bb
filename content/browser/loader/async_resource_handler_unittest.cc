@@ -189,7 +189,6 @@ class AsyncResourceHandlerTest : public ::testing::Test,
         false,                                 // report_raw_headers
         true,                                  // is_async
         PREVIEWS_OFF,                          // previews_state
-        std::string(),                         // original_headers
         nullptr,                               // body
         false);                                // initiated_in_secure_context
     info->AssociateWithRequest(request.get());

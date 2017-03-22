@@ -87,7 +87,6 @@ void ResourceRequestInfo::AllocateForTesting(net::URLRequest* request,
       false,                                 // report_raw_headers
       is_async,                              // is_async
       previews_state,                        // previews_state
-      std::string(),                         // original_headers
       nullptr,                               // body
       false);                                // initiated_in_secure_context
   info->AssociateWithRequest(request);
@@ -154,7 +153,6 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
     bool report_raw_headers,
     bool is_async,
     PreviewsState previews_state,
-    const std::string& original_headers,
     const scoped_refptr<ResourceRequestBodyImpl> body,
     bool initiated_in_secure_context)
     : detachable_handler_(NULL),
@@ -185,7 +183,6 @@ ResourceRequestInfoImpl::ResourceRequestInfoImpl(
       report_raw_headers_(report_raw_headers),
       is_async_(is_async),
       previews_state_(previews_state),
-      original_headers_(original_headers),
       body_(body),
       initiated_in_secure_context_(initiated_in_secure_context) {}
 

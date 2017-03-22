@@ -72,7 +72,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
       bool report_raw_headers,
       bool is_async,
       PreviewsState previews_state,
-      const std::string& original_headers,
       const scoped_refptr<ResourceRequestBodyImpl> body,
       bool initiated_in_secure_context);
   ~ResourceRequestInfoImpl() override;
@@ -180,7 +179,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   void set_do_not_prompt_for_login(bool do_not_prompt) {
     do_not_prompt_for_login_ = do_not_prompt;
   }
-  const std::string& original_headers() const { return original_headers_; }
 
   const scoped_refptr<ResourceRequestBodyImpl>& body() const { return body_; }
   void ResetBody();
@@ -236,7 +234,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   bool report_raw_headers_;
   bool is_async_;
   PreviewsState previews_state_;
-  const std::string original_headers_;
   scoped_refptr<ResourceRequestBodyImpl> body_;
   bool initiated_in_secure_context_;
   std::unique_ptr<NavigationUIData> navigation_ui_data_;

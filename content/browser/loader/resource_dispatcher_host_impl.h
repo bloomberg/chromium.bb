@@ -58,7 +58,6 @@ class ShareableFileReference;
 namespace content {
 class AppCacheNavigationHandleCore;
 class AppCacheService;
-class AsyncRevalidationManager;
 class LoaderDelegate;
 class NavigationURLLoaderImplCore;
 class NavigationUIData;
@@ -275,10 +274,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   int num_in_flight_requests_for_testing() const {
     return num_in_flight_requests_;
   }
-
-  // Turns on stale-while-revalidate support, regardless of command-line flags
-  // or experiment status. For unit tests only.
-  void EnableStaleWhileRevalidateForTesting();
 
   // Sets the LoaderDelegate, which must outlive this object. Ownership is not
   // transferred. The LoaderDelegate should be interacted with on the IO thread.
@@ -758,10 +753,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   LoaderDelegate* loader_delegate_;
 
   bool allow_cross_origin_auth_prompt_;
-
-  // AsyncRevalidationManager is non-NULL if and only if
-  // stale-while-revalidate is enabled.
-  std::unique_ptr<AsyncRevalidationManager> async_revalidation_manager_;
 
   typedef std::map<GlobalRequestID,
                    base::ObserverList<ResourceMessageDelegate>*> DelegateMap;

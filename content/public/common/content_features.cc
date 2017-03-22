@@ -202,12 +202,6 @@ const base::Feature kSlimmingPaintInvalidation{
 const base::Feature kSpeculativeLaunchServiceWorker{
     "SpeculativeLaunchServiceWorker", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables implementation of the Cache-Control: stale-while-revalidate directive
-// which permits servers to allow the use of stale resources while revalidation
-// proceeds in the background. See http://crbug.com/348877
-const base::Feature kStaleWhileRevalidate{"StaleWhileRevalidate2",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Throttle Blink timers in out-of-view cross origin frames.
 const base::Feature kTimerThrottlingForHiddenFrames{
     "TimerThrottlingForHiddenFrames", base::FEATURE_ENABLED_BY_DEFAULT};
