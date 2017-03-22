@@ -7,8 +7,8 @@
 #include <stddef.h>
 #include <utility>
 
-#include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/macros.h"
 #include "mojo/public/cpp/bindings/lib/message_builder.h"
 #include "mojo/public/cpp/bindings/lib/serialization.h"
 #include "mojo/public/interfaces/bindings/pipe_control_messages.mojom.h"
@@ -44,8 +44,7 @@ void PipeControlMessageProxy::NotifyPeerEndpointClosed(
     InterfaceId id,
     const base::Optional<DisconnectReason>& reason) {
   Message message(ConstructPeerEndpointClosedMessage(id, reason));
-  bool ok = receiver_->Accept(&message);
-  ALLOW_UNUSED_LOCAL(ok);
+  ignore_result(receiver_->Accept(&message));
 }
 
 // static

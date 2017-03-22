@@ -73,16 +73,17 @@ class ThreadSafeForwarder : public MessageReceiverWithResponder {
     return true;
   }
 
-  bool AcceptWithResponder(Message* message,
-                           MessageReceiver* response_receiver) override {
+  bool AcceptWithResponder(
+      Message* message,
+      std::unique_ptr<MessageReceiver> response_receiver) override {
     if (!message->associated_endpoint_handles()->empty()) {
       // Please see comment for the DCHECK in the previous method.
       DCHECK(associated_group_.GetController());
       message->SerializeAssociatedEndpointHandles(
           associated_group_.GetController());
     }
-    auto responder = base::MakeUnique<ForwardToCallingThread>(
-        base::WrapUnique(response_receiver));
+    auto responder =
+        base::MakeUnique<ForwardToCallingThread>(std::move(response_receiver));
     task_runner_->PostTask(
         FROM_HERE, base::Bind(forward_with_responder_, base::Passed(message),
                               base::Passed(&responder)));

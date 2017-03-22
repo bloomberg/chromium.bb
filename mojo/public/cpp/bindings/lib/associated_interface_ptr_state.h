@@ -131,7 +131,7 @@ class AssociatedInterfacePtrState {
 
   void ForwardMessageWithResponder(Message message,
                                    std::unique_ptr<MessageReceiver> responder) {
-    endpoint_client_->AcceptWithResponder(&message, responder.release());
+    endpoint_client_->AcceptWithResponder(&message, std::move(responder));
   }
 
  private:

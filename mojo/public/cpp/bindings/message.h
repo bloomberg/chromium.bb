@@ -183,14 +183,8 @@ class MessageReceiverWithResponder : public MessageReceiver {
   // responder) to handle the response message generated from the given
   // message. The responder's Accept method may be called during
   // AcceptWithResponder or some time after its return.
-  //
-  // NOTE: Upon returning true, AcceptWithResponder assumes ownership of
-  // |responder| and will delete it after calling |responder->Accept| or upon
-  // its own destruction.
-  //
-  // TODO(yzshen): consider changing |responder| to
-  // std::unique_ptr<MessageReceiver>.
-  virtual bool AcceptWithResponder(Message* message, MessageReceiver* responder)
+  virtual bool AcceptWithResponder(Message* message,
+                                   std::unique_ptr<MessageReceiver> responder)
       WARN_UNUSED_RESULT = 0;
 };
 
@@ -222,16 +216,9 @@ class MessageReceiverWithResponderStatus : public MessageReceiver {
   // the responder) to handle the response message generated from the given
   // message. Any of the responder's methods (Accept or IsValid) may be called
   // during  AcceptWithResponder or some time after its return.
-  //
-  // NOTE: Upon returning true, AcceptWithResponder assumes ownership of
-  // |responder| and will delete it after calling |responder->Accept| or upon
-  // its own destruction.
-  //
-  // TODO(yzshen): consider changing |responder| to
-  // std::unique_ptr<MessageReceiver>.
   virtual bool AcceptWithResponder(Message* message,
-                                   MessageReceiverWithStatus* responder)
-      WARN_UNUSED_RESULT = 0;
+                                   std::unique_ptr<MessageReceiverWithStatus>
+                                       responder) WARN_UNUSED_RESULT = 0;
 };
 
 class MOJO_CPP_BINDINGS_EXPORT PassThroughFilter

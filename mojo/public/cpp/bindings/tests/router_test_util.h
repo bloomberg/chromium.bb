@@ -42,9 +42,9 @@ class ResponseGenerator : public MessageReceiverWithResponderStatus {
 
   bool Accept(Message* message) override;
 
-  bool AcceptWithResponder(Message* message,
-                           MessageReceiverWithStatus* responder) override;
-
+  bool AcceptWithResponder(
+      Message* message,
+      std::unique_ptr<MessageReceiverWithStatus> responder) override;
   bool SendResponse(uint32_t name,
                     uint64_t request_id,
                     const char* request_string,
@@ -58,8 +58,9 @@ class LazyResponseGenerator : public ResponseGenerator {
 
   ~LazyResponseGenerator() override;
 
-  bool AcceptWithResponder(Message* message,
-                           MessageReceiverWithStatus* responder) override;
+  bool AcceptWithResponder(
+      Message* message,
+      std::unique_ptr<MessageReceiverWithStatus> responder) override;
 
   bool has_responder() const { return !!responder_; }
 
@@ -78,7 +79,7 @@ class LazyResponseGenerator : public ResponseGenerator {
   // also sends a response.
   void Complete(bool send_response);
 
-  MessageReceiverWithStatus* responder_;
+  std::unique_ptr<MessageReceiverWithStatus> responder_;
   uint32_t name_;
   uint64_t request_id_;
   std::string request_string_;

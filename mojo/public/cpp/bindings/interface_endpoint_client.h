@@ -96,7 +96,7 @@ class MOJO_CPP_BINDINGS_EXPORT InterfaceEndpointClient
   // state.
   bool Accept(Message* message) override;
   bool AcceptWithResponder(Message* message,
-                           MessageReceiver* responder) override;
+                           std::unique_ptr<MessageReceiver> responder) override;
 
   // The following methods are called by the router. They must be called
   // outside of the router's lock.

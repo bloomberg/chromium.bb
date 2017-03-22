@@ -234,8 +234,9 @@ bool InterfaceEndpointClient::Accept(Message* message) {
   return controller_->SendMessage(message);
 }
 
-bool InterfaceEndpointClient::AcceptWithResponder(Message* message,
-                                                  MessageReceiver* responder) {
+bool InterfaceEndpointClient::AcceptWithResponder(
+    Message* message,
+    std::unique_ptr<MessageReceiver> responder) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(message->has_flag(Message::kFlagExpectsResponse));
   DCHECK(!handle_.pending_association());
@@ -261,15 +262,13 @@ bool InterfaceEndpointClient::AcceptWithResponder(Message* message,
     return false;
 
   if (!is_sync) {
-    // We assume ownership of |responder|.
-    async_responders_[request_id] = base::WrapUnique(responder);
+    async_responders_[request_id] = std::move(responder);
     return true;
   }
 
   SyncCallRestrictions::AssertSyncCallAllowed();
 
   bool response_received = false;
-  std::unique_ptr<MessageReceiver> sync_responder(responder);
   sync_responses_.insert(std::make_pair(
       request_id, base::MakeUnique<SyncResponseInfo>(&response_received)));
 
@@ -282,11 +281,10 @@ bool InterfaceEndpointClient::AcceptWithResponder(Message* message,
     auto iter = sync_responses_.find(request_id);
     DCHECK_EQ(&response_received, iter->second->response_received);
     if (response_received)
-      ignore_result(sync_responder->Accept(&iter->second->response));
+      ignore_result(responder->Accept(&iter->second->response));
     sync_responses_.erase(iter);
   }
 
-  // Return true means that we take ownership of |responder|.
   return true;
 }
 
@@ -375,17 +373,16 @@ bool InterfaceEndpointClient::HandleValidatedMessage(Message* message) {
   }
 
   if (message->has_flag(Message::kFlagExpectsResponse)) {
-    MessageReceiverWithStatus* responder =
-        new ResponderThunk(weak_ptr_factory_.GetWeakPtr(), task_runner_);
-    bool ok = false;
+    std::unique_ptr<MessageReceiverWithStatus> responder =
+        base::MakeUnique<ResponderThunk>(weak_ptr_factory_.GetWeakPtr(),
+                                         task_runner_);
     if (mojo::internal::ControlMessageHandler::IsControlMessage(message)) {
-      ok = control_message_handler_.AcceptWithResponder(message, responder);
+      return control_message_handler_.AcceptWithResponder(message,
+                                                          std::move(responder));
     } else {
-      ok = incoming_receiver_->AcceptWithResponder(message, responder);
+      return incoming_receiver_->AcceptWithResponder(message,
+                                                     std::move(responder));
     }
-    if (!ok)
-      delete responder;
-    return ok;
   } else if (message->has_flag(Message::kFlagIsResponse)) {
     uint64_t request_id = message->request_id();
 

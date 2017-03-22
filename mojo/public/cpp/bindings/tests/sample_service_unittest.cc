@@ -295,8 +295,9 @@ class SimpleMessageReceiver : public mojo::MessageReceiverWithResponder {
     return stub.Accept(message);
   }
 
-  bool AcceptWithResponder(mojo::Message* message,
-                           mojo::MessageReceiver* responder) override {
+  bool AcceptWithResponder(
+      mojo::Message* message,
+      std::unique_ptr<mojo::MessageReceiver> responder) override {
     return false;
   }
 };

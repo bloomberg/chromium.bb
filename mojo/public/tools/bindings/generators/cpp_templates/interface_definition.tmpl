@@ -169,14 +169,14 @@ bool {{proxy_name}}::{{method.name}}(
                   "&serialization_context")}}
 
   bool result = false;
-  mojo::MessageReceiver* responder =
+  std::unique_ptr<mojo::MessageReceiver> responder(
       new {{class_name}}_{{method.name}}_HandleSyncResponse(
           &result
 {%-     for param in method.response_parameters -%}
           , param_{{param.name}}
-{%-     endfor %});
-  if (!receiver_->AcceptWithResponder(builder.message(), responder))
-    delete responder;
+{%-     endfor %}));
+  ignore_result(receiver_->AcceptWithResponder(builder.message(),
+                                               std::move(responder)));
   return result;
 }
 {%-   endif %}
@@ -200,15 +200,15 @@ void {{proxy_name}}::{{method.name}}(
                   "&serialization_context")}}
 
 {%- if method.response_parameters != None %}
-  mojo::MessageReceiver* responder =
-      new {{class_name}}_{{method.name}}_ForwardToCallback(std::move(callback));
-  if (!receiver_->AcceptWithResponder(builder.message(), responder))
-    delete responder;
+  std::unique_ptr<mojo::MessageReceiver> responder(
+      new {{class_name}}_{{method.name}}_ForwardToCallback(
+          std::move(callback)));
+  ignore_result(receiver_->AcceptWithResponder(builder.message(),
+                                               std::move(responder)));
 {%- else %}
-  bool ok = receiver_->Accept(builder.message());
-  // This return value may be ignored as !ok implies the Connector has
+  // This return value may be ignored as false implies the Connector has
   // encountered an error, which will be visible through other means.
-  ALLOW_UNUSED_LOCAL(ok);
+  ignore_result(receiver_->Accept(builder.message()));
 {%- endif %}
 }
 {%- endfor %}
@@ -226,10 +226,10 @@ class {{class_name}}_{{method.name}}_ProxyToResponder {
   static {{class_name}}::{{method.name}}Callback CreateCallback(
       uint64_t request_id,
       bool is_sync,
-      mojo::MessageReceiverWithStatus* responder) {
+      std::unique_ptr<mojo::MessageReceiverWithStatus> responder) {
     std::unique_ptr<{{class_name}}_{{method.name}}_ProxyToResponder> proxy(
         new {{class_name}}_{{method.name}}_ProxyToResponder(
-            request_id, is_sync, responder));
+            request_id, is_sync, std::move(responder)));
     return base::Bind(&{{class_name}}_{{method.name}}_ProxyToResponder::Run,
                       base::Passed(&proxy));
   }
@@ -245,17 +245,17 @@ class {{class_name}}_{{method.name}}_ProxyToResponder {
 #endif
     // If the Callback was dropped then deleting the responder will close
     // the pipe so the calling application knows to stop waiting for a reply.
-    delete responder_;
+    responder_ = nullptr;
   }
 
  private:
   {{class_name}}_{{method.name}}_ProxyToResponder(
       uint64_t request_id,
       bool is_sync,
-      mojo::MessageReceiverWithStatus* responder)
+      std::unique_ptr<mojo::MessageReceiverWithStatus> responder)
       : request_id_(request_id),
         is_sync_(is_sync),
-        responder_(responder) {
+        responder_(std::move(responder)) {
   }
 
   void Run(
@@ -264,7 +264,7 @@ class {{class_name}}_{{method.name}}_ProxyToResponder {
 
   uint64_t request_id_;
   bool is_sync_;
-  mojo::MessageReceiverWithStatus* responder_;
+  std::unique_ptr<mojo::MessageReceiverWithStatus> responder_;
 
   DISALLOW_COPY_AND_ASSIGN({{class_name}}_{{method.name}}_ProxyToResponder);
 };
@@ -285,12 +285,10 @@ void {{class_name}}_{{method.name}}_ProxyToResponder::Run(
 
   {{build_message(response_params_struct, "in_%s", params_description,
                   "&serialization_context")}}
-  bool ok = responder_->Accept(builder.message());
-  ALLOW_UNUSED_LOCAL(ok);
-  // TODO(darin): !ok returned here indicates a malformed message, and that may
-  // be good reason to close the connection. However, we don't have a way to do
-  // that from here. We should add a way.
-  delete responder_;
+  ignore_result(responder_->Accept(builder.message()));
+  // TODO(darin): Accept() returning false indicates a malformed message, and
+  // that may be good reason to close the connection. However, we don't have a
+  // way to do that from here. We should add a way.
   responder_ = nullptr;
 }
 {%-   endif -%}
@@ -334,7 +332,7 @@ bool {{class_name}}StubDispatch::Accept(
 bool {{class_name}}StubDispatch::AcceptWithResponder(
     {{interface.name}}* impl,
     mojo::Message* message,
-    mojo::MessageReceiverWithStatus* responder) {
+    std::unique_ptr<mojo::MessageReceiverWithStatus> responder) {
 {%- if interface.methods %}
   switch (message->header()->name) {
 {%-   for method in interface.methods %}
@@ -350,7 +348,8 @@ bool {{class_name}}StubDispatch::AcceptWithResponder(
       {{class_name}}::{{method.name}}Callback callback =
           {{class_name}}_{{method.name}}_ProxyToResponder::CreateCallback(
               message->request_id(),
-              message->has_flag(mojo::Message::kFlagIsSync), responder);
+              message->has_flag(mojo::Message::kFlagIsSync),
+              std::move(responder));
       // A null |impl| means no implementation was bound.
       assert(impl);
       TRACE_EVENT0("mojom", "{{class_name}}::{{method.name}}");

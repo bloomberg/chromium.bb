@@ -72,8 +72,8 @@ TEST_F(MultiplexRouterTest, BasicRequestResponse) {
   MessageQueue message_queue;
   base::RunLoop run_loop;
   client0.AcceptWithResponder(
-      &request,
-      new MessageAccumulator(&message_queue, run_loop.QuitClosure()));
+      &request, base::MakeUnique<MessageAccumulator>(&message_queue,
+                                                     run_loop.QuitClosure()));
 
   run_loop.Run();
 
@@ -91,8 +91,8 @@ TEST_F(MultiplexRouterTest, BasicRequestResponse) {
 
   base::RunLoop run_loop2;
   client0.AcceptWithResponder(
-      &request2,
-      new MessageAccumulator(&message_queue, run_loop2.QuitClosure()));
+      &request2, base::MakeUnique<MessageAccumulator>(&message_queue,
+                                                      run_loop2.QuitClosure()));
 
   run_loop2.Run();
 
@@ -117,7 +117,8 @@ TEST_F(MultiplexRouterTest, BasicRequestResponse_Synchronous) {
   AllocRequestMessage(1, "hello", &request);
 
   MessageQueue message_queue;
-  client0.AcceptWithResponder(&request, new MessageAccumulator(&message_queue));
+  client0.AcceptWithResponder(
+      &request, base::MakeUnique<MessageAccumulator>(&message_queue));
 
   router1_->WaitForIncomingMessage(MOJO_DEADLINE_INDEFINITE);
   router0_->WaitForIncomingMessage(MOJO_DEADLINE_INDEFINITE);
@@ -134,8 +135,8 @@ TEST_F(MultiplexRouterTest, BasicRequestResponse_Synchronous) {
   Message request2;
   AllocRequestMessage(1, "hello again", &request2);
 
-  client0.AcceptWithResponder(&request2,
-                              new MessageAccumulator(&message_queue));
+  client0.AcceptWithResponder(
+      &request2, base::MakeUnique<MessageAccumulator>(&message_queue));
 
   router1_->WaitForIncomingMessage(MOJO_DEADLINE_INDEFINITE);
   router0_->WaitForIncomingMessage(MOJO_DEADLINE_INDEFINITE);
@@ -167,8 +168,8 @@ TEST_F(MultiplexRouterTest, LazyResponses) {
   MessageQueue message_queue;
   base::RunLoop run_loop2;
   client0.AcceptWithResponder(
-      &request,
-      new MessageAccumulator(&message_queue, run_loop2.QuitClosure()));
+      &request, base::MakeUnique<MessageAccumulator>(&message_queue,
+                                                     run_loop2.QuitClosure()));
   run_loop.Run();
 
   // The request has been received but the response has not been sent yet.
@@ -194,8 +195,8 @@ TEST_F(MultiplexRouterTest, LazyResponses) {
 
   base::RunLoop run_loop4;
   client0.AcceptWithResponder(
-      &request2,
-      new MessageAccumulator(&message_queue, run_loop4.QuitClosure()));
+      &request2, base::MakeUnique<MessageAccumulator>(&message_queue,
+                                                      run_loop4.QuitClosure()));
   run_loop3.Run();
 
   // The request has been received but the response has not been sent yet.
@@ -246,7 +247,8 @@ TEST_F(MultiplexRouterTest, MissingResponses) {
   AllocRequestMessage(1, "hello", &request);
 
   MessageQueue message_queue;
-  client0.AcceptWithResponder(&request, new MessageAccumulator(&message_queue));
+  client0.AcceptWithResponder(
+      &request, base::MakeUnique<MessageAccumulator>(&message_queue));
   run_loop3.Run();
 
   // The request has been received but no response has been sent.
@@ -293,8 +295,8 @@ TEST_F(MultiplexRouterTest, LateResponse) {
     AllocRequestMessage(1, "hello", &request);
 
     MessageQueue message_queue;
-    client0.AcceptWithResponder(&request,
-                                new MessageAccumulator(&message_queue));
+    client0.AcceptWithResponder(
+        &request, base::MakeUnique<MessageAccumulator>(&message_queue));
 
     run_loop.Run();
 

@@ -58,14 +58,13 @@ bool ResponseGenerator::Accept(Message* message) {
 
 bool ResponseGenerator::AcceptWithResponder(
     Message* message,
-    MessageReceiverWithStatus* responder) {
+    std::unique_ptr<MessageReceiverWithStatus> responder) {
   EXPECT_TRUE(message->has_flag(Message::kFlagExpectsResponse));
 
   bool result = SendResponse(message->name(), message->request_id(),
                              reinterpret_cast<const char*>(message->payload()),
-                             responder);
+                             responder.get());
   EXPECT_TRUE(responder->IsValid());
-  delete responder;
   return result;
 }
 
@@ -84,18 +83,16 @@ bool ResponseGenerator::SendResponse(uint32_t name,
 LazyResponseGenerator::LazyResponseGenerator(const base::Closure& closure)
     : responder_(nullptr), name_(0), request_id_(0), closure_(closure) {}
 
-LazyResponseGenerator::~LazyResponseGenerator() {
-  delete responder_;
-}
+LazyResponseGenerator::~LazyResponseGenerator() = default;
 
 bool LazyResponseGenerator::AcceptWithResponder(
     Message* message,
-    MessageReceiverWithStatus* responder) {
+    std::unique_ptr<MessageReceiverWithStatus> responder) {
   name_ = message->name();
   request_id_ = message->request_id();
   request_string_ =
       std::string(reinterpret_cast<const char*>(message->payload()));
-  responder_ = responder;
+  responder_ = std::move(responder);
   if (!closure_.is_null()) {
     closure_.Run();
     closure_.Reset();
@@ -105,9 +102,8 @@ bool LazyResponseGenerator::AcceptWithResponder(
 
 void LazyResponseGenerator::Complete(bool send_response) {
   if (send_response) {
-    SendResponse(name_, request_id_, request_string_.c_str(), responder_);
+    SendResponse(name_, request_id_, request_string_.c_str(), responder_.get());
   }
-  delete responder_;
   responder_ = nullptr;
 }
 

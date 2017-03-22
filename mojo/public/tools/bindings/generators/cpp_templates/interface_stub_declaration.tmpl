@@ -1,9 +1,10 @@
 class {{export_attribute}} {{interface.name}}StubDispatch {
  public:
   static bool Accept({{interface.name}}* impl, mojo::Message* message);
-  static bool AcceptWithResponder({{interface.name}}* impl,
-                                  mojo::Message* message,
-                                  mojo::MessageReceiverWithStatus* responder);
+  static bool AcceptWithResponder(
+      {{interface.name}}* impl,
+      mojo::Message* message,
+      std::unique_ptr<mojo::MessageReceiverWithStatus> responder);
 };
 
 template <typename ImplRefTraits =
@@ -28,11 +29,11 @@ class {{interface.name}}Stub
 
   bool AcceptWithResponder(
       mojo::Message* message,
-      mojo::MessageReceiverWithStatus* responder) override {
+      std::unique_ptr<mojo::MessageReceiverWithStatus> responder) override {
     if (ImplRefTraits::IsNull(sink_))
       return false;
     return {{interface.name}}StubDispatch::AcceptWithResponder(
-        ImplRefTraits::GetRawPointer(&sink_), message, responder);
+        ImplRefTraits::GetRawPointer(&sink_), message, std::move(responder));
   }
 
  private:

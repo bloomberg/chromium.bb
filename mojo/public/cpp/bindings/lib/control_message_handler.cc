@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/macros.h"
 #include "mojo/public/cpp/bindings/lib/message_builder.h"
 #include "mojo/public/cpp/bindings/lib/serialization.h"
 #include "mojo/public/cpp/bindings/lib/validation_util.h"
@@ -80,19 +81,20 @@ bool ControlMessageHandler::Accept(Message* message) {
 
 bool ControlMessageHandler::AcceptWithResponder(
     Message* message,
-    MessageReceiverWithStatus* responder) {
+    std::unique_ptr<MessageReceiverWithStatus> responder) {
   if (!ValidateControlRequestWithResponse(message))
     return false;
 
   if (message->header()->name == interface_control::kRunMessageId)
-    return Run(message, responder);
+    return Run(message, std::move(responder));
 
   NOTREACHED();
   return false;
 }
 
-bool ControlMessageHandler::Run(Message* message,
-                                MessageReceiverWithStatus* responder) {
+bool ControlMessageHandler::Run(
+    Message* message,
+    std::unique_ptr<MessageReceiverWithStatus> responder) {
   interface_control::internal::RunMessageParams_Data* params =
       reinterpret_cast<interface_control::internal::RunMessageParams_Data*>(
           message->mutable_payload());
@@ -124,9 +126,7 @@ bool ControlMessageHandler::Run(Message* message,
       nullptr;
   Serialize<interface_control::RunResponseMessageParamsDataView>(
       response_params_ptr, builder.buffer(), &response_params, &context_);
-  bool ok = responder->Accept(builder.message());
-  ALLOW_UNUSED_LOCAL(ok);
-  delete responder;
+  ignore_result(responder->Accept(builder.message()));
 
   return true;
 }

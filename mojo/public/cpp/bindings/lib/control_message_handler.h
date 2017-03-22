@@ -27,12 +27,13 @@ class MOJO_CPP_BINDINGS_EXPORT ControlMessageHandler
 
   // Call the following methods only if IsControlMessage() returned true.
   bool Accept(Message* message) override;
-  // Takes ownership of |responder|.
-  bool AcceptWithResponder(Message* message,
-                           MessageReceiverWithStatus* responder) override;
+  bool AcceptWithResponder(
+      Message* message,
+      std::unique_ptr<MessageReceiverWithStatus> responder) override;
 
  private:
-  bool Run(Message* message, MessageReceiverWithStatus* responder);
+  bool Run(Message* message,
+           std::unique_ptr<MessageReceiverWithStatus> responder);
   bool RunOrClosePipe(Message* message);
 
   uint32_t interface_version_;
