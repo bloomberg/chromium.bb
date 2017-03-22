@@ -44,26 +44,32 @@ using autofill::PasswordForm;
 namespace password_manager {
 
 // The current version number of the login database schema.
-const int kCurrentVersionNumber = 18;
+const int kCurrentVersionNumber = 19;
 // The oldest version of the schema such that a legacy Chrome client using that
 // version can still read/write the current database.
-const int kCompatibleVersionNumber = 18;
+const int kCompatibleVersionNumber = 19;
 
-base::Pickle SerializeVector(const std::vector<base::string16>& vec) {
+base::Pickle SerializePossibleUsernamePairs(
+    const autofill::PossibleUsernamesVector& vec) {
   base::Pickle p;
   for (size_t i = 0; i < vec.size(); ++i) {
-    p.WriteString16(vec[i]);
+    p.WriteString16(vec[i].first);
+    p.WriteString16(vec[i].second);
   }
   return p;
 }
 
-std::vector<base::string16> DeserializeVector(const base::Pickle& p) {
-  std::vector<base::string16> ret;
-  base::string16 str;
+autofill::PossibleUsernamesVector DeserializePossibleUsernamePairs(
+    const base::Pickle& p) {
+  autofill::PossibleUsernamesVector ret;
+  base::string16 value;
+  base::string16 field_name;
 
   base::PickleIterator iterator(p);
-  while (iterator.ReadString16(&str)) {
-    ret.push_back(str);
+  while (iterator.ReadString16(&value)) {
+    bool name_success = iterator.ReadString16(&field_name);
+    DCHECK(name_success);
+    ret.push_back(autofill::PossibleUsernamePair(value, field_name));
   }
   return ret;
 }
@@ -85,7 +91,6 @@ enum LoginTableColumns {
   COLUMN_BLACKLISTED_BY_USER,
   COLUMN_SCHEME,
   COLUMN_PASSWORD_TYPE,
-  COLUMN_POSSIBLE_USERNAMES,
   COLUMN_TIMES_USED,
   COLUMN_FORM_DATA,
   COLUMN_DATE_SYNCED,
@@ -94,6 +99,7 @@ enum LoginTableColumns {
   COLUMN_FEDERATION_URL,
   COLUMN_SKIP_ZERO_CLICK,
   COLUMN_GENERATION_UPLOAD_STATUS,
+  COLUMN_POSSIBLE_USERNAME_PAIRS,
   COLUMN_NUM  // Keep this last.
 };
 
@@ -131,11 +137,6 @@ void BindAddStatement(const PasswordForm& form,
   s->BindInt(COLUMN_BLACKLISTED_BY_USER, form.blacklisted_by_user);
   s->BindInt(COLUMN_SCHEME, form.scheme);
   s->BindInt(COLUMN_PASSWORD_TYPE, form.type);
-  base::Pickle usernames_pickle =
-      SerializeVector(form.other_possible_usernames);
-  s->BindBlob(COLUMN_POSSIBLE_USERNAMES,
-              usernames_pickle.data(),
-              usernames_pickle.size());
   s->BindInt(COLUMN_TIMES_USED, form.times_used);
   base::Pickle form_data_pickle;
   autofill::SerializeFormData(form.form_data, &form_data_pickle);
@@ -152,6 +153,10 @@ void BindAddStatement(const PasswordForm& form,
                     : form.federation_origin.Serialize());
   s->BindInt(COLUMN_SKIP_ZERO_CLICK, form.skip_zero_click);
   s->BindInt(COLUMN_GENERATION_UPLOAD_STATUS, form.generation_upload_status);
+  base::Pickle usernames_pickle =
+      SerializePossibleUsernamePairs(form.other_possible_usernames);
+  s->BindBlob(COLUMN_POSSIBLE_USERNAME_PAIRS, usernames_pickle.data(),
+              usernames_pickle.size());
 }
 
 void AddCallback(int err, sql::Statement* /*stmt*/) {
@@ -430,6 +435,12 @@ void InitializeBuilder(SQLTableBuilder* builder) {
   builder->DropColumn("ssl_valid");
   version = builder->SealVersion();
   DCHECK_EQ(18u, version);
+
+  // Version 19.
+  builder->DropColumn("possible_usernames");
+  builder->AddColumn("possible_username_pairs", "BLOB");
+  version = builder->SealVersion();
+  DCHECK_EQ(19u, version);
 
   DCHECK_EQ(static_cast<size_t>(COLUMN_NUM), builder->NumberOfColumns())
       << "Adjust LoginTableColumns if you change column definitions here.";
@@ -844,37 +855,43 @@ PasswordStoreChangeList LoginDatabase::UpdateLogin(const PasswordForm& form) {
   DCHECK(!update_statement_.empty());
   sql::Statement s(
       db_.GetCachedStatement(SQL_FROM_HERE, update_statement_.c_str()));
-  s.BindString(0, form.action.spec());
-  s.BindBlob(1, encrypted_password.data(),
+  int next_param = 0;
+  s.BindString(next_param++, form.action.spec());
+  s.BindBlob(next_param++, encrypted_password.data(),
              static_cast<int>(encrypted_password.length()));
-  s.BindString16(2, form.submit_element);
-  s.BindInt(3, form.preferred);
-  s.BindInt64(4, form.date_created.ToInternalValue());
-  s.BindInt(5, form.blacklisted_by_user);
-  s.BindInt(6, form.scheme);
-  s.BindInt(7, form.type);
-  base::Pickle pickle = SerializeVector(form.other_possible_usernames);
-  s.BindBlob(8, pickle.data(), pickle.size());
-  s.BindInt(9, form.times_used);
+  s.BindString16(next_param++, form.submit_element);
+  s.BindInt(next_param++, form.preferred);
+  s.BindInt64(next_param++, form.date_created.ToInternalValue());
+  s.BindInt(next_param++, form.blacklisted_by_user);
+  s.BindInt(next_param++, form.scheme);
+  s.BindInt(next_param++, form.type);
+  s.BindInt(next_param++, form.times_used);
   base::Pickle form_data_pickle;
   autofill::SerializeFormData(form.form_data, &form_data_pickle);
-  s.BindBlob(10, form_data_pickle.data(), form_data_pickle.size());
-  s.BindInt64(11, form.date_synced.ToInternalValue());
-  s.BindString16(12, form.display_name);
-  s.BindString(13, form.icon_url.spec());
+  s.BindBlob(next_param++, form_data_pickle.data(), form_data_pickle.size());
+  s.BindInt64(next_param++, form.date_synced.ToInternalValue());
+  s.BindString16(next_param++, form.display_name);
+  s.BindString(next_param++, form.icon_url.spec());
   // An empty Origin serializes as "null" which would be strange to store here.
-  s.BindString(14, form.federation_origin.unique()
-                       ? std::string()
-                       : form.federation_origin.Serialize());
-  s.BindInt(15, form.skip_zero_click);
-  s.BindInt(16, form.generation_upload_status);
+  s.BindString(next_param++, form.federation_origin.unique()
+                                 ? std::string()
+                                 : form.federation_origin.Serialize());
+  s.BindInt(next_param++, form.skip_zero_click);
+  s.BindInt(next_param++, form.generation_upload_status);
+  base::Pickle username_pickle =
+      SerializePossibleUsernamePairs(form.other_possible_usernames);
+  s.BindBlob(next_param++, username_pickle.data(), username_pickle.size());
+  // NOTE: Add new fields here unless the field is a part of the unique key.
+  // If so, add new field below.
 
   // WHERE starts here.
-  s.BindString(17, form.origin.spec());
-  s.BindString16(18, form.username_element);
-  s.BindString16(19, form.username_value);
-  s.BindString16(20, form.password_element);
-  s.BindString(21, form.signon_realm);
+  s.BindString(next_param++, form.origin.spec());
+  s.BindString16(next_param++, form.username_element);
+  s.BindString16(next_param++, form.username_value);
+  s.BindString16(next_param++, form.password_element);
+  s.BindString(next_param++, form.signon_realm);
+  // NOTE: Add new fields here only if the field is a part of the unique key.
+  // Otherwise, add the field above "WHERE starts here" comment.
 
   if (!s.Run())
     return PasswordStoreChangeList();
@@ -998,11 +1015,11 @@ LoginDatabase::EncryptionResult LoginDatabase::InitPasswordFormFromStatement(
   int type_int = s.ColumnInt(COLUMN_PASSWORD_TYPE);
   DCHECK(type_int >= 0 && type_int <= PasswordForm::TYPE_LAST) << type_int;
   form->type = static_cast<PasswordForm::Type>(type_int);
-  if (s.ColumnByteLength(COLUMN_POSSIBLE_USERNAMES)) {
+  if (s.ColumnByteLength(COLUMN_POSSIBLE_USERNAME_PAIRS)) {
     base::Pickle pickle(
-        static_cast<const char*>(s.ColumnBlob(COLUMN_POSSIBLE_USERNAMES)),
-        s.ColumnByteLength(COLUMN_POSSIBLE_USERNAMES));
-    form->other_possible_usernames = DeserializeVector(pickle);
+        static_cast<const char*>(s.ColumnBlob(COLUMN_POSSIBLE_USERNAME_PAIRS)),
+        s.ColumnByteLength(COLUMN_POSSIBLE_USERNAME_PAIRS));
+    form->other_possible_usernames = DeserializePossibleUsernamePairs(pickle);
   }
   form->times_used = s.ColumnInt(COLUMN_TIMES_USED);
   if (s.ColumnByteLength(COLUMN_FORM_DATA)) {

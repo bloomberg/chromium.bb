@@ -387,8 +387,8 @@ struct StructTraits<autofill::mojom::PasswordFormDataView,
     return r.username_value;
   }
 
-  static const std::vector<base::string16>& other_possible_usernames(
-      const autofill::PasswordForm& r) {
+  static const std::vector<autofill::PossibleUsernamePair>&
+  other_possible_usernames(const autofill::PasswordForm& r) {
     return r.other_possible_usernames;
   }
 
@@ -555,6 +555,21 @@ struct StructTraits<autofill::mojom::FormsPredictionsMapDataView,
 
   static bool Read(autofill::mojom::FormsPredictionsMapDataView data,
                    autofill::FormsPredictionsMap* out);
+};
+
+template <>
+struct StructTraits<autofill::mojom::PossibleUsernamePairDataView,
+                    autofill::PossibleUsernamePair> {
+  static base::string16 value(const autofill::PossibleUsernamePair& r) {
+    return r.first;
+  }
+
+  static base::string16 field_name(const autofill::PossibleUsernamePair& r) {
+    return r.second;
+  }
+
+  static bool Read(autofill::mojom::PossibleUsernamePairDataView data,
+                   autofill::PossibleUsernamePair* out);
 };
 
 }  // namespace mojo

@@ -68,8 +68,10 @@ void CreateTestPasswordForm(PasswordForm* form) {
   form->username_element = base::ASCIIToUTF16("username");
   form->username_marked_by_site = true;
   form->username_value = base::ASCIIToUTF16("test@gmail.com");
-  form->other_possible_usernames.push_back(base::ASCIIToUTF16("Jerry_1"));
-  form->other_possible_usernames.push_back(base::ASCIIToUTF16("Jerry_2"));
+  form->other_possible_usernames.push_back(PossibleUsernamePair(
+      base::ASCIIToUTF16("Jerry_1"), base::ASCIIToUTF16("id1")));
+  form->other_possible_usernames.push_back(PossibleUsernamePair(
+      base::ASCIIToUTF16("Jerry_2"), base::ASCIIToUTF16("id2")));
   form->password_element = base::ASCIIToUTF16("password");
   form->password_value = base::ASCIIToUTF16("test");
   form->password_value_is_default = true;

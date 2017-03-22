@@ -298,7 +298,10 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, IdentifyingUsernameFields) {
       // When no elements are marked with autocomplete='username', the text-type
       // input field before the first password element should get selected as
       // the username, and the rest should be marked as alternatives.
-      {{nullptr, nullptr, nullptr}, "username2", "William", "John+Smith"},
+      {{nullptr, nullptr, nullptr},
+       "username2",
+       "William",
+       "John+username1, Smith+username3"},
       // When a sole element is marked with autocomplete='username', it should
       // be treated as the username for sure, with no other_possible_usernames.
       {{"username", nullptr, nullptr}, "username1", "John", ""},
@@ -306,21 +309,36 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, IdentifyingUsernameFields) {
       {{nullptr, nullptr, "username"}, "username3", "Smith", ""},
       // When >=2 elements have the attribute, the first should be selected as
       // the username, and the rest should go to other_possible_usernames.
-      {{"username", "username", nullptr}, "username1", "John", "William"},
-      {{nullptr, "username", "username"}, "username2", "William", "Smith"},
-      {{"username", nullptr, "username"}, "username1", "John", "Smith"},
+      {{"username", "username", nullptr},
+       "username1",
+       "John",
+       "William+username2"},
+      {{nullptr, "username", "username"},
+       "username2",
+       "William",
+       "Smith+username3"},
+      {{"username", nullptr, "username"},
+       "username1",
+       "John",
+       "Smith+username3"},
       {{"username", "username", "username"},
        "username1",
        "John",
-       "William+Smith"},
+       "William+username2, Smith+username3"},
       // When there is an empty autocomplete attribute (i.e. autocomplete=""),
       // it should have the same effect as having no attribute whatsoever.
-      {{"", "", ""}, "username2", "William", "John+Smith"},
+      {{"", "", ""}, "username2", "William", "John+username1, Smith+username3"},
       {{"", "", "username"}, "username3", "Smith", ""},
-      {{"username", "", "username"}, "username1", "John", "Smith"},
+      {{"username", "", "username"}, "username1", "John", "Smith+username3"},
       // It should not matter if attribute values are upper or mixed case.
-      {{"USERNAME", nullptr, "uSeRNaMe"}, "username1", "John", "Smith"},
-      {{"uSeRNaMe", nullptr, "USERNAME"}, "username1", "John", "Smith"}};
+      {{"USERNAME", nullptr, "uSeRNaMe"},
+       "username1",
+       "John",
+       "Smith+username3"},
+      {{"uSeRNaMe", nullptr, "USERNAME"},
+       "username1",
+       "John",
+       "Smith+username3"}};
 
   for (size_t i = 0; i < arraysize(cases); ++i) {
     for (size_t nonempty_username_fields = 0; nonempty_username_fields < 2;
@@ -360,8 +378,8 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, IdentifyingUsernameFields) {
         EXPECT_EQ(base::UTF8ToUTF16(cases[i].expected_username_value),
                   password_form->username_value);
         EXPECT_EQ(base::UTF8ToUTF16(cases[i].expected_other_possible_usernames),
-                  base::JoinString(password_form->other_possible_usernames,
-                                   base::ASCIIToUTF16("+")));
+                  OtherPossibleUsernamesToString(
+                      password_form->other_possible_usernames));
       } else {
         EXPECT_TRUE(password_form->username_value.empty());
         EXPECT_TRUE(password_form->other_possible_usernames.empty());
@@ -427,8 +445,10 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, IdentifyingTwoPasswordFields) {
     // Do a basic sanity check that we are still selecting the right username.
     EXPECT_EQ(base::UTF8ToUTF16("username1"), password_form->username_element);
     EXPECT_EQ(base::UTF8ToUTF16("William"), password_form->username_value);
-    EXPECT_THAT(password_form->other_possible_usernames,
-                testing::ElementsAre(base::UTF8ToUTF16("Smith")));
+    EXPECT_THAT(
+        password_form->other_possible_usernames,
+        testing::ElementsAre(PossibleUsernamePair(
+            base::UTF8ToUTF16("Smith"), base::UTF8ToUTF16("username2"))));
   }
 }
 
@@ -496,8 +516,10 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, IdentifyingThreePasswordFields) {
     // Do a basic sanity check that we are still selecting the right username.
     EXPECT_EQ(base::UTF8ToUTF16("username1"), password_form->username_element);
     EXPECT_EQ(base::UTF8ToUTF16("William"), password_form->username_value);
-    EXPECT_THAT(password_form->other_possible_usernames,
-                testing::ElementsAre(base::UTF8ToUTF16("Smith")));
+    EXPECT_THAT(
+        password_form->other_possible_usernames,
+        testing::ElementsAre(PossibleUsernamePair(
+            base::UTF8ToUTF16("Smith"), base::UTF8ToUTF16("username2"))));
   }
 }
 
@@ -848,11 +870,15 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
     EXPECT_EQ(base::UTF8ToUTF16(cases[i].expected_username_value),
               password_form->username_value);
     if (strcmp(cases[i].expected_username_value, "William") == 0) {
-      EXPECT_THAT(password_form->other_possible_usernames,
-                  testing::ElementsAre(base::UTF8ToUTF16("Smith")));
+      EXPECT_THAT(
+          password_form->other_possible_usernames,
+          testing::ElementsAre(PossibleUsernamePair(
+              base::UTF8ToUTF16("Smith"), base::UTF8ToUTF16("username2"))));
     } else {
-      EXPECT_THAT(password_form->other_possible_usernames,
-                  testing::ElementsAre(base::UTF8ToUTF16("William")));
+      EXPECT_THAT(
+          password_form->other_possible_usernames,
+          testing::ElementsAre(PossibleUsernamePair(
+              base::UTF8ToUTF16("William"), base::UTF8ToUTF16("username1"))));
     }
     EXPECT_EQ(base::UTF8ToUTF16(cases[i].expected_password_element),
               password_form->password_element);

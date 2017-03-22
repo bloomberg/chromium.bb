@@ -17,6 +17,12 @@
 
 namespace autofill {
 
+// Pair of possible username value and field name that contained this value.
+using PossibleUsernamePair = std::pair<base::string16, base::string16>;
+
+// Vector of possible username values and corresponding field names.
+using PossibleUsernamesVector = std::vector<PossibleUsernamePair>;
+
 // The PasswordForm struct encapsulates information about a login form,
 // which can be an HTML form or a dialog with username/password text fields.
 //
@@ -141,7 +147,7 @@ struct PasswordForm {
   // determining the username are incorrect. Optional.
   //
   // When parsing an HTML form, this is typically empty.
-  std::vector<base::string16> other_possible_usernames;
+  PossibleUsernamesVector other_possible_usernames;
 
   // The name of the input element corresponding to the current password.
   // Optional (improves scoring).
@@ -300,6 +306,10 @@ struct LessThanUniqueKey {
   bool operator()(const std::unique_ptr<PasswordForm>& left,
                   const std::unique_ptr<PasswordForm>& right) const;
 };
+
+// Converts a vector of possible usernames to string.
+base::string16 OtherPossibleUsernamesToString(
+    const PossibleUsernamesVector& possible_usernames);
 
 // For testing.
 std::ostream& operator<<(std::ostream& os, PasswordForm::Layout layout);

@@ -139,6 +139,12 @@ struct PasswordFormGenerationData {
   uint32 confirmation_field_signature;
 };
 
+// autofill::PossibleUsernamePair
+struct PossibleUsernamePair {
+  string value;
+  string field_name;
+};
+
 // autofill::PasswordForm
 struct PasswordForm {
   PasswordFormScheme scheme;
@@ -150,7 +156,7 @@ struct PasswordForm {
   string username_element;
   bool username_marked_by_site;
   string username_value;
-  array<string> other_possible_usernames;
+  array<PossibleUsernamePair> other_possible_usernames;
   string password_element;
   string password_value;
   bool password_value_is_default;

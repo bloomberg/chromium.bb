@@ -30,6 +30,8 @@
 #include "url/origin.h"
 
 using autofill::PasswordForm;
+using autofill::PossibleUsernamePair;
+using autofill::PossibleUsernamesVector;
 using base::ASCIIToUTF16;
 using ::testing::Eq;
 using ::testing::Pointee;
@@ -130,8 +132,9 @@ MATCHER(IsBasicAuthAccount, "") {
 }  // namespace
 
 // Serialization routines for vectors implemented in login_database.cc.
-base::Pickle SerializeVector(const std::vector<base::string16>& vec);
-std::vector<base::string16> DeserializeVector(const base::Pickle& pickle);
+base::Pickle SerializePossibleUsernamePairs(const PossibleUsernamesVector& vec);
+PossibleUsernamesVector DeserializePossibleUsernamePairs(
+    const base::Pickle& pickle);
 
 class LoginDatabaseTest : public testing::Test {
  protected:
@@ -963,18 +966,21 @@ TEST_F(LoginDatabaseTest, BlacklistedLogins) {
 
 TEST_F(LoginDatabaseTest, VectorSerialization) {
   // Empty vector.
-  std::vector<base::string16> vec;
-  base::Pickle temp = SerializeVector(vec);
-  std::vector<base::string16> output = DeserializeVector(temp);
+  PossibleUsernamesVector vec;
+  base::Pickle temp = SerializePossibleUsernamePairs(vec);
+  PossibleUsernamesVector output = DeserializePossibleUsernamePairs(temp);
   EXPECT_THAT(output, Eq(vec));
 
   // Normal data.
-  vec.push_back(ASCIIToUTF16("first"));
-  vec.push_back(ASCIIToUTF16("second"));
-  vec.push_back(ASCIIToUTF16("third"));
+  vec.push_back(
+      PossibleUsernamePair(ASCIIToUTF16("first"), ASCIIToUTF16("id1")));
+  vec.push_back(
+      PossibleUsernamePair(ASCIIToUTF16("second"), ASCIIToUTF16("id2")));
+  vec.push_back(
+      PossibleUsernamePair(ASCIIToUTF16("third"), ASCIIToUTF16("id3")));
 
-  temp = SerializeVector(vec);
-  output = DeserializeVector(temp);
+  temp = SerializePossibleUsernamePairs(vec);
+  output = DeserializePossibleUsernamePairs(temp);
   EXPECT_THAT(output, Eq(vec));
 }
 
@@ -1149,7 +1155,8 @@ TEST_F(LoginDatabaseTest, UpdateLogin) {
   form.action = GURL("http://accounts.google.com/login");
   form.password_value = ASCIIToUTF16("my_new_password");
   form.preferred = false;
-  form.other_possible_usernames.push_back(ASCIIToUTF16("my_new_username"));
+  form.other_possible_usernames.push_back(autofill::PossibleUsernamePair(
+      ASCIIToUTF16("my_new_username"), ASCIIToUTF16("new_username_id")));
   form.times_used = 20;
   form.submit_element = ASCIIToUTF16("submit_element");
   form.date_synced = base::Time::Now();

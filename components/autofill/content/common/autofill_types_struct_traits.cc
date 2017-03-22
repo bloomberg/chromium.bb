@@ -585,4 +585,13 @@ bool StructTraits<mojom::FormsPredictionsMapDataView, FormsPredictionsMap>::
   return true;
 }
 
+// static
+bool StructTraits<mojom::PossibleUsernamePairDataView, PossibleUsernamePair>::
+    Read(mojom::PossibleUsernamePairDataView data, PossibleUsernamePair* out) {
+  if (!data.ReadValue(&out->first) || !data.ReadFieldName(&out->second))
+    return false;
+
+  return true;
+}
+
 }  // namespace mojo

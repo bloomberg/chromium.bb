@@ -141,15 +141,15 @@ void PopulateSyntheticFormFromWebForm(const WebFormElement& web_form,
   synthetic_form->document = web_form.document();
 }
 
-// Helper function that removes |username_element.value()| from the vector
+// Helper function that removes |possible_username_pair| from the vector
 // |other_possible_usernames|, if the value presents in the vector.
 void ExcludeUsernameFromOtherUsernamesList(
-    const WebInputElement& username_element,
-    std::vector<base::string16>* other_possible_usernames) {
-  other_possible_usernames->erase(std::remove(other_possible_usernames->begin(),
-                                              other_possible_usernames->end(),
-                                              username_element.value().utf16()),
-                                  other_possible_usernames->end());
+    const PossibleUsernamePair& possible_username_pair,
+    PossibleUsernamesVector* other_possible_usernames) {
+  other_possible_usernames->erase(
+      std::remove(other_possible_usernames->begin(),
+                  other_possible_usernames->end(), possible_username_pair),
+      other_possible_usernames->end());
 }
 
 // Helper to determine which password is the main (current) one, and which is
@@ -367,6 +367,12 @@ void FoundVisiblePasswordAndVisibleUsernameBeforePassword(
   }
 }
 
+autofill::PossibleUsernamePair MakePossibleUsernamePair(
+    const blink::WebInputElement& input) {
+  return autofill::PossibleUsernamePair(input.value().utf16(),
+                                        input.nameForAutofill().utf16());
+}
+
 // Get information about a login form encapsulated in a PasswordForm struct.
 // If an element of |form| has an entry in |nonscript_modified_values|, the
 // associated string is used instead of the element's value to create
@@ -382,7 +388,7 @@ bool GetPasswordForm(
   std::vector<WebInputElement> passwords;
   std::map<blink::WebInputElement, blink::WebInputElement>
       last_text_input_before_password;
-  std::vector<base::string16> other_possible_usernames;
+  autofill::PossibleUsernamesVector other_possible_usernames;
 
   // Bail if this is a GAIA passwords site reauthentication form, so that
   // the form will be ignored.
@@ -482,7 +488,8 @@ bool GetPasswordForm(
           // autofill, not for form identification, and blank autofill entries
           // are not useful, so we do not collect empty strings.
           if (!input_element->value().isEmpty())
-            other_possible_usernames.push_back(input_element->value().utf16());
+            other_possible_usernames.push_back(
+                MakePossibleUsernamePair(*input_element));
         } else {
           // The first element marked with autocomplete='username'. Take the
           // hint and treat it as the username (overruling the tentative choice
@@ -506,7 +513,8 @@ bool GetPasswordForm(
           if (username_element.isNull())
             latest_input_element = *input_element;
           if (!input_element->value().isEmpty())
-            other_possible_usernames.push_back(input_element->value().utf16());
+            other_possible_usernames.push_back(
+                MakePossibleUsernamePair(*input_element));
         }
       }
     }
@@ -526,8 +534,9 @@ bool GetPasswordForm(
     if (username_element.isNull() && !new_password.isNull())
       username_element = last_text_input_before_password[new_password];
     if (!username_element.isNull())
-      ExcludeUsernameFromOtherUsernamesList(username_element,
-                                            &other_possible_usernames);
+      ExcludeUsernameFromOtherUsernamesList(
+          MakePossibleUsernamePair(username_element),
+          &other_possible_usernames);
   }
 
   password_form->layout = SequenceToLayout(layout_sequence);
@@ -542,10 +551,12 @@ bool GetPasswordForm(
   if (map_has_username_prediction &&
       (username_element_iterator == predicted_elements.end() ||
        username_element_iterator->second != PREDICTION_USERNAME)) {
-    ExcludeUsernameFromOtherUsernamesList(predicted_username_element,
-                                          &other_possible_usernames);
+    ExcludeUsernameFromOtherUsernamesList(
+        MakePossibleUsernamePair(predicted_username_element),
+        &other_possible_usernames);
     if (!username_element.isNull()) {
-      other_possible_usernames.push_back(username_element.value().utf16());
+      other_possible_usernames.push_back(
+          MakePossibleUsernamePair(username_element));
     }
     username_element = predicted_username_element;
     password_form->was_parsed_using_autofill_predictions = true;

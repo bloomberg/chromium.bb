@@ -47,6 +47,7 @@
 using autofill::FieldPropertiesFlags;
 using autofill::FieldPropertiesMask;
 using autofill::PasswordForm;
+using autofill::PossibleUsernamePair;
 using base::ASCIIToUTF16;
 using ::testing::_;
 using ::testing::IsEmpty;
@@ -343,8 +344,8 @@ class PasswordFormManagerTest : public testing::Test {
     saved_match_.preferred = true;
     saved_match_.username_value = ASCIIToUTF16("test@gmail.com");
     saved_match_.password_value = ASCIIToUTF16("test1");
-    saved_match_.other_possible_usernames.push_back(
-        ASCIIToUTF16("test2@gmail.com"));
+    saved_match_.other_possible_usernames.push_back(PossibleUsernamePair(
+        ASCIIToUTF16("test2@gmail.com"), ASCIIToUTF16("full_name")));
 
     psl_saved_match_ = saved_match_;
     psl_saved_match_.is_public_suffix_match = true;
@@ -414,15 +415,7 @@ class PasswordFormManagerTest : public testing::Test {
     autofill::ServerFieldTypeSet expected_available_field_types;
     FieldTypeMap expected_types;
     expected_types[ASCIIToUTF16("full_name")] = autofill::UNKNOWN_TYPE;
-
-    // When we're voting for an account creation form, we should also vote
-    // for its username field.
-    if (field_type && *field_type == autofill::ACCOUNT_CREATION_PASSWORD) {
-      expected_types[match.username_element] = autofill::USERNAME;
-      expected_available_field_types.insert(autofill::USERNAME);
-    } else {
-      expected_types[match.username_element] = autofill::UNKNOWN_TYPE;
-    }
+    expected_types[match.username_element] = autofill::UNKNOWN_TYPE;
 
     bool expect_generation_vote = false;
     if (field_type) {
@@ -954,7 +947,6 @@ TEST_F(PasswordFormManagerTest, PSLMatchedCredentialsMetadataUpdated) {
   PasswordForm actual_saved_form;
 
   autofill::ServerFieldTypeSet expected_available_field_types;
-  expected_available_field_types.insert(autofill::USERNAME);
   expected_available_field_types.insert(autofill::ACCOUNT_CREATION_PASSWORD);
   EXPECT_CALL(
       *client()->mock_driver()->mock_autofill_download_manager(),
@@ -1186,7 +1178,8 @@ TEST_F(PasswordFormManagerTest, TestAlternateUsername_NoChange) {
 
   PasswordForm saved_form = *saved_match();
   saved_form.other_possible_usernames.push_back(
-      ASCIIToUTF16("other_possible@gmail.com"));
+      PossibleUsernamePair(ASCIIToUTF16("other_possible@gmail.com"),
+                           ASCIIToUTF16("other_username")));
 
   fake_form_fetcher()->SetNonFederated({&saved_form}, 0u);
 
@@ -1221,8 +1214,8 @@ TEST_F(PasswordFormManagerTest, TestAlternateUsername_NoChange) {
 TEST_F(PasswordFormManagerTest, TestAlternateUsername_OtherUsername) {
   EXPECT_CALL(*client()->mock_driver(), AllowPasswordGenerationForForm(_));
 
-  const base::string16 kOtherUsername =
-      ASCIIToUTF16("other_possible@gmail.com");
+  const PossibleUsernamePair kOtherUsername(
+      ASCIIToUTF16("other_possible@gmail.com"), ASCIIToUTF16("other_username"));
   PasswordForm saved_form = *saved_match();
   saved_form.other_possible_usernames.push_back(kOtherUsername);
 
@@ -1231,7 +1224,7 @@ TEST_F(PasswordFormManagerTest, TestAlternateUsername_OtherUsername) {
   // The user chooses an alternative username.
   PasswordForm login(*observed_form());
   login.preferred = true;
-  login.username_value = kOtherUsername;
+  login.username_value = kOtherUsername.first;
   login.password_value = saved_match()->password_value;
 
   form_manager()->ProvisionallySave(
@@ -1249,7 +1242,7 @@ TEST_F(PasswordFormManagerTest, TestAlternateUsername_OtherUsername) {
 
   // |other_possible_usernames| should also be empty, but username_value should
   // be changed to match |new_username|.
-  EXPECT_EQ(kOtherUsername, saved_result.username_value);
+  EXPECT_EQ(kOtherUsername.first, saved_result.username_value);
   EXPECT_TRUE(saved_result.other_possible_usernames.empty());
 }
 
@@ -1351,14 +1344,16 @@ TEST_F(PasswordFormManagerTest, TestBestCredentialsForEachUsernameAreIncluded) {
 }
 
 TEST_F(PasswordFormManagerTest, TestSanitizePossibleUsernames) {
-  const base::string16 kUsernameOther = ASCIIToUTF16("other username");
+  const PossibleUsernamePair kUsernameOther(ASCIIToUTF16("other username"),
+                                            ASCIIToUTF16("other_username_id"));
 
   fake_form_fetcher()->SetNonFederated(std::vector<const PasswordForm*>(), 0u);
 
   PasswordForm credentials(*observed_form());
-  credentials.other_possible_usernames.push_back(ASCIIToUTF16("543-43-1234"));
   credentials.other_possible_usernames.push_back(
-      ASCIIToUTF16("378282246310005"));
+      PossibleUsernamePair(ASCIIToUTF16("543-43-1234"), ASCIIToUTF16("id1")));
+  credentials.other_possible_usernames.push_back(PossibleUsernamePair(
+      ASCIIToUTF16("378282246310005"), ASCIIToUTF16("id2")));
   credentials.other_possible_usernames.push_back(kUsernameOther);
   credentials.username_value = ASCIIToUTF16("test@gmail.com");
   credentials.preferred = true;
@@ -1379,19 +1374,24 @@ TEST_F(PasswordFormManagerTest, TestSanitizePossibleUsernames) {
 }
 
 TEST_F(PasswordFormManagerTest, TestSanitizePossibleUsernamesDuplicates) {
-  const base::string16 kUsernameEmail = ASCIIToUTF16("test@gmail.com");
-  const base::string16 kUsernameDuplicate = ASCIIToUTF16("duplicate");
-  const base::string16 kUsernameRandom = ASCIIToUTF16("random");
+  const PossibleUsernamePair kUsernameSsn(ASCIIToUTF16("511-32-9830"),
+                                          ASCIIToUTF16("ssn_id"));
+  const PossibleUsernamePair kUsernameEmail(ASCIIToUTF16("test@gmail.com"),
+                                            ASCIIToUTF16("email_id"));
+  const PossibleUsernamePair kUsernameDuplicate(ASCIIToUTF16("duplicate"),
+                                                ASCIIToUTF16("duplicate_id"));
+  const PossibleUsernamePair kUsernameRandom(ASCIIToUTF16("random"),
+                                             ASCIIToUTF16("random_id"));
 
   fake_form_fetcher()->SetNonFederated(std::vector<const PasswordForm*>(), 0u);
 
   PasswordForm credentials(*observed_form());
-  credentials.other_possible_usernames.push_back(ASCIIToUTF16("511-32-9830"));
+  credentials.other_possible_usernames.push_back(kUsernameSsn);
   credentials.other_possible_usernames.push_back(kUsernameDuplicate);
   credentials.other_possible_usernames.push_back(kUsernameDuplicate);
   credentials.other_possible_usernames.push_back(kUsernameRandom);
   credentials.other_possible_usernames.push_back(kUsernameEmail);
-  credentials.username_value = kUsernameEmail;
+  credentials.username_value = kUsernameEmail.first;
   credentials.preferred = true;
 
   // Pass in ALLOW_OTHER_POSSIBLE_USERNAMES, although it will not make a
@@ -2918,6 +2918,49 @@ TEST_F(PasswordFormManagerTest, DoesManageDifferentSignonRealmSameDrivers) {
   EXPECT_EQ(
       PasswordFormManager::RESULT_NO_MATCH,
       form_manager()->DoesManage(submitted_form, client()->driver().get()));
+}
+
+TEST_F(PasswordFormManagerTest, UploadUsernameCorrectionVote) {
+  // Observed and saved forms have the same password, but different usernames.
+  PasswordForm new_login(*observed_form());
+  new_login.username_value = saved_match()->other_possible_usernames[0].first;
+  new_login.password_value = saved_match()->password_value;
+
+  fake_form_fetcher()->SetNonFederated({saved_match()}, 0u);
+  form_manager()->ProvisionallySave(
+      new_login, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  // No match found (because usernames are different).
+  EXPECT_TRUE(form_manager()->IsNewLogin());
+
+  // Checks the username correction vote is saved.
+  PasswordForm expected_username_vote(*saved_match());
+  expected_username_vote.username_element =
+      saved_match()->other_possible_usernames[0].second;
+
+  // Checks the upload.
+  autofill::ServerFieldTypeSet expected_available_field_types;
+  expected_available_field_types.insert(autofill::USERNAME);
+  expected_available_field_types.insert(autofill::ACCOUNT_CREATION_PASSWORD);
+
+  FormStructure expected_upload(expected_username_vote.form_data);
+
+  std::string expected_login_signature =
+      FormStructure(form_manager()->observed_form().form_data)
+          .FormSignatureAsStr();
+
+  std::map<base::string16, autofill::ServerFieldType> expected_types;
+  expected_types[expected_username_vote.username_element] = autofill::USERNAME;
+  expected_types[expected_username_vote.password_element] =
+      autofill::ACCOUNT_CREATION_PASSWORD;
+  expected_types[ASCIIToUTF16("Email")] = autofill::UNKNOWN_TYPE;
+
+  EXPECT_CALL(*client()->mock_driver()->mock_autofill_download_manager(),
+              StartUploadRequest(CheckUploadedAutofillTypesAndSignature(
+                                     expected_upload.FormSignatureAsStr(),
+                                     expected_types, false),
+                                 false, expected_available_field_types,
+                                 expected_login_signature, true));
+  form_manager()->Save();
 }
 
 // Test that ResetStoredMatches removes references to previously fetched store
