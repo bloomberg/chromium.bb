@@ -176,7 +176,31 @@ typedef FirstRunMasterPrefsBrowserTestT<kImportDefault>
 #else
 #define MAYBE_ImportDefault ImportDefault
 #endif
+// No items are imported by default.
 IN_PROC_BROWSER_TEST_F(FirstRunMasterPrefsImportDefault, MAYBE_ImportDefault) {
+  int auto_import_state = first_run::auto_import_state();
+  EXPECT_EQ(MaskExpectedImportState(first_run::AUTO_IMPORT_CALLED),
+            auto_import_state);
+}
+
+extern const char kImportAll[] =
+    "{\n"
+    "  \"distribution\": {\n"
+    "    \"import_bookmarks\": true,\n"
+    "    \"import_history\": true,\n"
+    "    \"import_home_page\": true,\n"
+    "    \"import_search_engine\": true\n"
+    "  }\n"
+    "}\n";
+typedef FirstRunMasterPrefsBrowserTestT<kImportAll>
+    FirstRunMasterPrefsImportAll;
+// http://crbug.com/314221
+#if defined(OS_MACOSX) || (defined(GOOGLE_CHROME_BUILD) && defined(OS_LINUX))
+#define MAYBE_ImportAll DISABLED_ImportAll
+#else
+#define MAYBE_ImportAll ImportAll
+#endif
+IN_PROC_BROWSER_TEST_F(FirstRunMasterPrefsImportAll, MAYBE_ImportAll) {
   int auto_import_state = first_run::auto_import_state();
   EXPECT_EQ(MaskExpectedImportState(first_run::AUTO_IMPORT_CALLED |
                                     first_run::AUTO_IMPORT_PROFILE_IMPORTED),
@@ -204,7 +228,6 @@ IN_PROC_BROWSER_TEST_F(FirstRunMasterPrefsImportBookmarksFile,
   int auto_import_state = first_run::auto_import_state();
   EXPECT_EQ(
       MaskExpectedImportState(first_run::AUTO_IMPORT_CALLED |
-                              first_run::AUTO_IMPORT_PROFILE_IMPORTED |
                               first_run::AUTO_IMPORT_BOOKMARKS_FILE_IMPORTED),
       auto_import_state);
 }

@@ -96,10 +96,6 @@ const base::Feature kConsistentOmniboxGeolocation{
 // user promoting Chrome for iOS.
 const base::Feature kDesktopIOSPromotion{"DesktopIOSPromotion",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Disables the AutoImport feature on first run. See crbug.com/555550
-const base::Feature kDisableFirstRunAutoImportWin{
-    "DisableFirstRunAutoImport", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 // Experiment to display a toggle allowing users to opt-out of persisting a

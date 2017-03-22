@@ -55,6 +55,7 @@
 #include "chrome/installer/util/master_preferences.h"
 #include "chrome/installer/util/master_preferences_constants.h"
 #include "chrome/installer/util/util_constants.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -198,56 +199,6 @@ void DoDelayedInstallExtensionsIfNeeded(
   }
 }
 
-// Sets the |items| bitfield according to whether the import data specified by
-// |import_type| should be be auto imported or not.
-void SetImportItem(PrefService* user_prefs,
-                   const char* pref_path,
-                   int import_items,
-                   int dont_import_items,
-                   importer::ImportItem import_type,
-                   int* items) {
-  // Work out whether an item is to be imported according to what is specified
-  // in master preferences.
-  bool should_import = false;
-  bool master_pref_set =
-      ((import_items | dont_import_items) & import_type) != 0;
-  bool master_pref = ((import_items & ~dont_import_items) & import_type) != 0;
-
-  if (import_type == importer::HISTORY ||
-      (import_type != importer::FAVORITES &&
-       first_run::internal::IsOrganicFirstRun())) {
-    // History is always imported unless turned off in master_preferences.
-    // Search engines and home page are imported in organic builds only
-    // unless turned off in master_preferences.
-    should_import = !master_pref_set || master_pref;
-  } else {
-    // Bookmarks are never imported, unless turned on in master_preferences.
-    // Search engine and home page import behaviour is similar in non organic
-    // builds.
-    should_import = master_pref_set && master_pref;
-  }
-
-  // If an import policy is set, import items according to policy. If no master
-  // preference is set, but a corresponding recommended policy is set, import
-  // item according to recommended policy. If both a master preference and a
-  // recommended policy is set, the master preference wins. If neither
-  // recommended nor managed policies are set, import item according to what we
-  // worked out above.
-  if (master_pref_set)
-    user_prefs->SetBoolean(pref_path, should_import);
-
-  if (!user_prefs->FindPreference(pref_path)->IsDefaultValue()) {
-    if (user_prefs->GetBoolean(pref_path))
-      *items |= import_type;
-  } else {
-    // no policy (recommended or managed) is set
-    if (should_import)
-      *items |= import_type;
-  }
-
-  user_prefs->ClearPref(pref_path);
-}
-
 // Launches the import, via |importer_host|, from |source_profile| into
 // |target_profile| for the items specified in the |items_to_import| bitfield.
 // This may be done in a separate process depending on the platform, but it will
@@ -298,19 +249,16 @@ void ImportFromFile(Profile* profile,
 // Imports settings from the first profile in |importer_list|.
 void ImportSettings(Profile* profile,
                     std::unique_ptr<ImporterList> importer_list,
-                    int items_to_import) {
+                    uint16_t items_to_import) {
+  DCHECK(items_to_import);
   const importer::SourceProfile& source_profile =
       importer_list->GetSourceProfileAt(0);
-  // If no items to import then skip entirely.
-  if (!items_to_import)
-    return;
 
   // Ensure that importers aren't requested to import items that they do not
   // support. If there is no overlap, skip.
   items_to_import &= source_profile.services_supported;
-  if (items_to_import) {
+  if (items_to_import)
     ImportFromSourceProfile(source_profile, profile, items_to_import);
-  }
 
   g_auto_import_state |= first_run::AUTO_IMPORT_PROFILE_IMPORTED;
 }
@@ -495,57 +443,16 @@ void SetupMasterPrefsFromInstallPrefs(
   ConvertStringVectorToGURLVector(
       install_prefs.GetFirstRunTabs(), &out_prefs->new_tabs);
 
-  bool value = false;
-  if (install_prefs.GetBool(
-          installer::master_preferences::kDistroImportSearchPref, &value)) {
-    if (value) {
-      out_prefs->do_import_items |= importer::SEARCH_ENGINES;
-    } else {
-      out_prefs->dont_import_items |= importer::SEARCH_ENGINES;
-    }
-  }
-
   // If we're suppressing the first-run bubble, set that preference now.
   // Otherwise, wait until the user has completed first run to set it, so the
   // user is guaranteed to see the bubble iff they have completed the first run
   // process.
+  bool value = false;
   if (install_prefs.GetBool(
           installer::master_preferences::kDistroSuppressFirstRunBubble,
-          &value) && value)
+          &value) &&
+      value) {
     SetShowFirstRunBubblePref(FIRST_RUN_BUBBLE_SUPPRESS);
-
-  if (install_prefs.GetBool(
-          installer::master_preferences::kDistroImportHistoryPref,
-          &value)) {
-    if (value) {
-      out_prefs->do_import_items |= importer::HISTORY;
-    } else {
-      out_prefs->dont_import_items |= importer::HISTORY;
-    }
-  }
-
-  std::string not_used;
-  out_prefs->homepage_defined = install_prefs.GetString(
-      prefs::kHomePage, &not_used);
-
-  if (install_prefs.GetBool(
-          installer::master_preferences::kDistroImportHomePagePref,
-          &value)) {
-    if (value) {
-      out_prefs->do_import_items |= importer::HOME_PAGE;
-    } else {
-      out_prefs->dont_import_items |= importer::HOME_PAGE;
-    }
-  }
-
-  // Bookmarks are never imported unless specifically turned on.
-  if (install_prefs.GetBool(
-          installer::master_preferences::kDistroImportBookmarksPref,
-          &value)) {
-    if (value)
-      out_prefs->do_import_items |= importer::FAVORITES;
-    else
-      out_prefs->dont_import_items |= importer::FAVORITES;
   }
 
   if (install_prefs.GetBool(
@@ -616,15 +523,19 @@ FirstRunState DetermineFirstRunState(bool has_sentinel,
 
 }  // namespace internal
 
-MasterPrefs::MasterPrefs()
-    : homepage_defined(false),
-      do_import_items(0),
-      dont_import_items(0),
-      make_chrome_default_for_user(false),
-      suppress_first_run_default_browser_prompt(false),
-      welcome_page_on_os_upgrade_enabled(true) {}
+MasterPrefs::MasterPrefs() = default;
 
-MasterPrefs::~MasterPrefs() {}
+MasterPrefs::~MasterPrefs() = default;
+
+void RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry) {
+  registry->RegisterBooleanPref(prefs::kImportAutofillFormData, false);
+  registry->RegisterBooleanPref(prefs::kImportBookmarks, false);
+  registry->RegisterBooleanPref(prefs::kImportHistory, false);
+  registry->RegisterBooleanPref(prefs::kImportHomepage, false);
+  registry->RegisterBooleanPref(prefs::kImportSavedPasswords, false);
+  registry->RegisterBooleanPref(prefs::kImportSearchEngine, false);
+}
 
 bool IsChromeFirstRun() {
   if (g_first_run == internal::FIRST_RUN_UNKNOWN) {
@@ -756,84 +667,56 @@ ProcessMasterPreferencesResult ProcessMasterPreferences(
 
 void AutoImport(
     Profile* profile,
-    bool homepage_defined,
-    int import_items,
-    int dont_import_items,
     const std::string& import_bookmarks_path) {
-  base::FilePath local_state_path;
-  PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path);
-  bool local_state_file_exists = base::PathExists(local_state_path);
-
-  // It may be possible to do the if block below asynchronously. In which case,
-  // get rid of this RunLoop. http://crbug.com/366116.
-  base::RunLoop run_loop;
-  std::unique_ptr<ImporterList> importer_list(new ImporterList());
-  importer_list->DetectSourceProfiles(
-      g_browser_process->GetApplicationLocale(),
-      false,  // include_interactive_profiles?
-      run_loop.QuitClosure());
-  run_loop.Run();
-
-  // Do import if there is an available profile for us to import.
-  if (importer_list->count() > 0) {
-    if (internal::IsOrganicFirstRun()) {
-      // Home page is imported in organic builds only unless turned off or
-      // defined in master_preferences.
-      if (homepage_defined) {
-        dont_import_items |= importer::HOME_PAGE;
-        if (import_items & importer::HOME_PAGE)
-          import_items &= ~importer::HOME_PAGE;
-      }
-      // Search engines are not imported automatically in organic builds if the
-      // user already has a user preferences directory.
-      if (local_state_file_exists) {
-        dont_import_items |= importer::SEARCH_ENGINES;
-        if (import_items & importer::SEARCH_ENGINES)
-          import_items &= ~importer::SEARCH_ENGINES;
-      }
-    }
-
-    PrefService* user_prefs = profile->GetPrefs();
-    int items = 0;
-
-    SetImportItem(user_prefs,
-                  prefs::kImportHistory,
-                  import_items,
-                  dont_import_items,
-                  importer::HISTORY,
-                  &items);
-    SetImportItem(user_prefs,
-                  prefs::kImportHomepage,
-                  import_items,
-                  dont_import_items,
-                  importer::HOME_PAGE,
-                  &items);
-    SetImportItem(user_prefs,
-                  prefs::kImportSearchEngine,
-                  import_items,
-                  dont_import_items,
-                  importer::SEARCH_ENGINES,
-                  &items);
-    SetImportItem(user_prefs,
-                  prefs::kImportBookmarks,
-                  import_items,
-                  dont_import_items,
-                  importer::FAVORITES,
-                  &items);
-
-    importer::LogImporterUseToMetrics(
-        "AutoImport", importer_list->GetSourceProfileAt(0).importer_type);
-
-    ImportSettings(profile, std::move(importer_list), items);
-  }
-
-  if (!import_bookmarks_path.empty()) {
-    ImportFromFile(profile, import_bookmarks_path);
-  }
-
-  content::RecordAction(UserMetricsAction("FirstRunDef_Accept"));
-
   g_auto_import_state |= AUTO_IMPORT_CALLED;
+
+  // Use |profile|'s PrefService to determine what to import. It will reflect in
+  // order:
+  //  1) Policies.
+  //  2) Master preferences (used to initialize user prefs in
+  //     ProcessMasterPreferences()).
+  //  3) Recommended policies.
+  //  4) Registered default.
+  PrefService* prefs = profile->GetPrefs();
+  uint16_t items_to_import = 0;
+  static constexpr struct {
+    const char* pref_path;
+    importer::ImportItem bit;
+  } kImportItems[] = {
+      {prefs::kImportAutofillFormData, importer::AUTOFILL_FORM_DATA},
+      {prefs::kImportBookmarks, importer::FAVORITES},
+      {prefs::kImportHistory, importer::HISTORY},
+      {prefs::kImportHomepage, importer::HOME_PAGE},
+      {prefs::kImportSavedPasswords, importer::PASSWORDS},
+      {prefs::kImportSearchEngine, importer::SEARCH_ENGINES},
+  };
+
+  for (const auto& import_item : kImportItems) {
+    if (prefs->GetBoolean(import_item.pref_path))
+      items_to_import |= import_item.bit;
+  }
+
+  if (items_to_import) {
+    // It may be possible to do the if block below asynchronously. In which
+    // case, get rid of this RunLoop. http://crbug.com/366116.
+    base::RunLoop run_loop;
+    auto importer_list = base::MakeUnique<ImporterList>();
+    importer_list->DetectSourceProfiles(
+        g_browser_process->GetApplicationLocale(),
+        false,  // include_interactive_profiles?
+        run_loop.QuitClosure());
+    run_loop.Run();
+
+    if (importer_list->count() > 0) {
+      importer::LogImporterUseToMetrics(
+          "AutoImport", importer_list->GetSourceProfileAt(0).importer_type);
+
+      ImportSettings(profile, std::move(importer_list), items_to_import);
+    }
+  }
+
+  if (!import_bookmarks_path.empty())
+    ImportFromFile(profile, import_bookmarks_path);
 }
 
 void DoPostImportTasks(Profile* profile, bool make_chrome_default_for_user) {

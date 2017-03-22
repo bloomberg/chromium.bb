@@ -75,11 +75,7 @@ TEST_F(MasterPreferencesTest, ParseDistroParams) {
       "{ \n"
       "  \"distribution\": { \n"
       "     \"show_welcome_page\": true,\n"
-      "     \"import_search_engine\": true,\n"
-      "     \"import_history\": true,\n"
-      "     \"import_bookmarks\": true,\n"
       "     \"import_bookmarks_from_file\": \"c:\\\\foo\",\n"
-      "     \"import_home_page\": true,\n"
       "     \"welcome_page_on_os_upgrade_enabled\": true,\n"
       "     \"do_not_create_any_shortcuts\": true,\n"
       "     \"do_not_create_desktop_shortcut\": true,\n"
@@ -93,7 +89,7 @@ TEST_F(MasterPreferencesTest, ParseDistroParams) {
       "     \"require_eula\": true\n"
       "  },\n"
       "  \"blah\": {\n"
-      "     \"import_history\": false\n"
+      "     \"show_welcome_page\": false\n"
       "  }\n"
       "} \n";
 
@@ -103,10 +99,6 @@ TEST_F(MasterPreferencesTest, ParseDistroParams) {
   EXPECT_TRUE(prefs.read_from_file());
 
   const char* const expected_true[] = {
-      installer::master_preferences::kDistroImportSearchPref,
-      installer::master_preferences::kDistroImportHistoryPref,
-      installer::master_preferences::kDistroImportBookmarksPref,
-      installer::master_preferences::kDistroImportHomePagePref,
       installer::master_preferences::kDistroWelcomePageOnOSUpgradeEnabled,
       installer::master_preferences::kDoNotCreateAnyShortcuts,
       installer::master_preferences::kDoNotCreateDesktopShortcut,
@@ -135,16 +127,14 @@ TEST_F(MasterPreferencesTest, ParseDistroParams) {
 
 TEST_F(MasterPreferencesTest, ParseMissingDistroParams) {
   const char text[] =
-    "{ \n"
-    "  \"distribution\": { \n"
-    "     \"import_search_engine\": true,\n"
-    "     \"import_bookmarks\": false,\n"
-    "     \"import_bookmarks_from_file\": \"\",\n"
-    "     \"do_not_create_desktop_shortcut\": true,\n"
-    "     \"do_not_create_quick_launch_shortcut\": true,\n"
-    "     \"do_not_launch_chrome\": true\n"
-    "  }\n"
-    "} \n";
+      "{ \n"
+      "  \"distribution\": { \n"
+      "     \"import_bookmarks_from_file\": \"\",\n"
+      "     \"do_not_create_desktop_shortcut\": true,\n"
+      "     \"do_not_create_quick_launch_shortcut\": true,\n"
+      "     \"do_not_launch_chrome\": false\n"
+      "  }\n"
+      "} \n";
 
   EXPECT_TRUE(base::WriteFile(prefs_file(), text,
                               static_cast<int>(strlen(text))));
@@ -152,11 +142,9 @@ TEST_F(MasterPreferencesTest, ParseMissingDistroParams) {
   EXPECT_TRUE(prefs.read_from_file());
 
   ExpectedBooleans expected_bool[] = {
-    { installer::master_preferences::kDistroImportSearchPref, true },
-    { installer::master_preferences::kDistroImportBookmarksPref, false },
-    { installer::master_preferences::kDoNotCreateDesktopShortcut, true },
-    { installer::master_preferences::kDoNotCreateQuickLaunchShortcut, true },
-    { installer::master_preferences::kDoNotLaunchChrome, true },
+      {installer::master_preferences::kDoNotCreateDesktopShortcut, true},
+      {installer::master_preferences::kDoNotCreateQuickLaunchShortcut, true},
+      {installer::master_preferences::kDoNotLaunchChrome, false},
   };
 
   bool value = false;
@@ -166,7 +154,6 @@ TEST_F(MasterPreferencesTest, ParseMissingDistroParams) {
   }
 
   const char* const missing_bools[] = {
-    installer::master_preferences::kDistroImportHomePagePref,
     installer::master_preferences::kDistroWelcomePageOnOSUpgradeEnabled,
     installer::master_preferences::kDoNotRegisterForUpdateLaunch,
     installer::master_preferences::kMakeChromeDefault,
@@ -318,6 +305,10 @@ TEST_F(MasterPreferencesTest, EnforceLegacyPreferences) {
       "{"
       "  \"distribution\": {"
       "     \"create_all_shortcuts\": false,\n"
+      "     \"import_bookmarks\": true,\n"
+      "     \"import_history\": true,\n"
+      "     \"import_home_page\": true,\n"
+      "     \"import_search_engine\": true,\n"
       "     \"ping_delay\": 40\n"
       "  }"
       "}";
@@ -339,6 +330,20 @@ TEST_F(MasterPreferencesTest, EnforceLegacyPreferences) {
   EXPECT_TRUE(do_not_create_desktop_shortcut);
   EXPECT_TRUE(do_not_create_quick_launch_shortcut);
   EXPECT_FALSE(do_not_create_taskbar_shortcut);
+
+  bool actual_value = false;
+  EXPECT_TRUE(prefs.master_dictionary().GetBoolean(prefs::kImportBookmarks,
+                                                   &actual_value));
+  EXPECT_TRUE(actual_value);
+  EXPECT_TRUE(prefs.master_dictionary().GetBoolean(prefs::kImportHistory,
+                                                   &actual_value));
+  EXPECT_TRUE(actual_value);
+  EXPECT_TRUE(prefs.master_dictionary().GetBoolean(prefs::kImportHomepage,
+                                                   &actual_value));
+  EXPECT_TRUE(actual_value);
+  EXPECT_TRUE(prefs.master_dictionary().GetBoolean(prefs::kImportSearchEngine,
+                                                   &actual_value));
+  EXPECT_TRUE(actual_value);
 
 #if BUILDFLAG(ENABLE_RLZ)
   int rlz_ping_delay = 0;

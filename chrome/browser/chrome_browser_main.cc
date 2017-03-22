@@ -1663,29 +1663,11 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   PostProfileInit();
 
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-  // Show the First Run UI if this is the first time Chrome has been run on
-  // this computer, or we're being compelled to do so by a command line flag.
-  // Note that this be done _after_ the PrefService is initialized and all
-  // preferences are registered, since some of the code that the importer
-  // touches reads preferences.
+  // Execute first run specific code after the PrefService has been initialized
+  // and preferences have been registered since some of the import code depends
+  // on preferences.
   if (first_run::IsChromeFirstRun()) {
-    // By default Auto Import is performed on first run.
-    bool auto_import = true;
-
-#if defined(OS_WIN)
-    // Auto Import might be disabled via a field trial.  However, this field
-    // trial is not intended to affect enterprise users.
-    auto_import =
-        base::win::IsEnterpriseManaged() ||
-        !base::FeatureList::IsEnabled(features::kDisableFirstRunAutoImportWin);
-#endif  // defined(OS_WIN)
-
-    if (auto_import) {
-      first_run::AutoImport(profile_, master_prefs_->homepage_defined,
-                            master_prefs_->do_import_items,
-                            master_prefs_->dont_import_items,
-                            master_prefs_->import_bookmarks_path);
-    }
+    first_run::AutoImport(profile_, master_prefs_->import_bookmarks_path);
 
     // Note: this can pop the first run consent dialog on linux.
     first_run::DoPostImportTasks(profile_,

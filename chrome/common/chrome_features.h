@@ -62,7 +62,6 @@ extern const base::Feature kConsistentOmniboxGeolocation;
 
 #if defined(OS_WIN)
 extern const base::Feature kDesktopIOSPromotion;
-extern const base::Feature kDisableFirstRunAutoImportWin;
 #endif  // defined(OS_WIN)
 
 extern const base::Feature kDisplayPersistenceToggleInPermissionPrompts;

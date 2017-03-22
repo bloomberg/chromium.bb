@@ -556,21 +556,6 @@
             ]
         }
     ],
-    "DisableFirstRunAutoImport": [
-        {
-            "platforms": [
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "AutoImportDisabled",
-                    "enable_features": [
-                        "DisableFirstRunAutoImport"
-                    ]
-                }
-            ]
-        }
-    ],
     "DisallowFetchForDocWrittenScriptsInMainFrame": [
         {
             "platforms": [

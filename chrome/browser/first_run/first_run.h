@@ -24,6 +24,10 @@ namespace content {
 class WebContents;
 }
 
+namespace user_prefs {
+class PrefRegistrySyncable;
+}
+
 // This namespace contains the chrome first-run installation actions needed to
 // fully test the custom installer. It also contains the opposite actions to
 // execute during uninstall. When the first run UI is ready we won't
@@ -71,12 +75,9 @@ struct MasterPrefs {
   // remove items from here which are being stored temporarily only to be later
   // dumped into local_state. Also see related TODO in chrome_browser_main.cc.
 
-  bool homepage_defined;
-  int do_import_items;
-  int dont_import_items;
-  bool make_chrome_default_for_user;
-  bool suppress_first_run_default_browser_prompt;
-  bool welcome_page_on_os_upgrade_enabled;
+  bool make_chrome_default_for_user = false;
+  bool suppress_first_run_default_browser_prompt = false;
+  bool welcome_page_on_os_upgrade_enabled = true;
   std::vector<GURL> new_tabs;
   std::vector<GURL> bookmarks;
   std::string import_bookmarks_path;
@@ -85,6 +86,9 @@ struct MasterPrefs {
   std::string variations_seed_signature;
   std::string suppress_default_browser_prompt_for_version;
 };
+
+void RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* registry);
 
 // Returns true if Chrome should behave as if this is the first time Chrome is
 // run for this user.
@@ -151,13 +155,10 @@ bool ShouldDoPersonalDataManagerFirstRun();
 // Log a metric for the "FirstRun.SearchEngineBubble" histogram.
 void LogFirstRunMetric(FirstRunBubbleMetric metric);
 
-// Automatically import history and home page (and search engine, if
-// ShouldShowSearchEngineDialog is true). Also imports bookmarks from file if
+// Automatically imports items requested by |profile|'s configuration (sum of
+// policies and master prefs). Also imports bookmarks from file if
 // |import_bookmarks_path| is not empty.
 void AutoImport(Profile* profile,
-                bool homepage_defined,
-                int import_items,
-                int dont_import_items,
                 const std::string& import_bookmarks_path);
 
 // Does remaining first run tasks. This can pop the first run consent dialog on

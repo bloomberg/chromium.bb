@@ -71,12 +71,6 @@ void RegisterBrowserUserPrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterDictionaryPref(prefs::kBrowserWindowPlacement);
   registry->RegisterDictionaryPref(prefs::kBrowserWindowPlacementPopup);
   registry->RegisterDictionaryPref(prefs::kAppWindowPlacement);
-  registry->RegisterBooleanPref(prefs::kImportAutofillFormData, true);
-  registry->RegisterBooleanPref(prefs::kImportBookmarks, true);
-  registry->RegisterBooleanPref(prefs::kImportHistory, true);
-  registry->RegisterBooleanPref(prefs::kImportHomepage, true);
-  registry->RegisterBooleanPref(prefs::kImportSavedPasswords, true);
-  registry->RegisterBooleanPref(prefs::kImportSearchEngine, true);
   registry->RegisterBooleanPref(
       prefs::kEnableDoNotTrack,
       false,

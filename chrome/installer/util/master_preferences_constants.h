@@ -19,17 +19,9 @@ namespace master_preferences {
 extern const char kDisableLogging[];
 // Name of the dictionary that holds the distribution values.
 extern const char kDistroDict[];
-// Boolean pref that triggers silent import of the default browser bookmarks.
-extern const char kDistroImportBookmarksPref[];
 // String pref that triggers silent import of bookmarks from the html file at
 // given path.
 extern const char kDistroImportBookmarksFromFilePref[];
-// Boolean pref that triggers silent import of the default browser history.
-extern const char kDistroImportHistoryPref[];
-// Boolean pref that triggers silent import of the default browser homepage.
-extern const char kDistroImportHomePagePref[];
-// Boolean pref that triggers silent import of the default search engine.
-extern const char kDistroImportSearchPref[];
 // String of Chrome version for which the "set as default browser" infobar will
 // never be shown.
 extern const char kDistroSuppressDefaultBrowserPromptPref[];

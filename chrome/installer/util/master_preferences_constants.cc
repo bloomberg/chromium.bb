@@ -8,12 +8,8 @@ namespace installer {
 namespace master_preferences {
   const char kDisableLogging[] = "disable_logging";
   const char kDistroDict[] = "distribution";
-  const char kDistroImportBookmarksPref[] = "import_bookmarks";
   const char kDistroImportBookmarksFromFilePref[] =
       "import_bookmarks_from_file";
-  const char kDistroImportHistoryPref[] = "import_history";
-  const char kDistroImportHomePagePref[] = "import_home_page";
-  const char kDistroImportSearchPref[] = "import_search_engine";
   const char kDistroSuppressDefaultBrowserPromptPref[] =
       "suppress_default_browser_prompt_for_version";
   const char kDistroSuppressFirstRunBubble[] = "suppress_first_run_bubble";
