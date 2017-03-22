@@ -60,10 +60,9 @@ void TrayBluetoothHelper::InitializeOnAdapterReady(
   adapter_->AddObserver(this);
 }
 
-void TrayBluetoothHelper::GetAvailableBluetoothDevices(
-    std::vector<BluetoothDeviceInfo>* list) {
-  device::BluetoothAdapter::DeviceList devices = adapter_->GetDevices();
-  for (device::BluetoothDevice* device : devices) {
+BluetoothDeviceList TrayBluetoothHelper::GetAvailableBluetoothDevices() const {
+  BluetoothDeviceList list;
+  for (device::BluetoothDevice* device : adapter_->GetDevices()) {
     BluetoothDeviceInfo info;
     info.address = device->GetAddress();
     info.display_name = device->GetNameForDisplay();
@@ -71,8 +70,9 @@ void TrayBluetoothHelper::GetAvailableBluetoothDevices(
     info.connecting = device->IsConnecting();
     info.paired = device->IsPaired();
     info.device_type = device->GetDeviceType();
-    list->push_back(info);
+    list.push_back(info);
   }
+  return list;
 }
 
 void TrayBluetoothHelper::StartBluetoothDiscovering() {

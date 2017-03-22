@@ -35,8 +35,7 @@ TEST_F(TrayBluetoothHelperTest, Basics) {
   EXPECT_FALSE(helper.GetBluetoothEnabled());
   EXPECT_FALSE(helper.HasBluetoothDiscoverySession());
 
-  std::vector<ash::BluetoothDeviceInfo> devices;
-  helper.GetAvailableBluetoothDevices(&devices);
+  BluetoothDeviceList devices = helper.GetAvailableBluetoothDevices();
   // The devices are fake in tests, so don't assume any particular number.
   EXPECT_FALSE(devices.empty());
 

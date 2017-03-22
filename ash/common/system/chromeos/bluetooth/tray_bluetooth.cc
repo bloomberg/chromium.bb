@@ -162,8 +162,7 @@ class BluetoothDefaultView : public TrayItemMore {
       return kSystemMenuBluetoothDisabledIcon;
 
     bool has_connected_device = false;
-    BluetoothDeviceList list;
-    helper->GetAvailableBluetoothDevices(&list);
+    BluetoothDeviceList list = helper->GetAvailableBluetoothDevices();
     for (size_t i = 0; i < list.size(); ++i) {
       if (list[i].connected) {
         has_connected_device = true;
@@ -234,8 +233,8 @@ class BluetoothDetailedView : public TrayDetailsView {
     std::set<std::string> new_paired_not_connected_devices;
     std::set<std::string> new_discovered_not_paired_devices;
 
-    BluetoothDeviceList list;
-    Shell::Get()->tray_bluetooth_helper()->GetAvailableBluetoothDevices(&list);
+    BluetoothDeviceList list =
+        Shell::Get()->tray_bluetooth_helper()->GetAvailableBluetoothDevices();
     for (size_t i = 0; i < list.size(); ++i) {
       if (list[i].connecting) {
         new_connecting_devices.insert(list[i].address);

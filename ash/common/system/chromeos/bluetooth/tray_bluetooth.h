@@ -15,6 +15,11 @@ class BluetoothDefaultView;
 class BluetoothDetailedView;
 }
 
+// Bluetooth section in the main system tray menu. Contains:
+// * Toggle to turn Bluetooth on and off
+// * Gear icon that takes the user to the web ui settings
+// * List of paired devices
+// * List of unpaired devices
 class TrayBluetooth : public SystemTrayItem, public BluetoothObserver {
  public:
   explicit TrayBluetooth(SystemTray* system_tray);

@@ -20,8 +20,9 @@ class BluetoothDiscoverySession;
 
 namespace ash {
 
-// TODO(jamescook): Convert TrayBlueooth to use device::BluetoothDevice and
-// delete this. http://crbug.com/660043
+// Cached info from device::BluetoothDevice used for display in the UI.
+// Exists because it is not safe to cache pointers to device::BluetoothDevice
+// instances.
 struct ASH_EXPORT BluetoothDeviceInfo {
   BluetoothDeviceInfo();
   BluetoothDeviceInfo(const BluetoothDeviceInfo& other);
@@ -55,8 +56,7 @@ class ASH_EXPORT TrayBluetoothHelper
       scoped_refptr<device::BluetoothAdapter> adapter);
 
   // Returns a list of available bluetooth devices.
-  // TODO(jamescook): Just return the list.
-  void GetAvailableBluetoothDevices(std::vector<BluetoothDeviceInfo>* list);
+  BluetoothDeviceList GetAvailableBluetoothDevices() const;
 
   // Requests bluetooth start discovering devices, which happens asynchronously.
   void StartBluetoothDiscovering();
