@@ -352,7 +352,6 @@ class BrowserWindow : public ui::BaseWindow {
     AVATAR_BUBBLE_MODE_REAUTH,
     AVATAR_BUBBLE_MODE_CONFIRM_SIGNIN,
     AVATAR_BUBBLE_MODE_SHOW_ERROR,
-    AVATAR_BUBBLE_MODE_FAST_USER_SWITCH,
   };
   virtual void ShowAvatarBubbleFromAvatarButton(
       AvatarBubbleMode mode,

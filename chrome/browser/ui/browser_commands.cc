@@ -1129,13 +1129,6 @@ void ShowAvatarMenu(Browser* browser) {
       signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN, true);
 }
 
-void ShowFastUserSwitcher(Browser* browser) {
-  browser->window()->ShowAvatarBubbleFromAvatarButton(
-      BrowserWindow::AVATAR_BUBBLE_MODE_FAST_USER_SWITCH,
-      signin::ManageAccountsParams(),
-      signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN, false);
-}
-
 void OpenUpdateChromeDialog(Browser* browser) {
   if (UpgradeDetector::GetInstance()->is_outdated_install()) {
     content::NotificationService::current()->Notify(

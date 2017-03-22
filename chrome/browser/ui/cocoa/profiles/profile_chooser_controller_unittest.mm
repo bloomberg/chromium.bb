@@ -107,20 +107,6 @@ class ProfileChooserControllerTest : public CocoaProfileTest {
     [controller_ showWindow:nil];
   }
 
-  void StartFastUserSwitcher() {
-    NSRect frame = [test_window() frame];
-    NSPoint point = NSMakePoint(NSMidX(frame), NSMidY(frame));
-    controller_.reset([[ProfileChooserController alloc]
-        initWithBrowser:browser()
-             anchoredAt:point
-               viewMode:profiles::BUBBLE_VIEW_MODE_FAST_PROFILE_CHOOSER
-           tutorialMode:profiles::TUTORIAL_MODE_NONE
-            serviceType:signin::GAIA_SERVICE_TYPE_NONE
-            accessPoint:signin_metrics::AccessPoint::
-                            ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN]);
-    [controller_ showWindow:nil];
-  }
-
   void SignInFirstProfile() {
     std::vector<ProfileAttributesEntry*> entries = testing_profile_manager()->
         profile_attributes_storage()->GetAllProfilesAttributes();

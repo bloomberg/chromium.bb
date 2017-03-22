@@ -569,9 +569,6 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_SHOW_AVATAR_MENU:
       ShowAvatarMenu(browser_);
       break;
-    case IDC_SHOW_FAST_USER_SWITCHER:
-      ShowFastUserSwitcher(browser_);
-      break;
     case IDC_SHOW_HISTORY:
       ShowHistory(browser_);
       break;
@@ -800,7 +797,6 @@ void BrowserCommandController::InitCommandState() {
   // Chrome OS uses the system tray menu to handle multi-profiles.
   if (normal_window && (guest_session || !profile()->IsOffTheRecord())) {
     command_updater_.UpdateCommandEnabled(IDC_SHOW_AVATAR_MENU, true);
-    command_updater_.UpdateCommandEnabled(IDC_SHOW_FAST_USER_SWITCHER, true);
   }
 #endif
 

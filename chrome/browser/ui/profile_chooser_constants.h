@@ -27,8 +27,6 @@ enum BubbleViewMode {
   BUBBLE_VIEW_MODE_ACCOUNT_REMOVAL,
   // Shows a view for switching user.
   BUBBLE_VIEW_MODE_SWITCH_USER,
-  // Shows a "fast profile switcher" view.
-  BUBBLE_VIEW_MODE_FAST_PROFILE_CHOOSER,
 };
 
 // Tutorial modes that can be displayed in the profile chooser bubble.

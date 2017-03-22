@@ -125,16 +125,6 @@ class ProfileChooserView : public content::WebContentsDelegate,
   // Creates the profile chooser view.
   views::View* CreateProfileChooserView(AvatarMenu* avatar_menu);
 
-  // Populates |layout| with only a list of the profiles available to
-  // switch to.
-  void PopulateMinimalProfileChooserView(views::GridLayout* layout,
-                                         AvatarMenu* avatar_menu);
-
-  // Populates |layout| with all the elements of the Avatar Menu (current user
-  // bubble, options buttons, tutorials).
-  void PopulateCompleteProfileChooserView(views::GridLayout* layout,
-                                          AvatarMenu* avatar_menu);
-
   // Creates the main profile card for the profile |avatar_item|. |is_guest|
   // is used to determine whether to show any Sign in/Sign out/Manage accounts
   // links.

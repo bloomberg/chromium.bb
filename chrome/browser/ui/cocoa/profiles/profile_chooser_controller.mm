@@ -1390,7 +1390,6 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       subView = [self buildSwitchUserView];
       break;
     case profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER:
-    case profiles::BUBBLE_VIEW_MODE_FAST_PROFILE_CHOOSER:
     case profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT:
       subView = [self buildProfileChooserView];
       break;
@@ -1491,7 +1490,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       // This is the case when the user selects the sign out option in the user
       // menu upon encountering unrecoverable errors. Afterwards, the profile
       // chooser view is shown instead of the account management view.
-      viewMode_ = profiles::BUBBLE_VIEW_MODE_FAST_PROFILE_CHOOSER;
+      viewMode_ = profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER;
     }
   }
 
@@ -1534,14 +1533,6 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       [[NSMutableArray alloc] init]);
   // Local and guest profiles cannot lock their profile.
   bool showLock = false;
-  bool isFastProfileChooser =
-      viewMode_ == profiles::BUBBLE_VIEW_MODE_FAST_PROFILE_CHOOSER;
-  if (isFastProfileChooser) {
-    // The user is using right-click switching, no need to tell them about it.
-    PrefService* localState = g_browser_process->local_state();
-    localState->SetBoolean(
-        prefs::kProfileAvatarRightClickTutorialDismissed, true);
-  }
 
   // Loop over the profiles in reverse, so that they are sorted by their
   // y-coordinate, and separate them into active and "other" profiles.
@@ -1565,15 +1556,13 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   // overlap the bubble's rounded corners.
   CGFloat yOffset = 1;
 
-  if (!isFastProfileChooser)
-    [self buildProfileChooserViewWithProfileView:currentProfileView
-                                    tutorialView:tutorialView
-                                   syncErrorView:syncErrorView
-                                   otherProfiles:otherProfiles.get()
-                                       atYOffset:yOffset
-                                     inContainer:container
-                                        showLock:showLock];
-
+  [self buildProfileChooserViewWithProfileView:currentProfileView
+                                  tutorialView:tutorialView
+                                 syncErrorView:syncErrorView
+                                 otherProfiles:otherProfiles.get()
+                                     atYOffset:yOffset
+                                   inContainer:container
+                                      showLock:showLock];
   return container.autorelease();
 }
 

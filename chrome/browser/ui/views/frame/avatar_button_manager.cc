@@ -61,7 +61,7 @@ void AvatarButtonManager::ButtonPressed(views::Button* sender,
   if ((event.IsMouseEvent() &&
        static_cast<const ui::MouseEvent&>(event).IsRightMouseButton()) ||
       (event.type() == ui::ET_GESTURE_LONG_PRESS)) {
-    mode = BrowserWindow::AVATAR_BUBBLE_MODE_FAST_USER_SWITCH;
+    return;
   }
   frame_view_->browser_view()->ShowAvatarBubbleFromAvatarButton(
       mode, signin::ManageAccountsParams(),

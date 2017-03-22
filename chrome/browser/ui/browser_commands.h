@@ -134,7 +134,6 @@ void OpenFeedbackDialog(Browser* browser);
 void ToggleBookmarkBar(Browser* browser);
 void ShowAppMenu(Browser* browser);
 void ShowAvatarMenu(Browser* browser);
-void ShowFastUserSwitcher(Browser* browser);
 void OpenUpdateChromeDialog(Browser* browser);
 void DistillCurrentPage(Browser* browser);
 bool CanRequestTabletSite(content::WebContents* current_tab);

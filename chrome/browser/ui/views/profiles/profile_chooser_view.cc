@@ -115,8 +115,7 @@ const int kVerticalSpacing = 16;
 const int kTitleViewNativeWidgetOffset = 8;
 
 bool IsProfileChooser(profiles::BubbleViewMode mode) {
-  return mode == profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER ||
-      mode == profiles::BUBBLE_VIEW_MODE_FAST_PROFILE_CHOOSER;
+  return mode == profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER;
 }
 
 // DEPRECATED: New user menu components should use views::BoxLayout instead.
@@ -522,14 +521,6 @@ void ProfileChooserView::ShowBubble(
     views::View* anchor_view,
     Browser* browser,
     bool is_source_keyboard) {
-  // Don't start creating the view if it would be an empty fast user switcher.
-  // It has to happen here to prevent the view system from creating an empty
-  // container.
-  // Same for material design user menu since fast profile switcher will be
-  // migrated to the left-click menu.
-  if (view_mode == profiles::BUBBLE_VIEW_MODE_FAST_PROFILE_CHOOSER)
-    return;
-
   if (IsShowing()) {
     if (tutorial_mode != profiles::TUTORIAL_MODE_NONE) {
       profile_bubble_->tutorial_mode_ = tutorial_mode;
@@ -748,7 +739,6 @@ void ProfileChooserView::ShowView(profiles::BubbleViewMode view_to_display,
       break;
     case profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT:
     case profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER:
-    case profiles::BUBBLE_VIEW_MODE_FAST_PROFILE_CHOOSER:
       layout = CreateSingleColumnLayout(this, kFixedMenuWidth);
       sub_view = CreateProfileChooserView(avatar_menu);
       break;
@@ -992,9 +982,10 @@ void ProfileChooserView::StyledLabelLinkClicked(views::StyledLabel* label,
   chrome::ShowSettings(browser_);
 }
 
-void ProfileChooserView::PopulateCompleteProfileChooserView(
-    views::GridLayout* layout,
+views::View* ProfileChooserView::CreateProfileChooserView(
     AvatarMenu* avatar_menu) {
+  views::View* view = new views::View();
+  views::GridLayout* layout = CreateSingleColumnLayout(view, kFixedMenuWidth);
   // Separate items into active and alternatives.
   Indexes other_profiles;
   views::View* tutorial_view = NULL;
@@ -1061,38 +1052,6 @@ void ProfileChooserView::PopulateCompleteProfileChooserView(
     layout->StartRow(0, 0);
     layout->AddView(option_buttons_view);
   }
-}
-
-void ProfileChooserView::PopulateMinimalProfileChooserView(
-    views::GridLayout* layout,
-    AvatarMenu* avatar_menu) {
-  Indexes other_profiles;
-  for (size_t i = 0; i < avatar_menu->GetNumberOfItems(); ++i) {
-    const AvatarMenu::Item& item = avatar_menu->GetItemAt(i);
-    if (!item.active) {
-      other_profiles.push_back(i);
-    }
-  }
-
-  layout->StartRow(1, 0);
-  layout->AddView(CreateOtherProfilesView(other_profiles));
-}
-
-views::View* ProfileChooserView::CreateProfileChooserView(
-    AvatarMenu* avatar_menu) {
-  views::View* view = new views::View();
-  views::GridLayout* layout = CreateSingleColumnLayout(view, kFixedMenuWidth);
-
-  if (view_mode_ == profiles::BUBBLE_VIEW_MODE_FAST_PROFILE_CHOOSER) {
-    PopulateMinimalProfileChooserView(layout, avatar_menu);
-    // The user is using right-click switching, no need to tell them about it.
-    PrefService* local_state = g_browser_process->local_state();
-    local_state->SetBoolean(
-        prefs::kProfileAvatarRightClickTutorialDismissed, true);
-  } else {
-    PopulateCompleteProfileChooserView(layout, avatar_menu);
-  }
-
   return view;
 }
 
