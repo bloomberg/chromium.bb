@@ -129,6 +129,10 @@ config("ffmpegsumo_warnings") {
       # autorename_libavformat_utils.c
       "-Wno-sometimes-uninitialized",
 
+      # clock_gettime is marked as 10.12+ in the 10.12 SDK, but ffmpeg does
+      # correctly check for that before calling.
+      "-Wno-unguarded-availability",
+
       # ffmpeg contains static functions in header files, which lead
       # to unused function warnings. There are a few legit unused
       # functions too.
