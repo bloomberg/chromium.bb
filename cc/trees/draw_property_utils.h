@@ -27,9 +27,6 @@ struct EffectNode;
 
 namespace draw_property_utils {
 
-void CC_EXPORT PostConcatSurfaceContentsScale(const EffectNode* effect_node,
-                                              gfx::Transform* transform);
-
 void CC_EXPORT ConcatInverseSurfaceContentsScale(const EffectNode* effect_node,
                                                  gfx::Transform* transform);
 

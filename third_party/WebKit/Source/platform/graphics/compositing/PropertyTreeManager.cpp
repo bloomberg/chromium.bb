@@ -74,8 +74,6 @@ void PropertyTreeManager::setupRootTransformNode() {
       transformTree.Insert(cc::TransformNode(), kRealRootNodeId));
   DCHECK_EQ(transformNode.id, kSecondaryRootNodeId);
   transformNode.source_node_id = transformNode.parent_id;
-  transformTree.SetTargetId(transformNode.id, kRealRootNodeId);
-  transformTree.SetContentTargetId(transformNode.id, kRealRootNodeId);
 
   // TODO(jaydasika): We shouldn't set ToScreen and FromScreen of root
   // transform node here. They should be set while updating transform tree in
@@ -164,8 +162,6 @@ int PropertyTreeManager::ensureCompositorTransformNode(
   int id = transformTree().Insert(cc::TransformNode(), parentId);
 
   cc::TransformNode& compositorNode = *transformTree().Node(id);
-  transformTree().SetTargetId(id, kRealRootNodeId);
-  transformTree().SetContentTargetId(id, kRealRootNodeId);
   compositorNode.source_node_id = parentId;
 
   FloatPoint3D origin = transformNode->origin();

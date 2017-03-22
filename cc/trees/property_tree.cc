@@ -48,7 +48,6 @@ TransformTree::TransformTree()
       device_scale_factor_(1.f),
       device_transform_scale_factor_(1.f) {
   cached_data_.push_back(TransformCachedNodeData());
-  cached_data_[kRootNodeId].target_id = kRootNodeId;
 }
 
 TransformTree::~TransformTree() = default;
@@ -119,7 +118,6 @@ void TransformTree::clear() {
   nodes_affected_by_outer_viewport_bounds_delta_.clear();
   cached_data_.clear();
   cached_data_.push_back(TransformCachedNodeData());
-  cached_data_[kRootNodeId].target_id = kRootNodeId;
   sticky_position_data_.clear();
 
 #if DCHECK_IS_ON()
@@ -212,7 +210,6 @@ void TransformTree::UpdateTransforms(int id) {
   TransformNode* node = Node(id);
   TransformNode* parent_node = parent(node);
   DCHECK(parent_node);
-  TransformNode* target_node = Node(TargetId(id));
   TransformNode* source_node = Node(node->source_node_id);
   // TODO(flackr): Only dirty when scroll offset changes.
   if (node->sticky_position_constraint_id >= 0 ||
@@ -221,7 +218,7 @@ void TransformTree::UpdateTransforms(int id) {
   } else {
     UndoSnapping(node);
   }
-  UpdateScreenSpaceTransform(node, parent_node, target_node);
+  UpdateScreenSpaceTransform(node, parent_node);
   UpdateAnimationProperties(node, parent_node);
   UpdateSnapping(node);
   UpdateNodeAndAncestorsHaveIntegerTranslations(node, parent_node);
@@ -500,8 +497,7 @@ void TransformTree::UpdateLocalTransform(TransformNode* node) {
 }
 
 void TransformTree::UpdateScreenSpaceTransform(TransformNode* node,
-                                               TransformNode* parent_node,
-                                               TransformNode* target_node) {
+                                               TransformNode* parent_node) {
   DCHECK(parent_node);
   gfx::Transform to_screen_space_transform = ToScreen(parent_node->id);
   if (node->flattens_inherited_transform)
@@ -705,26 +701,6 @@ void TransformTree::SetToScreen(int node_id, const gfx::Transform& transform) {
   DCHECK(static_cast<int>(cached_data_.size()) > node_id);
   cached_data_[node_id].to_screen = transform;
   cached_data_[node_id].is_showing_backface = transform.IsBackFaceVisible();
-}
-
-int TransformTree::TargetId(int node_id) const {
-  DCHECK(static_cast<int>(cached_data_.size()) > node_id);
-  return cached_data_[node_id].target_id;
-}
-
-void TransformTree::SetTargetId(int node_id, int target_id) {
-  DCHECK(static_cast<int>(cached_data_.size()) > node_id);
-  cached_data_[node_id].target_id = target_id;
-}
-
-int TransformTree::ContentTargetId(int node_id) const {
-  DCHECK(static_cast<int>(cached_data_.size()) > node_id);
-  return cached_data_[node_id].content_target_id;
-}
-
-void TransformTree::SetContentTargetId(int node_id, int content_target_id) {
-  DCHECK(static_cast<int>(cached_data_.size()) > node_id);
-  cached_data_[node_id].content_target_id = content_target_id;
 }
 
 bool TransformTree::operator==(const TransformTree& other) const {

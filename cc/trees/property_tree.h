@@ -288,8 +288,7 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
 
   void UpdateLocalTransform(TransformNode* node);
   void UpdateScreenSpaceTransform(TransformNode* node,
-                                  TransformNode* parent_node,
-                                  TransformNode* target_node);
+                                  TransformNode* parent_node);
   void UpdateAnimationProperties(TransformNode* node,
                                  TransformNode* parent_node);
   void UndoSnapping(TransformNode* node);

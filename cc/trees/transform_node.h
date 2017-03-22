@@ -148,10 +148,6 @@ struct CC_EXPORT TransformCachedNodeData {
 
   gfx::Transform from_screen;
   gfx::Transform to_screen;
-  int target_id;
-  // This id is used for all content that draws into a render surface associated
-  // with this transform node.
-  int content_target_id;
 
   bool is_showing_backface : 1;
 
