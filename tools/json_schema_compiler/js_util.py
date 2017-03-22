@@ -119,6 +119,8 @@ class JsUtil(object):
     c.Append('function(')
     for i, param in enumerate(function.params):
       c.Concat(self._TypeToJsType(namespace_name, param.type_), new_line=False)
+      if param.optional:
+        c.Append('|undefined', new_line=False)
       if i is not len(function.params) - 1:
         c.Append(', ', new_line=False, strip_right=False)
     c.Append('):', new_line=False)
