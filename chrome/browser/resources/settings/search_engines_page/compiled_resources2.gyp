@@ -20,7 +20,7 @@
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:icon',
         'search_engines_browser_proxy',
-        '../compiled_resources2.gyp:focusable_iron_list_item_behavior',
+        '../compiled_resources2.gyp:focus_row_behavior',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },

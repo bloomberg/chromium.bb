@@ -4,7 +4,7 @@
 <link rel="import" href="chrome://resources/html/icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../controls/extension_controlled_indicator.html">
-<link rel="import" href="../focusable_iron_list_item_behavior.html">
+<link rel="import" href="../focus_row_behavior.html">
 <link rel="import" href="search_engine_dialog.html">
 <link rel="import" href="search_engine_entry_css.html">
 <link rel="import" href="search_engines_browser_proxy.html">
@@ -50,7 +50,7 @@
       <settings-search-engine-dialog model="[[engine]]">
       </settings-search-engine-dialog>
     </template>
-    <div class="list-item">
+    <div class="list-item" focus-row-container>
       <div id="name-column">
         <div class="favicon-image"
             style="background-image: [[getIconSet_(engine.iconURL)]]"></div>
@@ -58,8 +58,9 @@
       </div>
       <div id="keyword-column">[[engine.keyword]]</div>
       <div id="url-column" class="text-elide">[[engine.url]]</div>
-      <paper-icon-button icon="cr:more-vert" tabindex$="[[tabindex]]"
-          on-tap="onDotsTap_" title="$i18n{moreActions}">
+      <paper-icon-button icon="cr:more-vert" on-tap="onDotsTap_"
+          title="$i18n{moreActions}" focus-row-control
+          focus-type='cr-menu-button'>
       </paper-icon-button>
       <dialog is="cr-action-menu">
         <button class="dropdown-item" role="option" on-tap="onMakeDefaultTap_"

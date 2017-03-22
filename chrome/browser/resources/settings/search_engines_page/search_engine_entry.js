@@ -9,7 +9,7 @@
 Polymer({
   is: 'settings-search-engine-entry',
 
-  behaviors: [FocusableIronListItemBehavior],
+  behaviors: [FocusRowBehavior],
 
   properties: {
     /** @type {!SearchEngine} */

@@ -5,6 +5,7 @@
 <link rel="import" href="chrome://resources/html/icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="startup_urls_page_browser_proxy.html">
+<link rel="import" href="../focus_row_behavior.html">
 <link rel="import" href="../settings_shared_css.html">
 
 <dom-module id="settings-startup-url-entry">
@@ -14,7 +15,7 @@
         overflow: hidden;
       }
     </style>
-    <div class="list-item">
+    <div class="list-item" focus-row-container>
       <div class="favicon-image"
           style="background-image: [[getIconSet_(model.url)]]">
       </div>
@@ -23,9 +24,8 @@
         <div class="text-elide secondary">[[model.url]]</div>
       </div>
       <template is="dom-if" if="[[editable]]">
-        <paper-icon-button id="dots" icon="cr:more-vert"
-            tabindex$="[[tabindex]]" on-tap="onDotsTap_"
-            title="$i18n{moreActions}">
+        <paper-icon-button id="dots" icon="cr:more-vert" on-tap="onDotsTap_"
+            title="$i18n{moreActions}" focus-row-control focus-type="menu">
         </paper-icon-button>
         <template is="cr-lazy-render" id="menu">
           <dialog is="cr-action-menu">

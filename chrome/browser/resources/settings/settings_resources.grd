@@ -271,11 +271,11 @@
       <structure name="IDR_SETTINGS_GLOBAL_SCROLL_TARGET_BEHAVIOR_JS"
                  file="global_scroll_target_behavior.js"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_FOCUSABLE_IRON_LIST_ITEM_BEHAVIOR_HTML"
-                 file="focusable_iron_list_item_behavior.html"
+      <structure name="IDR_SETTINGS_FOCUS_ROW_BEHAVIOR_HTML"
+                 file="focus_row_behavior.html"
                  type="chrome_html" />
-      <structure name="IDR_SETTINGS_FOCUSABLE_IRON_LIST_ITEM_BEHAVIOR_JS"
-                 file="focusable_iron_list_item_behavior.js"
+      <structure name="IDR_SETTINGS_FOCUS_ROW_BEHAVIOR_JS"
+                 file="focus_row_behavior.js"
                  type="chrome_html" />
       <if expr="use_nss_certs">
         <structure name="IDR_SETTINGS_CERTIFICATE_MANAGER_PAGE_HTML"

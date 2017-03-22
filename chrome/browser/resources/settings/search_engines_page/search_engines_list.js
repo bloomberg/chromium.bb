@@ -23,5 +23,8 @@ Polymer({
 
     /** Whether column headers should be displayed */
     hideHeaders: Boolean,
+
+    /** @private {Object}*/
+    lastFocused_: Object,
   },
 });

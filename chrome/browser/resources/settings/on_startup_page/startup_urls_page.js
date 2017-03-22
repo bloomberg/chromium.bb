@@ -29,6 +29,9 @@ Polymer({
 
     /** @private {?StartupPageInfo} */
     startupUrlDialogModel_: Object,
+
+    /** @private {Object}*/
+    lastFocused_: Object,
   },
 
   /** @override */

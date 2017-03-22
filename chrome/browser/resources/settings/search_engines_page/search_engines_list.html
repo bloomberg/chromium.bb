@@ -45,7 +45,8 @@
         <iron-list items="[[engines]]" scroll-target="[[subpageScrollTarget]]">
           <template>
             <settings-search-engine-entry engine="[[item]]"
-                tabindex$="[[tabIndex]]">
+                tabindex$="[[tabIndex]]" iron-list-tab-index="[[tabIndex]]"
+                last-focused="{{lastFocused_}}">
             </settings-search-engine-entry>
           </template>
         </iron-list>

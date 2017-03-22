@@ -105,13 +105,18 @@ cr.define('cr.ui', function() {
      * to indicate they're equivalent.
      *
      * @param {string} type The type of element to track focus of.
-     * @param {string} query The selector of the element from this row's root.
+     * @param {string|HTMLElement} selectorOrElement The selector of the element
+     *    from this row's root, or the element itself.
      * @return {boolean} Whether a new item was added.
      */
-    addItem: function(type, query) {
+    addItem: function(type, selectorOrElement) {
       assert(type);
 
-      var element = this.root.querySelector(query);
+      var element;
+      if (typeof selectorOrElement == 'string')
+        element = this.root.querySelector(selectorOrElement);
+      else
+        element = selectorOrElement;
       if (!element)
         return false;
 
