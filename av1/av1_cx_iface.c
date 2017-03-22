@@ -71,6 +71,10 @@ struct av1_extracfg {
   aom_bit_depth_t bit_depth;
   aom_tune_content content;
   aom_color_space_t color_space;
+#if CONFIG_COLORSPACE_HEADERS
+  aom_transfer_function_t transfer_function;
+  aom_chroma_sample_position_t chroma_sample_position;
+#endif
   int color_range;
   int render_width;
   int render_height;
@@ -102,7 +106,7 @@ static struct av1_extracfg default_extra_cfg = {
   0,  // tile_rows
 #endif  // CONFIG_EXT_TILE
 #if CONFIG_DEPENDENT_HORZTILES
-  0,  // Depdendent Horizontal tiles
+  0,  // Dependent Horizontal tiles
 #endif
 #if CONFIG_LOOPFILTERING_ACROSS_TILES
   1,              // loop_filter_across_tiles_enabled
@@ -134,10 +138,14 @@ static struct av1_extracfg default_extra_cfg = {
 #if CONFIG_EXT_DELTA_Q
   NO_DELTA_Q,  // deltaq_mode
 #endif
-  CONFIG_XIPHRC,                // frame_periodic_delta_q
-  AOM_BITS_8,                   // Bit depth
-  AOM_CONTENT_DEFAULT,          // content
-  AOM_CS_UNKNOWN,               // color space
+  CONFIG_XIPHRC,        // frame_periodic_delta_q
+  AOM_BITS_8,           // Bit depth
+  AOM_CONTENT_DEFAULT,  // content
+  AOM_CS_UNKNOWN,       // color space
+#if CONFIG_COLORSPACE_HEADERS
+  AOM_TF_UNKNOWN,   // transfer function
+  AOM_CSP_UNKNOWN,  // chroma sample position
+#endif
   0,                            // color range
   0,                            // render width
   0,                            // render height
@@ -354,7 +362,14 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
       cfg->g_bit_depth == AOM_BITS_8) {
     ERROR("Codec bit-depth 8 not supported in profile > 1");
   }
+#if CONFIG_COLORSPACE_HEADERS
+  RANGE_CHECK(extra_cfg, color_space, AOM_CS_UNKNOWN, AOM_CS_ICTCP);
+  RANGE_CHECK(extra_cfg, transfer_function, AOM_TF_UNKNOWN, AOM_TF_HLG);
+  RANGE_CHECK(extra_cfg, chroma_sample_position, AOM_CSP_UNKNOWN,
+              AOM_CSP_COLOCATED);
+#else
   RANGE_CHECK(extra_cfg, color_space, AOM_CS_UNKNOWN, AOM_CS_SRGB);
+#endif
   RANGE_CHECK(extra_cfg, color_range, 0, 1);
 #if CONFIG_ANS && ANS_MAX_SYMBOLS
   RANGE_CHECK(extra_cfg, ans_window_size_log2, 8, 23);
@@ -523,6 +538,10 @@ static aom_codec_err_t set_encoder_config(
 #endif
 
   oxcf->color_space = extra_cfg->color_space;
+#if CONFIG_COLORSPACE_HEADERS
+  oxcf->transfer_function = extra_cfg->transfer_function;
+  oxcf->chroma_sample_position = extra_cfg->chroma_sample_position;
+#endif
   oxcf->color_range = extra_cfg->color_range;
   oxcf->render_width = extra_cfg->render_width;
   oxcf->render_height = extra_cfg->render_height;
@@ -1419,6 +1438,23 @@ static aom_codec_err_t ctrl_set_color_space(aom_codec_alg_priv_t *ctx,
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
+#if CONFIG_COLORSPACE_HEADERS
+static aom_codec_err_t ctrl_set_transfer_function(aom_codec_alg_priv_t *ctx,
+                                                  va_list args) {
+  struct av1_extracfg extra_cfg = ctx->extra_cfg;
+  extra_cfg.transfer_function = CAST(AV1E_SET_TRANSFER_FUNCTION, args);
+  return update_extra_cfg(ctx, &extra_cfg);
+}
+
+static aom_codec_err_t ctrl_set_chroma_sample_position(
+    aom_codec_alg_priv_t *ctx, va_list args) {
+  struct av1_extracfg extra_cfg = ctx->extra_cfg;
+  extra_cfg.chroma_sample_position =
+      CAST(AV1E_SET_CHROMA_SAMPLE_POSITION, args);
+  return update_extra_cfg(ctx, &extra_cfg);
+}
+#endif
+
 static aom_codec_err_t ctrl_set_color_range(aom_codec_alg_priv_t *ctx,
                                             va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
@@ -1504,6 +1540,10 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { AV1E_SET_FRAME_PERIODIC_BOOST, ctrl_set_frame_periodic_boost },
   { AV1E_SET_TUNE_CONTENT, ctrl_set_tune_content },
   { AV1E_SET_COLOR_SPACE, ctrl_set_color_space },
+#if CONFIG_COLORSPACE_HEADERS
+  { AV1E_SET_TRANSFER_FUNCTION, ctrl_set_transfer_function },
+  { AV1E_SET_CHROMA_SAMPLE_POSITION, ctrl_set_chroma_sample_position },
+#endif
   { AV1E_SET_COLOR_RANGE, ctrl_set_color_range },
   { AV1E_SET_NOISE_SENSITIVITY, ctrl_set_noise_sensitivity },
   { AV1E_SET_MIN_GF_INTERVAL, ctrl_set_min_gf_interval },

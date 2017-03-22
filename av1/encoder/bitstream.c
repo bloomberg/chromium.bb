@@ -4382,7 +4382,12 @@ static void write_bitdepth_colorspace_sampling(
     assert(cm->bit_depth > AOM_BITS_8);
     aom_wb_write_bit(wb, cm->bit_depth == AOM_BITS_10 ? 0 : 1);
   }
+#if CONFIG_COLORSPACE_HEADERS
+  aom_wb_write_literal(wb, cm->color_space, 5);
+  aom_wb_write_literal(wb, cm->transfer_function, 5);
+#else
   aom_wb_write_literal(wb, cm->color_space, 3);
+#endif
   if (cm->color_space != AOM_CS_SRGB) {
     // 0: [16, 235] (i.e. xvYCC), 1: [0, 255]
     aom_wb_write_bit(wb, cm->color_range);
@@ -4394,6 +4399,11 @@ static void write_bitdepth_colorspace_sampling(
     } else {
       assert(cm->subsampling_x == 1 && cm->subsampling_y == 1);
     }
+#if CONFIG_COLORSPACE_HEADERS
+    if (cm->subsampling_x == 1 && cm->subsampling_y == 1) {
+      aom_wb_write_literal(wb, cm->chroma_sample_position, 2);
+    }
+#endif
   } else {
     assert(cm->profile == PROFILE_1 || cm->profile == PROFILE_3);
     aom_wb_write_bit(wb, 0);  // unused

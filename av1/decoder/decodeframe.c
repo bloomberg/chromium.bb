@@ -3157,6 +3157,12 @@ static void setup_frame_size(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   pool->frame_bufs[cm->new_fb_idx].buf.subsampling_y = cm->subsampling_y;
   pool->frame_bufs[cm->new_fb_idx].buf.bit_depth = (unsigned int)cm->bit_depth;
   pool->frame_bufs[cm->new_fb_idx].buf.color_space = cm->color_space;
+#if CONFIG_COLORSPACE_HEADERS
+  pool->frame_bufs[cm->new_fb_idx].buf.transfer_function =
+      cm->transfer_function;
+  pool->frame_bufs[cm->new_fb_idx].buf.chroma_sample_position =
+      cm->chroma_sample_position;
+#endif
   pool->frame_bufs[cm->new_fb_idx].buf.color_range = cm->color_range;
   pool->frame_bufs[cm->new_fb_idx].buf.render_width = cm->render_width;
   pool->frame_bufs[cm->new_fb_idx].buf.render_height = cm->render_height;
@@ -3246,6 +3252,12 @@ static void setup_frame_size_with_refs(AV1_COMMON *cm,
   pool->frame_bufs[cm->new_fb_idx].buf.subsampling_y = cm->subsampling_y;
   pool->frame_bufs[cm->new_fb_idx].buf.bit_depth = (unsigned int)cm->bit_depth;
   pool->frame_bufs[cm->new_fb_idx].buf.color_space = cm->color_space;
+#if CONFIG_COLORSPACE_HEADERS
+  pool->frame_bufs[cm->new_fb_idx].buf.transfer_function =
+      cm->transfer_function;
+  pool->frame_bufs[cm->new_fb_idx].buf.chroma_sample_position =
+      cm->chroma_sample_position;
+#endif
   pool->frame_bufs[cm->new_fb_idx].buf.color_range = cm->color_range;
   pool->frame_bufs[cm->new_fb_idx].buf.render_width = cm->render_width;
   pool->frame_bufs[cm->new_fb_idx].buf.render_height = cm->render_height;
@@ -4213,8 +4225,12 @@ static void read_bitdepth_colorspace_sampling(AV1_COMMON *cm,
 #if CONFIG_HIGHBITDEPTH
   cm->use_highbitdepth = cm->bit_depth > AOM_BITS_8 || !CONFIG_LOWBITDEPTH;
 #endif
-
+#if CONFIG_COLORSPACE_HEADERS
+  cm->color_space = aom_rb_read_literal(rb, 5);
+  cm->transfer_function = aom_rb_read_literal(rb, 5);
+#else
   cm->color_space = aom_rb_read_literal(rb, 3);
+#endif
   if (cm->color_space != AOM_CS_SRGB) {
     // [16,235] (including xvycc) vs [0,255] range
     cm->color_range = aom_rb_read_bit(rb);
@@ -4230,6 +4246,11 @@ static void read_bitdepth_colorspace_sampling(AV1_COMMON *cm,
     } else {
       cm->subsampling_y = cm->subsampling_x = 1;
     }
+#if CONFIG_COLORSPACE_HEADERS
+    if (cm->subsampling_x == 1 && cm->subsampling_y == 1) {
+      cm->chroma_sample_position = aom_rb_read_literal(rb, 2);
+    }
+#endif
   } else {
     if (cm->profile == PROFILE_1 || cm->profile == PROFILE_3) {
       // Note if colorspace is SRGB then 4:4:4 chroma sampling is assumed.
@@ -4598,6 +4619,10 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
 
   get_frame_new_buffer(cm)->bit_depth = cm->bit_depth;
   get_frame_new_buffer(cm)->color_space = cm->color_space;
+#if CONFIG_COLORSPACE_HEADERS
+  get_frame_new_buffer(cm)->transfer_function = cm->transfer_function;
+  get_frame_new_buffer(cm)->chroma_sample_position = cm->chroma_sample_position;
+#endif
   get_frame_new_buffer(cm)->color_range = cm->color_range;
   get_frame_new_buffer(cm)->render_width = cm->render_width;
   get_frame_new_buffer(cm)->render_height = cm->render_height;

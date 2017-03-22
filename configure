@@ -369,6 +369,7 @@ CONFIG_LIST="
     highbitdepth
     experimental
     size_limit
+    colorspace_headers
     ${EXPERIMENT_LIST}
     analyzer
 "
@@ -426,6 +427,8 @@ CMDLINE_SELECT="
     aom_highbitdepth
     highbitdepth
     experimental
+    colorspace_headers
+    tile_groups
 "
 
 process_cmdline() {
