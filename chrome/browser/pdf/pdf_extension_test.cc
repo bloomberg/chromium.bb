@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
+#include "base/strings/pattern.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -71,12 +72,13 @@ const int kDefaultKeyModifier = blink::WebInputEvent::MetaKey;
 const int kDefaultKeyModifier = blink::WebInputEvent::ControlKey;
 #endif
 
-// Using ASSERT_TRUE deliberately instead of ASSERT_EQ or ASSERT_STREQ
-// in order to print a more readable message if the strings differ.
-#define ASSERT_MULTILINE_STREQ(expected, actual) \
-    ASSERT_TRUE(expected == actual) \
-        << "Expected:\n" << expected \
-        << "\n\nActual:\n" << actual
+// Check if the |actual| string matches the string or the string pattern in
+// |pattern| and print a readable message if it does not match.
+#define ASSERT_MULTILINE_STR_MATCHES(pattern, actual) \
+  ASSERT_TRUE(base::MatchPattern(actual, pattern))    \
+      << "Expected match pattern:\n"                  \
+      << pattern << "\n\nActual:\n"                   \
+      << actual
 
 bool GetGuestCallback(WebContents** guest_out, WebContents* guest) {
   EXPECT_FALSE(*guest_out);
@@ -594,8 +596,7 @@ static std::string DumpPdfAccessibilityTree(const ui::AXTreeUpdate& ax_tree) {
     ax_tree_dump += ui::ToString(node.role);
 
     std::string name = node.GetStringAttribute(ui::AX_ATTR_NAME);
-    base::ReplaceChars(name, "\r", "\\r", &name);
-    base::ReplaceChars(name, "\n", "\\n", &name);
+    base::ReplaceChars(name, "\r\n", "", &name);
     if (!name.empty())
       ax_tree_dump += " '" + name + "'";
     ax_tree_dump += "\n";
@@ -606,38 +607,41 @@ static std::string DumpPdfAccessibilityTree(const ui::AXTreeUpdate& ax_tree) {
   return ax_tree_dump;
 }
 
-static const char kExpectedPDFAXTree[] =
+// This is a pattern with a few wildcards due to a PDF bug where the
+// fi ligature is not parsed correctly on some systems.
+// http://crbug.com/701427
+
+static const char kExpectedPDFAXTreePattern[] =
     "embeddedObject\n"
     "  group\n"
     "    region 'Page 1'\n"
     "      paragraph\n"
-    "        staticText '1 First Section\\r\\n'\n"
+    "        staticText '1 First Section'\n"
     "          inlineTextBox '1 '\n"
-    "          inlineTextBox 'First Section\\r\\n'\n"
+    "          inlineTextBox 'First Section'\n"
     "      paragraph\n"
-    "        staticText 'This is the first section.\\r\\n1'\n"
-    "          inlineTextBox 'This is the first section.\\r\\n'\n"
+    "        staticText 'This is the *rst section.1'\n"
+    "          inlineTextBox 'This is the *rst section.'\n"
     "          inlineTextBox '1'\n"
     "    region 'Page 2'\n"
     "      paragraph\n"
-    "        staticText '1.1 First Subsection\\r\\n'\n"
+    "        staticText '1.1 First Subsection'\n"
     "          inlineTextBox '1.1 '\n"
-    "          inlineTextBox 'First Subsection\\r\\n'\n"
+    "          inlineTextBox 'First Subsection'\n"
     "      paragraph\n"
-    "        staticText 'This is the first subsection.\\r\\n2'\n"
-    "          inlineTextBox 'This is the first subsection.\\r\\n'\n"
+    "        staticText 'This is the *rst subsection.2'\n"
+    "          inlineTextBox 'This is the *rst subsection.'\n"
     "          inlineTextBox '2'\n"
     "    region 'Page 3'\n"
     "      paragraph\n"
-    "        staticText '2 Second Section\\r\\n'\n"
+    "        staticText '2 Second Section'\n"
     "          inlineTextBox '2 '\n"
-    "          inlineTextBox 'Second Section\\r\\n'\n"
+    "          inlineTextBox 'Second Section'\n"
     "      paragraph\n"
     "        staticText '3'\n"
     "          inlineTextBox '3'\n";
 
-// https://crbug.com/701427
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, DISABLED_PdfAccessibility) {
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibility) {
   content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
 
   GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test-bookmarks.pdf"));
@@ -648,7 +652,8 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, DISABLED_PdfAccessibility) {
                                                 "1 First Section\r\n");
   ui::AXTreeUpdate ax_tree = GetAccessibilityTreeSnapshot(guest_contents);
   std::string ax_tree_dump = DumpPdfAccessibilityTree(ax_tree);
-  ASSERT_MULTILINE_STREQ(kExpectedPDFAXTree, ax_tree_dump);
+
+  ASSERT_MULTILINE_STR_MATCHES(kExpectedPDFAXTreePattern, ax_tree_dump);
 }
 
 #if defined(GOOGLE_CHROME_BUILD)
@@ -666,8 +671,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibilityCharCountCrash) {
 }
 #endif
 
-// https://crbug.com/701427
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, DISABLED_PdfAccessibilityEnableLater) {
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibilityEnableLater) {
   // In this test, load the PDF file first, with accessibility off.
   GURL test_pdf_url(embedded_test_server()->GetURL("/pdf/test-bookmarks.pdf"));
   WebContents* guest_contents = LoadPdfGetGuestContents(test_pdf_url);
@@ -680,7 +684,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, DISABLED_PdfAccessibilityEnableLater) {
                                                 "1 First Section\r\n");
   ui::AXTreeUpdate ax_tree = GetAccessibilityTreeSnapshot(guest_contents);
   std::string ax_tree_dump = DumpPdfAccessibilityTree(ax_tree);
-  ASSERT_MULTILINE_STREQ(kExpectedPDFAXTree, ax_tree_dump);
+  ASSERT_MULTILINE_STR_MATCHES(kExpectedPDFAXTreePattern, ax_tree_dump);
 }
 
 bool RetrieveGuestContents(WebContents** out_guest_contents,
@@ -689,8 +693,7 @@ bool RetrieveGuestContents(WebContents** out_guest_contents,
   return true;
 }
 
-// https://crbug.com/701427
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, DISABLED_PdfAccessibilityInIframe) {
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibilityInIframe) {
   content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
   GURL test_iframe_url(embedded_test_server()->GetURL("/pdf/test-iframe.html"));
   ui_test_utils::NavigateToURL(browser(), test_iframe_url);
@@ -708,11 +711,10 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, DISABLED_PdfAccessibilityInIframe) {
 
   ui::AXTreeUpdate ax_tree = GetAccessibilityTreeSnapshot(guest_contents);
   std::string ax_tree_dump = DumpPdfAccessibilityTree(ax_tree);
-  ASSERT_MULTILINE_STREQ(kExpectedPDFAXTree, ax_tree_dump);
+  ASSERT_MULTILINE_STR_MATCHES(kExpectedPDFAXTreePattern, ax_tree_dump);
 }
 
-// https://crbug.com/701427
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, DISABLED_PdfAccessibilityInOOPIF) {
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PdfAccessibilityInOOPIF) {
   content::BrowserAccessibilityState::GetInstance()->EnableAccessibility();
   GURL test_iframe_url(embedded_test_server()->GetURL(
       "/pdf/test-cross-site-iframe.html"));
@@ -731,7 +733,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, DISABLED_PdfAccessibilityInOOPIF) {
 
   ui::AXTreeUpdate ax_tree = GetAccessibilityTreeSnapshot(guest_contents);
   std::string ax_tree_dump = DumpPdfAccessibilityTree(ax_tree);
-  ASSERT_MULTILINE_STREQ(kExpectedPDFAXTree, ax_tree_dump);
+  ASSERT_MULTILINE_STR_MATCHES(kExpectedPDFAXTreePattern, ax_tree_dump);
 }
 
 #if defined(GOOGLE_CHROME_BUILD)
