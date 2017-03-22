@@ -4525,12 +4525,11 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
 #if !(CONFIG_EC_ADAPT && CONFIG_NEW_TOKENSET)
   read_coef_probs(fc, cm->tx_mode, &r);
 #endif
-
+#endif  // !CONFIG_PVQ
 #if CONFIG_VAR_TX
   for (k = 0; k < TXFM_PARTITION_CONTEXTS; ++k)
     av1_diff_update_prob(&r, &fc->txfm_partition_prob[k], ACCT_STR);
 #endif  // CONFIG_VAR_TX
-#endif  // !CONFIG_PVQ
   for (k = 0; k < SKIP_CONTEXTS; ++k)
     av1_diff_update_prob(&r, &fc->skip_probs[k], ACCT_STR);
 
