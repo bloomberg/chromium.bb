@@ -250,6 +250,8 @@ bool LinuxPtraceDumper::GetThreadInfoByIndex(size_t index, ThreadInfo* info) {
 
 #if defined(__mips__)
   sys_ptrace(PTRACE_PEEKUSER, tid,
+             reinterpret_cast<void*>(PC), &info->mcontext.pc);
+  sys_ptrace(PTRACE_PEEKUSER, tid,
              reinterpret_cast<void*>(DSP_BASE), &info->mcontext.hi1);
   sys_ptrace(PTRACE_PEEKUSER, tid,
              reinterpret_cast<void*>(DSP_BASE + 1), &info->mcontext.lo1);
