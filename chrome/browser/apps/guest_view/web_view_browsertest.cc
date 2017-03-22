@@ -1438,9 +1438,17 @@ IN_PROC_BROWSER_TEST_P(WebViewTest, Shim_TestExecuteScript) {
   TestHelper("testExecuteScript", "web_view/shim", NO_TEST_SERVER);
 }
 
+// Flaky on Linux. See https://crbug.com/703727.
+#if defined(OS_LINUX)
+#define MAYBE_Shim_TestExecuteScriptIsAbortedWhenWebViewSourceIsChanged \
+  DISABLED_Shim_TestExecuteScriptIsAbortedWhenWebViewSourceIsChanged
+#else
+#define MAYBE_Shim_TestExecuteScriptIsAbortedWhenWebViewSourceIsChanged \
+  Shim_TestExecuteScriptIsAbortedWhenWebViewSourceIsChanged
+#endif
 IN_PROC_BROWSER_TEST_P(
     WebViewTest,
-    Shim_TestExecuteScriptIsAbortedWhenWebViewSourceIsChanged) {
+    MAYBE_Shim_TestExecuteScriptIsAbortedWhenWebViewSourceIsChanged) {
   TestHelper("testExecuteScriptIsAbortedWhenWebViewSourceIsChanged",
              "web_view/shim",
              NO_TEST_SERVER);
