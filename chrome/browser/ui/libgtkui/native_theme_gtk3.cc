@@ -354,12 +354,18 @@ SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
       return GetFgColor("GtkMenu#menu GtkSpinner#spinner:disabled");
 
     // Alert icons
+    // Fallback to the same colors as Aura.
     case ui::NativeTheme::kColorId_AlertSeverityLow:
-      return GetBgColor("GtkInfoBar#infobar.info");
     case ui::NativeTheme::kColorId_AlertSeverityMedium:
-      return GetBgColor("GtkInfoBar#infobar.warning");
-    case ui::NativeTheme::kColorId_AlertSeverityHigh:
-      return GetBgColor("GtkInfoBar#infobar.error");
+    case ui::NativeTheme::kColorId_AlertSeverityHigh: {
+      // Alert icons appear on the toolbar, so use the toolbar BG
+      // color to determine if the dark Aura theme should be used.
+      ui::NativeTheme* fallback_theme =
+          color_utils::IsDark(GetBgColor("GtkToolbar#toolbar"))
+              ? ui::NativeTheme::GetInstanceForNativeUi()
+              : ui::NativeThemeDarkAura::instance();
+      return fallback_theme->GetSystemColor(color_id);
+    }
 
     case ui::NativeTheme::kColorId_NumColors:
       NOTREACHED();
