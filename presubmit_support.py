@@ -680,8 +680,8 @@ class AffectedFile(object):
   def OldContents(self):
     """Returns an iterator over the lines in the old version of file.
 
-    The new version is the file in the user's workspace, i.e. the "right hand
-    side".
+    The old version is the file before any modifications in the user's
+    workspace, i.e. the "left hand side".
 
     Contents will be empty if the file is a directory or does not exist.
     Note: The carriage returns (LF or CR) are stripped off.
