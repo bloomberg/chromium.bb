@@ -144,7 +144,7 @@ def _CheckForHistogramOffByOne(input_api, output_api):
       ' - The max value (3rd argument) should be an enum value equal to the\n'
       '   last valid value, e.g. FOO_MAX = LAST_VALID_FOO.\n'
       ' - 1 must be added to that max value.\n'
-      'Contact rileya@chromium.org if you have questions.' , problems)]
+      'Contact dalecurtis@chromium.org if you have questions.' , problems)]
 
   return []
 
