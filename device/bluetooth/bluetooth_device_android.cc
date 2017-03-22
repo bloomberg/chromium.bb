@@ -34,14 +34,15 @@ void RecordConnectionTerminatedResult(int32_t status) {
 }
 }  // namespace
 
-BluetoothDeviceAndroid* BluetoothDeviceAndroid::Create(
+std::unique_ptr<BluetoothDeviceAndroid> BluetoothDeviceAndroid::Create(
     BluetoothAdapterAndroid* adapter,
     const JavaRef<jobject>&
         bluetooth_device_wrapper) {  // Java Type: bluetoothDeviceWrapper
-  BluetoothDeviceAndroid* device = new BluetoothDeviceAndroid(adapter);
+  std::unique_ptr<BluetoothDeviceAndroid> device(
+      new BluetoothDeviceAndroid(adapter));
 
   device->j_device_.Reset(Java_ChromeBluetoothDevice_create(
-      AttachCurrentThread(), reinterpret_cast<intptr_t>(device),
+      AttachCurrentThread(), reinterpret_cast<intptr_t>(device.get()),
       bluetooth_device_wrapper));
 
   return device;

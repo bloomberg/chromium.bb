@@ -192,8 +192,8 @@ void BluetoothAdapterAndroid::CreateOrUpdateDeviceOnScan(
   if (iter == devices_.end()) {
     // New device.
     is_new_device = true;
-    device_android_owner.reset(
-        BluetoothDeviceAndroid::Create(this, bluetooth_device_wrapper));
+    device_android_owner =
+        BluetoothDeviceAndroid::Create(this, bluetooth_device_wrapper);
     device_android = device_android_owner.get();
   } else {
     // Existing device.
