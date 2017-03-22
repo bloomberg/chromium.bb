@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/wtf/WTFExport.h"
+#include "platform/wtf/BitwiseOperations.h"
 
 // The contents of this header was moved to platform/wtf as part of
 // WTF migration project. See the following post for details:

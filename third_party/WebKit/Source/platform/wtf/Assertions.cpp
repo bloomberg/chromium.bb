@@ -32,12 +32,12 @@
 // we need to place this directive before any data or functions are defined.
 #pragma GCC diagnostic ignored "-Wmissing-format-attribute"
 
-#include "wtf/Assertions.h"
+#include "platform/wtf/Assertions.h"
 
-#include "wtf/Compiler.h"
-#include "wtf/PtrUtil.h"
-#include "wtf/ThreadSpecific.h"
-#include "wtf/Threading.h"
+#include "platform/wtf/Compiler.h"
+#include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/ThreadSpecific.h"
+#include "platform/wtf/Threading.h"
 #include <memory>
 #include <stdarg.h>
 #include <stdio.h>

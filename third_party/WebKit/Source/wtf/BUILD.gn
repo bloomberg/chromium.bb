@@ -22,7 +22,6 @@ component("wtf") {
     "AddressSanitizer.h",
     "Alignment.h",
     "Allocator.h",
-    "Assertions.cpp",
     "Assertions.h",
     "Atomics.h",
     "AutoReset.h",
