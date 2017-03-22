@@ -110,11 +110,16 @@ enum DisplayPowerState {
   DISPLAY_POWER_INTERNAL_ON_EXTERNAL_OFF = 3,
 };
 
+const char kNetworkProxyServiceName[] = "org.chromium.NetworkProxyService";
+const char kNetworkProxyServicePath[] = "/org/chromium/NetworkProxyService";
+const char kNetworkProxyServiceInterface[] =
+    "org.chromium.NetworkProxyServiceInterface";
+const char kNetworkProxyServiceResolveProxyMethod[] = "ResolveProxy";
+
 const char kLivenessServiceName[] = "org.chromium.LivenessService";
 const char kLivenessServicePath[] = "/org/chromium/LivenessService";
 const char kLivenessServiceInterface[] =
     "org.chromium.LivenessServiceInterface";
-// Methods
 const char kLivenessServiceCheckLivenessMethod[] = "CheckLiveness";
 
 const char kKioskAppServiceName[] = "org.chromium.KioskAppService";
