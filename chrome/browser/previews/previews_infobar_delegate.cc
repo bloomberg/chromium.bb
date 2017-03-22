@@ -59,11 +59,15 @@ void PreviewsInfoBarDelegate::Create(
     const OnDismissPreviewsInfobarCallback& on_dismiss_callback) {
   PreviewsInfoBarTabHelper* infobar_tab_helper =
       PreviewsInfoBarTabHelper::FromWebContents(web_contents);
-  if (infobar_tab_helper->displayed_preview_infobar())
-    return;
-
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
+
+  // The WebContents may not have TabHelpers set. If TabHelpers are not set,
+  // don't show Previews infobars.
+  if (!infobar_tab_helper || !infobar_service)
+    return;
+  if (infobar_tab_helper->displayed_preview_infobar())
+    return;
 
   infobars::InfoBar* infobar =
       infobar_service->AddInfoBar(infobar_service->CreateConfirmInfoBar(
