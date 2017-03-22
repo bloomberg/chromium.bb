@@ -2669,6 +2669,10 @@ TEST_F(OverflowButtonInkDropTest, MouseContextMenu) {
 // Tests ink drop state transitions for the overflow button when the user taps
 // on it.
 TEST_F(OverflowButtonInkDropTest, TouchActivate) {
+  // TODO: flaky in mash, figure out why. http://crbug.com/696769.
+  if (WmShell::Get()->IsRunningInMash())
+    return;
+
   ui::test::EventGenerator& generator = GetEventGenerator();
   generator.set_current_location(GetScreenPointInsideOverflowButton());
 
@@ -2851,6 +2855,10 @@ TEST_F(OverflowButtonActiveInkDropTest, MouseDragOut) {
 // and the user presses left mouse button on it and drags it out of the button
 // bounds and back.
 TEST_F(OverflowButtonActiveInkDropTest, MouseDragOutAndBack) {
+  // TODO: flaky in mash, figure out why. http://crbug.com/696769.
+  if (WmShell::Get()->IsRunningInMash())
+    return;
+
   ui::test::EventGenerator& generator = GetEventGenerator();
   generator.MoveMouseTo(GetScreenPointInsideOverflowButton());
 
@@ -2927,6 +2935,10 @@ TEST_F(OverflowButtonActiveInkDropTest, TouchDeactivate) {
 // Tests ink drop state transitions for the overflow button when it is active
 // and the user taps down on it and drags it out of the button bounds.
 TEST_F(OverflowButtonActiveInkDropTest, TouchDragOut) {
+  // TODO: flaky in mash, figure out why. http://crbug.com/696769.
+  if (WmShell::Get()->IsRunningInMash())
+    return;
+
   ui::test::EventGenerator& generator = GetEventGenerator();
   generator.set_current_location(GetScreenPointInsideOverflowButton());
 
@@ -2954,6 +2966,10 @@ TEST_F(OverflowButtonActiveInkDropTest, TouchDragOut) {
 // Tests ink drop state transitions for the overflow button when it is active
 // and the user taps down on it and drags it out of the button bounds and back.
 TEST_F(OverflowButtonActiveInkDropTest, TouchDragOutAndBack) {
+  // TODO: flaky in mash, figure out why. http://crbug.com/696769.
+  if (WmShell::Get()->IsRunningInMash())
+    return;
+
   ui::test::EventGenerator& generator = GetEventGenerator();
   generator.set_current_location(GetScreenPointInsideOverflowButton());
 
