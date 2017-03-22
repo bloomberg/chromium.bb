@@ -24,6 +24,8 @@
 LIBDRM_COMMON_MK := $(call my-dir)/Android.common.mk
 
 LOCAL_PATH := $(call my-dir)
+LIBDRM_TOP := $(LOCAL_PATH)
+
 include $(CLEAR_VARS)
 
 # Import variables LIBDRM_{,H_,INCLUDE_H_,INCLUDE_VMWGFX_H_}FILES
