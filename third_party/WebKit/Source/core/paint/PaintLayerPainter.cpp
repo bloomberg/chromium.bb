@@ -76,10 +76,7 @@ bool PaintLayerPainter::paintedOutputInvisible(
 
     const EffectPaintPropertyNode* effect =
         layoutObject.paintProperties()->effect();
-    const TransformPaintPropertyNode* transform =
-        layoutObject.paintProperties()->transform();
-    if ((effect && effect->requiresCompositingForAnimation()) ||
-        (transform && transform->requiresCompositingForAnimation())) {
+    if (effect && effect->requiresCompositingForAnimation()) {
       return false;
     }
   }

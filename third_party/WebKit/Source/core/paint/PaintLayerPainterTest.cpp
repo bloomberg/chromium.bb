@@ -1083,7 +1083,7 @@ TEST_P(PaintLayerPainterTest, DoPaintWithEffectAnimationZeroOpacity) {
       PaintLayerPainter(*targetLayer).paintedOutputInvisible(paintingInfo));
 }
 
-TEST_P(PaintLayerPainterTest, DoPaintWithTransformAnimationZeroOpacity) {
+TEST_P(PaintLayerPainterTest, DoNotPaintWithTransformAnimationZeroOpacity) {
   setBodyInnerHTML(
       "<style> "
       "div#target { "
@@ -1101,8 +1101,13 @@ TEST_P(PaintLayerPainterTest, DoPaintWithTransformAnimationZeroOpacity) {
       toLayoutBox(getLayoutObjectByElementId("target"))->layer();
   PaintLayerPaintingInfo paintingInfo(nullptr, LayoutRect(),
                                       GlobalPaintNormalPhase, LayoutSize());
-  EXPECT_FALSE(
-      PaintLayerPainter(*targetLayer).paintedOutputInvisible(paintingInfo));
+  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+    EXPECT_TRUE(
+        PaintLayerPainter(*targetLayer).paintedOutputInvisible(paintingInfo));
+  } else {
+    EXPECT_FALSE(
+        PaintLayerPainter(*targetLayer).paintedOutputInvisible(paintingInfo));
+  }
 }
 
 }  // namespace blink

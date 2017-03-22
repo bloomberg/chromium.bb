@@ -157,7 +157,7 @@ class CORE_EXPORT PaintLayerPainter {
   FRIEND_TEST_ALL_PREFIXES(PaintLayerPainterTest,
                            DoPaintWithEffectAnimationZeroOpacity);
   FRIEND_TEST_ALL_PREFIXES(PaintLayerPainterTest,
-                           DoPaintWithTransformAnimationZeroOpacity);
+                           DoNotPaintWithTransformAnimationZeroOpacity);
 };
 
 }  // namespace blink
