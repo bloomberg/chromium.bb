@@ -15,14 +15,14 @@
 # --disable-avx : AVX+AVX2 support is disabled.
 # --only-configs : Excludes generation of GN and GYP files (i.e. only
 #                  configuration headers are generated).
-# --enable-vp9-highbitdepth : Allow for high bit depth internal, 10 and 12 bit
-#                             vp9 encode and decode. Only applied to x86[_64].
+# --disable-vp9-highbitdepth : Revert x86[_64] builds to low-bit-depth only.
 
 export LC_ALL=C
 BASE_DIR=$(pwd)
 LIBVPX_SRC_DIR="source/libvpx"
 LIBVPX_CONFIG_DIR="source/config"
 unset DISABLE_AVX
+HIGHBD="--enable-vp9-highbitdepth"
 
 for i in "$@"
 do
@@ -36,7 +36,10 @@ case $i in
   shift
   ;;
   --enable-vp9-highbitdepth)
-  HIGHBD="--enable-vp9-highbitdepth"
+  shift
+  ;;
+  --disable-vp9-highbitdepth)
+  unset HIGHBD
   shift
   ;;
   *)
