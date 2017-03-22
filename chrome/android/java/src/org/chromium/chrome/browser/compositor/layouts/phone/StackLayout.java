@@ -247,12 +247,6 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
         startMarginAnimation(false);
         startYOffsetAnimation(false);
         finishScrollStacks();
-
-        // TODO(twellington): Add a proper tab selection animation rather than disabling the current
-        //                    animation.
-        if (FeatureUtilities.isChromeHomeEnabled()) {
-            onUpdateAnimation(System.currentTimeMillis(), true);
-        }
     }
 
     @Override

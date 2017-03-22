@@ -59,6 +59,7 @@ import org.chromium.chrome.browser.omnibox.LocationBarPhone;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.ColorUtils;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.browser.widget.animation.CancelAwareAnimatorListener;
@@ -706,7 +707,7 @@ public class ToolbarPhone extends ToolbarLayout
 
                 // Perform the fade logic before super.dispatchDraw(canvas) so that we can properly
                 // set the values before the draw happens.
-                if (!mAnimateNormalToolbar) {
+                if (!mAnimateNormalToolbar || FeatureUtilities.isChromeHomeEnabled()) {
                     drawTabSwitcherFadeAnimation(
                             tabSwitcherAnimationFinished, mTabSwitcherModePercent);
                 }

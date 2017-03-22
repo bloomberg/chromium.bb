@@ -1956,7 +1956,7 @@ public class Stack {
             if (tab.getId() == tabId) {
                 tab.setDiscardAmount(getDiscardRange());
                 tab.setDying(false);
-                tab.getLayoutTab().setMaxContentHeight(mLayout.getHeightMinusBrowserControls());
+                tab.getLayoutTab().setMaxContentHeight(getMaxTabHeight());
             }
         }
 
@@ -2269,6 +2269,16 @@ public class Stack {
     }
 
     /**
+     * @return The maximum height of a layout tab in the tab switcher.
+     */
+    public float getMaxTabHeight() {
+        if (FeatureUtilities.isChromeHomeEnabled() && mCurrentMode == Orientation.PORTRAIT) {
+            return mLayout.getHeight();
+        }
+        return mLayout.getHeightMinusBrowserControls();
+    }
+
+    /**
      * Computes the scale of the tab based on its discard status.
      *
      * @param amount    The discard amount.
@@ -2302,19 +2312,18 @@ public class Stack {
         mDiscardDirection = getDefaultDiscardDirection();
         setWarpState(true, false);
         final float opaqueTopPadding = mBorderTopPadding - mBorderTransparentTop;
-        mAnimationFactory = StackAnimation.createAnimationFactory(mLayout.getWidth(),
+        mAnimationFactory = StackAnimation.createAnimationFactory(this, mLayout.getWidth(),
                 mLayout.getHeight(), mLayout.getHeightMinusBrowserControls(), mBorderTopPadding,
                 opaqueTopPadding, mBorderLeftPadding, mCurrentMode);
         float dpToPx = mLayout.getContext().getResources().getDisplayMetrics().density;
         mViewAnimationFactory = new StackViewAnimation(dpToPx, mLayout.getWidth());
         if (mStackTabs == null) return;
         float width = mLayout.getWidth();
-        float height = mLayout.getHeightMinusBrowserControls();
         for (int i = 0; i < mStackTabs.length; i++) {
             LayoutTab tab = mStackTabs[i].getLayoutTab();
             if (tab == null) continue;
             tab.setMaxContentWidth(width);
-            tab.setMaxContentHeight(height);
+            tab.setMaxContentHeight(getMaxTabHeight());
         }
     }
 

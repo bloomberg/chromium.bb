@@ -80,10 +80,12 @@ public abstract class StackAnimation {
     protected final float mBorderTopHeight;
     protected final float mBorderTopOpaqueHeight;
     protected final float mBorderLeftWidth;
+    protected final Stack mStack;
 
     /**
      * Protected constructor.
      *
+     * @param stack                       The stack using the animations provided by this class.
      * @param width                       The width of the layout in dp.
      * @param height                      The height of the layout in dp.
      * @param heightMinusBrowserControls  The height of the layout minus the browser controls in dp.
@@ -91,9 +93,10 @@ public abstract class StackAnimation {
      * @param borderFramePaddingTopOpaque The opaque top padding of the border frame in dp.
      * @param borderFramePaddingLeft      The left padding of the border frame in dp.
      */
-    protected StackAnimation(float width, float height, float heightMinusBrowserControls,
-            float borderFramePaddingTop, float borderFramePaddingTopOpaque,
-            float borderFramePaddingLeft) {
+    protected StackAnimation(Stack stack, float width, float height,
+            float heightMinusBrowserControls, float borderFramePaddingTop,
+            float borderFramePaddingTopOpaque, float borderFramePaddingLeft) {
+        mStack = stack;
         mWidth = width;
         mHeight = height;
         mHeightMinusBrowserControls = heightMinusBrowserControls;
@@ -107,6 +110,7 @@ public abstract class StackAnimation {
      * The factory method that creates the particular factory method based on the orientation
      * parameter.
      *
+     * @param stack                       The stack of tabs being animated.
      * @param width                       The width of the layout in dp.
      * @param height                      The height of the layout in dp.
      * @param heightMinusBrowserControls  The height of the layout minus the browser controls in dp.
@@ -117,19 +121,21 @@ public abstract class StackAnimation {
      *                                    appropriate {@link StackAnimation}.
      * @return                            The TabSwitcherAnimationFactory instance.
      */
-    public static StackAnimation createAnimationFactory(float width, float height,
+    public static StackAnimation createAnimationFactory(Stack stack, float width, float height,
             float heightMinusBrowserControls, float borderFramePaddingTop,
             float borderFramePaddingTopOpaque, float borderFramePaddingLeft, int orientation) {
         StackAnimation factory = null;
         switch (orientation) {
             case Orientation.LANDSCAPE:
-                factory = new StackAnimationLandscape(width, height, heightMinusBrowserControls,
-                        borderFramePaddingTop, borderFramePaddingTopOpaque, borderFramePaddingLeft);
+                factory = new StackAnimationLandscape(stack, width, height,
+                        heightMinusBrowserControls, borderFramePaddingTop,
+                        borderFramePaddingTopOpaque, borderFramePaddingLeft);
                 break;
             case Orientation.PORTRAIT:
             default:
-                factory = new StackAnimationPortrait(width, height, heightMinusBrowserControls,
-                        borderFramePaddingTop, borderFramePaddingTopOpaque, borderFramePaddingLeft);
+                factory = new StackAnimationPortrait(stack, width, height,
+                        heightMinusBrowserControls, borderFramePaddingTop,
+                        borderFramePaddingTopOpaque, borderFramePaddingLeft);
                 break;
         }
 

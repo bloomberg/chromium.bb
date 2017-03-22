@@ -95,11 +95,11 @@ public class BottomToolbarPhone extends ToolbarPhone {
         super(context, attrs);
 
         int defaultHandleColor =
-                ApiCompatibilityUtils.getColor(getResources(), R.color.google_grey_500);
+                ApiCompatibilityUtils.getColor(getResources(), R.color.black_alpha_40);
         mHandleDark = generateHandleBitmap(defaultHandleColor);
 
         int lightHandleColor =
-                ApiCompatibilityUtils.getColor(getResources(), R.color.semi_opaque_white);
+                ApiCompatibilityUtils.getColor(getResources(), R.color.white_alpha_50);
         mHandleLight = generateHandleBitmap(lightHandleColor);
     }
 
@@ -201,10 +201,11 @@ public class BottomToolbarPhone extends ToolbarPhone {
     protected void updateVisualsForToolbarState() {
         super.updateVisualsForToolbarState();
 
-        // The handle should not show in tab switcher mode.
-        mToolbarHandleView.setVisibility(
-                mTabSwitcherState != ToolbarPhone.STATIC_TAB ? View.INVISIBLE : View.VISIBLE);
-        mToolbarHandleView.setImageBitmap(mUseLightToolbarDrawables ? mHandleLight : mHandleDark);
+        // The tab switcher's background color should not affect the toolbar handle; it should only
+        // switch color based on the static tab's theme color. This is done so fade in/out looks
+        // correct.
+        boolean isLight = ColorUtils.shouldUseLightForegroundOnBackground(getTabThemeColor());
+        mToolbarHandleView.setImageBitmap(isLight ? mHandleLight : mHandleDark);
     }
 
     @Override
@@ -252,6 +253,7 @@ public class BottomToolbarPhone extends ToolbarPhone {
         mNewTabButton.setAlpha(progress);
 
         mLocationBar.setAlpha(1f - progress);
+        mToolbarHandleView.setAlpha(1f - progress);
 
         int tabSwitcherThemeColor = getToolbarColorForVisualState(VisualState.TAB_SWITCHER_NORMAL);
 
