@@ -71,7 +71,8 @@ class SafeBrowsingBlockingPageFactoryImpl
         is_extended_reporting_opt_in_allowed,
         web_contents->GetBrowserContext()->IsOffTheRecord(),
         IsExtendedReportingEnabled(*prefs), IsScout(*prefs),
-        is_proceed_anyway_disabled);
+        is_proceed_anyway_disabled,
+        BaseBlockingPage::IsMainPageLoadBlocked(unsafe_resources));
 
     return new SafeBrowsingBlockingPage(ui_manager, web_contents,
                                         main_frame_url, unsafe_resources,

@@ -30,14 +30,16 @@ class SafeBrowsingErrorUI {
                           bool is_off_the_record,
                           bool is_extended_reporting_enabled,
                           bool is_scout_reporting_enabled,
-                          bool is_proceed_anyway_disabled)
+                          bool is_proceed_anyway_disabled,
+                          bool is_resource_cancellable)
         : is_main_frame_load_blocked(is_main_frame_load_blocked),
           is_extended_reporting_opt_in_allowed(
               is_extended_reporting_opt_in_allowed),
           is_off_the_record(is_off_the_record),
           is_extended_reporting_enabled(is_extended_reporting_enabled),
           is_scout_reporting_enabled(is_scout_reporting_enabled),
-          is_proceed_anyway_disabled(is_proceed_anyway_disabled) {}
+          is_proceed_anyway_disabled(is_proceed_anyway_disabled),
+          is_resource_cancellable(is_resource_cancellable) {}
 
     // Indicates if this SB interstitial is blocking main frame load.
     bool is_main_frame_load_blocked;
@@ -56,6 +58,10 @@ class SafeBrowsingErrorUI {
 
     // Indicates if kSafeBrowsingProceedAnywayDisabled preference is set.
     bool is_proceed_anyway_disabled;
+
+    // Indicates if "back to safety" should cancel the pending navigation or
+    // navigate back after it's committed.
+    bool is_resource_cancellable;
   };
 
   SafeBrowsingErrorUI(const GURL& request_url,

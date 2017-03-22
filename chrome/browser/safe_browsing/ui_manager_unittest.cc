@@ -350,7 +350,8 @@ class TestSafeBrowsingBlockingPage : public SafeBrowsingBlockingPage {
                 false,
                 false,
                 false,
-                false)) {
+                false,
+                BaseBlockingPage::IsMainPageLoadBlocked(unsafe_resources))) {
     // Don't delay details at all for the unittest.
     SetThreatDetailsProceedDelayForTesting(0);
     DontCreateViewForTesting();

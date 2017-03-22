@@ -127,7 +127,7 @@ void SafeBrowsingErrorUI::HandleCommand(SecurityInterstitialCommands command) {
       // User pressed on the button to return to safety.
       // Don't record the user action here because there are other ways of
       // triggering DontProceed, like clicking the back button.
-      if (display_options_.is_main_frame_load_blocked) {
+      if (display_options_.is_resource_cancellable) {
         // If the load is blocked, we want to close the interstitial and discard
         // the pending entry.
         controller_->GoBack();

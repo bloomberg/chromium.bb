@@ -71,14 +71,16 @@ BaseBlockingPage::~BaseBlockingPage() {}
 
 // static
 const SafeBrowsingErrorUI::SBErrorDisplayOptions
-BaseBlockingPage::CreateDefaultDisplayOptions() {
+BaseBlockingPage::CreateDefaultDisplayOptions(
+    const UnsafeResourceList& unsafe_resources) {
   return SafeBrowsingErrorUI::SBErrorDisplayOptions(
-      true,    // IsMainPageLoadBlocked()
-      false,   // kSafeBrowsingExtendedReportingOptInAllowed
-      false,   // is_off_the_record
-      false,   // is_extended_reporting
-      false,   // is_scout
-      false);  // kSafeBrowsingProceedAnywayDisabled
+      IsMainPageLoadBlocked(unsafe_resources),
+      false,  // kSafeBrowsingExtendedReportingOptInAllowed
+      false,  // is_off_the_record
+      false,  // is_extended_reporting
+      false,  // is_scout
+      false,  // kSafeBrowsingProceedAnywayDisabled
+      true);  // is_resource_cancellable
 }
 
 // static
@@ -103,7 +105,7 @@ void BaseBlockingPage::ShowBlockingPage(
         ui_manager, web_contents, entry ? entry->GetURL() : GURL(),
         unsafe_resources,
         CreateControllerClient(web_contents, unsafe_resources, ui_manager),
-        CreateDefaultDisplayOptions());
+        CreateDefaultDisplayOptions(unsafe_resources));
     blocking_page->Show();
   }
 }
