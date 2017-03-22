@@ -125,9 +125,6 @@ crbug.com/667045 virtual/disable-spinvalidation/paint/invalidation/table/composi
 # A real bug with a Skia assert
 crbug.com/671048 virtual/color_space/fast/canvas/color-space/display_linear-rgb.html [ Pass Failure Crash ]
 
-crbug.com/683339 paint/invalidation/paged-with-overflowing-block-rl.html [ Failure ]
-crbug.com/683339 virtual/disable-spinvalidation/paint/invalidation/paged-with-overflowing-block-rl.html [ Failure ]
-
 crbug.com/701800 [ Win7 ] virtual/disable-spinvalidation/compositing/perpendicular-layer-sorting.html [ Pass Failure ]
 
 crbug.com/702006 paint/invalidation/compositing/scrolling-neg-z-index-descendants-should-cause-repaint.html [ Failure ]
