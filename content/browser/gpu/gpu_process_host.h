@@ -196,6 +196,9 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   void StoreShaderToDisk(int32_t client_id,
                          const std::string& key,
                          const std::string& shader) override;
+  void RecordLogMessage(int32_t severity,
+                        const std::string& header,
+                        const std::string& message) override;
 
   void OnChannelEstablished(int client_id,
                             const EstablishChannelCallback& callback,

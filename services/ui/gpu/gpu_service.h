@@ -75,8 +75,16 @@ class GpuService : public gpu::GpuChannelManagerDelegate,
     return gpu_feature_info_;
   }
 
+  void set_in_host_process(bool in_host_process) {
+    in_host_process_ = in_host_process;
+  }
+
  private:
   friend class GpuMain;
+
+  void RecordLogMessage(int severity,
+                        size_t message_start,
+                        const std::string& message);
 
   gpu::SyncPointManager* sync_point_manager() { return sync_point_manager_; }
 
@@ -163,6 +171,9 @@ class GpuService : public gpu::GpuChannelManagerDelegate,
   // external sources.
   std::unique_ptr<gpu::SyncPointManager> owned_sync_point_manager_;
   gpu::SyncPointManager* sync_point_manager_ = nullptr;
+
+  // Whether this is running in the same process as the gpu host.
+  bool in_host_process_ = false;
 
   mojo::BindingSet<mojom::GpuService> bindings_;
 

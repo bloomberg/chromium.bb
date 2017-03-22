@@ -70,11 +70,5 @@ IPC_MESSAGE_CONTROL1(GpuHostMsg_GpuMemoryBufferCreated,
 IPC_MESSAGE_CONTROL1(GpuHostMsg_GraphicsInfoCollected,
                      gpu::GPUInfo /* GPU logging stats */)
 
-// Message from GPU to add a GPU log message to the about:gpu page.
-IPC_MESSAGE_CONTROL3(GpuHostMsg_OnLogMessage,
-                     int /*severity*/,
-                     std::string /* header */,
-                     std::string /* message */)
-
 // Sent by the GPU process to indicate that a fields trial has been activated.
 IPC_MESSAGE_CONTROL1(GpuHostMsg_FieldTrialActivated, std::string /* name */)

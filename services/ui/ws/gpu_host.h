@@ -57,6 +57,9 @@ class GpuHost : public mojom::GpuHost {
   void StoreShaderToDisk(int32_t client_id,
                          const std::string& key,
                          const std::string& shader) override;
+  void RecordLogMessage(int32_t severity,
+                        const std::string& header,
+                        const std::string& message) override;
 
   GpuHostDelegate* const delegate_;
   int32_t next_client_id_;

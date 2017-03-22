@@ -9,10 +9,8 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/lazy_instance.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_local.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/threading/worker_pool.h"
 #include "build/build_config.h"
 #include "content/child/child_process.h"
@@ -56,22 +54,6 @@
 
 namespace content {
 namespace {
-
-static base::LazyInstance<scoped_refptr<ThreadSafeSender>>::DestructorAtExit
-    g_thread_safe_sender = LAZY_INSTANCE_INITIALIZER;
-
-bool GpuProcessLogMessageHandler(int severity,
-                                 const char* file, int line,
-                                 size_t message_start,
-                                 const std::string& str) {
-  std::string header = str.substr(0, message_start);
-  std::string message = str.substr(message_start);
-
-  g_thread_safe_sender.Get()->Send(
-      new GpuHostMsg_OnLogMessage(severity, header, message));
-
-  return false;
-}
 
 // Message filter used to to handle GpuMsg_CreateGpuMemoryBuffer messages
 // on the IO thread. This allows the UI thread in the browser process to remain
@@ -163,7 +145,6 @@ GpuChildThread::GpuChildThread(
 #if defined(OS_WIN)
   target_services_ = NULL;
 #endif
-  g_thread_safe_sender.Get() = thread_safe_sender();
 }
 
 GpuChildThread::GpuChildThread(
@@ -193,8 +174,6 @@ GpuChildThread::GpuChildThread(
              switches::kSingleProcess) ||
          base::CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kInProcessGPU));
-
-  g_thread_safe_sender.Get() = thread_safe_sender();
 }
 
 GpuChildThread::~GpuChildThread() {
@@ -202,11 +181,11 @@ GpuChildThread::~GpuChildThread() {
 
 void GpuChildThread::Shutdown() {
   ChildThreadImpl::Shutdown();
-  logging::SetLogMessageHandler(NULL);
 }
 
 void GpuChildThread::Init(const base::Time& process_start_time) {
   process_start_time_ = process_start_time;
+  gpu_service_->set_in_host_process(in_browser_process_);
 
 #if defined(OS_ANDROID)
   // When running in in-process mode, this has been set in the browser at
@@ -301,7 +280,7 @@ void GpuChildThread::CreateGpuService(
                                   gpu_service_->gpu_feature_info()));
   while (!deferred_messages_.empty()) {
     const LogMessage& log = deferred_messages_.front();
-    Send(new GpuHostMsg_OnLogMessage(log.severity, log.header, log.message));
+    gpu_host->RecordLogMessage(log.severity, log.header, log.message);
     deferred_messages_.pop();
   }
 
@@ -310,11 +289,6 @@ void GpuChildThread::CreateGpuService(
     base::MessageLoop::current()->QuitWhenIdle();
     return;
   }
-
-  // We don't need to pipe log messages if we are running the GPU thread in
-  // the browser process.
-  if (!in_browser_process_)
-    logging::SetLogMessageHandler(GpuProcessLogMessageHandler);
 
   gpu::SyncPointManager* sync_point_manager = nullptr;
   // Note SyncPointManager from ContentGpuClient cannot be owned by this.

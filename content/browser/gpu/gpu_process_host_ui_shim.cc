@@ -148,22 +148,12 @@ bool GpuProcessHostUIShim::OnControlMessageReceived(
   DCHECK(CalledOnValidThread());
 
   IPC_BEGIN_MESSAGE_MAP(GpuProcessHostUIShim, message)
-    IPC_MESSAGE_HANDLER(GpuHostMsg_OnLogMessage, OnLogMessage)
     IPC_MESSAGE_HANDLER(GpuHostMsg_GraphicsInfoCollected,
                         OnGraphicsInfoCollected)
-
     IPC_MESSAGE_UNHANDLED_ERROR()
   IPC_END_MESSAGE_MAP()
 
   return true;
-}
-
-void GpuProcessHostUIShim::OnLogMessage(
-    int level,
-    const std::string& header,
-    const std::string& message) {
-  GpuDataManagerImpl::GetInstance()->AddLogMessage(
-      level, header, message);
 }
 
 void GpuProcessHostUIShim::OnGraphicsInfoCollected(

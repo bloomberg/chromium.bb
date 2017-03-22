@@ -193,5 +193,9 @@ void GpuHost::StoreShaderToDisk(int32_t client_id,
                                 const std::string& key,
                                 const std::string& shader) {}
 
+void GpuHost::RecordLogMessage(int32_t severity,
+                               const std::string& header,
+                               const std::string& message) {}
+
 }  // namespace ws
 }  // namespace ui

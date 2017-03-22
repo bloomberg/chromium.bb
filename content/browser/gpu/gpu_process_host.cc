@@ -831,9 +831,8 @@ void GpuProcessHost::OnChannelEstablished(
       !GpuDataManagerImpl::GetInstance()->GpuAccessAllowed(nullptr)) {
     gpu_service_ptr_->CloseChannel(client_id);
     callback.Run(IPC::ChannelHandle(), gpu::GPUInfo());
-    RouteOnUIThread(
-        GpuHostMsg_OnLogMessage(logging::LOG_WARNING, "WARNING",
-                                "Hardware acceleration is unavailable."));
+    RecordLogMessage(logging::LOG_WARNING, "WARNING",
+                     "Hardware acceleration is unavailable.");
     return;
   }
 
@@ -1001,6 +1000,12 @@ void GpuProcessHost::StoreShaderToDisk(int32_t client_id,
   if (iter == client_id_to_shader_cache_.end())
     return;
   iter->second->Cache(GetShaderPrefixKey(shader) + ":" + key, shader);
+}
+
+void GpuProcessHost::RecordLogMessage(int32_t severity,
+                                      const std::string& header,
+                                      const std::string& message) {
+  GpuDataManagerImpl::GetInstance()->AddLogMessage(severity, header, message);
 }
 
 GpuProcessHost::GpuProcessKind GpuProcessHost::kind() {
