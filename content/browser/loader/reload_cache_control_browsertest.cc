@@ -250,11 +250,6 @@ IN_PROC_BROWSER_TEST_F(ReloadCacheControlBrowserTest, NavigateToSame) {
     EXPECT_EQ(kNoCacheControl, request_log_[3].cache_control);
   }
 
-  // TODO(crbug.com/671545): This test does not work correctly if browser-side
-  // navigation is enabled.
-  if (IsBrowserSideNavigationEnabled())
-    return;
-
   // The second navigation is the same page navigation. This should be handled
   // as a reload, revalidating the main resource, but following cache protocols
   // for others.
