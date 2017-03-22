@@ -1232,7 +1232,6 @@ window.Audit = (function () {
    * @example
    *   let audit = Audit.createTaskRunner();
    *   audit.define('first-task', function (task, should) {
-   *     task.describe('the first task');
    *     should(someValue).beEqualTo(someValue);
    *     task.done();
    *   });

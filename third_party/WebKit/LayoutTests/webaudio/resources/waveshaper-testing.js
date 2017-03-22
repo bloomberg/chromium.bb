@@ -139,16 +139,20 @@ function runWaveShaperOversamplingTest(testParams) {
 
     let audit = Audit.createTaskRunner();
 
-    audit.define("test", function (task, should) {
-        task.describe(testParams.description);
+    audit.define({
+        label: "test",
+        description: testParams.description
+    }, function (task, should) {
 
         // Create offline audio context.
         var numberOfRenderFrames = sampleRate * lengthInSeconds;
-        context = new OfflineAudioContext(1, numberOfRenderFrames, sampleRate);
+        context = new OfflineAudioContext(1, numberOfRenderFrames,
+            sampleRate);
 
         // source -> waveshaper -> destination
         var source = context.createBufferSource();
-        source.buffer = createToneBuffer(context, fundamentalFrequency, lengthInSeconds, 1);
+        source.buffer = createToneBuffer(context, fundamentalFrequency,
+            lengthInSeconds, 1);
 
         // Apply a non-linear distortion curve.
         waveshaper = context.createWaveShaper();
@@ -163,7 +167,7 @@ function runWaveShaperOversamplingTest(testParams) {
         context.startRendering()
             .then(buffer => checkShapedCurve(buffer, should))
             .then(() => task.done());
-      });
+    });
 
     audit.run();
 }
