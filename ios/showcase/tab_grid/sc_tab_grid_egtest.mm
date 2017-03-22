@@ -4,7 +4,6 @@
 
 #import <EarlGrey/EarlGrey.h>
 
-#import "ios/showcase/test/showcase_matchers.h"
 #import "ios/showcase/test/showcase_test_case.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -32,8 +31,6 @@
       assertWithMatcher:grey_notNil()];
   [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(
                                           @"protocol_alerter_done")]
-      performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:showcase_matchers::FirstLevelBackButton()]
       performAction:grey_tap()];
 }
 
