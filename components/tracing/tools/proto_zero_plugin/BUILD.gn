@@ -12,5 +12,11 @@ if (current_toolchain == host_toolchain) {
     deps = [
       "//third_party/protobuf:protoc_lib",
     ]
+    if (is_win) {
+      # TODO(thomasanderson): remove when https://crbug.com/703251 is resolved
+      # by Microsoft.
+      configs -= [ "//build/config/win:default_incremental_linking" ]
+      configs += [ "//build/config/win:no_incremental_linking" ]
+    }
   }
 }
