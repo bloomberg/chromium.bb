@@ -23,9 +23,10 @@ namespace device {
 // (U2fInitPacket and U2fContinuationPacket). U2fPackets have header information
 // and a payload. If a U2fInitPacket cannot store the entire payload, further
 // payload information is stored in U2fContinuationPackets.
-class U2fPacket : public base::RefCountedThreadSafe<U2fPacket> {
+class U2fPacket {
  public:
   U2fPacket(const std::vector<uint8_t> data, uint32_t channel_id);
+  virtual ~U2fPacket();
 
   scoped_refptr<net::IOBufferWithSize> GetSerializedBuffer();
   std::vector<uint8_t> GetPacketPayload() const;
@@ -33,7 +34,6 @@ class U2fPacket : public base::RefCountedThreadSafe<U2fPacket> {
 
  protected:
   U2fPacket();
-  virtual ~U2fPacket();
 
   // Packet size of 64 bytes + 1 byte report ID
   static constexpr size_t kPacketSize = 65;
@@ -42,7 +42,6 @@ class U2fPacket : public base::RefCountedThreadSafe<U2fPacket> {
   scoped_refptr<net::IOBufferWithSize> serialized_;
 
  private:
-  friend class base::RefCountedThreadSafe<U2fPacket>;
   friend class U2fMessage;
 };
 
@@ -58,24 +57,21 @@ class U2fInitPacket : public U2fPacket {
                 uint8_t cmd,
                 const std::vector<uint8_t> data,
                 uint16_t payload_length);
+  U2fInitPacket(scoped_refptr<net::IOBufferWithSize> buf,
+                size_t* remaining_size);
+  ~U2fInitPacket() final;
 
   // Creates a packet from the serialized data of an initialization packet. As
   // this is the first packet, the payload length of the entire message will be
   // included within the serialized data. Remaining size will be returned to
   // inform the callee how many additional packets to expect.
-  static scoped_refptr<U2fInitPacket> CreateFromSerializedData(
+  static std::unique_ptr<U2fInitPacket> CreateFromSerializedData(
       scoped_refptr<net::IOBufferWithSize> buf,
       size_t* remaining_size);
   uint8_t command() { return command_; }
   uint16_t payload_length() { return payload_length_; }
 
- protected:
-  ~U2fInitPacket() final;
-
  private:
-  U2fInitPacket(scoped_refptr<net::IOBufferWithSize> buf,
-                size_t* remaining_size);
-
   uint8_t command_;
   uint16_t payload_length_;
 };
@@ -90,23 +86,20 @@ class U2fContinuationPacket : public U2fPacket {
   U2fContinuationPacket(const uint32_t channel_id,
                         const uint8_t sequence,
                         std::vector<uint8_t> data);
+  U2fContinuationPacket(scoped_refptr<net::IOBufferWithSize> buf,
+                        size_t* remaining_size);
+  ~U2fContinuationPacket() final;
 
   // Creates a packet from the serialized data of a continuation packet. As an
   // U2fInitPacket would have arrived earlier with the total payload size,
   // the remaining size should be passed to inform the packet of how much data
   // to expect.
-  static scoped_refptr<U2fContinuationPacket> CreateFromSerializedData(
+  static std::unique_ptr<U2fContinuationPacket> CreateFromSerializedData(
       scoped_refptr<net::IOBufferWithSize> buf,
       size_t* remaining_size);
   uint8_t sequence() { return sequence_; }
 
- protected:
-  ~U2fContinuationPacket() final;
-
  private:
-  U2fContinuationPacket(scoped_refptr<net::IOBufferWithSize> buf,
-                        size_t* remaining_size);
-
   uint8_t sequence_;
 };
 }  // namespace device

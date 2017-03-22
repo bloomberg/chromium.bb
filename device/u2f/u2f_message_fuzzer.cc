@@ -16,7 +16,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   scoped_refptr<net::IOBufferWithSize> buf(
       new net::IOBufferWithSize(packet_size));
   memcpy(buf->data(), start, std::min(packet_size, remaining_buffer));
-  scoped_refptr<device::U2fMessage> msg =
+  std::unique_ptr<device::U2fMessage> msg =
       device::U2fMessage::CreateFromSerializedData(buf);
 
   remaining_buffer -= std::min(remaining_buffer, packet_size);

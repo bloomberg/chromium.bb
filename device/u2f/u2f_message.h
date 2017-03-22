@@ -21,7 +21,7 @@ namespace device {
 // http://fidoalliance.org/specs/u2f-specs-1.0-bt-nfc-id-amendment/fido-u2f-hid-protocol.html
 // A U2fMessage object represents a list of U2fPackets. Basic information
 // about the message are available through class methods.
-class U2fMessage : public base::RefCountedThreadSafe<U2fMessage> {
+class U2fMessage {
  public:
   enum class Type : uint8_t {
     CMD_PING = 0x81,
@@ -31,11 +31,15 @@ class U2fMessage : public base::RefCountedThreadSafe<U2fMessage> {
     CMD_ERROR = 0xbf,
   };
 
-  static scoped_refptr<U2fMessage> Create(uint32_t channel_id,
-                                          Type type,
-                                          const std::vector<uint8_t>& data);
+  U2fMessage(uint32_t channel_id, Type type, const std::vector<uint8_t>& data);
+  U2fMessage(std::unique_ptr<U2fInitPacket> init_packet, size_t remaining_size);
+  ~U2fMessage();
+
+  static std::unique_ptr<U2fMessage> Create(uint32_t channel_id,
+                                            Type type,
+                                            const std::vector<uint8_t>& data);
   // Reconstruct a message from serialized message data
-  static scoped_refptr<U2fMessage> CreateFromSerializedData(
+  static std::unique_ptr<U2fMessage> CreateFromSerializedData(
       scoped_refptr<net::IOBufferWithSize> buf);
   // Pop front of queue with next packet
   scoped_refptr<net::IOBufferWithSize> PopNextPacket();
@@ -48,14 +52,10 @@ class U2fMessage : public base::RefCountedThreadSafe<U2fMessage> {
   uint32_t channel_id() { return channel_id_; }
   // Message construction complete
   bool MessageComplete();
-  std::list<scoped_refptr<U2fPacket>>::const_iterator begin();
-  std::list<scoped_refptr<U2fPacket>>::const_iterator end();
-
- protected:
-  virtual ~U2fMessage();
+  std::list<std::unique_ptr<U2fPacket>>::const_iterator begin();
+  std::list<std::unique_ptr<U2fPacket>>::const_iterator end();
 
  private:
-  friend class base::RefCountedThreadSafe<U2fMessage>;
   FRIEND_TEST_ALL_PREFIXES(U2fMessageTest, TestMaxLengthPacketConstructors);
   FRIEND_TEST_ALL_PREFIXES(U2fMessageTest, TestMessagePartitoning);
   FRIEND_TEST_ALL_PREFIXES(U2fMessageTest, TestDeconstruct);
@@ -73,10 +73,7 @@ class U2fMessage : public base::RefCountedThreadSafe<U2fMessage> {
   // Maximum payload length therefore is 64-7 + 128 * (64-5) = 7609 bytes
   static constexpr size_t kMaxMessageSize = 7609;
 
-  U2fMessage(uint32_t channel_id, Type type, const std::vector<uint8_t>& data);
-  U2fMessage(scoped_refptr<U2fInitPacket> init_packet, size_t remaining_size);
-
-  std::list<scoped_refptr<U2fPacket>> packets_;
+  std::list<std::unique_ptr<U2fPacket>> packets_;
   size_t remaining_size_;
   uint32_t channel_id_;
 };

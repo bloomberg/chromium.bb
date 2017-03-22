@@ -2,24 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/u2f/u2f_message.h"
+#include "base/memory/ptr_util.h"
 #include "device/u2f/u2f_packet.h"
 #include "net/base/io_buffer.h"
+
+#include "u2f_message.h"
 
 namespace device {
 
 // static
-scoped_refptr<U2fMessage> U2fMessage::Create(uint32_t channel_id,
-                                             Type type,
-                                             const std::vector<uint8_t>& data) {
+std::unique_ptr<U2fMessage> U2fMessage::Create(
+    uint32_t channel_id,
+    Type type,
+    const std::vector<uint8_t>& data) {
   if (data.size() > kMaxMessageSize)
     return nullptr;
 
-  return make_scoped_refptr(new U2fMessage(channel_id, type, data));
+  return base::MakeUnique<U2fMessage>(channel_id, type, data);
 }
 
 // static
-scoped_refptr<U2fMessage> U2fMessage::CreateFromSerializedData(
+std::unique_ptr<U2fMessage> U2fMessage::CreateFromSerializedData(
     scoped_refptr<net::IOBufferWithSize> buf) {
   size_t remaining_size = 0;
   if (buf == nullptr ||
@@ -27,19 +30,19 @@ scoped_refptr<U2fMessage> U2fMessage::CreateFromSerializedData(
       static_cast<size_t>(buf->size()) < kInitPacketHeader)
     return nullptr;
 
-  scoped_refptr<U2fInitPacket> init_packet =
+  std::unique_ptr<U2fInitPacket> init_packet =
       U2fInitPacket::CreateFromSerializedData(buf, &remaining_size);
   if (init_packet == nullptr)
     return nullptr;
 
-  return make_scoped_refptr(new U2fMessage(init_packet, remaining_size));
+  return base::MakeUnique<U2fMessage>(std::move(init_packet), remaining_size);
 }
 
-U2fMessage::U2fMessage(scoped_refptr<U2fInitPacket> init_packet,
+U2fMessage::U2fMessage(std::unique_ptr<U2fInitPacket> init_packet,
                        size_t remaining_size)
     : remaining_size_(remaining_size) {
   channel_id_ = init_packet->channel_id();
-  packets_.push_back(init_packet);
+  packets_.push_back(std::move(init_packet));
 }
 
 U2fMessage::U2fMessage(uint32_t channel_id,
@@ -60,9 +63,9 @@ U2fMessage::U2fMessage(uint32_t channel_id,
     remaining_bytes = 0;
   }
 
-  packets_.push_back(make_scoped_refptr(
-      new U2fInitPacket(channel_id, static_cast<uint8_t>(type),
-                        std::vector<uint8_t>(first, last), data.size())));
+  packets_.push_back(base::MakeUnique<U2fInitPacket>(
+      channel_id, static_cast<uint8_t>(type), std::vector<uint8_t>(first, last),
+      data.size()));
 
   while (remaining_bytes > 0) {
     first = last;
@@ -74,19 +77,19 @@ U2fMessage::U2fMessage(uint32_t channel_id,
       remaining_bytes = 0;
     }
 
-    packets_.push_back(make_scoped_refptr(new U2fContinuationPacket(
-        channel_id, sequence, std::vector<uint8_t>(first, last))));
+    packets_.push_back(base::MakeUnique<U2fContinuationPacket>(
+        channel_id, sequence, std::vector<uint8_t>(first, last)));
     sequence++;
   }
 }
 
 U2fMessage::~U2fMessage() {}
 
-std::list<scoped_refptr<U2fPacket>>::const_iterator U2fMessage::begin() {
+std::list<std::unique_ptr<U2fPacket>>::const_iterator U2fMessage::begin() {
   return packets_.cbegin();
 }
 
-std::list<scoped_refptr<U2fPacket>>::const_iterator U2fMessage::end() {
+std::list<std::unique_ptr<U2fPacket>>::const_iterator U2fMessage::end() {
   return packets_.cend();
 }
 
@@ -103,7 +106,7 @@ scoped_refptr<net::IOBufferWithSize> U2fMessage::PopNextPacket() {
 bool U2fMessage::AddContinuationPacket(
     scoped_refptr<net::IOBufferWithSize> buf) {
   size_t remaining_size = remaining_size_;
-  scoped_refptr<U2fContinuationPacket> cont_packet =
+  std::unique_ptr<U2fContinuationPacket> cont_packet =
       U2fContinuationPacket::CreateFromSerializedData(buf, &remaining_size);
 
   // Reject packets with a different channel id
@@ -111,7 +114,7 @@ bool U2fMessage::AddContinuationPacket(
     return false;
 
   remaining_size_ = remaining_size;
-  packets_.push_back(cont_packet);
+  packets_.push_back(std::move(cont_packet));
   return true;
 }
 

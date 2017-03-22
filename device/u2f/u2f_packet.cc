@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/u2f/u2f_packet.h"
+#include "base/memory/ptr_util.h"
 #include "net/base/io_buffer.h"
+
+#include "u2f_packet.h"
 
 namespace device {
 
@@ -58,13 +60,13 @@ U2fInitPacket::U2fInitPacket(const uint32_t channel_id,
 }
 
 // static
-scoped_refptr<U2fInitPacket> U2fInitPacket::CreateFromSerializedData(
+std::unique_ptr<U2fInitPacket> U2fInitPacket::CreateFromSerializedData(
     scoped_refptr<net::IOBufferWithSize> buf,
     size_t* remaining_size) {
   if (buf == nullptr || remaining_size == nullptr || buf->size() != kPacketSize)
     return nullptr;
 
-  return make_scoped_refptr(new U2fInitPacket(buf, remaining_size));
+  return base::MakeUnique<U2fInitPacket>(buf, remaining_size);
 }
 
 U2fInitPacket::U2fInitPacket(scoped_refptr<net::IOBufferWithSize> buf,
@@ -127,14 +129,14 @@ U2fContinuationPacket::U2fContinuationPacket(const uint32_t channel_id,
 }
 
 // static
-scoped_refptr<U2fContinuationPacket>
+std::unique_ptr<U2fContinuationPacket>
 U2fContinuationPacket::CreateFromSerializedData(
     scoped_refptr<net::IOBufferWithSize> buf,
     size_t* remaining_size) {
   if (buf == nullptr || remaining_size == nullptr || buf->size() != kPacketSize)
     return nullptr;
 
-  return make_scoped_refptr(new U2fContinuationPacket(buf, remaining_size));
+  return base::MakeUnique<U2fContinuationPacket>(buf, remaining_size);
 }
 
 U2fContinuationPacket::U2fContinuationPacket(
@@ -163,4 +165,5 @@ U2fContinuationPacket::U2fContinuationPacket(
 }
 
 U2fContinuationPacket::~U2fContinuationPacket() {}
+
 }  // namespace device

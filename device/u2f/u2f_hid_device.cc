@@ -52,9 +52,9 @@ void U2fHidDevice::Transition(std::unique_ptr<U2fApduCommand> command,
       break;
     case State::IDLE: {
       state_ = State::BUSY;
-      scoped_refptr<U2fMessage> msg = U2fMessage::Create(
+      std::unique_ptr<U2fMessage> msg = U2fMessage::Create(
           channel_id_, U2fMessage::Type::CMD_MSG, command->GetEncodedCommand());
-      WriteMessage(msg, true,
+      WriteMessage(std::move(msg), true,
                    base::Bind(&U2fHidDevice::MessageReceived,
                               weak_factory_.GetWeakPtr(), callback));
       break;
@@ -100,11 +100,11 @@ void U2fHidDevice::AllocateChannel(std::unique_ptr<U2fApduCommand> command,
   // Send random nonce to device to verify received message
   std::vector<uint8_t> nonce(8);
   crypto::RandBytes(nonce.data(), nonce.size());
-  scoped_refptr<U2fMessage> message =
+  std::unique_ptr<U2fMessage> message =
       U2fMessage::Create(channel_id_, U2fMessage::Type::CMD_INIT, nonce);
 
   WriteMessage(
-      message, true,
+      std::move(message), true,
       base::Bind(&U2fHidDevice::OnAllocateChannel, weak_factory_.GetWeakPtr(),
                  nonce, base::Passed(&command), callback));
 }
@@ -113,7 +113,7 @@ void U2fHidDevice::OnAllocateChannel(std::vector<uint8_t> nonce,
                                      std::unique_ptr<U2fApduCommand> command,
                                      const DeviceCallback& callback,
                                      bool success,
-                                     scoped_refptr<U2fMessage> message) {
+                                     std::unique_ptr<U2fMessage> message) {
   if (!success || !message) {
     state_ = State::DEVICE_ERROR;
     Transition(nullptr, callback);
@@ -153,7 +153,7 @@ void U2fHidDevice::OnAllocateChannel(std::vector<uint8_t> nonce,
   Transition(std::move(command), callback);
 }
 
-void U2fHidDevice::WriteMessage(scoped_refptr<U2fMessage> message,
+void U2fHidDevice::WriteMessage(std::unique_ptr<U2fMessage> message,
                                 bool response_expected,
                                 U2fHidMessageCallback callback) {
   if (!connection_ || !message || message->NumPackets() == 0) {
@@ -166,15 +166,15 @@ void U2fHidDevice::WriteMessage(scoped_refptr<U2fMessage> message,
   connection_->Write(
       buffer, buffer->size(),
       base::Bind(&U2fHidDevice::PacketWritten, weak_factory_.GetWeakPtr(),
-                 message, true, base::Passed(&callback)));
+                 base::Passed(&message), true, base::Passed(&callback)));
 }
 
-void U2fHidDevice::PacketWritten(scoped_refptr<U2fMessage> message,
+void U2fHidDevice::PacketWritten(std::unique_ptr<U2fMessage> message,
                                  bool response_expected,
                                  U2fHidMessageCallback callback,
                                  bool success) {
   if (success && message->NumPackets() > 0) {
-    WriteMessage(message, response_expected, std::move(callback));
+    WriteMessage(std::move(message), response_expected, std::move(callback));
   } else if (success && response_expected) {
     ReadMessage(std::move(callback));
   } else {
@@ -204,7 +204,7 @@ void U2fHidDevice::OnRead(U2fHidMessageCallback callback,
 
   scoped_refptr<net::IOBufferWithSize> buffer(new net::IOBufferWithSize(size));
   memcpy(buffer->data(), buf->data(), size);
-  scoped_refptr<U2fMessage> read_message =
+  std::unique_ptr<U2fMessage> read_message =
       U2fMessage::CreateFromSerializedData(buffer);
 
   if (!read_message) {
@@ -221,17 +221,17 @@ void U2fHidDevice::OnRead(U2fHidMessageCallback callback,
   }
 
   if (read_message->MessageComplete()) {
-    std::move(callback).Run(success, read_message);
+    std::move(callback).Run(success, std::move(read_message));
     return;
   }
 
   // Continue reading additional packets
-  connection_->Read(base::Bind(&U2fHidDevice::OnReadContinuation,
-                               weak_factory_.GetWeakPtr(), read_message,
-                               base::Passed(&callback)));
+  connection_->Read(
+      base::Bind(&U2fHidDevice::OnReadContinuation, weak_factory_.GetWeakPtr(),
+                 base::Passed(&read_message), base::Passed(&callback)));
 }
 
-void U2fHidDevice::OnReadContinuation(scoped_refptr<U2fMessage> message,
+void U2fHidDevice::OnReadContinuation(std::unique_ptr<U2fMessage> message,
                                       U2fHidMessageCallback callback,
                                       bool success,
                                       scoped_refptr<net::IOBuffer> buf,
@@ -245,17 +245,17 @@ void U2fHidDevice::OnReadContinuation(scoped_refptr<U2fMessage> message,
   memcpy(buffer->data(), buf->data(), size);
   message->AddContinuationPacket(buffer);
   if (message->MessageComplete()) {
-    std::move(callback).Run(success, message);
+    std::move(callback).Run(success, std::move(message));
     return;
   }
-  connection_->Read(base::Bind(&U2fHidDevice::OnReadContinuation,
-                               weak_factory_.GetWeakPtr(), message,
-                               base::Passed(&callback)));
+  connection_->Read(
+      base::Bind(&U2fHidDevice::OnReadContinuation, weak_factory_.GetWeakPtr(),
+                 base::Passed(&message), base::Passed(&callback)));
 }
 
 void U2fHidDevice::MessageReceived(const DeviceCallback& callback,
                                    bool success,
-                                   scoped_refptr<U2fMessage> message) {
+                                   std::unique_ptr<U2fMessage> message) {
   if (!success) {
     state_ = State::DEVICE_ERROR;
     Transition(nullptr, callback);
@@ -286,16 +286,16 @@ void U2fHidDevice::TryWink(const WinkCallback& callback) {
     return;
   }
 
-  scoped_refptr<U2fMessage> wink_message = device::U2fMessage::Create(
+  std::unique_ptr<U2fMessage> wink_message = U2fMessage::Create(
       channel_id_, U2fMessage::Type::CMD_WINK, std::vector<uint8_t>());
   WriteMessage(
-      wink_message, true,
+      std::move(wink_message), true,
       base::Bind(&U2fHidDevice::OnWink, weak_factory_.GetWeakPtr(), callback));
 }
 
 void U2fHidDevice::OnWink(const WinkCallback& callback,
                           bool success,
-                          scoped_refptr<U2fMessage> response) {
+                          std::unique_ptr<U2fMessage> response) {
   callback.Run();
 }
 

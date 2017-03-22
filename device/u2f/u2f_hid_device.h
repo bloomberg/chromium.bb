@@ -43,7 +43,7 @@ class U2fHidDevice : public U2fDevice {
   enum class State { INIT, CONNECTED, BUSY, IDLE, DEVICE_ERROR };
 
   using U2fHidMessageCallback =
-      base::OnceCallback<void(bool, scoped_refptr<U2fMessage>)>;
+      base::OnceCallback<void(bool, std::unique_ptr<U2fMessage>)>;
 
   // Open a connection to this device
   void Connect(const HidService::ConnectCallback& callback);
@@ -57,14 +57,14 @@ class U2fHidDevice : public U2fDevice {
                          std::unique_ptr<U2fApduCommand> command,
                          const DeviceCallback& callback,
                          bool success,
-                         scoped_refptr<U2fMessage> message);
+                         std::unique_ptr<U2fMessage> message);
   void Transition(std::unique_ptr<U2fApduCommand> command,
                   const DeviceCallback& callback);
   // Write all message packets to device, and read response if expected
-  void WriteMessage(scoped_refptr<U2fMessage> message,
+  void WriteMessage(std::unique_ptr<U2fMessage> message,
                     bool response_expected,
                     U2fHidMessageCallback callback);
-  void PacketWritten(scoped_refptr<U2fMessage> message,
+  void PacketWritten(std::unique_ptr<U2fMessage> message,
                      bool response_expected,
                      U2fHidMessageCallback callback,
                      bool success);
@@ -72,19 +72,19 @@ class U2fHidDevice : public U2fDevice {
   void ReadMessage(U2fHidMessageCallback callback);
   void MessageReceived(const DeviceCallback& callback,
                        bool success,
-                       scoped_refptr<U2fMessage> message);
+                       std::unique_ptr<U2fMessage> message);
   void OnRead(U2fHidMessageCallback callback,
               bool success,
               scoped_refptr<net::IOBuffer> buf,
               size_t size);
-  void OnReadContinuation(scoped_refptr<U2fMessage> message,
+  void OnReadContinuation(std::unique_ptr<U2fMessage> message,
                           U2fHidMessageCallback,
                           bool success,
                           scoped_refptr<net::IOBuffer> buf,
                           size_t size);
   void OnWink(const WinkCallback& callback,
               bool success,
-              scoped_refptr<U2fMessage> response);
+              std::unique_ptr<U2fMessage> response);
 
   State state_;
   std::list<std::pair<std::unique_ptr<U2fApduCommand>, DeviceCallback>>
