@@ -447,8 +447,7 @@ WebInputEventResult PointerEventManager::sendMousePointerEvent(
     const String& canvasRegionId,
     const AtomicString& mouseEventType,
     const WebMouseEvent& mouseEvent,
-    const Vector<WebMouseEvent>& coalescedEvents,
-    bool selectionOverLink) {
+    const Vector<WebMouseEvent>& coalescedEvents) {
   PointerEvent* pointerEvent =
       m_pointerEventFactory.create(mouseEventType, mouseEvent, coalescedEvents,
                                    m_frame->document()->domWindow());
@@ -501,14 +500,6 @@ WebInputEventResult PointerEventManager::sendMousePointerEvent(
         result,
         m_mouseEventManager->dispatchMouseEvent(
             mouseTarget, mouseEventType, mouseEvent, canvasRegionId, nullptr));
-
-    if (selectionOverLink && mouseTarget &&
-        mouseEventType == EventTypeNames::mouseup) {
-      WebInputEventResult clickEventResult =
-          m_mouseEventManager->dispatchMouseClickIfNeeded(
-              mouseTarget->toNode(), mouseEvent, canvasRegionId);
-      result = EventHandlingUtil::mergeEventResult(clickEventResult, result);
-    }
   }
 
   if (pointerEvent->type() == EventTypeNames::pointerup ||

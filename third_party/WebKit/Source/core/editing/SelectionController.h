@@ -144,7 +144,7 @@ class CORE_EXPORT SelectionController final
   SelectionState m_selectionState;
 };
 
-bool isSelectionOverLink(const MouseEventWithHitTestResults&);
+bool isLinkSelection(const MouseEventWithHitTestResults&);
 bool isExtendingSelection(const MouseEventWithHitTestResults&);
 
 }  // namespace blink

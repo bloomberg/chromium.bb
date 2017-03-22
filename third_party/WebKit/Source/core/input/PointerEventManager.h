@@ -39,8 +39,7 @@ class CORE_EXPORT PointerEventManager
       const String& canvasRegionId,
       const AtomicString& type,
       const WebMouseEvent&,
-      const Vector<WebMouseEvent>& coalescedEvents,
-      bool selectionOverLink);
+      const Vector<WebMouseEvent>& coalescedEvents);
 
   WebInputEventResult handleTouchEvents(
       const WebTouchEvent&,

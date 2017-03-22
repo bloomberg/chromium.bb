@@ -1965,6 +1965,7 @@ crbug.com/626703 external/wpt/streams/writable-streams/floating-point-total-queu
 crbug.com/626703 external/wpt/mediacapture-streams/MediaStreamTrack-end-manual.https.html [ Timeout ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/selectors/cue_function/underline_object/underline_with_class_object_specific_selector.html [ Failure ]
 crbug.com/626703 external/wpt/webvtt/rendering/cues-with-video/processing-model/selectors/default_styles/inherit_as_default_value_inherits_values_from_media_element.html [ Failure ]
+crbug.com/626703 external/wpt/pointerevents/pointerevent_click_during_capture-manual.html [ Timeout ]
 crbug.com/626703 external/wpt/streams/writable-streams/reentrant-strategy.dedicatedworker.html [ Timeout ]
 crbug.com/626703 external/wpt/streams/writable-streams/reentrant-strategy.html [ Timeout ]
 crbug.com/626703 external/wpt/streams/writable-streams/reentrant-strategy.serviceworker.https.html [ Timeout ]

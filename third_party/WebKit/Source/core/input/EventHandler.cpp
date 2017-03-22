@@ -977,9 +977,10 @@ WebInputEventResult EventHandler::handleMouseReleaseEvent(
 
   WebInputEventResult eventResult = updatePointerTargetAndDispatchEvents(
       EventTypeNames::mouseup, mev.innerNode(), mev.canvasRegionId(),
-      mev.event(), Vector<WebMouseEvent>(),
-      !(selectionController().hasExtendedSelection() &&
-        isSelectionOverLink(mev)));
+      mev.event(), Vector<WebMouseEvent>());
+
+  WebInputEventResult clickEventResult =
+      m_mouseEventManager->dispatchMouseClickIfNeeded(mev);
 
   m_scrollManager->clearResizeScrollableArea(false);
 
@@ -989,7 +990,7 @@ WebInputEventResult EventHandler::handleMouseReleaseEvent(
 
   m_mouseEventManager->invalidateClick();
 
-  return eventResult;
+  return EventHandlingUtil::mergeEventResult(clickEventResult, eventResult);
 }
 
 static bool targetIsFrame(Node* target, LocalFrame*& frame) {
@@ -1216,15 +1217,14 @@ WebInputEventResult EventHandler::updatePointerTargetAndDispatchEvents(
     Node* targetNode,
     const String& canvasRegionId,
     const WebMouseEvent& mouseEvent,
-    const Vector<WebMouseEvent>& coalescedEvents,
-    bool selectionOverLink) {
+    const Vector<WebMouseEvent>& coalescedEvents) {
   ASSERT(mouseEventType == EventTypeNames::mousedown ||
          mouseEventType == EventTypeNames::mousemove ||
          mouseEventType == EventTypeNames::mouseup);
 
   const auto& eventResult = m_pointerEventManager->sendMousePointerEvent(
       updateMouseEventTargetNode(targetNode), canvasRegionId, mouseEventType,
-      mouseEvent, coalescedEvents, selectionOverLink);
+      mouseEvent, coalescedEvents);
   return eventResult;
 }
 
