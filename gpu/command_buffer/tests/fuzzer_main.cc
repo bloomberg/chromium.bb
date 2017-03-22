@@ -190,12 +190,12 @@ class CommandBufferSetup {
   }
 
   void ResetDecoder() {
+    decoder_->Destroy(true);
+    decoder_.reset();
     if (recreate_context_) {
       context_->ReleaseCurrent(nullptr);
       context_ = nullptr;
     }
-    decoder_->Destroy(true);
-    decoder_.reset();
     command_buffer_.reset();
   }
 
