@@ -10,8 +10,10 @@ extensions and themes. It works without too much setup.
 
 ## Install extensions
 
-`ctrl+p` paste `ext install cpptools you-complete-me clang-format` then enter. 
-For more extensions: https://marketplace.visualstudio.com/search?target=vscode
+`F1` paste 
+`ext install cpptools you-complete-me clang-format chromium-codesearch` 
+then enter. For more extensions: 
+https://marketplace.visualstudio.com/search?target=vscode
 
 Highly recommend you also install your favorite keymap. 
 
@@ -29,6 +31,9 @@ settings.
 {
   "editor.tabSize": 2,
   "editor.rulers": [80],
+  "[cpp]": {
+    "editor.quickSuggestions": true
+  },
   // Exclude
   "files.exclude": {
     "**/.git": true,
@@ -62,15 +67,21 @@ $ ./build.py --clang-completer
 1. `ctrl+p` open file.
 2. `ctrl+o` goto symbol. `ctrl+l` goto line.
 3. <code>ctrl+`</code> toggle terminal.
+4. `F1` - `CodeSearchOpen` open current line in code search on chrome.
+5. `F1` - `CodeSearchReferences` open XRef Infomation of current symbol.
+6. Use right click menu call `go to definition` or `peek definition`.
+7. Use right click menu call `find all references`.
 
 ## Tips
 
 ### On laptop
 
 Because we use ycmd to enable auto completion. We can disable CPP autocomplete 
-and index to save battery. 
+and index to save battery. We can also disable git status autorefresh to save
+battery.
 
 ```
+"git.autorefresh": false,
 "C_Cpp.autocomplete": "Disabled",
 "C_Cpp.addWorkspaceRootToIncludePath": false
 ```
