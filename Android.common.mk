@@ -5,7 +5,9 @@ LOCAL_CFLAGS += \
 
 LOCAL_CFLAGS += \
 	-Wno-unused-parameter \
-	-Wno-missing-field-initializers
+	-Wno-missing-field-initializers \
+	-Wno-pointer-arith \
+	-Wno-enum-conversion
 
 # Quiet down the build system and remove any .h files from the sources
 LOCAL_SRC_FILES := $(patsubst %.h, , $(LOCAL_SRC_FILES))
