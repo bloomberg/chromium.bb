@@ -243,7 +243,7 @@ InspectorTest.dumpConsoleCounters = function()
 
 InspectorTest.expandConsoleMessages = function(callback, deepFilter, sectionFilter)
 {
-    Console.ConsoleView.instance()._viewportThrottler.flush();
+    Console.ConsoleView.instance()._invalidateViewport();
     var messageViews = Console.ConsoleView.instance()._visibleViewMessages;
 
     // Initiate round-trips to fetch necessary data for further rendering.
