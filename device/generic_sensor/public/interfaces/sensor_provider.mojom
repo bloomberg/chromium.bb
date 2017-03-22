@@ -27,10 +27,10 @@ struct SensorInitParams {
   // Minimum sampling frequency for the sensor.
   double minimum_frequency;
 
-  // Each sensor's read buffer contains 4 tightly packed 64-bit floating
+  // Each sensor's read buffer contains 5 tightly packed 64-bit floating
   // point fields (please see sensor_reading.h) and a seqlock, so its size is
-  // 5 * 8 = 40 bytes.
-  const uint64 kReadBufferSizeForTests = 40;
+  // 6 * 8 = 48 bytes.
+  const uint64 kReadBufferSizeForTests = 48;
 };
 
 interface SensorProvider {

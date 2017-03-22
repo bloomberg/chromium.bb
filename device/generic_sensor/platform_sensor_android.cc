@@ -85,12 +85,14 @@ void PlatformSensorAndroid::UpdatePlatformSensorReading(
     jdouble timestamp,
     jdouble value1,
     jdouble value2,
-    jdouble value3) {
+    jdouble value3,
+    jdouble value4) {
   SensorReading reading;
   reading.timestamp = timestamp;
   reading.values[0] = value1;
   reading.values[1] = value2;
   reading.values[2] = value3;
+  reading.values[3] = value4;
 
   bool needNotify = (GetReportingMode() == mojom::ReportingMode::ON_CHANGE);
   UpdateSensorReading(reading, needNotify);

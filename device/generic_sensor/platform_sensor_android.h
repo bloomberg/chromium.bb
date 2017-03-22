@@ -34,7 +34,8 @@ class PlatformSensorAndroid : public PlatformSensor {
       jdouble timestamp,
       jdouble value1,
       jdouble value2,
-      jdouble value3);
+      jdouble value3,
+      jdouble value4);
 
  protected:
   ~PlatformSensorAndroid() override;

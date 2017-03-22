@@ -91,7 +91,7 @@ public class PlatformSensorAndProviderTest {
 
         @Override
         protected void updateSensorReading(
-                double timestamp, double value1, double value2, double value3) {}
+                double timestamp, double value1, double value2, double value3, double value4) {}
         @Override
         protected void sensorError() {}
     }
@@ -159,6 +159,8 @@ public class PlatformSensorAndProviderTest {
         verify(mSensorManager).getSensorList(Sensor.TYPE_GYROSCOPE);
         provider.createSensor(SensorType.MAGNETOMETER);
         verify(mSensorManager).getSensorList(Sensor.TYPE_MAGNETIC_FIELD);
+        provider.createSensor(SensorType.ABSOLUTE_ORIENTATION);
+        verify(mSensorManager).getSensorList(Sensor.TYPE_ROTATION_VECTOR);
     }
 
     /**
@@ -289,7 +291,7 @@ public class PlatformSensorAndProviderTest {
         double timestamp = PLATFORM_SENSOR_TIMESTAMP * SECONDS_IN_NANOSECOND;
 
         verify(spySensor, times(1))
-                .updateSensorReading(timestamp, getFakeReadingValue(1), 0.0, 0.0);
+                .updateSensorReading(timestamp, getFakeReadingValue(1), 0.0, 0.0, 0.0);
     }
 
     /**

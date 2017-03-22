@@ -14,7 +14,8 @@ enum SensorType {
   GYROSCOPE,
   MAGNETOMETER,
   PRESSURE,
-  LAST = PRESSURE // Note: LAST is also equal to the types count.
+  ABSOLUTE_ORIENTATION,
+  LAST = ABSOLUTE_ORIENTATION // Note: LAST is also equal to the types count.
 };
 
 // Reporting mode supported by the Sensor.
