@@ -64,6 +64,7 @@ struct TestParams {
   media::VideoPixelFormat pixel_format_to_use;
   gfx::Size resolution_to_use;
   float frame_rate_to_use;
+  bool exercise_accelerated_jpeg_decoding;
 };
 
 struct FrameInfo {
@@ -116,6 +117,13 @@ class VideoCaptureBrowserTest
         switches::kUseFakeDeviceForMediaStream,
         GetParam().fake_device_factory_config_string);
     command_line->AppendSwitch(switches::kUseFakeUIForMediaStream);
+    if (GetParam().exercise_accelerated_jpeg_decoding) {
+      base::CommandLine::ForCurrentProcess()->AppendSwitch(
+          switches::kUseFakeJpegDecodeAccelerator);
+    } else {
+      base::CommandLine::ForCurrentProcess()->AppendSwitch(
+          switches::kDisableAcceleratedMjpegDecode);
+    }
   }
 
   // This cannot be part of an override of SetUp(), because at the time when
@@ -188,7 +196,8 @@ IN_PROC_BROWSER_TEST_P(VideoCaptureBrowserTest,
   SetUpRequiringBrowserMainLoopOnMainThread();
 
   std::vector<FrameInfo> received_frame_infos;
-  static const size_t kNumFramesToReceive = 3;
+  static const size_t kMinFramesToReceive = 3;
+  static const size_t kMaxFramesToReceive = 300;
   base::RunLoop run_loop;
 
   auto quit_run_loop_on_current_thread_cb =
@@ -198,20 +207,35 @@ IN_PROC_BROWSER_TEST_P(VideoCaptureBrowserTest,
                  base::Unretained(this),
                  std::move(quit_run_loop_on_current_thread_cb), true);
 
+  bool must_wait_for_gpu_decode_to_start = false;
+  if (GetParam().exercise_accelerated_jpeg_decoding) {
+    // Since the GPU jpeg decoder is created asynchronously while decoding
+    // in software is ongoing, we have to keep pushing frames until a message
+    // arrives that tells us that the GPU decoder is being used. Otherwise,
+    // it may happen that all test frames are decoded using the non-GPU
+    // decoding path before the GPU decoder has started getting used.
+    must_wait_for_gpu_decode_to_start = true;
+    EXPECT_CALL(mock_controller_event_handler_, OnStartedUsingGpuDecode(_))
+        .WillOnce(InvokeWithoutArgs([&must_wait_for_gpu_decode_to_start]() {
+          must_wait_for_gpu_decode_to_start = false;
+        }));
+  }
   EXPECT_CALL(mock_controller_event_handler_, DoOnBufferCreated(_, _, _, _))
       .Times(AtLeast(1));
   EXPECT_CALL(mock_controller_event_handler_, OnBufferReady(_, _, _))
-      .WillRepeatedly(
-          Invoke([&received_frame_infos, &finish_test_cb](
-                     VideoCaptureControllerID id, int buffer_id,
-                     const media::mojom::VideoFrameInfoPtr& frame_info) {
+      .WillRepeatedly(Invoke(
+          [&received_frame_infos, &must_wait_for_gpu_decode_to_start,
+           &finish_test_cb](VideoCaptureControllerID id, int buffer_id,
+                            const media::mojom::VideoFrameInfoPtr& frame_info) {
             FrameInfo received_frame_info;
             received_frame_info.pixel_format = frame_info->pixel_format;
             received_frame_info.storage_type = frame_info->storage_type;
             received_frame_info.size = frame_info->coded_size;
             received_frame_info.timestamp = frame_info->timestamp;
             received_frame_infos.emplace_back(received_frame_info);
-            if (received_frame_infos.size() >= kNumFramesToReceive) {
+            if ((received_frame_infos.size() >= kMinFramesToReceive &&
+                 !must_wait_for_gpu_decode_to_start) ||
+                (received_frame_infos.size() == kMaxFramesToReceive)) {
               finish_test_cb.Run();
             }
           }));
@@ -223,7 +247,9 @@ IN_PROC_BROWSER_TEST_P(VideoCaptureBrowserTest,
                  base::Unretained(this), std::move(do_nothing)));
   run_loop.Run();
 
-  EXPECT_GE(received_frame_infos.size(), kNumFramesToReceive);
+  EXPECT_FALSE(must_wait_for_gpu_decode_to_start);
+  EXPECT_GE(received_frame_infos.size(), kMinFramesToReceive);
+  EXPECT_LT(received_frame_infos.size(), kMaxFramesToReceive);
   base::TimeDelta previous_timestamp;
   bool first_frame = true;
   for (const auto& frame_info : received_frame_infos) {
@@ -242,14 +268,16 @@ INSTANTIATE_TEST_CASE_P(
     ,
     VideoCaptureBrowserTest,
     Values(TestParams{"fps=25,device-count=2", 0, media::PIXEL_FORMAT_I420,
-                      gfx::Size(1280, 720), 25.0f},
+                      gfx::Size(1280, 720), 25.0f, false},
            // The 2nd device outputs Y16
            TestParams{"fps=25,device-count=2", 1, media::PIXEL_FORMAT_Y16,
-                      gfx::Size(1280, 720), 25.0f},
+                      gfx::Size(1280, 720), 25.0f, false},
            TestParams{"fps=15,device-count=2", 1, media::PIXEL_FORMAT_Y16,
-                      gfx::Size(640, 480), 15.0f},
+                      gfx::Size(640, 480), 15.0f, false},
            // The 3rd device outputs MJPEG, which is converted to I420.
            TestParams{"fps=15,device-count=3", 2, media::PIXEL_FORMAT_I420,
-                      gfx::Size(640, 480), 25.0f}));
+                      gfx::Size(640, 480), 25.0f, false},
+           TestParams{"fps=6,device-count=3", 2, media::PIXEL_FORMAT_I420,
+                      gfx::Size(640, 480), 6.0f, true}));
 
 }  // namespace content

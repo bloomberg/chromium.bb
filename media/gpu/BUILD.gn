@@ -128,6 +128,8 @@ component("gpu") {
   defines = [ "MEDIA_GPU_IMPLEMENTATION" ]
 
   sources = [
+    "fake_jpeg_decode_accelerator.cc",
+    "fake_jpeg_decode_accelerator.h",
     "fake_video_decode_accelerator.cc",
     "fake_video_decode_accelerator.h",
     "gpu_video_accelerator_util.cc",

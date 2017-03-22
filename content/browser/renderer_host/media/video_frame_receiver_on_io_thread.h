@@ -36,6 +36,7 @@ class CONTENT_EXPORT VideoFrameReceiverOnIOThread
   void OnError() override;
   void OnLog(const std::string& message) override;
   void OnStarted() override;
+  void OnStartedUsingGpuDecode() override;
 
  private:
   base::WeakPtr<VideoFrameReceiver> receiver_;

@@ -69,6 +69,7 @@ class MockVideoCaptureControllerEventHandler
   MOCK_METHOD1(DoEnded, void(VideoCaptureControllerID));
   MOCK_METHOD1(DoError, void(VideoCaptureControllerID));
   MOCK_METHOD1(OnStarted, void(VideoCaptureControllerID));
+  MOCK_METHOD1(OnStartedUsingGpuDecode, void(VideoCaptureControllerID));
 
   void OnError(VideoCaptureControllerID id) override { DoError(id); }
   void OnBufferCreated(VideoCaptureControllerID id,
