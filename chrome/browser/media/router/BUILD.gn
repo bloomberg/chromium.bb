@@ -8,6 +8,7 @@ import("//testing/test.gni")
 
 static_library("router") {
   deps = [
+    ":mojo_bindings_common",
     "//base",
     "//chrome/common:constants",
     "//components/keyed_service/content",
@@ -54,6 +55,10 @@ static_library("router") {
     "media_source.h",
     "media_source_helper.cc",
     "media_source_helper.h",
+    "media_status.cc",
+    "media_status.h",
+    "mojo/media_route_controller.cc",
+    "mojo/media_route_controller.h",
     "offscreen_presentation_manager.cc",
     "offscreen_presentation_manager.h",
     "offscreen_presentation_manager_factory.cc",
@@ -100,12 +105,24 @@ static_library("router") {
   }
 }
 
+mojom("mojo_bindings_common") {
+  sources = [
+    "mojo/media_controller.mojom",
+    "mojo/media_status.mojom",
+  ]
+
+  public_deps = [
+    "//mojo/common:common_custom_types",
+  ]
+}
+
 mojom("mojo_bindings") {
   sources = [
     "mojo/media_router.mojom",
   ]
 
   public_deps = [
+    ":mojo_bindings_common",
     "//mojo/common:common_custom_types",
     "//net/interfaces:interfaces",
     "//url/mojo:url_mojom_gurl",

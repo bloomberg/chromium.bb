@@ -139,7 +139,7 @@ static const char kOnSuspendCanceledEvent[] = "runtime.onSuspendCanceled";
 
 void CrashOnException(const v8::TryCatch& trycatch) {
   NOTREACHED();
-};
+}
 
 // Calls a method |method_name| in a module |module_name| belonging to the
 // module system from |context|. Intended as a callback target from
@@ -751,8 +751,12 @@ std::vector<std::pair<const char*, int>> Dispatcher::GetJsResources() {
     {"platformApp", IDR_PLATFORM_APP_JS},
 
 #if defined(ENABLE_MEDIA_ROUTER)
+    {"chrome/browser/media/router/mojo/media_controller.mojom",
+     IDR_MEDIA_CONTROLLER_MOJOM_JS},
     {"chrome/browser/media/router/mojo/media_router.mojom",
      IDR_MEDIA_ROUTER_MOJOM_JS},
+    {"chrome/browser/media/router/mojo/media_status.mojom",
+     IDR_MEDIA_STATUS_MOJOM_JS},
     {"media_router_bindings", IDR_MEDIA_ROUTER_BINDINGS_JS},
     {"mojo/common/time.mojom", IDR_MOJO_TIME_MOJOM_JS},
     {"net/interfaces/ip_address.mojom", IDR_MOJO_IP_ADDRESS_MOJOM_JS},

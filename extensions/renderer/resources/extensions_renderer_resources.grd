@@ -86,8 +86,10 @@
 
       <!-- Media Router Mojo service and bindings. -->
       <if expr="enable_media_router">
+        <include name="IDR_MEDIA_CONTROLLER_MOJOM_JS" file="${mojom_root}\chrome\browser\media\router\mojo\media_controller.mojom.js" use_base_dir="false" type="BINDATA" />
         <include name="IDR_MEDIA_ROUTER_MOJOM_JS" file="${mojom_root}\chrome\browser\media\router\mojo\media_router.mojom.js" use_base_dir="false" type="BINDATA" />
         <include name="IDR_MEDIA_ROUTER_BINDINGS_JS" file="media_router_bindings.js" type="BINDATA" />
+        <include name="IDR_MEDIA_STATUS_MOJOM_JS" file="${mojom_root}\chrome\browser\media\router\mojo\media_status.mojom.js" use_base_dir="false" type="BINDATA" />
         <include name="IDR_MOJO_TIME_MOJOM_JS" file="${mojom_root}\mojo\common\time.mojom.js" use_base_dir="false" type="BINDATA" />
         <include name="IDR_MOJO_IP_ADDRESS_MOJOM_JS" file="${mojom_root}\net\interfaces\ip_address.mojom.js" use_base_dir="false" type="BINDATA" />
         <include name="IDR_ORIGIN_MOJOM_JS" file="${mojom_root}\url\mojo\origin.mojom.js" use_base_dir="false" type="BINDATA" />

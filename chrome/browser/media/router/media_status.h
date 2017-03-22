@@ -1,0 +1,63 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_MEDIA_ROUTER_MEDIA_STATUS_H_
+#define CHROME_BROWSER_MEDIA_ROUTER_MEDIA_STATUS_H_
+
+#include <string>
+
+#include "base/time/time.h"
+
+namespace media_router {
+
+// Represents the current state of a media content.
+struct MediaStatus {
+ public:
+  MediaStatus();
+  MediaStatus(const MediaStatus& other);
+  ~MediaStatus();
+
+  MediaStatus& operator=(const MediaStatus& other);
+  bool operator==(const MediaStatus& other) const;
+
+  // The main title of the media. For example, in a MediaStatus representing
+  // a YouTube Cast session, this could be the title of the video.
+  std::string title;
+
+  // Text describing the media, or a secondary title. For example, in a
+  // MediaStatus representing a YouTube Cast session, this could be "YouTube".
+  std::string description;
+
+  // If this is true, the media can be played and paused.
+  bool can_play_pause = false;
+
+  // If this is true, the media can be muted and unmuted.
+  bool can_mute = false;
+
+  // If this is true, the media's volume can be changed.
+  bool can_set_volume = false;
+
+  // If this is true, the media's current playback position can be changed.
+  bool can_seek = false;
+
+  bool is_paused = false;
+
+  bool is_muted = false;
+
+  // Current volume of the media, with 1 being the highest and 0 being the
+  // lowest/no sound. When |is_muted| is true, there should be no sound
+  // regardless of |volume|.
+  float volume = 0;
+
+  // The length of the media. A value of zero indicates that this is a media
+  // with no set duration (e.g. a live stream).
+  base::TimeDelta duration;
+
+  // Current playback position. Must be less than or equal to |duration|.
+  base::TimeDelta current_time;
+};
+
+}  // namespace media_router
+
+#endif  // CHROME_BROWSER_MEDIA_ROUTER_MEDIA_STATUS_H_
