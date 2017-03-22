@@ -263,6 +263,8 @@
         <include name="IDR_MD_BOOKMARKS_APP_JS" file="resources\md_bookmarks\app.js" type="BINDATA" />
         <include name="IDR_MD_BOOKMARKS_BOOKMARKS_HTML" file="resources\md_bookmarks\bookmarks.html" type="BINDATA" />
         <include name="IDR_MD_BOOKMARKS_BOOKMARKS_STORE_JS" file="resources\md_bookmarks\bookmarks_store.js" type="BINDATA" />
+        <include name="IDR_MD_BOOKMARKS_EDIT_DIALOG_HTML" file="resources\md_bookmarks\edit_dialog.html" type="BINDATA" />
+        <include name="IDR_MD_BOOKMARKS_EDIT_DIALOG_JS" file="resources\md_bookmarks\edit_dialog.js" type="BINDATA" />
         <include name="IDR_MD_BOOKMARKS_FOLDER_NODE_HTML" file="resources\md_bookmarks\folder_node.html" type="BINDATA" />
         <include name="IDR_MD_BOOKMARKS_FOLDER_NODE_JS" file="resources\md_bookmarks\folder_node.js" type="BINDATA" />
         <include name="IDR_MD_BOOKMARKS_ICONS_HTML" file="resources\md_bookmarks\icons.html" type="BINDATA" />

@@ -25,40 +25,6 @@ suite('<bookmarks-list>', function() {
     Polymer.dom.flush();
   });
 
-  test('folder menu item hides the url field', function() {
-    // Bookmark editor shows the url field.
-    list.menuItem_ = store.data.nodes['1'];
-    assertFalse(list.$['url'].hidden);
-
-    // Folder editor hides the url field.
-    list.menuItem_ = store.data.nodes['3'];
-    assertTrue(list.$['url'].hidden);
-  });
-
-  test('saving edit passes correct details to the update', function() {
-    // Saving bookmark edit.
-    var menuItem = store.data.nodes['1'];
-    chrome.bookmarks.update = function(id, edit) {
-      assertEquals(menuItem.id, id);
-      assertEquals(menuItem.url, edit.url);
-      assertEquals(menuItem.title, edit.title);
-    };
-    list.menuItem_ = menuItem;
-    list.$.editBookmark.showModal();
-    MockInteractions.tap(list.$.saveButton);
-
-    // Saving folder rename.
-    menuItem = store.data.nodes['3'];
-    chrome.bookmarks.update = function(id, edit) {
-      assertEquals(menuItem.id, id);
-      assertEquals(menuItem.title, edit.title);
-      assertEquals(undefined, edit.url);
-    };
-    list.menuItem_ = menuItem;
-    list.$.editBookmark.showModal();
-    MockInteractions.tap(list.$.saveButton);
-  });
-
   test('renders correct <bookmark-item> elements', function() {
     var items = list.root.querySelectorAll('bookmarks-item');
     var ids = Array.from(items).map((item) => item.itemId);

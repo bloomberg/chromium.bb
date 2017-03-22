@@ -55,7 +55,8 @@ Polymer({
   /** @private */
   onEditTap_: function() {
     this.closeDropdownMenu_();
-    this.$.editBookmark.showModal();
+    /** @type {BookmarksEditDialogElement} */ (this.$.editDialog.get())
+        .showEditDialog(this.menuItem_);
   },
 
   /** @private */
@@ -82,21 +83,6 @@ Polymer({
   },
 
   /** @private */
-  onSaveEditTap_: function() {
-    var edit = {'title': this.menuItem_.title};
-    if (this.menuItem_.url)
-      edit['url'] = this.menuItem_.url;
-
-    chrome.bookmarks.update(this.menuItem_.id, edit);
-    this.$.editBookmark.close();
-  },
-
-  /** @private */
-  onCancelEditTap_: function() {
-    this.$.editBookmark.cancel();
-  },
-
-  /** @private */
   closeDropdownMenu_: function() {
     var menu = /** @type {!CrActionMenuElement} */ (
         this.$.dropdown);
@@ -107,12 +93,6 @@ Polymer({
   getEditActionLabel_: function() {
     var label = this.menuItem_.url ? 'menuEdit' : 'menuRename';
     return loadTimeData.getString(label);
-  },
-
-  /** @private */
-  getEditorTitle_: function() {
-    var title = this.menuItem_.url ? 'editBookmarkTitle' : 'renameFolderTitle';
-    return loadTimeData.getString(title);
   },
 
   /** @private */

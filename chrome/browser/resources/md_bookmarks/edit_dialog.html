@@ -1,0 +1,37 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/html/assert.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
+
+<dom-module id="bookmarks-edit-dialog">
+  <template>
+    <style include="cr-shared-style"></style>
+    <dialog is="cr-dialog" id="dialog">
+      <div class="title">[[getDialogTitle_(isFolder_)]]</div>
+      <div class="body">
+        <paper-input always-float-label id="name"
+            label="$i18n{editDialogNameInput}"
+            value="{{titleValue_}}"
+            autofocus>
+        </paper-input>
+        <paper-input always-float-label id="url"
+            label="$i18n{editDialogUrlInput}"
+            value="{{urlValue_}}"
+            hidden$="[[isFolder_]]">
+        </paper-input>
+      </div>
+      <div class="button-container">
+        <paper-button class="cancel-button" on-tap="onCancelButtonTap_">
+          $i18n{cancelEdit}
+        </paper-button>
+        <paper-button id="saveButton" class="action-button"
+            on-tap="onSaveButtonTap_">
+          $i18n{saveEdit}
+        </paper-button>
+      </div>
+    </dialog>
+  </template>
+  <script src="chrome://bookmarks/edit_dialog.js"></script>
+</dom-module>

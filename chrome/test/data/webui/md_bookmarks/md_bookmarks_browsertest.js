@@ -55,6 +55,20 @@ TEST_F('MaterialBookmarksSidebarTest', 'All', function() {
   mocha.run();
 });
 
+function MaterialBookmarksEditDialogTest() {}
+
+MaterialBookmarksEditDialogTest.prototype = {
+  __proto__: MaterialBookmarksBrowserTest.prototype,
+
+  extraLibraries: MaterialBookmarksBrowserTest.prototype.extraLibraries.concat([
+    'edit_dialog_test.js',
+  ]),
+};
+
+TEST_F('MaterialBookmarksEditDialogTest', 'All', function() {
+  mocha.run();
+});
+
 function MaterialBookmarksItemTest() {}
 
 MaterialBookmarksItemTest.prototype = {

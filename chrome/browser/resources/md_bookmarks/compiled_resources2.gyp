@@ -46,6 +46,16 @@
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi']
     },
     {
+      'target_name': 'edit_dialog',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
+        '<(EXTERNS_GYP):chrome_extensions',
+        'types',
+      ],
+      'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi']
+    },
+    {
       'target_name': 'folder_node',
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
       'dependencies': [
@@ -72,6 +82,7 @@
         '<(EXTERNS_GYP):bookmark_manager_private',
         '<(EXTERNS_GYP):chrome_extensions',
         'actions',
+        'edit_dialog',
         'item',
         'store_client',
       ],

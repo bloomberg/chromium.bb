@@ -1,11 +1,9 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_action_menu/cr_action_menu.html">
-<link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
-<link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/shadow.html">
+<link rel="import" href="chrome://bookmarks/edit_dialog.html">
 <link rel="import" href="chrome://bookmarks/item.html">
 <link rel="import" href="chrome://bookmarks/shared_style.html">
 <link rel="import" href="chrome://bookmarks/store_client.html">
@@ -13,7 +11,7 @@
 
 <dom-module id="bookmarks-list">
   <template>
-    <style include="shared-style cr-shared-style">
+    <style include="shared-style">
       :host {
         overflow-y: auto;
         padding: 20px 32px 20px calc(32px - var(--splitter-width));
@@ -49,29 +47,6 @@
          $i18n{menuDelete}
       </button>
     </dialog>
-    <dialog is="cr-dialog" id="editBookmark">
-      <div class="title">[[getEditorTitle_(menuItem_)]]</div>
-      <div class="body">
-        <paper-input always-float-label id="name"
-            label="$i18n{editDialogNameInput}"
-            value="{{menuItem_.title}}">
-        </paper-input>
-        <paper-input always-float-label id="url"
-            label="$i18n{editDialogUrlInput}"
-            value="{{menuItem_.url}}"
-            hidden$="[[!menuItem_.url]]">
-        </paper-input>
-      </div>
-      <div class="button-container">
-        <paper-button class="cancel-button" on-tap="onCancelEditTap_">
-          $i18n{cancelEdit}
-        </paper-button>
-        <paper-button class="action-button" on-tap="onSaveEditTap_"
-            id='saveButton'>
-          $i18n{saveEdit}
-        </paper-button>
-      </div>
-    </dialog>
     <div id="bookmarksCard" hidden$="[[isEmptyList_(displayedList_.length)]]">
       <template is="dom-repeat" items="[[displayedList_]]" as="id">
         <bookmarks-item item-id="[[id]]">
@@ -82,6 +57,9 @@
         hidden$="[[!isEmptyList_(displayedList_.length)]]">
       [[emptyListMessage_(searchTerm_)]]
     </div>
+    <template is="cr-lazy-render" id="editDialog">
+      <bookmarks-edit-dialog></bookmarks-edit-dialog>
+    </template>
   </template>
   <script src="chrome://bookmarks/list.js"></script>
 </dom-module>
