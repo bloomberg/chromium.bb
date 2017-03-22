@@ -312,29 +312,18 @@ class WarmupURLFetcher : public net::URLFetcherDelegate {
     fetcher_->Start();
   }
 
-  void SetWarmupURLFetcherCallbackForTesting(
-      base::Callback<void()> warmup_url_fetched_callback) {
-    fetch_completion_callback_ = warmup_url_fetched_callback;
-  }
-
  private:
   void OnURLFetchComplete(const net::URLFetcher* source) override {
     DCHECK_EQ(source, fetcher_.get());
     UMA_HISTOGRAM_BOOLEAN(
         "DataReductionProxy.WarmupURL.FetchSuccessful",
         source->GetStatus().status() == net::URLRequestStatus::SUCCESS);
-
-    if (fetch_completion_callback_)
-      fetch_completion_callback_.Run();
   }
 
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
 
   // The URLFetcher being used for fetching the warmup URL.
   std::unique_ptr<net::URLFetcher> fetcher_;
-
-  // Called upon the completion of fetching of the warmup URL. May be null.
-  base::Callback<void()> fetch_completion_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(WarmupURLFetcher);
 };
@@ -869,14 +858,6 @@ void DataReductionProxyConfig::FetchWarmupURL() {
     return;
 
   warmup_url_fetcher_->FetchWarmupURL();
-}
-
-void DataReductionProxyConfig::SetWarmupURLFetcherCallbackForTesting(
-    base::Callback<void()> warmup_url_fetched_callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  warmup_url_fetcher_->SetWarmupURLFetcherCallbackForTesting(
-      warmup_url_fetched_callback);
 }
 
 void DataReductionProxyConfig::SetLoFiModeOff() {

@@ -228,10 +228,6 @@ class DataReductionProxyConfig
   // Updates the Data Reduction Proxy configurator with the current config.
   void UpdateConfigForTesting(bool enabled, bool restricted);
 
-  // Updates the callback that is called when the warmup URL has been fetched.
-  void SetWarmupURLFetcherCallbackForTesting(
-      base::Callback<void()> warmup_url_fetched_callback);
-
  private:
   friend class MockDataReductionProxyConfig;
   friend class TestDataReductionProxyConfig;

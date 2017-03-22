@@ -165,17 +165,6 @@ class DataReductionProxyConfigTest : public testing::Test {
         1);
   }
 
-  void WarmupURLFetchedCallBack() const {
-    warmup_url_fetched_run_loop_->Quit();
-  }
-
-  void WarmUpURLFetchedRunLoop() {
-    warmup_url_fetched_run_loop_.reset(new base::RunLoop());
-    // |warmup_url_fetched_run_loop_| will run until WarmupURLFetchedCallBack()
-    // is called.
-    warmup_url_fetched_run_loop_->Run();
-  }
-
   void RunUntilIdle() {
     test_context_->RunUntilIdle();
   }
@@ -213,7 +202,6 @@ class DataReductionProxyConfigTest : public testing::Test {
   std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
 
   base::MessageLoopForIO message_loop_;
-  std::unique_ptr<base::RunLoop> warmup_url_fetched_run_loop_;
   std::unique_ptr<DataReductionProxyTestContext> test_context_;
   std::unique_ptr<TestDataReductionProxyParams> expected_params_;
 };
@@ -375,9 +363,6 @@ TEST_F(DataReductionProxyConfigTest, WarmupURL) {
         new net::TestURLRequestContextGetter(task_runner());
     config.InitializeOnIOThread(request_context_getter_.get(),
                                 request_context_getter_.get());
-    config.SetWarmupURLFetcherCallbackForTesting(
-        base::Bind(&DataReductionProxyConfigTest::WarmupURLFetchedCallBack,
-                   base::Unretained(this)));
 
     // Set the connection type to WiFi so that warm up URL is fetched even if
     // the test device does not have connectivity.
@@ -387,12 +372,8 @@ TEST_F(DataReductionProxyConfigTest, WarmupURL) {
         test.data_reduction_proxy_enabled && test.enabled_via_field_trial;
 
     if (warmup_url_enabled) {
-      // Block until warm up URL is fetched successfully.
-      WarmUpURLFetchedRunLoop();
       histogram_tester.ExpectUniqueSample(
           "DataReductionProxy.WarmupURL.FetchInitiated", 1, 1);
-      histogram_tester.ExpectUniqueSample(
-          "DataReductionProxy.WarmupURL.FetchSuccessful", 1, 1);
     }
 
     // Set the connection type to 4G so that warm up URL is fetched even if
@@ -402,12 +383,8 @@ TEST_F(DataReductionProxyConfigTest, WarmupURL) {
     RunUntilIdle();
 
     if (warmup_url_enabled) {
-      // Block until warm up URL is fetched successfully.
-      WarmUpURLFetchedRunLoop();
       histogram_tester.ExpectUniqueSample(
           "DataReductionProxy.WarmupURL.FetchInitiated", 1, 2);
-      histogram_tester.ExpectUniqueSample(
-          "DataReductionProxy.WarmupURL.FetchSuccessful", 1, 2);
     } else {
       histogram_tester.ExpectTotalCount(
           "DataReductionProxy.WarmupURL.FetchInitiated", 0);
@@ -424,8 +401,6 @@ TEST_F(DataReductionProxyConfigTest, WarmupURL) {
     if (warmup_url_enabled) {
       histogram_tester.ExpectUniqueSample(
           "DataReductionProxy.WarmupURL.FetchInitiated", 1, 2);
-      histogram_tester.ExpectUniqueSample(
-          "DataReductionProxy.WarmupURL.FetchSuccessful", 1, 2);
     } else {
       histogram_tester.ExpectTotalCount(
           "DataReductionProxy.WarmupURL.FetchInitiated", 0);
