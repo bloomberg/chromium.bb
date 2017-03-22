@@ -11,8 +11,6 @@ per-file browsing_data_strings.grdp=file://components/browsing_data/OWNERS
 per-file crash_strings.grdp=file://components/crash/OWNERS
 per-file dom_distiller_strings.grdp=file://components/dom_distiller/OWNERS
 per-file error_page_strings.grdp=file://components/error_page/OWNERS
-per-file nacl_helper_nonsfi_unittests.isolate=file://components/nacl/OWNERS
-per-file nacl_loader_unittests.isolate=file://components/nacl/OWNERS
 per-file ntp_snippets_strings.grdp=file://components/ntp_snippets/OWNERS
 per-file omnibox_strings.grdp=file://components/omnibox/OWNERS
 per-file password_manager_strings.grdp=file://components/password_manager/OWNERS
@@ -31,9 +29,6 @@ per-file sync_ui_strings.grdp=file://components/sync/OWNERS
 per-file translate_strings.grdp=file://components/translate/OWNERS
 per-file undo_strings.grdp=file://components/undo/OWNERS
 per-file web_contents_delegate_android_strings.grdp=file://components/web_contents_delegate_android/OWNERS
-per-file *.isolate=maruel@chromium.org
-per-file *.isolate=tandrii@chromium.org
-per-file *.isolate=vadimsh@chromium.org
 
 # These are for the common case of adding or removing tests. If you're making
 # structural changes, please get a review from one of the overall components
