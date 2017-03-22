@@ -858,10 +858,6 @@ TEST_F(ShelfViewTest, AddAppShortcutWithBrowserButtonUntilOverflow) {
 }
 
 TEST_F(ShelfViewTest, AddPanelHidesPlatformAppButton) {
-  // TODO: investigate failure in mash, http://crbug.com/695751.
-  if (WmShell::Get()->IsRunningInMash())
-    return;
-
   // All buttons should be visible.
   ASSERT_EQ(test_api_->GetButtonCount(), test_api_->GetLastVisibleIndex() + 1);
 
@@ -1575,10 +1571,6 @@ TEST_F(ShelfViewTest, ResizeDuringOverflowAddAnimation) {
 
 // Checks the overflow bubble size when an item is ripped off and re-inserted.
 TEST_F(ShelfViewTest, OverflowBubbleSize) {
-  // TODO: investigate failure in mash, http://crbug.com/695751.
-  if (WmShell::Get()->IsRunningInMash())
-    return;
-
   shelf_delegate_->set_is_app_pinned(true);
   AddButtonsUntilOverflow();
   // Add one more button to prevent the overflow bubble to disappear upon
@@ -1632,10 +1624,6 @@ TEST_F(ShelfViewTest, OverflowBubbleSize) {
 
 // Check the drag insertion bounds of scrolled overflow bubble.
 TEST_F(ShelfViewTest, CheckDragInsertBoundsOfScrolledOverflowBubble) {
-  // TODO: investigate failure in mash, http://crbug.com/695751.
-  if (WmShell::Get()->IsRunningInMash())
-    return;
-
   UpdateDisplay("400x300");
 
   EXPECT_EQ(2, model_->item_count());
@@ -1787,10 +1775,6 @@ TEST_F(ShelfViewTest, CheckRipOffFromLeftShelfAlignmentWithMultiMonitor) {
 
 // Checks various drag and drop operations from OverflowBubble to Shelf.
 TEST_F(ShelfViewTest, CheckDragAndDropFromOverflowBubbleToShelf) {
-  // TODO: investigate failure in mash, http://crbug.com/695751.
-  if (WmShell::Get()->IsRunningInMash())
-    return;
-
   AddButtonsUntilOverflow();
   // Add one more button to prevent the overflow bubble to disappear upon
   // dragging an item out on windows (flakiness, see crbug.com/425097).
@@ -2669,10 +2653,6 @@ TEST_F(OverflowButtonInkDropTest, MouseContextMenu) {
 // Tests ink drop state transitions for the overflow button when the user taps
 // on it.
 TEST_F(OverflowButtonInkDropTest, TouchActivate) {
-  // TODO: flaky in mash, figure out why. http://crbug.com/696769.
-  if (WmShell::Get()->IsRunningInMash())
-    return;
-
   ui::test::EventGenerator& generator = GetEventGenerator();
   generator.set_current_location(GetScreenPointInsideOverflowButton());
 
@@ -2855,10 +2835,6 @@ TEST_F(OverflowButtonActiveInkDropTest, MouseDragOut) {
 // and the user presses left mouse button on it and drags it out of the button
 // bounds and back.
 TEST_F(OverflowButtonActiveInkDropTest, MouseDragOutAndBack) {
-  // TODO: flaky in mash, figure out why. http://crbug.com/696769.
-  if (WmShell::Get()->IsRunningInMash())
-    return;
-
   ui::test::EventGenerator& generator = GetEventGenerator();
   generator.MoveMouseTo(GetScreenPointInsideOverflowButton());
 
@@ -2935,10 +2911,6 @@ TEST_F(OverflowButtonActiveInkDropTest, TouchDeactivate) {
 // Tests ink drop state transitions for the overflow button when it is active
 // and the user taps down on it and drags it out of the button bounds.
 TEST_F(OverflowButtonActiveInkDropTest, TouchDragOut) {
-  // TODO: flaky in mash, figure out why. http://crbug.com/696769.
-  if (WmShell::Get()->IsRunningInMash())
-    return;
-
   ui::test::EventGenerator& generator = GetEventGenerator();
   generator.set_current_location(GetScreenPointInsideOverflowButton());
 
@@ -2966,10 +2938,6 @@ TEST_F(OverflowButtonActiveInkDropTest, TouchDragOut) {
 // Tests ink drop state transitions for the overflow button when it is active
 // and the user taps down on it and drags it out of the button bounds and back.
 TEST_F(OverflowButtonActiveInkDropTest, TouchDragOutAndBack) {
-  // TODO: flaky in mash, figure out why. http://crbug.com/696769.
-  if (WmShell::Get()->IsRunningInMash())
-    return;
-
   ui::test::EventGenerator& generator = GetEventGenerator();
   generator.set_current_location(GetScreenPointInsideOverflowButton());
 
@@ -3003,11 +2971,6 @@ TEST_F(OverflowButtonActiveInkDropTest, TouchDragOutAndBack) {
 // Tests ink drop state transitions for the overflow button when it is active
 // and the user long presses on the button to show the context menu.
 TEST_F(OverflowButtonActiveInkDropTest, TouchContextMenu) {
-  // TODO: investigate failure in mash, http://crbug.com/695751. Note, that this
-  // one is a bit flaky. Some times it passes with mash, other times not.
-  if (WmShell::Get()->IsRunningInMash())
-    return;
-
   ui::test::EventGenerator& generator = GetEventGenerator();
   generator.set_current_location(GetScreenPointInsideOverflowButton());
   base::ScopedMockTimeMessageLoopTaskRunner mock_task_runner;

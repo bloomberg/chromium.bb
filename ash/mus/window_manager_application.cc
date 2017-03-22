@@ -58,11 +58,12 @@ WindowManagerApplication::~WindowManagerApplication() {
 
 void WindowManagerApplication::InitWindowManager(
     std::unique_ptr<aura::WindowTreeClient> window_tree_client,
-    const scoped_refptr<base::SequencedWorkerPool>& blocking_pool) {
+    const scoped_refptr<base::SequencedWorkerPool>& blocking_pool,
+    bool init_network_handler) {
   // Tests may have already set the WindowTreeClient.
   if (!aura::Env::GetInstance()->HasWindowTreeClient())
     aura::Env::GetInstance()->SetWindowTreeClient(window_tree_client.get());
-  InitializeComponents();
+  InitializeComponents(init_network_handler);
 
   // TODO(jamescook): Refactor StatisticsProvider so we can get just the data
   // we need in ash. Right now StatisticsProviderImpl launches the crossystem
@@ -75,7 +76,7 @@ void WindowManagerApplication::InitWindowManager(
   window_manager_->Init(std::move(window_tree_client), blocking_pool);
 }
 
-void WindowManagerApplication::InitializeComponents() {
+void WindowManagerApplication::InitializeComponents(bool init_network_handler) {
   message_center::MessageCenter::Initialize();
 
   // Must occur after mojo::ApplicationRunner has initialized AtExitManager, but
@@ -87,7 +88,8 @@ void WindowManagerApplication::InitializeComponents() {
   bluez::BluezDBusManager::Initialize(
       chromeos::DBusThreadManager::Get()->GetSystemBus(),
       chromeos::DBusThreadManager::Get()->IsUsingFakes());
-  chromeos::NetworkHandler::Initialize();
+  if (init_network_handler)
+    chromeos::NetworkHandler::Initialize();
   network_connect_delegate_.reset(new NetworkConnectDelegateMus());
   chromeos::NetworkConnect::Initialize(network_connect_delegate_.get());
   // TODO(jamescook): Initialize real audio handler.
@@ -99,7 +101,9 @@ void WindowManagerApplication::ShutdownComponents() {
   chromeos::CrasAudioHandler::Shutdown();
   chromeos::NetworkConnect::Shutdown();
   network_connect_delegate_.reset();
-  chromeos::NetworkHandler::Shutdown();
+  // We may not have started the NetworkHandler.
+  if (chromeos::NetworkHandler::IsInitialized())
+    chromeos::NetworkHandler::Shutdown();
   device::BluetoothAdapterFactory::Shutdown();
   bluez::BluezDBusManager::Shutdown();
   chromeos::DBusThreadManager::Shutdown();
@@ -124,7 +128,9 @@ void WindowManagerApplication::OnStart() {
   const char kThreadNamePrefix[] = "MashBlocking";
   blocking_pool_ = new base::SequencedWorkerPool(
       kMaxNumberThreads, kThreadNamePrefix, base::TaskPriority::USER_VISIBLE);
-  InitWindowManager(std::move(window_tree_client), blocking_pool_);
+  const bool init_network_handler = true;
+  InitWindowManager(std::move(window_tree_client), blocking_pool_,
+                    init_network_handler);
 }
 
 bool WindowManagerApplication::OnConnect(

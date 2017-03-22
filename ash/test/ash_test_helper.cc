@@ -27,6 +27,7 @@
 #include "base/test/sequenced_worker_pool_owner.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/network/network_handler.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "ui/aura/env.h"
@@ -296,9 +297,13 @@ void AshTestHelper::CreateMashWindowManager() {
       window_manager_app_->window_manager_.get());
   aura::test::EnvTestHelper().SetWindowTreeClient(
       window_tree_client_setup_.window_tree_client());
+  // Classic ash does not start the NetworkHandler in tests, so don't start it
+  // for mash either. The NetworkHandler may cause subtle side effects (such as
+  // additional tray items) that can make for flaky tests.
+  const bool init_network_handler = false;
   window_manager_app_->InitWindowManager(
       window_tree_client_setup_.OwnWindowTreeClient(),
-      ash_test_environment_->GetBlockingPool());
+      ash_test_environment_->GetBlockingPool(), init_network_handler);
 
   aura::WindowTreeClient* window_tree_client =
       window_manager_app_->window_manager()->window_tree_client();
@@ -306,6 +311,10 @@ void AshTestHelper::CreateMashWindowManager() {
       base::MakeUnique<aura::WindowTreeClientPrivate>(window_tree_client);
   int next_x = 0;
   CreateRootWindowController("800x600", &next_x);
+
+  // Make sure the NetworkHandler didn't get turned on, see above comment as to
+  // why the NetworkHandler should not be running.
+  CHECK(!chromeos::NetworkHandler::IsInitialized());
 }
 
 void AshTestHelper::CreateShell() {

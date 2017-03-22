@@ -58,12 +58,14 @@ class WindowManagerApplication : public service_manager::Service {
   friend class WmTestBase;
   friend class WmTestHelper;
 
+  // If |init_network_handler| is true, chromeos::NetworkHandler is initialized.
   void InitWindowManager(
       std::unique_ptr<aura::WindowTreeClient> window_tree_client,
-      const scoped_refptr<base::SequencedWorkerPool>& blocking_pool);
+      const scoped_refptr<base::SequencedWorkerPool>& blocking_pool,
+      bool init_network_handler);
 
   // Initializes lower-level OS-specific components (e.g. D-Bus services).
-  void InitializeComponents();
+  void InitializeComponents(bool init_network_handler);
   void ShutdownComponents();
 
   // service_manager::Service:

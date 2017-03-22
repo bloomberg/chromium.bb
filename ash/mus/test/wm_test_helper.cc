@@ -108,9 +108,12 @@ void WmTestHelper::Init() {
       window_manager_app_->window_manager_.get());
   aura::test::EnvTestHelper().SetWindowTreeClient(
       window_tree_client_setup_.window_tree_client());
+  // See comment in AshTestHelper for details on why NetworkHandler is not
+  // initialized.
+  const bool init_network_handler = false;
   window_manager_app_->InitWindowManager(
       window_tree_client_setup_.OwnWindowTreeClient(),
-      blocking_pool_owner_->pool());
+      blocking_pool_owner_->pool(), init_network_handler);
 
   aura::WindowTreeClient* window_tree_client =
       window_manager_app_->window_manager()->window_tree_client();
