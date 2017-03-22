@@ -117,11 +117,8 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/canvas.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/geometry/point.h"
-#include "ui/gfx/geometry/size.h"
-#include "ui/gfx/path.h"
 #include "ui/gfx/text_elider.h"
 
 #if !BUILDFLAG(USE_BROWSER_SPELLCHECKER)
@@ -441,29 +438,17 @@ void WriteURLToClipboard(const GURL& url) {
 bool g_custom_id_ranges_initialized = false;
 
 #if !defined(OS_CHROMEOS)
-void AddAvatarToLastMenuItem(gfx::Image icon, ui::SimpleMenuModel* menu) {
-  int width = icon.Width();
-  int height = icon.Height();
-
+void AddAvatarToLastMenuItem(const gfx::Image& icon,
+                             ui::SimpleMenuModel* menu) {
   // Don't try to scale too small icons.
-  if (width < 16 || height < 16)
+  if (icon.Width() < 16 || icon.Height() < 16)
     return;
-
-  // Profile avatars are supposed to be displayed with a circular mask, so apply
-  // one.
-  gfx::Path circular_mask;
-  gfx::Canvas canvas(icon.Size(), 1.0f, true);
-  canvas.FillRect(gfx::Rect(icon.Size()), SK_ColorTRANSPARENT,
-                  SkBlendMode::kClear);
-  circular_mask.addCircle(SkIntToScalar(width) / 2, SkIntToScalar(height) / 2,
-                          SkIntToScalar(std::min(width, height)) / 2);
-  canvas.ClipPath(circular_mask, true);
-  canvas.DrawImageInt(*icon.ToImageSkia(), 0, 0);
-
-  gfx::CalculateFaviconTargetSize(&width, &height);
+  int target_dip_width = icon.Width();
+  int target_dip_height = icon.Height();
+  gfx::CalculateFaviconTargetSize(&target_dip_width, &target_dip_height);
   gfx::Image sized_icon = profiles::GetSizedAvatarIcon(
-      gfx::Image(gfx::ImageSkia(canvas.ExtractImageRep())), true, width,
-      height);
+      icon, true /* is_rectangle */, target_dip_width, target_dip_height,
+      profiles::SHAPE_CIRCLE);
   menu->SetIcon(menu->GetItemCount() - 1, sized_icon);
 }
 #endif  // !defined(OS_CHROMEOS)
