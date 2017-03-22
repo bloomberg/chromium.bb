@@ -163,8 +163,9 @@ void ExtensionActionAPI::SetBrowserActionVisibility(
   if (GetBrowserActionVisibility(extension_id) == visible)
     return;
 
-  GetExtensionPrefs()->UpdateExtensionPref(extension_id, kBrowserActionVisible,
-                                           new base::Value(visible));
+  GetExtensionPrefs()->UpdateExtensionPref(
+      extension_id, kBrowserActionVisible,
+      base::MakeUnique<base::Value>(visible));
   for (auto& observer : observers_)
     observer.OnExtensionActionVisibilityChanged(extension_id, visible);
 }

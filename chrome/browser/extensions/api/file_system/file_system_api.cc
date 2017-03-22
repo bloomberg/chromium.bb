@@ -293,9 +293,8 @@ base::FilePath GetLastChooseEntryDirectory(const ExtensionPrefs* prefs,
 void SetLastChooseEntryDirectory(ExtensionPrefs* prefs,
                                  const std::string& extension_id,
                                  const base::FilePath& path) {
-  prefs->UpdateExtensionPref(extension_id,
-                             kLastChooseEntryDirectory,
-                             base::CreateFilePathValue(path));
+  prefs->UpdateExtensionPref(extension_id, kLastChooseEntryDirectory,
+                             base::WrapUnique(base::CreateFilePathValue(path)));
 }
 
 #if defined(OS_CHROMEOS)

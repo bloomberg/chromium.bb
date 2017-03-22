@@ -75,9 +75,8 @@ bool SetOmniboxDefaultSuggestion(
   // Add the content field so that the dictionary can be used to populate an
   // omnibox::SuggestResult.
   dict->SetWithoutPathExpansion(kSuggestionContent, new base::Value(""));
-  prefs->UpdateExtensionPref(extension_id,
-                             kOmniboxDefaultSuggestion,
-                             dict.release());
+  prefs->UpdateExtensionPref(extension_id, kOmniboxDefaultSuggestion,
+                             std::move(dict));
 
   return true;
 }

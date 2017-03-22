@@ -107,7 +107,7 @@ void RemoveSavedFileEntry(ExtensionPrefs* prefs,
 // Clears all SavedFileEntry for the app from ExtensionPrefs.
 void ClearSavedFileEntries(ExtensionPrefs* prefs,
                            const std::string& extension_id) {
-  prefs->UpdateExtensionPref(extension_id, kFileEntries, NULL);
+  prefs->UpdateExtensionPref(extension_id, kFileEntries, nullptr);
 }
 
 // Returns all SavedFileEntries for the app.

@@ -83,7 +83,7 @@ void SetLaunchType(content::BrowserContext* context,
 
   ExtensionPrefs::Get(context)->UpdateExtensionPref(
       extension_id, kPrefLaunchType,
-      new base::Value(static_cast<int>(launch_type)));
+      base::MakeUnique<base::Value>(static_cast<int>(launch_type)));
 
   // Sync the launch type.
   const Extension* extension =

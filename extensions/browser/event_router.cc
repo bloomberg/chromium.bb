@@ -378,13 +378,13 @@ std::set<std::string> EventRouter::GetRegisteredEvents(
 
 void EventRouter::SetRegisteredEvents(const std::string& extension_id,
                                       const std::set<std::string>& events) {
-  ListValue* events_value = new ListValue;
+  auto events_value = base::MakeUnique<base::ListValue>();
   for (std::set<std::string>::const_iterator iter = events.begin();
        iter != events.end(); ++iter) {
     events_value->AppendString(*iter);
   }
-  extension_prefs_->UpdateExtensionPref(
-      extension_id, kRegisteredEvents, events_value);
+  extension_prefs_->UpdateExtensionPref(extension_id, kRegisteredEvents,
+                                        std::move(events_value));
 }
 
 void EventRouter::AddFilterToEvent(const std::string& event_name,

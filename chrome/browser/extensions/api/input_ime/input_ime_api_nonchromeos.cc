@@ -148,7 +148,8 @@ void InputImeAPI::OnExtensionLoaded(content::BrowserContext* browser_context,
   // input.ime.activate API has been never called since loaded.
   Profile* profile = Profile::FromBrowserContext(browser_context);
   ExtensionPrefs::Get(profile)->UpdateExtensionPref(
-      extension->id(), kPrefNeverActivatedSinceLoaded, new base::Value(true));
+      extension->id(), kPrefNeverActivatedSinceLoaded,
+      base::MakeUnique<base::Value>(true));
 }
 
 void InputImeAPI::OnExtensionUnloaded(content::BrowserContext* browser_context,
@@ -160,7 +161,7 @@ void InputImeAPI::OnExtensionUnloaded(content::BrowserContext* browser_context,
     // Records the extension is not the last active IME engine.
     ExtensionPrefs::Get(Profile::FromBrowserContext(browser_context))
         ->UpdateExtensionPref(extension->id(), kPrefLastActiveEngine,
-                              new base::Value(false));
+                              base::MakeUnique<base::Value>(false));
     event_router->DeleteInputMethodEngine(extension->id());
   }
 }
@@ -188,7 +189,7 @@ void InputImeEventRouter::SetActiveEngine(const std::string& extension_id) {
   // Records the extension is the last active IME engine.
   ExtensionPrefs::Get(GetProfile())
       ->UpdateExtensionPref(extension_id, kPrefLastActiveEngine,
-                            new base::Value(true));
+                            base::MakeUnique<base::Value>(true));
   if (active_engine_) {
     if (active_engine_->GetExtensionId() == extension_id) {
       active_engine_->Enable(std::string());
@@ -198,7 +199,8 @@ void InputImeEventRouter::SetActiveEngine(const std::string& extension_id) {
     // Records the extension is not the last active IME engine.
     ExtensionPrefs::Get(GetProfile())
         ->UpdateExtensionPref(active_engine_->GetExtensionId(),
-                              kPrefLastActiveEngine, new base::Value(false));
+                              kPrefLastActiveEngine,
+                              base::MakeUnique<base::Value>(false));
     DeleteInputMethodEngine(active_engine_->GetExtensionId());
   }
 
@@ -249,12 +251,14 @@ ExtensionFunction::ResponseAction InputImeActivateFunction::Run() {
     // chrome. No need for user gesture checking.
     event_router->SetActiveEngine(extension_id());
     ExtensionPrefs::Get(profile)->UpdateExtensionPref(
-        extension_id(), kPrefNeverActivatedSinceLoaded, new base::Value(false));
+        extension_id(), kPrefNeverActivatedSinceLoaded,
+        base::MakeUnique<base::Value>(false));
     return RespondNow(NoArguments());
   }
   // The API has already been called at least once.
   ExtensionPrefs::Get(profile)->UpdateExtensionPref(
-      extension_id(), kPrefNeverActivatedSinceLoaded, new base::Value(false));
+      extension_id(), kPrefNeverActivatedSinceLoaded,
+      base::MakeUnique<base::Value>(false));
 
   // Otherwise, this API is only allowed to be called from a user action.
   if (!user_gesture())
@@ -315,7 +319,8 @@ void InputImeActivateFunction::OnPermissionBubbleFinished(
     // Updates the extension preference if user checks the 'Never show this
     // again' check box. So we can activate the extension directly next time.
     ExtensionPrefs::Get(profile)->UpdateExtensionPref(
-        extension_id(), kPrefWarningBubbleNeverShow, new base::Value(true));
+        extension_id(), kPrefWarningBubbleNeverShow,
+        base::MakeUnique<base::Value>(true));
   }
 
   Respond(NoArguments());

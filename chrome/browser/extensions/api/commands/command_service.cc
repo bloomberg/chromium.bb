@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/lazy_instance.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -85,7 +86,7 @@ std::string StripCurrentPlatform(const std::string& key) {
 void SetInitialBindingsHaveBeenAssigned(
     ExtensionPrefs* prefs, const std::string& extension_id) {
   prefs->UpdateExtensionPref(extension_id, kInitialBindingsHaveBeenAssigned,
-                             new base::Value(true));
+                             base::MakeUnique<base::Value>(true));
 }
 
 bool InitialBindingsHaveBeenAssigned(
@@ -114,9 +115,8 @@ void MergeSuggestedKeyPrefs(
     suggested_key_prefs = std::move(new_prefs);
   }
 
-  extension_prefs->UpdateExtensionPref(extension_id,
-                                       kCommands,
-                                       suggested_key_prefs.release());
+  extension_prefs->UpdateExtensionPref(extension_id, kCommands,
+                                       std::move(suggested_key_prefs));
 }
 
 }  // namespace
@@ -719,9 +719,8 @@ void CommandService::RemoveDefunctExtensionSuggestedCommandPrefs(
       }
     }
 
-    extension_prefs->UpdateExtensionPref(extension->id(),
-                                         kCommands,
-                                         suggested_key_prefs.release());
+    extension_prefs->UpdateExtensionPref(extension->id(), kCommands,
+                                         std::move(suggested_key_prefs));
   }
 }
 

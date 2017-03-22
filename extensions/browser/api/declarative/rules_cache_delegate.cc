@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
@@ -223,8 +224,9 @@ void RulesCacheDelegate::SetDeclarativeRulesStored(
              ->GetExtensionById(extension_id, ExtensionRegistry::EVERYTHING));
 
   ExtensionScopedPrefs* extension_prefs = ExtensionPrefs::Get(browser_context_);
-  extension_prefs->UpdateExtensionPref(extension_id, rules_stored_key_,
-                                       new base::Value(rules_stored));
+  extension_prefs->UpdateExtensionPref(
+      extension_id, rules_stored_key_,
+      base::MakeUnique<base::Value>(rules_stored));
 }
 
 }  // namespace extensions

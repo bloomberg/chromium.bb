@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/chrome_app_sorting.h"
 
 #include <algorithm>
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
@@ -113,7 +114,7 @@ void ChromeAppSorting::MigrateAppIndex(
 
       page = PageIntegerAsStringOrdinal(old_page_index);
       SetPageOrdinal(*ext_id, page);
-      prefs->UpdateExtensionPref(*ext_id, kPrefPageIndexDeprecated, NULL);
+      prefs->UpdateExtensionPref(*ext_id, kPrefPageIndexDeprecated, nullptr);
     }
 
     int old_app_launch_index = 0;
@@ -128,7 +129,8 @@ void ChromeAppSorting::MigrateAppIndex(
       if (page.IsValid())
         app_launches_to_convert[page][old_app_launch_index] = &*ext_id;
 
-      prefs->UpdateExtensionPref(*ext_id, kPrefAppLaunchIndexDeprecated, NULL);
+      prefs->UpdateExtensionPref(*ext_id, kPrefAppLaunchIndexDeprecated,
+                                 nullptr);
     }
   }
 
@@ -321,15 +323,15 @@ void ChromeAppSorting::SetAppLaunchOrdinal(
       extension_id, page_ordinal, GetAppLaunchOrdinal(extension_id));
   AddOrdinalMapping(extension_id, page_ordinal, new_app_launch_ordinal);
 
-  base::Value* new_value =
+  std::unique_ptr<base::Value> new_value =
       new_app_launch_ordinal.IsValid()
-          ? new base::Value(new_app_launch_ordinal.ToInternalValue())
-          : NULL;
+          ? base::MakeUnique<base::Value>(
+                new_app_launch_ordinal.ToInternalValue())
+          : nullptr;
 
-  ExtensionPrefs::Get(browser_context_)->UpdateExtensionPref(
-      extension_id,
-      kPrefAppLaunchOrdinal,
-      new_value);
+  ExtensionPrefs::Get(browser_context_)
+      ->UpdateExtensionPref(extension_id, kPrefAppLaunchOrdinal,
+                            std::move(new_value));
   SyncIfNeeded(extension_id);
 }
 
@@ -401,15 +403,14 @@ void ChromeAppSorting::SetPageOrdinal(
       extension_id, GetPageOrdinal(extension_id), app_launch_ordinal);
   AddOrdinalMapping(extension_id, new_page_ordinal, app_launch_ordinal);
 
-  base::Value* new_value =
+  std::unique_ptr<base::Value> new_value =
       new_page_ordinal.IsValid()
-          ? new base::Value(new_page_ordinal.ToInternalValue())
-          : NULL;
+          ? base::MakeUnique<base::Value>(new_page_ordinal.ToInternalValue())
+          : nullptr;
 
-  ExtensionPrefs::Get(browser_context_)->UpdateExtensionPref(
-      extension_id,
-      kPrefPageOrdinal,
-      new_value);
+  ExtensionPrefs::Get(browser_context_)
+      ->UpdateExtensionPref(extension_id, kPrefPageOrdinal,
+                            std::move(new_value));
   SyncIfNeeded(extension_id);
 }
 
@@ -419,8 +420,8 @@ void ChromeAppSorting::ClearOrdinals(const std::string& extension_id) {
                        GetAppLaunchOrdinal(extension_id));
 
   ExtensionPrefs* prefs = ExtensionPrefs::Get(browser_context_);
-  prefs->UpdateExtensionPref(extension_id, kPrefPageOrdinal, NULL);
-  prefs->UpdateExtensionPref(extension_id, kPrefAppLaunchOrdinal, NULL);
+  prefs->UpdateExtensionPref(extension_id, kPrefPageOrdinal, nullptr);
+  prefs->UpdateExtensionPref(extension_id, kPrefAppLaunchOrdinal, nullptr);
 }
 
 int ChromeAppSorting::PageStringOrdinalAsInteger(

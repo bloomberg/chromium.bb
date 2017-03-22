@@ -916,7 +916,7 @@ void SetInstallTime(const std::string& extension_id,
                     ExtensionPrefs* prefs) {
   std::string time_str = base::Int64ToString(time.ToInternalValue());
   prefs->UpdateExtensionPref(extension_id, "install_time",
-                             new base::Value(time_str));
+                             base::MakeUnique<base::Value>(time_str));
 }
 
 // The feature this is meant to test is only implemented on Windows and Mac.

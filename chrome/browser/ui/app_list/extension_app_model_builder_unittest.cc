@@ -271,8 +271,9 @@ TEST_F(ExtensionAppModelBuilderTest, InvalidOrdinal) {
   // Creates a corrupted ordinal case.
   extensions::ExtensionScopedPrefs* scoped_prefs =
       extensions::ExtensionPrefs::Get(profile_.get());
-  scoped_prefs->UpdateExtensionPref(kHostedAppId, "page_ordinal",
-                                    new base::Value("a corrupted ordinal"));
+  scoped_prefs->UpdateExtensionPref(
+      kHostedAppId, "page_ordinal",
+      base::MakeUnique<base::Value>("a corrupted ordinal"));
 
   // This should not assert or crash.
   CreateBuilder();

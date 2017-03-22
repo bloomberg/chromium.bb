@@ -47,7 +47,7 @@ ExtensionFunction::ResponseAction ExtensionSetUpdateUrlDataFunction::Run() {
 
   ExtensionPrefs::Get(browser_context())
       ->UpdateExtensionPref(extension_id(), extension::kUpdateURLData,
-                            new base::Value(data));
+                            base::MakeUnique<base::Value>(data));
   return RespondNow(NoArguments());
 }
 

@@ -5,6 +5,15 @@
 #ifndef EXTENSIONS_BROWSER_EXTENSION_SCOPED_PREFS_H_
 #define EXTENSIONS_BROWSER_EXTENSION_SCOPED_PREFS_H_
 
+#include <memory>
+#include <string>
+
+namespace base {
+class DictionaryValue;
+class ListValue;
+class Value;
+}
+
 namespace extensions {
 
 class ExtensionScopedPrefs {
@@ -15,7 +24,7 @@ class ExtensionScopedPrefs {
   // Sets the pref |key| for extension |id| to |value|.
   virtual void UpdateExtensionPref(const std::string& id,
                                    const std::string& key,
-                                   base::Value* value) = 0;
+                                   std::unique_ptr<base::Value> value) = 0;
 
   // Deletes the pref dictionary for extension |id|.
   virtual void DeleteExtensionPrefs(const std::string& id) = 0;

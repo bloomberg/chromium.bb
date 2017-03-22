@@ -357,9 +357,9 @@ TEST_F(ScriptingPermissionsModifierUnitTest,
   const char* kHasSetPref = "has_set_script_all_urls";
   ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
   prefs->UpdateExtensionPref(extension->id(), kAllowedPref,
-                             new base::Value(false));
+                             base::MakeUnique<base::Value>(false));
   prefs->UpdateExtensionPref(extension->id(), kHasSetPref,
-                             new base::Value(true));
+                             base::MakeUnique<base::Value>(true));
 
   // The modifier should still return the correct value and should fix the
   // preferences.

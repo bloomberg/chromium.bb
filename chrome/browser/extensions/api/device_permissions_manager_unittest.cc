@@ -301,7 +301,7 @@ TEST_F(DevicePermissionsManagerTest, LoadPrefs) {
       "  }"
       "]");
   env_->GetExtensionPrefs()->UpdateExtensionPref(extension_->id(), "devices",
-                                                 prefs_value.release());
+                                                 std::move(prefs_value));
 
   DevicePermissionsManager* manager =
       DevicePermissionsManager::Get(env_->profile());

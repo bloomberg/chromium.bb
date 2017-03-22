@@ -41,10 +41,8 @@ const base::DictionaryValue* GetIdMappingDictionary(
     std::unique_ptr<base::DictionaryValue> dictionary(
         new base::DictionaryValue());
     out_value = dictionary.get();
-    extension_prefs->UpdateExtensionPref(
-        extension_id,
-        kPrefStringForIdMapping,
-        dictionary.release());
+    extension_prefs->UpdateExtensionPref(extension_id, kPrefStringForIdMapping,
+                                         std::move(dictionary));
   }
 
   return out_value;
@@ -73,9 +71,8 @@ std::vector<std::unique_ptr<DeviceInfo>> GetAllSignedInDevices(
   CreateMappingForUnmappedDevices(devices, editable_mapping_dictionary.get());
 
   // Write into |ExtensionPrefs| which will get persisted in disk.
-  extension_prefs->UpdateExtensionPref(extension_id,
-                                       kPrefStringForIdMapping,
-                                       editable_mapping_dictionary.release());
+  extension_prefs->UpdateExtensionPref(extension_id, kPrefStringForIdMapping,
+                                       std::move(editable_mapping_dictionary));
   return devices;
 }
 

@@ -608,8 +608,9 @@ void ExtensionStorageMonitor::SetNextStorageThreshold(
     int64_t next_threshold) {
   extension_prefs_->UpdateExtensionPref(
       extension_id, kPrefNextStorageThreshold,
-      next_threshold > 0 ? new base::Value(base::Int64ToString(next_threshold))
-                         : NULL);
+      next_threshold > 0
+          ? base::MakeUnique<base::Value>(base::Int64ToString(next_threshold))
+          : nullptr);
 }
 
 int64_t ExtensionStorageMonitor::GetNextStorageThresholdFromPrefs(
@@ -644,7 +645,7 @@ void ExtensionStorageMonitor::SetStorageNotificationEnabled(
     bool enable_notifications) {
   extension_prefs_->UpdateExtensionPref(
       extension_id, kPrefDisableStorageNotifications,
-      enable_notifications ? NULL : new base::Value(true));
+      enable_notifications ? nullptr : base::MakeUnique<base::Value>(true));
 }
 
 }  // namespace extensions

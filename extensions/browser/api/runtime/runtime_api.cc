@@ -156,7 +156,7 @@ void SetUninstallURL(ExtensionPrefs* prefs,
                      const std::string& extension_id,
                      const std::string& url_string) {
   prefs->UpdateExtensionPref(extension_id, kUninstallUrl,
-                             new base::Value(url_string));
+                             base::MakeUnique<base::Value>(url_string));
 }
 
 std::string GetUninstallURL(ExtensionPrefs* prefs,
@@ -327,7 +327,7 @@ void RuntimeAPI::StorePendingOnInstallInfoToPref(const Extension* extension) {
       previous_version.IsValid() ? previous_version.GetString() : "");
   prefs->UpdateExtensionPref(extension->id(),
                              kPrefPendingOnInstalledEventDispatchInfo,
-                             pending_on_install_info.release());
+                             std::move(pending_on_install_info));
 }
 
 void RuntimeAPI::ReloadExtension(const std::string& extension_id) {

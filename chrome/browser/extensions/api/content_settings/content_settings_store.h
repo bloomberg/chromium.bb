@@ -80,8 +80,9 @@ class ContentSettingsStore
   // Serializes all content settings set by the extension with ID |extension_id|
   // and returns them as a ListValue. The caller takes ownership of the returned
   // value.
-  base::ListValue* GetSettingsForExtension(const std::string& extension_id,
-                                           ExtensionPrefsScope scope) const;
+  std::unique_ptr<base::ListValue> GetSettingsForExtension(
+      const std::string& extension_id,
+      ExtensionPrefsScope scope) const;
 
   // Deserializes content settings rules from |list| and applies them as set by
   // the extension with ID |extension_id|.

@@ -199,7 +199,7 @@ void SetWasInstalledByCustodian(const std::string& extension_id,
 
   ExtensionPrefs::Get(context)->UpdateExtensionPref(
       extension_id, kWasInstalledByCustodianPrefName,
-      installed_by_custodian ? new base::Value(true) : nullptr);
+      installed_by_custodian ? base::MakeUnique<base::Value>(true) : nullptr);
   ExtensionService* service =
       ExtensionSystem::Get(context)->extension_service();
 

@@ -245,7 +245,7 @@ void ContentSettingsStore::ClearContentSettingsForExtension(
   }
 }
 
-base::ListValue* ContentSettingsStore::GetSettingsForExtension(
+std::unique_ptr<base::ListValue> ContentSettingsStore::GetSettingsForExtension(
     const std::string& extension_id,
     ExtensionPrefsScope scope) const {
   base::AutoLock lock(lock_);
@@ -253,7 +253,7 @@ base::ListValue* ContentSettingsStore::GetSettingsForExtension(
   if (!map)
     return nullptr;
 
-  base::ListValue* settings = new base::ListValue();
+  auto settings = base::MakeUnique<base::ListValue>();
   for (const auto& it : *map) {
     const auto& key = it.first;
     std::unique_ptr<RuleIterator> rule_iterator(
