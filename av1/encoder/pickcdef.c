@@ -167,12 +167,13 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
       dering_count = sb_compute_dering_list(cm, sbr * MAX_MIB_SIZE,
                                             sbc * MAX_MIB_SIZE, dlist);
       if (dering_count == 0) continue;
-      for (gi = 0; gi < DERING_STRENGTHS; gi++) {
+      for (gi = 0; gi < TOTAL_STRENGTHS; gi++) {
         int threshold;
+        int clpf_strength;
         DECLARE_ALIGNED(32, uint16_t, inbuf[OD_DERING_INBUF_SIZE]);
         uint16_t *in;
         int j;
-        level = dering_level_table[gi];
+        level = dering_level_table[gi / CLPF_STRENGTHS];
         threshold = level << coeff_shift;
         for (r = 0; r < nvb << bsize[0]; r++) {
           for (c = 0; c < nhb << bsize[0]; c++) {
@@ -199,17 +200,17 @@ void av1_cdef_search(YV12_BUFFER_CONFIG *frame, const YV12_BUFFER_CONFIG *ref,
             in[i * OD_FILT_BSTRIDE + j] = x[i * stride + j];
           }
         }
-        for (i = 0; i < CLPF_STRENGTHS; i++) {
-          od_dering(tmp_dst, in, 0, dir, 0, dlist, dering_count, threshold,
-                    i + (i == 3), clpf_damping, coeff_shift);
-          copy_dering_16bit_to_16bit(dst, MAX_MIB_SIZE << bsize[0], tmp_dst,
-                                     dlist, dering_count, bsize[0]);
-          mse[sb_count][gi * CLPF_STRENGTHS + i] = (int)compute_dist(
-              dst, MAX_MIB_SIZE << bsize[0],
-              &ref_coeff[(sbr * stride * MAX_MIB_SIZE << bsize[0]) +
-                         (sbc * MAX_MIB_SIZE << bsize[0])],
-              stride, nhb, nvb, coeff_shift);
-        }
+        clpf_strength = gi % CLPF_STRENGTHS;
+        od_dering(tmp_dst, in, 0, dir, 0, dlist, dering_count, threshold,
+                  clpf_strength + (clpf_strength == 3), clpf_damping,
+                  coeff_shift);
+        copy_dering_16bit_to_16bit(dst, MAX_MIB_SIZE << bsize[0], tmp_dst,
+                                   dlist, dering_count, bsize[0]);
+        mse[sb_count][gi] = (int)compute_dist(
+            dst, MAX_MIB_SIZE << bsize[0],
+            &ref_coeff[(sbr * stride * MAX_MIB_SIZE << bsize[0]) +
+                       (sbc * MAX_MIB_SIZE << bsize[0])],
+            stride, nhb, nvb, coeff_shift);
         sb_index[sb_count] =
             MAX_MIB_SIZE * sbr * cm->mi_stride + MAX_MIB_SIZE * sbc;
       }
