@@ -133,7 +133,7 @@ void CredentialManagerPendingRequestTask::OnGetPasswordStoreResults(
     std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
   if (results.empty()) {
     // Try to migrate the HTTP passwords and process them later.
-    http_migrator_ = base::MakeUnique<HttpPasswordMigrator>(
+    http_migrator_ = base::MakeUnique<HttpPasswordStoreMigrator>(
         origin_, delegate_->client(), this);
     return;
   }

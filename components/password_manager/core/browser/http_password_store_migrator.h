@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_HTTP_PASSWORD_MIGRATOR_H_
-#define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_HTTP_PASSWORD_MIGRATOR_H_
+#ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_HTTP_PASSWORD_STORE_MIGRATOR_H_
+#define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_HTTP_PASSWORD_STORE_MIGRATOR_H_
 
 #include <memory>
 #include <vector>
@@ -11,12 +11,11 @@
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
+#include "url/gurl.h"
 
 namespace autofill {
 struct PasswordForm;
 }
-
-class GURL;
 
 namespace password_manager {
 
@@ -28,9 +27,12 @@ class PasswordManagerClient;
 // HTTP password is considered obsolete and will be replaced by an HTTPS
 // version. If HSTS is not enabled, some parts of the site might still be served
 // via HTTP, which is why the password is copied in this case.
-class HttpPasswordMigrator : public PasswordStoreConsumer {
+// Furthermore, if a site has migrated to HTTPS and HSTS is enabled, the
+// corresponding HTTP site statistics are cleared as well, since they are
+// obsolete.
+class HttpPasswordStoreMigrator : public PasswordStoreConsumer {
  public:
-  // API to be implemented by an embedder of HttpPasswordMigrator.
+  // API to be implemented by an embedder of HttpPasswordStoreMigrator.
   class Consumer {
    public:
     virtual ~Consumer() = default;
@@ -42,10 +44,10 @@ class HttpPasswordMigrator : public PasswordStoreConsumer {
   };
 
   // |https_origin| should specify a valid HTTPS URL.
-  HttpPasswordMigrator(const GURL& https_origin,
-                       const PasswordManagerClient* client,
-                       Consumer* consumer);
-  ~HttpPasswordMigrator() override;
+  HttpPasswordStoreMigrator(const GURL& https_origin,
+                            const PasswordManagerClient* client,
+                            Consumer* consumer);
+  ~HttpPasswordStoreMigrator() override;
 
   // PasswordStoreConsumer:
   void OnGetPasswordStoreResults(
@@ -73,11 +75,12 @@ class HttpPasswordMigrator : public PasswordStoreConsumer {
   bool got_password_store_results_ = false;
   MigrationMode mode_;
   std::vector<std::unique_ptr<autofill::PasswordForm>> results_;
+  GURL http_origin_domain_;
   base::ThreadChecker thread_checker_;
 
-  DISALLOW_COPY_AND_ASSIGN(HttpPasswordMigrator);
+  DISALLOW_COPY_AND_ASSIGN(HttpPasswordStoreMigrator);
 };
 
 }  // namespace password_manager
 
-#endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_HTTP_PASSWORD_MIGRATOR_H_
+#endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_HTTP_PASSWORD_STORE_MIGRATOR_H_

@@ -477,7 +477,7 @@ TEST_F(FormFetcherImplTest, TryToMigrateHTTPPasswordsOnHTTPSSites) {
   EXPECT_CALL(*mock_store_, AddLogin(https_form));
   EXPECT_CALL(consumer_,
               ProcessMatches(UnorderedElementsAre(Pointee(https_form)), 0u));
-  static_cast<HttpPasswordMigrator*>(migrator_ptr.get())
+  static_cast<HttpPasswordStoreMigrator*>(migrator_ptr.get())
       ->OnGetPasswordStoreResults(MakeResults({http_form}));
   EXPECT_THAT(form_fetcher_->GetFederatedMatches(), IsEmpty());
 
@@ -548,7 +548,7 @@ TEST_F(FormFetcherImplTest, StateIsWaitingDuringMigration) {
 
   // Now perform the actual migration.
   EXPECT_CALL(*mock_store_, AddLogin(https_form));
-  static_cast<HttpPasswordMigrator*>(migrator_ptr.get())
+  static_cast<HttpPasswordStoreMigrator*>(migrator_ptr.get())
       ->OnGetPasswordStoreResults(MakeResults({http_form}));
   EXPECT_EQ(FormFetcher::State::NOT_WAITING, form_fetcher_->GetState());
 }

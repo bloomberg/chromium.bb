@@ -12,7 +12,7 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "components/password_manager/core/browser/http_password_migrator.h"
+#include "components/password_manager/core/browser/http_password_store_migrator.h"
 #include "components/password_manager/core/browser/password_store.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "url/gurl.h"
@@ -55,7 +55,7 @@ class CredentialManagerPendingRequestTaskDelegate {
 // Retrieves credentials from the PasswordStore.
 class CredentialManagerPendingRequestTask
     : public PasswordStoreConsumer,
-      public HttpPasswordMigrator::Consumer {
+      public HttpPasswordStoreMigrator::Consumer {
  public:
   CredentialManagerPendingRequestTask(
       CredentialManagerPendingRequestTaskDelegate* delegate,
@@ -73,7 +73,7 @@ class CredentialManagerPendingRequestTask
       std::vector<std::unique_ptr<autofill::PasswordForm>> results) override;
 
  private:
-  // HttpPasswordMigrator::Consumer:
+  // HttpPasswordStoreMigrator::Consumer:
   void ProcessMigratedForms(
       std::vector<std::unique_ptr<autofill::PasswordForm>> forms) override;
 
@@ -87,7 +87,7 @@ class CredentialManagerPendingRequestTask
   const bool include_passwords_;
   std::set<std::string> federations_;
 
-  std::unique_ptr<HttpPasswordMigrator> http_migrator_;
+  std::unique_ptr<HttpPasswordStoreMigrator> http_migrator_;
 
   DISALLOW_COPY_AND_ASSIGN(CredentialManagerPendingRequestTask);
 };

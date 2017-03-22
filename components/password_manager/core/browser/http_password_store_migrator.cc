@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/password_manager/core/browser/http_password_migrator.h"
+#include "components/password_manager/core/browser/http_password_store_migrator.h"
 
 #include "base/memory/weak_ptr.h"
 #include "components/password_manager/core/browser/password_manager_client.h"
@@ -21,16 +21,17 @@ void OnHSTSQueryResultHelper(
     const base::WeakPtr<PasswordStoreConsumer>& migrator,
     bool is_hsts) {
   if (migrator) {
-    static_cast<HttpPasswordMigrator*>(migrator.get())
+    static_cast<HttpPasswordStoreMigrator*>(migrator.get())
         ->OnHSTSQueryResult(is_hsts);
   }
 }
 
 }  // namespace
 
-HttpPasswordMigrator::HttpPasswordMigrator(const GURL& https_origin,
-                                           const PasswordManagerClient* client,
-                                           Consumer* consumer)
+HttpPasswordStoreMigrator::HttpPasswordStoreMigrator(
+    const GURL& https_origin,
+    const PasswordManagerClient* client,
+    Consumer* consumer)
     : client_(client), consumer_(consumer) {
   DCHECK(client_);
   DCHECK(https_origin.is_valid());
@@ -41,14 +42,15 @@ HttpPasswordMigrator::HttpPasswordMigrator(const GURL& https_origin,
   GURL http_origin = https_origin.ReplaceComponents(rep);
   PasswordStore::FormDigest form(autofill::PasswordForm::SCHEME_HTML,
                                  http_origin.GetOrigin().spec(), http_origin);
+  http_origin_domain_ = http_origin.GetOrigin();
   client_->GetPasswordStore()->GetLogins(form, this);
   client_->PostHSTSQueryForHost(
       https_origin, base::Bind(&OnHSTSQueryResultHelper, GetWeakPtr()));
 }
 
-HttpPasswordMigrator::~HttpPasswordMigrator() = default;
+HttpPasswordStoreMigrator::~HttpPasswordStoreMigrator() = default;
 
-void HttpPasswordMigrator::OnGetPasswordStoreResults(
+void HttpPasswordStoreMigrator::OnGetPasswordStoreResults(
     std::vector<std::unique_ptr<autofill::PasswordForm>> results) {
   DCHECK(thread_checker_.CalledOnValidThread());
   results_ = std::move(results);
@@ -58,16 +60,19 @@ void HttpPasswordMigrator::OnGetPasswordStoreResults(
     ProcessPasswordStoreResults();
 }
 
-void HttpPasswordMigrator::OnHSTSQueryResult(bool is_hsts) {
+void HttpPasswordStoreMigrator::OnHSTSQueryResult(bool is_hsts) {
   DCHECK(thread_checker_.CalledOnValidThread());
   mode_ = is_hsts ? MigrationMode::MOVE : MigrationMode::COPY;
   got_hsts_query_result_ = true;
+
+  if (is_hsts)
+    client_->GetPasswordStore()->RemoveSiteStats(http_origin_domain_);
 
   if (got_password_store_results_)
     ProcessPasswordStoreResults();
 }
 
-void HttpPasswordMigrator::ProcessPasswordStoreResults() {
+void HttpPasswordStoreMigrator::ProcessPasswordStoreResults() {
   // Android and PSL matches are ignored.
   results_.erase(
       std::remove_if(results_.begin(), results_.end(),
