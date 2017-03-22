@@ -86,16 +86,16 @@ html {
 }
 
 .round-button {
-  background-color: #eee;
+  background-color: #fbfbfb;
   background-position: center;
   background-repeat: no-repeat;
-  background-size: contain;
-  border-radius: 10%;
-  height: 96px;
+  background-size: 70px;
+  border-radius: 6px;
+  height: 112px;
   margin: auto auto;
   opacity: 0.8;
-  transition: opacity 150ms ease-in-out;
-  width: 96px;
+  transition: opacity 50ms ease-in-out;
+  width: 112px;
 }
 
 .button-caption {
@@ -105,7 +105,7 @@ html {
   opacity: 0;
   overflow: hidden;
   text-align: center;
-  transition: opacity 150ms ease-in-out;
+  transition: opacity 50ms ease-in-out;
   white-space: nowrap;
 }
 
@@ -129,7 +129,7 @@ html {
 }
 
 .disabled-button {
-  background-color: #aaa;
+  background-color: #bbb;
 }
 
 #back-button,
@@ -149,13 +149,21 @@ html {
 }
 
 #reload-ui-button {
+  --rotX: -0.2;
+  --rotY: 0;
+  --rotZ: 0;
+  --scale: 1;
+  --tranX: 0;
+  --tranY: -0.7;
+  --tranZ: -0.4;
+  background-color: rgba(255,255,255,0.25);
   color: white;
   font-size: 24px;
   padding: 12px;
 }
 
 #reload-ui-button:hover {
-  background-color: pink;
+  background-color: turquoise;
 }
 
 #content-interceptor {
@@ -204,25 +212,26 @@ html {
 }
 
 #url-indicator-container {
+  --scale: 1.2;
   --tranX: 0;
-  --tranY: -0.65;
-  --tranZ: -1.2;
+  --tranY: -0.75;
+  --tranZ: -1.8;
 }
 
 #url-indicator-border {
-  --fadeTimeMs: 500;
-  --fadeYOffset: -0.1;
+  --fadeTimeMs: 200;
+  --fadeYOffset: -0.05;
   --opacity: 0.9;
   --statusBarColor: rgb(66, 133, 244);
   background-color: #ececec;
-  border-radius: 200px;
+  border-radius: 6px;
   padding: 6px;
 }
 
 #url-indicator {
   align-items: center;
   background-color: #ececec;
-  border-radius: 200px;
+  border-radius: 6px;
   box-sizing: border-box;
   display: flex;
   height: 104px;
@@ -275,14 +284,10 @@ html {
 }
 
 #omnibox-ui-element {
-  --tranX: 0;
-  --tranY: -0.1;
-  --tranZ: -1.0;
   background-color: transparent;
   box-sizing: border-box;
-  font-family: arial;
   font-size: 16px;
-  width: 400px;
+  width: 368px;
 }
 
 #suggestions {
@@ -310,19 +315,23 @@ html {
 
 #omnibox-url-element {
   background-color: white;
-  border: 1px solid grey;
+  border-radius: 6px;
   box-sizing: border-box;
   display: flex;
   flex-direction: row-reverse; /* Right-justify for convienence. */
+  height: 64px;
   margin-top: 2px;
-  padding: 5px;
+  padding: 8px;
+  transition: background-color 50ms ease-in-out;
 }
 
 #omnibox-input-field {
+  background-color: transparent;
   border: none;
-  font-size: 16px;
+  font-size: 27px;
   outline: none; /* Do not show an outline when focused. */
   overflow: hidden;
+  text-align: center;
   white-space: nowrap;
   width: 100%;
 }

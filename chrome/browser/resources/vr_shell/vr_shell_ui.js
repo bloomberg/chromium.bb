@@ -16,9 +16,9 @@ var vrShellUi = (function() {
   // This value should match the one in VrShellImpl.java
   /** @const */ var UI_DPR = 1.2;
 
-  function getStyleFloat(style, property) {
+  function getStyleFloat(style, property, defaultValue) {
     let value = parseFloat(style.getPropertyValue(property));
-    return isNaN(value) ? 0 : value;
+    return isNaN(value) ? defaultValue : value;
   }
 
   function getStyleString(style, property) {
@@ -28,16 +28,17 @@ var vrShellUi = (function() {
 
   class ContentQuad {
     constructor() {
-      /** @const */ this.SCREEN_HEIGHT = 1.6;
-      /** @const */ this.SCREEN_RATIO = 16 / 9;
+      /** @const */ this.SCREEN_HEIGHT = 1.375;
+      /** @const */ this.SCREEN_RATIO = 9.6 / 6.4;
+      /** @const */ this.BROWSING_SCREEN_ELEVATION = -0.15;
       /** @const */ this.BROWSING_SCREEN_DISTANCE = 2.0;
       /** @const */ this.FULLSCREEN_DISTANCE = 3.0;
       /** @const */ this.CSS_WIDTH_PIXELS = 960.0;
       /** @const */ this.CSS_HEIGHT_PIXELS = 640.0;
       /** @const */ this.DPR = 1.2;
       /** @const */ this.MENU_MODE_SCREEN_DISTANCE = 2.0;
-      /** @const */ this.MENU_MODE_SCREEN_HEIGHT = 0.8;
-      /** @const */ this.MENU_MODE_SCREEN_ELEVATION = 0.2;
+      /** @const */ this.MENU_MODE_SCREEN_HEIGHT = 0.48;
+      /** @const */ this.MENU_MODE_SCREEN_ELEVATION = -0.125;
       /** @const */ this.BACKGROUND_DISTANCE_MULTIPLIER = 1.414;
       /** @const */ this.DOM_INTERCEPTOR_SELECTOR = '#content-interceptor';
       /** @const */ this.DOM_INTERCEPTOR_ELEVATION = 0.01;
@@ -50,7 +51,8 @@ var vrShellUi = (function() {
       element.setVisible(false);
       element.setSize(
           this.SCREEN_HEIGHT * this.SCREEN_RATIO, this.SCREEN_HEIGHT);
-      element.setTranslation(0, 0, -this.BROWSING_SCREEN_DISTANCE);
+      element.setTranslation(
+          0, this.BROWSING_SCREEN_ELEVATION, -this.BROWSING_SCREEN_DISTANCE);
       this.elementId = ui.addElement(element);
 
       // Place an invisible (fill none) but hittable plane behind the content
@@ -113,7 +115,7 @@ var vrShellUi = (function() {
 
     updateState() {
       // Defaults content quad parameters.
-      let y = 0;
+      let y = this.BROWSING_SCREEN_ELEVATION;
       let distance = this.BROWSING_SCREEN_DISTANCE;
       let height = this.SCREEN_HEIGHT;
 
@@ -167,13 +169,30 @@ var vrShellUi = (function() {
       this.sizeY = pixelHeight / 1000;
       element.setSize(this.sizeX, this.sizeY);
 
-      // Pull additional custom properties from CSS.
+      // Parse element CSS properties.
       let style = window.getComputedStyle(domElement);
-      this.translationX = getStyleFloat(style, '--tranX');
-      this.translationY = getStyleFloat(style, '--tranY');
-      this.translationZ = getStyleFloat(style, '--tranZ');
-      element.setTranslation(
-          this.translationX, this.translationY, this.translationZ);
+
+      this.translationX = getStyleFloat(style, '--tranX', 0);
+      this.translationY = getStyleFloat(style, '--tranY', 0);
+      this.translationZ = getStyleFloat(style, '--tranZ', 0);
+      if (this.translationX != 0 || this.translationY != 0 ||
+          this.translationZ != 0) {
+        element.setTranslation(
+            this.translationX, this.translationY, this.translationZ);
+      }
+
+      this.scale = getStyleFloat(style, '--scale', 1);
+      if (this.scale != 1) {
+        element.setScale(this.scale, this.scale, this.scale);
+      }
+
+      this.rotationX = getStyleFloat(style, '--rotX', 0);
+      this.rotationY = getStyleFloat(style, '--rotY', 0);
+      this.rotationZ = getStyleFloat(style, '--rotZ', 0);
+      if (this.rotationX != 0 || this.rotationY != 0 || this.rotationZ != 0) {
+        element.setRotation(
+            this.rotationX, this.rotationY, this.rotationZ, 2 * Math.PI);
+      }
 
       this.id = ui.addElement(element);
       this.domElement = domElement;
@@ -384,9 +403,9 @@ var vrShellUi = (function() {
         ],
       ];
 
-      /** @const */ var BUTTON_Y = -0.27;
-      /** @const */ var BUTTON_Z = -1;
-      /** @const */ var BUTTON_SPACING = 0.11;
+      /** @const */ var BUTTON_Y = -0.53;
+      /** @const */ var BUTTON_Z = -2;
+      /** @const */ var BUTTON_SPACING = 0.14;
 
       let controls = new api.UiElement(0, 0, 0, 0);
       controls.setVisible(false);
@@ -441,9 +460,6 @@ var vrShellUi = (function() {
 
       let update = new api.UiElementUpdate();
       update.setVisible(false);
-      update.setSize(0.25, 0.1);
-      update.setTranslation(0, -1.0, -1.0);
-      update.setRotation(1, 0, 0, -0.8);
       ui.updateElement(this.uiElement.id, update);
     }
 
@@ -566,9 +582,9 @@ var vrShellUi = (function() {
       let style = window.getComputedStyle(border);
       this.statusBarColor = getStyleString(style, '--statusBarColor');
       this.backgroundColor = style.backgroundColor;
-      this.fadeTimeMs = getStyleFloat(style, '--fadeTimeMs');
-      this.fadeYOffset = getStyleFloat(style, '--fadeYOffset');
-      this.opacity = getStyleFloat(style, '--opacity');
+      this.fadeTimeMs = getStyleFloat(style, '--fadeTimeMs', 0);
+      this.fadeYOffset = getStyleFloat(style, '--fadeYOffset', 0);
+      this.opacity = getStyleFloat(style, '--opacity', 1);
     }
 
     getSecurityIconElementId(level) {
@@ -711,7 +727,7 @@ var vrShellUi = (function() {
     constructor() {
       /** @const */ this.SCENE_GROUND_SIZE = 25.0;
       /** @const */ this.SCENE_HEIGHT = 4.0;
-      /** @const */ this.GRIDLINE_COUNT = 10;
+      /** @const */ this.GRIDLINE_COUNT = 40;
       /** @const */ this.HORIZON_COLOR = {r: 0.57, g: 0.57, b: 0.57, a: 1.0};
       /** @const */ this.CENTER_COLOR = {r: 0.48, g: 0.48, b: 0.48, a: 1.0};
       /** @const */ this.FULLSCREEN_BACKGROUND_COLOR =
@@ -734,7 +750,7 @@ var vrShellUi = (function() {
       ceilingPlane.setSize(this.SCENE_GROUND_SIZE, this.SCENE_GROUND_SIZE);
       ceilingPlane.setFill(
           new api.OpaqueGradient(this.HORIZON_COLOR, this.CENTER_COLOR));
-      ceilingPlane.setTranslation(0, this.SCENE_HEIGHT / 2, 0);
+      ceilingPlane.setTranslation(0, this.SCENE_HEIGHT * 2, 0);
       ceilingPlane.setRotation(1.0, 0.0, 0.0, Math.PI / 2);
       ceilingPlane.setDrawPhase(0);
       this.ceilingPlaneId = ui.addElement(ceilingPlane);
@@ -808,6 +824,10 @@ var vrShellUi = (function() {
 
   class Omnibox {
     constructor() {
+      /** @const */ this.ELEVATION = -0.7;
+      /** @const */ this.DISTANCE = -1.99;
+      /** @const */ this.SCALE = -this.DISTANCE;
+
       this.enabled = false;
 
       let root = document.querySelector('#omnibox-ui-element');
@@ -817,6 +837,8 @@ var vrShellUi = (function() {
       // Initially invisible.
       let update = new api.UiElementUpdate();
       update.setVisible(false);
+      update.setTranslation(0, this.ELEVATION, this.DISTANCE);
+      update.setScale(this.SCALE, this.SCALE, this.SCALE);
       ui.updateElement(this.domUiElement.id, update);
 
       // Field-clearing button.
@@ -923,8 +945,8 @@ var vrShellUi = (function() {
       /** @const */ var DOM_NEW_TAB_BUTTON_SELECTOR = '#new-tab';
       /** @const */ var DOM_NEW_INCOGNITO_TAB_BUTTON_SELECTOR =
           '#new-incognito-tab';
-      /** @const */ var TAB_CONTAINER_Y_OFFSET = 0.4;
-      /** @const */ var TAB_CONTAINER_Z_OFFSET = -1;
+      /** @const */ var TAB_CONTAINER_Y_OFFSET = 0.3;
+      /** @const */ var TAB_CONTAINER_Z_OFFSET = -2;
 
       this.domTabs = {};
       this.contentQuadId = contentQuadId;
@@ -1050,7 +1072,7 @@ var vrShellUi = (function() {
     constructor(contentQuadId) {
       /** @const */ this.SCALE = 1.4;
       /** @const */ this.ANGLE_UP = Math.PI / 8;
-      /** @const */ this.Y_OFFSET = -0.9;
+      /** @const */ this.Y_OFFSET = -1.0;
       /** @const */ this.Z_OFFSET = -1.8;
 
       this.element = new DomUiElement('#vkb');
