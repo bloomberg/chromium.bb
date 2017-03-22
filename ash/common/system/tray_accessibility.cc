@@ -434,7 +434,7 @@ void TrayAccessibility::OnAccessibilityModeChanged(
   if ((notify == A11Y_NOTIFICATION_SHOW) && being_enabled != A11Y_NONE) {
     // Shows popup if |notify| is true and the spoken feedback is being enabled.
     request_popup_view_state_ = being_enabled;
-    PopupDetailedView(kTrayPopupAutoCloseDelayForTextInSeconds, false);
+    ShowDetailedView(kTrayPopupAutoCloseDelayForTextInSeconds, false);
   } else {
     if (detailed_popup_)
       detailed_popup_->GetWidget()->Close();

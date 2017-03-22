@@ -74,8 +74,6 @@
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_POWER_SMALL_CHARGING_UNRELIABLE_DARK" file="cros/status/status_power_small_all_dark_fluctuating.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_POWER_SMALL_DARK" file="cros/status/status_power_small_all_dark.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_SETTINGS" file="cros/status/status_settings.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_WIFI_DISABLED" file="cros/network/status_wifi_disabled.png" />
-      <structure type="chrome_scaled_image" name="IDR_AURA_UBER_TRAY_WIFI_ENABLED" file="cros/network/status_wifi_enabled.png" />
 
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_BOTTOM" file="common/window_header_shade_bottom_inactive.png" />
       <structure type="chrome_scaled_image" name="IDR_AURA_WINDOW_HEADER_SHADE_INACTIVE_LEFT" file="common/window_header_shade_left_inactive.png" />

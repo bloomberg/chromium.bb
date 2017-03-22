@@ -22,6 +22,7 @@ aggregate_vector_icons("ash_vector_icons") {
     "network_badge_add_other.icon",
     "network_badge_captive_portal.1x.icon",
     "network_badge_captive_portal.icon",
+    "network_badge_off.icon",
     "network_badge_roaming.1x.icon",
     "network_badge_roaming.icon",
     "network_badge_secure.1x.icon",

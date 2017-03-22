@@ -46,6 +46,9 @@ ASH_EXPORT gfx::ImageSkia GetImageForDisconnectedCellNetwork();
 ASH_EXPORT gfx::ImageSkia GetImageForNewWifiNetwork(SkColor icon_color,
                                                     SkColor badge_color);
 
+// Gets the icon used to indicate whether system Wi-Fi is enabled or disabled.
+ASH_EXPORT gfx::ImageSkia GetImageForWifiChipState(bool enabled);
+
 // Returns the label for |network| based on |icon_type|. |network| cannot be
 // nullptr.
 ASH_EXPORT base::string16 GetLabelForNetwork(

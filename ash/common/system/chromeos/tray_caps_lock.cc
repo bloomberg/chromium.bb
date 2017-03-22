@@ -172,7 +172,7 @@ void TrayCapsLock::OnCapsLockChanged(bool enabled) {
       if (!message_shown_) {
         WmShell::Get()->RecordUserMetricsAction(
             UMA_STATUS_AREA_CAPS_LOCK_POPUP);
-        PopupDetailedView(kTrayPopupAutoCloseDelayForTextInSeconds, false);
+        ShowDetailedView(kTrayPopupAutoCloseDelayForTextInSeconds, false);
         message_shown_ = true;
       }
     } else if (detailed_) {

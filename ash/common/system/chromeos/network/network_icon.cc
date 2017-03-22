@@ -61,6 +61,7 @@ const int kMenuIconBadgeOffset = 2;
 struct Badges {
   gfx::ImageSkia top_left;
   gfx::ImageSkia top_right;
+  gfx::ImageSkia center;
   gfx::ImageSkia bottom_left;
   gfx::ImageSkia bottom_right;
 };
@@ -223,6 +224,10 @@ class NetworkIconImageSource : public gfx::CanvasImageSource {
     if (!badges_.top_right.isNull()) {
       canvas->DrawImageInt(badges_.top_right, width - badges_.top_right.width(),
                            top_badge_y);
+    }
+    if (!badges_.center.isNull()) {
+      canvas->DrawImageInt(badges_.center, (width - badges_.center.width()) / 2,
+                           (height - badges_.center.height()) / 2);
     }
     if (!badges_.bottom_left.isNull()) {
       canvas->DrawImageInt(badges_.bottom_left, 0,
@@ -777,6 +782,17 @@ gfx::ImageSkia GetImageForNewWifiNetwork(SkColor icon_color,
   Badges badges;
   badges.bottom_right =
       gfx::CreateVectorIcon(kNetworkBadgeAddOtherIcon, badge_color);
+  return NetworkIconImageSource::CreateImage(icon, badges);
+}
+
+gfx::ImageSkia GetImageForWifiChipState(bool enabled) {
+  SignalStrengthImageSource* source =
+      new SignalStrengthImageSource(ImageTypeForNetworkType(shill::kTypeWifi),
+                                    ICON_TYPE_LIST, kNumNetworkImages - 1);
+  gfx::ImageSkia icon = gfx::ImageSkia(source, source->size());
+  Badges badges;
+  if (!enabled)
+    badges.center = gfx::CreateVectorIcon(kNetworkBadgeOffIcon, kMenuIconColor);
   return NetworkIconImageSource::CreateImage(icon, badges);
 }
 

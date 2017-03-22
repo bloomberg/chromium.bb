@@ -117,7 +117,7 @@ class ASH_EXPORT SystemTrayItem {
   // something, e.g. volume, network availability etc. changes). If
   // |for_seconds| is non-zero, then the popup is closed after the specified
   // time.
-  void PopupDetailedView(int for_seconds, bool activate);
+  void ShowDetailedView(int for_seconds, bool activate);
 
   // Continue showing the currently-shown detailed view, if any, for
   // |for_seconds| seconds.  The caller is responsible for checking that the

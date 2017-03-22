@@ -149,7 +149,7 @@ class TrayAccessibilityTest
   ash::LoginStatus GetLoginStatus() { return tray()->login_; }
 
   bool CreateDetailedMenu() {
-    tray()->PopupDetailedView(0, false);
+    tray()->ShowDetailedView(0, false);
     return tray()->detailed_menu_ != NULL;
   }
 

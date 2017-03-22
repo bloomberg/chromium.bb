@@ -108,7 +108,7 @@ void TrayAudio::OnOutputNodeVolumeChanged(uint64_t /* node_id */,
     return;
   }
   pop_up_volume_view_ = true;
-  PopupDetailedView(kTrayPopupAutoCloseDelayInSeconds, false);
+  ShowDetailedView(kTrayPopupAutoCloseDelayInSeconds, false);
 }
 
 void TrayAudio::OnOutputMuteChanged(bool /* mute_on */, bool system_adjust) {
@@ -120,7 +120,7 @@ void TrayAudio::OnOutputMuteChanged(bool /* mute_on */, bool system_adjust) {
     SetDetailedViewCloseDelay(kTrayPopupAutoCloseDelayInSeconds);
   } else if (!system_adjust) {
     pop_up_volume_view_ = true;
-    PopupDetailedView(kTrayPopupAutoCloseDelayInSeconds, false);
+    ShowDetailedView(kTrayPopupAutoCloseDelayInSeconds, false);
   }
 }
 

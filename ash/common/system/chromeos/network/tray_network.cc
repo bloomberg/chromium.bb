@@ -19,7 +19,6 @@
 #include "ash/common/system/tray/tray_popup_item_style.h"
 #include "ash/common/system/tray/tray_utils.h"
 #include "ash/common/wm_shell.h"
-#include "ash/resources/grit/ash_resources.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
@@ -28,7 +27,6 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/link_listener.h"
@@ -177,61 +175,48 @@ class NetworkDefaultView : public TrayItemMore,
 class NetworkWifiDetailedView : public NetworkDetailedView {
  public:
   explicit NetworkWifiDetailedView(SystemTrayItem* owner)
-      : NetworkDetailedView(owner) {
-    SetLayoutManager(new views::BoxLayout(views::BoxLayout::kHorizontal,
-                                          kTrayPopupPaddingHorizontal, 10,
-                                          kTrayPopupPaddingBetweenItems));
+      : NetworkDetailedView(owner) {}
+
+  ~NetworkWifiDetailedView() override {}
+
+  // NetworkDetailedView:
+  void Init() override {
+    constexpr int kVerticalPadding = 10;
+    auto* box_layout = new views::BoxLayout(
+        views::BoxLayout::kHorizontal, kTrayPopupPaddingHorizontal,
+        kVerticalPadding, kTrayPopupPaddingBetweenItems);
+    SetLayoutManager(box_layout);
+
     image_view_ = new views::ImageView;
     AddChildView(image_view_);
 
     label_view_ = new views::Label();
-    label_view_->SetMultiLine(true);
     label_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     AddChildView(label_view_);
+    box_layout->SetFlexForView(label_view_, 1);
 
     Update();
   }
 
-  ~NetworkWifiDetailedView() override {}
-
-  // Overridden from NetworkDetailedView:
-
-  void Init() override {}
-
   NetworkDetailedView::DetailedViewType GetViewType() const override {
     return NetworkDetailedView::WIFI_VIEW;
-  }
-
-  void Layout() override {
-    // Center both views vertically.
-    views::View::Layout();
-    image_view_->SetY((height() - image_view_->GetPreferredSize().height()) /
-                      2);
-    label_view_->SetY((height() - label_view_->GetPreferredSize().height()) /
-                      2);
   }
 
   void Update() override {
     bool wifi_enabled =
         NetworkHandler::Get()->network_state_handler()->IsTechnologyEnabled(
             NetworkTypePattern::WiFi());
-    const int image_id = wifi_enabled ? IDR_AURA_UBER_TRAY_WIFI_ENABLED
-                                      : IDR_AURA_UBER_TRAY_WIFI_DISABLED;
-    ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
-    image_view_->SetImage(bundle.GetImageNamed(image_id).ToImageSkia());
+    image_view_->SetImage(network_icon::GetImageForWifiChipState(wifi_enabled));
 
     const int string_id = wifi_enabled
                               ? IDS_ASH_STATUS_TRAY_NETWORK_WIFI_ENABLED
                               : IDS_ASH_STATUS_TRAY_NETWORK_WIFI_DISABLED;
-    label_view_->SetText(bundle.GetLocalizedString(string_id));
-    label_view_->SizeToFit(
-        kTrayPopupMinWidth - kTrayPopupPaddingHorizontal * 2 -
-        kTrayPopupPaddingBetweenItems - kTrayPopupDetailsIconWidth);
+    label_view_->SetText(l10n_util::GetStringUTF16(string_id));
   }
 
  private:
-  views::ImageView* image_view_;
-  views::Label* label_view_;
+  views::ImageView* image_view_ = nullptr;
+  views::Label* label_view_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkWifiDetailedView);
 };
@@ -286,8 +271,8 @@ views::View* TrayNetwork::CreateDetailedView(LoginStatus status) {
   } else {
     detailed_ = new tray::NetworkStateListDetailedView(
         this, tray::NetworkStateListDetailedView::LIST_TYPE_NETWORK, status);
-    detailed_->Init();
   }
+  detailed_->Init();
   return detailed_;
 }
 
@@ -308,7 +293,7 @@ void TrayNetwork::RequestToggleWifi() {
   if (!detailed_ ||
       detailed_->GetViewType() == tray::NetworkDetailedView::WIFI_VIEW) {
     request_wifi_view_ = true;
-    PopupDetailedView(kTrayPopupAutoCloseDelayForTextInSeconds, false);
+    ShowDetailedView(kTrayPopupAutoCloseDelayForTextInSeconds, false);
   }
   NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
   bool enabled = handler->IsTechnologyEnabled(NetworkTypePattern::WiFi());
