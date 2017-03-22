@@ -99,13 +99,6 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // hasn't been created yet.
   static ResourceDispatcherHostImpl* Get();
 
-  // The following static methods should all be called from the UI thread.
-
-  // Resumes requests for a given render frame routing id. This will only resume
-  // requests for a single frame.
-  static void ResumeBlockedRequestsForRouteFromUI(
-      const GlobalFrameRoutingId& global_routing_id);
-
   // ResourceDispatcherHost implementation:
   void SetDelegate(ResourceDispatcherHostDelegate* delegate) override;
   void SetAllowCrossOriginAuthPrompt(bool value) override;
