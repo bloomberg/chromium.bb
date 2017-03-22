@@ -282,7 +282,6 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
 
   double currentAge() const;
   double freshnessLifetime() const;
-  double stalenessLifetime() const;
 
   bool isAlive() const { return m_isAlive; }
 

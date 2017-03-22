@@ -699,16 +699,6 @@ void ResourceFetcher::initializeRevalidation(
   if (!eTag.isEmpty())
     revalidatingRequest.setHTTPHeaderField(HTTPNames::If_None_Match, eTag);
 
-  double stalenessLifetime = resource->stalenessLifetime();
-  if (std::isfinite(stalenessLifetime) && stalenessLifetime > 0) {
-    revalidatingRequest.setHTTPHeaderField(
-        HTTPNames::Resource_Freshness,
-        AtomicString(String::format(
-            "max-age=%.0lf,stale-while-revalidate=%.0lf,age=%.0lf",
-            resource->freshnessLifetime(), stalenessLifetime,
-            resource->currentAge())));
-  }
-
   resource->setRevalidatingRequest(revalidatingRequest);
 }
 

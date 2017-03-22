@@ -700,14 +700,11 @@ CacheControlHeader parseCacheControlDirectives(
   CacheControlHeader cacheControlHeader;
   cacheControlHeader.parsed = true;
   cacheControlHeader.maxAge = std::numeric_limits<double>::quiet_NaN();
-  cacheControlHeader.staleWhileRevalidate =
-      std::numeric_limits<double>::quiet_NaN();
 
   static const char noCacheDirective[] = "no-cache";
   static const char noStoreDirective[] = "no-store";
   static const char mustRevalidateDirective[] = "must-revalidate";
   static const char maxAgeDirective[] = "max-age";
-  static const char staleWhileRevalidateDirective[] = "stale-while-revalidate";
 
   if (!cacheControlValue.isEmpty()) {
     Vector<std::pair<String, String>> directives;
@@ -734,17 +731,6 @@ CacheControlHeader parseCacheControlDirectives(
         double maxAge = directives[i].second.toDouble(&ok);
         if (ok)
           cacheControlHeader.maxAge = maxAge;
-      } else if (equalIgnoringCase(directives[i].first,
-                                   staleWhileRevalidateDirective)) {
-        if (!std::isnan(cacheControlHeader.staleWhileRevalidate)) {
-          // First stale-while-revalidate directive wins if there are multiple
-          // ones.
-          continue;
-        }
-        bool ok;
-        double staleWhileRevalidate = directives[i].second.toDouble(&ok);
-        if (ok)
-          cacheControlHeader.staleWhileRevalidate = staleWhileRevalidate;
       }
     }
   }

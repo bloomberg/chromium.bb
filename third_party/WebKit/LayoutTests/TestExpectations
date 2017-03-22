@@ -815,8 +815,6 @@ crbug.com/652536 fast/events/mouse-cursor-change-after-image-load.html [ Failure
 crbug.com/520188 [ Win ] http/tests/local/fileapi/file-last-modified-after-delete.html [ Failure Pass ]
 crbug.com/520188 [ Win ] virtual/mojo-loading/http/tests/local/fileapi/file-last-modified-after-delete.html [ Failure Pass ]
 crbug.com/520611 [ Debug ] fast/filesystem/workers/file-writer-events-shared-worker.html [ Failure Pass ]
-crbug.com/520613 http/tests/cache/freshness-header.html [ Failure Pass ]
-crbug.com/520613 virtual/mojo-loading/http/tests/cache/freshness-header.html [ Failure Pass ]
 crbug.com/520194 http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-overridesexpires.html [ Failure Pass ]
 crbug.com/520194 virtual/mojo-loading/http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-overridesexpires.html [ Failure Pass ]
 

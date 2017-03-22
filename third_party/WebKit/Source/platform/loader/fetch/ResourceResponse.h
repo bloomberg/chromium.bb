@@ -197,7 +197,6 @@ class PLATFORM_EXPORT ResourceResponse final {
   bool cacheControlContainsMustRevalidate() const;
   bool hasCacheValidatorFields() const;
   double cacheControlMaxAge() const;
-  double cacheControlStaleWhileRevalidate() const;
   double date() const;
   double age() const;
   double expires() const;

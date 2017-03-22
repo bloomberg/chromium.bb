@@ -524,10 +524,6 @@ double Resource::freshnessLifetime() const {
   return blink::freshnessLifetime(response(), m_responseTimestamp);
 }
 
-double Resource::stalenessLifetime() const {
-  return response().cacheControlStaleWhileRevalidate();
-}
-
 static bool canUseResponse(const ResourceResponse& response,
                            double responseTimestamp) {
   if (response.isNull())

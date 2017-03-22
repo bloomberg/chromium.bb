@@ -79,15 +79,13 @@ struct CacheControlHeader {
   bool containsNoStore : 1;
   bool containsMustRevalidate : 1;
   double maxAge;
-  double staleWhileRevalidate;
 
   CacheControlHeader()
       : parsed(false),
         containsNoCache(false),
         containsNoStore(false),
         containsMustRevalidate(false),
-        maxAge(0.0),
-        staleWhileRevalidate(0.0) {}
+        maxAge(0.0) {}
 };
 
 PLATFORM_EXPORT ContentDispositionType getContentDispositionType(const String&);
