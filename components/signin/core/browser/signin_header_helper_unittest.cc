@@ -117,11 +117,13 @@ TEST_F(SigninHeaderHelperTest, TestMirrorRequestGoogleCom) {
 
 // Tests that the Mirror request is returned with the GAIA Id on Drive origin,
 // even if account consistency is disabled.
+//
+// Account consistency if always enabled on Android and iOS, so this test is
+// only relevant on Desktop.
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
 TEST_F(SigninHeaderHelperTest, TestMirrorRequestDrive) {
   DCHECK(!base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableAccountConsistency));
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kDisableAccountConsistency);
   CheckMirrorHeaderRequest(
       GURL("https://docs.google.com/document"), "0123456789",
       "id=0123456789,mode=0,enable_account_consistency=false");
@@ -139,6 +141,7 @@ TEST_F(SigninHeaderHelperTest, TestMirrorRequestDrive) {
       GURL("https://drive.google.com/drive"), "0123456789",
       "id=0123456789:mode=0:enable_account_consistency=true");
 }
+#endif
 
 // Tests that the Mirror header request is returned normally when the redirect
 // URL is eligible.

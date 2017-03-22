@@ -10,20 +10,11 @@ namespace switches {
 // expiration of credentials during testing.
 const char kClearTokenService[] = "clear-token-service";
 
-// Disables consistent identity features.
-const char kDisableAccountConsistency[] = "disable-account-consistency";
-
-// Disables new profile management system, including new profile chooser UI.
-const char kDisableNewProfileManagement[] = "disable-new-profile-management";
-
 // Disables sending signin scoped device id to LSO with refresh token request.
 const char kDisableSigninScopedDeviceId[] = "disable-signin-scoped-device-id";
 
 // Enables consistent identity features.
 const char kEnableAccountConsistency[] = "enable-account-consistency";
-
-// Enables new profile management system, including lock mode.
-const char kEnableNewProfileManagement[] = "new-profile-management";
 
 // Enables sending EnableRefreshTokenAnnotationRequest.
 extern const char kEnableRefreshTokenAnnotationRequest[] =

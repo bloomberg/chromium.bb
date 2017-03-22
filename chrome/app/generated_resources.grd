@@ -12777,12 +12777,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
         Dark Theme
       </message>
 
-      <message name="IDS_FLAGS_NEW_PROFILE_MANAGEMENT_NAME" desc="Title for the flag for the new profile management." translateable="false">
-        New profile management system
-      </message>
-      <message name="IDS_FLAGS_NEW_PROFILE_MANAGEMENT_DESCRIPTION" desc="Description for the flag for the new profile management." translateable="false">
-        Enables the new profile management system, including profile lock and the new avatar menu UI.
-      </message>
       <message name="IDS_FLAGS_ACCOUNT_CONSISTENCY_NAME" desc="Title for the flag for account consistency between browser and cookie jar." translateable="false">
         Identity consistency between browser and cookie jar
       </message>
