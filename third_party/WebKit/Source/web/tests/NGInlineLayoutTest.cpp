@@ -34,7 +34,6 @@ class NGInlineLayoutTest : public SimTest {
 
 TEST_F(NGInlineLayoutTest, BlockWithSingleTextNode) {
   RuntimeEnabledFeatures::setLayoutNGEnabled(true);
-  RuntimeEnabledFeatures::setLayoutNGInlineEnabled(true);
 
   SimRequest mainResource("https://example.com/", "text/html");
   loadURL("https://example.com/");
@@ -60,7 +59,6 @@ TEST_F(NGInlineLayoutTest, BlockWithSingleTextNode) {
 
 TEST_F(NGInlineLayoutTest, BlockWithTextAndAtomicInline) {
   RuntimeEnabledFeatures::setLayoutNGEnabled(true);
-  RuntimeEnabledFeatures::setLayoutNGInlineEnabled(true);
 
   SimRequest mainResource("https://example.com/", "text/html");
   loadURL("https://example.com/");

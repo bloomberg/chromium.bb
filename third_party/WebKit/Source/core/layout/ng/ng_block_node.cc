@@ -199,8 +199,7 @@ DEFINE_TRACE(NGBlockNode) {
 bool NGBlockNode::CanUseNewLayout() {
   if (!layout_box_->isLayoutBlockFlow())
     return false;
-  return RuntimeEnabledFeatures::layoutNGInlineEnabled() ||
-         !HasInlineChildren();
+  return RuntimeEnabledFeatures::layoutNGEnabled() || !HasInlineChildren();
 }
 
 bool NGBlockNode::HasInlineChildren() {

@@ -490,9 +490,6 @@
       name: "LayoutNG",
     },
     {
-      name: "LayoutNGInline",
-    },
-    {
       name: "LinkServiceWorker",
       origin_trial_feature_name: "ForeignFetch",
       status: "experimental",
