@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_CRX_INSTALLER_H_
 #define CHROME_BROWSER_EXTENSIONS_CRX_INSTALLER_H_
 
-#include <memory>
 #include <string>
 #include <vector>
 
@@ -15,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/version.h"
+#include "chrome/browser/extensions/extension_install_checker.h"
 #include "chrome/browser/extensions/extension_install_prompt.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/webstore_installer.h"
@@ -36,7 +36,6 @@ class SequencedTaskRunner;
 
 namespace extensions {
 class CrxInstallError;
-class ExtensionInstallChecker;
 class ExtensionUpdaterTest;
 
 // This class installs a crx file into a profile.
@@ -201,9 +200,9 @@ class CrxInstaller : public SandboxedUnpackerClient {
 
   bool did_handle_successfully() const { return did_handle_successfully_; }
 
-  Profile* profile() { return profile_; }
+  Profile* profile() { return install_checker_.profile(); }
 
-  const Extension* extension() { return extension_.get(); }
+  const Extension* extension() { return install_checker_.extension().get(); }
 
   // The currently installed version of the extension, for updates. Will be
   // invalid if this isn't an update.
@@ -212,6 +211,7 @@ class CrxInstaller : public SandboxedUnpackerClient {
  private:
   friend class ::ExtensionServiceTest;
   friend class ExtensionUpdaterTest;
+  friend class ExtensionCrxInstallerTest;
 
   CrxInstaller(base::WeakPtr<ExtensionService> service_weak,
                std::unique_ptr<ExtensionInstallPrompt> client,
@@ -287,12 +287,6 @@ class CrxInstaller : public SandboxedUnpackerClient {
     else
       install_flags_ &= ~flag;
   }
-
-  // The Profile the extension is being installed in.
-  Profile* profile_;
-
-  // The extension being installed.
-  scoped_refptr<const Extension> extension_;
 
   // The file we're installing.
   base::FilePath source_file_;
@@ -444,7 +438,7 @@ class CrxInstaller : public SandboxedUnpackerClient {
   int install_flags_;
 
   // Performs requirements, policy and blacklist checks on the extension.
-  std::unique_ptr<ExtensionInstallChecker> install_checker_;
+  ExtensionInstallChecker install_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(CrxInstaller);
 };

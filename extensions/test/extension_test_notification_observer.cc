@@ -127,8 +127,7 @@ bool ExtensionTestNotificationObserver::WaitForExtensionCrash(
 bool ExtensionTestNotificationObserver::WaitForCrxInstallerDone() {
   int before = crx_installers_done_observed_;
   WaitForNotification(NOTIFICATION_CRX_INSTALLER_DONE);
-  return crx_installers_done_observed_ == before + 1 &&
-         !last_loaded_extension_id_.empty();
+  return crx_installers_done_observed_ == before + 1;
 }
 
 void ExtensionTestNotificationObserver::Watch(

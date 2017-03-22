@@ -22,8 +22,8 @@ namespace extensions {
 
 class RequirementsChecker;
 
-// Performs common checks for validating whether an extension may be installed.
-// This class should be Start()-ed at most once.
+// Performs common checks for an extension. Extensions that violate these checks
+// would be disabled or not even installed.
 class ExtensionInstallChecker {
  public:
   // Called when checks are complete. The returned value is a bitmask of
@@ -42,20 +42,25 @@ class ExtensionInstallChecker {
     CHECK_ALL = (1 << 3) - 1
   };
 
-  // |enabled_checks| is a bitmask of CheckTypes to run.
-  // If |fail_fast| is true, the callback to Start() will be invoked once any
-  // check fails. Otherwise it will be invoked when all checks have completed.
-  ExtensionInstallChecker(Profile* profile,
-                          scoped_refptr<const Extension> extension,
-                          int enabled_checks,
-                          bool fail_fast);
+  explicit ExtensionInstallChecker(Profile* profile);
   virtual ~ExtensionInstallChecker();
 
-  // Starts the set of checks. |callback| will only be called once.
+  // Start a set of checks. |enabled_checks| is a bitmask of CheckTypes to run.
+  // If |fail_fast| is true, the callback will be invoked once any check fails.
+  // Otherwise it will be invoked when all checks have completed. |callback|
+  // will only be called once.
   // This function must be called on the UI thread. The callback also occurs on
   // the UI thread. Checks may run asynchronously in parallel.
-  // This function should be invoked at most once.
-  void Start(const Callback& callback);
+  // If checks are currently running, the caller must wait for the callback to
+  // be invoked before starting another set of checks.
+  void Start(int enabled_checks, bool fail_fast, const Callback& callback);
+
+  Profile* profile() const { return profile_; }
+
+  const scoped_refptr<const Extension>& extension() { return extension_; }
+  void set_extension(const scoped_refptr<const Extension>& extension) {
+    extension_ = extension;
+  }
 
   // Returns true if any checks are currently running.
   bool is_running() const { return running_checks_ != 0; }
@@ -79,10 +84,14 @@ class ExtensionInstallChecker {
   void OnManagementPolicyCheckDone(bool allows_load, const std::string& error);
 
   virtual void CheckRequirements();
-  void OnRequirementsCheckDone(const std::vector<std::string>& errors);
+  void OnRequirementsCheckDone(int sequence_number,
+                               const std::vector<std::string>& errors);
 
   virtual void CheckBlacklistState();
-  void OnBlacklistStateCheckDone(BlacklistState state);
+  void OnBlacklistStateCheckDone(int sequence_number, BlacklistState state);
+
+  virtual void ResetResults();
+  int current_sequence_number() const { return current_sequence_number_; }
 
  private:
   void MaybeInvokeCallback();
@@ -105,11 +114,10 @@ class ExtensionInstallChecker {
   bool policy_allows_load_;
   std::string policy_error_;
 
-  // Bitmask of enabled checks.
-  int enabled_checks_;
+  // The sequence number of the currently running checks.
+  int current_sequence_number_;
 
   // Bitmask of currently running checks.
-  // TODO(michaelpg): Consolidate this with enabled_checks_.
   int running_checks_;
 
   // If true, the callback is invoked when the first check fails.
