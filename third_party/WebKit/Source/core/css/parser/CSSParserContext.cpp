@@ -32,28 +32,28 @@ CSSParserContext* CSSParserContext::createWithStyleSheetContents(
 
 // static
 CSSParserContext* CSSParserContext::create(const CSSParserContext* other,
-                                           const Document* m_document) {
+                                           const Document* useCounterDocument) {
   return new CSSParserContext(
       other->m_baseURL, other->m_charset, other->m_mode, other->m_matchMode,
       other->m_profile, other->m_referrer, other->m_isHTMLDocument,
       other->m_useLegacyBackgroundSizeShorthandBehavior,
-      other->m_shouldCheckContentSecurityPolicy, m_document);
+      other->m_shouldCheckContentSecurityPolicy, useCounterDocument);
 }
 
 // static
 CSSParserContext* CSSParserContext::create(CSSParserMode mode,
                                            SelectorProfile profile,
-                                           const Document* m_document) {
-  return new CSSParserContext(KURL(), emptyString, mode, mode, profile,
-                              Referrer(), false, false,
-                              DoNotCheckContentSecurityPolicy, m_document);
+                                           const Document* useCounterDocument) {
+  return new CSSParserContext(
+      KURL(), emptyString, mode, mode, profile, Referrer(), false, false,
+      DoNotCheckContentSecurityPolicy, useCounterDocument);
 }
 
 // static
 CSSParserContext* CSSParserContext::create(const Document& document,
-                                           const Document* m_document) {
+                                           const Document* useCounterDocument) {
   return CSSParserContext::create(document, KURL(), emptyString, DynamicProfile,
-                                  m_document);
+                                  useCounterDocument);
 }
 
 // static
@@ -61,7 +61,7 @@ CSSParserContext* CSSParserContext::create(const Document& document,
                                            const KURL& baseURLOverride,
                                            const String& charset,
                                            SelectorProfile profile,
-                                           const Document* m_document) {
+                                           const Document* useCounterDocument) {
   const KURL baseURL =
       baseURLOverride.isNull() ? document.baseURL() : baseURLOverride;
 
@@ -92,7 +92,7 @@ CSSParserContext* CSSParserContext::create(const Document& document,
   return new CSSParserContext(baseURL, charset, mode, matchMode, profile,
                               referrer, document.isHTMLDocument(),
                               useLegacyBackgroundSizeShorthandBehavior,
-                              policyDisposition, m_document);
+                              policyDisposition, useCounterDocument);
 }
 
 CSSParserContext::CSSParserContext(
@@ -105,7 +105,7 @@ CSSParserContext::CSSParserContext(
     bool isHTMLDocument,
     bool useLegacyBackgroundSizeShorthandBehavior,
     ContentSecurityPolicyDisposition policyDisposition,
-    const Document* m_document)
+    const Document* useCounterDocument)
     : m_baseURL(baseURL),
       m_charset(charset),
       m_mode(mode),
@@ -116,7 +116,7 @@ CSSParserContext::CSSParserContext(
       m_useLegacyBackgroundSizeShorthandBehavior(
           useLegacyBackgroundSizeShorthandBehavior),
       m_shouldCheckContentSecurityPolicy(policyDisposition),
-      m_document(m_document) {}
+      m_document(useCounterDocument) {}
 
 bool CSSParserContext::operator==(const CSSParserContext& other) const {
   return m_baseURL == other.m_baseURL && m_charset == other.m_charset &&
