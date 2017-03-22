@@ -18,13 +18,20 @@ InspectorTest.parseCSS = InspectorTest.parseSCSS;
 
 InspectorTest.loadASTMapping = function(header, callback)
 {
-    var completeSourceMapURL = Common.ParsedURL.completeURL(header.sourceURL, header.sourceMapURL);
-    SDK.TextSourceMap.load(completeSourceMapURL, header.sourceURL).then(onSourceMapLoaded);
+    var sourceMapManager = header.cssModel().sourceMapManager();
+    var sourceMap = sourceMapManager.sourceMapForClient(header);
+    if (sourceMap)  {
+        callback(sourceMap.editable() ? sourceMap : null);
+        return;
+    }
+    sourceMapManager.addEventListener(SDK.SourceMapManager.Events.SourceMapAttached, onAttached);
 
-    function onSourceMapLoaded(sourceMap)
-    {
-        InspectorTest.sassSourceMapFactory().editableSourceMap(header.cssModel().target(), sourceMap)
-            .then(map => callback(map));
+    function onAttached(event) {
+        if (event.data !== header)
+            return;
+        sourceMapManager.removeEventListener(SDK.SourceMapManager.Events.SourceMapAttached, onAttached);
+        var sourceMap = sourceMapManager.sourceMapForClient(header);
+        callback(sourceMap.editable()? sourceMap : null);
     }
 }
 

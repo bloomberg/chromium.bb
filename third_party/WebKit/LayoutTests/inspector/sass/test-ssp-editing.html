@@ -15,7 +15,6 @@ function insertStyleSheet()
 function test()
 {
     var sourceCode;
-    Runtime.experiments.enableForTest("liveSASS");
     InspectorTest.evaluateInPage("insertStyleSheet()", onStyleSheet);
 
     function onStyleSheet()

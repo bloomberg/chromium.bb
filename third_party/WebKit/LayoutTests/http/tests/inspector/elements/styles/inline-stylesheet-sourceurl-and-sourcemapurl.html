@@ -1,0 +1,36 @@
+<html>
+<head>
+<script src="../../inspector-test.js"></script>
+<script src="../../bindings/bindings-test.js"></script>
+<script>
+
+function addStyleSheet() {
+    var styleTag = document.createElement('style');
+    styleTag.textContent = `div {color: red}
+/*# sourceURL=style.css */
+/*# sourceMappingURL=resources/selector-line.css.map */`;
+    document.head.appendChild(styleTag);
+}
+
+async function test()
+{
+    InspectorTest.markStep('Adding style sheet');
+    await Promise.all([
+        InspectorTest.evaluateInPagePromise('addStyleSheet()'),
+        InspectorTest.waitForSourceMap('selector-line.css.map'),
+    ]);
+    InspectorTest.addResult("SourceMap successfully loaded.");
+    InspectorTest.completeTest();
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Verify that in case of complex scenario with both sourceURL and sourceMappingURL in inline stylesheet
+the sourceMap is resolved properly.
+</p>
+
+</body>
+</html>
