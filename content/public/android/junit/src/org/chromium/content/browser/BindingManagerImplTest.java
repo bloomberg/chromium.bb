@@ -10,6 +10,7 @@ import static android.content.ComponentCallbacks2.TRIM_MEMORY_RUNNING_MODERATE;
 
 import android.app.Activity;
 import android.app.Application;
+import android.os.IBinder;
 import android.util.Pair;
 
 import org.junit.Assert;
@@ -24,7 +25,6 @@ import org.robolectric.shadows.ShadowLooper;
 import org.chromium.base.process_launcher.ChildProcessCreationParams;
 import org.chromium.base.process_launcher.FileDescriptorInfo;
 import org.chromium.base.test.util.Feature;
-import org.chromium.content.common.IChildProcessCallback;
 import org.chromium.content.common.IChildProcessService;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
@@ -126,7 +126,7 @@ public class BindingManagerImplTest {
 
         @Override
         public void setupConnection(String[] commandLine, FileDescriptorInfo[] filesToBeMapped,
-                IChildProcessCallback processCallback, ConnectionCallback connectionCallbacks) {
+                IBinder callback, ConnectionCallback connectionCallbacks) {
             throw new UnsupportedOperationException();
         }
 

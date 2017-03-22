@@ -7,7 +7,7 @@ package org.chromium.content.common;
 import org.chromium.content.common.SurfaceWrapper;
 import android.view.Surface;
 
-interface IChildProcessCallback {
+interface IGpuProcessCallback {
 
   void forwardSurfaceForSurfaceRequest(
       in UnguessableToken requestToken, in Surface surface);

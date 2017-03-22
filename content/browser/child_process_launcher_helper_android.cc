@@ -9,11 +9,9 @@
 #include "base/android/apk_assets.h"
 #include "base/android/context_utils.h"
 #include "base/android/jni_array.h"
-#include "base/android/unguessable_token_android.h"
 #include "base/i18n/icu_util.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
-#include "content/browser/android/scoped_surface_request_manager.h"
 #include "content/browser/child_process_launcher_helper.h"
 #include "content/browser/child_process_launcher_helper_posix.h"
 #include "content/browser/file_descriptor_info_impl.h"
@@ -23,7 +21,6 @@
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/content_switches.h"
 #include "gin/v8_initializer.h"
-#include "gpu/ipc/common/gpu_surface_tracker.h"
 #include "jni/ChildProcessLauncher_jni.h"
 
 using base::android::AttachCurrentThread;
@@ -284,38 +281,9 @@ static void OnChildProcessStarted(JNIEnv*,
   delete callback;
 }
 
-void CompleteScopedSurfaceRequest(JNIEnv* env,
-                                  const JavaParamRef<jclass>& clazz,
-                                  const JavaParamRef<jobject>& token,
-                                  const JavaParamRef<jobject>& surface) {
-  base::UnguessableToken requestToken =
-      base::android::UnguessableTokenAndroid::FromJavaUnguessableToken(env,
-                                                                       token);
-  if (!requestToken) {
-    DLOG(ERROR) << "Received invalid surface request token.";
-    return;
-  }
-
-  DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  ScopedJavaGlobalRef<jobject> jsurface;
-  jsurface.Reset(env, surface);
-  ScopedSurfaceRequestManager::GetInstance()->FulfillScopedSurfaceRequest(
-      requestToken, gl::ScopedJavaSurface(jsurface));
-}
-
 jboolean IsSingleProcess(JNIEnv* env, const JavaParamRef<jclass>& clazz) {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kSingleProcess);
-}
-
-base::android::ScopedJavaLocalRef<jobject> GetViewSurface(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& jcaller,
-    jint surface_id) {
-  gl::ScopedJavaSurface surface_view =
-      gpu::GpuSurfaceTracker::GetInstance()->AcquireJavaSurface(surface_id);
-  return base::android::ScopedJavaLocalRef<jobject>(surface_view.j_surface());
 }
 
 bool RegisterChildProcessLauncher(JNIEnv* env) {

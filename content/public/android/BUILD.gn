@@ -9,8 +9,8 @@ android_aidl("common_aidl") {
   interface_file = "java/src/org/chromium/content/common/common.aidl"
   import_include = [ "java/src" ]
   sources = [
-    "java/src/org/chromium/content/common/IChildProcessCallback.aidl",
     "java/src/org/chromium/content/common/IChildProcessService.aidl",
+    "java/src/org/chromium/content/common/IGpuProcessCallback.aidl",
   ]
 }
 
@@ -133,6 +133,7 @@ android_library("content_java") {
     "java/src/org/chromium/content/browser/ContextSelectionProvider.java",
     "java/src/org/chromium/content/browser/DeviceUtils.java",
     "java/src/org/chromium/content/browser/FloatingActionModeCallback.java",
+    "java/src/org/chromium/content/browser/GpuProcessCallback.java",
     "java/src/org/chromium/content/browser/InterfaceRegistrarImpl.java",
     "java/src/org/chromium/content/browser/InterstitialPageDelegateAndroid.java",
     "java/src/org/chromium/content/browser/JavascriptInterface.java",
@@ -332,6 +333,7 @@ generate_jni("content_jni_headers") {
     "java/src/org/chromium/content/browser/ContentViewCore.java",
     "java/src/org/chromium/content/browser/ContentViewRenderView.java",
     "java/src/org/chromium/content/browser/ContentViewStatics.java",
+    "java/src/org/chromium/content/browser/GpuProcessCallback.java",
     "java/src/org/chromium/content/browser/InterfaceRegistrarImpl.java",
     "java/src/org/chromium/content/browser/InterstitialPageDelegateAndroid.java",
     "java/src/org/chromium/content/browser/MediaResourceGetter.java",

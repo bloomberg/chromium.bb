@@ -34,8 +34,8 @@ import org.chromium.base.process_launcher.ChildProcessCreationParams;
 import org.chromium.base.process_launcher.FileDescriptorInfo;
 import org.chromium.content.browser.ChildProcessConstants;
 import org.chromium.content.common.ContentSwitches;
-import org.chromium.content.common.IChildProcessCallback;
 import org.chromium.content.common.IChildProcessService;
+import org.chromium.content.common.IGpuProcessCallback;
 import org.chromium.content.common.SurfaceWrapper;
 
 import java.util.concurrent.Semaphore;
@@ -58,7 +58,7 @@ public class ChildProcessServiceImpl {
 
     // Lock that protects the following members.
     private final Object mBinderLock = new Object();
-    private IChildProcessCallback mCallback;
+    private IGpuProcessCallback mGpuCallback;
     // PID of the client of this service, set in bindToCaller().
     private int mBoundCallingPid;
 
@@ -124,7 +124,7 @@ public class ChildProcessServiceImpl {
         }
 
         @Override
-        public int setupConnection(Bundle args, IChildProcessCallback callback) {
+        public int setupConnection(Bundle args, IBinder callback) {
             int callingPid = Binder.getCallingPid();
             synchronized (mBinderLock) {
                 if (mBoundCallingPid != callingPid) {
@@ -137,7 +137,8 @@ public class ChildProcessServiceImpl {
                     return -1;
                 }
 
-                mCallback = callback;
+                mGpuCallback =
+                        callback != null ? IGpuProcessCallback.Stub.asInterface(callback) : null;
                 getServiceInfo(args);
                 return Process.myPid();
             }
@@ -377,7 +378,7 @@ public class ChildProcessServiceImpl {
     @CalledByNative
     private void forwardSurfaceTextureForSurfaceRequest(
             UnguessableToken requestToken, SurfaceTexture surfaceTexture) {
-        if (mCallback == null) {
+        if (mGpuCallback == null) {
             Log.e(TAG, "No callback interface has been provided.");
             return;
         }
@@ -385,7 +386,7 @@ public class ChildProcessServiceImpl {
         Surface surface = new Surface(surfaceTexture);
 
         try {
-            mCallback.forwardSurfaceForSurfaceRequest(requestToken, surface);
+            mGpuCallback.forwardSurfaceForSurfaceRequest(requestToken, surface);
         } catch (RemoteException e) {
             Log.e(TAG, "Unable to call forwardSurfaceForSurfaceRequest: %s", e);
             return;
@@ -397,13 +398,13 @@ public class ChildProcessServiceImpl {
     @SuppressWarnings("unused")
     @CalledByNative
     private Surface getViewSurface(int surfaceId) {
-        if (mCallback == null) {
+        if (mGpuCallback == null) {
             Log.e(TAG, "No callback interface has been provided.");
             return null;
         }
 
         try {
-            SurfaceWrapper wrapper = mCallback.getViewSurface(surfaceId);
+            SurfaceWrapper wrapper = mGpuCallback.getViewSurface(surfaceId);
             return wrapper != null ? wrapper.getSurface() : null;
         } catch (RemoteException e) {
             Log.e(TAG, "Unable to call getViewSurface: %s", e);

@@ -264,6 +264,8 @@ source_set("browser") {
     "android/content_video_view.cc",
     "android/content_video_view.h",
     "android/devtools_auth.cc",
+    "android/gpu_process_callback.cc",
+    "android/gpu_process_callback.h",
     "android/java_interfaces_impl.cc",
     "android/java_interfaces_impl.h",
     "android/scoped_surface_request_manager.cc",

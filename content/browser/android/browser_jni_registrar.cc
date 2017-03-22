@@ -18,6 +18,7 @@
 #include "content/browser/android/content_view_render_view.h"
 #include "content/browser/android/content_view_statics.h"
 #include "content/browser/android/date_time_chooser_android.h"
+#include "content/browser/android/gpu_process_callback.h"
 #include "content/browser/android/interstitial_page_delegate_android.h"
 #include "content/browser/android/joystick_scroll_provider.h"
 #include "content/browser/android/load_url_params.h"
@@ -44,6 +45,7 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
     {"ContentFeatureList", content::android::RegisterContentFeatureListJni},
     {"ContentVideoView", content::ContentVideoView::RegisterContentVideoView},
     {"CoreImpl", mojo::android::RegisterCoreImpl},
+    {"GpuProcessCallback", content::RegisterGpuProcessCallback},
     {"MemoryMonitorAndroid", content::MemoryMonitorAndroid::Register},
     {"BackgroundSyncNetworkObserverAndroid",
      content::BackgroundSyncNetworkObserverAndroid::Observer::

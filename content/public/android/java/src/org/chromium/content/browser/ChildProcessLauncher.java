@@ -10,17 +10,16 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.os.ParcelFileDescriptor;
 import android.os.RemoteException;
 import android.text.TextUtils;
-import android.view.Surface;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.CpuFeatures;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
-import org.chromium.base.UnguessableToken;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -31,8 +30,6 @@ import org.chromium.content.app.ChromiumLinkerParams;
 import org.chromium.content.app.PrivilegedProcessService;
 import org.chromium.content.app.SandboxedProcessService;
 import org.chromium.content.common.ContentSwitches;
-import org.chromium.content.common.IChildProcessCallback;
-import org.chromium.content.common.SurfaceWrapper;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -828,36 +825,8 @@ public class ChildProcessLauncher {
     /**
      * This implementation is used to receive callbacks from the remote service.
      */
-    private static IChildProcessCallback createCallback(
-            final int childProcessId, final int callbackType) {
-        return new IChildProcessCallback.Stub() {
-            @Override
-            public void forwardSurfaceForSurfaceRequest(
-                    UnguessableToken requestToken, Surface surface) {
-                // Do not allow a malicious renderer to connect to a producer. This is only used
-                // from stream textures managed by the GPU process.
-                if (callbackType != CALLBACK_FOR_GPU_PROCESS) {
-                    Log.e(TAG, "Illegal callback for non-GPU process.");
-                    return;
-                }
-
-                nativeCompleteScopedSurfaceRequest(requestToken, surface);
-            }
-
-            @Override
-            public SurfaceWrapper getViewSurface(int surfaceId) {
-                // Do not allow a malicious renderer to get to our view surface.
-                if (callbackType != CALLBACK_FOR_GPU_PROCESS) {
-                    Log.e(TAG, "Illegal callback for non-GPU process.");
-                    return null;
-                }
-                Surface surface = ChildProcessLauncher.nativeGetViewSurface(surfaceId);
-                if (surface == null) {
-                    return null;
-                }
-                return new SurfaceWrapper(surface);
-            }
-        };
+    private static IBinder createCallback(int childProcessId, int callbackType) {
+        return callbackType == CALLBACK_FOR_GPU_PROCESS ? new GpuProcessCallback() : null;
     }
 
     static void logPidWarning(int pid, String message) {
@@ -969,8 +938,5 @@ public class ChildProcessLauncher {
     }
 
     private static native void nativeOnChildProcessStarted(long clientContext, int pid);
-    private static native void nativeCompleteScopedSurfaceRequest(
-            UnguessableToken requestToken, Surface surface);
     private static native boolean nativeIsSingleProcess();
-    private static native Surface nativeGetViewSurface(int surfaceId);
 }

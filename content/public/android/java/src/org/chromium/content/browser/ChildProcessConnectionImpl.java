@@ -22,10 +22,11 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.process_launcher.ChildProcessCreationParams;
 import org.chromium.base.process_launcher.FileDescriptorInfo;
-import org.chromium.content.common.IChildProcessCallback;
 import org.chromium.content.common.IChildProcessService;
 
 import java.io.IOException;
+
+import javax.annotation.Nullable;
 
 /**
  * Manages a connection between the browser activity and a child service.
@@ -90,10 +91,10 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
     private static class ConnectionParams {
         final String[] mCommandLine;
         final FileDescriptorInfo[] mFilesToBeMapped;
-        final IChildProcessCallback mCallback;
+        final IBinder mCallback;
 
-        ConnectionParams(String[] commandLine, FileDescriptorInfo[] filesToBeMapped,
-                IChildProcessCallback callback) {
+        ConnectionParams(
+                String[] commandLine, FileDescriptorInfo[] filesToBeMapped, IBinder callback) {
             mCommandLine = commandLine;
             mFilesToBeMapped = filesToBeMapped;
             mCallback = callback;
@@ -349,7 +350,7 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
 
     @Override
     public void setupConnection(String[] commandLine, FileDescriptorInfo[] filesToBeMapped,
-            IChildProcessCallback processCallback, ConnectionCallback connectionCallback) {
+            @Nullable IBinder callback, ConnectionCallback connectionCallback) {
         synchronized (mLock) {
             assert mConnectionParams == null;
             if (mServiceDisconnected) {
@@ -360,8 +361,7 @@ public class ChildProcessConnectionImpl implements ChildProcessConnection {
             try {
                 TraceEvent.begin("ChildProcessConnectionImpl.setupConnection");
                 mConnectionCallback = connectionCallback;
-                mConnectionParams =
-                        new ConnectionParams(commandLine, filesToBeMapped, processCallback);
+                mConnectionParams = new ConnectionParams(commandLine, filesToBeMapped, callback);
                 // Run the setup if the service is already connected. If not,
                 // doConnectionSetupLocked() will be called from onServiceConnected().
                 if (mServiceConnectComplete) {
