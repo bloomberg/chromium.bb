@@ -36,7 +36,7 @@ class U2fDevice {
       base::Callback<void(bool success, ProtocolVersion version)>;
   using DeviceCallback =
       base::Callback<void(bool success,
-                          scoped_refptr<U2fApduResponse> response)>;
+                          std::unique_ptr<U2fApduResponse> response)>;
   using WinkCallback = base::Callback<void()>;
 
   ~U2fDevice();
@@ -63,7 +63,7 @@ class U2fDevice {
 
   // Pure virtual function defined by each device type, implementing
   // the device communication transaction.
-  virtual void DeviceTransact(scoped_refptr<U2fApduCommand> command,
+  virtual void DeviceTransact(std::unique_ptr<U2fApduCommand> command,
                               const DeviceCallback& callback) = 0;
 
   uint32_t channel_id_;
@@ -72,20 +72,20 @@ class U2fDevice {
  private:
   void OnRegisterComplete(const MessageCallback& callback,
                           bool success,
-                          scoped_refptr<U2fApduResponse> register_response);
+                          std::unique_ptr<U2fApduResponse> register_response);
   void OnSignComplete(const MessageCallback& callback,
                       bool success,
-                      scoped_refptr<U2fApduResponse> sign_response);
+                      std::unique_ptr<U2fApduResponse> sign_response);
   void OnVersionComplete(const VersionCallback& callback,
                          bool success,
-                         scoped_refptr<U2fApduResponse> version_response);
+                         std::unique_ptr<U2fApduResponse> version_response);
   void OnLegacyVersionComplete(
       const VersionCallback& callback,
       bool success,
-      scoped_refptr<U2fApduResponse> legacy_version_response);
+      std::unique_ptr<U2fApduResponse> legacy_version_response);
   void OnWink(const WinkCallback& callback,
               bool success,
-              scoped_refptr<U2fApduResponse> response);
+              std::unique_ptr<U2fApduResponse> response);
 
   base::WeakPtrFactory<U2fDevice> weak_factory_;
 

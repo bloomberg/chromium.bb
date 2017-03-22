@@ -5,10 +5,11 @@
 #ifndef DEVICE_U2F_U2F_APDU_COMMAND_H_
 #define DEVICE_U2F_U2F_APDU_COMMAND_H_
 
+#include <cinttypes>
+#include <memory>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
-#include "base/memory/ref_counted.h"
 
 namespace device {
 
@@ -20,13 +21,21 @@ namespace device {
 // byte, denoting the instruction code, P1 and P2, each one byte denoting
 // instruction parameters, a length field (Lc), a data field of length Lc, and
 // a maximum expected response length (Le).
-class U2fApduCommand : public base::RefCountedThreadSafe<U2fApduCommand> {
+class U2fApduCommand {
  public:
+  U2fApduCommand();
+  U2fApduCommand(uint8_t cla,
+                 uint8_t ins,
+                 uint8_t p1,
+                 uint8_t p2,
+                 size_t response_length,
+                 std::vector<uint8_t> data,
+                 std::vector<uint8_t> suffix);
+  ~U2fApduCommand();
+
   // Construct an apdu command from the serialized message data
-  static scoped_refptr<U2fApduCommand> CreateFromMessage(
+  static std::unique_ptr<U2fApduCommand> CreateFromMessage(
       const std::vector<uint8_t>& data);
-  // Create an empty apdu command object
-  static scoped_refptr<U2fApduCommand> Create();
   // Returns serialized message data
   std::vector<uint8_t> GetEncodedCommand() const;
   void set_cla(uint8_t cla) { cla_ = cla; }
@@ -38,20 +47,18 @@ class U2fApduCommand : public base::RefCountedThreadSafe<U2fApduCommand> {
     response_length_ = response_length;
   }
   void set_suffix(const std::vector<uint8_t>& suffix) { suffix_ = suffix; }
-  static scoped_refptr<U2fApduCommand> CreateRegister(
+  static std::unique_ptr<U2fApduCommand> CreateRegister(
       const std::vector<uint8_t>& appid_digest,
       const std::vector<uint8_t>& challenge_digest);
-  static scoped_refptr<U2fApduCommand> CreateVersion();
+  static std::unique_ptr<U2fApduCommand> CreateVersion();
   // Early U2F drafts defined a non-ISO 7816-4 conforming layout
-  static scoped_refptr<U2fApduCommand> CreateLegacyVersion();
-  static scoped_refptr<U2fApduCommand> CreateSign(
+  static std::unique_ptr<U2fApduCommand> CreateLegacyVersion();
+  static std::unique_ptr<U2fApduCommand> CreateSign(
       const std::vector<uint8_t>& appid_digest,
       const std::vector<uint8_t>& challenge_digest,
       const std::vector<uint8_t>& key_handle);
 
  private:
-  friend class base::RefCountedThreadSafe<U2fApduCommand>;
-  friend class U2fApduBuilder;
   FRIEND_TEST_ALL_PREFIXES(U2fApduTest, TestDeserializeBasic);
   FRIEND_TEST_ALL_PREFIXES(U2fApduTest, TestDeserializeComplex);
   FRIEND_TEST_ALL_PREFIXES(U2fApduTest, TestSerializeEdgeCases);
@@ -82,16 +89,6 @@ class U2fApduCommand : public base::RefCountedThreadSafe<U2fApduCommand> {
   static constexpr size_t kMaxKeyHandleLength = 255;
   static constexpr size_t kChallengeDigestLen = 32;
   static constexpr size_t kAppIdDigestLen = 32;
-
-  U2fApduCommand();
-  U2fApduCommand(uint8_t cla,
-                 uint8_t ins,
-                 uint8_t p1,
-                 uint8_t p2,
-                 size_t response_length,
-                 std::vector<uint8_t> data,
-                 std::vector<uint8_t> suffix);
-  ~U2fApduCommand();
 
   uint8_t cla_;
   uint8_t ins_;

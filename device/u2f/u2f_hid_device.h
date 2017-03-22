@@ -26,7 +26,7 @@ class U2fHidDevice : public U2fDevice {
   ~U2fHidDevice();
 
   // Send a U2f command to this device
-  void DeviceTransact(scoped_refptr<U2fApduCommand> command,
+  void DeviceTransact(std::unique_ptr<U2fApduCommand> command,
                       const DeviceCallback& callback) final;
   // Send a wink command if supported
   void TryWink(const WinkCallback& callback) final;
@@ -47,18 +47,18 @@ class U2fHidDevice : public U2fDevice {
 
   // Open a connection to this device
   void Connect(const HidService::ConnectCallback& callback);
-  void OnConnect(scoped_refptr<U2fApduCommand> command,
+  void OnConnect(std::unique_ptr<U2fApduCommand> command,
                  const DeviceCallback& callback,
                  scoped_refptr<HidConnection> connection);
   // Ask device to allocate a unique channel id for this connection
-  void AllocateChannel(scoped_refptr<U2fApduCommand> command,
+  void AllocateChannel(std::unique_ptr<U2fApduCommand> command,
                        const DeviceCallback& callback);
   void OnAllocateChannel(std::vector<uint8_t> nonce,
-                         scoped_refptr<U2fApduCommand> command,
+                         std::unique_ptr<U2fApduCommand> command,
                          const DeviceCallback& callback,
                          bool success,
                          scoped_refptr<U2fMessage> message);
-  void Transition(scoped_refptr<U2fApduCommand> command,
+  void Transition(std::unique_ptr<U2fApduCommand> command,
                   const DeviceCallback& callback);
   // Write all message packets to device, and read response if expected
   void WriteMessage(scoped_refptr<U2fMessage> message,
@@ -87,7 +87,7 @@ class U2fHidDevice : public U2fDevice {
               scoped_refptr<U2fMessage> response);
 
   State state_;
-  std::list<std::pair<scoped_refptr<U2fApduCommand>, DeviceCallback>>
+  std::list<std::pair<std::unique_ptr<U2fApduCommand>, DeviceCallback>>
       pending_transactions_;
   scoped_refptr<HidDeviceInfo> device_info_;
   scoped_refptr<HidConnection> connection_;

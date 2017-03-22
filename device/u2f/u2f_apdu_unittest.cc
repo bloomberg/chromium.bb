@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/ptr_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "u2f_apdu_command.h"
@@ -17,7 +18,7 @@ TEST_F(U2fApduTest, TestDeserializeBasic) {
   uint8_t p1 = 0xAC;
   uint8_t p2 = 0xAD;
   std::vector<uint8_t> message = {cla, ins, p1, p2};
-  scoped_refptr<U2fApduCommand> cmd =
+  std::unique_ptr<U2fApduCommand> cmd =
       U2fApduCommand::CreateFromMessage(message);
 
   EXPECT_EQ(static_cast<size_t>(0), cmd->response_length_);
@@ -57,7 +58,7 @@ TEST_F(U2fApduTest, TestDeserializeComplex) {
   message.insert(message.end(), data.begin(), data.end());
 
   // Create a message with no response expected
-  scoped_refptr<U2fApduCommand> cmd_no_response =
+  std::unique_ptr<U2fApduCommand> cmd_no_response =
       U2fApduCommand::CreateFromMessage(message);
   EXPECT_EQ(static_cast<size_t>(0), cmd_no_response->response_length_);
   EXPECT_THAT(data, testing::ContainerEq(cmd_no_response->data_));
@@ -69,7 +70,7 @@ TEST_F(U2fApduTest, TestDeserializeComplex) {
   // Add response length to message
   message.push_back(0xF1);
   message.push_back(0xD0);
-  scoped_refptr<U2fApduCommand> cmd =
+  std::unique_ptr<U2fApduCommand> cmd =
       U2fApduCommand::CreateFromMessage(message);
   EXPECT_THAT(data, testing::ContainerEq(cmd->data_));
   EXPECT_EQ(cmd->cla_, cla);
@@ -81,7 +82,7 @@ TEST_F(U2fApduTest, TestDeserializeComplex) {
 
 TEST_F(U2fApduTest, TestDeserializeResponse) {
   U2fApduResponse::Status status;
-  scoped_refptr<U2fApduResponse> response;
+  std::unique_ptr<U2fApduResponse> response;
   std::vector<uint8_t> test_vector;
 
   // Invalid length
@@ -111,7 +112,7 @@ TEST_F(U2fApduTest, TestDeserializeResponse) {
 }
 
 TEST_F(U2fApduTest, TestSerializeCommand) {
-  scoped_refptr<U2fApduCommand> cmd = U2fApduCommand::Create();
+  auto cmd = base::MakeUnique<U2fApduCommand>();
 
   cmd->set_cla(0xA);
   cmd->set_ins(0xB);
@@ -157,7 +158,7 @@ TEST_F(U2fApduTest, TestSerializeCommand) {
 }
 
 TEST_F(U2fApduTest, TestSerializeEdgeCases) {
-  scoped_refptr<U2fApduCommand> cmd = U2fApduCommand::Create();
+  auto cmd = base::MakeUnique<U2fApduCommand>();
 
   cmd->set_cla(0xA);
   cmd->set_ins(0xB);
@@ -187,7 +188,7 @@ TEST_F(U2fApduTest, TestCreateSign) {
   std::vector<uint8_t> challenge(U2fApduCommand::kChallengeDigestLen, 0xff);
   std::vector<uint8_t> key_handle(U2fApduCommand::kMaxKeyHandleLength);
 
-  scoped_refptr<U2fApduCommand> cmd =
+  std::unique_ptr<U2fApduCommand> cmd =
       U2fApduCommand::CreateSign(appid, challenge, key_handle);
   ASSERT_NE(nullptr, cmd);
   EXPECT_THAT(U2fApduCommand::CreateFromMessage(cmd->GetEncodedCommand())
@@ -212,7 +213,7 @@ TEST_F(U2fApduTest, TestCreateSign) {
 TEST_F(U2fApduTest, TestCreateRegister) {
   std::vector<uint8_t> appid(U2fApduCommand::kAppIdDigestLen, 0x01);
   std::vector<uint8_t> challenge(U2fApduCommand::kChallengeDigestLen, 0xff);
-  scoped_refptr<U2fApduCommand> cmd =
+  std::unique_ptr<U2fApduCommand> cmd =
       U2fApduCommand::CreateRegister(appid, challenge);
   ASSERT_NE(nullptr, cmd);
   EXPECT_THAT(U2fApduCommand::CreateFromMessage(cmd->GetEncodedCommand())
@@ -230,7 +231,7 @@ TEST_F(U2fApduTest, TestCreateRegister) {
 }
 
 TEST_F(U2fApduTest, TestCreateVersion) {
-  scoped_refptr<U2fApduCommand> cmd = U2fApduCommand::CreateVersion();
+  std::unique_ptr<U2fApduCommand> cmd = U2fApduCommand::CreateVersion();
   std::vector<uint8_t> expected = {
       0x0, U2fApduCommand::kInsU2fVersion, 0x0, 0x0, 0x0, 0x0, 0x0};
 
@@ -241,7 +242,7 @@ TEST_F(U2fApduTest, TestCreateVersion) {
 }
 
 TEST_F(U2fApduTest, TestCreateLegacyVersion) {
-  scoped_refptr<U2fApduCommand> cmd = U2fApduCommand::CreateLegacyVersion();
+  std::unique_ptr<U2fApduCommand> cmd = U2fApduCommand::CreateLegacyVersion();
   // Legacy version command contains 2 extra null bytes compared to ISO 7816-4
   // format
   std::vector<uint8_t> expected = {

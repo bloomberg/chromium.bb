@@ -29,10 +29,10 @@ const uint64_t kTestDeviceId = 42;
 const char* kTestDeviceId = "device";
 #endif
 
-void ResponseCallback(scoped_refptr<device::U2fApduResponse>* output,
+void ResponseCallback(std::unique_ptr<device::U2fApduResponse>* output,
                       bool success,
-                      scoped_refptr<device::U2fApduResponse> response) {
-  *output = response;
+                      std::unique_ptr<device::U2fApduResponse> response) {
+  *output = std::move(response);
 }
 
 class MockHidErrorConnection : public device::HidConnection {
@@ -141,21 +141,22 @@ class TestDeviceCallback {
         run_loop_() {}
   ~TestDeviceCallback() {}
 
-  void ReceivedCallback(bool success, scoped_refptr<U2fApduResponse> response) {
-    response_ = response;
+  void ReceivedCallback(bool success,
+                        std::unique_ptr<U2fApduResponse> response) {
+    response_ = std::move(response);
     closure_.Run();
   }
 
-  scoped_refptr<U2fApduResponse> WaitForCallback() {
+  std::unique_ptr<U2fApduResponse> WaitForCallback() {
     closure_ = run_loop_.QuitClosure();
     run_loop_.Run();
-    return response_;
+    return std::move(response_);
   }
 
   const U2fDevice::DeviceCallback& callback() { return callback_; }
 
  private:
-  scoped_refptr<U2fApduResponse> response_;
+  std::unique_ptr<U2fApduResponse> response_;
   base::Closure closure_;
   U2fDevice::DeviceCallback callback_;
   base::RunLoop run_loop_;
@@ -242,17 +243,17 @@ TEST_F(U2fHidDeviceTest, TestConnectionFailure) {
   // Manually delete connection
   device->connection_ = nullptr;
   // Add pending transactions manually and ensure they are processed
-  scoped_refptr<U2fApduResponse> response1(
+  std::unique_ptr<U2fApduResponse> response1(
       U2fApduResponse::CreateFromMessage(std::vector<uint8_t>({0x0, 0x0})));
   device->pending_transactions_.push_back(
       {U2fApduCommand::CreateVersion(),
        base::Bind(&ResponseCallback, &response1)});
-  scoped_refptr<U2fApduResponse> response2(
+  std::unique_ptr<U2fApduResponse> response2(
       U2fApduResponse::CreateFromMessage(std::vector<uint8_t>({0x0, 0x0})));
   device->pending_transactions_.push_back(
       {U2fApduCommand::CreateVersion(),
        base::Bind(&ResponseCallback, &response2)});
-  scoped_refptr<U2fApduResponse> response3(
+  std::unique_ptr<U2fApduResponse> response3(
       U2fApduResponse::CreateFromMessage(std::vector<uint8_t>({0x0, 0x0})));
   device->DeviceTransact(U2fApduCommand::CreateVersion(),
                          base::Bind(&ResponseCallback, &response3));
@@ -285,7 +286,7 @@ TEST_F(U2fHidDeviceTest, TestDeviceError) {
       new MockHidErrorConnection(device0));
   device->connection_ = connection;
   device->state_ = U2fHidDevice::State::IDLE;
-  scoped_refptr<U2fApduResponse> response0(
+  std::unique_ptr<U2fApduResponse> response0(
       U2fApduResponse::CreateFromMessage(std::vector<uint8_t>({0x0, 0x0})));
   device->DeviceTransact(U2fApduCommand::CreateVersion(),
                          base::Bind(&ResponseCallback, &response0));
@@ -293,17 +294,17 @@ TEST_F(U2fHidDeviceTest, TestDeviceError) {
   EXPECT_EQ(U2fHidDevice::State::DEVICE_ERROR, device->state_);
 
   // Add pending transactions manually and ensure they are processed
-  scoped_refptr<U2fApduResponse> response1(
+  std::unique_ptr<U2fApduResponse> response1(
       U2fApduResponse::CreateFromMessage(std::vector<uint8_t>({0x0, 0x0})));
   device->pending_transactions_.push_back(
       {U2fApduCommand::CreateVersion(),
        base::Bind(&ResponseCallback, &response1)});
-  scoped_refptr<U2fApduResponse> response2(
+  std::unique_ptr<U2fApduResponse> response2(
       U2fApduResponse::CreateFromMessage(std::vector<uint8_t>({0x0, 0x0})));
   device->pending_transactions_.push_back(
       {U2fApduCommand::CreateVersion(),
        base::Bind(&ResponseCallback, &response2)});
-  scoped_refptr<U2fApduResponse> response3(
+  std::unique_ptr<U2fApduResponse> response3(
       U2fApduResponse::CreateFromMessage(std::vector<uint8_t>({0x0, 0x0})));
   device->DeviceTransact(U2fApduCommand::CreateVersion(),
                          base::Bind(&ResponseCallback, &response3));

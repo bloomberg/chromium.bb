@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/ptr_util.h"
+
 #include "u2f_apdu_response.h"
 
 namespace device {
-scoped_refptr<U2fApduResponse> U2fApduResponse::CreateFromMessage(
+std::unique_ptr<U2fApduResponse> U2fApduResponse::CreateFromMessage(
     const std::vector<uint8_t>& message) {
   uint16_t status_bytes;
   Status response_status;
@@ -18,8 +20,7 @@ scoped_refptr<U2fApduResponse> U2fApduResponse::CreateFromMessage(
   response_status = static_cast<Status>(status_bytes);
   std::vector<uint8_t> data(message.begin(), message.end() - 2);
 
-  return make_scoped_refptr(
-      new U2fApduResponse(std::move(data), response_status));
+  return base::MakeUnique<U2fApduResponse>(std::move(data), response_status);
 }
 
 U2fApduResponse::U2fApduResponse(std::vector<uint8_t> message,

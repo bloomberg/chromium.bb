@@ -17,7 +17,7 @@ U2fDevice::~U2fDevice() {}
 void U2fDevice::Register(const std::vector<uint8_t>& app_param,
                          const std::vector<uint8_t>& challenge_param,
                          const MessageCallback& callback) {
-  scoped_refptr<U2fApduCommand> register_cmd =
+  std::unique_ptr<U2fApduCommand> register_cmd =
       U2fApduCommand::CreateRegister(app_param, challenge_param);
   if (!register_cmd) {
     callback.Run(ReturnCode::INVALID_PARAMS, std::vector<uint8_t>());
@@ -32,7 +32,7 @@ void U2fDevice::Sign(const std::vector<uint8_t>& app_param,
                      const std::vector<uint8_t>& challenge_param,
                      const std::vector<uint8_t>& key_handle,
                      const MessageCallback& callback) {
-  scoped_refptr<U2fApduCommand> sign_cmd =
+  std::unique_ptr<U2fApduCommand> sign_cmd =
       U2fApduCommand::CreateSign(app_param, challenge_param, key_handle);
   if (!sign_cmd) {
     callback.Run(ReturnCode::INVALID_PARAMS, std::vector<uint8_t>());
@@ -44,7 +44,7 @@ void U2fDevice::Sign(const std::vector<uint8_t>& app_param,
 }
 
 void U2fDevice::Version(const VersionCallback& callback) {
-  scoped_refptr<U2fApduCommand> version_cmd = U2fApduCommand::CreateVersion();
+  std::unique_ptr<U2fApduCommand> version_cmd = U2fApduCommand::CreateVersion();
   if (!version_cmd) {
     callback.Run(false, ProtocolVersion::UNKNOWN);
     return;
@@ -57,7 +57,7 @@ void U2fDevice::Version(const VersionCallback& callback) {
 void U2fDevice::OnRegisterComplete(
     const MessageCallback& callback,
     bool success,
-    scoped_refptr<U2fApduResponse> register_response) {
+    std::unique_ptr<U2fApduResponse> register_response) {
   if (!success || !register_response) {
     callback.Run(ReturnCode::FAILURE, std::vector<uint8_t>());
     return;
@@ -81,7 +81,7 @@ void U2fDevice::OnRegisterComplete(
 
 void U2fDevice::OnSignComplete(const MessageCallback& callback,
                                bool success,
-                               scoped_refptr<U2fApduResponse> sign_response) {
+                               std::unique_ptr<U2fApduResponse> sign_response) {
   if (!success || !sign_response) {
     callback.Run(ReturnCode::FAILURE, std::vector<uint8_t>());
     return;
@@ -106,7 +106,7 @@ void U2fDevice::OnSignComplete(const MessageCallback& callback,
 void U2fDevice::OnVersionComplete(
     const VersionCallback& callback,
     bool success,
-    scoped_refptr<U2fApduResponse> version_response) {
+    std::unique_ptr<U2fApduResponse> version_response) {
   if (success && version_response &&
       version_response->status() == U2fApduResponse::Status::SW_NO_ERROR &&
       version_response->data() ==
@@ -120,7 +120,7 @@ void U2fDevice::OnVersionComplete(
 void U2fDevice::OnLegacyVersionComplete(
     const VersionCallback& callback,
     bool success,
-    scoped_refptr<U2fApduResponse> legacy_version_response) {
+    std::unique_ptr<U2fApduResponse> legacy_version_response) {
   if (success && legacy_version_response &&
       legacy_version_response->status() ==
           U2fApduResponse::Status::SW_NO_ERROR &&

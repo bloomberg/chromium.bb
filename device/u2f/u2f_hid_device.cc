@@ -33,22 +33,22 @@ U2fHidDevice::~U2fHidDevice() {
     connection_->Close();
 }
 
-void U2fHidDevice::DeviceTransact(scoped_refptr<U2fApduCommand> command,
+void U2fHidDevice::DeviceTransact(std::unique_ptr<U2fApduCommand> command,
                                   const DeviceCallback& callback) {
-  Transition(command, callback);
+  Transition(std::move(command), callback);
 }
 
-void U2fHidDevice::Transition(scoped_refptr<U2fApduCommand> command,
+void U2fHidDevice::Transition(std::unique_ptr<U2fApduCommand> command,
                               const DeviceCallback& callback) {
   switch (state_) {
     case State::INIT:
       state_ = State::BUSY;
       Connect(base::Bind(&U2fHidDevice::OnConnect, weak_factory_.GetWeakPtr(),
-                         command, callback));
+                         base::Passed(&command), callback));
       break;
     case State::CONNECTED:
       state_ = State::BUSY;
-      AllocateChannel(command, callback);
+      AllocateChannel(std::move(command), callback);
       break;
     case State::IDLE: {
       state_ = State::BUSY;
@@ -83,7 +83,7 @@ void U2fHidDevice::Connect(const HidService::ConnectCallback& callback) {
   hid_service->Connect(device_info_->device_id(), callback);
 }
 
-void U2fHidDevice::OnConnect(scoped_refptr<U2fApduCommand> command,
+void U2fHidDevice::OnConnect(std::unique_ptr<U2fApduCommand> command,
                              const DeviceCallback& callback,
                              scoped_refptr<HidConnection> connection) {
   if (connection) {
@@ -92,10 +92,10 @@ void U2fHidDevice::OnConnect(scoped_refptr<U2fApduCommand> command,
   } else {
     state_ = State::DEVICE_ERROR;
   }
-  Transition(command, callback);
+  Transition(std::move(command), callback);
 }
 
-void U2fHidDevice::AllocateChannel(scoped_refptr<U2fApduCommand> command,
+void U2fHidDevice::AllocateChannel(std::unique_ptr<U2fApduCommand> command,
                                    const DeviceCallback& callback) {
   // Send random nonce to device to verify received message
   std::vector<uint8_t> nonce(8);
@@ -106,11 +106,11 @@ void U2fHidDevice::AllocateChannel(scoped_refptr<U2fApduCommand> command,
   WriteMessage(
       message, true,
       base::Bind(&U2fHidDevice::OnAllocateChannel, weak_factory_.GetWeakPtr(),
-                 nonce, command, callback));
+                 nonce, base::Passed(&command), callback));
 }
 
 void U2fHidDevice::OnAllocateChannel(std::vector<uint8_t> nonce,
-                                     scoped_refptr<U2fApduCommand> command,
+                                     std::unique_ptr<U2fApduCommand> command,
                                      const DeviceCallback& callback,
                                      bool success,
                                      scoped_refptr<U2fMessage> message) {
@@ -150,7 +150,7 @@ void U2fHidDevice::OnAllocateChannel(std::vector<uint8_t> nonce,
   capabilities_ = payload[16];
 
   state_ = State::IDLE;
-  Transition(command, callback);
+  Transition(std::move(command), callback);
 }
 
 void U2fHidDevice::WriteMessage(scoped_refptr<U2fMessage> message,
@@ -166,7 +166,7 @@ void U2fHidDevice::WriteMessage(scoped_refptr<U2fMessage> message,
   connection_->Write(
       buffer, buffer->size(),
       base::Bind(&U2fHidDevice::PacketWritten, weak_factory_.GetWeakPtr(),
-                 message, true, base::Passed(std::move(callback))));
+                 message, true, base::Passed(&callback)));
 }
 
 void U2fHidDevice::PacketWritten(scoped_refptr<U2fMessage> message,
@@ -190,7 +190,7 @@ void U2fHidDevice::ReadMessage(U2fHidMessageCallback callback) {
 
   connection_->Read(base::Bind(&U2fHidDevice::OnRead,
                                weak_factory_.GetWeakPtr(),
-                               base::Passed(std::move(callback))));
+                               base::Passed(&callback)));
 }
 
 void U2fHidDevice::OnRead(U2fHidMessageCallback callback,
@@ -216,7 +216,7 @@ void U2fHidDevice::OnRead(U2fHidMessageCallback callback,
   if (channel_id_ != read_message->channel_id()) {
     connection_->Read(base::Bind(&U2fHidDevice::OnRead,
                                  weak_factory_.GetWeakPtr(),
-                                 base::Passed(std::move(callback))));
+                                 base::Passed(&callback)));
     return;
   }
 
@@ -228,7 +228,7 @@ void U2fHidDevice::OnRead(U2fHidMessageCallback callback,
   // Continue reading additional packets
   connection_->Read(base::Bind(&U2fHidDevice::OnReadContinuation,
                                weak_factory_.GetWeakPtr(), read_message,
-                               base::Passed(std::move(callback))));
+                               base::Passed(&callback)));
 }
 
 void U2fHidDevice::OnReadContinuation(scoped_refptr<U2fMessage> message,
@@ -250,7 +250,7 @@ void U2fHidDevice::OnReadContinuation(scoped_refptr<U2fMessage> message,
   }
   connection_->Read(base::Bind(&U2fHidDevice::OnReadContinuation,
                                weak_factory_.GetWeakPtr(), message,
-                               base::Passed(std::move(callback))));
+                               base::Passed(&callback)));
 }
 
 void U2fHidDevice::MessageReceived(const DeviceCallback& callback,
@@ -261,21 +261,21 @@ void U2fHidDevice::MessageReceived(const DeviceCallback& callback,
     Transition(nullptr, callback);
     return;
   }
-  scoped_refptr<U2fApduResponse> response = nullptr;
+  std::unique_ptr<U2fApduResponse> response = nullptr;
   if (message)
     response = U2fApduResponse::CreateFromMessage(message->GetMessagePayload());
   state_ = State::IDLE;
   base::WeakPtr<U2fHidDevice> self = weak_factory_.GetWeakPtr();
-  callback.Run(success, response);
+  callback.Run(success, std::move(response));
 
   // Executing |callback| may have freed |this|. Check |self| first.
   if (self && !pending_transactions_.empty()) {
     // If any transactions were queued, process the first one
-    scoped_refptr<U2fApduCommand> pending_cmd =
+    std::unique_ptr<U2fApduCommand> pending_cmd =
         std::move(pending_transactions_.front().first);
     DeviceCallback pending_cb = pending_transactions_.front().second;
     pending_transactions_.pop_front();
-    Transition(pending_cmd, pending_cb);
+    Transition(std::move(pending_cmd), pending_cb);
   }
 }
 

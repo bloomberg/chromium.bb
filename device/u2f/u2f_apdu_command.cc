@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/memory/ptr_util.h"
+
 #include "u2f_apdu_command.h"
 
 namespace device {
 
-scoped_refptr<U2fApduCommand> U2fApduCommand::CreateFromMessage(
+std::unique_ptr<U2fApduCommand> U2fApduCommand::CreateFromMessage(
     const std::vector<uint8_t>& message) {
   uint16_t data_length = 0;
   size_t index = 0;
@@ -71,13 +73,8 @@ scoped_refptr<U2fApduCommand> U2fApduCommand::CreateFromMessage(
       break;
   }
 
-  return make_scoped_refptr(new U2fApduCommand(
-      cla, ins, p1, p2, response_length, std::move(data), std::move(suffix)));
-}
-
-// static
-scoped_refptr<U2fApduCommand> U2fApduCommand::Create() {
-  return make_scoped_refptr(new U2fApduCommand());
+  return base::MakeUnique<U2fApduCommand>(cla, ins, p1, p2, response_length,
+                                          std::move(data), std::move(suffix));
 }
 
 std::vector<uint8_t> U2fApduCommand::GetEncodedCommand() const {
@@ -130,7 +127,7 @@ U2fApduCommand::U2fApduCommand(uint8_t cla,
 U2fApduCommand::~U2fApduCommand() {}
 
 // static
-scoped_refptr<U2fApduCommand> U2fApduCommand::CreateRegister(
+std::unique_ptr<U2fApduCommand> U2fApduCommand::CreateRegister(
     const std::vector<uint8_t>& appid_digest,
     const std::vector<uint8_t>& challenge_digest) {
   if (appid_digest.size() != kAppIdDigestLen ||
@@ -138,7 +135,7 @@ scoped_refptr<U2fApduCommand> U2fApduCommand::CreateRegister(
     return nullptr;
   }
 
-  scoped_refptr<U2fApduCommand> command = Create();
+  auto command = base::MakeUnique<U2fApduCommand>();
   std::vector<uint8_t> data(challenge_digest.begin(), challenge_digest.end());
   data.insert(data.end(), appid_digest.begin(), appid_digest.end());
   command->set_ins(kInsU2fEnroll);
@@ -148,16 +145,16 @@ scoped_refptr<U2fApduCommand> U2fApduCommand::CreateRegister(
 }
 
 // static
-scoped_refptr<U2fApduCommand> U2fApduCommand::CreateVersion() {
-  scoped_refptr<U2fApduCommand> command = Create();
+std::unique_ptr<U2fApduCommand> U2fApduCommand::CreateVersion() {
+  auto command = base::MakeUnique<U2fApduCommand>();
   command->set_ins(kInsU2fVersion);
   command->set_response_length(kApduMaxResponseLength);
   return command;
 }
 
 // static
-scoped_refptr<U2fApduCommand> U2fApduCommand::CreateLegacyVersion() {
-  scoped_refptr<U2fApduCommand> command = Create();
+std::unique_ptr<U2fApduCommand> U2fApduCommand::CreateLegacyVersion() {
+  auto command = base::MakeUnique<U2fApduCommand>();
   command->set_ins(kInsU2fVersion);
   command->set_response_length(kApduMaxResponseLength);
   // Early U2F drafts defined the U2F version command in extended
@@ -168,7 +165,7 @@ scoped_refptr<U2fApduCommand> U2fApduCommand::CreateLegacyVersion() {
 }
 
 // static
-scoped_refptr<U2fApduCommand> U2fApduCommand::CreateSign(
+std::unique_ptr<U2fApduCommand> U2fApduCommand::CreateSign(
     const std::vector<uint8_t>& appid_digest,
     const std::vector<uint8_t>& challenge_digest,
     const std::vector<uint8_t>& key_handle) {
@@ -178,7 +175,7 @@ scoped_refptr<U2fApduCommand> U2fApduCommand::CreateSign(
     return nullptr;
   }
 
-  scoped_refptr<U2fApduCommand> command = Create();
+  auto command = base::MakeUnique<U2fApduCommand>();
   std::vector<uint8_t> data(challenge_digest.begin(), challenge_digest.end());
   data.insert(data.end(), appid_digest.begin(), appid_digest.end());
   data.push_back(static_cast<uint8_t>(key_handle.size()));
