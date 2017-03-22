@@ -285,6 +285,7 @@ class GLES2DecoderPassthroughImpl : public GLES2Decoder {
 
   bool IsEmulatedQueryTarget(GLenum target) const;
   error::Error ProcessQueries(bool did_finish);
+  void RemovePendingQuery(GLuint service_id);
 
   void UpdateTextureBinding(GLenum target, GLuint client_id, GLuint service_id);
 

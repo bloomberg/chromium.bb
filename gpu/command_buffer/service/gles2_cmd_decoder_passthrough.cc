@@ -835,6 +835,25 @@ error::Error GLES2DecoderPassthroughImpl::ProcessQueries(bool did_finish) {
   return error::kNoError;
 }
 
+void GLES2DecoderPassthroughImpl::RemovePendingQuery(GLuint service_id) {
+  auto pending_iter =
+      std::find_if(pending_queries_.begin(), pending_queries_.end(),
+                   [service_id](const PendingQuery& pending_query) {
+                     return pending_query.service_id == service_id;
+                   });
+  if (pending_iter != pending_queries_.end()) {
+    QuerySync* sync = GetSharedMemoryAs<QuerySync*>(
+        pending_iter->shm_id, pending_iter->shm_offset, sizeof(QuerySync));
+    if (sync != nullptr) {
+      sync->result = 0;
+      base::subtle::Release_Store(&sync->process_count,
+                                  pending_iter->submit_count);
+    }
+
+    pending_queries_.erase(pending_iter);
+  }
+}
+
 void GLES2DecoderPassthroughImpl::UpdateTextureBinding(GLenum target,
                                                        GLuint client_id,
                                                        GLuint service_id) {

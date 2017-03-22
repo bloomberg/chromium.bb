@@ -2341,14 +2341,7 @@ error::Error GLES2DecoderPassthroughImpl::DoDeleteQueriesEXT(
       active_queries_.erase(active_queries_iter);
     }
 
-    auto pending_iter =
-        std::find_if(pending_queries_.begin(), pending_queries_.end(),
-                     [query_service_id](const PendingQuery& pending_query) {
-                       return pending_query.service_id == query_service_id;
-                     });
-    if (pending_iter != pending_queries_.end()) {
-      pending_queries_.erase(pending_iter);
-    }
+    RemovePendingQuery(query_service_id);
   }
   return DeleteHelper(
       queries_copy.size(), queries_copy.data(), &query_id_map_,
@@ -2379,6 +2372,10 @@ error::Error GLES2DecoderPassthroughImpl::DoQueryCounterEXT(
 
   QueryInfo* query_info = &query_info_map_[service_id];
   query_info->type = target;
+
+  // Make sure to stop tracking this query if it was still pending a result from
+  // a previous glEndQuery
+  RemovePendingQuery(service_id);
 
   PendingQuery pending_query;
   pending_query.target = target;
@@ -2428,6 +2425,10 @@ error::Error GLES2DecoderPassthroughImpl::DoBeginQueryEXT(
   }
 
   query_info->type = target;
+
+  // Make sure to stop tracking this query if it was still pending a result from
+  // a previous glEndQuery
+  RemovePendingQuery(service_id);
 
   ActiveQuery query;
   query.service_id = service_id;
