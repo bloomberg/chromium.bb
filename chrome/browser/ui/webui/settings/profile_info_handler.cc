@@ -214,8 +214,9 @@ ProfileInfoHandler::GetAccountNameAndIcon() const {
     name = base::UTF16ToUTF8(entry->GetName());
 
     if (entry->IsUsingGAIAPicture() && entry->GetGAIAPicture()) {
-      gfx::Image icon =
-          profiles::GetAvatarIconForWebUI(entry->GetAvatarIcon(), true);
+      constexpr int kAvatarIconSize = 40;
+      gfx::Image icon = profiles::GetSizedAvatarIcon(
+          entry->GetAvatarIcon(), true, kAvatarIconSize, kAvatarIconSize);
       icon_url = webui::GetBitmapDataUrl(icon.AsBitmap());
     } else {
       icon_url = profiles::GetDefaultAvatarIconUrl(entry->GetAvatarIconIndex());
