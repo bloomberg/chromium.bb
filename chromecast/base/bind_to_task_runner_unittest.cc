@@ -4,170 +4,163 @@
 
 #include "chromecast/base/bind_to_task_runner.h"
 
+#include <memory>
 #include <utility>
 
-#include "base/memory/free_deleter.h"
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/callback.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/synchronization/waitable_event.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+using ::testing::Pointee;
 
 namespace chromecast {
 
-void BoundBoolSet(bool* var, bool val) {
-  *var = val;
-}
+namespace {
 
-void BoundBoolSetFromScopedPtr(bool* var, std::unique_ptr<bool> val) {
-  *var = *val;
-}
+using Type = int;
 
-void BoundBoolSetFromScopedPtrFreeDeleter(
-    bool* var,
-    std::unique_ptr<bool, base::FreeDeleter> val) {
-  *var = *val;
-}
+constexpr Type kValue = 15;
 
-void BoundBoolSetFromScopedArray(bool* var, std::unique_ptr<bool[]> val) {
-  *var = val[0];
-}
-
-void BoundBoolSetFromConstRef(bool* var, const bool& val) {
-  *var = val;
-}
-
-void BoundIntegersSet(int* a_var, int* b_var, int a_val, int b_val) {
-  *a_var = a_val;
-  *b_var = b_val;
-}
-
-// Various tests that check that the bound function is only actually executed
-// on the message loop, not during the original Run.
-class BindToTaskRunnerTest : public ::testing::Test {
- protected:
-  base::MessageLoop loop_;
+class Callbacks {
+ public:
+  virtual void VoidCallback() = 0;
+  virtual void ValueCallback(Type) = 0;
+  virtual void ConstRefCallback(const Type&) = 0;
+  virtual void MoveOnlyCallback(std::unique_ptr<Type>) = 0;
 };
 
-TEST_F(BindToTaskRunnerTest, Closure) {
-  // Test the closure is run inside the loop, not outside it.
-  base::WaitableEvent waiter(base::WaitableEvent::ResetPolicy::AUTOMATIC,
-                             base::WaitableEvent::InitialState::NOT_SIGNALED);
-  base::Closure cb = BindToCurrentThread(
-      base::Bind(&base::WaitableEvent::Signal, Unretained(&waiter)));
-  cb.Run();
-  EXPECT_FALSE(waiter.IsSignaled());
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(waiter.IsSignaled());
+class MockCallbacks : public Callbacks {
+ public:
+  MOCK_METHOD0(VoidCallback, void());
+  MOCK_METHOD1(ValueCallback, void(Type));
+  MOCK_METHOD1(ConstRefCallback, void(const Type&));
+  void MoveOnlyCallback(std::unique_ptr<Type> arg) override {
+    DoMoveOnlyCallback(arg.get());
+  }
+  MOCK_METHOD1(DoMoveOnlyCallback, void(Type*));
+};
+
+}  // namespace
+
+class BindToTaskRunnerTest : public ::testing::Test {
+ public:
+  ~BindToTaskRunnerTest() override { base::RunLoop().RunUntilIdle(); }
+
+  base::MessageLoop loop_;
+  MockCallbacks callbacks_;
+};
+
+TEST_F(BindToTaskRunnerTest, OnceClosure) {
+  base::OnceClosure callback = BindToCurrentThread(
+      base::BindOnce(&Callbacks::VoidCallback, base::Unretained(&callbacks_)));
+  std::move(callback).Run();
+  EXPECT_CALL(callbacks_, VoidCallback());
 }
 
-TEST_F(BindToTaskRunnerTest, Bool) {
-  bool bool_var = false;
-  base::Callback<void(bool)> cb =
-      BindToCurrentThread(base::Bind(&BoundBoolSet, &bool_var));
-  cb.Run(true);
-  EXPECT_FALSE(bool_var);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(bool_var);
+TEST_F(BindToTaskRunnerTest, OnceCallbackWithBoundValue) {
+  base::OnceCallback<void()> callback = BindToCurrentThread(base::BindOnce(
+      &Callbacks::ValueCallback, base::Unretained(&callbacks_), kValue));
+  std::move(callback).Run();
+  EXPECT_CALL(callbacks_, ValueCallback(kValue));
 }
 
-TEST_F(BindToTaskRunnerTest, BoundScopedPtrBool) {
-  bool bool_val = false;
-  std::unique_ptr<bool> scoped_ptr_bool(new bool(true));
-  base::Closure cb = BindToCurrentThread(base::Bind(
-      &BoundBoolSetFromScopedPtr, &bool_val, base::Passed(&scoped_ptr_bool)));
-  cb.Run();
-  EXPECT_FALSE(bool_val);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(bool_val);
+TEST_F(BindToTaskRunnerTest, OnceCallbackWithUnboundValue) {
+  base::OnceCallback<void(Type)> callback = BindToCurrentThread(
+      base::BindOnce(&Callbacks::ValueCallback, base::Unretained(&callbacks_)));
+  std::move(callback).Run(kValue);
+  EXPECT_CALL(callbacks_, ValueCallback(kValue));
 }
 
-TEST_F(BindToTaskRunnerTest, PassedScopedPtrBool) {
-  bool bool_val = false;
-  std::unique_ptr<bool> scoped_ptr_bool(new bool(true));
-  base::Callback<void(std::unique_ptr<bool>)> cb =
-      BindToCurrentThread(base::Bind(&BoundBoolSetFromScopedPtr, &bool_val));
-  cb.Run(std::move(scoped_ptr_bool));
-  EXPECT_FALSE(bool_val);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(bool_val);
+TEST_F(BindToTaskRunnerTest, OnceCallbackWithBoundConstRef) {
+  base::OnceCallback<void()> callback = BindToCurrentThread(base::BindOnce(
+      &Callbacks::ConstRefCallback, base::Unretained(&callbacks_), kValue));
+  std::move(callback).Run();
+  EXPECT_CALL(callbacks_, ConstRefCallback(kValue));
 }
 
-TEST_F(BindToTaskRunnerTest, BoundScopedArrayBool) {
-  bool bool_val = false;
-  std::unique_ptr<bool[]> scoped_array_bool(new bool[1]);
-  scoped_array_bool[0] = true;
-  base::Closure cb =
-      BindToCurrentThread(base::Bind(&BoundBoolSetFromScopedArray, &bool_val,
-                                     base::Passed(&scoped_array_bool)));
-  cb.Run();
-  EXPECT_FALSE(bool_val);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(bool_val);
+TEST_F(BindToTaskRunnerTest, OnceCallbackWithUnboundConstRef) {
+  base::OnceCallback<void(const Type&)> callback =
+      BindToCurrentThread(base::BindOnce(&Callbacks::ConstRefCallback,
+                                         base::Unretained(&callbacks_)));
+  std::move(callback).Run(kValue);
+  EXPECT_CALL(callbacks_, ConstRefCallback(kValue));
 }
 
-TEST_F(BindToTaskRunnerTest, PassedScopedArrayBool) {
-  bool bool_val = false;
-  std::unique_ptr<bool[]> scoped_array_bool(new bool[1]);
-  scoped_array_bool[0] = true;
-  base::Callback<void(std::unique_ptr<bool[]>)> cb =
-      BindToCurrentThread(base::Bind(&BoundBoolSetFromScopedArray, &bool_val));
-  cb.Run(std::move(scoped_array_bool));
-  EXPECT_FALSE(bool_val);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(bool_val);
+TEST_F(BindToTaskRunnerTest, OnceCallbackWithBoundMoveOnly) {
+  base::OnceCallback<void()> callback = BindToCurrentThread(base::BindOnce(
+      &Callbacks::MoveOnlyCallback, base::Unretained(&callbacks_),
+      base::MakeUnique<Type>(kValue)));
+  std::move(callback).Run();
+  EXPECT_CALL(callbacks_, DoMoveOnlyCallback(Pointee(kValue)));
 }
 
-TEST_F(BindToTaskRunnerTest, BoundScopedPtrFreeDeleterBool) {
-  bool bool_val = false;
-  std::unique_ptr<bool, base::FreeDeleter> scoped_ptr_free_deleter_bool(
-      static_cast<bool*>(malloc(sizeof(bool))));
-  *scoped_ptr_free_deleter_bool = true;
-  base::Closure cb = BindToCurrentThread(
-      base::Bind(&BoundBoolSetFromScopedPtrFreeDeleter, &bool_val,
-                 base::Passed(&scoped_ptr_free_deleter_bool)));
-  cb.Run();
-  EXPECT_FALSE(bool_val);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(bool_val);
+TEST_F(BindToTaskRunnerTest, OnceCallbackWithUnboundMoveOnly) {
+  base::OnceCallback<void(std::unique_ptr<Type>)> callback =
+      BindToCurrentThread(base::BindOnce(&Callbacks::MoveOnlyCallback,
+                                         base::Unretained(&callbacks_)));
+  std::move(callback).Run(base::MakeUnique<Type>(kValue));
+  EXPECT_CALL(callbacks_, DoMoveOnlyCallback(Pointee(kValue)));
 }
 
-TEST_F(BindToTaskRunnerTest, PassedScopedPtrFreeDeleterBool) {
-  bool bool_val = false;
-  std::unique_ptr<bool, base::FreeDeleter> scoped_ptr_free_deleter_bool(
-      static_cast<bool*>(malloc(sizeof(bool))));
-  *scoped_ptr_free_deleter_bool = true;
-  base::Callback<void(std::unique_ptr<bool, base::FreeDeleter>)> cb =
-      BindToCurrentThread(
-          base::Bind(&BoundBoolSetFromScopedPtrFreeDeleter, &bool_val));
-  cb.Run(std::move(scoped_ptr_free_deleter_bool));
-  EXPECT_FALSE(bool_val);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(bool_val);
+TEST_F(BindToTaskRunnerTest, RepeatingClosure) {
+  base::RepeatingClosure callback = BindToCurrentThread(base::BindRepeating(
+      &Callbacks::VoidCallback, base::Unretained(&callbacks_)));
+  callback.Run();
+  EXPECT_CALL(callbacks_, VoidCallback());
 }
 
-TEST_F(BindToTaskRunnerTest, BoolConstRef) {
-  bool bool_var = false;
-  bool true_var = true;
-  const bool& true_ref = true_var;
-  base::Closure cb = BindToCurrentThread(
-      base::Bind(&BoundBoolSetFromConstRef, &bool_var, true_ref));
-  cb.Run();
-  EXPECT_FALSE(bool_var);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(bool_var);
+TEST_F(BindToTaskRunnerTest, RepeatingCallbackWithBoundValue) {
+  base::RepeatingCallback<void()> callback =
+      BindToCurrentThread(base::BindRepeating(
+          &Callbacks::ValueCallback, base::Unretained(&callbacks_), kValue));
+  callback.Run();
+  EXPECT_CALL(callbacks_, ValueCallback(kValue));
 }
 
-TEST_F(BindToTaskRunnerTest, Integers) {
-  int a = 0;
-  int b = 0;
-  base::Callback<void(int, int)> cb =
-      BindToCurrentThread(base::Bind(&BoundIntegersSet, &a, &b));
-  cb.Run(1, -1);
-  EXPECT_EQ(a, 0);
-  EXPECT_EQ(b, 0);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(a, 1);
-  EXPECT_EQ(b, -1);
+TEST_F(BindToTaskRunnerTest, RepeatingCallbackWithUnboundValue) {
+  base::RepeatingCallback<void(Type)> callback =
+      BindToCurrentThread(base::BindRepeating(&Callbacks::ValueCallback,
+                                              base::Unretained(&callbacks_)));
+  callback.Run(kValue);
+  EXPECT_CALL(callbacks_, ValueCallback(kValue));
+}
+
+TEST_F(BindToTaskRunnerTest, RepeatingCallbackWithBoundConstRef) {
+  base::RepeatingCallback<void()> callback =
+      BindToCurrentThread(base::BindRepeating(
+          &Callbacks::ConstRefCallback, base::Unretained(&callbacks_), kValue));
+  callback.Run();
+  EXPECT_CALL(callbacks_, ConstRefCallback(kValue));
+}
+
+TEST_F(BindToTaskRunnerTest, RepeatingCallbackWithUnboundConstRef) {
+  base::RepeatingCallback<void(const Type&)> callback =
+      BindToCurrentThread(base::BindRepeating(&Callbacks::ConstRefCallback,
+                                              base::Unretained(&callbacks_)));
+  callback.Run(kValue);
+  EXPECT_CALL(callbacks_, ConstRefCallback(kValue));
+}
+
+TEST_F(BindToTaskRunnerTest, RepeatingCallbackWithBoundMoveOnly) {
+  base::RepeatingCallback<void()> callback =
+      BindToCurrentThread(base::BindRepeating(
+          &Callbacks::MoveOnlyCallback, base::Unretained(&callbacks_),
+          base::Passed(base::MakeUnique<Type>(kValue))));
+  callback.Run();
+  EXPECT_CALL(callbacks_, DoMoveOnlyCallback(Pointee(kValue)));
+}
+
+TEST_F(BindToTaskRunnerTest, RepeatingCallbackWithUnboundMoveOnly) {
+  base::RepeatingCallback<void(std::unique_ptr<Type>)> callback =
+      BindToCurrentThread(base::BindRepeating(&Callbacks::MoveOnlyCallback,
+                                              base::Unretained(&callbacks_)));
+  callback.Run(base::MakeUnique<Type>(kValue));
+  EXPECT_CALL(callbacks_, DoMoveOnlyCallback(Pointee(kValue)));
 }
 
 }  // namespace chromecast
