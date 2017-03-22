@@ -434,6 +434,10 @@ class HttpCache::Transaction : public HttpTransaction {
   // Called to signal completion of asynchronous IO.
   void OnIOComplete(int result);
 
+  // When in a DoLoop, use this to set the next state as it verifies that the
+  // state isn't set twice.
+  void TransitionToState(State state);
+
   State next_state_;
   const HttpRequestInfo* request_;
   RequestPriority priority_;
@@ -507,6 +511,9 @@ class HttpCache::Transaction : public HttpTransaction {
 
   BeforeNetworkStartCallback before_network_start_callback_;
   BeforeHeadersSentCallback before_headers_sent_callback_;
+
+  // True if the Transaction is currently processing the DoLoop.
+  bool in_do_loop_;
 
   base::WeakPtrFactory<Transaction> weak_factory_;
 
