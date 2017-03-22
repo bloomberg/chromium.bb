@@ -61,6 +61,7 @@ suite('DownloadsHandler', function() {
     var button = downloadsPage.$$('#changeDownloadsPath');
     assertTrue(!!button);
     MockInteractions.tap(button);
+    button.fire('transitionend');
     return DownloadsBrowserProxy.whenCalled('selectDownloadLocation');
   });
 

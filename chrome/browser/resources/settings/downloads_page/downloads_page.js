@@ -58,7 +58,9 @@ Polymer({
 
   /** @private */
   selectDownloadLocation_: function() {
-    this.browserProxy_.selectDownloadLocation();
+    listenOnce(this, 'transitionend', function() {
+      this.browserProxy_.selectDownloadLocation();
+    }.bind(this));
   },
 
   // <if expr="chromeos">

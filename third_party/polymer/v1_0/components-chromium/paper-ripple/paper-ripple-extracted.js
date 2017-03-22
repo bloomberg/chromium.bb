@@ -156,24 +156,27 @@ Polymer({
    * @suppress {checkTypes}
    */
   __hideRipple: function() {
-    this.ripples.forEach(function(ripple) {
-      var removeRipple = function() { ripple.remove(); };
-      // TODO(dbeam): should we be firing a transitionend event here? Does
-      // anybody actually use it? It's in the original paper-ripple.
-      var opacity = getComputedStyle(ripple).opacity;
-      if (!opacity.length) {
-        removeRipple();
-      } else {
-        var animation = ripple.animate({
-          opacity: [opacity, 0],
-        }, {
-          duration: 150,
-          fill: 'forwards',
-        });
-        animation.addEventListener('finish', removeRipple);
-        animation.addEventListener('cancel', removeRipple);
-      }
-    });
+    Promise.all(this.ripples.map(function(ripple) {
+      return new Promise(function(resolve) {
+        var removeRipple = function() {
+          ripple.remove();
+          resolve();
+        };
+        var opacity = getComputedStyle(ripple).opacity;
+        if (!opacity.length) {
+          removeRipple();
+        } else {
+          var animation = ripple.animate({
+            opacity: [opacity, 0],
+          }, {
+            duration: 150,
+            fill: 'forwards',
+          });
+          animation.addEventListener('finish', removeRipple);
+          animation.addEventListener('cancel', removeRipple);
+        }
+      });
+    })).then(function() { this.fire('transitionend'); }.bind(this));
     this.ripples = [];
   },
 
