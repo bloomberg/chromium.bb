@@ -16,6 +16,7 @@ from chromite.cbuildbot import commands
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import prebuilts
 from chromite.cbuildbot import relevant_changes
+from chromite.cbuildbot import tree_status
 from chromite.cbuildbot.stages import completion_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.cbuildbot.stages import sync_stages_unittest
@@ -778,6 +779,38 @@ class MasterCommitQueueCompletionStageTest(BaseCommitQueueCompletionStageTest):
 
     self.assertFalse(stage._IsFailureFatal(set(), set(), set()))
     self.assertFalse(stage._IsFailureFatal(set(['test3']), set(), set()))
+
+  def testSendInfraAlertIfNeededWithAlerts(self):
+    """Test SendInfraAlertIfNeeded which sends alerts."""
+    mock_send_alert = self.PatchObject(tree_status, 'SendHealthAlert')
+    self.PatchObject(completion_stages.CommitQueueCompletionStage,
+                     '_GetInfraFailMessages', return_value=['failure_message'])
+    self.PatchObject(completion_stages.CommitQueueCompletionStage,
+                     '_GetBuildersWithNoneMessages', return_value=[])
+    stage = self.ConstructStage()
+    failing = {'failing_build'}
+    inflight = {'inflight_build'}
+    no_stat = {'no_stat_build'}
+
+    stage.SendInfraAlertIfNeeded(failing, inflight, no_stat, False)
+    self.assertEqual(mock_send_alert.call_count, 1)
+    stage.SendInfraAlertIfNeeded(failing, inflight, no_stat, True)
+    self.assertEqual(mock_send_alert.call_count, 2)
+
+  def testSendInfraAlertIfNeededWithoutAlerts(self):
+    """Test SendInfraAlertIfNeeded which doesn't send alerts."""
+    mock_send_alert = self.PatchObject(tree_status, 'SendHealthAlert')
+    self.PatchObject(completion_stages.CommitQueueCompletionStage,
+                     '_GetInfraFailMessages', return_value=[])
+    self.PatchObject(completion_stages.CommitQueueCompletionStage,
+                     '_GetBuildersWithNoneMessages', return_value=[])
+    stage = self.ConstructStage()
+    inflight = {'inflight_build'}
+    no_stat = {'no_stat_build'}
+
+    stage.SendInfraAlertIfNeeded({}, inflight, no_stat, True)
+    self.assertEqual(mock_send_alert.call_count, 0)
+
 
 class PublishUprevChangesStageTest(
     generic_stages_unittest.AbstractStageTestCase):

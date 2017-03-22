@@ -764,7 +764,7 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
                              scheduled by Buildbucket.
     """
     messages = self._GetFailedMessages(failing)
-    self.SendInfraAlertIfNeeded(failing, inflight, no_stat)
+    self.SendInfraAlertIfNeeded(failing, inflight, no_stat, self_destructed)
 
     changes = self.sync_stage.pool.applied
 
@@ -839,20 +839,30 @@ class CommitQueueCompletionStage(MasterSlaveSyncCompletionStage):
     return [x for x in msgs if x and
             x.HasFailureType(failures_lib.InfrastructureFailure)]
 
-  def SendInfraAlertIfNeeded(self, failing, inflight, no_stat):
+  def SendInfraAlertIfNeeded(self, failing, inflight, no_stat, self_destructed):
     """Send infra alerts if needed.
 
     Args:
       failing: The names of the failing builders.
       inflight: The names of the builders that are still running.
       no_stat: The names of the builders that had status None.
+      self_destructed: Boolean indicating whether the master build destructed
+                       itself and stopped waiting completion of its slaves.
     """
     msgs = [str(x) for x in self._GetInfraFailMessages(failing)]
     # Failed to report a non-None messages is an infra failure.
     slaves = self._GetBuildersWithNoneMessages(failing)
     msgs += ['%s failed with unknown reason.' % x for x in slaves]
-    msgs += ['%s timed out' % x for x in inflight]
-    msgs += ['%s did not start' % x for x in no_stat]
+
+    if not self_destructed:
+      msgs += ['%s timed out' % x for x in inflight]
+      msgs += ['%s did not start' % x for x in no_stat]
+    elif msgs:
+      msgs += ['The master destructed itself and stopped waiting for the '
+               'following slaves:']
+      msgs += ['%s was still running' % x for x in inflight]
+      msgs += ['%s was waiting to start' % x for x in no_stat]
+
     if msgs:
       builder_name = self._run.config.name
       title = '%s has encountered infra failures:' % (builder_name,)
