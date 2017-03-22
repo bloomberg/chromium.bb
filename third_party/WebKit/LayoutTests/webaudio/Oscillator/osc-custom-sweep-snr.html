@@ -21,8 +21,9 @@
 
         // The thresholds are experimentally determined.
         tester.setThresholds({
-          snr: 93.450,
-          maxDiff: 0.00004
+          snr: 1000,
+          maxDiff: 0,
+          diffCount: 0
         });
         tester.runTest(context, "custom",
           "Custom Oscillator with Exponential Sweep", task, should);

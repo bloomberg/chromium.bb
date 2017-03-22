@@ -1191,19 +1191,15 @@ window.Audit = (function () {
   function loadFileFromUrl (fileUrl) {
     return new Promise((resolve, reject) => {
       let xhr = new XMLHttpRequest();
-      xhr.open('GET', fileUrl, true);
+      xhr.open('GET', fileUrl);
       xhr.responseType = 'arraybuffer';
 
       xhr.onload = () => {
-        // |status = 0| is a workaround for the run-webkit-test server. We are
-        // speculating the server quits the transaction prematurely without
-        // completing the request.
-        if (xhr.status === 200 || xhr.status === 0) {
+        if (xhr.status === 200) {
           resolve(xhr.response);
         } else {
           let errorMessage = 'loadFile: Request failed when loading ' +
-              fileUrl + '. ' + xhr.statusText + '. (status = ' +
-              xhr.status + ')';
+              fileUrl + '. (' + xhr.statusText + ')';
           if (reject) {
             reject(errorMessage);
           } else {

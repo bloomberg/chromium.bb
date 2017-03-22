@@ -21,11 +21,13 @@
 
         // The thresholds are experimentally determined.
         tester.setThresholds({
-          snr: 94.001,
-          maxDiff: 0.00006
+          snr: 1000,
+          maxDiff: 0,
+          diffCount: 0
         });
         tester.runTest(context, "sine",
-          "Sine Oscillator with Exponential Sweep", task, should);
+          "Sine Oscillator with Exponential Sweep",
+          task, should);
       });
 
       audit.run();
