@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/utils/mac/SkCGUtils.h"
 #include "ui/gl/gl_switches.h"
 
 namespace shape_detection {
@@ -64,7 +65,6 @@ TEST_F(BarcodeDetectionImplMacTest, ScanOneBarcode) {
 
   const gfx::Size size([qr_code_image extent].size.width,
                        [qr_code_image extent].size.height);
-  const int num_bytes = size.GetArea() * 4 /* bytes per pixel */;
 
   base::scoped_nsobject<CIContext> context([[CIContext alloc] init]);
 
@@ -73,30 +73,16 @@ TEST_F(BarcodeDetectionImplMacTest, ScanOneBarcode) {
   EXPECT_EQ(static_cast<size_t>(size.width()), CGImageGetWidth(cg_image));
   EXPECT_EQ(static_cast<size_t>(size.height()), CGImageGetHeight(cg_image));
 
-  base::ScopedCFTypeRef<CFDataRef> raw_cg_image_data(
-      CGDataProviderCopyData(CGImageGetDataProvider(cg_image)));
-  EXPECT_TRUE(CFDataGetBytePtr(raw_cg_image_data));
-  EXPECT_EQ(num_bytes, CFDataGetLength(raw_cg_image_data));
-
-  // Generate a new ScopedSharedBufferHandle of the aproppriate size, map it and
-  // copy the generated qr code image pixels into it.
-  mojo::ScopedSharedBufferHandle handle =
-      mojo::SharedBufferHandle::Create(num_bytes);
-  ASSERT_TRUE(handle->is_valid());
-
-  mojo::ScopedSharedBufferMapping mapping = handle->Map(num_bytes);
-  ASSERT_TRUE(mapping);
-
-  memcpy(mapping.get(), CFDataGetBytePtr(raw_cg_image_data), num_bytes);
+  SkBitmap bitmap;
+  ASSERT_TRUE(SkCreateBitmapFromCGImage(&bitmap, cg_image));
 
   base::RunLoop run_loop;
   base::Closure quit_closure = run_loop.QuitClosure();
   // Send the image Detect() and expect the response in callback.
   EXPECT_CALL(*this, Detection(1, kInfoString))
       .WillOnce(RunClosure(quit_closure));
-  impl_.Detect(std::move(handle), size.width(), size.height(),
-               base::Bind(&BarcodeDetectionImplMacTest::DetectCallback,
-                          base::Unretained(this)));
+  impl_.Detect(bitmap, base::Bind(&BarcodeDetectionImplMacTest::DetectCallback,
+                                  base::Unretained(this)));
 
   run_loop.Run();
 }

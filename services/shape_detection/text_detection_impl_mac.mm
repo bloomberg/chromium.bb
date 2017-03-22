@@ -48,22 +48,20 @@ TextDetectionImplMac::TextDetectionImplMac() {
 
 TextDetectionImplMac::~TextDetectionImplMac() {}
 
-void TextDetectionImplMac::Detect(mojo::ScopedSharedBufferHandle frame_data,
-                                  uint32_t width,
-                                  uint32_t height,
+void TextDetectionImplMac::Detect(const SkBitmap& bitmap,
                                   const DetectCallback& callback) {
   DCHECK(base::mac::IsAtLeastOS10_11());
   media::ScopedResultCallback<DetectCallback> scoped_callback(
       base::Bind(&RunCallbackWithResults, callback),
       base::Bind(&RunCallbackWithNoResults));
 
-  base::scoped_nsobject<CIImage> ci_image =
-      CreateCIImageFromSharedMemory(std::move(frame_data), width, height);
+  base::scoped_nsobject<CIImage> ci_image = CreateCIImageFromSkBitmap(bitmap);
   if (!ci_image)
     return;
 
   NSArray* const features = [detector_ featuresInImage:ci_image];
 
+  const int height = bitmap.height();
   std::vector<mojom::TextDetectionResultPtr> results;
   for (CIRectangleFeature* const f in features) {
     // CIRectangleFeature only has bounding box information.

@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/utils/mac/SkCGUtils.h"
 #include "ui/gl/gl_switches.h"
 
 namespace shape_detection {
@@ -81,29 +82,15 @@ TEST_F(TextDetectionImplMacTest, ScanOnce) {
   EXPECT_EQ(static_cast<size_t>(width), CGImageGetWidth(cg_image));
   EXPECT_EQ(static_cast<size_t>(height), CGImageGetHeight(cg_image));
 
-  base::ScopedCFTypeRef<CFDataRef> raw_cg_image_data(
-      CGDataProviderCopyData(CGImageGetDataProvider(cg_image)));
-  EXPECT_TRUE(CFDataGetBytePtr(raw_cg_image_data));
-  const int num_bytes = width * height * 4;
-  EXPECT_EQ(num_bytes, CFDataGetLength(raw_cg_image_data));
-
-  // Generate a new ScopedSharedBufferHandle of the aproppriate size, map it and
-  // copy the generated text image pixels into it.
-  auto handle = mojo::SharedBufferHandle::Create(num_bytes);
-  ASSERT_TRUE(handle->is_valid());
-
-  mojo::ScopedSharedBufferMapping mapping = handle->Map(num_bytes);
-  ASSERT_TRUE(mapping);
-
-  memcpy(mapping.get(), CFDataGetBytePtr(raw_cg_image_data), num_bytes);
+  SkBitmap bitmap;
+  ASSERT_TRUE(SkCreateBitmapFromCGImage(&bitmap, cg_image));
 
   base::RunLoop run_loop;
   base::Closure quit_closure = run_loop.QuitClosure();
   // Send the image to Detect() and expect the response in callback.
   EXPECT_CALL(*this, Detection(1)).WillOnce(RunClosure(quit_closure));
-  impl_.Detect(std::move(handle), width, height,
-               base::Bind(&TextDetectionImplMacTest::DetectCallback,
-                          base::Unretained(this)));
+  impl_.Detect(bitmap, base::Bind(&TextDetectionImplMacTest::DetectCallback,
+                                  base::Unretained(this)));
 
   run_loop.Run();
 }

@@ -10,6 +10,7 @@
 #include "core/imagebitmap/ImageBitmapFactories.h"
 #include "modules/ModulesExport.h"
 #include "modules/canvas2d/CanvasRenderingContext2D.h"
+#include "skia/public/interfaces/bitmap.mojom-blink.h"
 
 namespace blink {
 
@@ -27,9 +28,7 @@ class MODULES_EXPORT ShapeDetector
                                            const HTMLImageElement*);
 
   virtual ScriptPromise doDetect(ScriptPromiseResolver*,
-                                 mojo::ScopedSharedBufferHandle,
-                                 int imageWidth,
-                                 int imageHeight) = 0;
+                                 skia::mojom::blink::BitmapPtr) = 0;
 };
 
 }  // namespace blink
