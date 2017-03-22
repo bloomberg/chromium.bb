@@ -503,7 +503,7 @@ camera.views.Camera = function(context, router) {
   this.videoDeviceIds_ = null;
 
   /**
-   last* Legacy mirroring set per all devices.
+   * Legacy mirroring set per all devices.
    * @type {boolean}
    * @private
    */
@@ -515,6 +515,15 @@ camera.views.Camera = function(context, router) {
    * @private
    */
   this.mirroringToggles_ = {};
+
+  /**
+   * Overrides the default camera with a front facing camera due to
+   * limitations of WebRTC. This is a hack, to be removed when 58 hits
+   * post-stable.
+   * @type {boolean}
+   * @private
+   */
+  this.forceDefaultFrontFacingForReef58_ = false;
 
   // End of properties, seal the object.
   Object.seal(this);
@@ -646,7 +655,7 @@ camera.views.Camera.prototype.initialize = function(callback) {
 
   // Workaround for: crbug.com/523216.
   // Hide unsupported effects on alex.
-  camera.util.isBoard('x86-alex', function(result) {
+  camera.util.isBoard('x86-alex').then(function(result) {
     if (result) {
       var unsupported = [camera.effects.Cinema, camera.effects.TiltShift,
           camera.effects.Beauty, camera.effects.Funky];
@@ -655,6 +664,10 @@ camera.views.Camera.prototype.initialize = function(callback) {
       });
     }
 
+    return camera.util.isBoard('reef');
+  }).then(function(isReef) {
+    this.forceDefaultFrontFacingForReef58_ = isReef;
+  }.bind(this)).then(function() {
     // Initialize the webgl canvases.
     try {
       this.mainCanvas_ = fx.canvas();
@@ -1896,9 +1909,25 @@ camera.views.Camera.prototype.mediaRecorderRecording_ = function() {
     legacyConstraints.video.mandatory.sourceId = constraints.video.deviceId;
   }
 
-  // TODO(mtomasz): Move to navigator.mediaDevices.getUserMedia() when
-  // it's fully implemented.
-  navigator.webkitGetUserMedia(legacyConstraints, function(stream) {
+  // For reef devices probing resolutions may cause selecting a device
+  // which is not the default one on Chrome 58 and older.
+  //
+  // To workaround it, on reef, for the time being, force selecting the user
+  // facing camera, no matter what's the default camera set to in
+  // chrome://settings. On 58 passing larger resolution than the front facing
+  // camera can handle, would select the back facing, so hard-code the
+  // resolution.
+  if (this.forceDefaultFrontFacingForReef58_ && !constraints.video.deviceId) {
+    legacyConstraints = {
+      video: {
+        width: { exact: 1280 },
+        height: { exact: 720 },
+        facingMode: { exact: 'user' }
+      }
+    };
+  }
+
+  navigator.mediaDevices.getUserMedia(legacyConstraints).then(function(stream) {
     // Mute to avoid echo from the captured audio.
     this.video_.muted = true;
     this.video_.src = window.URL.createObjectURL(stream);
