@@ -346,27 +346,25 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
 }
 
 // Verify that when you unblock popup, the popup shows in history and omnibox.
-// TODO(crbug.com/663333) Flaky on Linux.
-#if defined(OS_LINUX)
-#define MAYBE_UnblockedPopupShowsInHistoryAndOmnibox \
-  DISABLED_UnblockedPopupShowsInHistoryAndOmnibox
-#else
-#define MAYBE_UnblockedPopupShowsInHistoryAndOmnibox \
-  UnblockedPopupShowsInHistoryAndOmnibox
-#endif
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
-                       MAYBE_UnblockedPopupShowsInHistoryAndOmnibox) {
+                       UnblockedPopupShowsInHistoryAndOmnibox) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisablePopupBlocking);
   GURL url(embedded_test_server()->GetURL(
       "/popup_blocker/popup-blocked-to-post-blank.html"));
   NavigateAndCheckPopupShown(url, ExpectTab);
 
+  // Make sure the navigation in the new tab actually finished.
+  WebContents* web_contents = browser()->tab_strip_model()->GetWebContentsAt(1);
+  base::string16 expected_title(base::ASCIIToUTF16("Popup Success!"));
+  content::TitleWatcher title_watcher(web_contents, expected_title);
+  EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+  WaitForHistoryBackendToRun(browser()->profile());
+
   std::string search_string =
       "data:text/html,<title>Popup Success!</title>you should not see this "
       "message if popup blocker is enabled";
 
-  WaitForHistoryBackendToRun(browser()->profile());
   ui_test_utils::HistoryEnumerator history(browser()->profile());
   std::vector<GURL>& history_urls = history.urls();
   ASSERT_EQ(2u, history_urls.size());
