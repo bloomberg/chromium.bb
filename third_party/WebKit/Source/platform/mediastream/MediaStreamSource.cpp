@@ -85,8 +85,7 @@ bool MediaStreamSource::removeAudioConsumer(
     AudioDestinationConsumer* consumer) {
   ASSERT(m_requiresConsumer);
   MutexLocker locker(m_audioConsumersLock);
-  HeapHashSet<Member<AudioDestinationConsumer>>::iterator it =
-      m_audioConsumers.find(consumer);
+  auto it = m_audioConsumers.find(consumer);
   if (it == m_audioConsumers.end())
     return false;
   m_audioConsumers.erase(it);
@@ -101,10 +100,8 @@ void MediaStreamSource::setAudioFormat(size_t numberOfChannels,
                                        float sampleRate) {
   ASSERT(m_requiresConsumer);
   MutexLocker locker(m_audioConsumersLock);
-  for (HeapHashSet<Member<AudioDestinationConsumer>>::iterator it =
-           m_audioConsumers.begin();
-       it != m_audioConsumers.end(); ++it)
-    (*it)->setFormat(numberOfChannels, sampleRate);
+  for (AudioDestinationConsumer* consumer : m_audioConsumers)
+    consumer->setFormat(numberOfChannels, sampleRate);
 }
 
 void MediaStreamSource::consumeAudio(AudioBus* bus, size_t numberOfFrames) {
@@ -113,15 +110,12 @@ void MediaStreamSource::consumeAudio(AudioBus* bus, size_t numberOfFrames) {
   // Prevent GCs from going ahead while this iteration runs, attempting to
   // pinpoint crbug.com/682945 failures.
   ThreadState::MainThreadGCForbiddenScope scope;
-  for (HeapHashSet<Member<AudioDestinationConsumer>>::iterator it =
-           m_audioConsumers.begin();
-       it != m_audioConsumers.end(); ++it)
-    (*it)->consumeAudio(bus, numberOfFrames);
+  for (AudioDestinationConsumer* consumer : m_audioConsumers)
+    consumer->consumeAudio(bus, numberOfFrames);
 }
 
 DEFINE_TRACE(MediaStreamSource) {
   visitor->trace(m_observers);
-  visitor->trace(m_audioConsumers);
 }
 
 }  // namespace blink

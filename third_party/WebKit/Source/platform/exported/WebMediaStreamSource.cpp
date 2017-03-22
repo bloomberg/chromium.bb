@@ -148,6 +148,8 @@ bool WebMediaStreamSource::requiresAudioConsumer() const {
 }
 
 class ConsumerWrapper final : public AudioDestinationConsumer {
+  USING_FAST_MALLOC(ConsumerWrapper);
+
  public:
   static ConsumerWrapper* create(WebAudioDestinationConsumer* consumer) {
     return new ConsumerWrapper(consumer);
@@ -196,12 +198,10 @@ bool WebMediaStreamSource::removeAudioConsumer(
   ASSERT(isMainThread());
   ASSERT(!m_private.isNull() && consumer);
 
-  const HeapHashSet<Member<AudioDestinationConsumer>>& consumers =
+  const HashSet<AudioDestinationConsumer*>& consumers =
       m_private->audioConsumers();
-  for (HeapHashSet<Member<AudioDestinationConsumer>>::const_iterator it =
-           consumers.begin();
-       it != consumers.end(); ++it) {
-    ConsumerWrapper* wrapper = static_cast<ConsumerWrapper*>(it->get());
+  for (AudioDestinationConsumer* it : consumers) {
+    ConsumerWrapper* wrapper = static_cast<ConsumerWrapper*>(it);
     if (wrapper->consumer() == consumer) {
       m_private->removeAudioConsumer(wrapper);
       return true;
