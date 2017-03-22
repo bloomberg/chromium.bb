@@ -7,6 +7,6 @@ Call stack:
 Executing StepOver...
 Executing StepOver...
 Call stack:
-    0) callback2 (debugger-step-over-across-timeouts.html:18)
+    0) callback2 (debugger-step-over-across-timeouts.html:20)
 
 

@@ -10,13 +10,13 @@ Executing StepInto...
 Executing StepInto...
 Executing StepInto...
 Call stack:
-    0) fooEventHandler1 (debugger-step-out-event-listener.html:14)
+    0) fooEventHandler1 (debugger-step-out-event-listener.html:15)
     1) inner (debugger-step-out-event-listener.html:27)
     2) testFunction (debugger-step-out-event-listener.html:32)
 
 Executing StepOut...
 Call stack:
-    0) fooEventHandler2 (debugger-step-out-event-listener.html:17)
+    0) fooEventHandler2 (debugger-step-out-event-listener.html:19)
     1) inner (debugger-step-out-event-listener.html:27)
     2) testFunction (debugger-step-out-event-listener.html:32)
 

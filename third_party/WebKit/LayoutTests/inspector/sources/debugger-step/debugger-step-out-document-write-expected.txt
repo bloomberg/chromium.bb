@@ -6,11 +6,11 @@ Call stack:
 
 Executing StepOut...
 Call stack:
-    0)  (debugger-step-out-document-write.html:9)
+    0)  (debugger-step-out-document-write.html:10)
 
 Executing StepOut...
 Call stack:
-    0)  (debugger-step-out-document-write.html:12)
+    0)  (debugger-step-out-document-write.html:18)
 
 Executing StepOut...
 Call stack:
@@ -23,7 +23,7 @@ Call stack:
 
 Executing StepOut...
 Call stack:
-    0)  (debugger-step-out-document-write.html:20)
+    0)  (debugger-step-out-document-write.html:21)
 
 Executing Resume...
 Page reloaded.

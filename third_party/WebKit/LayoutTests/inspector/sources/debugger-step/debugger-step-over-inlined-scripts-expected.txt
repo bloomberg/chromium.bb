@@ -16,10 +16,6 @@ Call stack:
 
 Executing StepOver...
 Call stack:
-    0)  (debugger-step-over-inlined-scripts.html:12)
-
-Executing StepOver...
-Call stack:
     0)  (debugger-step-over-inlined-scripts.html:17)
 
 Executing StepOver...

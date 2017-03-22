@@ -14,7 +14,6 @@ Call stack:
     0) testFunction (debugger-step-out-custom-element-callbacks.html:29)
 
 Executing StepInto...
-Executing StepInto...
 Call stack:
     0) attributeChangedCallback (debugger-step-out-custom-element-callbacks.html:25)
     1) testFunction (debugger-step-out-custom-element-callbacks.html:29)
@@ -24,7 +23,6 @@ Call stack:
     0) testFunction (debugger-step-out-custom-element-callbacks.html:30)
 
 Executing StepInto...
-Executing StepInto...
 Call stack:
     0) attachedCallback (debugger-step-out-custom-element-callbacks.html:17)
     1) testFunction (debugger-step-out-custom-element-callbacks.html:30)
@@ -33,7 +31,6 @@ Executing StepOut...
 Call stack:
     0) testFunction (debugger-step-out-custom-element-callbacks.html:31)
 
-Executing StepInto...
 Executing StepInto...
 Call stack:
     0) detachedCallback (debugger-step-out-custom-element-callbacks.html:21)

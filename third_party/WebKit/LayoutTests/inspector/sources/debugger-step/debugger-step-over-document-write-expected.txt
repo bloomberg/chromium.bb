@@ -10,10 +10,6 @@ Call stack:
 
 Executing StepOver...
 Call stack:
-    0)  (debugger-step-over-document-write.html:7)
-
-Executing StepOver...
-Call stack:
     0)  (debugger-step-over-document-write.html:8)
 
 Executing StepOver...

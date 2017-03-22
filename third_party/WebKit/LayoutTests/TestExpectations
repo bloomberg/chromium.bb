@@ -1402,6 +1402,20 @@ crbug.com/472330 fast/writing-mode/box-shadow-vertical-rl.html [ Failure ]
 
 crbug.com/700795 [ Mac ] inspector/animation/animation-transition-setTiming-crash.html [ Timeout Pass ]
 
+crbug.com/701500 inspector-protocol/debugger/debugger-doesnt-step-into-injected-script.html [ NeedsManualRebaseline ]
+crbug.com/701500 inspector/sources/debugger-frameworks/frameworks-step-into-skips-setTimeout.html [ NeedsManualRebaseline ]
+crbug.com/701500 inspector/sources/debugger-pause/pause-on-elements-panel.html [ NeedsManualRebaseline ]
+crbug.com/701500 inspector/sources/debugger-step/debugger-step-into-across-timeouts.html [ NeedsManualRebaseline ]
+crbug.com/701500 inspector/sources/debugger-step/debugger-step-into-document-write.html [ NeedsManualRebaseline ]
+crbug.com/701500 inspector/sources/debugger-step/debugger-step-into-inlined-scripts.html [ NeedsManualRebaseline ]
+crbug.com/701500 inspector/sources/debugger-step/debugger-step-out-across-timeouts.html [ NeedsManualRebaseline ]
+crbug.com/701500 inspector/sources/debugger-step/debugger-step-out-custom-element-callbacks.html [ NeedsManualRebaseline ]
+crbug.com/701500 inspector/sources/debugger-step/debugger-step-out-document-write.html [ NeedsManualRebaseline ]
+crbug.com/701500 inspector/sources/debugger-step/debugger-step-out-event-listener.html [ NeedsManualRebaseline ]
+crbug.com/701500 inspector/sources/debugger-step/debugger-step-over-across-timeouts.html [ NeedsManualRebaseline ]
+crbug.com/701500 inspector/sources/debugger-step/debugger-step-over-document-write.html [ NeedsManualRebaseline ]
+crbug.com/701500 inspector/sources/debugger-step/debugger-step-over-inlined-scripts.html [ NeedsManualRebaseline ]
+
 # Flaky on Win10 and Win7
 crbug.com/619539 [ Win ] http/tests/workers/terminate-during-sync-operation-file.html [ Pass Timeout ]
 crbug.com/619539 [ Win ] virtual/mojo-loading/http/tests/workers/terminate-during-sync-operation-file.html [ Pass Timeout ]

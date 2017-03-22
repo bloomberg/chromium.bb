@@ -6,6 +6,6 @@ Call stack:
 
 Executing StepOut...
 Call stack:
-    0) callback2 (debugger-step-out-across-timeouts.html:19)
+    0) callback2 (debugger-step-out-across-timeouts.html:21)
 
 

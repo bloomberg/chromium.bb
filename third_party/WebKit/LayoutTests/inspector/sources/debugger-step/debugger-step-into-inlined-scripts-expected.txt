@@ -16,10 +16,6 @@ Call stack:
 
 Executing StepInto...
 Call stack:
-    0)  (debugger-step-into-inlined-scripts.html:12)
-
-Executing StepInto...
-Call stack:
     0)  (debugger-step-into-inlined-scripts.html:17)
 
 Executing StepInto...

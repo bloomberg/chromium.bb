@@ -7,6 +7,6 @@ Call stack:
 Executing StepInto...
 Executing StepInto...
 Call stack:
-    0) callback2 (debugger-step-into-across-timeouts.html:18)
+    0) callback2 (debugger-step-into-across-timeouts.html:20)
 
 

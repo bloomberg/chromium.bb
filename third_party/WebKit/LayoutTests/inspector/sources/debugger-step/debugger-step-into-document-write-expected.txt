@@ -6,11 +6,6 @@ Call stack:
 
 Executing StepInto...
 Call stack:
-    0)  (:1)
-    1)  (debugger-step-into-document-write.html:4)
-
-Executing StepInto...
-Call stack:
     0)  (:5)
     1)  (debugger-step-into-document-write.html:4)
 
@@ -37,7 +32,7 @@ Call stack:
 
 Executing StepInto...
 Call stack:
-    0)  (debugger-step-into-document-write.html:7)
+    0)  (debugger-step-into-document-write.html:8)
 
 Executing StepInto...
 Call stack:
