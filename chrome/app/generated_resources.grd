@@ -11496,8 +11496,8 @@ Tell us what happened exactly before you got the profile error message:
       <message name="IDS_NOTIFICATION_BUTTON_CLOSE" desc="Button label to close a notification">
         Close
       </message>
-      <message name="IDS_NOTIFICATION_BUTTON_OPTIONS" desc="Button label to display more options like extra buttons or going to the site settings page.">
-        Options
+      <message name="IDS_NOTIFICATION_BUTTON_MORE" desc="Label shown on the second button of a MAC OSX system notification used to expand further options. [CHAR-LIMIT=12]">
+        More
       </message>
       <message name="IDS_NOTIFIER_WELCOME_BUTTON" desc="Notification body for when a new notifier service is introduced.">
         Turn off these notifications

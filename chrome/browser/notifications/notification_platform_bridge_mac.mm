@@ -182,7 +182,7 @@ void NotificationPlatformBridgeMac::Display(
   base::scoped_nsobject<NotificationBuilder> builder(
       [[NotificationBuilder alloc]
       initWithCloseLabel:l10n_util::GetNSString(IDS_NOTIFICATION_BUTTON_CLOSE)
-            optionsLabel:l10n_util::GetNSString(IDS_NOTIFICATION_BUTTON_OPTIONS)
+            optionsLabel:l10n_util::GetNSString(IDS_NOTIFICATION_BUTTON_MORE)
            settingsLabel:l10n_util::GetNSString(
                              IDS_NOTIFICATION_BUTTON_SETTINGS)]);
 

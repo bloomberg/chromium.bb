@@ -41,7 +41,7 @@ class NotificationPlatformBridgeMacTest : public testing::Test {
   NSUserNotification* BuildNotification() {
     base::scoped_nsobject<NotificationBuilder> builder(
         [[NotificationBuilder alloc] initWithCloseLabel:@"Close"
-                                           optionsLabel:@"Options"
+                                           optionsLabel:@"More"
                                           settingsLabel:@"Settings"]);
     [builder setTitle:@"Title"];
     [builder setSubTitle:@"https://www.miguel.com"];
@@ -235,7 +235,7 @@ TEST_F(NotificationPlatformBridgeMacTest, TestDisplayOneButton) {
   EXPECT_NSEQ(@"Context", [delivered_notification informativeText]);
   EXPECT_NSEQ(@"https://gmail.com", [delivered_notification subtitle]);
   EXPECT_NSEQ(@"Close", [delivered_notification otherButtonTitle]);
-  EXPECT_NSEQ(@"Options", [delivered_notification actionButtonTitle]);
+  EXPECT_NSEQ(@"More", [delivered_notification actionButtonTitle]);
 }
 
 TEST_F(NotificationPlatformBridgeMacTest, TestCloseNotification) {
