@@ -7,8 +7,12 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/lifetime/keep_alive_types.h"
+#include "chrome/browser/lifetime/scoped_keep_alive.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
@@ -59,6 +63,39 @@ void ProfileCreationComplete(Profile* profile, Profile::CreateStatus status) {
     base::MessageLoop::current()->QuitWhenIdle();
 }
 
+// An observer returns back to test code after one or more profiles was deleted.
+// It has ScopedKeepAlive object to prevent browser shutdown started in case
+// browser become windowless.
+class MultipleProfileDeletionObserver {
+ public:
+  explicit MultipleProfileDeletionObserver(size_t callbacks_calls_expected)
+      : callback_calls_left_(callbacks_calls_expected) {
+    EXPECT_LT(0u, callback_calls_left_);
+  }
+  ProfileManager::CreateCallback QuitAttemptClosure() {
+    return base::Bind(&MultipleProfileDeletionObserver::QuitAttempt,
+                      base::Unretained(this));
+  }
+  void Wait() {
+    keep_alive_ = base::MakeUnique<ScopedKeepAlive>(
+        KeepAliveOrigin::PROFILE_HELPER, KeepAliveRestartOption::DISABLED);
+    loop_.Run();
+  }
+
+ private:
+  void QuitAttempt(Profile* profile, Profile::CreateStatus status) {
+    EXPECT_EQ(Profile::CREATE_STATUS_INITIALIZED, status);
+    if (--callback_calls_left_)
+      return;
+    keep_alive_.reset(nullptr);
+    loop_.Quit();
+  }
+
+  base::RunLoop loop_;
+  size_t callback_calls_left_;
+  std::unique_ptr<ScopedKeepAlive> keep_alive_;
+};
+
 void EphemeralProfileCreationComplete(Profile* profile,
                                       Profile::CreateStatus status) {
   if (status == Profile::CREATE_STATUS_INITIALIZED)
@@ -80,14 +117,21 @@ class ProfileRemovalObserver : public ProfileAttributesStorage::Observer {
 
   std::string last_used_profile_name() { return last_used_profile_name_; }
 
+  void set_on_profile_removal_callback(const base::Closure& callback) {
+    on_profile_removal_callback_ = callback;
+  }
+
   // ProfileAttributesStorage::Observer overrides:
   void OnProfileWillBeRemoved(const base::FilePath& profile_path) override {
     last_used_profile_name_ = g_browser_process->local_state()->GetString(
         prefs::kProfileLastUsed);
+    if (!on_profile_removal_callback_.is_null())
+      on_profile_removal_callback_.Run();
   }
 
  private:
   std::string last_used_profile_name_;
+  base::Closure on_profile_removal_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileRemovalObserver);
 };
@@ -152,7 +196,9 @@ class ProfileManagerBrowserTest : public InProcessBrowserTest {
   }
 };
 
-#if defined(OS_MACOSX)
+// Android does not support multi-profiles, and CrOS multi-profiles
+// implementation is too different for these tests.
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 
 // Delete single profile and make sure a new one is created.
 IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DeleteSingletonProfile) {
@@ -168,14 +214,13 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DeleteSingletonProfile) {
   base::FilePath singleton_profile_path =
       storage.GetAllProfilesAttributes().front()->GetPath();
   EXPECT_FALSE(singleton_profile_path.empty());
-  base::RunLoop run_loop;
+  MultipleProfileDeletionObserver profile_deletion_observer(1u);
   profile_manager->ScheduleProfileForDeletion(
-      singleton_profile_path,
-      base::Bind(&OnUnblockOnProfileCreation, &run_loop));
+      singleton_profile_path, profile_deletion_observer.QuitAttemptClosure());
 
   // Run the message loop until the profile is actually deleted (as indicated
   // by the callback above being called).
-  run_loop.Run();
+  profile_deletion_observer.Wait();
 
   // Make sure a new profile was created automatically.
   EXPECT_EQ(1u, storage.GetNumberOfProfiles());
@@ -194,10 +239,78 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DeleteSingletonProfile) {
   EXPECT_EQ(last_used_profile_name, observer.last_used_profile_name());
 }
 
+// Delete inactive profile in a multi profile setup and make sure current
+// browser is not affected.
+IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DeleteInactiveProfile) {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  ProfileAttributesStorage& storage =
+      profile_manager->GetProfileAttributesStorage();
+  base::FilePath current_profile_path = browser()->profile()->GetPath();
+
+  // Create an additional profile.
+  base::FilePath new_path = profile_manager->GenerateNextProfileDirectoryPath();
+  base::RunLoop run_loop;
+  profile_manager->CreateProfileAsync(
+      new_path, base::Bind(&OnUnblockOnProfileCreation, &run_loop),
+      base::string16(), std::string(), std::string());
+  run_loop.Run();
+
+  ASSERT_EQ(2u, storage.GetNumberOfProfiles());
+
+  // Delete inactive profile.
+  base::RunLoop loop;
+  ProfileRemovalObserver observer;
+  observer.set_on_profile_removal_callback(loop.QuitClosure());
+  profile_manager->ScheduleProfileForDeletion(new_path,
+                                              ProfileManager::CreateCallback());
+  loop.Run();
+
+  // Make sure there only preexisted profile left.
+  EXPECT_EQ(1u, storage.GetNumberOfProfiles());
+  EXPECT_EQ(current_profile_path,
+            storage.GetAllProfilesAttributes().front()->GetPath());
+
+  // Make sure that last used profile preference is set correctly.
+  Profile* last_used = ProfileManager::GetLastUsedProfile();
+  EXPECT_EQ(current_profile_path, last_used->GetPath());
+}
+
+// Delete current profile in a multi profile setup and make sure an existing one
+// is loaded.
+IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DeleteCurrentProfile) {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  ProfileAttributesStorage& storage =
+      profile_manager->GetProfileAttributesStorage();
+
+  // Create an additional profile.
+  base::FilePath new_path = profile_manager->GenerateNextProfileDirectoryPath();
+  base::RunLoop run_loop;
+  profile_manager->CreateProfileAsync(
+      new_path, base::Bind(&OnUnblockOnProfileCreation, &run_loop),
+      base::string16(), std::string(), std::string());
+  run_loop.Run();
+
+  ASSERT_EQ(2u, storage.GetNumberOfProfiles());
+
+  // Delete current profile.
+  MultipleProfileDeletionObserver profile_deletion_observer(1u);
+  profile_manager->ScheduleProfileForDeletion(
+      browser()->profile()->GetPath(),
+      profile_deletion_observer.QuitAttemptClosure());
+  profile_deletion_observer.Wait();
+
+  // Make sure a profile created earlier become the only profile.
+  EXPECT_EQ(1u, storage.GetNumberOfProfiles());
+  EXPECT_EQ(new_path, storage.GetAllProfilesAttributes().front()->GetPath());
+
+  // Make sure that last used profile preference is set correctly.
+  Profile* last_used = ProfileManager::GetLastUsedProfile();
+  EXPECT_EQ(new_path, last_used->GetPath());
+}
+
 // Delete all profiles in a multi profile setup and make sure a new one is
 // created.
-// Crashes/CHECKs. See crbug.com/104851
-IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DISABLED_DeleteAllProfiles) {
+IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DeleteAllProfiles) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ProfileAttributesStorage& storage =
       profile_manager->GetProfileAttributesStorage();
@@ -216,6 +329,7 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DISABLED_DeleteAllProfiles) {
   ASSERT_EQ(2u, storage.GetNumberOfProfiles());
 
   // Delete all profiles.
+  MultipleProfileDeletionObserver profile_deletion_observer(2u);
   std::vector<ProfileAttributesEntry*> entries =
       storage.GetAllProfilesAttributes();
   std::vector<base::FilePath> old_profile_paths;
@@ -223,12 +337,10 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DISABLED_DeleteAllProfiles) {
     base::FilePath profile_path = entry->GetPath();
     EXPECT_FALSE(profile_path.empty());
     profile_manager->ScheduleProfileForDeletion(
-        profile_path, ProfileManager::CreateCallback());
+        profile_path, profile_deletion_observer.QuitAttemptClosure());
     old_profile_paths.push_back(profile_path);
   }
-
-  // Spin things so deletion can take place.
-  content::RunAllPendingInMessageLoop();
+  profile_deletion_observer.Wait();
 
   // Make sure a new profile was created automatically.
   EXPECT_EQ(1u, storage.GetNumberOfProfiles());
@@ -241,7 +353,7 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, DISABLED_DeleteAllProfiles) {
   Profile* last_used = ProfileManager::GetLastUsedProfile();
   EXPECT_EQ(new_profile_path, last_used->GetPath());
 }
-#endif  // OS_MACOSX
+#endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 
 #if defined(OS_CHROMEOS)
 

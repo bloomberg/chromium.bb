@@ -1835,6 +1835,7 @@ test("browser_tests") {
       "../browser/ui/webui/policy_ui_browsertest.cc",
       "../browser/ui/webui/prefs_internals_browsertest.cc",
       "../browser/ui/webui/print_preview/print_preview_ui_browsertest.cc",
+      "../browser/ui/webui/profile_helper_browsertest.cc",
       "../browser/ui/webui/set_as_default_browser_ui_browsertest_win.cc",
       "../browser/ui/webui/settings/md_settings_ui_browsertest.cc",
       "../browser/ui/webui/signin/inline_login_ui_browsertest.cc",
@@ -2379,6 +2380,7 @@ test("browser_tests") {
 
         # inline login UI is disabled on chromeos
         "../browser/ui/views/sync/profile_signin_confirmation_dialog_views_browsertest.cc",
+        "../browser/ui/webui/profile_helper_browsertest.cc",
         "../browser/ui/webui/signin/inline_login_ui_browsertest.cc",
 
         # chromeos does not use the desktop user manager
