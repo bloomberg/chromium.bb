@@ -19,7 +19,7 @@
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
         '<(EXTERNS_GYP):chrome_extensions',
         'actions',
-        'bookmarks_store',
+        'store',
         'util',
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
@@ -31,19 +31,10 @@
         '<(EXTERNS_GYP):chrome_extensions',
         'api_listener',
         'router',
+        'store',
         'store_client',
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
-    },
-    {
-      'target_name': 'bookmarks_store',
-      'dependencies': [
-        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
-        '<(EXTERNS_GYP):chrome_extensions',
-        'reducers',
-        'types',
-      ],
-      'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi']
     },
     {
       'target_name': 'edit_dialog',
@@ -83,7 +74,6 @@
         '<(EXTERNS_GYP):chrome_extensions',
         'actions',
         'edit_dialog',
-        'item',
         'store_client',
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
@@ -115,8 +105,10 @@
     {
       'target_name': 'store',
       'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
         '<(EXTERNS_GYP):chrome_extensions',
-        'router',
+        'reducers',
+        'types',
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi']
     },
@@ -124,7 +116,7 @@
       'target_name': 'store_client',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
-        'bookmarks_store',
+        'store',
         'types',
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi']

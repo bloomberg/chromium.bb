@@ -27,34 +27,6 @@ MaterialBookmarksBrowserTest.prototype = {
   ]),
 };
 
-function MaterialBookmarksStoreTest() {}
-
-MaterialBookmarksStoreTest.prototype = {
-  __proto__: MaterialBookmarksBrowserTest.prototype,
-
-  extraLibraries: MaterialBookmarksBrowserTest.prototype.extraLibraries.concat([
-    'store_test.js',
-  ]),
-};
-
-TEST_F('MaterialBookmarksStoreTest', 'All', function() {
-  mocha.run();
-});
-
-function MaterialBookmarksSidebarTest() {}
-
-MaterialBookmarksSidebarTest.prototype = {
-  __proto__: MaterialBookmarksBrowserTest.prototype,
-
-  extraLibraries: MaterialBookmarksBrowserTest.prototype.extraLibraries.concat([
-    'sidebar_test.js',
-  ]),
-};
-
-TEST_F('MaterialBookmarksSidebarTest', 'All', function() {
-  mocha.run();
-});
-
 function MaterialBookmarksEditDialogTest() {}
 
 MaterialBookmarksEditDialogTest.prototype = {
@@ -141,6 +113,20 @@ MaterialBookmarksRouterOnLoadTest.prototype = {
 
 TEST_F('MaterialBookmarksRouterOnLoadTest', 'All', function() {
   mocha.grep('URL preload').run();
+});
+
+function MaterialBookmarksSidebarTest() {}
+
+MaterialBookmarksSidebarTest.prototype = {
+  __proto__: MaterialBookmarksBrowserTest.prototype,
+
+  extraLibraries: MaterialBookmarksBrowserTest.prototype.extraLibraries.concat([
+    'sidebar_test.js',
+  ]),
+};
+
+TEST_F('MaterialBookmarksSidebarTest', 'All', function() {
+  mocha.run();
 });
 
 function MaterialBookmarksStoreClientTest() {}

@@ -73,8 +73,6 @@ content::WebUIDataSource* CreateMdBookmarksUIHTMLSource(Profile* profile) {
   source->AddResourcePath("api_listener.js", IDR_MD_BOOKMARKS_API_LISTENER_JS);
   source->AddResourcePath("app.html", IDR_MD_BOOKMARKS_APP_HTML);
   source->AddResourcePath("app.js", IDR_MD_BOOKMARKS_APP_JS);
-  source->AddResourcePath("bookmarks_store.js",
-                          IDR_MD_BOOKMARKS_BOOKMARKS_STORE_JS);
   source->AddResourcePath("edit_dialog.html",
                           IDR_MD_BOOKMARKS_EDIT_DIALOG_HTML);
   source->AddResourcePath("edit_dialog.js", IDR_MD_BOOKMARKS_EDIT_DIALOG_JS);
