@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <map>
+#include <set>
 #include <vector>
 
 #include "base/bind.h"
@@ -27,8 +28,11 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/browser/frame_host/cross_process_frame_connector.h"
+#include "content/browser/frame_host/frame_navigation_entry.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
+#include "content/browser/frame_host/navigation_controller_impl.h"
+#include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/frame_host/render_widget_host_view_child_frame.h"
@@ -100,6 +104,8 @@
 #include "content/browser/renderer_host/ime_adapter_android.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
 #endif
+
+using ::testing::SizeIs;
 
 namespace content {
 
@@ -9904,6 +9910,48 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_EQ(root->child_at(0)->current_url(), redirected_url);
   EXPECT_EQ(b_site_instance,
             root->child_at(0)->current_frame_host()->GetSiteInstance());
+}
+
+IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
+                       FrameSwapPreservesUniqueName) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(a)"));
+  ASSERT_TRUE(NavigateToURL(shell(), main_url));
+
+  // Navigate the subframe cross-site…
+  {
+    GURL url(embedded_test_server()->GetURL("b.com", "/title1.html"));
+    EXPECT_TRUE(NavigateIframeToURL(shell()->web_contents(), "child-0", url));
+  }
+  // and then same-site…
+  {
+    GURL url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+    EXPECT_TRUE(NavigateIframeToURL(shell()->web_contents(), "child-0", url));
+  }
+  // and cross-site once more.
+  {
+    GURL url(embedded_test_server()->GetURL("b.com", "/title1.html"));
+    EXPECT_TRUE(NavigateIframeToURL(shell()->web_contents(), "child-0", url));
+  }
+
+  // Inspect the navigation entries and make sure that the navigation target
+  // remained constant across frame swaps.
+  const auto& controller = static_cast<const NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+  EXPECT_EQ(4, controller.GetEntryCount());
+
+  std::set<std::string> names;
+  for (int i = 0; i < controller.GetEntryCount(); ++i) {
+    NavigationEntryImpl::TreeNode* root =
+        controller.GetEntryAtIndex(i)->root_node();
+    ASSERT_EQ(1U, root->children.size());
+    names.insert(root->children[0]->frame_entry->frame_unique_name());
+  }
+
+  // More than one entry in the set means that the subframe frame navigation
+  // entries didn't have a consistent unique name. This will break history
+  // navigations =(
+  EXPECT_THAT(names, SizeIs(1)) << "Mismatched names for subframe!";
 }
 
 }  // namespace content

@@ -174,7 +174,7 @@ HistoryEntry::HistoryNode* HistoryEntry::GetHistoryNodeForFrame(
     RenderFrameImpl* frame) {
   if (!frame->GetWebFrame()->parent())
     return root_history_node();
-  return unique_names_to_items_[frame->GetWebFrame()->uniqueName().utf8()];
+  return unique_names_to_items_[frame->unique_name()];
 }
 
 WebHistoryItem HistoryEntry::GetItemForFrame(RenderFrameImpl* frame) {

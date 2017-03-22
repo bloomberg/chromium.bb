@@ -266,7 +266,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
 
   virtual WebCookieJar* cookieJar() const = 0;
 
-  virtual void didChangeName(const String& name, const String& uniqueName) {}
+  virtual void didChangeName(const String&) {}
 
   virtual void didEnforceInsecureRequestPolicy(WebInsecureRequestPolicy) {}
 

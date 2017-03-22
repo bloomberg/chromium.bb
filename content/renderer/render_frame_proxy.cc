@@ -61,6 +61,7 @@ RenderFrameProxy* RenderFrameProxy::CreateProxyToReplaceFrame(
   CHECK_NE(routing_id, MSG_ROUTING_NONE);
 
   std::unique_ptr<RenderFrameProxy> proxy(new RenderFrameProxy(routing_id));
+  proxy->unique_name_ = frame_to_replace->unique_name();
 
   // When a RenderFrame is replaced by a RenderProxy, the WebRemoteFrame should
   // always come from WebRemoteFrame::create and a call to WebFrame::swap must
@@ -126,8 +127,8 @@ RenderFrameProxy* RenderFrameProxy::CreateFrameProxy(
     web_frame = parent->web_frame()->createRemoteChild(
         replicated_state.scope,
         blink::WebString::fromUTF8(replicated_state.name),
-        blink::WebString::fromUTF8(replicated_state.unique_name),
         replicated_state.sandbox_flags, proxy.get(), opener);
+    proxy->unique_name_ = replicated_state.unique_name;
     render_view = parent->render_view();
     render_widget = parent->render_widget();
   }
@@ -220,8 +221,7 @@ void RenderFrameProxy::SetReplicatedState(const FrameReplicationState& state) {
   DCHECK(web_frame_);
   web_frame_->setReplicatedOrigin(state.origin);
   web_frame_->setReplicatedSandboxFlags(state.sandbox_flags);
-  web_frame_->setReplicatedName(blink::WebString::fromUTF8(state.name),
-                                blink::WebString::fromUTF8(state.unique_name));
+  web_frame_->setReplicatedName(blink::WebString::fromUTF8(state.name));
   web_frame_->setReplicatedInsecureRequestPolicy(state.insecure_request_policy);
   web_frame_->setReplicatedPotentiallyTrustworthyUniqueOrigin(
       state.has_potentially_trustworthy_unique_origin);
@@ -347,8 +347,8 @@ void RenderFrameProxy::OnDispatchLoad() {
 
 void RenderFrameProxy::OnDidUpdateName(const std::string& name,
                                        const std::string& unique_name) {
-  web_frame_->setReplicatedName(blink::WebString::fromUTF8(name),
-                                blink::WebString::fromUTF8(unique_name));
+  web_frame_->setReplicatedName(blink::WebString::fromUTF8(name));
+  unique_name_ = unique_name;
 }
 
 void RenderFrameProxy::OnAddContentSecurityPolicy(

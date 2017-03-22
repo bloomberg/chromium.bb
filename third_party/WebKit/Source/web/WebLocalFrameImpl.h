@@ -88,7 +88,6 @@ class WEB_EXPORT WebLocalFrameImpl final
   // TODO(dcheng): Fix sorting here; a number of method have been moved to
   // WebLocalFrame but not correctly updated here.
   void close() override;
-  WebString uniqueName() const override;
   WebString assignedName() const override;
   void setName(const WebString&) override;
   WebVector<WebIconURL> iconURLs(int iconTypesMask) const override;
@@ -317,8 +316,7 @@ class WEB_EXPORT WebLocalFrameImpl final
   // WebFrameImplBase methods:
   void initializeCoreFrame(FrameHost*,
                            FrameOwner*,
-                           const AtomicString& name,
-                           const AtomicString& uniqueName) override;
+                           const AtomicString& name) override;
   LocalFrame* frame() const override { return m_frame.get(); }
 
   void willBeDetached();

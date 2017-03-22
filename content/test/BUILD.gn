@@ -504,6 +504,26 @@ static_library("layouttest_support") {
   }
 }
 
+static_library("test_runner_support") {
+  testonly = true
+
+  # See comment at the top of //content/BUILD.gn for why this is disabled in
+  # component builds.
+  if (is_component_build) {
+    check_includes = false
+  }
+
+  sources = [
+    "../public/test/test_runner_support.h",
+    "test_runner_support.cc",
+  ]
+
+  deps = [
+    "//content/renderer:for_content_tests",
+    "//third_party/WebKit/public:blink",
+  ]
+}
+
 if (is_android) {
   import("//build/config/android/rules.gni")
 

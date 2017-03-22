@@ -35,8 +35,7 @@ class WEB_EXPORT WebFrameImplBase
 
   virtual void initializeCoreFrame(FrameHost*,
                                    FrameOwner*,
-                                   const AtomicString& name,
-                                   const AtomicString& uniqueName) = 0;
+                                   const AtomicString& name) = 0;
   // TODO(dcheng): Rename this to coreFrame()? This probably also shouldn't be
   // const...
   virtual Frame* frame() const = 0;

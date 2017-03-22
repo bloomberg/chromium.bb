@@ -10,6 +10,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "content/public/test/test_runner_support.h"
 #include "content/shell/test_runner/accessibility_controller.h"
 #include "content/shell/test_runner/event_sender.h"
 #include "content/shell/test_runner/mock_color_chooser.h"
@@ -44,21 +45,19 @@ namespace test_runner {
 
 namespace {
 
-void PrintFrameDescription(WebTestDelegate* delegate, blink::WebFrame* frame) {
-  std::string name8 = frame->uniqueName().utf8();
+void PrintFrameDescription(WebTestDelegate* delegate,
+                           blink::WebLocalFrame* frame) {
+  std::string name = content::GetUniqueNameForFrame(frame);
   if (frame == frame->view()->mainFrame()) {
-    if (!name8.length()) {
-      delegate->PrintMessage("main frame");
-      return;
-    }
-    delegate->PrintMessage(std::string("main frame \"") + name8 + "\"");
+    DCHECK(name.empty());
+    delegate->PrintMessage("main frame");
     return;
   }
-  if (!name8.length()) {
+  if (name.empty()) {
     delegate->PrintMessage("frame (anonymous)");
     return;
   }
-  delegate->PrintMessage(std::string("frame \"") + name8 + "\"");
+  delegate->PrintMessage(std::string("frame \"") + name + "\"");
 }
 
 void PrintFrameuserGestureStatus(WebTestDelegate* delegate,

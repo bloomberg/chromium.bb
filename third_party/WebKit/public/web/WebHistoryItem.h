@@ -35,6 +35,7 @@
 #include "../platform/WebHistoryScrollRestorationType.h"
 #include "../platform/WebPrivatePtr.h"
 #include "../platform/WebReferrerPolicy.h"
+#include "public/platform/WebString.h"
 
 namespace blink {
 
@@ -81,7 +82,7 @@ class WebHistoryItem {
   BLINK_EXPORT WebReferrerPolicy getReferrerPolicy() const;
   BLINK_EXPORT void setReferrer(const WebString&, WebReferrerPolicy);
 
-  BLINK_EXPORT WebString target() const;
+  BLINK_EXPORT const WebString& target() const;
   BLINK_EXPORT void setTarget(const WebString&);
 
   BLINK_EXPORT WebFloatPoint visualViewportScrollOffset() const;
@@ -127,6 +128,8 @@ class WebHistoryItem {
 
  private:
   WebPrivatePtr<HistoryItem> m_private;
+  // TODO(dcheng): Remove this, since unique name is no longer a Blink concept.
+  WebString m_target;
 };
 
 }  // namespace blink

@@ -881,11 +881,10 @@ void LocalFrameClientImpl::frameFocused() const {
     m_webFrame->client()->frameFocused();
 }
 
-void LocalFrameClientImpl::didChangeName(const String& name,
-                                         const String& uniqueName) {
+void LocalFrameClientImpl::didChangeName(const String& name) {
   if (!m_webFrame->client())
     return;
-  m_webFrame->client()->didChangeName(name, uniqueName);
+  m_webFrame->client()->didChangeName(name);
 }
 
 void LocalFrameClientImpl::didEnforceInsecureRequestPolicy(

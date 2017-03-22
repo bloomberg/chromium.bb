@@ -1081,12 +1081,19 @@ void LocalDOMWindow::setName(const AtomicString& name) {
   if (!isCurrentlyDisplayedInFrame())
     return;
 
+  // Avoid calling out to notify the embedder if the browsing context name
+  // didn't change. This is important to avoid violating the browser assumption
+  // that the unique name doesn't change if the browsing context name doesn't
+  // change.
+  // TODO(dcheng): This comment is indicative of a problematic layering
+  // violation. The browser should not be relying on the renderer to get this
+  // correct; unique name calculation should be moved up into the browser.
   if (name == frame()->tree().name())
     return;
 
   frame()->tree().setName(name);
   ASSERT(frame()->loader().client());
-  frame()->loader().client()->didChangeName(name, frame()->tree().uniqueName());
+  frame()->loader().client()->didChangeName(name);
 }
 
 void LocalDOMWindow::setStatus(const String& string) {

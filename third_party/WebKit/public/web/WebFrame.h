@@ -120,9 +120,6 @@ class WebFrame {
 
   // Basic properties ---------------------------------------------------
 
-  // The unique name of this frame.
-  virtual WebString uniqueName() const = 0;
-
   // The name of this frame. If no name is given, empty string is returned.
   virtual WebString assignedName() const = 0;
 

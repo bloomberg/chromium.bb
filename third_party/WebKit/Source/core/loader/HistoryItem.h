@@ -55,7 +55,6 @@ class CORE_EXPORT HistoryItem final
   KURL url() const;
 
   const Referrer& referrer() const;
-  const String& target() const;
 
   EncodedFormData* formData();
   const AtomicString& formContentType() const;
@@ -83,7 +82,6 @@ class CORE_EXPORT HistoryItem final
   void setURL(const KURL&);
   void setURLString(const String&);
   void setReferrer(const Referrer&);
-  void setTarget(const String&);
 
   void setStateObject(PassRefPtr<SerializedScriptValue>);
   SerializedScriptValue* stateObject() const { return m_stateObject.get(); }
@@ -118,7 +116,6 @@ class CORE_EXPORT HistoryItem final
 
   String m_urlString;
   Referrer m_referrer;
-  String m_target;
 
   bool m_didSaveScrollOrScaleState;
   ScrollOffset m_visualViewportScrollOffset;

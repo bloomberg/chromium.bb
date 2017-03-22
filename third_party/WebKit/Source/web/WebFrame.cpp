@@ -70,7 +70,6 @@ bool WebFrame::swap(WebFrame* frame) {
 
   FrameHost* host = oldFrame->host();
   AtomicString name = oldFrame->tree().name();
-  AtomicString uniqueName = oldFrame->tree().uniqueName();
   FrameOwner* owner = oldFrame->owner();
 
   v8::HandleScope handleScope(v8::Isolate::GetCurrent());
@@ -106,8 +105,7 @@ bool WebFrame::swap(WebFrame* frame) {
                            TRACE_EVENT_SCOPE_THREAD, "frame", &localFrame);
     }
   } else {
-    toWebRemoteFrameImpl(frame)->initializeCoreFrame(host, owner, name,
-                                                     uniqueName);
+    toWebRemoteFrameImpl(frame)->initializeCoreFrame(host, owner, name);
   }
 
   if (m_parent && oldFrame->hasReceivedUserGesture())

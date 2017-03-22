@@ -100,18 +100,6 @@ TestWebViewClient* defaultWebViewClient() {
   return &client;
 }
 
-// |uniqueName| is normally calculated in a somewhat complicated way by the
-// FrameTree class, but for test purposes the approximation below should be
-// close enough.
-String nameToUniqueName(const String& name) {
-  static int uniqueNameCounter = 0;
-  StringBuilder uniqueName;
-  uniqueName.append(name);
-  uniqueName.append(' ');
-  uniqueName.appendNumber(uniqueNameCounter++);
-  return uniqueName.toString();
-}
-
 }  // namespace
 
 void loadFrame(WebFrame* frame, const std::string& url) {
@@ -176,8 +164,7 @@ WebLocalFrameImpl* createLocalChild(WebRemoteFrame* parent,
     client = defaultWebFrameClient();
 
   WebLocalFrameImpl* frame = toWebLocalFrameImpl(parent->createLocalChild(
-      WebTreeScopeType::Document, name, nameToUniqueName(name),
-      WebSandboxFlags::None, client,
+      WebTreeScopeType::Document, name, WebSandboxFlags::None, client,
       static_cast<TestWebFrameClient*>(client)->interfaceProvider(), nullptr,
       previousSibling, properties, nullptr));
 
@@ -191,9 +178,9 @@ WebLocalFrameImpl* createLocalChild(WebRemoteFrame* parent,
 WebRemoteFrameImpl* createRemoteChild(WebRemoteFrame* parent,
                                       WebRemoteFrameClient* client,
                                       const WebString& name) {
-  return toWebRemoteFrameImpl(parent->createRemoteChild(
-      WebTreeScopeType::Document, name, nameToUniqueName(name),
-      WebSandboxFlags::None, client, nullptr));
+  return toWebRemoteFrameImpl(
+      parent->createRemoteChild(WebTreeScopeType::Document, name,
+                                WebSandboxFlags::None, client, nullptr));
 }
 
 WebViewHelper::WebViewHelper(SettingOverrider* settingOverrider)
@@ -316,7 +303,7 @@ WebLocalFrame* TestWebFrameClient::createChildFrame(
     WebLocalFrame* parent,
     WebTreeScopeType scope,
     const WebString& name,
-    const WebString& uniqueName,
+    const WebString& fallbackName,
     WebSandboxFlags sandboxFlags,
     const WebFrameOwnerProperties& frameOwnerProperties) {
   WebLocalFrame* frame =

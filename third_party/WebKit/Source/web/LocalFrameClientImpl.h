@@ -181,7 +181,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
 
   WebCookieJar* cookieJar() const override;
   void frameFocused() const override;
-  void didChangeName(const String& name, const String& uniqueName) override;
+  void didChangeName(const String&) override;
   void didEnforceInsecureRequestPolicy(WebInsecureRequestPolicy) override;
   void didUpdateToUniqueOrigin() override;
   void didChangeSandboxFlags(Frame* childFrame, SandboxFlags) override;

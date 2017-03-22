@@ -182,7 +182,7 @@ class BLINK_EXPORT WebFrameClient {
   virtual WebLocalFrame* createChildFrame(WebLocalFrame* parent,
                                           WebTreeScopeType,
                                           const WebString& name,
-                                          const WebString& uniqueName,
+                                          const WebString& fallbackName,
                                           WebSandboxFlags sandboxFlags,
                                           const WebFrameOwnerProperties&) {
     return nullptr;
@@ -208,8 +208,7 @@ class BLINK_EXPORT WebFrameClient {
   virtual void willCommitProvisionalLoad() {}
 
   // This frame's name has changed.
-  virtual void didChangeName(const WebString& name,
-                             const WebString& uniqueName) {}
+  virtual void didChangeName(const WebString& name) {}
 
   // This frame has set an insecure request policy.
   virtual void didEnforceInsecureRequestPolicy(WebInsecureRequestPolicy) {}

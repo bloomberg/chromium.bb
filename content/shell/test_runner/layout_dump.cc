@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
+#include "content/public/test/test_runner_support.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -23,26 +24,26 @@ using blink::WebSize;
 
 namespace {
 
-std::string DumpFrameHeaderIfNeeded(WebFrame* frame) {
+std::string DumpFrameHeaderIfNeeded(WebLocalFrame* frame) {
   std::string result;
 
   // Add header for all but the main frame. Skip empty frames.
   if (frame->parent() && !frame->document().documentElement().isNull()) {
     result.append("\n--------\nFrame: '");
-    result.append(frame->uniqueName().utf8());
+    result.append(content::GetUniqueNameForFrame(frame));
     result.append("'\n--------\n");
   }
 
   return result;
 }
 
-std::string DumpFrameScrollPosition(WebFrame* frame) {
+std::string DumpFrameScrollPosition(WebLocalFrame* frame) {
   std::string result;
   WebSize offset = frame->getScrollOffset();
   if (offset.width > 0 || offset.height > 0) {
     if (frame->parent()) {
       result =
-          std::string("frame '") + frame->uniqueName().utf8().data() + "' ";
+          std::string("frame '") + content::GetUniqueNameForFrame(frame) + "' ";
     }
     base::StringAppendF(&result, "scrolled to %d,%d\n", offset.width,
                         offset.height);

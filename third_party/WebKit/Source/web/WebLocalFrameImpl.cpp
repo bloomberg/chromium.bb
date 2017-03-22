@@ -545,10 +545,6 @@ void WebLocalFrameImpl::close() {
   m_selfKeepAlive.clear();
 }
 
-WebString WebLocalFrameImpl::uniqueName() const {
-  return frame()->tree().uniqueName();
-}
-
 WebString WebLocalFrameImpl::assignedName() const {
   return frame()->tree().name();
 }
@@ -1532,11 +1528,8 @@ WebLocalFrameImpl* WebLocalFrameImpl::createProvisional(
   LocalFrame* frame = LocalFrame::create(webFrame->m_localFrameClientImpl.get(),
                                          oldFrame->page(), tempOwner,
                                          interfaceProvider, interfaceRegistry);
-  // Set the name and unique name directly, bypassing any of the normal logic
-  // to calculate unique name.
-  frame->tree().setPrecalculatedName(
-      toWebRemoteFrameImpl(oldWebFrame)->frame()->tree().name(),
-      toWebRemoteFrameImpl(oldWebFrame)->frame()->tree().uniqueName());
+  frame->tree().setName(
+      toWebRemoteFrameImpl(oldWebFrame)->frame()->tree().name());
   webFrame->setCoreFrame(frame);
 
   frame->setOwner(oldFrame->owner());
@@ -1608,12 +1601,11 @@ void WebLocalFrameImpl::setCoreFrame(LocalFrame* frame) {
 
 void WebLocalFrameImpl::initializeCoreFrame(FrameHost* host,
                                             FrameOwner* owner,
-                                            const AtomicString& name,
-                                            const AtomicString& uniqueName) {
+                                            const AtomicString& name) {
   setCoreFrame(LocalFrame::create(m_localFrameClientImpl.get(),
                                   host ? &host->page() : nullptr, owner,
                                   m_interfaceProvider, m_interfaceRegistry));
-  frame()->tree().setPrecalculatedName(name, uniqueName);
+  frame()->tree().setName(name);
   // We must call init() after m_frame is assigned because it is referenced
   // during init(). Note that this may dispatch JS events; the frame may be
   // detached after init() returns.
@@ -1661,19 +1653,16 @@ LocalFrame* WebLocalFrameImpl::createChildFrame(
   // solution. subResourceAttributeName returns just one attribute name. The
   // element might not have the attribute, and there might be other attributes
   // which can identify the element.
-  AtomicString uniqueName = frame()->tree().calculateUniqueNameForNewChildFrame(
-      name,
-      ownerElement->getAttribute(ownerElement->subResourceAttributeName()));
   WebLocalFrameImpl* webframeChild =
       toWebLocalFrameImpl(m_client->createChildFrame(
-          this, scope, name, uniqueName,
+          this, scope, name,
+          ownerElement->getAttribute(ownerElement->subResourceAttributeName()),
           static_cast<WebSandboxFlags>(ownerElement->getSandboxFlags()),
           ownerProperties));
   if (!webframeChild)
     return nullptr;
 
-  webframeChild->initializeCoreFrame(frame()->host(), ownerElement, name,
-                                     uniqueName);
+  webframeChild->initializeCoreFrame(frame()->host(), ownerElement, name);
   // Initializing the core frame may cause the new child to be detached, since
   // it may dispatch a load event in the parent.
   if (!webframeChild->parent())

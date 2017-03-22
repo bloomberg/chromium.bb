@@ -7087,13 +7087,13 @@ class TestCachePolicyWebFrameClient
   int willSendRequestCallCount() const { return m_willSendRequestCallCount; }
   int childFrameCreationCount() const { return m_childFrameCreationCount; }
 
-  virtual WebLocalFrame* createChildFrame(
+  WebLocalFrame* createChildFrame(
       WebLocalFrame* parent,
       WebTreeScopeType scope,
       const WebString&,
       const WebString&,
       WebSandboxFlags,
-      const WebFrameOwnerProperties& frameOwnerProperties) {
+      const WebFrameOwnerProperties& frameOwnerProperties) override {
     DCHECK(m_childClient);
     m_childFrameCreationCount++;
     WebLocalFrame* frame =
@@ -7498,8 +7498,8 @@ class FailCreateChildFrame : public FrameTestHelpers::TestWebFrameClient {
   WebLocalFrame* createChildFrame(
       WebLocalFrame* parent,
       WebTreeScopeType scope,
-      const WebString& frameName,
-      const WebString& frameUniqueName,
+      const WebString& name,
+      const WebString& fallbackName,
       WebSandboxFlags sandboxFlags,
       const WebFrameOwnerProperties& frameOwnerProperties) override {
     ++m_callCount;
@@ -9079,72 +9079,6 @@ TEST_F(WebFrameSwapTest, HistoryCommitTypeAfterExistingRemoteToLocalSwap) {
   // TestWebFrameClient.
   reset();
   remoteFrame->close();
-}
-
-// The uniqueName should be preserved when swapping to a RemoteFrame and back,
-// whether the frame has a name or not.
-TEST_F(WebFrameSwapTest, UniqueNameAfterRemoteToLocalSwap) {
-  // Start with a named frame.
-  WebFrame* targetFrame = mainFrame()->firstChild();
-  ASSERT_TRUE(targetFrame);
-  WebString uniqueName = targetFrame->uniqueName();
-  EXPECT_EQ("frame1", uniqueName.utf8());
-
-  // Swap to a RemoteFrame.
-  FrameTestHelpers::TestWebRemoteFrameClient remoteFrameClient;
-  WebRemoteFrameImpl* remoteFrame = WebRemoteFrameImpl::create(
-      WebTreeScopeType::Document, &remoteFrameClient);
-  targetFrame->swap(remoteFrame);
-  ASSERT_TRUE(mainFrame()->firstChild());
-  ASSERT_EQ(mainFrame()->firstChild(), remoteFrame);
-  EXPECT_EQ(uniqueName.utf8(),
-            WebString(remoteFrame->frame()->tree().uniqueName()).utf8());
-
-  // Swap back to a LocalFrame.
-  RemoteToLocalSwapWebFrameClient client(remoteFrame);
-  WebLocalFrame* localFrame = WebLocalFrame::createProvisional(
-      &client, nullptr, nullptr, remoteFrame, WebSandboxFlags::None);
-  FrameTestHelpers::loadFrame(localFrame, m_baseURL + "subframe-hello.html");
-  EXPECT_EQ(uniqueName.utf8(), localFrame->uniqueName().utf8());
-  EXPECT_EQ(uniqueName.utf8(), WebString(toWebLocalFrameImpl(localFrame)
-                                             ->frame()
-                                             ->loader()
-                                             .currentItem()
-                                             ->target())
-                                   .utf8());
-
-  // Repeat with no name on the frame.
-  // (note that uniqueName is immutable after first real commit).
-  localFrame->setName("");
-  WebString uniqueName2 = localFrame->uniqueName();
-  EXPECT_EQ("frame1", uniqueName2.utf8());
-
-  FrameTestHelpers::TestWebRemoteFrameClient remoteFrameClient2;
-  WebRemoteFrameImpl* remoteFrame2 = WebRemoteFrameImpl::create(
-      WebTreeScopeType::Document, &remoteFrameClient2);
-  localFrame->swap(remoteFrame2);
-  ASSERT_TRUE(mainFrame()->firstChild());
-  ASSERT_EQ(mainFrame()->firstChild(), remoteFrame2);
-  EXPECT_EQ(uniqueName2.utf8(),
-            WebString(remoteFrame2->frame()->tree().uniqueName()).utf8());
-
-  RemoteToLocalSwapWebFrameClient client2(remoteFrame2);
-  WebLocalFrame* localFrame2 = WebLocalFrame::createProvisional(
-      &client2, nullptr, nullptr, remoteFrame2, WebSandboxFlags::None);
-  FrameTestHelpers::loadFrame(localFrame2, m_baseURL + "subframe-hello.html");
-  EXPECT_EQ(uniqueName2.utf8(), localFrame2->uniqueName().utf8());
-  EXPECT_EQ(uniqueName2.utf8(), WebString(toWebLocalFrameImpl(localFrame2)
-                                              ->frame()
-                                              ->loader()
-                                              .currentItem()
-                                              ->target())
-                                    .utf8());
-
-  // Manually reset to break WebViewHelper's dependency on the stack allocated
-  // TestWebFrameClient.
-  reset();
-  remoteFrame->close();
-  remoteFrame2->close();
 }
 
 class RemoteNavigationClient
@@ -11302,20 +11236,6 @@ TEST_F(WebFrameTest, TestNonCompositedOverlayScrollbarsFade) {
   mockOverlayTheme.setOverlayScrollbarFadeOutDelay(0.0);
 }
 
-TEST_F(WebFrameTest, UniqueNames) {
-  registerMockedHttpURLLoad("frameset-repeated-name.html");
-  registerMockedHttpURLLoad("frameset-dest.html");
-  FrameTestHelpers::WebViewHelper webViewHelper;
-  webViewHelper.initializeAndLoad(m_baseURL + "frameset-repeated-name.html");
-  Frame* mainFrame = webViewHelper.webView()->mainFrameImpl()->frame();
-  HashSet<AtomicString> names;
-  for (Frame* frame = mainFrame->tree().firstChild(); frame;
-       frame = frame->tree().traverseNext()) {
-    EXPECT_TRUE(names.insert(frame->tree().uniqueName()).isNewEntry);
-  }
-  EXPECT_EQ(10u, names.size());
-}
-
 TEST_F(WebFrameTest, NoLoadingCompletionCallbacksInDetach) {
   class LoadingObserverFrameClient
       : public FrameTestHelpers::TestWebFrameClient {
@@ -11374,7 +11294,7 @@ TEST_F(WebFrameTest, NoLoadingCompletionCallbacksInDetach) {
     WebLocalFrame* createChildFrame(WebLocalFrame* parent,
                                     WebTreeScopeType scope,
                                     const WebString& name,
-                                    const WebString& uniqueName,
+                                    const WebString& fallbackName,
                                     WebSandboxFlags sandboxFlags,
                                     const WebFrameOwnerProperties&) override {
       WebLocalFrame* frame =

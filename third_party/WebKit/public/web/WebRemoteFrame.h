@@ -35,7 +35,6 @@ class WebRemoteFrame : public WebFrame {
   // children.
   virtual WebLocalFrame* createLocalChild(WebTreeScopeType,
                                           const WebString& name,
-                                          const WebString& uniqueName,
                                           WebSandboxFlags,
                                           WebFrameClient*,
                                           blink::InterfaceProvider*,
@@ -46,7 +45,6 @@ class WebRemoteFrame : public WebFrame {
 
   virtual WebRemoteFrame* createRemoteChild(WebTreeScopeType,
                                             const WebString& name,
-                                            const WebString& uniqueName,
                                             WebSandboxFlags,
                                             WebRemoteFrameClient*,
                                             WebFrame* opener) = 0;
@@ -55,37 +53,35 @@ class WebRemoteFrame : public WebFrame {
   virtual void setWebLayer(WebLayer*) = 0;
 
   // Set security origin replicated from another process.
-  virtual void setReplicatedOrigin(const WebSecurityOrigin&) const = 0;
+  virtual void setReplicatedOrigin(const WebSecurityOrigin&) = 0;
 
   // Set sandbox flags replicated from another process.
-  virtual void setReplicatedSandboxFlags(WebSandboxFlags) const = 0;
+  virtual void setReplicatedSandboxFlags(WebSandboxFlags) = 0;
 
-  // Set frame |name| and |uniqueName| replicated from another process.
-  virtual void setReplicatedName(const WebString& name,
-                                 const WebString& uniqueName) const = 0;
+  // Set frame |name| replicated from another process.
+  virtual void setReplicatedName(const WebString&) = 0;
 
   virtual void setReplicatedFeaturePolicyHeader(
-      const WebParsedFeaturePolicy& parsedHeader) const = 0;
+      const WebParsedFeaturePolicy& parsedHeader) = 0;
 
   // Adds |header| to the set of replicated CSP headers.
   virtual void addReplicatedContentSecurityPolicyHeader(
       const WebString& headerValue,
       WebContentSecurityPolicyType,
-      WebContentSecurityPolicySource) const = 0;
+      WebContentSecurityPolicySource) = 0;
 
   // Resets replicated CSP headers to an empty set.
-  virtual void resetReplicatedContentSecurityPolicy() const = 0;
+  virtual void resetReplicatedContentSecurityPolicy() = 0;
 
   // Set frame enforcement of insecure request policy replicated from another
   // process.
-  virtual void setReplicatedInsecureRequestPolicy(
-      WebInsecureRequestPolicy) const = 0;
+  virtual void setReplicatedInsecureRequestPolicy(WebInsecureRequestPolicy) = 0;
 
   // Set the frame to a unique origin that is potentially trustworthy,
   // replicated from another process.
-  virtual void setReplicatedPotentiallyTrustworthyUniqueOrigin(bool) const = 0;
+  virtual void setReplicatedPotentiallyTrustworthyUniqueOrigin(bool) = 0;
 
-  virtual void dispatchLoadEventOnFrameOwner() const = 0;
+  virtual void dispatchLoadEventOnFrameOwner() = 0;
 
   virtual void didStartLoading() = 0;
   virtual void didStopLoading() = 0;

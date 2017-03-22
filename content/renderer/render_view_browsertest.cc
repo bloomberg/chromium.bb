@@ -190,7 +190,7 @@ FrameReplicationState ReconstructReplicationStateForTesting(
   // can't recover result.scope - no way to get WebTreeScopeType via public
   // blink API...
   result.name = frame->assignedName().utf8();
-  result.unique_name = frame->uniqueName().utf8();
+  result.unique_name = test_render_frame->unique_name();
   result.sandbox_flags = frame->effectiveSandboxFlags();
   // result.should_enforce_strict_mixed_content_checking is calculated in the
   // browser...

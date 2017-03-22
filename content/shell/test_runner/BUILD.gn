@@ -114,6 +114,7 @@ component("test_runner") {
     "//cc/blink",
     "//cc/paint",
     "//content/public/common",
+    "//content/test:test_runner_support",
     "//device/sensors/public/cpp:full",
     "//gin",
     "//gpu",

@@ -117,6 +117,7 @@ class CONTENT_EXPORT RenderFrameProxy
   int routing_id() { return routing_id_; }
   RenderViewImpl* render_view() { return render_view_; }
   blink::WebRemoteFrame* web_frame() { return web_frame_; }
+  const std::string& unique_name() const { return unique_name_; }
 
   void set_provisional_frame_routing_id(int routing_id) {
     provisional_frame_routing_id_ = routing_id;
@@ -189,6 +190,7 @@ class CONTENT_EXPORT RenderFrameProxy
 
   // Stores the WebRemoteFrame we are associated with.
   blink::WebRemoteFrame* web_frame_;
+  std::string unique_name_;
   scoped_refptr<ChildFrameCompositingHelper> compositing_helper_;
 
   RenderViewImpl* render_view_;

@@ -35,7 +35,6 @@ class WEB_EXPORT WebRemoteFrameImpl final
 
   // WebFrame methods:
   void close() override;
-  WebString uniqueName() const override;
   WebString assignedName() const override;
   void setName(const WebString&) override;
   WebVector<WebIconURL> iconURLs(int iconTypesMask) const override;
@@ -112,8 +111,7 @@ class WEB_EXPORT WebRemoteFrameImpl final
   // WebFrameImplBase methods:
   void initializeCoreFrame(FrameHost*,
                            FrameOwner*,
-                           const AtomicString& name,
-                           const AtomicString& uniqueName) override;
+                           const AtomicString& name) override;
   RemoteFrame* frame() const override { return m_frame.get(); }
 
   void setCoreFrame(RemoteFrame*);
@@ -125,7 +123,6 @@ class WEB_EXPORT WebRemoteFrameImpl final
   // WebRemoteFrame methods:
   WebLocalFrame* createLocalChild(WebTreeScopeType,
                                   const WebString& name,
-                                  const WebString& uniqueName,
                                   WebSandboxFlags,
                                   WebFrameClient*,
                                   blink::InterfaceProvider*,
@@ -135,26 +132,23 @@ class WEB_EXPORT WebRemoteFrameImpl final
                                   WebFrame* opener) override;
   WebRemoteFrame* createRemoteChild(WebTreeScopeType,
                                     const WebString& name,
-                                    const WebString& uniqueName,
                                     WebSandboxFlags,
                                     WebRemoteFrameClient*,
                                     WebFrame* opener) override;
   void setWebLayer(WebLayer*) override;
-  void setReplicatedOrigin(const WebSecurityOrigin&) const override;
-  void setReplicatedSandboxFlags(WebSandboxFlags) const override;
-  void setReplicatedName(const WebString& name,
-                         const WebString& uniqueName) const override;
+  void setReplicatedOrigin(const WebSecurityOrigin&) override;
+  void setReplicatedSandboxFlags(WebSandboxFlags) override;
+  void setReplicatedName(const WebString&) override;
   void setReplicatedFeaturePolicyHeader(
-      const WebParsedFeaturePolicy& parsedHeader) const override;
+      const WebParsedFeaturePolicy& parsedHeader) override;
   void addReplicatedContentSecurityPolicyHeader(
       const WebString& headerValue,
       WebContentSecurityPolicyType,
-      WebContentSecurityPolicySource) const override;
-  void resetReplicatedContentSecurityPolicy() const override;
-  void setReplicatedInsecureRequestPolicy(
-      WebInsecureRequestPolicy) const override;
-  void setReplicatedPotentiallyTrustworthyUniqueOrigin(bool) const override;
-  void dispatchLoadEventOnFrameOwner() const override;
+      WebContentSecurityPolicySource) override;
+  void resetReplicatedContentSecurityPolicy() override;
+  void setReplicatedInsecureRequestPolicy(WebInsecureRequestPolicy) override;
+  void setReplicatedPotentiallyTrustworthyUniqueOrigin(bool) override;
+  void dispatchLoadEventOnFrameOwner() override;
   void didStartLoading() override;
   void didStopLoading() override;
   bool isIgnoredForHitTest() const override;

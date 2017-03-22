@@ -79,11 +79,6 @@ void WebRemoteFrameImpl::close() {
   m_selfKeepAlive.clear();
 }
 
-WebString WebRemoteFrameImpl::uniqueName() const {
-  NOTREACHED();
-  return WebString();
-}
-
 WebString WebRemoteFrameImpl::assignedName() const {
   NOTREACHED();
   return WebString();
@@ -325,7 +320,6 @@ WebString WebRemoteFrameImpl::layerTreeAsText(bool showDebugInfo) const {
 WebLocalFrame* WebRemoteFrameImpl::createLocalChild(
     WebTreeScopeType scope,
     const WebString& name,
-    const WebString& uniqueName,
     WebSandboxFlags sandboxFlags,
     WebFrameClient* client,
     blink::InterfaceProvider* interfaceProvider,
@@ -343,7 +337,7 @@ WebLocalFrame* WebRemoteFrameImpl::createLocalChild(
   // (one from the initial frame creation, and one from swapping it into the
   // remote process).  FrameLoader might need a special initialization function
   // for this case to avoid that duplicate navigation.
-  child->initializeCoreFrame(frame()->host(), owner, name, uniqueName);
+  child->initializeCoreFrame(frame()->host(), owner, name);
   // Partially related with the above FIXME--the init() call may trigger JS
   // dispatch. However,
   // if the parent is remote, it should never be detached synchronously...
@@ -353,18 +347,16 @@ WebLocalFrame* WebRemoteFrameImpl::createLocalChild(
 
 void WebRemoteFrameImpl::initializeCoreFrame(FrameHost* host,
                                              FrameOwner* owner,
-                                             const AtomicString& name,
-                                             const AtomicString& uniqueName) {
+                                             const AtomicString& name) {
   setCoreFrame(RemoteFrame::create(m_frameClient.get(),
                                    host ? &host->page() : nullptr, owner));
   frame()->createView();
-  m_frame->tree().setPrecalculatedName(name, uniqueName);
+  m_frame->tree().setName(name);
 }
 
 WebRemoteFrame* WebRemoteFrameImpl::createRemoteChild(
     WebTreeScopeType scope,
     const WebString& name,
-    const WebString& uniqueName,
     WebSandboxFlags sandboxFlags,
     WebRemoteFrameClient* client,
     WebFrame* opener) {
@@ -372,7 +364,7 @@ WebRemoteFrame* WebRemoteFrameImpl::createRemoteChild(
   appendChild(child);
   RemoteFrameOwner* owner = RemoteFrameOwner::create(
       static_cast<SandboxFlags>(sandboxFlags), WebFrameOwnerProperties());
-  child->initializeCoreFrame(frame()->host(), owner, name, uniqueName);
+  child->initializeCoreFrame(frame()->host(), owner, name);
   return child;
 }
 
@@ -393,8 +385,7 @@ WebRemoteFrameImpl* WebRemoteFrameImpl::fromFrame(RemoteFrame& frame) {
   return static_cast<RemoteFrameClientImpl*>(frame.client())->webFrame();
 }
 
-void WebRemoteFrameImpl::setReplicatedOrigin(
-    const WebSecurityOrigin& origin) const {
+void WebRemoteFrameImpl::setReplicatedOrigin(const WebSecurityOrigin& origin) {
   DCHECK(frame());
   frame()->securityContext()->setReplicatedOrigin(origin);
 
@@ -413,21 +404,19 @@ void WebRemoteFrameImpl::setReplicatedOrigin(
   }
 }
 
-void WebRemoteFrameImpl::setReplicatedSandboxFlags(
-    WebSandboxFlags flags) const {
+void WebRemoteFrameImpl::setReplicatedSandboxFlags(WebSandboxFlags flags) {
   DCHECK(frame());
   frame()->securityContext()->enforceSandboxFlags(
       static_cast<SandboxFlags>(flags));
 }
 
-void WebRemoteFrameImpl::setReplicatedName(const WebString& name,
-                                           const WebString& uniqueName) const {
+void WebRemoteFrameImpl::setReplicatedName(const WebString& name) {
   DCHECK(frame());
-  frame()->tree().setPrecalculatedName(name, uniqueName);
+  frame()->tree().setName(name);
 }
 
 void WebRemoteFrameImpl::setReplicatedFeaturePolicyHeader(
-    const WebParsedFeaturePolicy& parsedHeader) const {
+    const WebParsedFeaturePolicy& parsedHeader) {
   if (RuntimeEnabledFeatures::featurePolicyEnabled()) {
     WebFeaturePolicy* parentFeaturePolicy = nullptr;
     if (parent()) {
@@ -448,24 +437,24 @@ void WebRemoteFrameImpl::setReplicatedFeaturePolicyHeader(
 void WebRemoteFrameImpl::addReplicatedContentSecurityPolicyHeader(
     const WebString& headerValue,
     WebContentSecurityPolicyType type,
-    WebContentSecurityPolicySource source) const {
+    WebContentSecurityPolicySource source) {
   frame()->securityContext()->contentSecurityPolicy()->addPolicyFromHeaderValue(
       headerValue, static_cast<ContentSecurityPolicyHeaderType>(type),
       static_cast<ContentSecurityPolicyHeaderSource>(source));
 }
 
-void WebRemoteFrameImpl::resetReplicatedContentSecurityPolicy() const {
+void WebRemoteFrameImpl::resetReplicatedContentSecurityPolicy() {
   frame()->securityContext()->resetReplicatedContentSecurityPolicy();
 }
 
 void WebRemoteFrameImpl::setReplicatedInsecureRequestPolicy(
-    WebInsecureRequestPolicy policy) const {
+    WebInsecureRequestPolicy policy) {
   DCHECK(frame());
   frame()->securityContext()->setInsecureRequestPolicy(policy);
 }
 
 void WebRemoteFrameImpl::setReplicatedPotentiallyTrustworthyUniqueOrigin(
-    bool isUniqueOriginPotentiallyTrustworthy) const {
+    bool isUniqueOriginPotentiallyTrustworthy) {
   DCHECK(frame());
   // If |isUniqueOriginPotentiallyTrustworthy| is true, then the origin must be
   // unique.
@@ -478,7 +467,7 @@ void WebRemoteFrameImpl::setReplicatedPotentiallyTrustworthyUniqueOrigin(
           isUniqueOriginPotentiallyTrustworthy);
 }
 
-void WebRemoteFrameImpl::dispatchLoadEventOnFrameOwner() const {
+void WebRemoteFrameImpl::dispatchLoadEventOnFrameOwner() {
   DCHECK(frame()->owner()->isLocal());
   frame()->owner()->dispatchLoad();
 }

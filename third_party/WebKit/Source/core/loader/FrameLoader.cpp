@@ -413,7 +413,6 @@ void FrameLoader::setHistoryItemStateForCommit(
     m_currentItem = HistoryItem::create();
   m_currentItem->setURL(m_documentLoader->urlForHistory());
   m_currentItem->setDocumentState(m_frame->document()->formElementsState());
-  m_currentItem->setTarget(m_frame->tree().uniqueName());
   m_currentItem->setReferrer(SecurityPolicy::generateReferrer(
       m_documentLoader->getRequest().getReferrerPolicy(), m_currentItem->url(),
       m_documentLoader->getRequest().httpReferrer()));

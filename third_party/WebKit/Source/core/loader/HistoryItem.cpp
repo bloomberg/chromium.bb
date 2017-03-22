@@ -63,10 +63,6 @@ const Referrer& HistoryItem::referrer() const {
   return m_referrer;
 }
 
-const String& HistoryItem::target() const {
-  return m_target;
-}
-
 void HistoryItem::setURLString(const String& urlString) {
   if (m_urlString != urlString)
     m_urlString = urlString;
@@ -80,10 +76,6 @@ void HistoryItem::setReferrer(const Referrer& referrer) {
   // This should be a RELEASE_ASSERT.
   m_referrer = SecurityPolicy::generateReferrer(referrer.referrerPolicy, url(),
                                                 referrer.referrer);
-}
-
-void HistoryItem::setTarget(const String& target) {
-  m_target = target;
 }
 
 const ScrollOffset& HistoryItem::visualViewportScrollOffset() const {

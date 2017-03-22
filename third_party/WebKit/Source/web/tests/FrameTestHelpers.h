@@ -245,7 +245,7 @@ class TestWebFrameClient : public WebFrameClient {
   WebLocalFrame* createChildFrame(WebLocalFrame* parent,
                                   WebTreeScopeType,
                                   const WebString& name,
-                                  const WebString& uniqueName,
+                                  const WebString& fallbackName,
                                   WebSandboxFlags,
                                   const WebFrameOwnerProperties&) override;
   void didStartLoading(bool) override;

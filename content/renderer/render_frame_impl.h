@@ -44,6 +44,7 @@
 #include "content/renderer/frame_blame_context.h"
 #include "content/renderer/mojo/blink_interface_provider_impl.h"
 #include "content/renderer/renderer_webcookiejar_impl.h"
+#include "content/renderer/unique_name_helper.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_platform_file.h"
 #include "media/blink/webmediaplayer_delegate.h"
@@ -260,6 +261,9 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Draw commands have been issued by RenderWidgetCompositor.
   void DidCommitAndDrawCompositorFrame();
+
+  // Returns the unique name of the RenderFrame.
+  const std::string& unique_name() const { return unique_name_helper_.value(); }
 
   // TODO(jam): this is a temporary getter until all the code is transitioned
   // to using RenderFrame instead of RenderView.
@@ -507,15 +511,14 @@ class CONTENT_EXPORT RenderFrameImpl
       blink::WebLocalFrame* parent,
       blink::WebTreeScopeType scope,
       const blink::WebString& name,
-      const blink::WebString& unique_name,
+      const blink::WebString& fallback_name,
       blink::WebSandboxFlags sandbox_flags,
       const blink::WebFrameOwnerProperties& frame_owner_properties) override;
   void didChangeOpener(blink::WebFrame* frame) override;
   void frameDetached(blink::WebLocalFrame* frame, DetachType type) override;
   void frameFocused() override;
   void willCommitProvisionalLoad() override;
-  void didChangeName(const blink::WebString& name,
-                     const blink::WebString& unique_name) override;
+  void didChangeName(const blink::WebString& name) override;
   void didEnforceInsecureRequestPolicy(
       blink::WebInsecureRequestPolicy policy) override;
   void didUpdateToUniqueOrigin(
@@ -810,8 +813,7 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Builds and sends DidCommitProvisionalLoad to the host.
   void SendDidCommitProvisionalLoad(blink::WebFrame* frame,
-                                    blink::WebHistoryCommitType commit_type,
-                                    const blink::WebHistoryItem& item);
+                                    blink::WebHistoryCommitType commit_type);
 
   // Swaps the current frame into the frame tree, replacing the
   // RenderFrameProxy it is associated with.  Return value indicates whether
@@ -1128,6 +1130,8 @@ class CONTENT_EXPORT RenderFrameImpl
   // main frame or not. It remains accurate during destruction, even when
   // |frame_| has been invalidated.
   bool is_main_frame_;
+
+  UniqueNameHelper unique_name_helper_;
 
   // When a frame is detached in response to a message from the browser process,
   // this RenderFrame should not be sending notifications back to it. This

@@ -49,22 +49,22 @@ TEST_F(ScriptContextTest, GetEffectiveDocumentURL) {
 
   WebFrame* frame1 = frame->firstChild();
   ASSERT_TRUE(frame1);
-  ASSERT_EQ("frame1", frame1->uniqueName());
+  ASSERT_EQ("frame1", frame1->assignedName());
   WebFrame* frame1_1 = frame1->firstChild();
   ASSERT_TRUE(frame1_1);
-  ASSERT_EQ("frame1_1", frame1_1->uniqueName());
+  ASSERT_EQ("frame1_1", frame1_1->assignedName());
   WebFrame* frame1_2 = frame1_1->nextSibling();
   ASSERT_TRUE(frame1_2);
-  ASSERT_EQ("frame1_2", frame1_2->uniqueName());
+  ASSERT_EQ("frame1_2", frame1_2->assignedName());
   WebFrame* frame2 = frame1->nextSibling();
   ASSERT_TRUE(frame2);
-  ASSERT_EQ("frame2", frame2->uniqueName());
+  ASSERT_EQ("frame2", frame2->assignedName());
   WebFrame* frame2_1 = frame2->firstChild();
   ASSERT_TRUE(frame2_1);
-  ASSERT_EQ("frame2_1", frame2_1->uniqueName());
+  ASSERT_EQ("frame2_1", frame2_1->assignedName());
   WebFrame* frame3 = frame2->nextSibling();
   ASSERT_TRUE(frame3);
-  ASSERT_EQ("frame3", frame3->uniqueName());
+  ASSERT_EQ("frame3", frame3->assignedName());
 
   // Load a blank document in a frame from a different origin.
   frame3->loadHTMLString(frame3_html, different_url);
@@ -72,7 +72,7 @@ TEST_F(ScriptContextTest, GetEffectiveDocumentURL) {
 
   WebFrame* frame3_1 = frame3->firstChild();
   ASSERT_TRUE(frame3_1);
-  ASSERT_EQ("frame3_1", frame3_1->uniqueName());
+  ASSERT_EQ("frame3_1", frame3_1->assignedName());
 
   // Top-level frame
   EXPECT_EQ(GetEffectiveDocumentURL(frame), top_url);

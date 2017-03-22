@@ -377,6 +377,8 @@ target(link_target_type, "renderer") {
     "theme_helper_mac.mm",
     "top_level_blame_context.cc",
     "top_level_blame_context.h",
+    "unique_name_helper.cc",
+    "unique_name_helper.h",
     "web_frame_utils.cc",
     "web_frame_utils.h",
     "web_ui_extension.cc",
