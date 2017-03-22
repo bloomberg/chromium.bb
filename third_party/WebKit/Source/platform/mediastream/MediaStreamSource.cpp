@@ -51,13 +51,6 @@ MediaStreamSource::MediaStreamSource(const String& id,
       m_readyState(readyState),
       m_requiresConsumer(requiresConsumer) {}
 
-MediaStreamSource::~MediaStreamSource() {
-  // Verify that the audio thread isn't consuming audio.
-  // TODO(sof): remove once crbug.com/682945 has been diagnosed.
-  MutexTryLocker tryLocker(m_audioConsumersLock);
-  CHECK(tryLocker.locked());
-}
-
 void MediaStreamSource::setReadyState(ReadyState readyState) {
   if (m_readyState != ReadyStateEnded && m_readyState != readyState) {
     m_readyState = readyState;

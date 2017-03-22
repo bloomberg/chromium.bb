@@ -74,8 +74,6 @@ class PLATFORM_EXPORT MediaStreamSource final
                                    ReadyState = ReadyStateLive,
                                    bool requiresConsumer = false);
 
-  ~MediaStreamSource();
-
   const String& id() const { return m_id; }
   StreamType type() const { return m_type; }
   const String& name() const { return m_name; }
