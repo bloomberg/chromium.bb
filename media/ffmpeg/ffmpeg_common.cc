@@ -540,6 +540,15 @@ bool AVStreamToVideoDecoderConfig(const AVStream* stream,
   config->Initialize(codec, profile, format, color_space, coded_size,
                      visible_rect, natural_size, extra_data,
                      GetEncryptionScheme(stream));
+
+  const AVCodecParameters* codec_parameters = stream->codecpar;
+  config->set_color_space_info(gfx::ColorSpace::CreateVideo(
+      codec_parameters->color_primaries, codec_parameters->color_trc,
+      codec_parameters->color_space,
+      codec_parameters->color_range != AVCOL_RANGE_MPEG
+          ? gfx::ColorSpace::RangeID::FULL
+          : gfx::ColorSpace::RangeID::LIMITED));
+
   return true;
 }
 
