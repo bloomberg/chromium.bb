@@ -102,7 +102,7 @@ RenderFrameHost* MediaSessionController::GetRenderFrameHost() const {
 void MediaSessionController::OnPlaybackPaused() {
   // We check for suspension here since the renderer may issue its own pause
   // in response to or while a pause from the browser is in flight.
-  if (!media_session_->IsSuspended())
+  if (media_session_->IsActive())
     media_session_->OnPlayerPaused(this, player_id_);
 }
 

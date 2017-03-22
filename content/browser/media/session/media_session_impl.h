@@ -69,7 +69,6 @@ class MediaSessionImpl : public MediaSession,
                          public WebContentsObserver,
                          protected WebContentsUserData<MediaSessionImpl> {
  public:
-  // Only visible to tests.
   enum class State { ACTIVE, SUSPENDED, INACTIVE };
 
   // Returns the MediaSessionImpl associated to this WebContents. Creates one if
@@ -147,13 +146,6 @@ class MediaSessionImpl : public MediaSession,
   CONTENT_EXPORT bool IsActive() const;
 
   // Returns if the session is currently suspended.
-  // TODO(mlamouri): IsSuspended() below checks if the state is not ACTIVE
-  // instead of checking if the state is SUSPENDED. In order to not have to
-  // change all the callers and make the current refactoring ridiculously huge,
-  // this method is introduced temporarily and will be removed later.
-  CONTENT_EXPORT bool IsReallySuspended() const;
-
-  // Returns if the session is currently suspended or inactive.
   CONTENT_EXPORT bool IsSuspended() const;
 
   // Returns the audio focus type. The type is updated everytime after the
@@ -205,7 +197,6 @@ class MediaSessionImpl : public MediaSession,
 
   CONTENT_EXPORT void SetDelegateForTests(
       std::unique_ptr<AudioFocusDelegate> delegate);
-  CONTENT_EXPORT bool IsActiveForTest() const;
   CONTENT_EXPORT void RemoveAllPlayersForTest();
   CONTENT_EXPORT MediaSessionUmaHelper* uma_helper_for_test();
 
@@ -262,8 +253,8 @@ class MediaSessionImpl : public MediaSession,
   // ducking.
   double GetVolumeMultiplier() const;
 
-  // Compute if the actual playback state is paused using both the
-  // MediaSessionService declared state and guessed state.
+  // Compute if the actual playback state is paused by combining the
+  // MediaSessionService declared state and guessed state (audio_focus_state_).
   bool IsActuallyPaused() const;
 
   // Registers a MediaSessionImpl state change callback.

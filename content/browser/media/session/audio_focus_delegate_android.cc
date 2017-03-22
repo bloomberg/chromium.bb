@@ -62,7 +62,7 @@ void AudioFocusDelegateAndroid::OnSuspend(JNIEnv*,
 
 void AudioFocusDelegateAndroid::OnResume(JNIEnv*,
                                          const JavaParamRef<jobject>&) {
-  if (!media_session_->IsReallySuspended())
+  if (!media_session_->IsSuspended())
     return;
 
   media_session_->Resume(MediaSession::SuspendType::SYSTEM);

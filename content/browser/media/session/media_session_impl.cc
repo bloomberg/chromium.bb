@@ -301,12 +301,12 @@ void MediaSessionImpl::OnPlayerPaused(MediaSessionPlayerObserver* observer,
   }
 
   // Otherwise, suspend the session.
-  DCHECK(!IsSuspended());
+  DCHECK(IsActive());
   OnSuspendInternal(SuspendType::CONTENT, State::SUSPENDED);
 }
 
 void MediaSessionImpl::Resume(SuspendType suspend_type) {
-  DCHECK(IsReallySuspended());
+  DCHECK(IsSuspended());
 
   // When the resume requests comes from another source than system, audio focus
   // must be requested.
@@ -326,7 +326,7 @@ void MediaSessionImpl::Resume(SuspendType suspend_type) {
 }
 
 void MediaSessionImpl::Suspend(SuspendType suspend_type) {
-  if (IsSuspended())
+  if (!IsActive())
     return;
 
   OnSuspendInternal(suspend_type, State::SUSPENDED);
@@ -381,13 +381,8 @@ bool MediaSessionImpl::IsActive() const {
   return audio_focus_state_ == State::ACTIVE;
 }
 
-bool MediaSessionImpl::IsReallySuspended() const {
-  return audio_focus_state_ == State::SUSPENDED;
-}
-
 bool MediaSessionImpl::IsSuspended() const {
-  // TODO(mlamouri): should be == State::SUSPENDED.
-  return audio_focus_state_ != State::ACTIVE;
+  return audio_focus_state_ == State::SUSPENDED;
 }
 
 bool MediaSessionImpl::IsControllable() const {
@@ -421,10 +416,6 @@ MediaSessionImpl::RegisterMediaSessionStateChangedCallbackForTest(
 void MediaSessionImpl::SetDelegateForTests(
     std::unique_ptr<AudioFocusDelegate> delegate) {
   delegate_ = std::move(delegate);
-}
-
-bool MediaSessionImpl::IsActiveForTest() const {
-  return audio_focus_state_ == State::ACTIVE;
 }
 
 MediaSessionUmaHelper* MediaSessionImpl::uma_helper_for_test() {

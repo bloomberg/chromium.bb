@@ -95,28 +95,28 @@ class MediaSessionControllerTest : public RenderViewHostImplTestHarness {
 TEST_F(MediaSessionControllerTest, NoAudioNoSession) {
   ASSERT_TRUE(controller_->Initialize(false, false,
                                       media::MediaContentType::Persistent));
-  EXPECT_TRUE(media_session()->IsSuspended());
+  EXPECT_FALSE(media_session()->IsActive());
   EXPECT_FALSE(media_session()->IsControllable());
 }
 
 TEST_F(MediaSessionControllerTest, IsRemoteNoSession) {
   ASSERT_TRUE(
       controller_->Initialize(true, true, media::MediaContentType::Persistent));
-  EXPECT_TRUE(media_session()->IsSuspended());
+  EXPECT_FALSE(media_session()->IsActive());
   EXPECT_FALSE(media_session()->IsControllable());
 }
 
 TEST_F(MediaSessionControllerTest, TransientNoControllableSession) {
   ASSERT_TRUE(
       controller_->Initialize(true, false, media::MediaContentType::Transient));
-  EXPECT_FALSE(media_session()->IsSuspended());
+  EXPECT_TRUE(media_session()->IsActive());
   EXPECT_FALSE(media_session()->IsControllable());
 }
 
 TEST_F(MediaSessionControllerTest, BasicControls) {
   ASSERT_TRUE(controller_->Initialize(true, false,
                                       media::MediaContentType::Persistent));
-  EXPECT_FALSE(media_session()->IsSuspended());
+  EXPECT_TRUE(media_session()->IsActive());
   EXPECT_TRUE(media_session()->IsControllable());
 
   // Verify suspend notifies the renderer and maintains its session.
@@ -129,14 +129,14 @@ TEST_F(MediaSessionControllerTest, BasicControls) {
 
   // Verify destruction of the controller removes its session.
   controller_.reset();
-  EXPECT_TRUE(media_session()->IsSuspended());
+  EXPECT_FALSE(media_session()->IsActive());
   EXPECT_FALSE(media_session()->IsControllable());
 }
 
 TEST_F(MediaSessionControllerTest, VolumeMultiplier) {
   ASSERT_TRUE(controller_->Initialize(true, false,
                                       media::MediaContentType::Persistent));
-  EXPECT_FALSE(media_session()->IsSuspended());
+  EXPECT_TRUE(media_session()->IsActive());
   EXPECT_TRUE(media_session()->IsControllable());
 
   // Upon creation of the MediaSession the default multiplier will be sent.
@@ -153,38 +153,38 @@ TEST_F(MediaSessionControllerTest, VolumeMultiplier) {
 TEST_F(MediaSessionControllerTest, ControllerSidePause) {
   ASSERT_TRUE(controller_->Initialize(true, false,
                                       media::MediaContentType::Persistent));
-  EXPECT_FALSE(media_session()->IsSuspended());
+  EXPECT_TRUE(media_session()->IsActive());
   EXPECT_TRUE(media_session()->IsControllable());
 
   // Verify pause behavior.
   controller_->OnPlaybackPaused();
-  EXPECT_TRUE(media_session()->IsSuspended());
+  EXPECT_FALSE(media_session()->IsActive());
   EXPECT_TRUE(media_session()->IsControllable());
 
   // Verify the next Initialize() call restores the session.
   ASSERT_TRUE(controller_->Initialize(true, false,
                                       media::MediaContentType::Persistent));
-  EXPECT_FALSE(media_session()->IsSuspended());
+  EXPECT_TRUE(media_session()->IsActive());
   EXPECT_TRUE(media_session()->IsControllable());
 }
 
 TEST_F(MediaSessionControllerTest, Reinitialize) {
   ASSERT_TRUE(controller_->Initialize(false, false,
                                       media::MediaContentType::Persistent));
-  EXPECT_TRUE(media_session()->IsSuspended());
+  EXPECT_FALSE(media_session()->IsActive());
   EXPECT_FALSE(media_session()->IsControllable());
 
   // Create a transient type session.
   ASSERT_TRUE(
       controller_->Initialize(true, false, media::MediaContentType::Transient));
-  EXPECT_FALSE(media_session()->IsSuspended());
+  EXPECT_TRUE(media_session()->IsActive());
   EXPECT_FALSE(media_session()->IsControllable());
   const int current_player_id = controller_->get_player_id_for_testing();
 
   // Reinitialize the session as a content type.
   ASSERT_TRUE(controller_->Initialize(true, false,
                                       media::MediaContentType::Persistent));
-  EXPECT_FALSE(media_session()->IsSuspended());
+  EXPECT_TRUE(media_session()->IsActive());
   EXPECT_TRUE(media_session()->IsControllable());
   // Player id should not change when there's an active session.
   EXPECT_EQ(current_player_id, controller_->get_player_id_for_testing());
@@ -202,14 +202,14 @@ TEST_F(MediaSessionControllerTest, Reinitialize) {
   // the BrowserMediaPlayerManagers.  Tracked by http://crbug.com/580626
   ASSERT_TRUE(controller_->Initialize(false, false,
                                       media::MediaContentType::Persistent));
-  EXPECT_FALSE(media_session()->IsSuspended());
+  EXPECT_TRUE(media_session()->IsActive());
   EXPECT_TRUE(media_session()->IsControllable());
   EXPECT_EQ(current_player_id, controller_->get_player_id_for_testing());
 
   // Switch to a remote player, which should release the session.
   ASSERT_TRUE(
       controller_->Initialize(true, true, media::MediaContentType::Persistent));
-  EXPECT_TRUE(media_session()->IsSuspended());
+  EXPECT_FALSE(media_session()->IsActive());
   EXPECT_FALSE(media_session()->IsControllable());
   EXPECT_EQ(current_player_id, controller_->get_player_id_for_testing());
 }
