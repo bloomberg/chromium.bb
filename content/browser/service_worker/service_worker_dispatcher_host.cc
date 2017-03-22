@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/debug/crash_logging.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -1018,8 +1019,12 @@ void ServiceWorkerDispatcherHost::OnProviderCreated(
 
     // If no host is found, the navigation has been cancelled in the meantime.
     // Just return as the navigation will be stopped in the renderer as well.
-    if (provider_host == nullptr)
+    if (provider_host == nullptr) {
+      // TODO(clamy): remove this Dump when the root cause for crbug.com/703972
+      // has been found.
+      base::debug::DumpWithoutCrashing();
       return;
+    }
     DCHECK_EQ(SERVICE_WORKER_PROVIDER_FOR_WINDOW, info.type);
     provider_host->CompleteNavigationInitialized(render_process_id_,
                                                  info.route_id, this);
