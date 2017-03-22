@@ -30,15 +30,12 @@
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/metrics/first_web_contents_profiler.h"
+#include "chrome/browser/metrics/tab_usage_recorder.h"
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_ANDROID) && defined(__arm__)
 #include <cpu-features.h>
 #endif  // defined(OS_ANDROID) && defined(__arm__)
-
-#if !defined(OS_ANDROID)
-#include "chrome/browser/metrics/tab_usage_recorder.h"
-#endif  // !defined(OS_ANDROID)
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #include <gnu/libc-version.h>
@@ -56,6 +53,7 @@
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
+#include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/shell_integration_win.h"
 #include "chrome/installer/util/google_update_settings.h"
 #endif  // defined(OS_WIN)
@@ -366,6 +364,16 @@ void ChromeBrowserMainExtraPartsMetrics::PreBrowserStart() {
   flags_ui::PrefServiceFlagsStorage flags_storage(
       g_browser_process->local_state());
   about_flags::RecordUMAStatistics(&flags_storage);
+
+#if defined(OS_WIN)
+  ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial("ChromeWinClang",
+#if defined(__clang__)
+                                                            "Enabled"
+#else
+                                                            "Disabled"
+#endif
+                                                            );
+#endif
 }
 
 void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {

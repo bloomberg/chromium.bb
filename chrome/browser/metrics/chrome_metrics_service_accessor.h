@@ -99,6 +99,8 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class BrowserProcessImpl;
   friend void chrome::AttemptRestart();
   friend class chrome::android::ExternalDataUseObserverBridge;
+  // For ChromeWinClang.
+  friend class ChromeBrowserMainExtraPartsMetrics;
   // For StackSamplingConfiguration.
   friend class ChromeBrowserMainParts;
   friend class ChromeMetricsServicesManagerClient;
