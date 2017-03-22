@@ -47,14 +47,6 @@ crbug.com/619427 [ Mac Linux ] virtual/spv2/fast/overflow/overflow-height-float-
 # --- End SPV2 Tests ---
 
 crbug.com/309675 compositing/gestures/gesture-tapHighlight-simple-longPress.html [ Failure ]
-crbug.com/642581 compositing/direct-image-compositing.html [ NeedsRebaseline ]
-crbug.com/642581 compositing/overflow/nested-render-surfaces-with-rotation.html [ NeedsRebaseline ]
-crbug.com/642581 compositing/lots-of-img-layers.html [ NeedsRebaseline ]
-crbug.com/642581 compositing/lots-of-img-layers-with-opacity.html [ NeedsRebaseline ]
-crbug.com/642581 virtual/disable-spinvalidation/compositing/direct-image-compositing.html [ NeedsRebaseline ]
-crbug.com/642581 virtual/disable-spinvalidation/compositing/overflow/nested-render-surfaces-with-rotation.html [ NeedsRebaseline ]
-crbug.com/642581 virtual/disable-spinvalidation/compositing/lots-of-img-layers.html [ NeedsRebaseline ]
-crbug.com/642581 virtual/disable-spinvalidation/compositing/lots-of-img-layers-with-opacity.html [ NeedsRebaseline ]
 crbug.com/309675 virtual/disable-spinvalidation/compositing/gestures/gesture-tapHighlight-simple-longPress.html [ Failure ]
 
 crbug.com/504613 crbug.com/524248 paint/images/image-backgrounds-not-antialiased.html [ Skip ]
