@@ -107,9 +107,6 @@ void MediaStreamSource::setAudioFormat(size_t numberOfChannels,
 void MediaStreamSource::consumeAudio(AudioBus* bus, size_t numberOfFrames) {
   ASSERT(m_requiresConsumer);
   MutexLocker locker(m_audioConsumersLock);
-  // Prevent GCs from going ahead while this iteration runs, attempting to
-  // pinpoint crbug.com/682945 failures.
-  ThreadState::MainThreadGCForbiddenScope scope;
   for (AudioDestinationConsumer* consumer : m_audioConsumers)
     consumer->consumeAudio(bus, numberOfFrames);
 }
