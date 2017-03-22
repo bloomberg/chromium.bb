@@ -131,4 +131,28 @@ Found: Infinity
 Checking 'var x = (do|);'
 Found: document
 
+Checking 'complicatedObject["foo'
+Found: "foo-bar"], displayed as "foo-bar"
+
+Checking 'complicatedObject["foo-'
+Found: "foo-bar"], displayed as "foo-bar"
+
+Checking 'complicatedObject["foo-bar'
+Found: "foo-bar"], displayed as "foo-bar"
+
+Checking 'complicatedObject["'sing'
+Found: "'single-qouted'"], displayed as "'single-qouted'"
+
+Checking 'complicatedObject['\'sing'
+Found: '\'single-qouted\''], displayed as '\'single-qouted\''
+
+Checking 'complicatedObject["'single-qou'
+Found: "'single-qouted'"], displayed as "'single-qouted'"
+
+Checking 'complicatedObject["\"double-qouted\"'
+Found: "\"double-qouted\""], displayed as "\"double-qouted\""
+
+Checking 'complicatedObject["notDangerous();'
+Found: "notDangerous();"], displayed as "notDangerous();"
+
 

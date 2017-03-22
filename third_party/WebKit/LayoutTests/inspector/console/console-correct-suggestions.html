@@ -16,7 +16,12 @@ function shouldFindThisFunction() { }
 window["should not find this"] = true;
 
 var myMap = new Map([['first', 1], ['second', 2], ['third', 3], ['shouldNotFindThis', 4]]);
-
+var complicatedObject = {
+    'foo-bar': true,
+    '"double-qouted"': true,
+    "'single-qouted'": true,
+    "notDangerous();": true
+}
 function test()
 {
     var consoleEditor;
@@ -98,7 +103,15 @@ function test()
         () => testCompletions("document[   [win", ["window"]),
         () => testCompletions("document[   [  win", ["window"]),
         () => testCompletions('I|mag', ['Image', 'Infinity']),
-        () => testCompletions('var x = (do|);', ['document'])
+        () => testCompletions('var x = (do|);', ['document']),
+        () => testCompletions('complicatedObject["foo', ['"foo-bar"]']),
+        () => testCompletions('complicatedObject["foo-', ['"foo-bar"]']),
+        () => testCompletions('complicatedObject["foo-bar', ['"foo-bar"]']),
+        () => testCompletions('complicatedObject["\'sing', ['"\'single-qouted\'"]']),
+        () => testCompletions('complicatedObject[\'\\\'sing', ['\'\\\'single-qouted\\\'\']']),
+        () => testCompletions('complicatedObject["\'single-qou', ['"\'single-qouted\'"]']),
+        () => testCompletions('complicatedObject["\\"double-qouted\\"', ['"\\"double-qouted\\""]']),
+        () => testCompletions('complicatedObject["notDangerous();', ['"notDangerous();"]']),
     ]).then(InspectorTest.completeTest);
 
 }
