@@ -6,8 +6,6 @@
 
 #include <limits>
 
-#include "chrome/browser/predictors/resource_prefetch_predictor_tables.h"
-
 namespace predictors {
 
 using URLRequestSummary = ResourcePrefetchPredictor::URLRequestSummary;
@@ -67,6 +65,15 @@ RedirectData CreateRedirectData(const std::string& primary_key,
   data.set_primary_key(primary_key);
   data.set_last_visit_time(last_visit_time);
   return data;
+}
+
+precache::PrecacheManifest CreateManifestData(uint64_t id) {
+  precache::PrecacheManifestId* manifest_id =
+      new precache::PrecacheManifestId();
+  manifest_id->set_id(id);
+  precache::PrecacheManifest manifest;
+  manifest.set_allocated_id(manifest_id);
+  return manifest;
 }
 
 NavigationID CreateNavigationID(SessionID::id_type tab_id,

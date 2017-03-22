@@ -26,6 +26,7 @@
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/history/core/browser/history_types.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/precache/content/precache_manager.h"
 #include "content/public/common/resource_type.h"
 #include "url/gurl.h"
 
@@ -100,7 +101,8 @@ class ResourcePrefetcherManager;
 class ResourcePrefetchPredictor
     : public KeyedService,
       public history::HistoryServiceObserver,
-      public base::SupportsWeakPtr<ResourcePrefetchPredictor> {
+      public base::SupportsWeakPtr<ResourcePrefetchPredictor>,
+      public precache::PrecacheManager::Delegate {
  public:
   // Stores the data that we need to get from the URLRequest.
   struct URLRequestSummary {
@@ -224,6 +226,10 @@ class ResourcePrefetchPredictor
   // number of hits.
   bool IsResourcePrefetchable(const ResourceData& resource) const;
 
+  // precache::PrecacheManager::Delegate:
+  void OnManifestFetched(const std::string& host,
+                         const precache::PrecacheManifest& manifest) override;
+
   // Sets the |observer| to be notified when the resource prefetch predictor
   // data changes. Previously registered observer will be discarded. Call
   // this with nullptr parameter to de-register observer.
@@ -247,6 +253,10 @@ class ResourcePrefetchPredictor
                            NavigationUrlNotInDBAndDBFull);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, RedirectUrlNotInDB);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, RedirectUrlInDB);
+  FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, ManifestHostNotInDB);
+  FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, ManifestHostInDB);
+  FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest,
+                           ManifestHostNotInDBAndDBFull);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, OnMainFrameRequest);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest, OnMainFrameRedirect);
   FRIEND_TEST_ALL_PREFIXES(ResourcePrefetchPredictorTest,
@@ -359,6 +369,8 @@ class ResourcePrefetchPredictor
 
   void RemoveOldestEntryInRedirectDataMap(PrefetchKeyType key_type,
                                           RedirectDataMap* data_map);
+
+  void RemoveOldestEntryInManifestDataMap(ManifestDataMap* data_map);
 
   // Merges resources in |new_resources| into the |data_map| and correspondingly
   // updates the predictor database. Also calls LearnRedirect if relevant.

@@ -882,6 +882,7 @@ void PrecacheFetcher::OnManifestFetchComplete(int64_t host_visits,
     PrecacheManifest manifest;
 
     if (ParseProtoFromFetchResponse(*source.network_url_fetcher(), &manifest)) {
+      precache_delegate_->OnManifestFetched(source.referrer(), manifest);
       const base::Optional<std::vector<bool>> resource_bitset =
           GetResourceBitset(manifest, experiment_id_);
       const int32_t included_resources_max =

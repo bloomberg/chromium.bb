@@ -107,6 +107,12 @@ class MockHistoryService : public history::HistoryService {
                           const base::Callback<void(int)>& callback));
 };
 
+class MockPrecacheManagerDelegate : public PrecacheManager::Delegate {
+ public:
+  MOCK_METHOD2(OnManifestFetched,
+               void(const std::string& host, const PrecacheManifest& manifest));
+};
+
 ACTION_P(ReturnHosts, starting_hosts) {
   arg1.Run(starting_hosts);
 }
@@ -138,12 +144,14 @@ class PrecacheManagerUnderTest : public PrecacheManager {
       const history::HistoryService* history_service,
       const data_reduction_proxy::DataReductionProxySettings*
           data_reduction_proxy_settings,
+      Delegate* delegate_,
       const base::FilePath& db_path,
       std::unique_ptr<PrecacheDatabase> precache_database)
       : PrecacheManager(browser_context,
                         sync_service,
                         history_service,
                         data_reduction_proxy_settings,
+                        delegate_,
                         db_path,
                         std::move(precache_database)),
         control_group_(false) {}
@@ -202,7 +210,8 @@ class PrecacheManagerTest : public testing::Test {
         base::FilePath(FILE_PATH_LITERAL("precache_database")));
     precache_manager_.reset(new PrecacheManagerUnderTest(
         &browser_context_, nullptr /* sync_service */, &history_service_,
-        nullptr /* data_reduction_proxy_settings */, db_path,
+        nullptr /* data_reduction_proxy_settings */,
+        &precache_manager_delegate_, db_path,
         base::WrapUnique(precache_database)));
   }
 
@@ -246,6 +255,7 @@ class PrecacheManagerTest : public testing::Test {
   net::FakeURLFetcherFactory factory_;
   TestPrecacheCompletionCallback precache_callback_;
   testing::NiceMock<MockHistoryService> history_service_;
+  testing::NiceMock<MockPrecacheManagerDelegate> precache_manager_delegate_;
   base::HistogramTester histograms_;
   net::HttpResponseInfo info_;
   variations::testing::VariationParamsManager variation_params_;

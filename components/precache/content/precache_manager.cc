@@ -21,6 +21,7 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/precache/core/precache_database.h"
 #include "components/precache/core/precache_switches.h"
+#include "components/precache/core/proto/precache.pb.h"
 #include "components/precache/core/proto/unfinished_work.pb.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/driver/sync_service.h"
@@ -62,12 +63,14 @@ PrecacheManager::PrecacheManager(
     const history::HistoryService* const history_service,
     const data_reduction_proxy::DataReductionProxySettings*
         data_reduction_proxy_settings,
+    Delegate* delegate,
     const base::FilePath& db_path,
     std::unique_ptr<PrecacheDatabase> precache_database)
     : browser_context_(browser_context),
       sync_service_(sync_service),
       history_service_(history_service),
       data_reduction_proxy_settings_(data_reduction_proxy_settings),
+      delegate_(delegate),
       is_precaching_(false) {
   precache_database_ = std::move(precache_database);
   BrowserThread::PostTask(
@@ -454,6 +457,13 @@ void PrecacheManager::OnDone() {
   }
 
   is_precaching_ = false;
+}
+
+void PrecacheManager::OnManifestFetched(const std::string& host,
+                                        const PrecacheManifest& manifest) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (delegate_)
+    delegate_->OnManifestFetched(host, manifest);
 }
 
 void PrecacheManager::OnHostsReceived(

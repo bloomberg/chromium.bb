@@ -11,6 +11,8 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
+#include "chrome/browser/predictors/resource_prefetch_predictor.h"
+#include "chrome/browser/predictors/resource_prefetch_predictor_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -40,6 +42,7 @@ PrecacheManagerFactory::PrecacheManagerFactory()
   DependsOn(ProfileSyncServiceFactory::GetInstance());
   DependsOn(HistoryServiceFactory::GetInstance());
   DependsOn(DataReductionProxyChromeSettingsFactory::GetInstance());
+  DependsOn(predictors::ResourcePrefetchPredictorFactory::GetInstance());
 }
 
 PrecacheManagerFactory::~PrecacheManagerFactory() {
@@ -59,6 +62,8 @@ KeyedService* PrecacheManagerFactory::BuildServiceInstanceFor(
           Profile::FromBrowserContext(browser_context),
           ServiceAccessType::IMPLICIT_ACCESS),
       DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+          browser_context),
+      predictors::ResourcePrefetchPredictorFactory::GetForProfile(
           browser_context),
       db_path, std::move(precache_database));
 }

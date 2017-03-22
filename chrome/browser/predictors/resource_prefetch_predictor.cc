@@ -49,6 +49,7 @@ const char* kFontMimeTypes[] = {"font/woff2",
                                 "application/font-sfnt",
                                 "application/font-ttf"};
 
+const size_t kMaxManifestByteSize = 16 * 1024;
 const size_t kNumSampleHosts = 50;
 const size_t kReportReadinessThreshold = 50;
 
@@ -1087,6 +1088,26 @@ void ResourcePrefetchPredictor::RemoveOldestEntryInRedirectDataMap(
           tables_, key_to_delete, key_type));
 }
 
+void ResourcePrefetchPredictor::RemoveOldestEntryInManifestDataMap(
+    ManifestDataMap* data_map) {
+  if (data_map->empty())
+    return;
+
+  auto oldest_entry = std::min_element(
+      data_map->begin(), data_map->end(),
+      [](const std::pair<const std::string, precache::PrecacheManifest>& lhs,
+         const std::pair<const std::string, precache::PrecacheManifest>& rhs) {
+        return lhs.second.id().id() < rhs.second.id().id();
+      });
+
+  std::string key_to_delete = oldest_entry->first;
+  data_map->erase(oldest_entry);
+  BrowserThread::PostTask(
+      BrowserThread::DB, FROM_HERE,
+      base::Bind(&ResourcePrefetchPredictorTables::DeleteManifestData, tables_,
+                 std::vector<std::string>({key_to_delete})));
+}
+
 void ResourcePrefetchPredictor::OnVisitCountLookup(
     size_t url_visit_count,
     const PageRequestSummary& summary) {
@@ -1421,6 +1442,34 @@ void ResourcePrefetchPredictor::OnHistoryServiceLoaded(
   if (initialization_state_ == INITIALIZING) {
     OnHistoryAndCacheLoaded();
   }
+}
+
+void ResourcePrefetchPredictor::OnManifestFetched(
+    const std::string& host,
+    const precache::PrecacheManifest& manifest) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (initialization_state_ != INITIALIZED)
+    return;
+
+  if (host.length() > ResourcePrefetchPredictorTables::kMaxStringLength ||
+      static_cast<uint32_t>(manifest.ByteSize()) > kMaxManifestByteSize) {
+    return;
+  }
+
+  auto cache_entry = manifest_table_cache_->find(host);
+  if (cache_entry == manifest_table_cache_->end()) {
+    if (manifest_table_cache_->size() >= config_.max_hosts_to_track)
+      RemoveOldestEntryInManifestDataMap(manifest_table_cache_.get());
+    cache_entry =
+        manifest_table_cache_->insert(std::make_pair(host, manifest)).first;
+  } else {
+    cache_entry->second = manifest;
+  }
+
+  BrowserThread::PostTask(
+      BrowserThread::DB, FROM_HERE,
+      base::Bind(&ResourcePrefetchPredictorTables::UpdateManifestData, tables_,
+                 host, cache_entry->second));
 }
 
 void ResourcePrefetchPredictor::ConnectToHistoryService() {

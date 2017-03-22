@@ -128,6 +128,10 @@ class PrecacheFetcher : public base::SupportsWeakPtr<PrecacheFetcher> {
     // were fetched or not. If the PrecacheFetcher is destroyed before OnDone is
     // called, then precaching will be canceled and OnDone will not be called.
     virtual void OnDone() = 0;
+
+    // Called when a precache manifest has been successfully fetched and parsed.
+    virtual void OnManifestFetched(const std::string& host,
+                                   const PrecacheManifest& manifest) = 0;
   };
 
   // Visible for testing.
