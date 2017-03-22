@@ -180,17 +180,17 @@ void InsertValueIntoBuffer(std::vector<uint8_t>* data,
 
 template <typename T>
 void AppendValueToBuffer(std::vector<uint8_t>* data, const T& value) {
-  size_t old_size = data->size();
-  data->resize(old_size + sizeof(T));
-  memcpy(data->data() + old_size, &value, sizeof(T));
+  const base::CheckedNumeric<size_t> old_size = data->size();
+  data->resize((old_size + sizeof(T)).ValueOrDie());
+  memcpy(data->data() + old_size.ValueOrDie(), &value, sizeof(T));
 }
 
 void AppendStringToBuffer(std::vector<uint8_t>* data,
                           const char* str,
                           size_t len) {
-  size_t old_size = data->size();
-  data->resize(old_size + len);
-  memcpy(data->data() + old_size, str, len);
+  const base::CheckedNumeric<size_t> old_size = data->size();
+  data->resize((old_size + len).ValueOrDie());
+  memcpy(data->data() + old_size.ValueOrDie(), str, len);
 }
 
 }  // anonymous namespace
@@ -2653,8 +2653,16 @@ error::Error GLES2DecoderPassthroughImpl::DoGetProgramInfoCHROMIUM(
   GLint num_uniforms = 0;
   glGetProgramiv(service_program, GL_ACTIVE_UNIFORMS, &num_uniforms);
 
-  data->resize(sizeof(ProgramInfoHeader) +
-                   ((num_attributes + num_uniforms) * sizeof(ProgramInput)),
+  const base::CheckedNumeric<size_t> buffer_header_size(
+      sizeof(ProgramInfoHeader));
+  const base::CheckedNumeric<size_t> buffer_block_size(
+      sizeof(ProgramInput));
+  const base::CheckedNumeric<size_t> attribute_block_size =
+      buffer_block_size * num_attributes;
+  const base::CheckedNumeric<size_t> uniform_block_size =
+      buffer_block_size * num_uniforms;
+  data->resize((buffer_header_size + attribute_block_size + uniform_block_size)
+                   .ValueOrDie(),
                0);
 
   GLint link_status = 0;
@@ -2693,7 +2701,7 @@ error::Error GLES2DecoderPassthroughImpl::DoGetProgramInfoCHROMIUM(
 
     InsertValueIntoBuffer(
         data, input,
-        sizeof(ProgramInfoHeader) + (attrib_index * sizeof(ProgramInput)));
+        (buffer_header_size + (buffer_block_size * attrib_index)).ValueOrDie());
   }
 
   GLint active_uniform_max_length = 0;
@@ -2733,9 +2741,10 @@ error::Error GLES2DecoderPassthroughImpl::DoGetProgramInfoCHROMIUM(
     input.name_length = length;
     AppendStringToBuffer(data, uniform_name_buf.data(), length);
 
-    InsertValueIntoBuffer(data, input, sizeof(ProgramInfoHeader) +
-                                           ((num_attributes + uniform_index) *
-                                            sizeof(ProgramInput)));
+    InsertValueIntoBuffer(data, input,
+                          (buffer_header_size + attribute_block_size +
+                           (buffer_block_size * uniform_index))
+                              .ValueOrDie());
   }
 
   return error::kNoError;
@@ -2744,7 +2753,99 @@ error::Error GLES2DecoderPassthroughImpl::DoGetProgramInfoCHROMIUM(
 error::Error GLES2DecoderPassthroughImpl::DoGetUniformBlocksCHROMIUM(
     GLuint program,
     std::vector<uint8_t>* data) {
-  NOTIMPLEMENTED();
+  GLuint service_program = 0;
+  if (!resources_->program_id_map.GetServiceID(program, &service_program)) {
+    return error::kNoError;
+  }
+
+  GLint num_uniform_blocks = 0;
+  glGetProgramiv(service_program, GL_ACTIVE_UNIFORM_BLOCKS,
+                 &num_uniform_blocks);
+
+  // Resize the data to fit the headers and info objects so that strings can be
+  // appended.
+  const base::CheckedNumeric<size_t> buffer_header_size(
+      sizeof(UniformBlocksHeader));
+  const base::CheckedNumeric<size_t> buffer_block_size(
+      sizeof(UniformBlockInfo));
+  data->resize((buffer_header_size + (num_uniform_blocks * buffer_block_size))
+                   .ValueOrDie(),
+               0);
+
+  UniformBlocksHeader header;
+  header.num_uniform_blocks = num_uniform_blocks;
+  InsertValueIntoBuffer(data, header, 0);
+
+  GLint active_uniform_block_max_length = 0;
+  glGetProgramiv(service_program, GL_ACTIVE_UNIFORM_BLOCK_MAX_NAME_LENGTH,
+                 &active_uniform_block_max_length);
+
+  std::vector<char> uniform_block_name_buf(active_uniform_block_max_length, 0);
+  for (GLint uniform_block_index = 0; uniform_block_index < num_uniform_blocks;
+       uniform_block_index++) {
+    UniformBlockInfo block_info;
+
+    GLint uniform_block_binding = 0;
+    glGetActiveUniformBlockiv(service_program, uniform_block_index,
+                              GL_UNIFORM_BLOCK_BINDING, &uniform_block_binding);
+    block_info.binding = uniform_block_binding;
+
+    GLint uniform_block_data_size = 0;
+    glGetActiveUniformBlockiv(service_program, uniform_block_index,
+                              GL_UNIFORM_BLOCK_DATA_SIZE,
+                              &uniform_block_data_size);
+    block_info.data_size = uniform_block_data_size;
+
+    GLint uniform_block_name_length = 0;
+    glGetActiveUniformBlockName(
+        service_program, uniform_block_index, active_uniform_block_max_length,
+        &uniform_block_name_length, uniform_block_name_buf.data());
+    block_info.name_offset = data->size();
+    block_info.name_length = uniform_block_name_length;
+    AppendStringToBuffer(data, uniform_block_name_buf.data(),
+                         uniform_block_name_length);
+
+    GLint uniform_block_active_uniforms = 0;
+    glGetActiveUniformBlockiv(service_program, uniform_block_index,
+                              GL_UNIFORM_BLOCK_ACTIVE_UNIFORMS,
+                              &uniform_block_active_uniforms);
+    block_info.active_uniforms = uniform_block_active_uniforms;
+
+    std::vector<GLint> uniform_block_indices_buf(uniform_block_active_uniforms,
+                                                 0);
+    glGetActiveUniformBlockiv(service_program, uniform_block_index,
+                              GL_UNIFORM_BLOCK_ACTIVE_UNIFORM_INDICES,
+                              uniform_block_indices_buf.data());
+    block_info.active_uniform_offset = data->size();
+    for (GLint uniform_block_uniform_index_index = 0;
+         uniform_block_uniform_index_index < uniform_block_active_uniforms;
+         uniform_block_uniform_index_index++) {
+      AppendValueToBuffer(
+          data,
+          static_cast<uint32_t>(
+              uniform_block_indices_buf[uniform_block_uniform_index_index]));
+    }
+
+    GLint uniform_block_referenced_by_vertex_shader = 0;
+    glGetActiveUniformBlockiv(service_program, uniform_block_index,
+                              GL_UNIFORM_BLOCK_REFERENCED_BY_VERTEX_SHADER,
+                              &uniform_block_referenced_by_vertex_shader);
+    block_info.referenced_by_vertex_shader =
+        uniform_block_referenced_by_vertex_shader;
+
+    GLint uniform_block_referenced_by_fragment_shader = 0;
+    glGetActiveUniformBlockiv(service_program, uniform_block_index,
+                              GL_UNIFORM_BLOCK_REFERENCED_BY_FRAGMENT_SHADER,
+                              &uniform_block_referenced_by_fragment_shader);
+    block_info.referenced_by_fragment_shader =
+        uniform_block_referenced_by_fragment_shader;
+
+    InsertValueIntoBuffer(
+        data, block_info,
+        (buffer_header_size + (buffer_block_size * uniform_block_index))
+            .ValueOrDie());
+  }
+
   return error::kNoError;
 }
 
@@ -2752,14 +2853,118 @@ error::Error
 GLES2DecoderPassthroughImpl::DoGetTransformFeedbackVaryingsCHROMIUM(
     GLuint program,
     std::vector<uint8_t>* data) {
-  NOTIMPLEMENTED();
+  GLuint service_program = 0;
+  if (!resources_->program_id_map.GetServiceID(program, &service_program)) {
+    return error::kNoError;
+  }
+
+  GLint transform_feedback_buffer_mode = 0;
+  glGetProgramiv(service_program, GL_TRANSFORM_FEEDBACK_BUFFER_MODE,
+                 &transform_feedback_buffer_mode);
+
+  GLint num_transform_feedback_varyings = 0;
+  glGetProgramiv(service_program, GL_TRANSFORM_FEEDBACK_VARYINGS,
+                 &num_transform_feedback_varyings);
+
+  // Resize the data to fit the headers and info objects so that strings can be
+  // appended.
+  const base::CheckedNumeric<size_t> buffer_header_size(
+      sizeof(TransformFeedbackVaryingsHeader));
+  const base::CheckedNumeric<size_t> buffer_block_size(
+      sizeof(TransformFeedbackVaryingInfo));
+  data->resize((buffer_header_size +
+                (num_transform_feedback_varyings * buffer_block_size))
+                   .ValueOrDie(),
+               0);
+
+  TransformFeedbackVaryingsHeader header;
+  header.transform_feedback_buffer_mode = transform_feedback_buffer_mode;
+  header.num_transform_feedback_varyings = num_transform_feedback_varyings;
+  InsertValueIntoBuffer(data, header, 0);
+
+  GLint max_transform_feedback_varying_length = 0;
+  glGetProgramiv(service_program, GL_TRANSFORM_FEEDBACK_VARYING_MAX_LENGTH,
+                 &max_transform_feedback_varying_length);
+
+  std::vector<char> transform_feedback_varying_name_buf(
+      max_transform_feedback_varying_length, 0);
+  for (GLint transform_feedback_varying_index = 0;
+       transform_feedback_varying_index < num_transform_feedback_varyings;
+       transform_feedback_varying_index++) {
+    GLsizei length = 0;
+    GLint size = 0;
+    GLenum type = GL_NONE;
+    glGetTransformFeedbackVarying(
+        service_program, transform_feedback_varying_index,
+        max_transform_feedback_varying_length, &length, &size, &type,
+        transform_feedback_varying_name_buf.data());
+
+    TransformFeedbackVaryingInfo varying_info;
+    varying_info.size = size;
+    varying_info.type = type;
+    varying_info.name_length = data->size();
+    varying_info.name_length = length;
+
+    AppendStringToBuffer(data, transform_feedback_varying_name_buf.data(),
+                         length);
+
+    InsertValueIntoBuffer(
+        data, varying_info,
+        (buffer_header_size +
+         (buffer_block_size * transform_feedback_varying_index))
+            .ValueOrDie());
+  }
+
   return error::kNoError;
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoGetUniformsES3CHROMIUM(
     GLuint program,
     std::vector<uint8_t>* data) {
-  NOTIMPLEMENTED();
+  GLuint service_program = 0;
+  if (!resources_->program_id_map.GetServiceID(program, &service_program)) {
+    return error::kNoError;
+  }
+
+  GLint num_uniforms = 0;
+  glGetProgramiv(service_program, GL_ACTIVE_UNIFORMS, &num_uniforms);
+
+  UniformsES3Header header;
+  header.num_uniforms = num_uniforms;
+  AppendValueToBuffer(data, header);
+
+  for (GLuint uniform_index = 0;
+       uniform_index < static_cast<GLuint>(num_uniforms); uniform_index++) {
+    UniformES3Info uniform_info;
+
+    GLint uniform_block_index = 0;
+    glGetActiveUniformsiv(service_program, 1, &uniform_index,
+                          GL_UNIFORM_BLOCK_INDEX, &uniform_block_index);
+    uniform_info.block_index = uniform_block_index;
+
+    GLint uniform_offset = 0;
+    glGetActiveUniformsiv(service_program, 1, &uniform_index, GL_UNIFORM_OFFSET,
+                          &uniform_offset);
+    uniform_info.offset = uniform_offset;
+
+    GLint uniform_array_stride = 0;
+    glGetActiveUniformsiv(service_program, 1, &uniform_index,
+                          GL_UNIFORM_ARRAY_STRIDE, &uniform_array_stride);
+    uniform_info.array_stride = uniform_array_stride;
+
+    GLint uniform_matrix_stride = 0;
+    glGetActiveUniformsiv(service_program, 1, &uniform_index,
+                          GL_UNIFORM_MATRIX_STRIDE, &uniform_matrix_stride);
+    uniform_info.matrix_stride = uniform_matrix_stride;
+
+    GLint uniform_is_row_major = 0;
+    glGetActiveUniformsiv(service_program, 1, &uniform_index,
+                          GL_UNIFORM_IS_ROW_MAJOR, &uniform_is_row_major);
+    uniform_info.is_row_major = uniform_is_row_major;
+
+    AppendValueToBuffer(data, uniform_info);
+  }
+
   return error::kNoError;
 }
 
