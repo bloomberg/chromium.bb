@@ -854,7 +854,7 @@ TEST_F(ShellSurfaceTest, ToggleFullscreen) {
             shell_surface->GetWidget()->GetWindowBoundsInScreen().width());
 }
 
-TEST_F(ShellSurfaceTest, ImmersiveFullscreenBackground) {
+TEST_F(ShellSurfaceTest, MaximizedAndImmersiveFullscreenBackground) {
   const gfx::Size display_size =
       display::Screen::GetScreen()->GetPrimaryDisplay().size();
   const gfx::Size buffer_size(display_size);
@@ -877,12 +877,12 @@ TEST_F(ShellSurfaceTest, ImmersiveFullscreenBackground) {
   EXPECT_EQ(display::Screen::GetScreen()->GetPrimaryDisplay().size(),
             shell_surface->surface_for_testing()->window()->bounds().size());
 
-  ash::wm::WMEvent event(ash::wm::WM_EVENT_TOGGLE_FULLSCREEN);
+  ash::wm::WMEvent fullscreen_event(ash::wm::WM_EVENT_TOGGLE_FULLSCREEN);
   ash::WmWindow* window =
       ash::WmWindow::Get(shell_surface->GetWidget()->GetNativeWindow());
 
   // Enter immersive fullscreen mode. Shadow underlay is fullscreen.
-  window->GetWindowState()->OnWMEvent(&event);
+  window->GetWindowState()->OnWMEvent(&fullscreen_event);
 
   EXPECT_TRUE(shell_surface->shadow_underlay()->IsVisible());
   EXPECT_EQ(1.f, shell_surface->shadow_underlay()->layer()->opacity());
@@ -890,8 +890,23 @@ TEST_F(ShellSurfaceTest, ImmersiveFullscreenBackground) {
             shell_surface->shadow_underlay()->bounds().size());
 
   // Leave fullscreen mode. Shadow underlay is restored.
-  window->GetWindowState()->OnWMEvent(&event);
+  window->GetWindowState()->OnWMEvent(&fullscreen_event);
   EXPECT_TRUE(shell_surface->shadow_underlay()->IsVisible());
+  EXPECT_EQ(shadow_bounds, shell_surface->shadow_underlay()->bounds());
+
+  ash::wm::WMEvent maximize_event(ash::wm::WM_EVENT_TOGGLE_MAXIMIZE);
+
+  // Enter maximized mode. Shadow underlay is fullscreen.
+  window->GetWindowState()->OnWMEvent(&maximize_event);
+  EXPECT_TRUE(shell_surface->shadow_underlay()->IsVisible());
+  EXPECT_EQ(1.f, shell_surface->shadow_underlay()->layer()->opacity());
+  EXPECT_EQ(display::Screen::GetScreen()->GetPrimaryDisplay().size(),
+            shell_surface->shadow_underlay()->bounds().size());
+
+  // Leave maximized mode. Shadow underlay is fullscreen.
+  window->GetWindowState()->OnWMEvent(&maximize_event);
+  EXPECT_TRUE(shell_surface->shadow_underlay()->IsVisible());
+  EXPECT_EQ(1.f, shell_surface->shadow_underlay()->layer()->opacity());
   EXPECT_EQ(shadow_bounds, shell_surface->shadow_underlay()->bounds());
 }
 

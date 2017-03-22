@@ -1619,14 +1619,16 @@ void ShellSurface::UpdateShadow() {
         widget_->IsActive();
 
     float shadow_underlay_opacity = shadow_background_opacity_;
+
     // Put the black background layer behind the window if
-    // 1) the window is in immersive fullscreen or is active with
+    // 1) the window is in immersive fullscreen, maximized or is active with
     //    spoken feedback enabled.
     // 2) the window can control the bounds of the window in fullscreen (
     //    thus the background can be visible).
     // 3) the window has no transform (the transformed background may
     //    not cover the entire background, e.g. overview mode).
-    if ((widget_->IsFullscreen() || underlay_capture_events) &&
+    if ((widget_->IsFullscreen() || widget_->IsMaximized() ||
+         underlay_capture_events) &&
         ash::wm::GetWindowState(window)->allow_set_bounds_in_maximized() &&
         window->layer()->GetTargetTransform().IsIdentity()) {
       if (shadow_underlay_in_surface_) {
