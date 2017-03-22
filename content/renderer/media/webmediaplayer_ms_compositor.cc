@@ -48,25 +48,27 @@ scoped_refptr<media::VideoFrame> CopyFrame(
         media::PIXEL_FORMAT_I420, frame->coded_size(), frame->visible_rect(),
         frame->natural_size(), frame->timestamp());
 
-    sk_sp<cc::PaintSurface> surface = cc::PaintSurface::MakeRasterN32Premul(
-        frame->visible_rect().width(), frame->visible_rect().height());
-
     ui::ContextProviderCommandBuffer* const provider =
         RenderThreadImpl::current()->SharedMainThreadContextProvider().get();
-    if (surface && provider) {
-      DCHECK(provider->ContextGL());
-      video_renderer->Copy(
-          frame.get(), surface->getCanvas(),
-          media::Context3D(provider->ContextGL(), provider->GrContext()));
-    } else {
+    if (!provider) {
       // Return a black frame (yuv = {0, 0x80, 0x80}).
       return media::VideoFrame::CreateColorFrame(
           frame->visible_rect().size(), 0u, 0x80, 0x80, frame->timestamp());
     }
 
+    SkBitmap bitmap;
+    bitmap.allocPixels(SkImageInfo::MakeN32Premul(
+        frame->visible_rect().width(), frame->visible_rect().height()));
+    cc::SkiaPaintCanvas paint_canvas(bitmap);
+
+    DCHECK(provider->ContextGL());
+    video_renderer->Copy(
+        frame.get(), &paint_canvas,
+        media::Context3D(provider->ContextGL(), provider->GrContext()));
+
     SkPixmap pixmap;
-    const bool result = surface->getCanvas()->peekPixels(&pixmap);
-    DCHECK(result) << "Error trying to access PaintSurface's pixels";
+    const bool result = bitmap.peekPixels(&pixmap);
+    DCHECK(result) << "Error trying to access SkBitmap's pixels";
 
     const uint32 source_pixel_format =
         (kN32_SkColorType == kRGBA_8888_SkColorType) ? libyuv::FOURCC_ABGR

@@ -3798,15 +3798,17 @@ TEST_P(RenderTextTest, TextDoesntClip) {
   const Size kCanvasSize(300, 50);
   const int kTestSize = 10;
 
-  sk_sp<cc::PaintSurface> surface = cc::PaintSurface::MakeRasterN32Premul(
-      kCanvasSize.width(), kCanvasSize.height());
-  Canvas canvas(surface->getCanvas(), 1.0f);
+  SkBitmap bitmap;
+  bitmap.allocPixels(
+      SkImageInfo::MakeN32Premul(kCanvasSize.width(), kCanvasSize.height()));
+  cc::SkiaPaintCanvas paint_canvas(bitmap);
+  Canvas canvas(&paint_canvas, 1.0f);
   RenderText* render_text = GetRenderText();
   render_text->SetHorizontalAlignment(ALIGN_LEFT);
   render_text->SetColor(SK_ColorBLACK);
 
   for (auto* string : kTestStrings) {
-    surface->getCanvas()->clear(SK_ColorWHITE);
+    paint_canvas.clear(SK_ColorWHITE);
     render_text->SetText(WideToUTF16(string));
     const Size string_size = render_text->GetStringSize();
     render_text->ApplyBaselineStyle(SUPERSCRIPT, Range(1, 2));
@@ -3822,9 +3824,7 @@ TEST_P(RenderTextTest, TextDoesntClip) {
 
     render_text->Draw(&canvas);
     ASSERT_LT(string_size.width() + kTestSize, kCanvasSize.width());
-    SkPixmap pixmap;
-    surface->getCanvas()->peekPixels(&pixmap);
-    const uint32_t* buffer = static_cast<const uint32_t*>(pixmap.addr());
+    const uint32_t* buffer = static_cast<const uint32_t*>(bitmap.getPixels());
     ASSERT_NE(nullptr, buffer);
     TestRectangleBuffer rect_buffer(string, buffer, kCanvasSize.width(),
                                     kCanvasSize.height());
@@ -3891,15 +3891,17 @@ TEST_P(RenderTextTest, TextDoesClip) {
   const Size kCanvasSize(300, 50);
   const int kTestSize = 10;
 
-  sk_sp<cc::PaintSurface> surface = cc::PaintSurface::MakeRasterN32Premul(
-      kCanvasSize.width(), kCanvasSize.height());
-  Canvas canvas(surface->getCanvas(), 1.0f);
+  SkBitmap bitmap;
+  bitmap.allocPixels(
+      SkImageInfo::MakeN32Premul(kCanvasSize.width(), kCanvasSize.height()));
+  cc::SkiaPaintCanvas paint_canvas(bitmap);
+  Canvas canvas(&paint_canvas, 1.0f);
   RenderText* render_text = GetRenderText();
   render_text->SetHorizontalAlignment(ALIGN_LEFT);
   render_text->SetColor(SK_ColorBLACK);
 
   for (auto* string : kTestStrings) {
-    surface->getCanvas()->clear(SK_ColorWHITE);
+    paint_canvas.clear(SK_ColorWHITE);
     render_text->SetText(WideToUTF16(string));
     const Size string_size = render_text->GetStringSize();
     int fake_width = string_size.width() / 2;
@@ -3909,9 +3911,7 @@ TEST_P(RenderTextTest, TextDoesClip) {
     render_text->set_clip_to_display_rect(true);
     render_text->Draw(&canvas);
     ASSERT_LT(string_size.width() + kTestSize, kCanvasSize.width());
-    SkPixmap pixmap;
-    surface->getCanvas()->peekPixels(&pixmap);
-    const uint32_t* buffer = static_cast<const uint32_t*>(pixmap.addr());
+    const uint32_t* buffer = static_cast<const uint32_t*>(bitmap.getPixels());
     ASSERT_NE(nullptr, buffer);
     TestRectangleBuffer rect_buffer(string, buffer, kCanvasSize.width(),
                                     kCanvasSize.height());

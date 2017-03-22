@@ -28,7 +28,10 @@ class CC_PAINT_EXPORT SkiaPaintCanvas final : public PaintCanvas {
   explicit SkiaPaintCanvas(SkCanvas* canvas);
   explicit SkiaPaintCanvas(const SkBitmap& bitmap);
   explicit SkiaPaintCanvas(const SkBitmap& bitmap, const SkSurfaceProps& props);
+  explicit SkiaPaintCanvas(SkiaPaintCanvas&& other);
   ~SkiaPaintCanvas() override;
+
+  SkiaPaintCanvas& operator=(SkiaPaintCanvas&& other) = default;
 
   SkMetaData& getMetaData() override;
   SkImageInfo imageInfo() const override;
@@ -36,7 +39,6 @@ class CC_PAINT_EXPORT SkiaPaintCanvas final : public PaintCanvas {
   void flush() override;
 
   SkISize getBaseLayerSize() const override;
-  bool peekPixels(SkPixmap* pixmap) override;
   bool readPixels(const SkImageInfo& dest_info,
                   void* dest_pixels,
                   size_t dest_row_bytes,
@@ -163,6 +165,8 @@ class CC_PAINT_EXPORT SkiaPaintCanvas final : public PaintCanvas {
  private:
   SkCanvas* canvas_;
   std::unique_ptr<SkCanvas> owned_;
+
+  DISALLOW_COPY_AND_ASSIGN(SkiaPaintCanvas);
 };
 
 }  // namespace cc

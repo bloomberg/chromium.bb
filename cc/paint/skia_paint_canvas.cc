@@ -23,6 +23,7 @@ SkiaPaintCanvas::SkiaPaintCanvas(const SkBitmap& bitmap,
                                  const SkSurfaceProps& props)
     : canvas_(new SkCanvas(bitmap, props)), owned_(canvas_) {}
 
+SkiaPaintCanvas::SkiaPaintCanvas(SkiaPaintCanvas&& other) = default;
 SkiaPaintCanvas::~SkiaPaintCanvas() = default;
 
 SkMetaData& SkiaPaintCanvas::getMetaData() {
@@ -39,10 +40,6 @@ void SkiaPaintCanvas::flush() {
 
 SkISize SkiaPaintCanvas::getBaseLayerSize() const {
   return canvas_->getBaseLayerSize();
-}
-
-bool SkiaPaintCanvas::peekPixels(SkPixmap* pixmap) {
-  return canvas_->peekPixels(pixmap);
 }
 
 bool SkiaPaintCanvas::readPixels(const SkImageInfo& dest_info,

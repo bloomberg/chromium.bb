@@ -140,7 +140,7 @@ TEST_F(ContentBasedThumbnailingAlgorithmTest, CreateRetargetedThumbnail) {
 
   // The image consists of vertical non-overlapping stripes 150 pixels wide.
   canvas.FillRect(gfx::Rect(200, 200, 800, 400), SkColorSetRGB(255, 255, 255));
-  SkBitmap source = canvas.ToBitmap();
+  SkBitmap source = canvas.GetBitmap();
 
   ConsumerCallbackCatcher catcher;
   const gfx::Size thumbnail_size(432, 284);

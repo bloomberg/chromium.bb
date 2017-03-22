@@ -105,7 +105,7 @@ TEST_F(PluginInstanceThrottlerImplTest, ThrottleByKeyframe) {
   gfx::Canvas canvas(gfx::Size(20, 10), 1.0f, true);
   canvas.FillRect(gfx::Rect(20, 10), SK_ColorBLACK);
   canvas.FillRect(gfx::Rect(10, 10), SK_ColorWHITE);
-  SkBitmap interesting_bitmap = canvas.ToBitmap();
+  SkBitmap interesting_bitmap = canvas.GetBitmap();
 
   // Don't throttle for a boring frame.
   throttler()->OnImageFlush(boring_bitmap);

@@ -11,10 +11,11 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "cc/paint/paint_canvas.h"
 #include "cc/paint/paint_flags.h"
-#include "cc/paint/paint_surface.h"
+#include "cc/paint/skia_paint_canvas.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/text_constants.h"
@@ -471,7 +472,8 @@ class GFX_EXPORT Canvas {
                        const Rect& display_rect,
                        int flags);
 
-  SkBitmap ToBitmap();
+  // Note that writing to this bitmap will modify pixels stored in this canvas.
+  SkBitmap GetBitmap() const;
 
   // TODO(enne): rename sk_canvas members and interface.
   cc::PaintCanvas* sk_canvas() { return canvas_; }
@@ -496,6 +498,7 @@ class GFX_EXPORT Canvas {
                           bool filter,
                           const cc::PaintFlags& flags,
                           bool remove_image_scale);
+  cc::PaintCanvas* CreateOwnedCanvas(const Size& size, bool is_opaque);
 
   // The device scale factor at which drawing on this canvas occurs.
   // An additional scale can be applied via Canvas::Scale(). However,
@@ -503,10 +506,11 @@ class GFX_EXPORT Canvas {
   float image_scale_;
 
   // canvas_ is our active canvas object. Sometimes we are also the owner,
-  // in which case surface_ will be set. Other times we are just
-  // borrowing someone else's canvas, in which case canvas_ will point there
-  // but surface_ will be null.
-  sk_sp<cc::PaintSurface> surface_;
+  // in which case bitmap_ and owned_canvas_ will be set. Other times we are
+  // just borrowing someone else's canvas, in which case canvas_ will point
+  // there but bitmap_ and owned_canvas_ will not exist.
+  base::Optional<SkBitmap> bitmap_;
+  base::Optional<cc::SkiaPaintCanvas> owned_canvas_;
   cc::PaintCanvas* canvas_;
 
   DISALLOW_COPY_AND_ASSIGN(Canvas);

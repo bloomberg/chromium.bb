@@ -34,7 +34,6 @@ class CC_PAINT_EXPORT PaintCanvas {
   virtual void flush() = 0;
 
   virtual SkISize getBaseLayerSize() const = 0;
-  virtual bool peekPixels(SkPixmap* pixmap) = 0;
   virtual bool readPixels(const SkImageInfo& dest_info,
                           void* dest_pixels,
                           size_t dest_row_bytes,

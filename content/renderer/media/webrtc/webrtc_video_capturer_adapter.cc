@@ -101,27 +101,30 @@ class WebRtcVideoCapturerAdapter::TextureFrameCopier
            frame->format() == media::PIXEL_FORMAT_UYVY ||
            frame->format() == media::PIXEL_FORMAT_NV12);
     ScopedWaitableEvent event(waiter);
-    sk_sp<cc::PaintSurface> surface = cc::PaintSurface::MakeRasterN32Premul(
-        frame->visible_rect().width(), frame->visible_rect().height());
 
-    if (!surface || !provider_) {
+    if (!provider_) {
       // Return a black frame (yuv = {0, 0x80, 0x80}).
       *new_frame = media::VideoFrame::CreateColorFrame(
           frame->visible_rect().size(), 0u, 0x80, 0x80, frame->timestamp());
       return;
     }
 
+    SkBitmap bitmap;
+    bitmap.allocPixels(SkImageInfo::MakeN32Premul(
+        frame->visible_rect().width(), frame->visible_rect().height()));
+    cc::SkiaPaintCanvas paint_canvas(bitmap);
+
     *new_frame = media::VideoFrame::CreateFrame(
         media::PIXEL_FORMAT_I420, frame->coded_size(), frame->visible_rect(),
         frame->natural_size(), frame->timestamp());
     DCHECK(provider_->ContextGL());
     canvas_video_renderer_->Copy(
-        frame.get(), surface->getCanvas(),
+        frame.get(), &paint_canvas,
         media::Context3D(provider_->ContextGL(), provider_->GrContext()));
 
     SkPixmap pixmap;
-    const bool result = surface->getCanvas()->peekPixels(&pixmap);
-    DCHECK(result) << "Error trying to access PaintSurface's pixels";
+    const bool result = bitmap.peekPixels(&pixmap);
+    DCHECK(result) << "Error trying to access SkBitmap's pixels";
     const uint32 source_pixel_format =
         (kN32_SkColorType == kRGBA_8888_SkColorType) ? cricket::FOURCC_ABGR
                                                      : cricket::FOURCC_ARGB;

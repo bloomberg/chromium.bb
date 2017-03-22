@@ -345,7 +345,7 @@ TEST_F(ColorAnalysisTest, ComputeColorCovarianceWithCanvas) {
   canvas.FillRect(gfx::Rect(150, 0, 50, 200), SkColorSetRGB(0, 100, 100));
   canvas.FillRect(gfx::Rect(200, 0, 50, 200), SkColorSetRGB(0, 0, 100));
 
-  gfx::Matrix3F covariance = ComputeColorCovariance(canvas.ToBitmap());
+  gfx::Matrix3F covariance = ComputeColorCovariance(canvas.GetBitmap());
 
   gfx::Matrix3F expected_covariance = gfx::Matrix3F::Zeros();
   expected_covariance.set(2400, 400, -1600,
@@ -402,7 +402,7 @@ TEST_F(ColorAnalysisTest, ApplyColorReductionBlackAndWhite) {
   // The image consists of vertical non-overlapping stripes 150 pixels wide.
   canvas.FillRect(gfx::Rect(0, 0, 150, 200), SkColorSetRGB(0, 0, 0));
   canvas.FillRect(gfx::Rect(150, 0, 150, 200), SkColorSetRGB(255, 255, 255));
-  SkBitmap source = canvas.ToBitmap();
+  SkBitmap source = canvas.GetBitmap();
   SkBitmap result;
   result.allocPixels(SkImageInfo::MakeA8(300, 200));
 
@@ -439,7 +439,7 @@ TEST_F(ColorAnalysisTest, ApplyColorReductionMultiColor) {
   canvas.FillRect(gfx::Rect(0, 0, 100, 200), SkColorSetRGB(100, 0, 0));
   canvas.FillRect(gfx::Rect(100, 0, 100, 200), SkColorSetRGB(0, 255, 0));
   canvas.FillRect(gfx::Rect(200, 0, 100, 200), SkColorSetRGB(0, 0, 128));
-  SkBitmap source = canvas.ToBitmap();
+  SkBitmap source = canvas.GetBitmap();
   SkBitmap result;
   result.allocPixels(SkImageInfo::MakeA8(300, 200));
 
@@ -481,7 +481,7 @@ TEST_F(ColorAnalysisTest, ComputePrincipalComponentImage) {
   canvas.FillRect(gfx::Rect(0, 0, 100, 200), SkColorSetRGB(10, 10, 10));
   canvas.FillRect(gfx::Rect(100, 0, 100, 200), SkColorSetRGB(100, 100, 100));
   canvas.FillRect(gfx::Rect(200, 0, 100, 200), SkColorSetRGB(255, 255, 255));
-  SkBitmap source = canvas.ToBitmap();
+  SkBitmap source = canvas.GetBitmap();
   SkBitmap result;
   result.allocPixels(SkImageInfo::MakeA8(300, 200));
 
@@ -514,7 +514,7 @@ TEST_F(ColorAnalysisTest, ComputeProminentColor) {
   // close to black.
   gfx::Canvas canvas(gfx::Size(300, 200), 1.0f, true);
   canvas.FillRect(gfx::Rect(0, 0, 300, 200), SkColorSetRGB(10, 10, 10));
-  SkBitmap bitmap = canvas.ToBitmap();
+  SkBitmap bitmap = canvas.GetBitmap();
 
   // All expectations start at SK_ColorTRANSPARENT (i.e. 0).
   SkColor expectations[arraysize(color_profiles)] = {};
@@ -527,7 +527,7 @@ TEST_F(ColorAnalysisTest, ComputeProminentColor) {
   // Add a green that could hit a couple values.
   const SkColor kVibrantGreen = SkColorSetRGB(25, 200, 25);
   canvas.FillRect(gfx::Rect(0, 1, 300, 1), kVibrantGreen);
-  bitmap = canvas.ToBitmap();
+  bitmap = canvas.GetBitmap();
   expectations[0] = kVibrantGreen;
   expectations[1] = kVibrantGreen;
   for (size_t i = 0; i < arraysize(color_profiles); ++i) {
@@ -539,7 +539,7 @@ TEST_F(ColorAnalysisTest, ComputeProminentColor) {
   // Add a stripe of a dark, muted green (saturation .33, luma .29).
   const SkColor kDarkGreen = SkColorSetRGB(50, 100, 50);
   canvas.FillRect(gfx::Rect(0, 2, 300, 1), kDarkGreen);
-  bitmap = canvas.ToBitmap();
+  bitmap = canvas.GetBitmap();
   expectations[3] = kDarkGreen;
   for (size_t i = 0; i < arraysize(color_profiles); ++i) {
     EXPECT_EQ(expectations[i],
@@ -551,7 +551,7 @@ TEST_F(ColorAnalysisTest, ComputeProminentColor) {
   // normal vibrant, but is out of range for other color profiles.
   const SkColor kPureGreen = SkColorSetRGB(0, 255, 0);
   canvas.FillRect(gfx::Rect(0, 3, 300, 1), kPureGreen);
-  bitmap = canvas.ToBitmap();
+  bitmap = canvas.GetBitmap();
   expectations[1] = kPureGreen;
   for (size_t i = 0; i < arraysize(color_profiles); ++i) {
     EXPECT_EQ(expectations[i],
