@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.TextUtils;
@@ -19,6 +20,7 @@ import android.webkit.MimeTypeMap;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.download.DownloadUtils;
 
 import java.io.File;
@@ -74,7 +76,22 @@ public class DuplicateDownloadInfoBar extends ConfirmInfoBar {
         return getMessageText(template, filename, new ClickableSpan() {
             @Override
             public void onClick(View view) {
-                DownloadUtils.openFile(file, mimeType, null, mIsIncognito);
+                new AsyncTask<Void, Void, Boolean>() {
+                    @Override
+                    protected Boolean doInBackground(Void... params) {
+                        return new File(mFilePath).exists();
+                    }
+
+                    @Override
+                    protected void onPostExecute(Boolean fileExists) {
+                        if (fileExists) {
+                            DownloadUtils.openFile(file, mimeType, null, mIsIncognito);
+                        } else {
+                            DownloadManagerService.openDownloadsPage(
+                                    ContextUtils.getApplicationContext());
+                        }
+                    }
+                }.execute();
             }
         });
     }

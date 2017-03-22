@@ -1156,7 +1156,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
      * Open the Activity which shows a list of all downloads.
      * @param context Application context
      */
-    protected static void openDownloadsPage(Context context) {
+    public static void openDownloadsPage(Context context) {
         if (DownloadUtils.showDownloadManager(null, null)) return;
 
         // Open the Android Download Manager.
