@@ -3,7 +3,7 @@
   <head>
     <title>Test Oscillator Node: sawtooth</title>
     <script src="../../resources/testharness.js"></script>
-    <script src="../../resources/testharnessreport.js"></script> 
+    <script src="../../resources/testharnessreport.js"></script>
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audit.js"></script>
     <script src="../resources/buffer-loader.js"></script>
@@ -21,13 +21,11 @@
 
         // The thresholds are experimentally determined.
         tester.setThresholds({
-          snr: 1000,
-          maxDiff: 0,
-          diffCount: 0
+          snr: 92.858,
+          maxDiff: 0.0001
         });
         tester.runTest(context, "sawtooth",
-          "Sawtooth Oscillator with Exponential Sweep",
-          task, should);
+          "Sawtooth Oscillator with Exponential Sweep", task, should);
       });
 
       audit.run();

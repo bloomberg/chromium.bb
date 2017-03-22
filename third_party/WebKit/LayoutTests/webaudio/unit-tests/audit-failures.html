@@ -85,6 +85,20 @@
       task.done();
     });
 
+    // Testing the failure handling of Audit.loadFileFromUrl().
+    audit.define({ 
+        label: 'load-file-in-should',
+        description: 'Testing the failure handling of Audit.loadFileFromUrl().'
+      }, (task, should) => {
+        let url = 'non-existent-audio-file.wav';
+        let promise = should(
+            Audit.loadFileFromUrl(url),
+            'Loading non-existent file within should().beResolved()')
+                .beResolved();
+        promise.then(() => { task.done() });
+      }
+    );
+
     // With no argument, this executes all tasks in the order defined.
     audit.run();
   </script>

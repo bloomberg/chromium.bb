@@ -90,6 +90,9 @@ FAIL X [1,2,3,4,5,6,7,8,9,10,11] does not equal [2,3,4,5,6,7,800,900,1000,1100,1
 	[6]	7.0000000000000000e+0	8.0000000000000000e+2	7.9300000000000000e+2	9.9124999999999996e-1	0.0000000000000000e+0
  assert_true: expected true got false
 FAIL < [numerical-failures] 11 out of 11 assertions were failed. assert_true: expected true got false
-FAIL # AUDIT TASK RUNNER FINISHED: 2 out of 2 tasks were failed. assert_true: expected true got false
+PASS > [load-file-in-should] Testing the failure handling of Audit.loadFileFromUrl(). 
+FAIL X Loading non-existent file within should().beResolved() rejected incorrectly with loadFile: Network failure when loading non-existent-audio-file.wav.. Got undefined. assert_true: expected true got false
+FAIL < [load-file-in-should] 1 out of 1 assertions were failed. assert_true: expected true got false
+FAIL # AUDIT TASK RUNNER FINISHED: 3 out of 3 tasks were failed. assert_true: expected true got false
 Harness: the test ran to completion.
 

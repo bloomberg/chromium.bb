@@ -65,6 +65,20 @@
       }
     );
 
+    // Test Audit.loadFileFromUrl() within |should| assertion.
+    // See: crbug.com/701813
+    audit.define({ 
+        label: 'load-file-in-should',
+        description: 'Test Audit.loadFileFromUrl() within |should| assertion.'
+      }, (task, should) => {
+        let url = '../resources/hyper-reality/laughter.wav';
+        let promise = should(Audit.loadFileFromUrl(url),
+                             'Loading file within should().beResolved()')
+                          .beResolved();
+        promise.then(() => { task.done() });
+      }
+    );
+
 
     // The task headline needs to be printed even if there is no description is
     // given.
@@ -89,7 +103,8 @@
 
     // You can enumerate tasks you want to execute in the order, or simply pass
     // no argument to run all the defined tasks.
-    audit.run('numerical', 'basic', 'dummy-label-string', 'dummy-label-object');
+    audit.run('numerical', 'basic', 'load-file-in-should',
+              'dummy-label-string', 'dummy-label-object');
   </script>
 </body>
 </html>

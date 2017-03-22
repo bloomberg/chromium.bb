@@ -19,12 +19,10 @@
         let context = new OfflineAudioContext(1, tester.sampleRate *
           tester.lengthInSeconds, tester.sampleRate);
 
-        // Thresholds for verifying the test passes.  The thresholds are
-        // experimentally determined.
+        // The thresholds are experimentally determined.
         tester.setThresholds({
-          snr: 1000,
-          maxDiff: 0,
-          diffCount: 0
+          snr: 93.92,
+          maxDiff: 0.00005
         });
         tester.runTest(context, "triangle",
           "Triangle Oscillator with Exponential Sweep ", task, should);

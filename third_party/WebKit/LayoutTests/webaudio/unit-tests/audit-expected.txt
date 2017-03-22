@@ -33,10 +33,13 @@ PASS   Decoding audio data with no argument rejected correctly with TypeError: F
 PASS   Suspending OAC with no argument rejected correctly with TypeError. 
 PASS   Start OAC rendering resolved correctly. 
 PASS < [basic] All assertions passed. (total 20 assertions) 
+PASS > [load-file-in-should] Test Audit.loadFileFromUrl() within |should| assertion. 
+PASS   Loading file within should().beResolved() resolved correctly. 
+PASS < [load-file-in-should] All assertions passed. (total 1 assertions) 
 PASS > [dummy-label-string]  
 PASS < [dummy-label-string] All assertions passed. (total 0 assertions) 
 PASS > [dummy-label-object]  
 PASS < [dummy-label-object] All assertions passed. (total 0 assertions) 
-PASS # AUDIT TASK RUNNER FINISHED: 4 tasks ran successfully. 
+PASS # AUDIT TASK RUNNER FINISHED: 5 tasks ran successfully. 
 Harness: the test ran to completion.
 

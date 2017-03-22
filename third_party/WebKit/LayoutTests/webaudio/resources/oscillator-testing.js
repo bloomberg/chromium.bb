@@ -43,10 +43,6 @@ var thresholdSNR = 10000;
 // Max diff must be less than this to pass the test.
 var thresholdDiff = 0;
 
-// Count the number of differences between the expected and actual result. The tests passes
-// if the count is less than this threshold.
-var thresholdDiffCount = 0;
-
 // Mostly for debugging
 
 // An AudioBuffer for the reference (expected) result.
@@ -123,11 +119,6 @@ function checkResult (renderedBuffer, should, oscType) {
             maxError = Math.abs(diff);
             errorPosition = k;
         }
-        // The reference file is a 16-bit WAV file, so we will almost never get an exact match
-        // between it and the actual floating-point result.
-        if (diff > 0) {
-            diffCount++;
-        }
     }
 
     var snr = calculateSNR(signalPower, noisePower);
@@ -135,11 +126,6 @@ function checkResult (renderedBuffer, should, oscType) {
         .beGreaterThanOrEqualTo(thresholdSNR);
     should(maxError, "Maximum difference")
         .beLessThanOrEqualTo(thresholdDiff);
-
-    should(diffCount,
-           "Number of differences between actual and expected result out of "
-           + renderedData.length + " frames")
-        .beLessThanOrEqualTo(thresholdDiffCount);
 
     var filename = "oscillator-" + oscType + "-actual.wav";
     if (downloadAudioBuffer(renderedBuffer, filename, true))
@@ -161,7 +147,6 @@ return {
     lengthInSeconds: lengthInSeconds,
     thresholdSNR: thresholdSNR,
     thresholdDiff: thresholdDiff,
-    thresholdDiffCount: thresholdDiffCount,
     waveScaleFactor: waveScaleFactor,
     setThresholds: setThresholds,
     runTest: runTest,
