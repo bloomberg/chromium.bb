@@ -6,10 +6,10 @@ function repaintTest() {
 }
 onload = runRepaintAndPixelTest;
 </script>
+<p style="height: 200px">
 Tests paint invalidation of focus ring of an inline when a block content of the inline moves.
 Passes if the focus ring encloses the moved green rectangle.
-<div style="position: absolute; top: 200px">
-  <span style="outline: auto">
-    <div id="block" style="position: relative; width: 100px; height: 100px; background-color: green"></div>
-  </span>
-</div>
+</p>
+<span style="outline: auto">
+  <div id="block" style="position: relative; width: 100px; height: 100px; background-color: green"></div>
+</span>

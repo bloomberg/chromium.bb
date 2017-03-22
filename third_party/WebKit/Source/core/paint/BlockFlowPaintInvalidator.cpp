@@ -50,29 +50,6 @@ void BlockFlowPaintInvalidator::invalidateDisplayItemClients(
       reason == PaintInvalidationSelection)
     return;
 
-  // If the block is a continuation or containing block of an inline
-  // continuation, invalidate the start object of the continuations if it has
-  // focus ring because change of continuation may change the shape of the focus
-  // ring.
-  if (m_blockFlow.isAnonymous()) {
-    LayoutObject* startOfContinuations = nullptr;
-    if (LayoutInline* inlineElementContinuation =
-            m_blockFlow.inlineElementContinuation()) {
-      // This block is an anonymous block continuation.
-      startOfContinuations = inlineElementContinuation->node()->layoutObject();
-    } else if (LayoutObject* firstChild = m_blockFlow.firstChild()) {
-      // This block is the anonymous containing block of an inline element
-      // continuation.
-      if (firstChild->isElementContinuation())
-        startOfContinuations = firstChild->node()->layoutObject();
-    }
-    if (startOfContinuations &&
-        startOfContinuations->styleRef().outlineStyleIsAuto())
-      ObjectPaintInvalidator(*startOfContinuations)
-          .slowSetPaintingLayerNeedsRepaintAndInvalidateDisplayItemClient(
-              *startOfContinuations, reason);
-  }
-
   RootInlineBox* line = m_blockFlow.firstRootBox();
   if (line && line->isFirstLineStyle()) {
     // It's the RootInlineBox that paints the ::first-line background. Note that

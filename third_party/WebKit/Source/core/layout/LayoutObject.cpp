@@ -3426,11 +3426,27 @@ inline void LayoutObject::markAncestorsForPaintInvalidation() {
 inline void LayoutObject::setNeedsPaintOffsetAndVisualRectUpdate() {
   if (needsPaintOffsetAndVisualRectUpdate())
     return;
-  m_bitfields.setNeedsPaintOffsetAndVisualRectUpdate(true);
-  for (LayoutObject* parent = paintInvalidationParent();
-       parent && !parent->needsPaintOffsetAndVisualRectUpdate();
-       parent = parent->paintInvalidationParent())
-    parent->m_bitfields.setNeedsPaintOffsetAndVisualRectUpdate(true);
+  for (auto* object = this;
+       object && !object->needsPaintOffsetAndVisualRectUpdate();
+       object = object->paintInvalidationParent()) {
+    object->m_bitfields.setNeedsPaintOffsetAndVisualRectUpdate(true);
+
+    // Focus ring is special because continuations affect shape of focus ring.
+    // Mark the start object for paint invalidation if it has focus ring.
+    if (!object->isAnonymous() || !object->isLayoutBlockFlow())
+      continue;
+    auto* blockFlow = toLayoutBlockFlow(object);
+    if (!blockFlow->isAnonymousBlockContinuation())
+      continue;
+    if (auto* inlineElementContinuation =
+            blockFlow->inlineElementContinuation()) {
+      auto* startOfContinuations =
+          inlineElementContinuation->node()->layoutObject();
+      if (startOfContinuations &&
+          startOfContinuations->styleRef().outlineStyleIsAuto())
+        startOfContinuations->setMayNeedPaintInvalidation();
+    }
+  }
 }
 
 void LayoutObject::setShouldInvalidateSelection() {

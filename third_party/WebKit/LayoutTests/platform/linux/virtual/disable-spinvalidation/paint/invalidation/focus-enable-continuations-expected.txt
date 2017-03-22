@@ -29,10 +29,6 @@
     },
     {
       "object": "LayoutInline SPAN id='outer'",
-      "reason": "forced by layout"
-    },
-    {
-      "object": "LayoutInline SPAN id='outer'",
       "reason": "style change"
     }
   ]

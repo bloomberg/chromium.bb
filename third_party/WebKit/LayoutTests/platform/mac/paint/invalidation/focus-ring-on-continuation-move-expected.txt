@@ -8,12 +8,12 @@
       "paintInvalidations": [
         {
           "object": "LayoutInline SPAN",
-          "rect": [207, 231, 102, 102],
+          "rect": [204, 228, 108, 108],
           "reason": "outline"
         },
         {
           "object": "LayoutInline SPAN",
-          "rect": [7, 231, 102, 102],
+          "rect": [4, 228, 108, 108],
           "reason": "outline"
         },
         {
