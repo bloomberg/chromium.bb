@@ -46,10 +46,6 @@ void FetchContext::dispatchDidChangeResourcePriority(unsigned long,
 void FetchContext::addAdditionalRequestHeaders(ResourceRequest&,
                                                FetchResourceType) {}
 
-CachePolicy FetchContext::getCachePolicy() const {
-  return CachePolicyVerify;
-}
-
 WebCachePolicy FetchContext::resourceRequestCachePolicy(
     ResourceRequest&,
     Resource::Type,

@@ -217,6 +217,101 @@ bool shouldDisallowFetchForMainFrameScript(ResourceRequest& request,
           isConnectionEffectively2G(effectiveConnection));
 }
 
+enum class RequestMethod { kIsPost, kIsNotPost };
+enum class RequestType { kIsConditional, kIsNotConditional };
+enum class ResourceType { kIsMainResource, kIsNotMainResource };
+
+WebCachePolicy determineWebCachePolicy(RequestMethod method,
+                                       RequestType requestType,
+                                       ResourceType resourceType,
+                                       FrameLoadType loadType) {
+  switch (loadType) {
+    case FrameLoadTypeStandard:
+      return (requestType == RequestType::kIsConditional ||
+              method == RequestMethod::kIsPost)
+                 ? WebCachePolicy::ValidatingCacheData
+                 : WebCachePolicy::UseProtocolCachePolicy;
+    case FrameLoadTypeReplaceCurrentItem:
+    case FrameLoadTypeInitialInChildFrame:
+      // TODO(toyoshim): Should be the same with FrameLoadTypeStandard, but
+      // keep legacy logic as is. To be changed in a follow-up patch soon.
+      return (resourceType == ResourceType::kIsMainResource &&
+              (requestType == RequestType::kIsConditional ||
+               method == RequestMethod::kIsPost))
+                 ? WebCachePolicy::ValidatingCacheData
+                 : WebCachePolicy::UseProtocolCachePolicy;
+    case FrameLoadTypeInitialHistoryLoad:
+      // TODO(toyoshim): Should be the same with FrameLoadTypeBackForward, but
+      // keep legacy logic as is. To be changed in a follow-up patch soon.
+      return (resourceType == ResourceType::kIsMainResource &&
+              (requestType == RequestType::kIsConditional ||
+               method == RequestMethod::kIsPost))
+                 ? WebCachePolicy::ValidatingCacheData
+                 : WebCachePolicy::UseProtocolCachePolicy;
+    case FrameLoadTypeBackForward:
+      // Mutates the policy for POST requests to avoid form resubmission.
+      return method == RequestMethod::kIsPost
+                 ? WebCachePolicy::ReturnCacheDataDontLoad
+                 : WebCachePolicy::ReturnCacheDataElseLoad;
+    case FrameLoadTypeReload:
+      return WebCachePolicy::ValidatingCacheData;
+    case FrameLoadTypeReloadMainResource:
+      return resourceType == ResourceType::kIsMainResource
+                 ? WebCachePolicy::ValidatingCacheData
+                 : WebCachePolicy::UseProtocolCachePolicy;
+    case FrameLoadTypeReloadBypassingCache:
+      // TODO(toyoshim): Should return BypassingCache always, but keep legacy
+      // logic as is. To be changed in a follow-up patch soon.
+      return (resourceType == ResourceType::kIsMainResource &&
+              (requestType == RequestType::kIsConditional ||
+               method == RequestMethod::kIsPost))
+                 ? WebCachePolicy::ValidatingCacheData
+                 : WebCachePolicy::BypassingCache;
+  }
+  NOTREACHED();
+  return WebCachePolicy::UseProtocolCachePolicy;
+}
+
+// TODO(toyoshim): Remove |resourceType|. See comments in
+// resourceRequestCachePolicy().
+WebCachePolicy determineFrameWebCachePolicy(Frame* frame,
+                                            ResourceType resourceType) {
+  if (!frame)
+    return WebCachePolicy::UseProtocolCachePolicy;
+  if (!frame->isLocalFrame())
+    return determineFrameWebCachePolicy(frame->tree().parent(), resourceType);
+
+  // Does not propagate cache policy for subresources after the load event.
+  // TODO(toyoshim): We should be able to remove following parents' policy check
+  // if each frame has a relevant FrameLoadType for reload and history
+  // navigations.
+  if (resourceType == ResourceType::kIsNotMainResource &&
+      toLocalFrame(frame)->document()->loadEventFinished()) {
+    return WebCachePolicy::UseProtocolCachePolicy;
+  }
+
+  // Respects BypassingCache rather than parent's policy.
+  // TODO(toyoshim): Adopt BypassingCache even for MainResource.
+  FrameLoadType loadType =
+      toLocalFrame(frame)->loader().documentLoader()->loadType();
+  if (resourceType == ResourceType::kIsNotMainResource &&
+      loadType == FrameLoadTypeReloadBypassingCache) {
+    return WebCachePolicy::BypassingCache;
+  }
+
+  // Respects parent's policy if it has a special one.
+  WebCachePolicy parentPolicy =
+      determineFrameWebCachePolicy(frame->tree().parent(), resourceType);
+  if (parentPolicy != WebCachePolicy::UseProtocolCachePolicy)
+    return parentPolicy;
+
+  // Otherwise, follows FrameLoadType. Use kIsNotPost, kIsNotConditional, and
+  // kIsNotMainResource to obtain a representative policy for the frame.
+  return determineWebCachePolicy(RequestMethod::kIsNotPost,
+                                 RequestType::kIsNotConditional,
+                                 ResourceType::kIsNotMainResource, loadType);
+}
+
 }  // namespace
 
 FrameFetchContext::FrameFetchContext(DocumentLoader* loader, Document* document)
@@ -287,118 +382,46 @@ void FrameFetchContext::addAdditionalRequestHeaders(ResourceRequest& request,
     request.setHTTPHeaderField("Save-Data", "on");
 }
 
-CachePolicy FrameFetchContext::getCachePolicy() const {
-  if (m_document && m_document->loadEventFinished())
-    return CachePolicyVerify;
-
-  FrameLoadType loadType = masterDocumentLoader()->loadType();
-  if (loadType == FrameLoadTypeReloadBypassingCache)
-    return CachePolicyReload;
-
-  Frame* parentFrame = frame()->tree().parent();
-  if (parentFrame && parentFrame->isLocalFrame()) {
-    CachePolicy parentCachePolicy = toLocalFrame(parentFrame)
-                                        ->document()
-                                        ->fetcher()
-                                        ->context()
-                                        .getCachePolicy();
-    if (parentCachePolicy != CachePolicyVerify)
-      return parentCachePolicy;
-  }
-
-  if (loadType == FrameLoadTypeReload)
-    return CachePolicyRevalidate;
-
-  if (m_documentLoader &&
-      m_documentLoader->getRequest().getCachePolicy() ==
-          WebCachePolicy::ReturnCacheDataElseLoad)
-    return CachePolicyHistoryBuffer;
-
-  // Returns CachePolicyVerify for other cases, mainly FrameLoadTypeStandard and
-  // FrameLoadTypeReloadMainResource. See public/web/WebFrameLoadType.h to know
-  // how these load types work.
-  return CachePolicyVerify;
-}
-
-static WebCachePolicy memoryCachePolicyToResourceRequestCachePolicy(
-    const CachePolicy policy) {
-  if (policy == CachePolicyVerify)
-    return WebCachePolicy::UseProtocolCachePolicy;
-  if (policy == CachePolicyRevalidate)
-    return WebCachePolicy::ValidatingCacheData;
-  if (policy == CachePolicyReload)
-    return WebCachePolicy::BypassingCache;
-  if (policy == CachePolicyHistoryBuffer)
-    return WebCachePolicy::ReturnCacheDataElseLoad;
-  return WebCachePolicy::UseProtocolCachePolicy;
-}
-
-static WebCachePolicy frameLoadTypeToWebCachePolicy(FrameLoadType type) {
-  if (type == FrameLoadTypeBackForward)
-    return WebCachePolicy::ReturnCacheDataElseLoad;
-  if (type == FrameLoadTypeReloadBypassingCache)
-    return WebCachePolicy::BypassingCache;
-  if (type == FrameLoadTypeReload)
-    return WebCachePolicy::ValidatingCacheData;
-  return WebCachePolicy::UseProtocolCachePolicy;
-}
-
 WebCachePolicy FrameFetchContext::resourceRequestCachePolicy(
     ResourceRequest& request,
     Resource::Type type,
     FetchRequest::DeferOption defer) const {
   DCHECK(frame());
   if (type == Resource::MainResource) {
-    FrameLoadType frameLoadType = masterDocumentLoader()->loadType();
-    if (request.httpMethod() == "POST" &&
-        frameLoadType == FrameLoadTypeBackForward)
-      return WebCachePolicy::ReturnCacheDataDontLoad;
-    if (frameLoadType == FrameLoadTypeReloadMainResource ||
-        request.isConditional() || request.httpMethod() == "POST")
-      return WebCachePolicy::ValidatingCacheData;
-
-    WebCachePolicy policy = frameLoadTypeToWebCachePolicy(frameLoadType);
-    if (policy != WebCachePolicy::UseProtocolCachePolicy)
-      return policy;
-
-    for (Frame* f = frame()->tree().parent(); f; f = f->tree().parent()) {
-      if (!f->isLocalFrame())
-        continue;
-      policy = frameLoadTypeToWebCachePolicy(
-          toLocalFrame(f)->loader().documentLoader()->loadType());
-      if (policy != WebCachePolicy::UseProtocolCachePolicy)
-        return policy;
-    }
-    // Returns UseProtocolCachePolicy for other cases, parent frames not having
-    // special kinds of FrameLoadType as they are checked inside the for loop
-    // above, or |frameLoadType| being FrameLoadTypeStandard. See
-    // public/web/WebFrameLoadType.h to know how these load types work.
-    return WebCachePolicy::UseProtocolCachePolicy;
+    const WebCachePolicy cachePolicy = determineWebCachePolicy(
+        request.httpMethod() == "POST" ? RequestMethod::kIsPost
+                                       : RequestMethod::kIsNotPost,
+        request.isConditional() ? RequestType::kIsConditional
+                                : RequestType::kIsNotConditional,
+        ResourceType::kIsMainResource, masterDocumentLoader()->loadType());
+    // Follows the parent frame's policy.
+    // TODO(toyoshim): Probably, FrameLoadType for each frame should have a
+    // right type for reload or history navigations, and should not need to
+    // check parent's frame policy here. Once it has a right FrameLoadType,
+    // we can remove Resource::Type argument from determineFrameWebCachePolicy.
+    // See also crbug.com/332602.
+    if (cachePolicy != WebCachePolicy::UseProtocolCachePolicy)
+      return cachePolicy;
+    return determineFrameWebCachePolicy(frame()->tree().parent(),
+                                        ResourceType::kIsMainResource);
   }
 
   // For users on slow connections, we want to avoid blocking the parser in
   // the main frame on script loads inserted via document.write, since it can
   // add significant delays before page content is displayed on the screen.
+  // TODO(toyoshim): Move following logic that rewrites ResourceRequest to
+  // somewhere that should be relevant to the script resource handling.
   if (type == Resource::Script && isMainFrame() && m_document &&
       shouldDisallowFetchForMainFrameScript(request, defer, *m_document))
     return WebCachePolicy::ReturnCacheDataDontLoad;
 
+  // TODO(toyoshim): We should check isConditional() and use ValidatingCacheData
+  // only when |cachePolicy| below is UseProtocolCachePolicy.
   if (request.isConditional())
     return WebCachePolicy::ValidatingCacheData;
 
-  if (m_documentLoader && m_document && !m_document->loadEventFinished()) {
-    // For POST requests, we mutate the main resource's cache policy to avoid
-    // form resubmission. This policy should not be inherited by subresources.
-    WebCachePolicy mainResourceCachePolicy =
-        m_documentLoader->getRequest().getCachePolicy();
-    if (m_documentLoader->getRequest().httpMethod() == "POST") {
-      if (mainResourceCachePolicy == WebCachePolicy::ReturnCacheDataDontLoad)
-        return WebCachePolicy::ReturnCacheDataElseLoad;
-      return WebCachePolicy::UseProtocolCachePolicy;
-    }
-    return memoryCachePolicyToResourceRequestCachePolicy(getCachePolicy());
-  }
-  return WebCachePolicy::UseProtocolCachePolicy;
+  return determineFrameWebCachePolicy(frame(),
+                                      ResourceType::kIsNotMainResource);
 }
 
 // The |m_documentLoader| is null in the FrameFetchContext of an imported

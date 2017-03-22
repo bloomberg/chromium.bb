@@ -74,7 +74,6 @@ class CORE_EXPORT FrameFetchContext final : public FetchContext {
 
   void addAdditionalRequestHeaders(ResourceRequest&,
                                    FetchResourceType) override;
-  CachePolicy getCachePolicy() const override;
   WebCachePolicy resourceRequestCachePolicy(
       ResourceRequest&,
       Resource::Type,

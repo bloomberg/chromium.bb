@@ -33,7 +33,6 @@
 
 #include "platform/PlatformExport.h"
 #include "platform/heap/Handle.h"
-#include "platform/loader/fetch/CachePolicy.h"
 #include "platform/loader/fetch/FetchInitiatorInfo.h"
 #include "platform/loader/fetch/FetchRequest.h"
 #include "platform/loader/fetch/Resource.h"
@@ -78,7 +77,7 @@ class PLATFORM_EXPORT FetchContext
   virtual bool isLiveContext() { return false; }
 
   virtual void addAdditionalRequestHeaders(ResourceRequest&, FetchResourceType);
-  virtual CachePolicy getCachePolicy() const;
+
   // Returns the cache policy for the resource. ResourceRequest is not passed as
   // a const reference as a header needs to be added for doc.write blocking
   // intervention.
