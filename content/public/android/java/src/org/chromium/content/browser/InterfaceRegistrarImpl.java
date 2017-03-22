@@ -9,7 +9,6 @@ import android.content.Context;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.browser.androidoverlay.AndroidOverlayProviderImpl;
-import org.chromium.content.browser.installedapp.InstalledAppProviderFactory;
 import org.chromium.content.browser.shapedetection.FaceDetectionProviderImpl;
 import org.chromium.content_public.browser.InterfaceRegistrar;
 import org.chromium.content_public.browser.RenderFrameHost;
@@ -19,7 +18,6 @@ import org.chromium.device.battery.BatteryMonitorFactory;
 import org.chromium.device.mojom.VibrationManager;
 import org.chromium.device.nfc.mojom.Nfc;
 import org.chromium.device.vibration.VibrationManagerImpl;
-import org.chromium.installedapp.mojom.InstalledAppProvider;
 import org.chromium.media.mojom.AndroidOverlayProvider;
 import org.chromium.mojo.system.impl.CoreImpl;
 import org.chromium.services.service_manager.InterfaceRegistry;
@@ -64,8 +62,6 @@ class InterfaceRegistrarImpl {
         InterfaceRegistrar.Registry.addContextRegistrar(new ContentContextInterfaceRegistrar());
         InterfaceRegistrar.Registry.addWebContentsRegistrar(
                 new ContentWebContentsInterfaceRegistrar());
-        InterfaceRegistrar.Registry.addRenderFrameHostRegistrar(
-                new ContentRenderFrameHostInterfaceRegistrar());
     }
 
     private static class ContentContextInterfaceRegistrar implements InterfaceRegistrar<Context> {
@@ -89,16 +85,6 @@ class InterfaceRegistrarImpl {
         @Override
         public void registerInterfaces(InterfaceRegistry registry, final WebContents webContents) {
             registry.addInterface(Nfc.MANAGER, new NfcFactory(webContents));
-        }
-    }
-
-    private static class ContentRenderFrameHostInterfaceRegistrar
-            implements InterfaceRegistrar<RenderFrameHost> {
-        @Override
-        public void registerInterfaces(
-                InterfaceRegistry registry, final RenderFrameHost renderFrameHost) {
-            registry.addInterface(
-                    InstalledAppProvider.MANAGER, new InstalledAppProviderFactory(renderFrameHost));
         }
     }
 }
