@@ -412,15 +412,23 @@ void InstallableManager::CheckServiceWorker() {
                  weak_factory_.GetWeakPtr()));
 }
 
-void InstallableManager::OnDidCheckHasServiceWorker(bool has_service_worker) {
+void InstallableManager::OnDidCheckHasServiceWorker(
+    content::ServiceWorkerCapability capability) {
   if (!GetWebContents())
     return;
 
-  if (has_service_worker) {
-    installable_->installable = true;
-  } else {
-    installable_->installable = false;
-    installable_->error = NO_MATCHING_SERVICE_WORKER;
+  switch (capability) {
+    case content::ServiceWorkerCapability::SERVICE_WORKER_WITH_FETCH_HANDLER:
+      installable_->installable = true;
+      break;
+    case content::ServiceWorkerCapability::SERVICE_WORKER_NO_FETCH_HANDLER:
+      installable_->installable = false;
+      installable_->error = NOT_OFFLINE_CAPABLE;
+      break;
+    case content::ServiceWorkerCapability::NO_SERVICE_WORKER:
+      installable_->installable = false;
+      installable_->error = NO_MATCHING_SERVICE_WORKER;
+      break;
   }
 
   installable_->fetched = true;

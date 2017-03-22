@@ -2,4 +2,5 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-self.addEventListener('activate', function(event) {});
+// A no-op fetch handler.
+self.addEventListener('fetch', e => {});

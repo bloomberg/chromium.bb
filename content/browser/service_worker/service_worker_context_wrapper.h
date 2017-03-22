@@ -270,7 +270,7 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       const std::vector<ServiceWorkerRegistrationInfo>& registrations);
 
   void DidCheckHasServiceWorker(const CheckHasServiceWorkerCallback& callback,
-                                bool has_service_worker);
+                                content::ServiceWorkerCapability status);
 
   void DidFindRegistrationForUpdate(
       ServiceWorkerStatusCode status,

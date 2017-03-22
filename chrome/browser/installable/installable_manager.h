@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/installable/installable_logging.h"
+#include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "content/public/common/manifest.h"
@@ -91,9 +92,9 @@ struct InstallableData {
   // using it.
   const SkBitmap* badge_icon;
 
-  // true if the site has a service worker and a viable web app manifest. If
-  // check_installable was true and the site isn't installable, the reason will
-  // be in error_code.
+  // true if the site has a service worker with a fetch handler and a viable web
+  // app manifest. If check_installable was true and the site isn't installable,
+  // the reason will be in error_code.
   const bool is_installable;
 };
 
@@ -195,7 +196,7 @@ class InstallableManager
   void CheckInstallable();
   bool IsManifestValidForWebApp(const content::Manifest& manifest);
   void CheckServiceWorker();
-  void OnDidCheckHasServiceWorker(bool has_service_worker);
+  void OnDidCheckHasServiceWorker(content::ServiceWorkerCapability capability);
 
   void CheckAndFetchBestIcon(const IconParams& params);
   void OnIconFetched(

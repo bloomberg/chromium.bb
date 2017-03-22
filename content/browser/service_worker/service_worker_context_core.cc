@@ -32,6 +32,7 @@
 #include "content/browser/service_worker/service_worker_register_job.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_storage.h"
+#include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "ipc/ipc_message.h"
@@ -42,6 +43,26 @@
 
 namespace content {
 namespace {
+
+void CheckFetchHandlerOfInstalledServiceWorker(
+    const ServiceWorkerContext::CheckHasServiceWorkerCallback callback,
+    scoped_refptr<ServiceWorkerRegistration> registration) {
+  // Waiting Service Worker is a newer version, prefer that if available.
+  ServiceWorkerVersion* preferred_version =
+      registration->waiting_version() ? registration->waiting_version()
+                                      : registration->active_version();
+
+  DCHECK(preferred_version);
+
+  ServiceWorkerVersion::FetchHandlerExistence existence =
+      preferred_version->fetch_handler_existence();
+
+  DCHECK_NE(existence, ServiceWorkerVersion::FetchHandlerExistence::UNKNOWN);
+
+  callback.Run(existence == ServiceWorkerVersion::FetchHandlerExistence::EXISTS
+                   ? ServiceWorkerCapability::SERVICE_WORKER_WITH_FETCH_HANDLER
+                   : ServiceWorkerCapability::SERVICE_WORKER_NO_FETCH_HANDLER);
+}
 
 void SuccessCollectorCallback(const base::Closure& done_closure,
                               bool* overall_success,
@@ -856,17 +877,17 @@ void ServiceWorkerContextCore::DidFindRegistrationForCheckHasServiceWorker(
     ServiceWorkerStatusCode status,
     scoped_refptr<ServiceWorkerRegistration> registration) {
   if (status != SERVICE_WORKER_OK) {
-    callback.Run(false);
+    callback.Run(ServiceWorkerCapability::NO_SERVICE_WORKER);
     return;
   }
 
   if (!ServiceWorkerUtils::ScopeMatches(registration->pattern(), other_url)) {
-    callback.Run(false);
+    callback.Run(ServiceWorkerCapability::NO_SERVICE_WORKER);
     return;
   }
 
   if (registration->is_uninstalling() || registration->is_uninstalled()) {
-    callback.Run(false);
+    callback.Run(ServiceWorkerCapability::NO_SERVICE_WORKER);
     return;
   }
 
@@ -878,14 +899,18 @@ void ServiceWorkerContextCore::DidFindRegistrationForCheckHasServiceWorker(
     return;
   }
 
-  callback.Run(true);
+  CheckFetchHandlerOfInstalledServiceWorker(callback, registration);
 }
 
 void ServiceWorkerContextCore::OnRegistrationFinishedForCheckHasServiceWorker(
     const ServiceWorkerContext::CheckHasServiceWorkerCallback callback,
     scoped_refptr<ServiceWorkerRegistration> registration) {
-  callback.Run(registration->active_version() ||
-               registration->waiting_version());
+  if (!registration->active_version() && !registration->waiting_version()) {
+    callback.Run(ServiceWorkerCapability::NO_SERVICE_WORKER);
+    return;
+  }
+
+  CheckFetchHandlerOfInstalledServiceWorker(callback, registration);
 }
 
 }  // namespace content

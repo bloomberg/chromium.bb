@@ -620,6 +620,30 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
   }
 }
 
+IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
+                       CheckPageWithNoServiceWorkerFetchHandler) {
+  base::RunLoop run_loop;
+  std::unique_ptr<CallbackTester> tester(
+      new CallbackTester(run_loop.QuitClosure()));
+
+  NavigateAndRunInstallableManager(
+      tester.get(), GetWebAppParams(),
+      "/banners/no_sw_fetch_handler_test_page.html");
+
+  RunInstallableManager(tester.get(), GetWebAppParams());
+  run_loop.Run();
+
+  EXPECT_FALSE(tester->manifest().IsEmpty());
+  EXPECT_FALSE(tester->manifest_url().is_empty());
+
+  EXPECT_TRUE(tester->primary_icon_url().is_empty());
+  EXPECT_EQ(nullptr, tester->primary_icon());
+  EXPECT_TRUE(tester->badge_icon_url().is_empty());
+  EXPECT_EQ(nullptr, tester->badge_icon());
+  EXPECT_FALSE(tester->is_installable());
+  EXPECT_EQ(NOT_OFFLINE_CAPABLE, tester->error_code());
+}
+
 IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest, CheckDataUrlIcon) {
   // Verify that InstallableManager can handle data URL icons.
   base::RunLoop run_loop;

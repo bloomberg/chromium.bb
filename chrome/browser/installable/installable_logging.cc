@@ -64,7 +64,7 @@ static const char kUrlNotSupportedForWebApkMessage[] =
     "a URL in the web manifest contains a username, password, or port";
 static const char kInIncognitoMessage[] =
     "the page is loaded in an incognito window";
-
+static const char kNotOfflineCapable[] = "the page does not work offline";
 }  // namespace
 
 void LogErrorToConsole(content::WebContents* web_contents,
@@ -150,6 +150,9 @@ void LogErrorToConsole(content::WebContents* web_contents,
       break;
     case IN_INCOGNITO:
       pattern = kInIncognitoMessage;
+      break;
+    case NOT_OFFLINE_CAPABLE:
+      pattern = kNotOfflineCapable;
       break;
   }
 

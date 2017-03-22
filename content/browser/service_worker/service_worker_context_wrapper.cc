@@ -481,11 +481,11 @@ void ServiceWorkerContextWrapper::DidGetAllRegistrationsForGetAllOrigins(
 
 void ServiceWorkerContextWrapper::DidCheckHasServiceWorker(
     const CheckHasServiceWorkerCallback& callback,
-    bool has_service_worker) {
+    ServiceWorkerCapability capability) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(callback, has_service_worker));
+                          base::Bind(callback, capability));
 }
 
 void ServiceWorkerContextWrapper::StopAllServiceWorkersForOrigin(
@@ -570,8 +570,9 @@ void ServiceWorkerContextWrapper::CheckHasServiceWorker(
     return;
   }
   if (!context_core_) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(callback, false));
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(callback, ServiceWorkerCapability::NO_SERVICE_WORKER));
     return;
   }
   context()->CheckHasServiceWorker(

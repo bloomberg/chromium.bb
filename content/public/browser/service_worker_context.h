@@ -18,6 +18,12 @@ enum class WebNavigationHintType;
 
 namespace content {
 
+enum class ServiceWorkerCapability {
+  NO_SERVICE_WORKER,
+  SERVICE_WORKER_NO_FETCH_HANDLER,
+  SERVICE_WORKER_WITH_FETCH_HANDLER,
+};
+
 // Represents the per-StoragePartition ServiceWorker data.
 class ServiceWorkerContext {
  public:
@@ -31,7 +37,7 @@ class ServiceWorkerContext {
       const std::vector<ServiceWorkerUsageInfo>& usage_info)>;
 
   using CheckHasServiceWorkerCallback =
-      base::Callback<void(bool has_service_worker)>;
+      base::Callback<void(ServiceWorkerCapability capability)>;
 
   using CountExternalRequestsCallback =
       base::Callback<void(size_t external_request_count)>;
@@ -102,10 +108,14 @@ class ServiceWorkerContext {
   virtual void DeleteForOrigin(const GURL& origin_url,
                                const ResultCallback& callback) = 0;
 
-  // Returns true if a Service Worker registration exists that matches |url|,
-  // and if |other_url| falls inside the scope of the same registration. Note
-  // this still returns true even if there is a Service Worker registration
-  // which has a longer match for |other_url|.
+  // Returns ServiceWorkerCapability describing existence and properties of a
+  // Service Worker registration matching |url|. Found service worker
+  // registration must also encompass the |other_url|, otherwise it will be
+  // considered non existent by this method. Note that the longest matching
+  // registration for |url| is described, which is not necessarily the longest
+  // matching registration for |other_url|. In case the service worker is being
+  // installed as of calling this method, it will wait for the installation to
+  // finish before coming back with the result.
   //
   // This function can be called from any thread, but the callback will always
   // be called on the UI thread.
