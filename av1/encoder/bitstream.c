@@ -1721,6 +1721,10 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const MODE_INFO *mi,
 #if CONFIG_REF_MV
         if (mode == NEARMV || mode == NEWMV)
           write_drl_idx(cm, mbmi, mbmi_ext, w);
+#if CONFIG_EXT_INTER
+        else
+          assert(mbmi->ref_mv_idx == 0);
+#endif
 #endif
       }
     }

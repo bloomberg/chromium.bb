@@ -2203,39 +2203,39 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
                                   has_second_ref(mbmi),
 #endif  // CONFIG_EXT_INTER
                                   mode_ctx);
-
-          if (mode == NEWMV) {
-            uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
-            int idx;
-
-            for (idx = 0; idx < 2; ++idx) {
-              if (mbmi_ext->ref_mv_count[ref_frame_type] > idx + 1) {
-                uint8_t drl_ctx =
-                    av1_drl_ctx(mbmi_ext->ref_mv_stack[ref_frame_type], idx);
-                ++counts->drl_mode[drl_ctx][mbmi->ref_mv_idx != idx];
-
-                if (mbmi->ref_mv_idx == idx) break;
-              }
-            }
-          }
-
-          if (mode == NEARMV) {
-            uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
-            int idx;
-
-            for (idx = 1; idx < 3; ++idx) {
-              if (mbmi_ext->ref_mv_count[ref_frame_type] > idx + 1) {
-                uint8_t drl_ctx =
-                    av1_drl_ctx(mbmi_ext->ref_mv_stack[ref_frame_type], idx);
-                ++counts->drl_mode[drl_ctx][mbmi->ref_mv_idx != idx - 1];
-
-                if (mbmi->ref_mv_idx == idx - 1) break;
-              }
-            }
-          }
 #if CONFIG_EXT_INTER
         }
 #endif  // CONFIG_EXT_INTER
+
+        if (mode == NEWMV) {
+          uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
+          int idx;
+
+          for (idx = 0; idx < 2; ++idx) {
+            if (mbmi_ext->ref_mv_count[ref_frame_type] > idx + 1) {
+              uint8_t drl_ctx =
+                  av1_drl_ctx(mbmi_ext->ref_mv_stack[ref_frame_type], idx);
+              ++counts->drl_mode[drl_ctx][mbmi->ref_mv_idx != idx];
+
+              if (mbmi->ref_mv_idx == idx) break;
+            }
+          }
+        }
+
+        if (mode == NEARMV) {
+          uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
+          int idx;
+
+          for (idx = 1; idx < 3; ++idx) {
+            if (mbmi_ext->ref_mv_count[ref_frame_type] > idx + 1) {
+              uint8_t drl_ctx =
+                  av1_drl_ctx(mbmi_ext->ref_mv_stack[ref_frame_type], idx);
+              ++counts->drl_mode[drl_ctx][mbmi->ref_mv_idx != idx - 1];
+
+              if (mbmi->ref_mv_idx == idx - 1) break;
+            }
+          }
+        }
 #else
 #if CONFIG_EXT_INTER
         if (is_inter_compound_mode(mode))

@@ -10489,18 +10489,11 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
       }
 
 #if CONFIG_REF_MV
-// TODO(jingning): This needs some refactoring to improve code quality
-// and reduce redundant steps.
-#if CONFIG_EXT_INTER
-      if (((mbmi->mode == NEARMV || mbmi->mode == NEAR_NEARMV) &&
-           mbmi_ext->ref_mv_count[ref_frame_type] > 2) ||
-          ((mbmi->mode == NEWMV || mbmi->mode == NEW_NEWMV) &&
-           mbmi_ext->ref_mv_count[ref_frame_type] > 1)) {
-#else
+      // TODO(jingning): This needs some refactoring to improve code quality
+      // and reduce redundant steps.
       if ((mbmi->mode == NEARMV &&
            mbmi_ext->ref_mv_count[ref_frame_type] > 2) ||
           (mbmi->mode == NEWMV && mbmi_ext->ref_mv_count[ref_frame_type] > 1)) {
-#endif  // CONFIG_EXT_INTER
         int_mv backup_mv = frame_mv[NEARMV][ref_frame];
         MB_MODE_INFO backup_mbmi = *mbmi;
         int backup_skip = x->skip;
@@ -11320,6 +11313,13 @@ PALETTE_EXIT:
     }
 #endif  // CONFIG_EXT_INTER
 #endif  // CONFIG_REF_MV
+  }
+
+  // Make sure that the ref_mv_idx is only nonzero when we're
+  // using a mode which can support ref_mv_idx
+  if (best_mbmode.ref_mv_idx != 0 &&
+      !(best_mbmode.mode == NEARMV || best_mbmode.mode == NEWMV)) {
+    best_mbmode.ref_mv_idx = 0;
   }
 
 #if CONFIG_REF_MV
