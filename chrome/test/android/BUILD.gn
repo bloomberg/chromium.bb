@@ -81,6 +81,8 @@ android_library("chrome_java_test_support") {
     "//net/android:net_java",
     "//net/android:net_java_test_support",
     "//testing/android/reporter:reporter_java",
+    "//third_party/android_tools:android_support_design_java",
+    "//third_party/android_tools:android_support_transition_java",
     "//third_party/android_tools:android_support_v7_appcompat_java",
     "//third_party/android_tools:android_support_v7_recyclerview_java",
     "//third_party/android_tools:legacy_http_javalib",

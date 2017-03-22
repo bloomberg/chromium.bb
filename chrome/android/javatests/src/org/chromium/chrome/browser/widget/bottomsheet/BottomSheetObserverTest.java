@@ -7,6 +7,11 @@ package org.chromium.chrome.browser.widget.bottomsheet;
 import android.support.test.filters.MediumTest;
 
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.chrome.R;
+import org.chromium.chrome.browser.bookmarks.BookmarkSheetContent;
+import org.chromium.chrome.browser.download.DownloadSheetContent;
+import org.chromium.chrome.browser.history.HistorySheetContent;
+import org.chromium.chrome.browser.suggestions.SuggestionsBottomSheetContent;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
 import org.chromium.chrome.test.BottomSheetTestCaseBase;
@@ -31,6 +36,9 @@ public class BottomSheetObserverTest extends BottomSheetTestCaseBase {
 
         /** A {@link CallbackHelper} that can wait for the onOffsetChanged event. */
         private final CallbackHelper mOffsetChangedCallbackHelper = new CallbackHelper();
+
+        /** A {@link CallbackHelper} that can wait for the onSheetContentChanged event. */
+        private final CallbackHelper mContentChangedCallbackHelper = new CallbackHelper();
 
         /** The last value that the onTransitionPeekToHalf event sent. */
         private float mLastPeekToHalfValue;
@@ -67,7 +75,9 @@ public class BottomSheetObserverTest extends BottomSheetTestCaseBase {
         public void onSheetStateChanged(int newState) {}
 
         @Override
-        public void onSheetContentChanged(BottomSheetContent newContent) {}
+        public void onSheetContentChanged(BottomSheetContent newContent) {
+            mContentChangedCallbackHelper.notifyCalled();
+        }
     }
 
     @Override
@@ -231,5 +241,33 @@ public class BottomSheetObserverTest extends BottomSheetTestCaseBase {
         setSheetOffsetFromBottom(halfHeight);
         callbackHelper.waitForCallback(callbackCount, 1);
         assertEquals(1f, mObserver.mLastPeekToHalfValue, MathUtils.EPSILON);
+    }
+
+    /**
+     * Test the onSheetContentChanged event.
+     */
+    @MediumTest
+    public void testSheetContentChanged() throws InterruptedException, TimeoutException {
+        CallbackHelper callbackHelper = mObserver.mContentChangedCallbackHelper;
+
+        int callbackCount = callbackHelper.getCallCount();
+        selectBottomSheetContent(R.id.action_bookmarks);
+        callbackHelper.waitForCallback(callbackCount, 1);
+        assertTrue(getBottomSheetContent() instanceof BookmarkSheetContent);
+
+        callbackCount++;
+        selectBottomSheetContent(R.id.action_history);
+        callbackHelper.waitForCallback(callbackCount, 1);
+        assertTrue(getBottomSheetContent() instanceof HistorySheetContent);
+
+        callbackCount++;
+        selectBottomSheetContent(R.id.action_downloads);
+        callbackHelper.waitForCallback(callbackCount, 1);
+        assertTrue(getBottomSheetContent() instanceof DownloadSheetContent);
+
+        callbackCount++;
+        selectBottomSheetContent(R.id.action_home);
+        callbackHelper.waitForCallback(callbackCount, 1);
+        assertTrue(getBottomSheetContent() instanceof SuggestionsBottomSheetContent);
     }
 }

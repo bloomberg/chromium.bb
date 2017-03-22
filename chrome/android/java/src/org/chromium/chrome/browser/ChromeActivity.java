@@ -644,8 +644,18 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      * Get the Chrome Home bottom sheet if it exists.
      * @return The bottom sheet or null.
      */
+    @Nullable
     public BottomSheet getBottomSheet() {
         return mBottomSheet;
+    }
+
+    /**
+     * Get the Chrome Home bottom sheet content controller if it exists.
+     * @return The {@link BottomSheetContentController} or null.
+     */
+    @Nullable
+    public BottomSheetContentController getBottomSheetContentController() {
+        return mBottomSheetContentController;
     }
 
     /**

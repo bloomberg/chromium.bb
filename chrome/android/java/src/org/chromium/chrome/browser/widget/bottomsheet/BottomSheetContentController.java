@@ -15,6 +15,7 @@ import android.util.AttributeSet;
 import android.view.MenuItem;
 import android.view.View;
 
+import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.bookmarks.BookmarkSheetContent;
 import org.chromium.chrome.browser.download.DownloadSheetContent;
@@ -183,5 +184,16 @@ public class BottomSheetContentController extends BottomNavigationView
         getMenu().findItem(mSelectedItemId).setChecked(true);
 
         mBottomSheet.showContent(getSheetContentForId(mSelectedItemId));
+    }
+
+    /**
+     * @param itemId The id of the MenuItem to select.
+     */
+    @VisibleForTesting
+    public void selectItemForTests(int itemId) {
+        // TODO(twellington): A #setSelectedItemId() method was added to the support library
+        //                    recently. Replace this custom implementation with that method after
+        //                    the support library is rolled.
+        onNavigationItemSelected(getMenu().findItem(itemId));
     }
 }

@@ -14,6 +14,7 @@ import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContentController;
 import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
 
 /**
@@ -24,6 +25,9 @@ import org.chromium.chrome.test.util.browser.RecyclerViewTestUtils;
 public abstract class BottomSheetTestCaseBase extends ChromeTabbedActivityTestBase {
     /** A handle to the bottom sheet. */
     protected BottomSheet mBottomSheet;
+
+    /** A handle to the {@link BottomSheetContentController}. */
+    protected BottomSheetContentController mBottomSheetContentController;
 
     private boolean mOldChromeHomeFlagValue;
     @Override
@@ -50,6 +54,7 @@ public abstract class BottomSheetTestCaseBase extends ChromeTabbedActivityTestBa
                 ((RecyclerView) getBottomSheetContent().getContentView()));
 
         mBottomSheet = getActivity().getBottomSheet();
+        mBottomSheetContentController = getActivity().getBottomSheetContentController();
     }
 
     @Override
@@ -92,5 +97,18 @@ public abstract class BottomSheetTestCaseBase extends ChromeTabbedActivityTestBa
 
     protected BottomSheetContent getBottomSheetContent() {
         return getActivity().getBottomSheet().getCurrentSheetContent();
+    }
+
+    /**
+     * @param itemId The id of the MenuItem corresponding to the {@link BottomSheetContent} to
+     *               select.
+     */
+    protected void selectBottomSheetContent(final int itemId) {
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mBottomSheetContentController.selectItemForTests(itemId);
+            }
+        });
     }
 }
