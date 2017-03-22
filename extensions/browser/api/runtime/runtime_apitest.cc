@@ -80,8 +80,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
 }
 
 // Tests chrome.runtime.reload
-// This test is flaky: crbug.com/366181
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_ChromeRuntimeReload) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ChromeRuntimeReload) {
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
   const char kManifest[] =
       "{"
