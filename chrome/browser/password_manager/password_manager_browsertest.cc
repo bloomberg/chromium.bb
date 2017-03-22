@@ -1599,33 +1599,24 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 
 // Test that if a form gets autofilled, then it gets autofilled on re-creation
 // as well.
-// TODO(vabr): This is flaky everywhere. http://crbug.com/442704
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
-                       DISABLED_ReCreatedFormsGetFilled) {
-  NavigateToFile("/password/dynamic_password_form.html");
+                       ReCreatedFormsGetFilled) {
+  // At first let us save a credential to the password store.
+  scoped_refptr<password_manager::TestPasswordStore> password_store =
+      static_cast<password_manager::TestPasswordStore*>(
+          PasswordStoreFactory::GetForProfile(
+              browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS)
+              .get());
+  autofill::PasswordForm signin_form;
+  signin_form.signon_realm = embedded_test_server()->base_url().spec();
+  signin_form.origin = embedded_test_server()->base_url();
+  signin_form.action = embedded_test_server()->base_url();
+  signin_form.username_value = base::ASCIIToUTF16("temp");
+  signin_form.password_value = base::ASCIIToUTF16("random");
+  password_store->AddLogin(signin_form);
 
-  // Fill in the credentials, and make sure they are saved.
-  NavigationObserver form_submit_observer(WebContents());
-  std::unique_ptr<BubbleObserver> prompt_observer(
-      new BubbleObserver(WebContents()));
-  std::string create_fill_and_submit =
-      "document.getElementById('create_form_button').click();"
-      "window.setTimeout(function() {"
-      "  var form = document.getElementById('dynamic_form_id');"
-      "  form.username.value = 'temp';"
-      "  form.password.value = 'random';"
-      "  form.submit();"
-      "}, 0)";
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), create_fill_and_submit));
-  form_submit_observer.Wait();
-  EXPECT_TRUE(prompt_observer->IsShowingSavePrompt());
-  prompt_observer->AcceptSavePrompt();
-
-  // Reload the original page to have the saved credentials autofilled.
-  NavigationObserver reload_observer(WebContents());
   NavigateToFile("/password/dynamic_password_form.html");
-  reload_observer.Wait();
-  std::string create_form =
+  const std::string create_form =
       "document.getElementById('create_form_button').click();";
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), create_form));
   // Wait until the username is filled, to make sure autofill kicked in.
@@ -1633,7 +1624,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 
   // Now the form gets deleted and created again. It should get autofilled
   // again.
-  std::string delete_form =
+  const std::string delete_form =
       "var form = document.getElementById('dynamic_form_id');"
       "form.parentNode.removeChild(form);";
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), delete_form));
