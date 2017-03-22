@@ -90,6 +90,7 @@
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1797835274315207060">વિતરણ પદ્ધતિઓ અને આવશ્યકતાઓ તપાસવા વિતરણ માટેનું સરનામું પસંદ કરો.</translation>
 <translation id="1803678881841855883">Google સલામત બ્રાઉઝિંગને <ph name="SITE" /> પર <ph name="BEGIN_LINK" />માલવેર મળ્યું<ph name="END_LINK" />. વેબસાઇટ્સ કે જે સામાન્ય રીતે સુરક્ષિત હોય છે તે ક્યારેક માલવેરથી દૂષિત હોય છે. દુર્ભાવનાપૂર્ણ સામગ્રી, <ph name="SUBRESOURCE_HOST" />, એક જાણીતા માલવેર વિક્રેતાથી આવે છે. <ph name="BEGIN_LEARN_MORE_LINK" />વધુ જાણો<ph name="END_LEARN_MORE_LINK" />.</translation>
+<translation id="1806541873155184440"><ph name="ADDED_TO_AUTOFILL_MONTH" /> ના રોજ ઉમેર્યું</translation>
 <translation id="1821930232296380041">અમાન્ય વિનંતી અથવા વિનંતી પરિમાણો</translation>
 <translation id="1826516787628120939">તપાસી રહ્યાં છે</translation>
 <translation id="1834321415901700177">આ સાઇટમાં હાનિકારક પ્રોગ્રામ્સ છે</translation>
@@ -213,6 +214,7 @@
 <translation id="2955913368246107853">શોધ બાર બંધ કરો</translation>
 <translation id="2958431318199492670">નેટવર્ક ગોઠવણી ONC માનકનું પાલન કરતી નથી. ગોઠવણીના ભાગો આયાત કરી શકાશે નહીં.</translation>
 <translation id="29611076221683977">હુમલાખોરો હાલમાં <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> પર છે તે તમારા Mac પર તમારી માહિતી (ઉદાહરણ તરીકે, ફોટા, પાસવર્ડ્સ, સંદેશા અને ક્રેડિટ કાર્ડ્સ) ને ચોરી શકે કે કાઢી નાખે તેવા જોખમી પ્રોગ્રામ્સને ઇન્સ્ટોલ કરવાનો પ્રયાસ કરી શકે છે.</translation>
+<translation id="2966678944701946121">સમાપ્તિ: <ph name="EXPIRATION_DATE_ABBR" />, <ph name="ADDED_TO_AUTOFILL_MONTH" /> ના રોજ ઉમેર્યું</translation>
 <translation id="2969319727213777354">એક સુરક્ષિત કનેક્શન સ્થાપિત કરવા માટે, તમારી ઘડિયાળ યોગ્ય રીતે સેટ હોવી જરૂરી છે. આનું કારણ એ કે વેબસાઇટ્સ તેઓને ઓળખવા માટે જે પ્રમાણપત્રોનો ઉપયોગ કરે છે તે ચોક્કસ સમય અવધિ માટે જ માન્ય હોય છે. તમારા ઉપકરણની ઘડિયાળ ખોટી હોવાને લીધે, Google Chrome આ પ્રમાણપત્રોને ચકાસી શકતું નથી.</translation>
 <translation id="2972581237482394796">&amp;ફરી કરો</translation>
 <translation id="2985306909656435243">જો સક્ષમ કરેલું હોય, તો ઝડપથી ફોર્મ ભરવા માટે Chromium આ ઉપકરણ પર તમારા કાર્ડની એક કૉપિ સંગ્રહિત કરશે.</translation>
@@ -402,6 +404,7 @@
 <translation id="4728558894243024398">પ્લેટફોર્મ</translation>
 <translation id="4736825316280949806">Chromium ને પુનઃપ્રારંભ કરો</translation>
 <translation id="4744603770635761495">અમલ કરવાયોગ્ય પાથ</translation>
+<translation id="4749685221585524849">છેલ્લે <ph name="LAST_USED_MONTH" /> ના રોજ ઉપયોગ કર્યો</translation>
 <translation id="4750917950439032686">તમારી માહિતી (ઉદાહરણ તરીકે, પાસવર્ડ્સ અથવા ક્રેડિટ કાર્ડ નંબર્સ) ખાનગી હોય છે જ્યારે તે આ સાઇટ પર મોકલવામાં આવે.</translation>
 <translation id="4756388243121344051">&amp;ઇતિહાસ</translation>
 <translation id="4758311279753947758">સંપર્ક માહિતી ઉમેરો</translation>
@@ -589,6 +592,7 @@
 <translation id="6534179046333460208">વાસ્તવિક વેબ સૂચનો</translation>
 <translation id="6550675742724504774">વિકલ્પો</translation>
 <translation id="6556239504065605927">સુરક્ષિત કનેક્શન</translation>
+<translation id="6556915248009097796">સમાપ્તિ: <ph name="EXPIRATION_DATE_ABBR" />, છેલ્લે <ph name="LAST_USED_DATE_NO_DETAIL" /> ના રોજ ઉપયોગ કર્યો</translation>
 <translation id="6563469144985748109">તમારા સંચાલકે હજી સુધી તેને મંજૂર કરેલ નથી</translation>
 <translation id="6569060085658103619">તમે એક્સ્ટેન્શન પૃષ્ઠ જોઈ રહ્યાં છો</translation>
 <translation id="6593753688552673085"><ph name="UPPER_ESTIMATE" /> કરતાં ઓછું</translation>

@@ -58,8 +58,8 @@
 <translation id="2847479871509788944">Удалить из Chromium</translation>
 <translation id="2886012850691518054">(Необязательно) Помогите сделать Chromium лучше, автоматически отправляя статистику использования и отчеты об ошибках в Google.</translation>
 <translation id="2898082584336937987">Установите Chromium на телефон. Мы отправим вам SMS на номер <ph name="PHONE_NUMBER" />.</translation>
-<translation id="2905536371227304018">Chromium OS отображается на этом языке.</translation>
 <translation id="2910007522516064972">О &amp;Chromium</translation>
+<translation id="2977470724722393594">Вы используете актуальную версию Chromium</translation>
 <translation id="3032787606318309379">Добавление в Chromium...</translation>
 <translation id="3046695367536568084">Для работы с приложениями необходимо выполнить вход в Chromium. Это обеспечит синхронизацию приложений, закладок, истории, паролей и настроек, сохраненных на всех ваших устройствах.</translation>
 <translation id="3068515742935458733">Помочь улучшить Chromium, отправляя в Google отчеты о сбоях и <ph name="UMA_LINK" /></translation>
@@ -119,7 +119,6 @@
 <translation id="4994636714258228724">Добавить пользователя Chromium</translation>
 <translation id="5032989939245619637">Сохранять данные в Chromium</translation>
 <translation id="5045248521775609809">Chromium всегда под рукой</translation>
-<translation id="5113946445248196174">Chromium не удалось определить или задать браузер по умолчанию.</translation>
 <translation id="5116586539350239523">Chromium будет хранить ваши данные в защищенном виде, поэтому их не придется вводить повторно.</translation>
 <translation id="5231355151045086930">Выйти из Chromium</translation>
 <translation id="5358375970380395591">Выполнив вход в управляемый аккаунт, вы предоставляете администратору право контролировать настройки вашего профиля Chromium. Ваши данные Chromium (приложения, закладки, история, пароли и другие настройки) будут временно связаны с аккаунтом <ph name="USER_NAME" />. Эти данные можно удалить в Личном кабинете Google, но их нельзя связать с другим аккаунтом. <ph name="LEARN_MORE" /></translation>
@@ -129,7 +128,6 @@
 <translation id="5466153949126434691">Chromium обновляется автоматически, поэтому у вас всегда будет установлена последняя версия. После завершения скачивания и перезагрузки вы сможете продолжить работу.</translation>
 <translation id="5479196819031988440">Chromium OS не может открыть эту страницу</translation>
 <translation id="549669000822060376">Подождите, пока Chromium устанавливает последние обновления системы</translation>
-<translation id="556167189552180495">Chrominum отображается на этом языке.</translation>
 <translation id="5563479599352954471">Поиск в одно касание</translation>
 <translation id="5620765574781326016">Теперь искать информацию в Интернете можно с любой страницы.</translation>
 <translation id="5634636535844844681">Для работы Chromium необходима ОС Windows 7 или более поздней версии.</translation>

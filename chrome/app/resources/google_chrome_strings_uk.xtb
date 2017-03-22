@@ -70,7 +70,6 @@
 <translation id="2847461019998147611">Вибрати цю мову для Google Chrome</translation>
 <translation id="2871893339301912279">Ви ввійшли в Chrome.</translation>
 <translation id="2888126860611144412">Про Chrome</translation>
-<translation id="2900322993655997287">Google Chrome не може визначити чи встановити веб-переглядач за умовчанням.</translation>
 <translation id="3037838751736561277">Google Chrome у фоновому режимі.</translation>
 <translation id="3047079729301751317">Якщо від’єднати користувача <ph name="USERNAME" />, вашу історію, закладки, налаштування й інші дані Chrome, збережені на цьому пристрої, буде видалено. Дані, які зберігаються в обліковому записі Google, не буде видалено. Ними можна керувати на <ph name="GOOGLE_DASHBOARD_LINK" />Інформаційній панелі Google<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="3065168410429928842">Chrome</translation>
@@ -229,6 +228,7 @@
 <translation id="7788788617745289808">Chrome потрібен доступ до камери, щоб дозволити цьому сайту використовувати її.</translation>
 <translation id="7808348361785373670">Видалити з Chrome…</translation>
 <translation id="7825851276765848807">Програму не вдалося встановити через невизначену помилку. Завантажте Google Chrome ще раз.</translation>
+<translation id="7855730255114109580">У вас остання версія Google Chrome</translation>
 <translation id="7888186132678118370">Як закріпити значок Chrome на панелі завдань</translation>
 <translation id="7890208801193284374">Якщо вашим комп’ютером користуєтесь не лише ви, а й ваші друзі чи сім’я, вони можуть налаштувати Chrome на свій смак.</translation>
 <translation id="7896673875602241923">Хтось раніше входив у Chrome на цьому комп’ютері як <ph name="ACCOUNT_EMAIL_LAST" />. Створіть нового користувача Chrome, щоб зберігати свою інформацію окремо.</translation>

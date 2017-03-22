@@ -90,6 +90,7 @@
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1797835274315207060">Vælg en leveringsadresse for at se leveringsmetoder og krav.</translation>
 <translation id="1803678881841855883">Google Beskyttet browsing har for nylig <ph name="BEGIN_LINK" />registreret malware<ph name="END_LINK" /> på <ph name="SITE" />. Websites, der normalt er sikre, bliver undertiden inficeret med malware. Det skadelige indhold kommer fra <ph name="SUBRESOURCE_HOST" />, som er en kendt malwaredistributør. <ph name="BEGIN_LEARN_MORE_LINK" />Få flere oplysninger<ph name="END_LEARN_MORE_LINK" />.</translation>
+<translation id="1806541873155184440">Tilføjet den <ph name="ADDED_TO_AUTOFILL_MONTH" /></translation>
 <translation id="1821930232296380041">Ugyldig anmodning eller anmodningsparametre</translation>
 <translation id="1826516787628120939">Kontrollerer</translation>
 <translation id="1834321415901700177">Dette website indeholder skadelige programmer</translation>
@@ -213,6 +214,7 @@
 <translation id="2955913368246107853">Luk søgefeltet</translation>
 <translation id="2958431318199492670">Netværkskonfigurationen overholder ikke ONC-standarden. Dele af konfiguration kan muligvis ikke importeres.</translation>
 <translation id="29611076221683977">Hackere, der i øjeblikket befinder sig på <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />, vil muligvis forsøge at installere skadelige programmer på din Mac for at stjæle eller slette dine oplysninger (f.eks. billeder, adgangskoder, beskeder og kreditkortoplysninger).</translation>
+<translation id="2966678944701946121">Udløbsdato: <ph name="EXPIRATION_DATE_ABBR" />. Tilføjet den <ph name="ADDED_TO_AUTOFILL_MONTH" /></translation>
 <translation id="2969319727213777354">Uret på din enhed skal være indstillet korrekt, før du kan oprette en sikker forbindelse. Dette er vigtigt, da de certifikater, websites bruger til at identificere sig selv, kun er gyldige i bestemte perioder. Da uret på din enhed er indstillet forkert, kan Chrome ikke bekræfte disse certifikater.</translation>
 <translation id="2972581237482394796">&amp;Annuller fortryd</translation>
 <translation id="2985306909656435243">Hvis denne indstilling er slået til, gemmer Chromium en kopi af dit kort på denne enhed for at gøre det hurtigere at udfylde formularer.</translation>
@@ -402,6 +404,7 @@
 <translation id="4728558894243024398">Platform</translation>
 <translation id="4736825316280949806">Genstart Chromium</translation>
 <translation id="4744603770635761495">Eksekverbar sti</translation>
+<translation id="4749685221585524849">Sidst anvendt den <ph name="LAST_USED_MONTH" /></translation>
 <translation id="4750917950439032686">Dine oplysninger (f.eks. adgangskoder eller kreditkortnumre) er private, når de sendes til dette website.</translation>
 <translation id="4756388243121344051">&amp;Historik</translation>
 <translation id="4758311279753947758">Tilføj kontaktoplysninger</translation>
@@ -589,6 +592,7 @@
 <translation id="6534179046333460208">Forslag til Fysisk web</translation>
 <translation id="6550675742724504774">Valgmuligheder</translation>
 <translation id="6556239504065605927">Sikker forbindelse</translation>
+<translation id="6556915248009097796">Udløbsdato: <ph name="EXPIRATION_DATE_ABBR" />. Sidst anvendt den <ph name="LAST_USED_DATE_NO_DETAIL" /></translation>
 <translation id="6563469144985748109">Din administrator har ikke godkendt det endnu</translation>
 <translation id="6569060085658103619">Du ser en udvidelsesside</translation>
 <translation id="6593753688552673085">mindre end <ph name="UPPER_ESTIMATE" /></translation>

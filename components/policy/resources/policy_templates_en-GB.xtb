@@ -816,7 +816,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
           Leaving this policy unset will allow the users to choose the proxy settings on their own.</translation>
 <translation id="3205825995289802549">Maximise the first browser window on first run</translation>
-<translation id="3206731874112238027">Disable Print Preview (deprecated)</translation>
 <translation id="3213821784736959823">Controls whether the built-in DNS client is used in <ph name="PRODUCT_NAME" />.
 
       If this policy is set to true, the built-in DNS client will be used, if available.
@@ -1414,6 +1413,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If it is not set, the user may be asked whether to import or importing may happen automatically.</translation>
 <translation id="5056708224511062314">Screen magnifier disabled</translation>
 <translation id="5067143124345820993">Login user white list</translation>
+<translation id="5085647276663819155">Disable Print Preview</translation>
 <translation id="5105313908130842249">Screen lock delay when running on battery power</translation>
 <translation id="5111573778467334951">Specify the action to take when the idle delay is reached while running on battery power.
 

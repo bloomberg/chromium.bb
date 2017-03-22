@@ -90,6 +90,7 @@
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1797835274315207060">Pilih alamat penghantaran untuk menyemak kaedah dan keperluan penghantaran.</translation>
 <translation id="1803678881841855883">Penyemakan Imbas Selamat Google <ph name="BEGIN_LINK" />mengesan perisian hasad<ph name="END_LINK" /> di <ph name="SITE" /> baru-baru ini. Tapak web yang lazimnya selamat, kadangkala dijangkiti perisian hasad. Kandungan hasad berasal daripada <ph name="SUBRESOURCE_HOST" />, iaitu pengedar perisian hasad yang diketahui. <ph name="BEGIN_LEARN_MORE_LINK" />Ketahui lebih lanjut<ph name="END_LEARN_MORE_LINK" />.</translation>
+<translation id="1806541873155184440">Ditambahkan <ph name="ADDED_TO_AUTOFILL_MONTH" /></translation>
 <translation id="1821930232296380041">Permintaan atau parameter permintaan tidak sah</translation>
 <translation id="1826516787628120939">Menyemak</translation>
 <translation id="1834321415901700177">Tapak ini mengandungi atur cara berbahaya</translation>
@@ -213,6 +214,7 @@
 <translation id="2955913368246107853">Tutup bar cari</translation>
 <translation id="2958431318199492670">Konfigurasi rangkaian tidak mematuhi piawaian ONC. Sebahagian konfigurasi tidak boleh diimport.</translation>
 <translation id="29611076221683977">Penyerang yang ada di <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> pada masa ini mungkin cuba memasang program berbahaya pada Mac anda yang boleh mencuri atau memadamkan maklumat anda (contohnya foto, kata laluan, mesej dan kad kredit).</translation>
+<translation id="2966678944701946121">Tamat: <ph name="EXPIRATION_DATE_ABBR" />, ditambahkan <ph name="ADDED_TO_AUTOFILL_MONTH" /></translation>
 <translation id="2969319727213777354">Untuk mewujudkan sambungan yang selamat, jam anda perlu ditetapkan dengan betul. Perkara ini perlu dilakukan kerana sijil yang digunakan laman web untuk mengenal pastinya hanya sah untuk tempoh masa yang tertentu. Memandangkan jam peranti anda tidak betul, Google Chrome tidak boleh mengesahkan sijil ini.</translation>
 <translation id="2972581237482394796">&amp;Buat Semula</translation>
 <translation id="2985306909656435243">Jika didayakan, Chromium akan menyimpan salinan kad anda pada peranti ini untuk pengisian borang yang lebih cepat.</translation>
@@ -403,6 +405,7 @@
 <translation id="4728558894243024398">Platform</translation>
 <translation id="4736825316280949806">Mulakan semula Chromium</translation>
 <translation id="4744603770635761495">Laluan Boleh Laku</translation>
+<translation id="4749685221585524849">Kali terakhir digunakan <ph name="LAST_USED_MONTH" /></translation>
 <translation id="4750917950439032686">Maklumat anda (contohnya, kata laluan atau nombor kad kredit) adalah berciri peribadi apabila dihantar ke tapak ini.</translation>
 <translation id="4756388243121344051">&amp;Sejarah</translation>
 <translation id="4758311279753947758">Tambahkan maklumat hubungan</translation>
@@ -590,6 +593,7 @@
 <translation id="6534179046333460208">Cadangan Web Fizikal</translation>
 <translation id="6550675742724504774">Pilihan</translation>
 <translation id="6556239504065605927">Sambungan selamat</translation>
+<translation id="6556915248009097796">Tamat: <ph name="EXPIRATION_DATE_ABBR" />, kali terakhir digunakan <ph name="LAST_USED_DATE_NO_DETAIL" /></translation>
 <translation id="6563469144985748109">Pengurus anda belum meluluskannya</translation>
 <translation id="6569060085658103619">Anda sedang melihat halaman sambungan</translation>
 <translation id="6593753688552673085">kurang daripada <ph name="UPPER_ESTIMATE" /></translation>

@@ -776,7 +776,6 @@
 
           Ako se to pravilo ne postavi, korisnici će moći sami odabrati postavke proxyja.</translation>
 <translation id="3205825995289802549">Maksimiziraj prvi prozor preglednika pri prvom pokretanju</translation>
-<translation id="3206731874112238027">Onemogućivanje pregleda ispisa (obustavljeno)</translation>
 <translation id="3213821784736959823">Kontrolira primjenjuje li se ugrađeni DNS klijent u proizvodu <ph name="PRODUCT_NAME" />.
 
       Ako je to pravilo postavljeno na točno, primijenit će se ugrađeni DNS klijent ako je dostupan.
@@ -1334,6 +1333,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="5052081091120171147">Ako je omogućeno, ovo pravilo prisilno uvozi povijest pregledavanja iz trenutačno zadanog preglednika. Ako je omogućeno, ovo pravilo također utječe na dijaloški okvir za uvoz. Ako je onemogućeno, povijest pregledavanja se ne uvozi. Ako nije postavljeno, korisniku može biti postavljen upit želi li uvesti povijest pregledavanja ili do uvoza može doći automatski.</translation>
 <translation id="5056708224511062314">Povećalo je onemogućeno</translation>
 <translation id="5067143124345820993">Popis korisnika kojima je dopuštena prijava</translation>
+<translation id="5085647276663819155">Onemogući pregled ispisa</translation>
 <translation id="5105313908130842249">Odgoda zaključavanja zaslona za vrijeme baterijskog napajanja</translation>
 <translation id="5111573778467334951">Određuje radnju koja se treba poduzeti kada se dosegne odgoda zbog neaktivnosti dok računalo pokreće baterija.
 

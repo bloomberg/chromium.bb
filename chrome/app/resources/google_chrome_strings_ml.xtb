@@ -74,7 +74,6 @@
 <translation id="2847461019998147611">ഈ ഭാഷയില്‍‌ Google Chrome പ്രദര്‍‌ശിപ്പിക്കുക</translation>
 <translation id="2871893339301912279">നിങ്ങൾ Chrome-ൽ സൈൻ ഇൻ ചെയ്‌തു!</translation>
 <translation id="2888126860611144412">Chrome-നെ കുറിച്ച്</translation>
-<translation id="2900322993655997287">Google Chrome-ന് ഡിഫോൾട്ട് ബ്രൗസർ നിർണ്ണയിക്കാനോ സജ്ജമാക്കാനോ കഴിയില്ല.</translation>
 <translation id="3037838751736561277">Google Chrome ഒരു പശ്ചാത്തല മോഡിലാണ്.</translation>
 <translation id="3047079729301751317"><ph name="USERNAME" /> എന്നത് വിച്ഛേദിക്കുന്നത് നിങ്ങളുടെ ചരിത്രം, ബുക്ക്മാർക്കുകൾ, ക്രമീകരണങ്ങൾ, ഈ ഉപകരണത്തിൽ സംഭരിച്ച മറ്റ് Chrome ഡാറ്റ എന്നിവയെ മായ്‌ക്കും. നിങ്ങളുടെ Google അക്കൗണ്ടിൽ സംഭരിച്ച ഡാറ്റ മായ്‌ക്കാനാകില്ല, അവ <ph name="GOOGLE_DASHBOARD_LINK" />Google ഡാഷ്‌ബോർഡിൽ<ph name="END_GOOGLE_DASHBOARD_LINK" /> നിയന്ത്രിക്കാനാകും.</translation>
 <translation id="3065168410429928842">Chrome ടാബ്</translation>
@@ -237,6 +236,7 @@
 <translation id="7788788617745289808">Chrome-ന് ഇത് ഈ സൈറ്റുമായി പങ്കിടാൻ ക്യാമറ ആക്‌സസ്സ് ആവശ്യമുണ്ട്.</translation>
 <translation id="7808348361785373670">Chrome-ൽ നിന്ന് നീക്കംചെയ്യുക...</translation>
 <translation id="7825851276765848807">വ്യക്തമല്ലാത്ത പിശക് കാരണം ഇന്‍സ്റ്റാളേഷന്‍ പരാജയപ്പെട്ടു. ദയവായി Google Chrome വീണ്ടും ഡൗൺലോഡ് ചെയ്യുക.</translation>
+<translation id="7855730255114109580">Google Chrome കാലികമാണ്</translation>
 <translation id="7888186132678118370">Chrome-നെ നിങ്ങളുടെ ടാസ്‌ക്‌ബാറിൽ പിൻ ചെയ്യുക</translation>
 <translation id="7890208801193284374">നിങ്ങളൊരു കമ്പ്യൂട്ടർ പങ്കിടുകയാണെങ്കിൽ, സുഹൃത്തുക്കൾക്കും കുടുബാംഗങ്ങൾക്കും വെവ്വേറെ ബ്രൗസുചെയ്യാനും അവർക്കാവശ്യമുള്ള രീതിയിൽ Chrome സജ്ജമാക്കാനുമാകും.</translation>
 <translation id="7896673875602241923">ഈ കമ്പ്യൂട്ടറിലെ Chrome-ൽ മുമ്പ് മറ്റാരോ <ph name="ACCOUNT_EMAIL_LAST" /> എന്നയാളായി സൈൻ ഇൻ ചെയ്‌തിരിക്കുന്നു. നിങ്ങളുടെ വിവരങ്ങൾ പ്രത്യേകം വേർതിരിച്ച് സൂക്ഷിക്കാൻ പുതിയ Chrome ഉപയോക്താവിനെ സൃഷ്‌ടിക്കുക.</translation>

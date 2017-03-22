@@ -60,8 +60,8 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="2847479871509788944">Desinstalar de Chromium...</translation>
 <translation id="2886012850691518054">Opcional: ayudar a mejorar Chromium enviando automáticamente a Google estadísticas de uso e informes de errores</translation>
 <translation id="2898082584336937987">Instala Chromium en tu teléfono. Te enviaremos un SMS al siguiente número: <ph name="PHONE_NUMBER" /></translation>
-<translation id="2905536371227304018">Chromium OS se muestra en este idioma.</translation>
 <translation id="2910007522516064972">Información de &amp;Chromium</translation>
+<translation id="2977470724722393594">Chromium está actualizado.</translation>
 <translation id="3032787606318309379">Añadiendo a Chromium...</translation>
 <translation id="3046695367536568084">Para usar las aplicaciones, debes iniciar sesión en Chromium. De ese modo, Chromium podrá sincronizar tus aplicaciones, tus marcadores, tu historial, tus contraseñas y otras opciones en distintos dispositivos.</translation>
 <translation id="3068515742935458733">Ayudar a mejorar Chromium enviando informes sobre fallos y <ph name="UMA_LINK" /> a Google</translation>
@@ -95,7 +95,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="4050175100176540509">En la última versión puedes encontrar mejoras de seguridad importantes y nuevas funciones.</translation>
 <translation id="407254336480250557">Selecciona <ph name="BEGIN_BOLD" />Chromium<ph name="END_BOLD" /> <ph name="SMALL_PRODUCT_LOGO" /></translation>
 <translation id="4077262827416206768">Cierra todas las ventanas de Chromium y vuelve a iniciarlo para que se aplique el cambio.</translation>
-<translation id="4207043877577553402"><ph name="BEGIN_BOLD" />Advertencia:<ph name="END_BOLD" /> Chromium no puede evitar que las extensiones registren el historial de búsqueda. Para inhabilitar la ejecución de esta extensión en modo incógnito, desactiva la casilla correspondiente a esta opción.</translation>
+<translation id="4207043877577553402"><ph name="BEGIN_BOLD" />Advertencia:<ph name="END_BOLD" /> Chromium no puede evitar que las extensiones registren el historial de búsquedas . Para inhabilitar la ejecución de esta extensión en modo incógnito, desactiva la casilla correspondiente a esta opción.</translation>
 <translation id="421369550622382712">Descubre aplicaciones, juegos, extensiones y temas increíbles para Chromium.</translation>
 <translation id="4222580632002216401">Has iniciado sesión en Chromium. El administrador ha inhabilitado la sincronización.</translation>
 <translation id="4224199872375172890">Chromium está actualizado.</translation>
@@ -123,7 +123,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="4994636714258228724">Añadirte a Chromium</translation>
 <translation id="5032989939245619637">Guardar detalles en Chromium</translation>
 <translation id="5045248521775609809">Llévate Chromium a todas partes</translation>
-<translation id="5113946445248196174">Chromium no puede determinar ni establecer el navegador predeterminado.</translation>
 <translation id="5116586539350239523">Chromium almacenará de forma segura tu información personal, de modo que no tendrás que volver a introducirla.</translation>
 <translation id="5231355151045086930">Cerrar sesión en Chromium</translation>
 <translation id="5358375970380395591">Vas a iniciar sesión con una cuenta administrada, lo que significa que proporcionarás a su administrador control sobre tu perfil de Chromium. Tus datos de Chromium como, por ejemplo, tus aplicaciones, tus marcadores, tu historial, tus contraseñas y otras opciones se vincularán de forma permanente a la cuenta <ph name="USER_NAME" />. Podrás eliminar estos datos a través del Panel de control de cuentas de Google, pero no podrás asociarlos a otra cuenta. <ph name="LEARN_MORE" /></translation>
@@ -133,7 +132,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="5466153949126434691">Chromium se actualiza automáticamente para que siempre dispongas de la última versión. Cuando se complete la descarga, Chromium se reiniciará automáticamente.</translation>
 <translation id="5479196819031988440">Chromium OS no puede abrir esta página.</translation>
 <translation id="549669000822060376">Espera mientras Chromium instala las últimas actualizaciones del sistema.</translation>
-<translation id="556167189552180495">Chromium se muestra en este idioma.</translation>
 <translation id="5563479599352954471">Buscar con un toque</translation>
 <translation id="5620765574781326016">Obtén información sobre los temas en sitios web sin salir de la página.</translation>
 <translation id="5634636535844844681">Chromium requiere Windows 7 o una versión posterior.</translation>

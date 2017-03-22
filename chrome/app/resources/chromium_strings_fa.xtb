@@ -58,8 +58,8 @@
 <translation id="2847479871509788944">‏حذف از Chromium...</translation>
 <translation id="2886012850691518054">‏اختیاری: با ارسال خودکار آمار کاربرد و گزارش‌های خرابی برنامه به Chromium، به پیشرفت Chrome کمک کنید.</translation>
 <translation id="2898082584336937987">‏Chromium را در تلفنتان نصب کنید. پیامکی به تلفن شما ارسال خواهیم کرد: <ph name="PHONE_NUMBER" /></translation>
-<translation id="2905536371227304018">‏سیستم عامل Chromium به این زبان نشان داده می‌شود.</translation>
 <translation id="2910007522516064972">‏درباره &amp;Chromium</translation>
+<translation id="2977470724722393594">‏Chromium به‌روز است</translation>
 <translation id="3032787606318309379">‏افزودن به Chromium…</translation>
 <translation id="3046695367536568084">‏برای استفاده از برنامه‌ها باید وارد Chromium شده باشید. این به Chromium اجازه می‌دهد تا برنامه‌ها، نشانک‌ها، سابقه، گذرواژه‌های شما و سایر تنظیمات را در دستگاه‌ها همگام‌سازی کند.</translation>
 <translation id="3068515742935458733">‏با ارسال گزارش‌های خرابی و <ph name="UMA_LINK" /> به Google، به بهبود Google کمک کنید</translation>
@@ -120,7 +120,6 @@
 <translation id="4994636714258228724">‏افرودن خودتان به Chromium</translation>
 <translation id="5032989939245619637">‏ذخیره جزئیات در Chromium</translation>
 <translation id="5045248521775609809">‏Chrome را همه‌ جا ببرید</translation>
-<translation id="5113946445248196174">‏Chromium نمی‌تواند مرورگر پیش‌فرض را تعیین یا تنظیم کند.</translation>
 <translation id="5116586539350239523">‏Chromium به‌طور امن جزئیات شخصی‌تان را ذخیره خواهد کرد تا نیازی نباشد آن‌ها را دوباره تایپ کنید.</translation>
 <translation id="5231355151045086930">‏خروج از سیستم Chromium</translation>
 <translation id="5358375970380395591">‏شما با حساب مدیریت‌شده وارد سیستم می‌شوید و به سرپرست آن اجازه کنترل بر نمایه Chromium خود را می‌دهید. داده‌های Chromium شما شامل برنامه‌ها، نشانک‌ها، سابقه، گذرواژه‌ها و سایر تنظیمات برای همیشه به <ph name="USER_NAME" /> مرتبط خواهد شد. می‌توانید این داده‌ها را از طریق داشبورد حساب‌های Google حذف کنید اما نمی‌توانید این داده‌ها را به حساب دیگری مرتبط سازید. <ph name="LEARN_MORE" /></translation>
@@ -130,7 +129,6 @@
 <translation id="5466153949126434691">‏Chromium به صورت خودکار به‌روزرسانی می‌شود بنابراین همیشه جدیدترین نسخه را دارید. وقتی این بارگیری تمام شد، Chromium دوباره شروع به کار می‌کند و می‌توانید کارتان را ادامه دهید.</translation>
 <translation id="5479196819031988440">‏Chromium OS نمی‌تواند این صفحه را باز کند.</translation>
 <translation id="549669000822060376">‏وقتی Chromium جدیدترین به‌روزرسانی‌های سیستم را نصب می‌کند، لطفاً صبر کنید.</translation>
-<translation id="556167189552180495">‏Chromium به این زبان نشان داده می‌شود.</translation>
 <translation id="5563479599352954471">جستجو فقط با یک تماس</translation>
 <translation id="5620765574781326016">بدون اینکه صفحه را ترک کنید، درباره موضوعات در وب‌سایت‌ها اطلاعاتی به دست آورید.</translation>
 <translation id="5634636535844844681">‏Chromium به Windows 7 یا بالاتر نیاز دارد.</translation>

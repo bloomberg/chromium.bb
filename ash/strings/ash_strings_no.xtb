@@ -24,12 +24,16 @@
 <translation id="1525508553941733066">AVVIS</translation>
 <translation id="15373452373711364">Stor markør</translation>
 <translation id="1550523713251050646">Klikk for å se flere alternativer</translation>
+<translation id="1571442141242456645">Inndatametoden din er endret til <ph name="INPUT_METHOD_ID" />.
+    Trykk på Shift + Alt for å bytte.</translation>
 <translation id="1602076796624386989">Aktiver mobildata</translation>
 <translation id="1621499497873603021">Gjenværende tid til batteriet er tomt – <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Chrome-enhet</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> igjen</translation>
 <translation id="1747827819627189109">Skjermtastaturet er aktivert</translation>
 <translation id="1850504506766569011">Wi-Fi er slått av.</translation>
+<translation id="1854357586517521894">Caps Lock er på.
+    Trykk på Søk eller Shift for å avbryte.</translation>
 <translation id="1864454756846565995">USB-C-enhet (porten på baksiden)</translation>
 <translation id="1882897271359938046">Speiler <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Snarveien for å åpne oppgavebehandlingen er endret. Bruk <ph name="NEW_SHORTCUT" /> i stedet for <ph name="OLD_SHORTCUT" />.</translation>
@@ -62,6 +66,8 @@
 <translation id="2857608528410806398">Teksten i varselet for hurtigopplåsing-funksjonen skal være her. Teksten i varselet for hurtigopplåsing-funksjonen skal være her. Teksten i varselet for hurtigopplåsing-funksjonen skal være her. Teksten i varselet for hurtigopplåsing-funksjonen skal være her. Teksten i varselet for hurtigopplåsing-funksjonen skal være her.</translation>
 <translation id="2865888419503095837">Nettverksinformasjon</translation>
 <translation id="2872961005593481000">Slå av</translation>
+<translation id="291653379653113090">Inndatametoden din er endret til <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />tredjepart<ph name="END_LINK" />).
+    Trykk på Shift + Alt for å bytte.</translation>
 <translation id="2942516765047364088">Hylleposisjon</translation>
 <translation id="2946119680249604491">Legg til forbindelse</translation>
 <translation id="2963773877003373896">mod3</translation>
@@ -72,6 +78,8 @@
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Bunn</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
+<translation id="3109220592788908353">Caps Lock er på.
+    Trykk på Alt + Søk eller Shift for å avbryte.</translation>
 <translation id="3126069444801937830">Start på nytt for å oppdatere</translation>
 <translation id="3147142846278915599">Appoversikt (synkroniserer apper ...)</translation>
 <translation id="315116470104423982">Mobildata</translation>

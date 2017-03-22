@@ -90,6 +90,7 @@
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1797835274315207060">Selecciona una dirección de envío para consultar los métodos de envío y los requisitos.</translation>
 <translation id="1803678881841855883">La función de navegación segura de Google <ph name="BEGIN_LINK" />detectó software malicioso<ph name="END_LINK" /> recientemente en <ph name="SITE" />. En ocasiones, los sitios web que suelen ser seguros contienen software malicioso. Este contenido procede de <ph name="SUBRESOURCE_HOST" />, un conocido distribuidor de este tipo de software. <ph name="BEGIN_LEARN_MORE_LINK" />Más información<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="1806541873155184440">Añadida el <ph name="ADDED_TO_AUTOFILL_MONTH" /></translation>
 <translation id="1821930232296380041">Parámetros de solicitud o solicitud no válidos</translation>
 <translation id="1826516787628120939">Comprobando</translation>
 <translation id="1834321415901700177">Este sitio web contiene programas dañinos</translation>
@@ -213,6 +214,7 @@
 <translation id="2955913368246107853">Cerrar la barra de búsqueda</translation>
 <translation id="2958431318199492670">La configuración de red no cumple el estándar ONC. Es posible que no se importen partes de la configuración.</translation>
 <translation id="29611076221683977">Los atacantes que se encuentran actualmente en el sitio <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> podrían intentar instalar programas peligrosos en tu Mac para robar o eliminar tu información (por ejemplo, fotos, contraseñas, mensajes y tarjetas de crédito).</translation>
+<translation id="2966678944701946121">Fecha de caducidad: <ph name="EXPIRATION_DATE_ABBR" /> (añadida el <ph name="ADDED_TO_AUTOFILL_MONTH" />)</translation>
 <translation id="2969319727213777354">Para establecer una conexión segura, el reloj debe estar configurado correctamente. Esto se debe a que los certificados que utilizan los sitios web para identificarse solo son válidos para períodos de tiempo específicos. Como el reloj de tu dispositivo no está configurado correctamente, Google Chrome no puede verificar estos certificados.</translation>
 <translation id="2972581237482394796">&amp;Rehacer</translation>
 <translation id="2985306909656435243">Si se habilita esta opción, Chromium guardará una copia de tu tarjeta en este dispositivo para completar formularios más rápidamente.</translation>
@@ -402,6 +404,7 @@
 <translation id="4728558894243024398">Plataforma</translation>
 <translation id="4736825316280949806">Reinicia Chromium</translation>
 <translation id="4744603770635761495">Ruta del ejecutable</translation>
+<translation id="4749685221585524849">Usada por última vez el <ph name="LAST_USED_MONTH" /></translation>
 <translation id="4750917950439032686">Tu información (por ejemplo, las contraseñas o los números de las tarjetas de crédito) es privada cuando se envía a este sitio web.</translation>
 <translation id="4756388243121344051">&amp;Historial</translation>
 <translation id="4758311279753947758">Añadir información de contacto</translation>
@@ -589,6 +592,7 @@
 <translation id="6534179046333460208">Sugerencias de la Web física</translation>
 <translation id="6550675742724504774">Configuración</translation>
 <translation id="6556239504065605927">Conexión segura</translation>
+<translation id="6556915248009097796">Fecha de caducidad: <ph name="EXPIRATION_DATE_ABBR" /> (usada por última vez el <ph name="LAST_USED_DATE_NO_DETAIL" />)</translation>
 <translation id="6563469144985748109">Tu administrador aún no la ha aprobado</translation>
 <translation id="6569060085658103619">Estas viendo la página de una extensión</translation>
 <translation id="6593753688552673085">menos de <ph name="UPPER_ESTIMATE" /></translation>

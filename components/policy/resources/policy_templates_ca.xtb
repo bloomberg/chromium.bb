@@ -763,7 +763,6 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
 
           Si deixes aquesta política sense establir, els usuaris poden triar pel seu compte la configuració del servidor intermediari.</translation>
 <translation id="3205825995289802549">Maximitza la primera finestra del navegador en iniciar-lo per primera vegada</translation>
-<translation id="3206731874112238027">Desactiva la previsualització d'impressió (opció obsoleta)</translation>
 <translation id="3213821784736959823">Controla si el client DNS integrat s'utilitza a <ph name="PRODUCT_NAME" />.
 
 Si aquesta política s'activa, s'utilitzarà el client DNS integrat, si està disponible.
@@ -1317,6 +1316,7 @@ Si no es configura aquesta opció, no s'aplicarà cap restricció sobre els tipu
 <translation id="5052081091120171147">Si està activada, aquesta política fa que l'historial de navegació s'importi des del navegador predeterminat actual. Si està activada, aquesta política també afecta el diàleg d'importació. Si està desactivada, no s'importarà cap historial de navegació. Si no es defineix, pot ser que es demani a l'usuari si vol importar o bé la importació es pot produir de manera automàtica.</translation>
 <translation id="5056708224511062314">Lupa desactivada</translation>
 <translation id="5067143124345820993">Llista blanca de l'usuari d'inici de sessió</translation>
+<translation id="5085647276663819155">Desactiva la previsualització d'impressió</translation>
 <translation id="5105313908130842249">Retard del bloqueig de pantalla quan s'utilitza bateria</translation>
 <translation id="5111573778467334951">Especifica l'acció que s'ha d'emprendre quan s'està inactiu mentre s'utilitza la bateria.
 

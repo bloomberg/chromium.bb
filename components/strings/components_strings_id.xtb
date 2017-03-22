@@ -90,6 +90,7 @@
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1797835274315207060">Pilih alamat pengiriman untuk memeriksa metode pengiriman dan persyaratan.</translation>
 <translation id="1803678881841855883">Google Penjelajahan Aman baru-baru ini <ph name="BEGIN_LINK" />mendeteksi perangkat lunak perusak<ph name="END_LINK" /> di <ph name="SITE" />. Situs web yang biasanya aman terkadang dapat terinfeksi perangkat lunak perusak. Konten berbahaya tersebut berasal dari <ph name="SUBRESOURCE_HOST" />, sebuah distributor perangkat lunak perusak ternama. <ph name="BEGIN_LEARN_MORE_LINK" />Pelajari lebih lanjut<ph name="END_LEARN_MORE_LINK" />.</translation>
+<translation id="1806541873155184440">Ditambahkan pada <ph name="ADDED_TO_AUTOFILL_MONTH" /></translation>
 <translation id="1821930232296380041">Permintaan atau parameter permintaan tidak valid</translation>
 <translation id="1826516787628120939">Memeriksa</translation>
 <translation id="1834321415901700177">Situs ini berisi program yang berbahaya</translation>
@@ -213,6 +214,7 @@
 <translation id="2955913368246107853">Tutup bilah cari</translation>
 <translation id="2958431318199492670">Konfigurasi jaringan tidak mematuhi standar ONC. Bagian dari konfigurasi mungkin tidak diimpor.</translation>
 <translation id="29611076221683977">Saat ini penyerang yang berada pada <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> mungkin berusaha memasang program berbahaya di Mac yang dapat mencuri atau menghapus informasi Anda (misalnya, foto, sandi, pesan, dan kartu kredit).</translation>
+<translation id="2966678944701946121">Kedaluwarsa: <ph name="EXPIRATION_DATE_ABBR" />, ditambahkan pada <ph name="ADDED_TO_AUTOFILL_MONTH" /></translation>
 <translation id="2969319727213777354">Untuk membuat sambungan aman, jam perlu disetel dengan benar. Itu karena sertifikat yang digunakan situs web untuk mengidentifikasi situs web tersebut hanya valid untuk jangka waktu tertentu. Karena jam perangkat tidak benar, Google Chrome tidak dapat memverifikasi sertifikat ini.</translation>
 <translation id="2972581237482394796">&amp;Ulang</translation>
 <translation id="2985306909656435243">Jika diaktifkan, Chromium akan menyimpan salinan kartu Anda di perangkat ini untuk pengisian formulir yang lebih cepat.</translation>
@@ -402,6 +404,7 @@
 <translation id="4728558894243024398">Platform</translation>
 <translation id="4736825316280949806">Buka Ulang Chromium</translation>
 <translation id="4744603770635761495">Jalur Yang Dapat Dijalankan</translation>
+<translation id="4749685221585524849">Terakhir digunakan pada <ph name="LAST_USED_MONTH" /></translation>
 <translation id="4750917950439032686">Informasi Anda (misalnya, sandi atau nomor kartu kredit) bersifat pribadi saat dikirimkan ke situs ini.</translation>
 <translation id="4756388243121344051">&amp;Riwayat</translation>
 <translation id="4758311279753947758">Tambahkan info kontak</translation>
@@ -589,6 +592,7 @@
 <translation id="6534179046333460208">Saran Web Fisik</translation>
 <translation id="6550675742724504774">Opsi</translation>
 <translation id="6556239504065605927">Sambungan aman</translation>
+<translation id="6556915248009097796">Kedaluwarsa: <ph name="EXPIRATION_DATE_ABBR" />, terakhir digunakan pada <ph name="LAST_USED_DATE_NO_DETAIL" /></translation>
 <translation id="6563469144985748109">Pengelola Anda belum menyetujuinya</translation>
 <translation id="6569060085658103619">Anda melihat halaman ekstensi</translation>
 <translation id="6593753688552673085">kurang dari <ph name="UPPER_ESTIMATE" /></translation>

@@ -90,6 +90,7 @@
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1797835274315207060">Válassza ki a szállítási címet a szállítási módok és követelmények megtekintéséhez.</translation>
 <translation id="1803678881841855883">A Google Biztonságos Böngészés funkciója nemrég <ph name="BEGIN_LINK" />rosszindulatú programot észlelt<ph name="END_LINK" /> a(z) <ph name="SITE" /> webhelyen. A normál esetben biztonságos webhelyek néha rosszindulatú programokkal fertőzöttek. A rosszindulatú tartalom az ilyen programok következő ismert terjesztőjétől származik: <ph name="SUBRESOURCE_HOST" />. <ph name="BEGIN_LEARN_MORE_LINK" />További információ<ph name="END_LEARN_MORE_LINK" />.</translation>
+<translation id="1806541873155184440">Hozzáadva: <ph name="ADDED_TO_AUTOFILL_MONTH" /></translation>
 <translation id="1821930232296380041">Érvénytelen kérés vagy kérésparaméter</translation>
 <translation id="1826516787628120939">Ellenőrzés</translation>
 <translation id="1834321415901700177">A webhely ártalmas programokat tartalmaz</translation>
@@ -213,6 +214,7 @@
 <translation id="2955913368246107853">Keresősáv bezárása</translation>
 <translation id="2958431318199492670">A hálózati konfiguráció nem felel meg az ONC szabványnak. A konfiguráció egyes részeit nem lehet importálni.</translation>
 <translation id="29611076221683977">Előfordulhat, hogy a(z) <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> webhely támadói veszélyes programokat kísérelnek meg telepíteni Mac számítógépére, amelyek ellopják vagy törlik adatait (például fotóit, jelszavait, üzeneteit és hitelkártyaadatait).</translation>
+<translation id="2966678944701946121">Lejárati dátum: <ph name="EXPIRATION_DATE_ABBR" />, hozzáadva: <ph name="ADDED_TO_AUTOFILL_MONTH" /></translation>
 <translation id="2969319727213777354">Biztonságos kapcsolat létrehozásához az órát pontosan be kell állítani. Ez azért szükséges, mert a webhelyek által az azonosításukra használt tanúsítványok csak adott ideig érvényesek. Mivel az eszköz órája nem pontos, a Google Chrome nem tudja ellenőrizni ezeket a tanúsítványokat.</translation>
 <translation id="2972581237482394796">&amp;Újra</translation>
 <translation id="2985306909656435243">Ha engedélyezi, a Chromium megőrzi a kártya másolatát ezen az eszközön a gyorsabb űrlapkitöltés érdekében.</translation>
@@ -400,6 +402,7 @@
 <translation id="4728558894243024398">Platform</translation>
 <translation id="4736825316280949806">Indítsa újra a Chromiumot</translation>
 <translation id="4744603770635761495">Végrehajtható fájl útvonala</translation>
+<translation id="4749685221585524849">Utolsó használat: <ph name="LAST_USED_MONTH" /></translation>
 <translation id="4750917950439032686">Adatai (például jelszava vagy hitelkártyaszáma) nem láthatók más számára, amikor a rendszer elküldi őket a webhelynek.</translation>
 <translation id="4756388243121344051">&amp;Előzmények</translation>
 <translation id="4758311279753947758">Névjegyadatok hozzáadása</translation>
@@ -587,6 +590,7 @@
 <translation id="6534179046333460208">Fizikai web – javaslatok</translation>
 <translation id="6550675742724504774">Beállítások</translation>
 <translation id="6556239504065605927">Biztonságos kapcsolat</translation>
+<translation id="6556915248009097796">Lejárati dátum: <ph name="EXPIRATION_DATE_ABBR" />, utolsó használat: <ph name="LAST_USED_DATE_NO_DETAIL" /></translation>
 <translation id="6563469144985748109">A kezelő még nem hagyta jóvá</translation>
 <translation id="6569060085658103619">Jelenleg bővítményoldalt tekint meg</translation>
 <translation id="6593753688552673085">kevesebb, mint <ph name="UPPER_ESTIMATE" /></translation>

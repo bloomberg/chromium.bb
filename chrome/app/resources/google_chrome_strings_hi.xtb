@@ -70,7 +70,6 @@
 <translation id="2847461019998147611">Google Chrome इस भाषा में दिखाएं</translation>
 <translation id="2871893339301912279">आप Chrome में प्रवेश हैं.</translation>
 <translation id="2888126860611144412">क्रोम के बारे में</translation>
-<translation id="2900322993655997287">Google Chrome डिफ़ॉल्ट ब्राउज़र निर्धारित या सेट नहीं कर सकता.</translation>
 <translation id="3037838751736561277">Google Chrome पृष्ठभूमि मोड में है.</translation>
 <translation id="3047079729301751317"><ph name="USERNAME" /> को डिसकनेक्ट करने से आपका इतिहास, बुकमार्क, सेटिंग, और इस डिवाइस पर संग्रहित अन्य Chrome डेटा साफ़ हो जाएगा. आपके Google खाते में संग्रहित डेटा साफ़ नहीं होगा और उसे <ph name="GOOGLE_DASHBOARD_LINK" />Google डैशबोर्ड<ph name="END_GOOGLE_DASHBOARD_LINK" /> पर प्रबंधित किया जा सकता है.</translation>
 <translation id="3065168410429928842">Chrome टैब</translation>
@@ -231,6 +230,7 @@
 <translation id="7788788617745289808">Chrome को कैमरा ऐक्सेस की आवश्यकता है ताकि कैमरे को इस साइट के साथ साझा किया जा सके.</translation>
 <translation id="7808348361785373670">Chrome से नि‍कालें...</translation>
 <translation id="7825851276765848807">अनिर्दिष्ट गड़बड़ी के कारण डाउनलोड विफल हुआ. कृपया Google Chrome पुन: डाउनलोड करें.</translation>
+<translation id="7855730255114109580">Google Chrome अद्यतित है</translation>
 <translation id="7888186132678118370">Chrome को अपने टास्कबार में पिन करें</translation>
 <translation id="7890208801193284374">यदि आप कंप्यूटर साझा करते हैं, तो मित्र और परिवार अलग-अलग ब्राउज़ कर सकते हैं और Chrome को जैसा चाहें सेट कर सकते हैं.</translation>
 <translation id="7896673875602241923">इस कंप्यूटर पर पहले किसी अन्य व्यक्ति ने <ph name="ACCOUNT_EMAIL_LAST" /> के रूप में Chrome में प्रवेश किया है. अपनी जानकारी अलग रखने के लिए कृपया नया Chrome उपयोगकर्ता बनाएं.</translation>

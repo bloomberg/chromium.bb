@@ -821,7 +821,6 @@
 
           Om du inte anger den här principen kan användarna själva välja proxyinställningar.</translation>
 <translation id="3205825995289802549">Maximera det först visade fönstret första gången som webbläsaren körs</translation>
-<translation id="3206731874112238027">Inaktivera förhandsgranskning av utskrift (har fasats ut)</translation>
 <translation id="3213821784736959823">Styr huruvida den inbyggda DNS-klienten används i <ph name="PRODUCT_NAME" />.
 
       Om policyn tillämpas används den inbyggda DNS-klienten om den är tillgänglig.
@@ -1419,6 +1418,7 @@
       Om den inte anges kan användaren få välja om import ska göras, eller så kan import göras automatiskt.</translation>
 <translation id="5056708224511062314">Skärmförstoraren är inaktiverad</translation>
 <translation id="5067143124345820993">Vitlista för användarinloggning</translation>
+<translation id="5085647276663819155">Inaktivera förhandsgranskning av utskrift</translation>
 <translation id="5105313908130842249">Skärmlåsningstid när enheten drivs av batteriet</translation>
 <translation id="5111573778467334951">Ange vilken åtgärd som ska vidtas när fördröjning på grund av inaktivitet har uppnåtts vid batteridrift.
 

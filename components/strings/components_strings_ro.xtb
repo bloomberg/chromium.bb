@@ -90,6 +90,7 @@
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1797835274315207060">Selectează o adresă pentru livrare pentru a vedea care sunt metodele și cerințele privind livrarea.</translation>
 <translation id="1803678881841855883">Recent, Navigarea sigură Google <ph name="BEGIN_LINK" />a detectat programe malware<ph name="END_LINK" /> pe <ph name="SITE" />. Site-urile care sunt de obicei sigure sunt uneori infectate cu programe malware. Conținutul rău-intenționat provine de la <ph name="SUBRESOURCE_HOST" />, un distribuitor cunoscut de programe malware. <ph name="BEGIN_LEARN_MORE_LINK" />Află mai multe<ph name="END_LEARN_MORE_LINK" />.</translation>
+<translation id="1806541873155184440">Adăugat pe <ph name="ADDED_TO_AUTOFILL_MONTH" /></translation>
 <translation id="1821930232296380041">Solicitarea sau parametrii săi sunt greșiți</translation>
 <translation id="1826516787628120939">Se verifică</translation>
 <translation id="1834321415901700177">Acest site conține programe dăunătoare</translation>
@@ -213,6 +214,7 @@
 <translation id="2955913368246107853">Închide Bara de căutare</translation>
 <translation id="2958431318199492670">Configurația rețelei nu respectă standardul ONC. Este posibil ca anumite părți ale configurației să nu fie importate.</translation>
 <translation id="29611076221683977">Atacatorii de pe <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> pot încerca să instaleze programe periculoase pe computerul tău Mac, care să îți fure sau să îți șteargă informațiile (de exemplu, fotografiile, parolele, mesajele sau informațiile despre cardurile de credit).</translation>
+<translation id="2966678944701946121">Expirat în <ph name="EXPIRATION_DATE_ABBR" />, adăugat pe <ph name="ADDED_TO_AUTOFILL_MONTH" /></translation>
 <translation id="2969319727213777354">Pentru a stabili o conexiune securizată, ceasul trebuie să fie setat corect, deoarece certificatele pe care site-urile le folosesc pentru a se identifica sunt valabile numai pentru anumite intervale de timp. Din moment ce ora de pe dispozitiv este incorectă, Google Chrome nu poate verifica aceste certificate.</translation>
 <translation id="2972581237482394796">&amp;Repetă</translation>
 <translation id="2985306909656435243">Dacă opțiunea este activată, Chromium va stoca o copie a cardului pe dispozitiv pentru a completa formularul mai rapid.</translation>
@@ -402,6 +404,7 @@
 <translation id="4728558894243024398">Platformă</translation>
 <translation id="4736825316280949806">repornește Chromium;</translation>
 <translation id="4744603770635761495">Cale executabilă</translation>
+<translation id="4749685221585524849">Folosit ultima dată pe <ph name="LAST_USED_MONTH" /></translation>
 <translation id="4750917950439032686">Informațiile tale (de exemplu, parolele și numerele cardurilor de credit) sunt private când sunt trimise la acest site.</translation>
 <translation id="4756388243121344051">&amp;Istoric</translation>
 <translation id="4758311279753947758">Adaugă informații de contact</translation>
@@ -589,6 +592,7 @@
 <translation id="6534179046333460208">Sugestii pentru Webul material</translation>
 <translation id="6550675742724504774">Opțiuni</translation>
 <translation id="6556239504065605927">Conexiune securizată</translation>
+<translation id="6556915248009097796">Expirat în <ph name="EXPIRATION_DATE_ABBR" />, folosit ultima dată pe <ph name="LAST_USED_DATE_NO_DETAIL" /></translation>
 <translation id="6563469144985748109">Administratorul nu l-a aprobat încă</translation>
 <translation id="6569060085658103619">Se afișează pagina unei extensii</translation>
 <translation id="6593753688552673085">mai puțin de <ph name="UPPER_ESTIMATE" /></translation>

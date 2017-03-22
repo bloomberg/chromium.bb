@@ -90,6 +90,7 @@
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1797835274315207060">पद्धती आणि आवश्यकता वितरण तपासण्यासाठी वितरण पत्ता निवडा.</translation>
 <translation id="1803678881841855883">Google सुरक्षित ब्राउझिंगला अलीकडे <ph name="SITE" /> वर <ph name="BEGIN_LINK" />मालवेअर आढळले आहे<ph name="END_LINK" />. सामान्यतः सुरक्षित असलेल्या वेबसाइट काहीवेळा मालवेअरमुळे संक्रमित झालेल्या असतात. एक ज्ञात मालवेअर वितरक असलेल्या, <ph name="SUBRESOURCE_HOST" /> कडून दुर्भावनापूर्ण सामग्री येते. <ph name="BEGIN_LEARN_MORE_LINK" />अधिक जाणून घ्या<ph name="END_LEARN_MORE_LINK" />.</translation>
+<translation id="1806541873155184440"><ph name="ADDED_TO_AUTOFILL_MONTH" /> रोजी जोडले</translation>
 <translation id="1821930232296380041">अवैध विनंती किंवा विनंती मापदंड</translation>
 <translation id="1826516787628120939">तपासत आहे</translation>
 <translation id="1834321415901700177">या साइटमध्ये धोकादायक प्रोग्राम आहेत</translation>
@@ -213,6 +214,7 @@
 <translation id="2955913368246107853">शोध बार बंद करा</translation>
 <translation id="2958431318199492670">नेटवर्क कॉन्फिगरेशन ONC मानकाचे पालन करत नाही. कॉन्फिगरेशनचे भाग आयात केले जाऊ शकत नाहीत.</translation>
 <translation id="29611076221683977"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> वरील आक्रमणकर्ते सध्या कदाचित आपली माहिती (उदाहरणार्थ, फोटो, संकेतशब्द, संदेश आणि क्रेडिट कार्ड) चोरणारे आणि हटविणारे धोकादायक प्रोग्राम आपल्या Mac वर स्थापित करण्याचा प्रयत्न करू शकतात.</translation>
+<translation id="2966678944701946121">कालबाह्यता: <ph name="EXPIRATION_DATE_ABBR" />, जोडले <ph name="ADDED_TO_AUTOFILL_MONTH" /></translation>
 <translation id="2969319727213777354">एक सुरक्षित कनेक्‍शन स्‍थापित करण्‍यापूर्वी, आपले घड्‍याळ योग्यरित्या सेट केले असणे आवश्यक आहे. वेबसाइट त्यांना स्‍वत:ला ओळखण्‍यासाठी वापरतात ती प्रमाणपत्रे केवळ निर्दिष्‍ट केलेल्‍या कालावधीसाठी वैध असल्याने हे असू शकते. आपल्‍या डिव्‍हाइसचे घड्‍याळ चुकीचे असल्‍यामुळे, Google Chrome ही प्रमाणपत्रे सत्यापित करू शकत नाही.</translation>
 <translation id="2972581237482394796">&amp;पुन्हा करा</translation>
 <translation id="2985306909656435243">सक्षम केल्‍यास, Chromium जलदपणे फॉर्म भरण्‍यासाठी आपल्‍या कार्डची एक प्रत या डिव्‍हाइसवर संग्रहित करेल.</translation>
@@ -402,6 +404,7 @@
 <translation id="4728558894243024398">प्लॅटफॉर्म</translation>
 <translation id="4736825316280949806">Chromium रीस्टार्ट करा</translation>
 <translation id="4744603770635761495">कार्यवाहीयोग्य पथ</translation>
+<translation id="4749685221585524849">अखेरचे वापरले <ph name="LAST_USED_MONTH" /></translation>
 <translation id="4750917950439032686">आपली माहिती (उदाहरणार्थ, संकेतशब्द किंवा क्रेडिट कार्ड क्रमांक) या साइटवर पाठविली जाते तेव्हा ती खाजगी राहते.</translation>
 <translation id="4756388243121344051">&amp;इतिहास</translation>
 <translation id="4758311279753947758">संपर्क माहिती जोडा</translation>
@@ -590,6 +593,7 @@
 <translation id="6534179046333460208">वास्तविक वेब सूचना</translation>
 <translation id="6550675742724504774">पर्याय</translation>
 <translation id="6556239504065605927">सुरक्षित कनेक्शन</translation>
+<translation id="6556915248009097796">कालबाह्यता: <ph name="EXPIRATION_DATE_ABBR" />, अखेरचे वापरले <ph name="LAST_USED_DATE_NO_DETAIL" /></translation>
 <translation id="6563469144985748109">आपल्या व्यवस्थापकाने अद्याप ती मंजूर केली नाही</translation>
 <translation id="6569060085658103619">आपण एक विस्तार पृष्ठ पाहत आहात</translation>
 <translation id="6593753688552673085"><ph name="UPPER_ESTIMATE" /> पेक्षा कमी</translation>

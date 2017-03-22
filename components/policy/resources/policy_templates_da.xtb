@@ -780,7 +780,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 
           Hvis disse politikker ikke angives, kan brugerne selv vælge proxyindstillingerne.</translation>
 <translation id="3205825995289802549">Maksimer det første browservindue ved første kørsel</translation>
-<translation id="3206731874112238027">Deaktiver Vis udskrift (udfaset)</translation>
 <translation id="3213821784736959823">Styrer, om den indbyggede DNS-klient bruges i <ph name="PRODUCT_NAME" />.
 
       Hvis denne politik er angivet som Sand, anvendes den indbyggede DNS-klient, hvis den er tilgængelig.
@@ -1351,6 +1350,7 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
 <translation id="5052081091120171147">Denne politik tvinger import af browserhistorikken fra den aktuelle standardbrowser, hvis den er aktiveret. Hvis denne politik er aktiveret, påvirker den også dialogboksen for import. Hvis den er deaktiveret, importeres der ikke nogen browserdata. Hvis den ikke er angivet, kan brugeren blive spurgt, om der skal importeres, ellers sker importen automatisk.</translation>
 <translation id="5056708224511062314">Luppen er deaktiveret</translation>
 <translation id="5067143124345820993">Login til brugerens hvidliste</translation>
+<translation id="5085647276663819155">Deaktiver udskriftsvisning</translation>
 <translation id="5105313908130842249">Skærmlåsforsinkelse, når batteriet bruges</translation>
 <translation id="5111573778467334951">Angiv den handling, der skal igangsættes ved inaktiv forsinkelse på batteristrøm.
 

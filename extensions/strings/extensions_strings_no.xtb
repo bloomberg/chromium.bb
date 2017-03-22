@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="no">
 <translation id="1135328998467923690">Pakken er ugyldig: <ph name="ERROR_CODE" />.</translation>
+<translation id="1140871961407805696">Bakkamera</translation>
 <translation id="1256619696651732561">Extension Manifest Parser</translation>
 <translation id="1445572445564823378">Denne utvidelsen gjør <ph name="PRODUCT_NAME" /> tregere. Du bør deaktivere den for å gjenopprette ytelsen til <ph name="PRODUCT_NAME" />.</translation>
 <translation id="149347756975725155">Kan ikke laste inn utvidelsesikonet «<ph name="ICON" />».</translation>
@@ -42,6 +43,7 @@
 <translation id="7217838517480956708">Administratoren til denne maskinen krever at <ph name="EXTENSION_NAME" /> blir installert. Utvidelsen kan ikke fjernes eller endres.</translation>
 <translation id="7809034755304591547"><ph name="EXTENSION_NAME" /> (utvidelses-ID «<ph name="EXTENSION_ID" />») er blokkert av administratoren.</translation>
 <translation id="7972881773422714442">Alternativer: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
+<translation id="8035920974645200807">Frontkamera</translation>
 <translation id="8047248493720652249">Denne utvidelsen kunne ikke kalle nedlastingen «<ph name="ATTEMPTED_FILENAME" />» fordi en annen utvidelse (<ph name="EXTENSION_NAME" />) har angitt et annet filnavn («<ph name="ACTUAL_FILENAME" />»).</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> fra <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Denne utvidelsen kunne ikke oppgi påloggingsopplysningene til et nettverk fordi en annen utvidelse (<ph name="EXTENSION_NAME" />) oppga andre opplysninger.</translation>

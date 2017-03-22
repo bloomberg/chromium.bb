@@ -779,7 +779,6 @@
 
           Se deixar esta política por definir, permite que os utilizadores escolham as definições de proxy conforme pretendam.</translation>
 <translation id="3205825995289802549">Maximizar a primeira janela do navegador na primeira execução</translation>
-<translation id="3206731874112238027">Desativar a pré-visualização de impressão (descontinuado)</translation>
 <translation id="3213821784736959823">Controla se o cliente DNS incorporado é utilizado no <ph name="PRODUCT_NAME" />.
 
       Se esta política estiver definida como verdadeira, será utilizado o cliente DNS incorporado, caso esteja disponível.
@@ -1335,6 +1334,7 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="5052081091120171147">Se esta política estiver ativada, força a importação do histórico de navegação a partir do navegador predefinido atual e também afeta a caixa de diálogo de importação. Se estiver desativada, o histórico de navegação não é importado. Se não estiver definida, o utilizador poderá ser questionado se pretende importá-lo ou a importação poderá ocorrer automaticamente.</translation>
 <translation id="5056708224511062314">Lupa desativada</translation>
 <translation id="5067143124345820993">Lista branca de utilizadores com início de sessão</translation>
+<translation id="5085647276663819155">Desativar Pré-visualização de Impressão</translation>
 <translation id="5105313908130842249">Atraso do bloqueio do ecrã quando o dispositivo está a utilizar a energia da bateria</translation>
 <translation id="5111573778467334951">Especifique a ação a executar quando o atraso de inatividade for atingido e estiver a ser utilizada a energia da bateria.
 

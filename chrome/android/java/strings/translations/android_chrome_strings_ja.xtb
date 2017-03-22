@@ -426,6 +426,7 @@
 <translation id="572328651809341494">最近使ったタブ</translation>
 <translation id="572392919096807438">この選択を保存</translation>
 <translation id="5726692708398506830">ページ上のすべての要素を拡大する</translation>
+<translation id="5738816946784116349">Chrome のダウンロード</translation>
 <translation id="5748802427693696783">標準のタブに切り替えました</translation>
 <translation id="5749068826913805084">Chrome でファイルをダウンロードするにはストレージへのアクセス権が必要です。</translation>
 <translation id="5763382633136178763">シークレット タブ</translation>
@@ -681,6 +682,7 @@
 <translation id="856481929701340285">PC版サイトを見る</translation>
 <translation id="857943718398505171">許可（推奨）</translation>
 <translation id="8583805026567836021">アカウント データをクリア中</translation>
+<translation id="85969253066007694">あなたと保護者の方は、<ph name="BEGIN_LINK1" />設定<ph name="END_LINK1" />でこの動作を管理できます</translation>
 <translation id="8617240290563765734">ダウンロード コンテンツに指定されている URL を開きますか？</translation>
 <translation id="862875433388403934">他のアプリケーションでダウンロードしたコンテンツ（映画、音楽など）は再生できなくなっている可能性があります。再生するには、該当のアプリケーションで新しいデバイス認証情報に基づくライセンスを再取得する必要があります。
 

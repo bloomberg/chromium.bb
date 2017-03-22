@@ -58,8 +58,8 @@
 <translation id="2847479871509788944">Eliminar de Chromium…</translation>
 <translation id="2886012850691518054">Opcional: Ayúdanos a mejorar Chromium enviando estadísticas de uso e informes de errores a Google de manera automática.</translation>
 <translation id="2898082584336937987">Instala Chromium en el teléfono. Te enviaremos un SMS a ese dispositivo: <ph name="PHONE_NUMBER" /></translation>
-<translation id="2905536371227304018">El SO Chromium se muestra en este idioma.</translation>
 <translation id="2910007522516064972">Acerca de &amp;Chromium</translation>
+<translation id="2977470724722393594">Chromium está actualizado.</translation>
 <translation id="3032787606318309379">Agregar a Chromium...</translation>
 <translation id="3046695367536568084">Para usar las aplicaciones, debes acceder a Chromium. De este modo, Chromium puede sincronizar las aplicaciones, los favoritos, el historial, las contraseñas y otros parámetros de configuración en los dispositivos.</translation>
 <translation id="3068515742935458733">Envía a Google informes de fallos y <ph name="UMA_LINK" /> para ayudar a mejorar Chromium.</translation>
@@ -119,7 +119,6 @@
 <translation id="4994636714258228724">Agregarte a Chromium</translation>
 <translation id="5032989939245619637">Guardar los detalles en Chromium</translation>
 <translation id="5045248521775609809">Usa Chromium donde sea</translation>
-<translation id="5113946445248196174">Chromium no puede determinar ni establecer el navegador predeterminado.</translation>
 <translation id="5116586539350239523">Chromium almacenará de forma segura tus datos personales para que no tengas que volver a escribirlos.</translation>
 <translation id="5231355151045086930">Salir de Chromium</translation>
 <translation id="5358375970380395591">Estás por acceder con una cuenta administrada, lo que significa que proporcionarás al administrador el control sobre tu perfil de Chromium. Tus datos de Chromium, como las aplicaciones, los favoritos, el historial, las contraseñas y otros parámetros de configuración quedarán vinculados a <ph name="USER_NAME" /> de forma permanente. Podrás eliminar estos datos a través del Panel de control de Cuentas de Google, pero no podrás asociarlos a otra cuenta. <ph name="LEARN_MORE" /></translation>
@@ -129,7 +128,6 @@
 <translation id="5466153949126434691">Chromium se actualiza automáticamente para que siempre tengas la versión más reciente. Cuando se complete esta descarga, Chromium se reiniciará y podrás usarlo.</translation>
 <translation id="5479196819031988440">El Sistema operativo Chromium no puede abrir esta página.</translation>
 <translation id="549669000822060376">Espera mientras Chromium instala las últimas actualizaciones del sistema.</translation>
-<translation id="556167189552180495">Chromium se muestra en este idioma.</translation>
 <translation id="5563479599352954471">Buscar con un toque</translation>
 <translation id="5620765574781326016">Obtén información sobre los temas en sitios web sin salir de la página.</translation>
 <translation id="5634636535844844681">Para usar Chromium, se requiere Windows 7 o versiones posteriores.</translation>

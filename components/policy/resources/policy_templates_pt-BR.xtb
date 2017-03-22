@@ -768,7 +768,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 
           Deixar esta política sem definição permitirá que os usuários escolham as configurações de proxy por conta própria.</translation>
 <translation id="3205825995289802549">Maximizar a primeira janela do navegador na primeira execução</translation>
-<translation id="3206731874112238027">Desativar a visualização de impressão (uso suspenso)</translation>
 <translation id="3213821784736959823">Controla se o cliente DNS integrado é usado no <ph name="PRODUCT_NAME" />.
 
       Se esta política estiver definida como verdadeira, o cliente DNS integrado será usado, se disponível.
@@ -1322,6 +1321,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="5052081091120171147">Se ativada, esta política força a importação do histórico de navegação a partir do navegador padrão atual. Se ativada, esta política também afeta a caixa de diálogo de importação. Se desativada, nenhum histórico de navegação é importado. Caso não seja definida, o usuário pode ser solicitado a responder se deseja importar ou permitir a importação automática.</translation>
 <translation id="5056708224511062314">Lupa desativada</translation>
 <translation id="5067143124345820993">Lista de permissões de login de usuário</translation>
+<translation id="5085647276663819155">Desativar visualização da impressão</translation>
 <translation id="5105313908130842249">Intervalo de bloqueio da tela no funcionamento com energia da bateria</translation>
 <translation id="5111573778467334951">Especifica a ação a ser executada quando o tempo de inatividade for atingido durante a operação com alimentação por bateria.
 

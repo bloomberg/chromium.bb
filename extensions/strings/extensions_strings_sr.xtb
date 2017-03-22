@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="sr">
 <translation id="1135328998467923690">Пакет је неважећи: „<ph name="ERROR_CODE" />“.</translation>
+<translation id="1140871961407805696">Задња</translation>
 <translation id="1256619696651732561">Рашчлањивач манифеста додатака</translation>
 <translation id="1445572445564823378">Овај додатак успорава <ph name="PRODUCT_NAME" />. Требало би да га онемогућите да би се учинак производа <ph name="PRODUCT_NAME" /> вратио.</translation>
 <translation id="149347756975725155">Није могуће учитати икону додатка „<ph name="ICON" />“.</translation>
@@ -42,6 +43,7 @@
 <translation id="7217838517480956708">Администратор овог уређаја захтева да додатак <ph name="EXTENSION_NAME" /> буде инсталиран. Не можете да га уклоните или измените.</translation>
 <translation id="7809034755304591547">Администратор је блокирао <ph name="EXTENSION_NAME" /> (ИД додатка „<ph name="EXTENSION_ID" />“).</translation>
 <translation id="7972881773422714442">Опције: <ph name="EXTENSIONOPTIONS_TAG_NAME" /></translation>
+<translation id="8035920974645200807">Предња</translation>
 <translation id="8047248493720652249">Овај додатак није успео да преузетој датотеци дâ назив „<ph name="ATTEMPTED_FILENAME" />“ зато што је један други додатак (<ph name="EXTENSION_NAME" />) одредио другачији назив датотеке „<ph name="ACTUAL_FILENAME" />“.</translation>
 <translation id="8284835137979141223"><ph name="PRODUCT_NAME" /> продавца <ph name="VENDOR_NAME" /></translation>
 <translation id="8341840687457896278">Овај додатак није успео да достави акредитиве захтеву мреже јер је други додатак (<ph name="EXTENSION_NAME" />) доставио друге акредитиве.</translation>

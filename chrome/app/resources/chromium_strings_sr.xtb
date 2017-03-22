@@ -5,6 +5,7 @@
 
 Неке функције су можда недоступне и промене подешавања неће бити сачуване.</translation>
 <translation id="1115445892567829615">Chromium не може да синхронизује податке. Ажурирајте приступну фразу за Синхронизацију.</translation>
+<translation id="1170115874949214249">Инсталирајте Chromium на телефону. Послаћемо вам SMS на број телефона за враћање приступа налогу.</translation>
 <translation id="1174473354587728743">Делите рачунар? Сада можете да подесите Chromium баш онако како вама одговара.</translation>
 <translation id="1185134272377778587">О Chromium-у</translation>
 <translation id="1298199220304005244">Пронађи помоћ за коришћење Chromium ОС-а</translation>
@@ -58,8 +59,9 @@
 <translation id="2799223571221894425">Поново покрени</translation>
 <translation id="2847479871509788944">Уклони из Chromium-а...</translation>
 <translation id="2886012850691518054">Опционално: Помозите да побољшамо Chromium тако што ћете Google-у аутоматски слати статистику коришћења и извештаје о отказивању.</translation>
-<translation id="2905536371227304018">Chromium ОС се приказује на овом језику.</translation>
+<translation id="2898082584336937987">Инсталирајте Chromium на телефону. Послаћемо вам SMS на телефон: <ph name="PHONE_NUMBER" /></translation>
 <translation id="2910007522516064972">О &amp;Chromium-у</translation>
+<translation id="2977470724722393594">Chromium је ажуриран</translation>
 <translation id="3032787606318309379">Додавање у Chromium...</translation>
 <translation id="3046695367536568084">Треба да будете пријављени у Chromium да бисте користили апликације. То омогућава Chromium-у да синхронизује апликације, обележиваче, историју, лозинке и друга подешавања на свим уређајима.</translation>
 <translation id="3068515742935458733">Помозите нам да побољшамо Chromium тако што ћете Google-у слати извештаје о отказивању и <ph name="UMA_LINK" /></translation>
@@ -121,7 +123,6 @@
 <translation id="4994636714258228724">Додајте себе у Chromium</translation>
 <translation id="5032989939245619637">Сачувај детаље у Chromium-у</translation>
 <translation id="5045248521775609809">Нека Chromium буде увек са вама</translation>
-<translation id="5113946445248196174">Chromium не може да одреди ни да подеси подразумевани прегледач.</translation>
 <translation id="5116586539350239523">Chromium ће безбедно складиштити личне податке да не бисте морали да их поново уносите.</translation>
 <translation id="5231355151045086930">Одјавите се из Chromium-а</translation>
 <translation id="5358375970380395591">Пријављујете се помоћу налога којим се управља и дајете његовом администратору контролу над Chromium профилом. Chromium подаци, као што су апликације, обележивачи, историја, лозинке и друга подешавања, биће трајно повезани са налогом <ph name="USER_NAME" />. Моћи ћете да избришете те податке преко Контролне табле Google налога, али нећете моћи да их повежете са неким другим налогом. <ph name="LEARN_MORE" /></translation>
@@ -131,7 +132,6 @@
 <translation id="5466153949126434691">Chromium се аутоматски ажурира, па увек имате најновију верзију. Када ово преузимање буде довршено, Chromium ће се поново покренути и бићете спремни.</translation>
 <translation id="5479196819031988440">Chromium ОС не може да отвори ову страницу.</translation>
 <translation id="549669000822060376">Сачекајте да Chromium инсталира најновија ажурирања система.</translation>
-<translation id="556167189552180495">Chromium се приказује на овом језику.</translation>
 <translation id="5563479599352954471">Претражујте једним додиром</translation>
 <translation id="5620765574781326016">Сазнајте више о темама на веб-сајтовима без напуштања странице.</translation>
 <translation id="5634636535844844681">За Chromium је потребан Windows 7 или новија верзија.</translation>
@@ -203,6 +203,7 @@
 <translation id="7318036098707714271">Датотека подешавања је оштећена или неважећа.
 
 Chromium не може да врати подешавања.</translation>
+<translation id="7331920710658926971">Инсталирајте Chromium на телефону. Послаћемо вам SMS на телефон.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7339898014177206373">Нови прозор</translation>
 <translation id="734373864078049451">Веб, обележивачи и други Chromium садржај се овде уживо приказују.</translation>
@@ -232,6 +233,7 @@ Chromium не може да врати подешавања.</translation>
 <translation id="8033665941300843262">Chromium захтева приступ дозволама да би их делио са овим сајтом.</translation>
 <translation id="8134284582177628525">Ако делите овај рачунар са корисником <ph name="PROFILE_NAME" />, додајте себе у Chromium да бисте прегледали одвојено. У супротном, прекините везу са Google налогом овог корисника.</translation>
 <translation id="81770708095080097">Ова датотека је опасна, па ју је Chromium блокирао.</translation>
+<translation id="8222496066431494154">Инсталирајте Chromium на телефону. Послаћемо вам SMS на број телефона за враћање приступа налогу: <ph name="PHONE_NUMBER" /></translation>
 <translation id="8269379391216269538">Помозите нам да побољшамо Chromium</translation>
 <translation id="8290862415967981663">Ова датотека је можда опасна, па ју је Chromium блокирао.</translation>
 <translation id="8340674089072921962">Корисник <ph name="USER_EMAIL_ADDRESS" /> је претходно користио Chromium</translation>

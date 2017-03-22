@@ -58,8 +58,8 @@
 <translation id="2847479871509788944">Chromium থেকে সরান...</translation>
 <translation id="2886012850691518054">ঐচ্ছিক: স্বয়ংক্রিয়ভাবে Google-এ ব্যবহার পরিসংখ্যান এবং ক্র্যাশ প্রতিবেদন পাঠিয়ে Chromium-কে আরো ভালো করতে সহায়তা করুন৷</translation>
 <translation id="2898082584336937987">আপনার ফোনে Chromium ইনস্টল করুন। আমরা আপনার ফোনে একটি এসএমএস পাঠাব।: <ph name="PHONE_NUMBER" /></translation>
-<translation id="2905536371227304018">Chromium OS এই ভাষায় প্রদর্শিত হচ্ছে।</translation>
 <translation id="2910007522516064972">&amp;Chromium সম্পর্কে</translation>
+<translation id="2977470724722393594">Chromium আপ-টু-ডেট আছে</translation>
 <translation id="3032787606318309379">Chromium-এ জুড়ছে...</translation>
 <translation id="3046695367536568084">অ্যাপ্লিকেশানগুলি ব্যবহার করতে আপনাকে Chromium এ প্রবেশ করতে হবে৷ এটি Chromium কে ডিভাইসগুলি জুড়ে আপনার অ্যাপ্লিকেশান, বুকমার্কগুলি, ইতিহাস, পাসওয়ার্ডগুলি এবং অন্য সেটিংসগুলিকে সিঙ্ক করতে অনুমতি দেয়৷</translation>
 <translation id="3068515742935458733">Google এ  <ph name="UMA_LINK" /> ও ক্র্যাশ প্রতিবেদন পাঠিয়ে Chromium আরো ভালো করতে সাহায্য করুন</translation>
@@ -121,7 +121,6 @@
 <translation id="4994636714258228724">Chromium এর সাথে নিজেকে যোগ করুন</translation>
 <translation id="5032989939245619637">Chromium এ বিবরণ সংরক্ষণ করুন</translation>
 <translation id="5045248521775609809">Chromium কে সর্বত্র নিয়ে চলুন</translation>
-<translation id="5113946445248196174">Chromium ডিফল্ট ব্রাউজার নির্ধারণ বা সেট করতে পারছে না।</translation>
 <translation id="5116586539350239523">Chromium আপনার ব্যক্তিগত বিবরণ সুরক্ষিত ভাবে সঞ্চয় করবে, তাই আপনার আর টাইপ করার প্রয়োজন হবে না।</translation>
 <translation id="5231355151045086930">Chromium থেকে প্রস্থান করুন</translation>
 <translation id="5358375970380395591">আপনি একটি পরিচালিত অ্যাকাউন্টের মাধ্যমে প্রবেশ করুন করছেন এবং এর প্রশাসককে আপনার Chromium প্রোফাইলের উপরে নিয়ন্ত্রণ দিচ্ছেন৷ আপনার Chromium ডেটা, যেমন অ্যাপ্লিকেশান, বুকমার্ক, ইতিহাস, পাসওয়ার্ড এবং অন্যান্য সেটিংস <ph name="USER_NAME" /> এতে স্থায়ীভাবে সম্পৃক্ত হবে৷ আপনি Google অ্যাকাউন্টগুলির ড্যাশবোর্ডের মাধ্যমে এই ডেটাগুলি মুছতে সক্ষম হবেন, কিন্তু অন্য অ্যাকাউন্টের সাথে এই ডেটা সংশ্লিষ্ট করতে পারবেন না৷ <ph name="LEARN_MORE" /></translation>
@@ -131,7 +130,6 @@
 <translation id="5466153949126434691">Chromium স্বয়ংক্রিয়ভাবে আপডেট হয় তাই আপনার কাছে সর্বদা নবীনতম সংস্করণটি থাকে৷ এই ডাউনলোডটি সম্পূর্ণ হলে, Chromium আবার চালু হবে এবং আপনি আবার আগের মতো Chrome ব্যবহার করতে পারবেন৷</translation>
 <translation id="5479196819031988440">Chromium OS এই পৃষ্ঠাটি খুলতে পারবে না।</translation>
 <translation id="549669000822060376">Chromium যখন সিস্টেম আপডেটগুলিকে ইনস্টল করে তখন দয়া করে অপেক্ষা করুন৷</translation>
-<translation id="556167189552180495">এই ভাষায় Chromium  প্রদর্শিত হচ্ছে।</translation>
 <translation id="5563479599352954471">একবার স্পর্শ করে অনুসন্ধান</translation>
 <translation id="5620765574781326016">পৃষ্ঠা থেকে না বেরিয়েই ওয়েবসাইটের বিষয়বস্তুগুলি সম্বন্ধে জানুন৷</translation>
 <translation id="5634636535844844681">Chromium এর জন্য Windows 7 বা উচ্চতর সংস্করণ প্রয়োজন।</translation>

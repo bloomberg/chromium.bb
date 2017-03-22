@@ -70,7 +70,6 @@
 <translation id="2847461019998147611">將 Google Chrome 的介面文字設為這種語言</translation>
 <translation id="2871893339301912279">您已登入 Chrome！</translation>
 <translation id="2888126860611144412">關於 Chrome</translation>
-<translation id="2900322993655997287">Google Chrome 無法偵測或設定預設瀏覽器。</translation>
 <translation id="3037838751736561277">Google Chrome 正在背景模式中執行。</translation>
 <translation id="3047079729301751317">解除與 <ph name="USERNAME" /> 的連結將會清除此裝置上已儲存的歷史紀錄、書籤、設定和其他 Chrome 資料。不過，這不會清除 Google 帳戶中儲存的資料，您可以在 <ph name="GOOGLE_DASHBOARD_LINK" />Google 資訊主頁<ph name="END_GOOGLE_DASHBOARD_LINK" />管理這些資料。</translation>
 <translation id="3065168410429928842">Chrome 分頁</translation>
@@ -231,6 +230,7 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="7788788617745289808">Chrome 需要存取攝影機，才能與這個網站分享。</translation>
 <translation id="7808348361785373670">從 Chrome 中移除...</translation>
 <translation id="7825851276765848807">不明錯誤導致安裝失敗，請再次下載 Google Chrome。</translation>
+<translation id="7855730255114109580">Google Chrome 目前是最新版本</translation>
 <translation id="7888186132678118370">將 Chrome 固定至工作列</translation>
 <translation id="7890208801193284374">如果您與親朋好友共用電腦，人人皆可享有獨立的瀏覽空間，依照自己的偏好設定 Chrome。</translation>
 <translation id="7896673875602241923">先前已有其他使用者使用 <ph name="ACCOUNT_EMAIL_LAST" /> 在這部電腦上登入 Chrome。請建立新的 Chrome 使用者，以便另行保存你的資訊。</translation>

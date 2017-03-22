@@ -70,7 +70,6 @@ Se esegui comunque l'accesso, le informazioni di Chrome come Preferiti, cronolog
 <translation id="2847461019998147611">Visualizza Google Chrome in questa lingua</translation>
 <translation id="2871893339301912279">Hai eseguito l'accesso a Chrome.</translation>
 <translation id="2888126860611144412">Informazioni su Chrome</translation>
-<translation id="2900322993655997287">Google Chrome non è in grado di determinare o impostare il browser predefinito.</translation>
 <translation id="3037838751736561277">Google Chrome è in modalità background.</translation>
 <translation id="3047079729301751317">Se ti disconnetti da <ph name="USERNAME" /> verranno cancellati la cronologia, i Preferiti, le impostazioni e gli altri dati di Chrome memorizzati sul dispositivo. I dati memorizzati nel tuo account Google non verranno cancellati e potrai gestirli su <ph name="GOOGLE_DASHBOARD_LINK" />Google Dashboard<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="3065168410429928842">Scheda Chrome</translation>
@@ -230,6 +229,7 @@ Per ulteriori informazioni, controlla l'email all'indirizzo <ph name="ACCOUNT_EM
 <translation id="7788788617745289808">Chrome deve avere accesso alla fotocamera per condividerla con questo sito.</translation>
 <translation id="7808348361785373670">Rimuovi da Chrome...</translation>
 <translation id="7825851276765848807">Installazione non riuscita a causa di un errore non specificato. Scarica nuovamente Google Chrome.</translation>
+<translation id="7855730255114109580">Google Chrome è aggiornato</translation>
 <translation id="7888186132678118370">Aggiungi Chrome alla barra delle applicazioni</translation>
 <translation id="7890208801193284374">Se condividi un computer, i tuoi amici e la tua famiglia possono navigare separatamente e configurare Chrome in base alle proprie esigenze.</translation>
 <translation id="7896673875602241923">Qualcuno ha già eseguito l'accesso a Chrome su questo computer come <ph name="ACCOUNT_EMAIL_LAST" />. Crea un nuovo utente Chrome per tenere separate le tue informazioni.</translation>

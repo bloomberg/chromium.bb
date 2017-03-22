@@ -739,7 +739,6 @@
 
           如果您未设置此政策，用户将可以自行选择代理设置。</translation>
 <translation id="3205825995289802549">首次运行时，将第一个浏览器窗口最大化</translation>
-<translation id="3206731874112238027">停用打印预览功能（已弃用）</translation>
 <translation id="3213821784736959823">控制是否在 <ph name="PRODUCT_NAME" /> 中使用内置 DNS 客户端。
 
       如果此策略设置为 True，系统将使用内置 DNS 客户端（如果有）。
@@ -1275,6 +1274,7 @@
 <translation id="5052081091120171147">如果启用此政策，就会强制从当前默认浏览器导入浏览记录，还会影响导入对话框。如果停用此政策，就不会导入浏览记录。如果未设置此政策，系统就会询问用户是否导入浏览记录，或者系统自动进行导入。</translation>
 <translation id="5056708224511062314">放大镜已停用</translation>
 <translation id="5067143124345820993">登录用户白名单</translation>
+<translation id="5085647276663819155">停用打印预览</translation>
 <translation id="5105313908130842249">使用电池供电时的屏幕锁定延迟时间</translation>
 <translation id="5111573778467334951">指定当闲置延迟时间已过且使用电池供电时应执行的操作。
 

@@ -426,6 +426,7 @@ However, you aren't invisible. Going incognito doesn't hide your browsing from y
 <translation id="572328651809341494">Recent tabs</translation>
 <translation id="572392919096807438">Remember my decision</translation>
 <translation id="5726692708398506830">Make everything on the page bigger</translation>
+<translation id="5738816946784116349">Chrome Downloads</translation>
 <translation id="5748802427693696783">Switched to standard tabs</translation>
 <translation id="5749068826913805084">Chrome needs storage access to download files.</translation>
 <translation id="5763382633136178763">Incognito tabs</translation>
@@ -681,6 +682,7 @@ Your Google account may have other forms of browsing history like searches and a
 <translation id="856481929701340285">Request desktop site</translation>
 <translation id="857943718398505171">Allowed (recommended)</translation>
 <translation id="8583805026567836021">Clearing account data</translation>
+<translation id="85969253066007694">You and your parents can control how this works in <ph name="BEGIN_LINK1" />Settings<ph name="END_LINK1" /></translation>
 <translation id="8617240290563765734">Open the suggested URL specified in the downloaded content?</translation>
 <translation id="862875433388403934">Content (films, music, etc.) downloaded in other applications may no longer be playable until those applications re-acquire licences based on a new device credential. To obtain new licences, connect to the Internet and play your downloaded content.</translation>
 <translation id="8636825310635137004">To get your tabs from your other devices, turn on sync.</translation>

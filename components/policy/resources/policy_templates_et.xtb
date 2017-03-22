@@ -812,7 +812,6 @@ vastama ühele printeritest, mida <ph name="PRODUCT_NAME" /> toetab.
 
           Kui jätate reegli määramata, saavad kasutajad ise puhverserveri seadeid määrata.</translation>
 <translation id="3205825995289802549">Esmasel käivitamisel esimese brauseriakna maksimeerimine</translation>
-<translation id="3206731874112238027">Printimise eelvaate keelamine (tugi on katkestatud)</translation>
 <translation id="3213821784736959823">Määrab, kas rakenduses <ph name="PRODUCT_NAME" /> kasutatakse sisseehitatud DNS-i klienti.
 
       Kui reegel on lubatud, kasutatakse võimalusel sisseehitatud DNS-i klienti.
@@ -1400,6 +1399,7 @@ vastama ühele printeritest, mida <ph name="PRODUCT_NAME" /> toetab.
       Kui jätate reegli määramata, siis võib importimine toimuda automaatselt või kasutajalt võidakse küsida, kas ta soovib importida.</translation>
 <translation id="5056708224511062314">Ekraaniluup on keelatud</translation>
 <translation id="5067143124345820993">Kasutajate sisselogimise lubatud loend</translation>
+<translation id="5085647276663819155">Printimise eelvaate keelamine</translation>
 <translation id="5105313908130842249">Ekraani lukustamise viiteaeg akutoite kasutamisel</translation>
 <translation id="5111573778467334951">Määrab toimingu, mis rakendub siis, kui tegevusetuse viivitusaeg täitub akutoite kasutamisel.
 

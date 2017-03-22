@@ -777,7 +777,6 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 
           Membiarkan kebijakan ini tidak tersetel akan memungkinkan pengguna memilih setelan proxy-nya sendiri.</translation>
 <translation id="3205825995289802549">Maksimalkan jendela browser pertama di percobaan pertama</translation>
-<translation id="3206731874112238027">Menonaktifkan Pratinjau Cetak (tak lagi digunakan)</translation>
 <translation id="3213821784736959823">Mengontrol apakah klien DNS di dalamnya digunakan di <ph name="PRODUCT_NAME" />.
 
       Jika kebijakan ini disetel ke benar, klien DNS yang ada di dalamnya akan digunakan, jika tersedia.
@@ -1338,6 +1337,7 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 <translation id="5052081091120171147">Kebijakan ini memaksa riwayat browseran diimpor dari browser default saat ini, jika diaktifkan. Jika diaktifkan, kebijakan ini juga memengaruhi dialog impor. Jika dinonaktifkan, tidak ada riwayat browseran yang diimpor. Jika tidak disetel, pengguna mungkin ditanya apakah akan mengimpor, atau pengimporan dapat terjadi secara otomatis.</translation>
 <translation id="5056708224511062314">Lup dinonaktifkan</translation>
 <translation id="5067143124345820993">Daftar putih pengguna masuk</translation>
+<translation id="5085647276663819155">Nonaktifkan Pratinjau Cetak</translation>
 <translation id="5105313908130842249">Penundaan penguncian layar saat menggunakan daya baterai</translation>
 <translation id="5111573778467334951">Tentukan tindakan yang akan diambil saat penundaan nganggur dicapai ketika menjalankan daya baterai.
 

@@ -90,6 +90,7 @@
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1797835274315207060">Izberite naslov za dostavo, če želite preveriti načine dostave in zahteve za dostavo.</translation>
 <translation id="1803678881841855883">Googlova funkcija varnega brskanja je na spletnem mestu <ph name="SITE" /> nedavno <ph name="BEGIN_LINK" />zaznala zlonamerno programsko opremo<ph name="END_LINK" />. Spletna mesta, ki so običajno varna, so včasih okužena z zlonamerno programsko opremo. Zlonamerno vsebino razširja znani distributer zlonamerne programske opreme, <ph name="SUBRESOURCE_HOST" />. <ph name="BEGIN_LEARN_MORE_LINK" />Več o tem<ph name="END_LEARN_MORE_LINK" />.</translation>
+<translation id="1806541873155184440">Dodano: <ph name="ADDED_TO_AUTOFILL_MONTH" /></translation>
 <translation id="1821930232296380041">Neveljavna zahteva ali parametri zahteve</translation>
 <translation id="1826516787628120939">Preverjanje</translation>
 <translation id="1834321415901700177">Na tem spletnem mestu so škodljivi programi</translation>
@@ -213,6 +214,7 @@
 <translation id="2955913368246107853">Zapri vrstico za iskanje</translation>
 <translation id="2958431318199492670">Omrežna konfiguracija ne ustreza standardu ONC. Deli konfiguracije morda niso bili uvoženi.</translation>
 <translation id="29611076221683977">Napadalci, ki so trenutno na spletnem mestu <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />, lahko poskusijo v vašem računalniku Mac namestiti nevarne programe, ki kradejo ali brišejo podatke (na primer fotografije, gesla, sporočila in podatke kreditnih kartic).</translation>
+<translation id="2966678944701946121">Datum poteka: <ph name="EXPIRATION_DATE_ABBR" />, dodano: <ph name="ADDED_TO_AUTOFILL_MONTH" /></translation>
 <translation id="2969319727213777354">Če želite vzpostaviti varno povezavo, mora biti ura pravilno nastavljena. Potrdila, ki jih uporabljajo spletna mesta za prepoznavanje, namreč veljajo samo določen čas. Ker je ura naprave nepravilna, Google Chrome teh potrdil ne more preveriti.</translation>
 <translation id="2972581237482394796">&amp;Uveljavi</translation>
 <translation id="2985306909656435243">Če je to omogočeno, Chromium shrani kopijo kartice v tej napravi zaradi hitrejšega izpolnjevanja obrazcev.</translation>
@@ -402,6 +404,7 @@
 <translation id="4728558894243024398">Okolje</translation>
 <translation id="4736825316280949806">Znova zaženite Chromium</translation>
 <translation id="4744603770635761495">Pot do izvedljive datoteke</translation>
+<translation id="4749685221585524849">Zadnja uporaba: <ph name="LAST_USED_MONTH" /></translation>
 <translation id="4750917950439032686">Vaši podatki (npr. gesla ali številke kreditnih kartic) so zasebni, kadar so poslani temu spletnemu mestu.</translation>
 <translation id="4756388243121344051">&amp;Zgodovina</translation>
 <translation id="4758311279753947758">Dodaj podatke za stik</translation>
@@ -589,6 +592,7 @@
 <translation id="6534179046333460208">Predlogi za Fizični splet</translation>
 <translation id="6550675742724504774">Možnosti</translation>
 <translation id="6556239504065605927">Varna povezava</translation>
+<translation id="6556915248009097796">Datum poteka: <ph name="EXPIRATION_DATE_ABBR" />, zadnja uporaba: <ph name="LAST_USED_DATE_NO_DETAIL" /></translation>
 <translation id="6563469144985748109">Skrbnik še ni odobril</translation>
 <translation id="6569060085658103619">Ogledujete si stran razširitve</translation>
 <translation id="6593753688552673085">manj kot <ph name="UPPER_ESTIMATE" /></translation>

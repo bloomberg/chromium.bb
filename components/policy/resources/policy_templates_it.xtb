@@ -745,7 +745,6 @@ Questa norma viene rispettata soltanto se viene attivata la norma "DefaultSearch
 
           Se la norma non viene impostata, gli utenti possono scegliere autonomamente le impostazioni proxy.</translation>
 <translation id="3205825995289802549">Ingrandisci la prima finestra del browser alla prima esecuzione</translation>
-<translation id="3206731874112238027">Disattiva anteprima di stampa (ritirata)</translation>
 <translation id="3213821784736959823">Controlla se il client DNS integrato è in uso in <ph name="PRODUCT_NAME" />.
 
       Se il criterio è impostato su True, verrà utilizzato il client DNS integrato, se disponibile.
@@ -1283,6 +1282,7 @@ Questa norma viene applicata per tutti i tipi di ingressi video e non soltanto p
 <translation id="5052081091120171147">Se è attiva, questa norma impone l'importazione della cronologia di navigazione dal browser predefinito corrente. Se la norma è attiva incide anche sulla finestra di dialogo di importazione. Se non è attiva, la cronologia di navigazione non viene importata. Se non viene impostata, all'utente potrebbe essere chiesto se desidera effettuare l'importazione, oppure l'importazione potrebbe avvenire automaticamente.</translation>
 <translation id="5056708224511062314">Ingrandimento dello schermo disattivato</translation>
 <translation id="5067143124345820993">Whitelist di utenti con accesso</translation>
+<translation id="5085647276663819155">Disattiva anteprima di stampa</translation>
 <translation id="5105313908130842249">Ritardo blocco schermo in caso di utilizzo della batteria</translation>
 <translation id="5111573778467334951">Consente di specificare l'azione da compiere quando viene raggiunto il ritardo di inattività durante l'utilizzo della batteria.
 

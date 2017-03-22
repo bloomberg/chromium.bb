@@ -815,7 +815,6 @@ Si se inhabilita o no se configura esta opción, los usuarios podrán decidir si
 
           Si no se establece esta política, los usuarios podrán elegir su propia configuración del proxy.</translation>
 <translation id="3205825995289802549">Maximizar la primera ventana del navegador en la primera ejecución</translation>
-<translation id="3206731874112238027">Inhabilitar vista previa de impresión (obsoleto)</translation>
 <translation id="3213821784736959823">Permite controlar si el cliente DNS integrado se utiliza en <ph name="PRODUCT_NAME" />.
 
       Si esta política se establece en verdadera, se utilizará el cliente DNS integrado, si está disponible.
@@ -1410,6 +1409,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
       Si no se establece, es posible que se le pida al usuario que haga la importación o que el historial de navegación se importe automáticamente.</translation>
 <translation id="5056708224511062314">Aumento de pantalla inhabilitado</translation>
 <translation id="5067143124345820993">Lista de admisión de usuarios con permiso para iniciar sesión</translation>
+<translation id="5085647276663819155">Inhabilitar vista previa de impresión</translation>
 <translation id="5105313908130842249">Retraso de bloqueo de pantalla cuando el dispositivo funciona con la batería</translation>
 <translation id="5111573778467334951">Permite especificar la acción a emprender cuando se alcanza el retraso de inactividad mientras el dispositivo está usando la batería.
 

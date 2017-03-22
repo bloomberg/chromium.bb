@@ -58,8 +58,8 @@
 <translation id="2847479871509788944">從 Chromium 中移除...</translation>
 <translation id="2886012850691518054">選用：將使用統計資料及當機報告自動傳送給 Google，助我們一臂之力，讓 Chromium 更臻完美。</translation>
 <translation id="2898082584336937987">在手機上安裝 Chromium。我們會傳送簡訊到你的手機：<ph name="PHONE_NUMBER" /></translation>
-<translation id="2905536371227304018">Chromium 作業系統的介面文字已設為這種語言。</translation>
 <translation id="2910007522516064972">關於 Chromium(&amp;C)</translation>
+<translation id="2977470724722393594">Chromium 目前是最新版本</translation>
 <translation id="3032787606318309379">正在新增至 Chromium...</translation>
 <translation id="3046695367536568084">您必須登入 Chromium 才能使用應用程式。在登入狀態下，Chromium 可同步處理您在多個裝置上的應用程式、書籤、紀錄、密碼和其他設定。</translation>
 <translation id="3068515742935458733">將當機報告和<ph name="UMA_LINK" />傳送給 Google，助我們一臂之力，讓 Chromium 更臻完美</translation>
@@ -121,7 +121,6 @@
 <translation id="4994636714258228724">新增為 Chromium 使用者</translation>
 <translation id="5032989939245619637">在 Chromium 中儲存詳細資料</translation>
 <translation id="5045248521775609809">隨時隨地都能使用 Chromium</translation>
-<translation id="5113946445248196174">Chromium 無法偵測或設定預設瀏覽器。</translation>
 <translation id="5116586539350239523">Chromium 會妥善保存您的個人詳細資料，讓您不必重複輸入相同的資料。</translation>
 <translation id="5231355151045086930">登出 Chromium</translation>
 <translation id="5358375970380395591">您已登入管理化環境下的帳戶，並將管理控制權授予您的 Chromium 設定檔。您的 Chromium 資料 (例如應用程式、書籤、紀錄、密碼和其他設定) 均將永久與 <ph name="USER_NAME" /> 建立關聯。您可以透過 Google 帳戶資訊主頁刪除這些資料，但您無法將這些資料與其他帳戶建立關聯。<ph name="LEARN_MORE" /></translation>
@@ -131,7 +130,6 @@
 <translation id="5466153949126434691">Chromium 會自動更新，隨時讓您使用最新版本。完成這項下載作業後，Chromium 會重新啟動，自動為您進行更新。</translation>
 <translation id="5479196819031988440">Chromium 作業系統無法開啟這個網頁。</translation>
 <translation id="549669000822060376">請稍候，Chromium 正在安裝最新的系統更新。</translation>
-<translation id="556167189552180495">Chromium 的介面文字已設為這種語言。</translation>
 <translation id="5563479599352954471">輕觸即可搜尋</translation>
 <translation id="5620765574781326016">不必離開所在頁面即可瞭解網站上有哪些主題。</translation>
 <translation id="5634636535844844681">Chromium 僅支援 Windows 7 以上版本的作業系統。</translation>

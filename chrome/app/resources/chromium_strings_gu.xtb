@@ -60,8 +60,8 @@
 <translation id="2847479871509788944">Chromium માંથી દૂર કરો...</translation>
 <translation id="2886012850691518054">વૈકલ્પિક: ઉપયોગનાં આંકડાઓ અને ક્રેશ રીપોર્ટ્સ આપમેળે Google ને મોકલીને Chromium ને વધુ સારું બનાવવમાં સહાય કરો.</translation>
 <translation id="2898082584336937987">તમારા ફોન પર Chromium ઇન્સ્ટૉલ કરો. અમે તમારા ફોન પર એક SMS મોકલીશું: <ph name="PHONE_NUMBER" /></translation>
-<translation id="2905536371227304018">આ ભાષામાં Chromium OS પ્રદર્શિત થાય છે.</translation>
 <translation id="2910007522516064972">&amp;Chromium વિશે</translation>
+<translation id="2977470724722393594">Chromium અપ ટૂ ડેટ છે</translation>
 <translation id="3032787606318309379">Chromium માં ઉમેરી રહ્યું છે...</translation>
 <translation id="3046695367536568084">ઍપ્લિકેશનોનો ઉપયોગ કરવા માટે તમારે Chromium માં સાઇન ઇન કરવાની જરૂર છે. આ Chromium ને તમારી ઍપ્લિકેશનો, બુકમાર્ક્સ, ઇતિહાસ, પાસવર્ડ્સ અને સમગ્ર ઉપકરણો પર અન્ય સેટિંગ્સને સમન્વયિત કરવાની મંજૂરી આપે છે.</translation>
 <translation id="3068515742935458733">ક્રેશ રિપોર્ટ્સ અને <ph name="UMA_LINK" /> Google ને મોકલીને Chromium ને વધુ સારું બનાવવામાં સહાય કરો.</translation>
@@ -123,7 +123,6 @@
 <translation id="4994636714258228724">સ્વયંને Chromium માં ઉમેરો</translation>
 <translation id="5032989939245619637">Chromium માં વિગતો સાચવો</translation>
 <translation id="5045248521775609809">Chromium ને સર્વત્ર લઈ જાઓ</translation>
-<translation id="5113946445248196174">Chromium ડિફૉલ્ટ બ્રાઉઝરને નિર્ધારિત અથવા સેટ કરી શકતું નથી.</translation>
 <translation id="5116586539350239523">Chromium તમારી વ્યક્તિગત માહિતીને સુરક્ષિત રીતે સંગ્રહિત કરશે જેથી તમારે તેમને ફરીથી ટાઇપ કરવાની જરૂર નથી.</translation>
 <translation id="5231355151045086930">Chromium માંથી સાઇન આઉટ કરો</translation>
 <translation id="5358375970380395591">તમે સંચાલિત કરેલ એકાઉન્ટ સાથે સાઇન ઇન કરી રહ્યાં છો અને તમારી Chromium પ્રોફાઇલ પર તેનું વ્યવસ્થાપક નિયંત્રણ આપી રહ્યાં છો. તમારો Chromium ડેટા, જેમ કે ઍપ્લિકેશનો, બુકમાર્ક્સ, ઇતિહાસ, પાસવર્ડ્સ અને અન્ય સેટિંગ્સ, કાયમ માટે <ph name="USER_NAME" /> થી બંધાયેલ રહેશે. તમે Google એકાઉન્ટ્સ ડેશબોર્ડથી આ ડેટાને કાઢી શકશો, પરંતુ તમે આ ડેટાને અન્ય એકાઉન્ટ સાથે સાંકળી શકશો નહીં. <ph name="LEARN_MORE" /></translation>
@@ -133,7 +132,6 @@
 <translation id="5466153949126434691">Chromium આપમેળે અપડેટ થાય છે જેથી કરીને તમારી પાસે હંમેશા તાજું સંસ્કરણ રહે છે. જ્યારે આ ડાઉનલોડ પૂર્ણ થાય છે, ત્યારે Chromium પુનઃપ્રારંભ થશે અને તમે તમારા માર્ગે હશો.</translation>
 <translation id="5479196819031988440">Chromium OS, આ પૃષ્ઠને ખોલી શકતું નથી.</translation>
 <translation id="549669000822060376">કૃપા કરીને Chromium, નવીનતમ સિસ્ટમ અપડેટ્સ ઇન્સ્ટોલ કરે ત્યાં સુધી રાહ જુઓ.</translation>
-<translation id="556167189552180495">આ ભાષામાં Chromium પ્રદર્શિત થાય છે.</translation>
 <translation id="5563479599352954471">એક ટચ વડે શોધ કરો</translation>
 <translation id="5620765574781326016">પૃષ્ઠને છોડ્યાં વિના વેબસાઇટ્સ પરના મુદ્દાઓ વિશે જાણો.</translation>
 <translation id="5634636535844844681">Chromium માટે Windows 7 અથવા તે પછીનું સંસ્કરણ આવશ્યક છે.</translation>

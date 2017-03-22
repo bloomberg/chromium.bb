@@ -70,7 +70,6 @@
 <translation id="2847461019998147611">以这种语言显示 Google Chrome</translation>
 <translation id="2871893339301912279">您已登录 Chrome！</translation>
 <translation id="2888126860611144412">关于 Chrome</translation>
-<translation id="2900322993655997287">Google Chrome 无法确定或设置默认浏览器。</translation>
 <translation id="3037838751736561277">Google Chrome处于后台运行模式。</translation>
 <translation id="3047079729301751317">取消与<ph name="USERNAME" />的关联将会清除您的历史记录、书签、设置以及存储在此设备上的其他Chrome数据。您的Google帐号中存储的数据将不会被清除，并且您可以通过<ph name="GOOGLE_DASHBOARD_LINK" />Google信息中心<ph name="END_GOOGLE_DASHBOARD_LINK" />管理这些数据。</translation>
 <translation id="3065168410429928842">Chrome 标签页</translation>
@@ -230,6 +229,7 @@
 <translation id="7788788617745289808">Chrome 需要具有摄像头使用权限，才能批准此网站的分享请求。</translation>
 <translation id="7808348361785373670">从Chrome中移除…</translation>
 <translation id="7825851276765848807">由于未指定的错误导致安装失败。请重新下载 Google Chrome 浏览器。</translation>
+<translation id="7855730255114109580">Google Chrome 已是最新版本</translation>
 <translation id="7888186132678118370">将 Chrome 固定到任务栏</translation>
 <translation id="7890208801193284374">如果您与亲朋好友共用计算机，他们将能够使用单独的帐号进行浏览，并可随心所欲地设置Chrome。</translation>
 <translation id="7896673875602241923">之前已有人在此计算机上以 <ph name="ACCOUNT_EMAIL_LAST" /> 的身份登录了 Chrome。请新建一个 Chrome 用户来单独保存您的信息。</translation>

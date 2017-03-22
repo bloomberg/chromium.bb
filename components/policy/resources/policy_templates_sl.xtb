@@ -816,7 +816,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 
           Če ta pravilnik ni nastavljen, lahko uporabniki sami izberejo nastavitve strežnika proxy.</translation>
 <translation id="3205825995289802549">Povečaj prvo okno brskalnika pri prvem izvajanju</translation>
-<translation id="3206731874112238027">Onemogočanje predogleda tiskanja (zastarelo)</translation>
 <translation id="3213821784736959823">Določa, ali je v brskalniku <ph name="PRODUCT_NAME" /> uporabljen vgrajeni odjemalec DNS.
 
        Če je ta pravilnik nastavljen na »true«, bo uporabljen vgrajeni odjemalec DNS, če je na voljo.
@@ -1415,6 +1414,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
       Če ni nastavljen, bo uporabnik morda vprašan, ali naj jo uvozi, ali pa bo uvoz izveden samodejno.</translation>
 <translation id="5056708224511062314">Izklop lupe</translation>
 <translation id="5067143124345820993">Seznam odobrenih uporabnikov za prijavo</translation>
+<translation id="5085647276663819155">Onemogoči predogled tiskanja</translation>
 <translation id="5105313908130842249">Časovni zamik zaklepa zaslona, če se napaja iz akumulatorja</translation>
 <translation id="5111573778467334951">Določanje dejanja, ki se izvede, ko je pri akumulatorskem napajanju dosežena zakasnitev zaradi nedejavnosti.
 

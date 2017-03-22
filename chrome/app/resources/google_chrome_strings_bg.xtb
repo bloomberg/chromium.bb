@@ -72,7 +72,6 @@
 <translation id="2847461019998147611">Показване на Google Chrome на този език</translation>
 <translation id="2871893339301912279">Влязохте в Chrome!</translation>
 <translation id="2888126860611144412">Всичко за Chrome</translation>
-<translation id="2900322993655997287">Google Chrome не може да определи или зададе браузъра по подразбиране.</translation>
 <translation id="3037838751736561277">Google Chrome работи на заден план.</translation>
 <translation id="3047079729301751317">Прекратяването на връзката с/ъс <ph name="USERNAME" /> ще изчисти историята, отметките, настройките и другите данни в Chrome, съхранени на това устройство. Данните в профила ви в Google няма да бъдат изчистени и могат да се управляват в <ph name="GOOGLE_DASHBOARD_LINK" />Google Табло за управление<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="3065168410429928842">Раздел в Chrome</translation>
@@ -231,6 +230,7 @@
 <translation id="7788788617745289808">Chrome се нуждае от достъп до камерата, за да я сподели с този сайт.</translation>
 <translation id="7808348361785373670">Премахване от Chrome...</translation>
 <translation id="7825851276765848807">Инсталацията не бе успешна поради неизвестна грешка. Моля, изтеглете отново Google Chrome.</translation>
+<translation id="7855730255114109580">Google Chrome е актуален</translation>
 <translation id="7888186132678118370">Закачване на Chrome към лентата на задачите</translation>
 <translation id="7890208801193284374">Ако споделяте компютър, близките и приятелите ви могат да сърфират отделно и да настроят Chrome точно така, както искат.</translation>
 <translation id="7896673875602241923">По-рано някой влезе в Chrome на този компютър като <ph name="ACCOUNT_EMAIL_LAST" />. Моля, създайте нов потребител в браузъра, така че информацията ви да се съхранява отделно.</translation>

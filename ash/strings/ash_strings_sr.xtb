@@ -24,12 +24,16 @@
 <translation id="1525508553941733066">ОДБАЦИ</translation>
 <translation id="15373452373711364">Велики курсор</translation>
 <translation id="1550523713251050646">Кликните за више опција</translation>
+<translation id="1571442141242456645">Метод уноса је промењен у <ph name="INPUT_METHOD_ID" />.
+        Притисните Shift + Alt да бисте пребацили.</translation>
 <translation id="1602076796624386989">Омогући податке за мобилне уређаје</translation>
 <translation id="1621499497873603021">Време које је преостало док се батерија не испразни, <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Chrome уређај</translation>
 <translation id="1677472565718498478"><ph name="TIME" /> је преостало</translation>
 <translation id="1747827819627189109">Тастатура на екрану је омогућена</translation>
 <translation id="1850504506766569011">Wi-Fi је искључен.</translation>
+<translation id="1854357586517521894">CAPS LOCK је укључен.
+    Притисните тастер за претрагу или Shift да бисте га отказали.</translation>
 <translation id="1864454756846565995">Уређај са USB прикључком типа C (задњи порт)</translation>
 <translation id="1882897271359938046">Пресликавање у <ph name="DISPLAY_NAME" /></translation>
 <translation id="1919743966458266018">Пречица за отварање менаџера задатака је промењена. Користите <ph name="NEW_SHORTCUT" /> уместо <ph name="OLD_SHORTCUT" />.</translation>
@@ -62,6 +66,8 @@
 <translation id="2857608528410806398">Тело обавештења о функцији Брзо откључавање ће бити приказано овде. Тело обавештења о функцији Брзо откључавање ће бити приказано овде. Тело обавештења о функцији Брзо откључавање ће бити приказано овде. Тело обавештења о функцији Брзо откључавање ће бити приказано овде. Тело обавештења о функцији Брзо откључавање ће бити приказано овде.</translation>
 <translation id="2865888419503095837">Информације о мрежи</translation>
 <translation id="2872961005593481000">Искључи</translation>
+<translation id="291653379653113090">Метод уноса је промењен у <ph name="INPUT_METHOD_ID" />*(<ph name="BEGIN_LINK" />трећа страна<ph name="END_LINK" />).
+    Притисните Shift + Alt да бисте пребацили.</translation>
 <translation id="2942516765047364088">Положај полице</translation>
 <translation id="2946119680249604491">Додај везу</translation>
 <translation id="2963773877003373896">mod3</translation>
@@ -72,6 +78,8 @@
 <translation id="3077734595579995578">shift</translation>
 <translation id="3087734570205094154">Дно</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
+<translation id="3109220592788908353">CAPS LOCK је укључен.
+    Притисните Alt + тастер за претрагу или Shift да бисте га отказали.</translation>
 <translation id="3126069444801937830">Покрените поново да бисте ажурирали</translation>
 <translation id="3147142846278915599">Покретач (апликације се синхронизују...)</translation>
 <translation id="315116470104423982">Подаци за мобилне уређаје</translation>

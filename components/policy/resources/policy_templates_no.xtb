@@ -279,6 +279,7 @@
       Hvis en innstilling ikke angis, brukes en standardverdi.
 
       Hvis denne planen ikke angis, brukes standardverdiene for alle innstillingene.</translation>
+<translation id="1960840544413786116">Hvorvidt du vil tillate sertifikater som utstedes av lokale klareringsankre som mangler subjectAlternativeName-utvidelsen</translation>
 <translation id="1964634611280150550">Inkognitomodus er deaktivert</translation>
 <translation id="1964802606569741174">Denne regelen har ingen innvirkning på YouTube-appen for Android. Hvis du vil tvinge bruk av sikkerhetsmodus for YouTube, bør du ikke tillate installasjon av YouTube-appen for Android.</translation>
 <translation id="1969212217917526199">Overstyrer reglene i delversjonene for feilsøking på fjerntilgangsverten.
@@ -800,7 +801,6 @@
 
           Hvis du ikke spesifiserer denne regelen, kan brukerne velge egne innstillinger for proxy-tjenere.</translation>
 <translation id="3205825995289802549">Maksimer det første nettleservinduet ved den første kjøringen</translation>
-<translation id="3206731874112238027">Slå av forhåndsvisning av utskrifter (avviklet)</translation>
 <translation id="3213821784736959823">Kontrollerer hvorvidt den innebygde DNS-klinten brukes i <ph name="PRODUCT_NAME" />.
 
       Hvis denne innstillingen er angitt som «true», blir den innebygde DNS-klienten brukt, så sant den er tilgjengelig.
@@ -1374,6 +1374,7 @@
 <translation id="5052081091120171147">Denne retningslinjen tvinger import av nettleserloggen fra den aktuelle standardnettleseren hvis den er aktivert. Hvis den er aktivert, påvirker denne retningslinjen også importdialogen. Hvis den er deaktivert, importeres ingen nettleserlogg. Hvis den ikke er angitt, er det mulig at brukeren får spørsmål om hvorvidt vedkommende ønsker å importere, eller så kan importeringen skje automatisk.</translation>
 <translation id="5056708224511062314">Skjermforstørrelse deaktivert</translation>
 <translation id="5067143124345820993">Godkjenningsliste for brukerpålogging</translation>
+<translation id="5085647276663819155">Deaktiver forhåndsvisning av utskrift</translation>
 <translation id="5105313908130842249">Forsinkelse for låst skjerm når enheten kjører på batteristrøm</translation>
 <translation id="5111573778467334951">Angi handlingen som skal brukes når inaktivtetsforsinkelsen overgås og maskinen kjører på batteristrøm.
 
@@ -1458,6 +1459,9 @@
           Hvis denne innstillingen er aktivert, deaktiveres vertenes fysiske enheter for inn- og utdata mens en fjerntilkobling er aktiv.
 
           Hvis denne innstillingen er deaktivert eller ikke angitt, kan både lokale og eksterne brukere samhandle med verten når den deles.</translation>
+<translation id="5405289061476885481">Konfigurerer hvilke tastaturoppsett som tillates på påloggingsskjermen i <ph name="PRODUCT_OS_NAME" />.
+
+      Hvis denne regelen er angitt til en liste med identifikatorer for inndatametoder, er de angitte inndatametodene tilgjengelige på påloggingsskjermen. Den første angitte inndatametoden blir forhåndsvalgt. Når en brukerkapsel er fokusert på påloggingsskjermen, blir den inndatametoden det er lengst siden brukeren brukte, tilgjengelig – i tillegg til inndatametodene som spesifiseres av denne regelen. Hvis denne regelen ikke er spesifisert, blir inndatametodene på påloggingsskjermen avledet fra lokaliteten påloggingsskjermen vises med. Verdier som ikke er gyldige identifikatorer for inndatametoder, blir ignorert.</translation>
 <translation id="5423001109873148185">Denne retningslinjen gjør at søkemotorene importeres fra nåværende standard nettleser hvis den er aktivert.
 
       Hvis den er deaktivert, importeres ikke den standard søkemotoren.
@@ -1532,6 +1536,11 @@
       Hvis du angir denne innstillingen, kan ikke brukere endre eller ovekjøre den.
 
       Hvis innstillingen ikke angis, kan brukerne velge hvorvidt hyllen skal skjules automatisk eller ikke.</translation>
+<translation id="557360560705413259">Når denne innstillingen er slått på, bruker <ph name="PRODUCT_NAME" /> commonName-verdien for et tjenersertifikat for å sjekke samsvar med et vertsnavn hvis sertifikatet mangler en subjectAlternativeName-utvidelse – forutsatt at det faktisk valideres og er knyttet til et lokalt installert CA-sertifikat.
+
+      Vær oppmerksom på at dette ikke anbefales, ettersom det gjør det mulig å omgå nameConstraints-utvidelsen som begrenser vertsnavnene et gitt sertifikat kan autoriseres for
+
+      Hvis denne innstillingen ikke angis, eller hvis den angis som «false» (usann), klareres ikke tjenersertifikater som mangler en subjectAlternativeName-utvidelse og har enten et DNS-navn eller en IP-adresse.</translation>
 <translation id="557658534286111200">Aktiverer eller deaktiverer bokmerkeredigering</translation>
 <translation id="5586942249556966598">Gjør ingenting</translation>
 <translation id="5613179474872285001">Konfigurerer det påkrevde klientdomenenavnet som skal være obligatorisk for klienter med ekstern tilgang, og hindrer brukerne i å endre det.
@@ -2831,6 +2840,11 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Hvis innstillingen er aktivert, kan ikke brukere ta skjermdumper ved hjelp av hurtigtaster eller programmeringsgrensesnitt for utvidelser.
 
       Hvis innstillingen er deaktivert eller ikke angitt, er det fritt frem for å ta skjermdumper.</translation>
+<translation id="9212233969680267790">Advarsel: Regelen for høyeste TLS-versjon blir fullstendig fjernet fra <ph name="PRODUCT_NAME" /> omkring versjon 66 (rundt februar 2018).
+
+      Hvis denne regelen ikke konfigureres, bruker <ph name="PRODUCT_NAME" /> standarden for maksimumsversjon.
+
+      Ellers kan den angis som en av de følgende verdiene: «tls1.2» eller «tls1.3». Når den er angitt, kommer ikke <ph name="PRODUCT_NAME" /> til å bruke høyere SSL/TLS-versjoner enn den spesifiserte versjonen. Ukjente verdier blir ignorert.</translation>
 <translation id="9213347477683611358">Konfigurer bakgrunnsbildet som vises på påloggingsskjermen, på enhentsnivå hvis ingen brukere har logget på enheten ennå. Regelen angis ved å spesifisere nettadressen hvor Chrome OS-enheten kan laste ned bakgrunnsbildet, og dessuten en kryptografisk hash-verdi som brukes til bekrefte nedlastingens integritet. Bildet må være i JPEG-format, og filstørrelsen kan ikke overskride 16 MB. Nettadressen må være tilgjengelig uten autentisering. Bakgrunnsbildet lastes ned og bufres. Det lastes ned på nytt hvis nettadressen eller hash-verdien endres.
 
       Regelen skal spesifiseres som en streng der nettadressen og hash-verdien skrives i JSON-format, for eksempel

@@ -90,6 +90,7 @@
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1797835274315207060">配送方法や要件を確認するには、配送先住所を選択します。</translation>
 <translation id="1803678881841855883"><ph name="SITE" /> では最近、Google セーフ ブラウジングにより、<ph name="BEGIN_LINK" />不正なソフトウェアが検出<ph name="END_LINK" />されました。通常は安全なウェブサイトであっても、不正なソフトウェアに感染している場合があります。今回の悪意のあるコンテンツは、不正なソフトウェアの既知の配布元である「<ph name="SUBRESOURCE_HOST" />」から送られてきました。<ph name="BEGIN_LEARN_MORE_LINK" />詳細<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="1806541873155184440">追加日: <ph name="ADDED_TO_AUTOFILL_MONTH" /></translation>
 <translation id="1821930232296380041">無効なリクエストまたはリクエスト パラメータです</translation>
 <translation id="1826516787628120939">確認中</translation>
 <translation id="1834321415901700177">このサイトには有害なプログラムが含まれています</translation>
@@ -213,6 +214,7 @@
 <translation id="2955913368246107853">検索バーを閉じる</translation>
 <translation id="2958431318199492670">ネットワーク設定が ONC 標準に準拠していません。設定の一部がインポートされない可能性があります。</translation>
 <translation id="29611076221683977"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> では現在、悪意のあるユーザーが、お使いの Mac に危険なプログラム（写真、パスワード、メッセージ、クレジット カード番号などを盗み取るか削除するプログラム）をインストールしようとしている可能性があります。</translation>
+<translation id="2966678944701946121">有効期限: <ph name="EXPIRATION_DATE_ABBR" />、追加日: <ph name="ADDED_TO_AUTOFILL_MONTH" /></translation>
 <translation id="2969319727213777354">安全な接続を確立するには、時計が正しく設定されている必要があります。これは、ウェブサイトが自身を証明するために使用する証明書には有効期限があるためです。デバイスの時計が正しくないため、Google Chrome でこれらの証明書を確認することができません。</translation>
 <translation id="2972581237482394796">やり直し(&amp;R)</translation>
 <translation id="2985306909656435243">有効にすると、Chromium がカード情報をこの端末に保存するためフォームにすばやく入力できるようになります。</translation>
@@ -402,6 +404,7 @@
 <translation id="4728558894243024398">プラットフォーム</translation>
 <translation id="4736825316280949806">Chromium を再起動する</translation>
 <translation id="4744603770635761495">実行ファイルのパス</translation>
+<translation id="4749685221585524849">最終使用日: <ph name="LAST_USED_MONTH" /></translation>
 <translation id="4750917950439032686">お客様がこのサイトに送信した情報（パスワード、クレジット カード番号など）が第三者に見られることはありません。</translation>
 <translation id="4756388243121344051">履歴(&amp;H)</translation>
 <translation id="4758311279753947758">連絡先情報を追加</translation>
@@ -589,6 +592,7 @@
 <translation id="6534179046333460208">フィジカル ウェブからの URL</translation>
 <translation id="6550675742724504774">オプション</translation>
 <translation id="6556239504065605927">保護された接続</translation>
+<translation id="6556915248009097796">有効期限: <ph name="EXPIRATION_DATE_ABBR" />、最終使用日: <ph name="LAST_USED_DATE_NO_DETAIL" /></translation>
 <translation id="6563469144985748109">管理者がまだサイトを開くことを許可していません</translation>
 <translation id="6569060085658103619">拡張機能のページを表示しています</translation>
 <translation id="6593753688552673085"><ph name="UPPER_ESTIMATE" /> 未満</translation>

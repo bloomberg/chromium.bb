@@ -70,7 +70,6 @@ Si accedes de todos modos, se fusionará la información de Google Chrome, como 
 <translation id="2847461019998147611">Mostrar Google Chrome en este idioma</translation>
 <translation id="2871893339301912279">Accediste a Google Chrome.</translation>
 <translation id="2888126860611144412">Acerca de Chrome</translation>
-<translation id="2900322993655997287">Google Chrome no puede determinar ni establecer el navegador predeterminado.</translation>
 <translation id="3037838751736561277">Google Chrome está en modo de segundo plano</translation>
 <translation id="3047079729301751317">Si desconectas <ph name="USERNAME" />, se borrarán el historial, los favoritos, la configuración y otros datos de Chrome almacenados en este dispositivo. Los datos almacenados en la cuenta de Google no se borrarán y se pueden administrar en el <ph name="GOOGLE_DASHBOARD_LINK" />Panel de control de Google<ph name="END_GOOGLE_DASHBOARD_LINK" />.</translation>
 <translation id="3065168410429928842">Pestaña de Chrome</translation>
@@ -229,6 +228,7 @@ Para obtener más instrucciones, revisa tu correo electrónico en <ph name="ACCO
 <translation id="7788788617745289808">Chrome necesita acceso a la cámara para compartirla con este sitio.</translation>
 <translation id="7808348361785373670">Eliminar de Chrome…</translation>
 <translation id="7825851276765848807">La instalación falló debido a un error no especificado. Descarga Google Chrome otra vez.</translation>
+<translation id="7855730255114109580">Google Chrome está actualizado.</translation>
 <translation id="7888186132678118370">Cómo fijar Chrome a la barra de tareas</translation>
 <translation id="7890208801193284374">Si compartes una computadora, tus amigos y familiares pueden navegar de forma independiente y configurar Chrome según los gustos individuales.</translation>
 <translation id="7896673875602241923">Alguien accedió anteriormente a Chrome en esta computadora como <ph name="ACCOUNT_EMAIL_LAST" />. Crea un usuario de Chrome nuevo para mantener tu información por separado.</translation>

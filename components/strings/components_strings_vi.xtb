@@ -90,6 +90,7 @@
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1797835274315207060">Chọn địa chỉ giao hàng để kiểm tra các yêu cầu và phương thức giao hàng.</translation>
 <translation id="1803678881841855883">Gần đây, tính năng Duyệt web an toàn của Google <ph name="BEGIN_LINK" />đã phát hiện thấy phần mềm độc hại<ph name="END_LINK" /> trên <ph name="SITE" />. Các trang web bình thường vẫn an toàn đôi khi bị lây nhiễm phần mềm độc hại. Nội dung độc hại đến từ <ph name="SUBRESOURCE_HOST" />, một đối tượng phân phối phần mềm độc hại đã biết. <ph name="BEGIN_LEARN_MORE_LINK" />Tìm hiểu thêm<ph name="END_LEARN_MORE_LINK" />.</translation>
+<translation id="1806541873155184440">Ngày thêm: <ph name="ADDED_TO_AUTOFILL_MONTH" /></translation>
 <translation id="1821930232296380041">Yêu cầu hoặc tham số yêu cầu không hợp lệ</translation>
 <translation id="1826516787628120939">Đang kiểm tra</translation>
 <translation id="1834321415901700177">Trang web này có chứa các chương trình độc hại</translation>
@@ -213,6 +214,7 @@
 <translation id="2955913368246107853">Đóng thanh tìm</translation>
 <translation id="2958431318199492670">Cấu hình mạng không tuân thủ tiêu chuẩn ONC. Các bộ phận của cấu hình có thể không được nhập.</translation>
 <translation id="29611076221683977">Những kẻ tấn công hiện đang truy cập <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> có thể cố gắng cài đặt các chương trình nguy hiểm trên máy Mac. Các chương trình này sẽ đánh cắp hoặc xóa thông tin của bạn (ví dụ: ảnh, mật khẩu, thư và thẻ tín dụng).</translation>
+<translation id="2966678944701946121">Hết hạn: <ph name="EXPIRATION_DATE_ABBR" />, ngày thêm: <ph name="ADDED_TO_AUTOFILL_MONTH" /></translation>
 <translation id="2969319727213777354">Để thiết lập kết nối an toàn, bạn cần đặt thời gian đúng cho đồng hồ. Nguyên nhân là do chứng chỉ mà các trang web dùng để tự nhận dạng chỉ có hiệu lực trong khoảng thời gian cụ thể. Vì đồng hồ trên thiết bị của bạn không đúng nên Chrome không thể xác minh các chứng chỉ này.</translation>
 <translation id="2972581237482394796">&amp;Làm lại</translation>
 <translation id="2985306909656435243">Nếu được bật, Chromium sẽ lưu trữ bản sao thẻ của bạn trên thiết bị này để điền vào biểu mẫu nhanh hơn.</translation>
@@ -402,6 +404,7 @@
 <translation id="4728558894243024398">Nền tảng</translation>
 <translation id="4736825316280949806">Khởi động lại Chromium</translation>
 <translation id="4744603770635761495">Đường dẫn thực thi</translation>
+<translation id="4749685221585524849">Sử dụng lần cuối: <ph name="LAST_USED_MONTH" /></translation>
 <translation id="4750917950439032686">Thông tin của bạn (ví dụ: mật khẩu hoặc số thẻ tín dụng) sẽ được bảo mật khi được gửi tới trang web này.</translation>
 <translation id="4756388243121344051">&amp;Lịch sử</translation>
 <translation id="4758311279753947758">Thêm thông tin liên hệ</translation>
@@ -589,6 +592,7 @@
 <translation id="6534179046333460208">Đề xuất Web trong cuộc sống</translation>
 <translation id="6550675742724504774">Tùy chọn</translation>
 <translation id="6556239504065605927">Kết nối an toàn</translation>
+<translation id="6556915248009097796">Hết hạn: <ph name="EXPIRATION_DATE_ABBR" />, sử dụng lần cuối: <ph name="LAST_USED_DATE_NO_DETAIL" /></translation>
 <translation id="6563469144985748109">Người quản lý của bạn chưa phê duyệt trang web</translation>
 <translation id="6569060085658103619">Bạn đang xem trang tiện ích</translation>
 <translation id="6593753688552673085">dưới <ph name="UPPER_ESTIMATE" /></translation>

@@ -58,8 +58,8 @@
 <translation id="2847479871509788944">Fjern fra Chromium...</translation>
 <translation id="2886012850691518054">Valgfrit: Hjælp med at gøre Chromium bedre ved automatisk at sende forbrugsstatistik og nedbrudsrapporter til Google.</translation>
 <translation id="2898082584336937987">Installer Chromium på din telefon. Vi sender en sms til din telefon: <ph name="PHONE_NUMBER" /></translation>
-<translation id="2905536371227304018">Chromium OS vises på dette sprog.</translation>
 <translation id="2910007522516064972">Om &amp;Chromium</translation>
+<translation id="2977470724722393594">Chromium er opdateret</translation>
 <translation id="3032787606318309379">Føjer til Chromium...</translation>
 <translation id="3046695367536568084">Du skal være logget ind på Chromium, før du kan bruge apps. Det gør det muligt for Chromium at synkronisere dine apps, bogmærker, historik, adgangskoder og andre indstillinger på alle enheder.</translation>
 <translation id="3068515742935458733">Hjælp med at gøre Chromium bedre ved at sende fejlrapporter og <ph name="UMA_LINK" /> til Google</translation>
@@ -121,7 +121,6 @@
 <translation id="4994636714258228724">Tilføj dig selv i Chromium</translation>
 <translation id="5032989939245619637">Gem oplysninger i Chromium</translation>
 <translation id="5045248521775609809">Tag Chromium med overalt</translation>
-<translation id="5113946445248196174">Chromium kan ikke fastlægge eller angive standardbrowseren.</translation>
 <translation id="5116586539350239523">Chromium gemmer dine personlige oplysninger på sikker vis, så du ikke behøver at angive dem igen.</translation>
 <translation id="5231355151045086930">Log ud af Chromium</translation>
 <translation id="5358375970380395591">Du er ved at logge ind med en administreret konto og giver dens administrator kontrol over din profil i Chromium. Dine Chromium-data, f.eks. dine apps, bogmærker, historikdata, adgangskoder og andre indstillinger, knyttes permanent til <ph name="USER_NAME" />. Du kan slette disse data via betjeningspanelet for Google Konti, men du kan ikke knytte disse data til en anden konto. <ph name="LEARN_MORE" /></translation>
@@ -131,7 +130,6 @@
 <translation id="5466153949126434691">Chromium opdateres automatisk, så du altid har den nyeste version. Når downloaden er fuldført, genstartes Chromium, og så er du godt på vej.</translation>
 <translation id="5479196819031988440">Chromium OS kan ikke åbne denne side.</translation>
 <translation id="549669000822060376">Vent, mens Chromium installerer de nyeste systemopdateringer.</translation>
-<translation id="556167189552180495">Chromium vises på dette sprog.</translation>
 <translation id="5563479599352954471">Søg med én berøring</translation>
 <translation id="5620765574781326016">Læs om emner på websites uden at forlade siden.</translation>
 <translation id="5634636535844844681">Chromium kræver Windows 7 eller nyere.</translation>
