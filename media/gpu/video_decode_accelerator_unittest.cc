@@ -143,6 +143,10 @@ bool g_test_import = false;
 // working directory.
 base::FilePath g_test_file_path;
 
+// The location to output bad thumbnail image. If empty or invalid, fallback to
+// the original location.
+base::FilePath g_thumbnail_output_dir;
+
 // Environment to store rendering thread.
 class VideoDecodeAcceleratorTestEnvironment;
 VideoDecodeAcceleratorTestEnvironment* g_env;
@@ -199,7 +203,14 @@ const int kMD5StringLength = 32;
 base::FilePath GetTestDataFile(const base::FilePath& input_file) {
   if (input_file.IsAbsolute())
     return input_file;
-  return base::MakeAbsoluteFilePath(g_test_file_path.Append(input_file));
+  // input_file needs to be existed, otherwise base::MakeAbsoluteFilePath will
+  // return an empty base::FilePath.
+  base::FilePath abs_path =
+      base::MakeAbsoluteFilePath(g_test_file_path.Append(input_file));
+  LOG_IF(ERROR, abs_path.empty())
+      << g_test_file_path.Append(input_file).value().c_str()
+      << " is not an existing path.";
+  return abs_path;
 }
 
 // Read in golden MD5s for the thumbnailed rendering of this video
@@ -1540,11 +1551,23 @@ TEST_P(VideoDecodeAcceleratorParamTest, TestSimpleDecode) {
       LOG(ERROR) << "Unknown thumbnails MD5: " << md5_string;
 
       base::FilePath filepath(test_video_files_[0]->file_name);
+      if (!g_thumbnail_output_dir.empty() &&
+          base::DirectoryExists(g_thumbnail_output_dir)) {
+        // Write bad thumbnails image to where --thumbnail_output_dir assigned.
+        filepath = g_thumbnail_output_dir.Append(filepath.BaseName());
+      } else {
+        // Fallback to write to test data directory.
+        // Note: test data directory is not writable by vda_unittest while
+        //       running by autotest. It should assign its resultsdir as output
+        //       directory.
+        filepath = GetTestDataFile(filepath);
+      }
       filepath = filepath.AddExtension(FILE_PATH_LITERAL(".bad_thumbnails"));
       filepath = filepath.AddExtension(FILE_PATH_LITERAL(".png"));
-      int num_bytes =
-          base::WriteFile(GetTestDataFile(filepath),
-                          reinterpret_cast<char*>(&png[0]), png.size());
+      LOG(INFO) << "Write bad thumbnails image to: "
+                << filepath.value().c_str();
+      int num_bytes = base::WriteFile(
+          filepath, reinterpret_cast<char*>(&png[0]), png.size());
       EXPECT_EQ(num_bytes, static_cast<int>(png.size()));
     }
     EXPECT_NE(match, golden_md5s.end());
@@ -1887,6 +1910,9 @@ int main(int argc, char** argv) {
     if (it->first == "use-test-data-path") {
       media::g_test_file_path = media::GetTestDataFilePath("");
       continue;
+    }
+    if (it->first == "thumbnail_output_dir") {
+      media::g_thumbnail_output_dir = base::FilePath(it->second.c_str());
     }
   }
 
