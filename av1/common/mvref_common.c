@@ -1104,8 +1104,6 @@ int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
   int up_available = xd->up_available;
   int left_available = xd->left_available;
   int i, mi_step, np = 0;
-  int mvasint[100];
-  int mvnumber = 0;
   int global_offset_c = mi_col * MI_SIZE;
   int global_offset_r = mi_row * MI_SIZE;
 
@@ -1127,9 +1125,6 @@ int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
         int cc_offset = i * MI_SIZE + AOMMAX(bw, MI_SIZE) / 2 - 1;
         int j;
         int pixelperblock = SAMPLES_PER_NEIGHBOR;
-
-        mvasint[mvnumber] = mbmi->mv[0].as_int;
-        mvnumber++;
 
         for (j = 0; j < pixelperblock; j++) {
           int x = cc_offset + j % 2 + global_offset_c;
@@ -1171,9 +1166,6 @@ int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
         int j;
         int pixelperblock = SAMPLES_PER_NEIGHBOR;
 
-        mvasint[mvnumber] = mbmi->mv[0].as_int;
-        mvnumber++;
-
         for (j = 0; j < pixelperblock; j++) {
           int x = cc_offset + j % 2 + global_offset_c;
           int y = cr_offset + j / 2 + global_offset_r;
@@ -1210,9 +1202,6 @@ int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
       int j;
       int pixelperblock = SAMPLES_PER_NEIGHBOR;
 
-      mvasint[mvnumber] = mbmi->mv[0].as_int;
-      mvnumber++;
-
       for (j = 0; j < pixelperblock; j++) {
         int x = cc_offset + j % 2 + global_offset_c;
         int y = cr_offset + j / 2 + global_offset_r;
@@ -1233,11 +1222,7 @@ int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
   }
   assert(2 * np <= SAMPLES_ARRAY_SIZE);
 
-  for (i = 0; i < (mvnumber - 1); ++i) {
-    if (mvasint[i] != mvasint[i + 1]) break;
-  }
-
-  if (np == 0 || i == (mvnumber - 1)) {
+  if (np == 0) {
     return 0;
   } else {
     MODE_INFO *mi = xd->mi[0];
