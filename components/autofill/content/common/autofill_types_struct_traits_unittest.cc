@@ -54,21 +54,6 @@ void CreateTestPasswordFormFillData(PasswordFormFillData* fill_data) {
   pr.realm = "https://bar.com/";
   fill_data->additional_logins[name] = pr;
 
-  UsernamesCollectionKey key;
-  key.username = base::ASCIIToUTF16("Tom");
-  key.password = base::ASCIIToUTF16("Tom_Password");
-  key.realm = "https://foo.com/";
-  std::vector<base::string16>& possible_names =
-      fill_data->other_possible_usernames[key];
-  possible_names.push_back(base::ASCIIToUTF16("Tom_1"));
-  possible_names.push_back(base::ASCIIToUTF16("Tom_2"));
-  key.username = base::ASCIIToUTF16("Jerry");
-  key.password = base::ASCIIToUTF16("Jerry_Password");
-  key.realm = "https://bar.com/";
-  possible_names = fill_data->other_possible_usernames[key];
-  possible_names.push_back(base::ASCIIToUTF16("Jerry_1"));
-  possible_names.push_back(base::ASCIIToUTF16("Jerry_2"));
-
   fill_data->wait_for_username = true;
   fill_data->is_possible_change_password_form = false;
 }

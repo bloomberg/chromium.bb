@@ -270,37 +270,8 @@ struct StructTraits<autofill::mojom::PasswordAndRealmDataView,
 };
 
 template <>
-struct StructTraits<autofill::mojom::UsernamesCollectionKeyDataView,
-                    autofill::UsernamesCollectionKey> {
-  static const base::string16& username(
-      const autofill::UsernamesCollectionKey& r) {
-    return r.username;
-  }
-
-  static const base::string16& password(
-      const autofill::UsernamesCollectionKey& r) {
-    return r.password;
-  }
-
-  static const std::string& realm(const autofill::UsernamesCollectionKey& r) {
-    return r.realm;
-  }
-
-  static bool Read(autofill::mojom::UsernamesCollectionKeyDataView data,
-                   autofill::UsernamesCollectionKey* out);
-};
-
-template <>
 struct StructTraits<autofill::mojom::PasswordFormFillDataDataView,
                     autofill::PasswordFormFillData> {
-  using UsernamesCollectionKeysValuesPair =
-      std::pair<std::vector<autofill::UsernamesCollectionKey>,
-                std::vector<std::vector<base::string16>>>;
-
-  static void* SetUpContext(const autofill::PasswordFormFillData& r);
-
-  static void TearDownContext(const autofill::PasswordFormFillData& r,
-                              void* context);
 
   static const base::string16& name(const autofill::PasswordFormFillData& r) {
     return r.name;
@@ -332,18 +303,6 @@ struct StructTraits<autofill::mojom::PasswordFormFillDataDataView,
   static const std::map<base::string16, autofill::PasswordAndRealm>&
   additional_logins(const autofill::PasswordFormFillData& r) {
     return r.additional_logins;
-  }
-
-  static const std::vector<autofill::UsernamesCollectionKey>&
-  other_possible_usernames_keys(const autofill::PasswordFormFillData& r,
-                                void* context) {
-    return static_cast<UsernamesCollectionKeysValuesPair*>(context)->first;
-  }
-
-  static const std::vector<std::vector<base::string16>>&
-  other_possible_usernames_values(const autofill::PasswordFormFillData& r,
-                                  void* context) {
-    return static_cast<UsernamesCollectionKeysValuesPair*>(context)->second;
   }
 
   static bool wait_for_username(const autofill::PasswordFormFillData& r) {

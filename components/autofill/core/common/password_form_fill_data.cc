@@ -84,8 +84,6 @@ void InitPasswordFormFillData(
       if (it.second->is_public_suffix_match ||
           it.second->is_affiliation_based_match)
         key.realm = it.second->signon_realm;
-      result->other_possible_usernames[key] =
-          it.second->other_possible_usernames;
     }
   }
 }

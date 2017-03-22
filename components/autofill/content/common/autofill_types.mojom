@@ -117,12 +117,6 @@ struct PasswordAndRealm {
   string realm;
 };
 
-// autofill::UsernamesCollectionKey
-struct UsernamesCollectionKey {
-  string username;
-  string password;
-  string realm;
-};
 
 // autofill::PasswordFormFillData
 struct PasswordFormFillData {
@@ -133,11 +127,6 @@ struct PasswordFormFillData {
   FormFieldData password_field;
   string preferred_realm;
   map<string, PasswordAndRealm> additional_logins;
-  // TODO(leonhsl): Use map directly after http://crbug.com/628104 solved.
-  // Keys for std::map<UsernamesCollectionKey, std::vector<base::string16>>
-  array<UsernamesCollectionKey> other_possible_usernames_keys;
-  // Values for std::map<UsernamesCollectionKey, std::vector<base::string16>>
-  array<array<string>> other_possible_usernames_values;
   bool wait_for_username;
   bool is_possible_change_password_form;
 };
