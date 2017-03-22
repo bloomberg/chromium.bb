@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.Animatable
 import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.Animation;
 import org.chromium.chrome.browser.compositor.layouts.LayoutRenderHost;
 import org.chromium.chrome.browser.compositor.layouts.components.CompositorButton;
+import org.chromium.chrome.browser.compositor.layouts.components.CompositorButton.CompositorOnClickHandler;
 import org.chromium.chrome.browser.compositor.layouts.components.VirtualView;
 import org.chromium.chrome.browser.compositor.overlays.strip.TabLoadTracker.TabLoadTrackerCallback;
 import org.chromium.chrome.browser.tab.Tab;
@@ -38,7 +39,25 @@ public class StripLayoutTab
     /** An observer interface for StripLayoutTab. */
     public interface Observer {
         /** @param visible Whether the StripLayoutTab is visible. */
-        public void onVisibilityChanged(boolean visible);
+        void onVisibilityChanged(boolean visible);
+    }
+
+    /**
+     * Delegate for additional tab functionality.
+     */
+    public interface StripLayoutTabDelegate {
+        /**
+         * Handles tab click actions.
+         * @param tab The tab clicked.
+         */
+        void handleTabClick(StripLayoutTab tab);
+
+        /**
+         * Handles close button click actions.
+         * @param tab  The tab whose close button was clicked.
+         * @param time The time the close button was clicked.
+         */
+        void handleCloseButtonClick(StripLayoutTab tab, long time);
     }
 
     /**
@@ -62,6 +81,7 @@ public class StripLayoutTab
 
     private int mId = Tab.INVALID_TAB_ID;
 
+    private final StripLayoutTabDelegate mDelegate;
     private final TabLoadTracker mLoadTracker;
     private final LayoutRenderHost mRenderHost;
 
@@ -105,18 +125,27 @@ public class StripLayoutTab
      *
      * @param context An Android context for accessing system resources.
      * @param id The id of the {@link Tab} to visually represent.
+     * @param delegate The delegate for additional strip tab functionality.
      * @param loadTrackerCallback The {@link TabLoadTrackerCallback} to be notified of loading state
      *                            changes.
      * @param renderHost The {@link LayoutRenderHost}.
      * @param incognito Whether or not this layout tab is incognito.
      */
-    public StripLayoutTab(Context context, int id, TabLoadTrackerCallback loadTrackerCallback,
-            LayoutRenderHost renderHost, boolean incognito) {
+    public StripLayoutTab(Context context, int id, StripLayoutTabDelegate delegate,
+            TabLoadTrackerCallback loadTrackerCallback, LayoutRenderHost renderHost,
+            boolean incognito) {
         mId = id;
+        mDelegate = delegate;
         mLoadTracker = new TabLoadTracker(id, loadTrackerCallback);
         mRenderHost = renderHost;
         mIncognito = incognito;
-        mCloseButton = new CompositorButton(context, 0, 0);
+        CompositorOnClickHandler closeClickAction = new CompositorOnClickHandler() {
+            @Override
+            public void onClick(long time) {
+                mDelegate.handleCloseButtonClick(StripLayoutTab.this, time);
+            }
+        };
+        mCloseButton = new CompositorButton(context, 0, 0, closeClickAction);
         mCloseButton.setResources(R.drawable.btn_tab_close_normal, R.drawable.btn_tab_close_pressed,
                 R.drawable.btn_tab_close_white_normal, R.drawable.btn_tab_close_white_pressed);
         mCloseButton.setIncognito(mIncognito);
@@ -169,8 +198,13 @@ public class StripLayoutTab
     public boolean checkClicked(float x, float y) {
         // Since both the close button as well as the tab inhabit the same coordinates, the tab
         // should not consider itself hit if the close button is also hit, since it is on top.
-        if (mShowingCloseButton && mCloseButton.checkClicked(x, y)) return false;
+        if (checkCloseHitTest(x, y)) return false;
         return mTouchTarget.contains(x, y);
+    }
+
+    @Override
+    public void handleClick(long time) {
+        mDelegate.handleTabClick(this);
     }
 
     /**

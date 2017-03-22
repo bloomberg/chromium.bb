@@ -32,6 +32,7 @@ import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.Animation;
 import org.chromium.chrome.browser.compositor.layouts.LayoutRenderHost;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.compositor.layouts.components.CompositorButton;
+import org.chromium.chrome.browser.compositor.layouts.components.CompositorButton.CompositorOnClickHandler;
 import org.chromium.chrome.browser.compositor.layouts.components.VirtualView;
 import org.chromium.chrome.browser.compositor.layouts.phone.stack.StackScroller;
 import org.chromium.chrome.browser.compositor.overlays.strip.TabLoadTracker.TabLoadTrackerCallback;
@@ -54,8 +55,7 @@ import java.util.List;
  * <p>
  * The stacking and visual behavior is driven by setting a {@link StripStacker}.
  */
-public class StripLayoutHelper {
-
+public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate {
     // Drag Constants
     private static final int REORDER_SCROLL_NONE = 0;
     private static final int REORDER_SCROLL_LEFT = 1;
@@ -174,8 +174,14 @@ public class StripLayoutHelper {
         mReorderMoveStartThreshold = REORDER_MOVE_START_THRESHOLD_DP;
         mUpdateHost = updateHost;
         mRenderHost = renderHost;
-        mNewTabButton =
-                new CompositorButton(context, NEW_TAB_BUTTON_WIDTH_DP, NEW_TAB_BUTTON_HEIGHT_DP);
+        CompositorOnClickHandler newTabClickHandler = new CompositorOnClickHandler() {
+            @Override
+            public void onClick(long time) {
+                handleNewTabClick();
+            }
+        };
+        mNewTabButton = new CompositorButton(
+                context, NEW_TAB_BUTTON_WIDTH_DP, NEW_TAB_BUTTON_HEIGHT_DP, newTabClickHandler);
         mNewTabButton.setResources(R.drawable.btn_tabstrip_new_tab_normal,
                 R.drawable.btn_tabstrip_new_tab_pressed,
                 R.drawable.btn_tabstrip_new_incognito_tab_normal,
@@ -808,6 +814,43 @@ public class StripLayoutHelper {
         }
     }
 
+    private void handleNewTabClick() {
+        if (mModel == null) return;
+
+        if (!mModel.isIncognito()) mModel.commitAllTabClosures();
+        mTabCreator.launchNTP();
+    }
+
+    @Override
+    public void handleCloseButtonClick(StripLayoutTab tab, long time) {
+        if (tab == null || tab.isDying()) return;
+
+        // 1. Start the close animation.
+        startAnimation(buildTabClosedAnimation(tab), true);
+
+        // 2. Set the dying state of the tab.
+        tab.setIsDying(true);
+
+        // 3. Fake a selection on the next tab now.
+        Tab nextTab = mModel.getNextTabIfClosed(tab.getId());
+        if (nextTab != null) tabSelected(time, nextTab.getId(), tab.getId());
+
+        // 4. Find out if we're closing the last tab.  This determines if we resize immediately.
+        boolean lastTab =
+                mStripTabs.length == 0 || mStripTabs[mStripTabs.length - 1].getId() == tab.getId();
+
+        // 5. Resize the tabs appropriately.
+        resizeTabStrip(!lastTab);
+    }
+
+    @Override
+    public void handleTabClick(StripLayoutTab tab) {
+        if (tab == null || tab.isDying()) return;
+
+        int newIndex = TabModelUtils.getTabIndexById(mModel, tab.getId());
+        TabModelUtils.setIndex(mModel, newIndex);
+    }
+
     /**
      * Called on click. This is called before the onUpOrCancel event.
      * @param time      The current time of the app in ms.
@@ -819,9 +862,8 @@ public class StripLayoutHelper {
     public void click(long time, float x, float y, boolean fromMouse, int buttons) {
         resetResizeTimeout(false);
 
-        if (mNewTabButton.click(x, y) && mModel != null) {
-            if (!mModel.isIncognito()) mModel.commitAllTabClosures();
-            mTabCreator.launchNTP();
+        if (mNewTabButton.click(x, y)) {
+            mNewTabButton.handleClick(time);
             return;
         }
 
@@ -829,25 +871,9 @@ public class StripLayoutHelper {
         if (clickedTab == null || clickedTab.isDying()) return;
         if (clickedTab.checkCloseHitTest(x, y)
                 || (fromMouse && (buttons & MotionEvent.BUTTON_TERTIARY) != 0)) {
-            // 1. Start the close animation.
-            startAnimation(buildTabClosedAnimation(clickedTab), true);
-
-            // 2. Set the dying state of the tab.
-            clickedTab.setIsDying(true);
-
-            // 3. Fake a selection on the next tab now.
-            Tab nextTab = mModel.getNextTabIfClosed(clickedTab.getId());
-            if (nextTab != null) tabSelected(time, nextTab.getId(), clickedTab.getId());
-
-            // 4. Find out if we're closing the last tab.  This determines if we resize immediately.
-            boolean lastTab = mStripTabs.length == 0
-                    || mStripTabs[mStripTabs.length - 1].getId() == clickedTab.getId();
-
-            // 5. Resize the tabs appropriately.
-            resizeTabStrip(!lastTab);
+            clickedTab.getCloseButton().handleClick(time);
         } else {
-            int newIndex = TabModelUtils.getTabIndexById(mModel, clickedTab.getId());
-            TabModelUtils.setIndex(mModel, newIndex);
+            clickedTab.handleClick(time);
         }
     }
 
@@ -1069,8 +1095,8 @@ public class StripLayoutHelper {
 
     private StripLayoutTab createStripTab(int id) {
         // TODO: Cache these
-        StripLayoutTab tab =
-                new StripLayoutTab(mContext, id, mTabLoadTrackerHost, mRenderHost, mIncognito);
+        StripLayoutTab tab = new StripLayoutTab(
+                mContext, id, this, mTabLoadTrackerHost, mRenderHost, mIncognito);
         tab.setHeight(mHeight);
         pushStackerPropertiesToTab(tab);
         return tab;

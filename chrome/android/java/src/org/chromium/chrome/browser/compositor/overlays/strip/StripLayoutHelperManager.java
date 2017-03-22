@@ -14,6 +14,7 @@ import org.chromium.chrome.browser.compositor.LayerTitleCache;
 import org.chromium.chrome.browser.compositor.layouts.LayoutRenderHost;
 import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.compositor.layouts.components.CompositorButton;
+import org.chromium.chrome.browser.compositor.layouts.components.CompositorButton.CompositorOnClickHandler;
 import org.chromium.chrome.browser.compositor.layouts.components.VirtualView;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.AreaGestureEventFilter;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilter;
@@ -84,8 +85,14 @@ public class StripLayoutHelperManager implements SceneOverlay {
         mNormalHelper = new StripLayoutHelper(context, updateHost, renderHost, false);
         mIncognitoHelper = new StripLayoutHelper(context, updateHost, renderHost, true);
 
-        mModelSelectorButton = new CompositorButton(
-                context, MODEL_SELECTOR_BUTTON_WIDTH_DP, MODEL_SELECTOR_BUTTON_HEIGHT_DP);
+        CompositorOnClickHandler selectorClickHandler = new CompositorOnClickHandler() {
+            @Override
+            public void onClick(long time) {
+                handleModelSelectorButtonClick();
+            }
+        };
+        mModelSelectorButton = new CompositorButton(context, MODEL_SELECTOR_BUTTON_WIDTH_DP,
+                MODEL_SELECTOR_BUTTON_HEIGHT_DP, selectorClickHandler);
         mModelSelectorButton.setIncognito(false);
         mModelSelectorButton.setVisible(false);
         // Pressed resources are the same as the unpressed resources.
@@ -404,6 +411,13 @@ public class StripLayoutHelperManager implements SceneOverlay {
         getActiveStripLayoutHelper().onLongPress(time, x, y);
     }
 
+    private void handleModelSelectorButtonClick() {
+        if (mTabModelSelector == null) return;
+        getActiveStripLayoutHelper().finishAnimation();
+        if (!mModelSelectorButton.isVisible()) return;
+        mTabModelSelector.selectModel(!mTabModelSelector.isIncognitoSelected());
+    }
+
     /**
      * Called on click. This is called before the onUpOrCancel event.
      * @param time      The current time of the app in ms.
@@ -413,10 +427,8 @@ public class StripLayoutHelperManager implements SceneOverlay {
      * @param buttons   State of all buttons that were pressed when onDown was invoked.
      */
     public void click(long time, float x, float y, boolean fromMouse, int buttons) {
-        if (mModelSelectorButton.click(x, y) && mTabModelSelector != null) {
-            getActiveStripLayoutHelper().finishAnimation();
-            if (!mModelSelectorButton.isVisible()) return;
-            mTabModelSelector.selectModel(!mTabModelSelector.isIncognitoSelected());
+        if (mModelSelectorButton.click(x, y)) {
+            mModelSelectorButton.handleClick(time);
             return;
         }
         getActiveStripLayoutHelper().click(time, x, y, fromMouse, buttons);
