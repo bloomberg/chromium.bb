@@ -197,7 +197,7 @@ public class NativePageFactory {
         public int loadUrl(LoadUrlParams urlParams, boolean incognito) {
             if (incognito && !mTab.isIncognito()) {
                 mTab.getTabModelSelector().openNewTab(urlParams,
-                        TabModel.TabLaunchType.FROM_LONGPRESS_BACKGROUND, mTab,
+                        TabModel.TabLaunchType.FROM_LONGPRESS_FOREGROUND, mTab,
                         /* incognito = */ true);
                 return TabLoadStatus.DEFAULT_PAGE_LOAD;
             }
