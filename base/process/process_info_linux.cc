@@ -17,12 +17,10 @@ namespace base {
 const Time CurrentProcessInfo::CreationTime() {
   int64_t start_ticks =
       internal::ReadProcSelfStatsAndGetFieldAsInt64(internal::VM_STARTTIME);
-  if (!start_ticks)
-    return Time();
+  DCHECK(start_ticks);
   TimeDelta start_offset = internal::ClockTicksToTimeDelta(start_ticks);
   Time boot_time = internal::GetBootTime();
-  if (boot_time.is_null())
-    return Time();
+  DCHECK(!boot_time.is_null());
   return Time(boot_time + start_offset);
 }
 

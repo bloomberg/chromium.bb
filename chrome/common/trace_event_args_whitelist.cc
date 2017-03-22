@@ -24,7 +24,6 @@ const char* const kMemoryDumpAllowedArgs[] = {"dumps", nullptr};
 const WhitelistEntry kEventArgsWhitelist[] = {
     {"__metadata", "thread_name", nullptr},
     {"__metadata", "process_name", nullptr},
-    {"__metadata", "process_runtime_sec", nullptr},
     {"ipc", "SyncChannel::Send", nullptr},
     {"toplevel", "*", nullptr},
     {"latencyInfo", "*", kInputLatencyAllowedArgs},
