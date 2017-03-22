@@ -918,8 +918,12 @@ const char kHatsDeviceIsSelected[] = "hats_device_is_selected";
 
 // A boolean pref. Indicates if we've already shown a notification to inform the
 // current user about the quick unlock feature.
-const char kQuickUnlockFeatureNotificationShown[] =
-    "quick_unlock_feature_notification_shown";
+const char kPinUnlockFeatureNotificationShown[] =
+    "pin_unlock_feature_notification_shown";
+// A boolean pref. Indicates if we've already shown a notification to inform the
+// current user about the fingerprint unlock feature.
+const char kFingerprintUnlockFeatureNotificationShown[] =
+    "fingerprint_unlock_feature_notification_shown";
 
 // The salt and hash for the pin quick unlock mechanism.
 const char kQuickUnlockPinSalt[] = "quick_unlock.pin.salt";

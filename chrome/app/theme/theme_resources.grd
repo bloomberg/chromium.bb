@@ -265,6 +265,7 @@
       </if>
       <if expr="chromeos">
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_DRIVE" file="cros/notification_drive.png" />
+        <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_FINGERPRINT" file="cros/notification_fingerprint.png" />
         <structure type="chrome_scaled_image" name="IDR_NOTIFICATION_PERIPHERAL_BATTERY_LOW" file="cros/notification_peripheral_battery_low.png" />
         <structure type="chrome_scaled_image" name="IDR_PORTAL_DETECTION_ALERT" file="cros/captive_portal_icon.png" />
         <structure type="chrome_scaled_image" name="IDR_ARC_PLAY_STORE_NOTIFICATION" file="cros/notification_play_store.png" />

@@ -356,8 +356,10 @@ void Preferences::RegisterProfilePrefs(
 
   registry->RegisterBooleanPref(prefs::kHatsDeviceIsSelected, false);
 
-  registry->RegisterBooleanPref(prefs::kQuickUnlockFeatureNotificationShown,
+  registry->RegisterBooleanPref(prefs::kPinUnlockFeatureNotificationShown,
                                 false);
+  registry->RegisterBooleanPref(
+      prefs::kFingerprintUnlockFeatureNotificationShown, false);
 
   // We don't sync EOL related prefs because they are device specific.
   registry->RegisterBooleanPref(prefs::kEolNotificationDismissed, false);

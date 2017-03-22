@@ -1790,12 +1790,23 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
 
   if (quick_unlock::QuickUnlockNotificationController::
           ShouldShowPinNotification(profile) &&
-      quick_unlock_notification_handler_.find(profile) ==
-          quick_unlock_notification_handler_.end()) {
-    auto* qu_feature_notification_controller =
+      pin_unlock_notification_handler_.find(profile) ==
+          pin_unlock_notification_handler_.end()) {
+    auto* pin_feature_notification_controller =
         quick_unlock::QuickUnlockNotificationController::CreateForPin(profile);
-    quick_unlock_notification_handler_.insert(
-        std::make_pair(profile, qu_feature_notification_controller));
+    pin_unlock_notification_handler_.insert(
+        std::make_pair(profile, pin_feature_notification_controller));
+  }
+
+  if (quick_unlock::QuickUnlockNotificationController::
+          ShouldShowFingerprintNotification(profile) &&
+      fingerprint_unlock_notification_handler_.find(profile) ==
+          fingerprint_unlock_notification_handler_.end()) {
+    auto* fingerprint_feature_notification_controller =
+        quick_unlock::QuickUnlockNotificationController::CreateForFingerprint(
+            profile);
+    fingerprint_unlock_notification_handler_.insert(
+        std::make_pair(profile, fingerprint_feature_notification_controller));
   }
 
   // Mark login host for deletion after browser starts.  This

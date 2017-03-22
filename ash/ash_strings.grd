@@ -989,6 +989,15 @@ Press Ctrl+Alt+Z to disable.
       <message name="IDS_ASH_QUICK_UNLOCK_NOTIFICATION_BODY" desc="The body of the notification for Quick Unlock feature notification.">
         QU Feature notification body goes here. QU Feature notification body goes here. QU Feature notification body goes here. QU Feature notification body goes here. QU Feature notification body goes here.
       </message>
+      <message name="IDS_ASH_FINGERPRINT_NOTIFICATION_TITLE" desc="The title of the
+    notification for fingerprint unlock feature notification.">
+       Enable Fingerprint unlock?
+     </message>
+     <message name="IDS_ASH_FINGERPRINT_NOTIFICATION_BODY" desc="The body of the no
+   tification for fingerprint unlock feature notification.">
+       Skip the lock screen by just tapping the fingerprint sensor. Click to config
+   ure.
+     </message>
 
       <!-- Deprecated Accelerators Messages -->
       <!-- Shortcut keys MUST be connected with pluses (e.g. Ctrl+Shift+L). -->

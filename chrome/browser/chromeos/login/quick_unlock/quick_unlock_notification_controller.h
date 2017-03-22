@@ -24,10 +24,13 @@ class QuickUnlockNotificationController : public NotificationDelegate,
                                           public content::NotificationObserver {
  public:
   static QuickUnlockNotificationController* CreateForPin(Profile* profile);
-
   // Returns true if the notification needs to be displayed for the given
   // |profile|.
   static bool ShouldShowPinNotification(Profile* profile);
+
+  static QuickUnlockNotificationController* CreateForFingerprint(
+      Profile* profile);
+  static bool ShouldShowFingerprintNotification(Profile* profile);
 
   // content::NotificationObserver:
   void Observe(int type,

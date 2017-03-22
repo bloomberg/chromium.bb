@@ -32,6 +32,10 @@ namespace {
 constexpr char kPinDelegateId[] = "pinunlock_delegate";
 constexpr char kPinNotificationId[] = "pinunlock_notification";
 constexpr char kPinSetupUrl[] = "chrome://md-settings/lockScreen";
+constexpr char kFingerprintDelegateId[] = "fingerprintunlock_delegate";
+constexpr char kFingerprintNotificationId[] = "fingerprintunlock_notification";
+constexpr char kFingerprintSetupUrl[] =
+    "chrome://md-settings/lockScreen/fingerprint";
 
 }  // namespace
 
@@ -58,13 +62,13 @@ QuickUnlockNotificationController::CreateForPin(Profile* profile) {
       IDS_ASH_QUICK_UNLOCK_NOTIFICATION_TITLE;
   controller->params_.body_message_id = IDS_ASH_QUICK_UNLOCK_NOTIFICATION_BODY;
   controller->params_.icon_id = IDR_SCREENSHOT_NOTIFICATION_ICON;
-  controller->params_.notifier = ash::system_notifier::kNotifierQuickUnlock;
+  controller->params_.notifier = ash::system_notifier::kNotifierPinUnlock;
   controller->params_.feature_name_id =
-      IDS_MESSAGE_CENTER_NOTIFIER_QUICK_UNLOCK_FEATURE_NAME;
+      IDS_MESSAGE_CENTER_NOTIFIER_PIN_UNLOCK_FEATURE_NAME;
   controller->params_.notification_id = kPinNotificationId;
   controller->params_.url = GURL(kPinSetupUrl);
   controller->params_.was_shown_pref_id =
-      prefs::kQuickUnlockFeatureNotificationShown;
+      prefs::kPinUnlockFeatureNotificationShown;
 
   controller->should_show_notification_callback_ =
       base::Bind(&QuickUnlockNotificationController::ShouldShowPinNotification);
@@ -81,7 +85,7 @@ bool QuickUnlockNotificationController::ShouldShowPinNotification(
 
   // Do not show notification to user if already displayed in the past.
   if (profile->GetPrefs()->GetBoolean(
-          prefs::kQuickUnlockFeatureNotificationShown)) {
+          prefs::kPinUnlockFeatureNotificationShown)) {
     return false;
   }
 
@@ -97,6 +101,53 @@ bool QuickUnlockNotificationController::ShouldShowPinNotification(
     return false;
 
   // TODO(jdufault): Enable once quick unlock settings land(crbug.com/291747).
+  return false;
+}
+
+// static
+QuickUnlockNotificationController*
+QuickUnlockNotificationController::CreateForFingerprint(Profile* profile) {
+  QuickUnlockNotificationController* controller =
+      new QuickUnlockNotificationController(profile);
+
+  // Set the fingerprint notification parameters.
+  controller->params_.delegate_id = kFingerprintDelegateId;
+  controller->params_.title_message_id = IDS_ASH_FINGERPRINT_NOTIFICATION_TITLE;
+  controller->params_.body_message_id = IDS_ASH_FINGERPRINT_NOTIFICATION_BODY;
+  controller->params_.icon_id = IDR_NOTIFICATION_FINGERPRINT;
+  controller->params_.notifier =
+      ash::system_notifier::kNotifierFingerprintUnlock;
+  controller->params_.feature_name_id =
+      IDS_MESSAGE_CENTER_NOTIFIER_FINGERPRINT_UNLOCK_FEATURE_NAME;
+  controller->params_.notification_id = kFingerprintNotificationId;
+  controller->params_.url = GURL(kFingerprintSetupUrl);
+  controller->params_.was_shown_pref_id =
+      prefs::kFingerprintUnlockFeatureNotificationShown;
+
+  controller->should_show_notification_callback_ = base::Bind(
+      &QuickUnlockNotificationController::ShouldShowFingerprintNotification);
+
+  return controller;
+}
+
+// static
+bool QuickUnlockNotificationController::ShouldShowFingerprintNotification(
+    Profile* profile) {
+  // Do not show notification if this is a guest session.
+  if (profile->IsGuestSession())
+    return false;
+
+  // Do not show notification to user if already displayed in the past.
+  if (profile->GetPrefs()->GetBoolean(
+          prefs::kFingerprintUnlockFeatureNotificationShown)) {
+    return false;
+  }
+
+  if (!IsFingerprintEnabled())
+    return false;
+
+  // TODO(sammiequon): Enable once fingerprint api is ready. Do not enable
+  // before http://crbug.com/695639 is resolved.
   return false;
 }
 
