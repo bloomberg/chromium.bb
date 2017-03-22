@@ -91,7 +91,9 @@ class SyncBackendHostImpl : public SyncEngine, public InvalidationHandler {
   void RefreshTypesForTest(ModelTypeSet types) override;
   void ClearServerData(
       const SyncManager::ClearServerDataCallback& callback) override;
-  void OnCookieJarChanged(bool account_mismatch, bool empty_jar) override;
+  void OnCookieJarChanged(bool account_mismatch,
+                          bool empty_jar,
+                          const base::Closure& callback) override;
 
   // InvalidationHandler implementation.
   void OnInvalidatorStateChange(InvalidatorState state) override;
@@ -192,6 +194,8 @@ class SyncBackendHostImpl : public SyncEngine, public InvalidationHandler {
 
   void ClearServerDataDoneOnFrontendLoop(
       const SyncManager::ClearServerDataCallback& frontend_callback);
+
+  void OnCookieJarChangedDoneOnFrontendLoop(const base::Closure& callback);
 
   SyncClient* const sync_client_;
 

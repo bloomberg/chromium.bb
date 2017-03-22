@@ -2003,6 +2003,15 @@ void ProfileSyncService::OnGaiaAccountsInCookieUpdated(
     const std::vector<gaia::ListedAccount>& accounts,
     const std::vector<gaia::ListedAccount>& signed_out_accounts,
     const GoogleServiceAuthError& error) {
+  OnGaiaAccountsInCookieUpdatedWithCallback(accounts, signed_out_accounts,
+                                            error, base::Closure());
+}
+
+void ProfileSyncService::OnGaiaAccountsInCookieUpdatedWithCallback(
+    const std::vector<gaia::ListedAccount>& accounts,
+    const std::vector<gaia::ListedAccount>& signed_out_accounts,
+    const GoogleServiceAuthError& error,
+    const base::Closure& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!IsEngineInitialized())
     return;
@@ -2021,7 +2030,7 @@ void ProfileSyncService::OnGaiaAccountsInCookieUpdated(
 
   DVLOG(1) << "Cookie jar mismatch: " << cookie_jar_mismatch;
   DVLOG(1) << "Cookie jar empty: " << cookie_jar_empty;
-  engine_->OnCookieJarChanged(cookie_jar_mismatch, cookie_jar_empty);
+  engine_->OnCookieJarChanged(cookie_jar_mismatch, cookie_jar_empty, callback);
 }
 
 void ProfileSyncService::AddProtocolEventObserver(

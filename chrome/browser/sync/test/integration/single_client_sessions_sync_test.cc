@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sync/test/integration/profile_sync_service_harness.h"
@@ -324,7 +325,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, TabMovedToOtherWindow) {
 }
 
 // crbug.com/689662
-#if defined(OS_CHROMEOS) || defined(OS_WIN)
+#if defined(OS_CHROMEOS)
 #define MAYBE_CookieJarMismatch DISABLED_CookieJarMismatch
 #else
 #define MAYBE_CookieJarMismatch CookieJarMismatch
@@ -351,24 +352,31 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, MAYBE_CookieJarMismatch) {
     ASSERT_TRUE(GetFakeServer()->GetLastCommitMessage(&message));
     ASSERT_TRUE(message.commit().config_params().cookie_jar_mismatch());
 
-    // It is possible that multiple sync cycles occured during the call to
+    // It is possible that multiple sync cycles occurred during the call to
     // OpenTab, which would cause multiple identical samples.
     ExpectUniqueSampleGE(histogram_tester, "Sync.CookieJarMatchOnNavigation",
                          false, 1);
     ExpectUniqueSampleGE(histogram_tester, "Sync.CookieJarEmptyOnMismatch",
                          true, 1);
-
-    // Trigger a cookie jar change (user signing in to content area).
-    gaia::ListedAccount signed_in_account;
-    signed_in_account.id =
-        GetClient(0)->service()->signin()->GetAuthenticatedAccountId();
-    std::vector<gaia::ListedAccount> accounts;
-    std::vector<gaia::ListedAccount> signed_out_accounts;
-    accounts.push_back(signed_in_account);
-    GoogleServiceAuthError error(GoogleServiceAuthError::NONE);
-    GetClient(0)->service()->OnGaiaAccountsInCookieUpdated(
-        accounts, signed_out_accounts, error);
   }
+
+  // Trigger a cookie jar change (user signing in to content area).
+  gaia::ListedAccount signed_in_account;
+  signed_in_account.id =
+      GetClient(0)->service()->signin()->GetAuthenticatedAccountId();
+  std::vector<gaia::ListedAccount> accounts;
+  std::vector<gaia::ListedAccount> signed_out_accounts;
+  accounts.push_back(signed_in_account);
+  GoogleServiceAuthError error(GoogleServiceAuthError::NONE);
+
+  // Updating the cookie jar has to travel to the sync engine. It is possible
+  // something is already running or scheduled to run on the sync thread. We
+  // want to block here and not create the HistogramTester below until we know
+  // the cookie jar stats have been updated.
+  base::RunLoop run_loop;
+  GetClient(0)->service()->OnGaiaAccountsInCookieUpdatedWithCallback(
+      accounts, signed_out_accounts, error, run_loop.QuitClosure());
+  run_loop.Run();
 
   {
     HistogramTester histogram_tester;

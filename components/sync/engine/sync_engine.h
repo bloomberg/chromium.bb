@@ -186,7 +186,9 @@ class SyncEngine : public ModelTypeConfigurer {
 
   // Notify the syncer that the cookie jar has changed.
   // See SyncManager::OnCookieJarChanged.
-  virtual void OnCookieJarChanged(bool account_mismatch, bool empty_jar) = 0;
+  virtual void OnCookieJarChanged(bool account_mismatch,
+                                  bool empty_jar,
+                                  const base::Closure& callback) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncEngine);

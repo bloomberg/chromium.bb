@@ -395,6 +395,13 @@ class ProfileSyncService : public syncer::SyncServiceBase,
       const std::vector<gaia::ListedAccount>& signed_out_accounts,
       const GoogleServiceAuthError& error) override;
 
+  // Similar to above but with a callback that will be invoked on completion.
+  void OnGaiaAccountsInCookieUpdatedWithCallback(
+      const std::vector<gaia::ListedAccount>& accounts,
+      const std::vector<gaia::ListedAccount>& signed_out_accounts,
+      const GoogleServiceAuthError& error,
+      const base::Closure& callback);
+
   // Get the sync status code.
   SyncStatusSummary QuerySyncStatusSummary();
 

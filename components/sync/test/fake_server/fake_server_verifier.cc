@@ -147,10 +147,21 @@ AssertionResult FakeServerVerifier::VerifySessions(
     if (session_specifics.has_header()) {
       session_header = session_specifics.header();
     } else if (session_specifics.has_tab()) {
-      sync_pb::SessionTab tab = session_specifics.tab();
-      tab_ids_to_window_ids[tab.tab_id()] = tab.window_id();
-      tab_ids_to_urls[tab.tab_id()] =
-          tab.navigation(tab.current_navigation_index()).virtual_url();
+      const sync_pb::SessionTab& tab = session_specifics.tab();
+      const sync_pb::TabNavigation& nav =
+          tab.navigation(tab.current_navigation_index());
+      // Only read from tabs that have a title on their current navigation
+      // entry. This the result of an oddity around the timing of sessions
+      // related changes. Sometimes when opening a new window, the first
+      // navigation will be committed before the title has been set. Then a
+      // subsequent commit will go through for that same navigation. Because
+      // this logic is used to ensure synchronization, we are going to exclude
+      // partially omitted navigations. The full navigation should typically be
+      // committed in full immediately after we fail a check because of this.
+      if (nav.has_title()) {
+        tab_ids_to_window_ids[tab.tab_id()] = tab.window_id();
+        tab_ids_to_urls[tab.tab_id()] = nav.virtual_url();
+      }
     }
   }
 

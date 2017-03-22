@@ -585,9 +585,15 @@ void SyncBackendHostCore::DoClearServerData(
 }
 
 void SyncBackendHostCore::DoOnCookieJarChanged(bool account_mismatch,
-                                               bool empty_jar) {
+                                               bool empty_jar,
+                                               const base::Closure& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   sync_manager_->OnCookieJarChanged(account_mismatch, empty_jar);
+  if (!callback.is_null()) {
+    host_.Call(FROM_HERE,
+               &SyncBackendHostImpl::OnCookieJarChangedDoneOnFrontendLoop,
+               callback);
+  }
 }
 
 void SyncBackendHostCore::ClearServerDataDone(

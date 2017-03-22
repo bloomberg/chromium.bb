@@ -97,7 +97,12 @@ void FakeSyncEngine::ClearServerData(
   callback.Run();
 }
 
-void FakeSyncEngine::OnCookieJarChanged(bool account_mismatch, bool empty_jar) {
+void FakeSyncEngine::OnCookieJarChanged(bool account_mismatch,
+                                        bool empty_jar,
+                                        const base::Closure& callback) {
+  if (!callback.is_null()) {
+    callback.Run();
+  }
 }
 
 }  // namespace syncer

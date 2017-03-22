@@ -431,17 +431,24 @@ void SyncBackendHostImpl::ClearServerData(
 }
 
 void SyncBackendHostImpl::OnCookieJarChanged(bool account_mismatch,
-                                             bool empty_jar) {
+                                             bool empty_jar,
+                                             const base::Closure& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   sync_task_runner_->PostTask(
       FROM_HERE, base::Bind(&SyncBackendHostCore::DoOnCookieJarChanged, core_,
-                            account_mismatch, empty_jar));
+                            account_mismatch, empty_jar, callback));
 }
 
 void SyncBackendHostImpl::ClearServerDataDoneOnFrontendLoop(
     const SyncManager::ClearServerDataCallback& frontend_callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   frontend_callback.Run();
+}
+
+void SyncBackendHostImpl::OnCookieJarChangedDoneOnFrontendLoop(
+    const base::Closure& callback) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  callback.Run();
 }
 
 }  // namespace syncer
