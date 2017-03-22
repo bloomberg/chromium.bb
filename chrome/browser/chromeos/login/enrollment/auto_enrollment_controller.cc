@@ -217,26 +217,31 @@ AutoEnrollmentController::RegisterProgressCallback(
 
 void AutoEnrollmentController::OnOwnershipStatusCheckDone(
     DeviceSettingsService::OwnershipStatus status) {
-  switch (status) {
-    case DeviceSettingsService::OWNERSHIP_NONE: {
+  policy::ServerBackedStateKeysBroker* state_keys_broker =
       g_browser_process->platform_part()
           ->browser_policy_connector_chromeos()
-          ->GetStateKeysBroker()
-          ->RequestStateKeys(
-              base::Bind(&AutoEnrollmentController::StartClient,
-                         client_start_weak_factory_.GetWeakPtr()));
-      break;
-    }
-    case DeviceSettingsService::OWNERSHIP_TAKEN: {
+          ->GetStateKeysBroker();
+  switch (status) {
+    case DeviceSettingsService::OWNERSHIP_NONE:
+      // TODO(tnagel): Prevent missing state keys broker in the first place.
+      // https://crbug.com/703658
+      if (!state_keys_broker) {
+        LOG(ERROR) << "State keys broker missing.";
+        UpdateState(policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT);
+        return;
+      }
+      state_keys_broker->RequestStateKeys(
+          base::Bind(&AutoEnrollmentController::StartClient,
+                     client_start_weak_factory_.GetWeakPtr()));
+      return;
+    case DeviceSettingsService::OWNERSHIP_TAKEN:
       VLOG(1) << "Device already owned, skipping auto-enrollment check.";
       UpdateState(policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT);
-      break;
-    }
-    case DeviceSettingsService::OWNERSHIP_UNKNOWN: {
+      return;
+    case DeviceSettingsService::OWNERSHIP_UNKNOWN:
       LOG(ERROR) << "Ownership unknown, skipping auto-enrollment check.";
       UpdateState(policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT);
-      break;
-    }
+      return;
   }
 }
 
