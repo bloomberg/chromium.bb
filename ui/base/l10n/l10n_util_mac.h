@@ -21,6 +21,16 @@ class NSString;
 
 namespace l10n_util {
 
+// Get localized language name using NSLocale Foundation API. If the system
+// API returns null or an empty string, ICU's formatting style of an unknown
+// language will be used which is "xyz (XYZ)" where the input is parsed into
+// language and script by the - token and reformatted as
+// "$lowercase_language ($UPPERCASE_SCRIPT)". If the - token is not found, the
+// lowercase version of |locale| will be returned.
+UI_BASE_EXPORT base::string16 GetDisplayNameForLocale(
+    const std::string& locale,
+    const std::string& display_locale);
+
 // Remove the Windows-style accelerator marker (for labels, menuitems, etc.)
 // and change "..." into an ellipsis.
 // Returns the result in an autoreleased NSString.

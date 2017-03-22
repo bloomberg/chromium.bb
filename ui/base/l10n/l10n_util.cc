@@ -550,6 +550,11 @@ base::string16 GetDisplayNameForLocale(const std::string& locale,
     locale_code = "ro-MD";
 
   base::string16 display_name;
+#if defined(OS_IOS)
+  // Use the Foundation API to get the localized display name, removing the need
+  // for the ICU data file to include this data.
+  display_name = GetDisplayNameForLocale(locale_code, display_locale);
+#else
 #if defined(OS_ANDROID)
   // Use Java API to get locale display name so that we can remove most of
   // the lang data from icu data to reduce binary size, except for zh-Hans and
@@ -559,7 +564,7 @@ base::string16 GetDisplayNameForLocale(const std::string& locale,
   if (!base::StartsWith(locale_code, "zh-Han", base::CompareCase::SENSITIVE)) {
     display_name = GetDisplayNameForLocale(locale_code, display_locale);
   } else
-#endif
+#endif  // defined(OS_ANDROID)
   {
     UErrorCode error = U_ZERO_ERROR;
     const int kBufferSize = 1024;
@@ -570,6 +575,7 @@ base::string16 GetDisplayNameForLocale(const std::string& locale,
     DCHECK(U_SUCCESS(error));
     display_name.resize(actual_size);
   }
+#endif
 
   // Add directional markup so parentheses are properly placed.
   if (is_for_ui && base::i18n::IsRTL())
