@@ -4,6 +4,8 @@
 
 import("//build/config/crypto.gni")
 
+assert(!is_ios, "Chromium/iOS shouldn't use anything in //chrome")
+
 static_library("net") {
   sources = [
     "net_resource_provider.cc",
@@ -28,11 +30,7 @@ static_library("net") {
     "//ui/base",
   ]
 
-  if (is_ios) {
-    sources -= [ "net_resource_provider.cc" ]
-  }
-
-  if (is_android || is_ios) {
+  if (is_android) {
     sources -= [ "x509_certificate_model.cc" ]
   }
 

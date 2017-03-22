@@ -14,18 +14,20 @@ import("//ppapi/features/features.gni")
 import("//printing/features/features.gni")
 import("//ui/base/ui_features.gni")
 
+assert(!is_ios, "Chromium/iOS shouldn't use anything in //chrome")
+
 # Please keep features in alphabetical order.
 declare_args() {
   enable_app_list = is_chromeos
 
   # Enables support for background apps.
-  enable_background = !is_ios && !is_android && !is_chromecast
+  enable_background = !is_android && !is_chromecast
 
   # Enable the printing system dialog for platforms that support printing
   # and have a system dialog.
   enable_basic_print_dialog = enable_basic_printing && !is_chromeos
 
-  enable_captive_portal_detection = !is_android && !is_ios && !is_chromecast
+  enable_captive_portal_detection = !is_android && !is_chromecast
 
   # Google Now is disabled to prepare for its removal.
   # http://crbug.com/539674
@@ -51,9 +53,9 @@ declare_args() {
 
   # Enables use of the session service, which is enabled by default.
   # Android stores them separately on the Java side.
-  enable_session_service = !is_android && !is_ios && !is_chromecast
+  enable_session_service = !is_android && !is_chromecast
 
-  enable_supervised_users = !is_ios && !is_chromecast
+  enable_supervised_users = !is_chromecast
 
   # Enables vr shell UI development on local or remote page.
   enable_vr_shell_ui_dev = false

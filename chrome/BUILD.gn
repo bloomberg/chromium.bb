@@ -36,6 +36,8 @@ if (is_android) {
   import("//third_party/icu/config.gni")
 }
 
+assert(!is_ios, "Chromium/iOS shouldn't use anything in //chrome")
+
 if (enable_resource_whitelist_generation) {
   chrome_resource_whitelist = "$target_gen_dir/chrome_resource_whitelist.txt"
 }
@@ -1415,7 +1417,7 @@ group("extra_resources") {
     "//chrome/browser/resources:webapks_ui_resources",
   ]
 
-  if (!is_android && !is_ios) {
+  if (!is_android) {
     public_deps += [
       "//chrome/browser/resources:component_extension_resources",
       "//chrome/browser/resources:options_resources",

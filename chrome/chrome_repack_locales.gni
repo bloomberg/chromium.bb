@@ -8,6 +8,8 @@ import("//build/config/ui.gni")
 import("//extensions/features/features.gni")
 import("//tools/grit/repack.gni")
 
+assert(!is_ios, "Chromium/iOS shouldn't use anything in //chrome")
+
 # Wraps repack_locales(), setting the source_patterns and deps required for
 # Chrome.
 #
@@ -26,6 +28,11 @@ template("chrome_repack_locales") {
       "${root_gen_dir}/chrome/platform_locale_settings_",
       "${root_gen_dir}/components/strings/components_locale_settings_",
       "${root_gen_dir}/components/strings/components_strings_",
+      "${root_gen_dir}/content/app/strings/content_strings_",
+      "${root_gen_dir}/device/bluetooth/strings/bluetooth_strings_",
+      "${root_gen_dir}/third_party/libaddressinput/address_input_strings_",
+      "${root_gen_dir}/ui/strings/app_locale_settings_",
+      "${root_gen_dir}/ui/strings/ui_strings_",
     ]
     if (!defined(deps)) {
       deps = []
@@ -36,6 +43,11 @@ template("chrome_repack_locales") {
       "//chrome/app/resources:platform_locale_settings",
       "//components/strings:components_locale_settings",
       "//components/strings:components_strings",
+      "//content/app/strings",
+      "//device/bluetooth/strings",
+      "//third_party/libaddressinput:strings",
+      "//ui/strings:app_locale_settings",
+      "//ui/strings:ui_strings",
     ]
     if (defined(invoker.deps)) {
       deps += invoker.deps
@@ -53,22 +65,6 @@ template("chrome_repack_locales") {
       deps += [
         "//remoting/resources",
         "//ui/chromeos/strings",
-      ]
-    }
-    if (!is_ios) {
-      source_patterns += [
-        "${root_gen_dir}/content/app/strings/content_strings_",
-        "${root_gen_dir}/device/bluetooth/strings/bluetooth_strings_",
-        "${root_gen_dir}/third_party/libaddressinput/address_input_strings_",
-        "${root_gen_dir}/ui/strings/app_locale_settings_",
-        "${root_gen_dir}/ui/strings/ui_strings_",
-      ]
-      deps += [
-        "//content/app/strings",
-        "//device/bluetooth/strings",
-        "//third_party/libaddressinput:strings",
-        "//ui/strings:app_locale_settings",
-        "//ui/strings:ui_strings",
       ]
     }
     if (enable_extensions) {
