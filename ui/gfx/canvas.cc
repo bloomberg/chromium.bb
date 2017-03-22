@@ -180,6 +180,10 @@ void Canvas::SaveLayerAlpha(uint8_t alpha, const Rect& layer_bounds) {
   canvas_->saveLayerAlpha(&bounds, alpha);
 }
 
+void Canvas::SaveLayerWithFlags(const cc::PaintFlags& flags) {
+  canvas_->saveLayer(nullptr /* bounds */, &flags);
+}
+
 void Canvas::Restore() {
   canvas_->restore();
 }

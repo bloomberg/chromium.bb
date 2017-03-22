@@ -193,6 +193,10 @@ class GFX_EXPORT Canvas {
   void SaveLayerAlpha(uint8_t alpha);
   void SaveLayerAlpha(uint8_t alpha, const Rect& layer_bounds);
 
+  // Like SaveLayerAlpha but draws the layer with an arbitrary set of
+  // PaintFlags once Restore() is called.
+  void SaveLayerWithFlags(const cc::PaintFlags& flags);
+
   // Restores the drawing state after a call to Save*(). It is an error to
   // call Restore() more times than Save*().
   void Restore();

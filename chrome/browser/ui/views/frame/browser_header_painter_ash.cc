@@ -8,7 +8,7 @@
 #include "ash/common/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/common/frame/header_painter_util.h"
 #include "ash/resources/vector_icons/vector_icons.h"
-#include "base/logging.h"  // DCHECK
+#include "base/logging.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
@@ -22,6 +22,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
@@ -60,51 +61,40 @@ SkPath MakeRoundRectPath(const gfx::Rect& bounds,
 void PaintFrameImagesInRoundRect(gfx::Canvas* canvas,
                                  const gfx::ImageSkia& frame_image,
                                  const gfx::ImageSkia& frame_overlay_image,
-                                 const cc::PaintFlags& flags,
+                                 int alpha,
+                                 SkColor background_color,
                                  const gfx::Rect& bounds,
                                  int corner_radius,
                                  int image_inset_x) {
   SkPath frame_path = MakeRoundRectPath(bounds, corner_radius, corner_radius);
-  // If |flags| is using an unusual SkBlendMode (this is the case while
-  // crossfading), we must create a new canvas to overlay |frame_image| and
-  // |frame_overlay_image| using |kSrcOver| and then paint the result
-  // using the unusual mode. We try to avoid this because creating a new
-  // browser-width canvas is expensive.
-  bool fast_path = (frame_overlay_image.isNull() || flags.isSrcOver());
-  if (fast_path) {
-    if (frame_image.isNull()) {
-      canvas->DrawPath(frame_path, flags);
-    } else {
-      canvas->DrawImageInPath(frame_image, -image_inset_x, 0, frame_path,
-                              flags);
-    }
+  bool antialias = corner_radius > 0;
 
-    if (!frame_overlay_image.isNull()) {
-      // Adjust |bounds| such that |frame_overlay_image| is not tiled.
-      gfx::Rect overlay_bounds = bounds;
-      overlay_bounds.Intersect(
-          gfx::Rect(bounds.origin(), frame_overlay_image.size()));
-      int top_left_corner_radius = corner_radius;
-      int top_right_corner_radius = corner_radius;
-      if (overlay_bounds.width() < bounds.width() - corner_radius)
-        top_right_corner_radius = 0;
-      canvas->DrawImageInPath(
-          frame_overlay_image, 0, 0,
-          MakeRoundRectPath(overlay_bounds, top_left_corner_radius,
-                            top_right_corner_radius),
-          flags);
-    }
+  gfx::ScopedCanvas scoped_save(canvas);
+  canvas->ClipPath(frame_path, antialias);
+
+  cc::PaintFlags flags;
+  flags.setBlendMode(SkBlendMode::kPlus);
+  flags.setAntiAlias(antialias);
+
+  if (frame_image.isNull() && frame_overlay_image.isNull()) {
+    flags.setColor(background_color);
+    canvas->DrawRect(bounds, flags);
+  } else if (frame_overlay_image.isNull()) {
+    flags.setAlpha(alpha);
+    canvas->DrawImageInt(frame_image, -image_inset_x, 0, flags);
   } else {
-    gfx::Canvas temporary_canvas(bounds.size(), canvas->image_scale(), false);
+    flags.setAlpha(alpha);
+    canvas->SaveLayerWithFlags(flags);
+
     if (frame_image.isNull()) {
-      temporary_canvas.DrawColor(flags.getColor());
+      canvas->DrawColor(background_color);
     } else {
-      temporary_canvas.TileImageInt(frame_image, image_inset_x, 0, 0, 0,
-                                    bounds.width(), bounds.height());
+      canvas->TileImageInt(frame_image, image_inset_x, 0, 0, 0, bounds.width(),
+                           bounds.height());
     }
-    temporary_canvas.DrawImageInt(frame_overlay_image, 0, 0);
-    canvas->DrawImageInPath(gfx::ImageSkia(temporary_canvas.ExtractImageRep()),
-                            0, 0, frame_path, flags);
+    canvas->DrawImageInt(frame_overlay_image, 0, 0);
+
+    canvas->Restore();
   }
 }
 
@@ -256,19 +246,17 @@ void BrowserHeaderPainterAsh::PaintFrameImages(gfx::Canvas* canvas,
   if (alpha == 0)
     return;
 
-  bool round_corners = !frame_->IsMaximized() && !frame_->IsFullscreen();
   gfx::ImageSkia frame_image = view_->GetFrameImage(active);
   gfx::ImageSkia frame_overlay_image = view_->GetFrameOverlayImage(active);
+  SkColor background_color = SkColorSetA(view_->GetFrameColor(active), alpha);
 
-  cc::PaintFlags flags;
-  flags.setBlendMode(SkBlendMode::kPlus);
-  flags.setAlpha(alpha);
-  flags.setColor(SkColorSetA(view_->GetFrameColor(active), alpha));
-  flags.setAntiAlias(round_corners);
+  int corner_radius = 0;
+  if (!frame_->IsMaximized() && !frame_->IsFullscreen())
+    corner_radius = ash::HeaderPainterUtil::GetTopCornerRadiusWhenRestored();
+
   PaintFrameImagesInRoundRect(
-      canvas, frame_image, frame_overlay_image, flags, GetPaintedBounds(),
-      round_corners ? ash::HeaderPainterUtil::GetTopCornerRadiusWhenRestored()
-                    : 0,
+      canvas, frame_image, frame_overlay_image, alpha, background_color,
+      GetPaintedBounds(), corner_radius,
       ash::HeaderPainterUtil::GetThemeBackgroundXInset());
 }
 
