@@ -262,17 +262,10 @@ class CONTENT_EXPORT WebContentsImpl
   base::Closure AddBindingSet(const std::string& interface_name,
                               WebContentsBindingSet* binding_set);
 
-  // Overrides the incoming Channel-associated interface request handler for
-  // interfaces registered with this WebContents via a WebContentsBindingSet.
-  // |binder| will live until either the binder is overridden again or the
-  // WebContents is destroyed.
-  template <typename Interface>
-  void OverrideBinderForTesting(
-      std::unique_ptr<WebContentsBindingSet::Binder> binder) {
-    auto it = binding_sets_.find(Interface::Name_);
-    DCHECK(it != binding_sets_.end());
-    it->second->SetBinderForTesting(std::move(binder));
-  }
+  // Accesses a WebContentsBindingSet for a specific interface on this
+  // WebContents. Returns null of there is no registered binder for the
+  // interface.
+  WebContentsBindingSet* GetBindingSet(const std::string& interface_name);
 
   // WebContents ------------------------------------------------------
   WebContentsDelegate* GetDelegate() override;

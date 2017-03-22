@@ -28,6 +28,14 @@ WebContentsBindingSet::~WebContentsBindingSet() {
   remove_callback_.Run();
 }
 
+// static
+WebContentsBindingSet* WebContentsBindingSet::GetForWebContents(
+    WebContents* web_contents,
+    const char* interface_name) {
+  return static_cast<WebContentsImpl*>(web_contents)
+      ->GetBindingSet(interface_name);
+}
+
 void WebContentsBindingSet::CloseAllBindings() {
   binder_for_testing_.reset();
   binder_.reset();

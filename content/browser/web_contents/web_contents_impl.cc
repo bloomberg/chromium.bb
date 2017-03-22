@@ -1025,6 +1025,14 @@ base::Closure WebContentsImpl::AddBindingSet(
                     weak_factory_.GetWeakPtr(), interface_name);
 }
 
+WebContentsBindingSet* WebContentsImpl::GetBindingSet(
+    const std::string& interface_name) {
+  auto it = binding_sets_.find(interface_name);
+  if (it == binding_sets_.end())
+    return nullptr;
+  return it->second;
+}
+
 void WebContentsImpl::UpdateDeviceScaleFactor(double device_scale_factor) {
   SendPageMessage(
       new PageMsg_SetDeviceScaleFactor(MSG_ROUTING_NONE, device_scale_factor));

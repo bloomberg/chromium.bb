@@ -39,6 +39,11 @@ class CONTENT_EXPORT WebContentsBindingSet {
     binder_for_testing_ = std::move(binder);
   }
 
+  template <typename Interface>
+  static WebContentsBindingSet* GetForWebContents(WebContents* web_contents) {
+    return GetForWebContents(web_contents, Interface::Name_);
+  }
+
  protected:
   WebContentsBindingSet(WebContents* web_contents,
                         const std::string& interface_name,
@@ -47,6 +52,9 @@ class CONTENT_EXPORT WebContentsBindingSet {
 
  private:
   friend class WebContentsImpl;
+
+  static WebContentsBindingSet* GetForWebContents(WebContents* web_contents,
+                                                  const char* interface_name);
 
   void CloseAllBindings();
   void OnRequestForFrame(RenderFrameHost* render_frame_host,
