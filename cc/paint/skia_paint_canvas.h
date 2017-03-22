@@ -28,7 +28,7 @@ class CC_PAINT_EXPORT SkiaPaintCanvas final : public PaintCanvas {
   explicit SkiaPaintCanvas(SkCanvas* canvas);
   explicit SkiaPaintCanvas(const SkBitmap& bitmap);
   explicit SkiaPaintCanvas(const SkBitmap& bitmap, const SkSurfaceProps& props);
-  ~SkiaPaintCanvas();
+  ~SkiaPaintCanvas() override;
 
   SkMetaData& getMetaData() override;
   SkImageInfo imageInfo() const override;

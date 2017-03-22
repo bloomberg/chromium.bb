@@ -20,6 +20,8 @@ class PaintFlags;
 
 class CC_PAINT_EXPORT PaintCanvas {
  public:
+  virtual ~PaintCanvas() {}
+
   virtual SkMetaData& getMetaData() = 0;
   virtual SkImageInfo imageInfo() const = 0;
 
