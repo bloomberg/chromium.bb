@@ -50,11 +50,10 @@ class BASE_EXPORT MemoryDumpScheduler {
 
  private:
   friend class MemoryDumpManagerTest;
-  friend class MemoryDumpSchedulerPollingTest;
   FRIEND_TEST_ALL_PREFIXES(MemoryDumpManagerTest, TestPollingOnDumpThread);
 
   // Helper class to schdule periodic memory dumps.
-  struct BASE_EXPORT PeriodicTriggerState {
+  struct PeriodicTriggerState {
     PeriodicTriggerState();
     ~PeriodicTriggerState();
 
@@ -72,7 +71,7 @@ class BASE_EXPORT MemoryDumpScheduler {
     DISALLOW_COPY_AND_ASSIGN(PeriodicTriggerState);
   };
 
-  struct BASE_EXPORT PollingTriggerState {
+  struct PollingTriggerState {
     enum State {
       CONFIGURED,  // Polling trigger was added.
       ENABLED,     // Polling is running.

@@ -2154,7 +2154,6 @@ test("base_unittests") {
     "trace_event/java_heap_dump_provider_android_unittest.cc",
     "trace_event/memory_allocator_dump_unittest.cc",
     "trace_event/memory_dump_manager_unittest.cc",
-    "trace_event/memory_dump_scheduler_unittest.cc",
     "trace_event/memory_usage_estimator_unittest.cc",
     "trace_event/process_memory_dump_unittest.cc",
     "trace_event/trace_category_unittest.cc",
