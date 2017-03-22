@@ -153,8 +153,7 @@ class SmoothnessKeyDesktopMoveCases(_Smoothness):
               possible_browser.platform.GetOSName() == 'win')
 
 
-@benchmark.Disabled('all')
-#@benchmark.Enabled('android')
+@benchmark.Enabled('android')
 @benchmark.Owner(emails=['vmiura@chromium.org', 'tdresser@chromium.org'])
 class SmoothnessKeyMobileSites(_Smoothness):
   """Measures rendering statistics while scrolling down the key mobile sites.
@@ -277,8 +276,7 @@ class SmoothnessGpuRasterizationFiltersCases(_Smoothness):
             possible_browser.browser_type == 'reference')
 
 
-@benchmark.Disabled('all')
-#@benchmark.Enabled('android')
+@benchmark.Enabled('android')
 @benchmark.Owner(emails=['tdresser@chromium.org', 'rbyers@chromium.org'])
 class SmoothnessSyncScrollKeyMobileSites(_Smoothness):
   """Measures rendering statistics for the key mobile sites with synchronous
