@@ -24,14 +24,32 @@ namespace content {
 
 namespace {
 
+// Don't change or reorder any of the values in this enum, as these values
+// are serialized on disk.
+enum class StorageFormat : uint8_t { UTF16 = 0 };
+
 base::string16 Uint8VectorToString16(const std::vector<uint8_t>& input) {
-  return base::string16(reinterpret_cast<const base::char16*>(input.data()),
-                        input.size() / sizeof(base::char16));
+  // TODO(mek): Better error recovery when corrupt (or otherwise invalid) data
+  // is detected.
+  if (input.size() % sizeof(base::char16) != 1 ||
+      input[0] != static_cast<uint8_t>(StorageFormat::UTF16)) {
+    VLOG(1) << "Corrupt data in localstorage";
+    return base::string16();
+  }
+  base::string16 result;
+  result.resize(input.size() / sizeof(base::char16));
+  std::memcpy(reinterpret_cast<void*>(&result[0]), input.data() + 1,
+              input.size() - 1);
+  return result;
 }
 
 std::vector<uint8_t> String16ToUint8Vector(const base::string16& input) {
   const uint8_t* data = reinterpret_cast<const uint8_t*>(input.data());
-  return std::vector<uint8_t>(data, data + input.size() * sizeof(base::char16));
+  std::vector<uint8_t> result;
+  result.reserve(input.size() * sizeof(base::char16) + 1);
+  result.push_back(static_cast<uint8_t>(StorageFormat::UTF16));
+  result.insert(result.end(), data, data + input.size() * sizeof(base::char16));
+  return result;
 }
 
 class GetAllCallback : public mojom::LevelDBWrapperGetAllCallback {
