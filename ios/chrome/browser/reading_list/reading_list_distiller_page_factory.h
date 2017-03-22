@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "url/gurl.h"
 
 namespace web {
 class BrowserState;
@@ -28,8 +29,10 @@ class ReadingListDistillerPageFactory {
   explicit ReadingListDistillerPageFactory(web::BrowserState* browser_state);
   virtual ~ReadingListDistillerPageFactory();
 
-  // Creates a ReadingListDistillerPage.
+  // Creates a ReadingListDistillerPage to distill |url|.
+  // Information about page will be reported to |delegate|.
   std::unique_ptr<ReadingListDistillerPage> CreateReadingListDistillerPage(
+      const GURL& url,
       ReadingListDistillerPageDelegate* delegate) const;
 
   // Releases all WebState owned by |web_state_dispatcher_|.

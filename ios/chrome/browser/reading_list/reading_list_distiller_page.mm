@@ -55,10 +55,12 @@ ReadingListDistillerPageDelegate::ReadingListDistillerPageDelegate() {}
 ReadingListDistillerPageDelegate::~ReadingListDistillerPageDelegate() {}
 
 ReadingListDistillerPage::ReadingListDistillerPage(
+    const GURL& url,
     web::BrowserState* browser_state,
     FaviconWebStateDispatcher* web_state_dispatcher,
     ReadingListDistillerPageDelegate* delegate)
     : dom_distiller::DistillerPageIOS(browser_state),
+      original_url_(url),
       web_state_dispatcher_(web_state_dispatcher),
       delegate_(delegate),
       delayed_task_id_(0),
@@ -77,8 +79,9 @@ void ReadingListDistillerPage::DistillPageImpl(const GURL& url,
   std::unique_ptr<web::WebState> new_web_state =
       web_state_dispatcher_->RequestWebState();
   AttachWebState(std::move(new_web_state));
-  original_url_ = url;
+
   delayed_task_id_++;
+  distilling_main_page_ = url == original_url_;
   FetchFavicon(url);
 
   DistillerPageIOS::DistillPageImpl(url, script);
@@ -153,8 +156,10 @@ void ReadingListDistillerPage::OnLoadURLDone(
     DistillerPageIOS::OnLoadURLDone(load_completion_status);
     return;
   }
-  delegate_->DistilledPageHasMimeType(original_url_,
-                                      CurrentWebState()->GetContentsMimeType());
+  if (distilling_main_page_) {
+    delegate_->DistilledPageHasMimeType(
+        original_url_, CurrentWebState()->GetContentsMimeType());
+  }
   if (!CurrentWebState()->ContentIsHTML()) {
     // If content is not HTML, distillation will fail immediatly.
     // Call the handler to make sure cleaning methods are called correctly.
@@ -205,7 +210,7 @@ void ReadingListDistillerPage::ContinuePageDistillation() {
   // If the visible URL is not the original URL, notify the caller that URL
   // changed.
   GURL redirected_url = CurrentWebState()->GetVisibleURL();
-  if (redirected_url != original_url_ && delegate_) {
+  if (redirected_url != original_url_ && delegate_ && distilling_main_page_) {
     delegate_->DistilledPageRedirectedToURL(original_url_, redirected_url);
   }
   DistillerPageIOS::OnLoadURLDone(web::PageLoadCompletionStatus::SUCCESS);

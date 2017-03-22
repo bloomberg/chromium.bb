@@ -68,9 +68,11 @@ void DistillerViewer::OnArticleReady(
                   article_proto->pages(0).html().empty();
   if (!is_empty) {
     std::vector<ImageInfo> images;
-    for (int i = 0; i < article_proto->pages(0).image_size(); i++) {
-      auto image = article_proto->pages(0).image(i);
-      images.push_back(ImageInfo{GURL(image.url()), image.data()});
+    for (int p = 0; p < article_proto->pages_size(); p++) {
+      for (int i = 0; i < article_proto->pages(p).image_size(); i++) {
+        auto image = article_proto->pages(p).image(i);
+        images.push_back(ImageInfo{GURL(image.url()), image.data()});
+      }
     }
     const std::string html = viewer::GetUnsafeArticleTemplateHtml(
         url_.spec(), distilled_page_prefs_->GetTheme(),

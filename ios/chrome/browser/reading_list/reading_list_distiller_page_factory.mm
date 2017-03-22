@@ -23,9 +23,10 @@ ReadingListDistillerPageFactory::~ReadingListDistillerPageFactory() {}
 
 std::unique_ptr<ReadingListDistillerPage>
 ReadingListDistillerPageFactory::CreateReadingListDistillerPage(
+    const GURL& url,
     ReadingListDistillerPageDelegate* delegate) const {
   return base::MakeUnique<ReadingListDistillerPage>(
-      browser_state_, web_state_dispatcher_.get(), delegate);
+      url, browser_state_, web_state_dispatcher_.get(), delegate);
 }
 
 void ReadingListDistillerPageFactory::ReleaseAllRetainedWebState() {

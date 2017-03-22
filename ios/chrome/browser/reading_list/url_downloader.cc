@@ -173,7 +173,7 @@ void URLDownloader::DownloadURL(const GURL& url, bool offline_url_exists) {
   saved_size_ = 0;
   std::unique_ptr<reading_list::ReadingListDistillerPage>
       reading_list_distiller_page =
-          distiller_page_factory_->CreateReadingListDistillerPage(this);
+          distiller_page_factory_->CreateReadingListDistillerPage(url, this);
 
   distiller_.reset(new dom_distiller::DistillerViewer(
       distiller_factory_, std::move(reading_list_distiller_page), pref_service_,
