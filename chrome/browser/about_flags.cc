@@ -2408,6 +2408,12 @@ const FeatureEntry kFeatureEntries[] = {
      MULTI_VALUE_TYPE(kForceTabletModeChoices)},
 #endif  // OS_CHROMEOS
 
+#if defined(OS_ANDROID)
+    {"use-new-doodle-api", IDS_FLAGS_USE_NEW_DOODLE_API_NAME,
+     IDS_FLAGS_USE_NEW_DOODLE_API_DESCRIPTION, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kUseNewDoodleApi)},
+#endif  // OS_ANDROID
+
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in
     // histograms.xml and don't forget to run AboutFlagsHistogramTest unit test.

@@ -15044,6 +15044,15 @@ read aloud to screenreader users to announce that a completion is available.">
     <message name="IDS_FLAGS_MOJO_LOADING_DESCRIPTION" desc="Description for the flag to enable Mojo IPC for resource loading" translateable="false">
       Use Mojo IPC instead of traditional Chrome IPC for resource loading.
     </message>
+
+    <if expr="is_android">
+      <message name="IDS_FLAGS_USE_NEW_DOODLE_API_NAME" desc="Name for the flag to enable the new Doodle API" translateable="false">
+        Use new Doodle API
+      </message>
+      <message name="IDS_FLAGS_USE_NEW_DOODLE_API_DESCRIPTION" desc="Description for the flag to enable the new Doodle API" translateable="false">
+        Enables the new API to fetch Doodles for the NTP.
+      </message>
+    </if>
   </messages>
  </release>
 </grit>

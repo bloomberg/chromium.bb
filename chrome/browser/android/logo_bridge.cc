@@ -14,6 +14,7 @@
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
+#include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/logo_service.h"
 #include "chrome/browser/doodle/doodle_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -38,9 +39,6 @@ using base::android::ScopedJavaLocalRef;
 using base::android::ToJavaByteArray;
 
 namespace {
-
-const base::Feature kUseNewDoodleApi{"UseNewDoodleApi",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
 ScopedJavaLocalRef<jobject> MakeJavaLogo(JNIEnv* env,
                                          const SkBitmap* bitmap,
@@ -198,7 +196,7 @@ LogoBridge::LogoBridge(jobject j_profile)
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
   DCHECK(profile);
 
-  if (base::FeatureList::IsEnabled(kUseNewDoodleApi)) {
+  if (base::FeatureList::IsEnabled(chrome::android::kUseNewDoodleApi)) {
     doodle_service_ = DoodleServiceFactory::GetForProfile(profile);
     image_fetcher_ = base::MakeUnique<image_fetcher::ImageFetcherImpl>(
         base::MakeUnique<suggestions::ImageDecoderImpl>(),

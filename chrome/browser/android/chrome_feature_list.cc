@@ -180,6 +180,9 @@ const base::Feature kTabReparenting{"TabReparenting",
 const base::Feature kUploadCrashReportsUsingJobScheduler{
     "UploadCrashReportsUsingJobScheduler", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kUseNewDoodleApi{"UseNewDoodleApi",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kUserMediaScreenCapturing{
     "UserMediaScreenCapturing", base::FEATURE_DISABLED_BY_DEFAULT};
 
