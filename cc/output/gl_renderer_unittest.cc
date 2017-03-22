@@ -1641,8 +1641,7 @@ class TestOverlayProcessor : public OverlayProcessor {
 
     // Returns true if draw quads can be represented as CALayers (Mac only).
     MOCK_METHOD0(AllowCALayerOverlays, bool());
-
-    bool AllowDCLayerOverlays() override { return false; }
+    MOCK_METHOD0(AllowDCLayerOverlays, bool());
 
     // A list of possible overlay candidates is presented to this function.
     // The expected result is that those candidates that can be in a separate
@@ -1733,6 +1732,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   // list because the render pass is cleaned up by DrawFrame.
   EXPECT_CALL(*processor->strategy_, Attempt(_, _, _, _)).Times(0);
   EXPECT_CALL(*validator, AllowCALayerOverlays()).Times(0);
+  EXPECT_CALL(*validator, AllowDCLayerOverlays()).Times(0);
   DrawFrame(&renderer, viewport_size);
   Mock::VerifyAndClearExpectations(processor->strategy_);
   Mock::VerifyAndClearExpectations(validator.get());
@@ -1750,6 +1750,9 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
       premultiplied_alpha, gfx::PointF(0, 0), gfx::PointF(1, 1),
       SK_ColorTRANSPARENT, vertex_opacity, flipped, nearest_neighbor, false);
   EXPECT_CALL(*validator, AllowCALayerOverlays())
+      .Times(1)
+      .WillOnce(::testing::Return(false));
+  EXPECT_CALL(*validator, AllowDCLayerOverlays())
       .Times(1)
       .WillOnce(::testing::Return(false));
   EXPECT_CALL(*processor->strategy_, Attempt(_, _, _, _)).Times(1);
@@ -1904,20 +1907,21 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
 
 class PartialSwapMockGLES2Interface : public TestGLES2Interface {
  public:
-  explicit PartialSwapMockGLES2Interface(bool support_set_draw_rectangle)
-      : support_set_draw_rectangle_(support_set_draw_rectangle) {}
+  explicit PartialSwapMockGLES2Interface(bool support_dc_layers)
+      : support_dc_layers_(support_dc_layers) {}
 
   void InitializeTestContext(TestWebGraphicsContext3D* context) override {
     context->set_have_post_sub_buffer(true);
-    context->set_support_set_draw_rectangle(support_set_draw_rectangle_);
+    context->set_enable_dc_layers(support_dc_layers_);
   }
 
   MOCK_METHOD1(Enable, void(GLenum cap));
   MOCK_METHOD1(Disable, void(GLenum cap));
   MOCK_METHOD4(Scissor, void(GLint x, GLint y, GLsizei width, GLsizei height));
+  MOCK_METHOD1(SetEnableDCLayersCHROMIUM, void(GLboolean enable));
 
  private:
-  bool support_set_draw_rectangle_;
+  bool support_dc_layers_;
 };
 
 class GLRendererPartialSwapTest : public GLRendererTest {
@@ -2014,6 +2018,103 @@ TEST_F(GLRendererPartialSwapTest, SetDrawRectangle_PartialSwap) {
 
 TEST_F(GLRendererPartialSwapTest, SetDrawRectangle_NoPartialSwap) {
   RunTest(false, true);
+}
+
+class DCLayerValidator : public OverlayCandidateValidator {
+ public:
+  void GetStrategies(OverlayProcessor::StrategyList* strategies) override {}
+  bool AllowCALayerOverlays() override { return false; }
+  bool AllowDCLayerOverlays() override { return true; }
+  void CheckOverlaySupport(OverlayCandidateList* surfaces) override {}
+};
+
+// Test that SetEnableDCLayersCHROMIUM is properly called when enabling
+// and disabling DC layers.
+TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
+  auto gl_owned = base::MakeUnique<PartialSwapMockGLES2Interface>(true);
+  auto* gl = gl_owned.get();
+
+  auto provider = TestContextProvider::Create(std::move(gl_owned));
+  provider->BindToCurrentThread();
+
+  FakeOutputSurfaceClient output_surface_client;
+  std::unique_ptr<FakeOutputSurface> output_surface(
+      FakeOutputSurface::Create3d(std::move(provider)));
+  output_surface->BindToClient(&output_surface_client);
+
+  std::unique_ptr<ResourceProvider> resource_provider =
+      FakeResourceProvider::Create(output_surface->context_provider(), nullptr);
+
+  RendererSettings settings;
+  settings.partial_swap_enabled = true;
+  FakeRendererGL renderer(&settings, output_surface.get(),
+                          resource_provider.get());
+  renderer.Initialize();
+  renderer.SetVisible(true);
+  TestOverlayProcessor* processor =
+      new TestOverlayProcessor(output_surface.get());
+  processor->Initialize();
+  renderer.SetOverlayProcessor(processor);
+  std::unique_ptr<DCLayerValidator> validator(new DCLayerValidator);
+  output_surface->SetOverlayCandidateValidator(validator.get());
+
+  gfx::Size viewport_size(100, 100);
+
+  TextureMailbox mailbox =
+      TextureMailbox(gpu::Mailbox::Generate(), gpu::SyncToken(), GL_TEXTURE_2D,
+                     gfx::Size(256, 256), true, false);
+  std::unique_ptr<SingleReleaseCallbackImpl> release_callback =
+      SingleReleaseCallbackImpl::Create(base::Bind(&MailboxReleased));
+  ResourceId resource_id = resource_provider->CreateResourceFromTextureMailbox(
+      mailbox, std::move(release_callback));
+
+  for (int i = 0; i < 65; i++) {
+    int root_pass_id = 1;
+    RenderPass* root_pass = AddRenderPass(
+        &render_passes_in_draw_order_, root_pass_id, gfx::Rect(viewport_size),
+        gfx::Transform(), FilterOperations());
+    if (i == 0) {
+      gfx::Rect rect(0, 0, 100, 100);
+      gfx::RectF tex_coord_rect(0, 0, 1, 1);
+      SharedQuadState* shared_state =
+          root_pass->CreateAndAppendSharedQuadState();
+      shared_state->SetAll(gfx::Transform(), rect.size(), rect, rect, false, 1,
+                           SkBlendMode::kSrcOver, 0);
+      YUVVideoDrawQuad* quad =
+          root_pass->CreateAndAppendDrawQuad<YUVVideoDrawQuad>();
+      quad->SetNew(shared_state, rect, rect, rect, tex_coord_rect,
+                   tex_coord_rect, rect.size(), rect.size(), resource_id,
+                   resource_id, resource_id, resource_id,
+                   YUVVideoDrawQuad::REC_601, gfx::ColorSpace(), 0, 1.0, 8);
+    }
+
+    // A bunch of initialization that happens.
+    EXPECT_CALL(*gl, Disable(_)).Times(AnyNumber());
+    EXPECT_CALL(*gl, Enable(_)).Times(AnyNumber());
+    EXPECT_CALL(*gl, Scissor(_, _, _, _)).Times(AnyNumber());
+
+    // Partial frame, we should use a scissor to swap only that part when
+    // partial swap is enabled.
+    root_pass->damage_rect = gfx::Rect(2, 2, 3, 3);
+    // Frame 0 should be completely damaged because it's the first.
+    // Frame 1 should be because it changed. Frame 60 should be
+    // because it's disabling DC layers.
+    gfx::Rect output_rectangle = (i == 0 || i == 1 || i == 60)
+                                     ? root_pass->output_rect
+                                     : root_pass->damage_rect;
+
+    // Frame 0 should have DC Layers enabled because of the overlay.
+    // After 60 frames of no overlays DC layers should be disabled again.
+    if (i < 60)
+      EXPECT_CALL(*gl, SetEnableDCLayersCHROMIUM(GL_TRUE));
+    else
+      EXPECT_CALL(*gl, SetEnableDCLayersCHROMIUM(GL_FALSE));
+
+    renderer.DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
+    DrawFrame(&renderer, viewport_size);
+    EXPECT_EQ(output_rectangle, output_surface->last_set_draw_rectangle());
+    testing::Mock::VerifyAndClearExpectations(gl);
+  }
 }
 
 class GLRendererWithMockContextTest : public ::testing::Test {

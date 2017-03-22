@@ -2464,6 +2464,10 @@ void GLRenderer::FinishDrawingQuadList() {
   FlushTextureQuadCache(SHARED_BINDING);
 }
 
+void GLRenderer::SetEnableDCLayers(bool enable) {
+  gl_->SetEnableDCLayersCHROMIUM(enable);
+}
+
 bool GLRenderer::FlippedFramebuffer() const {
   if (force_drawing_frame_framebuffer_unflipped_)
     return false;

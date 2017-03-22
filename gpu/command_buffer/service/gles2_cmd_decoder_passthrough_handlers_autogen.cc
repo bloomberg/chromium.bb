@@ -4385,5 +4385,19 @@ error::Error GLES2DecoderPassthroughImpl::HandleSetDrawRectangleCHROMIUM(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderPassthroughImpl::HandleSetEnableDCLayersCHROMIUM(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::SetEnableDCLayersCHROMIUM& c =
+      *static_cast<const volatile gles2::cmds::SetEnableDCLayersCHROMIUM*>(
+          cmd_data);
+  GLboolean enabled = static_cast<GLboolean>(c.enabled);
+  error::Error error = DoSetEnableDCLayersCHROMIUM(enabled);
+  if (error != error::kNoError) {
+    return error;
+  }
+  return error::kNoError;
+}
+
 }  // namespace gles2
 }  // namespace gpu

@@ -388,5 +388,6 @@
 #define glSwapBuffersWithBoundsCHROMIUM \
   GLES2_GET_FUN(SwapBuffersWithBoundsCHROMIUM)
 #define glSetDrawRectangleCHROMIUM GLES2_GET_FUN(SetDrawRectangleCHROMIUM)
+#define glSetEnableDCLayersCHROMIUM GLES2_GET_FUN(SetEnableDCLayersCHROMIUM)
 
 #endif  // GPU_GLES2_GL2CHROMIUM_AUTOGEN_H_

@@ -25,6 +25,8 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/transform.h"
 
+namespace {
+
 static gfx::Transform OrthoProjectionMatrix(float left,
                                             float right,
                                             float bottom,
@@ -62,6 +64,13 @@ static gfx::Transform window_matrix(int x, int y, int width, int height) {
   return canvas;
 }
 
+// Switching between enabling DC layers and not is expensive, so only
+// switch away after a large number of frames not needing DC layers have
+// been produced.
+constexpr int kNumberOfFramesBeforeDisablingDCLayers = 60;
+
+}  // namespace
+
 namespace cc {
 
 DirectRenderer::DrawingFrame::DrawingFrame() = default;
@@ -87,8 +96,8 @@ void DirectRenderer::Initialize() {
   if (context_provider) {
     if (context_provider->ContextCapabilities().commit_overlay_planes)
       allow_empty_swap_ = true;
-    if (context_provider->ContextCapabilities().set_draw_rectangle)
-      use_set_draw_rectangle_ = true;
+    if (context_provider->ContextCapabilities().dc_layers)
+      supports_dc_layers_ = true;
   }
 
   initialized_ = true;
@@ -314,6 +323,19 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
       &current_frame()->dc_layer_overlay_list,
       &current_frame()->root_damage_rect,
       &current_frame()->root_content_bounds);
+  bool was_using_dc_layers = using_dc_layers_;
+  if (!current_frame()->dc_layer_overlay_list.empty()) {
+    DCHECK(supports_dc_layers_);
+    using_dc_layers_ = true;
+    frames_since_using_dc_layers_ = 0;
+  } else if (++frames_since_using_dc_layers_ >=
+             kNumberOfFramesBeforeDisablingDCLayers) {
+    using_dc_layers_ = false;
+  }
+  if (was_using_dc_layers != using_dc_layers_) {
+    current_frame()->root_damage_rect =
+        current_frame()->root_render_pass->output_rect;
+  }
 
   // We can skip all drawing if the damage rect is now empty.
   bool skip_drawing_root_render_pass =
@@ -523,7 +545,7 @@ void DirectRenderer::DrawRenderPass(const RenderPass* render_pass) {
   // outside the damage rectangle, even if the damage rectangle is the size of
   // the full backbuffer.
   bool render_pass_is_clipped =
-      (use_set_draw_rectangle_ && is_root_render_pass) ||
+      (supports_dc_layers_ && is_root_render_pass) ||
       !render_pass_scissor_in_draw_space.Contains(surface_rect_in_draw_space);
   bool has_external_stencil_test =
       is_root_render_pass && output_surface_->HasExternalStencilTest();
@@ -597,8 +619,10 @@ bool DirectRenderer::UseRenderPass(const RenderPass* render_pass) {
   if (render_pass == current_frame()->root_render_pass) {
     BindFramebufferToOutputSurface();
 
-    if (use_set_draw_rectangle_)
+    if (supports_dc_layers_) {
+      SetEnableDCLayers(using_dc_layers_);
       output_surface_->SetDrawRectangle(current_frame()->root_damage_rect);
+    }
     InitializeViewport(current_frame(), render_pass->output_rect,
                        gfx::Rect(current_frame()->device_viewport_size),
                        current_frame()->device_viewport_size);

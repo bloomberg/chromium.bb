@@ -583,6 +583,10 @@ void SoftwareRenderer::CopyCurrentRenderPassToBitmap(
   request->SendBitmapResult(std::move(bitmap));
 }
 
+void SoftwareRenderer::SetEnableDCLayers(bool enable) {
+  NOTIMPLEMENTED();
+}
+
 void SoftwareRenderer::DidChangeVisibility() {
   if (visible_)
     output_surface_->EnsureBackbuffer();

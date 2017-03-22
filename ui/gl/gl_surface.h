@@ -201,6 +201,8 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
 
   virtual bool ScheduleDCLayer(const ui::DCRendererLayerParams& params);
 
+  virtual bool SetEnableDCLayers(bool enable);
+
   virtual bool IsSurfaceless() const;
 
   virtual bool FlipsVertically() const;
@@ -209,7 +211,7 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   // the next buffer may be 2 frames old.
   virtual bool BuffersFlipped() const;
 
-  virtual bool SupportsSetDrawRectangle() const;
+  virtual bool SupportsDCLayers() const;
 
   // Set the rectangle that will be drawn into on the surface.
   virtual bool SetDrawRectangle(const gfx::Rect& rect);
@@ -286,10 +288,11 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
                             const gfx::Rect& bounds_rect,
                             const gfx::RectF& crop_rect) override;
   bool ScheduleDCLayer(const ui::DCRendererLayerParams& params) override;
+  bool SetEnableDCLayers(bool enable) override;
   bool IsSurfaceless() const override;
   bool FlipsVertically() const override;
   bool BuffersFlipped() const override;
-  bool SupportsSetDrawRectangle() const override;
+  bool SupportsDCLayers() const override;
   bool SetDrawRectangle(const gfx::Rect& rect) override;
   gfx::Vector2d GetDrawOffset() const override;
   void OnSetSwapInterval(int interval) override;

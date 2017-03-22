@@ -31,7 +31,7 @@ class GL_EXPORT GLSurfaceStub : public GLSurface {
   void* GetHandle() override;
   bool BuffersFlipped() const override;
   GLSurfaceFormat GetFormat() override;
-  bool SupportsSetDrawRectangle() const override;
+  bool SupportsDCLayers() const override;
   gfx::Vector2d GetDrawOffset() const override;
 
  protected:

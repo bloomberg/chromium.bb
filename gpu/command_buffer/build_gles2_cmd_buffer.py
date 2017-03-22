@@ -4548,6 +4548,10 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoSetDrawRectangleCHROMIUM',
     'extension': 'CHROMIUM_set_draw_rectangle',
   },
+  'SetEnableDCLayersCHROMIUM': {
+    'decoder_func': 'DoSetEnableDCLayersCHROMIUM',
+    'extension': 'CHROMIUM_dc_layers',
+  },
 }
 
 

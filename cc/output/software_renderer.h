@@ -51,6 +51,7 @@ class CC_EXPORT SoftwareRenderer : public DirectRenderer {
   void EnsureScissorTestDisabled() override;
   void CopyCurrentRenderPassToBitmap(
       std::unique_ptr<CopyOutputRequest> request) override;
+  void SetEnableDCLayers(bool enable) override;
   void DidChangeVisibility() override;
 
  private:

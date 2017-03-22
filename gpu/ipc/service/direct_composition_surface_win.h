@@ -49,16 +49,20 @@ class GPU_EXPORT DirectCompositionSurfaceWin : public gl::GLSurfaceEGL {
                             gl::GLImage* image,
                             const gfx::Rect& bounds_rect,
                             const gfx::RectF& crop_rect) override;
+  bool SetEnableDCLayers(bool enable) override;
   bool FlipsVertically() const override;
   bool SupportsPostSubBuffer() override;
   bool OnMakeCurrent(gl::GLContext* context) override;
-  bool SupportsSetDrawRectangle() const override;
+  bool SupportsDCLayers() const override;
   bool SetDrawRectangle(const gfx::Rect& rect) override;
   gfx::Vector2d GetDrawOffset() const override;
 
   bool Initialize(std::unique_ptr<gfx::VSyncProvider> vsync_provider);
 
   scoped_refptr<base::TaskRunner> GetWindowTaskRunnerForTesting();
+  base::win::ScopedComPtr<IDXGISwapChain1> swap_chain() const {
+    return swap_chain_;
+  }
 
  protected:
   ~DirectCompositionSurfaceWin() override;
@@ -82,8 +86,12 @@ class GPU_EXPORT DirectCompositionSurfaceWin : public gl::GLSurfaceEGL {
   };
 
   bool CommitAndClearPendingOverlays();
+  void ReleaseCurrentSurface();
   void InitializeSurface();
-  void ReleaseDrawTexture();
+  // Release the texture that's currently being drawn to. If will_discard is
+  // true then the surface should be discarded without swapping any contents
+  // to it.
+  void ReleaseDrawTexture(bool will_discard);
 
   ChildWindowWin child_window_;
 
@@ -97,8 +105,10 @@ class GPU_EXPORT DirectCompositionSurfaceWin : public gl::GLSurfaceEGL {
   EGLSurface real_surface_ = 0;
   gfx::Size size_ = gfx::Size(1, 1);
   bool first_swap_ = true;
+  bool enable_dc_layers_ = false;
   std::unique_ptr<gfx::VSyncProvider> vsync_provider_;
   std::vector<Overlay> pending_overlays_;
+  gfx::Rect swap_rect_;
 
   gfx::Vector2d draw_offset_;
 
@@ -107,6 +117,7 @@ class GPU_EXPORT DirectCompositionSurfaceWin : public gl::GLSurfaceEGL {
   base::win::ScopedComPtr<IDCompositionTarget> dcomp_target_;
   base::win::ScopedComPtr<IDCompositionVisual2> visual_;
   base::win::ScopedComPtr<IDCompositionSurface> dcomp_surface_;
+  base::win::ScopedComPtr<IDXGISwapChain1> swap_chain_;
   base::win::ScopedComPtr<ID3D11Texture2D> draw_texture_;
 
   // Keep track of whether the texture has been rendered to, as the first draw

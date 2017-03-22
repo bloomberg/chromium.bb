@@ -166,6 +166,7 @@ class CC_EXPORT DirectRenderer {
   virtual void DidChangeVisibility() = 0;
   virtual void CopyCurrentRenderPassToBitmap(
       std::unique_ptr<CopyOutputRequest> request) = 0;
+  virtual void SetEnableDCLayers(bool enable) = 0;
 
   gfx::Size surface_size_for_swap_buffers() const {
     return reshape_surface_size_;
@@ -184,8 +185,14 @@ class CC_EXPORT DirectRenderer {
   bool use_partial_swap_ = false;
   // Whether overdraw feedback is enabled and can be used.
   bool overdraw_feedback_ = false;
-  // Whether the SetDrawRectangle command is in use.
-  bool use_set_draw_rectangle_ = false;
+  // Whether the SetDrawRectangle and EnableDCLayers commands are in
+  // use.
+  bool supports_dc_layers_ = false;
+  // Whether the output surface is actually using DirectComposition.
+  bool using_dc_layers_ = false;
+  // This counts the number of draws since the last time
+  // DirectComposition layers needed to be used.
+  int frames_since_using_dc_layers_ = 0;
 
   // TODO(danakj): Just use a vector of pairs here? Hash map is way overkill.
   std::unordered_map<int, std::unique_ptr<ScopedResource>>

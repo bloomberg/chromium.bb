@@ -161,6 +161,11 @@ bool GLSurface::ScheduleDCLayer(const ui::DCRendererLayerParams& params) {
   return false;
 }
 
+bool GLSurface::SetEnableDCLayers(bool enable) {
+  NOTIMPLEMENTED();
+  return false;
+}
+
 bool GLSurface::IsSurfaceless() const {
   return false;
 }
@@ -173,7 +178,7 @@ bool GLSurface::BuffersFlipped() const {
   return false;
 }
 
-bool GLSurface::SupportsSetDrawRectangle() const {
+bool GLSurface::SupportsDCLayers() const {
   return false;
 }
 
@@ -359,6 +364,10 @@ bool GLSurfaceAdapter::ScheduleDCLayer(
   return surface_->ScheduleDCLayer(params);
 }
 
+bool GLSurfaceAdapter::SetEnableDCLayers(bool enable) {
+  return surface_->SetEnableDCLayers(enable);
+}
+
 bool GLSurfaceAdapter::IsSurfaceless() const {
   return surface_->IsSurfaceless();
 }
@@ -371,8 +380,8 @@ bool GLSurfaceAdapter::BuffersFlipped() const {
   return surface_->BuffersFlipped();
 }
 
-bool GLSurfaceAdapter::SupportsSetDrawRectangle() const {
-  return surface_->SupportsSetDrawRectangle();
+bool GLSurfaceAdapter::SupportsDCLayers() const {
+  return surface_->SupportsDCLayers();
 }
 
 bool GLSurfaceAdapter::SetDrawRectangle(const gfx::Rect& rect) {

@@ -5172,6 +5172,17 @@ error::Error GLES2DecoderImpl::HandleSetDrawRectangleCHROMIUM(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderImpl::HandleSetEnableDCLayersCHROMIUM(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::SetEnableDCLayersCHROMIUM& c =
+      *static_cast<const volatile gles2::cmds::SetEnableDCLayersCHROMIUM*>(
+          cmd_data);
+  GLboolean enabled = static_cast<GLboolean>(c.enabled);
+  DoSetEnableDCLayersCHROMIUM(enabled);
+  return error::kNoError;
+}
+
 bool GLES2DecoderImpl::SetCapabilityState(GLenum cap, bool enabled) {
   switch (cap) {
     case GL_BLEND:

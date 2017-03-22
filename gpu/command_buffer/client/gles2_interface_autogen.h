@@ -909,4 +909,5 @@ virtual void SetDrawRectangleCHROMIUM(GLint x,
                                       GLint y,
                                       GLint width,
                                       GLint height) = 0;
+virtual void SetEnableDCLayersCHROMIUM(GLboolean enabled) = 0;
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_AUTOGEN_H_

@@ -3230,4 +3230,12 @@ void SetDrawRectangleCHROMIUM(GLint x, GLint y, GLint width, GLint height) {
   }
 }
 
+void SetEnableDCLayersCHROMIUM(GLboolean enabled) {
+  gles2::cmds::SetEnableDCLayersCHROMIUM* c =
+      GetCmdSpace<gles2::cmds::SetEnableDCLayersCHROMIUM>();
+  if (c) {
+    c->Init(enabled);
+  }
+}
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_CMD_HELPER_AUTOGEN_H_

@@ -154,7 +154,8 @@ struct GPU_EXPORT Capabilities {
   bool disable_multisampling_color_mask_usage = false;
   bool disable_webgl_rgb_multisampling_usage = false;
   bool gpu_rasterization = false;
-  bool set_draw_rectangle = false;
+  // True if DirectComposition layers are enabled.
+  bool dc_layers = false;
 
   // When this parameter is true, a CHROMIUM image created with RGB format will
   // actually have RGBA format. The client is responsible for handling most of

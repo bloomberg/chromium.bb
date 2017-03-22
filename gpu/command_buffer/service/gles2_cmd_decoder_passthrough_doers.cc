@@ -3529,5 +3529,11 @@ error::Error GLES2DecoderPassthroughImpl::DoSetDrawRectangleCHROMIUM(
   return error::kNoError;
 }
 
+error::Error GLES2DecoderPassthroughImpl::DoSetEnableDCLayersCHROMIUM(
+    GLboolean enable) {
+  NOTIMPLEMENTED();
+  return error::kNoError;
+}
+
 }  // namespace gles2
 }  // namespace gpu

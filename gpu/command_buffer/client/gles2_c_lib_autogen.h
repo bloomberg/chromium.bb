@@ -1745,6 +1745,9 @@ void GL_APIENTRY GLES2SetDrawRectangleCHROMIUM(GLint x,
                                                GLint height) {
   gles2::GetGLContext()->SetDrawRectangleCHROMIUM(x, y, width, height);
 }
+void GL_APIENTRY GLES2SetEnableDCLayersCHROMIUM(GLboolean enabled) {
+  gles2::GetGLContext()->SetEnableDCLayersCHROMIUM(enabled);
+}
 
 namespace gles2 {
 
@@ -3059,6 +3062,10 @@ extern const NameToFunc g_gles2_function_table[] = {
     {
         "glSetDrawRectangleCHROMIUM",
         reinterpret_cast<GLES2FunctionPointer>(glSetDrawRectangleCHROMIUM),
+    },
+    {
+        "glSetEnableDCLayersCHROMIUM",
+        reinterpret_cast<GLES2FunctionPointer>(glSetEnableDCLayersCHROMIUM),
     },
     {
         NULL, NULL,

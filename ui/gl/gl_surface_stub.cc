@@ -39,7 +39,7 @@ GLSurfaceFormat GLSurfaceStub::GetFormat() {
   return GLSurfaceFormat();
 }
 
-bool GLSurfaceStub::SupportsSetDrawRectangle() const {
+bool GLSurfaceStub::SupportsDCLayers() const {
   return supports_draw_rectangle_;
 }
 

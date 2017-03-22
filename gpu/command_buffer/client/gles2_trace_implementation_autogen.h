@@ -882,4 +882,5 @@ void SetDrawRectangleCHROMIUM(GLint x,
                               GLint y,
                               GLint width,
                               GLint height) override;
+void SetEnableDCLayersCHROMIUM(GLboolean enabled) override;
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_TRACE_IMPLEMENTATION_AUTOGEN_H_

@@ -1187,4 +1187,5 @@ void GLES2InterfaceStub::SetDrawRectangleCHROMIUM(GLint /* x */,
                                                   GLint /* y */,
                                                   GLint /* width */,
                                                   GLint /* height */) {}
+void GLES2InterfaceStub::SetEnableDCLayersCHROMIUM(GLboolean /* enabled */) {}
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_INTERFACE_STUB_IMPL_AUTOGEN_H_

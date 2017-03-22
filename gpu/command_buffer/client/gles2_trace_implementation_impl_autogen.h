@@ -2536,4 +2536,9 @@ void GLES2TraceImplementation::SetDrawRectangleCHROMIUM(GLint x,
   gl_->SetDrawRectangleCHROMIUM(x, y, width, height);
 }
 
+void GLES2TraceImplementation::SetEnableDCLayersCHROMIUM(GLboolean enabled) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "GLES2Trace::SetEnableDCLayersCHROMIUM");
+  gl_->SetEnableDCLayersCHROMIUM(enabled);
+}
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_GLES2_TRACE_IMPLEMENTATION_IMPL_AUTOGEN_H_

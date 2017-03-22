@@ -100,6 +100,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   void EnsureScissorTestDisabled() override;
   void CopyCurrentRenderPassToBitmap(
       std::unique_ptr<CopyOutputRequest> request) override;
+  void SetEnableDCLayers(bool enable) override;
   void FinishDrawingQuadList() override;
 
   // Returns true if quad requires antialiasing and false otherwise.

@@ -368,3 +368,6 @@ GL_APICALL void         GL_APIENTRY glSwapBuffersWithBoundsCHROMIUM (GLsizei cou
 
 // Extension CHROMIUM_set_draw_rectangle
 GL_APICALL void         GL_APIENTRY glSetDrawRectangleCHROMIUM (GLint x, GLint y, GLint width, GLint height);
+
+// Extension CHROMIUM_dc_overlays
+GL_APICALL void         GL_APIENTRY glSetEnableDCLayersCHROMIUM (GLboolean enabled);

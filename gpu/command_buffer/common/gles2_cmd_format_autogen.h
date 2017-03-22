@@ -15866,4 +15866,37 @@ static_assert(offsetof(SetDrawRectangleCHROMIUM, width) == 12,
 static_assert(offsetof(SetDrawRectangleCHROMIUM, height) == 16,
               "offset of SetDrawRectangleCHROMIUM height should be 16");
 
+struct SetEnableDCLayersCHROMIUM {
+  typedef SetEnableDCLayersCHROMIUM ValueType;
+  static const CommandId kCmdId = kSetEnableDCLayersCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLboolean _enabled) {
+    SetHeader();
+    enabled = _enabled;
+  }
+
+  void* Set(void* cmd, GLboolean _enabled) {
+    static_cast<ValueType*>(cmd)->Init(_enabled);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t enabled;
+};
+
+static_assert(sizeof(SetEnableDCLayersCHROMIUM) == 8,
+              "size of SetEnableDCLayersCHROMIUM should be 8");
+static_assert(offsetof(SetEnableDCLayersCHROMIUM, header) == 0,
+              "offset of SetEnableDCLayersCHROMIUM header should be 0");
+static_assert(offsetof(SetEnableDCLayersCHROMIUM, enabled) == 4,
+              "offset of SetEnableDCLayersCHROMIUM enabled should be 4");
+
 #endif  // GPU_COMMAND_BUFFER_COMMON_GLES2_CMD_FORMAT_AUTOGEN_H_
