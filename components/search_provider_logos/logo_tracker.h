@@ -194,12 +194,14 @@ class LogoTracker : public net::URLFetcherDelegate {
   // Called when the logo has been downloaded and parsed. |logo| will be NULL
   // if the server's response was invalid.
   void OnFreshLogoParsed(bool* parsing_failed,
+                         bool from_http_cache,
                          std::unique_ptr<EncodedLogo> logo);
 
   // Called when the fresh logo has been decoded into an SkBitmap. |image| will
   // be NULL if decoding failed.
   void OnFreshLogoAvailable(std::unique_ptr<EncodedLogo> logo,
                             bool parsing_failed,
+                            bool from_http_cache,
                             const SkBitmap& image);
 
   // net::URLFetcherDelegate:

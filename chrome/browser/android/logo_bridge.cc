@@ -299,6 +299,9 @@ void LogoBridge::DoodleImageFetched(
     return;
   }
 
+  UMA_HISTOGRAM_BOOLEAN("NewTabPage.LogoImageDownloaded",
+                        metadata.from_http_cache);
+
   ScopedJavaLocalRef<jobject> j_logo = MakeJavaLogo(
       env, image.ToSkBitmap(), on_click_url, alt_text, animated_image_url);
   Java_LogoObserver_onLogoAvailable(env, j_logo_observer_, j_logo,

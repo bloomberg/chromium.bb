@@ -261,6 +261,7 @@ void LogoTracker::FetchLogo() {
 }
 
 void LogoTracker::OnFreshLogoParsed(bool* parsing_failed,
+                                    bool from_http_cache,
                                     std::unique_ptr<EncodedLogo> logo) {
   DCHECK(!is_idle_);
 
@@ -268,7 +269,8 @@ void LogoTracker::OnFreshLogoParsed(bool* parsing_failed,
     logo->metadata.source_url = logo_url_.spec();
 
   if (!logo || !logo->encoded_image.get()) {
-    OnFreshLogoAvailable(std::move(logo), *parsing_failed, SkBitmap());
+    OnFreshLogoAvailable(std::move(logo), *parsing_failed, from_http_cache,
+                         SkBitmap());
   } else {
     // Store the value of logo->encoded_image for use below. This ensures that
     // logo->encoded_image is evaulated before base::Passed(&logo), which sets
@@ -277,15 +279,15 @@ void LogoTracker::OnFreshLogoParsed(bool* parsing_failed,
     logo_delegate_->DecodeUntrustedImage(
         encoded_image,
         base::Bind(&LogoTracker::OnFreshLogoAvailable,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   base::Passed(&logo),
-                   *parsing_failed));
+                   weak_ptr_factory_.GetWeakPtr(), base::Passed(&logo),
+                   *parsing_failed, from_http_cache));
   }
 }
 
 void LogoTracker::OnFreshLogoAvailable(
     std::unique_ptr<EncodedLogo> encoded_logo,
     bool parsing_failed,
+    bool from_http_cache,
     const SkBitmap& image) {
   DCHECK(!is_idle_);
 
@@ -307,6 +309,8 @@ void LogoTracker::OnFreshLogoAvailable(
     std::unique_ptr<Logo> logo;
     // Check if the server returned a valid, non-empty response.
     if (encoded_logo) {
+      UMA_HISTOGRAM_BOOLEAN("NewTabPage.LogoImageDownloaded", from_http_cache);
+
       DCHECK(!image.isNull());
       logo.reset(new Logo());
       logo->metadata = encoded_logo->metadata;
@@ -360,13 +364,16 @@ void LogoTracker::OnURLFetchComplete(const net::URLFetcher* source) {
   source->GetResponseAsString(response.get());
   base::Time response_time = clock_->Now();
 
+  bool from_http_cache = source->WasCached();
+
   bool* parsing_failed = new bool(false);
   base::PostTaskAndReplyWithResult(
       background_task_runner_.get(), FROM_HERE,
       base::Bind(parse_logo_response_func_, base::Passed(&response),
                  response_time, parsing_failed),
       base::Bind(&LogoTracker::OnFreshLogoParsed,
-                 weak_ptr_factory_.GetWeakPtr(), base::Owned(parsing_failed)));
+                 weak_ptr_factory_.GetWeakPtr(), base::Owned(parsing_failed),
+                 from_http_cache));
 }
 
 void LogoTracker::OnURLFetchDownloadProgress(const net::URLFetcher* source,
