@@ -215,6 +215,12 @@ StackFrameAMD64* StackwalkerAMD64::GetCallerByFramePointerRecovery(
       return NULL;
     }
 
+    // Sanity check that resulting rbp is still inside stack memory.
+    uint64_t unused;
+    if (!memory_->GetMemoryAtAddress(caller_rbp, &unused)) {
+      return NULL;
+    }
+
     StackFrameAMD64* frame = new StackFrameAMD64();
     frame->trust = StackFrame::FRAME_TRUST_FP;
     frame->context = last_frame->context;
