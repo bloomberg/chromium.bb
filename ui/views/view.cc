@@ -11,6 +11,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/containers/adapters.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -54,6 +55,7 @@
 #include "ui/views/layout/layout_manager.h"
 #include "ui/views/view_observer.h"
 #include "ui/views/views_delegate.h"
+#include "ui/views/views_switches.h"
 #include "ui/views/widget/native_widget_private.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/tooltip_manager.h"
@@ -845,19 +847,10 @@ void View::SchedulePaintInRect(const gfx::Rect& rect) {
 }
 
 void View::Paint(const ui::PaintContext& parent_context) {
-  if (!visible_)
-    return;
-  if (size().IsEmpty())
+  if (!ShouldPaint())
     return;
 
-  gfx::Vector2d offset_to_parent;
-  if (!layer()) {
-    // If the View has a layer() then it is a paint root. Otherwise, we need to
-    // add the offset from the parent into the total offset from the paint root.
-    DCHECK(parent() || origin() == gfx::Point());
-    offset_to_parent = GetMirroredPosition().OffsetFromOrigin();
-  }
-  ui::PaintContext context(parent_context, offset_to_parent);
+  ui::PaintContext context(parent_context, GetPaintContextOffset());
 
   bool is_invalidated = true;
   if (context.CanCheckInvalid()) {
@@ -889,12 +882,10 @@ void View::Paint(const ui::PaintContext& parent_context) {
 
   // If the view is backed by a layer, it should paint with itself as the origin
   // rather than relative to its parent.
-  bool paint_relative_to_parent = !layer();
-
   // TODO(danakj): Rework clip and transform recorder usage here to use
   // std::optional once we can do so.
   ui::ClipRecorder clip_recorder(parent_context);
-  if (paint_relative_to_parent) {
+  if (!layer()) {
     // Set the clip rect to the bounds of this View, or |clip_path_| if it's
     // been set. Note that the X (or left) position we pass to ClipRect takes
     // into consideration whether or not the View uses a right-to-left layout so
@@ -909,16 +900,7 @@ void View::Paint(const ui::PaintContext& parent_context) {
   }
 
   ui::TransformRecorder transform_recorder(context);
-  if (paint_relative_to_parent) {
-    // Translate the graphics such that 0,0 corresponds to where
-    // this View is located relative to its parent.
-    gfx::Transform transform_from_parent;
-    gfx::Vector2d offset_from_parent = GetMirroredPosition().OffsetFromOrigin();
-    transform_from_parent.Translate(offset_from_parent.x(),
-                                    offset_from_parent.y());
-    transform_from_parent.PreconcatTransform(GetTransform());
-    transform_recorder.Transform(transform_from_parent);
-  }
+  SetupTransformRecorderForPainting(&transform_recorder);
 
   // Note that the cache is not aware of the offset of the view
   // relative to the parent since painting is always done relative to
@@ -1523,12 +1505,7 @@ void View::RemovedFromWidget() {}
 
 void View::PaintChildren(const ui::PaintContext& context) {
   TRACE_EVENT1("views", "View::PaintChildren", "class", GetClassName());
-  View::Views children = GetChildrenInZOrder();
-  DCHECK_EQ(child_count(), static_cast<int>(children.size()));
-  for (auto* child : children) {
-    if (!child->layer())
-      child->Paint(context);
-  }
+  RecursivePaintHelper(&View::Paint, context);
 }
 
 void View::OnPaint(gfx::Canvas* canvas) {
@@ -1631,7 +1608,7 @@ void View::UpdateChildLayerBounds(const gfx::Vector2d& offset) {
 }
 
 void View::OnPaintLayer(const ui::PaintContext& context) {
-  Paint(context);
+  PaintFromPaintRoot(context);
 }
 
 void View::OnDelegatedFrameDamage(
@@ -1906,6 +1883,71 @@ void View::SchedulePaintOnParent() {
     // then pass this notification up to the parent.
     parent_->SchedulePaintInRect(ConvertRectToParent(GetLocalBounds()));
   }
+}
+
+bool View::ShouldPaint() const {
+  return visible_ && !size().IsEmpty();
+}
+
+gfx::Vector2d View::GetPaintContextOffset() const {
+  // If the View has a layer() then it is a paint root. Otherwise, we need to
+  // add the offset from the parent into the total offset from the paint root.
+  DCHECK(layer() || parent() || origin() == gfx::Point());
+  return layer() ? gfx::Vector2d() : GetMirroredPosition().OffsetFromOrigin();
+}
+
+void View::SetupTransformRecorderForPainting(
+    ui::TransformRecorder* recorder) const {
+  // If the view is backed by a layer, it should paint with itself as the origin
+  // rather than relative to its parent.
+  if (layer())
+    return;
+
+  // Translate the graphics such that 0,0 corresponds to where this View is
+  // located relative to its parent.
+  gfx::Transform transform_from_parent;
+  gfx::Vector2d offset_from_parent = GetMirroredPosition().OffsetFromOrigin();
+  transform_from_parent.Translate(offset_from_parent.x(),
+                                  offset_from_parent.y());
+  transform_from_parent.PreconcatTransform(GetTransform());
+  recorder->Transform(transform_from_parent);
+}
+
+void View::RecursivePaintHelper(void (View::*func)(const ui::PaintContext&),
+                                const ui::PaintContext& context) {
+  View::Views children = GetChildrenInZOrder();
+  DCHECK_EQ(child_count(), static_cast<int>(children.size()));
+  for (auto* child : children) {
+    if (!child->layer())
+      (child->*func)(context);
+  }
+}
+
+void View::PaintFromPaintRoot(const ui::PaintContext& parent_context) {
+  Paint(parent_context);
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDrawViewBoundsRects))
+    PaintDebugRects(parent_context);
+}
+
+void View::PaintDebugRects(const ui::PaintContext& parent_context) {
+  if (!ShouldPaint())
+    return;
+
+  ui::PaintContext context(parent_context, GetPaintContextOffset());
+  ui::TransformRecorder transform_recorder(context);
+  SetupTransformRecorderForPainting(&transform_recorder);
+
+  RecursivePaintHelper(&View::PaintDebugRects, context);
+
+  // Draw outline rects for debugging.
+  ui::PaintRecorder recorder(context, size());
+  gfx::Canvas* canvas = recorder.canvas();
+  const float scale = canvas->UndoDeviceScaleFactor();
+  gfx::RectF outline_rect(ScaleToEnclosedRect(GetLocalBounds(), scale));
+  outline_rect.Inset(0.5f, 0.5f);
+  const SkColor color = SkColorSetARGB(0x30, 0xff, 0, 0);
+  canvas->DrawRect(outline_rect, color);
 }
 
 // Tree operations -------------------------------------------------------------

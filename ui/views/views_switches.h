@@ -14,6 +14,7 @@ namespace switches {
 
 // Please keep alphabetized.
 VIEWS_EXPORT extern const char kDisableViewsRectBasedTargeting[];
+VIEWS_EXPORT extern const char kDrawViewBoundsRects[];
 
 // Returns true if rect-based targeting in views should be used.
 VIEWS_EXPORT bool IsRectBasedTargetingEnabled();

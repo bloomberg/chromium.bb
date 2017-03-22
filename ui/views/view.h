@@ -61,6 +61,7 @@ class Layer;
 class NativeTheme;
 class PaintContext;
 class ThemeProvider;
+class TransformRecorder;
 }
 
 namespace views {
@@ -1290,6 +1291,35 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
 
   // Schedules a paint on the parent View if it exists.
   void SchedulePaintOnParent();
+
+  // Returns whether this view is eligible for painting, i.e. is visible and
+  // nonempty.  Note that this does not behave like IsDrawn(), since it doesn't
+  // check ancestors recursively; rather, it's used to prune subtrees of views
+  // during painting.
+  bool ShouldPaint() const;
+
+  // Returns the offset that should be used when constructing the paint context
+  // for this view.
+  gfx::Vector2d GetPaintContextOffset() const;
+
+  // Adjusts the transform of |recorder| in advance of painting.
+  void SetupTransformRecorderForPainting(ui::TransformRecorder* recorder) const;
+
+  // Recursively calls the painting method |func| on all non-layered children,
+  // in Z order.
+  void RecursivePaintHelper(void (View::*func)(const ui::PaintContext&),
+                            const ui::PaintContext& context);
+
+  // Invokes Paint() and, if necessary, PaintDebugRects().  Should be called
+  // only on the root of a widget/layer.  PaintDebugRects() is invoked as a
+  // separate pass, instead of being rolled into Paint(), so that siblings will
+  // not obscure debug rects.
+  void PaintFromPaintRoot(const ui::PaintContext& parent_context);
+
+  // Draws a semitransparent rect to indicate the bounds of this view.
+  // Recursively does the same for all children.  Invoked only with
+  // --draw-view-bounds-rects.
+  void PaintDebugRects(const ui::PaintContext& parent_context);
 
   // Tree operations -----------------------------------------------------------
 

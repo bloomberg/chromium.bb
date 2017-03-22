@@ -17,6 +17,9 @@ namespace switches {
 const char kDisableViewsRectBasedTargeting[] =
     "disable-views-rect-based-targeting";
 
+// Draws a semitransparent rect to indicate the bounds of each view.
+const char kDrawViewBoundsRects[] = "draw-view-bounds-rects";
+
 bool IsRectBasedTargetingEnabled() {
 #if defined(OS_CHROMEOS) || defined(OS_WIN) || defined(OS_LINUX)
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
