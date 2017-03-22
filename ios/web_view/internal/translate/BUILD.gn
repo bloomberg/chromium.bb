@@ -29,4 +29,6 @@ source_set("translate") {
     "//ios/web_view/public",
     "//url",
   ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
 }

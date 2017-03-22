@@ -26,6 +26,10 @@
 #import "ios/web_view/public/cwv_translate_delegate.h"
 #include "url/gurl.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 DEFINE_WEB_STATE_USER_DATA_KEY(ios_web_view::WebViewTranslateClient);
 
 namespace ios_web_view {
@@ -55,7 +59,7 @@ void WebViewTranslateClient::ShowTranslateUI(
     const std::string& target_language,
     translate::TranslateErrors::Type error_type,
     bool triggered_from_menu) {
-  if (!delegate_)
+  if (!delegate_.get())
     return;
 
   if (error_type != translate::TranslateErrors::NONE)

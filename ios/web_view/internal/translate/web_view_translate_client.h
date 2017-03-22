@@ -8,14 +8,15 @@
 #include <memory>
 #include <string>
 
+#import "base/ios/weak_nsobject.h"
 #include "components/translate/core/browser/translate_client.h"
 #include "components/translate/core/browser/translate_step.h"
 #include "components/translate/core/common/translate_errors.h"
 #import "components/translate/ios/browser/ios_translate_driver.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 #import "ios/web/public/web_state/web_state_user_data.h"
+#import "ios/web_view/public/cwv_translate_delegate.h"
 
-@protocol CWVTranslateDelegate;
 class PrefService;
 
 namespace translate {
@@ -38,7 +39,7 @@ class WebViewTranslateClient
   // Sets the delegate passed by the embedder.
   // |delegate| is assumed to outlive this WebViewTranslateClient.
   void set_translate_delegate(id<CWVTranslateDelegate> delegate) {
-    delegate_ = delegate;
+    delegate_.reset(delegate);
   }
 
  private:
@@ -72,7 +73,7 @@ class WebViewTranslateClient
   translate::IOSTranslateDriver translate_driver_;
 
   // Delegate provided by the embedder.
-  id<CWVTranslateDelegate> delegate_;  // Weak.
+  base::WeakNSProtocol<id<CWVTranslateDelegate>> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(WebViewTranslateClient);
 };
