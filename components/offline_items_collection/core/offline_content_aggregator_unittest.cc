@@ -4,6 +4,8 @@
 
 #include "components/offline_items_collection/core/offline_content_aggregator.h"
 
+#include <map>
+
 #include "base/memory/ptr_util.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -14,10 +16,40 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
+using testing::ContainerEq;
 using testing::Return;
 
 namespace offline_items_collection {
 namespace {
+
+struct CompareOfflineItemsById {
+  bool operator()(const OfflineItem& a, const OfflineItem& b) const {
+    return a.id < b.id;
+  }
+};
+
+// A custom comparator that makes sure two vectors contain the same elements.
+// TODO(dtrainor): Look into building a better matcher that works with gmock.
+template <typename T>
+bool VectorContentsEq(const std::vector<T>& list1,
+                      const std::vector<T>& list2) {
+  if (list1.size() != list2.size())
+    return false;
+
+  std::map<T, int, CompareOfflineItemsById> occurance_counts;
+  for (auto it = list1.begin(); it != list1.end(); it++)
+    occurance_counts[*it]++;
+
+  for (auto it = list2.begin(); it != list2.end(); it++)
+    occurance_counts[*it]--;
+
+  for (auto it = occurance_counts.begin(); it != occurance_counts.end(); it++) {
+    if (it->second != 0)
+      return false;
+  }
+
+  return true;
+}
 
 // Helper class that automatically unregisters itself from the aggregator in the
 // case that someone calls OpenItem on it.
@@ -141,12 +173,13 @@ TEST_F(OfflineContentAggregatorTest, QueryingItemsWithProviderThatIsntReady) {
   EXPECT_CALL(provider2, GetAllItems()).WillRepeatedly(Return(items2));
 
   provider1.NotifyOnItemsAvailable();
-  EXPECT_EQ(items1, aggregator_.GetAllItems());
+  EXPECT_TRUE(VectorContentsEq(items1, aggregator_.GetAllItems()));
 
   OfflineContentProvider::OfflineItemList combined_items(items1);
   combined_items.insert(combined_items.end(), items2.begin(), items2.end());
   provider2.NotifyOnItemsAvailable();
-  EXPECT_EQ(combined_items, aggregator_.GetAllItems());
+
+  EXPECT_TRUE(VectorContentsEq(combined_items, aggregator_.GetAllItems()));
 }
 
 TEST_F(OfflineContentAggregatorTest, QueryingItemFromRemovedProvider) {
@@ -402,6 +435,42 @@ TEST_F(OfflineContentAggregatorTest, ProviderRemovedDuringCallbackFlush) {
   EXPECT_CALL(provider1, OpenItem(id1)).Times(1);
   EXPECT_CALL(provider1, RemoveItem(id2)).Times(0);
   provider1.NotifyOnItemsAvailable();
+}
+
+TEST_F(OfflineContentAggregatorTest, SameProviderWithMultipleNamespaces) {
+  MockOfflineContentProvider provider;
+  ScopedMockOfflineContentProvider::ScopedMockObserver observer(&aggregator_);
+
+  ContentId id1("1", "A");
+  ContentId id2("2", "B");
+  OfflineItem item1(id1);
+  OfflineItem item2(id2);
+  OfflineContentProvider::OfflineItemList items;
+  items.push_back(item1);
+  items.push_back(item2);
+
+  aggregator_.RegisterProvider("1", &provider);
+  aggregator_.RegisterProvider("2", &provider);
+  EXPECT_TRUE(provider.HasObserver(&aggregator_));
+
+  EXPECT_CALL(provider, GetAllItems()).WillRepeatedly(Return(items));
+  EXPECT_CALL(provider, GetItemById(id1)).WillRepeatedly(Return(&item1));
+  EXPECT_CALL(provider, GetItemById(id2)).WillRepeatedly(Return(&item2));
+
+  EXPECT_CALL(observer, OnItemsAvailable(&aggregator_)).Times(1);
+  provider.NotifyOnItemsAvailable();
+
+  EXPECT_TRUE(VectorContentsEq(items, aggregator_.GetAllItems()));
+  EXPECT_EQ(&item1, aggregator_.GetItemById(id1));
+  EXPECT_EQ(&item2, aggregator_.GetItemById(id2));
+
+  aggregator_.UnregisterProvider("1");
+  EXPECT_TRUE(provider.HasObserver(&aggregator_));
+  EXPECT_EQ(nullptr, aggregator_.GetItemById(id1));
+  EXPECT_EQ(&item2, aggregator_.GetItemById(id2));
+
+  aggregator_.UnregisterProvider("2");
+  EXPECT_FALSE(provider.HasObserver(&aggregator_));
 }
 
 }  // namespace

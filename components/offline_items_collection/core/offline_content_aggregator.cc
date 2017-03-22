@@ -39,19 +39,28 @@ void OfflineContentAggregator::RegisterProvider(
   // Validate that this is the first OfflineContentProvider registered that is
   // associated with |name_space|.
   DCHECK(providers_.find(name_space) == providers_.end());
-  DCHECK(pending_actions_.find(provider) == pending_actions_.end());
+
+  // Only set up the connection to the provider if the provider isn't associated
+  // with any other namespace.
+  if (!MapContainsValue(providers_, provider))
+    provider->AddObserver(this);
 
   providers_[name_space] = provider;
-  provider->AddObserver(this);
 }
 
 void OfflineContentAggregator::UnregisterProvider(
     const std::string& name_space) {
-  auto it = providers_.find(name_space);
+  auto provider_it = providers_.find(name_space);
 
-  it->second->RemoveObserver(this);
-  pending_actions_.erase(it->second);
-  providers_.erase(it);
+  OfflineContentProvider* provider = provider_it->second;
+  providers_.erase(provider_it);
+
+  // Only clean up the connection to the provider if the provider isn't
+  // associated with any other namespace.
+  if (!MapContainsValue(providers_, provider)) {
+    provider->RemoveObserver(this);
+    pending_actions_.erase(provider);
+  }
 }
 
 bool OfflineContentAggregator::AreItemsAvailable() {
@@ -119,12 +128,17 @@ const OfflineItem* OfflineContentAggregator::GetItemById(const ContentId& id) {
 
 OfflineContentProvider::OfflineItemList
 OfflineContentAggregator::GetAllItems() {
+  // Create a set of unique providers to iterate over.
+  std::set<OfflineContentProvider*> providers;
+  for (auto provider_it : providers_)
+    providers.insert(provider_it.second);
+
   OfflineItemList items;
-  for (auto& it : providers_) {
-    if (!it.second->AreItemsAvailable())
+  for (auto* provider : providers) {
+    if (!provider->AreItemsAvailable())
       continue;
 
-    OfflineItemList provider_items = it.second->GetAllItems();
+    OfflineItemList provider_items = provider->GetAllItems();
     items.insert(items.end(), provider_items.begin(), provider_items.end());
   }
 
