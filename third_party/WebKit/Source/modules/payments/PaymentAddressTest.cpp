@@ -28,22 +28,22 @@ TEST(PaymentAddressTest, ValuesAreCopiedOver) {
   input->recipient = "Jon Doe";
   input->phone = "Phone Number";
 
-  PaymentAddress output(std::move(input));
+  PaymentAddress* output = new PaymentAddress(std::move(input));
 
-  EXPECT_EQ("US", output.country());
-  EXPECT_EQ(3U, output.addressLine().size());
-  EXPECT_EQ("340 Main St", output.addressLine()[0]);
-  EXPECT_EQ("BIN1", output.addressLine()[1]);
-  EXPECT_EQ("First floor", output.addressLine()[2]);
-  EXPECT_EQ("CA", output.region());
-  EXPECT_EQ("Los Angeles", output.city());
-  EXPECT_EQ("Venice", output.dependentLocality());
-  EXPECT_EQ("90291", output.postalCode());
-  EXPECT_EQ("CEDEX", output.sortingCode());
-  EXPECT_EQ("en-Latn", output.languageCode());
-  EXPECT_EQ("Google", output.organization());
-  EXPECT_EQ("Jon Doe", output.recipient());
-  EXPECT_EQ("Phone Number", output.phone());
+  EXPECT_EQ("US", output->country());
+  EXPECT_EQ(3U, output->addressLine().size());
+  EXPECT_EQ("340 Main St", output->addressLine()[0]);
+  EXPECT_EQ("BIN1", output->addressLine()[1]);
+  EXPECT_EQ("First floor", output->addressLine()[2]);
+  EXPECT_EQ("CA", output->region());
+  EXPECT_EQ("Los Angeles", output->city());
+  EXPECT_EQ("Venice", output->dependentLocality());
+  EXPECT_EQ("90291", output->postalCode());
+  EXPECT_EQ("CEDEX", output->sortingCode());
+  EXPECT_EQ("en-Latn", output->languageCode());
+  EXPECT_EQ("Google", output->organization());
+  EXPECT_EQ("Jon Doe", output->recipient());
+  EXPECT_EQ("Phone Number", output->phone());
 }
 
 TEST(PaymentAddressTest, IgnoreScriptCodeWithEmptyLanguageCode) {
@@ -51,9 +51,9 @@ TEST(PaymentAddressTest, IgnoreScriptCodeWithEmptyLanguageCode) {
       payments::mojom::blink::PaymentAddress::New();
   input->script_code = "Latn";
 
-  PaymentAddress output(std::move(input));
+  PaymentAddress* output = new PaymentAddress(std::move(input));
 
-  EXPECT_TRUE(output.languageCode().isEmpty());
+  EXPECT_TRUE(output->languageCode().isEmpty());
 }
 
 TEST(PaymentAddressTest, NoHyphenWithEmptyScriptCode) {
@@ -61,9 +61,9 @@ TEST(PaymentAddressTest, NoHyphenWithEmptyScriptCode) {
       payments::mojom::blink::PaymentAddress::New();
   input->language_code = "en";
 
-  PaymentAddress output(std::move(input));
+  PaymentAddress* output = new PaymentAddress(std::move(input));
 
-  EXPECT_EQ("en", output.languageCode());
+  EXPECT_EQ("en", output->languageCode());
 }
 
 }  // namespace

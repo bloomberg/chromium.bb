@@ -54,16 +54,17 @@ TEST(PaymentResponseTest, DataCopiedOver) {
   input->payer_phone = "0123";
   MockPaymentCompleter* completeCallback = new MockPaymentCompleter;
 
-  PaymentResponse output(std::move(input), completeCallback);
+  PaymentResponse* output =
+      new PaymentResponse(std::move(input), completeCallback);
 
-  EXPECT_EQ("foo", output.methodName());
-  EXPECT_EQ("standardShippingOption", output.shippingOption());
-  EXPECT_EQ("Jon Doe", output.payerName());
-  EXPECT_EQ("abc@gmail.com", output.payerEmail());
-  EXPECT_EQ("0123", output.payerPhone());
+  EXPECT_EQ("foo", output->methodName());
+  EXPECT_EQ("standardShippingOption", output->shippingOption());
+  EXPECT_EQ("Jon Doe", output->payerName());
+  EXPECT_EQ("abc@gmail.com", output->payerEmail());
+  EXPECT_EQ("0123", output->payerPhone());
 
   ScriptValue details =
-      output.details(scope.getScriptState(), scope.getExceptionState());
+      output->details(scope.getScriptState(), scope.getExceptionState());
 
   ASSERT_FALSE(scope.getExceptionState().hadException());
   ASSERT_TRUE(details.v8Value()->IsObject());
@@ -83,10 +84,11 @@ TEST(PaymentResponseTest, PaymentResponseDetailsJSONObject) {
       buildPaymentResponseForTest();
   input->stringified_details = "transactionId";
   MockPaymentCompleter* completeCallback = new MockPaymentCompleter;
-  PaymentResponse output(std::move(input), completeCallback);
+  PaymentResponse* output =
+      new PaymentResponse(std::move(input), completeCallback);
 
   ScriptValue details =
-      output.details(scope.getScriptState(), scope.getExceptionState());
+      output->details(scope.getScriptState(), scope.getExceptionState());
 
   ASSERT_TRUE(scope.getExceptionState().hadException());
 }
@@ -98,12 +100,13 @@ TEST(PaymentResponseTest, CompleteCalledWithSuccess) {
   input->method_name = "foo";
   input->stringified_details = "{\"transactionId\": 123}";
   MockPaymentCompleter* completeCallback = new MockPaymentCompleter;
-  PaymentResponse output(std::move(input), completeCallback);
+  PaymentResponse* output =
+      new PaymentResponse(std::move(input), completeCallback);
 
   EXPECT_CALL(*completeCallback,
               complete(scope.getScriptState(), PaymentCompleter::Success));
 
-  output.complete(scope.getScriptState(), "success");
+  output->complete(scope.getScriptState(), "success");
 }
 
 TEST(PaymentResponseTest, CompleteCalledWithFailure) {
@@ -113,12 +116,13 @@ TEST(PaymentResponseTest, CompleteCalledWithFailure) {
   input->method_name = "foo";
   input->stringified_details = "{\"transactionId\": 123}";
   MockPaymentCompleter* completeCallback = new MockPaymentCompleter;
-  PaymentResponse output(std::move(input), completeCallback);
+  PaymentResponse* output =
+      new PaymentResponse(std::move(input), completeCallback);
 
   EXPECT_CALL(*completeCallback,
               complete(scope.getScriptState(), PaymentCompleter::Fail));
 
-  output.complete(scope.getScriptState(), "fail");
+  output->complete(scope.getScriptState(), "fail");
 }
 
 TEST(PaymentResponseTest, JSONSerializerTest) {
@@ -139,8 +143,9 @@ TEST(PaymentResponseTest, JSONSerializerTest) {
   input->shipping_address->address_line.push_back("BIN1");
   input->shipping_address->address_line.push_back("First floor");
 
-  PaymentResponse output(std::move(input), new MockPaymentCompleter);
-  ScriptValue jsonObject = output.toJSONForBinding(scope.getScriptState());
+  PaymentResponse* output =
+      new PaymentResponse(std::move(input), new MockPaymentCompleter);
+  ScriptValue jsonObject = output->toJSONForBinding(scope.getScriptState());
   EXPECT_TRUE(jsonObject.isObject());
 
   String jsonString = v8StringToWebCoreString<String>(

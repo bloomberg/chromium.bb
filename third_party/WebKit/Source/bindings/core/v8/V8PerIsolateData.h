@@ -177,7 +177,7 @@ class CORE_EXPORT V8PerIsolateData {
     return m_activeScriptWrappables.get();
   }
 
-  class TemporaryScriptWrappableVisitorScope {
+  class CORE_EXPORT TemporaryScriptWrappableVisitorScope {
     WTF_MAKE_NONCOPYABLE(TemporaryScriptWrappableVisitorScope);
     STACK_ALLOCATED();
 

@@ -297,25 +297,50 @@ class InterceptingScriptWrappableVisitor
 
   size_t numberOfMarkedWrappers() const { return *m_markedWrappers; }
 
+  void start() { TracePrologue(); }
+
+  void end() {
+    // Gracefully terminate tracing.
+    AdvanceTracing(
+        0,
+        v8::EmbedderHeapTracer::AdvanceTracingActions(
+            v8::EmbedderHeapTracer::ForceCompletionAction::FORCE_COMPLETION));
+    AbortTracing();
+  }
+
  private:
   size_t* m_markedWrappers;  // Indirection required because of const override.
 };
 
-void swapInNewVisitor(v8::Isolate* isolate,
-                      blink::ScriptWrappableVisitor* newVisitor) {
-  isolate->SetEmbedderHeapTracer(newVisitor);
-  std::unique_ptr<blink::ScriptWrappableVisitor> visitor(newVisitor);
-  V8PerIsolateData::from(isolate)->setScriptWrappableVisitor(
-      std::move(visitor));
-}
+class InterceptingScriptWrappableVisitorScope
+    : public V8PerIsolateData::TemporaryScriptWrappableVisitorScope {
+  WTF_MAKE_NONCOPYABLE(InterceptingScriptWrappableVisitorScope);
+  STACK_ALLOCATED();
+
+ public:
+  InterceptingScriptWrappableVisitorScope(v8::Isolate* isolate)
+      : V8PerIsolateData::TemporaryScriptWrappableVisitorScope(
+            isolate,
+            std::unique_ptr<InterceptingScriptWrappableVisitor>(
+                new InterceptingScriptWrappableVisitor(isolate))) {
+    visitor()->start();
+  }
+
+  virtual ~InterceptingScriptWrappableVisitorScope() { visitor()->end(); }
+
+  InterceptingScriptWrappableVisitor* visitor() {
+    return reinterpret_cast<InterceptingScriptWrappableVisitor*>(
+        currentVisitor());
+  }
+};
 
 }  // namespace
 
 TEST(ScriptWrappableVisitorTest, NoWriteBarrierOnUnmarkedContainer) {
   V8TestingScope scope;
-  auto rawVisitor = new InterceptingScriptWrappableVisitor(scope.isolate());
-  swapInNewVisitor(scope.isolate(), rawVisitor);
-  rawVisitor->TracePrologue();
+  InterceptingScriptWrappableVisitorScope visitorScope(scope.isolate());
+  auto* rawVisitor = visitorScope.visitor();
+
   v8::Local<v8::String> str =
       v8::String::NewFromUtf8(scope.isolate(), "teststring",
                               v8::NewStringType::kNormal, sizeof("teststring"))
@@ -324,18 +349,13 @@ TEST(ScriptWrappableVisitorTest, NoWriteBarrierOnUnmarkedContainer) {
   CHECK_EQ(0u, rawVisitor->numberOfMarkedWrappers());
   container->setValue(scope.isolate(), str);
   CHECK_EQ(0u, rawVisitor->numberOfMarkedWrappers());
-  // Gracefully terminate tracing.
-  rawVisitor->AdvanceTracing(
-      0, v8::EmbedderHeapTracer::AdvanceTracingActions(
-             v8::EmbedderHeapTracer::ForceCompletionAction::FORCE_COMPLETION));
-  rawVisitor->AbortTracing();
 }
 
 TEST(ScriptWrappableVisitorTest, WriteBarrierTriggersOnMarkedContainer) {
   V8TestingScope scope;
-  auto rawVisitor = new InterceptingScriptWrappableVisitor(scope.isolate());
-  swapInNewVisitor(scope.isolate(), rawVisitor);
-  rawVisitor->TracePrologue();
+  InterceptingScriptWrappableVisitorScope visitorScope(scope.isolate());
+  auto* rawVisitor = visitorScope.visitor();
+
   v8::Local<v8::String> str =
       v8::String::NewFromUtf8(scope.isolate(), "teststring",
                               v8::NewStringType::kNormal, sizeof("teststring"))
@@ -345,11 +365,6 @@ TEST(ScriptWrappableVisitorTest, WriteBarrierTriggersOnMarkedContainer) {
   CHECK_EQ(0u, rawVisitor->numberOfMarkedWrappers());
   container->setValue(scope.isolate(), str);
   CHECK_EQ(1u, rawVisitor->numberOfMarkedWrappers());
-  // Gracefully terminate tracing.
-  rawVisitor->AdvanceTracing(
-      0, v8::EmbedderHeapTracer::AdvanceTracingActions(
-             v8::EmbedderHeapTracer::ForceCompletionAction::FORCE_COMPLETION));
-  rawVisitor->AbortTracing();
 }
 
 TEST(ScriptWrappableVisitorTest, VtableAtObjectStart) {
@@ -363,6 +378,29 @@ TEST(ScriptWrappableVisitorTest, VtableAtObjectStart) {
   CHECK_EQ(
       static_cast<void*>(visitor.get()),
       static_cast<void*>(dynamic_cast<v8::EmbedderHeapTracer*>(visitor.get())));
+}
+
+TEST(ScriptWrappableVisitor, WriteBarrierForScriptWrappable) {
+  // Regression test for crbug.com/702490.
+  V8TestingScope scope;
+  InterceptingScriptWrappableVisitorScope visitorScope(scope.isolate());
+  auto* rawVisitor = visitorScope.visitor();
+
+  // Mark the ScriptWrappable.
+  DeathAwareScriptWrappable* target = DeathAwareScriptWrappable::create();
+  HeapObjectHeader::fromPayload(target)->markWrapperHeader();
+
+  // Create a 'wrapper' object.
+  v8::Local<v8::ObjectTemplate> t = v8::ObjectTemplate::New(scope.isolate());
+  t->SetInternalFieldCount(2);
+  v8::Local<v8::Object> obj = t->NewInstance(scope.context()).ToLocalChecked();
+
+  // Upon setting the wrapper we should have executed the write barrier.
+  CHECK_EQ(0u, rawVisitor->numberOfMarkedWrappers());
+  bool success =
+      target->setWrapper(scope.isolate(), target->wrapperTypeInfo(), obj);
+  CHECK(success);
+  CHECK_EQ(1u, rawVisitor->numberOfMarkedWrappers());
 }
 
 }  // namespace blink
