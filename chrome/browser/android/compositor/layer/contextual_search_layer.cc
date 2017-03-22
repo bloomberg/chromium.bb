@@ -547,6 +547,9 @@ void ContextualSearchLayer::SetupTextLayer(float bar_top,
   // Setup the Drawing Hierarchy
   // ---------------------------------------------------------------------------
   // Search Term
+  DCHECK(text_layer_.get());
+  DCHECK(bar_text_.get());
+  DCHECK(search_caption_.get());
   bool bar_text_visible = search_term_opacity > 0.0f;
   if (bar_text_visible && bar_text_->parent() != text_layer_)
     text_layer_->AddChild(bar_text_);
