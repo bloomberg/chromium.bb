@@ -25,14 +25,17 @@ GbmBufferBase::GbmBufferBase(const scoped_refptr<GbmDevice>& drm,
     opaque_framebuffer_pixel_format_ = GetFourCCFormatForOpaqueFramebuffer(
         GetBufferFormatFromFourCCFormat(format));
 
-    // TODO(dcastagna): Add multi-planar support.
     uint32_t handles[4] = {0};
-    handles[0] = gbm_bo_get_handle(bo).u32;
     uint32_t strides[4] = {0};
-    strides[0] = gbm_bo_get_stride(bo);
     uint32_t offsets[4] = {0};
     uint64_t modifiers[4] = {0};
-    modifiers[0] = modifier;
+
+    for (size_t i = 0; i < gbm_bo_get_num_planes(bo); ++i) {
+      handles[i] = gbm_bo_get_plane_handle(bo, i).u32;
+      strides[i] = gbm_bo_get_plane_stride(bo, i);
+      offsets[i] = gbm_bo_get_plane_offset(bo, i);
+      modifiers[i] = modifier;
+    }
 
     // AddFramebuffer2 only considers the modifiers if addfb_flags has
     // DRM_MODE_FB_MODIFIERS set. We only set that when we've created

@@ -47,7 +47,6 @@ GpuMemoryBufferImplOzoneNativePixmap::CreateFromHandle(
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
     const DestructionCallback& callback) {
-  DCHECK_LE(handle.native_pixmap_handle.fds.size(), 1u);
 
   // GpuMemoryBufferImpl needs the FD to implement GetHandle() but
   // ui::ClientNativePixmapFactory::ImportFromHandle is expected to take
