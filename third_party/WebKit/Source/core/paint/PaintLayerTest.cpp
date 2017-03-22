@@ -649,6 +649,94 @@ TEST_P(PaintLayerTest, FloatLayerUnderBlockUnderInlineLayer) {
                                        document().layoutView()->layer()));
 }
 
+TEST_P(PaintLayerTest, FloatLayerUnderFloatUnderInlineLayer) {
+  setBodyInnerHTML(
+      "<style>body {margin: 0}</style>"
+      "<span id='span' style='position: relative; top: 100px; left: 100px'>"
+      "  <div style='float: left; margin: 33px'>"
+      "    <div id='floating'"
+      "        style='float: left; position: relative; top: 50px; left: 50px'>"
+      "    </div>"
+      "  </div>"
+      "</span>");
+
+  PaintLayer* floating =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("floating"))->layer();
+  PaintLayer* span =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("span"))->layer();
+
+  EXPECT_EQ(span, floating->parent());
+  EXPECT_EQ(span->parent(), floating->containingLayer());
+
+  EXPECT_EQ(LayoutPoint(83, 83), floating->location());
+  EXPECT_EQ(LayoutPoint(100, 100), span->location());
+  EXPECT_EQ(LayoutPoint(-17, -17), floating->visualOffsetFromAncestor(span));
+  EXPECT_EQ(LayoutPoint(83, 83), floating->visualOffsetFromAncestor(
+                                     document().layoutView()->layer()));
+}
+
+TEST_P(PaintLayerTest, FloatLayerUnderFloatLayerUnderInlineLayer) {
+  setBodyInnerHTML(
+      "<style>body {margin: 0}</style>"
+      "<span id='span' style='position: relative; top: 100px; left: 100px'>"
+      "  <div id='floatingParent'"
+      "      style='float: left; position: relative; margin: 33px'>"
+      "    <div id='floating'"
+      "        style='float: left; position: relative; top: 50px; left: 50px'>"
+      "    </div>"
+      "  </div>"
+      "</span>");
+
+  PaintLayer* floating =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("floating"))->layer();
+  PaintLayer* floatingParent =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("floatingParent"))
+          ->layer();
+  PaintLayer* span =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("span"))->layer();
+
+  EXPECT_EQ(floatingParent, floating->parent());
+  EXPECT_EQ(floatingParent, floating->containingLayer());
+  EXPECT_EQ(span, floatingParent->parent());
+  EXPECT_EQ(span->parent(), floatingParent->containingLayer());
+
+  EXPECT_EQ(LayoutPoint(50, 50), floating->location());
+  EXPECT_EQ(LayoutPoint(33, 33), floatingParent->location());
+  EXPECT_EQ(LayoutPoint(100, 100), span->location());
+  EXPECT_EQ(LayoutPoint(-17, -17), floating->visualOffsetFromAncestor(span));
+  EXPECT_EQ(LayoutPoint(-67, -67),
+            floatingParent->visualOffsetFromAncestor(span));
+  EXPECT_EQ(LayoutPoint(83, 83), floating->visualOffsetFromAncestor(
+                                     document().layoutView()->layer()));
+}
+
+TEST_P(PaintLayerTest, LayerUnderFloatUnderInlineLayer) {
+  setBodyInnerHTML(
+      "<style>body {margin: 0}</style>"
+      "<span id='span' style='position: relative; top: 100px; left: 100px'>"
+      "  <div style='float: left; margin: 33px'>"
+      "    <div>"
+      "      <div id='child' style='position: relative; top: 50px; left: 50px'>"
+      "      </div>"
+      "    </div>"
+      "  </div>"
+      "</span>");
+
+  PaintLayer* child =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("child"))->layer();
+  PaintLayer* span =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("span"))->layer();
+
+  EXPECT_EQ(span, child->parent());
+  EXPECT_EQ(span->parent(), child->containingLayer());
+
+  EXPECT_EQ(LayoutPoint(83, 83), child->location());
+  EXPECT_EQ(LayoutPoint(100, 100), span->location());
+  EXPECT_EQ(LayoutPoint(-17, -17), child->visualOffsetFromAncestor(span));
+  EXPECT_EQ(LayoutPoint(83, 83),
+            child->visualOffsetFromAncestor(document().layoutView()->layer()));
+}
+
 TEST_P(PaintLayerTest, CompositingContainerFloatingIframe) {
   enableCompositing();
   setBodyInnerHTML(

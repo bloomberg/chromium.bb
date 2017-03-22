@@ -870,8 +870,10 @@ PaintLayer* PaintLayer::containingLayer(const PaintLayer* ancestor,
     *skippedAncestor = false;
 
   LayoutObject& layoutObject = this->layoutObject();
-  if (layoutObject.isColumnSpanAll() ||
-      layoutObject.isFloatingWithNonContainingBlockParent()) {
+  // Column span need to find the containing layer through its containing block.
+  // TODO(wangxianzhu): This can be combined with the loop handing possible
+  // floating objects.
+  if (layoutObject.isColumnSpanAll()) {
     Optional<LayoutObject::AncestorSkipInfo> skipInfo;
     if (skippedAncestor)
       skipInfo.emplace(&ancestor->layoutObject());
@@ -899,7 +901,28 @@ PaintLayer* PaintLayer::containingLayer(const PaintLayer* ancestor,
     return curr;
   }
 
-  return parent();
+  // If the parent layer is not a block, there might be floating objects
+  // between this layer (included) and parent layer which need to escape the
+  // inline parent to find the actual containing layer through the containing
+  // block chain.
+  if (!parent() || parent()->layoutObject().isLayoutBlock())
+    return parent();
+
+  // This is a universal approach to find containing layer, but is slower than
+  // the earlier code.
+  Optional<LayoutObject::AncestorSkipInfo> skipInfo;
+  if (skippedAncestor)
+    skipInfo.emplace(&ancestor->layoutObject());
+  auto* object = &layoutObject;
+  while (auto* container =
+             object->container(skippedAncestor ? &*skipInfo : nullptr)) {
+    if (skippedAncestor && skipInfo->ancestorSkipped())
+      *skippedAncestor = true;
+    if (container->hasLayer())
+      return toLayoutBoxModelObject(container)->layer();
+    object = container;
+  }
+  return nullptr;
 }
 
 PaintLayer* PaintLayer::enclosingTransformedAncestor() const {

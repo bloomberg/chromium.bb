@@ -57,6 +57,10 @@ class GraphicsLayerUpdater::UpdateContext {
     if (layer.stackingNode()->isStacked())
       return m_compositingStackingContext;
 
+    // TODO(wangxianzhu, chrishtr): This is incorrect if m_compositingAncestor
+    // is inline and there is any non-layer floating object between layer and
+    // m_compositingAncestor. Should use the logic in PaintLayer::
+    // containingLayer().
     if (layer.layoutObject().isFloatingWithNonContainingBlockParent())
       return layer.enclosingLayerWithCompositedLayerMapping(ExcludeSelf);
 
