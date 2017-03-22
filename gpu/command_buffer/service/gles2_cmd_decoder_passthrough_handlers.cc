@@ -226,7 +226,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetActiveUniformBlockiv(
   unsigned int buffer_size = 0;
   typedef cmds::GetActiveUniformBlockiv::Result Result;
   Result* result = GetSharedMemoryAndSizeAs<Result*>(
-      c.params_shm_id, c.params_shm_offset, &buffer_size);
+      c.params_shm_id, c.params_shm_offset, sizeof(Result), &buffer_size);
   GLint* params = result ? result->GetData() : NULL;
   if (params == NULL) {
     return error::kOutOfBounds;
@@ -440,7 +440,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetInternalformativ(
   unsigned int buffer_size = 0;
   typedef cmds::GetInternalformativ::Result Result;
   Result* result = GetSharedMemoryAndSizeAs<Result*>(
-      c.params_shm_id, c.params_shm_offset, &buffer_size);
+      c.params_shm_id, c.params_shm_offset, sizeof(Result), &buffer_size);
   GLint* params = result ? result->GetData() : NULL;
   if (params == NULL) {
     return error::kOutOfBounds;
@@ -649,7 +649,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetUniformfv(
   unsigned int buffer_size = 0;
   typedef cmds::GetUniformfv::Result Result;
   Result* result = GetSharedMemoryAndSizeAs<Result*>(
-      c.params_shm_id, c.params_shm_offset, &buffer_size);
+      c.params_shm_id, c.params_shm_offset, sizeof(Result), &buffer_size);
   GLfloat* params = result ? result->GetData() : NULL;
   if (params == NULL) {
     return error::kOutOfBounds;
@@ -678,7 +678,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetUniformiv(
   unsigned int buffer_size = 0;
   typedef cmds::GetUniformiv::Result Result;
   Result* result = GetSharedMemoryAndSizeAs<Result*>(
-      c.params_shm_id, c.params_shm_offset, &buffer_size);
+      c.params_shm_id, c.params_shm_offset, sizeof(Result), &buffer_size);
   GLint* params = result ? result->GetData() : NULL;
   if (params == NULL) {
     return error::kOutOfBounds;
@@ -707,7 +707,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetUniformuiv(
   unsigned int buffer_size = 0;
   typedef cmds::GetUniformuiv::Result Result;
   Result* result = GetSharedMemoryAndSizeAs<Result*>(
-      c.params_shm_id, c.params_shm_offset, &buffer_size);
+      c.params_shm_id, c.params_shm_offset, sizeof(Result), &buffer_size);
   GLuint* params = result ? result->GetData() : NULL;
   if (params == NULL) {
     return error::kOutOfBounds;
@@ -808,7 +808,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetVertexAttribPointerv(
   unsigned int buffer_size = 0;
   typedef cmds::GetVertexAttribPointerv::Result Result;
   Result* result = GetSharedMemoryAndSizeAs<Result*>(
-      c.pointer_shm_id, c.pointer_shm_offset, &buffer_size);
+      c.pointer_shm_id, c.pointer_shm_offset, sizeof(Result), &buffer_size);
   GLuint* params = result ? result->GetData() : NULL;
   if (params == NULL) {
     return error::kOutOfBounds;
@@ -857,7 +857,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleReadPixels(
   unsigned int buffer_size = 0;
   if (c.pixels_shm_id != 0) {
     pixels = GetSharedMemoryAndSizeAs<uint8_t*>(
-        c.pixels_shm_id, c.pixels_shm_offset, &buffer_size);
+        c.pixels_shm_id, c.pixels_shm_offset, 0, &buffer_size);
     if (!pixels) {
       return error::kOutOfBounds;
     }
@@ -946,7 +946,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleTexImage2D(
 
   if (pixels_shm_id != 0 || pixels_shm_offset != 0) {
     pixels = GetSharedMemoryAndSizeAs<uint8_t*>(
-        pixels_shm_id, pixels_shm_offset, &buffer_size);
+        pixels_shm_id, pixels_shm_offset, 0, &buffer_size);
     if (!pixels) {
       return error::kOutOfBounds;
     }
@@ -984,7 +984,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleTexImage3D(
 
   if (pixels_shm_id != 0 || pixels_shm_offset != 0) {
     pixels = GetSharedMemoryAndSizeAs<uint8_t*>(
-        pixels_shm_id, pixels_shm_offset, &buffer_size);
+        pixels_shm_id, pixels_shm_offset, 0, &buffer_size);
     if (!pixels) {
       return error::kOutOfBounds;
     }
@@ -1021,7 +1021,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleTexSubImage2D(
 
   if (pixels_shm_id != 0 || pixels_shm_offset != 0) {
     pixels = GetSharedMemoryAndSizeAs<uint8_t*>(
-        pixels_shm_id, pixels_shm_offset, &buffer_size);
+        pixels_shm_id, pixels_shm_offset, 0, &buffer_size);
     if (!pixels) {
       return error::kOutOfBounds;
     }
@@ -1060,7 +1060,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleTexSubImage3D(
 
   if (pixels_shm_id != 0 || pixels_shm_offset != 0) {
     pixels = GetSharedMemoryAndSizeAs<uint8_t*>(
-        pixels_shm_id, pixels_shm_offset, &buffer_size);
+        pixels_shm_id, pixels_shm_offset, 0, &buffer_size);
     if (!pixels) {
       return error::kOutOfBounds;
     }
@@ -1897,7 +1897,7 @@ error::Error GLES2DecoderPassthroughImpl::HandlePathCommandsCHROMIUM(
     if (coords_shm_id != 0 || coords_shm_offset != 0) {
       unsigned int memory_size = 0;
       coords = GetSharedMemoryAndSizeAs<const GLvoid*>(
-          coords_shm_id, coords_shm_offset, &memory_size);
+          coords_shm_id, coords_shm_offset, 0, &memory_size);
       coords_bufsize = static_cast<GLsizei>(memory_size);
     }
 
@@ -2068,7 +2068,7 @@ GLES2DecoderPassthroughImpl::HandleStencilFillPathInstancedCHROMIUM(
     if (paths_shm_id != 0 || paths_shm_offset != 0) {
       unsigned int memory_size = 0;
       paths = GetSharedMemoryAndSizeAs<const GLvoid*>(
-          paths_shm_id, paths_shm_offset, &memory_size);
+          paths_shm_id, paths_shm_offset, 0, &memory_size);
       paths_bufsize = static_cast<GLsizei>(memory_size);
     }
 
@@ -2085,7 +2085,8 @@ GLES2DecoderPassthroughImpl::HandleStencilFillPathInstancedCHROMIUM(
   if (c.transformValues_shm_id != 0 || c.transformValues_shm_offset != 0) {
     unsigned int memory_size = 0;
     transform_values = GetSharedMemoryAndSizeAs<const GLfloat*>(
-        c.transformValues_shm_id, c.transformValues_shm_offset, &memory_size);
+        c.transformValues_shm_id, c.transformValues_shm_offset, 0,
+        &memory_size);
     transform_values_bufsize = static_cast<GLsizei>(memory_size);
   }
   if (!transform_values) {
@@ -2120,7 +2121,7 @@ GLES2DecoderPassthroughImpl::HandleStencilStrokePathInstancedCHROMIUM(
     if (paths_shm_id != 0 || paths_shm_offset != 0) {
       unsigned int memory_size = 0;
       paths = GetSharedMemoryAndSizeAs<const GLvoid*>(
-          paths_shm_id, paths_shm_offset, &memory_size);
+          paths_shm_id, paths_shm_offset, 0, &memory_size);
       paths_bufsize = static_cast<GLsizei>(memory_size);
     }
 
@@ -2137,7 +2138,8 @@ GLES2DecoderPassthroughImpl::HandleStencilStrokePathInstancedCHROMIUM(
   if (c.transformValues_shm_id != 0 || c.transformValues_shm_offset != 0) {
     unsigned int memory_size = 0;
     transform_values = GetSharedMemoryAndSizeAs<const GLfloat*>(
-        c.transformValues_shm_id, c.transformValues_shm_offset, &memory_size);
+        c.transformValues_shm_id, c.transformValues_shm_offset, 0,
+        &memory_size);
     transform_values_bufsize = static_cast<GLsizei>(memory_size);
   }
   if (!transform_values) {
@@ -2170,7 +2172,7 @@ error::Error GLES2DecoderPassthroughImpl::HandleCoverFillPathInstancedCHROMIUM(
     if (paths_shm_id != 0 || paths_shm_offset != 0) {
       unsigned int memory_size = 0;
       paths = GetSharedMemoryAndSizeAs<const GLvoid*>(
-          paths_shm_id, paths_shm_offset, &memory_size);
+          paths_shm_id, paths_shm_offset, 0, &memory_size);
       paths_bufsize = static_cast<GLsizei>(memory_size);
     }
 
@@ -2186,7 +2188,8 @@ error::Error GLES2DecoderPassthroughImpl::HandleCoverFillPathInstancedCHROMIUM(
   if (c.transformValues_shm_id != 0 || c.transformValues_shm_offset != 0) {
     unsigned int memory_size = 0;
     transform_values = GetSharedMemoryAndSizeAs<const GLfloat*>(
-        c.transformValues_shm_id, c.transformValues_shm_offset, &memory_size);
+        c.transformValues_shm_id, c.transformValues_shm_offset, 0,
+        &memory_size);
     transform_values_bufsize = static_cast<GLsizei>(memory_size);
   }
   if (!transform_values) {
@@ -2221,7 +2224,7 @@ GLES2DecoderPassthroughImpl::HandleCoverStrokePathInstancedCHROMIUM(
     if (paths_shm_id != 0 || paths_shm_offset != 0) {
       unsigned int memory_size = 0;
       paths = GetSharedMemoryAndSizeAs<const GLvoid*>(
-          paths_shm_id, paths_shm_offset, &memory_size);
+          paths_shm_id, paths_shm_offset, 0, &memory_size);
       paths_bufsize = static_cast<GLsizei>(memory_size);
     }
 
@@ -2237,7 +2240,8 @@ GLES2DecoderPassthroughImpl::HandleCoverStrokePathInstancedCHROMIUM(
   if (c.transformValues_shm_id != 0 || c.transformValues_shm_offset != 0) {
     unsigned int memory_size = 0;
     transform_values = GetSharedMemoryAndSizeAs<const GLfloat*>(
-        c.transformValues_shm_id, c.transformValues_shm_offset, &memory_size);
+        c.transformValues_shm_id, c.transformValues_shm_offset, 0,
+        &memory_size);
     transform_values_bufsize = static_cast<GLsizei>(memory_size);
   }
   if (!transform_values) {
@@ -2271,7 +2275,7 @@ GLES2DecoderPassthroughImpl::HandleStencilThenCoverFillPathInstancedCHROMIUM(
     if (paths_shm_id != 0 || paths_shm_offset != 0) {
       unsigned int memory_size = 0;
       paths = GetSharedMemoryAndSizeAs<const GLvoid*>(
-          paths_shm_id, paths_shm_offset, &memory_size);
+          paths_shm_id, paths_shm_offset, 0, &memory_size);
       paths_bufsize = static_cast<GLsizei>(memory_size);
     }
 
@@ -2289,7 +2293,8 @@ GLES2DecoderPassthroughImpl::HandleStencilThenCoverFillPathInstancedCHROMIUM(
   if (c.transformValues_shm_id != 0 || c.transformValues_shm_offset != 0) {
     unsigned int memory_size = 0;
     transform_values = GetSharedMemoryAndSizeAs<const GLfloat*>(
-        c.transformValues_shm_id, c.transformValues_shm_offset, &memory_size);
+        c.transformValues_shm_id, c.transformValues_shm_offset, 0,
+        &memory_size);
     transform_values_bufsize = static_cast<GLsizei>(memory_size);
   }
   if (!transform_values) {
@@ -2324,7 +2329,7 @@ GLES2DecoderPassthroughImpl::HandleStencilThenCoverStrokePathInstancedCHROMIUM(
     if (paths_shm_id != 0 || paths_shm_offset != 0) {
       unsigned int memory_size = 0;
       paths = GetSharedMemoryAndSizeAs<const GLvoid*>(
-          paths_shm_id, paths_shm_offset, &memory_size);
+          paths_shm_id, paths_shm_offset, 0, &memory_size);
       paths_bufsize = static_cast<GLsizei>(memory_size);
     }
 
@@ -2342,7 +2347,8 @@ GLES2DecoderPassthroughImpl::HandleStencilThenCoverStrokePathInstancedCHROMIUM(
   if (c.transformValues_shm_id != 0 || c.transformValues_shm_offset != 0) {
     unsigned int memory_size = 0;
     transform_values = GetSharedMemoryAndSizeAs<const GLfloat*>(
-        c.transformValues_shm_id, c.transformValues_shm_offset, &memory_size);
+        c.transformValues_shm_id, c.transformValues_shm_offset, 0,
+        &memory_size);
     transform_values_bufsize = static_cast<GLsizei>(memory_size);
   }
   if (!transform_values) {
@@ -2403,7 +2409,7 @@ GLES2DecoderPassthroughImpl::HandleProgramPathFragmentInputGenCHROMIUM(
   if (c.coeffs_shm_id != 0 || c.coeffs_shm_offset != 0) {
     unsigned int memory_size = 0;
     coeffs = GetSharedMemoryAndSizeAs<const GLfloat*>(
-        c.coeffs_shm_id, c.coeffs_shm_offset, &memory_size);
+        c.coeffs_shm_id, c.coeffs_shm_offset, 0, &memory_size);
     coeffs_bufsize = static_cast<GLsizei>(memory_size);
   }
   if (!coeffs) {

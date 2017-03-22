@@ -143,10 +143,11 @@ void* CommonDecoder::GetAddressAndCheckSize(unsigned int shm_id,
 
 void* CommonDecoder::GetAddressAndSize(unsigned int shm_id,
                                        unsigned int data_offset,
+                                       unsigned int minimum_size,
                                        unsigned int* data_size) {
   CHECK(engine_);
   scoped_refptr<gpu::Buffer> buffer = engine_->GetSharedMemoryBuffer(shm_id);
-  if (!buffer.get())
+  if (!buffer.get() || buffer->GetRemainingSize(data_offset) < minimum_size)
     return NULL;
   return buffer->GetDataAddressAndSize(data_offset, data_size);
 }

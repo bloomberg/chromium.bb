@@ -152,13 +152,16 @@ class GPU_EXPORT CommonDecoder : NON_EXPORTED_BASE(public AsyncAPIInterface) {
 
   void* GetAddressAndSize(unsigned int shm_id,
                           unsigned int offset,
+                          unsigned int minimum_size,
                           unsigned int* size);
 
   template <typename T>
   T GetSharedMemoryAndSizeAs(unsigned int shm_id,
                              unsigned int offset,
+                             unsigned int minimum_size,
                              unsigned int* size) {
-    return static_cast<T>(GetAddressAndSize(shm_id, offset, size));
+    return static_cast<T>(
+        GetAddressAndSize(shm_id, offset, minimum_size, size));
   }
 
   unsigned int GetSharedMemorySize(unsigned int shm_id, unsigned int offset);
