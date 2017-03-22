@@ -367,7 +367,7 @@ void PNGImageDecoder::rowAvailable(unsigned char* rowBuffer,
   // Write the decoded row pixels to the frame buffer. The repetitive
   // form of the row write loops is for speed.
   ImageFrame::PixelData* const dstRow = buffer.getAddr(frameRect.x(), y);
-  int width = frameRect.width();
+  const int width = frameRect.width();
 
   png_bytep srcPtr = row;
   if (hasAlpha) {
@@ -384,7 +384,7 @@ void PNGImageDecoder::rowAvailable(unsigned char* rowBuffer,
     if (SkColorSpaceXform* xform = colorTransform()) {
       SkColorSpaceXform::ColorFormat colorFormat =
           SkColorSpaceXform::kRGBA_8888_ColorFormat;
-      xform->apply(colorFormat, dstRow, colorFormat, srcPtr, size().width(),
+      xform->apply(colorFormat, dstRow, colorFormat, srcPtr, width,
                    kUnpremul_SkAlphaType);
       srcPtr = png_bytep(dstRow);
     }
@@ -443,7 +443,7 @@ void PNGImageDecoder::rowAvailable(unsigned char* rowBuffer,
     // RGBA (and not RGB).
     if (SkColorSpaceXform* xform = colorTransform()) {
       xform->apply(xformColorFormat(), dstRow, xformColorFormat(), dstRow,
-                   size().width(), kOpaque_SkAlphaType);
+                   width, kOpaque_SkAlphaType);
     }
   }
 
