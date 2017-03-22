@@ -50,6 +50,12 @@ bool isConnectionTypeSlow() {
   return networkStateNotifier().connectionType() == WebConnectionTypeCellular2G;
 }
 
+bool isInterventionV2Enabled() {
+  return RuntimeEnabledFeatures::webFontsInterventionV2With2GEnabled() ||
+         RuntimeEnabledFeatures::webFontsInterventionV2With3GEnabled() ||
+         RuntimeEnabledFeatures::webFontsInterventionV2WithSlow2GEnabled();
+}
+
 }  // namespace
 
 RemoteFontFaceSource::RemoteFontFaceSource(FontResource* font,
@@ -197,20 +203,16 @@ bool RemoteFontFaceSource::shouldTriggerWebFontsIntervention() {
       m_histograms.dataSource() == FontLoadHistograms::FromDataURL)
     return false;
 
-  bool isV2Enabled =
-      RuntimeEnabledFeatures::webFontsInterventionV2With2GEnabled() ||
-      RuntimeEnabledFeatures::webFontsInterventionV2With3GEnabled() ||
-      RuntimeEnabledFeatures::webFontsInterventionV2WithSlow2GEnabled();
-
   bool networkIsSlow =
-      isV2Enabled ? isEffectiveConnectionTypeSlowFor(m_fontSelector->document())
-                  : isConnectionTypeSlow();
+      isInterventionV2Enabled()
+          ? isEffectiveConnectionTypeSlowFor(m_fontSelector->document())
+          : isConnectionTypeSlow();
 
   return networkIsSlow && m_display == FontDisplayAuto;
 }
 
 bool RemoteFontFaceSource::isLowPriorityLoadingAllowedForRemoteFont() const {
-  return m_isInterventionTriggered;
+  return m_isInterventionTriggered && isInterventionV2Enabled();
 }
 
 PassRefPtr<SimpleFontData> RemoteFontFaceSource::createFontData(
