@@ -1739,7 +1739,7 @@ void WebContentsImpl::RenderWidgetDeleted(
       view_->RestoreFocus();
   }
 
-  if (mouse_lock_widget_)
+  if (render_widget_host == mouse_lock_widget_)
     LostMouseLock(mouse_lock_widget_);
 }
 

@@ -272,4 +272,47 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockEventRouting) {
   EXPECT_EQ(17, movementY);
 }
 
+// Flaky on Mac. See comment on https://codereview.chromium.org/2760343002.
+#if defined(OS_MACOSX)
+#define MAYBE_PointerLockChildFrameDetached \
+  DISABLED_PointerLockChildFrameDetached
+#else
+#define MAYBE_PointerLockChildFrameDetached PointerLockChildFrameDetached
+#endif
+// Tests that the browser will not unlock the pointer if a RenderWidgetHostView
+// that doesn't hold the pointer lock is destroyed.
+IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest,
+                       MAYBE_PointerLockChildFrameDetached) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+
+  // Request a pointer lock on the root frame's body.
+  EXPECT_TRUE(ExecuteScript(root, "document.body.requestPointerLock()"));
+
+  // Root frame should have been granted pointer lock.
+  bool locked = false;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(root,
+                                          "window.domAutomationController.send("
+                                          "document.pointerLockElement == "
+                                          "document.body);",
+                                          &locked));
+  EXPECT_TRUE(locked);
+
+  // Root (platform) RenderWidgetHostView should have the pointer locked.
+  EXPECT_TRUE(root->current_frame_host()->GetView()->IsMouseLocked());
+  EXPECT_EQ(root->current_frame_host()->GetRenderWidgetHost(),
+            web_contents()->GetMouseLockWidget());
+
+  // Detach the child frame.
+  EXPECT_TRUE(ExecuteScript(root, "document.querySelector('iframe').remove()"));
+
+  // Root (platform) RenderWidgetHostView should still have the pointer locked.
+  EXPECT_TRUE(root->current_frame_host()->GetView()->IsMouseLocked());
+  EXPECT_EQ(root->current_frame_host()->GetRenderWidgetHost(),
+            web_contents()->GetMouseLockWidget());
+}
+
 }  // namespace content
