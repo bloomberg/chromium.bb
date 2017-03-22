@@ -4,12 +4,12 @@
 
 #include "chromeos/dbus/services/proxy_resolution_service_provider.h"
 
-#include <string>
 #include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -21,167 +21,171 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
+namespace {
 
 // The ProxyResolverInterface implementation used in production.
 class ProxyResolverImpl : public ProxyResolverInterface {
  public:
-  // Data being used in one proxy resolution.
-  class Request {
-   public:
-    explicit Request(const std::string& source_url) : source_url_(source_url) {
-    }
-
-    virtual ~Request() {}
-
-    // Callback on IO thread for when net::ProxyService::ResolveProxy
-    // completes, synchronously or asynchronously.
-    void OnCompletion(scoped_refptr<base::SingleThreadTaskRunner> origin_thread,
-                      int result) {
-      // Generate the error message if the error message is not yet set,
-      // and there was an error.
-      if (error_.empty() && result != net::OK)
-        error_ = net::ErrorToString(result);
-      origin_thread->PostTask(FROM_HERE, notify_task_);
-    }
-
-    std::string source_url_;  // URL being resolved.
-    net::ProxyInfo proxy_info_;  // ProxyInfo resolved for source_url_.
-    std::string error_;  // Error from proxy resolution.
-    base::Closure notify_task_;  // Task to notify of resolution result.
-
-   private:
-    DISALLOW_COPY_AND_ASSIGN(Request);
-  };
-
-  explicit ProxyResolverImpl(std::unique_ptr<ProxyResolverDelegate> delegate)
-      : delegate_(std::move(delegate)),
-        origin_thread_(base::ThreadTaskRunnerHandle::Get()),
-        weak_ptr_factory_(this) {}
-
-  ~ProxyResolverImpl() override {
-    DCHECK(OnOriginThread());
-
-    for (std::set<Request*>::iterator iter = all_requests_.begin();
-         iter != all_requests_.end(); ++iter) {
-      Request* request = *iter;
-      LOG(WARNING) << "Pending request for " << request->source_url_;
-      delete request;
-    }
-  }
+  explicit ProxyResolverImpl(std::unique_ptr<ProxyResolverDelegate> delegate);
+  ~ProxyResolverImpl() override;
 
   // ProxyResolverInterface override.
   void ResolveProxy(
       const std::string& source_url,
       const std::string& signal_interface,
       const std::string& signal_name,
-      scoped_refptr<dbus::ExportedObject> exported_object) override {
-    DCHECK(OnOriginThread());
-
-    // Create a request slot for this proxy resolution request.
-    Request* request = new Request(source_url);
-    request->notify_task_ = base::Bind(
-        &ProxyResolverImpl::NotifyProxyResolved,
-        weak_ptr_factory_.GetWeakPtr(),
-        signal_interface,
-        signal_name,
-        exported_object,
-        request);
-    all_requests_.insert(request);
-
-    // GetRequestContext() must be called on UI thread.
-    scoped_refptr<net::URLRequestContextGetter> getter =
-        delegate_->GetRequestContext();
-
-    getter->GetNetworkTaskRunner()->PostTask(
-        FROM_HERE,
-        base::Bind(&ProxyResolverImpl::ResolveProxyInternal,
-                   request,
-                   origin_thread_,
-                   getter,
-                   exported_object));
-  }
+      scoped_refptr<dbus::ExportedObject> exported_object) override;
 
  private:
-  // Helper function for ResolveProxy().
-  static void ResolveProxyInternal(
-      Request* request,
-      scoped_refptr<base::SingleThreadTaskRunner> origin_thread,
-      scoped_refptr<net::URLRequestContextGetter> getter,
-      scoped_refptr<dbus::ExportedObject> exported_object) {
-    // Make sure we're running on IO thread.
-    DCHECK(getter->GetNetworkTaskRunner()->BelongsToCurrentThread());
+  // Data being used in one proxy resolution.
+  struct Request {
+   public:
+    Request(const std::string& source_url,
+            const std::string& signal_interface,
+            const std::string& signal_name,
+            scoped_refptr<dbus::ExportedObject> exported_object,
+            scoped_refptr<net::URLRequestContextGetter> context_getter)
+        : source_url(source_url),
+          signal_interface(signal_interface),
+          signal_name(signal_name),
+          exported_object(exported_object),
+          context_getter(context_getter) {}
+    ~Request() = default;
 
-    // Check if we have the URLRequestContextGetter.
-    if (!getter.get()) {
-      request->error_ = "No URLRequestContextGetter";
-      request->OnCompletion(origin_thread, net::ERR_UNEXPECTED);
-      return;
-    }
+    // URL being resolved.
+    const std::string source_url;
 
-    // Retrieve ProxyService from profile's request context.
-    net::ProxyService* proxy_service =
-        getter->GetURLRequestContext()->proxy_service();
-    if (!proxy_service) {
-      request->error_ = "No proxy service in chrome";
-      request->OnCompletion(origin_thread, net::ERR_UNEXPECTED);
-      return;
-    }
+    // D-Bus interface, name, and object for emitting result signal after
+    // resolution is complete.
+    const std::string signal_interface;
+    const std::string signal_name;
+    const scoped_refptr<dbus::ExportedObject> exported_object;
 
-    VLOG(1) << "Starting network proxy resolution for "
-            << request->source_url_;
-    net::CompletionCallback completion_callback =
-        base::Bind(&Request::OnCompletion,
-                   base::Unretained(request),
-                   origin_thread);
-    const int result = proxy_service->ResolveProxy(
-        GURL(request->source_url_), std::string(), &request->proxy_info_,
-        completion_callback, NULL, NULL, net::NetLogWithSource());
-    if (result != net::ERR_IO_PENDING) {
-      VLOG(1) << "Network proxy resolution completed synchronously.";
-      completion_callback.Run(result);
-    }
-  }
+    // Used to get the network context associated with the profile used to run
+    // this request.
+    const scoped_refptr<net::URLRequestContextGetter> context_getter;
 
-  // Called on UI thread as task posted from Request::OnCompletion on IO
-  // thread.
-  void NotifyProxyResolved(
-      const std::string& signal_interface,
-      const std::string& signal_name,
-      scoped_refptr<dbus::ExportedObject> exported_object,
-      Request* request) {
-    DCHECK(OnOriginThread());
+    // ProxyInfo resolved for |source_url|.
+    net::ProxyInfo proxy_info;
 
-    // Send a signal to the client.
-    dbus::Signal signal(signal_interface, signal_name);
-    dbus::MessageWriter writer(&signal);
-    writer.AppendString(request->source_url_);
-    writer.AppendString(request->proxy_info_.ToPacString());
-    writer.AppendString(request->error_);
-    exported_object->SendSignal(&signal);
-    VLOG(1) << "Sending signal: " << signal.ToString();
+    // Error from proxy resolution.
+    std::string error;
 
-    std::set<Request*>::iterator iter = all_requests_.find(request);
-    if (iter == all_requests_.end()) {
-      LOG(ERROR) << "can't find request slot(" << request->source_url_
-                 << ") in proxy-resolution queue";
-    } else {
-      all_requests_.erase(iter);
-    }
-    delete request;
-  }
+   private:
+    DISALLOW_COPY_AND_ASSIGN(Request);
+  };
 
   // Returns true if the current thread is on the origin thread.
-  bool OnOriginThread() {
-    return origin_thread_->BelongsToCurrentThread();
-  }
+  bool OnOriginThread() { return origin_thread_->BelongsToCurrentThread(); }
+
+  // Helper method for ResolveProxy() that runs on network thread.
+  void ResolveProxyOnNetworkThread(std::unique_ptr<Request> request);
+
+  // Callback on network thread for when net::ProxyService::ResolveProxy()
+  // completes, synchronously or asynchronously.
+  void OnResolutionComplete(std::unique_ptr<Request> request, int result);
+
+  // Called on UI thread from OnResolutionCompletion() to pass the resolved
+  // proxy information to the client over D-Bus.
+  void NotifyProxyResolved(std::unique_ptr<Request> request);
 
   std::unique_ptr<ProxyResolverDelegate> delegate_;
   scoped_refptr<base::SingleThreadTaskRunner> origin_thread_;
-  std::set<Request*> all_requests_;
   base::WeakPtrFactory<ProxyResolverImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyResolverImpl);
 };
+
+ProxyResolverImpl::ProxyResolverImpl(
+    std::unique_ptr<ProxyResolverDelegate> delegate)
+    : delegate_(std::move(delegate)),
+      origin_thread_(base::ThreadTaskRunnerHandle::Get()),
+      weak_ptr_factory_(this) {}
+
+ProxyResolverImpl::~ProxyResolverImpl() {
+  DCHECK(OnOriginThread());
+}
+
+void ProxyResolverImpl::ResolveProxy(
+    const std::string& source_url,
+    const std::string& signal_interface,
+    const std::string& signal_name,
+    scoped_refptr<dbus::ExportedObject> exported_object) {
+  DCHECK(OnOriginThread());
+
+  scoped_refptr<net::URLRequestContextGetter> context_getter =
+      delegate_->GetRequestContext();
+  auto request =
+      base::MakeUnique<Request>(source_url, signal_interface, signal_name,
+                                exported_object, context_getter);
+
+  // This would ideally call PostTaskAndReply() instead of PostTask(), but
+  // ResolveProxyOnNetworkThread()'s call to net::ProxyService::ResolveProxy()
+  // can result in an asynchronous lookup, in which case the result won't be
+  // available immediately.
+  context_getter->GetNetworkTaskRunner()->PostTask(
+      FROM_HERE, base::Bind(&ProxyResolverImpl::ResolveProxyOnNetworkThread,
+                            weak_ptr_factory_.GetWeakPtr(),
+                            base::Passed(std::move(request))));
+}
+
+void ProxyResolverImpl::ResolveProxyOnNetworkThread(
+    std::unique_ptr<Request> request) {
+  DCHECK(request->context_getter->GetNetworkTaskRunner()
+             ->BelongsToCurrentThread());
+
+  net::ProxyService* proxy_service =
+      request->context_getter->GetURLRequestContext()->proxy_service();
+  if (!proxy_service) {
+    request->error = "No proxy service in chrome";
+    OnResolutionComplete(std::move(request), net::ERR_UNEXPECTED);
+    return;
+  }
+
+  Request* request_ptr = request.get();
+  net::CompletionCallback callback = base::Bind(
+      &ProxyResolverImpl::OnResolutionComplete, weak_ptr_factory_.GetWeakPtr(),
+      base::Passed(std::move(request)));
+
+  VLOG(1) << "Starting network proxy resolution for "
+          << request_ptr->source_url;
+  const int result = proxy_service->ResolveProxy(
+      GURL(request_ptr->source_url), std::string(), &request_ptr->proxy_info,
+      callback, nullptr, nullptr, net::NetLogWithSource());
+  if (result != net::ERR_IO_PENDING) {
+    VLOG(1) << "Network proxy resolution completed synchronously.";
+    callback.Run(result);
+  }
+}
+
+void ProxyResolverImpl::OnResolutionComplete(std::unique_ptr<Request> request,
+                                             int result) {
+  DCHECK(request->context_getter->GetNetworkTaskRunner()
+             ->BelongsToCurrentThread());
+
+  if (request->error.empty() && result != net::OK)
+    request->error = net::ErrorToString(result);
+
+  origin_thread_->PostTask(FROM_HERE,
+                           base::Bind(&ProxyResolverImpl::NotifyProxyResolved,
+                                      weak_ptr_factory_.GetWeakPtr(),
+                                      base::Passed(std::move(request))));
+}
+
+void ProxyResolverImpl::NotifyProxyResolved(std::unique_ptr<Request> request) {
+  DCHECK(OnOriginThread());
+
+  // Send a signal to the client.
+  dbus::Signal signal(request->signal_interface, request->signal_name);
+  dbus::MessageWriter writer(&signal);
+  writer.AppendString(request->source_url);
+  writer.AppendString(request->proxy_info.ToPacString());
+  writer.AppendString(request->error);
+  request->exported_object->SendSignal(&signal);
+  VLOG(1) << "Sending signal: " << signal.ToString();
+}
+
+}  // namespace
 
 ProxyResolutionServiceProvider::ProxyResolutionServiceProvider(
     ProxyResolverInterface* resolver)
@@ -190,8 +194,7 @@ ProxyResolutionServiceProvider::ProxyResolutionServiceProvider(
       weak_ptr_factory_(this) {
 }
 
-ProxyResolutionServiceProvider::~ProxyResolutionServiceProvider() {
-}
+ProxyResolutionServiceProvider::~ProxyResolutionServiceProvider() = default;
 
 void ProxyResolutionServiceProvider::Start(
     scoped_refptr<dbus::ExportedObject> exported_object) {
@@ -217,8 +220,9 @@ void ProxyResolutionServiceProvider::OnExported(
   if (!success) {
     LOG(ERROR) << "Failed to export " << interface_name << "."
                << method_name;
+  } else {
+    VLOG(1) << "Method exported: " << interface_name << "." << method_name;
   }
-  VLOG(1) << "Method exported: " << interface_name << "." << method_name;
 }
 
 bool ProxyResolutionServiceProvider::OnOriginThread() {
@@ -272,7 +276,6 @@ ProxyResolutionServiceProvider* ProxyResolutionServiceProvider::Create(
       new ProxyResolverImpl(std::move(delegate)));
 }
 
-ProxyResolverInterface::~ProxyResolverInterface() {
-}
+ProxyResolverInterface::~ProxyResolverInterface() = default;
 
 }  // namespace chromeos
