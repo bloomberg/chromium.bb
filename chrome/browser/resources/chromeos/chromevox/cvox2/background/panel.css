@@ -233,7 +233,11 @@ button {
 .menu-item-title {
   border: 0;
   margin: 0;
+  max-width: 500px;
+  overflow: hidden;
   padding: 0 18px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .menu-item-shortcut {

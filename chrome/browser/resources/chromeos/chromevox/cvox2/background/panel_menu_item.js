@@ -31,6 +31,9 @@ PanelMenuItem = function(
   var title = document.createElement('td');
   title.className = 'menu-item-title';
   title.textContent = menuItemTitle;
+
+  // Tooltip in case the menu item is cut off.
+  title.title = menuItemTitle;
   this.element.appendChild(title);
 
   var shortcut = document.createElement('td');
