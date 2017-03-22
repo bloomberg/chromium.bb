@@ -157,7 +157,8 @@ void RegistrationRequest::Start() {
             "the registering entity, through Chromium."
           trigger:
             "Immediately after a feature, website or extension creates a new "
-            "registration with the GCM Driver."
+            "registration with the GCM Driver. Repeated registration requests "
+            "will be served from the cache instead."
           data:
             "The profile-bound Android ID and associated secret, and the "
             "identifiers for the feature, website or extension that is "
