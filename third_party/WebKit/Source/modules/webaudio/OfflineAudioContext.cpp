@@ -90,6 +90,7 @@ OfflineAudioContext* OfflineAudioContext::create(
 
   OfflineAudioContext* audioContext = new OfflineAudioContext(
       document, numberOfChannels, numberOfFrames, sampleRate, exceptionState);
+  audioContext->suspendIfNeeded();
 
   if (!audioContext->destination()) {
     exceptionState.throwDOMException(
@@ -123,7 +124,6 @@ OfflineAudioContext* OfflineAudioContext::create(
   offlineContextLengthHistogram.count(numberOfFrames);
   offlineContextSampleRateHistogram.count(sampleRate);
 
-  audioContext->suspendIfNeeded();
   return audioContext;
 }
 
