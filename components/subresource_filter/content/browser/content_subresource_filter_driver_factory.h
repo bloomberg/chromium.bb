@@ -152,10 +152,16 @@ class ContentSubresourceFilterDriverFactory
       const content::Referrer& referrer,
       ui::PageTransition page_transition);
 
-  bool DidURLMatchCurrentActivationList(const GURL& url) const;
+  bool DidURLMatchActivationList(const GURL& url,
+                                 ActivationList activation_list) const;
 
   void AddActivationListMatch(const GURL& url, ActivationList match_type);
+  int CalculateHitPatternForActivationList(
+      ActivationList activation_list) const;
   void RecordRedirectChainMatchPattern() const;
+
+  void RecordRedirectChainMatchPatternForList(
+      ActivationList activation_list) const;
 
   std::unique_ptr<SubresourceFilterClient> client_;
 

@@ -33,6 +33,7 @@ static_library("test_support") {
     "//base/test:test_support",
     "//components/variations",
     "//testing/gtest",
+    "//third_party/protobuf:protobuf_lite",
   ]
 }
 

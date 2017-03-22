@@ -9,10 +9,12 @@
 #include "base/metrics/field_trial.h"
 #include "base/test/histogram_tester.h"
 #include "components/safe_browsing_db/util.h"
+#include "components/subresource_filter/content/browser/content_activation_list_utils.h"
 #include "components/subresource_filter/content/browser/subresource_filter_client.h"
 #include "components/subresource_filter/content/common/subresource_filter_messages.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features_test_support.h"
+#include "components/subresource_filter/core/common/activation_list.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/mock_render_process_host.h"
@@ -60,6 +62,18 @@ enum RedirectChainMatchPattern {
                      // has happened, and this URL was a Safe Browsing hit.
   NUM_HIT_PATTERNS,
 };
+
+std::string GetSuffixForList(const ActivationList& type) {
+  switch (type) {
+    case ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL:
+      return ".SocialEngineeringAdsInterstitial";
+    case ActivationList::PHISHING_INTERSTITIAL:
+      return ".PhishingInterstital";
+    case ActivationList::NONE:
+      return std::string();
+  }
+  return std::string();
+}
 
 struct ActivationListTestData {
   ActivationDecision expected_activation_decision;
@@ -122,6 +136,10 @@ const ActivationListTestData kActivationListTestData[] = {
      safe_browsing::ThreatPatternType::NONE},
     {ActivationDecision::ACTIVATED,
      subresource_filter::kActivationListSocialEngineeringAdsInterstitial,
+     safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
+     safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS},
+    {ActivationDecision::ACTIVATED,
+     subresource_filter::kActivationListPhishingInterstitial,
      safe_browsing::SB_THREAT_TYPE_URL_PHISHING,
      safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS},
 };
@@ -268,18 +286,20 @@ class ContentSubresourceFilterDriverFactoryTest
     content::RenderFrameHostTester* rfh_tester =
         content::RenderFrameHostTester::For(main_rfh());
     rfh_tester->AppendChild(kSubframeName);
+    ActivationList activation_list =
+        GetListForThreatTypeAndMetadata(threat_type, threat_type_metadata);
 
+    const std::string suffix(GetSuffixForList(activation_list));
     if (expected_pattern != EMPTY) {
-      EXPECT_THAT(tester.GetAllSamples(kMatchesPatternHistogramName),
+      EXPECT_THAT(tester.GetAllSamples(kMatchesPatternHistogramName + suffix),
                   ::testing::ElementsAre(base::Bucket(expected_pattern, 1)));
       EXPECT_THAT(
-          tester.GetAllSamples(kNavigationChainSize),
+          tester.GetAllSamples(kNavigationChainSize + suffix),
           ::testing::ElementsAre(base::Bucket(navigation_chain.size(), 1)));
-
     } else {
-      EXPECT_THAT(tester.GetAllSamples(kMatchesPatternHistogramName),
+      EXPECT_THAT(tester.GetAllSamples(kMatchesPatternHistogramName + suffix),
                   ::testing::IsEmpty());
-      EXPECT_THAT(tester.GetAllSamples(kNavigationChainSize),
+      EXPECT_THAT(tester.GetAllSamples(kNavigationChainSize + suffix),
                   ::testing::IsEmpty());
     }
   }
@@ -426,10 +446,10 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest,
       kActivationScopeAllSites,
       kActivationListSocialEngineeringAdsInterstitial);
   const GURL url(kExampleUrlWithParams);
-  NavigateAndExpectActivation({true}, {url}, EMPTY,
+  NavigateAndExpectActivation({true}, {url}, NO_REDIRECTS_HIT,
                               ActivationDecision::ACTIVATION_DISABLED);
   factory()->AddHostOfURLToWhitelistSet(url);
-  NavigateAndExpectActivation({true}, {url}, EMPTY,
+  NavigateAndExpectActivation({true}, {url}, NO_REDIRECTS_HIT,
                               ActivationDecision::ACTIVATION_DISABLED);
 }
 
@@ -488,6 +508,8 @@ TEST_F(ContentSubresourceFilterDriverFactoryTest, FailedNavigation) {
   EmulateFailedNavigationAndExpectNoActivation(url);
 }
 
+// TODO(melandory): refactor the test so it no longer require the current
+// activation list to be matching.
 TEST_F(ContentSubresourceFilterDriverFactoryTest, RedirectPatternTest) {
   base::FieldTrialList field_trial_list(nullptr);
   testing::ScopedSubresourceFilterFeatureToggle scoped_feature_toggle(
@@ -675,13 +697,14 @@ TEST_P(ContentSubresourceFilterDriverFactoryThreatTypeTest,
   const GURL test_url("https://example.com/nonsoceng?q=engsocnon");
   std::vector<GURL> navigation_chain;
 
-  const bool expected_activation =
-      test_data.expected_activation_decision == ActivationDecision::ACTIVATED;
+  ActivationList effective_list = GetListForThreatTypeAndMetadata(
+      test_data.threat_type, test_data.threat_type_metadata);
   NavigateAndExpectActivation(
       {false, false, false, true},
       {GURL(kUrlA), GURL(kUrlB), GURL(kUrlC), test_url}, test_data.threat_type,
       test_data.threat_type_metadata, content::Referrer(),
-      ui::PAGE_TRANSITION_LINK, expected_activation ? F0M0L1 : EMPTY,
+      ui::PAGE_TRANSITION_LINK,
+      effective_list != ActivationList::NONE ? F0M0L1 : EMPTY,
       test_data.expected_activation_decision);
 };
 

@@ -8,6 +8,8 @@ static_library("browser") {
     "activation_state_computing_navigation_throttle.h",
     "async_document_subresource_filter.cc",
     "async_document_subresource_filter.h",
+    "content_activation_list_utils.cc",
+    "content_activation_list_utils.h",
     "content_ruleset_service.cc",
     "content_ruleset_service.h",
     "content_subresource_filter_driver_factory.cc",
