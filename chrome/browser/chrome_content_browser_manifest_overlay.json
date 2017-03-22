@@ -40,6 +40,7 @@
           "blink::mojom::ShareService",
           "bluetooth::mojom::AdapterFactory",
           "chrome::mojom::PrerenderCanceler",
+          "chrome::mojom::OpenSearchDocumentDescriptionHandler",
           "device::usb::ChooserService",
           "device::usb::DeviceManager",
           "contextual_search::mojom::ContextualSearchJsApiService",

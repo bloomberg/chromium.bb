@@ -306,12 +306,6 @@ IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_ShowFlashPermissionBubble)
 IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_CouldNotLoadPlugin,
                     base::FilePath /* plugin_path */)
 
-// Notification that the page has an OpenSearch description document
-// associated with it.
-IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_PageHasOSDD,
-                    GURL /* page_url */,
-                    GURL /* osdd_url */)
-
 // Notifies when a plugin couldn't be loaded because it's outdated.
 IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_BlockedOutdatedPlugin,
                     int /* placeholder ID */,

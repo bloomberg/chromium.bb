@@ -19,11 +19,13 @@
 #include "chrome/common/chrome_isolated_world_ids.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"
+#include "chrome/common/open_search_description_document_handler.mojom.h"
 #include "chrome/common/prerender_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/prerender/prerender_helper.h"
 #include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
 #include "components/translate/content/renderer/translate_helper.h"
+#include "content/public/common/associated_interface_provider.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "extensions/common/constants.h"
@@ -195,8 +197,9 @@ void ChromeRenderFrameObserver::RequestThumbnailForContextNode(
   if (!context_node.isNull() && context_node.isElementNode()) {
     blink::WebImage image = context_node.to<WebElement>().imageContents();
     original_size = image.size();
-    thumbnail =
-        Downscale(image, thumbnail_min_area_pixels, thumbnail_max_size_pixels);
+    thumbnail = Downscale(image,
+                          thumbnail_min_area_pixels,
+                          thumbnail_max_size_pixels);
   }
 
   SkBitmap bitmap;
@@ -249,8 +252,12 @@ void ChromeRenderFrameObserver::DidFinishLoad() {
 
   GURL osdd_url = frame->document().openSearchDescriptionURL();
   if (!osdd_url.is_empty()) {
-    Send(new ChromeViewHostMsg_PageHasOSDD(
-        routing_id(), frame->document().url(), osdd_url));
+    chrome::mojom::OpenSearchDescriptionDocumentHandlerAssociatedPtr
+        osdd_handler;
+    render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(
+        &osdd_handler);
+    osdd_handler->PageHasOpenSearchDescriptionDocument(
+        frame->document().url(), osdd_url);
   }
 }
 

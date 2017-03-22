@@ -72,8 +72,7 @@ base::string16 GenerateKeywordFromNavigationEntry(
 void AssociateURLFetcherWithWebContents(content::WebContents* web_contents,
                                         net::URLFetcher* url_fetcher) {
   content::AssociateURLFetcherWithRenderFrame(
-      url_fetcher,
-      url::Origin(web_contents->GetURL()),
+      url_fetcher, url::Origin(web_contents->GetURL()),
       web_contents->GetRenderProcessHost()->GetID(),
       web_contents->GetMainFrame()->GetRoutingID());
 }
@@ -88,33 +87,23 @@ void SearchEngineTabHelper::DidFinishNavigation(
   GenerateKeywordIfNecessary(handle);
 }
 
-bool SearchEngineTabHelper::OnMessageReceived(const IPC::Message& message) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(SearchEngineTabHelper, message)
-    IPC_MESSAGE_HANDLER(ChromeViewHostMsg_PageHasOSDD, OnPageHasOSDD)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-
-  return handled;
-}
-
-bool SearchEngineTabHelper::OnMessageReceived(
-    const IPC::Message& message,
-    content::RenderFrameHost* render_frame_host) {
-  return OnMessageReceived(message);
-}
-
 SearchEngineTabHelper::SearchEngineTabHelper(WebContents* web_contents)
-    : content::WebContentsObserver(web_contents) {
+    : content::WebContentsObserver(web_contents),
+      osdd_handler_bindings_(web_contents, this) {
   DCHECK(web_contents);
 }
 
-void SearchEngineTabHelper::OnPageHasOSDD(
+void SearchEngineTabHelper::PageHasOpenSearchDescriptionDocument(
     const GURL& page_url,
     const GURL& osdd_url) {
   // Checks to see if we should generate a keyword based on the OSDD, and if
   // necessary uses TemplateURLFetcher to download the OSDD and create a
   // keyword.
+
+  // Only accept messages from the main frame.
+  if (osdd_handler_bindings_.GetCurrentTargetFrame() !=
+      web_contents()->GetMainFrame())
+    return;
 
   // Make sure that the page is the current page and other basic checks.
   // When |page_url| has file: scheme, this method doesn't work because of
