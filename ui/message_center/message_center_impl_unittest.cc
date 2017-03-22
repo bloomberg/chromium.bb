@@ -1085,9 +1085,8 @@ TEST_F(MessageCenterImplTestWithChangeQueue, QueuedDirectUpdates) {
 
   SkBitmap bitmap;
   bitmap.allocN32Pixels(new_size.width(), new_size.height(), true);
-  sk_sp<SkSurface> surface = SkSurface::MakeRasterDirect(
-      bitmap.info(), bitmap.getPixels(), bitmap.rowBytes());
-  surface->getCanvas()->drawColor(SK_ColorBLUE);
+  SkCanvas canvas(bitmap);
+  canvas.drawColor(SK_ColorBLUE);
   gfx::Image test_image(
       gfx::Image(gfx::ImageSkia(gfx::ImageSkiaRep(bitmap, 1.f))));
   message_center()->SetNotificationIcon(id, test_image);

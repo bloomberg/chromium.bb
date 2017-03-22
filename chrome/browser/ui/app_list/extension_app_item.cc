@@ -86,13 +86,12 @@ class RoundedCornersImageSource : public gfx::CanvasImageSource {
 
     SkBitmap mask_bitmap;
     mask_bitmap.allocN32Pixels(icon_.width(), icon_.height(), false);
-    sk_sp<SkSurface> mask_surface = SkSurface::MakeRasterDirect(
-        mask_bitmap.info(), mask_bitmap.getPixels(), mask_bitmap.rowBytes());
-    mask_surface->getCanvas()->clear(SK_ColorTRANSPARENT);
+    SkCanvas mask_canvas(mask_bitmap);
+    mask_canvas.clear(SK_ColorTRANSPARENT);
     SkPaint mask_paint;
     mask_paint.setAntiAlias(true);
     mask_paint.setColor(SK_ColorWHITE);
-    mask_surface->getCanvas()->drawRoundRect(
+    mask_canvas.drawRoundRect(
         gfx::RectToSkRect(gfx::Rect(icon_.width(), icon_.height())),
         kRoundingRadius, kRoundingRadius, mask_paint);
 

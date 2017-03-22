@@ -59,15 +59,14 @@ SkBitmap GetGAIAPictureForNTP(const gfx::Image& image) {
   const int kLength = 27;
   SkBitmap bmp = skia::ImageOperations::Resize(*image.ToSkBitmap(),
       skia::ImageOperations::RESIZE_BEST, kLength, kLength);
+  SkCanvas canvas(bmp);
 
   // Draw a gray border on the inside of the icon.
-  sk_sp<SkSurface> surface =
-      SkSurface::MakeRasterDirect(bmp.info(), bmp.getPixels(), bmp.rowBytes());
   SkPaint paint;
   paint.setColor(SkColorSetARGB(83, 0, 0, 0));
   paint.setStyle(SkPaint::kStroke_Style);
-  surface->getCanvas()->drawRect(
-      gfx::RectToSkRect(gfx::Rect(kLength - 1, kLength - 1)), paint);
+  canvas.drawRect(gfx::RectToSkRect(gfx::Rect(kLength - 1, kLength - 1)),
+                  paint);
   return bmp;
 }
 

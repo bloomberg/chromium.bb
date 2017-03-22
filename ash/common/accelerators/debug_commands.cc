@@ -93,16 +93,15 @@ gfx::ImageSkia CreateWallpaperImage(SkColor fill, SkColor rect) {
   gfx::Size image_size(1366, 768);
   SkBitmap bitmap;
   bitmap.allocN32Pixels(image_size.width(), image_size.height(), true);
-  sk_sp<SkSurface> surface = SkSurface::MakeRasterDirect(
-      bitmap.info(), bitmap.getPixels(), bitmap.rowBytes());
-  surface->getCanvas()->drawColor(fill);
+  SkCanvas canvas(bitmap);
+  canvas.drawColor(fill);
   SkPaint paint;
   paint.setColor(rect);
   paint.setStrokeWidth(10);
   paint.setStyle(SkPaint::kStroke_Style);
   paint.setBlendMode(SkBlendMode::kSrcOver);
-  surface->getCanvas()->drawRoundRect(gfx::RectToSkRect(gfx::Rect(image_size)),
-                                      100.f, 100.f, paint);
+  canvas.drawRoundRect(gfx::RectToSkRect(gfx::Rect(image_size)), 100.f, 100.f,
+                       paint);
   return gfx::ImageSkia(gfx::ImageSkiaRep(std::move(bitmap), 1.f));
 }
 
