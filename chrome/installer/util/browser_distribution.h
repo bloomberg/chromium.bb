@@ -51,9 +51,6 @@ class BrowserDistribution {
       const base::FilePath& local_data_path,
       const base::string16& distribution_data);
 
-  // Returns the GUID to be used when registering for Active Setup.
-  virtual base::string16 GetActiveSetupGuid();
-
   // Returns the unsuffixed application name of this program.
   // This is the base of the name registered with Default Programs on Windows.
   // IMPORTANT: This should only be called by the installer which needs to make

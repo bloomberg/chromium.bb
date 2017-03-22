@@ -92,6 +92,10 @@ const wchar_t* GetProgIdPrefix();
 // Returns the browser's ProgId description.
 const wchar_t* GetProgIdDescription();
 
+// Returns the path to the Active Setup registry entries
+// (e.g., Software\Microsoft\Active Setup\Installed Components\[guid]).
+std::wstring GetActiveSetupPath();
+
 // Returns true if usage stats collecting is enabled for this user for the
 // current executable.
 bool GetCollectStatsConsent();

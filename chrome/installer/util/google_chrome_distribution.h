@@ -35,8 +35,6 @@ class GoogleChromeDistribution : public BrowserDistribution {
       const base::FilePath& local_data_path,
       const base::string16& distribution_data) override;
 
-  base::string16 GetActiveSetupGuid() override;
-
   base::string16 GetShortcutName() override;
 
   base::string16 GetIconFilename() override;

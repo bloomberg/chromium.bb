@@ -28,6 +28,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/install_static/install_details.h"
 #include "chrome/install_static/install_modes.h"
+#include "chrome/install_static/install_util.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/installation_state.h"
@@ -80,15 +81,8 @@ HWND CreateUACForegroundWindow() {
 
 }  // namespace
 
-base::string16 InstallUtil::GetActiveSetupPath(BrowserDistribution* dist) {
-  static const wchar_t kInstalledComponentsPath[] =
-      L"Software\\Microsoft\\Active Setup\\Installed Components\\";
-  return kInstalledComponentsPath + dist->GetActiveSetupGuid();
-}
-
 void InstallUtil::TriggerActiveSetupCommand() {
-  base::string16 active_setup_reg(
-      GetActiveSetupPath(BrowserDistribution::GetDistribution()));
+  base::string16 active_setup_reg(install_static::GetActiveSetupPath());
   base::win::RegKey active_setup_key(
       HKEY_LOCAL_MACHINE, active_setup_reg.c_str(), KEY_QUERY_VALUE);
   base::string16 cmd_str;

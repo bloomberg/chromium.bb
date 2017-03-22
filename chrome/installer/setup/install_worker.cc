@@ -807,7 +807,7 @@ void AddActiveSetupWorkItems(const InstallerState& installer_state,
   DCHECK(installer_state.RequiresActiveSetup());
 
   const HKEY root = HKEY_LOCAL_MACHINE;
-  const base::string16 active_setup_path(InstallUtil::GetActiveSetupPath(dist));
+  const base::string16 active_setup_path(install_static::GetActiveSetupPath());
 
   VLOG(1) << "Adding registration items for Active Setup.";
   list->AddCreateRegKeyWorkItem(

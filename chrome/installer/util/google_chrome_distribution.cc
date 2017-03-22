@@ -144,10 +144,6 @@ void GoogleChromeDistribution::DoPostUninstallOperations(
   NavigateToUrlWithIExplore(url);
 }
 
-base::string16 GoogleChromeDistribution::GetActiveSetupGuid() {
-  return install_static::GetAppGuid();
-}
-
 base::string16 GoogleChromeDistribution::GetBaseAppName() {
   // I'd really like to return L ## PRODUCT_FULLNAME_STRING; but that's no good
   // since it'd be "Chromium" in a non-Chrome build, which isn't at all what I

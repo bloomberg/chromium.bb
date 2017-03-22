@@ -32,10 +32,6 @@ class Version;
 // independently.
 class InstallUtil {
  public:
-  // Get the path to this distribution's Active Setup registry entries.
-  // e.g. Software\Microsoft\Active Setup\Installed Components\<dist_guid>
-  static base::string16 GetActiveSetupPath(BrowserDistribution* dist);
-
   // Attempts to trigger the command that would be run by Active Setup for a
   // system-level Chrome. For use only when system-level Chrome is installed.
   static void TriggerActiveSetupCommand();

@@ -81,6 +81,9 @@ TEST(InstallModes, VerifyModes) {
     // The ProgID description must not be empty.
     ASSERT_THAT(mode.prog_id_description, StrNe(L""));
 
+    // Every mode must have an Active Setup GUID.
+    ASSERT_THAT(mode.active_setup_guid, StrNe(L""));
+
     // UNSUPPORTED and kUseGoogleUpdateIntegration are mutually exclusive.
     if (kUseGoogleUpdateIntegration)
       ASSERT_THAT(mode.channel_strategy, Ne(ChannelStrategy::UNSUPPORTED));

@@ -22,6 +22,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/shortcut.h"
 #include "chrome/install_static/install_details.h"
+#include "chrome/install_static/install_util.h"
 #include "chrome/installer/setup/install_worker.h"
 #include "chrome/installer/setup/installer_crash_reporting.h"
 #include "chrome/installer/setup/installer_state.h"
@@ -649,7 +650,7 @@ void HandleOsUpgradeForBrowser(const installer::InstallerState& installer_state,
     UpdateDefaultBrowserBeaconForPath(chrome_exe);
   } else {
     UpdateActiveSetupVersionWorkItem active_setup_work_item(
-        InstallUtil::GetActiveSetupPath(chrome.distribution()),
+        install_static::GetActiveSetupPath(),
         UpdateActiveSetupVersionWorkItem::
             UPDATE_AND_BUMP_OS_UPGRADES_COMPONENT);
     if (active_setup_work_item.Do())

@@ -520,19 +520,15 @@ bool DeleteUserRegistryKeys(const std::vector<const base::string16*>* key_paths,
 // but otherwise respects the no rollback/best effort uninstall mentality.
 // This will only apply for system-level installs of Chrome/Chromium and will be
 // a no-op for all other types of installs.
-void UninstallActiveSetupEntries(const InstallerState& installer_state,
-                                 const Product& product) {
+void UninstallActiveSetupEntries(const InstallerState& installer_state) {
   VLOG(1) << "Uninstalling registry entries for Active Setup.";
-  BrowserDistribution* distribution = product.distribution();
 
   if (!installer_state.system_install()) {
-    VLOG(1) << "No Active Setup processing to do for user-level "
-            << distribution->GetDisplayName();
+    VLOG(1) << "No Active Setup processing to do for user-level install.";
     return;
   }
 
-  const base::string16 active_setup_path(
-      InstallUtil::GetActiveSetupPath(distribution));
+  const base::string16 active_setup_path(install_static::GetActiveSetupPath());
   InstallUtil::DeleteRegistryKey(HKEY_LOCAL_MACHINE, active_setup_path,
                                  WorkItem::kWow64Default);
 
@@ -971,7 +967,7 @@ InstallStatus UninstallProduct(const InstallationState& original_state,
 
     ProcessChromeWorkItems(installer_state, product);
 
-    UninstallActiveSetupEntries(installer_state, product);
+    UninstallActiveSetupEntries(installer_state);
 
     UninstallFirewallRules(browser_dist, chrome_exe);
 
