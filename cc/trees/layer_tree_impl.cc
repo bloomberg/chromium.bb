@@ -1521,10 +1521,8 @@ void LayerTreeImpl::AsValueInto(base::trace_event::TracedValue* state) const {
 
 bool LayerTreeImpl::DistributeRootScrollOffset(
     const gfx::ScrollOffset& root_offset) {
-  if (!InnerViewportScrollLayer())
+  if (!InnerViewportScrollLayer() || !OuterViewportScrollLayer())
     return false;
-
-  DCHECK(OuterViewportScrollLayer());
 
   // If we get here, we have both inner/outer viewports, and need to distribute
   // the scroll offset between them.
