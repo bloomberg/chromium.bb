@@ -459,7 +459,6 @@ var WGLUStats = (function() {
     this.prevGraphUpdateTime = this.startTime;
     this.frames = 0;
     this.fpsAverage = 0;
-    this.fpsSum = 0;
     this.fpsMin = 0;
     this.fpsStep = enablePerformanceMonitoring ? 1000 : 250;
 
@@ -550,11 +549,11 @@ var WGLUStats = (function() {
     var frameFps = 1000 / (time - this.prevFrameTime);
     this.prevFrameTime = time;
     this.fpsMin = this.frames ? Math.min(this.fpsMin, frameFps) : frameFps;
-    this.fpsSum += frameFps;
     this.frames++;
 
     if (time > this.prevGraphUpdateTime + this.fpsStep) {
-      this.fpsAverage = Math.round(this.fpsSum / this.frames);
+      var intervalTime = time - this.prevGraphUpdateTime;
+      this.fpsAverage = Math.round(1000 / (intervalTime / this.frames));
 
       // Draw both average and minimum FPS for this period
       // so that dropped frames are more clearly visible.
@@ -567,7 +566,6 @@ var WGLUStats = (function() {
       this.prevGraphUpdateTime = time;
       this.frames = 0;
       this.fpsMin = 0;
-      this.fpsSum = 0;
     }
   };
 
