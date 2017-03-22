@@ -208,10 +208,6 @@ class Binding {
     internal_state_.CloseWithReason(custom_reason, description);
   }
 
-  void EnableNestedDispatch(bool enabled) {
-    internal_state_.EnableNestedDispatch(enabled);
-  }
-
   // Unbinds the underlying pipe from this binding and returns it so it can be
   // used in another context, such as on another thread or with a different
   // implementation. Put this object into a state where it can be rebound to a

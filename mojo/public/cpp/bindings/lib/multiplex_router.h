@@ -130,8 +130,6 @@ class MOJO_CPP_BINDINGS_EXPORT MultiplexRouter
   // Whether there are any associated interfaces running currently.
   bool HasAssociatedEndpoints() const;
 
-  void EnableNestedDispatch(bool enabled);
-
   // Sets this object to testing mode.
   // In testing mode, the object doesn't disconnect the underlying message pipe
   // when it receives unexpected or invalid messages.

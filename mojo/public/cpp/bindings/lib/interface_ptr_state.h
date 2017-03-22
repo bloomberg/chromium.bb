@@ -150,11 +150,6 @@ class InterfacePtrState {
     return endpoint_client_->associated_group();
   }
 
-  void EnableNestedDispatch(bool enabled) {
-    ConfigureProxyIfNecessary();
-    router_->EnableNestedDispatch(enabled);
-  }
-
   void EnableTestingMode() {
     ConfigureProxyIfNecessary();
     router_->EnableTestingMode();

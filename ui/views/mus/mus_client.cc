@@ -86,10 +86,8 @@ MusClient::MusClient(service_manager::Connector* connector,
   if (create_wm_state)
     wm_state_ = base::MakeUnique<wm::WMState>();
 
-  if (testing_state == MusClientTestingState::CREATE_TESTING_STATE) {
+  if (testing_state == MusClientTestingState::CREATE_TESTING_STATE)
     connector->BindInterface(ui::mojom::kServiceName, &server_test_ptr_);
-    server_test_ptr_.EnableNestedDispatch(true);
-  }
 
   window_tree_client_ = base::MakeUnique<aura::WindowTreeClient>(
       connector, this, nullptr /* window_manager_delegate */,

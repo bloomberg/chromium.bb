@@ -155,13 +155,10 @@ class MOJO_CPP_BINDINGS_EXPORT Connector
   // |tag| must be a const string literal.
   void SetWatcherHeapProfilerTag(const char* tag);
 
-  // Enables support for nested message dispatch so that the Connector can
-  // continue dispatching inbound messages even if one of them spins a nested
-  // message loop. This should be enabled only when needed, as dispatch in this
-  // mode is generally less efficient.
-  void EnableNestedDispatch(bool enabled);
-
  private:
+  class ActiveDispatchTracker;
+  class MessageLoopNestingObserver;
+
   // Callback of mojo::SimpleWatcher.
   void OnWatcherHandleReady(MojoResult result);
   // Callback of SyncHandleWatcher.
@@ -202,8 +199,6 @@ class MOJO_CPP_BINDINGS_EXPORT Connector
 
   bool paused_ = false;
 
-  bool nested_dispatch_enabled_ = false;
-
   // If sending messages is allowed from multiple threads, |lock_| is used to
   // protect modifications to |message_pipe_| and |drop_writes_|.
   base::Optional<base::Lock> lock_;
@@ -222,6 +217,14 @@ class MOJO_CPP_BINDINGS_EXPORT Connector
   // The tag used to track heap allocations that originated from a Watcher
   // notification.
   const char* heap_profiler_tag_ = nullptr;
+
+  // A cached pointer to the MessageLoopNestingObserver for the MessageLoop on
+  // which this Connector was created.
+  MessageLoopNestingObserver* const nesting_observer_;
+
+  // |true| iff the Connector is currently dispatching a message. Used to detect
+  // nested dispatch operations.
+  bool is_dispatching_ = false;
 
   // Create a single weak ptr and use it everywhere, to avoid the malloc/free
   // cost of creating a new weak ptr whenever it is needed.

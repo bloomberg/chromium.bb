@@ -51,10 +51,6 @@ void BindingStateBase::CloseWithReason(uint32_t custom_reason,
   Close();
 }
 
-void BindingStateBase::EnableNestedDispatch(bool enabled) {
-  router_->EnableNestedDispatch(enabled);
-}
-
 void BindingStateBase::FlushForTesting() {
   endpoint_client_->FlushForTesting();
 }

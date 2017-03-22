@@ -482,12 +482,6 @@ WindowMus* WindowTreeClient::NewWindowFromWindowData(
 void WindowTreeClient::SetWindowTree(ui::mojom::WindowTreePtr window_tree_ptr) {
   tree_ptr_ = std::move(window_tree_ptr);
 
-  // Enable nested dispatch on both sides of this connect because these objects
-  // are used in the presence of nested runloops, such as those during drag and
-  // drop.
-  binding_.EnableNestedDispatch(true);
-  tree_ptr_.EnableNestedDispatch(true);
-
   WindowTreeConnectionEstablished(tree_ptr_.get());
   tree_ptr_->GetCursorLocationMemory(
       base::Bind(&WindowTreeClient::OnReceivedCursorLocationMemory,

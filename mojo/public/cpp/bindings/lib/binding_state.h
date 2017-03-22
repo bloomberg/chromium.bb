@@ -68,8 +68,6 @@ class MOJO_CPP_BINDINGS_EXPORT BindingStateBase {
     return router_->handle();
   }
 
-  void EnableNestedDispatch(bool enabled);
-
   void FlushForTesting();
 
   void EnableTestingMode();
