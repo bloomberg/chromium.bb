@@ -1569,6 +1569,10 @@ class Port(object):
             return False
         return True
 
+    def should_run_pixel_test_first(self, test_input):
+        return any(test_input.test_name.startswith(
+            directory) for directory in self._options.image_first_tests)
+
     def _convert_path(self, path):
         """Handles filename conversion for subprocess command line args."""
         # See note above in diff_image() for why we need this.

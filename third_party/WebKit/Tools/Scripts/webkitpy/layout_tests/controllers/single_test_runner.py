@@ -70,6 +70,7 @@ class SingleTestRunner(object):
         self._worker_name = worker_name
         self._test_name = test_input.test_name
         self._should_run_pixel_test = test_input.should_run_pixel_test
+        self._should_run_pixel_test_first = test_input.should_run_pixel_test_first
         self._reference_files = test_input.reference_files
         self._should_add_missing_baselines = test_input.should_add_missing_baselines
         self._stop_when_done = stop_when_done
@@ -283,11 +284,27 @@ class SingleTestRunner(object):
         is_testharness_test, testharness_failures = self._compare_testharness_test(driver_output, expected_driver_output)
         if is_testharness_test:
             failures.extend(testharness_failures)
+
+        compare_functions = []
+        compare_image_fn = (self._compare_image, (expected_driver_output, driver_output))
+        compare_txt_fn = (self._compare_text, (expected_driver_output.text, driver_output.text))
+        compare_audio_fn = (self._compare_audio, (expected_driver_output.audio, driver_output.audio))
+
+        if self._should_run_pixel_test_first:
+            if driver_output.image_hash and self._should_run_pixel_test:
+                compare_functions.append(compare_image_fn)
+            elif not is_testharness_test:
+                compare_functions.append(compare_txt_fn)
         else:
-            failures.extend(self._compare_text(expected_driver_output.text, driver_output.text))
-        failures.extend(self._compare_audio(expected_driver_output.audio, driver_output.audio))
-        if self._should_run_pixel_test:
-            failures.extend(self._compare_image(expected_driver_output, driver_output))
+            if not is_testharness_test:
+                compare_functions.append(compare_txt_fn)
+            if self._should_run_pixel_test:
+                compare_functions.append(compare_image_fn)
+        compare_functions.append(compare_audio_fn)
+
+        for func, args in compare_functions:
+            failures.extend(func(*args))
+
         has_repaint_overlay = (repaint_overlay.result_contains_repaint_rects(expected_driver_output.text) or
                                repaint_overlay.result_contains_repaint_rects(driver_output.text))
         return TestResult(self._test_name, failures, driver_output.test_time, driver_output.has_stderr(),

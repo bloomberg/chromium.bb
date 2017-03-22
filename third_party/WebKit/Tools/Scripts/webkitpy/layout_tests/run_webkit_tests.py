@@ -235,6 +235,15 @@ def parse_args(args):
                 dest='smoke',
                 action='store_false',
                 help='Do not run just the SmokeTests'),
+            optparse.make_option(
+                '--image-first-tests',
+                action='append',
+                default=[],
+                dest='image_first_tests',
+                help=('A directory (or test) where the test result will only be compared with the '
+                      'image baseline if an image baseline is available, and fall back to comparison '
+                      'with the text baseline when image baselines are missing. Specify multiple times '
+                      'to add multiple directories/tests.')),
         ]))
 
     option_group_definitions.append(
