@@ -2837,12 +2837,30 @@ bool DXVAVideoDecodeAccelerator::InitializeID3D11VideoProcessor(
           dx11_converter_output_color_space_ =
               gfx::ColorSpace::CreateSCRGBLinear();
         }
-        video_context1->VideoProcessorSetStreamColorSpace1(
-            d3d11_processor_.get(), 0,
-            gfx::ColorSpaceWin::GetDXGIColorSpace(color_space));
-        video_context1->VideoProcessorSetOutputColorSpace1(
-            d3d11_processor_.get(), gfx::ColorSpaceWin::GetDXGIColorSpace(
-                                        dx11_converter_output_color_space_));
+        // Since the video processor doesn't support HLG, let's just do the
+        // YUV->RGB conversion and let the output color space be HLG.
+        // This won't work well unless color management is on, but if color
+        // management is off we don't support HLG anyways.
+        if (color_space ==
+            gfx::ColorSpace(gfx::ColorSpace::PrimaryID::BT2020,
+                            gfx::ColorSpace::TransferID::ARIB_STD_B67,
+                            gfx::ColorSpace::MatrixID::BT709,
+                            gfx::ColorSpace::RangeID::LIMITED)) {
+          video_context1->VideoProcessorSetStreamColorSpace1(
+              d3d11_processor_.get(), 0,
+              DXGI_COLOR_SPACE_YCBCR_STUDIO_G2084_LEFT_P2020);
+          video_context1->VideoProcessorSetOutputColorSpace1(
+              d3d11_processor_.get(),
+              DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020);
+          dx11_converter_output_color_space_ = color_space.GetAsFullRangeRGB();
+        } else {
+          video_context1->VideoProcessorSetStreamColorSpace1(
+              d3d11_processor_.get(), 0,
+              gfx::ColorSpaceWin::GetDXGIColorSpace(color_space));
+          video_context1->VideoProcessorSetOutputColorSpace1(
+              d3d11_processor_.get(), gfx::ColorSpaceWin::GetDXGIColorSpace(
+                                          dx11_converter_output_color_space_));
+        }
       } else {
         D3D11_VIDEO_PROCESSOR_COLOR_SPACE d3d11_color_space =
             gfx::ColorSpaceWin::GetD3D11ColorSpace(color_space);
