@@ -89,8 +89,6 @@ struct MainFunctionParams;
 
 #if defined(OS_ANDROID)
 class ScreenOrientationDelegate;
-#elif defined(OS_WIN)
-class ScreenOrientationDelegate;
 #endif
 
 #if defined(USE_X11) && !defined(OS_CHROMEOS)
@@ -238,10 +236,6 @@ class CONTENT_EXPORT BrowserMainLoop {
 
 #if defined(USE_AURA)
   std::unique_ptr<aura::Env> env_;
-#endif
-
-#if defined(OS_WIN)
-  std::unique_ptr<ScreenOrientationDelegate> screen_orientation_delegate_;
 #endif
 
 #if defined(OS_ANDROID)

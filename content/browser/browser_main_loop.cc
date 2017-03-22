@@ -154,8 +154,6 @@
 #include <shellapi.h>
 
 #include "base/memory/memory_pressure_monitor_win.h"
-#include "base/win/windows_version.h"
-#include "content/browser/screen_orientation/screen_orientation_delegate_win.h"
 #include "content/common/sandbox_win.h"
 #include "net/base/winsock_init.h"
 #include "ui/base/l10n/l10n_util_win.h"
@@ -736,11 +734,6 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
     base::SetRecordActionTaskRunner(
         BrowserThread::GetTaskRunnerForThread(BrowserThread::UI));
   }
-
-#if defined(OS_WIN)
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8)
-    screen_orientation_delegate_.reset(new ScreenOrientationDelegateWin());
-#endif
 
   // Only use discardable_memory::DiscardableSharedMemoryManager when Chrome is
   // not running in mus+ash.
