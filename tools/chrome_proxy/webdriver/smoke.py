@@ -93,5 +93,27 @@ class Smoke(IntegrationTest):
         self.assertHasChromeProxyViaHeader(response)
         self.assertEqual(200, response.status)
 
+  # Ensure that block causes resources to load from the origin directly.
+  def testCheckBlockIsWorking(self):
+    with TestDriver() as t:
+      t.AddChromeArg('--enable-spdy-proxy-auth')
+      t.LoadURL('http://check.googlezip.net/block')
+      responses = t.GetHTTPResponses()
+      self.assertNotEqual(0, len(responses))
+      for response in responses:
+        self.assertNotHasChromeProxyViaHeader(response)
+
+  # Ensure image, css, and javascript resources are compressed.
+  def testCheckImageCssJavascriptIsCompressed(self):
+    with TestDriver() as t:
+      t.AddChromeArg('--enable-spdy-proxy-auth')
+      t.LoadURL('http://check.googlezip.net/static')
+      # http://check.googlezip.net/static is a test page that has
+      # image/css/javascript resources.
+      responses = t.GetHTTPResponses()
+      self.assertNotEqual(0, len(responses))
+      for response in responses:
+        self.assertHasChromeProxyViaHeader(response)        
+
 if __name__ == '__main__':
   IntegrationTest.RunAllTests()
