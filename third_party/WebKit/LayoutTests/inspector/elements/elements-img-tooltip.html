@@ -13,7 +13,7 @@ var test = function()
 
     function step1(node)
     {
-        InspectorTest.firstElementsTreeOutline()._loadDimensionsForNode(node, step2);
+        InspectorTest.firstElementsTreeOutline()._loadDimensionsForNode(node).then(step2);
     }
 
     function step2(dimensions)
