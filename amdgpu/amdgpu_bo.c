@@ -703,7 +703,8 @@ int amdgpu_bo_va_op_raw(amdgpu_device_handle dev,
 	struct drm_amdgpu_gem_va va;
 	int r;
 
-	if (ops != AMDGPU_VA_OP_MAP && ops != AMDGPU_VA_OP_UNMAP)
+	if (ops != AMDGPU_VA_OP_MAP && ops != AMDGPU_VA_OP_UNMAP &&
+	    ops != AMDGPU_VA_OP_REPLACE && ops != AMDGPU_VA_OP_CLEAR)
 		return -EINVAL;
 
 	memset(&va, 0, sizeof(va));
