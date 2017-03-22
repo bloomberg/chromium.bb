@@ -2,15 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//services/catalog/public/tools/catalog.gni")
 import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
-
-group("tests") {
-  testonly = true
-  deps = [
-    ":preferences_unittests",
-  ]
-}
 
 service_manifest("manifest") {
   name = "preferences2"
@@ -32,21 +26,37 @@ source_set("preferences") {
   ]
 }
 
-test("preferences_unittests") {
+source_set("tests") {
+  testonly = true
   deps = [
     ":preferences",
     "//base",
     "//base/test:test_support",
     "//components/prefs:test_support",
-    "//mojo/edk/test:run_all_unittests",
     "//mojo/public/cpp/bindings:bindings",
     "//services/preferences/public/cpp",
     "//services/preferences/public/cpp/tests",
     "//services/preferences/public/interfaces",
+    "//services/service_manager/public/cpp",
     "//testing/gmock",
     "//testing/gtest",
   ]
   sources = [
     "persistent_pref_store_impl_unittest.cc",
   ]
+  if (!is_ios) {
+    sources += [ "pref_service_factory_unittest.cc" ]
+    deps += [ "//services/service_manager/public/cpp:service_test_support" ]
+  }
+}
+
+service_manifest("unittest_manifest") {
+  name = "prefs_unittests"
+  source = "unittest_manifest.json"
+  packaged_services = [ ":manifest" ]
+}
+
+catalog("tests_catalog") {
+  testonly = true
+  embedded_services = [ ":unittest_manifest" ]
 }

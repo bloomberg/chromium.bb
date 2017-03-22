@@ -31,6 +31,7 @@ template("service_test") {
   }
 
   catalog_cpp_source(catalog_source_target) {
+    testonly = true
     catalog = invoker.catalog
     generated_function_name = "service_manager::test::CreateTestCatalog"
   }

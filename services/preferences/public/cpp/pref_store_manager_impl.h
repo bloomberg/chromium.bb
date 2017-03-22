@@ -97,6 +97,10 @@ class PrefStoreManagerImpl
   // Registered pref stores.
   PrefStorePtrs pref_store_ptrs_;
 
+  // We hold on to the connection request callbacks until all expected
+  // PrefStores have registered.
+  std::vector<ConnectCallback> pending_callbacks_;
+
   mojo::BindingSet<mojom::PrefStoreConnector> connector_bindings_;
   mojo::BindingSet<mojom::PrefStoreRegistry> registry_bindings_;
   std::unique_ptr<PersistentPrefStoreImpl> persistent_pref_store_;
@@ -110,10 +114,6 @@ class PrefStoreManagerImpl
       pending_persistent_pref_store_requests_;
 
   scoped_refptr<base::SequencedWorkerPool> worker_pool_;
-
-  // We hold on to the connection request callbacks until all expected
-  // PrefStores have registered.
-  std::vector<ConnectCallback> pending_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefStoreManagerImpl);
 };

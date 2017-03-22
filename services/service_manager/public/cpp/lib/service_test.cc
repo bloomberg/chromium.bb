@@ -89,8 +89,8 @@ void ServiceTest::SetUp() {
 
 void ServiceTest::TearDown() {
   background_service_manager_.reset();
-  message_loop_.reset();
   context_.reset();
+  message_loop_.reset();
 }
 
 }  // namespace test

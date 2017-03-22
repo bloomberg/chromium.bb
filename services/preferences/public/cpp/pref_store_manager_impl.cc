@@ -58,6 +58,12 @@ void ConnectionBarrier::Create(const PrefStorePtrs& pref_store_ptrs,
 }
 
 void ConnectionBarrier::Init(const PrefStorePtrs& pref_store_ptrs) {
+  if (expected_connections_ == 0) {
+    // Degenerate case. We don't expect this, but it could happen in
+    // e.g. testing.
+    callback_.Run(std::move(connections_));
+    return;
+  }
   for (const auto& ptr : pref_store_ptrs) {
     ptr.second->AddObserver(
         base::Bind(&ConnectionBarrier::OnConnect, this, ptr.first));
