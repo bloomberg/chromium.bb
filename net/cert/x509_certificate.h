@@ -197,8 +197,10 @@ class NET_EXPORT X509Certificate
   // Gets the subjectAltName extension field from the certificate, if any.
   // For future extension; currently this only returns those name types that
   // are required for HTTP certificate name verification - see VerifyHostname.
-  // Unrequired parameters may be passed as NULL.
-  void GetSubjectAltName(std::vector<std::string>* dns_names,
+  // Returns true if any dNSName or iPAddress SAN was present. If |dns_names|
+  // is non-null, it will be set to all dNSNames present. If |ip_addrs| is
+  // non-null, it will be set to all iPAddresses present.
+  bool GetSubjectAltName(std::vector<std::string>* dns_names,
                          std::vector<std::string>* ip_addrs) const;
 
   // Convenience method that returns whether this certificate has expired as of

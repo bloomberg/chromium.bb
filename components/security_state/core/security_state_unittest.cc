@@ -51,6 +51,9 @@ class TestSecurityStateHelper {
         displayed_credit_card_field_on_http_(false) {}
   virtual ~TestSecurityStateHelper() {}
 
+  void SetCertificate(scoped_refptr<net::X509Certificate> cert) {
+    cert_ = std::move(cert);
+  }
   void set_connection_status(int connection_status) {
     connection_status_ = connection_status;
   }
@@ -107,7 +110,7 @@ class TestSecurityStateHelper {
 
  private:
   GURL url_;
-  const scoped_refptr<net::X509Certificate> cert_;
+  scoped_refptr<net::X509Certificate> cert_;
   int connection_status_;
   net::CertStatus cert_status_;
   bool displayed_mixed_content_;
@@ -364,6 +367,26 @@ TEST(SecurityStateTest, MarkHttpAsStatusHistogram) {
   helper.set_displayed_password_field_on_http(false);
   helper.GetSecurityInfo(&security_info);
   histograms.ExpectUniqueSample(kHistogramName, 2 /* HTTP_SHOW_WARNING */, 2);
+}
+
+TEST(SecurityStateTest, DetectSubjectAltName) {
+  TestSecurityStateHelper helper;
+
+  // Ensure subjectAltName is detected as present when the cert includes it.
+  SecurityInfo san_security_info;
+  helper.GetSecurityInfo(&san_security_info);
+  EXPECT_FALSE(san_security_info.cert_missing_subject_alt_name);
+
+  // Ensure subjectAltName is detected as missing when the cert doesn't
+  // include it.
+  scoped_refptr<net::X509Certificate> cert = net::ImportCertFromFile(
+      net::GetTestCertsDirectory(), "salesforce_com_test.pem");
+  ASSERT_TRUE(cert);
+  helper.SetCertificate(std::move(cert));
+
+  SecurityInfo no_san_security_info;
+  helper.GetSecurityInfo(&no_san_security_info);
+  EXPECT_TRUE(no_san_security_info.cert_missing_subject_alt_name);
 }
 
 }  // namespace security_state

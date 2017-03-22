@@ -403,9 +403,16 @@ TEST(X509CertificateTest, ParseSubjectAltNames) {
       ImportCertFromFile(certs_dir, "subjectAltName_sanity_check.pem");
   ASSERT_NE(static_cast<X509Certificate*>(NULL), san_cert.get());
 
+  // Ensure that testing for SAN without using it is accepted.
+  EXPECT_TRUE(san_cert->GetSubjectAltName(nullptr, nullptr));
+
+  // Ensure that it's possible to get just dNSNames.
   std::vector<std::string> dns_names;
+  EXPECT_TRUE(san_cert->GetSubjectAltName(&dns_names, nullptr));
+
+  // Ensure that it's possible to get just iPAddresses.
   std::vector<std::string> ip_addresses;
-  san_cert->GetSubjectAltName(&dns_names, &ip_addresses);
+  EXPECT_TRUE(san_cert->GetSubjectAltName(nullptr, &ip_addresses));
 
   // Ensure that DNS names are correctly parsed.
   ASSERT_EQ(1U, dns_names.size());
@@ -432,6 +439,16 @@ TEST(X509CertificateTest, ParseSubjectAltNames) {
   // Ensure the subjectAltName dirName has not influenced the handling of
   // the subject commonName.
   EXPECT_EQ("127.0.0.1", san_cert->subject().common_name);
+
+  scoped_refptr<X509Certificate> no_san_cert =
+      ImportCertFromFile(certs_dir, "salesforce_com_test.pem");
+  ASSERT_NE(static_cast<X509Certificate*>(NULL), no_san_cert.get());
+
+  EXPECT_NE(0u, dns_names.size());
+  EXPECT_NE(0u, ip_addresses.size());
+  EXPECT_FALSE(no_san_cert->GetSubjectAltName(&dns_names, &ip_addresses));
+  EXPECT_EQ(0u, dns_names.size());
+  EXPECT_EQ(0u, ip_addresses.size());
 }
 
 #if defined(USE_NSS_CERTS)

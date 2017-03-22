@@ -142,6 +142,10 @@ struct SecurityInfo {
 
   // True if the page displayed credit card field on an HTTP page.
   bool displayed_credit_card_field_on_http;
+
+  // True if the server's certificate does not contain a
+  // subjectAltName extension with a domain name or IP address.
+  bool cert_missing_subject_alt_name;
 };
 
 // Contains the security state relevant to computing the SecurityInfo

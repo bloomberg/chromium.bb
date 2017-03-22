@@ -222,6 +222,11 @@ void SecurityInfoForRequest(
       visible_security_state.displayed_password_field_on_http;
   security_info->displayed_credit_card_field_on_http =
       visible_security_state.displayed_credit_card_field_on_http;
+  if (visible_security_state.certificate) {
+    security_info->cert_missing_subject_alt_name =
+        !visible_security_state.certificate->GetSubjectAltName(nullptr,
+                                                               nullptr);
+  }
 
   security_info->security_level = GetSecurityLevelForRequest(
       visible_security_state, used_policy_installed_certificate,
@@ -249,7 +254,8 @@ SecurityInfo::SecurityInfo()
       obsolete_ssl_status(net::OBSOLETE_SSL_NONE),
       pkp_bypassed(false),
       displayed_password_field_on_http(false),
-      displayed_credit_card_field_on_http(false) {}
+      displayed_credit_card_field_on_http(false),
+      cert_missing_subject_alt_name(false) {}
 
 SecurityInfo::~SecurityInfo() {}
 

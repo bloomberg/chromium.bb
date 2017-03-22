@@ -37,6 +37,7 @@ source_set("unit_tests") {
     "//content/public/browser",
     "//content/test:test_support",
     "//net",
+    "//net:test_support",
     "//testing/gtest",
   ]
 }

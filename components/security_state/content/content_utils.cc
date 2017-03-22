@@ -226,6 +226,14 @@ blink::WebSecurityStyle GetSecurityStyle(
             !!security_info.certificate));
   }
 
+  if (security_info.cert_missing_subject_alt_name) {
+    security_style_explanations->broken_explanations.push_back(
+        content::SecurityStyleExplanation(
+            l10n_util::GetStringUTF8(IDS_SUBJECT_ALT_NAME_MISSING),
+            l10n_util::GetStringUTF8(IDS_SUBJECT_ALT_NAME_MISSING_DESCRIPTION),
+            !!security_info.certificate));
+  }
+
   // Record the presence of mixed content (HTTP subresources on an HTTPS
   // page).
   security_style_explanations->ran_mixed_content =
