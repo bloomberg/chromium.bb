@@ -51,7 +51,7 @@
 #endif
 
 #if defined(OS_ANDROID)
-#include "media/base/android/media_client_android.h"
+#include "media/base/android/media_drm_bridge_client.h"
 #endif
 
 namespace content {
@@ -212,7 +212,8 @@ void GpuChildThread::Init(const base::Time& process_start_time) {
   // When running in in-process mode, this has been set in the browser at
   // ChromeBrowserMainPartsAndroid::PreMainMessageLoopRun().
   if (!in_browser_process_)
-    media::SetMediaClientAndroid(GetContentClient()->GetMediaClientAndroid());
+    media::SetMediaDrmBridgeClient(
+        GetContentClient()->GetMediaDrmBridgeClient());
 #endif
   // We don't want to process any incoming interface requests until
   // OnInitialize() is invoked.

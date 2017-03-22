@@ -2,26 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_COMMON_MEDIA_CAST_MEDIA_CLIENT_ANDROID_H_
-#define CHROMECAST_COMMON_MEDIA_CAST_MEDIA_CLIENT_ANDROID_H_
+#ifndef CHROMECAST_COMMON_MEDIA_CAST_MEDIA_DRM_BRIDGE_CLIENT_H_
+#define CHROMECAST_COMMON_MEDIA_CAST_MEDIA_DRM_BRIDGE_CLIENT_H_
 
 #include <map>
 
 #include "base/macros.h"
 #include "chromecast/media/cdm/playready_drm_delegate_android.h"
 #include "components/cdm/common/widevine_drm_delegate_android.h"
-#include "media/base/android/media_client_android.h"
+#include "media/base/android/media_drm_bridge_client.h"
 
 namespace chromecast {
 namespace media {
 
-class CastMediaClientAndroid : public ::media::MediaClientAndroid {
+class CastMediaDrmBridgeClient : public ::media::MediaDrmBridgeClient {
  public:
-  CastMediaClientAndroid();
-  ~CastMediaClientAndroid() override;
+  CastMediaDrmBridgeClient();
+  ~CastMediaDrmBridgeClient() override;
 
  private:
-  // ::media::MediaClientAndroid implementation:
+  // ::media::MediaDrmBridgeClient implementation:
   void AddKeySystemUUIDMappings(KeySystemUuidMap* map) override;
   ::media::MediaDrmBridgeDelegate* GetMediaDrmBridgeDelegate(
       const ::media::UUID& scheme_uuid) override;
@@ -32,10 +32,10 @@ class CastMediaClientAndroid : public ::media::MediaClientAndroid {
 
   cdm::WidevineDrmDelegateAndroid widevine_delegate_;
 
-  DISALLOW_COPY_AND_ASSIGN(CastMediaClientAndroid);
+  DISALLOW_COPY_AND_ASSIGN(CastMediaDrmBridgeClient);
 };
 
 }  // namespace media
 }  // namespace chromecast
 
-#endif  // CHROMECAST_COMMON_MEDIA_CAST_MEDIA_CLIENT_ANDROID_H_
+#endif  // CHROMECAST_COMMON_MEDIA_CAST_MEDIA_DRM_BRIDGE_CLIENT_H_

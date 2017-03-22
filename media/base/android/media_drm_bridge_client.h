@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_BASE_ANDROID_MEDIA_CLIENT_ANDROID_H_
-#define MEDIA_BASE_ANDROID_MEDIA_CLIENT_ANDROID_H_
+#ifndef MEDIA_BASE_ANDROID_MEDIA_DRM_BRIDGE_CLIENT_H_
+#define MEDIA_BASE_ANDROID_MEDIA_DRM_BRIDGE_CLIENT_H_
 
 #include <stdint.h>
 
@@ -17,44 +17,44 @@
 
 namespace media {
 
-class MediaClientAndroid;
+class MediaDrmBridgeClient;
 class MediaDrmBridgeDelegate;
 
-// Setter for MediaClientAndroid. This should be called in all processes where
-// we want to run media Android code. Also it should be called before any media
-// playback could occur.
-MEDIA_EXPORT void SetMediaClientAndroid(MediaClientAndroid* media_client);
+// Setter for MediaDrmBridgeClient. This should be called in all processes
+// where we want to run media Android code. Also it should be called before any
+// media playback could occur.
+MEDIA_EXPORT void SetMediaDrmBridgeClient(MediaDrmBridgeClient* media_client);
 
 #if defined(MEDIA_IMPLEMENTATION)
 // Getter for the client. Returns nullptr if no customized client is needed.
-MediaClientAndroid* GetMediaClientAndroid();
+MediaDrmBridgeClient* GetMediaDrmBridgeClient();
 #endif
 
 using UUID = std::vector<uint8_t>;
 
 // A client interface for embedders (e.g. content/browser or content/gpu) to
 // provide customized additions to Android's media handling.
-class MEDIA_EXPORT MediaClientAndroid {
+class MEDIA_EXPORT MediaDrmBridgeClient {
  public:
   typedef base::hash_map<std::string, UUID> KeySystemUuidMap;
 
-  MediaClientAndroid();
-  virtual ~MediaClientAndroid();
+  MediaDrmBridgeClient();
+  virtual ~MediaDrmBridgeClient();
 
   // Adds extra mappings from key-system name to Android UUID into |map|.
   virtual void AddKeySystemUUIDMappings(KeySystemUuidMap* map);
 
   // Returns a MediaDrmBridgeDelegate that corresponds to |scheme_uuid|.
-  // MediaClientAndroid retains ownership.
+  // MediaDrmBridgeClient retains ownership.
   virtual media::MediaDrmBridgeDelegate* GetMediaDrmBridgeDelegate(
       const UUID& scheme_uuid);
 
  private:
   friend class KeySystemManager;
 
-  DISALLOW_COPY_AND_ASSIGN(MediaClientAndroid);
+  DISALLOW_COPY_AND_ASSIGN(MediaDrmBridgeClient);
 };
 
 }  // namespace media
 
-#endif  // MEDIA_BASE_ANDROID_MEDIA_CLIENT_ANDROID_H_
+#endif  // MEDIA_BASE_ANDROID_MEDIA_DRM_BRIDGE_CLIENT_H_

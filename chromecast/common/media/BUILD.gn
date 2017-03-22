@@ -21,8 +21,8 @@ source_set("media") {
 
   if (is_android) {
     sources += [
-      "cast_media_client_android.cc",
-      "cast_media_client_android.h",
+      "cast_media_drm_bridge_client.cc",
+      "cast_media_drm_bridge_client.h",
     ]
     deps += [
       "//chromecast/media",

@@ -34,7 +34,7 @@ struct GPUInfo;
 }
 
 namespace media {
-class MediaClientAndroid;
+class MediaDrmBridgeClient;
 }
 
 namespace content {
@@ -183,8 +183,8 @@ class CONTENT_EXPORT ContentClient {
   // the browser UI thread.
   virtual bool UsingSynchronousCompositing();
 
-  // Returns the MediaClientAndroid to be used by media code on Android.
-  virtual media::MediaClientAndroid* GetMediaClientAndroid();
+  // Returns the MediaDrmBridgeClient to be used by media code on Android.
+  virtual media::MediaDrmBridgeClient* GetMediaDrmBridgeClient();
 #endif  // OS_ANDROID
 
  private:

@@ -4,7 +4,7 @@
 
 #include "android_webview/common/aw_content_client.h"
 
-#include "android_webview/common/aw_media_client_android.h"
+#include "android_webview/common/aw_media_drm_bridge_client.h"
 #include "android_webview/common/aw_resource.h"
 #include "android_webview/common/aw_version_info_values.h"
 #include "android_webview/common/crash_reporter/crash_keys.h"
@@ -91,8 +91,9 @@ bool AwContentClient::UsingSynchronousCompositing() {
   return true;
 }
 
-media::MediaClientAndroid* AwContentClient::GetMediaClientAndroid() {
-  return new AwMediaClientAndroid(AwResource::GetConfigKeySystemUuidMapping());
+media::MediaDrmBridgeClient* AwContentClient::GetMediaDrmBridgeClient() {
+  return new AwMediaDrmBridgeClient(
+      AwResource::GetConfigKeySystemUuidMapping());
 }
 
 }  // namespace android_webview

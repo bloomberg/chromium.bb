@@ -17,7 +17,7 @@
 #include "url/url_util.h"
 
 #if defined(OS_ANDROID)
-#include "chromecast/common/media/cast_media_client_android.h"
+#include "chromecast/common/media/cast_media_drm_bridge_client.h"
 #endif
 
 namespace chromecast {
@@ -110,8 +110,8 @@ gfx::Image& CastContentClient::GetNativeImageNamed(int resource_id) const {
 }
 
 #if defined(OS_ANDROID)
-::media::MediaClientAndroid* CastContentClient::GetMediaClientAndroid() {
-  return new media::CastMediaClientAndroid();
+::media::MediaDrmBridgeClient* CastContentClient::GetMediaDrmBridgeClient() {
+  return new media::CastMediaDrmBridgeClient();
 }
 #endif  // OS_ANDROID
 

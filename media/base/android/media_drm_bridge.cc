@@ -25,8 +25,8 @@
 #include "base/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "jni/MediaDrmBridge_jni.h"
-#include "media/base/android/media_client_android.h"
 #include "media/base/android/media_codec_util.h"
+#include "media/base/android/media_drm_bridge_client.h"
 #include "media/base/android/media_drm_bridge_delegate.h"
 #include "media/base/cdm_key_information.h"
 #include "media/base/media_switches.h"
@@ -133,7 +133,7 @@ class KeySystemManager {
   std::vector<std::string> GetPlatformKeySystemNames();
 
  private:
-  using KeySystemUuidMap = MediaClientAndroid::KeySystemUuidMap;
+  using KeySystemUuidMap = MediaDrmBridgeClient::KeySystemUuidMap;
 
   KeySystemUuidMap key_system_uuid_map_;
 
@@ -144,7 +144,7 @@ KeySystemManager::KeySystemManager() {
   // Widevine is always supported in Android.
   key_system_uuid_map_[kWidevineKeySystem] =
       UUID(kWidevineUuid, kWidevineUuid + arraysize(kWidevineUuid));
-  MediaClientAndroid* client = GetMediaClientAndroid();
+  MediaDrmBridgeClient* client = GetMediaDrmBridgeClient();
   if (client)
     client->AddKeySystemUUIDMappings(&key_system_uuid_map_);
 }
@@ -400,7 +400,7 @@ void MediaDrmBridge::CreateSessionAndGenerateRequest(
   ScopedJavaLocalRef<jbyteArray> j_init_data;
   ScopedJavaLocalRef<jobjectArray> j_optional_parameters;
 
-  MediaClientAndroid* client = GetMediaClientAndroid();
+  MediaDrmBridgeClient* client = GetMediaDrmBridgeClient();
   if (client) {
     MediaDrmBridgeDelegate* delegate =
         client->GetMediaDrmBridgeDelegate(scheme_uuid_);

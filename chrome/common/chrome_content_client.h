@@ -101,7 +101,7 @@ class ChromeContentClient : public content::ContentClient {
   content::OriginTrialPolicy* GetOriginTrialPolicy() override;
 
 #if defined(OS_ANDROID)
-  media::MediaClientAndroid* GetMediaClientAndroid() override;
+  media::MediaDrmBridgeClient* GetMediaDrmBridgeClient() override;
 #endif  // OS_ANDROID
 
  private:

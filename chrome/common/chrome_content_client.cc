@@ -92,7 +92,7 @@
 #endif
 
 #if defined(OS_ANDROID)
-#include "chrome/common/chrome_media_client_android.h"
+#include "chrome/common/media/chrome_media_drm_bridge_client.h"
 #endif
 
 namespace {
@@ -696,7 +696,7 @@ content::OriginTrialPolicy* ChromeContentClient::GetOriginTrialPolicy() {
 }
 
 #if defined(OS_ANDROID)
-media::MediaClientAndroid* ChromeContentClient::GetMediaClientAndroid() {
-  return new ChromeMediaClientAndroid();
+media::MediaDrmBridgeClient* ChromeContentClient::GetMediaDrmBridgeClient() {
+  return new ChromeMediaDrmBridgeClient();
 }
 #endif  // OS_ANDROID

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/chrome_media_client_android.h"
+#include "chrome/common/media/chrome_media_drm_bridge_client.h"
 
-ChromeMediaClientAndroid::ChromeMediaClientAndroid() {}
+ChromeMediaDrmBridgeClient::ChromeMediaDrmBridgeClient() {}
 
-ChromeMediaClientAndroid::~ChromeMediaClientAndroid() {}
+ChromeMediaDrmBridgeClient::~ChromeMediaDrmBridgeClient() {}
 
 media::MediaDrmBridgeDelegate*
-ChromeMediaClientAndroid::GetMediaDrmBridgeDelegate(
+ChromeMediaDrmBridgeClient::GetMediaDrmBridgeDelegate(
     const std::vector<uint8_t>& scheme_uuid) {
   if (scheme_uuid == widevine_delegate_.GetUUID())
     return &widevine_delegate_;

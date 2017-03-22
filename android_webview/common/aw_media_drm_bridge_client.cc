@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "android_webview/common/aw_media_client_android.h"
+#include "android_webview/common/aw_media_drm_bridge_client.h"
 
 #include <utility>
 
@@ -25,8 +25,8 @@ const size_t kGUIDLength = 36U;
     return std::make_pair("", uuid);                 \
   }
 
-media::MediaClientAndroid::KeySystemUuidMap::value_type CreateMappingFromString(
-    const std::string& key_system_uuid_mapping) {
+media::MediaDrmBridgeClient::KeySystemUuidMap::value_type
+CreateMappingFromString(const std::string& key_system_uuid_mapping) {
   std::vector<uint8_t> uuid;
 
   std::vector<std::string> tokens =
@@ -47,13 +47,13 @@ media::MediaClientAndroid::KeySystemUuidMap::value_type CreateMappingFromString(
 
 }  // namespace
 
-AwMediaClientAndroid::AwMediaClientAndroid(
+AwMediaDrmBridgeClient::AwMediaDrmBridgeClient(
     const std::vector<std::string>& key_system_uuid_mappings)
     : key_system_uuid_mappings_(key_system_uuid_mappings) {}
 
-AwMediaClientAndroid::~AwMediaClientAndroid() {}
+AwMediaDrmBridgeClient::~AwMediaDrmBridgeClient() {}
 
-void AwMediaClientAndroid::AddKeySystemUUIDMappings(KeySystemUuidMap* map) {
+void AwMediaDrmBridgeClient::AddKeySystemUUIDMappings(KeySystemUuidMap* map) {
   for (const std::string& key_system_uuid_mapping : key_system_uuid_mappings_) {
     auto mapping = CreateMappingFromString(key_system_uuid_mapping);
     if (!mapping.first.empty())
@@ -61,7 +61,8 @@ void AwMediaClientAndroid::AddKeySystemUUIDMappings(KeySystemUuidMap* map) {
   }
 }
 
-media::MediaDrmBridgeDelegate* AwMediaClientAndroid::GetMediaDrmBridgeDelegate(
+media::MediaDrmBridgeDelegate*
+AwMediaDrmBridgeClient::GetMediaDrmBridgeDelegate(
     const media::UUID& scheme_uuid) {
   if (scheme_uuid == widevine_delegate_.GetUUID())
     return &widevine_delegate_;

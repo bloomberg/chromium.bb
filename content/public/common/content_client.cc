@@ -136,7 +136,7 @@ bool ContentClient::UsingSynchronousCompositing() {
   return false;
 }
 
-media::MediaClientAndroid* ContentClient::GetMediaClientAndroid() {
+media::MediaDrmBridgeClient* ContentClient::GetMediaDrmBridgeClient() {
   return nullptr;
 }
 #endif  // OS_ANDROID

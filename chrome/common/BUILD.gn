@@ -68,8 +68,6 @@ static_library("common") {
     "chrome_content_client.cc",
     "chrome_content_client.h",
     "chrome_content_client_constants.cc",
-    "chrome_media_client_android.cc",
-    "chrome_media_client_android.h",
     "chrome_result_codes.h",
     "chrome_utility_messages.h",
     "common_message_generator.cc",
@@ -404,6 +402,10 @@ static_library("common") {
     sources -= [
       "channel_info_posix.cc",
       "media_galleries/metadata_types.h",
+    ]
+    sources += [
+      "media/chrome_media_drm_bridge_client.cc",
+      "media/chrome_media_drm_bridge_client.h",
     ]
   } else {
     # Non-Android.

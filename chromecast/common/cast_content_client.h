@@ -27,7 +27,7 @@ class CastContentClient : public content::ContentClient {
       int resource_id) const override;
   gfx::Image& GetNativeImageNamed(int resource_id) const override;
 #if defined(OS_ANDROID)
-  ::media::MediaClientAndroid* GetMediaClientAndroid() override;
+  ::media::MediaDrmBridgeClient* GetMediaDrmBridgeClient() override;
 #endif  // OS_ANDROID
 };
 
