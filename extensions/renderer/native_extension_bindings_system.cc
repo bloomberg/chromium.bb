@@ -8,7 +8,6 @@
 #include "base/memory/ptr_util.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/common/constants.h"
-#include "extensions/common/event_filtering_info.h"
 #include "extensions/common/extension_api.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/features/feature_provider.h"
@@ -447,15 +446,13 @@ void NativeExtensionBindingsSystem::UpdateBindingsForContext(
 void NativeExtensionBindingsSystem::DispatchEventInContext(
     const std::string& event_name,
     const base::ListValue* event_args,
-    const base::DictionaryValue* filtering_info_dict,
+    const base::DictionaryValue* filtering_info,
     ScriptContext* context) {
   v8::HandleScope handle_scope(context->isolate());
   v8::Context::Scope context_scope(context->v8_context());
-  EventFilteringInfo filter;
-  if (filtering_info_dict)
-    filter = EventFilteringInfo(*filtering_info_dict);
-  api_system_.FireEventInContext(event_name, context->v8_context(), *event_args,
-                                 filter);
+  // TODO(devlin): Take into account |filtering_info|.
+  api_system_.FireEventInContext(event_name, context->v8_context(),
+                                 *event_args);
 }
 
 void NativeExtensionBindingsSystem::HandleResponse(
@@ -637,11 +634,9 @@ void NativeExtensionBindingsSystem::SendRequest(
 void NativeExtensionBindingsSystem::OnEventListenerChanged(
     const std::string& event_name,
     binding::EventListenersChanged change,
-    const base::DictionaryValue* filter,
     v8::Local<v8::Context> context) {
-  send_event_listener_ipc_.Run(change,
-                               ScriptContextSet::GetContextByV8Context(context),
-                               event_name, filter);
+  send_event_listener_ipc_.Run(
+      change, ScriptContextSet::GetContextByV8Context(context), event_name);
 }
 
 void NativeExtensionBindingsSystem::GetJSBindingUtil(

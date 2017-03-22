@@ -56,8 +56,7 @@ void SendRequestIPC(ScriptContext* context,
 
 void SendEventListenersIPC(binding::EventListenersChanged changed,
                            ScriptContext* context,
-                           const std::string& event_name,
-                           const base::DictionaryValue* filter) {
+                           const std::string& event_name) {
   // TODO(devlin/lazyboy): Wire this up once extension workers support events.
 }
 

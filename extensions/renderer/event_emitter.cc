@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "extensions/renderer/api_event_listeners.h"
 #include "gin/object_template_builder.h"
 #include "gin/per_context_data.h"
 
@@ -14,12 +13,9 @@ namespace extensions {
 
 gin::WrapperInfo EventEmitter::kWrapperInfo = {gin::kEmbedderNativeGin};
 
-EventEmitter::EventEmitter(bool supports_filters,
-                           std::unique_ptr<APIEventListeners> listeners,
-                           const binding::RunJSFunction& run_js)
-    : supports_filters_(supports_filters),
-      listeners_(std::move(listeners)),
-      run_js_(run_js) {}
+EventEmitter::EventEmitter(const binding::RunJSFunction& run_js,
+                           const ListenersChangedMethod& listeners_changed)
+    : run_js_(run_js), listeners_changed_(listeners_changed) {}
 
 EventEmitter::~EventEmitter() {}
 
@@ -38,11 +34,13 @@ gin::ObjectTemplateBuilder EventEmitter::GetObjectTemplateBuilder(
 }
 
 void EventEmitter::Fire(v8::Local<v8::Context> context,
-                        std::vector<v8::Local<v8::Value>>* args,
-                        const EventFilteringInfo* filter) {
-  // Note that |listeners_| can be modified during handling.
-  std::vector<v8::Local<v8::Function>> listeners =
-      listeners_->GetListeners(filter, context);
+                        std::vector<v8::Local<v8::Value>>* args) {
+  // We create a local copy of listeners_ since the array can be modified during
+  // handling.
+  std::vector<v8::Local<v8::Function>> listeners;
+  listeners.reserve(listeners_.size());
+  for (const auto& listener : listeners_)
+    listeners.push_back(listener.Get(context->GetIsolate()));
 
   for (const auto& listener : listeners) {
     v8::TryCatch try_catch(context->GetIsolate());
@@ -54,13 +52,9 @@ void EventEmitter::Fire(v8::Local<v8::Context> context,
   }
 }
 
-void EventEmitter::Invalidate(v8::Local<v8::Context> context) {
+void EventEmitter::Invalidate() {
   valid_ = false;
-  listeners_->Invalidate(context);
-}
-
-size_t EventEmitter::GetNumListeners() const {
-  return listeners_->GetNumListeners();
+  listeners_.clear();
 }
 
 void EventEmitter::AddListener(gin::Arguments* arguments) {
@@ -78,17 +72,6 @@ void EventEmitter::AddListener(gin::Arguments* arguments) {
   if (!arguments->GetNext(&listener))
     return;
 
-  if (!arguments->PeekNext().IsEmpty() && !supports_filters_) {
-    arguments->ThrowTypeError("This event does not support filters");
-    return;
-  }
-
-  v8::Local<v8::Object> filter;
-  if (!arguments->PeekNext().IsEmpty() && !arguments->GetNext(&filter)) {
-    arguments->ThrowTypeError("Invalid invocation");
-    return;
-  }
-
   v8::Local<v8::Object> holder;
   CHECK(arguments->GetHolder(&holder));
   CHECK(!holder.IsEmpty());
@@ -96,10 +79,13 @@ void EventEmitter::AddListener(gin::Arguments* arguments) {
   if (!gin::PerContextData::From(context))
     return;
 
-  std::string error;
-  if (!listeners_->AddListener(listener, filter, context, &error) &&
-      !error.empty()) {
-    arguments->ThrowTypeError(error);
+  if (!HasListener(listener)) {
+    listeners_.push_back(
+        v8::Global<v8::Function>(arguments->isolate(), listener));
+    if (listeners_.size() == 1) {
+      listeners_changed_.Run(binding::EventListenersChanged::HAS_LISTENERS,
+                             context);
+    }
   }
 }
 
@@ -113,26 +99,34 @@ void EventEmitter::RemoveListener(gin::Arguments* arguments) {
   if (!arguments->GetNext(&listener))
     return;
 
-  v8::Local<v8::Object> holder;
-  CHECK(arguments->GetHolder(&holder));
-  CHECK(!holder.IsEmpty());
-  v8::Local<v8::Context> context = holder->CreationContext();
-  listeners_->RemoveListener(listener, context);
+  auto iter = std::find(listeners_.begin(), listeners_.end(), listener);
+  if (iter != listeners_.end()) {
+    listeners_.erase(iter);
+    if (listeners_.empty()) {
+      v8::Local<v8::Object> holder;
+      CHECK(arguments->GetHolder(&holder));
+      CHECK(!holder.IsEmpty());
+      v8::Local<v8::Context> context = holder->CreationContext();
+      listeners_changed_.Run(binding::EventListenersChanged::NO_LISTENERS,
+                             context);
+    }
+  }
 }
 
 bool EventEmitter::HasListener(v8::Local<v8::Function> listener) {
-  return listeners_->HasListener(listener);
+  return std::find(listeners_.begin(), listeners_.end(), listener) !=
+         listeners_.end();
 }
 
 bool EventEmitter::HasListeners() {
-  return listeners_->GetNumListeners() != 0;
+  return !listeners_.empty();
 }
 
 void EventEmitter::Dispatch(gin::Arguments* arguments) {
   if (!valid_)
     return;
 
-  if (listeners_->GetNumListeners() == 0)
+  if (listeners_.empty())
     return;
   v8::HandleScope handle_scope(arguments->isolate());
   v8::Local<v8::Context> context =
@@ -142,7 +136,7 @@ void EventEmitter::Dispatch(gin::Arguments* arguments) {
     // Converting to v8::Values should never fail.
     CHECK(arguments->GetRemaining(&v8_args));
   }
-  Fire(context, &v8_args, nullptr);
+  Fire(context, &v8_args);
 }
 
 }  // namespace extensions

@@ -26,7 +26,6 @@ namespace extensions {
 class EventFilteringInfo {
  public:
   EventFilteringInfo();
-  explicit EventFilteringInfo(const base::DictionaryValue& dict);
   EventFilteringInfo(const EventFilteringInfo& other);
   ~EventFilteringInfo();
   void SetWindowExposedByDefault(bool exposed);

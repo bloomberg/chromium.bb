@@ -68,11 +68,10 @@ scoped_refptr<Extension> CreateExtension(
 
 class EventChangeHandler {
  public:
-  MOCK_METHOD4(OnChange,
+  MOCK_METHOD3(OnChange,
                void(binding::EventListenersChanged,
                     ScriptContext*,
-                    const std::string& event_name,
-                    const base::DictionaryValue* filter));
+                    const std::string& event_name));
 };
 
 }  // namespace
@@ -131,10 +130,9 @@ class NativeExtensionBindingsSystemUnittest : public APIBindingTest {
 
   void MockSendListenerIPC(binding::EventListenersChanged changed,
                            ScriptContext* context,
-                           const std::string& event_name,
-                           const base::DictionaryValue* filter) {
+                           const std::string& event_name) {
     if (event_change_handler_)
-      event_change_handler_->OnChange(changed, context, event_name, filter);
+      event_change_handler_->OnChange(changed, context, event_name);
   }
 
   ScriptContext* CreateScriptContext(v8::Local<v8::Context> v8_context,
@@ -569,10 +567,11 @@ TEST_F(NativeExtensionBindingsSystemUnittest, TestEventRegistration) {
       "});";
   v8::Local<v8::Function> add_listener =
       FunctionFromString(context, kAddListener);
-  EXPECT_CALL(*event_change_handler(),
-              OnChange(binding::EventListenersChanged::HAS_LISTENERS,
-                       script_context, kEventName, nullptr))
-      .Times(1);
+  EXPECT_CALL(
+      *event_change_handler(),
+      OnChange(binding::EventListenersChanged::HAS_LISTENERS,
+               script_context,
+               kEventName)).Times(1);
   v8::Local<v8::Value> argv[] = {listener};
   RunFunction(add_listener, context, arraysize(argv), argv);
   ::testing::Mock::VerifyAndClearExpectations(event_change_handler());
@@ -582,10 +581,11 @@ TEST_F(NativeExtensionBindingsSystemUnittest, TestEventRegistration) {
       "(function(listener) {\n"
       "  chrome.idle.onStateChanged.removeListener(listener);\n"
       "});";
-  EXPECT_CALL(*event_change_handler(),
-              OnChange(binding::EventListenersChanged::NO_LISTENERS,
-                       script_context, kEventName, nullptr))
-      .Times(1);
+  EXPECT_CALL(
+      *event_change_handler(),
+      OnChange(binding::EventListenersChanged::NO_LISTENERS,
+               script_context,
+               kEventName)).Times(1);
   v8::Local<v8::Function> remove_listener =
       FunctionFromString(context, kRemoveListener);
   RunFunction(remove_listener, context, arraysize(argv), argv);
@@ -627,7 +627,7 @@ TEST_F(NativeExtensionBindingsSystemUnittest,
       FunctionFromString(context, kUseAppRuntime);
   EXPECT_CALL(*event_change_handler(),
               OnChange(binding::EventListenersChanged::HAS_LISTENERS,
-                       script_context, "app.runtime.onLaunched", nullptr))
+                       script_context, "app.runtime.onLaunched"))
       .Times(1);
   RunFunctionOnGlobal(use_app_runtime, context, 0, nullptr);
   ::testing::Mock::VerifyAndClearExpectations(event_change_handler());

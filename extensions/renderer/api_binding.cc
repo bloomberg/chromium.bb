@@ -90,19 +90,15 @@ struct APIBinding::MethodData {
 struct APIBinding::EventData {
   EventData(std::string exposed_name,
             std::string full_name,
-            bool supports_filters,
             APIEventHandler* event_handler)
       : exposed_name(std::move(exposed_name)),
         full_name(std::move(full_name)),
-        supports_filters(supports_filters),
         event_handler(event_handler) {}
 
   // The name of the event on the API object (e.g. onCreated).
   std::string exposed_name;
   // The fully-specified name of the event (e.g. tabs.onCreated).
   std::string full_name;
-  // Whether the event supports filters.
-  bool supports_filters;
   // The associated event handler. This raw pointer is safe because the
   // EventData is only accessed from the callbacks associated with the
   // APIBinding, and both the APIBinding and APIEventHandler are owned by the
@@ -218,12 +214,8 @@ APIBinding::APIBinding(const std::string& api_name,
       CHECK(event_dict->GetString("name", &name));
       std::string full_name =
           base::StringPrintf("%s.%s", api_name_.c_str(), name.c_str());
-      const base::ListValue* filters = nullptr;
-      bool supports_filters =
-          event_dict->GetList("filters", &filters) && !filters->empty();
-      events_.push_back(
-          base::MakeUnique<EventData>(std::move(name), std::move(full_name),
-                                      supports_filters, event_handler));
+      events_.push_back(base::MakeUnique<EventData>(
+          std::move(name), std::move(full_name), event_handler));
     }
   }
 }
@@ -383,7 +375,7 @@ void APIBinding::GetEventObject(
   auto* event_data =
       static_cast<EventData*>(info.Data().As<v8::External>()->Value());
   info.GetReturnValue().Set(event_data->event_handler->CreateEventInstance(
-      event_data->full_name, event_data->supports_filters, context));
+      event_data->full_name, context));
 }
 
 void APIBinding::GetCustomPropertyObject(

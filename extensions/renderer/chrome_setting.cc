@@ -143,11 +143,10 @@ v8::Local<v8::Value> ChromeSetting::GetOnChangeEvent(
 
   DCHECK(!event.IsEmpty());
   if (event->IsUndefined()) {
-    bool supports_filters = false;
     event = event_handler_->CreateEventInstance(
         base::StringPrintf("types.ChromeSetting.%s.onChange",
                            pref_name_.c_str()),
-        supports_filters, context);
+        context);
     v8::Maybe<bool> set_result = wrapper->SetPrivate(context, key, event);
     if (!set_result.IsJust() || !set_result.FromJust()) {
       NOTREACHED();

@@ -122,7 +122,6 @@ bool AllowAllAPIs(const std::string& name) {
 
 void OnEventListenersChanged(const std::string& event_name,
                              binding::EventListenersChanged change,
-                             const base::DictionaryValue* filter,
                              v8::Local<v8::Context> context) {}
 
 }  // namespace

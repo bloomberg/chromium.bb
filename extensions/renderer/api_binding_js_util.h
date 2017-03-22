@@ -51,14 +51,12 @@ class APIBindingJSUtil final : public gin::Wrappable<APIBindingJSUtil> {
 
   // A handler to allow custom bindings to create custom extension API event
   // objects (e.g. foo.onBar).
-  // Note: The JS version allows for constructing declarative events; it's
-  // unclear if we'll need to support this.
-  // TODO(devlin): Currently, we ignore schema. We may want to take it into
-  // account.
+  // TODO(devlin): Currently, we ignore schema and options. We'll need to take
+  // at least options into account.
   void CreateCustomEvent(gin::Arguments* arguments,
                          v8::Local<v8::Value> v8_event_name,
                          v8::Local<v8::Value> unused_schema,
-                         bool supports_filters);
+                         v8::Local<v8::Value> unused_event_options);
 
   // Invalidates an event, removing its listeners and preventing any more from
   // being added.

@@ -206,34 +206,14 @@ void SendRequestIPC(ScriptContext* context,
 // background pages.
 void SendEventListenersIPC(binding::EventListenersChanged changed,
                            ScriptContext* context,
-                           const std::string& event_name,
-                           const base::DictionaryValue* filter) {
-  // TODO(devlin): Fix this. We need to account for lazy listeners, but it
-  // also depends on if the listener is removed due to the context being torn
-  // down or the extension unregistering.
-  bool lazy = false;
-  std::string extension_id = context->GetExtensionID();
-
-  if (filter) {
-    if (changed == binding::EventListenersChanged::HAS_LISTENERS) {
-      content::RenderThread::Get()->Send(
-          new ExtensionHostMsg_AddFilteredListener(extension_id, event_name,
-                                                   *filter, lazy));
-    } else {
-      DCHECK_EQ(binding::EventListenersChanged::NO_LISTENERS, changed);
-      content::RenderThread::Get()->Send(
-          new ExtensionHostMsg_RemoveFilteredListener(extension_id, event_name,
-                                                      *filter, lazy));
-    }
+                           const std::string& event_name) {
+  if (changed == binding::EventListenersChanged::HAS_LISTENERS) {
+    content::RenderThread::Get()->Send(new ExtensionHostMsg_AddListener(
+        context->GetExtensionID(), context->url(), event_name));
   } else {
-    if (changed == binding::EventListenersChanged::HAS_LISTENERS) {
-      content::RenderThread::Get()->Send(new ExtensionHostMsg_AddListener(
-          context->GetExtensionID(), context->url(), event_name));
-    } else {
-      DCHECK_EQ(binding::EventListenersChanged::NO_LISTENERS, changed);
-      content::RenderThread::Get()->Send(new ExtensionHostMsg_RemoveListener(
-          context->GetExtensionID(), context->url(), event_name));
-    }
+    DCHECK_EQ(binding::EventListenersChanged::NO_LISTENERS, changed);
+    content::RenderThread::Get()->Send(new ExtensionHostMsg_RemoveListener(
+        context->GetExtensionID(), context->url(), event_name));
   }
 }
 

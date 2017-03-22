@@ -34,8 +34,7 @@ class NativeExtensionBindingsSystem : public ExtensionBindingsSystem {
   using SendEventListenerIPCMethod =
       base::Callback<void(binding::EventListenersChanged,
                           ScriptContext*,
-                          const std::string& event_name,
-                          const base::DictionaryValue* filter)>;
+                          const std::string& event_name)>;
 
   NativeExtensionBindingsSystem(
       const SendRequestIPCMethod& send_request_ipc,
@@ -66,7 +65,6 @@ class NativeExtensionBindingsSystem : public ExtensionBindingsSystem {
   // to |send_event_listener_ipc_|.
   void OnEventListenerChanged(const std::string& event_name,
                               binding::EventListenersChanged change,
-                              const base::DictionaryValue* filter,
                               v8::Local<v8::Context> context);
 
   // Getter callback for an extension API, since APIs are constructed lazily.
