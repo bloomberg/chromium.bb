@@ -42,6 +42,7 @@ void CertificateViewerUITest::ShowCertificateViewer() {
   scoped_refptr<net::X509Certificate> google_cert(
       net::X509Certificate::CreateFromBytes(
           reinterpret_cast<const char*>(google_der), sizeof(google_der)));
+  ASSERT_TRUE(google_cert);
 
   ASSERT_TRUE(browser());
   ASSERT_TRUE(browser()->window());
@@ -64,6 +65,7 @@ void CertificateViewerUITest::ShowModalCertificateViewer() {
   scoped_refptr<net::X509Certificate> google_cert(
       net::X509Certificate::CreateFromBytes(
           reinterpret_cast<const char*>(google_der), sizeof(google_der)));
+  ASSERT_TRUE(google_cert);
 
   ASSERT_TRUE(browser());
   ASSERT_TRUE(browser()->window());

@@ -96,18 +96,22 @@ TEST_F(TokenValidatorBaseTest, TestSelectCertificate) {
   scoped_refptr<net::X509Certificate> cert_expired_5_minutes_ago =
       CreateFakeCert(now - base::TimeDelta::FromMinutes(10),
                                         now - base::TimeDelta::FromMinutes(5));
+  ASSERT_TRUE(cert_expired_5_minutes_ago);
 
   scoped_refptr<net::X509Certificate> cert_start_5min_expire_5min =
       CreateFakeCert(now - base::TimeDelta::FromMinutes(5),
                                         now + base::TimeDelta::FromMinutes(5));
+  ASSERT_TRUE(cert_start_5min_expire_5min);
 
   scoped_refptr<net::X509Certificate> cert_start_10min_expire_5min =
       CreateFakeCert(now - base::TimeDelta::FromMinutes(10),
                                         now + base::TimeDelta::FromMinutes(5));
+  ASSERT_TRUE(cert_start_10min_expire_5min);
 
   scoped_refptr<net::X509Certificate> cert_start_5min_expire_10min =
       CreateFakeCert(now - base::TimeDelta::FromMinutes(5),
                                         now + base::TimeDelta::FromMinutes(10));
+  ASSERT_TRUE(cert_start_5min_expire_10min);
 
   // No certificate.
   net::CertificateList certificates {};

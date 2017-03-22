@@ -2347,6 +2347,7 @@ TEST_F(SSLClientSocketTest, VerifyReturnChainProperlyOrdered) {
   CertVerifyResult verify_result;
   verify_result.verified_cert = X509Certificate::CreateFromHandle(
       certs[0]->os_cert_handle(), temp_intermediates);
+  ASSERT_TRUE(verify_result.verified_cert);
 
   // Add a rule that maps the server cert (A) to the chain of A->B->C2
   // rather than A->B->C.

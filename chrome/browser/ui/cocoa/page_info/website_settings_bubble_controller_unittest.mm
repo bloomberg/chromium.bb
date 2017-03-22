@@ -213,6 +213,7 @@ TEST_F(WebsiteSettingsBubbleControllerTest, ResetDecisionsButton) {
   // Set identity info, specifying that the button should be shown.
   info.certificate = net::X509Certificate::CreateFromBytes(
       reinterpret_cast<const char*>(google_der), sizeof(google_der));
+  ASSERT_TRUE(info.certificate);
   info.show_ssl_decision_revoke_button = true;
   bridge_->SetIdentityInfo(const_cast<WebsiteSettingsUI::IdentityInfo&>(info));
   EXPECT_NE([controller_ resetDecisionsButton], nil);

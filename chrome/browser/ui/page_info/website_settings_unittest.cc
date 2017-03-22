@@ -505,6 +505,7 @@ TEST_F(WebsiteSettingsTest, HTTPSEVCert) {
   scoped_refptr<net::X509Certificate> ev_cert =
       net::X509Certificate::CreateFromBytes(
           reinterpret_cast<const char*>(google_der), sizeof(google_der));
+  ASSERT_TRUE(ev_cert);
 
   security_info_.security_level = security_state::NONE;
   security_info_.scheme_is_cryptographic = true;

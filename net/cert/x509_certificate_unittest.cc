@@ -271,6 +271,7 @@ TEST(X509CertificateTest, SerialNumbers) {
   scoped_refptr<X509Certificate> google_cert(
       X509Certificate::CreateFromBytes(
           reinterpret_cast<const char*>(google_der), sizeof(google_der)));
+  ASSERT_TRUE(google_cert);
 
   static const uint8_t google_serial[16] = {
     0x01,0x2a,0x39,0x76,0x0d,0x3f,0x4f,0xc9,
@@ -287,6 +288,7 @@ TEST(X509CertificateTest, SerialNumbers) {
       X509Certificate::CreateFromBytes(
           reinterpret_cast<const char*>(paypal_null_der),
           sizeof(paypal_null_der)));
+  ASSERT_TRUE(paypal_null_cert);
 
   static const uint8_t paypal_null_serial[3] = {0x00, 0xf0, 0x9b};
   ASSERT_EQ(sizeof(paypal_null_serial),
@@ -298,6 +300,7 @@ TEST(X509CertificateTest, SerialNumbers) {
 TEST(X509CertificateTest, SHA256FingerprintsCorrectly) {
   scoped_refptr<X509Certificate> google_cert(X509Certificate::CreateFromBytes(
       reinterpret_cast<const char*>(google_der), sizeof(google_der)));
+  ASSERT_TRUE(google_cert);
 
   const SHA256HashValue google_sha256_fingerprint = {
       {0x21, 0xaf, 0x58, 0x74, 0xea, 0x6b, 0xad, 0xbd, 0xe4, 0xb3, 0xb1,
@@ -328,18 +331,21 @@ TEST(X509CertificateTest, CAFingerprints) {
   scoped_refptr<X509Certificate> cert_chain1 =
       X509Certificate::CreateFromHandle(server_cert->os_cert_handle(),
                                         intermediates);
+  ASSERT_TRUE(cert_chain1);
 
   intermediates.clear();
   intermediates.push_back(intermediate_cert2->os_cert_handle());
   scoped_refptr<X509Certificate> cert_chain2 =
       X509Certificate::CreateFromHandle(server_cert->os_cert_handle(),
                                         intermediates);
+  ASSERT_TRUE(cert_chain2);
 
   // No intermediate CA certicates.
   intermediates.clear();
   scoped_refptr<X509Certificate> cert_chain3 =
       X509Certificate::CreateFromHandle(server_cert->os_cert_handle(),
                                         intermediates);
+  ASSERT_TRUE(cert_chain3);
 
   SHA256HashValue cert_chain1_ca_fingerprint_256 = {
       {0x51, 0x15, 0x30, 0x49, 0x97, 0x54, 0xf8, 0xb4, 0x17, 0x41, 0x6b,
@@ -530,6 +536,7 @@ TEST(X509CertificateTest, Cache) {
   scoped_refptr<X509Certificate> cert1(X509Certificate::CreateFromHandle(
       google_cert_handle, X509Certificate::OSCertHandles()));
   X509Certificate::FreeOSCertHandle(google_cert_handle);
+  ASSERT_TRUE(cert1);
 
   // Add the same certificate, but as a new handle.
   google_cert_handle = X509Certificate::CreateOSCertHandleFromBytes(
@@ -537,6 +544,7 @@ TEST(X509CertificateTest, Cache) {
   scoped_refptr<X509Certificate> cert2(X509Certificate::CreateFromHandle(
       google_cert_handle, X509Certificate::OSCertHandles()));
   X509Certificate::FreeOSCertHandle(google_cert_handle);
+  ASSERT_TRUE(cert2);
 
   // A new X509Certificate should be returned.
   EXPECT_NE(cert1.get(), cert2.get());
@@ -558,6 +566,7 @@ TEST(X509CertificateTest, Cache) {
       google_cert_handle, intermediates));
   X509Certificate::FreeOSCertHandle(google_cert_handle);
   X509Certificate::FreeOSCertHandle(thawte_cert_handle);
+  ASSERT_TRUE(cert3);
 
   // Test that the new certificate, even with intermediates, results in the
   // same underlying handle being used.
@@ -609,10 +618,12 @@ TEST(X509CertificateTest, IntermediateCertificates) {
   scoped_refptr<X509Certificate> webkit_cert(
       X509Certificate::CreateFromBytes(
           reinterpret_cast<const char*>(webkit_der), sizeof(webkit_der)));
+  ASSERT_TRUE(webkit_cert);
 
   scoped_refptr<X509Certificate> thawte_cert(
       X509Certificate::CreateFromBytes(
           reinterpret_cast<const char*>(thawte_der), sizeof(thawte_der)));
+  ASSERT_TRUE(thawte_cert);
 
   X509Certificate::OSCertHandle google_handle;
   // Create object with no intermediates:
@@ -621,6 +632,7 @@ TEST(X509CertificateTest, IntermediateCertificates) {
   X509Certificate::OSCertHandles intermediates1;
   scoped_refptr<X509Certificate> cert1;
   cert1 = X509Certificate::CreateFromHandle(google_handle, intermediates1);
+  ASSERT_TRUE(cert1);
   EXPECT_EQ(0u, cert1->GetIntermediateCertificates().size());
 
   // Create object with 2 intermediates:
@@ -629,6 +641,7 @@ TEST(X509CertificateTest, IntermediateCertificates) {
   intermediates2.push_back(thawte_cert->os_cert_handle());
   scoped_refptr<X509Certificate> cert2;
   cert2 = X509Certificate::CreateFromHandle(google_handle, intermediates2);
+  ASSERT_TRUE(cert2);
 
   // Verify it has all the intermediates:
   const X509Certificate::OSCertHandles& cert2_intermediates =
@@ -741,6 +754,7 @@ TEST(X509CertificateTest, IsIssuedByEncodedWithIntermediates) {
   scoped_refptr<X509Certificate> cert_chain =
       X509Certificate::CreateFromHandle(policy_chain[0]->os_cert_handle(),
                                         intermediates);
+  ASSERT_TRUE(cert_chain);
 
   std::vector<std::string> issuers;
 
@@ -907,6 +921,7 @@ TEST_P(X509CertificateParseTest, CanParseFormat) {
 
     // A cert is expected - make sure that one was parsed.
     ASSERT_LT(i, certs.size());
+    ASSERT_TRUE(certs[i]);
 
     // Compare the parsed certificate with the expected certificate, by
     // comparing fingerprints.

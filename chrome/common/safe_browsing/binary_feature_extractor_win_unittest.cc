@@ -36,10 +36,12 @@ class BinaryFeatureExtractorWinTest : public testing::Test {
       const ClientDownloadRequest_CertificateChain& chain,
       std::vector<scoped_refptr<net::X509Certificate> >* certs) {
     for (int i = 0; i < chain.element_size(); ++i) {
-      certs->push_back(
+      scoped_refptr<net::X509Certificate> cert =
           net::X509Certificate::CreateFromBytes(
               chain.element(i).certificate().data(),
-              chain.element(i).certificate().size()));
+              chain.element(i).certificate().size());
+      if (cert)
+        certs->push_back(cert);
     }
   }
 

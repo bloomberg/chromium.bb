@@ -470,6 +470,7 @@ TEST_P(CertVerifyProcInternalTest, RejectWeakKeys) {
       scoped_refptr<X509Certificate> cert_chain =
           X509Certificate::CreateFromHandle(ee_cert->os_cert_handle(),
                                             intermediates);
+      ASSERT_TRUE(cert_chain);
 
       CertVerifyResult verify_result;
       int error = Verify(cert_chain.get(), "127.0.0.1", 0, NULL,
@@ -525,6 +526,7 @@ TEST_P(CertVerifyProcInternalTest, ExtraneousMD5RootCert) {
   intermediates.push_back(extra_cert->os_cert_handle());
   scoped_refptr<X509Certificate> cert_chain = X509Certificate::CreateFromHandle(
       server_cert->os_cert_handle(), intermediates);
+  ASSERT_TRUE(cert_chain);
 
   CertVerifyResult verify_result;
   int flags = 0;
@@ -559,6 +561,7 @@ TEST_P(CertVerifyProcInternalTest, GoogleDigiNotarTest) {
   intermediates.push_back(intermediate_cert->os_cert_handle());
   scoped_refptr<X509Certificate> cert_chain = X509Certificate::CreateFromHandle(
       server_cert->os_cert_handle(), intermediates);
+  ASSERT_TRUE(cert_chain);
 
   CertVerifyResult verify_result;
   int flags = CertVerifier::VERIFY_REV_CHECKING_ENABLED;
@@ -1028,6 +1031,7 @@ TEST_P(CertVerifyProcInternalTest, NameConstraintsFailure) {
   X509Certificate::OSCertHandles intermediates;
   scoped_refptr<X509Certificate> leaf = X509Certificate::CreateFromHandle(
       cert_list[0]->os_cert_handle(), intermediates);
+  ASSERT_TRUE(leaf);
 
   int flags = 0;
   CertVerifyResult verify_result;
@@ -1085,6 +1089,7 @@ TEST_P(CertVerifyProcInternalTest, DISABLED_TestKnownRoot) {
 
   scoped_refptr<X509Certificate> cert_chain = X509Certificate::CreateFromHandle(
       certs[0]->os_cert_handle(), intermediates);
+  ASSERT_TRUE(cert_chain);
 
   int flags = 0;
   CertVerifyResult verify_result;
