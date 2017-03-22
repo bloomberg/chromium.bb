@@ -15,7 +15,7 @@
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_paths.h"
 #import "ios/chrome/browser/sessions/session_service.h"
-#import "ios/chrome/browser/sessions/session_window.h"
+#import "ios/chrome/browser/sessions/session_window_ios.h"
 #include "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"

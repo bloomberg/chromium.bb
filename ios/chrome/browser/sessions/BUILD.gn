@@ -11,6 +11,8 @@ source_set("sessions") {
     "ios_chrome_tab_restore_service_client.mm",
     "ios_chrome_tab_restore_service_factory.cc",
     "ios_chrome_tab_restore_service_factory.h",
+    "session_window_ios.h",
+    "session_window_ios.mm",
   ]
   deps = [
     "//base",
@@ -26,6 +28,7 @@ source_set("sessions") {
   public_deps = [
     ":sessions_non_arc",
   ]
+  allow_circular_includes_from = [ ":sessions_non_arc" ]
 }
 
 source_set("sessions_non_arc") {
@@ -37,8 +40,6 @@ source_set("sessions_non_arc") {
     "session_service.mm",
     "session_util.h",
     "session_util.mm",
-    "session_window.h",
-    "session_window.mm",
     "tab_restore_service_delegate_impl_ios.h",
     "tab_restore_service_delegate_impl_ios.mm",
     "tab_restore_service_delegate_impl_ios_factory.h",
@@ -69,10 +70,25 @@ source_set("test_support") {
 }
 
 source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [
+    "session_window_ios_unittest.mm",
+  ]
+  deps = [
+    ":sessions",
+    ":unit_tests_non_arc",
+    "//base",
+    "//ios/web",
+    "//testing/gtest",
+  ]
+  libs = [ "Foundation.framework" ]
+}
+
+source_set("unit_tests_non_arc") {
   testonly = true
   sources = [
     "session_service_unittest.mm",
-    "session_window_unittest.mm",
   ]
   deps = [
     ":resources_unit_tests",
@@ -88,7 +104,7 @@ source_set("unit_tests") {
 }
 
 bundle_data("resources_unit_tests") {
-  visibility = [ ":unit_tests" ]
+  visibility = [ ":unit_tests_non_arc" ]
   testonly = true
   sources = [
     "//ios/chrome/test/data/sessions/corrupted.plist",

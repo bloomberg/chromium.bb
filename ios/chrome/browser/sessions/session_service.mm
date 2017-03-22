@@ -18,7 +18,7 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#import "ios/chrome/browser/sessions/session_window.h"
+#import "ios/chrome/browser/sessions/session_window_ios.h"
 #import "ios/web/navigation/crw_session_certificate_policy_manager.h"
 #import "ios/web/public/crw_navigation_item_storage.h"
 #import "ios/web/public/crw_session_storage.h"

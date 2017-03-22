@@ -14,7 +14,7 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
 #include "ios/chrome/browser/sessions/ios_chrome_session_tab_helper.h"
-#import "ios/chrome/browser/sessions/session_window.h"
+#import "ios/chrome/browser/sessions/session_window_ios.h"
 #import "ios/chrome/browser/sessions/test_session_service.h"
 #import "ios/chrome/browser/tabs/tab.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
@@ -105,15 +105,14 @@ class TabModelTest : public PlatformTest {
   // "restored window 2" and "restored window 3" and the second entry
   // marked as selected.
   base::scoped_nsobject<SessionWindowIOS> CreateSessionWindow() {
-    base::scoped_nsobject<SessionWindowIOS> window(
-        [[SessionWindowIOS alloc] init]);
+    NSMutableArray<CRWSessionStorage*>* sessions = [NSMutableArray array];
     for (int i = 0; i < 3; i++) {
       CRWSessionStorage* session_storage =
           [[[CRWSessionStorage alloc] init] autorelease];
-      [window addSerializedSessionStorage:session_storage];
+      [sessions addObject:session_storage];
     }
-    [window setSelectedIndex:1];
-    return window;
+    return base::scoped_nsobject<SessionWindowIOS>(
+        [[SessionWindowIOS alloc] initWithSessions:sessions selectedIndex:1]);
   }
 
   web::TestWebThreadBundle thread_bundle_;
