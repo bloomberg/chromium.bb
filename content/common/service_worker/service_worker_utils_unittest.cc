@@ -91,6 +91,10 @@ TEST(ServiceWorkerUtilsTest, ScopeMatches) {
   // URLs canonicalize \ to / so this is equivalent to "...//x"
   ASSERT_TRUE(ServiceWorkerUtils::ScopeMatches(
       GURL("http://www.example.com/\\x"), GURL("http://www.example.com//x")));
+
+  // URLs that are in different origin shouldn't match.
+  ASSERT_FALSE(ServiceWorkerUtils::ScopeMatches(
+      GURL("https://evil.com"), GURL("https://evil.com.example.com")));
 }
 
 TEST(ServiceWorkerUtilsTest, FindLongestScopeMatch) {
