@@ -383,20 +383,14 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetBufferSubDataAsyncCHROMIUM(
   GLsizeiptr size = static_cast<GLsizeiptr>(c.size);
   uint32_t data_shm_id = static_cast<uint32_t>(c.data_shm_id);
 
-  int8_t* mem =
-      GetSharedMemoryAs<int8_t*>(data_shm_id, c.data_shm_offset, size);
+  uint8_t* mem =
+      GetSharedMemoryAs<uint8_t*>(data_shm_id, c.data_shm_offset, size);
   if (!mem) {
     return error::kOutOfBounds;
   }
 
-  void* ptr = nullptr;
   error::Error error =
-      DoMapBufferRange(target, offset, size, GL_MAP_READ_BIT, &ptr);
-  if (error != error::kNoError) {
-    return error;
-  }
-  memcpy(mem, ptr, size);
-  error = DoUnmapBuffer(target);
+      DoGetBufferSubDataAsyncCHROMIUM(target, offset, size, mem);
   if (error != error::kNoError) {
     return error;
   }
@@ -1332,8 +1326,8 @@ error::Error GLES2DecoderPassthroughImpl::HandleMapBufferRange(
     return error::kOutOfBounds;
   }
 
-  void* ptr = nullptr;
-  error::Error error = DoMapBufferRange(target, offset, size, access, &ptr);
+  error::Error error = DoMapBufferRange(target, offset, size, access, mem,
+                                        c.data_shm_id, c.data_shm_offset);
   if (error != error::kNoError) {
     return error;
   }

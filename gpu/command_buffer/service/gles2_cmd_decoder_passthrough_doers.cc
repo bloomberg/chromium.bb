@@ -224,8 +224,15 @@ error::Error GLES2DecoderPassthroughImpl::DoBindAttribLocation(
 
 error::Error GLES2DecoderPassthroughImpl::DoBindBuffer(GLenum target,
                                                        GLuint buffer) {
+  FlushErrors();
   glBindBuffer(
       target, GetBufferServiceID(buffer, resources_, bind_generates_resource_));
+  if (FlushErrors()) {
+    return error::kNoError;
+  }
+
+  bound_buffers_[target] = buffer;
+
   return error::kNoError;
 }
 
@@ -587,9 +594,16 @@ error::Error GLES2DecoderPassthroughImpl::DoDeleteBuffers(
     InsertError(GL_INVALID_VALUE, "n cannot be negative.");
     return error::kNoError;
   }
-  return DeleteHelper(
-      n, buffers, &resources_->buffer_id_map,
-      [](GLsizei n, GLuint* buffers) { glDeleteBuffersARB(n, buffers); });
+  return DeleteHelper(n, buffers, &resources_->buffer_id_map,
+                      [this](GLsizei n, GLuint* buffers) {
+                        glDeleteBuffersARB(n, buffers);
+                        for (GLsizei i = 0; i < n; i++)
+                          for (auto buffer_binding : bound_buffers_) {
+                            if (buffer_binding.second == buffers[i]) {
+                              buffer_binding.second = 0;
+                            }
+                          }
+                      });
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoDeleteFramebuffers(
@@ -792,6 +806,50 @@ error::Error GLES2DecoderPassthroughImpl::DoFlushMappedBufferRange(
     GLenum target,
     GLintptr offset,
     GLsizeiptr size) {
+  auto bound_buffers_iter = bound_buffers_.find(target);
+  if (bound_buffers_iter == bound_buffers_.end() ||
+      bound_buffers_iter->second == 0) {
+    InsertError(GL_INVALID_OPERATION, "No buffer bound to this target.");
+    return error::kNoError;
+  }
+
+  GLuint client_buffer = bound_buffers_iter->second;
+  auto mapped_buffer_info_iter =
+      resources_->mapped_buffer_map.find(client_buffer);
+  if (mapped_buffer_info_iter == resources_->mapped_buffer_map.end()) {
+    InsertError(GL_INVALID_OPERATION, "Buffer is not mapped.");
+    return error::kNoError;
+  }
+
+  const MappedBuffer& map_info = mapped_buffer_info_iter->second;
+
+  if (offset < 0) {
+    InsertError(GL_INVALID_VALUE, "Offset cannot be negative.");
+    return error::kNoError;
+  }
+
+  if (size < 0) {
+    InsertError(GL_INVALID_VALUE, "Size cannot be negative.");
+    return error::kNoError;
+  }
+
+  base::CheckedNumeric<size_t> range_start(offset);
+  base::CheckedNumeric<size_t> range_end = offset + size;
+  if (!range_end.IsValid() && range_end.ValueOrDefault(0) > map_info.size) {
+    InsertError(GL_INVALID_OPERATION,
+                "Flush range is not within the original mapping size.");
+    return error::kNoError;
+  }
+
+  uint8_t* mem = GetSharedMemoryAs<uint8_t*>(
+      map_info.data_shm_id, map_info.data_shm_offset, map_info.size);
+  if (!mem) {
+    return error::kOutOfBounds;
+  }
+
+  memcpy(map_info.map_ptr + offset, mem + offset, size);
+  glFlushMappedBufferRange(target, offset, size);
+
   return error::kNoError;
 }
 
@@ -986,6 +1044,25 @@ error::Error GLES2DecoderPassthroughImpl::DoGetAttribLocation(GLuint program,
                                                               const char* name,
                                                               GLint* result) {
   *result = glGetAttribLocation(GetProgramServiceID(program, resources_), name);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderPassthroughImpl::DoGetBufferSubDataAsyncCHROMIUM(
+    GLenum target,
+    GLintptr offset,
+    GLsizeiptr size,
+    uint8_t* mem) {
+  FlushErrors();
+
+  void* mapped_ptr = glMapBufferRange(target, offset, size, GL_MAP_READ_BIT);
+  if (FlushErrors() || mapped_ptr == nullptr) {
+    // Had an error while mapping, don't copy any data
+    return error::kNoError;
+  }
+
+  memcpy(mem, mapped_ptr, size);
+  glUnmapBuffer(target);
+
   return error::kNoError;
 }
 
@@ -2594,17 +2671,97 @@ error::Error GLES2DecoderPassthroughImpl::DoEnableFeatureCHROMIUM(
   return error::kNoError;
 }
 
-error::Error GLES2DecoderPassthroughImpl::DoMapBufferRange(GLenum target,
-                                                           GLintptr offset,
-                                                           GLsizeiptr size,
-                                                           GLbitfield access,
-                                                           void** ptr) {
-  NOTIMPLEMENTED();
+error::Error GLES2DecoderPassthroughImpl::DoMapBufferRange(
+    GLenum target,
+    GLintptr offset,
+    GLsizeiptr size,
+    GLbitfield access,
+    void* ptr,
+    int32_t data_shm_id,
+    uint32_t data_shm_offset) {
+  FlushErrors();
+
+  GLbitfield filtered_access = access;
+
+  // Always filter out GL_MAP_UNSYNCHRONIZED_BIT to get rid of undefined
+  // behaviors.
+  filtered_access = (filtered_access & ~GL_MAP_UNSYNCHRONIZED_BIT);
+
+  if ((filtered_access & GL_MAP_INVALIDATE_BUFFER_BIT) != 0) {
+    // To be on the safe side, always map GL_MAP_INVALIDATE_BUFFER_BIT to
+    // GL_MAP_INVALIDATE_RANGE_BIT.
+    filtered_access = (filtered_access & ~GL_MAP_INVALIDATE_BUFFER_BIT);
+    filtered_access = (filtered_access | GL_MAP_INVALIDATE_RANGE_BIT);
+  }
+  if ((filtered_access & GL_MAP_INVALIDATE_RANGE_BIT) == 0) {
+    // If this user intends to use this buffer without invalidating the data, we
+    // need to also add GL_MAP_READ_BIT to preserve the original data when
+    // copying it to shared memory.
+    filtered_access = (filtered_access | GL_MAP_READ_BIT);
+  }
+
+  void* mapped_ptr = glMapBufferRange(target, offset, size, filtered_access);
+  if (FlushErrors() || mapped_ptr == nullptr) {
+    // Had an error while mapping, don't copy any data
+    return error::kNoError;
+  }
+
+  if ((filtered_access & GL_MAP_INVALIDATE_RANGE_BIT) == 0) {
+    memcpy(ptr, mapped_ptr, size);
+  }
+
+  // Track the mapping of this buffer so that data can be synchronized when it
+  // is unmapped
+  DCHECK(bound_buffers_.find(target) != bound_buffers_.end());
+  GLuint client_buffer = bound_buffers_.at(target);
+
+  MappedBuffer mapped_buffer_info;
+  mapped_buffer_info.size = size;
+  mapped_buffer_info.access = filtered_access;
+  mapped_buffer_info.map_ptr = static_cast<uint8_t*>(mapped_ptr);
+  mapped_buffer_info.data_shm_id = data_shm_id;
+  mapped_buffer_info.data_shm_offset = data_shm_offset;
+
+  DCHECK(resources_->mapped_buffer_map.find(client_buffer) ==
+         resources_->mapped_buffer_map.end());
+  resources_->mapped_buffer_map.insert(
+      std::make_pair(client_buffer, mapped_buffer_info));
+
   return error::kNoError;
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoUnmapBuffer(GLenum target) {
-  NOTIMPLEMENTED();
+  auto bound_buffers_iter = bound_buffers_.find(target);
+  if (bound_buffers_iter == bound_buffers_.end() ||
+      bound_buffers_iter->second == 0) {
+    InsertError(GL_INVALID_OPERATION, "No buffer bound to this target.");
+    return error::kNoError;
+  }
+
+  GLuint client_buffer = bound_buffers_iter->second;
+  auto mapped_buffer_info_iter =
+      resources_->mapped_buffer_map.find(client_buffer);
+  if (mapped_buffer_info_iter == resources_->mapped_buffer_map.end()) {
+    InsertError(GL_INVALID_OPERATION, "Buffer is not mapped.");
+    return error::kNoError;
+  }
+
+  const MappedBuffer& map_info = mapped_buffer_info_iter->second;
+  if ((map_info.access & GL_MAP_WRITE_BIT) != 0 &&
+      (map_info.access & GL_MAP_FLUSH_EXPLICIT_BIT) == 0) {
+    uint8_t* mem = GetSharedMemoryAs<uint8_t*>(
+        map_info.data_shm_id, map_info.data_shm_offset, map_info.size);
+    if (!mem) {
+      return error::kOutOfBounds;
+    }
+
+    memcpy(map_info.map_ptr, mem, map_info.size);
+  }
+
+  glUnmapBuffer(target);
+
+  resources_->mapped_buffer_map.erase(mapped_buffer_info_iter);
+
   return error::kNoError;
 }
 

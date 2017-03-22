@@ -30,6 +30,14 @@ namespace gles2 {
 
 class ContextGroup;
 
+struct MappedBuffer {
+  GLsizeiptr size;
+  GLbitfield access;
+  uint8_t* map_ptr;
+  int32_t data_shm_id;
+  uint32_t data_shm_offset;
+};
+
 struct PassthroughResources {
   PassthroughResources();
   ~PassthroughResources();
@@ -53,6 +61,10 @@ struct PassthroughResources {
   // using the mailbox are deleted
   std::unordered_map<GLuint, scoped_refptr<TexturePassthrough>>
       texture_object_map;
+
+  // Mapping of client buffer IDs that are mapped to the shared memory used to
+  // back the mapping so that it can be flushed when the buffer is unmapped
+  std::unordered_map<GLuint, MappedBuffer> mapped_buffer_map;
 };
 
 class GLES2DecoderPassthroughImpl : public GLES2Decoder {
@@ -351,6 +363,9 @@ class GLES2DecoderPassthroughImpl : public GLES2Decoder {
   // State tracking of currently bound 2D textures (client IDs)
   size_t active_texture_unit_;
   std::unordered_map<GLenum, std::vector<GLuint>> bound_textures_;
+
+  // State tracking of currently bound buffers
+  std::unordered_map<GLenum, GLuint> bound_buffers_;
 
   // Track the service-id to type of all queries for validation
   struct QueryInfo {
