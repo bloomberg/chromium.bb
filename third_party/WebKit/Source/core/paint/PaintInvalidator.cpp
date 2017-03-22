@@ -52,8 +52,7 @@ template <typename Rect, typename Point>
 static LayoutRect mapLocalRectToVisualRectInBacking(
     const LayoutObject& object,
     const Rect& localRect,
-    const PaintInvalidatorContext& context,
-    GeometryMapper& geometryMapper) {
+    const PaintInvalidatorContext& context) {
   if (localRect.isEmpty())
     return LayoutRect();
 
@@ -130,7 +129,7 @@ static LayoutRect mapLocalRectToVisualRectInBacking(
           context.treeBuilderContext.current.clip, nullptr);
 
       FloatRect floatRect(rect);
-      geometryMapper.sourceToDestinationVisualRect(
+      context.geometryMapper.sourceToDestinationVisualRect(
           currentTreeState, *containerContentsProperties, floatRect);
       result = LayoutRect(floatRect);
     }
@@ -153,9 +152,8 @@ static LayoutRect mapLocalRectToVisualRectInBacking(
 void PaintInvalidatorContext::mapLocalRectToVisualRectInBacking(
     const LayoutObject& object,
     LayoutRect& rect) const {
-  std::unique_ptr<GeometryMapper> geometryMapper = GeometryMapper::create();
   rect = blink::mapLocalRectToVisualRectInBacking<LayoutRect, LayoutPoint>(
-      object, rect, *this, *geometryMapper);
+      object, rect, *this);
 }
 
 LayoutRect PaintInvalidator::computeVisualRectInBacking(
@@ -164,10 +162,10 @@ LayoutRect PaintInvalidator::computeVisualRectInBacking(
   if (object.isSVGChild()) {
     FloatRect localRect = SVGLayoutSupport::localVisualRect(object);
     return mapLocalRectToVisualRectInBacking<FloatRect, FloatPoint>(
-        object, localRect, context, m_geometryMapper);
+        object, localRect, context);
   }
   return mapLocalRectToVisualRectInBacking<LayoutRect, LayoutPoint>(
-      object, object.localVisualRect(), context, m_geometryMapper);
+      object, object.localVisualRect(), context);
 }
 
 LayoutPoint PaintInvalidator::computeLocationInBacking(
@@ -187,7 +185,7 @@ LayoutPoint PaintInvalidator::computeLocationInBacking(
             ->transform();
     if (context.treeBuilderContext.current.transform != containerTransform) {
       FloatRect rect = FloatRect(FloatPoint(point), FloatSize());
-      m_geometryMapper.sourceToDestinationRect(
+      context.geometryMapper.sourceToDestinationRect(
           context.treeBuilderContext.current.transform, containerTransform,
           rect);
       point = LayoutPoint(rect.location());

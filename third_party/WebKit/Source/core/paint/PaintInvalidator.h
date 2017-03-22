@@ -19,13 +19,17 @@ struct PaintPropertyTreeBuilderContext;
 
 struct PaintInvalidatorContext {
   PaintInvalidatorContext(
-      const PaintPropertyTreeBuilderContext& treeBuilderContext)
-      : treeBuilderContext(treeBuilderContext), parentContext(nullptr) {}
+      const PaintPropertyTreeBuilderContext& treeBuilderContext,
+      GeometryMapper& geometryMapper)
+      : treeBuilderContext(treeBuilderContext),
+        geometryMapper(geometryMapper),
+        parentContext(nullptr) {}
 
   PaintInvalidatorContext(
       const PaintPropertyTreeBuilderContext& treeBuilderContext,
       const PaintInvalidatorContext& parentContext)
       : treeBuilderContext(treeBuilderContext),
+        geometryMapper(parentContext.geometryMapper),
         parentContext(&parentContext),
         forcedSubtreeInvalidationFlags(
             parentContext.forcedSubtreeInvalidationFlags),
@@ -34,12 +38,13 @@ struct PaintInvalidatorContext {
             parentContext.paintInvalidationContainerForStackedContents),
         paintingLayer(parentContext.paintingLayer) {}
 
-  // This method is temporary to adapt PaintInvalidatorContext and the legacy
-  // PaintInvalidationState for code shared by old code and new code.
+  // This method is virtual temporarily to adapt PaintInvalidatorContext and the
+  // legacy PaintInvalidationState for code shared by old code and new code.
   virtual void mapLocalRectToVisualRectInBacking(const LayoutObject&,
                                                  LayoutRect&) const;
 
   const PaintPropertyTreeBuilderContext& treeBuilderContext;
+  GeometryMapper& geometryMapper;
   const PaintInvalidatorContext* parentContext;
 
   enum ForcedSubtreeInvalidationFlag {
@@ -88,9 +93,6 @@ struct PaintInvalidatorContext {
 
 class PaintInvalidator {
  public:
-  PaintInvalidator(GeometryMapper& geometryMapper)
-      : m_geometryMapper(geometryMapper) {}
-
   void invalidatePaintIfNeeded(FrameView&, PaintInvalidatorContext&);
   void invalidatePaintIfNeeded(const LayoutObject&, PaintInvalidatorContext&);
 
@@ -112,7 +114,6 @@ class PaintInvalidator {
                                       PaintInvalidatorContext&);
 
   Vector<const LayoutObject*> m_pendingDelayedPaintInvalidations;
-  GeometryMapper& m_geometryMapper;
 };
 
 }  // namespace blink

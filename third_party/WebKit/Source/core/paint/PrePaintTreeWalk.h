@@ -22,7 +22,7 @@ struct PrePaintTreeWalkContext;
 class PrePaintTreeWalk {
  public:
   PrePaintTreeWalk(GeometryMapper& geometryMapper)
-      : m_paintInvalidator(geometryMapper), m_geometryMapper(geometryMapper) {}
+      : m_geometryMapper(geometryMapper) {}
   void walk(FrameView& rootFrame);
 
  private:

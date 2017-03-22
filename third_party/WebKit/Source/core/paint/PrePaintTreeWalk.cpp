@@ -15,10 +15,10 @@
 namespace blink {
 
 struct PrePaintTreeWalkContext {
-  PrePaintTreeWalkContext()
+  PrePaintTreeWalkContext(GeometryMapper& geometryMapper)
       : treeBuilderContext(
             WTF::wrapUnique(new PaintPropertyTreeBuilderContext)),
-        paintInvalidatorContext(*treeBuilderContext),
+        paintInvalidatorContext(*treeBuilderContext, geometryMapper),
         ancestorOverflowPaintLayer(nullptr),
         ancestorTransformedOrRootPaintLayer(nullptr) {}
   PrePaintTreeWalkContext(const PrePaintTreeWalkContext& parentContext)
@@ -48,7 +48,7 @@ void PrePaintTreeWalk::walk(FrameView& rootFrame) {
   DCHECK(rootFrame.frame().document()->lifecycle().state() ==
          DocumentLifecycle::InPrePaint);
 
-  PrePaintTreeWalkContext initialContext;
+  PrePaintTreeWalkContext initialContext(m_geometryMapper);
   m_propertyTreeBuilder.setupInitialContext(*initialContext.treeBuilderContext);
   initialContext.ancestorTransformedOrRootPaintLayer =
       rootFrame.layoutView()->layer();

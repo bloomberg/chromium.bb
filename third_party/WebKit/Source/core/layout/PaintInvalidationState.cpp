@@ -17,6 +17,7 @@
 #include "core/paint/PaintInvalidator.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/PaintPropertyTreeBuilder.h"
+#include "platform/graphics/paint/GeometryMapper.h"
 
 namespace blink {
 
@@ -634,9 +635,17 @@ static const PaintPropertyTreeBuilderContext& dummyTreeBuilderContext() {
   return dummyContext;
 }
 
+static GeometryMapper& dummyGeometryMapper() {
+  DEFINE_STATIC_LOCAL(std::unique_ptr<GeometryMapper>, dummyMapper,
+                      (GeometryMapper::create()));
+  return *dummyMapper;
+}
+
 PaintInvalidatorContextAdapter::PaintInvalidatorContextAdapter(
     const PaintInvalidationState& paintInvalidationState)
-    : PaintInvalidatorContext(dummyTreeBuilderContext()),
+    // The dummy parameters will be never used because the overriding
+    // mapLocalRectToVisualRectInBacking() uses PaintInvalidationState.
+    : PaintInvalidatorContext(dummyTreeBuilderContext(), dummyGeometryMapper()),
       m_paintInvalidationState(paintInvalidationState) {
   forcedSubtreeInvalidationFlags =
       paintInvalidationState.m_forcedSubtreeInvalidationFlags;
