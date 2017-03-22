@@ -352,7 +352,7 @@ void WorkspaceLayoutManager::AdjustAllWindowsBoundsForWorkAreaChange(
   // This would happen if the launcher was auto hidden before the login screen
   // was shown and then gets shown when the login screen gets presented.
   if (event->type() == wm::WM_EVENT_WORKAREA_BOUNDS_CHANGED &&
-      WmShell::Get()->session_controller()->IsScreenLocked())
+      Shell::Get()->session_controller()->IsScreenLocked())
     return;
 
   // If a user plugs an external display into a laptop running Aura the

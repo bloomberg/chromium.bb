@@ -26,6 +26,7 @@
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_helper.h"
+#include "ash/test/shell_test_api.h"
 #include "ash/test/test_shell_delegate.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
@@ -345,7 +346,7 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
       ASSERT_TRUE(profile_manager_->SetUp());
     }
 
-    model_ = ash::WmShell::Get()->shelf_controller()->model();
+    model_ = ash::Shell::Get()->shelf_controller()->model();
     model_observer_.reset(new TestShelfModelObserver);
     model_->AddObserver(model_observer_.get());
 
@@ -551,7 +552,7 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
   // This needs to be called after InitLaunchController(), or its family.
   // It is not supported to recreate the instance.
   void SetShelfDelegate() {
-    ash::WmShell::Get()->SetShelfDelegateForTesting(
+    ash::test::ShellTestApi().SetShelfDelegate(
         base::MakeUnique<ProxyShelfDelegate>(launcher_controller_.get()));
   }
 
@@ -4297,7 +4298,7 @@ TEST_F(ChromeLauncherControllerImplPrefTest, PrefsLoadedOnLogin) {
   prefs->SetString(prefs::kShelfAutoHideBehaviorLocal, "Always");
   prefs->SetString(prefs::kShelfAutoHideBehavior, "Always");
 
-  ash::ShelfModel* model = ash::WmShell::Get()->shelf_controller()->model();
+  ash::ShelfModel* model = ash::Shell::Get()->shelf_controller()->model();
   TestChromeLauncherControllerImpl test_launcher_controller(profile(), model);
   test_launcher_controller.Init();
 
@@ -4318,7 +4319,7 @@ TEST_F(ChromeLauncherControllerImplPrefTest, PrefsLoadedOnLogin) {
 
 // Tests that the shelf controller's changes are not wastefully echoed back.
 TEST_F(ChromeLauncherControllerImplPrefTest, DoNotEchoShelfControllerChanges) {
-  ash::ShelfModel* model = ash::WmShell::Get()->shelf_controller()->model();
+  ash::ShelfModel* model = ash::Shell::Get()->shelf_controller()->model();
   TestChromeLauncherControllerImpl test_launcher_controller(profile(), model);
   test_launcher_controller.Init();
 

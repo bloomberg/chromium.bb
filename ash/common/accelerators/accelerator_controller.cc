@@ -85,7 +85,7 @@ class DeprecatedAcceleratorNotificationDelegate
   bool HasClickedListener() override { return true; }
 
   void Click() override {
-    if (!WmShell::Get()->session_controller()->IsUserSessionBlocked())
+    if (!Shell::Get()->session_controller()->IsUserSessionBlocked())
       Shell::Get()->shell_delegate()->OpenKeyboardShortcutHelpPage();
   }
 
@@ -499,12 +499,12 @@ void HandleGetHelp() {
 }
 
 bool CanHandleLock() {
-  return WmShell::Get()->session_controller()->CanLockScreen();
+  return Shell::Get()->session_controller()->CanLockScreen();
 }
 
 void HandleLock() {
   base::RecordAction(UserMetricsAction("Accel_LockScreen_L"));
-  WmShell::Get()->session_controller()->LockScreen();
+  Shell::Get()->session_controller()->LockScreen();
 }
 
 void HandleShowStylusTools() {
@@ -531,7 +531,7 @@ void HandleSuspend() {
 
 bool CanHandleCycleUser() {
   return Shell::Get()->shell_delegate()->IsMultiProfilesEnabled() &&
-         WmShell::Get()->session_controller()->NumberOfLoggedInUsers() > 1;
+         Shell::Get()->session_controller()->NumberOfLoggedInUsers() > 1;
 }
 
 void HandleCycleUser(CycleUserDirection direction) {
@@ -545,7 +545,7 @@ void HandleCycleUser(CycleUserDirection direction) {
       base::RecordAction(UserMetricsAction("Accel_Switch_To_Previous_User"));
       break;
   }
-  WmShell::Get()->session_controller()->CycleActiveUser(direction);
+  Shell::Get()->session_controller()->CycleActiveUser(direction);
 }
 
 bool CanHandleToggleCapsLock(const ui::Accelerator& accelerator,
@@ -1225,12 +1225,12 @@ AcceleratorController::GetAcceleratorProcessingRestriction(int action) {
           actions_allowed_in_pinned_mode_.end()) {
     return RESTRICTION_PREVENT_PROCESSING_AND_PROPAGATION;
   }
-  if (!wm_shell->session_controller()->IsActiveUserSessionStarted() &&
+  if (!Shell::Get()->session_controller()->IsActiveUserSessionStarted() &&
       actions_allowed_at_login_screen_.find(action) ==
           actions_allowed_at_login_screen_.end()) {
     return RESTRICTION_PREVENT_PROCESSING;
   }
-  if (wm_shell->session_controller()->IsScreenLocked() &&
+  if (Shell::Get()->session_controller()->IsScreenLocked() &&
       actions_allowed_at_lock_screen_.find(action) ==
           actions_allowed_at_lock_screen_.end()) {
     return RESTRICTION_PREVENT_PROCESSING;

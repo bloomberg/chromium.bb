@@ -75,7 +75,7 @@ void TestShelfDelegate::AddShelfItem(WmWindow* window, ShelfItemStatus status) {
     item.type = TYPE_APP_PANEL;
   else
     item.type = TYPE_APP;
-  ShelfModel* model = WmShell::Get()->shelf_model();
+  ShelfModel* model = Shell::Get()->shelf_model();
   ShelfID id = model->next_id();
   item.status = status;
   model->Add(item);
@@ -90,7 +90,7 @@ void TestShelfDelegate::RemoveShelfItemForWindow(WmWindow* window) {
   ShelfID shelf_id = window->aura_window()->GetProperty(kShelfIDKey);
   if (shelf_id == 0)
     return;
-  ShelfModel* model = WmShell::Get()->shelf_model();
+  ShelfModel* model = Shell::Get()->shelf_model();
   int index = model->ItemIndexByID(shelf_id);
   DCHECK_NE(-1, index);
   model->RemoveItemAt(index);

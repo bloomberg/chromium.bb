@@ -33,10 +33,10 @@ WindowSelectorController::~WindowSelectorController() {
 bool WindowSelectorController::CanSelect() {
   // Don't allow a window overview if the screen is locked or a modal dialog is
   // open or running in kiosk app session.
-  WmShell* wm_shell = WmShell::Get();
-  SessionController* session_controller = wm_shell->session_controller();
+  SessionController* session_controller = Shell::Get()->session_controller();
   SystemTrayDelegate* system_tray_delegate =
       Shell::Get()->system_tray_delegate();
+  WmShell* wm_shell = WmShell::Get();
   return session_controller->IsActiveUserSessionStarted() &&
          !session_controller->IsScreenLocked() &&
          !wm_shell->IsSystemModalWindowOpen() && !wm_shell->IsPinned() &&

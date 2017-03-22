@@ -11,6 +11,7 @@
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/shell.h"
 #include "base/memory/ptr_util.h"
 #include "base/stl_util.h"
 #include "ui/aura/client/aura_constants.h"
@@ -80,7 +81,7 @@ void SystemModalContainerLayoutManager::OnWindowAddedToLayout(WmWindow* child) {
   if (!WmShell::Get()->IsRunningInMash()) {
     DCHECK(container_->GetShellWindowId() !=
                kShellWindowId_LockSystemModalContainer ||
-           WmShell::Get()->session_controller()->IsUserSessionBlocked());
+           Shell::Get()->session_controller()->IsUserSessionBlocked());
   }
   // Since this is for SystemModal, there is no good reason to add windows
   // other than MODAL_TYPE_NONE or MODAL_TYPE_SYSTEM. DCHECK to avoid simple

@@ -220,7 +220,7 @@ class PanelLayoutManagerTest : public test::AshTestBase {
     test::ShelfViewTestAPI test_api(shelf_view);
     test_api.SetAnimationDuration(1);
     test_api.RunMessageLoopUntilAnimationsDone();
-    int index = WmShell::Get()->shelf_model()->ItemIndexByID(
+    int index = Shell::Get()->shelf_model()->ItemIndexByID(
         window->GetProperty(kShelfIDKey));
     gfx::Rect bounds = test_api.GetButton(index)->GetBoundsInScreen();
 

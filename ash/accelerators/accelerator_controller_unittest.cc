@@ -1286,8 +1286,8 @@ class DeprecatedAcceleratorTester : public AcceleratorControllerTest {
   }
 
   void ResetStateIfNeeded() {
-    if (WmShell::Get()->session_controller()->IsScreenLocked() ||
-        WmShell::Get()->session_controller()->IsUserSessionBlocked()) {
+    if (Shell::Get()->session_controller()->IsScreenLocked() ||
+        Shell::Get()->session_controller()->IsUserSessionBlocked()) {
       UnblockUserSession();
     }
   }

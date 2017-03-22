@@ -29,7 +29,7 @@ class ShelfWindowWatcherTest : public test::AshTestBase {
 
   void SetUp() override {
     test::AshTestBase::SetUp();
-    model_ = WmShell::Get()->shelf_model();
+    model_ = Shell::Get()->shelf_model();
   }
 
   void TearDown() override {
@@ -38,7 +38,7 @@ class ShelfWindowWatcherTest : public test::AshTestBase {
   }
 
   static ShelfID CreateShelfItem(WmWindow* window) {
-    ShelfID id = WmShell::Get()->shelf_model()->next_id();
+    ShelfID id = Shell::Get()->shelf_model()->next_id();
     window->aura_window()->SetProperty(kShelfItemTypeKey,
                                        static_cast<int32_t>(TYPE_DIALOG));
     return id;
@@ -335,9 +335,9 @@ TEST_F(ShelfWindowWatcherTest, DontCreateShelfEntriesForChildWindows) {
 // Ensures ShelfWindowWatcher supports windows opened prior to session start.
 using ShelfWindowWatcherSessionStartTest = test::NoSessionAshTestBase;
 TEST_F(ShelfWindowWatcherSessionStartTest, PreExistingWindow) {
-  ShelfModel* model = WmShell::Get()->shelf_model();
+  ShelfModel* model = Shell::Get()->shelf_model();
   ASSERT_FALSE(
-      WmShell::Get()->session_controller()->IsActiveUserSessionStarted());
+      Shell::Get()->session_controller()->IsActiveUserSessionStarted());
 
   // ShelfModel only has an APP_LIST item.
   EXPECT_EQ(1, model->item_count());

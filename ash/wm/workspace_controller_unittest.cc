@@ -500,7 +500,7 @@ TEST_F(WorkspaceControllerTest, MinimizeResetsVisibility) {
   // AshTestHelper.
   mojom::SessionInfoPtr info = mojom::SessionInfo::New();
   info->state = session_manager::SessionState::ACTIVE;
-  ash::WmShell::Get()->session_controller()->SetSessionInfo(std::move(info));
+  ash::Shell::Get()->session_controller()->SetSessionInfo(std::move(info));
 
   std::unique_ptr<Window> w1(CreateTestWindow());
   w1->Show();

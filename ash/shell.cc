@@ -29,7 +29,12 @@
 #include "ash/common/media_controller.h"
 #include "ash/common/new_window_controller.h"
 #include "ash/common/palette_delegate.h"
+#include "ash/common/session/session_controller.h"
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/shelf/shelf_controller.h"
+#include "ash/common/shelf/shelf_delegate.h"
+#include "ash/common/shelf/shelf_model.h"
+#include "ash/common/shelf/shelf_window_watcher.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shell_delegate.h"
 #include "ash/common/shell_observer.h"
@@ -371,6 +376,10 @@ bool Shell::ShouldSaveDisplaySettings() {
       resolution_notification_controller_->DoesNotificationTimeout());
 }
 
+ShelfModel* Shell::shelf_model() {
+  return shelf_controller_->model();
+}
+
 aura::client::ActivationClient* Shell::activation_client() {
   return focus_controller_.get();
 }
@@ -405,6 +414,16 @@ void Shell::SetTouchHudProjectionEnabled(bool enabled) {
 
 FirstRunHelper* Shell::CreateFirstRunHelper() {
   return new FirstRunHelperImpl;
+}
+
+void Shell::CreateShelfView() {
+  // Must occur after SessionController creation and user login.
+  DCHECK(session_controller());
+  DCHECK_GT(session_controller()->NumberOfLoggedInUsers(), 0);
+  CreateShelfDelegate();
+
+  for (WmWindow* root_window : wm_shell_->GetAllRootWindows())
+    root_window->GetRootWindowController()->CreateShelfView();
 }
 
 void Shell::SetLargeCursorSizeInDip(int large_cursor_size_in_dip) {
@@ -454,6 +473,13 @@ bool Shell::IsAppListVisible() const {
 
 bool Shell::GetAppListTargetVisibility() const {
   return app_list_->GetTargetVisibility();
+}
+
+void Shell::UpdateAfterLoginStatusChange(LoginStatus status) {
+  for (WmWindow* root_window : wm_shell_->GetAllRootWindows()) {
+    root_window->GetRootWindowController()->UpdateAfterLoginStatusChange(
+        status);
+  }
 }
 
 void Shell::NotifyMaximizeModeStarted() {
@@ -530,6 +556,8 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
           base::MakeUnique<LocaleNotificationController>()),
       media_controller_(base::MakeUnique<MediaController>()),
       new_window_controller_(base::MakeUnique<NewWindowController>()),
+      session_controller_(base::MakeUnique<SessionController>()),
+      shelf_controller_(base::MakeUnique<ShelfController>()),
       shell_delegate_(std::move(shell_delegate)),
       system_tray_controller_(base::MakeUnique<SystemTrayController>()),
       app_list_(base::MakeUnique<app_list::AppList>()),
@@ -550,6 +578,8 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
   }
 
   PowerStatus::Initialize();
+
+  session_controller_->AddSessionStateObserver(this);
 }
 
 Shell::~Shell() {
@@ -688,7 +718,21 @@ Shell::~Shell() {
   // Balances the Install() in Initialize().
   views::FocusManagerFactory::Install(nullptr);
 
+  // ShelfWindowWatcher has window observers and a pointer to the shelf model.
+  shelf_window_watcher_.reset();
+
+  // ShelfItemDelegate subclasses it owns have complex cleanup to run (e.g. ARC
+  // shelf items in Chrome) so explicitly shutdown early.
+  shelf_model()->DestroyItemDelegates();
+
+  // Must be destroyed before FocusController.
+  shelf_delegate_.reset();
+
+  // Removes itself as an observer of |pref_store_|.
+  shelf_controller_.reset();
+
   wm_shell_->Shutdown();
+
   // Depends on |focus_controller_|, so must be destroyed before.
   window_tree_host_manager_.reset();
   focus_controller_->RemoveObserver(this);
@@ -714,6 +758,7 @@ Shell::~Shell() {
 
   // Needs to happen right before |instance_| is reset.
   wm_shell_.reset();
+  session_controller_->RemoveSessionStateObserver(this);
   wallpaper_delegate_.reset();
   pref_store_ = nullptr;
   shell_delegate_.reset();
@@ -1110,6 +1155,19 @@ void Shell::CloseAllRootWindowChildWindows() {
   }
 }
 
+void Shell::CreateShelfDelegate() {
+  // May be called multiple times as shelves are created and destroyed.
+  if (shelf_delegate_)
+    return;
+  // Must occur after SessionController creation and user login because
+  // Chrome's implementation of ShelfDelegate assumes it can get information
+  // about multi-profile login state.
+  DCHECK(session_controller());
+  DCHECK_GT(session_controller()->NumberOfLoggedInUsers(), 0);
+  shelf_delegate_.reset(shell_delegate_->CreateShelfDelegate(shelf_model()));
+  shelf_window_watcher_ = base::MakeUnique<ShelfWindowWatcher>(shelf_model());
+}
+
 bool Shell::CanWindowReceiveEvents(aura::Window* window) {
   RootWindowControllerList controllers = GetAllRootWindowControllers();
   for (RootWindowController* controller : controllers) {
@@ -1146,6 +1204,26 @@ void Shell::OnWindowActivated(
   WmWindow* gained_active_wm = WmWindow::Get(gained_active);
   if (gained_active_wm)
     root_window_for_new_windows_ = gained_active_wm->GetRootWindow();
+}
+
+void Shell::SessionStateChanged(session_manager::SessionState state) {
+  // Create the shelf when a session becomes active. It's safe to do this
+  // multiple times (e.g. initial login vs. multiprofile add session).
+  if (state == session_manager::SessionState::ACTIVE) {
+    CreateShelfView();
+
+    if (!wm_shell_->IsRunningInMash()) {
+      // Recreate the keyboard after initial login and after multiprofile login.
+      CreateKeyboard();
+    }
+  }
+
+  // Only trigger an update in mash because with classic ash chrome calls
+  // UpdateAfterLoginStatusChange() directly.
+  if (wm_shell_->IsRunningInMash()) {
+    // TODO(jamescook): Should this call Shell::OnLoginStatusChanged() too?
+    UpdateAfterLoginStatusChange(session_controller_->GetLoginStatus());
+  }
 }
 
 }  // namespace ash

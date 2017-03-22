@@ -47,7 +47,7 @@ class LauncherContextMenuTest : public ash::test::AshTestBase {
     session_manager_ = base::MakeUnique<session_manager::SessionManager>();
     ash::test::AshTestBase::SetUp();
     controller_.reset(new ChromeLauncherControllerImpl(
-        profile(), ash::WmShell::Get()->shelf_model()));
+        profile(), ash::Shell::Get()->shelf_model()));
     controller_->Init();
   }
 

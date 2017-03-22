@@ -233,7 +233,7 @@ class LauncherPlatformAppBrowserTest
     return extensions::PlatformAppBrowserTest::RunTestOnMainThreadLoop();
   }
 
-  ash::ShelfModel* shelf_model() { return ash::WmShell::Get()->shelf_model(); }
+  ash::ShelfModel* shelf_model() { return ash::Shell::Get()->shelf_model(); }
 
   ash::ShelfID CreateAppShortcutLauncherItem(
       const ash::AppLaunchId& app_launch_id) {
@@ -287,7 +287,7 @@ class ShelfAppBrowserTest : public ExtensionBrowserTest {
 
     shelf_ =
         ash::WmShelf::ForWindow(ash::WmShell::Get()->GetPrimaryRootWindow());
-    model_ = ash::WmShell::Get()->shelf_model();
+    model_ = ash::Shell::Get()->shelf_model();
     controller_ = GetChromeLauncherControllerImpl();
     ASSERT_TRUE(controller_);
     return ExtensionBrowserTest::RunTestOnMainThreadLoop();
@@ -1562,7 +1562,7 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest, WindowAttentionStatus) {
 
 IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest,
                        ShowInShelfWindowsWithWindowKeySet) {
-  ash::ShelfModel* shelf_model = ash::WmShell::Get()->shelf_model();
+  ash::ShelfModel* shelf_model = ash::Shell::Get()->shelf_model();
 
   // Add a window with shelf True, close it
   int item_count = shelf_model->item_count();
@@ -2277,7 +2277,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, V1AppNavigation) {
 IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, SettingsWindow) {
   chrome::SettingsWindowManager* settings_manager =
       chrome::SettingsWindowManager::GetInstance();
-  ash::ShelfModel* shelf_model = ash::WmShell::Get()->shelf_model();
+  ash::ShelfModel* shelf_model = ash::Shell::Get()->shelf_model();
 
   // Get the number of items in the shelf and browser menu.
   int item_count = shelf_model->item_count();

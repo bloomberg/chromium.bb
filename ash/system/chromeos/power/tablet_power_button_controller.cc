@@ -252,7 +252,7 @@ void TabletPowerButtonController::OnShutdownTimeout() {
 }
 
 void TabletPowerButtonController::LockScreenIfRequired() {
-  SessionController* session_controller = WmShell::Get()->session_controller();
+  SessionController* session_controller = Shell::Get()->session_controller();
   if (session_controller->ShouldLockScreenAutomatically() &&
       session_controller->CanLockScreen() &&
       !session_controller->IsUserSessionBlocked() &&

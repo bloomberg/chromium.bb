@@ -9,6 +9,7 @@
 #include "ash/common/login_status.h"
 #include "ash/common/session/session_controller.h"
 #include "ash/common/wm_shell.h"
+#include "ash/shell.h"
 #include "base/time/time.h"
 
 namespace ash {
@@ -27,7 +28,7 @@ TestSystemTrayDelegate::~TestSystemTrayDelegate() {}
 
 void TestSystemTrayDelegate::SetLoginStatus(LoginStatus login_status) {
   login_status_ = login_status;
-  WmShell::Get()->UpdateAfterLoginStatusChange(login_status);
+  Shell::Get()->UpdateAfterLoginStatusChange(login_status);
 }
 
 void TestSystemTrayDelegate::SetSessionLengthLimitForTest(
@@ -57,7 +58,7 @@ LoginStatus TestSystemTrayDelegate::GetUserLoginStatus() const {
 
   // At new user image screen manager->IsUserLoggedIn() would return true
   // but there's no browser session available yet so use SessionStarted().
-  SessionController* controller = WmShell::Get()->session_controller();
+  SessionController* controller = Shell::Get()->session_controller();
 
   if (!controller->IsActiveUserSessionStarted())
     return LoginStatus::NOT_LOGGED_IN;

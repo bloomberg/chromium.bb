@@ -76,7 +76,7 @@ void PowerEventObserver::BrightnessChanged(int level, bool user_initiated) {
 }
 
 void PowerEventObserver::SuspendImminent() {
-  SessionController* controller = WmShell::Get()->session_controller();
+  SessionController* controller = Shell::Get()->session_controller();
 
   // This class is responsible for disabling all rendering requests at suspend
   // time and then enabling them at resume time.  When the

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "ash/common/shelf/shelf_delegate.h"
-#include "ash/common/wm_shell.h"
+#include "ash/shell.h"
 #include "ash/wm/window_util.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -108,7 +108,7 @@ ChromeLauncherController* chrome_controller() {
 }
 
 ash::ShelfDelegate* shelf_delegate() {
-  return ash::WmShell::Get()->shelf_delegate();
+  return ash::Shell::Get()->shelf_delegate();
 }
 
 class AppAnimatedWaiter {

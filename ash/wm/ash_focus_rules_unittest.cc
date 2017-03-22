@@ -94,7 +94,7 @@ class LockScreenAshFocusRulesTest : public AshTestBase {
     AshTestBase::SetUp();
     ash_test_helper()->set_test_session_controller_client(
         base::MakeUnique<LockScreenSessionControllerClient>(
-            WmShell::Get()->session_controller()));
+            Shell::Get()->session_controller()));
   }
 
   void TearDown() override { AshTestBase::TearDown(); }
@@ -163,7 +163,7 @@ TEST_F(LockScreenAshFocusRulesTest, RegainFocusAfterUnlock) {
 
   BlockUserSession(BLOCKED_BY_LOCK_SCREEN);
 
-  EXPECT_TRUE(WmShell::Get()->session_controller()->IsScreenLocked());
+  EXPECT_TRUE(Shell::Get()->session_controller()->IsScreenLocked());
   EXPECT_FALSE(normal_window->HasFocus());
   EXPECT_FALSE(always_on_top_window->HasFocus());
   EXPECT_FALSE(normal_window_state->IsMinimized());
@@ -173,7 +173,7 @@ TEST_F(LockScreenAshFocusRulesTest, RegainFocusAfterUnlock) {
 
   UnblockUserSession();
 
-  EXPECT_FALSE(WmShell::Get()->session_controller()->IsScreenLocked());
+  EXPECT_FALSE(Shell::Get()->session_controller()->IsScreenLocked());
   EXPECT_FALSE(normal_window_state->IsMinimized());
   EXPECT_FALSE(always_on_top_window_state->IsMinimized());
   EXPECT_TRUE(normal_window_state->CanActivate());
@@ -186,7 +186,7 @@ TEST_F(LockScreenAshFocusRulesTest, RegainFocusAfterUnlock) {
 // view doesn't get focused if the widget shows behind the lock screen.
 TEST_F(LockScreenAshFocusRulesTest, PreventFocusChangeWithLockScreenPresent) {
   BlockUserSession(BLOCKED_BY_LOCK_SCREEN);
-  EXPECT_TRUE(WmShell::Get()->session_controller()->IsScreenLocked());
+  EXPECT_TRUE(Shell::Get()->session_controller()->IsScreenLocked());
 
   views::test::TestInitialFocusWidgetDelegate delegate(CurrentContext());
   EXPECT_FALSE(delegate.view()->HasFocus());
@@ -195,7 +195,7 @@ TEST_F(LockScreenAshFocusRulesTest, PreventFocusChangeWithLockScreenPresent) {
   EXPECT_FALSE(delegate.view()->HasFocus());
 
   UnblockUserSession();
-  EXPECT_FALSE(WmShell::Get()->session_controller()->IsScreenLocked());
+  EXPECT_FALSE(Shell::Get()->session_controller()->IsScreenLocked());
   EXPECT_TRUE(delegate.GetWidget()->IsActive());
   EXPECT_TRUE(delegate.view()->HasFocus());
 }

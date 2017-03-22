@@ -9,7 +9,7 @@
 
 #include "ash/common/login_status.h"
 #include "ash/common/session/session_controller.h"
-#include "ash/common/wm_shell.h"
+#include "ash/shell.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "components/session_manager/session_manager_types.h"
@@ -79,7 +79,7 @@ void TestSessionControllerClient::SetSessionState(
   controller_->SetSessionInfo(session_info_->Clone());
 
   // TODO(xiyuan): Remove after LoginStatus becomes part of SessionController.
-  WmShell::Get()->UpdateAfterLoginStatusChange(
+  Shell::Get()->UpdateAfterLoginStatusChange(
       state == session_manager::SessionState::ACTIVE
           ? LoginStatus::USER
           : LoginStatus::NOT_LOGGED_IN);

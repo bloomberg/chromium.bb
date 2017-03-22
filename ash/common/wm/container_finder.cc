@@ -39,7 +39,7 @@ WmWindow* GetSystemModalContainer(WmWindow* root, WmWindow* window) {
   // all modal windows are placed into the normal modal container.
   // In case of missing transient parent (it could happen for alerts from
   // background pages) assume that the window belongs to user session.
-  if (!WmShell::Get()->session_controller()->IsUserSessionBlocked() ||
+  if (!Shell::Get()->session_controller()->IsUserSessionBlocked() ||
       !window->GetTransientParent()) {
     return root->GetChildByShellWindowId(kShellWindowId_SystemModalContainer);
   }

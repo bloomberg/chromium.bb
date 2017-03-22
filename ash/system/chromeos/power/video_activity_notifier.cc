@@ -23,8 +23,7 @@ const int kNotifyIntervalSec = 5;
 VideoActivityNotifier::VideoActivityNotifier(VideoDetector* detector)
     : detector_(detector),
       video_state_(detector->state()),
-      screen_is_locked_(
-          WmShell::Get()->session_controller()->IsScreenLocked()) {
+      screen_is_locked_(Shell::Get()->session_controller()->IsScreenLocked()) {
   detector_->AddObserver(this);
   Shell::GetInstance()->AddShellObserver(this);
 

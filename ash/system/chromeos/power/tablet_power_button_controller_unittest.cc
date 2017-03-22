@@ -112,7 +112,7 @@ class TabletPowerButtonControllerTest : public AshTestBase {
     // LockScreen is an async mojo call. Spin message loop to ensure it is
     // delivered.
     SessionController* const session_controller =
-        WmShell::Get()->session_controller();
+        Shell::Get()->session_controller();
     session_controller->FlushMojoForTest();
     return session_controller->IsScreenLocked();
   }

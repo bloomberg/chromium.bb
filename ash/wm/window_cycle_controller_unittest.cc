@@ -227,7 +227,7 @@ TEST_F(WindowCycleControllerTest, HandleCycleWindow) {
   wm::ActivateWindow(window0.get());
 
   // When the screen is locked, cycling window does not take effect.
-  WmShell::Get()->session_controller()->LockScreenAndFlushForTest();
+  Shell::Get()->session_controller()->LockScreenAndFlushForTest();
   EXPECT_TRUE(wm::IsActiveWindow(window0.get()));
   controller->HandleCycleWindow(WindowCycleController::FORWARD);
   EXPECT_FALSE(controller->IsCycling());

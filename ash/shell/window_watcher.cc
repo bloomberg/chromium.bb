@@ -97,7 +97,7 @@ void WindowWatcher::OnWindowAdded(aura::Window* new_window) {
     return;
 
   static int image_count = 0;
-  ShelfModel* model = WmShell::Get()->shelf_model();
+  ShelfModel* model = Shell::Get()->shelf_model();
   ShelfItem item;
   item.type = new_window->type() == ui::wm::WINDOW_TYPE_PANEL
                   ? ash::TYPE_APP_PANEL
@@ -124,7 +124,7 @@ void WindowWatcher::OnWillRemoveWindow(aura::Window* window) {
   for (IDToWindow::iterator i = id_to_window_.begin(); i != id_to_window_.end();
        ++i) {
     if (i->second == window) {
-      ShelfModel* model = WmShell::Get()->shelf_model();
+      ShelfModel* model = Shell::Get()->shelf_model();
       int index = model->ItemIndexByID(i->first);
       DCHECK_NE(-1, index);
       model->RemoveItemAt(index);

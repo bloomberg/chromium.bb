@@ -183,7 +183,7 @@ void ShelfWidget::CreateStatusAreaWidget(WmWindow* status_container) {
   // TODO(jamescook): Move ownership to RootWindowController.
   status_area_widget_ = new StatusAreaWidget(status_container, wm_shelf_);
   status_area_widget_->CreateTrayViews();
-  if (WmShell::Get()->session_controller()->IsActiveUserSessionStarted())
+  if (Shell::Get()->session_controller()->IsActiveUserSessionStarted())
     status_area_widget_->Show();
   Shell::Get()->focus_cycler()->AddWidget(status_area_widget_);
   background_animator_.AddObserver(status_area_widget_);
@@ -231,9 +231,8 @@ void ShelfWidget::OnShelfAlignmentChanged() {
 ShelfView* ShelfWidget::CreateShelfView() {
   DCHECK(!shelf_view_);
 
-  shelf_view_ =
-      new ShelfView(WmShell::Get()->shelf_model(),
-                    WmShell::Get()->shelf_delegate(), wm_shelf_, this);
+  shelf_view_ = new ShelfView(Shell::Get()->shelf_model(),
+                              Shell::Get()->shelf_delegate(), wm_shelf_, this);
   shelf_view_->Init();
   GetContentsView()->AddChildView(shelf_view_);
   return shelf_view_;
@@ -252,7 +251,7 @@ void ShelfWidget::PostCreateShelf() {
   // hidden because ShelfWidget is transparent. Some of the ShelfView visibility
   // code could be simplified. http://crbug.com/674773
   shelf_view_->SetVisible(
-      WmShell::Get()->session_controller()->IsActiveUserSessionStarted());
+      Shell::Get()->session_controller()->IsActiveUserSessionStarted());
   shelf_layout_manager_->LayoutShelf();
   shelf_layout_manager_->UpdateAutoHideState();
   Show();

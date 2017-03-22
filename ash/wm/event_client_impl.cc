@@ -23,7 +23,7 @@ bool EventClientImpl::CanProcessEventsWithinSubtree(
   // remove this.
   const aura::Window* root_window = window ? window->GetRootWindow() : NULL;
   if (!root_window ||
-      !WmShell::Get()->session_controller()->IsUserSessionBlocked()) {
+      !Shell::Get()->session_controller()->IsUserSessionBlocked()) {
     return true;
   }
 

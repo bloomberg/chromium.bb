@@ -82,7 +82,7 @@ views::View* TrayUser::CreateDefaultView(LoginStatus status) {
   if (status == LoginStatus::NOT_LOGGED_IN)
     return nullptr;
   const SessionController* const session_controller =
-      WmShell::Get()->session_controller();
+      Shell::Get()->session_controller();
 
   // If the screen is locked or a system modal dialog box is shown, show only
   // the currently active user.
@@ -224,7 +224,7 @@ void TrayUser::OnUserUpdate() {
 
 void TrayUser::OnUserAddedToSession() {
   const SessionController* const session_controller =
-      WmShell::Get()->session_controller();
+      Shell::Get()->session_controller();
   // Only create views for user items which are logged in.
   if (user_index_ >= session_controller->NumberOfLoggedInUsers())
     return;
@@ -238,7 +238,7 @@ void TrayUser::OnUserAddedToSession() {
 
 void TrayUser::UpdateAvatarImage(LoginStatus status) {
   const SessionController* const session_controller =
-      WmShell::Get()->session_controller();
+      Shell::Get()->session_controller();
   if (!avatar_ || user_index_ >= session_controller->NumberOfLoggedInUsers())
     return;
 

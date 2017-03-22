@@ -6,7 +6,7 @@
 
 #include "ash/common/session/session_controller.h"
 #include "ash/common/system/networking_config_delegate.h"
-#include "ash/common/wm_shell.h"
+#include "ash/shell.h"
 
 namespace ash {
 namespace {
@@ -37,7 +37,7 @@ SystemTrayDelegateMus::~SystemTrayDelegateMus() {
 }
 
 LoginStatus SystemTrayDelegateMus::GetUserLoginStatus() const {
-  return WmShell::Get()->session_controller()->GetLoginStatus();
+  return Shell::Get()->session_controller()->GetLoginStatus();
 }
 
 NetworkingConfigDelegate* SystemTrayDelegateMus::GetNetworkingConfigDelegate()

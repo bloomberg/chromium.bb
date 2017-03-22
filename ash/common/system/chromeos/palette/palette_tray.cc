@@ -63,7 +63,7 @@ const SkColor kPaletteSeparatorColor = SkColorSetARGB(0x1E, 0x00, 0x00, 0x00);
 
 // Returns true if we are in a user session that can show the stylus tools.
 bool IsInUserSession() {
-  SessionController* session_controller = WmShell::Get()->session_controller();
+  SessionController* session_controller = Shell::Get()->session_controller();
   return !session_controller->IsUserSessionBlocked() &&
          session_controller->GetSessionState() ==
              session_manager::SessionState::ACTIVE &&
@@ -165,7 +165,7 @@ PaletteTray::PaletteTray(WmShelf* wm_shelf)
   tray_container()->AddChildView(icon_);
 
   Shell::GetInstance()->AddShellObserver(this);
-  WmShell::Get()->session_controller()->AddSessionStateObserver(this);
+  Shell::Get()->session_controller()->AddSessionStateObserver(this);
   ui::InputDeviceManager::GetInstance()->AddObserver(this);
 }
 
@@ -175,7 +175,7 @@ PaletteTray::~PaletteTray() {
 
   ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
   Shell::GetInstance()->RemoveShellObserver(this);
-  WmShell::Get()->session_controller()->RemoveSessionStateObserver(this);
+  Shell::Get()->session_controller()->RemoveSessionStateObserver(this);
 }
 
 bool PaletteTray::PerformAction(const ui::Event& event) {

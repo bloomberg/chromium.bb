@@ -13,7 +13,6 @@
 #include "ash/ash_export.h"
 #include "ash/common/metrics/gesture_action_type.h"
 #include "ash/common/metrics/user_metrics_action.h"
-#include "ash/common/session/session_state_observer.h"
 #include "ash/common/wm/lock_state_observer.h"
 #include "base/observer_list.h"
 #include "ui/base/ui_base_types.h"
@@ -43,12 +42,7 @@ class KeyEventWatcher;
 class KeyboardUI;
 class RootWindowController;
 class ScopedDisableInternalMouseAndKeyboard;
-class SessionController;
 class SessionStateDelegate;
-class ShelfController;
-class ShelfDelegate;
-class ShelfModel;
-class ShelfWindowWatcher;
 struct ShellInitParams;
 class ShutdownController;
 class SystemTrayNotifier;
@@ -70,22 +64,14 @@ class WindowState;
 }
 
 // Similar to ash::Shell. Eventually the two will be merged.
-class ASH_EXPORT WmShell : public SessionStateObserver {
+class ASH_EXPORT WmShell {
  public:
-  ~WmShell() override;
+  virtual ~WmShell();
 
   static WmShell* Get();
   static bool HasInstance() { return instance_ != nullptr; }
 
   virtual void Shutdown();
-
-  SessionController* session_controller() { return session_controller_.get(); }
-
-  ShelfController* shelf_controller() { return shelf_controller_.get(); }
-
-  ShelfDelegate* shelf_delegate() { return shelf_delegate_.get(); }
-
-  ShelfModel* shelf_model();
 
   ShutdownController* shutdown_controller() {
     return shutdown_controller_.get();
@@ -223,16 +209,6 @@ class ASH_EXPORT WmShell : public SessionStateObserver {
 
   virtual std::unique_ptr<KeyEventWatcher> CreateKeyEventWatcher() = 0;
 
-  // Creates the ShelfView for each display and populates it with items.
-  // Called after the user session is active and profile is available.
-  void CreateShelfView();
-
-  void CreateShelfDelegate();
-
-  // Called when the login status changes.
-  // TODO(oshima): Investigate if we can merge this and |OnLoginStateChanged|.
-  void UpdateAfterLoginStatusChange(LoginStatus status);
-
   virtual SessionStateDelegate* GetSessionStateDelegate() = 0;
 
   virtual void AddDisplayObserver(WmDisplayObserver* observer) = 0;
@@ -252,8 +228,6 @@ class ASH_EXPORT WmShell : public SessionStateObserver {
   void OnLockStateEvent(LockStateObserver::EventType event);
   void AddLockStateObserver(LockStateObserver* observer);
   void RemoveLockStateObserver(LockStateObserver* observer);
-
-  void SetShelfDelegateForTesting(std::unique_ptr<ShelfDelegate> test_delegate);
 
   // True if any touch points are down.
   virtual bool IsTouchDown() = 0;
@@ -285,19 +259,12 @@ class ASH_EXPORT WmShell : public SessionStateObserver {
 
   void DeleteWindowSelectorController();
 
-  // SessionStateObserver:
-  void SessionStateChanged(session_manager::SessionState state) override;
-
  private:
   friend class AcceleratorControllerTest;
   friend class Shell;
 
   static WmShell* instance_;
 
-  std::unique_ptr<SessionController> session_controller_;
-  std::unique_ptr<ShelfController> shelf_controller_;
-  std::unique_ptr<ShelfDelegate> shelf_delegate_;
-  std::unique_ptr<ShelfWindowWatcher> shelf_window_watcher_;
   std::unique_ptr<ShutdownController> shutdown_controller_;
   std::unique_ptr<SystemTrayNotifier> system_tray_notifier_;
   std::unique_ptr<VpnList> vpn_list_;

@@ -164,7 +164,7 @@ class ShellTest : public test::AshTestBase {
     // Create a LockScreen window.
     views::Widget::InitParams widget_params(
         views::Widget::InitParams::TYPE_WINDOW);
-    SessionController* controller = WmShell::Get()->session_controller();
+    SessionController* controller = Shell::Get()->session_controller();
     controller->LockScreenAndFlushForTest();
     views::Widget* lock_widget = CreateTestWindow(widget_params);
     Shell::GetContainer(Shell::GetPrimaryRootWindow(),
@@ -278,7 +278,7 @@ TEST_F(ShellTest, CreateLockScreenModalWindow) {
   EXPECT_TRUE(
       GetDefaultContainer()->Contains(widget->GetNativeWindow()->parent()));
 
-  WmShell::Get()->session_controller()->LockScreenAndFlushForTest();
+  Shell::Get()->session_controller()->LockScreenAndFlushForTest();
   // Create a LockScreen window.
   views::Widget* lock_widget = CreateTestWindow(widget_params);
   Shell::GetContainer(Shell::GetPrimaryRootWindow(),
@@ -335,7 +335,7 @@ TEST_F(ShellTest, CreateLockScreenModalWindow) {
 }
 
 TEST_F(ShellTest, IsScreenLocked) {
-  SessionController* controller = WmShell::Get()->session_controller();
+  SessionController* controller = Shell::Get()->session_controller();
   controller->LockScreenAndFlushForTest();
   EXPECT_TRUE(controller->IsScreenLocked());
   GetSessionControllerClient()->UnlockScreen();

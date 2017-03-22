@@ -142,7 +142,7 @@ void AshTestHelper::SetUp(bool start_session) {
       std::unique_ptr<aura::InputStateLookup>());
 
   session_controller_client_.reset(
-      new TestSessionControllerClient(WmShell::Get()->session_controller()));
+      new TestSessionControllerClient(Shell::Get()->session_controller()));
   session_controller_client_->InitializeAndBind();
 
   Shell* shell = Shell::GetInstance();

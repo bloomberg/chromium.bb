@@ -64,7 +64,7 @@ views::View* CreateUserAvatarView(LoginStatus login_status, int user_index) {
         gfx::CreateVectorIcon(kSystemMenuGuestIcon, kMenuIconColor);
     image_view->SetImage(icon, icon.size());
   } else {
-    SessionController* controller = WmShell::Get()->session_controller();
+    SessionController* controller = Shell::Get()->session_controller();
     // TODO(xiyuan); HiDpi avatar support. http://crbug.com/702689
     image_view->SetImage(gfx::ImageSkia::CreateFrom1xBitmap(
                              controller->GetUserSession(user_index)->avatar),
@@ -122,7 +122,7 @@ PublicAccountUserDetails::PublicAccountUserDetails(int max_width)
   // Note that since this is a public account it always has to be the primary
   // user.
   base::string16 display_name = base::UTF8ToUTF16(
-      WmShell::Get()->session_controller()->GetUserSession(0)->display_name);
+      Shell::Get()->session_controller()->GetUserSession(0)->display_name);
   base::RemoveChars(display_name, kDisplayNameMark, &display_name);
   display_name = kDisplayNameMark[0] + display_name + kDisplayNameMark[0];
   // Retrieve the domain managing the device and wrap it with markers.
@@ -396,7 +396,7 @@ void UserCardView::AddPublicModeUserContent(int max_width) {
 void UserCardView::AddUserContent(views::BoxLayout* layout,
                                   LoginStatus login_status) {
   AddChildView(CreateUserAvatarView(login_status, user_index_));
-  SessionController* controller = WmShell::Get()->session_controller();
+  SessionController* controller = Shell::Get()->session_controller();
   base::string16 user_name_string =
       login_status == LoginStatus::GUEST
           ? l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_GUEST_LABEL)

@@ -33,6 +33,7 @@
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/overflow_bubble_view_test_api.h"
 #include "ash/test/shelf_view_test_api.h"
+#include "ash/test/shell_test_api.h"
 #include "ash/test/test_shell_delegate.h"
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
@@ -300,7 +301,7 @@ class ShelfViewTest : public AshTestBase {
 
   void SetUp() override {
     AshTestBase::SetUp();
-    model_ = WmShell::Get()->shelf_model();
+    model_ = Shell::Get()->shelf_model();
     shelf_view_ = GetPrimaryShelf()->GetShelfViewForTesting();
 
     WebNotificationTray::DisableAnimationsForTest(true);
@@ -683,11 +684,10 @@ class ShelfViewTest : public AshTestBase {
 
   void ReplaceShelfDelegate() {
     // Clear the value first to avoid TestShelfDelegate's singleton check.
-    WmShell::Get()->SetShelfDelegateForTesting(nullptr);
+    test::ShellTestApi().SetShelfDelegate(nullptr);
     shelf_delegate_ = new TestShelfDelegateForShelfView();
     test_api_->SetShelfDelegate(shelf_delegate_);
-    WmShell::Get()->SetShelfDelegateForTesting(
-        base::WrapUnique(shelf_delegate_));
+    test::ShellTestApi().SetShelfDelegate(base::WrapUnique(shelf_delegate_));
   }
 
   ShelfModel* model_;

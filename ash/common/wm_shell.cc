@@ -10,10 +10,6 @@
 #include "ash/common/session/session_controller.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/app_list_shelf_item_delegate.h"
-#include "ash/common/shelf/shelf_controller.h"
-#include "ash/common/shelf/shelf_delegate.h"
-#include "ash/common/shelf/shelf_model.h"
-#include "ash/common/shelf/shelf_window_watcher.h"
 #include "ash/common/shell_delegate.h"
 #include "ash/common/shutdown_controller.h"
 #include "ash/common/system/chromeos/network/vpn_list.h"
@@ -39,7 +35,6 @@ WmShell* WmShell::instance_ = nullptr;
 WmShell::~WmShell() {
   DCHECK_EQ(this, instance_);
   instance_ = nullptr;
-  session_controller_->RemoveSessionStateObserver(this);
 }
 
 // static
@@ -48,64 +43,19 @@ WmShell* WmShell::Get() {
 }
 
 void WmShell::Shutdown() {
-  // ShelfWindowWatcher has window observers and a pointer to the shelf model.
-  shelf_window_watcher_.reset();
-  // ShelfItemDelegate subclasses it owns have complex cleanup to run (e.g. ARC
-  // shelf items in Chrome) so explicitly shutdown early.
-  shelf_model()->DestroyItemDelegates();
-  // Must be destroyed before FocusClient.
-  shelf_delegate_.reset();
-
-  // Removes itself as an observer of |pref_store_|.
-  shelf_controller_.reset();
-}
-
-ShelfModel* WmShell::shelf_model() {
-  return shelf_controller_->model();
 }
 
 void WmShell::ShowContextMenu(const gfx::Point& location_in_screen,
                               ui::MenuSourceType source_type) {
   // Bail if there is no active user session or if the screen is locked.
-  if (session_controller()->NumberOfLoggedInUsers() < 1 ||
-      session_controller()->IsScreenLocked()) {
+  if (Shell::Get()->session_controller()->NumberOfLoggedInUsers() < 1 ||
+      Shell::Get()->session_controller()->IsScreenLocked()) {
     return;
   }
 
   WmWindow* root = wm::GetRootWindowAt(location_in_screen);
   root->GetRootWindowController()->ShowContextMenu(location_in_screen,
                                                    source_type);
-}
-
-void WmShell::CreateShelfView() {
-  // Must occur after SessionController creation and user login.
-  DCHECK(session_controller());
-  DCHECK_GT(session_controller()->NumberOfLoggedInUsers(), 0);
-  CreateShelfDelegate();
-
-  for (WmWindow* root_window : GetAllRootWindows())
-    root_window->GetRootWindowController()->CreateShelfView();
-}
-
-void WmShell::CreateShelfDelegate() {
-  // May be called multiple times as shelves are created and destroyed.
-  if (shelf_delegate_)
-    return;
-  // Must occur after SessionController creation and user login because
-  // Chrome's implementation of ShelfDelegate assumes it can get information
-  // about multi-profile login state.
-  DCHECK(session_controller());
-  DCHECK_GT(session_controller()->NumberOfLoggedInUsers(), 0);
-  shelf_delegate_.reset(
-      Shell::Get()->shell_delegate()->CreateShelfDelegate(shelf_model()));
-  shelf_window_watcher_.reset(new ShelfWindowWatcher(shelf_model()));
-}
-
-void WmShell::UpdateAfterLoginStatusChange(LoginStatus status) {
-  for (WmWindow* root_window : GetAllRootWindows()) {
-    root_window->GetRootWindowController()->UpdateAfterLoginStatusChange(
-        status);
-  }
 }
 
 void WmShell::OnLockStateEvent(LockStateObserver::EventType event) {
@@ -121,15 +71,8 @@ void WmShell::RemoveLockStateObserver(LockStateObserver* observer) {
   lock_state_observers_.RemoveObserver(observer);
 }
 
-void WmShell::SetShelfDelegateForTesting(
-    std::unique_ptr<ShelfDelegate> test_delegate) {
-  shelf_delegate_ = std::move(test_delegate);
-}
-
 WmShell::WmShell()
-    : session_controller_(base::MakeUnique<SessionController>()),
-      shelf_controller_(base::MakeUnique<ShelfController>()),
-      shutdown_controller_(base::MakeUnique<ShutdownController>()),
+    : shutdown_controller_(base::MakeUnique<ShutdownController>()),
       system_tray_notifier_(base::MakeUnique<SystemTrayNotifier>()),
       vpn_list_(base::MakeUnique<VpnList>()),
       window_cycle_controller_(base::MakeUnique<WindowCycleController>()),
@@ -137,7 +80,6 @@ WmShell::WmShell()
           base::MakeUnique<WindowSelectorController>()) {
   DCHECK(!instance_);
   instance_ = this;
-  session_controller_->AddSessionStateObserver(this);
 }
 
 RootWindowController* WmShell::GetPrimaryRootWindowController() {
@@ -198,20 +140,6 @@ void WmShell::DeleteWindowCycleController() {
 
 void WmShell::DeleteWindowSelectorController() {
   window_selector_controller_.reset();
-}
-
-void WmShell::SessionStateChanged(session_manager::SessionState state) {
-  // Create the shelf when a session becomes active. It's safe to do this
-  // multiple times (e.g. initial login vs. multiprofile add session).
-  if (state == session_manager::SessionState::ACTIVE)
-    CreateShelfView();
-
-  // Only trigger an update in mash because with classic ash chrome calls
-  // UpdateAfterLoginStatusChange() directly.
-  if (IsRunningInMash()) {
-    // TODO(jamescook): Should this call Shell::OnLoginStatusChanged() too?
-    UpdateAfterLoginStatusChange(session_controller_->GetLoginStatus());
-  }
 }
 
 }  // namespace ash

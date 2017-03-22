@@ -60,11 +60,11 @@ void BindNewWindowControllerRequestOnMainThread(
 
 void BindSessionControllerRequestOnMainThread(
     mojom::SessionControllerRequest request) {
-  WmShell::Get()->session_controller()->BindRequest(std::move(request));
+  Shell::Get()->session_controller()->BindRequest(std::move(request));
 }
 
 void BindShelfRequestOnMainThread(mojom::ShelfControllerRequest request) {
-  WmShell::Get()->shelf_controller()->BindRequest(std::move(request));
+  Shell::Get()->shelf_controller()->BindRequest(std::move(request));
 }
 
 void BindShutdownControllerRequestOnMainThread(

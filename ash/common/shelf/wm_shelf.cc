@@ -141,7 +141,7 @@ void WmShelf::CreateShelfView() {
   DCHECK(!shelf_view_);
   shelf_view_ = shelf_widget_->CreateShelfView();
   shelf_locking_manager_.reset(new ShelfLockingManager(this));
-  WmShell::Get()->shelf_controller()->NotifyShelfCreated(this);
+  Shell::Get()->shelf_controller()->NotifyShelfCreated(this);
 }
 
 void WmShelf::ShutdownShelf() {
@@ -175,7 +175,7 @@ void WmShelf::SetAlignment(ShelfAlignment alignment) {
   // The ShelfWidget notifies the ShelfView of the alignment change.
   shelf_widget_->OnShelfAlignmentChanged();
   shelf_layout_manager_->LayoutShelf();
-  WmShell::Get()->shelf_controller()->NotifyShelfAlignmentChanged(this);
+  Shell::Get()->shelf_controller()->NotifyShelfAlignmentChanged(this);
   Shell::GetInstance()->NotifyShelfAlignmentChanged(
       GetWindow()->GetRootWindow());
 }
@@ -220,7 +220,7 @@ void WmShelf::SetAutoHideBehavior(ShelfAutoHideBehavior auto_hide_behavior) {
     return;
 
   auto_hide_behavior_ = auto_hide_behavior;
-  WmShell::Get()->shelf_controller()->NotifyShelfAutoHideBehaviorChanged(this);
+  Shell::Get()->shelf_controller()->NotifyShelfAutoHideBehaviorChanged(this);
   Shell::GetInstance()->NotifyShelfAutoHideBehaviorChanged(
       GetWindow()->GetRootWindow());
 }
@@ -272,7 +272,7 @@ gfx::Rect WmShelf::GetScreenBoundsOfItemIconForWindow(WmWindow* window) {
 
 // static
 void WmShelf::LaunchShelfItem(int item_index) {
-  ShelfModel* shelf_model = WmShell::Get()->shelf_model();
+  ShelfModel* shelf_model = Shell::Get()->shelf_model();
   const ShelfItems& items = shelf_model->items();
   int item_count = shelf_model->item_count();
   int indexes_left = item_index >= 0 ? item_index : item_count;
@@ -298,7 +298,7 @@ void WmShelf::LaunchShelfItem(int item_index) {
 
 // static
 void WmShelf::ActivateShelfItem(int item_index) {
-  ShelfModel* shelf_model = WmShell::Get()->shelf_model();
+  ShelfModel* shelf_model = Shell::Get()->shelf_model();
   const ShelfItem& item = shelf_model->items()[item_index];
   mojom::ShelfItemDelegate* item_delegate =
       shelf_model->GetShelfItemDelegate(item.id);

@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 #include "ash/test/shell_test_api.h"
+
 #include "ash/common/palette_delegate.h"
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/shelf/shelf_delegate.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 
@@ -43,6 +45,11 @@ void ShellTestApi::SetPaletteDelegate(
 void ShellTestApi::SetSessionStateDelegate(
     SessionStateDelegate* session_state_delegate) {
   shell_->session_state_delegate_.reset(session_state_delegate);
+}
+
+void ShellTestApi::SetShelfDelegate(
+    std::unique_ptr<ShelfDelegate> test_delegate) {
+  shell_->shelf_delegate_ = std::move(test_delegate);
 }
 
 }  // namespace test

@@ -86,9 +86,6 @@ class ASH_EXPORT WmShellAura : public WmShell,
   std::unique_ptr<AcceleratorController> CreateAcceleratorController() override;
 
  private:
-  // SessionStateObserver:
-  void SessionStateChanged(session_manager::SessionState state) override;
-
   // WindowTreeHostManager::Observer:
   void OnDisplayConfigurationChanging() override;
   void OnDisplayConfigurationChanged() override;

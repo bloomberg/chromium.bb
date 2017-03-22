@@ -7,9 +7,9 @@
 #include "ash/common/shelf/shelf_controller.h"
 #include "ash/common/shelf/shelf_model.h"
 #include "ash/common/wm/window_state.h"
-#include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/public/cpp/window_properties.h"
+#include "ash/shell.h"
 #include "ash/wm/window_util.h"
 #include "ui/aura/window.h"
 #include "ui/events/event_constants.h"
@@ -19,7 +19,7 @@ namespace ash {
 namespace {
 
 ShelfItemType GetShelfItemType(ShelfID id) {
-  ShelfModel* model = WmShell::Get()->shelf_controller()->model();
+  ShelfModel* model = Shell::Get()->shelf_controller()->model();
   ShelfItems::const_iterator item = model->ItemByID(id);
   return item == model->items().end() ? TYPE_UNDEFINED : item->type;
 }

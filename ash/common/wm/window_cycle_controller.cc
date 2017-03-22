@@ -39,7 +39,7 @@ WindowCycleController::~WindowCycleController() {}
 bool WindowCycleController::CanCycle() {
   // Prevent window cycling if the screen is locked or a modal dialog is open.
   WmShell* wm_shell = WmShell::Get();
-  return !wm_shell->session_controller()->IsScreenLocked() &&
+  return !Shell::Get()->session_controller()->IsScreenLocked() &&
          !wm_shell->IsSystemModalWindowOpen() && !wm_shell->IsPinned();
 }
 

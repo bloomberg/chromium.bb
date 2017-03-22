@@ -29,7 +29,7 @@ class MultiProfileMediaTrayItemTest : public test::AshTestBase {
 
   void SetMediaCaptureState(mojom::MediaCaptureState state) {
     // Create the fake update.
-    SessionController* controller = WmShell::Get()->session_controller();
+    SessionController* controller = Shell::Get()->session_controller();
     std::vector<mojom::MediaCaptureState> v;
     for (int i = 0; i < controller->NumberOfLoggedInUsers(); ++i)
       v.push_back(state);

@@ -31,7 +31,7 @@ bool MaximizeModeEventHandler::ToggleFullscreen(const ui::TouchEvent& event) {
   if (event.type() != ui::ET_TOUCH_PRESSED)
     return false;
 
-  const SessionController* controller = WmShell::Get()->session_controller();
+  const SessionController* controller = Shell::Get()->session_controller();
 
   if (controller->IsScreenLocked() ||
       controller->GetSessionState() != session_manager::SessionState::ACTIVE) {

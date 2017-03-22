@@ -50,7 +50,7 @@ namespace {
 // Switch to a user with the given |user_index|.
 void SwitchUser(UserIndex user_index) {
   // Do not switch users when the log screen is presented.
-  SessionController* controller = WmShell::Get()->session_controller();
+  SessionController* controller = Shell::Get()->session_controller();
   if (controller->IsUserSessionBlocked())
     return;
 
@@ -68,7 +68,7 @@ void SwitchUser(UserIndex user_index) {
 
 bool IsMultiProfileSupportedAndUserActive() {
   return Shell::Get()->shell_delegate()->IsMultiProfilesEnabled() &&
-         !WmShell::Get()->session_controller()->IsUserSessionBlocked();
+         !Shell::Get()->session_controller()->IsUserSessionBlocked();
 }
 
 // Creates the view shown in the user switcher popup ("AddUserMenuOption").
@@ -352,7 +352,7 @@ void UserView::ToggleAddUserMenuOption() {
   add_menu_option_->Init(params);
 
   const AddUserSessionPolicy add_user_policy =
-      WmShell::Get()->session_controller()->GetAddUserPolicy();
+      Shell::Get()->session_controller()->GetAddUserPolicy();
   add_user_enabled_ = add_user_policy == AddUserSessionPolicy::ALLOWED;
 
   // Position the widget on top of the user card view (which is still in the

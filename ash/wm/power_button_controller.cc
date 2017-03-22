@@ -104,7 +104,7 @@ void PowerButtonController::OnPowerButtonEvent(
   }
 
   const SessionController* const session_controller =
-      WmShell::Get()->session_controller();
+      Shell::Get()->session_controller();
   if (has_legacy_power_button_) {
     // If power button releases won't get reported correctly because we're not
     // running on official hardware, just lock the screen or shut down
@@ -145,7 +145,7 @@ void PowerButtonController::OnLockButtonEvent(
   lock_button_down_ = down;
 
   const SessionController* const session_controller =
-      WmShell::Get()->session_controller();
+      Shell::Get()->session_controller();
   if (!session_controller->CanLockScreen() ||
       session_controller->IsScreenLocked() ||
       lock_state_controller_->LockRequested() ||

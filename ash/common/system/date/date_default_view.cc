@@ -53,7 +53,7 @@ DateDefaultView::DateDefaultView(SystemTrayItem* owner, LoginStatus login)
   view->SetContent(date_view_);
   AddChildView(view);
 
-  WmShell* shell = WmShell::Get();
+  Shell* shell = Shell::Get();
   const bool adding_user =
       shell->session_controller()->IsInSecondaryLoginScreen();
 

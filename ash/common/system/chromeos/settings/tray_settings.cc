@@ -50,7 +50,7 @@ class SettingsDefaultView : public ActionableView,
     bool power_view_right_align = false;
     if (login_status_ != LoginStatus::NOT_LOGGED_IN &&
         login_status_ != LoginStatus::LOCKED &&
-        !WmShell::Get()->session_controller()->IsInSecondaryLoginScreen()) {
+        !Shell::Get()->session_controller()->IsInSecondaryLoginScreen()) {
       ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
       views::ImageView* icon = TrayPopupUtils::CreateMainImageView();
 
@@ -84,7 +84,7 @@ class SettingsDefaultView : public ActionableView,
   bool PerformAction(const ui::Event& event) override {
     if (login_status_ == LoginStatus::NOT_LOGGED_IN ||
         login_status_ == LoginStatus::LOCKED ||
-        WmShell::Get()->session_controller()->IsInSecondaryLoginScreen()) {
+        Shell::Get()->session_controller()->IsInSecondaryLoginScreen()) {
       return false;
     }
 

@@ -150,7 +150,7 @@ TEST_F(AcceleratorFilterTest, CanConsumeSystemKeys) {
 
 TEST_F(AcceleratorFilterTest, SearchKeyShortcutsAreAlwaysHandled) {
   SessionController* const session_controller =
-      WmShell::Get()->session_controller();
+      Shell::Get()->session_controller();
   EXPECT_FALSE(session_controller->IsScreenLocked());
 
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());

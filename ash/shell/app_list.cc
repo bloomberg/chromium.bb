@@ -112,7 +112,7 @@ class WindowTypeShelfItem : public app_list::AppListItem {
         break;
       }
       case LOCK_SCREEN: {
-        WmShell::Get()->session_controller()->LockScreen();
+        Shell::Get()->session_controller()->LockScreen();
         break;
       }
       case WIDGETS_WINDOW: {

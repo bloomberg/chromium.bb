@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/ash/launcher/extension_app_window_launcher_controller.h"
 
 #include "ash/common/shelf/shelf_delegate.h"
-#include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
+#include "ash/shell.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
 #include "base/stl_util.h"
@@ -173,7 +173,7 @@ void ExtensionAppWindowLauncherController::RegisterApp(AppWindow* app_window) {
     // If there is already a shelf id mapped to this AppLaunchId (e.g. pinned),
     // use that shelf item.
     shelf_id =
-        ash::WmShell::Get()->shelf_delegate()->GetShelfIDForAppIDAndLaunchID(
+        ash::Shell::Get()->shelf_delegate()->GetShelfIDForAppIDAndLaunchID(
             app_id, launch_id);
 
     if (shelf_id == 0) {

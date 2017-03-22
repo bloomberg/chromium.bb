@@ -397,7 +397,7 @@ TEST_F(RootWindowControllerTest, ModalContainer) {
             controller->GetSystemModalLayoutManager(
                 WmWindow::Get(session_modal_widget->GetNativeWindow())));
 
-  wm_shell->session_controller()->LockScreenAndFlushForTest();
+  Shell::Get()->session_controller()->LockScreenAndFlushForTest();
   EXPECT_EQ(LoginStatus::LOCKED,
             Shell::Get()->system_tray_delegate()->GetUserLoginStatus());
   EXPECT_EQ(
@@ -423,7 +423,7 @@ TEST_F(RootWindowControllerTest, ModalContainerNotLoggedInLoggedIn) {
   UpdateDisplay("600x600");
 
   // Configure login screen environment.
-  SessionController* session_controller = WmShell::Get()->session_controller();
+  SessionController* session_controller = Shell::Get()->session_controller();
   SetUserLoggedIn(false);
   EXPECT_EQ(LoginStatus::NOT_LOGGED_IN,
             Shell::Get()->system_tray_delegate()->GetUserLoginStatus());
@@ -1004,7 +1004,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, RestoreWorkspaceAfterLogin) {
   // Mock a login user profile change to reinitialize the keyboard.
   mojom::SessionInfoPtr info = mojom::SessionInfo::New();
   info->state = session_manager::SessionState::ACTIVE;
-  WmShell::Get()->session_controller()->SetSessionInfo(std::move(info));
+  Shell::Get()->session_controller()->SetSessionInfo(std::move(info));
   EXPECT_EQ(display::Screen::GetScreen()->GetPrimaryDisplay().work_area(),
             before);
 }

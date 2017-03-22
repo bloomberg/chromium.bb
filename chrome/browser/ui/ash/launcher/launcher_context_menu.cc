@@ -116,7 +116,7 @@ void LauncherContextMenu::ExecuteCommand(int command_id, int event_flags) {
     case MENU_CLOSE:
       if (item_.type == ash::TYPE_DIALOG) {
         ash::mojom::ShelfItemDelegate* item_delegate =
-            ash::WmShell::Get()->shelf_model()->GetShelfItemDelegate(item_.id);
+            ash::Shell::Get()->shelf_model()->GetShelfItemDelegate(item_.id);
         DCHECK(item_delegate);
         item_delegate->Close();
       } else {

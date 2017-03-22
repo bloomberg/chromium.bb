@@ -34,12 +34,12 @@ OverviewButtonTray::OverviewButtonTray(WmShelf* wm_shelf)
   set_separator_visibility(false);
 
   Shell::GetInstance()->AddShellObserver(this);
-  WmShell::Get()->session_controller()->AddSessionStateObserver(this);
+  Shell::Get()->session_controller()->AddSessionStateObserver(this);
 }
 
 OverviewButtonTray::~OverviewButtonTray() {
   Shell::GetInstance()->RemoveShellObserver(this);
-  WmShell::Get()->session_controller()->RemoveSessionStateObserver(this);
+  Shell::Get()->session_controller()->RemoveSessionStateObserver(this);
 }
 
 void OverviewButtonTray::UpdateAfterLoginStatusChange(LoginStatus status) {
@@ -109,7 +109,7 @@ void OverviewButtonTray::UpdateIconVisibility() {
   // WindowSelectorController::CanSelect. The visibility of the button should
   // not change during transient times in which CanSelect is false. Such as when
   // a modal dialog is present.
-  SessionController* session_controller = WmShell::Get()->session_controller();
+  SessionController* session_controller = Shell::Get()->session_controller();
 
   Shell* shell = Shell::Get();
   SetVisible(

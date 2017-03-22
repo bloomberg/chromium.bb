@@ -14,8 +14,8 @@
 #include "ash/common/system/tray/size_range_layout.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_item_style.h"
-#include "ash/common/wm_shell.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/shell.h"
 #include "base/memory/ptr_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -431,7 +431,7 @@ bool TrayPopupUtils::CanOpenWebUISettings(LoginStatus status) {
   // ShowSettings() method.
   return status != LoginStatus::NOT_LOGGED_IN &&
          status != LoginStatus::LOCKED &&
-         !WmShell::Get()->session_controller()->IsInSecondaryLoginScreen();
+         !Shell::Get()->session_controller()->IsInSecondaryLoginScreen();
 }
 
 }  // namespace ash

@@ -927,7 +927,7 @@ TEST_F(WorkspaceLayoutManagerSoloTest, NotResizeWhenScreenIsLocked) {
             window_bounds.ToString());
 
   // The window size should not get touched while we are in lock screen.
-  WmShell::Get()->session_controller()->LockScreenAndFlushForTest();
+  Shell::Get()->session_controller()->LockScreenAndFlushForTest();
   ShelfLayoutManager* shelf_layout_manager = shelf->shelf_layout_manager();
   shelf_layout_manager->UpdateVisibilityState();
   EXPECT_EQ(window_bounds.ToString(), window->GetBounds().ToString());

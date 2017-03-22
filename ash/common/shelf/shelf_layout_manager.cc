@@ -160,9 +160,8 @@ ShelfLayoutManager::ShelfLayoutManager(ShelfWidget* shelf_widget,
   Shell::GetInstance()->AddShellObserver(this);
   WmShell::Get()->AddLockStateObserver(this);
   Shell::GetInstance()->activation_client()->AddObserver(this);
-  WmShell::Get()->session_controller()->AddSessionStateObserver(this);
-  state_.session_state =
-      WmShell::Get()->session_controller()->GetSessionState();
+  Shell::Get()->session_controller()->AddSessionStateObserver(this);
+  state_.session_state = Shell::Get()->session_controller()->GetSessionState();
 }
 
 ShelfLayoutManager::~ShelfLayoutManager() {
@@ -173,7 +172,7 @@ ShelfLayoutManager::~ShelfLayoutManager() {
     observer.WillDeleteShelfLayoutManager();
   Shell::GetInstance()->RemoveShellObserver(this);
   WmShell::Get()->RemoveLockStateObserver(this);
-  WmShell::Get()->session_controller()->RemoveSessionStateObserver(this);
+  Shell::Get()->session_controller()->RemoveSessionStateObserver(this);
 }
 
 void ShelfLayoutManager::PrepareForShutdown() {
@@ -340,7 +339,7 @@ void ShelfLayoutManager::RemoveObserver(ShelfLayoutManagerObserver* observer) {
 
 bool ShelfLayoutManager::ProcessGestureEvent(const ui::GestureEvent& event) {
   // The gestures are disabled in the lock/login screen.
-  SessionController* controller = WmShell::Get()->session_controller();
+  SessionController* controller = Shell::Get()->session_controller();
   if (!controller->NumberOfLoggedInUsers() || controller->IsScreenLocked())
     return false;
 
@@ -437,7 +436,7 @@ void ShelfLayoutManager::OnKeyboardBoundsChanging(const gfx::Rect& new_bounds) {
   // On login screen if keyboard has been just hidden, update bounds just once
   // but ignore target_bounds.work_area_insets since shelf overlaps with login
   // window.
-  if (WmShell::Get()->session_controller()->IsUserSessionBlocked() &&
+  if (Shell::Get()->session_controller()->IsUserSessionBlocked() &&
       keyboard_is_about_to_hide) {
     WmWindow* window = WmWindow::Get(shelf_widget_->GetNativeWindow());
     WmShell::Get()->SetDisplayWorkAreaInsets(window, gfx::Insets());

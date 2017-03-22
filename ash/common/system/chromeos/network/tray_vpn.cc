@@ -17,6 +17,7 @@
 #include "ash/common/system/tray/tray_popup_item_style.h"
 #include "ash/common/wm_shell.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
@@ -161,7 +162,7 @@ views::View* TrayVPN::CreateDefaultView(LoginStatus status) {
     return NULL;
 
   const bool is_in_secondary_login_screen =
-      WmShell::Get()->session_controller()->IsInSecondaryLoginScreen();
+      Shell::Get()->session_controller()->IsInSecondaryLoginScreen();
 
   default_ = new tray::VpnDefaultView(this);
   default_->SetEnabled(status != LoginStatus::LOCKED &&

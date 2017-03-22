@@ -137,11 +137,11 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   // creating shelf.
   example_session_controller_client_ =
       base::MakeUnique<ExampleSessionControllerClient>(
-          WmShell::Get()->session_controller());
+          Shell::Get()->session_controller());
   example_session_controller_client_->Initialize();
 
-  ash::WmShell::Get()->CreateShelfView();
-  ash::WmShell::Get()->UpdateAfterLoginStatusChange(LoginStatus::USER);
+  ash::Shell::Get()->CreateShelfView();
+  ash::Shell::Get()->UpdateAfterLoginStatusChange(LoginStatus::USER);
 
   window_watcher_.reset(new ash::shell::WindowWatcher);
   display::Screen::GetScreen()->AddObserver(window_watcher_.get());

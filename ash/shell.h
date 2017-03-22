@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/common/session/session_state_observer.h"
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/wm/cursor_manager_chromeos.h"
@@ -138,7 +139,12 @@ class ScreenOrientationController;
 class ScreenshotController;
 class ScreenPinningController;
 class ScreenPositionController;
+class SessionController;
 class SessionStateDelegate;
+class ShelfController;
+class ShelfDelegate;
+class ShelfModel;
+class ShelfWindowWatcher;
 class ShellDelegate;
 struct ShellInitParams;
 class ShellObserver;
@@ -178,7 +184,8 @@ class SmsObserverTest;
 //
 // Upon creation, the Shell sets itself as the RootWindow's delegate, which
 // takes ownership of the Shell.
-class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
+class ASH_EXPORT Shell : public SessionStateObserver,
+                         public SystemModalContainerEventFilterDelegate,
                          public ui::EventTarget,
                          public aura::client::ActivationChangeObserver {
  public:
@@ -326,6 +333,10 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   NewWindowController* new_window_controller() {
     return new_window_controller_.get();
   }
+  SessionController* session_controller() { return session_controller_.get(); }
+  ShelfController* shelf_controller() { return shelf_controller_.get(); }
+  ShelfDelegate* shelf_delegate() { return shelf_delegate_.get(); }
+  ShelfModel* shelf_model();
   SystemTrayController* system_tray_controller() {
     return system_tray_controller_.get();
   }
@@ -483,6 +494,10 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   // returned object.
   ash::FirstRunHelper* CreateFirstRunHelper();
 
+  // Creates the ShelfView for each display and populates it with items.
+  // Called after the user session is active and profile is available.
+  void CreateShelfView();
+
   void SetLargeCursorSizeInDip(int large_cursor_size_in_dip);
 
   // Toggles cursor compositing on/off. Native cursor is disabled when cursor
@@ -517,6 +532,10 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
 
   // Returns app list target visibility.
   bool GetAppListTargetVisibility() const;
+
+  // Called when the login status changes.
+  // TODO(oshima): Investigate if we can merge this and |OnLoginStateChanged|.
+  void UpdateAfterLoginStatusChange(LoginStatus status);
 
   // Notifies observers that maximize mode has started, windows might still
   // animate.
@@ -584,6 +603,8 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   void SetSystemTrayDelegate(std::unique_ptr<SystemTrayDelegate> delegate);
   void DeleteSystemTrayDelegate();
 
+  void CreateShelfDelegate();
+
   // Destroys all child windows including widgets across all roots.
   void CloseAllRootWindowChildWindows();
 
@@ -600,6 +621,9 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   void OnWindowActivated(ActivationReason reason,
                          aura::Window* gained_active,
                          aura::Window* lost_active) override;
+
+  // SessionStateObserver:
+  void SessionStateChanged(session_manager::SessionState state) override;
 
   static Shell* instance_;
 
@@ -640,6 +664,10 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   std::unique_ptr<NewWindowController> new_window_controller_;
   std::unique_ptr<PaletteDelegate> palette_delegate_;
   std::unique_ptr<ResizeShadowController> resize_shadow_controller_;
+  std::unique_ptr<SessionController> session_controller_;
+  std::unique_ptr<ShelfController> shelf_controller_;
+  std::unique_ptr<ShelfDelegate> shelf_delegate_;
+  std::unique_ptr<ShelfWindowWatcher> shelf_window_watcher_;
   std::unique_ptr<ShellDelegate> shell_delegate_;
   std::unique_ptr<SystemTrayController> system_tray_controller_;
   std::unique_ptr<SystemTrayDelegate> system_tray_delegate_;

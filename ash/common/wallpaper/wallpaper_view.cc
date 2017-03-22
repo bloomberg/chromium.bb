@@ -222,7 +222,7 @@ views::Widget* CreateWallpaper(WmWindow* root_window, int container_id) {
   // 4. From an empty background, guest user logged in.
   if (wallpaper_delegate->ShouldShowInitialAnimation() ||
       root_window_controller->animating_wallpaper_widget_controller() ||
-      WmShell::Get()->session_controller()->NumberOfLoggedInUsers()) {
+      Shell::Get()->session_controller()->NumberOfLoggedInUsers()) {
     wallpaper_window->SetVisibilityAnimationTransition(::wm::ANIMATE_SHOW);
     int duration_override = wallpaper_delegate->GetAnimationDurationOverride();
     if (duration_override) {

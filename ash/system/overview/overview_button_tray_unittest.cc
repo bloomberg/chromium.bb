@@ -74,7 +74,7 @@ void OverviewButtonTrayTest::SetUp() {
 
 void OverviewButtonTrayTest::NotifySessionStateChanged() {
   GetTray()->SessionStateChanged(
-      WmShell::Get()->session_controller()->GetSessionState());
+      Shell::Get()->session_controller()->GetSessionState());
 }
 
 // Ensures that creation doesn't cause any crashes and adds the image icon.
@@ -173,11 +173,11 @@ TEST_F(OverviewButtonTrayTest, VisibilityChangesForLoginStatus) {
   Shell::Get()->maximize_mode_controller()->EnableMaximizeModeWindowManager(
       true);
   SetUserLoggedIn(false);
-  WmShell::Get()->UpdateAfterLoginStatusChange(LoginStatus::NOT_LOGGED_IN);
+  Shell::Get()->UpdateAfterLoginStatusChange(LoginStatus::NOT_LOGGED_IN);
   EXPECT_FALSE(GetTray()->visible());
   SetUserLoggedIn(true);
   SetSessionStarted(true);
-  WmShell::Get()->UpdateAfterLoginStatusChange(LoginStatus::USER);
+  Shell::Get()->UpdateAfterLoginStatusChange(LoginStatus::USER);
   EXPECT_TRUE(GetTray()->visible());
   SetUserAddingScreenRunning(true);
   NotifySessionStateChanged();

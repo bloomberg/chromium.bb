@@ -41,7 +41,7 @@ class PanelWindowResizerTest : public test::AshTestBase {
   void SetUp() override {
     AshTestBase::SetUp();
     UpdateDisplay("600x400");
-    model_ = WmShell::Get()->shelf_model();
+    model_ = Shell::Get()->shelf_model();
   }
 
   void TearDown() override { AshTestBase::TearDown(); }

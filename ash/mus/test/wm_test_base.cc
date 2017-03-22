@@ -8,13 +8,13 @@
 #include <vector>
 
 #include "ash/common/session/session_controller.h"
-#include "ash/common/wm_shell.h"
 #include "ash/mus/test/wm_test_helper.h"
 #include "ash/mus/top_level_window_factory.h"
 #include "ash/mus/window_manager.h"
 #include "ash/mus/window_manager_application.h"
 #include "ash/public/cpp/session_types.h"
 #include "ash/public/interfaces/session_controller.mojom.h"
+#include "ash/shell.h"
 #include "ash/test/wm_window_test_api.h"
 #include "base/memory/ptr_util.h"
 #include "services/ui/public/cpp/property_type_converters.h"
@@ -180,7 +180,7 @@ void WmTestBase::TearDown() {
 }
 
 void WmTestBase::SimulateUserLogin() {
-  SessionController* session_controller = WmShell::Get()->session_controller();
+  SessionController* session_controller = Shell::Get()->session_controller();
 
   // Simulate the first user logging in.
   mojom::UserSessionPtr session = mojom::UserSession::New();

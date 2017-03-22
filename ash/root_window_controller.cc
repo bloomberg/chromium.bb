@@ -399,7 +399,7 @@ RootWindowController::GetSystemModalLayoutManager(WmWindow* window) {
     }
   } else {
     int modal_window_id =
-        WmShell::Get()->session_controller()->IsUserSessionBlocked()
+        Shell::Get()->session_controller()->IsUserSessionBlocked()
             ? kShellWindowId_LockSystemModalContainer
             : kShellWindowId_SystemModalContainer;
     modal_container = GetWmContainer(modal_window_id);
@@ -433,7 +433,7 @@ bool RootWindowController::CanWindowReceiveEvents(aura::Window* window) {
   aura::Window* blocking_container = nullptr;
 
   int modal_container_id = 0;
-  if (WmShell::Get()->session_controller()->IsUserSessionBlocked()) {
+  if (Shell::Get()->session_controller()->IsUserSessionBlocked()) {
     blocking_container =
         GetContainer(kShellWindowId_LockScreenContainersContainer);
     modal_container_id = kShellWindowId_LockSystemModalContainer;
@@ -778,7 +778,7 @@ void RootWindowController::Init(RootWindowType root_window_type) {
     window_tree_host_->Show();
 
     // Create a shelf if a user is already logged in.
-    if (wm_shell->session_controller()->NumberOfLoggedInUsers())
+    if (shell->session_controller()->NumberOfLoggedInUsers())
       CreateShelfView();
 
     // Notify shell observers about new root window.

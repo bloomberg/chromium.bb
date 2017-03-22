@@ -293,14 +293,14 @@ class ShelfLayoutManagerTest : public test::AshTestBase {
   void LockScreen() {
     mojom::SessionInfoPtr info = mojom::SessionInfo::New();
     info->state = session_manager::SessionState::LOCKED;
-    ash::WmShell::Get()->session_controller()->SetSessionInfo(std::move(info));
+    ash::Shell::Get()->session_controller()->SetSessionInfo(std::move(info));
   }
 
   // Turn off the lock screen.
   void UnlockScreen() {
     mojom::SessionInfoPtr info = mojom::SessionInfo::New();
     info->state = session_manager::SessionState::ACTIVE;
-    ash::WmShell::Get()->session_controller()->SetSessionInfo(std::move(info));
+    ash::Shell::Get()->session_controller()->SetSessionInfo(std::move(info));
   }
 
   int64_t GetPrimaryDisplayId() {
@@ -845,7 +845,7 @@ TEST_F(ShelfLayoutManagerTest, VisibleWhenLoginScreenShowing) {
 
   mojom::SessionInfoPtr info = mojom::SessionInfo::New();
   info->state = session_manager::SessionState::LOGIN_PRIMARY;
-  ash::WmShell::Get()->session_controller()->SetSessionInfo(std::move(info));
+  ash::Shell::Get()->session_controller()->SetSessionInfo(std::move(info));
 
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
   EXPECT_EQ(SHELF_BACKGROUND_OVERLAP, GetShelfWidget()->GetBackgroundType());

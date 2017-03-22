@@ -40,7 +40,7 @@ class MultiProfileMediaTrayView : public TrayItemView,
   // MediaCaptureObserver:
   void OnMediaCaptureChanged(
       const std::vector<mojom::MediaCaptureState>& capture_states) override {
-    SessionController* controller = WmShell::Get()->session_controller();
+    SessionController* controller = Shell::Get()->session_controller();
     // The user at 0 is the current desktop user.
     for (UserIndex index = 1; index < controller->NumberOfLoggedInUsers();
          ++index) {

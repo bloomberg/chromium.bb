@@ -90,7 +90,7 @@ void TilesDefaultView::Init() {
   lock_button_ =
       new SystemMenuButton(this, TrayPopupInkDropStyle::HOST_CENTERED,
                            kSystemMenuLockIcon, IDS_ASH_STATUS_TRAY_LOCK);
-  if (disable_buttons || !shell->session_controller()->CanLockScreen())
+  if (disable_buttons || !Shell::Get()->session_controller()->CanLockScreen())
     lock_button_->SetEnabled(false);
 
   AddChildView(lock_button_);
@@ -102,7 +102,7 @@ void TilesDefaultView::Init() {
   AddChildView(power_button_);
   // This object is recreated every time the menu opens. Don't bother updating
   // the tooltip if the shutdown policy changes while the menu is open.
-  bool reboot = WmShell::Get()->shutdown_controller()->reboot_on_shutdown();
+  bool reboot = shell->shutdown_controller()->reboot_on_shutdown();
   power_button_->SetTooltipText(l10n_util::GetStringUTF16(
       reboot ? IDS_ASH_STATUS_TRAY_REBOOT : IDS_ASH_STATUS_TRAY_SHUTDOWN));
 }

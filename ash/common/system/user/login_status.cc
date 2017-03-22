@@ -5,7 +5,7 @@
 #include "ash/common/system/user/login_status.h"
 
 #include "ash/common/session/session_controller.h"
-#include "ash/common/wm_shell.h"
+#include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -26,7 +26,7 @@ base::string16 GetLocalizedSignOutStringForStatus(LoginStatus status,
       break;
     default:
       message_id =
-          WmShell::Get()->session_controller()->NumberOfLoggedInUsers() > 1
+          Shell::Get()->session_controller()->NumberOfLoggedInUsers() > 1
               ? IDS_ASH_STATUS_TRAY_SIGN_OUT_ALL
               : IDS_ASH_STATUS_TRAY_SIGN_OUT;
       break;

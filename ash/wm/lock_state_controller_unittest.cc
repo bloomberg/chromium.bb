@@ -277,13 +277,13 @@ class LockStateControllerTest : public AshTestBase {
   void ExpectUnlockedState() {
     SCOPED_TRACE("Failure in ExpectUnlockedState");
     EXPECT_EQ(0u, test_animator_->GetAnimationCount());
-    EXPECT_FALSE(WmShell::Get()->session_controller()->IsScreenLocked());
+    EXPECT_FALSE(Shell::Get()->session_controller()->IsScreenLocked());
   }
 
   void ExpectLockedState() {
     SCOPED_TRACE("Failure in ExpectLockedState");
     EXPECT_EQ(0u, test_animator_->GetAnimationCount());
-    EXPECT_TRUE(WmShell::Get()->session_controller()->IsScreenLocked());
+    EXPECT_TRUE(Shell::Get()->session_controller()->IsScreenLocked());
   }
 
   void HideWallpaper() { test_animator_->HideWallpaper(); }
@@ -314,7 +314,7 @@ class LockStateControllerTest : public AshTestBase {
 
   void SystemLocks() {
     lock_state_controller_->OnLockStateChanged(true);
-    WmShell::Get()->session_controller()->LockScreenAndFlushForTest();
+    Shell::Get()->session_controller()->LockScreenAndFlushForTest();
   }
 
   void SuccessfulAuthentication(bool* call_flag) {

@@ -55,9 +55,7 @@ class TrayUserTest : public test::AshTestBase {
 
   // Accessors to various system components.
   SystemTray* tray() { return tray_; }
-  SessionController* controller() {
-    return WmShell::Get()->session_controller();
-  }
+  SessionController* controller() { return Shell::Get()->session_controller(); }
   TrayUser* tray_user(int index) { return tray_user_[index]; }
 
  private:

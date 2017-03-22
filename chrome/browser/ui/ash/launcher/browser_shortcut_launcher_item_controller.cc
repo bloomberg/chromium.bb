@@ -9,9 +9,9 @@
 
 #include "ash/common/shelf/shelf_delegate.h"
 #include "ash/common/shelf/shelf_model.h"
-#include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "ash/resources/grit/ash_resources.h"
+#include "ash/shell.h"
 #include "ash/wm/window_properties.h"
 #include "ash/wm/window_util.h"
 #include "base/memory/ptr_util.h"
@@ -358,7 +358,7 @@ bool BrowserShortcutLauncherItemController::IsBrowserRepresentedInBrowserList(
     return false;
 
   // v1 App popup windows with a valid app id have their own icon.
-  ash::ShelfDelegate* delegate = ash::WmShell::Get()->shelf_delegate();
+  ash::ShelfDelegate* delegate = ash::Shell::Get()->shelf_delegate();
   if (browser->is_app() && browser->is_type_popup() && delegate &&
       delegate->GetShelfIDForAppID(web_app::GetExtensionIdFromApplicationName(
           browser->app_name())) > 0) {
