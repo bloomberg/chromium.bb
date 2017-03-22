@@ -30,6 +30,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/sys_info.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
@@ -552,7 +553,9 @@ std::string AboutDiscards(const std::string& path) {
   output.append(AddStringRow(
       "Total", base::IntToString(meminfo.total / 1024)));
   output.append(AddStringRow(
-      "Free", base::IntToString(meminfo.free / 1024)));
+      "Free",
+      base::IntToString(base::SysInfo::AmountOfAvailablePhysicalMemory() /
+                        1024 / 1024)));
 #if defined(OS_CHROMEOS)
   int mem_allocated_kb = meminfo.active_anon + meminfo.inactive_anon;
 #if defined(ARCH_CPU_ARM_FAMILY)

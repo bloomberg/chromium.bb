@@ -17,7 +17,7 @@ class TestMemoryMonitorWinDelegate : public TestMemoryMonitorDelegate {
   TestMemoryMonitorWinDelegate() {}
 
   void SetFreeMemoryKB(int free_memory_kb) {
-    mem_info_.free = free_memory_kb;
+    mem_info_.avail_phys = free_memory_kb;
   }
 
  private:
