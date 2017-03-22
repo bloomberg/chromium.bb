@@ -7,7 +7,17 @@
 
 <dom-module id="settings-search-engine-dialog">
   <template>
-    <style include="settings-shared"></style>
+    <style include="settings-shared">
+      :host {
+        --paper-input-container: {
+          /**
+           * Saves space for error message. Using calc to leave just enough
+           * space at all font sizes (default 0, grow/shrink with font-size).
+           */
+          padding-bottom: calc(1rem - 8px);
+        };
+      }
+    </style>
     <dialog is="cr-dialog" id="dialog" close-text="$i18n{close}">
       <div class="title">[[dialogTitle_]]</div>
       <div class="body" on-keypress="onKeypress_">
