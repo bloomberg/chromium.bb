@@ -52,6 +52,7 @@ class SESSION_EXPORT SessionManager {
   // Convenience wrapps of session state.
   bool IsInSecondaryLoginScreen() const;
   bool IsScreenLocked() const;
+  bool IsUserSessionBlocked() const;
 
   void AddObserver(SessionManagerObserver* observer);
   void RemoveObserver(SessionManagerObserver* observer);

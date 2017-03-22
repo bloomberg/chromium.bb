@@ -70,6 +70,10 @@ bool SessionManager::IsScreenLocked() const {
   return session_state_ == SessionState::LOCKED;
 }
 
+bool SessionManager::IsUserSessionBlocked() const {
+  return session_state_ != SessionState::ACTIVE;
+}
+
 void SessionManager::AddObserver(SessionManagerObserver* observer) {
   observers_.AddObserver(observer);
 }

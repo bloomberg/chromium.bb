@@ -23,12 +23,40 @@
 #include "extensions/common/extension.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "components/session_manager/core/session_manager.h"
+#endif
+
 namespace {
 
 bool CheckInternalResourcesURL(const GURL& url) {
   return url.SchemeIs(content::kChromeUIScheme) &&
          (url.host_piece() == chrome::kChromeUISyncResourcesHost);
 }
+
+bool IsUserSessionBlocked() {
+#if defined(OS_CHROMEOS)
+  if (session_manager::SessionManager::Get() &&
+      session_manager::SessionManager::Get()->IsUserSessionBlocked()) {
+    return true;
+  }
+#endif
+  return false;
+}
+
+// Context menu content with no supported groups.
+class NullContextMenuContentType : public ContextMenuContentType {
+ public:
+  NullContextMenuContentType(content::WebContents* web_contents,
+                             const content::ContextMenuParams& params)
+      : ContextMenuContentType(web_contents, params, false) {}
+  ~NullContextMenuContentType() override = default;
+
+  bool SupportsGroup(int group) override { return false; }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(NullContextMenuContentType);
+};
 
 }  // namespace
 
@@ -42,6 +70,9 @@ ContextMenuContentTypeFactory::~ContextMenuContentTypeFactory() {
 ContextMenuContentType* ContextMenuContentTypeFactory::Create(
     content::WebContents* web_contents,
     const content::ContextMenuParams& params) {
+  if (IsUserSessionBlocked())
+    return new NullContextMenuContentType(web_contents, params);
+
   return SetInternalResourcesURLChecker(CreateInternal(web_contents, params));
 }
 
