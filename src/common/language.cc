@@ -151,7 +151,7 @@ class RustLanguage: public Language {
   }
 
   virtual DemangleResult DemangleName(const string& mangled,
-                                      std::string* demangled) const {
+                                      string* demangled) const {
     // Rust names use GCC C++ name mangling, but demangling them with
     // abi_demangle doesn't produce stellar results due to them having
     // another layer of encoding.
