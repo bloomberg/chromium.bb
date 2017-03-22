@@ -107,9 +107,10 @@ MaterialHistoryListTest.prototype = {
   ]),
 };
 
-// Times out on debug builders because the History page can take several seconds
-// to load in a Debug build. See https://crbug.com/669227.
-GEN('#if !defined(NDEBUG)');
+// Times out on debug builders and may time out on memory bots because
+// the History page can take several seconds to load in a Debug build. See
+// https://crbug.com/669227.
+GEN('#if defined(MEMORY_SANITIZER) || !defined(NDEBUG)');
 GEN('#define MAYBE_All DISABLED_All');
 GEN('#else');
 GEN('#define MAYBE_All All');
