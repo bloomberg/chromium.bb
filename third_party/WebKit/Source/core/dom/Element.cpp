@@ -92,7 +92,6 @@
 #include "core/editing/serializers/Serialization.h"
 #include "core/events/EventDispatcher.h"
 #include "core/events/FocusEvent.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/HostsUsingFeatures.h"
 #include "core/frame/LocalDOMWindow.h"
@@ -154,11 +153,11 @@ namespace {
 
 // We need to retain the scroll customization callbacks until the element
 // they're associated with is destroyed. It would be simplest if the callbacks
-// could be stored in ElementRareData, but we can't afford the space
-// increase. Instead, keep the scroll customization callbacks here. The other
-// option would be to store these callbacks on the FrameHost or document, but
-// that necessitates a bunch more logic for transferring the callbacks between
-// FrameHosts when elements are moved around.
+// could be stored in ElementRareData, but we can't afford the space increase.
+// Instead, keep the scroll customization callbacks here. The other option would
+// be to store these callbacks on the Page or document, but that necessitates a
+// bunch more logic for transferring the callbacks between Pages when elements
+// are moved around.
 ScrollCustomizationCallbacks& scrollCustomizationCallbacks() {
   DEFINE_STATIC_LOCAL(ScrollCustomizationCallbacks,
                       scrollCustomizationCallbacks,
@@ -605,8 +604,8 @@ void Element::callApplyScroll(ScrollState& scrollState) {
   // or CC. http://crbug.com/625676.
   DisableCompositingQueryAsserts disabler;
 
-  if (!document().frameHost()) {
-    // We should always have a frameHost if we're scrolling. See
+  if (!document().page()) {
+    // We should always have a Page if we're scrolling. See
     // crbug.com/689074 for details.
     return;
   }

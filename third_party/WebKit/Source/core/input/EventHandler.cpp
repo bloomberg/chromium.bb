@@ -54,7 +54,6 @@
 #include "core/events/WheelEvent.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/EventHandlerRegistry.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
@@ -2091,13 +2090,6 @@ WebInputEventResult EventHandler::passMouseReleaseEventToSubframe(
   if (result != WebInputEventResult::NotHandled)
     return result;
   return WebInputEventResult::HandledSystem;
-}
-
-FrameHost* EventHandler::frameHost() const {
-  if (!m_frame->page())
-    return nullptr;
-
-  return &m_frame->page()->frameHost();
 }
 
 }  // namespace blink

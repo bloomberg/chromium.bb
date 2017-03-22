@@ -1564,7 +1564,7 @@ unsigned Internals::suspendableObjectCount(Document* document) {
 static unsigned eventHandlerCount(
     Document& document,
     EventHandlerRegistry::EventHandlerClass handlerClass) {
-  if (!document.frameHost())
+  if (!document.page())
     return 0;
   EventHandlerRegistry* registry = &document.page()->eventHandlerRegistry();
   unsigned count = 0;

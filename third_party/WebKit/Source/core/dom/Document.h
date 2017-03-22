@@ -108,7 +108,6 @@ class ExceptionState;
 class FloatQuad;
 class FloatRect;
 class FormController;
-class FrameHost;
 class FrameRequestCallback;
 class FrameView;
 class HTMLAllCollection;
@@ -471,7 +470,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   FrameView* view() const;                       // can be null
   LocalFrame* frame() const { return m_frame; }  // can be null
-  FrameHost* frameHost() const;                  // can be null
   Page* page() const;                            // can be null
   Settings* settings() const;                    // can be null
 

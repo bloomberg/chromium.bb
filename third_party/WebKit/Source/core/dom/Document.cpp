@@ -139,7 +139,6 @@
 #include "core/frame/DOMVisualViewport.h"
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameConsole.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/History.h"
 #include "core/frame/HostsUsingFeatures.h"
@@ -1661,9 +1660,6 @@ Page* Document::page() const {
   return m_frame ? m_frame->page() : nullptr;
 }
 
-FrameHost* Document::frameHost() const {
-  return m_frame ? m_frame->host() : nullptr;
-}
 
 Settings* Document::settings() const {
   return m_frame ? m_frame->settings() : nullptr;

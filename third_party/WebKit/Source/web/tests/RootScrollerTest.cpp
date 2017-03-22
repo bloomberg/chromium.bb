@@ -5,7 +5,6 @@
 #include "bindings/core/v8/NodeOrString.h"
 #include "core/dom/ClientRect.h"
 #include "core/frame/BrowserControls.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/RootFrameViewport.h"
 #include "core/frame/VisualViewport.h"
@@ -100,8 +99,6 @@ class RootScrollerTest : public ::testing::Test {
   WebViewImpl* webViewImpl() const { return m_helper.webView(); }
 
   Page& page() const { return *m_helper.webView()->page(); }
-
-  FrameHost& frameHost() const { return page().frameHost(); }
 
   LocalFrame* mainFrame() const {
     return webViewImpl()->mainFrameImpl()->frame();

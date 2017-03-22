@@ -8,7 +8,6 @@
 #include "core/dom/Document.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/events/KeyboardEventInit.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/VisualViewport.h"
 #include "core/html/HTMLBodyElement.h"
@@ -99,7 +98,7 @@ TEST_F(HTMLInputElementTest, create) {
 
 TEST_F(HTMLInputElementTest, NoAssertWhenMovedInNewDocument) {
   Document* documentWithoutFrame = Document::create();
-  EXPECT_EQ(nullptr, documentWithoutFrame->frameHost());
+  EXPECT_EQ(nullptr, documentWithoutFrame->page());
   HTMLHtmlElement* html = HTMLHtmlElement::create(*documentWithoutFrame);
   html->appendChild(HTMLBodyElement::create(*documentWithoutFrame));
 
@@ -109,7 +108,7 @@ TEST_F(HTMLInputElementTest, NoAssertWhenMovedInNewDocument) {
 
   std::unique_ptr<DummyPageHolder> pageHolder = DummyPageHolder::create();
   auto& document = pageHolder->document();
-  EXPECT_NE(nullptr, document.frameHost());
+  EXPECT_NE(nullptr, document.page());
 
   // Put the input element inside a document with frame.
   document.body()->appendChild(documentWithoutFrame->body()->firstChild());

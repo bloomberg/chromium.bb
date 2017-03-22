@@ -8,7 +8,6 @@
 #include "core/dom/DocumentUserGestureToken.h"
 #include "core/editing/SelectionController.h"
 #include "core/events/GestureEvent.h"
-#include "core/frame/FrameHost.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
@@ -424,13 +423,6 @@ WebInputEventResult GestureManager::handleGestureShowPress() {
       animator->cancelAnimation();
   }
   return WebInputEventResult::NotHandled;
-}
-
-FrameHost* GestureManager::frameHost() const {
-  if (!m_frame->page())
-    return nullptr;
-
-  return &m_frame->page()->frameHost();
 }
 
 WTF::Optional<WTF::TimeTicks> GestureManager::getLastShowPressTimestamp()

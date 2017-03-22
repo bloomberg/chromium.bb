@@ -59,7 +59,6 @@ class EventTarget;
 template <typename EventType>
 class EventWithHitTestResults;
 class FloatQuad;
-class FrameHost;
 class HTMLFrameSetElement;
 class HitTestRequest;
 class HitTestResult;
@@ -337,8 +336,6 @@ class CORE_EXPORT EventHandler final
   WebInputEventResult handleGestureShowPress();
 
   bool shouldBrowserControlsConsumeScroll(FloatSize) const;
-
-  FrameHost* frameHost() const;
 
   bool rootFrameTouchPointerActiveInCurrentFrame(int pointerId) const;
 

@@ -61,8 +61,6 @@ class CORE_EXPORT GestureManager
   WebInputEventResult sendContextMenuEventForGesture(
       const GestureEventWithHitTestResults&);
 
-  FrameHost* frameHost() const;
-
   // NOTE: If adding a new field to this class please ensure that it is
   // cleared if needed in |GestureManager::clear()|.
 
