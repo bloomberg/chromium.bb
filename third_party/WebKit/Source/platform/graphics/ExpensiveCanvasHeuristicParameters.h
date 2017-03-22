@@ -94,7 +94,7 @@ enum {
   // acceleration on the destination first. If that does not succeed,
   // we disable acceleration on the source canvas. Either way, future
   // readbacks are prevented.
-  EnableAccelerationToAvoidReadbacks = 1,
+  EnableAccelerationToAvoidReadbacks = 0,
 
 };  // enum
 
