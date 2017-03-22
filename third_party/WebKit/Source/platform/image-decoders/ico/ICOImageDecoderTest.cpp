@@ -21,6 +21,24 @@ std::unique_ptr<ImageDecoder> createDecoder() {
 }
 }
 
+TEST(ICOImageDecoderTests, trunctedIco) {
+  RefPtr<SharedBuffer> data =
+      readFile("/LayoutTests/images/resources/png-in-ico.ico");
+  ASSERT_FALSE(data->isEmpty());
+
+  RefPtr<SharedBuffer> truncatedData =
+      SharedBuffer::create(data->data(), data->size() / 2);
+  auto decoder = createDecoder();
+
+  decoder->setData(truncatedData.get(), false);
+  decoder->frameBufferAtIndex(0);
+  EXPECT_FALSE(decoder->failed());
+
+  decoder->setData(truncatedData.get(), true);
+  decoder->frameBufferAtIndex(0);
+  EXPECT_TRUE(decoder->failed());
+}
+
 TEST(ICOImageDecoderTests, errorInPngInIco) {
   RefPtr<SharedBuffer> data =
       readFile("/LayoutTests/images/resources/png-in-ico.ico");
