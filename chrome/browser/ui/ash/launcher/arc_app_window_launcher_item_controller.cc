@@ -55,6 +55,11 @@ void ArcAppWindowLauncherItemController::ItemSelected(
   callback.Run(ash::SHELF_ACTION_NEW_WINDOW_CREATED, base::nullopt);
 }
 
+void ArcAppWindowLauncherItemController::ExecuteCommand(uint32_t command_id,
+                                                        int32_t event_flags) {
+  ActivateIndexedApp(command_id);
+}
+
 MenuItemList ArcAppWindowLauncherItemController::GetAppMenuItems(
     int event_flags) {
   MenuItemList items;

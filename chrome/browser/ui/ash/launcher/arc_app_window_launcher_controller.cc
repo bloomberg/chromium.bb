@@ -565,6 +565,9 @@ void ArcAppWindowLauncherController::OnTaskOrientationLockRequested(
 
 AppWindowLauncherItemController*
 ArcAppWindowLauncherController::ControllerForWindow(aura::Window* window) {
+  if (!window)
+    return nullptr;
+
   AppWindow* app_window = GetAppWindowForTask(active_task_id_);
   if (app_window &&
       app_window->widget() == views::Widget::GetWidgetForNativeWindow(window)) {
@@ -587,6 +590,8 @@ void ArcAppWindowLauncherController::OnWindowActivated(
     aura::client::ActivationChangeObserver::ActivationReason reason,
     aura::Window* gained_active,
     aura::Window* lost_active) {
+  AppWindowLauncherController::OnWindowActivated(reason, gained_active,
+                                                 lost_active);
   OnTaskSetActive(active_task_id_);
 }
 

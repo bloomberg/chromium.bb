@@ -28,6 +28,7 @@ class ArcAppWindowLauncherItemController
                     ash::ShelfLaunchSource source,
                     const ItemSelectedCallback& callback) override;
   MenuItemList GetAppMenuItems(int event_flags) override;
+  void ExecuteCommand(uint32_t command_id, int32_t event_flags) override;
 
   void AddTaskId(int task_id);
   void RemoveTaskId(int task_id);

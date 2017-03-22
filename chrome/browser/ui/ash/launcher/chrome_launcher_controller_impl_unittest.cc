@@ -112,6 +112,7 @@
 #include "ui/display/display.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/screen.h"
+#include "ui/events/base_event_utils.h"
 #include "ui/events/event_constants.h"
 #include "ui/views/widget/widget.h"
 
@@ -322,6 +323,18 @@ class ProxyShelfDelegate : public ash::ShelfDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(ProxyShelfDelegate);
 };
+
+// A callback that does nothing after shelf item selection handling.
+void NoopCallback(ash::ShelfAction action, base::Optional<MenuItemList>) {}
+
+// Simulates selection of the shelf item.
+void SelectItem(ash::mojom::ShelfItemDelegate* delegate) {
+  std::unique_ptr<ui::Event> event = base::MakeUnique<ui::MouseEvent>(
+      ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(), ui::EventTimeForNow(),
+      ui::EF_NONE, 0);
+  delegate->ItemSelected(std::move(event), display::kInvalidDisplayId,
+                         ash::LAUNCH_FROM_UNKNOWN, base::Bind(&NoopCallback));
+}
 
 }  // namespace
 
@@ -3772,6 +3785,65 @@ TEST_P(ChromeLauncherControllerImplWithArcTest, ArcManaged) {
   ValidateArcState(true, false,
                    arc::ArcSessionManager::State::NEGOTIATING_TERMS_OF_SERVICE,
                    "AppList, Chrome");
+}
+
+// Test the application menu of a shelf item with multiple ARC windows.
+TEST_P(ChromeLauncherControllerImplWithArcTest, ShelfItemWithMultipleWindows) {
+  InitLauncherControllerWithBrowser();
+
+  arc::mojom::AppInfo appinfo =
+      CreateAppInfo("Test1", "test", "com.example.app", OrientationLock::NONE);
+  AddArcAppAndShortcut(appinfo);
+
+  // Widgets will be deleted by the system.
+  NotifyOnTaskCreated(appinfo, 1 /* task_id */);
+  views::Widget* window1 = CreateArcWindow("org.chromium.arc.1");
+  ASSERT_TRUE(window1);
+  EXPECT_TRUE(window1->IsActive());
+
+  NotifyOnTaskCreated(appinfo, 2 /* task_id */);
+  views::Widget* window2 = CreateArcWindow("org.chromium.arc.2");
+  ASSERT_TRUE(window2);
+
+  EXPECT_FALSE(window1->IsActive());
+  EXPECT_TRUE(window2->IsActive());
+
+  const std::string app_id = ArcAppTest::GetAppId(appinfo);
+
+  const ash::ShelfID shelf_id =
+      launcher_controller_->GetShelfIDForAppID(app_id);
+  LauncherItemController* item_controller =
+      launcher_controller_->GetLauncherItemController(shelf_id);
+  ASSERT_TRUE(item_controller);
+
+  // Selecting the item will show its application menu. It does not change the
+  // active window.
+  SelectItem(item_controller);
+  EXPECT_FALSE(window1->IsActive());
+  EXPECT_TRUE(window2->IsActive());
+
+  // Command ids are just app window indices. Note, apps are registered in
+  // opposite order. Last created goes in front.
+  MenuItemList items = item_controller->GetAppMenuItems(0);
+  ASSERT_EQ(items.size(), 2U);
+  EXPECT_EQ(items[0]->command_id, 0U);
+  EXPECT_EQ(items[1]->command_id, 1U);
+
+  // Execute command to activate first window.
+  item_controller->ExecuteCommand(items[1]->command_id, 0);
+  EXPECT_TRUE(window1->IsActive());
+  EXPECT_FALSE(window2->IsActive());
+
+  // Selecting the item will show its application menu. It does not change the
+  // active window.
+  SelectItem(item_controller);
+  EXPECT_TRUE(window1->IsActive());
+  EXPECT_FALSE(window2->IsActive());
+
+  // Execute command to activate second window.
+  item_controller->ExecuteCommand(items[0]->command_id, 0);
+  EXPECT_FALSE(window1->IsActive());
+  EXPECT_TRUE(window2->IsActive());
 }
 
 namespace {
