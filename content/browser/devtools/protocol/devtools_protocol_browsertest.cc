@@ -1414,6 +1414,121 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, ShowCertificateViewer) {
   EXPECT_EQ(transient_entry->GetSSL().certificate, last_shown_certificate());
 }
 
+IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, CertificateError) {
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
+  https_server.ServeFilesFromSourceDirectory("content/test/data");
+  ASSERT_TRUE(https_server.Start());
+  GURL test_url = https_server.GetURL("/devtools/navigation.html");
+  std::unique_ptr<base::DictionaryValue> params;
+  std::unique_ptr<base::DictionaryValue> command_params;
+  int eventId;
+
+  shell()->LoadURL(GURL("about:blank"));
+  WaitForLoadStop(shell()->web_contents());
+
+  Attach();
+  SendCommand("Network.enable", nullptr, true);
+  SendCommand("Security.enable", nullptr, false);
+  command_params.reset(new base::DictionaryValue());
+  command_params->SetBoolean("override", true);
+  SendCommand("Security.setOverrideCertificateErrors",
+              std::move(command_params), true);
+
+  // Test cancel.
+  SendCommand("Network.clearBrowserCache", nullptr, true);
+  SendCommand("Network.clearBrowserCookies", nullptr, true);
+  TestNavigationObserver cancel_observer(shell()->web_contents(), 1);
+  shell()->LoadURL(test_url);
+  params = WaitForNotification("Security.certificateError", false);
+  EXPECT_TRUE(shell()->web_contents()->GetController().GetPendingEntry());
+  EXPECT_EQ(
+      test_url,
+      shell()->web_contents()->GetController().GetPendingEntry()->GetURL());
+  EXPECT_TRUE(params->GetInteger("eventId", &eventId));
+  command_params.reset(new base::DictionaryValue());
+  command_params->SetInteger("eventId", eventId);
+  command_params->SetString("action", "cancel");
+  SendCommand("Security.handleCertificateError", std::move(command_params),
+              false);
+  cancel_observer.Wait();
+  EXPECT_FALSE(shell()->web_contents()->GetController().GetPendingEntry());
+  EXPECT_EQ(GURL("about:blank"), shell()
+                                     ->web_contents()
+                                     ->GetController()
+                                     .GetLastCommittedEntry()
+                                     ->GetURL());
+
+  // Test continue.
+  SendCommand("Network.clearBrowserCache", nullptr, true);
+  SendCommand("Network.clearBrowserCookies", nullptr, true);
+  TestNavigationObserver continue_observer(shell()->web_contents(), 1);
+  shell()->LoadURL(test_url);
+  params = WaitForNotification("Security.certificateError", false);
+  EXPECT_TRUE(params->GetInteger("eventId", &eventId));
+  command_params.reset(new base::DictionaryValue());
+  command_params->SetInteger("eventId", eventId);
+  command_params->SetString("action", "continue");
+  SendCommand("Security.handleCertificateError", std::move(command_params),
+              false);
+  WaitForNotification("Network.loadingFinished", true);
+  continue_observer.Wait();
+  EXPECT_EQ(test_url, shell()
+                          ->web_contents()
+                          ->GetController()
+                          .GetLastCommittedEntry()
+                          ->GetURL());
+}
+
+IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, SubresourceWithCertificateError) {
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_EXPIRED);
+  https_server.ServeFilesFromSourceDirectory("content/test/data/devtools");
+  ASSERT_TRUE(https_server.Start());
+  GURL test_url = https_server.GetURL("/image.html");
+  std::unique_ptr<base::DictionaryValue> params;
+  std::unique_ptr<base::DictionaryValue> command_params;
+  int eventId;
+
+  shell()->LoadURL(GURL("about:blank"));
+  WaitForLoadStop(shell()->web_contents());
+
+  Attach();
+  SendCommand("Security.enable", nullptr, false);
+  command_params.reset(new base::DictionaryValue());
+  command_params->SetBoolean("override", true);
+  SendCommand("Security.setOverrideCertificateErrors",
+              std::move(command_params), true);
+
+  TestNavigationObserver observer(shell()->web_contents(), 1);
+  shell()->LoadURL(test_url);
+
+  // Expect certificateError event for main frame.
+  params = WaitForNotification("Security.certificateError", false);
+  EXPECT_TRUE(params->GetInteger("eventId", &eventId));
+  command_params.reset(new base::DictionaryValue());
+  command_params->SetInteger("eventId", eventId);
+  command_params->SetString("action", "continue");
+  SendCommand("Security.handleCertificateError", std::move(command_params),
+              false);
+
+  // Expect certificateError event for image.
+  params = WaitForNotification("Security.certificateError", false);
+  EXPECT_TRUE(params->GetInteger("eventId", &eventId));
+  command_params.reset(new base::DictionaryValue());
+  command_params->SetInteger("eventId", eventId);
+  command_params->SetString("action", "continue");
+  SendCommand("Security.handleCertificateError", std::move(command_params),
+              false);
+
+  observer.Wait();
+  EXPECT_EQ(test_url, shell()
+                          ->web_contents()
+                          ->GetController()
+                          .GetLastCommittedEntry()
+                          ->GetURL());
+}
+
 IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, TargetDiscovery) {
   std::string temp;
   std::set<std::string> ids;

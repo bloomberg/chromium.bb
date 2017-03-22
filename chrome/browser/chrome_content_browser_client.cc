@@ -2306,7 +2306,7 @@ void ChromeContentBrowserClient::AllowCertificateError(
         callback) {
   DCHECK(web_contents);
   if (resource_type != content::RESOURCE_TYPE_MAIN_FRAME) {
-    // A sub-resource has a certificate error.  The user doesn't really
+    // A sub-resource has a certificate error. The user doesn't really
     // have a context for making the right decision, so block the
     // request hard, without an info bar to allow showing the insecure
     // content.

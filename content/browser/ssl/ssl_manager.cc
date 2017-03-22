@@ -11,6 +11,8 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/supports_user_data.h"
+#include "content/browser/devtools/devtools_agent_host_impl.h"
+#include "content/browser/devtools/protocol/security_handler.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
@@ -20,6 +22,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/certificate_request_result_type.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/ssl_host_state_delegate.h"
 #include "net/url_request/url_request.h"
@@ -37,8 +40,17 @@ enum SSLGoodCertSeenEvent {
   SSL_GOOD_CERT_SEEN_EVENT_MAX = 2
 };
 
+void OnAllowCertificateWithRecordDecision(
+    bool record_decision,
+    const base::Callback<void(bool, content::CertificateRequestResultType)>&
+        callback,
+    CertificateRequestResultType decision) {
+  callback.Run(record_decision, decision);
+}
+
 void OnAllowCertificate(SSLErrorHandler* handler,
                         SSLHostStateDelegate* state_delegate,
+                        bool record_decision,
                         CertificateRequestResultType decision) {
   DCHECK(handler->ssl_info().is_valid());
   switch (decision) {
@@ -53,7 +65,7 @@ void OnAllowCertificate(SSLErrorHandler* handler,
       // While AllowCert() executes synchronously on this thread,
       // ContinueRequest() gets posted to a different thread. Calling
       // AllowCert() first ensures deterministic ordering.
-      if (state_delegate) {
+      if (record_decision && state_delegate) {
         state_delegate->AllowCert(handler->request_url().host(),
                                   *handler->ssl_info().cert.get(),
                                   handler->cert_error());
@@ -356,11 +368,24 @@ void SSLManager::OnCertErrorInternal(std::unique_ptr<SSLErrorHandler> handler,
   const net::SSLInfo& ssl_info = handler->ssl_info();
   const GURL& request_url = handler->request_url();
   ResourceType resource_type = handler->resource_type();
-  GetContentClient()->browser()->AllowCertificateError(
-      web_contents, cert_error, ssl_info, request_url, resource_type,
-      overridable, strict_enforcement, expired_previous_decision,
+
+  base::Callback<void(bool, content::CertificateRequestResultType)> callback =
       base::Bind(&OnAllowCertificate, base::Owned(handler.release()),
-                 ssl_host_state_delegate_));
+                 ssl_host_state_delegate_);
+
+  DevToolsAgentHostImpl* agent_host = static_cast<DevToolsAgentHostImpl*>(
+      DevToolsAgentHost::GetOrCreateFor(web_contents).get());
+  protocol::SecurityHandler* security_handler =
+      protocol::SecurityHandler::FromAgentHost(agent_host);
+  if (!security_handler ||
+      !security_handler->NotifyCertificateError(
+          cert_error, request_url,
+          base::Bind(&OnAllowCertificateWithRecordDecision, false, callback))) {
+    GetContentClient()->browser()->AllowCertificateError(
+        web_contents, cert_error, ssl_info, request_url, resource_type,
+        overridable, strict_enforcement, expired_previous_decision,
+        base::Bind(&OnAllowCertificateWithRecordDecision, true, callback));
+  }
 }
 
 void SSLManager::UpdateEntry(NavigationEntryImpl* entry,

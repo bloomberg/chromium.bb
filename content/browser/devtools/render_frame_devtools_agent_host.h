@@ -71,7 +71,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
 
   FrameTreeNode* frame_tree_node() { return frame_tree_node_; }
 
-  // DevTooolsAgentHost overrides.
+  // DevToolsAgentHost overrides.
   void DisconnectWebContents() override;
   void ConnectWebContents(WebContents* web_contents) override;
   BrowserContext* GetBrowserContext() override;

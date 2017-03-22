@@ -146,6 +146,32 @@ void SecurityHandler::DidChangeVisibleSecurityState() {
       Maybe<std::string>(security_style_explanations.summary));
 }
 
+void SecurityHandler::DidFinishNavigation(NavigationHandle* navigation_handle) {
+  if (certificate_errors_overriden_)
+    FlushPendingCertificateErrorNotifications();
+}
+
+void SecurityHandler::FlushPendingCertificateErrorNotifications() {
+  for (auto callback : cert_error_callbacks_)
+    callback.second.Run(content::CERTIFICATE_REQUEST_RESULT_TYPE_CANCEL);
+  cert_error_callbacks_.clear();
+}
+
+bool SecurityHandler::NotifyCertificateError(int cert_error,
+                                             const GURL& request_url,
+                                             CertErrorCallback handler) {
+  if (!enabled_)
+    return false;
+  frontend_->CertificateError(++last_cert_error_id_,
+                              net::ErrorToShortString(cert_error),
+                              request_url.spec());
+  if (!certificate_errors_overriden_) {
+    return false;
+  }
+  cert_error_callbacks_[last_cert_error_id_] = handler;
+  return true;
+}
+
 Response SecurityHandler::Enable() {
   enabled_ = true;
   if (host_)
@@ -156,7 +182,9 @@ Response SecurityHandler::Enable() {
 
 Response SecurityHandler::Disable() {
   enabled_ = false;
+  certificate_errors_overriden_ = false;
   WebContentsObserver::Observe(nullptr);
+  FlushPendingCertificateErrorNotifications();
   return Response::OK();
 }
 
@@ -170,6 +198,37 @@ Response SecurityHandler::ShowCertificateViewer() {
     return Response::Error("Could not find certificate");
   web_contents->GetDelegate()->ShowCertificateViewerInDevTools(
       web_contents, certificate);
+  return Response::OK();
+}
+
+Response SecurityHandler::HandleCertificateError(int event_id,
+                                                 const String& action) {
+  if (cert_error_callbacks_.find(event_id) == cert_error_callbacks_.end()) {
+    return Response::Error(
+        String("Unknown event id: " + std::to_string(event_id)));
+  }
+  content::CertificateRequestResultType type =
+      content::CERTIFICATE_REQUEST_RESULT_TYPE_CANCEL;
+  Response response = Response::OK();
+  if (action == Security::CertificateErrorActionEnum::Continue) {
+    type = content::CERTIFICATE_REQUEST_RESULT_TYPE_CONTINUE;
+  } else if (action == Security::CertificateErrorActionEnum::Cancel) {
+    type = content::CERTIFICATE_REQUEST_RESULT_TYPE_CANCEL;
+  } else {
+    response =
+        Response::Error(String("Unknown Certificate Error Action: " + action));
+  }
+  cert_error_callbacks_[event_id].Run(type);
+  cert_error_callbacks_.erase(event_id);
+  return response;
+}
+
+Response SecurityHandler::SetOverrideCertificateErrors(bool override) {
+  if (override && !enabled_)
+    return Response::Error("Security domain not enabled");
+  certificate_errors_overriden_ = override;
+  if (!override)
+    FlushPendingCertificateErrorNotifications();
   return Response::OK();
 }
 
