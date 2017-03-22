@@ -179,6 +179,8 @@ class HttpCache::Transaction : public HttpTransaction {
   };
 
   enum State {
+    STATE_UNSET,
+
     // Normally, states are traversed in approximately this order.
     STATE_NONE,
     STATE_GET_BACKEND,
