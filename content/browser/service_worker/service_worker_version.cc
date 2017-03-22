@@ -242,12 +242,7 @@ class ServiceWorkerVersion::PingController {
     if (ping_state_ != PINGING || !ping_time_.is_null())
       return;
 
-    if (version_->PingWorker() != SERVICE_WORKER_OK) {
-      // TODO(falken): Maybe try resending Ping a few times first?
-      ping_state_ = PING_TIMED_OUT;
-      version_->OnPingTimeout();
-      return;
-    }
+    version_->PingWorker();
     version_->RestartTick(&ping_time_);
   }
 
@@ -968,7 +963,6 @@ bool ServiceWorkerVersion::OnMessageReceived(const IPC::Message& message) {
                         OnSkipWaiting)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_ClaimClients,
                         OnClaimClients)
-    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_Pong, OnPongFromWorker)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_RegisterForeignFetchScopes,
                         OnRegisterForeignFetchScopes)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -1658,10 +1652,12 @@ void ServiceWorkerVersion::OnTimeoutTimer() {
   ping_controller_->CheckPingStatus();
 }
 
-ServiceWorkerStatusCode ServiceWorkerVersion::PingWorker() {
+void ServiceWorkerVersion::PingWorker() {
   DCHECK(running_status() == EmbeddedWorkerStatus::STARTING ||
          running_status() == EmbeddedWorkerStatus::RUNNING);
-  return embedded_worker_->SendMessage(ServiceWorkerMsg_Ping());
+  // base::Unretained here is safe because event_dispatcher is owned by |this|.
+  event_dispatcher()->Ping(base::Bind(&ServiceWorkerVersion::OnPongFromWorker,
+                                      base::Unretained(this)));
 }
 
 void ServiceWorkerVersion::OnPingTimeout() {

@@ -236,6 +236,8 @@ class EmbeddedWorkerTestHelper::MockServiceWorkerEventDispatcher
     helper_->OnExtendableMessageEventStub(std::move(event), callback);
   }
 
+  void Ping(const PingCallback& callback) override { callback.Run(); }
+
  private:
   base::WeakPtr<EmbeddedWorkerTestHelper> helper_;
   const int thread_id_;

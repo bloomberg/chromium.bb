@@ -722,7 +722,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void SetTimeoutTimerInterval(base::TimeDelta interval);
 
   // Called by PingController for ping protocol.
-  ServiceWorkerStatusCode PingWorker();
+  void PingWorker();
   void OnPingTimeout();
 
   // Stops the worker if it is idle (has no in-flight requests) or timed out

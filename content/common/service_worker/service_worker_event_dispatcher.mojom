@@ -85,4 +85,10 @@ interface ServiceWorkerEventDispatcher {
   DispatchExtendableMessageEvent(ExtendableMessageEvent event)
       => (blink.mojom.ServiceWorkerEventStatus status,
           mojo.common.mojom.Time dispatch_event_time);
+
+  // Pings the service worker to check if it is responsive. If the callback is
+  // not called within a certain period of time, the browser will terminate the
+  // worker. Unlike the other functions in this interface, Ping() does not
+  // dispatch an event.
+  Ping() => ();
 };

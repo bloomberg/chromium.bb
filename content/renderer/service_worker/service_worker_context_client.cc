@@ -429,7 +429,6 @@ void ServiceWorkerContextClient::OnMessageReceived(
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidSkipWaiting, OnDidSkipWaiting)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidClaimClients, OnDidClaimClients)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ClaimClientsError, OnClaimClientsError)
-    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_Ping, OnPing);
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   DCHECK(handled);
@@ -1329,8 +1328,8 @@ void ServiceWorkerContextClient::OnClaimClientsError(
   context_->claim_clients_callbacks.Remove(request_id);
 }
 
-void ServiceWorkerContextClient::OnPing() {
-  Send(new ServiceWorkerHostMsg_Pong(GetRoutingID()));
+void ServiceWorkerContextClient::Ping(const PingCallback& callback) {
+  callback.Run();
 }
 
 void ServiceWorkerContextClient::OnNavigationPreloadResponse(

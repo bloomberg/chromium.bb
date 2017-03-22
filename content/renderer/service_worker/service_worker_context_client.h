@@ -252,6 +252,7 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
   void DispatchPaymentRequestEvent(
       payments::mojom::PaymentAppRequestPtr app_request,
       const DispatchPaymentRequestEventCallback& callback) override;
+  void Ping(const PingCallback& callback) override;
 
   void OnInstallEvent(int request_id);
   void OnNotificationClickEvent(
@@ -281,8 +282,6 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
   void OnClaimClientsError(int request_id,
                            blink::WebServiceWorkerError::ErrorType error_type,
                            const base::string16& message);
-  void OnPing();
-
   // Called to resolve the FetchEvent.preloadResponse promise.
   void OnNavigationPreloadResponse(
       int fetch_event_id,
