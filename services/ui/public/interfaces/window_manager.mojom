@@ -266,6 +266,10 @@ interface WindowManagerClient {
   OnWmCreatedTopLevelWindow(uint32 change_id, uint32 window_id);
 
   // See description in WindowManager::OnAccelerator(). |ack_id| is the value
-  // that was passed to OnAccelerator().
-  OnAcceleratorAck(uint32 ack_id, EventResult event_result);
+  // that was passed to OnAccelerator(). If the accelerator is a pre-target
+  // handler and |event_result| is UNHANDLED, then |properties| is added to
+  // the KeyEvent that is dispatched to the client with the focused window.
+  OnAcceleratorAck(uint32 ack_id,
+                   EventResult event_result,
+                   map<string, array<uint8>> properties);
 };

@@ -298,7 +298,9 @@ void WindowManagerState::OnEventAck(mojom::WindowTree* tree,
   ProcessNextEventFromQueue();
 }
 
-void WindowManagerState::OnAcceleratorAck(mojom::EventResult result) {
+void WindowManagerState::OnAcceleratorAck(
+    mojom::EventResult result,
+    const std::unordered_map<std::string, std::vector<uint8_t>>& properties) {
   if (!in_flight_event_details_ ||
       in_flight_event_details_->phase !=
           EventDispatchPhase::PRE_TARGET_ACCELERATOR) {
@@ -311,6 +313,9 @@ void WindowManagerState::OnAcceleratorAck(mojom::EventResult result) {
       std::move(in_flight_event_details_);
 
   if (result == mojom::EventResult::UNHANDLED) {
+    DCHECK(details->event->IsKeyEvent());
+    if (!properties.empty())
+      details->event->AsKeyEvent()->SetProperties(properties);
     event_processing_display_id_ = details->display_id;
     event_dispatcher_.ProcessEvent(
         *details->event, EventDispatcher::AcceleratorMatchPhase::POST_ONLY);
@@ -381,7 +386,7 @@ void WindowManagerState::OnEventAckTimeout(ClientSpecificId client_id) {
     window_tree_->ClientJankinessChanged(hung_tree);
   if (in_flight_event_details_->phase ==
       EventDispatchPhase::PRE_TARGET_ACCELERATOR) {
-    OnAcceleratorAck(mojom::EventResult::UNHANDLED);
+    OnAcceleratorAck(mojom::EventResult::UNHANDLED, KeyEvent::Properties());
   } else {
     OnEventAck(
         in_flight_event_details_ ? in_flight_event_details_->tree : nullptr,

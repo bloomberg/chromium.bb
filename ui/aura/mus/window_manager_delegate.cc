@@ -8,7 +8,8 @@ namespace aura {
 
 ui::mojom::EventResult WindowManagerDelegate::OnAccelerator(
     uint32_t id,
-    const ui::Event& event) {
+    const ui::Event& event,
+    std::unordered_map<std::string, std::vector<uint8_t>>* properties) {
   return ui::mojom::EventResult::UNHANDLED;
 }
 

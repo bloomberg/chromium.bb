@@ -83,8 +83,10 @@ void MusDemoInternal::OnWmDisplayRemoved(
 
 void MusDemoInternal::OnWmDisplayModified(const display::Display& display) {}
 
-mojom::EventResult MusDemoInternal::OnAccelerator(uint32_t id,
-                                                  const Event& event) {
+mojom::EventResult MusDemoInternal::OnAccelerator(
+    uint32_t id,
+    const Event& event,
+    std::unordered_map<std::string, std::vector<uint8_t>>* properties) {
   return mojom::EventResult::UNHANDLED;
 }
 

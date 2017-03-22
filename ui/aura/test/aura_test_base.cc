@@ -208,8 +208,10 @@ void AuraTestBase::OnWmDisplayRemoved(WindowTreeHostMus* window_tree_host) {
 
 void AuraTestBase::OnWmDisplayModified(const display::Display& display) {}
 
-ui::mojom::EventResult AuraTestBase::OnAccelerator(uint32_t id,
-                                                   const ui::Event& event) {
+ui::mojom::EventResult AuraTestBase::OnAccelerator(
+    uint32_t id,
+    const ui::Event& event,
+    std::unordered_map<std::string, std::vector<uint8_t>>* properties) {
   return ui::mojom::EventResult::HANDLED;
 }
 

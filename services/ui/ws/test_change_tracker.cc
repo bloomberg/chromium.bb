@@ -369,6 +369,8 @@ void TestChangeTracker::OnWindowInputEvent(Id window_id,
   change.window_id = window_id;
   change.event_action = static_cast<int32_t>(event.type());
   change.matches_pointer_watcher = matches_pointer_watcher;
+  if (event.IsKeyEvent() && event.AsKeyEvent()->properties())
+    change.key_event_properties = *event.AsKeyEvent()->properties();
   AddChange(change);
 }
 

@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "base/macros.h"
@@ -92,6 +93,8 @@ struct Change {
   cc::SurfaceId surface_id;
   gfx::Size frame_size;
   float device_scale_factor;
+  // Set in OnWindowInputEvent() if the event is a KeyEvent.
+  std::unordered_map<std::string, std::vector<uint8_t>> key_event_properties;
 };
 
 // Converts Changes to string descriptions.

@@ -50,7 +50,8 @@ class WindowManagerStateTest : public testing::Test {
                                   Accelerator* accelerator);
   void OnEventAckTimeout(ClientSpecificId client_id);
 
-  // This is the tree associated with the WindowManagerState.
+  // This is the tree associated with the WindowManagerState. That is, this is
+  // the WindowTree of the WindowManager.
   WindowTree* tree() {
     return window_event_targeting_helper_.window_server()->GetTreeWithId(1);
   }
@@ -235,7 +236,7 @@ TEST_F(WindowManagerStateTest, PreTargetConsumed) {
   TestChangeTracker* tracker2 = window_tree_client()->tracker();
   tracker2->changes()->clear();
 
-  // Send an ensure only the pre accelerator is called.
+  // Send and ensure only the pre accelerator is called.
   ui::KeyEvent key(ui::ET_KEY_PRESSED, ui::VKEY_W, ui::EF_CONTROL_DOWN);
   window_manager_state()->ProcessEvent(key, 0);
   EXPECT_TRUE(window_manager()->on_accelerator_called());
@@ -263,6 +264,79 @@ TEST_F(WindowManagerStateTest, PreTargetConsumed) {
   // The focused window should get the event.
   EXPECT_EQ("InputEvent window=0,11 event_action=7",
             SingleChangeToDescription(*tracker2->changes()));
+}
+
+TEST_F(WindowManagerStateTest, AckWithProperties) {
+  // Set up two trees with focus on a child in the second.
+  const ClientWindowId child_window_id(11);
+  window_tree()->NewWindow(child_window_id, ServerWindow::Properties());
+  ServerWindow* child_window =
+      window_tree()->GetWindowByClientId(child_window_id);
+  window_tree()->AddWindow(FirstRootId(window_tree()), child_window_id);
+  child_window->SetVisible(true);
+  SetCanFocusUp(child_window);
+  tree()->GetDisplay(child_window)->AddActivationParent(child_window->parent());
+  ASSERT_TRUE(window_tree()->SetFocus(child_window_id));
+
+  // Register a pre-accelerator.
+  uint32_t accelerator_id = 11;
+  {
+    mojom::EventMatcherPtr matcher = ui::CreateKeyMatcher(
+        ui::mojom::KeyboardCode::W, ui::mojom::kEventFlagControlDown);
+
+    ASSERT_TRUE(window_manager_state()->event_dispatcher()->AddAccelerator(
+        accelerator_id, std::move(matcher)));
+  }
+  TestChangeTracker* tracker = wm_client()->tracker();
+  tracker->changes()->clear();
+  TestChangeTracker* tracker2 = window_tree_client()->tracker();
+  tracker2->changes()->clear();
+
+  // Send and ensure only the pre accelerator is called.
+  ui::KeyEvent key(ui::ET_KEY_PRESSED, ui::VKEY_W, ui::EF_CONTROL_DOWN);
+  window_manager_state()->ProcessEvent(key, 0);
+  EXPECT_TRUE(window_manager()->on_accelerator_called());
+  EXPECT_EQ(accelerator_id, window_manager()->on_accelerator_id());
+  EXPECT_TRUE(tracker->changes()->empty());
+  EXPECT_TRUE(tracker2->changes()->empty());
+
+  // Ack the accelerator, with unhandled.
+  std::unordered_map<std::string, std::vector<uint8_t>> event_properties;
+  const std::string property_key = "x";
+  const std::vector<uint8_t> property_value(2, 0xAB);
+  event_properties[property_key] = property_value;
+  EXPECT_TRUE(tracker->changes()->empty());
+  EXPECT_TRUE(tracker2->changes()->empty());
+  WindowTreeTestApi(tree()).AckLastAccelerator(mojom::EventResult::UNHANDLED,
+                                               event_properties);
+
+  // The focused window should get the event.
+  EXPECT_EQ("InputEvent window=0,11 event_action=7",
+            SingleChangeToDescription(*tracker2->changes()));
+  ASSERT_EQ(1u, tracker2->changes()->size());
+  EXPECT_EQ(1u, (*tracker2->changes())[0].key_event_properties.size());
+  EXPECT_EQ(event_properties, (*tracker2->changes())[0].key_event_properties);
+
+  WindowTreeTestApi(window_tree()).AckLastEvent(mojom::EventResult::HANDLED);
+  tracker2->changes()->clear();
+
+  // Send the event again, and ack with no properties. Ensure client gets no
+  // properties.
+  window_manager()->ClearAcceleratorCalled();
+  window_manager_state()->ProcessEvent(key, 0);
+  EXPECT_TRUE(window_manager()->on_accelerator_called());
+  EXPECT_EQ(accelerator_id, window_manager()->on_accelerator_id());
+  EXPECT_TRUE(tracker->changes()->empty());
+  EXPECT_TRUE(tracker2->changes()->empty());
+
+  // Ack the accelerator with unhandled.
+  WindowTreeTestApi(tree()).AckLastAccelerator(mojom::EventResult::UNHANDLED);
+
+  // The focused window should get the event.
+  EXPECT_EQ("InputEvent window=0,11 event_action=7",
+            SingleChangeToDescription(*tracker2->changes()));
+  ASSERT_EQ(1u, tracker2->changes()->size());
+  EXPECT_TRUE((*tracker2->changes())[0].key_event_properties.empty());
 }
 
 // Tests that when a client handles an event that post target accelerators are

@@ -9,6 +9,8 @@
 
 #include <memory>
 #include <queue>
+#include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
@@ -100,7 +102,9 @@ class WindowManagerState : public EventDispatcherDelegate,
   void OnEventAck(mojom::WindowTree* tree, mojom::EventResult result);
 
   // Called when the WindowManager acks an accelerator.
-  void OnAcceleratorAck(mojom::EventResult result);
+  void OnAcceleratorAck(
+      mojom::EventResult result,
+      const std::unordered_map<std::string, std::vector<uint8_t>>& properties);
 
  private:
   class ProcessedEventTarget;

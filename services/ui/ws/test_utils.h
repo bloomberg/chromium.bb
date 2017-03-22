@@ -117,8 +117,11 @@ class WindowTreeTestApi {
   void AckLastEvent(mojom::EventResult result) {
     tree_->OnWindowInputEventAck(tree_->event_ack_id_, result);
   }
-  void AckLastAccelerator(mojom::EventResult result) {
-    tree_->OnAcceleratorAck(tree_->event_ack_id_, result);
+  void AckLastAccelerator(
+      mojom::EventResult result,
+      const std::unordered_map<std::string, std::vector<uint8_t>>& properties =
+          std::unordered_map<std::string, std::vector<uint8_t>>()) {
+    tree_->OnAcceleratorAck(tree_->event_ack_id_, result, properties);
   }
 
   void StartPointerWatcher(bool want_moves);

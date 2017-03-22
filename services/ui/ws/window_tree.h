@@ -485,7 +485,11 @@ class WindowTree : public mojom::WindowTree,
                             mojom::Cursor cursor_id) override;
   void OnWmCreatedTopLevelWindow(uint32_t change_id,
                                  Id transport_window_id) override;
-  void OnAcceleratorAck(uint32_t event_id, mojom::EventResult result) override;
+  void OnAcceleratorAck(
+      uint32_t event_id,
+      mojom::EventResult result,
+      const std::unordered_map<std::string, std::vector<uint8_t>>& properties)
+      override;
 
   // AccessPolicyDelegate:
   bool HasRootForAccessPolicy(const ServerWindow* window) const override;

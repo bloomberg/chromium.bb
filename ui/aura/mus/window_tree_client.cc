@@ -1594,10 +1594,12 @@ void WindowTreeClient::OnAccelerator(uint32_t ack_id,
                                      uint32_t accelerator_id,
                                      std::unique_ptr<ui::Event> event) {
   DCHECK(event);
-  const ui::mojom::EventResult result =
-      window_manager_delegate_->OnAccelerator(accelerator_id, *event.get());
+  std::unordered_map<std::string, std::vector<uint8_t>> properties;
+  const ui::mojom::EventResult result = window_manager_delegate_->OnAccelerator(
+      accelerator_id, *event.get(), &properties);
   if (ack_id && window_manager_internal_client_)
-    window_manager_internal_client_->OnAcceleratorAck(ack_id, result);
+    window_manager_internal_client_->OnAcceleratorAck(ack_id, result,
+                                                      properties);
 }
 
 void WindowTreeClient::SetFrameDecorationValues(

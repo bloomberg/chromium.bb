@@ -35,6 +35,8 @@
 
 using mojo::InterfaceRequest;
 
+using EventProperties = std::unordered_map<std::string, std::vector<uint8_t>>;
+
 namespace ui {
 namespace ws {
 
@@ -556,6 +558,7 @@ void WindowTree::OnChangeCompleted(uint32_t change_id, bool success) {
 void WindowTree::OnAccelerator(uint32_t accelerator_id,
                                const ui::Event& event,
                                bool needs_ack) {
+  DVLOG(3) << "OnAccelerator client=" << id_;
   DCHECK(window_manager_internal_);
   if (needs_ack)
     GenerateEventAckId();
@@ -1178,6 +1181,7 @@ uint32_t WindowTree::GenerateEventAckId() {
 
 void WindowTree::DispatchInputEventImpl(ServerWindow* target,
                                         const ui::Event& event) {
+  DVLOG(3) << "DispatchInputEventImpl client=" << id_;
   GenerateEventAckId();
   WindowManagerDisplayRoot* display_root = GetWindowManagerDisplayRoot(target);
   DCHECK(display_root);
@@ -1501,6 +1505,7 @@ void WindowTree::SetImeVisibility(Id transport_window_id,
 
 void WindowTree::OnWindowInputEventAck(uint32_t event_id,
                                        mojom::EventResult result) {
+  DVLOG(3) << "OnWindowInputEventAck client=" << id_;
   if (event_ack_id_ == 0 || event_id != event_ack_id_) {
     // TODO(sad): Something bad happened. Kill the client?
     NOTIMPLEMENTED() << ": Wrong event acked. event_id=" << event_id
@@ -2074,7 +2079,9 @@ void WindowTree::OnWmCreatedTopLevelWindow(uint32_t change_id,
 }
 
 void WindowTree::OnAcceleratorAck(uint32_t event_id,
-                                  mojom::EventResult result) {
+                                  mojom::EventResult result,
+                                  const EventProperties& properties) {
+  DVLOG(3) << "OnAcceleratorAck client=" << id_;
   if (event_ack_id_ == 0 || event_id != event_ack_id_) {
     DVLOG(1) << "OnAcceleratorAck supplied invalid event_id";
     window_server_->WindowManagerSentBogusMessage();
@@ -2082,7 +2089,7 @@ void WindowTree::OnAcceleratorAck(uint32_t event_id,
   }
   event_ack_id_ = 0;
   DCHECK(window_manager_state_);
-  window_manager_state_->OnAcceleratorAck(result);
+  window_manager_state_->OnAcceleratorAck(result, properties);
 }
 
 bool WindowTree::HasRootForAccessPolicy(const ServerWindow* window) const {

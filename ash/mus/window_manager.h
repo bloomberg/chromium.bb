@@ -161,8 +161,11 @@ class WindowManager : public aura::WindowManagerDelegate,
                            const gfx::Point& cursor_location,
                            const base::Callback<void(bool)>& on_done) override;
   void OnWmCancelMoveLoop(aura::Window* window) override;
-  ui::mojom::EventResult OnAccelerator(uint32_t id,
-                                       const ui::Event& event) override;
+  ui::mojom::EventResult OnAccelerator(
+      uint32_t id,
+      const ui::Event& event,
+      std::unordered_map<std::string, std::vector<uint8_t>>* properties)
+      override;
   void OnWmSetClientArea(
       aura::Window* window,
       const gfx::Insets& insets,

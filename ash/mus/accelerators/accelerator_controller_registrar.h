@@ -36,8 +36,11 @@ class AcceleratorControllerRegistrar : public AcceleratorHandler,
   ~AcceleratorControllerRegistrar() override;
 
   // AcceleratorHandler:
-  ui::mojom::EventResult OnAccelerator(uint32_t id,
-                                       const ui::Event& event) override;
+  ui::mojom::EventResult OnAccelerator(
+      uint32_t id,
+      const ui::Event& event,
+      std::unordered_map<std::string, std::vector<uint8_t>>* properties)
+      override;
 
  private:
   friend class AcceleratorControllerRegistrarTestApi;

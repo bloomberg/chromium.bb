@@ -56,10 +56,8 @@ AcceleratorControllerRegistrar::~AcceleratorControllerRegistrar() {
 
 ui::mojom::EventResult AcceleratorControllerRegistrar::OnAccelerator(
     uint32_t id,
-    const ui::Event& event) {
-  // TODO: during startup a bunch of accelerators are registered, resulting in
-  // lots of IPC. We should optimize this to send a single IPC.
-  // http://crbug.com/632050
+    const ui::Event& event,
+    std::unordered_map<std::string, std::vector<uint8_t>>* properties) {
   const ui::Accelerator accelerator(*event.AsKeyEvent());
   auto iter = accelerator_to_ids_.find(accelerator);
   if (iter == accelerator_to_ids_.end()) {
