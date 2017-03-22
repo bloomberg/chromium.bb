@@ -39,6 +39,8 @@ class ArcNotificationDelegate : public message_center::NotificationDelegate {
 
   void Close(bool by_user) override { item_->Close(by_user); }
 
+  void Click() override { item_->Click(); }
+
  private:
   // The destructor is private since this class is ref-counted.
   ~ArcNotificationDelegate() override {}
