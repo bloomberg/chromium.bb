@@ -18,6 +18,7 @@ import org.chromium.chrome.browser.compositor.layouts.eventfilter.EdgeSwipeEvent
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EdgeSwipeHandler;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilter;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.GestureEventFilter;
+import org.chromium.chrome.browser.compositor.layouts.phone.StackLayout;
 import org.chromium.chrome.browser.compositor.overlays.SceneOverlay;
 import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutHelperManager;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDelegate;
@@ -152,26 +153,10 @@ public class LayoutManagerChrome
     }
 
     /**
-     * Delegate of a factory to create an overview layout.
-     */
-    public interface OverviewLayoutFactoryDelegate {
-        /**
-         * @param context     The current Android's context.
-         * @param updateHost  The {@link LayoutUpdateHost} view for this layout.
-         * @param renderHost  The {@link LayoutRenderHost} view for this layout.
-         * @param eventFilter The {@link EventFilter} that is needed for this view.
-         */
-        Layout createOverviewLayout(Context context, LayoutUpdateHost updateHost,
-                LayoutRenderHost renderHost, EventFilter eventFilter);
-    }
-
-    /**
      * Creates the {@link LayoutManagerChrome} instance.
      * @param host              A {@link LayoutManagerHost} instance.
-     * @param overviewLayoutFactoryDelegate A {@link OverviewLayoutFactoryDelegate} instance.
      */
-    public LayoutManagerChrome(
-            LayoutManagerHost host, OverviewLayoutFactoryDelegate overviewLayoutFactoryDelegate) {
+    public LayoutManagerChrome(LayoutManagerHost host, boolean createOverviewLayout) {
         super(host);
         Context context = host.getContext();
         LayoutRenderHost renderHost = host.getLayoutRenderHost();
@@ -190,9 +175,8 @@ public class LayoutManagerChrome
                 new OverviewListLayout(context, this, renderHost, mBlackHoleEventFilter);
         mToolbarSwipeLayout =
                 new ToolbarSwipeLayout(context, this, renderHost, mBlackHoleEventFilter);
-        if (overviewLayoutFactoryDelegate != null) {
-            mOverviewLayout = overviewLayoutFactoryDelegate.createOverviewLayout(
-                    context, this, renderHost, mGestureEventFilter);
+        if (createOverviewLayout) {
+            mOverviewLayout = new StackLayout(context, this, renderHost, mGestureEventFilter);
         }
     }
 

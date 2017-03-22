@@ -286,14 +286,6 @@ public class CompositorViewHolder extends FrameLayout
     }
 
     /**
-     * Reset command line flags. This gets called after the native library finishes
-     * loading.
-     */
-    public void resetFlags() {
-        mCompositorView.resetFlags();
-    }
-
-    /**
      * Should be called for cleanup when the CompositorView instance is no longer used.
      */
     public void shutDown() {

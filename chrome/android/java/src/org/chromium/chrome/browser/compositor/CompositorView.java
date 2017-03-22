@@ -20,12 +20,10 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 
-import org.chromium.base.CommandLine;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.UsedByReflection;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutProvider;
 import org.chromium.chrome.browser.compositor.layouts.LayoutRenderHost;
@@ -36,7 +34,6 @@ import org.chromium.chrome.browser.externalnav.IntentWithGesturesHandler;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.tabmodel.TabModelImpl;
 import org.chromium.chrome.browser.widget.ClipDrawableProgressBar.DrawingInfo;
-import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.resources.AndroidResourceType;
 import org.chromium.ui.resources.ResourceManager;
@@ -66,7 +63,6 @@ public class CompositorView extends FrameLayout implements SurfaceHolder.Callbac
 
     private long mNativeCompositorView;
     private final LayoutRenderHost mRenderHost;
-    private boolean mEnableTabletTabStack;
     private int mPreviousWindowTop = -1;
 
     // A conservative estimate of when a frame is guaranteed to be presented after being submitted.
@@ -94,7 +90,6 @@ public class CompositorView extends FrameLayout implements SurfaceHolder.Callbac
     public CompositorView(Context c, LayoutRenderHost host) {
         super(c);
         mRenderHost = host;
-        resetFlags();
 
         setVisibility(View.INVISIBLE);
     }
@@ -104,16 +99,6 @@ public class CompositorView extends FrameLayout implements SurfaceHolder.Callbac
      */
     public void setRootView(View view) {
         mRootView = view;
-    }
-
-    /**
-     * Reset the commandline flags. This gets called after we switch over to the
-     * native command line.
-     */
-    public void resetFlags() {
-        CommandLine commandLine = CommandLine.getInstance();
-        mEnableTabletTabStack = commandLine.hasSwitch(ChromeSwitches.ENABLE_TABLET_TAB_STACK)
-                && DeviceFormFactor.isTablet(getContext());
     }
 
     @Override

@@ -23,7 +23,6 @@ import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EdgeSwipeEventFilter.ScrollDirection;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EdgeSwipeHandler;
-import org.chromium.chrome.browser.compositor.layouts.eventfilter.EventFilter;
 import org.chromium.chrome.browser.compositor.layouts.phone.StackLayout;
 import org.chromium.chrome.browser.compositor.layouts.phone.stack.Stack;
 import org.chromium.chrome.browser.compositor.layouts.phone.stack.StackTab;
@@ -121,14 +120,7 @@ public class LayoutManagerTest extends InstrumentationTestCase
         FrameLayout container = new FrameLayout(context);
         parentContainer.addView(container);
 
-        mManagerPhone = new LayoutManagerChromePhone(
-                layoutManagerHost, new LayoutManagerChromePhone.OverviewLayoutFactoryDelegate() {
-                    @Override
-                    public Layout createOverviewLayout(Context context, LayoutUpdateHost updateHost,
-                            LayoutRenderHost renderHost, EventFilter eventFilter) {
-                        return new StackLayout(context, updateHost, renderHost, eventFilter);
-                    }
-                });
+        mManagerPhone = new LayoutManagerChromePhone(layoutManagerHost);
         mManager = mManagerPhone;
         mManager.init(mTabModelSelector, null, null, container, null, null, null);
         initializeMotionEvent();
