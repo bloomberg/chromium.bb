@@ -120,8 +120,6 @@ void VideoCaptureHost::OnStarted(VideoCaptureControllerID controller_id) {
   }
 }
 
-void VideoCaptureHost::OnStartedUsingGpuDecode(VideoCaptureControllerID id) {}
-
 void VideoCaptureHost::Start(int32_t device_id,
                              int32_t session_id,
                              const media::VideoCaptureParams& params,

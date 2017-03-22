@@ -102,7 +102,6 @@ class CONTENT_EXPORT VideoCaptureController : public media::VideoFrameReceiver {
   void OnError() override;
   void OnLog(const std::string& message) override;
   void OnStarted() override;
-  void OnStartedUsingGpuDecode() override;
 
  private:
   struct ControllerClient;
@@ -172,11 +171,6 @@ class CONTENT_EXPORT VideoCaptureController : public media::VideoFrameReceiver {
                                        double consumer_resource_utilization);
   void ReleaseBufferContext(
       const std::vector<BufferContext>::iterator& buffer_state_iter);
-
-  using EventHandlerAction =
-      base::Callback<void(VideoCaptureControllerEventHandler* client,
-                          VideoCaptureControllerID id)>;
-  void PerformForClientsWithOpenSession(EventHandlerAction action);
 
   std::unique_ptr<media::VideoFrameConsumerFeedbackObserver>
       consumer_feedback_observer_;

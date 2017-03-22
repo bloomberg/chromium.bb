@@ -100,11 +100,6 @@ const char kUseFileForFakeVideoCapture[] = "use-file-for-fake-video-capture";
 // or <path>%noloop to stop after playing the file to completion.
 const char kUseFileForFakeAudioCapture[] = "use-file-for-fake-audio-capture";
 
-// Use fake device for accelerated decoding of JPEG. This allows, for example,
-// testing of the communication to the GPU service without requiring actual
-// accelerator hardware to be present.
-const char kUseFakeJpegDecodeAccelerator[] = "use-fake-jpeg-decode-accelerator";
-
 // Enables support for inband text tracks in media content.
 const char kEnableInbandTextTracks[] = "enable-inband-text-tracks";
 

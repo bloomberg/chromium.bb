@@ -63,10 +63,4 @@ void VideoFrameReceiverOnIOThread::OnStarted() {
       base::Bind(&VideoFrameReceiver::OnStarted, receiver_));
 }
 
-void VideoFrameReceiverOnIOThread::OnStartedUsingGpuDecode() {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&VideoFrameReceiver::OnStartedUsingGpuDecode, receiver_));
-}
-
 }  // namespace content

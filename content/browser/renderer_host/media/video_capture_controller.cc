@@ -46,21 +46,6 @@ static const int kInfiniteRatio = 99999;
   UMA_HISTOGRAM_SPARSE_SLOWLY(                          \
       name, (height) ? ((width)*100) / (height) : kInfiniteRatio);
 
-void CallOnError(VideoCaptureControllerEventHandler* client,
-                 VideoCaptureControllerID id) {
-  client->OnError(id);
-}
-
-void CallOnStarted(VideoCaptureControllerEventHandler* client,
-                   VideoCaptureControllerID id) {
-  client->OnStarted(id);
-}
-
-void CallOnStartedUsingGpuDecode(VideoCaptureControllerEventHandler* client,
-                                 VideoCaptureControllerID id) {
-  client->OnStartedUsingGpuDecode(id);
-}
-
 }  // anonymous namespace
 
 struct VideoCaptureController::ControllerClient {
@@ -466,7 +451,12 @@ void VideoCaptureController::OnBufferRetired(int buffer_id) {
 void VideoCaptureController::OnError() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   state_ = VIDEO_CAPTURE_STATE_ERROR;
-  PerformForClientsWithOpenSession(base::Bind(&CallOnError));
+
+  for (const auto& client : controller_clients_) {
+    if (client->session_closed)
+      continue;
+    client->event_handler->OnError(client->controller_id);
+  }
 }
 
 void VideoCaptureController::OnLog(const std::string& message) {
@@ -477,11 +467,12 @@ void VideoCaptureController::OnLog(const std::string& message) {
 void VideoCaptureController::OnStarted() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   state_ = VIDEO_CAPTURE_STATE_STARTED;
-  PerformForClientsWithOpenSession(base::Bind(&CallOnStarted));
-}
 
-void VideoCaptureController::OnStartedUsingGpuDecode() {
-  PerformForClientsWithOpenSession(base::Bind(&CallOnStartedUsingGpuDecode));
+  for (const auto& client : controller_clients_) {
+    if (client->session_closed)
+      continue;
+    client->event_handler->OnStarted(client->controller_id);
+  }
 }
 
 VideoCaptureController::ControllerClient* VideoCaptureController::FindClient(
@@ -554,16 +545,6 @@ void VideoCaptureController::ReleaseBufferContext(
     }
   }
   buffer_contexts_.erase(buffer_context_iter);
-}
-
-void VideoCaptureController::PerformForClientsWithOpenSession(
-    EventHandlerAction action) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  for (const auto& client : controller_clients_) {
-    if (client->session_closed)
-      continue;
-    action.Run(client->event_handler, client->controller_id);
-  }
 }
 
 }  // namespace content

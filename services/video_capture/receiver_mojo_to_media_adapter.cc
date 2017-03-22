@@ -41,10 +41,6 @@ void ReceiverMojoToMediaAdapter::OnStarted() {
   receiver_->OnStarted();
 }
 
-void ReceiverMojoToMediaAdapter::OnStartedUsingGpuDecode() {
-  NOTIMPLEMENTED();
-}
-
 void ReceiverMojoToMediaAdapter::OnBufferRetired(int buffer_id) {
   NOTIMPLEMENTED();
 }

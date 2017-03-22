@@ -108,7 +108,6 @@ class CAPTURE_EXPORT VideoCaptureDeviceClient
 
   // Whether |external_jpeg_decoder_| has been initialized.
   bool external_jpeg_decoder_initialized_;
-  base::OnceClosure on_started_using_gpu_cb_;
 
   // The pool of shared-memory buffers used for capturing.
   const scoped_refptr<VideoCaptureBufferPool> buffer_pool_;

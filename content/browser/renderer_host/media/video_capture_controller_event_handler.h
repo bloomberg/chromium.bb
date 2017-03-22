@@ -57,8 +57,6 @@ class CONTENT_EXPORT VideoCaptureControllerEventHandler {
   // VideoCaptureDevice has successfully started the device.
   virtual void OnStarted(VideoCaptureControllerID id) = 0;
 
-  virtual void OnStartedUsingGpuDecode(VideoCaptureControllerID id) = 0;
-
  protected:
   virtual ~VideoCaptureControllerEventHandler() {}
 };
