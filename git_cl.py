@@ -5584,13 +5584,13 @@ def CMDformat(parser, args):
                      "\nTry running 'gn format' on this file manually.")
 
   metrics_xml_files = [
-    'tools/metrics/actions/actions.xml',
-    'tools/metrics/histograms/histograms.xml',
-    'tools/metrics/rappor/rappor.xml']
+    os.path.join('tools', 'metrics', 'actions', 'actions.xml'),
+    os.path.join('tools', 'metrics', 'histograms', 'histograms.xml'),
+    os.path.join('tools', 'metrics', 'rappor', 'rappor.xml')]
   for xml_file in metrics_xml_files:
     if xml_file in diff_files:
-      tool_dir = top_dir + '/' + os.path.dirname(xml_file)
-      cmd = [tool_dir + '/pretty_print.py', '--non-interactive']
+      tool_dir = os.path.join(top_dir, os.path.dirname(xml_file))
+      cmd = [os.path.join(tool_dir, 'pretty_print.py'), '--non-interactive']
       if opts.dry_run or opts.diff:
         cmd.append('--diff')
       stdout = RunCommand(cmd, cwd=top_dir)
