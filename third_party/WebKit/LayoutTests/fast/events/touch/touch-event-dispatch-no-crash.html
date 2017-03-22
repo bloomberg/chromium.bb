@@ -7,7 +7,7 @@
 description('Test that touches created with no target does not crash during dispatch. http://crbug.com/517962');
 
 var event = new TouchEvent('touchstart', {
-    touches: [document.createTouch()],
+    touches: [document.createTouch(window, null, 0, 0, 0, 0, 0)],
 });
 document.body.dispatchEvent(event);
 

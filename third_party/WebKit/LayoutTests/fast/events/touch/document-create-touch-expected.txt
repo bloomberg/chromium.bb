@@ -15,17 +15,19 @@ PASS touch.radiusX is 5
 PASS touch.radiusY is 3
 PASS touch.rotationAngle is 10
 PASS touch.force is 10
-PASS emptyTouch is non-null.
-PASS emptyTouch.target is null
-PASS emptyTouch.identifier is 0
-PASS emptyTouch.pageX is 0
-PASS emptyTouch.pageY is 0
-PASS emptyTouch.screenX is 0
-PASS emptyTouch.screenY is 0
-PASS emptyTouch.radiusX is 0
-PASS emptyTouch.radiusY is 0
-PASS emptyTouch.rotationAngle is 0
-PASS emptyTouch.force is 0
+PASS document.createTouch() threw exception TypeError: Failed to execute 'createTouch' on 'Document': 7 arguments required, but only 0 present..
+PASS incompleteTouch is non-null.
+PASS incompleteTouch.target is non-null.
+PASS incompleteTouch.identifier is 1
+PASS incompleteTouch.pageX is 100
+PASS incompleteTouch.pageY is 101
+PASS incompleteTouch.screenX is 102
+PASS incompleteTouch.screenY is 103
+PASS incompleteTouch.radiusX is 0
+PASS incompleteTouch.radiusY is 0
+PASS incompleteTouch.rotationAngle is 0
+PASS incompleteTouch.force is 0
+PASS document.createTouch(window, target, 1, 'b', 101, 102, 103, 0, 0, 0, 0) threw exception TypeError: Failed to execute 'createTouch' on 'Document': The provided double value is non-finite..
 PASS badParamsTouch is non-null.
 PASS badParamsTouch.target is null
 PASS badParamsTouch.identifier is 0
@@ -37,7 +39,7 @@ PASS badParamsTouch.radiusX is 0
 PASS badParamsTouch.radiusY is 0
 PASS badParamsTouch.rotationAngle is 0
 PASS badParamsTouch.force is 0
-PASS detachedTouch = document.implementation.createDocument('a', 'b').createTouch() is non-null.
+PASS detachedTouch = document.implementation.createDocument('a', 'b').createTouch(window, null, 0, 0, 0, 0, 0) is non-null.
 PASS detachedTouch.target is null
 PASS detachedTouch.identifier is 0
 PASS detachedTouch.pageX is 0

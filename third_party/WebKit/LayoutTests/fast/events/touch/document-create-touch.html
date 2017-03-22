@@ -36,21 +36,25 @@ shouldBe("touch.radiusY", "3");
 shouldBe("touch.rotationAngle", "10");
 shouldBe("touch.force", "10");
 
-var emptyTouch = document.createTouch();
-shouldBeNonNull("emptyTouch");
-shouldBeNull("emptyTouch.target");
-shouldBe("emptyTouch.identifier", "0");
-shouldBe("emptyTouch.pageX", "0");
-shouldBe("emptyTouch.pageY", "0");
-shouldBe("emptyTouch.screenX", "0");
-shouldBe("emptyTouch.screenY", "0");
-shouldBe("emptyTouch.radiusX", "0");
-shouldBe("emptyTouch.radiusY", "0");
-shouldBe("emptyTouch.rotationAngle", "0");
-shouldBe("emptyTouch.force", "0");
+shouldThrow("document.createTouch()", '"TypeError: Failed to execute \'createTouch\' on \'Document\': 7 arguments required, but only 0 present."');
+
+var incompleteTouch = document.createTouch(window, target, 1, 100, 101, 102, 103);
+shouldBeNonNull("incompleteTouch");
+shouldBeNonNull("incompleteTouch.target");
+shouldBe("incompleteTouch.identifier", "1");
+shouldBe("incompleteTouch.pageX", "100");
+shouldBe("incompleteTouch.pageY", "101");
+shouldBe("incompleteTouch.screenX", "102");
+shouldBe("incompleteTouch.screenY", "103");
+shouldBe("incompleteTouch.radiusX", "0");
+shouldBe("incompleteTouch.radiusY", "0");
+shouldBe("incompleteTouch.rotationAngle", "0");
+shouldBe("incompleteTouch.force", "0");
+
+shouldThrow("document.createTouch(window, target, 1, 'b', 101, 102, 103, 0, 0, 0, 0)", '"TypeError: Failed to execute \'createTouch\' on \'Document\': The provided double value is non-finite."');
 
 // Try invoking with incorrect parameter types.
-var badParamsTouch = document.createTouch(function(x) { return x; }, 12, 'a', 'b', 'c', function(x) { return x; }, 104, 'a', 'b', 'c', 'd');
+var badParamsTouch = document.createTouch(function(x) { return x; }, 12, 'a', 0, 0, 0, 104, function(x) { return x; }, 'a', 'b', 'c');
 shouldBeNonNull("badParamsTouch");
 shouldBeNull("badParamsTouch.target");
 shouldBe("badParamsTouch.identifier", "0");
@@ -65,7 +69,7 @@ shouldBe("badParamsTouch.force", "0");
 
 // Should not crash when invoked on a detached Document.
 var detachedTouch;
-shouldBeNonNull("detachedTouch = document.implementation.createDocument('a', 'b').createTouch()");
+shouldBeNonNull("detachedTouch = document.implementation.createDocument('a', 'b').createTouch(window, null, 0, 0, 0, 0, 0)");
 shouldBeNull("detachedTouch.target");
 shouldBe("detachedTouch.identifier", "0");
 shouldBe("detachedTouch.pageX", "0");
@@ -78,6 +82,7 @@ shouldBe("detachedTouch.rotationAngle", "0");
 shouldBe("detachedTouch.force", "0");
 
 isSuccessfullyParsed();
+
 </script>
 </body>
 </html>
