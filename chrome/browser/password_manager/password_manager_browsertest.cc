@@ -322,23 +322,23 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, Redirects) {
 
   // Fill a form and submit through a <input type="submit"> button. The form
   // points to a redirection page.
-  NavigationObserver observer(WebContents());
-  std::unique_ptr<BubbleObserver> prompt_observer(
-      new BubbleObserver(WebContents()));
+  NavigationObserver observer1(WebContents());
   std::string fill_and_submit =
       "document.getElementById('username_redirect').value = 'temp';"
       "document.getElementById('password_redirect').value = 'random';"
       "document.getElementById('submit_redirect').click()";
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
-  observer.Wait();
-  EXPECT_TRUE(prompt_observer->IsShowingSavePrompt());
+  observer1.Wait();
+  BubbleObserver bubble_observer(WebContents());
+  EXPECT_TRUE(bubble_observer.IsShowingSavePrompt());
 
   // The redirection page now redirects via Javascript. We check that the
-  // infobar stays.
+  // bubble stays.
+  NavigationObserver observer2(WebContents());
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(),
                                      "window.location.href = 'done.html';"));
-  observer.Wait();
-  EXPECT_TRUE(prompt_observer->IsShowingSavePrompt());
+  observer2.Wait();
+  EXPECT_TRUE(bubble_observer.IsShowingSavePrompt());
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
@@ -1285,7 +1285,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, NoLastLoadGoodLastLoad) {
       static_cast<password_manager::TestPasswordStore*>(
           PasswordStoreFactory::GetForProfile(
               browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS).get());
-  EXPECT_TRUE(password_store->IsEmpty());
+  ASSERT_TRUE(password_store->IsEmpty());
 
   // Navigate to a page requiring HTTP auth. Wait for the tab to get the correct
   // WebContents, but don't wait for navigation, which only finishes after
@@ -1295,11 +1295,10 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, NoLastLoadGoodLastLoad) {
       WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_TAB);
 
-  content::NavigationController* nav_controller =
-      &WebContents()->GetController();
-  NavigationObserver nav_observer(WebContents());
-  std::unique_ptr<BubbleObserver> prompt_observer(
-      new BubbleObserver(WebContents()));
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::NavigationController* nav_controller = &tab->GetController();
+  NavigationObserver nav_observer(tab);
   WindowedAuthNeededObserver auth_needed_observer(nav_controller);
   auth_needed_observer.Wait();
 
@@ -1314,13 +1313,14 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, NoLastLoadGoodLastLoad) {
 
   // The password manager should be working correctly.
   nav_observer.Wait();
-  EXPECT_TRUE(prompt_observer->IsShowingSavePrompt());
-  prompt_observer->AcceptSavePrompt();
+  WaitForPasswordStore();
+  BubbleObserver bubble_observer(tab);
+  EXPECT_TRUE(bubble_observer.IsShowingSavePrompt());
+  bubble_observer.AcceptSavePrompt();
 
   // Spin the message loop to make sure the password store had a chance to save
   // the password.
-  base::RunLoop run_loop;
-  run_loop.RunUntilIdle();
+  WaitForPasswordStore();
   EXPECT_FALSE(password_store->IsEmpty());
 }
 
@@ -1777,6 +1777,19 @@ IN_PROC_BROWSER_TEST_F(
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                        InFrameNavigationDoesNotClearPopupState) {
+  scoped_refptr<password_manager::TestPasswordStore> password_store =
+      static_cast<password_manager::TestPasswordStore*>(
+          PasswordStoreFactory::GetForProfile(
+              browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS)
+              .get());
+  autofill::PasswordForm signin_form;
+  signin_form.signon_realm = embedded_test_server()->base_url().spec();
+  signin_form.username_value = base::ASCIIToUTF16("temp");
+  signin_form.password_value = base::ASCIIToUTF16("random123");
+  password_store->AddLogin(signin_form);
+
+  NavigateToFile("/password/password_form.html");
+
   // Mock out the AutofillClient so we know how long to wait. Unfortunately
   // there isn't otherwise a good event to wait on to verify that the popup
   // would have been shown.
@@ -1792,23 +1805,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
   driver->GetPasswordAutofillManager()->set_autofill_client(
       observing_autofill_client);
 
-  NavigateToFile("/password/password_form.html");
-
-  NavigationObserver form_submit_observer(WebContents());
-  std::unique_ptr<BubbleObserver> prompt_observer(
-      new BubbleObserver(WebContents()));
-  std::string fill =
-      "document.getElementById('username_field').value = 'temp';"
-      "document.getElementById('password_field').value = 'random123';"
-      "document.getElementById('input_submit_button').click();";
-
-  // Save credentials for the site.
-  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill));
-  form_submit_observer.Wait();
-  EXPECT_TRUE(prompt_observer->IsShowingSavePrompt());
-  prompt_observer->AcceptSavePrompt();
-
-  NavigateToFile("/password/password_form.html");
   ASSERT_TRUE(content::ExecuteScript(
       RenderViewHost(),
       "var usernameRect = document.getElementById('username_field')"
@@ -1830,9 +1826,9 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
       "window.domAutomationController.send(usernameRect.left);",
       &left));
 
-  content::SimulateMouseClickAt(
-      WebContents(), 0, blink::WebMouseEvent::Button::Left, gfx::Point(left + 1,
-                                                                     top + 1));
+  content::SimulateMouseClickAt(WebContents(), 0,
+                                blink::WebMouseEvent::Button::Left,
+                                gfx::Point(left + 1, top + 1));
   // Make sure the popup would be shown.
   observing_autofill_client->Wait();
 }
@@ -2915,7 +2911,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, InternalsPage_Renderer) {
       browser(), embedded_test_server()->GetURL("/password/password_form.html"),
       WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
-  content::WebContents* forms_web_contents = WebContents();
+  content::WebContents* forms_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
 
   // The renderer queries the availability of logging on start-up. However, it
   // can take too long to propagate that message from the browser back to the
@@ -3243,6 +3240,16 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestWarning,
   ASSERT_TRUE(
       base::FeatureList::IsEnabled(security_state::kHttpFormWarningFeature));
 
+  // We need to serve from a non-localhost context for the form to be treated as
+  // Not Secure.
+  host_resolver()->AddRule("example.com", "127.0.0.1");
+  NavigationObserver observer(WebContents());
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(
+                     "example.com", "/password/password_form.html"));
+  observer.Wait();
+
+  // Mock the autofill client.
   password_manager::ContentPasswordManagerDriverFactory* driver_factory =
       password_manager::ContentPasswordManagerDriverFactory::FromWebContents(
           WebContents());
@@ -3254,15 +3261,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestWarning,
   DCHECK(driver);
   driver->GetPasswordAutofillManager()->set_autofill_client(
       observing_autofill_client);
-
-  // We need to serve from a non-localhost context for the form to be treated as
-  // Not Secure.
-  host_resolver()->AddRule("example.com", "127.0.0.1");
-  NavigationObserver observer(WebContents());
-  ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL(
-                     "example.com", "/password/password_form.html"));
-  observer.Wait();
 
   ASSERT_TRUE(content::ExecuteScript(
       RenderViewHost(),
@@ -3298,6 +3296,16 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestWarning,
   ASSERT_TRUE(
       base::FeatureList::IsEnabled(security_state::kHttpFormWarningFeature));
 
+  // We need to serve from a non-localhost context for the form to be treated as
+  // Not Secure.
+  host_resolver()->AddRule("example.com", "127.0.0.1");
+  NavigationObserver observer(WebContents());
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(
+                     "example.com", "/password/password_form.html"));
+  observer.Wait();
+
+  // Mock the autofill client.
   password_manager::ContentPasswordManagerDriverFactory* driver_factory =
       password_manager::ContentPasswordManagerDriverFactory::FromWebContents(
           WebContents());
@@ -3309,15 +3317,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestWarning,
   DCHECK(driver);
   driver->GetPasswordAutofillManager()->set_autofill_client(
       observing_autofill_client);
-
-  // We need to serve from a non-localhost context for the form to be treated as
-  // Not Secure.
-  host_resolver()->AddRule("example.com", "127.0.0.1");
-  NavigationObserver observer(WebContents());
-  ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL(
-                     "example.com", "/password/password_form.html"));
-  observer.Wait();
 
   ASSERT_TRUE(content::ExecuteScript(
       RenderViewHost(),

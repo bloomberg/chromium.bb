@@ -162,9 +162,8 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
   EXPECT_TRUE(base::ContainsKey(passwords, www_url.spec()));
 }
 
-// Flaky. See crbug.com/703305
 IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
-    DISABLED_ObsoleteHttpCredentialMovedOnMigrationToHstsSite) {
+                       ObsoleteHttpCredentialMovedOnMigrationToHstsSite) {
   // Add an http credential to the password store.
   GURL https_origin = https_test_server().base_url();
   ASSERT_TRUE(https_origin.SchemeIs(url::kHttpsScheme));
@@ -191,29 +190,13 @@ IN_PROC_BROWSER_TEST_F(CredentialManagerBrowserTest,
   ui_test_utils::NavigateToURL(
       browser(), https_test_server().GetURL("/password/done.html"));
 
-  // Call the API to trigger |get| and |store| and redirect.
+  // Call the API to trigger the account chooser.
   ASSERT_TRUE(content::ExecuteScript(
       RenderViewHost(), "navigator.credentials.get({password: true})"));
+  BubbleObserver(WebContents()).WaitForAccountChooser();
 
-  // Issue the query for HTTPS credentials.
+  // Wait for the migration logic to actually touch the password store.
   WaitForPasswordStore();
-
-  // Realize there are no HTTPS credentials and issue the query for HTTP
-  // credentials instead.
-  WaitForPasswordStore();
-
-  // Sync with IO thread before continuing. This is necessary, because the
-  // credential migration triggers a query for the HSTS state which gets
-  // executed on the IO thread. The actual task is empty, because only the reply
-  // is relevant. By the time the reply is executed it is guaranteed that the
-  // migration is completed.
-  const auto empty_lambda = []() {};
-  base::RunLoop run_loop;
-  content::BrowserThread::PostTaskAndReply(content::BrowserThread::IO,
-                                           FROM_HERE, base::Bind(empty_lambda),
-                                           run_loop.QuitClosure());
-  run_loop.Run();
-
   // Only HTTPS passwords should be present.
   EXPECT_TRUE(
       password_store->stored_passwords().at(http_origin.spec()).empty());

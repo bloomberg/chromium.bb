@@ -8,10 +8,10 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/test/test_utils.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
@@ -53,7 +53,7 @@ class NavigationObserver : public content::WebContentsObserver {
   std::string wait_for_path_;
   content::RenderFrameHost* render_frame_host_;
   bool quit_on_entry_committed_;
-  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+  base::RunLoop run_loop_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationObserver);
 };
@@ -82,6 +82,11 @@ class BubbleObserver {
   // Expecting that the prompt is shown, update |form| with the password from
   // observed form. Checks that the prompt is no longer visible afterwards.
   void AcceptUpdatePrompt(const autofill::PasswordForm& form) const;
+
+  // Returns once the account chooser pops up or it's already shown.
+  // |web_contents| must be the custom one returned by
+  // PasswordManagerBrowserTestBase.
+  void WaitForAccountChooser() const;
 
  private:
   ManagePasswordsUIController* const passwords_ui_controller_;
@@ -143,6 +148,7 @@ class PasswordManagerBrowserTestBase : public InProcessBrowserTest {
   void AddHSTSHost(const std::string& host);
 
   // Accessors
+  // Return the first created tab with a custom ManagePasswordsUIController.
   content::WebContents* WebContents();
   content::RenderViewHost* RenderViewHost();
   net::EmbeddedTestServer& https_test_server() { return https_test_server_; }
@@ -151,6 +157,8 @@ class PasswordManagerBrowserTestBase : public InProcessBrowserTest {
  private:
   net::EmbeddedTestServer https_test_server_;
   net::MockCertVerifier mock_cert_verifier_;
+  // A tab with some hooks injected.
+  content::WebContents* web_contents_;
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerBrowserTestBase);
 };
 
