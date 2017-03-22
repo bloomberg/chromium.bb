@@ -17,6 +17,7 @@ import android.widget.FrameLayout;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.layouts.eventfilter.EdgeSwipeHandler;
+import org.chromium.chrome.browser.compositor.resources.ResourceFactory;
 import org.chromium.chrome.browser.contextualsearch.SwipeRecognizer;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.ClipDrawableProgressBar.DrawingInfo;
@@ -160,6 +161,8 @@ public class ToolbarControlContainer extends FrameLayout implements ControlConta
 
     private static class ToolbarViewResourceAdapter extends ViewResourceAdapter {
         private final int[] mTempPosition = new int[2];
+        private final Rect mLocationBarRect = new Rect();
+        private final Rect mToolbarRect = new Rect();
         private final View mToolbarContainer;
 
         private Toolbar mToolbar;
@@ -220,16 +223,18 @@ public class ToolbarControlContainer extends FrameLayout implements ControlConta
         }
 
         @Override
-        protected void computeContentPadding(Rect outContentPadding) {
-            outContentPadding.set(
-                    0, mTabStripHeightPx, mToolbarContainer.getWidth(), mToolbar.getHeight());
-        }
-
-        @Override
-        protected void computeContentAperture(Rect outContentAperture) {
-            mToolbar.getLocationBarContentRect(outContentAperture);
+        public long createNativeResource() {
             mToolbar.getPositionRelativeToContainer(mToolbarContainer, mTempPosition);
-            outContentAperture.offset(mTempPosition[0], mTempPosition[1]);
+            mToolbarRect.set(mTempPosition[0], mTempPosition[1], mToolbarContainer.getWidth(),
+                    mTempPosition[1] + mToolbar.getHeight());
+
+            mToolbar.getLocationBarContentRect(mLocationBarRect);
+            mLocationBarRect.offset(mTempPosition[0], mTempPosition[1]);
+
+            int shadowHeight =
+                    mToolbarContainer.getHeight() - mToolbar.getHeight() - mTabStripHeightPx;
+            return ResourceFactory.createToolbarContainerResource(
+                    mToolbarRect, mLocationBarRect, shadowHeight);
         }
     }
 

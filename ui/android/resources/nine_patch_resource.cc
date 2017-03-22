@@ -5,6 +5,8 @@
 #include "ui/android/resources/nine_patch_resource.h"
 
 #include "base/memory/ptr_util.h"
+#include "cc/layers/nine_patch_layer.h"
+#include "ui/gfx/geometry/point_f.h"
 
 namespace ui {
 
@@ -20,6 +22,22 @@ NinePatchResource::NinePatchResource(gfx::Rect padding, gfx::Rect aperture)
       aperture_(aperture) {}
 
 NinePatchResource::~NinePatchResource() = default;
+
+gfx::Size NinePatchResource::DrawSize(const gfx::Size& content_size) const {
+  // The effective drawing size of the resource includes the size of the content
+  // (fit inside the expanded padding area) and the size of the margins on each
+  // side.
+  return gfx::Size(content_size.width() + size().width() - padding_.width(),
+                   content_size.height() + size().height() - padding_.height());
+}
+
+gfx::PointF NinePatchResource::DrawPosition(
+    const gfx::Point& content_position) const {
+  // Offset the location of the layer by the amount taken by the left and top
+  // margin.
+  return gfx::PointF(content_position.x() - padding_.x(),
+                     content_position.y() - padding_.y());
+}
 
 gfx::Rect NinePatchResource::Border(const gfx::Size& bounds) const {
   return Border(bounds, gfx::InsetsF(1.f, 1.f, 1.f, 1.f));

@@ -14,7 +14,7 @@ namespace ui {
 
 class UI_ANDROID_EXPORT Resource {
  public:
-  enum class Type { BITMAP, NINE_PATCH_BITMAP };
+  enum class Type { BITMAP, NINE_PATCH_BITMAP, TOOLBAR };
 
   Resource();
   virtual ~Resource();

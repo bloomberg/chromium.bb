@@ -25,8 +25,6 @@ import org.chromium.ui.resources.statics.NinePatchData;
 public class ViewResourceAdapter implements DynamicResource, OnLayoutChangeListener {
     private final View mView;
     private final Rect mDirtyRect = new Rect();
-    private final Rect mContentPadding = new Rect();
-    private final Rect mContentAperture = new Rect();
 
     private Bitmap mBitmap;
     private Rect mBitmapSize = new Rect();
@@ -75,17 +73,16 @@ public class ViewResourceAdapter implements DynamicResource, OnLayoutChangeListe
         return mBitmapSize;
     }
 
+    /**
+     * Override this method to create the native resource type for the generated bitmap.
+     */
     @Override
     public long createNativeResource() {
-        // TODO(khushalsagar): Fix this to create the correct native resource type.
-        // See crbug.com/700454.
-        computeContentPadding(mContentPadding);
-        computeContentAperture(mContentAperture);
-        return ResourceFactory.createNinePatchBitmapResource(mContentPadding, mContentAperture);
+        return ResourceFactory.createBitmapResource(null);
     }
 
     @Override
-    public NinePatchData getNinePatchData() {
+    public final NinePatchData getNinePatchData() {
         return null;
     }
 
@@ -147,22 +144,6 @@ public class ViewResourceAdapter implements DynamicResource, OnLayoutChangeListe
      * Called after {@link #capture(Canvas)}.
      */
     protected void onCaptureEnd() {
-    }
-
-    /**
-     * Gives overriding classes the chance to specify a different content padding.
-     * @param outContentPadding The resulting content padding.
-     */
-    protected void computeContentPadding(Rect outContentPadding) {
-        outContentPadding.set(0, 0, mView.getWidth(), mView.getHeight());
-    }
-
-    /**
-     * Gives overriding classes the chance to specify a different content aperture.
-     * @param outContentAperture The resulting content aperture.
-     */
-    protected void computeContentAperture(Rect outContentAperture) {
-        outContentAperture.set(0, 0, mView.getWidth(), mView.getHeight());
     }
 
     /**

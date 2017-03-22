@@ -23,6 +23,7 @@
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/compositor/compositor_view.h"
 #include "chrome/browser/android/compositor/layer_title_cache.h"
+#include "chrome/browser/android/compositor/resources/resource_factory.h"
 #include "chrome/browser/android/compositor/scene_layer/contextual_search_scene_layer.h"
 #include "chrome/browser/android/compositor/scene_layer/reader_mode_scene_layer.h"
 #include "chrome/browser/android/compositor/scene_layer/scene_layer.h"
@@ -379,6 +380,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"ReaderModeSceneLayer", RegisterReaderModeSceneLayer},
     {"RemoteMediaPlayerBridge",
      remote_media::RemoteMediaPlayerBridge::RegisterRemoteMediaPlayerBridge},
+    {"ResourceFactory", RegisterResourceFactory},
     {"ResourcePrefetchPredictor",
      predictors::RegisterResourcePrefetchPredictor},
     {"RevenueStats", chrome::android::RegisterRevenueStats},

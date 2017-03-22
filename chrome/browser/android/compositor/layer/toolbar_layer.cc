@@ -8,6 +8,7 @@
 #include "cc/layers/solid_color_layer.h"
 #include "cc/layers/ui_resource_layer.h"
 #include "cc/resources/scoped_ui_resource.h"
+#include "chrome/browser/android/compositor/resources/toolbar_resource.h"
 #include "content/public/browser/android/compositor.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/android/resources/nine_patch_resource.h"
@@ -37,9 +38,8 @@ void ToolbarLayer::PushResource(
     bool show_debug,
     bool clip_shadow,
     bool browser_controls_at_bottom) {
-  // TODO(khushalsagar): This should not be a nine-patch resource.
-  ui::NinePatchResource* resource =
-      ui::NinePatchResource::From(resource_manager_->GetResource(
+  ToolbarResource* resource =
+      ToolbarResource::From(resource_manager_->GetResource(
           ui::ANDROID_RESOURCE_TYPE_DYNAMIC, toolbar_resource_id));
 
   // Ensure the toolbar resource is available before making the layer visible.
@@ -47,63 +47,50 @@ void ToolbarLayer::PushResource(
   if (!resource)
     return;
 
-  // This layer effectively draws over the space it takes for shadows.  Set the
-  // bounds to the non-shadow size so that other things can properly line up.
-  // Padding height does not include the height of the tabstrip, so we add
-  // it explicitly by adding y offset.
-  gfx::Size size =
-      gfx::Size(resource->padding().width(),
-                resource->padding().height() + resource->padding().y());
-  layer_->SetBounds(size);
+  // This layer effectively draws over the space the resource takes for shadows.
+  // Set the bounds to the non-shadow size so that other things can properly
+  // line up.
+  gfx::Size toolbar_bounds =
+      gfx::Size(resource->size().width(),
+                resource->size().height() - resource->shadow_height());
+  layer_->SetBounds(toolbar_bounds);
 
   // The toolbar_root_ contains all of the layers that make up the toolbar. The
   // toolbar_root_ is moved around inside of layer_ to allow appropriate
   // clipping of the shadow.
-  toolbar_root_->SetBounds(resource->padding().size());
-
-  gfx::PointF root_layer_position(0, y_offset);
-  gfx::PointF background_position(resource->padding().origin());
+  toolbar_root_->SetBounds(toolbar_bounds);
   if (browser_controls_at_bottom) {
-    // The toolbar's position as if it were completely shown.
-    float base_toolbar_y = window_height - resource->padding().size().height();
-    float layer_offset =
-        resource->size().height() - resource->padding().size().height();
-
-    root_layer_position.set_y(base_toolbar_y + y_offset);
-    toolbar_root_->SetPosition(gfx::PointF(0, -layer_offset));
-    background_position.set_y(layer_offset);
+    // If the browser controld are at bottom, this means that the shadow is at
+    // top of the container, i.e., at the top of the resource bitmap, move the
+    // toolbar up by the amount of the shadow to allow clipping if necessary.
+    toolbar_root_->SetPosition(gfx::PointF(0, -resource->shadow_height()));
   }
-  layer_->SetPosition(root_layer_position);
 
-  toolbar_background_layer_->SetBounds(resource->padding().size());
-  toolbar_background_layer_->SetPosition(background_position);
+  toolbar_background_layer_->SetBounds(resource->toolbar_rect().size());
+  toolbar_background_layer_->SetPosition(
+      gfx::PointF(resource->toolbar_rect().origin()));
   toolbar_background_layer_->SetBackgroundColor(toolbar_background_color);
 
-  bool url_bar_visible = (resource->aperture().width() != 0);
+  bool url_bar_visible = (resource->location_bar_content_rect().width() != 0);
   url_bar_background_layer_->SetHideLayerAndSubtree(!url_bar_visible);
   if (url_bar_visible) {
     ui::NinePatchResource* url_bar_background_resource =
         ui::NinePatchResource::From(resource_manager_->GetResource(
             ui::ANDROID_RESOURCE_TYPE_STATIC, url_bar_background_resource_id));
-    gfx::Size url_bar_size(resource->aperture().width() +
-                               url_bar_background_resource->size().width() -
-                               url_bar_background_resource->padding().width(),
-                           resource->aperture().height() +
-                               url_bar_background_resource->size().height() -
-                               url_bar_background_resource->padding().height());
-    gfx::Rect url_bar_border(
-        url_bar_background_resource->Border(url_bar_size));
-    gfx::PointF url_bar_position = gfx::PointF(
-        resource->aperture().x() - url_bar_background_resource->padding().x(),
-        resource->aperture().y() - url_bar_background_resource->padding().y());
 
-    url_bar_background_layer_->SetUIResourceId(
-        url_bar_background_resource->ui_resource()->id());
-    url_bar_background_layer_->SetBorder(url_bar_border);
+    gfx::Size draw_size(url_bar_background_resource->DrawSize(
+        resource->location_bar_content_rect().size()));
+    gfx::Rect border(url_bar_background_resource->Border(draw_size));
+    gfx::PointF position(url_bar_background_resource->DrawPosition(
+        resource->location_bar_content_rect().origin()));
+
+    url_bar_background_layer_->SetBounds(draw_size);
+    url_bar_background_layer_->SetPosition(position);
+    url_bar_background_layer_->SetBorder(border);
     url_bar_background_layer_->SetAperture(
         url_bar_background_resource->aperture());
-    url_bar_background_layer_->SetBounds(url_bar_size);
-    url_bar_background_layer_->SetPosition(url_bar_position);
+    url_bar_background_layer_->SetUIResourceId(
+        url_bar_background_resource->ui_resource()->id());
     url_bar_background_layer_->SetOpacity(url_bar_alpha);
   }
 
@@ -114,8 +101,9 @@ void ToolbarLayer::PushResource(
 
   anonymize_layer_->SetHideLayerAndSubtree(!anonymize);
   if (anonymize) {
-    anonymize_layer_->SetPosition(gfx::PointF(resource->aperture().origin()));
-    anonymize_layer_->SetBounds(resource->aperture().size());
+    anonymize_layer_->SetPosition(
+        gfx::PointF(resource->location_bar_content_rect().origin()));
+    anonymize_layer_->SetBounds(resource->location_bar_content_rect().size());
     anonymize_layer_->SetBackgroundColor(toolbar_textbox_background_color);
   }
 
@@ -124,6 +112,14 @@ void ToolbarLayer::PushResource(
     layer_->AddChild(debug_layer_);
   else if (!show_debug && debug_layer_->parent())
     debug_layer_->RemoveFromParent();
+
+  gfx::PointF root_layer_position(0, y_offset);
+  if (browser_controls_at_bottom) {
+    // The toolbar's position as if it were completely shown.
+    float base_toolbar_y = window_height - toolbar_bounds.height();
+    root_layer_position.set_y(base_toolbar_y + y_offset);
+  }
+  layer_->SetPosition(root_layer_position);
 }
 
 void ToolbarLayer::UpdateProgressBar(int progress_bar_x,

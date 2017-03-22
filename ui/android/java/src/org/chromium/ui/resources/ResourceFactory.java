@@ -20,8 +20,7 @@ public class ResourceFactory {
                                                ninePatchData.getAperture());
     }
 
-    // Make this private in https://codereview.chromium.org/2752693003/
-    public static long createNinePatchBitmapResource(Rect padding, Rect aperture) {
+    private static long createNinePatchBitmapResource(Rect padding, Rect aperture) {
         return nativeCreateNinePatchBitmapResource(padding.left, padding.top, padding.right,
                 padding.bottom, aperture.left, aperture.top, aperture.right, aperture.bottom);
     }
