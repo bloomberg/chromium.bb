@@ -12,6 +12,13 @@
 #include "components/sync/protocol/reading_list_specifics.pb.h"
 #include "net/base/backoff_entry_serializer.h"
 
+namespace {
+// Converts |time| to the number of microseconds since Jan 1st 1970.
+int64_t TimeToUS(const base::Time& time) {
+  return (time - base::Time::UnixEpoch()).InMicroseconds();
+}
+}
+
 // The backoff time is the following: 10min, 10min, 1h, 2h, 2h..., starting
 // after the first failure.
 const net::BackoffEntry::Policy ReadingListEntry::kBackoffPolicy = {
@@ -39,19 +46,22 @@ const net::BackoffEntry::Policy ReadingListEntry::kBackoffPolicy = {
     true,  // Don't use initial delay unless the last request was an error.
 };
 
-ReadingListEntry::ReadingListEntry(const GURL& url, const std::string& title)
-    : ReadingListEntry(url, title, nullptr){};
+ReadingListEntry::ReadingListEntry(const GURL& url,
+                                   const std::string& title,
+                                   const base::Time& now)
+    : ReadingListEntry(url, title, now, nullptr){};
 
 ReadingListEntry::ReadingListEntry(const GURL& url,
                                    const std::string& title,
+                                   const base::Time& now,
                                    std::unique_ptr<net::BackoffEntry> backoff)
     : ReadingListEntry(url,
                        title,
                        UNSEEN,
+                       TimeToUS(now),
                        0,
-                       0,
-                       0,
-                       0,
+                       TimeToUS(now),
+                       TimeToUS(now),
                        WAITING,
                        base::FilePath(),
                        GURL(),
@@ -93,14 +103,9 @@ ReadingListEntry::ReadingListEntry(
   } else {
     backoff_ = base::MakeUnique<net::BackoffEntry>(&kBackoffPolicy);
   }
-  if (creation_time_us_ == 0) {
-    DCHECK(update_time_us_ == 0);
-    DCHECK(update_title_time_us_ == 0);
-    creation_time_us_ =
-        (base::Time::Now() - base::Time::UnixEpoch()).InMicroseconds();
-    update_time_us_ = creation_time_us_;
-    update_title_time_us_ = creation_time_us_;
-  }
+  DCHECK(creation_time_us_);
+  DCHECK(update_time_us_);
+  DCHECK(update_title_time_us_);
   DCHECK(!url.is_empty());
   DCHECK(url.is_valid());
 }
@@ -181,26 +186,25 @@ bool ReadingListEntry::operator==(const ReadingListEntry& other) const {
   return url_ == other.url_;
 }
 
-void ReadingListEntry::SetTitle(const std::string& title) {
+void ReadingListEntry::SetTitle(const std::string& title,
+                                const base::Time& now) {
   title_ = title;
-  update_title_time_us_ =
-      (base::Time::Now() - base::Time::UnixEpoch()).InMicroseconds();
+  update_title_time_us_ = TimeToUS(now);
 }
 
-void ReadingListEntry::SetRead(bool read) {
+void ReadingListEntry::SetRead(bool read, const base::Time& now) {
   State previous_state = state_;
   state_ = read ? READ : UNREAD;
   if (state_ == previous_state) {
     return;
   }
   if (FirstReadTime() == 0 && read) {
-    first_read_time_us_ =
-        (base::Time::Now() - base::Time::UnixEpoch()).InMicroseconds();
+    first_read_time_us_ = TimeToUS(now);
   }
   if (!(previous_state == UNSEEN && state_ == UNREAD)) {
     // If changing UNSEEN -> UNREAD, entry is not marked updated to preserve
     // order in Reading List View.
-    MarkEntryUpdated();
+    MarkEntryUpdated(now);
   }
 }
 
@@ -215,14 +219,13 @@ bool ReadingListEntry::HasBeenSeen() const {
 void ReadingListEntry::SetDistilledInfo(const base::FilePath& path,
                                         const GURL& distilled_url,
                                         int64_t distilation_size,
-                                        int64_t distilation_time) {
+                                        const base::Time& distilation_time) {
   DCHECK(!path.empty());
   DCHECK(distilled_url.is_valid());
   distilled_path_ = path;
   distilled_state_ = PROCESSED;
   distilled_url_ = distilled_url;
-  distillation_time_us_ = distilation_time;
-  ;
+  distillation_time_us_ = TimeToUS(distilation_time);
   distillation_size_ = distilation_size;
   backoff_->Reset();
   failed_download_counter_ = 0;
@@ -260,14 +263,14 @@ int64_t ReadingListEntry::FirstReadTime() const {
   return first_read_time_us_;
 }
 
-void ReadingListEntry::MarkEntryUpdated() {
-  update_time_us_ =
-      (base::Time::Now() - base::Time::UnixEpoch()).InMicroseconds();
+void ReadingListEntry::MarkEntryUpdated(const base::Time& now) {
+  update_time_us_ = TimeToUS(now);
 }
 
 // static
 std::unique_ptr<ReadingListEntry> ReadingListEntry::FromReadingListLocal(
-    const reading_list::ReadingListLocal& pb_entry) {
+    const reading_list::ReadingListLocal& pb_entry,
+    const base::Time& now) {
   if (!pb_entry.has_url()) {
     return nullptr;
   }
@@ -283,6 +286,8 @@ std::unique_ptr<ReadingListEntry> ReadingListEntry::FromReadingListLocal(
   int64_t creation_time_us = 0;
   if (pb_entry.has_creation_time_us()) {
     creation_time_us = pb_entry.creation_time_us();
+  } else {
+    creation_time_us = (now - base::Time::UnixEpoch()).InMicroseconds();
   }
 
   int64_t first_read_time_us = 0;
@@ -290,12 +295,12 @@ std::unique_ptr<ReadingListEntry> ReadingListEntry::FromReadingListLocal(
     first_read_time_us = pb_entry.first_read_time_us();
   }
 
-  int64_t update_time_us = 0;
+  int64_t update_time_us = creation_time_us;
   if (pb_entry.has_update_time_us()) {
     update_time_us = pb_entry.update_time_us();
   }
 
-  int64_t update_title_time_us = 0;
+  int64_t update_title_time_us = creation_time_us;
   if (pb_entry.has_update_title_time_us()) {
     update_title_time_us = pb_entry.update_title_time_us();
   }
@@ -369,7 +374,7 @@ std::unique_ptr<ReadingListEntry> ReadingListEntry::FromReadingListLocal(
         deserializer.Deserialize(nullptr, nullptr));
     if (value) {
       backoff = net::BackoffEntrySerializer::DeserializeFromValue(
-          *value, &kBackoffPolicy, nullptr, base::Time::Now());
+          *value, &kBackoffPolicy, nullptr, now);
     }
   }
 
@@ -382,7 +387,8 @@ std::unique_ptr<ReadingListEntry> ReadingListEntry::FromReadingListLocal(
 
 // static
 std::unique_ptr<ReadingListEntry> ReadingListEntry::FromReadingListSpecifics(
-    const sync_pb::ReadingListSpecifics& pb_entry) {
+    const sync_pb::ReadingListSpecifics& pb_entry,
+    const base::Time& now) {
   if (!pb_entry.has_url()) {
     return nullptr;
   }
@@ -395,7 +401,7 @@ std::unique_ptr<ReadingListEntry> ReadingListEntry::FromReadingListSpecifics(
     title = pb_entry.title();
   }
 
-  int64_t creation_time_us = 0;
+  int64_t creation_time_us = TimeToUS(now);
   if (pb_entry.has_creation_time_us()) {
     creation_time_us = pb_entry.creation_time_us();
   }
@@ -405,12 +411,12 @@ std::unique_ptr<ReadingListEntry> ReadingListEntry::FromReadingListSpecifics(
     first_read_time_us = pb_entry.first_read_time_us();
   }
 
-  int64_t update_time_us = 0;
+  int64_t update_time_us = creation_time_us;
   if (pb_entry.has_update_time_us()) {
     update_time_us = pb_entry.update_time_us();
   }
 
-  int64_t update_title_time_us = 0;
+  int64_t update_title_time_us = creation_time_us;
   if (pb_entry.has_update_title_time_us()) {
     update_title_time_us = pb_entry.update_title_time_us();
   }
@@ -489,7 +495,7 @@ void ReadingListEntry::MergeWithEntry(const ReadingListEntry& other) {
 }
 
 std::unique_ptr<reading_list::ReadingListLocal>
-ReadingListEntry::AsReadingListLocal() const {
+ReadingListEntry::AsReadingListLocal(const base::Time& now) const {
   std::unique_ptr<reading_list::ReadingListLocal> pb_entry =
       base::MakeUnique<reading_list::ReadingListLocal>();
 
@@ -551,8 +557,7 @@ ReadingListEntry::AsReadingListLocal() const {
 
   if (backoff_) {
     std::unique_ptr<base::Value> backoff =
-        net::BackoffEntrySerializer::SerializeToValue(*backoff_,
-                                                      base::Time::Now());
+        net::BackoffEntrySerializer::SerializeToValue(*backoff_, now);
 
     std::string output;
     JSONStringValueSerializer serializer(&output);

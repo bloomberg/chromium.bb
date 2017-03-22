@@ -12,6 +12,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/default_clock.h"
 #include "components/favicon/core/large_icon_service.h"
 #include "components/favicon/core/test/mock_favicon_service.h"
 #include "components/reading_list/ios/reading_list_model.h"
@@ -56,7 +57,8 @@ class ReadingListCollectionViewControllerTest : public testing::Test {
                 GetLargestRawFaviconForPageURL(_, _, _, _, _))
         .WillRepeatedly(PostReply<5>(favicon_base::FaviconRawBitmapResult()));
 
-    reading_list_model_.reset(new ReadingListModelImpl(nullptr, nullptr));
+    reading_list_model_.reset(new ReadingListModelImpl(
+        nullptr, nullptr, base::MakeUnique<base::DefaultClock>()));
     large_icon_service_.reset(new favicon::LargeIconService(
         &mock_favicon_service_, base::ThreadTaskRunnerHandle::Get()));
     reading_list_view_controller_.reset(
@@ -190,7 +192,7 @@ TEST_F(ReadingListCollectionViewControllerTest,
                                 reading_list::ADDED_VIA_CURRENT_APP);
   int64_t size = 50;
   reading_list_model_->SetEntryDistilledInfo(url, distilled_path, distilled_url,
-                                             size, 100);
+                                             size, base::Time::FromTimeT(100));
   // Load view.
   [reading_list_view_controller_ view];
   DCHECK([reading_list_view_controller_.get().collectionView

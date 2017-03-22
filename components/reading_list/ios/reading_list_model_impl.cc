@@ -8,29 +8,30 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
+#include "base/time/clock.h"
 #include "components/prefs/pref_service.h"
 #include "components/reading_list/ios/reading_list_model_storage.h"
 #include "components/reading_list/ios/reading_list_pref_names.h"
 #include "url/gurl.h"
 
-ReadingListModelImpl::ReadingListModelImpl()
-    : ReadingListModelImpl(nullptr, nullptr) {}
-
 ReadingListModelImpl::ReadingListModelImpl(
     std::unique_ptr<ReadingListModelStorage> storage,
-    PrefService* pref_service)
+    PrefService* pref_service,
+    std::unique_ptr<base::Clock> clock)
     : entries_(base::MakeUnique<ReadingListEntries>()),
       unread_entry_count_(0),
       read_entry_count_(0),
       unseen_entry_count_(0),
+      clock_(std::move(clock)),
       pref_service_(pref_service),
       has_unseen_(false),
       loaded_(false),
       weak_ptr_factory_(this) {
   DCHECK(CalledOnValidThread());
+  DCHECK(clock_);
   if (storage) {
     storage_layer_ = std::move(storage);
-    storage_layer_->SetReadingListModel(this, this);
+    storage_layer_->SetReadingListModel(this, this, clock_.get());
   } else {
     loaded_ = true;
   }
@@ -134,7 +135,7 @@ void ReadingListModelImpl::MarkAllSeen() {
       observer.ReadingListWillUpdateEntry(this, iterator.first);
     }
     UpdateEntryStateCountersOnEntryRemoval(entry);
-    entry.SetRead(false);
+    entry.SetRead(false, clock_->Now());
     UpdateEntryStateCountersOnEntryInsertion(entry);
     if (storage_layer_) {
       storage_layer_->SaveEntry(entry);
@@ -330,7 +331,7 @@ const ReadingListEntry& ReadingListModelImpl::AddEntry(
 
   std::string trimmed_title = base::CollapseWhitespaceASCII(title, false);
 
-  ReadingListEntry entry(url, trimmed_title);
+  ReadingListEntry entry(url, trimmed_title, clock_->Now());
   for (auto& observer : observers_)
     observer.ReadingListWillAddEntry(this, entry);
   UpdateEntryStateCountersOnEntryInsertion(entry);
@@ -364,8 +365,8 @@ void ReadingListModelImpl::SetReadStatus(const GURL& url, bool read) {
     observer.ReadingListWillMoveEntry(this, url);
   }
   UpdateEntryStateCountersOnEntryRemoval(entry);
-  entry.SetRead(read);
-  entry.MarkEntryUpdated();
+  entry.SetRead(read, clock_->Now());
+  entry.MarkEntryUpdated(clock_->Now());
   UpdateEntryStateCountersOnEntryInsertion(entry);
 
   if (storage_layer_) {
@@ -394,7 +395,7 @@ void ReadingListModelImpl::SetEntryTitle(const GURL& url,
   for (ReadingListModelObserver& observer : observers_) {
     observer.ReadingListWillUpdateEntry(this, url);
   }
-  entry.SetTitle(trimmed_title);
+  entry.SetTitle(trimmed_title, clock_->Now());
   if (storage_layer_) {
     storage_layer_->SaveEntry(entry);
   }
@@ -408,7 +409,7 @@ void ReadingListModelImpl::SetEntryDistilledInfo(
     const base::FilePath& distilled_path,
     const GURL& distilled_url,
     int64_t distillation_size,
-    int64_t distillation_date) {
+    const base::Time& distillation_date) {
   DCHECK(CalledOnValidThread());
   DCHECK(loaded());
   auto iterator = entries_->find(url);

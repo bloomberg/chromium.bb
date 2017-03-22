@@ -5,6 +5,7 @@
 #include "ios/chrome/browser/reading_list/reading_list_web_state_observer.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/time/default_clock.h"
 #include "components/reading_list/ios/reading_list_model_impl.h"
 #include "ios/chrome/browser/reading_list/offline_url_utils.h"
 #import "ios/web/public/navigation_item.h"
@@ -58,8 +59,8 @@ class ReadingListWebStateObserverTest : public web::WebTest {
     test_navigation_manager->SetPendingItem(pending_item_.get());
     test_navigation_manager->SetLastCommittedItem(last_committed_item_.get());
     test_web_state_.SetNavigationManager(std::move(test_navigation_manager));
-    reading_list_model_ =
-        base::MakeUnique<ReadingListModelImpl>(nullptr, nullptr);
+    reading_list_model_ = base::MakeUnique<ReadingListModelImpl>(
+        nullptr, nullptr, base::MakeUnique<base::DefaultClock>());
     reading_list_model_->AddEntry(GURL(kTestURL), kTestTitle,
                                   reading_list::ADDED_VIA_CURRENT_APP);
     ReadingListWebStateObserver::FromWebState(&test_web_state_,
@@ -97,7 +98,8 @@ TEST_F(ReadingListWebStateObserverTest, TestLoadReadingListOnline) {
   GURL url(kTestURL);
   std::string distilled_path = kTestDistilledPath;
   reading_list_model_->SetEntryDistilledInfo(
-      url, base::FilePath(distilled_path), GURL(kTestDistilledURL), 50, 100);
+      url, base::FilePath(distilled_path), GURL(kTestDistilledURL), 50,
+      base::Time::FromTimeT(100));
   const ReadingListEntry* entry = reading_list_model_->GetEntryByURL(url);
 
   test_navigation_manager_->GetPendingItem()->SetURL(url);
@@ -119,7 +121,8 @@ TEST_F(ReadingListWebStateObserverTest, TestLoadReadingListDistilledCommitted) {
   GURL url(kTestURL);
   std::string distilled_path = kTestDistilledPath;
   reading_list_model_->SetEntryDistilledInfo(
-      url, base::FilePath(distilled_path), GURL(kTestDistilledURL), 50, 100);
+      url, base::FilePath(distilled_path), GURL(kTestDistilledURL), 50,
+      base::Time::FromTimeT(100));
   const ReadingListEntry* entry = reading_list_model_->GetEntryByURL(url);
   GURL distilled_url = reading_list::OfflineURLForPath(
       entry->DistilledPath(), entry->URL(), entry->DistilledURL());
@@ -145,7 +148,8 @@ TEST_F(ReadingListWebStateObserverTest, TestLoadReadingListDistilledPending) {
   GURL url(kTestURL);
   std::string distilled_path = kTestDistilledPath;
   reading_list_model_->SetEntryDistilledInfo(
-      url, base::FilePath(distilled_path), GURL(kTestDistilledURL), 50, 100);
+      url, base::FilePath(distilled_path), GURL(kTestDistilledURL), 50,
+      base::Time::FromTimeT(100));
   const ReadingListEntry* entry = reading_list_model_->GetEntryByURL(url);
   GURL distilled_url = reading_list::OfflineURLForPath(
       entry->DistilledPath(), entry->URL(), entry->DistilledURL());

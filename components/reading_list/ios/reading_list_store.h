@@ -35,7 +35,8 @@ class ReadingListStore : public ReadingListModelStorage,
 
   // ReadingListModelStorage implementation
   void SetReadingListModel(ReadingListModel* model,
-                           ReadingListStoreDelegate* delegate) override;
+                           ReadingListStoreDelegate* delegate,
+                           base::Clock* clock) override;
 
   void SaveEntry(const ReadingListEntry& entry) override;
   void RemoveEntry(const ReadingListEntry& entry) override;
@@ -164,6 +165,10 @@ class ReadingListStore : public ReadingListModelStorage,
 
   int pending_transaction_count_;
   std::unique_ptr<syncer::ModelTypeStore::WriteBatch> batch_;
+
+  base::Clock* clock_;
+
+  DISALLOW_COPY_AND_ASSIGN(ReadingListStore);
 };
 
 #endif  // COMPONENTS_READING_LIST_IOS_READING_LIST_STORE_H_

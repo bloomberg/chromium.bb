@@ -14,6 +14,10 @@
 #include "components/reading_list/ios/reading_list_model_storage.h"
 #include "components/reading_list/ios/reading_list_store_delegate.h"
 
+namespace base {
+class Clock;
+}
+
 class PrefService;
 
 // Concrete implementation of a reading list model using in memory lists.
@@ -24,12 +28,14 @@ class ReadingListModelImpl : public ReadingListModel,
   using ReadingListEntries = std::map<GURL, ReadingListEntry>;
 
   // Initialize a ReadingListModelImpl to load and save data in
-  // |persistence_layer|.
+  // |storage_layer|. Passing null to |storage_layer| will create a
+  // ReadingListModelImpl without persistence. Data will not be persistent
+  // across sessions.
+  // |clock| will be used to timestamp all the operations.
   ReadingListModelImpl(std::unique_ptr<ReadingListModelStorage> storage_layer,
-                       PrefService* pref_service);
+                       PrefService* pref_service,
+                       std::unique_ptr<base::Clock> clock_);
 
-  // Initialize a ReadingListModelImpl without persistence. Data will not be
-  // persistent across sessions.
   ReadingListModelImpl();
 
   syncer::ModelTypeSyncBridge* GetModelTypeSyncBridge() override;
@@ -73,7 +79,7 @@ class ReadingListModelImpl : public ReadingListModel,
                              const base::FilePath& distilled_path,
                              const GURL& distilled_url,
                              int64_t distillation_size,
-                             int64_t distillation_date) override;
+                             const base::Time& distillation_date) override;
 
   void SyncAddEntry(std::unique_ptr<ReadingListEntry> entry) override;
   ReadingListEntry* SyncMergeEntry(
@@ -132,11 +138,15 @@ class ReadingListModelImpl : public ReadingListModel,
   // Set the unseen flag to true.
   void SetUnseenFlag();
 
+  // |storage_layer_| depends on |clock_| so keep the order.
+  std::unique_ptr<base::Clock> clock_;
   std::unique_ptr<ReadingListModelStorage> storage_layer_;
   PrefService* pref_service_;
   bool has_unseen_;
   bool loaded_;
+
   base::WeakPtrFactory<ReadingListModelImpl> weak_ptr_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(ReadingListModelImpl);
 };
 

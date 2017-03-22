@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
+#include "base/time/default_clock.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -77,8 +78,9 @@ std::unique_ptr<KeyedService> ReadingListModelFactory::BuildServiceInstanceFor(
                                      GetChannel())));
 
   std::unique_ptr<KeyedService> reading_list_model =
-      base::MakeUnique<ReadingListModelImpl>(std::move(store),
-                                             chrome_browser_state->GetPrefs());
+      base::MakeUnique<ReadingListModelImpl>(
+          std::move(store), chrome_browser_state->GetPrefs(),
+          base::MakeUnique<base::DefaultClock>());
   return reading_list_model;
 }
 

@@ -33,11 +33,28 @@ class ReadingListEntry;
 // An entry in the reading list. The URL is a unique identifier for an entry, as
 // such it should not be empty and is the only thing considered when comparing
 // entries.
+// A word about timestamp usage in this class:
+// - The backing store uses int64 values to code timestamps. We use internally
+//   the same type to avoid useless conversions. This values represent the
+//   number of micro seconds since Jan 1st 1970.
+// - As most timestamp are used to sort entries, operations on int64_t are
+//   faster than operations on base::Time. So Getter return the int64_t values.
+// - However, to ensure all the conversions are done the same way, and because
+//   the Now time is alway retrieved using base::Time::Now(), all the timestamp
+//   parameter are passed as base::Time. These parameters are internally
+//   converted in int64_t.
 class ReadingListEntry {
  public:
-  ReadingListEntry(const GURL& url, const std::string& title);
+  // Creates a ReadingList entry. |url| and |title| are the main fields of the
+  // entry.
+  // |now| is used to fill the |creation_time_us_| and all the update timestamp
+  // fields.
   ReadingListEntry(const GURL& url,
                    const std::string& title,
+                   const base::Time& now);
+  ReadingListEntry(const GURL& url,
+                   const std::string& title,
+                   const base::Time& now,
                    std::unique_ptr<net::BackoffEntry> backoff);
   ReadingListEntry(ReadingListEntry&& entry);
   ~ReadingListEntry();
@@ -94,23 +111,28 @@ class ReadingListEntry {
   // microseconds since Jan 1st 1970.
   int64_t FirstReadTime() const;
 
-  // Set the update time to now.
-  void MarkEntryUpdated();
+  // Set the update time to |now|.
+  void MarkEntryUpdated(const base::Time& now);
 
   // Returns a protobuf encoding the content of this ReadingListEntry for local
-  // storage.
-  std::unique_ptr<reading_list::ReadingListLocal> AsReadingListLocal() const;
+  // storage. Use |now| to serialize the backoff_entry.
+  std::unique_ptr<reading_list::ReadingListLocal> AsReadingListLocal(
+      const base::Time& now) const;
 
   // Returns a protobuf encoding the content of this ReadingListEntry for sync.
   std::unique_ptr<sync_pb::ReadingListSpecifics> AsReadingListSpecifics() const;
 
   // Created a ReadingListEntry from the protobuf format.
+  // Use |now| to deserialize the backoff_entry.
   static std::unique_ptr<ReadingListEntry> FromReadingListLocal(
-      const reading_list::ReadingListLocal& pb_entry);
+      const reading_list::ReadingListLocal& pb_entry,
+      const base::Time& now);
 
   // Created a ReadingListEntry from the protobuf format.
+  // If creation time is not set, it will be set to |now|.
   static std::unique_ptr<ReadingListEntry> FromReadingListSpecifics(
-      const sync_pb::ReadingListSpecifics& pb_entry);
+      const sync_pb::ReadingListSpecifics& pb_entry,
+      const base::Time& now);
 
   // Merge |this| and |other| into this.
   // Local fields are kept from |this|.
@@ -129,19 +151,21 @@ class ReadingListEntry {
 
   bool operator==(const ReadingListEntry& other) const;
 
-  // Sets the title.
-  void SetTitle(const std::string& title);
+  // Sets |title_| to |title|. Sets |update_title_time_us_| to |now|.
+  void SetTitle(const std::string& title, const base::Time& now);
   // Sets the distilled info (offline path, online URL, size and date of the
   // stored files) about distilled page, switch the state to PROCESSED and reset
   // the time until the next try.
   void SetDistilledInfo(const base::FilePath& path,
                         const GURL& distilled_url,
                         int64_t distilation_size,
-                        int64_t distilation_time);
+                        const base::Time& distilation_time);
   // Sets the state to one of PROCESSING, WILL_RETRY or ERROR.
   void SetDistilledState(DistillationState distilled_state);
   // Sets the read state of the entry. Will set the UpdateTime of the entry.
-  void SetRead(bool read);
+  // If |first_read_time_us_| is 0 and read is READ, sets |first_read_time_us_|
+  // to |now|.
+  void SetRead(bool read, const base::Time& now);
 
  private:
   enum State { UNSEEN, UNREAD, READ };

@@ -15,6 +15,10 @@
 class ReadingListModel;
 class ReadingListStoreDelegate;
 
+namespace base {
+class Clock;
+}
+
 namespace syncer {
 class ModelTypeSyncBridge;
 }
@@ -32,8 +36,11 @@ class ReadingListModelStorage : public syncer::ModelTypeSyncBridge {
 
   // Sets the model the Storage is backing.
   // This will trigger store initalization and load persistent entries.
+  // Pass the |clock| from the |model| to ensure synchroization when loading
+  // entries.
   virtual void SetReadingListModel(ReadingListModel* model,
-                                   ReadingListStoreDelegate* delegate) = 0;
+                                   ReadingListStoreDelegate* delegate,
+                                   base::Clock* clock) = 0;
 
   // Starts a transaction. All Save/Remove entry will be delayed until the
   // transaction is commited.

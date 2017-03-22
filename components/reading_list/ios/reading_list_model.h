@@ -128,7 +128,7 @@ class ReadingListModel : public base::NonThreadSafe {
                                      const base::FilePath& distilled_path,
                                      const GURL& distilled_url,
                                      int64_t distilation_size,
-                                     int64_t distilation_time) = 0;
+                                     const base::Time& distilation_time) = 0;
 
   // Observer registration methods. The model will remove all observers upon
   // destruction automatically.

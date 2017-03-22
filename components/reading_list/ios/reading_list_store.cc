@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/time/clock.h"
 #include "components/reading_list/ios/proto/reading_list.pb.h"
 #include "components/reading_list/ios/reading_list_model_impl.h"
 #include "components/sync/model/entity_change.h"
@@ -32,10 +33,12 @@ ReadingListStore::~ReadingListStore() {
 }
 
 void ReadingListStore::SetReadingListModel(ReadingListModel* model,
-                                           ReadingListStoreDelegate* delegate) {
+                                           ReadingListStoreDelegate* delegate,
+                                           base::Clock* clock) {
   DCHECK(CalledOnValidThread());
   model_ = model;
   delegate_ = delegate;
+  clock_ = clock;
   create_store_callback_.Run(
       base::Bind(&ReadingListStore::OnStoreCreated, base::AsWeakPtr(this)));
 }
@@ -79,7 +82,7 @@ void ReadingListStore::SaveEntry(const ReadingListEntry& entry) {
   auto token = EnsureBatchCreated();
 
   std::unique_ptr<reading_list::ReadingListLocal> pb_entry =
-      entry.AsReadingListLocal();
+      entry.AsReadingListLocal(clock_->Now());
 
   batch_->WriteData(entry.URL().spec(), pb_entry->SerializeAsString());
 
@@ -137,7 +140,7 @@ void ReadingListStore::OnDatabaseLoad(
     }
 
     std::unique_ptr<ReadingListEntry> entry(
-        ReadingListEntry::FromReadingListLocal(proto));
+        ReadingListEntry::FromReadingListLocal(proto, clock_->Now()));
     if (!entry) {
       continue;
     }
@@ -218,7 +221,7 @@ base::Optional<syncer::ModelError> ReadingListStore::MergeSyncData(
         kv.second.value().specifics.reading_list();
     // Deserialize entry.
     std::unique_ptr<ReadingListEntry> entry(
-        ReadingListEntry::FromReadingListSpecifics(specifics));
+        ReadingListEntry::FromReadingListSpecifics(specifics, clock_->Now()));
 
     const ReadingListEntry* existing_entry =
         model_->GetEntryByURL(entry->URL());
@@ -227,7 +230,7 @@ base::Optional<syncer::ModelError> ReadingListStore::MergeSyncData(
       // This entry is new. Add it to the store and model.
       // Convert to local store format and write to store.
       std::unique_ptr<reading_list::ReadingListLocal> entry_pb =
-          entry->AsReadingListLocal();
+          entry->AsReadingListLocal(clock_->Now());
       batch_->WriteData(entry->URL().spec(), entry_pb->SerializeAsString());
 
       // Notify model about updated entry.
@@ -239,7 +242,7 @@ base::Optional<syncer::ModelError> ReadingListStore::MergeSyncData(
 
       // Write to the store.
       std::unique_ptr<reading_list::ReadingListLocal> entry_local_pb =
-          merged_entry->AsReadingListLocal();
+          merged_entry->AsReadingListLocal(clock_->Now());
       batch_->WriteData(merged_entry->URL().spec(),
                         entry_local_pb->SerializeAsString());
 
@@ -305,7 +308,7 @@ base::Optional<syncer::ModelError> ReadingListStore::ApplySyncChanges(
       const sync_pb::ReadingListSpecifics& specifics =
           change.data().specifics.reading_list();
       std::unique_ptr<ReadingListEntry> entry(
-          ReadingListEntry::FromReadingListSpecifics(specifics));
+          ReadingListEntry::FromReadingListSpecifics(specifics, clock_->Now()));
 
       const ReadingListEntry* existing_entry =
           model_->GetEntryByURL(entry->URL());
@@ -314,7 +317,7 @@ base::Optional<syncer::ModelError> ReadingListStore::ApplySyncChanges(
         // This entry is new. Add it to the store and model.
         // Convert to local store format and write to store.
         std::unique_ptr<reading_list::ReadingListLocal> entry_pb =
-            entry->AsReadingListLocal();
+            entry->AsReadingListLocal(clock_->Now());
         batch_->WriteData(entry->URL().spec(), entry_pb->SerializeAsString());
 
         // Notify model about updated entry.
@@ -326,7 +329,7 @@ base::Optional<syncer::ModelError> ReadingListStore::ApplySyncChanges(
 
         // Write to the store.
         std::unique_ptr<reading_list::ReadingListLocal> entry_local_pb =
-            merged_entry->AsReadingListLocal();
+            merged_entry->AsReadingListLocal(clock_->Now());
         batch_->WriteData(merged_entry->URL().spec(),
                           entry_local_pb->SerializeAsString());
 

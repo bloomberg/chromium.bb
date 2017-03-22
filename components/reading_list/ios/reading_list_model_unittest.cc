@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#import "base/test/ios/wait_util.h"
+#include "base/test/simple_test_clock.h"
 #include "components/reading_list/ios/reading_list_model_impl.h"
 #include "components/reading_list/ios/reading_list_model_storage.h"
 #include "components/reading_list/ios/reading_list_store_delegate.h"
@@ -19,6 +19,11 @@ namespace {
 const GURL callback_url("http://example.com");
 const std::string callback_title("test title");
 
+base::Time AdvanceAndGetTime(base::SimpleTestClock* clock) {
+  clock->Advance(base::TimeDelta::FromMilliseconds(10));
+  return clock->Now();
+}
+
 class TestReadingListStorageObserver {
  public:
   virtual void ReadingListDidSaveEntry() = 0;
@@ -27,66 +32,63 @@ class TestReadingListStorageObserver {
 
 class TestReadingListStorage : public ReadingListModelStorage {
  public:
-  TestReadingListStorage(TestReadingListStorageObserver* observer)
+  TestReadingListStorage(TestReadingListStorageObserver* observer,
+                         base::SimpleTestClock* clock)
       : ReadingListModelStorage(
             base::Bind(&syncer::ModelTypeChangeProcessor::Create,
                        base::RepeatingClosure()),
             syncer::READING_LIST),
         entries_(new ReadingListStoreDelegate::ReadingListEntries()),
-        observer_(observer) {}
+        observer_(observer),
+        clock_(clock) {}
 
   void AddSampleEntries() {
     // Adds timer and interlace read/unread entry creation to avoid having two
     // entries with the same creation timestamp.
-    ReadingListEntry unread_a(GURL("http://unread_a.com"), "unread_a");
+    ReadingListEntry unread_a(GURL("http://unread_a.com"), "unread_a",
+                              AdvanceAndGetTime(clock_));
     entries_->insert(
         std::make_pair(GURL("http://unread_a.com"), std::move(unread_a)));
-    base::test::ios::SpinRunLoopWithMinDelay(
-        base::TimeDelta::FromMilliseconds(5));
 
-    ReadingListEntry read_a(GURL("http://read_a.com"), "read_a");
-    read_a.SetRead(true);
+    ReadingListEntry read_a(GURL("http://read_a.com"), "read_a",
+                            AdvanceAndGetTime(clock_));
+    read_a.SetRead(true, AdvanceAndGetTime(clock_));
     entries_->insert(
         std::make_pair(GURL("http://read_a.com"), std::move(read_a)));
-    base::test::ios::SpinRunLoopWithMinDelay(
-        base::TimeDelta::FromMilliseconds(5));
 
-    ReadingListEntry unread_b(GURL("http://unread_b.com"), "unread_b");
+    ReadingListEntry unread_b(GURL("http://unread_b.com"), "unread_b",
+                              AdvanceAndGetTime(clock_));
     entries_->insert(
         std::make_pair(GURL("http://unread_b.com"), std::move(unread_b)));
-    base::test::ios::SpinRunLoopWithMinDelay(
-        base::TimeDelta::FromMilliseconds(5));
 
-    ReadingListEntry read_b(GURL("http://read_b.com"), "read_b");
-    read_b.SetRead(true);
+    ReadingListEntry read_b(GURL("http://read_b.com"), "read_b",
+                            AdvanceAndGetTime(clock_));
+    read_b.SetRead(true, AdvanceAndGetTime(clock_));
     entries_->insert(
         std::make_pair(GURL("http://read_b.com"), std::move(read_b)));
-    base::test::ios::SpinRunLoopWithMinDelay(
-        base::TimeDelta::FromMilliseconds(5));
 
-    ReadingListEntry unread_c(GURL("http://unread_c.com"), "unread_c");
+    ReadingListEntry unread_c(GURL("http://unread_c.com"), "unread_c",
+                              AdvanceAndGetTime(clock_));
     entries_->insert(
         std::make_pair(GURL("http://unread_c.com"), std::move(unread_c)));
-    base::test::ios::SpinRunLoopWithMinDelay(
-        base::TimeDelta::FromMilliseconds(5));
 
-    ReadingListEntry read_c(GURL("http://read_c.com"), "read_c");
-    read_c.SetRead(true);
+    ReadingListEntry read_c(GURL("http://read_c.com"), "read_c",
+                            AdvanceAndGetTime(clock_));
+    read_c.SetRead(true, AdvanceAndGetTime(clock_));
     entries_->insert(
         std::make_pair(GURL("http://read_c.com"), std::move(read_c)));
-    base::test::ios::SpinRunLoopWithMinDelay(
-        base::TimeDelta::FromMilliseconds(5));
 
-    ReadingListEntry unread_d(GURL("http://unread_d.com"), "unread_d");
+    ReadingListEntry unread_d(GURL("http://unread_d.com"), "unread_d",
+                              AdvanceAndGetTime(clock_));
     entries_->insert(
         std::make_pair(GURL("http://unread_d.com"), std::move(unread_d)));
-    base::test::ios::SpinRunLoopWithMinDelay(
-        base::TimeDelta::FromMilliseconds(5));
   }
 
   void SetReadingListModel(ReadingListModel* model,
-                           ReadingListStoreDelegate* delegate) override {
+                           ReadingListStoreDelegate* delegate,
+                           base::Clock* clock) override {
     delegate->StoreLoaded(std::move(entries_));
+    clock_ = static_cast<base::SimpleTestClock*>(clock);
   }
 
   // Saves or updates an entry. If the entry is not yet in the database, it is
@@ -148,22 +150,28 @@ class TestReadingListStorage : public ReadingListModelStorage {
  private:
   std::unique_ptr<ReadingListStoreDelegate::ReadingListEntries> entries_;
   TestReadingListStorageObserver* observer_;
+  base::SimpleTestClock* clock_;
 };
 
 class ReadingListModelTest : public ReadingListModelObserver,
                              public TestReadingListStorageObserver,
                              public testing::Test {
  public:
-  ReadingListModelTest()
-      : callback_called_(false), model_(new ReadingListModelImpl()) {
+  ReadingListModelTest() : callback_called_(false) {
+    auto clock = base::MakeUnique<base::SimpleTestClock>();
+    clock_ = clock.get();
+    model_ = base::MakeUnique<ReadingListModelImpl>(nullptr, nullptr,
+                                                    std::move(clock));
     ClearCounts();
     model_->AddObserver(this);
   }
   ~ReadingListModelTest() override {}
 
-  void SetStorage(std::unique_ptr<TestReadingListStorage> storage) {
-    model_ =
-        base::MakeUnique<ReadingListModelImpl>(std::move(storage), nullptr);
+  void SetStorage(std::unique_ptr<TestReadingListStorage> storage,
+                  std::unique_ptr<base::SimpleTestClock> clock) {
+    clock_ = clock.get();
+    model_ = base::MakeUnique<ReadingListModelImpl>(std::move(storage), nullptr,
+                                                    std::move(clock));
     ClearCounts();
     model_->AddObserver(this);
   }
@@ -294,6 +302,8 @@ class ReadingListModelTest : public ReadingListModelObserver,
   bool callback_called_;
 
   std::unique_ptr<ReadingListModelImpl> model_;
+  // Owned by |model_|;
+  base::SimpleTestClock* clock_;
 };
 
 // Tests creating an empty model.
@@ -310,9 +320,10 @@ TEST_F(ReadingListModelTest, EmptyLoaded) {
 // Tests load model.
 TEST_F(ReadingListModelTest, ModelLoaded) {
   ClearCounts();
-  auto storage = base::MakeUnique<TestReadingListStorage>(this);
+  auto clock = base::MakeUnique<base::SimpleTestClock>();
+  auto storage = base::MakeUnique<TestReadingListStorage>(this, clock.get());
   storage->AddSampleEntries();
-  SetStorage(std::move(storage));
+  SetStorage(std::move(storage), std::move(clock));
 
   AssertObserverCount(1, 0, 0, 0, 0, 0, 0, 0, 0);
   std::map<GURL, std::string> loaded_entries;
@@ -334,8 +345,9 @@ TEST_F(ReadingListModelTest, ModelLoaded) {
 
 // Tests adding entry.
 TEST_F(ReadingListModelTest, AddEntry) {
-  auto storage = base::MakeUnique<TestReadingListStorage>(this);
-  SetStorage(std::move(storage));
+  auto clock = base::MakeUnique<base::SimpleTestClock>();
+  auto storage = base::MakeUnique<TestReadingListStorage>(this, clock.get());
+  SetStorage(std::move(storage), std::move(clock));
   ClearCounts();
 
   const ReadingListEntry& entry =
@@ -360,11 +372,12 @@ TEST_F(ReadingListModelTest, AddEntry) {
 
 // Tests addin entry from sync.
 TEST_F(ReadingListModelTest, SyncAddEntry) {
-  auto storage = base::MakeUnique<TestReadingListStorage>(this);
-  SetStorage(std::move(storage));
-  auto entry =
-      base::MakeUnique<ReadingListEntry>(GURL("http://example.com"), "sample");
-  entry->SetRead(true);
+  auto clock = base::MakeUnique<base::SimpleTestClock>();
+  auto storage = base::MakeUnique<TestReadingListStorage>(this, clock.get());
+  SetStorage(std::move(storage), std::move(clock));
+  auto entry = base::MakeUnique<ReadingListEntry>(
+      GURL("http://example.com"), "sample", AdvanceAndGetTime(clock_));
+  entry->SetRead(true, AdvanceAndGetTime(clock_));
   ClearCounts();
 
   model_->SyncAddEntry(std::move(entry));
@@ -377,8 +390,9 @@ TEST_F(ReadingListModelTest, SyncAddEntry) {
 
 // Tests updating entry from sync.
 TEST_F(ReadingListModelTest, SyncMergeEntry) {
-  auto storage = base::MakeUnique<TestReadingListStorage>(this);
-  SetStorage(std::move(storage));
+  auto clock = base::MakeUnique<base::SimpleTestClock>();
+  auto storage = base::MakeUnique<TestReadingListStorage>(this, clock.get());
+  SetStorage(std::move(storage), std::move(clock));
   model_->AddEntry(GURL("http://example.com"), "sample",
                    reading_list::ADDED_VIA_CURRENT_APP);
   const base::FilePath distilled_path("distilled/page.html");
@@ -386,16 +400,15 @@ TEST_F(ReadingListModelTest, SyncMergeEntry) {
   int64_t size = 50;
   int64_t time = 100;
   model_->SetEntryDistilledInfo(GURL("http://example.com"), distilled_path,
-                                distilled_url, size, time);
+                                distilled_url, size,
+                                base::Time::FromTimeT(time));
   const ReadingListEntry* local_entry =
       model_->GetEntryByURL(GURL("http://example.com"));
   int64_t local_update_time = local_entry->UpdateTime();
 
-  base::test::ios::SpinRunLoopWithMinDelay(
-      base::TimeDelta::FromMilliseconds(10));
-  auto sync_entry =
-      base::MakeUnique<ReadingListEntry>(GURL("http://example.com"), "sample");
-  sync_entry->SetRead(true);
+  auto sync_entry = base::MakeUnique<ReadingListEntry>(
+      GURL("http://example.com"), "sample", AdvanceAndGetTime(clock_));
+  sync_entry->SetRead(true, AdvanceAndGetTime(clock_));
   ASSERT_GT(sync_entry->UpdateTime(), local_update_time);
   int64_t sync_update_time = sync_entry->UpdateTime();
   EXPECT_TRUE(sync_entry->DistilledPath().empty());
@@ -411,13 +424,15 @@ TEST_F(ReadingListModelTest, SyncMergeEntry) {
             base::FilePath("distilled/page.html"));
   EXPECT_EQ(merged_entry->UpdateTime(), sync_update_time);
   EXPECT_EQ(size, merged_entry->DistillationSize());
-  EXPECT_EQ(time, merged_entry->DistillationTime());
+  EXPECT_EQ(time * base::Time::kMicrosecondsPerSecond,
+            merged_entry->DistillationTime());
 }
 
 // Tests deleting entry.
 TEST_F(ReadingListModelTest, RemoveEntryByUrl) {
-  auto storage = base::MakeUnique<TestReadingListStorage>(this);
-  SetStorage(std::move(storage));
+  auto clock = base::MakeUnique<base::SimpleTestClock>();
+  auto storage = base::MakeUnique<TestReadingListStorage>(this, clock.get());
+  SetStorage(std::move(storage), std::move(clock));
   model_->AddEntry(GURL("http://example.com"), "sample",
                    reading_list::ADDED_VIA_CURRENT_APP);
   ClearCounts();
@@ -448,8 +463,9 @@ TEST_F(ReadingListModelTest, RemoveEntryByUrl) {
 
 // Tests deleting entry from sync.
 TEST_F(ReadingListModelTest, RemoveSyncEntryByUrl) {
-  auto storage = base::MakeUnique<TestReadingListStorage>(this);
-  SetStorage(std::move(storage));
+  auto clock = base::MakeUnique<base::SimpleTestClock>();
+  auto storage = base::MakeUnique<TestReadingListStorage>(this, clock.get());
+  SetStorage(std::move(storage), std::move(clock));
   model_->AddEntry(GURL("http://example.com"), "sample",
                    reading_list::ADDED_VIA_CURRENT_APP);
   ClearCounts();
@@ -631,13 +647,15 @@ TEST_F(ReadingListModelTest, UpdateDistilledInfo) {
   int64_t size = 50;
   int64_t time = 100;
   model_->SetEntryDistilledInfo(GURL("http://example.com"), distilled_path,
-                                distilled_url, size, time);
+                                distilled_url, size,
+                                base::Time::FromTimeT(time));
   AssertObserverCount(0, 0, 0, 0, 0, 0, 0, 1, 1);
   EXPECT_EQ(ReadingListEntry::PROCESSED, entry.DistilledState());
   EXPECT_EQ(distilled_path, entry.DistilledPath());
   EXPECT_EQ(distilled_url, entry.DistilledURL());
   EXPECT_EQ(size, entry.DistillationSize());
-  EXPECT_EQ(time, entry.DistillationTime());
+  EXPECT_EQ(time * base::Time::kMicrosecondsPerSecond,
+            entry.DistillationTime());
 }
 
 // Tests setting title on read entry.
@@ -679,13 +697,15 @@ TEST_F(ReadingListModelTest, UpdateReadDistilledInfo) {
   int64_t size = 50;
   int64_t time = 100;
   model_->SetEntryDistilledInfo(GURL("http://example.com"), distilled_path,
-                                distilled_url, size, time);
+                                distilled_url, size,
+                                base::Time::FromTimeT(time));
   AssertObserverCount(0, 0, 0, 0, 0, 0, 0, 1, 1);
   EXPECT_EQ(ReadingListEntry::PROCESSED, entry->DistilledState());
   EXPECT_EQ(distilled_path, entry->DistilledPath());
   EXPECT_EQ(distilled_url, entry->DistilledURL());
   EXPECT_EQ(size, entry->DistillationSize());
-  EXPECT_EQ(time, entry->DistillationTime());
+  EXPECT_EQ(time * base::Time::kMicrosecondsPerSecond,
+            entry->DistillationTime());
 }
 
 // Tests that ReadingListModel calls CallbackModelBeingDeleted when destroyed.

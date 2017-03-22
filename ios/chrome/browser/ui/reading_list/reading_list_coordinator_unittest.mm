@@ -7,6 +7,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/default_clock.h"
 #include "components/favicon/core/large_icon_service.h"
 #include "components/favicon/core/test/mock_favicon_service.h"
 #include "components/reading_list/ios/reading_list_entry.h"
@@ -94,7 +95,8 @@ class ReadingListCoordinatorTest : public web::WebTestWithWebState {
     TestChromeBrowserState::Builder builder;
     browser_state_ = builder.Build();
 
-    reading_list_model_.reset(new ReadingListModelImpl(nullptr, nullptr));
+    reading_list_model_.reset(new ReadingListModelImpl(
+        nullptr, nullptr, base::MakeUnique<base::DefaultClock>()));
     large_icon_service_.reset(new favicon::LargeIconService(
         &mock_favicon_service_, base::ThreadTaskRunnerHandle::Get()));
     coordinator_.reset([[ReadingListCoordinator alloc]
@@ -139,7 +141,7 @@ TEST_F(ReadingListCoordinatorTest, OpenItem) {
   GURL url("https://chromium.org");
   std::string title("Chromium");
   std::unique_ptr<ReadingListEntry> entry =
-      base::MakeUnique<ReadingListEntry>(url, title);
+      base::MakeUnique<ReadingListEntry>(url, title, base::Time::FromTimeT(10));
   ReadingListModel* model = GetReadingListModel();
   model->AddEntry(url, title, reading_list::ADDED_VIA_CURRENT_APP);
 

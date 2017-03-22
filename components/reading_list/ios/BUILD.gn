@@ -43,8 +43,8 @@ source_set("unit_tests") {
   sources = [
     "offline_url_utils_unittest.cc",
     "reading_list_entry_unittest.cc",
-    "reading_list_model_unittest.mm",
-    "reading_list_store_unittest.mm",
+    "reading_list_model_unittest.cc",
+    "reading_list_store_unittest.cc",
   ]
   deps = [
     ":ios",
