@@ -4,7 +4,7 @@ InspectorTest.preloadPanel("resources");
 InspectorTest.dumpIndexedDBTree = function()
 {
     InspectorTest.addResult("Dumping IndexedDB tree:");
-    var indexedDBTreeElement = UI.panels.resources.indexedDBListTreeElement;
+    var indexedDBTreeElement = UI.panels.resources._sidebar.indexedDBListTreeElement;
     if (!indexedDBTreeElement.childCount()) {
         InspectorTest.addResult("    (empty)");
         return;

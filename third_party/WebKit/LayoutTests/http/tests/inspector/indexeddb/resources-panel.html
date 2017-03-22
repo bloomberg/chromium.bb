@@ -70,7 +70,7 @@ function test()
     UI.viewManager.showView("resources");
 
     InspectorTest.addResult("Expanded IndexedDB tree element.");
-    UI.panels.resources.indexedDBListTreeElement.expand();
+    UI.panels.resources._sidebar.indexedDBListTreeElement.expand();
     InspectorTest.dumpIndexedDBTree();
     InspectorTest.addResult("Created database.");
     createDatabase(databaseCreated);
@@ -79,7 +79,7 @@ function test()
     {
         indexedDBModel = InspectorTest.indexedDBModel();
         indexedDBModel.addEventListener(Resources.IndexedDBModel.Events.DatabaseLoaded, databaseLoaded);
-        UI.panels.resources.indexedDBListTreeElement.refreshIndexedDB();
+        UI.panels.resources._sidebar.indexedDBListTreeElement.refreshIndexedDB();
     }
 
     function databaseLoaded()
@@ -106,14 +106,14 @@ function test()
 
     function databaseDeleted()
     {
-        UI.panels.resources.indexedDBListTreeElement.refreshIndexedDB();
+        UI.panels.resources._sidebar.indexedDBListTreeElement.refreshIndexedDB();
         InspectorTest.addSniffer(Resources.IndexedDBModel.prototype, "_updateOriginDatabaseNames", databaseNamesLoadedAfterDeleting, false);
     }
 
     function databaseNamesLoadedAfterDeleting()
     {
         InspectorTest.dumpIndexedDBTree();
-        UI.panels.resources.indexedDBListTreeElement.collapse();
+        UI.panels.resources._sidebar.indexedDBListTreeElement.collapse();
         InspectorTest.completeTest();
     }
 }

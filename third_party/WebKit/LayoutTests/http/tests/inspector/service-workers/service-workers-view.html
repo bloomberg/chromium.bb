@@ -42,7 +42,7 @@ function test()
     }
 
     InspectorTest.addResult("Select ServiceWorkers tree element.");
-    UI.panels.resources.serviceWorkersTreeElement.select();
+    UI.panels.resources._sidebar.serviceWorkersTreeElement.select();
     InspectorTest.addResult("Register ServiceWorker for scope1");
     InspectorTest.registerServiceWorker(scriptURL, scope1);
 }

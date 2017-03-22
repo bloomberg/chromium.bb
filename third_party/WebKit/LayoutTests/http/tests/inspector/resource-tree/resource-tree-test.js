@@ -64,7 +64,7 @@ InspectorTest.dumpResourcesTree = function()
             dump(children[i], prefix + "    ");
     }
 
-    dump(UI.panels.resources._resourcesSection._treeElement, "");
+    dump(UI.panels.resources._sidebar._resourcesSection._treeElement, "");
     if (!InspectorTest._testSourceNavigator) {
         InspectorTest._testSourceNavigator = new Sources.SourcesNavigatorView();
         InspectorTest._testSourceNavigator.show(UI.inspectorView.element);

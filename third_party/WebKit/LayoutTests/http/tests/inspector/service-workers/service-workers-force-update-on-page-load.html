@@ -90,7 +90,7 @@ function test()
             InspectorTest.deleteServiceWorkerRegistration(scope);
             InspectorTest.completeTest();
         });
-    UI.panels.resources.serviceWorkersTreeElement.select();
+    UI.panels.resources._sidebar.serviceWorkersTreeElement.select();
     InspectorTest.registerServiceWorker(scriptURL, scope);
 }
 

@@ -46,7 +46,7 @@ function test()
             InspectorTest.completeTest();
             return;
         }
-        UI.panels.resources._showDOMStorage(storage);
+        UI.panels.resources.showDOMStorage(storage);
         InspectorTest.addResult("Did show: " + name(storage));
         InspectorTest.deprecatedRunAfterPendingDispatches(function() {
             InspectorTest.addResult(name(storage) + " content: ");

@@ -92,7 +92,7 @@ function initialize_extensionsPanelTest()
         }
         InspectorTest.recordNetwork();
         InspectorTest.addSniffer(UI.panels.sources, "showUILocation", showUILocationHook, true);
-        InspectorTest.addSniffer(UI.panels.resources, "showResource", showResourceHook, true);
+        InspectorTest.addSniffer(UI.panels.resources._sidebar, "showResource", showResourceHook, true);
         InspectorTest.addSniffer(UI.panels.network, "revealAndHighlightRequest", showRequestHook, true);
 
         function showUILocationHook(uiLocation)

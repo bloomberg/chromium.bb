@@ -7,9 +7,9 @@ InspectorTest.preloadPanel("resources");
 
 InspectorTest.dumpCacheTree = function()
 {
-    UI.panels.resources.cacheStorageListTreeElement.expand();
+    UI.panels.resources._sidebar.cacheStorageListTreeElement.expand();
     InspectorTest.addResult("Dumping CacheStorage tree:");
-    var cachesTreeElement = UI.panels.resources.cacheStorageListTreeElement;
+    var cachesTreeElement = UI.panels.resources._sidebar.cacheStorageListTreeElement;
     var promise = new Promise(function(resolve, reject) {
         InspectorTest.addSnifferPromise(SDK.ServiceWorkerCacheModel.prototype, "_updateCacheNames").then(crawlCacheTree).catch(reject);
 
@@ -65,20 +65,20 @@ InspectorTest.dumpCacheTree = function()
             }
         }
     });
-    UI.panels.resources.cacheStorageListTreeElement._refreshCaches();
+    UI.panels.resources._sidebar.cacheStorageListTreeElement._refreshCaches();
     return promise;
 }
 
 // If optionalEntry is not specified, then the whole cache is deleted.
 InspectorTest.deleteCacheFromInspector = function(cacheName, optionalEntry)
 {
-    UI.panels.resources.cacheStorageListTreeElement.expand();
+    UI.panels.resources._sidebar.cacheStorageListTreeElement.expand();
     if (optionalEntry) {
         InspectorTest.addResult("Deleting CacheStorage entry " + optionalEntry + " in cache " + cacheName);
     } else {
         InspectorTest.addResult("Deleting CacheStorage cache " + cacheName);
     }
-    var cachesTreeElement = UI.panels.resources.cacheStorageListTreeElement;
+    var cachesTreeElement = UI.panels.resources._sidebar.cacheStorageListTreeElement;
     var promise = new Promise(function(resolve, reject) {
         InspectorTest.addSnifferPromise(SDK.ServiceWorkerCacheModel.prototype, "_updateCacheNames")
             .then(function() {
@@ -124,7 +124,7 @@ InspectorTest.deleteCacheFromInspector = function(cacheName, optionalEntry)
                 reject("Error: Could not find CacheStorage cache " + cacheName);
             }).catch(reject);
     });
-    UI.panels.resources.cacheStorageListTreeElement._refreshCaches();
+    UI.panels.resources._sidebar.cacheStorageListTreeElement._refreshCaches();
     return promise;
 }
 

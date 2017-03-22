@@ -99,7 +99,7 @@ function test() {
     {
         InspectorTest.addSniffer(Elements.ElementsPanel.prototype, "revealAndSelectNode", nodeRevealed, true);
         InspectorTest.addSniffer(Sources.SourcesPanel.prototype, "showUILocation", uiLocationRevealed, true);
-        InspectorTest.addSniffer(Resources.ResourcesPanel.prototype, "showResource", resourceRevealed, true);
+        InspectorTest.addSniffer(Resources.ApplicationPanelSidebar.prototype, "showResource", resourceRevealed, true);
         InspectorTest.addSniffer(Network.NetworkPanel.prototype, "revealAndHighlightRequest", revealed, true);
     }
 

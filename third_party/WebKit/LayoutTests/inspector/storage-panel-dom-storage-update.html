@@ -66,7 +66,7 @@ function test()
 
             InspectorTest.assertTrue(!!storage, "Local storage not found.");
 
-            UI.panels.resources._showDOMStorage(storage);
+            UI.panels.resources.showDOMStorage(storage);
             view = UI.panels.resources._domStorageView;
             InspectorTest.addSniffer(view, "_showDOMStorageItems", viewUpdated);
         },
