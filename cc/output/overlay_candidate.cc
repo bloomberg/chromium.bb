@@ -25,7 +25,7 @@ const SkMScalar kEpsilon = std::numeric_limits<float>::epsilon();
 const gfx::BufferFormat kOverlayFormats[] = {
     gfx::BufferFormat::RGBX_8888, gfx::BufferFormat::RGBA_8888,
     gfx::BufferFormat::BGRX_8888, gfx::BufferFormat::BGRA_8888,
-    gfx::BufferFormat::BGR_565};
+    gfx::BufferFormat::BGR_565,   gfx::BufferFormat::YUV_420_BIPLANAR};
 
 enum Axis { NONE, AXIS_POS_X, AXIS_NEG_X, AXIS_POS_Y, AXIS_NEG_Y };
 

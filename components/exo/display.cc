@@ -45,7 +45,7 @@ const gfx::BufferFormat kOverlayFormats[] = {
 
 const gfx::BufferFormat kOverlayFormatsForDrmAtomic[] = {
     gfx::BufferFormat::RGBX_8888, gfx::BufferFormat::RGBA_8888,
-    gfx::BufferFormat::BGR_565};
+    gfx::BufferFormat::BGR_565, gfx::BufferFormat::YUV_420_BIPLANAR};
 #endif
 
 }  // namespace
