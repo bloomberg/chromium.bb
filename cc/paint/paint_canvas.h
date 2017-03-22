@@ -7,6 +7,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "build/build_config.h"
 #include "cc/paint/paint_export.h"
 #include "cc/paint/paint_record.h"
@@ -166,8 +167,7 @@ class CC_PAINT_EXPORT PaintCanvas {
                             const PaintFlags& flags) = 0;
 
   virtual void drawDisplayItemList(
-      const SkRect& bounds,
-      const DisplayItemList* display_item_list) = 0;
+      scoped_refptr<DisplayItemList> display_item_list) = 0;
 
   virtual void drawPicture(sk_sp<const PaintRecord> record,
                            const SkMatrix* matrix,

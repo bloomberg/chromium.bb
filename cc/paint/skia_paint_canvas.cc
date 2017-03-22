@@ -267,12 +267,8 @@ void SkiaPaintCanvas::drawTextBlob(sk_sp<SkTextBlob> blob,
 }
 
 void SkiaPaintCanvas::drawDisplayItemList(
-    const SkRect& bounds,
-    const DisplayItemList* display_item_list) {
-  SkPictureRecorder recorder;
-  SkCanvas* canvas = recorder.beginRecording(bounds);
-  display_item_list->Raster(canvas, nullptr);
-  canvas_->drawPicture(recorder.finishRecordingAsPicture());
+    scoped_refptr<DisplayItemList> display_item_list) {
+  display_item_list->Raster(canvas_, nullptr);
 }
 
 void SkiaPaintCanvas::drawPicture(sk_sp<const PaintRecord> record,
