@@ -1714,7 +1714,7 @@ class PreCQLauncherStage(SyncStage):
         for b in build_dicts:
           url = tree_status.ConstructDashboardURL(
               b['waterfall'], b['builder_name'], b['build_number'])
-          lines.append('(%s) : %s' % (b['build_config'], url))
+          lines.append('(%s) : %s ' % (b['build_config'], url))
 
         # Send notifications.
         pool.HandleApplySuccess(change, build_log=('\n' + '\n'.join(lines)))
