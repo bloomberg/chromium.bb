@@ -298,6 +298,8 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
                         Id old_capture_window_id) override {
     tracker()->OnCaptureChanged(new_capture_window_id, old_capture_window_id);
   }
+  void OnFrameSinkIdAllocated(Id window_id,
+                              const cc::FrameSinkId& frame_sink_id) override {}
   void OnTopLevelCreated(uint32_t change_id,
                          mojom::WindowDataPtr data,
                          int64_t display_id,

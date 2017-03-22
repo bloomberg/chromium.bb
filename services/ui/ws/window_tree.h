@@ -180,7 +180,7 @@ class WindowTree : public mojom::WindowTree,
   bool SetWindowOpacity(const ClientWindowId& window_id, float opacity);
   bool SetFocus(const ClientWindowId& window_id);
   bool Embed(const ClientWindowId& window_id,
-             mojom::WindowTreeClientPtr client,
+             mojom::WindowTreeClientPtr window_tree_client,
              uint32_t flags);
   void DispatchInputEvent(ServerWindow* target, const ui::Event& event);
 

@@ -271,8 +271,16 @@ void WindowPortMus::SetPropertyFromServer(
 void WindowPortMus::SetFrameSinkIdFromServer(
     const cc::FrameSinkId& frame_sink_id) {
   frame_sink_id_ = frame_sink_id;
-  if (!pending_compositor_frame_sink_request_.is_null())
+  if (!pending_compositor_frame_sink_request_.is_null()) {
+    // TOP_LEVEL_IN_WM, and EMBED_IN_OWNER windows should not be requesting
+    // CompositorFrameSinks.
+    DCHECK_NE(WindowMusType::TOP_LEVEL_IN_WM, window_mus_type());
+    DCHECK_NE(WindowMusType::EMBED_IN_OWNER, window_mus_type());
     base::ResetAndReturn(&pending_compositor_frame_sink_request_).Run();
+  }
+  // TODO(fsamuel): If the window type is TOP_LEVEL_IN_WM or EMBED_IN_OWNER then
+  // we should check if we have a cc::LocalSurfaeId ready as well. If we do,
+  // then we are ready to embed.
 }
 
 void WindowPortMus::SetSurfaceInfoFromServer(

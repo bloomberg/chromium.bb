@@ -119,6 +119,13 @@ void RendererWindowTreeClient::OnUnembed(ui::Id window_id) {
 void RendererWindowTreeClient::OnCaptureChanged(ui::Id new_capture_window_id,
                                                 ui::Id old_capture_window_id) {}
 
+void RendererWindowTreeClient::OnFrameSinkIdAllocated(
+    ui::Id window_id,
+    const cc::FrameSinkId& frame_sink_id) {
+  // TODO(fsamuel): OOPIF's |frame_sink_id| is ready. The OOPIF can now be
+  // embedded by the parent.
+}
+
 void RendererWindowTreeClient::OnTopLevelCreated(
     uint32_t change_id,
     ui::mojom::WindowDataPtr data,

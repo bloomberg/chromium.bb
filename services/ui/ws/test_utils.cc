@@ -290,6 +290,12 @@ void TestWindowTreeClient::OnCaptureChanged(Id new_capture_window_id,
   tracker_.OnCaptureChanged(new_capture_window_id, old_capture_window_id);
 }
 
+void TestWindowTreeClient::OnFrameSinkIdAllocated(
+    Id window_id,
+    const cc::FrameSinkId& frame_sink_id) {
+  tracker_.OnFrameSinkIdAllocated(window_id, frame_sink_id);
+}
+
 void TestWindowTreeClient::OnTopLevelCreated(
     uint32_t change_id,
     mojom::WindowDataPtr data,

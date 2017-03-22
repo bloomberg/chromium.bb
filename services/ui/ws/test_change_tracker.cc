@@ -54,6 +54,11 @@ std::string ChangeToDescription(const Change& change,
                                 WindowIdToString(change.window_id).c_str(),
                                 WindowIdToString(change.window_id2).c_str());
 
+    case CHANGE_TYPE_FRAME_SINK_ID_ALLOCATED:
+      return base::StringPrintf("OnFrameSinkIdAllocated window=%s %s",
+                                WindowIdToString(change.window_id).c_str(),
+                                change.frame_sink_id.ToString().c_str());
+
     case CHANGE_TYPE_NODE_ADD_TRANSIENT_WINDOW:
       return base::StringPrintf("AddTransientWindow parent = %s child = %s",
                                 WindowIdToString(change.window_id).c_str(),
@@ -301,6 +306,16 @@ void TestChangeTracker::OnCaptureChanged(Id new_capture_window_id,
   change.type = CHANGE_TYPE_CAPTURE_CHANGED;
   change.window_id = new_capture_window_id;
   change.window_id2 = old_capture_window_id;
+  AddChange(change);
+}
+
+void TestChangeTracker::OnFrameSinkIdAllocated(
+    Id window_id,
+    const cc::FrameSinkId& frame_sink_id) {
+  Change change;
+  change.type = CHANGE_TYPE_FRAME_SINK_ID_ALLOCATED;
+  change.window_id = window_id;
+  change.frame_sink_id = frame_sink_id;
   AddChange(change);
 }
 

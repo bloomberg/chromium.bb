@@ -664,6 +664,34 @@ TEST_F(WindowTreeTest, EventAck) {
             ChangesToDescription1(*wm_client()->tracker()->changes())[0]);
 }
 
+// Establish client, call Embed() in WM, make sure to get FrameSinkId.
+TEST_F(WindowTreeTest, Embed) {
+  const ClientWindowId embed_window_id = BuildClientWindowId(wm_tree(), 1);
+  EXPECT_TRUE(
+      wm_tree()->NewWindow(embed_window_id, ServerWindow::Properties()));
+  ServerWindow* embed_window = wm_tree()->GetWindowByClientId(embed_window_id);
+  ASSERT_TRUE(embed_window);
+  const ClientWindowId wm_root_id = FirstRootId(wm_tree());
+  EXPECT_TRUE(wm_tree()->AddWindow(wm_root_id, embed_window_id));
+  ServerWindow* wm_root = FirstRoot(wm_tree());
+  ASSERT_TRUE(wm_root);
+  mojom::WindowTreeClientPtr client;
+  mojom::WindowTreeClientRequest client_request(&client);
+  wm_client()->Bind(std::move(client_request));
+  const uint32_t embed_flags = 0;
+  wm_tree()->Embed(embed_window_id, std::move(client), embed_flags);
+  ASSERT_EQ(1u, wm_client()->tracker()->changes()->size())
+      << SingleChangeToDescription(*wm_client()->tracker()->changes());
+  // The window manager should be told about the FrameSinkId of the embedded
+  // window.
+  EXPECT_EQ(
+      base::StringPrintf(
+          "OnFrameSinkIdAllocated window=%s %s",
+          WindowIdToString(WindowIdFromTransportId(embed_window_id.id)).c_str(),
+          embed_window->frame_sink_id().ToString().c_str()),
+      SingleChangeToDescription(*wm_client()->tracker()->changes()));
+}
+
 // Establish client, call NewTopLevelWindow(), make sure get id, and make
 // sure client paused.
 TEST_F(WindowTreeTest, NewTopLevelWindow) {
@@ -700,9 +728,20 @@ TEST_F(WindowTreeTest, NewTopLevelWindow) {
   child_binding->client()->tracker()->changes()->clear();
   static_cast<mojom::WindowManagerClient*>(wm_tree())
       ->OnWmCreatedTopLevelWindow(wm_change_id, embed_window_id2.id);
-  EXPECT_FALSE(child_binding->is_paused());
+
   ServerWindow* embed_window = wm_tree()->GetWindowByClientId(embed_window_id2);
   ASSERT_TRUE(embed_window);
+  ASSERT_EQ(1u, wm_client()->tracker()->changes()->size())
+      << SingleChangeToDescription(*wm_client()->tracker()->changes());
+  // The window manager should be told about the FrameSinkId of the embedded
+  // window.
+  EXPECT_EQ(base::StringPrintf(
+                "OnFrameSinkIdAllocated window=%s %s",
+                WindowIdToString(WindowIdFromTransportId(embed_window_id2.id))
+                    .c_str(),
+                embed_window->frame_sink_id().ToString().c_str()),
+            SingleChangeToDescription(*wm_client()->tracker()->changes()));
+  EXPECT_FALSE(child_binding->is_paused());
   // TODO(fsamuel): Currently the FrameSinkId maps directly to the server's
   // window ID. This is likely bad from a security perspective and should be
   // fixed.

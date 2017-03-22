@@ -22,6 +22,7 @@ namespace ws {
 
 enum ChangeType {
   CHANGE_TYPE_CAPTURE_CHANGED,
+  CHANGE_TYPE_FRAME_SINK_ID_ALLOCATED,
   CHANGE_TYPE_EMBED,
   CHANGE_TYPE_EMBEDDED_APP_DISCONNECTED,
   CHANGE_TYPE_UNEMBED,
@@ -148,6 +149,8 @@ class TestChangeTracker {
   void OnEmbeddedAppDisconnected(Id window_id);
   void OnUnembed(Id window_id);
   void OnCaptureChanged(Id new_capture_window_id, Id old_capture_window_id);
+  void OnFrameSinkIdAllocated(Id window_id,
+                              const cc::FrameSinkId& frame_sink_id);
   void OnTransientWindowAdded(Id window_id, Id transient_window_id);
   void OnTransientWindowRemoved(Id window_id, Id transient_window_id);
   void OnWindowBoundsChanged(

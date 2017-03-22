@@ -470,17 +470,18 @@ bool WindowTree::SetFocus(const ClientWindowId& window_id) {
 }
 
 bool WindowTree::Embed(const ClientWindowId& window_id,
-                       mojom::WindowTreeClientPtr client,
+                       mojom::WindowTreeClientPtr window_tree_client,
                        uint32_t flags) {
-  if (!client || !CanEmbed(window_id))
+  if (!window_tree_client || !CanEmbed(window_id))
     return false;
   ServerWindow* window = GetWindowByClientId(window_id);
   PrepareForEmbed(window);
   // When embedding we don't know the user id of where the TreeClient came
   // from. Use an invalid id, which limits what the client is able to do.
-  window_server_->EmbedAtWindow(window, InvalidUserId(), std::move(client),
-                                flags,
+  window_server_->EmbedAtWindow(window, InvalidUserId(),
+                                std::move(window_tree_client), flags,
                                 base::WrapUnique(new DefaultAccessPolicy));
+  client()->OnFrameSinkIdAllocated(window_id.id, window->frame_sink_id());
   return true;
 }
 
@@ -2074,6 +2075,10 @@ void WindowTree::OnWmCreatedTopLevelWindow(uint32_t change_id,
     DVLOG(1) << "OnWmCreatedTopLevelWindow supplied invalid window id";
     window_server_->WindowManagerSentBogusMessage();
     window = nullptr;
+  }
+  if (window) {
+    client()->OnFrameSinkIdAllocated(transport_window_id,
+                                     window->frame_sink_id());
   }
   window_server_->WindowManagerCreatedTopLevelWindow(this, change_id, window);
 }

@@ -920,6 +920,16 @@ void WindowTreeClient::OnCaptureChanged(Id new_capture_window_id,
   capture_synchronizer_->SetCaptureFromServer(new_capture_window);
 }
 
+void WindowTreeClient::OnFrameSinkIdAllocated(
+    Id window_id,
+    const cc::FrameSinkId& frame_sink_id) {
+  WindowMus* window = GetWindowByServerId(window_id);
+  if (!window)
+    return;
+
+  window->SetFrameSinkIdFromServer(frame_sink_id);
+}
+
 void WindowTreeClient::OnTopLevelCreated(uint32_t change_id,
                                          ui::mojom::WindowDataPtr data,
                                          int64_t display_id,

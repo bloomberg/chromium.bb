@@ -404,6 +404,8 @@ class TestWindowTreeClient : public ui::mojom::WindowTreeClient {
   void OnUnembed(Id window_id) override;
   void OnCaptureChanged(Id new_capture_window_id,
                         Id old_capture_window_id) override;
+  void OnFrameSinkIdAllocated(Id window_id,
+                              const cc::FrameSinkId& frame_sink_id) override;
   void OnTopLevelCreated(uint32_t change_id,
                          mojom::WindowDataPtr data,
                          int64_t display_id,

@@ -339,6 +339,11 @@ interface WindowTreeClient {
   // change.
   OnCaptureChanged(uint32 new_capture, uint32 old_capture);
 
+  // This is called on the owner of a window when it embeds a client in it,
+  // which includes the window manager creating a new window at the request of
+  // another client.
+  OnFrameSinkIdAllocated(uint32 window, cc.mojom.FrameSinkId frame_sink_id);
+
   // Called in response to NewTopLevelWindow() successfully completing.
   // |parent_drawn| is true if the parent of the window is drawn, see
   // OnDrawnStateChanged() for details. |display_id| identifies the display this

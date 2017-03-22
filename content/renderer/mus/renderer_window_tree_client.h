@@ -74,6 +74,8 @@ class RendererWindowTreeClient : public ui::mojom::WindowTreeClient {
   void OnUnembed(ui::Id window_id) override;
   void OnCaptureChanged(ui::Id new_capture_window_id,
                         ui::Id old_capture_window_id) override;
+  void OnFrameSinkIdAllocated(ui::Id window_id,
+                              const cc::FrameSinkId& frame_sink_id) override;
   void OnTopLevelCreated(uint32_t change_id,
                          ui::mojom::WindowDataPtr data,
                          int64_t display_id,
