@@ -633,21 +633,6 @@ class AbstractParallelRebaselineCommand(AbstractRebaseliningCommand):
         return TestExpectations.suffixes_for_test_result(test_result)
 
 
-class RebaselineJson(AbstractParallelRebaselineCommand):
-    name = 'rebaseline-json'
-    help_text = 'Rebaseline based off JSON passed to stdin. Intended to only be called from other scripts.'
-
-    def __init__(self,):
-        super(RebaselineJson, self).__init__(options=[
-            self.no_optimize_option,
-            self.results_directory_option,
-        ])
-
-    def execute(self, options, args, tool):
-        self._tool = tool
-        self.rebaseline(options, json.loads(sys.stdin.read()))
-
-
 class RebaselineExpectations(AbstractParallelRebaselineCommand):
     name = 'rebaseline-expectations'
     help_text = 'Rebaselines the tests indicated in TestExpectations.'

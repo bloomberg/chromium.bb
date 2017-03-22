@@ -13,8 +13,7 @@ from webkitpy.layout_tests.builder_list import BuilderList
 from webkitpy.layout_tests.port.factory_mock import MockPortFactory
 from webkitpy.tool.commands.rebaseline import (
     AbstractParallelRebaselineCommand, CopyExistingBaselinesInternal,
-    Rebaseline, RebaselineExpectations, RebaselineJson, RebaselineTest,
-    TestBaselineSet
+    Rebaseline, RebaselineExpectations, RebaselineTest, TestBaselineSet
 )
 from webkitpy.tool.mock_tool import MockWebKitPatch
 
@@ -363,15 +362,17 @@ class TestAbstractParallelRebaselineCommand(BaseTestCase):
             '/test.checkout/LayoutTests/passes/text-expected.txt'))
 
 
-class TestRebaselineJson(BaseTestCase):
-    command_constructor = RebaselineJson
+class TestRebaseline(BaseTestCase):
+    """Tests for the rebaseline method which is used by multiple rebaseline commands."""
+
+    command_constructor = Rebaseline
 
     def setUp(self):
-        super(TestRebaselineJson, self).setUp()
+        super(TestRebaseline, self).setUp()
         self.tool.executive = MockExecutive()
 
     def tearDown(self):
-        super(TestRebaselineJson, self).tearDown()
+        super(TestRebaseline, self).tearDown()
 
     @staticmethod
     def options(**kwargs):
@@ -490,11 +491,12 @@ class TestRebaselineJson(BaseTestCase):
             ])
 
 
-class TestRebaselineJsonUpdatesExpectationsFiles(BaseTestCase):
-    command_constructor = RebaselineJson
+class TestRebaselineUpdatesExpectationsFiles(BaseTestCase):
+    """Tests for the logic related to updating the test expectations file."""
+    command_constructor = Rebaseline
 
     def setUp(self):
-        super(TestRebaselineJsonUpdatesExpectationsFiles, self).setUp()
+        super(TestRebaselineUpdatesExpectationsFiles, self).setUp()
         self.tool.executive = MockExecutive()
 
         def mock_run_command(*args, **kwargs):  # pylint: disable=unused-argument
@@ -598,10 +600,10 @@ class TestRebaselineJsonUpdatesExpectationsFiles(BaseTestCase):
             new_expectations, 'Bug(x) [ Linux Mac10.10 Win ] userscripts/first-test.html [ Failure ]\n')
 
 
-class TestRebaseline(BaseTestCase):
-    # This command shares most of its logic with RebaselineJson, so these tests just test what is different.
+class TestRebaselineExecute(BaseTestCase):
+    """Tests for the main execute function of the webkit-patch rebaseline command."""
 
-    command_constructor = Rebaseline  # AKA webkit-patch rebaseline
+    command_constructor = Rebaseline
 
     def test_rebaseline(self):
         self.command._builders_to_pull_from = lambda: ['MOCK Win7']
