@@ -86,7 +86,7 @@ class FakeCompositorFrameSink : public cc::CompositorFrameSink,
   }
 
   void OnDidFinishFrame(const cc::BeginFrameAck& ack) override {
-    external_begin_frame_source_->DidFinishFrame(this, ack);
+    begin_frame_source_->DidFinishFrame(this, ack);
   }
 
   void SetBeginFrameSource(cc::BeginFrameSource* source) {
@@ -181,6 +181,12 @@ class FrameGeneratorTest : public testing::Test {
     return compositor_frame_sink_->last_render_pass_list();
   }
 
+  const cc::BeginFrameAck& LastBeginFrameAck() {
+    return begin_frame_source_->LastAckForObserver(compositor_frame_sink_);
+  }
+
+  ServerWindow* root_window() { return root_window_.get(); }
+
  private:
   FakeCompositorFrameSink* compositor_frame_sink_ = nullptr;
   std::unique_ptr<cc::FakeExternalBeginFrameSource> begin_frame_source_;
@@ -198,6 +204,7 @@ TEST_F(FrameGeneratorTest, OnSurfaceCreated) {
   // FrameGenerator does not request BeginFrames upon creation.
   IssueBeginFrame();
   EXPECT_EQ(0, NumberOfFramesReceived());
+  EXPECT_EQ(cc::BeginFrameAck(), LastBeginFrameAck());
 
   const cc::SurfaceId kArbitrarySurfaceId(
       cc::FrameSinkId(1, 1),
@@ -218,10 +225,42 @@ TEST_F(FrameGeneratorTest, OnSurfaceCreated) {
   EXPECT_EQ(1lu, referenced_surfaces.size());
   EXPECT_EQ(kArbitrarySurfaceId, referenced_surfaces.front());
 
+  cc::BeginFrameAck expected_ack(0, 2, 2, 0, true);
+  EXPECT_EQ(expected_ack, LastBeginFrameAck());
+  EXPECT_EQ(expected_ack, last_metadata.begin_frame_ack);
+
   // FrameGenerator stops requesting BeginFrames after submitting a
   // CompositorFrame.
   IssueBeginFrame();
   EXPECT_EQ(1, NumberOfFramesReceived());
+  EXPECT_EQ(expected_ack, LastBeginFrameAck());
+}
+
+TEST_F(FrameGeneratorTest, BeginFrameWhileInvisible) {
+  EXPECT_EQ(0, NumberOfFramesReceived());
+
+  // A valid SurfaceInfo is required for BeginFrame processing.
+  const cc::SurfaceId kArbitrarySurfaceId(
+      cc::FrameSinkId(1, 1),
+      cc::LocalSurfaceId(1, base::UnguessableToken::Create()));
+  const cc::SurfaceInfo kArbitrarySurfaceInfo(kArbitrarySurfaceId, 1.0f,
+                                              gfx::Size(100, 100));
+  frame_generator()->OnSurfaceCreated(kArbitrarySurfaceInfo);
+  EXPECT_EQ(0, NumberOfFramesReceived());
+
+  // No frames are produced while invisible but in need of BeginFrames.
+  root_window()->SetVisible(false);
+  IssueBeginFrame();
+  EXPECT_EQ(0, NumberOfFramesReceived());
+  EXPECT_EQ(cc::BeginFrameAck(0, 1, 1, 0, false), LastBeginFrameAck());
+
+  // When visible again, a frame is produced.
+  root_window()->SetVisible(true);
+  IssueBeginFrame();
+  EXPECT_EQ(1, NumberOfFramesReceived());
+  cc::BeginFrameAck expected_ack(0, 2, 2, 0, true);
+  EXPECT_EQ(expected_ack, LastBeginFrameAck());
+  EXPECT_EQ(expected_ack, LastMetadata().begin_frame_ack);
 }
 
 TEST_F(FrameGeneratorTest, SetDeviceScaleFactor) {

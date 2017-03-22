@@ -84,6 +84,7 @@ class FrameGenerator : public cc::CompositorFrameSinkClient,
 
   std::unique_ptr<cc::CompositorFrameSink> compositor_frame_sink_;
   cc::BeginFrameArgs last_begin_frame_args_;
+  cc::BeginFrameAck current_begin_frame_ack_;
   cc::BeginFrameSource* begin_frame_source_ = nullptr;
   bool observing_begin_frames_ = false;
   bool high_contrast_mode_enabled_ = false;

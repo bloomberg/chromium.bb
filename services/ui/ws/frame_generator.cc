@@ -98,17 +98,24 @@ void FrameGenerator::SetExternalTilePriorityConstraints(
     const gfx::Transform& transform) {}
 
 void FrameGenerator::OnBeginFrame(const cc::BeginFrameArgs& begin_frame_args) {
+  current_begin_frame_ack_ = cc::BeginFrameAck(
+      begin_frame_args.source_id, begin_frame_args.sequence_number,
+      begin_frame_args.sequence_number, 0, false);
   if (!root_window_->visible() ||
       begin_frame_args.type == cc::BeginFrameArgs::MISSED) {
+    begin_frame_source_->DidFinishFrame(this, current_begin_frame_ack_);
     return;
   }
 
+  current_begin_frame_ack_.has_damage = true;
+  last_begin_frame_args_ = begin_frame_args;
+
   // TODO(fsamuel): We should add a trace for generating a top level frame.
   cc::CompositorFrame frame(GenerateCompositorFrame(root_window_->bounds()));
-
   compositor_frame_sink_->SubmitCompositorFrame(std::move(frame));
+
+  begin_frame_source_->DidFinishFrame(this, current_begin_frame_ack_);
   SetNeedsBeginFrame(false);
-  last_begin_frame_args_ = begin_frame_args;
 }
 
 const cc::BeginFrameArgs& FrameGenerator::LastUsedBeginFrameArgs() const {
@@ -150,6 +157,7 @@ cc::CompositorFrame FrameGenerator::GenerateCompositorFrame(
     frame.render_pass_list.push_back(std::move(invert_pass));
   }
   frame.metadata.device_scale_factor = device_scale_factor_;
+  frame.metadata.begin_frame_ack = current_begin_frame_ack_;
 
   if (window_manager_surface_info_.is_valid()) {
     frame.metadata.referenced_surfaces.push_back(
