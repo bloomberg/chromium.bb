@@ -278,11 +278,8 @@ CreateOverlayCandidateValidator(gfx::AcceleratedWidget widget) {
   validator.reset(
       new display_compositor::CompositorOverlayCandidateValidatorAndroid());
 #elif defined(OS_WIN)
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableHardwareOverlays)) {
-    validator = base::MakeUnique<
-        display_compositor::CompositorOverlayCandidateValidatorWin>();
-  }
+  validator = base::MakeUnique<
+      display_compositor::CompositorOverlayCandidateValidatorWin>();
 #endif
 
   return validator;
@@ -528,7 +525,10 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       } else {
         std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
             validator;
-#if !defined(OS_MACOSX)
+#if defined(OS_WIN)
+        if (capabilities.dc_layers)
+          validator = CreateOverlayCandidateValidator(compositor->widget());
+#elif !defined(OS_MACOSX)
         // Overlays are only supported on surfaceless output surfaces on Mac.
         validator = CreateOverlayCandidateValidator(compositor->widget());
 #endif
