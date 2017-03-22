@@ -605,11 +605,7 @@ bool IsCertificateCleared() {
       metrics::prefs::kMetricsReportingEnabled, YES);
   chrome_test_util::SetBooleanLocalStatePref(prefs::kMetricsReportingWifiOnly,
                                              NO);
-  // Service should be always enabled regardless of network settings.
-  chrome_test_util::SetWWANStateTo(YES);
   [self assertMetricsServiceEnabled:serviceType];
-  chrome_test_util::SetWWANStateTo(NO);
-  [self assertMetricsServiceDisabled:serviceType];
 #else
   // Development build.  Do not allow any recording or uploading of data.
   // Specifically, the kMetricsReportingEnabled preference is completely

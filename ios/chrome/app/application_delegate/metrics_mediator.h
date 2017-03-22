@@ -28,8 +28,8 @@ extern NSString* const kAppEnteredBackgroundDateKey;
 - (BOOL)isUploadingEnabled;
 // Starts or stops the metrics service and crash report recording and/or
 // uploading, based on the current user preferences. Makes sure helper
-// mechanisms and the wwan state observer are set up if necessary. Called both
-// on initialization and after user triggered preference change.
+// mechanisms and the wwan state observer are set up if necessary. Must be
+// called both on initialization and after user triggered preference change.
 // |isUserTriggered| is used to distinguish between those cases.
 - (void)updateMetricsStateBasedOnPrefsUserTriggered:(BOOL)isUserTriggered;
 // Logs the duration of the cold start startup. Does nothing if there isn't a
