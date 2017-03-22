@@ -7,11 +7,10 @@
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/test_extension_dir.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/public/browser/notification_service.h"
 #include "extensions/browser/api/runtime/runtime_api.h"
 #include "extensions/browser/extension_dialog_auto_confirm.h"
 #include "extensions/browser/extension_registry.h"
-#include "extensions/browser/notification_types.h"
+#include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/test/result_catcher.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
@@ -106,22 +105,21 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_ChromeRuntimeReload) {
   // to reload itself that often without being terminated, the test fails
   // anyway.
   for (int i = 0; i < 30; i++) {
-    content::WindowedNotificationObserver unload_observer(
-        extensions::NOTIFICATION_EXTENSION_UNLOADED_DEPRECATED,
-        content::NotificationService::AllSources());
-    content::WindowedNotificationObserver load_observer(
-        extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-        content::NotificationService::AllSources());
-
+    TestExtensionRegistryObserver unload_observer(registry, extension_id);
+    TestExtensionRegistryObserver load_observer(registry, extension_id);
     ASSERT_TRUE(ExecuteScriptInBackgroundPageNoWait(
         extension_id, "chrome.runtime.reload();"));
-    unload_observer.Wait();
+    unload_observer.WaitForExtensionUnloaded();
+    base::RunLoop().RunUntilIdle();
 
     if (registry->GetExtensionById(extension_id,
                                    ExtensionRegistry::TERMINATED)) {
       break;
     } else {
-      load_observer.Wait();
+      load_observer.WaitForExtensionLoaded();
+      // We need to let other registry observers handle the notification to
+      // finish initialization
+      base::RunLoop().RunUntilIdle();
       WaitForExtensionViewsToLoad();
     }
   }
