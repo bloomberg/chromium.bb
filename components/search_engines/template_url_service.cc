@@ -1441,28 +1441,14 @@ TemplateURL* TemplateURLService::BestEngineForKeyword(TemplateURL* engine1,
   DCHECK_NE(engine1, engine2);
   DCHECK_EQ(engine1->keyword(), engine2->keyword());
 
-  std::string engine1_params =
-      base::StringPrintf("%s, %i, %" PRId64 ", %i, %s",
-                         base::UTF16ToUTF8(engine1->keyword()).c_str(),
-                         static_cast<int>(engine1->type()), engine1->id(),
-                         engine1->prepopulate_id(), engine1->url().c_str());
-
-  std::string engine2_params =
-      base::StringPrintf("%s, %i, %" PRId64 ", %i, %s",
-                         base::UTF16ToUTF8(engine2->keyword()).c_str(),
-                         static_cast<int>(engine2->type()), engine2->id(),
-                         engine2->prepopulate_id(), engine2->url().c_str());
-
-  base::debug::ScopedCrashKey scoped_crash_key1("engine1_params",
-                                                engine1_params);
-  base::debug::ScopedCrashKey scoped_crash_key2("engine2_params",
-                                                engine2_params);
-
   // We should only have overlapping keywords when at least one comes from
   // an extension.
-  // TODO(a-v-y) Replace CHECK with DCHECK when reasons for crash
-  // https://bugs.chromium.org/p/chromium/issues/detail?id=697745 become clear.
-  CHECK(IsCreatedByExtension(engine1) || IsCreatedByExtension(engine2));
+  DCHECK(IsCreatedByExtension(engine1) || IsCreatedByExtension(engine2));
+  // TODO(a-v-y) Remove following code for non extension engines when reasons
+  // for crash https://bugs.chromium.org/p/chromium/issues/detail?id=697745
+  // become clear.
+  if (!IsCreatedByExtension(engine1) && !IsCreatedByExtension(engine2))
+    return CanReplace(engine1) ? engine2 : engine1;
 
   if (engine2->type() == engine1->type()) {
     return engine1->extension_info_->install_time >
@@ -1589,23 +1575,6 @@ void TemplateURLService::SetTemplateURLs(
   auto first_invalid = std::partition(
       urls->begin(), urls->end(), [](const std::unique_ptr<TemplateURL>& turl) {
         return turl->id() != kInvalidTemplateURLID;
-      });
-
-  // Check that no extension engines are coming from DB.
-  // TODO(a-v-y) Replace CHECK with DCHECK when reasons for crash
-  // https://bugs.chromium.org/p/chromium/issues/detail?id=697745 become clear.
-  for_each(
-      urls->begin(), urls->end(), [](const std::unique_ptr<TemplateURL>& turl) {
-        if (IsCreatedByExtension(turl.get())) {
-          std::string engine_params =
-              base::StringPrintf("%s, %i, %" PRId64 ", %i, %s",
-                                 base::UTF16ToUTF8(turl->keyword()).c_str(),
-                                 static_cast<int>(turl->type()), turl->id(),
-                                 turl->prepopulate_id(), turl->url().c_str());
-          base::debug::ScopedCrashKey scoped_crash_key1("engine_params",
-                                                        engine_params);
-          CHECK(false) << "Unexpected search engine type";
-        }
       });
 
   // First, add the items that already have id's, so that the next_id_ gets
