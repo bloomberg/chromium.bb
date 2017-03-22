@@ -76,7 +76,6 @@ void GpuService::InitializeWithHost(mojom::GpuHostPtr gpu_host,
                                     base::WaitableEvent* shutdown_event) {
   DCHECK(CalledOnValidThread());
   DCHECK(!gpu_host_);
-  gpu_host_ = std::move(gpu_host);
   gpu_preferences_ = preferences;
   gpu_info_.video_decode_accelerator_capabilities =
       media::GpuVideoDecodeAccelerator::GetCapabilities(gpu_preferences_);
@@ -85,8 +84,9 @@ void GpuService::InitializeWithHost(mojom::GpuHostPtr gpu_host,
   gpu_info_.jpeg_decode_accelerator_supported =
       media::GpuJpegDecodeAcceleratorFactoryProvider::
           IsAcceleratedJpegDecodeSupported();
-  gpu_host_->DidInitialize(gpu_info_);
-
+  gpu_host->DidInitialize(gpu_info_);
+  gpu_host_ =
+      mojom::ThreadSafeGpuHostPtr::Create(gpu_host.PassInterface(), io_runner_);
   sync_point_manager_ = sync_point_manager;
   if (!sync_point_manager_) {
     owned_sync_point_manager_ = base::MakeUnique<gpu::SyncPointManager>();
@@ -143,35 +143,35 @@ void GpuService::GetVideoMemoryUsageStats(
 }
 
 void GpuService::DidCreateOffscreenContext(const GURL& active_url) {
-  gpu_host_->DidCreateOffscreenContext(active_url);
+  (*gpu_host_)->DidCreateOffscreenContext(active_url);
 }
 
 void GpuService::DidDestroyChannel(int client_id) {
   media_gpu_channel_manager_->RemoveChannel(client_id);
-  gpu_host_->DidDestroyChannel(client_id);
+  (*gpu_host_)->DidDestroyChannel(client_id);
 }
 
 void GpuService::DidDestroyOffscreenContext(const GURL& active_url) {
-  gpu_host_->DidDestroyOffscreenContext(active_url);
+  (*gpu_host_)->DidDestroyOffscreenContext(active_url);
 }
 
 void GpuService::DidLoseContext(bool offscreen,
                                 gpu::error::ContextLostReason reason,
                                 const GURL& active_url) {
-  gpu_host_->DidLoseContext(offscreen, reason, active_url);
+  (*gpu_host_)->DidLoseContext(offscreen, reason, active_url);
 }
 
 void GpuService::StoreShaderToDisk(int client_id,
                                    const std::string& key,
                                    const std::string& shader) {
-  gpu_host_->StoreShaderToDisk(client_id, key, shader);
+  (*gpu_host_)->StoreShaderToDisk(client_id, key, shader);
 }
 
 #if defined(OS_WIN)
 void GpuService::SendAcceleratedSurfaceCreatedChildWindow(
     gpu::SurfaceHandle parent_window,
     gpu::SurfaceHandle child_window) {
-  gpu_host_->SetChildSurface(parent_window, child_window);
+  (*gpu_host_)->SetChildSurface(parent_window, child_window);
 }
 #endif
 
