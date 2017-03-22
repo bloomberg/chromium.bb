@@ -9,6 +9,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "url/gurl.h"
 
 // Encapsulates key parts of a Contextual Search Context, including surrounding
@@ -28,7 +29,7 @@ struct ContextualSearchContext {
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
   // Returns the native |ContextualSearchContext| given the Java object.
-  static ContextualSearchContext* FromJavaContextualSearchContext(
+  static base::WeakPtr<ContextualSearchContext> FromJavaContextualSearchContext(
       const base::android::JavaRef<jobject>& j_contextual_search_context);
 
   // Returns whether this context can be resolved.
@@ -79,6 +80,9 @@ struct ContextualSearchContext {
   // characters).
   int GetEndOffset() const;
 
+  // Gets a WeakPtr to this instance.
+  base::WeakPtr<ContextualSearchContext> GetWeakPtr();
+
  private:
   bool can_resolve;
   bool can_send_base_page_url;
@@ -93,6 +97,11 @@ struct ContextualSearchContext {
 
   // The linked Java object.
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
+
+  // Member variables should appear before the WeakPtrFactory, to ensure
+  // that any WeakPtrs to this instance are invalidated before its members
+  // variable's destructors are executed, rendering them invalid.
+  base::WeakPtrFactory<ContextualSearchContext> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextualSearchContext);
 };

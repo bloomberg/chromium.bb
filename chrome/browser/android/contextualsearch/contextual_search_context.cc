@@ -17,7 +17,8 @@ ContextualSearchContext::ContextualSearchContext(JNIEnv* env, jobject obj)
       base_page_url(GURL()),
       surrounding_text(base::string16()),
       start_offset(0),
-      end_offset(0) {
+      end_offset(0),
+      weak_factory_(this) {
   java_object_.Reset(env, obj);
 }
 
@@ -29,7 +30,8 @@ ContextualSearchContext::ContextualSearchContext(
     : selected_text(selected_text),
       home_country(home_country),
       base_page_url(page_url),
-      base_page_encoding(encoding) {
+      base_page_encoding(encoding),
+      weak_factory_(this) {
   java_object_ = nullptr;
 }
 
@@ -37,7 +39,7 @@ ContextualSearchContext::~ContextualSearchContext() {
 }
 
 // static
-ContextualSearchContext*
+base::WeakPtr<ContextualSearchContext>
 ContextualSearchContext::FromJavaContextualSearchContext(
     const base::android::JavaRef<jobject>& j_contextual_search_context) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -49,7 +51,7 @@ ContextualSearchContext::FromJavaContextualSearchContext(
           Java_ContextualSearchContext_getNativePointer(
               base::android::AttachCurrentThread(),
               j_contextual_search_context));
-  return contextual_search_context;
+  return contextual_search_context->GetWeakPtr();
 }
 
 void ContextualSearchContext::SetResolveProperties(
@@ -118,6 +120,10 @@ int ContextualSearchContext::GetStartOffset() const {
 
 int ContextualSearchContext::GetEndOffset() const {
   return end_offset;
+}
+
+base::WeakPtr<ContextualSearchContext> ContextualSearchContext::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 // Java wrapper boilerplate

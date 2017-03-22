@@ -99,13 +99,18 @@ ContextualSearchDelegate::~ContextualSearchDelegate() {
 }
 
 void ContextualSearchDelegate::GatherAndSaveSurroundingText(
-    ContextualSearchContext* contextual_search_context,
+    base::WeakPtr<ContextualSearchContext> contextual_search_context,
     content::WebContents* web_contents) {
   DCHECK(web_contents);
   RenderFrameHost::TextSurroundingSelectionCallback callback =
       base::Bind(&ContextualSearchDelegate::OnTextSurroundingSelectionAvailable,
                  AsWeakPtr());
   context_ = contextual_search_context;
+  if (context_ == nullptr) {
+    callback.Run(base::string16(), 0, 0);
+    return;
+  }
+
   context_->SetBasePageEncoding(web_contents->GetEncoding());
   int surroundingTextSize = context_->CanResolve()
                                 ? field_trial_->GetSurroundingSize()
@@ -120,10 +125,13 @@ void ContextualSearchDelegate::GatherAndSaveSurroundingText(
 }
 
 void ContextualSearchDelegate::StartSearchTermResolutionRequest(
-    ContextualSearchContext* contextual_search_context,
+    base::WeakPtr<ContextualSearchContext> contextual_search_context,
     content::WebContents* web_contents) {
   DCHECK(web_contents);
-  DCHECK(context_ == contextual_search_context);
+  if (context_ == nullptr)
+    return;
+
+  DCHECK(context_.get() == contextual_search_context.get());
   DCHECK(context_->CanResolve());
 
   // Immediately cancel any request that's in flight, since we're building a new
@@ -141,9 +149,7 @@ void ContextualSearchDelegate::StartSearchTermResolutionRequest(
 }
 
 void ContextualSearchDelegate::ResolveSearchTermFromContext() {
-  DCHECK(context_);
-  if (!context_)
-    return;
+  DCHECK(context_ != nullptr);
   GURL request_url(BuildRequestUrl(context_->GetHomeCountry()));
   DCHECK(request_url.is_valid());
 
@@ -180,7 +186,7 @@ void ContextualSearchDelegate::OnURLFetchComplete(
     std::string response;
     bool has_string_response = source->GetResponseAsString(&response);
     DCHECK(has_string_response);
-    if (has_string_response) {
+    if (has_string_response && context_ != nullptr) {
       resolved_search_term =
           GetResolvedSearchTermFromJson(response_code, response);
     }
@@ -192,6 +198,7 @@ std::unique_ptr<ResolvedSearchTerm>
 ContextualSearchDelegate::GetResolvedSearchTermFromJson(
     int response_code,
     const std::string& json_string) {
+  DCHECK(context_ != nullptr);
   std::string search_term;
   std::string display_text;
   std::string alternate_term;
@@ -237,7 +244,6 @@ ContextualSearchDelegate::GetResolvedSearchTermFromJson(
 
 std::string ContextualSearchDelegate::BuildRequestUrl(
     std::string home_country) {
-  // TODO(donnd): Confirm this is the right way to handle TemplateURL fails.
   if (!template_url_service_ ||
       !template_url_service_->GetDefaultSearchProvider()) {
     return std::string();
@@ -291,6 +297,9 @@ void ContextualSearchDelegate::OnTextSurroundingSelectionAvailable(
     const base::string16& surrounding_text,
     int start_offset,
     int end_offset) {
+  if (context_ == nullptr)
+    return;
+
   SaveSurroundingText(surrounding_text, start_offset, end_offset);
   if (context_->CanResolve())
     SendSurroundingText(kSurroundingSizeForUI);
@@ -300,7 +309,7 @@ void ContextualSearchDelegate::SaveSurroundingText(
     const base::string16& surrounding_text,
     int start_offset,
     int end_offset) {
-  DCHECK(context_);
+  DCHECK(context_ != nullptr);
   // Sometimes the surroundings are 0, 0, '', so fall back on the selection.
   // See crbug.com/393100.
   bool use_selection = false;
@@ -337,6 +346,7 @@ void ContextualSearchDelegate::SaveSurroundingText(
 }
 
 void ContextualSearchDelegate::SendSurroundingText(int max_surrounding_chars) {
+  DCHECK(context_ != nullptr);
   const base::string16& surrounding = context_->GetSurroundingText();
 
   // Determine the text after the selection.

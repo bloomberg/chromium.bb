@@ -70,7 +70,7 @@ void ContextualSearchManager::StartSearchTermResolutionRequest(
   WebContents* base_web_contents =
       WebContents::FromJavaWebContents(j_base_web_contents);
   DCHECK(base_web_contents);
-  ContextualSearchContext* contextual_search_context =
+  base::WeakPtr<ContextualSearchContext> contextual_search_context =
       ContextualSearchContext::FromJavaContextualSearchContext(
           j_contextual_search_context);
   // Calls back to OnSearchTermResolutionResponse.
@@ -86,7 +86,7 @@ void ContextualSearchManager::GatherSurroundingText(
   WebContents* base_web_contents =
       WebContents::FromJavaWebContents(j_base_web_contents);
   DCHECK(base_web_contents);
-  ContextualSearchContext* contextual_search_context =
+  base::WeakPtr<ContextualSearchContext> contextual_search_context =
       ContextualSearchContext::FromJavaContextualSearchContext(
           j_contextual_search_context);
   delegate_->GatherAndSaveSurroundingText(contextual_search_context,

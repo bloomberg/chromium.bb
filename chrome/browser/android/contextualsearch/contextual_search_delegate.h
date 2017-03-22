@@ -63,7 +63,7 @@ class ContextualSearchDelegate
 
   // Gathers surrounding text and saves it locally in the given context.
   void GatherAndSaveSurroundingText(
-      ContextualSearchContext* contextual_search_context,
+      base::WeakPtr<ContextualSearchContext> contextual_search_context,
       content::WebContents* web_contents);
 
   // Starts an asynchronous search term resolution request.
@@ -72,7 +72,7 @@ class ContextualSearchDelegate
   // When the response is available the callback specified in the constructor
   // is run.
   void StartSearchTermResolutionRequest(
-      ContextualSearchContext* contextual_search_context,
+      base::WeakPtr<ContextualSearchContext> contextual_search_context,
       content::WebContents* web_contents);
 
   // Gets the target language for translation purposes for this user.
@@ -80,11 +80,6 @@ class ContextualSearchDelegate
 
   // Returns the accept languages preference string.
   std::string GetAcceptLanguages();
-
-  // For testing.
-  void set_context_for_testing(ContextualSearchContext* context) {
-    context_ = context;
-  }
 
  private:
   // Friend our test which allows our private methods to be used in helper
@@ -205,6 +200,12 @@ class ContextualSearchDelegate
                                          size_t* start,
                                          size_t* end);
 
+  // For testing.
+  void SetContextForTesting(
+      const base::WeakPtr<ContextualSearchContext>& context) {
+    context_ = context;
+  }
+
   // The current request in progress, or NULL.
   std::unique_ptr<net::URLFetcher> search_term_fetcher_;
 
@@ -228,7 +229,7 @@ class ContextualSearchDelegate
 
   // Used to hold the context until an upcoming search term request is started.
   // Owned by the Java ContextualSearchContext.
-  ContextualSearchContext* context_;
+  base::WeakPtr<ContextualSearchContext> context_;
 
   DISALLOW_COPY_AND_ASSIGN(ContextualSearchDelegate);
 };

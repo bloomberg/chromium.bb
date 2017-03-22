@@ -93,7 +93,7 @@ class ContextualSearchDelegateTest : public testing::Test {
     test_context_ = new ContextualSearchContext(
         selected_text, std::string(), GURL(kSomeSpecificBasePage), "utf-8");
     // ContextualSearchDelegate class takes ownership of the context.
-    delegate_->set_context_for_testing(test_context_);
+    delegate_->SetContextForTesting(test_context_->GetWeakPtr());
 
     test_context_->SetSelectionSurroundings(start_offset, end_offset,
                                             surrounding_text);
@@ -126,6 +126,38 @@ class ContextualSearchDelegateTest : public testing::Test {
     EXPECT_EQ("obama", search_term());
   }
 
+  //-------------------------------------------------------------------
+  // Helper methods that call private ContextualSearchDelegate methods.
+  // The ContextualSearchDelegate methods cannot be called directly
+  // from tests, but can be called here because this is a friend class.
+  //-------------------------------------------------------------------
+  void CreateTestContext() {
+    test_context_ =
+        new ContextualSearchContext(std::string("word"), std::string(),
+                                    GURL(kSomeSpecificBasePage), "utf-8");
+    delegate_->SetContextForTesting(test_context_->GetWeakPtr());
+  }
+
+  void DestroyTestContext() { delete test_context_; }
+
+  // Call the OnTextSurroundingSelectionAvailable.
+  // Cannot be in an actual test because OnTextSurroundingSelectionAvailable
+  // is private.
+  void CallOnTextSurroundingSelectionAvailable() {
+    delegate_->OnTextSurroundingSelectionAvailable(base::string16(), 1, 2);
+  }
+
+  // Call the OnURLFetchComplete to simulate the end of a Resolve request.
+  // Cannot be in an actual test because OnTextSurroundingSelectionAvailable
+  // is private.
+  void CallOnURLFetchComplete() {
+    delegate_->OnURLFetchComplete(delegate_->search_term_fetcher_.get());
+  }
+
+  void CallResolveSearchTermFromContext() {
+    delegate_->ResolveSearchTermFromContext();
+  }
+
   void SetResponseStringAndFetch(const std::string& selected_text,
                                  const std::string& mentions_start,
                                  const std::string& mentions_end) {
@@ -149,7 +181,7 @@ class ContextualSearchDelegateTest : public testing::Test {
     test_context_->SetSelectionSurroundings(start_offset, end_offset,
                                             surrounding_text);
     // ContextualSearchDelegate class takes ownership of the context.
-    delegate_->set_context_for_testing(test_context_);
+    delegate_->SetContextForTesting(test_context_->GetWeakPtr());
   }
 
   // Gets the Client Discourse Context proto from the request header.
@@ -600,4 +632,19 @@ TEST_F(ContextualSearchDelegateTest, ContextualCardsResponseWithThumbnail) {
       ", |thumbnail|:|https://t0.gstatic.com/images?q=tbn:ANd9|");
   EXPECT_EQ("", caption());
   EXPECT_EQ("https://t0.gstatic.com/images?q=tbn:ANd9", thumbnail_url());
+}
+
+// Test that we can destroy the context while resolving without a crash.
+TEST_F(ContextualSearchDelegateTest, DestroyContextDuringResolve) {
+  CreateTestContext();
+  CallResolveSearchTermFromContext();
+  DestroyTestContext();
+  CallOnURLFetchComplete();
+}
+
+// Test that we can destroy the context while gathering surrounding text.
+TEST_F(ContextualSearchDelegateTest, DestroyContextDuringGatherSurroundings) {
+  CreateTestContext();
+  DestroyTestContext();
+  CallOnTextSurroundingSelectionAvailable();
 }
