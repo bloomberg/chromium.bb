@@ -19,7 +19,23 @@ var ContentSettingProvider = {
 };
 
 /**
+ * The site exception information passed form the C++ handler.
+ * See also: SiteException.
  * @typedef {{embeddingOrigin: string,
+ *            embeddingDisplayName: string,
+ *            incognito: boolean,
+ *            origin: string,
+ *            displayName: string,
+ *            setting: string,
+ *            source: string}}
+ */
+var RawSiteException;
+
+/**
+ * The site exception after it has been converted/filtered for UI use.
+ * See also: RawSiteException.
+ * @typedef {{category: !settings.ContentSettingsTypes,
+ *            embeddingOrigin: string,
  *            embeddingDisplayName: string,
  *            incognito: boolean,
  *            origin: string,
@@ -120,14 +136,14 @@ cr.define('settings', function() {
     /**
      * Gets the exceptions (site list) for a particular category.
      * @param {string} contentType The name of the category to query.
-     * @return {!Promise<!Array<!SiteException>>}
+     * @return {!Promise<!Array<!RawSiteException>>}
      */
     getExceptionList: function(contentType) {},
 
     /**
      * Gets the exception details for a particular site.
      * @param {string} site The name of the site.
-     * @return {!Promise<!SiteException>}
+     * @return {!Promise<!RawSiteException>}
      */
     getSiteDetails: function(site) {},
 

@@ -12,6 +12,7 @@ var SiteSettingsBehaviorImpl = {
     /**
      * The string ID of the category this element is displaying data for.
      * See site_settings/constants.js for possible values.
+     * @type {!settings.ContentSettingsTypes}
      */
     category: String,
 
@@ -146,7 +147,7 @@ var SiteSettingsBehaviorImpl = {
   /**
    * Convert an exception (received from the C++ handler) to a full
    * SiteException.
-   * @param {!Object} exception The raw site exception from C++.
+   * @param {!RawSiteException} exception The raw site exception from C++.
    * @return {SiteException} The expanded (full) SiteException.
    * @private
    */
