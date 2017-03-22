@@ -10,6 +10,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/ssl/ssl_error_handler.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -82,11 +83,12 @@ void SSLErrorAssistantComponentInstallerTraits::ComponentReady(
   DVLOG(1) << "Component ready, version " << version.GetString() << " in "
            << install_dir.value();
 
-  if (!content::BrowserThread::PostBlockingPoolTask(
-          FROM_HERE,
-          base::Bind(&LoadProtoFromDisk, GetInstalledPath(install_dir)))) {
-    NOTREACHED();
-  }
+  base::PostTaskWithTraits(
+      FROM_HERE,
+      base::TaskTraits()
+          .WithPriority(base::TaskPriority::BACKGROUND)
+          .MayBlock(),
+      base::Bind(&LoadProtoFromDisk, GetInstalledPath(install_dir)));
 }
 
 // Called during startup and installation before ComponentReady().
