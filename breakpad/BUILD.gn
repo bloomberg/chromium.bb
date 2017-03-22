@@ -10,6 +10,10 @@ if (is_android) {
   import("//build/config/android/rules.gni")
 }
 
+if (is_win) {
+  import("//build/config/win/visual_studio_version.gni")
+}
+
 config("tools_config") {
   include_dirs = [
     "src",
@@ -820,6 +824,48 @@ if (is_linux || is_android) {
     ]
 
     include_dirs = [ "src" ]
+  }
+}
+
+if (is_win) {
+  executable("dump_syms") {
+    # TODO(scottmg) using this with VS2015 may break the crash server.
+    # https://crbug.com/696671
+    include_dirs = [
+      "$visual_studio_path/DIA SDK/include",
+      "src",
+    ]
+
+    sources = [
+      "src/common/windows/dia_util.cc",
+      "src/common/windows/dia_util.h",
+      "src/common/windows/guid_string.cc",
+      "src/common/windows/guid_string.h",
+      "src/common/windows/omap.cc",
+      "src/common/windows/omap.h",
+      "src/common/windows/pdb_source_line_writer.cc",
+      "src/common/windows/pdb_source_line_writer.h",
+      "src/common/windows/string_utils-inl.h",
+      "src/common/windows/string_utils.cc",
+      "src/tools/windows/dump_syms/dump_syms.cc",
+    ]
+
+    lib_dirs = []
+    if (target_cpu == "x64") {
+      lib_dirs += [ "$visual_studio_path/DIA SDK/lib/amd64" ]
+    } else {
+      lib_dirs += [ "$visual_studio_path/DIA SDK/lib" ]
+    }
+
+    libs = [
+      "diaguids.lib",
+      "imagehlp.lib",
+    ]
+    if (is_clang) {
+      # clang complains about microsoft-specific goto extensions. Instead of
+      # rewriting decade-old, goto-ridden code, disable the warning.
+      cflags = [ "-Wno-microsoft-goto" ]
+    }
   }
 }
 
