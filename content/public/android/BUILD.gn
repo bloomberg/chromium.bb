@@ -61,6 +61,7 @@ android_library("content_java") {
     "//services/service_manager/public/java:service_manager_java",
     "//services/shape_detection/public/interfaces:interfaces_java",
     "//skia/public/interfaces:interfaces_java",
+    "//third_party/WebKit/public:android_mojo_bindings_java",
     "//third_party/WebKit/public:blink_headers_java",
     "//third_party/WebKit/public:mojo_bindings_java",
     "//third_party/android_tools:android_support_annotations_java",
@@ -199,6 +200,8 @@ android_library("content_java") {
     "java/src/org/chromium/content/browser/input/ThreadedInputConnection.java",
     "java/src/org/chromium/content/browser/input/ThreadedInputConnectionFactory.java",
     "java/src/org/chromium/content/browser/input/ThreadedInputConnectionProxyView.java",
+    "java/src/org/chromium/content/browser/installedapp/InstalledAppProviderFactory.java",
+    "java/src/org/chromium/content/browser/installedapp/InstalledAppProviderImpl.java",
     "java/src/org/chromium/content/browser/picker/DateDialogNormalizer.java",
     "java/src/org/chromium/content/browser/picker/DatePickerDialogCompat.java",
     "java/src/org/chromium/content/browser/picker/DateTimePickerDialog.java",
@@ -475,10 +478,13 @@ junit_binary("content_junit_tests") {
     "junit/src/org/chromium/content/browser/input/ThreadedInputConnectionTest.java",
     "junit/src/org/chromium/content/browser/picker/DateDialogNormalizerTest.java",
     "junit/src/org/chromium/content/browser/BindingManagerImplTest.java",
+    "junit/src/org/chromium/content/browser/installedapp/InstalledAppProviderTest.java",
   ]
   deps = [
     ":content_java",
     "//base:base_java",
     "//base:base_java_test_support",
+    "//mojo/public/java:bindings_java",
+    "//third_party/WebKit/public:android_mojo_bindings_java",
   ]
 }
