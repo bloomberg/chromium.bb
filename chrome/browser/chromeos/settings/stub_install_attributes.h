@@ -21,11 +21,16 @@ class StubInstallAttributes : public InstallAttributes {
   // Setup as not-yet enrolled.
   void Clear();
 
-  // Setup as consumer device.  (Clears existing configuration.)
-  void SetConsumer();
+  // Setup as consumer owned device.  (Clears existing configuration.)
+  void SetConsumerOwned();
 
-  // Setup as enterprise enrolled.  (Clears existing configuration.)
-  void SetEnterprise(const std::string& domain, const std::string& device_id);
+  // Setup as managed by Google cloud.  (Clears existing configuration.)
+  void SetCloudManaged(const std::string& domain, const std::string& device_id);
+
+  // Setup as managed by Active Directory server.  (Clears existing
+  // configuration.)
+  void SetActiveDirectoryManaged(const std::string& realm,
+                                 const std::string& device_id);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StubInstallAttributes);
@@ -40,11 +45,16 @@ class ScopedStubInstallAttributes {
   static ScopedStubInstallAttributes CreateUnset();
 
   // Factory for consumer-type ScopedStubInstallAttributes.
-  static ScopedStubInstallAttributes CreateConsumer();
+  static ScopedStubInstallAttributes CreateConsumerOwned();
 
-  // Factory for enterprise-type ScopedStubInstallAttributes.
-  static ScopedStubInstallAttributes CreateEnterprise(
+  // Factory for cloud managed ScopedStubInstallAttributes.
+  static ScopedStubInstallAttributes CreateCloudManaged(
       const std::string& domain,
+      const std::string& device_id);
+
+  // Factory for Active Directory managed ScopedStubInstallAttributes.
+  static ScopedStubInstallAttributes CreateActiveDirectoryManaged(
+      const std::string& realm,
       const std::string& device_id);
 
  private:

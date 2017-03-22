@@ -99,7 +99,7 @@ class EnterpriseDeviceAttributesTest :
     std::unique_ptr<chromeos::StubInstallAttributes> attributes =
         base::MakeUnique<chromeos::StubInstallAttributes>();
 
-    attributes->SetEnterprise("fake-domain", "fake-id");
+    attributes->SetCloudManaged("fake-domain", "fake-id");
     policy::BrowserPolicyConnectorChromeOS::SetInstallAttributesForTesting(
         attributes.release());
 

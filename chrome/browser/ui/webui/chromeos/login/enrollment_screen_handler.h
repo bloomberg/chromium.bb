@@ -23,6 +23,16 @@ namespace chromeos {
 class ErrorScreensHistogramHelper;
 class HelpAppLauncher;
 
+// Possible error states of the Active Directory screen. Must be in the same
+// order as ACTIVE_DIRECTORY_ERROR_STATE enum values.
+enum class ActiveDirectoryErrorState {
+  NONE = 0,
+  MACHINE_NAME_INVALID = 1,
+  MACHINE_NAME_TOO_LONG = 2,
+  BAD_USERNAME = 3,
+  BAD_PASSWORD = 4,
+};
+
 // WebUIMessageHandler implementation which handles events occurring on the
 // page, such as the user pressing the signin button.
 class EnrollmentScreenHandler

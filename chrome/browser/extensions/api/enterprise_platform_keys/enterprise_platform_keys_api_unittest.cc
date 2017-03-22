@@ -161,7 +161,7 @@ class EPKChallengeKeyTestBase : public BrowserWithTestWindowTest {
     ON_CALL(mock_attestation_flow_, GetCertificate(_, _, _, _, _))
         .WillByDefault(Invoke(GetCertificateCallbackTrue));
 
-    stub_install_attributes_.SetEnterprise("google.com", "device_id");
+    stub_install_attributes_.SetCloudManaged("google.com", "device_id");
 
     settings_helper_.ReplaceProvider(chromeos::kDeviceAttestationEnabled);
     settings_helper_.SetBoolean(chromeos::kDeviceAttestationEnabled, true);
@@ -273,7 +273,7 @@ class EPKChallengeMachineKeyTest : public EPKChallengeKeyTestBase {
 };
 
 TEST_F(EPKChallengeMachineKeyTest, NonEnterpriseDevice) {
-  stub_install_attributes_.SetConsumer();
+  stub_install_attributes_.SetConsumerOwned();
 
   EXPECT_EQ(EPKPChallengeMachineKey::kNonEnterpriseDeviceError,
             RunFunctionAndReturnError(func_.get(), CreateArgs(), browser()));
@@ -492,7 +492,7 @@ TEST_F(EPKChallengeUserKeyTest, KeyNotRegistered) {
 }
 
 TEST_F(EPKChallengeUserKeyTest, PersonalDevice) {
-  stub_install_attributes_.SetConsumer();
+  stub_install_attributes_.SetConsumerOwned();
 
   // Currently personal devices are not supported.
   EXPECT_EQ(GetCertificateError(kUserRejected),

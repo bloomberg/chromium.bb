@@ -171,7 +171,7 @@ TEST_P(DeviceCloudPolicyInitializerTest,
 
   // If the device is enterprise-managed, the management domain gets pulled from
   // install attributes.
-  install_attributes_.SetEnterprise("example.com", "fake-id");
+  install_attributes_.SetCloudManaged("example.com", "fake-id");
   config = device_cloud_policy_initializer_.GetPrescribedEnrollmentConfig();
   EXPECT_EQ(EnrollmentConfig::MODE_NONE, config.mode);
   EXPECT_EQ("example.com", config.management_domain);

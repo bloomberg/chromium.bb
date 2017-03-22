@@ -22,18 +22,27 @@ void StubInstallAttributes::Clear() {
   registration_device_id_.clear();
 }
 
-void StubInstallAttributes::SetConsumer() {
+void StubInstallAttributes::SetConsumerOwned() {
   registration_mode_ = policy::DEVICE_MODE_CONSUMER;
   registration_domain_.clear();
   registration_realm_.clear();
   registration_device_id_.clear();
 }
 
-void StubInstallAttributes::SetEnterprise(const std::string& domain,
-                                          const std::string& device_id) {
+void StubInstallAttributes::SetCloudManaged(const std::string& domain,
+                                            const std::string& device_id) {
   registration_mode_ = policy::DEVICE_MODE_ENTERPRISE;
   registration_domain_ = domain;
   registration_realm_.clear();
+  registration_device_id_ = device_id;
+}
+
+void StubInstallAttributes::SetActiveDirectoryManaged(
+    const std::string& realm,
+    const std::string& device_id) {
+  registration_mode_ = policy::DEVICE_MODE_ENTERPRISE_AD;
+  registration_realm_ = realm;
+  registration_domain_.clear();
   registration_device_id_ = device_id;
 }
 
@@ -47,20 +56,32 @@ ScopedStubInstallAttributes ScopedStubInstallAttributes::CreateUnset() {
 }
 
 // static
-ScopedStubInstallAttributes ScopedStubInstallAttributes::CreateConsumer() {
+ScopedStubInstallAttributes ScopedStubInstallAttributes::CreateConsumerOwned() {
   StubInstallAttributes* attributes = new StubInstallAttributes();
-  attributes->SetConsumer();
+  attributes->SetConsumerOwned();
   policy::BrowserPolicyConnectorChromeOS::SetInstallAttributesForTesting(
       attributes);
   return ScopedStubInstallAttributes();
 }
 
 // static
-ScopedStubInstallAttributes ScopedStubInstallAttributes::CreateEnterprise(
+ScopedStubInstallAttributes ScopedStubInstallAttributes::CreateCloudManaged(
     const std::string& domain,
     const std::string& device_id) {
   StubInstallAttributes* attributes = new StubInstallAttributes();
-  attributes->SetEnterprise(domain, device_id);
+  attributes->SetCloudManaged(domain, device_id);
+  policy::BrowserPolicyConnectorChromeOS::SetInstallAttributesForTesting(
+      attributes);
+  return ScopedStubInstallAttributes();
+}
+
+// static
+ScopedStubInstallAttributes
+ScopedStubInstallAttributes::CreateActiveDirectoryManaged(
+    const std::string& realm,
+    const std::string& device_id) {
+  StubInstallAttributes* attributes = new StubInstallAttributes();
+  attributes->SetActiveDirectoryManaged(realm, device_id);
   policy::BrowserPolicyConnectorChromeOS::SetInstallAttributesForTesting(
       attributes);
   return ScopedStubInstallAttributes();

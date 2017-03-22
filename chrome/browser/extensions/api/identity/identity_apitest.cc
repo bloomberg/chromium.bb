@@ -1602,7 +1602,7 @@ class GetAuthTokenFunctionPublicSessionTest : public GetAuthTokenFunctionTest {
     // enterprise-managed.
      std::unique_ptr<chromeos::StubInstallAttributes> attributes
          = base::MakeUnique<chromeos::StubInstallAttributes>();
-     attributes->SetEnterprise("example.com", "fake-id");
+     attributes->SetCloudManaged("example.com", "fake-id");
      policy::BrowserPolicyConnectorChromeOS::SetInstallAttributesForTesting(
          attributes.release());
   }

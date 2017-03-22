@@ -39,8 +39,13 @@ class CHROMEOS_EXPORT FakeAuthPolicyClient : public AuthPolicyClient {
   // devices.
   void set_started(bool started) { started_ = started; }
 
+  void set_auth_error(authpolicy::ErrorType auth_error) {
+    auth_error_ = auth_error;
+  }
+
  private:
   bool started_ = false;
+  authpolicy::ErrorType auth_error_ = authpolicy::ERROR_NONE;
   DISALLOW_COPY_AND_ASSIGN(FakeAuthPolicyClient);
 };
 

@@ -108,14 +108,6 @@ std::string GetEnterpriseDomain() {
   return connector->GetEnterpriseDomain();
 }
 
-enum ActiveDirectoryErrorState {
-  ERROR_STATE_NONE = 0,
-  ERROR_STATE_MACHINE_NAME_INVALID = 1,
-  ERROR_STATE_MACHINE_NAME_TOO_LONG = 2,
-  ERROR_STATE_BAD_USERNAME = 3,
-  ERROR_STATE_BAD_PASSWORD = 4,
-};
-
 }  // namespace
 
 // EnrollmentScreenHandler, public ------------------------------
@@ -598,19 +590,20 @@ void EnrollmentScreenHandler::HandleAdDomainJoin(
     case authpolicy::ERROR_PARSE_UPN_FAILED:
     case authpolicy::ERROR_BAD_USER_NAME:
       CallJS("invalidateAd", machine_name, user_name,
-             static_cast<int>(ERROR_STATE_BAD_USERNAME));
+             static_cast<int>(ActiveDirectoryErrorState::BAD_USERNAME));
       return;
     case authpolicy::ERROR_BAD_PASSWORD:
       CallJS("invalidateAd", machine_name, user_name,
-             static_cast<int>(ERROR_STATE_BAD_PASSWORD));
+             static_cast<int>(ActiveDirectoryErrorState::BAD_PASSWORD));
       return;
     case authpolicy::ERROR_MACHINE_NAME_TOO_LONG:
-      CallJS("invalidateAd", machine_name, user_name,
-             static_cast<int>(ERROR_STATE_MACHINE_NAME_TOO_LONG));
+      CallJS(
+          "invalidateAd", machine_name, user_name,
+          static_cast<int>(ActiveDirectoryErrorState::MACHINE_NAME_TOO_LONG));
       return;
     case authpolicy::ERROR_BAD_MACHINE_NAME:
       CallJS("invalidateAd", machine_name, user_name,
-             static_cast<int>(ERROR_STATE_MACHINE_NAME_INVALID));
+             static_cast<int>(ActiveDirectoryErrorState::MACHINE_NAME_INVALID));
       return;
     case authpolicy::ERROR_JOIN_ACCESS_DENIED:
       ShowError(IDS_AD_USER_DENIED_TO_JOIN_MACHINE, true);
@@ -626,7 +619,7 @@ void EnrollmentScreenHandler::HandleAdDomainJoin(
     default:
       LOG(WARNING) << "Unhandled error code: " << code;
       CallJS("invalidateAd", machine_name, user_name,
-             static_cast<int>(ERROR_STATE_NONE));
+             static_cast<int>(ActiveDirectoryErrorState::NONE));
       return;
   }
 }

@@ -1120,13 +1120,14 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       this.updateControlsState();
     },
 
-    invalidateAd: function(username) {
+    invalidateAd: function(username, errorState) {
       if (this.screenMode_ != ScreenMode.AD_AUTH)
         return;
       var adAuthUI = this.getSigninFrame_();
       adAuthUI.setUser(username);
-      adAuthUI.setInvalid(ACTIVE_DIRECTORY_ERROR_STATE.BAD_PASSWORD);
+      adAuthUI.setInvalid(errorState);
       this.loading = false;
+      Oobe.getInstance().headerHidden = false;
     }
   };
 });

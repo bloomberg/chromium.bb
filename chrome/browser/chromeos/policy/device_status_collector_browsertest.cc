@@ -273,7 +273,7 @@ class DeviceStatusCollectorTest : public testing::Test {
  public:
   DeviceStatusCollectorTest()
       : install_attributes_(
-            chromeos::ScopedStubInstallAttributes::CreateEnterprise(
+            chromeos::ScopedStubInstallAttributes::CreateCloudManaged(
                 "managed.com",
                 "device_id")),
         settings_helper_(false),

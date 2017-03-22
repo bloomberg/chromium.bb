@@ -261,7 +261,7 @@ class AutoLaunchedKioskTest : public ExtensionApiTest {
  public:
   AutoLaunchedKioskTest()
       : install_attributes_(
-            chromeos::ScopedStubInstallAttributes::CreateEnterprise(
+            chromeos::ScopedStubInstallAttributes::CreateCloudManaged(
                 "domain.com",
                 "device_id")),
         owner_key_util_(new ownership::MockOwnerKeyUtil()),

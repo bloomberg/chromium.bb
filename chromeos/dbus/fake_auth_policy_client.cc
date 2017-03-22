@@ -113,8 +113,9 @@ void FakeAuthPolicyClient::AuthenticateUser(
     callback.Run(authpolicy::ERROR_DBUS_FAILURE, account_data);
     return;
   }
-  account_data.set_account_id(base::MD5String(user_principal_name));
-  callback.Run(authpolicy::ERROR_NONE, account_data);
+  if (auth_error_ == authpolicy::ERROR_NONE)
+    account_data.set_account_id(base::MD5String(user_principal_name));
+  callback.Run(auth_error_, account_data);
 }
 
 void FakeAuthPolicyClient::RefreshDevicePolicy(

@@ -188,16 +188,16 @@ FakeConsumer::GetInvalidationService() const {
 }
 
 AffiliatedInvalidationServiceProviderImplTest::
-AffiliatedInvalidationServiceProviderImplTest()
+    AffiliatedInvalidationServiceProviderImplTest()
     : device_invalidation_service_(nullptr),
       profile_invalidation_service_(nullptr),
       fake_user_manager_(new chromeos::FakeChromeUserManager),
       user_manager_enabler_(fake_user_manager_),
       install_attributes_(
-          chromeos::ScopedStubInstallAttributes::CreateEnterprise(
-              "example.com", "device_id")),
-      profile_manager_(TestingBrowserProcess::GetGlobal()) {
-}
+          chromeos::ScopedStubInstallAttributes::CreateCloudManaged(
+              "example.com",
+              "device_id")),
+      profile_manager_(TestingBrowserProcess::GetGlobal()) {}
 
 void AffiliatedInvalidationServiceProviderImplTest::SetUp() {
   chromeos::SystemSaltGetter::Initialize();

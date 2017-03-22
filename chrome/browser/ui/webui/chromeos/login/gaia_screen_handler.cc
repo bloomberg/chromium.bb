@@ -28,6 +28,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/io_thread.h"
+#include "chrome/browser/ui/webui/chromeos/login/enrollment_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
 #include "chrome/common/channel_info.h"
@@ -558,9 +559,12 @@ void GaiaScreenHandler::DoAdAuth(
       break;
     case authpolicy::ERROR_PARSE_UPN_FAILED:
     case authpolicy::ERROR_BAD_USER_NAME:
-    case authpolicy::ERROR_BAD_PASSWORD:
-      CallJS("invalidateAd", username);
+      CallJS("invalidateAd", username,
+             static_cast<int>(ActiveDirectoryErrorState::BAD_USERNAME));
       return;
+    case authpolicy::ERROR_BAD_PASSWORD:
+      CallJS("invalidateAd", username,
+             static_cast<int>(ActiveDirectoryErrorState::BAD_PASSWORD));
     case authpolicy::ERROR_UNKNOWN:
     case authpolicy::ERROR_DBUS_FAILURE:
     case authpolicy::ERROR_CANNOT_RESOLVE_KDC:
