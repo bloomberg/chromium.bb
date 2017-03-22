@@ -528,7 +528,8 @@ def PerformSymbolsFileUpload(symbols, upload_url, product_name='ChromeOS'):
         # This command retries the upload multiple times with growing delays. We
         # only consider the upload a failure if these retries fail.
         def ShouldRetryUpload(exception):
-          return isinstance(exception, (urllib2.HTTPError, urllib2.URLError))
+          return isinstance(exception, (urllib2.HTTPError, urllib2.URLError,
+                                        httplib.HTTPException, socket.error))
 
         with cros_build_lib.TimedSection() as timer:
           retry_stats.RetryWithStats(
