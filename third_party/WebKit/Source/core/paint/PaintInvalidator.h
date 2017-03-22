@@ -21,30 +21,28 @@ struct PaintInvalidatorContext {
   PaintInvalidatorContext(
       const PaintPropertyTreeBuilderContext& treeBuilderContext,
       GeometryMapper& geometryMapper)
-      : treeBuilderContext(treeBuilderContext),
-        geometryMapper(geometryMapper),
-        parentContext(nullptr) {}
+      : parentContext(nullptr),
+        m_treeBuilderContext(treeBuilderContext),
+        m_geometryMapper(geometryMapper) {}
 
   PaintInvalidatorContext(
       const PaintPropertyTreeBuilderContext& treeBuilderContext,
       const PaintInvalidatorContext& parentContext)
-      : treeBuilderContext(treeBuilderContext),
-        geometryMapper(parentContext.geometryMapper),
-        parentContext(&parentContext),
+      : parentContext(&parentContext),
         forcedSubtreeInvalidationFlags(
             parentContext.forcedSubtreeInvalidationFlags),
         paintInvalidationContainer(parentContext.paintInvalidationContainer),
         paintInvalidationContainerForStackedContents(
             parentContext.paintInvalidationContainerForStackedContents),
-        paintingLayer(parentContext.paintingLayer) {}
+        paintingLayer(parentContext.paintingLayer),
+        m_treeBuilderContext(treeBuilderContext),
+        m_geometryMapper(parentContext.m_geometryMapper) {}
 
   // This method is virtual temporarily to adapt PaintInvalidatorContext and the
   // legacy PaintInvalidationState for code shared by old code and new code.
   virtual void mapLocalRectToVisualRectInBacking(const LayoutObject&,
                                                  LayoutRect&) const;
 
-  const PaintPropertyTreeBuilderContext& treeBuilderContext;
-  GeometryMapper& geometryMapper;
   const PaintInvalidatorContext* parentContext;
 
   enum ForcedSubtreeInvalidationFlag {
@@ -89,6 +87,11 @@ struct PaintInvalidatorContext {
   // LayoutObject::adjustVisualRectForCompositedScrolling().
   LayoutPoint oldLocation;
   LayoutPoint newLocation;
+
+ private:
+  friend class PaintInvalidator;
+  const PaintPropertyTreeBuilderContext& m_treeBuilderContext;
+  GeometryMapper& m_geometryMapper;
 };
 
 class PaintInvalidator {
@@ -101,6 +104,13 @@ class PaintInvalidator {
   void processPendingDelayedPaintInvalidations();
 
  private:
+  friend struct PaintInvalidatorContext;
+  template <typename Rect, typename Point>
+  static LayoutRect mapLocalRectToVisualRectInBacking(
+      const LayoutObject&,
+      const Rect&,
+      const PaintInvalidatorContext&);
+
   ALWAYS_INLINE LayoutRect
   computeVisualRectInBacking(const LayoutObject&,
                              const PaintInvalidatorContext&);

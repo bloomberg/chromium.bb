@@ -49,7 +49,7 @@ static LayoutRect slowMapToVisualRectInAncestorSpace(
 // This function is templatized to avoid FloatRect<->LayoutRect conversions
 // which affect performance.
 template <typename Rect, typename Point>
-static LayoutRect mapLocalRectToVisualRectInBacking(
+LayoutRect PaintInvalidator::mapLocalRectToVisualRectInBacking(
     const LayoutObject& object,
     const Rect& localRect,
     const PaintInvalidatorContext& context) {
@@ -108,9 +108,9 @@ static LayoutRect mapLocalRectToVisualRectInBacking(
         context.paintInvalidationContainer->paintProperties()
             ->contentsProperties();
 
-    if (context.treeBuilderContext.current.transform ==
+    if (context.m_treeBuilderContext.current.transform ==
             containerContentsProperties->transform() &&
-        context.treeBuilderContext.current.clip ==
+        context.m_treeBuilderContext.current.clip ==
             containerContentsProperties->clip()) {
       result = LayoutRect(rect);
     } else {
@@ -119,17 +119,16 @@ static LayoutRect mapLocalRectToVisualRectInBacking(
       // snapping, when transforms are applied. If there is no transform,
       // enclosingIntRect is applied in the last step of paint invalidation
       // (see CompositedLayerMapping::setContentsNeedDisplayInRect()).
-      if (!isSVGChild &&
-          context.treeBuilderContext.current.transform !=
-              containerContentsProperties->transform())
+      if (!isSVGChild && context.m_treeBuilderContext.current.transform !=
+                             containerContentsProperties->transform())
         rect = Rect(enclosingIntRect(rect));
 
       PropertyTreeState currentTreeState(
-          context.treeBuilderContext.current.transform,
-          context.treeBuilderContext.current.clip, nullptr);
+          context.m_treeBuilderContext.current.transform,
+          context.m_treeBuilderContext.current.clip, nullptr);
 
       FloatRect floatRect(rect);
-      context.geometryMapper.sourceToDestinationVisualRect(
+      context.m_geometryMapper.sourceToDestinationVisualRect(
           currentTreeState, *containerContentsProperties, floatRect);
       result = LayoutRect(floatRect);
     }
@@ -152,7 +151,8 @@ static LayoutRect mapLocalRectToVisualRectInBacking(
 void PaintInvalidatorContext::mapLocalRectToVisualRectInBacking(
     const LayoutObject& object,
     LayoutRect& rect) const {
-  rect = blink::mapLocalRectToVisualRectInBacking<LayoutRect, LayoutPoint>(
+  rect = PaintInvalidator::mapLocalRectToVisualRectInBacking<LayoutRect,
+                                                             LayoutPoint>(
       object, rect, *this);
 }
 
@@ -183,10 +183,10 @@ LayoutPoint PaintInvalidator::computeLocationInBacking(
         context.paintInvalidationContainer->paintProperties()
             ->contentsProperties()
             ->transform();
-    if (context.treeBuilderContext.current.transform != containerTransform) {
+    if (context.m_treeBuilderContext.current.transform != containerTransform) {
       FloatRect rect = FloatRect(FloatPoint(point), FloatSize());
-      context.geometryMapper.sourceToDestinationRect(
-          context.treeBuilderContext.current.transform, containerTransform,
+      context.m_geometryMapper.sourceToDestinationRect(
+          context.m_treeBuilderContext.current.transform, containerTransform,
           rect);
       point = LayoutPoint(rect.location());
     }
@@ -255,10 +255,11 @@ namespace {
 // apply.
 class ScopedUndoFrameViewContentClipAndScroll {
  public:
-  ScopedUndoFrameViewContentClipAndScroll(const FrameView& frameView,
-                                          PaintInvalidatorContext& context)
-      : m_treeBuilderContext(const_cast<PaintPropertyTreeBuilderContext&>(
-            context.treeBuilderContext)),
+  ScopedUndoFrameViewContentClipAndScroll(
+      const FrameView& frameView,
+      const PaintPropertyTreeBuilderContext& treeBuilderContext)
+      : m_treeBuilderContext(
+            const_cast<PaintPropertyTreeBuilderContext&>(treeBuilderContext)),
         m_savedContext(m_treeBuilderContext.current) {
     DCHECK(!RuntimeEnabledFeatures::rootLayerScrollingEnabled());
 
@@ -354,7 +355,7 @@ void PaintInvalidator::updateVisualRect(const LayoutObject& object,
   if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled() &&
       object.isLayoutView() && !object.isPaintInvalidationContainer()) {
     undoFrameViewContentClipAndScroll.emplace(*toLayoutView(object).frameView(),
-                                              context);
+                                              context.m_treeBuilderContext);
   }
 
   // TODO(crbug.com/637313): Use GeometryMapper which now supports filter
@@ -400,7 +401,8 @@ void PaintInvalidator::invalidatePaintIfNeeded(
   context.paintingLayer = layoutView->layer();
 
   if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
-    ScopedUndoFrameViewContentClipAndScroll undo(frameView, context);
+    ScopedUndoFrameViewContentClipAndScroll undo(frameView,
+                                                 context.m_treeBuilderContext);
     frameView.invalidatePaintOfScrollControlsIfNeeded(context);
   }
 }
@@ -416,7 +418,7 @@ void PaintInvalidator::invalidatePaintIfNeeded(
 
   // The paint offset should already be updated through
   // PaintPropertyTreeBuilder::updatePropertiesForSelf.
-  DCHECK(context.treeBuilderContext.current.paintOffset ==
+  DCHECK(context.m_treeBuilderContext.current.paintOffset ==
          object.paintOffset());
 
   updatePaintingLayer(object, context);
