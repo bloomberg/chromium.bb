@@ -405,14 +405,10 @@ static void update_and_record_txb_context(int plane, int block, int blk_row,
   const tran_low_t *qcoeff = BLOCK_OFFSET(p->qcoeff, block);
   tran_low_t *tcoeff = BLOCK_OFFSET(x->mbmi_ext->tcoeff[plane], block);
   const int segment_id = mbmi->segment_id;
-  const int16_t *scan, *nb;
   const TX_TYPE tx_type = get_tx_type(plane_type, xd, block, tx_size);
   const SCAN_ORDER *const scan_order =
       get_scan(cm, tx_size, tx_type, is_inter_block(mbmi));
-  const int ref = is_inter_block(mbmi);
-  unsigned int(*const counts)[COEFF_CONTEXTS][ENTROPY_TOKENS] =
-      td->rd_counts.coef_counts[tx_size][plane_type][ref];
-  const uint8_t *const band = get_band_translate(tx_size);
+  const int16_t *scan = scan_order->scan;
   const int seg_eob = get_tx_eob(&cpi->common.seg, segment_id, tx_size);
   int c, i;
   TXB_CTX txb_ctx;
@@ -425,14 +421,7 @@ static void update_and_record_txb_context(int plane, int block, int blk_row,
 
   nz_map_count = &td->counts->nz_map[tx_size][plane_type];
 
-  scan = scan_order->scan;
-  nb = scan_order->neighbors;
-
   memcpy(tcoeff, qcoeff, sizeof(*tcoeff) * seg_eob);
-
-  (void)nb;
-  (void)counts;
-  (void)band;
 
   ++td->counts->txb_skip[tx_size][txb_ctx.txb_skip_ctx][eob == 0];
   x->mbmi_ext->txb_skip_ctx[plane][block] = txb_ctx.txb_skip_ctx;
