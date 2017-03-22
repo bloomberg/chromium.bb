@@ -53,6 +53,7 @@ struct GL_EXPORT GLVersionInfo {
   bool is_es;
   bool is_angle;
   bool is_mesa;
+  bool is_swiftshader;
   unsigned major_version;
   unsigned minor_version;
   bool is_es2;

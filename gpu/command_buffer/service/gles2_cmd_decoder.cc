@@ -8364,7 +8364,7 @@ void GLES2DecoderImpl::RenderbufferStorageMultisampleHelper(
   if (feature_info->feature_flags().use_core_framebuffer_multisample) {
     glRenderbufferStorageMultisample(
         target, samples, internal_format, width, height);
-  } else if (feature_info->gl_version_info().is_angle) {
+  } else if (feature_info->feature_flags().angle_framebuffer_multisample) {
     // This is ES2 only.
     glRenderbufferStorageMultisampleANGLE(
         target, samples, internal_format, width, height);
@@ -8389,7 +8389,7 @@ void GLES2DecoderImpl::BlitFramebufferHelper(GLint srcX0,
   if (feature_info_->feature_flags().use_core_framebuffer_multisample) {
     glBlitFramebuffer(
         srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
-  } else if (gl_version_info().is_angle) {
+  } else if (feature_info_->feature_flags().angle_framebuffer_multisample) {
     // This is ES2 only.
     glBlitFramebufferANGLE(
         srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);

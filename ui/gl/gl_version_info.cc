@@ -46,6 +46,7 @@ GLVersionInfo::GLVersionInfo()
     : is_es(false),
       is_angle(false),
       is_mesa(false),
+      is_swiftshader(false),
       major_version(0),
       minor_version(0),
       is_es2(false),
@@ -65,6 +66,8 @@ void GLVersionInfo::Initialize(const char* version_str,
                                 base::CompareCase::SENSITIVE);
     is_mesa = base::StartsWith(renderer_str, "Mesa",
                                base::CompareCase::SENSITIVE);
+    is_swiftshader = base::StartsWith(renderer_str, "Google SwiftShader",
+                                      base::CompareCase::SENSITIVE);
   }
   is_desktop_core_profile =
       DesktopCoreCommonCheck(is_es, major_version, minor_version) &&
