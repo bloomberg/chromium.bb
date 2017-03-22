@@ -297,6 +297,13 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
             self.command.builders_with_pending_builds([Build('MOCK Try Linux', None), Build('MOCK Try Win', 123)]),
             {'MOCK Try Linux'})
 
+    def test_builders_with_no_results(self):
+        # In this example, Linux has a pending build, and Mac has no build.
+        # MOCK Try Mac is listed because it's listed in the BuilderList in setUp.
+        self.assertEqual(
+            self.command.builders_with_no_results([Build('MOCK Try Linux', None), Build('MOCK Try Win', 123)]),
+            {'MOCK Try Mac', 'MOCK Try Linux'})
+
     def test_bails_when_one_build_is_missing_results(self):
         self.tool.buildbot.set_results(Build('MOCK Try Win', 5000), None)
         return_code = self.command.execute(self.command_options(), [], self.tool)
