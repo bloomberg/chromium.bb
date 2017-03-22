@@ -151,6 +151,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyDeviceMac
   DISALLOW_COPY_AND_ASSIGN(BluetoothLowEnergyDeviceMac);
 };
 
+// Stream operator for logging.
+DEVICE_BLUETOOTH_EXPORT std::ostream& operator<<(
+    std::ostream& out,
+    const BluetoothLowEnergyDeviceMac& device);
+
 }  // namespace device
 
 #endif  // DEVICE_BLUETOOTH_BLUETOOTH_LOW_ENERGY_DEVICE_MAC_H_

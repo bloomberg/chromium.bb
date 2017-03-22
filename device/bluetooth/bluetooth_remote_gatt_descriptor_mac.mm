@@ -74,4 +74,17 @@ CBDescriptor* BluetoothRemoteGattDescriptorMac::GetCBDescriptor() const {
   return cb_descriptor_.get();
 }
 
+DEVICE_BLUETOOTH_EXPORT std::ostream& operator<<(
+    std::ostream& out,
+    const BluetoothRemoteGattDescriptorMac& descriptor) {
+  const BluetoothRemoteGattCharacteristicMac* characteristic_mac =
+      static_cast<const BluetoothRemoteGattCharacteristicMac*>(
+          descriptor.GetCharacteristic());
+  return out << "<BluetoothRemoteGattServiceMac "
+             << descriptor.GetUUID().canonical_value() << "/" << &descriptor
+             << ", characteristic: "
+             << characteristic_mac->GetUUID().canonical_value() << "/"
+             << characteristic_mac << ">";
+}
+
 }  // namespace device.

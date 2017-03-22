@@ -60,6 +60,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattDescriptorMac
   std::vector<uint8_t> value_;
 };
 
+// Stream operator for logging.
+DEVICE_BLUETOOTH_EXPORT std::ostream& operator<<(
+    std::ostream& out,
+    const BluetoothRemoteGattDescriptorMac& descriptor);
+
 }  // namespace device
 
 #endif  // DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_CHARACTERISTIC_MAC_H_

@@ -93,7 +93,6 @@ void BluetoothLowEnergyDiscoveryManagerMac::DiscoveredPeripheral(
     CBPeripheral* peripheral,
     NSDictionary* advertisementData,
     int rssi) {
-  VLOG(3) << "DiscoveredPeripheral";
   observer_->LowEnergyDeviceUpdated(peripheral, advertisementData, rssi);
 }
 

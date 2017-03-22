@@ -102,6 +102,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattServiceMac
   DISALLOW_COPY_AND_ASSIGN(BluetoothRemoteGattServiceMac);
 };
 
+// Stream operator for logging.
+DEVICE_BLUETOOTH_EXPORT std::ostream& operator<<(
+    std::ostream& out,
+    const BluetoothRemoteGattServiceMac& service);
+
 }  // namespace device
 
 #endif  // DEVICE_BLUETOOTH_BLUETOOTH_REMOTE_GATT_SERVICE_MAC_H_
