@@ -258,11 +258,15 @@ void DOMSelection::collapse(Node* node,
 
   // 5. Set ([DOM4]) the start and the end of newRange to (node, offset).
   newRange->setStart(node, offset, exceptionState);
-  if (exceptionState.hadException())
+  if (exceptionState.hadException()) {
+    newRange->dispose();
     return;
+  }
   newRange->setEnd(node, offset, exceptionState);
-  if (exceptionState.hadException())
+  if (exceptionState.hadException()) {
+    newRange->dispose();
     return;
+  }
 
   // 6. Set the context object's range to newRange.
   updateFrameSelection(
