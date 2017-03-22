@@ -4,16 +4,39 @@
 
 #include "chrome/install_static/install_modes.h"
 
+#include <windows.h>
+
+#include <ctype.h>
+
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::Eq;
 using ::testing::Gt;
+using ::testing::Le;
 using ::testing::Ne;
+using ::testing::Not;
+using ::testing::ResultOf;
 using ::testing::StrEq;
 using ::testing::StrNe;
 
 namespace install_static {
+
+namespace {
+
+// A matcher that returns true if |arg| contains a character that is neither
+// alpha-numeric nor a period.
+MATCHER(ContainsIllegalProgIdChar, "") {
+  const wchar_t* scan = arg;
+  wint_t c;
+  while ((c = *scan++) != 0) {
+    if (!iswalnum(c) && c != L'.')
+      return true;
+  }
+  return false;
+}
+
+}  // namespace
 
 TEST(InstallModes, VerifyModes) {
   ASSERT_THAT(NUM_INSTALL_MODES, Gt(0));
@@ -46,6 +69,17 @@ TEST(InstallModes, VerifyModes) {
       ASSERT_THAT(mode.app_guid, StrNe(L""));
     else
       ASSERT_THAT(mode.app_guid, StrEq(L""));
+
+    // The ProgID prefix must not be empty, must be no greater than 11
+    // characters long, must contain no punctuation, and may not start with a
+    // digit (https://msdn.microsoft.com/library/windows/desktop/dd542719.aspx).
+    ASSERT_THAT(mode.prog_id_prefix, StrNe(L""));
+    ASSERT_THAT(lstrlen(mode.prog_id_prefix), Le(11));
+    ASSERT_THAT(mode.prog_id_prefix, Not(ContainsIllegalProgIdChar()));
+    ASSERT_THAT(*mode.prog_id_prefix, ResultOf(iswdigit, Eq(0)));
+
+    // The ProgID description must not be empty.
+    ASSERT_THAT(mode.prog_id_description, StrNe(L""));
 
     // UNSUPPORTED and kUseGoogleUpdateIntegration are mutually exclusive.
     if (kUseGoogleUpdateIntegration)

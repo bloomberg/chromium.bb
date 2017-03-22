@@ -324,6 +324,14 @@ const wchar_t* GetBaseAppId() {
   return InstallDetails::Get().base_app_id();
 }
 
+const wchar_t* GetProgIdPrefix() {
+  return InstallDetails::Get().mode().prog_id_prefix;
+}
+
+const wchar_t* GetProgIdDescription() {
+  return InstallDetails::Get().mode().prog_id_description;
+}
+
 bool GetCollectStatsConsent() {
   bool enabled = true;
 

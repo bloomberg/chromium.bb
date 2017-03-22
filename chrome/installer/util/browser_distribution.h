@@ -80,18 +80,6 @@ class BrowserDistribution {
   virtual base::string16 GetStartMenuShortcutSubfolder(
       Subfolder subfolder_type);
 
-  // Returns the Browser ProgId prefix (e.g. ChromeHTML, ChromiumHTM, etc...).
-  // The full id is of the form |prefix|.|suffix| and is limited to a maximum
-  // length of 39 characters including null-terminator.  See
-  // http://msdn.microsoft.com/library/aa911706.aspx for details.  We define
-  // |suffix| as a fixed-length 26-character alphanumeric identifier, therefore
-  // the return value of this function must have a maximum length of
-  // 39 - 1(null-term) - 26(|suffix|) - 1(dot separator) = 11 characters.
-  virtual base::string16 GetBrowserProgIdPrefix();
-
-  // Returns the Browser ProgId description.
-  virtual base::string16 GetBrowserProgIdDesc();
-
   virtual base::string16 GetPublisherName();
 
   virtual base::string16 GetAppDescription();

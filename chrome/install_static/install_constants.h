@@ -68,6 +68,15 @@ struct InstallConstants {
   // directly.
   const wchar_t* base_app_id;
 
+  // The prefix for the browser's ProgID. This prefix may be no more than 11
+  // characters long; see ShellUtil::GetBrowserProgId and
+  // https://msdn.microsoft.com/library/windows/desktop/dd542719.aspx.
+  const wchar_t* prog_id_prefix;
+
+  // A human-readable description of the browser, used when registering with
+  // Windows.
+  const wchar_t* prog_id_description;
+
   // The default name for this mode's update channel.
   const wchar_t* default_channel_name;
 

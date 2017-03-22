@@ -24,8 +24,6 @@ class GoogleChromeSxSDistribution : public GoogleChromeDistribution {
   int GetIconIndex() override;
   base::string16 GetStartMenuShortcutSubfolder(
       Subfolder subfolder_type) override;
-  base::string16 GetBrowserProgIdPrefix() override;
-  base::string16 GetBrowserProgIdDesc() override;
   base::string16 GetUninstallRegPath() override;
   DefaultBrowserControlPolicy GetDefaultBrowserControlPolicy() override;
   base::string16 GetCommandExecuteImplClsid() override;

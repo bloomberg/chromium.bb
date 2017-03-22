@@ -144,18 +144,6 @@ base::string16 BrowserDistribution::GetStartMenuShortcutSubfolder(
   }
 }
 
-base::string16 BrowserDistribution::GetBrowserProgIdPrefix() {
-  // This used to be "ChromiumHTML", but was forced to become "ChromiumHTM"
-  // because of http://crbug.com/153349.  See the declaration of this function
-  // in the header file for more details.
-  return L"ChromiumHTM";
-}
-
-base::string16 BrowserDistribution::GetBrowserProgIdDesc() {
-  return L"Chromium HTML Document";
-}
-
-
 base::string16 BrowserDistribution::GetPublisherName() {
   return L"Chromium";
 }

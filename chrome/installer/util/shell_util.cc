@@ -88,8 +88,7 @@ const wchar_t kReinstallCommand[] = L"ReinstallCommand";
 // "ChromeHTML|suffix|").
 // |suffix| can be the empty string.
 base::string16 GetBrowserProgId(const base::string16& suffix) {
-  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  base::string16 chrome_html(dist->GetBrowserProgIdPrefix());
+  base::string16 chrome_html(install_static::GetProgIdPrefix());
   chrome_html.append(suffix);
 
   // ProgIds cannot be longer than 39 characters.
@@ -350,18 +349,20 @@ void GetChromeProgIdEntries(BrowserDistribution* dist,
                             const base::FilePath& chrome_exe,
                             const base::string16& suffix,
                             ScopedVector<RegistryEntry>* entries) {
+  // Assert that this is only called with the one relevant distribution.
+  // TODO(grt): Remove this when BrowserDistribution goes away.
+  DCHECK_EQ(BrowserDistribution::GetDistribution(), dist);
   int chrome_icon_index = dist->GetIconIndex();
 
   ApplicationInfo app_info;
   app_info.prog_id = GetBrowserProgId(suffix);
-  app_info.file_type_name = dist->GetBrowserProgIdDesc();
+  app_info.file_type_name = install_static::GetProgIdDescription();
   // File types associated with Chrome are just given the Chrome icon.
   app_info.file_type_icon_path = chrome_exe;
   app_info.file_type_icon_index = chrome_icon_index;
   app_info.command_line = ShellUtil::GetChromeShellOpenCmd(chrome_exe);
   // For user-level installs: entries for the app id will be in HKCU; thus we
   // do not need a suffix on those entries.
-  DCHECK_EQ(BrowserDistribution::GetDistribution(), dist);
   app_info.app_id =
       ShellUtil::GetBrowserModelId(InstallUtil::IsPerUserInstall());
 
@@ -795,6 +796,9 @@ bool QuickIsChromeRegistered(BrowserDistribution* dist,
                              const base::FilePath& chrome_exe,
                              const base::string16& suffix,
                              RegistrationConfirmationLevel confirmation_level) {
+  // Assert that this is only called with the one relevant distribution.
+  // TODO(grt): Remove this when BrowserDistribution goes away.
+  DCHECK_EQ(BrowserDistribution::GetDistribution(), dist);
   // Get the appropriate key to look for based on the level desired.
   base::string16 reg_key;
   switch (confirmation_level) {
@@ -802,7 +806,7 @@ bool QuickIsChromeRegistered(BrowserDistribution* dist,
       // Software\Classes\ChromeHTML|suffix|
       reg_key = ShellUtil::kRegClasses;
       reg_key.push_back(base::FilePath::kSeparators[0]);
-      reg_key.append(dist->GetBrowserProgIdPrefix());
+      reg_key.append(install_static::GetProgIdPrefix());
       reg_key.append(suffix);
       break;
     case CONFIRM_SHELL_REGISTRATION:
@@ -1036,8 +1040,8 @@ ShellUtil::DefaultState ProbeCurrentDefaultHandlers(
   if (FAILED(hr))
     return ShellUtil::UNKNOWN_DEFAULT;
 
+  base::string16 prog_id(install_static::GetProgIdPrefix());
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  base::string16 prog_id(dist->GetBrowserProgIdPrefix());
   prog_id += ShellUtil::GetCurrentInstallationSuffix(dist, chrome_exe);
 
   for (size_t i = 0; i < num_protocols; ++i) {

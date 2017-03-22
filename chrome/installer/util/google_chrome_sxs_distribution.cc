@@ -15,8 +15,6 @@
 namespace {
 
 const wchar_t kChromeSxSGuid[] = L"{4ea16ac7-fd5a-47c3-875b-dbf4a2008c20}";
-const wchar_t kBrowserProgIdPrefix[] = L"ChromeSSHTM";
-const wchar_t kBrowserProgIdDesc[] = L"Chrome Canary HTML Document";
 const wchar_t kCommandExecuteImplUuid[] =
     L"{1BEAC3E3-B852-44F4-B468-8906C062422E}";
 
@@ -44,14 +42,6 @@ base::string16 GoogleChromeSxSDistribution::GetStartMenuShortcutSubfolder(
       DCHECK_EQ(subfolder_type, SUBFOLDER_CHROME);
       return GetShortcutName();
   }
-}
-
-base::string16 GoogleChromeSxSDistribution::GetBrowserProgIdPrefix() {
-  return kBrowserProgIdPrefix;
-}
-
-base::string16 GoogleChromeSxSDistribution::GetBrowserProgIdDesc() {
-  return kBrowserProgIdDesc;
 }
 
 base::string16 GoogleChromeSxSDistribution::GetUninstallRegPath() {

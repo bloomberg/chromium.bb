@@ -440,9 +440,8 @@ void RemoveFiletypeRegistration(const InstallerState& installer_state,
   base::string16 classes_path(ShellUtil::kRegClasses);
   classes_path.push_back(base::FilePath::kSeparators[0]);
 
-  BrowserDistribution* distribution = BrowserDistribution::GetDistribution();
-  const base::string16 prog_id(
-      distribution->GetBrowserProgIdPrefix() + browser_entry_suffix);
+  const base::string16 prog_id(install_static::GetProgIdPrefix() +
+                               browser_entry_suffix);
 
   // Delete each filetype association if it references this Chrome.  Take care
   // not to delete the association if it references a system-level install of
@@ -639,8 +638,9 @@ bool DeleteChromeRegistrationKeys(const InstallerState& installer_state,
   base::FilePath chrome_exe(installer_state.target_path().Append(kChromeExe));
 
   // Delete Software\Classes\ChromeHTML.
-  const base::string16 prog_id(
-      dist->GetBrowserProgIdPrefix() + browser_entry_suffix);
+  DCHECK_EQ(BrowserDistribution::GetDistribution(), dist);
+  const base::string16 prog_id(install_static::GetProgIdPrefix() +
+                               browser_entry_suffix);
   base::string16 reg_prog_id(ShellUtil::kRegClasses);
   reg_prog_id.push_back(base::FilePath::kSeparators[0]);
   reg_prog_id.append(prog_id);
@@ -651,7 +651,6 @@ bool DeleteChromeRegistrationKeys(const InstallerState& installer_state,
   reg_app_id.push_back(base::FilePath::kSeparators[0]);
   // Append the requested suffix manually here (as ShellUtil::GetBrowserModelId
   // would otherwise try to figure out the currently installed suffix).
-  DCHECK_EQ(BrowserDistribution::GetDistribution(), dist);
   reg_app_id.append(install_static::GetBaseAppId() + browser_entry_suffix);
   InstallUtil::DeleteRegistryKey(root, reg_app_id, WorkItem::kWow64Default);
 

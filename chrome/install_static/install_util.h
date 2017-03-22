@@ -80,6 +80,18 @@ const wchar_t* GetAppGuid();
 // directly.
 const wchar_t* GetBaseAppId();
 
+// Returns the browser's ProgID prefix (e.g., ChromeHTML or ChromiumHTM). The
+// full id is of the form |prefix|.|suffix| and is limited to a maximum length
+// of 39 characters including null-terminator; see
+// https://msdn.microsoft.com/library/windows/desktop/dd542719.aspx for details.
+// We define |suffix| as a fixed-length 26-character alphanumeric identifier,
+// therefore the return value of this function must have a maximum length of
+// 39 - 1(null-term) - 26(|suffix|) - 1(dot separator) = 11 characters.
+const wchar_t* GetProgIdPrefix();
+
+// Returns the browser's ProgId description.
+const wchar_t* GetProgIdDescription();
+
 // Returns true if usage stats collecting is enabled for this user for the
 // current executable.
 bool GetCollectStatsConsent();

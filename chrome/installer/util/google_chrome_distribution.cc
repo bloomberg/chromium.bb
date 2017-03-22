@@ -41,8 +41,6 @@
 namespace {
 
 const wchar_t kChromeGuid[] = L"{8A69D345-D564-463c-AFF1-A69D9E530F96}";
-const wchar_t kBrowserProgIdPrefix[] = L"ChromeHTML";
-const wchar_t kBrowserProgIdDesc[] = L"Chrome HTML Document";
 const wchar_t kCommandExecuteImplUuid[] =
     L"{5C65F4B0-3651-4514-B207-D10CB699B14B}";
 
@@ -163,14 +161,6 @@ base::string16 GoogleChromeDistribution::GetShortcutName() {
 
 int GoogleChromeDistribution::GetIconIndex() {
   return icon_resources::kApplicationIndex;
-}
-
-base::string16 GoogleChromeDistribution::GetBrowserProgIdPrefix() {
-  return kBrowserProgIdPrefix;
-}
-
-base::string16 GoogleChromeDistribution::GetBrowserProgIdDesc() {
-  return kBrowserProgIdDesc;
 }
 
 base::string16 GoogleChromeDistribution::GetPublisherName() {
