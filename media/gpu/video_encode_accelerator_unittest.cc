@@ -2224,8 +2224,9 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::Values(
         std::make_tuple(1, false, 0, true, false, true, false, false, false)));
 
+// TODO(kcwu): add back bitrate test after crbug.com/693336 fixed.
 INSTANTIATE_TEST_CASE_P(
-    MidStreamParamSwitchFPS,
+    DISABLED_MidStreamParamSwitchFPS,
     VideoEncodeAcceleratorTest,
     ::testing::Values(
         std::make_tuple(1, false, 0, true, false, false, true, false, false)));
@@ -2235,7 +2236,6 @@ INSTANTIATE_TEST_CASE_P(
     VideoEncodeAcceleratorTest,
     ::testing::Values(
         std::make_tuple(3, false, 0, false, false, false, false, false, false),
-        std::make_tuple(3, false, 0, true, false, false, true, false, false),
         std::make_tuple(3, false, 0, true, false, true, false, false, false)));
 
 INSTANTIATE_TEST_CASE_P(
