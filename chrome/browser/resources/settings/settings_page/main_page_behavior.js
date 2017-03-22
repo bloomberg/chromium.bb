@@ -11,6 +11,16 @@
 var MainPageBehaviorImpl = {
   properties: {
     /**
+     * Help CSS to alter style during the horizontal swipe animation.
+     * Note that this is unrelated to the |currentAnimation_| (which refers to
+     * the vertical exapand animation).
+     */
+    isSubpageAnimating: {
+      reflectToAttribute: true,
+      type: Boolean,
+    },
+
+    /**
      * Whether a search operation is in progress or previous search results are
      * being displayed.
      * @private {boolean}
@@ -25,12 +35,27 @@ var MainPageBehaviorImpl = {
   /** @type {?HTMLElement} The scrolling container. */
   scroller: null,
 
+  listeners: {
+    'neon-animation-finish': 'onNeonAnimationFinish_'
+  },
+
   /** @override */
   attached: function() {
     if (this.domHost && this.domHost.parentNode.tagName == 'PAPER-HEADER-PANEL')
       this.scroller = this.domHost.parentNode.scroller;
     else
       this.scroller = document.body; // Used in unit tests.
+  },
+
+  /**
+   * Remove the is-animating attribute once the animation is complete.
+   * This may catch animations finishing more often than needed, which is not
+   * known to cause any issues (e.g. when animating from a shallower page to a
+   * deeper page; or when transitioning to the main page).
+   * @private
+   */
+  onNeonAnimationFinish_: function() {
+    this.isSubpageAnimating = false;
   },
 
   /**
@@ -56,6 +81,9 @@ var MainPageBehaviorImpl = {
     var scrollToSection =
         !settings.lastRouteChangeWasPopstate() || oldRouteWasSection ||
         oldRoute == settings.Route.BASIC;
+
+    if (oldRoute && (oldRoute.isSubpage() || newRoute.isSubpage()))
+      this.isSubpageAnimating = true;
 
     // For previously uncreated pages (including on first load), allow the page
     // to render before scrolling to or expanding the section.
