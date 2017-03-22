@@ -2651,7 +2651,7 @@ crbug.com/698520 external/wpt/preload/fetch-destination.https.html [ Failure Pas
 crbug.com/698521 external/wpt/preload/preload-with-type.html [ Failure Pass ]
 
 # Sheriff failures 2017-03-10
-crbug.com/402805 [ Mac10.10 Mac10.11 Mac10.12 Win10 ] inspector-protocol/input/emulateTouchFromMouseEvent.html [ Timeout ]
+crbug.com/402805 [ Mac10.10 Mac10.11 Mac10.12 Win7 Win10 ] inspector-protocol/input/emulateTouchFromMouseEvent.html [ Timeout ]
 crbug.com/700374 [ Win ] virtual/mojo-loading/http/tests/inspector/workers-on-navigation.html [ Failure Pass ]
 crbug.com/700374 [ Win ] http/tests/inspector/workers-on-navigation.html [ Failure Pass ]
 
