@@ -1441,9 +1441,9 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
             Resources resources = parent.getContext().getResources();
             setBackgroundColor(ApiCompatibilityUtils.getColor(
                     resources, R.color.payments_section_separator));
-            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                    LayoutParams.MATCH_PARENT,
-                    resources.getDimensionPixelSize(R.dimen.payments_section_separator_height));
+            LinearLayout.LayoutParams params =
+                    new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT,
+                            resources.getDimensionPixelSize(R.dimen.separator_height));
 
             int margin = resources.getDimensionPixelSize(R.dimen.payments_section_large_spacing);
             ApiCompatibilityUtils.setMarginStart(params, margin);

@@ -131,14 +131,17 @@
     <!-- Minimum height/width for a touchable item -->
     <dimen name="min_touch_target_size">48dp</dimen>
 
+    <!-- Promo dialogs -->
+    <dimen name="promo_dialog_illustration_margin">24dp</dimen>
+    <dimen name="promo_dialog_illustration_width">150dp</dimen>
+    <dimen name="promo_dialog_padding">16dp</dimen>
+    <dimen name="promo_dialog_max_width">600dp</dimen>
+    <dimen name="promo_dialog_max_content_width">320dp</dimen>
+    <dimen name="promo_dialog_title_text_size">23sp</dimen>
+    <dimen name="promo_dialog_normal_text_size">14sp</dimen>
+
     <!-- Data Saver -->
     <dimen name="data_usage_chart_height">252dp</dimen>
-    <dimen name="data_reduction_promo_screen_width">330dp</dimen>
-    <dimen name="data_reduction_promo_screen_width_horizontal">500dp</dimen>
-    <dimen name="data_reduction_promo_title_text_size">20sp</dimen>
-    <dimen name="data_reduction_promo_normal_text_size">14sp</dimen>
-    <dimen name="data_reduction_promo_button_text_size">13sp</dimen>
-    <dimen name="data_reduction_promo_illustration_margin_bottom">30dp</dimen>
 
     <!-- The size of the text for tab titles. -->
     <dimen name="compositor_tab_title_text_size">13sp</dimen>
@@ -381,7 +384,6 @@
     <dimen name="payments_section_largest_spacing">32dp</dimen>
     <dimen name="payments_section_checking_spacing">6dp</dimen>
     <dimen name="payments_section_descriptive_item_spacing">40dp</dimen>
-    <dimen name="payments_section_separator_height">1dp</dimen>
     <dimen name="payments_section_logo_width">38dp</dimen>
     <dimen name="payments_section_add_button_height">48dp</dimen>
     <dimen name="payments_ui_max_dialog_width">0dp</dimen>

@@ -4,10 +4,8 @@
 
 package org.chromium.chrome.browser.locale;
 
-import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.IntDef;
@@ -23,6 +21,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.SearchEnginePreference;
+import org.chromium.chrome.browser.widget.PromoDialog;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
@@ -33,8 +32,7 @@ import java.lang.annotation.RetentionPolicy;
 /**
  * A promotion dialog showing that the default search provider will be set to Sogou.
  */
-public class SearchEnginePromoDialog extends Dialog
-        implements View.OnClickListener, OnDismissListener {
+public class SogouPromoDialog extends PromoDialog {
     // These constants are here to back a uma histogram. Append new constants at the end of this
     // list (do not rearrange) and don't forget to update CHOICE_ENUM_COUNT.
     @Retention(RetentionPolicy.SOURCE)
@@ -52,53 +50,61 @@ public class SearchEnginePromoDialog extends Dialog
         @Override
         public void onClick(View widget) {
             mChoice = CHOICE_SETTINGS;
-            Intent intent = PreferencesLauncher.createIntentForSettingsPage(getContext(),
-                    SearchEnginePreference.class.getName());
+            Intent intent = PreferencesLauncher.createIntentForSettingsPage(
+                    getContext(), SearchEnginePreference.class.getName());
             getContext().startActivity(intent);
             dismiss();
         }
     };
 
-    @UserChoice private int mChoice = CHOICE_BACK_KEY;
+    @UserChoice
+    private int mChoice = CHOICE_BACK_KEY;
 
     /**
      * Creates an instance of the dialog.
      */
-    public SearchEnginePromoDialog(Context context, LocaleManager localeManager) {
-        super(context, R.style.SimpleDialog);
+    public SogouPromoDialog(Context context, LocaleManager localeManager) {
+        super(context);
         mLocaleManager = localeManager;
         setOnDismissListener(this);
         setCanceledOnTouchOutside(false);
     }
 
     @Override
+    protected DialogParams getDialogParams() {
+        PromoDialog.DialogParams params = new PromoDialog.DialogParams();
+        params.drawableResource = R.drawable.search_sogou;
+        params.headerStringResource = R.string.search_with_sogou;
+        params.subheaderStringResource = R.string.sogou_explanation;
+        params.primaryButtonStringResource = R.string.ok;
+        params.secondaryButtonStringResource = R.string.keep_google;
+        return params;
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
         // Do not allow this dialog to be reconstructed because it requires native side loaded.
         if (savedInstanceState != null) {
             dismiss();
             return;
         }
-        setContentView(R.layout.search_engine_promo);
 
-        View keepGoogleButton = findViewById(R.id.keep_google_button);
-        View okButton = findViewById(R.id.ok_button);
-        keepGoogleButton.setOnClickListener(this);
-        okButton.setOnClickListener(this);
-
-        TextView textView = (TextView) findViewById(R.id.description);
+        StyleSpan boldSpan = new StyleSpan(android.graphics.Typeface.BOLD);
+        TextView textView = (TextView) findViewById(R.id.subheader);
         SpannableString description = SpanApplier.applySpans(
                 getContext().getString(R.string.sogou_explanation),
-                new SpanInfo("<link>", "</link>", mSpan),
-                new SpanInfo("<b>", "</b>", new StyleSpan(android.graphics.Typeface.BOLD)));
+                new SpanInfo("<link>", "</link>", mSpan), new SpanInfo("<b>", "</b>", boldSpan));
         textView.setText(description);
         textView.setMovementMethod(LinkMovementMethod.getInstance());
     }
 
     @Override
     public void onClick(View view) {
-        if (view.getId() == R.id.keep_google_button) {
+        if (view.getId() == R.id.button_secondary) {
             mChoice = CHOICE_KEEP_GOOGLE;
-        } else if (view.getId() == R.id.ok_button) {
+        } else if (view.getId() == R.id.button_primary) {
             mChoice = CHOICE_USE_SOGOU;
         } else {
             assert false : "Not handled click.";
@@ -131,9 +137,11 @@ public class SearchEnginePromoDialog extends Dialog
             default:
                 assert false : "Unexpected choice";
         }
-        ContextUtils.getAppSharedPreferences().edit()
-                .putBoolean(LocaleManager.PREF_PROMO_SHOWN, true).apply();
-        RecordHistogram.recordEnumeratedHistogram("SpecialLocale.PromotionDialog", mChoice,
-                CHOICE_ENUM_COUNT);
+        ContextUtils.getAppSharedPreferences()
+                .edit()
+                .putBoolean(LocaleManager.PREF_PROMO_SHOWN, true)
+                .apply();
+        RecordHistogram.recordEnumeratedHistogram(
+                "SpecialLocale.PromotionDialog", mChoice, CHOICE_ENUM_COUNT);
     }
 }

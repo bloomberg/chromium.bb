@@ -427,8 +427,8 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         // requires exploration of how interactions would work when the dialog can be sent back and
         // forth between the peeking and expanded state.
         mFullContainer = new FrameLayout(mContext);
-        mFullContainer.setBackgroundColor(
-                ApiCompatibilityUtils.getColor(mContext.getResources(), R.color.payments_ui_scrim));
+        mFullContainer.setBackgroundColor(ApiCompatibilityUtils.getColor(
+                mContext.getResources(), R.color.modal_dialog_scrim_color));
         FrameLayout.LayoutParams bottomSheetParams = new FrameLayout.LayoutParams(
                 LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT);
         bottomSheetParams.gravity = Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM;
@@ -1229,7 +1229,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
             mRequestView.removeOnLayoutChangeListener(this);
 
             Animator scrimFader = ObjectAnimator.ofInt(mFullContainer.getBackground(),
-                    AnimatorProperties.DRAWABLE_ALPHA_PROPERTY, 0, 127);
+                    AnimatorProperties.DRAWABLE_ALPHA_PROPERTY, 0, 255);
             Animator alphaAnimator = ObjectAnimator.ofFloat(mFullContainer, View.ALPHA, 0f, 1f);
 
             AnimatorSet alphaSet = new AnimatorSet();
