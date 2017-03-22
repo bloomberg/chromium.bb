@@ -62,14 +62,6 @@ function canvas_fallback_test(element, expected) {
 
 const NotSupportedError = { name : 'NotSupportedError' };
 
-canvas_fallback_test(document.getElementById('button_is_not_descendant_of_canvas'), NotSupportedError);
-canvas_fallback_test(document.querySelector('canvas'), NotSupportedError);
-canvas_fallback_test(document.getElementById('a'));
-canvas_fallback_test(document.getElementById('a_with_image'), NotSupportedError);
-canvas_fallback_test(document.getElementById('button'));
-canvas_fallback_test(document.getElementById('checkbox'));
-canvas_fallback_test(document.getElementById('radio'));
-canvas_fallback_test(document.getElementById('input_button'));
 canvas_fallback_test(document.getElementById('input_image_button'), NotSupportedError);
 canvas_fallback_test(document.getElementById('empty_select'), NotSupportedError);
 canvas_fallback_test(document.getElementById('select_size_greater_than_1'));
@@ -79,13 +71,5 @@ canvas_fallback_test(document.getElementById('option_with_select_multiple'));
 canvas_fallback_test(document.getElementById('option_with_select_size_greater_than_1'));
 canvas_fallback_test(document.getElementById('p'), NotSupportedError);
 canvas_fallback_test(document.getElementById('p_with_tabindex'));
-canvas_fallback_test(document.querySelector('canvas table'));
-canvas_fallback_test(document.querySelector('canvas tr'));
-canvas_fallback_test(document.querySelector('canvas th'));
-canvas_fallback_test(document.querySelector('canvas td'));
-canvas_fallback_test(document.querySelector('canvas thead'));
-canvas_fallback_test(document.querySelector('canvas tfoot'));
-canvas_fallback_test(document.querySelector('canvas tbody'));
-canvas_fallback_test(document.querySelector('canvas caption'));
 
 </script>
