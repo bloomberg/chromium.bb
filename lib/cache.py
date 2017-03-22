@@ -188,12 +188,13 @@ class DiskCache(object):
 
   _STAGING_DIR = 'staging'
 
-  def __init__(self, cache_dir):
+  def __init__(self, cache_dir, cache_user=None):
     self._cache_dir = cache_dir
+    self._cache_user = cache_user
     self.staging_dir = os.path.join(cache_dir, self._STAGING_DIR)
 
-    osutils.SafeMakedirsNonRoot(self._cache_dir)
-    osutils.SafeMakedirsNonRoot(self.staging_dir)
+    osutils.SafeMakedirsNonRoot(self._cache_dir, user=self._cache_user)
+    osutils.SafeMakedirsNonRoot(self.staging_dir, user=self._cache_user)
 
   def _KeyExists(self, key):
     return os.path.exists(self._GetKeyPath(key))
@@ -205,7 +206,8 @@ class DiskCache(object):
   def _LockForKey(self, key, suffix='.lock'):
     """Returns an unacquired lock associated with a key."""
     key_path = self._GetKeyPath(key)
-    osutils.SafeMakedirsNonRoot(os.path.dirname(key_path))
+    osutils.SafeMakedirsNonRoot(os.path.dirname(key_path),
+                                user=self._cache_user)
     lock_path = os.path.join(self._cache_dir, os.path.dirname(key_path),
                              os.path.basename(key_path) + suffix)
     return locking.FileLock(lock_path)
@@ -217,7 +219,8 @@ class DiskCache(object):
     """Insert a file or a directory into the cache at a given key."""
     self._Remove(key)
     key_path = self._GetKeyPath(key)
-    osutils.SafeMakedirsNonRoot(os.path.dirname(key_path))
+    osutils.SafeMakedirsNonRoot(os.path.dirname(key_path),
+                                user=self._cache_user)
     shutil.move(path, key_path)
 
   def _InsertText(self, key, text):

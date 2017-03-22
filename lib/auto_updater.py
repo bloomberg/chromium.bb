@@ -316,7 +316,7 @@ class ChromiumOSFlashUpdater(BaseUpdater):
     keys = keys or ['CURRENT_OP']
     result = device.RunCommand([cls.REMOTE_UPDATE_ENGINE_BIN_FILENAME,
                                 '--status'],
-                               capture_output=True)
+                               capture_output=True, log_output=True)
 
     if not result.output:
       raise Exception('Cannot get update status')

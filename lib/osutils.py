@@ -257,7 +257,7 @@ def SafeMakedirsNonRoot(path, mode=0o775, user=None):
     user = GetNonRootUser()
 
   if user is None or user == 'root':
-    raise MakingDirsAsRoot('Refusing to create %s as root!' % path)
+    raise MakingDirsAsRoot('Refusing to create %s as user %s!' % (path, user))
 
   created = False
   should_chown = False

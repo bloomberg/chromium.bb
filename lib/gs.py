@@ -320,13 +320,13 @@ class GSContext(object):
                               'without progress')
 
   @classmethod
-  def GetDefaultGSUtilBin(cls, cache_dir=None):
+  def GetDefaultGSUtilBin(cls, cache_dir=None, cache_user=None):
     if cls.DEFAULT_GSUTIL_BIN is None:
       if cache_dir is None:
         cache_dir = path_util.GetCacheDir()
       if cache_dir is not None:
         common_path = os.path.join(cache_dir, constants.COMMON_CACHE)
-        tar_cache = cache.TarballCache(common_path)
+        tar_cache = cache.TarballCache(common_path, cache_user=cache_user)
         key = (cls.GSUTIL_TAR,)
         # The common cache will not be LRU, removing the need to hold a read
         # lock on the cached gsutil.
@@ -418,7 +418,7 @@ class GSContext(object):
 
   def __init__(self, boto_file=None, cache_dir=None, acl=None,
                dry_run=False, gsutil_bin=None, init_boto=False, retries=None,
-               sleep=None):
+               sleep=None, cache_user=None):
     """Constructor.
 
     Args:
@@ -436,9 +436,10 @@ class GSContext(object):
         user to interactively set up the boto config.
       retries: Number of times to retry a command before failing.
       sleep: Amount of time to sleep between failures.
+      cache_user: user for creating cache_dir for gsutil. Default is None.
     """
     if gsutil_bin is None:
-      gsutil_bin = self.GetDefaultGSUtilBin(cache_dir)
+      gsutil_bin = self.GetDefaultGSUtilBin(cache_dir, cache_user=cache_user)
     else:
       self._CheckFile('gsutil not found', gsutil_bin)
     self.gsutil_bin = gsutil_bin
