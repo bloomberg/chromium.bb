@@ -44,6 +44,11 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
+#if defined(CHROMEOS)
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chromeos/chromeos_switches.h"
+#endif
+
 namespace extensions {
 
 namespace {
@@ -122,8 +127,6 @@ void VerifyPostMessageToOpener(content::RenderFrameHost* sender,
       sender, "opener.postMessage('foo', '*');", &result));
   EXPECT_EQ("foo", result);
 }
-
-}  // namespace
 
 // Takes a snapshot of all frames upon construction. When Wait() is called, a
 // MessageLoop is created and Quit when all previously recorded frames are
@@ -269,6 +272,50 @@ class ProcessManagerBrowserTest : public ExtensionBrowserTest {
   guest_view::TestGuestViewManagerFactory factory_;
   std::vector<std::unique_ptr<TestExtensionDir>> temp_dirs_;
 };
+
+class DefaultProfileExtensionBrowserTest : public ExtensionBrowserTest {
+ protected:
+  DefaultProfileExtensionBrowserTest() {
+#if defined(OS_CHROMEOS)
+    // We want signin profile on ChromeOS, not logged in user profile.
+    set_chromeos_user_ = false;
+#endif
+  }
+
+ private:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    ExtensionBrowserTest::SetUpCommandLine(command_line);
+#if defined(OS_CHROMEOS)
+    command_line->AppendSwitch(chromeos::switches::kLoginManager);
+    command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
+#endif
+  }
+};
+
+}  // namespace
+
+// By default, no extension hosts should be present in the profile;
+// they should only be present if non-component extensions are loaded
+// or if the user takes some action to trigger a component extension.
+// TODO(achuith): Expand this testing to include more in-depth
+// testing for the signin profile, where we explicitly disallow all
+// extension hosts unless it's the off-the-record profile.
+IN_PROC_BROWSER_TEST_F(DefaultProfileExtensionBrowserTest, NoExtensionHosts) {
+  // Explicitly get the original and off-the-record-profiles, since on CrOS,
+  // the signin profile (profile()) is the off-the-record version.
+  Profile* original = profile()->GetOriginalProfile();
+  Profile* otr = original->GetOffTheRecordProfile();
+#if defined(OS_CHROMEOS)
+  EXPECT_EQ(profile(), otr);
+  EXPECT_TRUE(chromeos::ProfileHelper::IsSigninProfile(original));
+#endif
+
+  ProcessManager* pm = ProcessManager::Get(original);
+  EXPECT_EQ(0u, pm->background_hosts().size());
+
+  pm = ProcessManager::Get(otr);
+  EXPECT_EQ(0u, pm->background_hosts().size());
+}
 
 // Test that basic extension loading creates the appropriate ExtensionHosts
 // and background pages.
